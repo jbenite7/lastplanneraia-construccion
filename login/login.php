@@ -4,73 +4,66 @@ require("../conexion.php");
 
 if (isset($_SESSION['usuario'])) {
     header("Location: ../index.php");
+    exit();
 }
 
+$errores = '';
 
-$errores='';
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $usuario = filter_var(strtolower($_POST['usuario']), FILTER_SANITIZE_STRING);
+    $password = $_POST['password'];
+    $proyecto = $_POST['proyecto_login'];
 
+    $stmt = $pdo->prepare("SELECT * FROM general_proyectos_procesos WHERE Proyecto_Proceso = ? AND Area='Construccion'");
+    $stmt->execute([$proyecto]);
+    $data = $stmt->fetch();
 
-if ($_SERVER['REQUEST_METHOD']== 'POST'){
-    $usuario=filter_var(strtolower($_POST['usuario']), FILTER_SANITIZE_STRING);
-    $password=$_POST['password'];
-    $proyecto=$_POST['proyecto_login'];
+    if ($data) {
+        $db = $data["Base_de_Datos"];
+        $acceso = $data["Acceso"];
+        $pdcActivo = $data["pdcActivo"];
 
-    $query="SELECT * FROM general_proyectos_procesos WHERE Proyecto_Proceso ='$proyecto' AND Area='Construccion'";
-    $resultado= mysqli_query($conexion, $query);
-    $data=mysqli_fetch_assoc($resultado);
-    $db=$data["Base_de_Datos"];
-    $acceso=$data["Acceso"];
-    $pdcActivo=$data["pdcActivo"];
+        $passwordHashed = hash('sha512', $password);
+        $stmt1 = $pdo->prepare("SELECT * FROM general_usuarios WHERE usuario = ? AND password = ? AND (proyecto = ? OR proyecto='todos')");
+        $stmt1->execute([$usuario, $passwordHashed, $proyecto]);
+        $data1 = $stmt1->fetch();
 
-    //require ("../conexion.php");
-    $password=$_POST['password'];
-    $query1="SELECT * FROM general_usuarios WHERE usuario ='$usuario' AND password ='".hash('sha512',$password)."' AND (proyecto ='$proyecto' OR proyecto='todos')";
+        if ($data1) {
+            $proyecto1 = $data1["proyecto"];
+            $permiso = $data1['permiso'];
+            $nombreUsuario = $data1['nombre'];
 
-    $resultado1= mysqli_query($conexion, $query1);
-
-    $data1=mysqli_fetch_assoc($resultado1);
-    $proyecto1=$data1["proyecto"];
-    $permiso=$data1['permiso'];
-    $nombreUsuario=$data1['nombre'];
-    // if($proyecto=='Prueba'){
-    //     if($permiso=='P'){
-    //       $permiso='P';
-    //     }else{
-    //       $permiso='A';
-    //     }
-    // }
-    if($acceso==0 && $permiso!='P'){
-         $errores .= "<li>El proyecto $proyecto se encuentra inactivo.</li>";
-    }else{
-        if($proyecto1!=""){
-            if((strtolower($proyecto)!=strtolower($proyecto1))){
-                if($proyecto1!='Todos'){
+            if ($acceso == 0 && $permiso != 'P') {
+                $errores .= "<li>El proyecto $proyecto se encuentra inactivo.</li>";
+            } else {
+                if (strtolower($proyecto) != strtolower($proyecto1) && $proyecto1 != 'Todos') {
                     $errores .= "<li>Este usuario no se encuentra autorizado para ingresar al proyecto $proyecto.</li>";
-                }else{
-                    iniciar_sesion($usuario, $proyecto, $semana, $permiso, $pdcActivo, $nombreUsuario, $db);
+                } else {
+                    iniciar_sesion($usuario, $proyecto, $permiso, $pdcActivo, $nombreUsuario, $db, $pdo);
                 }
-            }else{
-                iniciar_sesion($usuario, $proyecto, $semana, $permiso, $pdcActivo, $nombreUsuario, $db);
             }
         } else {
-            $errores .= "Error: <li>Este usuario no se encuentra autorizado para ingresar al proyecto $proyecto o el usuario o la contraseña son incorrectos.</li>";
+            $errores .= "Error: <li>Usuario, contraseña o proyecto incorrectos.</li>";
         }
+    } else {
+        $errores .= "Error: <li>El proyecto seleccionado no existe o no está configurado.</li>";
     }
-
-mysqli_close($conexion);
 }
+
 require 'views/login.view.php';
 
-function iniciar_sesion($usuario, $proyecto, $semana, $permiso, $pdcActivo, $nombreUsuario, $db){
+function iniciar_sesion($usuario, $proyecto, $permiso, $pdcActivo, $nombreUsuario, $db, $pdo){
     $_SESSION['usuario'] = $usuario;
 
-    require ("../conexion.php");
-    $query2="SELECT MAX(Semana) FROM $db"."_semanas_activas";
-    $resultado2= mysqli_query($conexion, $query2);
-    $data2=mysqli_fetch_assoc($resultado2);
-    $semana= (!$data2["MAX(Semana)"]) ? 0 : $data2["MAX(Semana)"];
+    // La conexión $pdo ya está disponible a través del parámetro de la función.
+    $query2 = "SELECT MAX(Semana) AS max_semana FROM {$db}_semanas_activas";
+    $stmt2 = $pdo->prepare($query2);
+    $stmt2->execute();
+    $data2 = $stmt2->fetch();
+    
+    $semana = $data2 && $data2['max_semana'] ? $data2['max_semana'] : 0;
 
-    header("Location: ../index.php?proyecto=".$proyecto."&db=$db&semana=$semana&p=$permiso&pdcActivo=$pdcActivo&nombreUsuario=$nombreUsuario");
-    mysqli_close($conexion);
+    header("Location: ../index.php?proyecto=".$proyecto."&db=$db&semana=$semana&p=$permiso&pdcActivo=$pdcActivo&nombreUsuario=".urlencode($nombreUsuario));
+    exit();
 }
 ?>

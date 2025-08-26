@@ -1,0 +1,115 @@
+{
+  "planTitle": "Plan de Acción a 30 Días - Auditoría Técnica Web",
+  "phases": [
+    {
+      "name": "DÍAS 0-7: FUNDACIÓN Y CONTENCIÓN DE RIESGOS",
+      "milestones": [
+        {
+          "id": "HITO-1",
+          "description": "Inicializar repositorio Git y subir todo el código.",
+          "priority": "Must",
+          "status": "Completado",
+          "highlights": [
+            "Repositorio Git inicializado con `git init`.",
+            "Creado archivo `.gitignore` para excluir dependencias, logs y secretos.",
+            "Código subido a un repositorio privado en GitHub para respaldo y colaboración."
+          ]
+        },
+        {
+          "id": "HITO-2",
+          "description": "Externalizar credenciales a .env.",
+          "priority": "Must",
+          "status": "Completado",
+          "highlights": [
+            "Instalado PHP y Composer en el entorno de desarrollo local.",
+            "Instalada la librería `vlucas/phpdotenv`.",
+            "Credenciales de la base de datos movidas de `conexion.php` al archivo `.env`."
+          ]
+        },
+        {
+          "id": "HITO-3",
+          "description": "Actualizar `phpoffice/phpspreadsheet` a la última versión.",
+          "priority": "Must",
+          "status": "Completado",
+          "highlights": [
+            "Librería actualizada de la versión 3.9 a la 1.30.0.",
+            "Se resolvió el problema de la restricción de versión (`^`) en `composer.json` para permitir una actualización mayor."
+          ]
+        },
+        {
+          "id": "HITO-4",
+          "description": "Refactorizar `login.php` y consultas críticas a PDO.",
+          "priority": "Must",
+          "status": "Pendiente",
+          "highlights": []
+        },
+        {
+          "id": "HITO-5",
+          "description": "Implementar Headers de Seguridad básicos (CSP, X-Frame-Options, etc.).",
+          "priority": "Should",
+          "status": "Pendiente",
+          "highlights": []
+        }
+      ]
+    },
+    {
+      "name": "DÍAS 8-21: ENDURECIMIENTO Y MEJORA DE CÓDIGO",
+      "milestones": [
+        {
+          "id": "HITO-6",
+          "description": "Implementar tokens Anti-CSRF en formularios críticos.",
+          "priority": "Must",
+          "status": "Pendiente",
+          "highlights": []
+        },
+        {
+          "id": "HITO-7",
+          "description": "Sanear todas las salidas a HTML con `htmlspecialchars()` para prevenir XSS.",
+          "priority": "Must",
+          "status": "Pendiente",
+          "highlights": []
+        },
+        {
+          "id": "HITO-8",
+          "description": "Instalar y configurar PHPCS (PHP CodeSniffer) con el estándar PSR-12.",
+          "priority": "Should",
+          "status": "Pendiente",
+          "highlights": []
+        },
+        {
+          "id": "HITO-9",
+          "description": "Analizar y añadir índices a las 3 consultas más lentas de la aplicación.",
+          "priority": "Should",
+          "status": "Pendiente",
+          "highlights": []
+        }
+      ]
+    },
+    {
+      "name": "DÍAS 22-30: REFACTORIZACIÓN Y OPTIMIZACIÓN",
+      "milestones": [
+        {
+          "id": "HITO-10",
+          "description": "Crear una capa de abstracción de base de datos simple (ej. una clase `Database`).",
+          "priority": "Could",
+          "status": "Pendiente",
+          "highlights": []
+        },
+        {
+          "id": "HITO-11",
+          "description": "Unificar y minificar archivos CSS y JS.",
+          "priority": "Could",
+          "status": "Pendiente",
+          "highlights": []
+        },
+        {
+          "id": "HITO-12",
+          "description": "Empezar a refactorizar un módulo (ej. `subcontratistas`) para separar lógica y vista.",
+          "priority": "Won't (este mes)",
+          "status": "Pendiente",
+          "highlights": []
+        }
+      ]
+    }
+  ]
+}
