@@ -1,0 +1,64 @@
+{
+  "resumen_ejecutivo": "El proyecto presenta riesgos de seguridad críticos, principalmente inyección SQL, y una deuda técnica significativa debido a su arquitectura heredada. El plan de 30 días se enfoca en la contención de seguridad inmediata, la implementación de control de versiones y el establecimiento de prácticas de desarrollo modernas como base para futuras mejoras.",
+  "hallazgos": [
+    {
+      "id": "H-001",
+      "severidad": "Crítica",
+      "area": "Seguridad",
+      "impacto": "Exfiltración/modificación total de la base de datos.",
+      "probabilidad": "Alta",
+      "evidencia": "Uso de `mysqli` sin un patrón forzado de consultas preparadas, lo que comúnmente lleva a concatenación de SQL.",
+      "recomendacion": "Migrar urgentemente todas las consultas de `mysqli_*` a `PDO` con sentencias preparadas.",
+      "esfuerzo_estimado": "5-7 días",
+      "dueno_sugerido": "Backend",
+      "referencias": ["OWASP A03:2021-Injection", "CWE-89"]
+    },
+    {
+      "id": "H-002",
+      "severidad": "Alta",
+      "area": "Seguridad",
+      "impacto": "Robo de sesiones de usuario, ejecución de código malicioso en el navegador del cliente.",
+      "probabilidad": "Alta",
+      "evidencia": "Ausencia de un framework que imponga sanitización de salida por defecto.",
+      "recomendacion": "Aplicar `htmlspecialchars()` a todas las variables que se imprimen en HTML y que provienen de una fuente no confiable.",
+      "esfuerzo_estimado": "3-5 días",
+      "dueno_sugerido": "Backend/Frontend",
+      "referencias": ["CWE-79"]
+    },
+    {
+      "id": "H-004",
+      "severidad": "Alta",
+      "area": "Código/DevEx",
+      "impacto": "Sin trazabilidad de cambios, riesgo de sobreescritura de trabajo, imposibilidad de colaboración segura.",
+      "probabilidad": "Alta",
+      "evidencia": "Ausencia de un directorio `.git` en la raíz del proyecto.",
+      "recomendacion": "Inicializar un repositorio Git. Definir una estrategia de ramas y una convención de commits.",
+      "esfuerzo_estimado": "1 día",
+      "dueno_sugerido": "DevOps/Backend",
+      "referencias": []
+    }
+  ],
+  "inventario_secciones": [
+    {
+      "ruta": "/programa_general/",
+      "proposito": "Gestión del programa general del proyecto.",
+      "dependencias": ["PHP", "MySQL", "jQuery"],
+      "problemas": ["Alto riesgo de SQLi en listado y guardado", "Lógica de negocio mezclada con HTML"]
+    },
+    {
+      "ruta": "/programacion_semanal/",
+      "proposito": "Gestión de la programación semanal, CIC, CNC, CNP.",
+      "dependencias": ["PHP", "MySQL", "jQuery"],
+      "problemas": ["Múltiples puntos de entrada para manipulación de datos", "Alto riesgo de SQLi y CSRF", "Código duplicado"]
+    }
+  ],
+  "sbom": [
+    { "componente": "phpoffice/phpspreadsheet", "version": "^3.9", "origen": "composer.json", "riesgo_probable": "Alto", "notas": "Versión de 2018, probablemente con CVEs conocidas. Actualizar urgentemente." },
+    { "componente": "jquery", "version": "3.x?", "origen": "local/cdn", "riesgo_probable": "Medio", "notas": "Dependencia no gestionada. Versiones < 3.5.0 tienen XSS conocidos." }
+  ],
+  "plan_accion": [
+    { "hito": "Inicializar repositorio Git y subir todo el código.", "prioridad": "Must", "esfuerzo": "0.5d", "impacto": "Crítico", "owner": "Backend" },
+    { "hito": "Refactorizar login y consultas críticas a PDO.", "prioridad": "Must", "esfuerzo": "3d", "impacto": "Crítico", "owner": "Backend" },
+    { "hito": "Implementar tokens Anti-CSRF en formularios críticos.", "prioridad": "Must", "esfuerzo": "3d", "impacto": "Alto", "owner": "Backend" }
+  ]
+}

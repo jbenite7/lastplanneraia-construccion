@@ -1,0 +1,7 @@
+[13-Mar-2025 19:06:38 UTC] PHP Fatal error:  require(): Failed opening required '../../../../../vendor/autoload.php' (include_path='.:/usr/local/php74/pear') in /home/customer/www/lastplanneraia.com/public_html/construccion/programacion_intermedia/descargarRestricciones.php on line 3
+[03-Jun-2025 03:31:22 UTC] PHP Fatal error:  Uncaught PhpOffice\PhpSpreadsheet\Writer\Exception: Could not open file "cortesRestricciones/202506031883117accesibilidadMetroA_Liberacion_Restricciones_S6.xlsx" for writing. in /home/customer/www/lastplanneraia.com/vendor/phpoffice/phpspreadsheet/src/PhpSpreadsheet/Writer/BaseWriter.php:130
+Stack trace:
+#0 /home/customer/www/lastplanneraia.com/vendor/phpoffice/phpspreadsheet/src/PhpSpreadsheet/Writer/Xlsx.php(551): PhpOffice\PhpSpreadsheet\Writer\BaseWriter->openFileHandle('cortesRestricci...')
+#1 /home/customer/www/lastplanneraia.com/public_html/construccion/programacion_intermedia/descargarRestricciones.php(288): PhpOffice\PhpSpreadsheet\Writer\Xlsx->save('cortesRestricci...')
+#2 {main}
+  thrown in /home/customer/www/lastplanneraia.com/vendor/phpoffice/phpspreadsheet/src/PhpSpreadsheet/Writer/BaseWriter.php on line 130

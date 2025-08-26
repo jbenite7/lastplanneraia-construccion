@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head id="head">
+    <!--Script cque va al archivo linksComunesHead2.js-->
+	<script type="text/javascript" src="../funciones_generales/js/linksComunesHead2.js" charset="utf-8"></script>
+
+	<!-- Tabulator -->
+	<link href="https://unpkg.com/tabulator-tables@5.3.4/dist/css/tabulator.min.css" rel="stylesheet">
+	<!-- <link href="https://cdnjs.cloudflare.com/ajax/libs/tabulator/5.3.4/css/tabulator_simple.min.css" rel="stylesheet"> -->
+	<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabulator/5.3.4/css/tabulator_bootstrap4.min.css"> -->
+	
+	
+</head>
+<body>
+	<div class="encabezado" id="encabezado">
+		<input type="hidden" name="seccion" id="seccion" value="controlCambios">
+	</div>
+
+	<div class="row ventanasModalesSemana" id="ventanasModalesSemana"></div>
+
+    <div class="row ventanasModalesEspecificas" id="ventanasModalesEspecificas">
+		
+		<div class="modal_ordenDeCambio modal fade" id="modalordenDeCambio" role="dialog" aria-labelledby="modal_ordenDeCambioLabel">
+			<div class="modal-dialog modal-xl" role="document">
+				<div class="modal-content" id="modalordenDeCambioContent">
+					<div class="modal-header p-0">
+						<div class="col-sm-12 p-0 h-100">
+							<div class="row d-flex align-items-center pt-2 pb-2">
+								<div class="col-sm-3 m-auto" style="max-width: 50%">
+									<img src="../imagenes/logoHorizontal.png" class="img-fluid" alt="Responsive image">
+								</div>
+								<div class="col-sm m-auto">
+									<h1 class="modal-title" id="modalordenDeCambioLabel">
+										<b><p class="modal-body-texto-ordenDeCambio text-center  mb-0" id="modal-body-texto-ordenDeCambio">Orden de Cambio</p></b>
+									</h1>
+								</div>
+								<div class="col-sm-3 m-auto" style="max-width: 50%">
+									<img src="../imagenes/etiquetaConstructoraAIASAS.png" class="img-fluid" alt="Responsive image">
+								</div>
+								<button type="button" class="close col-sm-1" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" onclick="recargarTabla('listar')">&times;</span></button>
+							</div>
+						</div>
+					</div>
+					<div class="modal-body">
+						<form class="form form-horizontal" action="" method="POST">
+							<input type="hidden" id="tipoContrato" name="tipoContrato" value="">
+							<input type="hidden" id="actividadModificar" name="actividadModificar" value="">
+							
+
+							<!-- Se crean los inputs del formulario de contratos de suministro -->
+							<div class="col-sm-12 p-0 mb-4 border-2 border-top-0 rounded border-dark">
+								<div class="tituloFormularioCambios form-group mb-0">
+									<h3 id='form_general'>Información General</h3>
+								</div>
+								<div class="row mb-3">
+									<div class="form-group col-sm mt-0 mb-0 pt-3 pb-3" style="height:100%">
+										<label for="inputConsecutivo"><b>Número de Orden</b></label>
+										<input type="number" class="form-control" id="inputConsecutivo" placeholder="Consecutivo" autocomplete="off">
+									</div>
+									<div class="form-group col-sm mt-0 mb-0 pt-3 pb-3" style="height:100%">
+										<label for="inputProyecto"><b>Proyecto</b></label>
+										<input type="text" class="form-control" id="inputProyecto" placeholder="Proyecto" autocomplete="off">
+									</div>
+								</div>
+								<div class="row border-bottom">
+									<div class="form-group col-sm mt-0 mb-0 pb-3" style="height:100%">
+										<label for="inputDirector"><b>Director de Obra</b></label>
+										<input type="text" class="form-control" id="inputDirector" placeholder="Director" autocomplete="off">
+									</div>
+									<div class="form-group col-sm mt-0 mb-0 pb-3" style="height:100%">
+										<label for="inputFechaSolicitud"><b>Fecha de Solicitud</b></label>
+										<input type="text" class="form-control" id="inputFechaSolicitud" placeholder="Fecha de Solicitud" autocomplete="off">
+									</div>
+								</div>
+								<div class="row border-bottom">
+									<div class="form-group col-sm-7 border-right mt-0 mb-0 pt-3 pb-3" style="height:100%">
+										<div class="form-group mb-0">
+											<label for="radioSolicitanteCambio"><b>Solicitante del Cambio</b></label>
+										</div>
+										<div class="form-check form-check-inline" id="radioSolicitanteCambio">
+											<input type="radio" class="form-check-input" name="inputSolicitanteCambio" id="inputSolicitanteCambioObra" value="1" onclick="document.getElementById('inputDetalleSolicitanteOtro').disabled = true; document.getElementById('inputDetalleSolicitanteOtro').value=''">
+											<label class="form-check-label" for="inputSolicitanteCambioObra">Obra</label>
+										</div>
+										<div class="form-check form-check-inline" id="radioSolicitanteCambio">
+											<input type="radio" class="form-check-input" name="inputSolicitanteCambio" id="inputSolicitanteCambioCliente" value="2" onclick="document.getElementById('inputDetalleSolicitanteOtro').disabled = true; document.getElementById('inputDetalleSolicitanteOtro').value=''">
+											<label class="form-check-label" for="inputSolicitanteCambioCliente">Cliente</label>
+										</div>
+										<div class="form-check form-check-inline" id="radioSolicitanteCambio">
+											<input type="radio" class="form-check-input" name="inputSolicitanteCambio" id="inputSolicitanteCambioInterventoria" value="3" onclick="document.getElementById('inputDetalleSolicitanteOtro').disabled = true; document.getElementById('inputDetalleSolicitanteOtro').value=''">
+											<label class="form-check-label" for="inputSolicitanteCambioInterventoria">Interventoría</label>
+										</div>
+										<div class="form-check form-check-inline col-sm-6" id="radioSolicitanteCambio">
+											<input type="radio" class="form-check-input" name="inputSolicitanteCambio" id="inputSolicitanteCambioOtro" value="4" onclick="document.getElementById('inputDetalleSolicitanteOtro').disabled = false;">
+											<label class="form-check-label" for="inputSolicitanteCambioOtro">Otro:&nbsp&nbsp</label>
+											<input type="text" class="form-control" id="inputDetalleSolicitanteOtro" placeholder="¿Quien?" disabled autocomplete="off">
+										</div>
+									</div>
+									<div class="form-group col-sm-5 mt-0 mb-0 pt-3 pb-3">
+										<div class="form-group mb-0">
+											<label for="radioPrioridad"><b>Prioridad</b></label>
+										</div>
+										<div class="form-check form-check-inline" id="radioPrioridad">
+											<input type="radio" class="form-check-input" name="inputPrioridad" id="inputPrioridadAlta" value="1">
+											<label class="form-check-label" for="inputPrioridadAlta">Alta</label>
+										</div>
+										<div class="form-check form-check-inline" id="radioPrioridad">
+											<input type="radio" class="form-check-input" name="inputPrioridad" id="inputPrioridadMedia" value="2">
+											<label class="form-check-label" for="inputPrioridadMedia">Media</label>
+										</div>
+										<div class="form-check form-check-inline" id="radioPrioridad">
+											<input type="radio" class="form-check-input" name="inputPrioridad" id="inputPrioridadBaja" value="3">
+											<label class="form-check-label" for="inputPrioridadBaja">Baja</label>
+										</div>
+									</div>
+								</div>
+								<div class="row">									
+									<div class="form-group col-sm-5 border-right mt-0 mb-0 pt-3 pb-3">
+										<div class="form-group mb-0">
+											<label for="checkboxTipoCambio"><b>Tipo de Cambio</b></label>
+										</div>
+										<div class="row">
+											<div class="form-check form-check-inline" id="checkboxTipoCambio">
+												<input type="checkbox" class="form-check-input" name="inputTipoCambio" id="inputTipoCambioAlcance" value="1">
+												<label class="form-check-label" for="inputTipoCambioAlcance">Alcance</label>
+											</div>
+											<div class="form-check form-check-inline" id="checkboxTipoCambio">
+												<input type="checkbox" class="form-check-input" name="inputTipoCambio" id="inputTipoCambioCronograma" value="2">
+												<label class="form-check-label" for="inputTipoCambioCronograma">Cronograma</label>
+											</div>	
+											<div class="form-check form-check-inline" id="checkboxTipoCambio">
+												<input type="checkbox" class="form-check-input" name="inputTipoCambio" id="inputTipoCambioCosto" value="3">
+												<label class="form-check-label" for="inputTipoCambioCosto">Costo</label>
+											</div>	
+										</div>
+										<div class="row mt-1">
+											<div class="form-check form-check-inline" id="checkboxTipoCambio">
+												<input type="checkbox" class="form-check-input" name="inputTipoCambio" id="inputTipoCambioCalidad" value="4">
+												<label class="form-check-label" for="inputTipoCambioCalidad">Calidad</label>
+											</div>	
+											<div class="form-check form-check-inline" id="checkboxTipoCambio">
+												<input type="checkbox" class="form-check-input" name="inputTipoCambio" id="inputTipoCambioRiesgo" value="5">
+												<label class="form-check-label" for="inputTipoCambioRiesgo">Riesgo</label>
+											</div>	
+											<div class="form-check form-check-inline" id="checkboxTipoCambio">
+												<input type="checkbox" class="form-check-input" name="inputTipoCambio" id="inputTipoCambioRecurso" value="6">
+												<label class="form-check-label" for="inputTipoCambioRecurso">Recurso</label>
+											</div>	
+										</div>								
+									</div>
+									<div class="form-group col-sm-7 mt-0 mb-0 pt-3 pb-3">
+										<div class="form-group mb-0">
+											<label for="radioResponsableSolucion"><b>Responsable de la Definición de Cambio</b></label>
+										</div>
+										<div class="form-check form-check-inline" id="radioResponsableSolucion">
+											<input type="radio" class="form-check-input" name="inputResponsableSolucion" id="inputResponsableSolucionObra" value="1" onclick="document.getElementById('inputDetalleResponsableSolucion').disabled = true; document.getElementById('inputDetalleResponsableSolucion').value=''">
+											<label class="form-check-label" for="inputResponsableSolucionObra">Obra</label>
+										</div>
+										<div class="form-check form-check-inline" id="radioResponsableSolucion">
+											<input type="radio" class="form-check-input" name="inputResponsableSolucion" id="inputResponsableSolucionCliente" value="2" onclick="document.getElementById('inputDetalleResponsableSolucion').disabled = true; document.getElementById('inputDetalleResponsableSolucion').value=''">
+											<label class="form-check-label" for="inputResponsableSolucionCliente">Cliente</label>
+										</div>
+										<div class="form-check form-check-inline" id="radioResponsableSolucion">
+											<input type="radio" class="form-check-input" name="inputResponsableSolucion" id="inputResponsableSolucionInterventoria" value="3" onclick="document.getElementById('inputDetalleResponsableSolucion').disabled = true; document.getElementById('inputDetalleResponsableSolucion').value=''">
+											<label class="form-check-label" for="inputResponsableSolucionInterventoria">Interventoría</label>
+										</div>
+										<div class="form-check form-check-inline col-sm-6" id="radioResponsableSolucion">
+											<input type="radio" class="form-check-input" name="inputResponsableSolucion" id="inputResponsableSolucionOtro" value="4" onclick="document.getElementById('inputDetalleResponsableSolucion').disabled = false;">
+											<label class="form-check-label" for="inputResponsableSolucionOtro">Otro:&nbsp&nbsp</label>
+											<input type="text" class="form-control col-sm-11" id="inputDetalleResponsableSolucion" placeholder="¿Quien?" disabled autocomplete="off">
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="col-sm-12 p-0 mb-4 border-2 border-top-0 rounded border-dark">
+								<div class="tituloFormularioCambios form-group mb-0">
+									<h3 id='form_general'>Detalle del Cambio</h3>
+								</div>
+								<div class="row">
+									<div class="input-group col-sm-12 mt-0 mb-0 pt-2 pb-2">
+										<div class="input-group col-sm-12">
+											<div class="input-group-prepend">
+												<span class="input-group-text"><b>Justificación</b></span>
+											</div>
+											<textarea class="form-control" id="inputJustificacion" rows="4" onkeyup="contadorTextarea(this,'contadorJustificacion',500)" autocomplete="off"></textarea>
+										</div>
+										<div class="input-group col-sm-12 d-flex justify-content-end">
+											<p id="contadorJustificacion" class="">0 de 500 caracteres permitidos.</p>
+										</div>						
+									</div>
+								</div>
+								<div class="row">
+									<div class="input-group col-sm-12 mt-0 mb-0 pt-2 pb-2">
+										<div class="input-group col-sm-12">
+											<div class="input-group-prepend">
+												<span class="input-group-text"><b>Descripción <br>del Cambio</b></span>
+											</div>
+											<textarea class="form-control" id="inputDescripcion" rows="4" onkeyup="contadorTextarea(this,'contadorDescripcion',500)" autocomplete="off"></textarea>
+										</div>
+										<div class="input-group col-sm-12 d-flex justify-content-end">
+											<p id="contadorDescripcion" class="">0 de 500 caracteres permitidos.</p>
+										</div>										
+									</div>
+								</div>
+								<div class="row">
+									<div class="input-group col-sm-12 mt-0 mb-0 pt-2 pb-2">
+										<div class="input-group col-sm-12">
+											<div class="input-group-prepend">
+												<span class="input-group-text"><b>Incidencia en <br>el Alcance</b></span>
+											</div>
+											<textarea class="form-control" id="inputIncidenciaAlcance" rows="4" onkeyup="contadorTextarea(this,'contadorIncidenciaAlcance',500)" autocomplete="off"></textarea>
+										</div>
+										<div class="input-group col-sm-12 d-flex justify-content-end">
+											<p id="contadorIncidenciaAlcance" class="">0 de 500 caracteres permitidos.</p>
+										</div>										
+									</div>
+								</div>
+								<div class="row">
+									<div class="input-group col-sm-12 mt-0 mb-0 pt-2 pb-2">
+										<div class="input-group col-sm-12">
+											<div class="input-group-prepend">
+												<span class="input-group-text"><b>Incidencia <br>en el <br>Cronograma</b></span>
+											</div>
+											<textarea class="form-control" id="inputIncidenciaCronograma" rows="4" onkeyup="contadorTextarea(this,'contadorIncidenciaCronograma',500)" autocomplete="off"></textarea>
+										</div>
+										<div class="input-group col-sm-12 d-flex justify-content-end">
+											<p id="contadorIncidenciaCronograma" class="">0 de 500 caracteres permitidos.</p>
+										</div>										
+									</div>
+								</div>
+								<div class="row">
+									<div class="input-group col-sm-12 mt-0 mb-0 pt-2 pb-0">
+										<div class="input-group-prepend ml-3 mr-0 pr-0">
+											<span class="input-group-text w-100 d-flex justify-content-center"><b>Incidencia <br>en el <br>Presupuesto</b></span>
+										</div>
+										<div class="input-group w-75 ml-0 pl-0">
+											<div class="input-group col-sm-12 m-0 pb-1 pt-0 pr-0 pl-0 w-75">
+												<div class="input-group col-sm-8 w-100">
+													<div class="input-group-prepend" style="width:200px;max-width:40%">
+														<span class="input-group-text w-100"><b>Costo Directo</b></span>
+													</div>
+													<input type="text" class="form-control col-sm-11" id="inputCostoDirecto" data-type="currency" autocomplete="off">
+												</div>									
+											</div>
+											<div class="input-group col-sm-12 m-0 pb-1 pt-0 pr-0 pl-0">
+												<div class="input-group col-sm-8">
+													<div class="input-group-prepend" style="width:200px;max-width:40%">
+														<span class="input-group-text w-100"><b>Costo Directo + AIU</b></span>
+													</div>
+													<input type="text" class="form-control col-sm-11" id="inputCostoDirectoAIU" data-type="currency" autocomplete="off">
+												</div>										
+											</div>
+											<div class="input-group col-sm-12 m-0 pb-1 pt-0 pr-0 pl-0">
+												<div class="input-group col-sm-8">
+													<div class="input-group-prepend" style="width:200px;max-width:40%">
+														<span class="input-group-text w-100"><b>Costo Directo + AIU + IVA</b></span>
+													</div>
+													<input type="text" class="form-control col-sm-11" id="inputCostoDirectoAIUIVA" data-type="currency" autocomplete="off">
+												</div>										
+											</div>
+											<div class="input-group col-sm-12 m-0 pb-1 pt-0 pr-0 pl-0">
+												<div class="input-group col-sm-8">
+													<div class="input-group-prepend" style="width:200px;max-width:40%">
+														<span class="input-group-text w-100"><b>Valor Aprobado</b></span>
+													</div>
+													<input type="text" class="form-control col-sm-11" id="inputValorAprobado" data-type="currency" autocomplete="off">
+												</div>										
+											</div>
+											<div class="input-group col-sm-12 m-0 pb-1 pt-0 pr-0 pl-0">
+												<div class="input-group col-sm-12">
+													<div class="input-group-prepend" style="width:200px;max-width:40%">
+														<span class="input-group-text w-100"><b>Observaciones</b></span>
+													</div>
+													<textarea class="form-control" id="inputIncidenciaPresupuesto" rows="4" onkeyup="contadorTextarea(this,'contadorIncidenciaPresupuesto',500)" autocomplete="off"></textarea>
+												</div>									
+											</div>
+										</div>
+										<div class="input-group col-sm-10 d-flex justify-content-end">
+											<p id="contadorIncidenciaPresupuesto" class="">0 de 500 caracteres permitidos.</p>
+										</div>	
+									</div>
+								</div>
+								<div class="row">
+									<div class="input-group col-sm-12 mt-0 mb-0 pt-2 pb-2">
+										<div class="input-group col-sm-12">
+											<div class="input-group-prepend">
+												<span class="input-group-text"><b>Incidencia <br>en la <br>Calidad</b></span>
+											</div>
+											<textarea class="form-control" id="inputIncidenciaCalidad" rows="4" onkeyup="contadorTextarea(this,'contadorIncidenciaCalidad',500)" autocomplete="off"></textarea>
+										</div>
+										<div class="input-group col-sm-12 d-flex justify-content-end">
+											<p id="contadorIncidenciaCalidad" class="">0 de 500 caracteres permitidos.</p>
+										</div>										
+									</div>
+								</div>
+								<div class="row">
+									<div class="input-group col-sm-12 mt-0 mb-0 pt-2 pb-2">
+										<div class="input-group col-sm-12">
+											<div class="input-group-prepend">
+												<span class="input-group-text"><b>Incidencia <br>en el <br>Riesgo</b></span>
+											</div>
+											<textarea class="form-control" id="inputIncidenciaRiesgo" rows="4" onkeyup="contadorTextarea(this,'contadorIncidenciaRiesgo',500)" autocomplete="off"></textarea>
+										</div>
+										<div class="input-group col-sm-12 d-flex justify-content-end">
+											<p id="contadorIncidenciaRiesgo" class="">0 de 500 caracteres permitidos.</p>
+										</div>										
+									</div>
+								</div>
+								<div class="row border-bottom">
+									<div class="input-group col-sm-12 mt-0 mb-0 pt-2 pb-2">
+										<div class="input-group col-sm-12">
+											<div class="input-group-prepend">
+												<span class="input-group-text"><b>Incidencia <br>en el <br>Recurso</b></span>
+											</div>
+											<textarea class="form-control" id="inputIncidenciaRecurso" rows="4" onkeyup="contadorTextarea(this,'contadorIncidenciaRecurso',500)" autocomplete="off"></textarea>
+										</div>
+										<div class="input-group col-sm-12 d-flex justify-content-end">
+											<p id="contadorIncidenciaRecurso" class="">0 de 500 caracteres permitidos.</p>
+										</div>										
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-sm-6 d-flex justify-content-center border-right">
+										<div class="form-group col-sm-8 mt-0 mb-0 pt-3 pb-3" style="height:100%">
+											<label for="inputFechaEntregaInterventoria"><b>Fecha de Entrega a Interventoría</b></label>
+											<input type="text" class="form-control" id="inputFechaEntregaInterventoria" placeholder="Fecha de Entrega a Interventoría" autocomplete="off">
+										</div>
+									</div>
+									<div class="col-sm-6 d-flex justify-content-center">
+										<div class="form-group col-sm-8 mt-0 mb-0 pt-3 pb-3" style="height:100%">
+											<label for="inputFechaTentativaDefinicion"><b>Fecha Tentativa de Definición</b></label>
+											<input type="text" class="form-control" id="inputFechaTentativaDefinicion" placeholder="Fecha Tentativa de Definición" autocomplete="off">
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="col-sm-12 p-0 mb-4 border-2 border-top-0 rounded border-dark">
+								<div class="tituloFormularioCambios form-group mb-0">
+									<h3 id='form_general'>Aprobación</h3>
+								</div>
+								<div class="row">
+									<div class="form-group col-sm-8 mt-0 mb-0 pt-3 pb-3 border-right" style="height:100%">
+										<div class="form-group mb-0">
+											<label for="radioAprobacion"><b>Estado de Aprobación</b></label>
+										</div>
+										<div class="form-check form-check-inline" id="radioAprobacion">
+											<input type="radio" class="form-check-input" name="inputAprobacion" id="inputAprobacionEstudio" value="4">
+											<label class="form-check-label" for="inputAprobacionEstudio">En Estudio</label>
+										</div>
+										<div class="form-check form-check-inline" id="radioAprobacion">
+											<input type="radio" class="form-check-input" name="inputAprobacion" id="inputAprobacionAprobado" value="1">
+											<label class="form-check-label" for="inputAprobacionAprobado">Aprobado</label>
+										</div>
+										<div class="form-check form-check-inline" id="radioAprobacion">
+											<input type="radio" class="form-check-input" name="inputAprobacion" id="inputAprobacionAprobadoRestricciones" value="2">
+											<label class="form-check-label" for="inputAprobacionAprobadoRestricciones">Aprobado con Restricciones</label>
+										</div>
+										<div class="form-check form-check-inline" id="radioAprobacion">
+											<input type="radio" class="form-check-input" name="inputAprobacion" id="inputAprobacionNoAprobado" value="3">
+											<label class="form-check-label" for="inputAprobacionNoAprobado">No Aprobado</label>
+										</div>
+										<div class="form-check form-check-inline" id="radioAprobacion">
+											<input type="radio" class="form-check-input" name="inputAprobacion" id="inputAprobacionDesistido" value="5">
+											<label class="form-check-label" for="inputAprobacionDesistido">Desistido</label>
+										</div>
+									</div>
+									<div class="col-sm-4 d-flex justify-content-center">
+										<div class="form-group col-sm-12 mt-0 mb-0 pt-3 pb-3" style="height:100%">
+											<label for="inputFechaDefinicion"><b>Fecha de Definición</b></label>
+											<input type="text" class="form-control" id="inputFechaDefinicion" placeholder="Fecha de Definición" autocomplete="off">
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="col-sm-12 p-0 border-2 border-top-0 rounded border-dark">
+								<div class="tituloFormularioCambios form-group mb-0">
+									<h3 id='form_general'>Archivos de Soporte</h3>
+								</div>
+								<div class="row mt-4">
+									<div id="example-table" class="table table-bordered table-hover table-responsive-sm table-sm" style="width:90%; margin: 0 auto">
+										<!-- <thead class="thead-light">
+											<tr>
+												<th>Adjunto N°</th>
+												<th>Descripción</th>
+												<th>Link (URL)</th>
+												<th></th>
+											</tr>
+										</thead>
+										<tbody>
+											<tr>
+												<th>1</th>
+												<th>Descripción</th>
+												<th>https://www.google.com</th>
+												<th></th>
+											</tr>
+										</tbody> -->
+									</div>
+									<div class="input-group col-sm-12 mt-2 mb-2">
+										<input type="text" class="form-control col-sm-2" id="inputNumeroArchivosSoporte" value="1">
+										<div class="input-group col-sm-12">
+											<button type="button" class="btn btn-primary btn-sm" onclick="adjuntarSoporte()">Adjuntar <i class="fas fa-plus"></i></button>
+										</div>
+									</div>		
+								</div>
+							</div>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<div class="col-sm-12">
+							<!--Se crea el mensaje emergente que dice si los comandos fueron ejecutados correctamente o no-->
+							<div class="row">
+								<div class="col-sm-12">
+									<p class="mensaje">mensaje</p>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-sm-12 d-flex justify-content-end">
+									<button id="btn_guardarOrden" type="button" class="btn btn-success ml-1 mr-1">Guardar <i class="fas fa-save fa-lg"></i></i></button>
+									<button id="btn_generarPDFOrden" type="button" class="btn btn-secondary ml-1 mr-1">Generar PDF <i class="fas fa-download fa-lg"></i></button>
+									<button id="btn_cancelarOrden" type="button" class="btn btn-danger ml-1 mr-1" data-dismiss="modal">Cancelar <i class="fas fa-window-close fa-lg"></i></button>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- Modal -->
+	</div>
+
+	
+    
+    <!-- Iniciar Jquery-->
+	<script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-1.12.4.js"></script>
+	<!-- Iniciar Popper-->
+	<script type="text/javascript" charset="utf8" src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+	<!-- Iniciar Bootstrap-->
+	<script type="text/javascript" charset="utf8" src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+	<!--Iniciar DataTables-->
+	<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.4/js/jquery.dataTables.js"></script>
+	<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.4/js/dataTables.bootstrap4.min.js"></script>
+	<!--Botones de Datatables-->
+	<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/1.6.1/js/dataTables.buttons.min.js"></script>
+	<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.bootstrap4.min.js"></script>
+	<!--checkboxes DataTables-->
+	<script type="text/javascript" src="https://gyrocode.github.io/jquery-datatables-checkboxes/1.2.11/js/dataTables.checkboxes.min.js"></script>
+	<!--Selector de fechas -->
+	<script src="https://code.jquery.com/ui/1.10.1/jquery-ui.js"></script>
+	<!--Google Charts-->
+	<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+	<script src="https://code.jquery.com/ui/1.10.1/jquery-ui.js"></script>
+	<!--Any Chart-->
+	<script src="https://cdn.anychart.com/releases/v8/js/anychart-base.min.js?hcode=c11e6e3cfefb406e8ce8d99fa8368d33"></script>
+	<script src="https://cdn.anychart.com/releases/v8/js/anychart-circular-gauge.min.js?hcode=c11e6e3cfefb406e8ce8d99fa8368d33"></script>
+	<!-- Lista desplegable con buscador -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
+	<!--Formatos de números-->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/numeral.js/2.0.6/numeral.min.js"></script>
+	<!--Script con la funcion que carga los datos generales del archivo-->
+	<script type="text/javascript" src="../funciones_generales/js/cargarDatosGeneralesPagina2.js" charset="utf-8"></script>
+	<!--Script con las funciones NUEVA SEMANA y ELIMINAR SEMANA-->
+	<script type="text/javascript" src="../funciones_generales/js/funcionesGenerales6.js" charset="utf-8"></script>
+	<!-- Bloquear el click derecho-->
+	<!--    <script type='text/javascript'>document.oncontextmenu = function(){return false}</script>-->
+	<!-- Librería jsPDF -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.4.1/jspdf.debug.js"></script>
+	<!-- Librería HTML2Canvas -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+	<!-- Tabulator -->
+	<script type="text/javascript" src="https://unpkg.com/tabulator-tables@5.3.4/dist/js/tabulator.min.js"></script>
+	
+
+	<script type="text/javascript">
+		$("#modalordenDeCambio").modal("show");
+	</script>
+
+	<script>
+
+		function contadorTextarea(field,field2,maxlimit){
+			var countfield = document.getElementById(field2);
+			if ( field.value.length > maxlimit ) {
+			field.value = field.value.substring( 0, maxlimit );
+			return false;
+			} else {
+			countfield.innerHTML = (field.value.length) + " de 500 caracteres permitidos." ;
+			}
+		}
+
+		// Funciones para los input de dinero
+		$("input[data-type='currency']").on({
+		    change: function() {
+		      formatCurrency($(this));
+		    },
+		    blur: function() {
+		      formatCurrency($(this), "blur");
+		    }
+		});
+
+
+		function formatCurrency(input, blur) {
+			input_val = input.val();
+			if(input_val == null || input_val == ""){
+				input.val('');
+			}else{
+				var myNumeral = numeral(input_val);
+				myNumeral = myNumeral.format('$0,0.00');
+				input.val(myNumeral);
+			}
+
+		}
+
+		//Crear PDF
+		document.getElementById("btn_generarPDFOrden").onclick = function(){
+			var w = document.getElementById("modalordenDeCambioContent").offsetWidth;
+			var h = document.getElementById("modalordenDeCambioContent").offsetHeight;
+			var doc = new jsPDF('portrait', 'px', 'letter');
+			
+			var width = doc.internal.pageSize.getWidth();
+			var height = doc.internal.pageSize.getHeight();
+			
+			
+			//Añadir Logo de AIA
+			var logoAIA = new Image();
+			logoAIA.src = '../imagenes/logoHorizontal.png';	
+			var wLogoAIA = 90;
+			var hLogoAIA = (89.51 / 254.44) * wLogoAIA;
+			doc.addImage(logoAIA, 'PNG', 30, 30, wLogoAIA, hLogoAIA, 'logoAIA', 'NONE', 0);
+
+			//Añadir Etiqueta de Constructora AIA
+			var etiquetaConstructoraAIASAS = new Image();
+			etiquetaConstructoraAIASAS.src = '../imagenes/etiquetaConstructoraAIASAS.png';	
+			var wEtiquetaConstructoraAIASAS = 90;
+			var hEtiquetaConstructoraAIASAS = (21.37 / 254.44) * wEtiquetaConstructoraAIASAS;
+			doc.addImage(etiquetaConstructoraAIASAS, 'PNG', (width - 30 - wEtiquetaConstructoraAIASAS), 40, wEtiquetaConstructoraAIASAS, hEtiquetaConstructoraAIASAS, 'etiquetaConstructoraAIASAS', 'NONE', 0);
+
+			//Añadir Título "Orden de Cambio"
+			doc.setFontSize(26);
+			doc.setFont('Helvetica', 'Bold');
+			doc.text("Orden de Cambio", (width / 2),50, {baseline: "middle", align: "center"});
+
+			//Crear Primer Contenedor
+			doc.setLineWidth(1);
+			doc.setDrawColor(41, 49, 56);
+			doc.setFillColor(55, 68, 81);
+			doc.roundedRect(20, 70, (width - 20 - 20), 15, 3, 3, 'FD'); //  Barra Azul de titulo del primer contenedor
+			doc.setFontSize(18);
+			doc.setTextColor(250, 250, 250);
+			doc.text("Información General", (width / 2), 82, {baseline: "middle", align: "center"});
+			doc.setDrawColor(41, 49, 56);
+			doc.setFillColor(250, 250, 250);
+			doc.roundedRect(20, 70, (width - 20 - 20), 200, 3, 3, 'S'); //  Primer Contenedor
+
+			//Input Numero de Orden
+			doc.setFont('Helvetica', 'Bold');
+			doc.setFontSize(11);
+			doc.setTextColor(0, 0, 0);
+			doc.text("Número de Orden", 30, 100, {baseline: "middle", align: "left"});
+			doc.setLineWidth(0.75);
+			doc.setDrawColor(206, 212, 218);
+			doc.setFillColor(250, 250, 250);
+			doc.roundedRect(30, 105, 120, 15, 3, 3, 'S');
+			doc.setFont('Helvetica', 'normal');
+			doc.setFontSize(10);
+			doc.text(document.getElementById("inputConsecutivo").value, 35, 115, {baseline: "middle", align: "left"});
+
+			//Input Proyecto
+			doc.setFont('Helvetica', 'Bold');
+			doc.setFontSize(11);
+			doc.setTextColor(0, 0, 0);
+			doc.text("Proyecto", (width - 30 - 190), 100, {baseline: "middle", align: "left"});
+			doc.setLineWidth(0.75);
+			doc.setDrawColor(206, 212, 218);
+			doc.setFillColor(250, 250, 250);
+			doc.roundedRect((width - 30 - 190), 105, 190, 15, 3, 3, 'S');
+			doc.setFont('Helvetica', 'normal');
+			doc.setFontSize(10);
+			doc.text(document.getElementById("inputProyecto").value, (width - 25 - 190), 115, {baseline: "middle", align: "left"});
+
+			//Input Director de Obra
+			doc.setFont('Helvetica', 'Bold');
+			doc.setFontSize(11);
+			doc.setTextColor(0, 0, 0);
+			doc.text("Director de Obra", 30, 140, {baseline: "middle", align: "left"});
+			doc.setLineWidth(0.75);
+			doc.setDrawColor(206, 212, 218);
+			doc.setFillColor(250, 250, 250);
+			doc.roundedRect(30, 145, 190, 15, 3, 3, 'S');
+			doc.setFont('Helvetica', 'normal');
+			doc.setFontSize(10);
+			doc.text(document.getElementById("inputDirector").value, 35, 155, {baseline: "middle", align: "left"});
+
+			//Input Fecha de Solicitud
+			doc.setFont('Helvetica', 'Bold');
+			doc.setFontSize(11);
+			doc.setTextColor(0, 0, 0);
+			doc.text("Fecha de Solicitud", (width - 30 - 190), 140, {baseline: "middle", align: "left"});
+			doc.setLineWidth(0.75);
+			doc.setDrawColor(206, 212, 218);
+			doc.setFillColor(250, 250, 250);
+			doc.roundedRect((width - 30 - 190), 145, 190, 15, 3, 3, 'S');
+			doc.setFont('Helvetica', 'normal');
+			doc.setFontSize(10);
+			doc.text(document.getElementById("inputFechaSolicitud").value, (width - 25 - 190), 155, {baseline: "middle", align: "left"});
+
+			//Input Solicitante del Cambio
+			doc.line(20, 170, (width - 20), 170);
+			doc.line((width * 4/6), 170, (width * 4/6), 210);
+			doc.line(20, 210, (width - 20), 210);
+			doc.setFont('Helvetica', 'Bold');
+			doc.setFontSize(11);
+			doc.setTextColor(0, 0, 0);
+			doc.text("Solicitante del Cambio", 30, 185, {baseline: "middle", align: "left"});
+			doc.setLineWidth(0.75);
+			doc.setFont('Helvetica', 'normal');
+			doc.setFontSize(10);
+			doc.setDrawColor(206, 212, 218);
+			doc.setFillColor(250, 250, 250);
+			doc.circle(35, 195, 4, 'FD'); // Select Solicitante Obra
+			doc.text("Obra", 41, 197, {baseline: "middle", align: "left"});
+			doc.setDrawColor(206, 212, 218);
+			doc.setFillColor(250, 250, 250);
+			doc.circle(70, 195, 4, 'FD'); // Select Solicitante Cliente
+			doc.text("Cliente", 76, 197, {baseline: "middle", align: "left"});
+			doc.setDrawColor(206, 212, 218);
+			doc.setFillColor(250, 250, 250);
+			doc.circle(110, 195, 4, 'FD'); // Select Solicitante Interventoría
+			doc.text("Interventoría", 116, 197, {baseline: "middle", align: "left"});
+			doc.setDrawColor(206, 212, 218);
+			doc.setFillColor(250, 250, 250);
+			doc.circle(170, 195, 4, 'FD'); // Select Solicitante Otro
+			doc.text("Otro:", 176, 197, {baseline: "middle", align: "left"});
+
+			// Seleccion Solicitante del Cambio
+			var inputValor = !document.querySelector('input[name="inputSolicitanteCambio"]:checked') ? "" : document.querySelector('input[name="inputSolicitanteCambio"]:checked').value;
+			var posicionesX = {1:35, 2:70, 3:110, 4:170};
+			doc.setDrawColor(0, 123, 255);
+			doc.setFillColor(0, 123, 255);
+			if (inputValor != "") {
+				doc.circle(posicionesX[inputValor], 195, 2, 'FD'); 
+			}
+			
+
+			// Activar/Desactivar Detalle Solicitante Otro
+			if (inputValor == 4) {
+				doc.setDrawColor(206, 212, 218);
+				doc.setFillColor(250, 250, 250);
+				doc.roundedRect(195, 185, 105, 15, 3, 3, 'FD');
+				doc.setFont('Helvetica', 'normal');
+				doc.setFontSize(9);
+				doc.text(document.getElementById("inputDetalleSolicitanteOtro").value, (195 + 5), 195, {baseline: "middle", align: "left", maxWidth: 95});
+			}else{
+				doc.setDrawColor(206, 212, 218);
+				doc.setFillColor(233, 236, 239);
+				doc.roundedRect(195, 185, 105, 15, 3, 3, 'FD');
+			}
+			
+
+			//Input Prioridad
+			doc.setFont('Helvetica', 'Bold');
+			doc.setFontSize(11);
+			doc.setTextColor(0, 0, 0);
+			doc.text("Prioridad", (width - 30 - 115), 185, {baseline: "middle", align: "left"});
+			doc.setLineWidth(0.75);
+			doc.setFont('Helvetica', 'normal');
+			doc.setFontSize(10);
+			doc.setDrawColor(206, 212, 218);
+			doc.setFillColor(250, 250, 250);
+			doc.circle((width - 30 - 115), 195, 4, 'FD'); // Select Prioridad Alta
+			doc.text("Alta", (width - 30 - 109), 197, {baseline: "middle", align: "left"});
+			doc.setDrawColor(206, 212, 218);
+			doc.setFillColor(250, 250, 250);
+			doc.circle((width - 30 - 85), 195, 4, 'FD'); // Select Prioridad Media
+			doc.text("Media", (width - 30 - 79), 197, {baseline: "middle", align: "left"});
+			doc.setDrawColor(206, 212, 218);
+			doc.setFillColor(250, 250, 250);
+			doc.circle((width - 30 - 45), 195, 4, 'FD'); // Select Prioridad Baja
+			doc.text("Baja", (width - 30 - 39), 197, {baseline: "middle", align: "left"});
+
+			// Seleccion Prioridad
+			var inputValor = !document.querySelector('input[name="inputPrioridad"]:checked') ? "" : document.querySelector('input[name="inputPrioridad"]:checked').value;;
+			var posicionesX = {1:(width - 30 - 115), 2:(width - 30 - 85), 3:(width - 30 - 45)};
+			doc.setDrawColor(0, 123, 255);
+			doc.setFillColor(0, 123, 255);
+			if (inputValor != "") {
+				doc.circle(posicionesX[inputValor], 195, 2, 'FD'); 
+			}
+
+			//Input Tipo de Cambio
+			doc.setLineWidth(0.75);
+			doc.setDrawColor(206, 212, 218);
+			doc.setFillColor(250, 250, 250);
+			doc.line((width * 0.35), 210, (width * 0.35), 270);
+			doc.setFont('Helvetica', 'Bold');
+			doc.setFontSize(11);
+			doc.setTextColor(0, 0, 0);
+			doc.text("Tipo de Cambio", 30, 225, {baseline: "middle", align: "left"});
+			doc.setLineWidth(0.75);
+			doc.setFont('Helvetica', 'normal');
+			doc.setFontSize(10);
+			doc.setDrawColor(206, 212, 218);
+			doc.setFillColor(250, 250, 250);
+			doc.roundedRect(30, 235, 8, 8, 2, 2, 'FD'); // Select Tipo de Cambio Alcance
+			doc.text("Alcance", 40, 242, {baseline: "middle", align: "left"});
+			doc.setDrawColor(206, 212, 218);
+			doc.setFillColor(250, 250, 250);
+			doc.roundedRect(72, 235, 8, 8, 2, 2, 'FD'); // Select Tipo de Cambio Cronograma
+			doc.text("Cronograma", 82, 242, {baseline: "middle", align: "left"});
+			doc.setDrawColor(206, 212, 218);
+			doc.setFillColor(250, 250, 250);
+			doc.roundedRect(130, 235, 8, 8, 2, 2, 'FD'); // Select Tipo de Cambio Costo
+			doc.text("Costo", 140, 242, {baseline: "middle", align: "left"});
+			doc.setDrawColor(206, 212, 218);
+			doc.setFillColor(250, 250, 250);
+			doc.roundedRect(30, 247, 8, 8, 2, 2, 'FD'); // Select Tipo de Cambio Calidad
+			doc.text("Calidad", 40, 254, {baseline: "middle", align: "left"});
+			doc.setDrawColor(206, 212, 218);
+			doc.setFillColor(250, 250, 250);
+			doc.roundedRect(70, 247, 8, 8, 2, 2, 'FD'); // Select Tipo de Cambio Riesgo
+			doc.text("Riesgo", 80, 254, {baseline: "middle", align: "left"});
+			doc.setDrawColor(206, 212, 218);
+			doc.setFillColor(250, 250, 250);
+			doc.roundedRect(108, 247, 8, 8, 2, 2, 'FD'); // Select Tipo de Cambio Recurso
+			doc.text("Recurso", 118, 254, {baseline: "middle", align: "left"});
+
+			// Seleccion Tipo de Cambio
+			var inputTipoCambioAlcance = !document.querySelector('#inputTipoCambioAlcance:checked') ? "" : document.querySelector('#inputTipoCambioAlcance').value,
+				inputTipoCambioCronograma = !document.querySelector('#inputTipoCambioCronograma:checked') ? "" : document.querySelector('#inputTipoCambioCronograma').value,
+				inputTipoCambioCosto = !document.querySelector('#inputTipoCambioCosto:checked') ? "" : document.querySelector('#inputTipoCambioCosto').value,
+				inputTipoCambioCalidad = !document.querySelector('#inputTipoCambioCalidad:checked') ? "" : document.querySelector('#inputTipoCambioCalidad').value,
+				inputTipoCambioRiesgo = !document.querySelector('#inputTipoCambioRiesgo:checked') ? "" : document.querySelector('#inputTipoCambioRiesgo').value,
+				inputTipoCambioRecurso = !document.querySelector('#inputTipoCambioRecurso:checked') ? "" : document.querySelector('#inputTipoCambioRecurso').value;
+			
+				var inputsTipoCambio = [[inputTipoCambioAlcance, 30, 235], [inputTipoCambioCronograma, 72, 235], [inputTipoCambioCosto, 130, 235], [inputTipoCambioCalidad, 30, 247], [inputTipoCambioRiesgo, 70, 247], [inputTipoCambioRecurso, 108, 247]];
+
+			inputsTipoCambio.forEach(element => {
+				var inputTipoCambio = element[0];
+				doc.setDrawColor(0, 123, 255);
+				doc.setFillColor(0, 123, 255);
+				if (inputTipoCambio != "") {
+					doc.roundedRect(element[1]+2, element[2]+2, 4, 4, 1, 1, 'FD'); 
+				}	
+			});
+
+			//Input Responsable de la Definición del Cambio
+			doc.setFont('Helvetica', 'Bold');
+			doc.setFontSize(11);
+			doc.setTextColor(0, 0, 0);
+			doc.text("Responsable de la Definición del Cambio", (width - 30 - 260), 225, {baseline: "middle", align: "left"});
+			doc.setLineWidth(0.75);
+			doc.setFont('Helvetica', 'normal');
+			doc.setFontSize(10);
+			doc.setDrawColor(206, 212, 218);
+			doc.setFillColor(250, 250, 250);
+			doc.circle((width - 30 - 255), 245, 4, 'FD'); // Select Responsable Obra
+			doc.text("Obra", (width - 30 - 249), 247, {baseline: "middle", align: "left"});
+			doc.setDrawColor(206, 212, 218);
+			doc.setFillColor(250, 250, 250);
+			doc.circle((width - 30 - 220), 245, 4, 'FD'); // Select Responsable Cliente
+			doc.text("Cliente",(width - 30 - 214), 247, {baseline: "middle", align: "left"});
+			doc.setDrawColor(206, 212, 218);
+			doc.setFillColor(250, 250, 250);
+			doc.circle((width - 30 - 180), 245, 4, 'FD'); // Select Responsable Interventoría
+			doc.text("Interventoría", (width - 30 - 174), 247, {baseline: "middle", align: "left"});
+			doc.setDrawColor(206, 212, 218);
+			doc.setFillColor(250, 250, 250);
+			doc.circle((width - 30 - 120), 245, 4, 'FD'); // Select Responsable Otro
+			doc.text("Otro:", (width - 30 - 114), 247, {baseline: "middle", align: "left"});
+
+			// Seleccion Responsable de la Definición del Cambio
+			var inputValor = !document.querySelector('input[name="inputResponsableSolucion"]:checked') ? "" : document.querySelector('input[name="inputResponsableSolucion"]:checked').value;
+			var posicionesX = {1:(width - 30 - 255), 2:(width - 30 - 220), 3:(width - 30 - 180), 4:(width - 30 - 120)};
+			doc.setDrawColor(0, 123, 255);
+			doc.setFillColor(0, 123, 255);
+			if (inputValor != "") {
+				doc.circle(posicionesX[inputValor], 245, 2, 'FD'); 
+			}
+			
+
+			// Activar/Desactivar Detalle Responsable de Definición Otro
+			if (inputValor == 4) {
+				doc.setDrawColor(206, 212, 218);
+				doc.setFillColor(250, 250, 250);
+				doc.roundedRect((width - 30 - 95), 235, 100, 15, 3, 3, 'FD');
+				doc.setFont('Helvetica', 'normal');
+				doc.setFontSize(9);
+				doc.text(document.getElementById("inputDetalleResponsableSolucion").value, (width - 30 - 95 + 5), 245, {baseline: "top", align: "left", maxWidth: 90});
+			}else{
+				doc.setDrawColor(206, 212, 218);
+				doc.setFillColor(233, 236, 239);
+				doc.roundedRect((width - 30 - 95), 235, 100, 15, 3, 3, 'FD');
+			}
+			
+			
+
+			//Crear Segundo Contenedor
+			doc.setLineWidth(1);
+			doc.setDrawColor(41, 49, 56);
+			doc.setFillColor(55, 68, 81);
+			doc.roundedRect(20, 280, (width - 20 - 20), 15, 3, 3, 'FD'); //  Barra Azul de titulo del segundo contenedor
+			doc.setFontSize(18);
+			doc.setFont('Helvetica', 'Bold');
+			doc.setTextColor(250, 250, 250);
+			doc.text("Detalle del Cambio", (width / 2), 292, {baseline: "middle", align: "center"});
+			doc.setDrawColor(41, 49, 56);
+			doc.setFillColor(250, 250, 250);
+			doc.roundedRect(20, 280, (width - 20 - 20), (height - 20 - 310), 3, 3, 'S'); //  Segundo Contenedor
+
+			//Input Justificación
+			doc.setLineWidth(0.75);
+			doc.setDrawColor(206, 212, 218);
+			doc.setFillColor(250, 250, 250);
+			doc.roundedRect(30, 305, (width - 30 - 30), 45, 3, 3, 'FD');
+			doc.setFillColor(233, 236, 239);
+			doc.roundedRect(30, 305, 50, 45, 3, 3, 'FD');
+			doc.setFontSize(10);
+			doc.setTextColor(0, 0, 0);
+			doc.text("Justificación", (30 + 50/2), (305 + 45/2), {baseline: "middle", align: "center"});
+			doc.setFont('Helvetica', 'normal');
+			doc.setFontSize(9);
+			doc.text(document.getElementById("inputJustificacion").value, (20 + 10 + 50 + 5), 312, {baseline: "top", align: "left", maxWidth: (width - 20 - 20 - 10 - 10 - 5 - 5 - 50)});
+
+			//Input Descripción
+			doc.setFont('Helvetica', 'Bold');
+			doc.setDrawColor(206, 212, 218);
+			doc.setFillColor(250, 250, 250);
+			doc.roundedRect(30, 360, (width - 30 - 30), 45, 3, 3, 'FD');
+			doc.setFillColor(233, 236, 239);
+			doc.roundedRect(30, 360, 50, 45, 3, 3, 'FD');
+			doc.setFontSize(10);
+			doc.setTextColor(0, 0, 0);
+			doc.text("Descripción", (30 + 50/2), (360 + 45/2), {baseline: "middle", align: "center"});
+			doc.setFont('Helvetica', 'normal');
+			doc.setFontSize(9);
+			doc.text(document.getElementById("inputDescripcion").value, (20 + 10 + 50 + 5), 367, {baseline: "top", align: "left", maxWidth: (width - 20 - 20 - 10 - 10 - 5 - 5 - 50)});
+
+			//Input Indicencia en el Alcance
+			doc.setFont('Helvetica', 'Bold');
+			doc.setDrawColor(206, 212, 218);
+			doc.setFillColor(250, 250, 250);
+			doc.roundedRect(30, 415, (width - 30 - 30), 45, 3, 3, 'FD');
+			doc.setFillColor(233, 236, 239);
+			doc.roundedRect(30, 415, 50, 45, 3, 3, 'FD');
+			doc.setFontSize(10);
+			doc.setTextColor(0, 0, 0);
+			doc.text("Indicencia en el Alcance", (30 + 50/2), (415 + 45/3), {baseline: "middle", align: "center", maxWidth: 45});
+			doc.setFont('Helvetica', 'normal');
+			doc.setFontSize(9);
+			doc.text(document.getElementById("inputIncidenciaAlcance").value, (20 + 10 + 50 + 5), 422, {baseline: "top", align: "left", maxWidth: (width - 20 - 20 - 10 - 10 - 5 - 5 - 50)});
+
+			//Input Indicencia en el Cronograma
+			doc.setFont('Helvetica', 'Bold');
+			doc.setDrawColor(206, 212, 218);
+			doc.setFillColor(250, 250, 250);
+			doc.roundedRect(30, 470, (width - 30 - 30), 45, 3, 3, 'FD');
+			doc.setFillColor(233, 236, 239);
+			doc.roundedRect(30, 470, 50, 45, 3, 3, 'FD');
+			doc.setFontSize(10);
+			doc.setTextColor(0, 0, 0);
+			doc.text("Indicencia en el Cronograma", (30 + 50/2), (470 + 45/3), {baseline: "middle", align: "center", maxWidth: 45});
+			doc.setFont('Helvetica', 'normal');
+			doc.setFontSize(9);
+			doc.text(document.getElementById("inputIncidenciaCronograma").value, (20 + 10 + 50 + 5), 477, {baseline: "top", align: "left", maxWidth: (width - 20 - 20 - 10 - 10 - 5 - 5 - 50)});
+			
+			//Crear nueva página
+			doc.addPage('letter', 'portrait');
+
+			//Crear Tercer Contenedor
+			doc.setLineWidth(1);
+			doc.setDrawColor(41, 49, 56);
+			doc.setFillColor(250, 250, 250);
+			doc.roundedRect(20, 20, (width - 20 - 20), 375, 3, 3, 'S'); //  Tercer Contenedor
+
+			//Titulo Incidencia en el Presupuesto
+			doc.setFont('Helvetica', 'Bold');
+			doc.setLineWidth(0.75);
+			doc.setDrawColor(206, 212, 218);
+			doc.setFillColor(233, 236, 239);
+			doc.roundedRect(30, 30, 50, 135, 3, 3, 'FD');
+			doc.setFontSize(10);
+			doc.setTextColor(0, 0, 0);
+			doc.text("Incidencia en el", (30 + 50/2), (30 + 60), {baseline: "middle", align: "center", maxWidth: 45});
+			doc.text("Presupuesto", (30 + 50/2), (30 + 60 + 15), {baseline: "middle", align: "center", maxWidth: 48});
+
+			//Input Costo Directo
+			doc.setFont('Helvetica', 'Bold');
+			doc.setDrawColor(206, 212, 218);
+			doc.setFillColor(250, 250, 250);
+			doc.roundedRect((30 + 50 + 5), 30, 230, 20, 3, 3, 'FD');
+			doc.setFillColor(233, 236, 239);
+			doc.roundedRect((30 + 50 + 5), 30, 110, 20, 3, 3, 'FD');
+			doc.setFontSize(10);
+			doc.setTextColor(0, 0, 0);
+			doc.text("Costo Directo", (30 + 50 + 5 + 110/2), (30 + 12), {baseline: "middle", align: "center", maxWidth: 110});
+
+			//Input Costo Directo + AIU
+			doc.setFont('Helvetica', 'Bold');
+			doc.setDrawColor(206, 212, 218);
+			doc.setFillColor(250, 250, 250);
+			doc.roundedRect((30 + 50 + 5), 55, 230, 20, 3, 3, 'FD');
+			doc.setFillColor(233, 236, 239);
+			doc.roundedRect((30 + 50 + 5), 55, 110, 20, 3, 3, 'FD');
+			doc.setFontSize(10);
+			doc.setTextColor(0, 0, 0);
+			doc.text("Costo Directo + AIU", (30 + 50 + 5 + 110/2), (55 + 12), {baseline: "middle", align: "center", maxWidth: 110});
+
+			//Input Costo Directo + AIU + IVA
+			doc.setFont('Helvetica', 'Bold');
+			doc.setDrawColor(206, 212, 218);
+			doc.setFillColor(250, 250, 250);
+			doc.roundedRect((30 + 50 + 5), 80, 230, 20, 3, 3, 'FD');
+			doc.setFillColor(233, 236, 239);
+			doc.roundedRect((30 + 50 + 5), 80, 110, 20, 3, 3, 'FD');
+			doc.setFontSize(10);
+			doc.setTextColor(0, 0, 0);
+			doc.text("Costo Directo + AIU + IVA", (30 + 50 + 5 + 110/2), (80 + 12), {baseline: "middle", align: "center", maxWidth: 110});
+
+			//Input Valor Aprobado
+			doc.setFont('Helvetica', 'Bold');
+			doc.setDrawColor(206, 212, 218);
+			doc.setFillColor(250, 250, 250);
+			doc.roundedRect((30 + 50 + 5), 105, 230, 20, 3, 3, 'FD');
+			doc.setFillColor(233, 236, 239);
+			doc.roundedRect((30 + 50 + 5), 105, 110, 20, 3, 3, 'FD');
+			doc.setFontSize(10);
+			doc.setTextColor(0, 0, 0);
+			doc.text("Valor Aprobado", (30 + 50 + 5 + 110/2), (105 + 12), {baseline: "middle", align: "center", maxWidth: 110});
+
+			//Input Observaciones Incidencia en el Presupuesto
+			doc.setFont('Helvetica', 'Bold');
+			doc.setDrawColor(206, 212, 218);
+			doc.setFillColor(250, 250, 250);
+			doc.roundedRect((30 + 50 + 5), 130, (width - 30 - 50 - 5 - 30), 35, 3, 3, 'FD');
+			doc.setFillColor(233, 236, 239);
+			doc.roundedRect((30 + 50 + 5), 130, 110, 35, 3, 3, 'FD');
+			doc.setFontSize(10);
+			doc.setTextColor(0, 0, 0);
+			doc.text("Observaciones", (30 + 50 + 5 + 110/2), (130 + 35/2), {baseline: "middle", align: "center", maxWidth: 110});
+
+			//Input Incidencia en la Calidad
+			doc.setFont('Helvetica', 'Bold');
+			doc.setDrawColor(206, 212, 218);
+			doc.setFillColor(250, 250, 250);
+			doc.roundedRect(30, 175, (width - 30 - 30), 45, 3, 3, 'FD');
+			doc.setFillColor(233, 236, 239);
+			doc.roundedRect(30, 175, 50, 45, 3, 3, 'FD');
+			doc.setFontSize(10);
+			doc.setTextColor(0, 0, 0);
+			doc.text("Incidencia en la Calidad", (30 + 50/2), (175 + 45/3), {baseline: "middle", align: "center", maxWidth: 45});
+			doc.setFont('Helvetica', 'normal');
+			doc.setFontSize(9);
+			doc.text(document.getElementById("inputIncidenciaCalidad").value, (20 + 10 + 50 + 5), 182, {baseline: "top", align: "left", maxWidth: (width - 20 - 20 - 10 - 10 - 5 - 5 - 50)});
+
+			//Input Incidencia en el Riesgo
+			doc.setFont('Helvetica', 'Bold');
+			doc.setDrawColor(206, 212, 218);
+			doc.setFillColor(250, 250, 250);
+			doc.roundedRect(30, 230, (width - 30 - 30), 45, 3, 3, 'FD');
+			doc.setFillColor(233, 236, 239);
+			doc.roundedRect(30, 230, 50, 45, 3, 3, 'FD');
+			doc.setFontSize(10);
+			doc.setTextColor(0, 0, 0);
+			doc.text("Incidencia en el Riesgo", (30 + 50/2), (230 + 45/3), {baseline: "middle", align: "center", maxWidth: 45});
+			doc.setFont('Helvetica', 'normal');
+			doc.setFontSize(9);
+			doc.text(document.getElementById("inputIncidenciaRiesgo").value, (20 + 10 + 50 + 5), 237, {baseline: "top", align: "left", maxWidth: (width - 20 - 20 - 10 - 10 - 5 - 5 - 50)});
+
+			//Input Incidencia en el Recurso
+			doc.setFont('Helvetica', 'Bold');
+			doc.setDrawColor(206, 212, 218);
+			doc.setFillColor(250, 250, 250);
+			doc.roundedRect(30, 285, (width - 30 - 30), 45, 3, 3, 'FD');
+			doc.setFillColor(233, 236, 239);
+			doc.roundedRect(30, 285, 50, 45, 3, 3, 'FD');
+			doc.setFontSize(10);
+			doc.setTextColor(0, 0, 0);
+			doc.text("Incidencia en el Recurso", (30 + 50/2), (285 + 45/3), {baseline: "middle", align: "center", maxWidth: 45});
+			doc.setFont('Helvetica', 'normal');
+			doc.setFontSize(9);
+			doc.text(document.getElementById("inputIncidenciaRecurso").value, (20 + 10 + 50 + 5), 292, {baseline: "top", align: "left", maxWidth: (width - 20 - 20 - 10 - 10 - 5 - 5 - 50)});
+
+			//Input Fecha de Entrega a Interventoría
+			doc.setLineWidth(0.75);
+			doc.setDrawColor(206, 212, 218); 
+			doc.setFillColor(250, 250, 250);
+			doc.line(20, 350, (width - 20), 350);
+			doc.line((width / 2), 350, (width / 2), 395);
+			doc.setFont('Helvetica', 'Bold');
+			doc.setFontSize(11);
+			doc.setTextColor(0, 0, 0);
+			doc.text("Fecha de Entrega a Interventoría", 30, 365, {baseline: "middle", align: "left"});
+			doc.setLineWidth(0.75);
+			doc.setDrawColor(206, 212, 218);
+			doc.setFillColor(250, 250, 250);
+			doc.roundedRect(30, 370, 120, 15, 3, 3, 'S');
+			doc.setFont('Helvetica', 'normal');
+			doc.setFontSize(10);
+			doc.text(document.getElementById("inputFechaEntregaInterventoria").value, 35, 380, {baseline: "middle", align: "left"});
+
+			//Input Fecha Tentativa de Definición
+			doc.setFont('Helvetica', 'Bold');
+			doc.setFontSize(11);
+			doc.setTextColor(0, 0, 0);
+			doc.text("Fecha Tentativa de Definición", (width - 30 - 190), 365, {baseline: "middle", align: "left"});
+			doc.setLineWidth(0.75);
+			doc.setDrawColor(206, 212, 218);
+			doc.setFillColor(250, 250, 250);
+			doc.roundedRect((width - 30 - 190), 370, 120, 15, 3, 3, 'S');
+			doc.setFont('Helvetica', 'normal');
+			doc.setFontSize(10);
+			doc.text(document.getElementById("inputFechaTentativaDefinicion").value, (width - 25 - 190), 380, {baseline: "middle", align: "left"});
+
+			//Crear Cuarto Contenedor
+			doc.setLineWidth(1);
+			doc.setDrawColor(41, 49, 56);
+			doc.setFillColor(55, 68, 81);
+			doc.roundedRect(20, 405, (width - 20 - 20), 15, 3, 3, 'FD'); //  Barra Azul de titulo del cuarto contenedor
+			doc.setFontSize(18);
+			doc.setFont('Helvetica', 'Bold');
+			doc.setTextColor(250, 250, 250);
+			doc.text("Aprobación", (width / 2), 417, {baseline: "middle", align: "center"});
+			doc.setDrawColor(41, 49, 56);
+			doc.setFillColor(250, 250, 250);
+			doc.roundedRect(20, 405, (width - 20 - 20), (height - 405 - 20 - 30), 3, 3, 'S'); //  Cuarto Contenedor
+
+			//Input Estado de Aprobación
+			doc.setLineWidth(0.75);
+			doc.setDrawColor(206, 212, 218); 
+			doc.setFillColor(250, 250, 250);
+			doc.line((20 + (width - 20 - 20)/3*2), 420, (20 + (width - 20 - 20)/3*2), 460);
+			doc.line(20, 460, (width - 20), 460);
+			doc.setFont('Helvetica', 'Bold');
+			doc.setFontSize(11);
+			doc.setTextColor(0, 0, 0);
+			doc.text("Estado de Aprobación", 30, 435, {baseline: "middle", align: "left"});
+			doc.setLineWidth(0.75);
+			doc.setFont('Helvetica', 'normal');
+			doc.setFontSize(10);
+			doc.setDrawColor(206, 212, 218);
+			doc.setFillColor(250, 250, 250);
+			doc.circle(33, 445, 4, 'FD'); // Select Estado de Aprobación En Estudio
+			doc.text("En Estudio", 39, 447, {baseline: "middle", align: "left"});
+			doc.setDrawColor(206, 212, 218);
+			doc.setFillColor(250, 250, 250);
+			doc.circle(85, 445, 4, 'FD'); // Select Estado de Aprobación Aprobado
+			doc.text("Aprobado", 91, 447, {baseline: "middle", align: "left"});
+			doc.setDrawColor(206, 212, 218);
+			doc.setFillColor(250, 250, 250);
+			doc.circle(133, 445, 4, 'FD'); // Select Estado de Aprobación Aprobado con Restricciones
+			doc.text("Aprobado con Restricciones", 139, 447, {baseline: "middle", align: "left", maxWidth: 55});
+			doc.setDrawColor(206, 212, 218);
+			doc.setFillColor(250, 250, 250);
+			doc.circle(196, 445, 4, 'FD'); // Select Estado de Aprobación No Aprobado
+			doc.text("No Aprobado", 202, 447, {baseline: "middle", align: "left"});
+			doc.setDrawColor(206, 212, 218);
+			doc.setFillColor(250, 250, 250);
+			doc.circle(256, 445, 4, 'FD'); // Select Estado de Aprobación Desistido
+			doc.text("Desistido", 262, 447, {baseline: "middle", align: "left"});
+
+			// Seleccion Solicitante del Cambio
+			var inputValor = !document.querySelector('input[name="inputAprobacion"]:checked') ? "" : document.querySelector('input[name="inputAprobacion"]:checked').value;
+			var posicionesX = {1:33, 2:85, 3:133, 4:196, 5:256};
+			doc.setDrawColor(0, 123, 255);
+			doc.setFillColor(0, 123, 255);
+			if (inputValor != "") {
+				doc.circle(posicionesX[inputValor], 445, 2, 'FD'); 
+			}
+
+			//Input Fecha de Definición
+			doc.setFont('Helvetica', 'Bold');
+			doc.setFontSize(11);
+			doc.setTextColor(0, 0, 0);
+			doc.text("Fecha de Definición", (20 + (width - 20 - 20)/3*2 + 10), 435, {baseline: "middle", align: "left"});
+			doc.setLineWidth(0.75);
+			doc.setDrawColor(206, 212, 218);
+			doc.setFillColor(250, 250, 250);
+			doc.roundedRect((20 + (width - 20 - 20)/3*2 + 10), 440, 120, 15, 3, 3, 'S');
+			doc.setFont('Helvetica', 'normal');
+			doc.setFontSize(10);
+			doc.text(document.getElementById("inputFechaDefinicion").value, (20 + (width - 20 - 20)/3*2 + 15), 450, {baseline: "middle", align: "left"});
+
+			//Firmas
+			doc.setFont('Helvetica', 'Bold');
+			doc.setFontSize(11);
+			doc.setTextColor(0, 0, 0);
+			doc.text("Firmas", 30, 470, {baseline: "middle", align: "left"});
+			doc.setLineWidth(0.75);
+			doc.setDrawColor(0, 0, 0); 
+			doc.line((20 + 10), 510, (20 + 10 + 120), 510);
+			doc.line((width/2 - 120/2), 510, (width/2 + 120/2), 510);
+			doc.line((width - 20 - 10 - 120), 510, (width - 20 - 10), 510);
+			doc.setFontSize(9);
+			doc.text("Nombre:", (20 + 10), 520, {baseline: "top", align: "left"});
+			doc.text("Nombre:", (width/2 - 120/2), 520, {baseline: "top", align: "left"});
+			doc.text("Nombre:", (width - 20 - 10 - 120), 520, {baseline: "top", align: "left"});
+			doc.setFont('Helvetica', 'normal');
+			doc.text("Coordinador o Director de Obra", (20 + 10 + 120/2), 540, {baseline: "top", align: "center"});
+			doc.text("Interventoría", (width/2), 540, {baseline: "top", align: "center"});
+			doc.text("Cliente o Socio", (width - 20 - 10 - 120/2), 540, {baseline: "top", align: "center"});
+
+			//Crear nueva página
+			doc.addPage('letter', 'portrait');
+
+			//Crear Quinto Contenedor
+			doc.setLineWidth(1);
+			doc.setDrawColor(41, 49, 56);
+			doc.setFillColor(55, 68, 81);
+			doc.roundedRect(20, 20, (width - 20 - 20), 15, 3, 3, 'FD'); //  Barra Azul de titulo del quinto contenedor
+			doc.setFontSize(18);
+			doc.setFont('Helvetica', 'Bold');
+			doc.setTextColor(250, 250, 250);
+			doc.text("Archivos de Soporte", (width / 2), 32, {baseline: "middle", align: "center"});
+			doc.setDrawColor(41, 49, 56);
+			doc.setFillColor(250, 250, 250);
+			doc.roundedRect(20, 20, (width - 20 - 20), (height - 20 - 50), 3, 3, 'S'); //  Quinto Contenedor
+
+			//Encabezado tabla de archivos de soporte
+			doc.setLineWidth(0.75);
+			doc.setDrawColor(206, 212, 218);
+			doc.setFillColor(233, 236, 239);
+			doc.roundedRect((20 + 10), 45, (width - 20 - 20 - 10 - 10), 20, 1, 1, 'FD'); 
+			doc.line((20 + 10 + 2*(width - 20 - 10 - 20 - 10)/12), 45, (20 + 10 + 2*(width - 20 - 10 - 20 - 10)/12), 65);
+			doc.line((20 + 10 + 7*(width - 20 - 10 - 20 - 10)/12), 45, (20 + 10 + 7*(width - 20 - 10 - 20 - 10)/12), 65);
+			doc.setFont('Helvetica', 'Bold');
+			doc.setFontSize(12);
+			doc.setTextColor(0, 0, 0);
+			doc.text("Adjunto N°", (20 + 10 + (width - 20 - 10 - 20 - 10)/12), 58, {baseline: "middle", align: "center"});
+			doc.text("Descripción", (20 + 10 + 4.5*(width - 20 - 10 - 20 - 10)/12), 58, {baseline: "middle", align: "center"});
+			doc.text("Link (URL)", (20 + 10 + 9.5*(width - 20 - 10 - 20 - 10)/12), 58, {baseline: "middle", align: "center"});
+
+			let baseY = 65;
+			let baseX = 30;
+			for (i = 1; i < (5 + 1); i++) {
+				doc.setLineWidth(0.75);
+				doc.setDrawColor(206, 212, 218);
+				doc.setFillColor(250, 250, 250);
+				doc.roundedRect((baseX), baseY, (width - 20 - 20 - 10 - 10), 20, 1, 1, 'FD'); 
+				doc.line((baseX + 2*(width - 20 - 10 - 20 - 10)/12), baseY, (baseX + 2*(width - 20 - 10 - 20 - 10)/12), (baseY + 20));
+				doc.line((baseX + 7*(width - 20 - 10 - 20 - 10)/12), baseY, (baseX + 7*(width - 20 - 10 - 20 - 10)/12), (baseY + 20));
+
+				baseY += 20;
+			}
+
+			
+			
+
+			//Descargar el Archivo
+			var blob = doc.output("blob"); 
+
+			var data = new FormData();
+			data.append("upfile", blob);
+			fetch("http://127.0.0.1:5500/controlCambios/ordenes/orden.pdf", { method: "POST", body: data });
+
+			// console.log(blob);
+			var fileURL = URL.createObjectURL(blob);
+			var fileLink = document.createElement('a'); // create <a> tag dinamically
+			fileLink.href = fileURL;
+			fileLink.download = 'generated'; // it forces the name of the downloaded file
+			fileLink.click(); // triggers the click event
+
+		}
+		/*var doc = new jsPDF({
+					orientation: "portrait",
+					unit: "mm",
+					format: "letter"
+					});
+			var margin = 30;
+			var modal = document.getElementById('modalordenDeCambioContent');
+			var scale = (doc.internal.pageSize.width - (margin * 2)) / (modal.scrollWidth);
+			console.log(doc.internal.pageSize.width, (margin * 2), modal.scrollWidth)
+			doc.fromHTML(modal, {
+				x: margin,
+				y: margin,
+				html2canvas: {
+					scale: scale,
+				},
+				callback: function(doc){
+					doc.output('dataurlnewwindow', {filename: 'fichero-pdf.pdf'});
+				}
+			});*/
+		
+		
+		var selectoresFecha=function(input){
+			// $("#" + input).datepicker( "destroy" );
+			dia = new Date($( "#" + input ).val());
+			dia = new Date(dia.getFullYear()+"-"+(dia.getMonth()+1)+"-"+(dia.getDate()+1));
+			$("#" + input).datepicker({dateFormat: 'yy-mm-dd',
+																					 changeMonth: true,
+																					 changeYear: true,
+																					 showOtherMonths: true,
+																					 selectOtherMonths: true,
+																					 defaultDate:dia,
+																					});
+		};
+
+		selectoresFecha("inputFechaEntregaInterventoria");
+		selectoresFecha("inputFechaTentativaDefinicion");
+		selectoresFecha("inputFechaDefinicion");
+
+		
+		
+		
+	</script>
+</body>
+</html>
