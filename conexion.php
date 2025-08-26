@@ -1,8 +1,13 @@
 <?php
-	$server = "localhost";
-	$user = "uasgrofcw1fgs";
-	$password = "Las#0510!";//poner tu propia contraseña, si tienes una.
-	$bd = "dbbfn7fojgsqao";
+	require_once __DIR__ . '/vendor/autoload.php';
+
+	$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+	$dotenv->load();
+
+	$server = $_ENV['DB_HOST'];
+	$user = $_ENV['DB_USER'];
+	$password = $_ENV['DB_PASS'];//poner tu propia contraseña, si tienes una.
+	$bd = $_ENV['DB_NAME'];
   // $server = "localhost";
 	// $user = "id11931347_jbenitez";
 	// $password = "Jbe#1106z";//poner tu propia contraseña, si tienes una.
