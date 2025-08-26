@@ -1,0 +1,18 @@
+# Composer
+/vendor/
+composer.lock
+
+# Archivos de configuración local
+.env
+
+# Logs y archivos temporales
+*.log
+php_errorlog
+/cortesProgramacion/
+/cortesRestricciones/
+/compromisosSemana/
+/ordenes/
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
