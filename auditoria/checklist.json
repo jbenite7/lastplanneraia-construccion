@@ -40,8 +40,12 @@
           "id": "HITO-4",
           "description": "Refactorizar `login.php` y consultas críticas a PDO.",
           "priority": "Must",
-          "status": "Pendiente",
-          "highlights": []
+          "status": "En Progreso",
+          "highlights": [
+            "Archivo `conexion.php` migrado completamente a PDO.",
+            "Script `login/login.php` refactorizado para usar sentencias preparadas de PDO.",
+            "Pendiente: `programa_general/listar_programa_general.php` y otras consultas críticas."
+          ]
         },
         {
           "id": "HITO-5",
