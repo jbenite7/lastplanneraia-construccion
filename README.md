@@ -66,3 +66,75 @@ Para contribuir al desarrollo del proyecto, por favor siga los siguientes pasos:
 4.  **Haga commit** de sus cambios con un mensaje descriptivo.
 5.  **Envíe sus cambios** a su fork: `git push origin <nombre-de-su-rama>`.
 6.  **Abra un Pull Request** hacia la rama `main` o `develop` del repositorio original.
+
+## 6. Entorno de Desarrollo
+
+Para asegurar una experiencia de desarrollo consistente y eficiente, recomendamos utilizar **Visual Studio Code** con las siguientes extensiones y configuraciones.
+
+### Prerrequisitos
+
+Asegúrate de tener instalados los siguientes programas en tu sistema:
+- **PHP** (versión 7.4 o superior)
+- **Composer** (gestor de dependencias para PHP)
+- **Git** (para control de versiones)
+- **Visual Studio Code** (editor de código)
+
+### Extensiones Recomendadas de VS Code
+
+Las siguientes extensiones están listadas en el archivo `.vscode/extensions.json` y VS Code te sugerirá instalarlas al abrir el proyecto.
+
+---
+
+#### Para Escribir Código PHP
+
+1.  **Intelephense (`bmewburn.vscode-intelephense-client`)**
+    - **¿Qué es?** Es tu **asistente inteligente para PHP**. Te proporciona autocompletado avanzado, análisis de código en tiempo real y navegación rápida.
+    - **Analogía:** Es como un corrector que no solo marca errores, sino que te sugiere la siguiente palabra. Te ayuda a escribir código más rápido y con menos errores.
+
+2.  **PHP Debug (`xdebug.php-debug`)**
+    - **¿Qué es?** Es una **herramienta de detective** para encontrar errores (bugs) en tu código PHP.
+    - **Analogía:** Te permite ejecutar tu código paso a paso, viendo qué está pasando con tus variables en cada momento, para que puedas encontrar el punto exacto donde ocurre un problema.
+
+3.  **php-cs-fixer (`junstyle.php-cs-fixer`)**
+    - **¿Qué es?** Es el **organizador automático** de tu código PHP.
+    - **Analogía:** Es un robot que ordena tu código para que siga un estilo único y consistente (basado en el archivo `.php-cs-fixer.dist.php`), haciendo que sea más fácil de leer para todo el equipo.
+
+---
+
+#### Para la Base de Datos
+
+4.  **SQLTools y Driver de MySQL (`mtxr.sqltools`, `mtxr.sqltools-driver-mysql`)**
+    - **¿Qué es?** Es tu **ventana a la base de datos** directamente desde VS Code.
+    - **Analogía:** En lugar de usar otra aplicación, te permite ver, consultar y modificar tu base de datos MySQL desde una pestaña dentro de tu editor.
+
+---
+
+#### Para el Frontend (JS, CSS, HTML)
+
+5.  **Prettier (`esbenp.prettier-vscode`)**
+    - **¿Qué es?** Es el **organizador automático** para tu código de Frontend.
+    - **Analogía:** Al igual que `php-cs-fixer`, pero para JavaScript, HTML y CSS. Cada vez que guardas, "embellece" tu código para mantenerlo ordenado y consistente.
+
+6.  **ESLint (`dbaeumer.vscode-eslint`)**
+    - **¿Qué es?** Es un **entrenador de calidad** para tu código JavaScript.
+    - **Analogía:** No solo se preocupa de que el código se vea bonito (como Prettier), sino que te avisa de posibles errores lógicos o malas prácticas que podrían causar problemas a futuro.
+
+---
+
+#### Para el Control de Versiones (Git)
+
+7.  **GitLens (`eamodio.gitlens`)**
+    - **¿Qué es?** Son **superpoderes para ver el historial** de tu código.
+    - **Analogía:** Git es una máquina del tiempo para tu proyecto. GitLens te permite ver fácilmente quién escribió cada línea de código, cuándo y por qué, sin tener que salir del editor.
+
+---
+
+#### Utilidades Generales
+
+8.  **DotENV (`mikestead.dotenv`)**
+    - **¿Qué es?** Un **resaltador de texto para tus secretos**.
+    - **Analogía:** Simplemente añade colores a los archivos `.env` para que sean más fáciles de leer y diferenciar las claves de los valores.
+
+9.  **EditorConfig for VS Code (`editorconfig.editorconfig`)**
+    - **¿Qué es?** Un **acuerdo de formato básico** para todo el equipo.
+    - **Analogía:** Asegura que todos usen las mismas reglas básicas (como espacios vs. tabulaciones) para mantener la consistencia del código, sin importar la configuración personal del editor.

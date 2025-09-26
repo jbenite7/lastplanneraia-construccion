@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Documentación detallada del entorno de desarrollo, incluyendo prerrequisitos y explicación de las extensiones de VS Code recomendadas en `README.md`.
 - Initial project structure and diagnosis files (`README.md`, `CHANGELOG.md`, `ROADMAP.md`).
 
 ### Changed
