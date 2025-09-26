@@ -17,13 +17,13 @@ La aplicación está construida sobre un stack tradicional de PHP, sin el uso de
     - `vlucas/phpdotenv`: Para la gestión de variables de entorno.
 - **Base de Datos:** MySQL / MariaDB (utilizando la extensión PDO para la conexión).
 - **Frontend:** HTML, CSS, JavaScript (Vanilla).
-- **Servidor Web:** Apache (compatible con SiteGround).
+- **Servidor Web:** Apache.
 
 ## 3. Variables de Entorno
 
 La configuración de la aplicación se gestiona a través de un archivo `.env` en la raíz del proyecto. Este archivo es requerido para establecer la conexión con la base de datos y otras configuraciones sensibles.
 
-Cree un archivo `.env` a partir de `.env.example` (si existiera) y complete las siguientes variables:
+Cree un archivo `.env` en la raíz del proyecto y complete las siguientes variables:
 
 ```dotenv
 DB_HOST=your_database_host
@@ -34,27 +34,28 @@ DB_PASS=your_database_password
 
 ## 4. Instalación y Uso
 
-1.  **Clonar el repositorio:**
+1.  **Clonar el repositorio y acceder al directorio:**
     ```bash
     git clone <url-del-repositorio>
-    cd construccion
+    cd <nombre-del-repositorio>
     ```
 
 2.  **Instalar dependencias de PHP:**
+    Asegúrese de tener [Composer](https://getcomposer.org/) instalado.
     ```bash
     composer install
     ```
 
 3.  **Configurar el entorno:**
-    - Copie o renombre su archivo de configuración a `.env`.
+    - Cree el archivo `.env` en la raíz del proyecto.
     - Configure las variables de entorno, especialmente las credenciales de la base de datos.
 
 4.  **Configurar el servidor web:**
-    - Apunte la raíz de su servidor web (ej. Apache en SiteGround) al directorio `public_html/construccion`.
-    - Asegúrese de que el módulo `mod_rewrite` esté habilitado (viene por defecto en SiteGround).
+    - Apunte la raíz de su servidor web (ej. Apache) al directorio raíz de este proyecto.
+    - La aplicación principal se encuentra en el subdirectorio `/construccion`.
 
 5.  **Acceder a la aplicación:**
-    - Abra su navegador y navegue a la URL configurada. Será redirigido a la página de login.
+    - Abra su navegador y navegue a la URL correspondiente (ej. `http://localhost/construccion`). Será redirigido a la página de login.
 
 ## 5. Cómo Contribuir
 
@@ -87,7 +88,7 @@ Las siguientes extensiones están listadas en el archivo `.vscode/extensions.jso
 
 #### Para Escribir Código PHP
 
-1.  **Intelephense (`bmewburn.vscode-intelephense-client`)**
+1.  **Intelephense (`bmewburn.vscode-intephense-client`)**
     - **¿Qué es?** Es tu **asistente inteligente para PHP**. Te proporciona autocompletado avanzado, análisis de código en tiempo real y navegación rápida.
     - **Analogía:** Es como un corrector que no solo marca errores, sino que te sugiere la siguiente palabra. Te ayuda a escribir código más rápido y con menos errores.
 

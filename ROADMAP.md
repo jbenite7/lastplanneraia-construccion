@@ -1,96 +1,111 @@
-# Diagnóstico y Roadmap de Implementación - Last Planner AIA (Análisis Detallado)
-
-**Nota Importante:** Este análisis y roadmap se basan en una revisión exhaustiva del código fuente y están diseñados para ser implementados en un **hosting compartido (SiteGround)**.
+# Diagnóstico y Roadmap de Implementación - Last Planner AIA
 
 ## 1. Propósito Central del Proyecto
 
-El proyecto es una aplicación web de gestión para la industria de la construcción, enfocada en la metodología *Last Planner System (LPS)*. Su propósito es digitalizar y centralizar la planificación, el seguimiento de compromisos y la generación de reportes.
+La aplicación "Last Planner AIA" es una herramienta web diseñada para implementar la metodología *Last Planner System (LPS)* en proyectos de construcción. Su objetivo es digitalizar, centralizar y optimizar la planificación, el seguimiento de tareas, la gestión de restricciones y la generación de reportes de productividad, mejorando la comunicación y la fiabilidad en la ejecución de obras.
 
 ## 2. Nivel de Madurez
 
 **Clasificación: Maduro con Deuda Técnica Crítica.**
 
-- **Maduro:** La aplicación es funcional y extensa, demostrando un profundo conocimiento del dominio de negocio.
-- **Deuda Técnica Crítica:** El análisis revela problemas estructurales y de seguridad que representan un riesgo significativo y dificultan la evolución del software.
+- **Maduro:** La aplicación es funcionalmente rica y demuestra un profundo conocimiento del dominio de negocio de la construcción. Cubre procesos complejos y específicos del sector.
+- **Deuda Técnica Crítica:** El código base presenta vulnerabilidades de seguridad significativas y problemas arquitectónicos que impiden su mantenimiento, escalabilidad y evolución.
 
-## 3. Stack Tecnológico
+## 3. Stack Tecnológico Identificado
 
-- **Backend:** PHP "Vanilla" (procedural), utilizando la extensión `mysqli`.
+- **Backend:** PHP 7.x / 8.x (procedural, sin uso de frameworks).
 - **Frontend:** HTML, CSS, JavaScript (Vanilla).
+- **Base de Datos:** MySQL / MariaDB.
+- **Gestor de Dependencias:** Composer.
+- **Librerías Clave:**
+    - `phpoffice/phpspreadsheet`: Manipulación de archivos Excel.
+    - `vlucas/phpdotenv`: Gestión de variables de entorno.
+- **Herramientas de Calidad de Código:**
+    - `php-cs-fixer`: Para estandarización de estilo de código (PSR-12).
 
-## 4. Evidencia Concreta del Análisis Técnico
+## 4. Análisis DOFA Técnico
 
-1.  **Vulnerabilidad Sistémica de Inyección SQL:** Se encontraron **115 coincidencias** de `$_GET` donde, en la mayoría de los casos, se asigna `$_GET['db']` a una variable `$db` que luego se concatena directamente en las consultas SQL.
-2.  **Manejo Descentralizado de la Conexión:** Se encontraron **120 instancias** de `require("../conexion.php")`, demostrando que cada script gestiona su propia conexión.
-3.  **Duplicación de Código:** La comparación de los directorios `pdc` y `pdc1` confirma que son funcionalmente idénticos.
-4.  **Mezcla de Lógica y Presentación:** Se encontraron **8 archivos PHP** fuera de los directorios `views` que contienen la etiqueta `<body>`.
+### Fortalezas
+- **Conocimiento de Dominio:** La lógica de negocio implementada es robusta y está alineada con las necesidades reales de la industria.
+- **Funcionalidad Completa:** La aplicación cubre un amplio espectro de los requerimientos del Last Planner System.
+- **Sin Dependencias Excesivas:** Al ser "vanilla", tiene una sobrecarga mínima y es compatible con la mayoría de los entornos de hosting PHP.
 
-## 5. Visión Estratégica: Hacia una Aplicación Moderna y Automatizada
+### Oportunidades
+- **Modernización de Arquitectura:** La migración a un patrón **API-First (Backend desacoplado) + Frontend Moderno (SPA)** puede transformar radicalmente la experiencia de usuario, la mantenibilidad y la escalabilidad.
+- **Automatización de Tareas:** Implementar funcionalidades como acciones en lote, notificaciones automáticas e importaciones inteligentes para reducir la carga de trabajo manual.
+- **Mejora de la Seguridad:** La adopción de prácticas estándar como el uso de PDO y un Front Controller puede eliminar las vulnerabilidades actuales.
+- **Implementación de Pruebas:** La creación de una suite de pruebas automatizadas (unitarias y de integración) aumentaría la fiabilidad del código.
 
-El objetivo a largo plazo es transformar la aplicación para que sea más intuitiva, fácil de usar y proactiva, reduciendo la carga de trabajo manual de los usuarios. Esto se logrará mediante un cambio de paradigma arquitectónico:
+### Debilidades
+- **Vulnerabilidad de Inyección SQL:** El uso de `mysqli` con concatenación directa de variables (especialmente `$_GET['db']`) en las consultas SQL es una falla de seguridad crítica.
+- **Código Duplicado:** Módulos como `pdc` y `pdc1` son prácticamente idénticos, aumentando el costo de mantenimiento.
+- **Falta de un Punto de Entrada Único (Front Controller):** Cada archivo PHP se gestiona a sí mismo, lo que lleva a la repetición de código para la inicialización de sesiones y conexiones a la base de datos.
+- **Mezcla de Lógica y Presentación:** El código PHP, la lógica de negocio y el HTML están fuertemente acoplados en los mismos archivos, dificultando la lectura y modificación.
 
-- **De:** Una aplicación monolítica donde cada script PHP es una página.
-- **A:** Una **API de Backend desacoplada** que solo gestiona la lógica de negocio y los datos, y un **Frontend Moderno (Single Page Application - SPA)** que se encarga de toda la experiencia de usuario.
+### Amenazas
+- **Riesgo de Seguridad:** La vulnerabilidad de inyección SQL expone la aplicación a ataques que podrían comprometer la integridad y confidencialidad de los datos.
+- **Dependencias Obsoletas:** Las librerías pueden quedar desactualizadas si no se gestionan activamente, introduciendo riesgos de seguridad o incompatibilidades.
+- **Dificultad para Escalar:** La arquitectura actual hace que añadir nuevas funcionalidades sea un proceso lento, propenso a errores y costoso.
 
-### Objetivos Clave de Automatización para el Usuario:
-- **Acciones en Lote (Bulk Actions):** Permitir a los usuarios actualizar el estado o asignar responsables a múltiples actividades a la vez, eliminando tareas repetitivas.
-- **Importación Inteligente de Datos:** Facilitar la carga masiva de listados de actividades desde archivos Excel, con validación y vista previa.
-- **Cálculos y Proyecciones en Tiempo Real:** Actualizar dashboards (como la Curva S) instantáneamente y proveer alertas proactivas sobre posibles retrasos.
-- **Notificaciones Automáticas:** Informar a los usuarios por correo o dentro de la app sobre eventos relevantes (ej. una restricción liberada).
+## 5. Oportunidades de Mejora y Herramientas Recomendadas
 
-## 6. Roadmap de Implementación (Fase 1: Fundación - 3 Meses)
+- **Guía de Estilo:** Continuar y reforzar el uso de **PSR-12** a través de `php-cs-fixer`.
+- **Análisis Estático:**
+    - **PHPStan:** Introducir gradualmente para detectar errores lógicos y de tipado sin ejecutar el código. Empezar en el nivel más bajo e ir subiendo.
+- **Pruebas Automatizadas:**
+    - **PHPUnit:** Implementar para crear pruebas unitarias (para la lógica de negocio) y pruebas de integración (para el acceso a datos).
 
-Esta fase es **crítica e indispensable**. Se enfoca en resolver la deuda técnica para crear una base estable y segura sobre la cual se pueda construir la aplicación moderna.
+## 6. Roadmap de Implementación (3 Meses)
 
-### Mes 1: Mitigación de Riesgos y Estabilización
-- **Semana 1-2: ERRADICAR INYECCIÓN SQL (Prioridad Máxima).**
-    - **Acción:** Modificar `conexion.php` para usar PDO. Crear una clase `Database` que centralice la ejecución de consultas preparadas.
-    - **Acción:** Auditar los **115+ puntos identificados** y refactorizar **TODAS** las consultas para usar exclusivamente consultas preparadas con PDO. Validar `$db` contra una lista blanca.
-    - **Victoria:** Cierre de la vulnerabilidad de seguridad más crítica del sistema.
-- **Semana 3: Unificación de Código y Limpieza.**
-    - **Acción:** Configurar `PHP-CS-Fixer` con PSR-12 y formatear toda la base de código localmente.
-    - **Acción:** Fusionar cualquier diferencia necesaria de `pdc1` en `pdc` y **eliminar el directorio `pdc1`**.
-    - **Victoria:** Código unificado y reducción de la superficie de mantenimiento.
+Esta fase se centra en **estabilizar la plataforma, eliminar la deuda técnica crítica y sentar las bases para la modernización futura.**
+
+### Mes 1: Mitigación de Riesgos y Unificación del Código
+- **Semana 1-2: ERRADICAR VULNERABILIDADES DE INYECCIÓN SQL (Prioridad Máxima).**
+    - **Acción:** Refactorizar `conexion.php` para utilizar **PDO** en lugar de `mysqli`.
+    - **Acción:** Crear una clase `Database` que centralice la conexión y la ejecución de consultas, forzando el uso de **consultas preparadas**.
+    - **Acción:** Auditar y refactorizar **TODAS** las consultas SQL del proyecto para que utilicen el nuevo sistema de consultas preparadas.
+    - **Resultado Clave:** Cierre de la brecha de seguridad más crítica.
+- **Semana 3: Consolidación y Limpieza.**
+    - **Acción:** Aplicar `php-cs-fixer` a toda la base de código para garantizar un estilo consistente (PSR-12).
+    - **Acción:** Analizar las diferencias entre los directorios `pdc` y `pdc1`, fusionar la funcionalidad necesaria en `pdc` y **eliminar `pdc1`**.
+    - **Resultado Clave:** Reducción del código duplicado y mejora de la legibilidad.
 - **Semana 4: Detección Temprana de Errores.**
-    - **Acción:** Instalar `PHPStan` en nivel 1 y corregir los errores más sencillos localmente.
-    - **Victoria:** Se establece una primera línea de defensa contra bugs comunes.
+    - **Acción:** Instalar **PHPStan** (vía Composer) y configurarlo en el nivel 1.
+    - **Acción:** Ejecutar el análisis y corregir los errores de bajo nivel identificados.
+    - **Resultado Clave:** Establecimiento de una primera capa de análisis estático para prevenir errores comunes.
 
-### Mes 2: Refactorización Estructural
-- **Semana 5-6: Centralización del Punto de Entrada.**
-    - **Acción:** Implementar el patrón Front Controller con `.htaccess` y `nikic/fast-route`.
-    - **Acción:** Migrar los 3 módulos más críticos (ej. `programa_general`, `programacion_semanal`, `login`) al nuevo enrutador.
-    - **Victoria:** Se establece la base para una API RESTful. Se elimina la necesidad de `session_start()` y `require("conexion.php")` en cada archivo, centralizando la lógica.
-- **Semana 7-8: Abstracción de Lógica de Negocio.**
-    - **Acción:** Extraer los cálculos complejos (ej. `CASE` en `guardar_programa_general.php`) a funciones puras en un nuevo directorio `src/`.
-    - **Victoria:** La lógica de negocio crítica se vuelve legible, reutilizable y, fundamentalmente, **testeable**.
+### Mes 2: Refactorización Arquitectónica
+- **Semana 5-6: Implementación del Patrón Front Controller.**
+    - **Acción:** Configurar `mod_rewrite` (vía `.htaccess`) para redirigir todas las peticiones a un único archivo `index.php`.
+    - **Acción:** Instalar una librería de enrutamiento como `nikic/fast-route`.
+    - **Acción:** Migrar los 3 módulos más importantes (ej. `login`, `programa_general`, `programacion_semanal`) al nuevo sistema de rutas.
+    - **Resultado Clave:** Centralización de la gestión de peticiones, sesiones y conexión a la BD. Base para una futura API REST.
+- **Semana 7-8: Separación de Lógica y Presentación.**
+    - **Acción:** Crear un directorio `src/` para la lógica de negocio.
+    - **Acción:** Extraer cálculos complejos y lógica de negocio de los archivos principales a funciones y clases dentro de `src/`.
+    - **Acción:** Convertir las vistas (HTML) en plantillas que reciben datos del controlador, eliminando la lógica de ellas.
+    - **Resultado Clave:** Código más organizado, reutilizable y testeable.
 
-### Mes 3: Capa de Acceso a Datos y Pruebas
+### Mes 3: Abstracción de Datos y Pruebas
 - **Semana 9-10: Implementación del Patrón Repositorio.**
-    - **Acción:** Crear una clase `SubcontratistaRepository` que encapsule todas las consultas a la base de datos para ese módulo.
-    - **Victoria:** Se crea un plano para una capa de acceso a datos limpia y fácil de mantener, un paso clave para la futura API.
-- **Semana 11-12: Creación de la Red de Seguridad.**
-    - **Acción:** Instalar **PHPUnit** localmente. Escribir pruebas unitarias para la lógica de negocio extraída y pruebas de integración para el `SubcontratistaRepository`.
-    - **Victoria:** Se crea una red de seguridad automatizada que permite realizar cambios futuros con confianza.
+    - **Acción:** Crear clases "Repositorio" (ej. `ProyectoRepository`, `UsuarioRepository`) que encapsulen toda la lógica de acceso a datos para cada entidad.
+    - **Acción:** Refactorizar el código para que utilice estos repositorios en lugar de realizar consultas SQL directamente en los controladores.
+    - **Resultado Clave:** Desacoplamiento de la lógica de negocio de la base de datos, facilitando el mantenimiento y las pruebas.
+- **Semana 11-12: Creación de la Red de Seguridad (Testing).**
+    - **Acción:** Instalar **PHPUnit** (vía Composer).
+    - **Acción:** Escribir pruebas unitarias para la lógica de negocio extraída en `src/`.
+    - **Acción:** Escribir pruebas de integración para los Repositorios para asegurar que las consultas a la BD funcionan como se espera.
+    - **Resultado Clave:** Inicio de una suite de pruebas automatizadas que aumenta la confianza para realizar cambios futuros.
 
----
+## Mensaje de Commit Sugerido
 
-## 7. Roadmap de Implementación (Fase 2: Modernización y Automatización - Post 3 Meses)
+```
+feat: Add initial project diagnosis and roadmap
 
-Con la base estabilizada, comienza la transformación visible para el usuario.
+This commit introduces a comprehensive set of documentation to establish a baseline for the project's evolution.
 
-### Mes 4-5: Construcción del Primer Módulo Moderno (Prueba de Concepto)
-- **Tecnologías:** **Vue.js** como framework de frontend y **Vuetify** o **BootstrapVue** como librería de componentes de UI.
-- **Acción:** Elegir un módulo de bajo riesgo pero de uso frecuente (ej. "Subcontratistas" o "Profesionales").
-- **Acción:** Construir los endpoints de la API RESTful en el backend para el CRUD de ese módulo.
-- **Acción:** Desarrollar una pequeña Single Page Application (SPA) con Vue.js que consuma la nueva API para gestionar el módulo de forma interactiva.
-- **Acción:** Reemplazar el enlace del menú antiguo para que apunte a la nueva interfaz (Patrón Strangler Fig).
-- **Victoria:** Se valida la nueva arquitectura y se entrega la primera mejora tangible de UX a los usuarios.
-
-### Mes 6+: Expansión y Automatización Avanzada
-- **Acción:** Migrar incrementalmente los módulos más complejos (`Programa General`, `Programación Semanal`) a la nueva arquitectura de API + SPA.
-- **Acción:** Con la nueva interfaz, implementar las funcionalidades de **automatización clave**:
-    - Introducir **acciones en lote** en las tablas principales.
-    - Desarrollar el flujo de **importación inteligente desde Excel**.
-- **Acción:** Configurar un sistema de tareas programadas (cron job) en el servidor para las **notificaciones y alertas automáticas**.
-- **Acción (Opcional):** Configurar un flujo de CI/CD con **GitHub Actions** para automatizar las pruebas y los despliegues a SiteGround.
-- **Victoria:** La aplicación se ha transformado en una herramienta moderna, intuitiva y proactiva que ahorra tiempo y reduce errores para el usuario final.
+- Creates a detailed ROADMAP.md with a 3-month plan to address critical technical debt and lay the foundation for modernization.
+- Updates README.md with clearer installation instructions and project structure.
+- Initializes CHANGELOG.md to track future changes.
+- Establishes a .gitignore file based on best practices for PHP projects.
+```

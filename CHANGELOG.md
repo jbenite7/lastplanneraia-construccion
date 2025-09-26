@@ -8,17 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Diagnóstico y Roadmap Detallado:** Realización de un análisis técnico completo y creación de un `ROADMAP.md` con un plan de acción de 3 meses para modernizar la aplicación.
 - Gestión de credenciales de base de datos a través de un archivo `.env` para mejorar la seguridad.
 - Implementación de `.gitignore` para excluir archivos y directorios no esenciales del control de versiones.
-- Documentación detallada del entorno de desarrollo, incluyendo prerrequisitos y explicación de las extensiones de VS Code recomendadas en `README.md`.
-- Creación de archivos iniciales de diagnóstico del proyecto (`README.md`, `CHANGELOG.md`, `ROADMAP.md`).
+- Documentación del entorno de desarrollo y recomendaciones de extensiones de VS Code en `README.md`.
 
 ### Changed
-- Actualización de la dependencia `phpoffice/phpspreadsheet` a la versión `^1.30.0`.
-- El `ROADMAP.md` fue actualizado para incluir una visión de modernización a largo plazo.
-
-### Fixed
-- ...
-
-### Security
-- Refactorización de la conexión a la base de datos y consultas para usar PDO, mitigando riesgos de inyección SQL.
+- **Estructura del Proyecto:** Se ha centralizado el proyecto en el directorio raíz, moviendo la configuración principal y la documentación fuera de la subcarpeta `construccion/`.
+- **Documentación Mejorada:** Se han actualizado `README.md`, `CHANGELOG.md` y `ROADMAP.md` para reflejar el estado actual, el diagnóstico y la visión futura del proyecto.
+- **Dependencia Actualizada:** Se ha actualizado `phpoffice/phpspreadsheet` a la versión `^1.29.0`.
