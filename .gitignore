@@ -19,3 +19,6 @@ Thumbs.db
 
 # Configuración del editor
 .vscode/
+
+# Bases de datos
+DB_server_produccion.sql
