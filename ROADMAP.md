@@ -61,9 +61,11 @@ Esta fase se centra en **estabilizar la plataforma, eliminar la deuda técnica c
 
 ### Mes 1: Mitigación de Riesgos y Unificación del Código
 - **Semana 1-2: ERRADICAR VULNERABILIDADES DE INYECCIÓN SQL (Prioridad Máxima).**
-    - **Acción:** Refactorizar `conexion.php` para utilizar **PDO** en lugar de `mysqli`.
-    - **Acción:** Crear una clase `Database` que centralice la conexión y la ejecución de consultas, forzando el uso de **consultas preparadas**.
-    - **Acción:** Auditar y refactorizar **TODAS** las consultas SQL del proyecto para que utilicen el nuevo sistema de consultas preparadas.
+    - **Acción:** Refactorizar `conexion.php` para utilizar **PDO** en lugar de `mysqli`. - **(HECHO)**
+    - **Acción:** Crear una clase `Database` que centralice la conexión y la ejecución de consultas, forzando el uso de **consultas preparadas**. - **(HECHO)**
+    - **Acción:** Auditar y refactorizar **TODAS** las consultas SQL del proyecto para que utilicen el nuevo sistema de consultas preparadas. - **(EN PROGRESO)**
+        - *Avance: Módulo `login` completado.*
+        - *Avance: Script `generarReporteSubcontratistas.php` completado.*
     - **Resultado Clave:** Cierre de la brecha de seguridad más crítica.
 - **Semana 3: Consolidación y Limpieza.**
     - **Acción:** Aplicar `php-cs-fixer` a toda la base de código para garantizar un estilo consistente (PSR-12).

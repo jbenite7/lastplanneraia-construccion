@@ -27,13 +27,12 @@
                 <i class="icono izquierda fa fa-building"></i><select id="proyecto_login" name="proyecto_login" class="proyecto_login custom-select">
                         <option value="">Proyecto:</option>
                         <?php
-                            require("../conexion.php");
-                            $query="SELECT * FROM general_proyectos_procesos WHERE Activo=1 AND Area='Construccion'";
-                            $resultado= mysqli_query($conexion, $query);
-                            while ($valores = mysqli_fetch_array($resultado)){
-                                echo '<option value="'.$valores["Proyecto_Proceso"].'">'.$valores["Proyecto_Proceso"].'</option>';
-                            };
-                            mysqli_close($conexion);
+                            // La conexión $db (nuestra clase Database) ya está disponible desde el controlador login.php
+                            $statement = $db->query("SELECT * FROM general_proyectos_procesos WHERE Activo=1 AND Area='Construccion'");
+                            $proyectos = $statement->fetchAll();
+                            foreach ($proyectos as $valores) {
+                                echo '<option value="' . htmlspecialchars($valores["Proyecto_Proceso"]) . '">' . htmlspecialchars($valores["Proyecto_Proceso"]) . '</option>';
+                            }
                         ?>
                         </select>
             </div>

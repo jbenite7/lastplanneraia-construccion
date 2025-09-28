@@ -16,23 +16,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $proyecto = $_POST['proyecto_login'];
 
     // 1. Obtener la configuración del proyecto de forma segura.
-    $stmt = $pdo->prepare("SELECT * FROM general_proyectos_procesos WHERE Proyecto_Proceso = ? AND Area='Construccion'");
-    $stmt->execute([$proyecto]);
+    $stmt = $db->query("SELECT * FROM general_proyectos_procesos WHERE Proyecto_Proceso = ? AND Area='Construccion'", [$proyecto]);
     $data = $stmt->fetch();
 
     if ($data) {
-        $db = $data["Base_de_Datos"];
+        $db_name = $data["Base_de_Datos"];
 
         // 2. Validar el nombre de la base de datos como medida de seguridad adicional (defensa en profundidad).
-        if (!preg_match('/^[a-zA-Z0-9_]+$/', $db)) {
+        if (!preg_match('/^[a-zA-Z0-9_]+$/', $db_name)) {
             $errores .= "<li>Nombre de base de datos no válido.</li>";
         } else {
             $acceso = $data["Acceso"];
             $pdcActivo = $data["pdcActivo"];
 
             // 3. Obtener el usuario de la base de datos sin incluir la contraseña en la consulta inicial.
-            $stmt1 = $pdo->prepare("SELECT * FROM general_usuarios WHERE usuario = ? AND (proyecto = ? OR proyecto='todos')");
-            $stmt1->execute([$usuario, $proyecto]);
+            $stmt1 = $db->query("SELECT * FROM general_usuarios WHERE usuario = ? AND (proyecto = ? OR proyecto='todos')", [$usuario, $proyecto]);
             $data1 = $stmt1->fetch();
 
             // 4. Verificar la contraseña de forma segura usando hash_equals para prevenir ataques de temporización.
@@ -47,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     if (strtolower($proyecto) != strtolower($proyecto1) && $proyecto1 != 'Todos') {
                         $errores .= "<li>Este usuario no se encuentra autorizado para ingresar al proyecto $proyecto.</li>";
                     } else {
-                        iniciar_sesion($usuario, $proyecto, $permiso, $pdcActivo, $nombreUsuario, $db, $pdo);
+                        iniciar_sesion($usuario, $proyecto, $permiso, $pdcActivo, $nombreUsuario, $db_name, $db);
                     }
                 }
             } else {
@@ -61,18 +59,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 require 'views/login.view.php';
 
-function iniciar_sesion($usuario, $proyecto, $permiso, $pdcActivo, $nombreUsuario, $db, $pdo){
+function iniciar_sesion($usuario, $proyecto, $permiso, $pdcActivo, $nombreUsuario, $db_name, $db){
     $_SESSION['usuario'] = $usuario;
 
-    // La conexión $pdo ya está disponible a través del parámetro de la función.
-    $query2 = "SELECT MAX(Semana) AS max_semana FROM {$db}_semanas_activas";
-    $stmt2 = $pdo->prepare($query2);
-    $stmt2->execute();
+    // La conexión $db ya está disponible a través del parámetro de la función.
+    // OJO: La interpolación de variables en el nombre de la tabla es un riesgo si no se valida.
+    // Aquí $db_name está validado con preg_match arriba, lo que lo hace seguro.
+    $query2 = "SELECT MAX(Semana) AS max_semana FROM {$db_name}_semanas_activas";
+    $stmt2 = $db->query($query2);
     $data2 = $stmt2->fetch();
     
     $semana = $data2 && $data2['max_semana'] ? $data2['max_semana'] : 0;
 
-    header("Location: ../index.php?proyecto=".$proyecto."&db=$db&semana=$semana&p=$permiso&pdcActivo=$pdcActivo&nombreUsuario=".urlencode($nombreUsuario));
+    header("Location: ../index.php?proyecto=".$proyecto."&db=$db_name&semana=$semana&p=$permiso&pdcActivo=$pdcActivo&nombreUsuario=".urlencode($nombreUsuario));
     exit();
 }
 ?>

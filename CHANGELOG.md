@@ -17,3 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Estructura del Proyecto:** Se ha centralizado el proyecto en el directorio raíz, moviendo la configuración principal y la documentación fuera de la subcarpeta `construccion/`.
 - **Documentación Mejorada:** Se han actualizado `README.md`, `CHANGELOG.md` y `ROADMAP.md` para reflejar el estado actual, el diagnóstico y la visión futura del proyecto.
 - **Dependencia Actualizada:** Se ha actualizado `phpoffice/phpspreadsheet` a la versión `^1.29.0`.
+
+### Security
+- **Eliminación de Inyección SQL (Trabajo en curso):**
+    - Se ha creado la clase `construccion/src/Database.php`, que centraliza la conexión a la base de datos mediante PDO y obliga el uso de consultas preparadas para prevenir inyecciones SQL.
+    - Se refactorizó `construccion/conexion.php` para utilizar la nueva clase `Database`.
+    - Se refactorizó por completo el módulo de `login` (`construccion/login/login.php` y `construccion/login/views/login.view.php`) para usar el nuevo sistema seguro.
+    - Se refactorizó el script `construccion/generarReporteSubcontratistas.php` como ejemplo de migración para otros módulos.

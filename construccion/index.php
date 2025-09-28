@@ -9,7 +9,7 @@ if(isset($_GET['proyecto'])){
         $semana=$_GET['semana'];
         $permiso=$_GET['p'];
         $pdcActivo=$_GET['pdcActivo'];
-        $nombreUsuario=$_GET['nombreUsuario'];
+        $nombreUsuario=$_GET['nombreUsuario']; 
         $_SESSION['proyecto']=$proyecto;
         $_SESSION['db']=$db;
         $_SESSION['semana']=$semana;
