@@ -24,3 +24,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Se refactorizó `construccion/conexion.php` para utilizar la nueva clase `Database`.
     - Se refactorizó por completo el módulo de `login` (`construccion/login/login.php` y `construccion/login/views/login.view.php`) para usar el nuevo sistema seguro.
     - Se refactorizó el script `construccion/generarReporteSubcontratistas.php` como ejemplo de migración para otros módulos.
+
+### Removed
+- **Directorio Obsoleto:** Se ha eliminado por completo el directorio `PI/`, que contenía una versión antigua o paralela de la aplicación, reduciendo la complejidad y el código a mantener.

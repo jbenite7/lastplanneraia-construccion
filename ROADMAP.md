@@ -69,7 +69,8 @@ Esta fase se centra en **estabilizar la plataforma, eliminar la deuda técnica c
     - **Resultado Clave:** Cierre de la brecha de seguridad más crítica.
 - **Semana 3: Consolidación y Limpieza.**
     - **Acción:** Aplicar `php-cs-fixer` a toda la base de código para garantizar un estilo consistente (PSR-12).
-    - **Acción:** Analizar las diferencias entre los directorios `pdc` y `pdc1`, fusionar la funcionalidad necesaria en `pdc` y **eliminar `pdc1`**.
+    - **Acción:** Analizar las diferencias entre los directorios `pdc` y `pdc1`, fusionar la funcionalidad necesaria en `pdc` y **eliminar `pdc1`**. - **(EN PROGRESO)**
+        - *Avance: Eliminado directorio obsoleto `PI/` que contribuye a la reducción de código duplicado.*
     - **Resultado Clave:** Reducción del código duplicado y mejora de la legibilidad.
 - **Semana 4: Detección Temprana de Errores.**
     - **Acción:** Instalar **PHPStan** (vía Composer) y configurarlo en el nivel 1.
