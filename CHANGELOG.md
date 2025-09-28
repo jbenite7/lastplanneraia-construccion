@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - **Estructura del Proyecto:** Se ha centralizado el proyecto en el directorio raíz, moviendo la configuración principal y la documentación fuera de la subcarpeta `construccion/`.
+- **Consolidación de Código:** Se han unificado los directorios duplicados `pdc` y `pdc1`, eliminando `pdc1` y conservando una única versión del módulo para reducir la deuda técnica.
 - **Documentación Mejorada:** Se han actualizado `README.md`, `CHANGELOG.md` y `ROADMAP.md` para reflejar el estado actual, el diagnóstico y la visión futura del proyecto.
 - **Dependencia Actualizada:** Se ha actualizado `phpoffice/phpspreadsheet` a la versión `^1.29.0`.
 
