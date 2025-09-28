@@ -1515,13 +1515,12 @@
 		    });
 			$("#seccionSeguimientoContrato").show("slow");
 			if (document.getElementById('fechaRealInicioProyectadaContrato').value == "") {
-		      $(".seguimientoContrato").hide("slow");
-		      $("#valorReclamado").val(0).change();
-		      $("#valorDevoluciones").val(0).change();
-			  console.log("hola");
-		    } else {
-			  $(".seguimientoContrato").show("slow");
-		    }
+				$(".seguimientoContrato").hide("slow");
+				$("#valorReclamado").val(0).change();
+				$("#valorDevoluciones").val(0).change();
+			} else {
+				$(".seguimientoContrato").show("slow");
+			}
 			
 		    $("#activoSeguimientoContrato").val(1).change();
 		  }
