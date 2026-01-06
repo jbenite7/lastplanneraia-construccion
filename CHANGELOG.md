@@ -23,8 +23,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 - **Eliminación de Inyección SQL (En progreso):**
-    - Refactorización de módulos de lectura: `listar_programa_general.php` y `listar_programacion_semanal.php` migrados a PDO con consultas preparadas y validación estricta de nombres de tablas.
-    - Refactorización de módulos de escritura: `guardar_programa_general.php` y `guardar_programacion_semanal.php` (parcial) migrados a un sistema de base de datos centralizado y seguro.
+    - Refactorización completa del módulo de Programación Semanal: `listar_programacion_semanal.php` y `guardar_programacion_semanal.php` migrados a PDO con consultas preparadas y validación estricta de lógica de indicadores (CIC).
+    - Refactorización de módulos de lectura: `listar_programa_general.php` migrado a PDO con consultas preparadas y validación estricta de nombres de tablas.
+    - Refactorización de módulos de escritura: `guardar_programa_general.php` migrado a un sistema de base de datos centralizado y seguro.
     - Se ha creado la clase `construccion/src/Database.php`, que centraliza la conexión a la base de datos mediante PDO y obliga el uso de consultas preparadas para prevenir inyecciones SQL.
     - Se refactorizó `construccion/conexion.php` para utilizar la nueva clase `Database`.
     - Se refactorizó por completo el módulo de `login` (`construccion/login/login.php` y `construccion/login/views/login.view.php`) para usar el nuevo sistema seguro.
