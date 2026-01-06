@@ -55,9 +55,9 @@ La aplicación "Last Planner AIA" es una herramienta web diseñada para implemen
 - **Pruebas Automatizadas:**
     - **PHPUnit:** Implementar para crear pruebas unitarias (para la lógica de negocio) y pruebas de integración (para el acceso a datos).
 
-## 6. Roadmap de Implementación (3 Meses)
+## 6. Roadmap de Implementación (4 Meses)
 
-Esta fase se centra en **estabilizar la plataforma, eliminar la deuda técnica crítica y sentar las bases para la modernización futura.**
+Esta fase se centra en **estabilizar la plataforma, eliminar la deuda técnica crítica y desarrollar las herramientas de administración necesarias para el control total del sistema.**
 
 ### Mes 1: Mitigación de Riesgos y Unificación del Código
 - **Semana 1-2: ERRADICAR VULNERABILIDADES DE INYECCIÓN SQL (Prioridad Máxima).**
@@ -98,6 +98,17 @@ Esta fase se centra en **estabilizar la plataforma, eliminar la deuda técnica c
     - **Acción:** Escribir pruebas unitarias para la lógica de negocio extraída en `src/`.
     - **Acción:** Escribir pruebas de integración para los Repositorios para asegurar que las consultas a la BD funcionan como se espera.
     - **Resultado Clave:** Inicio de una suite de pruebas automatizadas que aumenta la confianza para realizar cambios futuros.
+
+### Mes 4: Panel de Administración y Gestión de Accesos
+- **Semana 13-14: Gestión de Entidades Core (CRUD).**
+    - **Acción:** Desarrollar el módulo de **Gestión de Proyectos**: interfaz para crear, editar, bloquear (activar/desactivar) y eliminar proyectos.
+    - **Acción:** Desarrollar el módulo de **Gestión de Usuarios**: interfaz para el alta, baja y modificación de datos de usuarios.
+    - **Resultado Clave:** Control administrativo centralizado sobre los datos maestros de la aplicación.
+- **Semana 15-16: Sistema de Permisos y Seguridad Avanzada.**
+    - **Acción:** Implementar un **Control de Acceso Basado en Roles (RBAC)**: definir permisos específicos por tipo de usuario (Admin, Residente, Consulta).
+    - **Acción:** Integrar la validación de permisos en el Front Controller para proteger las rutas y acciones del sistema.
+    - **Acción:** Crear una interfaz visual para la asignación dinámica de permisos y roles.
+    - **Resultado Clave:** Sistema seguro y granular donde cada usuario accede solo a la información autorizada.
 
 ## Mensaje de Commit Sugerido
 

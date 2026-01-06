@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Planificación Extendida (Roadmap):** Se ha extendido el plan de trabajo a 4 meses, integrando una nueva fase para el desarrollo de un Panel de Administración centralizado.
+- **Gestión de Administración:** Inclusión en el roadmap de funcionalidades para la gestión de proyectos, usuarios y un sistema de permisos basado en roles (RBAC).
 - **Diagnóstico y Roadmap Detallado:** Realización de un análisis técnico completo y creación de un `ROADMAP.md` con un plan de acción de 3 meses para modernizar la aplicación.
 - Gestión de credenciales de base de datos a través de un archivo `.env` para mejorar la seguridad.
 - Implementación de `.gitignore` para excluir archivos y directorios no esenciales del control de versiones.
