@@ -1,550 +1,427 @@
 <?php
-	session_start();
-	require ("conexion.php");
+session_start();
+require_once("conexion.php");
 
-		$resultado= mysqli_query($conexion, $query);
+// Obtener la semana de la sesión o de la petición
+$semana = filter_var($_SESSION['semana'] ?? ($_REQUEST['semana'] ?? 0), FILTER_VALIDATE_INT);
 
-		$queryProyectos="SELECT  * FROM general_proyectos_procesos WHERE Area='Construccion' AND Activo=1";
-		//echo "$query1 <br>" ;
+if (!$semana) {
+    echo "Error: Semana no definida.";
+    exit;
+}
 
-		$resultadoProyectos= mysqli_query($conexion, $queryProyectos);
+// Consultar proyectos activos de construcción
+$queryProyectos = "SELECT Proyecto_Proceso, Base_de_Datos FROM general_proyectos_procesos WHERE Area = 'Construccion' AND Activo = 1";
+$proyectos = $db->fetchAll($queryProyectos);
 
-		echo "<li>Calificación Integral:";
+echo "<li>Calificación Integral:";
 
-		while ($dataProyectos=mysqli_fetch_assoc($resultadoProyectos)){
-			$Proyecto=$dataProyectos["Proyecto_Proceso"];
-			//echo "<li> $Proyecto";
-			$db=$dataProyectos["Base_de_Datos"];
+foreach ($proyectos as $dataProyectos) {
+    $proyecto = $dataProyectos["Proyecto_Proceso"];
+    $dbName = $dataProyectos["Base_de_Datos"];
 
-			$query="SELECT  COUNT(*) FROM $db"."_cic WHERE (Semana=$semana)";
-			$resultado= mysqli_query($conexion, $query);
-			$data=mysqli_fetch_assoc($resultado);
-			$conteo=$data["COUNT(*)"];
-			if($conteo>0){
-					actualizar_PAC_subcontratistas($semana, $db, $conexion, $semana);
-			}
+    // Validar nombre de base de datos para prevenir inyecciones en nombres de tablas
+    if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbName)) {
+        echo "<li>$proyecto - Error: Nombre de base de datos inválido.";
+        continue;
+    }
 
-			//require ("../conexion.php");
-			$query1="SELECT  COUNT(*) FROM $db"."_cip WHERE (Semana=$semana)";
-			$resultado1= mysqli_query($conexion, $query1);
-			$data1=mysqli_fetch_assoc($resultado1);
-			$conteo1=$data1["COUNT(*)"];
-			if($conteo1>0){
-					actualizar_PAC_profesionales($semana, $db, $conexion, $semana);
-			}
+    // Verificar si existen registros para la semana en la tabla de subcontratistas (_cic)
+    $queryCic = "SELECT COUNT(*) as conteo FROM {$dbName}_cic WHERE Semana = :semana";
+    $dataCic = $db->fetch($queryCic, ['semana' => $semana]);
+    $conteo = $dataCic['conteo'] ?? 0;
 
-			//require ("../conexion.php");
-			$query1="SELECT * FROM $db"."_cic WHERE (Semana=$semana)";
-			$resultado1= mysqli_query($conexion, $query1);
-			$script_subcontratistas="";
-			while ($data1 = mysqli_fetch_assoc($resultado1)){
-					$subcontratista=$data1["subcontratista"];
-					$script_subcontratistas .="AND Sub_Contratista != '$subcontratista' ";
-					//echo $script_subcontratistas;
-			}
-			//mysqli_close($conexion);
+    if ($conteo > 0) {
+        actualizar_PAC_subcontratistas($semana, $dbName, $db, $semana);
+    }
 
-			//require ("../conexion.php");
-			$query1="SELECT * FROM $db"."_cip WHERE (Semana=$semana)";
-			$resultado1= mysqli_query($conexion, $query1);
-			$script_profesionales="";
-			while ($data1 = mysqli_fetch_assoc($resultado1)){
-					$profesional=$data1["profesional"];
-					$script_profesionales .="AND Responsable_AIA != '$profesional' ";
-					//echo $script_profesionales;
-			}
-			//mysqli_close($conexion);
+    // Verificar si existen registros para la semana en la tabla de profesionales (_cip)
+    $queryCip = "SELECT COUNT(*) as conteo FROM {$dbName}_cip WHERE Semana = :semana";
+    $dataCip = $db->fetch($queryCip, ['semana' => $semana]);
+    $conteo1 = $dataCip['conteo'] ?? 0;
 
-			generar_subcontratistas($semana, $db, $conexion, $conteo, $script_subcontratistas);
-			generar_profesionales($semana, $db, $conexion, $conteo1, $script_profesionales);
+    if ($conteo1 > 0) {
+        actualizar_PAC_profesionales($semana, $dbName, $db, $semana);
+    }
 
-			echo "<li>$Proyecto - OK";
+    // Obtener subcontratistas ya registrados para excluirlos
+    $queryExistingCic = "SELECT subcontratista FROM {$dbName}_cic WHERE Semana = :semana";
+    $existingCic = $db->fetchAll($queryExistingCic, ['semana' => $semana]);
+    $excludeSubcontratistas = array_column($existingCic, 'subcontratista');
 
+    // Obtener profesionales ya registrados para excluirlos
+    $queryExistingCip = "SELECT profesional FROM {$dbName}_cip WHERE Semana = :semana";
+    $existingCip = $db->fetchAll($queryExistingCip, ['semana' => $semana]);
+    $excludeProfesionales = array_column($existingCip, 'profesional');
 
-		}
+    generar_subcontratistas($semana, $dbName, $db, $excludeSubcontratistas);
+    generar_profesionales($semana, $dbName, $db, $excludeProfesionales);
 
-		mysqli_close($conexion);
+    echo "<li>$proyecto - OK";
+}
 
-    function generar_subcontratistas($semana, $db, $conexion, $conteo, $script_subcontratistas){
-        //require ("../conexion.php");
-        $query2="SELECT DISTINCT Sub_Contratista FROM $db"."_programacion_semanal WHERE Semana=$semana $script_subcontratistas  AND Sub_Contratista !='' AND (Activa='1' OR Activa='NA') AND (PAC='1' OR PAC='0')";
-        //echo $query2;
-        $resultado2= mysqli_query($conexion, $query2);
-        while($data2=mysqli_fetch_assoc($resultado2)){
-            $subcontratista=$data2["Sub_Contratista"];
-            $query3="INSERT INTO $db"."_cic (Semana, subcontratista) VALUES (0, '$subcontratista');";
-            //echo $query3;
-            $resultado3= mysqli_query($conexion, $query3);
+function generar_subcontratistas($semana, $dbName, $db, $excludeSubcontratistas) {
+    $params = ['semana' => $semana];
+    $sqlExclude = "";
+    
+    if (!empty($excludeSubcontratistas)) {
+        $placeholders = [];
+        foreach ($excludeSubcontratistas as $i => $sub) {
+            $key = "sub_$i";
+            $placeholders[] = ":$key";
+            $params[$key] = $sub;
         }
-
-
-        actualizar_PAC_subcontratistas($semana, $db, $conexion, $semana1=0);
-        actualizar_integral_subcontratistas($semana, $db, $conexion);
-
+        $sqlExclude = " AND Sub_Contratista NOT IN (" . implode(',', $placeholders) . ")";
     }
 
-    function generar_profesionales($semana, $db, $conexion, $conteo1, $script_profesionales){
-        //require ("../conexion.php");
-        $query2="SELECT DISTINCT Responsable_AIA FROM $db"."_programacion_semanal WHERE Semana=$semana $script_profesionales  AND Responsable_AIA !='' AND (Activa='1' OR Activa='NA') AND (PAC='1' OR PAC='0')";
-        //echo $query2;
-        $resultado2= mysqli_query($conexion, $query2);
-        while($data2=mysqli_fetch_assoc($resultado2)){
-            $profesional=$data2["Responsable_AIA"];
-            $query3="INSERT INTO $db"."_cip (Semana, profesional) VALUES (0, '$profesional');";
-            //echo $query3;
-            $resultado3= mysqli_query($conexion, $query3);
+    $query = "SELECT DISTINCT Sub_Contratista FROM {$dbName}_programacion_semanal 
+              WHERE Semana = :semana $sqlExclude 
+              AND Sub_Contratista != '' 
+              AND (Activa = '1' OR Activa = 'NA') 
+              AND (PAC = '1' OR PAC = '0')";
+    
+    $results = $db->fetchAll($query, $params);
+
+    foreach ($results as $row) {
+        $subcontratista = $row["Sub_Contratista"];
+        $db->execute("INSERT INTO {$dbName}_cic (Semana, subcontratista) VALUES (0, :sub)", ['sub' => $subcontratista]);
+    }
+
+    actualizar_PAC_subcontratistas($semana, $dbName, $db, 0);
+    actualizar_integral_subcontratistas($semana, $dbName, $db);
+}
+
+function generar_profesionales($semana, $dbName, $db, $excludeProfesionales) {
+    $params = ['semana' => $semana];
+    $sqlExclude = "";
+    
+    if (!empty($excludeProfesionales)) {
+        $placeholders = [];
+        foreach ($excludeProfesionales as $i => $prof) {
+            $key = "prof_$i";
+            $placeholders[] = ":$key";
+            $params[$key] = $prof;
         }
-
-        actualizar_PAC_profesionales($semana, $db, $conexion, $semana1=0);
-        actualizar_integral_profesionales($semana, $db, $conexion);
-
+        $sqlExclude = " AND Responsable_AIA NOT IN (" . implode(',', $placeholders) . ")";
     }
 
-    function actualizar_PAC_subcontratistas($semana, $db, $conexion, $semana1){
-        $query3 ="SELECT DISTINCT Sub_Contratista FROM $db"."_programacion_semanal WHERE Semana=$semana AND Sub_Contratista !='' AND (Activa='1' OR Activa='NA') AND (PAC='1' OR PAC='0')";
-            $resultado3= mysqli_query($conexion, $query3);
-            //$conteo1=mysqli_num_rows($resultado3);
-            //echo $conteo1;
-            $script ="";
-            while($data1=mysqli_fetch_assoc($resultado3)){
-                $subcontratista = $data1['Sub_Contratista'];
-                $query4="SELECT (SELECT ROUND((SUM(P_Completado)/COUNT(P_Completado)),3) FROM $db"."_programacion_semanal WHERE Semana=$semana AND Sub_Contratista ='$subcontratista' AND (Activa=1 OR Activa='NA')) AS 'P_Completado', (SELECT ROUND((SUM(PAC)/COUNT(PAC)),3) FROM $db"."_programacion_semanal WHERE Semana=$semana AND Sub_Contratista ='$subcontratista' AND (Activa=1 OR Activa='NA')) AS 'PAC'";
-                //echo $query4;
-                $resultado4= mysqli_query($conexion, $query4);
-                $data2=mysqli_fetch_assoc($resultado4);
-                $PAC=$data2["PAC"];
-                $P_Completado=$data2["P_Completado"];
-                //echo $PAC, $P_Completado;
+    $query = "SELECT DISTINCT Responsable_AIA FROM {$dbName}_programacion_semanal 
+              WHERE Semana = :semana $sqlExclude 
+              AND Responsable_AIA != '' 
+              AND (Activa = '1' OR Activa = 'NA') 
+              AND (PAC = '1' OR PAC = '0')";
+    
+    $results = $db->fetchAll($query, $params);
 
-                $query5 ="UPDATE $db"."_cic INNER JOIN $db"."_subcontratistas ON $db"."_cic . subcontratista = $db"."_subcontratistas . subcontratista SET
-                    $db"."_cic . P_Completado = '$P_Completado',
-
-                    $db"."_cic . PAC = '$PAC',
-
-                    $db"."_cic . Semana = $semana, $db"."_cic . correo_contacto = $db"."_subcontratistas . correo_contacto, $db"."_cic . NIT = $db"."_subcontratistas . NIT, $db"."_cic . alcance = $db"."_subcontratistas . alcance, $db"."_cic . tipo_proveedor = $db"."_subcontratistas . tipo_proveedor WHERE $db"."_cic . subcontratista = '$subcontratista'  AND Semana=$semana1;";
-
-
-                $resultado5= mysqli_query($conexion, $query5);
-
-
-                //echo $query5 ."<br>" /*. $query4 ."<br>"*/;
-
-                $script .="AND subcontratista != '$subcontratista' ";
-            }
-
-            $query6="DELETE FROM $db"."_cic WHERE Semana=$semana $script";
-            //echo $query6 ."<br>";
-            $resultado6= mysqli_query($conexion, $query6);
-
-
-            mysqli_free_result($resultado3);
-
-            //mysqli_close($conexion);
-
-
-    }
-     function actualizar_PAC_profesionales($semana, $db, $conexion, $semana1){
-        $query3 ="SELECT DISTINCT Responsable_AIA FROM $db"."_programacion_semanal WHERE Semana=$semana AND Responsable_AIA !='' AND (Activa='1' OR Activa='NA') AND (PAC='1' OR PAC='0')";
-            $resultado3= mysqli_query($conexion, $query3);
-            $script ="";
-            while($data1=mysqli_fetch_assoc($resultado3)){
-                $profesional = $data1['Responsable_AIA'];
-                $query4="SELECT (SELECT ROUND((SUM(P_Completado)/COUNT(P_Completado)),3) FROM $db"."_programacion_semanal WHERE Semana=$semana AND Responsable_AIA ='$profesional' AND (Activa=1 OR Activa='NA')) AS 'P_Completado', (SELECT ROUND((SUM(PAC)/COUNT(PAC)),3) FROM $db"."_programacion_semanal WHERE Semana=$semana AND Responsable_AIA ='$profesional' AND (Activa=1 OR Activa='NA')) AS 'PAC'";
-                //echo $query4 ."<br>";
-                $resultado4= mysqli_query($conexion, $query4);
-                $data2=mysqli_fetch_assoc($resultado4);
-                $PAC=$data2["PAC"];
-                $P_Completado=$data2["P_Completado"];
-                //echo $PAC, $P_Completado;
-
-                $query5 ="UPDATE $db"."_cip INNER JOIN $db"."_profesionales ON $db"."_cip . profesional = $db"."_profesionales . nombre SET
-                    $db"."_cip . P_Completado = $P_Completado,
-
-                    $db"."_cip . PAC = $PAC,
-
-                    $db"."_cip . Semana = $semana, $db"."_cip . correo_contacto = $db"."_profesionales . email WHERE $db"."_cip . profesional = '$profesional'  AND Semana=$semana1;";
-
-                $resultado5= mysqli_query($conexion, $query5);
-                //echo $query5 ."<br>" . $query4 ."<br>";
-
-                $script .="AND profesional != '$profesional' ";
-            }
-
-            $query6="DELETE FROM $db"."_cip WHERE Semana=$semana $script";
-            //echo $query6 ."<br>";
-
-            $resultado6= mysqli_query($conexion, $query6);
-
-
-            mysqli_free_result($resultado3);
-            //mysqli_close($conexion);
-
-
+    foreach ($results as $row) {
+        $profesional = $row["Responsable_AIA"];
+        $db->execute("INSERT INTO {$dbName}_cip (Semana, profesional) VALUES (0, :prof)", ['prof' => $profesional]);
     }
 
-    function actualizar_integral_subcontratistas($semana, $db, $conexion){
-        //require("../conexion.php");
-        $query5 ="SELECT * FROM $db"."_cic WHERE Semana=$semana;";
-        $resultado5= mysqli_query($conexion, $query5);
+    actualizar_PAC_profesionales($semana, $dbName, $db, 0);
+    actualizar_integral_profesionales($semana, $dbName, $db);
+}
 
-        while ($cic = mysqli_fetch_assoc($resultado5)){
-            $Id=$cic['Id'];
-            $subcontratista=$cic['subcontratista'];
+function actualizar_PAC_subcontratistas($semana, $dbName, $db, $semanaFiltro) {
+    $query = "SELECT DISTINCT Sub_Contratista FROM {$dbName}_programacion_semanal 
+              WHERE Semana = :semana AND Sub_Contratista != '' 
+              AND (Activa = '1' OR Activa = 'NA') AND (PAC = '1' OR PAC = '0')";
+    
+    $subcontratistas = $db->fetchAll($query, ['semana' => $semana]);
+    $processedSubs = [];
 
-            $query6 ="SELECT (SELECT CASE WHEN (SELECT COUNT(*) FROM $db"."_cic WHERE Semana<=$semana AND subcontratista='$subcontratista' AND PAC!='NA')=0 THEN NULL ELSE (SELECT ROUND(AVG(PAC),3) FROM $db"."_cic WHERE Semana<=$semana AND subcontratista='$subcontratista' AND PAC!='NA') END) AS 'PAC_Acum',
+    foreach ($subcontratistas as $row) {
+        $subcontratista = $row['Sub_Contratista'];
+        $processedSubs[] = $subcontratista;
 
-        (SELECT CASE WHEN (SELECT COUNT(*) FROM $db"."_cic WHERE Semana<=$semana AND subcontratista='$subcontratista' AND P_Completado!='NA')=0 THEN NULL ELSE (SELECT ROUND(AVG(P_Completado),3) FROM $db"."_cic WHERE Semana<=$semana AND subcontratista='$subcontratista' AND P_Completado!='NA') END) AS 'P_Completado_Acum',
+        $queryStats = "SELECT 
+                        ROUND((SUM(CASE WHEN (Activa = 1 OR Activa = 'NA') THEN P_Completado ELSE 0 END) / 
+                               COUNT(CASE WHEN (Activa = 1 OR Activa = 'NA') THEN 1 END)), 3) AS P_Completado,
+                        ROUND((SUM(CASE WHEN (Activa = 1 OR Activa = 'NA') THEN PAC ELSE 0 END) / 
+                               COUNT(CASE WHEN (Activa = 1 OR Activa = 'NA') THEN 1 END)), 3) AS PAC
+                       FROM {$dbName}_programacion_semanal 
+                       WHERE Semana = :semana AND Sub_Contratista = :sub";
+        
+        $stats = $db->fetch($queryStats, ['semana' => $semana, 'sub' => $subcontratista]);
+        
+        $pac = $stats['PAC'] ?? 0;
+        $pCompletado = $stats['P_Completado'] ?? 0;
 
-        (SELECT CASE WHEN (SELECT COUNT(*) FROM $db"."_cic WHERE Semana<=$semana AND subcontratista='$subcontratista' AND Calidad!='NA' AND Calidad!='NR')=0 THEN 'NA' ELSE (SELECT ROUND(AVG(Calidad),3) FROM $db"."_cic WHERE Semana<=$semana AND subcontratista='$subcontratista' AND Calidad!='NA' AND Calidad!='NR') END) AS 'Calidad_Acum',
+        $updateQuery = "UPDATE {$dbName}_cic cic
+                        INNER JOIN {$dbName}_subcontratistas sub ON cic.subcontratista = sub.subcontratista 
+                        SET cic.P_Completado = :p_comp,
+                            cic.PAC = :pac,
+                            cic.Semana = :semana,
+                            cic.correo_contacto = sub.correo_contacto,
+                            cic.NIT = sub.NIT,
+                            cic.alcance = sub.alcance,
+                            cic.tipo_proveedor = sub.tipo_proveedor 
+                        WHERE cic.subcontratista = :sub AND cic.Semana = :semana_filtro";
+        
+        $db->execute($updateQuery, [
+            'p_comp' => $pCompletado,
+            'pac' => $pac,
+            'semana' => $semana,
+            'sub' => $subcontratista,
+            'semana_filtro' => $semanaFiltro
+        ]);
+    }
 
-        (SELECT CASE WHEN (SELECT COUNT(*) FROM $db"."_cic WHERE Semana<=$semana AND subcontratista='$subcontratista' AND GSA!='NA' AND GSA!='NR')=0 THEN 'NA' ELSE (SELECT ROUND(AVG(GSA),3) FROM $db"."_cic WHERE Semana<=$semana AND subcontratista='$subcontratista' AND GSA!='NA' AND GSA!='NR') END) AS 'GSA_Acum',
+    // Eliminar registros que ya no están en la programación semanal para esa semana
+    $sqlDelete = "DELETE FROM {$dbName}_cic WHERE Semana = :semana";
+    $deleteParams = ['semana' => $semana];
+    if (!empty($processedSubs)) {
+        $placeholders = [];
+        foreach ($processedSubs as $i => $sub) {
+            $key = "sub_$i";
+            $placeholders[] = ":$key";
+            $deleteParams[$key] = $sub;
+        }
+        $sqlDelete .= " AND subcontratista NOT IN (" . implode(',', $placeholders) . ")";
+    }
+    $db->execute($sqlDelete, $deleteParams);
+}
 
-        (SELECT CASE WHEN (SELECT COUNT(*) FROM $db"."_cic WHERE Semana<=$semana AND subcontratista='$subcontratista' AND SST!='NA' AND SST!='NR')=0 THEN 'NA' ELSE (SELECT ROUND(AVG(SST),3) FROM $db"."_cic WHERE Semana<=$semana AND subcontratista='$subcontratista' AND SST!='NA' AND SST!='NR') END) AS 'SST_Acum',
+function actualizar_PAC_profesionales($semana, $dbName, $db, $semanaFiltro) {
+    $query = "SELECT DISTINCT Responsable_AIA FROM {$dbName}_programacion_semanal 
+              WHERE Semana = :semana AND Responsable_AIA != '' 
+              AND (Activa = '1' OR Activa = 'NA') AND (PAC = '1' OR PAC = '0')";
+    
+    $profesionales = $db->fetchAll($query, ['semana' => $semana]);
+    $processedProfs = [];
 
-        (SELECT CASE WHEN (SELECT COUNT(*) FROM $db"."_cic WHERE Semana<=$semana AND subcontratista='$subcontratista' AND ADM!='NA' AND ADM!='NR')=0 THEN 'NA' ELSE (SELECT ROUND(AVG(ADM),3) FROM $db"."_cic WHERE Semana<=$semana AND subcontratista='$subcontratista' AND ADM!='NA' AND ADM!='NR') END) AS 'ADM_Acum'
+    foreach ($profesionales as $row) {
+        $profesional = $row['Responsable_AIA'];
+        $processedProfs[] = $profesional;
 
-        ";
+        $queryStats = "SELECT 
+                        ROUND((SUM(CASE WHEN (Activa = 1 OR Activa = 'NA') THEN P_Completado ELSE 0 END) / 
+                               COUNT(CASE WHEN (Activa = 1 OR Activa = 'NA') THEN 1 END)), 3) AS P_Completado,
+                        ROUND((SUM(CASE WHEN (Activa = 1 OR Activa = 'NA') THEN PAC ELSE 0 END) / 
+                               COUNT(CASE WHEN (Activa = 1 OR Activa = 'NA') THEN 1 END)), 3) AS PAC
+                       FROM {$dbName}_programacion_semanal 
+                       WHERE Semana = :semana AND Responsable_AIA = :prof";
+        
+        $stats = $db->fetch($queryStats, ['semana' => $semana, 'prof' => $profesional]);
+        
+        $pac = $stats['PAC'] ?? 0;
+        $pCompletado = $stats['P_Completado'] ?? 0;
 
-            $resultado6= mysqli_query($conexion, $query6);
+        $updateQuery = "UPDATE {$dbName}_cip cip
+                        INNER JOIN {$dbName}_profesionales prof ON cip.profesional = prof.nombre 
+                        SET cip.P_Completado = :p_comp,
+                            cip.PAC = :pac,
+                            cip.Semana = :semana,
+                            cip.correo_contacto = prof.email 
+                        WHERE cip.profesional = :prof AND cip.Semana = :semana_filtro";
+        
+        $db->execute($updateQuery, [
+            'p_comp' => $pCompletado,
+            'pac' => $pac,
+            'semana' => $semana,
+            'prof' => $profesional,
+            'semana_filtro' => $semanaFiltro
+        ]);
+    }
 
-            $data=mysqli_fetch_assoc($resultado6);
-            $PAC_Acum=$data["PAC_Acum"];
-            $P_Completado_Acum=$data["P_Completado_Acum"];
-            $Calidad_Acum=$data["Calidad_Acum"];
-            $GSA_Acum=$data["GSA_Acum"];
-            $SST_Acum=$data["SST_Acum"];
-            $ADM_Acum=$data["ADM_Acum"];
+    $sqlDelete = "DELETE FROM {$dbName}_cip WHERE Semana = :semana";
+    $deleteParams = ['semana' => $semana];
+    if (!empty($processedProfs)) {
+        $placeholders = [];
+        foreach ($processedProfs as $i => $prof) {
+            $key = "prof_$i";
+            $placeholders[] = ":$key";
+            $deleteParams[$key] = $prof;
+        }
+        $sqlDelete .= " AND profesional NOT IN (" . implode(',', $placeholders) . ")";
+    }
+    $db->execute($sqlDelete, $deleteParams);
+}
 
+function actualizar_integral_subcontratistas($semana, $dbName, $db) {
+    $cicRows = $db->fetchAll("SELECT Id, subcontratista, PAC, Calidad, ADM, GSA, SST FROM {$dbName}_cic WHERE Semana = :semana", ['semana' => $semana]);
 
+    foreach ($cicRows as $cic) {
+        $id = $cic['Id'];
+        $subcontratista = $cic['subcontratista'];
 
-            $query6_1 = "UPDATE $db"."_cic SET
-                PAC_Acum = '$PAC_Acum',
+        $queryAcum = "SELECT 
+            (SELECT ROUND(AVG(PAC), 3) FROM {$dbName}_cic WHERE Semana <= :semana AND subcontratista = :sub AND PAC != 'NA') AS PAC_Acum,
+            (SELECT ROUND(AVG(P_Completado), 3) FROM {$dbName}_cic WHERE Semana <= :semana AND subcontratista = :sub AND P_Completado != 'NA') AS P_Completado_Acum,
+            (SELECT CASE WHEN COUNT(*) = 0 THEN 'NA' ELSE ROUND(AVG(Calidad), 3) END FROM {$dbName}_cic WHERE Semana <= :semana AND subcontratista = :sub AND Calidad NOT IN ('NA', 'NR')) AS Calidad_Acum,
+            (SELECT CASE WHEN COUNT(*) = 0 THEN 'NA' ELSE ROUND(AVG(GSA), 3) END FROM {$dbName}_cic WHERE Semana <= :semana AND subcontratista = :sub AND GSA NOT IN ('NA', 'NR')) AS GSA_Acum,
+            (SELECT CASE WHEN COUNT(*) = 0 THEN 'NA' ELSE ROUND(AVG(SST), 3) END FROM {$dbName}_cic WHERE Semana <= :semana AND subcontratista = :sub AND SST NOT IN ('NA', 'NR')) AS SST_Acum,
+            (SELECT CASE WHEN COUNT(*) = 0 THEN 'NA' ELSE ROUND(AVG(ADM), 3) END FROM {$dbName}_cic WHERE Semana <= :semana AND subcontratista = :sub AND ADM NOT IN ('NA', 'NR')) AS ADM_Acum
+            FROM DUAL";
 
-                P_Completado_Acum = '$P_Completado_Acum',
+        $acum = $db->fetch($queryAcum, ['semana' => $semana, 'sub' => $subcontratista]);
 
-                Calidad_Acum = '$Calidad_Acum',
+        $db->execute("UPDATE {$dbName}_cic SET 
+                        PAC_Acum = :pac, P_Completado_Acum = :pcomp, Calidad_Acum = :cal, 
+                        GSA_Acum = :gsa, SST_Acum = :sst, ADM_Acum = :adm 
+                      WHERE Id = :id", [
+            'pac' => $acum['PAC_Acum'], 'pcomp' => $acum['P_Completado_Acum'], 'cal' => $acum['Calidad_Acum'],
+            'gsa' => $acum['GSA_Acum'], 'sst' => $acum['SST_Acum'], 'adm' => $acum['ADM_Acum'], 'id' => $id
+        ]);
 
-                GSA_Acum = '$GSA_Acum',
+        // Cálculo de Calificación Integral (Lógica original conservada)
+        $pac = $cic['PAC'];
+        $calidad = $cic['Calidad'];
+        $adm = $cic['ADM'];
+        $gsa = $cic['GSA'];
+        $sst = $cic['SST'];
 
-                SST_Acum = '$SST_Acum',
+        $cal_integral = calcular_logica_integral($pac, $calidad, $sst, $gsa, $adm);
+        
+        $pac_acum = $acum['PAC_Acum'];
+        $calidad_acum = $acum['Calidad_Acum'];
+        $adm_acum = $acum['ADM_Acum'];
+        $gsa_acum = $acum['GSA_Acum'];
+        $sst_acum = $acum['SST_Acum'];
+        
+        $cal_integral_acum = calcular_logica_integral($pac_acum, $calidad_acum, $sst_acum, $gsa_acum, $adm_acum);
 
-                ADM_Acum = '$ADM_Acum'
+        $db->execute("UPDATE {$dbName}_cic SET Cal_Integral = ROUND(:cal, 3), Cal_Integral_Acum = ROUND(:cal_acum, 3) WHERE Id = :id", [
+            'cal' => $cal_integral, 'cal_acum' => $cal_integral_acum, 'id' => $id
+        ]);
+    }
+}
 
-                WHERE Id=$Id";
-
-            $resultado6_1= mysqli_query($conexion, $query6_1);
-
-
-            $query7 ="SELECT * FROM $db"."_cic WHERE Id=$Id;";
-            $resultado7= mysqli_query($conexion, $query7);
-            $cic1 = mysqli_fetch_assoc($resultado7);
-
-            $PAC=$cic1['PAC'];
-            $PAC_acum=$cic1['PAC_Acum'];
-            $calidad=$cic1['Calidad'];
-            $calidad_acum=$cic1['Calidad_Acum'];
-            $adm=$cic1['ADM'];
-            $adm_acum=$cic1['ADM_Acum'];
-            $gsa=$cic1['GSA'];
-            $gsa_acum=$cic1['GSA_Acum'];
-            $sst=$cic1['SST'];
-            $sst_acum=$cic1['SST_Acum'];
-
-            if($calidad=='NA' || $calidad=='NR'){
-                if($sst=='NA' || $sst=='NR'){
-                    if($gsa=='NA' || $gsa=='NR'){
-                        if($adm=='NA' || $adm=='NR'){
-                            $cal_integral=$PAC*(0.3+(0.7/7)*7);
-                        }else{
-                            $cal_integral=$PAC*(0.3+(0.6/4)*3)+$adm*(0.1+(0.6/4)*1);
-                        }
-                    }else{
-                        if($adm=='NA' || $adm=='NR'){
-                            $cal_integral=$PAC*(0.3+(0.5/5)*3)+$gsa*(0.2+(0.5/5)*2);
-                        }else{
-                            $cal_integral=$PAC*(0.3+(0.4/6)*3)+$gsa*(0.2+(0.4/6)*2)+$adm*(0.1+(0.4/6)*1);
-                        }
-                    }
-                }else{
-                    if($gsa=='NA' || $gsa=='NR'){
-                        if($adm=='NA' || $adm=='NR'){
-                            $cal_integral=$PAC*(0.3+(0.5/5)*3)+$sst*(0.2+(0.5/5)*2);
-                        }else{
-                            $cal_integral=$PAC*(0.3+(0.4/6)*3)+$sst*(0.2+(0.4/6)*2)+$adm*(0.1+(0.4/6)*1);
-                        }
-                    }else{
-                        if($adm=='NA' || $adm=='NR'){
-                            $cal_integral=$PAC*(0.3+(0.3/7)*3)+$sst*(0.2+(0.3/7)*2)+$gsa*(0.2+(0.3/7)*2);
-                        }else{
-                            $cal_integral=$PAC*(0.3+(0.2/8)*3)+$sst*(0.2+(0.2/8)*2)+$gsa*(0.2+(0.2/8)*2)+$adm*(0.1+(0.2/8)*1);
-                        }
-                    }
+function calcular_logica_integral($pac, $calidad, $sst, $gsa, $adm) {
+    if ($calidad == 'NA' || $calidad == 'NR') {
+        if ($sst == 'NA' || $sst == 'NR') {
+            if ($gsa == 'NA' || $gsa == 'NR') {
+                if ($adm == 'NA' || $adm == 'NR') {
+                    return $pac * (0.3 + (0.7 / 7) * 7);
+                } else {
+                    return $pac * (0.3 + (0.6 / 4) * 3) + $adm * (0.1 + (0.6 / 4) * 1);
                 }
-            }else{
-                if($sst=='NA' || $sst=='NR'){
-                    if($gsa=='NA' || $gsa=='NR'){
-                        if($adm=='NA' || $adm=='NR'){
-                            $cal_integral=$PAC*(0.3+(0.5/5)*3)+$calidad*(0.2+(0.5/5)*2);
-                        }else{
-                            $cal_integral=$PAC*(0.3+(0.4/6)*3)+$calidad*(0.2+(0.4/6)*2)+$adm*(0.1+(0.4/6)*1);
-                        }
-                    }else{
-                        if($adm=='NA' || $adm=='NR'){
-                            $cal_integral=$PAC*(0.3+(0.3/7)*3)+$calidad*(0.2+(0.3/7)*2)+$gsa*(0.2+(0.3/7)*2);
-                        }else{
-                            $cal_integral=$PAC*(0.3+(0.2/8)*3)+$calidad*(0.2+(0.2/8)*2)+$gsa*(0.2+(0.2/8)*2)+$adm*(0.1+(0.2/8)*1);
-                        }
-                    }
-                }else{
-                    if($gsa=='NA' || $gsa=='NR'){
-                        if($adm=='NA' || $adm=='NR'){
-                            $cal_integral=$PAC*(0.3+(0.3/7)*3)+$calidad*(0.2+(0.3/7)*2)+$sst*(0.2+(0.3/7)*2);
-                        }else{
-                            $cal_integral=$PAC*(0.3+(0.2/8)*3)+$calidad*(0.2+(0.2/8)*2)+$sst*(0.2+(0.2/8)*2)+$adm*(0.1+(0.2/8)*1);
-                        }
-                    }else{
-                        if($adm=='NA' || $adm=='NR'){
-                            $cal_integral=$PAC*(0.3+(0.1/9)*3)+$calidad*(0.2+(0.1/9)*2)+$sst*(0.2+(0.1/9)*2)+$gsa*(0.2+(0.1/9)*2);
-                        }else{
-                            $cal_integral=$PAC*(0.3+(0.0/10)*3)+$calidad*(0.2+(0.0/10)*2)+$sst*(0.2+(0.0/10)*2)+$gsa*(0.2+(0.0/10)*2)+$adm*(0.1+(0.0/10)*1);
-                        }
-                    }
+            } else {
+                if ($adm == 'NA' || $adm == 'NR') {
+                    return $pac * (0.3 + (0.5 / 5) * 3) + $gsa * (0.2 + (0.5 / 5) * 2);
+                } else {
+                    return $pac * (0.3 + (0.4 / 6) * 3) + $gsa * (0.2 + (0.4 / 6) * 2) + $adm * (0.1 + (0.4 / 6) * 1);
                 }
             }
-
-
-            if($calidad_acum=='NA' || $calidad_acum=='NR'){
-                if($sst_acum=='NA' || $sst_acum=='NR'){
-                    if($gsa_acum=='NA' || $gsa_acum=='NR'){
-                        if($adm_acum=='NA' || $adm_acum=='NR'){
-                            $cal_integral_acum=$PAC_acum*(0.3+(0.7/7)*7);
-                        }else{
-                            $cal_integral_acum=$PAC_acum*(0.3+(0.6/4)*3)+$adm_acum*(0.1+(0.6/4)*1);
-                        }
-                    }else{
-                        if($adm_acum=='NA' || $adm_acum=='NR'){
-                            $cal_integral_acum=$PAC_acum*(0.3+(0.5/5)*3)+$gsa_acum*(0.2+(0.5/5)*2);
-                        }else{
-                            $cal_integral_acum=$PAC_acum*(0.3+(0.4/6)*3)+$gsa_acum*(0.2+(0.4/6)*2)+$adm_acum*(0.1+(0.4/6)*1);
-                        }
-                    }
-                }else{
-                    if($gsa_acum=='NA' || $gsa_acum=='NR'){
-                        if($adm_acum=='NA' || $adm_acum=='NR'){
-                            $cal_integral_acum=$PAC_acum*(0.3+(0.5/5)*3)+$sst_acum*(0.2+(0.5/5)*2);
-                        }else{
-                            $cal_integral_acum=$PAC_acum*(0.3+(0.4/6)*3)+$sst_acum*(0.2+(0.4/6)*2)+$adm_acum*(0.1+(0.4/6)*1);
-                        }
-                    }else{
-                        if($adm_acum=='NA' || $adm_acum=='NR'){
-                            $cal_integral_acum=$PAC_acum*(0.3+(0.3/7)*3)+$sst_acum*(0.2+(0.3/7)*2)+$gsa_acum*(0.2+(0.3/7)*2);
-                        }else{
-                            $cal_integral_acum=$PAC_acum*(0.3+(0.2/8)*3)+$sst_acum*(0.2+(0.2/8)*2)+$gsa_acum*(0.2+(0.2/8)*2)+$adm_acum*(0.1+(0.2/8)*1);
-                        }
-                    }
+        } else {
+            if ($gsa == 'NA' || $gsa == 'NR') {
+                if ($adm == 'NA' || $adm == 'NR') {
+                    return $pac * (0.3 + (0.5 / 5) * 3) + $sst * (0.2 + (0.5 / 5) * 2);
+                } else {
+                    return $pac * (0.3 + (0.4 / 6) * 3) + $sst * (0.2 + (0.4 / 6) * 2) + $adm * (0.1 + (0.4 / 6) * 1);
                 }
-            }else{
-                if($sst_acum=='NA' || $sst_acum=='NR'){
-                    if($gsa_acum=='NA' || $gsa_acum=='NR'){
-                        if($adm_acum=='NA' || $adm_acum=='NR'){
-                            $cal_integral_acum=$PAC_acum*(0.3+(0.5/5)*3)+$calidad_acum*(0.2+(0.5/5)*2);
-                        }else{
-                            $cal_integral_acum=$PAC_acum*(0.3+(0.4/6)*3)+$calidad_acum*(0.2+(0.4/6)*2)+$adm_acum*(0.1+(0.4/6)*1);
-                        }
-                    }else{
-                        if($adm_acum=='NA' || $adm_acum=='NR'){
-                            $cal_integral_acum=$PAC_acum*(0.3+(0.3/7)*3)+$calidad_acum*(0.2+(0.3/7)*2)+$gsa_acum*(0.2+(0.3/7)*2);
-                        }else{
-                            $cal_integral_acum=$PAC_acum*(0.3+(0.2/8)*3)+$calidad_acum*(0.2+(0.2/8)*2)+$gsa_acum*(0.2+(0.2/8)*2)+$adm_acum*(0.1+(0.2/8)*1);
-                        }
-                    }
-                }else{
-                    if($gsa_acum=='NA' || $gsa_acum=='NR'){
-                        if($adm_acum=='NA' || $adm_acum=='NR'){
-                            $cal_integral_acum=$PAC_acum*(0.3+(0.3/7)*3)+$calidad_acum*(0.2+(0.3/7)*2)+$sst_acum*(0.2+(0.3/7)*2);
-                        }else{
-                            $cal_integral_acum=$PAC_acum*(0.3+(0.2/8)*3)+$calidad_acum*(0.2+(0.2/8)*2)+$sst_acum*(0.2+(0.2/8)*2)+$adm_acum*(0.1+(0.2/8)*1);
-                        }
-                    }else{
-                        if($adm_acum=='NA' || $adm_acum=='NR'){
-                            $cal_integral_acum=$PAC_acum*(0.3+(0.1/9)*3)+$calidad_acum*(0.2+(0.1/9)*2)+$sst_acum*(0.2+(0.1/9)*2)+$gsa_acum*(0.2+(0.1/9)*2);
-                        }else{
-                            $cal_integral_acum=$PAC_acum*(0.3+(0.0/10)*3)+$calidad_acum*(0.2+(0.0/10)*2)+$sst_acum*(0.2+(0.0/10)*2)+$gsa_acum*(0.2+(0.0/10)*2)+$adm_acum*(0.1+(0.0/10)*1);
-                        }
-                    }
+            } else {
+                if ($adm == 'NA' || $adm == 'NR') {
+                    return $pac * (0.3 + (0.3 / 7) * 3) + $sst * (0.2 + (0.3 / 7) * 2) + $gsa * (0.2 + (0.3 / 7) * 2);
+                } else {
+                    return $pac * (0.3 + (0.2 / 8) * 3) + $sst * (0.2 + (0.2 / 8) * 2) + $gsa * (0.2 + (0.2 / 8) * 2) + $adm * (0.1 + (0.2 / 8) * 1);
                 }
             }
-
-            //echo "<li>" . $PAC_acum . "<li>" . $calidad_acum . "<li>" . $gsa_acum . "<li>" . $sst_acum . "<li>" . $adm_acum . "<li>" . $cal_integral_acum ;
-
-            $query7 = "UPDATE $db"."_cic SET Cal_Integral = ROUND($cal_integral,3), Cal_Integral_Acum = ROUND($cal_integral_acum,3) WHERE Id=ROUND($Id,3);";
-
-            //echo $query7;
-            $resultado7= mysqli_query($conexion, $query7);
-
-        };
-            //echo $query8;
-
-            //$resultado4= mysqli_multi_query($conexion, $query4);
-            //mysqli_close($conexion);
-            //mysqli_free_result($resultado);
+        }
+    } else {
+        if ($sst == 'NA' || $sst == 'NR') {
+            if ($gsa == 'NA' || $gsa == 'NR') {
+                if ($adm == 'NA' || $adm == 'NR') {
+                    return $pac * (0.3 + (0.5 / 5) * 3) + $calidad * (0.2 + (0.5 / 5) * 2);
+                } else {
+                    return $pac * (0.3 + (0.4 / 6) * 3) + $calidad * (0.2 + (0.4 / 6) * 2) + $adm * (0.1 + (0.4 / 6) * 1);
+                }
+            } else {
+                if ($adm == 'NA' || $adm == 'NR') {
+                    return $pac * (0.3 + (0.3 / 7) * 3) + $calidad * (0.2 + (0.3 / 7) * 2) + $gsa * (0.2 + (0.3 / 7) * 2);
+                } else {
+                    return $pac * (0.3 + (0.2 / 8) * 3) + $calidad * (0.2 + (0.2 / 8) * 2) + $gsa * (0.2 + (0.2 / 8) * 2) + $adm * (0.1 + (0.2 / 8) * 1);
+                }
+            }
+        } else {
+            if ($gsa == 'NA' || $gsa == 'NR') {
+                if ($adm == 'NA' || $adm == 'NR') {
+                    return $pac * (0.3 + (0.3 / 7) * 3) + $calidad * (0.2 + (0.3 / 7) * 2) + $sst * (0.2 + (0.3 / 7) * 2);
+                } else {
+                    return $pac * (0.3 + (0.2 / 8) * 3) + $calidad * (0.2 + (0.2 / 8) * 2) + $sst * (0.2 + (0.2 / 8) * 2) + $adm * (0.1 + (0.2 / 8) * 1);
+                }
+            } else {
+                if ($adm == 'NA' || $adm == 'NR') {
+                    return $pac * (0.3 + (0.1 / 9) * 3) + $calidad * (0.2 + (0.1 / 9) * 2) + $sst * (0.2 + (0.1 / 9) * 2) + $gsa * (0.2 + (0.1 / 9) * 2);
+                } else {
+                    return $pac * (0.3 + (0.0 / 10) * 3) + $calidad * (0.2 + (0.0 / 10) * 2) + $sst * (0.2 + (0.0 / 10) * 2) + $gsa * (0.2 + (0.0 / 10) * 2) + $adm * (0.1 + (0.0 / 10) * 1);
+                }
+            }
+        }
     }
+}
 
-    function actualizar_integral_profesionales($semana, $db, $conexion){
-        //require("../conexion.php");
-        $query5 ="SELECT * FROM $db"."_cip WHERE Semana=$semana;";
-        $resultado5= mysqli_query($conexion, $query5);
-        //$query6="";
-        //$query7=""'NA'
-        while ($cip = mysqli_fetch_assoc($resultado5)){
-            $Profesional=$cip['profesional'];
-            $query5_1="SELECT (SELECT CASE WHEN (SELECT COUNT(Critica) FROM $db"."_programacion_semanal WHERE Semana=$semana AND Responsable_AIA ='$Profesional' AND Activa=1 AND Critica=1 AND Atrasada=0)>0 THEN (SELECT ROUND((SELECT COUNT(Critica) FROM $db"."_programacion_semanal WHERE Semana=$semana AND Responsable_AIA ='$Profesional' AND Activa=1 AND Critica=1 AND Atrasada=0 AND PAC=1) / (SELECT COUNT(Critica) FROM $db"."_programacion_semanal WHERE Semana=$semana AND Responsable_AIA ='$Profesional' AND Activa=1 AND Critica=1 AND Atrasada=0),3)) ELSE 'NA' END) AS 'Act_Criticas_Cumplidas',
+function actualizar_integral_profesionales($semana, $dbName, $db) {
+    $cipRows = $db->fetchAll("SELECT profesional, PAC FROM {$dbName}_cip WHERE Semana = :semana", ['semana' => $semana]);
 
-            (SELECT CASE WHEN (SELECT COUNT(Critica) FROM $db"."_programacion_semanal WHERE Semana=$semana AND Responsable_AIA ='$Profesional' AND (Activa=1 OR Activa='NA') AND Critica=0 AND Atrasada=0)>0  THEN (SELECT ROUND((SELECT COUNT(Critica) FROM $db"."_programacion_semanal WHERE Semana=$semana AND Responsable_AIA ='$Profesional' AND (Activa=1 OR Activa='NA') AND Critica=0 AND Atrasada=0 AND PAC=1) / (SELECT COUNT(Critica) FROM $db"."_programacion_semanal WHERE Semana=$semana AND Responsable_AIA ='$Profesional' AND (Activa=1 OR Activa='NA') AND Critica=0 AND Atrasada=0),3)) ELSE 'NA' END) AS 'Act_No_Criticas_Cumplidas',
+    foreach ($cipRows as $cip) {
+        $profesional = $cip['profesional'];
 
-            (SELECT CASE WHEN (SELECT COUNT(Atrasada) FROM $db"."_programacion_semanal WHERE Semana=$semana AND Responsable_AIA ='$Profesional' AND Activa=1 AND Atrasada=1)>0  THEN (SELECT ROUND((SELECT COUNT(Atrasada) FROM $db"."_programacion_semanal WHERE Semana=$semana AND Responsable_AIA ='$Profesional' AND Activa=1 AND Atrasada=1 AND PAC=1) / (SELECT COUNT(Atrasada) FROM $db"."_programacion_semanal WHERE Semana=$semana AND Responsable_AIA ='$Profesional' AND Activa=1 AND Atrasada=1),3)) ELSE 'NA' END) AS 'Act_Atrasadas_Cumplidas'
+        $queryStats = "SELECT 
+            (SELECT CASE WHEN COUNT(Critica) > 0 THEN ROUND(SUM(CASE WHEN PAC=1 THEN 1 ELSE 0 END)/COUNT(Critica), 3) ELSE 'NA' END 
+             FROM {$dbName}_programacion_semanal WHERE Semana = :semana AND Responsable_AIA = :prof AND Activa = 1 AND Critica = 1 AND Atrasada = 0) AS Act_Criticas_Cumplidas,
+            (SELECT CASE WHEN COUNT(Critica) > 0 THEN ROUND(SUM(CASE WHEN PAC=1 THEN 1 ELSE 0 END)/COUNT(Critica), 3) ELSE 'NA' END 
+             FROM {$dbName}_programacion_semanal WHERE Semana = :semana AND Responsable_AIA = :prof AND (Activa = 1 OR Activa = 'NA') AND Critica = 0 AND Atrasada = 0) AS Act_No_Criticas_Cumplidas,
+            (SELECT CASE WHEN COUNT(Atrasada) > 0 THEN ROUND(SUM(CASE WHEN PAC=1 THEN 1 ELSE 0 END)/COUNT(Atrasada), 3) ELSE 'NA' END 
+             FROM {$dbName}_programacion_semanal WHERE Semana = :semana AND Responsable_AIA = :prof AND Activa = 1 AND Atrasada = 1) AS Act_Atrasadas_Cumplidas
+            FROM DUAL";
 
-            ";
-            //echo $query5_1;
-            $resultado5_1= mysqli_query($conexion, $query5_1);
+        $stats = $db->fetch($queryStats, ['semana' => $semana, 'prof' => $profesional]);
 
-            $data2=mysqli_fetch_assoc($resultado5_1);
-            $Act_Criticas_Cumplidas=$data2["Act_Criticas_Cumplidas"];
-            $Act_No_Criticas_Cumplidas=$data2["Act_No_Criticas_Cumplidas"];
-            $Act_Atrasadas_Cumplidas=$data2["Act_Atrasadas_Cumplidas"];
+        $db->execute("UPDATE {$dbName}_cip SET 
+                        Act_Criticas_Cumplidas = :crit, Act_No_Criticas_Cumplidas = :nocrit, Act_Atrasadas_Cumplidas = :atr 
+                      WHERE profesional = :prof AND Semana = :semana", [
+            'crit' => $stats['Act_Criticas_Cumplidas'], 'nocrit' => $stats['Act_No_Criticas_Cumplidas'],
+            'atr' => $stats['Act_Atrasadas_Cumplidas'], 'prof' => $profesional, 'semana' => $semana
+        ]);
 
-            $query6 = "UPDATE $db"."_cip SET
+        $queryAcum = "SELECT 
+            (SELECT ROUND(AVG(PAC), 3) FROM {$dbName}_cip WHERE Semana <= :semana AND profesional = :prof AND PAC != 'NA') AS PAC_Acum,
+            (SELECT ROUND(AVG(P_Completado), 3) FROM {$dbName}_cip WHERE Semana <= :semana AND profesional = :prof AND P_Completado != 'NA') AS P_Completado_Acum,
+            (SELECT CASE WHEN COUNT(*) = 0 THEN 'NA' ELSE ROUND(AVG(Act_Criticas_Cumplidas), 3) END FROM {$dbName}_cip WHERE Semana <= :semana AND profesional = :prof AND Act_Criticas_Cumplidas != 'NA') AS Act_Criticas_Acum,
+            (SELECT CASE WHEN COUNT(*) = 0 THEN 'NA' ELSE ROUND(AVG(Act_No_Criticas_Cumplidas), 3) END FROM {$dbName}_cip WHERE Semana <= :semana AND profesional = :prof AND Act_No_Criticas_Cumplidas != 'NA') AS Act_No_Criticas_Acum,
+            (SELECT CASE WHEN COUNT(*) = 0 THEN 'NA' ELSE ROUND(AVG(Act_Atrasadas_Cumplidas), 3) END FROM {$dbName}_cip WHERE Semana <= :semana AND profesional = :prof AND Act_Atrasadas_Cumplidas != 'NA') AS Act_Atrasadas_Acum
+            FROM DUAL";
 
-                Act_Criticas_Cumplidas = '$Act_Criticas_Cumplidas',
+        $acum = $db->fetch($queryAcum, ['semana' => $semana, 'prof' => $profesional]);
 
-                Act_No_Criticas_Cumplidas = '$Act_No_Criticas_Cumplidas',
+        $db->execute("UPDATE {$dbName}_cip SET 
+                        PAC_Acum = :pac, P_Completado_Acum = :pcomp, 
+                        Act_Criticas_Cumplidas_Acum = :crit, Act_No_Criticas_Cumplidas_Acum = :nocrit, Act_Atrasadas_Cumplidas_Acum = :atr 
+                      WHERE profesional = :prof AND Semana = :semana", [
+            'pac' => $acum['PAC_Acum'], 'pcomp' => $acum['P_Completado_Acum'], 'crit' => $acum['Act_Criticas_Acum'],
+            'nocrit' => $acum['Act_No_Criticas_Acum'], 'atr' => $acum['Act_Atrasadas_Acum'], 'prof' => $profesional, 'semana' => $semana
+        ]);
 
-                Act_Atrasadas_Cumplidas = '$Act_Atrasadas_Cumplidas'
+        // Cálculo de PAC Consolidado
+        $pac = $cip['PAC'];
+        $crit = $stats['Act_Criticas_Cumplidas'];
+        $nocrit = $stats['Act_No_Criticas_Cumplidas'];
+        $atr = $stats['Act_Atrasadas_Cumplidas'];
+        
+        $pac_cons = calcular_pac_consolidado($pac, $crit, $nocrit, $atr);
 
-                WHERE profesional='$Profesional' AND Semana=$semana;";
-            //echo $query6;
+        $pac_acum = $acum['PAC_Acum'];
+        $crit_acum = $acum['Act_Criticas_Acum'];
+        $nocrit_acum = $acum['Act_No_Criticas_Acum'];
+        $atr_acum = $acum['Act_Atrasadas_Acum'];
 
-            $resultado6= mysqli_multi_query($conexion, $query6);
+        $pac_cons_acum = calcular_pac_consolidado($pac_acum, $crit_acum, $nocrit_acum, $atr_acum);
 
-
-            $query7= "SELECT (SELECT CASE WHEN (SELECT COUNT(*) FROM $db"."_cip WHERE Semana<=$semana AND profesional='$Profesional' AND PAC!='NA')=0 THEN NULL ELSE (SELECT ROUND(AVG(PAC),3) FROM $db"."_cip WHERE Semana<=$semana AND profesional='$Profesional' AND PAC!='NA') END) AS 'PAC_Acum',
-
-            (SELECT CASE WHEN (SELECT COUNT(*) FROM $db"."_cip WHERE Semana<=$semana AND profesional='$Profesional' AND P_Completado!='NA')=0 THEN NULL ELSE (SELECT ROUND(AVG(P_Completado),3) FROM $db"."_cip WHERE Semana<=$semana AND profesional='$Profesional' AND P_Completado!='NA') END) AS 'P_Completado_Acum',
-
-            (SELECT CASE WHEN (SELECT COUNT(*) FROM $db"."_cip WHERE Semana<=$semana AND profesional='$Profesional' AND Act_Criticas_Cumplidas!='NA')=0 THEN 'NA' ELSE (SELECT ROUND(AVG(Act_Criticas_Cumplidas),3) FROM $db"."_cip WHERE Semana<=$semana AND profesional='$Profesional' AND Act_Criticas_Cumplidas!='NA') END) AS 'Act_Criticas_Cumplidas_Acum',
-
-            (SELECT CASE WHEN (SELECT COUNT(*) FROM $db"."_cip WHERE Semana<=$semana AND profesional='$Profesional' AND Act_No_Criticas_Cumplidas!='NA')=0 THEN 'NA' ELSE (SELECT ROUND(AVG(Act_No_Criticas_Cumplidas),3) FROM $db"."_cip WHERE Semana<=$semana AND profesional='$Profesional' AND Act_No_Criticas_Cumplidas!='NA') END) AS 'Act_No_Criticas_Cumplidas_Acum',
-
-            (SELECT CASE WHEN (SELECT COUNT(*) FROM $db"."_cip WHERE Semana<=$semana AND profesional='$Profesional' AND Act_Atrasadas_Cumplidas!='NA')=0 THEN 'NA' ELSE (SELECT ROUND(AVG(Act_Atrasadas_Cumplidas),3) FROM $db"."_cip WHERE Semana<=$semana AND profesional='$Profesional' AND Act_Atrasadas_Cumplidas!='NA') END) AS 'Act_Atrasadas_Cumplidas_Acum'";
-
-            $resultado7= mysqli_query($conexion, $query7);
-
-            $data3=mysqli_fetch_assoc($resultado7);
-
-            $PAC_Acum=$data3["PAC_Acum"];
-            $P_Completado_Acum=$data3["P_Completado_Acum"];
-            $Act_Criticas_Cumplidas_Acum=$data3["Act_Criticas_Cumplidas_Acum"];
-            $Act_No_Criticas_Cumplidas_Acum=$data3["Act_No_Criticas_Cumplidas_Acum"];
-            $Act_Atrasadas_Cumplidas_Acum=$data3["Act_Atrasadas_Cumplidas_Acum"];
-
-            //echo $Profesional . "<br>" . $Act_Criticas_Cumplidas_Acum . "<br>" . $Act_No_Criticas_Cumplidas_Acum . "<br>" . $Act_Atrasadas_Cumplidas_Acum . "<br>" ;
-
-            $query7_1 = "UPDATE $db"."_cip SET
-                PAC_Acum = $PAC_Acum,
-
-                P_Completado_Acum = $P_Completado_Acum,
-
-                Act_Criticas_Cumplidas_Acum = '$Act_Criticas_Cumplidas_Acum',
-
-                Act_No_Criticas_Cumplidas_Acum = '$Act_No_Criticas_Cumplidas_Acum',
-
-                Act_Atrasadas_Cumplidas_Acum = '$Act_Atrasadas_Cumplidas_Acum'
-
-                WHERE profesional='$Profesional' AND Semana=$semana;";
-            //echo $query7_1 ."<br><br>";
-
-            $query8 = "SELECT (SELECT CASE
-
-                    WHEN (SELECT Act_Criticas_Cumplidas FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana)!='NA' AND (SELECT Act_No_Criticas_Cumplidas FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana)!='NA' AND (SELECT Act_Atrasadas_Cumplidas FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana)!='NA' THEN ROUND(((SELECT PAC FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana) * ((SELECT Act_Criticas_Cumplidas FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana) * 0.4 + (SELECT Act_No_Criticas_Cumplidas FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana) * 0.2 + (SELECT Act_Atrasadas_Cumplidas FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana) * 0.4)),3)
-
-                    WHEN (SELECT Act_Criticas_Cumplidas FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana)!='NA' AND (SELECT Act_No_Criticas_Cumplidas FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana)!='NA' AND (SELECT Act_Atrasadas_Cumplidas FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana)='NA' THEN ROUND(((SELECT PAC FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana) * ((SELECT Act_Criticas_Cumplidas FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana) * 0.6667 + (SELECT Act_No_Criticas_Cumplidas FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana) * 0.3333)),3)
-
-                    WHEN (SELECT Act_Criticas_Cumplidas FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana)!='NA' AND (SELECT Act_No_Criticas_Cumplidas FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana)='NA' AND (SELECT Act_Atrasadas_Cumplidas FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana)!='NA' THEN ROUND(((SELECT PAC FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana) * ((SELECT Act_Criticas_Cumplidas FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana) * 0.5 + (SELECT Act_Atrasadas_Cumplidas FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana) * 0.5)),3)
-
-                    WHEN (SELECT Act_Criticas_Cumplidas FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana)='NA' AND (SELECT Act_No_Criticas_Cumplidas FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana)!='NA' AND (SELECT Act_Atrasadas_Cumplidas FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana)!='NA' THEN ROUND(((SELECT PAC FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana) * ((SELECT Act_No_Criticas_Cumplidas FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana) * 0.3333 + (SELECT Act_Atrasadas_Cumplidas FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana) * 0.6667)),3)
-
-                    WHEN (SELECT Act_Criticas_Cumplidas FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana)!='NA' AND (SELECT Act_No_Criticas_Cumplidas FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana)='NA' AND (SELECT Act_Atrasadas_Cumplidas FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana)='NA' THEN ROUND(((SELECT PAC FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana) * ((SELECT Act_Criticas_Cumplidas FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana))),3)
-
-                    WHEN (SELECT Act_Criticas_Cumplidas FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana)='NA' AND (SELECT Act_No_Criticas_Cumplidas FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana)!='NA' AND (SELECT Act_Atrasadas_Cumplidas FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana)='NA' THEN ROUND(((SELECT PAC FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana) * ((SELECT Act_No_Criticas_Cumplidas FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana))),3)
-
-                    WHEN (SELECT Act_Criticas_Cumplidas FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana)='NA' AND (SELECT Act_No_Criticas_Cumplidas FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana)='NA' AND (SELECT Act_Atrasadas_Cumplidas FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana)!='NA' THEN ROUND(((SELECT PAC FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana) * ((SELECT Act_Atrasadas_Cumplidas FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana))) ,3)
-
-                    END) AS 'PAC_Consolidado',
-
-
-                    (SELECT CASE
-
-                    WHEN (SELECT Act_Criticas_Cumplidas_Acum FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana)!='NA' AND (SELECT Act_No_Criticas_Cumplidas_Acum FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana)!='NA' AND (SELECT Act_Atrasadas_Cumplidas_Acum FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana)!='NA' THEN ROUND(((SELECT PAC_Acum FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana) * ((SELECT Act_Criticas_Cumplidas_Acum FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana) * 0.4 + (SELECT Act_No_Criticas_Cumplidas_Acum FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana) * 0.2 + (SELECT Act_Atrasadas_Cumplidas_Acum FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana) * 0.4)),3)
-
-                    WHEN (SELECT Act_Criticas_Cumplidas_Acum FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana)!='NA' AND (SELECT Act_No_Criticas_Cumplidas_Acum FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana)!='NA' AND (SELECT Act_Atrasadas_Cumplidas_Acum FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana)='NA' THEN ROUND(((SELECT PAC_Acum FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana) * ((SELECT Act_Criticas_Cumplidas_Acum FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana) * 0.6667 + (SELECT Act_No_Criticas_Cumplidas_Acum FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana) * 0.3333)),3)
-
-                    WHEN (SELECT Act_Criticas_Cumplidas_Acum FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana)!='NA' AND (SELECT Act_No_Criticas_Cumplidas_Acum FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana)='NA' AND (SELECT Act_Atrasadas_Cumplidas_Acum FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana)!='NA' THEN ROUND(((SELECT PAC_Acum FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana) * ((SELECT Act_Criticas_Cumplidas_Acum FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana) * 0.5 + (SELECT Act_Atrasadas_Cumplidas_Acum FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana) * 0.5)),3)
-
-                    WHEN (SELECT Act_Criticas_Cumplidas_Acum FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana)='NA' AND (SELECT Act_No_Criticas_Cumplidas_Acum FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana)!='NA' AND (SELECT Act_Atrasadas_Cumplidas_Acum FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana)!='NA' THEN ROUND(((SELECT PAC_Acum FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana) * ((SELECT Act_No_Criticas_Cumplidas_Acum FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana) * 0.3333 + (SELECT Act_Atrasadas_Cumplidas_Acum FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana) * 0.6667)),3)
-
-                    WHEN (SELECT Act_Criticas_Cumplidas_Acum FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana)!='NA' AND (SELECT Act_No_Criticas_Cumplidas_Acum FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana)='NA' AND (SELECT Act_Atrasadas_Cumplidas_Acum FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana)='NA' THEN ROUND(((SELECT PAC_Acum FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana) * ((SELECT Act_Criticas_Cumplidas_Acum FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana))),3)
-
-                    WHEN (SELECT Act_Criticas_Cumplidas_Acum FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana)='NA' AND (SELECT Act_No_Criticas_Cumplidas_Acum FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana)!='NA' AND (SELECT Act_Atrasadas_Cumplidas_Acum FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana)='NA' THEN ROUND(((SELECT PAC_Acum FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana) * ((SELECT Act_No_Criticas_Cumplidas_Acum FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana))),3)
-
-                    WHEN (SELECT Act_Criticas_Cumplidas_Acum FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana)='NA' AND (SELECT Act_No_Criticas_Cumplidas_Acum FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana)='NA' AND (SELECT Act_Atrasadas_Cumplidas_Acum FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana)!='NA' THEN ROUND(((SELECT PAC_Acum FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana) * ((SELECT Act_Atrasadas_Cumplidas_Acum FROM $db"."_cip WHERE profesional='$Profesional' AND Semana=$semana))),3)
-
-                    END) AS 'PAC_Consolidado_Acum'
-
-                    ";
-
-            //echo $query7;
-            $resultado7_1= mysqli_query($conexion, $query7_1);
-            /*echo $query7_1 ."<br>";
-            if(!$resultado7_1){
-                die(mysqli_error($conexion))."<br><br>";
-            } else{
-                echo "OK"."<br><br>";
-            }*/
-
-            $resultado8= mysqli_query($conexion, $query8);
-            //echo $query8 ."<br>";
-            /*if(!$resultado8){
-                die(mysqli_error($conexion))."<br><br>";
-            } else{
-                echo "OK"."<br><br>";
-            }*/
-
-            $data4=mysqli_fetch_assoc($resultado8);
-
-            $PAC_Consolidado=$data4["PAC_Consolidado"];
-            $PAC_Consolidado_Acum=$data4["PAC_Consolidado_Acum"];
-            //echo $Profesional ."<br>". $PAC_Consolidado ."<br>". $PAC_Consolidado_Acum ."<br>";
-
-            $query8_1 = "UPDATE $db"."_cip SET
-
-                PAC_Consolidado = $PAC_Consolidado ,
-
-                PAC_Consolidado_Acum = $PAC_Consolidado_Acum
-
-                WHERE profesional='$Profesional' AND Semana=$semana;";
-
-            $resultado8_1= mysqli_query($conexion, $query8_1);
-            /*echo $query8_1 ."<br>";
-            if(!$resultado8_1){
-                die(mysqli_error($conexion))."<br><br>";
-            } else{
-                echo "OK"."<br><br>";
-            }*/
-
-        };
-
-
-            //$resultado4= mysqli_multi_query($conexion, $query4);
-            //mysqli_close($conexion);
-            //mysqli_free_result($resultado);
+        $db->execute("UPDATE {$dbName}_cip SET PAC_Consolidado = :cons, PAC_Consolidado_Acum = :cons_acum 
+                      WHERE profesional = :prof AND Semana = :semana", [
+            'cons' => $pac_cons, 'cons_acum' => $pac_cons_acum, 'prof' => $profesional, 'semana' => $semana
+        ]);
     }
+}
+
+function calcular_pac_consolidado($pac, $crit, $nocrit, $atr) {
+    if ($crit != 'NA' && $nocrit != 'NA' && $atr != 'NA') return round($pac * ($crit * 0.4 + $nocrit * 0.2 + $atr * 0.4), 3);
+    if ($crit != 'NA' && $nocrit != 'NA' && $atr == 'NA') return round($pac * ($crit * 0.6667 + $nocrit * 0.3333), 3);
+    if ($crit != 'NA' && $nocrit == 'NA' && $atr != 'NA') return round($pac * ($crit * 0.5 + $atr * 0.5), 3);
+    if ($crit == 'NA' && $nocrit != 'NA' && $atr != 'NA') return round($pac * ($nocrit * 0.3333 + $atr * 0.6667), 3);
+    if ($crit != 'NA' && $nocrit == 'NA' && $atr == 'NA') return round($pac * $crit, 3);
+    if ($crit == 'NA' && $nocrit != 'NA' && $atr == 'NA') return round($pac * $nocrit, 3);
+    if ($crit == 'NA' && $nocrit == 'NA' && $atr != 'NA') return round($pac * $atr, 3);
+    return 0;
+}

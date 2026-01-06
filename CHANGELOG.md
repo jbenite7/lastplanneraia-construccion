@@ -30,6 +30,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Se refactorizó `construccion/conexion.php` para utilizar la nueva clase `Database`.
     - Se refactorizó por completo el módulo de `login` (`construccion/login/login.php` y `construccion/login/views/login.view.php`) para usar el nuevo sistema seguro.
     - Se refactorizó el script `construccion/generarReporteSubcontratistas.php` como ejemplo de migración para otros módulos.
+    - Se refactorizaron por completo los scripts `construccion/actualizarCICProyectos.php` y `construccion/controlCambios/descargarConsolidadoODC.php` para utilizar PDO, consultas preparadas y validación estricta de parámetros.
+    - Se implementó sanitización y prevención de Path Traversal en `construccion/controlCambios/ordenes/cargarPDFServidor.php`.
 
 ### Removed
 - **Módulos Redundantes:** Se han eliminado los directorios `PI/` y `construccion/ext/`, que contenían versiones antiguas o redundantes de la aplicación, simplificando la estructura del proyecto y reduciendo la deuda técnica.
+- **Limpieza de Código Muerto:**
+    - Eliminación del módulo huérfano de autenticación con Google: `construccion/controlCambios/cargarODC/`.
+    - Eliminación de scripts obsoletos o mal ubicados: `construccion/controlCambios/posicion_controlCambios.php` y `construccion/programacion_semanal/actualizarCICProyectos.php`.

@@ -1,7 +1,9 @@
 <?php
-$nombre = str_replace(" ", "_", $_POST["nombreArchivo"]);
-/*$direccion = $_SERVER['DOCUMENT_ROOT'] . "/LPS_WEB9.3/controlCambios/ordenes/$nombre";*/
- $direccion = $_SERVER['DOCUMENT_ROOT'] . "/construccion/controlCambios/ordenes/$nombre"; 
+// Sanitizar nombre de archivo: eliminar espacios y caracteres no permitidos (solo letras, números, guiones y puntos)
+$nombre = preg_replace("/[^a-zA-Z0-9\._-]/", "_", $_POST["nombreArchivo"]);
+$nombre = basename($nombre); // Evitar navegación de directorios (Path Traversal)
+
+$direccion = __DIR__ . "/$nombre"; 
 
 if (file_exists($direccion)) {
     $status  = unlink($direccion) ? 'The file '.$nombre.' has been deleted' : 'Error deleting '.$nombre;

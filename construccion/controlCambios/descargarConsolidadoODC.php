@@ -1,19 +1,20 @@
 <?php
 
-require '../../../../../vendor/autoload.php';
-// require '../vendor/autoload.php';
-require ("../conexion.php");
+require_once (__DIR__ . "/../conexion.php");
+// El objeto $db (instancia de Database) ya está disponible desde conexion.php
 
-$db= $_POST["db"];
-//$db= "accesibilidadMetroB";
+$dbPrefix = $_POST["db"] ?? '';
+// Validación estricta del prefijo de la base de datos
+if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
+    die(json_encode(["error" => "Parámetro de base de datos inválido."]));
+}
 
-$query="SELECT * FROM $db"."_cambios";
-$resultado= mysqli_query($conexion, $query);
+$query = "SELECT * FROM {$dbPrefix}_cambios";
+$results = $db->fetchAll($query);
 
 $tabla[] = ["Id", "Solicitante", "Fecha Solicitud", "Prioridad", "Tipo de Cambio", "Responsable", "Descripcion","Días Afectación Cronograma", "Costo Directo + AIU + IVA", "Valor Aprobado", "Fecha Tentativa de Definición", "Fecha de Entrega a Interventoría", "Fecha de Definición", "Aprobación"];
 
-while($data=mysqli_fetch_assoc($resultado)){
-
+foreach ($results as $data) {
   extract($data);
 
   switch ($solicitanteCambio) {

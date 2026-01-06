@@ -68,8 +68,10 @@ Esta fase se centra en **estabilizar la plataforma, eliminar la deuda técnica c
         - *Avance: Módulo `programa_general` (listar y guardar) completado.*
         - *Avance: Módulo `programacion_semanal` (listar y guardar) completado.*
         - *Avance: Módulo `contratos` (listar y guardar) completado.*
-        - *Avance: Módulo `controlCambios` (listar y guardar) completado.*
+        - *Avance: Módulo `controlCambios` (listar, guardar y descarga de consolidado) completado.*
+        - *Avance: Script `construccion/actualizarCICProyectos.php` completado.*
         - *Avance: Script `generarReporteSubcontratistas.php` completado.*
+        - *Avance: Sanitización de carga de archivos en `cargarPDFServidor.php` completada.*
     - **Resultado Clave:** Cierre de la brecha de seguridad más crítica.
 - **Semana 3: Consolidación y Limpieza.**
     - **Acción:** Aplicar `php-cs-fixer` a toda la base de código para garantizar un estilo consistente (PSR-12).
