@@ -1,361 +1,211 @@
 <?php
-require("../conexion.php");
+require_once (__DIR__ . "/../conexion.php");
+// El objeto $db (instancia de Database) ya está disponible desde conexion.php
 
-$db=$_GET['db'];
-$opcion=$_POST["opcion"];
+$dbPrefix = $_GET['db'] ?? '';
+// Validación estricta del prefijo de la base de datos
+if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
+    die(json_encode(["error" => "Parámetro de base de datos inválido."]));
+}
 
-// $db="brizaDelCabrero";
-// $opcion="actualizarInsumosRecursos";
+$opcion = $_POST["opcion"] ?? '';
+$informacion = [];
 
-$informacion=[];
-// $_POST['Id']=6;
-// $_POST['codigo']='';
-// $_POST['actividad']="Mortero de Piso en Concreto";
-// $_POST['descripcionActividad']="Vaciado y nivelación de pisos en concreto";
-// $_POST['fechaInicio']="2021-12-15";
-// $_POST['tipoContrato']=1;
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && $opcion == "modificar") {
+    $Id = $_POST['Id'];
+    $tipoContrato = $_POST['tipoContrato'];
+    $actividadModificar = $_POST['actividadModificar'];
+    $errores = '';
 
+    $semanaActualizacion = filter_var($_POST['semana'] ?? 0, FILTER_VALIDATE_INT);
 
-if($_SERVER['REQUEST_METHOD']== 'POST' && $opcion == "modificar"){
-    $Id=$_POST['Id'];
-    $tipoContrato=$_POST['tipoContrato'];
-    $actividadModificar=$_POST['actividadModificar'];
-    $errores='';
-
-    if(empty($_POST['semana'])){
-        $semanaActualizacion='';
-    } else{
-        $semanaActualizacion=$_POST['semana'];
+    // Procesar todos los paquetes e insumos de forma segura
+    $paquetes = [];
+    $tipos = ['SI', 'S', 'MO'];
+    foreach ($tipos as $t) {
+        for ($i = 1; $i <= 5; $i++) {
+            $pKey = "paquete$t$i";
+            $iKey = "$t$i";
+            $pVal = $_POST[$pKey] ?? null;
+            $iVal = $_POST[$iKey] ?? null;
+            $res = insumosPaquetes($pVal, $iVal);
+            $paquetes["paquete$t$i"] = $res[0];
+            $paquetes["$t$i"] = $res[1];
+        }
     }
 
-
-    $paqueteSI1=insumosPaquetes($paquete = $_POST['paqueteSI1'], $insumo = !isset($_POST['SI1']) ? "NULL" : $_POST['SI1'])[0];
-    $SI1=insumosPaquetes($paquete = $_POST['paqueteSI1'], $insumo = !isset($_POST['SI1']) ? "NULL" : $_POST['SI1'])[1];
-
-    $paqueteSI2=insumosPaquetes($paquete = $_POST['paqueteSI2'], $insumo = !isset($_POST['SI2']) ? "NULL" : $_POST['SI2'])[0];
-    $SI2=insumosPaquetes($paquete = $_POST['paqueteSI2'], $insumo = !isset($_POST['SI2']) ? "NULL" : $_POST['SI2'])[1];
-
-    $paqueteSI3=insumosPaquetes($paquete = $_POST['paqueteSI3'], $insumo = !isset($_POST['SI3']) ? "NULL" : $_POST['SI3'])[0];
-    $SI3=insumosPaquetes($paquete = $_POST['paqueteSI3'], $insumo = !isset($_POST['SI3']) ? "NULL" : $_POST['SI3'])[1];
-
-    $paqueteSI4=insumosPaquetes($paquete = $_POST['paqueteSI4'], $insumo = !isset($_POST['SI4']) ? "NULL" : $_POST['SI4'])[0];
-    $SI4=insumosPaquetes($paquete = $_POST['paqueteSI4'], $insumo = !isset($_POST['SI4']) ? "NULL" : $_POST['SI4'])[1];
-
-    $paqueteSI5=insumosPaquetes($paquete = $_POST['paqueteSI5'], $insumo = !isset($_POST['SI5']) ? "NULL" : $_POST['SI5'])[0];
-    $SI5=insumosPaquetes($paquete = $_POST['paqueteSI5'], $insumo = !isset($_POST['SI5']) ? "NULL" : $_POST['SI5'])[1];
-
-    $paqueteS1=insumosPaquetes($paquete = $_POST['paqueteS1'], $insumo = !isset($_POST['S1']) ? "NULL" : $_POST['S1'])[0];
-    $S1=insumosPaquetes($paquete = $_POST['paqueteS1'], $insumo = !isset($_POST['S1']) ? "NULL" : $_POST['S1'])[1];
-
-    $paqueteS2=insumosPaquetes($paquete = $_POST['paqueteS2'], $insumo = !isset($_POST['S2']) ? "NULL" : $_POST['S2'])[0];
-    $S2=insumosPaquetes($paquete = $_POST['paqueteS2'], $insumo = !isset($_POST['S2']) ? "NULL" : $_POST['S2'])[1];
-
-    $paqueteS3=insumosPaquetes($paquete = $_POST['paqueteS3'], $insumo = !isset($_POST['S3']) ? "NULL" : $_POST['S3'])[0];
-    $S3=insumosPaquetes($paquete = $_POST['paqueteS3'], $insumo = !isset($_POST['S3']) ? "NULL" : $_POST['S3'])[1];
-
-    $paqueteS4=insumosPaquetes($paquete = $_POST['paqueteS4'], $insumo = !isset($_POST['S4']) ? "NULL" : $_POST['S4'])[0];
-    $S4=insumosPaquetes($paquete = $_POST['paqueteS4'], $insumo = !isset($_POST['S4']) ? "NULL" : $_POST['S4'])[1];
-
-    $paqueteS5=insumosPaquetes($paquete = $_POST['paqueteS5'], $insumo = !isset($_POST['S5']) ? "NULL" : $_POST['S5'])[0];
-    $S5=insumosPaquetes($paquete = $_POST['paqueteS5'], $insumo = !isset($_POST['S5']) ? "NULL" : $_POST['S5'])[1];
-
-    $paqueteMO1=insumosPaquetes($paquete = $_POST['paqueteMO1'], $insumo = !isset($_POST['MO1']) ? "NULL" : $_POST['MO1'])[0];
-    $MO1=insumosPaquetes($paquete = $_POST['paqueteMO1'], $insumo = !isset($_POST['MO1']) ? "NULL" : $_POST['MO1'])[1];
-
-    $paqueteMO2=insumosPaquetes($paquete = $_POST['paqueteMO2'], $insumo = !isset($_POST['MO2']) ? "NULL" : $_POST['MO2'])[0];
-    $MO2=insumosPaquetes($paquete = $_POST['paqueteMO2'], $insumo = !isset($_POST['MO2']) ? "NULL" : $_POST['MO2'])[1];
-
-    $paqueteMO3=insumosPaquetes($paquete = $_POST['paqueteMO3'], $insumo = !isset($_POST['MO3']) ? "NULL" : $_POST['MO3'])[0];
-    $MO3=insumosPaquetes($paquete = $_POST['paqueteMO3'], $insumo = !isset($_POST['MO3']) ? "NULL" : $_POST['MO3'])[1];
-
-    $paqueteMO4=insumosPaquetes($paquete = $_POST['paqueteMO4'], $insumo = !isset($_POST['MO4']) ? "NULL" : $_POST['MO4'])[0];
-    $MO4=insumosPaquetes($paquete = $_POST['paqueteMO4'], $insumo = !isset($_POST['MO4']) ? "NULL" : $_POST['MO4'])[1];
-
-    $paqueteMO5=insumosPaquetes($paquete = $_POST['paqueteMO5'], $insumo = !isset($_POST['MO5']) ? "NULL" : $_POST['MO5'])[0];
-    $MO5=insumosPaquetes($paquete = $_POST['paqueteMO5'], $insumo = !isset($_POST['MO5']) ? "NULL" : $_POST['MO5'])[1];
-
-    if($paqueteSI1 == "NULL" && $paqueteSI2 == "NULL" && $paqueteSI3 == "NULL" && $paqueteSI4 == "NULL" && $paqueteSI5 == "NULL" && $tipoContrato == 2){
-      $errores .= "No se han asignado paquetes de contratación de Suministro e Instalación para la actividad; ";
-    }else{
-      if($paqueteMO1 == "NULL" && $paqueteMO2 == "NULL" && $paqueteMO3 == "NULL" && $paqueteMO4 == "NULL" && $paqueteMO5 == "NULL" && $paqueteS1 == "NULL" && $paqueteS2 == "NULL" && $paqueteS3 == "NULL" && $paqueteS4 == "NULL" && $paqueteS5 == "NULL" && $tipoContrato == 1){
-        $errores .= "No se han asignado paquetes de contratación de Suministro o de Mano de Obra para la actividad; ";
-      }else{
-      }
+    if ($tipoContrato == 2 && empty($paquetes['paqueteSI1']) && empty($paquetes['paqueteSI2']) && empty($paquetes['paqueteSI3']) && empty($paquetes['paqueteSI4']) && empty($paquetes['paqueteSI5'])) {
+        $errores .= "No se han asignado paquetes de contratación de Suministro e Instalación para la actividad; ";
+    } else if ($tipoContrato == 1) {
+        $hasMO = !empty($paquetes['paqueteMO1']) || !empty($paquetes['paqueteMO2']) || !empty($paquetes['paqueteMO3']) || !empty($paquetes['paqueteMO4']) || !empty($paquetes['paqueteMO5']);
+        $hasS = !empty($paquetes['paqueteS1']) || !empty($paquetes['paqueteS2']) || !empty($paquetes['paqueteS3']) || !empty($paquetes['paqueteS4']) || !empty($paquetes['paqueteS5']);
+        if (!$hasMO && !hasS) {
+            $errores .= "No se han asignado paquetes de contratación de Suministro o de Mano de Obra para la actividad; ";
+        }
     }
 
-
-    //echo "$Id, $codigo, $Actividad, $descripcionActividad, $actividadInicio, $fechaInicio, $tipoContrato";
-
-    if(!empty($errores)){
-      $resultado=false;
+    if (!empty($errores)) {
+        $stmt = false;
     } else {
-      $query = "UPDATE $db"."_actividades SET SI1=$SI1, paqueteSI1=$paqueteSI1, SI2=$SI2, paqueteSI2=$paqueteSI2, SI3=$SI3, paqueteSI3=$paqueteSI3, SI4=$SI4, paqueteSI4=$paqueteSI4, SI5=$SI5, paqueteSI5=$paqueteSI5, S1=$S1, paqueteS1=$paqueteS1, S2=$S2, paqueteS2=$paqueteS2, S3=$S3, paqueteS3=$paqueteS3, S4=$S4, paqueteS4=$paqueteS4, S5=$S5, paqueteS5=$paqueteS5, MO1=$MO1, paqueteMO1=$paqueteMO1, MO2=$MO2, paqueteMO2=$paqueteMO2, MO3=$MO3, paqueteMO3=$paqueteMO3, MO4=$MO4, paqueteMO4=$paqueteMO4, MO5=$MO5, paqueteMO5=$paqueteMO5, semanaActualizacion=$semanaActualizacion WHERE Id=$Id";
+        $queryUpdate = "UPDATE {$dbPrefix}_actividades SET 
+            SI1=?, paqueteSI1=?, SI2=?, paqueteSI2=?, SI3=?, paqueteSI3=?, SI4=?, paqueteSI4=?, SI5=?, paqueteSI5=?, 
+            S1=?, paqueteS1=?, S2=?, paqueteS2=?, S3=?, paqueteS3=?, S4=?, paqueteS4=?, S5=?, paqueteS5=?, 
+            MO1=?, paqueteMO1=?, MO2=?, paqueteMO2=?, MO3=?, paqueteMO3=?, MO4=?, paqueteMO4=?, MO5=?, paqueteMO5=?, 
+            semanaActualizacion=? 
+            WHERE Id=?";
+        
+        $paramsUpdate = [
+            $paquetes['SI1'], $paquetes['paqueteSI1'], $paquetes['SI2'], $paquetes['paqueteSI2'], $paquetes['SI3'], $paquetes['paqueteSI3'], $paquetes['SI4'], $paquetes['paqueteSI4'], $paquetes['SI5'], $paquetes['paqueteSI5'],
+            $paquetes['S1'], $paquetes['paqueteS1'], $paquetes['S2'], $paquetes['paqueteS2'], $paquetes['S3'], $paquetes['paqueteS3'], $paquetes['S4'], $paquetes['paqueteS4'], $paquetes['S5'], $paquetes['paqueteS5'],
+            $paquetes['MO1'], $paquetes['paqueteMO1'], $paquetes['MO2'], $paquetes['paqueteMO2'], $paquetes['MO3'], $paquetes['paqueteMO3'], $paquetes['MO4'], $paquetes['paqueteMO4'], $paquetes['MO5'], $paquetes['paqueteMO5'],
+            $semanaActualizacion, $Id
+        ];
 
-      $resultado= mysqli_query($conexion, $query);
+        $stmt = $db->query($queryUpdate, $paramsUpdate);
 
-      $query1 = "INSERT INTO `general_dias_procesos_contratacion`(`id`, `paqueteContratacion`, `tipoPaquete`, `diasElaboracionPliegos`, `diasIngresoLicify`, `diasEntregaPliegos`, `diasReciboPropuestas`, `diasCuadrosComparativos`, `diasLegalizacionContrato`, `diasFabricacion`, `diasInsumosObra`)
-      SELECT
-      NULL, $paqueteSI1,'Suministro e Instalación',1,1,1,1,1,1,1,1 WHERE NOT EXISTS (SELECT `paqueteContratacion` FROM `general_dias_procesos_contratacion` WHERE (`paqueteContratacion`=$paqueteSI1 OR $paqueteSI1 = '' OR $paqueteSI1 IS NULL) AND `tipoPaquete` = 'Suministro e Instalación') UNION
-      SELECT
-      NULL, $paqueteSI2,'Suministro e Instalación',1,1,1,1,1,1,1,1 WHERE NOT EXISTS (SELECT `paqueteContratacion` FROM `general_dias_procesos_contratacion` WHERE (`paqueteContratacion`=$paqueteSI2 OR $paqueteSI2 = '' OR $paqueteSI2 IS NULL) AND `tipoPaquete` = 'Suministro e Instalación') UNION
-      SELECT
-      NULL, $paqueteSI3,'Suministro e Instalación',1,1,1,1,1,1,1,1 WHERE NOT EXISTS (SELECT `paqueteContratacion` FROM `general_dias_procesos_contratacion` WHERE (`paqueteContratacion`=$paqueteSI3 OR $paqueteSI3 = '' OR $paqueteSI3 IS NULL) AND `tipoPaquete` = 'Suministro e Instalación') UNION
-      SELECT
-      NULL, $paqueteSI4,'Suministro e Instalación',1,1,1,1,1,1,1,1 WHERE NOT EXISTS (SELECT `paqueteContratacion` FROM `general_dias_procesos_contratacion` WHERE (`paqueteContratacion`=$paqueteSI4 OR $paqueteSI4 = '' OR $paqueteSI4 IS NULL) AND `tipoPaquete` = 'Suministro e Instalación') UNION
-      SELECT
-      NULL, $paqueteSI5,'Suministro e Instalación',1,1,1,1,1,1,1,1 WHERE NOT EXISTS (SELECT `paqueteContratacion` FROM `general_dias_procesos_contratacion` WHERE (`paqueteContratacion`=$paqueteSI5 OR $paqueteSI5 = '' OR $paqueteSI5 IS NULL) AND `tipoPaquete` = 'Suministro e Instalación') UNION
-      SELECT
-      NULL, $paqueteMO1,'Mano de Obra',1,1,1,1,1,1,1,1 WHERE NOT EXISTS (SELECT `paqueteContratacion` FROM `general_dias_procesos_contratacion` WHERE (`paqueteContratacion`=$paqueteMO1 OR $paqueteMO1 = '' OR $paqueteMO1 IS NULL) AND `tipoPaquete` = 'Mano de Obra') UNION
-      SELECT
-      NULL, $paqueteMO2,'Mano de Obra',1,1,1,1,1,1,1,1 WHERE NOT EXISTS (SELECT `paqueteContratacion` FROM `general_dias_procesos_contratacion` WHERE (`paqueteContratacion`=$paqueteMO2 OR $paqueteMO2 = '' OR $paqueteMO2 IS NULL) AND `tipoPaquete` = 'Mano de Obra') UNION
-      SELECT
-      NULL, $paqueteMO3,'Mano de Obra',1,1,1,1,1,1,1,1 WHERE NOT EXISTS (SELECT `paqueteContratacion` FROM `general_dias_procesos_contratacion` WHERE (`paqueteContratacion`=$paqueteMO3 OR $paqueteMO3 = '' OR $paqueteMO3 IS NULL) AND `tipoPaquete` = 'Mano de Obra') UNION
-      SELECT
-      NULL, $paqueteMO4,'Mano de Obra',1,1,1,1,1,1,1,1 WHERE NOT EXISTS (SELECT `paqueteContratacion` FROM `general_dias_procesos_contratacion` WHERE (`paqueteContratacion`=$paqueteMO4 OR $paqueteMO4 = '' OR $paqueteMO4 IS NULL) AND `tipoPaquete` = 'Mano de Obra') UNION
-      SELECT
-      NULL, $paqueteMO5,'Mano de Obra',1,1,1,1,1,1,1,1 WHERE NOT EXISTS (SELECT `paqueteContratacion` FROM `general_dias_procesos_contratacion` WHERE (`paqueteContratacion`=$paqueteMO5 OR $paqueteMO5 = '' OR $paqueteMO5 IS NULL) AND `tipoPaquete` = 'Mano de Obra') UNION
-      SELECT
-      NULL, $paqueteS1,'Suministro',1,1,1,1,1,1,1,1 WHERE NOT EXISTS (SELECT `paqueteContratacion` FROM `general_dias_procesos_contratacion` WHERE (`paqueteContratacion`=$paqueteS1 OR $paqueteS1 = '' OR $paqueteS1 IS NULL) AND `tipoPaquete` = 'Suministro') UNION
-      SELECT
-      NULL, $paqueteS2,'Suministro',1,1,1,1,1,1,1,1 WHERE NOT EXISTS (SELECT `paqueteContratacion` FROM `general_dias_procesos_contratacion` WHERE (`paqueteContratacion`=$paqueteS2 OR $paqueteS2 = '' OR $paqueteS2 IS NULL) AND `tipoPaquete` = 'Suministro') UNION
-      SELECT
-      NULL, $paqueteS3,'Suministro',1,1,1,1,1,1,1,1 WHERE NOT EXISTS (SELECT `paqueteContratacion` FROM `general_dias_procesos_contratacion` WHERE (`paqueteContratacion`=$paqueteS3 OR $paqueteS3 = '' OR $paqueteS3 IS NULL) AND `tipoPaquete` = 'Suministro') UNION
-      SELECT
-      NULL, $paqueteS4,'Suministro',1,1,1,1,1,1,1,1 WHERE NOT EXISTS (SELECT `paqueteContratacion` FROM `general_dias_procesos_contratacion` WHERE (`paqueteContratacion`=$paqueteS4 OR $paqueteS4 = '' OR $paqueteS4 IS NULL) AND `tipoPaquete` = 'Suministro') UNION
-      SELECT
-      NULL, $paqueteS5,'Suministro',1,1,1,1,1,1,1,1 WHERE NOT EXISTS (SELECT `paqueteContratacion` FROM `general_dias_procesos_contratacion` WHERE (`paqueteContratacion`=$paqueteS5 OR $paqueteS5 = '' OR $paqueteS5 IS NULL) AND `tipoPaquete` = 'Suministro')";
+        // Insertar en general_dias_procesos_contratacion si no existe
+        $insertTargets = [
+            ['SI', 'Suministro e Instalación'],
+            ['MO', 'Mano de Obra'],
+            ['S', 'Suministro']
+        ];
 
-      $resultado1= mysqli_query($conexion, $query1);
-    }
-
-    verificar_resultado($resultado, $errores);
-    mysqli_close($conexion);
-
-
-}else if($opcion=="nueva_sem"){
-    $f_inicio_sem=/*date("Y-m-d",strtotime("2019-11-26"));*/date("Y-m-d",strtotime($_POST["f_inicio_sem"]));
-    nueva_sem($f_inicio_sem, $db, $conexion);
-}else if($opcion=="eliminar_sem"){
-    $semana=$_POST["semana"];
-    eliminar_sem($semana, $db, $conexion);
-}else if($opcion=="eliminar"){
-    $Id=/*4*/$_POST["Id"];
-    eliminar($Id, $db, $conexion);
-}else if($opcion=="actualizarFechaInicio"){
-    $Id=/*4*/$_POST["idActividad"];
-    $nombreActividad=/*4*/$_POST["nombreActividad"];
-    $semana=$_POST["semana"];
-    actualizarFechaInicio($Id, $nombreActividad, $semana, $db, $conexion);
-}else if($opcion == "actualizarListadoPaquetesContratacion"){
-  $tipoContrato = $_POST["tipoContrato"];
-  actualizarListadoPaquetesContratacion($tipoContrato, $db, $conexion);
-}else if($opcion == "actualizarInsumosRecursos"){
-  $tipoContrato = $_POST["tipoContrato"];
-  // $tipoContrato = 2;
-  actualizarInsumosRecursos($tipoContrato, $db, $conexion);
-}
-
-function nueva_sem($f_inicio_sem, $db, $conexion){
-    require("../funciones_generales/nueva_semana.php");
-    //mysqli_close($conexion);
-    //require("../conexion.php");
-    require("../funciones_generales/modificar_sem_estado.php");
-}
-
-
-function eliminar_sem($semana, $db, $conexion){
-    require("../funciones_generales/eliminar_semana.php");
-}
-
-function eliminar($Id, $db, $conexion){
-  $query="DELETE FROM $db"."_actividades WHERE Id=$Id";
-  $resultado=mysqli_query($conexion, $query);
-  $errores='';
-  verificar_resultado($resultado="OK", $errores);
-  mysqli_close($conexion);
-}
-
-function actualizarFechaInicio($Id, $nombreActividad, $semana, $db, $conexion){
-  $query="SELECT (Fecha_Inicio) FROM $db"."_programa_consolidado WHERE Consecutivo_en_Programa=$Id AND Semana=$semana";
-  $resultado=mysqli_query($conexion, $query);
-  if(!$resultado){
-      die("Error");
-  } else{
-    while($data=mysqli_fetch_assoc($resultado)){
-        $arreglo["data"]=array_map("utf8_encode", $data);
-    }
-    $json_codificado = json_encode($arreglo, JSON_UNESCAPED_UNICODE);
-    echo utf8_decode($json_codificado);
-  }
-  mysqli_close($conexion);
-}
-
-function actualizarListadoPaquetesContratacion($tipoContrato, $db, $conexion){
-  if ($tipoContrato == 1) {
-    $tipoContratoMO = "tipoPaquete = 'Mano de Obra'";
-    $tipoContratoS = "tipoPaquete = 'Suministro'";
-    $queryMO = "SELECT * FROM general_dias_procesos_contratacion WHERE $tipoContratoMO";
-    $queryS = "SELECT * FROM general_dias_procesos_contratacion WHERE $tipoContratoS";
-    $resultadoMO=mysqli_query($conexion, $queryMO);
-    if(!$resultadoMO){
-        die("Error");
-    } else{
-      $scriptMO = "<option value=''></option>";
-      while($dataMO=mysqli_fetch_assoc($resultadoMO)){
-        $scriptMO .= "<option value='" . $dataMO["paqueteContratacion"] . "'>" . $dataMO["paqueteContratacion"] . "</option>";
-      }
-    }
-
-    $resultadoS=mysqli_query($conexion, $queryS);
-    if(!$resultadoS){
-        die("Error");
-    } else{
-      $scriptS = "<option value=''></option>";
-      while($dataS=mysqli_fetch_assoc($resultadoS)){
-        $scriptS .= "<option value='" . $dataS["paqueteContratacion"] . "'>" . $dataS["paqueteContratacion"] . "</option>";
-      }
-    }
-    $scriptSI = "";
-  }else if ($tipoContrato == 2) {
-    $tipoContratoSI = "tipoPaquete = 'Suministro e Instalación'";
-    $querySI = "SELECT * FROM general_dias_procesos_contratacion WHERE $tipoContratoSI";
-    $resultadoSI=mysqli_query($conexion, $querySI);
-    if(!$resultadoSI){
-        die("Error");
-    } else{
-      $scriptSI = "<option value=''></option>";
-      while($dataSI=mysqli_fetch_assoc($resultadoSI)){
-        $scriptSI .= "<option value='" . $dataSI["paqueteContratacion"] . "'>" . $dataSI["paqueteContratacion"] . "</option>";
-      }
-    }
-    $scriptMO = "";
-    $scriptS = "";
-  }
-  $arreglo["listadoMO"] = $scriptMO;
-  $arreglo["listadoS"] = $scriptS;
-  $arreglo["listadoSI"] = $scriptSI;
-
-  mysqli_close($conexion);
-  $json_codificado = json_encode($arreglo, JSON_UNESCAPED_UNICODE);
-  echo $json_codificado;
-
-}
-
-function actualizarInsumosRecursos($tipoContrato, $db, $conexion){
-  if ($tipoContrato == 1) {
-    $queryMO = "SELECT DISTINCT MO1 FROM $db"."_actividades WHERE MO1 IS NOT NULL AND MO1 != '' UNION SELECT DISTINCT MO2 FROM $db"."_actividades WHERE MO2 IS NOT NULL AND MO2 != '' UNION SELECT DISTINCT MO3 FROM $db"."_actividades WHERE MO3 IS NOT NULL AND MO3 != '' UNION SELECT DISTINCT MO4 FROM $db"."_actividades WHERE MO4 IS NOT NULL AND MO4 != '' UNION SELECT DISTINCT MO5 FROM $db"."_actividades WHERE MO5 IS NOT NULL AND MO5 != '' ORDER BY MO1 ASC";
-    $queryS = "SELECT DISTINCT S1 FROM $db"."_actividades WHERE S1 IS NOT NULL AND S1 != '' UNION SELECT DISTINCT S2 FROM $db"."_actividades WHERE S2 IS NOT NULL AND S2 != '' UNION SELECT DISTINCT S3 FROM $db"."_actividades WHERE S3 IS NOT NULL AND S3 != '' UNION SELECT DISTINCT S4 FROM $db"."_actividades WHERE S4 IS NOT NULL AND S4 != '' UNION SELECT DISTINCT S5 FROM $db"."_actividades WHERE S5 IS NOT NULL AND S5 != '' ORDER BY S1 ASC";
-    $resultadoMO=mysqli_query($conexion, $queryMO);
-    if(!$resultadoMO){
-        die("Error");
-    } else{
-      $scriptMO = "<option value=''></option>";
-      $dataInsumo = array();
-      while($dataMO=mysqli_fetch_assoc($resultadoMO)){
-        $dataVariables = explode(";", $dataMO["MO1"]);
-        foreach ($dataVariables as $var) {
-          array_push($dataInsumo, $var);
+        foreach ($insertTargets as $target) {
+            $prefix = $target[0];
+            $tipo = $target[1];
+            for ($i = 1; $i <= 5; $i++) {
+                $pVal = $paquetes["paquete$prefix$i"];
+                if (!empty($pVal)) {
+                    $queryCheck = "SELECT 1 FROM general_dias_procesos_contratacion WHERE paqueteContratacion = ? AND tipoPaquete = ?";
+                    $stmtCheck = $db->query($queryCheck, [$pVal, $tipo]);
+                    if (!$stmtCheck->fetch()) {
+                        $queryIns = "INSERT INTO general_dias_procesos_contratacion (paqueteContratacion, tipoPaquete, diasElaboracionPliegos, diasIngresoLicify, diasEntregaPliegos, diasReciboPropuestas, diasCuadrosComparativos, diasLegalizacionContrato, diasFabricacion, diasInsumosObra) VALUES (?, ?, 1, 1, 1, 1, 1, 1, 1, 1)";
+                        $db->query($queryIns, [$pVal, $tipo]);
+                    }
+                }
+            }
         }
-      }
-      $dataInsumo = (array_unique($dataInsumo));
-      foreach ($dataInsumo as $insumo) {
-        $scriptMO .= "<option value='" . $insumo . "'>" . $insumo . "</option>";
-      }
     }
 
-    $resultadoS=mysqli_query($conexion, $queryS);
-    if(!$resultadoS){
-        die("Error");
-    } else{
-      $scriptS = "<option value=''></option>";
-      $dataInsumo = array();
-      while($dataS=mysqli_fetch_assoc($resultadoS)){
-        $dataVariables = explode(";", $dataS["S1"]);
-        foreach ($dataVariables as $var) {
-          array_push($dataInsumo, $var);
-        }
-      }
-      $dataInsumo = (array_unique($dataInsumo));
-      foreach ($dataInsumo as $insumo) {
-        $scriptS .= "<option value='" . $insumo . "'>" . $insumo . "</option>";
-      }
-    }
-    $scriptSI = "";
-  }else if ($tipoContrato == 2) {
-    $querySI = "SELECT DISTINCT SI1 FROM $db"."_actividades WHERE SI1 IS NOT NULL AND SI1 != '' UNION SELECT DISTINCT SI2 FROM $db"."_actividades WHERE SI2 IS NOT NULL AND SI2 != '' UNION SELECT DISTINCT SI3 FROM $db"."_actividades WHERE SI3 IS NOT NULL AND SI3 != '' UNION SELECT DISTINCT SI4 FROM $db"."_actividades WHERE SI4 IS NOT NULL AND SI4 != '' UNION SELECT DISTINCT SI5 FROM $db"."_actividades WHERE SI5 IS NOT NULL AND SI5 != '' ORDER BY SI1 ASC";
-    $resultadoSI=mysqli_query($conexion, $querySI);
-    if(!$resultadoSI){
-        die("Error");
-    } else{
-      $scriptSI = "<option value=''></option>";
-      $dataInsumo = array();
-      while($dataSI=mysqli_fetch_assoc($resultadoSI)){
-        $dataVariables = explode(";", $dataSI["SI1"]);
-        foreach ($dataVariables as $var) {
-          array_push($dataInsumo, $var);
-        }
-      }
-      $dataInsumo = (array_unique($dataInsumo));
-      foreach ($dataInsumo as $insumo) {
-        $scriptSI .= "<option value='" . $insumo . "'>" . $insumo . "</option>";
-      }
-    }
-    $scriptMO = "";
-    $scriptS = "";
-  }
-  $arreglo["listadoMO"] = $scriptMO;
-  $arreglo["listadoS"] = $scriptS;
-  $arreglo["listadoSI"] = $scriptSI;
+    verificar_resultado($stmt, $errores);
 
-  mysqli_close($conexion);
-  $json_codificado = json_encode($arreglo, JSON_UNESCAPED_UNICODE);
-  echo $json_codificado;
-
+} else if ($opcion == "nueva_sem") {
+    $f_inicio_sem = date("Y-m-d", strtotime($_POST["f_inicio_sem"]));
+    nueva_sem($f_inicio_sem, $dbPrefix, $db);
+} else if ($opcion == "eliminar_sem") {
+    $semana = filter_var($_POST["semana"], FILTER_VALIDATE_INT);
+    eliminar_sem($semana, $dbPrefix, $db);
+} else if ($opcion == "eliminar") {
+    $Id = $_POST["Id"];
+    eliminar($Id, $dbPrefix, $db);
+} else if ($opcion == "actualizarFechaInicio") {
+    $Id = $_POST["idActividad"];
+    $semana = filter_var($_POST["semana"], FILTER_VALIDATE_INT);
+    actualizarFechaInicio($Id, $semana, $dbPrefix, $db);
+} else if ($opcion == "actualizarListadoPaquetesContratacion") {
+    $tipoContrato = $_POST["tipoContrato"];
+    actualizarListadoPaquetesContratacion($tipoContrato, $dbPrefix, $db);
+} else if ($opcion == "actualizarInsumosRecursos") {
+    $tipoContrato = $_POST["tipoContrato"];
+    actualizarInsumosRecursos($tipoContrato, $dbPrefix, $db);
 }
 
-function insumosPaquetes($paquete, $insumo){
-  if(!$paquete || empty($paquete)){
-      $insumoFinal= "NULL";
-      $paqueteFinal= "NULL";
-  }else{
-    if(!isset($insumo) || !$insumo || empty($insumo) || $insumo == "NULL"){
-      $insumoFinal= "NULL";
-    }else{
-      $insumoArray = "";
-      foreach ($insumo as $insumo) {
-        if($paquete == ''){
-        }else{
-          $insumoArray .= "$insumo;";
+function nueva_sem($f_inicio_sem, $dbPrefix, $db) {
+    require(__DIR__ . "/../funciones_generales/nueva_semana.php");
+    require(__DIR__ . "/../funciones_generales/modificar_sem_estado.php");
+}
+
+function eliminar_sem($semana, $dbPrefix, $db) {
+    require(__DIR__ . "/../funciones_generales/eliminar_semana.php");
+}
+
+function eliminar($Id, $dbPrefix, $db) {
+    $query = "DELETE FROM {$dbPrefix}_actividades WHERE Id = ?";
+    $stmt = $db->query($query, [$Id]);
+    verificar_resultado($stmt, '');
+}
+
+function actualizarFechaInicio($Id, $semana, $dbPrefix, $db) {
+    $query = "SELECT Fecha_Inicio FROM {$dbPrefix}_programa_consolidado WHERE Consecutivo_en_Programa = ? AND Semana = ?";
+    $stmt = $db->query($query, [$Id, $semana]);
+    $data = $stmt->fetch();
+    echo json_encode(["data" => $data], JSON_UNESCAPED_UNICODE);
+}
+
+function actualizarListadoPaquetesContratacion($tipoContrato, $dbPrefix, $db) {
+    $res = ["listadoMO" => "", "listadoS" => "", "listadoSI" => ""];
+    if ($tipoContrato == 1) {
+        $stmtMO = $db->query("SELECT paqueteContratacion FROM general_dias_procesos_contratacion WHERE tipoPaquete = 'Mano de Obra'");
+        $scriptMO = "<option value=''></option>";
+        while ($row = $stmtMO->fetch()) {
+            $scriptMO .= "<option value='{$row["paqueteContratacion"]}'>{$row["paqueteContratacion"]}</option>";
         }
-      }
-      $insumoFinal = "'" . substr($insumoArray, 0, -1) . "'";
+        $res["listadoMO"] = $scriptMO;
+
+        $stmtS = $db->query("SELECT paqueteContratacion FROM general_dias_procesos_contratacion WHERE tipoPaquete = 'Suministro'");
+        $scriptS = "<option value=''></option>";
+        while ($row = $stmtS->fetch()) {
+            $scriptS .= "<option value='{$row["paqueteContratacion"]}'>{$row["paqueteContratacion"]}</option>";
+        }
+        $res["listadoS"] = $scriptS;
+    } else if ($tipoContrato == 2) {
+        $stmtSI = $db->query("SELECT paqueteContratacion FROM general_dias_procesos_contratacion WHERE tipoPaquete = 'Suministro e Instalación'");
+        $scriptSI = "<option value=''></option>";
+        while ($row = $stmtSI->fetch()) {
+            $scriptSI .= "<option value='{$row["paqueteContratacion"]}'>{$row["paqueteContratacion"]}</option>";
+        }
+        $res["listadoSI"] = $scriptSI;
     }
-    $paqueteFinal= "'" . $paquete . "'";
-  }
-  $array = array($paqueteFinal, $insumoFinal);
-  return $array;
+    echo json_encode($res, JSON_UNESCAPED_UNICODE);
 }
 
-function verificar_resultado($resultado, $errores){
-    if(!$resultado){
-        $informacion["respuesta"] ="ERROR";
-    }
-    if($errores ==''){
-        $informacion["respuesta"] = "BIEN";
-    }else if ($errores=='Debe rellenar todos los campos'){
-        $informacion["respuesta"] = "VACIO";
-    }else if ($errores=='La actividad que estás intentando registrar ya existe'){
-        $informacion["respuesta"] = "EXISTE";
-    }else if ($errores=='No se puede eliminar esta actividad'){
-        $informacion["respuesta"] = "NO_ELIMINAR";
-    }else{
-        $informacion["respuesta"] = $errores;
-    }
+function actualizarInsumosRecursos($tipoContrato, $dbPrefix, $db) {
+    $res = ["listadoMO" => "", "listadoS" => "", "listadoSI" => ""];
+    if ($tipoContrato == 1) {
+        $queryMO = "SELECT MO1 FROM {$dbPrefix}_actividades WHERE MO1 IS NOT NULL AND MO1 != '' UNION SELECT MO2 FROM {$dbPrefix}_actividades WHERE MO2 IS NOT NULL AND MO2 != '' UNION SELECT MO3 FROM {$dbPrefix}_actividades WHERE MO3 IS NOT NULL AND MO3 != '' UNION SELECT MO4 FROM {$dbPrefix}_actividades WHERE MO4 IS NOT NULL AND MO4 != '' UNION SELECT MO5 FROM {$dbPrefix}_actividades WHERE MO5 IS NOT NULL AND MO5 != ''";
+        $insumosMO = obtenerInsumosUnicos($db->query($queryMO));
+        $res["listadoMO"] = generarOpcionesInsumos($insumosMO);
 
-    echo json_encode($informacion);
+        $queryS = "SELECT S1 FROM {$dbPrefix}_actividades WHERE S1 IS NOT NULL AND S1 != '' UNION SELECT S2 FROM {$dbPrefix}_actividades WHERE S2 IS NOT NULL AND S2 != '' UNION SELECT S3 FROM {$dbPrefix}_actividades WHERE S3 IS NOT NULL AND S3 != '' UNION SELECT S4 FROM {$dbPrefix}_actividades WHERE S4 IS NOT NULL AND S4 != '' UNION SELECT S5 FROM {$dbPrefix}_actividades WHERE S5 IS NOT NULL AND S5 != ''";
+        $insumosS = obtenerInsumosUnicos($db->query($queryS));
+        $res["listadoS"] = generarOpcionesInsumos($insumosS);
+    } else if ($tipoContrato == 2) {
+        $querySI = "SELECT SI1 FROM {$dbPrefix}_actividades WHERE SI1 IS NOT NULL AND SI1 != '' UNION SELECT SI2 FROM {$dbPrefix}_actividades WHERE SI2 IS NOT NULL AND SI2 != '' UNION SELECT SI3 FROM {$dbPrefix}_actividades WHERE SI3 IS NOT NULL AND SI3 != '' UNION SELECT SI4 FROM {$dbPrefix}_actividades WHERE SI4 IS NOT NULL AND SI4 != '' UNION SELECT SI5 FROM {$dbPrefix}_actividades WHERE SI5 IS NOT NULL AND SI5 != ''";
+        $insumosSI = obtenerInsumosUnicos($db->query($querySI));
+        $res["listadoSI"] = generarOpcionesInsumos($insumosSI);
+    }
+    echo json_encode($res, JSON_UNESCAPED_UNICODE);
 }
 
-function cerrar($conexion){
-    mysqli_close($conexion);
+function obtenerInsumosUnicos($stmt) {
+    $insumos = [];
+    while ($row = $stmt->fetch(PDO::FETCH_NUM)) {
+        $parts = explode(";", $row[0]);
+        foreach ($parts as $p) {
+            if (!empty(trim($p))) $insumos[] = trim($p);
+        }
+    }
+    return array_unique($insumos);
+}
+
+function generarOpcionesInsumos($insumos) {
+    $html = "<option value=''></option>";
+    sort($insumos);
+    foreach ($insumos as $i) {
+        $html .= "<option value='" . htmlspecialchars($i, ENT_QUOTES) . "'>" . htmlspecialchars($i, ENT_QUOTES) . "</option>";
+    }
+    return $html;
+}
+
+function insumosPaquetes($paquete, $insumos) {
+    if (empty($paquete)) return [null, null];
+    if (empty($insumos) || !is_array($insumos)) return [$paquete, null];
+    return [$paquete, implode(";", $insumos)];
+}
+
+function verificar_resultado($stmt, $errores) {
+    $respuesta = ($stmt) ? "BIEN" : "ERROR";
+    if (!empty($errores)) $respuesta = $errores;
+    echo json_encode(["respuesta" => $respuesta]);
 }
 ?>

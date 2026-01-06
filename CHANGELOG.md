@@ -32,4 +32,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Se refactorizó el script `construccion/generarReporteSubcontratistas.php` como ejemplo de migración para otros módulos.
 
 ### Removed
-- **Directorio Obsoleto:** Se ha eliminado por completo el directorio `PI/`, que contenía una versión antigua o paralela de la aplicación, reduciendo la complejidad y el código a mantener.
+- **Módulos Redundantes:** Se han eliminado los directorios `PI/` y `construccion/ext/`, que contenían versiones antiguas o redundantes de la aplicación, simplificando la estructura del proyecto y reduciendo la deuda técnica.
