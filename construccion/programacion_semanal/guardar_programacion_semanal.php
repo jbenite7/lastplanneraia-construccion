@@ -1,288 +1,266 @@
 <?php
-require("../conexion.php");
+require_once (__DIR__ . "/../conexion.php");
+// El objeto $db (instancia de Database) ya está disponible desde conexion.php
 
-$db=$_GET['db'];
-$opcion=$_POST["opcion"];
-
-//$db="accesibilidadMetroB";
-//$opcion="autoprogramar";
-$informacion=[];
-
-if ($opcion == "modificar") {
-    $Id=/*26*/$_POST["Id"];
-    $semana=/*2*/$_POST["semana"];
-    $Descripcion=/*"ARMADO DE ACERO"*/$_POST["Descripcion"];
-    $Ubicacion=/*"TORRE "*/$_POST["Ubicacion"];
-    $Sub_Contratista=/*"AIA"*/$_POST["Sub_Contratista"];
-    $Responsable_AIA=/*"Sergio Rendon"*/$_POST["Responsable_AIA"];
-    $Empresa=/*"AIA"*/$_POST["Empresa"];
-    $Unidad=/*"%"*/$_POST["Unidad"];
-    $Compromiso=/*40*/$_POST["Compromiso"];
-    $Cantidad_Sugerida=/*40*/$_POST["Cantidad_Sugerida"];
-    $Ejecutado_Real=/*40*/$_POST["Real"];
-    $Categoria_CNC=/*40*/$_POST["Categoria_CNC"];
-    $CNC=/*40*/$_POST["CNC"];
-    $Observaciones_CNC=/*40*/$_POST["Observaciones_CNC"];
-    $Rendimientos=$_POST["Rendimientos"];
-}else if ($opcion == "EstadoEjecucion") {
-    $Id=/*143*/$_POST["Id"];
-    $semana=/*2*/$_POST["semana"];
-    $Ejecutado=/*1*/$_POST["Ejecutado"];
-}else if($opcion=="eliminar"){
-    $Id=$_POST["Id"];
-    $semana=$_POST["semana"];
-    //$Actividad=utf8_decode($_POST["Actividad"]);
-    $Responsable_AIA=$_POST["Responsable_AIA"];
-    $Categoria_CNP=$_POST["Categoria_CNP"];
-    $CNP=$_POST["CNP"];
-    $Observaciones_CNP=$_POST["Observaciones_CNP"];
-}else if($opcion=="duplicar"){
-    $Id=/*36*/$_POST["Id"];
-    $semana=/*58*/$_POST["semana"];
-    //$Actividad=utf8_decode($_POST["Actividad"]);
-}else if($opcion=="nuevo"){
-    $Id=/*"23-A"*/$_POST["idNuevo"];
-    $semana=/*4*/$_POST["semana"]*100/100;
-    $Actividad=/*""*/$_POST["Actividad"];
-    $Descripcion=$_POST["Descripcion"];
-    $Ubicacion=/*""*/$_POST["Ubicacion"];
-    $Sub_Contratista=/*""*/$_POST["Sub_Contratista"];
-    $Responsable_AIA=/*""*/$_POST["Responsable_AIA"];
-    $Empresa=/*""*/$_POST["Empresa"];
-    $Unidad=/*""*/$_POST["Unidad"];
-    $Compromiso=/*0*/$_POST["Compromiso"];
-    if($Compromiso==""){
-        $Compromiso="NULL";
-    }
-}else if($opcion=="autoprogramar"){
-    $semana=$_POST["semana"];
-}else if($opcion=="guardar_costos_cuadrilla"){
-    $costo_hora_oficial=$_POST["costo_hora_oficial"];
-    $costo_hora_ayudante=$_POST["costo_hora_ayudante"];
-}else if($opcion=="ind_compromisos"){
-    $nombre=/*"general"*/$_POST['nombre'];
-    $semana=/*2*/$_POST["semana"];
-}else if($opcion=="bloquear_compromisos"){
-    $semana=/*2*/$_POST["semana"];
-    $fechaCierreCompromisos=($_POST["fechaCierreCompromisos"] == '' || $_POST["fechaCierreCompromisos"] == null) ? "NULL" : "'" . date("Y-m-d",strtotime($_POST["fechaCierreCompromisos"])) . "'";
-}else if($opcion=="importar_actividad_no_requerida"){
-    $semana=/*10*/$_POST["semana"];
-    $Consecutivo=/*31*/$_POST["Consecutivo"];
+$dbPrefix = $_GET['db'] ?? '';
+// Validación estricta del prefijo de la base de datos
+if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
+    die(json_encode(["error" => "Parámetro de base de datos inválido."]));
 }
 
+$opcion = $_POST["opcion"] ?? '';
+$informacion = [];
 
-switch($opcion){
+// Inicialización de variables comunes según la opción
+if ($opcion == "modificar") {
+    $Id = $_POST["Id"];
+    $semana = filter_var($_POST["semana"], FILTER_VALIDATE_INT);
+    $Descripcion = $_POST["Descripcion"];
+    $Ubicacion = $_POST["Ubicacion"];
+    $Sub_Contratista = $_POST["Sub_Contratista"];
+    $Responsable_AIA = $_POST["Responsable_AIA"];
+    $Empresa = $_POST["Empresa"];
+    $Unidad = $_POST["Unidad"];
+    $Compromiso = $_POST["Compromiso"];
+    $Cantidad_Sugerida = $_POST["Cantidad_Sugerida"];
+    $Ejecutado_Real = $_POST["Real"];
+    $Categoria_CNC = $_POST["Categoria_CNC"];
+    $CNC = $_POST["CNC"];
+    $Observaciones_CNC = $_POST["Observaciones_CNC"];
+    $Rendimientos = $_POST["Rendimientos"];
+} else if ($opcion == "EstadoEjecucion") {
+    $Id = $_POST["Id"];
+    $semana = filter_var($_POST["semana"], FILTER_VALIDATE_INT);
+    $Ejecutado = $_POST["Ejecutado"];
+} else if ($opcion == "eliminar") {
+    $Id = $_POST["Id"];
+    $semana = filter_var($_POST["semana"], FILTER_VALIDATE_INT);
+    $Responsable_AIA = $_POST["Responsable_AIA"];
+    $Categoria_CNP = $_POST["Categoria_CNP"];
+    $CNP = $_POST["CNP"];
+    $Observaciones_CNP = $_POST["Observaciones_CNP"];
+} else if ($opcion == "duplicar") {
+    $Id = $_POST["Id"];
+    $semana = filter_var($_POST["semana"], FILTER_VALIDATE_INT);
+} else if ($opcion == "nuevo") {
+    $Id = $_POST["idNuevo"];
+    $semana = filter_var($_POST["semana"], FILTER_VALIDATE_INT);
+    $Actividad = $_POST["Actividad"] ?? '';
+    $Descripcion = $_POST["Descripcion"] ?? '';
+    $Ubicacion = $_POST["Ubicacion"] ?? '';
+    $Sub_Contratista = $_POST["Sub_Contratista"] ?? '';
+    $Responsable_AIA = $_POST["Responsable_AIA"] ?? '';
+    $Empresa = $_POST["Empresa"] ?? '';
+    $Unidad = $_POST["Unidad"] ?? '';
+    $Compromiso = ($_POST["Compromiso"] === "") ? null : $_POST["Compromiso"];
+} else if ($opcion == "autoprogramar") {
+    $semana = filter_var($_POST["semana"], FILTER_VALIDATE_INT);
+} else if ($opcion == "guardar_costos_cuadrilla") {
+    $costo_hora_oficial = $_POST["costo_hora_oficial"];
+    $costo_hora_ayudante = $_POST["costo_hora_ayudante"];
+} else if ($opcion == "ind_compromisos") {
+    $nombre = $_POST['nombre'] ?? 'general';
+    $semana = filter_var($_POST["semana"], FILTER_VALIDATE_INT);
+} else if ($opcion == "bloquear_compromisos") {
+    $semana = filter_var($_POST["semana"], FILTER_VALIDATE_INT);
+    $fechaCierreCompromisos = (($_POST["fechaCierreCompromisos"] ?? '') === '') ? null : date("Y-m-d", strtotime($_POST["fechaCierreCompromisos"]));
+} else if ($opcion == "importar_actividad_no_requerida") {
+    $semana = filter_var($_POST["semana"], FILTER_VALIDATE_INT);
+    $Consecutivo = $_POST["Consecutivo"];
+}
+
+switch ($opcion) {
     case 'modificar':
-        modificar($Id, $semana, $Descripcion, $Ubicacion, $Sub_Contratista, $Responsable_AIA, $Empresa, $Unidad, $Compromiso, $Cantidad_Sugerida, $Ejecutado_Real, $Rendimientos, $Categoria_CNC, $CNC, $Observaciones_CNC, $db, $conexion);
+        modificar($Id, $semana, $Descripcion, $Ubicacion, $Sub_Contratista, $Responsable_AIA, $Empresa, $Unidad, $Compromiso, $Cantidad_Sugerida, $Ejecutado_Real, $Rendimientos, $Categoria_CNC, $CNC, $Observaciones_CNC, $dbPrefix, $db);
         break;
 
     case 'EstadoEjecucion':
-        EstadoEjecucion($Id, $semana, $Ejecutado, $db, $conexion);
+        EstadoEjecucion($Id, $semana, $Ejecutado, $dbPrefix, $db);
         break;
 
     case 'eliminar':
-        eliminar($Id, $semana, $Responsable_AIA, $Categoria_CNP, $CNP, $Observaciones_CNP, $db, $conexion);
+        eliminar($Id, $semana, $Responsable_AIA, $Categoria_CNP, $CNP, $Observaciones_CNP, $dbPrefix, $db);
         break;
 
     case 'duplicar':
-        duplicar($Id, $semana, $db, $conexion);
+        duplicar($Id, $semana, $dbPrefix, $db);
         break;
 
     case 'nuevo':
-        agregar_actividad($Id, $semana, $Actividad, $Descripcion, $Ubicacion, $Sub_Contratista, $Responsable_AIA, $Empresa, $Unidad, $Compromiso, $db, $conexion);
+        agregar_actividad($Id, $semana, $Actividad, $Descripcion, $Ubicacion, $Sub_Contratista, $Responsable_AIA, $Empresa, $Unidad, $Compromiso, $dbPrefix, $db);
         break;
 
     case 'autoprogramar':
-        autoprogramar($semana, $db, $conexion);
+        autoprogramar($semana, $dbPrefix, $db);
         break;
 
     case 'guardar_costos_cuadrilla':
-        guardar_costos_cuadrilla($costo_hora_oficial, $costo_hora_ayudante, $db, $conexion);
+        guardar_costos_cuadrilla($costo_hora_oficial, $costo_hora_ayudante, $dbPrefix, $db);
         break;
 
     case 'cargar_costos_cuadrilla':
-        cargar_costos_cuadrilla($db, $conexion);
+        cargar_costos_cuadrilla($dbPrefix, $db);
         break;
 
     case 'ind_compromisos':
-        ind_compromisos($conexion, $semana, $db, $nombre);
+        ind_compromisos($db, $semana, $dbPrefix, $nombre);
         break;
 
     case 'bloquear_compromisos':
-        bloquear_compromisos($conexion, $semana, $fechaCierreCompromisos, $db);
+        bloquear_compromisos($db, $semana, $fechaCierreCompromisos, $dbPrefix);
         break;
 
     case 'importar_actividad_no_requerida':
-        importar_actividad_no_requerida($conexion, $semana, $db, $Consecutivo);
+        importar_actividad_no_requerida($db, $semana, $dbPrefix, $Consecutivo);
         break;
 }
 
+function modificar($Id, $semana, $Descripcion, $Ubicacion, $Sub_Contratista, $Responsable_AIA, $Empresa, $Unidad, $Compromiso, $Cantidad_Sugerida, $Ejecutado_Real, $Rendimientos, $Categoria_CNC, $CNC, $Observaciones_CNC, $dbPrefix, $db) {
+    $PAC = null;
+    $P_Completado = null;
 
-
-function modificar($Id, $semana, $Descripcion, $Ubicacion, $Sub_Contratista, $Responsable_AIA, $Empresa, $Unidad, $Compromiso, $Cantidad_Sugerida, $Ejecutado_Real, $Rendimientos, $Categoria_CNC, $CNC, $Observaciones_CNC, $db, $conexion){
-    if ($Compromiso >=0 && $Ejecutado_Real >=0 && $Compromiso!="" && $Ejecutado_Real !=""){
-        $P_Completado=($Ejecutado_Real/$Compromiso);
-        if($Ejecutado_Real<$Compromiso){
-           $PAC=0;
-        } else{
-            $PAC=1;
-        }
-    } else{
-        if($Ejecutado_Real===""){
-            $Ejecutado_Real="NULL";
-        };
-        if($Compromiso===""){
-            $Compromiso="NULL";
-            $Ejecutado_Real="NULL";
-        };
-
-        $P_Completado="NULL";
-        $PAC="NULL";
-    }
-    if(empty($Categoria_CNC)){
-        $Categoria_CNC=NULL;
-    }
-    if(empty($CNC)){
-        $CNC=NULL;
-    }
-    if(empty($Observaciones_CNC)){
-        $Observaciones_CNC=NULL;
-    }
-    if(empty($Rendimientos)){
-        $Rendimientos=NULL;
-    }
-    if($PAC==1){
-        $query= "UPDATE $db"."_programacion_semanal SET Descripcion='$Descripcion', Ubicacion='$Ubicacion', Sub_Contratista='$Sub_Contratista', Responsable_AIA='$Responsable_AIA', Empresa='$Empresa', Unidad='$Unidad', Compromiso=$Compromiso, Cantidad_Sugerida=$Cantidad_Sugerida, Ejecutado_Real=$Ejecutado_Real, P_Completado=$P_Completado, PAC=$PAC, Rendimientos='$Rendimientos', Categoria_CNC=NULL, CNC=NULL, Observaciones_CNC=NULL WHERE Consecutivo=$Id;";
-    }else{
-        $query= "UPDATE $db"."_programacion_semanal SET Descripcion='$Descripcion', Ubicacion='$Ubicacion', Sub_Contratista='$Sub_Contratista', Responsable_AIA='$Responsable_AIA', Empresa='$Empresa', Unidad='$Unidad', Compromiso=$Compromiso, Cantidad_Sugerida=$Cantidad_Sugerida, Ejecutado_Real=$Ejecutado_Real, P_Completado=$P_Completado, PAC=$PAC, Rendimientos='$Rendimientos', Categoria_CNC='$Categoria_CNC', CNC='$CNC', Observaciones_CNC='$Observaciones_CNC' WHERE Consecutivo=$Id;";
-    }
-
-
-    //echo $query;
-    $resultado= mysqli_query($conexion, $query);
-    verificar_resultado($resultado);
-//    modificar_sem_rest($conexion);
-//    modificar_estado_act($conexion);
-    mysqli_close($conexion);
-}
-
-function EstadoEjecucion($Id, $semana, $Ejecutado, $db, $conexion){
-    $query = "UPDATE $db"."_programa_consolidado SET Activa=1 WHERE Consecutivo_en_Programa='$Id' AND Semana=$semana;";
-    $query1 = "UPDATE $db"."_programa_consolidado SET Ejecutado_Siguiente_Semana=$Ejecutado WHERE Consecutivo_en_Programa='$Id' AND Semana=$semana";
-    $resultado= mysqli_query($conexion, $query);
-    //require("../conexion.php");
-    $resultado1= mysqli_query($conexion, $query1);
-    verificar_resultado($resultado1);
-    mysqli_close($conexion);
-}
-
-function agregar_actividad($Id, $semana, $Actividad, $Descripcion, $Ubicacion, $Sub_Contratista, $Responsable_AIA, $Empresa, $Unidad, $Compromiso, $db, $conexion){
-    $query0="SELECT * FROM $db"."_programa_consolidado WHERE Semana=$semana AND Id='$Id'";
-    $resultado0= mysqli_query($conexion, $query0);
-    if(!$resultado0){
-        die("Error");
+    if ($Compromiso !== "" && $Ejecutado_Real !== "" && $Compromiso >= 0 && $Ejecutado_Real >= 0) {
+        $P_Completado = ($Ejecutado_Real / $Compromiso);
+        $PAC = ($Ejecutado_Real < $Compromiso) ? 0 : 1;
     } else {
-        $data0=mysqli_fetch_assoc($resultado0);
-        $consecutivo_en_programa=$data0["Consecutivo_en_Programa"];
-        $Fecha_Inicio=$data0["Fecha_Inicio"];
-        $Fecha_Inicio="'$Fecha_Inicio'";
-        $Fecha_Fin=$data0["Fecha_Fin"];
-        $Fecha_Fin="'$Fecha_Fin'";
-        $Ejecutado=$data0["Ejecutado"];
-        $medir_productividad=$data0["medir_productividad"];
-        if($medir_productividad == "" || $medir_productividad == null){
-          $medir_productividad="NULL";
-        }else{
-          $medir_productividad="'$medir_productividad'";
-        }
-        $cantidad_ppto=$data0["cantidad_ppto"];
-        if($cantidad_ppto == "" || $cantidad_ppto == null){
-          $cantidad_ppto="NULL";
-        }else{
-          $cantidad_ppto="'$cantidad_ppto'";
-        }
-
-        $codigo_actividad=$data0["codigo_actividad"];
-        $codigo_actividad="'$codigo_actividad'";
+        $Ejecutado_Real = ($Ejecutado_Real === "") ? null : $Ejecutado_Real;
+        $Compromiso = ($Compromiso === "") ? null : $Compromiso;
+        if ($Compromiso === null) $Ejecutado_Real = null;
     }
 
-    if(!$consecutivo_en_programa){
-        $query="SELECT MAX(Consecutivo_En_Programa) FROM $db"."_programacion_semanal WHERE Semana=$semana";
-        $resultado= mysqli_query($conexion, $query);
-        $data=mysqli_fetch_assoc($resultado);
-        $query1="SELECT MAX(Consecutivo_en_Programa) FROM $db"."_programa_consolidado WHERE Semana=$semana";
-        $resultado1= mysqli_query($conexion, $query1);
-        $data1=mysqli_fetch_assoc($resultado1);
-        //require("../conexion.php");
-        $consecutivo_en_programacion_semanal=$data["MAX(Consecutivo_En_Programa)"];
-        $consecutivo_en_programa_consolidado=$data1["MAX(Consecutivo_en_Programa)"];
-        if($consecutivo_en_programa_consolidado<=$consecutivo_en_programacion_semanal){
-            $consecutivo_en_programa=$consecutivo_en_programacion_semanal + 1;
-        }else{
-            $consecutivo_en_programa=$consecutivo_en_programa_consolidado + 1;
-        }
-        $Fecha_Inicio="NULL";
-        $Fecha_Fin="NULL";
-        $medir_productividad="NULL";
-        $cantidad_ppto="NULL";
-        $codigo_actividad="NULL";
+    $Categoria_CNC = empty($Categoria_CNC) ? null : $Categoria_CNC;
+    $CNC = empty($CNC) ? null : $CNC;
+    $Observaciones_CNC = empty($Observaciones_CNC) ? null : $Observaciones_CNC;
+    $Rendimientos = empty($Rendimientos) ? null : $Rendimientos;
+
+    if ($PAC == 1) {
+        $query = "UPDATE {$dbPrefix}_programacion_semanal SET 
+            Descripcion = ?, Ubicacion = ?, Sub_Contratista = ?, Responsable_AIA = ?, 
+            Empresa = ?, Unidad = ?, Compromiso = ?, Cantidad_Sugerida = ?, 
+            Ejecutado_Real = ?, P_Completado = ?, PAC = ?, Rendimientos = ?, 
+            Categoria_CNC = NULL, CNC = NULL, Observaciones_CNC = NULL 
+            WHERE Consecutivo = ?";
+        $params = [
+            $Descripcion, $Ubicacion, $Sub_Contratista, $Responsable_AIA, 
+            $Empresa, $Unidad, $Compromiso, $Cantidad_Sugerida, 
+            $Ejecutado_Real, $P_Completado, $PAC, $Rendimientos, $Id
+        ];
+    } else {
+        $query = "UPDATE {$dbPrefix}_programacion_semanal SET 
+            Descripcion = ?, Ubicacion = ?, Sub_Contratista = ?, Responsable_AIA = ?, 
+            Empresa = ?, Unidad = ?, Compromiso = ?, Cantidad_Sugerida = ?, 
+            Ejecutado_Real = ?, P_Completado = ?, PAC = ?, Rendimientos = ?, 
+            Categoria_CNC = ?, CNC = ?, Observaciones_CNC = ? 
+            WHERE Consecutivo = ?";
+        $params = [
+            $Descripcion, $Ubicacion, $Sub_Contratista, $Responsable_AIA, 
+            $Empresa, $Unidad, $Compromiso, $Cantidad_Sugerida, 
+            $Ejecutado_Real, $P_Completado, $PAC, $Rendimientos, 
+            $Categoria_CNC, $CNC, $Observaciones_CNC, $Id
+        ];
     }
 
-    $query1="INSERT INTO $db"."_programacion_semanal (Consecutivo, Semana, Consecutivo_En_Programa, Id, Actividad, Descripcion, Ubicacion, Fecha_Inicio, Fecha_Fin, Sub_Contratista, Responsable_AIA, Empresa, Ejecutado, medir_productividad, Unidad, cantidad_ppto, Compromiso, Critica, Atrasada, Activa, Prog_Sin_Restricciones_100, codigo_actividad) VALUES (NULL, $semana, $consecutivo_en_programa, '$Id', '$Actividad', '$Descripcion', '$Ubicacion', $Fecha_Inicio, $Fecha_Fin, '$Sub_Contratista', '$Responsable_AIA', '$Empresa', $Ejecutado, $medir_productividad, '$Unidad', $cantidad_ppto, $Compromiso, 0, 0, 'NA', 0, $codigo_actividad);";
-
-    $resultado1= mysqli_multi_query($conexion, $query1);
-    verificar_resultado($resultado1);
-    mysqli_close($conexion);
+    $stmt = $db->query($query, $params);
+    verificar_resultado($stmt);
 }
 
-function autoprogramar($semana, $db, $conexion){
-    require("../funciones_generales/php/autoprogramar_actividades.php");
+function EstadoEjecucion($Id, $semana, $Ejecutado, $dbPrefix, $db) {
+    $query1 = "UPDATE {$dbPrefix}_programa_consolidado SET Activa = 1 WHERE Consecutivo_en_Programa = ? AND Semana = ?";
+    $query2 = "UPDATE {$dbPrefix}_programa_consolidado SET Ejecutado_Siguiente_Semana = ? WHERE Consecutivo_en_Programa = ? AND Semana = ?";
+    
+    $db->query($query1, [$Id, $semana]);
+    $stmt = $db->query($query2, [$Ejecutado, $Id, $semana]);
+    verificar_resultado($stmt);
 }
 
-function eliminar($Id, $semana, $Responsable_AIA, $Categoria_CNP, $CNP, $Observaciones_CNP, $db, $conexion){
-    $query="SELECT Activa FROM $db"."_programacion_semanal WHERE Consecutivo=$Id";
-    $resultado=mysqli_query($conexion, $query);
-    $data=mysqli_fetch_assoc($resultado);
-    $activa=$data["Activa"];
-    if($activa=="NA"){
-        $query1="DELETE FROM $db"."_programacion_semanal WHERE Consecutivo=$Id";
-        $resultado1=mysqli_query($conexion, $query1);
-        verificar_resultado($resultado1="OK");
-        //mysqli_close($conexion);
-    }else{
-        $query1="UPDATE $db"."_programacion_semanal SET Activa='0', Responsable_AIA='$Responsable_AIA', Categoria_CNP='$Categoria_CNP', CNP='$CNP', Observaciones_CNP='$Observaciones_CNP' WHERE Consecutivo=$Id";
-        $resultado1=mysqli_query($conexion, $query1);
-        verificar_resultado($resultado1);
-        //mysqli_close($conexion);
+function agregar_actividad($Id, $semana, $Actividad, $Descripcion, $Ubicacion, $Sub_Contratista, $Responsable_AIA, $Empresa, $Unidad, $Compromiso, $dbPrefix, $db) {
+    $query0 = "SELECT * FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Id = ?";
+    $stmt0 = $db->query($query0, [$semana, $Id]);
+    $data0 = $stmt0->fetch();
+
+    if ($data0) {
+        $consecutivo_en_programa = $data0["Consecutivo_en_Programa"];
+        $Fecha_Inicio = $data0["Fecha_Inicio"];
+        $Fecha_Fin = $data0["Fecha_Fin"];
+        $Ejecutado = $data0["Ejecutado"];
+        $medir_productividad = $data0["medir_productividad"] ?? null;
+        $cantidad_ppto = $data0["cantidad_ppto"] ?? null;
+        $codigo_actividad = $data0["codigo_actividad"] ?? null;
+    } else {
+        $consecutivo_en_programa = null;
     }
-    mysqli_close($conexion);
 
+    if (!$consecutivo_en_programa) {
+        $queryMaxSemanas = "SELECT MAX(Consecutivo_En_Programa) as max_ps FROM {$dbPrefix}_programacion_semanal WHERE Semana = ?";
+        $stmtMaxSemanas = $db->query($queryMaxSemanas, [$semana]);
+        $dataMaxSemanas = $stmtMaxSemanas->fetch();
+
+        $queryMaxConsolidado = "SELECT MAX(Consecutivo_en_Programa) as max_pc FROM {$dbPrefix}_programa_consolidado WHERE Semana = ?";
+        $stmtMaxConsolidado = $db->query($queryMaxConsolidado, [$semana]);
+        $dataMaxConsolidado = $stmtMaxConsolidado->fetch();
+
+        $maxPS = $dataMaxSemanas["max_ps"] ?? 0;
+        $maxPC = $dataMaxConsolidado["max_pc"] ?? 0;
+        $consecutivo_en_programa = max($maxPS, $maxPC) + 1;
+
+        $Fecha_Inicio = null;
+        $Fecha_Fin = null;
+        $medir_productividad = null;
+        $cantidad_ppto = null;
+        $codigo_actividad = null;
+        $Ejecutado = 0;
+    }
+
+    $queryInsert = "INSERT INTO {$dbPrefix}_programacion_semanal (
+        Semana, Consecutivo_En_Programa, Id, Actividad, Descripcion, Ubicacion, 
+        Fecha_Inicio, Fecha_Fin, Sub_Contratista, Responsable_AIA, Empresa, 
+        Ejecutado, medir_productividad, Unidad, cantidad_ppto, Compromiso, 
+        Critica, Atrasada, Activa, Prog_Sin_Restricciones_100, codigo_actividad
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 'NA', 0, ?)";
+
+    $stmtInsert = $db->query($queryInsert, [
+        $semana, $consecutivo_en_programa, $Id, $Actividad, $Descripcion, $Ubicacion,
+        $Fecha_Inicio, $Fecha_Fin, $Sub_Contratista, $Responsable_AIA, $Empresa,
+        $Ejecutado, $medir_productividad, $Unidad, $cantidad_ppto, $Compromiso, $codigo_actividad
+    ]);
+
+    verificar_resultado($stmtInsert);
 }
 
-function duplicar($Id, $semana, $db, $conexion){
-    $query="INSERT INTO $db"."_programacion_semanal (Semana, Consecutivo_En_Programa, Id, Actividad, Critica, Atrasada, Activa, Prog_Sin_Restricciones_100, Fecha_Inicio, Fecha_Fin, Sub_Contratista, Responsable_AIA, Empresa, Ejecutado, medir_productividad) SELECT
-        $semana,
-        Consecutivo_en_Programa,
-        Id,
-        Actividad,
-        0,
-        0,
-        'NA',
-        Prog_Sin_Restricciones_100,
-        Fecha_Inicio,
-        Fecha_Fin,
-        Sub_Contratista,
-        Responsable_AIA,
-        Empresa,
-        Ejecutado,
-        0
+function autoprogramar($semana, $dbPrefix, $db) {
+    // La lógica de autoprogramar está en un archivo externo que debe ser refactorizado.
+    require(__DIR__ . "/../funciones_generales/php/autoprogramar_actividades.php");
+}
 
-        FROM $db"."_programacion_semanal WHERE Semana=$semana AND Consecutivo=$Id";
-    //echo $query;
-    $resultado=mysqli_query($conexion, $query);
-    verificar_resultado($resultado);
-    mysqli_close($conexion);
+function eliminar($Id, $semana, $Responsable_AIA, $Categoria_CNP, $CNP, $Observaciones_CNP, $dbPrefix, $db) {
+    $querySelect = "SELECT Activa FROM {$dbPrefix}_programacion_semanal WHERE Consecutivo = ?";
+    $stmtSelect = $db->query($querySelect, [$Id]);
+    $data = $stmtSelect->fetch();
 
+    if ($data && $data["Activa"] === "NA") {
+        $queryDelete = "DELETE FROM {$dbPrefix}_programacion_semanal WHERE Consecutivo = ?";
+        $stmt = $db->query($queryDelete, [$Id]);
+        verificar_resultado($stmt);
+    } else {
+        $queryUpdate = "UPDATE {$dbPrefix}_programacion_semanal SET 
+            Activa = '0', Responsable_AIA = ?, Categoria_CNP = ?, CNP = ?, Observaciones_CNP = ? 
+            WHERE Consecutivo = ?";
+        $stmt = $db->query($queryUpdate, [$Responsable_AIA, $Categoria_CNP, $CNP, $Observaciones_CNP, $Id]);
+        verificar_resultado($stmt);
+    }
+}
+
+function duplicar($Id, $semana, $dbPrefix, $db) {
+    $queryInsert = "INSERT INTO {$dbPrefix}_programacion_semanal (
+        Semana, Consecutivo_En_Programa, Id, Actividad, Critica, Atrasada, 
+        Activa, Prog_Sin_Restricciones_100, Fecha_Inicio, Fecha_Fin, 
+        Sub_Contratista, Responsable_AIA, Empresa, Ejecutado, medir_productividad
+    ) SELECT ?, Consecutivo_en_Programa, Id, Actividad, 0, 0, 'NA', Prog_Sin_Restricciones_100, 
+             Fecha_Inicio, Fecha_Fin, Sub_Contratista, Responsable_AIA, Empresa, Ejecutado, 0 
+      FROM {$dbPrefix}_programacion_semanal WHERE Semana = ? AND Consecutivo = ?";
+    
+    $stmt = $db->query($queryInsert, [$semana, $semana, $Id]);
+    verificar_resultado($stmt);
 }
 
 function guardar_costos_cuadrilla($costo_hora_oficial, $costo_hora_ayudante, $db, $conexion){

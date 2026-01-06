@@ -65,6 +65,8 @@ Esta fase se centra en **estabilizar la plataforma, eliminar la deuda técnica c
     - **Acción:** Crear una clase `Database` que centralice la conexión y la ejecución de consultas, forzando el uso de **consultas preparadas**. - **(HECHO)**
     - **Acción:** Auditar y refactorizar **TODAS** las consultas SQL del proyecto para que utilicen el nuevo sistema de consultas preparadas. - **(EN PROGRESO)**
         - *Avance: Módulo `login` completado.*
+        - *Avance: Módulo `programa_general` (listar y guardar) completado.*
+        - *Avance: Módulo `programacion_semanal` (listar y guardar parcial) completado.*
         - *Avance: Script `generarReporteSubcontratistas.php` completado.*
     - **Resultado Clave:** Cierre de la brecha de seguridad más crítica.
 - **Semana 3: Consolidación y Limpieza.**
