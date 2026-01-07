@@ -74,8 +74,8 @@ Esta fase inicial se centra en construir una base administrativa sólida y segur
     - [ ] **Integración Esquema Existente:** Mapear modelos a tablas existentes `general_usuarios` (usuarios, roles, permisos) y `general_proyectos_procesos` (proyectos).
     - [ ] **Auditoría de Datos:** Verificar integridad de `general_usuarios` para autenticación segura (hashing de contraseñas).
 *   **Día 3: Núcleo del Framework Artesanal (Micro-MVC)**
-    - [ ] **Router:** Implementar despachador de rutas simple basado en URL amigables (ej: `/usuarios/editar/15`).
-    - [ ] **Controller Base:** Crear clase abstracta para renderizado de vistas y respuestas JSON estandarizadas.
+    - [x] **Router:** Implementar despachador de rutas simple basado en URL amigables (ej: `/usuarios/editar/15`). - **(HECHO)**
+    - [x] **Controller Base:** Crear clase abstracta para renderizado de vistas y respuestas JSON estandarizadas. - **(HECHO)**
     - [ ] **Session Hardening:** Configurar `HttpOnly`, `Secure`, `Strict Mode` y regeneración de ID de sesión al login.
     - [ ] **Seguridad CSRF:** Implementar clase `CsrfToken` para generación y validación de tokens en formularios POST/PUT/DELETE.
 *   **Día 4: Integración de Frontend (AdminLTE 3)**

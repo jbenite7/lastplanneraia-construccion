@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Infraestructura del Panel Administrativo:** Implementación del núcleo Micro-MVC que incluye un sistema de enrutamiento (`Router`), un controlador base (`BaseController`) y modelos iniciales para `User` y `Project`.
+- **Autoloading PSR-4:** Configuración de carga automática de clases para el espacio de nombres `Admin` apuntando a `admin/src/`.
 - **Planificación Extendida (Roadmap):** Se ha extendido el plan de trabajo a 4 meses, integrando una nueva fase para el desarrollo de un Panel de Administración centralizado.
 - **Gestión de Administración:** Inclusión en el roadmap de funcionalidades para la gestión de proyectos, usuarios y un sistema de permisos basado en roles (RBAC).
 - **Diagnóstico y Roadmap Detallado:** Realización de un análisis técnico completo y creación de un `ROADMAP.md` con un plan de acción de 3 meses para modernizar la aplicación.
