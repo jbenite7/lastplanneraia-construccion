@@ -55,7 +55,8 @@ DB_PASS=your_database_password
     - La aplicación principal se encuentra en el subdirectorio `/construccion`.
 
 5.  **Acceder a la aplicación:**
-    - Abra su navegador y navegue a la URL correspondiente (ej. `http://localhost/construccion`). Será redirigido a la página de login.
+    - **Módulo de Construcción (LPS):** Abra su navegador y navegue a `http://localhost/construccion`.
+    - **Panel de Administración (Core):** Navegue a `http://localhost/admin/public`. Este panel centraliza la gestión de usuarios, proyectos y seguridad global.
 
 ## 5. Cómo Contribuir
 

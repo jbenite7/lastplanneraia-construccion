@@ -64,13 +64,13 @@ Esta fase inicial se centra en construir una base administrativa sólida y segur
 
 #### Semana 1: Arquitectura Core, Base de Datos y Seguridad
 *   **Día 1: Infraestructura y Estructura de Directorios**
-    - [ ] **Estructura Segura:** Implementar separación física entre `app/` (lógica, config, inaccesible vía web) y `public_html/` (webroot).
-    - [ ] **Front Controller:** Configurar `.htaccess` para redirigir todo el tráfico a `public_html/index.php` y bloquear acceso directo a `app/`.
-    - [ ] **Sistema de Logs:** Implementar `set_error_handler` personalizado para rotación de logs en `/app/logs/` (ocultando errores al usuario final).
-    - [ ] **Git:** Configurar `.gitignore` robusto (excluyendo `config.php`, `vendor/`, logs).
+    - [x] **Estructura Segura:** Implementar separación física entre `app/` (lógica, config, inaccesible vía web) y `public_html/` (webroot).
+    - [x] **Front Controller:** Configurar `.htaccess` para redirigir todo el tráfico a `public_html/index.php` y bloquear acceso directo a `app/`.
+    - [x] **Sistema de Logs:** Implementar `set_error_handler` personalizado para rotación de logs en `/app/logs/` (ocultando errores al usuario final).
+    - [x] **Git:** Configurar `.gitignore` robusto (excluyendo `config.php`, `vendor/`, logs).
 *   **Día 2: Capa de Datos y Modelado (MySQL + PDO)**
-    - [ ] **Conexión Singleton:** Implementar clase `Database` con patrón Singleton para optimizar conexiones.
-    - [ ] **Configuración PDO Segura:** Desactivar `ATTR_EMULATE_PREPARES` para prevenir inyecciones SQL avanzadas.
+    - [x] **Conexión Singleton:** Implementar clase `Database` con patrón Singleton para optimizar conexiones.
+    - [x] **Configuración PDO Segura:** Desactivar `ATTR_EMULATE_PREPARES` para prevenir inyecciones SQL avanzadas.
     - [x] **Integración Esquema Existente:** Mapear modelos a tablas existentes `general_usuarios` (usuarios, roles, permisos) y `general_proyectos_procesos` (proyectos).
     - [ ] **Auditoría de Datos:** Verificar integridad de `general_usuarios` para autenticación segura (hashing de contraseñas).
 *   **Día 3: Núcleo del Framework Artesanal (Micro-MVC)**
