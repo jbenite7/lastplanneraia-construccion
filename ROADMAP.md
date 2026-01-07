@@ -55,23 +55,169 @@ La aplicación "Last Planner AIA" es una herramienta web diseñada para implemen
 - **Pruebas Automatizadas:**
     - **PHPUnit:** Implementar para crear pruebas unitarias (para la lógica de negocio) y pruebas de integración (para el acceso a datos).
 
-## 6. Roadmap de Implementación (4 Meses)
+## 6. Roadmap de Implementación (4 Meses y 2 Semanas)
 
-Esta fase se centra en **estabilizar la plataforma, eliminar la deuda técnica crítica y desarrollar las herramientas de administración necesarias para el control total del sistema.**
+Esta fase inicial se centra en construir una base administrativa sólida y segura ("Greenfield") para luego integrar y refactorizar la lógica de negocio existente.
 
-### Mes 1: Mitigación de Riesgos y Unificación del Código
+### Fase 1: Panel de Administración de Alta Eficiencia (Semanas 1-2)
+**Objetivo:** Implementar un panel administrativo robusto, seguro y escalable utilizando arquitectura LAMP optimizada ("No-Framework"), basado en *AdminLTE 3* y *DataTables Server-Side*.
+
+#### Semana 1: Arquitectura Core, Base de Datos y Seguridad
+*   **Día 1: Infraestructura y Estructura de Directorios**
+    - [ ] **Estructura Segura:** Implementar separación física entre `app/` (lógica, config, inaccesible vía web) y `public_html/` (webroot).
+    - [ ] **Front Controller:** Configurar `.htaccess` para redirigir todo el tráfico a `public_html/index.php` y bloquear acceso directo a `app/`.
+    - [ ] **Sistema de Logs:** Implementar `set_error_handler` personalizado para rotación de logs en `/app/logs/` (ocultando errores al usuario final).
+    - [ ] **Git:** Configurar `.gitignore` robusto (excluyendo `config.php`, `vendor/`, logs).
+*   **Día 2: Capa de Datos y Modelado (MySQL + PDO)**
+    - [ ] **Conexión Singleton:** Implementar clase `Database` con patrón Singleton para optimizar conexiones.
+    - [ ] **Configuración PDO Segura:** Desactivar `ATTR_EMULATE_PREPARES` para prevenir inyecciones SQL avanzadas.
+    - [ ] **Esquema RBAC:** Crear tablas normalizadas: `users`, `roles`, `permissions`, `user_roles`, `role_permissions`.
+    - [ ] **Esquema Proyectos:** Crear tablas `projects` (status ENUM) y `project_members` (pivote).
+*   **Día 3: Núcleo del Framework Artesanal (Micro-MVC)**
+    - [ ] **Router:** Implementar despachador de rutas simple basado en URL amigables (ej: `/usuarios/editar/15`).
+    - [ ] **Controller Base:** Crear clase abstracta para renderizado de vistas y respuestas JSON estandarizadas.
+    - [ ] **Session Hardening:** Configurar `HttpOnly`, `Secure`, `Strict Mode` y regeneración de ID de sesión al login.
+    - [ ] **Seguridad CSRF:** Implementar clase `CsrfToken` para generación y validación de tokens en formularios POST/PUT/DELETE.
+*   **Día 4: Integración de Frontend (AdminLTE 3)**
+    - [ ] **Assets:** Integrar AdminLTE 3 (Bootstrap 4.6 + jQuery) en `public_html/assets/`.
+    - [ ] **Layout Modular:** Separar componentes: `Navbar` (fixed), `Sidebar` (con lógica de menú activo), `Footer` y `Content Wrapper`.
+    - [ ] **Breadcrumbs:** Implementar sistema automático de migas de pan según la ruta.
+    - [ ] **Optimización de Assets:** Implementar inyección de scripts por vista (cargar JS pesado solo donde se use).
+*   **Día 5: Autenticación y Control de Acceso**
+    - [ ] **Login:** Formulario de acceso con validación `password_verify` y regeneración de sesión.
+    - [ ] **Middleware Auth:** Proteger rutas administrativas verificando sesión activa.
+    - [ ] **Lógica RBAC:** Implementar clase/método `User::can($permission)` para control granular en Vistas y Controladores.
+
+#### Semana 2: Módulos Funcionales y Experiencia de Usuario (UX)
+*   **Día 6-7: Gestión de Usuarios (Escalabilidad Total)**
+    - [ ] **Controlador:** Implementar `UserController` (index, create, store, edit, update, delete).
+    - [ ] **DataTables Server-Side:** Implementar lógica backend para paginación, filtrado y ordenamiento SQL dinámico (AJAX).
+    - [ ] **Vista Index:** Integrar DataTables configurado para carga AJAX y renderizado de columnas.
+    - [ ] **Acciones:** Generar botones de acción (Editar/Eliminar) dinámicamente.
+*   **Día 8: Gestión de Proyectos y UX Avanzada**
+    - [ ] **Controlador:** Implementar `ProjectController`.
+    - [ ] **Toggle Switches:** Implementar cambio de estado (Activo/Pendiente) con *Bootstrap Switch* y peticiones AJAX inmediatas.
+    - [ ] **Feedback:** Integrar *SweetAlert2* o *Toastr* para notificaciones de éxito/error asíncronas.
+    - [ ] **Validación:** Implementar saneamiento (`filter_var`) y validación estricta de entradas en el backend.
+*   **Día 9: Asignación de Recursos (Relaciones N:M)**
+    - [ ] **Select2 AJAX:** Integrar *Select2* para búsqueda remota de usuarios (evitar cargar lista completa en DOM).
+    - [ ] **Lógica de Asignación:** Gestionar guardado de `project_members` utilizando transacciones de base de datos para integridad.
+*   **Día 10: Pulido, Despliegue y Entrega**
+    - [ ] **Auditoría Final:** Verificar permisos de archivos y configuración de entorno (`display_errors = Off`).
+    - [ ] **Backups:** Implementar script PHP para backup de BD (mysqldump) disparado por Cron.
+    - [ ] **Smoke Test:** Validación manual completa de flujos críticos (Login -> ABM Usuarios -> ABM Proyectos -> Logout).
+
+### Fase 2: Mitigación de Riesgos y Unificación del Código (Mes 1)
 - **Semana 1-2: ERRADICAR VULNERABILIDADES DE INYECCIÓN SQL (Prioridad Máxima).**
     - **Acción:** Refactorizar `conexion.php` para utilizar **PDO** en lugar de `mysqli`. - **(HECHO)**
     - **Acción:** Crear una clase `Database` que centralice la conexión y la ejecución de consultas, forzando el uso de **consultas preparadas**. - **(HECHO)**
     - **Acción:** Auditar y refactorizar **TODAS** las consultas SQL del proyecto para que utilicen el nuevo sistema de consultas preparadas. - **(EN PROGRESO)**
-        - *Avance: Módulo `login` completado.*
-        - *Avance: Módulo `programa_general` (listar y guardar) completado.*
-        - *Avance: Módulo `programacion_semanal` (listar y guardar) completado.*
-        - *Avance: Módulo `contratos` (listar y guardar) completado.*
-        - *Avance: Módulo `controlCambios` (listar, guardar y descarga de consolidado) completado.*
-        - *Avance: Script `construccion/actualizarCICProyectos.php` completado.*
-        - *Avance: Script `generarReporteSubcontratistas.php` completado.*
-        - *Avance: Sanitización de carga de archivos en `cargarPDFServidor.php` completada.*
+        
+        #### Scripts Raíz
+        - [ ] `construccion/Cargar_Nuevos_Proyectos.php`
+        - [ ] `construccion/Copia_de_Seguridad_LPS.php`
+        - [ ] `construccion/eliminar_proyectos.php`
+        - [ ] `construccion/generarCurvaS.php`
+        - [ ] `construccion/generarCurvaSB.php`
+        - [ ] `construccion/generarCurvaSPDC.php`
+        - [ ] `construccion/generarListadoRestriccionesGeneral.php`
+        - [ ] `construccion/generarReporteGeneral.php`
+        - [ ] `construccion/generarReportePDC.php`
+        - [ ] `construccion/generarTablaHTMLProgramacionSemanal.php`
+
+        #### Módulo: Funciones Generales
+        - [ ] `construccion/funciones_generales/php/actualizarEjecucion.php`
+        - [ ] `construccion/funciones_generales/php/actualizar_pdc_nueva_semana.php`
+        - [ ] `construccion/funciones_generales/php/autoprogramar_actividades.php`
+        - [ ] `construccion/funciones_generales/php/datosGeneralesPagina.php`
+        - [ ] `construccion/funciones_generales/php/eliminar_semana.php`
+        - [ ] `construccion/funciones_generales/php/modificar_sem_estado.php`
+        - [ ] `construccion/funciones_generales/php/modificar_sem_estado_actualizar.php`
+        - [ ] `construccion/funciones_generales/php/nueva_semana.php`
+        - [ ] `construccion/funciones_generales/php/nueva_semana1.php`
+        - [ ] `construccion/funciones_generales/php/verificarCICActualizada.php`
+
+        #### Módulo: Indicadores
+        - [ ] `construccion/indicadores/listar_detalles_indicadores.php`
+        - [ ] `construccion/indicadores/listar_indicadores.php` (Refactorización parcial pendiente)
+
+        #### Módulo: Informe Productividad
+        - [ ] `construccion/informe_productividad/listar_detalles_informe_productividad.php`
+        - [ ] `construccion/informe_productividad/listar_informe_productividad.php`
+        - [ ] `construccion/informe_productividad/listar_informe_productividad_c.php`
+        - [ ] `construccion/informe_productividad/views/informe_productividad.view.nuevaBarra.php`
+
+        #### Módulo: Informes JSON
+        - [ ] `construccion/informesJSON/listar_curvas.php`
+        - [ ] `construccion/informesJSON/listar_curvas_pdc.php`
+        - [ ] `construccion/informesJSON/listar_informe_pdc.php`
+        - [ ] `construccion/informesJSON/listar_informe_programacion_semanal.php`
+        - [ ] `construccion/informesJSON/listar_informe_restricciones.php`
+
+        #### Módulo: Listado Actividades
+        - [ ] `construccion/listadoActividades/guardar_listadoActividades.php`
+        - [ ] `construccion/listadoActividades/listar_listadoActividades.php`
+        - [ ] `construccion/listadoActividades/views/listadoActividades.view.nuevaBarra.php`
+
+        #### Módulo: Paquetes Contratación
+        - [ ] `construccion/paquetesContratacion/guardar_paquetesContratacion.php`
+        - [ ] `construccion/paquetesContratacion/listar_paquetesContratacion.php`
+        - [ ] `construccion/paquetesContratacion/views/paquetesContratacion.view.php`
+
+        #### Módulo: PDC
+        - [ ] `construccion/pdc/actualizar_pdc.php`
+        - [ ] `construccion/pdc/guardar_pdc.php`
+        - [ ] `construccion/pdc/listar_pdc.php`
+        - [ ] `construccion/pdc/prueba.php`
+
+        #### Módulo: Profesionales
+        - [ ] `construccion/profesionales/guardar_profesionales.php`
+        - [ ] `construccion/profesionales/listar_profesionales.php`
+
+        #### Módulo: Programa General Actualizar
+        - [ ] `construccion/programaGeneralActualizar/actualizarFiltros.php`
+        - [ ] `construccion/programaGeneralActualizar/descargarCorteProgramacion.php`
+        - [ ] `construccion/programaGeneralActualizar/guardar_programaGeneralActualizar.php`
+        - [ ] `construccion/programaGeneralActualizar/listar_programaGeneralActualizar.php`
+        - [ ] `construccion/programaGeneralActualizar/views/programaGeneralActualizar.view.nuevaBarra.php`
+
+        #### Módulo: Programa General
+        - [ ] `construccion/programa_general/actualizarFiltros.php`
+        - [ ] `construccion/programa_general/descargarCorteProgramacion.php`
+        - [ ] `construccion/programa_general/pruebaSpreadsheets.php`
+        - [ ] `construccion/programa_general/views/programa_general.view.nuevaBarra.php`
+
+        #### Módulo: Programación Intermedia
+        - [ ] `construccion/programacion_intermedia/actualizarFiltros.php`
+        - [ ] `construccion/programacion_intermedia/descargarRestricciones.php`
+        - [ ] `construccion/programacion_intermedia/generarListadoRestriccionesGeneral.php`
+        - [ ] `construccion/programacion_intermedia/guardar_programacion_intermedia.php`
+        - [ ] `construccion/programacion_intermedia/listar_programacion_intermedia.php`
+        - [ ] `construccion/programacion_intermedia/prueba.php`
+        - [ ] `construccion/programacion_intermedia/views/programacion_intermedia.view.nuevaBarra.php`
+
+        #### Módulo: Programación Semanal
+        - [ ] `construccion/programacion_semanal/descargarCompromisos.php`
+        - [ ] `construccion/programacion_semanal/generarReporteGeneral.php`
+        - [ ] `construccion/programacion_semanal/guardar_CIC.php`
+        - [ ] `construccion/programacion_semanal/guardar_CNC.php`
+        - [ ] `construccion/programacion_semanal/guardar_CNP.php`
+        - [ ] `construccion/programacion_semanal/guardar_programacion_semanal.php`
+        - [ ] `construccion/programacion_semanal/listar_CIC.php`
+        - [ ] `construccion/programacion_semanal/listar_CNC.php`
+        - [ ] `construccion/programacion_semanal/listar_CNP.php`
+        - [ ] `construccion/programacion_semanal/listar_programacion_semanal1.php`
+        - [ ] `construccion/programacion_semanal/views/CNP.view.nuevaBarra.php`
+        - [ ] `construccion/programacion_semanal/views/programacion_semanal.view.nuevaBarra.php`
+
+        #### Módulo: Regístrate
+        - [ ] `construccion/registrate/registrate.php`
+        - [ ] `construccion/registrate/views/registrate.view.php`
+
+        #### Módulo: Subcontratistas
+        - [ ] `construccion/subcontratistas/guardar_subcontratistas.php`
+        - [ ] `construccion/subcontratistas/listar_subcontratistas.php`
+
     - **Resultado Clave:** Cierre de la brecha de seguridad más crítica.
 - **Semana 3: Consolidación y Limpieza.**
     - **Acción:** Aplicar `php-cs-fixer` a toda la base de código para garantizar un estilo consistente (PSR-12).
