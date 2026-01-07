@@ -72,16 +72,16 @@ Esta fase inicial se centra en construir una base administrativa sólida y segur
     - [x] **Conexión Singleton:** Implementar clase `Database` con patrón Singleton para optimizar conexiones.
     - [x] **Configuración PDO Segura:** Desactivar `ATTR_EMULATE_PREPARES` para prevenir inyecciones SQL avanzadas.
     - [x] **Integración Esquema Existente:** Mapear modelos a tablas existentes `general_usuarios` (usuarios, roles, permisos) y `general_proyectos_procesos` (proyectos).
-    - [ ] **Auditoría de Datos:** Verificar integridad de `general_usuarios` para autenticación segura (hashing de contraseñas).
+    - [x] **Auditoría de Datos:** Confirmado uso de SHA-512 (128 chars) sin salt dinámico. Implementado puente de compatibilidad híbrida para migración progresiva a `password_hash()`.
 *   **Día 3: Núcleo del Framework Artesanal (Micro-MVC)**
     - [x] **Router:** Implementar despachador de rutas simple basado en URL amigables (ej: `/usuarios/editar/15`). - **(HECHO)**
     - [x] **Controller Base:** Crear clase abstracta para renderizado de vistas y respuestas JSON estandarizadas. - **(HECHO)**
     - [ ] **Session Hardening:** Configurar `HttpOnly`, `Secure`, `Strict Mode` y regeneración de ID de sesión al login.
     - [ ] **Seguridad CSRF:** Implementar clase `CsrfToken` para generación y validación de tokens en formularios POST/PUT/DELETE.
 *   **Día 4: Integración de Frontend (AdminLTE 3)**
-    - [ ] **Assets:** Integrar AdminLTE 3 (Bootstrap 4.6 + jQuery) en `public_html/assets/`.
-    - [ ] **Layout Modular:** Separar componentes: `Navbar` (fixed), `Sidebar` (con lógica de menú activo), `Footer` y `Content Wrapper`.
-    - [ ] **Breadcrumbs:** Implementar sistema automático de migas de pan según la ruta.
+    - [x] **Assets:** Integrar AdminLTE 3 (vía CDN) y dependencias (Bootstrap 4.6 + jQuery). - **(HECHO)**
+    - [x] **Layout Modular:** Separar componentes: `Navbar`, `Sidebar`, `Footer` y `Content Wrapper` en `admin/views/layouts/main.php`. - **(HECHO)**
+    - [x] **Breadcrumbs:** Implementar sistema dinámico de migas de pan pasado desde el controlador. - **(HECHO)**
     - [ ] **Optimización de Assets:** Implementar inyección de scripts por vista (cargar JS pesado solo donde se use).
 *   **Día 5: Autenticación y Control de Acceso**
     - [ ] **Login:** Formulario de acceso con validación `password_verify` y regeneración de sesión.
