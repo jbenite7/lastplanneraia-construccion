@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Documentación del entorno de desarrollo y recomendaciones de extensiones de VS Code en `README.md`.
 
 ### Changed
+- **Control de Versiones:** Se ha corregido el rastreo del archivo "Diseño Panel Administración Web PHP.pdf" en el `.gitignore` para asegurar su exclusión correcta independientemente del encoding.
 - **Roadmap Refinado:** Se ha ajustado la Fase 1 para integrar las tablas existentes `general_usuarios` y `general_proyectos_procesos` en lugar de crear nuevas.
 - **Roadmap Actualizado:** Se ha re-priorizado el plan de trabajo, estableciendo como **Fase 1** inmediata la construcción de un Panel de Administración de alta eficiencia (LAMP optimizado, DataTables Server-Side, RBAC) para las próximas 2 semanas.
 - **Estructura del Proyecto:** Se ha centralizado el proyecto en el directorio raíz, moviendo la configuración principal y la documentación fuera de la subcarpeta `construccion/`.
