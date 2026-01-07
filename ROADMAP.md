@@ -71,8 +71,8 @@ Esta fase inicial se centra en construir una base administrativa sólida y segur
 *   **Día 2: Capa de Datos y Modelado (MySQL + PDO)**
     - [ ] **Conexión Singleton:** Implementar clase `Database` con patrón Singleton para optimizar conexiones.
     - [ ] **Configuración PDO Segura:** Desactivar `ATTR_EMULATE_PREPARES` para prevenir inyecciones SQL avanzadas.
-    - [ ] **Esquema RBAC:** Crear tablas normalizadas: `users`, `roles`, `permissions`, `user_roles`, `role_permissions`.
-    - [ ] **Esquema Proyectos:** Crear tablas `projects` (status ENUM) y `project_members` (pivote).
+    - [ ] **Integración Esquema Existente:** Mapear modelos a tablas existentes `general_usuarios` (usuarios, roles, permisos) y `general_proyectos_procesos` (proyectos).
+    - [ ] **Auditoría de Datos:** Verificar integridad de `general_usuarios` para autenticación segura (hashing de contraseñas).
 *   **Día 3: Núcleo del Framework Artesanal (Micro-MVC)**
     - [ ] **Router:** Implementar despachador de rutas simple basado en URL amigables (ej: `/usuarios/editar/15`).
     - [ ] **Controller Base:** Crear clase abstracta para renderizado de vistas y respuestas JSON estandarizadas.
