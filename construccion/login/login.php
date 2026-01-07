@@ -33,8 +33,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $stmt1 = $db->query("SELECT * FROM general_usuarios WHERE usuario = ? AND (proyecto = ? OR proyecto='todos')", [$usuario, $proyecto]);
             $data1 = $stmt1->fetch();
 
-            // 4. Verificar la contraseña de forma segura usando hash_equals para prevenir ataques de temporización.
-            if ($data1 && hash_equals($data1['password'], hash('sha512', $password))) {
+            // 4. Verificar la contraseña de forma segura. 
+            // Soporta el hash antiguo (SHA-512) y el nuevo estándar (BCRYPT vía password_verify).
+            $password_valida = false;
+            if ($data1) {
+                if (password_verify($password, $data1['password'])) {
+                    $password_valida = true;
+                } elseif (hash_equals($data1['password'], hash('sha512', $password))) {
+                    $password_valida = true;
+                }
+            }
+
+            if ($password_valida) {
                 $proyecto1 = $data1["proyecto"];
                 $permiso = $data1['permiso'];
                 $nombreUsuario = $data1['nombre'];
