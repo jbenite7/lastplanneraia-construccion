@@ -8,6 +8,7 @@ composer.lock
 # Logs y archivos temporales
 *.log
 php_errorlog
+admin/logs/*.log
 /cortesProgramacion/
 /cortesRestricciones/
 /compromisosSemana/
