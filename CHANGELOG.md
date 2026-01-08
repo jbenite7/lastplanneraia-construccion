@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **User Management Enhancements:**
+  - Automatic username suggestion based on name or email prefix with duplication detection.
+  - Duplication prevention for full names and email addresses during user creation.
+  - Integrated **Select2** for job titles (cargos) with AJAX search and tag support.
+  - Password generator and visibility toggle in the user creation form.
+- **UI/UX Optimizations:**
+  - **Sticky Headers:** Implemented persistent table headers for Projects and Users lists.
+  - **Horizontal Space Optimization:** Applied compact styling (`table-sm`), smaller fonts, and `text-break` rules to eliminate horizontal scrolling.
+  - **DataTables Fix:** Resolved "table.buttons is not a function" error by properly including Buttons extension assets.
+  - **CORS Resolution:** Inlined Spanish translation for DataTables to avoid cross-origin request issues on local environments.
+
+### Changed
+- **Permission Refinement:** Simplified global permission display in the user list to show "Administrador" or "Usuario" badges based on global codes (A/U).
+- **Cleanup:** Removed the redundant "Proyecto" column from the global user list to focus on user profile data.
+
 ## [0.4.0] - 2026-01-08
 
 ### Added

@@ -4,6 +4,7 @@ namespace Admin\Controllers;
 
 use Admin\Models\User;
 use Admin\Core\Security;
+use Admin\Core\RoleManager;
 use Database;
 
 class UserController extends AdminController
@@ -45,6 +46,129 @@ class UserController extends AdminController
     }
 
     /**
+     * Get unique job titles for selection.
+     */
+    public function getCargos()
+    {
+        $db = Database::getInstance();
+        
+        // Obtener cargos de usuarios existentes y de la tabla de inteligencia
+        $sql = "SELECT DISTINCT cargo as title FROM general_usuarios WHERE cargo IS NOT NULL AND cargo != ''
+                UNION
+                SELECT DISTINCT cargo_title as title FROM role_intelligence
+                ORDER BY title ASC";
+        
+        $stmt = $db->query($sql);
+        $cargos = $stmt->fetchAll();
+        
+        $this->json(['success' => true, 'cargos' => array_column($cargos, 'title')]);
+    }
+
+    /**
+     * Suggest a unique username based on full name or email prefix.
+     * Also checks for name and email duplicates.
+     */
+    public function suggestUsername()
+    {
+        $nombreCompleto = trim($_GET['nombre'] ?? '');
+        $email = trim($_GET['email'] ?? '');
+        
+        $response = [
+            'success' => true,
+            'usuario' => '',
+            'nombreExiste' => false,
+            'emailExiste' => false
+        ];
+
+        // Verificar duplicados de nombre y email
+        if (!empty($nombreCompleto) && $this->userModel->findByName($nombreCompleto)) {
+            $response['nombreExiste'] = true;
+        }
+
+        if (!empty($email) && $this->userModel->findByEmail($email)) {
+            $response['emailExiste'] = true;
+        }
+
+        $baseUsuario = '';
+        $n1 = ''; $n2 = ''; $a1 = ''; $a2 = '';
+
+        // 1. Si hay email, el prefijo manda
+        if (!empty($email) && strpos($email, '@') !== false) {
+            $baseUsuario = explode('@', $email)[0];
+            $baseUsuario = $this->normalizeString($baseUsuario);
+            $baseUsuario = str_replace(' ', '.', $baseUsuario);
+        } 
+        
+        // 2. Lógica del nombre
+        if (!empty($nombreCompleto)) {
+            $nombreLimpio = $this->normalizeString($nombreCompleto);
+            $partes = array_values(array_filter(explode(' ', $nombreLimpio)));
+            $numPartes = count($partes);
+
+            if ($numPartes > 0) {
+                $n1 = $partes[0];
+                if ($numPartes == 2) {
+                    $a1 = $partes[1];
+                } elseif ($numPartes == 3) {
+                    $n2 = $partes[1];
+                    $a1 = $partes[2];
+                    $a2 = $partes[1];
+                } elseif ($numPartes >= 4) {
+                    $n2 = $partes[1];
+                    $a1 = $partes[2];
+                    $a2 = $partes[3];
+                }
+
+                if (empty($baseUsuario)) {
+                    $baseUsuario = !empty($a1) ? "{$n1}.{$a1}" : $n1;
+                }
+            }
+        }
+
+        if (!empty($baseUsuario)) {
+            $usuarioSugerido = $baseUsuario;
+            if (!$this->userModel->findByUsername($usuarioSugerido)) {
+                $response['usuario'] = $usuarioSugerido;
+            } else {
+                if (!empty($a2) && $a2 !== $a1) {
+                    $intento = "{$n1}.{$a2}";
+                    if (!$this->userModel->findByUsername($intento)) {
+                        $response['usuario'] = $intento;
+                    }
+                }
+                
+                if (empty($response['usuario'])) {
+                    $contador = 1;
+                    while ($this->userModel->findByUsername($baseUsuario . $contador)) {
+                        $contador++;
+                    }
+                    $response['usuario'] = $baseUsuario . $contador;
+                }
+            }
+        }
+
+        $this->json($response);
+    }
+
+    /**
+     * Normalize string for username creation.
+     */
+    private function normalizeString($string)
+    {
+        $string = mb_strtolower($string, 'UTF-8');
+        $string = str_replace(
+            ['á', 'é', 'í', 'ó', 'ú', 'ñ', 'ü'],
+            ['a', 'e', 'i', 'o', 'u', 'n', 'u'],
+            $string
+        );
+        // Eliminar cualquier cosa que no sea letras, números, espacios o puntos
+        $string = preg_replace('/[^a-z0-9\s.]/', '', $string);
+        // Limpiar espacios múltiples
+        $string = preg_replace('/\s+/', ' ', trim($string));
+        return $string;
+    }
+
+    /**
      * Store a new user.
      */
     public function store()
@@ -63,16 +187,32 @@ class UserController extends AdminController
             'password' => $_POST['password'] ?? ''
         ];
 
-        if (empty($data['usuario']) || empty($data['password'])) {
-            $this->json(['success' => false, 'message' => 'Usuario y contraseña son requeridos']);
+        if (empty($data['usuario']) || empty($data['password']) || empty($data['nombre'])) {
+            $this->json(['success' => false, 'message' => 'Nombre, usuario y contraseña son requeridos']);
+        }
+
+        // Validaciones estrictas de duplicados
+        if ($this->userModel->findByName($data['nombre'])) {
+            $this->json(['success' => false, 'message' => 'Ya existe un usuario con este nombre completo']);
+            return;
+        }
+
+        if (!empty($data['email']) && $this->userModel->findByEmail($data['email'])) {
+            $this->json(['success' => false, 'message' => 'Ya existe un usuario con este correo electrónico']);
+            return;
         }
 
         if ($this->userModel->findByUsername($data['usuario'])) {
             $this->json(['success' => false, 'message' => 'El nombre de usuario ya existe']);
+            return;
         }
 
         if ($this->userModel->create($data)) {
+            // Aprender el cargo si es nuevo
+            RoleManager::learn($data['cargo'], $data['permiso']);
+            
             $this->json(['success' => true, 'message' => 'Usuario creado correctamente']);
+            return;
         }
 
         $this->json(['success' => false, 'message' => 'Error al crear el usuario']);

@@ -63,6 +63,10 @@ $router->add('GET', '/usuarios', 'UserController@index');
 
 $router->add('GET', '/usuarios/crear', 'UserController@create');
 
+$router->add('GET', '/usuarios/sugerir-usuario', 'UserController@suggestUsername');
+
+$router->add('GET', '/usuarios/cargos', 'UserController@getCargos');
+
 $router->add('POST', '/usuarios/guardar', 'UserController@store');
 
 $router->add('GET', '/usuarios/editar', 'UserController@edit');

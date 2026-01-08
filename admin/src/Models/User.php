@@ -27,8 +27,8 @@ class User
             return false;
         }
 
-        // Admin has all permissions
-        if ($user['permiso'] === 'Admin') {
+        // Admin has all permissions (A = Global Admin)
+        if ($user['permiso'] === 'A') {
             return true;
         }
 
@@ -62,6 +62,32 @@ class User
     public function findByUsername($username)
     {
         $stmt = $this->db->query("SELECT * FROM {$this->table} WHERE usuario = ? LIMIT 1", [$username]);
+        return $stmt->fetch();
+    }
+
+    /**
+     * Find a user by their email.
+     *
+     * @param string $email
+     * @return array|false
+     */
+    public function findByEmail($email)
+    {
+        if (empty($email)) return false;
+        $stmt = $this->db->query("SELECT * FROM {$this->table} WHERE email = ? LIMIT 1", [$email]);
+        return $stmt->fetch();
+    }
+
+    /**
+     * Find a user by their full name.
+     *
+     * @param string $name
+     * @return array|false
+     */
+    public function findByName($name)
+    {
+        if (empty($name)) return false;
+        $stmt = $this->db->query("SELECT * FROM {$this->table} WHERE nombre = ? LIMIT 1", [$name]);
         return $stmt->fetch();
     }
 

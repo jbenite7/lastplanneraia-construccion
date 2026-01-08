@@ -8,37 +8,43 @@
     </div>
   </div>
   <!-- /.card-header -->
-  <div class="card-body">
-    <table id="usersTable" class="table table-bordered table-striped">
+  <div class="card-body p-0" style="max-height: 700px; overflow-y: auto;">
+    <table id="usersTable" class="table table-bordered table-striped table-sm" style="width: 100%; font-size: 0.85rem; border-collapse: separate; border-spacing: 0;">
       <thead>
         <tr>
-          <th>ID</th>
-          <th>Nombre</th>
-          <th>Usuario</th>
-          <th>Email</th>
-          <th>Cargo</th>
-          <th>Proyecto</th>
-          <th>Permiso</th>
-          <th>Acciones</th>
+          <th style="width: 40px; position: sticky; top: 0; background: white; z-index: 10; border-top: 1px solid #dee2e6;">ID</th>
+          <th style="position: sticky; top: 0; background: white; z-index: 10; border-top: 1px solid #dee2e6;">Nombre</th>
+          <th style="width: 100px; position: sticky; top: 0; background: white; z-index: 10; border-top: 1px solid #dee2e6;">Usuario</th>
+          <th style="width: 150px; position: sticky; top: 0; background: white; z-index: 10; border-top: 1px solid #dee2e6;">Email</th>
+          <th style="position: sticky; top: 0; background: white; z-index: 10; border-top: 1px solid #dee2e6;">Cargo</th>
+          <th style="width: 120px; position: sticky; top: 0; background: white; z-index: 10; border-top: 1px solid #dee2e6;">Permiso Global</th>
+          <th style="width: 90px; position: sticky; top: 0; background: white; z-index: 10; border-top: 1px solid #dee2e6;" class="text-center">Acciones</th>
         </tr>
       </thead>
       <tbody>
         <?php foreach ($users as $user): ?>
         <tr>
-          <td><?php echo $user['id']; ?></td>
+          <td class="text-center"><?php echo $user['id']; ?></td>
           <td><?php echo htmlspecialchars($user['nombre']); ?></td>
-          <td><?php echo htmlspecialchars($user['usuario']); ?></td>
-          <td><?php echo htmlspecialchars($user['email']); ?></td>
+          <td class="text-break"><?php echo htmlspecialchars($user['usuario']); ?></td>
+          <td class="text-break"><?php echo htmlspecialchars($user['email']); ?></td>
           <td><?php echo htmlspecialchars($user['cargo']); ?></td>
-          <td><?php echo htmlspecialchars($user['proyecto']); ?></td>
-          <td><?php echo htmlspecialchars($user['permiso']); ?></td>
-          <td>
-            <a href="/admin/usuarios/editar?id=<?php echo $user['id']; ?>" class="btn btn-info btn-sm">
-              <i class="fas fa-edit"></i>
-            </a>
-            <button class="btn btn-danger btn-sm delete-user" data-id="<?php echo $user['id']; ?>" data-name="<?php echo htmlspecialchars($user['nombre']); ?>">
-              <i class="fas fa-trash"></i>
-            </button>
+          <td class="text-center">
+            <?php if ($user['permiso'] === 'A'): ?>
+                <span class="badge badge-danger">Administrador</span>
+            <?php else: ?>
+                <span class="badge badge-primary">Usuario</span>
+            <?php endif; ?>
+          </td>
+          <td class="text-center">
+            <div class="btn-group">
+              <a href="/admin/usuarios/editar?id=<?php echo $user['id']; ?>" class="btn btn-info btn-xs" title="Editar">
+                <i class="fas fa-edit"></i>
+              </a>
+              <button class="btn btn-danger btn-xs delete-user" data-id="<?php echo $user['id']; ?>" data-name="<?php echo htmlspecialchars($user['nombre']); ?>" title="Eliminar">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
           </td>
         </tr>
         <?php endforeach; ?>
@@ -49,21 +55,49 @@
 </div>
 
 <style>
-    /* Prevenir que el footer de AdminLTE solape la última fila de la tabla */
-    .card-body {
-        padding-bottom: 60px;
-        min-height: 200px;
+    /* Ajustes para maximizar el espacio horizontal y permitir sticky header */
+    .text-break {
+        word-break: break-all !important;
+    }
+    #usersTable td, #usersTable th {
+        vertical-align: middle;
+        padding: 4px 6px;
+    }
+    /* Sombra suave para el header sticky */
+    thead th {
+        box-shadow: inset 0 -1px 0 #dee2e6;
     }
 </style>
 
 <script>
 $(function () {
   $("#usersTable").DataTable({
-    "responsive": true, 
+    "responsive": false, 
+    "paging": false,
     "lengthChange": false, 
-    "autoWidth": false,
+    "autoWidth": true,
+    "ordering": true,
+    "info": false,
+    "columnDefs": [
+      { "type": "num", "targets": 0 }
+    ],
     "language": {
-      "url": "//cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json"
+        "processing": "Procesando...",
+        "search": "Buscar:",
+        "lengthMenu": "Mostrar _MENU_ registros",
+        "info": "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
+        "infoEmpty": "Mostrando registros del 0 al 0 de un total de 0 registros",
+        "infoFiltered": "(filtrado de un total de _MAX_ registros)",
+        "infoPostFix": "",
+        "loadingRecords": "Cargando...",
+        "zeroRecords": "No se encontraron resultados",
+        "emptyTable": "Ningún dato disponible en esta tabla",
+        "paginate": {
+            "first": "Primero",
+            "previous": "Anterior",
+            "next": "Siguiente",
+            "last": "Último"
+        }
     }
   });
 
