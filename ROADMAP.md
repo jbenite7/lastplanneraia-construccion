@@ -103,8 +103,9 @@ Esta fase inicial se centra en construir una base administrativa sólida y segur
     - [x] **Integridad de Datos:** Implementar creación automática y renombrado atómico de tablas de proyecto (10 tablas por proyecto).
     - [x] **Validación:** Implementar saneamiento (`filter_var`) y validación estricta de entradas en el backend.
 *   **Día 9: Asignación de Recursos (Relaciones N:M)**
-    - [ ] **Select2 AJAX:** Integrar *Select2* para búsqueda remota de usuarios (evitar cargar lista completa en DOM).
-    - [ ] **Lógica de Asignación:** Gestionar guardado de `project_members` utilizando transacciones de base de datos para integridad.
+    - [x] **Unificación de Datos:** Eliminación de duplicados en `general_usuarios` y migración a tabla relacional.
+    - [x] **Motor de IA:** Implementación de `RoleManager` con normalización y búsqueda difusa (Levenshtein).
+    - [x] **Lógica de Asignación:** Gestión de `project_members` con aprendizaje dinámico cargo-rol.
 *   **Día 10: Pulido, Despliegue y Entrega**
     - [ ] **Auditoría Final:** Verificar permisos de archivos y configuración de entorno (`display_errors = Off`).
     - [ ] **Backups:** Implementar script PHP para backup de BD (mysqldump) disparado por Cron.

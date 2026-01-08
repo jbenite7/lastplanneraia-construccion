@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-01-08
+
+### Added
+- **Gestión de Miembros:** Implementación completa del sistema de membresía para vincular usuarios únicos a múltiples proyectos.
+- **Inteligencia de Roles:** 
+  - Motor de normalización de cargos (limpieza de acentos, géneros y artículos).
+  - Búsqueda difusa (Fuzzy Matching) mediante algoritmo de Levenshtein para tolerancia a errores de ortografía.
+  - Sistema de aprendizaje persistente en la tabla `role_intelligence` que evoluciona con el uso del administrador.
+- **UI Proyectos:** Nueva interfaz para asignar y revocar acceso a proyectos con sugerencias inteligentes en tiempo real.
+- **Seguridad:** Protocolo de "Seguridad por Defecto" que asigna rol de Visualizador ante cargos desconocidos.
+
+### Changed
+- **Normalización de Datos:** Unificación de la tabla `general_usuarios` eliminando más de 100 registros duplicados y consolidando sus accesos en la nueva tabla `project_members`.
+- **Arquitectura:** Centralización de la lógica de permisos en la clase `RoleManager`.
+
 ## [0.3.0] - 2026-01-08
 
 ### Added
@@ -18,7 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Error de namespace en la generación del token CSRF en el layout principal (`\Admin\Core\Security`).
-- Delegación de eventos en DataTables para asegurar que los botones funcionen tras búsquedas o cambios de página.
+- Delegación de eventos en DataTables para asegurar que los botones funcionen tras buscas o cambios de página.
 
 ## [0.2.0] - 2026-01-08
 
