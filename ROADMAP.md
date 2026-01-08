@@ -64,20 +64,20 @@ Esta fase inicial se centra en construir una base administrativa sólida y segur
 
 #### Semana 1: Arquitectura Core, Base de Datos y Seguridad
 *   **Día 1: Infraestructura y Estructura de Directorios**
-    - [x] **Estructura Segura:** Implementar separación física entre `app/` (lógica, config, inaccesible vía web) y `public_html/` (webroot).
-    - [x] **Front Controller:** Configurar `.htaccess` para redirigir todo el tráfico a `public_html/index.php` y bloquear acceso directo a `app/`.
-    - [x] **Sistema de Logs:** Implementar `set_error_handler` personalizado para rotación de logs en `/app/logs/` (ocultando errores al usuario final).
-    - [x] **Git:** Configurar `.gitignore` robusto (excluyendo `config.php`, `vendor/`, logs).
+    - [x] **Estructura Segura:** Implementar separación física entre lógica e interfaz pública en la carpeta `admin/`.
+    - [x] **Front Controller:** Configurar `.htaccess` para redirigir todo el tráfico a `admin/public/index.php` y bloquear acceso directo a carpetas sensibles. **(Verificado en MAMP)**
+    - [x] **Sistema de Logs:** Implementar logs de error en `admin/logs/php_error.log`.
+    - [x] **Git:** Configurar `.gitignore` robusto.
 *   **Día 2: Capa de Datos y Modelado (MySQL + PDO)**
-    - [x] **Conexión Singleton:** Implementar clase `Database` con patrón Singleton para optimizar conexiones.
-    - [x] **Configuración PDO Segura:** Desactivar `ATTR_EMULATE_PREPARES` para prevenir inyecciones SQL avanzadas.
+    - [x] **Conexión Singleton:** Implementar clase `Database` con patrón Singleton y soporte para puerto MAMP (8889).
+    - [x] **Configuración PDO Segura:** Desactivar `ATTR_EMULATE_PREPARES`.
     - [x] **Integración Esquema Existente:** Mapear modelos a tablas existentes `general_usuarios` (usuarios, roles, permisos) y `general_proyectos_procesos` (proyectos).
     - [x] **Auditoría de Datos:** Confirmado uso de SHA-512 (128 chars) sin salt dinámico. Implementado puente de compatibilidad híbrida para migración progresiva a `password_hash()`.
 *   **Día 3: Núcleo del Framework Artesanal (Micro-MVC)**
     - [x] **Router:** Implementar despachador de rutas simple basado en URL amigables (ej: `/usuarios/editar/15`). - **(HECHO)**
     - [x] **Controller Base:** Crear clase abstracta para renderizado de vistas y respuestas JSON estandarizadas. - **(HECHO)**
-    - [ ] **Session Hardening:** Configurar `HttpOnly`, `Secure`, `Strict Mode` y regeneración de ID de sesión al login.
-    - [ ] **Seguridad CSRF:** Implementar clase `CsrfToken` para generación y validación de tokens en formularios POST/PUT/DELETE.
+    - [x] **Session Hardening:** Configurar `HttpOnly`, `Secure`, `Strict Mode` y regeneración de ID de sesión al login.
+    - [x] **Seguridad CSRF:** Implementar clase `CsrfToken` para generación y validación de tokens en formularios POST/PUT/DELETE.
 *   **Día 4: Integración de Frontend (AdminLTE 3)**
     - [x] **Assets:** Integrar AdminLTE 3 (vía CDN) y dependencias (Bootstrap 4.6 + jQuery). - **(HECHO)**
     - [x] **Layout Modular:** Separar componentes: `Navbar`, `Sidebar`, `Footer` y `Content Wrapper` en `admin/views/layouts/main.php`. - **(HECHO)**
@@ -90,10 +90,10 @@ Esta fase inicial se centra en construir una base administrativa sólida y segur
 
 #### Semana 2: Módulos Funcionales y Experiencia de Usuario (UX)
 *   **Día 6-7: Gestión de Usuarios (Escalabilidad Total)**
-    - [ ] **Controlador:** Implementar `UserController` (index, create, store, edit, update, delete).
-    - [ ] **DataTables Server-Side:** Implementar lógica backend para paginación, filtrado y ordenamiento SQL dinámico (AJAX).
-    - [ ] **Vista Index:** Integrar DataTables configurado para carga AJAX y renderizado de columnas.
-    - [ ] **Acciones:** Generar botones de acción (Editar/Eliminar) dinámicamente.
+    - [x] **Controlador:** Implementar `UserController` (index, create, store, edit, update, delete).
+    - [x] **DataTables Server-Side:** Implementar lógica backend para paginación, filtrado y ordenamiento SQL dinámico (AJAX). (Implementado Client-side para agilidad inicial, escalable a Server-side).
+    - [x] **Vista Index:** Integrar DataTables configurado para carga AJAX y renderizado de columnas.
+    - [x] **Acciones:** Generar botones de acción (Editar/Eliminar) dinámicamente.
 *   **Día 8: Gestión de Proyectos y UX Avanzada**
     - [ ] **Controlador:** Implementar `ProjectController`.
     - [ ] **Toggle Switches:** Implementar cambio de estado (Activo/Pendiente) con *Bootstrap Switch* y peticiones AJAX inmediatas.

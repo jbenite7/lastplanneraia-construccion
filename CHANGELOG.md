@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Error 404 en el Panel Administrativo mediante la configuración de reglas `mod_rewrite` en `.htaccess`.
+- Error de conexión a la base de datos en entorno MAMP ajustando el puerto (8889) y host (127.0.0.1) en el `.env`.
+- Fallo en la carga de la clase `Database` en el Front Controller del administrador.
+- Procesamiento de URIs en el `Router` para soportar subdirectorios en servidores locales.
+
+### Added
+- Logs de diagnóstico en `admin/public/index.php` para facilitar la depuración de rutas.
+- Verificación de existencia del archivo `Database.php` antes de su inclusión.
+
 ### Added
 - **Security & Compatibility:**
   - **Hybrid Password Authentication:** Updated `construccion/login/login.php` to support both legacy SHA-512 hashes and modern BCRYPT (`password_verify`). This ensures new users created in the Admin Panel can access the legacy system.
