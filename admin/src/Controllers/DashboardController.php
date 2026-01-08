@@ -2,16 +2,8 @@
 
 namespace Admin\Controllers;
 
-class DashboardController extends BaseController
+class DashboardController extends AdminController
 {
-    public function __construct()
-    {
-        if (!isset($_SESSION['admin_user'])) {
-            header('Location: /admin/login');
-            exit;
-        }
-    }
-
     /**
      * Show dashboard home.
      */

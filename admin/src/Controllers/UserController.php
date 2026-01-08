@@ -6,17 +6,13 @@ use Admin\Models\User;
 use Admin\Core\Security;
 use Database;
 
-class UserController extends BaseController
+class UserController extends AdminController
 {
     private $userModel;
 
     public function __construct()
     {
-        if (!isset($_SESSION['admin_user'])) {
-            header('Location: /admin/login');
-            exit;
-        }
-        
+        parent::__construct();
         $this->userModel = new User(Database::getInstance());
     }
 
