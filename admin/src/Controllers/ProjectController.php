@@ -194,4 +194,56 @@ class ProjectController extends AdminController
         }
         exit;
     }
+
+    /**
+     * Alternar el estado de un campo booleano de un proyecto vía AJAX.
+     */
+    public function toggleStatus()
+    {
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+            exit;
+        }
+
+        // Priorizar el token enviado en el body del POST para evitar problemas con cabeceras custom
+        $token = $_POST['csrf_token'] ?? '';
+        
+        // Si no está en el body, buscar en las cabeceras (X-CSRF-TOKEN o HTTP_X_CSRF_TOKEN)
+        if (empty($token)) {
+            $headers = getallheaders();
+            $token = $headers['X-CSRF-TOKEN'] ?? $headers['x-csrf-token'] ?? '';
+        }
+
+        if (!Security::validateCsrfToken($token)) {
+            echo json_encode(['success' => false, 'message' => 'Token CSRF inválido']);
+            exit;
+        }
+
+        $id = $_POST['id'] ?? null;
+        $field = $_POST['field'] ?? 'Activo';
+        $value = isset($_POST['value']) ? (int)$_POST['value'] : null;
+
+        if ($id === null || $value === null) {
+            echo json_encode(['success' => false, 'message' => 'Parámetros insuficientes']);
+            exit;
+        }
+
+        // Mapeo de nombres de campo del frontend a la base de datos si es necesario
+        $fieldMap = [
+            'activo' => 'Activo',
+            'acceso' => 'Acceso',
+            'pdc'    => 'pdcActivo'
+        ];
+
+        $dbField = $fieldMap[$field] ?? $field;
+
+        if ($this->projectModel->updateField($id, $dbField, $value)) {
+            echo json_encode(['success' => true, 'message' => 'Actualizado correctamente']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Error al actualizar']);
+        }
+        exit;
+    }
 }

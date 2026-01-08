@@ -194,6 +194,25 @@ class Project
     }
 
     /**
+     * Update a single field of a project.
+     *
+     * @param int $id
+     * @param string $field
+     * @param mixed $value
+     * @return bool
+     */
+    public function updateField($id, $field, $value)
+    {
+        // Lista blanca de campos permitidos para actualización directa
+        $allowedFields = ['Activo', 'Acceso', 'pdcActivo'];
+        if (!in_array($field, $allowedFields)) {
+            return false;
+        }
+
+        return $this->db->query("UPDATE {$this->table} SET {$field} = ? WHERE Id = ?", [$value, $id]);
+    }
+
+    /**
      * Delete a project.
      *
      * @param int $id
