@@ -19,39 +19,46 @@
         <div class="card card-primary card-outline">
             <div class="card-header">
                 <h3 class="card-title">Listado de Proyectos de Construcción</h3>
+                <div class="card-tools">
+                    <a href="/admin/proyectos/crear" class="btn btn-success btn-sm">
+                        <i class="fas fa-plus"></i> Nuevo Proyecto
+                    </a>
+                </div>
             </div>
             <div class="card-body">
                 <table id="projectsTable" class="table table-bordered table-striped">
                     <thead>
                         <tr>
                             <th>ID</th>
-                            <th>Código</th>
+                            <th>Base de Datos</th>
                             <th>Proyecto / Proceso</th>
+                            <th>Área</th>
                             <th>Estado</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <?php foreach ($projects as $project): ?>
-                            <tr>
-                                <td><?php echo $project['Id']; ?></td>
-                                <td><?php echo htmlspecialchars($project['Codigo'] ?? 'N/A'); ?></td>
-                                <td><?php echo htmlspecialchars($project['Proyecto_Proceso']); ?></td>
-                                <td class="text-center">
-                                    <?php if ($project['Activo'] == 1): ?>
-                                        <span class="badge badge-success">Activo</span>
-                                    <?php else: ?>
-                                        <span class="badge badge-secondary">Inactivo</span>
-                                    <?php endif; ?>
-                                </td>
-                                <td class="text-center">
-                                    <a href="/admin/proyectos/editar?id=<?php echo $project['Id']; ?>" class="btn btn-sm btn-info">
-                                        <i class="fas fa-edit"></i> Editar
-                                    </a>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
+                            <tbody>
+                                <?php foreach ($projects as $project): ?>
+                                    <tr>
+                                        <td><?php echo $project['Id']; ?></td>
+                                        <td><code><?php echo htmlspecialchars($project['Base_de_Datos'] ?? 'N/A'); ?></code></td>
+                                        <td><?php echo htmlspecialchars($project['Proyecto_Proceso']); ?></td>
+                                        <td><?php echo htmlspecialchars($project['Area'] ?? 'N/A'); ?></td>
+                                        <td>
+                                            <?php if ($project['Activo']): ?>
+                                                <span class="badge badge-success">Activo</span>
+                                            <?php else: ?>
+                                                <span class="badge badge-danger">Inactivo</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td class="text-center">
+                                            <a href="/admin/proyectos/editar?id=<?php echo $project['Id']; ?>" class="btn btn-sm btn-info">
+                                                <i class="fas fa-edit"></i> Editar
+                                            </a>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
                 </table>
             </div>
         </div>

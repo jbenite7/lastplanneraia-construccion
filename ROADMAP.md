@@ -95,10 +95,12 @@ Esta fase inicial se centra en construir una base administrativa sólida y segur
     - [x] **Vista Index:** Integrar DataTables configurado para carga AJAX y renderizado de columnas.
     - [x] **Acciones:** Generar botones de acción (Editar/Eliminar) dinámicamente.
 *   **Día 8: Gestión de Proyectos y UX Avanzada**
-    - [ ] **Controlador:** Implementar `ProjectController`.
+    - [x] **Controlador:** Implementar `ProjectController`. (CRUD Completo implementado)
+    - [x] **Formularios Extendidos:** Implementados campos de área, fechas de línea base, costos y URLs.
+    - [x] **Slugify Automático:** Generación inteligente de nombres de BD con números romanos y stop-words.
     - [ ] **Toggle Switches:** Implementar cambio de estado (Activo/Pendiente) con *Bootstrap Switch* y peticiones AJAX inmediatas.
     - [ ] **Feedback:** Integrar *SweetAlert2* o *Toastr* para notificaciones de éxito/error asíncronas.
-    - [ ] **Validación:** Implementar saneamiento (`filter_var`) y validación estricta de entradas en el backend.
+    - [x] **Validación:** Implementar saneamiento (`filter_var`) y validación estricta de entradas en el backend.
 *   **Día 9: Asignación de Recursos (Relaciones N:M)**
     - [ ] **Select2 AJAX:** Integrar *Select2* para búsqueda remota de usuarios (evitar cargar lista completa en DOM).
     - [ ] **Lógica de Asignación:** Gestionar guardado de `project_members` utilizando transacciones de base de datos para integridad.

@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-01-08
+
+### Added
+- **Project Management Enhancements:**
+  - Expanded project schema with new fields: Area (Construction/PI), Access Control, PDC Status, Baseline Dates (Start/End), Delay Cost, and Change Control URL.
+  - Automatic Database Name Generation: Implemented a robust `slugify` logic that:
+    - Removes Spanish stop words (el, de, la, etc.).
+    - Converts numbers (1-10) to Roman numerals (i, ii, iii...).
+    - Handles transliteration and separates words with underscores.
+    - Automatically appends `_pi` suffix for PI area projects.
+  - Full CRUD implementation:
+    - New Project creation view with advanced fields.
+    - Project Edit view with database name manual override capability.
+    - Updated Project list with Area column and improved styling.
+  - Secure routing for all project CRUD operations with CSRF protection.
+
+## [0.1.0] - 2026-01-08
+
 ### Added
 - **Project Module:**
   - Initial implementation of `ProjectController`.

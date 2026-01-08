@@ -77,7 +77,15 @@ $router->add('POST', '/usuarios/eliminar', 'UserController@delete');
 
 $router->add('GET', '/proyectos', 'ProjectController@index');
 
+$router->add('GET', '/proyectos/crear', 'ProjectController@create');
+
+$router->add('POST', '/proyectos/guardar', 'ProjectController@store');
+
 $router->add('GET', '/proyectos/editar', 'ProjectController@edit');
+
+$router->add('POST', '/proyectos/actualizar', 'ProjectController@update');
+
+$router->add('POST', '/proyectos/eliminar', 'ProjectController@delete');
 
 
 
