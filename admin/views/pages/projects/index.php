@@ -7,25 +7,24 @@
                     </a>
                 </div>
             </div>
-            <div class="card-body">
-                <table id="projectsTable" class="table table-bordered table-striped">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Proyecto / Proceso</th>
-                            <th>Área</th>
-                            <th class="text-center">Estado</th>
-                            <th class="text-center">Activo</th>
-                            <th class="text-center">Acceso</th>
-                            <th class="text-center">Plan de Compras</th>
-                            <th class="text-center">Acciones</th>
-                        </tr>
-                    </thead>
-                            <tbody>
+            <div class="card-body p-0" style="max-height: 700px; overflow-y: auto;">
+                <table id="projectsTable" class="table table-bordered table-striped table-sm" style="width: 100%; font-size: 0.85rem; border-collapse: separate; border-spacing: 0;">
+                                <thead>
+                                    <tr>
+                                        <th style="position: sticky; top: 0; background: white; z-index: 10; border-top: 1px solid #dee2e6;">ID</th>
+                                        <th style="position: sticky; top: 0; background: white; z-index: 10; border-top: 1px solid #dee2e6;">Proyecto / Proceso</th>
+                                        <th style="position: sticky; top: 0; background: white; z-index: 10; border-top: 1px solid #dee2e6;">Área</th>
+                                        <th style="position: sticky; top: 0; background: white; z-index: 10; border-top: 1px solid #dee2e6;" class="text-center">Estado</th>
+                                        <th style="position: sticky; top: 0; background: white; z-index: 10; border-top: 1px solid #dee2e6;" class="text-center">Activo</th>
+                                        <th style="position: sticky; top: 0; background: white; z-index: 10; border-top: 1px solid #dee2e6;" class="text-center">Acceso</th>
+                                        <th style="position: sticky; top: 0; background: white; z-index: 10; border-top: 1px solid #dee2e6;" class="text-center">Plan de Compras</th>
+                                        <th style="position: sticky; top: 0; background: white; z-index: 10; border-top: 1px solid #dee2e6;" class="text-center">Acciones</th>
+                                    </tr>
+                                </thead>                            <tbody>
                                 <?php foreach ($projects as $project): ?>
                                     <tr>
-                                        <td><?php echo $project['Id']; ?></td>
-                                        <td>
+                                        <td class="text-center"><?php echo $project['Id']; ?></td>
+                                        <td class="text-break">
                                             <strong><?php echo htmlspecialchars($project['Proyecto_Proceso']); ?></strong><br>
                                             <small class="text-muted">BD: <code><?php echo htmlspecialchars($project['Base_de_Datos'] ?? 'N/A'); ?></code></small>
                                         </td>
@@ -72,17 +71,17 @@
                                         </td>
                                         <td class="text-center">
                                             <div class="btn-group">
-                                                <a href="/admin/proyectos/miembros?id=<?php echo $project['Id']; ?>" class="btn btn-sm btn-outline-primary" title="Gestionar Miembros">
+                                                <a href="/admin/proyectos/miembros?id=<?php echo $project['Id']; ?>" class="btn btn-xs btn-outline-primary" title="Gestionar Miembros">
                                                     <i class="fas fa-users"></i>
                                                 </a>
-                                                <a href="/admin/proyectos/respaldar?id=<?php echo $project['Id']; ?>" class="btn btn-sm btn-warning" title="Respaldar (SQL)">
+                                                <a href="/admin/proyectos/respaldar?id=<?php echo $project['Id']; ?>" class="btn btn-xs btn-warning" title="Respaldar (SQL)">
                                                     <i class="fas fa-download"></i>
                                                 </a>
-                                                <a href="/admin/proyectos/editar?id=<?php echo $project['Id']; ?>" class="btn btn-sm btn-info" title="Editar">
+                                                <a href="/admin/proyectos/editar?id=<?php echo $project['Id']; ?>" class="btn btn-xs btn-info" title="Editar">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
                                                 <button type="button" 
-                                                        class="btn btn-sm btn-danger delete-project" 
+                                                        class="btn btn-xs btn-danger delete-project" 
                                                         data-id="<?php echo $project['Id']; ?>" 
                                                         data-name="<?php echo htmlspecialchars($project['Proyecto_Proceso']); ?>"
                                                         title="Eliminar">
@@ -104,10 +103,17 @@
 </form>
 
 <style>
-    /* Prevenir que el footer de AdminLTE solape la última fila de la tabla */
-    .card-body {
-        padding-bottom: 60px;
-        min-height: 200px;
+    /* Ajustes para maximizar el espacio horizontal y permitir sticky header */
+    .text-break {
+        word-break: break-all !important;
+    }
+    #projectsTable td, #projectsTable th {
+        vertical-align: middle;
+        padding: 4px 6px;
+    }
+    /* Sombra suave para el header sticky */
+    thead th {
+        box-shadow: inset 0 -1px 0 #dee2e6;
     }
     
     #projectsTable_wrapper {
@@ -120,7 +126,7 @@
 $(function () {
     // Inicializar DataTable
     var table = $("#projectsTable").DataTable({
-        "responsive": true, 
+        "responsive": false, 
         "lengthChange": false, 
         "autoWidth": false,
         "paging": false,

@@ -82,7 +82,8 @@ Esta fase inicial se centra en construir una base administrativa sólida y segur
     - [x] **Assets:** Integrar AdminLTE 3 (vía CDN) y dependencias (Bootstrap 4.6 + jQuery). - **(HECHO)**
     - [x] **Layout Modular:** Separar componentes: `Navbar`, `Sidebar`, `Footer` y `Content Wrapper` en `admin/views/layouts/main.php`. - **(HECHO)**
     - [x] **Breadcrumbs:** Implementar sistema dinámico de migas de pan pasado desde el controlador. - **(HECHO)**
-    - [ ] **Optimización de Assets:** Implementar inyección de scripts por vista (cargar JS pesado solo donde se use).
+    - [x] **Optimización de Interfaz:** Implementados encabezados fijos (sticky headers) y optimización de espacio en tablas (compact mode) para eliminar scroll horizontal.
+    - [x] **Inyección de Scripts:** Implementada lógica de scripts específicos por vista para DataTables y SweetAlert2.
 *   **Día 5: Autenticación y Control de Acceso**
     - [x] **Login:** Formulario de acceso con validación `password_verify` y regeneración de sesión.
     - [x] **Middleware Auth:** Proteger rutas administrativas verificando sesión activa.
@@ -91,6 +92,7 @@ Esta fase inicial se centra en construir una base administrativa sólida y segur
 #### Semana 2: Módulos Funcionales y Experiencia de Usuario (UX)
 *   **Día 6-7: Gestión de Usuarios (Escalabilidad Total)**
     - [x] **Controlador:** Implementar `UserController` (index, create, store, edit, update, delete).
+    - [x] **Generación Automática de Usuario:** Implementada lógica para sugerir `nombre.apellido` automáticamente con detección de duplicados y normalización de caracteres.
     - [x] **DataTables Server-Side:** Implementar lógica backend para paginación, filtrado y ordenamiento SQL dinámico (AJAX). (Implementado Client-side para agilidad inicial, escalable a Server-side).
     - [x] **Vista Index:** Integrar DataTables configurado para carga AJAX y renderizado de columnas.
     - [x] **Acciones:** Generar botones de acción (Editar/Eliminar) dinámicamente.
