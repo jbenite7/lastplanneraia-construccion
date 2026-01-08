@@ -5,6 +5,8 @@
  * Este es el único punto de entrada a la aplicación.
  */
 
+error_log("Solicitud recibida en index.php: " . $_SERVER['REQUEST_URI']);
+
 // 1. Cargar el Autoloader de Composer para las dependencias
 require_once __DIR__ . '/../../vendor/autoload.php';
 
@@ -12,34 +14,65 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../../');
 $dotenv->load();
 
-// 3. Configuración del sistema de logs (Seguridad Día 1)
-ini_set('display_errors', 0); // No mostrar errores al usuario final
-ini_set('log_errors', 1);     // Guardar errores en un archivo
-ini_set('error_log', __DIR__ . '/../logs/php_error.log'); // Ruta del archivo de logs
+// 3. Configuración del sistema de logs
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/../logs/php_error.log');
 
 // 4. Configuración de zona horaria
 date_default_timezone_set('America/Bogota');
 
-// 5. Iniciar la sesión con parámetros de seguridad (Día 3)
-session_start([
-    'cookie_httponly' => true,
-    'cookie_secure'   => isset($_SERVER['HTTPS']),
-    'cookie_samesite' => 'Lax',
-]);
+// 5. Inicializar Seguridad y Sesión
+use Admin\Core\Security;
+Security::initSession();
 
 // 6. Inicializar la Base de Datos (Singleton)
-require_once __DIR__ . '/../../construccion/src/Database.php';
-$db = Database::getInstance();
+if (file_exists(__DIR__ . '/../../construccion/src/Database.php')) {
+    require_once __DIR__ . '/../../construccion/src/Database.php';
+    try {
+        // Aseguramos que la conexión se establezca
+        $db = \Database::getInstance();
+    } catch (\Exception $e) {
+        error_log("Error inicializando base de datos: " . $e->getMessage());
+    }
+} else {
+    error_log("Error: No se encontró el archivo Database.php en " . __DIR__ . '/../../construccion/src/Database.php');
+}
 
-// 7. Inicializar el Router y procesar la petición
+// 7. Inicializar el Router y definir rutas
 use Admin\Core\Router;
 
 $router = new Router();
 
-// Aquí definiremos las rutas más adelante
-$route = $_GET['route'] ?? 'dashboard';
+// Rutas de Autenticación
+$router->add('GET', '/login', 'AuthController@loginView');
+$router->add('POST', '/login', 'AuthController@login');
+$router->add('GET', '/logout', 'AuthController@logout');
 
-// Por ahora, un simple mensaje de prueba hasta configurar las vistas
-echo "<h1>Panel Administrativo AIA</h1>";
-echo "<p>Estructura segura cargada correctamente.</p>";
-echo "<p>Ruta actual: " . htmlspecialchars($route) . "</p>";
+// Rutas Protegidas
+
+$router->add('GET', '/', 'DashboardController@index');
+
+$router->add('GET', '/dashboard', 'DashboardController@index');
+
+
+
+// Gestión de Usuarios
+
+$router->add('GET', '/usuarios', 'UserController@index');
+
+$router->add('GET', '/usuarios/crear', 'UserController@create');
+
+$router->add('POST', '/usuarios/guardar', 'UserController@store');
+
+$router->add('GET', '/usuarios/editar', 'UserController@edit');
+
+$router->add('POST', '/usuarios/actualizar', 'UserController@update');
+
+$router->add('POST', '/usuarios/eliminar', 'UserController@delete');
+
+
+
+// Ejecutar el ruteo
+
+$router->dispatch();

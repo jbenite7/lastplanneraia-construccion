@@ -48,4 +48,78 @@ class User
         $stmt = $this->db->query("SELECT * FROM {$this->table}");
         return $stmt->fetchAll();
     }
+
+    /**
+     * Create a new user.
+     *
+     * @param array $data
+     * @return bool
+     */
+    public function create($data)
+    {
+        $sql = "INSERT INTO {$this->table} (nombre, email, cargo, proyecto, permiso, usuario, password) 
+                VALUES (?, ?, ?, ?, ?, ?, ?)";
+        
+        $password = password_hash($data['password'], PASSWORD_DEFAULT);
+        
+        return $this->db->query($sql, [
+            $data['nombre'],
+            $data['email'],
+            $data['cargo'],
+            $data['proyecto'],
+            $data['permiso'],
+            $data['usuario'],
+            $password
+        ]);
+    }
+
+    /**
+     * Update an existing user.
+     *
+     * @param int $id
+     * @param array $data
+     * @return bool
+     */
+    public function update($id, $data)
+    {
+        $fields = [
+            'nombre = ?',
+            'email = ?',
+            'cargo = ?',
+            'proyecto = ?',
+            'permiso = ?',
+            'usuario = ?'
+        ];
+        
+        $params = [
+            $data['nombre'],
+            $data['email'],
+            $data['cargo'],
+            $data['proyecto'],
+            $data['permiso'],
+            $data['usuario']
+        ];
+
+        // If password is provided, update it too
+        if (!empty($data['password'])) {
+            $fields[] = 'password = ?';
+            $params[] = password_hash($data['password'], PASSWORD_DEFAULT);
+        }
+
+        $params[] = $id;
+        $sql = "UPDATE {$this->table} SET " . implode(', ', $fields) . " WHERE id = ?";
+        
+        return $this->db->query($sql, $params);
+    }
+
+    /**
+     * Delete a user.
+     *
+     * @param int $id
+     * @return bool
+     */
+    public function delete($id)
+    {
+        return $this->db->query("DELETE FROM {$this->table} WHERE id = ?", [$id]);
+    }
 }

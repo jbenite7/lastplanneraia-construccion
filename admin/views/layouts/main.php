@@ -30,7 +30,7 @@
     <!-- Right navbar links -->
     <ul class="navbar-nav ml-auto">
       <li class="nav-item">
-        <a class="nav-link" href="../cerrar.php" role="button">
+        <a class="nav-link" href="/admin/logout" role="button">
           <i class="fas fa-sign-out-alt"></i> Salir
         </a>
       </li>
@@ -52,20 +52,20 @@
       <nav class="mt-2">
         <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
           <li class="nav-item">
-            <a href="index.php" class="nav-link">
+            <a href="/admin/" class="nav-link">
               <i class="nav-icon fas fa-tachometer-alt"></i>
               <p>Dashboard</p>
             </a>
           </li>
           <li class="nav-header">GESTIÓN</li>
           <li class="nav-item">
-            <a href="proyectos.php" class="nav-link">
+            <a href="/admin/proyectos" class="nav-link">
               <i class="nav-icon fas fa-project-diagram"></i>
               <p>Proyectos</p>
             </a>
           </li>
           <li class="nav-item">
-            <a href="usuarios.php" class="nav-link">
+            <a href="/admin/usuarios" class="nav-link">
               <i class="nav-icon fas fa-users"></i>
               <p>Usuarios</p>
             </a>

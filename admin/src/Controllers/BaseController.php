@@ -9,8 +9,9 @@ abstract class BaseController
      *
      * @param string $view Name of the view file (without .php)
      * @param array $data Data to be passed to the view
+     * @param bool $useLayout Whether to wrap the view in the main layout
      */
-    protected function render($view, $data = [])
+    protected function render($view, $data = [], $useLayout = true)
     {
         // Extract data to make variables available in the view
         extract($data);
@@ -19,13 +20,17 @@ abstract class BaseController
         $viewFile = __DIR__ . "/../../views/pages/$view.php";
 
         if (file_exists($viewFile)) {
-            // Start output buffering
-            ob_start();
-            include $viewFile;
-            $content = ob_get_clean();
+            if ($useLayout) {
+                // Start output buffering
+                ob_start();
+                include $viewFile;
+                $content = ob_get_clean();
 
-            // Include the main layout
-            include __DIR__ . "/../../views/layouts/main.php";
+                // Include the main layout
+                include __DIR__ . "/../../views/layouts/main.php";
+            } else {
+                include $viewFile;
+            }
         } else {
             die("Error: La vista $view no existe en $viewFile");
         }

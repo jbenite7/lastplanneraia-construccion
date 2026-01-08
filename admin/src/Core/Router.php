@@ -28,9 +28,15 @@ class Router
     public function dispatch()
     {
         $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-        // Remove the base path if necessary (e.g., /admin)
+        error_log("Router Dispatch - Original URI: " . $_SERVER['REQUEST_URI']);
+        
+        // Remove common base paths if they exist
+        $uri = str_replace('/admin/public/index.php', '', $uri);
         $uri = str_replace('/admin', '', $uri);
+        
         if ($uri === '') $uri = '/';
+        
+        error_log("Router Dispatch - Processed URI: " . $uri);
 
         $method = $_SERVER['REQUEST_METHOD'];
 
