@@ -10,11 +10,13 @@ class Security
     public static function initSession()
     {
         if (session_status() === PHP_SESSION_NONE) {
-            // Configuración de cookies de sesión
+            // En local (localhost), a veces el dominio con puerto causa problemas
+            $isLocal = in_array($_SERVER['REMOTE_ADDR'], ['127.0.0.1', '::1']);
+            
+            // Configuración simplificada para máxima compatibilidad en MAMP/Local
             session_set_cookie_params([
                 'lifetime' => 0,
-                'path' => '/admin/',
-                'domain' => $_SERVER['HTTP_HOST'],
+                'path' => '/', // Cambiado de /admin/ a / para evitar problemas de alcance
                 'secure' => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on',
                 'httponly' => true,
                 'samesite' => 'Lax'
@@ -34,6 +36,7 @@ class Security
     {
         if (empty($_SESSION['csrf_token'])) {
             $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+            error_log("CSRF: Nuevo token generado: " . $_SESSION['csrf_token']);
         }
         return $_SESSION['csrf_token'];
     }
@@ -43,10 +46,20 @@ class Security
      */
     public static function validateCsrfToken($token)
     {
-        if (!isset($_SESSION['csrf_token']) || empty($token)) {
+        $sessionToken = $_SESSION['csrf_token'] ?? '';
+        
+        if (empty($sessionToken) || empty($token)) {
+            error_log("CSRF Error: Token faltante. Sesión: '$sessionToken', Enviado: '$token'");
             return false;
         }
-        return hash_equals($_SESSION['csrf_token'], $token);
+        
+        $isValid = hash_equals($sessionToken, $token);
+        
+        if (!$isValid) {
+            error_log("CSRF Error: No coinciden. Sesión: '$sessionToken', Enviado: '$token'");
+        }
+        
+        return $isValid;
     }
 
     /**
