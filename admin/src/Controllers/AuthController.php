@@ -12,7 +12,7 @@ class AuthController extends BaseController
 
     public function __construct()
     {
-        $this->userModel = new User(Database::getInstance());
+        $this->userModel = new User(\Database::getInstance());
     }
 
     /**

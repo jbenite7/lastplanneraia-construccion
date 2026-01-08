@@ -9,9 +9,36 @@ class User
     private $db;
     private $table = 'general_usuarios';
 
-    public function __construct(Database $db)
+    public function __construct($db)
     {
         $this->db = $db;
+    }
+
+    /**
+     * Check if a user has a specific permission or role.
+     * 
+     * @param string $permission The permission or role name
+     * @param array $user The user data (optional, defaults to checking the current instance if it were an object)
+     * @return bool
+     */
+    public static function can($user, $permission)
+    {
+        if (!$user || !isset($user['permiso'])) {
+            return false;
+        }
+
+        // Admin has all permissions
+        if ($user['permiso'] === 'Admin') {
+            return true;
+        }
+
+        // Exact match
+        if ($user['permiso'] === $permission) {
+            return true;
+        }
+
+        // Logic for multiple roles could be added here
+        return false;
     }
 
     /**
