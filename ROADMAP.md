@@ -98,8 +98,9 @@ Esta fase inicial se centra en construir una base administrativa sólida y segur
     - [x] **Controlador:** Implementar `ProjectController`. (CRUD Completo implementado)
     - [x] **Formularios Extendidos:** Implementados campos de área, fechas de línea base, costos y URLs.
     - [x] **Slugify Automático:** Generación inteligente de nombres de BD con números romanos y stop-words.
-    - [ ] **Toggle Switches:** Implementar cambio de estado (Activo/Pendiente) con *Bootstrap Switch* y peticiones AJAX inmediatas.
-    - [ ] **Feedback:** Integrar *SweetAlert2* o *Toastr* para notificaciones de éxito/error asíncronas.
+    - [x] **Toggle Switches:** Implementar cambio de estado (Activo/Acceso/PDC) con peticiones AJAX inmediatas.
+    - [x] **Feedback:** Integrar *Toastr* para notificaciones de éxito/error asíncronas.
+    - [x] **Integridad de Datos:** Implementar creación automática y renombrado atómico de tablas de proyecto (10 tablas por proyecto).
     - [x] **Validación:** Implementar saneamiento (`filter_var`) y validación estricta de entradas en el backend.
 *   **Día 9: Asignación de Recursos (Relaciones N:M)**
     - [ ] **Select2 AJAX:** Integrar *Select2* para búsqueda remota de usuarios (evitar cargar lista completa en DOM).
