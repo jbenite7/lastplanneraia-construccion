@@ -3,17 +3,22 @@
 namespace Admin\Controllers;
 
 use Admin\Models\Project;
+use Admin\Models\ProjectMember;
 use Admin\Core\Security;
+use Admin\Core\RoleManager;
 use Database;
 
 class ProjectController extends AdminController
 {
     private $projectModel;
+    private $memberModel;
 
     public function __construct()
     {
         parent::__construct();
-        $this->projectModel = new Project(\Database::getInstance());
+        $db = \Database::getInstance();
+        $this->projectModel = new Project($db);
+        $this->memberModel = new ProjectMember($db);
     }
 
     /**
@@ -30,6 +35,117 @@ class ProjectController extends AdminController
             'projects' => $projects,
             'csrf_token' => Security::generateCsrfToken()
         ]);
+    }
+
+    /**
+     * Ver y gestionar miembros de un proyecto.
+     */
+    public function members()
+    {
+        $id = $_GET['id'] ?? null;
+        if (!$id) {
+            header('Location: /admin/proyectos');
+            exit;
+        }
+
+        $project = $this->projectModel->find($id);
+        if (!$project) {
+            header('Location: /admin/proyectos?error=not_found');
+            exit;
+        }
+
+        $members = $this->memberModel->getByProject($id);
+        $availableUsers = $this->memberModel->getNonMembers($id);
+
+        $this->render('projects/members', [
+            'title' => 'Gestionar Miembros - ' . $project['Proyecto_Proceso'],
+            'pageTitle' => 'Miembros del Proyecto: ' . $project['Proyecto_Proceso'],
+            'breadcrumb' => 'Proyectos / Miembros',
+            'project' => $project,
+            'members' => $members,
+            'availableUsers' => $availableUsers,
+            'roles' => RoleManager::getAll(),
+            'csrf_token' => Security::generateCsrfToken()
+        ]);
+    }
+
+    /**
+     * Añadir un miembro al proyecto.
+     */
+    public function addMember()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: /admin/proyectos');
+            exit;
+        }
+
+        if (!Security::validateCsrfToken($_POST['csrf_token'] ?? '')) {
+            die('Error de seguridad: Token CSRF inválido.');
+        }
+
+        $projectId = $_POST['project_id'] ?? null;
+        $userId = $_POST['user_id'] ?? null;
+        $role = $_POST['role'] ?? 'U';
+
+        if ($projectId && $userId) {
+            $this->memberModel->add($projectId, $userId, $role);
+            
+            // INTELIGENCIA: Aprender la relación cargo -> rol
+            $user = (new \Admin\Models\User(\Database::getInstance()))->find($userId);
+            if ($user && !empty($user['cargo'])) {
+                RoleManager::learn($user['cargo'], $role);
+            }
+
+            header('Location: /admin/proyectos/miembros?id=' . $projectId . '&success=member_added');
+        } else {
+            header('Location: /admin/proyectos/miembros?id=' . $projectId . '&error=missing_data');
+        }
+        exit;
+    }
+
+    /**
+     * Endpoint AJAX para sugerir un rol basado en el cargo.
+     */
+    public function suggestRole()
+    {
+        header('Content-Type: application/json');
+        $cargo = $_GET['cargo'] ?? '';
+        
+        $role = RoleManager::suggestRoleByCargo($cargo);
+        $roleInfo = RoleManager::getAll()[$role] ?? null;
+
+        echo json_encode([
+            'role' => $role,
+            'name' => $roleInfo['name'] ?? $role,
+            'description' => $roleInfo['description'] ?? ''
+        ]);
+        exit;
+    }
+
+    /**
+     * Eliminar un miembro del proyecto.
+     */
+    public function removeMember()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: /admin/proyectos');
+            exit;
+        }
+
+        if (!Security::validateCsrfToken($_POST['csrf_token'] ?? '')) {
+            die('Error de seguridad: Token CSRF inválido.');
+        }
+
+        $projectId = $_POST['project_id'] ?? null;
+        $userId = $_POST['user_id'] ?? null;
+
+        if ($projectId && $userId) {
+            $this->memberModel->remove($projectId, $userId);
+            header('Location: /admin/proyectos/miembros?id=' . $projectId . '&success=member_removed');
+        } else {
+            header('Location: /admin/proyectos/miembros?id=' . $projectId . '&error=delete_failed');
+        }
+        exit;
     }
 
     /**

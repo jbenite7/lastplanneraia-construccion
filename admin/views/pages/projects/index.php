@@ -72,6 +72,9 @@
                                         </td>
                                         <td class="text-center">
                                             <div class="btn-group">
+                                                <a href="/admin/proyectos/miembros?id=<?php echo $project['Id']; ?>" class="btn btn-sm btn-outline-primary" title="Gestionar Miembros">
+                                                    <i class="fas fa-users"></i>
+                                                </a>
                                                 <a href="/admin/proyectos/respaldar?id=<?php echo $project['Id']; ?>" class="btn btn-sm btn-warning" title="Respaldar (SQL)">
                                                     <i class="fas fa-download"></i>
                                                 </a>

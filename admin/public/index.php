@@ -76,20 +76,20 @@ $router->add('POST', '/usuarios/eliminar', 'UserController@delete');
 // Gestión de Proyectos
 
 $router->add('GET', '/proyectos', 'ProjectController@index');
-
 $router->add('GET', '/proyectos/crear', 'ProjectController@create');
-
 $router->add('POST', '/proyectos/guardar', 'ProjectController@store');
-
 $router->add('GET', '/proyectos/editar', 'ProjectController@edit');
-
 $router->add('POST', '/proyectos/actualizar', 'ProjectController@update');
-
 $router->add('POST', '/proyectos/eliminar', 'ProjectController@delete');
-
 $router->add('GET', '/proyectos/respaldar', 'ProjectController@backup');
-
 $router->add('POST', '/proyectos/toggle-status', 'ProjectController@toggleStatus');
+
+// Gestión de Miembros de Proyectos
+$router->add('GET', '/proyectos/miembros', 'ProjectController@members');
+$router->add('POST', '/proyectos/miembros/añadir', 'ProjectController@addMember');
+$router->add('POST', '/proyectos/miembros/quitar', 'ProjectController@removeMember');
+$router->add('GET', '/proyectos/sugerir-rol', 'ProjectController@suggestRole');
+$router->add('GET', '/proyectos/sugerir-rol', 'ProjectController@suggestRole');
 
 
 
