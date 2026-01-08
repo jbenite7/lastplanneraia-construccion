@@ -73,6 +73,14 @@ $router->add('POST', '/usuarios/eliminar', 'UserController@delete');
 
 
 
+// Gestión de Proyectos
+
+$router->add('GET', '/proyectos', 'ProjectController@index');
+
+$router->add('GET', '/proyectos/editar', 'ProjectController@edit');
+
+
+
 // Ejecutar el ruteo
 
 $router->dispatch();
