@@ -84,9 +84,9 @@ Esta fase inicial se centra en construir una base administrativa sólida y segur
     - [x] **Breadcrumbs:** Implementar sistema dinámico de migas de pan pasado desde el controlador. - **(HECHO)**
     - [ ] **Optimización de Assets:** Implementar inyección de scripts por vista (cargar JS pesado solo donde se use).
 *   **Día 5: Autenticación y Control de Acceso**
-    - [ ] **Login:** Formulario de acceso con validación `password_verify` y regeneración de sesión.
-    - [ ] **Middleware Auth:** Proteger rutas administrativas verificando sesión activa.
-    - [ ] **Lógica RBAC:** Implementar clase/método `User::can($permission)` para control granular en Vistas y Controladores.
+    - [x] **Login:** Formulario de acceso con validación `password_verify` y regeneración de sesión.
+    - [x] **Middleware Auth:** Proteger rutas administrativas verificando sesión activa.
+    - [x] **Lógica RBAC:** Implementar clase/método `User::can($permission)` para control granular en Vistas y Controladores.
 
 #### Semana 2: Módulos Funcionales y Experiencia de Usuario (UX)
 *   **Día 6-7: Gestión de Usuarios (Escalabilidad Total)**
