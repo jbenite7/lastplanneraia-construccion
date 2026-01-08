@@ -162,7 +162,7 @@ $(function() {
     // Configuración global de AJAX para incluir el token CSRF
     $.ajaxSetup({
         headers: {
-            'X-CSRF-TOKEN': '<?php echo Security::generateCsrfToken(); ?>'
+            'X-CSRF-TOKEN': '<?php echo \Admin\Core\Security::generateCsrfToken(); ?>'
         }
     });
 

@@ -71,9 +71,21 @@
                                             </div>
                                         </td>
                                         <td class="text-center">
-                                            <a href="/admin/proyectos/editar?id=<?php echo $project['Id']; ?>" class="btn btn-sm btn-info" title="Editar">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
+                                            <div class="btn-group">
+                                                <a href="/admin/proyectos/respaldar?id=<?php echo $project['Id']; ?>" class="btn btn-sm btn-warning" title="Respaldar (SQL)">
+                                                    <i class="fas fa-download"></i>
+                                                </a>
+                                                <a href="/admin/proyectos/editar?id=<?php echo $project['Id']; ?>" class="btn btn-sm btn-info" title="Editar">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <button type="button" 
+                                                        class="btn btn-sm btn-danger delete-project" 
+                                                        data-id="<?php echo $project['Id']; ?>" 
+                                                        data-name="<?php echo htmlspecialchars($project['Proyecto_Proceso']); ?>"
+                                                        title="Eliminar">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -81,6 +93,24 @@
                 </table>
             </div>
         </div>
+
+<!-- Hidden Form for Deletion -->
+<form id="deleteForm" action="/admin/proyectos/eliminar" method="POST" style="display:none;">
+    <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
+    <input type="hidden" name="id" id="deleteProjectId">
+</form>
+
+<style>
+    /* Prevenir que el footer de AdminLTE solape la última fila de la tabla */
+    .card-body {
+        padding-bottom: 60px;
+        min-height: 200px;
+    }
+    
+    #projectsTable_wrapper {
+        margin-bottom: 20px;
+    }
+</style>
 
 <!-- DataTables Scripts -->
 <script>
@@ -93,7 +123,30 @@ $(function () {
         "paging": false,
         "info": false,
         "language": {
-            "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Spanish.json"
+            "processing": "Procesando...",
+            "search": "Buscar:",
+            "lengthMenu": "Mostrar _MENU_ registros",
+            "info": "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
+            "infoEmpty": "Mostrando registros del 0 al 0 de un total de 0 registros",
+            "infoFiltered": "(filtrado de un total de _MAX_ registros)",
+            "infoPostFix": "",
+            "loadingRecords": "Cargando...",
+            "zeroRecords": "No se encontraron resultados",
+            "emptyTable": "Ningún dato disponible en esta tabla",
+            "paginate": {
+                "first": "Primero",
+                "previous": "Anterior",
+                "next": "Siguiente",
+                "last": "Último"
+            },
+            "aria": {
+                "sortAscending": ": Activar para ordenar la columna de manera ascendente",
+                "sortDescending": ": Activar para ordenar la columna de manera descendente"
+            },
+            "buttons": {
+                "copy": "Copiar",
+                "colvis": "Visibilidad"
+            }
         },
         "columnDefs": [
             { "orderable": false, "targets": [4, 5, 6, 7] }
@@ -103,8 +156,37 @@ $(function () {
     
     table.buttons().container().appendTo('#projectsTable_wrapper .col-md-6:eq(0)');
 
-    // Manejo del cambio de estado vía AJAX
-    $('.status-toggle').on('change', function() {
+    // Confirmación de eliminación con SweetAlert2 (usando delegación de eventos)
+    $(document).on('click', '.delete-project', function() {
+        var id = $(this).data('id');
+        var name = $(this).data('name');
+
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: "Se descargará un respaldo automático y luego se eliminará el proyecto '" + name + "' permanentemente. ¡Esta acción no se puede deshacer!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, respaldar y eliminar',
+            cancelButtonText: 'Cancelar',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // 1. Disparar la descarga del backup
+                window.location.href = '/admin/proyectos/respaldar?id=' + id;
+                
+                // 2. Esperar un breve momento para que el navegador procese la descarga antes de enviar el POST de eliminación
+                setTimeout(function() {
+                    $('#deleteProjectId').val(id);
+                    $('#deleteForm').submit();
+                }, 2000);
+            }
+        });
+    });
+
+    // Manejo del cambio de estado vía AJAX (usando delegación de eventos)
+    $(document).on('change', '.status-toggle', function() {
         var checkbox = $(this);
         var projectId = checkbox.data('id');
         var field = checkbox.data('field');
@@ -149,12 +231,20 @@ $(function () {
         });
     });
 
-    // Detectar parámetros de éxito en la URL
+    // Detectar parámetros en la URL para notificaciones
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('success')) {
         const action = urlParams.get('success');
         if (action === 'created') toastr.success('Proyecto creado con éxito');
         if (action === 'updated') toastr.success('Proyecto actualizado con éxito');
+        if (action === 'deleted') Swal.fire('Eliminado', 'El proyecto ha sido eliminado correctamente.', 'success');
+        
+        window.history.replaceState({}, document.title, "/admin/proyectos");
+    }
+
+    if (urlParams.has('error')) {
+        const error = urlParams.get('error');
+        if (error === 'delete_failed') toastr.error('No se pudo eliminar el proyecto');
         
         window.history.replaceState({}, document.title, "/admin/proyectos");
     }

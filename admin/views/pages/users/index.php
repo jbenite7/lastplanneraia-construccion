@@ -1,6 +1,3 @@
-<!-- DataTables -->
-<link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
-
 <div class="card">
   <div class="card-header">
     <h3 class="card-title">Listado de Usuarios</h3>
@@ -51,11 +48,13 @@
   <!-- /.card-body -->
 </div>
 
-<!-- DataTables & Plugins -->
-<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
-<!-- SweetAlert2 -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<style>
+    /* Prevenir que el footer de AdminLTE solape la última fila de la tabla */
+    .card-body {
+        padding-bottom: 60px;
+        min-height: 200px;
+    }
+</style>
 
 <script>
 $(function () {
@@ -68,7 +67,7 @@ $(function () {
     }
   });
 
-  $('.delete-user').on('click', function() {
+  $(document).on('click', '.delete-user', function() {
     const id = $(this).data('id');
     const name = $(this).data('name');
     

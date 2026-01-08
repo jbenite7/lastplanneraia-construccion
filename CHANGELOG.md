@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-01-08
+
+### Added
+- **Integridad de Datos:** Creación automática de 10 tablas relacionales por cada proyecto nuevo.
+- **Gestión de Prefijos:** Renombrado atómico de tablas de base de datos cuando se modifica el prefijo del proyecto.
+- **Respaldos:** Funcionalidad para exportar y descargar un volcado SQL completo de las tablas de un proyecto.
+- **Eliminación Segura:** Flujo de trabajo con SweetAlert2 que descarga un respaldo antes de eliminar físicamente las tablas.
+- **UI Proyectos:** Integración completa de DataTables con traducción al español, Toastr para feedback asíncrono y corrección de solapamiento en el layout.
+
+### Fixed
+- Error de namespace en la generación del token CSRF en el layout principal (`\Admin\Core\Security`).
+- Delegación de eventos en DataTables para asegurar que los botones funcionen tras búsquedas o cambios de página.
+
 ## [0.2.0] - 2026-01-08
 
 ### Added

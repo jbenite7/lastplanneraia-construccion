@@ -196,6 +196,39 @@ class ProjectController extends AdminController
     }
 
     /**
+     * Generar y descargar copia de seguridad SQL del proyecto.
+     */
+    public function backup()
+    {
+        $id = $_GET['id'] ?? null;
+        if (!$id) {
+            header('Location: /admin/proyectos');
+            exit;
+        }
+
+        $project = $this->projectModel->find($id);
+        if (!$project) {
+            header('Location: /admin/proyectos?error=not_found');
+            exit;
+        }
+
+        $sqlContent = $this->projectModel->exportToSql($id);
+        
+        if (!$sqlContent) {
+            header('Location: /admin/proyectos?error=backup_failed');
+            exit;
+        }
+
+        $filename = "backup_" . $project['Base_de_Datos'] . "_" . date('Ymd_His') . ".sql";
+
+        header('Content-Type: application/sql');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        echo $sqlContent;
+        exit;
+    }
+
+
+    /**
      * Alternar el estado de un campo booleano de un proyecto vía AJAX.
      */
     public function toggleStatus()

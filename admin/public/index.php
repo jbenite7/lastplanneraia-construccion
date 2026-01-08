@@ -87,6 +87,8 @@ $router->add('POST', '/proyectos/actualizar', 'ProjectController@update');
 
 $router->add('POST', '/proyectos/eliminar', 'ProjectController@delete');
 
+$router->add('GET', '/proyectos/respaldar', 'ProjectController@backup');
+
 $router->add('POST', '/proyectos/toggle-status', 'ProjectController@toggleStatus');
 
 
