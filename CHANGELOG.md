@@ -7,15 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
-- Error 404 en el Panel Administrativo mediante la configuración de reglas `mod_rewrite` en `.htaccess`.
-- Error de conexión a la base de datos en entorno MAMP ajustando el puerto (8889) y host (127.0.0.1) en el `.env`.
-- Fallo en la carga de la clase `Database` en el Front Controller del administrador.
-- Procesamiento de URIs en el `Router` para soportar subdirectorios en servidores locales.
-
 ### Added
-- Logs de diagnóstico en `admin/public/index.php` para facilitar la depuración de rutas.
-- Verificación de existencia del archivo `Database.php` antes de su inclusión.
+- **Project Module:**
+  - Initial implementation of `ProjectController`.
+  - Advanced projects list view with DataTables (search, export, pagination).
+  - Clean routing for project management (/admin/proyectos).
+- **Navigation & Compatibility:**
+  - Standardized all administrative links to use friendly URLs.
+  - Implemented `admin/index.php` as a bridge to prevent directory listing and improve entry point handling.
+  - Hardened `admin/.htaccess` security.
+
+### Fixed
+- Fixed 403 Forbidden/Directory Listing issue when accessing `/admin/`.
+- Corrected sidebar links that were pointing to non-existent .php files.
 
 ### Added
 - **Security & Compatibility:**
