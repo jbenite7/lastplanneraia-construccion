@@ -19,6 +19,12 @@
   .card-title .info-icon {
     color: #6c757d;
   }
+  /* Estilos para los logs */
+  .log-row-error { background-color: #fff5f5 !important; border-left: 4px solid #dc3545; }
+  .log-row-route { background-color: #f0f7ff !important; border-left: 4px solid #007bff; }
+  .log-row-default { border-left: 4px solid #6c757d; }
+  .log-timestamp { color: #888; font-size: 0.7rem; font-weight: bold; }
+  .log-message { font-family: 'Courier New', Courier, monospace; font-size: 0.75rem; }
 </style>
 
 <div class="row">
@@ -217,38 +223,49 @@
 
   <div class="col-md-8" id="logs">
     <div class="card card-outline card-danger">
-      <div class="card-header">
-        <h3 class="card-title">
+      <div class="card-header d-flex p-0">
+        <h3 class="card-title p-3">
           <i class="fas fa-list-alt"></i> Últimos Eventos
           <i class="fas fa-info-circle info-icon" data-toggle="tooltip" title="Actividad crítica y errores recientes del log del sistema."></i>
         </h3>
+        <ul class="nav nav-pills ml-auto p-2">
+          <li class="nav-item"><a class="nav-link active btn-xs py-1 px-2 log-filter" href="#" data-filter="all">Todos</a></li>
+          <li class="nav-item"><a class="nav-link btn-xs py-1 px-2 log-filter" href="#" data-filter="error">Errores</a></li>
+          <li class="nav-item"><a class="nav-link btn-xs py-1 px-2 log-filter" href="#" data-filter="route">Rutas</a></li>
+          <li class="nav-item"><a class="nav-link btn-xs py-1 px-2 log-filter" href="#" data-filter="default">Otros</a></li>
+        </ul>
       </div>
-      <div class="card-body p-0">
+      <div class="card-body p-0" style="max-height: 600px; overflow-y: auto;">
         <div class="table-responsive">
           <table class="table table-sm mb-0">
-            <thead class="bg-light">
-              <tr>
-                <th>Evento / Log Entry</th>
-              </tr>
-            </thead>
             <tbody>
               <?php if (empty($stats['recent_errors'])): ?>
                 <tr>
                   <td class="text-center text-muted py-3">Sin eventos relevantes.</td>
                 </tr>
               <?php else: ?>
-                <?php foreach ($stats['recent_errors'] as $error): ?>
-                  <tr>
-                    <td style="font-family: monospace; font-size: 0.8rem; word-break: break-all;">
-                      <?php 
-                        if (strpos($error, 'Error') !== false || strpos($error, 'Exception') !== false || strpos($error, 'Fatal') !== false) {
-                            echo '<span class="badge badge-danger">ERROR</span> ' . htmlspecialchars($error);
-                        } elseif (strpos($error, 'Router') !== false) {
-                            echo '<span class="badge badge-info">ROUTE</span> ' . htmlspecialchars($error);
-                        } else {
-                            echo '<span class="badge badge-secondary">LOG</span> ' . htmlspecialchars($error);
-                        }
-                      ?>
+                <?php foreach ($stats['recent_errors'] as $error): 
+                  $isError = (stripos($error, 'error') !== false || stripos($error, 'exception') !== false || stripos($error, 'fatal') !== false);
+                  $isRoute = strpos($error, 'Router') !== false;
+                  
+                  // Intentar extraer timestamp [DD-Mon-YYYY HH:II:SS ...]
+                  preg_match('/^\[(.*?)\]\s+(.*)$/', $error, $matches);
+                  $timestamp = $matches[1] ?? '';
+                  $message = $matches[2] ?? $error;
+                  
+                  $rowClass = $isError ? 'log-row-error' : ($isRoute ? 'log-row-route' : 'log-row-default');
+                  $filterTag = $isError ? 'error' : ($isRoute ? 'route' : 'default');
+                  $icon = $isError ? 'fas fa-bug text-danger' : ($isRoute ? 'fas fa-route text-primary' : 'fas fa-info-circle text-muted');
+                ?>
+                  <tr class="log-row-all <?php echo $rowClass; ?>" data-type="<?php echo $filterTag; ?>">
+                    <td class="p-2">
+                      <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="log-timestamp"><i class="<?php echo $icon; ?> mr-1"></i> <?php echo htmlspecialchars($timestamp); ?></span>
+                        <span class="badge badge-<?php echo $isError ? 'danger' : ($isRoute ? 'primary' : 'secondary'); ?> btn-xs">
+                          <?php echo $isError ? 'ERROR' : ($isRoute ? 'ROUTE' : 'LOG'); ?>
+                        </span>
+                      </div>
+                      <div class="log-message text-break"><?php echo htmlspecialchars($message); ?></div>
                     </td>
                   </tr>
                 <?php endforeach; ?>
@@ -271,98 +288,28 @@ document.addEventListener('DOMContentLoaded', function() {
       $('[data-toggle="tooltip"]').tooltip();
     });
 
-    // 1. Limpieza de Tablas Huérfanas
-    const btnCleanup = document.getElementById('btnCleanupOrphans');
-    if (btnCleanup) {
-        btnCleanup.addEventListener('click', function() {
-            Swal.fire({
-                title: '¿Estás seguro?',
-                text: "Se eliminarán las tablas basura detectadas.",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                confirmButtonText: 'Sí, limpiar',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const formData = new FormData();
-                    formData.append('csrf_token', '<?php echo $_SESSION["csrf_token"]; ?>');
+    // Filtro de Logs
+    const filterLinks = document.querySelectorAll('.log-filter');
+    const logRows = document.querySelectorAll('.log-row-all');
 
-                    fetch('/admin/proyectos/limpiar-huerfanas', {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            Swal.fire('¡Limpio!', data.message, 'success').then(() => location.reload());
-                        } else {
-                            Swal.fire('Error', data.message, 'error');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        Swal.fire('Error', 'Fallo en la conexión.', 'error');
-                    });
+    filterLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const filter = this.getAttribute('data-filter');
+
+            // Actualizar UI de botones
+            filterLinks.forEach(l => l.classList.remove('active'));
+            this.classList.add('active');
+
+            // Filtrar filas
+            logRows.forEach(row => {
+                if (filter === 'all' || row.getAttribute('data-type') === filter) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
                 }
             });
         });
-    }
-
-    // 2. Detalle de Integridad (Un Clic)
-    document.querySelectorAll('.integrity-item').forEach(item => {
-        item.addEventListener('click', function() {
-            const project = this.getAttribute('data-project');
-            const missing = this.getAttribute('data-missing').split(', ').map(t => `<li>${t}</li>`).join('');
-            
-            Swal.fire({
-                title: `Tablas faltantes: ${project}`,
-                html: `<div class="text-left"><ul class="small">${missing}</ul></div>`,
-                icon: 'info',
-                confirmButtonText: 'Entendido'
-            });
-        });
-    });
-
-    // 3. Respaldo Completo
-    const btnFullBackup = document.getElementById('btnFullBackup');
-    if (btnFullBackup) {
-        btnFullBackup.addEventListener('click', function() {
-            Swal.fire({
-                title: 'Generar Respaldo Completo',
-                text: "Se creará un volcado SQL total en el servidor.",
-                icon: 'info',
-                showCancelButton: true,
-                confirmButtonText: 'Generar',
-                showLoaderOnConfirm: true,
-                preConfirm: () => {
-                    const formData = new FormData();
-                    formData.append('csrf_token', '<?php echo $_SESSION["csrf_token"]; ?>');
-                    return fetch('/admin/proyectos/respaldo-completo', {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .catch(error => {
-                        Swal.showValidationMessage(`Error: ${error}`);
-                    });
-                },
-                allowOutsideClick: () => !Swal.isLoading()
-            }).then((result) => {
-                if (result.isConfirmed && result.value.success) {
-                    Swal.fire('¡Éxito!', result.value.message, 'success').then(() => location.reload());
-                }
-            });
-        });
-    }
-});
-</script>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Inicializar tooltips de Bootstrap
-    $(function () {
-      $('[data-toggle="tooltip"]').tooltip();
     });
 
     // 1. Limpieza de Tablas Huérfanas
@@ -377,7 +324,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 confirmButtonColor: '#d33',
                 cancelButtonColor: '#3085d6',
                 confirmButtonText: 'Sí, limpiar',
-                cancelButtonText: 'Cancelar'
+                cancelButtonText: 'Cancelar',
+                backdrop: true
             }).then((result) => {
                 if (result.isConfirmed) {
                     const formData = new FormData();
@@ -390,14 +338,29 @@ document.addEventListener('DOMContentLoaded', function() {
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            Swal.fire('¡Limpio!', data.message, 'success').then(() => location.reload());
+                            Swal.fire({
+                                title: '¡Limpio!', 
+                                text: data.message, 
+                                icon: 'success',
+                                backdrop: true
+                            }).then(() => location.reload());
                         } else {
-                            Swal.fire('Error', data.message, 'error');
+                            Swal.fire({
+                                title: 'Error', 
+                                text: data.message, 
+                                icon: 'error',
+                                backdrop: true
+                            });
                         }
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        Swal.fire('Error', 'Ocurrió un fallo en la conexión.', 'error');
+                        Swal.fire({
+                            title: 'Error', 
+                            text: 'Ocurrió un fallo en la conexión.', 
+                            icon: 'error',
+                            backdrop: true
+                        });
                     });
                 }
             });
@@ -414,7 +377,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 title: `Tablas faltantes en ${project}`,
                 html: `<div class="text-left"><ul class="small">${missing}</ul></div>`,
                 icon: 'info',
-                confirmButtonText: 'Entendido'
+                confirmButtonText: 'Entendido',
+                backdrop: true
             });
         });
     });
@@ -430,6 +394,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 showCancelButton: true,
                 confirmButtonText: 'Generar ahora',
                 showLoaderOnConfirm: true,
+                backdrop: true,
+                allowOutsideClick: () => !Swal.isLoading(),
                 preConfirm: () => {
                     const formData = new FormData();
                     formData.append('csrf_token', '<?php echo $_SESSION["csrf_token"]; ?>');
@@ -444,13 +410,22 @@ document.addEventListener('DOMContentLoaded', function() {
                     .catch(error => {
                         Swal.showValidationMessage(`Request failed: ${error}`);
                     });
-                },
-                allowOutsideClick: () => !Swal.isLoading()
+                }
             }).then((result) => {
                 if (result.isConfirmed && result.value.success) {
-                    Swal.fire('¡Éxito!', result.value.message, 'success').then(() => location.reload());
+                    Swal.fire({
+                        title: '¡Éxito!', 
+                        text: result.value.message, 
+                        icon: 'success',
+                        backdrop: true
+                    }).then(() => location.reload());
                 } else if (result.isConfirmed) {
-                    Swal.fire('Error', result.value.message, 'error');
+                    Swal.fire({
+                        title: 'Error', 
+                        text: result.value.message, 
+                        icon: 'error',
+                        backdrop: true
+                    });
                 }
             });
         });

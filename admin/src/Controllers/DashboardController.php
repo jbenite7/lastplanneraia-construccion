@@ -24,7 +24,7 @@ class DashboardController extends AdminController
 
         // 2. System Health - Log Errors
         $logErrors = $this->getLogErrorCount();
-        $recentErrors = $this->getRecentErrors(10);
+        $recentErrors = $this->getRecentErrors(30);
 
         // 3. Database Health & Integrity
         $dbStats = $this->getDatabaseStats();
@@ -105,7 +105,9 @@ class DashboardController extends AdminController
         $handle = fopen($logFile, 'r');
         if ($handle) {
             while (($line = fgets($handle)) !== false) {
-                if (strpos($line, $today) !== false && (strpos($line, 'Error') !== false || strpos($line, 'Exception') !== false || strpos($line, 'Fatal') !== false)) {
+                // Buscamos la fecha de hoy y palabras clave de error (insensible a mayúsculas)
+                if (strpos($line, $today) !== false && 
+                   (stripos($line, 'error') !== false || stripos($line, 'exception') !== false || stripos($line, 'fatal') !== false)) {
                     $count++;
                 }
             }
@@ -116,37 +118,57 @@ class DashboardController extends AdminController
     }
 
     /**
-     * Get the most recent events from the log.
+     * Get all relevant events from the log for today.
      */
-    private function getRecentErrors($limit = 10)
+    private function getRecentErrors($limit = 100) // Increased internal limit
     {
         $logFile = __DIR__ . '/../../logs/php_error.log';
         if (!file_exists($logFile)) return [];
 
-        $lines = [];
+        $today = date('d-M-Y');
+        $results = [];
+        
         $fp = fopen($logFile, 'r');
         if (!$fp) return [];
 
+        // Simple tail to avoid reading GBs, but enough to cover a full day of activity
+        $buffer = 4096;
         fseek($fp, 0, SEEK_END);
         $pos = ftell($fp);
-        $buffer = 4096;
+        $lines = [];
         $chunk = '';
 
-        while ($pos > 0 && count($lines) < $limit * 3) {
+        // Read up to 100KB backwards - usually more than enough for daily logs
+        $maxRead = 102400; 
+        $bytesRead = 0;
+
+        while ($pos > 0 && $bytesRead < $maxRead) {
             $readSize = min($pos, $buffer);
             $pos -= $readSize;
+            $bytesRead += $readSize;
             fseek($fp, $pos);
             $chunk = fread($fp, $readSize) . $chunk;
             $lines = explode("\n", $chunk);
         }
         fclose($fp);
 
-        $results = [];
         foreach (array_reverse($lines) as $line) {
-            if (empty(trim($line))) continue;
-            if (strpos($line, 'Error') !== false || strpos($line, 'Exception') !== false || strpos($line, 'Router') !== false || strpos($line, 'CSRF') !== false) {
-                $results[] = trim($line);
-                if (count($results) >= $limit) break;
+            $line = trim($line);
+            if (empty($line)) continue;
+
+            // FILTRO CRÍTICO: Solo registros de hoy
+            if (strpos($line, $today) === false) continue;
+
+            // Capturar errores, actividad de Router o CSRF
+            if (stripos($line, 'error') !== false || 
+                stripos($line, 'exception') !== false || 
+                stripos($line, 'fatal') !== false || 
+                strpos($line, 'Router') !== false || 
+                strpos($line, 'CSRF') !== false) {
+                
+                $results[] = $line;
+                // Safety break to not overload the browser if logs are massive
+                if (count($results) >= 100) break;
             }
         }
 

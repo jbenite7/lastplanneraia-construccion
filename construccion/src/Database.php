@@ -56,6 +56,17 @@ class Database
         }
     }
 
+    /**
+     * Escapa una cadena para su uso en una consulta SQL.
+     *
+     * @param string $string
+     * @return string
+     */
+    public function quote($string)
+    {
+        return $this->pdo->quote($string);
+    }
+
     // Evitar clonación del objeto
     private function __clone() {}
 

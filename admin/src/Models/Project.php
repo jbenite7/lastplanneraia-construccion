@@ -145,44 +145,46 @@ class Project
     }
 
     /**
-     * Generates a full SQL dump of the entire database (Global + All Project tables).
+     * Generates a full SQL dump of the entire database writing directly to a stream.
+     * This prevents memory exhaustion for large databases.
      * 
-     * @return string SQL content
+     * @param string $filePath Path where the SQL file will be saved
+     * @return bool Success or failure
      */
-    public function exportFullDatabase()
+    public function exportFullDatabaseToPath($filePath)
     {
+        $handle = fopen($filePath, 'w');
+        if (!$handle) return false;
+
         $stmt = $this->db->query("SHOW TABLES");
         $allTables = $stmt->fetchAll(\PDO::FETCH_COLUMN);
 
-        $output = "-- Respaldo Completo de la Base de Datos\n";
-        $output .= "-- Generado el: " . date('Y-m-d H:i:s') . "\n\n";
-        $output .= "SET FOREIGN_KEY_CHECKS=0;\n\n";
+        fwrite($handle, "-- Respaldo Completo de la Base de Datos\n");
+        fwrite($handle, "-- Generado el: " . date('Y-m-d H:i:s') . "\n\n");
+        fwrite($handle, "SET FOREIGN_KEY_CHECKS=0;\n\n");
 
         foreach ($allTables as $table) {
             // 1. Estructura
             $res = $this->db->query("SHOW CREATE TABLE `{$table}`");
             $createRow = $res->fetch();
-            $output .= "DROP TABLE IF EXISTS `{$table}`;\n";
-            $output .= $createRow['Create Table'] . ";\n\n";
+            fwrite($handle, "DROP TABLE IF EXISTS `{$table}`;\n");
+            fwrite($handle, $createRow['Create Table'] . ";\n\n");
 
-            // 2. Datos
+            // 2. Datos (Procesados por lotes si fuera necesario, pero por ahora tabla a tabla)
             $res = $this->db->query("SELECT * FROM `{$table}`");
-            $rows = $res->fetchAll();
-
-            if (!empty($rows)) {
-                foreach ($rows as $row) {
-                    $values = array_map(function($val) {
-                        if (is_null($val)) return "NULL";
-                        return "'" . addslashes($val) . "'";
-                    }, $row);
-                    $output .= "INSERT INTO `{$table}` VALUES (" . implode(', ', $values) . ");\n";
-                }
-                $output .= "\n";
+            while ($row = $res->fetch(\PDO::FETCH_ASSOC)) {
+                $values = array_map(function($val) {
+                    if (is_null($val)) return "NULL";
+                    return $this->db->quote($val);
+                }, $row);
+                fwrite($handle, "INSERT INTO `{$table}` VALUES (" . implode(', ', $values) . ");\n");
             }
+            fwrite($handle, "\n");
         }
 
-        $output .= "SET FOREIGN_KEY_CHECKS=1;\n";
-        return $output;
+        fwrite($handle, "SET FOREIGN_KEY_CHECKS=1;\n");
+        fclose($handle);
+        return true;
     }
 
     /**

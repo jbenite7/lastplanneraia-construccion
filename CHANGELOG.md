@@ -9,15 +9,16 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ### Añadido
 - **Tablero de Salud del Sistema:**
-  - **Monitoreo en Tiempo Real:** Integración de escaneo del log de errores de PHP con conteo diario automático y flujo de actividad en vivo.
+  - **Monitoreo en Tiempo Real:** Integración de escaneo del log de errores de PHP con conteo diario automático y flujo de actividad que cubre todo el día actual.
   - **Herramientas de Integridad de Datos:** Verificación automatizada de las tablas estructurales requeridas para cada proyecto, incluyendo una vista detallada de tablas faltantes a un solo clic.
   - **Limpieza de Base de Datos:** Implementación de un detector de "Tablas Huérfanas" para identificar y eliminar tablas sobrantes de proyectos borrados, con protección explícita para las tablas globales `general_`.
-  - **Respaldos Completos:** Añadida funcionalidad para generar y almacenar instantáneas SQL completas de la base de datos (configuración global + todos los proyectos) directamente en el servidor.
+  - **Respaldos Completos:** Añadida funcionalidad para generar y almacenar instantáneas SQL completas de la base de datos mediante streaming directo a disco para prevenir agotamiento de memoria.
   - **Información del Entorno del Servidor:** Añadida visibilidad de límites críticos de PHP (`upload_max_filesize`, `memory_limit`, etc.) para facilitar el soporte técnico.
 - **Mejoras de UI/UX:**
+  - **Filtrado de Eventos:** Añadida capacidad para filtrar el feed de actividad por tipo (Errores, Rutas, Otros) mediante botones dinámicos en el encabezado.
   - **Tooltips Interactivos:** Estandarización de iconos de información (`i`) en todas las métricas con explicaciones detalladas de conceptos y lógica de medición.
-  - **Seguimiento de Proyectos Activos:** Mejora del recuadro de proyectos para mostrar el conteo `Activos / Totales` con una lista desplegable de los proyectos actuales.
-  - **Modales Integrados:** Uso de **SweetAlert2** para todas las confirmaciones de limpieza, detalles de integridad y notificaciones de progreso de respaldos.
+  - **Seguimiento de Proyectos Activos:** Mejora del recuadro de proyectos para mostrar el conteo `Activos / Totales` con una lista desplegable de los proyectos actuales en formato de viñetas.
+  - **Modales Integrados:** Uso de **SweetAlert2** con soporte de fondo (backdrop) para todas las confirmaciones de limpieza, detalles de integridad y notificaciones de progreso.
 - **Mejoras en Gestión de Usuarios:**
   - Sugerencia automática de nombre de usuario basada en nombre o prefijo de email con detección de duplicados.
   - Prevención de duplicados para nombres completos y correos electrónicos durante la creación de usuarios.
@@ -28,6 +29,11 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
   - **Optimización de Espacio Horizontal:** Aplicación de estilos compactos (`table-sm`), fuentes más pequeñas y reglas de `text-break` para eliminar el desplazamiento horizontal.
   - **Corrección de DataTables:** Resuelto el error "table.buttons is not a function" incluyendo correctamente los activos de la extensión Buttons.
   - **Resolución de CORS:** Traducción al español de DataTables integrada directamente para evitar problemas de peticiones de origen cruzado en entornos locales.
+
+### Corregido
+- **Fallo de Memoria en Respaldos:** Corregido error 500 al realizar respaldos completos mediante la implementación de escritura por flujo (streaming) en disco.
+- **Advertencias de SweetAlert2:** Resuelta la advertencia de consola relacionada con el parámetro `allowOutsideClick` asegurando el uso de `backdrop: true`.
+- **Sensibilidad de Búsqueda en Logs:** Unificados criterios de escaneo de errores (insensible a mayúsculas) para que el contador diario coincida exactamente con el feed de eventos.
 
 ### Eliminado
 - **Limpieza de Archivos Redundantes:** 
@@ -74,7 +80,7 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 - **Mejoras en Gestión de Proyectos:**
   - Esquema de proyecto ampliado con nuevos campos: Área (Construcción/PI), Control de Acceso, Estado de PDC, Fechas de Línea Base (Inicio/Fin), Costo de Retraso y URL de Control de Cambios.
   - Generación Automática de Nombres de Base de Datos: Implementada una lógica robusta de `slugify` que:
-    - Elimina palabras vacías en español (el, de, la, etc.).
+    - Elimina palabras vacías en español (el, de la, la, etc.).
     - Convierte números (1-10) a números romanos (i, ii, iii...).
     - Maneja la transliteración y separa las palabras con guiones bajos.
     - Añade automáticamente el sufijo `_pi` para proyectos del área PI.

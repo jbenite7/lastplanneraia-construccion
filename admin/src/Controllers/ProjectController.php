@@ -445,19 +445,34 @@ class ProjectController extends AdminController
             exit;
         }
 
-        $backupDir = __DIR__ . '/../../../backups';
+        // Definir ruta absoluta a la carpeta de respaldos en la raíz del proyecto
+        $backupDir = dirname(__DIR__, 2) . '/backups';
+        
         if (!is_dir($backupDir)) {
-            mkdir($backupDir, 0755, true);
+            if (!mkdir($backupDir, 0755, true)) {
+                echo json_encode(['success' => false, 'message' => 'No se pudo crear la carpeta de respaldos.']);
+                exit;
+            }
         }
 
-        $sqlContent = $this->projectModel->exportFullDatabase();
-        $filename = "full_backup_" . date('Ymd_His') . ".sql";
-        $filePath = $backupDir . '/' . $filename;
+        if (!is_writable($backupDir)) {
+            echo json_encode(['success' => false, 'message' => 'La carpeta de respaldos no tiene permisos de escritura.']);
+            exit;
+        }
 
-        if (file_put_contents($filePath, $sqlContent)) {
-            echo json_encode(['success' => true, 'message' => 'Respaldo completo generado: ' . $filename]);
-        } else {
-            echo json_encode(['success' => false, 'message' => 'Error al guardar el archivo de respaldo.']);
+        try {
+            $filename = "full_backup_" . date('Ymd_His') . ".sql";
+            $filePath = $backupDir . '/' . $filename;
+
+            // Call the refactored streaming method
+            if ($this->projectModel->exportFullDatabaseToPath($filePath)) {
+                echo json_encode(['success' => true, 'message' => 'Respaldo completo generado: ' . $filename]);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Error al escribir el archivo SQL.']);
+            }
+        } catch (\Exception $e) {
+            error_log("Error en fullBackup: " . $e->getMessage());
+            echo json_encode(['success' => false, 'message' => 'Error interno: ' . $e->getMessage()]);
         }
         exit;
     }

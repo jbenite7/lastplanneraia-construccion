@@ -110,11 +110,11 @@ Esta fase inicial se centra en construir una base administrativa sólida y segur
     - [x] **Lógica de Asignación:** Gestión de `project_members` con aprendizaje dinámico de cargo-rol.
 *   **Día 10: Salud del Sistema y Monitoreo (Dashboard)**
     - [x] **Tablero de Salud:** Implementado tablero de indicadores técnicos (Salud del Sistema).
-    - [x] **Monitoreo de Logs:** Rastreo automático de errores en `php_error.log` con conteo diario y flujo de actividad reciente.
-    - [x] **Alertas de Integridad:** Sistema de detección de tablas faltantes por proyecto.
-    - [x] **Limpieza de Base de Datos:** Identificación de tablas huérfanas (basura de proyectos eliminados).
+    - [x] **Monitoreo de Logs:** Rastreo de errores en `php_error.log` con filtrado dinámico y visualización en tiempo real de toda la actividad del día actual.
+    - [x] **Alertas de Integridad:** Sistema de detección de tablas faltantes por proyecto con detalle visual a un clic.
+    - [x] **Limpieza de Base de Datos:** Identificación y eliminación de tablas huérfanas (basura de proyectos eliminados) con protección de tablas globales.
     - [x] **Monitor de Entorno:** Visualización de límites de PHP (`upload_max_filesize`, `memory_limit`) para soporte técnico.
-    - [x] **Estado de Respaldos:** Seguimiento de copias de seguridad SQL generadas.
+    - [x] **Estado de Respaldos:** Generación de copias de seguridad SQL completas mediante streaming directo a disco para evitar saturación de memoria.
 *   **Día 11: Pulido y Entrega**
     - [ ] **Auditoría Final:** Verificar permisos de archivos y configuración de entorno (`display_errors = Off`).
     - [ ] **Smoke Test:** Validación manual completa de flujos críticos.
