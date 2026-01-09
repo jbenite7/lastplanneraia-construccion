@@ -63,6 +63,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $opcion == "modificar") {
 
         $stmt = $db->query($queryUpdate, $paramsUpdate);
 
+        if ($stmt) {
+            $db->logActivity('Contratos', 'MODIFICAR', "Se actualizaron los paquetes de contratación para la actividad: $actividadModificar (ID: $Id)", $dbPrefix);
+        }
+
         // Insertar en general_dias_procesos_contratacion si no existe
         $insertTargets = [
             ['SI', 'Suministro e Instalación'],
@@ -81,6 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $opcion == "modificar") {
                     if (!$stmtCheck->fetch()) {
                         $queryIns = "INSERT INTO general_dias_procesos_contratacion (paqueteContratacion, tipoPaquete, diasElaboracionPliegos, diasIngresoLicify, diasEntregaPliegos, diasReciboPropuestas, diasCuadrosComparativos, diasLegalizacionContrato, diasFabricacion, diasInsumosObra) VALUES (?, ?, 1, 1, 1, 1, 1, 1, 1, 1)";
                         $db->query($queryIns, [$pVal, $tipo]);
+                        $db->logActivity('Contratos', 'CREAR_DIAS_PROCESO', "Se creó configuración de días para el paquete: $pVal ($tipo)", $dbPrefix);
                     }
                 }
             }
@@ -91,13 +96,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $opcion == "modificar") {
 
 } else if ($opcion == "nueva_sem") {
     $f_inicio_sem = date("Y-m-d", strtotime($_POST["f_inicio_sem"]));
+    $db->logActivity('Contratos', 'NUEVA_SEMANA', "Se solicitó creación de nueva semana con fecha inicio: $f_inicio_sem", $dbPrefix);
     nueva_sem($f_inicio_sem, $dbPrefix, $db);
 } else if ($opcion == "eliminar_sem") {
     $semana = filter_var($_POST["semana"], FILTER_VALIDATE_INT);
+    $db->logActivity('Contratos', 'ELIMINAR_SEMANA', "Se eliminó la semana: $semana", $dbPrefix);
     eliminar_sem($semana, $dbPrefix, $db);
 } else if ($opcion == "eliminar") {
     $Id = $_POST["Id"];
+    // Obtener nombre de la actividad antes de borrar para el log
+    $actData = $db->query("SELECT actividad FROM {$dbPrefix}_actividades WHERE Id = ?", [$Id])->fetch();
+    $nombreAct = $actData ? $actData['actividad'] : "ID: $Id";
+    
     eliminar($Id, $dbPrefix, $db);
+    $db->logActivity('Contratos', 'ELIMINAR', "Se eliminó la actividad de contratos: $nombreAct (ID: $Id)", $dbPrefix);
 } else if ($opcion == "actualizarFechaInicio") {
     $Id = $_POST["idActividad"];
     $semana = filter_var($_POST["semana"], FILTER_VALIDATE_INT);

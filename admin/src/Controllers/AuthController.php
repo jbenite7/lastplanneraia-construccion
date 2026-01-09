@@ -71,9 +71,15 @@ class AuthController extends BaseController
 
                 Security::regenerateSession();
 
+                // Auditoría
+                \Database::getInstance()->logActivity('Seguridad', 'LOGIN', "Inicio de sesión exitoso");
+
                 $this->json(['success' => true, 'redirect' => '/admin/']);
             }
         }
+
+        // Auditoría de fallo
+        \Database::getInstance()->logActivity('Seguridad', 'LOGIN_FALLIDO', "Intento de acceso fallido para el usuario: $username");
 
         $this->json(['success' => false, 'message' => 'Credenciales incorrectas']);
     }
@@ -83,6 +89,9 @@ class AuthController extends BaseController
      */
     public function logout()
     {
+        // Auditoría antes de destruir la sesión
+        \Database::getInstance()->logActivity('Seguridad', 'LOGOUT', "Cierre de sesión");
+
         unset($_SESSION['admin_user']);
         session_destroy();
         header('Location: /admin/login');

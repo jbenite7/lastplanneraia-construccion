@@ -14,13 +14,13 @@ class DashboardController extends AdminController
     public function index()
     {
         $db = Database::getInstance();
-        $projectModel = new Project($db);
-        $userModel = new User($db);
+        $this->projectModel = new Project($db);
+        $this->userModel = new User($db);
 
         // 1. Entity Counts & Active Projects List
-        $totalProjects = $projectModel->count();
-        $activeProjects = $projectModel->getActiveNames();
-        $totalUsers = $userModel->count();
+        $totalProjects = $this->projectModel->count();
+        $activeProjects = $this->projectModel->getActiveNames();
+        $totalUsers = $this->userModel->count();
 
         // 2. System Health - Log Errors
         $logErrors = $this->getLogErrorCount();
@@ -28,8 +28,8 @@ class DashboardController extends AdminController
 
         // 3. Database Health & Integrity
         $dbStats = $this->getDatabaseStats();
-        $integrityIssues = $projectModel->getIntegrityReport();
-        $orphanTables = $projectModel->getOrphanTables();
+        $integrityIssues = $this->projectModel->getIntegrityReport();
+        $orphanTables = $this->projectModel->getOrphanTables();
 
         // 4. PHP Server Environment
         $phpLimits = $this->getPhpLimits();
@@ -37,28 +37,46 @@ class DashboardController extends AdminController
         // 5. Backup Status
         $backupStatus = $this->getBackupStatus();
 
+        $stats = [
+            'total_projects' => $totalProjects,
+            'active_projects_list' => $activeProjects,
+            'active_projects_count' => count($activeProjects),
+            'total_users' => $totalUsers,
+            'log_errors' => $logErrors,
+            'db_size' => $dbStats['size_mb'],
+            'total_tables' => $dbStats['total_tables'],
+            'recent_errors' => $recentErrors,
+            'integrity_issues' => $integrityIssues,
+            'orphan_tables' => $orphanTables,
+            'php_limits' => $phpLimits,
+            'backup_status' => $backupStatus,
+            'audit_logs' => $this->getAuditLogs(10)
+        ];
+
         $this->render('dashboard', [
-            'title' => 'Salud del Sistema - Panel Admin',
-            'user' => $_SESSION['admin_user'],
-            'stats' => [
-                'total_projects' => $totalProjects,
-                'active_projects_list' => $activeProjects,
-                'active_projects_count' => count($activeProjects),
-                'total_users' => $totalUsers,
-                'log_errors' => $logErrors,
-                'db_size' => $dbStats['size_mb'],
-                'total_tables' => $dbStats['total_tables'],
-                'recent_errors' => $recentErrors,
-                'integrity_issues' => $integrityIssues,
-                'orphan_tables' => $orphanTables,
-                'php_limits' => $phpLimits,
-                'backup_status' => $backupStatus
-            ]
+            'title' => 'Dashboard de Administración',
+            'stats' => $stats
         ]);
     }
 
     /**
-     * Get PHP critical configuration limits.
+     * Get recent audit logs from database.
+     */
+    private function getAuditLogs($limit = 10)
+    {
+        $db = \Database::getInstance();
+        $sql = "SELECT * FROM general_auditoria_acciones ORDER BY fecha DESC LIMIT ?";
+        try {
+            $stmt = $db->query($sql, [$limit]);
+            return $stmt->fetchAll();
+        } catch (\Exception $e) {
+            error_log("Error fetching audit logs: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Count errors in the PHP log for today.
      */
     private function getPhpLimits()
     {

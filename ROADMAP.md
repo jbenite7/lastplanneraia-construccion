@@ -260,13 +260,27 @@ Esta fase inicial se centra en construir una base administrativa sólida y segur
     - **Acción:** Escribir pruebas de integración para los repositorios para asegurar que las consultas a la base de datos funcionan como se espera.
     - **Resultado Clave:** Inicio de una suite de pruebas automatizadas que aumenta la confianza para realizar cambios futuros.
 
-### Mes 4: Panel de Administración y Gestión de Accesos
-- **Semana 13-14: Gestión de Entidades Núcleo (CRUD).**
-    - **Acción:** Desarrollar el módulo de **Gestión de Proyectos**: interfaz para crear, editar, bloquear (activar/desactivar) y eliminar proyectos.
-    - **Acción:** Desarrollar el módulo de **Gestión de Usuarios**: interfaz para el alta, baja y modificación de datos de usuarios.
-    - **Resultado Clave:** Control administrativo centralizado sobre los datos maestros de la aplicación.
-- **Semana 15-16: Sistema de Permisos y Seguridad Avanzada.**
-    - **Acción:** Implementar un **Control de Acceso Basado en Roles (RBAC)**: definir permisos específicos por tipo de usuario (Administrador, Residente, Consulta).
-    - **Acción:** Integrar la validación de permisos en el Front Controller para proteger las rutas y acciones del sistema.
-    - **Acción:** Crear una interfaz visual para la asignación dinámica de permisos y roles.
-    - **Resultado Clave:** Sistema seguro y granular donde cada usuario accede solo a la información autorizada.
+### Fase Extra: Implementación de Auditoría de Acciones (Seguimiento Alfabético)
+**Objetivo:** Integrar el registro automático de acciones (`logActivity`) en cada proceso que modifique datos en el sistema.
+
+- [x] **Infraestructura:** Creación de tabla y método central en `Database.php`.
+- [x] **Visualización:** Tablero de auditoría en Dashboard de Administración.
+- [x] **Módulo: admin** (Gestión de usuarios, proyectos y miembros).
+- [x] **Módulo: contratos**
+- [ ] **Módulo: controlCambios**
+- [ ] **Módulo: indicadores**
+- [ ] **Módulo: informe_productividad**
+- [ ] **Módulo: listadoActividades**
+- [ ] **Módulo: login** (Registro de inicios y cierres de sesión).
+- [ ] **Módulo: paquetesContratacion**
+- [ ] **Módulo: pdc**
+- [ ] **Módulo: profesionales**
+- [ ] **Módulo: programa_general**
+- [ ] **Módulo: programaGeneralActualizar**
+- [ ] **Módulo: programacion_intermedia**
+- [ ] **Módulo: programacion_semanal**
+- [ ] **Módulo: registrate**
+- [ ] **Módulo: subcontratistas**
+
+---
+Mensaje de Commit Sugerido: feat: Add audit logging infrastructure and checklist to roadmap.

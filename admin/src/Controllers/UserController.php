@@ -211,6 +211,9 @@ class UserController extends AdminController
             // Aprender el cargo si es nuevo
             RoleManager::learn($data['cargo'], $data['permiso']);
             
+            // Auditoría
+            Database::getInstance()->logActivity('Usuarios', 'CREAR', "Se creó el usuario '{$data['usuario']}' ({$data['nombre']}) con rol '{$data['permiso']}'");
+            
             $this->json(['success' => true, 'message' => 'Usuario creado correctamente']);
             return;
         }
@@ -269,6 +272,9 @@ class UserController extends AdminController
         ];
 
         if ($this->userModel->update($id, $data)) {
+            // Auditoría
+            \Database::getInstance()->logActivity('Usuarios', 'MODIFICAR', "Se actualizó el usuario con ID: $id ('{$data['usuario']}')");
+            
             $this->json(['success' => true, 'message' => 'Usuario actualizado correctamente']);
         }
 
@@ -289,7 +295,14 @@ class UserController extends AdminController
             $this->json(['success' => false, 'message' => 'ID de usuario no proporcionado']);
         }
 
+        // Obtener datos antes de borrar para el log
+        $user = $this->userModel->find($id);
+
         if ($this->userModel->delete($id)) {
+            // Auditoría
+            $userName = $user ? $user['usuario'] : 'Desconocido';
+            \Database::getInstance()->logActivity('Usuarios', 'ELIMINAR', "Se eliminó el usuario con ID: $id ('$userName')");
+            
             $this->json(['success' => true, 'message' => 'Usuario eliminado correctamente']);
         }
 

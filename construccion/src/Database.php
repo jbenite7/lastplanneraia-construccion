@@ -57,6 +57,46 @@ class Database
     }
 
     /**
+     * Registra una acción en la bitácora de auditoría.
+     * 
+     * @param string $modulo Nombre del módulo (ej: 'PDC', 'Usuarios')
+     * @param string $accion Tipo de acción (ej: 'CREAR', 'MODIFICAR')
+     * @param string $descripcion Detalle de la acción
+     * @param string $proyecto Proyecto asociado (opcional)
+     * @return bool
+     */
+    public function logActivity($modulo, $accion, $descripcion = '', $proyecto = null)
+    {
+        try {
+            // Detectar usuario de cualquier sesión
+            if (session_status() === PHP_SESSION_NONE) {
+                session_start();
+            }
+            
+            $usuario = $_SESSION['usuario'] ?? $_SESSION['admin_user']['usuario'] ?? 'Sistema';
+            $id_sesion = session_id();
+            $ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+            
+            $sql = "INSERT INTO general_auditoria_acciones 
+                    (usuario, id_sesion, modulo, accion, descripcion, ip_address, proyecto) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?)";
+                    
+            return $this->query($sql, [
+                $usuario, 
+                $id_sesion, 
+                $modulo, 
+                $accion, 
+                $descripcion, 
+                $ip, 
+                $proyecto
+            ]);
+        } catch (Exception $e) {
+            error_log('Error registrando auditoría: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
      * Escapa una cadena para su uso en una consulta SQL.
      *
      * @param string $string

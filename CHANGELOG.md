@@ -8,6 +8,13 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 ## [Sin publicar]
 
 ### Añadido
+- **Sistema de Auditoría de Acciones:**
+  - Creación de la tabla `general_auditoria_acciones` para el registro persistente de actividad de usuarios.
+  - Implementación del método `Database::logActivity()` para centralizar el registro de acciones desde cualquier módulo.
+  - Rediseño del Dashboard administrativo para incluir una tabla de Auditoría de Acciones separada de los logs de error del sistema.
+  - Soporte para detección automática de usuario e IP en registros de auditoría.
+
+### Añadido
 - **Tablero de Salud del Sistema:**
   - **Monitoreo en Tiempo Real:** Integración de escaneo del log de errores de PHP con conteo diario automático y flujo de actividad que cubre todo el día actual.
   - **Herramientas de Integridad de Datos:** Verificación automatizada de las tablas estructurales requeridas para cada proyecto, incluyendo una vista detallada de tablas faltantes a un solo clic.

@@ -96,6 +96,11 @@ class ProjectController extends AdminController
                 RoleManager::learn($user['cargo'], $role);
             }
 
+            // Auditoría
+            $project = $this->projectModel->find($projectId);
+            $userName = $user ? $user['usuario'] : "ID:$userId";
+            \Database::getInstance()->logActivity('Miembros', 'CREAR', "Se añadió a '$userName' al proyecto '{$project['Proyecto_Proceso']}' con rol '$role'", $project['Base_de_Datos']);
+
             header('Location: /admin/proyectos/miembros?id=' . $projectId . '&success=member_added');
         } else {
             header('Location: /admin/proyectos/miembros?id=' . $projectId . '&error=missing_data');
@@ -140,8 +145,17 @@ class ProjectController extends AdminController
         $userId = $_POST['user_id'] ?? null;
 
         if ($projectId && $userId) {
-            $this->memberModel->remove($projectId, $userId);
-            header('Location: /admin/proyectos/miembros?id=' . $projectId . '&success=member_removed');
+            $project = $this->projectModel->find($projectId);
+            $user = (new \Admin\Models\User(\Database::getInstance()))->find($userId);
+            
+            if ($this->memberModel->remove($projectId, $userId)) {
+                // Auditoría
+                $userName = $user ? $user['usuario'] : "ID:$userId";
+                \Database::getInstance()->logActivity('Miembros', 'ELIMINAR', "Se retiró a '$userName' del proyecto '{$project['Proyecto_Proceso']}'", $project['Base_de_Datos']);
+                header('Location: /admin/proyectos/miembros?id=' . $projectId . '&success=member_removed');
+            } else {
+                header('Location: /admin/proyectos/miembros?id=' . $projectId . '&error=delete_failed');
+            }
         } else {
             header('Location: /admin/proyectos/miembros?id=' . $projectId . '&error=delete_failed');
         }
@@ -219,6 +233,8 @@ class ProjectController extends AdminController
         ];
 
         if ($this->projectModel->update($id, $data)) {
+            // Auditoría
+            \Database::getInstance()->logActivity('Proyectos', 'MODIFICAR', "Se actualizó la configuración del proyecto '$nombre'", $base_datos);
             header('Location: /admin/proyectos?success=updated');
         } else {
             header('Location: /admin/proyectos/editar?id=' . $id . '&error=db_error');
@@ -281,6 +297,8 @@ class ProjectController extends AdminController
         ];
 
         if ($this->projectModel->create($data)) {
+            // Auditoría
+            \Database::getInstance()->logActivity('Proyectos', 'CREAR', "Se creó el proyecto '$nombre'");
             header('Location: /admin/proyectos?success=created');
         } else {
             header('Location: /admin/proyectos/crear?error=db_error');
@@ -303,8 +321,15 @@ class ProjectController extends AdminController
         }
 
         $id = $_POST['id'] ?? null;
-        if ($id && $this->projectModel->delete($id)) {
-            header('Location: /admin/proyectos?success=deleted');
+        if ($id) {
+            $project = $this->projectModel->find($id);
+            if ($this->projectModel->delete($id)) {
+                // Auditoría
+                \Database::getInstance()->logActivity('Proyectos', 'ELIMINAR', "Se eliminó permanentemente el proyecto '{$project['Proyecto_Proceso']}'");
+                header('Location: /admin/proyectos?success=deleted');
+            } else {
+                header('Location: /admin/proyectos?error=delete_failed');
+            }
         } else {
             header('Location: /admin/proyectos?error=delete_failed');
         }
@@ -334,6 +359,9 @@ class ProjectController extends AdminController
             header('Location: /admin/proyectos?error=backup_failed');
             exit;
         }
+
+        // Auditoría
+        \Database::getInstance()->logActivity('Proyectos', 'BACKUP', "Se generó respaldo del proyecto '{$project['Proyecto_Proceso']}'", $project['Base_de_Datos']);
 
         $filename = "backup_" . $project['Base_de_Datos'] . "_" . date('Ymd_His') . ".sql";
 
@@ -389,6 +417,11 @@ class ProjectController extends AdminController
         $dbField = $fieldMap[$field] ?? $field;
 
         if ($this->projectModel->updateField($id, $dbField, $value)) {
+            // Auditoría
+            $project = $this->projectModel->find($id);
+            $statusText = $value ? 'Activado' : 'Desactivado';
+            \Database::getInstance()->logActivity('Proyectos', 'ESTADO', "Se cambió '$dbField' a '$statusText' para '{$project['Proyecto_Proceso']}'", $project['Base_de_Datos']);
+            
             echo json_encode(['success' => true, 'message' => 'Actualizado correctamente']);
         } else {
             echo json_encode(['success' => false, 'message' => 'Error al actualizar']);
@@ -421,6 +454,8 @@ class ProjectController extends AdminController
         }
 
         if ($this->projectModel->dropTables($orphans)) {
+            // Auditoría
+            \Database::getInstance()->logActivity('Sistema', 'LIMPIEZA', "Se eliminaron " . count($orphans) . " tablas huérfanas de la base de datos");
             echo json_encode(['success' => true, 'message' => count($orphans) . ' tablas eliminadas correctamente.']);
         } else {
             echo json_encode(['success' => false, 'message' => 'Error al intentar eliminar las tablas.']);
@@ -466,6 +501,8 @@ class ProjectController extends AdminController
 
             // Call the refactored streaming method
             if ($this->projectModel->exportFullDatabaseToPath($filePath)) {
+                // Auditoría
+                \Database::getInstance()->logActivity('Sistema', 'BACKUP_FULL', "Se generó un respaldo completo de la base de datos: $filename");
                 echo json_encode(['success' => true, 'message' => 'Respaldo completo generado: ' . $filename]);
             } else {
                 echo json_encode(['success' => false, 'message' => 'Error al escribir el archivo SQL.']);
