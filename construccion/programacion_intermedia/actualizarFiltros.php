@@ -51,11 +51,11 @@ if(isset($_SESSION['en_ejecucion_terminadas_intermedia'])){
 }
 
 $query="SELECT (SELECT COUNT(*) FROM $db"."_programa_consolidado WHERE ((Semanas_Inicio<=0 AND Ejecutado=1) OR (Semanas_Inicio>6 AND Ejecutado=0)) AND Semana=$semana AND Titulo=0) AS 'no_requeridas', (SELECT COUNT(*) FROM $db"."_programa_consolidado WHERE Semana=$semana AND Semanas_Inicio>0 AND Semanas_Inicio<=6 AND Ejecutado=0 AND Titulo=0) AS 'lookahead', (SELECT COUNT(*) FROM $db"."_programa_consolidado WHERE Semana=$semana AND Semanas_Inicio<=0 AND Ejecutado=0 AND Titulo=0) AS 'no_iniciadas', (SELECT COUNT(*) FROM $db"."_programa_consolidado WHERE Semanas_Inicio<=6 AND Semana=$semana AND Ejecutado>0 AND Ejecutado<1 AND Titulo=0 AND Estado_Restricciones<1) AS 'en_ejecucion_pendientes', (SELECT COUNT(*) FROM $db"."_programa_consolidado WHERE Semanas_Inicio<=6 AND Semana=$semana AND Ejecutado>0 AND Ejecutado<1 AND Titulo=0 AND Estado_Restricciones=1) AS 'en_ejecucion_terminadas', (SELECT COUNT(*) FROM $db"."_programa_consolidado WHERE Semanas_Inicio<=6 AND Ejecutado<1 AND Semana=$semana AND Titulo=0) AS 'total'";
-$resultado= mysqli_query($conexion, $query);
-if(!$resultado){
+$stmt = $db->query($query);
+if(!$stmt){
   die("Error");
 }else{
-  $data=mysqli_fetch_assoc($resultado);
+  $data = $stmt->fetch();
   $arreglo['no_requeridas']=$data['no_requeridas'];
   $arreglo['lookahead']=$data['lookahead'];
   $arreglo['no_iniciadas']=$data['no_iniciadas'];
@@ -65,6 +65,6 @@ if(!$resultado){
   $arregloFinal["data"]=$arreglo;
   echo utf8_decode(json_encode($arregloFinal));
 }
-mysqli_close($conexion);
+// mysqli_close($conexion);
 
 ?>
