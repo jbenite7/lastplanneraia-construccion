@@ -1,4 +1,4 @@
-# Diagnóstico y Roadmap de Implementación - Last Planner AIA
+# Diagnóstico y Hoja de Ruta de Implementación - Last Planner AIA
 
 ## 1. Propósito Central del Proyecto
 
@@ -55,14 +55,14 @@ La aplicación "Last Planner AIA" es una herramienta web diseñada para implemen
 - **Pruebas Automatizadas:**
     - **PHPUnit:** Implementar para crear pruebas unitarias (para la lógica de negocio) y pruebas de integración (para el acceso a datos).
 
-## 6. Roadmap de Implementación (4 Meses y 2 Semanas)
+## 6. Hoja de Ruta de Implementación (4 Meses y 2 Semanas)
 
 Esta fase inicial se centra en construir una base administrativa sólida y segura ("Greenfield") para luego integrar y refactorizar la lógica de negocio existente.
 
 ### Fase 1: Panel de Administración de Alta Eficiencia (Semanas 1-2)
-**Objetivo:** Implementar un panel administrativo robusto, seguro y escalable utilizando arquitectura LAMP optimizada ("No-Framework"), basado en *AdminLTE 3* y *DataTables Server-Side*.
+**Objetivo:** Implementar un panel administrativo robusto, seguro y escalable utilizando arquitectura LAMP optimizada ("Sin Framework"), basado en *AdminLTE 3* y *DataTables Server-Side*.
 
-#### Semana 1: Arquitectura Core, Base de Datos y Seguridad
+#### Semana 1: Arquitectura Núcleo, Base de Datos y Seguridad
 *   **Día 1: Infraestructura y Estructura de Directorios**
     - [x] **Estructura Segura:** Implementar separación física entre lógica e interfaz pública en la carpeta `admin/`.
     - [x] **Front Controller:** Configurar `.htaccess` para redirigir todo el tráfico a `admin/public/index.php` y bloquear acceso directo a carpetas sensibles. **(Verificado en MAMP)**
@@ -72,49 +72,49 @@ Esta fase inicial se centra en construir una base administrativa sólida y segur
     - [x] **Conexión Singleton:** Implementar clase `Database` con patrón Singleton y soporte para puerto MAMP (8889).
     - [x] **Configuración PDO Segura:** Desactivar `ATTR_EMULATE_PREPARES`.
     - [x] **Integración Esquema Existente:** Mapear modelos a tablas existentes `general_usuarios` (usuarios, roles, permisos) y `general_proyectos_procesos` (proyectos).
-    - [x] **Auditoría de Datos:** Confirmado uso de SHA-512 (128 chars) sin salt dinámico. Implementado puente de compatibilidad híbrida para migración progresiva a `password_hash()`.
+    - [x] **Auditoría de Datos:** Confirmado uso de SHA-512 (128 caracteres) sin sal dinámica. Implementado puente de compatibilidad híbrida para migración progresiva a `password_hash()`.
 *   **Día 3: Núcleo del Framework Artesanal (Micro-MVC)**
-    - [x] **Router:** Implementar despachador de rutas simple basado en URL amigables (ej: `/usuarios/editar/15`). - **(HECHO)**
-    - [x] **Controller Base:** Crear clase abstracta para renderizado de vistas y respuestas JSON estandarizadas. - **(HECHO)**
-    - [x] **Session Hardening:** Configurar `HttpOnly`, `Secure`, `Strict Mode` y regeneración de ID de sesión al login.
+    - [x] **Router:** Implementar despachador de rutas simple basado en URLs amigables (ej: `/usuarios/editar/15`).
+    - [x] **Controlador Base:** Crear clase abstracta para renderizado de vistas y respuestas JSON estandarizadas.
+    - [x] **Endurecimiento de Sesión:** Configurar `HttpOnly`, `Secure`, `Strict Mode` y regeneración de ID de sesión al iniciar sesión.
     - [x] **Seguridad CSRF:** Implementar clase `CsrfToken` para generación y validación de tokens en formularios POST/PUT/DELETE.
 *   **Día 4: Integración de Frontend (AdminLTE 3)**
-    - [x] **Assets:** Integrar AdminLTE 3 (vía CDN) y dependencias (Bootstrap 4.6 + jQuery). - **(HECHO)**
-    - [x] **Layout Modular:** Separar componentes: `Navbar`, `Sidebar`, `Footer` y `Content Wrapper` en `admin/views/layouts/main.php`. - **(HECHO)**
-    - [x] **Breadcrumbs:** Implementar sistema dinámico de migas de pan pasado desde el controlador. - **(HECHO)**
-    - [x] **Optimización de Interfaz:** Implementados encabezados fijos (sticky headers) y optimización de espacio en tablas (compact mode) para eliminar scroll horizontal.
+    - [x] **Activos:** Integrar AdminLTE 3 (vía CDN) y dependencias (Bootstrap 4.6 + jQuery).
+    - [x] **Diseño Modular:** Separar componentes: `Navbar`, `Sidebar`, `Footer` y `Content Wrapper` en `admin/views/layouts/main.php`.
+    - [x] **Migas de Pan (Breadcrumbs):** Implementar sistema dinámico de migas de pan pasado desde el controlador.
+    - [x] **Optimización de Interfaz:** Implementados encabezados fijos (sticky headers) y optimización de espacio en tablas (modo compacto) para eliminar desplazamiento horizontal.
     - [x] **Inyección de Scripts:** Implementada lógica de scripts específicos por vista para DataTables y SweetAlert2.
 *   **Día 5: Autenticación y Control de Acceso**
-    - [x] **Login:** Formulario de acceso con validación `password_verify` y regeneración de sesión.
-    - [x] **Middleware Auth:** Proteger rutas administrativas verificando sesión activa.
-    - [x] **Lógica RBAC:** Implementar clase/método `User::can($permission)` para control granular en Vistas y Controladores.
+    - [x] **Inicio de Sesión:** Formulario de acceso con validación `password_verify` y regeneración de sesión.
+    - [x] **Middleware de Autenticación:** Proteger rutas administrativas verificando sesión activa.
+    - [x] **Lógica RBAC:** Implementar clase/método `User::can($permission)` para control granular en vistas y controladores.
 
 #### Semana 2: Módulos Funcionales y Experiencia de Usuario (UX)
 *   **Día 6-7: Gestión de Usuarios (Escalabilidad Total)**
     - [x] **Controlador:** Implementar `UserController` (index, create, store, edit, update, delete).
     - [x] **Generación Automática de Usuario:** Implementada lógica para sugerir `nombre.apellido` automáticamente con detección de duplicados y normalización de caracteres.
-    - [x] **DataTables Server-Side:** Implementar lógica backend para paginación, filtrado y ordenamiento SQL dinámico (AJAX). (Implementado Client-side para agilidad inicial, escalable a Server-side).
-    - [x] **Vista Index:** Integrar DataTables configurado para carga AJAX y renderizado de columnas.
+    - [x] **DataTables Server-Side:** Implementar lógica backend para paginación, filtrado y ordenamiento SQL dinámico (AJAX). (Implementado en el cliente para agilidad inicial, escalable a servidor).
+    - [x] **Vista Índice:** Integrar DataTables configurado para carga AJAX y renderizado de columnas.
     - [x] **Acciones:** Generar botones de acción (Editar/Eliminar) dinámicamente.
 *   **Día 8: Gestión de Proyectos y UX Avanzada**
-    - [x] **Controlador:** Implementar `ProjectController`. (CRUD Completo implementado)
+    - [x] **Controlador:** Implementar `ProjectController`. (CRUD completo implementado).
     - [x] **Formularios Extendidos:** Implementados campos de área, fechas de línea base, costos y URLs.
-    - [x] **Slugify Automático:** Generación inteligente de nombres de BD con números romanos y stop-words.
-    - [x] **Toggle Switches:** Implementar cambio de estado (Activo/Acceso/PDC) con peticiones AJAX inmediatas.
-    - [x] **Feedback:** Integrar *Toastr* para notificaciones de éxito/error asíncronas.
+    - [x] **Slugify Automático:** Generación inteligente de nombres de base de datos con números romanos y palabras vacías (stop-words).
+    - [x] **Interruptores (Toggle Switches):** Implementar cambio de estado (Activo/Acceso/PDC) con peticiones AJAX inmediatas.
+    - [x] **Retroalimentación:** Integrar *Toastr* para notificaciones de éxito/error asíncronas.
     - [x] **Integridad de Datos:** Implementar creación automática y renombrado atómico de tablas de proyecto (10 tablas por proyecto).
     - [x] **Validación:** Implementar saneamiento (`filter_var`) y validación estricta de entradas en el backend.
 *   **Día 9: Asignación de Recursos (Relaciones N:M)**
     - [x] **Unificación de Datos:** Eliminación de duplicados en `general_usuarios` y migración a tabla relacional.
-    - [x] **Motor de IA:** Implementación de `RoleManager` con normalización y búsqueda difusa (Levenshtein).
-    - [x] **Lógica de Asignación:** Gestión de `project_members` con aprendizaje dinámico cargo-rol.
+    - [x] **Motor de Inteligencia:** Implementación de `RoleManager` con normalización y búsqueda difusa (Levenshtein).
+    - [x] **Lógica de Asignación:** Gestión de `project_members` con aprendizaje dinámico de cargo-rol.
 *   **Día 10: Salud del Sistema y Monitoreo (Dashboard)**
-    - [x] **Panel de Salud:** Implementado tablero de indicadores técnicos (Salud del Sistema).
-    - [x] **Monitoreo de Logs:** Rastreo automático de errores en `php_error.log` con conteo diario y feed de actividad reciente.
+    - [x] **Tablero de Salud:** Implementado tablero de indicadores técnicos (Salud del Sistema).
+    - [x] **Monitoreo de Logs:** Rastreo automático de errores en `php_error.log` con conteo diario y flujo de actividad reciente.
     - [x] **Alertas de Integridad:** Sistema de detección de tablas faltantes por proyecto.
-    - [x] **Limpieza de BD:** Identificación de tablas huérfanas (basura de proyectos eliminados).
+    - [x] **Limpieza de Base de Datos:** Identificación de tablas huérfanas (basura de proyectos eliminados).
     - [x] **Monitor de Entorno:** Visualización de límites de PHP (`upload_max_filesize`, `memory_limit`) para soporte técnico.
-    - [x] **Estado de Backups:** Seguimiento de respaldos SQL generados.
+    - [x] **Estado de Respaldos:** Seguimiento de copias de seguridad SQL generadas.
 *   **Día 11: Pulido y Entrega**
     - [ ] **Auditoría Final:** Verificar permisos de archivos y configuración de entorno (`display_errors = Off`).
     - [ ] **Smoke Test:** Validación manual completa de flujos críticos.
@@ -153,7 +153,7 @@ Esta fase inicial se centra en construir una base administrativa sólida y segur
         - [ ] `construccion/indicadores/listar_detalles_indicadores.php`
         - [ ] `construccion/indicadores/listar_indicadores.php` (Refactorización parcial pendiente)
 
-        #### Módulo: Informe Productividad
+        #### Módulo: Informe de Productividad
         - [ ] `construccion/informe_productividad/listar_detalles_informe_productividad.php`
         - [ ] `construccion/informe_productividad/listar_informe_productividad.php`
         - [ ] `construccion/informe_productividad/listar_informe_productividad_c.php`
@@ -166,12 +166,12 @@ Esta fase inicial se centra en construir una base administrativa sólida y segur
         - [ ] `construccion/informesJSON/listar_informe_programacion_semanal.php`
         - [ ] `construccion/informesJSON/listar_informe_restricciones.php`
 
-        #### Módulo: Listado Actividades
+        #### Módulo: Listado de Actividades
         - [ ] `construccion/listadoActividades/guardar_listadoActividades.php`
         - [ ] `construccion/listadoActividades/listar_listadoActividades.php`
         - [ ] `construccion/listadoActividades/views/listadoActividades.view.nuevaBarra.php`
 
-        #### Módulo: Paquetes Contratación
+        #### Módulo: Paquetes de Contratación
         - [ ] `construccion/paquetesContratacion/guardar_paquetesContratacion.php`
         - [ ] `construccion/paquetesContratacion/listar_paquetesContratacion.php`
         - [ ] `construccion/paquetesContratacion/views/paquetesContratacion.view.php`
@@ -185,7 +185,7 @@ Esta fase inicial se centra en construir una base administrativa sólida y segur
         - [ ] `construccion/profesionales/guardar_profesionales.php`
         - [ ] `construccion/profesionales/listar_profesionales.php`
 
-        #### Módulo: Programa General Actualizar
+        #### Módulo: Actualización de Programa General
         - [ ] `construccion/programaGeneralActualizar/actualizarFiltros.php`
         - [ ] `construccion/programaGeneralActualizar/descargarCorteProgramacion.php`
         - [ ] `construccion/programaGeneralActualizar/guardar_programaGeneralActualizar.php`
@@ -242,44 +242,31 @@ Esta fase inicial se centra en construir una base administrativa sólida y segur
     - **Acción:** Configurar `mod_rewrite` (vía `.htaccess`) para redirigir todas las peticiones a un único archivo `index.php`.
     - **Acción:** Instalar una librería de enrutamiento como `nikic/fast-route`.
     - **Acción:** Migrar los 3 módulos más importantes (ej. `login`, `programa_general`, `programacion_semanal`) al nuevo sistema de rutas.
-    - **Resultado Clave:** Centralización de la gestión de peticiones, sesiones y conexión a la BD. Base para una futura API REST.
+    - **Resultado Clave:** Centralización de la gestión de peticiones, sesiones y conexión a la base de datos. Base para una futura API REST.
 - **Semana 7-8: Separación de Lógica y Presentación.**
     - **Acción:** Crear un directorio `src/` para la lógica de negocio.
     - **Acción:** Extraer cálculos complejos y lógica de negocio de los archivos principales a funciones y clases dentro de `src/`.
     - **Acción:** Convertir las vistas (HTML) en plantillas que reciben datos del controlador, eliminando la lógica de ellas.
-    - **Resultado Clave:** Código más organizado, reutilizable y testeable.
+    - **Resultado Clave:** Código más organizado, reutilizable y fácil de probar.
 
 ### Mes 3: Abstracción de Datos y Pruebas
 - **Semana 9-10: Implementación del Patrón Repositorio.**
     - **Acción:** Crear clases "Repositorio" (ej. `ProyectoRepository`, `UsuarioRepository`) que encapsulen toda la lógica de acceso a datos para cada entidad.
     - **Acción:** Refactorizar el código para que utilice estos repositorios en lugar de realizar consultas SQL directamente en los controladores.
     - **Resultado Clave:** Desacoplamiento de la lógica de negocio de la base de datos, facilitando el mantenimiento y las pruebas.
-- **Semana 11-12: Creación de la Red de Seguridad (Testing).**
+- **Semana 11-12: Creación de la Red de Seguridad (Pruebas).**
     - **Acción:** Instalar **PHPUnit** (vía Composer).
     - **Acción:** Escribir pruebas unitarias para la lógica de negocio extraída en `src/`.
-    - **Acción:** Escribir pruebas de integración para los Repositorios para asegurar que las consultas a la BD funcionan como se espera.
+    - **Acción:** Escribir pruebas de integración para los repositorios para asegurar que las consultas a la base de datos funcionan como se espera.
     - **Resultado Clave:** Inicio de una suite de pruebas automatizadas que aumenta la confianza para realizar cambios futuros.
 
 ### Mes 4: Panel de Administración y Gestión de Accesos
-- **Semana 13-14: Gestión de Entidades Core (CRUD).**
+- **Semana 13-14: Gestión de Entidades Núcleo (CRUD).**
     - **Acción:** Desarrollar el módulo de **Gestión de Proyectos**: interfaz para crear, editar, bloquear (activar/desactivar) y eliminar proyectos.
     - **Acción:** Desarrollar el módulo de **Gestión de Usuarios**: interfaz para el alta, baja y modificación de datos de usuarios.
     - **Resultado Clave:** Control administrativo centralizado sobre los datos maestros de la aplicación.
 - **Semana 15-16: Sistema de Permisos y Seguridad Avanzada.**
-    - **Acción:** Implementar un **Control de Acceso Basado en Roles (RBAC)**: definir permisos específicos por tipo de usuario (Admin, Residente, Consulta).
+    - **Acción:** Implementar un **Control de Acceso Basado en Roles (RBAC)**: definir permisos específicos por tipo de usuario (Administrador, Residente, Consulta).
     - **Acción:** Integrar la validación de permisos en el Front Controller para proteger las rutas y acciones del sistema.
     - **Acción:** Crear una interfaz visual para la asignación dinámica de permisos y roles.
     - **Resultado Clave:** Sistema seguro y granular donde cada usuario accede solo a la información autorizada.
-
-## Mensaje de Commit Sugerido
-
-```
-feat: Add initial project diagnosis and roadmap
-
-This commit introduces a comprehensive set of documentation to establish a baseline for the project's evolution.
-
-- Creates a detailed ROADMAP.md with a 3-month plan to address critical technical debt and lay the foundation for modernization.
-- Updates README.md with clearer installation instructions and project structure.
-- Initializes CHANGELOG.md to track future changes.
-- Establishes a .gitignore file based on best practices for PHP projects.
-```

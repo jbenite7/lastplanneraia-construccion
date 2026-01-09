@@ -1,48 +1,48 @@
-# Changelog
+# Registro de Cambios (Changelog)
 
-All notable changes to this project will be documented in this file.
+Todos los cambios notables en este proyecto serán documentados en este archivo.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0/).
+El formato se basa en [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0/).
 
-## [Unreleased]
+## [Sin publicar]
 
-### Added
-- **System Health Dashboard:**
-  - **Real-time Monitoring:** Integrated PHP error log scanning with automated daily error counting and a live activity feed.
-  - **Data Integrity Tools:** Automated verification of required structural tables for every project, including a single-click detail view for missing tables.
-  - **Database Cleanup:** Implemented an "Orphan Tables" detector to identify and remove leftover database tables from deleted projects, with explicit protection for global `general_` tables.
-  - **Full Backups:** Added functionality to generate and store full SQL database snapshots (Global config + all projects) directly on the server.
-  - **Server Environment Info:** Added visibility for critical PHP limits (`upload_max_filesize`, `memory_limit`, etc.) to facilitate technical support.
-- **UI/UX Enhancements:**
-  - **Interactive Tooltips:** Standardized information icons (`i`) across all metrics with detailed explanations of concepts and measurement logic.
-  - **Active Projects Tracker:** Improved projects box to show `Active / Total` count with a hoverable bulleted list of current projects.
-  - **Integrated Modals:** Leveraged **SweetAlert2** for all cleanup confirmations, integrity details, and backup progress notifications.
-- **User Management Enhancements:**
-  - Automatic username suggestion based on name or email prefix with duplication detection.
-  - Duplication prevention for full names and email addresses during user creation.
-  - Integrated **Select2** for job titles (cargos) with AJAX search and tag support.
-  - Password generator and visibility toggle in the user creation form.
-- **UI/UX Optimizations:**
-  - **Sticky Headers:** Implemented persistent table headers for Projects and Users lists.
-  - **Horizontal Space Optimization:** Applied compact styling (`table-sm`), smaller fonts, and `text-break` rules to eliminate horizontal scrolling.
-  - **DataTables Fix:** Resolved "table.buttons is not a function" error by properly including Buttons extension assets.
-  - **CORS Resolution:** Inlined Spanish translation for DataTables to avoid cross-origin request issues on local environments.
+### Añadido
+- **Tablero de Salud del Sistema:**
+  - **Monitoreo en Tiempo Real:** Integración de escaneo del log de errores de PHP con conteo diario automático y flujo de actividad en vivo.
+  - **Herramientas de Integridad de Datos:** Verificación automatizada de las tablas estructurales requeridas para cada proyecto, incluyendo una vista detallada de tablas faltantes a un solo clic.
+  - **Limpieza de Base de Datos:** Implementación de un detector de "Tablas Huérfanas" para identificar y eliminar tablas sobrantes de proyectos borrados, con protección explícita para las tablas globales `general_`.
+  - **Respaldos Completos:** Añadida funcionalidad para generar y almacenar instantáneas SQL completas de la base de datos (configuración global + todos los proyectos) directamente en el servidor.
+  - **Información del Entorno del Servidor:** Añadida visibilidad de límites críticos de PHP (`upload_max_filesize`, `memory_limit`, etc.) para facilitar el soporte técnico.
+- **Mejoras de UI/UX:**
+  - **Tooltips Interactivos:** Estandarización de iconos de información (`i`) en todas las métricas con explicaciones detalladas de conceptos y lógica de medición.
+  - **Seguimiento de Proyectos Activos:** Mejora del recuadro de proyectos para mostrar el conteo `Activos / Totales` con una lista desplegable de los proyectos actuales.
+  - **Modales Integrados:** Uso de **SweetAlert2** para todas las confirmaciones de limpieza, detalles de integridad y notificaciones de progreso de respaldos.
+- **Mejoras en Gestión de Usuarios:**
+  - Sugerencia automática de nombre de usuario basada en nombre o prefijo de email con detección de duplicados.
+  - Prevención de duplicados para nombres completos y correos electrónicos durante la creación de usuarios.
+  - Integración de **Select2** para cargos con búsqueda AJAX y soporte para etiquetas.
+  - Generador de contraseñas y alternancia de visibilidad en el formulario de creación de usuarios.
+- **Optimizaciones de Interfaz:**
+  - **Encabezados Fijos (Sticky Headers):** Implementados en las listas de Proyectos y Usuarios.
+  - **Optimización de Espacio Horizontal:** Aplicación de estilos compactos (`table-sm`), fuentes más pequeñas y reglas de `text-break` para eliminar el desplazamiento horizontal.
+  - **Corrección de DataTables:** Resuelto el error "table.buttons is not a function" incluyendo correctamente los activos de la extensión Buttons.
+  - **Resolución de CORS:** Traducción al español de DataTables integrada directamente para evitar problemas de peticiones de origen cruzado en entornos locales.
 
-### Removed
-- **Redundant Files Cleanup:** 
-  - Deleted multiple test and backup files in `/construccion` including `prueba.php` (various modules), `listar_programacion_semanal1.php`, `pruebaSpreadsheets.php`, `charts1.php`, and the `prueba_correos/` directory.
-  - **New Cleanup:** Removed legacy management scripts replaced by the Admin MVC: `Cargar_Nuevos_Proyectos.php`, `eliminar_proyectos.php`, and `Copia_de_Seguridad_LPS.php`.
-  - **Redundancy:** Removed root redirects `cerrar.php`, `login/login.php` (and its directory), and `check_schema.php`.
-  - **Maintenance:** Deleted `admin/test_models.php`, `admin/test_create_project.php`, and duplicate view `construccion/pdc/pdc.view.nuevaBarra.php`.
+### Eliminado
+- **Limpieza de Archivos Redundantes:** 
+  - Eliminados múltiples archivos de prueba y respaldo en `/construccion`, incluyendo `prueba.php`, `listar_programacion_semanal1.php`, `pruebaSpreadsheets.php`, `charts1.php` y el directorio `prueba_correos/`.
+  - **Nueva Limpieza:** Eliminados scripts de gestión legados reemplazados por el MVC administrativo: `Cargar_Nuevos_Proyectos.php`, `eliminar_proyectos.php` y `Copia_de_Seguridad_LPS.php`.
+  - **Redundancia:** Eliminadas redirecciones raíz `cerrar.php`, `login/login.php` (y su directorio) y `check_schema.php`.
+  - **Mantenimiento:** Eliminados `admin/test_models.php`, `admin/test_create_project.php` y la vista duplicada `construccion/pdc/pdc.view.nuevaBarra.php`.
 
-### Changed
-- **Permission Refinement:** Simplified global permission display in the user list to show "Administrador" or "Usuario" badges based on global codes (A/U).
-- **Cleanup:** Removed the redundant "Proyecto" column from the global user list to focus on user profile data.
+### Cambiado
+- **Refinamiento de Permisos:** Simplificación de la visualización de permisos globales en la lista de usuarios para mostrar etiquetas de "Administrador" o "Usuario" basadas en códigos globales (A/U).
+- **Limpieza:** Eliminada la columna redundante "Proyecto" de la lista global de usuarios para enfocar los datos en el perfil del usuario.
 
 ## [0.4.0] - 2026-01-08
 
-### Added
+### Añadido
 - **Gestión de Miembros:** Implementación completa del sistema de membresía para vincular usuarios únicos a múltiples proyectos.
 - **Inteligencia de Roles:** 
   - Motor de normalización de cargos (limpieza de acentos, géneros y artículos).
@@ -51,78 +51,78 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **UI Proyectos:** Nueva interfaz para asignar y revocar acceso a proyectos con sugerencias inteligentes en tiempo real.
 - **Seguridad:** Protocolo de "Seguridad por Defecto" que asigna rol de Visualizador ante cargos desconocidos.
 
-### Changed
+### Cambiado
 - **Normalización de Datos:** Unificación de la tabla `general_usuarios` eliminando más de 100 registros duplicados y consolidando sus accesos en la nueva tabla `project_members`.
 - **Arquitectura:** Centralización de la lógica de permisos en la clase `RoleManager`.
 
 ## [0.3.0] - 2026-01-08
 
-### Added
+### Añadido
 - **Integridad de Datos:** Creación automática de 10 tablas relacionales por cada proyecto nuevo.
 - **Gestión de Prefijos:** Renombrado atómico de tablas de base de datos cuando se modifica el prefijo del proyecto.
 - **Respaldos:** Funcionalidad para exportar y descargar un volcado SQL completo de las tablas de un proyecto.
 - **Eliminación Segura:** Flujo de trabajo con SweetAlert2 que descarga un respaldo antes de eliminar físicamente las tablas.
 - **UI Proyectos:** Integración completa de DataTables con traducción al español, Toastr para feedback asíncrono y corrección de solapamiento en el layout.
 
-### Fixed
-- Error de namespace en la generación del token CSRF en el layout principal (`\Admin\Core\Security`).
-- Delegación de eventos en DataTables para asegurar que los botones funcionen tras buscas o cambios de página.
+### Corregido
+- Error de espacio de nombres en la generación del token CSRF en el diseño principal (`\Admin\Core\Security`).
+- Delegación de eventos en DataTables para asegurar que los botones funcionen tras búsquedas o cambios de página.
 
 ## [0.2.0] - 2026-01-08
 
-### Added
-- **Project Management Enhancements:**
-  - Expanded project schema with new fields: Area (Construction/PI), Access Control, PDC Status, Baseline Dates (Start/End), Delay Cost, and Change Control URL.
-  - Automatic Database Name Generation: Implemented a robust `slugify` logic that:
-    - Removes Spanish stop words (el, de, la, etc.).
-    - Converts numbers (1-10) to Roman numerals (i, ii, iii...).
-    - Handles transliteration and separates words with underscores.
-    - Automatically appends `_pi` suffix for PI area projects.
-  - Full CRUD implementation:
-    - New Project creation view with advanced fields.
-    - Project Edit view with database name manual override capability.
-    - Updated Project list with Area column and improved styling.
-  - Secure routing for all project CRUD operations with CSRF protection.
+### Añadido
+- **Mejoras en Gestión de Proyectos:**
+  - Esquema de proyecto ampliado con nuevos campos: Área (Construcción/PI), Control de Acceso, Estado de PDC, Fechas de Línea Base (Inicio/Fin), Costo de Retraso y URL de Control de Cambios.
+  - Generación Automática de Nombres de Base de Datos: Implementada una lógica robusta de `slugify` que:
+    - Elimina palabras vacías en español (el, de, la, etc.).
+    - Convierte números (1-10) a números romanos (i, ii, iii...).
+    - Maneja la transliteración y separa las palabras con guiones bajos.
+    - Añade automáticamente el sufijo `_pi` para proyectos del área PI.
+  - Implementación completa de CRUD:
+    - Nueva vista de creación de proyectos con campos avanzados.
+    - Vista de edición de proyectos con capacidad de anulación manual del nombre de la base de datos.
+    - Lista de proyectos actualizada con columna de Área y estilo mejorado.
+  - Enrutamiento seguro para todas las operaciones CRUD de proyectos con protección CSRF.
 
 ## [0.1.0] - 2026-01-08
 
-### Added
-- **Project Module:**
-  - Initial implementation of `ProjectController`.
-  - Advanced projects list view with DataTables (search, export, pagination).
-  - Clean routing for project management (/admin/proyectos).
-- **Navigation & Compatibility:**
-  - Standardized all administrative links to use friendly URLs.
-  - Implemented `admin/index.php` as a bridge to prevent directory listing and improve entry point handling.
-  - Hardened `admin/.htaccess` security.
+### Añadido
+- **Módulo de Proyectos:**
+  - Implementación inicial de `ProjectController`.
+  - Vista de lista de proyectos avanzada con DataTables (búsqueda, exportación, paginación).
+  - Enrutamiento limpio para la gestión de proyectos (/admin/proyectos).
+- **Navegación y Compatibilidad:**
+  - Estandarización de todos los enlaces administrativos para usar URLs amigables.
+  - Implementación de `admin/index.php` como puente para prevenir el listado de directorios y mejorar el manejo del punto de entrada.
+  - Endurecimiento de la seguridad de `admin/.htaccess`.
 
-### Fixed
-- Fixed 403 Forbidden/Directory Listing issue when accessing `/admin/`.
-- Corrected sidebar links that were pointing to non-existent .php files.
+### Corregido
+- Corregido el problema de 403 Prohibido/Listado de Directorios al acceder a `/admin/`.
+- Corregidos los enlaces de la barra lateral que apuntaban a archivos .php inexistentes.
 
-### Added
-- **Security & Compatibility:**
-  - **Hybrid Password Authentication:** Updated `construccion/login/login.php` to support both legacy SHA-512 hashes and modern BCRYPT (`password_verify`). This ensures new users created in the Admin Panel can access the legacy system.
-  - **Data Integrity Audit:** Verified SHA-512 usage in `general_usuarios` and documented the migration path for password security.
-- **Admin Panel Infrastructure:**
-  - Front Controller implemented in `admin/public/index.php`.
-  - URL rewriting configured in `admin/public/.htaccess` for clean routes.
-  - Core Router implemented in `admin/src/Core/Router.php`.
-  - Security hardening for administrative routes and sessions.
-  - Base Controller and User Model implemented in `admin/src/`.
-- **Frontend & UI:**
-  - Integrated AdminLTE 3 (CDN) for the administrative dashboard.
-  - Modular layout system implemented in `admin/views/layouts/main.php`.
-  - Dynamic breadcrumbs system for administrative pages.
-- **Database Layer:**
-  - Implemented Singleton pattern in `Database` class for efficient connection management.
-  - Refactored legacy `construccion/conexion.php` to use the `Database::getInstance()` Singleton, unifying connection logic.
-  - Automatic environment variable loading for database credentials via `phpdotenv`.
+### Añadido
+- **Seguridad y Compatibilidad:**
+  - **Autenticación Híbrida de Contraseñas:** Actualizado `construccion/login/login.php` para soportar tanto hashes SHA-512 legados como BCRYPT moderno (`password_verify`). Esto asegura que los nuevos usuarios creados en el Panel de Administración puedan acceder al sistema legado.
+  - **Auditoría de Integridad de Datos:** Verificado el uso de SHA-512 en `general_usuarios` y documentada la ruta de migración para la seguridad de contraseñas.
+- **Infraestructura del Panel de Administración:**
+  - Front Controller implementado en `admin/public/index.php`.
+  - Reescritura de URLs configurada en `admin/public/.htaccess` para rutas limpias.
+  - Core Router implementado en `admin/src/Core/Router.php`.
+  - Endurecimiento de seguridad para rutas administrativas y sesiones.
+  - Controlador Base y Modelo de Usuario implementados en `admin/src/`.
+- **Frontend y UI:**
+  - Integrado AdminLTE 3 (CDN) para el tablero administrativo.
+  - Sistema de diseño modular implementado en `admin/views/layouts/main.php`.
+  - Sistema dinámico de migas de pan para páginas administrativas.
+- **Capa de Base de Datos:**
+  - Implementado patrón Singleton en la clase `Database` para una gestión eficiente de conexiones.
+  - Refactorizado el legado `construccion/conexion.php` para usar el Singleton `Database::getInstance()`, unificando la lógica de conexión.
+  - Carga automática de variables de entorno para credenciales de base de datos vía `phpdotenv`.
 
-### Changed
-- **Architecture:** Transitioned from procedural connection management to a centralized Singleton pattern.
-- Updated `.gitignore` to include administrative logs and protect sensitive data.
+### Cambiado
+- **Arquitectura:** Transición de la gestión de conexiones procedural a un patrón Singleton centralizado.
+- Actualizado `.gitignore` para incluir logs administrativos y proteger datos sensibles.
 
-### Fixed
-- Fixed 500 Internal Server Error in the admin panel by properly initializing the Database instance.
-- Corrected path resolution for `.env` loading in administrative scripts.
+### Corregido
+- Corregido el error 500 Internal Server Error en el panel administrativo inicializando correctamente la instancia de Database.
+- Corregida la resolución de rutas para la carga de `.env` en scripts administrativos.
