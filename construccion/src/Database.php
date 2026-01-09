@@ -52,7 +52,7 @@ class Database
             return $stmt;
         } catch (PDOException $e) {
             error_log('Error en la consulta SQL: ' . $e->getMessage());
-            die('Error al ejecutar la consulta.');
+            throw $e;
         }
     }
 

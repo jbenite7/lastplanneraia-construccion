@@ -1,146 +1,94 @@
 <?php
-    sleep(5);
+/** @var Database $db */
+// $db ya está disponible si es llamado desde actualizarEjecucion.php
+if (!isset($db)) {
+    require_once __DIR__ . "/../../conexion.php";
+    $db = Database::getInstance();
+}
 
-    $query2="SELECT * FROM $db"."_programa_consolidado WHERE Semana=$semana";
-    $resultado5= mysqli_query($conexion, $query2);
-    if(!$resultado5){
-        mysqli_error($conexion);
-    } else{
-        $query3="UPDATE $db"."_programa_consolidado SET Semanas_Inicio= CASE";
-        $query3_1=" Estado_Restricciones= CASE";
+sleep(5);
 
-        while($data=mysqli_fetch_assoc($resultado5)){
-            $Id=$data["Consecutivo_en_Programa"];
-            $Id_Real=$data["Id"];
-            $Titulo=$data["Titulo"];
-            $actividad=$data["Actividad"];
-            $hoy= $f_inicio_sem;
-            $manana= date("Y-m-d",strtotime($data["Fecha_Inicio"]));
-            $dias=(strtotime($manana)-strtotime($hoy))/86400;
-            $dias=floor($dias);
-            $semanas=floor($dias/7);
-            //echo "<li>" . "$Id_Real, $dias, $semanas";
-            $Estado_Restricciones='NULL';
-            if($Titulo==0){
-                $D_y_E2=$data["D_y_E"];
-                $Materiales2=$data["Materiales"];
-                $MdeO2=$data["MdeO"];
-                $Equipos2=$data["Equipos"];
-                $Predecesora2=$data["Predecesora"];
-                $Pdto_Cons2=$data["Pdto_Cons"];
-                $Modelo2=$data["Modelo"];
-                $conteo=0;
-                $suma=0;
-                if($D_y_E2=="N/A"){
-                    $conteo=$conteo+0;
-                    $suma=$suma+0;
-                }else{
-                    $conteo=$conteo+1;
-                    $suma=$suma + round($D_y_E2 , 5);
+try {
+    $sqlSelect = "SELECT * FROM {$dbName}_programa_consolidado WHERE Semana = ?";
+    $stmt = $db->query($sqlSelect, [$semana]);
+    $actividades = $stmt->fetchAll();
+
+    if (count($actividades) > 0) {
+        foreach ($actividades as $data) {
+            $Id = $data["Consecutivo_en_Programa"];
+            $Titulo = (int)($data["Titulo"] ?? 0);
+            $hoy = $f_inicio_sem;
+            $manana = date("Y-m-d", strtotime($data["Fecha_Inicio"] ?? 'now'));
+            
+            $dias = floor((strtotime($manana) - strtotime($hoy)) / 86400);
+            $semanas = floor($dias / 7);
+
+            $Estado_Restricciones = null;
+
+            if ($Titulo === 0) {
+                $campos = ["D_y_E", "Materiales", "MdeO", "Equipos", "Predecesora", "Pdto_Cons", "Modelo"];
+                $conteo = 0;
+                $suma = 0;
+
+                foreach ($campos as $campo) {
+                    $valor = $data[$campo];
+                    if ($valor !== "N/A" && $valor !== null) {
+                        $conteo++;
+                        $suma += round((float)$valor, 5);
+                    }
                 }
-                if($Materiales2=="N/A"){
-                    $conteo=$conteo+0;
-                    $suma=$suma+0;
-                }else{
-                    $conteo=$conteo+1;
-                    $suma=$suma + round($Materiales2 , 5);
-                }
-                if($MdeO2=="N/A"){
-                    $conteo=$conteo+0;
-                    $suma=$suma+0;
-                }else{
-                    $conteo=$conteo+1;
-                    $suma=$suma + round($MdeO2 , 5);
-                }
-                if($Equipos2=="N/A"){
-                    $conteo=$conteo+0;
-                    $suma=$suma+0;
-                }else{
-                    $conteo=$conteo+1;
-                    $suma=$suma + round($Equipos2 , 5);
-                }
-                if($Predecesora2=="N/A"){
-                    $conteo=$conteo+0;
-                    $suma=$suma+0;
-                }else{
-                    $conteo=$conteo+1;
-                    $suma=$suma + round($Predecesora2 , 5);
-                }
-                if($Pdto_Cons2=="N/A"){
-                    $conteo=$conteo+0;
-                    $suma=$suma+0;
-                }else{
-                    $conteo=$conteo+1;
-                    $suma=$suma + round($Pdto_Cons2 , 5);
-                }
-                if($Modelo2=="N/A"){
-                    $conteo=$conteo+0;
-                    $suma=$suma+0;
-                }else{
-                    $conteo=$conteo+1;
-                    $suma=$suma + round($Modelo2 , 5);
-                }
-                //echo $conteo . "<br>" . $suma;
-                if($conteo==0){
-                    $Estado_Restricciones=1;
-                }else{
-                    $Estado_Restricciones=round(($suma/$conteo),5);
+
+                if ($conteo === 0) {
+                    $Estado_Restricciones = 1;
+                } else {
+                    $Estado_Restricciones = round(($suma / $conteo), 5);
                 }
             }
 
-
-            if($data["Fecha_Inicio"]==NULL && $data["Fecha_Fin"]==NULL){
-                $semanas='NULL';
-            }else{
-                if($semanas<0 || $semanas==-0){
-                    $ID=$data["Id"];
-                    $inicio=$data["Fecha_Inicio"];
-                    $fin=$data["Fecha_Fin"];
-                    $semanas=0;
+            if ($data["Fecha_Inicio"] === null && $data["Fecha_Fin"] === null) {
+                $semanas = null;
+            } else {
+                if ($semanas < 0) {
+                    $semanas = 0;
                 }
             }
 
+            $sqlUpdateActividad = "UPDATE {$dbName}_programa_consolidado 
+                                  SET Semanas_Inicio = ?, Estado_Restricciones = ? 
+                                  WHERE Consecutivo_en_Programa = ? AND Semana = ?";
+            
+            $valEstadoRestricciones = ($Titulo === 1) ? null : $Estado_Restricciones;
 
-
-
-            $query3 .=" WHEN Consecutivo_en_Programa='$Id' THEN $semanas";
-            $query3_1 .=" WHEN Consecutivo_en_Programa='$Id' AND Titulo=0 THEN $Estado_Restricciones WHEN Consecutivo_en_Programa='$Id' AND Titulo=1 THEN NULL";
+            $db->query($sqlUpdateActividad, [
+                $semanas,
+                $valEstadoRestricciones,
+                $Id,
+                $semana
+            ]);
         }
-        $query3 .=" END,";
-        $query3_1 .=" END WHERE Semana=$semana";
-        $query3 .=$query3_1;
-    };
+    }
 
-    $resultado6=mysqli_query($conexion, $query3);
     sleep(0.5);
 
-    $query4 = "UPDATE $db"."_programa_consolidado SET Ruta_Critica=NULL WHERE Titulo=1 AND Semana=$semana";
+    $db->query("UPDATE {$dbName}_programa_consolidado SET Ruta_Critica = NULL WHERE Titulo = 1 AND Semana = ?", [$semana]);
 
-    $resultado7=mysqli_query($conexion, $query4);
+    $db->query("UPDATE {$dbName}_programa_consolidado SET Ejecutado = NULL, Semanas_Inicio = NULL WHERE Fecha_Inicio IS NULL AND Fecha_Fin IS NULL AND Titulo = 1 AND Semana = ?", [$semana]);
 
+    $sqlEstado = "UPDATE {$dbName}_programa_consolidado SET
+       Estado = CASE
+          WHEN Ejecutado = 1 AND ROUND((SELECT CASE WHEN (DATEDIFF(Fecha_Fin, Fecha_Inicio)+1) >= DATEDIFF(?, Fecha_Inicio) AND DATEDIFF(?, Fecha_Inicio) >= 1 THEN (DATEDIFF(?, Fecha_Inicio) / (DATEDIFF(Fecha_Fin, Fecha_Inicio)+1)) WHEN (DATEDIFF(Fecha_Fin, Fecha_Inicio)+1) < DATEDIFF(?, Fecha_Inicio) THEN 1 WHEN DATEDIFF(?, Fecha_Inicio) < 1 THEN 0 END) - Ejecutado, 3) < 0 THEN 'Terminada Antes'
 
-    $query5 = "UPDATE $db"."_programa_consolidado SET Ejecutado=NULL, Semanas_Inicio=NULL WHERE Fecha_Inicio=NULL AND Fecha_Fin=NULL AND Titulo=1 AND Semana=$semana";
+          WHEN Ejecutado = 1 AND ROUND((SELECT CASE WHEN (DATEDIFF(Fecha_Fin, Fecha_Inicio)+1) >= DATEDIFF(?, Fecha_Inicio) AND DATEDIFF(?, Fecha_Inicio) >= 1 THEN (DATEDIFF(?, Fecha_Inicio) / (DATEDIFF(Fecha_Fin, Fecha_Inicio)+1)) WHEN (DATEDIFF(Fecha_Fin, Fecha_Inicio)+1) < DATEDIFF(?, Fecha_Inicio) THEN 1 WHEN DATEDIFF(?, Fecha_Inicio) < 1 THEN 0 END) - Ejecutado, 3) = 0 THEN 'Terminada'
 
-    $resultado8=mysqli_query($conexion, $query5);
+          WHEN Ejecutado < 1 AND Ejecutado >= 0 AND ROUND((SELECT CASE WHEN (DATEDIFF(Fecha_Fin, Fecha_Inicio)+1) >= DATEDIFF(?, Fecha_Inicio) AND DATEDIFF(?, Fecha_Inicio) >= 1 THEN (DATEDIFF(?, Fecha_Inicio) / (DATEDIFF(Fecha_Fin, Fecha_Inicio)+1)) WHEN (DATEDIFF(Fecha_Fin, Fecha_Inicio)+1) < DATEDIFF(?, Fecha_Inicio) THEN 1 WHEN DATEDIFF(?, Fecha_Inicio) < 1 THEN 0 END) - Ejecutado, 3) > 0 THEN 'Atrasada'
 
+          WHEN Ejecutado < 1 AND Ejecutado > 0 AND ROUND((SELECT CASE WHEN (DATEDIFF(Fecha_Fin, Fecha_Inicio)+1) >= DATEDIFF(?, Fecha_Inicio) AND DATEDIFF(?, Fecha_Inicio) >= 1 THEN (DATEDIFF(?, Fecha_Inicio) / (DATEDIFF(Fecha_Fin, Fecha_Inicio)+1)) WHEN (DATEDIFF(Fecha_Fin, Fecha_Inicio)+1) < DATEDIFF(?, Fecha_Inicio) THEN 1 WHEN DATEDIFF(?, Fecha_Inicio) < 1 THEN 0 END) - Ejecutado, 3) <= 0 THEN 'A Tiempo'
 
-    $fin_semana= date("Y-m-d",strtotime("$f_inicio_sem + 6 days"));
+          WHEN Semanas_Inicio <= 0 AND Estado_Restricciones = 1 AND ROUND((SELECT CASE WHEN (DATEDIFF(Fecha_Fin, Fecha_Inicio)+1) >= DATEDIFF(?, Fecha_Inicio) AND DATEDIFF(?, Fecha_Inicio) >= 1 THEN (DATEDIFF(?, Fecha_Inicio) / (DATEDIFF(Fecha_Fin, Fecha_Inicio)+1)) WHEN (DATEDIFF(Fecha_Fin, Fecha_Inicio)+1) < DATEDIFF(?, Fecha_Inicio) THEN 1 WHEN DATEDIFF(?, Fecha_Inicio) < 1 THEN 0 END), 3) = 0 AND Ejecutado = 0 THEN 'Debe Iniciar esta Semana'
 
-    $query6 = "UPDATE $db"."_programa_consolidado SET
-       Estado= CASE
-          WHEN Ejecutado = 1 AND ROUND((SELECT CASE WHEN (DATEDIFF(Fecha_Fin, Fecha_Inicio)+1) >= DATEDIFF('$f_inicio_sem', Fecha_Inicio) AND DATEDIFF('$f_inicio_sem', Fecha_Inicio) >= 1 THEN (DATEDIFF('$f_inicio_sem', Fecha_Inicio) / (DATEDIFF(Fecha_Fin, Fecha_Inicio)+1)) WHEN (DATEDIFF(Fecha_Fin, Fecha_Inicio)+1) < DATEDIFF('$f_inicio_sem', Fecha_Inicio) THEN 1 WHEN DATEDIFF('$f_inicio_sem', Fecha_Inicio) < 1 THEN 0 END) - Ejecutado,3) < 0 THEN 'Terminada Antes'
+          WHEN Semanas_Inicio <= 0 AND Estado_Restricciones < 1 AND ROUND((SELECT CASE WHEN (DATEDIFF(Fecha_Fin, Fecha_Inicio)+1) >= DATEDIFF(?, Fecha_Inicio) AND DATEDIFF(?, Fecha_Inicio) >= 1 THEN (DATEDIFF(?, Fecha_Inicio) / (DATEDIFF(Fecha_Fin, Fecha_Inicio)+1)) WHEN (DATEDIFF(Fecha_Fin, Fecha_Inicio)+1) < DATEDIFF(?, Fecha_Inicio) THEN 1 WHEN DATEDIFF(?, Fecha_Inicio) < 1 THEN 0 END) - Ejecutado, 3) > 0 AND Ejecutado = 0 THEN 'Ya Debió Iniciar y Restricciones Pendientes'
 
-          WHEN Ejecutado = 1 AND ROUND((SELECT CASE WHEN (DATEDIFF(Fecha_Fin, Fecha_Inicio)+1) >= DATEDIFF('$f_inicio_sem', Fecha_Inicio) AND DATEDIFF('$f_inicio_sem', Fecha_Inicio) >= 1 THEN (DATEDIFF('$f_inicio_sem', Fecha_Inicio) / (DATEDIFF(Fecha_Fin, Fecha_Inicio)+1)) WHEN (DATEDIFF(Fecha_Fin, Fecha_Inicio)+1) < DATEDIFF('$f_inicio_sem', Fecha_Inicio) THEN 1 WHEN DATEDIFF('$f_inicio_sem', Fecha_Inicio) < 1 THEN 0 END) - Ejecutado,3) = 0 THEN 'Terminada'
-
-          WHEN Ejecutado < 1 AND Ejecutado >= 0 AND ROUND((SELECT CASE WHEN (DATEDIFF(Fecha_Fin, Fecha_Inicio)+1) >= DATEDIFF('$f_inicio_sem', Fecha_Inicio) AND DATEDIFF('$f_inicio_sem', Fecha_Inicio) >= 1 THEN (DATEDIFF('$f_inicio_sem', Fecha_Inicio) / (DATEDIFF(Fecha_Fin, Fecha_Inicio)+1)) WHEN (DATEDIFF(Fecha_Fin, Fecha_Inicio)+1) < DATEDIFF('$f_inicio_sem', Fecha_Inicio) THEN 1 WHEN DATEDIFF('$f_inicio_sem', Fecha_Inicio) < 1 THEN 0 END) - Ejecutado,3) > 0 THEN 'Atrasada'
-
-          WHEN Ejecutado < 1 AND Ejecutado > 0 AND ROUND((SELECT CASE WHEN (DATEDIFF(Fecha_Fin, Fecha_Inicio)+1) >= DATEDIFF('$f_inicio_sem', Fecha_Inicio) AND DATEDIFF('$f_inicio_sem', Fecha_Inicio) >= 1 THEN (DATEDIFF('$f_inicio_sem', Fecha_Inicio) / (DATEDIFF(Fecha_Fin, Fecha_Inicio)+1)) WHEN (DATEDIFF(Fecha_Fin, Fecha_Inicio)+1) < DATEDIFF('$f_inicio_sem', Fecha_Inicio) THEN 1 WHEN DATEDIFF('$f_inicio_sem', Fecha_Inicio) < 1 THEN 0 END) - Ejecutado,3) <= 0 THEN 'A Tiempo'
-
-          WHEN Semanas_Inicio <= 0 AND Estado_Restricciones = 1 AND ROUND((SELECT CASE WHEN (DATEDIFF(Fecha_Fin, Fecha_Inicio)+1) >= DATEDIFF('$f_inicio_sem', Fecha_Inicio) AND DATEDIFF('$f_inicio_sem', Fecha_Inicio) >= 1 THEN (DATEDIFF('$f_inicio_sem', Fecha_Inicio) / (DATEDIFF(Fecha_Fin, Fecha_Inicio)+1)) WHEN (DATEDIFF(Fecha_Fin, Fecha_Inicio)+1) < DATEDIFF('$f_inicio_sem', Fecha_Inicio) THEN 1 WHEN DATEDIFF('$f_inicio_sem', Fecha_Inicio) < 1 THEN 0 END),3) = 0 AND Ejecutado=0 THEN 'Debe Iniciar esta Semana'
-
-          WHEN Semanas_Inicio <= 0 AND Estado_Restricciones < 1 AND ROUND((SELECT CASE WHEN (DATEDIFF(Fecha_Fin, Fecha_Inicio)+1) >= DATEDIFF('$f_inicio_sem', Fecha_Inicio) AND DATEDIFF('$f_inicio_sem', Fecha_Inicio) >= 1 THEN (DATEDIFF('$f_inicio_sem', Fecha_Inicio) / (DATEDIFF(Fecha_Fin, Fecha_Inicio)+1)) WHEN (DATEDIFF(Fecha_Fin, Fecha_Inicio)+1) < DATEDIFF('$f_inicio_sem', Fecha_Inicio) THEN 1 WHEN DATEDIFF('$f_inicio_sem', Fecha_Inicio) < 1 THEN 0 END) - Ejecutado,3) > 0 AND Ejecutado=0 THEN 'Ya Debió Iniciar y Restricciones Pendientes'
-
-          WHEN Semanas_Inicio <= 0 AND Estado_Restricciones < 1 AND ROUND((SELECT CASE WHEN (DATEDIFF(Fecha_Fin, Fecha_Inicio)+1) >= DATEDIFF('$f_inicio_sem', Fecha_Inicio) AND DATEDIFF('$f_inicio_sem', Fecha_Inicio) >= 1 THEN (DATEDIFF('$f_inicio_sem', Fecha_Inicio) / (DATEDIFF(Fecha_Fin, Fecha_Inicio)+1)) WHEN (DATEDIFF(Fecha_Fin, Fecha_Inicio)+1) < DATEDIFF('$f_inicio_sem', Fecha_Inicio) THEN 1 WHEN DATEDIFF('$f_inicio_sem', Fecha_Inicio) < 1 THEN 0 END),3) = 0 AND Ejecutado=0 THEN 'Debe Iniciar esta Semana y Restricciones Pendientes'
+          WHEN Semanas_Inicio <= 0 AND Estado_Restricciones < 1 AND ROUND((SELECT CASE WHEN (DATEDIFF(Fecha_Fin, Fecha_Inicio)+1) >= DATEDIFF(?, Fecha_Inicio) AND DATEDIFF(?, Fecha_Inicio) >= 1 THEN (DATEDIFF(?, Fecha_Inicio) / (DATEDIFF(Fecha_Fin, Fecha_Inicio)+1)) WHEN (DATEDIFF(Fecha_Fin, Fecha_Inicio)+1) < DATEDIFF(?, Fecha_Inicio) THEN 1 WHEN DATEDIFF(?, Fecha_Inicio) < 1 THEN 0 END), 3) = 0 AND Ejecutado = 0 THEN 'Debe Iniciar esta Semana y Restricciones Pendientes'
 
           WHEN Semanas_Inicio > 0 AND Semanas_Inicio <= 6 AND Ejecutado = 0 THEN 'En Liberación de Restricciones'
 
@@ -148,15 +96,17 @@
 
           ELSE 'No Requerida'
        END
-      WHERE Titulo=0 AND Semana=$semana";
-    $resultado9=mysqli_multi_query($conexion, $query6);
-    if(!$resultado9){
-      die(mysqli_error($conexion));
-    }else{
-      $respuesta = array($semana, $ejecucionActualizada, $semanalConfirmada);
-      echo utf8_decode(json_encode($respuesta));
-    }
-    mysqli_close($conexion);
+      WHERE Titulo = 0 AND Semana = ?";
+    
+    $params = array_fill(0, 21, $f_inicio_sem);
+    $params[] = $semana;
 
+    $db->query($sqlEstado, $params);
 
-?>
+    $respuesta = [$semana, $ejecucionActualizada, $semanalConfirmada];
+    echo json_encode($respuesta);
+
+} catch (Exception $e) {
+    error_log("Error en modificar_sem_estado.php: " . $e->getMessage());
+    die("Error al modificar el estado de la semana.");
+}

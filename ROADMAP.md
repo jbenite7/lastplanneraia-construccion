@@ -129,21 +129,21 @@ Esta fase inicial se centra en construir una base administrativa sólida y segur
         - [x] `construccion/Cargar_Nuevos_Proyectos.php` (Eliminado - Reemplazado por ProjectController)
         - [x] `construccion/Copia_de_Seguridad_LPS.php` (Eliminado - Reemplazado por ProjectController)
         - [x] `construccion/eliminar_proyectos.php` (Eliminado - Reemplazado por ProjectController)
-        - [ ] `construccion/generarCurvaS.php`
-        - [ ] `construccion/generarCurvaSB.php`
-        - [ ] `construccion/generarCurvaSPDC.php`
-        - [ ] `construccion/generarListadoRestriccionesGeneral.php`
-        - [ ] `construccion/generarReporteGeneral.php`
-        - [ ] `construccion/generarReportePDC.php`
-        - [ ] `construccion/generarTablaHTMLProgramacionSemanal.php`
+        - [x] `construccion/generarCurvaS.php`
+        - [x] `construccion/generarCurvaSB.php`
+        - [x] `construccion/generarCurvaSPDC.php`
+        - [x] `construccion/generarListadoRestriccionesGeneral.php`
+        - [x] `construccion/generarReporteGeneral.php`
+        - [x] `construccion/generarReportePDC.php`
+        - [x] `construccion/generarTablaHTMLProgramacionSemanal.php`
 
         #### Módulo: Funciones Generales
-        - [ ] `construccion/funciones_generales/php/actualizarEjecucion.php`
+        - [x] `construccion/funciones_generales/php/actualizarEjecucion.php`
         - [ ] `construccion/funciones_generales/php/actualizar_pdc_nueva_semana.php`
         - [ ] `construccion/funciones_generales/php/autoprogramar_actividades.php`
         - [ ] `construccion/funciones_generales/php/datosGeneralesPagina.php`
         - [ ] `construccion/funciones_generales/php/eliminar_semana.php`
-        - [ ] `construccion/funciones_generales/php/modificar_sem_estado.php`
+        - [x] `construccion/funciones_generales/php/modificar_sem_estado.php`
         - [ ] `construccion/funciones_generales/php/modificar_sem_estado_actualizar.php`
         - [ ] `construccion/funciones_generales/php/nueva_semana.php`
         - [ ] `construccion/funciones_generales/php/nueva_semana1.php`

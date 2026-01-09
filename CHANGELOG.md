@@ -14,6 +14,13 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
   - Rediseño del Dashboard administrativo para incluir una tabla de Auditoría de Acciones separada de los logs de error del sistema.
   - Soporte para detección automática de usuario e IP en registros de auditoría.
 
+### Cambiado
+- **Refactorización de Scripts de Reportes y Soporte:**
+  - Migración de scripts legados en `construccion/` para utilizar el Singleton `Database` y sentencias preparadas (PDO).
+  - Mejora de la seguridad contra inyección SQL en la generación masiva de reportes y actualización de ejecución semanal.
+  - Optimización de los scripts de generación de Curvas S, Curvas S PDC y Reportes Consolidados.
+  - Implementación de logging de actividad (`logActivity`) en procesos críticos de generación de datos.
+
 ### Añadido
 - **Tablero de Salud del Sistema:**
   - **Monitoreo en Tiempo Real:** Integración de escaneo del log de errores de PHP con conteo diario automático y flujo de actividad que cubre todo el día actual.

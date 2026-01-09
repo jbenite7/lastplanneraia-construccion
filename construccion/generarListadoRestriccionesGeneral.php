@@ -1,66 +1,79 @@
-<?php session_start();
-require ("conexion.php");
-//$proyecto=$_GET["P"];
+<?php
+session_start();
+require_once __DIR__ . "/conexion.php";
 
-$query="TRUNCATE TABLE general_informe_restricciones_consolidado";
-//echo "$query <br>" ;
+/** @var Database $db */
+$db = Database::getInstance();
 
-$resultado= mysqli_query($conexion, $query);
+$db->logActivity('Sistema', 'GENERAR_RESTRICCIONES_GRAL', "Iniciando consolidación de listado de restricciones general");
 
-$query1="SELECT  * FROM general_proyectos_procesos WHERE Area='Construccion' AND Activo=1";
-//echo "$query1 <br>" ;
+try {
+    // 1. Limpiar tabla consolidada
+    $db->query("TRUNCATE TABLE general_informe_restricciones_consolidado");
 
-$resultado1= mysqli_query($conexion, $query1);
+    // 2. Obtener proyectos activos
+    $stmtProyectos = $db->query("SELECT * FROM general_proyectos_procesos WHERE Area='Construccion' AND Activo=1");
+    $proyectos = $stmtProyectos->fetchAll();
 
-echo "<li>Liberación de Restricciones";
+    echo "<li>Liberación de Restricciones";
 
-while ($data1=mysqli_fetch_assoc($resultado1)){
-    $Proyecto=$data1["Proyecto_Proceso"];
-    //echo "<li> $Proyecto";
-    $Base_de_Datos=$data1["Base_de_Datos"];
+    // Definición de tipos de restricciones y sus columnas correspondientes
+    $restricciones = [
+        'D_y_E' => 'D_y_E',
+        'Materiales' => 'Materiales',
+        'MdeO' => 'MdeO',
+        'Equipos' => 'Equipos',
+        'Predecesora' => 'Predecesora',
+        'Pdto_Cons' => 'Pdto_Cons',
+        'Modelo' => 'Modelo'
+    ];
 
-    $query2="INSERT INTO general_informe_restricciones_consolidado (`Proyecto`, `Semana`, `Fecha_Inicio_Sem`, `Fecha_Fin_Sem`, `Actividad`, `Fecha_Inicio`, `Fecha_Fin`, `Semanas_Inicio`, `Restriccion`, `valorRestriccion`, `estadoActividad`) ";
+    foreach ($proyectos as $data1) {
+        $proyecto = $data1["Proyecto_Proceso"];
+        $dbPrefix = $data1["Base_de_Datos"];
 
-		$query2 .= "SELECT '$Proyecto', $Base_de_Datos"."_programa_consolidado.`Semana`, $Base_de_Datos"."_semanas_activas.`Fecha_Inicio_Sem`, $Base_de_Datos"."_semanas_activas.`Fecha_Fin_Sem`, $Base_de_Datos"."_programa_consolidado.`Actividad`, $Base_de_Datos"."_programa_consolidado.`Fecha_Inicio`, $Base_de_Datos"."_programa_consolidado.`Fecha_Fin`, $Base_de_Datos"."_programa_consolidado.`Semanas_Inicio`, (SELECT 'D_y_E'), (SELECT CASE WHEN $Base_de_Datos"."_programa_consolidado.`D_y_E` IS NULL THEN '0%' WHEN $Base_de_Datos"."_programa_consolidado.`D_y_E`='N/A' THEN 'N/A' ELSE CONCAT(FLOOR($Base_de_Datos"."_programa_consolidado.`D_y_E` * 100),'%') END), $Base_de_Datos"."_programa_consolidado.`Ejecutado` FROM $Base_de_Datos"."_programa_consolidado LEFT JOIN $Base_de_Datos"."_semanas_activas ON $Base_de_Datos"."_semanas_activas.`Semana` = $Base_de_Datos"."_programa_consolidado.`Semana` WHERE $Base_de_Datos"."_programa_consolidado.`D_y_E`!='N/A' AND $Base_de_Datos"."_programa_consolidado.`Titulo`=0 AND $Base_de_Datos"."_programa_consolidado.`Semanas_Inicio`<7 AND $Base_de_Datos"."_programa_consolidado.`Ejecutado`<1 AND $Base_de_Datos"."_programa_consolidado.`Semana`>=((SELECT MAX($Base_de_Datos"."_programa_consolidado.`Semana`) FROM $Base_de_Datos"."_programa_consolidado)-3) UNION ";
+        foreach ($restricciones as $nombreLabel => $columna) {
+            $sqlInsert = "INSERT INTO general_informe_restricciones_consolidado (
+                Proyecto, Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem, Actividad, 
+                Fecha_Inicio, Fecha_Fin, Semanas_Inicio, Restriccion, valorRestriccion, estadoActividad
+            )
+            SELECT 
+                ? AS Proyecto, 
+                prog.Semana, 
+                sem.Fecha_Inicio_Sem, 
+                sem.Fecha_Fin_Sem, 
+                prog.Actividad, 
+                prog.Fecha_Inicio, 
+                prog.Fecha_Fin, 
+                prog.Semanas_Inicio, 
+                ? AS Restriccion,
+                (CASE 
+                    WHEN prog.{$columna} IS NULL THEN '0%' 
+                    WHEN prog.{$columna} = 'N/A' THEN 'N/A' 
+                    ELSE CONCAT(FLOOR(prog.{$columna} * 100), '%') 
+                END) AS valorRestriccion,
+                prog.Ejecutado
+            FROM {$dbPrefix}_programa_consolidado AS prog
+            LEFT JOIN {$dbPrefix}_semanas_activas AS sem ON sem.Semana = prog.Semana
+            WHERE prog.{$columna} != 'N/A' 
+              AND prog.Titulo = 0 
+              AND prog.Semanas_Inicio < 7 
+              AND prog.Ejecutado < 1 
+              AND prog.Semana >= ((SELECT MAX(Semana) FROM {$dbPrefix}_programa_consolidado) - 3)";
 
-		$query2 .= "SELECT '$Proyecto', $Base_de_Datos"."_programa_consolidado.`Semana`, $Base_de_Datos"."_semanas_activas.`Fecha_Inicio_Sem`, $Base_de_Datos"."_semanas_activas.`Fecha_Fin_Sem`, $Base_de_Datos"."_programa_consolidado.`Actividad`, $Base_de_Datos"."_programa_consolidado.`Fecha_Inicio`, $Base_de_Datos"."_programa_consolidado.`Fecha_Fin`, $Base_de_Datos"."_programa_consolidado.`Semanas_Inicio`, (SELECT 'Materiales'), (SELECT CASE WHEN $Base_de_Datos"."_programa_consolidado.`Materiales` IS NULL THEN '0%' WHEN $Base_de_Datos"."_programa_consolidado.`Materiales`='N/A' THEN 'N/A' ELSE CONCAT(FLOOR($Base_de_Datos"."_programa_consolidado.`Materiales` * 100),'%') END), $Base_de_Datos"."_programa_consolidado.`Ejecutado` FROM $Base_de_Datos"."_programa_consolidado LEFT JOIN $Base_de_Datos"."_semanas_activas ON $Base_de_Datos"."_semanas_activas.`Semana` = $Base_de_Datos"."_programa_consolidado.`Semana` WHERE $Base_de_Datos"."_programa_consolidado.`Materiales`!='N/A' AND $Base_de_Datos"."_programa_consolidado.`Titulo`=0 AND $Base_de_Datos"."_programa_consolidado.`Semanas_Inicio`<7 AND $Base_de_Datos"."_programa_consolidado.`Ejecutado`<1 AND $Base_de_Datos"."_programa_consolidado.`Semana`>=((SELECT MAX($Base_de_Datos"."_programa_consolidado.`Semana`) FROM $Base_de_Datos"."_programa_consolidado)-3) UNION ";
+            $db->query($sqlInsert, [$proyecto, $nombreLabel]);
+        }
 
-		$query2 .= "SELECT '$Proyecto', $Base_de_Datos"."_programa_consolidado.`Semana`, $Base_de_Datos"."_semanas_activas.`Fecha_Inicio_Sem`, $Base_de_Datos"."_semanas_activas.`Fecha_Fin_Sem`, $Base_de_Datos"."_programa_consolidado.`Actividad`, $Base_de_Datos"."_programa_consolidado.`Fecha_Inicio`, $Base_de_Datos"."_programa_consolidado.`Fecha_Fin`, $Base_de_Datos"."_programa_consolidado.`Semanas_Inicio`, (SELECT 'MdeO'), (SELECT CASE WHEN $Base_de_Datos"."_programa_consolidado.`MdeO` IS NULL THEN '0%' WHEN $Base_de_Datos"."_programa_consolidado.`MdeO`='N/A' THEN 'N/A' ELSE CONCAT(FLOOR(`MdeO` * 100),'%') END), $Base_de_Datos"."_programa_consolidado.`Ejecutado` FROM $Base_de_Datos"."_programa_consolidado LEFT JOIN $Base_de_Datos"."_semanas_activas ON $Base_de_Datos"."_semanas_activas.`Semana` = $Base_de_Datos"."_programa_consolidado.`Semana` WHERE $Base_de_Datos"."_programa_consolidado.`MdeO`!='N/A' AND $Base_de_Datos"."_programa_consolidado.`Titulo`=0 AND $Base_de_Datos"."_programa_consolidado.`Semanas_Inicio`<7 AND $Base_de_Datos"."_programa_consolidado.`Ejecutado`<1 AND $Base_de_Datos"."_programa_consolidado.`Semana`>=((SELECT MAX($Base_de_Datos"."_programa_consolidado.`Semana`) FROM $Base_de_Datos"."_programa_consolidado)-3) UNION ";
+        // Limpiar registros inconsistentes (NULLs)
+        $db->query("DELETE FROM general_informe_restricciones_consolidado WHERE Fecha_Inicio_Sem IS NULL OR Fecha_Fin_Sem IS NULL");
 
-    $query2 .= "SELECT '$Proyecto', $Base_de_Datos"."_programa_consolidado.`Semana`, $Base_de_Datos"."_semanas_activas.`Fecha_Inicio_Sem`, $Base_de_Datos"."_semanas_activas.`Fecha_Fin_Sem`, $Base_de_Datos"."_programa_consolidado.`Actividad`, $Base_de_Datos"."_programa_consolidado.`Fecha_Inicio`, $Base_de_Datos"."_programa_consolidado.`Fecha_Fin`, $Base_de_Datos"."_programa_consolidado.`Semanas_Inicio`, (SELECT 'Equipos'), (SELECT CASE WHEN $Base_de_Datos"."_programa_consolidado.`Equipos` IS NULL THEN '0%' WHEN $Base_de_Datos"."_programa_consolidado.`Equipos`='N/A' THEN 'N/A' ELSE CONCAT(FLOOR(`Equipos` * 100),'%') END), $Base_de_Datos"."_programa_consolidado.`Ejecutado` FROM $Base_de_Datos"."_programa_consolidado LEFT JOIN $Base_de_Datos"."_semanas_activas ON $Base_de_Datos"."_semanas_activas.`Semana` = $Base_de_Datos"."_programa_consolidado.`Semana` WHERE $Base_de_Datos"."_programa_consolidado.`Equipos`!='N/A' AND $Base_de_Datos"."_programa_consolidado.`Titulo`=0 AND $Base_de_Datos"."_programa_consolidado.`Semanas_Inicio`<7 AND $Base_de_Datos"."_programa_consolidado.`Ejecutado`<1 AND $Base_de_Datos"."_programa_consolidado.`Semana`>=((SELECT MAX($Base_de_Datos"."_programa_consolidado.`Semana`) FROM $Base_de_Datos"."_programa_consolidado)-3) UNION ";
-
-		$query2 .= "SELECT '$Proyecto', $Base_de_Datos"."_programa_consolidado.`Semana`, $Base_de_Datos"."_semanas_activas.`Fecha_Inicio_Sem`, $Base_de_Datos"."_semanas_activas.`Fecha_Fin_Sem`, $Base_de_Datos"."_programa_consolidado.`Actividad`, $Base_de_Datos"."_programa_consolidado.`Fecha_Inicio`, $Base_de_Datos"."_programa_consolidado.`Fecha_Fin`, $Base_de_Datos"."_programa_consolidado.`Semanas_Inicio`, (SELECT 'Predecesora'), (SELECT CASE WHEN $Base_de_Datos"."_programa_consolidado.`Predecesora` IS NULL THEN '0%' WHEN $Base_de_Datos"."_programa_consolidado.`Predecesora`='N/A' THEN 'N/A' ELSE CONCAT(FLOOR(`Predecesora` * 100),'%') END), $Base_de_Datos"."_programa_consolidado.`Ejecutado` FROM $Base_de_Datos"."_programa_consolidado LEFT JOIN $Base_de_Datos"."_semanas_activas ON $Base_de_Datos"."_semanas_activas.`Semana` = $Base_de_Datos"."_programa_consolidado.`Semana` WHERE $Base_de_Datos"."_programa_consolidado.`Predecesora`!='N/A' AND $Base_de_Datos"."_programa_consolidado.`Titulo`=0 AND $Base_de_Datos"."_programa_consolidado.`Semanas_Inicio`<7 AND $Base_de_Datos"."_programa_consolidado.`Ejecutado`<1 AND $Base_de_Datos"."_programa_consolidado.`Semana`>=((SELECT MAX($Base_de_Datos"."_programa_consolidado.`Semana`) FROM $Base_de_Datos"."_programa_consolidado)-3) UNION ";
-    //
-		$query2 .= "SELECT '$Proyecto', $Base_de_Datos"."_programa_consolidado.`Semana`, $Base_de_Datos"."_semanas_activas.`Fecha_Inicio_Sem`, $Base_de_Datos"."_semanas_activas.`Fecha_Fin_Sem`, $Base_de_Datos"."_programa_consolidado.`Actividad`, $Base_de_Datos"."_programa_consolidado.`Fecha_Inicio`, $Base_de_Datos"."_programa_consolidado.`Fecha_Fin`, $Base_de_Datos"."_programa_consolidado.`Semanas_Inicio`, (SELECT 'Pdto_Cons'), (SELECT CASE WHEN $Base_de_Datos"."_programa_consolidado.`Pdto_Cons` IS NULL THEN '0%' WHEN $Base_de_Datos"."_programa_consolidado.`Pdto_Cons`='N/A' THEN 'N/A' ELSE CONCAT(FLOOR(`Pdto_Cons` * 100),'%') END), $Base_de_Datos"."_programa_consolidado.`Ejecutado` FROM $Base_de_Datos"."_programa_consolidado LEFT JOIN $Base_de_Datos"."_semanas_activas ON $Base_de_Datos"."_semanas_activas.`Semana` = $Base_de_Datos"."_programa_consolidado.`Semana` WHERE $Base_de_Datos"."_programa_consolidado.`Pdto_Cons`!='N/A' AND $Base_de_Datos"."_programa_consolidado.`Titulo`=0 AND $Base_de_Datos"."_programa_consolidado.`Semanas_Inicio`<7 AND $Base_de_Datos"."_programa_consolidado.`Ejecutado`<1 AND $Base_de_Datos"."_programa_consolidado.`Semana`>=((SELECT MAX($Base_de_Datos"."_programa_consolidado.`Semana`) FROM $Base_de_Datos"."_programa_consolidado)-3) UNION ";
-
-		$query2 .= "SELECT '$Proyecto', $Base_de_Datos"."_programa_consolidado.`Semana`, $Base_de_Datos"."_semanas_activas.`Fecha_Inicio_Sem`, $Base_de_Datos"."_semanas_activas.`Fecha_Fin_Sem`, $Base_de_Datos"."_programa_consolidado.`Actividad`, $Base_de_Datos"."_programa_consolidado.`Fecha_Inicio`, $Base_de_Datos"."_programa_consolidado.`Fecha_Fin`, $Base_de_Datos"."_programa_consolidado.`Semanas_Inicio`, (SELECT 'Modelo'), (SELECT CASE WHEN $Base_de_Datos"."_programa_consolidado.`Modelo` IS NULL THEN '0%' WHEN $Base_de_Datos"."_programa_consolidado.`Modelo`='N/A' THEN 'N/A' ELSE CONCAT(FLOOR(`Modelo` * 100),'%') END), $Base_de_Datos"."_programa_consolidado.`Ejecutado` FROM $Base_de_Datos"."_programa_consolidado LEFT JOIN $Base_de_Datos"."_semanas_activas ON $Base_de_Datos"."_semanas_activas.`Semana` = $Base_de_Datos"."_programa_consolidado.`Semana` WHERE $Base_de_Datos"."_programa_consolidado.`Modelo`!='N/A' AND $Base_de_Datos"."_programa_consolidado.`Titulo`=0 AND $Base_de_Datos"."_programa_consolidado.`Semanas_Inicio`<7 AND $Base_de_Datos"."_programa_consolidado.`Ejecutado`<1 AND $Base_de_Datos"."_programa_consolidado.`Semana`>=((SELECT MAX($Base_de_Datos"."_programa_consolidado.`Semana`) FROM $Base_de_Datos"."_programa_consolidado)-3) UNION ";
-
-    $query2 = substr($query2, 0, -7);
-    //echo "<li> $query2";
-    $resultado2 = mysqli_query($conexion, $query2);
-    if(!$resultado2){
-        die("<li>$Proyecto - " . mysqli_error($conexion));
-    } else{
-      $query3 = "DELETE FROM general_informe_restricciones_consolidado WHERE `Fecha_Inicio_Sem`=NULL OR `Fecha_Fin_Sem`=NULL";
-
-      $resultado3 = mysqli_query($conexion, $query3);
-
-      if(!$resultado3){
-        die("<li>$Proyecto - " . mysqli_error($conexion));
-      } else{
-        echo "<li>$Proyecto - OK";
-      }
+        echo "<li>$proyecto - OK";
     }
+
+    $db->logActivity('Sistema', 'GENERAR_RESTRICCIONES_GRAL', "Consolidación de restricciones completada con éxito");
+
+} catch (Exception $e) {
+    error_log("Error en generarListadoRestriccionesGeneral.php: " . $e->getMessage());
+    echo "<li>Error: " . $e->getMessage();
 }
-
-
-//mysqli_free_result($resultado);
-//mysqli_free_result($resultado1);
-//mysqli_free_result($resultado2);
-//mysqli_free_result($resultado3);
-
-mysqli_close($conexion);
-
-//session_destroy();
-
 ?>
