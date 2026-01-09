@@ -1,399 +1,338 @@
 <?php
-	// require ("../../conexion.php");
-	//
-  // $db=$_POST['db'];
-	// $semana=$_POST['semana'];
+session_start();
+require_once __DIR__ . "/../../conexion.php";
 
-	// $db="concejo_bogota_pc";
-	// $semana=18;
+/** @var Database $db */
+$db = Database::getInstance();
 
-	$query = "SELECT COUNT(*) AS conteo FROM ".$db."_pdc WHERE titulo=0 AND semana = $semana AND fechaInicio IS NOT NULL";
-	//echo $query;
-	$resultado = mysqli_query($conexion, $query);
-  $data=mysqli_fetch_assoc($resultado);
-  $conteo=$data["conteo"];
-	//echo $conteo;
-  if ($conteo==0){
-		$contratosVigentesSI = "";
-		$contratosVigentesS = "";
-		$contratosVigentesMO = "";
+$dbName = $_POST['db'] ?? '';
+$semana = (int)($_POST['semana'] ?? 0);
 
-		$query1 = "DELETE FROM $db"."_pdc WHERE (titulo=1 AND semana = $semana) OR (titulo=0 AND fechaInicio IS NULL AND semana = $semana) ";
-		$resultado1 = mysqli_query($conexion, $query1);
-		if(!$resultado1){
-			die(mysqli_error($conexion));
-		}else{
-			$query2 = insertarPaquetes($db, $semana, $contratosVigentesSI, $contratosVigentesS, $contratosVigentesMO);
-			$resultado2 = mysqli_query($conexion, $query2);
+if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbName)) {
+    die(json_encode(["respuesta" => "ERROR", "mensaje" => "Nombre de base de datos inválido."]));
+}
 
-			if(!$resultado2){
-				die(mysqli_error($conexion));
-			}else{
-				sleep(1);
-				$query3 = generarEstadoProceso($db, $semana, $conexion);
-				if($query3 == ""){
-					$informacion["respuesta"] = "BIEN";
-					echo json_encode($informacion);
-				}else{
-					$resultado3 = mysqli_multi_query($conexion, $query3);
-					if(!$resultado3){
-						die(mysqli_error($conexion));
-					}else{
-						$informacion["respuesta"] = "BIEN";
-						echo json_encode($informacion);
-					}
-				}
-			}
-		}
+try {
+    $sqlConteo = "SELECT COUNT(*) AS conteo FROM {$dbName}_pdc WHERE titulo = 0 AND semana = ? AND fechaInicio IS NOT NULL";
+    $stmtConteo = $db->query($sqlConteo, [$semana]);
+    $dataConteo = $stmtConteo->fetch();
+    $conteo = (int)($dataConteo["conteo"] ?? 0);
 
+    if ($conteo === 0) {
+        $contratosVigentesSI = "";
+        $contratosVigentesS = "";
+        $contratosVigentesMO = "";
 
-  	}else{
-	$query0_1 = "SELECT GROUP_CONCAT(CONCAT('CONCAT(paqueteContratacion, \'&\', tipoPaquete) != \'', paqueteContratacion, '&', tipoPaquete, '\'') SEPARATOR ' AND ') AS contratos
-	FROM (SELECT DISTINCT paqueteSI1 AS paqueteContratacion, 'Suministro e Instalación' AS tipoPaquete FROM $db"."_actividades WHERE fechaInicio IS NOT NULL AND semanaActualizacion = $semana AND paqueteSI1 IS NOT NULL AND paqueteSI1 != ''
-				UNION SELECT DISTINCT paqueteSI2 AS paqueteContratacion, 'Suministro e Instalación' AS tipoPaquete FROM $db"."_actividades WHERE fechaInicio IS NOT NULL AND semanaActualizacion = $semana AND paqueteSI2 IS NOT NULL AND paqueteSI2 != ''
-				UNION SELECT DISTINCT paqueteSI3 AS paqueteContratacion, 'Suministro e Instalación' AS tipoPaquete FROM $db"."_actividades WHERE fechaInicio IS NOT NULL AND semanaActualizacion = $semana AND paqueteSI3 IS NOT NULL AND paqueteSI3 != ''
-				UNION SELECT DISTINCT paqueteSI4 AS paqueteContratacion, 'Suministro e Instalación' AS tipoPaquete FROM $db"."_actividades WHERE fechaInicio IS NOT NULL AND semanaActualizacion = $semana AND paqueteSI4 IS NOT NULL AND paqueteSI4 != ''
-				UNION SELECT DISTINCT paqueteSI5 AS paqueteContratacion, 'Suministro e Instalación' AS tipoPaquete FROM $db"."_actividades WHERE fechaInicio IS NOT NULL AND semanaActualizacion = $semana AND paqueteSI5 IS NOT NULL AND paqueteSI5 != ''
-				UNION SELECT DISTINCT paqueteMO1 AS paqueteContratacion, 'Mano de Obra' AS tipoPaquete FROM $db"."_actividades WHERE fechaInicio IS NOT NULL AND semanaActualizacion = $semana AND paqueteMO1 IS NOT NULL AND paqueteMO1 != ''
-				UNION SELECT DISTINCT paqueteMO2 AS paqueteContratacion, 'Mano de Obra' AS tipoPaquete FROM $db"."_actividades WHERE fechaInicio IS NOT NULL AND semanaActualizacion = $semana AND paqueteMO2 IS NOT NULL AND paqueteMO2 != ''
-				UNION SELECT DISTINCT paqueteMO3 AS paqueteContratacion, 'Mano de Obra' AS tipoPaquete FROM $db"."_actividades WHERE fechaInicio IS NOT NULL AND semanaActualizacion = $semana AND paqueteMO3 IS NOT NULL AND paqueteMO3 != ''
-				UNION SELECT DISTINCT paqueteMO4 AS paqueteContratacion, 'Mano de Obra' AS tipoPaquete FROM $db"."_actividades WHERE fechaInicio IS NOT NULL AND semanaActualizacion = $semana AND paqueteMO4 IS NOT NULL AND paqueteMO4 != ''
-				UNION SELECT DISTINCT paqueteMO5 AS paqueteContratacion, 'Mano de Obra' AS tipoPaquete FROM $db"."_actividades WHERE fechaInicio IS NOT NULL AND semanaActualizacion = $semana AND paqueteMO5 IS NOT NULL AND paqueteMO5 != ''
-				UNION SELECT DISTINCT paqueteS1 AS paqueteContratacion, 'Suministro' AS tipoPaquete FROM $db"."_actividades WHERE fechaInicio IS NOT NULL AND semanaActualizacion = $semana AND paqueteS1 IS NOT NULL AND paqueteS1 != ''
-				UNION SELECT DISTINCT paqueteS2 AS paqueteContratacion, 'Suministro' AS tipoPaquete FROM $db"."_actividades WHERE fechaInicio IS NOT NULL AND semanaActualizacion = $semana AND paqueteS2 IS NOT NULL AND paqueteS2 != ''
-				UNION SELECT DISTINCT paqueteS3 AS paqueteContratacion, 'Suministro' AS tipoPaquete FROM $db"."_actividades WHERE fechaInicio IS NOT NULL AND semanaActualizacion = $semana AND paqueteS3 IS NOT NULL AND paqueteS3 != ''
-				UNION SELECT DISTINCT paqueteS4 AS paqueteContratacion, 'Suministro' AS tipoPaquete FROM $db"."_actividades WHERE fechaInicio IS NOT NULL AND semanaActualizacion = $semana AND paqueteS4 IS NOT NULL AND paqueteS4 != ''
-				UNION SELECT DISTINCT paqueteS5 AS paqueteContratacion, 'Suministro' AS tipoPaquete FROM $db"."_actividades WHERE fechaInicio IS NOT NULL AND semanaActualizacion = $semana AND paqueteS5 IS NOT NULL AND paqueteS5 != '')
-	AS Tabla";
+        $sqlDelete = "DELETE FROM {$dbName}_pdc WHERE (titulo = 1 AND semana = ?) OR (titulo = 0 AND fechaInicio IS NULL AND semana = ?)";
+        $db->query($sqlDelete, [$semana, $semana]);
 
-		//echo $query0_1;
-		$resultado0_1 = mysqli_query($conexion, $query0_1);
-		if(!$resultado0_1){
-				die(mysqli_error($conexion));
-		} else{
-			$data0_1=mysqli_fetch_assoc($resultado0_1);
-			$contratosVigentes = $data0_1["contratos"];
-			//echo "contratos: " . $contratosVigentes;
-			if(empty($contratosVigentes)){
-				$query0_2 = "DELETE FROM $db"."_pdc WHERE (titulo=0 AND semana = $semana) OR (titulo=1 AND semana = $semana)";
-			}else{
-				$query0_2 = "DELETE FROM $db"."_pdc WHERE (titulo=0 AND semana = $semana AND $contratosVigentes) OR (titulo=1 AND semana = $semana)";
-			}
-			$resultado0_2 = mysqli_query($conexion, $query0_2);
+        insertarPaquetes($db, $dbName, $semana, $contratosVigentesSI, $contratosVigentesS, $contratosVigentesMO);
+        
+        sleep(1);
+        generarEstadoProceso($db, $dbName, $semana);
+        
+        $db->logActivity('Sistema', 'PDC_ACTUALIZAR', "Actualización de PDC para nueva semana $semana iniciada (conteo 0)");
+        echo json_encode(["respuesta" => "BIEN"]);
 
-			$query1 ="SELECT * FROM $db"."_pdc WHERE titulo=0 AND semana = $semana";
-			$resultado1 = mysqli_query($conexion, $query1);
+    } else {
+        $sqlVigentes = <<<SQL
+SELECT GROUP_CONCAT(CONCAT("CONCAT(paqueteContratacion, '&', tipoPaquete) != '", paqueteContratacion, "&", tipoPaquete, "'") SEPARATOR ' AND ') AS contratos
+FROM (SELECT DISTINCT paqueteSI1 AS paqueteContratacion, 'Suministro e Instalación' AS tipoPaquete FROM {$dbName}_actividades WHERE fechaInicio IS NOT NULL AND semanaActualizacion = ? AND paqueteSI1 IS NOT NULL AND paqueteSI1 != ''
+            UNION SELECT DISTINCT paqueteSI2 AS paqueteContratacion, 'Suministro e Instalación' AS tipoPaquete FROM {$dbName}_actividades WHERE fechaInicio IS NOT NULL AND semanaActualizacion = ? AND paqueteSI2 IS NOT NULL AND paqueteSI2 != ''
+            UNION SELECT DISTINCT paqueteSI3 AS paqueteContratacion, 'Suministro e Instalación' AS tipoPaquete FROM {$dbName}_actividades WHERE fechaInicio IS NOT NULL AND semanaActualizacion = ? AND paqueteSI3 IS NOT NULL AND paqueteSI3 != ''
+            UNION SELECT DISTINCT paqueteSI4 AS paqueteContratacion, 'Suministro e Instalación' AS tipoPaquete FROM {$dbName}_actividades WHERE fechaInicio IS NOT NULL AND semanaActualizacion = ? AND paqueteSI4 IS NOT NULL AND paqueteSI4 != ''
+            UNION SELECT DISTINCT paqueteSI5 AS paqueteContratacion, 'Suministro e Instalación' AS tipoPaquete FROM {$dbName}_actividades WHERE fechaInicio IS NOT NULL AND semanaActualizacion = ? AND paqueteSI5 IS NOT NULL AND paqueteSI5 != ''
+            UNION SELECT DISTINCT paqueteMO1 AS paqueteContratacion, 'Mano de Obra' AS tipoPaquete FROM {$dbName}_actividades WHERE fechaInicio IS NOT NULL AND semanaActualizacion = ? AND paqueteMO1 IS NOT NULL AND paqueteMO1 != ''
+            UNION SELECT DISTINCT paqueteMO2 AS paqueteContratacion, 'Mano de Obra' AS tipoPaquete FROM {$dbName}_actividades WHERE fechaInicio IS NOT NULL AND semanaActualizacion = ? AND paqueteMO2 IS NOT NULL AND paqueteMO2 != ''
+            UNION SELECT DISTINCT paqueteMO3 AS paqueteContratacion, 'Mano de Obra' AS tipoPaquete FROM {$dbName}_actividades WHERE fechaInicio IS NOT NULL AND semanaActualizacion = ? AND paqueteMO3 IS NOT NULL AND paqueteMO3 != ''
+            UNION SELECT DISTINCT paqueteMO4 AS paqueteContratacion, 'Mano de Obra' AS tipoPaquete FROM {$dbName}_actividades WHERE fechaInicio IS NOT NULL AND semanaActualizacion = ? AND paqueteMO4 IS NOT NULL AND paqueteMO4 != ''
+            UNION SELECT DISTINCT paqueteMO5 AS paqueteContratacion, 'Mano de Obra' AS tipoPaquete FROM {$dbName}_actividades WHERE fechaInicio IS NOT NULL AND semanaActualizacion = ? AND paqueteMO5 IS NOT NULL AND paqueteMO5 != ''
+            UNION SELECT DISTINCT paqueteS1 AS paqueteContratacion, 'Suministro' AS tipoPaquete FROM {$dbName}_actividades WHERE fechaInicio IS NOT NULL AND semanaActualizacion = ? AND paqueteS1 IS NOT NULL AND paqueteS1 != ''
+            UNION SELECT DISTINCT paqueteS2 AS paqueteContratacion, 'Suministro' AS tipoPaquete FROM {$dbName}_actividades WHERE fechaInicio IS NOT NULL AND semanaActualizacion = ? AND paqueteS2 IS NOT NULL AND paqueteS2 != ''
+            UNION SELECT DISTINCT paqueteS3 AS paqueteContratacion, 'Suministro' AS tipoPaquete FROM {$dbName}_actividades WHERE fechaInicio IS NOT NULL AND semanaActualizacion = ? AND paqueteS3 IS NOT NULL AND paqueteS3 != ''
+            UNION SELECT DISTINCT paqueteS4 AS paqueteContratacion, 'Suministro' AS tipoPaquete FROM {$dbName}_actividades WHERE fechaInicio IS NOT NULL AND semanaActualizacion = ? AND paqueteS4 IS NOT NULL AND paqueteS4 != ''
+            UNION SELECT DISTINCT paqueteS5 AS paqueteContratacion, 'Suministro' AS tipoPaquete FROM {$dbName}_actividades WHERE fechaInicio IS NOT NULL AND semanaActualizacion = ? AND paqueteS5 IS NOT NULL AND paqueteS5 != '')
+AS Tabla
+SQL;
 
-			if(!$resultado1){
-				die(mysqli_error($conexion));
-			}else{
-				$query2 = "";
-				$contratosVigentesSI = "";
-				$contratosVigentesS = "";
-				$contratosVigentesMO = "";
-				while($data=mysqli_fetch_assoc($resultado1)){
-					$tipoPaquete = $data["tipoPaquete"];
-					$paqueteContratacion = $data["paqueteContratacion"];
-					if($tipoPaquete == "Suministro e Instalación"){
-						$tipoContrato = 2;
-						$grupo ="SI";
-						$contratosVigentesSI .= "paqueteContratacion != '$paqueteContratacion' AND ";
-					}else if($tipoPaquete == "Suministro"){
-						$tipoContrato = 1;
-						$grupo ="S";
-						$contratosVigentesS .= "paqueteContratacion != '$paqueteContratacion' AND ";
-					}else if($tipoPaquete == "Mano de Obra"){
-						$tipoContrato = 1;
-						$grupo ="MO";
-						$contratosVigentesMO .= "paqueteContratacion != '$paqueteContratacion' AND ";
-					}
+        $paramsVigentes = array_fill(0, 15, $semana);
+        $stmtVigentes = $db->query($sqlVigentes, $paramsVigentes);
+        $dataVigentes = $stmtVigentes->fetch();
+        $contratosVigentes = $dataVigentes["contratos"] ?? '';
 
+        if (empty($contratosVigentes)) {
+            $db->query("DELETE FROM {$dbName}_pdc WHERE (titulo = 0 AND semana = ?) OR (titulo = 1 AND semana = ?)", [$semana, $semana]);
+        } else {
+            $db->query("DELETE FROM {$dbName}_pdc WHERE (titulo = 0 AND semana = ? AND $contratosVigentes) OR (titulo = 1 AND semana = ?)", [$semana, $semana]);
+        }
 
-					$query2 .= "UPDATE $db"."_pdc SET semana = $semana, ";
+        $stmtPdc = $db->query("SELECT * FROM {$dbName}_pdc WHERE titulo = 0 AND semana = ?", [$semana]);
+        $actividadesPdc = $stmtPdc->fetchAll();
 
-						$query2 .= "contratos=(SELECT GROUP_CONCAT(REPLACE(actividad, ';', '; ') SEPARATOR '; ') FROM (SELECT actividad, descripcionActividad, fechaInicio, tipoContrato, semanaActualizacion, ".$grupo."1 AS contrato, paquete".$grupo."1 AS paqueteContratacion FROM $db"."_actividades WHERE semanaActualizacion = $semana AND tipoContrato=$tipoContrato AND paquete".$grupo."1 = '$paqueteContratacion' UNION SELECT actividad, descripcionActividad, fechaInicio, tipoContrato, semanaActualizacion, ".$grupo."2 AS contrato, paquete".$grupo."2 AS paqueteContratacion FROM $db"."_actividades WHERE semanaActualizacion = $semana AND tipoContrato=$tipoContrato AND paquete".$grupo."2 = '$paqueteContratacion' UNION SELECT actividad, descripcionActividad, fechaInicio, tipoContrato, semanaActualizacion, ".$grupo."3 AS contrato, paquete".$grupo."3 AS paqueteContratacion FROM $db"."_actividades WHERE semanaActualizacion = $semana AND tipoContrato=$tipoContrato AND paquete".$grupo."3 = '$paqueteContratacion' UNION SELECT actividad, descripcionActividad, fechaInicio, tipoContrato, semanaActualizacion, ".$grupo."4 AS contrato, paquete".$grupo."4 AS paqueteContratacion FROM $db"."_actividades WHERE semanaActualizacion = $semana AND tipoContrato=$tipoContrato AND paquete".$grupo."4 = '$paqueteContratacion' UNION SELECT actividad, descripcionActividad, fechaInicio, tipoContrato, semanaActualizacion, ".$grupo."5 AS contrato, paquete".$grupo."5 AS paqueteContratacion FROM $db"."_actividades WHERE semanaActualizacion = $semana AND tipoContrato=$tipoContrato AND paquete".$grupo."5 = '$paqueteContratacion') AS Tabla), ";
+        $queryUpdate = false;
+        $contratosVigentesSI = "";
+        $contratosVigentesS = "";
+        $contratosVigentesMO = "";
 
-						$query2 .= "fechaInicio=(SELECT MIN(fechaInicio) FROM (SELECT actividad, descripcionActividad, fechaInicio, tipoContrato, semanaActualizacion, ".$grupo."1 AS contrato, paquete".$grupo."1 AS paqueteContratacion FROM $db"."_actividades WHERE semanaActualizacion = $semana AND tipoContrato=$tipoContrato AND paquete".$grupo."1 = '$paqueteContratacion' UNION SELECT actividad, descripcionActividad, fechaInicio, tipoContrato, semanaActualizacion, ".$grupo."2 AS contrato, paquete".$grupo."2 AS paqueteContratacion FROM $db"."_actividades WHERE semanaActualizacion = $semana AND tipoContrato=$tipoContrato AND paquete".$grupo."2 = '$paqueteContratacion' UNION SELECT actividad, descripcionActividad, fechaInicio, tipoContrato, semanaActualizacion, ".$grupo."3 AS contrato, paquete".$grupo."3 AS paqueteContratacion FROM $db"."_actividades WHERE semanaActualizacion = $semana AND tipoContrato=$tipoContrato AND paquete".$grupo."3 = '$paqueteContratacion' UNION SELECT actividad, descripcionActividad, fechaInicio, tipoContrato, semanaActualizacion, ".$grupo."4 AS contrato, paquete".$grupo."4 AS paqueteContratacion FROM $db"."_actividades WHERE semanaActualizacion = $semana AND tipoContrato=$tipoContrato AND paquete".$grupo."4 = '$paqueteContratacion' UNION SELECT actividad, descripcionActividad, fechaInicio, tipoContrato, semanaActualizacion, ".$grupo."5 AS contrato, paquete".$grupo."5 AS paqueteContratacion FROM $db"."_actividades WHERE semanaActualizacion = $semana AND tipoContrato=$tipoContrato AND paquete".$grupo."5 = '$paqueteContratacion') AS Tabla) ";
+        foreach ($actividadesPdc as $data) {
+            $queryUpdate = true;
+            $tipoPaquete = $data["tipoPaquete"];
+            $paqueteContratacion = $data["paqueteContratacion"];
 
-						$query2 .= "WHERE semana = $semana AND tipoPaquete='$tipoPaquete' AND paqueteContratacion='$paqueteContratacion'; ";
+            if ($tipoPaquete == "Suministro e Instalación") {
+                $tipoContrato = 2;
+                $grupo = "SI";
+                $contratosVigentesSI .= "paqueteContratacion != " . $db->quote($paqueteContratacion) . " AND ";
+            } else if ($tipoPaquete == "Suministro") {
+                $tipoContrato = 1;
+                $grupo = "S";
+                $contratosVigentesS .= "paqueteContratacion != " . $db->quote($paqueteContratacion) . " AND ";
+            } else if ($tipoPaquete == "Mano de Obra") {
+                $tipoContrato = 1;
+                $grupo = "MO";
+                $contratosVigentesMO .= "paqueteContratacion != " . $db->quote($paqueteContratacion) . " AND ";
+            }
 
-				}
-				
-				if($query2 == ""){
-					$query2 = insertarPaquetes($db, $semana, $contratosVigentesSI, $contratosVigentesS, $contratosVigentesMO);
-					$resultado2 = mysqli_query($conexion, $query2);
+            $sqlUpdate = "UPDATE {$dbName}_pdc SET 
+                contratos = (
+                    SELECT GROUP_CONCAT(REPLACE(actividad, ';', '; ') SEPARATOR '; ')
+                    FROM (
+                        SELECT actividad FROM {$dbName}_actividades WHERE semanaActualizacion = ? AND tipoContrato = ? AND paquete{$grupo}1 = ?
+                        UNION SELECT actividad FROM {$dbName}_actividades WHERE semanaActualizacion = ? AND tipoContrato = ? AND paquete{$grupo}2 = ?
+                        UNION SELECT actividad FROM {$dbName}_actividades WHERE semanaActualizacion = ? AND tipoContrato = ? AND paquete{$grupo}3 = ?
+                        UNION SELECT actividad FROM {$dbName}_actividades WHERE semanaActualizacion = ? AND tipoContrato = ? AND paquete{$grupo}4 = ?
+                        UNION SELECT actividad FROM {$dbName}_actividades WHERE semanaActualizacion = ? AND tipoContrato = ? AND paquete{$grupo}5 = ?
+                    ) AS Tabla
+                ),
+                fechaInicio = (
+                    SELECT MIN(fechaInicio) 
+                    FROM (
+                        SELECT fechaInicio FROM {$dbName}_actividades WHERE semanaActualizacion = ? AND tipoContrato = ? AND paquete{$grupo}1 = ?
+                        UNION SELECT fechaInicio FROM {$dbName}_actividades WHERE semanaActualizacion = ? AND tipoContrato = ? AND paquete{$grupo}2 = ?
+                        UNION SELECT fechaInicio FROM {$dbName}_actividades WHERE semanaActualizacion = ? AND tipoContrato = ? AND paquete{$grupo}3 = ?
+                        UNION SELECT fechaInicio FROM {$dbName}_actividades WHERE semanaActualizacion = ? AND tipoContrato = ? AND paquete{$grupo}4 = ?
+                        UNION SELECT fechaInicio FROM {$dbName}_actividades WHERE semanaActualizacion = ? AND tipoContrato = ? AND paquete{$grupo}5 = ?
+                    ) AS Tabla
+                )
+                WHERE semana = ? AND tipoPaquete = ? AND paqueteContratacion = ?";
 
-					if(!$resultado2){
-						die(mysqli_error($conexion));
-					}else{
-						sleep(1);
-						$queryDuplicar = crearSubcontratosDuplicados($db, $semana, $conexion);
-						if(empty($queryDuplicar)){
-							$resultadoDuplicar = "OK";
-						}else{
-							$resultadoDuplicar = mysqli_query($conexion, $queryDuplicar);
-							if(!$resultadoDuplicar){
-								die(mysqli_error($conexion));
-							}else{
-								$resultadoDuplicar = "OK";
-							}
-						}
-						
-						if($resultadoDuplicar != "OK"){
-							die(mysqli_error($conexion));
-						}else{
-							$query3 = generarEstadoProceso($db, $semana, $conexion);
-							if($query3 == ""){
-								$informacion["respuesta"] = "BIEN";
-								echo json_encode($informacion);
-							}else{
-								$resultado3 = mysqli_multi_query($conexion, $query3);
-								if(!$resultado3){
-									die(mysqli_error($conexion));
-								}else{
-									$informacion["respuesta"] = "BIEN";
-									echo json_encode($informacion);
-								}
-							}
-						}
-					}
-				}else{
-					$resultado2 = mysqli_multi_query($conexion, $query2);
-					sleep(1);
-					require ("../conexion.php");
+            $paramsUpdate = [
+                $semana, $tipoContrato, $paqueteContratacion,
+                $semana, $tipoContrato, $paqueteContratacion,
+                $semana, $tipoContrato, $paqueteContratacion,
+                $semana, $tipoContrato, $paqueteContratacion,
+                $semana, $tipoContrato, $paqueteContratacion,
+                $semana, $tipoContrato, $paqueteContratacion,
+                $semana, $tipoContrato, $paqueteContratacion,
+                $semana, $tipoContrato, $paqueteContratacion,
+                $semana, $tipoContrato, $paqueteContratacion,
+                $semana, $tipoContrato, $paqueteContratacion,
+                $semana, $tipoPaquete, $paqueteContratacion
+            ];
 
-					if(!$resultado2){
-						die(mysqli_error($conexion));
-					}else{
-						if($contratosVigentesSI != ""){
-							$contratosVigentesSI = "WHERE " . substr($contratosVigentesSI,0,-4);
-						}
-						if($contratosVigentesS != ""){
-							$contratosVigentesS = "WHERE " . substr($contratosVigentesS,0,-4);
-						}
-						if($contratosVigentesMO != ""){
-							$contratosVigentesMO = "WHERE " . substr($contratosVigentesMO,0,-4);
-						}
+            $db->query($sqlUpdate, $paramsUpdate);
+        }
 
-						$query3 = insertarPaquetes($db, $semana, $contratosVigentesSI, $contratosVigentesS, $contratosVigentesMO);
+        if (!$queryUpdate) {
+            insertarPaquetes($db, $dbName, $semana, $contratosVigentesSI, $contratosVigentesS, $contratosVigentesMO);
+            sleep(1);
+            crearSubcontratosDuplicados($db, $dbName, $semana);
+            generarEstadoProceso($db, $dbName, $semana);
+        } else {
+            sleep(1);
+            if ($contratosVigentesSI != "") $contratosVigentesSI = "WHERE " . rtrim($contratosVigentesSI, " AND ");
+            if ($contratosVigentesS != "") $contratosVigentesS = "WHERE " . rtrim($contratosVigentesS, " AND ");
+            if ($contratosVigentesMO != "") $contratosVigentesMO = "WHERE " . rtrim($contratosVigentesMO, " AND ");
 
-						//echo $query3;
-						$resultado3 = mysqli_query($conexion, $query3);
-						if(!$resultado3){
-							die(mysqli_error($conexion));
-						}else{
-							sleep(1);
-							$queryDuplicar = crearSubcontratosDuplicados($db, $semana, $conexion);
-							if(empty($queryDuplicar)){
-								$resultadoDuplicar = "OK";
-							}else{
-								$resultadoDuplicar = mysqli_query($conexion, $queryDuplicar);
-								if(!$resultadoDuplicar){
-									die(mysqli_error($conexion));
-								}else{
-									$resultadoDuplicar = "OK";
-								}
-							}
+            insertarPaquetes($db, $dbName, $semana, $contratosVigentesSI, $contratosVigentesS, $contratosVigentesMO);
+            sleep(1);
+            crearSubcontratosDuplicados($db, $dbName, $semana);
+            generarEstadoProceso($db, $dbName, $semana);
+        }
+        
+        $db->logActivity('Sistema', 'PDC_ACTUALIZAR', "PDC actualizado para semana $semana");
+        echo json_encode(["respuesta" => "BIEN"]);
+    }
 
-							if($resultadoDuplicar != "OK"){
-								die(mysqli_error($conexion));
-							}else{
-								$query4 = generarEstadoProceso($db, $semana, $conexion);
-								if($query4 == ""){
-									$informacion["respuesta"] = "BIEN";
-									echo json_encode($informacion);
-								}else{
-									$resultado4 = mysqli_multi_query($conexion, $query4);
-									if(!$resultado4){
-										die(mysqli_error($conexion));
-									}else{
-										$informacion["respuesta"] = "BIEN";
-										echo json_encode($informacion);
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-		mysqli_free_result($resultado1);
-	}
-	mysqli_close($conexion);
+} catch (Exception $e) {
+    error_log("Error en actualizar_pdc_nueva_semana.php: " . $e->getMessage());
+    echo json_encode(["respuesta" => "ERROR", "mensaje" => $e->getMessage()]);
+}
 
-	function insertarPaquetes($db, $semana, $contratosVigentesSI, $contratosVigentesS, $contratosVigentesMO){
-		$query1 ="INSERT INTO $db"."_pdc (consecutivo, titulo, semana, tipoPaquete, paqueteContratacion, contratos, fechaInicio, diasElaboracionPliegos, diasIngresoLicify, diasEntregaPliegos, diasReciboPropuestas, diasCuadrosComparativos, diasLegalizacionContrato, diasFabricacion, diasInsumosObra, fechaElaboracionPliegos, fechaIngresoLicify, fechaEntregaPliegos, fechaReciboPropuestas, fechaCuadrosComparativos, fechaLegalizacionContrato, fechaFabricacion, fechaInsumosObra)";
+/**
+ * Funciones de soporte adaptadas
+ */
 
-		$query1 .=" SELECT NULL AS consecutivo, 1 AS titulo, $semana AS semana, 'Suministro e Instalación' AS tipoPaquete, 'Suministro e Instalación' AS paqueteContratacion, NULL AS contratos, NULL AS fechaInicio, NULL AS diasElaboracionPliegos, NULL AS diasIngresoLicify, NULL AS diasEntregaPliegos, NULL AS diasReciboPropuestas, NULL AS diasCuadrosComparativos, NULL AS diasLegalizacionContrato, NULL AS diasFabricacion, NULL AS diasInsumosObra, NULL AS fechaElaboracionPliegos, NULL AS fechaIngresoLicify, NULL AS fechaEntregaPliegos, NULL AS fechaReciboPropuestas, NULL AS fechaCuadrosComparativos, NULL AS fechaLegalizacionContrato, NULL AS fechaFabricacion, NULL AS fechaInsumosObra";
+function insertarPaquetes($db, $dbName, $semana, $cvSI, $cvS, $cvMO) {
+    // Definición de tipos de contrato
+    $tipos = [
+        ['Suministro e Instalación', 'SI', 2],
+        ['Mano de Obra', 'MO', 1],
+        ['Suministro', 'S', 1]
+    ];
 
-		$query1 .= " UNION SELECT NULL AS consecutivo, 0 AS titulo, $semana AS semana, 'Suministro e Instalación' AS tipoPaquete, paqueteContratacion, GROUP_CONCAT(actividad SEPARATOR '; ') AS contratos, MIN(fechaInicio) AS fechaInicio, diasElaboracionPliegos, diasIngresoLicify, diasEntregaPliegos, diasReciboPropuestas, diasCuadrosComparativos, diasLegalizacionContrato, diasFabricacion, diasInsumosObra, DATE_SUB(fechaInicio, INTERVAL (diasInsumosObra + diasFabricacion + diasLegalizacionContrato + diasCuadrosComparativos + diasReciboPropuestas + diasEntregaPliegos + diasIngresoLicify + diasElaboracionPliegos) DAY) AS fechaElaboracionPliegos, DATE_SUB(fechaInicio, INTERVAL (diasInsumosObra + diasFabricacion + diasLegalizacionContrato + diasCuadrosComparativos + diasReciboPropuestas + diasEntregaPliegos + diasIngresoLicify) DAY) AS fechaIngresoLicify, DATE_SUB(fechaInicio, INTERVAL (diasInsumosObra + diasFabricacion + diasLegalizacionContrato + diasCuadrosComparativos + diasReciboPropuestas + diasEntregaPliegos) DAY) AS fechaEntregaPliegos, DATE_SUB(fechaInicio, INTERVAL (diasInsumosObra + diasFabricacion + diasLegalizacionContrato + diasCuadrosComparativos + diasReciboPropuestas) DAY) AS fechaReciboPropuestas, DATE_SUB(fechaInicio, INTERVAL (diasInsumosObra + diasFabricacion + diasLegalizacionContrato + diasCuadrosComparativos) DAY) AS fechaCuadrosComparativos, DATE_SUB(fechaInicio, INTERVAL (diasInsumosObra + diasFabricacion + diasLegalizacionContrato) DAY) AS fechaLegalizacionContrato, DATE_SUB(fechaInicio, INTERVAL (diasInsumosObra + diasFabricacion) DAY) AS fechaFabricacion, DATE_SUB(fechaInicio, INTERVAL diasInsumosObra DAY) AS fechaInsumosObra FROM (SELECT `$db"."_actividades`.actividad AS actividad, `$db"."_actividades`.descripcionActividad AS descripcionActividad, `$db"."_actividades`.fechaInicio AS fechaInicio, `$db"."_actividades`.tipoContrato AS tipoContrato, `$db"."_actividades`.semanaActualizacion AS semanaActualizacion, `$db"."_actividades`.SI1 AS contrato, `$db"."_actividades`.paqueteSI1 AS paqueteContratacion, `general_dias_procesos_contratacion`.diasElaboracionPliegos AS diasElaboracionPliegos, `general_dias_procesos_contratacion`.diasIngresoLicify AS diasIngresoLicify, `general_dias_procesos_contratacion`.diasEntregaPliegos AS diasEntregaPliegos, `general_dias_procesos_contratacion`.diasReciboPropuestas AS diasReciboPropuestas, `general_dias_procesos_contratacion`.diasCuadrosComparativos AS diasCuadrosComparativos, `general_dias_procesos_contratacion`.diasLegalizacionContrato AS diasLegalizacionContrato, `general_dias_procesos_contratacion`.diasFabricacion AS diasFabricacion, `general_dias_procesos_contratacion`.diasInsumosObra AS diasInsumosObra FROM `$db"."_actividades` INNER JOIN `general_dias_procesos_contratacion` ON `$db"."_actividades`.paqueteSI1 = `general_dias_procesos_contratacion`.paqueteContratacion  WHERE fechaInicio IS NOT NULL AND semanaActualizacion = $semana AND paqueteSI1 IS NOT NULL AND paqueteSI1 != '' AND `general_dias_procesos_contratacion`.tipoPaquete='Suministro e Instalación' UNION SELECT `$db"."_actividades`.actividad AS actividad, `$db"."_actividades`.descripcionActividad AS descripcionActividad, `$db"."_actividades`.fechaInicio AS fechaInicio, `$db"."_actividades`.tipoContrato AS tipoContrato, `$db"."_actividades`.semanaActualizacion AS semanaActualizacion, `$db"."_actividades`.SI2 AS contrato, `$db"."_actividades`.paqueteSI2 AS paqueteContratacion, `general_dias_procesos_contratacion`.diasElaboracionPliegos AS diasElaboracionPliegos, `general_dias_procesos_contratacion`.diasIngresoLicify AS diasIngresoLicify, `general_dias_procesos_contratacion`.diasEntregaPliegos AS diasEntregaPliegos, `general_dias_procesos_contratacion`.diasReciboPropuestas AS diasReciboPropuestas, `general_dias_procesos_contratacion`.diasCuadrosComparativos AS diasCuadrosComparativos, `general_dias_procesos_contratacion`.diasLegalizacionContrato AS diasLegalizacionContrato, `general_dias_procesos_contratacion`.diasFabricacion AS diasFabricacion, `general_dias_procesos_contratacion`.diasInsumosObra AS diasInsumosObra FROM `$db"."_actividades` INNER JOIN `general_dias_procesos_contratacion` ON `$db"."_actividades`.paqueteSI2 = `general_dias_procesos_contratacion`.paqueteContratacion  WHERE fechaInicio IS NOT NULL AND semanaActualizacion = $semana AND paqueteSI2 IS NOT NULL AND paqueteSI2 != '' AND `general_dias_procesos_contratacion`.tipoPaquete='Suministro e Instalación' UNION SELECT `$db"."_actividades`.actividad AS actividad, `$db"."_actividades`.descripcionActividad AS descripcionActividad, `$db"."_actividades`.fechaInicio AS fechaInicio, `$db"."_actividades`.tipoContrato AS tipoContrato, `$db"."_actividades`.semanaActualizacion AS semanaActualizacion, `$db"."_actividades`.SI3 AS contrato, `$db"."_actividades`.paqueteSI3 AS paqueteContratacion, `general_dias_procesos_contratacion`.diasElaboracionPliegos AS diasElaboracionPliegos, `general_dias_procesos_contratacion`.diasIngresoLicify AS diasIngresoLicify, `general_dias_procesos_contratacion`.diasEntregaPliegos AS diasEntregaPliegos, `general_dias_procesos_contratacion`.diasReciboPropuestas AS diasReciboPropuestas, `general_dias_procesos_contratacion`.diasCuadrosComparativos AS diasCuadrosComparativos, `general_dias_procesos_contratacion`.diasLegalizacionContrato AS diasLegalizacionContrato, `general_dias_procesos_contratacion`.diasFabricacion AS diasFabricacion, `general_dias_procesos_contratacion`.diasInsumosObra AS diasInsumosObra FROM `$db"."_actividades` INNER JOIN `general_dias_procesos_contratacion` ON `$db"."_actividades`.paqueteSI3 = `general_dias_procesos_contratacion`.paqueteContratacion  WHERE fechaInicio IS NOT NULL AND semanaActualizacion = $semana AND paqueteSI3 IS NOT NULL AND paqueteSI3 != '' AND `general_dias_procesos_contratacion`.tipoPaquete='Suministro e Instalación' UNION SELECT `$db"."_actividades`.actividad AS actividad, `$db"."_actividades`.descripcionActividad AS descripcionActividad, `$db"."_actividades`.fechaInicio AS fechaInicio, `$db"."_actividades`.tipoContrato AS tipoContrato, `$db"."_actividades`.semanaActualizacion AS semanaActualizacion, `$db"."_actividades`.SI4 AS contrato, `$db"."_actividades`.paqueteSI4 AS paqueteContratacion, `general_dias_procesos_contratacion`.diasElaboracionPliegos AS diasElaboracionPliegos, `general_dias_procesos_contratacion`.diasIngresoLicify AS diasIngresoLicify, `general_dias_procesos_contratacion`.diasEntregaPliegos AS diasEntregaPliegos, `general_dias_procesos_contratacion`.diasReciboPropuestas AS diasReciboPropuestas, `general_dias_procesos_contratacion`.diasCuadrosComparativos AS diasCuadrosComparativos, `general_dias_procesos_contratacion`.diasLegalizacionContrato AS diasLegalizacionContrato, `general_dias_procesos_contratacion`.diasFabricacion AS diasFabricacion, `general_dias_procesos_contratacion`.diasInsumosObra AS diasInsumosObra FROM `$db"."_actividades` INNER JOIN `general_dias_procesos_contratacion` ON `$db"."_actividades`.paqueteSI4 = `general_dias_procesos_contratacion`.paqueteContratacion  WHERE fechaInicio IS NOT NULL AND semanaActualizacion = $semana AND paqueteSI4 IS NOT NULL AND paqueteSI4 != '' AND `general_dias_procesos_contratacion`.tipoPaquete='Suministro e Instalación' UNION SELECT `$db"."_actividades`.actividad AS actividad, `$db"."_actividades`.descripcionActividad AS descripcionActividad, `$db"."_actividades`.fechaInicio AS fechaInicio, `$db"."_actividades`.tipoContrato AS tipoContrato, `$db"."_actividades`.semanaActualizacion AS semanaActualizacion, `$db"."_actividades`.SI5 AS contrato, `$db"."_actividades`.paqueteSI5 AS paqueteContratacion, `general_dias_procesos_contratacion`.diasElaboracionPliegos AS diasElaboracionPliegos, `general_dias_procesos_contratacion`.diasIngresoLicify AS diasIngresoLicify, `general_dias_procesos_contratacion`.diasEntregaPliegos AS diasEntregaPliegos, `general_dias_procesos_contratacion`.diasReciboPropuestas AS diasReciboPropuestas, `general_dias_procesos_contratacion`.diasCuadrosComparativos AS diasCuadrosComparativos, `general_dias_procesos_contratacion`.diasLegalizacionContrato AS diasLegalizacionContrato, `general_dias_procesos_contratacion`.diasFabricacion AS diasFabricacion, `general_dias_procesos_contratacion`.diasInsumosObra AS diasInsumosObra FROM `$db"."_actividades` INNER JOIN `general_dias_procesos_contratacion` ON `$db"."_actividades`.paqueteSI5 = `general_dias_procesos_contratacion`.paqueteContratacion  WHERE fechaInicio IS NOT NULL AND semanaActualizacion = $semana AND paqueteSI5 IS NOT NULL AND paqueteSI5 != '' AND `general_dias_procesos_contratacion`.tipoPaquete='Suministro e Instalación') AS Tabla $contratosVigentesSI GROUP BY paqueteContratacion";
+    foreach ($tipos as $t) {
+        list($label, $prefix, $tipoId) = $t;
+        
+        // Insertar título
+        $db->query("INSERT INTO {$dbName}_pdc (titulo, semana, tipoPaquete, paqueteContratacion) VALUES (1, ?, ?, ?)", [$semana, $label, $label]);
 
-		$query1 .=" UNION SELECT NULL AS consecutivo, 1 AS titulo, $semana AS semana, 'Mano de Obra' AS tipoPaquete, 'Mano de Obra' AS paqueteContratacion, NULL AS contratos, NULL AS fechaInicio, NULL AS diasElaboracionPliegos, NULL AS diasIngresoLicify, NULL AS diasEntregaPliegos, NULL AS diasReciboPropuestas, NULL AS diasCuadrosComparativos, NULL AS diasLegalizacionContrato, NULL AS diasFabricacion, NULL AS diasInsumosObra, NULL AS fechaElaboracionPliegos, NULL AS fechaIngresoLicify, NULL AS fechaEntregaPliegos, NULL AS fechaReciboPropuestas, NULL AS fechaCuadrosComparativos, NULL AS fechaLegalizacionContrato, NULL AS fechaFabricacion, NULL AS fechaInsumosObra";
+        // Determinar filtro dinámico
+        $whereClause = "";
+        if ($prefix === 'SI') $whereClause = $cvSI;
+        else if ($prefix === 'S') $whereClause = $cvS;
+        else if ($prefix === 'MO') $whereClause = $cvMO;
 
-		$query1 .= " UNION SELECT NULL AS consecutivo, 0 AS titulo, $semana AS semana, 'Mano de Obra' AS tipoPaquete, paqueteContratacion, GROUP_CONCAT(actividad SEPARATOR '; ') AS contratos, MIN(fechaInicio) AS fechaInicio, diasElaboracionPliegos, diasIngresoLicify, diasEntregaPliegos, diasReciboPropuestas, diasCuadrosComparativos, diasLegalizacionContrato, diasFabricacion, diasInsumosObra, DATE_SUB(fechaInicio, INTERVAL (diasInsumosObra + diasFabricacion + diasLegalizacionContrato + diasCuadrosComparativos + diasReciboPropuestas + diasEntregaPliegos + diasIngresoLicify + diasElaboracionPliegos) DAY) AS fechaElaboracionPliegos, DATE_SUB(fechaInicio, INTERVAL (diasInsumosObra + diasFabricacion + diasLegalizacionContrato + diasCuadrosComparativos + diasReciboPropuestas + diasEntregaPliegos + diasIngresoLicify) DAY) AS fechaIngresoLicify, DATE_SUB(fechaInicio, INTERVAL (diasInsumosObra + diasFabricacion + diasLegalizacionContrato + diasCuadrosComparativos + diasReciboPropuestas + diasEntregaPliegos) DAY) AS fechaEntregaPliegos, DATE_SUB(fechaInicio, INTERVAL (diasInsumosObra + diasFabricacion + diasLegalizacionContrato + diasCuadrosComparativos + diasReciboPropuestas) DAY) AS fechaReciboPropuestas, DATE_SUB(fechaInicio, INTERVAL (diasInsumosObra + diasFabricacion + diasLegalizacionContrato + diasCuadrosComparativos) DAY) AS fechaCuadrosComparativos, DATE_SUB(fechaInicio, INTERVAL (diasInsumosObra + diasFabricacion + diasLegalizacionContrato) DAY) AS fechaLegalizacionContrato, DATE_SUB(fechaInicio, INTERVAL (diasInsumosObra + diasFabricacion) DAY) AS fechaFabricacion, DATE_SUB(fechaInicio, INTERVAL diasInsumosObra DAY) AS fechaInsumosObra FROM (SELECT `$db"."_actividades`.actividad AS actividad, `$db"."_actividades`.descripcionActividad AS descripcionActividad, `$db"."_actividades`.fechaInicio AS fechaInicio, `$db"."_actividades`.tipoContrato AS tipoContrato, `$db"."_actividades`.semanaActualizacion AS semanaActualizacion, `$db"."_actividades`.MO1 AS contrato, `$db"."_actividades`.paqueteMO1 AS paqueteContratacion, `general_dias_procesos_contratacion`.diasElaboracionPliegos AS diasElaboracionPliegos, `general_dias_procesos_contratacion`.diasIngresoLicify AS diasIngresoLicify, `general_dias_procesos_contratacion`.diasEntregaPliegos AS diasEntregaPliegos, `general_dias_procesos_contratacion`.diasReciboPropuestas AS diasReciboPropuestas, `general_dias_procesos_contratacion`.diasCuadrosComparativos AS diasCuadrosComparativos, `general_dias_procesos_contratacion`.diasLegalizacionContrato AS diasLegalizacionContrato, `general_dias_procesos_contratacion`.diasFabricacion AS diasFabricacion, `general_dias_procesos_contratacion`.diasInsumosObra AS diasInsumosObra FROM `$db"."_actividades` INNER JOIN `general_dias_procesos_contratacion` ON `$db"."_actividades`.paqueteMO1 = `general_dias_procesos_contratacion`.paqueteContratacion  WHERE fechaInicio IS NOT NULL AND semanaActualizacion = $semana AND paqueteMO1 IS NOT NULL AND paqueteMO1 != '' AND `general_dias_procesos_contratacion`.tipoPaquete='Mano de Obra' UNION SELECT `$db"."_actividades`.actividad AS actividad, `$db"."_actividades`.descripcionActividad AS descripcionActividad, `$db"."_actividades`.fechaInicio AS fechaInicio, `$db"."_actividades`.tipoContrato AS tipoContrato, `$db"."_actividades`.semanaActualizacion AS semanaActualizacion, `$db"."_actividades`.MO2 AS contrato, `$db"."_actividades`.paqueteMO2 AS paqueteContratacion, `general_dias_procesos_contratacion`.diasElaboracionPliegos AS diasElaboracionPliegos, `general_dias_procesos_contratacion`.diasIngresoLicify AS diasIngresoLicify, `general_dias_procesos_contratacion`.diasEntregaPliegos AS diasEntregaPliegos, `general_dias_procesos_contratacion`.diasReciboPropuestas AS diasReciboPropuestas, `general_dias_procesos_contratacion`.diasCuadrosComparativos AS diasCuadrosComparativos, `general_dias_procesos_contratacion`.diasLegalizacionContrato AS diasLegalizacionContrato, `general_dias_procesos_contratacion`.diasFabricacion AS diasFabricacion, `general_dias_procesos_contratacion`.diasInsumosObra AS diasInsumosObra FROM `$db"."_actividades` INNER JOIN `general_dias_procesos_contratacion` ON `$db"."_actividades`.paqueteMO2 = `general_dias_procesos_contratacion`.paqueteContratacion  WHERE fechaInicio IS NOT NULL AND semanaActualizacion = $semana AND paqueteMO2 IS NOT NULL AND paqueteMO2 != '' AND `general_dias_procesos_contratacion`.tipoPaquete='Mano de Obra' UNION SELECT `$db"."_actividades`.actividad AS actividad, `$db"."_actividades`.descripcionActividad AS descripcionActividad, `$db"."_actividades`.fechaInicio AS fechaInicio, `$db"."_actividades`.tipoContrato AS tipoContrato, `$db"."_actividades`.semanaActualizacion AS semanaActualizacion, `$db"."_actividades`.MO3 AS contrato, `$db"."_actividades`.paqueteMO3 AS paqueteContratacion, `general_dias_procesos_contratacion`.diasElaboracionPliegos AS diasElaboracionPliegos, `general_dias_procesos_contratacion`.diasIngresoLicify AS diasIngresoLicify, `general_dias_procesos_contratacion`.diasEntregaPliegos AS diasEntregaPliegos, `general_dias_procesos_contratacion`.diasReciboPropuestas AS diasReciboPropuestas, `general_dias_procesos_contratacion`.diasCuadrosComparativos AS diasCuadrosComparativos, `general_dias_procesos_contratacion`.diasLegalizacionContrato AS diasLegalizacionContrato, `general_dias_procesos_contratacion`.diasFabricacion AS diasFabricacion, `general_dias_procesos_contratacion`.diasInsumosObra AS diasInsumosObra FROM `$db"."_actividades` INNER JOIN `general_dias_procesos_contratacion` ON `$db"."_actividades`.paqueteMO3 = `general_dias_procesos_contratacion`.paqueteContratacion  WHERE fechaInicio IS NOT NULL AND semanaActualizacion = $semana AND paqueteMO3 IS NOT NULL AND paqueteMO3 != '' AND `general_dias_procesos_contratacion`.tipoPaquete='Mano de Obra' UNION SELECT `$db"."_actividades`.actividad AS actividad, `$db"."_actividades`.descripcionActividad AS descripcionActividad, `$db"."_actividades`.fechaInicio AS fechaInicio, `$db"."_actividades`.tipoContrato AS tipoContrato, `$db"."_actividades`.semanaActualizacion AS semanaActualizacion, `$db"."_actividades`.MO4 AS contrato, `$db"."_actividades`.paqueteMO4 AS paqueteContratacion, `general_dias_procesos_contratacion`.diasElaboracionPliegos AS diasElaboracionPliegos, `general_dias_procesos_contratacion`.diasIngresoLicify AS diasIngresoLicify, `general_dias_procesos_contratacion`.diasEntregaPliegos AS diasEntregaPliegos, `general_dias_procesos_contratacion`.diasReciboPropuestas AS diasReciboPropuestas, `general_dias_procesos_contratacion`.diasCuadrosComparativos AS diasCuadrosComparativos, `general_dias_procesos_contratacion`.diasLegalizacionContrato AS diasLegalizacionContrato, `general_dias_procesos_contratacion`.diasFabricacion AS diasFabricacion, `general_dias_procesos_contratacion`.diasInsumosObra AS diasInsumosObra FROM `$db"."_actividades` INNER JOIN `general_dias_procesos_contratacion` ON `$db"."_actividades`.paqueteMO4 = `general_dias_procesos_contratacion`.paqueteContratacion  WHERE fechaInicio IS NOT NULL AND semanaActualizacion = $semana AND paqueteMO4 IS NOT NULL AND paqueteMO4 != '' AND `general_dias_procesos_contratacion`.tipoPaquete='Mano de Obra' UNION SELECT `$db"."_actividades`.actividad AS actividad, `$db"."_actividades`.descripcionActividad AS descripcionActividad, `$db"."_actividades`.fechaInicio AS fechaInicio, `$db"."_actividades`.tipoContrato AS tipoContrato, `$db"."_actividades`.semanaActualizacion AS semanaActualizacion, `$db"."_actividades`.MO5 AS contrato, `$db"."_actividades`.paqueteMO5 AS paqueteContratacion, `general_dias_procesos_contratacion`.diasElaboracionPliegos AS diasElaboracionPliegos, `general_dias_procesos_contratacion`.diasIngresoLicify AS diasIngresoLicify, `general_dias_procesos_contratacion`.diasEntregaPliegos AS diasEntregaPliegos, `general_dias_procesos_contratacion`.diasReciboPropuestas AS diasReciboPropuestas, `general_dias_procesos_contratacion`.diasCuadrosComparativos AS diasCuadrosComparativos, `general_dias_procesos_contratacion`.diasLegalizacionContrato AS diasLegalizacionContrato, `general_dias_procesos_contratacion`.diasFabricacion AS diasFabricacion, `general_dias_procesos_contratacion`.diasInsumosObra AS diasInsumosObra FROM `$db"."_actividades` INNER JOIN `general_dias_procesos_contratacion` ON `$db"."_actividades`.paqueteMO5 = `general_dias_procesos_contratacion`.paqueteContratacion  WHERE fechaInicio IS NOT NULL AND semanaActualizacion = $semana AND paqueteMO5 IS NOT NULL AND paqueteMO5 != '' AND `general_dias_procesos_contratacion`.tipoPaquete='Mano de Obra') AS Tabla $contratosVigentesMO GROUP BY paqueteContratacion";
+        $sqlInsert = <<<SQL
+INSERT INTO {$dbName}_pdc (titulo, semana, tipoPaquete, paqueteContratacion, contratos, fechaInicio, 
+              diasElaboracionPliegos, diasIngresoLicify, diasEntregaPliegos, diasReciboPropuestas, 
+              diasCuadrosComparativos, diasLegalizacionContrato, diasFabricacion, diasInsumosObra,
+              fechaElaboracionPliegos, fechaIngresoLicify, fechaEntregaPliegos, fechaReciboPropuestas, 
+              fechaCuadrosComparativos, fechaLegalizacionContrato, fechaFabricacion, fechaInsumosObra)
+SELECT 0, ?, ?, paqueteContratacion, GROUP_CONCAT(actividad SEPARATOR '; '), MIN(fechaInicio),
+       diasElaboracionPliegos, diasIngresoLicify, diasEntregaPliegos, diasReciboPropuestas,
+       diasCuadrosComparativos, diasLegalizacionContrato, diasFabricacion, diasInsumosObra,
+       DATE_SUB(MIN(fechaInicio), INTERVAL (IFNULL(diasInsumosObra,0) + IFNULL(diasFabricacion,0) + IFNULL(diasLegalizacionContrato,0) + IFNULL(diasCuadrosComparativos,0) + IFNULL(diasReciboPropuestas,0) + IFNULL(diasEntregaPliegos,0) + IFNULL(diasIngresoLicify,0) + IFNULL(diasElaboracionPliegos,0)) DAY),
+       DATE_SUB(MIN(fechaInicio), INTERVAL (IFNULL(diasInsumosObra,0) + IFNULL(diasFabricacion,0) + IFNULL(diasLegalizacionContrato,0) + IFNULL(diasCuadrosComparativos,0) + IFNULL(diasReciboPropuestas,0) + IFNULL(diasEntregaPliegos,0) + IFNULL(diasIngresoLicify,0)) DAY),
+       DATE_SUB(MIN(fechaInicio), INTERVAL (IFNULL(diasInsumosObra,0) + IFNULL(diasFabricacion,0) + IFNULL(diasLegalizacionContrato,0) + IFNULL(diasCuadrosComparativos,0) + IFNULL(diasReciboPropuestas,0) + IFNULL(diasEntregaPliegos,0)) DAY),
+       DATE_SUB(MIN(fechaInicio), INTERVAL (IFNULL(diasInsumosObra,0) + IFNULL(diasFabricacion,0) + IFNULL(diasLegalizacionContrato,0) + IFNULL(diasCuadrosComparativos,0) + IFNULL(diasReciboPropuestas,0)) DAY),
+       DATE_SUB(MIN(fechaInicio), INTERVAL (IFNULL(diasInsumosObra,0) + IFNULL(diasFabricacion,0) + IFNULL(diasLegalizacionContrato,0) + IFNULL(diasCuadrosComparativos,0)) DAY),
+       DATE_SUB(MIN(fechaInicio), INTERVAL (IFNULL(diasInsumosObra,0) + IFNULL(diasFabricacion,0) + IFNULL(diasLegalizacionContrato,0)) DAY),
+       DATE_SUB(MIN(fechaInicio), INTERVAL (IFNULL(diasInsumosObra,0) + IFNULL(diasFabricacion,0)) DAY),
+       DATE_SUB(MIN(fechaInicio), INTERVAL IFNULL(diasInsumosObra,0) DAY)
+FROM (
+    SELECT actividad, fechaInicio, paquete{$prefix}1 AS paqueteContratacion FROM {$dbName}_actividades WHERE semanaActualizacion = ? AND tipoContrato = ? AND paquete{$prefix}1 IS NOT NULL AND paquete{$prefix}1 != ''
+    UNION SELECT actividad, fechaInicio, paquete{$prefix}2 AS paqueteContratacion FROM {$dbName}_actividades WHERE semanaActualizacion = ? AND tipoContrato = ? AND paquete{$prefix}2 IS NOT NULL AND paquete{$prefix}2 != ''
+    UNION SELECT actividad, fechaInicio, paquete{$prefix}3 AS paqueteContratacion FROM {$dbName}_actividades WHERE semanaActualizacion = ? AND tipoContrato = ? AND paquete{$prefix}3 IS NOT NULL AND paquete{$prefix}3 != ''
+    UNION SELECT actividad, fechaInicio, paquete{$prefix}4 AS paqueteContratacion FROM {$dbName}_actividades WHERE semanaActualizacion = ? AND tipoContrato = ? AND paquete{$prefix}4 IS NOT NULL AND paquete{$prefix}4 != ''
+    UNION SELECT actividad, fechaInicio, paquete{$prefix}5 AS paqueteContratacion FROM {$dbName}_actividades WHERE semanaActualizacion = ? AND tipoContrato = ? AND paquete{$prefix}5 IS NOT NULL AND paquete{$prefix}5 != ''
+) AS SubAct
+LEFT JOIN general_paquetes_contratacion AS gpc ON SubAct.paqueteContratacion = gpc.paqueteContratacion
+$whereClause
+GROUP BY paqueteContratacion
+SQL;
 
-		$query1 .=" UNION SELECT NULL AS consecutivo, 1 AS titulo, $semana AS semana, 'Suministro' AS tipoPaquete, 'Suministro' AS paqueteContratacion, NULL AS contratos, NULL AS fechaInicio, NULL AS diasElaboracionPliegos, NULL AS diasIngresoLicify, NULL AS diasEntregaPliegos, NULL AS diasReciboPropuestas, NULL AS diasCuadrosComparativos, NULL AS diasLegalizacionContrato, NULL AS diasFabricacion, NULL AS diasInsumosObra, NULL AS fechaElaboracionPliegos, NULL AS fechaIngresoLicify, NULL AS fechaEntregaPliegos, NULL AS fechaReciboPropuestas, NULL AS fechaCuadrosComparativos, NULL AS fechaLegalizacionContrato, NULL AS fechaFabricacion, NULL AS fechaInsumosObra";
+        $db->query($sqlInsert, [
+            $semana, $label,
+            $semana, $tipoId,
+            $semana, $tipoId,
+            $semana, $tipoId,
+            $semana, $tipoId,
+            $semana, $tipoId
+        ]);
+    }
+}
 
-		$query1 .= " UNION SELECT NULL AS consecutivo, 0 AS titulo, $semana AS semana, 'Suministro' AS tipoPaquete, paqueteContratacion, GROUP_CONCAT(actividad SEPARATOR '; ') AS contratos, MIN(fechaInicio) AS fechaInicio, diasElaboracionPliegos, diasIngresoLicify, diasEntregaPliegos, diasReciboPropuestas, diasCuadrosComparativos, diasLegalizacionContrato, diasFabricacion, diasInsumosObra, DATE_SUB(fechaInicio, INTERVAL (diasInsumosObra + diasFabricacion + diasLegalizacionContrato + diasCuadrosComparativos + diasReciboPropuestas + diasEntregaPliegos + diasIngresoLicify + diasElaboracionPliegos) DAY) AS fechaElaboracionPliegos, DATE_SUB(fechaInicio, INTERVAL (diasInsumosObra + diasFabricacion + diasLegalizacionContrato + diasCuadrosComparativos + diasReciboPropuestas + diasEntregaPliegos + diasIngresoLicify) DAY) AS fechaIngresoLicify, DATE_SUB(fechaInicio, INTERVAL (diasInsumosObra + diasFabricacion + diasLegalizacionContrato + diasCuadrosComparativos + diasReciboPropuestas + diasEntregaPliegos) DAY) AS fechaEntregaPliegos, DATE_SUB(fechaInicio, INTERVAL (diasInsumosObra + diasFabricacion + diasLegalizacionContrato + diasCuadrosComparativos + diasReciboPropuestas) DAY) AS fechaReciboPropuestas, DATE_SUB(fechaInicio, INTERVAL (diasInsumosObra + diasFabricacion + diasLegalizacionContrato + diasCuadrosComparativos) DAY) AS fechaCuadrosComparativos, DATE_SUB(fechaInicio, INTERVAL (diasInsumosObra + diasFabricacion + diasLegalizacionContrato) DAY) AS fechaLegalizacionContrato, DATE_SUB(fechaInicio, INTERVAL (diasInsumosObra + diasFabricacion) DAY) AS fechaFabricacion, DATE_SUB(fechaInicio, INTERVAL diasInsumosObra DAY) AS fechaInsumosObra FROM (SELECT `$db"."_actividades`.actividad AS actividad, `$db"."_actividades`.descripcionActividad AS descripcionActividad, `$db"."_actividades`.fechaInicio AS fechaInicio, `$db"."_actividades`.tipoContrato AS tipoContrato, `$db"."_actividades`.semanaActualizacion AS semanaActualizacion, `$db"."_actividades`.S1 AS contrato, `$db"."_actividades`.paqueteS1 AS paqueteContratacion, `general_dias_procesos_contratacion`.diasElaboracionPliegos AS diasElaboracionPliegos, `general_dias_procesos_contratacion`.diasIngresoLicify AS diasIngresoLicify, `general_dias_procesos_contratacion`.diasEntregaPliegos AS diasEntregaPliegos, `general_dias_procesos_contratacion`.diasReciboPropuestas AS diasReciboPropuestas, `general_dias_procesos_contratacion`.diasCuadrosComparativos AS diasCuadrosComparativos, `general_dias_procesos_contratacion`.diasLegalizacionContrato AS diasLegalizacionContrato, `general_dias_procesos_contratacion`.diasFabricacion AS diasFabricacion, `general_dias_procesos_contratacion`.diasInsumosObra AS diasInsumosObra FROM `$db"."_actividades` INNER JOIN `general_dias_procesos_contratacion` ON `$db"."_actividades`.paqueteS1 = `general_dias_procesos_contratacion`.paqueteContratacion  WHERE fechaInicio IS NOT NULL AND semanaActualizacion = $semana AND paqueteS1 IS NOT NULL AND paqueteS1 != '' AND `general_dias_procesos_contratacion`.tipoPaquete='Suministro' UNION SELECT `$db"."_actividades`.actividad AS actividad, `$db"."_actividades`.descripcionActividad AS descripcionActividad, `$db"."_actividades`.fechaInicio AS fechaInicio, `$db"."_actividades`.tipoContrato AS tipoContrato, `$db"."_actividades`.semanaActualizacion AS semanaActualizacion, `$db"."_actividades`.S2 AS contrato, `$db"."_actividades`.paqueteS2 AS paqueteContratacion, `general_dias_procesos_contratacion`.diasElaboracionPliegos AS diasElaboracionPliegos, `general_dias_procesos_contratacion`.diasIngresoLicify AS diasIngresoLicify, `general_dias_procesos_contratacion`.diasEntregaPliegos AS diasEntregaPliegos, `general_dias_procesos_contratacion`.diasReciboPropuestas AS diasReciboPropuestas, `general_dias_procesos_contratacion`.diasCuadrosComparativos AS diasCuadrosComparativos, `general_dias_procesos_contratacion`.diasLegalizacionContrato AS diasLegalizacionContrato, `general_dias_procesos_contratacion`.diasFabricacion AS diasFabricacion, `general_dias_procesos_contratacion`.diasInsumosObra AS diasInsumosObra FROM `$db"."_actividades` INNER JOIN `general_dias_procesos_contratacion` ON `$db"."_actividades`.paqueteS2 = `general_dias_procesos_contratacion`.paqueteContratacion  WHERE fechaInicio IS NOT NULL AND semanaActualizacion = $semana AND paqueteS2 IS NOT NULL AND paqueteS2 != '' AND `general_dias_procesos_contratacion`.tipoPaquete='Suministro' UNION SELECT `$db"."_actividades`.actividad AS actividad, `$db"."_actividades`.descripcionActividad AS descripcionActividad, `$db"."_actividades`.fechaInicio AS fechaInicio, `$db"."_actividades`.tipoContrato AS tipoContrato, `$db"."_actividades`.semanaActualizacion AS semanaActualizacion, `$db"."_actividades`.S3 AS contrato, `$db"."_actividades`.paqueteS3 AS paqueteContratacion, `general_dias_procesos_contratacion`.diasElaboracionPliegos AS diasElaboracionPliegos, `general_dias_procesos_contratacion`.diasIngresoLicify AS diasIngresoLicify, `general_dias_procesos_contratacion`.diasEntregaPliegos AS diasEntregaPliegos, `general_dias_procesos_contratacion`.diasReciboPropuestas AS diasReciboPropuestas, `general_dias_procesos_contratacion`.diasCuadrosComparativos AS diasCuadrosComparativos, `general_dias_procesos_contratacion`.diasLegalizacionContrato AS diasLegalizacionContrato, `general_dias_procesos_contratacion`.diasFabricacion AS diasFabricacion, `general_dias_procesos_contratacion`.diasInsumosObra AS diasInsumosObra FROM `$db"."_actividades` INNER JOIN `general_dias_procesos_contratacion` ON `$db"."_actividades`.paqueteS3 = `general_dias_procesos_contratacion`.paqueteContratacion  WHERE fechaInicio IS NOT NULL AND semanaActualizacion = $semana AND paqueteS3 IS NOT NULL AND paqueteS3 != '' AND `general_dias_procesos_contratacion`.tipoPaquete='Suministro' UNION SELECT `$db"."_actividades`.actividad AS actividad, `$db"."_actividades`.descripcionActividad AS descripcionActividad, `$db"."_actividades`.fechaInicio AS fechaInicio, `$db"."_actividades`.tipoContrato AS tipoContrato, `$db"."_actividades`.semanaActualizacion AS semanaActualizacion, `$db"."_actividades`.S4 AS contrato, `$db"."_actividades`.paqueteS4 AS paqueteContratacion, `general_dias_procesos_contratacion`.diasElaboracionPliegos AS diasElaboracionPliegos, `general_dias_procesos_contratacion`.diasIngresoLicify AS diasIngresoLicify, `general_dias_procesos_contratacion`.diasEntregaPliegos AS diasEntregaPliegos, `general_dias_procesos_contratacion`.diasReciboPropuestas AS diasReciboPropuestas, `general_dias_procesos_contratacion`.diasCuadrosComparativos AS diasCuadrosComparativos, `general_dias_procesos_contratacion`.diasLegalizacionContrato AS diasLegalizacionContrato, `general_dias_procesos_contratacion`.diasFabricacion AS diasFabricacion, `general_dias_procesos_contratacion`.diasInsumosObra AS diasInsumosObra FROM `$db"."_actividades` INNER JOIN `general_dias_procesos_contratacion` ON `$db"."_actividades`.paqueteS4 = `general_dias_procesos_contratacion`.paqueteContratacion  WHERE fechaInicio IS NOT NULL AND semanaActualizacion = $semana AND paqueteS4 IS NOT NULL AND paqueteS4 != '' AND `general_dias_procesos_contratacion`.tipoPaquete='Suministro' UNION SELECT `$db"."_actividades`.actividad AS actividad, `$db"."_actividades`.descripcionActividad AS descripcionActividad, `$db"."_actividades`.fechaInicio AS fechaInicio, `$db"."_actividades`.tipoContrato AS tipoContrato, `$db"."_actividades`.semanaActualizacion AS semanaActualizacion, `$db"."_actividades`.S5 AS contrato, `$db"."_actividades`.paqueteS5 AS paqueteContratacion, `general_dias_procesos_contratacion`.diasElaboracionPliegos AS diasElaboracionPliegos, `general_dias_procesos_contratacion`.diasIngresoLicify AS diasIngresoLicify, `general_dias_procesos_contratacion`.diasEntregaPliegos AS diasEntregaPliegos, `general_dias_procesos_contratacion`.diasReciboPropuestas AS diasReciboPropuestas, `general_dias_procesos_contratacion`.diasCuadrosComparativos AS diasCuadrosComparativos, `general_dias_procesos_contratacion`.diasLegalizacionContrato AS diasLegalizacionContrato, `general_dias_procesos_contratacion`.diasFabricacion AS diasFabricacion, `general_dias_procesos_contratacion`.diasInsumosObra AS diasInsumosObra FROM `$db"."_actividades` INNER JOIN `general_dias_procesos_contratacion` ON `$db"."_actividades`.paqueteS5 = `general_dias_procesos_contratacion`.paqueteContratacion  WHERE fechaInicio IS NOT NULL AND semanaActualizacion = $semana AND paqueteS5 IS NOT NULL AND paqueteS5 != '' AND `general_dias_procesos_contratacion`.tipoPaquete='Suministro') AS Tabla $contratosVigentesS GROUP BY paqueteContratacion ORDER BY tipoPaquete DESC, fechaInicio ASC";
+function crearSubcontratosDuplicados($db, $dbName, $semana) {
+    $stmt = $db->query("SELECT * FROM {$dbName}_pdc WHERE semana = ? AND titulo = 0 AND numeroSubcontratos > 1", [$semana]);
+    $items = $stmt->fetchAll();
 
-		return $query1;
-		//echo $query1;
-	}
+    foreach ($items as $data) {
+        $consecutivo = $data["consecutivo"];
+        $numeroSubcontratos = (int)$data["numeroSubcontratos"];
+        $paqueteContratacion = $data["paqueteContratacion"];
 
-	function crearSubcontratosDuplicados($db, $semana, $conexion){
-		$query = "SELECT * FROM $db"."_pdc WHERE semana=$semana AND titulo=0 AND numeroSubcontratos > 1";
-		$resultado = mysqli_query($conexion, $query);
-		if(!$resultado){
-			die(mysqli_error($conexion));
-			$script = "Esto era";
-		}else{
-			$queryDuplicarFinal = "INSERT INTO $db"."_pdc (semana, titulo, tipoPaquete, paqueteContratacion, contratos, subcontratoPaquete, estado, fechaElaboracionPliegos, diasIngresoLicify, fechaEntregaPliegos, diasEntregaPliegos, fechaReciboPropuestas, diasReciboPropuestas, fechaCuadrosComparativos, diasCuadrosComparativos, fechaLegalizacionContrato, diasLegalizacionContrato, fechaFabricacion, diasFabricacion, fechaInsumosObra, diasInsumosObra, fechaInicio) SELECT * FROM (";
-			$queryDuplicar = "";
-			while($data=mysqli_fetch_assoc($resultado)){
-				$consecutivo = $data["consecutivo"];
-				$numeroSubcontratos = $data["numeroSubcontratos"];
-				$paqueteContratacion = $data["paqueteContratacion"];
-				$queryInfoSubcontratosPaquete = "SELECT COUNT(*), MAX(subcontratoPaquete) FROM $db"."_pdc WHERE semana=$semana AND titulo=0 AND paqueteContratacion = '$paqueteContratacion'";
-				$resultadoInfoSubcontratosPaquete = mysqli_query($conexion, $queryInfoSubcontratosPaquete);
-				$dataInfoSubcontratosPaquete=mysqli_fetch_assoc($resultadoInfoSubcontratosPaquete);
-				$conteoSubcontratosPaquete=$dataInfoSubcontratosPaquete["COUNT(*)"];
-				$maxSubcontratosPaquete=$dataInfoSubcontratosPaquete["MAX(subcontratoPaquete)"];
-				//echo "$conteoSubcontratosPaquete, $maxSubcontratosPaquetes" . "<br>";
-				if($conteoSubcontratosPaquete < $numeroSubcontratos){
-					for($i=($conteoSubcontratosPaquete+1); $i<(1+$numeroSubcontratos); $i++){
-						$queryDuplicar .= "SELECT semana, titulo, tipoPaquete, paqueteContratacion, contratos, ($maxSubcontratosPaquete + 1), estado, fechaElaboracionPliegos, diasIngresoLicify, fechaEntregaPliegos, diasEntregaPliegos, fechaReciboPropuestas, diasReciboPropuestas, fechaCuadrosComparativos, diasCuadrosComparativos, fechaLegalizacionContrato, diasLegalizacionContrato, fechaFabricacion, diasFabricacion, fechaInsumosObra, diasInsumosObra, fechaInicio FROM $db"."_pdc WHERE consecutivo = $consecutivo UNION ";
-						$maxSubcontratosPaquete++;
-					}
-				}
-			}
-			if(empty($queryDuplicar)){
-				return "";
-			}else{
-				$queryDuplicar = substr($queryDuplicar,0,-7);
-				$queryDuplicarFinal .= $queryDuplicar . ") AS tabla";
-				return $queryDuplicarFinal;
-			}
-		}
-	}
+        $stmtInfo = $db->query("SELECT COUNT(*) as conteo, MAX(subcontratoPaquete) as maxSub FROM {$dbName}_pdc WHERE semana = ? AND titulo = 0 AND paqueteContratacion = ?", [$semana, $paqueteContratacion]);
+        $info = $stmtInfo->fetch();
+        $conteoActual = (int)$info["conteo"];
+        $maxSub = (int)$info["maxSub"];
 
-	function generarEstadoProceso($db, $semana, $conexion){
-		$script = "";
+        if ($conteoActual < $numeroSubcontratos) {
+            for ($i = $conteoActual + 1; $i <= $numeroSubcontratos; $i++) {
+                $maxSub++;
+                $sqlDup = "INSERT INTO {$dbName}_pdc (semana, titulo, tipoPaquete, paqueteContratacion, contratos, subcontratoPaquete, estado, 
+                           fechaElaboracionPliegos, diasIngresoLicify, fechaEntregaPliegos, diasEntregaPliegos, fechaReciboPropuestas, 
+                           diasReciboPropuestas, fechaCuadrosComparativos, diasCuadrosComparativos, fechaLegalizacionContrato, 
+                           diasLegalizacionContrato, fechaFabricacion, diasFabricacion, fechaInsumosObra, diasInsumosObra, fechaInicio) 
+                           SELECT semana, titulo, tipoPaquete, paqueteContratacion, contratos, ?, estado, 
+                                  fechaElaboracionPliegos, diasIngresoLicify, fechaEntregaPliegos, diasEntregaPliegos, fechaReciboPropuestas, 
+                                  diasReciboPropuestas, fechaCuadrosComparativos, diasCuadrosComparativos, fechaLegalizacionContrato, 
+                                  diasLegalizacionContrato, fechaFabricacion, diasFabricacion, fechaInsumosObra, diasInsumosObra, fechaInicio 
+                           FROM {$dbName}_pdc WHERE consecutivo = ?";
+                $db->query($sqlDup, [$maxSub, $consecutivo]);
+            }
+        }
+    }
+}
 
-		$query = "SELECT * FROM $db"."_pdc WHERE semana=$semana AND titulo=0 AND fechaInicio IS NOT NULL";
+function generarEstadoProceso($db, $dbName, $semana) {
+    $stmt = $db->query("SELECT * FROM {$dbName}_pdc WHERE semana = ? AND titulo = 0 AND fechaInicio IS NOT NULL", [$semana]);
+    $actividades = $stmt->fetchAll();
 
-		$resultado = mysqli_query($conexion, $query);
+    $stmtFecha = $db->query("SELECT Fecha_Inicio_Sem FROM {$dbName}_semanas_activas WHERE Semana = ?", [$semana]);
+    $dataFecha = $stmtFecha->fetch();
+    $fechaActual = date('Y-m-d', strtotime($dataFecha["Fecha_Inicio_Sem"] ?? 'now'));
 
-		$queryFechaActual = "SELECT Fecha_Inicio_Sem FROM $db"."_semanas_activas WHERE Semana=$semana";
-		$resultadoFechaActual = mysqli_query($conexion, $queryFechaActual);
-		$dataFechaActual=mysqli_fetch_assoc($resultadoFechaActual);
-		$fechaActual = date('Y-m-d', strtotime($dataFechaActual["Fecha_Inicio_Sem"]));
+    foreach ($actividades as $data) {
+        $fechaInicio = $data["fechaInicio"];
+        $consecutivo = $data["consecutivo"];
 
-		if(!$resultado){
-			die(mysqli_error($conexion));
-			$script = "Esto era";
-		}else{
-			while($data=mysqli_fetch_assoc($resultado)){
-				$fechaElaboracionPliegosInicial = date('Y-m-d', strtotime($data["fechaElaboracionPliegos"]));
+        // Cálculos de fechas teóricas basados en duraciones
+        $duraciones = [
+            'elaboracion' => (int)$data["diasElaboracionPliegos"],
+            'licify' => (int)$data["diasIngresoLicify"],
+            'entrega' => (int)$data["diasEntregaPliegos"],
+            'recibo' => (int)$data["diasReciboPropuestas"],
+            'cuadros' => (int)$data["diasCuadrosComparativos"],
+            'legalizacion' => (int)$data["diasLegalizacionContrato"],
+            'fabricacion' => (int)$data["diasFabricacion"],
+            'insumos' => (int)$data["diasInsumosObra"]
+        ];
 
-				$data["fechaElaboracionPliegos"] = date('Y-m-d', strtotime($data["fechaInicio"] . "- " . ($data["diasElaboracionPliegos"] + $data["diasIngresoLicify"] + $data["diasEntregaPliegos"] + $data["diasReciboPropuestas"] + $data["diasCuadrosComparativos"] + $data["diasLegalizacionContrato"] + $data["diasFabricacion"] + $data["diasInsumosObra"]) . " days"));
+        $totalDias = array_sum($duraciones);
+        
+        $fechasCalculadas = [
+            'fechaElaboracionPliegos' => date('Y-m-d', strtotime("$fechaInicio - $totalDias days")),
+            'fechaIngresoLicify'      => date('Y-m-d', strtotime("$fechaInicio - " . ($totalDias - $duraciones['elaboracion']) . " days")),
+            'fechaEntregaPliegos'     => date('Y-m-d', strtotime("$fechaInicio - " . ($totalDias - $duraciones['elaboracion'] - $duraciones['licify']) . " days")),
+            'fechaReciboPropuestas'    => date('Y-m-d', strtotime("$fechaInicio - " . ($totalDias - $duraciones['elaboracion'] - $duraciones['licify'] - $duraciones['entrega']) . " days")),
+            'fechaCuadrosComparativos' => date('Y-m-d', strtotime("$fechaInicio - " . ($duraciones['cuadros'] + $duraciones['legalizacion'] + $duraciones['fabricacion'] + $duraciones['insumos']) . " days")),
+            'fechaLegalizacionContrato'=> date('Y-m-d', strtotime("$fechaInicio - " . ($duraciones['legalizacion'] + $duraciones['fabricacion'] + $duraciones['insumos']) . " days")),
+            'fechaFabricacion'        => date('Y-m-d', strtotime("$fechaInicio - " . ($duraciones['fabricacion'] + $duraciones['insumos']) . " days")),
+            'fechaInsumosObra'        => date('Y-m-d', strtotime("$fechaInicio - " . $duraciones['insumos'] . " days"))
+        ];
 
-				$data["fechaIngresoLicify"] = date('Y-m-d', strtotime($data["fechaInicio"] . "- " . ($data["diasIngresoLicify"] + $data["diasEntregaPliegos"] + $data["diasReciboPropuestas"] + $data["diasCuadrosComparativos"] + $data["diasLegalizacionContrato"] + $data["diasFabricacion"] + $data["diasInsumosObra"]) . " days"));
+        // Determinar estado
+        $pasos = [
+            [$data["fechaRealElaboracionPliegos"],  $fechasCalculadas['fechaElaboracionPliegos'], "Elaborando pliegos del contrato"],
+            [$data["fechaRealIngresoLicify"],       $fechasCalculadas['fechaIngresoLicify'],      "Ingresando el contrato a Licify"],
+            [$data["fechaRealEntregaPliegos"],      $fechasCalculadas['fechaEntregaPliegos'],     "Entregando pliegos a los proveedores invitados"],
+            [$data["fechaRealReciboPropuestas"],    $fechasCalculadas['fechaReciboPropuestas'],   "Recibiendo propuestas de los proveedores invitados"],
+            [$data["fechaRealCuadrosComparativos"], $fechasCalculadas['fechaCuadrosComparativos'],"Elaborando cuadros comparativos, análisis y adjudicación del contrato"],
+            [$data["fechaRealLegalizacionContrato"],$fechasCalculadas['fechaLegalizacionContrato'],"En proceso de legalización del contrato"],
+            [$data["fechaRealFabricacion"],         $fechasCalculadas['fechaFabricacion'],        "En periodo de fabricación, producción, importaciones, transportes, movilización, etc"],
+            [$data["fechaRealInsumosObra"],         $fechasCalculadas['fechaInsumosObra'],        "En proceso de llegada de recursos, insumos y personal a la obra"],
+            [$data["fechaRealInicio"],              $fechaInicio,                                 "Proceso de contratación finalizado y actividades del contrato iniciadas"]
+        ];
 
-				$data["fechaEntregaPliegos"] = date('Y-m-d', strtotime($data["fechaInicio"] . "- " . ($data["diasEntregaPliegos"] + $data["diasReciboPropuestas"] + $data["diasCuadrosComparativos"] + $data["diasLegalizacionContrato"] + $data["diasFabricacion"] + $data["diasInsumosObra"]) . " days"));
+        $posicion = -1;
+        $deberiaHoy = -1;
 
-				$data["fechaReciboPropuestas"] = date('Y-m-d', strtotime($data["fechaInicio"] . "- " . ($data["diasReciboPropuestas"] + $data["diasCuadrosComparativos"] + $data["diasLegalizacionContrato"] + $data["diasFabricacion"] + $data["diasInsumosObra"]) . " days"));
+        for ($i = 0; $i < 9; $i++) {
+            if (!empty($pasos[$i][0])) $posicion = $i;
+            if ($pasos[$i][1] <= $fechaActual) $deberiaHoy = $i;
+        }
 
-				$data["fechaCuadrosComparativos"] = date('Y-m-d', strtotime($data["fechaInicio"] . "- " . ($data["diasCuadrosComparativos"] + $data["diasLegalizacionContrato"] + $data["diasFabricacion"] + $data["diasInsumosObra"]) . " days"));
+        $diagnostico = ($posicion >= $deberiaHoy) ? "A tiempo" : "Atrasado!!";
 
-				$data["fechaLegalizacionContrato"] = date('Y-m-d', strtotime($data["fechaInicio"] . "- " . ($data["diasLegalizacionContrato"] + $data["diasFabricacion"] + $data["diasInsumosObra"]) . " days"));
+        if ($posicion === 8) {
+            $estadoFinal = ($pasos[8][0] > $pasos[8][1]) ? "Terminado con retrasos" : "Terminado a tiempo";
+        } else {
+            $estadoFinal = "$diagnostico; " . ($posicion === -1 ? "Proceso de contratación no iniciado" : $pasos[$posicion][2]);
+        }
 
-				$data["fechaFabricacion"] = date('Y-m-d', strtotime($data["fechaInicio"] . "- " . ($data["diasFabricacion"] + $data["diasInsumosObra"]) . " days"));
-
-				$data["fechaInsumosObra"] = date('Y-m-d', strtotime($data["fechaInicio"] . "- " . ($data["diasInsumosObra"]) . " days"));
-
-				if($fechaElaboracionPliegosInicial != $data["fechaElaboracionPliegos"]){
-					$scriptActualizarFechas = "`fechaElaboracionPliegos`='".$data["fechaElaboracionPliegos"]."', `fechaIngresoLicify`='".$data["fechaIngresoLicify"]."', `fechaEntregaPliegos`='".$data["fechaEntregaPliegos"]."', `fechaReciboPropuestas`='".$data["fechaReciboPropuestas"]."', `fechaCuadrosComparativos`='".$data["fechaCuadrosComparativos"]."', `fechaLegalizacionContrato`='".$data["fechaLegalizacionContrato"]."', `fechaFabricacion`='".$data["fechaFabricacion"]."', `fechaInsumosObra`='".$data["fechaInsumosObra"]."', ";
-				}else{
-					$scriptActualizarFechas = "";
-				}
-
-				$posicion = -1;
-				$deberiaHoy = -1;
-				$fechaEvaluar = "";
-				$diagnostico = "";
-
-				$pasos = array(
-					array($data["fechaRealElaboracionPliegos"], $data["fechaElaboracionPliegos"], "Elaborando pliegos del contrato"),
-					array($data["fechaRealIngresoLicify"], $data["fechaIngresoLicify"], "Ingresando el contrato a Licify"),
-					array($data["fechaRealEntregaPliegos"], $data["fechaEntregaPliegos"], "Entregando pliegos a los proveedores invitados"),
-					array($data["fechaRealReciboPropuestas"], $data["fechaReciboPropuestas"], "Recibiendo propuestas de los proveedores invitados"),
-					array($data["fechaRealCuadrosComparativos"], $data["fechaCuadrosComparativos"], "Elaborando cuadros comparativos, análisis y adjudicación del contrato"),
-					array($data["fechaRealLegalizacionContrato"], $data["fechaLegalizacionContrato"], "En proceso de legalización del contrato"),
-					array($data["fechaRealFabricacion"], $data["fechaFabricacion"], "En periodo de fabricación, producción, importaciones, transportes, movilización, etc"),
-					array($data["fechaRealInsumosObra"], $data["fechaInsumosObra"], "En proceso de llegada de recursos, insumos y personal a la obra"),
-					array($data["fechaRealInicio"], $data["fechaInicio"], "Proceso de contratación finalizado y actividades del contrato iniciadas")
-				);
-
-				for ($i = 0; $i < 9; $i++) {
-					if ($pasos[$i][0] != "") {
-						$posicion = $i;
-					}
-					$fechaEvaluar = $pasos[$i][1];
-					//echo "<li>$fechaEvaluar, $fechaActual, " . ($fechaEvaluar <= $fechaActual);
-					if ($fechaEvaluar <= $fechaActual) {
-						$deberiaHoy = $i;
-					}
-				}
-
-				if ($posicion == -1) {
-			    $estadoProceso = "Proceso de contratación no iniciado";
-			    if ($deberiaHoy == -1) {
-			      $deberiaProceso = "";
-			    } else {
-			      $deberiaProceso = $pasos[$deberiaHoy][2];
-			    }
-			  } else {
-			    $estadoProceso = $pasos[$posicion][2];
-			    if ($deberiaHoy == -1) {
-			      $deberiaProceso = "";
-			    } else {
-			      $deberiaProceso = $pasos[$deberiaHoy][2];
-			    }
-			  }
-				//echo "<li>Paquete: ".$data["paqueteContratacion"].", Estado: $posicion, Debería: $deberiaHoy<br>";
-
-				if ($posicion >= $deberiaHoy) {
-			    $diagnostico = "A tiempo";
-			    // if (($posicion == -1 && $deberiaHoy == -1)) {
-			    //   $diagnostico = "A tiempo";
-			    // } else if ($pasos[$posicion][0] <= $pasos[$posicion][1]) {
-			    //   $diagnostico = "A tiempo";
-			    // } else {
-			    //   $diagnostico = "Atrasado!!";
-					// 	echo "<li> $diagnostico";
-			    // }
-			  } else {
-			    $diagnostico = "Atrasado!!";
-			  }
-
-
-				if ($estadoProceso == $pasos[8][2]) {
-			    if ($pasos[8][0] > $pasos[8][1]) {
-			      $diagnostico = "Terminado con retrasos";
-			      $estadoProceso = "Terminado con retrasos";
-			    } else {
-			      $diagnostico = "Terminado a tiempo";
-			      $estadoProceso = "Terminado a tiempo";
-			    }
-			  } else {
-			    $estadoProceso = "$diagnostico; $estadoProceso";
-			  }
-
-				//echo "<li>Paquete: ".$data["paqueteContratacion"].", Estado: $estadoProceso, Debería: $deberiaProceso, Diagnóstico: $diagnostico<br><br>";
-
-				$script .= "UPDATE $db"."_pdc SET $scriptActualizarFechas estado = '$estadoProceso' WHERE semana = $semana AND consecutivo = ".$data["consecutivo"]."; ";
-			}
-		}
-		return $script;
-	}
-?>
+        $sqlAct = "UPDATE {$dbName}_pdc SET 
+                   fechaElaboracionPliegos = ?, fechaIngresoLicify = ?, fechaEntregaPliegos = ?, 
+                   fechaReciboPropuestas = ?, fechaCuadrosComparativos = ?, fechaLegalizacionContrato = ?, 
+                   fechaFabricacion = ?, fechaInsumosObra = ?, estado = ?
+                   WHERE consecutivo = ?";
+        
+        $db->query($sqlAct, [
+            $fechasCalculadas['fechaElaboracionPliegos'], $fechasCalculadas['fechaIngresoLicify'],
+            $fechasCalculadas['fechaEntregaPliegos'], $fechasCalculadas['fechaReciboPropuestas'],
+            $fechasCalculadas['fechaCuadrosComparativos'], $fechasCalculadas['fechaLegalizacionContrato'],
+            $fechasCalculadas['fechaFabricacion'], $fechasCalculadas['fechaInsumosObra'],
+            $estadoFinal, $consecutivo
+        ]);
+    }
+}
