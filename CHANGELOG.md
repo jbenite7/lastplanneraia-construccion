@@ -19,6 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **DataTables Fix:** Resolved "table.buttons is not a function" error by properly including Buttons extension assets.
   - **CORS Resolution:** Inlined Spanish translation for DataTables to avoid cross-origin request issues on local environments.
 
+### Removed
+- **Redundant Files Cleanup:** 
+  - Deleted multiple test and backup files in `/construccion` including `prueba.php` (various modules), `listar_programacion_semanal1.php`, `pruebaSpreadsheets.php`, `charts1.php`, and the `prueba_correos/` directory to improve project maintainability.
+
 ### Changed
 - **Permission Refinement:** Simplified global permission display in the user list to show "Administrador" or "Usuario" badges based on global codes (A/U).
 - **Cleanup:** Removed the redundant "Proyecto" column from the global user list to focus on user profile data.

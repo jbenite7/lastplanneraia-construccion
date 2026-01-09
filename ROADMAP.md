@@ -174,7 +174,6 @@ Esta fase inicial se centra en construir una base administrativa sólida y segur
         - [ ] `construccion/pdc/actualizar_pdc.php`
         - [ ] `construccion/pdc/guardar_pdc.php`
         - [ ] `construccion/pdc/listar_pdc.php`
-        - [ ] `construccion/pdc/prueba.php`
 
         #### Módulo: Profesionales
         - [ ] `construccion/profesionales/guardar_profesionales.php`
@@ -190,7 +189,6 @@ Esta fase inicial se centra en construir una base administrativa sólida y segur
         #### Módulo: Programa General
         - [ ] `construccion/programa_general/actualizarFiltros.php`
         - [ ] `construccion/programa_general/descargarCorteProgramacion.php`
-        - [ ] `construccion/programa_general/pruebaSpreadsheets.php`
         - [ ] `construccion/programa_general/views/programa_general.view.nuevaBarra.php`
 
         #### Módulo: Programación Intermedia
@@ -199,7 +197,6 @@ Esta fase inicial se centra en construir una base administrativa sólida y segur
         - [ ] `construccion/programacion_intermedia/generarListadoRestriccionesGeneral.php`
         - [ ] `construccion/programacion_intermedia/guardar_programacion_intermedia.php`
         - [ ] `construccion/programacion_intermedia/listar_programacion_intermedia.php`
-        - [ ] `construccion/programacion_intermedia/prueba.php`
         - [ ] `construccion/programacion_intermedia/views/programacion_intermedia.view.nuevaBarra.php`
 
         #### Módulo: Programación Semanal
@@ -212,7 +209,6 @@ Esta fase inicial se centra en construir una base administrativa sólida y segur
         - [ ] `construccion/programacion_semanal/listar_CIC.php`
         - [ ] `construccion/programacion_semanal/listar_CNC.php`
         - [ ] `construccion/programacion_semanal/listar_CNP.php`
-        - [ ] `construccion/programacion_semanal/listar_programacion_semanal1.php`
         - [ ] `construccion/programacion_semanal/views/CNP.view.nuevaBarra.php`
         - [ ] `construccion/programacion_semanal/views/programacion_semanal.view.nuevaBarra.php`
 
