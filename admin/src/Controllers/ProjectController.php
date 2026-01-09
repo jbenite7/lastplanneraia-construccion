@@ -395,4 +395,70 @@ class ProjectController extends AdminController
         }
         exit;
     }
+
+    /**
+     * AJAX endpoint to drop orphan tables.
+     */
+    public function cleanupOrphans()
+    {
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+            exit;
+        }
+
+        if (!Security::validateCsrfToken($_POST['csrf_token'] ?? '')) {
+            echo json_encode(['success' => false, 'message' => 'Token CSRF inválido']);
+            exit;
+        }
+
+        $orphans = $this->projectModel->getOrphanTables();
+        
+        if (empty($orphans)) {
+            echo json_encode(['success' => true, 'message' => 'No hay tablas huérfanas que limpiar.']);
+            exit;
+        }
+
+        if ($this->projectModel->dropTables($orphans)) {
+            echo json_encode(['success' => true, 'message' => count($orphans) . ' tablas eliminadas correctamente.']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Error al intentar eliminar las tablas.']);
+        }
+        exit;
+    }
+
+    /**
+     * AJAX endpoint to generate a full database backup.
+     */
+    public function fullBackup()
+    {
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+            exit;
+        }
+
+        if (!Security::validateCsrfToken($_POST['csrf_token'] ?? '')) {
+            echo json_encode(['success' => false, 'message' => 'Token CSRF inválido']);
+            exit;
+        }
+
+        $backupDir = __DIR__ . '/../../../backups';
+        if (!is_dir($backupDir)) {
+            mkdir($backupDir, 0755, true);
+        }
+
+        $sqlContent = $this->projectModel->exportFullDatabase();
+        $filename = "full_backup_" . date('Ymd_His') . ".sql";
+        $filePath = $backupDir . '/' . $filename;
+
+        if (file_put_contents($filePath, $sqlContent)) {
+            echo json_encode(['success' => true, 'message' => 'Respaldo completo generado: ' . $filename]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Error al guardar el archivo de respaldo.']);
+        }
+        exit;
+    }
 }

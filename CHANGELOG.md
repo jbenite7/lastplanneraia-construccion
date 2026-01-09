@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **System Health Dashboard:**
+  - **Real-time Monitoring:** Integrated PHP error log scanning with automated daily error counting and a live activity feed.
+  - **Data Integrity Tools:** Automated verification of required structural tables for every project, including a single-click detail view for missing tables.
+  - **Database Cleanup:** Implemented an "Orphan Tables" detector to identify and remove leftover database tables from deleted projects, with explicit protection for global `general_` tables.
+  - **Full Backups:** Added functionality to generate and store full SQL database snapshots (Global config + all projects) directly on the server.
+  - **Server Environment Info:** Added visibility for critical PHP limits (`upload_max_filesize`, `memory_limit`, etc.) to facilitate technical support.
+- **UI/UX Enhancements:**
+  - **Interactive Tooltips:** Standardized information icons (`i`) across all metrics with detailed explanations of concepts and measurement logic.
+  - **Active Projects Tracker:** Improved projects box to show `Active / Total` count with a hoverable bulleted list of current projects.
+  - **Integrated Modals:** Leveraged **SweetAlert2** for all cleanup confirmations, integrity details, and backup progress notifications.
 - **User Management Enhancements:**
   - Automatic username suggestion based on name or email prefix with duplication detection.
   - Duplication prevention for full names and email addresses during user creation.

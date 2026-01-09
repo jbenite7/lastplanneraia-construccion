@@ -108,10 +108,16 @@ Esta fase inicial se centra en construir una base administrativa sólida y segur
     - [x] **Unificación de Datos:** Eliminación de duplicados en `general_usuarios` y migración a tabla relacional.
     - [x] **Motor de IA:** Implementación de `RoleManager` con normalización y búsqueda difusa (Levenshtein).
     - [x] **Lógica de Asignación:** Gestión de `project_members` con aprendizaje dinámico cargo-rol.
-*   **Día 10: Pulido, Despliegue y Entrega**
+*   **Día 10: Salud del Sistema y Monitoreo (Dashboard)**
+    - [x] **Panel de Salud:** Implementado tablero de indicadores técnicos (Salud del Sistema).
+    - [x] **Monitoreo de Logs:** Rastreo automático de errores en `php_error.log` con conteo diario y feed de actividad reciente.
+    - [x] **Alertas de Integridad:** Sistema de detección de tablas faltantes por proyecto.
+    - [x] **Limpieza de BD:** Identificación de tablas huérfanas (basura de proyectos eliminados).
+    - [x] **Monitor de Entorno:** Visualización de límites de PHP (`upload_max_filesize`, `memory_limit`) para soporte técnico.
+    - [x] **Estado de Backups:** Seguimiento de respaldos SQL generados.
+*   **Día 11: Pulido y Entrega**
     - [ ] **Auditoría Final:** Verificar permisos de archivos y configuración de entorno (`display_errors = Off`).
-    - [ ] **Backups:** Implementar script PHP para backup de BD (mysqldump) disparado por Cron.
-    - [ ] **Smoke Test:** Validación manual completa de flujos críticos (Login -> ABM Usuarios -> ABM Proyectos -> Logout).
+    - [ ] **Smoke Test:** Validación manual completa de flujos críticos.
 
 ### Fase 2: Mitigación de Riesgos y Unificación del Código (Mes 1)
 - **Semana 1-2: ERRADICAR VULNERABILIDADES DE INYECCIÓN SQL (Prioridad Máxima).**

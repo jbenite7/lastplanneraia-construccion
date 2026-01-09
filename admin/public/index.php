@@ -85,6 +85,8 @@ $router->add('POST', '/proyectos/guardar', 'ProjectController@store');
 $router->add('GET', '/proyectos/editar', 'ProjectController@edit');
 $router->add('POST', '/proyectos/actualizar', 'ProjectController@update');
 $router->add('POST', '/proyectos/eliminar', 'ProjectController@delete');
+$router->add('POST', '/proyectos/limpiar-huerfanas', 'ProjectController@cleanupOrphans');
+$router->add('POST', '/proyectos/respaldo-completo', 'ProjectController@fullBackup');
 $router->add('GET', '/proyectos/respaldar', 'ProjectController@backup');
 $router->add('POST', '/proyectos/toggle-status', 'ProjectController@toggleStatus');
 

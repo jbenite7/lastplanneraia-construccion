@@ -1,69 +1,459 @@
+<style>
+  /* Ajuste para que el tooltip sea responsivo al contenido y no rompa líneas */
+  .tooltip-inner {
+    max-width: 350px !important;
+    text-align: left !important;
+    padding: 10px 15px;
+    background-color: rgba(0,0,0,0.9);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  }
+  .integrity-item:hover {
+    background-color: #f8f9fa;
+  }
+  .info-icon {
+    font-size: 0.9rem;
+    color: rgba(255,255,255,0.8);
+    cursor: help;
+    margin-left: 5px;
+  }
+  .card-title .info-icon {
+    color: #6c757d;
+  }
+</style>
+
 <div class="row">
   <div class="col-lg-3 col-6">
-    <!-- small box -->
+    <!-- small box: Proyectos -->
     <div class="small-box bg-info">
       <div class="inner">
-        <h3>150</h3>
+        <h3>
+          <?php echo $stats['active_projects_count']; ?> / <?php echo $stats['total_projects']; ?>
+          <i class="fas fa-info-circle info-icon" data-toggle="tooltip" data-html="true" 
+             title="<div class='text-left'><b>Proyectos Activos Actualmente:</b><ul class='mb-0 pl-3'><?php foreach($stats['active_projects_list'] as $proj) echo '<li>'.htmlspecialchars($proj).'</li>'; ?></ul><hr class='border-light my-1'><b>¿Cómo se mide?</b> Filtra proyectos con estado 'Activo' en la tabla maestra.</div>"></i>
+        </h3>
         <p>Proyectos Activos</p>
       </div>
       <div class="icon">
         <i class="fas fa-project-diagram"></i>
       </div>
-      <a href="proyectos.php" class="small-box-footer">Más info <i class="fas fa-arrow-circle-right"></i></a>
+      <a href="proyectos" class="small-box-footer">Gestionar <i class="fas fa-arrow-circle-right"></i></a>
     </div>
   </div>
   <!-- ./col -->
   <div class="col-lg-3 col-6">
-    <!-- small box -->
+    <!-- small box: DB Size -->
     <div class="small-box bg-success">
       <div class="inner">
-        <h3>53<sup style="font-size: 20px">%</sup></h3>
-        <p>Cumplimiento General</p>
+        <h3>
+          <?php echo $stats['db_size']; ?><sup style="font-size: 20px">MB</sup>
+          <i class="fas fa-info-circle info-icon" data-toggle="tooltip" data-html="true" 
+             title="<b>¿Qué es?</b> Espacio físico de la base de datos.<br><b>¿Cómo se mide?</b> Suma el tamaño de datos e índices de todas las tablas en MySQL."></i>
+        </h3>
+        <p>Tamaño de Base de Datos</p>
       </div>
       <div class="icon">
-        <i class="fas fa-chart-line"></i>
+        <i class="fas fa-database"></i>
       </div>
-      <a href="#" class="small-box-footer">Más info <i class="fas fa-arrow-circle-right"></i></a>
+      <div class="small-box-footer"><?php echo $stats['total_tables']; ?> tablas activas</div>
     </div>
   </div>
   <!-- ./col -->
   <div class="col-lg-3 col-6">
-    <!-- small box -->
+    <!-- small box: Usuarios -->
     <div class="small-box bg-warning">
       <div class="inner">
-        <h3>44</h3>
-        <p>Usuarios Registrados</p>
+        <h3>
+          <?php echo $stats['total_users']; ?>
+          <i class="fas fa-info-circle info-icon" style="color:rgba(0,0,0,0.5)" data-toggle="tooltip" data-html="true" 
+             title="<b>¿Qué es?</b> Cuentas creadas.<br><b>¿Cómo se mide?</b> Conteo directo en 'general_usuarios'."></i>
+        </h3>
+        <p>Usuarios en el Sistema</p>
       </div>
       <div class="icon">
         <i class="fas fa-users"></i>
       </div>
-      <a href="usuarios.php" class="small-box-footer">Más info <i class="fas fa-arrow-circle-right"></i></a>
+      <a href="usuarios" class="small-box-footer">Ver todos <i class="fas fa-arrow-circle-right"></i></a>
     </div>
   </div>
   <!-- ./col -->
   <div class="col-lg-3 col-6">
-    <!-- small box -->
+    <!-- small box: Errores -->
     <div class="small-box bg-danger">
       <div class="inner">
-        <h3>65</h3>
-        <p>Logs de Error</p>
+        <h3>
+          <?php echo $stats['log_errors']; ?>
+          <i class="fas fa-info-circle info-icon" data-toggle="tooltip" data-html="true" 
+             title="<b>¿Qué es?</b> Fallos críticos hoy.<br><b>¿Cómo se mide?</b> Escanea el log de errores de PHP para la fecha actual."></i>
+        </h3>
+        <p>Errores hoy (Log)</p>
       </div>
       <div class="icon">
         <i class="fas fa-exclamation-triangle"></i>
       </div>
-      <a href="#" class="small-box-footer">Más info <i class="fas fa-arrow-circle-right"></i></a>
+      <a href="#logs" class="small-box-footer">Ver detalles <i class="fas fa-arrow-circle-bottom"></i></a>
     </div>
   </div>
   <!-- ./col -->
 </div>
 
-<div class="card">
-  <div class="card-header">
-    <h3 class="card-title">Bienvenido al Panel de Administración</h3>
+<div class="row">
+  <!-- PHP & Backup Info -->
+  <div class="col-md-4">
+    <div class="card card-outline card-primary">
+      <div class="card-header">
+        <h3 class="card-title">
+          <i class="fas fa-server"></i> Entorno del Servidor
+          <i class="fas fa-info-circle info-icon" data-toggle="tooltip" title="Límites configurados en el servidor que afectan la carga de archivos y rendimiento."></i>
+        </h3>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-sm table-striped mb-0">
+          <tbody>
+            <tr>
+              <td>
+                <strong>Upload Max</strong>
+                <i class="fas fa-info-circle info-icon" data-toggle="tooltip" title="Tamaño máximo para un solo archivo subido."></i>
+              </td>
+              <td><span class="badge badge-info"><?php echo $stats['php_limits']['upload_max']; ?></span></td>
+            </tr>
+            <tr>
+              <td>
+                <strong>Post Max Size</strong>
+                <i class="fas fa-info-circle info-icon" data-toggle="tooltip" title="Límite total de datos enviados en una sola petición."></i>
+              </td>
+              <td><span class="badge badge-info"><?php echo $stats['php_limits']['post_max']; ?></span></td>
+            </tr>
+            <tr>
+              <td>
+                <strong>Memoria PHP</strong>
+                <i class="fas fa-info-circle info-icon" data-toggle="tooltip" title="RAM máxima que un script puede consumir."></i>
+              </td>
+              <td><span class="badge badge-info"><?php echo $stats['php_limits']['memory_limit']; ?></span></td>
+            </tr>
+            <tr>
+              <td>
+                <strong>Max Execution</strong>
+                <i class="fas fa-info-circle info-icon" data-toggle="tooltip" title="Tiempo máximo de ejecución de un proceso."></i>
+              </td>
+              <td><span class="badge badge-info"><?php echo $stats['php_limits']['max_execution']; ?></span></td>
+            </tr>
+            <tr>
+              <td>
+                <strong>Último Backup</strong>
+                <i class="fas fa-info-circle info-icon" data-toggle="tooltip" title="Fecha del último respaldo completo exitoso."></i>
+              </td>
+              <td><span class="badge badge-success"><?php echo $stats['backup_status']['last_backup']; ?></span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card-footer text-center">
+        <button class="btn btn-sm btn-primary" id="btnFullBackup">
+          <i class="fas fa-download mr-1"></i> Generar Respaldo Completo
+        </button>
+      </div>
+    </div>
+
+    <!-- Integrity Alerts -->
+    <div class="card card-outline card-warning">
+      <div class="card-header">
+        <h3 class="card-title text-warning">
+          <i class="fas fa-tools"></i> Integridad de Proyectos
+          <i class="fas fa-info-circle info-icon" data-toggle="tooltip" title="Verifica que cada proyecto tenga sus tablas estructurales."></i>
+        </h3>
+      </div>
+      <div class="card-body p-0" style="max-height: 300px; overflow-y: auto;">
+        <?php if (!empty($stats['integrity_issues'])): ?>
+          <ul class="list-group list-group-flush">
+            <?php foreach ($stats['integrity_issues'] as $issue): ?>
+            <li class="list-group-item integrity-item" style="cursor: pointer;" 
+                data-project="<?php echo htmlspecialchars($issue['nombre']); ?>" 
+                data-missing="<?php echo htmlspecialchars(implode(', ', $issue['missing'])); ?>">
+              <small><strong><?php echo $issue['nombre']; ?></strong></small><br>
+              <small class="text-danger">Tablas faltantes: <?php echo count($issue['missing']); ?></small>
+              <br><small class="text-muted"><i class="fas fa-mouse-pointer"></i> Clic para ver detalle</small>
+            </li>
+            <?php endforeach; ?>
+          </ul>
+        <?php else: ?>
+          <div class="p-3 text-center text-muted">
+            <i class="fas fa-check-shield text-success mb-2"></i><br>
+            <small>Todos los proyectos están íntegros.</small>
+          </div>
+        <?php endif; ?>
+      </div>
+    </div>
+
+    <!-- Orphan Tables -->
+    <div class="card card-outline card-secondary">
+      <div class="card-header">
+        <h3 class="card-title">
+          <i class="fas fa-trash-alt"></i> Tablas Huérfanas (<?php echo count($stats['orphan_tables']); ?>)
+          <i class="fas fa-info-circle info-icon" data-toggle="tooltip" title="Tablas basura de proyectos ya eliminados (Excluye tablas globales)."></i>
+        </h3>
+      </div>
+      <div class="card-body p-0" style="max-height: 200px; overflow-y: auto;">
+        <?php if (!empty($stats['orphan_tables'])): ?>
+          <div class="p-2">
+              <?php foreach ($stats['orphan_tables'] as $table): ?>
+                <span class="badge badge-light border mb-1"><?php echo $table; ?></span>
+              <?php endforeach; ?>
+          </div>
+        <?php else: ?>
+          <div class="p-3 text-center text-muted">
+            <i class="fas fa-check-circle text-success mb-2"></i><br>
+            <small>Base de datos limpia.</small>
+          </div>
+        <?php endif; ?>
+      </div>
+      <div class="card-footer p-1 text-center">
+        <?php if (!empty($stats['orphan_tables'])): ?>
+          <button class="btn btn-xs btn-outline-danger mb-1" id="btnCleanupOrphans">Limpiar BD</button>
+          <br>
+        <?php endif; ?>
+      </div>
+    </div>
   </div>
-  <div class="card-body">
-    Has iniciado sesión como <strong><?php echo $user['nombre']; ?></strong> (<?php echo $user['usuario']; ?>).
-    <br><br>
-    Desde este panel podrás gestionar los proyectos y usuarios de la plataforma de construcción.
+
+  <div class="col-md-8" id="logs">
+    <div class="card card-outline card-danger">
+      <div class="card-header">
+        <h3 class="card-title">
+          <i class="fas fa-list-alt"></i> Últimos Eventos
+          <i class="fas fa-info-circle info-icon" data-toggle="tooltip" title="Actividad crítica y errores recientes del log del sistema."></i>
+        </h3>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-sm mb-0">
+            <thead class="bg-light">
+              <tr>
+                <th>Evento / Log Entry</th>
+              </tr>
+            </thead>
+            <tbody>
+              <?php if (empty($stats['recent_errors'])): ?>
+                <tr>
+                  <td class="text-center text-muted py-3">Sin eventos relevantes.</td>
+                </tr>
+              <?php else: ?>
+                <?php foreach ($stats['recent_errors'] as $error): ?>
+                  <tr>
+                    <td style="font-family: monospace; font-size: 0.8rem; word-break: break-all;">
+                      <?php 
+                        if (strpos($error, 'Error') !== false || strpos($error, 'Exception') !== false || strpos($error, 'Fatal') !== false) {
+                            echo '<span class="badge badge-danger">ERROR</span> ' . htmlspecialchars($error);
+                        } elseif (strpos($error, 'Router') !== false) {
+                            echo '<span class="badge badge-info">ROUTE</span> ' . htmlspecialchars($error);
+                        } else {
+                            echo '<span class="badge badge-secondary">LOG</span> ' . htmlspecialchars($error);
+                        }
+                      ?>
+                    </td>
+                  </tr>
+                <?php endforeach; ?>
+              <?php endif; ?>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card-footer text-center">
+        <small class="text-muted">Ruta: admin/logs/php_error.log</small>
+      </div>
+    </div>
   </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar tooltips
+    $(function () {
+      $('[data-toggle="tooltip"]').tooltip();
+    });
+
+    // 1. Limpieza de Tablas Huérfanas
+    const btnCleanup = document.getElementById('btnCleanupOrphans');
+    if (btnCleanup) {
+        btnCleanup.addEventListener('click', function() {
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: "Se eliminarán las tablas basura detectadas.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Sí, limpiar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const formData = new FormData();
+                    formData.append('csrf_token', '<?php echo $_SESSION["csrf_token"]; ?>');
+
+                    fetch('/admin/proyectos/limpiar-huerfanas', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire('¡Limpio!', data.message, 'success').then(() => location.reload());
+                        } else {
+                            Swal.fire('Error', data.message, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire('Error', 'Fallo en la conexión.', 'error');
+                    });
+                }
+            });
+        });
+    }
+
+    // 2. Detalle de Integridad (Un Clic)
+    document.querySelectorAll('.integrity-item').forEach(item => {
+        item.addEventListener('click', function() {
+            const project = this.getAttribute('data-project');
+            const missing = this.getAttribute('data-missing').split(', ').map(t => `<li>${t}</li>`).join('');
+            
+            Swal.fire({
+                title: `Tablas faltantes: ${project}`,
+                html: `<div class="text-left"><ul class="small">${missing}</ul></div>`,
+                icon: 'info',
+                confirmButtonText: 'Entendido'
+            });
+        });
+    });
+
+    // 3. Respaldo Completo
+    const btnFullBackup = document.getElementById('btnFullBackup');
+    if (btnFullBackup) {
+        btnFullBackup.addEventListener('click', function() {
+            Swal.fire({
+                title: 'Generar Respaldo Completo',
+                text: "Se creará un volcado SQL total en el servidor.",
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonText: 'Generar',
+                showLoaderOnConfirm: true,
+                preConfirm: () => {
+                    const formData = new FormData();
+                    formData.append('csrf_token', '<?php echo $_SESSION["csrf_token"]; ?>');
+                    return fetch('/admin/proyectos/respaldo-completo', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .catch(error => {
+                        Swal.showValidationMessage(`Error: ${error}`);
+                    });
+                },
+                allowOutsideClick: () => !Swal.isLoading()
+            }).then((result) => {
+                if (result.isConfirmed && result.value.success) {
+                    Swal.fire('¡Éxito!', result.value.message, 'success').then(() => location.reload());
+                }
+            });
+        });
+    }
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar tooltips de Bootstrap
+    $(function () {
+      $('[data-toggle="tooltip"]').tooltip();
+    });
+
+    // 1. Limpieza de Tablas Huérfanas
+    const btnCleanup = document.getElementById('btnCleanupOrphans');
+    if (btnCleanup) {
+        btnCleanup.addEventListener('click', function() {
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: "Esta acción eliminará permanentemente las tablas huérfanas detectadas.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Sí, limpiar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const formData = new FormData();
+                    formData.append('csrf_token', '<?php echo $_SESSION["csrf_token"]; ?>');
+
+                    fetch('/admin/proyectos/limpiar-huerfanas', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire('¡Limpio!', data.message, 'success').then(() => location.reload());
+                        } else {
+                            Swal.fire('Error', data.message, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire('Error', 'Ocurrió un fallo en la conexión.', 'error');
+                    });
+                }
+            });
+        });
+    }
+
+    // 2. Detalle de Integridad (Un Clic)
+    document.querySelectorAll('.integrity-item').forEach(item => {
+        item.addEventListener('click', function() {
+            const project = this.getAttribute('data-project');
+            const missing = this.getAttribute('data-missing').split(', ').map(t => `<li>${t}</li>`).join('');
+            
+            Swal.fire({
+                title: `Tablas faltantes en ${project}`,
+                html: `<div class="text-left"><ul class="small">${missing}</ul></div>`,
+                icon: 'info',
+                confirmButtonText: 'Entendido'
+            });
+        });
+    });
+
+    // 3. Respaldo Completo
+    const btnFullBackup = document.getElementById('btnFullBackup');
+    if (btnFullBackup) {
+        btnFullBackup.addEventListener('click', function() {
+            Swal.fire({
+                title: 'Generar Respaldo Completo',
+                text: "Se creará un volcado SQL de toda la base de datos en el servidor.",
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonText: 'Generar ahora',
+                showLoaderOnConfirm: true,
+                preConfirm: () => {
+                    const formData = new FormData();
+                    formData.append('csrf_token', '<?php echo $_SESSION["csrf_token"]; ?>');
+                    return fetch('/admin/proyectos/respaldo-completo', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => {
+                        if (!response.ok) throw new Error(response.statusText);
+                        return response.json();
+                    })
+                    .catch(error => {
+                        Swal.showValidationMessage(`Request failed: ${error}`);
+                    });
+                },
+                allowOutsideClick: () => !Swal.isLoading()
+            }).then((result) => {
+                if (result.isConfirmed && result.value.success) {
+                    Swal.fire('¡Éxito!', result.value.message, 'success').then(() => location.reload());
+                } else if (result.isConfirmed) {
+                    Swal.fire('Error', result.value.message, 'error');
+                }
+            });
+        });
+    }
+});
+</script>

@@ -15,6 +15,177 @@ class Project
     }
 
     /**
+     * Get the total number of projects.
+     *
+     * @return int
+     */
+    public function count()
+    {
+        $stmt = $this->db->query("SELECT COUNT(*) as total FROM {$this->table} WHERE Area = 'Construccion'");
+        $row = $stmt->fetch();
+        return (int) ($row['total'] ?? 0);
+    }
+
+    /**
+     * Checks if all required tables exist for each project.
+     * 
+     * @return array List of projects with missing tables
+     */
+    public function getIntegrityReport()
+    {
+        $projects = $this->getAll();
+        $suffixes = [
+            '_actividades', '_cambios', '_cic', '_pdc', '_profesionales', 
+            '_programa', '_programacion_semanal', '_programa_consolidado', 
+            '_semanas_activas', '_subcontratistas'
+        ];
+
+        $report = [];
+        foreach ($projects as $project) {
+            $prefix = $project['Base_de_Datos'];
+            if (empty($prefix)) continue;
+
+            $missing = [];
+            foreach ($suffixes as $suffix) {
+                $table = "{$prefix}{$suffix}";
+                $stmt = $this->db->query("SHOW TABLES LIKE '{$table}'");
+                if (!$stmt->fetch()) {
+                    $missing[] = $table;
+                }
+            }
+
+            if (!empty($missing)) {
+                $report[] = [
+                    'id' => $project['Id'],
+                    'nombre' => $project['Proyecto_Proceso'],
+                    'missing' => $missing
+                ];
+            }
+        }
+        return $report;
+    }
+
+    /**
+     * Detects tables in the DB that follow the project pattern but don't belong to any project.
+     * PROTECTS tables starting with 'general_'.
+     * 
+     * @return array List of orphan tables
+     */
+    public function getOrphanTables()
+    {
+        $projects = $this->getAll();
+        $validPrefixes = array_filter(array_column($projects, 'Base_de_Datos'));
+
+        $stmt = $this->db->query("SHOW TABLES");
+        $allTables = $stmt->fetchAll(\PDO::FETCH_COLUMN);
+
+        $suffixes = [
+            '_actividades', '_cambios', '_cic', '_pdc', '_profesionales', 
+            '_programa', '_programacion_semanal', '_programa_consolidado', 
+            '_semanas_activas', '_subcontratistas'
+        ];
+
+        $orphans = [];
+        foreach ($allTables as $table) {
+            // SEGURIDAD: Ignorar tablas globales del sistema
+            if (str_starts_with($table, 'general_')) {
+                continue;
+            }
+
+            $isProjectTable = false;
+            $currentPrefix = '';
+
+            foreach ($suffixes as $suffix) {
+                if (str_ends_with($table, $suffix)) {
+                    $isProjectTable = true;
+                    $currentPrefix = str_replace($suffix, '', $table);
+                    break;
+                }
+            }
+
+            if ($isProjectTable && !in_array($currentPrefix, $validPrefixes)) {
+                $orphans[] = $table;
+            }
+        }
+        return $orphans;
+    }
+
+    /**
+     * Safely drop multiple tables.
+     * 
+     * @param array $tables List of table names to drop
+     * @return bool
+     */
+    public function dropTables($tables)
+    {
+        if (empty($tables)) return true;
+
+        foreach ($tables as $table) {
+            // Basic SQL injection protection for table names
+            $table = preg_replace('/[^a-zA-Z0-9_]/', '', $table);
+            try {
+                $this->db->query("DROP TABLE IF EXISTS `{$table}`");
+            } catch (\Exception $e) {
+                error_log("Error dropping orphan table {$table}: " . $e->getMessage());
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Get the list of names of all active projects.
+     * 
+     * @return array
+     */
+    public function getActiveNames()
+    {
+        $stmt = $this->db->query("SELECT Proyecto_Proceso FROM {$this->table} WHERE Area = 'Construccion' AND Activo = 1");
+        return $stmt->fetchAll(\PDO::FETCH_COLUMN);
+    }
+
+    /**
+     * Generates a full SQL dump of the entire database (Global + All Project tables).
+     * 
+     * @return string SQL content
+     */
+    public function exportFullDatabase()
+    {
+        $stmt = $this->db->query("SHOW TABLES");
+        $allTables = $stmt->fetchAll(\PDO::FETCH_COLUMN);
+
+        $output = "-- Respaldo Completo de la Base de Datos\n";
+        $output .= "-- Generado el: " . date('Y-m-d H:i:s') . "\n\n";
+        $output .= "SET FOREIGN_KEY_CHECKS=0;\n\n";
+
+        foreach ($allTables as $table) {
+            // 1. Estructura
+            $res = $this->db->query("SHOW CREATE TABLE `{$table}`");
+            $createRow = $res->fetch();
+            $output .= "DROP TABLE IF EXISTS `{$table}`;\n";
+            $output .= $createRow['Create Table'] . ";\n\n";
+
+            // 2. Datos
+            $res = $this->db->query("SELECT * FROM `{$table}`");
+            $rows = $res->fetchAll();
+
+            if (!empty($rows)) {
+                foreach ($rows as $row) {
+                    $values = array_map(function($val) {
+                        if (is_null($val)) return "NULL";
+                        return "'" . addslashes($val) . "'";
+                    }, $row);
+                    $output .= "INSERT INTO `{$table}` VALUES (" . implode(', ', $values) . ");\n";
+                }
+                $output .= "\n";
+            }
+        }
+
+        $output .= "SET FOREIGN_KEY_CHECKS=1;\n";
+        return $output;
+    }
+
+    /**
      * Find a project by its ID.
      *
      * @param int $id

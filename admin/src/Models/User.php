@@ -92,6 +92,18 @@ class User
     }
 
     /**
+     * Get the total number of users.
+     *
+     * @return int
+     */
+    public function count()
+    {
+        $stmt = $this->db->query("SELECT COUNT(*) as total FROM {$this->table}");
+        $row = $stmt->fetch();
+        return (int) ($row['total'] ?? 0);
+    }
+
+    /**
      * Get all users.
      *
      * @return array
