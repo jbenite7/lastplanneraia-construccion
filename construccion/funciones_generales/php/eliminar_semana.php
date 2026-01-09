@@ -1,43 +1,55 @@
 <?php
-require("../../conexion.php");
+session_start();
+require_once __DIR__ . "/../../conexion.php";
 
-$db=/*"cross"*/$_GET['db'];
-$opcion=/*"nueva_sem"*/$_POST["opcion"];
-$semana=$_POST["semana"];
+/** @var Database $dbInstance */
+$dbInstance = Database::getInstance();
 
-$query = "SELECT MAX(Semana) AS maxSemana FROM $db"."_semanas_activas";
-$resultado= mysqli_query($conexion, $query);
-$data= mysqli_fetch_assoc($resultado);
-$maxSemana = $data["maxSemana"];
+$dbName = $_GET['db'] ?? $_POST['db'] ?? '';
+$semana = (int)($_POST["semana"] ?? 0);
 
-if($maxSemana > $semana){
-  $arreglo["maxSemana"]=$maxSemana;
-  $arreglo["puedeEliminar"]="NO";
-  echo utf8_decode(json_encode($arreglo));
-}else{
-  $query3="DELETE FROM $db"."_semanas_activas WHERE Semana>=$semana;";
-  $resultado= mysqli_query($conexion, $query3);
-
-  $query4="DELETE FROM $db"."_programa_consolidado WHERE Semana>=$semana;";
-  $query5="DELETE FROM $db"."_programacion_semanal WHERE Semana>=$semana;";
-  $query6="DELETE FROM $db"."_cic WHERE Semana>=$semana;";
-  // $query7="DELETE FROM $db"."_cip WHERE Semana>=$semana;";
-  // $query8="DELETE FROM $db"."_indicadores_generales WHERE Semana>=$semana;";
-  $query9="DELETE FROM $db"."_pdc WHERE semana>=$semana;";
-  $query10="DELETE FROM $db"."_actividades WHERE semanaActualizacion>=$semana;";
-
-  $resultado1= mysqli_query($conexion, $query4);
-  $resultado2= mysqli_query($conexion, $query5);
-  $resultado3= mysqli_query($conexion, $query6);
-  // $resultado4= mysqli_query($conexion, $query7);
-  // $resultado5= mysqli_query($conexion, $query8);
-  $resultado6= mysqli_query($conexion, $query9);
-  $resultado7= mysqli_query($conexion, $query10);
-
-  mysqli_close($conexion);
-
-  $arreglo["maxSemana"]=$maxSemana;
-  $arreglo["puedeEliminar"]="SI";
-  echo utf8_decode(json_encode($arreglo));
+if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbName)) {
+    die(json_encode(["respuesta" => "ERROR", "mensaje" => "Nombre de base de datos inválido."]));
 }
-?>
+
+try {
+    // 1. Verificar si es la última semana
+    $stmtMax = $dbInstance->query("SELECT MAX(Semana) AS maxSemana FROM {$dbName}_semanas_activas");
+    $dataMax = $stmtMax->fetch();
+    $maxSemana = (int)($dataMax["maxSemana"] ?? 0);
+
+    if ($maxSemana > $semana) {
+        $arreglo = [
+            "maxSemana" => $maxSemana,
+            "puedeEliminar" => "NO",
+            "mensaje" => "Solo se puede eliminar la última semana activa para mantener la integridad de los datos."
+        ];
+        echo json_encode($arreglo, JSON_UNESCAPED_UNICODE);
+    } else {
+        // 2. Realizar eliminación en cascada de la semana seleccionada (y superiores por seguridad)
+        $tablas = [
+            "{$dbName}_semanas_activas" => "Semana",
+            "{$dbName}_programa_consolidado" => "Semana",
+            "{$dbName}_programacion_semanal" => "Semana",
+            "{$dbName}_cic" => "Semana",
+            "{$dbName}_pdc" => "semana",
+            "{$dbName}_actividades" => "semanaActualizacion"
+        ];
+
+        foreach ($tablas as $tabla => $columna) {
+            $dbInstance->query("DELETE FROM $tabla WHERE $columna >= ?", [$semana]);
+        }
+
+        $dbInstance->logActivity('Sistema', 'ELIMINAR_SEMANA', "Eliminación de semana $semana y superiores en proyecto $dbName");
+
+        $arreglo = [
+            "maxSemana" => $maxSemana,
+            "puedeEliminar" => "SI"
+        ];
+        echo json_encode($arreglo, JSON_UNESCAPED_UNICODE);
+    }
+
+} catch (Exception $e) {
+    error_log("Error en eliminar_semana.php: " . $e->getMessage());
+    echo json_encode(["respuesta" => "ERROR", "mensaje" => "Error al eliminar la semana."]);
+}

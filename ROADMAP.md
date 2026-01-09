@@ -139,7 +139,7 @@ Esta fase inicial se centra en construir una base administrativa sólida y segur
 
         #### Módulo: Funciones Generales
         - [x] `construccion/funciones_generales/php/actualizarEjecucion.php`
-        - [ ] `construccion/funciones_generales/php/actualizar_pdc_nueva_semana.php`
+        - [x] `construccion/funciones_generales/php/actualizar_pdc_nueva_semana.php`
         - [ ] `construccion/funciones_generales/php/autoprogramar_actividades.php`
         - [ ] `construccion/funciones_generales/php/datosGeneralesPagina.php`
         - [ ] `construccion/funciones_generales/php/eliminar_semana.php`

@@ -48,6 +48,11 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 - **Fallo de Memoria en Respaldos:** Corregido error 500 al realizar respaldos completos mediante la implementación de escritura por flujo (streaming) en disco.
 - **Advertencias de SweetAlert2:** Resuelta la advertencia de consola relacionada con el parámetro `allowOutsideClick` asegurando el uso de `backdrop: true`.
 - **Sensibilidad de Búsqueda en Logs:** Unificados criterios de escaneo de errores (insensible a mayúsculas) para que el contador diario coincida exactamente con el feed de eventos.
+- **Estabilidad del PDC (Plan de Compras):**
+  - Refactorizado `actualizar_pdc_nueva_semana.php` para erradicar errores de sintaxis en consultas SQL dinámicas mediante el uso de la sintaxis `HEREDOC`.
+  - Implementación de `IFNULL` en cálculos de `DATE_SUB` de MySQL para prevenir errores de intervalo cuando las duraciones de contratación no están definidas.
+  - Corrección de desajuste en el conteo de placeholders de consultas preparadas PDO.
+  - Estandarización de limpieza de strings dinámicos para evitar conflictos de comillas simples/dobles en concatenaciones de SQL.
 
 ### Eliminado
 - **Limpieza de Archivos Redundantes:** 
