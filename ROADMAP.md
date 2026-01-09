@@ -120,9 +120,9 @@ Esta fase inicial se centra en construir una base administrativa sólida y segur
     - **Acción:** Auditar y refactorizar **TODAS** las consultas SQL del proyecto para que utilicen el nuevo sistema de consultas preparadas. - **(EN PROGRESO)**
         
         #### Scripts Raíz
-        - [ ] `construccion/Cargar_Nuevos_Proyectos.php`
-        - [ ] `construccion/Copia_de_Seguridad_LPS.php`
-        - [ ] `construccion/eliminar_proyectos.php`
+        - [x] `construccion/Cargar_Nuevos_Proyectos.php` (Eliminado - Reemplazado por ProjectController)
+        - [x] `construccion/Copia_de_Seguridad_LPS.php` (Eliminado - Reemplazado por ProjectController)
+        - [x] `construccion/eliminar_proyectos.php` (Eliminado - Reemplazado por ProjectController)
         - [ ] `construccion/generarCurvaS.php`
         - [ ] `construccion/generarCurvaSB.php`
         - [ ] `construccion/generarCurvaSPDC.php`

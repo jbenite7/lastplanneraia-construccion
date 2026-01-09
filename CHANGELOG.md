@@ -21,7 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 - **Redundant Files Cleanup:** 
-  - Deleted multiple test and backup files in `/construccion` including `prueba.php` (various modules), `listar_programacion_semanal1.php`, `pruebaSpreadsheets.php`, `charts1.php`, and the `prueba_correos/` directory to improve project maintainability.
+  - Deleted multiple test and backup files in `/construccion` including `prueba.php` (various modules), `listar_programacion_semanal1.php`, `pruebaSpreadsheets.php`, `charts1.php`, and the `prueba_correos/` directory.
+  - **New Cleanup:** Removed legacy management scripts replaced by the Admin MVC: `Cargar_Nuevos_Proyectos.php`, `eliminar_proyectos.php`, and `Copia_de_Seguridad_LPS.php`.
+  - **Redundancy:** Removed root redirects `cerrar.php`, `login/login.php` (and its directory), and `check_schema.php`.
+  - **Maintenance:** Deleted `admin/test_models.php`, `admin/test_create_project.php`, and duplicate view `construccion/pdc/pdc.view.nuevaBarra.php`.
 
 ### Changed
 - **Permission Refinement:** Simplified global permission display in the user list to show "Administrador" or "Usuario" badges based on global codes (A/U).
