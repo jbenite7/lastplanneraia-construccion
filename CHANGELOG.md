@@ -8,6 +8,22 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 ## [Sin publicar]
 
 ### Añadido
+- **Robustez Transversal en el Parseo JSON (Frontend):**
+  - Implementación del patrón de seguridad `(typeof info === 'string' ? JSON.parse(info) : info)` en todas las respuestas de peticiones AJAX para evitar errores de ejecución cuando el navegador ya ha parseado el JSON automáticamente.
+  - Actualización de las funciones de éxito en `cargarDatosGeneralesPagina2.js` y `cargarDatosGeneralesPaginaNoCC.js`.
+  - Estandarización de la lógica de gestión de semanas en `funcionesGenerales6.js` y `funcionesGenerales7.js`.
+  - **Módulos con Vistas Actualizadas:** Contratos, Paquetes de Contratación, Listado de Actividades, PDC, Programa General, Programación Intermedia, Programación Semanal (CIC, CNP) y Subcontratistas.
+  - **En progreso:** Informe de Productividad (2 de 10 instancias corregidas).
+
+### Cambiado
+- **Refactorización de Programa General (Backend):**
+  - **Seguridad:** Migración de `actualizarFiltros.php` a la clase `Database` con consultas preparadas (PDO), eliminando riesgos de inyección SQL en la gestión de filtros.
+  - **Optimización de Reportes:** Reescritura total de `descargarCorteProgramacion.php`. 
+    - Eliminación de la dependencia pesada de `PhpSpreadsheet` para la exportación de cortes de programación.
+    - Implementación de un flujo de descarga de datos JSON nativo, mucho más ligero y rápido.
+    - Ordenamiento optimizado por `Consecutivo` y `Consecutivo_en_Programa` directamente en la base de datos.
+
+### Añadido
 - **Sistema de Auditoría de Acciones:**
   - Creación de la tabla `general_auditoria_acciones` para el registro persistente de actividad de usuarios.
   - Implementación del método `Database::logActivity()` para centralizar el registro de acciones desde cualquier módulo.

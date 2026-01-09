@@ -1198,7 +1198,7 @@
 					contenttype:"charset=utf-8",
 					data: frm,
 				}).done( function( info ){
-				var json_info = JSON.parse( info );
+				var json_info = (typeof info === 'string' ? JSON.parse( info ) : info);
 					$("#modalcic_si #cuadroModal").scrollTop(0);
 					recargarTabla('');
 				});
@@ -1220,7 +1220,7 @@
 					contenttype:"charset=utf-8",
 					data: frm,
 				}).done( function( info ){
-				var json_info = JSON.parse( info );
+				var json_info = (typeof info === 'string' ? JSON.parse( info ) : info);
 					$("#modalcic_mdo #cuadroModal").scrollTop(0);
 					recargarTabla('');
 				});

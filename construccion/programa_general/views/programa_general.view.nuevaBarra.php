@@ -604,7 +604,7 @@
 				contenttype:"charset=utf-8",
 				data: {"db":db, "semana":semana},
 			}).done( function( info ){
-				var json_info = JSON.parse( info );
+				var json_info = (typeof info === 'string' ? JSON.parse( info ) : info);
 				var no_requeridas=json_info["data"]["no_requeridas"];
 				var lookahead=json_info["data"]["lookahead"];
 				var no_iniciadas=json_info["data"]["no_iniciadas"];
@@ -780,18 +780,17 @@
 							$( this ).parent().find('.input_cantidad_ppto').html(codigo_html_cantidad_ppto);
 
 							var codigo_actividad = <?php
-								require("../conexion.php");
+								require_once("../conexion.php");
 								$query="SELECT * FROM general_codigos_actividades";
-								$resultado= mysqli_query($conexion, $query);
+								$stmt = $db->query($query);
 								$codigo_actividad="";
-								while ($valores = mysqli_fetch_array($resultado)){
+								while ($valores = $stmt->fetch()){
 								$valor=$valores["codigo_actividad"];
 								$actividad=$valores["actividad"];
 								$vista=$valor . " - " . $actividad;
 								$codigo_actividad .="<option value='$valor'>$vista</option>";
 								};
 								echo '"'.$codigo_actividad.'"';
-								mysqli_close($conexion);
 							?>;
 							var codigo_html_codigo_actividad = "<select id='select_codigo_actividad' name='codigo_actividad' class='form-control form-control-sm' onchange=bloquear_unidad()><option value=''></option>"+codigo_actividad+"</select>";
 							if (permiso=="P" || permiso=="A"){
@@ -890,7 +889,7 @@
 		        "codigo_actividad": codigo_actividad
 		      }
 		    }).done(function(info) {
-		      var json_info = JSON.parse(info);
+		      var json_info = (typeof info === 'string' ? JSON.parse(info) : info);
 		      unidad = json_info[0];
 		      $("#select_unidad").val(unidad).change();
 		    });
@@ -1049,7 +1048,7 @@
 								"f_inicio_sem": f_inicio_sem
 							}
 						}).done(function(info) {
-							var json_info = JSON.parse(info);
+							var json_info = (typeof info === 'string' ? JSON.parse(info) : info);
 							var actualizado = json_info[2];
 							if(actualizado == 1){
 								$(".iconoAlertaSemanalConfirmada").html('<div class="texto_semanal_confirmada" style="width:100%; float:left"></div>');
@@ -1100,7 +1099,7 @@
 				contenttype:"charset=utf-8",
 				data: {"db":db, "semana":semana},
 			}).done( function( info ){
-				var json_info = JSON.parse(info);
+				var json_info = (typeof info === 'string' ? JSON.parse(info) : info);
 				window.location.href = json_info;
 			});
 		}

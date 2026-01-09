@@ -1536,7 +1536,7 @@
 		//         "codigo_actividad": codigo_actividad
 		//       }
 		//     }).done(function(info) {
-		//       var json_info = JSON.parse(info);
+		//       var json_info = (typeof info === 'string' ? JSON.parse(info) : info);
 		//       unidad = json_info[0];
 		//       $("#select_unidad").val(unidad).change();
 		//     });
@@ -1585,7 +1585,7 @@
 					contenttype:"charset=utf-8",
 					data: {"semana": semana, "opcion": opcion}
 				}).done( function( info ){
-					var respuesta =  JSON.parse(info);
+					var respuesta = (typeof info === 'string' ? JSON.parse(info) : info);
 					console.log(respuesta);
 					if(respuesta=="OK"){
 						location.reload(true);
@@ -1651,7 +1651,7 @@
 	          contenttype:"charset=utf-8",
 						data: frm,
 					}).done( function( info ){
-						var json_info =  JSON.parse(info);
+						var json_info = (typeof info === 'string' ? JSON.parse(info) : info);
 						//console.log(json_info);
 	          location.reload(true);
 					});
@@ -1681,7 +1681,7 @@
 		        "Consecutivo": Consecutivo
 		      }
 		    }).done(function(info) {
-		      var json_info = JSON.parse(info);
+		      var json_info = (typeof info === 'string' ? JSON.parse(info) : info);
 		      $("#Sub_Contratista").val(json_info["data"]["Sub_Contratista"]).change();
 		      $("#Responsable_AIA").val(json_info["data"]["Responsable_AIA"]).change();
 		      $("#Actividad").val(json_info["data"]["Actividad"]).change();
@@ -1711,7 +1711,7 @@
 						"fechaCierreCompromisos": fechaCierreCompromisos
 					}
 				}).done(function(info) {
-					var json_info = JSON.parse(info);
+					var json_info = (typeof info === 'string' ? JSON.parse(info) : info);
 					//console.logjson_info);
 					var respuesta = json_info;
 					$("#modal_aceptar_cerrar_compromisos").modal("show");
@@ -2214,7 +2214,7 @@
 		      "opcion": opcion
 		    }
 		  }).done(function(info) {
-		    var json_info = JSON.parse(info);
+		    var json_info = (typeof info === 'string' ? JSON.parse(info) : info);
 		    costo_hora_oficial = json_info[0];
 		    costo_hora_ayudante = json_info[1];
 		    if (costo_hora_oficial == 0 || costo_hora_ayudante == 0) {
@@ -2484,7 +2484,7 @@
 		      "semana": semana
 		    }
 		  }).responseText;
-		  var data = JSON.parse(jsonData);
+		  var data = (typeof jsonData === 'string' ? JSON.parse(jsonData) : jsonData);
 		  //console.logdata);
 		  var dataSet = anychart.data.set(data[0]);
 		  //var palette = anychart.palettes.distinctColors().items(['rgb(191,215,48)', 'rgb(211,84,0)', 'rgb(52,73,94)', 'rgb(55,86,54)', '#455a64', '#96a6a6', '#dd2c00', '#00838f', '#00bfa5', '#ffa000']);
@@ -2574,7 +2574,7 @@
 				contenttype:"charset=utf-8",
 				data: {"db":db, "semana":semana},
 			}).done( function( info ){
-				var json_info = JSON.parse(info);
+				var json_info = (typeof info === 'string' ? JSON.parse(info) : info);
 				console.log(json_info);
 				window.location.href = json_info;
 			});

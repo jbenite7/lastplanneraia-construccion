@@ -35,7 +35,11 @@ var cargarDatosGeneralesPagina = function(seccion) {
       "seccion": seccion
     },
     success: function(info) {
-      json_info_global = JSON.parse(info);
+      if (typeof info === 'string') {
+        json_info_global = JSON.parse(info);
+      } else {
+        json_info_global = info;
+      }
       //console.log(json_info_global["data"]);
       datosGenerales = json_info_global["data"];
       listadoSemanas = json_info_global["data"]["listadoSemanas"];

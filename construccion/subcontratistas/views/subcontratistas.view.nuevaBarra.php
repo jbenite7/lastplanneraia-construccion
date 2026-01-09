@@ -202,7 +202,7 @@
 										contenttype:"charset=utf-8",
 					data: frm,
 				}).done( function( info ){
-					var json_info = JSON.parse( info );
+					var json_info = (typeof info === 'string' ? JSON.parse( info ) : info);
 						mostrar_mensaje( json_info );
 						//console.log(json_info);
 						if (json_info.respuesta=="BIEN"){
@@ -235,7 +235,7 @@
 						contenttype:"charset=utf-8",
 						data: frm,
 				}).done( function( info ){
-						var json_info = JSON.parse( info );
+						var json_info = (typeof info === 'string' ? JSON.parse( info ) : info);
 						// console.log(json_info);
 						mostrar_mensaje( json_info );
 						limpiar_datos();
@@ -256,7 +256,7 @@
 										contenttype:"charset=utf-8",
 					data: {"Id": Id, "opcion": opcion}
 				}).done( function( info ){
-					var json_info = JSON.parse( info );
+					var json_info = (typeof info === 'string' ? JSON.parse( info ) : info);
 					mostrar_mensaje( json_info );
 					limpiar_datos();
 					recargarTabla("");

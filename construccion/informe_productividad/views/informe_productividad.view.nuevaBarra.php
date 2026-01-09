@@ -196,7 +196,7 @@
 			      "codigo_actividad": codigo_actividad
 			    }
 			  }).responseText;
-			  var array = JSON.parse(jsonData);
+			  var array = (typeof jsonData === 'string' ? JSON.parse(jsonData) : jsonData);
 			  $("#oficiales_teorico").val(array["oficiales_tipica"]).change();
 			  $("#ayudantes_teorico").val(array["ayudantes_tipica"]).change();
 			  $("#rendimiento_cuadrilla_tipica_teorico").val(array["rendimiento_tipica"]).change();
@@ -228,7 +228,7 @@
 		        "numero_cuadrillas_tipicas": numero_cuadrillas_tipicas
 		      }
 		    }).responseText;
-		    var array = JSON.parse(jsonData);
+		    var array = (typeof jsonData === 'string' ? JSON.parse(jsonData) : jsonData);
 		    grafico_Seguimiento_Ejecucion(nombre, db, semana);
 		  }
 		}

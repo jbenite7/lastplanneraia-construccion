@@ -1091,7 +1091,7 @@
 				contenttype:"charset=utf-8",
 				data: frm,
 			}).done( function( info ){
-				var json_info = JSON.parse( info );
+				var json_info = (typeof info === 'string' ? JSON.parse( info ) : info);
 				if(json_info == "sinModificaciones" || json_info == "conModificaciones"){
 					$("#modalDefinirContratos").modal("hide");
 					actualizarPDC();
@@ -1125,7 +1125,7 @@
 		      "base": base
 		    }
 		  }).done(function(info) {
-		    var json_info = JSON.parse(info);
+		    var json_info = (typeof info === 'string' ? JSON.parse( info ) : info);
 		    //console.log(json_info);
 		    if (json_info == "No Existe") {
 		      idProveedorExistente.value = '';
@@ -1228,7 +1228,7 @@
 		      "fechaRealElaboracionPliegos": fechaRealElaboracionPliegos
 		    }
 		  }).done(function(info) {
-		    var json_info = JSON.parse(info);
+		    var json_info = (typeof info === 'string' ? JSON.parse( info ) : info);
 		    document.getElementById('fechaElaboracionPliegosTeorica').value = json_info["data"][0]["fechaElaboracionPliegos"];
 		    document.getElementById('fechaIngresoLicifyTeorica').value = json_info["data"][0]["fechaIngresoLicify"];
 		    document.getElementById('fechaEntregaPliegosTeorica').value = json_info["data"][0]["fechaEntregaPliegos"];
@@ -1339,7 +1339,7 @@
 		        "fechaRealElaboracionPliegos": fechaRealElaboracionPliegos
 		      }
 		    }).done(function(info) {
-		      var json_info = JSON.parse(info);
+		      var json_info = (typeof info === 'string' ? JSON.parse( info ) : info);
 		      document.getElementById('fechaElaboracionPliegos').value = json_info["data"][0]["fechaElaboracionPliegos"];
 		      document.getElementById('fechaIngresoLicify').value = json_info["data"][0]["fechaIngresoLicify"];
 		      document.getElementById('fechaEntregaPliegos').value = json_info["data"][0]["fechaEntregaPliegos"];
@@ -1602,7 +1602,7 @@
 				contenttype:"charset=utf-8",
 				data: {"db": db, "semana": semana}
 			}).done( function( info ){
-				var json_info = JSON.parse( info );
+				var json_info = (typeof info === 'string' ? JSON.parse( info ) : info);
 				// console.log(json_info);
 				// console.log(json_info["respuesta"]);
 				if(json_info["respuesta"]=="BIEN"){
@@ -1673,7 +1673,7 @@
           			contenttype:"charset=utf-8",
 					data: frm,
 				}).done( function( info ){
-					var json_info = JSON.parse( info );
+					var json_info = (typeof info === 'string' ? JSON.parse( info ) : info);
 					// console.log(json_info);
 					// mostrar_mensaje( json_info );
 					if(json_info == "OK"){
@@ -1737,7 +1737,7 @@
 						"semana": semana
 					}
 				}).done(function(info) {
-					var json_info = JSON.parse(info);
+					var json_info = (typeof info === 'string' ? JSON.parse( info ) : info);
 					//console.log(json_info)
 					mostrar_mensaje(json_info);
 					recargarTabla('');

@@ -484,7 +484,7 @@
 						contenttype: "charset=utf-8",
 						data: {"opcion": "actualizarListadoPaquetesContratacion", "tipoContrato": tipoContrato}
 					}).done(function(info) {
-						var json_info = JSON.parse(info);
+						var json_info = (typeof info === 'string' ? JSON.parse(info) : info);
 
 						$.ajax({
 							method: "POST",
@@ -492,7 +492,7 @@
 							contenttype: "charset=utf-8",
 							data: {"opcion": "actualizarInsumosRecursos", "tipoContrato": tipoContrato}
 						}).done(function(info) {
-							var json_info2 = JSON.parse(info);
+							var json_info2 = (typeof info === 'string' ? JSON.parse(info) : info);
 							if(tipoContrato==1){
 
 								$("#S1, #S2, #S3, #S4, #S5").html(json_info2["listadoS"]).change();
@@ -628,7 +628,7 @@
 		      contenttype: "charset=utf-8",
 		      data: frm,
 		    }).done(function(info) {
-		      var json_info = JSON.parse(info);
+		      var json_info = (typeof info === 'string' ? JSON.parse(info) : info);
 		      //mostrar_mensaje(json_info);
 		      // console.log(json_info);
 		      if (json_info.respuesta == "BIEN") {

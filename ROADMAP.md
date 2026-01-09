@@ -149,6 +149,10 @@ Esta fase inicial se centra en construir una base administrativa sólida y segur
         - [ ] `construccion/funciones_generales/php/nueva_semana1.php`
         - [ ] `construccion/funciones_generales/php/verificarCICActualizada.php`
 
+        #### Módulo: Programa General (Filtros y Reportes)
+        - [x] `construccion/programa_general/actualizarFiltros.php` (Migrado a Database PDO + Seguridad)
+        - [x] `construccion/programa_general/descargarCorteProgramacion.php` (Reporte JSON optimizado, eliminación de PhpSpreadsheet)
+
         #### Módulo: Indicadores
         - [ ] `construccion/indicadores/listar_detalles_indicadores.php`
         - [ ] `construccion/indicadores/listar_indicadores.php` (Refactorización parcial pendiente)

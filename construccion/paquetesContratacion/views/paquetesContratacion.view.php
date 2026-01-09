@@ -532,7 +532,7 @@
 		          contenttype:"charset=utf-8",
 							data: {"f_inicio_sem": f_inicio_sem, "opcion": opcion}
 						}).done( function( info ){
-							var json_info = JSON.parse( info );
+							var json_info = (typeof info === 'string' ? JSON.parse(info) : info);
 							mostrar_mensaje( json_info );
 							limpiar_datos_nueva_sem();
 		                    location.reload(true);

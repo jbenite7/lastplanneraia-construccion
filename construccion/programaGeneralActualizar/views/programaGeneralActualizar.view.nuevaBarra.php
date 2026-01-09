@@ -765,7 +765,7 @@
 		        "codigo_actividad": codigo_actividad
 		      }
 		    }).done(function(info) {
-		      var json_info = JSON.parse(info);
+		      var json_info = (typeof info === 'string' ? JSON.parse(info) : info);
 		      unidad = json_info[0];
 		      $("#select_unidad").val(unidad).change();
 		    });
@@ -809,7 +809,7 @@
 		      processData: false,
 		      data: variables,
 		    }).done(function(info) {
-		      var json_info = JSON.parse(info);
+		      var json_info = (typeof info === 'string' ? JSON.parse(info) : info);
 					var semana_json = json_info[0];
 		      if (semana_json == (Number(semana)+1)) {
 		        location.reload();
@@ -835,7 +835,7 @@
 		      contenttype: "charset=utf-8",
 		      data: {"semana": semana, "opcion": opcion},
 		    }).done(function(info) {
-		      var json_info = JSON.parse(info);
+		      var json_info = (typeof info === 'string' ? JSON.parse(info) : info);
 					console.log(json_info);
 		      if (json_info.respuesta == "BIEN") {
 		        location.reload();

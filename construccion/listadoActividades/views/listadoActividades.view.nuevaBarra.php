@@ -492,7 +492,7 @@
 					contenttype: "charset=utf-8",
 					data: frm,
 				}).done(function(info) {
-					var json_info = JSON.parse(info);
+					var json_info = (typeof info === 'string' ? JSON.parse(info) : info);
 					if (json_info.respuesta == "BIEN") {
 						limpiar_datos();
 						json_info.respuesta = json_info.respuesta + "NuevaActividad";
@@ -519,7 +519,7 @@
 		      processData: false,
 		      data: variables,
 		    }).done(function(info) {
-		      var json_info = JSON.parse(info);
+		      var json_info = (typeof info === 'string' ? JSON.parse(info) : info);
 		      if (json_info.respuesta == "BIEN") {
 		        limpiar_datos();
 		        json_info.respuesta = json_info.respuesta + "CargarExcel";
@@ -552,7 +552,7 @@
 					contenttype: "charset=utf-8",
 					data: frm,
 				}).done(function(info) {
-					var json_info = JSON.parse(info);
+					var json_info = (typeof info === 'string' ? JSON.parse(info) : info);
 					// console.log(json_info);
 					recargarTabla('');
 				});
@@ -576,7 +576,7 @@
 		        "opcion": opcion
 		      }
 		    }).done(function(info) {
-		      var json_info = JSON.parse(info);
+		      var json_info = (typeof info === 'string' ? JSON.parse(info) : info);
 		      mostrar_mensaje(json_info);
 		      limpiar_datos();
 		      recargarTabla('');
@@ -613,7 +613,7 @@
 		        "semana": semana
 		      }
 		    }).done(function(info) {
-		      var json_info = JSON.parse(info);
+		      var json_info = (typeof info === 'string' ? JSON.parse(info) : info);
 		      if (funcion == "nuevo") {
 		        $("#fechaInicio").val(json_info["data"]["Fecha_Inicio"]);
 		      } else {

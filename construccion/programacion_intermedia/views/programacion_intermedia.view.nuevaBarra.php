@@ -629,7 +629,7 @@
 				contenttype:"charset=utf-8",
 				data: {"db":db, "semana":semana},
 			}).done( function( info ){
-				var json_info = JSON.parse( info );
+				var json_info = (typeof info === 'string' ? JSON.parse( info ) : info);
 				var no_requeridas=json_info["data"]["no_requeridas"];
 				var lookahead=json_info["data"]["lookahead"];
 				var no_iniciadas=json_info["data"]["no_iniciadas"];
@@ -1004,7 +1004,7 @@
 				contenttype:"charset=utf-8",
 				data: {"db":db, "semana":semana},
 			}).done( function( info ){
-				var json_info = JSON.parse(info);
+				var json_info = (typeof info === 'string' ? JSON.parse(info) : info);
 				console.log(json_info);
 				window.location.href = json_info;
 				$("#modal_spinner").modal("hide");

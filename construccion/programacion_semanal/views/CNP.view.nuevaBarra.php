@@ -436,7 +436,7 @@
 		        "opcion": opcion
 		      }
 		    }).done(function(info) {
-		      var json_info = JSON.parse(info);
+		      var json_info = (typeof info === 'string' ? JSON.parse(info) : info);
 		      recargarTabla('');
 		    });
 		  });

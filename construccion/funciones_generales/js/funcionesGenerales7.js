@@ -19,7 +19,7 @@ var nueva_sem=function(db, carpeta, seccion){
       contenttype:"charset=utf-8",
       data: {"db": db, "semana": semanaActual}
     }).done( function( info ){
-      var faltaCalificar = JSON.parse( info );
+      var faltaCalificar = (typeof info === 'string' ? JSON.parse( info ) : info);
       if(faltaCalificar != 0){
         window.alert("No se pueden crear nuevas semanas hasta que se realicen las Calificaciónes Integrales (Calidad, Gestión Social - Ambiental, SST y Administración)" + faltaCalificar + ", las cuales se deben realizar mínimo cada 2 meses.");
         location.assign("../cambiar_pagina.php?seccion=CIC&semana="+semanaActual);
@@ -30,7 +30,7 @@ var nueva_sem=function(db, carpeta, seccion){
           contenttype:"charset=utf-8",
           data: {"f_inicio_sem": f_inicio_sem,"opcion": opcion,"permiso": permiso}
         }).done( function( info ){
-          var json_info = JSON.parse( info );
+          var json_info = (typeof info === 'string' ? JSON.parse( info ) : info);
           var semana = json_info[0];
           var pdcConteo = json_info[1];
           var semanalConfirmada = json_info[3];
@@ -53,7 +53,7 @@ var nueva_sem=function(db, carpeta, seccion){
                   contenttype:"charset=utf-8",
                   data: {"db": db,"semana": semana}
                 }).done( function( info ){
-                  var json_info = JSON.parse( info );
+                  var json_info = (typeof info === 'string' ? JSON.parse( info ) : info);
                   if(carpeta == 1){
                     location.assign("../cambiar_pagina.php?seccion=programa_general&semana="+semana);
                   }else{
@@ -92,7 +92,7 @@ var eliminar_sem=function(semana, db, carpeta, seccion){
       contenttype:"charset=utf-8",
       data: {"semana": semana, "opcion": opcion}
     }).done( function( info ){
-      var json_info = JSON.parse( info );
+      var json_info = (typeof info === 'string' ? JSON.parse( info ) : info);
       if(json_info["puedeEliminar"] == "SI"){
         if(carpeta == 1){
           location.assign("../cambiar_pagina.php?seccion=programa_general&semana="+semanaFinal);
@@ -156,7 +156,7 @@ var limpiar_buscador = function(tbody, table){
       contenttype:"charset=utf-8",
       data: {"buscadorTabla": buscadorTabla}
     }).done( function( info ){
-      var json_info = JSON.parse( info );
+      var json_info = (typeof info === 'string' ? JSON.parse( info ) : info);
        console.log(json_info);
       if(json_info!=''){
         $("#btn_limpiar_buscador").show();
