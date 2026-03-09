@@ -175,28 +175,36 @@
     var _this = this;
     this.closeTimeout = null;
 
-    // ── Montar el wrapper DENTRO del TD activo ──
-    // Handsontable detecta "outside clicks" verificando si el target está en su DOM.
-    // Al colgar el wrapper de body, Handsontable lo interpreta como externo y cierra.
-    // Montándolo dentro del TD activo, todo click en pills/dropdown queda "adentro".
-    $(this.TD).css('position', 'relative').css('overflow', 'visible');
-    this.$wrapper.detach().appendTo(this.TD);
+    // ── Nivel Root ──
+    // Montar en body para evitar CSS residual en los TDs reciclados por Handsontable
+    this.$wrapper.detach().appendTo('body');
 
+    var tdOffset = $(this.TD).offset();
     var tdWidth = $(this.TD).outerWidth();
+    var tdHeight = $(this.TD).outerHeight();
     var wrapperWidth = Math.max(260, tdWidth);
 
     this.$wrapper.css({
       position: 'absolute',
-      top: $(this.TD).outerHeight() + 'px',
-      left: '0',
+      top: tdOffset.top + 'px',
+      left: tdOffset.left + 'px',
       width: wrapperWidth + 'px',
+      minHeight: tdHeight + 'px',
       display: 'block',
       zIndex: 10050,
     });
 
+    // ── Barrera de Clics: Aislar de Handsontable ──
+    this.$wrapper.off('mousedown.htAislado').on('mousedown.htAislado', function(e) {
+      e.stopPropagation();
+    });
+    $('body').off('mousedown.htAislado').on('mousedown.htAislado', '.select2-container', function(e) {
+      e.stopPropagation();
+    });
+
     this.$select
       .select2({
-        dropdownParent: this.$wrapper,
+        dropdownParent: $('body'),
         allowClear: true,
         placeholder: 'Seleccione...',
         width: '100%',
@@ -218,7 +226,14 @@
         if (_this.closeTimeout) {
           clearTimeout(_this.closeTimeout);
         }
-        // Desactivar visualmente el buscador para Sub-Contratista sin perder el focus
+        
+        // ── El Silver Bullet (Scroll Locking de Select2 Multiple) ──
+        setTimeout(function() {
+            $(document).off('mousewheel.select2 DOMMouseScroll.select2 wheel.select2 scroll.select2');
+            $('html, body').add(window).off('mousewheel.select2 DOMMouseScroll.select2 wheel.select2 scroll.select2');
+        }, 0);
+
+        // Desactivar visualmente el buscador sin perder el focus
         _this.$wrapper.find('.select2-search__field').prop('readonly', true).css({
           width: '0px',
           padding: '0',
@@ -404,25 +419,35 @@
     Handsontable.editors.BaseEditor.prototype.open.apply(this, arguments);
     var _this = this;
 
-    // Montar dentro del TD activo para que HOT no detecte "outside click"
-    $(this.TD).css('position', 'relative').css('overflow', 'visible');
-    this.$wrapper.detach().appendTo(this.TD);
+    // ── Nivel Root ──
+    this.$wrapper.detach().appendTo('body');
 
+    var tdOffset = $(this.TD).offset();
     var tdWidth = $(this.TD).outerWidth();
+    var tdHeight = $(this.TD).outerHeight();
     var wrapperWidth = Math.max(260, tdWidth);
 
     this.$wrapper.css({
       position: 'absolute',
-      top: $(this.TD).outerHeight() + 'px',
-      left: '0',
+      top: tdOffset.top + 'px',
+      left: tdOffset.left + 'px',
       width: wrapperWidth + 'px',
+      minHeight: tdHeight + 'px',
       display: 'block',
       zIndex: 10050,
     });
 
+    // ── Barrera de Clics: Aislar de Handsontable ──
+    this.$wrapper.off('mousedown.htAislado').on('mousedown.htAislado', function(e) {
+      e.stopPropagation();
+    });
+    $('body').off('mousedown.htAislado').on('mousedown.htAislado', '.select2-container', function(e) {
+      e.stopPropagation();
+    });
+
     this.$select
       .select2({
-        dropdownParent: this.$wrapper,
+        dropdownParent: $('body'),
         allowClear: true,
         placeholder: 'Seleccione...',
         width: '100%',
@@ -433,6 +458,12 @@
           return;
         }
         _this.finishEditing();
+      })
+      .on('select2:open', function () {
+        setTimeout(function() {
+            $(document).off('mousewheel.select2 DOMMouseScroll.select2 wheel.select2 scroll.select2');
+            $('html, body').add(window).off('mousewheel.select2 DOMMouseScroll.select2 wheel.select2 scroll.select2');
+        }, 0);
       })
       .on('select2:close', function () {
         setTimeout(function () {
