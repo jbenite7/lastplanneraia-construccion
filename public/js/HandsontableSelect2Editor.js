@@ -339,18 +339,26 @@
 
     if (this.$select.data('select2')) {
       try { this.$select.select2('close'); } catch(e) {}
-      this.$select.select2('destroy');
+      try { this.$select.select2('destroy'); } catch(e) {}
     }
-    // Limpieza agresiva de handlers globales que Select2 puede dejar huérfanos
-    $(window).off('wheel.select2 DOMMouseScroll.select2 scroll.select2');
-    $(document).off('wheel.select2 DOMMouseScroll.select2 scroll.select2');
-    $('body').off('wheel.select2 DOMMouseScroll.select2 scroll.select2');
+    
+    // ── Limpieza masiva de namespaces nativos de Select2 y reset de flags de CSS ──
+    $(window).off('.select2');
+    $(document).off('.select2');
+    $('html, body').off('.select2').css({ overflow: '', 'overflow-y': '' });
+
     this.$wrapper.hide();
     // Devolver wrapper a body para no contaminar el TD
     this.$wrapper.detach().appendTo('body');
     if (this.TD) {
       $(this.TD).css('overflow', '');
       $(this.TD).css('position', '');
+    }
+    
+    // ── Resucitar Handsontable ──
+    // Fuerza a Walkontable a reañadir los event listeners (`wheel`, `keydown`) de la tabla principal
+    if (this.hot) {
+      this.hot.listen();
     }
   };
 
@@ -520,17 +528,24 @@
 
     if (this.$select.data('select2')) {
       try { this.$select.select2('close'); } catch(e) {}
-      this.$select.select2('destroy');
+      try { this.$select.select2('destroy'); } catch(e) {}
     }
-    // Limpieza agresiva de handlers globales que Select2 puede dejar huérfanos
-    $(window).off('wheel.select2 DOMMouseScroll.select2 scroll.select2');
-    $(document).off('wheel.select2 DOMMouseScroll.select2 scroll.select2');
-    $('body').off('wheel.select2 DOMMouseScroll.select2 scroll.select2');
+    
+    // ── Limpieza masiva de namespaces nativos de Select2 y reset de flags de CSS ──
+    $(window).off('.select2');
+    $(document).off('.select2');
+    $('html, body').off('.select2').css({ overflow: '', 'overflow-y': '' });
+
     this.$wrapper.hide();
     this.$wrapper.detach().appendTo('body');
     if (this.TD) {
       $(this.TD).css('overflow', '');
       $(this.TD).css('position', '');
+    }
+    
+    // ── Resucitar Handsontable ──
+    if (this.hot) {
+      this.hot.listen();
     }
   };
 

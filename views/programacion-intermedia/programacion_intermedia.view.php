@@ -761,7 +761,7 @@
             ?>
         };
     </script>
-    <script type="text/javascript" src="/js/HandsontableSelect2Editor.js?v=hotcustom10"></script>
+    <script type="text/javascript" src="/js/HandsontableSelect2Editor.js?v=hotcustom11"></script>
     <script src="/js/modules/programacion_intermedia/hot.js?v=hot25"></script>
 
     <script>
