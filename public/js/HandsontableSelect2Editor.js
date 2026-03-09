@@ -336,8 +336,13 @@
     }
 
     if (this.$select.data('select2')) {
+      try { this.$select.select2('close'); } catch(e) {}
       this.$select.select2('destroy');
     }
+    // Limpieza agresiva de handlers globales que Select2 puede dejar huérfanos
+    $(window).off('wheel.select2 DOMMouseScroll.select2 scroll.select2');
+    $(document).off('wheel.select2 DOMMouseScroll.select2 scroll.select2');
+    $('body').off('wheel.select2 DOMMouseScroll.select2 scroll.select2');
     this.$wrapper.hide();
     // Devolver wrapper a body para no contaminar el TD
     this.$wrapper.detach().appendTo('body');
@@ -508,8 +513,13 @@
     }
 
     if (this.$select.data('select2')) {
+      try { this.$select.select2('close'); } catch(e) {}
       this.$select.select2('destroy');
     }
+    // Limpieza agresiva de handlers globales que Select2 puede dejar huérfanos
+    $(window).off('wheel.select2 DOMMouseScroll.select2 scroll.select2');
+    $(document).off('wheel.select2 DOMMouseScroll.select2 scroll.select2');
+    $('body').off('wheel.select2 DOMMouseScroll.select2 scroll.select2');
     this.$wrapper.hide();
     this.$wrapper.detach().appendTo('body');
     if (this.TD) {
