@@ -171,6 +171,7 @@
   };
 
   Select2Editor.prototype.open = function () {
+    Handsontable.editors.BaseEditor.prototype.open.apply(this, arguments);
     var _this = this;
     this.closeTimeout = null;
 
@@ -324,6 +325,7 @@
   };
 
   Select2Editor.prototype.close = function () {
+    Handsontable.editors.BaseEditor.prototype.close.apply(this, arguments);
     if (this._keydownCaptureHandler) {
       document.removeEventListener('keydown', this._keydownCaptureHandler, true);
       this._keydownCaptureHandler = null;
@@ -341,6 +343,7 @@
     this.$wrapper.detach().appendTo('body');
     if (this.TD) {
       $(this.TD).css('overflow', '');
+      $(this.TD).css('position', '');
     }
   };
 
@@ -393,6 +396,7 @@
   };
 
   Select2Single.prototype.open = function () {
+    Handsontable.editors.BaseEditor.prototype.open.apply(this, arguments);
     var _this = this;
 
     // Montar dentro del TD activo para que HOT no detecte "outside click"
@@ -497,6 +501,7 @@
   };
 
   Select2Single.prototype.close = function () {
+    Handsontable.editors.BaseEditor.prototype.close.apply(this, arguments);
     if (this._keydownCaptureHandlerSingle) {
       document.removeEventListener('keydown', this._keydownCaptureHandlerSingle, true);
       this._keydownCaptureHandlerSingle = null;
@@ -509,6 +514,7 @@
     this.$wrapper.detach().appendTo('body');
     if (this.TD) {
       $(this.TD).css('overflow', '');
+      $(this.TD).css('position', '');
     }
   };
 
