@@ -175,36 +175,25 @@
     var _this = this;
     this.closeTimeout = null;
 
-    // ── Nivel Root ──
-    // Montar en body para evitar CSS residual en los TDs reciclados por Handsontable
-    this.$wrapper.detach().appendTo('body');
+    // ── Montar el wrapper DENTRO del TD activo ──
+    $(this.TD).css('position', 'relative').css('overflow', 'visible');
+    this.$wrapper.detach().appendTo(this.TD);
 
-    var tdOffset = $(this.TD).offset();
     var tdWidth = $(this.TD).outerWidth();
-    var tdHeight = $(this.TD).outerHeight();
     var wrapperWidth = Math.max(260, tdWidth);
 
     this.$wrapper.css({
       position: 'absolute',
-      top: tdOffset.top + 'px',
-      left: tdOffset.left + 'px',
+      top: $(this.TD).outerHeight() + 'px',
+      left: '0',
       width: wrapperWidth + 'px',
-      minHeight: tdHeight + 'px',
       display: 'block',
       zIndex: 10050,
     });
 
-    // ── Barrera de Clics: Aislar de Handsontable ──
-    this.$wrapper.off('mousedown.htAislado').on('mousedown.htAislado', function(e) {
-      e.stopPropagation();
-    });
-    $('body').off('mousedown.htAislado').on('mousedown.htAislado', '.select2-container', function(e) {
-      e.stopPropagation();
-    });
-
     this.$select
       .select2({
-        dropdownParent: $('body'),
+        dropdownParent: this.$wrapper,
         allowClear: true,
         placeholder: 'Seleccione...',
         width: '100%',
@@ -418,35 +407,25 @@
     Handsontable.editors.BaseEditor.prototype.open.apply(this, arguments);
     var _this = this;
 
-    // ── Nivel Root ──
-    this.$wrapper.detach().appendTo('body');
+    // Montar dentro del TD activo para que HOT no detecte "outside click"
+    $(this.TD).css('position', 'relative').css('overflow', 'visible');
+    this.$wrapper.detach().appendTo(this.TD);
 
-    var tdOffset = $(this.TD).offset();
     var tdWidth = $(this.TD).outerWidth();
-    var tdHeight = $(this.TD).outerHeight();
     var wrapperWidth = Math.max(260, tdWidth);
 
     this.$wrapper.css({
       position: 'absolute',
-      top: tdOffset.top + 'px',
-      left: tdOffset.left + 'px',
+      top: $(this.TD).outerHeight() + 'px',
+      left: '0',
       width: wrapperWidth + 'px',
-      minHeight: tdHeight + 'px',
       display: 'block',
       zIndex: 10050,
     });
 
-    // ── Barrera de Clics: Aislar de Handsontable ──
-    this.$wrapper.off('mousedown.htAislado').on('mousedown.htAislado', function(e) {
-      e.stopPropagation();
-    });
-    $('body').off('mousedown.htAislado').on('mousedown.htAislado', '.select2-container', function(e) {
-      e.stopPropagation();
-    });
-
     this.$select
       .select2({
-        dropdownParent: $('body'),
+        dropdownParent: this.$wrapper,
         allowClear: true,
         placeholder: 'Seleccione...',
         width: '100%',
