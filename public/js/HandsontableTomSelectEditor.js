@@ -11,7 +11,7 @@
   var TomSelectEditor = Handsontable.editors.BaseEditor.prototype.extend();
 
   TomSelectEditor.prototype.init = function () {
-    this.$wrapper = $('<div class="htTomSelectWrapper" style="display:none; position:absolute; z-index:10050; background:#fff; border-radius:4px; box-shadow:0 4px 6px rgba(0,0,0,0.1);"></div>');
+    this.$wrapper = $('<div class="htTomSelectWrapper" style="display:none; position:absolute; z-index:99999; background:#fff;"></div>');
     this.$select = $('<select multiple placeholder="Seleccione..."></select>');
     this.$wrapper.append(this.$select);
     $('body').append(this.$wrapper);
@@ -45,10 +45,8 @@
       display: 'block'
     });
 
-    // Barrera para evitar que clics dentro del dropdown cierren el editor accidentalmente
-    this.$wrapper.off('mousedown.htAislado').on('mousedown.htAislado', function(e) {
-      e.stopPropagation();
-    });
+    // Se ha ELIMINADO intencionalmente la barrera e.stopPropagation()
+    // Esto es para habilitar los clics nativos de selección de ítems en TomSelect
 
     // Destruir instancia previa si por si acaso quedó viva
     if (this.tomSelectInstance) {
@@ -61,6 +59,7 @@
         labelField: 'text',
         searchField: 'text',
         options: this.tomOptions,
+        dropdownParent: 'body',
         plugins: ['remove_button', 'clear_button'],
         maxOptions: null,
         closeAfterSelect: false,
@@ -194,7 +193,7 @@
   var TomSelectSingle = Handsontable.editors.BaseEditor.prototype.extend();
 
   TomSelectSingle.prototype.init = function () {
-    this.$wrapper = $('<div class="htTomSelectWrapper" style="display:none; position:absolute; z-index:10050; background:#fff; border-radius:4px; box-shadow:0 4px 6px rgba(0,0,0,0.1);"></div>');
+    this.$wrapper = $('<div class="htTomSelectWrapper" style="display:none; position:absolute; z-index:99999; background:#fff;"></div>');
     this.$select = $('<select placeholder="Seleccione..."></select>');
     this.$wrapper.append(this.$select);
     $('body').append(this.$wrapper);
@@ -226,9 +225,8 @@
       display: 'block'
     });
 
-    this.$wrapper.off('mousedown.htAislado').on('mousedown.htAislado', function(e) {
-      e.stopPropagation();
-    });
+    // Se ha ELIMINADO intencionalmente la barrera e.stopPropagation()
+    // Esto es para habilitar los clics nativos de selección de ítems en TomSelect
 
     if (this.tomSelectInstance) {
         this.tomSelectInstance.destroy();
@@ -239,6 +237,7 @@
         labelField: 'text',
         searchField: 'text',
         options: this.tomOptions,
+        dropdownParent: 'body',
         plugins: ['clear_button'],
         maxOptions: null,
         render: {
