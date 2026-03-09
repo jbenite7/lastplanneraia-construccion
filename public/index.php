@@ -149,6 +149,11 @@ $router->post('/construccion/programa_general/guardar_programa_general.php', fun
     require_once PROJECT_ROOT . '/src/Legacy/Endpoints/guardar_programa_general.php';
 });
 
+// Endpoint faltante para Cargar Datos Generales (Cargos/Nombres)
+$router->post('/construccion/funciones_generales/php/datosGeneralesPagina.php', function() {
+    require_once PROJECT_ROOT . '/src/Legacy/datosGeneralesPagina.php';
+});
+
 $router->post('/context/clear-week', [\App\Controllers\Core\ContextController::class, 'clearWeek']);
 
 // --- FIN ZONA DE RUTAS ---
