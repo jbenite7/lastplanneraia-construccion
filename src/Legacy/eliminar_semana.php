@@ -1,7 +1,7 @@
 <?php
 
 session_start();
-require_once __DIR__ . "/../../conexion.php";
+require_once __DIR__ . "/conexion.php";
 
 /** @var Database $dbInstance */
 $dbInstance = Database::getInstance();

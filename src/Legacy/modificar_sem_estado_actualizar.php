@@ -1,6 +1,6 @@
 <?php
 
-require('../../conexion.php');
+require('./conexion.php');
 require_once __DIR__ . '/estado_programa_general.php';
 
 /** @var Database $dbInstance */

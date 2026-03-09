@@ -2,9 +2,8 @@ Options -Indexes
 RewriteEngine On
 
 # 1. Heredar el prefijo /construccion/ para assets (CSS, JS, IMAGES)
-# Esto redirige /construccion/css/styles.css -> /css/styles.css de forma transparente
-RewriteCond %{REQUEST_URI} ^/construccion/(css|js|imagenes|archivosBase|vendor|storage)/ [NC]
-RewriteRule ^construccion/(.*)$ $1 [L,NC]
+# Redirige /construccion/css/styles.css -> /css/styles.css
+RewriteRule ^construccion/(css|js|imagenes|archivosBase|vendor|storage)/(.*)$ $1/$2 [L,NC]
 
 # 2. Rutas estándar del Front Controller
 RewriteCond %{REQUEST_FILENAME} !-f

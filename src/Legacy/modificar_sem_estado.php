@@ -7,7 +7,7 @@ if (!isset($dbInstance)) {
     if (isset($db) && is_object($db)) {
         $dbInstance = $db;
     } else {
-        require_once __DIR__ . "/../../conexion.php";
+        require_once __DIR__ . "/conexion.php";
         $dbInstance = Database::getInstance();
     }
 }

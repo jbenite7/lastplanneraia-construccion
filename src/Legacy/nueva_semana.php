@@ -9,7 +9,7 @@ header('Content-Type: application/json');
 
 /** @var Database $dbInstance */
 if (!isset($dbInstance)) {
-    require_once __DIR__ . "/../../conexion.php";
+    require_once __DIR__ . "/conexion.php";
     $dbInstance = Database::getInstance();
 }
 
