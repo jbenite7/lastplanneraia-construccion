@@ -171,7 +171,6 @@
   };
 
   Select2Editor.prototype.open = function () {
-    Handsontable.editors.BaseEditor.prototype.open.apply(this, arguments);
     var _this = this;
     this.closeTimeout = null;
 
@@ -404,7 +403,6 @@
   };
 
   Select2Single.prototype.open = function () {
-    Handsontable.editors.BaseEditor.prototype.open.apply(this, arguments);
     var _this = this;
 
     // Montar dentro del TD activo para que HOT no detecte "outside click"
