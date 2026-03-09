@@ -2042,8 +2042,8 @@
         { data: 'Id', readOnly: true, className: 'htCenter htMiddle' },
         { data: '__shared_selected', type: 'checkbox', className: 'htCenter htMiddle pi-shared-select-cell' },
         { data: 'Actividad', readOnly: true, renderer: 'piActividadRenderer', className: 'htLeft htMiddle force-wrap' },
-        { data: 'Sub_Contratista', editor: 'select2Multiple', select2Options: subcontratistas, className: 'htCenter htMiddle force-wrap' },
-        { data: 'Responsable_AIA', editor: 'select2Single', select2Options: profesionales, className: 'htCenter htMiddle force-wrap' },
+        { data: 'Sub_Contratista', editor: 'tomSelectMultiple', tomSelectOptions: subcontratistas, className: 'htCenter htMiddle force-wrap' },
+        { data: 'Responsable_AIA', editor: 'tomSelectSingle', tomSelectOptions: profesionales, className: 'htCenter htMiddle force-wrap' },
         { data: 'Semanas_Inicio', readOnly: true, className: 'htCenter htMiddle' },
         { data: 'Ejecutado', readOnly: true, renderer: 'piPercentRenderer', className: 'htCenter htMiddle' },
         { data: 'D_y_E', type: 'dropdown', source: restrictedOptions, strict: false, allowInvalid: false, renderer: 'piPercentRenderer', className: 'htCenter htMiddle' },
@@ -2501,9 +2501,9 @@
           var cols = hot.getSettings().columns;
           cols.forEach(function (col) {
             if (col.data === 'Sub_Contratista') {
-              col.select2Options = subcontratistas;
+              col.tomSelectOptions = subcontratistas;
             }
-            if (col.data === 'Responsable_AIA') col.select2Options = profesionales;
+            if (col.data === 'Responsable_AIA') col.tomSelectOptions = profesionales;
           });
           hot.updateSettings({ columns: cols });
         }

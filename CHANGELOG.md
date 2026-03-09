@@ -25,6 +25,7 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
   - [x] CIC (`CicApiController`) — listado UNION, guardado con cálculo de disciplinas
   - [x] Programación Intermedia (`ProgramacionIntermediaController`) — list y save
   - [x] Programación General (`GeneralApiController`) — list, update, updateBatch y codigos
+- **UI & Bugs (Scroll Lock):** Se sustituyó completamente el plugin Select2 (jQuery) por Tom Select (Vanilla JS) en la grilla de Programación Intermedia. El uso de la nueva clase `HandsontableTomSelectEditor.js` aísla los eventos del DOM previniendo el secuestro global del `wheel` que congelaba el scroll tras cerrar los menús desplegables.
 - **Kill Switch Legacy (Fases 5 y 6):** Culminación de la erradicación del código heredado.
   - **Assets:** Se migraron masivamente imágenes, CSS y JS desde la carpeta `/construccion/` a `/public/`. Además, se actualizaron con `sed` los paths relativos en las vistas renderizadas.
   - **Endpoints Huerfanos:** Se mudaron scripts POST/GET solitarios como `actualizar_pdc.php` o `cambiar_pagina.php` al sandbox `/src/Legacy/Endpoints/` interceptándolos a través del Front Controller vía `$router->post` fallback rules.

@@ -3,8 +3,8 @@
 <head id="head">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.10.1/jquery-ui.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap4.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
     <script type="text/javascript" src="/js/linksComunesHead2.js" charset="utf-8"></script>
     <link rel="stylesheet" href="/public/vendor/handsontable/handsontable.full.min.css" />
     <link rel="stylesheet" href="/css/handsontable-module.css" />
@@ -761,7 +761,7 @@
             ?>
         };
     </script>
-    <script type="text/javascript" src="/js/HandsontableSelect2Editor.js?v=hotcustom11"></script>
+    <script type="text/javascript" src="/js/HandsontableTomSelectEditor.js?v=tomselect1"></script>
     <script src="/js/modules/programacion_intermedia/hot.js?v=hot25"></script>
 
     <script>
