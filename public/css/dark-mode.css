@@ -1,0 +1,153 @@
+/* AIA Dark Mode - Brand Manual Compliant
+   Based on manual-de-marca-aia.json
+   Overrides variables from styles.css and inline styles
+*/
+
+@layer theme {
+body.dark-mode {
+    /* =========================================
+       Variable Overrides
+       ========================================= */
+
+    /* Backgrounds & Surfaces */
+    /* Brand: "Texto Principal" #1C1C1E used as Dark Background (Avoiding pure black) */
+    --surface-bg: #1C1C1E; 
+    
+    /* Brand: Custom dark grey for cards, slightly lighter than BG */
+    --surface-card: #2C2C2E; 
+    
+    /* Dark Glass for Headers */
+    --surface-header: rgba(28, 28, 30, 0.95);
+    
+    --surface-modal: #2C2C2E;
+
+    /* Typography */
+    /* Brand: "Linen" #F4F1EA used as Primary Text (Avoiding pure white) */
+    --text-main: #F4F1EA;
+    
+    /* Brand: "Separadores" #D1D1D1 used as Secondary Text */
+    --text-secondary: #D1D1D1;
+    
+    --text-inverse: #1C1C1E;
+
+    /* Navbar Variables (from navbar.css) */
+    /* Brand: "Corporativo Oscuro" #1a3c2a for Navbar Background */
+    --aia-green: #1a3c2a; 
+    --aia-white: #1C1C1E; /* Drawer BG */
+
+    /* Global Body Styles */
+    color: var(--text-main);
+    background-color: var(--surface-bg) !important; /* Override inline styles */
+}
+}
+
+@layer components {
+/* =========================================
+   Component Overrides
+   ========================================= */
+
+/* Navbar & Drawer */
+body.dark-mode .navbar-aia {
+    background-color: var(--aia-green) !important;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+body.dark-mode .navbar-collapse-drawer {
+    background-color: var(--surface-card) !important;
+}
+
+body.dark-mode .nav-link {
+    color: var(--text-main) !important;
+}
+
+body.dark-mode .nav-link:hover {
+    background-color: rgba(255,255,255,0.1) !important;
+}
+
+body.dark-mode .dropdown-menu {
+    background-color: var(--surface-card) !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+}
+
+body.dark-mode .dropdown-item {
+    color: var(--text-main) !important;
+}
+
+body.dark-mode .dropdown-item:hover {
+    background-color: rgba(255,255,255,0.05) !important;
+}
+
+/* =========================================
+   Project Selector Specific Overrides
+   ========================================= */
+
+/* Project Cards */
+body.dark-mode .project-card {
+    background-color: var(--surface-card) !important;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3) !important;
+}
+
+body.dark-mode .card-header-project {
+    background-color: var(--surface-card) !important;
+    border-bottom: 1px solid rgba(255,255,255,0.1) !important;
+}
+
+body.dark-mode .project-title {
+    color: var(--text-main) !important;
+}
+
+body.dark-mode .card-body-project {
+    color: var(--text-secondary) !important;
+}
+
+/* Inputs */
+body.dark-mode .form-control {
+    background-color: #3A3A3C !important;
+    border-color: rgba(255,255,255,0.1) !important;
+    color: var(--text-main) !important;
+}
+
+body.dark-mode .form-control::placeholder {
+    color: #888;
+}
+
+body.dark-mode .input-group-text {
+    background-color: #3A3A3C !important;
+    border-color: rgba(255,255,255,0.1) !important;
+    color: var(--text-main) !important;
+}
+
+/* =========================================
+   AdminLTE / Layout Overrides
+   ========================================= */
+
+body.dark-mode .content-wrapper {
+    background-color: var(--surface-bg) !important;
+}
+
+body.dark-mode .main-footer {
+    background-color: var(--surface-card) !important;
+    border-top: 1px solid rgba(255,255,255,0.1) !important;
+    color: var(--text-secondary) !important;
+}
+
+body.dark-mode h1, 
+body.dark-mode h2, 
+body.dark-mode h3, 
+body.dark-mode h4, 
+body.dark-mode h5, 
+body.dark-mode h6 {
+    color: var(--text-main) !important;
+}
+
+/* Tables */
+body.dark-mode .table {
+    color: var(--text-main) !important;
+    background-color: var(--surface-card) !important;
+}
+
+body.dark-mode .table td, 
+body.dark-mode .table th {
+    border-top-color: rgba(255,255,255,0.1) !important;
+}
+}

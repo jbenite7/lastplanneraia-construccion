@@ -1,0 +1,517 @@
+/* AIA Unified Navigation Styles - Refactored 2026 */
+
+@layer layout, components, aia-premium-drawer;
+
+@layer layout {
+  :root {
+    --aia-green: oklch(43.86% 0.084 142.5); /* #1a5633 */
+    --aia-green-dark: oklch(35.5% 0.09 143.5); /* #144226 */
+    --aia-white: oklch(100% 0 0); /* #ffffff */
+    --navbar-height: 60px;
+    --drawer-width: 280px;
+  }
+
+  /* --- Global Navbar Styles --- */
+  .navbar-aia {
+    background-color: var(--aia-green);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 0 1rem;
+    height: var(--navbar-height);
+    font-family: 'Roboto', 'Helvetica', sans-serif;
+    z-index: 1040;
+
+    .navbar-brand {
+      color: var(--aia-white) !important;
+      font-weight: 700;
+      font-size: 1.25rem;
+      display: flex;
+      align-items: center;
+
+      img {
+        height: 32px;
+        margin-right: 10px;
+      }
+    }
+  }
+}
+
+@layer components {
+  /* --- Desktop Navigation (>= 1400px) --- */
+  @media (width >= 1400px) {
+    .navbar-aia {
+      .nav-link {
+        color: rgba(255, 255, 255, 0.85) !important;
+        font-weight: 500;
+        /* Fluid padding: from 8px at 1200px to 12px at higher res */
+        padding-inline: clamp(0.5rem, -1.6rem + 2.8vw, 0.75rem) !important;
+        /* Fluid font size: from 13.5px at 1200px to 16px at 1400px+ */
+        font-size: clamp(0.84375rem, 0.45rem + 0.5vw, 1rem) !important;
+        height: var(--navbar-height);
+        display: flex !important;
+        align-items: center !important;
+        transition: all 0.2s;
+        border-bottom: 3px solid transparent;
+
+        /* Abbreviations removed — handled in JS (cargarDatosGeneralesPagina2.js) */
+
+        &:hover,
+        &.active {
+          color: #fff !important;
+          background-color: rgba(255, 255, 255, 0.1);
+          border-bottom-color: #fff;
+        }
+      }
+
+      .dropdown-menu {
+        margin-top: 0;
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+        border: none;
+      }
+
+      .dropdown-item.active,
+      .dropdown-item:active {
+        background-color: var(--aia-green);
+        color: #fff !important;
+      }
+    }
+  }
+
+  /* --- Tablet & Small Desktop Intermediate (768–1399.98px) --- */
+  @media (width >= 768px) and (width <= 1399.98px) {
+    .navbar-aia .nav-link {
+      padding: 0 8px !important;
+      font-size: 0.85rem;
+    }
+
+    .navbar-aia #userDropdown, .navbar-aia #nombreUsuario {
+      max-width: 160px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .navbar-aia .navbar-brand {
+      font-size: 1.05rem;
+    }
+  }
+
+
+  /* Utility */
+  .user-avatar-sm {
+    width: 30px;
+    height: 30px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 8px;
+    font-size: 0.8rem;
+  }
+
+  /* Centro de Notificaciones (Flyout Navbar) AIA Colors */
+  #notificationDropdown .badge-danger {
+    background-color: oklch(75% 0.15 70); /* Variable AIA Highlight Alert */
+    color: #000;
+  }
+
+  #notificationList {
+    scrollbar-width: thin;
+    scrollbar-color: oklch(85% 0 0) transparent;
+  }
+
+  #notificationList::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  #notificationList::-webkit-scrollbar-thumb {
+    background-color: oklch(85% 0 0);
+    border-radius: 4px;
+  }
+
+  .notification-item:hover {
+    background-color: oklch(98% 0.01 250); /* AIA Light BG */
+    cursor: pointer;
+  }
+
+  .notification-item .icon-circle {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+}
+
+@layer aia-premium-drawer {
+  @media (width < 1400px) {
+    :root {
+      --drawer-bg-oklch: oklch(28% 0.08 142.5); /* Vibrant Institutional AIA Green - Clearly Green on Tablets */
+      --drawer-text: oklch(100% 0 0);
+      --drawer-accent: oklch(100% 0 0 / 0.1);
+      --drawer-active-bg: oklch(43.86% 0.084 142.5); /* Master AIA Green */
+      --drawer-active-text: oklch(100% 0 0);
+      --drawer-width: 380px;
+    }
+
+    .drawer-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background-color: oklch(0% 0 0 / 0.4);
+      backdrop-filter: blur(4px);
+      z-index: 1045;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+
+      &.show {
+        display: block;
+        opacity: 1;
+      }
+    }
+
+    .navbar-collapse-drawer {
+      position: fixed;
+      top: 0;
+      left: calc(var(--drawer-width) * -1);
+      width: var(--drawer-width);
+      height: 100dvh;
+      background-image: none !important; /* Kill Bootstrap gradients */
+      background-color: var(--drawer-bg-oklch) !important; /* Force Institutional Color */
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      transition: left 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+      z-index: 1050;
+      box-shadow: 15px 0 50px rgba(0, 0, 0, 0.5);
+      display: flex !important;
+      flex-direction: column;
+      border-right: 1px solid oklch(100% 0 0 / 0.15);
+      
+      /* Reset agresivo para Chrome/Bootstrap inheritances */
+      &.navbar-collapse {
+        background-color: var(--drawer-bg-oklch) !important;
+        flex-basis: auto !important;
+      }
+
+      &.show {
+        left: 0;
+      }
+      
+      /* Force Toggler Visibility for Tablet & Mobile Range (Unaligned with Bootstrap xl) */
+      & ~ .navbar-toggler {
+        display: block !important;
+      }
+      
+      /* Ensure horizontal menu is hidden in tablet range (1180px-1300px) */
+      &:not(.show).navbar-collapse-drawer {
+          display: none !important;
+      }
+      
+      /* Force Toggler Visibility for Tablet/Mobile Range */
+      & ~ #drawerToggle {
+        display: block !important;
+      }
+
+      /* Drawer Header - Elegancia Suprema y Transparencia Real */
+      .drawer-header {
+        padding: 3.5rem 1.5rem 1rem !important;
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        gap: 1rem;
+        border-bottom: 1px solid oklch(100% 0 0 / 0.1) !important;
+        background: transparent !important; /* Killer for the gray box from styles.css */
+        
+        h5 {
+          color: white !important;
+          font-family: 'Montserrat', sans-serif;
+          font-weight: 800;
+          letter-spacing: 4px;
+          margin: 0;
+          text-transform: uppercase;
+          font-size: 1.1rem;
+          opacity: 0.9;
+          text-shadow: none; /* Cleaner, more professional */
+        }
+
+        .close-drawer {
+          color: white !important;
+          background: oklch(100% 0 0 / 0.1);
+          border: 1px solid oklch(100% 0 0 / 0.2);
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.1rem;
+          cursor: pointer;
+          transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+          
+          &:hover {
+            background: oklch(100% 0 0 / 0.2);
+            transform: rotate(90deg) scale(1.1);
+          }
+        }
+      }
+
+      /* Scrollable Nav Links - Optimización de Espacio */
+      .navbar-nav.main-links {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1.5rem 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem; /* Más balanceado */
+        
+        /* Ocultar barra de scroll para limpieza visual */
+        scrollbar-width: none;
+        &::-webkit-scrollbar { display: none; }
+      }
+
+      .nav-link {
+        color: oklch(85% 0 0) !important;
+        padding: 0.85rem 1.25rem;
+        font-weight: 500;
+        border-radius: 14px;
+        transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+        display: flex;
+        align-items: center;
+        margin-bottom: 4px;
+
+        i { margin-right: 14px; opacity: 0.6; font-size: 1.1rem; }
+
+        &:hover {
+          background-color: var(--drawer-accent);
+          color: var(--drawer-text) !important;
+          transform: translateX(8px);
+          i { opacity: 1; }
+        }
+
+        &.active {
+          background-color: var(--drawer-active-bg);
+          color: var(--drawer-active-text) !important;
+          font-weight: 600;
+          box-shadow: 0 8px 20px oklch(42% 0.09 155 / 0.3);
+          
+          i { opacity: 1; color: white; }
+        }
+
+        /* Elegant Dropdowns In-Drawer */
+        &.dropdown-toggle::after {
+          margin-left: auto;
+          transition: transform 0.3s ease;
+        }
+      }
+
+      /* Nested Dropdown Menus Refinement (v3 Elegancia Suprema) */
+      .dropdown-menu {
+        background-color: oklch(15% 0.02 155 / 0.98) !important; 
+        backdrop-filter: blur(20px) !important;
+        border: 1px solid oklch(100% 0 0 / 0.1) !important;
+        border-radius: 20px !important;
+        margin: 0.5rem 1rem !important;
+        padding: 0.5rem !important;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.5) !important;
+        
+        .dropdown-item {
+          color: oklch(85% 0 0) !important;
+          border-radius: 12px !important;
+          padding: 0.6rem 1rem !important;
+          font-size: 0.88rem !important;
+          margin-bottom: 2px !important;
+          
+          &:hover {
+            background-color: oklch(100% 0 0 / 0.08) !important;
+            color: white !important;
+            transform: scale(1.02);
+          }
+          
+          &.active {
+            background-color: var(--drawer-active-bg) !important;
+          }
+        }
+        
+        /* Proporcionalidad Quirúrgica de Botones en Dropdowns */
+        .btn {
+          font-size: 0.75rem !important;
+          padding: 4px 12px !important;
+          border-radius: 30px !important;
+          text-transform: none !important;
+          letter-spacing: 0.5px !important;
+          margin: 4px !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          gap: 6px !important;
+          
+          i { font-size: 0.8rem !important; }
+        }
+
+        .btn-primary { 
+          background-color: transparent !important;
+          border: 1px solid oklch(55% 0.12 155) !important;
+          color: oklch(80% 0.05 155) !important;
+          
+          &:hover {
+            background-color: oklch(55% 0.12 155) !important;
+            color: white !important;
+          }
+        }
+
+        .btn-danger {
+          background-color: oklch(100% 0 0 / 0.05) !important;
+          border: 1px solid oklch(100% 0 0 / 0.1) !important;
+          color: oklch(70% 0.1 25) !important;
+          width: 30px !important;
+          height: 30px !important;
+          padding: 0 !important;
+          display: flex !important;
+          justify-content: center !important;
+          border-radius: 50% !important;
+
+          &:hover {
+            background-color: oklch(55% 0.15 25) !important;
+            color: white !important;
+            border-color: transparent !important;
+          }
+        }
+      }
+
+      /* User Island: Bye Bye Blue */
+      .user-island {
+        margin: 1.5rem !important;
+        margin-top: auto !important; /* Ancla al final */
+        
+        .nav-link {
+          color: oklch(90% 0 0) !important; /* Forzar blanco/gris claro */
+          font-size: 0.85rem !important;
+          padding: 0.5rem 0.25rem !important;
+          
+          i { color: oklch(55% 0.12 155) !important; } /* Iconos en AIA Green */
+
+          &:hover {
+            color: white !important;
+            background: transparent !important;
+            text-decoration: underline !important;
+          }
+        }
+        
+        #cerrarSesionMobile {
+          color: oklch(70% 0.1 25) !important; /* Rojo sutil para salir */
+          &:hover { color: oklch(85% 0.15 25) !important; }
+        }
+      }
+
+      /* User Island (Thumb Zone) */
+      .user-island {
+        margin: 0 auto 1.75rem; /* Centrado horizontal */
+        width: 90%; /* 90% del ancho del sidebar */
+        background-color: oklch(100% 0 0 / 0.04); /* Very subtle crystalline base */
+        border: 1px solid oklch(100% 0 0 / 0.12);
+        border-radius: 20px; /* Sweeter rounding */
+        padding: 1.15rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+        backdrop-filter: blur(16px); /* More blur for elegance */
+        -webkit-backdrop-filter: blur(16px);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+
+        .user-island-header {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          
+          .user-avatar-lg {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, oklch(80% 0.1 142.5), oklch(60% 0.15 142.5));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #111;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+          }
+
+          .user-info {
+            flex: 1;
+            min-width: 0; /* truncate fix */
+            
+            .user-name {
+              color: var(--drawer-text);
+              font-weight: 600;
+              font-size: 0.95rem;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              margin-bottom: 2px;
+            }
+            .user-role {
+              color: oklch(75% 0 0);
+              font-size: 0.8rem;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+            }
+          }
+        }
+
+        .user-island-actions {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 0.5rem;
+          
+          .island-btn {
+            background-color: oklch(100% 0 0 / 0.1);
+            color: white !important; /* Bye Bye Blue */
+            border: 1px solid oklch(100% 0 0 / 0.05);
+            border-radius: 12px;
+            padding: 0.5rem;
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            text-decoration: none;
+
+            i { color: oklch(55% 0.12 155) !important; } /* Iconos en AIA Green */
+
+            &:hover {
+              background-color: oklch(100% 0 0 / 0.15);
+              transform: translateY(-2px);
+            }
+            
+            &.btn-danger-soft {
+              color: oklch(80% 0.15 25) !important;
+              background-color: oklch(80% 0.15 25 / 0.1);
+              &:hover {
+                background-color: oklch(80% 0.15 25 / 0.2);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+/* =============================================================
+   UNLAYERED OVERRIDES — Beat Bootstrap CDN (Iteration 6)
+   Bootstrap 4 is loaded without @layer, so layered styles ALWAYS
+   lose. These rules live OUTSIDE any @layer to match priority.
+   ============================================================= */
+@media (min-width: 992px) and (max-width: 1399.98px) {
+  .navbar-expand-xl .navbar-collapse {
+    display: none !important;
+  }
+  .navbar-expand-xl .navbar-toggler {
+    display: block !important;
+  }
+}
+
+/* Navbar Text Abbreviations — REMOVED: Handled directly in JS (cargarDatosGeneralesPagina2.js)
+   The font-size:0 + ::after technique conflicts with Bootstrap's dropdown-toggle::after caret. */

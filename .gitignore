@@ -1,0 +1,43 @@
+# Composer
+/vendor/
+
+
+# Archivos de configuración local
+.env
+.env.docker
+.env.docker.local
+
+# Logs y archivos temporales
+*.log
+php_errorlog
+!admin/logs/.gitkeep
+cortesProgramacion/
+cortesRestricciones/
+compromisosSemana/
+ordenes/
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+
+# Configuración del editor
+.vscode/
+
+# Bases de datos
+*.sql
+!database/migrations/*.sql
+!backups/*.sql
+DB_server_produccion.sql
+
+# Documentación externa
+"Diseño Panel Administración Web PHP.pdf"
+# Dev tools
+construccion/autologin_antigravity.php
+construccion/check_db_prefix.php
+
+# Static Analysis & Formatting
+.php-cs-fixer.cache
+phpstan_errors.json
+
+# Debug scripts
+debug_*.php

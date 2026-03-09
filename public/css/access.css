@@ -1,0 +1,58 @@
+@layer utilities {
+/* 
+   Access.css - Utilidades de Accesibilidad y Refactorización
+   Fecha: 2026-01-16
+*/
+
+/* --- Accesibilidad --- */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* --- Utilidades de Espaciado (Reemplazo de Magic Numbers) --- */
+.btn-action-gap {
+  margin: 0 5px !important; /* Reemplaza style="margin: 0px 5px" */
+}
+
+.nav-link-custom {
+  padding: 16px 0 8px 16px !important; /* Reemplaza style="padding: 16px 0px 8px 16px" */
+}
+
+.p-xs {
+  padding: 1px !important;
+}
+.px-sm {
+  padding-left: 5px !important;
+  padding-right: 5px !important;
+}
+.py-sm {
+  padding-top: 5px !important;
+  padding-bottom: 5px !important;
+}
+.m-0 {
+  margin: 0 !important;
+}
+
+/* --- Ajustes Responsivos --- */
+@media (max-width: 768px) {
+  .table-responsive-custom {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .mobile-stack {
+    flex-direction: column !important;
+    width: 100% !important;
+  }
+}
+}

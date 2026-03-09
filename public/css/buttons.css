@@ -1,0 +1,346 @@
+@layer components {
+/* 
+   Scalable Toolbar V3 - Unified Sizing System
+   ALL buttons and inputs now share the same visual height and consistent spacing
+*/
+
+/* ========================================
+   CONSISTENT SIZING SYSTEM
+   ======================================== */
+
+/* Define consistent height and font size for ALL interactive elements */
+:root {
+  --toolbar-height: calc(1.5em + 0.5rem + 2px); /* Bootstrap btn-sm standard */
+  --toolbar-font-size: clamp(0.7rem, 1.2vw + 0.2rem, 0.875rem);
+  --toolbar-padding-y: clamp(3px, 0.4vw, 6px);
+  --toolbar-padding-x: clamp(6px, 1vw, 12px);
+  --toolbar-gap: clamp(3px, 0.5vw, 8px);
+}
+
+/* ========================================
+   ACTION BUTTONS TOOLBAR
+   ======================================== */
+
+.btn-toolbar-scalable {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  gap: var(--toolbar-gap) !important;
+  padding: 5px 0 !important;
+  margin-bottom: 5px !important;
+}
+
+.btn-toolbar-scalable > div,
+.btn-toolbar-scalable .grupo_botones1,
+.btn-toolbar-scalable .grupo_botones_semanal_madre,
+.btn-toolbar-scalable .btn-group {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  width: auto !important;
+  max-width: none !important;
+  justify-content: center;
+  gap: var(--toolbar-gap) !important;
+}
+
+/* ALL ACTION BUTTONS - Consistent Size */
+.btn-toolbar-scalable .btn,
+.btn-toolbar-scalable button,
+.btn-toolbar-scalable input[type='button'] {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+
+  /* UNIFIED SIZING */
+  height: var(--toolbar-height) !important;
+  font-size: var(--toolbar-font-size) !important;
+  padding: var(--toolbar-padding-y) var(--toolbar-padding-x) !important;
+  line-height: 1.2 !important;
+  margin: 0 !important;
+}
+
+.btn-toolbar-scalable i,
+.btn-toolbar-scalable svg {
+  font-size: 0.9em;
+  margin-left: 4px;
+  flex-shrink: 0;
+}
+
+/* ========================================
+   FILTER TOOLBAR
+   ======================================== */
+
+.filter-toolbar-scalable {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  width: 100% !important;
+  gap: var(--toolbar-gap) !important;
+}
+
+/* Filter Inputs - SAME HEIGHT as buttons */
+.filter-toolbar-scalable input.form-control,
+.filter-toolbar-scalable input[type='text'] {
+  flex: 1 1 auto !important;
+  min-width: 100px !important;
+  max-width: 100% !important;
+  width: auto !important;
+
+  /* UNIFIED SIZING */
+  height: var(--toolbar-height) !important;
+  font-size: var(--toolbar-font-size) !important;
+  padding: var(--toolbar-padding-y) var(--toolbar-padding-x) !important;
+  line-height: 1.2 !important;
+  margin: 0 !important;
+
+  display: inline-block !important;
+}
+
+/* Filter Buttons - SAME HEIGHT as action buttons */
+.filter-toolbar-scalable .btn,
+.filter-toolbar-scalable button {
+  flex: 0 0 auto !important;
+  white-space: nowrap !important;
+
+  /* UNIFIED SIZING */
+  height: var(--toolbar-height) !important;
+  font-size: var(--toolbar-font-size) !important;
+  padding: var(--toolbar-padding-y) var(--toolbar-padding-x) !important;
+  line-height: 1.2 !important;
+  margin: 0 !important;
+}
+
+/* ========================================
+   GLOBAL BUTTON SIZE ENFORCEMENT
+   Force ALL Bootstrap btn-sm to use unified sizing
+   ======================================== */
+
+.btn-toolbar-scalable .btn-sm,
+.filter-toolbar-scalable .btn-sm,
+.btn-toolbar-scalable input.btn-sm,
+.filter-toolbar-scalable input.btn-sm {
+  height: var(--toolbar-height) !important;
+  font-size: var(--toolbar-font-size) !important;
+  padding: var(--toolbar-padding-y) var(--toolbar-padding-x) !important;
+  line-height: 1.2 !important;
+}
+
+/* ========================================
+   RESPONSIVE OPTIMIZATIONS
+   ======================================== */
+
+@media (max-width: 992px) {
+  .btn-toolbar-scalable,
+  .filter-toolbar-scalable {
+    gap: 4px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Hide icons on small screens */
+  .btn-toolbar-scalable .btn i,
+  .btn-toolbar-scalable button i {
+    display: none !important;
+  }
+
+  .btn-toolbar-scalable .btn,
+  .btn-toolbar-scalable button {
+    letter-spacing: -0.3px;
+  }
+
+  .filter-toolbar-scalable {
+    justify-content: space-between !important;
+  }
+}
+
+/* ========================================
+   MESSAGES/LEGEND AREA
+   ======================================== */
+
+.toolbarFilaMensajes {
+  display: flex !important;
+  align-items: center !important;
+  font-size: 0.85rem;
+  color: #6c757d;
+  flex: 1 1 auto;
+  min-width: 0 !important; /* Critical for shrinking */
+  overflow: hidden; /* Prevent content from breaking layout */
+}
+
+.toolbarFilaMensajes p {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* ========================================
+   PDC LEGEND (Programación Intermedia)
+   CRITICAL: Force single-line layout
+   ======================================== */
+
+.pdc-legend {
+  display: flex !important;
+  flex-wrap: nowrap !important; /* STRICT: No wrapping allowed */
+  align-items: center !important;
+  gap: 2px !important; /* Minimal gap */
+  overflow-x: auto !important; /* Allow horizontal scroll if absolutely needed */
+  overflow-y: hidden !important;
+  width: 100% !important;
+  padding: 1px 0 !important;
+  -webkit-overflow-scrolling: touch !important; /* Smooth scroll on iOS */
+  scrollbar-width: thin !important;
+}
+
+/* Hide scrollbar but keep functionality */
+.pdc-legend::-webkit-scrollbar {
+  height: 2px !important;
+}
+
+.pdc-legend::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+.pdc-legend::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2) !important;
+  border-radius: 2px !important;
+}
+
+.pdc-legend-item {
+  display: inline-flex !important;
+  align-items: center !important;
+  white-space: nowrap !important; /* Force text to stay on one line */
+  flex-shrink: 0 !important; /* Prevent items from shrinking */
+
+  /* ULTRA AGGRESSIVE SIZE REDUCTION - GLOBAL OVERRIDE */
+  height: auto !important;
+  min-height: 18px !important;
+  max-height: 20px !important;
+  font-size: 0.5rem !important; /* Minimal size */
+  padding: 1px 4px !important; /* Tighter padding */
+  line-height: 1 !important;
+
+  cursor: pointer !important;
+  user-select: none !important;
+  border-radius: 2px !important;
+  transition: background-color 0.15s ease !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+.pdc-legend-item .indicator {
+  display: block !important; /* Ensure visibility if it was hidden */
+  flex-shrink: 0 !important;
+  margin-right: 2px !important;
+  width: 5px !important;
+  height: 5px !important;
+  border-radius: 50% !important;
+}
+
+.pdc-legend-item .count-badge {
+  display: inline-block !important;
+  flex-shrink: 0 !important;
+  margin-left: 2px !important;
+  font-size: 0.45rem !important;
+  font-weight: 700 !important;
+  background-color: rgba(255, 255, 255, 0.3) !important;
+  padding: 0 3px !important;
+  border-radius: 4px !important;
+}
+
+/* Responsive: Even tighter on tablets */
+@media (max-width: 992px) {
+  .pdc-legend {
+    gap: 2px !important;
+  }
+
+  .pdc-legend-item {
+    font-size: 0.5rem !important;
+    padding: 1px 3px !important;
+    min-height: 18px !important;
+  }
+}
+
+/* Mobile: Stack if absolutely necessary */
+@media (max-width: 768px) {
+  .pdc-legend {
+    flex-wrap: wrap !important; /* Allow wrapping only on mobile */
+    overflow-x: visible;
+  }
+}
+
+/* ========================================
+   STATE-SPECIFIC COLORS
+   ======================================== */
+
+/* Programación General & Programación Intermedia */
+.pdc-legend-item.missing .indicator {
+  background-color: #6c757d;
+} /* Gray */
+.pdc-legend-item.critical .indicator {
+  background-color: #dc3545;
+} /* Red */
+.pdc-legend-item.delayed .indicator {
+  background-color: #fd7e14;
+} /* Orange */
+.pdc-legend-item.completed-ontime .indicator {
+  background-color: #28a745;
+} /* Green */
+.pdc-legend-item.active .indicator {
+  background-color: #17a2b8;
+} /* Cyan */
+.pdc-legend-item.pending-future .indicator {
+  background-color: #28a745;
+}
+.pdc-legend-item.pending-2-weeks .indicator {
+  background-color: #ffc107;
+}
+.pdc-legend-item.pending-1-week .indicator {
+  background-color: #fd7e14;
+}
+.pdc-legend-item.should-start-liberated .indicator {
+  background-color: #fd7e14;
+}
+.pdc-legend-item.should-start-pending .indicator {
+  background-color: #dc3545;
+}
+.pdc-legend-item.started-liberated .indicator {
+  background-color: #28a745;
+}
+.pdc-legend-item.started-pending .indicator {
+  background-color: #fd7e14;
+}
+
+/* Programación Semanal - New States */
+.pdc-legend-item.critical-delay .indicator {
+  background-color: #dc3545;
+} /* Red - Atrasado Crítico */
+.pdc-legend-item.on-track .indicator {
+  background-color: #ffc107;
+} /* Yellow - En Curso */
+.pdc-legend-item.completed .indicator {
+  background-color: #6c757d;
+} /* Gray - Completado */
+
+/* Active state styling */
+.pdc-legend-item.active {
+  background-color: rgba(13, 110, 253, 0.1);
+  border: 1px solid #0d6efd;
+  font-weight: 600;
+}
+
+.pdc-legend-item:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+}

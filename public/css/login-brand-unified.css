@@ -1,0 +1,227 @@
+@layer tokens, base, components, states, responsive;
+
+@layer tokens {
+  :root {
+    --aia-brand: oklch(44% 0.11 152);
+    --aia-brand-hover: oklch(38% 0.09 152);
+    --aia-surface: oklch(99% 0.005 95);
+    --aia-surface-2: oklch(96% 0.01 95);
+    --aia-card: oklch(100% 0 0);
+    --aia-text: oklch(31% 0.03 140);
+    --aia-muted: oklch(43% 0.02 140);
+    --aia-border: oklch(88% 0.01 140);
+    --aia-shadow: 0 16px 44px oklch(23% 0.03 140 / 0.12);
+    --aia-radius-lg: 1rem;
+    --aia-radius-md: 0.625rem;
+  }
+}
+
+@layer base {
+  body.login-brand-page,
+  body.login-brand-page.login-page {
+    margin: 0;
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex !important;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center !important;
+    padding: clamp(1rem, 2vw, 2rem);
+    font-family: "Inter", sans-serif;
+    color: var(--aia-text);
+    background:
+      radial-gradient(60rem 30rem at 10% -10%, oklch(92% 0.03 150 / 0.7), transparent 70%),
+      radial-gradient(44rem 24rem at 100% 0%, oklch(90% 0.04 90 / 0.6), transparent 70%),
+      linear-gradient(160deg, var(--aia-surface), var(--aia-surface-2));
+  }
+
+  body.login-brand-page > .login-box {
+    width: min(100%, 25rem);
+    margin: 0 auto;
+    margin-inline: auto !important;
+    margin-block: auto;
+    align-self: center !important;
+  }
+}
+
+@layer components {
+  body.login-brand-page .card-login,
+  body.login-brand-page .login-box > .card {
+    border: 0;
+    border-radius: var(--aia-radius-lg);
+    overflow: clip;
+    background: var(--aia-card);
+    box-shadow: var(--aia-shadow);
+    content-visibility: auto;
+    contain-intrinsic-size: 46rem;
+    container-type: inline-size;
+  }
+
+  body.login-brand-page .card-header {
+    border: 0;
+    padding: clamp(1.75rem, 3vw, 2.5rem) clamp(1.25rem, 3vw, 2rem) 1rem;
+    text-align: center;
+    background: linear-gradient(180deg, oklch(98% 0.01 145), oklch(100% 0 0));
+  }
+
+  body.login-brand-page .brand-logo {
+    width: clamp(8.75rem, 42%, 11.5rem);
+    height: auto;
+    margin-block-end: 0.75rem;
+  }
+
+  body.login-brand-page .login-title {
+    margin: 0;
+    font-family: "Montserrat", sans-serif;
+    font-size: clamp(1.2rem, 2.7vw, 1.55rem);
+    font-weight: 700;
+    color: var(--aia-brand);
+    line-height: 1.2;
+    letter-spacing: 0.01em;
+  }
+
+  body.login-brand-page .login-subtitle,
+  body.login-brand-page .login-box-msg {
+    margin: 0.45rem 0 0;
+    color: var(--aia-muted);
+    font-size: 0.92rem;
+    line-height: 1.45;
+    text-align: center;
+  }
+
+  body.login-brand-page .card-body,
+  body.login-brand-page .login-card-body {
+    border-radius: 0;
+    padding: clamp(1.3rem, 3vw, 2rem) clamp(1rem, 3vw, 2rem) clamp(1.4rem, 3vw, 2.1rem);
+    background: transparent;
+  }
+
+  body.login-brand-page .input-group {
+    align-items: stretch;
+  }
+
+  body.login-brand-page .form-control {
+    min-height: 3rem;
+    border: 1px solid var(--aia-border);
+    border-radius: var(--aia-radius-md);
+    padding-inline: 1rem;
+    font-size: 0.95rem;
+    color: var(--aia-text);
+    background: oklch(100% 0 0 / 0.9);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  }
+
+  body.login-brand-page .form-control::placeholder {
+    color: oklch(46% 0.015 140);
+    opacity: 1;
+  }
+
+  body.login-brand-page .input-group > .form-control {
+    border-inline-end: 0;
+    border-start-end-radius: 0;
+    border-end-end-radius: 0;
+  }
+
+  body.login-brand-page .input-group-text {
+    border: 1px solid var(--aia-border);
+    border-inline-start: 0;
+    border-start-end-radius: var(--aia-radius-md);
+    border-end-end-radius: var(--aia-radius-md);
+    background: oklch(100% 0 0 / 0.9);
+    color: oklch(58% 0.02 145);
+    min-width: 2.75rem;
+    justify-content: center;
+  }
+
+  body.login-brand-page .btn-aia,
+  body.login-brand-page .btn-primary {
+    min-height: 3rem;
+    border-radius: var(--aia-radius-md);
+    border: 1px solid var(--aia-brand);
+    background: linear-gradient(180deg, oklch(46% 0.11 152), var(--aia-brand));
+    color: oklch(99% 0 0) !important;
+    font-family: "Montserrat", sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-shadow: 0 1px 1px oklch(20% 0.03 140 / 0.25);
+    transition: transform 0.18s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  }
+
+  body.login-brand-page .btn-aia .fas,
+  body.login-brand-page .btn-primary .fas {
+    color: inherit !important;
+  }
+
+  body.login-brand-page .btn-aia:hover,
+  body.login-brand-page .btn-primary:hover {
+    border-color: var(--aia-brand-hover);
+    background: linear-gradient(180deg, var(--aia-brand), var(--aia-brand-hover));
+    transform: translateY(-1px);
+    box-shadow: 0 10px 20px oklch(35% 0.08 152 / 0.22);
+  }
+
+  body.login-brand-page .footer-text {
+    margin-top: 1.2rem;
+    font-size: 0.8rem;
+    text-align: center;
+    color: oklch(42% 0.01 145);
+  }
+
+  body.login-brand-page .icheck-primary {
+    margin-top: 0.55rem;
+    font-size: 0.88rem;
+    color: var(--aia-muted);
+  }
+
+  body.login-brand-page .icheck-primary input:first-child:checked + label::before,
+  body.login-brand-page .icheck-primary input:first-child:not(:disabled):not(:checked) + label:hover::before {
+    border-color: var(--aia-brand);
+    background-color: var(--aia-brand);
+  }
+
+  body.login-brand-page .alert-custom,
+  body.login-brand-page #loginMessage .alert {
+    border-radius: var(--aia-radius-md);
+    font-size: 0.9rem;
+  }
+}
+
+@layer states {
+  body.login-brand-page .form-control:focus {
+    border-color: var(--aia-brand);
+    box-shadow: 0 0 0 0.2rem oklch(44% 0.11 152 / 0.18);
+    outline: 2px solid transparent;
+    background: oklch(100% 0 0);
+  }
+
+  body.login-brand-page .btn-aia:focus-visible,
+  body.login-brand-page .btn-primary:focus-visible {
+    outline: 3px solid oklch(78% 0.12 152 / 0.45);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    body.login-brand-page .btn-aia,
+    body.login-brand-page .btn-primary,
+    body.login-brand-page .form-control {
+      transition: none;
+    }
+  }
+}
+
+@layer responsive {
+  @container (max-width: 22rem) {
+    body.login-brand-page .card-header {
+      padding-top: 1.45rem;
+    }
+
+    body.login-brand-page .login-title {
+      font-size: 1.12rem;
+    }
+
+    body.login-brand-page .login-subtitle,
+    body.login-brand-page .login-box-msg {
+      font-size: 0.86rem;
+    }
+  }
+}

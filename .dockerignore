@@ -1,0 +1,16 @@
+.git
+.gitignore
+.DS_Store
+.vscode
+node_modules
+*.sql
+*.log
+*.pdf
+php_errorlog
+.env.docker
+.env.docker.local
+backups
+cortesProgramacion
+construccion/programacion_semanal/compromisosSemana
+admin/logs
+docs

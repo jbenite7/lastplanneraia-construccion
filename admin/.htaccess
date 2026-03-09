@@ -1,0 +1,13 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Impedir el listado de directorios
+    Options -Indexes
+
+    # No aplicar reglas si el archivo existe físicamente (ej: imágenes, css)
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    
+    # Redirigir todo lo demás al archivo puente
+    RewriteRule ^(.*)$ index.php [QSA,L]
+</IfModule>

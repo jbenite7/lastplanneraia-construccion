@@ -1,0 +1,137 @@
+@layer reset, base, components, utilities;
+
+@import "tokens.css";
+@import "utilities.css";
+
+/* ========================================
+   RESET & BASE
+   ======================================== */
+
+@layer base {
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: var(--aia-bg-alabaster);
+    color: var(--aia-text-primary);
+  }
+
+  /* ========================================
+     ADMINLTE BRAND OVERRIDES
+     ======================================== */
+  :root {
+    --primary: var(--aia-blue-primary);
+  }
+  
+  /* Buttons & Backgrounds */
+  .bg-primary { background-color: var(--aia-blue-primary) !important; color: white !important; }
+  .btn-primary { background-color: var(--aia-blue-primary); border-color: var(--aia-blue-dark); color: white; }
+  .btn-primary:hover, .btn-primary:first-child:active { background-color: var(--aia-blue-dark); border-color: var(--aia-blue-dark); color: white; }
+  
+  /* Cards */
+  .card-primary.card-outline { border-top-color: var(--aia-blue-primary); }
+  
+  /* Sidebar Branding */
+  .sidebar-dark-primary { background-color: var(--aia-text-primary) !important; }
+  .sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link.active {
+      background-color: var(--aia-blue-primary) !important;
+      color: white !important;
+  }
+}
+
+/* ========================================
+   COMPONENTS
+   ======================================== */
+@layer components {
+  /* Dashboard Widgets with Container Queries */
+  .dashboard-widget {
+    container-type: inline-size;
+    background: white;
+    border-radius: var(--radius-md);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+
+  .dashboard-widget__body {
+    overflow-y: auto;
+    /* Logic property for height */
+    block-size: 15.625rem; /* ~250px */
+    max-block-size: 25rem; /* ~400px */
+  }
+
+  /* Sticky Table Headers */
+  .table-sticky-header th {
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 10;
+    border-top: 1px solid var(--aia-separators);
+  }
+
+  /* Status Badges using OKLCH */
+  .badge-aia {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  
+  .badge-aia--success {
+    background-color: var(--aia-green-very-light);
+    color: var(--aia-green-dark);
+  }
+  
+  .badge-aia--warning {
+    background-color: var(--aia-warning-background);
+    color: var(--aia-warning-critical);
+  }
+  
+  .badge-aia--danger {
+    background-color: var(--aia-alert-background);
+    color: var(--aia-alert-critical);
+  }
+
+  /* Dashboard Specifics */
+  .tooltip-inner {
+    max-width: 350px !important;
+    text-align: left !important;
+    padding: var(--spacing-md);
+    background-color: rgba(0,0,0,0.9);
+    box-shadow: var(--shadow-md);
+  }
+
+  .integrity-item:hover {
+    background-color: var(--aia-bg-secondary);
+  }
+
+  .info-icon {
+    font-size: 0.9rem;
+    color: var(--aia-text-tertiary); /* fallback/default */
+    cursor: help;
+    margin-left: 5px;
+  }
+  .bg-info .info-icon, .bg-success .info-icon, .bg-danger .info-icon {
+    color: rgba(255,255,255,0.8);
+  }
+  
+  /* Log Rows */
+  .log-row-error { 
+    background-color: var(--aia-alert-background) !important; 
+    border-left: 4px solid var(--aia-alert-critical); 
+  }
+  .log-row-route { 
+    background-color: var(--aia-blue-very-light) !important; 
+    border-left: 4px solid var(--aia-blue-primary); 
+  }
+  .log-row-default { 
+    border-left: 4px solid var(--aia-text-secondary); 
+  }
+  
+  .log-timestamp { 
+    color: var(--aia-text-secondary); 
+    font-size: 0.7rem; 
+    font-weight: bold; 
+  }
+  
+  .log-message { 
+    font-family: 'Courier New', Courier, monospace; 
+    font-size: 0.75rem; 
+  }
+}

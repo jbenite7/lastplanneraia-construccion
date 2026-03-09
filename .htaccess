@@ -1,0 +1,10 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # 1. Si el archivo existe físicamente, sírvelo directamente (Legacy Support de Assets)
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^ - [L]
+
+    # 2. Todo lo demás (URLs y directorios), redirígelo al Front Controller en public/index.php
+    RewriteRule ^(.*)$ public/index.php [QSA,L]
+</IfModule>

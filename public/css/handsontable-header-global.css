@@ -1,0 +1,108 @@
+/**
+ * handsontable-header-global.css
+ * ========================
+ * UNLAYERED INTENTIONAL: Handsontable Vendor Overrides with !important
+ * Sobrescritos forzados para cabeceras y menús filtrantes de HOT.
+ * ESTE ARCHIVO NO LLEVA @layer: Si se encapsula perdería contra el vendor.
+ * Reglas globales para encabezados de Handsontable:
+ * - Texto centrado
+ * - Icono changeType debajo del texto
+ * - changeType alineado a la derecha
+ */
+
+body.ps-page #hot-container .handsontable thead th,
+body.pi-page #hot-container .handsontable thead th,
+body.pg-page #hot-container .handsontable thead th,
+body #hot-container .handsontable thead th {
+  position: relative !important;
+  padding: 0 !important;
+  text-align: center !important;
+}
+
+body.ps-page #hot-container .handsontable thead th .relative,
+body.pi-page #hot-container .handsontable thead th .relative,
+body.pg-page #hot-container .handsontable thead th .relative,
+body #hot-container .handsontable thead th .relative {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  gap: 2px !important;
+  width: 100% !important;
+  padding: 0 1px !important;
+  box-sizing: border-box !important;
+}
+
+body.ps-page #hot-container .handsontable thead th .relative > .colHeader,
+body.pi-page #hot-container .handsontable thead th .relative > .colHeader,
+body.pg-page #hot-container .handsontable thead th .relative > .colHeader,
+body #hot-container .handsontable thead th .relative > .colHeader {
+  order: 1 !important;
+  display: block !important;
+  width: 100% !important;
+}
+
+body.ps-page #hot-container .handsontable thead th .colHeader,
+body.pi-page #hot-container .handsontable thead th .colHeader,
+body.pg-page #hot-container .handsontable thead th .colHeader,
+body #hot-container .handsontable thead th .colHeader {
+  text-align: center !important;
+}
+
+body.ps-page #hot-container .handsontable thead th .relative > .changeType,
+body.pi-page #hot-container .handsontable thead th .relative > .changeType,
+body.pg-page #hot-container .handsontable thead th .relative > .changeType,
+body #hot-container .handsontable thead th .relative > .changeType {
+  order: 2 !important;
+  align-self: flex-end !important;
+  margin: 1px 0 0 0 !important;
+}
+
+body.ps-page #hot-container .handsontable thead th .changeType,
+body.pi-page #hot-container .handsontable thead th .changeType,
+body.pg-page #hot-container .handsontable thead th .changeType,
+body #hot-container .handsontable thead th .changeType {
+  float: none !important;
+  position: static !important;
+  top: auto !important;
+  right: auto !important;
+  transform: none !important;
+  width: 13px !important;
+  height: 13px !important;
+  margin: 1px 0 0 0 !important;
+  padding: 0 !important;
+  border: 1px solid #cfd8e3 !important;
+  border-radius: 4px !important;
+  background: #f4f7fb !important;
+  color: #5c6b7a !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+  z-index: 2 !important;
+}
+
+body.ps-page #hot-container .handsontable thead th .changeType:before,
+body.pi-page #hot-container .handsontable thead th .changeType:before,
+body.pg-page #hot-container .handsontable thead th .changeType:before,
+body #hot-container .handsontable thead th .changeType:before {
+  content: "\f0b0" !important;
+  font-family: "Font Awesome 5 Free" !important;
+  font-weight: 900 !important;
+  font-size: 6px !important;
+  line-height: 1 !important;
+}
+
+body.ps-page #hot-container .handsontable thead th .changeType:hover,
+body.ps-page #hot-container .handsontable thead th .changeType:focus,
+body.pi-page #hot-container .handsontable thead th .changeType:hover,
+body.pi-page #hot-container .handsontable thead th .changeType:focus,
+body.pg-page #hot-container .handsontable thead th .changeType:hover,
+body.pg-page #hot-container .handsontable thead th .changeType:focus,
+body #hot-container .handsontable thead th .changeType:hover,
+body #hot-container .handsontable thead th .changeType:focus {
+  border-color: #7ea7d8 !important;
+  background: #eaf3ff !important;
+  color: #1e5ea8 !important;
+  cursor: pointer !important;
+}

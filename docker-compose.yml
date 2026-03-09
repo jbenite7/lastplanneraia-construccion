@@ -1,0 +1,50 @@
+name: last-planner-aia
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    ports:
+      - "8081:80"
+    environment:
+      TZ: America/Bogota
+      DB_HOST: ${DOCKER_APP_DB_HOST:-db}
+      DB_PORT: ${DOCKER_APP_DB_PORT:-3306}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+    restart: unless-stopped
+
+  db:
+    image: mysql:8.0.40
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    ports:
+      - "${DOCKER_DB_PORT:-3307}:3306"
+    environment:
+      TZ: America/Bogota
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_ROOT_PASSWORD: ${DB_PASS}
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  adminer:
+    image: adminer:4.8.1
+    ports:
+      - "${DOCKER_ADMINER_PORT:-8082}:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: db
+    depends_on:
+      - db
+    restart: unless-stopped
+
+volumes:
+  db_data:
+    external: true
+    name: htdocs_db_data

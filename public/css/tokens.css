@@ -1,0 +1,129 @@
+@layer theme {
+:root {
+  /* ========================================
+     COLORES CORPORATIVOS (Verde AIA)
+     ======================================== */
+  --aia-green-dark: oklch(27.8% 0.05 147.1); /* #1a3c2a */
+  --aia-green-primary: oklch(32% 0.07 148.5); /* #1a5633 */
+  --aia-green-medium: oklch(52% 0.08 149.8); /* #4a7c64 */
+  --aia-green-light: oklch(75.5% 0.06 149.8); /* #8cb4a1 */
+  --aia-green-very-light: oklch(91.5% 0.02 149.8); /* #d5e5db */
+
+  /* ========================================
+     CONSTRUCCIÓN (Naranja)
+     ======================================== */
+  --aia-orange-dark: oklch(35% 0.13 46.2); /* #8b4011 */
+  --aia-orange-primary: oklch(45% 0.16 46.2); /* #b55211 */
+  --aia-orange-medium: oklch(65% 0.18 46.2); /* #e87722 */
+  --aia-orange-light: oklch(87% 0.1 46.2); /* #f6c79b */
+  --aia-orange-very-light: oklch(95.5% 0.04 46.2); /* #fbead9 */
+
+  /* ========================================
+     ARQUITECTURA (Azul)
+     ======================================== */
+  --aia-blue-dark: oklch(42% 0.1 247.1); /* #2a5a8f */
+  --aia-blue-primary: oklch(56% 0.12 247.1); /* #4a81bd */
+  --aia-blue-medium: oklch(70% 0.09 247.1); /* #7da5d3 */
+  --aia-blue-light: oklch(85% 0.05 247.1); /* #b1cae6 */
+  --aia-blue-very-light: oklch(95% 0.02 247.1); /* #e6f0fa */
+
+  /* ========================================
+     PROYECTOS (Verde Agua)
+     ======================================== */
+  --aia-aqua-dark: oklch(46% 0.1 189); /* #007a71 */
+  --aia-aqua-primary: oklch(61% 0.13 189); /* #00a499 */
+  --aia-aqua-medium: oklch(75% 0.1 189); /* #5ec9bd */
+  --aia-aqua-light: oklch(88% 0.05 189); /* #ace5e0 */
+  --aia-aqua-very-light: oklch(97% 0.01 189); /* #e3f9f7 */
+
+  /* ========================================
+     ALERTAS (Rojo)
+     ======================================== */
+  --aia-alert-critical: oklch(25.5% 0.16 26.3); /* #9a1f1f */
+  --aia-alert-high: oklch(55% 0.22 26.3); /* #e53935 */
+  --aia-alert-medium: oklch(65% 0.18 26.3); /* #ed7472 */
+  --aia-alert-background: oklch(96% 0.02 26.3); /* #fdecec */
+
+  /* ========================================
+     ADVERTENCIAS (Amarillo)
+     ======================================== */
+  --aia-warning-critical: oklch(55% 0.16 85); /* #a0731a */
+  --aia-warning-high: oklch(85% 0.18 85); /* #ffca28 */
+  --aia-warning-medium: oklch(90% 0.15 85); /* #ffd966 */
+  --aia-warning-background: oklch(98% 0.03 85); /* #fff8e1 */
+
+  /* ========================================
+     TIPOGRAFÍA Y GRISES
+     ======================================== */
+  --aia-text-primary: oklch(14.5% 0.003 260); /* #1c1c1e */
+  --aia-text-secondary: oklch(35% 0.002 260); /* #4a4a4d */
+  --aia-text-tertiary: oklch(72% 0 0); /* #a9a9a9 */
+  --aia-separators: oklch(86% 0 0); /* #d1d1d1 */
+  --aia-bg-secondary: oklch(94% 0 0); /* #eaeaea */
+
+  /* ========================================
+     FONDOS Y NEUTROS
+     ======================================== */
+  --aia-bg-linen: oklch(96% 0.01 80); /* #f4f1ea */
+  --aia-bg-alabaster: oklch(98% 0 0); /* #fafafa */
+  --aia-bg-beige: oklch(96.5% 0.02 95); /* #f5f5dc */
+  --aia-bg-gray-light: oklch(94% 0 0); /* #eaeaea */
+
+  /* ========================================
+     ESPACIADO (Layout Moderno)
+     ======================================== */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+
+  /* ========================================
+     BORDER RADIUS
+     ======================================== */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+
+  /* ========================================
+     Z-INDEX LAYERS
+     ======================================== */
+  --z-negative: -1;
+  --z-normal: 1;
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+
+  /* ========================================
+     OPACITY
+     ======================================== */
+  --opacity-0: 0;
+  --opacity-25: 0.25;
+  --opacity-50: 0.5;
+  --opacity-75: 0.75;
+  --opacity-100: 1;
+  --opacity-disabled: 0.6;
+  --opacity-hover: 0.8;
+
+  /* ========================================
+     TRANSITIONS
+     ======================================== */
+  --transition-fast: 0.15s ease-in-out;
+  --transition-normal: 0.3s ease-in-out;
+  --transition-slow: 0.5s ease-in-out;
+
+  /* ========================================
+     SHADOWS
+     ======================================== */
+  --shadow-sm: 0 1px 2px oklch(0% 0 0 / 8%);
+  --shadow-md: 0 4px 6px oklch(0% 0 0 / 10%);
+  --shadow-lg: 0 10px 15px oklch(0% 0 0 / 12%);
+}
+
+}
