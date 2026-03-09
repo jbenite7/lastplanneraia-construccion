@@ -340,7 +340,6 @@
   };
 
   Select2Editor.prototype.close = function () {
-    Handsontable.editors.BaseEditor.prototype.close.apply(this, arguments);
     if (this._keydownCaptureHandler) {
       document.removeEventListener('keydown', this._keydownCaptureHandler, true);
       this._keydownCaptureHandler = null;
@@ -537,7 +536,6 @@
   };
 
   Select2Single.prototype.close = function () {
-    Handsontable.editors.BaseEditor.prototype.close.apply(this, arguments);
     if (this._keydownCaptureHandlerSingle) {
       document.removeEventListener('keydown', this._keydownCaptureHandlerSingle, true);
       this._keydownCaptureHandlerSingle = null;
