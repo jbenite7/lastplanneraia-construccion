@@ -5,6 +5,23 @@
 (function (Handsontable, $) {
   'use strict';
 
+  // ─────────────────────────────────────────────────────────────
+  // INTERCEPTOR GLOBAL (Registrado UNA VEZ al cargar el módulo)
+  // Se ejecuta ANTES que los listeners de Handsontable porque
+  // este script carga ANTES que hot.js (ver programacion_intermedia.view.php)
+  // Bloque a HOT si el clic viene de dentro de nuestro wrapper flotante.
+  // ─────────────────────────────────────────────────────────────
+  document.addEventListener('mousedown', function (e) {
+    var wrappers = document.querySelectorAll('.htTomSelectWrapper');
+    for (var i = 0; i < wrappers.length; i++) {
+      if (wrappers[i].style.display !== 'none' && wrappers[i].contains(e.target)) {
+        // El clic está dentro de un editor Tom Select activo—bloqueamos a HOT
+        e.stopImmediatePropagation();
+        return;
+      }
+    }
+  }, true);
+
   // ──────────────────────────────────────────────
   // Tom Select MULTIPLE Editor
   // ──────────────────────────────────────────────
@@ -44,20 +61,6 @@
       minHeight: tdHeight + 'px',
       display: 'block'
     });
-
-    // CAPTURE PHASE: Interceptar ANTES que Handsontable detecte el clic fuera de la celda
-    // Tom Select usa mousedown para seleccionar ítems, y HOT también escucha mousedown
-    // en su propio listener de captura. Registrándonos PRIMERO bloqueamos a HOT solo
-    // cuando el clic viene de dentro de nuestro wrapper.
-    this._mousedownCaptureHandler = function (e) {
-      var wrapperEl = _this.$wrapper && _this.$wrapper[0];
-      if (wrapperEl && wrapperEl.contains(e.target)) {
-        // El clic es válido dentro de Tom Select — detener la propagación
-        // para que HOT no destruya el editor
-        e.stopImmediatePropagation();
-      }
-    };
-    document.addEventListener('mousedown', this._mousedownCaptureHandler, true);
 
     // Destruir instancia previa si por si acaso quedó viva
     if (this.tomSelectInstance) {
@@ -153,11 +156,6 @@
     if (this._keydownCaptureHandler) {
       document.removeEventListener('keydown', this._keydownCaptureHandler, true);
       this._keydownCaptureHandler = null;
-    }
-
-    if (this._mousedownCaptureHandler) {
-      document.removeEventListener('mousedown', this._mousedownCaptureHandler, true);
-      this._mousedownCaptureHandler = null;
     }
 
     if (this.tomSelectInstance) {
@@ -330,11 +328,6 @@
     if (this._keydownCaptureHandlerSingle) {
       document.removeEventListener('keydown', this._keydownCaptureHandlerSingle, true);
       this._keydownCaptureHandlerSingle = null;
-    }
-
-    if (this._mousedownCaptureHandlerSingle) {
-      document.removeEventListener('mousedown', this._mousedownCaptureHandlerSingle, true);
-      this._mousedownCaptureHandlerSingle = null;
     }
 
     if (this.tomSelectInstance) {
