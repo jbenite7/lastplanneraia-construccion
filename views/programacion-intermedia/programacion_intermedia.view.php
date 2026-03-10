@@ -935,7 +935,7 @@
             ?>
         };
     </script>
-    <script type="text/javascript" src="/js/HandsontableTomSelectEditor.js?v=tomselect27"></script>
+    <script type="text/javascript" src="/js/HandsontableTomSelectEditor.js?v=tomselect28"></script>
     <script src="/js/modules/programacion_intermedia/hot.js?v=hot26"></script>
 
     <script>
