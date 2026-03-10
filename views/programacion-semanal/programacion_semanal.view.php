@@ -600,7 +600,6 @@
                                         <select id="idNuevo" name="idNuevo" class="form-control w-100" data-placeholder="Seleccione una actividad">
                                             <option value=""></option>
                                             <?php
-                                            require_once(PROJECT_ROOT . "/construccion/conexion.php");
                                             $dbInstance = Database::getInstance();
                                             $db = $_SESSION['db'];
                                             $semana = $_SESSION['semana'];
