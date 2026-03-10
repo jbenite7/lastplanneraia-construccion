@@ -577,13 +577,13 @@
            Tipografía: Inter (contenido) · sin abuso de uppercase
            ──────────────────────────────────────────────────────── */
 
-        /* Wrapper flotante */
+        /* Wrapper flotante: sin borde propio - lo ponen .ts-control y .ts-dropdown */
         .htTomSelectWrapper {
             min-width: 300px !important;
-            background: #fafafa !important;        /* Alabaster AIA */
-            border: 1.5px solid #b55211 !important; /* Naranja Construcción */
-            border-radius: 6px !important;
-            box-shadow: 0 4px 16px rgba(181,82,17,0.13) !important;
+            background: transparent !important;
+            border: none !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
             font-family: 'Inter', 'Segoe UI', sans-serif !important;
         }
 
@@ -591,16 +591,19 @@
         .htTomSelectWrapper .ts-wrapper {
             width: 100% !important;
         }
+        /* Control: borde 3 lados (top + left + right) + radio arriba */
         .htTomSelectWrapper .ts-control {
             background: #fafafa !important;
-            border: none !important;
-            border-bottom: 1px solid #f6c79b !important; /* naranja light AIA */
+            border: 1.5px solid #b55211 !important;
+            border-bottom: 1px solid #f6c79b !important;
+            border-radius: 6px 6px 0 0 !important;
             min-height: 38px !important;
             width: 100% !important;
             font-size: 0.83rem !important;
             font-family: 'Inter', sans-serif !important;
             color: #1c1c1e !important;
             padding: 4px 8px !important;
+            box-shadow: 0 3px 10px rgba(181,82,17,0.10) !important;
         }
         .htTomSelectWrapper .ts-control input {
             min-width: 120px !important;
@@ -630,12 +633,13 @@
             background: #f6c79b !important;
         }
 
-        /* Dropdown */
+        /* Dropdown: borde 3 lados (left + right + bottom) + radio abajo */
         .htTomSelectWrapper .ts-dropdown {
             background: #fafafa !important;
             border: 1.5px solid #b55211 !important;
             border-top: none !important;
             border-radius: 0 0 6px 6px !important;
+            box-shadow: 0 6px 14px rgba(181,82,17,0.12) !important;
             width: 100% !important;
             left: 0 !important;
             max-height: 220px !important;
