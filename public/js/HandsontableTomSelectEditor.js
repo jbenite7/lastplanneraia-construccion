@@ -49,8 +49,8 @@
       this.tomSelectInstance = null;
     }
 
-    // Crear un <select> fresco para evitar residuos de Tom Select previos
-    this.$select.replaceWith('<select multiple style="width:100%; box-sizing:border-box; display:block;"></select>');
+    // Crear un <select> fresco sin estilos de visibilidad; Tom Select lo ocultará
+    this.$select.replaceWith('<select multiple style="width:100%; box-sizing:border-box;"></select>');
     this.$select = this.$wrapper.find('select');
 
     this.tomSelectInstance = new TomSelect(this.$select[0], {
@@ -63,6 +63,8 @@
       closeAfterSelect:  false,
       hideSelected:      true
     });
+    // Ocultar explícitamente el <select> nativo por si Bootstrap lo sobre-expone
+    this.$select.css('display', 'none');
 
     // ─── FIX PRINCIPAL ─────────────────────────────────────────────
     // pointerdown (bubble) dispara ANTES que mousedown (capture) de HOT.
@@ -186,7 +188,7 @@
       this.tomSelectInstance = null;
     }
 
-    this.$select.replaceWith('<select style="width:100%; box-sizing:border-box; display:block;"></select>');
+    this.$select.replaceWith('<select style="width:100%; box-sizing:border-box;"></select>');
     this.$select = this.$wrapper.find('select');
 
     this.tomSelectInstance = new TomSelect(this.$select[0], {
@@ -197,6 +199,7 @@
       plugins:     ['clear_button'],
       maxOptions:   null
     });
+    this.$select.css('display', 'none');
 
     // ─── FIX PRINCIPAL ─────────────────────────────────────────────
     this._pointerdownHandler = function (e) {
