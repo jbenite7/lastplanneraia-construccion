@@ -28,10 +28,12 @@
   var TomSelectEditor = Handsontable.editors.BaseEditor.prototype.extend();
 
   TomSelectEditor.prototype.init = function () {
-    this.$wrapper = $('<div class="htTomSelectWrapper" style="display:none; position:absolute; z-index:99999; background:#fff; padding: 4px; box-sizing: border-box; border: 1px solid #5292f7;"></div>');
-    this.$select = $('<select multiple placeholder="Seleccione..." style="width: 100%; box-sizing: border-box; min-width: 200px; display: block;"></select>');
+    this.$wrapper = $('<div class="htTomSelectWrapper" style="display:none; position:fixed; z-index:99999; background:#fff; padding: 4px; box-sizing: border-box; border: 1px solid #5292f7; border-radius: 4px; min-width: 200px;"></div>');
+    this.$select = $('<select multiple placeholder="Seleccione..." style="width: 100%; box-sizing: border-box; display: block;"></select>');
     this.$wrapper.append(this.$select);
-    $('body').append(this.$wrapper);
+    // Appending DENTRO del rootElement de HOT para que HOT vea el clic como "interno"
+    // y no destruya el editor activo.
+    // Se asigna en open() cuando ya tenemos acceso a this.hot.
     this.tomSelectInstance = null;
   };
 
@@ -48,17 +50,19 @@
   TomSelectEditor.prototype.open = function () {
     var _this = this;
 
-    // Posicionar el wrapper sobre la celda activa flotando en el body
-    var tdOffset = $(this.TD).offset();
-    var tdWidth = $(this.TD).outerWidth();
-    var tdHeight = $(this.TD).outerHeight();
-    var wrapperWidth = Math.max(260, tdWidth);
+    // Usar getBoundingClientRect para coordenadas válidas con position:fixed
+    var tdRect = this.TD.getBoundingClientRect();
+    var wrapperWidth = Math.max(260, tdRect.width);
+
+    // Append al rootElement de HOT (no al body) para que HOT vea el clic como interno
+    if (!this.$wrapper.parent().is(this.hot.rootElement)) {
+      $(this.hot.rootElement).append(this.$wrapper);
+    }
 
     this.$wrapper.css({
-      top: tdOffset.top + 'px',
-      left: tdOffset.left + 'px',
+      top: tdRect.bottom + 'px',
+      left: tdRect.left + 'px',
       width: wrapperWidth + 'px',
-      minHeight: tdHeight + 'px',
       display: 'block'
     });
 
@@ -206,10 +210,10 @@
   var TomSelectSingle = Handsontable.editors.BaseEditor.prototype.extend();
 
   TomSelectSingle.prototype.init = function () {
-    this.$wrapper = $('<div class="htTomSelectWrapper" style="display:none; position:absolute; z-index:99999; background:#fff; padding: 4px; box-sizing: border-box; border: 1px solid #5292f7;"></div>');
-    this.$select = $('<select placeholder="Seleccione..." style="width: 100%; box-sizing: border-box; min-width: 200px; display: block;"></select>');
+    this.$wrapper = $('<div class="htTomSelectWrapper" style="display:none; position:fixed; z-index:99999; background:#fff; padding: 4px; box-sizing: border-box; border: 1px solid #5292f7; border-radius: 4px; min-width: 200px;"></div>');
+    this.$select = $('<select placeholder="Seleccione..." style="width: 100%; box-sizing: border-box; display: block;"></select>');
     this.$wrapper.append(this.$select);
-    $('body').append(this.$wrapper);
+    // Se hace append en open() cuando tenemos acceso a this.hot.rootElement
     this.tomSelectInstance = null;
   };
 
@@ -225,27 +229,21 @@
   TomSelectSingle.prototype.open = function () {
     var _this = this;
 
-    var tdOffset = $(this.TD).offset();
-    var tdWidth = $(this.TD).outerWidth();
-    var tdHeight = $(this.TD).outerHeight();
-    var wrapperWidth = Math.max(260, tdWidth);
+    // Usar getBoundingClientRect para coordenadas válidas con position:fixed
+    var tdRect = this.TD.getBoundingClientRect();
+    var wrapperWidth = Math.max(260, tdRect.width);
+
+    // Append al rootElement de HOT para que los clics sean internos
+    if (!this.$wrapper.parent().is(this.hot.rootElement)) {
+      $(this.hot.rootElement).append(this.$wrapper);
+    }
 
     this.$wrapper.css({
-      top: tdOffset.top + 'px',
-      left: tdOffset.left + 'px',
+      top: tdRect.bottom + 'px',
+      left: tdRect.left + 'px',
       width: wrapperWidth + 'px',
-      minHeight: tdHeight + 'px',
       display: 'block'
     });
-
-    // CAPTURE PHASE: misma estrategia que TomSelectEditor
-    this._mousedownCaptureHandlerSingle = function (e) {
-      var wrapperEl = _this.$wrapper && _this.$wrapper[0];
-      if (wrapperEl && wrapperEl.contains(e.target)) {
-        e.stopImmediatePropagation();
-      }
-    };
-    document.addEventListener('mousedown', this._mousedownCaptureHandlerSingle, true);
     if (this.tomSelectInstance) {
         this.tomSelectInstance.destroy();
     }
