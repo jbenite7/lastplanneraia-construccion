@@ -685,23 +685,29 @@
             border-bottom: none !important;
         }
 
-        /* Opción especial "+ Crear" (Resaltada con color de acento AIA) */
-        .htTomSelectWrapper .ts-dropdown .ts-option[data-value*="Crear"],
-        .htTomSelectWrapper .ts-dropdown .ts-option[data-value*="\u2795"] {
+        /* Opción especial "+ Crear" (Targeting por clase inyectada en JS) */
+        .htTomSelectWrapper .ts-dropdown .ts-option .ts-create-option {
+            display: block !important;
             color: #ffffff !important;
             font-weight: 700 !important;
             background: #b55211 !important; /* AIA Dark Orange Accent */
-            border-top: 1px solid #e87722 !important;
-            margin-top: 2px !important;
+            border-radius: 4px !important;
+            padding: 4px 10px !important;
             text-align: center !important;
             letter-spacing: 0.5px !important;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1) !important;
         }
-        .htTomSelectWrapper .ts-dropdown .ts-option[data-value*="Crear"]:hover,
-        .htTomSelectWrapper .ts-dropdown .ts-option[data-value*="\u2795"]:hover,
-        .htTomSelectWrapper .ts-dropdown .ts-option[data-value*="Crear"].active,
-        .htTomSelectWrapper .ts-dropdown .ts-option[data-value*="\u2795"].active {
-            background: #e87722 !important; /* AIA Vibrant Orange on hover */
-            color: #ffffff !important;
+        /* Para que el contenedor ts-option no tenga padding extra cuando es un botón */
+        .htTomSelectWrapper .ts-dropdown .ts-option:has(.ts-create-option) {
+            padding: 4px 6px !important;
+            background: #fff9f5 !important;
+        }
+        .htTomSelectWrapper .ts-dropdown .ts-option:has(.ts-create-option):hover,
+        .htTomSelectWrapper .ts-dropdown .ts-option:has(.ts-create-option).active {
+            background: #fbead9 !important;
+        }
+        .htTomSelectWrapper .ts-dropdown .ts-option .ts-create-option:hover {
+            background: #e87722 !important;
         }
 
         .htTomSelectWrapper .ts-control .clear-button.aia-clear-btn {
@@ -934,7 +940,7 @@
             ?>
         };
     </script>
-    <script type="text/javascript" src="/js/HandsontableTomSelectEditor.js?v=tomselect22"></script>
+    <script type="text/javascript" src="/js/HandsontableTomSelectEditor.js?v=tomselect23"></script>
     <script src="/js/modules/programacion_intermedia/hot.js?v=hot26"></script>
 
     <script>
