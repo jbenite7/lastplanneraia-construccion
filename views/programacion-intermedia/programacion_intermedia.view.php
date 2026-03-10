@@ -596,7 +596,7 @@
         .htTomSelectWrapper .ts-control {
             background: #fafafa !important;
             border: 1px solid #b55211 !important;
-            border-bottom: 1px solid #f6c79b !important;
+            border-bottom: none !important;
             border-radius: 4px 4px 0 0 !important;
             min-height: 24px !important;
             width: 100% !important;
@@ -605,8 +605,9 @@
             font-size: 0.83rem !important;
             font-family: 'Inter', sans-serif !important;
             color: #1c1c1e !important;
-            padding: 2px 4px 6px 4px !important; /* Added 6px bottom padding for the clear button */
-            box-shadow: none !important; /* Remove individual shadow to merge with dropdown */
+            padding: 2px 4px 0 4px !important; /* Removed bottom padding, the button will be the floor */
+            box-shadow: none !important;
+            overflow: hidden !important; /* Clips the button to the control border radius if needed */
         }
         .htTomSelectWrapper .ts-control input {
             width: 90% !important;
@@ -697,27 +698,27 @@
             background: #fbead9 !important;
         }
 
-        /* Botón limpiar todo (clear_button plugin) */
         .htTomSelectWrapper .ts-control .clear-button.aia-clear-btn {
-            display: inline-flex !important;
+            display: flex !important;
             align-items: center !important;
-            gap: 6px !important;
-            margin-top: 2px !important;
+            justify-content: center !important;
+            gap: 8px !important;
+            margin: 0 !important;
+            margin-top: 0 !important; /* Flush with content */
             margin-bottom: 0 !important;
-            background: #ffffff !important;
-            border: 1px solid #b55211 !important;
-            border-radius: 4px !important;
+            background: #fff9f5 !important;
+            border: none !important;
+            border-top: 1px solid #f6c79b !important;
+            border-radius: 0 !important;
             color: #b55211 !important;
-            padding: 1px 8px !important;
-            height: 20px !important;
-            line-height: normal !important;
-            font-size: 0.72rem !important;
+            padding: 8px 12px !important;
+            width: calc(100% + 8px) !important; /* Expands to cover padding */
+            margin-left: -4px !important; /* Offsets padding */
+            font-size: 0.75rem !important;
             font-weight: 700 !important;
             text-transform: uppercase !important;
             cursor: pointer !important;
-            transition: all 0.22s ease !important;
-            opacity: 1 !important;
-            width: auto !important;
+            transition: all 0.2s ease !important;
             position: relative !important;
             float: left !important;
             clear: both !important;
@@ -927,7 +928,7 @@
             ?>
         };
     </script>
-    <script type="text/javascript" src="/js/HandsontableTomSelectEditor.js?v=tomselect20"></script>
+    <script type="text/javascript" src="/js/HandsontableTomSelectEditor.js?v=tomselect21"></script>
     <script src="/js/modules/programacion_intermedia/hot.js?v=hot26"></script>
 
     <script>
