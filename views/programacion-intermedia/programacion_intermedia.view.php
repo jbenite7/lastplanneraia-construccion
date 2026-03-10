@@ -687,27 +687,37 @@
             border-bottom: none !important;
         }
 
-        /* TEST DE CACHE NUCLEAR: Si no lo ves fucsia, SiteGround tiene cache viejo */
-        html body .pi-page .htTomSelectWrapper .ts-dropdown .ts-option .ts-create-option {
+        /* Opción especial "+ Crear" (Estilo Botón AIA con Selectores Nativos + Especificidad Nuclear) */
+        html body .pi-page .htTomSelectWrapper .ts-dropdown .ts-option[data-value*="Crear"],
+        html body .pi-page .htTomSelectWrapper .ts-dropdown .ts-option[data-value*="\u2795"] {
             display: block !important;
             color: #ffffff !important;
             font-weight: 700 !important;
-            background: #ff00ff !important; /* FUCSIA NEON EXPLOSIVO */
+            background: #b55211 !important; /* AIA Naranja Oficial */
             border-radius: 4px !important;
             padding: 8px 12px !important;
             text-align: center !important;
-            letter-spacing: 1px !important;
-            box-shadow: 0 4px 15px rgba(255,0,255,0.4) !important;
-            margin: -4px -6px !important;
+            letter-spacing: 0.5px !important;
+            box-shadow: 0 4px 10px rgba(181,82,17,0.2) !important;
+            margin: 4px 6px !important; /* Margen positivo en vez de negativo para evitar usar el :has() container */
             text-transform: uppercase !important;
-        }
-        .htTomSelectWrapper .ts-dropdown .ts-option:has(.ts-create-option) {
-            padding: 4px 6px !important;
-            background: #fff9f5 !important;
             border-bottom: none !important;
         }
-        .htTomSelectWrapper .ts-dropdown .ts-option .ts-create-option:hover {
-            background: #e87722 !important;
+
+        /* Garantizar visibilidad del texto si hay elementos hijos */
+        html body .pi-page .htTomSelectWrapper .ts-dropdown .ts-option[data-value*="Crear"] *,
+        html body .pi-page .htTomSelectWrapper .ts-dropdown .ts-option[data-value*="\u2795"] * {
+            color: #ffffff !important;
+        }
+
+        /* Efecto Hover del botón */
+        html body .pi-page .htTomSelectWrapper .ts-dropdown .ts-option[data-value*="Crear"]:hover,
+        html body .pi-page .htTomSelectWrapper .ts-dropdown .ts-option[data-value*="\u2795"]:hover,
+        html body .pi-page .htTomSelectWrapper .ts-dropdown .ts-option[data-value*="Crear"].active,
+        html body .pi-page .htTomSelectWrapper .ts-dropdown .ts-option[data-value*="\u2795"].active {
+            background: #e87722 !important; /* AIA Naranja vibrante */
+            color: #ffffff !important;
+            transform: translateY(-1px) !important;
         }
 
         .htTomSelectWrapper .ts-control .clear-button.aia-clear-btn {
@@ -940,7 +950,7 @@
             ?>
         };
     </script>
-    <script type="text/javascript" src="/js/HandsontableTomSelectEditor.js?v=tomselect100"></script>
+    <script type="text/javascript" src="/js/HandsontableTomSelectEditor.js?v=tomselect101"></script>
     <script src="/js/modules/programacion_intermedia/hot.js?v=hot26"></script>
 
     <script>
