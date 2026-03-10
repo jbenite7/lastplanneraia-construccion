@@ -685,17 +685,23 @@
             border-bottom: none !important;
         }
 
-        /* Opción especial "+ Crear" */
+        /* Opción especial "+ Crear" (Resaltada con color de acento AIA) */
         .htTomSelectWrapper .ts-dropdown .ts-option[data-value*="Crear"],
         .htTomSelectWrapper .ts-dropdown .ts-option[data-value*="\u2795"] {
-            color: #b55211 !important;
-            font-weight: 600 !important;
-            background: #fff9f5 !important;
-            border-top: 1px solid #f6c79b !important;
+            color: #ffffff !important;
+            font-weight: 700 !important;
+            background: #b55211 !important; /* AIA Dark Orange Accent */
+            border-top: 1px solid #e87722 !important;
+            margin-top: 2px !important;
+            text-align: center !important;
+            letter-spacing: 0.5px !important;
         }
         .htTomSelectWrapper .ts-dropdown .ts-option[data-value*="Crear"]:hover,
-        .htTomSelectWrapper .ts-dropdown .ts-option[data-value*="\u2795"]:hover {
-            background: #fbead9 !important;
+        .htTomSelectWrapper .ts-dropdown .ts-option[data-value*="\u2795"]:hover,
+        .htTomSelectWrapper .ts-dropdown .ts-option[data-value*="Crear"].active,
+        .htTomSelectWrapper .ts-dropdown .ts-option[data-value*="\u2795"].active {
+            background: #e87722 !important; /* AIA Vibrant Orange on hover */
+            color: #ffffff !important;
         }
 
         .htTomSelectWrapper .ts-control .clear-button.aia-clear-btn {
@@ -928,7 +934,7 @@
             ?>
         };
     </script>
-    <script type="text/javascript" src="/js/HandsontableTomSelectEditor.js?v=tomselect21"></script>
+    <script type="text/javascript" src="/js/HandsontableTomSelectEditor.js?v=tomselect22"></script>
     <script src="/js/modules/programacion_intermedia/hot.js?v=hot26"></script>
 
     <script>
