@@ -675,7 +675,8 @@
             transition: background 0.12s ease !important;
         }
         .htTomSelectWrapper .ts-dropdown .ts-option:hover,
-        .htTomSelectWrapper .ts-dropdown .ts-option.active {
+        .htTomSelectWrapper .ts-dropdown .ts-option.active,
+        .htTomSelectWrapper .ts-dropdown .ts-option.focused {
             background: #f6c79b !important; /* Más intenso que el beige para feedback claro */
             color: #b55211 !important;
             font-weight: 500 !important;
@@ -702,8 +703,11 @@
         .htTomSelectWrapper .ts-dropdown .ts-create-option * {
             color: #ffffff !important;
         }
-        .htTomSelectWrapper .ts-dropdown .ts-create-option:hover {
+        .htTomSelectWrapper .ts-dropdown .ts-option:hover .ts-create-option,
+        .htTomSelectWrapper .ts-dropdown .ts-option.active .ts-create-option,
+        .htTomSelectWrapper .ts-dropdown .ts-option.focused .ts-create-option {
             background: #e87722 !important;
+            cursor: pointer !important;
         }
 
         .htTomSelectWrapper .ts-control .clear-button.aia-clear-btn {
@@ -936,7 +940,7 @@
             ?>
         };
     </script>
-    <script type="text/javascript" src="/js/HandsontableTomSelectEditor.js?v=tomselect29"></script>
+    <script type="text/javascript" src="/js/HandsontableTomSelectEditor.js?v=tomselect30"></script>
     <script src="/js/modules/programacion_intermedia/hot.js?v=hot26"></script>
 
     <script>
