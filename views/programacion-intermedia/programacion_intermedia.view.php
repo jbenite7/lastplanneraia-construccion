@@ -582,9 +582,9 @@
         .htTomSelectWrapper {
             background: transparent !important;
             border: none !important;
-            border-radius: 0 !important;
-            box-shadow: none !important;
-            font-family: 'Inter', 'Segoe UI', sans-serif !important;
+            z-index: 10000 !important;
+            box-shadow: 0 10px 30px rgba(181,82,17,0.18) !important;
+            pointer-events: auto !important;
         }
 
         /* Control principal (input + pills) */
@@ -604,8 +604,8 @@
             font-size: 0.83rem !important;
             font-family: 'Inter', sans-serif !important;
             color: #1c1c1e !important;
-            padding: 2px 4px !important;
-            box-shadow: 0 3px 10px rgba(181,82,17,0.10) !important;
+            padding: 2px 4px 6px 4px !important; /* Added 6px bottom padding for the clear button */
+            box-shadow: none !important; /* Remove individual shadow to merge with dropdown */
         }
         .htTomSelectWrapper .ts-control input {
             width: 90% !important;
@@ -649,7 +649,7 @@
             border: 1.5px solid #b55211 !important;
             border-top: none !important;
             border-radius: 0 0 6px 6px !important;
-            box-shadow: 0 6px 14px rgba(181,82,17,0.12) !important;
+            box-shadow: 0 8px 16px rgba(181,82,17,0.15) !important;
             min-width: 100% !important;
             box-sizing: border-box !important;
             left: 0 !important;
@@ -700,25 +700,27 @@
             display: inline-flex !important;
             align-items: center !important;
             gap: 6px !important;
-            margin-top: 6px !important;
-            margin-bottom: 2px !important;
+            margin-top: 2px !important;
+            margin-bottom: 0 !important;
             background: #ffffff !important;
             border: 1px solid #b55211 !important;
             border-radius: 4px !important;
             color: #b55211 !important;
-            padding: 4px 10px !important;
-            font-size: 0.75rem !important;
+            padding: 1px 8px !important;
+            height: 20px !important;
+            line-height: normal !important;
+            font-size: 0.72rem !important;
             font-weight: 700 !important;
             text-transform: uppercase !important;
             cursor: pointer !important;
             transition: all 0.22s ease !important;
-            box-shadow: 0 2px 4px rgba(181,82,17,0.1) !important;
             opacity: 1 !important;
             width: auto !important;
             position: relative !important;
             float: left !important;
             clear: both !important;
             visibility: visible !important;
+            box-sizing: border-box !important;
         }
         .htTomSelectWrapper .ts-control .clear-button.aia-clear-btn i {
             font-size: 0.75rem !important;

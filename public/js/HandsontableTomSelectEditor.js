@@ -36,10 +36,12 @@
 
     // Posicionamiento con position:fixed superponiendo exactamente sobre la celda
     var tdRect = this.TD.getBoundingClientRect();
+    var calculatedWidth = Math.max(300, tdRect.width);
+
     this.$wrapper.css({
       top:   tdRect.top + 'px',
       left:  tdRect.left + 'px',
-      width: tdRect.width + 'px',
+      width: calculatedWidth + 'px',
       minHeight: tdRect.height + 'px',
       display: 'block'
     });
@@ -77,7 +79,7 @@
     
     // Evitar que la lista del dropdown se recorte si la celda es muy pequeña
     if (this.tomSelectInstance.dropdown) {
-      this.tomSelectInstance.dropdown.style.width = Math.max(300, tdRect.width) + 'px';
+      this.tomSelectInstance.dropdown.style.width = calculatedWidth + 'px';
     }
 
     // Detectar opción "Crear" via item_add (Tom Select la añade en su mousedown):
@@ -209,10 +211,12 @@
     }
 
     var tdRect = this.TD.getBoundingClientRect();
+    var calculatedWidth = Math.max(300, tdRect.width);
+
     this.$wrapper.css({
       top:   tdRect.top + 'px',
       left:  tdRect.left + 'px',
-      width: tdRect.width + 'px',
+      width: calculatedWidth + 'px',
       minHeight: tdRect.height + 'px',
       display: 'block'
     });
@@ -244,7 +248,7 @@
 
     // Evitar recortar la lista del dropdown si la celda es pequeña
     if (this.tomSelectInstance.dropdown) {
-      this.tomSelectInstance.dropdown.style.width = Math.max(300, tdRect.width) + 'px';
+      this.tomSelectInstance.dropdown.style.width = calculatedWidth + 'px';
     }
 
     // ─── FIX PRINCIPAL ─────────────────────────────────────────────
