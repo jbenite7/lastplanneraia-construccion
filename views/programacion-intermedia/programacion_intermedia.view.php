@@ -570,6 +570,41 @@
             line-height: 1.4;
             padding: 10px 14px;
         }
+
+        /* ── Tom Select en Handsontable ────────────────────────── */
+        .htTomSelectWrapper {
+            min-width: 300px !important;
+        }
+        .htTomSelectWrapper .ts-wrapper {
+            width: 100% !important;
+        }
+        .htTomSelectWrapper .ts-control {
+            min-height: 36px !important;
+            width: 100% !important;
+            font-size: 0.85rem !important;
+        }
+        .htTomSelectWrapper .ts-control input {
+            min-width: 120px !important;
+            font-size: 0.85rem !important;
+        }
+        .htTomSelectWrapper .ts-dropdown {
+            width: 100% !important;
+            left: 0 !important;
+            max-height: 220px !important;
+            overflow-y: auto !important;
+            font-size: 0.85rem !important;
+            z-index: 99999 !important;
+        }
+        .htTomSelectWrapper .ts-dropdown .ts-dropdown-content {
+            max-height: 210px !important;
+            overflow-y: auto !important;
+        }
+        .htTomSelectWrapper .ts-dropdown .option,
+        .htTomSelectWrapper .ts-dropdown .ts-option {
+            padding: 7px 12px !important;
+            cursor: pointer !important;
+        }
+        /* ─────────────────────────────────────────────────────── */
     </style>
     <link rel="stylesheet" href="/css/handsontable-header-global.css?v=20260223a" />
 </head>
