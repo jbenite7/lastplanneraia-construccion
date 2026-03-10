@@ -631,7 +631,7 @@
         }
         .htTomSelectWrapper .ts-control .item .remove {
             color: #b55211 !important;
-            border-left: 1px solid #e87722 !important;
+            border-left: none !important;
         }
         .htTomSelectWrapper .ts-control .item .remove:hover {
             background: #f6c79b !important;
