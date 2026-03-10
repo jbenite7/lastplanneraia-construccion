@@ -608,7 +608,7 @@
             box-shadow: 0 3px 10px rgba(181,82,17,0.10) !important;
         }
         .htTomSelectWrapper .ts-control input {
-            min-width: 80px !important;
+            width: 90% !important;
             font-size: 0.83rem !important;
             font-family: 'Inter', sans-serif !important;
             color: #1c1c1e !important;
