@@ -571,38 +571,123 @@
             padding: 10px 14px;
         }
 
-        /* ── Tom Select en Handsontable ────────────────────────── */
+        /* ── Tom Select · Línea Construcción AIA ──────────────────
+           Paleta: Naranja #b55211 (main) · #e87722 (mid) · #fbead9 (very light)
+           Fondo:  Alabaster #fafafa · Linen #f4f1ea
+           Tipografía: Inter (contenido) · sin abuso de uppercase
+           ──────────────────────────────────────────────────────── */
+
+        /* Wrapper flotante */
         .htTomSelectWrapper {
             min-width: 300px !important;
+            background: #fafafa !important;        /* Alabaster AIA */
+            border: 1.5px solid #b55211 !important; /* Naranja Construcción */
+            border-radius: 6px !important;
+            box-shadow: 0 4px 16px rgba(181,82,17,0.13) !important;
+            font-family: 'Inter', 'Segoe UI', sans-serif !important;
         }
+
+        /* Control principal (input + pills) */
         .htTomSelectWrapper .ts-wrapper {
             width: 100% !important;
         }
         .htTomSelectWrapper .ts-control {
-            min-height: 36px !important;
+            background: #fafafa !important;
+            border: none !important;
+            border-bottom: 1px solid #f6c79b !important; /* naranja light AIA */
+            min-height: 38px !important;
             width: 100% !important;
-            font-size: 0.85rem !important;
+            font-size: 0.83rem !important;
+            font-family: 'Inter', sans-serif !important;
+            color: #1c1c1e !important;
+            padding: 4px 8px !important;
         }
         .htTomSelectWrapper .ts-control input {
             min-width: 120px !important;
-            font-size: 0.85rem !important;
+            font-size: 0.83rem !important;
+            font-family: 'Inter', sans-serif !important;
+            color: #1c1c1e !important;
         }
+        .htTomSelectWrapper .ts-control input::placeholder {
+            color: #a1a1aa !important;
+        }
+
+        /* Pills (ítems seleccionados) */
+        .htTomSelectWrapper .ts-control .item {
+            background: #fbead9 !important;   /* very light naranja AIA */
+            border: 1px solid #e87722 !important; /* mid naranja AIA */
+            color: #8b4011 !important;         /* dark naranja AIA */
+            border-radius: 4px !important;
+            font-size: 0.78rem !important;
+            font-weight: 500 !important;
+            padding: 2px 6px !important;
+        }
+        .htTomSelectWrapper .ts-control .item .remove {
+            color: #b55211 !important;
+            border-left: 1px solid #e87722 !important;
+        }
+        .htTomSelectWrapper .ts-control .item .remove:hover {
+            background: #f6c79b !important;
+        }
+
+        /* Dropdown */
         .htTomSelectWrapper .ts-dropdown {
+            background: #fafafa !important;
+            border: 1.5px solid #b55211 !important;
+            border-top: none !important;
+            border-radius: 0 0 6px 6px !important;
             width: 100% !important;
             left: 0 !important;
             max-height: 220px !important;
             overflow-y: auto !important;
-            font-size: 0.85rem !important;
+            font-size: 0.83rem !important;
+            font-family: 'Inter', sans-serif !important;
             z-index: 99999 !important;
+            box-shadow: 0 6px 16px rgba(181,82,17,0.10) !important;
         }
         .htTomSelectWrapper .ts-dropdown .ts-dropdown-content {
             max-height: 210px !important;
             overflow-y: auto !important;
         }
-        .htTomSelectWrapper .ts-dropdown .option,
+
+        /* Opción normal */
         .htTomSelectWrapper .ts-dropdown .ts-option {
-            padding: 7px 12px !important;
+            padding: 8px 12px !important;
             cursor: pointer !important;
+            color: #1c1c1e !important;
+            font-family: 'Inter', sans-serif !important;
+            border-bottom: 1px solid #f4f1ea !important; /* Linen separator */
+            transition: background 0.12s ease !important;
+        }
+        .htTomSelectWrapper .ts-dropdown .ts-option:hover,
+        .htTomSelectWrapper .ts-dropdown .ts-option.active {
+            background: #fbead9 !important; /* very light naranja */
+            color: #8b4011 !important;
+        }
+        .htTomSelectWrapper .ts-dropdown .ts-option:last-child {
+            border-bottom: none !important;
+        }
+
+        /* Opción especial "+ Crear" */
+        .htTomSelectWrapper .ts-dropdown .ts-option[data-value*="Crear"],
+        .htTomSelectWrapper .ts-dropdown .ts-option[data-value*="\u2795"] {
+            color: #b55211 !important;
+            font-weight: 600 !important;
+            background: #fff9f5 !important;
+            border-top: 1px solid #f6c79b !important;
+        }
+        .htTomSelectWrapper .ts-dropdown .ts-option[data-value*="Crear"]:hover,
+        .htTomSelectWrapper .ts-dropdown .ts-option[data-value*="\u2795"]:hover {
+            background: #fbead9 !important;
+        }
+
+        /* Botón limpiar todo (clear_button plugin) */
+        .htTomSelectWrapper .ts-control .clear-button {
+            color: #b55211 !important;
+            opacity: 0.7 !important;
+        }
+        .htTomSelectWrapper .ts-control .clear-button:hover {
+            opacity: 1 !important;
         }
         /* ─────────────────────────────────────────────────────── */
     </style>
