@@ -1,343 +1,252 @@
 /**
- * Custom Handsontable Editor for Multiple and Single Select using Tom Select
- * Replaces Select2 to fix severe scroll-locking and DOM mutation bugs.
+ * HandsontableTomSelectEditor.js
+ * Reemplazo de Select2. Usa pointerdown (dispara ANTES que mousedown/capture de HOT)
+ * para pre-seleccionar el ítem en Tom Select antes de que HOT llame finishEditing() / getValue().
+ * Sin stopPropagation / stopImmediatePropagation — no se bloquea ningún evento.
  */
 (function (Handsontable, $) {
   'use strict';
 
-  // ─────────────────────────────────────────────────────────────
-  // INTERCEPTOR GLOBAL (Registrado UNA VEZ al cargar el módulo)
-  // Se ejecuta ANTES que los listeners de Handsontable porque
-  // este script carga ANTES que hot.js (ver programacion_intermedia.view.php)
-  // Bloque a HOT si el clic viene de dentro de nuestro wrapper flotante.
-  // ─────────────────────────────────────────────────────────────
-  document.addEventListener('mousedown', function (e) {
-    var wrappers = document.querySelectorAll('.htTomSelectWrapper');
-    for (var i = 0; i < wrappers.length; i++) {
-      if (wrappers[i].style.display !== 'none' && wrappers[i].contains(e.target)) {
-        // El clic está dentro de un editor Tom Select activo—bloqueamos a HOT
-        e.stopImmediatePropagation();
-        return;
-      }
-    }
-  }, true);
-
-  // ──────────────────────────────────────────────
+  // ──────────────────────────────────────────────────────────────────
   // Tom Select MULTIPLE Editor
-  // ──────────────────────────────────────────────
+  // ──────────────────────────────────────────────────────────────────
   var TomSelectEditor = Handsontable.editors.BaseEditor.prototype.extend();
 
   TomSelectEditor.prototype.init = function () {
-    this.$wrapper = $('<div class="htTomSelectWrapper" style="display:none; position:fixed; z-index:99999; background:#fff; padding: 4px; box-sizing: border-box; border: 1px solid #5292f7; border-radius: 4px; min-width: 200px;"></div>');
-    this.$select = $('<select multiple placeholder="Seleccione..." style="width: 100%; box-sizing: border-box; display: block;"></select>');
+    this.$wrapper = $('<div class="htTomSelectWrapper" style="display:none; position:fixed; z-index:99999; background:#fff; padding:4px; box-sizing:border-box; border:1px solid #5292f7; border-radius:4px; min-width:220px; box-shadow:0 4px 12px rgba(0,0,0,0.15);"></div>');
+    this.$select  = $('<select multiple style="width:100%; box-sizing:border-box; display:block;"></select>');
     this.$wrapper.append(this.$select);
-    // Appending DENTRO del rootElement de HOT para que HOT vea el clic como "interno"
-    // y no destruya el editor activo.
-    // Se asigna en open() cuando ya tenemos acceso a this.hot.
     this.tomSelectInstance = null;
+    this._pointerdownHandler = null;
   };
 
   TomSelectEditor.prototype.prepare = function (row, col, prop, td, originalValue, cellProperties) {
     Handsontable.editors.BaseEditor.prototype.prepare.apply(this, arguments);
-    this.options = cellProperties.select2Options || cellProperties.tomSelectOptions || [];
-    
-    // Preparar opciones en formato Tom Select: [{value: 'A', text: 'A'}, ...]
-    this.tomOptions = this.options.map(function(opt) {
-        return { value: opt, text: opt };
-    });
+    this.options = cellProperties.tomSelectOptions || cellProperties.select2Options || [];
+    this.tomOptions = this.options.map(function(opt) { return { value: opt, text: opt }; });
   };
 
   TomSelectEditor.prototype.open = function () {
     var _this = this;
 
-    // Usar getBoundingClientRect para coordenadas válidas con position:fixed
-    var tdRect = this.TD.getBoundingClientRect();
-    var wrapperWidth = Math.max(260, tdRect.width);
-
-    // Append al rootElement de HOT (no al body) para que HOT vea el clic como interno
+    // Adjuntar al rootElement de HOT para que los clics sean considerados "internos"
     if (!this.$wrapper.parent().is(this.hot.rootElement)) {
       $(this.hot.rootElement).append(this.$wrapper);
     }
 
+    // Posicionamiento con position:fixed usando coordenadas de viewport
+    var tdRect = this.TD.getBoundingClientRect();
     this.$wrapper.css({
-      top: tdRect.bottom + 'px',
-      left: tdRect.left + 'px',
-      width: wrapperWidth + 'px',
+      top:   (tdRect.bottom + 2) + 'px',
+      left:  tdRect.left + 'px',
+      width: Math.max(260, tdRect.width) + 'px',
       display: 'block'
     });
 
-    // Destruir instancia previa si por si acaso quedó viva
-    if (this.tomSelectInstance) {
-        this.tomSelectInstance.destroy();
-    }
-
-    // Inicializar Tom Select
-    this.tomSelectInstance = new TomSelect(this.$select[0], {
-        valueField: 'value',
-        labelField: 'text',
-        searchField: 'text',
-        options: this.tomOptions,
-        plugins: ['remove_button', 'clear_button'],
-        maxOptions: null,
-        closeAfterSelect: false,
-        hideSelected: true,
-        render: {
-            option: function(data, escape) {
-                // Resaltar opciones de Creación (➕ Crear...)
-                if (data.text.indexOf('➕') > -1) {
-                    return '<div style="color: #059669; font-weight: 600; background-color: #ecfdf5; border-top: 1px solid #d1fae5; padding: 8px 12px;">' + escape(data.text) + '</div>';
-                }
-                return '<div style="padding: 8px 12px;">' + escape(data.text) + '</div>';
-            }
-        }
-    });
-
-    // Eventos
-    this.tomSelectInstance.on('item_add', function(value) {
-        if (value.indexOf('➕') > -1) {
-            _this.finishEditing();
-        }
-    });
-
-    // Timeout para asegurar que se abre sin bloqueos visuales
-    setTimeout(function() {
-        if (_this.tomSelectInstance) {
-            _this.tomSelectInstance.focus();
-        }
-    }, 10);
-
-    // Capturar teclado para navegación nativa de Handsontable
-    this._keydownCaptureHandler = function (e) {
-      var isTab = e.keyCode === 9;
-      var isEsc = e.keyCode === 27;
-      var isArrow = (e.keyCode >= 37 && e.keyCode <= 40);
-
-      if (isTab || isEsc || isArrow) {
-        // Permitir flechas Arriba/Abajo si el dropdown de Tom Select está abierto
-        if ((e.keyCode === 38 || e.keyCode === 40) && _this.tomSelectInstance && _this.tomSelectInstance.isOpen) {
-            return; // Dejar que Tom Select navegue sus opciones
-        }
-
-        // Si es Tab, Esc, o flechas (estando cerrado), delegar a Handsontable
-        e.preventDefault();
-        e.stopPropagation();
-        _this.finishEditing();
-
-        var instance = _this.hot;
-        if (instance) {
-            instance.listen(); // Despertar Handsontable
-            if (isTab || isArrow) {
-                var moveCol = 0;
-                var moveRow = 0;
-                if (isTab) {
-                    moveCol = e.shiftKey ? -1 : 1;
-                } else {
-                    if (e.keyCode === 37) moveCol = -1;
-                    else if (e.keyCode === 39) moveCol = 1;
-                    else if (e.keyCode === 38) moveRow = -1;
-                    else if (e.keyCode === 40) moveRow = 1;
-                }
-
-                var newCol = _this.col + moveCol;
-                var newRow = _this.row + moveRow;
-
-                if (newCol >= instance.countCols()) { newCol = 0; newRow += 1; }
-                else if (newCol < 0) { newCol = instance.countCols() - 1; newRow -= 1; }
-
-                if (newRow >= 0 && newRow < instance.countRows()) {
-                    if (typeof window !== 'undefined') window.__piPendingNav = true;
-                    instance.selectCell(newRow, newCol, newRow, newCol, true, false);
-                }
-            }
-        }
-      }
-    };
-    
-    document.addEventListener('keydown', this._keydownCaptureHandler, true);
-  };
-
-  TomSelectEditor.prototype.close = function () {
-    if (this._keydownCaptureHandler) {
-      document.removeEventListener('keydown', this._keydownCaptureHandler, true);
-      this._keydownCaptureHandler = null;
-    }
-
+    // Destruir instancia previa
     if (this.tomSelectInstance) {
       this.tomSelectInstance.destroy();
       this.tomSelectInstance = null;
     }
-    
-    this.$wrapper.hide();
-    
-    // Resucitar el Event Manager de Handsontable para evitar el Freeze total
-    if (this.hot) {
-      this.hot.listen();
+
+    // Crear un <select> fresco para evitar residuos de Tom Select previos
+    this.$select.replaceWith('<select multiple style="width:100%; box-sizing:border-box; display:block;"></select>');
+    this.$select = this.$wrapper.find('select');
+
+    this.tomSelectInstance = new TomSelect(this.$select[0], {
+      valueField:       'value',
+      labelField:       'text',
+      searchField:      'text',
+      options:           this.tomOptions,
+      plugins:          ['remove_button', 'clear_button'],
+      maxOptions:        null,
+      closeAfterSelect:  false,
+      hideSelected:      true
+    });
+
+    // ─── FIX PRINCIPAL ─────────────────────────────────────────────
+    // pointerdown (bubble) dispara ANTES que mousedown (capture) de HOT.
+    // Pre-seleccionamos el ítem aquí para que cuando HOT llame getValue(),
+    // el valor ya esté actualizado en Tom Select.
+    this._pointerdownHandler = function (e) {
+      var optionEl = e.target.closest ? e.target.closest('.ts-option') : null;
+      if (optionEl && _this.tomSelectInstance) {
+        var val = optionEl.getAttribute('data-value');
+        if (val !== null) {
+          var items = _this.tomSelectInstance.items;
+          if (items.indexOf(val) === -1) {
+            _this.tomSelectInstance.addItem(val, true); // silent: no re-render
+          } else {
+            _this.tomSelectInstance.removeItem(val, true);
+          }
+        }
+      }
+    };
+    this.$wrapper[0].addEventListener('pointerdown', this._pointerdownHandler, false);
+    // ───────────────────────────────────────────────────────────────
+
+    // Keydown: Tab/Esc/Flechas fuera del dropdown → delegar a HOT
+    this._keydownHandler = function (e) {
+      var isTab   = e.keyCode === 9;
+      var isEsc   = e.keyCode === 27;
+      var isArrow = e.keyCode >= 37 && e.keyCode <= 40;
+      if (!isTab && !isEsc && !isArrow) return;
+      if ((e.keyCode === 38 || e.keyCode === 40) && _this.tomSelectInstance && _this.tomSelectInstance.isOpen) return;
+      e.preventDefault();
+      e.stopPropagation();
+      _this.finishEditing();
+      if (_this.hot) { _this.hot.listen(); }
+    };
+    document.addEventListener('keydown', this._keydownHandler, true);
+
+    // Población de valor inicial
+    var currentVal = this.originalValue;
+    if (currentVal) {
+      var arr = String(currentVal).split(',').map(function(s){ return s.trim(); });
+      this.tomSelectInstance.setValue(arr, true);
     }
+
+    setTimeout(function() {
+      if (_this.tomSelectInstance) { _this.tomSelectInstance.focus(); }
+    }, 10);
+  };
+
+  TomSelectEditor.prototype.close = function () {
+    if (this._keydownHandler) {
+      document.removeEventListener('keydown', this._keydownHandler, true);
+      this._keydownHandler = null;
+    }
+    if (this._pointerdownHandler && this.$wrapper[0]) {
+      this.$wrapper[0].removeEventListener('pointerdown', this._pointerdownHandler, false);
+      this._pointerdownHandler = null;
+    }
+    if (this.tomSelectInstance) {
+      this.tomSelectInstance.destroy();
+      this.tomSelectInstance = null;
+    }
+    this.$wrapper.hide();
+    if (this.hot) { this.hot.listen(); }
   };
 
   TomSelectEditor.prototype.getValue = function () {
     if (!this.tomSelectInstance) return '';
     var val = this.tomSelectInstance.getValue() || [];
-    // Tom Select returns an array for multiple. HOT expects a comma-separated string.
     return Array.isArray(val) ? val.join(', ') : val;
   };
 
   TomSelectEditor.prototype.setValue = function (value) {
     if (!this.tomSelectInstance) return;
-    if (!value) {
-      this.tomSelectInstance.clear(true);
-    } else {
-      var selectedArr = String(value)
-        .split(',')
-        .map(function (item) {
-          return item.trim();
-        });
-      this.tomSelectInstance.setValue(selectedArr, true);
-    }
+    if (!value) { this.tomSelectInstance.clear(true); return; }
+    var arr = String(value).split(',').map(function(s){ return s.trim(); });
+    this.tomSelectInstance.setValue(arr, true);
   };
 
   TomSelectEditor.prototype.focus = function () {
-    if (this.tomSelectInstance) {
-        this.tomSelectInstance.focus();
-    }
+    if (this.tomSelectInstance) { this.tomSelectInstance.focus(); }
   };
 
   Handsontable.editors.registerEditor('tomSelectMultiple', TomSelectEditor);
 
-  // ──────────────────────────────────────────────
+  // ──────────────────────────────────────────────────────────────────
   // Tom Select SINGLE Editor
-  // ──────────────────────────────────────────────
+  // ──────────────────────────────────────────────────────────────────
   var TomSelectSingle = Handsontable.editors.BaseEditor.prototype.extend();
 
   TomSelectSingle.prototype.init = function () {
-    this.$wrapper = $('<div class="htTomSelectWrapper" style="display:none; position:fixed; z-index:99999; background:#fff; padding: 4px; box-sizing: border-box; border: 1px solid #5292f7; border-radius: 4px; min-width: 200px;"></div>');
-    this.$select = $('<select placeholder="Seleccione..." style="width: 100%; box-sizing: border-box; display: block;"></select>');
+    this.$wrapper = $('<div class="htTomSelectWrapper" style="display:none; position:fixed; z-index:99999; background:#fff; padding:4px; box-sizing:border-box; border:1px solid #5292f7; border-radius:4px; min-width:220px; box-shadow:0 4px 12px rgba(0,0,0,0.15);"></div>');
+    this.$select  = $('<select style="width:100%; box-sizing:border-box; display:block;"></select>');
     this.$wrapper.append(this.$select);
-    // Se hace append en open() cuando tenemos acceso a this.hot.rootElement
     this.tomSelectInstance = null;
+    this._pointerdownHandler = null;
   };
 
   TomSelectSingle.prototype.prepare = function (row, col, prop, td, originalValue, cellProperties) {
     Handsontable.editors.BaseEditor.prototype.prepare.apply(this, arguments);
-    this.options = cellProperties.select2Options || cellProperties.tomSelectOptions || [];
-    
-    this.tomOptions = this.options.map(function(opt) {
-        return { value: opt, text: opt };
-    });
+    this.options = cellProperties.tomSelectOptions || cellProperties.select2Options || [];
+    this.tomOptions = this.options.map(function(opt) { return { value: opt, text: opt }; });
   };
 
   TomSelectSingle.prototype.open = function () {
     var _this = this;
 
-    // Usar getBoundingClientRect para coordenadas válidas con position:fixed
-    var tdRect = this.TD.getBoundingClientRect();
-    var wrapperWidth = Math.max(260, tdRect.width);
-
-    // Append al rootElement de HOT para que los clics sean internos
     if (!this.$wrapper.parent().is(this.hot.rootElement)) {
       $(this.hot.rootElement).append(this.$wrapper);
     }
 
+    var tdRect = this.TD.getBoundingClientRect();
     this.$wrapper.css({
-      top: tdRect.bottom + 'px',
-      left: tdRect.left + 'px',
-      width: wrapperWidth + 'px',
+      top:   (tdRect.bottom + 2) + 'px',
+      left:  tdRect.left + 'px',
+      width: Math.max(260, tdRect.width) + 'px',
       display: 'block'
     });
-    if (this.tomSelectInstance) {
-        this.tomSelectInstance.destroy();
-    }
-
-    this.tomSelectInstance = new TomSelect(this.$select[0], {
-        valueField: 'value',
-        labelField: 'text',
-        searchField: 'text',
-        options: this.tomOptions,
-        plugins: ['clear_button'],
-        maxOptions: null,
-        render: {
-            option: function(data, escape) {
-                if (data.text.indexOf('➕') > -1) {
-                    return '<div style="color: #059669; font-weight: 600; background-color: #ecfdf5; border-top: 1px solid #d1fae5; padding: 8px 12px;">' + escape(data.text) + '</div>';
-                }
-                return '<div style="padding: 8px 12px;">' + escape(data.text) + '</div>';
-            }
-        }
-    });
-
-    this.tomSelectInstance.on('item_add', function(value) {
-        _this.finishEditing();
-    });
-
-    setTimeout(function() {
-        if (_this.tomSelectInstance) {
-            _this.tomSelectInstance.focus();
-        }
-    }, 10);
-
-    this._keydownCaptureHandlerSingle = function (e) {
-      var isTab = e.keyCode === 9;
-      var isEsc = e.keyCode === 27;
-      var isArrow = (e.keyCode >= 37 && e.keyCode <= 40);
-
-      if (isTab || isEsc || isArrow) {
-        if ((e.keyCode === 38 || e.keyCode === 40) && _this.tomSelectInstance && _this.tomSelectInstance.isOpen) {
-            return;
-        }
-
-        e.preventDefault();
-        e.stopPropagation();
-        _this.finishEditing();
-
-        var instance = _this.hot;
-        if (instance) {
-            instance.listen();
-            if (isTab || isArrow) {
-                var moveCol = 0;
-                var moveRow = 0;
-                if (isTab) {
-                    moveCol = e.shiftKey ? -1 : 1;
-                } else {
-                    if (e.keyCode === 37) moveCol = -1;
-                    else if (e.keyCode === 39) moveCol = 1;
-                    else if (e.keyCode === 38) moveRow = -1;
-                    else if (e.keyCode === 40) moveRow = 1;
-                }
-
-                var newCol = _this.col + moveCol;
-                var newRow = _this.row + moveRow;
-
-                if (newCol >= instance.countCols()) { newCol = 0; newRow += 1; }
-                else if (newCol < 0) { newCol = instance.countCols() - 1; newRow -= 1; }
-
-                if (newRow >= 0 && newRow < instance.countRows()) {
-                    if (typeof window !== 'undefined') window.__piPendingNav = true;
-                    instance.selectCell(newRow, newCol, newRow, newCol, true, false);
-                }
-            }
-        }
-      }
-    };
-    
-    document.addEventListener('keydown', this._keydownCaptureHandlerSingle, true);
-  };
-
-  TomSelectSingle.prototype.close = function () {
-    if (this._keydownCaptureHandlerSingle) {
-      document.removeEventListener('keydown', this._keydownCaptureHandlerSingle, true);
-      this._keydownCaptureHandlerSingle = null;
-    }
 
     if (this.tomSelectInstance) {
       this.tomSelectInstance.destroy();
       this.tomSelectInstance = null;
     }
-    
-    this.$wrapper.hide();
-    
-    if (this.hot) {
-      this.hot.listen();
+
+    this.$select.replaceWith('<select style="width:100%; box-sizing:border-box; display:block;"></select>');
+    this.$select = this.$wrapper.find('select');
+
+    this.tomSelectInstance = new TomSelect(this.$select[0], {
+      valueField:  'value',
+      labelField:  'text',
+      searchField: 'text',
+      options:      this.tomOptions,
+      plugins:     ['clear_button'],
+      maxOptions:   null
+    });
+
+    // ─── FIX PRINCIPAL ─────────────────────────────────────────────
+    this._pointerdownHandler = function (e) {
+      var optionEl = e.target.closest ? e.target.closest('.ts-option') : null;
+      if (optionEl && _this.tomSelectInstance) {
+        var val = optionEl.getAttribute('data-value');
+        if (val !== null) {
+          _this.tomSelectInstance.setValue(val, true); // silent
+        }
+      }
+    };
+    this.$wrapper[0].addEventListener('pointerdown', this._pointerdownHandler, false);
+    // ───────────────────────────────────────────────────────────────
+
+    this._keydownHandlerSingle = function (e) {
+      var isTab   = e.keyCode === 9;
+      var isEsc   = e.keyCode === 27;
+      var isArrow = e.keyCode >= 37 && e.keyCode <= 40;
+      if (!isTab && !isEsc && !isArrow) return;
+      if ((e.keyCode === 38 || e.keyCode === 40) && _this.tomSelectInstance && _this.tomSelectInstance.isOpen) return;
+      e.preventDefault();
+      e.stopPropagation();
+      _this.finishEditing();
+      if (_this.hot) { _this.hot.listen(); }
+    };
+    document.addEventListener('keydown', this._keydownHandlerSingle, true);
+
+    var currentVal = this.originalValue;
+    if (currentVal) { this.tomSelectInstance.setValue(String(currentVal).trim(), true); }
+
+    setTimeout(function() {
+      if (_this.tomSelectInstance) { _this.tomSelectInstance.focus(); }
+    }, 10);
+  };
+
+  TomSelectSingle.prototype.close = function () {
+    if (this._keydownHandlerSingle) {
+      document.removeEventListener('keydown', this._keydownHandlerSingle, true);
+      this._keydownHandlerSingle = null;
     }
+    if (this._pointerdownHandler && this.$wrapper[0]) {
+      this.$wrapper[0].removeEventListener('pointerdown', this._pointerdownHandler, false);
+      this._pointerdownHandler = null;
+    }
+    if (this.tomSelectInstance) {
+      this.tomSelectInstance.destroy();
+      this.tomSelectInstance = null;
+    }
+    this.$wrapper.hide();
+    if (this.hot) { this.hot.listen(); }
   };
 
   TomSelectSingle.prototype.getValue = function () {
@@ -351,9 +260,7 @@
   };
 
   TomSelectSingle.prototype.focus = function () {
-    if (this.tomSelectInstance) {
-        this.tomSelectInstance.focus();
-    }
+    if (this.tomSelectInstance) { this.tomSelectInstance.focus(); }
   };
 
   Handsontable.editors.registerEditor('tomSelectSingle', TomSelectSingle);
