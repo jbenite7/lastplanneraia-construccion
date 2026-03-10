@@ -473,11 +473,7 @@
 					var opcion = $("#opcion").val("modificar");
 
 					var Responsable_AIA = <?php
-                    if (session_status() === PHP_SESSION_NONE) {
-                        session_start();
-                    }
-					        require_once($_SERVER['DOCUMENT_ROOT'] . "/construccion/conexion.php");
-					$dbInstance = Database::getInstance();
+					        $dbInstance = Database::getInstance();
 					$db = $_SESSION["db"];
 					$query = "SELECT * FROM {$db}_profesionales WHERE Activo=1";
 					try {

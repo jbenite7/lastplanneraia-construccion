@@ -703,7 +703,7 @@
 						$( this ).parent().find('.input_cantidad_ppto').html(codigo_html_cantidad_ppto);
 
 						var codigo_actividad = <?php
-                            require_once(PROJECT_ROOT . "/construccion/conexion.php");
+                            // DB available via Database::getInstance() from autoloader
 						$dbInstance = Database::getInstance();
 						$query = "SELECT * FROM general_codigos_actividades";
 						$stmt = $dbInstance->query($query);
@@ -729,7 +729,7 @@
 						}
 
 						var opciones_codigo_html_actividadAsociar = "<?php
-						        require_once(PROJECT_ROOT . "/construccion/conexion.php");
+						        // DB available via Database::getInstance() from autoloader
 						$dbInstance = Database::getInstance();
 						$db = $_SESSION["db"] ?? '';
 						$semana = $_SESSION["semana"] ?? 0;

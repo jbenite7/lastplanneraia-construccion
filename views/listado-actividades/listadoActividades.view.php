@@ -87,7 +87,7 @@
 		                  <label for="actividadInicio" class="control-label">Tarea del Cronograma de Inicio de la Actividad</label>
 		                  <select id="actividadInicio" name="actividadInicio" class="form-control" onchange="actualizarFechaInicio('nuevo')" style="width:100%; border-color:rgb(206, 212, 218, 0)">
 		                    <option value=""></option> <?php
-                                                                    require_once(PROJECT_ROOT . "/construccion/conexion.php");
+                                                                    // DB available via Database::getInstance() from autoloader
 		                    $dbPrefix = $_SESSION["db"] ?? '';
 		                    $semana = $_SESSION["semana"] ?? 0;
 
@@ -483,7 +483,7 @@
 					$( this ).parent().find('td:eq(3)').html(codigo_html_descripcionActividad);
 
 					var opciones_codigo_html_actividadInicio = "<?php
-                            require_once(PROJECT_ROOT . "/construccion/conexion.php");
+                            // DB available via Database::getInstance() from autoloader
 		                    $dbPrefix = $_SESSION["db"] ?? '';
 		                    $semana = $_SESSION["semana"] ?? 0;
 
