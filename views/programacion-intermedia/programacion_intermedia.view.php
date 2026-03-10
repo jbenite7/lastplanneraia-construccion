@@ -595,22 +595,25 @@
         /* Control: borde 3 lados (top + left + right) + radio arriba */
         .htTomSelectWrapper .ts-control {
             background: #fafafa !important;
-            border: 1.5px solid #b55211 !important;
+            border: 1px solid #b55211 !important;
             border-bottom: 1px solid #f6c79b !important;
-            border-radius: 6px 6px 0 0 !important;
-            min-height: 38px !important;
+            border-radius: 4px 4px 0 0 !important;
+            min-height: 24px !important;
             width: 100% !important;
+            box-sizing: border-box !important;
             font-size: 0.83rem !important;
             font-family: 'Inter', sans-serif !important;
             color: #1c1c1e !important;
-            padding: 4px 8px !important;
+            padding: 2px 4px !important;
             box-shadow: 0 3px 10px rgba(181,82,17,0.10) !important;
         }
         .htTomSelectWrapper .ts-control input {
-            min-width: 120px !important;
+            min-width: 80px !important;
             font-size: 0.83rem !important;
             font-family: 'Inter', sans-serif !important;
             color: #1c1c1e !important;
+            margin: 0 !important;
+            padding: 0 !important;
         }
         .htTomSelectWrapper .ts-control input::placeholder {
             color: #a1a1aa !important;

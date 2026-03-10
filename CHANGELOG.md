@@ -33,6 +33,8 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ### Corregido
 
+- **Fix Desalineamiento de Tom Select:** Corrección de la posición y ancho en `HandsontableTomSelectEditor.js` para que el input del dropdown solape perfectamente la celda de Handsontable (`top`/`left` relativos exactos y `width` dinámico) pero permitiendo a su vez que la lista emergente se expanda horizontalmente (`min-width: max(300px, tdRect.width)`) para no truncar los nombres largos de empresas.
+
 - **Fix DataTables POST vs GET Methods (APIs):** Se modificó `public/index.php` para resolver un Error 405 (Method Not Allowed) en las tablas heredadas de jQuery DataTables (CNP, CNC, Contratos, etc.). Se restauró la definición a `POST` (estándar requerido por el AJAX interno de los listados legacy), manteniendo la dualidad `GET`/`POST` exclusivamente para la nueva grilla de Handsontable en `/api/semanal/list`.
 - **Refactor SemanalApiController (Proyecciones):** Se delegó el cálculo asintótico del remanente al iterador de listado de Programación Semanal a través del `LpsService::calculateWeeklyProjections` eliminando código duplicado en el controlador.
 - **Fix Error 404 Control de Cambios:** Se corrigieron referencias residuales a scripts legacy (`listar_controlCambios.php` y `guardar_controlCambios.php`) en `controlCambios.js` que causaban fallos en la carga de la tabla y obtención del director de obra tras la migración a la API.

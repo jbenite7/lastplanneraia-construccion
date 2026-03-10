@@ -13,7 +13,7 @@
   var TomSelectEditor = Handsontable.editors.BaseEditor.prototype.extend();
 
   TomSelectEditor.prototype.init = function () {
-    this.$wrapper = $('<div class="htTomSelectWrapper" style="display:none; position:fixed; z-index:99999; background:#fff; padding:4px; box-sizing:border-box; border:1px solid #5292f7; border-radius:4px; min-width:220px; box-shadow:0 4px 12px rgba(0,0,0,0.15);"></div>');
+    this.$wrapper = $('<div class="htTomSelectWrapper" style="display:none; position:fixed; z-index:99999; background:#fff; padding:1px; box-sizing:border-box; border:1px solid #5292f7; border-radius:1px; box-shadow:0 4px 12px rgba(0,0,0,0.15);"></div>');
     this.$select  = $('<select multiple style="width:100%; box-sizing:border-box; display:block;"></select>');
     this.$wrapper.append(this.$select);
     this.tomSelectInstance = null;
@@ -34,12 +34,13 @@
       $(this.hot.rootElement).append(this.$wrapper);
     }
 
-    // Posicionamiento con position:fixed usando coordenadas de viewport
+    // Posicionamiento con position:fixed superponiendo exactamente sobre la celda
     var tdRect = this.TD.getBoundingClientRect();
     this.$wrapper.css({
-      top:   (tdRect.bottom + 2) + 'px',
+      top:   tdRect.top + 'px',
       left:  tdRect.left + 'px',
-      width: Math.max(300, tdRect.width) + 'px',
+      width: tdRect.width + 'px',
+      minHeight: tdRect.height + 'px',
       display: 'block'
     });
 
@@ -65,6 +66,11 @@
     });
     // Ocultar explícitamente el <select> nativo por si Bootstrap lo sobre-expone
     this.$select.css('display', 'none');
+    
+    // Evitar que la lista del dropdown se recorte si la celda es muy pequeña
+    if (this.tomSelectInstance.dropdown) {
+      this.tomSelectInstance.dropdown.style.width = Math.max(300, tdRect.width) + 'px';
+    }
 
     // Detectar opción "Crear" via item_add (Tom Select la añade en su mousedown):
     // La removemos silenciosamente y navegamos al módulo correcto.
@@ -174,7 +180,7 @@
   var TomSelectSingle = Handsontable.editors.BaseEditor.prototype.extend();
 
   TomSelectSingle.prototype.init = function () {
-    this.$wrapper = $('<div class="htTomSelectWrapper" style="display:none; position:fixed; z-index:99999; background:#fff; padding:4px; box-sizing:border-box; border:1px solid #5292f7; border-radius:4px; min-width:220px; box-shadow:0 4px 12px rgba(0,0,0,0.15);"></div>');
+    this.$wrapper = $('<div class="htTomSelectWrapper" style="display:none; position:fixed; z-index:99999; background:#fff; padding:1px; box-sizing:border-box; border:1px solid #5292f7; border-radius:1px; box-shadow:0 4px 12px rgba(0,0,0,0.15);"></div>');
     this.$select  = $('<select style="width:100%; box-sizing:border-box; display:block;"></select>');
     this.$wrapper.append(this.$select);
     this.tomSelectInstance = null;
@@ -196,9 +202,10 @@
 
     var tdRect = this.TD.getBoundingClientRect();
     this.$wrapper.css({
-      top:   (tdRect.bottom + 2) + 'px',
+      top:   tdRect.top + 'px',
       left:  tdRect.left + 'px',
-      width: Math.max(300, tdRect.width) + 'px',
+      width: tdRect.width + 'px',
+      minHeight: tdRect.height + 'px',
       display: 'block'
     });
 
@@ -219,6 +226,11 @@
       maxOptions:   null
     });
     this.$select.css('display', 'none');
+
+    // Evitar recortar la lista del dropdown si la celda es pequeña
+    if (this.tomSelectInstance.dropdown) {
+      this.tomSelectInstance.dropdown.style.width = Math.max(300, tdRect.width) + 'px';
+    }
 
     // ─── FIX PRINCIPAL ─────────────────────────────────────────────
     this._pointerdownHandler = function (e) {
