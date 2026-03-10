@@ -650,7 +650,7 @@
             border-top: none !important;
             border-radius: 0 0 6px 6px !important;
             box-shadow: 0 6px 14px rgba(181,82,17,0.12) !important;
-            width: 100% !important;
+            min-width: 100% !important;
             box-sizing: border-box !important;
             left: 0 !important;
             max-height: 220px !important;
