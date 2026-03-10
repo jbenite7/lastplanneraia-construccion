@@ -72,7 +72,13 @@
       },
       maxOptions:        null,
       closeAfterSelect:  false,
-      hideSelected:      true
+      hideSelected:      true,
+      render: {
+        option: function(data, escape) {
+          var isCreate = data.value.indexOf('\u2795') > -1 || data.value.indexOf('Crear') > -1;
+          return '<div class="option' + (isCreate ? ' ts-create-option' : '') + '">' + escape(data.text) + '</div>';
+        }
+      }
     });
     // Ocultar explícitamente el <select> nativo por si Bootstrap lo sobre-expone
     this.$select.css('display', 'none');
@@ -246,7 +252,13 @@
           }
         }
       },
-      maxOptions:   null
+      maxOptions:   null,
+      render: {
+        option: function(data, escape) {
+          var isCreate = data.value.indexOf('\u2795') > -1 || data.value.indexOf('Crear') > -1;
+          return '<div class="option' + (isCreate ? ' ts-create-option' : '') + '">' + escape(data.text) + '</div>';
+        }
+      }
     });
     this.$select.css('display', 'none');
 

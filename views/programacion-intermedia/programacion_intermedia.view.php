@@ -593,22 +593,20 @@
             box-sizing: border-box !important;
         }
         /* Control: borde 3 lados (top + left + right) + radio arriba */
-        html body .pi-page .htTomSelectWrapper .ts-control {
+        .htTomSelectWrapper .ts-control {
             background: #fafafa !important;
-            border: 1.5px solid #b55211 !important;
+            border: 1px solid #b55211 !important;
             border-bottom: none !important;
             border-radius: 4px 4px 0 0 !important;
             min-height: 24px !important;
-            width: 300px !important; /* Forzado Nuclear */
-            min-width: 300px !important;
-            max-width: 300px !important;
+            min-width: 100% !important;
             box-sizing: border-box !important;
             font-size: 0.83rem !important;
             font-family: 'Inter', sans-serif !important;
             color: #1c1c1e !important;
-            padding: 2px 4px 0 4px !important;
+            padding: 2px 4px 0 4px !important; /* Removed bottom padding, the button will be the floor */
             box-shadow: none !important;
-            overflow: hidden !important;
+            overflow: hidden !important; /* Clips the button to the control border radius if needed */
         }
         .htTomSelectWrapper .ts-control input {
             width: 90% !important;
@@ -647,15 +645,13 @@
         }
 
         /* Dropdown: borde 3 lados (left + right + bottom) + radio abajo */
-        html body .pi-page .htTomSelectWrapper .ts-dropdown {
+        .htTomSelectWrapper .ts-dropdown {
             background: #fafafa !important;
             border: 1.5px solid #b55211 !important;
             border-top: none !important;
             border-radius: 0 0 6px 6px !important;
             box-shadow: 0 8px 16px rgba(181,82,17,0.15) !important;
-            width: 300px !important; /* Forzado Nuclear */
-            min-width: 300px !important;
-            max-width: 300px !important;
+            min-width: 100% !important;
             box-sizing: border-box !important;
             left: 0 !important;
             max-height: 220px !important;
@@ -687,37 +683,26 @@
             border-bottom: none !important;
         }
 
-        /* Opción especial "+ Crear" (Estilo Botón AIA con Selectores Nativos + Especificidad Nuclear) */
-        html body .pi-page .htTomSelectWrapper .ts-dropdown .ts-option[data-value*="Crear"],
-        html body .pi-page .htTomSelectWrapper .ts-dropdown .ts-option[data-value*="\u2795"] {
+        /* Opción especial "+ Crear" (Estilo Botón de Acción AIA) */
+        .htTomSelectWrapper .ts-dropdown .ts-create-option {
             display: block !important;
-            color: #ffffff !important;
+            color: #ffffff !important; /* Texto blanco obligatorio */
             font-weight: 700 !important;
-            background: #b55211 !important; /* AIA Naranja Oficial */
+            background: #b55211 !important; /* Naranja AIA */
             border-radius: 4px !important;
             padding: 8px 12px !important;
             text-align: center !important;
             letter-spacing: 0.5px !important;
-            box-shadow: 0 4px 10px rgba(181,82,17,0.2) !important;
-            margin: 4px 6px !important; /* Margen positivo en vez de negativo para evitar usar el :has() container */
-            text-transform: uppercase !important;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15) !important;
+            margin: 4px 6px !important;
             border-bottom: none !important;
         }
-
-        /* Garantizar visibilidad del texto si hay elementos hijos */
-        html body .pi-page .htTomSelectWrapper .ts-dropdown .ts-option[data-value*="Crear"] *,
-        html body .pi-page .htTomSelectWrapper .ts-dropdown .ts-option[data-value*="\u2795"] * {
+        /* Garantizar que el texto sea blanco incluso si hay herencia */
+        .htTomSelectWrapper .ts-dropdown .ts-create-option * {
             color: #ffffff !important;
         }
-
-        /* Efecto Hover del botón */
-        html body .pi-page .htTomSelectWrapper .ts-dropdown .ts-option[data-value*="Crear"]:hover,
-        html body .pi-page .htTomSelectWrapper .ts-dropdown .ts-option[data-value*="\u2795"]:hover,
-        html body .pi-page .htTomSelectWrapper .ts-dropdown .ts-option[data-value*="Crear"].active,
-        html body .pi-page .htTomSelectWrapper .ts-dropdown .ts-option[data-value*="\u2795"].active {
-            background: #e87722 !important; /* AIA Naranja vibrante */
-            color: #ffffff !important;
-            transform: translateY(-1px) !important;
+        .htTomSelectWrapper .ts-dropdown .ts-create-option:hover {
+            background: #e87722 !important;
         }
 
         .htTomSelectWrapper .ts-control .clear-button.aia-clear-btn {
@@ -950,7 +935,7 @@
             ?>
         };
     </script>
-    <script type="text/javascript" src="/js/HandsontableTomSelectEditor.js?v=tomselect101"></script>
+    <script type="text/javascript" src="/js/HandsontableTomSelectEditor.js?v=tomselect27"></script>
     <script src="/js/modules/programacion_intermedia/hot.js?v=hot26"></script>
 
     <script>
