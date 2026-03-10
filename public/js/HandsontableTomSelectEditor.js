@@ -11,8 +11,8 @@
   var TomSelectEditor = Handsontable.editors.BaseEditor.prototype.extend();
 
   TomSelectEditor.prototype.init = function () {
-    this.$wrapper = $('<div class="htTomSelectWrapper" style="display:none; position:absolute; z-index:99999; background:#fff;"></div>');
-    this.$select = $('<select multiple placeholder="Seleccione..."></select>');
+    this.$wrapper = $('<div class="htTomSelectWrapper" style="display:none; position:absolute; z-index:99999; background:#fff; padding: 4px; box-sizing: border-box; border: 1px solid #5292f7;"></div>');
+    this.$select = $('<select multiple placeholder="Seleccione..." style="width: 100%; box-sizing: border-box; min-width: 200px; display: block;"></select>');
     this.$wrapper.append(this.$select);
     $('body').append(this.$wrapper);
     this.tomSelectInstance = null;
@@ -45,8 +45,16 @@
       display: 'block'
     });
 
-    // Se ha ELIMINADO intencionalmente la barrera e.stopPropagation()
-    // Esto es para habilitar los clics nativos de selección de ítems en TomSelect
+    // Barrera de Cristal: Vital para evitar que al clickear opciones HOT cierre la celda.
+    this.$wrapper.off('mousedown.htAislado').on('mousedown.htAislado', function(e) {
+      e.stopPropagation();
+      // Si el usuario hace clic en el área blanca sobrante del editor, enfocar el select
+      if (!$(e.target).closest('.ts-wrapper').length) {
+         if (_this.tomSelectInstance) {
+             setTimeout(function() { _this.tomSelectInstance.focus(); }, 10);
+         }
+      }
+    });
 
     // Destruir instancia previa si por si acaso quedó viva
     if (this.tomSelectInstance) {
@@ -59,7 +67,6 @@
         labelField: 'text',
         searchField: 'text',
         options: this.tomOptions,
-        dropdownParent: 'body',
         plugins: ['remove_button', 'clear_button'],
         maxOptions: null,
         closeAfterSelect: false,
@@ -193,8 +200,8 @@
   var TomSelectSingle = Handsontable.editors.BaseEditor.prototype.extend();
 
   TomSelectSingle.prototype.init = function () {
-    this.$wrapper = $('<div class="htTomSelectWrapper" style="display:none; position:absolute; z-index:99999; background:#fff;"></div>');
-    this.$select = $('<select placeholder="Seleccione..."></select>');
+    this.$wrapper = $('<div class="htTomSelectWrapper" style="display:none; position:absolute; z-index:99999; background:#fff; padding: 4px; box-sizing: border-box; border: 1px solid #5292f7;"></div>');
+    this.$select = $('<select placeholder="Seleccione..." style="width: 100%; box-sizing: border-box; min-width: 200px; display: block;"></select>');
     this.$wrapper.append(this.$select);
     $('body').append(this.$wrapper);
     this.tomSelectInstance = null;
@@ -225,9 +232,16 @@
       display: 'block'
     });
 
-    // Se ha ELIMINADO intencionalmente la barrera e.stopPropagation()
-    // Esto es para habilitar los clics nativos de selección de ítems en TomSelect
-
+    // Barrera de Cristal: Vital para evitar que al clickear opciones HOT cierre la celda.
+    this.$wrapper.off('mousedown.htAislado').on('mousedown.htAislado', function(e) {
+      e.stopPropagation();
+      // Si el usuario hace clic en el área blanca sobrante del editor, enfocar el select
+      if (!$(e.target).closest('.ts-wrapper').length) {
+         if (_this.tomSelectInstance) {
+             setTimeout(function() { _this.tomSelectInstance.focus(); }, 10);
+         }
+      }
+    });
     if (this.tomSelectInstance) {
         this.tomSelectInstance.destroy();
     }
@@ -237,7 +251,6 @@
         labelField: 'text',
         searchField: 'text',
         options: this.tomOptions,
-        dropdownParent: 'body',
         plugins: ['clear_button'],
         maxOptions: null,
         render: {
