@@ -578,8 +578,8 @@
            ──────────────────────────────────────────────────────── */
 
         /* Wrapper flotante: sin borde propio - lo ponen .ts-control y .ts-dropdown */
+        /* El ancho lo fija el JS: Math.max(300, anchoColumna) */
         .htTomSelectWrapper {
-            min-width: 300px !important;
             background: transparent !important;
             border: none !important;
             border-radius: 0 !important;
@@ -590,6 +590,7 @@
         /* Control principal (input + pills) */
         .htTomSelectWrapper .ts-wrapper {
             width: 100% !important;
+            box-sizing: border-box !important;
         }
         /* Control: borde 3 lados (top + left + right) + radio arriba */
         .htTomSelectWrapper .ts-control {
@@ -641,13 +642,13 @@
             border-radius: 0 0 6px 6px !important;
             box-shadow: 0 6px 14px rgba(181,82,17,0.12) !important;
             width: 100% !important;
+            box-sizing: border-box !important;
             left: 0 !important;
             max-height: 220px !important;
             overflow-y: auto !important;
             font-size: 0.83rem !important;
             font-family: 'Inter', sans-serif !important;
             z-index: 99999 !important;
-            box-shadow: 0 6px 16px rgba(181,82,17,0.10) !important;
         }
         .htTomSelectWrapper .ts-dropdown .ts-dropdown-content {
             max-height: 210px !important;

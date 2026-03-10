@@ -39,7 +39,7 @@
     this.$wrapper.css({
       top:   (tdRect.bottom + 2) + 'px',
       left:  tdRect.left + 'px',
-      width: Math.max(260, tdRect.width) + 'px',
+      width: Math.max(300, tdRect.width) + 'px',
       display: 'block'
     });
 
@@ -198,7 +198,7 @@
     this.$wrapper.css({
       top:   (tdRect.bottom + 2) + 'px',
       left:  tdRect.left + 'px',
-      width: Math.max(260, tdRect.width) + 'px',
+      width: Math.max(300, tdRect.width) + 'px',
       display: 'block'
     });
 
