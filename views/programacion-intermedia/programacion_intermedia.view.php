@@ -604,7 +604,7 @@
             font-size: 0.83rem !important;
             font-family: 'Inter', sans-serif !important;
             color: #1c1c1e !important;
-            padding: 2px 86px 2px 4px !important; /* Space for the "Limpiar" button (right) */
+            padding: 2px 4px !important;
             box-shadow: 0 3px 10px rgba(181,82,17,0.10) !important;
         }
         .htTomSelectWrapper .ts-control input {
@@ -697,37 +697,36 @@
 
         /* Botón limpiar todo (clear_button plugin) */
         .htTomSelectWrapper .ts-control .clear-button {
-            position: absolute !important;
-            right: 6px !important;
-            top: 50% !important;
-            transform: translateY(-50%) !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            margin-top: 4px !important;
+            margin-bottom: 2px !important;
             background: #ffffff !important;
             border: 1px solid #b55211 !important;
             border-radius: 4px !important;
             color: #b55211 !important;
-            padding: 0 8px !important;
-            height: 22px !important;
-            line-height: 20px !important;
-            font-size: 0.7rem !important;
+            padding: 2px 10px !important;
+            font-size: 0.75rem !important;
             font-weight: 700 !important;
             text-transform: uppercase !important;
-            white-space: nowrap !important;
-            display: inline-flex !important;
-            align-items: center !important;
-            gap: 5px !important;
-            box-shadow: 0 1px 3px rgba(181,82,17,0.1) !important;
-            transition: all 0.2s ease !important;
-            opacity: 1 !important;
             cursor: pointer !important;
-            z-index: 10 !important;
+            transition: all 0.22s ease !important;
+            box-shadow: 0 2px 4px rgba(181,82,17,0.08) !important;
+            opacity: 1 !important;
+            width: auto !important;
+            position: relative !important;
+            float: left !important;
+            clear: both !important;
         }
         .htTomSelectWrapper .ts-control .clear-button i {
-            font-size: 0.65rem !important;
+            font-size: 0.7rem !important;
         }
         .htTomSelectWrapper .ts-control .clear-button:hover {
             background: #b55211 !important;
             color: #ffffff !important;
-            box-shadow: 0 3px 8px rgba(181,82,17,0.2) !important;
+            box-shadow: 0 4px 8px rgba(181,82,17,0.15) !important;
+            transform: translateY(-1px) !important;
         }
         /* ─────────────────────────────────────────────────────── */
     </style>
