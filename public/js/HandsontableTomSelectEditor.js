@@ -45,16 +45,19 @@
       display: 'block'
     });
 
-    // Barrera de Cristal: Vital para evitar que al clickear opciones HOT cierre la celda.
-    this.$wrapper.off('mousedown.htAislado').on('mousedown.htAislado', function(e) {
-      e.stopPropagation();
-      // Si el usuario hace clic en el área blanca sobrante del editor, enfocar el select
-      if (!$(e.target).closest('.ts-wrapper').length) {
-         if (_this.tomSelectInstance) {
-             setTimeout(function() { _this.tomSelectInstance.focus(); }, 10);
-         }
+    // CAPTURE PHASE: Interceptar ANTES que Handsontable detecte el clic fuera de la celda
+    // Tom Select usa mousedown para seleccionar ítems, y HOT también escucha mousedown
+    // en su propio listener de captura. Registrándonos PRIMERO bloqueamos a HOT solo
+    // cuando el clic viene de dentro de nuestro wrapper.
+    this._mousedownCaptureHandler = function (e) {
+      var wrapperEl = _this.$wrapper && _this.$wrapper[0];
+      if (wrapperEl && wrapperEl.contains(e.target)) {
+        // El clic es válido dentro de Tom Select — detener la propagación
+        // para que HOT no destruya el editor
+        e.stopImmediatePropagation();
       }
-    });
+    };
+    document.addEventListener('mousedown', this._mousedownCaptureHandler, true);
 
     // Destruir instancia previa si por si acaso quedó viva
     if (this.tomSelectInstance) {
@@ -152,6 +155,11 @@
       this._keydownCaptureHandler = null;
     }
 
+    if (this._mousedownCaptureHandler) {
+      document.removeEventListener('mousedown', this._mousedownCaptureHandler, true);
+      this._mousedownCaptureHandler = null;
+    }
+
     if (this.tomSelectInstance) {
       this.tomSelectInstance.destroy();
       this.tomSelectInstance = null;
@@ -232,16 +240,14 @@
       display: 'block'
     });
 
-    // Barrera de Cristal: Vital para evitar que al clickear opciones HOT cierre la celda.
-    this.$wrapper.off('mousedown.htAislado').on('mousedown.htAislado', function(e) {
-      e.stopPropagation();
-      // Si el usuario hace clic en el área blanca sobrante del editor, enfocar el select
-      if (!$(e.target).closest('.ts-wrapper').length) {
-         if (_this.tomSelectInstance) {
-             setTimeout(function() { _this.tomSelectInstance.focus(); }, 10);
-         }
+    // CAPTURE PHASE: misma estrategia que TomSelectEditor
+    this._mousedownCaptureHandlerSingle = function (e) {
+      var wrapperEl = _this.$wrapper && _this.$wrapper[0];
+      if (wrapperEl && wrapperEl.contains(e.target)) {
+        e.stopImmediatePropagation();
       }
-    });
+    };
+    document.addEventListener('mousedown', this._mousedownCaptureHandlerSingle, true);
     if (this.tomSelectInstance) {
         this.tomSelectInstance.destroy();
     }
@@ -324,6 +330,11 @@
     if (this._keydownCaptureHandlerSingle) {
       document.removeEventListener('keydown', this._keydownCaptureHandlerSingle, true);
       this._keydownCaptureHandlerSingle = null;
+    }
+
+    if (this._mousedownCaptureHandlerSingle) {
+      document.removeEventListener('mousedown', this._mousedownCaptureHandlerSingle, true);
+      this._mousedownCaptureHandlerSingle = null;
     }
 
     if (this.tomSelectInstance) {
