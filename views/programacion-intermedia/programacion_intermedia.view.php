@@ -621,6 +621,9 @@
 
         /* Pills (ítems seleccionados) */
         .htTomSelectWrapper .ts-control .item {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
             background: #fbead9 !important;   /* very light naranja AIA */
             border: 1px solid #e87722 !important; /* mid naranja AIA */
             color: #8b4011 !important;         /* dark naranja AIA */
@@ -628,10 +631,13 @@
             font-size: 0.78rem !important;
             font-weight: 500 !important;
             padding: 2px 6px !important;
+            margin: 2px !important;
         }
         .htTomSelectWrapper .ts-control .item .remove {
+            margin-left: auto !important;
             color: #b55211 !important;
             border-left: none !important;
+            padding-left: 8px !important;
         }
         .htTomSelectWrapper .ts-control .item .remove:hover {
             background: #f6c79b !important;
