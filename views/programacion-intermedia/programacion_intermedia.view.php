@@ -696,37 +696,40 @@
         }
 
         /* Botón limpiar todo (clear_button plugin) */
-        .htTomSelectWrapper .ts-control .clear-button {
+        .htTomSelectWrapper .ts-control .clear-button.aia-clear-btn {
             display: inline-flex !important;
             align-items: center !important;
             gap: 6px !important;
-            margin-top: 4px !important;
+            margin-top: 6px !important;
             margin-bottom: 2px !important;
             background: #ffffff !important;
             border: 1px solid #b55211 !important;
             border-radius: 4px !important;
             color: #b55211 !important;
-            padding: 2px 10px !important;
+            padding: 4px 10px !important;
             font-size: 0.75rem !important;
             font-weight: 700 !important;
             text-transform: uppercase !important;
             cursor: pointer !important;
             transition: all 0.22s ease !important;
-            box-shadow: 0 2px 4px rgba(181,82,17,0.08) !important;
+            box-shadow: 0 2px 4px rgba(181,82,17,0.1) !important;
             opacity: 1 !important;
             width: auto !important;
             position: relative !important;
             float: left !important;
             clear: both !important;
+            visibility: visible !important;
         }
-        .htTomSelectWrapper .ts-control .clear-button i {
-            font-size: 0.7rem !important;
+        .htTomSelectWrapper .ts-control .clear-button.aia-clear-btn i {
+            font-size: 0.75rem !important;
+            color: #b55211 !important;
         }
-        .htTomSelectWrapper .ts-control .clear-button:hover {
+        .htTomSelectWrapper .ts-control .clear-button.aia-clear-btn:hover {
             background: #b55211 !important;
             color: #ffffff !important;
-            box-shadow: 0 4px 8px rgba(181,82,17,0.15) !important;
-            transform: translateY(-1px) !important;
+        }
+        .htTomSelectWrapper .ts-control .clear-button.aia-clear-btn:hover i {
+            color: #ffffff !important;
         }
         /* ─────────────────────────────────────────────────────── */
     </style>
@@ -920,7 +923,7 @@
             ?>
         };
     </script>
-    <script type="text/javascript" src="/js/HandsontableTomSelectEditor.js?v=tomselect10"></script>
+    <script type="text/javascript" src="/js/HandsontableTomSelectEditor.js?v=tomselect11"></script>
     <script src="/js/modules/programacion_intermedia/hot.js?v=hot26"></script>
 
     <script>

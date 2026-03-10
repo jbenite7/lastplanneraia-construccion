@@ -64,7 +64,7 @@
         'clear_button': {
           title: 'Limpiar selección',
           html: function(data) {
-            return '<button type="button" class="' + data.className + '" title="' + data.title + '"><i class="fas fa-trash-alt"></i> Limpiar</button>';
+            return '<button type="button" class="' + data.className + ' aia-clear-btn" title="' + data.title + '"><i class="fas fa-trash-alt"></i> Limpiar</button>';
           }
         }
       },
@@ -234,7 +234,7 @@
         'clear_button': {
           title: 'Limpiar selección',
           html: function(data) {
-            return '<button type="button" class="' + data.className + '" title="' + data.title + '"><i class="fas fa-trash-alt"></i> Limpiar</button>';
+            return '<button type="button" class="' + data.className + ' aia-clear-btn" title="' + data.title + '"><i class="fas fa-trash-alt"></i> Limpiar</button>';
           }
         }
       },
