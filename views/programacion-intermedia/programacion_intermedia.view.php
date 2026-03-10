@@ -676,8 +676,9 @@
         }
         .htTomSelectWrapper .ts-dropdown .ts-option:hover,
         .htTomSelectWrapper .ts-dropdown .ts-option.active {
-            background: #fbead9 !important; /* very light naranja */
-            color: #8b4011 !important;
+            background: #f6c79b !important; /* Más intenso que el beige para feedback claro */
+            color: #b55211 !important;
+            font-weight: 500 !important;
         }
         .htTomSelectWrapper .ts-dropdown .ts-option:last-child {
             border-bottom: none !important;
@@ -935,7 +936,7 @@
             ?>
         };
     </script>
-    <script type="text/javascript" src="/js/HandsontableTomSelectEditor.js?v=tomselect28"></script>
+    <script type="text/javascript" src="/js/HandsontableTomSelectEditor.js?v=tomselect29"></script>
     <script src="/js/modules/programacion_intermedia/hot.js?v=hot26"></script>
 
     <script>
