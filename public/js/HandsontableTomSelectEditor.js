@@ -75,9 +75,22 @@
       if (optionEl && _this.tomSelectInstance) {
         var val = optionEl.getAttribute('data-value');
         if (val !== null) {
+          // Opción especial de navegación (➕ Crear ...)  → redirigir, no seleccionar
+          if (val.indexOf('\u2795') > -1 || val.indexOf('Crear') > -1) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (val.indexOf('Subcontratista') > -1 || val.toLowerCase().indexOf('sub') > -1) {
+              window.open('/subcontratistas', '_blank');
+            } else if (val.indexOf('Profesional') > -1 || val.indexOf('Responsable') > -1) {
+              window.open('/profesionales', '_blank');
+            }
+            _this.finishEditing();
+            return;
+          }
+          // Opción normal: pre-seleccionar antes de que HOT llame getValue()
           var items = _this.tomSelectInstance.items;
           if (items.indexOf(val) === -1) {
-            _this.tomSelectInstance.addItem(val, true); // silent: no re-render
+            _this.tomSelectInstance.addItem(val, true);
           } else {
             _this.tomSelectInstance.removeItem(val, true);
           }
