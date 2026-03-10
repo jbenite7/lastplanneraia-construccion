@@ -600,6 +600,7 @@
             border-radius: 4px 4px 0 0 !important;
             min-height: 24px !important;
             width: 100% !important;
+            max-width: 100% !important;
             box-sizing: border-box !important;
             font-size: 0.83rem !important;
             font-family: 'Inter', sans-serif !important;
@@ -650,7 +651,8 @@
             border-top: none !important;
             border-radius: 0 0 6px 6px !important;
             box-shadow: 0 8px 16px rgba(181,82,17,0.15) !important;
-            min-width: 100% !important;
+            width: 100% !important;
+            max-width: 100% !important;
             box-sizing: border-box !important;
             left: 0 !important;
             max-height: 220px !important;
@@ -925,7 +927,7 @@
             ?>
         };
     </script>
-    <script type="text/javascript" src="/js/HandsontableTomSelectEditor.js?v=tomselect11"></script>
+    <script type="text/javascript" src="/js/HandsontableTomSelectEditor.js?v=tomselect20"></script>
     <script src="/js/modules/programacion_intermedia/hot.js?v=hot26"></script>
 
     <script>
