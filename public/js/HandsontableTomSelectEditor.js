@@ -66,6 +66,20 @@
     // Ocultar explícitamente el <select> nativo por si Bootstrap lo sobre-expone
     this.$select.css('display', 'none');
 
+    // Detectar opción "Crear" via item_add (Tom Select la añade en su mousedown):
+    // La removemos silenciosamente y navegamos al módulo correcto.
+    this.tomSelectInstance.on('item_add', function(value) {
+      var isCreate = value.indexOf('\u2795') > -1 || value.indexOf('Crear') > -1;
+      if (!isCreate) return;
+      if (_this.tomSelectInstance) {
+        _this.tomSelectInstance.removeItem(value, true);
+      }
+      var url = (value.indexOf('Subcontratista') > -1)
+        ? '/subcontratistas' : '/profesionales';
+      window.open(url, '_blank');
+      setTimeout(function() { _this.finishEditing(); }, 0);
+    });
+
     // ─── FIX PRINCIPAL ─────────────────────────────────────────────
     // pointerdown (bubble) dispara ANTES que mousedown (capture) de HOT.
     // Pre-seleccionamos el ítem aquí para que cuando HOT llame getValue(),
@@ -75,16 +89,8 @@
       if (optionEl && _this.tomSelectInstance) {
         var val = optionEl.getAttribute('data-value');
         if (val !== null) {
-          // Opción especial de navegación (➕ Crear ...)  → redirigir, no seleccionar
+          // Opción especial (➕ Crear): el listener item_add lo maneja, aquí solo saltar
           if (val.indexOf('\u2795') > -1 || val.indexOf('Crear') > -1) {
-            e.preventDefault();
-            e.stopPropagation();
-            if (val.indexOf('Subcontratista') > -1 || val.toLowerCase().indexOf('sub') > -1) {
-              window.open('/subcontratistas', '_blank');
-            } else if (val.indexOf('Profesional') > -1 || val.indexOf('Responsable') > -1) {
-              window.open('/profesionales', '_blank');
-            }
-            _this.finishEditing();
             return;
           }
           // Opción normal: pre-seleccionar antes de que HOT llame getValue()
