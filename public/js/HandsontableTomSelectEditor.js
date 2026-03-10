@@ -59,7 +59,15 @@
       labelField:       'text',
       searchField:      'text',
       options:           this.tomOptions,
-      plugins:          ['remove_button', 'clear_button'],
+      plugins: {
+        'remove_button': {},
+        'clear_button': {
+          title: 'Limpiar selección',
+          html: function(data) {
+            return '<button type="button" class="' + data.className + '" title="' + data.title + '"><i class="fas fa-trash-alt"></i> Limpiar</button>';
+          }
+        }
+      },
       maxOptions:        null,
       closeAfterSelect:  false,
       hideSelected:      true
@@ -222,7 +230,14 @@
       labelField:  'text',
       searchField: 'text',
       options:      this.tomOptions,
-      plugins:     ['clear_button'],
+      plugins: {
+        'clear_button': {
+          title: 'Limpiar selección',
+          html: function(data) {
+            return '<button type="button" class="' + data.className + '" title="' + data.title + '"><i class="fas fa-trash-alt"></i> Limpiar</button>';
+          }
+        }
+      },
       maxOptions:   null
     });
     this.$select.css('display', 'none');
