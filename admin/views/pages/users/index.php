@@ -88,7 +88,7 @@ use Admin\Core\RoleManager;
 
 <script>
 $(function () {
-  $("#usersTable").DataTable({
+  var table = $("#usersTable").DataTable({
     "responsive": false, 
     "paging": false,
     "lengthChange": false, 

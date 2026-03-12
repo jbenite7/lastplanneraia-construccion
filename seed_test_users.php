@@ -6,7 +6,7 @@
  */
 
 require_once __DIR__ . '/vendor/autoload.php';
-require_once __DIR__ . '/construccion/conexion.php';
+require_once __DIR__ . '/src/Core/Database.php';
 require_once __DIR__ . '/admin/src/Core/RoleManager.php';
 
 use Admin\Core\RoleManager;

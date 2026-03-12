@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script src="/construccion/js/tablet-viewport-scale.js?v=1.2"></script>
+  <script src="/public/js/tablet-viewport-scale.js?v=1.2"></script>
   <title><?php echo $title ?? 'Panel Administrativo - AIA'; ?></title>
 
   <!-- Google Font: Inter (AIA Corporate Font) -->
@@ -72,7 +72,7 @@
   <aside class="main-sidebar sidebar-dark-primary elevation-4">
     <!-- Brand Logo -->
     <a href="/admin/dashboard" class="brand-link">
-      <img src="/construccion/imagenes/florAIA.png" alt="AIA Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
+      <img src="/public/img/florAIA.png" alt="AIA Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
       <span class="brand-text font-weight-light">AIA Panel</span>
     </a>
 
