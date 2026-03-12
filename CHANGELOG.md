@@ -31,7 +31,11 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
   - **Endpoints Huerfanos:** Se mudaron scripts POST/GET solitarios como `actualizar_pdc.php` o `cambiar_pagina.php` al sandbox `/src/Legacy/Endpoints/` interceptándolos a través del Front Controller vía `$router->post` fallback rules.
   - **Eliminación Física:** Borrado definitivo de la mega-carpeta `/construccion/` limpiando el footprint fundamental del sistema viejo sin breaking changes.
 
+- **Unificación Script PDC:** Reintegración y refactorización del script legacy `actualizar_pdc.php`. Se fusionó la validación esencial de negocio (`pdcActivo`) extraída del código original de 2022 con la eficiencia de sentencias preparadas (PDO) y manejo de excepciones JSON desarrolladas recientemente, consolidando todo en `src/Legacy/actualizar_pdc.php` y eliminando la versión redundante `actualizar_pdc_nueva_semana.php`.
+
 ### Corregido
+
+- **Fix Error 500 Rutas Duplicadas:** Se purgó el enrutador principal (`public/index.php`) de un bloque de rutas obsoletas y fantasmas dirigidas a `src/Legacy/Endpoints/` que causaba colisión de declaración y caída total del servidor al intentar resolver la ruta de actualización del PDC.
 
 - **Fix Desalineamiento de Tom Select:** Corrección de la posición y ancho en `HandsontableTomSelectEditor.js` para que el input del dropdown solape perfectamente la celda de Handsontable (`top`/`left` relativos exactos y `width` dinámico) pero permitiendo a su vez que la lista emergente se expanda horizontalmente (`min-width: max(300px, tdRect.width)`) para no truncar los nombres largos de empresas.
 
