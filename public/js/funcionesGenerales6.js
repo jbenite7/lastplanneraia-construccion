@@ -1,5 +1,5 @@
 document.getElementById('ventanasModalesSemana').innerHTML =
-  "<!-- Se crea el Modal que contiene el formulario para crear una nueva semana en el proyecto --><div class='modal_nueva_sem modal fade' id='modal_nueva_sem' tabindex='-1' role='dialog' aria-labelledby='modal_nueva_semLabel'><div class='modal-dialog' role='document'><div class='modal-content'><div class='modal-header'><h4 class='modal-title' id='modalEliminarLabel'>Crear Semana LPS</h4><button type='button' class='close' data-dismiss='modal' aria-label='Close'><span aria-hidden='true'>&times;</span></button></div><div class='modal-body'><div class='row'><div id='cuadroModal' class='cuadroModal col-sm-12 col-md-12 col-lg-12 '><form class='form form-horizontal' action='' method='POST'><input type='hidden' id='Id' name='Id' value='0'><input type='hidden' id='opcion' name='opcion' value='registrar'><div class='form-group' style='width:100%;'><label for='inicio_sem' class='col-sm-12 control-label'>Seleccione Fecha de Inicio de la Semana</label><div class='col-sm-6'><input id='inicio_sem' name='inicio_sem' class='form-control' type='text' readonly></div></div><!--Se crean los botones Guardar y Listar--><div class='form-group'><div class='col-sm-offset-2 col-sm-8'><input id='btn_guardar_nueva_sem' type='button' class='btn btn-primary' data-dismiss='modal' value='Guardar'><input id='btn_cancelar' type='button' class='btn btn-danger' data-dismiss='modal' value='Cancelar' ></div></div></form></div></div></div><!-- <div class='modal-footer'><button type='button' id='eliminar-usuario' class='btn btn-primary' data-dismiss='modal' >Aceptar</button><button type='button' class='btn btn-default' data-dismiss='modal'>Cancelar</button></div> --></div></div></div><!-- Modal --><!-- Se crea el Modal que solicita la confirmación de eliminar una semana del proyecto --><div class='modal_eliminar_sem modal fade' id='modal_eliminar_sem' tabindex='-1' role='dialog' aria-labelledby='modal_nueva_semLabel'><div class='modal-dialog' role='document'><div class='modal-content'><div class='modal-header'><h4 class='modal-title' id='modalEliminarLabel'>Eliminar Semana LPS</h4><button type='button' class='close' data-dismiss='modal' aria-label='Close'><span aria-hidden='true'>&times;</span></button></div><div class='modal-body'><div class='row'><div id='cuadro5' class='cuadro5 col-sm-12 col-md-12 col-lg-12 '><form class='form form-horizontal' action='' method='POST'><p class='modal-eliminar-semana-body-texto' id='modal-eliminar-semana-body-texto'></p><!--Se crean los botones Guardar y Listar--><div class='form-group'><div class='col-sm-offset-2 col-sm-8'><input id='btn_eliminar_sem' type='button' class='btn btn-primary' data-dismiss='modal' value='Eliminar'><input id='btn_cancelar_semana' type='button' class='btn btn-danger' data-dismiss='modal' value='Cancelar' ></div></div></form></div></div></div></div></div></div><!-- Modal --><!-- Se crea el modal que explica la leyenda de colores de las tablas --><div class='modal fade' id='modal_leyenda_colores' role='dialog' data-backdrop='static'><div class='modal-dialog modal-lg'><!-- Modal content--><div class='modal-content'><div class='modal-header'><h4 class='modal-title' id='modal_leyenda_colores_Label'>Leyenda de Colores de Las Actividades</h4><button type='button' class='close' data-dismiss='modal'>&times;</button></div><div class='modal-body' style='margin:auto'><img src='/construccion/imagenes/Leyenda_Actividades.png' class='d-inline-block align-top' style='margin:auto; width:100%; max-width:800px' alt=''></div><div class='modal-footer'><button type='button' class='btn btn-default btn-primary' data-dismiss='modal'>Close</button></div></div></div></div><!-- Modal --><!-- Se crea el Modal que coloca el spinner cuando se está ejecutando un código que se demora varios segundos --><div class='modal fade' id='modal_spinner' role='dialog'><div class='modal-dialog modal-sm modal-dialog-centered'><!-- Modal content--><div class='spinner-border' style='width: 300px; height: 300px; color: white' role='status'><span class='sr-only'>Cargando...</span></div></div></div></div>";
+  "<!-- Se crea el Modal que contiene el formulario para crear una nueva semana en el proyecto --><div class='modal_nueva_sem modal fade' id='modal_nueva_sem' tabindex='-1' role='dialog' aria-labelledby='modal_nueva_semLabel'><div class='modal-dialog' role='document'><div class='modal-content'><div class='modal-header'><h4 class='modal-title' id='modalEliminarLabel'>Crear Semana LPS</h4><button type='button' class='close' data-dismiss='modal' aria-label='Close'><span aria-hidden='true'>&times;</span></button></div><div class='modal-body'><div class='row'><div id='cuadroModal' class='cuadroModal col-sm-12 col-md-12 col-lg-12 '><form class='form form-horizontal' action='' method='POST'><input type='hidden' id='Id' name='Id' value='0'><input type='hidden' id='opcion' name='opcion' value='registrar'><div class='form-group' style='width:100%;'><label for='inicio_sem' class='col-sm-12 control-label'>Seleccione Fecha de Inicio de la Semana</label><div class='col-sm-6'><input id='inicio_sem' name='inicio_sem' class='form-control' type='text' readonly></div></div><!--Se crean los botones Guardar y Listar--><div class='form-group'><div class='col-sm-offset-2 col-sm-8'><input id='btn_guardar_nueva_sem' type='button' class='btn btn-primary' data-dismiss='modal' value='Guardar'><input id='btn_cancelar' type='button' class='btn btn-danger' data-dismiss='modal' value='Cancelar' ></div></div></form></div></div></div><!-- <div class='modal-footer'><button type='button' id='eliminar-usuario' class='btn btn-primary' data-dismiss='modal' >Aceptar</button><button type='button' class='btn btn-default' data-dismiss='modal'>Cancelar</button></div> --></div></div></div><!-- Modal --><!-- Se crea el Modal que solicita la confirmación de eliminar una semana del proyecto --><div class='modal_eliminar_sem modal fade' id='modal_eliminar_sem' tabindex='-1' role='dialog' aria-labelledby='modal_nueva_semLabel'><div class='modal-dialog' role='document'><div class='modal-content'><div class='modal-header'><h4 class='modal-title' id='modalEliminarLabel'>Eliminar Semana LPS</h4><button type='button' class='close' data-dismiss='modal' aria-label='Close'><span aria-hidden='true'>&times;</span></button></div><div class='modal-body'><div class='row'><div id='cuadro5' class='cuadro5 col-sm-12 col-md-12 col-lg-12 '><form class='form form-horizontal' action='' method='POST'><p class='modal-eliminar-semana-body-texto' id='modal-eliminar-semana-body-texto'></p><!--Se crean los botones Guardar y Listar--><div class='form-group'><div class='col-sm-offset-2 col-sm-8'><input id='btn_eliminar_sem' type='button' class='btn btn-primary' data-dismiss='modal' value='Eliminar'><input id='btn_cancelar_semana' type='button' class='btn btn-danger' data-dismiss='modal' value='Cancelar' ></div></div></form></div></div></div></div></div></div><!-- Modal --><!-- Se crea el modal que explica la leyenda de colores de las tablas --><div class='modal fade' id='modal_leyenda_colores' role='dialog' data-backdrop='static'><div class='modal-dialog modal-lg'><!-- Modal content--><div class='modal-content'><div class='modal-header'><h4 class='modal-title' id='modal_leyenda_colores_Label'>Leyenda de Colores de Las Actividades</h4><button type='button' class='close' data-dismiss='modal'>&times;</button></div><div class='modal-body' style='margin:auto'><img src='/img/Leyenda_Actividades.png' class='d-inline-block align-top' style='margin:auto; width:100%; max-width:800px' alt=''></div><div class='modal-footer'><button type='button' class='btn btn-default btn-primary' data-dismiss='modal'>Close</button></div></div></div></div><!-- Modal --><!-- Se crea el Modal que coloca el spinner cuando se está ejecutando un código que se demora varios segundos --><div class='modal fade' id='modal_spinner' role='dialog'><div class='modal-dialog modal-sm modal-dialog-centered'><!-- Modal content--><div class='spinner-border' style='width: 300px; height: 300px; color: white' role='status'><span class='sr-only'>Cargando...</span></div></div></div></div>";
 
 var nueva_sem = function (db, carpeta, seccion) {
   var semanaActual = document.getElementById('semana').value;
@@ -11,13 +11,13 @@ var nueva_sem = function (db, carpeta, seccion) {
     var f_inicio_sem = $('#inicio_sem').val(),
       opcion = 'nueva_sem';
     if (carpeta == 1) {
-      var url = '/construccion/funciones_generales/php/nueva_semana.php?db=' + db;
+      var url = '/legacy/funciones_generales/php/nueva_semana.php?db=' + db;
     } else {
-      var url = '/construccion/funciones_generales/php/nueva_semana.php?db=' + db;
+      var url = '/legacy/funciones_generales/php/nueva_semana.php?db=' + db;
     }
     $.ajax({
       method: 'POST',
-      url: '/construccion/funciones_generales/php/verificarCICActualizada.php?',
+      url: '/legacy/funciones_generales/php/verificarCICActualizada.php?',
       contenttype: 'charset=utf-8',
       data: { db: db, semana: semanaActual },
     }).done(function (info) {
@@ -28,7 +28,7 @@ var nueva_sem = function (db, carpeta, seccion) {
             faltaCalificar +
             ', las cuales se deben realizar mínimo cada 2 meses.'
         );
-        location.assign('/construccion/cambiar_pagina.php?seccion=CIC&semana=' + semanaActual);
+        location.assign('/legacy/cambiar_pagina.php?seccion=CIC&semana=' + semanaActual);
       } else {
         $.ajax({
           method: 'POST',
@@ -49,46 +49,46 @@ var nueva_sem = function (db, carpeta, seccion) {
                 semana
             );
             location.assign(
-              '/construccion/cambiar_pagina.php?seccion=programacion_semanal&semana=' + semana
+              '/legacy/cambiar_pagina.php?seccion=programacion_semanal&semana=' + semana
             );
           } else {
             if (pdcConteo == 0) {
               if (carpeta == 1) {
                 location.assign(
-                  '/construccion/cambiar_pagina.php?seccion=programa_general&semana=' + semana
+                  '/legacy/cambiar_pagina.php?seccion=programa_general&semana=' + semana
                 );
               } else {
                 location.assign(
-                  '/construccion/cambiar_pagina.php?seccion=programa_general&semana=' + semana
+                  '/legacy/cambiar_pagina.php?seccion=programa_general&semana=' + semana
                 );
               }
             } else {
               if (semana > 1) {
                 $.ajax({
                   method: 'POST',
-                  url: '/construccion/pdc/actualizar_pdc.php',
+                  url: '/legacy/pdc/actualizar_pdc.php',
                   contenttype: 'charset=utf-8',
                   data: { db: db, semana: semana },
                 }).done(function (info) {
                   var json_info = typeof info === 'string' ? JSON.parse(info) : info;
                   if (carpeta == 1) {
                     location.assign(
-                      '/construccion/cambiar_pagina.php?seccion=programa_general&semana=' + semana
+                      '/legacy/cambiar_pagina.php?seccion=programa_general&semana=' + semana
                     );
                   } else {
                     location.assign(
-                      '/construccion/cambiar_pagina.php?seccion=programa_general&semana=' + semana
+                      '/legacy/cambiar_pagina.php?seccion=programa_general&semana=' + semana
                     );
                   }
                 });
               } else {
                 if (carpeta == 1) {
                   location.assign(
-                    '/construccion/cambiar_pagina.php?seccion=programa_general&semana=' + semana
+                    '/legacy/cambiar_pagina.php?seccion=programa_general&semana=' + semana
                   );
                 } else {
                   location.assign(
-                    '/construccion/cambiar_pagina.php?seccion=programa_general&semana=' + semana
+                    '/legacy/cambiar_pagina.php?seccion=programa_general&semana=' + semana
                   );
                 }
               }
@@ -109,9 +109,9 @@ var eliminar_sem = function (semana, db, carpeta, seccion) {
     var semanaFinal = semana - 1,
       opcion = 'eliminar_sem';
     if (carpeta == 1) {
-      var url = '/construccion/funciones_generales/php/eliminar_semana.php?db=' + db;
+      var url = '/legacy/funciones_generales/php/eliminar_semana.php?db=' + db;
     } else {
-      var url = '/construccion/funciones_generales/php/eliminar_semana.php?db=' + db;
+      var url = '/legacy/funciones_generales/php/eliminar_semana.php?db=' + db;
     }
     $.ajax({
       method: 'POST',
@@ -123,11 +123,11 @@ var eliminar_sem = function (semana, db, carpeta, seccion) {
       if (json_info['puedeEliminar'] == 'SI') {
         if (carpeta == 1) {
           location.assign(
-            '/construccion/cambiar_pagina.php?seccion=programa_general&semana=' + semanaFinal
+            '/legacy/cambiar_pagina.php?seccion=programa_general&semana=' + semanaFinal
           );
         } else {
           location.assign(
-            '/construccion/cambiar_pagina.php?seccion=programa_general&semana=' + semanaFinal
+            '/legacy/cambiar_pagina.php?seccion=programa_general&semana=' + semanaFinal
           );
         }
       } else {
@@ -187,7 +187,7 @@ var limpiar_buscador = function (tbody, table) {
 
     $.ajax({
       method: 'POST',
-      url: '/construccion/funciones_generales/php/buscadorTabla.php',
+      url: '/legacy/funciones_generales/php/buscadorTabla.php',
       contenttype: 'charset=utf-8',
       data: { buscadorTabla: buscadorTabla },
     }).done(function (info) {

@@ -2896,10 +2896,10 @@
         var semanaActual = typeof getSemana === 'function' ? getSemana() : '';
         var sufijo = semanaActual ? '&semana=' + semanaActual : '';
         
-        if (id === 'btn_Actividades') window.location.href = '/construccion/cambiar_pagina.php?seccion=programacion_semanal' + sufijo;
-        else if (id === 'btn_CNP') window.location.href = '/construccion/cambiar_pagina.php?seccion=CNP' + sufijo;
-        else if (id === 'btn_CNC') window.location.href = '/construccion/cambiar_pagina.php?seccion=CNC' + sufijo;
-        else if (id === 'btn_Cal_Proveedores') window.location.href = '/construccion/cambiar_pagina.php?seccion=CIC' + sufijo;
+        if (id === 'btn_Actividades') window.location.href = '/legacy/cambiar_pagina.php?seccion=programacion_semanal' + sufijo;
+        else if (id === 'btn_CNP') window.location.href = '/legacy/cambiar_pagina.php?seccion=CNP' + sufijo;
+        else if (id === 'btn_CNC') window.location.href = '/legacy/cambiar_pagina.php?seccion=CNC' + sufijo;
+        else if (id === 'btn_Cal_Proveedores') window.location.href = '/legacy/cambiar_pagina.php?seccion=CIC' + sufijo;
     });
     $('#psAlertsMobile')
       .off('shown.bs.collapse.psLayout hidden.bs.collapse.psLayout')

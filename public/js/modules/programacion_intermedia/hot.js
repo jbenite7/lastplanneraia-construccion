@@ -2470,8 +2470,8 @@
     if (!db) { showFeedback('error', 'No hay proyecto seleccionado'); return; }
     $('#btn-refresh-listas').prop('disabled', true).text('Cargando...');
 
-    var urlSub = '/construccion/subcontratistas/listar_subcontratistas.php?db=' + encodeURIComponent(db);
-    var urlProf = '/construccion/profesionales/listar_profesionales.php?db=' + encodeURIComponent(db);
+    var urlSub = '/legacy/subcontratistas/listar_subcontratistas.php?db=' + encodeURIComponent(db);
+    var urlProf = '/legacy/profesionales/listar_profesionales.php?db=' + encodeURIComponent(db);
 
     $.when(
       $.getJSON(urlSub),

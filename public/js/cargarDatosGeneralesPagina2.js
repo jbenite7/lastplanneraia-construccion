@@ -248,7 +248,7 @@ $(document).ready(function () {
 var cargarDatosGeneralesPagina = function (seccion) {
   $.ajax({
     method: 'POST',
-    url: '/construccion/funciones_generales/php/datosGeneralesPagina.php',
+    url: '/legacy/funciones_generales/php/datosGeneralesPagina.php',
     contenttype: 'charset=utf-8',
     data: {
       seccion: seccion,
