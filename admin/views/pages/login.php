@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script src="/construccion/js/tablet-viewport-scale.js?v=1.2"></script>
+  <script src="/public/js/tablet-viewport-scale.js?v=1.2"></script>
   <title><?php echo $title; ?></title>
 
   <!-- Google Fonts: Montserrat & Inter -->
@@ -14,13 +14,13 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/icheck-bootstrap/3.0.1/icheck-bootstrap.min.css">
   <!-- Theme style -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
-  <link rel="stylesheet" href="/construccion/css/login-brand-unified.css?v=1.2">
+  <link rel="stylesheet" href="/public/css/login-brand-unified.css?v=1.2">
 </head>
 <body class="hold-transition login-page login-brand-page">
 <div class="login-box">
   <div class="card card-login">
     <div class="card-header">
-      <img src="/construccion/imagenes/aiaConstruccionMasCerteza.png" alt="AIA Logo" class="brand-logo">
+      <img src="/public/img/aiaConstruccionMasCerteza.png" alt="AIA Logo" class="brand-logo">
       <h1 class="login-title">Last Planner AIA</h1>
       <p class="login-subtitle">Inicia sesión en Last Planner AIA para acceder al panel</p>
     </div>
