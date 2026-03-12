@@ -86,7 +86,7 @@ abstract class BaseController
     /**
      * Renderiza una vista con datos opcionales.
      *
-     * @param string $viewPath Ruta relativa a PROJECT_ROOT (ej: '/construccion/modulo/views/...')
+     * @param string $viewPath Ruta relativa a PROJECT_ROOT (ej: '/views/modulo/...')
      * @param array $data Datos a pasar a la vista (se extraen como variables)
      * @return void
      */

@@ -1161,7 +1161,7 @@
 			$("div.toolbarAcciones").html('<div class="grupo_botones1 ps-toolbar-actions" role="group" aria-label="Actions"><button id="btn_tutorialActualizarCronograma" type="button" class="btn btn-secondary btn-sm ps-btn-gap" title="Video tutorial" onclick="window.open(\'https://youtu.be/3vqOnCOABzI\', \'_blank\')">Tutorial <i class="fas fa-list-ol fa-lg"></i></button><button id="btn_actualizarPDC" class="btn btn-primary btn-sm ps-btn-gap" title="Actualizar items" onclick="actualizarPDC()">Actualizar <i class="fas fa-sync fa-lg"></i></button><button id="btn_definirContratosPDC" class="btn btn-warning btn-sm ps-btn-gap" title="Desglosar Subcontratos" onclick="obtener_data_definirContratos()">Desglosar <i class="fa fa-list-ol fa-lg" aria-hidden="true"></i></button></div>');
 			
 			// 2. Navigation Bar (Center/Middle)
-			$("div.toolbarNavegacion").html('<div class="grupo_botones_semanal_madre ps-toolbar-nav-wrap"><div class="ps-module-switcher" role="tablist" aria-label="Navegacion general"><button id="btn_Actividades" type="button" class="ps-module-tab" onclick="window.location.href=\'/construccion/cambiar_pagina.php?seccion=info_listadoActividades&semana='+semana+'\'" aria-label="Ir a Actividades"><i class="fas fa-table" aria-hidden="true"></i><span>Actividades</span></button><button id="btn_contratos" type="button" class="ps-module-tab" onclick="window.location.href=\'/construccion/cambiar_pagina.php?seccion=info_contratos&semana='+semana+'\'" aria-label="Ir a Contratos"><i class="fas fa-file-alt" aria-hidden="true"></i><span>Contratos</span></button><button id="btn_planCompras" type="button" class="ps-module-tab is-active" onclick="window.location.href=\'/construccion/cambiar_pagina.php?seccion=planCompras&semana='+semana+'\'" aria-label="Ir a Plan de Compras" aria-current="page"><i class="fas fa-shopping-cart" aria-hidden="true"></i><span>Plan de Compras</span></button></div></div>');
+			$("div.toolbarNavegacion").html('<div class="grupo_botones_semanal_madre ps-toolbar-nav-wrap"><div class="ps-module-switcher" role="tablist" aria-label="Navegacion general"><button id="btn_Actividades" type="button" class="ps-module-tab" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_listadoActividades&semana='+semana+'\'" aria-label="Ir a Actividades"><i class="fas fa-table" aria-hidden="true"></i><span>Actividades</span></button><button id="btn_contratos" type="button" class="ps-module-tab" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_contratos&semana='+semana+'\'" aria-label="Ir a Contratos"><i class="fas fa-file-alt" aria-hidden="true"></i><span>Contratos</span></button><button id="btn_planCompras" type="button" class="ps-module-tab is-active" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=planCompras&semana='+semana+'\'" aria-label="Ir a Plan de Compras" aria-current="page"><i class="fas fa-shopping-cart" aria-hidden="true"></i><span>Plan de Compras</span></button></div></div>');
 
 			$("div.toolbarFilaMensajes").html(`
 				<div class="pdc-legend">
@@ -1998,7 +1998,7 @@
 			var semana = document.getElementById('semana').value;
 			$.ajax({
 				method:"POST",
-				url: "/construccion/pdc/actualizar_pdc.php?db="+db,
+				url: "/legacy/pdc/actualizar_pdc.php?db="+db,
 				contenttype:"charset=utf-8",
 				data: {"db": db, "semana": semana}
 			}).done( function( info ){

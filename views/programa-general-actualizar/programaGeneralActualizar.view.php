@@ -310,7 +310,7 @@
 				"paging": false,
 				"ajax": {
 					"method": "POST",
-					"url":"/construccion/programaGeneralActualizar/listar_programaGeneralActualizar.php?db="+db+"&semana="+semana
+					"url":"/legacy/programaGeneralActualizar/listar_programaGeneralActualizar.php?db="+db+"&semana="+semana
 				},
 				"lengthMenu": [100, 200, 500],
 				'columnDefs': [
@@ -847,7 +847,7 @@
 		    codigo_actividad = $("#select_codigo_actividad").val();
 		    $.ajax({
 		      method: "POST",
-		      url: "/construccion/programa_general/guardar_programa_general.php?db="+db,
+		      url: "/legacy/programa_general/guardar_programa_general.php?db="+db,
 		      contenttype: "charset=utf-8",
 		      data: {
 		        "opcion": opcion,
@@ -901,7 +901,7 @@
 		    //var frm = $(this).serialize();
 		    $.ajax({
 		      type: "POST",
-		      url: "/construccion/programaGeneralActualizar/guardar_programaGeneralActualizar.php?db="+db+"&f_inicio_sem="+f_inicio_sem,
+		      url: "/legacy/programaGeneralActualizar/guardar_programaGeneralActualizar.php?db="+db+"&f_inicio_sem="+f_inicio_sem,
 		      contentType: false,
 		      processData: false,
 		      data: variables,
@@ -929,7 +929,7 @@
 		    //var frm = $(this).serialize();
 		    $.ajax({
 		      type: "POST",
-		      url: "/construccion/programaGeneralActualizar/guardar_programaGeneralActualizar.php?db="+db,
+		      url: "/legacy/programaGeneralActualizar/guardar_programaGeneralActualizar.php?db="+db,
 		      contenttype: "charset=utf-8",
 		      data: {"semana": semana, "opcion": opcion},
 		    }).done(function(info) {
@@ -1008,7 +1008,7 @@
 				}else{
 					$.ajax({
 						method: "POST",
-						url: "/construccion/programa_general/guardar_programa_general.php?db="+db+"&semana="+(Number(semana)+1),
+						url: "/legacy/programa_general/guardar_programa_general.php?db="+db+"&semana="+(Number(semana)+1),
 						contenttype:"charset=utf-8",
 						data: frm,
 					}).done( function( info ){

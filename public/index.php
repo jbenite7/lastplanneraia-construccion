@@ -130,28 +130,40 @@ $router->post('/api/notifications/read', [\App\Controllers\Core\NotificationCont
 $router->get('/dashboard', [\App\Controllers\Core\DashboardController::class, 'index']);
 $router->post('/context/week', [\App\Controllers\Core\ContextController::class, 'setWeek']);
 
-$router->get('/construccion/cambiar_pagina.php', function() {
+$router->get('/legacy/cambiar_pagina.php', function() {
     require_once PROJECT_ROOT . '/src/Legacy/Endpoints/cambiar_pagina.php';
 });
-$router->post('/construccion/cambiar_pagina.php', function() {
+$router->post('/legacy/cambiar_pagina.php', function() {
     require_once PROJECT_ROOT . '/src/Legacy/Endpoints/cambiar_pagina.php';
 });
-$router->post('/construccion/pdc/actualizar_pdc.php', function() {
+$router->post('/legacy/pdc/actualizar_pdc.php', function() {
     require_once PROJECT_ROOT . '/src/Legacy/Endpoints/actualizar_pdc.php';
 });
-$router->post('/construccion/programaGeneralActualizar/guardar_programaGeneralActualizar.php', function() {
+$router->post('/legacy/programaGeneralActualizar/guardar_programaGeneralActualizar.php', function() {
     require_once PROJECT_ROOT . '/src/Legacy/Endpoints/guardar_programaGeneralActualizar.php';
 });
-$router->get('/construccion/programaGeneralActualizar/listar_programaGeneralActualizar.php', function() {
+$router->get('/legacy/programaGeneralActualizar/listar_programaGeneralActualizar.php', function() {
     require_once PROJECT_ROOT . '/src/Legacy/Endpoints/listar_programaGeneralActualizar.php';
 });
-$router->post('/construccion/programa_general/guardar_programa_general.php', function() {
+$router->post('/legacy/programa_general/guardar_programa_general.php', function() {
     require_once PROJECT_ROOT . '/src/Legacy/Endpoints/guardar_programa_general.php';
 });
 
 // Endpoint faltante para Cargar Datos Generales (Cargos/Nombres)
-$router->post('/construccion/funciones_generales/php/datosGeneralesPagina.php', function() {
+$router->post('/legacy/funciones_generales/php/datosGeneralesPagina.php', function() {
     require_once PROJECT_ROOT . '/src/Legacy/datosGeneralesPagina.php';
+});
+$router->post('/legacy/funciones_generales/php/nueva_semana.php', function() {
+    require_once PROJECT_ROOT . '/src/Legacy/nueva_semana.php';
+});
+$router->post('/legacy/funciones_generales/php/verificarCICActualizada.php', function() {
+    require_once PROJECT_ROOT . '/src/Legacy/verificarCICActualizada.php';
+});
+$router->post('/legacy/funciones_generales/php/eliminar_semana.php', function() {
+    require_once PROJECT_ROOT . '/src/Legacy/eliminar_semana.php';
+});
+$router->post('/legacy/funciones_generales/php/buscadorTabla.php', function() {
+    require_once PROJECT_ROOT . '/src/Legacy/buscadorTabla.php';
 });
 
 $router->post('/context/clear-week', [\App\Controllers\Core\ContextController::class, 'clearWeek']);
