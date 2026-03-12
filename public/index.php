@@ -165,6 +165,9 @@ $router->post('/legacy/funciones_generales/php/eliminar_semana.php', function() 
 $router->post('/legacy/funciones_generales/php/buscadorTabla.php', function() {
     require_once PROJECT_ROOT . '/src/Legacy/buscadorTabla.php';
 });
+$router->post('/legacy/pdc/actualizar_pdc.php', function() {
+    require_once PROJECT_ROOT . '/src/Legacy/actualizar_pdc_nueva_semana.php';
+});
 
 $router->post('/context/clear-week', [\App\Controllers\Core\ContextController::class, 'clearWeek']);
 
