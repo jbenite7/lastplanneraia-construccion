@@ -1,6 +1,10 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
+    # 0. Mapear rutas de FrontEnd absolutas (/css, /js, /img) a /public en local
+    RewriteCond %{REQUEST_URI} ^/(css|js|img|vendor|storage)/(.*)$ [NC]
+    RewriteRule ^(.*)$ public/%{REQUEST_URI} [L]
+
     # 1. Si el archivo existe físicamente, sírvelo directamente (Legacy Support de Assets)
     RewriteCond %{REQUEST_FILENAME} -f
     RewriteRule ^ - [L]

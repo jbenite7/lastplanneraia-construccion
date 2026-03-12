@@ -371,7 +371,7 @@ class ReportController extends BaseController
 
         // 4. Save File
         $filename = date("YmdBis") . "_{$dbName}_semana_{$semana}.xlsx";
-        $savePath = PROJECT_ROOT . "/cortesProgramacion";
+        $savePath = PROJECT_ROOT . "/public/storage/cortesProgramacion";
 
         if (!is_dir($savePath)) {
             mkdir($savePath, 0777, true);
@@ -1275,7 +1275,7 @@ class ReportController extends BaseController
             // Note: Legacy returns absolute path or relative?
             // Legacy returned just $archivoDescargar which was "ordenes/..." relative to execution.
             // But AJAX client window.location.href utilized it relative to current page URL.
-            // If current page is /construccion/controlCambios/controlCambios.php, then "ordenes/..." is valid.
+            // If current page is /legacy/controlCambios/controlCambios.php, then "ordenes/..." is valid.
             // Since we are moving to global API, we should probably return absolute URL path.
             echo json_encode(["url" => "/public/storage/ordenes/" . $filename]);
         } else {
