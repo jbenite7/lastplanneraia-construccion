@@ -95,7 +95,15 @@
 		                <div class="col-sm-12">
 		                  <label for="archivoExcel" class="control-label">Seleccione el archivo con el cronograma completo desde el equipo (Solo se permiten archivos en formato XLSX):</label>
 		                  <input type="file" name="archivoExcel" id="archivoExcel" class="form-control form-control-lg" accept=".xlsx">
-		                  <!-- <input type="submit" value="Enviar" name="archivoExcel"> -->
+		                </div>
+		              </div>
+
+		              <!-- Campo de Fecha de Inicio para Proyectos Nuevos -->
+		              <div id="container_f_inicio_importar" class="form-group parametro_cargarExcel" style="padding: 1px 5px 15px 5px; margin-bottom: 10px; display: none;">
+		                <div class="col-sm-12">
+		                  <label for="f_inicio_importar" class="control-label"><b>Fecha de Inicio de la Primera Semana:</b></label>
+		                  <input type="text" name="f_inicio_importar" id="f_inicio_importar" class="form-control" readonly style="background: white; cursor: pointer;" placeholder="YYYY-MM-DD">
+		                  <small class="text-muted">Como este es un proyecto nuevo, por favor define cuándo inicia la primera semana.</small>
 		                </div>
 		              </div>
 		              <div class="form-group">
@@ -152,6 +160,27 @@
 		  </div>
 		</div>
 		<!-- Modal -->
+
+		<!-- Modal de Éxito - Marca AIA (Línea Construcción) -->
+		<div class="modal fade" id="modalImportacionExitosa" role="dialog" data-backdrop="static">
+		  <div class="modal-dialog modal-dialog-centered">
+		    <div class="modal-content" style="border-radius: 12px; border: none; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
+		      <div class="modal-body text-center" style="padding: 40px 20px;">
+		        <div style="width: 80px; height: 80px; background: #fbead9; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+		          <i class="fas fa-check" style="color: #b55211; font-size: 40px;"></i>
+		        </div>
+		        <h3 style="font-family: 'Montserrat', sans-serif; font-weight: 700; color: #1a3c2a; margin-bottom: 10px;">¡Carga Exitosa!</h3>
+		        <p style="font-family: 'Inter', sans-serif; color: #4a4a4d; font-size: 16px; margin-bottom: 25px;">
+		          El cronograma y la primera semana han sido creados correctamente. <br>
+		          Hemos preparado todo para que inicies tu seguimiento.
+		        </p>
+		        <button type="button" class="btn btn-lg" id="btnIrAlPrograma" style="background: #b55211; color: white; border-radius: 8px; padding: 12px 30px; font-weight: 600; border: none; transition: background 0.3s;">
+		          Ir al Programa General
+		        </button>
+		      </div>
+		    </div>
+		  </div>
+		</div>
 
 
 		<!-- Se crea el Modal que explica el significado de la columna 'Ejecutado Teórico' -->
@@ -310,7 +339,7 @@
 				"paging": false,
 				"ajax": {
 					"method": "POST",
-					"url":"/legacy/programaGeneralActualizar/listar_programaGeneralActualizar.php?db="+db+"&semana="+semana
+					"url":"/api/general/list?db="+db+"&semana="+semana
 				},
 				"lengthMenu": [100, 200, 500],
 				'columnDefs': [
@@ -683,7 +712,7 @@
 			var semana = document.getElementById('semana').value;
 		  var permiso = document.getElementById('permiso').value;
 
-			var canEdit = RbacCapabilities.canEditMga(permiso, parseInt(semana), parseInt(max_semana));
+			var canEdit = RbacCapabilities.canEditLps(permiso, parseInt(semana), parseInt(max_semana));
 			var only_once = !canEdit;
 
 		  $(tbody).one("click", "td", function() {
@@ -897,11 +926,11 @@
 				var db = document.getElementById('baseDatos').value;
 				var semana = document.getElementById('semana').value;
 		    var variables = new FormData($("#formCargarExcel")[0]);
-				var f_inicio_sem = document.getElementById('Fecha_Inicio_SemYMD').value;
+				var f_inicio_sem = document.getElementById('f_inicio_importar').value || document.getElementById('Fecha_Inicio_SemYMD').value;
 		    //var frm = $(this).serialize();
 		    $.ajax({
 		      type: "POST",
-		      url: "/legacy/programaGeneralActualizar/guardar_programaGeneralActualizar.php?db="+db+"&f_inicio_sem="+f_inicio_sem,
+		      url: "/api/general/import?db="+db+"&semana="+semana+"&f_inicio_sem="+f_inicio_sem,
 		      contentType: false,
 		      processData: false,
 		      data: variables,
@@ -909,13 +938,61 @@
 		      console.log("DEBUG EXCEL:", info, typeof info);
 		      var json_info = (typeof info === 'string' ? JSON.parse(info) : info);
 					var semana_json = json_info[0];
+					
 		      if (semana_json == (Number(semana)+1)) {
-		        location.reload();
-						$("#modalCargarExcel").modal("hide");
+		        $("#modalCargarExcel").modal("hide");
+		        
+		        // Mostrar modal de éxito personalizado AIA
+		        $("#modalImportacionExitosa").modal("show");
+		        
+		        $("#btnIrAlPrograma").off("click").on("click", function() {
+							// Forzar semana 1 en sesión y redirigir
+							if (typeof cambiarSemanaSesion === 'function') {
+								cambiarSemanaSesion(semana_json, "/programa-general");
+							} else {
+								location.assign("/programa-general");
+							}
+		        });
+
+		        // Redirección automática tras 10 segundos para dar tiempo a leer
+		        setTimeout(function() {
+		          if ($("#modalImportacionExitosa").is(":visible")) {
+								if (typeof cambiarSemanaSesion === 'function') {
+									cambiarSemanaSesion(semana_json, "/programa-general");
+								} else {
+									location.assign("/programa-general");
+								}
+		          }
+		        }, 10000);
+		      } else {
+		        // Manejo de otros estados si es necesario
+		        if (json_info.respuesta == "ERROR") {
+		          alert("Error: " + json_info.mensaje);
+		        } else {
+		          location.reload();
+		        }
 		      }
-		      // mostrar_mensaje(json_info);
-		      // recargarTabla('');
 		    });
+		  });
+
+		  // Lógica para mostrar/ocultar selector de fecha en importación inicial
+		  $("#modalCargarExcel").on("show.bs.modal", function() {
+		    var semanaActual = document.getElementById('semana').value;
+		    if (semanaActual == 0) {
+		      $("#container_f_inicio_importar").show();
+		      $("#f_inicio_importar").datepicker({
+		        dateFormat: "yy-mm-dd",
+		        changeMonth: true,
+		        changeYear: true
+		      });
+		      // Poner fecha de hoy por defecto si está vacío
+		      if (!$("#f_inicio_importar").val()) {
+		        var today = new Date().toISOString().split('T')[0];
+		        $("#f_inicio_importar").val(today);
+		      }
+		    } else {
+		      $("#container_f_inicio_importar").hide();
+		    }
 		  });
 		}
 
@@ -929,7 +1006,7 @@
 		    //var frm = $(this).serialize();
 		    $.ajax({
 		      type: "POST",
-		      url: "/legacy/programaGeneralActualizar/guardar_programaGeneralActualizar.php?db="+db,
+		      url: "/api/general/delete-update?db="+db,
 		      contenttype: "charset=utf-8",
 		      data: {"semana": semana, "opcion": opcion},
 		    }).done(function(info) {
@@ -1008,7 +1085,7 @@
 				}else{
 					$.ajax({
 						method: "POST",
-						url: "/legacy/programa_general/guardar_programa_general.php?db="+db+"&semana="+(Number(semana)+1),
+						url: "/api/general/update?db="+db+"&semana="+(Number(semana)+1),
 						contenttype:"charset=utf-8",
 						data: frm,
 					}).done( function( info ){
@@ -1078,7 +1155,7 @@
 			var semana = document.getElementById('semana').value;
 		  var permiso = document.getElementById('permiso').value;
 
-			var canEdit = RbacCapabilities.canEditMga(permiso, parseInt(semana), parseInt(max_semana));
+			var canEdit = RbacCapabilities.canEditLps(permiso, parseInt(semana), parseInt(max_semana));
 			var isReadOnly = RbacCapabilities.isReadOnly(permiso);
 
 			if (!canEdit) {
