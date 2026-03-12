@@ -270,4 +270,228 @@ class GeneralApiController extends BaseController
         }
     }
 
+    /**
+     * API: Importa el programa general desde un archivo Excel (.xlsx).
+     */
+    public function importExcel()
+    {
+        $this->requireAuth();
+        header('Content-Type: application/json; charset=utf-8');
+
+        try {
+            $vars = $this->getSessionVars();
+            $dbPrefix = $_GET['db'] ?? ($vars['dbName'] ?? '');
+            $semana = (int)($_GET['semana'] ?? ($vars['semana'] ?? 0));
+            $f_inicio_sem = $_GET['f_inicio_sem'] ?? date('Y-m-d');
+
+            if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
+                throw new Exception("Base de datos inválida.");
+            }
+
+            $archivo = $_FILES['archivoExcel'] ?? null;
+            if (!$archivo || $archivo['error'] !== UPLOAD_ERR_OK) {
+                throw new Exception("Archivo inváido.");
+            }
+
+            $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($archivo['tmp_name']);
+            $excelData = $spreadsheet->getActiveSheet()->toArray();
+            $todoElExcel = $excelData; 
+            array_shift($excelData); 
+
+            // 1. Detección inteligente de semana inicial
+            $stmtMax = $this->db->prepare("SELECT MAX(Semana) as max_sem FROM {$dbPrefix}_programa_consolidado");
+            $stmtMax->execute();
+            $maxSem = (int)($stmtMax->fetch(PDO::FETCH_ASSOC)['max_sem'] ?? 0);
+            
+            // Si no hay datos, forzamos Semana 1, de lo contrario usamos el incremento correlativo
+            $semanaNueva = ($maxSem === 0) ? 1 : ($semana + 1);
+
+            $logFile = PROJECT_ROOT . "/public/debug_import.log";
+            $debug = function($msg) use ($logFile) {
+                file_put_contents($logFile, "[" . date('Y-m-d H:i:s') . "] " . $msg . "\n", FILE_APPEND);
+            };
+
+            $debug("DEBUG IMPORT: Semana actual detectada en DB: $maxSem. Semana destino: $semanaNueva");
+            $debug("DEBUG IMPORT: Filas en Excel (sin header): " . count($excelData));
+
+            // 2. Encontrar columna de esquema (puede no ser la 0)
+            $colEsquema = 0;
+            if (!empty($excelData)) {
+                $primeraFila = $excelData[0];
+                foreach ($primeraFila as $i => $cell) {
+                    if (preg_match('/^\d+(\.\d+)*$/', (string)$cell)) {
+                        $colEsquema = $i;
+                        $debug("DEBUG IMPORT: Columna de esquema detectada en índice: $colEsquema");
+                        break;
+                    }
+                }
+            }
+
+            $historico = $this->getPreviousWeekData($dbPrefix, $semana);
+            $debug("DEBUG IMPORT: Registros históricos encontrados: " . count($historico));
+
+            $consecutivoEnProg = 0;
+            $itemsParaInsertar = [];
+
+            foreach ($excelData as $index => $row) {
+                if (empty($row[$colEsquema])) {
+                    $debug("DEBUG IMPORT: Fila $index omitida (Esquema vacío en col $colEsquema)");
+                    continue;
+                }
+                
+                if ($index === 0) {
+                    $debug("DEBUG IMPORT: Procesando primera fila de datos: " . json_encode($row));
+                }
+
+                $esquema = (string)$row[$colEsquema];
+                $nombreActividadHtml = $this->formatTaskNameWithHierarchy($esquema, $todoElExcel, $colEsquema);
+                $nombreLimpio = strip_tags($nombreActividadHtml);
+
+                $titulo = (isset($row[2]) && (stripos($row[2], 'S') !== false || $row[2] == '1')) ? 1 : 0;
+                $fInicio = !empty($row[3]) ? date('Y-m-d', strtotime(str_replace('/', '-', $row[3]))) : null;
+                $fFin = !empty($row[4]) ? date('Y-m-d', strtotime(str_replace('/', '-', $row[4]))) : null;
+                $rutaCritica = (isset($row[5]) && (stripos($row[5], 'S') !== false || $row[5] == '1')) ? 1 : 0;
+
+                $prev = $historico[$nombreLimpio] ?? [];
+                $itemsParaInsertar[] = [
+                    'Semana' => $semanaNueva, 'Consecutivo_en_Programa' => $consecutivoEnProg++,
+                    'Id' => $esquema, 'Actividad' => $nombreActividadHtml, 'Titulo' => $titulo,
+                    'Fecha_Inicio' => $fInicio, 'Fecha_Fin' => $fFin, 'Ruta_Critica' => $rutaCritica,
+                    'Ejecutado' => $prev['Ejecutado'] ?? null, 'Responsable_AIA' => $prev['Responsable_AIA'] ?? null,
+                    'Sub_Contratista' => $prev['Sub_Contratista'] ?? null, 'Observaciones' => $prev['Observaciones'] ?? null,
+                    'codigo_actividad' => $prev['codigo_actividad'] ?? null, 'medir_productividad' => $prev['medir_productividad'] ?? null,
+                    'cantidad_ppto' => $prev['cantidad_ppto'] ?? null, 'unidad' => $prev['unidad'] ?? null,
+                ];
+            }
+
+            $this->db->beginTransaction();
+
+            // 1. Borrar registros de la semana destino si existen (sobrescribir)
+            $this->db->prepare("DELETE FROM {$dbPrefix}_programa_consolidado WHERE Semana = ?")->execute([$semanaNueva]);
+
+             // 2. Insertar nuevos registros
+            $queryInsert = "INSERT INTO {$dbPrefix}_programa_consolidado (
+                Semana, Consecutivo_en_Programa, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin, Ruta_Critica, 
+                Ejecutado, Responsable_AIA, Sub_Contratista, Observaciones, codigo_actividad, medir_productividad, cantidad_ppto, unidad
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            $stmtInsert = $this->db->prepare($queryInsert);
+
+            foreach ($itemsParaInsertar as $item) {
+                $stmtInsert->execute(array_values($item));
+            }
+
+            // 3. Activar semana si no existe (indispensable para visualización)
+            $stmtCheckSem = $this->db->prepare("SELECT COUNT(*) FROM {$dbPrefix}_semanas_activas WHERE Semana = ?");
+            $stmtCheckSem->execute([$semanaNueva]);
+            if ($stmtCheckSem->fetchColumn() == 0) {
+                $f_final_sem = date('Y-m-d', strtotime($f_inicio_sem . ' + 6 days'));
+                $stmtInsertSem = $this->db->prepare("INSERT INTO {$dbPrefix}_semanas_activas (Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem, fechaCreacionSemana) VALUES (?, ?, ?, ?)");
+                $stmtInsertSem->execute([$semanaNueva, $f_inicio_sem, $f_final_sem, date('Y-m-d')]);
+                $debug("DEBUG IMPORT: Creada nueva semana activa: $semanaNueva ($f_inicio_sem a $f_final_sem)");
+            }
+
+            $this->db->commit();
+
+            // 3. Integración Legacy: Recalcular estados
+            $dbName = $dbPrefix; // Variable esperada por script legacy
+            $semana = $semanaNueva; // Variable esperada por script legacy
+            $ejecucionActualizada = 1;
+            
+            error_log("DEBUG IMPORT: Iniciando integración legacy para Semana $semanaNueva");
+            
+            ob_start();
+            require PROJECT_ROOT . "/src/Legacy/modificar_sem_estado.php";
+            $legacyOutput = ob_get_clean();
+            
+            error_log("DEBUG IMPORT: Salida de modificar_sem_estado: " . $legacyOutput);
+
+            echo json_encode(['respuesta' => 'BIEN', 0 => (int)$semanaNueva]);
+
+        } catch (\Throwable $e) {
+            if (isset($debug)) {
+                $debug("FATAL ERROR: " . $e->getMessage() . " in " . $e->getFile() . " line " . $e->getLine());
+            }
+            if ($this->db->inTransaction()) $this->db->rollBack();
+            http_response_code(500);
+            echo json_encode(['respuesta' => 'ERROR', 'mensaje' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * API: Elimina la actualización actual del cronograma.
+     */
+    public function deleteUpdate()
+    {
+        $this->requireAuth();
+        header('Content-Type: application/json; charset=utf-8');
+
+        try {
+            $vars = $this->getSessionVars();
+            $dbPrefix = $_GET['db'] ?? ($vars['dbName'] ?? '');
+            $semana = $_POST['semana'] ?? ($vars['semana'] ?? 0);
+
+            if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
+                throw new Exception("Base de datos inválida.");
+            }
+
+            $sql = "UPDATE {$dbPrefix}_programa_consolidado SET 
+                    Ejecutado = 0, Responsable_AIA = NULL, Sub_Contratista = NULL, Observaciones = NULL
+                    WHERE Semana = ?";
+            
+            $this->db->prepare($sql)->execute([$semana]);
+            $this->updateBatch();
+
+            echo json_encode(['respuesta' => 'BIEN']);
+
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['respuesta' => 'ERROR', 'mensaje' => $e->getMessage()]);
+        }
+    }
+    /**
+     * Reconstruye el nombre de la tarea con formato de jerarquía (HTML).
+     */
+    private function formatTaskNameWithHierarchy(string $esquema, array $todoElExcel, int $colEsquema = 0): string
+    {
+        $niveles = explode('.', (string)$esquema);
+        $contadorNiveles = count($niveles);
+        $jerarquia = [];
+        $esquemaParcial = '';
+
+        foreach ($niveles as $nivel) {
+            $esquemaParcial = ($esquemaParcial === '') ? $nivel : "{$esquemaParcial}.{$nivel}";
+            foreach ($todoElExcel as $row) {
+                if ((string)($row[$colEsquema] ?? '') === $esquemaParcial) {
+                    $jerarquia[] = $row[$colEsquema + 1] ?? 'Sin Nombre';
+                    break;
+                }
+            }
+        }
+
+        $nombrePrincipal = end($jerarquia);
+        if ($contadorNiveles === 1) {
+            return "<b>" . htmlspecialchars($nombrePrincipal) . "</b>";
+        }
+
+        $capitulos = array_slice($jerarquia, 0, -1);
+        $capituloTexto = htmlspecialchars(implode(', ', array_reverse($capitulos)));
+        return "<b>" . htmlspecialchars($nombrePrincipal) . ", </b> <small>[Capítulo: {$capituloTexto}]</small>";
+    }
+
+    /**
+     * Obtiene los datos de la semana anterior para el rollover.
+     */
+    private function getPreviousWeekData(string $dbPrefix, int $semanaAnterior): array
+    {
+        $sql = "SELECT * FROM {$dbPrefix}_programa_consolidado WHERE Semana = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$semanaAnterior]);
+        $results = $stmt->fetchAll();
+        $mapped = [];
+        foreach ($results as $row) {
+            $key = strip_tags($row['Actividad']);
+            $mapped[$key] = $row;
+        }
+        return $mapped;
+    }
 }
