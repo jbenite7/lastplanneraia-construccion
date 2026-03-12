@@ -9,7 +9,7 @@
       "Admin\\": "admin/src/",
       "App\\": "src/"
     },
-    "classmap": []
+    "classmap": ["src/Core/Database.php"]
   },
   "require-dev": {
     "friendsofphp/php-cs-fixer": "^3.93",

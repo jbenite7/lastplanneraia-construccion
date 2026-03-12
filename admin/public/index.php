@@ -28,8 +28,8 @@ use Admin\Core\Security;
 Security::initSession();
 
 // 6. Inicializar la Base de Datos (Singleton)
-if (file_exists(__DIR__ . '/../../construccion/src/Database.php')) {
-    require_once __DIR__ . '/../../construccion/src/Database.php';
+if (file_exists(__DIR__ . '/../../src/Core/Database.php')) {
+    require_once __DIR__ . '/../../src/Core/Database.php';
     try {
         // Aseguramos que la conexión se establezca
         $db = \Database::getInstance();
@@ -37,7 +37,7 @@ if (file_exists(__DIR__ . '/../../construccion/src/Database.php')) {
         error_log("Error inicializando base de datos: " . $e->getMessage());
     }
 } else {
-    error_log("Error: No se encontró el archivo Database.php en " . __DIR__ . '/../../construccion/src/Database.php');
+    error_log("Error: No se encontró el archivo Database.php en " . __DIR__ . '/../../src/Core/Database.php');
 }
 
 // 7. Inicializar el Router y definir rutas
