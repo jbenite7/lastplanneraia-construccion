@@ -35,6 +35,9 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ### Corregido
 
+- **Fix Error 500 en Admin Login (Database Path):** Se resolvió un error fatal que impedía acceder al panel administrativo integrado moderno (`/admin/login`). El controlador frontal de la consola de administración (`admin/public/index.php`) y el mapa de autoloader de Composer (`composer.json`) seguían apuntando a la ruta legacy de `Database.php` (`construccion/src/Database.php`) que fue eliminada por el Kill Switch. Se actualizó el entrypoint hacia la ubicación actual `src/Core/Database.php` y se regeneró el mapa de clases.
+- **Fix Assets 404 en Admin Login:** Corrección de dependencias estáticas (logo AIA, `tablet-viewport-scale.js` y `login-brand-unified.css`) en la vista del inicio de sesión administrativo (`admin/views/pages/login.php`) mutando el path huérfano `/construccion/` por el directorio absoluto directo `/public/` para resolver las omisiones de archivo no encontrado y fallos de renderizado.
+
 - **Fix Error 500 Rutas Duplicadas:** Se purgó el enrutador principal (`public/index.php`) de un bloque de rutas obsoletas y fantasmas dirigidas a `src/Legacy/Endpoints/` que causaba colisión de declaración y caída total del servidor al intentar resolver la ruta de actualización del PDC.
 
 - **Fix Desalineamiento de Tom Select:** Corrección de la posición y ancho en `HandsontableTomSelectEditor.js` para que el input del dropdown solape perfectamente la celda de Handsontable (`top`/`left` relativos exactos y `width` dinámico) pero permitiendo a su vez que la lista emergente se expanda horizontalmente (`min-width: max(300px, tdRect.width)`) para no truncar los nombres largos de empresas.
