@@ -36,7 +36,9 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 ### Corregido
 
 - **Fix Error 500 en Admin Login (Database Path):** Se resolvió un error fatal que impedía acceder al panel administrativo integrado moderno (`/admin/login`). El controlador frontal de la consola de administración (`admin/public/index.php`) y el mapa de autoloader de Composer (`composer.json`) seguían apuntando a la ruta legacy de `Database.php` (`construccion/src/Database.php`) que fue eliminada por el Kill Switch. Se actualizó el entrypoint hacia la ubicación actual `src/Core/Database.php` y se regeneró el mapa de clases.
-- **Fix Assets 404 en Admin Login:** Corrección de dependencias estáticas (logo AIA, `tablet-viewport-scale.js` y `login-brand-unified.css`) en la vista del inicio de sesión administrativo (`admin/views/pages/login.php`) mutando el path huérfano `/construccion/` por el directorio absoluto directo `/public/` para resolver las omisiones de archivo no encontrado y fallos de renderizado.
+- **Fix Assets 404 en Admin Panel (Global):** Corrección masiva de dependencias estáticas (logo AIA `florAIA.png`, `tablet-viewport-scale.js` y `login-brand-unified.css`) tanto en la vista de login como en el layout principal (`admin/views/layouts/main.php`). Se mutaron los paths huérfanos `/construccion/` por el directorio absoluto `/public/`.
+- **Fix JS ReferenceError en Tabla de Usuarios:** Se corrigió un error de ejecución en `admin/views/pages/users/index.php` donde el objeto `table` no estaba definido al intentar inicializar los botones de exportación de DataTables.
+- **Update Seed Script:** Se actualizó `seed_test_users.php` para apuntar a la nueva infraestructura de base de datos en `src/Core/Database.php` eliminando la dependencia de `construccion/conexion.php`.
 
 - **Fix Error 500 Rutas Duplicadas:** Se purgó el enrutador principal (`public/index.php`) de un bloque de rutas obsoletas y fantasmas dirigidas a `src/Legacy/Endpoints/` que causaba colisión de declaración y caída total del servidor al intentar resolver la ruta de actualización del PDC.
 
