@@ -3,25 +3,21 @@ document.getElementById('ventanasModalesSemana').innerHTML =
 
 var nueva_sem = function (db, carpeta, seccion) {
   var semanaActual = document.getElementById('semana').value;
-  var permiso = document.getElementById('permiso').value;
-  console.log(permiso);
+  var permisoCanon = document.getElementById('permiso_canonico') ? document.getElementById('permiso_canonico').value : '';
+  var esAdmin = (permisoCanon === 'A');
   $('#btn_guardar_nueva_sem').off('click').on('click', function () {
     $('#btn_guardar_nueva_sem').prop('disabled', true);
     $('#modal_spinner').modal('show');
     var f_inicio_sem = $('#inicio_sem').val(),
       opcion = 'nueva_sem';
-    if (carpeta == 1) {
-      var url = '/legacy/funciones_generales/php/nueva_semana.php?db=' + db;
-    } else {
-      var url = '/legacy/funciones_generales/php/nueva_semana.php?db=' + db;
-    }
+    var url = '/legacy/funciones_generales/php/nueva_semana.php?db=' + db;
     $.ajax({
       method: 'POST',
-      url: '/legacy/funciones_generales/php/verificarCICActualizada.php?',
-      contenttype: 'charset=utf-8',
+      url: '/legacy/funciones_generales/php/verificarCICActualizada.php',
+      dataType: 'json',
       data: { db: db, semana: semanaActual },
     }).done(function (info) {
-      var faltaCalificar = typeof info === 'string' ? JSON.parse(info) : info;
+      var faltaCalificar = info;
       if (faltaCalificar != 0) {
         window.alert(
           'No se pueden crear nuevas semanas hasta que se realicen las Calificaciónes Integrales (Calidad, Gestión Social - Ambiental, SST y Administración)' +
@@ -33,15 +29,21 @@ var nueva_sem = function (db, carpeta, seccion) {
         $.ajax({
           method: 'POST',
           url: url,
-          contenttype: 'charset=utf-8',
-          data: { f_inicio_sem: f_inicio_sem, opcion: opcion, permiso: permiso },
+          dataType: 'json',
+          data: { f_inicio_sem: f_inicio_sem, opcion: opcion },
         }).done(function (info) {
-          var json_info = typeof info === 'string' ? JSON.parse(info) : info;
+          var json_info = info;
+          if (json_info && json_info.respuesta === 'ERROR') {
+            $('#modal_spinner').modal('hide');
+            window.alert(json_info.mensaje);
+            location.reload();
+            return;
+          }
           var semana = json_info[0];
           var pdcConteo = json_info[1];
           var semanalConfirmada = json_info[3];
-          // console.log(semanalConfirmada);
-          if (semanalConfirmada == 0 && permiso != 'P') {
+          
+          if (semanalConfirmada == 0 && Number(semana) > 1 && !esAdmin) {
             window.alert(
               'No se pueden crear la Semana ' +
                 (Number(semana) + 1) +
@@ -52,52 +54,37 @@ var nueva_sem = function (db, carpeta, seccion) {
               '/legacy/cambiar_pagina.php?seccion=programacion_semanal&semana=' + semana
             );
           } else {
-            if (pdcConteo == 0) {
-              if (carpeta == 1) {
+            if (pdcConteo > 0 && semana > 1) {
+              $.ajax({
+                method: 'POST',
+                url: '/legacy/pdc/actualizar_pdc.php',
+                dataType: 'json',
+                data: { db: db, semana: semana },
+              }).done(function (info) {
                 location.assign(
                   '/legacy/cambiar_pagina.php?seccion=programa_general&semana=' + semana
                 );
-              } else {
+              }).fail(function (xhr, status, error) {
+                $('#modal_spinner').modal('hide');
+                window.alert('Error al actualizar el PDC: ' + (error || status));
                 location.assign(
                   '/legacy/cambiar_pagina.php?seccion=programa_general&semana=' + semana
                 );
-              }
+              });
             } else {
-              if (semana > 1) {
-                $.ajax({
-                  method: 'POST',
-                  url: '/legacy/pdc/actualizar_pdc.php',
-                  contenttype: 'charset=utf-8',
-                  data: { db: db, semana: semana },
-                }).done(function (info) {
-                  var json_info = typeof info === 'string' ? JSON.parse(info) : info;
-                  if (carpeta == 1) {
-                    location.assign(
-                      '/legacy/cambiar_pagina.php?seccion=programa_general&semana=' + semana
-                    );
-                  } else {
-                    location.assign(
-                      '/legacy/cambiar_pagina.php?seccion=programa_general&semana=' + semana
-                    );
-                  }
-                });
-              } else {
-                if (carpeta == 1) {
-                  location.assign(
-                    '/legacy/cambiar_pagina.php?seccion=programa_general&semana=' + semana
-                  );
-                } else {
-                  location.assign(
-                    '/legacy/cambiar_pagina.php?seccion=programa_general&semana=' + semana
-                  );
-                }
-              }
+              location.assign(
+                '/legacy/cambiar_pagina.php?seccion=programa_general&semana=' + semana
+              );
             }
           }
         }).always(function() {
           $('#btn_guardar_nueva_sem').prop('disabled', false);
         });
       }
+    }).fail(function (xhr, status, error) {
+      $('#modal_spinner').modal('hide');
+      $('#btn_guardar_nueva_sem').prop('disabled', false);
+      window.alert('Error al verificar Calificaciones CIC: ' + (error || status));
     });
   });
 };
@@ -108,11 +95,7 @@ var eliminar_sem = function (semana, db, carpeta, seccion) {
     $('#modal_spinner').modal('show');
     var semanaFinal = semana - 1,
       opcion = 'eliminar_sem';
-    if (carpeta == 1) {
-      var url = '/legacy/funciones_generales/php/eliminar_semana.php?db=' + db;
-    } else {
-      var url = '/legacy/funciones_generales/php/eliminar_semana.php?db=' + db;
-    }
+    var url = '/legacy/funciones_generales/php/eliminar_semana.php?db=' + db;
     $.ajax({
       method: 'POST',
       url: url,
@@ -121,15 +104,9 @@ var eliminar_sem = function (semana, db, carpeta, seccion) {
     }).done(function (info) {
       var json_info = typeof info === 'string' ? JSON.parse(info) : info;
       if (json_info['puedeEliminar'] == 'SI') {
-        if (carpeta == 1) {
-          location.assign(
-            '/legacy/cambiar_pagina.php?seccion=programa_general&semana=' + semanaFinal
-          );
-        } else {
-          location.assign(
-            '/legacy/cambiar_pagina.php?seccion=programa_general&semana=' + semanaFinal
-          );
-        }
+        location.assign(
+          '/legacy/cambiar_pagina.php?seccion=programa_general&semana=' + semanaFinal
+        );
       } else {
         window.alert(
           'No se puede eliminar una semana menor a la máxima del proyecto (Semana ' +
@@ -143,18 +120,23 @@ var eliminar_sem = function (semana, db, carpeta, seccion) {
 };
 
 var fechaNuevaSemana = function () {
-  //console.log(document.getElementById('Fecha_Fin_SemYMD').value);
-  var dia = new Date("'" + document.getElementById('Fecha_Fin_SemYMD').value + "''");
-  dia.setDate(dia.getDate() + 1);
-  $('#inicio_sem').val(dia.getFullYear() + '-' + (dia.getMonth() + 1) + '-' + dia.getDate());
-  $('#inicio_sem').datepicker({
+  var fechaFinRaw = document.getElementById('Fecha_Fin_SemYMD').value;
+  var dpOptions = {
     dateFormat: 'yy-mm-dd',
     changeMonth: true,
     changeYear: true,
     showOtherMonths: true,
     selectOtherMonths: true,
-    defaultDate: dia,
-  });
+  };
+  if (fechaFinRaw && fechaFinRaw.trim() !== '') {
+    var dia = new Date(fechaFinRaw);
+    dia.setDate(dia.getDate() + 1);
+    var mes = ('0' + (dia.getMonth() + 1)).slice(-2);
+    var d = ('0' + dia.getDate()).slice(-2);
+    $('#inicio_sem').val(dia.getFullYear() + '-' + mes + '-' + d);
+    dpOptions.defaultDate = dia;
+  }
+  $('#inicio_sem').datepicker(dpOptions);
 };
 
 var activarBuscador = function (tbody, table) {

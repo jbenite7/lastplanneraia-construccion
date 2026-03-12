@@ -22,6 +22,7 @@ $arreglo = [
     "db" => $dbName,
     "semana" => $semana,
     "permiso" => $permisoCodigo,
+    "permiso_canonico" => $_SESSION['permiso_canonico'] ?? $permisoCodigo,
     "pdcActivo" => $_SESSION['pdcActivo'] ?? '',
     "nombreUsuario" => $_SESSION['nombreUsuario'] ?? '',
     "rolUsuario" => $rolHumano,

@@ -1,7 +1,8 @@
 <?php
 
-error_reporting(0);
+error_reporting(E_ALL);
 ini_set('display_errors', 0);
+ini_set('log_errors', 1);
 header('Content-Type: application/json');
 require_once __DIR__ . "/conexion.php";
 
@@ -15,10 +16,15 @@ if (!preg_match('/^[a-zA-Z0-9_]+$/', $db)) {
     die(json_encode(0));
 }
 
-if ($db == 'cedi_pasto') {
+try {
+    if ($db == 'cedi_pasto' || empty($db)) {
+        $faltaCalificar = 0;
+    } else {
+        $faltaCalificar = listar($db, $semana, $dbInstance);
+    }
+} catch (Throwable $e) {
+    error_log("Error fatal en verificarCICActualizada.php: " . $e->getMessage());
     $faltaCalificar = 0;
-} else {
-    $faltaCalificar = listar($db, $semana, $dbInstance);
 }
 echo json_encode($faltaCalificar);
 
@@ -29,7 +35,7 @@ function listar($db, $semana, $dbInstance)
     $conteo = $data["conteo"] ?? 0;
 
     if ($conteo == 0) {
-        return '';
+        return 0;
     } else {
         $stmt1 = $dbInstance->query("SELECT DISTINCT(subcontratista) FROM {$db}_cic WHERE (Semana <= ?) AND tipo_proveedor != 'Suministro de Materiales, Herramientas o Equipos' ORDER BY `subcontratista` ASC", [$semana]);
         $rows1 = $stmt1->fetchAll();
@@ -45,10 +51,10 @@ function listar($db, $semana, $dbInstance)
                 // Since subcontratista comes from DB, we 'trust' it relative to the app logic,
                 // but let's escape single quotes just in case.
                 $subcontratista = $data1["subcontratista"];
-                $subSafe = str_replace("'", "''", $subcontratista);
+                $subSafe = $dbInstance->quote($subcontratista);
 
                 // Note: The original query logic involves a subquery to get 'semanasEnProyecto' and filtered by MAX week.
-                $part = "SELECT `Id`, `Semana`, (SELECT COUNT(*) FROM {$db}_cic WHERE `subcontratista` = '$subSafe' AND Semana <= $semana AND tipo_proveedor != 'Suministro de Materiales, Herramientas o Equipos') AS `semanasEnProyecto`, `subcontratista`, `correo_contacto`, `alcance`, `tipo_proveedor`, `PAC`, `PAC_Acum`, `P_Completado`, `P_Completado_Acum`, `Calidad`, `Calidad_Acum`, `GSA`, `GSA_Acum`, `SST`, `SST_Acum`, `ADM`, `ADM_Acum`, `Cal_Integral`, `Cal_Integral_Acum`, `Observaciones` FROM {$db}_cic WHERE `subcontratista` = '$subSafe' AND Semana = (SELECT MAX(`Semana`) FROM {$db}_cic WHERE `subcontratista` = '$subSafe' AND Semana <= $semana AND tipo_proveedor != 'Suministro de Materiales, Herramientas o Equipos') AND tipo_proveedor != 'Suministro de Materiales, Herramientas o Equipos'";
+                $part = "SELECT `Id`, `Semana`, (SELECT COUNT(*) FROM {$db}_cic WHERE `subcontratista` = $subSafe AND Semana <= $semana AND tipo_proveedor != 'Suministro de Materiales, Herramientas o Equipos') AS `semanasEnProyecto`, `subcontratista`, `correo_contacto`, `alcance`, `tipo_proveedor`, `PAC`, `PAC_Acum`, `P_Completado`, `P_Completado_Acum`, `Calidad`, `Calidad_Acum`, `GSA`, `GSA_Acum`, `SST`, `SST_Acum`, `ADM`, `ADM_Acum`, `Cal_Integral`, `Cal_Integral_Acum`, `Observaciones` FROM {$db}_cic WHERE `subcontratista` = $subSafe AND Semana = (SELECT MAX(`Semana`) FROM {$db}_cic WHERE `subcontratista` = $subSafe AND Semana <= $semana AND tipo_proveedor != 'Suministro de Materiales, Herramientas o Equipos') AND tipo_proveedor != 'Suministro de Materiales, Herramientas o Equipos'";
                 $unionParts[] = $part;
             }
 

@@ -460,6 +460,7 @@ class ReportController extends BaseController
 
             $cantidad_ppto = $data["cantidad_ppto"];
             if ($cantidad_ppto == 0 || $cantidad_ppto == null || $cantidad_ppto == '') {
+                // Fallback: actividades tipo % usan 100 como base de cálculo
                 $cantidad_ppto = 100;
             }
 

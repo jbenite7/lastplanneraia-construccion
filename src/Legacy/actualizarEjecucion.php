@@ -41,6 +41,7 @@ try {
             $Ejecutado_Real = (float)($data["Ejecutado_Real"] ?? 0);
 
             if ($cantidad_ppto <= 0) {
+                // Fallback: actividades tipo % usan 100 como base de cálculo
                 $cantidad_ppto = 100;
             }
 

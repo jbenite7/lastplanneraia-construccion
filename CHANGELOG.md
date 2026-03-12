@@ -10,6 +10,10 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 ### Cambiado
 
 - **Migración de Vistas al MVC Moderno (Fase 2):** 17 vistas distribuidas en los subdirectorios legacy `construccion/*/views/` fueron resituadas dentro del patrón arquitectónico en el nuevo directorio raíz `views/`. Los controladores de `src/Controllers/` fueron paralelamente recompilados para resolver los path dinámicos hacia sus equivalentes modernos.
+- **Importación de Cronogramas (Fase 4):**
+  - **Selector de Fecha Inicial:** Implementación de un selector de fecha dinámico en el modal de importación exclusivamente para proyectos nuevos (Semana 0), permitiendo alinear el cronograma con el calendario real.
+  - **Notificación y Redirección AIA:** Diseño de un flujo de éxito premium (Manual de Marca AIA) que confirma la creación del cronograma y redirige automáticamente al Programa General (Semana 1) para una visualización inmediata.
+  - **Detección Dinámica de Esquema:** Motor de búsqueda inteligente para la columna de jerarquía (WBS) en Excel, eliminando la dependencia de un orden estricto de columnas.
 - **Sanitización de Invocaciones:** Se blindó el indexado de assets (css, imagenes, archivos bases) en los archivos views migrados desde `../` hacia paths absolutos en `/construccion/…` para evitar crashes por niveles de directorios variables.
 - **Apificación de Módulos (Fase 3):**
   - [x] Contratos (`ContratosApiController`)

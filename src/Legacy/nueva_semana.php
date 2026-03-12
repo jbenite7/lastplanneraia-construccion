@@ -3,8 +3,9 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-error_reporting(0);
+error_reporting(E_ALL);
 ini_set('display_errors', 0);
+ini_set('log_errors', 1);
 header('Content-Type: application/json');
 
 /** @var Database $dbInstance */
@@ -18,7 +19,8 @@ $opcion = $_POST["opcion"] ?? "nueva_sem";
 $f_inicio_sem_raw = $_POST["f_inicio_sem"] ?? '';
 $f_inicio_sem = date("Y-m-d", strtotime($f_inicio_sem_raw));
 $pdcActivo = $_SESSION['pdcActivo'] ?? 0;
-$permiso = $_SESSION['permiso'] ?? '';
+$rolCanon = $_SESSION['permiso_canonico'] ?? '';
+$esAdmin = ($rolCanon === 'A');
 
 if (!preg_match('/^[a-zA-Z0-9_]+$/', $db)) {
     die(json_encode(["respuesta" => "ERROR", "mensaje" => "Nombre de base de datos inválido."]));
@@ -36,7 +38,7 @@ try {
         $semanalConfirmada = (int)($dataVerif["Semanal_Confirmada"] ?? 0);
     }
 
-    if ($conteo > 0 && $semanalConfirmada == 0 && $permiso != "P") {
+    if ($conteo > 0 && $semanalConfirmada == 0 && !$esAdmin) {
         $respuesta = [$conteo, 0, 0, $semanalConfirmada];
         echo json_encode($respuesta, JSON_UNESCAPED_UNICODE);
     } else {
@@ -48,12 +50,18 @@ try {
         $dbInstance->query($sqlInsertSemana, [$semana_crear, $f_inicio_sem, $f_fin_sem, $fCreacionSemana]);
 
         if ($conteo == 0) {
-            // Fix NULL vulnerability in copy from master program
+            // Validar que el Programa Maestro tenga actividades antes de copiar
+            $stmtPrograma = $dbInstance->query("SELECT COUNT(*) AS c FROM {$db}_programa");
+            if ((int)$stmtPrograma->fetch()['c'] === 0) {
+                // Rollback: eliminar la semana recién creada
+                $dbInstance->query("DELETE FROM {$db}_semanas_activas WHERE Semana = ?", [$semana_crear]);
+                echo json_encode(["respuesta" => "ERROR", "mensaje" => "No hay actividades en el Programa Maestro. Cargue el programa antes de crear la primera semana."]);
+                return;
+            }
+
             $sqlCopy = "INSERT INTO {$db}_programa_consolidado(Consecutivo, Semana, Consecutivo_en_Programa, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin, Ruta_Critica, medir_productividad, Ejecutado, Estado, Semanas_Inicio, Estado_Restricciones, D_y_E, Materiales, MdeO, Equipos, Predecesora, Pdto_Cons, Modelo, Responsable_AIA, Observaciones, Ult_Act_Est, Ult_Act_Restr, Ejecutado_Siguiente_Semana) 
                         SELECT NULL, ?, Consecutivo, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin, Ruta_Critica, 0, IFNULL(Ejecutado, 0), Estado, IFNULL(Semanas_Inicio, 0), IFNULL(Estado_Restricciones, '0'), IFNULL(D_y_E, '0'), IFNULL(Materiales, '0'), IFNULL(MdeO, '0'), IFNULL(Equipos, '0'), IFNULL(Predecesora, '0'), IFNULL(Pdto_Cons, '0'), IFNULL(Modelo, '0'), Responsable_AIA, Observaciones, Ult_Act_Est, Ult_Act_Restr, IFNULL(Ejecutado, 0) FROM {$db}_programa";
             $dbInstance->query($sqlCopy, [$semana_crear]);
-
-            sleep(1);
             $sqlReset = "UPDATE {$db}_programa_consolidado SET Semanas_Inicio=NULL, medir_productividad=NULL, unidad=NULL, cantidad_ppto=NULL, codigo_actividad=NULL, Ejecutado=0, D_y_E='0', Materiales='0', MdeO='0', Equipos='0', Predecesora='0', Pdto_Cons='0', Modelo='0', Sub_Contratista=NULL, Responsable_AIA=NULL, Observaciones=NULL, Ult_Act_Est=NULL, Ult_Act_Restr=NULL, Activa=0, Ejecutado_Siguiente_Semana=NULL WHERE Semana = ? AND Titulo=1";
             $dbInstance->query($sqlReset, [$semana_crear]);
 
@@ -61,6 +69,12 @@ try {
             $stmtMax = $dbInstance->query("SELECT MAX(Semana) AS max_semana FROM {$db}_programa_consolidado");
             $dataMax = $stmtMax->fetch();
             $maxSemanaProgramaConsolidado = (int)($dataMax["max_semana"] ?? $conteo);
+
+            // Limpiar datos huérfanos si hay semanas superiores a la esperada
+            if ($maxSemanaProgramaConsolidado > $semana_crear) {
+                $dbInstance->query("DELETE FROM {$db}_programa_consolidado WHERE Semana > ?", [$semana_crear]);
+                error_log("[nueva_semana] Limpieza de datos huérfanos: eliminadas semanas > $semana_crear en programa_consolidado");
+            }
 
             if ($maxSemanaProgramaConsolidado == $semana_crear) {
                 $campos = "Ejecutado, Estado, Semanas_Inicio, Estado_Restricciones, D_y_E, Materiales, MdeO, Equipos, Predecesora, Pdto_Cons, Modelo, Sub_Contratista, Responsable_AIA, Observaciones, Ult_Act_Est, Ult_Act_Restr, Activa, Ejecutado_Siguiente_Semana, codigo_actividad, medir_productividad, cantidad_ppto, unidad";
@@ -104,13 +118,12 @@ try {
                 $sqlInsertCopy = "INSERT INTO {$db}_programa_consolidado(Consecutivo, Semana, $cols)
                                    SELECT NULL, ?, $selectCols FROM {$db}_programa_consolidado WHERE Semana = ?";
                 $dbInstance->query($sqlInsertCopy, [$semana_crear, $conteo]);
-                sleep(1);
             }
 
             $dbInstance->query("UPDATE {$db}_programa_consolidado SET Semanas_Inicio=NULL, medir_productividad=NULL, unidad=NULL, cantidad_ppto=NULL, codigo_actividad=NULL, Ejecutado=0, D_y_E='0', Materiales='0', MdeO='0', Equipos='0', Predecesora='0', Pdto_Cons='0', Modelo='0', Sub_Contratista=NULL, Responsable_AIA=NULL, Observaciones=NULL, Ult_Act_Est=NULL, Ult_Act_Restr=NULL, Activa=0, Ejecutado_Siguiente_Semana=NULL WHERE Semana = ? AND Titulo=1", [$semana_crear]);
             $dbInstance->query("UPDATE {$db}_programa_consolidado SET Ejecutado = 0, Estado_Restricciones = '0', D_y_E = '0', Materiales = '0', MdeO = '0', Equipos = '0', Predecesora = '0', Pdto_Cons = '0', Modelo = '0' WHERE Ejecutado IS NULL AND Semana = ? AND Titulo=0", [$semana_crear]);
 
-            sleep(1);
+
 
             $sqlSemanal = "SELECT 
                 MAX(Actividad) as Actividad, 
@@ -134,6 +147,7 @@ try {
                 $Ejecutado = (float)$data5["Ejecutado"];
                 $cantidad_ppto = (float)($data5["cantidad_ppto"] ?? 0);
                 if ($cantidad_ppto <= 0) {
+                    // Fallback: actividades tipo % usan 100 como base de cálculo
                     $cantidad_ppto = 100;
                 }
 
@@ -146,7 +160,6 @@ try {
                 $sqlUpdateProg = "UPDATE {$db}_programa_consolidado SET Ejecutado=?, Responsable_AIA=?, Sub_Contratista=? WHERE Semana=? AND (Actividad=? OR programaAnteriorAsociar=?)";
                 $dbInstance->query($sqlUpdateProg, [$Ejecutado_fin_semana, $Responsable_AIA, $Sub_Contratista, $semana_crear, $Actividad, $Actividad]);
             }
-            sleep(1);
 
             if ($pdcActivo == 1) {
                 $sqlCopyPDC = "INSERT INTO `{$db}_pdc` (semana, titulo, tipoPaquete, paqueteContratacion, contratos, numeroSubcontratos, subcontratoPaquete, estado, fechaElaboracionPliegos, diasElaboracionPliegos, fechaRealElaboracionPliegos, fechaIngresoLicify, diasIngresoLicify, fechaRealIngresoLicify, fechaEntregaPliegos, diasEntregaPliegos, fechaRealEntregaPliegos, fechaReciboPropuestas, diasReciboPropuestas, fechaRealReciboPropuestas, fechaCuadrosComparativos, diasCuadrosComparativos, fechaRealCuadrosComparativos, fechaLegalizacionContrato, diasLegalizacionContrato, fechaRealLegalizacionContrato, fechaFabricacion, diasFabricacion, fechaRealFabricacion, fechaInsumosObra, diasInsumosObra, fechaRealInsumosObra, fechaInicio, fechaInicioProyectada, fechaRealInicio, idProveedorAdjudicado, numeroContrato, fechaVencimientoPolizas, valorPresupuesto, valorPrimeraNegociacion, valorAdjudicado, valorAnticipo, valorReclamado, valorDevoluciones, observacionesContrato)

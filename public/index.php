@@ -66,8 +66,11 @@ $router->post('/programacion-intermedia/shared-constraints/apply', [\App\Control
 $router->get('/api/pi/list', [\App\Controllers\Programacion\ProgramacionIntermediaController::class, 'list']);
 $router->post('/api/pi/save', [\App\Controllers\Programacion\ProgramacionIntermediaController::class, 'save']);
 $router->get('/api/general/list', [\App\Controllers\Api\GeneralApiController::class, 'list']);
+$router->post('/api/general/list', [\App\Controllers\Api\GeneralApiController::class, 'list']);
 $router->post('/api/general/update', [\App\Controllers\Api\GeneralApiController::class, 'update']);
 $router->post('/api/general/update-batch', [\App\Controllers\Api\GeneralApiController::class, 'updateBatch']);
+$router->post('/api/general/import', [\App\Controllers\Api\GeneralApiController::class, 'importExcel']);
+$router->post('/api/general/delete-update', [\App\Controllers\Api\GeneralApiController::class, 'deleteUpdate']);
 $router->get('/api/general/codigos', [\App\Controllers\Api\GeneralApiController::class, 'getCodigos']);
 $router->post('/api/indicadores/generar', [\App\Controllers\Api\IndicadoresApiController::class, 'generar']);
 $router->get('/programa-general-actualizar', [\App\Controllers\Programacion\ProgramaGeneralActualizarController::class, 'index']);
