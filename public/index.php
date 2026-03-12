@@ -136,18 +136,6 @@ $router->get('/legacy/cambiar_pagina.php', function() {
 $router->post('/legacy/cambiar_pagina.php', function() {
     require_once PROJECT_ROOT . '/src/Legacy/Endpoints/cambiar_pagina.php';
 });
-$router->post('/legacy/pdc/actualizar_pdc.php', function() {
-    require_once PROJECT_ROOT . '/src/Legacy/Endpoints/actualizar_pdc.php';
-});
-$router->post('/legacy/programaGeneralActualizar/guardar_programaGeneralActualizar.php', function() {
-    require_once PROJECT_ROOT . '/src/Legacy/Endpoints/guardar_programaGeneralActualizar.php';
-});
-$router->get('/legacy/programaGeneralActualizar/listar_programaGeneralActualizar.php', function() {
-    require_once PROJECT_ROOT . '/src/Legacy/Endpoints/listar_programaGeneralActualizar.php';
-});
-$router->post('/legacy/programa_general/guardar_programa_general.php', function() {
-    require_once PROJECT_ROOT . '/src/Legacy/Endpoints/guardar_programa_general.php';
-});
 
 // Endpoint faltante para Cargar Datos Generales (Cargos/Nombres)
 $router->post('/legacy/funciones_generales/php/datosGeneralesPagina.php', function() {
@@ -166,7 +154,7 @@ $router->post('/legacy/funciones_generales/php/buscadorTabla.php', function() {
     require_once PROJECT_ROOT . '/src/Legacy/buscadorTabla.php';
 });
 $router->post('/legacy/pdc/actualizar_pdc.php', function() {
-    require_once PROJECT_ROOT . '/src/Legacy/actualizar_pdc_nueva_semana.php';
+    require_once PROJECT_ROOT . '/src/Legacy/actualizar_pdc.php';
 });
 
 $router->post('/context/clear-week', [\App\Controllers\Core\ContextController::class, 'clearWeek']);
