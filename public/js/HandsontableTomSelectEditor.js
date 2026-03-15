@@ -118,7 +118,7 @@
     // Pre-seleccionamos el ítem aquí para que cuando HOT llame getValue(),
     // el valor ya esté actualizado en Tom Select.
     this._pointerdownHandler = function (e) {
-      var optionEl = e.target.closest ? e.target.closest('.ts-option') : null;
+      var optionEl = e.target.closest ? e.target.closest('.option') : null;
       if (optionEl && _this.tomSelectInstance) {
         var val = optionEl.getAttribute('data-value');
         if (val !== null) {
@@ -271,7 +271,8 @@
           }
         }
       },
-      maxOptions:   null,
+      maxOptions:        null,
+      closeAfterSelect:  true,
       render: {
         item: function(data, escape) {
           var decoded = data.text.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
@@ -299,7 +300,7 @@
 
     // ─── FIX PRINCIPAL ─────────────────────────────────────────────
     this._pointerdownHandler = function (e) {
-      var optionEl = e.target.closest ? e.target.closest('.ts-option') : null;
+      var optionEl = e.target.closest ? e.target.closest('.option') : null;
       if (optionEl && _this.tomSelectInstance) {
         var val = optionEl.getAttribute('data-value');
         if (val !== null) {
