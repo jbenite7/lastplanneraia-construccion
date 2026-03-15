@@ -147,7 +147,7 @@ body {
 .force-wrap {
   white-space: pre-wrap !important;
   word-wrap: break-word !important;
-  word-break: break-all !important;
+  word-break: normal !important;
   overflow-wrap: break-word !important;
 }
 

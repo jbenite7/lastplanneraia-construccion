@@ -6,10 +6,20 @@
 window.HOTActualizarModule = (function() {
     var hot = null;
     var rawData = [];
-    var showingUnmappedOnly = false;
+    var showingUnmappedOnly = true;
 
     // Configuración de validadores y regexs
     const regexNumerico = /^-?\d*(\.\d+)?$/;
+    const unitOptions = ['', 'ml', 'm2', 'm3', 'un', 'gl', 'kg', '%', 'Niveles'];
+    const editableProps = {
+        'programaAnteriorAsociar': true,
+        'Fecha_Inicio': true,
+        'Fecha_Fin': true,
+        'unidad': true,
+        'cantidad_ppto': true,
+        'Ejecutado': true,
+        'codigo_actividad': true
+    };
 
     // Obtenemos el JSON de opciones pre-cargado desde PHP
     var sourceDataHistorica = [];
@@ -20,6 +30,53 @@ window.HOTActualizarModule = (function() {
         }
     } catch(e) {
         console.error("Error cargando data histórica para el Dropdown:", e);
+    }
+
+    /**
+     * Valida permisos globales
+     */
+    function isUserAllowedToEdit() {
+        var permiso = String($('#permiso').val() || 'V').trim().toUpperCase();
+        var semanalConfirmada = parseInt($('#Semanal_Confirmada').val() || 0);
+        var semanaActual = parseInt($('#semana').val() || 0);
+        var maxSemana = parseInt($('#Max_Semana').val() || 0);
+
+        // Si la semana ya está confirmada, nadie edita
+        if (semanalConfirmada === 1) return false;
+
+        // Roles permitidos: Administrador(A), Director(D), Residente(R), DCV
+        var allowedRoles = ['A', 'D', 'R', 'DCV'];
+        if (allowedRoles.indexOf(permiso) === -1) return false;
+
+        // Si es Residente(R), solo puede editar si es la semana activa o max-1
+        if (permiso === 'R' && semanaActual < (maxSemana - 1)) return false;
+
+        return true;
+    }
+
+    /**
+     * Normalización de valores al estilo Programa General
+     */
+    function normalizeCellValue(prop, value) {
+        if (value === null || value === undefined) return { valid: true, value: null };
+        var str = String(value).trim();
+
+        if (prop === 'Ejecutado' || prop === 'cantidad_ppto') {
+            if (str === '') return { valid: true, value: null };
+            var num = parseFloat(str.replace(',', '.'));
+            if (isNaN(num)) return { valid: false, error: 'Debe ser un número válido' };
+            if (num < 0) return { valid: false, error: 'No se permiten valores negativos' };
+            if (prop === 'Ejecutado' && num > 100) return { valid: false, error: 'El porcentaje no puede ser mayor a 100%' };
+            return { valid: true, value: num };
+        }
+
+        if (prop.startsWith('Fecha_')) {
+            if (str === '') return { valid: true, value: null };
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(str)) return { valid: false, error: 'Formato de fecha inválido (YYYY-MM-DD)' };
+            return { valid: true, value: str };
+        }
+
+        return { valid: true, value: str };
     }
 
     /**
@@ -65,6 +122,60 @@ window.HOTActualizarModule = (function() {
     }
 
     /**
+     * Renderizador para Ejecutado Real (Muestra valor físico y porcentaje)
+     */
+    function pgEjecutadoRealRenderer(instance, td, row, col, prop, value, cellProperties) {
+        Handsontable.renderers.NumericRenderer.apply(this, arguments);
+        var rowData = instance.getSourceDataAtRow(row) || {};
+        var unity = String(rowData.unidad || '').trim();
+        var ppto = parseFloat(rowData.cantidad_ppto || 0);
+        var val = parseFloat(value || 0);
+
+        var isMapped = rowData.programaAnteriorAsociar && rowData.programaAnteriorAsociar !== '*No Asociada*';
+
+        if (!isMapped || unity === '%' || unity === '') {
+            td.innerHTML = (val * 100).toFixed(1) + '%';
+        } else {
+            var physicalValue = (val * ppto).toFixed(1);
+            var percentValue = (val * 100).toFixed(1);
+            td.innerHTML = physicalValue + ' ' + unity + ' (' + percentValue + '%)';
+        }
+
+        td.className = (td.className || '') + ' htCenter htMiddle';
+    }
+
+    /**
+     * Renderizador genérico para porcentajes (Restricciones)
+     */
+    function pgPercentRenderer(instance, td, row, col, prop, value, cellProperties) {
+        Handsontable.renderers.NumericRenderer.apply(this, arguments);
+        var val = parseFloat(value || 0);
+        td.innerHTML = (val * 100).toFixed(1) + '%';
+        td.className = (td.className || '') + ' htCenter htMiddle';
+    }
+
+    /**
+     * Cargar Códigos de Actividad (Catálogo)
+     */
+    function fetchCodigosActividad() {
+        var db = document.getElementById('baseDatos').value;
+        fetch("/api/general/codigos?db=" + db)
+            .then(res => res.json())
+            .then(response => {
+                if (response.data && hot) {
+                    var codes = response.data.map(c => c.codigo);
+                    var colIndex = hot.getPropToCol('codigo_actividad');
+                    if (colIndex !== -1) {
+                        var settings = hot.getSettings();
+                        settings.columns[colIndex].source = codes;
+                        hot.updateSettings({ columns: settings.columns });
+                    }
+                }
+            })
+            .catch(err => console.error("Error cargando códigos:", err));
+    }
+
+    /**
      * Cargar y Filtrar Datos
      */
     function loadData() {
@@ -78,7 +189,7 @@ window.HOTActualizarModule = (function() {
         
         // Fetch desde el API: Consultamos la semana de borrador (siguiente a la activa)
         var targetSemana = parseInt(semanaVal) + 1;
-        var fullUrl = "/api/general/list?db=" + db + "&semana=" + targetSemana;
+        var fullUrl = "/api/general/list?db=" + db + "&semana=" + targetSemana + "&exclude_chapters=1";
         
         console.log("🔥 [MapeoManual] targetSemana calculado: ", targetSemana);
         console.log("🔥 [MapeoManual] Iniciando fetch GET: ", fullUrl);
@@ -169,30 +280,31 @@ window.HOTActualizarModule = (function() {
         // Actividad -> No se envía (es de lectura)
         if(changesObj['programaAnteriorAsociar'] !== undefined) formData.append('actividadAsociar', changesObj['programaAnteriorAsociar']);
         if(changesObj['Fecha_Inicio'] !== undefined) formData.append('Fecha_Inicio', changesObj['Fecha_Inicio']);
+        else formData.append('Fecha_Inicio', rowData.Fecha_Inicio || '');
+
         if(changesObj['Fecha_Fin'] !== undefined) formData.append('Fecha_Fin', changesObj['Fecha_Fin']);
+        else formData.append('Fecha_Fin', rowData.Fecha_Fin || '');
+
         if(changesObj['unidad'] !== undefined) formData.append('unidad', changesObj['unidad']);
+        else formData.append('unidad', rowData.unidad || '');
+
         if(changesObj['cantidad_ppto'] !== undefined) formData.append('cantidad_ppto', changesObj['cantidad_ppto']);
-        if(changesObj['Ejecutado'] !== undefined) formData.append('Ejecutado', changesObj['Ejecutado']);
-
-        // Mapear campos: Prioridad al cambio reciente, sino valor actual de la fila
-        formData.append('actividadAsociar', changesObj['programaAnteriorAsociar'] !== undefined ? changesObj['programaAnteriorAsociar'] : (rowData.programaAnteriorAsociar || '*No Asociada*'));
-        formData.append('Fecha_Inicio', changesObj['Fecha_Inicio'] !== undefined ? changesObj['Fecha_Inicio'] : (rowData.Fecha_Inicio || ''));
-        formData.append('Fecha_Fin', changesObj['Fecha_Fin'] !== undefined ? changesObj['Fecha_Fin'] : (rowData.Fecha_Fin || ''));
-        formData.append('unidad', changesObj['unidad'] !== undefined ? changesObj['unidad'] : (rowData.unidad || '%'));
-        formData.append('cantidad_ppto', changesObj['cantidad_ppto'] !== undefined ? changesObj['cantidad_ppto'] : (rowData.cantidad_ppto || ''));
+        else formData.append('cantidad_ppto', rowData.cantidad_ppto !== undefined ? rowData.cantidad_ppto : '');
         
-        // Lógica de Ejecutado vs Cantidad Presupuesto
-        var editedEjecutado = changesObj['Ejecutado'] !== undefined ? changesObj['Ejecutado'] : rowData.Ejecutado;
-        var currentPpto = changesObj['cantidad_ppto'] !== undefined ? changesObj['cantidad_ppto'] : rowData.cantidad_ppto;
-
-        if (editedEjecutado === null || editedEjecutado === "") {
-            formData.append('Ejecutado', "Nulo");
-        } else {
-            var pptoFactor = (currentPpto == null || currentPpto == "" || parseFloat(currentPpto) === 0) ? 100 : parseFloat(currentPpto);
-            formData.append('Ejecutado', (parseFloat(editedEjecutado) / pptoFactor).toFixed(4));
-        }
+        // Sincronización AIA 2026: El usuario ingresa 0-100, la DB guarda 0-1
+        var editedEjecutado = (changesObj['Ejecutado'] !== undefined) ? changesObj['Ejecutado'] : rowData.Ejecutado;
+        var valToSubmit = parseFloat(editedEjecutado);
+        if (isNaN(valToSubmit)) valToSubmit = 0; // Fallback seguro
+        if (valToSubmit > 1 && valToSubmit <= 100) valToSubmit = valToSubmit / 100;
+        else if (valToSubmit > 0 && valToSubmit <= 1) valToSubmit = valToSubmit; // Ya es ratio
         
-        formData.append('codigo_actividad', rowData.codigo_actividad || '');
+        formData.append('Ejecutado', valToSubmit.toFixed(4));
+
+        if(changesObj['actividadAsociar'] !== undefined) formData.append('actividadAsociar', changesObj['actividadAsociar']);
+        else formData.append('actividadAsociar', rowData.programaAnteriorAsociar || rowData.actividadAsociar || '*No Asociada*');
+
+        if(changesObj['codigo_actividad'] !== undefined) formData.append('codigo_actividad', changesObj['codigo_actividad']);
+        else formData.append('codigo_actividad', rowData.codigo_actividad || '');
 
         fetch("/api/general/update?db=" + db + "&semana=" + targetSemana, {
             method: 'POST',
@@ -206,16 +318,30 @@ window.HOTActualizarModule = (function() {
             if (res.respuesta === "BIEN") {
                 $('#save-status').text('Autoguardado').removeClass('badge-warning').addClass('badge-success');
                 setTimeout(() => $('#save-status').fadeOut(), 2000);
+
+                // Reflejar cambios heredados si existen en la respuesta (Herencia AIA 2026)
+                if (res.unidad !== undefined) hot.setDataAtRowProp(visualRowIndex, 'unidad', res.unidad, 'internal');
+                if (res.cantidad_ppto !== undefined) hot.setDataAtRowProp(visualRowIndex, 'cantidad_ppto', res.cantidad_ppto, 'internal');
+                if (res.Ejecutado !== undefined) hot.setDataAtRowProp(visualRowIndex, 'Ejecutado', res.Ejecutado, 'internal');
+                if (res.Estado_Restricciones !== undefined) hot.setDataAtRowProp(visualRowIndex, 'Estado_Restricciones', res.Estado_Restricciones, 'internal');
+                if (res.estado !== undefined) hot.setDataAtRowProp(visualRowIndex, 'Estado', res.estado, 'internal');
+                
+                // Herencia de las 7 restricciones individuales (persistidas pero no visibles)
+                const silentFields = ['D_y_E', 'Materiales', 'MdeO', 'Equipos', 'Predecesora', 'Pdto_Cons', 'Modelo'];
+                silentFields.forEach(field => {
+                    if (res[field] !== undefined) hot.setDataAtRowProp(visualRowIndex, field, res[field], 'internal');
+                });
             } else {
                 $('#save-status').hide();
                 $('#save-error').text(res.mensaje || 'Error al guardar').show();
-                toastr.error("Error al guardar fila ID: " + rowId);
+                if (typeof toastr !== 'undefined') toastr.error("Error al guardar fila ID: " + rowId);
             }
         })
         .catch(err => {
-            console.error(err);
+            console.error("🔥 Error en autoSaveRow:", err);
             $('#save-status').hide();
             $('#save-error').show();
+            if (typeof toastr !== 'undefined') toastr.error("Error de red al guardar");
         });
     }
 
@@ -227,7 +353,7 @@ window.HOTActualizarModule = (function() {
 
         var hotConfig = {
             data: data,
-            rowHeaders: true,
+            rowHeaders: false,
             colHeaders: [
                 "Consecutivo",
                 "Id",
@@ -237,6 +363,7 @@ window.HOTActualizarModule = (function() {
                 "F. Fin",
                 "Unidad",
                 "Cant. PPTO",
+                "Restricciones",
                 "Ejec. Real"
             ],
             columns: [
@@ -247,16 +374,68 @@ window.HOTActualizarModule = (function() {
                     data: 'programaAnteriorAsociar', 
                     type: 'text',
                     width: 300, 
+                    className: "htCenter htMiddle",
                     editor: 'tomSelectSingle',
                     tomSelectOptions: sourceDataHistorica,
                     renderer: ActivityMappingRenderer
                 },
-                { data: 'Fecha_Inicio', type: 'date', dateFormat: 'YYYY-MM-DD', width: 90, className: "htCenter htMiddle pg-cell-editable" },
-                { data: 'Fecha_Fin', type: 'date', dateFormat: 'YYYY-MM-DD', width: 90, className: "htCenter htMiddle pg-cell-editable" },
-                { data: 'unidad', type: 'text', width: 60, className: "htCenter htMiddle pg-cell-editable" },
-                { data: 'cantidad_ppto', type: 'numeric', width: 80, className: "htCenter htMiddle pg-cell-editable" },
-                { data: 'Ejecutado', type: 'numeric', width: 80, className: "htCenter htMiddle pg-cell-editable" }
+                { data: 'Fecha_Inicio', type: 'date', dateFormat: 'YYYY-MM-DD', width: 90, className: "htCenter htMiddle" },
+                { data: 'Fecha_Fin', type: 'date', dateFormat: 'YYYY-MM-DD', width: 90, className: "htCenter htMiddle" },
+                { 
+                    data: 'unidad', 
+                    type: 'dropdown', 
+                    source: unitOptions, 
+                    width: 60, 
+                    className: "htCenter htMiddle" 
+                },
+                { 
+                    data: 'cantidad_ppto', 
+                    type: 'numeric', 
+                    numericFormat: { pattern: '0.0' }, 
+                    width: 80, 
+                    className: "htCenter htMiddle" 
+                },
+                { 
+                    data: 'Estado_Restricciones', 
+                    type: 'numeric', 
+                    readOnly: true,
+                    width: 100, 
+                    className: "htCenter htMiddle",
+                    renderer: pgPercentRenderer
+                },
+                { 
+                    data: 'Ejecutado', 
+                    type: 'numeric', 
+                    numericFormat: { pattern: '0.0' }, 
+                    width: 140, 
+                    className: "htCenter htMiddle",
+                    renderer: pgEjecutadoRealRenderer 
+                }
             ],
+            cells: function(row, col, prop) {
+                var props = {};
+                var canEdit = Boolean(editableProps[prop]) && isUserAllowedToEdit();
+                var rowData = this.instance.getSourceDataAtRow(row) || {};
+
+                // Bloquear cantidad_ppto si la unidad es %
+                if (canEdit && prop === 'cantidad_ppto' && String(rowData.unidad || '').trim() === '%') {
+                    canEdit = false;
+                }
+
+                // Bloquear campos críticos si la actividad está mapeada (automapeada o manual)
+                var isMapped = rowData.programaAnteriorAsociar && rowData.programaAnteriorAsociar !== '*No Asociada*';
+                var restrictedMappedProps = ['Ejecutado', 'unidad', 'cantidad_ppto'];
+                
+                if (canEdit && isMapped && restrictedMappedProps.indexOf(prop) !== -1) {
+                    canEdit = false;
+                }
+
+                props.readOnly = !canEdit;
+                props.className = (this.instance.getSettings().columns[col].className || '') + 
+                                  (canEdit ? ' pg-cell-editable' : ' pg-cell-readonly');
+                
+                return props;
+            },
             
             // Características UX AIA 2026
             stretchH: 'all',
@@ -277,7 +456,7 @@ window.HOTActualizarModule = (function() {
             },
 
             afterChange: function(changes, source) {
-               if (source === 'loadData' || !changes) return;
+               if (source === 'loadData' || source === 'internal' || !changes) return;
 
                // Agrupar cambios por fila
                var rowChanges = {};
@@ -288,10 +467,33 @@ window.HOTActualizarModule = (function() {
                    var newVal = change[3];
 
                    if (oldVal !== newVal) {
+                       // Validar y Normalizar
+                       var normalized = normalizeCellValue(prop, newVal);
+                       if (!normalized.valid) {
+                           this.setDataAtRowProp(visualRow, prop, oldVal, 'internal');
+                           if (typeof toastr !== 'undefined') toastr.warning(normalized.error);
+                           return;
+                       }
+
+                       // Si se borra la asociación, forzar "*No Asociada*" para mostrar PENDIENTE
+                       if (prop === 'programaAnteriorAsociar' && (normalized.value === null || normalized.value === '')) {
+                           normalized.value = '*No Asociada*';
+                       }
+
                        if (!rowChanges[visualRow]) rowChanges[visualRow] = {};
-                       rowChanges[visualRow][prop] = newVal;
+                       rowChanges[visualRow][prop] = normalized.value;
+
+                       // Update visual si hubo normalización (ej: coma a punto)
+                       if (normalized.value !== newVal) {
+                           this.setDataAtRowProp(visualRow, prop, normalized.value, 'internal');
+                       }
+
+                       // Si cambió la unidad, forzar renderizado para bloquear/desbloquear cantidad_ppto
+                       if (prop === 'unidad') {
+                           this.render();
+                       }
                    }
-               });
+               }.bind(this));
 
                // Disparar guardado por cada fila modificada
                 Object.keys(rowChanges).forEach(function(visualRowStr) {
@@ -321,6 +523,7 @@ window.HOTActualizarModule = (function() {
         init: function() {
             console.log("🔥 [MapeoManual] HOTActualizarModule.init() alcanzado.");
             try {
+                fetchCodigosActividad();
                 loadData();
             } catch (error) {
                 console.error("🔥 [MapeoManual] Excepción síncrona en init(): ", error);
