@@ -60,6 +60,10 @@ class GeneralApiController extends BaseController
                 $sqlFilter = " AND (" . implode(" OR ", $conditions) . ")";
             }
 
+            if (isset($_GET['filter']) && $_GET['filter'] === 'unmapped') {
+                $sqlFilter .= " AND programaAnteriorAsociar = '*No Asociada*' ";
+            }
+
             // 3. Obtener Fechas de la Semana
             $stmtFechas = $this->db->prepare("SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem FROM {$dbPrefix}_semanas_activas WHERE Semana = ? LIMIT 1");
             $stmtFechas->execute([$semana]);
@@ -75,8 +79,6 @@ class GeneralApiController extends BaseController
             $sql = "SELECT * 
                     FROM {$dbPrefix}_programa_consolidado 
                     WHERE Semana = ? 
-                    AND Fecha_Inicio IS NOT NULL 
-                    AND Fecha_Fin IS NOT NULL 
                     $sqlFilter 
                     ORDER BY Consecutivo ASC, Consecutivo_en_Programa ASC, Id ASC";
 
@@ -157,7 +159,9 @@ class GeneralApiController extends BaseController
             // 3. Productividad (Legacy: forzado a 0)
             $medirProductividad = 0;
 
-            // 4. Update Principal
+            $actividadAsociar = $_POST['actividadAsociar'] ?? null;
+
+            // 4. Update Principal (Incluyendo Mapeo)
             $sql = "UPDATE {$dbPrefix}_programa_consolidado SET 
                     Activa = 1,
                     Ejecutado = ?, 
@@ -167,15 +171,46 @@ class GeneralApiController extends BaseController
                     codigo_actividad = ?, 
                     Ejecutado_Siguiente_Semana = ?, 
                     Fecha_Inicio = ?, 
-                    Fecha_Fin = ? 
+                    Fecha_Fin = ?,
+                    programaAnteriorAsociar = ?
                     WHERE Consecutivo_en_Programa = ? AND Semana = ?";
             
             $this->db->prepare($sql)->execute([
                 $ejecutado, $medirProductividad, $unidad, $cantidadPpto, 
-                $codigoActividad, $ejecutado, $fechaInicio, $fechaFin, $id, $semana
+                $codigoActividad, $ejecutado, $fechaInicio, $fechaFin, $actividadAsociar, $id, $semana
             ]);
 
-            // 5. Recalcular Estado
+            // 5. Herencia Manual (Mapeo Manual LPS)
+            if (!empty($_POST['editarActividadAsociar']) && !empty($actividadAsociar) && $actividadAsociar !== '*No Asociada*') {
+                $nombreAsociado = $actividadAsociar;
+                $semanaAnterior = $semana - 1;
+                // Buscar la actividad original ignorando posibles etiquetas <b> en la comparación
+                $sqlHerencia = "SELECT Responsable_AIA, Sub_Contratista, Observaciones, codigo_actividad, medir_productividad, cantidad_ppto, unidad, 
+                                       Estado_Restricciones, D_y_E, Materiales, MdeO, Equipos, Predecesora, Pdto_Cons, Modelo 
+                                FROM {$dbPrefix}_programa_consolidado 
+                                WHERE (Actividad = ? OR REPLACE(REPLACE(Actividad, '<b>', ''), '</b>', '') = ?) 
+                                AND Semana = ? LIMIT 1";
+                $stmtHerencia = $this->db->prepare($sqlHerencia);
+                $stmtHerencia->execute([$nombreAsociado, $nombreAsociado, $semanaAnterior]);
+                $dataHerencia = $stmtHerencia->fetch(PDO::FETCH_ASSOC);
+
+                if ($dataHerencia) {
+                    $sqlApply = "UPDATE {$dbPrefix}_programa_consolidado SET 
+                                    Responsable_AIA = ?, Sub_Contratista = ?, Observaciones = ?, codigo_actividad = ?, 
+                                    medir_productividad = ?, cantidad_ppto = ?, unidad = ?, 
+                                    Estado_Restricciones = ?, D_y_E = ?, Materiales = ?, MdeO = ?, Equipos = ?, 
+                                    Predecesora = ?, Pdto_Cons = ?, Modelo = ? 
+                                 WHERE Consecutivo_en_Programa = ? AND Semana = ?";
+                    $this->db->prepare($sqlApply)->execute([
+                        $dataHerencia['Responsable_AIA'], $dataHerencia['Sub_Contratista'], $dataHerencia['Observaciones'], $dataHerencia['codigo_actividad'],
+                        $dataHerencia['medir_productividad'], $dataHerencia['cantidad_ppto'], $dataHerencia['unidad'],
+                        $dataHerencia['Estado_Restricciones'], $dataHerencia['D_y_E'], $dataHerencia['Materiales'], $dataHerencia['MdeO'], $dataHerencia['Equipos'],
+                        $dataHerencia['Predecesora'], $dataHerencia['Pdto_Cons'], $dataHerencia['Modelo'], $id, $semana
+                    ]);
+                }
+            }
+
+            // 6. Recalcular Estado
             $ctxStmt = $this->db->prepare("SELECT Titulo FROM {$dbPrefix}_programa_consolidado WHERE Consecutivo_en_Programa = ? AND Semana = ?");
             $ctxStmt->execute([$id, $semana]);
             $row = $ctxStmt->fetch(PDO::FETCH_ASSOC);
@@ -298,20 +333,34 @@ class GeneralApiController extends BaseController
             $todoElExcel = $excelData; 
             array_shift($excelData); 
 
-            // 1. Detección inteligente de semana inicial
-            $stmtMax = $this->db->prepare("SELECT MAX(Semana) as max_sem FROM {$dbPrefix}_programa_consolidado");
-            $stmtMax->execute();
-            $maxSem = (int)($stmtMax->fetch(PDO::FETCH_ASSOC)['max_sem'] ?? 0);
+            // 1. Detección inteligente de
+            $stmtMaxCons = $this->db->prepare("SELECT MAX(Semana) as max_sem FROM {$dbPrefix}_programa_consolidado");
+            $stmtMaxCons->execute();
+            $maxSemCons = (int)($stmtMaxCons->fetch(PDO::FETCH_ASSOC)['max_sem'] ?? 0);
+
+            $stmtMaxAct = $this->db->prepare("SELECT MAX(Semana) as max_sem FROM {$dbPrefix}_semanas_activas");
+            $stmtMaxAct->execute();
+            $maxSemAct = (int)($stmtMaxAct->fetch(PDO::FETCH_ASSOC)['max_sem'] ?? 0);
             
-            // Si no hay datos, forzamos Semana 1, de lo contrario usamos el incremento correlativo
-            $semanaNueva = ($maxSem === 0) ? 1 : ($semana + 1);
+            // Lógica de Autodetección de Semana Destino:
+            if ($maxSemCons === 0) {
+                // Caso A: Proyecto Nuevo -> Semana 1
+                $semanaNueva = 1;
+            } else if ($maxSemCons > $maxSemAct) {
+                // Caso B: Ya existe un borrador (Draft) -> Mantener en la misma semana para re-importar/mapear
+                $semanaNueva = $maxSemCons;
+            } else {
+                // Caso C: Al día -> Preparar la siguiente semana (Next)
+                $semanaNueva = $maxSemAct + 1;
+            }
 
             $logFile = PROJECT_ROOT . "/public/debug_import.log";
             $debug = function($msg) use ($logFile) {
-                file_put_contents($logFile, "[" . date('Y-m-d H:i:s') . "] " . $msg . "\n", FILE_APPEND);
+                $timestamp = date('Y-m-d H:i:s');
+                file_put_contents($logFile, "[$timestamp] $msg\n", FILE_APPEND);
             };
 
-            $debug("DEBUG IMPORT: Semana actual detectada en DB: $maxSem. Semana destino: $semanaNueva");
+            $debug("DEBUG IMPORT: Semana Actual: $semana. Max Consolidado: $maxSemCons. Max Activas: $maxSemAct. Destino: $semanaNueva");
             $debug("DEBUG IMPORT: Filas en Excel (sin header): " . count($excelData));
 
             // 2. Encontrar columna de esquema (puede no ser la 0)
@@ -327,8 +376,10 @@ class GeneralApiController extends BaseController
                 }
             }
 
-            $historico = $this->getPreviousWeekData($dbPrefix, $semana);
-            $debug("DEBUG IMPORT: Registros históricos encontrados: " . count($historico));
+            // Herencia inteligente: buscar en la semana activa más reciente
+            $semanaOrigen = ($maxSemAct > 0) ? $maxSemAct : $semana;
+            $historico = $this->getPreviousWeekData($dbPrefix, $semanaOrigen);
+            $debug("DEBUG IMPORT: Herencia desde Semana $semanaOrigen. Registros: " . count($historico));
 
             $consecutivoEnProg = 0;
             $itemsParaInsertar = [];
@@ -361,33 +412,51 @@ class GeneralApiController extends BaseController
                     'Sub_Contratista' => $prev['Sub_Contratista'] ?? null, 'Observaciones' => $prev['Observaciones'] ?? null,
                     'codigo_actividad' => $prev['codigo_actividad'] ?? null, 'medir_productividad' => $prev['medir_productividad'] ?? null,
                     'cantidad_ppto' => $prev['cantidad_ppto'] ?? null, 'unidad' => $prev['unidad'] ?? null,
+                    'Estado_Restricciones' => $prev['Estado_Restricciones'] ?? 0, 'D_y_E' => $prev['D_y_E'] ?? '0',
+                    'Materiales' => $prev['Materiales'] ?? '0', 'MdeO' => $prev['MdeO'] ?? '0', 'Equipos' => $prev['Equipos'] ?? '0',
+                    'Predecesora' => $prev['Predecesora'] ?? '0', 'Pdto_Cons' => $prev['Pdto_Cons'] ?? '0', 'Modelo' => $prev['Modelo'] ?? '0',
+                    'programaAnteriorAsociar' => empty($prev) ? '*No Asociada*' : $nombreLimpio
                 ];
             }
 
             $this->db->beginTransaction();
 
-            // 1. Borrar registros de la semana destino si existen (sobrescribir)
+            // 1A. Actualizar _programa (Baseline/Maestro)
+            $this->db->prepare("DELETE FROM {$dbPrefix}_programa")->execute();
+            $qProg = "INSERT INTO {$dbPrefix}_programa (Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin, Ruta_Critica) VALUES (?, ?, ?, ?, ?, ?)";
+            $stmtProg = $this->db->prepare($qProg);
+            foreach ($itemsParaInsertar as $item) {
+                $stmtProg->execute([$item['Id'], $item['Actividad'], $item['Titulo'], $item['Fecha_Inicio'], $item['Fecha_Fin'], $item['Ruta_Critica']]);
+            }
+            $debug("DEBUG IMPORT: _programa actualizado con " . count($itemsParaInsertar) . " registros.");
+
+            // 1B. Borrar borrador anterior en consolidado
             $this->db->prepare("DELETE FROM {$dbPrefix}_programa_consolidado WHERE Semana = ?")->execute([$semanaNueva]);
 
              // 2. Insertar nuevos registros
             $queryInsert = "INSERT INTO {$dbPrefix}_programa_consolidado (
                 Semana, Consecutivo_en_Programa, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin, Ruta_Critica, 
-                Ejecutado, Responsable_AIA, Sub_Contratista, Observaciones, codigo_actividad, medir_productividad, cantidad_ppto, unidad
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                Ejecutado, Responsable_AIA, Sub_Contratista, Observaciones, codigo_actividad, medir_productividad, cantidad_ppto, unidad,
+                Estado_Restricciones, D_y_E, Materiales, MdeO, Equipos, Predecesora, Pdto_Cons, Modelo, programaAnteriorAsociar
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $stmtInsert = $this->db->prepare($queryInsert);
 
             foreach ($itemsParaInsertar as $item) {
                 $stmtInsert->execute(array_values($item));
             }
 
-            // 3. Activar semana si no existe (indispensable para visualización)
+            // 3. Activar semana (Solo automáticamente para S1; S2+ queda como borrador)
             $stmtCheckSem = $this->db->prepare("SELECT COUNT(*) FROM {$dbPrefix}_semanas_activas WHERE Semana = ?");
             $stmtCheckSem->execute([$semanaNueva]);
-            if ($stmtCheckSem->fetchColumn() == 0) {
+            $existeSemana = (int)$stmtCheckSem->fetchColumn();
+
+            if ($existeSemana == 0 && $semanaNueva === 1) {
                 $f_final_sem = date('Y-m-d', strtotime($f_inicio_sem . ' + 6 days'));
                 $stmtInsertSem = $this->db->prepare("INSERT INTO {$dbPrefix}_semanas_activas (Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem, fechaCreacionSemana) VALUES (?, ?, ?, ?)");
                 $stmtInsertSem->execute([$semanaNueva, $f_inicio_sem, $f_final_sem, date('Y-m-d')]);
-                $debug("DEBUG IMPORT: Creada nueva semana activa: $semanaNueva ($f_inicio_sem a $f_final_sem)");
+                $debug("DEBUG IMPORT: Creada semana activa 1 automáticamente.");
+            } elseif ($existeSemana == 0) {
+                $debug("DEBUG IMPORT: Semana $semanaNueva guardada como BORRADOR. Use 'Nueva Semana' para activarla.");
             }
 
             $this->db->commit();
@@ -428,20 +497,35 @@ class GeneralApiController extends BaseController
         try {
             $vars = $this->getSessionVars();
             $dbPrefix = $_GET['db'] ?? ($vars['dbName'] ?? '');
-            $semana = $_POST['semana'] ?? ($vars['semana'] ?? 0);
+            $semana = $_GET['semana'] ?? $_POST['semana'] ?? ($vars['semana'] ?? 0);
 
             if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
                 throw new Exception("Base de datos inválida.");
             }
 
-            $sql = "UPDATE {$dbPrefix}_programa_consolidado SET 
-                    Ejecutado = 0, Responsable_AIA = NULL, Sub_Contratista = NULL, Observaciones = NULL
-                    WHERE Semana = ?";
-            
-            $this->db->prepare($sql)->execute([$semana]);
-            $this->updateBatch();
+            // 1. Determinar la última semana activa oficialmente
+            $stmtMax = $this->db->prepare("SELECT MAX(Semana) FROM {$dbPrefix}_semanas_activas");
+            $stmtMax->execute();
+            $maxSemanaActiva = (int)$stmtMax->fetchColumn();
 
-            echo json_encode(['respuesta' => 'BIEN']);
+            // 2. Si la semana que se quiere eliminar es superior a la activa, es un borrador (Draft)
+            // Procedemos con el borrado físico para que el usuario pueda re-importar/mapear de cero
+            if ($semana > $maxSemanaActiva) {
+                $sqlDelete = "DELETE FROM {$dbPrefix}_programa_consolidado WHERE Semana = ?";
+                $this->db->prepare($sqlDelete)->execute([$semana]);
+            } else {
+                // Si es una semana activa, solo reseteamos los campos de actualización (Soft Reset)
+                $sqlReset = "UPDATE {$dbPrefix}_programa_consolidado SET 
+                        Ejecutado = 0, Responsable_AIA = NULL, Sub_Contratista = NULL, Observaciones = NULL,
+                        programaAnteriorAsociar = '*No Asociada*'
+                        WHERE Semana = ?";
+                $this->db->prepare($sqlReset)->execute([$semana]);
+            }
+
+            echo json_encode([
+                'respuesta' => 'BIEN',
+                'semana_activa' => $maxSemanaActiva
+            ]);
 
         } catch (Exception $e) {
             http_response_code(500);
