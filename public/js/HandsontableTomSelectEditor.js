@@ -74,13 +74,15 @@
       closeAfterSelect:  false,
       hideSelected:      true,
       render: {
+        item: function(data, escape) {
+          var decoded = data.text.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+          return '<div class="item">' + decoded + '</div>';
+        },
         option: function(data, escape) {
-          var isCreate = data.value.indexOf('\u2795') > -1 || data.value.indexOf('Crear') > -1;
-          var label = escape(data.text);
-          if (isCreate) {
-            // Reemplazar el emoji por un icono de font-awesome para que herede el color del texto
-            label = label.replace(/\u2795/g, '<i class="fas fa-plus"></i>');
-          }
+          var valStr = String(data.value || '');
+          var decoded = data.text.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+          var isCreate = valStr.indexOf('\u2795') > -1 || valStr.indexOf('Crear') > -1;
+          var label = isCreate ? escape(decoded).replace(/\u2795/g, '<i class="fas fa-plus"></i>') : decoded;
           return '<div class="option' + (isCreate ? ' ts-create-option' : '') + '">' + label + '</div>';
         }
       }
@@ -144,9 +146,16 @@
       var isArrow = e.keyCode >= 37 && e.keyCode <= 40;
       if (!isTab && !isEsc && !isArrow) return;
       if ((e.keyCode === 38 || e.keyCode === 40) && _this.tomSelectInstance && _this.tomSelectInstance.isOpen) return;
+      
       e.preventDefault();
       e.stopPropagation();
-      _this.finishEditing();
+      
+      if (isEsc) {
+        _this.finishEditing(true);
+      } else {
+        _this.finishEditing();
+      }
+      
       if (_this.hot) { _this.hot.listen(); }
     };
     document.addEventListener('keydown', this._keydownHandler, true);
@@ -215,7 +224,12 @@
   TomSelectSingle.prototype.prepare = function (row, col, prop, td, originalValue, cellProperties) {
     Handsontable.editors.BaseEditor.prototype.prepare.apply(this, arguments);
     this.options = cellProperties.tomSelectOptions || cellProperties.select2Options || [];
-    this.tomOptions = this.options.map(function(opt) { return { value: opt, text: opt }; });
+    this.tomOptions = this.options.map(function(opt) {
+      if (typeof opt === 'object' && opt !== null) {
+        return { value: opt.id || opt.value || '', text: opt.title || opt.text || opt.label || '' };
+      }
+      return { value: String(opt), text: String(opt) };
+    });
   };
 
   TomSelectSingle.prototype.open = function () {
@@ -259,12 +273,15 @@
       },
       maxOptions:   null,
       render: {
+        item: function(data, escape) {
+          var decoded = data.text.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+          return '<div class="item">' + decoded + '</div>';
+        },
         option: function(data, escape) {
-          var isCreate = data.value.indexOf('\u2795') > -1 || data.value.indexOf('Crear') > -1;
-          var label = escape(data.text);
-          if (isCreate) {
-            label = label.replace(/\u2795/g, '<i class="fas fa-plus"></i>');
-          }
+          var valStr = String(data.value || '');
+          var decoded = data.text.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+          var isCreate = valStr.indexOf('\u2795') > -1 || valStr.indexOf('Crear') > -1;
+          var label = isCreate ? escape(decoded).replace(/\u2795/g, '<i class="fas fa-plus"></i>') : decoded;
           return '<div class="option' + (isCreate ? ' ts-create-option' : '') + '">' + label + '</div>';
         }
       }
@@ -286,7 +303,8 @@
       if (optionEl && _this.tomSelectInstance) {
         var val = optionEl.getAttribute('data-value');
         if (val !== null) {
-          _this.tomSelectInstance.setValue(val, true); // silent
+          _this.tomSelectInstance.setValue(val, false);
+          _this.finishEditing();
         }
       }
     };
@@ -299,9 +317,16 @@
       var isArrow = e.keyCode >= 37 && e.keyCode <= 40;
       if (!isTab && !isEsc && !isArrow) return;
       if ((e.keyCode === 38 || e.keyCode === 40) && _this.tomSelectInstance && _this.tomSelectInstance.isOpen) return;
+      
       e.preventDefault();
       e.stopPropagation();
-      _this.finishEditing();
+      
+      if (isEsc) {
+        _this.finishEditing(true);
+      } else {
+        _this.finishEditing();
+      }
+      
       if (_this.hot) { _this.hot.listen(); }
     };
     document.addEventListener('keydown', this._keydownHandlerSingle, true);
