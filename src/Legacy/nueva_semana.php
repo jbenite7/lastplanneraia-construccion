@@ -91,7 +91,7 @@ try {
 
                 $sqlBigUpdate = "UPDATE {$db}_programa_consolidado AS dest
                                  INNER JOIN (SELECT * FROM {$db}_programa_consolidado WHERE Semana = ? AND Titulo = 0) AS src
-                                 ON dest.programaAnteriorAsociar = src.Actividad
+                                 ON REPLACE(REPLACE(dest.programaAnteriorAsociar, '<b>', ''), '</b>', '') = REPLACE(REPLACE(src.Actividad, '<b>', ''), '</b>', '')
                                  SET $setClause
                                  WHERE dest.Semana = ?";
                 $dbInstance->query($sqlBigUpdate, [$conteo, $semana_crear]);
@@ -143,7 +143,7 @@ try {
             $actividadesSem = $stmtSemanal->fetchAll();
 
             foreach ($actividadesSem as $data5) {
-                $Actividad = $data5["Actividad"];
+                $Actividad = strip_tags($data5["Actividad"]);
                 $Ejecutado = (float)$data5["Ejecutado"];
                 $cantidad_ppto = (float)($data5["cantidad_ppto"] ?? 0);
                 if ($cantidad_ppto <= 0) {
@@ -157,7 +157,7 @@ try {
                 
                 $Ejecutado_fin_semana = ($Suma_Ejecutado_Real == 0) ? $Ejecutado : ($Suma_Ejecutado_Real / $cantidad_ppto) + $Ejecutado;
 
-                $sqlUpdateProg = "UPDATE {$db}_programa_consolidado SET Ejecutado=?, Responsable_AIA=?, Sub_Contratista=? WHERE Semana=? AND (Actividad=? OR programaAnteriorAsociar=?)";
+                $sqlUpdateProg = "UPDATE {$db}_programa_consolidado SET Ejecutado=?, Responsable_AIA=?, Sub_Contratista=? WHERE Semana=? AND (REPLACE(REPLACE(Actividad, '<b>', ''), '</b>', '') = ? OR REPLACE(REPLACE(programaAnteriorAsociar, '<b>', ''), '</b>', '') = ?)";
                 $dbInstance->query($sqlUpdateProg, [$Ejecutado_fin_semana, $Responsable_AIA, $Sub_Contratista, $semana_crear, $Actividad, $Actividad]);
             }
 

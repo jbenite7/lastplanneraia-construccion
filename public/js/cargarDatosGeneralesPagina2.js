@@ -405,11 +405,8 @@ var cargarDatosGeneralesPagina = function (seccion) {
         };
       }
       if (document.getElementById('actualizarCronograma')) {
-        document.getElementById('actualizarCronograma').href = '#';
-        document.getElementById('actualizarCronograma').onclick = function () {
-          window.Context.clearWeek('/programa-general-actualizar');
-          return false;
-        };
+        document.getElementById('actualizarCronograma').href = '/programa-general-actualizar';
+        document.getElementById('actualizarCronograma').onclick = null; // No clearing required
       }
 
       if (document.getElementById('controlCambios')) {
@@ -608,8 +605,21 @@ var cargarDatosGeneralesPagina = function (seccion) {
         if (menuElem) menuElem.classList.add('active');
       }
 
-      cargaParametros();
+      console.log("🕵️ [DeepAnalysis] A punto de llamar a cargaParametros() en cargarDatosGeneralesPagina2.js");
+      try {
+        if (typeof cargaParametros === 'function') {
+          console.log("🕵️ [DeepAnalysis] cargaParametros es una función. Ejecutando...");
+          cargaParametros();
+        } else {
+          console.error("🕵️ [DeepAnalysis] CRÍTICO: cargaParametros NO es una función o es undefined en este contexto global. Tipo actual:", typeof cargaParametros);
+        }
+      } catch (error) {
+        console.error("🕵️ [DeepAnalysis] Excepción ahogada (swallowed) capturada al ejecutar cargaParametros():", error);
+      }
     },
+    error: function(xhr, status, error) {
+      console.error("🕵️ [DeepAnalysis] Error AJAX en cargarDatosGeneralesPagina2.js:", status, error);
+    }
   });
 };
 
