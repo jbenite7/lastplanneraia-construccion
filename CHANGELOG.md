@@ -7,6 +7,21 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [Sin publicar]
 
+### Añadido
+
+- **TomSelect Premium AIA:** Implementación de arquitectura de estilos corporativos (Naranja Construcción) en `tom-select-premium-aia.css`. Incluye tipografía Montserrat/Inter, chips adaptables con word-wrap y un botón de limpieza elegante integrado siguiendo el manual de marca 2026.
+- **Persistencia de Mapeo Físico:** El botón "Eliminar Actualización" ahora realiza un `DELETE` físico de borradores en la base de datos, garantizando un flujo de trabajo limpio y permitiendo reintentar mapeos desde cero.
+
+### Cambiado
+
+- **Herencia Agnóstica a HTML:** Refactorización de la lógica en `nueva_semana.php` y `GeneralApiController.php` para que el sistema ignore etiquetas como `<b>` al comparar nombres de actividades, asegurando la herencia correcta de PDC y Responsables entre semanas con formatos mixtos.
+- **Robustez en Carga de Parámetros:** Inyección de protecciones `try-catch` y logs descriptivos en `cargarDatosGeneralesPagina2.js` para interceptar fallos en la función `cargaParametros()`, mejorando la observabilidad en producción.
+
+### Corregido
+
+- **Fix Tecla ESC en Grilla:** Resolución del `TypeError` y pérdida accidental de valores al presionar ESC en los editores TomSelect. Se sustituyó el método inexistente por `finishEditing(true)`, restaurando el estado previo de la celda de forma segura.
+- **Sincronización de Assets:** Actualización de headers y links de fuentes en las vistas de actualización para garantizar la carga de tipografías premium y el bypass de caché mediante versionamiento de scripts (`v=tomselect30`).
+
 ### Cambiado
 
 - **Migración de Vistas al MVC Moderno (Fase 2):** 17 vistas distribuidas en los subdirectorios legacy `construccion/*/views/` fueron resituadas dentro del patrón arquitectónico en el nuevo directorio raíz `views/`. Los controladores de `src/Controllers/` fueron paralelamente recompilados para resolver los path dinámicos hacia sus equivalentes modernos.

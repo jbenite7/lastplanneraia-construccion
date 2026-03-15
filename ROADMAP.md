@@ -72,6 +72,17 @@ gantt
     - Activación automática de Semana 1 en proyectos nuevos.
     - Detección dinámica de jerarquía (WBS/Esquema).
     - Modal de éxito premium y redirección integrada (Manual de Marca AIA).
+- [x] **Modelo Híbrido LPS 2.0: Importación con Herencia y Borradores** ✅ (2026-03-13)
+    - Actualización dual `_programa` (baseline) + `_programa_consolidado` (borrador).
+    - Herencia inteligente desde semana activa real (Restricciones, PDC, Responsables).
+    - Borradores habilitados: S2+ se guarda sin activar hasta "Nueva Semana".
+    - Fix Visibilidad: Filtro por defecto 'Mostrar Todas' para evitar falsos negativos tras rollover.
+    - Fix Persistencia: Sanitización de IDs en `autoSaveRow` (SQLSTATE 22007 resolved).
+    - Opt. API: Remoto filtro de fechas obligatorias para visibilidad total de registros.
+    - Fix Sincronización:- [x] **Persistencia Garantizada**: Mapeos persistentes en base de datos tras refresco. Incluye botón "Eliminar Actualización" con borrado físico de borradores (`DELETE`) para un flujo de trabajo sin residuos de actualizaciones fallidas. ✅
+- [x] **Herencia Inteligente (Label-Agnostic)**: Atributos y ejecución real se heredan correctamente ignorando etiquetas HTML (<b>) en las comparaciones de actividades. Blindaje aplicado en `nueva_semana.php` y `GeneralApiController.php`. ✅
+- [x] **TomSelect Premium AIA (2026-03-14)**: Implementación de arquitectura de estilos corporativos (Naranja Construcción) con tipografía Montserrat/Inter, chips adaptables (word-wrap) y botón de limpieza integrado. ✅
+- [x] **Fix Tecla ESC en Grilla**: Corrección en `HandsontableTomSelectEditor.js` para llamar a `cancelEditing()` en lugar de `finishEditing()`, evitando la pérdida accidental de datos al cancelar una edición con la tecla ESC. ✅
 - [x] Habilitación de POST en router para API General
 - **Select2 Arquitectura Inteligente y UI/UX Premium (2026-03-04):** Consolidación de Select2 Múltiple paramétrico y aislado, evadiendo colisiones del motor "outside clicks" de Handsontable mediante DOM-nesting atado directamente a la celda activa (`this.TD`). Refinamiento exhaustivo inyectando CSS modular para arreglos de espaciado interactivo, alineación flexible (`flex-wrap`) de chips y erradicación de gaps inter-elementos vía resets absolutos. Se forzó despliegue con actualizador de cache manual.
 - **Erradicación de DataTables (2026-03-03):** Se eliminó por completo la dependencia visual y los archivos base (`*.view.nuevaBarra.php`) del antiguo jQuery DataTables en las vistas maestras de Programación General, Programación Intermedia y Programación Semanal, consolidando Handsontable como la única tecnología de grilla.
