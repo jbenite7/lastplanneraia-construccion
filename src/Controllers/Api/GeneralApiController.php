@@ -64,6 +64,10 @@ class GeneralApiController extends BaseController
                 $sqlFilter .= " AND programaAnteriorAsociar = '*No Asociada*' ";
             }
 
+            if (!empty($_GET['exclude_chapters'])) {
+                $sqlFilter .= " AND Titulo = 0 ";
+            }
+
             // 3. Obtener Fechas de la Semana
             $stmtFechas = $this->db->prepare("SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem FROM {$dbPrefix}_semanas_activas WHERE Semana = ? LIMIT 1");
             $stmtFechas->execute([$semana]);
@@ -72,7 +76,7 @@ class GeneralApiController extends BaseController
             $fechaInicioSemana = $fechasSemana['Fecha_Inicio_Sem'] ?? date('Y-m-d');
 
             // 4. Auto-actualización de unidades vacías a '%' (paridad con legacy)
-            $sqlAutoUpdate = "UPDATE {$dbPrefix}_programa_consolidado SET unidad = '%' WHERE Semana = ? AND (unidad IS NULL OR TRIM(unidad) = '') AND Titulo = 0";
+            $sqlAutoUpdate = "UPDATE {$dbPrefix}_programa_consolidado SET unidad = '%' WHERE Semana = ? AND (unidad IS NULL OR TRIM(unidad) = '')";
             $this->db->prepare($sqlAutoUpdate)->execute([$semana]);
 
             // 5. Consulta Principal
@@ -132,16 +136,21 @@ class GeneralApiController extends BaseController
             $semana = isset($_GET['semana']) ? filter_var($_GET['semana'], FILTER_VALIDATE_INT) : ($vars['semana'] ?? 0);
             $id = $_POST['Id'] ?? null;
 
-            if (!$id || !$semana) {
+            if (($id === null || $id === '') || !$semana) {
+                error_log("🔥 [DebugUpdate] Faltan parámetros. ID: " . var_export($id, true) . ", Semana: " . var_export($semana, true));
                 throw new Exception("Faltan parámetros requeridos (Id, Semana).");
             }
 
             $ejecutado = $this->lpsService->toFloat($_POST["Ejecutado"] ?? null);
             $codigoActividad = $_POST["codigo_actividad"] ?? '';
-            $unidad = $_POST["unidad"] ?? '';
+            $unidadRaw = trim($_POST["unidad"] ?? '');
+            $unidad = ($unidadRaw === '') ? '%' : $unidadRaw;
             $cantidadPpto = $this->lpsService->toFloat($_POST["cantidad_ppto"] ?? null);
-            $fechaInicio = date("Y-m-d", strtotime($_POST["Fecha_Inicio"]));
-            $fechaFin = date("Y-m-d", strtotime($_POST["Fecha_Fin"]));
+            
+            $fechaInicioRaw = $_POST["Fecha_Inicio"] ?? '';
+            $fechaFinRaw = $_POST["Fecha_Fin"] ?? '';
+            $fechaInicio = !empty($fechaInicioRaw) ? date("Y-m-d", strtotime($fechaInicioRaw)) : null;
+            $fechaFin = !empty($fechaFinRaw) ? date("Y-m-d", strtotime($fechaFinRaw)) : null;
             
             if ($ejecutado !== null) {
                 if ($ejecutado < 0 || $ejecutado > 1) {
@@ -182,31 +191,27 @@ class GeneralApiController extends BaseController
 
             // 5. Herencia Manual (Mapeo Manual LPS)
             if (!empty($_POST['editarActividadAsociar']) && !empty($actividadAsociar) && $actividadAsociar !== '*No Asociada*') {
-                $nombreAsociado = $actividadAsociar;
                 $semanaAnterior = $semana - 1;
-                // Buscar la actividad original ignorando posibles etiquetas <b> en la comparación
-                $sqlHerencia = "SELECT Responsable_AIA, Sub_Contratista, Observaciones, codigo_actividad, medir_productividad, cantidad_ppto, unidad, 
-                                       Estado_Restricciones, D_y_E, Materiales, MdeO, Equipos, Predecesora, Pdto_Cons, Modelo 
-                                FROM {$dbPrefix}_programa_consolidado 
-                                WHERE (Actividad = ? OR REPLACE(REPLACE(Actividad, '<b>', ''), '</b>', '') = ?) 
-                                AND Semana = ? LIMIT 1";
-                $stmtHerencia = $this->db->prepare($sqlHerencia);
-                $stmtHerencia->execute([$nombreAsociado, $nombreAsociado, $semanaAnterior]);
-                $dataHerencia = $stmtHerencia->fetch(PDO::FETCH_ASSOC);
+                $historico = $this->getPreviousWeekData($dbPrefix, $semanaAnterior);
+                $keyBusqueda = trim($actividadAsociar);
+                $dataHerencia = $historico[$keyBusqueda] ?? null;
 
                 if ($dataHerencia) {
                     $sqlApply = "UPDATE {$dbPrefix}_programa_consolidado SET 
                                     Responsable_AIA = ?, Sub_Contratista = ?, Observaciones = ?, codigo_actividad = ?, 
                                     medir_productividad = ?, cantidad_ppto = ?, unidad = ?, 
                                     Estado_Restricciones = ?, D_y_E = ?, Materiales = ?, MdeO = ?, Equipos = ?, 
-                                    Predecesora = ?, Pdto_Cons = ?, Modelo = ? 
+                                    Predecesora = ?, Pdto_Cons = ?, Modelo = ?, Ejecutado = ?
                                  WHERE Consecutivo_en_Programa = ? AND Semana = ?";
                     $this->db->prepare($sqlApply)->execute([
                         $dataHerencia['Responsable_AIA'], $dataHerencia['Sub_Contratista'], $dataHerencia['Observaciones'], $dataHerencia['codigo_actividad'],
                         $dataHerencia['medir_productividad'], $dataHerencia['cantidad_ppto'], $dataHerencia['unidad'],
                         $dataHerencia['Estado_Restricciones'], $dataHerencia['D_y_E'], $dataHerencia['Materiales'], $dataHerencia['MdeO'], $dataHerencia['Equipos'],
-                        $dataHerencia['Predecesora'], $dataHerencia['Pdto_Cons'], $dataHerencia['Modelo'], $id, $semana
+                        $dataHerencia['Predecesora'], $dataHerencia['Pdto_Cons'], $dataHerencia['Modelo'], $dataHerencia['Ejecutado'], $id, $semana
                     ]);
+
+                    $ejecutado = $dataHerencia['Ejecutado'];
+                    $unidad = $dataHerencia['unidad'];
                 }
             }
 
@@ -214,6 +219,10 @@ class GeneralApiController extends BaseController
             $ctxStmt = $this->db->prepare("SELECT Titulo FROM {$dbPrefix}_programa_consolidado WHERE Consecutivo_en_Programa = ? AND Semana = ?");
             $ctxStmt->execute([$id, $semana]);
             $row = $ctxStmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$row) {
+                throw new Exception("Error post-update: Registro no encontrado.");
+            }
 
             $stmtFechas = $this->db->prepare("SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem FROM {$dbPrefix}_semanas_activas WHERE Semana = ?");
             $stmtFechas->execute([$semana]);
@@ -228,7 +237,27 @@ class GeneralApiController extends BaseController
             $this->db->prepare("UPDATE {$dbPrefix}_programa_consolidado SET Estado = ?, Semanas_Inicio = ? WHERE Consecutivo_en_Programa = ? AND Semana = ?")
                      ->execute([$nuevoEstado, $semanasInicio, $id, $semana]);
 
-            echo json_encode(['respuesta' => 'BIEN', 'estado' => $nuevoEstado, 'Semanas_Inicio' => $semanasInicio]);
+            $response = [
+                'respuesta' => 'BIEN', 
+                'estado' => $nuevoEstado, 
+                'Semanas_Inicio' => $semanasInicio,
+                'unidad' => $unidad // Devolvemos la unidad final (ej: auto-ajustada a %)
+            ];
+            
+            // Si hubo herencia, devolvemos los campos actualizados (prioridad sobre el input manual)
+            if (!empty($_POST['editarActividadAsociar']) && !empty($actividadAsociar) && $actividadAsociar !== '*No Asociada*') {
+                $inheritanceFields = "unidad, cantidad_ppto, Ejecutado, Estado_Restricciones, D_y_E, Materiales, MdeO, Equipos, Predecesora, Pdto_Cons, Modelo";
+                $inheritanceStmt = $this->db->prepare("SELECT $inheritanceFields FROM {$dbPrefix}_programa_consolidado WHERE Consecutivo_en_Programa = ? AND Semana = ?");
+                $inheritanceStmt->execute([$id, $semana]);
+                $inheritedData = $inheritanceStmt->fetch(PDO::FETCH_ASSOC);
+                if ($inheritedData) {
+                    foreach ($inheritedData as $k => $v) {
+                        $response[$k] = $v;
+                    }
+                }
+            }
+
+            echo json_encode($response);
 
         } catch (Exception $e) {
             http_response_code(500);
@@ -404,17 +433,37 @@ class GeneralApiController extends BaseController
                 $rutaCritica = (isset($row[5]) && (stripos($row[5], 'S') !== false || $row[5] == '1')) ? 1 : 0;
 
                 $prev = $historico[$nombreLimpio] ?? [];
+                
+                // Si no hay match exacto con el nombre limpio, intentamos una búsqueda más flexible (opcional pero recomendado)
+                if (empty($prev)) {
+                    foreach ($historico as $hKey => $hRow) {
+                        if (trim($hKey) === $nombreLimpio) {
+                            $prev = $hRow;
+                            break;
+                        }
+                    }
+                }
+
                 $itemsParaInsertar[] = [
                     'Semana' => $semanaNueva, 'Consecutivo_en_Programa' => $consecutivoEnProg++,
                     'Id' => $esquema, 'Actividad' => $nombreActividadHtml, 'Titulo' => $titulo,
                     'Fecha_Inicio' => $fInicio, 'Fecha_Fin' => $fFin, 'Ruta_Critica' => $rutaCritica,
-                    'Ejecutado' => $prev['Ejecutado'] ?? null, 'Responsable_AIA' => $prev['Responsable_AIA'] ?? null,
-                    'Sub_Contratista' => $prev['Sub_Contratista'] ?? null, 'Observaciones' => $prev['Observaciones'] ?? null,
-                    'codigo_actividad' => $prev['codigo_actividad'] ?? null, 'medir_productividad' => $prev['medir_productividad'] ?? null,
-                    'cantidad_ppto' => $prev['cantidad_ppto'] ?? null, 'unidad' => $prev['unidad'] ?? null,
-                    'Estado_Restricciones' => $prev['Estado_Restricciones'] ?? 0, 'D_y_E' => $prev['D_y_E'] ?? '0',
-                    'Materiales' => $prev['Materiales'] ?? '0', 'MdeO' => $prev['MdeO'] ?? '0', 'Equipos' => $prev['Equipos'] ?? '0',
-                    'Predecesora' => $prev['Predecesora'] ?? '0', 'Pdto_Cons' => $prev['Pdto_Cons'] ?? '0', 'Modelo' => $prev['Modelo'] ?? '0',
+                    'Ejecutado' => isset($prev['Ejecutado']) ? $prev['Ejecutado'] : 0, 
+                    'Responsable_AIA' => $prev['Responsable_AIA'] ?? null,
+                    'Sub_Contratista' => $prev['Sub_Contratista'] ?? null, 
+                    'Observaciones' => $prev['Observaciones'] ?? null,
+                    'codigo_actividad' => $prev['codigo_actividad'] ?? null, 
+                    'medir_productividad' => $prev['medir_productividad'] ?? null,
+                    'cantidad_ppto' => $prev['cantidad_ppto'] ?? null, 
+                    'unidad' => $prev['unidad'] ?? null,
+                    'Estado_Restricciones' => isset($prev['Estado_Restricciones']) ? $prev['Estado_Restricciones'] : 0, 
+                    'D_y_E' => $prev['D_y_E'] ?? '0',
+                    'Materiales' => $prev['Materiales'] ?? '0', 
+                    'MdeO' => $prev['MdeO'] ?? '0', 
+                    'Equipos' => $prev['Equipos'] ?? '0',
+                    'Predecesora' => $prev['Predecesora'] ?? '0', 
+                    'Pdto_Cons' => $prev['Pdto_Cons'] ?? '0', 
+                    'Modelo' => $prev['Modelo'] ?? '0',
                     'programaAnteriorAsociar' => empty($prev) ? '*No Asociada*' : $nombreLimpio
                 ];
             }
@@ -553,6 +602,12 @@ class GeneralApiController extends BaseController
         }
 
         $nombrePrincipal = end($jerarquia);
+        
+        // AIA 2026: Si el nombre principal ya contiene jerarquía (ej. exportado previo), evitamos duplicar
+        if (strpos($nombrePrincipal, '[Capítulo:') !== false) {
+            return "<b>" . htmlspecialchars($nombrePrincipal) . "</b>";
+        }
+
         if ($contadorNiveles === 1) {
             return "<b>" . htmlspecialchars($nombrePrincipal) . "</b>";
         }
@@ -573,8 +628,15 @@ class GeneralApiController extends BaseController
         $results = $stmt->fetchAll();
         $mapped = [];
         foreach ($results as $row) {
-            $key = strip_tags($row['Actividad']);
-            $mapped[$key] = $row;
+            $key = trim(strip_tags((string)$row['Actividad']));
+            
+            // Priorización AIA 2026: Si ya tenemos un registro con este nombre, 
+            // solo lo reemplazamos si el nuevo registro tiene "más datos" o el actual está vacío.
+            $hasData = (!empty($row['unidad']) && $row['unidad'] !== '%') || !empty($row['cantidad_ppto']) || !empty($row['Ejecutado']);
+            
+            if (!isset($mapped[$key]) || ($hasData && empty($mapped[$key]['cantidad_ppto']))) {
+                $mapped[$key] = $row;
+            }
         }
         return $mapped;
     }
