@@ -16,6 +16,10 @@ class ProgramaGeneralActualizarController extends BaseController
         $semana = (int)($_SESSION['semana'] ?? 0);
 
         // Autocuración y Blindaje de Contexto
+        $maxOverall = 0;
+        $maxConfirmed = null;
+        $semanalConfirmada = 0;
+
         if ($dbName !== '') {
             try {
                 // Obtenemos el panorama real del proyecto actual
@@ -35,6 +39,12 @@ class ProgramaGeneralActualizarController extends BaseController
                     $_SESSION['semana'] = ($maxConfirmed !== null) ? $maxConfirmed : $maxOverall;
                     $semana = $_SESSION['semana'];
                 }
+
+                // Obtener estado específico de la semana actual
+                $stmtStatus = $this->db->prepare("SELECT Semanal_Confirmada FROM {$dbName}_semanas_activas WHERE Semana = ?");
+                $stmtStatus->execute([$semana]);
+                $semanalConfirmada = (int)($stmtStatus->fetchColumn() ?: 0);
+
             } catch (\Exception $e) {
                 // Silencioso
             }
@@ -42,7 +52,9 @@ class ProgramaGeneralActualizarController extends BaseController
 
         // Obtener variables de sesión actualizadas
         $vars = $this->getSessionVars();
-        extract($vars); // $dbName, $semana, $proyecto, $permiso, etc.
+        $vars['maxSemana'] = $maxOverall;
+        $vars['semanalConfirmada'] = $semanalConfirmada;
+        extract($vars); // $dbName, $semana, $proyecto, $permiso, $maxSemana, $semanalConfirmada etc.
 
         // Cargar vista Programa General Actualizar
         require PROJECT_ROOT . '/views/programa-general-actualizar/programaGeneralActualizar.view.php';

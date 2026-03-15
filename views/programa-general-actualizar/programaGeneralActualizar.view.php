@@ -24,7 +24,7 @@
 		.hot-full-bleed { display: flex; flex-direction: column; height: calc(100vh - 80px); --hot-gutter: 8px; width: 100%; max-width: 100%; margin: 0; padding-left: var(--hot-gutter); padding-right: var(--hot-gutter); box-sizing: border-box; overflow: hidden; }
 		#hot-container { flex: 1 1 auto; min-height: 0; min-width: 0; position: relative; width: 100% !important; overflow: hidden; z-index: 1; }
 		/* Utilidades para celdas Handsontable */
-		.pg-page #hot-container td.force-wrap, .pg-page #hot-container th.force-wrap { white-space: normal !important; word-break: break-word !important; overflow-wrap: anywhere !important; }
+		.pg-page #hot-container td.force-wrap, .pg-page #hot-container th.force-wrap { white-space: pre-wrap !important; word-break: normal !important; overflow-wrap: break-word !important; hyphens: none !important; }
 		/* Changetypes UI */
 		.pg-page #hot-container .handsontable thead th { position: relative !important; text-align: center !important; }
 		.pg-page #hot-container .handsontable thead th .relative { display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 2px; width: 100%; padding: 0 1px; box-sizing: border-box; }
@@ -37,6 +37,17 @@
 		
 		/* Overrides de Z-index */
 		.pg-page .htDropdownMenu:not(.htGhostTable), .pg-page .htFiltersConditionsMenu:not(.htGhostTable) { z-index: 1085; }
+
+		/* Celdas Handsontable AIA 2026 */
+		.pg-page #hot-container td.pg-cell-editable {
+			box-shadow: inset 0 0 0 9999px rgba(34, 197, 94, 0.06);
+			cursor: text;
+		}
+
+		.pg-page #hot-container td.pg-cell-readonly {
+			box-shadow: inset 0 0 0 9999px rgba(148, 163, 184, 0.08);
+			cursor: not-allowed;
+		}
 
 		/* Botones Filtro UI */
 		.pg-actions-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
@@ -78,6 +89,9 @@
 	<div class="encabezado" id="encabezado">
 		<input type="hidden" id="baseDatos" name="baseDatos" value="<?php echo $dbPrefix; ?>" aria-hidden="true">
 		<input type="hidden" id="semana" name="semana" value="<?php echo $semana; ?>" aria-hidden="true">
+		<input type="hidden" id="permiso" name="permiso" value="<?php echo $permiso; ?>" aria-hidden="true">
+		<input type="hidden" id="Max_Semana" name="Max_Semana" value="<?php echo $maxSemana; ?>" aria-hidden="true">
+		<input type="hidden" id="Semanal_Confirmada" name="Semanal_Confirmada" value="<?php echo $semanalConfirmada; ?>" aria-hidden="true">
 		<input type="hidden" name="seccion" id="seccion" value="actualizarCronograma" aria-hidden="true">
 		<input type="hidden" id="Id" name="Id" value="0" aria-hidden="true">
 		<input type="hidden" id="opcion" name="opcion" value="registrar" aria-hidden="true">
