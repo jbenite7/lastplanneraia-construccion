@@ -141,7 +141,7 @@ class LpsService
         $fsTs = $this->toTimestamp($fechaInicioSemana);
 
         if ($fiTs === null || $ffTs === null || $fsTs === null) {
-            return ($ej > 0.001) ? 'En Curso' : 'No Requerida';
+            return ($ej > 0.1) ? 'En Curso' : 'No Requerida';
         }
 
         if ($ffTs < $fiTs) {
@@ -249,7 +249,7 @@ class LpsService
         $diasTotales = ((strtotime($fFinAct) - strtotime($fInicioAct)) / 86400) + 1;
         $diasTranscurridos = ((strtotime($fFinSem) - strtotime($fInicioAct)) / 86400) + 1;
 
-        $faltaPorEjecutar = max(0, 1 - $ejecutado);
+        $faltaPorEjecutar = max(0, 1.0 - $ejecutado);
 
         $inicioOverlap = max(strtotime($fInicioSem), strtotime($fInicioAct));
         $finOverlap = min(strtotime($fFinSem), strtotime($fFinAct));
@@ -270,13 +270,13 @@ class LpsService
 
         if (($diasTranscurridos + $proyeccion) >= 1 && $diasTotales >= ($diasTranscurridos + $proyeccion)) {
             $data["Ejecutado_Fin_Semana"] = $ejecutado + $proyeccion;
-        } elseif ($diasTotales < ($diasTranscurridos + $proyeccion) || ($ejecutado + $proyeccion) > 1) {
-            $data["Ejecutado_Fin_Semana"] = 1;
+        } elseif ($diasTotales < ($diasTranscurridos + $proyeccion) || ($ejecutado + $proyeccion) > 1.0) {
+            $data["Ejecutado_Fin_Semana"] = 1.0;
         } else {
-            $data["Ejecutado_Fin_Semana"] = $ejecutado;
+            $data["Ejecutado_Fin_Semana"] = $ejecutado + $proyeccion;
         }
         
-        $data["Ejecutado_Fin_Semana"] = min(1, (float)$data["Ejecutado_Fin_Semana"]);
+        $data["Ejecutado_Fin_Semana"] = min(1.0, (float)$data["Ejecutado_Fin_Semana"]);
         
         return $data;
     }

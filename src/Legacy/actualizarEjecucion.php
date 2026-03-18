@@ -48,7 +48,7 @@ try {
             if ($Ejecutado_Real == 0) {
                 $Ejecutado_fin_semana = $Ejecutado;
             } else {
-                $Ejecutado_fin_semana = ($Ejecutado_Real / $cantidad_ppto) + $Ejecutado;
+                $Ejecutado_fin_semana = (($Ejecutado_Real / $cantidad_ppto) * 100) + $Ejecutado;
             }
 
             $sqlUpdate = "UPDATE {$dbName}_programa_consolidado 

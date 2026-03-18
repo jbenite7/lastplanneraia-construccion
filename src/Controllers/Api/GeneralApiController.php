@@ -141,23 +141,36 @@ class GeneralApiController extends BaseController
                 throw new Exception("Faltan parámetros requeridos (Id, Semana).");
             }
 
-            $ejecutado = $this->lpsService->toFloat($_POST["Ejecutado"] ?? null);
+            $rawInput = $_POST["Ejecutado"] ?? null;
+            $ejecutado = $this->lpsService->toFloat($rawInput);
             $codigoActividad = $_POST["codigo_actividad"] ?? '';
             $unidadRaw = trim($_POST["unidad"] ?? '');
             $unidad = ($unidadRaw === '') ? '%' : $unidadRaw;
             $cantidadPpto = $this->lpsService->toFloat($_POST["cantidad_ppto"] ?? null);
             
+            // 1. Caso: Unidad física (m2, kg, etc.) con Presupuesto > 0
+            if ($ejecutado !== null && $unidad !== '%' && ($cantidadPpto ?? 0) > 0) {
+                // Convertimos la cantidad absoluta directamente a ratio (0.0 a 1.0)
+                $ejecutado = ($ejecutado / $cantidadPpto);
+            } 
+            // 2. Caso: Unidad porcentaje (%) o Unidad física sin Presupuesto válido
+            elseif ($ejecutado !== null) {
+                // Convertimos el porcentaje (0-100) a ratio (0.0 a 1.0). Si alguien tecleó '95' en 'ml' y no hay ppto, asume 95%.
+                $ejecutado = ($ejecutado / 100);
+            }
+            
+            if ($ejecutado !== null) {
+                if ($ejecutado < -0.0001 || $ejecutado > 1.0001) { // Tolerancia pequeña
+                    $pctDisplay = round($ejecutado * 100, 2);
+                    throw new Exception("El valor resultante ({$pctDisplay}%) excede el rango permitido (0-100%).");
+                }
+                $ejecutado = round($ejecutado, 6); // Mayor precisión para ratios
+            }
+
             $fechaInicioRaw = $_POST["Fecha_Inicio"] ?? '';
             $fechaFinRaw = $_POST["Fecha_Fin"] ?? '';
             $fechaInicio = !empty($fechaInicioRaw) ? date("Y-m-d", strtotime($fechaInicioRaw)) : null;
             $fechaFin = !empty($fechaFinRaw) ? date("Y-m-d", strtotime($fechaFinRaw)) : null;
-            
-            if ($ejecutado !== null) {
-                if ($ejecutado < 0 || $ejecutado > 1) {
-                    throw new Exception("El valor de Ejecutado debe estar entre 0 y 100%.");
-                }
-                $ejecutado = round($ejecutado, 4);
-            }
 
             if ($cantidadPpto !== null) {
                 if ($cantidadPpto < 0) throw new Exception("La cantidad en presupuesto no puede ser negativa.");
@@ -241,7 +254,8 @@ class GeneralApiController extends BaseController
                 'respuesta' => 'BIEN', 
                 'estado' => $nuevoEstado, 
                 'Semanas_Inicio' => $semanasInicio,
-                'unidad' => $unidad // Devolvemos la unidad final (ej: auto-ajustada a %)
+                'unidad' => $unidad,
+                'Ejecutado' => $ejecutado // Retornamos el ratio decimal calculado
             ];
             
             // Si hubo herencia, devolvemos los campos actualizados (prioridad sobre el input manual)
@@ -260,8 +274,8 @@ class GeneralApiController extends BaseController
             echo json_encode($response);
 
         } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode(['respuesta' => 'ERROR', 'mensaje' => $e->getMessage()]);
+            http_response_code(400);
+            echo json_encode(['success' => false, 'respuesta' => 'ERROR', 'error' => $e->getMessage(), 'mensaje' => $e->getMessage()]);
         }
     }
 
