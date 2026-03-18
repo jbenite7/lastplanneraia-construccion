@@ -795,8 +795,7 @@
                 <button id="btn-shared-clear-selection" class="btn-pdc-modern">Limpiar selección</button>
                 <span id="shared-selection-count" class="badge badge-secondary">0 selec.</span>
                 <div class="pi-status-badges">
-                    <span id="save-status" class="badge badge-success" style="display:none;">Guardado</span>
-                    <span id="save-error" class="badge badge-danger" style="display:none;">Error al guardar</span>
+                    <span id="save-status" class="badge badge-success badge-badge-hidden">Guardado</span>
                 </div>
             </div>
             <button class="btn-filter-toggle pdc-mobile-toggle" type="button" data-toggle="collapse" data-target="#pdcFiltersMobile" aria-expanded="false" aria-controls="pdcFiltersMobile">

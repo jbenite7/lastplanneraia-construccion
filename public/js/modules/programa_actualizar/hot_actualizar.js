@@ -224,7 +224,7 @@ window.HOTActualizarModule = (function() {
             })
             .catch(err => {
                 console.error("🔥 [MapeoManual] Error en fetch: ", err);
-                if (typeof toastr !== 'undefined') toastr.error("Error de conexión al cargar datos.");
+                if (window.AIA && window.AIA.Notice) window.AIA.Notice.error("Error de conexión al cargar datos.");
                 rawData = [];
                 applyFilterAndRender();
             })
@@ -283,7 +283,7 @@ window.HOTActualizarModule = (function() {
             // Para simplicidad, calculamos el ratio anterior asumiendo que el cambio está en changesObj.
         }
 
-        // AIA 2026: El sistema oficial es 'toastr'. 
+        // AIA 2026: El sistema oficial es 'AIA.Notice'. 
         // Solo mostramos el spinner/loading si es necesario, sin texto redundante.
         $('#save-status').fadeIn().removeClass('badge-success').addClass('badge-warning');
         
@@ -367,7 +367,7 @@ window.HOTActualizarModule = (function() {
             var maxV = (currentUnidad === '%' || currentUnidad === '' || currentPpto <= 0) ? "100%" : (currentPpto + " " + currentUnidad);
             var errM = "El valor resultante (" + (ratioCheck * 100).toFixed(1) + "%) excede el rango permitido (0-100%). Máximo: " + maxV;
             $('#save-status').hide();
-            if (typeof toastr !== 'undefined') toastr.error(errM);
+            if (window.AIA && window.AIA.Notice) window.AIA.Notice.error(errM);
             return; // Bloquea el envío al servidor
         }
 
@@ -382,7 +382,7 @@ window.HOTActualizarModule = (function() {
         .then(res => {
             if (res.respuesta === "BIEN") {
                 $('#save-status').fadeOut(200);
-                if (typeof toastr !== 'undefined') toastr.success('Guardado');
+                if (window.AIA && window.AIA.Notice) window.AIA.Notice.badge('success', 'Guardado');
 
                 // Reflejar cambios heredados si existen en la respuesta (Herencia AIA 2026)
                 if (res.unidad !== undefined) hot.setDataAtRowProp(visualRowIndex, 'unidad', res.unidad, 'internal');
@@ -411,14 +411,14 @@ window.HOTActualizarModule = (function() {
             } else {
                 $('#save-status').hide();
                 var msg = res.mensaje || 'Error al guardar';
-                if (typeof toastr !== 'undefined') toastr.error(msg);
+                if (window.AIA && window.AIA.Notice) window.AIA.Notice.error(msg);
             }
         })
         .catch(err => {
             console.error("🔥 Error en autoSaveRow:", err);
             $('#save-status').hide();
             var errorMsg = err.message || 'Error de red al guardar';
-            if (typeof toastr !== 'undefined') toastr.error(errorMsg);
+            if (window.AIA && window.AIA.Notice) window.AIA.Notice.error(errorMsg);
         });
     }
 
@@ -548,7 +548,7 @@ window.HOTActualizarModule = (function() {
                        var normalized = normalizeCellValue(prop, newVal);
                        if (!normalized.valid) {
                            this.setDataAtRowProp(visualRow, prop, oldVal, 'internal');
-                           if (typeof toastr !== 'undefined') toastr.warning(normalized.error);
+                           if (window.AIA && window.AIA.Notice) window.AIA.Notice.warning(normalized.error);
                            return;
                        }
 

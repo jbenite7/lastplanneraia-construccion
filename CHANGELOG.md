@@ -9,6 +9,7 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ### Añadido
 
+- **AIA Notice Global:** Nuevo core `public/js/core/AiaAlertInterceptor.js` para centralizar alertas, toasts y badges de guardado sobre SweetAlert2 en Admin, login y modulos LPS.
 - **TomSelect Premium AIA:** Implementación de arquitectura de estilos corporativos (Naranja Construcción) en `tom-select-premium-aia.css`. Incluye tipografía Montserrat/Inter, chips adaptables con word-wrap y un botón de limpieza elegante integrado siguiendo el manual de marca 2026.
 - **Herencia de Restricciones (Manual/Excel):** Sincronización automática de las 7 restricciones individuales (D y E, Materiales, MdeO, etc.) tanto en procesos de importación masiva como en la asociación manual por dropdown. (AIA 2026).
 - **Persistencia de Mapeo Físico:** El botón "Eliminar Actualización" ahora realiza un `DELETE` físico de borradores en la base de datos, garantizando un flujo de trabajo limpio y permitiendo reintentar mapeos desde cero.
@@ -18,6 +19,7 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 - **Motor de Herencia Robusto y Unificado:** Re-ingeniería del método `getPreviousWeekData` en `GeneralApiController.php` para implementar una lógica de priorización inteligente: el sistema ahora identifica y prefiere registros con datos reales (Unidad/Cantidad) sobre registros anómalos o vacíos en caso de duplicidad.
 - **Herencia Agnóstica a HTML:** Refactorización de la lógica en `nueva_semana.php` y `GeneralApiController.php` para que el sistema ignore etiquetas como `<b>` y `<small>` al comparar nombres de actividades, asegurando la herencia correcta de PDC y Responsables tanto en importación como en mapeo manual.
 - **Robustez en Carga de Parámetros:** Inyección de protecciones `try-catch` y logs descriptivos en `cargarDatosGeneralesPagina2.js` para interceptar fallos en la función `cargaParametros()`, mejorando la observabilidad en producción.
+- **Unificación de Notificaciones:** Inicio formal de la eliminación total de `toastr` en el repositorio. Los modulos principales y vistas administrativas ahora consumen `AIA.Notice` como capa oficial para toasts, errores y badges de guardado.
 
 ### Corregido
 

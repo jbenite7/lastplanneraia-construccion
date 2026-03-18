@@ -289,30 +289,32 @@
   }
 
   function showFeedback(type, message) {
-    var container = document.getElementById('ps-toast-container');
-    if (!container) return;
-
-    var toast = document.createElement('div');
-    toast.className = 'ps-toast';
-    toast.setAttribute('data-intent', type);
-    
-    var icon = 'ℹ';
-    var duration = 3000;
-    if (type === 'success') { icon = '✓'; duration = 2500; }
-    else if (type === 'warning') { icon = '⚠'; duration = 4000; }
-    else if (type === 'error') { icon = '✗'; duration = 5000; }
-
-    toast.innerHTML = '<span style="font-size: 1.25rem;">' + icon + '</span><span>' + escapeHtml(message || '') + '</span>';
-    container.insertBefore(toast, container.firstChild);
-
-    setTimeout(function() {
-      toast.classList.add('is-closing');
-      setTimeout(function() {
-        if (toast.parentNode) {
-          toast.parentNode.removeChild(toast);
+    if (type === 'success') {
+      if (window.AIA && window.AIA.Notice && window.AIA.Notice.badge) {
+        window.AIA.Notice.badge('success', message);
+      } else {
+        // Fallback
+        var $el = $('#save-status');
+        if ($el.length) {
+          $el.removeClass('badge-badge-hidden').text(message || 'Guardado').fadeIn(120);
+          setTimeout(function () {
+            $el.fadeOut(250, function() { $(this).addClass('badge-badge-hidden'); });
+          }, 1800);
         }
-      }, 250);
-    }, duration);
+      }
+    } else if (type === 'warning') {
+      if (window.AIA && window.AIA.Notice && window.AIA.Notice.warning) {
+        window.AIA.Notice.warning(message);
+      } else {
+        alert("Atención: " + message);
+      }
+    } else {
+      if (window.AIA && window.AIA.Notice && window.AIA.Notice.error) {
+        window.AIA.Notice.error(message || 'Error al guardar');
+      } else {
+        alert("Error: " + (message || 'Error al guardar'));
+      }
+    }
   }
 
   function parseResponse(response) {

@@ -165,9 +165,6 @@
         }
     </style>
     <link rel="stylesheet" href="/css/handsontable-header-global.css?v=20260223a" />
-    <!-- Toastr (Mensajes Emergentes) -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 </head>
 <body class="pg-page">
     <div id="loading"><div class="spinner-border text-primary" role="status"><span class="sr-only">Cargando...</span></div></div>
@@ -195,8 +192,7 @@
                 <button id="btn-refresh" class="btn-pdc-modern">Recargar</button>
             </div>
             <div class="pg-status-badges">
-                <span id="save-status" class="badge badge-success" style="display:none;">Guardado</span>
-                <span id="save-error" class="badge badge-danger" style="display:none;">Error al guardar</span>
+                <span id="save-status" class="badge badge-success badge-badge-hidden">Guardado</span>
                 <button class="btn-filter-toggle pdc-mobile-toggle" type="button" data-toggle="collapse" data-target="#pdcFiltersMobile" aria-expanded="false" aria-controls="pdcFiltersMobile">
                     <i class="fas fa-filter"></i> Filtros <span class="badge badge-light" id="mobileFilterCount">0</span>
                 </button>
