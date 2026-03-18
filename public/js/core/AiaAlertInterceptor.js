@@ -154,7 +154,7 @@ window.AIA = window.AIA || {};
                 this.badge('success', msg);
                 return;
             }
-            this.toast({
+            return this.toast({
                 icon: 'success',
                 title: msg,
                 customClass: {
@@ -166,7 +166,7 @@ window.AIA = window.AIA || {};
         },
 
         error: function(msg) {
-            Swal.fire({
+            return Swal.fire({
                 icon: 'error',
                 title: 'Error detectado',
                 text: msg,
@@ -181,7 +181,7 @@ window.AIA = window.AIA || {};
         },
 
         info: function(msg) {
-            this.toast({
+            return this.toast({
                 icon: 'info',
                 title: msg,
                 customClass: {
@@ -193,7 +193,7 @@ window.AIA = window.AIA || {};
         },
 
         warningToast: function(msg) {
-            this.toast({
+            return this.toast({
                 icon: 'warning',
                 title: msg,
                 customClass: {
@@ -205,7 +205,7 @@ window.AIA = window.AIA || {};
         },
 
         warning: function(msg, title = 'Atención Requerida') {
-            Swal.fire({
+            return Swal.fire({
                 icon: 'warning',
                 title: title,
                 text: msg,
@@ -220,7 +220,7 @@ window.AIA = window.AIA || {};
         },
 
         errorToast: function(msg) {
-            this.toast({
+            return this.toast({
                 icon: 'error',
                 title: msg,
                 customClass: {
