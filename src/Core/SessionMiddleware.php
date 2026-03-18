@@ -27,13 +27,13 @@ class SessionMiddleware
         }
 
         // Gestión de timeout de inactividad (3600 segundos = 1 hora)
-        $inactividad = 3600;
+        $inactividad = 3600; // 1 hora de inactividad (Timeout Phase 1)
         if (isset($_SESSION["timeout"])) {
             $sessionTTL = time() - $_SESSION["timeout"];
             if ($sessionTTL > $inactividad) {
                 session_unset();
                 session_destroy();
-                echo "<script>alert('Se cerrará la sesión por un tiempo de inactividad mayor a 1 hora.');window.location.href='/login';</script>";
+                header('Location: /login?timeout=1');
                 exit;
             }
         }
