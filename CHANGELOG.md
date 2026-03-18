@@ -17,6 +17,7 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ### Cambiado
 
+- **Fase 2 de Unificacion de Notificaciones:** Se completo la migracion de `alert()` a `AIA.Notice` en `funcionesGenerales6.js`, `ContextManager.js` y `cargarDatosGeneralesPagina2.js`, unificando bloqueos de negocio y errores AJAX en helpers compartidos.
 - **Validacion Universal de Sesion:** El front controller verifica timeout en rutas protegidas antes de despachar la aplicacion.
 - **Unificacion de Notificaciones:** `programaGeneralActualizar.view.php` continua la migracion desde `alert()` hacia `AIA.Notice` con fallback seguro.
 - **Motor de Herencia Robusto y Unificado:** Re-ingeniería del método `getPreviousWeekData` en `GeneralApiController.php` para implementar una lógica de priorización inteligente: el sistema ahora identifica y prefiere registros con datos reales (Unidad/Cantidad) sobre registros anómalos o vacíos en caso de duplicidad.
