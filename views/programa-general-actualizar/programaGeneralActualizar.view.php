@@ -417,7 +417,7 @@
 		        }
 		      } else {
 		        if (json_info.respuesta == "ERROR") {
-		          alert("Error: " + json_info.mensaje);
+		          if (window.AIA && window.AIA.Notice) window.AIA.Notice.error("Error: " + json_info.mensaje); else alert("Error: " + json_info.mensaje);
 		        } else {
 		          location.reload();
 		        }
