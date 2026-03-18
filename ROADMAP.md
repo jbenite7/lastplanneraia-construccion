@@ -82,6 +82,10 @@ gantt
     - Fix Sincronización:- [x] **Persistencia Garantizada**: Mapeos persistentes en base de datos tras refresco. Incluye botón "Eliminar Actualización" con borrado físico de borradores (`DELETE`) para un flujo de trabajo sin residuos de actualizaciones fallidas. ✅ (2026-03-13)
 - [x] **Herencia Inteligente y Robusta (AIA 2026)** ✅ (2026-03-15)
     - Re-ingeniería de `getPreviousWeekData` con priorización de registros con datos.
+    - [x] Sincronización proactiva de ratios desde API POST a Renderizadores.
+  - [x] Fix del Colapso al Cambio Dinámico de Unidades (Ratio * Presupuesto calculado).
+  - [x] Refactorización del Data Model en HOT (`hot.js`, `hot_actualizar.js`) para almacenar cantidad Física nativa.
+  - [x] Fix GeneralApiController.php para manejo resiliente de fallback a porcentaje y error 400.
     - Unificación de lógica de herencia para Mapeo Manual (Dropdown) e Importación Excel.
     - Sincronización automática de las 7 restricciones individuales.
     - Normalización de nombres (Capítulos) y limpieza de etiquetas HTML activa.
@@ -90,6 +94,15 @@ gantt
     - Fix UI: Alineación vertical de celdas y eliminación de números de fila.
     - Fix Editor: Estabilidad de TomSelect (ESC bug, closeAfterSelect).
 - [x] Habilitación de POST en router para API General
+- [x] **Corrección Integral del Motor de Ejecución (Base Ratio 0-1) ✅ (2026-03-16)**
+    - Restauración total del motor `LpsService` a escala decimal (0.0 a 1.0).
+    - API General actúa como traductor inteligente (Cantidades Físicas vs Porcentaje).
+    - Sincronización de Frontend (`hot.js` y `hot_actualizar.js`) eliminando auto-divisiones indebidas.
+    - Renderizadores adaptativos: Visualización de `Cantidad (Unidad) + %` basada en presupuesto.
+    - [x] **Ejecución Real & Blindaje de Feedback (2026-03-18)**:
+    - [x] **Cambio Dinámico de Unidades**: Prevención de colapso de porcentajes al cambiar unidades o presupuesto mediante conversión inteligente de Ratio a Cantidad Física.
+    - [x] **Validación Preventiva JS**: Bloqueo de envíos fuera de rango (0-100%) en el navegador para eliminar errores 400 en la consola y red.
+    - [x] **Unificación de Notificaciones**: **toastr** establecido como el sistema oficial único, eliminando los badges redundantes de la cabecera para una UI limpia y premium. ✅
 - **Select2 Arquitectura Inteligente y UI/UX Premium (2026-03-04):** Consolidación de Select2 Múltiple paramétrico y aislado, evadiendo colisiones del motor "outside clicks" de Handsontable mediante DOM-nesting atado directamente a la celda activa (`this.TD`). Refinamiento exhaustivo inyectando CSS modular para arreglos de espaciado interactivo, alineación flexible (`flex-wrap`) de chips y erradicación de gaps inter-elementos vía resets absolutos. Se forzó despliegue con actualizador de cache manual.
 - **Erradicación de DataTables (2026-03-03):** Se eliminó por completo la dependencia visual y los archivos base (`*.view.nuevaBarra.php`) del antiguo jQuery DataTables en las vistas maestras de Programación General, Programación Intermedia y Programación Semanal, consolidando Handsontable como la única tecnología de grilla.
 - [x] **[Hito 2 completado en refactor]** Ajustar breakpoints y overflow del header (Navbar global). Implementados breakpoints `xl`, `clamp()` typography y truncado inteligente por CSS (`navbar.css` y archivos base JS/PHP actualizados).
