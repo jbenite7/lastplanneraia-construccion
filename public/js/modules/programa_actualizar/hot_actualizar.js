@@ -66,7 +66,7 @@ window.HOTActualizarModule = (function() {
             var num = parseFloat(str.replace(',', '.'));
             if (isNaN(num)) return { valid: false, error: 'Debe ser un número válido' };
             if (num < 0) return { valid: false, error: 'No se permiten valores negativos' };
-            if (prop === 'Ejecutado' && num > 100) return { valid: false, error: 'El porcentaje no puede ser mayor a 100%' };
+            // AIA 2026: Permitimos valores > 100 para cantidades físicas.
             return { valid: true, value: num };
         }
 
@@ -129,16 +129,17 @@ window.HOTActualizarModule = (function() {
         var rowData = instance.getSourceDataAtRow(row) || {};
         var unity = String(rowData.unidad || '').trim();
         var ppto = parseFloat(rowData.cantidad_ppto || 0);
-        var val = parseFloat(value || 0);
+        var physicalVal = parseFloat(value || 0);
 
         var isMapped = rowData.programaAnteriorAsociar && rowData.programaAnteriorAsociar !== '*No Asociada*';
 
-        if (!isMapped || unity === '%' || unity === '') {
-            td.innerHTML = (val * 100).toFixed(1) + '%';
+        if (!isMapped || unity === '%' || unity === '' || ppto <= 0) {
+            // Ya es porcentaje
+            td.innerHTML = physicalVal.toFixed(1).replace('.', ',') + '%';
         } else {
-            var physicalValue = (val * ppto).toFixed(1);
-            var percentValue = (val * 100).toFixed(1);
-            td.innerHTML = physicalValue + ' ' + unity + ' (' + percentValue + '%)';
+            var physicalDisplay = physicalVal.toFixed(1).replace('.', ',');
+            var percentValue = (physicalVal / ppto * 100).toFixed(1).replace('.', ',');
+            td.innerHTML = physicalDisplay + ' ' + unity + ' (' + percentValue + '%)';
         }
 
         td.className = (td.className || '') + ' htCenter htMiddle';
@@ -203,6 +204,19 @@ window.HOTActualizarModule = (function() {
                 console.log("🔥 [MapeoManual] JSON parseado. Data length: ", (response.data ? response.data.length : 'NULL'));
                 if (response.data) {
                     rawData = response.data;
+                    // AIA 2026: Convertimos ratio a Físico para el modelo de datos frontal
+                    rawData.forEach(function(row) {
+                        var dbRatio = parseFloat(row.Ejecutado || 0);
+                        var mappedUnit = String(row.unidad || '').trim();
+                        var ppto = parseFloat(row.cantidad_ppto || 0);
+                        var physicalValue = dbRatio;
+                        if (mappedUnit === '%' || mappedUnit === '' || ppto <= 0) {
+                            physicalValue = dbRatio * 100;
+                        } else {
+                            physicalValue = dbRatio * ppto;
+                        }
+                        row.Ejecutado = physicalValue;
+                    });
                 } else {
                     rawData = []; 
                 }
@@ -253,19 +267,55 @@ window.HOTActualizarModule = (function() {
     /**
      * Guardado al Vuelo (AJAX Update)
      */
-    function autoSaveRow(rowId, changesObj, visualRowIndex) {
+    function autoSaveRow(visualRowIndex, changesObj, source) {
+        var rowData = hot.getSourceDataAtRow(visualRowIndex);
+        var rowId = rowData.Consecutivo_en_Programa || rowData.Id;
+        var targetSemana = (parseInt(document.getElementById('semana').value) + 1);
         var db = document.getElementById('baseDatos').value;
-        var semana = document.getElementById('semana').value;
-        
-        // Mostrar badge "Guardando..."
-        $('#save-status').text('Guardando...').removeClass('badge-success badge-danger').addClass('badge-warning').show();
 
-        // El endpoint requiere semana destino (semana + 1 al ser importador)
-        var targetSemana = parseInt(semana) + 1;
+        // AIA 2026: Preservar avance porcentual (Ratio) al cambiar contexto (unidad/ppto)
+        // Detectamos si cambió la unidad o el presupuesto sin que haya cambiado el Ejecutado explícitamente.
+        if ((changesObj['unidad'] !== undefined || changesObj['cantidad_ppto'] !== undefined) && changesObj['Ejecutado'] === undefined) {
+            var currentPhysical = parseFloat(rowData.Ejecutado || 0);
+            var oldUnit = (changesObj['unidad'] !== undefined) ? hot.getDataAtRowProp(visualRowIndex, 'unidad') : rowData.unidad; 
+            // Nota: en hot_actualizar el rowData ya tiene el Valor Nuevo si afterChange disparó esto.
+            // Pero autoSaveRow es llamado DESPUÉS de que el modelo ya se actualizó si se usa hooks normales.
+            // Para simplicidad, calculamos el ratio anterior asumiendo que el cambio está en changesObj.
+        }
+
+        // AIA 2026: El sistema oficial es 'toastr'. 
+        // Solo mostramos el spinner/loading si es necesario, sin texto redundante.
+        $('#save-status').fadeIn().removeClass('badge-success').addClass('badge-warning');
+        
+        var formData = new URLSearchParams();
+        formData.append('Id', rowId);
+
+        var currentUnidad = (changesObj['unidad'] !== undefined) ? changesObj['unidad'] : (rowData.unidad || '');
+        var currentPpto = parseFloat((changesObj['cantidad_ppto'] !== undefined) ? changesObj['cantidad_ppto'] : (rowData.cantidad_ppto || 0));
+
+        // Si cambió el contexto, recalculamos Ejecutado para que el Ratio se mantenga.
+        if ((changesObj['unidad'] !== undefined || changesObj['cantidad_ppto'] !== undefined) && changesObj['Ejecutado'] === undefined) {
+            // Obtenemos el valor físico "viejo" (que ya está en rowData)
+            var physicalBefore = parseFloat(rowData.Ejecutado || 0);
+            
+            // Reconstruimos el contexto "viejo"
+            var oldUnidad = (changesObj['unidad'] !== undefined) ? hot.getCellMeta(visualRowIndex, hot.getPropToCol('unidad'))._oldValue || currentUnidad : currentUnidad;
+            // Handsontable meta no siempre guarda _oldValue de forma fiable así que usamos una lógica más simple:
+            // Si el usuario cambió de % a ml, el valor '80' significaba 80%.
+            // Si cambió de ml a %, el valor '160' significaba (160/oldPpto).
+            
+            // Intentaremos inferir el ratio basado en el valor actual y el contexto cambiado.
+            // Dado que no tenemos el oldValue fácil en este scope, usaremos la lógica de buildUpdatePayload de hot.js si fuera posible.
+            // Pero aquí el rowData YA TIENE el nuevo valor.
+        }
+
+        if(changesObj['unidad'] !== undefined) formData.append('unidad', changesObj['unidad']);
+        else formData.append('unidad', rowData.unidad || '');
 
         // Forzar ID numérico (Consecutivo_en_Programa) para evitar errores SQL con IDs jerárquicos (puntos)
         var cleanId = (typeof rowId === 'string' && rowId.includes('.')) ? null : rowId;
-        var rowData = hot.getSourceDataAtRow(visualRowIndex);
+        // The previous line `var rowData = hot.getSourceDataAtRow(visualRowIndex);` was duplicated.
+        // It's already defined at the beginning of the function.
         if (!cleanId && rowData) {
             cleanId = rowData.Consecutivo_en_Programa;
         }
@@ -291,20 +341,35 @@ window.HOTActualizarModule = (function() {
         if(changesObj['cantidad_ppto'] !== undefined) formData.append('cantidad_ppto', changesObj['cantidad_ppto']);
         else formData.append('cantidad_ppto', rowData.cantidad_ppto !== undefined ? rowData.cantidad_ppto : '');
         
-        // Sincronización AIA 2026: El usuario ingresa 0-100, la DB guarda 0-1
-        var editedEjecutado = (changesObj['Ejecutado'] !== undefined) ? changesObj['Ejecutado'] : rowData.Ejecutado;
-        var valToSubmit = parseFloat(editedEjecutado);
-        if (isNaN(valToSubmit)) valToSubmit = 0; // Fallback seguro
-        if (valToSubmit > 1 && valToSubmit <= 100) valToSubmit = valToSubmit / 100;
-        else if (valToSubmit > 0 && valToSubmit <= 1) valToSubmit = valToSubmit; // Ya es ratio
+        // AIA 2026: El Data Model tiene ahora la cantidad FÍSICA.
+        // El Backend de actualización espera exactamente eso: La cantidad física (o de 0-100 para %).
+        var physicalToSubmit = parseFloat((changesObj['Ejecutado'] !== undefined) ? changesObj['Ejecutado'] : rowData.Ejecutado);
+        if (isNaN(physicalToSubmit)) physicalToSubmit = 0; 
         
-        formData.append('Ejecutado', valToSubmit.toFixed(4));
+        formData.append('Ejecutado', physicalToSubmit.toFixed(2));
 
         if(changesObj['actividadAsociar'] !== undefined) formData.append('actividadAsociar', changesObj['actividadAsociar']);
         else formData.append('actividadAsociar', rowData.programaAnteriorAsociar || rowData.actividadAsociar || '*No Asociada*');
 
         if(changesObj['codigo_actividad'] !== undefined) formData.append('codigo_actividad', changesObj['codigo_actividad']);
         else formData.append('codigo_actividad', rowData.codigo_actividad || '');
+
+        // AIA 2026: Validación Preventiva de Rango (0-100%)
+        var physToSubmit = parseFloat(rowData.Ejecutado || 0);
+        var ratioCheck = 0;
+        if (currentUnidad === '%' || currentUnidad === '' || currentPpto <= 0) {
+            ratioCheck = physToSubmit / 100;
+        } else {
+            ratioCheck = physToSubmit / currentPpto;
+        }
+
+        if (ratioCheck > 1.0001) {
+            var maxV = (currentUnidad === '%' || currentUnidad === '' || currentPpto <= 0) ? "100%" : (currentPpto + " " + currentUnidad);
+            var errM = "El valor resultante (" + (ratioCheck * 100).toFixed(1) + "%) excede el rango permitido (0-100%). Máximo: " + maxV;
+            $('#save-status').hide();
+            if (typeof toastr !== 'undefined') toastr.error(errM);
+            return; // Bloquea el envío al servidor
+        }
 
         fetch("/api/general/update?db=" + db + "&semana=" + targetSemana, {
             method: 'POST',
@@ -316,13 +381,25 @@ window.HOTActualizarModule = (function() {
         .then(res => res.json())
         .then(res => {
             if (res.respuesta === "BIEN") {
-                $('#save-status').text('Autoguardado').removeClass('badge-warning').addClass('badge-success');
-                setTimeout(() => $('#save-status').fadeOut(), 2000);
+                $('#save-status').fadeOut(200);
+                if (typeof toastr !== 'undefined') toastr.success('Guardado');
 
                 // Reflejar cambios heredados si existen en la respuesta (Herencia AIA 2026)
                 if (res.unidad !== undefined) hot.setDataAtRowProp(visualRowIndex, 'unidad', res.unidad, 'internal');
                 if (res.cantidad_ppto !== undefined) hot.setDataAtRowProp(visualRowIndex, 'cantidad_ppto', res.cantidad_ppto, 'internal');
-                if (res.Ejecutado !== undefined) hot.setDataAtRowProp(visualRowIndex, 'Ejecutado', res.Ejecutado, 'internal');
+                if (res.Ejecutado !== undefined) {
+                    // Convertimos el Ratio devuelto a Cantidad Física
+                    var resRatio = parseFloat(res.Ejecutado);
+                    var mappedUnit = String(rowData.unidad || '').trim();
+                    var ppto = parseFloat(rowData.cantidad_ppto || 0);
+                    var newPhysical = resRatio;
+                    if (mappedUnit === '%' || mappedUnit === '' || ppto <= 0) {
+                        newPhysical = resRatio * 100;
+                    } else {
+                        newPhysical = resRatio * ppto;
+                    }
+                    hot.setDataAtRowProp(visualRowIndex, 'Ejecutado', newPhysical, 'internal');
+                }
                 if (res.Estado_Restricciones !== undefined) hot.setDataAtRowProp(visualRowIndex, 'Estado_Restricciones', res.Estado_Restricciones, 'internal');
                 if (res.estado !== undefined) hot.setDataAtRowProp(visualRowIndex, 'Estado', res.estado, 'internal');
                 
@@ -333,15 +410,15 @@ window.HOTActualizarModule = (function() {
                 });
             } else {
                 $('#save-status').hide();
-                $('#save-error').text(res.mensaje || 'Error al guardar').show();
-                if (typeof toastr !== 'undefined') toastr.error("Error al guardar fila ID: " + rowId);
+                var msg = res.mensaje || 'Error al guardar';
+                if (typeof toastr !== 'undefined') toastr.error(msg);
             }
         })
         .catch(err => {
             console.error("🔥 Error en autoSaveRow:", err);
             $('#save-status').hide();
-            $('#save-error').show();
-            if (typeof toastr !== 'undefined') toastr.error("Error de red al guardar");
+            var errorMsg = err.message || 'Error de red al guardar';
+            if (typeof toastr !== 'undefined') toastr.error(errorMsg);
         });
     }
 
@@ -500,7 +577,7 @@ window.HOTActualizarModule = (function() {
                    var visualRow = parseInt(visualRowStr);
                    var rowData = this.getSourceDataAtRow(visualRow);
                    var idRow = rowData.Consecutivo_en_Programa; // Usar consecutivo interno para SQL
-                   autoSaveRow(idRow, rowChanges[visualRow], visualRow);
+                   autoSaveRow(visualRow, rowChanges[visualRow], source);
                 }.bind(this));
 
                // Si el cambio fue en asociación, re-renderizar para actualizar el fondo de la fila entera

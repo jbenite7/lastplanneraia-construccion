@@ -56,6 +56,9 @@
 	</style>
 	<link rel="stylesheet" href="/css/handsontable-header-global.css?v=20260313" />
 	<link rel="stylesheet" href="/css/tom-select-premium-aia.css?v=20260314" />
+	<!-- Toastr (Mensajes Emergentes) -->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 </head>
 
 <body class="pg-page">

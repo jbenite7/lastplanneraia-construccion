@@ -165,6 +165,9 @@
         }
     </style>
     <link rel="stylesheet" href="/css/handsontable-header-global.css?v=20260223a" />
+    <!-- Toastr (Mensajes Emergentes) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 </head>
 <body class="pg-page">
     <div id="loading"><div class="spinner-border text-primary" role="status"><span class="sr-only">Cargando...</span></div></div>
