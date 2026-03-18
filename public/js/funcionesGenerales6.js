@@ -19,12 +19,14 @@ var nueva_sem = function (db, carpeta, seccion) {
     }).done(function (info) {
       var faltaCalificar = info;
       if (faltaCalificar != 0) {
-        window.alert(
-          'No se pueden crear nuevas semanas hasta que se realicen las Calificaciónes Integrales (Calidad, Gestión Social - Ambiental, SST y Administración)' +
+        AIA.Notice.warning(
+          'No se pueden crear nuevas semanas hasta que se realicen las Calificaciones Integrales (Calidad, Gestión Social - Ambiental, SST y Administración) ' +
             faltaCalificar +
-            ', las cuales se deben realizar mínimo cada 2 meses.'
-        );
-        location.assign('/legacy/cambiar_pagina.php?seccion=CIC&semana=' + semanaActual);
+            ', las cuales se deben realizar como mínimo cada 2 meses.',
+          'Calificación Pendiente'
+        ).then(() => {
+          location.assign('/legacy/cambiar_pagina.php?seccion=CIC&semana=' + semanaActual);
+        });
       } else {
         $.ajax({
           method: 'POST',
@@ -35,24 +37,27 @@ var nueva_sem = function (db, carpeta, seccion) {
           var json_info = info;
           if (json_info && json_info.respuesta === 'ERROR') {
             $('#modal_spinner').modal('hide');
-            window.alert(json_info.mensaje);
-            location.reload();
+            AIA.Notice.error(json_info.mensaje).then(() => {
+              location.reload();
+            });
             return;
           }
           var semana = json_info[0];
           var pdcConteo = json_info[1];
           var semanalConfirmada = json_info[3];
           
-          if (semanalConfirmada == 0 && Number(semana) > 1 && !esAdmin) {
-            window.alert(
-              'No se pueden crear la Semana ' +
+          if (semanalConfirmada == 0 && Number(semana) > 0 && !esAdmin) {
+            AIA.Notice.warning(
+              'No se puede crear la Semana ' +
                 (Number(semana) + 1) +
                 ' hasta que se confirmen los compromisos en la Semana ' +
-                semana
-            );
-            location.assign(
-              '/legacy/cambiar_pagina.php?seccion=programacion_semanal&semana=' + semana
-            );
+                semana,
+              'Semana Bloqueada'
+            ).then(() => {
+              location.assign(
+                '/legacy/cambiar_pagina.php?seccion=programacion_semanal&semana=' + semana
+              );
+            });
           } else {
             if (pdcConteo > 0 && semana > 1) {
               $.ajax({
@@ -66,7 +71,7 @@ var nueva_sem = function (db, carpeta, seccion) {
                 );
               }).fail(function (xhr, status, error) {
                 $('#modal_spinner').modal('hide');
-                window.alert('Error al actualizar el PDC: ' + (error || status));
+                AIA.Notice.error('Error al actualizar el PDC: ' + (error || status));
                 location.assign(
                   '/legacy/cambiar_pagina.php?seccion=programa_general&semana=' + semana
                 );
@@ -84,7 +89,7 @@ var nueva_sem = function (db, carpeta, seccion) {
     }).fail(function (xhr, status, error) {
       $('#modal_spinner').modal('hide');
       $('#btn_guardar_nueva_sem').prop('disabled', false);
-      window.alert('Error al verificar Calificaciones CIC: ' + (error || status));
+      AIA.Notice.error('Error al verificar Calificaciones CIC: ' + (error || status));
     });
   });
 };
@@ -108,12 +113,14 @@ var eliminar_sem = function (semana, db, carpeta, seccion) {
           '/legacy/cambiar_pagina.php?seccion=programa_general&semana=' + semanaFinal
         );
       } else {
-        window.alert(
+        AIA.Notice.warning(
           'No se puede eliminar una semana menor a la máxima del proyecto (Semana ' +
             json_info['maxSemana'] +
-            ')'
-        );
-        location.reload();
+            ')',
+          'Acción No Permitida'
+        ).then(() => {
+          location.reload();
+        });
       }
     });
   });

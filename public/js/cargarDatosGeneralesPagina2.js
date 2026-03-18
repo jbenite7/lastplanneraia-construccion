@@ -640,7 +640,7 @@ window.cambiarSemanaSesion = function (semana, redirectUrl) {
       if (data.success) {
         window.location.href = redirectUrl;
       } else {
-        alert('Error al cambiar de semana: ' + (data.message || 'Desconocido'));
+        AIA.Notice.error('Error al cambiar de semana: ' + (data.message || 'Desconocido'));
       }
     })
     .catch((error) => {
