@@ -202,7 +202,7 @@ $(document).ready(function () {
 
   $(document).on('click', '.remove-assignment-row', function () {
     if ($assignmentsContainer.find('.assignment-row').length <= 1) {
-      if (window.AIA && window.AIA.Notice) window.AIA.Notice.warningToast('El usuario debe tener al menos un proyecto asignado.');
+      toastr.warning('El usuario debe tener al menos un proyecto asignado.');
       return;
     }
     $(this).closest('.assignment-row').remove();
@@ -266,7 +266,7 @@ $(document).ready(function () {
     }
     $password.val(password).attr('type', 'text');
     $togglePassIcon.removeClass('fa-eye').addClass('fa-eye-slash');
-    if (window.AIA && window.AIA.Notice) window.AIA.Notice.success('Contrasena generada');
+    toastr.success('Contrasena generada');
   });
 
   $('#togglePass').on('click', function () {
@@ -391,7 +391,7 @@ $(document).ready(function () {
             didOpen: function () {
               $('#btnCopyCreds').off('click').on('click', function () {
                 navigator.clipboard.writeText(mensajeTexto).then(function () {
-                  if (window.AIA && window.AIA.Notice) window.AIA.Notice.success('Copiado al portapapeles');
+                  toastr.success('Copiado al portapapeles');
                   $('#btnCopyCreds').html('<i class="fas fa-check"></i> Copiado');
                 });
               });

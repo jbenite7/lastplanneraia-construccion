@@ -475,11 +475,18 @@
   }
 
   function showFeedback(type, message) {
+    clearTimeout(saveBadgeTimer);
+    // AIA 2026: El sistema oficial es 'toastr'. 
+    // Mantenemos los badges ocultos para evitar duplicidad visual.
+    $('#save-status').hide();
+    $('#save-error').hide();
+
     if (type === 'success') {
-      window.AIA.Notice.badge('success', message || 'Guardado');
+      if (typeof toastr !== 'undefined') toastr.success(message || 'Guardado');
       return;
     }
-    window.AIA.Notice.error(message || 'Error al guardar');
+
+    if (typeof toastr !== 'undefined') toastr.error(message || 'Error al guardar');
   }
 
   function fetchCodigosActividad() {

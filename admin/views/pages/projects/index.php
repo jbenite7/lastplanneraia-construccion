@@ -219,7 +219,7 @@ $(function () {
             },
             success: function(response) {
                 if (response.success) {
-                    if (window.AIA && window.AIA.Notice) window.AIA.Notice.success(response.message);
+                    toastr.success(response.message);
                     
                     // Si el campo es 'activo', actualizar el badge de la columna Estado
                     if (field === 'activo') {
@@ -229,13 +229,13 @@ $(function () {
                         $('#status-badge-' + projectId).html(badgeHtml);
                     }
                 } else {
-                    if (window.AIA && window.AIA.Notice) window.AIA.Notice.errorToast(response.message);
+                    toastr.error(response.message);
                     // Revertir el cambio si hubo error
                     checkbox.prop('checked', !value);
                 }
             },
             error: function() {
-                if (window.AIA && window.AIA.Notice) window.AIA.Notice.errorToast('Error de comunicación con el servidor');
+                toastr.error('Error de comunicación con el servidor');
                 checkbox.prop('checked', !value);
             },
             complete: function() {
@@ -248,8 +248,8 @@ $(function () {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('success')) {
         const action = urlParams.get('success');
-        if (action === 'created' && window.AIA && window.AIA.Notice) window.AIA.Notice.success('Proyecto creado con éxito');
-        if (action === 'updated' && window.AIA && window.AIA.Notice) window.AIA.Notice.success('Proyecto actualizado con éxito');
+        if (action === 'created') toastr.success('Proyecto creado con éxito');
+        if (action === 'updated') toastr.success('Proyecto actualizado con éxito');
         if (action === 'deleted') Swal.fire('Eliminado', 'El proyecto ha sido eliminado correctamente.', 'success');
         
         window.history.replaceState({}, document.title, "/admin/proyectos");
@@ -257,7 +257,7 @@ $(function () {
 
     if (urlParams.has('error')) {
         const error = urlParams.get('error');
-        if (error === 'delete_failed' && window.AIA && window.AIA.Notice) window.AIA.Notice.errorToast('No se pudo eliminar el proyecto');
+        if (error === 'delete_failed') toastr.error('No se pudo eliminar el proyecto');
         
         window.history.replaceState({}, document.title, "/admin/proyectos");
     }

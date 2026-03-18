@@ -482,9 +482,7 @@
             </div>
 
             <div class="ps-toolbar-right">
-                <div class="ps-hot-status-badges">
-                    <span id="save-status" class="badge badge-success badge-badge-hidden">Guardado</span>
-                </div>
+                <div id="ps-toast-container" aria-live="polite"></div>
                 <div class="ps-dropdown-nav" aria-label="Navegacion Programacion Semanal">
                     <button type="button" class="btn-pdc-modern btn-dropdown-trigger">
                         <i class="fas fa-th-list"></i> <span>Ver Secciones</span> <i class="fas fa-chevron-down ml-1"></i>

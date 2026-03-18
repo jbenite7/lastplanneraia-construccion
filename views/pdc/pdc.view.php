@@ -1763,7 +1763,7 @@
 		    });
 		  } else {
 		    if (inputCambiado != "") {
-		      if (window.AIA && window.AIA.Notice) window.AIA.Notice.warning("No se puede asignar una fecha mayor a la fecha de fin de la presente semana (" + finSemanaActual + ")."); else alert("No se puede asignar una fecha mayor a la fecha de fin de la presente semana (" + finSemanaActual + ").");
+		      window.alert("No se puede asignar una fecha mayor a la fecha de fin de la presente semana (" + finSemanaActual + ").");
 		      document.getElementById('fechaReal' + inputCambiado).value = '';
 		      selectoresFecha("InsumosObra");
 		      selectoresFecha("Fabricacion");

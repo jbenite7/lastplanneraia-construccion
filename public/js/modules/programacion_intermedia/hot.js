@@ -1142,26 +1142,22 @@
   }
 
   function showFeedback(type, message) {
+    clearTimeout(saveBadgeTimer);
+    $('#save-status').hide();
+    $('#save-error').hide();
+
     if (type === 'success') {
-      if (window.AIA && window.AIA.Notice && window.AIA.Notice.badge) {
-        window.AIA.Notice.badge('success', message);
-      } else {
-        // Fallback robusto
-        clearTimeout(saveBadgeTimer);
-        var $el = $('#save-status');
-        $el.removeClass('badge-badge-hidden').text(message || 'Guardado').fadeIn(120);
-        saveBadgeTimer = setTimeout(function () {
-          $el.fadeOut(250, function() { $(this).addClass('badge-badge-hidden'); });
-        }, 1800);
-      }
-    } else {
-      if (window.AIA && window.AIA.Notice && window.AIA.Notice.error) {
-        window.AIA.Notice.error(message || 'Error al guardar');
-      } else {
-        // Fallback a alert si falla cargar AIA.Notice
-        alert(message || 'Error al guardar');
-      }
+      $('#save-status').text(message || 'Guardado').fadeIn(120);
+      saveBadgeTimer = setTimeout(function () {
+        $('#save-status').fadeOut(250);
+      }, 1800);
+      return;
     }
+
+    $('#save-error').text(message || 'Error al guardar').fadeIn(120);
+    saveBadgeTimer = setTimeout(function () {
+      $('#save-error').fadeOut(350);
+    }, 3200);
   }
 
   function renderLegendModal() {

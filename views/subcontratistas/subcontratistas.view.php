@@ -407,14 +407,14 @@
                                 }
                             }, 200);
                         } else {
-                            if (window.AIA && window.AIA.Notice) window.AIA.Notice.error("Error cargando datos: Formato inesperado"); else alert("Error cargando datos: Formato inesperado");
+                            alert("Error cargando datos: Formato inesperado");
                         }
                     });
                 },
                 error: function(err) {
                     console.error(err);
                     $('#loading').fadeOut();
-                    if (window.AIA && window.AIA.Notice) window.AIA.Notice.error("Error de red al cargar datos."); else alert("Error de red al cargar datos.");
+                    alert("Error de red al cargar datos.");
                 }
             });
         }
@@ -513,7 +513,7 @@
                         if (id && prop !== 'accion' && prop !== 'activo') {
                             const trimmedValue = (newValue || '').toString().trim();
                             if (trimmedValue === '') {
-                                if (window.AIA && window.AIA.Notice) window.AIA.Notice.warning('No se puede dejar el campo vacío. Por favor ingrese un valor.'); else alert('No se puede dejar el campo vacío. Por favor ingrese un valor.');
+                                alert('No se puede dejar el campo vacío. Por favor ingrese un valor.');
                                 // Revertir al valor anterior
                                 instance.setDataAtRowProp(row, prop, oldValue, 'revert');
                                 return;
@@ -548,7 +548,7 @@
                         if(recordId) {
                             // Check if locked
                             if (rowData.has_dependencies) {
-                                if (window.AIA && window.AIA.Notice) window.AIA.Notice.warning('No se puede eliminar: Tiene registros asociados (Semanales, Evaluaciones, etc.)'); else alert('No se puede eliminar: Tiene registros asociados (Semanales, Evaluaciones, etc.)');
+                                alert('No se puede eliminar: Tiene registros asociados (Semanales, Evaluaciones, etc.)');
                                 return;
                             }
                             if(confirm('¿Seguro que desea eliminar a ' + (rowData.subcontratista || 'este registro') + '?')) {
@@ -592,10 +592,10 @@
                     if (res.status === 'success') {
                          showFeedback('success');
                     } else if (res.status === 'warning') {
-                         if (window.AIA && window.AIA.Notice) window.AIA.Notice.warning('Advertencia: ' + (res.message || '') + '\\n' + (res.errors ? res.errors.join('\\n') : '')); else alert('Advertencia: ' + (res.message || '') + '\\n' + (res.errors ? res.errors.join('\\n') : ''));
+                         alert('Advertencia: ' + (res.message || '') + '\n' + (res.errors ? res.errors.join('\n') : ''));
                          showFeedback('error');
                     } else {
-                         if (window.AIA && window.AIA.Notice) window.AIA.Notice.error('Error: ' + (res.message || 'Error desconocido')); else alert('Error: ' + (res.message || 'Error desconocido'));
+                         alert('Error: ' + (res.message || 'Error desconocido'));
                          showFeedback('error');
                     }
                 },
@@ -625,12 +625,12 @@
                         showFeedback('success');
                         loadData(); // Recargar para obtener el nuevo Id
                     } else {
-                        if (window.AIA && window.AIA.Notice) window.AIA.Notice.error("Error creando: " + (res.message || 'Error desconocido')); else alert("Error creando: " + (res.message || 'Error desconocido'));
+                        alert("Error creando: " + (res.message || 'Error desconocido'));
                     }
                 },
                 error: function(err) {
                     console.error(err);
-                    if (window.AIA && window.AIA.Notice) window.AIA.Notice.error("Error de red al crear subcontratista"); else alert("Error de red al crear subcontratista");
+                    alert("Error de red al crear subcontratista");
                 }
             });
         }
@@ -648,9 +648,9 @@
                 success: function(res) {
                     if (res.status === 'success') {
                         loadData();
-                        if (window.AIA && window.AIA.Notice) window.AIA.Notice.badge('success', "Eliminado correctamente"); else alert("Eliminado correctamente");
+                        alert("Eliminado correctamente");
                     } else {
-                        if (window.AIA && window.AIA.Notice) window.AIA.Notice.error("Error: " + res.message); else alert("Error: " + res.message);
+                        alert("Error: " + res.message);
                     }
                 }
             });
@@ -773,7 +773,7 @@
             const tipo = $('#new-mobile-tipo').val();
 
             if (!nombre) {
-                if (window.AIA && window.AIA.Notice) window.AIA.Notice.warning("Por favor ingrese al menos el nombre"); else alert("Por favor ingrese al menos el nombre");
+                alert("Por favor ingrese al menos el nombre");
                 return;
             }
 
@@ -794,7 +794,7 @@
                 success: function(res) {
                     if (res.status === 'success') {
                         loadData();
-                        if (window.AIA && window.AIA.Notice) window.AIA.Notice.badge('success', "Subcontratista registrado correctamente"); else alert("Subcontratista registrado correctamente");
+                        alert("Subcontratista registrado correctamente");
                         // Clear form
                         $('#new-mobile-subcontratista').val('');
                         $('#new-mobile-correo').val('');
@@ -802,7 +802,7 @@
                         $('#new-mobile-alcance').val('');
                         $('#new-mobile-tipo').val('');
                     } else {
-                        if (window.AIA && window.AIA.Notice) window.AIA.Notice.error("Error: " + (res.message || res.respuesta)); else alert("Error: " + (res.message || res.respuesta));
+                        alert("Error: " + (res.message || res.respuesta));
                     }
                 }
             });

@@ -56,6 +56,9 @@
 	</style>
 	<link rel="stylesheet" href="/css/handsontable-header-global.css?v=20260313" />
 	<link rel="stylesheet" href="/css/tom-select-premium-aia.css?v=20260314" />
+	<!-- Toastr (Mensajes Emergentes) -->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 </head>
 
 <body class="pg-page">
@@ -111,7 +114,8 @@
 					<button id="btn_toggleFiltroMapeo" type="button" class="btn btn-outline-primary btn-sm active" title="Alternar visualización de actividades" aria-label="Alternar visualización">Mostrando Pendientes <i class="fas fa-filter fa-lg"></i></button>
 				</div>
 				<div class="pg-status-badges">
-					<span id="save-status" class="badge badge-success badge-badge-hidden">Auto-Guardado</span>
+					<span id="save-status" class="badge badge-success" style="display:none;">Auto-Guardado</span>
+					<span id="save-error" class="badge badge-danger" style="display:none;">Error al guardar</span>
 				</div>
 			</div>
 		</div>
@@ -403,8 +407,8 @@
 		          }, 10000);
 		        } else {
 		          // Actualización de cronograma
-		          if (window.AIA && window.AIA.Notice) {
-		            window.AIA.Notice.badge('success', "¡Cronograma cargado con éxito en la Semana " + semana_json + "! Ahora puedes realizar el mapeo de actividades.");
+		          if (typeof toastr !== 'undefined') {
+		            toastr.success("¡Cronograma cargado con éxito en la Semana " + semana_json + "! Ahora puedes realizar el mapeo de actividades.");
 		          } else {
 		            alert("¡Cronograma cargado con éxito en la Semana " + semana_json + "! Ahora puedes realizar el mapeo de actividades.");
 		          }

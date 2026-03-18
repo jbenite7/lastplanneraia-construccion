@@ -174,7 +174,7 @@ $(function() {
             $.getJSON('/admin/proyectos/sugerir-rol', { cargo: cargoLimpio }, function(data) {
                 if (data.role) {
                     $('#role').val(data.role).trigger('change');
-                    if (window.AIA && window.AIA.Notice) window.AIA.Notice.info('Sugerencia inteligente aplicada');
+                    toastr.info('Sugerencia inteligente aplicada');
                 }
             });
         } else {
@@ -246,8 +246,8 @@ $(function() {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('success')) {
         const action = urlParams.get('success');
-        if (action === 'member_added' && window.AIA && window.AIA.Notice) window.AIA.Notice.success('Miembro asignado con éxito');
-        if (action === 'member_removed' && window.AIA && window.AIA.Notice) window.AIA.Notice.success('Se ha revocado el acceso al miembro');
+        if (action === 'member_added') toastr.success('Miembro asignado con éxito');
+        if (action === 'member_removed') toastr.success('Se ha revocado el acceso al miembro');
         window.history.replaceState({}, document.title, window.location.pathname + "?id=<?php echo $project['Id']; ?>");
     }
 });

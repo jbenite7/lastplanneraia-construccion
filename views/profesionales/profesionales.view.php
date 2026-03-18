@@ -410,14 +410,14 @@
                                 if(hot && window.innerWidth > 768) hot.render();
                             }, 100);
                         } else {
-                            if (window.AIA && window.AIA.Notice) window.AIA.Notice.error("Error cargando datos: " + response.message); else alert("Error cargando datos: " + response.message);
+                            alert("Error cargando datos: " + response.message);
                         }
                     });
                 },
                 error: function(err) {
                     console.error(err);
                     $('#loading').fadeOut();
-                    if (window.AIA && window.AIA.Notice) window.AIA.Notice.error("Error de red al cargar datos."); else alert("Error de red al cargar datos.");
+                    alert("Error de red al cargar datos.");
                 }
             });
         }
@@ -510,7 +510,7 @@
                         if (id && prop !== 'accion' && prop !== 'activo') {
                             const trimmedValue = (newValue || '').toString().trim();
                             if (trimmedValue === '') {
-                                if (window.AIA && window.AIA.Notice) window.AIA.Notice.warning('No se puede dejar el campo vacío. Por favor ingrese un valor.'); else alert('No se puede dejar el campo vacío. Por favor ingrese un valor.');
+                                alert('No se puede dejar el campo vacío. Por favor ingrese un valor.');
                                 // Revertir al valor anterior
                                 instance.setDataAtRowProp(row, prop, oldValue, 'revert');
                                 return;
@@ -603,7 +603,7 @@
                         showFeedback('success');
                         loadData(); 
                     } else {
-                        if (window.AIA && window.AIA.Notice) window.AIA.Notice.error("Error creando: " + res.message); else alert("Error creando: " + res.message);
+                        alert("Error creando: " + res.message);
                     }
                 }
             });
@@ -619,9 +619,9 @@
                     if (res.status === 'success') {
                         // Success -> Reload data to refresh grid without destroying instance
                         loadData();
-                        if (window.AIA && window.AIA.Notice) window.AIA.Notice.badge('success', "Eliminado correctamente"); else alert("Eliminado correctamente");
+                        alert("Eliminado correctamente");
                     } else {
-                        if (window.AIA && window.AIA.Notice) window.AIA.Notice.error("Error: " + res.message); else alert("Error: " + res.message);
+                        alert("Error: " + res.message);
                     }
                 }
             });
@@ -746,7 +746,7 @@
             const cargo = document.getElementById('new-mobile-cargo').value;
             
             if(!nombre || !email) {
-                if (window.AIA && window.AIA.Notice) window.AIA.Notice.warning("Nombre y correo son obligatorios"); else alert("Nombre y correo son obligatorios");
+                alert("Nombre y correo son obligatorios");
                 return;
             }
             createRow({ nombre: nombre, email: email, cargo: cargo });
