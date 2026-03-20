@@ -75,11 +75,7 @@ class GeneralApiController extends BaseController
             
             $fechaInicioSemana = $fechasSemana['Fecha_Inicio_Sem'] ?? date('Y-m-d');
 
-            // 4. Auto-actualización de unidades vacías a '%' (paridad con legacy)
-            $sqlAutoUpdate = "UPDATE {$dbPrefix}_programa_consolidado SET unidad = '%' WHERE Semana = ? AND (unidad IS NULL OR TRIM(unidad) = '')";
-            $this->db->prepare($sqlAutoUpdate)->execute([$semana]);
-
-            // 5. Consulta Principal
+            // 4. Consulta Principal
             $sql = "SELECT * 
                     FROM {$dbPrefix}_programa_consolidado 
                     WHERE Semana = ? 
@@ -91,6 +87,15 @@ class GeneralApiController extends BaseController
             $data = [];
 
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $unidad = trim((string)($row['unidad'] ?? ''));
+                if ($unidad === '') {
+                    $unidad = '%';
+                }
+                $row['unidad'] = $unidad;
+                if ($unidad === '%') {
+                    $row['cantidad_ppto'] = null;
+                }
+
                 if ($row['Titulo'] == 1) {
                     $row['Estado'] = "Capítulo";
                     $row['boton'] = "No Boton";
@@ -142,41 +147,44 @@ class GeneralApiController extends BaseController
             }
 
             $rawInput = $_POST["Ejecutado"] ?? null;
-            $ejecutado = $this->lpsService->toFloat($rawInput);
+            $ejecutadoVisible = $this->lpsService->toFloat($rawInput);
+            $ejecutadoRatioInput = $this->lpsService->toFloat($_POST["EjecutadoRatio"] ?? null, null);
             $codigoActividad = $_POST["codigo_actividad"] ?? '';
             $unidadRaw = trim($_POST["unidad"] ?? '');
             $unidad = ($unidadRaw === '') ? '%' : $unidadRaw;
             $cantidadPpto = $this->lpsService->toFloat($_POST["cantidad_ppto"] ?? null);
             
-            // 1. Caso: Unidad física (m2, kg, etc.) con Presupuesto > 0
-            if ($ejecutado !== null && $unidad !== '%' && ($cantidadPpto ?? 0) > 0) {
-                // Convertimos la cantidad absoluta directamente a ratio (0.0 a 1.0)
-                $ejecutado = ($ejecutado / $cantidadPpto);
-            } 
-            // 2. Caso: Unidad porcentaje (%) o Unidad física sin Presupuesto válido
-            elseif ($ejecutado !== null) {
-                // Convertimos el porcentaje (0-100) a ratio (0.0 a 1.0). Si alguien tecleó '95' en 'ml' y no hay ppto, asume 95%.
-                $ejecutado = ($ejecutado / 100);
+            if ($cantidadPpto !== null) {
+                if ($cantidadPpto < 0) throw new Exception("La cantidad en presupuesto no puede ser negativa.");
+                $cantidadPpto = round($cantidadPpto, 1);
+                if ($cantidadPpto === 0.0) $cantidadPpto = null;
+            }
+
+            if ($unidad === '%') {
+                $cantidadPpto = null;
+            }
+
+            $ejecutado = $ejecutadoRatioInput;
+            if ($ejecutado === null && $ejecutadoVisible !== null) {
+                if ($unidad !== '%' && ($cantidadPpto ?? 0) > 0) {
+                    $ejecutado = ($ejecutadoVisible / $cantidadPpto);
+                } else {
+                    $ejecutado = ($ejecutadoVisible / 100);
+                }
             }
             
             if ($ejecutado !== null) {
-                if ($ejecutado < -0.0001 || $ejecutado > 1.0001) { // Tolerancia pequeña
+                if ($ejecutado < -0.0001 || $ejecutado > 1.0001) {
                     $pctDisplay = round($ejecutado * 100, 2);
                     throw new Exception("El valor resultante ({$pctDisplay}%) excede el rango permitido (0-100%).");
                 }
-                $ejecutado = round($ejecutado, 6); // Mayor precisión para ratios
+                $ejecutado = round($ejecutado, 6);
             }
 
             $fechaInicioRaw = $_POST["Fecha_Inicio"] ?? '';
             $fechaFinRaw = $_POST["Fecha_Fin"] ?? '';
             $fechaInicio = !empty($fechaInicioRaw) ? date("Y-m-d", strtotime($fechaInicioRaw)) : null;
             $fechaFin = !empty($fechaFinRaw) ? date("Y-m-d", strtotime($fechaFinRaw)) : null;
-
-            if ($cantidadPpto !== null) {
-                if ($cantidadPpto < 0) throw new Exception("La cantidad en presupuesto no puede ser negativa.");
-                $cantidadPpto = round($cantidadPpto, 1);
-                if ($cantidadPpto === 0.0) $cantidadPpto = null;
-            }
 
             // 3. Productividad (Legacy: forzado a 0)
             $medirProductividad = 0;
@@ -197,10 +205,57 @@ class GeneralApiController extends BaseController
                     programaAnteriorAsociar = ?
                     WHERE Consecutivo_en_Programa = ? AND Semana = ?";
             
-            $this->db->prepare($sql)->execute([
+            $updateStmt = $this->db->prepare($sql);
+            $updateStmt->execute([
                 $ejecutado, $medirProductividad, $unidad, $cantidadPpto, 
                 $codigoActividad, $ejecutado, $fechaInicio, $fechaFin, $actividadAsociar, $id, $semana
             ]);
+
+            $verifyStmt = $this->db->prepare("SELECT unidad, cantidad_ppto, Ejecutado FROM {$dbPrefix}_programa_consolidado WHERE Consecutivo_en_Programa = ? AND Semana = ? LIMIT 1");
+            $verifyStmt->execute([$id, $semana]);
+            $updatedRow = $verifyStmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$updatedRow) {
+                throw new Exception("No se encontró la actividad a actualizar en Programa General.");
+            }
+
+            $unidad = trim((string)($updatedRow['unidad'] ?? ''));
+            if ($unidad === '') {
+                $unidad = '%';
+            }
+            $cantidadPpto = $this->lpsService->toFloat($updatedRow['cantidad_ppto'] ?? null);
+            $ejecutado = $this->lpsService->toFloat($updatedRow['Ejecutado'] ?? null);
+
+            $expectedUnidad = ($unidadRaw === '') ? '%' : $unidadRaw;
+            $expectedCantidadPpto = $this->lpsService->toFloat($_POST["cantidad_ppto"] ?? null);
+            if ($expectedCantidadPpto !== null) {
+                $expectedCantidadPpto = round($expectedCantidadPpto, 1);
+                if ($expectedCantidadPpto === 0.0) {
+                    $expectedCantidadPpto = null;
+                }
+            }
+            if ($expectedUnidad === '%') {
+                $expectedCantidadPpto = null;
+            }
+
+            $expectedRatio = $ejecutadoRatioInput;
+            if ($expectedRatio === null && $ejecutadoVisible !== null) {
+                if ($expectedUnidad !== '%' && ($expectedCantidadPpto ?? 0) > 0) {
+                    $expectedRatio = $ejecutadoVisible / $expectedCantidadPpto;
+                } else {
+                    $expectedRatio = $ejecutadoVisible / 100;
+                }
+                $expectedRatio = round($expectedRatio, 6);
+            }
+
+            $cantidadMatches = ($cantidadPpto === null && $expectedCantidadPpto === null)
+                || ($cantidadPpto !== null && $expectedCantidadPpto !== null && abs($cantidadPpto - $expectedCantidadPpto) < 0.0001);
+            $ejecutadoMatches = ($ejecutado === null && $expectedRatio === null)
+                || ($ejecutado !== null && $expectedRatio !== null && abs($ejecutado - $expectedRatio) < 0.0001);
+
+            if ($unidad !== $expectedUnidad || !$cantidadMatches || !$ejecutadoMatches) {
+                throw new Exception("No fue posible persistir completamente el cambio solicitado en Programa General.");
+            }
 
             // 5. Herencia Manual (Mapeo Manual LPS)
             if (!empty($_POST['editarActividadAsociar']) && !empty($actividadAsociar) && $actividadAsociar !== '*No Asociada*') {
@@ -255,6 +310,7 @@ class GeneralApiController extends BaseController
                 'estado' => $nuevoEstado, 
                 'Semanas_Inicio' => $semanasInicio,
                 'unidad' => $unidad,
+                'cantidad_ppto' => $cantidadPpto,
                 'Ejecutado' => $ejecutado // Retornamos el ratio decimal calculado
             ];
             

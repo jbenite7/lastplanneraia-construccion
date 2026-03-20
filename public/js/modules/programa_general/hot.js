@@ -21,7 +21,7 @@
     Fecha_Fin: true,
     unidad: true,
     cantidad_ppto: true,
-    Ejecutado: true,
+    EjecutadoDisplay: true,
   };
 
   var trackedStates = [
@@ -130,6 +130,11 @@
     return Number.isFinite(parsed) ? parsed : fallback;
   }
 
+  function isPercentLikeUnit(value) {
+    var unit = String(value || '').trim();
+    return unit === '' || unit === '%';
+  }
+
   function formatPercent(value) {
     var numeric = toNumber(value, null);
     if (numeric === null) {
@@ -213,6 +218,67 @@
     }
 
     return Math.round((numeric + Number.EPSILON) * 10000) / 10000;
+  }
+
+  function getEjecutadoRatio(rowData) {
+    return normalizeRatio(rowData ? rowData.Ejecutado : null);
+  }
+
+  function buildDisplayContext(rowData, overrides) {
+    var contextOverrides = overrides || {};
+    var hasOwn = Object.prototype.hasOwnProperty;
+    var unidadValue = hasOwn.call(contextOverrides, 'unidad')
+      ? contextOverrides.unidad
+      : rowData.unidad;
+    var cantidadPptoValue = hasOwn.call(contextOverrides, 'cantidad_ppto')
+      ? contextOverrides.cantidad_ppto
+      : rowData.cantidad_ppto;
+    var ejecutadoDisplayValue = hasOwn.call(contextOverrides, 'EjecutadoDisplay')
+      ? contextOverrides.EjecutadoDisplay
+      : rowData.EjecutadoDisplay;
+
+    return {
+      unidad: String(unidadValue || '').trim(),
+      cantidad_ppto: toNumber(cantidadPptoValue, 0),
+      EjecutadoDisplay: toNumber(ejecutadoDisplayValue, null),
+    };
+  }
+
+  function ratioFromDisplayContext(context) {
+    if (!context || context.EjecutadoDisplay === null) {
+      return null;
+    }
+
+    if (isPercentLikeUnit(context.unidad) || context.cantidad_ppto <= 0) {
+      return context.EjecutadoDisplay / 100;
+    }
+
+    return context.EjecutadoDisplay / context.cantidad_ppto;
+  }
+
+  function displayFromRatioForContext(ratio, context) {
+    if (ratio === null) {
+      return null;
+    }
+
+    if (!context || isPercentLikeUnit(context.unidad) || context.cantidad_ppto <= 0) {
+      return ratio * 100;
+    }
+
+    return ratio * context.cantidad_ppto;
+  }
+
+  function syncEjecutadoFields(rowData, ratio, overrides) {
+    if (!rowData) {
+      return;
+    }
+
+    var normalizedRatio = normalizeRatio(ratio);
+    if (isPercentLikeUnit(rowData.unidad)) {
+      rowData.cantidad_ppto = null;
+    }
+    rowData.Ejecutado = normalizedRatio;
+    rowData.EjecutadoDisplay = displayFromRatioForContext(normalizedRatio, buildDisplayContext(rowData, overrides));
   }
 
   function normalizeNumberForPayload(value, decimals) {
@@ -357,7 +423,7 @@
   }
 
   function getFallbackStateKey(data) {
-    var ejecutado = percentToRatio(data.Ejecutado);
+    var ejecutado = getEjecutadoRatio(data);
     if (ejecutado === null) {
       ejecutado = 0;
     }
@@ -400,7 +466,7 @@
       estadoRestricciones = 1;
     }
 
-    var ejecutado = percentToRatio(data.Ejecutado);
+    var ejecutado = getEjecutadoRatio(data);
     if (ejecutado === null) {
       ejecutado = 0;
     }
@@ -649,21 +715,10 @@
         for (var i = 0; i < masterData.length; i++) {
           var row = masterData[i] || {};
           if (Number(row.Titulo) === 0) {
-            // AIA 2026: Convertimos el ratio puro de BD (0.0 - 1.0) a Cantidad Física (o 0-100 en %).
-            // Resiliencia: Si no hay presupuesto (o <= 0), tratamos el ratio como porcentaje (0-100).
             var dbRatio = normalizeRatio(row.Ejecutado);
             var mappedUnit = String(row.unidad || '').trim();
-            var ppto = parseFloat(row.cantidad_ppto || 0);
-            
-            var physicalValue = dbRatio === null ? 0 : dbRatio;
-            if (mappedUnit === '%' || mappedUnit === '' || ppto <= 0) {
-                physicalValue = physicalValue * 100;
-            } else {
-                physicalValue = physicalValue * ppto;
-            }
-
-            row.Ejecutado = physicalValue;
             row.unidad = mappedUnit;
+            syncEjecutadoFields(row, dbRatio);
           }
         }
 
@@ -689,7 +744,7 @@
   }
 
   function normalizeCellValue(prop, value) {
-    if (prop === 'Ejecutado') {
+    if (prop === 'EjecutadoDisplay') {
       var numeric = toNumber(value, null);
       if (numeric === null) {
         return { valid: false, value: value, error: 'Ejecutado inválido' };
@@ -718,7 +773,7 @@
 
     if (prop === 'unidad') {
       var parsedUnit = String(value || '').trim();
-      return { valid: true, value: parsedUnit === '' ? '%' : parsedUnit };
+      return { valid: true, value: isPercentLikeUnit(parsedUnit) ? '%' : parsedUnit };
     }
 
     if (prop === 'codigo_actividad') {
@@ -728,18 +783,34 @@
     return { valid: true, value: value };
   }
 
-  function buildUpdatePayload(rowData, prop) {
-    var id = rowData.Consecutivo_en_Programa || rowData.Id;
-    var fechaInicio = String(rowData.Fecha_Inicio || '').trim();
-    var fechaFin = String(rowData.Fecha_Fin || '').trim();
-    var physicalVal = toNumber(rowData.Ejecutado, null);
-    
-    var unidad = String(rowData.unidad || '').trim();
-    var cantidadPpto = toNumber(rowData.cantidad_ppto, null);
+  function buildUpdatePayload(rowData, prop, overrides) {
+    var payloadRow = $.extend({}, rowData || {}, overrides || {});
+    var id = payloadRow.Consecutivo_en_Programa || payloadRow.Id;
+    var fechaInicio = String(payloadRow.Fecha_Inicio || '').trim();
+    var fechaFin = String(payloadRow.Fecha_Fin || '').trim();
+    var physicalVal = toNumber(payloadRow.EjecutadoDisplay, null);
+    var unidad = String(payloadRow.unidad || '').trim();
+    var cantidadPpto = toNumber(payloadRow.cantidad_ppto, null);
+    var displayContext = buildDisplayContext(payloadRow);
+    var canonicalRatio = normalizeRatio(payloadRow.EjecutadoRatio);
+    if (canonicalRatio === null) {
+      canonicalRatio = getEjecutadoRatio(payloadRow);
+    }
+    var ratioVal = canonicalRatio;
 
-    // AIA 2026: El Data Model tiene ahora la cantidad FÍSICA.
-    // El Backend de actualización espera exactamente eso: La cantidad física (o de 0-100 para %).
-    // Extraemos limpiamente el dato.
+    if (isPercentLikeUnit(unidad)) {
+      cantidadPpto = null;
+      displayContext.cantidad_ppto = 0;
+    }
+
+    if (prop === 'EjecutadoDisplay' || ratioVal === null) {
+      ratioVal = ratioFromDisplayContext(displayContext);
+    }
+
+    if (ratioVal !== null && prop !== 'EjecutadoDisplay') {
+      physicalVal = displayFromRatioForContext(ratioVal, displayContext);
+    }
+
     var physicalToSubmit = physicalVal;
 
     if (!id) {
@@ -754,16 +825,12 @@
       return { valid: false, error: 'Ejecutado inválido' };
     }
 
-    // AIA 2026: Validación Preventiva de Rango (Evita Error 400 en red)
-    var ratioVal = 0;
-    if (unidad === '%' || unidad === '' || cantidadPpto <= 0) {
-      ratioVal = physicalToSubmit / 100;
-    } else {
-      ratioVal = physicalToSubmit / cantidadPpto;
+    if (ratioVal === null) {
+      return { valid: false, error: 'Ejecutado inválido' };
     }
 
     if (ratioVal > 1.0001) { // Pequeño margen para precisión decimal
-      var maxVal = (unidad === '%' || unidad === '' || cantidadPpto <= 0) ? "100%" : (cantidadPpto + " " + unidad);
+      var maxVal = (isPercentLikeUnit(unidad) || cantidadPpto <= 0) ? "100%" : (cantidadPpto + " " + unidad);
       return { 
         valid: false, 
         error: "El valor resultante (" + (ratioVal * 100).toFixed(1) + "%) excede el rango permitido (0-100%). Máximo: " + maxVal 
@@ -775,12 +842,30 @@
       data: {
         Id: id,
         Ejecutado: physicalToSubmit.toFixed(2),
-        codigo_actividad: String(rowData.codigo_actividad || '').trim(),
+        EjecutadoRatio: ratioVal.toFixed(6),
+        codigo_actividad: String(payloadRow.codigo_actividad || '').trim(),
         unidad: unidad,
-        cantidad_ppto: normalizeNumberForPayload(rowData.cantidad_ppto, 1),
+        cantidad_ppto: isPercentLikeUnit(unidad) ? '' : normalizeNumberForPayload(payloadRow.cantidad_ppto, 1),
         Fecha_Inicio: fechaInicio,
         Fecha_Fin: fechaFin,
       },
+    };
+  }
+
+  function buildPercentUnitPayloadOverrides(rowData, targetUnit) {
+    var canonicalRatio = getEjecutadoRatio(rowData);
+    var percentUnit = isPercentLikeUnit(targetUnit) ? '%' : String(targetUnit || '').trim();
+    var percentDisplay = displayFromRatioForContext(canonicalRatio, {
+      unidad: percentUnit,
+      cantidad_ppto: 0,
+    });
+
+    return {
+      unidad: percentUnit,
+      cantidad_ppto: null,
+      Ejecutado: canonicalRatio,
+      EjecutadoRatio: canonicalRatio,
+      EjecutadoDisplay: percentDisplay,
     };
   }
 
@@ -795,44 +880,46 @@
     }
   }
 
-  function saveRow(visualRow, prop, oldValue, source) {
+  function getPhysicalRowIndex(visualRow) {
+    if (!hot || typeof hot.toPhysicalRow !== 'function') {
+      return visualRow;
+    }
+
+    var physicalRow = hot.toPhysicalRow(visualRow);
+    return Number.isInteger(physicalRow) && physicalRow >= 0 ? physicalRow : visualRow;
+  }
+
+  function getRowDataByVisualRow(visualRow) {
+    if (!hot) {
+      return null;
+    }
+
+    return hot.getSourceDataAtRow(getPhysicalRowIndex(visualRow));
+  }
+
+  function saveRow(visualRow, prop, oldValue, source, options) {
     var db = getDb();
     var semana = getSemana();
-    var rowData = hot.getSourceDataAtRow(visualRow);
+    var rowData = getRowDataByVisualRow(visualRow) || {};
+    var saveOptions = options || {};
+    var payloadOverrides = saveOptions.payloadOverrides || null;
 
-    // AIA 2026: Preservar avance porcentual (Ratio) al cambiar el contexto (unidad o presupuesto)
-    // Si el usuario cambia la unidad o el ppto, recalculamos el valor físico en el Data Model
-    // para que el porcentaje resultante sea el mismo que antes del cambio.
-    if ((prop === 'unidad' || prop === 'cantidad_ppto') && prop !== 'Ejecutado') {
-        var currentPhysical = toNumber(rowData.Ejecutado, null);
-        if (currentPhysical !== null) {
-            var oldUnit = (prop === 'unidad') ? oldValue : rowData.unidad;
-            var oldPpto = (prop === 'cantidad_ppto') ? toNumber(oldValue, 0) : toNumber(rowData.cantidad_ppto, 0);
-            
-            // Ratio original basado en contexto anterior
-            var ratio;
-            if (oldUnit === '%' || oldUnit === '' || oldPpto <= 0) {
-                ratio = currentPhysical / 100;
-            } else {
-                ratio = currentPhysical / oldPpto;
-            }
-            
-            // Nuevo valor físico basado en contexto actual
-            var newUnit = rowData.unidad;
-            var newPpto = toNumber(rowData.cantidad_ppto, 0);
-            var newPhysical;
-            if (newUnit === '%' || newUnit === '' || newPpto <= 0) {
-                newPhysical = ratio * 100;
-            } else {
-                newPhysical = ratio * newPpto;
-            }
-            
-            hot.setDataAtRowProp(visualRow, 'Ejecutado', newPhysical, 'internal-update');
-            rowData = hot.getSourceDataAtRow(visualRow); // Refrescar rowData para el payload
+    if (!payloadOverrides && prop === 'EjecutadoDisplay') {
+        var editedRatio = ratioFromDisplayContext(buildDisplayContext(rowData));
+        hot.setDataAtRowProp(visualRow, 'Ejecutado', normalizeRatio(editedRatio), 'internal-update');
+        rowData = getRowDataByVisualRow(visualRow) || {};
+    }
+
+    if (!payloadOverrides && (prop === 'unidad' || prop === 'cantidad_ppto')) {
+        var preservedRatio = getEjecutadoRatio(rowData);
+        if (preservedRatio !== null) {
+          var newDisplay = displayFromRatioForContext(preservedRatio, buildDisplayContext(rowData));
+          hot.setDataAtRowProp(visualRow, 'EjecutadoDisplay', newDisplay, 'internal-update');
+          rowData = getRowDataByVisualRow(visualRow) || {};
         }
     }
 
-    var payload = buildUpdatePayload(rowData || {}, prop);
+    var payload = buildUpdatePayload(rowData || {}, prop, payloadOverrides);
     if (!payload.valid) {
       revertCell(visualRow, prop, oldValue);
       showFeedback('error', payload.error);
@@ -859,19 +946,29 @@
           }
           if (response.Ejecutado !== undefined && response.Ejecutado !== null) {
             var resRatio = parseFloat(response.Ejecutado);
-            var mappedUnit = String(rowData.unidad || '').trim();
-            var ppto = parseFloat(rowData.cantidad_ppto || 0);
-            var newPhysical = resRatio;
-            if (mappedUnit === '%' || mappedUnit === '' || ppto <= 0) {
-              newPhysical = resRatio * 100;
-            } else {
-              newPhysical = resRatio * ppto;
+            var updatedRowData = getRowDataByVisualRow(visualRow) || rowData || {};
+            var mappedUnit = String((response.unidad !== undefined ? response.unidad : updatedRowData.unidad) || '').trim();
+            if (response.unidad !== undefined) {
+              hot.setDataAtRowProp(visualRow, 'unidad', mappedUnit, 'internal-update');
             }
-            hot.setDataAtRowProp(visualRow, 'Ejecutado', newPhysical, 'internal-update');
+            if (response.cantidad_ppto !== undefined) {
+              hot.setDataAtRowProp(visualRow, 'cantidad_ppto', response.cantidad_ppto, 'internal-update');
+            }
+            hot.setDataAtRowProp(visualRow, 'Ejecutado', normalizeRatio(resRatio), 'internal-update');
+            updatedRowData = getRowDataByVisualRow(visualRow) || updatedRowData;
+            hot.setDataAtRowProp(
+              visualRow,
+              'EjecutadoDisplay',
+              displayFromRatioForContext(normalizeRatio(resRatio), buildDisplayContext(updatedRowData)),
+              'internal-update'
+            );
           }
 
           hot.render();
-          updateLegendCounts(hot.getSourceData());
+          updateLegendCounts(masterData);
+          if (prop === 'unidad' || prop === 'cantidad_ppto' || saveOptions.reloadAfterSuccess) {
+            loadData();
+          }
           showFeedback('success', 'Guardado');
           return;
         }
@@ -978,9 +1075,10 @@
         Handsontable.renderers.TextRenderer.apply(this, arguments);
         var rowData = instance.getSourceDataAtRow(row) || {};
         var cantidadPpto = toNumber(rowData.cantidad_ppto, null);
+        var unidad = String(rowData.unidad || '').trim();
         var ratio = toNumber(value, null);
         if (ratio === null) { td.textContent = ''; td.classList.add('htCenter'); return; }
-        if (cantidadPpto === null) {
+        if (isPercentLikeUnit(unidad) || cantidadPpto === null || cantidadPpto <= 0) {
           td.textContent = formatPercentValue(value);
         } else {
           var qty = Math.round((cantidadPpto * ratio + Number.EPSILON) * 10) / 10;
@@ -997,6 +1095,7 @@
         var rowData = instance.getSourceDataAtRow(row) || {};
         var cantidadPpto = toNumber(rowData.cantidad_ppto, null);
         var physicalVal = toNumber(value, null);
+        var ratio = getEjecutadoRatio(rowData);
         
         if (physicalVal === null) { td.textContent = ''; td.classList.add('htCenter'); return; }
         
@@ -1005,12 +1104,12 @@
         // Formateo natural de display
         var physicalDisplay = formatDecimalComma(physicalVal, 1);
         
-        if (unidad === '%' || unidad === '' || cantidadPpto === null || cantidadPpto <= 0) {
+        if (isPercentLikeUnit(unidad) || cantidadPpto === null || cantidadPpto <= 0) {
             // Si es %, el valor físico YA ES el porcentaje
             td.textContent = physicalDisplay + '%';
         } else {
             // Calcular porcentaje pasivo de lectura
-            var percent = (physicalVal / cantidadPpto * 100);
+            var percent = ratio === null ? (physicalVal / cantidadPpto * 100) : (ratio * 100);
             var percentDisplay = formatDecimalComma(percent, 1);
             td.innerHTML = "<span class='pg-cell-main'>" + formatValueWithUnit(physicalDisplay, unidad) + "</span> <span class='pg-cell-meta'>(" + percentDisplay + "%)</span>";
         }
@@ -1697,7 +1796,7 @@
           className: 'htCenter htMiddle',
         },
         {
-          data: 'Ejecutado',
+          data: 'EjecutadoDisplay',
           type: 'numeric',
           numericFormat: { pattern: '0.0' },
           renderer: 'pgEjecutadoRealRenderer',
@@ -1740,7 +1839,7 @@
         var canEdit = Boolean(editableProps[prop]) && !isHeader && isUserAllowedToEdit();
 
         // Bloquear cantidad_ppto si la unidad es %
-        if (canEdit && prop === 'cantidad_ppto' && String(rowData.unidad || '').trim() === '%') {
+        if (canEdit && prop === 'cantidad_ppto' && isPercentLikeUnit(rowData.unidad)) {
           canEdit = false;
         }
 
@@ -1791,27 +1890,41 @@
             hot.setDataAtRowProp(row, prop, normalized.value, 'internal-update');
           }
 
+          var currentRowData = getRowDataByVisualRow(row) || {};
+          var previousContext = null;
+          if (prop === 'unidad' || prop === 'cantidad_ppto') {
+            previousContext = buildDisplayContext(currentRowData, {
+              unidad: prop === 'unidad' ? oldValue : currentRowData.unidad,
+              cantidad_ppto: prop === 'cantidad_ppto' ? oldValue : currentRowData.cantidad_ppto,
+            });
+          }
+
           // Auto-clear cantidad_ppto al cambiar unidad a %
           if (prop === 'unidad') {
-            var physRow = hot.toPhysicalRow(row);
-            var rd = hot.getSourceDataAtRow(physRow) || {};
-            var isPercent = !normalized.value || normalized.value.trim() === '' || normalized.value.trim() === '%';
+            var rd = getRowDataByVisualRow(row) || {};
+            var isPercent = isPercentLikeUnit(normalized.value);
             var hasCantidad = rd.cantidad_ppto !== null && rd.cantidad_ppto !== '' && rd.cantidad_ppto !== undefined;
 
             if (isPercent && hasCantidad) {
               revertCell(row, prop, oldValue);
-              (function (vRow, newUnit, oldUnit, cantVal) {
+              (function (vRow, newUnit, oldUnit, previousUnitContext, cantVal) {
                 showUnitChangeConfirm(cantVal, function () {
-                  hot.setDataAtRowProp(vRow, 'unidad', newUnit, 'internal-update');
-                  hot.setDataAtRowProp(vRow, 'cantidad_ppto', null, 'internal-update');
-                  saveRow(vRow, 'unidad', oldUnit, 'unit-change-confirm');
+                  var currentUnitRowData = getRowDataByVisualRow(vRow) || {};
+                  var percentPayloadOverrides = buildPercentUnitPayloadOverrides(currentUnitRowData, newUnit);
+                  saveRow(vRow, 'unidad', oldUnit, 'unit-change-confirm', {
+                    previousContext: previousUnitContext,
+                    payloadOverrides: percentPayloadOverrides,
+                    reloadAfterSuccess: true,
+                  });
                 });
-              })(row, normalized.value, oldValue, rd.cantidad_ppto);
+              })(row, normalized.value, oldValue, previousContext, rd.cantidad_ppto);
               continue;
             }
           }
 
-          saveRow(row, prop, oldValue, source);
+          saveRow(row, prop, oldValue, source, {
+            previousContext: previousContext,
+          });
         }
       },
     });
