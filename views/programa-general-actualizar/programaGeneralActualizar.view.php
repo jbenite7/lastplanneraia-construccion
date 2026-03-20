@@ -405,8 +405,6 @@
 		          // Actualización de cronograma
 		          if (window.AIA && window.AIA.Notice) {
 		            window.AIA.Notice.badge('success', "¡Cronograma cargado con éxito en la Semana " + semana_json + "! Ahora puedes realizar el mapeo de actividades.");
-		          } else {
-		            alert("¡Cronograma cargado con éxito en la Semana " + semana_json + "! Ahora puedes realizar el mapeo de actividades.");
 		          }
 
 							if (typeof cambiarSemanaSesion === 'function') {
@@ -417,7 +415,7 @@
 		        }
 		      } else {
 		        if (json_info.respuesta == "ERROR") {
-		          if (window.AIA && window.AIA.Notice) window.AIA.Notice.error("Error: " + json_info.mensaje); else alert("Error: " + json_info.mensaje);
+		          if (window.AIA && window.AIA.Notice) window.AIA.Notice.error("Error: " + json_info.mensaje);
 		        } else {
 		          location.reload();
 		        }

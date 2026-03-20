@@ -305,14 +305,10 @@
     } else if (type === 'warning') {
       if (window.AIA && window.AIA.Notice && window.AIA.Notice.warning) {
         window.AIA.Notice.warning(message);
-      } else {
-        alert("Atención: " + message);
       }
     } else {
       if (window.AIA && window.AIA.Notice && window.AIA.Notice.error) {
         window.AIA.Notice.error(message || 'Error al guardar');
-      } else {
-        alert("Error: " + (message || 'Error al guardar'));
       }
     }
   }
@@ -1791,18 +1787,18 @@
                 var rowData = hot.getSourceDataAtRow(toReject[0]) || {};
                 var msg = 'Al asignar una cantidad 0 para esta actividad, debe analizar la Causa de No Programación (CNP). Al continuar, la actividad será desprogramada.';
                 
-                if (typeof Swal !== 'undefined') {
-                    Swal.fire({
+                if (typeof AIA !== 'undefined' && AIA.Notice) {
+                    AIA.Notice.dialog({
                         title: 'Compromiso Cero (CNP Obligatoria)',
                         text: msg,
                         icon: 'warning',
                         confirmButtonText: 'Justificar CNP',
+                        showCancelButton: false,
                         allowOutsideClick: false
                     }).then(function() {
                         deleteActivity(rowData);
                     });
                 } else {
-                    alert(msg);
                     deleteActivity(rowData);
                 }
             }, 100);
@@ -2334,30 +2330,37 @@
   function duplicateActivity(row) {
     var db = getDb();
     var semana = getSemana();
-    if (!window.confirm('¿Desea duplicar esta actividad?')) {
-      return;
-    }
 
-    $.ajax({
-      method: 'POST',
-      url: '/api/semanal/save?db=' + encodeURIComponent(db),
-      dataType: 'json',
-      data: {
-        opcion: 'duplicar',
-        Id: row.Consecutivo,
-        semana: semana,
-      },
-    }).done(function (raw) {
-      var response = parseResponse(raw);
-      if (response && response.respuesta === 'BIEN') {
-        showFeedback('success', 'Actividad duplicada');
-        loadData();
-      } else {
-        showFeedback('error', 'No se pudo duplicar la actividad');
-      }
-    }).fail(function () {
-      showFeedback('error', 'Error duplicando actividad');
-    });
+    var doAjax = function() {
+      $.ajax({
+        method: 'POST',
+        url: '/api/semanal/save?db=' + encodeURIComponent(db),
+        dataType: 'json',
+        data: {
+          opcion: 'duplicar',
+          Id: row.Consecutivo,
+          semana: semana,
+        },
+      }).done(function (raw) {
+        var response = parseResponse(raw);
+        if (response && response.respuesta === 'BIEN') {
+          showFeedback('success', 'Actividad duplicada');
+          loadData();
+        } else {
+          showFeedback('error', 'Error al duplicar la actividad');
+        }
+      }).fail(function () {
+        showFeedback('error', 'Error al duplicar la actividad');
+      });
+    };
+
+    if (typeof AIA !== 'undefined' && AIA.Notice) {
+      AIA.Notice.confirm('¿Desea duplicar esta actividad?', 'Duplicar Actividad').then(function(confirmed) {
+        if (confirmed) {
+          doAjax();
+        }
+      });
+    }
   }
 
   function deleteActivity(row) {

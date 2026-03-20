@@ -174,22 +174,16 @@ $(function () {
         var id = $(this).data('id');
         var name = $(this).data('name');
 
-        Swal.fire({
+        AIA.Notice.dialog({
             title: '¿Estás seguro?',
             text: "Se descargará un respaldo automático y luego se eliminará el proyecto '" + name + "' permanentemente. ¡Esta acción no se puede deshacer!",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
             confirmButtonText: 'Sí, respaldar y eliminar',
-            cancelButtonText: 'Cancelar',
-            reverseButtons: true
+            cancelButtonText: 'Cancelar'
         }).then((result) => {
             if (result.isConfirmed) {
-                // 1. Disparar la descarga del backup
                 window.location.href = '/admin/proyectos/respaldar?id=' + id;
-                
-                // 2. Esperar un breve momento para que el navegador procese la descarga antes de enviar el POST de eliminación
                 setTimeout(function() {
                     $('#deleteProjectId').val(id);
                     $('#deleteForm').submit();
@@ -250,7 +244,7 @@ $(function () {
         const action = urlParams.get('success');
         if (action === 'created' && window.AIA && window.AIA.Notice) window.AIA.Notice.success('Proyecto creado con éxito');
         if (action === 'updated' && window.AIA && window.AIA.Notice) window.AIA.Notice.success('Proyecto actualizado con éxito');
-        if (action === 'deleted') Swal.fire('Eliminado', 'El proyecto ha sido eliminado correctamente.', 'success');
+        if (action === 'deleted' && window.AIA && window.AIA.Notice) window.AIA.Notice.success('El proyecto ha sido eliminado correctamente.');
         
         window.history.replaceState({}, document.title, "/admin/proyectos");
     }

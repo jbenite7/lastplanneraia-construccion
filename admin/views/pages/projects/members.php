@@ -224,16 +224,13 @@ $(function() {
         var userId = $(this).data('id');
         var userName = $(this).data('name');
 
-        Swal.fire({
+        AIA.Notice.dialog({
             title: '¿Quitar miembro?',
             text: "El usuario '" + userName + "' ya no tendrá acceso a este proyecto.",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
             confirmButtonText: 'Sí, quitar acceso',
-            cancelButtonText: 'Cancelar',
-            reverseButtons: true
+            cancelButtonText: 'Cancelar'
         }).then((result) => {
             if (result.isConfirmed) {
                 $('#removeUserId').val(userId);

@@ -23,13 +23,12 @@ window.AIA = window.AIA || {};
                 border-radius: 12px !important;
                 font-family: 'Montserrat', sans-serif !important;
                 font-weight: 700 !important;
-                display: inline-flex !important;
+                display: inline-flex;
                 align-items: center !important;
                 border: 1px solid rgba(255,255,255,0.25) !important;
                 box-shadow: 0 8px 32px rgba(0,0,0,0.2) !important;
                 transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
                 transform: translateY(0);
-                opacity: 1;
             }
             #save-status.badge-success {
                 background: linear-gradient(135deg, rgba(26, 86, 51, 0.95), rgba(30, 100, 60, 0.85)) !important;
@@ -38,6 +37,7 @@ window.AIA = window.AIA || {};
                 background: linear-gradient(135deg, rgba(229, 57, 53, 0.95), rgba(183, 28, 28, 0.85)) !important;
             }
             .badge-badge-hidden {
+                display: none !important;
                 opacity: 0 !important;
                 transform: translateY(-10px) !important;
                 pointer-events: none !important;
@@ -83,6 +83,20 @@ window.AIA = window.AIA || {};
                 box-shadow: 0 6px 20px rgba(26, 86, 51, 0.4) !important;
                 background: #237a46 !important;
             }
+            .aia-glass-cancel-btn {
+                background: rgba(255, 255, 255, 0.05) !important;
+                color: #ffffff !important;
+                border-radius: 12px !important;
+                padding: 14px 36px !important;
+                font-weight: 600 !important;
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                margin-left: 10px !important;
+                transition: all 0.2s ease !important;
+            }
+            .aia-glass-cancel-btn:hover {
+                background: rgba(255, 255, 255, 0.12) !important;
+                border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            }
             .aia-toast-construction {
                 box-shadow: 0 8px 32px rgba(181, 82, 17, 0.35) !important;
                 border: 1px solid rgba(181, 82, 17, 0.5) !important;
@@ -111,7 +125,7 @@ window.AIA = window.AIA || {};
         if (typeof Swal !== 'undefined') {
             Swal.fire({
                 title: 'Notificación del Sistema',
-                text: message,
+                html: message ? message.replace(/\\n|\n/g, '<br>') : '',
                 icon: 'info',
                 customClass: {
                     popup: 'aia-glass-popup',
@@ -149,6 +163,58 @@ window.AIA = window.AIA || {};
             return Toast.fire(options);
         },
 
+        confirm: function(messageOrOptions, title) {
+            let options = {};
+            if (typeof messageOrOptions === 'string') {
+                options = { 
+                    html: messageOrOptions.replace(/\\n|\n/g, '<br>'),
+                    title: title || '¿Está seguro?'
+                };
+            } else {
+                options = messageOrOptions;
+                if (options.html) options.html = options.html.replace(/\\n|\n/g, '<br>');
+            }
+
+            const defaults = {
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar',
+                customClass: {
+                    popup: 'aia-glass-popup',
+                    title: 'swal2-title',
+                    htmlContainer: 'swal2-html-container',
+                    confirmButton: 'aia-glass-confirm-btn',
+                    cancelButton: 'aia-glass-cancel-btn'
+                },
+                buttonsStyling: false,
+                backdrop: true,
+                allowOutsideClick: false
+            };
+
+            return Swal.fire({ ...defaults, ...options }).then(result => result.isConfirmed);
+        },
+
+        dialog: function(options = {}) {
+            const defaults = {
+                customClass: {
+                    popup: 'aia-glass-popup',
+                    title: 'swal2-title',
+                    htmlContainer: 'swal2-html-container',
+                    confirmButton: 'aia-glass-confirm-btn',
+                    cancelButton: 'aia-glass-cancel-btn'
+                },
+                buttonsStyling: false,
+                backdrop: true
+            };
+
+            if (options.html) {
+                options.html = options.html.replace(/\\n|\n/g, '<br>');
+            }
+
+            return Swal.fire({ ...defaults, ...options });
+        },
+
         success: function(msg) {
             if ($('#save-status').length) {
                 this.badge('success', msg);
@@ -169,7 +235,7 @@ window.AIA = window.AIA || {};
             return Swal.fire({
                 icon: 'error',
                 title: 'Error detectado',
-                text: msg,
+                html: msg ? msg.replace(/\\n|\n/g, '<br>') : '',
                 customClass: {
                     popup: 'aia-glass-popup',
                     title: 'swal2-title',
@@ -208,7 +274,7 @@ window.AIA = window.AIA || {};
             return Swal.fire({
                 icon: 'warning',
                 title: title,
-                text: msg,
+                html: msg ? msg.replace(/\\n|\n/g, '<br>') : '',
                 customClass: {
                     popup: 'aia-glass-popup',
                     title: 'swal2-title',

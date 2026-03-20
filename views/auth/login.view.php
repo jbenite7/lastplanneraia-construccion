@@ -90,7 +90,7 @@
         <?php if (!empty($timeoutNotice)): ?>
             document.addEventListener('DOMContentLoaded', function() {
                 if (window.AIA && AIA.Notice) {
-                    AIA.Notice.warning('Sesión Finalizada', 'Su sesión ha expirado por inactividad. Por favor ingrese de nuevo.');
+                    AIA.Notice.warning('Su sesión ha expirado por inactividad. Por favor ingrese de nuevo.', 'Sesión Finalizada');
                 }
                 
                 // Limpiar URL para evitar re-disparos al recargar

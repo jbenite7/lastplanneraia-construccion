@@ -132,17 +132,7 @@ $(function () {
     const id = $(this).data('id');
     const name = $(this).data('name');
     
-    Swal.fire({
-      title: '¿Estás seguro?',
-      text: "Vas a eliminar al usuario " + name,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Sí, eliminar',
-      cancelButtonText: 'Cancelar'
-    }).then((result) => {
-      if (result.isConfirmed) {
+    var doAjax = function() {
         $.ajax({
           url: '/admin/usuarios/eliminar',
           method: 'POST',
@@ -152,20 +142,30 @@ $(function () {
           },
           success: function(response) {
             if (response.success) {
-              Swal.fire(
-                '¡Eliminado!',
-                response.message,
-                'success'
-              ).then(() => {
-                location.reload();
-              });
+              AIA.Notice.dialog({
+                  title: '¡Eliminado!',
+                  text: response.message,
+                  icon: 'success',
+                  showCancelButton: false,
+                  confirmButtonText: 'Entendido'
+              }).then(() => { location.reload(); });
             } else {
-              Swal.fire('Error', response.message, 'error');
+              AIA.Notice.error(response.message, 'Error');
             }
           }
         });
-      }
-    });
+    };
+
+        AIA.Notice.dialog({
+          title: '¿Estás seguro?',
+          text: "Vas a eliminar al usuario " + name,
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Sí, eliminar',
+          cancelButtonText: 'Cancelar'
+        }).then((result) => {
+          if (result.isConfirmed) doAjax();
+        });
   });
 });
 </script>

@@ -1157,9 +1157,6 @@
     } else {
       if (window.AIA && window.AIA.Notice && window.AIA.Notice.error) {
         window.AIA.Notice.error(message || 'Error al guardar');
-      } else {
-        // Fallback a alert si falla cargar AIA.Notice
-        alert(message || 'Error al guardar');
       }
     }
   }

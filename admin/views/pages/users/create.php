@@ -339,11 +339,7 @@ $(document).ready(function () {
 
     const assignmentValidation = validateAssignmentsClient();
     if (!assignmentValidation.ok) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Asignaciones incompletas',
-        text: assignmentValidation.message
-      });
+      AIA.Notice.warning(assignmentValidation.message, 'Asignaciones incompletas');
       return;
     }
 
@@ -371,13 +367,13 @@ $(document).ready(function () {
             'Contrasena: ' + password + '\n' +
             'Puedes ingresar aqui: https://lastplanneraia.com';
 
-          Swal.fire({
+          AIA.Notice.dialog({
             icon: 'success',
             title: 'Usuario creado',
             html:
               '<div class="text-left mt-3">' +
                 '<p>Comparte estos datos de forma segura:</p>' +
-                '<div class="p-3 bg-light border rounded mb-3">' +
+                '<div class="p-3 bg-light border rounded mb-3" style="background: rgba(255,255,255,0.05) !important; color: inherit;">' +
                   '<strong>Usuario:</strong> <code>' + usuario + '</code><br>' +
                   '<strong>Contrasena:</strong> <code>' + password + '</code>' +
                 '</div>' +
@@ -400,20 +396,12 @@ $(document).ready(function () {
             window.location.href = '/admin/usuarios';
           });
         } else {
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: response.message || 'No se pudo crear el usuario.'
-          });
+          AIA.Notice.error(response.message || 'No se pudo crear el usuario.', 'Error');
           $btn.prop('disabled', false).text('Guardar Usuario');
         }
       },
       error: function () {
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'Error de comunicacion con el servidor.'
-        });
+        AIA.Notice.error('Error de comunicacion con el servidor.', 'Error');
         $btn.prop('disabled', false).text('Guardar Usuario');
       }
     });

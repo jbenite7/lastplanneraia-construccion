@@ -1496,13 +1496,13 @@ var actualizarEjecucion = function() {
     }).done(function(info){
         if(info && info.respuesta == "BIEN"){
             recargarTabla("listar");
-            if (window.AIA && window.AIA.Notice) window.AIA.Notice.badge('success', 'Ejecución Actualizada Correctamente'); else alert("Ejecución Actualizada Correctamente");
+            if (window.AIA && window.AIA.Notice) window.AIA.Notice.badge('success', 'Ejecución Actualizada Correctamente');
         } else {
-            if (window.AIA && window.AIA.Notice) window.AIA.Notice.error("Error al actualizar la ejecución"); else alert("Error al actualizar la ejecución");
+            if (window.AIA && window.AIA.Notice) window.AIA.Notice.error("Error al actualizar la ejecución");
         }
     }).fail(function(xhr){
         console.error("Error en update_batch:", xhr && xhr.responseText ? xhr.responseText : xhr);
-        if (window.AIA && window.AIA.Notice) window.AIA.Notice.error("Error al actualizar la ejecución"); else alert("Error al actualizar la ejecución");
+        if (window.AIA && window.AIA.Notice) window.AIA.Notice.error("Error al actualizar la ejecución");
     }).always(function(){
         $("#actualizarEjecucion").attr('disabled', false);
         $("#actualizarEjecucion").html('Actualizar Ejecución <i class="fas fa-sync fa-lg ml-2"></i>');
@@ -1530,12 +1530,12 @@ var descargarCorteProgramacion = function() {
                 link.click();
                 document.body.removeChild(link);
             } else {
-                if (window.AIA && window.AIA.Notice) window.AIA.Notice.error("Error: No se pudo obtener el archivo."); else alert("Error: No se pudo obtener el archivo.");
+                if (window.AIA && window.AIA.Notice) window.AIA.Notice.error("Error: No se pudo obtener el archivo.");
             }
         },
         error: function(xhr, status, error) {
             console.error("Error descargando corte:", error);
-            if (window.AIA && window.AIA.Notice) window.AIA.Notice.error("Error al generar el corte de programación."); else alert("Error al generar el corte de programación.");
+            if (window.AIA && window.AIA.Notice) window.AIA.Notice.error("Error al generar el corte de programación.");
         },
         complete: function() {
             $("#descargarCorteProgramacion").attr('disabled', false);

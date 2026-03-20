@@ -190,11 +190,7 @@ $(function () {
 
   $(document).on('click', '.remove-assignment-row', function () {
     if ($assignmentsContainer.find('.assignment-row').length <= 1) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Asignacion requerida',
-        text: 'El usuario debe tener al menos un proyecto asignado.'
-      });
+        AIA.Notice.warning('El usuario debe tener al menos un proyecto asignado.', 'Asignación requerida');
       return;
     }
 
@@ -206,11 +202,7 @@ $(function () {
 
     const assignmentValidation = validateAssignmentsClient();
     if (!assignmentValidation.ok) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Asignaciones incompletas',
-        text: assignmentValidation.message
-      });
+      AIA.Notice.warning(assignmentValidation.message, 'Asignaciones incompletas');
       return;
     }
 
@@ -226,28 +218,22 @@ $(function () {
       dataType: 'json',
       success: function(response) {
         if (response.success) {
-          Swal.fire({
-            icon: 'success',
+          AIA.Notice.dialog({
             title: 'Actualizado',
-            text: response.message
+            text: response.message,
+            icon: 'success',
+            showCancelButton: false,
+            confirmButtonText: 'Continuar'
           }).then(function () {
             window.location.href = '/admin/usuarios';
           });
         } else {
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: response.message || 'No se pudo actualizar el usuario.'
-          });
+          AIA.Notice.error(response.message || 'No se pudo actualizar el usuario.', 'Error');
           $btn.prop('disabled', false).text('Actualizar Usuario');
         }
       },
       error: function() {
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'Error de comunicacion con el servidor'
-        });
+        AIA.Notice.error('Error de comunicacion con el servidor', 'Error');
         $btn.prop('disabled', false).text('Actualizar Usuario');
       }
     });
