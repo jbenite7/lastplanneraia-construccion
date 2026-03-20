@@ -17,6 +17,7 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ### Cambiado
 
+- **Estandarización Final de AIA.Notice:** La capa `AIA.Notice` ahora cubre confirmaciones, diálogos y mensajes multilínea en Admin y módulos LPS, reemplazando `Swal.fire`, `window.confirm` y fallbacks `alert()` residuales con una API consistente.
 - **Fase 2 de Unificacion de Notificaciones:** Se completo la migracion de `alert()` a `AIA.Notice` en `funcionesGenerales6.js`, `ContextManager.js` y `cargarDatosGeneralesPagina2.js`, unificando bloqueos de negocio y errores AJAX en helpers compartidos.
 - **Validacion Universal de Sesion:** El front controller verifica timeout en rutas protegidas antes de despachar la aplicacion.
 - **Unificacion de Notificaciones:** `programaGeneralActualizar.view.php` continua la migracion desde `alert()` hacia `AIA.Notice` con fallback seguro.
@@ -27,6 +28,7 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ### Corregido
 
+- **Programa General - Cambio de Unidad a Porcentaje:** Al convertir actividades con unidad fisica a `%` (o vacio), el sistema ahora preserva el ratio canonico de `Ejecutado`, limpia `cantidad_ppto` y reconstruye `Ejecutado Real` como porcentaje persistente tras guardar y recargar.
 - **Fix Tecla ESC en Grilla:** Resolución del `TypeError` y pérdida accidental de valores al presionar ESC en los editores TomSelect. Se sustituyó el método inexistente por `cancelEditing()`, restaurando el estado previo de la celda de forma segura.
 - **Sincronización de Assets:** Actualización de headers y links de fuentes en las vistas de actualización para garantizar la carga de tipografías premium y el bypass de caché mediante versionamiento de scripts (`v=tomselect30`).
 - **Alineación Vertical y Filas:** Eliminación de la columna de numeración redundante en Handsontable y ajuste de `line-height` en `handsontable-module.css` para resolver el desalineamiento visual de las celdas.
