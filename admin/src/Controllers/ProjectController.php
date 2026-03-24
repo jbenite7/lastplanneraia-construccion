@@ -6,6 +6,7 @@ use Admin\Core\RoleManager;
 use Admin\Core\Security;
 use Admin\Models\Project;
 use Admin\Models\ProjectMember;
+use App\Services\ProjectProfessionalsSyncService;
 use Database;
 
 class ProjectController extends AdminController
@@ -150,6 +151,11 @@ class ProjectController extends AdminController
             $user = (new \Admin\Models\User(\Database::getInstance()))->find($userId);
 
             if ($this->memberModel->remove($projectId, $userId)) {
+                if ($project && !empty($project['Base_de_Datos']) && $user && !empty($user['email'])) {
+                    (new ProjectProfessionalsSyncService(\Database::getInstance()))
+                        ->blockProfessionalByEmail((string)$project['Base_de_Datos'], (string)$user['email']);
+                }
+
                 // Auditoría
                 $userName = $user ? $user['usuario'] : "ID:$userId";
                 \Database::getInstance()->logActivity('Miembros', 'ELIMINAR', "Se retiró a '$userName' del proyecto '{$project['Proyecto_Proceso']}'", $project['Base_de_Datos']);

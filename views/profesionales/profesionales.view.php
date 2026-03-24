@@ -422,6 +422,103 @@
             });
         }
 
+        const professionalCargos = [
+            'Administrador',
+            'Residente de Obra',
+            'Residente SST',
+            'Residente Ambiental',
+            'Residente Oficina Técnica',
+            'Profesional Diseño y Construcción Virtual',
+            'Maestro de Obra',
+            'Almacenista',
+            'Director de Obra',
+            'Residente SST + Ambiental',
+            'Coordinador de Obras',
+            'Gerente de Proyecto'
+        ];
+
+        function normalizeTextValue(value) {
+            return (value || '').toString().trim().replace(/\s+/g, ' ');
+        }
+
+        function normalizeEmailValue(value) {
+            return (value || '').toString().trim().toLowerCase();
+        }
+
+        function buildProfessionalPayload(rowData) {
+            return {
+                nombre: normalizeTextValue(rowData && rowData.nombre),
+                email: normalizeEmailValue(rowData && rowData.email),
+                cargo: normalizeTextValue(rowData && rowData.cargo),
+                activo: rowData && (rowData.activo === true || rowData.activo === 1 || rowData.activo === '1') ? 1 : 0
+            };
+        }
+
+        function isProfessionalDraftEmpty(payload) {
+            return !payload.nombre && !payload.email && !payload.cargo;
+        }
+
+        function isProfessionalDraftComplete(payload) {
+            return !!(payload.nombre && payload.email && payload.cargo);
+        }
+
+        function buildCargoOptionsHtml(selectedValue, includePlaceholder = true, placeholderLabel = 'Seleccionar...') {
+            let options = includePlaceholder ? `<option value="">${placeholderLabel}</option>` : '';
+            professionalCargos.forEach((cargo) => {
+                const selected = selectedValue === cargo ? 'selected' : '';
+                options += `<option value="${cargo}" ${selected}>${cargo}</option>`;
+            });
+            return options;
+        }
+
+        function collectProfessionalValidationErrors(payload, options) {
+            const validationOptions = options || {};
+            const currentId = validationOptions.currentId || null;
+            const excludeRowData = validationOptions.excludeRowData || null;
+            const errors = [];
+            if (!payload.nombre) errors.push('El nombre es obligatorio.');
+            if (!payload.email) {
+                errors.push('El correo es obligatorio.');
+            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)) {
+                errors.push('El correo no tiene un formato valido.');
+            }
+            if (!payload.cargo) {
+                errors.push('El cargo es obligatorio.');
+            } else if (professionalCargos.indexOf(payload.cargo) === -1) {
+                errors.push('El cargo seleccionado no es valido.');
+            }
+
+            const rows = hot ? hot.getSourceData() : [];
+            rows.forEach((row) => {
+                if (!row) return;
+                if (excludeRowData && row === excludeRowData) return;
+                const rowId = row.id || null;
+                if (currentId && String(rowId) === String(currentId)) return;
+                const candidate = buildProfessionalPayload(row);
+                if (!rowId && isProfessionalDraftEmpty(candidate)) return;
+                if (payload.email && candidate.email && payload.email === candidate.email) {
+                    errors.push('Ya existe un profesional con ese correo.');
+                }
+            });
+
+            return [...new Set(errors)];
+        }
+
+        function showValidationMessage(errors, type) {
+            if (!errors || !errors.length || !(window.AIA && window.AIA.Notice)) return;
+            const method = type || 'warning';
+            const message = errors.join('\n');
+            if (window.AIA.Notice[method]) {
+                window.AIA.Notice[method](message);
+            }
+        }
+
+        function revertHandsontableChanges(instance, visualRow, changes) {
+            changes.forEach((change) => {
+                instance.setDataAtRowProp(visualRow, change.prop, change.oldValue, 'revert');
+            });
+        }
+
         function updateOrInitHandsontable(data) {
             if (hot) {
                 hot.loadData(data);
@@ -436,17 +533,12 @@
                     { data: 'id', readOnly: true, className: 'htCenter htMiddle' },
                     { data: 'nombre', type: 'text', className: 'htCenter htMiddle' },
                     { data: 'email', type: 'text', className: 'htCenter htMiddle' },
-                    { 
-                        data: 'cargo', 
-                        type: 'dropdown',
-                        className: 'htCenter htMiddle',
-                        source: [
-                            'Residente de Obra', 'Residente SST', 'Residente Ambiental', 
-                            'Residente Oficina Técnica', 'Profesional Diseño y Construcción Virtual',
-                            'Maestro de Obra', 'Almacenista', 'Director de Obra', 
-                            'Coordinador de Obras', 'Gerente de Proyecto'
-                        ]
-                    },
+                     { 
+                         data: 'cargo', 
+                         type: 'dropdown',
+                         className: 'htCenter htMiddle',
+                         source: professionalCargos
+                     },
                     { data: 'activo', type: 'checkbox', className: 'htCenter htMiddle' },
                     { 
                        data: 'accion', 
@@ -478,17 +570,38 @@
                 
                 cells: function(row, col) {
                     const cellProperties = {};
+                    const physicalRow = hot ? hot.toPhysicalRow(row) : row;
+                    const rowData = hot ? hot.getSourceDataAtRow(physicalRow) : null;
+
+                    if (rowData) {
+                        if ([1, 2, 3].includes(col) && !rowData.can_edit_identity) {
+                            cellProperties.readOnly = true;
+                        }
+
+                        if (col === 4 && !rowData.can_edit_active) {
+                            cellProperties.readOnly = true;
+                        }
+                    }
+
+                    if (col === 3 && rowData && rowData.is_admin_managed && !rowData.cargo) {
+                        cellProperties.renderer = function(instance, td) {
+                            td.textContent = 'Sin cargo';
+                            td.className = 'htCenter htMiddle text-muted';
+                        };
+                    }
+
                     if (col === 5) { // Acciones column
-                         cellProperties.renderer = function(instance, td, row, col, prop, value, cellProperties) {
-                             Handsontable.renderers.HtmlRenderer.apply(this, arguments);
-                             const physicalRow = instance.toPhysicalRow(row);
-                             const rowData = instance.getSourceDataAtRow(physicalRow);
-                             
-                             if (rowData && rowData.has_dependencies) {
-                                 td.innerHTML = '<button class="btn btn-secondary btn-xs" disabled title="No se puede eliminar: Tiene registros asociados"><i class="fas fa-lock"></i></button>';
-                             } else {
-                                 td.innerHTML = '<button class="btn btn-danger btn-xs btn-delete"><i class="fas fa-trash"></i></button>';
-                             }
+                          cellProperties.renderer = function(instance, td, row, col, prop, value, cellProperties) {
+                              Handsontable.renderers.HtmlRenderer.apply(this, arguments);
+                              const physicalRow = instance.toPhysicalRow(row);
+                              const rowData = instance.getSourceDataAtRow(physicalRow);
+                              
+                              if (rowData && rowData.id && !rowData.can_delete) {
+                                  const reason = rowData.delete_reason || 'Registro bloqueado';
+                                  td.innerHTML = `<button class="btn btn-secondary btn-xs" disabled title="${reason}"><i class="fas fa-lock"></i></button>`;
+                              } else {
+                                  td.innerHTML = '<button class="btn btn-danger btn-xs btn-delete"><i class="fas fa-trash"></i></button>';
+                              }
                              td.style.textAlign = 'center';
                          }
                     }
@@ -496,29 +609,79 @@
                 },
                 
                 afterChange: function(changes, source) {
-                    if (source === 'loadData' || !changes) return;
-                    
+                    if (source === 'loadData' || source === 'revert' || !changes) return;
+
                     const instance = this;
+                    const groupedChanges = new Map();
+
                     changes.forEach(([row, prop, oldValue, newValue]) => {
-                        if (oldValue === newValue) return;
-                        
+                        if (oldValue === newValue || prop === 'accion') return;
                         const physicalRow = instance.toPhysicalRow(row);
+                        if (!groupedChanges.has(physicalRow)) {
+                            groupedChanges.set(physicalRow, { visualRow: row, changes: [] });
+                        }
+                        groupedChanges.get(physicalRow).changes.push({ prop, oldValue, newValue });
+                    });
+
+                    groupedChanges.forEach(({ visualRow, changes: rowChanges }, physicalRow) => {
                         const rowData = instance.getSourceDataAtRow(physicalRow);
-                        const id = rowData.id;
-                        
-                        // Validar campos vacíos en registros existentes
-                        if (id && prop !== 'accion' && prop !== 'activo') {
-                            const trimmedValue = (newValue || '').toString().trim();
-                            if (trimmedValue === '') {
-                                if (window.AIA && window.AIA.Notice) window.AIA.Notice.warning('No se puede dejar el campo vacío. Por favor ingrese un valor.');
-                                // Revertir al valor anterior
-                                instance.setDataAtRowProp(row, prop, oldValue, 'revert');
+                        if (!rowData) return;
+
+                        const rejectedChanges = [];
+                        const acceptedChanges = [];
+                        rowChanges.forEach((change) => {
+                            if (['nombre', 'email', 'cargo'].includes(change.prop)) {
+                                if (!rowData.can_edit_identity) {
+                                    rejectedChanges.push(change);
+                                    return;
+                                }
+                            }
+
+                            if (change.prop === 'activo' && !rowData.can_edit_active) {
+                                rejectedChanges.push(change);
                                 return;
                             }
+
+                            acceptedChanges.push(change);
+                        });
+
+                        if (rejectedChanges.length) {
+                            revertHandsontableChanges(instance, visualRow, rejectedChanges);
+                            const identityRejected = rejectedChanges.some((change) => ['nombre', 'email', 'cargo'].includes(change.prop));
+                            const reason = identityRejected
+                                ? (rowData.identity_edit_reason || rowData.block_reason || 'Este profesional no permite cambios de identidad desde este modulo.')
+                                : (rowData.active_edit_reason || rowData.block_reason || 'Este profesional no permite cambiar Activo en este modulo.');
+                            showValidationMessage([reason], 'warning');
                         }
-                        
-                        // Pasar rowData para permitir creación de nuevos registros
-                        saveData(rowData, prop, newValue);
+
+                        if (!acceptedChanges.length) {
+                            return;
+                        }
+
+                        const payload = buildProfessionalPayload(rowData);
+                        const id = rowData.id || null;
+
+                        if (!id) {
+                            if (isProfessionalDraftEmpty(payload)) return;
+                            const draftErrors = collectProfessionalValidationErrors(payload, { excludeRowData: rowData });
+                            if (draftErrors.length) {
+                                if (isProfessionalDraftComplete(payload)) {
+                                    showValidationMessage(draftErrors, 'warning');
+                                }
+                                return;
+                            }
+                            createRow(rowData, { excludeRowData: rowData });
+                            return;
+                        }
+
+                        const errors = collectProfessionalValidationErrors(payload, { currentId: id });
+                        if (errors.length) {
+                            revertHandsontableChanges(instance, visualRow, rowChanges);
+                            showValidationMessage(errors, 'warning');
+                            return;
+                        }
+
+                        saveRowChanges(id, rowData, acceptedChanges);
                     });
                 }
             });
@@ -549,17 +712,12 @@
             });
         }
 
-        function saveData(rowData, prop, newValue) {
+        function saveRowChanges(id, rowData, changes) {
             const db = document.getElementById('baseDatos').value;
             $('#save-status').hide();
             $('#save-error').hide();
 
-            if (!rowData.id && prop !== 'accion') {
-                if (rowData.nombre) {
-                    createRow(rowData);
-                }
-                return;
-            }
+            const payload = buildProfessionalPayload(rowData);
 
             $.ajax({
                 url: '/api/profesionales/save?db=' + db,
@@ -567,37 +725,79 @@
                 dataType: 'json',
                 data: {
                     opcion: 'guardar_cambios',
-                    cambios: [
-                        { id: rowData.id, prop: prop, value: newValue }
-                    ]
+                    cambios: changes.map(function(change) {
+                        return { id: id, prop: change.prop, value: payload[change.prop] !== undefined ? payload[change.prop] : rowData[change.prop] };
+                    })
                 },
                 success: function(res) {
                     if (res.status === 'success') {
                         showFeedback('success');
                     } else if (res.status === 'warning') {
-                         console.warn(res.message, res.errors);
-                         showFeedback('error'); 
+                         showValidationMessage(res.errors || [res.message || 'No se pudo guardar el registro.'], 'warning');
+                         showFeedback('error');
+                         loadData();
                     } else {
-                        console.error(res.message);
+                        showValidationMessage(res.errors || [res.message || 'No se pudo guardar el registro.'], 'error');
                         showFeedback('error');
+                        loadData();
                     }
                 },
                 error: function() {
+                    if (window.AIA && window.AIA.Notice) window.AIA.Notice.error('Error de red al guardar profesional.');
                     showFeedback('error');
+                    loadData();
                 }
             });
         }
 
-        function createRow(rowData) {
+        function saveData(rowData, prop, newValue) {
+            if (!rowData || !rowData.id) return;
+            const currentRow = hot ? hot.getSourceData().find((item) => item && String(item.id) === String(rowData.id)) : null;
+            const mergedRow = Object.assign({}, currentRow || {}, rowData || {});
+            mergedRow[prop] = newValue;
+
+            if (['nombre', 'email', 'cargo'].includes(prop) && !mergedRow.can_edit_identity) {
+                showValidationMessage([mergedRow.identity_edit_reason || mergedRow.block_reason || 'Este profesional no permite cambios de identidad desde este modulo.'], 'warning');
+                loadData();
+                return;
+            }
+
+            if (prop === 'activo' && !mergedRow.can_edit_active) {
+                showValidationMessage([mergedRow.active_edit_reason || mergedRow.block_reason || 'Este profesional no permite cambiar Activo en este modulo.'], 'warning');
+                loadData();
+                return;
+            }
+
+            const errors = collectProfessionalValidationErrors(buildProfessionalPayload(mergedRow), { currentId: rowData.id });
+            if (errors.length) {
+                showValidationMessage(errors, 'warning');
+                loadData();
+                return;
+            }
+            saveRowChanges(rowData.id, mergedRow, [{ prop: prop, oldValue: null, newValue: newValue }]);
+        }
+
+        function createRow(rowData, options) {
+             const payload = buildProfessionalPayload(rowData);
+             const errors = collectProfessionalValidationErrors(payload, options || {});
+             if (errors.length) {
+                 showValidationMessage(errors, 'warning');
+                 return;
+             }
+
+             if (rowData.__creating) return;
+
              const db = document.getElementById('baseDatos').value;
+             rowData.__creating = true;
              $.ajax({
                 url: '/api/profesionales/save?db=' + db,
                 type: 'POST',
+                dataType: 'json',
                 data: {
                     opcion: 'crear',
-                    nombre: rowData.nombre,
-                    email: rowData.email,
-                    cargo: rowData.cargo
+                    nombre: payload.nombre,
+                    email: payload.email,
+                    cargo: payload.cargo
                 },
                 success: function(res) {
                     if (res.status === 'success') {
@@ -605,10 +805,15 @@
                         showFeedback('success');
                         loadData(); 
                     } else {
-                        if (window.AIA && window.AIA.Notice) window.AIA.Notice.error("Error creando: " + res.message);
+                        rowData.__creating = false;
+                        showValidationMessage(res.errors || [res.message || 'No se pudo crear el profesional.'], 'warning');
                     }
+                },
+                error: function() {
+                    rowData.__creating = false;
+                    if (window.AIA && window.AIA.Notice) window.AIA.Notice.error('Error de red al crear profesional.');
                 }
-            });
+             });
         }
 
         function deleteRow(id) {
@@ -662,17 +867,7 @@
                     </div>
                      <div class="form-group">
                         <select class="form-control" id="new-mobile-cargo">
-                            <option value="">Seleccionar Cargo</option>
-                            <option>Residente de Obra</option>
-                            <option>Residente SST</option>
-                            <option>Residente Ambiental</option>
-                            <option>Residente Oficina Técnica</option>
-                            <option>Profesional Diseño y Construcción Virtual</option>
-                            <option>Maestro de Obra</option>
-                            <option>Almacenista</option>
-                            <option>Director de Obra</option>
-                            <option>Coordinador de Obras</option>
-                            <option>Gerente de Proyecto</option>
+                            ${buildCargoOptionsHtml('', true)}
                         </select>
                     </div>
                     <button class="btn btn-primary btn-block shadow-sm" onclick="createMobileRow()">
@@ -684,18 +879,16 @@
             data.forEach(row => {
                if(!row.id) return; // Skip empty rows
                const isChecked = row.activo ? 'checked' : '';
-               const cargos = [
-                    'Residente de Obra', 'Residente SST', 'Residente Ambiental', 
-                    'Residente Oficina Técnica', 'Profesional Diseño y Construcción Virtual',
-                    'Maestro de Obra', 'Almacenista', 'Director de Obra', 
-                    'Coordinador de Obras', 'Gerente de Proyecto'
-               ];
-               
-               let cargoOptions = '<option value="">Seleccionar...</option>';
-               cargos.forEach(c => {
-                   const selected = row.cargo === c ? 'selected' : '';
-                   cargoOptions += `<option value="${c}" ${selected}>${c}</option>`;
-               });
+                const cargoOptions = buildCargoOptionsHtml(row.cargo || '', true, (!row.cargo && row.is_admin_managed) ? 'Sin cargo' : 'Seleccionar...');
+                const disableIdentityEdition = !row.can_edit_identity ? 'disabled' : '';
+                const disableActiveEdition = !row.can_edit_active ? 'disabled' : '';
+                const deleteActionHtml = !row.can_delete
+                    ? `<button class="btn btn-outline-secondary btn-sm" disabled title="${row.delete_reason || 'Registro bloqueado'}"><i class="fas fa-lock"></i> Bloqueado</button>`
+                    : `<button class="btn btn-outline-danger btn-sm" onclick="deleteMobileRow(${row.id}, '${row.nombre}')"><i class="fas fa-trash"></i> Eliminar</button>`;
+                const guidance = row.identity_edit_reason || row.active_edit_reason || row.block_reason;
+                const blockReasonHtml = guidance
+                    ? `<div class="text-muted" style="font-size:12px; margin-top:10px;">${guidance}</div>`
+                    : '';
 
                 html += `
                 <div class="mobile-card">
@@ -703,17 +896,20 @@
                         <span class="mobile-label">Nombre</span>
                         <input type="text" class="form-control" style="flex:1; margin-left:20px; text-align:right;" 
                                value="${row.nombre || ''}" 
+                               ${disableIdentityEdition}
                                onchange="updateMobileRow(${row.id}, 'nombre', this.value)">
                     </div>
                     <div class="mobile-card-row">
                         <span class="mobile-label">Correo</span>
                         <input type="email" class="form-control" style="flex:1; margin-left:20px; text-align:right;" 
                                value="${row.email || ''}" 
+                               ${disableIdentityEdition}
                                onchange="updateMobileRow(${row.id}, 'email', this.value)">
                     </div>
                     <div class="mobile-card-row">
                         <span class="mobile-label">Cargo</span>
                         <select class="form-control" style="flex:1; margin-left:20px; text-align-last:right;" 
+                                ${disableIdentityEdition}
                                 onchange="updateMobileRow(${row.id}, 'cargo', this.value)">
                             ${cargoOptions}
                         </select>
@@ -722,17 +918,16 @@
                         <span class="mobile-label">Activo</span>
                         <div class="custom-control custom-switch">
                             <input type="checkbox" class="custom-control-input" id="switch-${row.id}" ${isChecked}
+                                   ${disableActiveEdition}
                                    onchange="updateMobileRow(${row.id}, 'activo', this.checked)">
                             <label class="custom-control-label" for="switch-${row.id}"></label>
                         </div>
                     </div>
                     
                     <div class="mobile-actions">
-                         ${row.has_dependencies ? 
-                            `<button class="btn btn-outline-secondary btn-sm" disabled><i class="fas fa-lock"></i> En uso</button>` :
-                            `<button class="btn btn-outline-danger btn-sm" onclick="deleteMobileRow(${row.id}, '${row.nombre}')"><i class="fas fa-trash"></i> Eliminar</button>`
-                          }
+                         ${deleteActionHtml}
                     </div>
+                    ${blockReasonHtml}
                 </div>
                `; 
             });
@@ -750,12 +945,8 @@
             const nombre = document.getElementById('new-mobile-nombre').value;
             const email = document.getElementById('new-mobile-email').value;
             const cargo = document.getElementById('new-mobile-cargo').value;
-            
-            if(!nombre || !email) {
-                if (window.AIA && window.AIA.Notice) window.AIA.Notice.warning("Nombre y correo son obligatorios");
-                return;
-            }
-            createRow({ nombre: nombre, email: email, cargo: cargo });
+
+            createRow({ nombre: nombre, email: email, cargo: cargo, activo: 1 });
         }
 
         function deleteMobileRow(id, nombre) {

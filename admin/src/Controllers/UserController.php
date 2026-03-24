@@ -356,6 +356,11 @@ class UserController extends AdminController
         // Obtener datos antes de borrar para el log
         $user = $this->userModel->find($id);
 
+        $deleteRestriction = $this->userModel->getDeletionBlockReason((int)$id);
+        if ($deleteRestriction !== null) {
+            $this->json(['success' => false, 'message' => $deleteRestriction]);
+        }
+
         if ($this->userModel->delete($id)) {
             // Auditoría
             $userName = $user ? $user['usuario'] : 'Desconocido';

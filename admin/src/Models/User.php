@@ -360,6 +360,10 @@ class User
      */
     public function delete($id)
     {
+        if ($this->getDeletionBlockReason((int)$id) !== null) {
+            return false;
+        }
+
         $this->db->beginTransaction();
         try {
             $this->db->query("DELETE FROM project_members WHERE user_id = ?", [$id]);
@@ -372,5 +376,82 @@ class User
 
             return false;
         }
+    }
+
+    public function getDeletionBlockReason(int $id): ?string
+    {
+        if ($id <= 0) {
+            return 'Usuario inválido.';
+        }
+
+        $user = $this->find($id);
+        if (!$user) {
+            return 'Usuario no encontrado.';
+        }
+
+        $activeAssignments = (int)$this->db->query(
+            "SELECT COUNT(*) FROM project_members WHERE user_id = ?",
+            [$id]
+        )->fetchColumn();
+
+        if ($activeAssignments > 0) {
+            return 'No se puede eliminar: el usuario sigue asignado a uno o más proyectos. Retíralo de los proyectos para bloquearlo en cada uno.';
+        }
+
+        $email = $this->normalizeEmail($user['email'] ?? '');
+        if ($email === '') {
+            return null;
+        }
+
+        $projectRefs = $this->findProjectProfessionalReferences($email);
+        if (!empty($projectRefs)) {
+            $sample = implode(', ', array_slice($projectRefs, 0, 3));
+            $suffix = count($projectRefs) > 3 ? ', ...' : '';
+            return "No se puede eliminar: el usuario tiene historial en Profesionales de proyecto(s): {$sample}{$suffix}. Debe mantenerse para conservar la trazabilidad.";
+        }
+
+        return null;
+    }
+
+    private function findProjectProfessionalReferences(string $email): array
+    {
+        $references = [];
+        $projects = $this->db->query(
+            "SELECT Proyecto_Proceso, Base_de_Datos
+             FROM general_proyectos_procesos
+             WHERE Area = 'Construccion'
+               AND Base_de_Datos IS NOT NULL
+               AND TRIM(Base_de_Datos) != ''"
+        )->fetchAll();
+
+        foreach ($projects as $project) {
+            $dbPrefix = trim((string)($project['Base_de_Datos'] ?? ''));
+            if ($dbPrefix === '' || !preg_match('/^[A-Za-z0-9_\-]+$/', $dbPrefix)) {
+                continue;
+            }
+
+            $tableName = "{$dbPrefix}_profesionales";
+            $tableExists = $this->db->query("SHOW TABLES LIKE ?", [$tableName])->fetch();
+            if (!$tableExists) {
+                continue;
+            }
+
+            $hasReference = (int)$this->db->query(
+                "SELECT COUNT(*) FROM {$tableName} WHERE LOWER(TRIM(email)) = ?",
+                [$email]
+            )->fetchColumn();
+
+            if ($hasReference > 0) {
+                $references[] = trim((string)($project['Proyecto_Proceso'] ?? $dbPrefix));
+            }
+        }
+
+        return $references;
+    }
+
+    private function normalizeEmail($email): string
+    {
+        $value = trim((string)$email);
+        return function_exists('mb_strtolower') ? mb_strtolower($value, 'UTF-8') : strtolower($value);
     }
 }

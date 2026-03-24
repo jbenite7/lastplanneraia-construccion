@@ -3,21 +3,39 @@
 namespace App\Controllers\Api;
 
 use App\Core\Lps\LpsService;
+use App\Services\ProjectProfessionalsSyncService;
 use App\Security\RbacManager;
 use PDO;
 use Throwable;
 
 class ProfesionalesApiController
 {
+    private const ALLOWED_CARGOS = [
+        'Administrador',
+        'Residente de Obra',
+        'Residente SST',
+        'Residente Ambiental',
+        'Residente Oficina Técnica',
+        'Profesional Diseño y Construcción Virtual',
+        'Maestro de Obra',
+        'Almacenista',
+        'Director de Obra',
+        'Residente SST + Ambiental',
+        'Coordinador de Obras',
+        'Gerente de Proyecto',
+    ];
+
     private $db;
     private LpsService $lpsService;
     private RbacManager $rbac;
+    private ProjectProfessionalsSyncService $syncService;
 
     public function __construct()
     {
         $this->db = \Database::getInstance();
         $this->lpsService = new LpsService();
         $this->rbac = new RbacManager();
+        $this->syncService = new ProjectProfessionalsSyncService($this->db);
     }
 
     public function list(): void
@@ -30,7 +48,10 @@ class ProfesionalesApiController
         }
 
         try {
+            $syncSummary = $this->syncService->syncProjectProfessionals($dbPrefix);
+
             $tables = [
+                "{$dbPrefix}_programa" => "Responsable_AIA",
                 "{$dbPrefix}_cip" => "profesional",
                 "{$dbPrefix}_programacion_semanal" => "Responsable_AIA",
                 "{$dbPrefix}_programa_consolidado" => "Responsable_AIA",
@@ -48,13 +69,31 @@ class ProfesionalesApiController
 
             $query = "SELECT p.id, p.nombre, p.email, p.cargo, p.activo $depSql FROM {$dbPrefix}_profesionales p WHERE p.nombre IS NOT NULL AND TRIM(p.nombre) != '' ORDER BY p.id ASC";
             $data = $this->db->query($query)->fetchAll(PDO::FETCH_ASSOC);
+            $data = $this->syncService->decorateProjectProfessionals($dbPrefix, $data);
 
             foreach ($data as &$row) {
                 $row['activo'] = (bool)$row['activo'];
                 $row['has_dependencies'] = (bool)$row['has_dependencies'];
+                $row['is_admin_managed'] = (bool)($row['is_admin_managed'] ?? false);
+                $row['is_current_member'] = (bool)($row['is_current_member'] ?? false);
+                $row['is_blocked'] = (bool)($row['is_blocked'] ?? false);
+                $row['can_edit_identity'] = !$row['is_admin_managed'] && !$row['is_blocked'];
+                $row['can_edit_active'] = !$row['is_blocked'] && (!$row['is_admin_managed'] || $row['is_current_member']);
+                $row['identity_edit_reason'] = $this->resolverMotivoEdicionIdentidad($row);
+                $row['active_edit_reason'] = $this->resolverMotivoEdicionActivo($row);
+                $row['can_delete'] = !$row['has_dependencies'] && !$row['is_admin_managed'] && !$row['is_blocked'];
+                $row['delete_reason'] = $this->resolverMotivoEliminacion($row);
             }
 
-            $this->json(["status" => "success", "data" => $data]);
+            $response = ["status" => "success", "data" => $data];
+            if (!empty($syncSummary['warnings'])) {
+                $response['sync_warnings'] = $syncSummary['warnings'];
+            }
+            if (($syncSummary['inserted'] + $syncSummary['reactivated'] + $syncSummary['updated'] + ($syncSummary['blocked'] ?? 0) + ($syncSummary['deduplicated'] ?? 0)) > 0) {
+                $response['sync_summary'] = $syncSummary;
+            }
+
+            $this->json($response);
         } catch (Throwable $t) {
             $this->json(["status" => "error", "message" => "Error del servidor: " . $t->getMessage()]);
         }
@@ -102,45 +141,80 @@ class ProfesionalesApiController
         $actualizados = 0;
         $allowed = ['nombre', 'email', 'cargo', 'activo'];
 
+        $changesById = [];
         foreach ($changes as $change) {
-            $id = $change['id'];
-            $columna = $change['prop'];
-            $valor = $change['value'];
+            $id = (int)($change['id'] ?? 0);
+            $columna = $change['prop'] ?? '';
 
-            if ($columna == 'email' && !empty($valor)) {
-                if (!filter_var($valor, FILTER_VALIDATE_EMAIL)) {
-                    $errores[] = "ID $id: Email inválido '$valor'";
-                    continue;
-                }
-                $stmtCheck = $this->db->query("SELECT COUNT(*) FROM {$dbPrefix}_profesionales WHERE email = ? AND id != ?", [$valor, $id]);
-                if ($stmtCheck->fetchColumn() > 0) {
-                    $errores[] = "ID $id: El correo '$valor' ya está en uso por otro usuario.";
-                    continue;
-                }
+            if ($id <= 0) {
+                $errores[] = 'Registro inválido para actualizar.';
+                continue;
             }
 
-            if ($columna == 'activo') {
-                $valor = ($valor === 'true' || $valor === '1' || $valor === true) ? 1 : 0;
-            } else {
-                $valor = trim($valor);
-            }
-
-            if ($columna == 'nombre') {
-                $oldName = $this->db->query("SELECT nombre FROM {$dbPrefix}_profesionales WHERE id = ?", [$id])->fetchColumn();
-                if ($oldName && $oldName !== $valor) {
-                    $this->actualizar_dependencias_nombre($dbPrefix, $oldName, $valor);
-                }
-            }
-
-            if (!in_array($columna, $allowed)) {
+            if (!in_array($columna, $allowed, true)) {
                 $errores[] = "Columna no permitida: $columna";
                 continue;
             }
 
-            if ($this->db->query("UPDATE {$dbPrefix}_profesionales SET $columna = ? WHERE id = ?", [$valor, $id])) {
+            $changesById[$id][$columna] = $change['value'] ?? null;
+        }
+
+        foreach ($changesById as $id => $rowChanges) {
+            $actual = $this->obtenerProfesional($dbPrefix, $id);
+            if (!$actual) {
+                $errores[] = "Profesional ID $id no encontrado.";
+                continue;
+            }
+
+            $lockInfo = $this->syncService->getProfessionalLockInfo($dbPrefix, (string)($actual['email'] ?? ''));
+            $columnasCambiadas = array_keys($rowChanges);
+            $soloActivo = !empty($columnasCambiadas) && count(array_diff($columnasCambiadas, ['activo'])) === 0;
+
+            if (!empty($lockInfo['is_blocked'])) {
+                $errores[] = $lockInfo['block_reason'] ?: 'Este profesional está bloqueado y no puede editarse desde este módulo.';
+                continue;
+            }
+
+            if (!empty($lockInfo['is_admin_managed'])) {
+                if (!$soloActivo) {
+                    $errores[] = 'Este profesional se sincroniza desde Admin. Aqui solo puedes cambiar Activo.';
+                    continue;
+                }
+
+                $activo = $this->normalizarBooleano($rowChanges['activo'] ?? $actual['activo']);
+                $resultado = $this->db->query(
+                    "UPDATE {$dbPrefix}_profesionales SET activo = ? WHERE id = ?",
+                    [$activo, $id]
+                );
+
+                if ($resultado) {
+                    $actualizados++;
+                } else {
+                    $errores[] = "Error actualizando el estado activo del profesional '{$actual['nombre']}'.";
+                }
+
+                continue;
+            }
+
+            $actualizado = $this->aplicarCambiosProfesional($actual, $rowChanges);
+            $erroresFila = $this->validarProfesional($dbPrefix, $actualizado, $id);
+            if (!empty($erroresFila)) {
+                $errores = array_merge($errores, $erroresFila);
+                continue;
+            }
+
+            $resultado = $this->db->query(
+                "UPDATE {$dbPrefix}_profesionales SET nombre = ?, email = ?, cargo = ?, activo = ? WHERE id = ?",
+                [$actualizado['nombre'], $actualizado['email'], $actualizado['cargo'], $actualizado['activo'], $id]
+            );
+
+            if ($resultado) {
+                if ($this->normalizarTexto($actual['nombre']) !== $this->normalizarTexto($actualizado['nombre'])) {
+                    $this->actualizar_dependencias_nombre($dbPrefix, $actual['nombre'], $actualizado['nombre']);
+                }
                 $actualizados++;
             } else {
-                $errores[] = "Error actualizando ID $id columna $columna";
+                $errores[] = "Error actualizando el profesional '{$actualizado['nombre']}'.";
             }
         }
 
@@ -154,6 +228,7 @@ class ProfesionalesApiController
     private function actualizar_dependencias_nombre(string $dbPrefix, string $oldName, string $newName): void
     {
         $tablesToUpdate = [
+            "{$dbPrefix}_programa" => "Responsable_AIA",
             "{$dbPrefix}_programacion_semanal" => "Responsable_AIA",
             "{$dbPrefix}_programa_consolidado" => "Responsable_AIA",
             "{$dbPrefix}_cip" => "profesional",
@@ -169,25 +244,21 @@ class ProfesionalesApiController
 
     private function crear(string $dbPrefix): void
     {
-        $nombre = trim($_POST['nombre'] ?? '');
-        $email = trim($_POST['email'] ?? '');
-        $cargo = trim($_POST['cargo'] ?? '');
+        $data = $this->sanitizarProfesional([
+            'nombre' => $_POST['nombre'] ?? '',
+            'email' => $_POST['email'] ?? '',
+            'cargo' => $_POST['cargo'] ?? '',
+            'activo' => 1,
+        ]);
 
-        if (empty($nombre)) {
-            $this->json(["status" => "error", "message" => "El nombre es obligatorio."]);
+        $errores = $this->validarProfesional($dbPrefix, $data);
+        if (!empty($errores)) {
+            $this->json(["status" => "error", "message" => implode("\n", $errores), "errors" => $errores]);
             return;
         }
 
-        if (!empty($email)) {
-            $stmt = $this->db->query("SELECT COUNT(*) FROM {$dbPrefix}_profesionales WHERE email = ?", [$email]);
-            if ($stmt->fetchColumn() > 0) {
-                $this->json(["status" => "error", "message" => "El correo '$email' ya está registrado."]);
-                return;
-            }
-        }
-
         $res = $this->db->query("INSERT INTO {$dbPrefix}_profesionales (nombre, email, cargo, activo) VALUES (?, ?, ?, 1)", [
-            $nombre, empty($email) ? null : $email, empty($cargo) ? null : $cargo
+            $data['nombre'], $data['email'], $data['cargo']
         ]);
 
         if ($res) {
@@ -200,14 +271,25 @@ class ProfesionalesApiController
     private function eliminar(string $dbPrefix): void
     {
         $id = $_POST['id'] ?? 0;
-        $nombre = $this->db->query("SELECT nombre FROM {$dbPrefix}_profesionales WHERE id = ?", [$id])->fetchColumn();
+        $profesional = $this->obtenerProfesional($dbPrefix, (int)$id);
+        $nombre = $profesional['nombre'] ?? null;
 
         if (!$nombre) {
             $this->json(["status" => "error", "message" => "Profesional no encontrado."]);
             return;
         }
 
+        $lockInfo = $this->syncService->getProfessionalLockInfo($dbPrefix, (string)($profesional['email'] ?? ''));
+        if (!empty($lockInfo['is_admin_managed'])) {
+            $mensaje = !empty($lockInfo['is_blocked'])
+                ? ($lockInfo['block_reason'] ?: 'Este profesional está bloqueado y no puede eliminarse.')
+                : 'No se puede eliminar: el profesional está administrado desde Admin. Retíralo del proyecto para bloquearlo.';
+            $this->json(["status" => "error", "message" => $mensaje]);
+            return;
+        }
+
         $tables = [
+            "{$dbPrefix}_programa" => "Responsable_AIA",
             "{$dbPrefix}_cip" => "profesional",
             "{$dbPrefix}_programacion_semanal" => "Responsable_AIA",
             "{$dbPrefix}_programa_consolidado" => "Responsable_AIA",
@@ -235,5 +317,153 @@ class ProfesionalesApiController
         header('Content-Type: application/json');
         echo json_encode($data, JSON_UNESCAPED_UNICODE);
         exit;
+    }
+
+    private function obtenerProfesional(string $dbPrefix, int $id): ?array
+    {
+        $stmt = $this->db->query("SELECT id, nombre, email, cargo, activo FROM {$dbPrefix}_profesionales WHERE id = ?", [$id]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ?: null;
+    }
+
+    private function aplicarCambiosProfesional(array $actual, array $changes): array
+    {
+        $mezclado = [
+            'nombre' => array_key_exists('nombre', $changes) ? $changes['nombre'] : $actual['nombre'],
+            'email' => array_key_exists('email', $changes) ? $changes['email'] : $actual['email'],
+            'cargo' => array_key_exists('cargo', $changes) ? $changes['cargo'] : $actual['cargo'],
+            'activo' => array_key_exists('activo', $changes) ? $changes['activo'] : $actual['activo'],
+        ];
+
+        return $this->sanitizarProfesional($mezclado);
+    }
+
+    private function sanitizarProfesional(array $data): array
+    {
+        return [
+            'nombre' => $this->limpiarTexto($data['nombre'] ?? ''),
+            'email' => $this->normalizarEmail($data['email'] ?? ''),
+            'cargo' => $this->limpiarTexto($data['cargo'] ?? ''),
+            'activo' => $this->normalizarBooleano($data['activo'] ?? 1),
+        ];
+    }
+
+    private function validarProfesional(string $dbPrefix, array $data, ?int $excludeId = null): array
+    {
+        $errores = [];
+
+        if ($data['nombre'] === '') {
+            $errores[] = 'El nombre es obligatorio.';
+        }
+
+        if ($data['email'] === '') {
+            $errores[] = 'El correo es obligatorio.';
+        } elseif (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+            $errores[] = 'El correo no tiene un formato válido.';
+        }
+
+        if ($data['cargo'] === '') {
+            $errores[] = 'El cargo es obligatorio.';
+        } elseif (!in_array($data['cargo'], self::ALLOWED_CARGOS, true)) {
+            $errores[] = 'El cargo seleccionado no es válido.';
+        }
+
+        foreach ($this->buscarDuplicadosProfesional($dbPrefix, $data, $excludeId) as $error) {
+            $errores[] = $error;
+        }
+
+        $lockInfo = $this->syncService->getProfessionalLockInfo($dbPrefix, $data['email']);
+        if (!empty($lockInfo['is_admin_managed'])) {
+            $errores[] = !empty($lockInfo['is_blocked'])
+                ? ($lockInfo['block_reason'] ?: 'El correo corresponde a un profesional bloqueado para este proyecto.')
+                : 'El correo corresponde a un profesional administrado desde Admin. Gestiona sus cambios allí.';
+        }
+
+        return array_values(array_unique($errores));
+    }
+
+    private function buscarDuplicadosProfesional(string $dbPrefix, array $data, ?int $excludeId = null): array
+    {
+        $errores = [];
+        $params = [];
+        $sql = "SELECT id, email FROM {$dbPrefix}_profesionales";
+
+        if ($excludeId !== null) {
+            $sql .= ' WHERE id != ?';
+            $params[] = $excludeId;
+        }
+
+        $rows = $this->db->query($sql, $params)->fetchAll(PDO::FETCH_ASSOC);
+        $emailNormalizado = $this->normalizarEmail($data['email']);
+
+        foreach ($rows as $row) {
+            if ($emailNormalizado !== '' && $this->normalizarEmail($row['email'] ?? '') === $emailNormalizado) {
+                $errores[] = 'Ya existe un profesional con ese correo.';
+            }
+        }
+
+        return array_values(array_unique($errores));
+    }
+
+    private function limpiarTexto($valor): string
+    {
+        return preg_replace('/\s+/u', ' ', trim((string)$valor)) ?? '';
+    }
+
+    private function normalizarTexto($valor): string
+    {
+        return function_exists('mb_strtolower')
+            ? mb_strtolower($this->limpiarTexto($valor), 'UTF-8')
+            : strtolower($this->limpiarTexto($valor));
+    }
+
+    private function normalizarEmail($valor): string
+    {
+        $email = trim((string)$valor);
+        return function_exists('mb_strtolower') ? mb_strtolower($email, 'UTF-8') : strtolower($email);
+    }
+
+    private function normalizarBooleano($valor): int
+    {
+        return ($valor === 'true' || $valor === '1' || $valor === 1 || $valor === true) ? 1 : 0;
+    }
+
+    private function resolverMotivoEliminacion(array $row): ?string
+    {
+        if (!empty($row['has_dependencies'])) {
+            return 'No se puede eliminar: tiene registros asociados.';
+        }
+
+        if (!empty($row['is_blocked'])) {
+            return $row['block_reason'] ?? 'Este profesional está bloqueado.';
+        }
+
+        if (!empty($row['is_admin_managed'])) {
+            return 'No se puede eliminar: el profesional está administrado desde Admin.';
+        }
+
+        return null;
+    }
+
+    private function resolverMotivoEdicionIdentidad(array $row): ?string
+    {
+        if (!empty($row['is_blocked'])) {
+            return $row['block_reason'] ?? 'Este profesional está bloqueado.';
+        }
+
+        if (!empty($row['is_admin_managed'])) {
+            return 'Este profesional se sincroniza desde Admin. Aqui solo puedes cambiar Activo.';
+        }
+
+        return null;
+    }
+
+    private function resolverMotivoEdicionActivo(array $row): ?string
+    {
+        if (!empty($row['is_blocked'])) {
+            return $row['block_reason'] ?? 'Este profesional está bloqueado.';
+        }
+
+        return null;
     }
 }
