@@ -174,22 +174,16 @@ $(function () {
         var id = $(this).data('id');
         var name = $(this).data('name');
 
-        Swal.fire({
+        AIA.Notice.dialog({
             title: '¿Estás seguro?',
             text: "Se descargará un respaldo automático y luego se eliminará el proyecto '" + name + "' permanentemente. ¡Esta acción no se puede deshacer!",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
             confirmButtonText: 'Sí, respaldar y eliminar',
-            cancelButtonText: 'Cancelar',
-            reverseButtons: true
+            cancelButtonText: 'Cancelar'
         }).then((result) => {
             if (result.isConfirmed) {
-                // 1. Disparar la descarga del backup
                 window.location.href = '/admin/proyectos/respaldar?id=' + id;
-                
-                // 2. Esperar un breve momento para que el navegador procese la descarga antes de enviar el POST de eliminación
                 setTimeout(function() {
                     $('#deleteProjectId').val(id);
                     $('#deleteForm').submit();
@@ -219,7 +213,7 @@ $(function () {
             },
             success: function(response) {
                 if (response.success) {
-                    toastr.success(response.message);
+                    if (window.AIA && window.AIA.Notice) window.AIA.Notice.success(response.message);
                     
                     // Si el campo es 'activo', actualizar el badge de la columna Estado
                     if (field === 'activo') {
@@ -229,13 +223,13 @@ $(function () {
                         $('#status-badge-' + projectId).html(badgeHtml);
                     }
                 } else {
-                    toastr.error(response.message);
+                    if (window.AIA && window.AIA.Notice) window.AIA.Notice.errorToast(response.message);
                     // Revertir el cambio si hubo error
                     checkbox.prop('checked', !value);
                 }
             },
             error: function() {
-                toastr.error('Error de comunicación con el servidor');
+                if (window.AIA && window.AIA.Notice) window.AIA.Notice.errorToast('Error de comunicación con el servidor');
                 checkbox.prop('checked', !value);
             },
             complete: function() {
@@ -248,16 +242,16 @@ $(function () {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('success')) {
         const action = urlParams.get('success');
-        if (action === 'created') toastr.success('Proyecto creado con éxito');
-        if (action === 'updated') toastr.success('Proyecto actualizado con éxito');
-        if (action === 'deleted') Swal.fire('Eliminado', 'El proyecto ha sido eliminado correctamente.', 'success');
+        if (action === 'created' && window.AIA && window.AIA.Notice) window.AIA.Notice.success('Proyecto creado con éxito');
+        if (action === 'updated' && window.AIA && window.AIA.Notice) window.AIA.Notice.success('Proyecto actualizado con éxito');
+        if (action === 'deleted' && window.AIA && window.AIA.Notice) window.AIA.Notice.success('El proyecto ha sido eliminado correctamente.');
         
         window.history.replaceState({}, document.title, "/admin/proyectos");
     }
 
     if (urlParams.has('error')) {
         const error = urlParams.get('error');
-        if (error === 'delete_failed') toastr.error('No se pudo eliminar el proyecto');
+        if (error === 'delete_failed' && window.AIA && window.AIA.Notice) window.AIA.Notice.errorToast('No se pudo eliminar el proyecto');
         
         window.history.replaceState({}, document.title, "/admin/proyectos");
     }

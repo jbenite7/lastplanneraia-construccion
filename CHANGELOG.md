@@ -9,18 +9,26 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ### Añadido
 
+- **Flujo de Timeout de Sesion (Fase 1):** La expiracion por inactividad ahora redirige al login con un aviso visual en `AIA.Notice`, mejorando la experiencia tras sesiones vencidas.
+- **AIA Notice Global:** Nuevo core `public/js/core/AiaAlertInterceptor.js` para centralizar alertas, toasts y badges de guardado sobre SweetAlert2 en Admin, login y modulos LPS.
 - **TomSelect Premium AIA:** Implementación de arquitectura de estilos corporativos (Naranja Construcción) en `tom-select-premium-aia.css`. Incluye tipografía Montserrat/Inter, chips adaptables con word-wrap y un botón de limpieza elegante integrado siguiendo el manual de marca 2026.
 - **Herencia de Restricciones (Manual/Excel):** Sincronización automática de las 7 restricciones individuales (D y E, Materiales, MdeO, etc.) tanto en procesos de importación masiva como en la asociación manual por dropdown. (AIA 2026).
 - **Persistencia de Mapeo Físico:** El botón "Eliminar Actualización" ahora realiza un `DELETE` físico de borradores en la base de datos, garantizando un flujo de trabajo limpio y permitiendo reintentar mapeos desde cero.
 
 ### Cambiado
 
+- **Estandarización Final de AIA.Notice:** La capa `AIA.Notice` ahora cubre confirmaciones, diálogos y mensajes multilínea en Admin y módulos LPS, reemplazando `Swal.fire`, `window.confirm` y fallbacks `alert()` residuales con una API consistente.
+- **Fase 2 de Unificacion de Notificaciones:** Se completo la migracion de `alert()` a `AIA.Notice` en `funcionesGenerales6.js`, `ContextManager.js` y `cargarDatosGeneralesPagina2.js`, unificando bloqueos de negocio y errores AJAX en helpers compartidos.
+- **Validacion Universal de Sesion:** El front controller verifica timeout en rutas protegidas antes de despachar la aplicacion.
+- **Unificacion de Notificaciones:** `programaGeneralActualizar.view.php` continua la migracion desde `alert()` hacia `AIA.Notice` con fallback seguro.
 - **Motor de Herencia Robusto y Unificado:** Re-ingeniería del método `getPreviousWeekData` en `GeneralApiController.php` para implementar una lógica de priorización inteligente: el sistema ahora identifica y prefiere registros con datos reales (Unidad/Cantidad) sobre registros anómalos o vacíos en caso de duplicidad.
 - **Herencia Agnóstica a HTML:** Refactorización de la lógica en `nueva_semana.php` y `GeneralApiController.php` para que el sistema ignore etiquetas como `<b>` y `<small>` al comparar nombres de actividades, asegurando la herencia correcta de PDC y Responsables tanto en importación como en mapeo manual.
 - **Robustez en Carga de Parámetros:** Inyección de protecciones `try-catch` y logs descriptivos en `cargarDatosGeneralesPagina2.js` para interceptar fallos en la función `cargaParametros()`, mejorando la observabilidad en producción.
+- **Unificación de Notificaciones:** Inicio formal de la eliminación total de `toastr` en el repositorio. Los modulos principales y vistas administrativas ahora consumen `AIA.Notice` como capa oficial para toasts, errores y badges de guardado.
 
 ### Corregido
 
+- **Programa General - Cambio de Unidad a Porcentaje:** Al convertir actividades con unidad fisica a `%` (o vacio), el sistema ahora preserva el ratio canonico de `Ejecutado`, limpia `cantidad_ppto` y reconstruye `Ejecutado Real` como porcentaje persistente tras guardar y recargar.
 - **Fix Tecla ESC en Grilla:** Resolución del `TypeError` y pérdida accidental de valores al presionar ESC en los editores TomSelect. Se sustituyó el método inexistente por `cancelEditing()`, restaurando el estado previo de la celda de forma segura.
 - **Sincronización de Assets:** Actualización de headers y links de fuentes en las vistas de actualización para garantizar la carga de tipografías premium y el bypass de caché mediante versionamiento de scripts (`v=tomselect30`).
 - **Alineación Vertical y Filas:** Eliminación de la columna de numeración redundante en Handsontable y ajuste de `line-height` en `handsontable-module.css` para resolver el desalineamiento visual de las celdas.

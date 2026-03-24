@@ -410,14 +410,14 @@
                                 if(hot && window.innerWidth > 768) hot.render();
                             }, 100);
                         } else {
-                            alert("Error cargando datos: " + response.message);
+                            if (window.AIA && window.AIA.Notice) window.AIA.Notice.error("Error cargando datos: " + response.message);
                         }
                     });
                 },
                 error: function(err) {
                     console.error(err);
                     $('#loading').fadeOut();
-                    alert("Error de red al cargar datos.");
+                    if (window.AIA && window.AIA.Notice) window.AIA.Notice.error("Error de red al cargar datos.");
                 }
             });
         }
@@ -510,7 +510,7 @@
                         if (id && prop !== 'accion' && prop !== 'activo') {
                             const trimmedValue = (newValue || '').toString().trim();
                             if (trimmedValue === '') {
-                                alert('No se puede dejar el campo vacío. Por favor ingrese un valor.');
+                                if (window.AIA && window.AIA.Notice) window.AIA.Notice.warning('No se puede dejar el campo vacío. Por favor ingrese un valor.');
                                 // Revertir al valor anterior
                                 instance.setDataAtRowProp(row, prop, oldValue, 'revert');
                                 return;
@@ -536,8 +536,10 @@
                         const rowData = hot.getSourceDataAtRow(physicalRow);
                         
                         if(rowData.id) {
-                            if(confirm('¿Seguro que desea eliminar a ' + rowData.nombre + '?')) {
-                                deleteRow(rowData.id);
+                            if (window.AIA && window.AIA.Notice) {
+                                window.AIA.Notice.confirm('¿Seguro que desea eliminar a ' + rowData.nombre + '?', 'Eliminar Profesional').then((confirmed) => {
+                                    if(confirmed) deleteRow(rowData.id);
+                                });
                             }
                         } else {
                             hot.alter('remove_row', coords.row);
@@ -603,7 +605,7 @@
                         showFeedback('success');
                         loadData(); 
                     } else {
-                        alert("Error creando: " + res.message);
+                        if (window.AIA && window.AIA.Notice) window.AIA.Notice.error("Error creando: " + res.message);
                     }
                 }
             });
@@ -619,9 +621,9 @@
                     if (res.status === 'success') {
                         // Success -> Reload data to refresh grid without destroying instance
                         loadData();
-                        alert("Eliminado correctamente");
+                        if (window.AIA && window.AIA.Notice) window.AIA.Notice.badge('success', "Eliminado correctamente");
                     } else {
-                        alert("Error: " + res.message);
+                        if (window.AIA && window.AIA.Notice) window.AIA.Notice.error("Error: " + res.message);
                     }
                 }
             });
@@ -746,16 +748,18 @@
             const cargo = document.getElementById('new-mobile-cargo').value;
             
             if(!nombre || !email) {
-                alert("Nombre y correo son obligatorios");
+                if (window.AIA && window.AIA.Notice) window.AIA.Notice.warning("Nombre y correo son obligatorios");
                 return;
             }
             createRow({ nombre: nombre, email: email, cargo: cargo });
         }
 
         function deleteMobileRow(id, nombre) {
-             if(confirm('¿Seguro que desea eliminar a ' + nombre + '?')) {
-                deleteRow(id);
-            }
+             if (window.AIA && window.AIA.Notice) {
+                 window.AIA.Notice.confirm('¿Seguro que desea eliminar a ' + nombre + '?', 'Eliminar Profesional').then((confirmed) => {
+                     if(confirmed) deleteRow(id);
+                 });
+             }
         }
     </script>
 </body>

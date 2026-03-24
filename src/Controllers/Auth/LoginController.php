@@ -26,6 +26,7 @@ class LoginController
         // Las vistas legacy suelen requerir variables globales o paths relativos complejos.
         // Vamos a incluir la vista legacy, pero saneada.
 
+        $timeoutNotice = ($_GET['timeout'] ?? '') === '1';
         $errores = ''; // Inicializar variable para la vista
 
         // Exponer $db para la vista legacy

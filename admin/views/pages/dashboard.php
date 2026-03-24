@@ -308,18 +308,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnCleanup = document.getElementById('btnCleanupOrphans');
     if (btnCleanup) {
         btnCleanup.addEventListener('click', function() {
-            Swal.fire({
-                title: '¿Estás seguro?',
-                text: "Esta acción eliminará permanentemente las tablas huérfanas detectadas.",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Sí, limpiar',
-                cancelButtonText: 'Cancelar',
-                backdrop: true
-            }).then((result) => {
-                if (result.isConfirmed) {
+            AIA.Notice.confirm('Esta acción eliminará permanentemente las tablas huérfanas detectadas.', '¿Estás seguro?').then((confirmed) => {
+                if (confirmed) {
                     const formData = new FormData();
                     formData.append('csrf_token', '<?php echo $_SESSION["csrf_token"]; ?>');
 
@@ -330,29 +320,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            Swal.fire({
-                                title: '¡Limpio!', 
-                                text: data.message, 
-                                icon: 'success',
-                                backdrop: true
-                            }).then(() => location.reload());
+                            AIA.Notice.success(data.message).then(() => location.reload());
                         } else {
-                            Swal.fire({
-                                title: 'Error', 
-                                text: data.message, 
-                                icon: 'error',
-                                backdrop: true
-                            });
+                            AIA.Notice.error(data.message, 'Error');
                         }
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        Swal.fire({
-                            title: 'Error', 
-                            text: 'Ocurrió un fallo en la conexión.', 
-                            icon: 'error',
-                            backdrop: true
-                        });
+                        AIA.Notice.error('Ocurrió un fallo en la conexión.', 'Error');
                     });
                 }
             });
@@ -365,12 +340,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const project = this.getAttribute('data-project');
             const missing = this.getAttribute('data-missing').split(', ').map(t => `<li>${t}</li>`).join('');
             
-            Swal.fire({
+            AIA.Notice.dialog({
                 title: `Tablas faltantes en ${project}`,
                 html: `<div class="text-left"><ul class="small">${missing}</ul></div>`,
                 icon: 'info',
-                confirmButtonText: 'Entendido',
-                backdrop: true
+                confirmButtonText: 'Entendido'
             });
         });
     });
@@ -379,15 +353,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnFullBackup = document.getElementById('btnFullBackup');
     if (btnFullBackup) {
         btnFullBackup.addEventListener('click', function() {
-            Swal.fire({
+            AIA.Notice.dialog({
                 title: 'Generar Respaldo Completo',
                 text: "Se creará un volcado SQL de toda la base de datos en el servidor.",
                 icon: 'info',
                 showCancelButton: true,
                 confirmButtonText: 'Generar ahora',
                 showLoaderOnConfirm: true,
-                backdrop: true,
-                allowOutsideClick: () => !Swal.isLoading(),
                 preConfirm: () => {
                     const formData = new FormData();
                     formData.append('csrf_token', '<?php echo $_SESSION["csrf_token"]; ?>');
@@ -405,19 +377,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }).then((result) => {
                 if (result.isConfirmed && result.value.success) {
-                    Swal.fire({
-                        title: '¡Éxito!', 
-                        text: result.value.message, 
-                        icon: 'success',
-                        backdrop: true
-                    }).then(() => location.reload());
+                    AIA.Notice.success(result.value.message).then(() => location.reload());
                 } else if (result.isConfirmed) {
-                    Swal.fire({
-                        title: 'Error', 
-                        text: result.value.message, 
-                        icon: 'error',
-                        backdrop: true
-                    });
+                    AIA.Notice.error(result.value.message);
                 }
             });
         });
@@ -425,155 +387,3 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Inicializar tooltips
-    $(function () {
-      $('[data-toggle="tooltip"]').tooltip();
-    });
-
-    // Filtro de Logs
-    const filterLinks = document.querySelectorAll('.log-filter');
-    const logRows = document.querySelectorAll('.log-row-all');
-
-    filterLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            const filter = this.getAttribute('data-filter');
-
-            // Actualizar UI de botones
-            filterLinks.forEach(l => l.classList.remove('active'));
-            this.classList.add('active');
-
-            // Filtrar filas
-            logRows.forEach(row => {
-                if (filter === 'all' || row.getAttribute('data-type') === filter) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-        });
-    });
-
-    // 1. Limpieza de Tablas Huérfanas
-    const btnCleanup = document.getElementById('btnCleanupOrphans');
-    if (btnCleanup) {
-        btnCleanup.addEventListener('click', function() {
-            Swal.fire({
-                title: '¿Estás seguro?',
-                text: "Esta acción eliminará permanentemente las tablas huérfanas detectadas.",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Sí, limpiar',
-                cancelButtonText: 'Cancelar',
-                backdrop: true
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const formData = new FormData();
-                    formData.append('csrf_token', '<?php echo $_SESSION["csrf_token"]; ?>');
-
-                    fetch('/admin/proyectos/limpiar-huerfanas', {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            Swal.fire({
-                                title: '¡Limpio!', 
-                                text: data.message, 
-                                icon: 'success',
-                                backdrop: true
-                            }).then(() => location.reload());
-                        } else {
-                            Swal.fire({
-                                title: 'Error', 
-                                text: data.message, 
-                                icon: 'error',
-                                backdrop: true
-                            });
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        Swal.fire({
-                            title: 'Error', 
-                            text: 'Ocurrió un fallo en la conexión.', 
-                            icon: 'error',
-                            backdrop: true
-                        });
-                    });
-                }
-            });
-        });
-    }
-
-    // 2. Detalle de Integridad (Un Clic)
-    document.querySelectorAll('.integrity-item').forEach(item => {
-        item.addEventListener('click', function() {
-            const project = this.getAttribute('data-project');
-            const missing = this.getAttribute('data-missing').split(', ').map(t => `<li>${t}</li>`).join('');
-            
-            Swal.fire({
-                title: `Tablas faltantes en ${project}`,
-                html: `<div class="text-left"><ul class="small">${missing}</ul></div>`,
-                icon: 'info',
-                confirmButtonText: 'Entendido',
-                backdrop: true
-            });
-        });
-    });
-
-    // 3. Respaldo Completo
-    const btnFullBackup = document.getElementById('btnFullBackup');
-    if (btnFullBackup) {
-        btnFullBackup.addEventListener('click', function() {
-            Swal.fire({
-                title: 'Generar Respaldo Completo',
-                text: "Se creará un volcado SQL de toda la base de datos en el servidor.",
-                icon: 'info',
-                showCancelButton: true,
-                confirmButtonText: 'Generar ahora',
-                showLoaderOnConfirm: true,
-                backdrop: true,
-                allowOutsideClick: () => !Swal.isLoading(),
-                preConfirm: () => {
-                    const formData = new FormData();
-                    formData.append('csrf_token', '<?php echo $_SESSION["csrf_token"]; ?>');
-                    return fetch('/admin/proyectos/respaldo-completo', {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => {
-                        if (!response.ok) throw new Error(response.statusText);
-                        return response.json();
-                    })
-                    .catch(error => {
-                        Swal.showValidationMessage(`Request failed: ${error}`);
-                    });
-                }
-            }).then((result) => {
-                if (result.isConfirmed && result.value.success) {
-                    Swal.fire({
-                        title: '¡Éxito!', 
-                        text: result.value.message, 
-                        icon: 'success',
-                        backdrop: true
-                    }).then(() => location.reload());
-                } else if (result.isConfirmed) {
-                    Swal.fire({
-                        title: 'Error', 
-                        text: result.value.message, 
-                        icon: 'error',
-                        backdrop: true
-                    });
-                }
-            });
-        });
-    }
-});
-</script>

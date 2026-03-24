@@ -25,6 +25,13 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// 3.5 Verificar Sesión y Timeout (Protección Universal)
+// Excluimos las rutas de login para permitir el inicio de sesión
+$requestUri = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH);
+if ($requestUri !== '/login' && $requestUri !== '/') {
+    \App\Core\SessionMiddleware::check();
+}
+
 // 4. Instanciar Conexión a Base de Datos (Singleton)
 use App\Core\Router;
 // Importamos la clase Database existente (Legacy)

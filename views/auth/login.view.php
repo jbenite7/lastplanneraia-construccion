@@ -79,6 +79,19 @@
     <script>
         // Prevent context menu
         document.oncontextmenu = function(){return false};
+
+        <?php if (!empty($timeoutNotice)): ?>
+            document.addEventListener('DOMContentLoaded', function() {
+                if (window.AIA && AIA.Notice) {
+                    AIA.Notice.warning('Su sesión ha expirado por inactividad. Por favor ingrese de nuevo.', 'Sesión Finalizada');
+                }
+                
+                // Limpiar URL para evitar re-disparos al recargar
+                const url = new URL(window.location);
+                url.searchParams.delete('timeout');
+                window.history.replaceState({}, document.title, url.pathname);
+            });
+        <?php endif; ?>
     </script>
 
 </body>

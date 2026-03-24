@@ -50,7 +50,7 @@ class ContextManager {
         }
       } else {
         console.error('Context Error:', data.message);
-        alert('No se pudo cambiar la semana: ' + data.message);
+        AIA.Notice.error('No se pudo cambiar la semana: ' + data.message);
       }
     } catch (err) {
       console.error('Network Error:', err);
