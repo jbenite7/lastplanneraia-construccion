@@ -9,6 +9,7 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ### Añadido
 
+- **Sincronización de Profesionales por Proyecto:** Nuevo servicio `src/Services/ProjectProfessionalsSyncService.php` para reconciliar `admin/` contra `*_profesionales`, mapear roles `A/D/DCV/G/OT/R/S/SG`, consolidar duplicados por correo y preservar el historial por proyecto.
 - **Flujo de Timeout de Sesion (Fase 1):** La expiracion por inactividad ahora redirige al login con un aviso visual en `AIA.Notice`, mejorando la experiencia tras sesiones vencidas.
 - **AIA Notice Global:** Nuevo core `public/js/core/AiaAlertInterceptor.js` para centralizar alertas, toasts y badges de guardado sobre SweetAlert2 en Admin, login y modulos LPS.
 - **TomSelect Premium AIA:** Implementación de arquitectura de estilos corporativos (Naranja Construcción) en `tom-select-premium-aia.css`. Incluye tipografía Montserrat/Inter, chips adaptables con word-wrap y un botón de limpieza elegante integrado siguiendo el manual de marca 2026.
@@ -17,6 +18,9 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ### Cambiado
 
+- **Profesionales Gobernados desde Admin:** El módulo `Profesionales` ahora usa el correo como identidad real, permite nombres repetidos, sincroniza cargos desde `admin/`, bloquea edición de nombre/correo/cargo y deja `Activo` como control local solo para miembros vigentes del proyecto.
+- **Bajas y Trazabilidad de Profesionales:** Retirar un miembro del proyecto o eliminarlo desde `admin/` ya no destruye su historial operativo; el sistema bloquea el registro local y evita el borrado del usuario maestro cuando existe trazabilidad en proyectos.
+- **Subcontratistas Live Edit:** Desktop, mobile y PDC ahora exigen filas completas antes de crear registros y validan el estado final completo antes de guardar cambios parciales.
 - **Autoguardado Unificado al Estilo PI:** Programa General, Programación Semanal, Programa General Actualizar, Subcontratistas y Profesionales ahora muestran el badge inline de `AIA.Notice` en lugar de `toastr` o fades locales, alineando el feedback visual con Programación Intermedia.
 - **Estandarización Final de AIA.Notice:** La capa `AIA.Notice` ahora cubre confirmaciones, diálogos y mensajes multilínea en Admin y módulos LPS, reemplazando `Swal.fire`, `window.confirm` y fallbacks `alert()` residuales con una API consistente.
 - **Fase 2 de Unificacion de Notificaciones:** Se completo la migracion de `alert()` a `AIA.Notice` en `funcionesGenerales6.js`, `ContextManager.js` y `cargarDatosGeneralesPagina2.js`, unificando bloqueos de negocio y errores AJAX en helpers compartidos.
@@ -29,6 +33,9 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ### Corregido
 
+- **Fix Falsos Duplicados en Profesionales:** La fila borrador ya no se valida contra sí misma, los homónimos dejan de bloquear el alta y el guardado local solo rechaza correos realmente repetidos.
+- **Fix Integridad de Subcontratistas y PDC:** Se reemplazaron alertas SQL crudas por validaciones de negocio para campos obligatorios y duplicados por nombre, correo y NIT.
+- **Fix Consistencia Admin/Proyecto:** Los roles `A` ahora sincronizan como `Administrador` en `Profesionales`, manteniendo el mismo criterio operativo entre `admin/` y el proyecto.
 - **Recuperación Global de AIA.Notice:** Se restauró la carga de SweetAlert2 y `AiaAlertInterceptor.js` en legacy, admin y login, corrigiendo la regresión que dejaba sin alertas de guardado, cambios de semana y avisos de sesión a varias vistas operativas.
 - **Programa General - Cambio de Unidad a Porcentaje:** Al convertir actividades con unidad fisica a `%` (o vacio), el sistema ahora preserva el ratio canonico de `Ejecutado`, limpia `cantidad_ppto` y reconstruye `Ejecutado Real` como porcentaje persistente tras guardar y recargar.
 - **Fix Tecla ESC en Grilla:** Resolución del `TypeError` y pérdida accidental de valores al presionar ESC en los editores TomSelect. Se sustituyó el método inexistente por `cancelEditing()`, restaurando el estado previo de la celda de forma segura.
