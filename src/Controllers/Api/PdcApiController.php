@@ -7,6 +7,12 @@ use Throwable;
 
 class PdcApiController
 {
+    private const ALLOWED_PROVIDER_TYPES = [
+        'Mano de Obra',
+        'Suministro e Instalación',
+        'Suministro de Materiales, Herramientas o Equipos',
+    ];
+
     private $db;
 
     public function __construct()
@@ -320,22 +326,36 @@ class PdcApiController
 
     private function adjudicarContrato(string $p): void
     {
-        $idProv = $_POST['idProveedorAdjudicado'] ?? 0;
-        $sub = $_POST['Subcontratista'] ?? '';
-        $nit = $_POST['NIT'] ?? '';
-        $email = $_POST['email'] ?? '';
-        $alcance = $_POST['alcance'] ?? '';
-        $tipo = $_POST['tipo_proveedor'] ?? 1;
-        if ($tipo != 1 && $tipo != 2) $tipo = 1;
+        $idProv = (int)($_POST['idProveedorAdjudicado'] ?? 0);
+        $proveedor = $this->sanitizarProveedorPdc([
+            'subcontratista' => $_POST['Subcontratista'] ?? '',
+            'correo_contacto' => $_POST['email'] ?? '',
+            'NIT' => $_POST['NIT'] ?? '',
+            'alcance' => $_POST['alcance'] ?? '',
+            'tipo_proveedor' => $_POST['tipo_proveedor'] ?? '',
+        ]);
+
+        $errores = $this->validarProveedorPdc($p, $proveedor, $idProv > 0 ? $idProv : null);
+        if (!empty($errores)) {
+            $this->json(["respuesta" => "ERROR", "mensaje" => implode("\n", $errores), "errores" => $errores]);
+            return;
+        }
 
         if ($idProv != 0 && $idProv != "0") {
             $stmtOld = $this->db->query("SELECT subcontratista FROM {$p}_subcontratistas WHERE id=?", [$idProv]);
             $oldName = ($stmtOld->fetch())['subcontratista'] ?? '';
 
             $this->db->query("UPDATE {$p}_subcontratistas SET subcontratista=?, correo_contacto=?, NIT=?, alcance=?, tipo_proveedor=? WHERE id=?",
-                [$sub, $email, $nit, $alcance, $tipo, $idProv]);
+                [
+                    $proveedor['subcontratista'],
+                    $proveedor['correo_contacto'],
+                    $proveedor['NIT'],
+                    $proveedor['alcance'],
+                    $proveedor['tipo_proveedor'],
+                    $idProv,
+                ]);
 
-            if ($oldName && $oldName != $sub) {
+            if ($oldName && $this->normalizarTextoPdc($oldName) !== $this->normalizarTextoPdc($proveedor['subcontratista'])) {
                 $tables = [
                     "{$p}_programacion_semanal" => "Sub_Contratista",
                     "{$p}_programa_consolidado" => "Sub_Contratista",
@@ -343,13 +363,19 @@ class PdcApiController
                     "{$p}_indicadores_generales" => "subcontratista_profesional",
                 ];
                 foreach ($tables as $tbl => $col) {
-                    $this->db->query("UPDATE $tbl SET $col = ? WHERE $col = ?", [$sub, $oldName]);
+                    $this->db->query("UPDATE $tbl SET $col = ? WHERE $col = ?", [$proveedor['subcontratista'], $oldName]);
                 }
             }
             $this->json(["respuesta" => "BIEN", "idProveedor" => $idProv]);
         } else {
             $this->db->query("INSERT INTO {$p}_subcontratistas (subcontratista, correo_contacto, NIT, alcance, tipo_proveedor) VALUES (?,?,?,?,?)",
-                [$sub, $email, $nit, $alcance, $tipo]);
+                [
+                    $proveedor['subcontratista'],
+                    $proveedor['correo_contacto'],
+                    $proveedor['NIT'],
+                    $proveedor['alcance'],
+                    $proveedor['tipo_proveedor'],
+                ]);
             $this->json(["respuesta" => "BIEN", "idProveedor" => $this->db->lastInsertId()]);
         }
     }
@@ -418,6 +444,119 @@ class PdcApiController
     private function checkNull($val)
     {
         return ($val === "NULL" || $val === "") ? null : $val;
+    }
+
+    private function sanitizarProveedorPdc(array $data): array
+    {
+        return [
+            'subcontratista' => $this->limpiarTextoPdc($data['subcontratista'] ?? ''),
+            'correo_contacto' => $this->normalizarEmailPdc($data['correo_contacto'] ?? ''),
+            'NIT' => $this->limpiarTextoPdc($data['NIT'] ?? ''),
+            'alcance' => $this->limpiarTextoPdc($data['alcance'] ?? ''),
+            'tipo_proveedor' => $this->normalizarTipoProveedorPdc($data['tipo_proveedor'] ?? ''),
+        ];
+    }
+
+    private function validarProveedorPdc(string $dbPrefix, array $data, ?int $excludeId = null): array
+    {
+        $errores = [];
+
+        if ($data['subcontratista'] === '') {
+            $errores[] = 'El nombre del subcontratista es obligatorio.';
+        }
+
+        if ($data['correo_contacto'] === '') {
+            $errores[] = 'El correo de contacto es obligatorio.';
+        } elseif (!filter_var($data['correo_contacto'], FILTER_VALIDATE_EMAIL)) {
+            $errores[] = 'El correo de contacto no tiene un formato válido.';
+        }
+
+        if ($data['NIT'] === '') {
+            $errores[] = 'El NIT es obligatorio.';
+        }
+
+        if ($data['alcance'] === '') {
+            $errores[] = 'El alcance es obligatorio.';
+        }
+
+        if ($data['tipo_proveedor'] === '') {
+            $errores[] = 'El tipo de proveedor es obligatorio.';
+        } elseif (!in_array($data['tipo_proveedor'], self::ALLOWED_PROVIDER_TYPES, true)) {
+            $errores[] = 'El tipo de proveedor seleccionado no es válido.';
+        }
+
+        foreach ($this->buscarDuplicadosProveedorPdc($dbPrefix, $data, $excludeId) as $error) {
+            $errores[] = $error;
+        }
+
+        return array_values(array_unique($errores));
+    }
+
+    private function buscarDuplicadosProveedorPdc(string $dbPrefix, array $data, ?int $excludeId = null): array
+    {
+        $errores = [];
+        $params = [];
+        $sql = "SELECT Id, subcontratista, correo_contacto, NIT FROM {$dbPrefix}_subcontratistas";
+
+        if ($excludeId !== null) {
+            $sql .= ' WHERE Id != ?';
+            $params[] = $excludeId;
+        }
+
+        $rows = $this->db->query($sql, $params)->fetchAll(PDO::FETCH_ASSOC);
+        $nombreNormalizado = $this->normalizarTextoPdc($data['subcontratista']);
+        $correoNormalizado = $this->normalizarEmailPdc($data['correo_contacto']);
+        $nitNormalizado = $this->normalizarNitPdc($data['NIT']);
+
+        foreach ($rows as $row) {
+            if ($nombreNormalizado !== '' && $this->normalizarTextoPdc($row['subcontratista'] ?? '') === $nombreNormalizado) {
+                $errores[] = 'Ya existe un subcontratista con ese nombre.';
+            }
+            if ($correoNormalizado !== '' && $this->normalizarEmailPdc($row['correo_contacto'] ?? '') === $correoNormalizado) {
+                $errores[] = 'Ya existe un subcontratista con ese correo.';
+            }
+            if ($nitNormalizado !== '' && $this->normalizarNitPdc($row['NIT'] ?? '') === $nitNormalizado) {
+                $errores[] = 'Ya existe un subcontratista con ese NIT.';
+            }
+        }
+
+        return array_values(array_unique($errores));
+    }
+
+    private function limpiarTextoPdc($valor): string
+    {
+        return preg_replace('/\s+/u', ' ', trim((string)$valor)) ?? '';
+    }
+
+    private function normalizarTextoPdc($valor): string
+    {
+        return function_exists('mb_strtolower')
+            ? mb_strtolower($this->limpiarTextoPdc($valor), 'UTF-8')
+            : strtolower($this->limpiarTextoPdc($valor));
+    }
+
+    private function normalizarEmailPdc($valor): string
+    {
+        $email = trim((string)$valor);
+        return function_exists('mb_strtolower') ? mb_strtolower($email, 'UTF-8') : strtolower($email);
+    }
+
+    private function normalizarNitPdc($valor): string
+    {
+        $nit = trim((string)$valor);
+        return preg_replace('/[^a-zA-Z0-9]/', '', $nit) ?? '';
+    }
+
+    private function normalizarTipoProveedorPdc($valor): string
+    {
+        $tipo = $this->limpiarTextoPdc($valor);
+        if ($tipo === '1') {
+            return 'Mano de Obra';
+        }
+        if ($tipo === '2') {
+            return 'Suministro e Instalación';
+        }
+        return $tipo;
     }
 
     private function json(array $data): void

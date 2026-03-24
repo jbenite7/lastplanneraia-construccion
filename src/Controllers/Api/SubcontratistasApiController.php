@@ -7,6 +7,12 @@ use Throwable;
 
 class SubcontratistasApiController
 {
+    private const ALLOWED_PROVIDER_TYPES = [
+        'Mano de Obra',
+        'Suministro e Instalación',
+        'Suministro de Materiales, Herramientas o Equipos',
+    ];
+
     private $db;
 
     public function __construct()
@@ -102,50 +108,58 @@ class SubcontratistasApiController
         $actualizados = 0;
         $allowed = ['subcontratista', 'correo_contacto', 'NIT', 'alcance', 'tipo_proveedor', 'activo'];
 
+        $changesById = [];
         foreach ($changes as $change) {
-            $id = $change['id'];
-            $columna = $change['prop'];
-            $valor = $change['value'];
+            $id = (int)($change['id'] ?? 0);
+            $columna = $change['prop'] ?? '';
 
-            if ($columna == 'NIT') {
-                $stmtCheck = $this->db->query("SELECT COUNT(*) FROM {$dbPrefix}_subcontratistas WHERE NIT = ? AND Id != ?", [$valor, $id]);
-                if ($stmtCheck->fetchColumn() > 0) {
-                    $errores[] = "ID $id: El NIT '$valor' ya existe.";
-                    continue;
+            if ($id <= 0) {
+                $errores[] = 'Registro inválido para actualizar.';
+                continue;
+            }
+
+            if (!in_array($columna, $allowed, true)) {
+                $errores[] = "Columna no permitida: $columna";
+                continue;
+            }
+
+            $changesById[$id][$columna] = $change['value'] ?? null;
+        }
+
+        foreach ($changesById as $id => $rowChanges) {
+            $actual = $this->obtenerSubcontratista($dbPrefix, $id);
+            if (!$actual) {
+                $errores[] = "Subcontratista ID $id no encontrado.";
+                continue;
+            }
+
+            $actualizado = $this->aplicarCambiosSubcontratista($actual, $rowChanges);
+            $erroresFila = $this->validarSubcontratista($dbPrefix, $actualizado, $id);
+            if (!empty($erroresFila)) {
+                $errores = array_merge($errores, $erroresFila);
+                continue;
+            }
+
+            $resultado = $this->db->query(
+                "UPDATE {$dbPrefix}_subcontratistas SET subcontratista = ?, correo_contacto = ?, NIT = ?, alcance = ?, tipo_proveedor = ?, activo = ? WHERE Id = ?",
+                [
+                    $actualizado['subcontratista'],
+                    $actualizado['correo_contacto'],
+                    $actualizado['NIT'],
+                    $actualizado['alcance'],
+                    $actualizado['tipo_proveedor'],
+                    $actualizado['activo'],
+                    $id,
+                ]
+            );
+
+            if ($resultado) {
+                if ($this->normalizarTexto($actual['subcontratista']) !== $this->normalizarTexto($actualizado['subcontratista'])) {
+                    $this->actualizar_dependencias_nombre($dbPrefix, $actual['subcontratista'], $actualizado['subcontratista']);
                 }
-            }
-
-            if ($columna == 'correo_contacto' && !empty($valor)) {
-                if (!filter_var($valor, FILTER_VALIDATE_EMAIL)) {
-                    $errores[] = "ID $id: Email inválido '$valor'";
-                    continue;
-                }
-            }
-
-            if ($columna == 'activo') {
-                $valor = ($valor === 'true' || $valor === '1' || $valor === true || $valor === 1) ? 1 : 0;
-            } else {
-                $valor = trim($valor);
-            }
-
-            if ($columna == 'subcontratista') {
-                $oldName = $this->db->query("SELECT subcontratista FROM {$dbPrefix}_subcontratistas WHERE Id = ?", [$id])->fetchColumn();
-                if ($oldName && $oldName !== $valor) {
-                    $stmtCheckName = $this->db->query("SELECT COUNT(*) FROM {$dbPrefix}_subcontratistas WHERE subcontratista = ? AND Id != ?", [$valor, $id]);
-                    if ($stmtCheckName->fetchColumn() > 0) {
-                        $errores[] = "ID $id: El Nombre '$valor' ya existe.";
-                        continue;
-                    }
-                    $this->actualizar_dependencias_nombre($dbPrefix, $oldName, $valor);
-                }
-            }
-
-            if (!in_array($columna, $allowed)) continue;
-
-            if ($this->db->query("UPDATE {$dbPrefix}_subcontratistas SET $columna = ? WHERE Id = ?", [$valor, $id])) {
                 $actualizados++;
             } else {
-                $errores[] = "Error actualizando ID $id columna $columna";
+                $errores[] = "Error actualizando el subcontratista '{$actualizado['subcontratista']}'.";
             }
         }
 
@@ -170,31 +184,27 @@ class SubcontratistasApiController
 
     private function crear(string $dbPrefix): void
     {
-        $nombre = trim($_POST['Subcontratista'] ?? $_POST['subcontratista'] ?? '');
-        $correo = trim($_POST['Correo'] ?? $_POST['correo_contacto'] ?? '');
-        $nit = trim($_POST['NIT'] ?? '');
-        $alcance = trim($_POST['alcance'] ?? '');
-        $tipo = trim($_POST['tipo_proveedor'] ?? '');
+        $data = $this->sanitizarSubcontratista([
+            'subcontratista' => $_POST['Subcontratista'] ?? $_POST['subcontratista'] ?? '',
+            'correo_contacto' => $_POST['Correo'] ?? $_POST['correo_contacto'] ?? '',
+            'NIT' => $_POST['NIT'] ?? '',
+            'alcance' => $_POST['alcance'] ?? '',
+            'tipo_proveedor' => $_POST['tipo_proveedor'] ?? '',
+            'activo' => 1,
+        ]);
 
-        if (empty($nombre)) {
-            $this->json(["status" => "error", "message" => "El nombre es obligatorio."]);
-            return;
-        }
-
-        if (!empty($nit)) {
-            if ($this->db->query("SELECT COUNT(*) FROM {$dbPrefix}_subcontratistas WHERE NIT = ?", [$nit])->fetchColumn() > 0) {
-                $this->json(["status" => "error", "message" => "El NIT '$nit' ya está registrado."]);
-                return;
-            }
-        }
-
-        if ($this->db->query("SELECT COUNT(*) FROM {$dbPrefix}_subcontratistas WHERE subcontratista = ?", [$nombre])->fetchColumn() > 0) {
-            $this->json(["status" => "error", "message" => "El Subcontratista '$nombre' ya existe."]);
+        $errores = $this->validarSubcontratista($dbPrefix, $data);
+        if (!empty($errores)) {
+            $this->json(["status" => "error", "message" => implode("\n", $errores), "errors" => $errores]);
             return;
         }
 
         $res = $this->db->query("INSERT INTO {$dbPrefix}_subcontratistas (subcontratista, correo_contacto, NIT, alcance, tipo_proveedor, activo) VALUES (?, ?, ?, ?, ?, 1)", [
-            $nombre, empty($correo) ? null : $correo, empty($nit) ? null : $nit, empty($alcance) ? null : $alcance, empty($tipo) ? null : $tipo
+            $data['subcontratista'],
+            $data['correo_contacto'],
+            $data['NIT'],
+            $data['alcance'],
+            $data['tipo_proveedor'],
         ]);
 
         if ($res) {
@@ -243,5 +253,135 @@ class SubcontratistasApiController
     {
         header('Content-Type: application/json');
         echo json_encode($data, JSON_UNESCAPED_UNICODE);
+    }
+
+    private function obtenerSubcontratista(string $dbPrefix, int $id): ?array
+    {
+        $stmt = $this->db->query("SELECT Id, subcontratista, correo_contacto, NIT, alcance, tipo_proveedor, activo FROM {$dbPrefix}_subcontratistas WHERE Id = ?", [$id]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ?: null;
+    }
+
+    private function aplicarCambiosSubcontratista(array $actual, array $changes): array
+    {
+        $mezclado = [
+            'subcontratista' => array_key_exists('subcontratista', $changes) ? $changes['subcontratista'] : $actual['subcontratista'],
+            'correo_contacto' => array_key_exists('correo_contacto', $changes) ? $changes['correo_contacto'] : $actual['correo_contacto'],
+            'NIT' => array_key_exists('NIT', $changes) ? $changes['NIT'] : $actual['NIT'],
+            'alcance' => array_key_exists('alcance', $changes) ? $changes['alcance'] : $actual['alcance'],
+            'tipo_proveedor' => array_key_exists('tipo_proveedor', $changes) ? $changes['tipo_proveedor'] : $actual['tipo_proveedor'],
+            'activo' => array_key_exists('activo', $changes) ? $changes['activo'] : $actual['activo'],
+        ];
+
+        return $this->sanitizarSubcontratista($mezclado);
+    }
+
+    private function sanitizarSubcontratista(array $data): array
+    {
+        return [
+            'subcontratista' => $this->limpiarTexto($data['subcontratista'] ?? ''),
+            'correo_contacto' => $this->normalizarEmail($data['correo_contacto'] ?? ''),
+            'NIT' => $this->limpiarTexto($data['NIT'] ?? ''),
+            'alcance' => $this->limpiarTexto($data['alcance'] ?? ''),
+            'tipo_proveedor' => $this->limpiarTexto($data['tipo_proveedor'] ?? ''),
+            'activo' => $this->normalizarBooleano($data['activo'] ?? 1),
+        ];
+    }
+
+    private function validarSubcontratista(string $dbPrefix, array $data, ?int $excludeId = null): array
+    {
+        $errores = [];
+
+        if ($data['subcontratista'] === '') {
+            $errores[] = 'El nombre del subcontratista es obligatorio.';
+        }
+
+        if ($data['correo_contacto'] === '') {
+            $errores[] = 'El correo de contacto es obligatorio.';
+        } elseif (!filter_var($data['correo_contacto'], FILTER_VALIDATE_EMAIL)) {
+            $errores[] = 'El correo de contacto no tiene un formato válido.';
+        }
+
+        if ($data['NIT'] === '') {
+            $errores[] = 'El NIT es obligatorio.';
+        }
+
+        if ($data['alcance'] === '') {
+            $errores[] = 'El alcance es obligatorio.';
+        }
+
+        if ($data['tipo_proveedor'] === '') {
+            $errores[] = 'El tipo de proveedor es obligatorio.';
+        } elseif (!in_array($data['tipo_proveedor'], self::ALLOWED_PROVIDER_TYPES, true)) {
+            $errores[] = 'El tipo de proveedor seleccionado no es válido.';
+        }
+
+        foreach ($this->buscarDuplicadosSubcontratista($dbPrefix, $data, $excludeId) as $error) {
+            $errores[] = $error;
+        }
+
+        return array_values(array_unique($errores));
+    }
+
+    private function buscarDuplicadosSubcontratista(string $dbPrefix, array $data, ?int $excludeId = null): array
+    {
+        $errores = [];
+        $params = [];
+        $sql = "SELECT Id, subcontratista, correo_contacto, NIT FROM {$dbPrefix}_subcontratistas";
+
+        if ($excludeId !== null) {
+            $sql .= ' WHERE Id != ?';
+            $params[] = $excludeId;
+        }
+
+        $rows = $this->db->query($sql, $params)->fetchAll(PDO::FETCH_ASSOC);
+        $nombreNormalizado = $this->normalizarTexto($data['subcontratista']);
+        $correoNormalizado = $this->normalizarEmail($data['correo_contacto']);
+        $nitNormalizado = $this->normalizarNitComparacion($data['NIT']);
+
+        foreach ($rows as $row) {
+            if ($nombreNormalizado !== '' && $this->normalizarTexto($row['subcontratista'] ?? '') === $nombreNormalizado) {
+                $errores[] = 'Ya existe un subcontratista con ese nombre.';
+            }
+
+            if ($correoNormalizado !== '' && $this->normalizarEmail($row['correo_contacto'] ?? '') === $correoNormalizado) {
+                $errores[] = 'Ya existe un subcontratista con ese correo.';
+            }
+
+            if ($nitNormalizado !== '' && $this->normalizarNitComparacion($row['NIT'] ?? '') === $nitNormalizado) {
+                $errores[] = 'Ya existe un subcontratista con ese NIT.';
+            }
+        }
+
+        return array_values(array_unique($errores));
+    }
+
+    private function limpiarTexto($valor): string
+    {
+        return preg_replace('/\s+/u', ' ', trim((string)$valor)) ?? '';
+    }
+
+    private function normalizarTexto($valor): string
+    {
+        return function_exists('mb_strtolower')
+            ? mb_strtolower($this->limpiarTexto($valor), 'UTF-8')
+            : strtolower($this->limpiarTexto($valor));
+    }
+
+    private function normalizarEmail($valor): string
+    {
+        $email = trim((string)$valor);
+        return function_exists('mb_strtolower') ? mb_strtolower($email, 'UTF-8') : strtolower($email);
+    }
+
+    private function normalizarNitComparacion($valor): string
+    {
+        $nit = trim((string)$valor);
+        return preg_replace('/[^a-zA-Z0-9]/', '', $nit) ?? '';
+    }
+
+    private function normalizarBooleano($valor): int
+    {
+        return ($valor === 'true' || $valor === '1' || $valor === true || $valor === 1) ? 1 : 0;
     }
 }

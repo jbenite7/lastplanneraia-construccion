@@ -419,6 +419,95 @@
             });
         }
 
+        const providerTypes = ['Mano de Obra', 'Suministro e Instalación', 'Suministro de Materiales, Herramientas o Equipos'];
+
+        function normalizeTextValue(value) {
+            return (value || '').toString().trim().replace(/\s+/g, ' ');
+        }
+
+        function normalizeEmailValue(value) {
+            return (value || '').toString().trim().toLowerCase();
+        }
+
+        function normalizeNitValue(value) {
+            return (value || '').toString().trim();
+        }
+
+        function normalizeNitForCompare(value) {
+            return normalizeNitValue(value).replace(/[^a-zA-Z0-9]/g, '');
+        }
+
+        function buildSubcontratistaPayload(rowData) {
+            return {
+                subcontratista: normalizeTextValue(rowData && rowData.subcontratista),
+                correo_contacto: normalizeEmailValue(rowData && rowData.correo_contacto),
+                NIT: normalizeNitValue(rowData && rowData.NIT),
+                alcance: normalizeTextValue(rowData && rowData.alcance),
+                tipo_proveedor: normalizeTextValue(rowData && rowData.tipo_proveedor),
+                activo: rowData && (rowData.activo === true || rowData.activo === 1 || rowData.activo === '1') ? 1 : 0
+            };
+        }
+
+        function isSubcontratistaDraftEmpty(payload) {
+            return !payload.subcontratista && !payload.correo_contacto && !payload.NIT && !payload.alcance && !payload.tipo_proveedor;
+        }
+
+        function isSubcontratistaDraftComplete(payload) {
+            return !!(payload.subcontratista && payload.correo_contacto && payload.NIT && payload.alcance && payload.tipo_proveedor);
+        }
+
+        function collectSubcontratistaValidationErrors(payload, currentId) {
+            const errors = [];
+            if (!payload.subcontratista) errors.push('El nombre del subcontratista es obligatorio.');
+            if (!payload.correo_contacto) {
+                errors.push('El correo de contacto es obligatorio.');
+            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.correo_contacto)) {
+                errors.push('El correo de contacto no tiene un formato valido.');
+            }
+            if (!payload.NIT) errors.push('El NIT es obligatorio.');
+            if (!payload.alcance) errors.push('El alcance es obligatorio.');
+            if (!payload.tipo_proveedor) {
+                errors.push('El tipo de proveedor es obligatorio.');
+            } else if (providerTypes.indexOf(payload.tipo_proveedor) === -1) {
+                errors.push('El tipo de proveedor seleccionado no es valido.');
+            }
+
+            const rows = hot ? hot.getSourceData() : [];
+            rows.forEach((row) => {
+                if (!row) return;
+                const rowId = row.Id || row.id || null;
+                if (currentId && String(rowId) === String(currentId)) return;
+                const candidate = buildSubcontratistaPayload(row);
+                if (!rowId && isSubcontratistaDraftEmpty(candidate)) return;
+                if (payload.subcontratista && candidate.subcontratista && payload.subcontratista.toLowerCase() === candidate.subcontratista.toLowerCase()) {
+                    errors.push('Ya existe un subcontratista con ese nombre.');
+                }
+                if (payload.correo_contacto && candidate.correo_contacto && payload.correo_contacto === candidate.correo_contacto) {
+                    errors.push('Ya existe un subcontratista con ese correo.');
+                }
+                if (payload.NIT && candidate.NIT && normalizeNitForCompare(payload.NIT) === normalizeNitForCompare(candidate.NIT)) {
+                    errors.push('Ya existe un subcontratista con ese NIT.');
+                }
+            });
+
+            return [...new Set(errors)];
+        }
+
+        function showValidationMessage(errors, type) {
+            if (!errors || !errors.length || !(window.AIA && window.AIA.Notice)) return;
+            const method = type || 'warning';
+            const message = errors.join('\n');
+            if (window.AIA.Notice[method]) {
+                window.AIA.Notice[method](message);
+            }
+        }
+
+        function revertHandsontableChanges(instance, visualRow, changes) {
+            changes.forEach((change) => {
+                instance.setDataAtRowProp(visualRow, change.prop, change.oldValue, 'revert');
+            });
+        }
+
         function updateOrInitHandsontable(data) {
             if (hot) {
                 hot.loadData(data);
@@ -436,12 +525,12 @@
                     { data: 'correo_contacto', type: 'text', className: 'htCenter htMiddle force-wrap' },
                     { data: 'NIT', type: 'text', className: 'htCenter htMiddle' },
                     { data: 'alcance', type: 'text', className: 'htCenter htMiddle force-wrap' },
-                    { 
-                        data: 'tipo_proveedor', 
-                        type: 'dropdown',
-                        className: 'htCenter htMiddle force-wrap',
-                        source: ['Mano de Obra', 'Suministro e Instalación', 'Suministro de Materiales, Herramientas o Equipos']
-                    },
+                     { 
+                         data: 'tipo_proveedor', 
+                         type: 'dropdown',
+                         className: 'htCenter htMiddle force-wrap',
+                         source: providerTypes
+                     },
                     { 
                         data: 'activo', 
                         type: 'checkbox', 
@@ -497,31 +586,48 @@
                     return cellProperties;
                 },
                 afterChange: function(changes, source) {
-                    if (source === 'loadData' || !changes) return;
-                    
+                    if (source === 'loadData' || source === 'revert' || !changes) return;
+
                     const instance = this;
+                    const groupedChanges = new Map();
+
                     changes.forEach(([row, prop, oldValue, newValue]) => {
-                        if (oldValue === newValue) return;
-                        
+                        if (oldValue === newValue || prop === 'accion') return;
                         const physicalRow = instance.toPhysicalRow(row);
+                        if (!groupedChanges.has(physicalRow)) {
+                            groupedChanges.set(physicalRow, { visualRow: row, changes: [] });
+                        }
+                        groupedChanges.get(physicalRow).changes.push({ prop, oldValue, newValue });
+                    });
+
+                    groupedChanges.forEach(({ visualRow, changes: rowChanges }, physicalRow) => {
                         const rowData = instance.getSourceDataAtRow(physicalRow);
-                        const id = rowData.Id;
-                        
-                        // Validar campos vacíos en registros existentes (excepto activo y accion)
-                        if (id && prop !== 'accion' && prop !== 'activo') {
-                            const trimmedValue = (newValue || '').toString().trim();
-                            if (trimmedValue === '') {
-                                if (window.AIA && window.AIA.Notice) window.AIA.Notice.warning('No se puede dejar el campo vacío. Por favor ingrese un valor.');
-                                // Revertir al valor anterior
-                                instance.setDataAtRowProp(row, prop, oldValue, 'revert');
+                        if (!rowData) return;
+
+                        const payload = buildSubcontratistaPayload(rowData);
+                        const id = rowData.Id || rowData.id || null;
+
+                        if (!id) {
+                            if (isSubcontratistaDraftEmpty(payload)) return;
+                            const draftErrors = collectSubcontratistaValidationErrors(payload, null);
+                            if (draftErrors.length) {
+                                if (isSubcontratistaDraftComplete(payload)) {
+                                    showValidationMessage(draftErrors, 'warning');
+                                }
                                 return;
                             }
+                            createSubcontratista(rowData);
+                            return;
                         }
-                        
-                        console.log('afterChange triggered:', { id, prop, oldValue, newValue, rowData });
-                        
-                        // Pasar rowData para permitir creación de nuevos registros
-                        autosave(id, prop, newValue, rowData);
+
+                        const errors = collectSubcontratistaValidationErrors(payload, id);
+                        if (errors.length) {
+                            revertHandsontableChanges(instance, visualRow, rowChanges);
+                            showValidationMessage(errors, 'warning');
+                            return;
+                        }
+
+                        saveRowChanges(id, rowData, rowChanges);
                     });
                 }
             });
@@ -562,19 +668,12 @@
             });
         }
 
-        function autosave(id, column, value, rowData) {
-             const db = document.getElementById('baseDatos').value;
-             $('#save-status').hide();
-             $('#save-error').hide();
+        function saveRowChanges(id, rowData, changes) {
+            const db = document.getElementById('baseDatos').value;
+            $('#save-status').hide();
+            $('#save-error').hide();
 
-             // Si no tiene Id, es un registro nuevo
-             if (!id) {
-                 // Verificar si tiene al menos el nombre para crear
-                 if (rowData && rowData.subcontratista) {
-                     createSubcontratista(rowData);
-                 }
-                 return;
-             }
+            const payload = buildSubcontratistaPayload(rowData);
 
             $.ajax({
                 url: '/api/subcontratistas/save?db=' + db,
@@ -582,54 +681,86 @@
                 dataType: 'json',
                 data: {
                     opcion: 'guardar_cambios',
-                    cambios: [{
-                        id: id,
-                        prop: column,
-                        value: value
-                    }]
+                    cambios: changes.map(function(change) {
+                        return {
+                            id: id,
+                            prop: change.prop,
+                            value: payload[change.prop] !== undefined ? payload[change.prop] : rowData[change.prop]
+                        };
+                    })
                 },
                 success: function(res) {
                     if (res.status === 'success') {
-                         showFeedback('success');
+                        showFeedback('success');
                     } else if (res.status === 'warning') {
-                         if (window.AIA && window.AIA.Notice) window.AIA.Notice.warning('Advertencia: ' + (res.message || '') + '\n' + (res.errors ? res.errors.join('\n') : ''));
-                         showFeedback('error');
+                        showValidationMessage(res.errors || [res.message || 'No se pudo guardar el registro.'], 'warning');
+                        showFeedback('error');
+                        loadData();
                     } else {
-                         if (window.AIA && window.AIA.Notice) window.AIA.Notice.error('Error: ' + (res.message || 'Error desconocido'));
-                         showFeedback('error');
+                        showValidationMessage(res.errors || [res.message || 'No se pudo guardar el registro.'], 'error');
+                        showFeedback('error');
+                        loadData();
                     }
                 },
                 error: function(err) {
                     console.error(err);
+                    if (window.AIA && window.AIA.Notice) window.AIA.Notice.error('Error de red al guardar subcontratista.');
                     showFeedback('error');
+                    loadData();
                 }
             });
         }
 
+        function autosave(id, column, value, rowData) {
+            if (!rowData || !id) return;
+            const currentRow = hot ? hot.getSourceData().find((item) => item && String(item.Id || item.id) === String(id)) : null;
+            const mergedRow = Object.assign({}, currentRow || {}, rowData || {});
+            mergedRow[column] = value;
+            const errors = collectSubcontratistaValidationErrors(buildSubcontratistaPayload(mergedRow), id);
+            if (errors.length) {
+                showValidationMessage(errors, 'warning');
+                loadData();
+                return;
+            }
+            saveRowChanges(id, mergedRow, [{ prop: column, oldValue: null, newValue: value }]);
+        }
+
         function createSubcontratista(rowData) {
+            const payload = buildSubcontratistaPayload(rowData);
+            const errors = collectSubcontratistaValidationErrors(payload, null);
+            if (errors.length) {
+                showValidationMessage(errors, 'warning');
+                return;
+            }
+
+            if (rowData.__creating) return;
+
             const db = document.getElementById('baseDatos').value;
+            rowData.__creating = true;
             $.ajax({
                 url: '/api/subcontratistas/save?db=' + db,
                 type: 'POST',
                 dataType: 'json',
                 data: {
                     opcion: 'crear',
-                    Subcontratista: rowData.subcontratista || '',
-                    Correo: rowData.correo_contacto || '',
-                    NIT: rowData.NIT || '',
-                    alcance: rowData.alcance || '',
-                    tipo_proveedor: rowData.tipo_proveedor || ''
+                    Subcontratista: payload.subcontratista,
+                    Correo: payload.correo_contacto,
+                    NIT: payload.NIT,
+                    alcance: payload.alcance,
+                    tipo_proveedor: payload.tipo_proveedor
                 },
                 success: function(res) {
                     if (res.status === 'success') {
                         showFeedback('success');
                         loadData(); // Recargar para obtener el nuevo Id
                     } else {
-                        if (window.AIA && window.AIA.Notice) window.AIA.Notice.error("Error creando: " + (res.message || 'Error desconocido'));
+                        rowData.__creating = false;
+                        showValidationMessage(res.errors || [res.message || 'No se pudo crear el subcontratista.'], 'warning');
                     }
                 },
                 error: function(err) {
                     console.error(err);
+                    rowData.__creating = false;
                     if (window.AIA && window.AIA.Notice) window.AIA.Notice.error("Error de red al crear subcontratista");
                 }
             });
@@ -686,8 +817,6 @@
         function renderMobileCards(data) {
             const container = document.getElementById('mobile-card-view');
             container.innerHTML = '';
-            
-            const providerTypes = ['Mano de Obra', 'Suministro e Instalación', 'Suministro de Materiales, Herramientas o Equipos'];
 
             // Generate Card Form for New Entry
             let html = `
@@ -776,8 +905,18 @@
             const alcance = $('#new-mobile-alcance').val();
             const tipo = $('#new-mobile-tipo').val();
 
-            if (!nombre) {
-                if (window.AIA && window.AIA.Notice) window.AIA.Notice.warning("Por favor ingrese al menos el nombre");
+            const payload = buildSubcontratistaPayload({
+                subcontratista: nombre,
+                correo_contacto: correo,
+                NIT: nit,
+                alcance: alcance,
+                tipo_proveedor: tipo,
+                activo: 1
+            });
+
+            const errors = collectSubcontratistaValidationErrors(payload, null);
+            if (errors.length) {
+                showValidationMessage(errors, 'warning');
                 return;
             }
 
@@ -789,25 +928,27 @@
                 dataType: 'json',
                 data: {
                     opcion: 'crear',
-                    Subcontratista: nombre,
-                    Correo: correo,
-                    NIT: nit,
-                    alcance: alcance,
-                    tipo_proveedor: tipo
+                    Subcontratista: payload.subcontratista,
+                    Correo: payload.correo_contacto,
+                    NIT: payload.NIT,
+                    alcance: payload.alcance,
+                    tipo_proveedor: payload.tipo_proveedor
                 },
                 success: function(res) {
                     if (res.status === 'success') {
                         loadData();
                         if (window.AIA && window.AIA.Notice) window.AIA.Notice.badge('success', "Subcontratista registrado correctamente");
-                        // Clear form
                         $('#new-mobile-subcontratista').val('');
                         $('#new-mobile-correo').val('');
                         $('#new-mobile-nit').val('');
                         $('#new-mobile-alcance').val('');
                         $('#new-mobile-tipo').val('');
                     } else {
-                        if (window.AIA && window.AIA.Notice) window.AIA.Notice.error("Error: " + (res.message || res.respuesta));
+                        showValidationMessage(res.errors || [res.message || res.respuesta || 'No se pudo crear el subcontratista.'], 'warning');
                     }
+                },
+                error: function() {
+                    if (window.AIA && window.AIA.Notice) window.AIA.Notice.error('Error de red al crear subcontratista.');
                 }
             });
         }
