@@ -19,6 +19,7 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 ### Cambiado
 
 - **Profesionales Gobernados desde Admin:** El módulo `Profesionales` ahora usa el correo como identidad real, permite nombres repetidos, sincroniza cargos desde `admin/`, bloquea edición de nombre/correo/cargo y deja `Activo` como control local solo para miembros vigentes del proyecto.
+- **Normalización Canónica de Nombres en Profesionales:** Las tablas `*_profesionales` ahora guardan el `nombre` oficial de `general_usuarios` cuando el correo tiene una coincidencia única en Admin, tanto en la sincronización automática como en el alta/edición manual; si no existe match confiable, se conserva el nombre local capturado.
 - **Bajas y Trazabilidad de Profesionales:** Retirar un miembro del proyecto o eliminarlo desde `admin/` ya no destruye su historial operativo; el sistema bloquea el registro local y evita el borrado del usuario maestro cuando existe trazabilidad en proyectos.
 - **Subcontratistas Live Edit:** Desktop, mobile y PDC ahora exigen filas completas antes de crear registros y validan el estado final completo antes de guardar cambios parciales.
 - **Autoguardado Unificado al Estilo PI:** Programa General, Programación Semanal, Programa General Actualizar, Subcontratistas y Profesionales ahora muestran el badge inline de `AIA.Notice` en lugar de `toastr` o fades locales, alineando el feedback visual con Programación Intermedia.
@@ -34,6 +35,7 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 ### Corregido
 
 - **Fix Falsos Duplicados en Profesionales:** La fila borrador ya no se valida contra sí misma, los homónimos dejan de bloquear el alta y el guardado local solo rechaza correos realmente repetidos.
+- **Fix Carga de Profesionales al Renombrar Dependencias:** La sincronización de `*_profesionales` ahora verifica correctamente las tablas dependientes al propagar nombres canonizados, evitando el error SQL 1064 que impedía abrir `/profesionales`.
 - **Fix Integridad de Subcontratistas y PDC:** Se reemplazaron alertas SQL crudas por validaciones de negocio para campos obligatorios y duplicados por nombre, correo y NIT.
 - **Fix Consistencia Admin/Proyecto:** Los roles `A` ahora sincronizan como `Administrador` en `Profesionales`, manteniendo el mismo criterio operativo entre `admin/` y el proyecto.
 - **Recuperación Global de AIA.Notice:** Se restauró la carga de SweetAlert2 y `AiaAlertInterceptor.js` en legacy, admin y login, corrigiendo la regresión que dejaba sin alertas de guardado, cambios de semana y avisos de sesión a varias vistas operativas.
