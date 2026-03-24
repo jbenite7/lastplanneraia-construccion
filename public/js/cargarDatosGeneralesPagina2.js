@@ -640,7 +640,11 @@ window.cambiarSemanaSesion = function (semana, redirectUrl) {
       if (data.success) {
         window.location.href = redirectUrl;
       } else {
-        AIA.Notice.error('Error al cambiar de semana: ' + (data.message || 'Desconocido'));
+        if (window.AIA && window.AIA.Notice && typeof window.AIA.Notice.error === 'function') {
+          AIA.Notice.error('Error al cambiar de semana: ' + (data.message || 'Desconocido'));
+        } else if (typeof window.alert === 'function') {
+          window.alert('Error al cambiar de semana: ' + (data.message || 'Desconocido'));
+        }
       }
     })
     .catch((error) => {

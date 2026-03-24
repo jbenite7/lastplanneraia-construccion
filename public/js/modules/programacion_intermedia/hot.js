@@ -1142,12 +1142,15 @@
   }
 
   function showFeedback(type, message) {
+    clearTimeout(saveBadgeTimer);
+    $('#save-status').hide();
+    $('#save-error').hide();
+
     if (type === 'success') {
       if (window.AIA && window.AIA.Notice && window.AIA.Notice.badge) {
         window.AIA.Notice.badge('success', message);
       } else {
         // Fallback robusto
-        clearTimeout(saveBadgeTimer);
         var $el = $('#save-status');
         $el.removeClass('badge-badge-hidden').text(message || 'Guardado').fadeIn(120);
         saveBadgeTimer = setTimeout(function () {
@@ -1157,6 +1160,16 @@
     } else {
       if (window.AIA && window.AIA.Notice && window.AIA.Notice.error) {
         window.AIA.Notice.error(message || 'Error al guardar');
+      } else {
+        var $error = $('#save-error');
+        if ($error.length) {
+          $error.text(message || 'Error al guardar').fadeIn(120);
+          saveBadgeTimer = setTimeout(function () {
+            $error.fadeOut(350);
+          }, 3200);
+        } else if (typeof window.alert === 'function') {
+          window.alert(message || 'Error al guardar');
+        }
       }
     }
   }

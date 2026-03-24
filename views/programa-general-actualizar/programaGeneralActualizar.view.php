@@ -4,7 +4,7 @@
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 	<script src="https://code.jquery.com/ui/1.10.1/jquery-ui.js"></script>
 	<!--Script cque va al archivo linksComunesHead2.js-->
-	<script type="text/javascript" src="/js/linksComunesHead2.js" charset="utf-8"></script>
+	<script type="text/javascript" src="/js/linksComunesHead2.js?v=20260324a" charset="utf-8"></script>
 
 	<!-- Estilos Core Hot -->
 	<link rel="stylesheet" href="/public/vendor/handsontable/handsontable.full.min.css" />
@@ -343,7 +343,7 @@
 	<script src="/js/HandsontableTomSelectEditor.js?v=tomselect30"></script>
 	
 	<!-- Módulos de Handsontable -->
-	<script src="/public/js/modules/programa_actualizar/hot_actualizar.js?v=202603132"></script>
+	<script src="/public/js/modules/programa_actualizar/hot_actualizar.js?v=202603241"></script>
 
 	<script>
 		/* Funciones Legacy requeridas a nivel global */

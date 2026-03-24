@@ -50,7 +50,11 @@ class ContextManager {
         }
       } else {
         console.error('Context Error:', data.message);
-        AIA.Notice.error('No se pudo cambiar la semana: ' + data.message);
+        if (window.AIA && window.AIA.Notice && typeof window.AIA.Notice.error === 'function') {
+          AIA.Notice.error('No se pudo cambiar la semana: ' + data.message);
+        } else if (typeof window.alert === 'function') {
+          window.alert('No se pudo cambiar la semana: ' + data.message);
+        }
       }
     } catch (err) {
       console.error('Network Error:', err);

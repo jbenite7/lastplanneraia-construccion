@@ -3,7 +3,7 @@
 <head id="head">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.10.1/jquery-ui.js"></script>
-    <script type="text/javascript" src="/js/linksComunesHead2.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/js/linksComunesHead2.js?v=20260324a" charset="utf-8"></script>
     <link rel="stylesheet" href="/public/vendor/handsontable/handsontable.full.min.css" />
     <link rel="stylesheet" href="/css/handsontable-module.css?v=hotfix-20260217c" />
     <style>
@@ -77,6 +77,19 @@
 
         .ps-toolbar-right {
            margin-left: auto;
+        }
+
+        .ps-status-badges {
+            display: inline-flex;
+            align-items: center;
+            justify-content: flex-end;
+            min-width: 88px;
+            min-height: 24px;
+        }
+
+        .ps-status-badges .badge {
+            min-width: 88px;
+            justify-content: center;
         }
 
         .ps-actions-row.ps-actions-stacked {
@@ -482,6 +495,9 @@
             </div>
 
             <div class="ps-toolbar-right">
+                <div class="ps-status-badges">
+                    <span id="save-status" class="badge badge-success badge-badge-hidden">Guardado</span>
+                </div>
                 <div id="ps-toast-container" aria-live="polite"></div>
                 <div class="ps-dropdown-nav" aria-label="Navegacion Programacion Semanal">
                     <button type="button" class="btn-pdc-modern btn-dropdown-trigger">
@@ -840,7 +856,7 @@
             ?>
         };
     </script>
-    <script src="/js/modules/programacion_semanal/hot.js?v=hot39"></script>
+    <script src="/js/modules/programacion_semanal/hot.js?v=hot40"></script>
 
     <script>
         function cargaParametros() {

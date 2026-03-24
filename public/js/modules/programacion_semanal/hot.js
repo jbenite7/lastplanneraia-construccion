@@ -305,10 +305,14 @@
     } else if (type === 'warning') {
       if (window.AIA && window.AIA.Notice && window.AIA.Notice.warning) {
         window.AIA.Notice.warning(message);
+      } else if (typeof window.alert === 'function') {
+        window.alert(message || 'Atencion');
       }
     } else {
       if (window.AIA && window.AIA.Notice && window.AIA.Notice.error) {
         window.AIA.Notice.error(message || 'Error al guardar');
+      } else if (typeof window.alert === 'function') {
+        window.alert(message || 'Error al guardar');
       }
     }
   }

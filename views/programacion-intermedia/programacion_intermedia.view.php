@@ -5,7 +5,7 @@
     <script src="https://code.jquery.com/ui/1.10.1/jquery-ui.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap4.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
-    <script type="text/javascript" src="/js/linksComunesHead2.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/js/linksComunesHead2.js?v=20260324a" charset="utf-8"></script>
     <link rel="stylesheet" href="/public/vendor/handsontable/handsontable.full.min.css" />
     <link rel="stylesheet" href="/css/handsontable-module.css" />
     <style>
@@ -941,7 +941,7 @@
         };
     </script>
     <script type="text/javascript" src="/js/HandsontableTomSelectEditor.js?v=tomselect30"></script>
-    <script src="/js/modules/programacion_intermedia/hot.js?v=hot26"></script>
+    <script src="/js/modules/programacion_intermedia/hot.js?v=hot27"></script>
 
     <script>
         function cargaParametros() {

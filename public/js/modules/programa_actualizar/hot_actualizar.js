@@ -283,9 +283,13 @@ window.HOTActualizarModule = (function() {
             // Para simplicidad, calculamos el ratio anterior asumiendo que el cambio está en changesObj.
         }
 
-        // AIA 2026: El sistema oficial es 'toastr'. 
-        // Solo mostramos el spinner/loading si es necesario, sin texto redundante.
-        $('#save-status').fadeIn().removeClass('badge-success').addClass('badge-warning');
+        var $saveStatus = $('#save-status');
+        $saveStatus
+            .stop(true, true)
+            .removeClass('badge-badge-hidden badge-success')
+            .addClass('badge-warning')
+            .text('Guardando...')
+            .fadeIn(120);
         
         var formData = new URLSearchParams();
         formData.append('Id', rowId);
@@ -366,7 +370,7 @@ window.HOTActualizarModule = (function() {
         if (ratioCheck > 1.0001) {
             var maxV = (currentUnidad === '%' || currentUnidad === '' || currentPpto <= 0) ? "100%" : (currentPpto + " " + currentUnidad);
             var errM = "El valor resultante (" + (ratioCheck * 100).toFixed(1) + "%) excede el rango permitido (0-100%). Máximo: " + maxV;
-            $('#save-status').hide();
+            $saveStatus.hide();
             if (typeof toastr !== 'undefined') toastr.error(errM);
             return; // Bloquea el envío al servidor
         }
@@ -381,8 +385,19 @@ window.HOTActualizarModule = (function() {
         .then(res => res.json())
         .then(res => {
             if (res.respuesta === "BIEN") {
-                $('#save-status').fadeOut(200);
-                if (typeof toastr !== 'undefined') toastr.success('Guardado');
+                $saveStatus.removeClass('badge-warning').addClass('badge-success');
+                if (window.AIA && window.AIA.Notice && window.AIA.Notice.badge) {
+                    window.AIA.Notice.badge('success', 'Auto-Guardado');
+                } else {
+                    $saveStatus
+                        .removeClass('badge-badge-hidden')
+                        .text('Auto-Guardado')
+                        .fadeIn(120)
+                        .delay(1800)
+                        .fadeOut(250, function() {
+                            $(this).addClass('badge-badge-hidden');
+                        });
+                }
 
                 // Reflejar cambios heredados si existen en la respuesta (Herencia AIA 2026)
                 if (res.unidad !== undefined) hot.setDataAtRowProp(visualRowIndex, 'unidad', res.unidad, 'internal');
@@ -409,14 +424,14 @@ window.HOTActualizarModule = (function() {
                     if (res[field] !== undefined) hot.setDataAtRowProp(visualRowIndex, field, res[field], 'internal');
                 });
             } else {
-                $('#save-status').hide();
+                $saveStatus.hide();
                 var msg = res.mensaje || 'Error al guardar';
                 if (typeof toastr !== 'undefined') toastr.error(msg);
             }
         })
         .catch(err => {
             console.error("🔥 Error en autoSaveRow:", err);
-            $('#save-status').hide();
+            $saveStatus.hide();
             var errorMsg = err.message || 'Error de red al guardar';
             if (typeof toastr !== 'undefined') toastr.error(errorMsg);
         });
