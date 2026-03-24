@@ -49,6 +49,7 @@ class ProjectProfessionalsSyncService
             }
 
             $adminEmailStats = $this->fetchAdminEmailStats();
+            $adminCanonicalNames = $this->fetchAdminCanonicalNames();
             $existingByEmail = $this->fetchExistingProfessionalsByEmail($dbPrefix, $summary);
 
             foreach ($members as $member) {
@@ -57,8 +58,8 @@ class ProjectProfessionalsSyncService
                     continue;
                 }
 
-                $nombre = $this->limpiarTexto($member['nombre'] ?? '');
                 $email = $this->normalizarEmail($member['email'] ?? '');
+                $nombre = $adminCanonicalNames[$email] ?? $this->limpiarTexto($member['nombre'] ?? '');
                 $usuario = trim((string)($member['usuario'] ?? ''));
                 $cargo = self::ROLE_TO_CARGO[$role];
 
@@ -160,6 +161,8 @@ class ProjectProfessionalsSyncService
                 $existing = $existingByEmail[$email];
                 $fields = [];
                 $params = [];
+                $existingName = $this->limpiarTexto($existing['nombre'] ?? '');
+                $nameChanged = false;
 
                 if ($this->limpiarTexto($existing['cargo'] ?? '') !== $cargo) {
                     $fields[] = 'cargo = ?';
@@ -168,11 +171,12 @@ class ProjectProfessionalsSyncService
                     $existing['cargo'] = $cargo;
                 }
 
-                if ($this->limpiarTexto($existing['nombre'] ?? '') === '' && $nombre !== '') {
+                if ($nombre !== '' && $existingName !== $nombre) {
                     $fields[] = 'nombre = ?';
                     $params[] = $nombre;
                     $summary['updated']++;
                     $existing['nombre'] = $nombre;
+                    $nameChanged = true;
                 }
 
                 if (!empty($fields)) {
@@ -181,6 +185,9 @@ class ProjectProfessionalsSyncService
                         "UPDATE {$dbPrefix}_profesionales SET " . implode(', ', $fields) . ' WHERE id = ?',
                         $params
                     );
+                    if ($nameChanged) {
+                        $this->replaceProfessionalDependencies($dbPrefix, $existingName, $existing['nombre']);
+                    }
                     $existingByEmail[$email] = $existing;
                 }
             }
@@ -218,12 +225,39 @@ class ProjectProfessionalsSyncService
                     continue;
                 }
 
+                $fields = [];
+                $params = [];
+                $existingName = $this->limpiarTexto($existing['nombre'] ?? '');
+                $canonicalName = $adminCanonicalNames[$email] ?? '';
+                $nameChanged = false;
+
+                if ($canonicalName !== '' && $existingName !== $canonicalName) {
+                    $fields[] = 'nombre = ?';
+                    $params[] = $canonicalName;
+                    $summary['updated']++;
+                    $existing['nombre'] = $canonicalName;
+                    $nameChanged = true;
+                }
+
                 if (!isset($currentMemberEmails[$email]) && (int)($existing['activo'] ?? 0) !== 0) {
-                    $this->db->query(
-                        "UPDATE {$dbPrefix}_profesionales SET activo = 0 WHERE id = ?",
-                        [$existing['id']]
-                    );
+                    $fields[] = 'activo = ?';
+                    $params[] = 0;
+                    $existing['activo'] = 0;
                     $summary['blocked']++;
+                }
+
+                if (!empty($fields)) {
+                    $params[] = $existing['id'];
+                    $this->db->query(
+                        "UPDATE {$dbPrefix}_profesionales SET " . implode(', ', $fields) . ' WHERE id = ?',
+                        $params
+                    );
+
+                    if ($nameChanged) {
+                        $this->replaceProfessionalDependencies($dbPrefix, $existingName, $existing['nombre']);
+                    }
+
+                    $existingByEmail[$email] = $existing;
                 }
             }
 
@@ -304,6 +338,14 @@ class ProjectProfessionalsSyncService
         return true;
     }
 
+    public function resolveCanonicalProfessionalName(string $email, string $fallbackName = ''): string
+    {
+        $fallbackName = $this->limpiarTexto($fallbackName);
+        $canonicalName = $this->fetchCanonicalAdminNameByEmail($this->normalizarEmail($email));
+
+        return $canonicalName ?? $fallbackName;
+    }
+
     private function fetchEligibleProjectMembers(string $dbPrefix): array
     {
         $roles = array_keys(self::ROLE_TO_CARGO);
@@ -353,6 +395,55 @@ class ProjectProfessionalsSyncService
         }
 
         return $stats;
+    }
+
+    private function fetchAdminCanonicalNames(): array
+    {
+        $rows = $this->db->query(
+            "SELECT LOWER(TRIM(email)) AS email_normalized,
+                    MAX(CASE WHEN nombre IS NOT NULL AND TRIM(nombre) != '' THEN TRIM(nombre) ELSE '' END) AS nombre
+             FROM general_usuarios
+             WHERE email IS NOT NULL AND TRIM(email) != ''
+             GROUP BY LOWER(TRIM(email))
+             HAVING COUNT(*) = 1
+                AND MAX(CASE WHEN nombre IS NOT NULL AND TRIM(nombre) != '' THEN 1 ELSE 0 END) = 1"
+        )->fetchAll(PDO::FETCH_ASSOC);
+
+        $map = [];
+        foreach ($rows as $row) {
+            $email = $this->normalizarEmail($row['email_normalized'] ?? '');
+            $nombre = $this->limpiarTexto($row['nombre'] ?? '');
+            if ($email === '' || $nombre === '') {
+                continue;
+            }
+
+            $map[$email] = $nombre;
+        }
+
+        return $map;
+    }
+
+    private function fetchCanonicalAdminNameByEmail(string $email): ?string
+    {
+        if ($email === '') {
+            return null;
+        }
+
+        $row = $this->db->query(
+            "SELECT COUNT(*) AS total,
+                    MAX(CASE WHEN nombre IS NOT NULL AND TRIM(nombre) != '' THEN TRIM(nombre) ELSE '' END) AS nombre
+             FROM general_usuarios
+             WHERE LOWER(TRIM(email)) = ?",
+            [$email]
+        )->fetch(PDO::FETCH_ASSOC);
+
+        if ((int)($row['total'] ?? 0) !== 1) {
+            return null;
+        }
+
+        $nombre = $this->limpiarTexto($row['nombre'] ?? '');
+
+        return $nombre !== '' ? $nombre : null;
     }
 
     private function fetchExistingProfessionalsByEmail(string $dbPrefix, array &$summary): array
@@ -498,7 +589,7 @@ class ProjectProfessionalsSyncService
 
         $existingTables = [];
         foreach ($tables as $table => $column) {
-            if ($this->db->query("SHOW TABLES LIKE ?", [$table])->fetch()) {
+            if ($this->db->query("SHOW TABLES LIKE " . $this->db->quote($table))->fetch()) {
                 $existingTables[$table] = $column;
             }
         }

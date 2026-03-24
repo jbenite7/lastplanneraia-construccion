@@ -197,6 +197,10 @@ class ProfesionalesApiController
             }
 
             $actualizado = $this->aplicarCambiosProfesional($actual, $rowChanges);
+            $actualizado['nombre'] = $this->syncService->resolveCanonicalProfessionalName(
+                $actualizado['email'],
+                $actualizado['nombre']
+            );
             $erroresFila = $this->validarProfesional($dbPrefix, $actualizado, $id);
             if (!empty($erroresFila)) {
                 $errores = array_merge($errores, $erroresFila);
@@ -250,6 +254,7 @@ class ProfesionalesApiController
             'cargo' => $_POST['cargo'] ?? '',
             'activo' => 1,
         ]);
+        $data['nombre'] = $this->syncService->resolveCanonicalProfessionalName($data['email'], $data['nombre']);
 
         $errores = $this->validarProfesional($dbPrefix, $data);
         if (!empty($errores)) {
