@@ -3,6 +3,7 @@
 namespace App\Controllers\Api;
 
 use App\Core\Lps\LpsService;
+use App\Services\WeeklyRealProgressCarryoverService;
 use PDO;
 use Throwable;
 
@@ -10,11 +11,13 @@ class SemanalApiController
 {
     private $db;
     private LpsService $lpsService;
+    private WeeklyRealProgressCarryoverService $weeklyRealProgressCarryoverService;
 
     public function __construct()
     {
         $this->db = \Database::getInstance();
         $this->lpsService = new LpsService();
+        $this->weeklyRealProgressCarryoverService = new WeeklyRealProgressCarryoverService($this->db, $this->lpsService);
     }
 
     public function list(): void
@@ -109,6 +112,9 @@ class SemanalApiController
                     break;
             }
         } catch (Throwable $t) {
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
             $this->jsonError("Error: " . $t->getMessage());
         }
     }
@@ -133,7 +139,13 @@ class SemanalApiController
 
     private function modificar(string $dbPrefix, int $semana): void
     {
-        $id = $_POST["Id"];
+        $id = (int)($_POST["Id"] ?? 0);
+        $sourceProgramId = $this->getWeeklyProgramId($dbPrefix, $id);
+        if ($sourceProgramId === null) {
+            $this->jsonError("No se encontró la actividad semanal a actualizar.");
+            return;
+        }
+
         $compromiso = $this->lpsService->toFloat($_POST["Compromiso"] ?? null);
         $real = $this->lpsService->toFloat($_POST["Real"] ?? null);
 
@@ -169,7 +181,11 @@ class SemanalApiController
             $catCnc, $cnc, $obs, $id
         ];
 
+        $this->db->beginTransaction();
         $res = $this->db->query($query, $params);
+        $this->syncNextWeekCarryover($dbPrefix, $semana, $sourceProgramId);
+        $this->db->commit();
+
         $this->jsonResponse($res ? "BIEN" : "ERROR");
     }
 
@@ -304,6 +320,90 @@ class SemanalApiController
         return is_numeric($normalized) ? (float)$normalized : null;
     }
 
+    private function getWeeklyProgramId(string $dbPrefix, int $weeklyRowId): ?int
+    {
+        if ($weeklyRowId <= 0) {
+            return null;
+        }
+
+        $programId = $this->db->query(
+            "SELECT Consecutivo_En_Programa FROM {$dbPrefix}_programacion_semanal WHERE Consecutivo = ? LIMIT 1",
+            [$weeklyRowId]
+        )->fetchColumn();
+
+        if ($programId === false || $programId === null) {
+            return null;
+        }
+
+        return (int)$programId;
+    }
+
+    private function syncNextWeekCarryover(string $dbPrefix, int $sourceWeek, int $sourceProgramId): void
+    {
+        if ($sourceWeek <= 0 || $sourceProgramId <= 0) {
+            return;
+        }
+
+        $targetWeek = $sourceWeek + 1;
+        $exists = (int)$this->db->query(
+            "SELECT COUNT(*) FROM {$dbPrefix}_semanas_activas WHERE Semana = ?",
+            [$targetWeek]
+        )->fetchColumn();
+
+        if ($exists === 0) {
+            return;
+        }
+
+        $result = $this->weeklyRealProgressCarryoverService->syncWeek($dbPrefix, $sourceWeek, $targetWeek, $sourceProgramId);
+        $updatedProgramIds = $result['updatedProgramIds'] ?? [];
+
+        if (!empty($updatedProgramIds)) {
+            $this->refreshGeneralStatuses($dbPrefix, $targetWeek, $updatedProgramIds);
+        }
+    }
+
+    private function refreshGeneralStatuses(string $dbPrefix, int $semana, array $programIds): void
+    {
+        $programIds = array_values(array_unique(array_filter(array_map('intval', $programIds), static fn ($id) => $id > 0)));
+        if (empty($programIds)) {
+            return;
+        }
+
+        $semanaData = $this->db->query(
+            "SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem FROM {$dbPrefix}_semanas_activas WHERE Semana = ? LIMIT 1",
+            [$semana]
+        )->fetch(PDO::FETCH_ASSOC);
+
+        if (!$semanaData) {
+            return;
+        }
+
+        $placeholders = implode(',', array_fill(0, count($programIds), '?'));
+        $params = array_merge([$semana], $programIds);
+        $rows = $this->db->query(
+            "SELECT Consecutivo_en_Programa, Titulo, Ejecutado, Fecha_Inicio, Fecha_Fin
+             FROM {$dbPrefix}_programa_consolidado
+             WHERE Semana = ? AND Consecutivo_en_Programa IN ({$placeholders})",
+            $params
+        )->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($rows as $row) {
+            $estado = $this->lpsService->calculateGeneralStatus(
+                $row['Titulo'] ?? 0,
+                $row['Ejecutado'] ?? 0,
+                $row['Fecha_Inicio'] ?? null,
+                $row['Fecha_Fin'] ?? null,
+                $semanaData['Fecha_Inicio_Sem'] ?? null,
+                $semanaData['Fecha_Fin_Sem'] ?? null
+            );
+
+            $this->db->query(
+                "UPDATE {$dbPrefix}_programa_consolidado SET Estado = ? WHERE Semana = ? AND Consecutivo_en_Programa = ?",
+                [$estado, $semana, $row['Consecutivo_en_Programa']]
+            );
+        }
+    }
+
     // Stub methods for the rest of the logic to be completed in subsequent edits if necessary
     private function estadoEjecucion(string $dbPrefix, int $semana): void
     {
@@ -318,7 +418,14 @@ class SemanalApiController
 
     private function eliminar(string $dbPrefix, int $semana): void
     {
-        $id = $_POST["Id"];
+        $id = (int)($_POST["Id"] ?? 0);
+        $sourceProgramId = $this->getWeeklyProgramId($dbPrefix, $id);
+        if ($sourceProgramId === null) {
+            $this->jsonError("No se encontró la actividad semanal a eliminar.");
+            return;
+        }
+
+        $this->db->beginTransaction();
         $querySelect = "SELECT Activa FROM {$dbPrefix}_programacion_semanal WHERE Consecutivo = ?";
         $data = $this->db->query($querySelect, [$id])->fetch(PDO::FETCH_ASSOC);
 
@@ -328,14 +435,26 @@ class SemanalApiController
             $queryUpdate = "UPDATE {$dbPrefix}_programacion_semanal SET Activa = '0', Responsable_AIA = ?, Categoria_CNP = ?, CNP = ?, Observaciones_CNP = ? WHERE Consecutivo = ?";
             $res = $this->db->query($queryUpdate, [$_POST["Responsable_AIA"], $_POST["Categoria_CNP"], $_POST["CNP"], $_POST["Observaciones_CNP"], $id]);
         }
+
+        $this->syncNextWeekCarryover($dbPrefix, $semana, $sourceProgramId);
+        $this->db->commit();
         $this->jsonResponse($res ? "BIEN" : "ERROR");
     }
 
     private function duplicar(string $dbPrefix, int $semana): void
     {
-        $id = $_POST["Id"];
+        $id = (int)($_POST["Id"] ?? 0);
+        $sourceProgramId = $this->getWeeklyProgramId($dbPrefix, $id);
+        if ($sourceProgramId === null) {
+            $this->jsonError("No se encontró la actividad semanal a duplicar.");
+            return;
+        }
+
+        $this->db->beginTransaction();
         $queryInsert = "INSERT INTO {$dbPrefix}_programacion_semanal (Semana, Consecutivo_En_Programa, Id, Actividad, Critica, Atrasada, Activa, Prog_Sin_Restricciones_100, Fecha_Inicio, Fecha_Fin, Sub_Contratista, Responsable_AIA, Empresa, Ejecutado, medir_productividad) SELECT ?, Consecutivo_en_Programa, Id, Actividad, 0, 0, 'NA', Prog_Sin_Restricciones_100, Fecha_Inicio, Fecha_Fin, Sub_Contratista, Responsable_AIA, Empresa, Ejecutado, 0 FROM {$dbPrefix}_programacion_semanal WHERE Semana = ? AND Consecutivo = ?";
         $res = $this->db->query($queryInsert, [$semana, $semana, $id]);
+        $this->syncNextWeekCarryover($dbPrefix, $semana, $sourceProgramId);
+        $this->db->commit();
         $this->jsonResponse($res ? "BIEN" : "ERROR");
     }
     private function nuevo(string $dbPrefix, int $semana): void
@@ -349,10 +468,13 @@ class SemanalApiController
         $queryInsert = "INSERT INTO {$dbPrefix}_programacion_semanal (Semana, Consecutivo_En_Programa, Id, Actividad, Descripcion, Ubicacion, Fecha_Inicio, Fecha_Fin, Sub_Contratista, Responsable_AIA, Empresa, Ejecutado, medir_productividad, Unidad, cantidad_ppto, Compromiso, Critica, Atrasada, Activa, Prog_Sin_Restricciones_100, codigo_actividad) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 'NA', 0, ?)";
         $subs = array_filter(array_map('trim', explode(',', $_POST["Sub_Contratista"])));
         $isFirst = true;
+        $this->db->beginTransaction();
         foreach ($subs as $sub) {
             $this->db->query($queryInsert, [$semana, $data0["Consecutivo_en_Programa"], $idBase, $_POST["Actividad"], $_POST["Descripcion"], $_POST["Ubicacion"], $data0["Fecha_Inicio"], $data0["Fecha_Fin"], $sub, $_POST["Responsable_AIA"], $_POST["Empresa"], $data0["Ejecutado"], $data0["medir_productividad"], $_POST["Unidad"] ?: '%', $data0["cantidad_ppto"], $isFirst ? $this->parseLocalizedFloat($_POST["Compromiso"]) : null, $data0["codigo_actividad"]]);
             $isFirst = false;
         }
+        $this->syncNextWeekCarryover($dbPrefix, $semana, (int)$data0["Consecutivo_en_Programa"]);
+        $this->db->commit();
         $this->jsonResponse("BIEN");
     }
 

@@ -125,41 +125,8 @@ try {
 
 
 
-            $sqlSemanal = "SELECT 
-                MAX(Actividad) as Actividad, 
-                Consecutivo_En_Programa, 
-                MAX(Ejecutado) as Ejecutado, 
-                MAX(cantidad_ppto) as cantidad_ppto, 
-                SUM(Ejecutado_Real) as S_Ejecutado_Real, 
-                GROUP_CONCAT(DISTINCT Responsable_AIA SEPARATOR ', ') as Responsable_AIA, 
-                GROUP_CONCAT(DISTINCT Sub_Contratista SEPARATOR ', ') as Sub_Contratista 
-            FROM {$db}_programacion_semanal 
-            WHERE Semana=? 
-              AND (Activa='1' OR Activa='NA') 
-              AND (Ejecutado_Real IS NOT NULL AND Ejecutado_Real != '' AND Ejecutado_Real !=0) 
-            GROUP BY Consecutivo_En_Programa";
-            
-            $stmtSemanal = $dbInstance->query($sqlSemanal, [$conteo]);
-            $actividadesSem = $stmtSemanal->fetchAll();
-
-            foreach ($actividadesSem as $data5) {
-                $Actividad = strip_tags($data5["Actividad"]);
-                $Ejecutado = (float)$data5["Ejecutado"];
-                $cantidad_ppto = (float)($data5["cantidad_ppto"] ?? 0);
-                if ($cantidad_ppto <= 0) {
-                    // Fallback: actividades tipo % usan 100 como base de cálculo
-                    $cantidad_ppto = 100;
-                }
-
-                $Suma_Ejecutado_Real = (float)$data5["S_Ejecutado_Real"];
-                $Responsable_AIA = $data5["Responsable_AIA"];
-                $Sub_Contratista = $data5["Sub_Contratista"];
-                
-                $Ejecutado_fin_semana = ($Suma_Ejecutado_Real == 0) ? $Ejecutado : ($Suma_Ejecutado_Real / $cantidad_ppto) + $Ejecutado;
-
-                $sqlUpdateProg = "UPDATE {$db}_programa_consolidado SET Ejecutado=?, Responsable_AIA=?, Sub_Contratista=? WHERE Semana=? AND (REPLACE(REPLACE(Actividad, '<b>', ''), '</b>', '') = ? OR REPLACE(REPLACE(programaAnteriorAsociar, '<b>', ''), '</b>', '') = ?)";
-                $dbInstance->query($sqlUpdateProg, [$Ejecutado_fin_semana, $Responsable_AIA, $Sub_Contratista, $semana_crear, $Actividad, $Actividad]);
-            }
+            $carryoverService = new \App\Services\WeeklyRealProgressCarryoverService($dbInstance);
+            $carryoverService->syncWeek($db, $conteo, $semana_crear);
 
             if ($pdcActivo == 1) {
                 $sqlCopyPDC = "INSERT INTO `{$db}_pdc` (semana, titulo, tipoPaquete, paqueteContratacion, contratos, numeroSubcontratos, subcontratoPaquete, estado, fechaElaboracionPliegos, diasElaboracionPliegos, fechaRealElaboracionPliegos, fechaIngresoLicify, diasIngresoLicify, fechaRealIngresoLicify, fechaEntregaPliegos, diasEntregaPliegos, fechaRealEntregaPliegos, fechaReciboPropuestas, diasReciboPropuestas, fechaRealReciboPropuestas, fechaCuadrosComparativos, diasCuadrosComparativos, fechaRealCuadrosComparativos, fechaLegalizacionContrato, diasLegalizacionContrato, fechaRealLegalizacionContrato, fechaFabricacion, diasFabricacion, fechaRealFabricacion, fechaInsumosObra, diasInsumosObra, fechaRealInsumosObra, fechaInicio, fechaInicioProyectada, fechaRealInicio, idProveedorAdjudicado, numeroContrato, fechaVencimientoPolizas, valorPresupuesto, valorPrimeraNegociacion, valorAdjudicado, valorAnticipo, valorReclamado, valorDevoluciones, observacionesContrato)
