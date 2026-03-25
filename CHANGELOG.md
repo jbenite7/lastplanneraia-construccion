@@ -9,6 +9,7 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ### Añadido
 
+- **Runtime Frontend Config Global:** Nuevo endpoint `'/runtime/frontend-config.js'`, servicio `src/Services/FeatureFlagService.php` y documento `docs/20260325_general_feature_flags.md` para exponer feature flags publicos sin acoplar las vistas al backend.
 - **Sincronización de Profesionales por Proyecto:** Nuevo servicio `src/Services/ProjectProfessionalsSyncService.php` para reconciliar `admin/` contra `*_profesionales`, mapear roles `A/D/DCV/G/OT/R/S/SG`, consolidar duplicados por correo y preservar el historial por proyecto.
 - **Flujo de Timeout de Sesion (Fase 1):** La expiracion por inactividad ahora redirige al login con un aviso visual en `AIA.Notice`, mejorando la experiencia tras sesiones vencidas.
 - **AIA Notice Global:** Nuevo core `public/js/core/AiaAlertInterceptor.js` para centralizar alertas, toasts y badges de guardado sobre SweetAlert2 en Admin, login y modulos LPS.
@@ -18,6 +19,7 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ### Cambiado
 
+- **Switch Global de Console Logs:** El dashboard admin ahora permite activar o silenciar `console.log` en todo el frontend, con persistencia centralizada y recarga uniforme de la configuracion en login, selector de proyecto y vistas legacy/MVC.
 - **Profesionales Gobernados desde Admin:** El módulo `Profesionales` ahora usa el correo como identidad real, permite nombres repetidos, sincroniza cargos desde `admin/`, bloquea edición de nombre/correo/cargo y deja `Activo` como control local solo para miembros vigentes del proyecto.
 - **Normalización Canónica de Nombres en Profesionales:** Las tablas `*_profesionales` ahora guardan el `nombre` oficial de `general_usuarios` cuando el correo tiene una coincidencia única en Admin, tanto en la sincronización automática como en el alta/edición manual; si no existe match confiable, se conserva el nombre local capturado.
 - **Bajas y Trazabilidad de Profesionales:** Retirar un miembro del proyecto o eliminarlo desde `admin/` ya no destruye su historial operativo; el sistema bloquea el registro local y evita el borrado del usuario maestro cuando existe trazabilidad en proyectos.
@@ -34,6 +36,7 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ### Corregido
 
+- **Fix CNP al Abrir la Vista:** La columna `¿Liberada?` en `views/programacion-semanal/CNP.view.php` ahora tolera valores `null` de `Prog_Sin_Restricciones_100` y la autoprogramacion semanal vuelve a recalcular ese flag para evitar warnings TN/4 de DataTables al abrir `/programacion-semanal/cnp`.
 - **Fix Falsos Duplicados en Profesionales:** La fila borrador ya no se valida contra sí misma, los homónimos dejan de bloquear el alta y el guardado local solo rechaza correos realmente repetidos.
 - **Fix Carga de Profesionales al Renombrar Dependencias:** La sincronización de `*_profesionales` ahora verifica correctamente las tablas dependientes al propagar nombres canonizados, evitando el error SQL 1064 que impedía abrir `/profesionales`.
 - **Fix Integridad de Subcontratistas y PDC:** Se reemplazaron alertas SQL crudas por validaciones de negocio para campos obligatorios y duplicados por nombre, correo y NIT.
