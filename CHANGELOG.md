@@ -19,6 +19,7 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ### Cambiado
 
+- **Contexto Inteligente de Aterrizaje por Proyecto:** Nuevo servicio `src/Services/ProjectLandingService.php` para resolver la semana operativa y el modulo inicial segun semanas activas, pendientes de calificacion y rol canonico; `DashboardController`, `ProjectSelectorController`, `ProgramaGeneralController` y `ProgramacionSemanalController` ahora sanean el contexto semanal antes de redirigir o renderizar vistas.
 - **Switch Global de Console Logs:** El dashboard admin ahora permite activar o silenciar `console.log` en todo el frontend, con persistencia centralizada y recarga uniforme de la configuracion en login, selector de proyecto y vistas legacy/MVC.
 - **Profesionales Gobernados desde Admin:** El módulo `Profesionales` ahora usa el correo como identidad real, permite nombres repetidos, sincroniza cargos desde `admin/`, bloquea edición de nombre/correo/cargo y deja `Activo` como control local solo para miembros vigentes del proyecto.
 - **Normalización Canónica de Nombres en Profesionales:** Las tablas `*_profesionales` ahora guardan el `nombre` oficial de `general_usuarios` cuando el correo tiene una coincidencia única en Admin, tanto en la sincronización automática como en el alta/edición manual; si no existe match confiable, se conserva el nombre local capturado.
@@ -36,6 +37,7 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ### Corregido
 
+- **Programación Semanal - Bloqueo por Asignaciones Incompletas:** El estado operativo ya no marca una actividad como `Lista para Confirmar` si falta `Responsable_AIA` o `Sub_Contratista`; el chip, el cierre semanal y la API ahora tratan esos casos como bloqueantes operativos.
 - **Fix CNP al Abrir la Vista:** La columna `¿Liberada?` en `views/programacion-semanal/CNP.view.php` ahora tolera valores `null` de `Prog_Sin_Restricciones_100` y la autoprogramacion semanal vuelve a recalcular ese flag para evitar warnings TN/4 de DataTables al abrir `/programacion-semanal/cnp`.
 - **Fix Falsos Duplicados en Profesionales:** La fila borrador ya no se valida contra sí misma, los homónimos dejan de bloquear el alta y el guardado local solo rechaza correos realmente repetidos.
 - **Fix Carga de Profesionales al Renombrar Dependencias:** La sincronización de `*_profesionales` ahora verifica correctamente las tablas dependientes al propagar nombres canonizados, evitando el error SQL 1064 que impedía abrir `/profesionales`.
