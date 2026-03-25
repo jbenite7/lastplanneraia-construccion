@@ -69,19 +69,19 @@
       },
       {
         key: 'prog-sin-compromiso',
-        label: 'Sin Compromiso',
+        label: 'Sin Compromiso o sin Responsables',
         className: 'ps-alert-critical',
         priority: 'p1',
-        description: 'Actividad activa sin compromiso semanal.',
-        action: 'Definir cantidad y responsable antes del cierre semanal.',
+        description: 'Actividad activa sin compromiso semanal o sin asignaciones obligatorias (Responsable AIA/Sub-Contratista).',
+        action: 'Definir cantidad, Responsable AIA y Sub-Contratista antes del cierre semanal.',
       },
       {
         key: 'prog-lista-para-confirmar',
         label: 'Lista para Confirmar',
         className: 'ps-alert-control',
         priority: 'p3',
-        description: 'Compromiso cargado y listo para cierre.',
-        action: 'Verificar recursos y confirmar en el comité semanal.',
+        description: 'Compromiso cargado con Responsable AIA y Sub-Contratista definidos.',
+        action: 'Verificar recursos, asignaciones y confirmar en el comite semanal.',
       },
     ],
     calificacion: [
@@ -2248,7 +2248,7 @@
 
     var html = "<div class='ps-close-summary'>" +
       "<div class='ps-close-summary-kpis'>" +
-      "<div class='ps-close-summary-kpi is-blocking'><strong>" + summary.blockingCount + "</strong><small>Sin compromiso</small></div>" +
+      "<div class='ps-close-summary-kpi is-blocking'><strong>" + summary.blockingCount + "</strong><small>Bloqueantes</small></div>" +
       "<div class='ps-close-summary-kpi is-ready'><strong>" + summary.readyCount + "</strong><small>Listas para confirmar</small></div>" +
       "<div class='ps-close-summary-kpi is-warning'><strong>" + summary.warningLowCount + "</strong><small>Compromiso menor a sugerido</small></div>" +
       "<div class='ps-close-summary-kpi is-warning'><strong>" + summary.warningRestrictedCount + "</strong><small>Compromiso con restricción</small></div>" +
@@ -2727,7 +2727,7 @@
         syncPhaseUI();
         loadData();
       } else {
-        $('#aceptar_cerrar_compromisos_semana').html('<p>Se detectaron actividades sin compromiso válido.</p><p>Asigne compromisos > 0 en todas las actividades activas para continuar.</p>');
+        $('#aceptar_cerrar_compromisos_semana').html('<p>Se detectaron actividades sin compromiso o sin asignaciones obligatorias.</p><p>Asigne compromisos > 0, Responsable AIA y Sub-Contratista en todas las actividades activas para continuar.</p>');
       }
     }).fail(function () {
       showFeedback('error', 'Error confirmando compromisos');

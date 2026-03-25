@@ -358,9 +358,9 @@ class SemanalApiController
 
     private function bloquearCompromisos(string $dbPrefix, int $semana): void
     {
-        $queryCount = "SELECT COUNT(*) FROM {$dbPrefix}_programacion_semanal WHERE Semana = ? AND Activa = 1 AND (Compromiso IS NULL OR Compromiso <= 0)";
+        $queryCount = "SELECT COUNT(*) FROM {$dbPrefix}_programacion_semanal WHERE Semana = ? AND Activa = 1 AND (Compromiso IS NULL OR Compromiso <= 0 OR TRIM(COALESCE(Sub_Contratista, '')) = '' OR LOWER(TRIM(COALESCE(Sub_Contratista, ''))) = 'null' OR TRIM(COALESCE(Responsable_AIA, '')) = '' OR LOWER(TRIM(COALESCE(Responsable_AIA, ''))) = 'null')";
         if ($this->db->query($queryCount, [$semana])->fetchColumn() > 0) {
-            echo json_encode(["respuesta" => "No_Bloqueado", "mensaje" => "Hay actividades sin compromiso."]); return;
+            echo json_encode(["respuesta" => "No_Bloqueado", "mensaje" => "Hay actividades sin compromiso o sin asignaciones obligatorias."]); return;
         }
         $res = $this->db->query("UPDATE {$dbPrefix}_semanas_activas SET Semanal_Confirmada = 1, fechaCierreCompromisos = ? WHERE Semana = ?", [$_POST["fechaCierreCompromisos"] ?: null, $semana]);
         if ($res) {

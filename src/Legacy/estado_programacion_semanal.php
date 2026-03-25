@@ -110,17 +110,20 @@ if (!function_exists('ps_weekly_phase_key')) {
 
         $critica = ps_to_float($row['Critica'] ?? null, 0.0);
         $isCriticalRoute = ($critica >= 1);
+        $missingSubcontractor = ps_is_blank($row['Sub_Contratista'] ?? null);
+        $missingResponsible = ps_is_blank($row['Responsable_AIA'] ?? null);
+        $missingAssignments = $missingSubcontractor || $missingResponsible;
 
         if ($phaseKey === 'programacion') {
             if (!$isIncomplete) {
                 return 'ps-no-activa';
             }
 
-            if ($hasCommitment) {
+            if ($hasCommitment && !$missingAssignments) {
                 return 'prog-lista-para-confirmar';
             }
 
-            if ($sinLiberacion && $isCriticalRoute) {
+            if (!$hasCommitment && $sinLiberacion && $isCriticalRoute) {
                 return 'prog-bloqueo-critico-sin-compromiso';
             }
 

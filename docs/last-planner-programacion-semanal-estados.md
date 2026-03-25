@@ -31,11 +31,11 @@ Definicion de criticidad:
    - Accion: escalar en comite diario, asignar responsable y fecha de destrabe.
 
 2. `prog-sin-compromiso`
-   - Condicion: `Compromiso <= 0`.
-   - Accion: bloquear cierre semanal hasta comprometer > 0.
+   - Condicion: `Compromiso <= 0` o `Responsable_AIA` / `Sub_Contratista` vacios.
+   - Accion: bloquear cierre semanal hasta comprometer > 0 y completar las asignaciones obligatorias.
 
 3. `prog-lista-para-confirmar`
-   - Condicion: `Compromiso > 0`.
+   - Condicion: `Compromiso > 0` + `Responsable_AIA` y `Sub_Contratista` definidos.
    - Accion: validar confiabilidad y confirmar compromisos.
 
 ### Fase Calificacion (`Semanal_Confirmada = 1`)

@@ -94,17 +94,20 @@
     var estaIncompleta = ejecutado === null || ejecutado < 0.999;
     var sinLiberacion = liberacionFlag !== null ? liberacionFlag > 0 : false;
     var isCriticalRoute = critica !== null && critica >= 1;
+    var subcontratistaVacio = isBlank(rowData.Sub_Contratista);
+    var responsableVacio = isBlank(rowData.Responsable_AIA);
+    var faltanResponsables = subcontratistaVacio || responsableVacio;
 
     if (phaseKey === 'programacion') {
       if (!estaIncompleta) {
         return 'ps-no-activa';
       }
 
-      if (!compromisoVacio) {
+      if (!compromisoVacio && !faltanResponsables) {
         return 'prog-lista-para-confirmar';
       }
 
-      if (sinLiberacion && isCriticalRoute) {
+      if (compromisoVacio && sinLiberacion && isCriticalRoute) {
         return 'prog-bloqueo-critico-sin-compromiso';
       }
 
