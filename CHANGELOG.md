@@ -10,6 +10,7 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 ### Añadido
 
 - **Runtime Frontend Config Global:** Nuevo endpoint `'/runtime/frontend-config.js'`, servicio `src/Services/FeatureFlagService.php` y documento `docs/20260325_general_feature_flags.md` para exponer feature flags publicos sin acoplar las vistas al backend.
+- **Cambio Obligatorio de Contraseña:** Nuevo flujo de seguridad con bandera `force_password_change`, endpoint `'/password/update'`, modal bloqueante en login con `AIA.Notice` y accion administrativa para forzar la rotacion masiva de credenciales desde el dashboard.
 - **Sincronización de Profesionales por Proyecto:** Nuevo servicio `src/Services/ProjectProfessionalsSyncService.php` para reconciliar `admin/` contra `*_profesionales`, mapear roles `A/D/DCV/G/OT/R/S/SG`, consolidar duplicados por correo y preservar el historial por proyecto.
 - **Flujo de Timeout de Sesion (Fase 1):** La expiracion por inactividad ahora redirige al login con un aviso visual en `AIA.Notice`, mejorando la experiencia tras sesiones vencidas.
 - **AIA Notice Global:** Nuevo core `public/js/core/AiaAlertInterceptor.js` para centralizar alertas, toasts y badges de guardado sobre SweetAlert2 en Admin, login y modulos LPS.
@@ -37,6 +38,7 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ### Corregido
 
+- **Carryover PS -> PG al Crear Semana:** La nueva semana ahora arrastra `Ejecutado_Real`, `Responsable_AIA`, `Sub_Contratista`, `unidad` y `cantidad_ppto` desde Programación Semanal hacia Programa General, respetando subdivisiones, mapeo por `programaAnteriorAsociar` y normalizando a `%` cuando las medidas son inconsistentes.
 - **Programación Semanal - Bloqueo por Asignaciones Incompletas:** El estado operativo ya no marca una actividad como `Lista para Confirmar` si falta `Responsable_AIA` o `Sub_Contratista`; el chip, el cierre semanal y la API ahora tratan esos casos como bloqueantes operativos.
 - **Fix CNP al Abrir la Vista:** La columna `¿Liberada?` en `views/programacion-semanal/CNP.view.php` ahora tolera valores `null` de `Prog_Sin_Restricciones_100` y la autoprogramacion semanal vuelve a recalcular ese flag para evitar warnings TN/4 de DataTables al abrir `/programacion-semanal/cnp`.
 - **Fix Falsos Duplicados en Profesionales:** La fila borrador ya no se valida contra sí misma, los homónimos dejan de bloquear el alta y el guardado local solo rechaza correos realmente repetidos.
