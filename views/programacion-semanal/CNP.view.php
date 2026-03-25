@@ -3,7 +3,7 @@
 <head id="head">
 	<!--Script cque va al archivo linksComunesHead2.js-->
 	<!--Script cque va al archivo linksComunesHead2.js-->
-	<script type="text/javascript" src="/js/linksComunesHead2.js?v=20260324a" charset="utf-8"></script>
+	<script type="text/javascript" src="/js/linksComunesHead2.js?v=20260325a" charset="utf-8"></script>
     <style>
         .filaBotones, .ps-actions-row {
             overflow: visible !important;
@@ -339,20 +339,19 @@
 						},
 
 						{
-								'targets': [6],
-								'render': function ( data, type, full, meta ) {
-										if(data===""){
-												data="";
-												return data;
-										}else if(data==0){
-												data="Sí";
-												return data;
-										}else if (data==1){
-												data="No";
-												return data;
-										}
+							'targets': [6],
+							'render': function ( data, type, full, meta ) {
+									if(data === "" || data === null || typeof data === "undefined"){
+											return "";
+									}else if(String(data) === "0"){
+											return "Sí";
+									}else if (String(data) === "1"){
+											return "No";
+									}
 
-								},
+									return "";
+
+							},
 						},
 
 						{
@@ -391,7 +390,7 @@
 						{"data":"Actividad"},
 						{"data":"Descripcion", "visible":false},
 						{"data":"Ubicacion", "visible":false},
-						{"data":"Prog_Sin_Restricciones_100"},
+						{"data":"Prog_Sin_Restricciones_100", "defaultContent":""},
 						{"data":"Responsable_AIA"},
 						{"data":"Categoria_CNP",},
 						{"data":"CNP"},

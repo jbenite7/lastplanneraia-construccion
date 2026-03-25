@@ -267,10 +267,24 @@ class SemanalApiController
             // 4. Limpieza: Actividades iniciadas o con compromisos pero ya no requeridas según el programa
             $this->db->query("DELETE FROM {$dbPrefix}_programacion_semanal WHERE Semana = ? AND Activa != 'NA' AND Consecutivo_En_Programa NOT IN (SELECT Consecutivo_en_Programa FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Titulo = 0)", [$semana, $semana]);
 
+            $this->syncRestrictionFlags($dbPrefix, $semana);
+
             echo json_encode(["respuesta" => "OK", "alertasRestricciones" => []], JSON_UNESCAPED_UNICODE);
         } catch (Throwable $t) {
             $this->jsonError("Error Autoprogramar: " . $t->getMessage());
         }
+    }
+
+    private function syncRestrictionFlags(string $dbPrefix, int $semana): void
+    {
+        $this->db->query("UPDATE {$dbPrefix}_programacion_semanal ps
+            JOIN {$dbPrefix}_programa_consolidado pc
+              ON ps.Consecutivo_En_Programa = pc.Consecutivo_en_Programa
+             AND ps.Semana = pc.Semana
+            SET ps.Prog_Sin_Restricciones_100 = (CASE WHEN pc.Estado_Restricciones < 1 THEN 1 ELSE 0 END)
+            WHERE ps.Semana = ? AND ps.Activa != 'NA'", [$semana]);
+
+        $this->db->query("UPDATE {$dbPrefix}_programacion_semanal SET Prog_Sin_Restricciones_100 = 0 WHERE Semana = ? AND Activa = 'NA'", [$semana]);
     }
 
     private function jsonResponse(string $res): void
