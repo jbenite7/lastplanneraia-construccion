@@ -17,6 +17,8 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 - **TomSelect Premium AIA:** Implementación de arquitectura de estilos corporativos (Naranja Construcción) en `tom-select-premium-aia.css`. Incluye tipografía Montserrat/Inter, chips adaptables con word-wrap y un botón de limpieza elegante integrado siguiendo el manual de marca 2026.
 - **Herencia de Restricciones (Manual/Excel):** Sincronización automática de las 7 restricciones individuales (D y E, Materiales, MdeO, etc.) tanto en procesos de importación masiva como en la asociación manual por dropdown. (AIA 2026).
 - **Persistencia de Mapeo Físico:** El botón "Eliminar Actualización" ahora realiza un `DELETE` físico de borradores en la base de datos, garantizando un flujo de trabajo limpio y permitiendo reintentar mapeos desde cero.
+- **Página de Mantenimiento AIA:** Nueva página HTML standalone (`public/mantenimiento-aia.html`) con identidad corporativa, spinner animado y tagline de marca.
+- **Plan de Desacoplamiento Visual CSS:** Documento técnico (`docs/css-desacoplamiento-plan.md`) para migración aditiva de estilos CSS sin tocar lógica ni romper legacy.
 
 ### Cambiado
 
