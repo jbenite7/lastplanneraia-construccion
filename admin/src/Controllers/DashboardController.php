@@ -2,8 +2,10 @@
 
 namespace Admin\Controllers;
 
+use Admin\Core\Security;
 use Admin\Models\Project;
 use Admin\Models\User;
+use App\Services\FeatureFlagService;
 use Database;
 
 class DashboardController extends AdminController
@@ -25,6 +27,7 @@ class DashboardController extends AdminController
         $db = Database::getInstance();
         $this->projectModel = new Project($db);
         $this->userModel = new User($db);
+        $featureFlags = new FeatureFlagService();
 
         // 1. Entity Counts & Active Projects List
         $totalProjects = $this->projectModel->count();
@@ -60,11 +63,57 @@ class DashboardController extends AdminController
             'php_limits' => $phpLimits,
             'backup_status' => $backupStatus,
             'audit_logs' => $this->getAuditLogs(10),
+            'console_logs_enabled' => $featureFlags->isConsoleLogsEnabled(),
         ];
 
         $this->render('dashboard', [
             'title' => 'Dashboard de Administración',
             'stats' => $stats,
+            'csrf_token' => Security::generateCsrfToken(),
+        ]);
+    }
+
+    public function toggleConsoleLogs()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            $this->json(['success' => false, 'message' => 'Método no permitido']);
+        }
+
+        if (!Security::validateCsrfToken($_POST['csrf_token'] ?? '')) {
+            http_response_code(403);
+            $this->json(['success' => false, 'message' => 'Token CSRF inválido']);
+        }
+
+        $enabled = $_POST['enabled'] ?? null;
+        if (!in_array((string) $enabled, ['0', '1'], true)) {
+            http_response_code(400);
+            $this->json(['success' => false, 'message' => 'Valor inválido para el switch']);
+        }
+
+        $enabled = (bool) ((int) $enabled);
+        $featureFlags = new FeatureFlagService();
+        $updatedBy = $_SESSION['admin_user']['usuario'] ?? 'admin';
+
+        if (!$featureFlags->setConsoleLogsEnabled($enabled, $updatedBy)) {
+            http_response_code(500);
+            $this->json(['success' => false, 'message' => 'No se pudo guardar la configuración global']);
+        }
+
+        $actionText = $enabled ? 'habilitó' : 'deshabilitó';
+        Database::getInstance()->logActivity(
+            'Configuracion',
+            'ACTUALIZAR',
+            "{$updatedBy} {$actionText} la visualizacion global de console.log en el frontend.",
+            null
+        );
+
+        $this->json([
+            'success' => true,
+            'enabled' => $enabled,
+            'message' => $enabled
+                ? 'Console logs activados globalmente. Recarga cualquier vista para verlos.'
+                : 'Console logs ocultos globalmente. Recarga cualquier vista para aplicar el cambio.',
         ]);
     }
 

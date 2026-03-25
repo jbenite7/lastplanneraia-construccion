@@ -25,6 +25,7 @@
     head.appendChild(script);
   }
 
+  loadScript('/runtime/frontend-config.js?v=20260325a');
   loadScript('https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.4.24/sweetalert2.all.min.js');
   loadScript('/public/js/core/AiaAlertInterceptor.js?v=20260324a');
 

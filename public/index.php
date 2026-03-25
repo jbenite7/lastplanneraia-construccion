@@ -26,9 +26,10 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // 3.5 Verificar Sesión y Timeout (Protección Universal)
-// Excluimos las rutas de login para permitir el inicio de sesión
+// Excluimos las rutas públicas para permitir inicio de sesión y configuración temprana del frontend
 $requestUri = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH);
-if ($requestUri !== '/login' && $requestUri !== '/') {
+$publicRoutes = ['/', '/login', '/runtime/frontend-config.js'];
+if (!in_array($requestUri, $publicRoutes, true)) {
     \App\Core\SessionMiddleware::check();
 }
 
@@ -138,6 +139,7 @@ $router->post('/api/cnp/reprogramar', [\App\Controllers\Api\CnpApiController::cl
 $router->get('/api/notifications/unread', [\App\Controllers\Core\NotificationController::class, 'getUnread']);
 $router->post('/api/notifications/read', [\App\Controllers\Core\NotificationController::class, 'markAsRead']);
 $router->get('/dashboard', [\App\Controllers\Core\DashboardController::class, 'index']);
+$router->get('/runtime/frontend-config.js', [\App\Controllers\Core\FrontendConfigController::class, 'javascript']);
 $router->post('/context/week', [\App\Controllers\Core\ContextController::class, 'setWeek']);
 
 $router->get('/legacy/cambiar_pagina.php', function() {

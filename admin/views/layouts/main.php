@@ -30,6 +30,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.1/js/bootstrap.bundle.min.js"></script>
   <!-- SweetAlert2 + AIA Notice -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.4.24/sweetalert2.all.min.js"></script>
+  <script src="/runtime/frontend-config.js?v=20260325a"></script>
   <script src="/public/js/core/AiaAlertInterceptor.js?v=20260324a"></script>
 </head>
 <body class="hold-transition sidebar-mini">

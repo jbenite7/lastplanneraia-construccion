@@ -55,6 +55,7 @@ $router->add('GET', '/logout', 'AuthController@logout');
 $router->add('GET', '/', 'DashboardController@index');
 
 $router->add('GET', '/dashboard', 'DashboardController@index');
+$router->add('POST', '/dashboard/toggle-console-logs', 'DashboardController@toggleConsoleLogs');
 
 
 

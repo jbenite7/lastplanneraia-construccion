@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="/runtime/frontend-config.js?v=20260325a"></script>
     <script src="/js/tablet-viewport-scale.js?v=1.2"></script>
     <title>Seleccionar Proyecto - Last Planner AIA</title>
     <!-- AdminLTE & Bootstrap -->

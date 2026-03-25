@@ -3,7 +3,7 @@
 <head id="head">
 	<!--Script cque va al archivo linksComunesHead2.js-->
 	<!--Script cque va al archivo linksComunesHead2.js-->
-	<script type="text/javascript" src="/js/linksComunesHead2.js?v=20260324a" charset="utf-8"></script>
+	<script type="text/javascript" src="/js/linksComunesHead2.js?v=20260325a" charset="utf-8"></script>
     <style>
         .filaBotones, .ps-actions-row {
             overflow: visible !important;

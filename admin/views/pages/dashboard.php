@@ -120,6 +120,35 @@
       </div>
     </div>
 
+    <div class="card card-outline card-info">
+      <div class="card-header">
+        <h3 class="card-title">
+          <i class="fas fa-terminal"></i> Console Logs Frontend
+        </h3>
+      </div>
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div>
+            <strong>Switch global</strong>
+            <div class="text-muted small">Controla la visualización de <code>console.log</code> en todas las vistas web.</div>
+          </div>
+          <div class="custom-control custom-switch">
+            <input type="checkbox"
+                   class="custom-control-input"
+                   id="consoleLogsGlobalToggle"
+                   <?php echo $stats['console_logs_enabled'] ? 'checked' : ''; ?>>
+            <label class="custom-control-label" for="consoleLogsGlobalToggle"></label>
+          </div>
+        </div>
+        <div class="d-flex justify-content-between align-items-center small">
+          <span class="text-muted">Aplica en el siguiente reload de cada página.</span>
+          <span id="consoleLogsStatusBadge" class="badge <?php echo $stats['console_logs_enabled'] ? 'badge-success' : 'badge-secondary'; ?>">
+            <?php echo $stats['console_logs_enabled'] ? 'Activos' : 'Ocultos'; ?>
+          </span>
+        </div>
+      </div>
+    </div>
+
     <!-- Integrity Alerts -->
     <div class="card card-outline card-warning">
       <div class="card-header">
@@ -275,10 +304,65 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    function updateConsoleLogsBadge(enabled) {
+        const badge = document.getElementById('consoleLogsStatusBadge');
+        if (!badge) {
+            return;
+        }
+
+        badge.textContent = enabled ? 'Activos' : 'Ocultos';
+        badge.classList.toggle('badge-success', enabled);
+        badge.classList.toggle('badge-secondary', !enabled);
+    }
+
     // Inicializar tooltips
     $(function () {
       $('[data-toggle="tooltip"]').tooltip();
     });
+
+    const consoleLogsToggle = document.getElementById('consoleLogsGlobalToggle');
+    if (consoleLogsToggle) {
+        consoleLogsToggle.addEventListener('change', function() {
+            const toggle = this;
+            const enabled = toggle.checked ? 1 : 0;
+            const previousState = !toggle.checked;
+            const formData = new FormData();
+
+            formData.append('enabled', String(enabled));
+            formData.append('csrf_token', '<?php echo $csrf_token; ?>');
+
+            toggle.disabled = true;
+
+            fetch('/admin/dashboard/toggle-console-logs', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    throw new Error(data.message || 'No se pudo guardar la configuración');
+                }
+
+                updateConsoleLogsBadge(!!data.enabled);
+
+                if (window.AIA && typeof window.AIA.applyConsoleLogPolicy === 'function') {
+                    window.AIA.applyConsoleLogPolicy(!!data.enabled);
+                }
+
+                AIA.Notice.success(data.message);
+            })
+            .catch(error => {
+                toggle.checked = previousState;
+                updateConsoleLogsBadge(previousState);
+                AIA.Notice.error(error.message || 'No se pudo actualizar el switch global.');
+            })
+            .finally(() => {
+                toggle.disabled = false;
+            });
+        });
+
+        updateConsoleLogsBadge(consoleLogsToggle.checked);
+    }
 
     // Filtro de Logs
     const filterLinks = document.querySelectorAll('.log-filter');
@@ -386,4 +470,3 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
-

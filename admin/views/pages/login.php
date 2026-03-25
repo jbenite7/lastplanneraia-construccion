@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="/runtime/frontend-config.js?v=20260325a"></script>
   <script src="/public/js/tablet-viewport-scale.js?v=1.2"></script>
   <title><?php echo $title; ?></title>
 
