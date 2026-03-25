@@ -3,12 +3,14 @@
 namespace App\Controllers\Programacion;
 
 use App\Controllers\BaseController;
+use App\Services\ProjectLandingService;
 
 class ProgramacionSemanalController extends BaseController
 {
     public function index()
     {
         $this->requireAuth();
+        $this->healWeeklyContext();
 
         $dbName = $_SESSION['db'] ?? '';
         $semana = (int)($_SESSION['semana'] ?? 0);
@@ -45,6 +47,7 @@ class ProgramacionSemanalController extends BaseController
     public function cnp()
     {
         $this->requireAuth();
+        $this->healWeeklyContext();
 
         $dbName = $_SESSION['db'] ?? '';
         $semana = (int)($_SESSION['semana'] ?? 0);
@@ -57,6 +60,7 @@ class ProgramacionSemanalController extends BaseController
     public function cnc()
     {
         $this->requireAuth();
+        $this->healWeeklyContext();
 
         $dbName = $_SESSION['db'] ?? '';
         $semana = (int)($_SESSION['semana'] ?? 0);
@@ -69,6 +73,7 @@ class ProgramacionSemanalController extends BaseController
     public function cic()
     {
         $this->requireAuth();
+        $this->healWeeklyContext();
 
         $dbName = $_SESSION['db'] ?? '';
         $semana = (int)($_SESSION['semana'] ?? 0);
@@ -76,5 +81,29 @@ class ProgramacionSemanalController extends BaseController
         $nombreUsuario = $_SESSION['nombreUsuario'] ?? '';
 
         require PROJECT_ROOT . '/views/programacion-semanal/CIC.view.php';
+    }
+
+    private function healWeeklyContext(): void
+    {
+        $dbName = (string) ($_SESSION['db'] ?? '');
+
+        if ($dbName === '' || preg_match('/^[A-Za-z0-9_]+$/', $dbName) !== 1) {
+            header('Location: /proyectos');
+            exit;
+        }
+
+        $currentWeek = (int) ($_SESSION['semana'] ?? 0);
+        $landingService = new ProjectLandingService();
+        $context = $landingService->sanitizeWeek($dbName, $currentWeek);
+
+        if (!$context['hasActiveWeeks']) {
+            $_SESSION['semana'] = 0;
+            header('Location: /programa-general-actualizar');
+            exit;
+        }
+
+        if ($currentWeek !== (int) $context['week']) {
+            $_SESSION['semana'] = (int) $context['week'];
+        }
     }
 }

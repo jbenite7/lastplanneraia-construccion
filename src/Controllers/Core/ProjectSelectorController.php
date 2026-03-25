@@ -3,15 +3,18 @@
 namespace App\Controllers\Core;
 
 use Admin\Core\RoleManager;
+use App\Services\ProjectLandingService;
 use Database;
 
 class ProjectSelectorController
 {
     private $db;
+    private ProjectLandingService $projectLandingService;
 
     public function __construct()
     {
         $this->db = Database::getInstance();
+        $this->projectLandingService = new ProjectLandingService();
     }
 
     public function index()
@@ -113,28 +116,8 @@ class ProjectSelectorController
         $_SESSION['permiso_canonico'] = $permiso;
         $_SESSION['pdcActivo'] = $accessData['pdcActivo'] ?? 0;
 
-        $_SESSION['semana'] = 0;
-        if ($dbName !== '' && preg_match('/^[A-Za-z0-9_]+$/', $dbName)) {
-            try {
-                // Lógica de Contexto Inteligente:
-                // Priorizamos la última CONFIRMADA si existe (para proyectos en marcha).
-                // Si no hay ninguna confirmada, usamos la última EXISTENTE (para proyectos recién iniciados).
-                $query = "SELECT 
-                            MAX(Semana) as max_overall,
-                            MAX(CASE WHEN Semanal_Confirmada = 1 THEN Semana ELSE NULL END) as max_confirmed
-                          FROM {$dbName}_semanas_activas";
-                $stmt = $this->db->query($query);
-                $res = $stmt->fetch();
-                
-                $maxOverall = (int)($res['max_overall'] ?? 0);
-                $maxConfirmed = ($res['max_confirmed'] !== null) ? (int)$res['max_confirmed'] : null;
-                
-                // Si hay confirmadas, la base es la confirmada. Si no, la base es la unificada.
-                $_SESSION['semana'] = ($maxConfirmed !== null) ? $maxConfirmed : $maxOverall;
-            } catch (\Exception $e) {
-                $_SESSION['semana'] = 0;
-            }
-        }
+        $landing = $this->projectLandingService->resolve($dbName, $permiso);
+        $_SESSION['semana'] = (int) ($landing['week'] ?? 0);
 
         if (method_exists($this->db, 'logActivity')) {
             $this->db->logActivity(
@@ -145,30 +128,7 @@ class ProjectSelectorController
             );
         }
 
-        switch ($permiso) {
-            case 'V':
-            case 'A':
-            case 'D':
-            case 'R':
-            case 'OT':
-            case 'DCV':
-                header('Location: /programa-general');
-                break;
-
-            case 'G':
-            case 'S':
-            case 'SG':
-                header('Location: /programacion-semanal/cic');
-                break;
-
-            case 'C':
-                header('Location: /programacion-semanal');
-                break;
-
-            default:
-                header('Location: /dashboard');
-                break;
-        }
+        header('Location: ' . ($landing['route'] ?? '/dashboard'));
 
         exit();
     }

@@ -3,15 +3,15 @@
 namespace App\Controllers\Programacion;
 
 use App\Controllers\BaseController;
+use App\Services\ProjectLandingService;
 
 class ProgramaGeneralController extends BaseController
 {
     public function index()
     {
-        // Validar autenticación y gestionar timeout
         $this->requireAuth();
+        $this->healWeeklyContext();
 
-        // Obtener variables de sesión
         $vars = $this->getSessionVars();
         $dbName = $vars['dbName'] ?? '';
         $semana = $vars['semana'] ?? 0;
@@ -19,7 +19,6 @@ class ProgramaGeneralController extends BaseController
         $permiso = $vars['permiso'] ?? '';
         $pdcActivo = $vars['pdcActivo'] ?? '';
 
-        // Variables por defecto
         $maxSemana = 0;
         $fechaInicioSem = '';
         $fechaFinSem = '';
@@ -33,23 +32,20 @@ class ProgramaGeneralController extends BaseController
 
         try {
             if (!empty($dbName) && preg_match('/^[a-zA-Z0-9_]+$/', $dbName)) {
-                // 1. Obtener última semana (Max_Semana)
                 $sqlUltima = "SELECT Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem FROM {$dbName}_semanas_activas WHERE Semana = (SELECT MAX(Semana) FROM {$dbName}_semanas_activas)";
                 $stmtUltima = $this->db->query($sqlUltima);
                 $dataUltima = $stmtUltima->fetch();
 
                 if ($dataUltima) {
                     $maxSemana = $dataUltima["Semana"];
-                    $fechaInicioSemYMD = $dataUltima["Fecha_Inicio_Sem"]; // Y-m-d
-                    $fechaFinSemYMD = $dataUltima["Fecha_Fin_Sem"];     // Y-m-d
+                    $fechaInicioSemYMD = $dataUltima["Fecha_Inicio_Sem"];
+                    $fechaFinSemYMD = $dataUltima["Fecha_Fin_Sem"];
 
-                    // Formato para JS Date: Y, m-1, d, H, m, s
                     $fechaInicioSem = date("Y, n - 1, d, H, i, s", strtotime($dataUltima["Fecha_Inicio_Sem"]));
                     $fechaFinSem = date("Y, n - 1, d, H, i, s", strtotime($dataUltima["Fecha_Fin_Sem"]));
                     $fechaDatepicker = date("Y, n - 1, d, H, i, s", strtotime($dataUltima["Fecha_Fin_Sem"]));
                 }
 
-                // 2. Detalles de la semana actual ($semana)
                 $sqlDetalles = "SELECT Semanal_Confirmada, fechaCierreCompromisos, fechaCreacionSemana, 
                                (SELECT SUM(reprogramacion) FROM {$dbName}_semanas_activas WHERE Semana <= ?) AS versionCronograma 
                                FROM {$dbName}_semanas_activas WHERE Semana = ?";
@@ -65,12 +61,34 @@ class ProgramaGeneralController extends BaseController
                 }
             }
         } catch (\PDOException $e) {
-            // En caso de error, las variables quedarán vacías, evitando crash
             error_log("Error cargando variables ProgramaGeneral: " . $e->getMessage());
         }
 
-        // Cargar la vista Handsontable con autoguardado
         require PROJECT_ROOT . '/views/programa-general/programa_general.view.php';
+    }
+
+    private function healWeeklyContext(): void
+    {
+        $dbName = (string) ($_SESSION['db'] ?? '');
+
+        if ($dbName === '' || preg_match('/^[A-Za-z0-9_]+$/', $dbName) !== 1) {
+            header('Location: /proyectos');
+            exit;
+        }
+
+        $currentWeek = (int) ($_SESSION['semana'] ?? 0);
+        $landingService = new ProjectLandingService();
+        $context = $landingService->sanitizeWeek($dbName, $currentWeek);
+
+        if (!$context['hasActiveWeeks']) {
+            $_SESSION['semana'] = 0;
+            header('Location: /programa-general-actualizar');
+            exit;
+        }
+
+        if ($currentWeek !== (int) $context['week']) {
+            $_SESSION['semana'] = (int) $context['week'];
+        }
     }
 
     /**
