@@ -20,6 +20,7 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ### Cambiado
 
+- **Sincronización Productiva SiteGround:** La rama `main` quedó desplegada en `prueba-lps.lastplanneraia.com` y la base de datos remota fue clonada desde local sobre `dbhif4pdimjtxe`, preservando estructura y datos de prueba para validación operativa.
 - **Contexto Inteligente de Aterrizaje por Proyecto:** Nuevo servicio `src/Services/ProjectLandingService.php` para resolver la semana operativa y el modulo inicial segun semanas activas, pendientes de calificacion y rol canonico; `DashboardController`, `ProjectSelectorController`, `ProgramaGeneralController` y `ProgramacionSemanalController` ahora sanean el contexto semanal antes de redirigir o renderizar vistas.
 - **Switch Global de Console Logs:** El dashboard admin ahora permite activar o silenciar `console.log` en todo el frontend, con persistencia centralizada y recarga uniforme de la configuracion en login, selector de proyecto y vistas legacy/MVC.
 - **Profesionales Gobernados desde Admin:** El módulo `Profesionales` ahora usa el correo como identidad real, permite nombres repetidos, sincroniza cargos desde `admin/`, bloquea edición de nombre/correo/cargo y deja `Activo` como control local solo para miembros vigentes del proyecto.
