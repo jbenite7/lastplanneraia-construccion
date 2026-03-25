@@ -49,6 +49,9 @@ class DashboardController extends AdminController
         // 5. Backup Status
         $backupStatus = $this->getBackupStatus();
 
+        // 6. Password Change Status
+        $passwordStats = $this->userModel->getPasswordChangeStats();
+
         $stats = [
             'total_projects' => $totalProjects,
             'active_projects_list' => $activeProjects,
@@ -64,6 +67,7 @@ class DashboardController extends AdminController
             'backup_status' => $backupStatus,
             'audit_logs' => $this->getAuditLogs(10),
             'console_logs_enabled' => $featureFlags->isConsoleLogsEnabled(),
+            'password_stats' => $passwordStats,
         ];
 
         $this->render('dashboard', [
@@ -114,6 +118,39 @@ class DashboardController extends AdminController
             'message' => $enabled
                 ? 'Console logs activados globalmente. Recarga cualquier vista para verlos.'
                 : 'Console logs ocultos globalmente. Recarga cualquier vista para aplicar el cambio.',
+        ]);
+    }
+
+    /**
+     * Force password change for all users.
+     */
+    public function forcePasswordChange()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            $this->json(['success' => false, 'message' => 'Método no permitido']);
+        }
+
+        if (!Security::validateCsrfToken($_POST['csrf_token'] ?? '')) {
+            http_response_code(403);
+            $this->json(['success' => false, 'message' => 'Token CSRF inválido']);
+        }
+
+        $db = \Database::getInstance();
+        $userModel = new User($db);
+        $affected = $userModel->forcePasswordChangeForAll();
+
+        $updatedBy = $_SESSION['admin_user']['usuario'] ?? 'admin';
+        $db->logActivity(
+            'Seguridad',
+            'RESETEAR_CLAVES',
+            "{$updatedBy} activó el cambio de contraseña obligatorio para {$affected} usuarios activos.",
+            null
+        );
+
+        $this->json([
+            'success' => true,
+            'message' => "Se ha activado el cambio de contraseña obligatorio para {$affected} usuarios.",
         ]);
     }
 

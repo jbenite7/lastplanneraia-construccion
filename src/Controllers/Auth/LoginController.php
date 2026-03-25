@@ -16,8 +16,8 @@ class LoginController
 
     public function index()
     {
-        // 1. Si ya hay sesión, redirigir al dashboard
-        if (isset($_SESSION['usuario'])) {
+        // 1. Si ya hay sesión completa y no debe cambiar clave, redirigir al dashboard
+        if (isset($_SESSION['usuario']) && !isset($_SESSION['must_change_password'])) {
             header('Location: /dashboard');
             exit();
         }
@@ -79,7 +79,21 @@ class LoginController
             }
 
             if ($password_valida) {
-                // 3. Crear Sesión Parcial (Solo identidad, sin proyecto)
+                // 3. Verificar requisito de cambio de contraseña ANTES de crear sesión completa
+                if (isset($data['force_password_change']) && $data['force_password_change'] == 1) {
+                    $_SESSION['usuario_temp'] = $usuario;
+                    $_SESSION['nombreUsuario'] = $data['nombre'];
+                    $_SESSION['must_change_password'] = true;
+                    
+                    if (method_exists($this->db, 'logActivity')) {
+                        $this->db->logActivity('Login', 'LOGIN_PENDIENTE_CLAVE', "Usuario $usuario requiere cambio de contraseña.");
+                    }
+                    
+                    header("Location: /login");
+                    exit();
+                }
+
+                // 4. Crear Sesión Parcial (Solo identidad, sin proyecto)
                 $_SESSION['usuario'] = $usuario;
                 $_SESSION['nombreUsuario'] = $data['nombre'];
 
@@ -92,7 +106,6 @@ class LoginController
 
                 // Log básico de ingreso
                 if (method_exists($this->db, 'logActivity')) {
-                    // Usamos una BD genérica o null para el log global
                     $this->db->logActivity('Login', 'LOGIN_FASE_1', "Usuario autenticado: $usuario");
                 }
 
@@ -121,4 +134,86 @@ class LoginController
     }
 
     // Método iniciarSesion eliminado ya que la lógica se movió a ProjectSelectorController::select()
+
+    /**
+     * Actualizar la contraseña del usuario (Requisito de Seguridad).
+     */
+    public function updatePassword()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || (!isset($_SESSION['usuario']) && !isset($_SESSION['usuario_temp']))) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'Acceso no permitido']);
+            exit();
+        }
+
+        $password = $_POST['password'] ?? '';
+        $confirm = $_POST['confirm_password'] ?? '';
+        $usuario = $_SESSION['usuario'] ?? $_SESSION['usuario_temp'];
+
+        header('Content-Type: application/json');
+
+        if (empty($password) || strlen($password) < 6) {
+            echo json_encode(['success' => false, 'message' => 'La contraseña debe tener al menos 6 caracteres']);
+            exit();
+        }
+
+        if (!preg_match('/[A-Z]/', $password)) {
+            echo json_encode(['success' => false, 'message' => 'Debe contener al menos una letra mayúscula']);
+            exit();
+        }
+
+        if (!preg_match('/[^a-zA-Z0-9]/', $password)) {
+            echo json_encode(['success' => false, 'message' => 'Debe contener al menos un carácter especial (!@#$%...)']);
+            exit();
+        }
+
+        if ($password !== $confirm) {
+            echo json_encode(['success' => false, 'message' => 'Las contraseñas no coinciden']);
+            exit();
+        }
+
+        // Verificar que no sea la misma contraseña anterior
+        $stmt = $this->db->prepare("SELECT password FROM general_usuarios WHERE usuario = ? LIMIT 1");
+        $stmt->execute([$usuario]);
+        $row = $stmt->fetch();
+
+        if ($row) {
+            $oldHash = $row['password'];
+            if (password_verify($password, $oldHash) || hash_equals($oldHash, hash('sha512', $password))) {
+                echo json_encode(['success' => false, 'message' => 'La nueva contraseña no puede ser igual a la anterior']);
+                exit();
+            }
+        }
+
+        try {
+            $newHash = password_hash($password, PASSWORD_DEFAULT);
+            $stmt = $this->db->prepare("UPDATE general_usuarios SET password = ?, force_password_change = 0 WHERE usuario = ?");
+            $stmt->execute([$newHash, $usuario]);
+
+            // Elevar a sesión definitiva si estaba en temp
+            if (isset($_SESSION['usuario_temp'])) {
+                $_SESSION['usuario'] = $_SESSION['usuario_temp'];
+                unset($_SESSION['usuario_temp']);
+                
+                // Limpiar variables de proyecto anterior si existen
+                unset($_SESSION['proyecto']);
+                unset($_SESSION['db']);
+                unset($_SESSION['semana']);
+                unset($_SESSION['permiso']);
+                unset($_SESSION['pdcActivo']);
+            }
+
+            // Limpiar flag de sesión
+            unset($_SESSION['must_change_password']);
+
+            if (method_exists($this->db, 'logActivity')) {
+                $this->db->logActivity('Seguridad', 'CAMBIO_CLAVE', "Usuario $usuario actualizó su contraseña por requerimiento.");
+            }
+
+            echo json_encode(['success' => true, 'message' => 'Contraseña actualizada correctamente. Bienvenido.']);
+        } catch (\Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'Error al actualizar la contraseña: ' . $e->getMessage()]);
+        }
+        exit();
+    }
 }

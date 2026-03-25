@@ -78,6 +78,33 @@
 </div>
 
 <div class="row">
+  <div class="col-lg-3 col-6">
+    <!-- small box: Password Change Status -->
+    <div class="small-box bg-maroon">
+      <div class="inner">
+        <h3>
+          <?php echo $stats['password_stats']['completed']; ?> / <?php echo $stats['password_stats']['total']; ?>
+          <i class="fas fa-info-circle info-icon" data-toggle="tooltip" data-html="true" 
+             title="<b>¿Qué es?</b> Usuarios que han cumplido con el cambio de clave obligatorio.<br><b>Pendientes:</b> <?php echo $stats['password_stats']['pending']; ?>"></i>
+        </h3>
+        <p>Cambios de Clave Realizados</p>
+      </div>
+      <div class="icon">
+        <i class="fas fa-key"></i>
+      </div>
+      <div class="small-box-footer">
+        <?php 
+          $percent = $stats['password_stats']['total'] > 0 
+            ? round(($stats['password_stats']['completed'] / $stats['password_stats']['total']) * 100) 
+            : 100;
+          echo "$percent% completado";
+        ?>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
   <!-- COLUMNA IZQUIERDA (Info Servidor e Integridad) -->
   <div class="col-md-4">
     <div class="card card-outline card-primary">
@@ -123,14 +150,14 @@
     <div class="card card-outline card-info">
       <div class="card-header">
         <h3 class="card-title">
-          <i class="fas fa-terminal"></i> Console Logs Frontend
+          <i class="fas fa-cog"></i> Configuración y Seguridad
         </h3>
       </div>
       <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="d-flex justify-content-between align-items-center mb-3">
           <div>
-            <strong>Switch global</strong>
-            <div class="text-muted small">Controla la visualización de <code>console.log</code> en todas las vistas web.</div>
+            <strong>Console Logs Frontend</strong>
+            <div class="text-muted small">Controla <code>console.log</code> en toda la app.</div>
           </div>
           <div class="custom-control custom-switch">
             <input type="checkbox"
@@ -140,11 +167,17 @@
             <label class="custom-control-label" for="consoleLogsGlobalToggle"></label>
           </div>
         </div>
-        <div class="d-flex justify-content-between align-items-center small">
-          <span class="text-muted">Aplica en el siguiente reload de cada página.</span>
-          <span id="consoleLogsStatusBadge" class="badge <?php echo $stats['console_logs_enabled'] ? 'badge-success' : 'badge-secondary'; ?>">
-            <?php echo $stats['console_logs_enabled'] ? 'Activos' : 'Ocultos'; ?>
-          </span>
+        
+        <hr class="my-3">
+        
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <strong>Seguridad de Claves</strong>
+            <div class="text-muted small">Obliga a todos los usuarios a cambiar su contraseña.</div>
+          </div>
+          <button class="btn btn-sm btn-danger" id="btnForcePasswordChange">
+            <i class="fas fa-sync-alt mr-1"></i> Forzar Cambio
+          </button>
         </div>
       </div>
     </div>
@@ -464,6 +497,39 @@ document.addEventListener('DOMContentLoaded', function() {
                     AIA.Notice.success(result.value.message).then(() => location.reload());
                 } else if (result.isConfirmed) {
                     AIA.Notice.error(result.value.message);
+                }
+            });
+        });
+    }
+
+    // 4. Forzar Cambio de Clave
+    const btnForcePass = document.getElementById('btnForcePasswordChange');
+    if (btnForcePass) {
+        btnForcePass.addEventListener('click', function() {
+            AIA.Notice.confirm(
+                'Esta acción obligará a TODOS los usuarios a cambiar su contraseña en su próximo inicio de sesión.',
+                '¿Confirmar Rutina de Seguridad?'
+            ).then((confirmed) => {
+                if (confirmed) {
+                    const formData = new FormData();
+                    formData.append('csrf_token', '<?php echo $csrf_token; ?>');
+
+                    fetch('/admin/dashboard/forzar-cambio-clave', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            AIA.Notice.success(data.message).then(() => location.reload());
+                        } else {
+                            AIA.Notice.error(data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        AIA.Notice.error('Fallo en la comunicación con el servidor.');
+                    });
                 }
             });
         });

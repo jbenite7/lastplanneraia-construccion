@@ -454,4 +454,37 @@ class User
         $value = trim((string)$email);
         return function_exists('mb_strtolower') ? mb_strtolower($value, 'UTF-8') : strtolower($value);
     }
+
+    /**
+     * Force password change for all active users.
+     *
+     * @return int Number of affected rows
+     */
+    public function forcePasswordChangeForAll()
+    {
+        $sql = "UPDATE {$this->table} SET force_password_change = 1";
+        $stmt = $this->db->query($sql);
+
+        return $stmt->rowCount();
+    }
+
+    /**
+     * Get statistics about password changes.
+     *
+     * @return array [total_active, completed, pending]
+     */
+    public function getPasswordChangeStats()
+    {
+        // total_active (considering all for now, maybe filtered by state in future)
+        $total = $this->count();
+
+        $sqlPending = "SELECT COUNT(*) as pending FROM {$this->table} WHERE force_password_change = 1";
+        $pending = (int) $this->db->query($sqlPending)->fetchColumn();
+
+        return [
+            'total' => $total,
+            'pending' => $pending,
+            'completed' => $total - $pending,
+        ];
+    }
 }
