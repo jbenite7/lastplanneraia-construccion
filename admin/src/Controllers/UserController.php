@@ -388,34 +388,43 @@ class UserController extends AdminController
             $this->json(['success' => false, 'message' => 'Parámetros inválidos']);
         }
 
-        $blockReason = $this->userModel->canRemoveFromProject($userId, $projectId);
-        if ($blockReason !== null) {
-            $this->json(['success' => false, 'message' => $blockReason]);
+        try {
+            $blockReason = $this->userModel->canRemoveFromProject($userId, $projectId);
+            if ($blockReason !== null) {
+                $this->json(['success' => false, 'message' => $blockReason]);
+            }
+
+            if (!$this->userModel->removeFromProject($userId, $projectId)) {
+                $this->json(['success' => false, 'message' => 'Error al quitar el proyecto']);
+            }
+
+            // Block the professional in the project tables
+            $project = $this->projectModel->find($projectId);
+            $user = $this->userModel->find($userId);
+
+            if ($project && !empty($project['Base_de_Datos']) && $user && !empty($user['email'])) {
+                try {
+                    (new \App\Services\ProjectProfessionalsSyncService(Database::getInstance()))
+                        ->blockProfessionalByEmail((string)$project['Base_de_Datos'], (string)$user['email']);
+                } catch (\Throwable $e) {
+                    error_log("Error al bloquear profesional en SyncService: " . $e->getMessage());
+                }
+            }
+
+            // Audit
+            $userName = $user ? $user['usuario'] : "ID:$userId";
+            $projectName = $project ? $project['Proyecto_Proceso'] : "ID:$projectId";
+            Database::getInstance()->logActivity(
+                'Usuarios',
+                'QUITAR_PROYECTO',
+                "Se retiró a '{$userName}' del proyecto '{$projectName}'"
+            );
+
+            $this->json(['success' => true, 'message' => 'Proyecto retirado correctamente']);
+        } catch (\Throwable $e) {
+            error_log("Error crítico en removeProject: " . $e->getMessage());
+            $this->json(['success' => false, 'message' => 'Error interno del servidor: ' . $e->getMessage()]);
         }
-
-        if (!$this->userModel->removeFromProject($userId, $projectId)) {
-            $this->json(['success' => false, 'message' => 'Error al quitar el proyecto']);
-        }
-
-        // Block the professional in the project tables
-        $project = $this->projectModel->find($projectId);
-        $user = $this->userModel->find($userId);
-
-        if ($project && !empty($project['Base_de_Datos']) && $user && !empty($user['email'])) {
-            (new \App\Services\ProjectProfessionalsSyncService(Database::getInstance()))
-                ->blockProfessionalByEmail((string)$project['Base_de_Datos'], (string)$user['email']);
-        }
-
-        // Audit
-        $userName = $user ? $user['usuario'] : "ID:$userId";
-        $projectName = $project ? $project['Proyecto_Proceso'] : "ID:$projectId";
-        Database::getInstance()->logActivity(
-            'Usuarios',
-            'QUITAR_PROYECTO',
-            "Se retiró a '{$userName}' del proyecto '{$projectName}'"
-        );
-
-        $this->json(['success' => true, 'message' => 'Proyecto retirado correctamente']);
     }
 
     private function parseAssignments($rawAssignments): array
@@ -447,9 +456,7 @@ class UserController extends AdminController
 
     private function validateAssignments(array $assignments): ?string
     {
-        if (empty($assignments)) {
-            return 'Debe asignar al menos un proyecto al usuario.';
-        }
+        // Permitido que un usuario no tenga proyectos asignados (PDCA Ciclo 2)
 
         $validProjects = $this->projectModel->getAll();
         $validProjectIds = [];
