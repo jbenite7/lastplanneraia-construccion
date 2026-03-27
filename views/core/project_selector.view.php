@@ -37,9 +37,9 @@
             font-weight: 700;
             color: #333;
             margin: 0;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            white-space: normal;
+            word-break: break-word;
+            padding-right: 10px;
         }
         .badge-status {
             font-size: 0.75rem;

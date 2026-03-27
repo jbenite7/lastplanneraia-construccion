@@ -9,6 +9,9 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ### Añadido
 
+- **Word Wrap en Selector de Proyectos:** Actualización de estilos CSS (`white-space: normal`, `word-break: break-word`) en las tarjetas del selector de proyectos para revelar los nombres completamente en lugar de truncarlos con puntos suspensivos.
+- **Despliegue SiteGround (PHP CLI):** Actualización de la documentación de operación (`docs/siteground-deploy-routine.md`) con el advertimento y comando exacto para forzar PHP 8.3 CLI en las ejecuciones de Composer, previniendo fallos del autoloader en producción.
+
 - **Runtime Frontend Config Global:** Nuevo endpoint `'/runtime/frontend-config.js'`, servicio `src/Services/FeatureFlagService.php` y documento `docs/20260325_general_feature_flags.md` para exponer feature flags publicos sin acoplar las vistas al backend.
 - **Cambio Obligatorio de Contraseña:** Nuevo flujo de seguridad con bandera `force_password_change`, endpoint `'/password/update'`, modal bloqueante en login con `AIA.Notice` y accion administrativa para forzar la rotacion masiva de credenciales desde el dashboard.
 - **Sincronización de Profesionales por Proyecto:** Nuevo servicio `src/Services/ProjectProfessionalsSyncService.php` para reconciliar `admin/` contra `*_profesionales`, mapear roles `A/D/DCV/G/OT/R/S/SG`, consolidar duplicados por correo y preservar el historial por proyecto.
