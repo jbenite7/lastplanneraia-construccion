@@ -10,6 +10,10 @@ use Admin\Core\RoleManager;
         <input type="checkbox" class="custom-control-input" id="toggleInactiveUsers">
         <label class="custom-control-label" for="toggleInactiveUsers">Mostrar inactivos</label>
       </div>
+      <div class="custom-control custom-switch mr-3">
+        <input type="checkbox" class="custom-control-input" id="toggleUsersWithoutProjects">
+        <label class="custom-control-label" for="toggleUsersWithoutProjects">Mostrar sin proyectos</label>
+      </div>
       <a href="/admin/usuarios/crear" class="btn btn-primary btn-sm">
         <i class="fas fa-plus"></i> Nuevo Usuario
       </a>
@@ -34,7 +38,7 @@ use Admin\Core\RoleManager;
        <tbody>
          <?php foreach ($users as $user): ?>
         <?php $isActive = (int)($user['activo'] ?? 1) === 1; ?>
-        <tr data-active="<?php echo $isActive ? 1 : 0; ?>" class="<?php echo $isActive ? '' : 'user-row-inactive'; ?>">
+        <tr data-active="<?php echo $isActive ? 1 : 0; ?>" data-has-projects="<?php echo ((int)($user['projects_count'] ?? 0) > 0) ? 1 : 0; ?>" class="<?php echo $isActive ? '' : 'user-row-inactive'; ?>">
           <td class="text-center"><?php echo $user['id']; ?></td>
           <td><?php echo htmlspecialchars($user['nombre']); ?></td>
           <td class="text-break"><?php echo htmlspecialchars($user['usuario']); ?></td>
@@ -163,16 +167,24 @@ $(function () {
       return true;
     }
 
-    if ($('#toggleInactiveUsers').is(':checked')) {
-      return true;
-    }
-
     var rowNode = table.row(dataIndex).node();
     if (!rowNode) {
       return true;
     }
 
-    return Number($(rowNode).attr('data-active') || 0) === 1;
+    if ($('#toggleInactiveUsers').is(':checked')) {
+      if ($('#toggleUsersWithoutProjects').is(':checked')) {
+        return true;
+      }
+    } else if (Number($(rowNode).attr('data-active') || 0) !== 1) {
+      return false;
+    }
+
+    if (!$('#toggleUsersWithoutProjects').is(':checked') && Number($(rowNode).attr('data-has-projects') || 0) !== 1) {
+      return false;
+    }
+
+    return true;
   });
 
   function updateUserStatusRow($row, active) {
@@ -186,6 +198,10 @@ $(function () {
   }
 
   $('#toggleInactiveUsers').on('change', function() {
+    table.draw(false);
+  });
+
+  $('#toggleUsersWithoutProjects').on('change', function() {
     table.draw(false);
   });
 
