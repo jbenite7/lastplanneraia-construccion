@@ -55,13 +55,19 @@ Usa esto solo para drift real del servidor. No reemplaza una rama ni una estrate
 
 ```bash
 git pull --ff-only origin main
-composer install --no-dev --optimize-autoloader
+```
+
+> [!WARNING]
+> **Importante (Problema de PHP CLI en SiteGround):**
+> En terminales SSH de SiteGround, el comando global `composer` y `php` suelen estar anclados a versiones obsoletas (como PHP 7.4). Para que el autoloader y las dependencias funcionen para la versión moderna del código, **es obligatorio forzar la ejecución con el binario de PHP 8.3 apuntando directamente al script `.phar` de Composer:**
+
+```bash
+/usr/local/php83/bin/php-cli -d memory_limit=4096M /usr/local/bin/composer.phar install --no-dev --optimize-autoloader
 ```
 
 Notas:
 
 - Usa siempre `--ff-only` para evitar merges manuales en produccion.
-- Si Composer detecta cambio de plataforma, confirma primero la version de PHP.
 
 ## 6. Smoke tests minimos
 
