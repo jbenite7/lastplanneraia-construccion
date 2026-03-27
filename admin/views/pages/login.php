@@ -26,6 +26,10 @@
       <p class="login-subtitle">Inicia sesión en Last Planner AIA para acceder al panel</p>
     </div>
     <div class="card-body login-card-body">
+      <?php if (!empty($inactive_notice)): ?>
+        <div class="alert alert-warning">Tu cuenta está inactiva. Contacta al administrador.</div>
+      <?php endif; ?>
+
       <form id="loginForm">
         <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
         <div class="input-group mb-3">

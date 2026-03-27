@@ -22,6 +22,27 @@ abstract class AdminController extends BaseController
             exit;
         }
 
+        try {
+            $db = \Database::getInstance();
+            $stmt = $db->prepare("SELECT activo FROM general_usuarios WHERE usuario = ? LIMIT 1");
+            $stmt->execute([(string)($_SESSION['admin_user']['usuario'] ?? '')]);
+            $user = $stmt->fetch();
+
+            if ($user && isset($user['activo']) && (int)$user['activo'] !== 1) {
+                unset($_SESSION['admin_user']);
+
+                if ($this->isAjaxRequest()) {
+                    http_response_code(401);
+                    $this->json(['success' => false, 'message' => 'Tu cuenta está inactiva.']);
+                }
+
+                header('Location: /admin/login?inactive=1');
+                exit;
+            }
+        } catch (\Throwable $e) {
+            error_log('Error validando estado activo del usuario admin: ' . $e->getMessage());
+        }
+
         // 2. Additional security checks can be added here
     }
 

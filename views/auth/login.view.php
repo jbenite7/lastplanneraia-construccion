@@ -96,6 +96,18 @@
                 window.history.replaceState({}, document.title, url.pathname);
             });
         <?php endif; ?>
+
+        <?php if (!empty($inactiveNotice)): ?>
+            document.addEventListener('DOMContentLoaded', function() {
+                if (window.AIA && AIA.Notice) {
+                    AIA.Notice.warning('Tu cuenta está inactiva. Contacta al administrador.', 'Acceso Bloqueado');
+                }
+
+                const url = new URL(window.location);
+                url.searchParams.delete('inactive');
+                window.history.replaceState({}, document.title, url.pathname);
+            });
+        <?php endif; ?>
     </script>
 <script src="public/js/core/AiaAlertInterceptor.js"></script>
 

@@ -27,6 +27,7 @@ class LoginController
         // Vamos a incluir la vista legacy, pero saneada.
 
         $timeoutNotice = ($_GET['timeout'] ?? '') === '1';
+        $inactiveNotice = ($_GET['inactive'] ?? '') === '1';
         $errores = ''; // Inicializar variable para la vista
 
         // Exponer $db para la vista legacy
@@ -41,6 +42,8 @@ class LoginController
     public function login()
     {
         $errores = '';
+        $timeoutNotice = false;
+        $inactiveNotice = false;
 
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // Sanitizar usuario
@@ -79,6 +82,18 @@ class LoginController
             }
 
             if ($password_valida) {
+                if (isset($data['activo']) && (int)$data['activo'] !== 1) {
+                    $errores .= "<li>Tu cuenta está inactiva. Contacta al administrador.</li>";
+                    if (method_exists($this->db, 'logActivity')) {
+                        $this->db->logActivity('Login', 'LOGIN_BLOQUEADO_INACTIVO', "Intento de acceso con cuenta inactiva: $usuario");
+                    }
+
+                    $db = $this->db;
+                    require PROJECT_ROOT . '/views/auth/login.view.php';
+
+                    return;
+                }
+
                 // 3. Verificar requisito de cambio de contraseña ANTES de crear sesión completa
                 if (isset($data['force_password_change']) && $data['force_password_change'] == 1) {
                     $_SESSION['usuario_temp'] = $usuario;

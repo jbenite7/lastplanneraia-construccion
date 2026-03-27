@@ -26,6 +26,22 @@ class SessionMiddleware
             exit;
         }
 
+        try {
+            $db = \Database::getInstance();
+            $stmt = $db->prepare("SELECT activo FROM general_usuarios WHERE usuario = ? LIMIT 1");
+            $stmt->execute([(string)$_SESSION['usuario']]);
+            $user = $stmt->fetch();
+
+            if ($user && isset($user['activo']) && (int)$user['activo'] !== 1) {
+                session_unset();
+                session_destroy();
+                header('Location: /login?inactive=1');
+                exit;
+            }
+        } catch (\Throwable $e) {
+            error_log('Error validando estado activo de la sesión: ' . $e->getMessage());
+        }
+
         // Gestión de timeout de inactividad (3600 segundos = 1 hora)
         $inactividad = 3600; // 1 hora de inactividad (Timeout Phase 1)
         if (isset($_SESSION["timeout"])) {

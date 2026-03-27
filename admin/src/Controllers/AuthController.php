@@ -34,6 +34,7 @@ class AuthController extends BaseController
         $this->render('login', [
             'title' => 'Iniciar Sesión - Admin Panel',
             'csrf_token' => Security::generateCsrfToken(),
+            'inactive_notice' => (($_GET['inactive'] ?? '') === '1'),
         ], false);
     }
 
@@ -67,6 +68,19 @@ class AuthController extends BaseController
             }
 
             if ($password_valida) {
+                if (isset($user['activo']) && (int)$user['activo'] !== 1) {
+                    $this->events->emit(
+                        'seguridad.auth',
+                        'login_bloqueado_inactivo',
+                        "Intento de acceso bloqueado por cuenta inactiva: $username",
+                        ['scope' => 'admin'],
+                        null,
+                        'warning'
+                    );
+
+                    $this->json(['success' => false, 'message' => 'Tu cuenta está inactiva. Contacta al administrador.']);
+                }
+
                 // Set session
                 $_SESSION['admin_user'] = [
                     'id' => $user['id'],
