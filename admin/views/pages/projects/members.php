@@ -9,7 +9,8 @@
                 <h3 class="card-title"><i class="fas fa-users-cog mr-2"></i> Miembros Asignados</h3>
             </div>
             <div class="card-body p-0">
-                <table class="table table-striped table-valign-middle">
+                <div class="table-responsive">
+                    <table class="table table-striped table-valign-middle">
                     <thead>
                         <tr>
                             <th>Nombre / Usuario</th>
@@ -28,11 +29,11 @@
                         <?php else: ?>
                             <?php foreach ($members as $member): ?>
                                 <tr>
-                                    <td>
+                                    <td class="text-break">
                                         <strong><?php echo htmlspecialchars($member['nombre']); ?></strong><br>
                                         <small class="text-muted">@<?php echo htmlspecialchars($member['usuario']); ?></small>
                                     </td>
-                                    <td><?php echo htmlspecialchars($member['cargo']); ?></td>
+                                    <td class="text-break"><?php echo htmlspecialchars($member['cargo']); ?></td>
                                     <td class="text-center">
                                         <?php
                                             $roleName = RoleManager::getRoleName($member['role']);
@@ -54,7 +55,8 @@
                             <?php endforeach; ?>
                         <?php endif; ?>
                     </tbody>
-                </table>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
