@@ -22,6 +22,7 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 - **Estabilidad en Gestión de Usuarios y Miembros:** Resolución de Error 500 al intentar eliminar usuarios o miembros, unificando el uso de `tableExists` seguro en el Core de la Base de Datos y blindando controladores con `try-catch`.
 - **Sincronización:** Refactorización de `ProjectProfessionalsSyncService` eliminando el uso inseguro de `SHOW TABLES LIKE`, previniendo errores en esquemas de proyectos incompletos.
 - **Gestión Flexible (Zero Projects):** Eliminación de restricciones de base de datos y frontend que impedían dejar usuarios sin proyectos asignados.
+- **Sobreposición de Miembros en Admin:** Resolución de desbordamiento horizontal en la tabla de miembros asignados mediante contenedor responsivo y quiebre de palabras forzado para strings largos.
 
 - **Runtime Frontend Config Global:** Nuevo endpoint `'/runtime/frontend-config.js'`, servicio `src/Services/FeatureFlagService.php` y documento `docs/20260325_general_feature_flags.md` para exponer feature flags publicos sin acoplar las vistas al backend.
 - **Cambio Obligatorio de Contraseña:** Nuevo flujo de seguridad con bandera `force_password_change`, endpoint `'/password/update'`, modal bloqueante en login con `AIA.Notice` y accion administrativa para forzar la rotacion masiva de credenciales desde el dashboard.
