@@ -456,16 +456,6 @@ class User
      */
     public function canRemoveFromProject(int $userId, int $projectId): ?string
     {
-        // 1. Verify it's not the last project
-        $count = (int)$this->db->query(
-            "SELECT COUNT(*) FROM project_members WHERE user_id = ?",
-            [$userId]
-        )->fetchColumn();
-
-        if ($count <= 1) {
-            return 'El usuario debe tener al menos un proyecto asignado.';
-        }
-
         // 2. Get project info
         $project = $this->db->query(
             "SELECT Id, Activo, Base_de_Datos FROM general_proyectos_procesos WHERE Id = ?",

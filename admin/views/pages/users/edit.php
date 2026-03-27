@@ -161,9 +161,7 @@ $(function () {
       selected.push(projectId);
     });
 
-    if (selected.length === 0) {
-      return { ok: false, message: 'Debes asignar al menos un proyecto.' };
-    }
+
 
     if (hasEmpty) {
       return { ok: false, message: 'Todas las filas deben tener un proyecto seleccionado.' };
@@ -195,10 +193,7 @@ $(function () {
 
     // New row (not saved yet) — just remove from DOM
     if (!savedProjectId) {
-      if ($assignmentsContainer.find('.assignment-row').length <= 1) {
-        AIA.Notice.warning('El usuario debe tener al menos un proyecto asignado.', 'Asignación requerida');
-        return;
-      }
+
       $row.remove();
       return;
     }
