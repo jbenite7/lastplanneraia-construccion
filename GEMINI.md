@@ -61,7 +61,8 @@ Los comandos de operación del agente ahora están definidos como workflows form
 4. **Normalización de Cargos**: Toda lógica relacionada con cargos debe pasar por `Admin\Core\RoleManager::cleanCargo()`.
 5. **Scripts Críticos**: Antes de ejecutar scripts masivos, mostrar resumen y pedir confirmación explícita.
 6. **Control de Versiones**: NO hacer git push sin aprobación explícita.
-7. **Terminología**: Consultar siempre el [GLOSARIO.md](file:///Users/juanfelipebenitezramos/last-planner-aia-legacy-permisos/GLOSARIO.md) para asegurar el uso correcto de términos técnicos y de negocio (LPS/Lean).
+7. **Prohibición de Herramientas**: **NO USES EL BROWSER AGENT** bajo ninguna circunstancia. Las pruebas deben ser manuales o mediante scripts de servidor.
+8. **Terminología**: Consultar siempre el [GLOSARIO.md](file:///Users/juanfelipebenitezramos/last-planner-aia-legacy-permisos/GLOSARIO.md) para asegurar el uso correcto de términos técnicos y de negocio (LPS/Lean).
 
 ## 📄 Documentación de Referencia
 

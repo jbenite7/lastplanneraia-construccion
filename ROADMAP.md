@@ -22,6 +22,7 @@ gantt
     Analítica & Notificaciones  :active,  des4, 2026-03-05, 7d
     Gestión Flexible (Fase 2)    :done,    des7, 2026-03-27, 2026-03-27
     Fix Error 500 (Eliminar)    :done,    des8, 2026-03-27, 2026-03-27
+    Estabilidad Miembros (500)  :done,    des9, 2026-03-27, 2026-03-27
     Migración LPS Core (Fase 4) :done,    des6, 2026-03-05, 2026-03-06
     Shared Schema (DB)         :         des5, after des6, 21d
 ```

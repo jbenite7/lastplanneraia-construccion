@@ -90,20 +90,25 @@ class ProjectController extends AdminController
         $role = RoleManager::normalizeRole($_POST['role'] ?? 'C');
 
         if ($projectId && $userId) {
-            $this->memberModel->add($projectId, $userId, $role);
+            try {
+                $this->memberModel->add($projectId, $userId, $role);
 
-            // INTELIGENCIA: Aprender la relación cargo -> rol
-            $user = (new \Admin\Models\User(\Database::getInstance()))->find($userId);
-            if ($user && !empty($user['cargo'])) {
-                RoleManager::learn($user['cargo'], $role);
+                // INTELIGENCIA: Aprender la relación cargo -> rol
+                $user = (new \Admin\Models\User(\Database::getInstance()))->find($userId);
+                if ($user && !empty($user['cargo'])) {
+                    RoleManager::learn($user['cargo'], $role);
+                }
+
+                // Auditoría
+                $project = $this->projectModel->find($projectId);
+                $userName = $user ? $user['usuario'] : "ID:$userId";
+                \Database::getInstance()->logActivity('Miembros', 'CREAR', "Se añadió a '$userName' al proyecto '{$project['Proyecto_Proceso']}' con rol '$role'", $project['Base_de_Datos']);
+
+                header('Location: /admin/proyectos/miembros?id=' . $projectId . '&success=member_added');
+            } catch (\Throwable $e) {
+                error_log("Error crítico en addMember: " . $e->getMessage());
+                header('Location: /admin/proyectos/miembros?id=' . $projectId . '&error=system_error');
             }
-
-            // Auditoría
-            $project = $this->projectModel->find($projectId);
-            $userName = $user ? $user['usuario'] : "ID:$userId";
-            \Database::getInstance()->logActivity('Miembros', 'CREAR', "Se añadió a '$userName' al proyecto '{$project['Proyecto_Proceso']}' con rol '$role'", $project['Base_de_Datos']);
-
-            header('Location: /admin/proyectos/miembros?id=' . $projectId . '&success=member_added');
         } else {
             header('Location: /admin/proyectos/miembros?id=' . $projectId . '&error=missing_data');
         }
@@ -147,21 +152,31 @@ class ProjectController extends AdminController
         $userId = $_POST['user_id'] ?? null;
 
         if ($projectId && $userId) {
-            $project = $this->projectModel->find($projectId);
-            $user = (new \Admin\Models\User(\Database::getInstance()))->find($userId);
+            try {
+                $project = $this->projectModel->find($projectId);
+                $user = (new \Admin\Models\User(\Database::getInstance()))->find($userId);
 
-            if ($this->memberModel->remove($projectId, $userId)) {
-                if ($project && !empty($project['Base_de_Datos']) && $user && !empty($user['email'])) {
-                    (new ProjectProfessionalsSyncService(\Database::getInstance()))
-                        ->blockProfessionalByEmail((string)$project['Base_de_Datos'], (string)$user['email']);
+                if ($this->memberModel->remove($projectId, $userId)) {
+                    if ($project && !empty($project['Base_de_Datos']) && $user && !empty($user['email'])) {
+                        // Sincronización con el servicio de profesionales (puede fallar en algunos proyectos)
+                        try {
+                            (new ProjectProfessionalsSyncService(\Database::getInstance()))
+                                ->blockProfessionalByEmail((string)$project['Base_de_Datos'], (string)$user['email']);
+                        } catch (\Throwable $syncError) {
+                            error_log("Error de sincronización al quitar miembro: " . $syncError->getMessage());
+                        }
+                    }
+
+                    // Auditoría
+                    $userName = $user ? $user['usuario'] : "ID:$userId";
+                    \Database::getInstance()->logActivity('Miembros', 'ELIMINAR', "Se retiró a '$userName' del proyecto '{$project['Proyecto_Proceso']}'", $project['Base_de_Datos']);
+                    header('Location: /admin/proyectos/miembros?id=' . $projectId . '&success=member_removed');
+                } else {
+                    header('Location: /admin/proyectos/miembros?id=' . $projectId . '&error=delete_failed');
                 }
-
-                // Auditoría
-                $userName = $user ? $user['usuario'] : "ID:$userId";
-                \Database::getInstance()->logActivity('Miembros', 'ELIMINAR', "Se retiró a '$userName' del proyecto '{$project['Proyecto_Proceso']}'", $project['Base_de_Datos']);
-                header('Location: /admin/proyectos/miembros?id=' . $projectId . '&success=member_removed');
-            } else {
-                header('Location: /admin/proyectos/miembros?id=' . $projectId . '&error=delete_failed');
+            } catch (\Throwable $e) {
+                error_log("Error crítico en removeMember: " . $e->getMessage());
+                header('Location: /admin/proyectos/miembros?id=' . $projectId . '&error=system_error');
             }
         } else {
             header('Location: /admin/proyectos/miembros?id=' . $projectId . '&error=delete_failed');

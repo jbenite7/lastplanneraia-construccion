@@ -18,8 +18,9 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 ### Corregido
 
 - **Compatibilidad SQL en Detección de Tablas:** Corrección del uso de placeholders en `SHOW TABLES LIKE` mediante el uso de `quote()` nativo de PDO, asegurando compatibilidad con el driver de base de datos en entornos SiteGround/Docker.
-- **Error 500 en Remoción de Proyectos:** Implementación de manejo de excepciones (`try-catch`) en `UserController::removeProject` para evitar fallos catastróficos si el servicio de sincronización falla, devolviendo ahora errores descriptivos.
-- **Estabilidad en Gestión de Usuarios:** Resolución de Error 500 al intentar eliminar usuarios desde la lista general (`/admin/usuarios/eliminar`), unificando el uso de `tableExists` seguro y blindando el controlador con `try-catch`.
+- **Error 500 en Remoción de Proyectos:** Implementación de manejo de excepciones (`try-catch`) en `UserController::removeProject` y `ProjectController::removeMember` para evitar fallos catastróficos si el servicio de sincronización falla, devolviendo ahora errores descriptivos.
+- **Estabilidad en Gestión de Usuarios y Miembros:** Resolución de Error 500 al intentar eliminar usuarios o miembros, unificando el uso de `tableExists` seguro en el Core de la Base de Datos y blindando controladores con `try-catch`.
+- **Sincronización:** Refactorización de `ProjectProfessionalsSyncService` eliminando el uso inseguro de `SHOW TABLES LIKE`, previniendo errores en esquemas de proyectos incompletos.
 - **Gestión Flexible (Zero Projects):** Eliminación de restricciones de base de datos y frontend que impedían dejar usuarios sin proyectos asignados.
 
 - **Runtime Frontend Config Global:** Nuevo endpoint `'/runtime/frontend-config.js'`, servicio `src/Services/FeatureFlagService.php` y documento `docs/20260325_general_feature_flags.md` para exponer feature flags publicos sin acoplar las vistas al backend.

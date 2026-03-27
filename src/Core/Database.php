@@ -152,6 +152,22 @@ class Database
         return $this->pdo->prepare($sql);
     }
 
+    /**
+     * Verifica de forma segura si una tabla existe en la base de datos actual.
+     *
+     * @param string $tableName Nombre de la tabla a verificar.
+     * @return bool
+     */
+    public function tableExists(string $tableName): bool
+    {
+        try {
+            $stmt = $this->pdo->query("SELECT 1 FROM " . $this->quote($tableName) . " LIMIT 1");
+            return $stmt !== false;
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
+
     // Evitar clonación del objeto
     private function __clone()
     {

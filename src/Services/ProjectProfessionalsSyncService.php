@@ -321,6 +321,10 @@ class ProjectProfessionalsSyncService
             return false;
         }
 
+        if (!$this->db->tableExists("{$dbPrefix}_profesionales")) {
+            return false;
+        }
+
         $count = (int)$this->db->query(
             "SELECT COUNT(*) FROM {$dbPrefix}_profesionales WHERE LOWER(TRIM(email)) = ?",
             [$normalizedEmail]
@@ -589,7 +593,7 @@ class ProjectProfessionalsSyncService
 
         $existingTables = [];
         foreach ($tables as $table => $column) {
-            if ($this->db->query("SHOW TABLES LIKE " . $this->db->quote($table))->fetch()) {
+            if ($this->db->tableExists($table)) {
                 $existingTables[$table] = $column;
             }
         }
