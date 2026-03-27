@@ -353,23 +353,28 @@ class UserController extends AdminController
             $this->json(['success' => false, 'message' => 'ID de usuario no proporcionado']);
         }
 
-        // Obtener datos antes de borrar para el log
-        $user = $this->userModel->find($id);
+        try {
+            // Obtener datos antes de borrar para el log
+            $user = $this->userModel->find($id);
 
-        $deleteRestriction = $this->userModel->getDeletionBlockReason((int)$id);
-        if ($deleteRestriction !== null) {
-            $this->json(['success' => false, 'message' => $deleteRestriction]);
+            $deleteRestriction = $this->userModel->getDeletionBlockReason((int)$id);
+            if ($deleteRestriction !== null) {
+                $this->json(['success' => false, 'message' => $deleteRestriction]);
+            }
+
+            if ($this->userModel->delete($id)) {
+                // Auditoría
+                $userName = $user ? $user['usuario'] : 'Desconocido';
+                \Database::getInstance()->logActivity('Usuarios', 'ELIMINAR', "Se eliminó el usuario con ID: $id ('$userName')");
+
+                $this->json(['success' => true, 'message' => 'Usuario eliminado correctamente']);
+            }
+
+            $this->json(['success' => false, 'message' => 'Error al eliminar el usuario']);
+        } catch (\Throwable $e) {
+            error_log("Error crítico en delete user: " . $e->getMessage());
+            $this->json(['success' => false, 'message' => 'Error interno del servidor: ' . $e->getMessage()]);
         }
-
-        if ($this->userModel->delete($id)) {
-            // Auditoría
-            $userName = $user ? $user['usuario'] : 'Desconocido';
-            \Database::getInstance()->logActivity('Usuarios', 'ELIMINAR', "Se eliminó el usuario con ID: $id ('$userName')");
-
-            $this->json(['success' => true, 'message' => 'Usuario eliminado correctamente']);
-        }
-
-        $this->json(['success' => false, 'message' => 'Error al eliminar el usuario']);
     }
 
     /**

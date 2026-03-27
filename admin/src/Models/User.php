@@ -431,8 +431,7 @@ class User
             }
 
             $tableName = "{$dbPrefix}_profesionales";
-            $tableExists = $this->db->query("SHOW TABLES LIKE ?", [$tableName])->fetch();
-            if (!$tableExists) {
+            if (!$this->tableExists($tableName)) {
                 continue;
             }
 
