@@ -11,13 +11,14 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 - **Word Wrap en Selector de Proyectos:** Actualización de estilos CSS (`white-space: normal`, `word-break: break-word`) en las tarjetas del selector de proyectos para revelar los nombres completamente en lugar de truncarlos con puntos suspensivos.
 - **Eliminación Condicional de Permisos (Fase 1):** Implementación de reglas de negocio para la eliminación de permisos por proyecto desde la vista de edición de usuario. Valida si el proyecto está activo o si el usuario tiene actividades programadas (`profesionales`, `programacion_semanal`) antes de permitir la revocación.
-- **Gestión Flexible de Usuarios (Fase 2):** Eliminación de la restricción de "mínimo un proyecto", permitiendo usuarios con cero asignaciones para facilitar procesos de suspensión temporal.
+- **Gestión Flexible de Usuarios (Fase 2):** Eliminación completa de la restricción de "mínimo un proyecto", permitiendo usuarios con cero asignaciones para facilitar procesos de suspensión temporal. Se ajustaron validaciones en Model, View y Controller.
 - **Validación AJAX de Permisos:** Nuevo endpoint `/usuarios/quitar-proyecto` que integra validación de integridad de datos y bloquea automáticamente al profesional en el proyecto tras la revocación exitosa.
 - **Despliegue SiteGround (PHP CLI):** Actualización de la documentación de operación (`docs/siteground-deploy-routine.md`) con el advertimento y comando exacto para forzar PHP 8.3 CLI en las ejecuciones de Composer, previniendo fallos del autoloader en producción.
 
 ### Corregido
 
 - **Compatibilidad SQL en Detección de Tablas:** Corrección del uso de placeholders en `SHOW TABLES LIKE` mediante el uso de `quote()` nativo de PDO, asegurando compatibilidad con el driver de base de datos en entornos SiteGround/Docker.
+- **Error 500 en Remoción de Proyectos:** Implementación de manejo de excepciones (`try-catch`) en `UserController::removeProject` para evitar fallos catastróficos si el servicio de sincronización falla, devolviendo ahora errores descriptivos.
 
 - **Runtime Frontend Config Global:** Nuevo endpoint `'/runtime/frontend-config.js'`, servicio `src/Services/FeatureFlagService.php` y documento `docs/20260325_general_feature_flags.md` para exponer feature flags publicos sin acoplar las vistas al backend.
 - **Cambio Obligatorio de Contraseña:** Nuevo flujo de seguridad con bandera `force_password_change`, endpoint `'/password/update'`, modal bloqueante en login con `AIA.Notice` y accion administrativa para forzar la rotacion masiva de credenciales desde el dashboard.
