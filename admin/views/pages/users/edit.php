@@ -24,6 +24,9 @@ foreach (($assignments ?? []) as $assignment) {
         'role' => strtoupper((string)($assignment['role'] ?? 'V')),
     ];
 }
+
+$isUserActive = (int)($user['activo'] ?? 1) === 1;
+$forcePasswordChangeEnabled = (int)($user['force_password_change'] ?? 0) === 1;
 ?>
 
 <div class="card card-info">
@@ -52,6 +55,16 @@ foreach (($assignments ?? []) as $assignment) {
             <label for="cargo">Cargo</label>
             <input type="text" name="cargo" class="form-control" id="cargo" value="<?php echo htmlspecialchars((string)$user['cargo']); ?>">
           </div>
+
+          <div class="form-group mb-0">
+            <label class="d-block">Estado del usuario</label>
+            <input type="hidden" name="activo" value="0">
+            <div class="custom-control custom-switch">
+              <input type="checkbox" class="custom-control-input" id="activo" name="activo" value="1" <?php echo $isUserActive ? 'checked' : ''; ?>>
+              <label class="custom-control-label" for="activo">Usuario activo</label>
+            </div>
+            <small class="text-muted">Si se desactiva, el usuario no podrá iniciar sesión pero conservará su trazabilidad.</small>
+          </div>
         </div>
 
         <div class="col-md-6">
@@ -64,21 +77,46 @@ foreach (($assignments ?? []) as $assignment) {
             <label for="password">Contrasena (dejar en blanco para no cambiar)</label>
             <input type="password" name="password" class="form-control" id="password" placeholder="Nueva contrasena">
           </div>
+
+          <div class="form-group mb-0">
+            <label class="d-block">Política de contraseña</label>
+            <input type="hidden" name="force_password_change" value="0">
+            <div class="custom-control custom-switch">
+              <input type="checkbox" class="custom-control-input" id="force_password_change" name="force_password_change" value="1" <?php echo $forcePasswordChangeEnabled ? 'checked' : ''; ?>>
+              <label class="custom-control-label" for="force_password_change">Forzar cambio de contrasena</label>
+            </div>
+            <small class="text-muted">La bandera seguirá activa hasta que el usuario cambie su contrasena o un admin la desactive.</small>
+          </div>
         </div>
       </div>
+
+      <?php if (!$isUserActive): ?>
+        <div class="alert alert-warning mt-3 mb-0">
+          Este usuario está inactivo. Permanecerá oculto por defecto en el listado y no podrá iniciar sesión hasta ser reactivado.
+        </div>
+      <?php endif; ?>
 
       <hr>
 
       <div class="d-flex justify-content-between align-items-center mb-2">
         <h5 class="mb-0">Asignaciones por Proyecto</h5>
-        <button type="button" class="btn btn-sm btn-outline-primary" id="addAssignmentRow">
-          <i class="fas fa-plus"></i> Agregar proyecto
-        </button>
+        <div class="btn-group">
+          <button type="button" class="btn btn-sm btn-outline-danger" id="revokeAllProjectsBtn">
+            <i class="fas fa-user-slash"></i> Revocar todos los permisos
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-primary" id="addAssignmentRow">
+            <i class="fas fa-plus"></i> Agregar proyecto
+          </button>
+        </div>
       </div>
 
       <p class="text-muted mb-2">
         Este usuario puede tener roles diferentes segun el proyecto.
       </p>
+
+      <div class="alert alert-light border mb-3">
+        Revocar todos los permisos retira el acceso actual a los proyectos, pero no borra el historial del usuario en los proyectos.
+      </div>
 
       <div id="assignmentsContainer"></div>
     </div>
@@ -179,12 +217,54 @@ $(function () {
     initialAssignments.forEach(function (assignment) {
       addAssignmentRow(assignment);
     });
-  } else {
-    addAssignmentRow({ role: 'V' });
   }
 
   $('#addAssignmentRow').on('click', function () {
     addAssignmentRow({ role: 'V' });
+  });
+
+  $('#revokeAllProjectsBtn').on('click', function () {
+    const $btn = $(this);
+
+    AIA.Notice.dialog({
+      title: 'Revocar todos los permisos',
+      text: 'Se retirará el acceso del usuario a todos sus proyectos actuales. Esta acción no borrará su historial en los proyectos.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, revocar todo',
+      cancelButtonText: 'Cancelar'
+    }).then(function (result) {
+      if (!result.isConfirmed) {
+        return;
+      }
+
+      $btn.prop('disabled', true);
+
+      $.ajax({
+        url: '/admin/usuarios/revocar-todos-proyectos',
+        method: 'POST',
+        dataType: 'json',
+        data: {
+          id: userId,
+          csrf_token: csrfToken
+        },
+        success: function (response) {
+          if (!response.success) {
+            AIA.Notice.error(response.message, 'No se pudo revocar');
+            return;
+          }
+
+          $assignmentsContainer.empty();
+          AIA.Notice.success(response.message, 'Permisos revocados');
+        },
+        error: function () {
+          AIA.Notice.error('Error de comunicación con el servidor', 'Error');
+        },
+        complete: function () {
+          $btn.prop('disabled', false);
+        }
+      });
+    });
   });
 
   $(document).on('click', '.remove-assignment-row', function () {

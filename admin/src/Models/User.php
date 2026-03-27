@@ -177,9 +177,9 @@ class User
                      FROM project_members pm2
                      INNER JOIN general_proyectos_procesos p2 ON p2.Id = pm2.project_id
                      WHERE pm2.user_id = u.id
-                       AND p2.Area = 'Construccion') AS projects_count
-             FROM {$this->table} u
-             ORDER BY u.nombre ASC"
+                        AND p2.Area = 'Construccion') AS projects_count
+              FROM {$this->table} u
+              ORDER BY u.activo DESC, u.nombre ASC"
         );
 
         return $stmt->fetchAll();
@@ -219,8 +219,8 @@ class User
     {
         $this->db->beginTransaction();
         try {
-            $sql = "INSERT INTO {$this->table} (nombre, email, cargo, usuario, password)
-                    VALUES (?, ?, ?, ?, ?)";
+            $sql = "INSERT INTO {$this->table} (nombre, email, cargo, usuario, password, activo, force_password_change)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)";
 
             $password = password_hash($data['password'], PASSWORD_DEFAULT);
 
@@ -230,6 +230,8 @@ class User
                 $data['cargo'],
                 $data['usuario'],
                 $password,
+                (int)($data['activo'] ?? 1),
+                (int)($data['force_password_change'] ?? 0),
             ]);
 
             $userId = $this->db->lastInsertId();
@@ -275,6 +277,16 @@ class User
                 $params[] = password_hash($data['password'], PASSWORD_DEFAULT);
             }
 
+            if (array_key_exists('activo', $data)) {
+                $fields[] = 'activo = ?';
+                $params[] = (int)$data['activo'];
+            }
+
+            if (array_key_exists('force_password_change', $data)) {
+                $fields[] = 'force_password_change = ?';
+                $params[] = (int)$data['force_password_change'];
+            }
+
             $params[] = $id;
             $sql = "UPDATE {$this->table} SET " . implode(', ', $fields) . " WHERE id = ?";
             
@@ -289,6 +301,54 @@ class User
         } catch (\Exception $e) {
             $this->db->rollBack();
             return false;
+        }
+    }
+
+    public function setActive(int $id, bool $active): bool
+    {
+        try {
+            $this->db->query(
+                "UPDATE {$this->table} SET activo = ? WHERE id = ?",
+                [$active ? 1 : 0, $id]
+            );
+
+            return true;
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
+    public function setForcePasswordChange(int $id, bool $enabled): bool
+    {
+        try {
+            $this->db->query(
+                "UPDATE {$this->table} SET force_password_change = ? WHERE id = ?",
+                [$enabled ? 1 : 0, $id]
+            );
+
+            return true;
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
+    public function revokeAllProjects(int $userId): array
+    {
+        if ($userId <= 0) {
+            return ['success' => false, 'assignments' => []];
+        }
+
+        $this->db->beginTransaction();
+        try {
+            $assignments = $this->getProjectAssignments($userId);
+            $this->db->query("DELETE FROM project_members WHERE user_id = ?", [$userId]);
+            $this->db->commit();
+
+            return ['success' => true, 'assignments' => $assignments];
+        } catch (\Exception $e) {
+            $this->db->rollBack();
+
+            return ['success' => false, 'assignments' => []];
         }
     }
 
@@ -360,22 +420,7 @@ class User
      */
     public function delete($id)
     {
-        if ($this->getDeletionBlockReason((int)$id) !== null) {
-            return false;
-        }
-
-        $this->db->beginTransaction();
-        try {
-            $this->db->query("DELETE FROM project_members WHERE user_id = ?", [$id]);
-            $this->db->query("DELETE FROM {$this->table} WHERE id = ?", [$id]);
-            $this->db->commit();
-
-            return true;
-        } catch (\Exception $e) {
-            $this->db->rollBack();
-
-            return false;
-        }
+        return false;
     }
 
     public function getDeletionBlockReason(int $id): ?string
@@ -389,28 +434,7 @@ class User
             return 'Usuario no encontrado.';
         }
 
-        $activeAssignments = (int)$this->db->query(
-            "SELECT COUNT(*) FROM project_members WHERE user_id = ?",
-            [$id]
-        )->fetchColumn();
-
-        if ($activeAssignments > 0) {
-            return 'No se puede eliminar: el usuario sigue asignado a uno o más proyectos. Retíralo de los proyectos para bloquearlo en cada uno.';
-        }
-
-        $email = $this->normalizeEmail($user['email'] ?? '');
-        if ($email === '') {
-            return null;
-        }
-
-        $projectRefs = $this->findProjectProfessionalReferences($email);
-        if (!empty($projectRefs)) {
-            $sample = implode(', ', array_slice($projectRefs, 0, 3));
-            $suffix = count($projectRefs) > 3 ? ', ...' : '';
-            return "No se puede eliminar: el usuario tiene historial en Profesionales de proyecto(s): {$sample}{$suffix}. Debe mantenerse para conservar la trazabilidad.";
-        }
-
-        return null;
+        return 'Los usuarios ya no se eliminan. Usa el estado Activo/Inactivo para bloquear su acceso.';
     }
 
     private function findProjectProfessionalReferences(string $email): array
@@ -631,7 +655,7 @@ class User
      */
     public function forcePasswordChangeForAll()
     {
-        $sql = "UPDATE {$this->table} SET force_password_change = 1";
+        $sql = "UPDATE {$this->table} SET force_password_change = 1 WHERE activo = 1";
         $stmt = $this->db->query($sql);
 
         return $stmt->rowCount();
@@ -644,10 +668,11 @@ class User
      */
     public function getPasswordChangeStats()
     {
-        // total_active (considering all for now, maybe filtered by state in future)
-        $total = $this->count();
+        $total = (int)$this->db->query(
+            "SELECT COUNT(*) FROM {$this->table} WHERE activo = 1"
+        )->fetchColumn();
 
-        $sqlPending = "SELECT COUNT(*) as pending FROM {$this->table} WHERE force_password_change = 1";
+        $sqlPending = "SELECT COUNT(*) as pending FROM {$this->table} WHERE activo = 1 AND force_password_change = 1";
         $pending = (int) $this->db->query($sqlPending)->fetchColumn();
 
         return [

@@ -176,10 +176,6 @@ $(document).ready(function () {
       selected.push(projectId);
     });
 
-    if (selected.length === 0) {
-      return { ok: false, message: 'Debes agregar al menos una asignacion de proyecto.' };
-    }
-
     if (hasEmpty) {
       return { ok: false, message: 'Todas las asignaciones deben tener un proyecto seleccionado.' };
     }
@@ -199,10 +195,6 @@ $(document).ready(function () {
   });
 
   $(document).on('click', '.remove-assignment-row', function () {
-    if ($assignmentsContainer.find('.assignment-row').length <= 1) {
-      toastr.warning('El usuario debe tener al menos un proyecto asignado.');
-      return;
-    }
     $(this).closest('.assignment-row').remove();
   });
 

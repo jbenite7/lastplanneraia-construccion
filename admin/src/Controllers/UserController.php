@@ -6,6 +6,7 @@ use Admin\Core\RoleManager;
 use Admin\Core\Security;
 use Admin\Models\Project;
 use Admin\Models\User;
+use App\Services\ProjectProfessionalsSyncService;
 use Database;
 
 class UserController extends AdminController
@@ -290,7 +291,14 @@ class UserController extends AdminController
             $this->json(['success' => false, 'message' => 'ID de usuario no proporcionado']);
         }
 
+        $user = $this->userModel->find($id);
+        if (!$user) {
+            $this->json(['success' => false, 'message' => 'Usuario no encontrado']);
+        }
+
         $assignments = $this->parseAssignments($_POST['assignments'] ?? []);
+        $currentAdminId = (int)($_SESSION['admin_user']['id'] ?? 0);
+        $isSelfUpdate = $currentAdminId > 0 && $currentAdminId === (int)$id;
 
         $data = [
             'nombre' => trim($_POST['nombre'] ?? ''),
@@ -298,11 +306,17 @@ class UserController extends AdminController
             'cargo' => trim($_POST['cargo'] ?? ''),
             'usuario' => trim($_POST['usuario'] ?? ''),
             'password' => $_POST['password'] ?? '',
+            'activo' => $this->normalizeBooleanInput($_POST['activo'] ?? '1'),
+            'force_password_change' => $this->normalizeBooleanInput($_POST['force_password_change'] ?? '0'),
             'assignments' => $assignments,
         ];
 
         if (empty($data['usuario']) || empty($data['nombre'])) {
             $this->json(['success' => false, 'message' => 'Nombre y usuario son requeridos']);
+        }
+
+        if ($isSelfUpdate && (int)$data['activo'] !== 1) {
+            $this->json(['success' => false, 'message' => 'No puedes inactivar tu propia cuenta desde la sesión actual.']);
         }
 
         $assignmentError = $this->validateAssignments($assignments);
@@ -325,12 +339,22 @@ class UserController extends AdminController
             $this->json(['success' => false, 'message' => 'El nombre de usuario ya existe']);
         }
 
+        $previousAssignments = $this->userModel->getProjectAssignments((int)$id);
+        $removedAssignments = $this->findRemovedAssignments($previousAssignments, $assignments);
+
         if ($this->userModel->update($id, $data)) {
+            $emailForRevocation = trim((string)($user['email'] ?? ''));
+            if ($emailForRevocation === '') {
+                $emailForRevocation = trim((string)($data['email'] ?? ''));
+            }
+
+            $this->blockProfessionalAccess($removedAssignments, $emailForRevocation);
+
             // Auditoría
             \Database::getInstance()->logActivity(
                 'Usuarios',
                 'MODIFICAR',
-                "Se actualizó el usuario con ID: $id ('{$data['usuario']}') y " . count($assignments) . " proyecto(s)"
+                "Se actualizó el usuario con ID: $id ('{$data['usuario']}'), estado " . ((int)$data['activo'] === 1 ? 'activo' : 'inactivo') . ", cambio de clave " . ((int)$data['force_password_change'] === 1 ? 'pendiente' : 'normal') . " y " . count($assignments) . " proyecto(s)"
             );
 
             $this->json(['success' => true, 'message' => 'Usuario actualizado correctamente']);
@@ -344,37 +368,134 @@ class UserController extends AdminController
      */
     public function delete()
     {
+        http_response_code(405);
+        $this->json([
+            'success' => false,
+            'message' => 'Los usuarios ya no se eliminan. Usa Activo/Inactivo para bloquear su acceso.',
+        ]);
+    }
+
+    public function toggleActive()
+    {
         if (!Security::validateCsrfToken($_POST['csrf_token'] ?? '')) {
             $this->json(['success' => false, 'message' => 'Token CSRF inválido']);
         }
 
-        $id = $_POST['id'] ?? null;
-        if (!$id) {
+        $id = (int)($_POST['id'] ?? 0);
+        $active = $this->normalizeBooleanInput($_POST['value'] ?? '0') === 1;
+
+        if ($id <= 0) {
             $this->json(['success' => false, 'message' => 'ID de usuario no proporcionado']);
         }
 
-        try {
-            // Obtener datos antes de borrar para el log
-            $user = $this->userModel->find($id);
-
-            $deleteRestriction = $this->userModel->getDeletionBlockReason((int)$id);
-            if ($deleteRestriction !== null) {
-                $this->json(['success' => false, 'message' => $deleteRestriction]);
-            }
-
-            if ($this->userModel->delete($id)) {
-                // Auditoría
-                $userName = $user ? $user['usuario'] : 'Desconocido';
-                \Database::getInstance()->logActivity('Usuarios', 'ELIMINAR', "Se eliminó el usuario con ID: $id ('$userName')");
-
-                $this->json(['success' => true, 'message' => 'Usuario eliminado correctamente']);
-            }
-
-            $this->json(['success' => false, 'message' => 'Error al eliminar el usuario']);
-        } catch (\Throwable $e) {
-            error_log("Error crítico en delete user: " . $e->getMessage());
-            $this->json(['success' => false, 'message' => 'Error interno del servidor: ' . $e->getMessage()]);
+        if ((int)($_SESSION['admin_user']['id'] ?? 0) === $id && !$active) {
+            $this->json(['success' => false, 'message' => 'No puedes inactivar tu propia cuenta desde la sesión actual.']);
         }
+
+        $user = $this->userModel->find($id);
+        if (!$user) {
+            $this->json(['success' => false, 'message' => 'Usuario no encontrado']);
+        }
+
+        if (!$this->userModel->setActive($id, $active)) {
+            $this->json(['success' => false, 'message' => 'No se pudo actualizar el estado del usuario']);
+        }
+
+        Database::getInstance()->logActivity(
+            'Usuarios',
+            'ESTADO',
+            "Se marcó al usuario '{$user['usuario']}' como " . ($active ? 'activo' : 'inactivo')
+        );
+
+        $this->json([
+            'success' => true,
+            'active' => $active,
+            'message' => $active
+                ? 'Usuario activado correctamente.'
+                : 'Usuario inactivado correctamente. Ya no podrá iniciar sesión.',
+        ]);
+    }
+
+    public function toggleForcePasswordChange()
+    {
+        if (!Security::validateCsrfToken($_POST['csrf_token'] ?? '')) {
+            $this->json(['success' => false, 'message' => 'Token CSRF inválido']);
+        }
+
+        $id = (int)($_POST['id'] ?? 0);
+        $enabled = $this->normalizeBooleanInput($_POST['value'] ?? '0') === 1;
+
+        if ($id <= 0) {
+            $this->json(['success' => false, 'message' => 'ID de usuario no proporcionado']);
+        }
+
+        $user = $this->userModel->find($id);
+        if (!$user) {
+            $this->json(['success' => false, 'message' => 'Usuario no encontrado']);
+        }
+
+        if (!$this->userModel->setForcePasswordChange($id, $enabled)) {
+            $this->json(['success' => false, 'message' => 'No se pudo actualizar la política de contraseña']);
+        }
+
+        Database::getInstance()->logActivity(
+            'Usuarios',
+            'SEGURIDAD',
+            "Se " . ($enabled ? 'activó' : 'desactivó') . " el cambio obligatorio de contraseña para '{$user['usuario']}'"
+        );
+
+        $this->json([
+            'success' => true,
+            'enabled' => $enabled,
+            'message' => $enabled
+                ? 'El usuario deberá cambiar su contraseña en su próximo inicio de sesión.'
+                : 'El cambio obligatorio de contraseña fue desactivado para este usuario.',
+        ]);
+    }
+
+    public function revokeAllProjects()
+    {
+        if (!Security::validateCsrfToken($_POST['csrf_token'] ?? '')) {
+            $this->json(['success' => false, 'message' => 'Token CSRF inválido']);
+        }
+
+        $userId = (int)($_POST['id'] ?? 0);
+        if ($userId <= 0) {
+            $this->json(['success' => false, 'message' => 'ID de usuario no proporcionado']);
+        }
+
+        if ((int)($_SESSION['admin_user']['id'] ?? 0) === $userId) {
+            $this->json(['success' => false, 'message' => 'No puedes revocar todos tus permisos desde tu propia sesión.']);
+        }
+
+        $user = $this->userModel->find($userId);
+        if (!$user) {
+            $this->json(['success' => false, 'message' => 'Usuario no encontrado']);
+        }
+
+        $result = $this->userModel->revokeAllProjects($userId);
+        if (!$result['success']) {
+            $this->json(['success' => false, 'message' => 'No se pudieron revocar los permisos del usuario']);
+        }
+
+        $assignments = $result['assignments'];
+        $this->blockProfessionalAccess($assignments, (string)($user['email'] ?? ''));
+
+        Database::getInstance()->logActivity(
+            'Usuarios',
+            'REVOCAR_TODOS_PROYECTOS',
+            "Se revocaron todos los permisos de '{$user['usuario']}' en " . count($assignments) . ' proyecto(s) sin borrar su historial.'
+        );
+
+        $message = empty($assignments)
+            ? 'El usuario ya no tenía permisos activos en proyectos.'
+            : 'Se revocaron todos los permisos del usuario sin afectar su historial en los proyectos.';
+
+        $this->json([
+            'success' => true,
+            'revoked_projects' => count($assignments),
+            'message' => $message,
+        ]);
     }
 
     /**
@@ -409,7 +530,7 @@ class UserController extends AdminController
 
             if ($project && !empty($project['Base_de_Datos']) && $user && !empty($user['email'])) {
                 try {
-                    (new \App\Services\ProjectProfessionalsSyncService(Database::getInstance()))
+                    (new ProjectProfessionalsSyncService(Database::getInstance()))
                         ->blockProfessionalByEmail((string)$project['Base_de_Datos'], (string)$user['email']);
                 } catch (\Throwable $e) {
                     error_log("Error al bloquear profesional en SyncService: " . $e->getMessage());
@@ -477,5 +598,58 @@ class UserController extends AdminController
         }
 
         return null;
+    }
+
+    private function normalizeBooleanInput($value): int
+    {
+        return in_array((string)$value, ['1', 'true', 'on'], true) ? 1 : 0;
+    }
+
+    private function findRemovedAssignments(array $previousAssignments, array $nextAssignments): array
+    {
+        $nextProjectIds = [];
+        foreach ($nextAssignments as $assignment) {
+            $projectId = (int)($assignment['project_id'] ?? 0);
+            if ($projectId > 0) {
+                $nextProjectIds[$projectId] = true;
+            }
+        }
+
+        $removed = [];
+        foreach ($previousAssignments as $assignment) {
+            $projectId = (int)($assignment['project_id'] ?? 0);
+            if ($projectId > 0 && !isset($nextProjectIds[$projectId])) {
+                $removed[] = $assignment;
+            }
+        }
+
+        return $removed;
+    }
+
+    private function blockProfessionalAccess(array $assignments, string $email): void
+    {
+        $normalizedEmail = trim($email);
+        if ($normalizedEmail === '' || empty($assignments)) {
+            return;
+        }
+
+        $syncService = new ProjectProfessionalsSyncService(Database::getInstance());
+        foreach ($assignments as $assignment) {
+            $projectId = (int)($assignment['project_id'] ?? 0);
+            if ($projectId <= 0) {
+                continue;
+            }
+
+            $project = $this->projectModel->find($projectId);
+            if (!$project || empty($project['Base_de_Datos'])) {
+                continue;
+            }
+
+            try {
+                $syncService->blockProfessionalByEmail((string)$project['Base_de_Datos'], $normalizedEmail);
+            } catch (\Throwable $e) {
+                error_log('Error al bloquear profesional por revocación administrativa: ' . $e->getMessage());
+            }
+        }
     }
 }

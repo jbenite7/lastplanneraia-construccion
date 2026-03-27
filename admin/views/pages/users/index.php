@@ -5,7 +5,11 @@ use Admin\Core\RoleManager;
 <div class="card">
   <div class="card-header">
     <h3 class="card-title">Listado de Usuarios</h3>
-    <div class="card-tools">
+    <div class="card-tools d-flex align-items-center">
+      <div class="custom-control custom-switch mr-3">
+        <input type="checkbox" class="custom-control-input" id="toggleInactiveUsers">
+        <label class="custom-control-label" for="toggleInactiveUsers">Mostrar inactivos</label>
+      </div>
       <a href="/admin/usuarios/crear" class="btn btn-primary btn-sm">
         <i class="fas fa-plus"></i> Nuevo Usuario
       </a>
@@ -20,15 +24,17 @@ use Admin\Core\RoleManager;
           <th style="position: sticky; top: 0; background: white; z-index: 10; border-top: 1px solid #dee2e6;">Nombre</th>
           <th style="width: 100px; position: sticky; top: 0; background: white; z-index: 10; border-top: 1px solid #dee2e6;">Usuario</th>
           <th style="width: 150px; position: sticky; top: 0; background: white; z-index: 10; border-top: 1px solid #dee2e6;">Email</th>
-          <th style="position: sticky; top: 0; background: white; z-index: 10; border-top: 1px solid #dee2e6;">Cargo</th>
-          <th style="width: 160px; position: sticky; top: 0; background: white; z-index: 10; border-top: 1px solid #dee2e6;">Rol Principal</th>
-          <th style="width: 90px; position: sticky; top: 0; background: white; z-index: 10; border-top: 1px solid #dee2e6;" class="text-center">Proyectos</th>
-          <th style="width: 90px; position: sticky; top: 0; background: white; z-index: 10; border-top: 1px solid #dee2e6;" class="text-center">Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <?php foreach ($users as $user): ?>
-        <tr>
+           <th style="position: sticky; top: 0; background: white; z-index: 10; border-top: 1px solid #dee2e6;">Cargo</th>
+           <th style="width: 160px; position: sticky; top: 0; background: white; z-index: 10; border-top: 1px solid #dee2e6;">Rol Principal</th>
+           <th style="width: 150px; position: sticky; top: 0; background: white; z-index: 10; border-top: 1px solid #dee2e6;" class="text-center">Estado</th>
+           <th style="width: 90px; position: sticky; top: 0; background: white; z-index: 10; border-top: 1px solid #dee2e6;" class="text-center">Proyectos</th>
+           <th style="width: 90px; position: sticky; top: 0; background: white; z-index: 10; border-top: 1px solid #dee2e6;" class="text-center">Acciones</th>
+         </tr>
+       </thead>
+       <tbody>
+         <?php foreach ($users as $user): ?>
+        <?php $isActive = (int)($user['activo'] ?? 1) === 1; ?>
+        <tr data-active="<?php echo $isActive ? 1 : 0; ?>" class="<?php echo $isActive ? '' : 'user-row-inactive'; ?>">
           <td class="text-center"><?php echo $user['id']; ?></td>
           <td><?php echo htmlspecialchars($user['nombre']); ?></td>
           <td class="text-break"><?php echo htmlspecialchars($user['usuario']); ?></td>
@@ -49,6 +55,26 @@ use Admin\Core\RoleManager;
               <?php echo htmlspecialchars($roleCode . ' - ' . $roleName); ?>
             </span>
           </td>
+          <td class="text-center user-status-cell">
+            <div class="custom-control custom-switch d-inline-block">
+              <input type="checkbox"
+                     class="custom-control-input user-active-toggle"
+                     id="user-active-<?php echo $user['id']; ?>"
+                     data-id="<?php echo $user['id']; ?>"
+                     <?php echo $isActive ? 'checked' : ''; ?>>
+              <label class="custom-control-label" for="user-active-<?php echo $user['id']; ?>"></label>
+            </div>
+            <div class="mt-1">
+              <span class="badge user-status-badge <?php echo $isActive ? 'badge-success' : 'badge-secondary'; ?>">
+                <?php echo $isActive ? 'Activo' : 'Inactivo'; ?>
+              </span>
+            </div>
+            <?php if ((int)($user['force_password_change'] ?? 0) === 1): ?>
+              <div class="mt-1">
+                <span class="badge badge-warning">Clave pendiente</span>
+              </div>
+            <?php endif; ?>
+          </td>
           <td class="text-center">
             <span class="badge badge-secondary"><?php echo (int)($user['projects_count'] ?? 0); ?></span>
           </td>
@@ -57,9 +83,6 @@ use Admin\Core\RoleManager;
               <a href="/admin/usuarios/editar?id=<?php echo $user['id']; ?>" class="btn btn-info btn-xs" title="Editar">
                 <i class="fas fa-edit"></i>
               </a>
-              <button class="btn btn-danger btn-xs delete-user" data-id="<?php echo $user['id']; ?>" data-name="<?php echo htmlspecialchars($user['nombre']); ?>" title="Eliminar">
-                <i class="fas fa-trash"></i>
-              </button>
             </div>
           </td>
         </tr>
@@ -80,6 +103,10 @@ use Admin\Core\RoleManager;
         padding: 4px 6px;
         font-size: 0.8rem;
     }
+    .user-row-inactive {
+        opacity: 0.7;
+        background: #f8f9fa;
+    }
     /* Sombra suave para el header sticky */
     thead th {
         box-shadow: inset 0 -1px 0 #dee2e6;
@@ -88,7 +115,9 @@ use Admin\Core\RoleManager;
 
 <script>
 $(function () {
-  var table = $("#usersTable").DataTable({
+  var table;
+
+  table = $("#usersTable").DataTable({
     "responsive": false, 
     "paging": false,
     "lengthChange": false, 
@@ -102,8 +131,9 @@ $(function () {
       { "targets": 3, "width": "20%" },
       { "targets": 4, "width": "16%" },
       { "targets": 5, "width": "16%" },
-      { "targets": 6, "width": "6%" },
-      { "targets": 7, "width": "10%" }
+      { "targets": 6, "width": "12%", "orderable": false },
+      { "targets": 7, "width": "6%" },
+      { "targets": 8, "width": "6%", "orderable": false }
     ],
     "language": {
         "processing": "Procesando...",
@@ -128,44 +158,100 @@ $(function () {
 
   table.buttons().container().appendTo('#usersTable_wrapper .col-md-6:eq(0)');
 
-  $(document).on('click', '.delete-user', function() {
-    const id = $(this).data('id');
-    const name = $(this).data('name');
-    
-    var doAjax = function() {
-        $.ajax({
-          url: '/admin/usuarios/eliminar',
-          method: 'POST',
-          data: {
-            id: id,
-            csrf_token: '<?php echo \Admin\Core\Security::generateCsrfToken(); ?>'
-          },
-          success: function(response) {
-            if (response.success) {
-              AIA.Notice.dialog({
-                  title: '¡Eliminado!',
-                  text: response.message,
-                  icon: 'success',
-                  showCancelButton: false,
-                  confirmButtonText: 'Entendido'
-              }).then(() => { location.reload(); });
-            } else {
-              AIA.Notice.error(response.message, 'Error');
-            }
+  $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+    if (!table || settings.nTable !== table.table().node()) {
+      return true;
+    }
+
+    if ($('#toggleInactiveUsers').is(':checked')) {
+      return true;
+    }
+
+    var rowNode = table.row(dataIndex).node();
+    if (!rowNode) {
+      return true;
+    }
+
+    return Number($(rowNode).attr('data-active') || 0) === 1;
+  });
+
+  function updateUserStatusRow($row, active) {
+    var $badge = $row.find('.user-status-badge');
+    $row.attr('data-active', active ? '1' : '0');
+    $row.toggleClass('user-row-inactive', !active);
+    $badge
+      .text(active ? 'Activo' : 'Inactivo')
+      .toggleClass('badge-success', active)
+      .toggleClass('badge-secondary', !active);
+  }
+
+  $('#toggleInactiveUsers').on('change', function() {
+    table.draw(false);
+  });
+
+  table.draw(false);
+
+  $(document).on('change', '.user-active-toggle', function() {
+    var checkbox = $(this);
+    var row = checkbox.closest('tr');
+    var userId = checkbox.data('id');
+    var active = checkbox.is(':checked') ? 1 : 0;
+    var previousChecked = !checkbox.is(':checked');
+
+    var performToggle = function() {
+      checkbox.prop('disabled', true);
+
+      $.ajax({
+        url: '/admin/usuarios/toggle-active',
+        method: 'POST',
+        dataType: 'json',
+        data: {
+          id: userId,
+          value: active,
+          csrf_token: '<?php echo \Admin\Core\Security::generateCsrfToken(); ?>'
+        },
+        success: function(response) {
+          if (!response.success) {
+            checkbox.prop('checked', previousChecked);
+            AIA.Notice.error(response.message, 'Error');
+            return;
           }
-        });
+
+          updateUserStatusRow(row, !!response.active);
+          AIA.Notice.success(response.message, 'Estado actualizado');
+          table.draw(false);
+        },
+        error: function() {
+          checkbox.prop('checked', previousChecked);
+          AIA.Notice.error('Error de comunicación con el servidor', 'Error');
+        },
+        complete: function() {
+          checkbox.prop('disabled', false);
+        }
+      });
     };
 
-        AIA.Notice.dialog({
-          title: '¿Estás seguro?',
-          text: "Vas a eliminar al usuario " + name,
-          icon: 'warning',
-          showCancelButton: true,
-          confirmButtonText: 'Sí, eliminar',
-          cancelButtonText: 'Cancelar'
-        }).then((result) => {
-          if (result.isConfirmed) doAjax();
-        });
+    if (active === 0) {
+      AIA.Notice.dialog({
+        title: 'Inactivar usuario',
+        text: 'El usuario dejará de poder iniciar sesión hasta que vuelva a activarse.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, inactivar',
+        cancelButtonText: 'Cancelar'
+      }).then(function(result) {
+        if (result.isConfirmed) {
+          performToggle();
+          return;
+        }
+
+        checkbox.prop('checked', previousChecked);
+      });
+
+      return;
+    }
+
+    performToggle();
   });
 });
 </script>

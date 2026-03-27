@@ -77,6 +77,12 @@ $router->add('GET', '/usuarios/editar', 'UserController@edit');
 
 $router->add('POST', '/usuarios/actualizar', 'UserController@update');
 
+$router->add('POST', '/usuarios/toggle-active', 'UserController@toggleActive');
+
+$router->add('POST', '/usuarios/toggle-force-password-change', 'UserController@toggleForcePasswordChange');
+
+$router->add('POST', '/usuarios/revocar-todos-proyectos', 'UserController@revokeAllProjects');
+
 $router->add('POST', '/usuarios/eliminar', 'UserController@delete');
 
 $router->add('POST', '/usuarios/quitar-proyecto', 'UserController@removeProject');
