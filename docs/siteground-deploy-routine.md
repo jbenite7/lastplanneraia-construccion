@@ -7,7 +7,7 @@ Checklist operativo para desplegar este proyecto en `prueba-lps.lastplanneraia.c
 
 - El repositorio local ya esta en `main` y sincronizado con `origin/main`.
 - El servidor usa PHP 8.3 para web y CLI.
-- El proyecto esta desplegado en `~/www/prueba-lps.lastplanneraia.com/public_html`.
+- El proyecto esta desplegado en `~/www/lastplanneraia.com/public_html`.
 - El archivo `.env` solo vive en el servidor y no se versiona.
 
 ## 1. Preparacion local
@@ -83,7 +83,7 @@ Resultado esperado:
 
 ## 7. Verificacion funcional
 
-- Abrir `https://prueba-lps.lastplanneraia.com/`.
+- Abrir `https://lastplanneraia.com/`.
 - Hacer login.
 - Probar al menos un modulo critico del flujo afectado por el deploy.
 - Si el cambio toca reportes o importaciones, ejecutar un caso real corto.
