@@ -106,6 +106,8 @@ $(function () {
   const projectOptionsHtml = <?php echo json_encode($projectOptionsHtml); ?>;
   const roleOptionsHtml = <?php echo json_encode($roleOptionsHtml); ?>;
   const initialAssignments = <?php echo json_encode($initialAssignments, JSON_UNESCAPED_UNICODE); ?>;
+  const userId = <?php echo (int)$user['id']; ?>;
+  const csrfToken = <?php echo json_encode($csrf_token); ?>;
   let assignmentIndex = 0;
 
   function addAssignmentRow(initialData) {
@@ -141,6 +143,7 @@ $(function () {
 
     if (data.project_id) {
       row.find('.assignment-project').val(String(data.project_id));
+      row.data('saved-project-id', data.project_id);
     }
     row.find('.assignment-role').val(String(data.role || 'V'));
   }
@@ -187,12 +190,54 @@ $(function () {
   });
 
   $(document).on('click', '.remove-assignment-row', function () {
-    if ($assignmentsContainer.find('.assignment-row').length <= 1) {
+    const $row = $(this).closest('.assignment-row');
+    const savedProjectId = $row.data('saved-project-id');
+
+    // New row (not saved yet) — just remove from DOM
+    if (!savedProjectId) {
+      if ($assignmentsContainer.find('.assignment-row').length <= 1) {
         AIA.Notice.warning('El usuario debe tener al menos un proyecto asignado.', 'Asignación requerida');
+        return;
+      }
+      $row.remove();
       return;
     }
 
-    $(this).closest('.assignment-row').remove();
+    // Existing row — validate via server
+    const projectName = $row.find('.assignment-project option:selected').text();
+    AIA.Notice.dialog({
+      title: 'Quitar proyecto',
+      text: '¿Retirar a este usuario del proyecto "' + projectName + '"?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, retirar',
+      cancelButtonText: 'Cancelar'
+    }).then(function (result) {
+      if (!result.isConfirmed) return;
+
+      const $btn = $row.find('.remove-assignment-row');
+      $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+
+      $.ajax({
+        url: '/admin/usuarios/quitar-proyecto',
+        method: 'POST',
+        data: { csrf_token: csrfToken, user_id: userId, project_id: savedProjectId },
+        dataType: 'json',
+        success: function (res) {
+          if (res.success) {
+            $row.fadeOut(300, function () { $(this).remove(); });
+            AIA.Notice.success(res.message, 'Listo');
+          } else {
+            AIA.Notice.error(res.message, 'No se puede retirar');
+            $btn.prop('disabled', false).html('<i class="fas fa-trash"></i>');
+          }
+        },
+        error: function () {
+          AIA.Notice.error('Error de comunicación con el servidor', 'Error');
+          $btn.prop('disabled', false).html('<i class="fas fa-trash"></i>');
+        }
+      });
+    });
   });
 
   $('#editUserForm').on('submit', function(e) {

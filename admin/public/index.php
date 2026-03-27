@@ -79,6 +79,8 @@ $router->add('POST', '/usuarios/actualizar', 'UserController@update');
 
 $router->add('POST', '/usuarios/eliminar', 'UserController@delete');
 
+$router->add('POST', '/usuarios/quitar-proyecto', 'UserController@removeProject');
+
 
 
 // Gestión de Proyectos

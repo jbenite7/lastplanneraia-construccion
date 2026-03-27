@@ -449,6 +449,186 @@ class User
         return $references;
     }
 
+    /**
+     * Check if a user can be removed from a project.
+     *
+     * @return string|null Error message or null if OK
+     */
+    public function canRemoveFromProject(int $userId, int $projectId): ?string
+    {
+        // 1. Verify it's not the last project
+        $count = (int)$this->db->query(
+            "SELECT COUNT(*) FROM project_members WHERE user_id = ?",
+            [$userId]
+        )->fetchColumn();
+
+        if ($count <= 1) {
+            return 'El usuario debe tener al menos un proyecto asignado.';
+        }
+
+        // 2. Get project info
+        $project = $this->db->query(
+            "SELECT Id, Activo, Base_de_Datos FROM general_proyectos_procesos WHERE Id = ?",
+            [$projectId]
+        )->fetch();
+
+        if (!$project) {
+            return 'Proyecto no encontrado.';
+        }
+
+        // 3. Inactive project → always removable
+        if ((int)($project['Activo'] ?? 0) === 0) {
+            return null;
+        }
+
+        // 4. Active project → check for activities
+        $dbPrefix = trim((string)($project['Base_de_Datos'] ?? ''));
+        if ($dbPrefix === '') {
+            return null; // No tables, no activities
+        }
+
+        $user = $this->find($userId);
+        if (!$user) {
+            return 'Usuario no encontrado.';
+        }
+
+        $userName = trim((string)($user['nombre'] ?? ''));
+        $userEmail = $this->normalizeEmail($user['email'] ?? '');
+
+        return $this->checkUserActivityInProject(
+            $dbPrefix, $userName, $userEmail
+        );
+    }
+
+    /**
+     * Check if a user has activity in a project's tables.
+     */
+    private function checkUserActivityInProject(
+        string $dbPrefix,
+        string $userName,
+        string $userEmail
+    ): ?string {
+        // A) Check {prefix}_profesionales (activo = 1)
+        $profTable = "{$dbPrefix}_profesionales";
+        if ($this->tableExists($profTable)) {
+            $found = $this->findProfessionalMatch(
+                $profTable, $userName, $userEmail
+            );
+            if ($found) {
+                return "No se puede quitar: el usuario está como profesional activo en el proyecto ('{$found}').";
+            }
+        }
+
+        // B) Check {prefix}_programa_consolidado
+        $consTable = "{$dbPrefix}_programa_consolidado";
+        if ($this->tableExists($consTable)) {
+            $found = $this->findResponsableMatch(
+                $consTable, $userName, $userEmail
+            );
+            if ($found) {
+                return "No se puede quitar: el usuario tiene actividades en el programa consolidado.";
+            }
+        }
+
+        // C) Check {prefix}_programacion_semanal
+        $semTable = "{$dbPrefix}_programacion_semanal";
+        if ($this->tableExists($semTable)) {
+            $found = $this->findResponsableMatch(
+                $semTable, $userName, $userEmail
+            );
+            if ($found) {
+                return "No se puede quitar: el usuario tiene actividades en la programación semanal.";
+            }
+        }
+
+        return null;
+    }
+
+    private function tableExists(string $table): bool
+    {
+        $quotedTable = $this->db->quote($table);
+        return (bool)$this->db->query(
+            "SHOW TABLES LIKE " . $quotedTable
+        )->fetch();
+    }
+
+    /**
+     * Search by name first; if duplicates, disambiguate by email.
+     */
+    private function findProfessionalMatch(
+        string $table,
+        string $name,
+        string $email
+    ): ?string {
+        if (empty($name)) {
+            return null;
+        }
+
+        $rows = $this->db->query(
+            "SELECT nombre, email FROM {$table} WHERE activo = 1 AND TRIM(nombre) = ?",
+            [$name]
+        )->fetchAll();
+
+        if (count($rows) === 1) {
+            return $rows[0]['nombre'];
+        }
+
+        if (count($rows) > 1 && !empty($email)) {
+            foreach ($rows as $row) {
+                $rowEmail = $this->normalizeEmail($row['email'] ?? '');
+                if ($rowEmail === $email) {
+                    return $row['nombre'];
+                }
+            }
+        }
+
+        return count($rows) > 0 ? $rows[0]['nombre'] : null;
+    }
+
+    /**
+     * Search Responsable_AIA by name; fallback to email on duplicates.
+     */
+    private function findResponsableMatch(
+        string $table,
+        string $name,
+        string $email
+    ): bool {
+        if (empty($name)) {
+            return false;
+        }
+
+        // 1. Search by Name
+        $count = (int)$this->db->query(
+            "SELECT COUNT(*) FROM {$table} WHERE TRIM(Responsable_AIA) = ?",
+            [$name]
+        )->fetchColumn();
+
+        if ($count > 0) {
+            return true;
+        }
+
+        // 2. Fallback to Email
+        if (!empty($email)) {
+            $count = (int)$this->db->query(
+                "SELECT COUNT(*) FROM {$table} WHERE TRIM(Responsable_AIA) = ?",
+                [$email]
+            )->fetchColumn();
+        }
+
+        return $count > 0;
+    }
+
+    /**
+     * Remove a user from a specific project.
+     */
+    public function removeFromProject(int $userId, int $projectId): bool
+    {
+        return (bool)$this->db->query(
+            "DELETE FROM project_members WHERE user_id = ? AND project_id = ?",
+            [$userId, $projectId]
+        );
+    }
+
     private function normalizeEmail($email): string
     {
         $value = trim((string)$email);

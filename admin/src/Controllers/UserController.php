@@ -372,6 +372,52 @@ class UserController extends AdminController
         $this->json(['success' => false, 'message' => 'Error al eliminar el usuario']);
     }
 
+    /**
+     * Remove a user from a specific project (AJAX).
+     */
+    public function removeProject()
+    {
+        if (!Security::validateCsrfToken($_POST['csrf_token'] ?? '')) {
+            $this->json(['success' => false, 'message' => 'Token CSRF inválido']);
+        }
+
+        $userId = (int)($_POST['user_id'] ?? 0);
+        $projectId = (int)($_POST['project_id'] ?? 0);
+
+        if ($userId <= 0 || $projectId <= 0) {
+            $this->json(['success' => false, 'message' => 'Parámetros inválidos']);
+        }
+
+        $blockReason = $this->userModel->canRemoveFromProject($userId, $projectId);
+        if ($blockReason !== null) {
+            $this->json(['success' => false, 'message' => $blockReason]);
+        }
+
+        if (!$this->userModel->removeFromProject($userId, $projectId)) {
+            $this->json(['success' => false, 'message' => 'Error al quitar el proyecto']);
+        }
+
+        // Block the professional in the project tables
+        $project = $this->projectModel->find($projectId);
+        $user = $this->userModel->find($userId);
+
+        if ($project && !empty($project['Base_de_Datos']) && $user && !empty($user['email'])) {
+            (new \App\Services\ProjectProfessionalsSyncService(Database::getInstance()))
+                ->blockProfessionalByEmail((string)$project['Base_de_Datos'], (string)$user['email']);
+        }
+
+        // Audit
+        $userName = $user ? $user['usuario'] : "ID:$userId";
+        $projectName = $project ? $project['Proyecto_Proceso'] : "ID:$projectId";
+        Database::getInstance()->logActivity(
+            'Usuarios',
+            'QUITAR_PROYECTO',
+            "Se retiró a '{$userName}' del proyecto '{$projectName}'"
+        );
+
+        $this->json(['success' => true, 'message' => 'Proyecto retirado correctamente']);
+    }
+
     private function parseAssignments($rawAssignments): array
     {
         if (!is_array($rawAssignments)) {
