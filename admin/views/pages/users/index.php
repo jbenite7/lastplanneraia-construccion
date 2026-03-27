@@ -81,6 +81,11 @@ use Admin\Core\RoleManager;
           </td>
           <td class="text-center">
             <span class="badge badge-secondary"><?php echo (int)($user['projects_count'] ?? 0); ?></span>
+            <?php if ((int)($user['projects_count'] ?? 0) === 0): ?>
+              <div class="mt-1">
+                <span class="badge badge-light border">Sin proyectos</span>
+              </div>
+            <?php endif; ?>
           </td>
           <td class="text-center">
             <div class="btn-group">
