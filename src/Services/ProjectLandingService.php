@@ -159,22 +159,6 @@ class ProjectLandingService
         ];
     }
 
-    private function hasWeeklyActivities(string $dbName, int $week): bool
-    {
-        if ($week <= 0) {
-            return false;
-        }
-
-        try {
-            $query = "SELECT COUNT(*) FROM {$dbName}_programacion_semanal WHERE Semana = ?";
-            return (int) $this->db->query($query, [$week])->fetchColumn() > 0;
-        } catch (Throwable $e) {
-            error_log('ProjectLandingService weekly activity check error: ' . $e->getMessage());
-
-            return false;
-        }
-    }
-
     private function hasPendingCalificacion(string $dbName, int $week): bool
     {
         if ($week <= 0) {
@@ -215,7 +199,8 @@ class ProjectLandingService
         $weekNumbers = array_keys($weeks);
         rsort($weekNumbers, SORT_NUMERIC);
 
-        $highestOpenWeekWithoutActivities = null;
+        $highestPendingCalificacionWeek = null;
+        $highestOpenWeek = null;
 
         foreach ($weekNumbers as $weekNumber) {
             $weekNumber = (int) $weekNumber;
@@ -226,35 +211,31 @@ class ProjectLandingService
             }
 
             if (($week['confirmed'] ?? false) === true) {
-                if ($this->hasPendingCalificacion($dbName, $weekNumber)) {
-                    return [
-                        'week' => $weekNumber,
-                        'module' => 'programacion-semanal',
-                        'reason' => 'highest-confirmed-week-pending-calificacion',
-                    ];
+                if ($highestPendingCalificacionWeek === null && $this->hasPendingCalificacion($dbName, $weekNumber)) {
+                    $highestPendingCalificacionWeek = $weekNumber;
                 }
 
                 continue;
             }
 
-            if ($this->hasWeeklyActivities($dbName, $weekNumber)) {
-                return [
-                    'week' => $weekNumber,
-                    'module' => 'programacion-semanal',
-                    'reason' => 'highest-open-week-with-activities',
-                ];
-            }
-
-            if ($highestOpenWeekWithoutActivities === null) {
-                $highestOpenWeekWithoutActivities = $weekNumber;
+            if ($highestOpenWeek === null) {
+                $highestOpenWeek = $weekNumber;
             }
         }
 
-        if ($highestOpenWeekWithoutActivities !== null) {
+        if ($highestOpenWeek !== null && ($highestPendingCalificacionWeek === null || $highestOpenWeek >= $highestPendingCalificacionWeek)) {
             return [
-                'week' => $highestOpenWeekWithoutActivities,
-                'module' => 'programa-general',
-                'reason' => 'highest-open-week-without-activities',
+                'week' => $highestOpenWeek,
+                'module' => 'programacion-semanal',
+                'reason' => 'highest-open-week',
+            ];
+        }
+
+        if ($highestPendingCalificacionWeek !== null) {
+            return [
+                'week' => $highestPendingCalificacionWeek,
+                'module' => 'programacion-semanal',
+                'reason' => 'highest-confirmed-week-pending-calificacion',
             ];
         }
 
