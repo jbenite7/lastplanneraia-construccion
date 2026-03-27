@@ -41,6 +41,7 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ### Corregido
 
+- **Fix 404 Añadir Miembros:** Se renombró el endpoint de `/admin/proyectos/miembros/añadir` a `/agregar` para prevenir fallos 404 ocasionados por codificación de la `ñ`.
 - **Carryover PS -> PG al Crear Semana:** La nueva semana ahora arrastra `Ejecutado_Real`, `Responsable_AIA`, `Sub_Contratista`, `unidad` y `cantidad_ppto` desde Programación Semanal hacia Programa General, respetando subdivisiones, mapeo por `programaAnteriorAsociar` y normalizando a `%` cuando las medidas son inconsistentes.
 - **Programación Semanal - Bloqueo por Asignaciones Incompletas:** El estado operativo ya no marca una actividad como `Lista para Confirmar` si falta `Responsable_AIA` o `Sub_Contratista`; el chip, el cierre semanal y la API ahora tratan esos casos como bloqueantes operativos.
 - **Fix CNP al Abrir la Vista:** La columna `¿Liberada?` en `views/programacion-semanal/CNP.view.php` ahora tolera valores `null` de `Prog_Sin_Restricciones_100` y la autoprogramacion semanal vuelve a recalcular ese flag para evitar warnings TN/4 de DataTables al abrir `/programacion-semanal/cnp`.

@@ -66,7 +66,7 @@
                 <h3 class="card-title"><i class="fas fa-user-plus mr-2"></i> Añadir Miembro</h3>
             </div>
             <div class="card-body">
-                <form action="/admin/proyectos/miembros/añadir" method="POST" id="addMemberForm">
+                <form action="/admin/proyectos/miembros/agregar" method="POST" id="addMemberForm">
                     <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
                     <input type="hidden" name="project_id" value="<?php echo $project['Id']; ?>">
                     

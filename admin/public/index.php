@@ -96,7 +96,7 @@ $router->add('POST', '/proyectos/toggle-status', 'ProjectController@toggleStatus
 
 // Gestión de Miembros de Proyectos
 $router->add('GET', '/proyectos/miembros', 'ProjectController@members');
-$router->add('POST', '/proyectos/miembros/añadir', 'ProjectController@addMember');
+$router->add('POST', '/proyectos/miembros/agregar', 'ProjectController@addMember');
 $router->add('POST', '/proyectos/miembros/quitar', 'ProjectController@removeMember');
 $router->add('GET', '/proyectos/sugerir-rol', 'ProjectController@suggestRole');
 
