@@ -14,6 +14,7 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 - **Gestión Flexible de Usuarios (Fase 2):** Eliminación completa de la restricción de "mínimo un proyecto", permitiendo usuarios con cero asignaciones para facilitar procesos de suspensión temporal. Se ajustaron validaciones en Model, View y Controller.
 - **Validación AJAX de Permisos:** Nuevo endpoint `/usuarios/quitar-proyecto` que integra validación de integridad de datos y bloquea automáticamente al profesional en el proyecto tras la revocación exitosa.
 - **Despliegue SiteGround (PHP CLI):** Actualización de la documentación de operación (`docs/siteground-deploy-routine.md`) con el advertimento y comando exacto para forzar PHP 8.3 CLI en las ejecuciones de Composer, previniendo fallos del autoloader en producción.
+- **Usuarios Inactivos y Revocación Global:** Nuevo estado `activo` en `general_usuarios`, switch en `admin/usuarios` para activar/inactivar, filtro para ocultar inactivos por defecto, revocatoria masiva de permisos por proyecto sin pérdida de historial y switch individual para forzar cambio de contraseña.
 
 ### Corregido
 
@@ -38,6 +39,7 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 ### Cambiado
 
 - **Sincronización Productiva SiteGround:** La rama `main` quedó desplegada en `prueba-lps.lastplanneraia.com` y la base de datos remota fue clonada desde local sobre `dbhif4pdimjtxe`, preservando estructura y datos de prueba para validación operativa.
+- **Gestión de Usuarios sin Borrado Físico:** El admin ya no elimina usuarios de `general_usuarios`; ahora los conserva, bloquea acceso con `Activo/Inactivo`, invalida sesiones de cuentas desactivadas y mantiene la trazabilidad histórica aunque se revoquen todos sus proyectos.
 - **Contexto Inteligente de Aterrizaje por Proyecto:** Nuevo servicio `src/Services/ProjectLandingService.php` para resolver la semana operativa y el modulo inicial segun semanas activas, pendientes de calificacion y rol canonico; `DashboardController`, `ProjectSelectorController`, `ProgramaGeneralController` y `ProgramacionSemanalController` ahora sanean el contexto semanal antes de redirigir o renderizar vistas.
 - **Switch Global de Console Logs:** El dashboard admin ahora permite activar o silenciar `console.log` en todo el frontend, con persistencia centralizada y recarga uniforme de la configuracion en login, selector de proyecto y vistas legacy/MVC.
 - **Profesionales Gobernados desde Admin:** El módulo `Profesionales` ahora usa el correo como identidad real, permite nombres repetidos, sincroniza cargos desde `admin/`, bloquea edición de nombre/correo/cargo y deja `Activo` como control local solo para miembros vigentes del proyecto.
