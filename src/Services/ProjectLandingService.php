@@ -210,36 +210,58 @@ class ProjectLandingService
     private function determinePreferredContext(string $dbName, array $weekMetadata): array
     {
         $maxActiveWeek = (int) ($weekMetadata['maxActiveWeek'] ?? 0);
-        $maxConfirmedWeek = $weekMetadata['maxConfirmedWeek'];
 
-        if ($maxConfirmedWeek !== null && $this->hasPendingCalificacion($dbName, $maxConfirmedWeek)) {
-            return [
-                'week' => $maxConfirmedWeek,
-                'module' => 'programacion-semanal',
-                'reason' => 'confirmed-week-pending-calificacion',
-            ];
-        }
+        $weeks = $weekMetadata['weeks'] ?? [];
+        $weekNumbers = array_keys($weeks);
+        rsort($weekNumbers, SORT_NUMERIC);
 
-        if ($maxConfirmedWeek === null || $maxActiveWeek > $maxConfirmedWeek) {
-            if ($this->hasWeeklyActivities($dbName, $maxActiveWeek)) {
+        $highestOpenWeekWithoutActivities = null;
+
+        foreach ($weekNumbers as $weekNumber) {
+            $weekNumber = (int) $weekNumber;
+            $week = $weeks[$weekNumber] ?? null;
+
+            if ($week === null) {
+                continue;
+            }
+
+            if (($week['confirmed'] ?? false) === true) {
+                if ($this->hasPendingCalificacion($dbName, $weekNumber)) {
+                    return [
+                        'week' => $weekNumber,
+                        'module' => 'programacion-semanal',
+                        'reason' => 'highest-confirmed-week-pending-calificacion',
+                    ];
+                }
+
+                continue;
+            }
+
+            if ($this->hasWeeklyActivities($dbName, $weekNumber)) {
                 return [
-                    'week' => $maxActiveWeek,
+                    'week' => $weekNumber,
                     'module' => 'programacion-semanal',
-                    'reason' => 'open-week-with-activities',
+                    'reason' => 'highest-open-week-with-activities',
                 ];
             }
 
+            if ($highestOpenWeekWithoutActivities === null) {
+                $highestOpenWeekWithoutActivities = $weekNumber;
+            }
+        }
+
+        if ($highestOpenWeekWithoutActivities !== null) {
             return [
-                'week' => $maxActiveWeek,
+                'week' => $highestOpenWeekWithoutActivities,
                 'module' => 'programa-general',
-                'reason' => 'open-week-without-activities',
+                'reason' => 'highest-open-week-without-activities',
             ];
         }
 
         return [
             'week' => $maxActiveWeek,
             'module' => 'programacion-semanal',
-            'reason' => 'latest-week-confirmed-without-next-active',
+            'reason' => 'latest-week-confirmed-without-pending-or-open-activities',
         ];
     }
 
