@@ -4,7 +4,7 @@ namespace App\Core;
 
 class SessionMiddleware
 {
-    private const IDLE_TIMEOUT_SECONDS = 10;
+    private const IDLE_TIMEOUT_SECONDS = 3600;
 
     public static function idleTimeoutSeconds(): int
     {
