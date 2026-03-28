@@ -58,6 +58,7 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 - **Herencia Agnóstica a HTML:** Refactorización de la lógica en `nueva_semana.php` y `GeneralApiController.php` para que el sistema ignore etiquetas como `<b>` y `<small>` al comparar nombres de actividades, asegurando la herencia correcta de PDC y Responsables tanto en importación como en mapeo manual.
 - **Robustez en Carga de Parámetros:** Inyección de protecciones `try-catch` y logs descriptivos en `cargarDatosGeneralesPagina2.js` para interceptar fallos en la función `cargaParametros()`, mejorando la observabilidad en producción.
 - **Unificación de Notificaciones:** Inicio formal de la eliminación total de `toastr` en el repositorio. Los modulos principales y vistas administrativas ahora consumen `AIA.Notice` como capa oficial para toasts, errores y badges de guardado.
+- **Ajuste de Timeout de Sesión:** Incrementado el tiempo de inactividad de 10 segundos (test) a 3600 segundos (1 hora) para despliegue productivo, alineando el comportamiento del backend con la configuración global de la aplicación.
 
 ### Corregido
 
