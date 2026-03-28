@@ -9,7 +9,9 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ### Añadido
 - **Filtro de Usuarios sin Proyectos:** Nuevo toggle en la lista de administración de usuarios para ocultar/mostrar aquellos sin proyectos asignados. Incluye indicador visual (badge "Sin proyectos") para identificación rápida.
-
+- **Gestión Proactiva de Timeout de Sesión:** Implementación de un sistema de monitoreo de inactividad en el frontend que sincroniza la actividad del usuario entre múltiples pestañas mediante `localStorage`. Incluye redirección automática al cierre de sesión tras la expiración del tiempo de inactividad (configurado en el backend).
+- **Endpoint de Heartbeat (/session/touch):** Nuevo controlador y ruta para renovar el timestamp de sesión asíncronamente desde el frontend sin recargar la página completa.
+- **Soporte JSON para Sesiones Expiradas:** `SessionMiddleware` ahora devuelve estados HTTP 401 con payloads descriptivos para interceptar fallos de sesión en llamadas AJAX y redirigir correctamente.
 - **Word Wrap en Selector de Proyectos:** Actualización de estilos CSS (`white-space: normal`, `word-break: break-word`) en las tarjetas del selector de proyectos para revelar los nombres completamente en lugar de truncarlos con puntos suspensivos.
 - **Eliminación Condicional de Permisos (Fase 1):** Implementación de reglas de negocio para la eliminación de permisos por proyecto desde la vista de edición de usuario. Valida si el proyecto está activo o si el usuario tiene actividades programadas (`profesionales`, `programacion_semanal`) antes de permitir la revocación.
 - **Gestión Flexible de Usuarios (Fase 2):** Eliminación completa de la restricción de "mínimo un proyecto", permitiendo usuarios con cero asignaciones para facilitar procesos de suspensión temporal. Se ajustaron validaciones en Model, View y Controller.
