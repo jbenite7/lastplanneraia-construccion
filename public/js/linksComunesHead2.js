@@ -28,6 +28,7 @@
   loadScript('/runtime/frontend-config.js?v=20260325a');
   loadScript('https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.4.24/sweetalert2.all.min.js');
   loadScript('/public/js/core/AiaAlertInterceptor.js?v=20260324a');
+  loadScript('/public/js/core/SessionTimeoutManager.js?v=20260328a');
 
   loadScript('/js/tablet-viewport-scale.js?v=1.2');
   loadScript('/js/datatable-height-manager.js?v=1.1');

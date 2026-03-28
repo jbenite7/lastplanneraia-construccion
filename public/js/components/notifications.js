@@ -1,4 +1,15 @@
 (function() {
+    function handleSessionExpiry(payload) {
+        var redirectUrl = (payload && payload.redirect) || '/logout?timeout=1';
+
+        if (window.AIA && window.AIA.SessionTimeoutManager && typeof window.AIA.SessionTimeoutManager.forceLogout === 'function') {
+            window.AIA.SessionTimeoutManager.forceLogout(redirectUrl);
+            return;
+        }
+
+        window.location.replace(redirectUrl);
+    }
+
     function initNotifications() {
     const badgeDesk = document.getElementById('notificationBadge');
     const listDesk = document.getElementById('notificationList');
@@ -9,12 +20,34 @@
 
     // Obtener notificaciones
     function fetchNotifications() {
-        fetch('/api/notifications/unread')
+        fetch('/api/notifications/unread', {
+            headers: {
+                'X-AIA-Expect-Json': '1',
+                'X-AIA-Idle-Refresh': '0',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
             .then(response => {
+                if (response.status === 401) {
+                    return response.json()
+                        .then(payload => {
+                            handleSessionExpiry(payload);
+                            return null;
+                        })
+                        .catch(() => {
+                            handleSessionExpiry();
+                            return null;
+                        });
+                }
+
                 if (!response.ok) throw new Error('Network response was not ok');
                 return response.json();
             })
             .then(res => {
+                if (!res) {
+                    return;
+                }
+
                 if (res.success && res.data) {
                     renderNotifications(res.data);
                 }

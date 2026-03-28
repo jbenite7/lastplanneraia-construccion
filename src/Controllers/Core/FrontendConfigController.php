@@ -3,6 +3,7 @@
 namespace App\Controllers\Core;
 
 use App\Controllers\BaseController;
+use App\Core\SessionMiddleware;
 use App\Services\FeatureFlagService;
 
 class FrontendConfigController extends BaseController
@@ -10,6 +11,7 @@ class FrontendConfigController extends BaseController
     public function javascript()
     {
         $flags = (new FeatureFlagService())->getPublicFrontendFlags();
+        $flags['sessionTimeoutSeconds'] = SessionMiddleware::idleTimeoutSeconds();
         $payload = json_encode($flags, JSON_UNESCAPED_SLASHES);
 
         if ($payload === false) {
@@ -31,6 +33,7 @@ class FrontendConfigController extends BaseController
 
   var runtimeFlags = window.AIA.runtimeFlags;
   runtimeFlags.consoleLogsEnabled = !!flags.consoleLogsEnabled;
+  runtimeFlags.sessionTimeoutSeconds = Number(flags.sessionTimeoutSeconds || 0);
 
   var con = window.console = window.console || {};
   if (typeof con.error !== 'function') {
