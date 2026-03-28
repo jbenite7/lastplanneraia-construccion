@@ -143,8 +143,21 @@ class LoginController
 
     public function logout()
     {
+        $query = [];
+
+        if (($_GET['timeout'] ?? '') === '1') {
+            $query['timeout'] = '1';
+        }
+
+        session_unset();
         session_destroy();
-        header("Location: /login");
+        $redirectUrl = '/login';
+
+        if (!empty($query)) {
+            $redirectUrl .= '?' . http_build_query($query);
+        }
+
+        header("Location: {$redirectUrl}");
         exit();
     }
 

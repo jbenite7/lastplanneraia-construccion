@@ -4,6 +4,13 @@ namespace App\Core;
 
 class SessionMiddleware
 {
+    private const IDLE_TIMEOUT_SECONDS = 10;
+
+    public static function idleTimeoutSeconds(): int
+    {
+        return self::IDLE_TIMEOUT_SECONDS;
+    }
+
     /**
      * Verifica que el usuario esté autenticado y gestiona el timeout de sesión.
      *
@@ -22,8 +29,7 @@ class SessionMiddleware
 
         // Validar que el usuario esté autenticado
         if (!isset($_SESSION['usuario'])) {
-            header('Location: /login');
-            exit;
+            self::finishUnauthorized('/login', 'missing_session');
         }
 
         try {
@@ -35,31 +41,63 @@ class SessionMiddleware
             if ($user && isset($user['activo']) && (int)$user['activo'] !== 1) {
                 session_unset();
                 session_destroy();
-                header('Location: /login?inactive=1');
-                exit;
+                self::finishUnauthorized('/login?inactive=1', 'inactive');
             }
         } catch (\Throwable $e) {
             error_log('Error validando estado activo de la sesión: ' . $e->getMessage());
         }
 
         // Gestión de timeout de inactividad (3600 segundos = 1 hora)
-        $inactividad = 3600; // 1 hora de inactividad (Timeout Phase 1)
+        $inactividad = self::idleTimeoutSeconds();
         if (isset($_SESSION["timeout"])) {
-            $sessionTTL = time() - $_SESSION["timeout"];
-            if ($sessionTTL > $inactividad) {
+            $sessionTTL = time() - (int) $_SESSION["timeout"];
+            if ($sessionTTL >= $inactividad) {
                 session_unset();
                 session_destroy();
-                header('Location: /login?timeout=1');
-                exit;
+                self::finishUnauthorized('/login?timeout=1', 'timeout');
             }
         }
 
         // Actualizar timestamp de última actividad
-        $_SESSION["timeout"] = time();
+        if (self::shouldRefreshTimeout()) {
+            $_SESSION["timeout"] = time();
+        }
 
         // Actualizar semana en sesión si viene por parámetro GET (patrón legacy)
         if (isset($_GET['semana'])) {
             $_SESSION['semana'] = (int)$_GET['semana'];
         }
+    }
+
+    private static function shouldRefreshTimeout(): bool
+    {
+        $header = strtolower((string) ($_SERVER['HTTP_X_AIA_IDLE_REFRESH'] ?? ''));
+
+        return !in_array($header, ['0', 'false', 'skip'], true);
+    }
+
+    private static function expectsJsonResponse(): bool
+    {
+        $header = strtolower((string) ($_SERVER['HTTP_X_AIA_EXPECT_JSON'] ?? ''));
+
+        return in_array($header, ['1', 'true', 'json'], true);
+    }
+
+    private static function finishUnauthorized(string $redirectUrl, string $reason): void
+    {
+        if (self::expectsJsonResponse()) {
+            http_response_code(401);
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode([
+                'success' => false,
+                'sessionExpired' => true,
+                'reason' => $reason,
+                'redirect' => $redirectUrl,
+            ]);
+            exit;
+        }
+
+        header('Location: ' . $redirectUrl);
+        exit;
     }
 }

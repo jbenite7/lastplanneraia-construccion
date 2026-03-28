@@ -141,6 +141,7 @@ $router->get('/api/notifications/unread', [\App\Controllers\Core\NotificationCon
 $router->post('/api/notifications/read', [\App\Controllers\Core\NotificationController::class, 'markAsRead']);
 $router->get('/dashboard', [\App\Controllers\Core\DashboardController::class, 'index']);
 $router->get('/runtime/frontend-config.js', [\App\Controllers\Core\FrontendConfigController::class, 'javascript']);
+$router->post('/session/touch', [\App\Controllers\Core\SessionController::class, 'touch']);
 $router->post('/context/week', [\App\Controllers\Core\ContextController::class, 'setWeek']);
 
 $router->get('/legacy/cambiar_pagina.php', function() {
