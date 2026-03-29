@@ -8,16 +8,20 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 ## [Sin publicar]
 
 ### Añadido
-- **Filtro de Usuarios sin Proyectos:** Nuevo toggle en la lista de administración de usuarios para ocultar/mostrar aquellos sin proyectos asignados. Incluye indicador visual (badge "Sin proyectos") para identificación rápida.
-- **Gestión Proactiva de Timeout de Sesión:** Implementación de un sistema de monitoreo de inactividad en el frontend que sincroniza la actividad del usuario entre múltiples pestañas mediante `localStorage`. Incluye redirección automática al cierre de sesión tras la expiración del tiempo de inactividad (configurado en el backend).
-- **Endpoint de Heartbeat (/session/touch):** Nuevo controlador y ruta para renovar el timestamp de sesión asíncronamente desde el frontend sin recargar la página completa.
-- **Soporte JSON para Sesiones Expiradas:** `SessionMiddleware` ahora devuelve estados HTTP 401 con payloads descriptivos para interceptar fallos de sesión en llamadas AJAX y redirigir correctamente.
-- **Word Wrap en Selector de Proyectos:** Actualización de estilos CSS (`white-space: normal`, `word-break: break-word`) en las tarjetas del selector de proyectos para revelar los nombres completamente en lugar de truncarlos con puntos suspensivos.
-- **Eliminación Condicional de Permisos (Fase 1):** Implementación de reglas de negocio para la eliminación de permisos por proyecto desde la vista de edición de usuario. Valida si el proyecto está activo o si el usuario tiene actividades programadas (`profesionales`, `programacion_semanal`) antes de permitir la revocación.
-- **Gestión Flexible de Usuarios (Fase 2):** Eliminación completa de la restricción de "mínimo un proyecto", permitiendo usuarios con cero asignaciones para facilitar procesos de suspensión temporal. Se ajustaron validaciones en Model, View y Controller.
-- **Validación AJAX de Permisos:** Nuevo endpoint `/usuarios/quitar-proyecto` que integra validación de integridad de datos y bloquea automáticamente al profesional en el proyecto tras la revocación exitosa.
-- **Despliegue SiteGround (PHP CLI):** Actualización de la documentación de operación (`docs/siteground-deploy-routine.md`) con el advertimento y comando exacto para forzar PHP 8.3 CLI en las ejecuciones de Composer, previniendo fallos del autoloader en producción.
-- **Usuarios Inactivos y Revocación Global:** Nuevo estado `activo` en `general_usuarios`, switch en `admin/usuarios` para activar/inactivar, filtro para ocultar inactivos por defecto, revocatoria masiva de permisos por proyecto sin pérdida de historial y switch individual para forzar cambio de contraseña.
+
+- **Sistema de Recuperación de Contraseña:** Implementación completa del flujo "Olvidé mi contraseña" con envío de correos (MailService), tokens de un solo uso (PasswordService) y vistas dedicadas tanto en la aplicación principal como en el panel administrativo.
+- **Infraestructura SMTP para Recuperación:** Integración de `phpmailer/phpmailer`, variables `APP_URL` + `MAIL_*` y plantilla Docker de entorno para soportar el envío de enlaces de restablecimiento.
+- **Protección CSRF para Auth:** Nuevo `CsrfTokenManager` para blindar los formularios de inicio de sesión y recuperación de credenciales contra ataques de falsificación de petición en sitios cruzados.
+- **Expansión de Capacidades RBAC:** Adición de 7 nuevos flags de capacidad en `RbacManager` (`canManageGeneralProgram`, `canEditPastGeneralProgram`, `canManageWeeklyProgram`, etc.) para un control granular más preciso en los módulos LPS y Contratos.
+- **Soporte de Utilidades Globales:** Nuevo namespace `App\Support` con `ModuleRequestContext` para la resolución segura y centralizada de parámetros de contexto (Proyecto, Base de Datos, Semana) en módulos legacy y modernos.
+
+### Cambiado
+
+- **Refactor de Seguridad PDC:** El script `actualizar_pdc.php` ahora utiliza `ModuleRequestContext` para resolver la base de datos y semana, e integra `rbac_guard_require_permission` para validar permisos antes de cualquier operación de escritura.
+- **Hardening de APIs LPS:** Actualización de `PdcApiController`, `ContratosApiController` y `ListadoActividadesApiController` para mejorar la resolución de contexto y el manejo de excepciones mediante bloques `Throwable`.
+- **Blindaje de Escrituras por Semana Activa:** Las operaciones sensibles en Contratos, Listado de Actividades y PDC ahora se acotan al contexto operativo resuelto por `ModuleRequestContext` para reducir cruces de semana/proyecto.
+- **Mejoras en Login UX:** Integración de enlaces de recuperación de contraseña y avisos de éxito tras el restablecimiento de credenciales en las vistas de acceso.
+- **Refactor de LoginController:** Simplificación del método `updatePassword` delegando la lógica de validación y hash al nuevo `PasswordService`.
 
 ### Corregido
 

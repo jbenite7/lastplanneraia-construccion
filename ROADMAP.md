@@ -14,15 +14,17 @@ Visión unificada y plan de adopción metodológica de **Last Planner System (LP
 gantt
     title Roadmap de Proyecto AIA
     dateFormat  YYYY-MM-DD
-    section Entregado
+    section Finalizado
     Núcleo RBAC & Permisos       :done,    des1, 2026-02-17, 2026-02-20
     Migración LPS & Web UI       :done,    des2, 2026-02-20, 2026-02-28
     Fixes Transversales          :done,    des3, 2026-02-25, 2026-03-02
-    section Próximo Macro-Sprint
-    Analítica & Notificaciones  :active,  des4, 2026-03-05, 7d
     Gestión Flexible (Fase 2)    :done,    des7, 2026-03-27, 2026-03-27
     Fix Error 500 (Eliminar)    :done,    des8, 2026-03-27, 2026-03-27
     Estabilidad Miembros (500)  :done,    des9, 2026-03-27, 2026-03-27
+    Recuperación de Contraseña   :done,    des10, 2026-03-29, 2026-03-29
+    Hardening Contexto LPS/PDC   :done,    des11, 2026-03-29, 2026-03-29
+    section Próximo Macro-Sprint
+    Analítica & Notificaciones  :active,  des4, 2026-03-05, 7d
     Migración LPS Core (Fase 4) :done,    des6, 2026-03-05, 2026-03-06
     Shared Schema (DB)         :         des5, after des6, 21d
 ```
@@ -130,6 +132,7 @@ gantt
 - [x] **Eliminación Condicional de Permisos (Fase 1) ✅ (2026-03-27)**: Implementación de validación AJAX, bloqueo por actividad programada y automatización de baja de profesional (PDCA Ciclo 1).
 - [x] **Gestión Flexible de Usuarios (Fase 2) ✅ (2026-03-27)**: Eliminación de la restricción de "mínimo un proyecto", permitiendo usuarios con cero asignaciones (PDCA Ciclo 2).
 - [x] **Usuarios Persistentes e Inactivos en Admin (2026-03-27)**: Nuevo switch `Activo/Inactivo` con bloqueo de login y cierre de sesiones, filtro para ocultar inactivos por defecto, revocatoria total de permisos sin pérdida de historial y control individual de cambio obligatorio de contraseña.
+- [x] **Hardening Contextual de Compras/LPS (2026-03-29)**: `ModuleRequestContext` centraliza `db` y `semana`, las APIs de Contratos/Listado/PDC exigen permisos explícitos y las escrituras quedan acotadas a la semana operativa para evitar cruces inseguros entre proyectos y periodos.
 - [x] **Word Wrap en Selector de Proyectos (2026-03-26)**: Actualización de reglas CSS (`white-space: normal`, `word-break: break-word`) en el componente de selección de proyectos para revelar el nombre completo sin recortes, mejorando la usabilidad de lectura rápida.
 - **Select2 Arquitectura Inteligente y UI/UX Premium (2026-03-04):** Consolidación de Select2 Múltiple paramétrico y aislado, evadiendo colisiones del motor "outside clicks" de Handsontable mediante DOM-nesting atado directamente a la celda activa (`this.TD`). Refinamiento exhaustivo inyectando CSS modular para arreglos de espaciado interactivo, alineación flexible (`flex-wrap`) de chips y erradicación de gaps inter-elementos vía resets absolutos. Se forzó despliegue con actualizador de cache manual.
 - **Erradicación de DataTables (2026-03-03):** Se eliminó por completo la dependencia visual y los archivos base (`*.view.nuevaBarra.php`) del antiguo jQuery DataTables en las vistas maestras de Programación General, Programación Intermedia y Programación Semanal, consolidando Handsontable como la única tecnología de grilla.
