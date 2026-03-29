@@ -36,6 +36,12 @@
                     </div>
                 <?php endif ?>
 
+                <?php if (!empty($resetNotice)): ?>
+                    <div class="alert alert-success alert-custom mb-4">
+                        Tu contraseña fue restablecida correctamente. Ya puedes iniciar sesión.
+                    </div>
+                <?php endif; ?>
+
                 <form action="/login" method="post" id="loginForm">
                     <div class="input-group mb-3">
                         <label for="usuario" class="sr-only">Usuario</label>
@@ -65,6 +71,10 @@
                         </div>
                     </div>
                 </form>
+
+                <div class="text-center mb-3">
+                    <a href="/password/forgot">¿Olvidaste tu contraseña?</a>
+                </div>
 
                 <div class="footer-text">
                     &copy; 2026 Arquitectos e Ingenieros Asociados<br>

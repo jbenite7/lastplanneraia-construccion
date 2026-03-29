@@ -30,6 +30,10 @@
         <div class="alert alert-warning">Tu cuenta está inactiva. Contacta al administrador.</div>
       <?php endif; ?>
 
+      <?php if (!empty($reset_notice)): ?>
+        <div class="alert alert-success">Tu contraseña fue restablecida correctamente. Ya puedes iniciar sesión.</div>
+      <?php endif; ?>
+
       <form id="loginForm">
         <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
         <div class="input-group mb-3">
@@ -66,6 +70,9 @@
       </form>
 
       <div id="loginMessage" class="mt-3"></div>
+      <div class="text-center mb-3">
+        <a href="/admin/password/forgot">¿Olvidaste tu contraseña?</a>
+      </div>
       <div class="footer-text">
         &copy; 2026 Arquitectos e Ingenieros Asociados<br>
         Construyendo con <strong>+CERTEZA</strong>

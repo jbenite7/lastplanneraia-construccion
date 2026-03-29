@@ -2,16 +2,19 @@
 
 namespace App\Controllers\Auth;
 
+use App\Services\Auth\UserPasswordService;
 use Database;
 
 class LoginController
 {
     private $db;
+    private $passwords;
 
     public function __construct()
     {
         // Obtener instancia de la base de datos (Singleton)
         $this->db = Database::getInstance();
+        $this->passwords = new UserPasswordService($this->db);
     }
 
     public function index()
@@ -28,6 +31,7 @@ class LoginController
 
         $timeoutNotice = ($_GET['timeout'] ?? '') === '1';
         $inactiveNotice = ($_GET['inactive'] ?? '') === '1';
+        $resetNotice = ($_GET['reset'] ?? '') === '1';
         $errores = ''; // Inicializar variable para la vista
 
         // Exponer $db para la vista legacy
@@ -44,6 +48,7 @@ class LoginController
         $errores = '';
         $timeoutNotice = false;
         $inactiveNotice = false;
+        $resetNotice = false;
 
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // Sanitizar usuario
@@ -180,43 +185,12 @@ class LoginController
 
         header('Content-Type: application/json');
 
-        if (empty($password) || strlen($password) < 6) {
-            echo json_encode(['success' => false, 'message' => 'La contraseña debe tener al menos 6 caracteres']);
-            exit();
-        }
-
-        if (!preg_match('/[A-Z]/', $password)) {
-            echo json_encode(['success' => false, 'message' => 'Debe contener al menos una letra mayúscula']);
-            exit();
-        }
-
-        if (!preg_match('/[^a-zA-Z0-9]/', $password)) {
-            echo json_encode(['success' => false, 'message' => 'Debe contener al menos un carácter especial (!@#$%...)']);
-            exit();
-        }
-
-        if ($password !== $confirm) {
-            echo json_encode(['success' => false, 'message' => 'Las contraseñas no coinciden']);
-            exit();
-        }
-
-        // Verificar que no sea la misma contraseña anterior
-        $stmt = $this->db->prepare("SELECT password FROM general_usuarios WHERE usuario = ? LIMIT 1");
-        $stmt->execute([$usuario]);
-        $row = $stmt->fetch();
-
-        if ($row) {
-            $oldHash = $row['password'];
-            if (password_verify($password, $oldHash) || hash_equals($oldHash, hash('sha512', $password))) {
-                echo json_encode(['success' => false, 'message' => 'La nueva contraseña no puede ser igual a la anterior']);
+        try {
+            $result = $this->passwords->changePasswordForUsername((string) $usuario, $password, $confirm, true);
+            if (!$result['success']) {
+                echo json_encode($result);
                 exit();
             }
-        }
-
-        try {
-            $newHash = password_hash($password, PASSWORD_DEFAULT);
-            $stmt = $this->db->prepare("UPDATE general_usuarios SET password = ?, force_password_change = 0 WHERE usuario = ?");
-            $stmt->execute([$newHash, $usuario]);
 
             // Elevar a sesión definitiva si estaba en temp
             if (isset($_SESSION['usuario_temp'])) {
@@ -239,7 +213,7 @@ class LoginController
             }
 
             echo json_encode(['success' => true, 'message' => 'Contraseña actualizada correctamente. Bienvenido.']);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             echo json_encode(['success' => false, 'message' => 'Error al actualizar la contraseña: ' . $e->getMessage()]);
         }
         exit();

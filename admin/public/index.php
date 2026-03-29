@@ -48,6 +48,10 @@ $router = new Router();
 // Rutas de Autenticación
 $router->add('GET', '/login', 'AuthController@loginView');
 $router->add('POST', '/login', 'AuthController@login');
+$router->add('GET', '/password/forgot', 'PasswordResetController@forgotView');
+$router->add('POST', '/password/forgot', 'PasswordResetController@sendResetLink');
+$router->add('GET', '/password/reset', 'PasswordResetController@resetView');
+$router->add('POST', '/password/reset', 'PasswordResetController@resetPassword');
 $router->add('GET', '/logout', 'AuthController@logout');
 
 // Rutas Protegidas

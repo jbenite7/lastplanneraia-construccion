@@ -28,7 +28,7 @@ if (session_status() === PHP_SESSION_NONE) {
 // 3.5 Verificar Sesión y Timeout (Protección Universal)
 // Excluimos las rutas públicas para permitir inicio de sesión y configuración temprana del frontend
 $requestUri = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH);
-$publicRoutes = ['/', '/login', '/password/update', '/runtime/frontend-config.js'];
+$publicRoutes = ['/', '/login', '/password/forgot', '/password/reset', '/password/update', '/runtime/frontend-config.js'];
 if (!in_array($requestUri, $publicRoutes, true)) {
     \App\Core\SessionMiddleware::check();
 }
@@ -51,6 +51,10 @@ $router->get('/', [\App\Controllers\Auth\LoginController::class, 'index']);
 // Auth
 $router->get('/login', [\App\Controllers\Auth\LoginController::class, 'index']);
 $router->post('/login', [\App\Controllers\Auth\LoginController::class, 'login']);
+$router->get('/password/forgot', [\App\Controllers\Auth\PasswordResetController::class, 'forgot']);
+$router->post('/password/forgot', [\App\Controllers\Auth\PasswordResetController::class, 'sendLink']);
+$router->get('/password/reset', [\App\Controllers\Auth\PasswordResetController::class, 'reset']);
+$router->post('/password/reset', [\App\Controllers\Auth\PasswordResetController::class, 'update']);
 $router->post('/password/update', [\App\Controllers\Auth\LoginController::class, 'updatePassword']);
 $router->get('/logout', [\App\Controllers\Auth\LoginController::class, 'logout']);
 

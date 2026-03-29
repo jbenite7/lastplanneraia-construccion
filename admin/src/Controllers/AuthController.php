@@ -35,6 +35,7 @@ class AuthController extends BaseController
             'title' => 'Iniciar Sesión - Admin Panel',
             'csrf_token' => Security::generateCsrfToken(),
             'inactive_notice' => (($_GET['inactive'] ?? '') === '1'),
+            'reset_notice' => (($_GET['reset'] ?? '') === '1'),
         ], false);
     }
 
