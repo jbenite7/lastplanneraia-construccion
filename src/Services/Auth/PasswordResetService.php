@@ -20,7 +20,7 @@ class PasswordResetService
         $this->passwords = $passwords ?: new UserPasswordService($this->db);
     }
 
-    public function request(string $email, string $scope, string $baseUrl): bool
+    public function request(string $email, string $scope): bool
     {
         $scope = $this->normalizeScope($scope);
         $normalizedEmail = $this->normalizeEmail($email);
@@ -48,14 +48,15 @@ class PasswordResetService
         );
         $stmt->execute([(int) $user['id'], $scope, $tokenHash, $requestedIp, $expiresAt]);
         $tokenId = (int) $this->db->lastInsertId();
-        $resetUrl = $this->buildResetUrl($baseUrl, $scope, $plainToken);
+        $appUrl = $this->resolveAppUrl();
+        $resetUrl = $this->buildResetUrl($appUrl, $scope, $plainToken);
 
         try {
             $this->mailer->send(
                 (string) $user['email'],
                 (string) ($user['nombre'] ?? $user['usuario']),
                 'Restablece tu contraseña en Last Planner AIA',
-                $this->buildHtmlMessage((string) ($user['nombre'] ?? $user['usuario']), $scope, $resetUrl, $baseUrl),
+                $this->buildHtmlMessage((string) ($user['nombre'] ?? $user['usuario']), $scope, $resetUrl, $appUrl),
                 $this->buildTextMessage((string) ($user['nombre'] ?? $user['usuario']), $scope, $resetUrl)
             );
         } catch (\Throwable $e) {
@@ -214,7 +215,13 @@ class PasswordResetService
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%;max-width:640px;border-collapse:collapse;">
           <tr>
             <td style="padding:0 0 16px 0;text-align:center;">
-              <img src="{$safeLogoUrl}" alt="AIA - Construimos por Naturaleza" width="252" style="display:inline-block;width:100%;max-width:252px;height:auto;border:0;" />
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin:0 auto;background-color:#f7f5ef;border:1px solid #d8d2c4;border-radius:12px;">
+                <tr>
+                  <td style="padding:14px 18px;text-align:center;">
+                    <img src="{$safeLogoUrl}" alt="AIA - Construimos por Naturaleza" width="252" style="display:inline-block;width:100%;max-width:252px;height:auto;border:0;" />
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
           <tr>
@@ -304,6 +311,17 @@ HTML;
     {
         $email = trim($email);
         return function_exists('mb_strtolower') ? mb_strtolower($email, 'UTF-8') : strtolower($email);
+    }
+
+    private function resolveAppUrl(): string
+    {
+        $configured = trim((string) ($_ENV['APP_URL'] ?? $_SERVER['APP_URL'] ?? getenv('APP_URL') ?? ''));
+
+        if ($configured === '') {
+            throw new \RuntimeException('Falta configurar APP_URL para generar enlaces de restablecimiento.');
+        }
+
+        return rtrim($configured, '/');
     }
 
     private function audit(string $action, string $description): void

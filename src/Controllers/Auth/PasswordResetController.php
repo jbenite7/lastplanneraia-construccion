@@ -37,7 +37,7 @@ class PasswordResetController
             return;
         }
 
-        $this->service->request($emailValue, 'app', $this->resolveBaseUrl());
+        $this->service->request($emailValue, 'app');
         $this->renderForgot(
             'Si el correo existe y está habilitado, enviaremos un enlace de restablecimiento en unos minutos.',
             'success'
@@ -95,18 +95,5 @@ class PasswordResetController
     {
         $csrfToken = CsrfTokenManager::generate('password_reset');
         require PROJECT_ROOT . '/views/auth/password-reset.view.php';
-    }
-
-    private function resolveBaseUrl(): string
-    {
-        $configured = trim((string) ($_ENV['APP_URL'] ?? $_SERVER['APP_URL'] ?? getenv('APP_URL') ?? ''));
-        if ($configured !== '') {
-            return rtrim($configured, '/');
-        }
-
-        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-
-        return $scheme . '://' . $host;
     }
 }

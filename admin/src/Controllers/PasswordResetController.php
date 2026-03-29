@@ -33,7 +33,7 @@ class PasswordResetController extends BaseController
             return;
         }
 
-        $this->service->request($email, 'admin', $this->resolveBaseUrl());
+        $this->service->request($email, 'admin');
         $this->renderForgot(
             'Si el correo existe y está habilitado, enviaremos un enlace de restablecimiento en unos minutos.',
             'success'
@@ -98,18 +98,5 @@ class PasswordResetController extends BaseController
             'token' => $token,
             'isTokenValid' => $isTokenValid,
         ], false);
-    }
-
-    private function resolveBaseUrl(): string
-    {
-        $configured = trim((string) ($_ENV['APP_URL'] ?? $_SERVER['APP_URL'] ?? getenv('APP_URL') ?? ''));
-        if ($configured !== '') {
-            return rtrim($configured, '/');
-        }
-
-        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-
-        return $scheme . '://' . $host;
     }
 }
