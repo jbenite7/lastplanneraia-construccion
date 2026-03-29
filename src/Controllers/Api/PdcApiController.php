@@ -2,6 +2,7 @@
 
 namespace App\Controllers\Api;
 
+use App\Support\ModuleRequestContext;
 use PDO;
 use Throwable;
 
@@ -23,20 +24,19 @@ class PdcApiController
     // ─── LIST ───────────────────────────────────────────────────────────
     public function list(): void
     {
-        $dbPrefix = $_GET['db'] ?? '';
-        $semana = (int)($_GET['semana'] ?? 0);
         $definirContratos = (int)($_GET['definirContratos'] ?? 0);
-
-        if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
-            $this->json(["respuesta" => "ERROR", "mensaje" => "Nombre de base de datos inválido."]);
-            return;
-        }
 
         $condicionContratos = ($definirContratos == 1)
             ? "AND numeroSubcontratos IS NOT NULL AND titulo = 0 "
             : "";
 
         try {
+            $context = ModuleRequestContext::resolve();
+            $dbPrefix = $context['dbPrefix'];
+            $semana = $context['semana'];
+
+            $this->requirePermission('lps.pdc.ver', 'No autorizado para consultar el plan de compras.');
+
             $stmt = $this->db->query(
                 "SELECT COUNT(*) AS conteo FROM {$dbPrefix}_pdc WHERE semana = ? $condicionContratos",
                 [$semana]
@@ -118,7 +118,7 @@ class PdcApiController
 
         } catch (Throwable $e) {
             error_log("Error en PdcApiController@list: " . $e->getMessage());
-            $this->json(["respuesta" => "ERROR", "mensaje" => "Error interno al cargar PDC."]);
+            $this->jsonError('No se pudo cargar el plan de compras.', 500, ["data" => []]);
         }
     }
 
@@ -126,15 +126,29 @@ class PdcApiController
     public function save(): void
     {
         $opcion = $_POST['opcion'] ?? '';
-        $dbPrefix = $_POST['db'] ?? '';
-        $semana = $_POST['semana'] ?? 0;
-
-        if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
-            $this->json(["respuesta" => "ERROR", "mensaje" => "Nombre de base de datos inválido."]);
-            return;
-        }
 
         try {
+            $context = ModuleRequestContext::resolve();
+            $dbPrefix = $context['dbPrefix'];
+            $semana = $context['semana'];
+
+            $this->requirePermission('lps.pdc.ver', 'No autorizado para consultar el plan de compras.');
+
+            $isEditOperation = in_array($opcion, [
+                'nueva_sem',
+                'eliminar_sem',
+                'eliminar_actividad_pdc',
+                'guardar_actividad_pdc',
+                'adjudicar_pdc',
+                'modificar',
+                'guardar_DefinirContratos',
+                'adjudicar_contrato',
+            ], true) || isset($_POST['columna']);
+
+            if ($isEditOperation) {
+                $this->requirePermission('lps.pdc.editar', 'No autorizado para modificar el plan de compras.');
+            }
+
             switch ($opcion) {
                 case "nueva_sem":
                     $f_inicio_sem = $_POST['f_inicio_sem'] ?? '';
@@ -148,7 +162,7 @@ class PdcApiController
                     break;
 
                 case "eliminar_actividad_pdc":
-                    $this->eliminarActividad($dbPrefix);
+                    $this->eliminarActividad($dbPrefix, $semana);
                     break;
 
                 case "guardar_actividad_pdc":
@@ -156,15 +170,15 @@ class PdcApiController
                     break;
 
                 case "adjudicar_pdc":
-                    $this->adjudicarPdc($dbPrefix);
+                    $this->adjudicarPdc($dbPrefix, $semana);
                     break;
 
                 case "modificar":
-                    $this->modificar($dbPrefix);
+                    $this->modificar($dbPrefix, $semana);
                     break;
 
                 case "guardar_DefinirContratos":
-                    $this->guardarDefinirContratos($dbPrefix);
+                    $this->guardarDefinirContratos($dbPrefix, $semana);
                     break;
 
                 case "adjudicar_contrato":
@@ -180,29 +194,29 @@ class PdcApiController
                     break;
 
                 default:
-                    $this->handleCeldaDinamica($dbPrefix);
+                    $this->handleCeldaDinamica($dbPrefix, $semana);
                     break;
             }
         } catch (Throwable $e) {
             error_log("Error en PdcApiController@save: " . $e->getMessage());
-            $this->json(["respuesta" => "ERROR", "mensaje" => $e->getMessage()]);
+            $this->jsonError('No se pudo procesar la solicitud del plan de compras.', 500);
         }
     }
 
     // ─── OPERACIONES PRIVADAS ───────────────────────────────────────────
 
-    private function eliminarActividad(string $p): void
+    private function eliminarActividad(string $p, int $semana): void
     {
-        $id = $_POST['id'];
+        $id = $_POST['id'] ?? $_POST['Id'] ?? null;
         $justificacion = $_POST['justificacion'] ?? '';
 
-        $stmtInfo = $this->db->query("SELECT * FROM {$p}_pdc WHERE consecutivo = ?", [$id]);
+        $stmtInfo = $this->db->query("SELECT * FROM {$p}_pdc WHERE consecutivo = ? AND semana = ?", [$id, $semana]);
         $info = $stmtInfo->fetch();
 
         if ($info) {
-            $this->db->query("INSERT INTO {$p}_papelera_pdc SELECT * FROM {$p}_pdc WHERE consecutivo = ?", [$id]);
-            $this->db->query("UPDATE {$p}_papelera_pdc SET justificacionEliminacion = ? WHERE consecutivo = ?", [$justificacion, $id]);
-            $this->db->query("DELETE FROM {$p}_pdc WHERE consecutivo = ?", [$id]);
+            $this->db->query("INSERT INTO {$p}_papelera_pdc SELECT * FROM {$p}_pdc WHERE consecutivo = ? AND semana = ?", [$id, $semana]);
+            $this->db->query("UPDATE {$p}_papelera_pdc SET justificacionEliminacion = ? WHERE consecutivo = ? AND semana = ?", [$justificacion, $id, $semana]);
+            $this->db->query("DELETE FROM {$p}_pdc WHERE consecutivo = ? AND semana = ?", [$id, $semana]);
             $this->db->logActivity('PDC', 'ELIMINAR_ACTIVIDAD', "Eliminó actividad PDC con ID $id", $p);
             $this->json(["respuesta" => "BIEN"]);
         } else {
@@ -241,7 +255,7 @@ class PdcApiController
         $this->json(["respuesta" => "BIEN"]);
     }
 
-    private function adjudicarPdc(string $p): void
+    private function adjudicarPdc(string $p, int $semana): void
     {
         $id = $_POST['id'];
         $fields = ['idProveedorAdjudicado','numeroContrato','fechaVencimientoPolizas','valorPresupuesto',
@@ -253,13 +267,13 @@ class PdcApiController
             idProveedorAdjudicado=?, numeroContrato=?, fechaVencimientoPolizas=?,
             valorPresupuesto=?, valorPrimeraNegociacion=?, valorAdjudicado=?,
             valorAnticipo=?, valorReclamado=?, valorDevoluciones=?, observacionesContrato=?
-            WHERE consecutivo=?";
-        $this->db->query($sql, array_merge($vals, [$id]));
+            WHERE consecutivo=? AND semana=?";
+        $this->db->query($sql, array_merge($vals, [$id, $semana]));
         $this->db->logActivity('PDC', 'ADJUDICAR_PDC', "Adjudicó PDC consecutivo $id", $p);
         $this->json(["respuesta" => "BIEN"]);
     }
 
-    private function modificar(string $p): void
+    private function modificar(string $p, int $semana): void
     {
         $id = $_POST['Id'] ?? 0;
         $idProv = $this->checkNull($_POST['idProveedorExistente'] ?? '');
@@ -297,26 +311,26 @@ class PdcApiController
             fechaRealReciboPropuestas=?, fechaRealCuadrosComparativos=?, fechaRealLegalizacionContrato=?,
             fechaRealFabricacion=?, fechaRealInsumosObra=?, fechaRealInicio=?,
             observacionesContrato=?, estado=?
-            WHERE consecutivo=?";
+            WHERE consecutivo=? AND semana=?";
 
         $this->db->query($sql, [
             $idProv, $numContrato, $aplicaPolizas, $fVencPolizas,
             $vPres, $vInit, $vAdj, $vAnt, $vRec, $vDev,
             $dEl, $dIL, $dEP, $dRP, $dCC, $dLC, $dF, $dIO,
             $fREl, $fRIL, $fREP, $fRRP, $fRCC, $fRLC, $fRF, $fRIO, $fRIn,
-            $obs, $est, $id,
+            $obs, $est, $id, $semana,
         ]);
         $this->db->logActivity('PDC', 'MODIFICAR_ACTIVIDAD', "Modificó paquete PDC consecutivo $id", $p);
         echo json_encode("OK");
     }
 
-    private function guardarDefinirContratos(string $p): void
+    private function guardarDefinirContratos(string $p, int $semana): void
     {
         $json = $_POST['numeroSubcontratos'] ?? '';
         $data = json_decode($json, true);
         if (isset($data['numeroSubcontratos'])) {
             foreach ($data['numeroSubcontratos'] as $item) {
-                $this->db->query("UPDATE {$p}_pdc SET numeroSubcontratos = ? WHERE consecutivo = ?", [$item['numeroSubcontratos'], $item['consecutivo']]);
+                $this->db->query("UPDATE {$p}_pdc SET numeroSubcontratos = ? WHERE consecutivo = ? AND semana = ?", [$item['numeroSubcontratos'], $item['consecutivo'], $semana]);
             }
             echo json_encode("conModificaciones");
         } else {
@@ -422,14 +436,14 @@ class PdcApiController
         ]]]);
     }
 
-    private function handleCeldaDinamica(string $p): void
+    private function handleCeldaDinamica(string $p, int $semana): void
     {
         if (isset($_POST['columna'])) {
             $columna = $_POST['columna'];
             $valor = $_POST['valor'];
             $id = $_POST['id'];
             if (preg_match('/^[a-zA-Z0-9_]+$/', $columna)) {
-                $this->db->query("UPDATE {$p}_pdc SET $columna = ? WHERE consecutivo = ?", [$this->checkNull($valor), $id]);
+                $this->db->query("UPDATE {$p}_pdc SET $columna = ? WHERE consecutivo = ? AND semana = ?", [$this->checkNull($valor), $id, $semana]);
                 $this->db->logActivity('PDC', 'MODIFICAR_CELDA', "Actualizó columna $columna de PDC $id", $p);
                 $this->json(["respuesta" => "BIEN"]);
             } else {
@@ -561,7 +575,22 @@ class PdcApiController
 
     private function json(array $data): void
     {
-        header('Content-Type: application/json');
+        header('Content-Type: application/json; charset=utf-8');
         echo json_encode($data, JSON_UNESCAPED_UNICODE);
+    }
+
+    private function jsonError(string $message, int $httpCode = 400, array $extra = []): void
+    {
+        http_response_code($httpCode);
+        $this->json(array_merge([
+            'respuesta' => 'ERROR',
+            'mensaje' => $message,
+        ], $extra));
+    }
+
+    private function requirePermission(string $permissionKey, string $message): void
+    {
+        require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
+        rbac_guard_require_permission($permissionKey, ['message' => $message]);
     }
 }

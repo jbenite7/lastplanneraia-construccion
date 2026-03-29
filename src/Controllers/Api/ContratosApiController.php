@@ -3,8 +3,8 @@
 namespace App\Controllers\Api;
 
 use App\Controllers\BaseController;
+use App\Support\ModuleRequestContext;
 use Database;
-use Exception;
 use PDO;
 use Throwable;
 
@@ -17,16 +17,14 @@ class ContratosApiController extends BaseController
 
     public function list()
     {
-        $dbPrefix = $_GET['db'] ?? '';
-        if (empty($dbPrefix) || !preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
-            echo json_encode(["data" => [], "error" => "Parámetro de BD inválido."]);
-            return;
-        }
-
-        $semana = filter_var($_GET['semana'] ?? 0, FILTER_VALIDATE_INT);
-        $arreglo = ["data" => []];
-
         try {
+            $context = ModuleRequestContext::resolve();
+            $dbPrefix = $context['dbPrefix'];
+            $semana = $context['semana'];
+            $arreglo = ["data" => []];
+
+            $this->requirePermission('lps.contratos.ver', 'No autorizado para consultar contratos.');
+
             $db = Database::getInstance();
             $queryCount = "SELECT COUNT(*) as total FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND tipoContrato IS NOT NULL AND fechaInicio IS NOT NULL";
             $stmtCount = $db->query($queryCount, [$semana]);
@@ -68,6 +66,7 @@ class ContratosApiController extends BaseController
                     if ($contratosAsociadosSI != "") {
                         $contratosAsociadosSI = substr($contratosAsociadosSI, 0, -2);
                         $contratosAsociadosSI = str_replace(';', ", ", $contratosAsociadosSI);
+                        $contratosAsociadosSI = $this->escapeHtml($contratosAsociadosSI);
                         $contratosAsociadosSI = "<b class='ct-text-danger'>- Suministro e Instalación: </b>" . $contratosAsociadosSI . ".<br>";
                     }
 
@@ -80,6 +79,7 @@ class ContratosApiController extends BaseController
                     if ($contratosAsociadosS != "") {
                         $contratosAsociadosS = substr($contratosAsociadosS, 0, -2);
                         $contratosAsociadosS = str_replace(';', ", ", $contratosAsociadosS);
+                        $contratosAsociadosS = $this->escapeHtml($contratosAsociadosS);
                         $contratosAsociadosS = "<b class='ct-text-info'>- Suministro: </b>" . $contratosAsociadosS . ".<br> ";
                     }
 
@@ -92,6 +92,7 @@ class ContratosApiController extends BaseController
                     if ($contratosAsociadosMO != "") {
                         $contratosAsociadosMO = substr($contratosAsociadosMO, 0, -2);
                         $contratosAsociadosMO = str_replace(';', ", ", $contratosAsociadosMO);
+                        $contratosAsociadosMO = $this->escapeHtml($contratosAsociadosMO);
                         $contratosAsociadosMO = "<b class='ct-text-success'>- Mano de Obra: </b>" . $contratosAsociadosMO . ".<br>";
                     }
 
@@ -100,40 +101,33 @@ class ContratosApiController extends BaseController
                 }
             }
 
-            header('Content-Type: application/json');
-            echo json_encode($arreglo, JSON_UNESCAPED_UNICODE);
+            $this->jsonResponse($arreglo);
 
         } catch (Throwable $e) {
             error_log("Error in ContratosApiController::list: " . $e->getMessage());
-            echo json_encode(["data" => [], "error" => $e->getMessage()]);
+            $this->jsonError('No se pudo cargar la informacion de contratos.', 500, ["data" => []]);
         }
     }
 
     public function save()
     {
-        require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
-
-        $dbPrefix = $_GET['db'] ?? '';
-        if (empty($dbPrefix) || !preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
-            echo json_encode(["respuesta" => "ERROR", "mensaje" => "Parámetro de base de datos inválido."]);
-            return;
-        }
-
         try {
-            rbac_guard_require_permission('lps.contratos.ver');
+            $context = ModuleRequestContext::resolve();
+            $dbPrefix = $context['dbPrefix'];
+            $semanaActualizacion = $context['semana'];
+
+            $this->requirePermission('lps.contratos.ver', 'No autorizado para consultar contratos.');
 
             $db = Database::getInstance();
             $opcion = $_POST["opcion"] ?? '';
 
             if ($_SERVER['REQUEST_METHOD'] == 'POST' && $opcion == "modificar") {
-                rbac_guard_require_permission('lps.contratos.editar');
+                $this->requirePermission('lps.contratos.editar', 'No autorizado para modificar contratos.');
 
                 $Id = $_POST['Id'] ?? 0;
                 $tipoContrato = $_POST['tipoContrato'] ?? '';
                 $actividadModificar = !empty($_POST['actividadModificar']) ? trim($_POST['actividadModificar']) : '';
                 $errores = '';
-
-                $semanaActualizacion = filter_var($_POST['semana'] ?? 0, FILTER_VALIDATE_INT);
 
                 $paquetes = [];
                 $tipos = ['SI', 'S', 'MO'];
@@ -167,13 +161,13 @@ class ContratosApiController extends BaseController
                         S1=?, paqueteS1=?, S2=?, paqueteS2=?, S3=?, paqueteS3=?, S4=?, paqueteS4=?, S5=?, paqueteS5=?, 
                         MO1=?, paqueteMO1=?, MO2=?, paqueteMO2=?, MO3=?, paqueteMO3=?, MO4=?, paqueteMO4=?, MO5=?, paqueteMO5=?, 
                         semanaActualizacion=? 
-                        WHERE Id=?";
+                        WHERE Id=? AND semanaActualizacion=?";
 
                     $paramsUpdate = [
                         $paquetes['SI1'], $paquetes['paqueteSI1'], $paquetes['SI2'], $paquetes['paqueteSI2'], $paquetes['SI3'], $paquetes['paqueteSI3'], $paquetes['SI4'], $paquetes['paqueteSI4'], $paquetes['SI5'], $paquetes['paqueteSI5'],
                         $paquetes['S1'], $paquetes['paqueteS1'], $paquetes['S2'], $paquetes['paqueteS2'], $paquetes['S3'], $paquetes['paqueteS3'], $paquetes['S4'], $paquetes['paqueteS4'], $paquetes['S5'], $paquetes['paqueteS5'],
                         $paquetes['MO1'], $paquetes['paqueteMO1'], $paquetes['MO2'], $paquetes['paqueteMO2'], $paquetes['MO3'], $paquetes['paqueteMO3'], $paquetes['MO4'], $paquetes['paqueteMO4'], $paquetes['MO5'], $paquetes['paqueteMO5'],
-                        $semanaActualizacion, $Id,
+                        $semanaActualizacion, $Id, $semanaActualizacion,
                     ];
 
                     $stmt = $db->query($queryUpdate, $paramsUpdate);
@@ -209,27 +203,27 @@ class ContratosApiController extends BaseController
                 $this->verificar_resultado($stmt, $errores);
 
             } elseif ($opcion == "actualizarFechaInicio") {
-                $this->actualizarFechaInicio($_POST["idActividad"] ?? '', filter_var($_POST["semana"] ?? 0, FILTER_VALIDATE_INT), $dbPrefix, $db);
+                $this->actualizarFechaInicio($_POST["idActividad"] ?? '', $semanaActualizacion, $dbPrefix, $db);
             } elseif ($opcion == "actualizarListadoPaquetesContratacion") {
                 $this->actualizarListadoPaquetesContratacion($_POST["tipoContrato"] ?? '', $dbPrefix, $db);
             } elseif ($opcion == "actualizarInsumosRecursos") {
-                $this->actualizarInsumosRecursos($_POST["tipoContrato"] ?? '', $dbPrefix, $db);
+                $this->actualizarInsumosRecursos($_POST["tipoContrato"] ?? '', $dbPrefix, $db, $semanaActualizacion);
             } else {
-                echo json_encode(["respuesta" => "ERROR", "mensaje" => "Opción no válida"]);
+                $this->jsonError('Opción no válida.');
             }
 
         } catch (Throwable $e) {
             error_log("Error in ContratosApiController::save: " . $e->getMessage());
-            echo json_encode(["respuesta" => "ERROR", "mensaje" => $e->getMessage()]);
+            $this->jsonError('No se pudo procesar la solicitud de contratos.', 500);
         }
     }
 
     private function actualizarFechaInicio($Id, $semana, $dbPrefix, $db)
     {
-        $query = "SELECT Fecha_Inicio FROM {$dbPrefix}_programa_consolidado WHERE Consecutivo_en_Programa = ? AND Semana = ?";
-        $stmt = $db->query($query, [$Id, $semana]);
+        $query = "SELECT Fecha_Inicio FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND (Consecutivo_en_Programa = ? OR Actividad = ?) ORDER BY Fecha_Inicio ASC LIMIT 1";
+        $stmt = $db->query($query, [$semana, $Id, $Id]);
         $data = $stmt->fetch(PDO::FETCH_ASSOC);
-        echo json_encode(["data" => $data], JSON_UNESCAPED_UNICODE);
+        $this->jsonResponse(["data" => $data ?: ["Fecha_Inicio" => ""]]);
     }
 
     private function actualizarListadoPaquetesContratacion($tipoContrato, $dbPrefix, $db)
@@ -257,26 +251,26 @@ class ContratosApiController extends BaseController
             }
             $res["listadoSI"] = $scriptSI;
         }
-        echo json_encode($res, JSON_UNESCAPED_UNICODE);
+        $this->jsonResponse($res);
     }
 
-    private function actualizarInsumosRecursos($tipoContrato, $dbPrefix, $db)
+    private function actualizarInsumosRecursos($tipoContrato, $dbPrefix, $db, $semana)
     {
         $res = ["listadoMO" => "", "listadoS" => "", "listadoSI" => ""];
         if ($tipoContrato == 1) {
-            $queryMO = "SELECT MO1 FROM {$dbPrefix}_actividades WHERE MO1 IS NOT NULL AND MO1 != '' UNION SELECT MO2 FROM {$dbPrefix}_actividades WHERE MO2 IS NOT NULL AND MO2 != '' UNION SELECT MO3 FROM {$dbPrefix}_actividades WHERE MO3 IS NOT NULL AND MO3 != '' UNION SELECT MO4 FROM {$dbPrefix}_actividades WHERE MO4 IS NOT NULL AND MO4 != '' UNION SELECT MO5 FROM {$dbPrefix}_actividades WHERE MO5 IS NOT NULL AND MO5 != ''";
-            $insumosMO = $this->obtenerInsumosUnicos($db->query($queryMO));
+            $queryMO = "SELECT MO1 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND MO1 IS NOT NULL AND MO1 != '' UNION SELECT MO2 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND MO2 IS NOT NULL AND MO2 != '' UNION SELECT MO3 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND MO3 IS NOT NULL AND MO3 != '' UNION SELECT MO4 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND MO4 IS NOT NULL AND MO4 != '' UNION SELECT MO5 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND MO5 IS NOT NULL AND MO5 != ''";
+            $insumosMO = $this->obtenerInsumosUnicos($db->query($queryMO, [$semana, $semana, $semana, $semana, $semana]));
             $res["listadoMO"] = $this->generarOpcionesInsumos($insumosMO);
 
-            $queryS = "SELECT S1 FROM {$dbPrefix}_actividades WHERE S1 IS NOT NULL AND S1 != '' UNION SELECT S2 FROM {$dbPrefix}_actividades WHERE S2 IS NOT NULL AND S2 != '' UNION SELECT S3 FROM {$dbPrefix}_actividades WHERE S3 IS NOT NULL AND S3 != '' UNION SELECT S4 FROM {$dbPrefix}_actividades WHERE S4 IS NOT NULL AND S4 != '' UNION SELECT S5 FROM {$dbPrefix}_actividades WHERE S5 IS NOT NULL AND S5 != ''";
-            $insumosS = $this->obtenerInsumosUnicos($db->query($queryS));
+            $queryS = "SELECT S1 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND S1 IS NOT NULL AND S1 != '' UNION SELECT S2 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND S2 IS NOT NULL AND S2 != '' UNION SELECT S3 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND S3 IS NOT NULL AND S3 != '' UNION SELECT S4 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND S4 IS NOT NULL AND S4 != '' UNION SELECT S5 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND S5 IS NOT NULL AND S5 != ''";
+            $insumosS = $this->obtenerInsumosUnicos($db->query($queryS, [$semana, $semana, $semana, $semana, $semana]));
             $res["listadoS"] = $this->generarOpcionesInsumos($insumosS);
         } elseif ($tipoContrato == 2) {
-            $querySI = "SELECT SI1 FROM {$dbPrefix}_actividades WHERE SI1 IS NOT NULL AND SI1 != '' UNION SELECT SI2 FROM {$dbPrefix}_actividades WHERE SI2 IS NOT NULL AND SI2 != '' UNION SELECT SI3 FROM {$dbPrefix}_actividades WHERE SI3 IS NOT NULL AND SI3 != '' UNION SELECT SI4 FROM {$dbPrefix}_actividades WHERE SI4 IS NOT NULL AND SI4 != '' UNION SELECT SI5 FROM {$dbPrefix}_actividades WHERE SI5 IS NOT NULL AND SI5 != ''";
-            $insumosSI = $this->obtenerInsumosUnicos($db->query($querySI));
+            $querySI = "SELECT SI1 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND SI1 IS NOT NULL AND SI1 != '' UNION SELECT SI2 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND SI2 IS NOT NULL AND SI2 != '' UNION SELECT SI3 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND SI3 IS NOT NULL AND SI3 != '' UNION SELECT SI4 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND SI4 IS NOT NULL AND SI4 != '' UNION SELECT SI5 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND SI5 IS NOT NULL AND SI5 != ''";
+            $insumosSI = $this->obtenerInsumosUnicos($db->query($querySI, [$semana, $semana, $semana, $semana, $semana]));
             $res["listadoSI"] = $this->generarOpcionesInsumos($insumosSI);
         }
-        echo json_encode($res, JSON_UNESCAPED_UNICODE);
+        $this->jsonResponse($res);
     }
 
     private function obtenerInsumosUnicos($stmt)
@@ -329,6 +323,32 @@ class ContratosApiController extends BaseController
             $respuesta = "ERROR";
             $mensaje = $errores;
         }
-        echo json_encode(["respuesta" => $respuesta, "mensaje" => $mensaje]);
+        $this->jsonResponse(["respuesta" => $respuesta, "mensaje" => $mensaje]);
+    }
+
+    private function jsonResponse(array $data): void
+    {
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode($data, JSON_UNESCAPED_UNICODE);
+    }
+
+    private function jsonError(string $message, int $httpCode = 400, array $extra = []): void
+    {
+        http_response_code($httpCode);
+        $this->jsonResponse(array_merge([
+            'respuesta' => 'ERROR',
+            'mensaje' => $message,
+        ], $extra));
+    }
+
+    private function requirePermission(string $permissionKey, string $message): void
+    {
+        require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
+        rbac_guard_require_permission($permissionKey, ['message' => $message]);
+    }
+
+    private function escapeHtml(string $value): string
+    {
+        return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
     }
 }

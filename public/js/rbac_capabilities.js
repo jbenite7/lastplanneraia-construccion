@@ -42,6 +42,34 @@ const RbacCapabilities = {
     return allowedRoles.includes(role);
   },
 
+  canManagePdC: function (role) {
+    return this.canManageContracts(role);
+  },
+
+  canManageWeeks: function (role) {
+    return ['A', 'D', 'OT'].includes(role);
+  },
+
+  canEditGeneralProgram: function (role) {
+    return ['A', 'D', 'R', 'OT', 'DCV'].includes(role);
+  },
+
+  canEditPastGeneralProgram: function (role) {
+    return ['A', 'D'].includes(role);
+  },
+
+  canManageGeneralProgram: function (role) {
+    return this.canEditGeneralProgram(role);
+  },
+
+  canManageMediumTermProgram: function (role) {
+    return ['A', 'D', 'R', 'OT'].includes(role);
+  },
+
+  canManageWeeklyProgram: function (role) {
+    return ['A', 'D', 'R', 'S', 'G', 'SG', 'OT'].includes(role);
+  },
+
   /**
    * Determina si un rol es estrictamente de solo lectura (Visitante, Subcontratista inicial).
    */
@@ -70,5 +98,87 @@ const RbacCapabilities = {
   },
 };
 
+function readRbacRole() {
+  var canonical = document.getElementById('permiso_canonico');
+  var legacy = document.getElementById('permiso');
+  var raw = '';
+
+  if (canonical && canonical.value) {
+    raw = canonical.value;
+  } else if (legacy && legacy.value) {
+    raw = legacy.value;
+  }
+
+  return String(raw || '').trim().toUpperCase();
+}
+
+function buildLegacyCapabilities() {
+  var resolveRole = function () {
+    return readRbacRole();
+  };
+
+  var legacyCaps = {};
+
+  Object.defineProperties(legacyCaps, {
+    canManageWeeks: {
+      enumerable: true,
+      get: function () {
+        return RbacCapabilities.canManageWeeks(resolveRole());
+      },
+    },
+    canEditGeneralProgram: {
+      enumerable: true,
+      get: function () {
+        return RbacCapabilities.canEditGeneralProgram(resolveRole());
+      },
+    },
+    canManageGeneralProgram: {
+      enumerable: true,
+      get: function () {
+        return RbacCapabilities.canManageGeneralProgram(resolveRole());
+      },
+    },
+    canEditPastGeneralProgram: {
+      enumerable: true,
+      get: function () {
+        return RbacCapabilities.canEditPastGeneralProgram(resolveRole());
+      },
+    },
+    canManageMediumTermProgram: {
+      enumerable: true,
+      get: function () {
+        return RbacCapabilities.canManageMediumTermProgram(resolveRole());
+      },
+    },
+    canManageWeeklyProgram: {
+      enumerable: true,
+      get: function () {
+        return RbacCapabilities.canManageWeeklyProgram(resolveRole());
+      },
+    },
+    canManageContracts: {
+      enumerable: true,
+      get: function () {
+        return RbacCapabilities.canManageContracts(resolveRole());
+      },
+    },
+    canManagePdC: {
+      enumerable: true,
+      get: function () {
+        return RbacCapabilities.canManagePdC(resolveRole());
+      },
+    },
+    isReadOnly: {
+      enumerable: true,
+      get: function () {
+        return RbacCapabilities.isReadOnly(resolveRole());
+      },
+    },
+  });
+
+  return legacyCaps;
+}
+
 // Exponer globalmente para las vistas legacy
 window.RbacCapabilities = RbacCapabilities;
+window.rbacCapabilities = buildLegacyCapabilities();

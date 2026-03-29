@@ -1,19 +1,25 @@
 <?php
 
+use App\Support\ModuleRequestContext;
+
 session_start();
 require_once __DIR__ . "/conexion.php";
+require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
+
+header('Content-Type: application/json; charset=utf-8');
 
 /** @var Database $db */
 $db = Database::getInstance();
 
-$dbName = $_GET['db'] ?? $_POST['db'] ?? '';
-$semana = (int)($_POST['semana'] ?? 0);
-
-if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbName)) {
-    die(json_encode(["respuesta" => "ERROR", "mensaje" => "Nombre de base de datos inválido."]));
-}
-
 try {
+    $context = ModuleRequestContext::resolve();
+    $dbName = $context['dbPrefix'];
+    $semana = (int)$context['semana'];
+
+    rbac_guard_require_permission('lps.pdc.editar', [
+        'message' => 'No autorizado para actualizar el plan de compras.',
+    ]);
+
     // 1. CHEQUEO DE VALIDACIÓN ORIGINAL (PDC ACTIVO)
     // Extraído del código fuente original actualizar_pdc.php
     $sqlPdcActivo = "SELECT pdcActivo FROM general_proyectos_procesos WHERE Base_de_datos = ? AND Area = 'Construcción'";
@@ -176,9 +182,10 @@ SQL;
         echo json_encode(["respuesta" => "BIEN"]);
     }
 
-} catch (Exception $e) {
+} catch (Throwable $e) {
     error_log("Error en actualizar_pdc.php: " . $e->getMessage());
-    echo json_encode(["respuesta" => "ERROR", "mensaje" => $e->getMessage()]);
+    http_response_code(500);
+    echo json_encode(["respuesta" => "ERROR", "mensaje" => "No se pudo actualizar el plan de compras."], JSON_UNESCAPED_UNICODE);
 }
 
 /**

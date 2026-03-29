@@ -21,20 +21,32 @@ class RbacManager
         $isProfesionalDCV = ($role === 'DCV');
         $isVisualizer = ($role === 'V');
         $isSubcontractor = ($role === 'C');
+        $canManageWeeks = in_array($role, ['A', 'D', 'OT']);
+        $canEditGeneralProgram = in_array($role, ['A', 'D', 'R', 'OT', 'DCV']);
+        $canEditWeeklyProgram = in_array($role, ['A', 'D', 'R', 'S', 'G', 'SG', 'OT']);
+        $canEditMediumTerm = in_array($role, ['A', 'D', 'R', 'OT']);
+        $canManageContracts = in_array($role, ['A', 'D', 'OT']);
 
         return [
             'isSystemAdmin' => $isSystemAdmin,
-            'canManageWeeks' => in_array($role, ['A', 'D', 'OT']),
+            'canManageWeeks' => $canManageWeeks,
             'canDeleteRows' => in_array($role, ['A', 'D']),
-            'canEditGeneralProgram' => in_array($role, ['A', 'D', 'R', 'OT', 'DCV']),
-            'canEditWeeklyProgram' => in_array($role, ['A', 'D', 'R', 'S', 'G', 'SG', 'OT']),
-            'canEditMediumTerm' => in_array($role, ['A', 'D', 'R', 'OT']),
+            'canEditGeneralProgram' => $canEditGeneralProgram,
+            'canManageGeneralProgram' => $canEditGeneralProgram,
+            'canEditPastGeneralProgram' => in_array($role, ['A', 'D']),
+            'canEditWeeklyProgram' => $canEditWeeklyProgram,
+            'canManageWeeklyProgram' => $canEditWeeklyProgram,
+            'canEditMediumTerm' => $canEditMediumTerm,
+            'canManageMediumTermProgram' => $canEditMediumTerm,
             'canEditConstraints' => in_array($role, ['A', 'D', 'R', 'S', 'G', 'SG', 'OT']),
             'canEditFinancial' => in_array($role, ['A', 'D', 'OT']),
             'canEditSST' => in_array($role, ['A', 'S', 'SG']),
             'canEditAmbiental' => in_array($role, ['A', 'G', 'SG']),
+            'canManageContracts' => $canManageContracts,
+            'canManagePdC' => $canManageContracts,
             'canSeeReports' => true,
             'isExternal' => ($role === 'C'),
+            'isReadOnly' => $isVisualizer || $isSubcontractor,
         ];
     }
 

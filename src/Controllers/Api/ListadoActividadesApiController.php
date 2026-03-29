@@ -2,7 +2,7 @@
 
 namespace App\Controllers\Api;
 
-use App\Core\Database; // Ajusta si la ruta de tu DB Singleton es distinta (legacy usa Database::getInstance())
+use App\Support\ModuleRequestContext;
 use Exception;
 use PDO;
 use Throwable;
@@ -19,16 +19,13 @@ class ListadoActividadesApiController
 
     public function list(): void
     {
-        $dbPrefix = $_GET['db'] ?? '';
-        
-        if (empty($dbPrefix) || !preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
-            $this->jsonResponse(["data" => []]);
-            return;
-        }
-
-        $semana = filter_var($_GET['semana'] ?? 0, FILTER_VALIDATE_INT);
-
         try {
+            $context = ModuleRequestContext::resolve();
+            $dbPrefix = $context['dbPrefix'];
+            $semana = $context['semana'];
+
+            $this->requirePermission('lps.listado_actividades.ver', 'No autorizado para consultar el listado de actividades.');
+
             $query = "SELECT COUNT(*) FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ?";
             $stmt = $this->db->query($query, [$semana]);
             $conteo = $stmt->fetchColumn();
@@ -73,47 +70,50 @@ class ListadoActividadesApiController
 
         } catch (Throwable $e) {
             error_log("Error en ListadoActividadesApiController@list: " . $e->getMessage());
-            $this->jsonResponse(["data" => [], "error" => $e->getMessage()]);
+            $this->jsonError('No se pudo cargar el listado de actividades.', 500, ["data" => []]);
         }
     }
 
     public function save(): void
     {
-        $dbPrefix = $_GET['db'] ?? '';
-        if (empty($dbPrefix) || !preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
-            $this->jsonResponse(["respuesta" => "ERROR", "mensaje" => "Prefijo de base de datos inválido."]);
-            return;
-        }
-
         $opcion = $_POST["opcion"] ?? '';
 
         try {
+            $context = ModuleRequestContext::resolve();
+            $dbPrefix = $context['dbPrefix'];
+            $semana = $context['semana'];
+
+            $this->requirePermission('lps.listado_actividades.ver', 'No autorizado para consultar el listado de actividades.');
+
+            if (in_array($opcion, ['registrar', 'modificar', 'eliminar', 'cargarExcel'], true)) {
+                $this->requirePermission('lps.listado_actividades.editar', 'No autorizado para modificar el listado de actividades.');
+            }
+
             if ($opcion == "registrar") {
-                $this->registrar($dbPrefix);
+                $this->registrar($dbPrefix, $semana);
             } elseif ($opcion == "modificar") {
-                $this->modificar($dbPrefix);
+                $this->modificar($dbPrefix, $semana);
             } elseif ($opcion == "eliminar") {
-                $this->eliminar($dbPrefix);
+                $this->eliminar($dbPrefix, $semana);
             } elseif ($opcion == "actualizarFechaInicio") {
-                $this->actualizarFechaInicio($dbPrefix);
+                $this->actualizarFechaInicio($dbPrefix, $semana);
             } elseif ($opcion == "cargarExcel") {
-                $this->cargarExcel($dbPrefix);
+                $this->cargarExcel($dbPrefix, $semana);
             } else {
-                $this->jsonResponse(["respuesta" => "ERROR", "mensaje" => "Opción no válida."]);
+                $this->jsonError('Opción no válida.');
             }
         } catch (Throwable $e) {
             error_log("Error in ListadoActividadesApiController@save: " . $e->getMessage());
-            $this->jsonResponse(["respuesta" => "ERROR", "mensaje" => $e->getMessage()]);
+            $this->jsonError('No se pudo procesar la solicitud del listado de actividades.', 500);
         }
     }
 
-    private function registrar(string $dbPrefix): void
+    private function registrar(string $dbPrefix, int $semana): void
     {
         $Actividad = !empty($_POST['actividad']) ? trim($_POST['actividad']) : '';
         $descripcionActividad = !empty($_POST['descripcionActividad']) ? trim($_POST['descripcionActividad']) : '';
         $fechaInicio = !empty($_POST['fechaInicio']) ? date("Y-m-d", strtotime($_POST["fechaInicio"])) : null;
         $tipoContrato = $_POST['tipoContrato'] ?? '';
-        $semana = $_POST['semana'] ?? '';
         $actividadInicio = !empty($_POST['actividadInicio']) ? $_POST['actividadInicio'] : null;
 
         $errores = '';
@@ -146,14 +146,13 @@ class ListadoActividadesApiController
         $this->verificar_resultado(false, $errores);
     }
 
-    private function modificar(string $dbPrefix): void
+    private function modificar(string $dbPrefix, int $semana): void
     {
         $Id = $_POST['Id'] ?? 0;
         $Actividad = !empty($_POST['Actividad']) ? trim($_POST['Actividad']) : '';
         $descripcionActividad = !empty($_POST['descripcionActividad']) ? trim($_POST['descripcionActividad']) : '';
         $fechaInicio = !empty($_POST['fechaInicio']) ? date("Y-m-d", strtotime($_POST["fechaInicio"])) : null;
         $tipoContrato = $_POST['tipoContrato'] ?? '';
-        $semana = $_POST['semana'] ?? '';
         $actividadInicio = !empty($_POST['actividadInicio']) ? $_POST['actividadInicio'] : null;
 
         $errores = '';
@@ -162,8 +161,8 @@ class ListadoActividadesApiController
         } else {
             $queryUpdate = "UPDATE {$dbPrefix}_actividades SET actividad=?, descripcionActividad=?, actividadInicio=?, 
                              nombreActividadInicio=(SELECT Actividad FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Actividad = ? LIMIT 1), 
-                             fechaInicio=?, tipoContrato=?, semanaActualizacion=? WHERE Id=?";
-            $params = [$Actividad, $descripcionActividad, $actividadInicio, $semana, $actividadInicio, $fechaInicio, $tipoContrato, $semana, $Id];
+                             fechaInicio=?, tipoContrato=?, semanaActualizacion=? WHERE Id=? AND semanaActualizacion=?";
+            $params = [$Actividad, $descripcionActividad, $actividadInicio, $semana, $actividadInicio, $fechaInicio, $tipoContrato, $semana, $Id, $semana];
             $stmtUpdate = $this->db->query($queryUpdate, $params);
             $this->db->logActivity('ListadoActividades', 'MODIFICAR', "Modificó actividad ID $Id", $dbPrefix);
             
@@ -173,23 +172,22 @@ class ListadoActividadesApiController
         $this->verificar_resultado(false, $errores);
     }
 
-    private function eliminar(string $dbPrefix): void
+    private function eliminar(string $dbPrefix, int $semana): void
     {
         $Id = $_POST["Id"] ?? 0;
-        $query = "DELETE FROM {$dbPrefix}_actividades WHERE Id = ?";
-        $stmt = $this->db->query($query, [$Id]);
+        $query = "DELETE FROM {$dbPrefix}_actividades WHERE Id = ? AND semanaActualizacion = ?";
+        $stmt = $this->db->query($query, [$Id, $semana]);
         $this->db->logActivity('ListadoActividades', 'ELIMINAR', "Eliminó actividad ID $Id", $dbPrefix);
         $this->verificar_resultado(true, '');
     }
 
-    private function actualizarFechaInicio(string $dbPrefix): void
+    private function actualizarFechaInicio(string $dbPrefix, int $semana): void
     {
         $Id = $_POST["idActividad"] ?? '';
-        $semana = $_POST["semana"] ?? 0;
 
         try {
-            $query = "SELECT Fecha_Inicio FROM {$dbPrefix}_programa_consolidado WHERE Actividad = ? AND Semana = ?";
-            $stmt = $this->db->query($query, [$Id, $semana]);
+            $query = "SELECT Fecha_Inicio FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND (Consecutivo_en_Programa = ? OR Actividad = ?) ORDER BY Fecha_Inicio ASC LIMIT 1";
+            $stmt = $this->db->query($query, [$semana, $Id, $Id]);
             $data = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if ($data) {
@@ -198,11 +196,12 @@ class ListadoActividadesApiController
                 $this->jsonResponse(["data" => ["Fecha_Inicio" => ""]]);
             }
         } catch (Throwable $t) {
-            $this->jsonResponse(["data" => ["Fecha_Inicio" => ""], "error" => $t->getMessage()]);
+            error_log("Error en ListadoActividadesApiController@actualizarFechaInicio: " . $t->getMessage());
+            $this->jsonResponse(["data" => ["Fecha_Inicio" => ""]]);
         }
     }
 
-    private function cargarExcel(string $dbPrefix): void
+    private function cargarExcel(string $dbPrefix, int $semanaActualizacion): void
     {
         $archivoExcel = $_FILES["archivoExcel"] ?? null;
         if (!$archivoExcel) {
@@ -210,11 +209,6 @@ class ListadoActividadesApiController
             return;
         }
 
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-        $semanaActualizacion = $_SESSION["Max_Semana"] ?? 0;
-        
         $info = new SplFileInfo($archivoExcel["name"]);
         $extension = $info->getExtension();
 
@@ -280,7 +274,22 @@ class ListadoActividadesApiController
 
     private function jsonResponse(array $data): void
     {
-        header('Content-Type: application/json');
+        header('Content-Type: application/json; charset=utf-8');
         echo json_encode($data, JSON_UNESCAPED_UNICODE);
+    }
+
+    private function jsonError(string $message, int $httpCode = 400, array $extra = []): void
+    {
+        http_response_code($httpCode);
+        $this->jsonResponse(array_merge([
+            'respuesta' => 'ERROR',
+            'mensaje' => $message,
+        ], $extra));
+    }
+
+    private function requirePermission(string $permissionKey, string $message): void
+    {
+        require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
+        rbac_guard_require_permission($permissionKey, ['message' => $message]);
     }
 }
