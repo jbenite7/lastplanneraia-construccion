@@ -6,7 +6,22 @@ Este documento centraliza todas las rutas vigentes y controladas por el **Front 
 
 - **`GET /login`**: Muestra el formulario de inicio de sesión.
 - **`POST /login`**: Procesa las credenciales de ingreso.
+- **`GET /password/forgot`**: Muestra el formulario para solicitar restablecimiento de contraseña.
+- **`POST /password/forgot`**: Envía el enlace de recuperación por correo.
+- **`GET /password/reset`**: Muestra el formulario de restablecimiento con token válido.
+- **`POST /password/reset`**: Actualiza la contraseña desde el enlace de recuperación.
+- **`POST /password/update`**: Cambia la contraseña forzada tras login inicial o política de seguridad.
 - **`GET /logout`**: Cierra sesión y destruye cookies seguras.
+
+### Auth Admin (`admin/public/index.php`)
+
+- **`GET /admin/login`**: Muestra el formulario de inicio de sesión del panel administrativo.
+- **`POST /admin/login`**: Procesa las credenciales del panel administrativo.
+- **`GET /admin/password/forgot`**: Muestra el formulario de recuperación para administradores.
+- **`POST /admin/password/forgot`**: Envía el enlace de recuperación del panel administrativo.
+- **`GET /admin/password/reset`**: Muestra el formulario de restablecimiento del panel administrativo.
+- **`POST /admin/password/reset`**: Restablece la contraseña del panel administrativo.
+- **`GET /admin/logout`**: Cierra la sesión del panel administrativo.
 
 ## 2. Inicialización y Contexto (Core)
 

@@ -146,7 +146,7 @@ El backend corre en un entorno estandarizado sin frameworks comerciales que engo
 priorizando eficiencia transaccional para operaciones con alta densidad de datos.
 
 - **Core:** PHP 8.3 + MariaDB/MySQL 8.
-- **Librerías Críticas:** `phpoffice/phpspreadsheet` (Reportería), `vlucas/phpdotenv` (Seguridad).
+- **Librerías Críticas:** `phpoffice/phpspreadsheet` (Reportería), `vlucas/phpdotenv` (Seguridad), `phpmailer/phpmailer` (correo transaccional para recuperación de contraseña).
 - **Seguridad Central:** Inyección protegida contra consultas (Prepared Statements mandatory),
   denegación explícita (HTTP 403) liderada por RBAC para roles restrictivos de la obra (`D`, `R`,
   `C`, `G`, etc.).
@@ -170,6 +170,7 @@ Esta etapa finaliza las dependencias caóticas e implementa Docker y Agentes IA 
 
 1. Clona el repositorio a tu máquina.
 2. Crea tu archivo `.env` basado en `.env.example`. (Ver `GEMINI.md` para credenciales).
+   Si vas a habilitar recuperación de contraseña, configura también `APP_URL`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_ENCRYPTION`, `MAIL_FROM_ADDRESS` y `MAIL_FROM_NAME`.
 3. Despierta el stack:
 
 ```bash
@@ -187,6 +188,14 @@ depurar módulos. Por ejemplo: `test.A` (Administración global), `test.D` (Dire
 
 - _Localiza todas las contraseñas e IDs en el ecosistema **`GEMINI.md`** (Sección 5)._
 - _Puntos de acceso:_ App -> `http://localhost:8081` | DB UI -> `http://localhost:8082`.
+
+#### Recuperación de contraseña y SMTP
+
+- **Variables requeridas:** `APP_URL`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_ENCRYPTION`, `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME`.
+- **Base URL pública:** `APP_URL` se usa para construir los enlaces de restablecimiento (`/password/reset` y `/admin/password/reset`).
+- **Dependencia SMTP:** el flujo de recuperación no funciona si el contenedor/app no puede abrir conexión saliente al servidor SMTP configurado.
+- **Parche de base de datos:** aplica `database/patches/20260329_create_password_reset_tokens.sql` antes de usar el flujo en un entorno nuevo o clonado.
+- **Rutas nuevas:** app pública `GET|POST /password/forgot` y `GET|POST /password/reset`; panel admin `GET|POST /admin/password/forgot` y `GET|POST /admin/password/reset`.
 
 ### 3.2 Gobernanza de Inteligencia Artificial ("Antigravity")
 

@@ -28,6 +28,28 @@ That means local PHP/JS/CSS changes are reflected immediately in the `app` conta
 docker compose up -d app
 ```
 
+## Password reset setup
+
+If you want the forgot-password flow to work in Docker, make sure your `.env` includes:
+
+- `APP_URL=http://localhost:8081`
+- `MAIL_HOST`
+- `MAIL_PORT`
+- `MAIL_USERNAME`
+- `MAIL_PASSWORD`
+- `MAIL_ENCRYPTION`
+- `MAIL_FROM_ADDRESS`
+- `MAIL_FROM_NAME`
+
+The reset flow also requires the database patch `database/patches/20260329_create_password_reset_tokens.sql`.
+
+Typical local verification:
+
+```bash
+docker compose up -d --build db app adminer
+docker compose exec app php -r "require 'vendor/autoload.php'; echo getenv('APP_URL') ?: 'APP_URL missing';"
+```
+
 Use rebuild only when changing image-level dependencies (`Dockerfile`, system packages, PHP extensions):
 
 ```bash
