@@ -99,15 +99,15 @@ SQL;
                 if ($tipoPaquete == "Suministro e Instalación") {
                     $tipoContrato = 2;
                     $grupo = "SI";
-                    $contratosVigentesSI .= "paqueteContratacion != " . $db->quote($paqueteContratacion) . " AND ";
+                    $contratosVigentesSI .= "SubAct.paqueteContratacion != " . $db->quote($paqueteContratacion) . " AND ";
                 } elseif ($tipoPaquete == "Suministro") {
                     $tipoContrato = 1;
                     $grupo = "S";
-                    $contratosVigentesS .= "paqueteContratacion != " . $db->quote($paqueteContratacion) . " AND ";
+                    $contratosVigentesS .= "SubAct.paqueteContratacion != " . $db->quote($paqueteContratacion) . " AND ";
                 } elseif ($tipoPaquete == "Mano de Obra") {
                     $tipoContrato = 1;
                     $grupo = "MO";
-                    $contratosVigentesMO .= "paqueteContratacion != " . $db->quote($paqueteContratacion) . " AND ";
+                    $contratosVigentesMO .= "SubAct.paqueteContratacion != " . $db->quote($paqueteContratacion) . " AND ";
                 }
 
                 $sqlUpdate = "UPDATE {$dbName}_pdc SET 
@@ -223,17 +223,17 @@ INSERT INTO {$dbName}_pdc (titulo, semana, tipoPaquete, paqueteContratacion, con
               diasCuadrosComparativos, diasLegalizacionContrato, diasFabricacion, diasInsumosObra,
               fechaElaboracionPliegos, fechaIngresoLicify, fechaEntregaPliegos, fechaReciboPropuestas, 
               fechaCuadrosComparativos, fechaLegalizacionContrato, fechaFabricacion, fechaInsumosObra)
-SELECT 0, ?, ?, paqueteContratacion, GROUP_CONCAT(actividad SEPARATOR '; '), MIN(fechaInicio),
-       diasElaboracionPliegos, diasIngresoLicify, diasEntregaPliegos, diasReciboPropuestas,
-       diasCuadrosComparativos, diasLegalizacionContrato, diasFabricacion, diasInsumosObra,
-       DATE_SUB(MIN(fechaInicio), INTERVAL (IFNULL(diasInsumosObra,0) + IFNULL(diasFabricacion,0) + IFNULL(diasLegalizacionContrato,0) + IFNULL(diasCuadrosComparativos,0) + IFNULL(diasReciboPropuestas,0) + IFNULL(diasEntregaPliegos,0) + IFNULL(diasIngresoLicify,0) + IFNULL(diasElaboracionPliegos,0)) DAY),
-       DATE_SUB(MIN(fechaInicio), INTERVAL (IFNULL(diasInsumosObra,0) + IFNULL(diasFabricacion,0) + IFNULL(diasLegalizacionContrato,0) + IFNULL(diasCuadrosComparativos,0) + IFNULL(diasReciboPropuestas,0) + IFNULL(diasEntregaPliegos,0) + IFNULL(diasIngresoLicify,0)) DAY),
-       DATE_SUB(MIN(fechaInicio), INTERVAL (IFNULL(diasInsumosObra,0) + IFNULL(diasFabricacion,0) + IFNULL(diasLegalizacionContrato,0) + IFNULL(diasCuadrosComparativos,0) + IFNULL(diasReciboPropuestas,0) + IFNULL(diasEntregaPliegos,0)) DAY),
-       DATE_SUB(MIN(fechaInicio), INTERVAL (IFNULL(diasInsumosObra,0) + IFNULL(diasFabricacion,0) + IFNULL(diasLegalizacionContrato,0) + IFNULL(diasCuadrosComparativos,0) + IFNULL(diasReciboPropuestas,0)) DAY),
-       DATE_SUB(MIN(fechaInicio), INTERVAL (IFNULL(diasInsumosObra,0) + IFNULL(diasFabricacion,0) + IFNULL(diasLegalizacionContrato,0) + IFNULL(diasCuadrosComparativos,0)) DAY),
-       DATE_SUB(MIN(fechaInicio), INTERVAL (IFNULL(diasInsumosObra,0) + IFNULL(diasFabricacion,0) + IFNULL(diasLegalizacionContrato,0)) DAY),
-       DATE_SUB(MIN(fechaInicio), INTERVAL (IFNULL(diasInsumosObra,0) + IFNULL(diasFabricacion,0)) DAY),
-       DATE_SUB(MIN(fechaInicio), INTERVAL IFNULL(diasInsumosObra,0) DAY)
+SELECT 0, ?, ?, SubAct.paqueteContratacion, GROUP_CONCAT(SubAct.actividad SEPARATOR '; '), MIN(SubAct.fechaInicio),
+       MAX(gpc.diasElaboracionPliegos), MAX(gpc.diasIngresoLicify), MAX(gpc.diasEntregaPliegos), MAX(gpc.diasReciboPropuestas),
+       MAX(gpc.diasCuadrosComparativos), MAX(gpc.diasLegalizacionContrato), MAX(gpc.diasFabricacion), MAX(gpc.diasInsumosObra),
+       DATE_SUB(MIN(SubAct.fechaInicio), INTERVAL (IFNULL(MAX(gpc.diasInsumosObra),0) + IFNULL(MAX(gpc.diasFabricacion),0) + IFNULL(MAX(gpc.diasLegalizacionContrato),0) + IFNULL(MAX(gpc.diasCuadrosComparativos),0) + IFNULL(MAX(gpc.diasReciboPropuestas),0) + IFNULL(MAX(gpc.diasEntregaPliegos),0) + IFNULL(MAX(gpc.diasIngresoLicify),0) + IFNULL(MAX(gpc.diasElaboracionPliegos),0)) DAY),
+       DATE_SUB(MIN(SubAct.fechaInicio), INTERVAL (IFNULL(MAX(gpc.diasInsumosObra),0) + IFNULL(MAX(gpc.diasFabricacion),0) + IFNULL(MAX(gpc.diasLegalizacionContrato),0) + IFNULL(MAX(gpc.diasCuadrosComparativos),0) + IFNULL(MAX(gpc.diasReciboPropuestas),0) + IFNULL(MAX(gpc.diasEntregaPliegos),0) + IFNULL(MAX(gpc.diasIngresoLicify),0)) DAY),
+       DATE_SUB(MIN(SubAct.fechaInicio), INTERVAL (IFNULL(MAX(gpc.diasInsumosObra),0) + IFNULL(MAX(gpc.diasFabricacion),0) + IFNULL(MAX(gpc.diasLegalizacionContrato),0) + IFNULL(MAX(gpc.diasCuadrosComparativos),0) + IFNULL(MAX(gpc.diasReciboPropuestas),0) + IFNULL(MAX(gpc.diasEntregaPliegos),0)) DAY),
+       DATE_SUB(MIN(SubAct.fechaInicio), INTERVAL (IFNULL(MAX(gpc.diasInsumosObra),0) + IFNULL(MAX(gpc.diasFabricacion),0) + IFNULL(MAX(gpc.diasLegalizacionContrato),0) + IFNULL(MAX(gpc.diasCuadrosComparativos),0) + IFNULL(MAX(gpc.diasReciboPropuestas),0)) DAY),
+       DATE_SUB(MIN(SubAct.fechaInicio), INTERVAL (IFNULL(MAX(gpc.diasInsumosObra),0) + IFNULL(MAX(gpc.diasFabricacion),0) + IFNULL(MAX(gpc.diasLegalizacionContrato),0) + IFNULL(MAX(gpc.diasCuadrosComparativos),0)) DAY),
+       DATE_SUB(MIN(SubAct.fechaInicio), INTERVAL (IFNULL(MAX(gpc.diasInsumosObra),0) + IFNULL(MAX(gpc.diasFabricacion),0) + IFNULL(MAX(gpc.diasLegalizacionContrato),0)) DAY),
+       DATE_SUB(MIN(SubAct.fechaInicio), INTERVAL (IFNULL(MAX(gpc.diasInsumosObra),0) + IFNULL(MAX(gpc.diasFabricacion),0)) DAY),
+       DATE_SUB(MIN(SubAct.fechaInicio), INTERVAL IFNULL(MAX(gpc.diasInsumosObra),0) DAY)
 FROM (
     SELECT actividad, fechaInicio, paquete{$prefix}1 AS paqueteContratacion FROM {$dbName}_actividades WHERE semanaActualizacion = ? AND tipoContrato = ? AND paquete{$prefix}1 IS NOT NULL AND paquete{$prefix}1 != ''
     UNION SELECT actividad, fechaInicio, paquete{$prefix}2 AS paqueteContratacion FROM {$dbName}_actividades WHERE semanaActualizacion = ? AND tipoContrato = ? AND paquete{$prefix}2 IS NOT NULL AND paquete{$prefix}2 != ''
@@ -241,9 +241,9 @@ FROM (
     UNION SELECT actividad, fechaInicio, paquete{$prefix}4 AS paqueteContratacion FROM {$dbName}_actividades WHERE semanaActualizacion = ? AND tipoContrato = ? AND paquete{$prefix}4 IS NOT NULL AND paquete{$prefix}4 != ''
     UNION SELECT actividad, fechaInicio, paquete{$prefix}5 AS paqueteContratacion FROM {$dbName}_actividades WHERE semanaActualizacion = ? AND tipoContrato = ? AND paquete{$prefix}5 IS NOT NULL AND paquete{$prefix}5 != ''
 ) AS SubAct
-LEFT JOIN general_paquetes_contratacion AS gpc ON SubAct.paqueteContratacion = gpc.paqueteContratacion
+LEFT JOIN general_dias_procesos_contratacion AS gpc ON SubAct.paqueteContratacion = gpc.paqueteContratacion AND gpc.tipoPaquete = ?
 $whereClause
-GROUP BY paqueteContratacion
+GROUP BY SubAct.paqueteContratacion
 SQL;
 
         $db->query($sqlInsert, [
@@ -253,6 +253,7 @@ SQL;
             $semana, $tipoId,
             $semana, $tipoId,
             $semana, $tipoId,
+            $label,
         ]);
     }
 }
