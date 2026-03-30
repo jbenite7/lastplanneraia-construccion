@@ -81,198 +81,94 @@
 	</div>
 
 	<div class="row ventanasModalesEspecificas" id="ventanasModalesEspecificas">
-		<div class="modal_EditarContratos modal fade" id="modalEditarContratos" role="dialog" aria-labelledby="modal_EditarContratosLabel">
-			<div class="modal-dialog modal-xl" role="document">
-				<div class="modal-content">
-					<div class="modal-header">
-						<h5 class="modal-title" id="modalEditarContratosLabel"><p class="modal-body-texto-EditarContratos" id="modal-body-texto-EditarContratos"></p></h5>
-						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" onclick="recargarTabla('listar')">&times;</span></button>
+		<div class="modal_EditarContratos modal fade" id="modalEditarContratos" tabindex="-1" role="dialog" aria-labelledby="modalEditarContratosLabel" aria-hidden="true">
+			<div class="modal-dialog modal-xl modal-dialog-scrollable ct-modal-dialog" role="document">
+				<div class="modal-content ct-modal-content">
+					<div class="modal-header ct-modal-header">
+						<h5 class="modal-title ct-modal-title" id="modalEditarContratosLabel">
+							<span class="modal-body-texto-EditarContratos" id="modal-body-texto-EditarContratos"></span>
+						</h5>
+						<button type="button" class="close ct-modal-close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true" onclick="recargarTabla('listar')">&times;</span>
+						</button>
 					</div>
-					<div class="modal-body">
+					<div class="modal-body ct-modal-body">
 						<div class="row">
-							<div id="cuadro4" class="cuadro4 col-sm-12 col-md-12 col-lg-12 ">
-								<form class="form form-horizontal" action="" method="POST">
+							<div id="cuadro4" class="cuadro4 col-sm-12 col-md-12 col-lg-12">
+								<form id="formularioEditarContratos" class="form form-horizontal ct-contract-form" action="" method="POST" autocomplete="off">
 									<input type="hidden" id="tipoContrato" name="tipoContrato" value="">
 									<input type="hidden" id="actividadModificar" name="actividadModificar" value="">
-									<div class="form-group parametro_EditarContratos" id="parametro_EditarContratosS">
-										<div class="form_eval form-group">
-											<h3 id='form_general'>Contratos de Suministro</h3>
-										</div>
+									<?php
+									$contractSections = [
+										[
+											'id' => 'parametro_EditarContratosS',
+											'title' => 'Contratos de Suministro',
+											'packagePrefix' => 'paqueteS',
+											'resourcePrefix' => 'S',
+											'packageLabel' => 'Paquete Suministro',
+											'resourceLabel' => 'Insumos Suministro',
+										],
+										[
+											'id' => 'parametro_EditarContratosMO',
+											'title' => 'Contratos de Mano de Obra',
+											'packagePrefix' => 'paqueteMO',
+											'resourcePrefix' => 'MO',
+											'packageLabel' => 'Paquete Mano de Obra',
+											'resourceLabel' => 'Insumos Mano de Obra',
+										],
+										[
+											'id' => 'parametro_EditarContratosSI',
+											'title' => 'Contratos de Suministro e Instalación',
+											'packagePrefix' => 'paqueteSI',
+											'resourcePrefix' => 'SI',
+											'packageLabel' => 'Paquete Suministro e Instalación',
+											'resourceLabel' => 'Insumos Suministro e Instalación',
+										],
+									];
+									?>
+									<?php foreach ($contractSections as $section): ?>
+										<section class="form-group parametro_EditarContratos ct-contract-section" id="<?php echo $section['id']; ?>">
+											<div class="form_eval form-group ct-contract-section__banner">
+												<h3 class="ct-contract-section__title"><?php echo $section['title']; ?></h3>
+											</div>
+											<div class="ct-contract-header" aria-hidden="true">
+												<div class="ct-contract-header__spacer"></div>
+												<div class="ct-contract-header__cell">Paquete de Contratación</div>
+												<div class="ct-contract-header__cell">Insumo / Recurso</div>
+											</div>
+											<div class="ct-contract-list">
+												<?php for ($i = 1; $i <= 5; $i++): ?>
+													<?php
+													$packageId = $section['packagePrefix'] . $i;
+													$resourceId = $section['resourcePrefix'] . $i;
+													?>
+													<div class="ct-contract-row">
+														<label for="<?php echo $packageId; ?>" class="control-label ct-contract-index"><?php echo $i; ?>.</label>
+														<div class="ct-contract-field">
+															<select id="<?php echo $packageId; ?>" name="<?php echo $packageId; ?>" class="form-control ct-contract-control" aria-label="<?php echo $section['packageLabel'] . ' ' . $i; ?>">
+																<option value=""></option>
+															</select>
+														</div>
+														<div class="ct-contract-field">
+															<select id="<?php echo $resourceId; ?>" name="<?php echo $resourceId; ?>[]" class="form-control ct-contract-control ct-contract-control--multiple" multiple="multiple" aria-label="<?php echo $section['resourceLabel'] . ' ' . $i; ?>">
+																<option value=""></option>
+															</select>
+														</div>
+													</div>
+												<?php endfor; ?>
+											</div>
+										</section>
+									<?php endforeach; ?>
 
-										<!--Se crean 2 inputs que contienen el id del registro que se va a modificar, y el switch que dice si la acción es modificar-->
-
-
-
-										<!-- Se crean los inputs del formulario de contratos de suministro -->
-										<div class="col-sm-12">
-											<br>
-											<label for="S1" class="control-label ct-col-id"></label>
-											<label for="paqueteS1" class="control-label ct-col-main"><h5>Paquete de Contratación</h5></label>
-											<label for="S1" class="control-label ct-col-main"><h5>Insumo / Recurso</h5></label>
-
-											<label for="paqueteS1" class="control-label ct-col-id"><h5>1.</h5></label>
-											<select id="paqueteS1" name="paqueteS1" type="text" class="form-control ct-col-main ct-input-flat" aria-label="Paquete Suministro 1">
-												<option value=""></option>
-											</select>
-											<select id="S1" name="S1[]" type="text" class="form-control ct-col-main ct-input-flat" multiple="multiple" aria-label="Insumos Suministro 1">
-												<option value=""></option>
-											</select>
-
-											<label for="paqueteS2" class="control-label ct-col-id"><h5>2.</h5></label>
-											<select id="paqueteS2" name="paqueteS2" type="text" class="form-control ct-col-main ct-input-flat" aria-label="Paquete Suministro 2">
-												<option value=""></option>
-											</select>
-											<select id="S2" name="S2[]" type="text" class="form-control ct-col-main ct-input-flat" multiple="multiple" aria-label="Insumos Suministro 2">
-												<option value=""></option>
-											</select>
-
-											<label for="paqueteS3" class="control-label ct-col-id"><h5>3.</h5></label>
-											<select id="paqueteS3" name="paqueteS3" type="text" class="form-control ct-col-main ct-input-flat" aria-label="Paquete Suministro 3">
-												<option value=""></option>
-											</select>
-											<select id="S3" name="S3[]" type="text" class="form-control ct-col-main ct-input-flat" multiple="multiple" aria-label="Insumos Suministro 3">
-												<option value=""></option>
-											</select>
-
-											<label for="paqueteS4" class="control-label ct-col-id"><h5>4.</h5></label>
-											<select id="paqueteS4" name="paqueteS4" type="text" class="form-control ct-col-main ct-input-flat" aria-label="Paquete Suministro 4">
-												<option value=""></option>
-											</select>
-											<select id="S4" name="S4[]" type="text" class="form-control ct-col-main ct-input-flat" multiple="multiple" aria-label="Insumos Suministro 4">
-												<option value=""></option>
-											</select>
-
-											<label for="paqueteS5" class="control-label ct-col-id"><h5>5.</h5></label>
-											<select id="paqueteS5" name="paqueteS5" type="text" class="form-control ct-col-main ct-input-flat" aria-label="Paquete Suministro 5">
-												<option value=""></option>
-											</select>
-											<select id="S5" name="S5[]" type="text" class="form-control ct-col-main ct-input-flat" multiple="multiple" aria-label="Insumos Suministro 5">
-												<option value=""></option>
-											</select>
-										</div>
-										<br>
-									</div>
-
-									<div class="form-group parametro_EditarContratos" id="parametro_EditarContratosMO">
-										<div class="form_eval form-group">
-											<h3 id='form_general'>Contratos de Mano de Obra</h3>
-										</div>
-
-										<!-- Se crean los inputs del formulario de contratos de mano de obra -->
-										<div class="col-sm-12">
-											<br>
-											<label for="MO1" class="control-label ct-col-id"></label>
-											<label for="paqueteMO1" class="control-label ct-col-main"><h5>Paquete de Contratación</h5></label>
-											<label for="MO1" class="control-label ct-col-main"><h5>Insumo / Recurso</h5></label>
-
-											<label for="paqueteMO1" class="control-label ct-col-id"><h5>1.</h5></label>
-											<select id="paqueteMO1" name="paqueteMO1" type="text" class="form-control ct-col-main ct-input-flat" aria-label="Paquete Mano de Obra 1">
-												<option value=""></option>
-											</select>
-											<select id="MO1" name="MO1[]" type="text" class="form-control ct-col-main ct-input-flat" multiple="multiple" aria-label="Insumos Mano de Obra 1">
-												<option value=""></option>
-											</select>
-
-											<label for="paqueteMO2" class="control-label ct-col-id"><h5>2.</h5></label>
-											<select id="paqueteMO2" name="paqueteMO2" type="text" class="form-control ct-col-main ct-input-flat" aria-label="Paquete Mano de Obra 2">
-												<option value=""></option>
-											</select>
-											<select id="MO2" name="MO2[]" type="text" class="form-control ct-col-main ct-input-flat" multiple="multiple" aria-label="Insumos Mano de Obra 2">
-												<option value=""></option>
-											</select>
-
-											<label for="paqueteMO3" class="control-label ct-col-id"><h5>3.</h5></label>
-											<select id="paqueteMO3" name="paqueteMO3" type="text" class="form-control ct-col-main ct-input-flat" aria-label="Paquete Mano de Obra 3">
-												<option value=""></option>
-											</select>
-											<select id="MO3" name="MO3[]" type="text" class="form-control ct-col-main ct-input-flat" multiple="multiple" aria-label="Insumos Mano de Obra 3">
-												<option value=""></option>
-											</select>
-
-											<label for="paqueteMO4" class="control-label ct-col-id"><h5>4.</h5></label>
-											<select id="paqueteMO4" name="paqueteMO4" type="text" class="form-control ct-col-main ct-input-flat" aria-label="Paquete Mano de Obra 4">
-												<option value=""></option>
-											</select>
-											<select id="MO4" name="MO4[]" type="text" class="form-control ct-col-main ct-input-flat" multiple="multiple" aria-label="Insumos Mano de Obra 4">
-												<option value=""></option>
-											</select>
-
-											<label for="paqueteMO5" class="control-label ct-col-id"><h5>5.</h5></label>
-											<select id="paqueteMO5" name="paqueteMO5" type="text" class="form-control ct-col-main ct-input-flat" aria-label="Paquete Mano de Obra 5">
-												<option value=""></option>
-											</select>
-											<select id="MO5" name="MO5[]" type="text" class="form-control ct-col-main ct-input-flat" multiple="multiple" aria-label="Insumos Mano de Obra 5">
-												<option value=""></option>
-											</select>
-										</div>
-										<br>
-									</div>
-
-									<div class="form-group parametro_EditarContratos" id="parametro_EditarContratosSI">
-										<div class="form_eval form-group">
-											<h3 id='form_general'>Contratos de Suministro e Instalación</h3>
-										</div>
-
-										<!-- Se crean los inputs del formulario de contratos de mano de obra -->
-										<div class="col-sm-12">
-											<br>
-											<label for="SI1" class="control-label ct-col-id"></label>
-											<label for="paqueteSI1" class="control-label ct-col-main"><h5>Paquete de Contratación</h5></label>
-											<label for="SI1" class="control-label ct-col-main"><h5>Insumo / Recurso</h5></label>
-
-											<label for="paqueteSI1" class="control-label ct-col-id"><h5>1.</h5></label>
-											<select id="paqueteSI1" name="paqueteSI1" type="text" class="form-control ct-col-main ct-input-flat" aria-label="Paquete Suministro e Instalación 1">
-												<option value=""></option>
-											</select>
-											<select id="SI1" name="SI1[]" type="text" class="form-control ct-col-main ct-input-flat" multiple="multiple" aria-label="Insumos Suministro e Instalación 1">
-												<option value=""></option>
-											</select>
-
-											<label for="paqueteSI2" class="control-label ct-col-id"><h5>2.</h5></label>
-											<select id="paqueteSI2" name="paqueteSI2" type="text" class="form-control ct-col-main ct-input-flat" aria-label="Paquete Suministro e Instalación 2">
-												<option value=""></option>
-											</select>
-											<select id="SI2" name="SI2[]" type="text" class="form-control ct-col-main ct-input-flat" multiple="multiple" aria-label="Insumos Suministro e Instalación 2">
-												<option value=""></option>
-											</select>
-
-											<label for="paqueteSI3" class="control-label ct-col-id"><h5>3.</h5></label>
-											<select id="paqueteSI3" name="paqueteSI3" type="text" class="form-control ct-col-main ct-input-flat" aria-label="Paquete Suministro e Instalación 3">
-												<option value=""></option>
-											</select>
-											<select id="SI3" name="SI3[]" type="text" class="form-control ct-col-main ct-input-flat" multiple="multiple" aria-label="Insumos Suministro e Instalación 3">
-												<option value=""></option>
-											</select>
-
-											<label for="paqueteSI4" class="control-label ct-col-id"><h5>4.</h5></label>
-											<select id="paqueteSI4" name="paqueteSI4" type="text" class="form-control ct-col-main ct-input-flat" aria-label="Paquete Suministro e Instalación 4">
-												<option value=""></option>
-											</select>
-											<select id="SI4" name="SI4[]" type="text" class="form-control ct-col-main ct-input-flat" multiple="multiple" aria-label="Insumos Suministro e Instalación 4">
-												<option value=""></option>
-											</select>
-
-											<label for="paqueteSI5" class="control-label ct-col-id"><h5>5.</h5></label>
-											<select id="paqueteSI5" name="paqueteSI5" type="text" class="form-control ct-col-main ct-input-flat" aria-label="Paquete Suministro e Instalación 5">
-												<option value=""></option>
-											</select>
-											<select id="SI5" name="SI5[]" type="text" class="form-control ct-col-main ct-input-flat" multiple="multiple" aria-label="Insumos Suministro e Instalación 5">
-												<option value=""></option>
-											</select>
-										</div>
-										<br>
-									</div>
-
-									<!--Se crea el mensaje emergente que dice si los comandos fueron ejecutados correctamente o no-->
-									<div class="col-sm-offset-2 col-sm-8">
-										<p class="mensaje"></p>
-									</div>
-
-									<div class="form-group">
-										<div class="col-sm-12">
+									<div class="form-group ct-contract-actions">
+										<div class="col-sm-12 ct-contract-actions__buttons">
 											<input id="btn_guardar_contratos" type="button" class="btn btn-primary" value="Guardar" aria-label="Guardar contratos">
 											<input id="btn_cancelar_contratos" type="button" class="btn btn-danger" value="Cancelar" data-dismiss="modal" aria-label="Cancelar edición">
 										</div>
+									</div>
+
+									<div class="col-sm-12 ct-contract-message-wrap">
+										<p class="mensaje"></p>
 									</div>
 								</form>
 							</div>
@@ -323,7 +219,24 @@
 		});
 
 		var cargaParametros = function() {
-			$('#S1,#S2,#S3,#S4,#S5,#paqueteS1,#paqueteS2,#paqueteS3,#paqueteS4,#paqueteS5,#MO1,#MO2,#MO3,#MO4,#MO5,#paqueteMO1,#paqueteMO2,#paqueteMO3,#paqueteMO4,#paqueteMO5,#SI1,#SI2,#SI3,#SI4,#SI5,#paqueteSI1,#paqueteSI2,#paqueteSI3,#paqueteSI4,#paqueteSI5').select2({tags: true, placeholder:'', allowClear: true});
+			var $contractSelects = $('#S1,#S2,#S3,#S4,#S5,#paqueteS1,#paqueteS2,#paqueteS3,#paqueteS4,#paqueteS5,#MO1,#MO2,#MO3,#MO4,#MO5,#paqueteMO1,#paqueteMO2,#paqueteMO3,#paqueteMO4,#paqueteMO5,#SI1,#SI2,#SI3,#SI4,#SI5,#paqueteSI1,#paqueteSI2,#paqueteSI3,#paqueteSI4,#paqueteSI5');
+
+			$contractSelects.each(function() {
+				var $select = $(this);
+
+				if ($select.data('select2')) {
+					$select.select2('destroy');
+				}
+
+				$select.select2({
+					tags: true,
+					placeholder: '',
+					allowClear: true,
+					width: '100%',
+					dropdownParent: $('#modalEditarContratos')
+				});
+			});
+
       listar();
 		}
 
@@ -505,7 +418,7 @@
 				table.columns.adjust();
 			});
 
-			$("div.toolbarFilaBotones").html('<div class="grupo_botones1 ps-toolbar-actions" role="group" aria-label="Basic example"><button id="btn_nuevo" type="button" class="btn btn-primary btn-sm ps-btn-gap" title="Registrar nuevo contrato" data-toggle="modal" data-target="#modal_nuevo_contrato">Nuevo Contrato <i class="fas fa-plus"></i></button><button id="btn_tutorialActualizarCronograma" type="button" class="btn btn-secondary btn-sm ps-btn-gap" title="Video tutorial de la sección de \'\'Contratos\'\'" onclick="window.open(\'https://youtu.be/7zNHgNC7O_8\', \'_blank\')">Tutorial <i class="fas fa-list-ol fa-lg"></i></button></div><div class="grupo_botones_semanal_madre ps-toolbar-nav-wrap"><div class="grupo_botones_semanal btn-group" role="group" aria-label="Basic example"><button id="btn_Actividades" type="button" class="btn btn-success btn-sm" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_listadoActividades&semana='+semana+'\'">Actividades <i class="fas fa-arrow-right fa-m"></i></button><button id="btn_contratos" type="button" class="btn btn-success btn-sm active" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_contratos&semana='+semana+'\'">Contratos <i class="fas fa-arrow-right fa-m"></i></button><button id="btn_planCompras" type="button" class="btn btn-success btn-sm" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=planCompras&semana='+semana+'\'">Plan de Compras</button></div></div>');
+			$("div.toolbarFilaBotones").html('<div class="grupo_botones_semanal_madre ps-toolbar-nav-wrap"><div class="grupo_botones_semanal btn-group" role="group" aria-label="Basic example"><button id="btn_Actividades" type="button" class="btn btn-success btn-sm" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_listadoActividades&semana='+semana+'\'">Actividades <i class="fas fa-arrow-right fa-m"></i></button><button id="btn_contratos" type="button" class="btn btn-success btn-sm active" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_contratos&semana='+semana+'\'">Contratos <i class="fas fa-arrow-right fa-m"></i></button><button id="btn_planCompras" type="button" class="btn btn-success btn-sm" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=planCompras&semana='+semana+'\'">Plan de Compras</button></div></div>');
 
 			$("div.toolbarFilaBotones .grupo_botones_semanal_madre")
 				.addClass("ps-toolbar-nav-wrap")

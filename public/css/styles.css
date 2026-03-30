@@ -5023,26 +5023,297 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
 }
 
 /* Contratos */
-.ct-col-id {
-  inline-size: 62.5rem;
-  max-inline-size: 17%;
-  padding: 0.0625rem;
-  margin: 0;
-  display: inline-block;
-  text-align: center;
+#modalEditarContratos .modal-dialog.ct-modal-dialog {
+  max-width: min(70rem, calc(100vw - 2rem));
+  margin: 1rem auto;
 }
 
-.ct-col-main {
-  inline-size: 62.5rem;
-  max-inline-size: 41%;
-  padding: 0.0625rem;
-  margin: 0;
-  display: inline-block;
-  text-align: center;
+#modalEditarContratos .ct-modal-content {
+  border: 1px solid var(--aia-separators, #d1d1d1);
+  border-radius: 0.75rem;
+  background: #fff;
+  box-shadow: 0 18px 38px rgb(15 23 42 / 18%);
 }
 
-.ct-input-flat {
-  border-color: rgb(206 212 218 / 0);
+#modalEditarContratos .ct-modal-header {
+  align-items: flex-start;
+  padding: 1rem 1.25rem;
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+#modalEditarContratos .ct-modal-title {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.3;
+  font-weight: 500;
+  color: var(--aia-text-primary, #1c1c1e);
+}
+
+#modalEditarContratos .ct-modal-title b {
+  font-weight: 700;
+}
+
+#modalEditarContratos .ct-modal-close {
+  background: transparent;
+  border-radius: 0;
+  inline-size: auto;
+  block-size: auto;
+  line-height: 1;
+  opacity: 0.6;
+  box-shadow: none;
+}
+
+#modalEditarContratos .ct-modal-close:hover {
+  opacity: 1;
+  background: transparent;
+}
+
+#modalEditarContratos .ct-modal-body {
+  padding: 1rem 1.25rem 1.5rem;
+  background: #fff;
+}
+
+#formularioEditarContratos.ct-contract-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+#modalEditarContratos .parametro_EditarContratos {
+  display: block;
+  inline-size: 100%;
+  margin: 0;
+  padding: 0.25rem 0.25rem 1rem;
+  border: 2px solid rgba(55, 68, 81, 1);
+  border-radius: 0.45rem;
+  background: #fff;
+  text-align: initial;
+}
+
+#modalEditarContratos .parametro_EditarContratos div {
+  margin: 0;
+  text-align: initial;
+  vertical-align: initial;
+}
+
+#modalEditarContratos .ct-contract-section__banner {
+  margin-bottom: 1rem;
+  border: 2px solid rgba(55, 68, 81, 1);
+  border-radius: 0.35rem;
+  background: rgb(191, 215, 48);
+  overflow: hidden;
+}
+
+#modalEditarContratos .ct-contract-section__title {
+  margin: 0;
+  padding: 0.45rem 1rem;
+  font-size: clamp(1.65rem, 2vw, 1.95rem);
+  line-height: 1.1;
+  font-weight: 700;
+  text-align: center;
+  color: #111827;
+}
+
+#modalEditarContratos .ct-contract-header,
+#modalEditarContratos .ct-contract-row {
+  display: grid;
+  grid-template-columns: 4rem minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0.85rem 1rem;
+  align-items: center;
+}
+
+#modalEditarContratos .ct-contract-header {
+  padding: 0 0.75rem 0.35rem;
+}
+
+#modalEditarContratos .ct-contract-header__cell {
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: center;
+  color: var(--aia-text-primary, #1c1c1e);
+}
+
+#modalEditarContratos .ct-contract-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0 0.75rem;
+}
+
+#modalEditarContratos .ct-contract-index {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+  color: var(--aia-text-primary, #1c1c1e);
+}
+
+#modalEditarContratos .ct-contract-field {
+  min-inline-size: 0;
+}
+
+#modalEditarContratos .ct-contract-field__label {
+  display: none;
+  margin: 0 0 0.25rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--aia-text-secondary, #4a4a4d);
+}
+
+#modalEditarContratos .ct-contract-field .form-control {
+  inline-size: 100%;
+  min-block-size: 2.4rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.3rem;
+  background: #fff;
+  box-shadow: none;
+}
+
+#modalEditarContratos .ct-contract-field .form-control:focus,
+#modalEditarContratos .ct-contract-field .form-control:focus-visible {
+  border-color: var(--aia-blue-primary, #4a81bd);
+  box-shadow: 0 0 0 0.16rem rgb(74 129 189 / 18%);
+}
+
+#modalEditarContratos .ct-contract-field .select2-container {
+  display: block;
+  inline-size: 100% !important;
+}
+
+#modalEditarContratos .ct-contract-field .select2-container--default .select2-selection--single,
+#modalEditarContratos .ct-contract-field .select2-container--default .select2-selection--multiple {
+  min-block-size: 2.4rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.3rem;
+  background: #fff;
+  padding: 0.18rem 0.55rem;
+}
+
+#modalEditarContratos .ct-contract-field .select2-container--default .select2-selection--single .select2-selection__rendered {
+  padding-left: 0;
+  padding-right: 1.4rem;
+  line-height: 2rem;
+  color: var(--aia-text-primary, #1c1c1e);
+}
+
+#modalEditarContratos .ct-contract-field .select2-container--default .select2-selection--single .select2-selection__arrow {
+  block-size: 2.2rem;
+  inset-inline-end: 0.25rem;
+}
+
+#modalEditarContratos .ct-contract-field .select2-container--default .select2-selection--multiple {
+  display: flex;
+  align-items: center;
+}
+
+#modalEditarContratos .ct-contract-field .select2-container--default .select2-selection--multiple .select2-selection__rendered {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  inline-size: 100%;
+  padding: 0;
+}
+
+#modalEditarContratos .ct-contract-field .select2-container--default .select2-selection--multiple .select2-search--inline .select2-search__field {
+  margin-top: 0 !important;
+  min-block-size: 1.85rem;
+}
+
+#modalEditarContratos .ct-contract-field .select2-container--default .select2-selection--multiple .select2-selection__choice {
+  margin-top: 0 !important;
+  border: none;
+  border-radius: 999px;
+  background: var(--aia-blue-very-light, #e6f0fa);
+  color: var(--aia-blue-dark, #2a5a8f);
+  padding: 0.18rem 0.55rem 0.18rem 0.4rem;
+  font-size: 0.82rem;
+}
+
+#modalEditarContratos .ct-contract-field .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+  margin-right: 0.35rem;
+  color: inherit;
+}
+
+#modalEditarContratos .ct-contract-field .select2-container--default.select2-container--focus .select2-selection--single,
+#modalEditarContratos .ct-contract-field .select2-container--default.select2-container--focus .select2-selection--multiple,
+#modalEditarContratos .ct-contract-field .select2-container--default.select2-container--open .select2-selection--single,
+#modalEditarContratos .ct-contract-field .select2-container--default.select2-container--open .select2-selection--multiple {
+  border-color: var(--aia-blue-primary, #4a81bd);
+  box-shadow: 0 0 0 0.16rem rgb(74 129 189 / 18%);
+}
+
+#modalEditarContratos .select2-dropdown {
+  border-color: #cbd5e1;
+  border-radius: 0.35rem;
+  box-shadow: 0 10px 24px rgb(15 23 42 / 14%);
+}
+
+#modalEditarContratos .ct-contract-actions {
+  margin: 0;
+}
+
+#modalEditarContratos .ct-contract-actions__buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0;
+}
+
+#modalEditarContratos .ct-contract-actions__buttons .btn {
+  min-inline-size: 6.5rem;
+  border-radius: 0.7rem;
+}
+
+#modalEditarContratos .ct-contract-message-wrap {
+  padding: 0;
+}
+
+#modalEditarContratos .mensaje {
+  min-block-size: 1.25rem;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 47.99rem) {
+  #modalEditarContratos .modal-dialog.ct-modal-dialog {
+    max-width: calc(100vw - 1rem);
+    margin: 0.5rem auto;
+  }
+
+  #modalEditarContratos .ct-modal-body {
+    padding: 0.85rem;
+  }
+
+  #modalEditarContratos .parametro_EditarContratos {
+    padding: 0.2rem 0.2rem 0.85rem;
+  }
+
+  #modalEditarContratos .ct-contract-header {
+    display: none;
+  }
+
+  #modalEditarContratos .ct-contract-list {
+    padding: 0 0.5rem;
+  }
+
+  #modalEditarContratos .ct-contract-row {
+    grid-template-columns: 1fr;
+    gap: 0.4rem;
+  }
+
+  #modalEditarContratos .ct-contract-index {
+    padding-left: 0.2rem;
+    text-align: left;
+  }
+
+  #modalEditarContratos .ct-contract-field__label {
+    display: block;
+  }
+
+  #modalEditarContratos .ct-contract-actions__buttons {
+    flex-wrap: wrap;
+  }
 }
 
 .ct-text-danger {
@@ -5197,4 +5468,3 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
   justify-content: center !important;
   align-items: center !important;
 }
-
