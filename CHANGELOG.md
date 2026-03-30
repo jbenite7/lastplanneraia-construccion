@@ -20,6 +20,8 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 - **Refactor de Seguridad PDC:** El script `actualizar_pdc.php` ahora utiliza `ModuleRequestContext` para resolver la base de datos y semana, e integra `rbac_guard_require_permission` para validar permisos antes de cualquier operación de escritura.
 - **Hardening de APIs LPS:** Actualización de `PdcApiController`, `ContratosApiController` y `ListadoActividadesApiController` para mejorar la resolución de contexto y el manejo de excepciones mediante bloques `Throwable`.
 - **Blindaje de Escrituras por Semana Activa:** Las operaciones sensibles en Contratos, Listado de Actividades y PDC ahora se acotan al contexto operativo resuelto por `ModuleRequestContext` para reducir cruces de semana/proyecto.
+- **UI de Contratos Más Clara y Responsive:** El modal de edición de contratos fue remaquetado con una grilla consistente, mejor integración de Select2 y una presentación más estable en desktop y móvil.
+- **Listado de Actividades Alineado con la Semana Vigente:** La vista y sus flujos AJAX ahora priorizan `Max_Semana`, reutilizan un único set de opciones para la actividad de inicio y endurecen la edición inline según el rol operativo.
 - **Mejoras en Login UX:** Integración de enlaces de recuperación de contraseña y avisos de éxito tras el restablecimiento de credenciales en las vistas de acceso.
 - **Refactor de LoginController:** Simplificación del método `updatePassword` delegando la lógica de validación y hash al nuevo `PasswordService`.
 
@@ -31,6 +33,8 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 - **Sincronización:** Refactorización de `ProjectProfessionalsSyncService` eliminando el uso inseguro de `SHOW TABLES LIKE`, previniendo errores en esquemas de proyectos incompletos.
 - **Gestión Flexible (Zero Projects):** Eliminación de restricciones de base de datos y frontend que impedían dejar usuarios sin proyectos asignados.
 - **Sobreposición de Miembros en Admin:** Resolución de desbordamiento horizontal en la tabla de miembros asignados mediante contenedor responsivo y quiebre de palabras forzado para strings largos.
+- **Actividad de Inicio en Listado:** La API y la vista de Listado de Actividades vuelven a resolver `actividadInicio` por `Consecutivo_en_Programa`, sincronizan la fecha desde la semana activa real y evitan inconsistencias al registrar, editar o consultar actividades.
+- **Consolidación de PDC por Tipo de Contrato:** `actualizar_pdc.php` ahora agrupa y calcula fechas con alias explícitos de subactividades y usa `general_dias_procesos_contratacion` filtrado por tipo de paquete para evitar cruces y resultados erróneos.
 
 - **Runtime Frontend Config Global:** Nuevo endpoint `'/runtime/frontend-config.js'`, servicio `src/Services/FeatureFlagService.php` y documento `docs/20260325_general_feature_flags.md` para exponer feature flags publicos sin acoplar las vistas al backend.
 - **Cambio Obligatorio de Contraseña:** Nuevo flujo de seguridad con bandera `force_password_change`, endpoint `'/password/update'`, modal bloqueante en login con `AIA.Notice` y accion administrativa para forzar la rotacion masiva de credenciales desde el dashboard.
