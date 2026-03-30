@@ -3,6 +3,7 @@
 namespace App\Controllers\Gestion;
 
 use App\Controllers\BaseController;
+use Throwable;
 
 class ListadoActividadesController extends BaseController
 {
@@ -11,11 +12,32 @@ class ListadoActividadesController extends BaseController
         // Validar autenticación
         $this->requireAuth();
 
+        $this->syncMaxSemanaContext();
+
         // Obtener variables de sesión
         $vars = $this->getSessionVars();
         extract($vars); // $dbName, $semana, $proyecto, $permiso, etc.
 
         // Cargar vista Listado de Actividades
         require PROJECT_ROOT . '/views/listado-actividades/listadoActividades.view.php';
+    }
+
+    private function syncMaxSemanaContext(): void
+    {
+        $dbName = (string) ($_SESSION['db'] ?? '');
+
+        if ($dbName === '' || preg_match('/^[A-Za-z0-9_]+$/', $dbName) !== 1) {
+            return;
+        }
+
+        try {
+            $query = "SELECT MAX(Semana) FROM {$dbName}_semanas_activas";
+            $maxSemana = (int) $this->db->query($query)->fetchColumn();
+
+            $_SESSION['Max_Semana'] = $maxSemana;
+            $_SESSION['semana'] = $maxSemana;
+        } catch (Throwable $e) {
+            error_log('ListadoActividadesController syncMaxSemanaContext error: ' . $e->getMessage());
+        }
     }
 }

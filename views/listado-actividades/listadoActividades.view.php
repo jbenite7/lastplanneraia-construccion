@@ -7,6 +7,36 @@
 
 <!--Etiqueta superior-->
 <body>
+	<?php
+		$dbPrefixListadoActividades = $_SESSION['db'] ?? '';
+		$maxSemanaListadoActividades = (int) ($_SESSION['Max_Semana'] ?? ($_SESSION['semana'] ?? 0));
+		$actividadInicioOptionsHtml = '';
+
+		if (empty($dbPrefixListadoActividades) || !preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefixListadoActividades)) {
+			$actividadInicioOptionsHtml = '<option value="">Error: Database prefix not set</option>';
+		} else {
+			try {
+				$dbInstance = Database::getInstance();
+				$queryActividadInicio = "SELECT Consecutivo_en_Programa, Id, Actividad, Fecha_Inicio FROM {$dbPrefixListadoActividades}_programa_consolidado WHERE Semana=? AND Titulo=0 AND Fecha_Inicio IS NOT NULL AND Fecha_Fin IS NOT NULL ORDER BY Fecha_Inicio ASC";
+				$stmtActividadInicio = $dbInstance->query($queryActividadInicio, [$maxSemanaListadoActividades]);
+				$actividadInicioOptions = [];
+
+				while ($valores = $stmtActividadInicio->fetch(PDO::FETCH_ASSOC)) {
+					$actividadValue = (string) ($valores['Consecutivo_en_Programa'] ?? '');
+					$actividadTexto = (string) ($valores['Actividad'] ?? '');
+					$actividadDisplay = html_entity_decode(strip_tags($actividadTexto), ENT_QUOTES, 'UTF-8');
+					$actividadDisplay = preg_replace('/\s+/u', ' ', $actividadDisplay);
+					$actividadDisplay = trim((string) $actividadDisplay);
+					$actividadLabel = trim(($valores['Id'] ?? '') . '. ' . $actividadDisplay . ' (Inicia el: ' . ($valores['Fecha_Inicio'] ?? '') . ')');
+					$actividadInicioOptions[] = '<option value="' . htmlspecialchars($actividadValue, ENT_QUOTES, 'UTF-8') . '">' . htmlspecialchars($actividadLabel, ENT_QUOTES, 'UTF-8') . '</option>';
+				}
+
+				$actividadInicioOptionsHtml = implode('', $actividadInicioOptions);
+			} catch (Throwable $t) {
+				$actividadInicioOptionsHtml = '<option value="">Error loading data: ' . htmlspecialchars($t->getMessage(), ENT_QUOTES, 'UTF-8') . '</option>';
+			}
+		}
+	?>
 
 	<div class="encabezado" id="encabezado">
 		<input type="hidden" name="seccion" id="seccion" value="info_listadoActividades" aria-hidden="true">
@@ -54,7 +84,7 @@
 
 	<div class="row ventanasModalesEspecificas" id="ventanasModalesEspecificas">
 		<!--Genera el modal con el formulario de registro de una nueva actividad para el proyecto-->
-		<div class="modal_nuevaActividad modal fade" id="modalNuevaActividad" role="dialog" aria-labelledby="modal_nuevaActividadLabel">
+		<div class="modal_nuevaActividad modal fade" id="modalNuevaActividad" role="dialog" aria-labelledby="modalNuevaActividadLabel">
 		  <div class="modal-dialog modal-lg" role="document">
 		    <div class="modal-content">
 		      <div class="modal-header">
@@ -86,30 +116,7 @@
 		                <div class="col-sm-12">
 		                  <label for="actividadInicio" class="control-label">Tarea del Cronograma de Inicio de la Actividad</label>
 		                  <select id="actividadInicio" name="actividadInicio" class="form-control" onchange="actualizarFechaInicio('nuevo')" style="width:100%; border-color:rgb(206, 212, 218, 0)">
-		                    <option value=""></option> <?php
-                                                                    // DB available via Database::getInstance() from autoloader
-		                    $dbPrefix = $_SESSION["db"] ?? '';
-		                    $semana = $_SESSION["semana"] ?? 0;
-
-		                    // Validate db prefix
-		                    if (empty($dbPrefix) || !preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
-		                        echo '<option value="">Error: Database prefix not set</option>';
-		                    } else {
-		                        try {
-		                            $dbInstance = Database::getInstance();
-		                            $query = "SELECT * FROM {$dbPrefix}_programa_consolidado WHERE Semana=? AND Titulo=0 AND Fecha_Inicio IS NOT NULL AND Fecha_Fin IS NOT NULL ORDER BY Fecha_Inicio ASC";
-		                            $stmt = $dbInstance->query($query, [$semana]);
-		                            while ($valores = $stmt->fetch(PDO::FETCH_ASSOC)) {
-		                                $Actividad = $valores["Actividad"];
-		                                $Actividad = str_replace('"', '\"', $Actividad);
-		                                $Actividad = str_replace("'", "\'", $Actividad);
-		                                echo '<option value="'.$Actividad.'">'.$valores["Id"].'.  <b>'.$Actividad.'</b> <small>(Inicia el: '.$valores["Fecha_Inicio"].')</small></option>';
-		                            }
-		                        } catch (Throwable $t) {
-		                            echo '<option value="">Error loading data: ' . $t->getMessage() . '</option>';
-		                        }
-		                    }
-		                    ?>
+		                    <option value=""></option><?php echo $actividadInicioOptionsHtml; ?>
 		                  </select>
 		                </div>
 		                <br>
@@ -264,8 +271,87 @@
 			cargarDatosGeneralesPagina(document.getElementById('seccion').value);
 		});
 
+		var configurarSelectActividadInicio = function(selector, dropdownParent) {
+			var $select = $(selector);
+
+			if (!$select.length || typeof $select.select2 !== 'function') {
+				return;
+			}
+
+			$select.off('.aiaActividadInicio');
+
+			if ($select.data('select2')) {
+				$select.select2('destroy');
+			}
+
+			var select2Options = {
+				allowClear: true,
+				placeholder: '',
+				width: '100%'
+			};
+
+			if (dropdownParent && dropdownParent.length) {
+				select2Options.dropdownParent = dropdownParent;
+			}
+
+			$select.select2(select2Options);
+
+			$select.on('select2:open.aiaActividadInicio', function() {
+				window.setTimeout(function() {
+					var $searchField = $('.select2-container--open .select2-search__field');
+					if ($searchField.length) {
+						$searchField.trigger('focus');
+					}
+				}, 0);
+			});
+		};
+
+		var inicializarModalNuevaActividad = function() {
+			var $modalNuevaActividad = $('#modalNuevaActividad');
+
+			if (!$modalNuevaActividad.length) {
+				return;
+			}
+
+			$modalNuevaActividad
+				.off('shown.bs.modal.aiaActividadInicio')
+				.on('shown.bs.modal.aiaActividadInicio', function() {
+					configurarSelectActividadInicio('#actividadInicio', $modalNuevaActividad);
+					limpiar_datos();
+				})
+				.off('hidden.bs.modal.aiaActividadInicio')
+				.on('hidden.bs.modal.aiaActividadInicio', function() {
+					var $selectActividadInicio = $('#actividadInicio');
+
+					if ($selectActividadInicio.data('select2')) {
+						$selectActividadInicio.select2('close');
+					}
+				});
+		};
+
+		var puedeEditarListadoActividades = function() {
+			var rol = '';
+
+			if (typeof readRbacRole === 'function') {
+				rol = readRbacRole();
+			} else {
+				var permisoCanonico = document.getElementById('permiso_canonico');
+				var permisoLegacy = document.getElementById('permiso');
+
+				if (permisoCanonico && permisoCanonico.value) {
+					rol = permisoCanonico.value;
+				} else if (permisoLegacy && permisoLegacy.value) {
+					rol = permisoLegacy.value;
+				}
+			}
+
+			rol = String(rol || '').trim().toUpperCase();
+
+			return rol === 'A' || rol === 'D' || rol === 'OT';
+		};
+
 		var cargaParametros = function() {
-			$('#actividadInicio').select2({allowClear: true});
+			inicializarModalNuevaActividad();
       listar();
 			guardarNuevaActividad();
 			guardarCargarExcel();
@@ -314,8 +400,7 @@
 		/*Acá se inicia la datatable y se crean sus valores por defecto como el ordenamiento, las celdas que se muestran, los datos, las opciones de longitud de los registros, y el color de las filas dependiendo del estado de las actividades*/
 		var listar = function() {
 			var db = document.getElementById('baseDatos').value;
-			var semana = document.getElementById('semana').value;
-			var Max_Semana = document.getElementById('Max_Semana').value;
+			var semana = document.getElementById('Max_Semana').value;
 			var Max_Semana = document.getElementById('Max_Semana').value;
 		  
 			// Initial Height Calculation
@@ -435,13 +520,13 @@
 				table.columns.adjust();
 			});
 
-			$("div.toolbarFilaBotones").html('<div class="grupo_botones1" role="group" aria-label="Basic example" style="padding:5; max-width:50%;display:inline-block; "><button id="btn_tutorialActualizarCronograma" type="button" class="btn btn-secondary btn-sm" style="margin-right:5px" title="Video tutorial de la sección de \'\'Actividades del Proyecto\'\'" onclick="window.open(\'https://youtu.be/DnjTRfFupSA\', \'_blank\')">Tutorial <i class="fas fa-list-ol fa-lg"></i></button><button id="btn_cargarActividadesExcel" class="btn btn-secondary btn-sm" title="Cargar listado de actividades desde Excel" data-toggle="modal" data-target="#modalCargarExcel">Cargar desde Excel <i class="fas fa-upload fa-lg"></i></button><button id="btn_nueva_actividad" class="btn btn-primary btn-sm" title="Registrar nueva actividad del proyecto" data-toggle="modal" data-target="#modalNuevaActividad" style="margin: auto 5px">Nueva Actividad <i class="fas fa-plus fa-lg"></i></button></div><div class="grupo_botones_semanal_madre"  style="padding:5; max-width:69%"><div class="grupo_botones_semanal btn-group" role="group" aria-label="Basic example"><button id="btn_Actividades" type="button" class="btn btn-success btn-sm active" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_listadoActividades&semana='+semana+'\'">Actividades <i class="fas fa-arrow-right fa-m"></i></button><button id="btn_contratos" type="button" class="btn btn-success btn-sm" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_contratos&semana='+semana+'\'">Contratos <i class="fas fa-arrow-right fa-m"></i></button><button id="btn_planCompras" type="button" class="btn btn-success btn-sm" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=planCompras&semana='+semana+'\'">Plan de Compras</button></div></div>');
+			$("div.toolbarFilaBotones").html('<div class="grupo_botones1" role="group" aria-label="Basic example" style="padding:5; max-width:50%;display:inline-block; "><button id="btn_cargarActividadesExcel" class="btn btn-secondary btn-sm" title="Cargar listado de actividades desde Excel" data-toggle="modal" data-target="#modalCargarExcel">Cargar desde Excel <i class="fas fa-upload fa-lg"></i></button><button id="btn_nueva_actividad" class="btn btn-primary btn-sm" title="Registrar nueva actividad del proyecto" data-toggle="modal" data-target="#modalNuevaActividad" style="margin: auto 5px">Nueva Actividad <i class="fas fa-plus fa-lg"></i></button></div><div class="grupo_botones_semanal_madre"  style="padding:5; max-width:69%"><div class="grupo_botones_semanal btn-group" role="group" aria-label="Basic example"><button id="btn_Actividades" type="button" class="btn btn-success btn-sm active" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_listadoActividades&semana='+semana+'\'">Actividades <i class="fas fa-arrow-right fa-m"></i></button><button id="btn_contratos" type="button" class="btn btn-success btn-sm" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_contratos&semana='+semana+'\'">Contratos <i class="fas fa-arrow-right fa-m"></i></button><button id="btn_planCompras" type="button" class="btn btn-success btn-sm" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=planCompras&semana='+semana+'\'">Plan de Compras</button></div></div>');
 
 			$("div.toolbarFilaBotones .grupo_botones1")
 				.addClass("ps-toolbar-actions")
 				.removeAttr("style");
 			$("div.toolbarFilaBotones .grupo_botones1 .btn").addClass("ps-btn-gap");
-			$("div.toolbarFilaBotones #btn_tutorialActualizarCronograma, div.toolbarFilaBotones #btn_nueva_actividad").removeAttr("style");
+			$("div.toolbarFilaBotones #btn_nueva_actividad").removeAttr("style");
 			$("div.toolbarFilaBotones .grupo_botones_semanal_madre")
 				.addClass("ps-toolbar-nav-wrap")
 				.removeAttr("style")
@@ -459,60 +544,46 @@
 
 		/*Toma los datos de la fila en la que se presionó el botón editar*/
 		var obtener_data_editar = function(tbody, table) {
-		  var only_once = true;
-		  if (typeof window.rbacCapabilities !== 'undefined') {
-			var canEdit = window.rbacCapabilities.canManagePdC || window.rbacCapabilities.canManageContracts || false;
-			only_once = !canEdit;
-		  } else {
-			var permiso = document.getElementById('permiso').value;
-		  	if (permiso=="G" || permiso=="S" || permiso=="SG" || permiso=="R" || permiso=="DCV" || permiso=="V" || permiso=="C") {
-		    	only_once = false;
-		  	}
+		  $(tbody)
+				.off("click.aiaEditarActividad", "td:not(:first-child), button.editar");
+
+		  if (!puedeEditarListadoActividades()) {
+				return;
 		  }
-		  
-		  $(tbody).one("click", "td", function() {
-				var data= table.row($(this).parents("tr")).data();
+
+		  var only_once = true;
+
+		  $(tbody).on("click.aiaEditarActividad", "td:not(:first-child), button.editar", function(e) {
+					e.preventDefault();
+					e.stopPropagation();
+
+					var $row = $(this).closest("tr");
+
+				var data= table.row($row).data();
+
+				if (!data) {
+					return;
+				}
+
 				var Id=$("#Id").val(data.Id),
 						opcion = $("#opcion").val("modificar"),
 						codigo = $("#codigo").val(data.codigo);
 		    if (only_once == true) {
 					var codigo_html_Actividad =  "<input id='select_Actividad' name='Actividad' class='form-control form-control-sm' type='text' value='"+data.actividad+"'></input>";
-					$( this ).parent().find('td:eq(2)').html(codigo_html_Actividad);
+					$row.find('td:eq(2)').html(codigo_html_Actividad);
 
 					var codigo_html_descripcionActividad =  "<input id='select_descripcionActividad' name='descripcionActividad' class='form-control form-control-sm' type='text' value='"+data.descripcionActividad+"'></input>";
-					$( this ).parent().find('td:eq(3)').html(codigo_html_descripcionActividad);
+					$row.find('td:eq(3)').html(codigo_html_descripcionActividad);
 
-					var opciones_codigo_html_actividadInicio = "<?php
-                            // DB available via Database::getInstance() from autoloader
-		                    $dbPrefix = $_SESSION["db"] ?? '';
-		                    $semana = $_SESSION["semana"] ?? 0;
-
-		                    // Validate db prefix
-		                    if (!empty($dbPrefix) && preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
-		                        try {
-		                            $dbInstance = Database::getInstance();
-		                            $query = "SELECT * FROM {$dbPrefix}_programa_consolidado WHERE Semana=? AND Titulo=0 AND Fecha_Inicio IS NOT NULL AND Fecha_Fin IS NOT NULL ORDER BY Fecha_Inicio ASC";
-		                            $stmt = $dbInstance->query($query, [$semana]);
-		                            while ($valores = $stmt->fetch(PDO::FETCH_ASSOC)) {
-		                                $Actividad = $valores['Actividad'];
-		                                $Actividad = str_replace('"', '\"', $Actividad);
-		                                $Actividad = str_replace("'", "\'", $Actividad);
-		                                $Fecha_Inicio = $valores['Fecha_Inicio'];
-		                                $Id = $valores['Id'];
-		                                echo "<option value='".$Actividad."'>".$Id.". <b>".$Actividad."</b> <small>(Inicia el: ".$Fecha_Inicio.")</small></option>";
-		                            }
-		                        } catch (Throwable $t) {
-		                        }
-		                    }
-		                    ?>";
+					var opciones_codigo_html_actividadInicio = <?php echo json_encode($actividadInicioOptionsHtml, JSON_UNESCAPED_UNICODE); ?>;
 
 					var codigo_html_actividadInicio =  "<select id='select_actividadInicio' name='actividadInicio' class='form-control form-control-sm' onchange=actualizarFechaInicio('actualizar')><option value=''></option>";
 					codigo_html_actividadInicio = codigo_html_actividadInicio + opciones_codigo_html_actividadInicio + "</select>";
-					$( this ).parent().find('td:eq(4)').html(codigo_html_actividadInicio);
-					$('#select_actividadInicio').select2({allowClear: true});
+					$row.find('td:eq(4)').html(codigo_html_actividadInicio);
+					configurarSelectActividadInicio('#select_actividadInicio');
 
 					var codigo_html_fechaInicio =  "<input id='select_fechaInicio' name='fechaInicio' class='form-control form-control-sm' type='text' value='"+data.fechaInicio+"' autocomplete='off'></input>";
-					$( this ).parent().find('td:eq(5)').html(codigo_html_fechaInicio);
+					$row.find('td:eq(5)').html(codigo_html_fechaInicio);
 
 					$( "#select_fechaInicio" ).datepicker({dateFormat: 'yy-mm-dd',
 																							 changeMonth: true,
@@ -525,13 +596,13 @@
 
 
 					var codigo_html_tipoContrato =  "<select id='select_tipoContrato' name='tipoContrato' class='form-control form-control-sm' ><option value=''></option><option value=1>Mano de Obra y Suministro Por Separado</option><option value=2>Suministro e Instalación</option></select>";
-					$( this ).parent().find('td:eq(6)').html(codigo_html_tipoContrato);
+					$row.find('td:eq(6)').html(codigo_html_tipoContrato);
 
 					// var codigo_html_paqueteContratacion =  "<select id='select_paqueteContratacion' name='paqueteContratacion' class='form-control form-control-sm' ><option value=''></option><option value='1'>(1) - Paquete 1</option><option value='2'>(2) - Paquete 2</option><option value='3'>(3) - Paquete 3</option></select>";
-					// $( this ).parent().find('td:eq(6)').html(codigo_html_paqueteContratacion);
+					// $row.find('td:eq(6)').html(codigo_html_paqueteContratacion);
 
 					var codigo_html_botones = "<button type= 'button' id='btn_guardar_editar' class='guardar btn btn-success btn-sm btn-action-gap' title='Guardar la edición'><i class='fa fa-save fa-xs' aria-hidden='true' ></i></button><button type= 'button' id='btn_cancelar_editar' class='cancelar btn btn-danger btn-sm btn-action-gap' title='Cancelar la edición'><i class='fa fa-undo fa-xs' aria-hidden='true' ></i></button>";
-					$( this ).parent().find('td:eq(0)').html(codigo_html_botones);
+					$row.find('td:eq(0)').html(codigo_html_botones);
 
 					$("#select_tipoContrato").val(data.tipoContrato).change();
 
@@ -558,29 +629,31 @@
 									only_once = true;
 							}
 					});
-		    }
-		    cancelarEdicionFila();
-		    guardar_modificar();
+			    }
+			    cancelarEdicionFila();
+			    guardar_modificar();
 		  });
 		}
 
 		/*Toma los datos de la fila en la que se presionó el botón eliminar*/
 		var obtener_id_eliminar = function(tbody, table) {
-		  var canEdit = false;
-		  if (typeof window.rbacCapabilities !== 'undefined') {
-			canEdit = window.rbacCapabilities.canManagePdC || window.rbacCapabilities.canManageContracts || false;
-		  } else {
-			var permiso = document.getElementById('permiso').value;
-		  	if (!(permiso=="G" || permiso=="S" || permiso=="SG" || permiso=="R" || permiso=="DCV" || permiso=="V" || permiso=="C")) {
-				canEdit = true;
-			}
-		  }
+		  $(tbody).off("click.aiaEliminarActividad", "button.eliminar");
+
+		  var canEdit = puedeEditarListadoActividades();
 
 		  if (!canEdit) {
 			// No hace nada
 		  } else {
-				$(tbody).one("click", "button.eliminar", function() {
+				$(tbody).on("click.aiaEliminarActividad", "button.eliminar", function(e) {
+						e.preventDefault();
+						e.stopPropagation();
+
 					var data= table.row($(this).parents("tr")).data();
+
+					if (!data) {
+						return;
+					}
+
 					var idusuario=$("#Id").val(data.Id);
 					var opcion=$("#opcion").val("eliminar");
 					$("#modalEliminar").modal("show");
@@ -594,7 +667,7 @@
 			$("#modalNuevaActividad form").on("submit", function(e) {
 				e.preventDefault();
 				var db = document.getElementById('baseDatos').value;
-				var semana = document.getElementById('semana').value;
+				var semana = document.getElementById('Max_Semana').value;
 				var frm = $(this).serialize();
 				frm = frm + "&semana=" + semana;
 				$.ajax({
@@ -619,7 +692,7 @@
 		  $("#modalCargarExcel form").on("submit", function(e) {
 		    e.preventDefault();
 				var db = document.getElementById('baseDatos').value;
-				var semana = document.getElementById('semana').value;
+				var semana = document.getElementById('Max_Semana').value;
 		    var variables = new FormData($("#formCargarExcel")[0]);
 		    //var frm = $(this).serialize();
 		    console.log(variables);
@@ -645,7 +718,7 @@
 			$("#btn_guardar_editar").one("click", function(e) {
 				e.preventDefault();
 				var db = document.getElementById('baseDatos').value;
-				var semana = document.getElementById('semana').value;
+				var semana = document.getElementById('Max_Semana').value;
 				var Id = $("#Id").serialize();
 				var opcion = $("#opcion").serialize();
 				var codigo = $("#codigo").serialize();
@@ -674,7 +747,7 @@
 		var eliminar = function() {
 		  $("#eliminar-usuario").on("click", function() {
 				var db = document.getElementById('baseDatos').value;
-				var semana = document.getElementById('semana').value;
+				var semana = document.getElementById('Max_Semana').value;
 		    	var Id = $("#Id").val(),
 		      	opcion = "eliminar";
 				//console.log(Id, opcion);
@@ -706,11 +779,11 @@
 		  } else {
 		    var idActividad = $("#select_actividadInicio").val();
 				var sel = document.getElementById("select_actividadInicio");
-				var nombreActividad = document.getElementById("actividadInicio").value;
+				var nombreActividad = document.getElementById("select_actividadInicio").value;
 		  }
 
 			var db = document.getElementById('baseDatos').value;
-			var semana = document.getElementById('semana').value;
+			var semana = document.getElementById('Max_Semana').value;
 		  //console.log(opcion, idActividad, nombreActividad, semana);
 		  if (idActividad != "") {
 		    $.ajax({
@@ -803,14 +876,25 @@
 
 		/*limpia los valores del formulario de registro*/
 		var limpiar_datos = function() {
-			$("#opcion").val("registrar");
-			$("#Id").val("");
-			$("#actividad").val("").focus();
-			$("#descripcionActividad").val("");
-			$("#fechaInicio").val("");
-			$("#tipoContrato").val("");
-			$("#idPaqueteContratacion").val("");
-			$("#paqueteContratacion").val("");
+			var $formNuevaActividad = $("#modalNuevaActividad form");
+			var $actividadInicio = $("#modalNuevaActividad #actividadInicio");
+
+			if ($formNuevaActividad.length && $formNuevaActividad[0]) {
+				$formNuevaActividad[0].reset();
+			}
+
+			if ($actividadInicio.length) {
+				if ($actividadInicio.data('select2')) {
+					$actividadInicio.val(null).trigger('change');
+				} else {
+					$actividadInicio.val('');
+				}
+			}
+
+			$("#modalNuevaActividad #fechaInicio").val("");
+			$("#modalNuevaActividad #tipoContrato").val("");
+			$("#modalNuevaActividad .mensaje").html("");
+			$("#modalNuevaActividad #actividad").focus();
 		}
 
 		var limpiar_datos_nueva_sem = function() {

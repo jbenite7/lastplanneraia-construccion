@@ -22,7 +22,7 @@ class ListadoActividadesApiController
         try {
             $context = ModuleRequestContext::resolve();
             $dbPrefix = $context['dbPrefix'];
-            $semana = $context['semana'];
+            $semana = $this->resolveMaxSemana($dbPrefix);
 
             $this->requirePermission('lps.listado_actividades.ver', 'No autorizado para consultar el listado de actividades.');
 
@@ -51,14 +51,32 @@ class ListadoActividadesApiController
                             a.codigo, 
                             a.actividad, 
                             a.descripcionActividad, 
-                            a.actividadInicio, 
-                            CONCAT(p.Id, '. ', p.Actividad, ' (Inicia en: ', p.Fecha_Inicio, ')') AS nombreActividadInicio, 
+                            COALESCE(
+                                (
+                                    SELECT pc.Consecutivo_en_Programa
+                                    FROM {$dbPrefix}_programa_consolidado pc
+                                    WHERE pc.Semana = a.semanaActualizacion
+                                      AND (pc.Consecutivo_en_Programa = a.actividadInicio OR pc.Actividad = a.actividadInicio)
+                                    ORDER BY pc.Fecha_Inicio ASC
+                                    LIMIT 1
+                                ),
+                                a.actividadInicio
+                            ) AS actividadInicio,
+                            COALESCE(
+                                (
+                                    SELECT CONCAT(pc.Id, '. ', pc.Actividad, ' (Inicia en: ', pc.Fecha_Inicio, ')')
+                                    FROM {$dbPrefix}_programa_consolidado pc
+                                    WHERE pc.Semana = a.semanaActualizacion
+                                      AND (pc.Consecutivo_en_Programa = a.actividadInicio OR pc.Actividad = a.actividadInicio)
+                                    ORDER BY pc.Fecha_Inicio ASC
+                                    LIMIT 1
+                                ),
+                                a.nombreActividadInicio
+                            ) AS nombreActividadInicio,
                             a.fechaInicio, 
                             a.tipoContrato, 
                             a.semanaActualizacion 
                            FROM {$dbPrefix}_actividades AS a
-                           LEFT JOIN {$dbPrefix}_programa_consolidado AS p 
-                           ON p.Actividad = a.actividadInicio AND p.Semana = a.semanaActualizacion 
                            WHERE a.semanaActualizacion = ? 
                            ORDER BY a.Id";
 
@@ -81,7 +99,7 @@ class ListadoActividadesApiController
         try {
             $context = ModuleRequestContext::resolve();
             $dbPrefix = $context['dbPrefix'];
-            $semana = $context['semana'];
+            $semana = $this->resolveMaxSemana($dbPrefix);
 
             $this->requirePermission('lps.listado_actividades.ver', 'No autorizado para consultar el listado de actividades.');
 
@@ -106,6 +124,19 @@ class ListadoActividadesApiController
             error_log("Error in ListadoActividadesApiController@save: " . $e->getMessage());
             $this->jsonError('No se pudo procesar la solicitud del listado de actividades.', 500);
         }
+    }
+
+    private function resolveMaxSemana(string $dbPrefix): int
+    {
+        $query = "SELECT MAX(Semana) FROM {$dbPrefix}_semanas_activas";
+        $maxSemana = (int) $this->db->query($query)->fetchColumn();
+
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            $_SESSION['Max_Semana'] = $maxSemana;
+            $_SESSION['semana'] = $maxSemana;
+        }
+
+        return $maxSemana;
     }
 
     private function registrar(string $dbPrefix, int $semana): void
@@ -133,7 +164,7 @@ class ListadoActividadesApiController
                 $codigo = empty($maxCode) ? 1 : $maxCode + 1;
 
                 $queryInsert = "INSERT INTO {$dbPrefix}_actividades (codigo, actividad, descripcionActividad, actividadInicio, nombreActividadInicio, fechaInicio, tipoContrato, semanaActualizacion) 
-                                VALUES (?, ?, ?, ?, (SELECT Actividad FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Actividad = ? LIMIT 1), ?, ?, ?)";
+                                VALUES (?, ?, ?, ?, (SELECT CONCAT(Id, '. ', Actividad, ' (Inicia en: ', Fecha_Inicio, ')') FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Consecutivo_en_Programa = ? LIMIT 1), ?, ?, ?)";
                 $params = [$codigo, $Actividad, $descripcionActividad, $actividadInicio, $semana, $actividadInicio, $fechaInicio, $tipoContrato, $semana];
 
                 $stmtInsert = $this->db->query($queryInsert, $params);
@@ -160,7 +191,7 @@ class ListadoActividadesApiController
             $errores = 'Debe rellenar todos los campos';
         } else {
             $queryUpdate = "UPDATE {$dbPrefix}_actividades SET actividad=?, descripcionActividad=?, actividadInicio=?, 
-                             nombreActividadInicio=(SELECT Actividad FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Actividad = ? LIMIT 1), 
+                             nombreActividadInicio=(SELECT CONCAT(Id, '. ', Actividad, ' (Inicia en: ', Fecha_Inicio, ')') FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Consecutivo_en_Programa = ? LIMIT 1), 
                              fechaInicio=?, tipoContrato=?, semanaActualizacion=? WHERE Id=? AND semanaActualizacion=?";
             $params = [$Actividad, $descripcionActividad, $actividadInicio, $semana, $actividadInicio, $fechaInicio, $tipoContrato, $semana, $Id, $semana];
             $stmtUpdate = $this->db->query($queryUpdate, $params);
@@ -186,8 +217,8 @@ class ListadoActividadesApiController
         $Id = $_POST["idActividad"] ?? '';
 
         try {
-            $query = "SELECT Fecha_Inicio FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND (Consecutivo_en_Programa = ? OR Actividad = ?) ORDER BY Fecha_Inicio ASC LIMIT 1";
-            $stmt = $this->db->query($query, [$semana, $Id, $Id]);
+            $query = "SELECT Fecha_Inicio FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Consecutivo_en_Programa = ? LIMIT 1";
+            $stmt = $this->db->query($query, [$semana, $Id]);
             $data = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if ($data) {
