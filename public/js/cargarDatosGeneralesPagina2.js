@@ -392,7 +392,11 @@ var cargarDatosGeneralesPagina = function (seccion) {
       if (document.getElementById('planCompras')) {
         document.getElementById('planCompras').href = '#';
         document.getElementById('planCompras').onclick = function () {
-          window.Context.clearWeek('/pdc');
+          window.location.href =
+            '/legacy/cambiar_pagina.php?seccion=planCompras&semana=' +
+            datosGenerales.Max_Semana +
+            '&origen=' +
+            encodeURIComponent(seccion || '');
           return false;
         };
       }

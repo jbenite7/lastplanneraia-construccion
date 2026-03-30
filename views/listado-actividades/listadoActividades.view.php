@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head id="head">
+	<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 	<!--Script cque va al archivo linksComunesHead2.js-->
 	<script type="text/javascript" src="/js/linksComunesHead2.js?v=20260325a" charset="utf-8"></script>
 </head>
@@ -84,66 +85,62 @@
 
 	<div class="row ventanasModalesEspecificas" id="ventanasModalesEspecificas">
 		<!--Genera el modal con el formulario de registro de una nueva actividad para el proyecto-->
-		<div class="modal_nuevaActividad modal fade" id="modalNuevaActividad" role="dialog" aria-labelledby="modalNuevaActividadLabel">
+		<div class="modal_nuevaActividad modal fade aia-modal" id="modalNuevaActividad" tabindex="-1" role="dialog" aria-labelledby="modalNuevaActividadLabel" aria-hidden="true">
 		  <div class="modal-dialog modal-lg" role="document">
 		    <div class="modal-content">
 		      <div class="modal-header">
-		        <h5 class="modal-title" id="modalNuevaActividadLabel">
-		          <p class="modal-body-texto-nuevaActividad" id="modal-body-texto-nuevaActividad">Registrar Nueva Actividad</p>
-		        </h5>
+		        <div class="modal-title" id="modalNuevaActividadLabel">
+		          <div class="aia-modal__eyebrow">AIA Construccion</div>
+		          <h2 class="aia-modal__headline">Registrar Nueva Actividad</h2>
+		          <p class="aia-modal__subtitle modal-body-texto-nuevaActividad" id="modal-body-texto-nuevaActividad">Completa la informacion base de la actividad y su relacion con el cronograma.</p>
+		        </div>
 		        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 		      </div>
 		      <div class="modal-body">
 		        <div class="row">
-		          <div id="cuadro4" class="cuadro4 col-sm-12 col-md-12 col-lg-12 ">
-		            <form class="form form-horizontal" action="" method="POST">
-		              <div class="form-group parametro_nuevaActividad">
-		                <div class="form_eval form-group">
-		                  <h3 id='form_general'> Formulario de Registro de Actividades</h3>
+		          <div id="cuadro4" class="cuadro4 col-sm-12 col-md-12 col-lg-12">
+		            <form class="form form-horizontal aia-modal__form" action="" method="POST">
+		              <section class="form-group parametro_nuevaActividad aia-modal__section">
+		                <div class="aia-modal__section-header">
+		                  <h3 class="aia-modal__section-title">Formulario de Registro de Actividades</h3>
+		                  <p class="aia-modal__hint">Define la actividad, su descripcion y la actividad de referencia del cronograma.</p>
 		                </div>
+		                <div class="aia-modal__field-grid">
 		                <!--Se crean 2 inputs que contienen el id del registro que se va a modificar, y el switch que dice si la acción es modificar-->
 										<input type="hidden" id="Id" name="Id" value="">
-							      <input type="hidden" id="opcion" name="opcion" value="registrar">
+					      <input type="hidden" id="opcion" name="opcion" value="registrar">
 		                <!-- Se crean los inputs del formulario de registro de usuario (Nombre, Apellidos y DNI) -->
-		                <div class="col-sm-12">
-		                  <label for="actividad" class="control-label">Actividad</label><input id="actividad" name="actividad" type="text" class="form-control">
+		                <div class="col-sm-12 aia-modal__field">
+		                  <label for="actividad" class="control-label aia-modal__label">Actividad</label><input id="actividad" name="actividad" type="text" class="form-control">
 		                </div>
-		                <br>
-		                <div class="col-sm-12">
-		                  <label for="descripcionActividad" class="control-label">Descripción</label><input id="descripcionActividad" name="descripcionActividad" type="text" class="form-control">
+		                <div class="col-sm-12 aia-modal__field">
+		                  <label for="descripcionActividad" class="control-label aia-modal__label">Descripcion</label><input id="descripcionActividad" name="descripcionActividad" type="text" class="form-control">
 		                </div>
-		                <br>
-		                <div class="col-sm-12">
-		                  <label for="actividadInicio" class="control-label">Tarea del Cronograma de Inicio de la Actividad</label>
-		                  <select id="actividadInicio" name="actividadInicio" class="form-control" onchange="actualizarFechaInicio('nuevo')" style="width:100%; border-color:rgb(206, 212, 218, 0)">
+		                <div class="col-sm-12 aia-modal__field">
+			                  <label for="actividadInicio" class="control-label aia-modal__label">Tarea del Cronograma de Inicio de la Actividad</label>
+			                  <select id="actividadInicio" name="actividadInicio" class="form-control" onchange="actualizarFechaInicio('nuevo')" style="width:100%">
 		                    <option value=""></option><?php echo $actividadInicioOptionsHtml; ?>
 		                  </select>
 		                </div>
-		                <br>
-		                <div class="col-sm-12">
-		                  <label for="fechaInicio" class="control-label">Fecha de Inicio</label><input id="fechaInicio" name="fechaInicio" type="text" class="form-control">
+		                <div class="col-sm-12 aia-modal__field">
+		                  <label for="fechaInicio" class="control-label aia-modal__label">Fecha de Inicio</label><input id="fechaInicio" name="fechaInicio" type="text" class="form-control">
 		                </div>
-		                <br>
-		                <div class="col-sm-12">
-		                  <label for="tipoContrato" class="control-label">Tipo de Contrato</label>
+		                <div class="col-sm-12 aia-modal__field">
+		                  <label for="tipoContrato" class="control-label aia-modal__label">Tipo de Contrato</label>
 		                  <select id="tipoContrato" name="tipoContrato" class="form-control">
 		                    <option value=""></option>
 		                    <option value=1>Mano de Obra y Suministro Por Separado</option>
 		                    <option value=2>Suministro e Instalación</option>
 		                  </select>
 		                </div>
-		              </div>
-		              <br>
-									<br>
-		              <div class="form-group">
-		                <div class="col-sm-12">
+		                </div>
+		              </section>
+		              <div class="form-group aia-modal__actions">
+		                <div class="col-sm-12 aia-modal__buttons">
 		                  <input id="btn_guardar_actividad" type="submit" class="btn btn-primary" value="Guardar" aria-label="Guardar actividad">
 		                  <input id="btn_listar" type="button" class="btn btn-danger" value="Cancelar" data-dismiss="modal" aria-label="Cancelar actividad">
 		                </div>
-		              </div>
-		              <!--Se crea el mensaje emergente que dice si los comandos fueron ejecutados correctamente o no-->
-		              <div class="col-sm-offset-2 col-sm-8">
-		                <p class="mensaje"></p>
+		                <p class="mensaje aia-modal__message"></p>
 		              </div>
 		            </form>
 		          </div>
@@ -155,52 +152,56 @@
 		<!-- Modal -->
 
 		<!-- General el modal para descargar y cargar el CSV con el que se puede agregar el listado de actividades desde excel -->
-		<div class="modal_cargarExcel modal fade" id="modalCargarExcel" role="dialog" aria-labelledby="modal_cargarExcelLabel">
+		<div class="modal_cargarExcel modal fade aia-modal" id="modalCargarExcel" role="dialog" aria-labelledby="modal_cargarExcelLabel">
 		  <div class="modal-dialog modal-lg" role="document">
 		    <div class="modal-content">
 		      <div class="modal-header">
-		        <h5 class="modal-title" id="modalCargarExcelLabel">
-		          <p class="modal-body-texto-cargarExcel" id="modal-body-texto-cargarExcel">Cargar Listado de Actividades desde Excel</p>
-		        </h5>
+		        <div class="modal-title" id="modalCargarExcelLabel">
+		          <div class="aia-modal__eyebrow">AIA Construccion</div>
+		          <h2 class="aia-modal__headline">Cargar Actividades desde Excel</h2>
+		          <p class="aia-modal__subtitle modal-body-texto-cargarExcel" id="modal-body-texto-cargarExcel">Descarga la plantilla base y carga el archivo CSV completo del listado de actividades.</p>
+		        </div>
 		        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 		      </div>
 		      <div class="modal-body">
 		        <div class="row">
-		          <div id="cuadro4" class="cuadro4 col-sm-12 col-md-12 col-lg-12 ">
-		            <form enctype="multipart/form-data" class="form form-horizontal" id="formCargarExcel" name="formCargarExcel" action="" method="POST">
-		              <div class="form-group parametro_cargarExcel" style="padding: 1px 5px 10px 5px; margin-bottom: 10px; border:none">
+		          <div id="cuadroCargarExcel" class="cuadro4 col-sm-12 col-md-12 col-lg-12">
+		            <form enctype="multipart/form-data" class="form form-horizontal aia-modal__form" id="formCargarExcel" name="formCargarExcel" action="" method="POST">
+		              <section class="form-group parametro_cargarExcel aia-modal__section aia-modal__section--plain" style="border:none; box-shadow:none;">
 		                <!-- <div class="form_eval form-group">
 													<h3 id='form_general'>
 														Descargar Archivo Base
 													</h3>
 												</div> -->
-		                <label for="descargarArchivoBase" class="control-label">En el siguiente enlace puede descargar el archivo base para crear el listado de actividades desde Excel:</label>
+		                <div class="aia-modal__section-header">
+		                  <h3 class="aia-modal__section-title">Descargar Archivo Base</h3>
+		                  <p class="aia-modal__hint">Usa la plantilla oficial para asegurar la estructura correcta del cargue masivo.</p>
+		                </div>
+		                <label for="descargarArchivoBase" class="control-label aia-modal__label">En el siguiente enlace puede descargar el archivo base para crear el listado de actividades desde Excel:</label>
 		                <a id="descargarArchivoBase" class="descargarArchivoBase btn btn-primary" download="listadoActividades.csv" href="/archivosBase/listadoActividades.csv">Descargar Archivo Base</a>
-		              </div>
-		              <div class="form-group parametro_cargarExcel" style="padding: 1px 5px 15px 5px; margin-bottom: 10px">
-		                <div class="form_eval form-group">
-		                  <h3 id='form_general'> Cargar Listado en Excel </h3>
+		              </section>
+		              <section class="form-group parametro_cargarExcel aia-modal__section">
+		                <div class="aia-modal__section-header">
+		                  <h3 class="aia-modal__section-title">Cargar Listado en Excel</h3>
+		                  <p class="aia-modal__hint">Solo se permiten archivos en formato CSV y se procesara el contenido completo del listado.</p>
 		                </div>
 		                <!--Se crean 2 inputs que contienen el id del registro que se va a modificar, y el switch que dice si la acción es cargarExcel-->
 		                <input type="hidden" id="Id" name="Id" value="">
 		                <input type="hidden" id="opcion" name="opcion" value="cargarExcel">
 		                <input type="hidden" id="codigo" name="codigo" value="">
 		                <!-- Se crea el input para cargar el archivo CSV que cargarà el listado de actividades del proyecto -->
-		                <div class="col-sm-12">
-		                  <label for="archivoExcel" class="control-label">Seleccione el archivo con el listado de actividades completo desde el equipo (Solo se permiten archivos en formato CSV):</label>
+		                <div class="col-sm-12 aia-modal__field">
+		                  <label for="archivoExcel" class="control-label aia-modal__label">Seleccione el archivo con el listado de actividades completo desde el equipo (solo se permiten archivos en formato CSV):</label>
 		                  <input type="file" name="archivoExcel" id="archivoExcel" class="form-control form-control-lg" accept=".csv">
 		                  <!-- <input type="submit" value="Enviar" name="archivoExcel"> -->
 		                </div>
-		              </div>
-		              <div class="form-group">
-		                <div class="col-sm-12">
+		              </section>
+		              <div class="form-group aia-modal__actions">
+		                <div class="col-sm-12 aia-modal__buttons">
 		                  <input id="" type="submit" class="btn btn-success" value="Guardar">
 		                  <input id="btn_listar" type="button" class="btn btn-danger" value="Cancelar" data-dismiss="modal">
 		                </div>
-		              </div>
-		              <!--Se crea el mensaje emergente que dice si los comandos fueron ejecutados correctamente o no-->
-		              <div class="col-sm-offset-2 col-sm-8">
-		                <p class="mensaje"></p>
+		                <p class="mensaje aia-modal__message"></p>
 		              </div>
 		            </form>
 		          </div>
@@ -212,17 +213,21 @@
 		<!-- Modal -->
 
 		<!-- Se crea el Modal que solicita la confirmación de eliminar un registro o no -->
-		<div class="modal fade" id="modalEliminar" tabindex="-1" role="dialog" aria-labelledby="modalEliminarLabel">
+		<div class="modal fade aia-modal aia-modal__confirm" id="modalEliminar" tabindex="-1" role="dialog" aria-labelledby="modalEliminarLabel">
 		  <div class="modal-dialog" role="document">
 		    <div class="modal-content">
 		      <div class="modal-header">
-		        <h4 class="modal-title" id="modalEliminarLabel">Eliminar Actividad</h4>
+		        <div class="modal-title" id="modalEliminarLabel">
+		          <div class="aia-modal__eyebrow">Accion sensible</div>
+		          <h2 class="aia-modal__title">Eliminar Actividad</h2>
+		          <p class="aia-modal__subtitle">Confirma esta accion antes de continuar.</p>
+		        </div>
 		        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 		      </div>
 		      <div class="modal-body">
-		        <p class="modal-body-texto-eliminar" id="modal-body-texto-eliminar"></p>
+		        <p class="modal-body-texto-eliminar aia-modal__body-copy" id="modal-body-texto-eliminar"></p>
 		      </div>
-		      <div class="modal-footer">
+		      <div class="modal-footer aia-modal__buttons">
 		        <button type="button" id="eliminar-usuario" class="btn btn-primary" data-dismiss="modal" data-toggle="modal">Aceptar</button>
 		        <!--data-target="#modal_CNP"-->
 		        <button type="button" class="btn btn-default" data-dismiss="modal" onClick='listar()'>Cancelar</button>
@@ -273,6 +278,8 @@
 
 		var configurarSelectActividadInicio = function(selector, dropdownParent) {
 			var $select = $(selector);
+			var $fieldParent = $select.closest('.aia-modal__field');
+			var $dropdownParent = $fieldParent.length ? $fieldParent : dropdownParent;
 
 			if (!$select.length || typeof $select.select2 !== 'function') {
 				return;
@@ -290,8 +297,8 @@
 				width: '100%'
 			};
 
-			if (dropdownParent && dropdownParent.length) {
-				select2Options.dropdownParent = dropdownParent;
+			if ($dropdownParent && $dropdownParent.length) {
+				select2Options.dropdownParent = $dropdownParent;
 			}
 
 			$select.select2(select2Options);
@@ -316,8 +323,8 @@
 			$modalNuevaActividad
 				.off('shown.bs.modal.aiaActividadInicio')
 				.on('shown.bs.modal.aiaActividadInicio', function() {
-					configurarSelectActividadInicio('#actividadInicio', $modalNuevaActividad);
 					limpiar_datos();
+					configurarSelectActividadInicio('#actividadInicio', $modalNuevaActividad);
 				})
 				.off('hidden.bs.modal.aiaActividadInicio')
 				.on('hidden.bs.modal.aiaActividadInicio', function() {
@@ -520,7 +527,7 @@
 				table.columns.adjust();
 			});
 
-			$("div.toolbarFilaBotones").html('<div class="grupo_botones1" role="group" aria-label="Basic example" style="padding:5; max-width:50%;display:inline-block; "><button id="btn_cargarActividadesExcel" class="btn btn-secondary btn-sm" title="Cargar listado de actividades desde Excel" data-toggle="modal" data-target="#modalCargarExcel">Cargar desde Excel <i class="fas fa-upload fa-lg"></i></button><button id="btn_nueva_actividad" class="btn btn-primary btn-sm" title="Registrar nueva actividad del proyecto" data-toggle="modal" data-target="#modalNuevaActividad" style="margin: auto 5px">Nueva Actividad <i class="fas fa-plus fa-lg"></i></button></div><div class="grupo_botones_semanal_madre"  style="padding:5; max-width:69%"><div class="grupo_botones_semanal btn-group" role="group" aria-label="Basic example"><button id="btn_Actividades" type="button" class="btn btn-success btn-sm active" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_listadoActividades&semana='+semana+'\'">Actividades <i class="fas fa-arrow-right fa-m"></i></button><button id="btn_contratos" type="button" class="btn btn-success btn-sm" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_contratos&semana='+semana+'\'">Contratos <i class="fas fa-arrow-right fa-m"></i></button><button id="btn_planCompras" type="button" class="btn btn-success btn-sm" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=planCompras&semana='+semana+'\'">Plan de Compras</button></div></div>');
+			$("div.toolbarFilaBotones").html('<div class="grupo_botones1" role="group" aria-label="Basic example" style="padding:5; max-width:50%;display:inline-block; "><button id="btn_cargarActividadesExcel" class="btn btn-secondary btn-sm" title="Cargar listado de actividades desde Excel" data-toggle="modal" data-target="#modalCargarExcel">Cargar desde Excel <i class="fas fa-upload fa-lg"></i></button><button id="btn_nueva_actividad" class="btn btn-primary btn-sm" title="Registrar nueva actividad del proyecto" data-toggle="modal" data-target="#modalNuevaActividad" style="margin: auto 5px">Nueva Actividad <i class="fas fa-plus fa-lg"></i></button></div><div class="grupo_botones_semanal_madre"  style="padding:5; max-width:69%"><div class="grupo_botones_semanal btn-group" role="group" aria-label="Basic example"><button id="btn_Actividades" type="button" class="btn btn-success btn-sm active" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_listadoActividades&semana='+semana+'\'">Actividades <i class="fas fa-arrow-right fa-m"></i></button><button id="btn_contratos" type="button" class="btn btn-success btn-sm" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_contratos&semana='+semana+'\'">Contratos <i class="fas fa-arrow-right fa-m"></i></button><button id="btn_planCompras" type="button" class="btn btn-success btn-sm" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=planCompras&semana='+semana+'&origen=info_listadoActividades\'">Plan de Compras</button></div></div>');
 
 			$("div.toolbarFilaBotones .grupo_botones1")
 				.addClass("ps-toolbar-actions")
@@ -530,7 +537,7 @@
 			$("div.toolbarFilaBotones .grupo_botones_semanal_madre")
 				.addClass("ps-toolbar-nav-wrap")
 				.removeAttr("style")
-				.html('<div class="ps-module-switcher" role="tablist" aria-label="Navegacion general"><button id="btn_Actividades" type="button" class="ps-module-tab is-active" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_listadoActividades&semana='+semana+'\'" aria-label="Ir a Actividades" aria-current="page"><i class="fas fa-table" aria-hidden="true"></i><span>Actividades</span></button><button id="btn_contratos" type="button" class="ps-module-tab" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_contratos&semana='+semana+'\'" aria-label="Ir a Contratos"><i class="fas fa-file-alt" aria-hidden="true"></i><span>Contratos</span></button><button id="btn_planCompras" type="button" class="ps-module-tab" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=planCompras&semana='+semana+'\'" aria-label="Ir a Plan de Compras"><i class="fas fa-shopping-cart" aria-hidden="true"></i><span>Plan de Compras</span></button></div>');
+				.html('<div class="ps-module-switcher" role="tablist" aria-label="Navegacion general"><button id="btn_Actividades" type="button" class="ps-module-tab is-active" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_listadoActividades&semana='+semana+'\'" aria-label="Ir a Actividades" aria-current="page"><i class="fas fa-table" aria-hidden="true"></i><span>Actividades</span></button><button id="btn_contratos" type="button" class="ps-module-tab" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_contratos&semana='+semana+'\'" aria-label="Ir a Contratos"><i class="fas fa-file-alt" aria-hidden="true"></i><span>Contratos</span></button><button id="btn_planCompras" type="button" class="ps-module-tab" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=planCompras&semana='+semana+'&origen=info_listadoActividades\'" aria-label="Ir a Plan de Compras"><i class="fas fa-shopping-cart" aria-hidden="true"></i><span>Plan de Compras</span></button></div>');
 
 			$("div.toolbarFilaMensajes").html('<p id="mensajeActualizacion"></p>');
 

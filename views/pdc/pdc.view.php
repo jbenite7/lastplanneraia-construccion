@@ -1,68 +1,68 @@
 <!DOCTYPE html>
 <html lang="es">
 <head id="head">
+	<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 	<!--Script cque va al archivo linksComunesHead2.js-->
 	<script type="text/javascript" src="/js/linksComunesHead2.js?v=20260325a" charset="utf-8"></script>
 	<style>
 		/* Modern 2026 PDC Styles */
+		.Titulo td,
 		.pdc-header td {
-			background-color: #035766 !important;
-			color: #ffffff !important;
-			font-weight: 500;
-			letter-spacing: 0.5px;
+			background-color: #8b4011 !important;
+			color: #fafafa !important;
+			font-family: 'Montserrat', sans-serif;
+			font-weight: 600;
+			letter-spacing: 0.02em;
+			border-color: rgba(232, 119, 34, 0.28) !important;
+		}
+		.Titulo td *,
+		.pdc-header td * {
+			color: #fafafa !important;
+		}
+		.Titulo td:first-child,
+		.pdc-header td:first-child {
+			box-shadow: inset 4px 0 0 #e87722 !important;
 		}
 		.pdc-missing-data td {
-			background-color: #f3e8ff !important; /* Purple-100 */
-			color: #6b21a8 !important; /* Purple-800 */
-		}
-		.pdc-missing-data td:first-child {
-			box-shadow: inset 4px 0 0 #9333ea !important; /* Purple-600 accent strip */
+			background-color: #f3e8ff !important;
+			color: #6b21a8 !important;
 		}
 		.pdc-critical-delay td {
-			background-color: #fecaca !important; /* Red-200 */
-			color: #7f1d1d !important; /* Red-900 */
-			font-weight: 600; /* Bold */
-		}
-		.pdc-critical-delay td:first-child {
-			box-shadow: inset 6px 0 0 #b91c1c !important; /* Thicker Dark Red strip */
+			background-color: #fecaca !important;
+			color: #7f1d1d !important;
+			font-weight: 600;
 		}
 		.pdc-delayed td {
-			background-color: #fee2e2 !important; /* Red-100 */
-			color: #991b1b !important; /* Red-800 */
-		}
-		.pdc-delayed td:first-child {
-			box-shadow: inset 4px 0 0 #dc2626 !important; /* Red-600 accent strip */
+			background-color: #fee2e2 !important;
+			color: #991b1b !important;
 		}
 		.pdc-completed-delayed td {
-			background-color: #fffbeb !important; /* Amber-50 */
-			color: #92400e !important; /* Amber-800 */
-		}
-		.pdc-completed-delayed td:first-child {
-			box-shadow: inset 4px 0 0 #f59e0b !important; /* Amber-500 accent strip */
+			background-color: #fffbeb !important;
+			color: #92400e !important;
 		}
 		.pdc-completed-ontime td {
-			background-color: #f0fdf4 !important; /* Emerald-50 */
-			color: #166534 !important; /* Emerald-800 */
-		}
-		.pdc-completed-ontime td:first-child {
-			box-shadow: inset 4px 0 0 #10b981 !important; /* Emerald-500 accent strip */
+			background-color: #f0fdf4 !important;
+			color: #166534 !important;
 		}
 		.pdc-active td {
-			background-color: #dbeafe !important; /* Blue-100 */
-			color: #1e40af !important; /* Blue-800 */
-		}
-		.pdc-active td:first-child {
-			box-shadow: inset 4px 0 0 #2563eb !important; /* Blue-600 accent strip */
+			background-color: #dbeafe !important;
+			color: #1e40af !important;
 		}
 		.pdc-not-started td {
-			background-color: #f8fafc !important; /* Slate-50 */
-			color: #475569 !important; /* Slate-600 */
+			background-color: #f1f5f9 !important;
+			color: #475569 !important;
 		}
-		.pdc-not-started td:first-child {
-			box-shadow: inset 4px 0 0 #94a3b8 !important; /* Slate-400 accent strip */
+		.pdc-missing-data td *,
+		.pdc-critical-delay td *,
+		.pdc-delayed td *,
+		.pdc-completed-delayed td *,
+		.pdc-completed-ontime td *,
+		.pdc-active td *,
+		.pdc-not-started td * {
+			color: inherit !important;
 		}
 		/* Hover effect for better readability - Clean & Modern */
-		#dt_cliente tbody tr:hover td {
+		#dt_cliente tbody tr:not(.Titulo):not(.pdc-missing-data):not(.pdc-critical-delay):not(.pdc-delayed):not(.pdc-completed-delayed):not(.pdc-completed-ontime):not(.pdc-active):not(.pdc-not-started):hover td {
 			background-color: #f1f5f9 !important; /* Slate-100 hover */
 			transition: background-color 0.2s ease;
 		}
@@ -155,6 +155,23 @@
 
 		/* Hide old indicator span since color is now on the chip */
 		.pdc-legend-item .indicator { display: none; }
+		#dt_cliente thead tr.pdc-filter-row th {
+			padding: 6px 6px;
+			background: #f8fafc;
+			vertical-align: middle;
+		}
+		#dt_cliente thead .pdc-column-filter {
+			width: 100%;
+			min-width: 110px;
+			font-size: 0.8rem;
+		}
+		#dt_cliente thead .pdc-column-filter[type="date"] {
+			min-width: 150px;
+		}
+		#dt_cliente thead tr.pdc-filter-row th.pdc-filter-empty {
+			padding: 0;
+			min-width: 0;
+		}
 		.pdc-toast {
 			position: fixed;
 			top: 20px;
@@ -175,6 +192,543 @@
 		@keyframes slideIn {
 			from { transform: translateX(100%); opacity: 0; }
 			to { transform: translateX(0); opacity: 1; }
+		}
+
+		#modalContrato {
+			color: #24313a;
+		}
+
+		#modalContrato .modal-dialog {
+			max-width: min(1380px, calc(100vw - 2rem));
+			margin: 1rem auto;
+		}
+
+		#modalContrato .modal-content {
+			border: 0;
+			border-radius: 1.25rem;
+			overflow: hidden;
+			background: linear-gradient(180deg, #fafafa 0%, #f4f1ea 100%);
+			box-shadow: 0 24px 60px rgba(36, 49, 58, 0.18);
+		}
+
+		#modalContrato .modal-header {
+			padding: 1.5rem 1.75rem 1.25rem;
+			border-bottom: 1px solid rgba(181, 82, 17, 0.14);
+			background: linear-gradient(135deg, #f7efe3 0%, #fafafa 100%);
+			align-items: flex-start;
+		}
+
+		#modalContrato .modal-title {
+			margin: 0;
+			max-width: calc(100% - 3rem);
+		}
+
+		#modalContrato .close {
+			margin: 0;
+			padding: 0.25rem;
+			font-size: 1.8rem;
+			line-height: 1;
+			color: #7a3b14;
+			opacity: 0.8;
+		}
+
+		#modalContrato .close:hover {
+			opacity: 1;
+		}
+
+		#modalContrato .modal-body {
+			padding: 1.5rem 1.75rem 1.75rem;
+			overflow-x: hidden;
+		}
+
+		#modalContrato .pdc-contract-modal__eyebrow {
+			display: inline-flex;
+			align-items: center;
+			gap: 0.5rem;
+			margin-bottom: 0.65rem;
+			padding: 0.35rem 0.75rem;
+			border-radius: 999px;
+			background: rgba(181, 82, 17, 0.12);
+			color: #7a3b14;
+			font-family: 'Montserrat', sans-serif;
+			font-size: 0.75rem;
+			font-weight: 700;
+			letter-spacing: 0.08em;
+			text-transform: uppercase;
+		}
+
+		#modalContrato .modal-body-texto-Contrato {
+			font-family: 'Inter', sans-serif;
+			font-size: 0.96rem;
+			line-height: 1.55;
+			color: #46535b;
+		}
+
+		#modalContrato .modal-body-texto-Contrato b {
+			color: #24313a;
+			font-family: 'Montserrat', sans-serif;
+			font-weight: 700;
+		}
+
+		#modalContrato .pdc-contract-form {
+			display: grid;
+			gap: 1rem;
+		}
+
+		#modalContrato .pdc-contract-section {
+			padding: 1.1rem 1.15rem 1.2rem;
+			border: 1px solid rgba(181, 82, 17, 0.14);
+			border-radius: 1rem;
+			background: rgba(250, 250, 250, 0.94);
+			box-shadow: 0 10px 24px rgba(36, 49, 58, 0.06);
+		}
+
+		#modalContrato .pdc-contract-section__header {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 1rem;
+			margin-bottom: 1rem;
+			padding-bottom: 0.85rem;
+			border-bottom: 1px solid rgba(181, 82, 17, 0.12);
+		}
+
+		#modalContrato .pdc-contract-section__title {
+			margin: 0;
+			font-family: 'Montserrat', sans-serif;
+			font-size: 1.06rem;
+			font-weight: 700;
+			line-height: 1.2;
+			letter-spacing: -0.01em;
+			color: #24313a;
+		}
+
+		#modalContrato .pdc-contract-section__hint {
+			margin: 0;
+			font-family: 'Inter', sans-serif;
+			font-size: 0.88rem;
+			line-height: 1.45;
+			color: #6b7280;
+		}
+
+		#modalContrato .pdc-contract-section__body {
+			display: grid;
+			gap: 0.9rem;
+		}
+
+		#modalContrato .pdc-modal-row {
+			display: grid;
+			grid-template-columns: minmax(220px, 1.1fr) minmax(0, 1.6fr);
+			gap: 1rem;
+			align-items: start;
+			padding: 0;
+			border: 0;
+		}
+
+		#modalContrato .pdc-modal-label {
+			inline-size: auto;
+			max-inline-size: none;
+			display: block;
+			margin: 0;
+			text-align: left;
+		}
+
+		#modalContrato .pdc-modal-label span,
+		#modalContrato .labelFormularioAdjudicado,
+		#modalContrato .labelFormularioSeguimientoContrato {
+			display: inline-block;
+			font-family: 'Montserrat', sans-serif;
+			font-size: 0.9rem;
+			font-weight: 600;
+			line-height: 1.45;
+			color: #24313a;
+		}
+
+		#modalContrato .pdc-modal-value,
+		#modalContrato .pdc-modal-field,
+		#modalContrato .pdc-modal-spacer {
+			inline-size: auto;
+			max-inline-size: none;
+			margin: 0;
+		}
+
+		#modalContrato .pdc-modal-value,
+		#modalContrato .pdc-modal-field {
+			padding: 0;
+		}
+
+		#modalContrato .pdc-modal-field,
+		#modalContrato .pdc-modal-value .form-control[readonly],
+		#modalContrato .pdc-modal-value .form-control:not(textarea) {
+			min-height: 3rem;
+			border-radius: 0.8rem;
+			border: 1px solid rgba(104, 116, 125, 0.24);
+			background: #fff;
+			box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+		}
+
+		#modalContrato textarea.form-control,
+		#modalContrato input.form-control,
+		#modalContrato select.form-control {
+			border-radius: 0.8rem;
+			border: 1px solid rgba(104, 116, 125, 0.24);
+			font-family: 'Inter', sans-serif;
+			font-size: 0.95rem;
+			color: #24313a;
+			background: #fff;
+			transition: border-color 0.2s ease, box-shadow 0.2s ease;
+		}
+
+		#modalContrato textarea.form-control:focus,
+		#modalContrato input.form-control:focus,
+		#modalContrato select.form-control:focus {
+			border-color: rgba(181, 82, 17, 0.45);
+			box-shadow: 0 0 0 0.2rem rgba(181, 82, 17, 0.12);
+		}
+
+		#modalContrato #actividadesDelContrato,
+		#modalContrato #observacionesContrato {
+			min-height: 8rem;
+			resize: vertical;
+		}
+
+		#modalContrato .pdc-process-grid {
+			display: grid;
+			gap: 0.7rem;
+		}
+
+		#modalContrato .filaEncabezado,
+		#modalContrato .pasoProcesoContratacion {
+			display: grid;
+			grid-template-columns: minmax(260px, 2.2fr) repeat(4, minmax(132px, 1fr));
+			gap: 0.75rem;
+			align-items: stretch;
+			width: 100%;
+			margin: 0;
+			padding: 0;
+			background: transparent;
+			border: 0;
+		}
+
+		#modalContrato .filaEncabezado {
+			padding: 0 0 0.2rem;
+		}
+
+		#modalContrato .labelFormularioContratos,
+		#modalContrato .inputFormularioContratos,
+		#modalContrato .labelFilaEncabezado {
+			inline-size: auto;
+			max-inline-size: none;
+			margin: 0;
+			height: auto;
+		}
+
+		#modalContrato .labelFormularioContratos {
+			padding: 1rem 1rem 1rem 1.1rem;
+			border: 1px solid rgba(181, 82, 17, 0.08);
+			border-radius: 0.9rem;
+			background: linear-gradient(180deg, #f8f1e7 0%, #f4f1ea 100%);
+			text-align: left;
+		}
+
+		#modalContrato .labelFormularioContratos span {
+			display: block;
+			font-family: 'Montserrat', sans-serif;
+			font-size: 0.92rem;
+			font-weight: 600;
+			line-height: 1.5;
+			color: #24313a;
+		}
+
+		#modalContrato .labelFilaEncabezado {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			padding: 0.8rem 0.6rem;
+			border-radius: 0.9rem;
+			background: #b55211;
+			font-family: 'Montserrat', sans-serif;
+			font-size: 0.82rem;
+			font-weight: 700;
+			line-height: 1.35;
+			text-align: center;
+			color: #fafafa;
+		}
+
+		#modalContrato .inputFormularioContratos {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 0.5rem;
+			padding: 0.8rem 0.75rem;
+			border: 1px solid rgba(181, 82, 17, 0.1);
+			border-radius: 0.9rem;
+			background: #fff;
+			box-shadow: 0 6px 16px rgba(36, 49, 58, 0.04);
+		}
+
+		#modalContrato .inputFormularioContratos input,
+		#modalContrato .inputFormularioContratos input:read-only {
+			max-width: none;
+			flex: 1 1 auto;
+			width: 100%;
+			min-width: 0;
+			padding: 0.55rem 0.8rem;
+			border: 1px solid rgba(104, 116, 125, 0.24);
+			border-radius: 0.75rem;
+			background: #fff;
+			font-family: 'Inter', sans-serif;
+		}
+
+		#modalContrato .inputFormularioContratos i {
+			max-width: none;
+			margin: 0;
+			padding: 0;
+			font-size: 1rem;
+			color: #b55211;
+		}
+
+		#modalContrato .pdc-bg-muted {
+			background: linear-gradient(180deg, #efebe4 0%, #e7dfd3 100%);
+		}
+
+		#modalContrato .pdc-bg-muted input,
+		#modalContrato .pdc-bg-muted input:read-only {
+			background: transparent;
+			border-style: dashed;
+		}
+
+		#modalContrato .informacionAdjudicacionProveedor,
+		#modalContrato .informacionAdjudicacionContrato,
+		#modalContrato .seguimientoContrato {
+			padding: 1rem 1.05rem;
+			border: 1px solid rgba(181, 82, 17, 0.1);
+			border-radius: 0.95rem;
+			background: #fffdfa;
+		}
+
+		#modalContrato .informacionAdjudicacionProveedor .form-group,
+		#modalContrato .informacionAdjudicacionContrato .form-group,
+		#modalContrato .seguimientoContrato .form-group {
+			margin-bottom: 0.9rem;
+		}
+
+		#modalContrato .pdc-row-center h5 {
+			margin: 0;
+			font-family: 'Montserrat', sans-serif;
+			font-size: 1rem;
+			font-weight: 700;
+			color: #7a3b14;
+		}
+
+		#modalContrato .mensajeModalInformacionAdjudicado,
+		#modalContrato .mensajeModalInformacionContrato,
+		#modalContrato .mensajeModalSeguimientoContrato,
+		#modalContrato .mensajeModalContrato {
+			margin: 0;
+			font-family: 'Inter', sans-serif;
+			font-size: 0.88rem;
+		}
+
+		#modalContrato .pdc-provider-locked {
+			border-color: rgba(181, 82, 17, 0.22) !important;
+			background: linear-gradient(180deg, #f3ede4 0%, #ece2d5 100%) !important;
+			color: #6a4a34 !important;
+			cursor: not-allowed;
+			box-shadow: inset 0 0 0 1px rgba(181, 82, 17, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.72);
+		}
+
+		#modalContrato .pdc-provider-locked::placeholder {
+			color: #8b7a69;
+		}
+
+		#modalContrato .pdc-provider-locked + .pdc-provider-lock-badge,
+		#modalContrato .pdc-provider-lock-badge {
+			display: inline-flex;
+			align-items: center;
+			gap: 0.35rem;
+			margin-top: 0.45rem;
+			padding: 0.22rem 0.55rem;
+			border-radius: 999px;
+			background: rgba(181, 82, 17, 0.1);
+			color: #7a3b14;
+			font-family: 'Montserrat', sans-serif;
+			font-size: 0.72rem;
+			font-weight: 700;
+			letter-spacing: 0.03em;
+			text-transform: uppercase;
+		}
+
+		#modalContrato .pdc-provider-lock-badge[hidden] {
+			display: none !important;
+		}
+
+		#modalContrato .pdc-contract-actions {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 1rem;
+			flex-wrap: wrap;
+			padding-top: 0.25rem;
+		}
+
+		#modalContrato .pdc-contract-actions__buttons {
+			display: flex;
+			gap: 0.75rem;
+			flex-wrap: wrap;
+		}
+
+		#modalContrato #btn_guardar_pdc,
+		#modalContrato #btn_cancelar_editar {
+			min-width: 140px;
+			padding: 0.8rem 1.35rem;
+			border-radius: 999px;
+			font-family: 'Montserrat', sans-serif;
+			font-weight: 700;
+			letter-spacing: 0.01em;
+		}
+
+		#modalContrato #btn_guardar_pdc {
+			background: #b55211;
+			border-color: #b55211;
+			box-shadow: 0 12px 22px rgba(181, 82, 17, 0.18);
+		}
+
+		#modalContrato #btn_guardar_pdc:hover,
+		#modalContrato #btn_guardar_pdc:focus {
+			background: #8f430f;
+			border-color: #8f430f;
+		}
+
+		#modalContrato #btn_cancelar_editar {
+			background: transparent;
+			border: 1px solid rgba(122, 59, 20, 0.35);
+			color: #7a3b14;
+		}
+
+		#modalContrato #btn_cancelar_editar:hover,
+		#modalContrato #btn_cancelar_editar:focus {
+			background: rgba(181, 82, 17, 0.08);
+			color: #7a3b14;
+		}
+
+		#modalContrato .pdc-contract-note {
+			margin: 0;
+			font-family: 'Inter', sans-serif;
+			font-size: 0.84rem;
+			color: #6b7280;
+		}
+
+		@media (max-width: 1199.98px) {
+			#modalContrato .filaEncabezado,
+			#modalContrato .pasoProcesoContratacion {
+				grid-template-columns: minmax(220px, 1.7fr) repeat(2, minmax(150px, 1fr));
+			}
+
+			#modalContrato .labelFormularioContratos {
+				grid-column: 1 / -1;
+			}
+		}
+
+		@media (max-width: 767.98px) {
+			#modalContrato .modal-dialog {
+				max-width: calc(100vw - 1rem);
+				margin: 0.5rem auto;
+			}
+
+			#modalContrato .modal-header,
+			#modalContrato .modal-body {
+				padding: 1rem;
+			}
+
+			#modalContrato .pdc-contract-section {
+				padding: 1rem;
+				border-radius: 0.9rem;
+			}
+
+			#modalContrato .pdc-contract-section__header {
+				flex-direction: column;
+				align-items: flex-start;
+				gap: 0.45rem;
+			}
+
+			#modalContrato .pdc-modal-row {
+				grid-template-columns: 1fr;
+				gap: 0.55rem;
+			}
+
+			#modalContrato .filaEncabezado {
+				display: none;
+			}
+
+			#modalContrato .pasoProcesoContratacion {
+				grid-template-columns: 1fr;
+				gap: 0.7rem;
+				padding: 1rem;
+				border: 1px solid rgba(181, 82, 17, 0.12);
+				border-radius: 0.95rem;
+				background: #fff;
+			}
+
+			#modalContrato .labelFormularioContratos,
+			#modalContrato .inputFormularioContratos {
+				padding: 0.9rem;
+			}
+
+			#modalContrato .inputFormularioContratos {
+				justify-content: flex-start;
+			}
+
+			#modalContrato .pasoProcesoContratacion .inputFormularioContratos::before {
+				display: block;
+				width: 100%;
+				margin-bottom: 0.45rem;
+				font-family: 'Montserrat', sans-serif;
+				font-size: 0.76rem;
+				font-weight: 700;
+				letter-spacing: 0.04em;
+				text-transform: uppercase;
+				color: #7a3b14;
+			}
+
+			#modalContrato .pasoProcesoContratacion .inputFormularioContratos:nth-child(2)::before {
+				content: 'Duracion';
+			}
+
+			#modalContrato .pasoProcesoContratacion .inputFormularioContratos:nth-child(3)::before {
+				content: 'Fecha teorica';
+			}
+
+			#modalContrato .pasoProcesoContratacion .inputFormularioContratos:nth-child(4)::before {
+				content: 'Fecha proyectada';
+			}
+
+			#modalContrato .pasoProcesoContratacion .inputFormularioContratos:nth-child(5)::before {
+				content: 'Fecha real';
+			}
+
+			#modalContrato .pdc-contract-actions {
+				align-items: stretch;
+			}
+
+			#modalContrato .pdc-contract-actions__buttons {
+				width: 100%;
+			}
+
+			#modalContrato .informacionAdjudicacionProveedor .col,
+			#modalContrato .informacionAdjudicacionContrato .col,
+			#modalContrato .seguimientoContrato .col,
+			#modalContrato .informacionAdjudicacionContrato .col-4,
+			#modalContrato .informacionAdjudicacionContrato .col-8 {
+				flex: 0 0 100%;
+				max-width: 100%;
+			}
+
+			#modalContrato #btn_guardar_pdc,
+			#modalContrato #btn_cancelar_editar {
+				flex: 1 1 0;
+				min-width: 0;
+			}
 		}
 	</style>
 </head>
@@ -253,66 +807,66 @@
 	</div>
 
 	<div class="row ventanasModalesEspecificas" id="ventanasModalesEspecificas">
-		<div class="modal_Contrato modal fade" id="modalContrato" tabindex="-1" role="dialog" aria-labelledby="modal_ContratoLabel">
-			<div class="modal-dialog modal-xl" role="document">
+		<div class="modal_Contrato modal fade aia-modal" id="modalContrato" tabindex="-1" role="dialog" aria-labelledby="modal_ContratoLabel">
+			<div class="modal-dialog modal-xl modal-dialog-scrollable" role="document">
 				<div class="modal-content">
 					<div class="modal-header">
-						<h2 class="modal-title h5" id="modalContratoLabel">
-							<p class="modal-body-texto-Contrato mb-0" id="modal-body-texto-Contrato"></p>
-						</h2>
+						<div class="modal-title" id="modalContratoLabel">
+							<div class="pdc-contract-modal__eyebrow">AIA Construccion</div>
+							<div class="modal-body-texto-Contrato mb-0" id="modal-body-texto-Contrato"></div>
+						</div>
 						<button type="button" class="close" data-dismiss="modal" aria-label="Close" onClick="recargarTabla('')"><span aria-hidden="true">&times;</span></button>
 					</div>
 					<div class="modal-body">
 						<div class="row">
 							<div id="cuadro4" class="cuadro4 col-sm-12 col-md-12 col-lg-12 ">
-								<form id="formularioContrato" class="form form-horizontal" action="" method="POST">
-									<div class="form-group">
-										<div class="form-group parametro_Contrato">
-											<div class='form_eval form-group'>
-												<h4 id='form_general'>Descripción del Proceso</h4>
+								<form id="formularioContrato" class="form form-horizontal pdc-contract-form" action="" method="POST">
+									<section class="parametro_Contrato pdc-contract-section">
+										<div class="pdc-contract-section__header">
+											<div>
+												<h3 class="pdc-contract-section__title">Descripcion del Proceso</h3>
+												<p class="pdc-contract-section__hint">Contexto del paquete, fechas de referencia y presupuesto base del proceso.</p>
 											</div>
+										</div>
+										<div class="pdc-contract-section__body">
 											<div class="col-sm-12 pdc-modal-row">
-												<label for="Contrato" class="control-label pdc-modal-label">
+												<label for="actividadesDelContrato" class="control-label pdc-modal-label">
 													<span class="h6 font-weight-bold">Actividades del programa de obra en este paquete de contratación:</span>
 												</label>
 												<div id='divActividadesDelContrato' name='divActividadesDelContrato' class='pdc-modal-value'><textarea id="actividadesDelContrato" name="actividadesDelContrato" class="form-control" readonly></textarea>
 												</div>
 											</div>
-											<br>
 											<div class="col-sm-12 pdc-modal-row">
-												<label for="Contrato" class="control-label pdc-modal-label">
+												<label for="fechaActual" class="control-label pdc-modal-label">
 													<span class="h6 font-weight-bold">Fecha de Corte:</span>
 												</label>
 												<div id='divFechaActual' name='divFechaActual' class='pdc-modal-value pdc-modal-value--narrow'><input id='fechaActual' name='fechaActual' class='form-control text-center' type='text' value='' placeholder='Fecha de Corte' autocomplete="off" readonly>
 												</div>
-												<div class='pdc-modal-spacer'>
-												</div>
 											</div>
-											<br>
 											<div class="col-sm-12 pdc-modal-row">
-												<label for="Contrato" class="control-label pdc-modal-label">
+												<label for="fechaInicioContrato" class="control-label pdc-modal-label">
 													<span class="h6 font-weight-bold">Fecha de inicio del contrato según el cronograma:</span>
 												</label>
 												<div id='divFechaInicioContrato' name='divFechaInicioContrato' class='pdc-modal-value pdc-modal-value--narrow'><input id='fechaInicioContrato' name='fechaInicioContrato' class='form-control text-center' type='text' value='' placeholder='Fecha de Inicio' autocomplete="off" readonly>
 												</div>
-												<div class='pdc-modal-spacer'>
-												</div>
 											</div>
-											<br>
 											<div class="col-sm-12 pdc-modal-row">
-												<label for="Contrato" class="control-label pdc-modal-label">
+												<label for="valorPresupuesto" class="control-label pdc-modal-label">
 													<span class="h6 font-weight-bold">Valor en presupuesto de la actividad:</span>
 												</label>
 												<div id='divValorPresupuesto' name='divValorPresupuesto' class='pdc-modal-value pdc-modal-value--narrow'><input id='valorPresupuesto' name='valorPresupuesto' class='form-control bg-white text-center' type='text' value='' placeholder='Valor en Pesos Colombianos' autocomplete="off" data-type="currency">
 												</div>
-												<div class='pdc-modal-spacer'>
-												</div>
 											</div>
 										</div>
-										<div class="form-group parametro_Contrato">
-											<div class='form_eval form-group'>
-												<h4 id='form_general'>Proceso de Contratación</h4>
+									</section>
+									<section class="parametro_Contrato pdc-contract-section">
+										<div class="pdc-contract-section__header">
+											<div>
+												<h3 class="pdc-contract-section__title">Proceso de Contratacion</h3>
+												<p class="pdc-contract-section__hint">Seguimiento por etapa con duracion, fecha teorica, proyectada y real.</p>
 											</div>
+										</div>
+										<div class="pdc-contract-section__body pdc-process-grid">
 											<div class="filaEncabezado">
 												<div class="labelFormularioContratos">
 													<span class="h6 font-weight-bold"></span>
@@ -458,28 +1012,30 @@
 												</div>
 												<div class="row">
 													<div class="form-group col">
-														<label for="nitAdjudicado" class"labelFormularioAdjudicado">NIT (sin puntos o guiones)</label>
+														<label for="nitAdjudicado" class="labelFormularioAdjudicado">NIT (sin puntos o guiones)</label>
 														<input type="number" step="1" class="form-control" id="nitAdjudicado" name="nitAdjudicado" placeholder="NIT" minlenght="9" maxlength="9" onchange="verificarProveedor('nitAdjudicado')" onkeyup="quitar_guion()">
 													</div>
 													<div class="form-group col">
-														<label for="subcontratistaAdjudicado" class"labelFormularioAdjudicado">Nombre del Proveedor</label>
+														<label for="subcontratistaAdjudicado" class="labelFormularioAdjudicado">Nombre del Proveedor</label>
 														<input type="text" class="form-control" id="subcontratistaAdjudicado" name="subcontratistaAdjudicado" placeholder="Nombre del Proveedor">
+														<small class="pdc-provider-lock-badge" id="lockBadgeSubcontratistaAdjudicado" hidden>Proveedor registrado</small>
 													</div>
 												</div>
-												<br>
 												<div class="row">
 													<div class="form-group col">
-														<label for="correoAdjudicado" class"labelFormularioAdjudicado">Correo de Contacto</label>
+														<label for="correoAdjudicado" class="labelFormularioAdjudicado">Correo de Contacto</label>
 														<input type="email" class="form-control" id="correoAdjudicado" name="correoAdjudicado" placeholder="Correo de Contacto">
+														<small class="pdc-provider-lock-badge" id="lockBadgeCorreoAdjudicado" hidden>Proveedor registrado</small>
 													</div>
 													<div class="form-group col">
-														<label for="tipoProveedorAdjudicado" class"labelFormularioAdjudicado">Tipo de Proveedor</label>
+														<label for="tipoProveedorAdjudicado" class="labelFormularioAdjudicado">Tipo de Proveedor</label>
 														<input type="text" class="form-control" id="tipoProveedorAdjudicado" name="tipoProveedorAdjudicado" placeholder="Tipo de Proveedor" readonly>
+														<small class="pdc-provider-lock-badge" id="lockBadgeTipoProveedorAdjudicado" hidden>Autocompletado</small>
 													</div>
 												</div>
-												<div class="row">
-													<p class="mensajeModalInformacionAdjudicado" id="mensajeModalInformacionAdjudicado" class="pdc-inline-msg"></p>
-												</div>
+								<div class="row">
+									<p class="mensajeModalInformacionAdjudicado pdc-inline-msg" id="mensajeModalInformacionAdjudicado"></p>
+								</div>
 											</div>
 											<div class="pasoProcesoContratacion">
 												<div class="labelFormularioContratos">
@@ -542,28 +1098,31 @@
 												</div>
 											</div>
 										</div>
-										<div class="form-group parametro_Contrato">
-											<div class='form_eval form-group'>
-												<h4 id='form_general'>Diagnóstico del Proceso</h4>
+									</section>
+									<section class="parametro_Contrato pdc-contract-section">
+										<div class="pdc-contract-section__header">
+											<div>
+												<h3 class="pdc-contract-section__title">Diagnostico del Proceso</h3>
+												<p class="pdc-contract-section__hint">Lectura rapida del estado actual frente al cronograma definido.</p>
 											</div>
+										</div>
+										<div class="pdc-contract-section__body">
 											<div class="col-sm-12 pdc-modal-row">
-												<label for="Contrato" class="control-label pdc-modal-label">
+												<label for="estadoProceso" class="control-label pdc-modal-label">
 													<span class="h6 font-weight-bold">Estado del Proceso:</span>
 												</label>
 												<div id='divEstadoProceso' name='divEstadoProceso' class='pdc-modal-field'>
 												</div>
 											</div>
-											<br>
 											<div class="col-sm-12 pdc-modal-row">
-												<label for="Contrato" class="control-label pdc-modal-label">
+												<label for="divDeberiaProceso" class="control-label pdc-modal-label">
 													<span class="h6 font-weight-bold">¿Donde Debería Ir Según el Cronograma?:</span>
 												</label>
 												<div id='divDeberiaProceso' name='divDeberiaProceso' class='pdc-modal-field'>
 												</div>
 											</div>
-											<br>
 											<div class="col-sm-12 pdc-modal-row">
-												<label for="Contrato" class="control-label pdc-modal-label">
+												<label for="divDiagnostico" class="control-label pdc-modal-label">
 													<span class="h6 font-weight-bold">Diagnóstico:</span>
 												</label>
 												<div id='divDiagnostico' name='divDiagnostico' class='pdc-modal-field'>
@@ -571,10 +1130,15 @@
 											</div>
 											<input type="hidden" id="estadoProceso" name="estadoProceso" value="">
 										</div>
-										<div class="form-group parametro_Contrato" id="seccionSeguimientoContrato">
-											<div class='form_eval form-group'>
-												<h4 id='form_general'>Seguimiento al Contrato</h4>
+									</section>
+									<section class="parametro_Contrato pdc-contract-section" id="seccionSeguimientoContrato">
+										<div class="pdc-contract-section__header">
+											<div>
+												<h3 class="pdc-contract-section__title">Seguimiento al Contrato</h3>
+												<p class="pdc-contract-section__hint">Datos del proveedor adjudicado, contrato formalizado y devoluciones asociadas.</p>
 											</div>
+										</div>
+										<div class="pdc-contract-section__body">
 											<div class="container informacionAdjudicacionContrato">
 												<input type="hidden" id="activoInformacionAdjudicacionContrato" name="activoInformacionAdjudicacionContrato" value="0">
 												<div class="row pdc-row-center">
@@ -601,7 +1165,6 @@
 																									
 													</div>
 												</div>
-												<br>
 												<div class="row">
 													<div class="form-group col">
 														<label for="valorPrimeraNegociacion" class="labelFormularioAdjudicado">Valor Primera Negociación</label>
@@ -622,9 +1185,9 @@
 														<input type="text" class="form-control" id="valorAhorroPerdida" name="valorAhorroPerdida" value="" data-type="currency" placeholder="Valor en Pesos Colombianos" readonly disabled>
 													</div>
 												</div>
-												<div class="row">
-													<p class="mensajeModalInformacionAdjudicado" id="mensajeModalInformacionAdjudicado" class="pdc-inline-msg"></p>
-												</div>
+								<div class="row">
+									<p class="mensajeModalInformacionContrato pdc-inline-msg" id="mensajeModalInformacionContrato"></p>
+								</div>
 											</div>
 											<div class="container seguimientoContrato">
 												<input type="hidden" id="activoSeguimientoContrato" name="activoSeguimientoContrato" value="0">
@@ -641,28 +1204,35 @@
 														<input type="text" class="form-control" id="valorDevoluciones" name="valorDevoluciones" value="0" data-type="currency" placeholder="Valor en Pesos Colombianos">
 													</div>
 													<div class="form-group col">
-														<label for="tasaDevoluciones" class"labelFormularioSeguimientoContrato">Tasa de Devoluciones al Proveedor</label>
+														<label for="tasaDevoluciones" class="labelFormularioSeguimientoContrato">Tasa de Devoluciones al Proveedor</label>
 														<input type="text" class="form-control" id="tasaDevoluciones" name="tasaDevoluciones" value="" readonly disabled>
 													</div>
 												</div>
 												<div class="row">
-													<p class="mensajeModalSeguimientoContrato" id="mensajeModalSeguimientoContrato" class="pdc-inline-msg"></p>
+													<p class="mensajeModalSeguimientoContrato pdc-inline-msg" id="mensajeModalSeguimientoContrato"></p>
 												</div>
 											</div>
 										</div>
-										<div class="form-group parametro_Contrato w-100">
-											<div class='form_eval form-group'>
-												<h4 id='form_general'>Observaciones</h4>
+									</section>
+									<section class="parametro_Contrato pdc-contract-section w-100">
+										<div class="pdc-contract-section__header">
+											<div>
+												<h3 class="pdc-contract-section__title">Observaciones</h3>
+												<p class="pdc-contract-section__hint">Notas complementarias para dejar trazabilidad del proceso de contratacion.</p>
 											</div>
+										</div>
+										<div class="pdc-contract-section__body">
 											<div class="col-sm-12"><textarea id="observacionesContrato" name="observacionesContrato" class="form-control"></textarea></div>
 										</div>
-									</div>
-									<!--Se crean los botones Guardar y Listar-->
-									<div class="form-group">
-										<div class="col-sm-offset-2 col-sm-12">
+									</section>
+									<div class="pdc-contract-actions">
+										<div class="pdc-contract-actions__buttons">
 											<input id="btn_guardar_pdc" type="button" class="btn btn-primary" value="Guardar" aria-label="Guardar Plan de Compras">
 											<input id="btn_cancelar_editar" type="button" data-dismiss="modal" class="btn btn-danger" value="Cancelar" aria-label="Cancelar edición">
-											<p class="mensajeModalContrato" id="mensajeModalContrato" class="pdc-inline-msg"></p>
+										</div>
+										<div>
+											<p class="mensajeModalContrato pdc-inline-msg" id="mensajeModalContrato"></p>
+											<p class="pdc-contract-note">Guarda los cambios cuando completes el seguimiento del proceso.</p>
 										</div>
 									</div>
 								</form>
@@ -678,21 +1248,26 @@
 		</div>
 		<!-- Modal -->
 
-		<div class="modal_DefinirContrato modal fade" id="modalDefinirContratos" tabindex="-1" role="dialog" aria-labelledby="modal_DefinirContratoLabel">
+		<div class="modal_DefinirContrato modal fade aia-modal" id="modalDefinirContratos" tabindex="-1" role="dialog" aria-labelledby="modal_DefinirContratoLabel">
 			<div class="modal-dialog modal-lg" role="document">
 				<div class="modal-content">
 					<div class="modal-header">
-						<h2 class="modal-title h5" id="modalDefinirContratosLabel">
-							<p class="modal-body-texto-DefinirContrato" id="modal-body-texto-DefinirContrato">Definir Contratos</p>
-						</h2>
+						<div class="modal-title" id="modalDefinirContratosLabel">
+							<div class="aia-modal__eyebrow">AIA Construccion</div>
+							<h2 class="aia-modal__headline modal-body-texto-DefinirContrato" id="modal-body-texto-DefinirContrato">Definir Contratos</h2>
+							<p class="aia-modal__subtitle">Configura el numero de contratos asociados a cada paquete antes de guardar.</p>
+						</div>
 						<button type="button" class="close" data-dismiss="modal" aria-label="Close" onClick="location.reload()"><span aria-hidden="true">&times;</span></button>
 					</div>
 					<div class="modal-body">
 						<div class="row">
-							<div id="cuadro4" class="cuadro4 col-sm-12 col-md-12 col-lg-12 ">
-								<form id="formularioDefinirContrato" class="form form-horizontal" action="" method="POST">
-									<div class="form-group">
-										<div class="form-group parametro_Contrato">
+							<div id="cuadroDefinirContratos" class="cuadro4 col-sm-12 col-md-12 col-lg-12 ">
+								<form id="formularioDefinirContrato" class="form form-horizontal aia-modal__form" action="" method="POST">
+									<section class="form-group parametro_Contrato aia-modal__section">
+										<div class="aia-modal__section-header">
+											<h3 class="aia-modal__section-title">Distribucion de Contratos</h3>
+											<p class="aia-modal__hint">Ajusta la estructura por tipo de contrato y conserva el orden visual del paquete.</p>
+										</div>
 											<div class="table-responsive">
 												<table id="dt_definirContratos" class="table table-bordered w-100">
 													<thead class="thead-dark">
@@ -707,21 +1282,16 @@
 												</thead>
 												</table>
 											</div>
-										</div>
-									</div>
+									</section>
 									<!--Se crean los botones Guardar y Listar-->
-									<div class="form-group">
-										<div class="col-sm-offset-2 col-sm-12">
+									<div class="form-group aia-modal__actions">
+										<div class="col-sm-offset-2 col-sm-12 aia-modal__buttons">
 											<input id="btn_guardar_definirContratos" type="button" class="btn btn-primary" value="Guardar" onclick="guardar_DefinirContratos()" aria-label="Guardar definición de contratos">
 											<input id="btn_cancelar_definirContratos" type="button" data-dismiss="modal" class="btn btn-danger" value="Cancelar" onClick="location.reload()" aria-label="Cancelar definición">
-											<p class="mensajeModalDefinirContrato" id="mensajeModalDefinirContrato" class="pdc-inline-msg"></p>
 										</div>
+										<p class="mensajeModalDefinirContrato pdc-inline-msg aia-modal__message" id="mensajeModalDefinirContrato"></p>
 									</div>
 								</form>
-								<!--Se crea el mensaje emergente que dice si los comandos fueron ejecutados correctamente o no-->
-								<div class="col-sm-offset-2 col-sm-8">
-									<p class="mensaje"></p>
-								</div>
 							</div>
 						</div>
 					</div>
@@ -731,17 +1301,21 @@
 		<!-- Modal -->
 
 		<!-- Se crea el Modal que solicita la confirmación de eliminar un registro o no -->
-		<div class="modal fade" id="modalEliminar" tabindex="-1" role="dialog" aria-labelledby="modalEliminarLabel">
+		<div class="modal fade aia-modal aia-modal__confirm" id="modalEliminar" tabindex="-1" role="dialog" aria-labelledby="modalEliminarLabel">
 		  <div class="modal-dialog" role="document">
 		    <div class="modal-content">
 		      <div class="modal-header">
-		        <h2 class="modal-title h4" id="modalEliminarLabel">Eliminar Actividad</h2>
+		        <div class="modal-title" id="modalEliminarLabel">
+		          <div class="aia-modal__eyebrow">Accion sensible</div>
+		          <h2 class="aia-modal__title">Eliminar Actividad</h2>
+		          <p class="aia-modal__subtitle">Confirma esta accion antes de continuar.</p>
+		        </div>
 		        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 		      </div>
 		      <div class="modal-body">
-		        <p class="modal-body-texto-eliminar" id="modal-body-texto-eliminar"></p>
+		        <p class="modal-body-texto-eliminar aia-modal__body-copy" id="modal-body-texto-eliminar"></p>
 		      </div>
-		      <div class="modal-footer">
+		      <div class="modal-footer aia-modal__buttons">
 		        <button type="button" id="eliminar-usuario" class="btn btn-primary" data-dismiss="modal" data-toggle="modal">Aceptar</button>
 		        <!--data-target="#modal_CNP"-->
 		        <button type="button" class="btn btn-default" data-dismiss="modal" onClick='listar()'>Cancelar</button>
@@ -786,14 +1360,43 @@
 	<!--    <script type='text/javascript'>document.oncontextmenu = function(){return false}</script>-->
 
 	<script>
+		var autoSyncPdcOnLoad = <?php echo !empty($autoSyncPdcOnLoad) ? 'true' : 'false'; ?>;
+		var pdcSyncOrigin = <?php echo json_encode($pdcSyncOrigin ?? '', JSON_UNESCAPED_UNICODE); ?>;
+
 		/* Ejecuta las funciones listar, guardar y eliminar, solo cuando la página esta lista */
 		$(document).on("ready", function() {
 		  $("#formulario_nuevo").hide();
 			cargarDatosGeneralesPagina(document.getElementById('seccion').value);
 		});
 
+		var obtenerSemanaPdc = function() {
+			var semanaActual = parseInt(document.getElementById('semana').value, 10) || 0;
+			var maxSemana = parseInt(document.getElementById('Max_Semana').value, 10) || 0;
+
+			return semanaActual > 0 ? semanaActual : maxSemana;
+		}
+
+		var iniciarAutoActualizacionPdc = function() {
+			if (!autoSyncPdcOnLoad) {
+				return false;
+			}
+
+			autoSyncPdcOnLoad = false;
+			actualizarPDC({
+				onError: function() {
+					listar();
+					eliminar();
+				}
+			});
+
+			return true;
+		}
+
 		var cargaParametros = function() {
 			$('#S1,#S2,#S3,#S4,#S5,#paqueteS1,#paqueteS2,#paqueteS3,#paqueteS4,#paqueteS5,#MO1,#MO2,#MO3,#MO4,#MO5,#paqueteMO1,#paqueteMO2,#paqueteMO3,#paqueteMO4,#paqueteMO5,#SI1,#SI2,#SI3,#SI4,#SI5,#paqueteSI1,#paqueteSI2,#paqueteSI3,#paqueteSI4,#paqueteSI5').select2({tags: true, selectOnClose: true, allowClear: true});
+			if (iniciarAutoActualizacionPdc()) {
+				return;
+			}
 			listar();
 			eliminar();
 		}
@@ -820,11 +1423,21 @@
 
 		var table; // Global table variable
 		var activePDCFilters = []; // Store active filter states (Array)
+		var pdcColumnFilterConfig = {
+			3: { type: 'select', dataKey: 'tipoPaquete', ariaLabel: 'Filtrar tipo de contrato' },
+			4: { type: 'text', ariaLabel: 'Filtrar paquete de contratacion', placeholder: 'Filtrar' },
+			5: { type: 'text', ariaLabel: 'Filtrar actividades del proyecto', placeholder: 'Filtrar' },
+			6: { type: 'select', dataKey: 'estado', ariaLabel: 'Filtrar estado' },
+			7: { type: 'date', ariaLabel: 'Filtrar inicio del proceso de contratacion' },
+			31: { type: 'date', ariaLabel: 'Filtrar inicio actividades cronograma' },
+			32: { type: 'date', ariaLabel: 'Filtrar inicio actividades proyectado' },
+			33: { type: 'date', ariaLabel: 'Filtrar inicio actividades real' },
+			34: { type: 'text', ariaLabel: 'Filtrar observaciones', placeholder: 'Filtrar' }
+		};
 
 		/* Centralized Status Logic */
 		function getPDCState(data) {
 			if(data.titulo != 0) return 'header';
-			if(data.fechaInicioProyectada == "" || data.valorPresupuesto == "" || data.valorPresupuesto == null) return 'missing';
 			
 			let estado = data.estado || "";
 			if(estado.includes("Atrasado") && (estado.includes("no iniciado") || estado.includes("No iniciado"))) return 'critical';
@@ -833,6 +1446,7 @@
 			if(estado.includes("Terminado a tiempo")) return 'completed-ontime';
 			if(estado.includes("no iniciado") || estado.includes("No iniciado")) return 'not-started';
 			if(estado.includes("A tiempo")) return 'active';
+			if(data.fechaInicioProyectada == "" || data.valorPresupuesto == "" || data.valorPresupuesto == null) return 'missing';
 			
 			return 'standard';
 		}
@@ -856,6 +1470,133 @@
 			return (availableHeight > 200 ? availableHeight : 200) + "px";
 		} // Min height 200px
 
+		function escapePdcRegex(value) {
+			if ($.fn.dataTable && $.fn.dataTable.util && typeof $.fn.dataTable.util.escapeRegex === 'function') {
+				return $.fn.dataTable.util.escapeRegex(value);
+			}
+
+			return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+		}
+
+		function buildPdcFilterControl(columnIndex, config) {
+			var baseAttributes = 'class="pdc-column-filter form-control form-control-sm" data-column-index="' + columnIndex + '" data-filter-type="' + config.type + '" aria-label="' + config.ariaLabel + '"';
+
+			if (config.type === 'select') {
+				return '<select ' + baseAttributes + '><option value="">Todos</option></select>';
+			}
+
+			if (config.type === 'date') {
+				return '<input ' + baseAttributes + ' type="date">';
+			}
+
+			return '<input ' + baseAttributes + ' type="text" placeholder="' + (config.placeholder || 'Filtrar') + '">';
+		}
+
+		function renderPdcColumnFilterRow() {
+			var $thead = $('#dt_cliente thead');
+			var $baseRow = $thead.find('tr').first();
+			var totalColumns = $baseRow.children('th').length;
+			var $filterRow = $('<tr class="pdc-filter-row"></tr>');
+
+			$thead.find('tr.pdc-filter-row').remove();
+
+			for (var columnIndex = 0; columnIndex < totalColumns; columnIndex++) {
+				var config = pdcColumnFilterConfig[columnIndex] || null;
+				var $cell = $('<th></th>');
+
+				if (config) {
+					$cell.html(buildPdcFilterControl(columnIndex, config));
+				} else {
+					$cell.addClass('pdc-filter-empty');
+				}
+
+				$filterRow.append($cell);
+			}
+
+			$thead.append($filterRow);
+		}
+
+		function getPdcFilterHeads(dataTable) {
+			var $heads = $('#dt_cliente thead');
+
+			if (dataTable && typeof dataTable.table === 'function') {
+				var $container = $(dataTable.table().container());
+				var $scrollHead = $container.find('div.dataTables_scrollHead thead');
+
+				if ($scrollHead.length) {
+					$heads = $heads.add($scrollHead);
+				}
+			}
+
+			return $heads;
+		}
+
+		function populatePdcSelectFilterOptions(dataTable) {
+			var $filterHeads = getPdcFilterHeads(dataTable);
+
+			Object.keys(pdcColumnFilterConfig).forEach(function(key) {
+				var columnIndex = Number(key);
+				var config = pdcColumnFilterConfig[columnIndex];
+				var $filter = $filterHeads.find('.pdc-column-filter[data-column-index="' + columnIndex + '"]');
+
+				if (!$filter.length || config.type !== 'select') {
+					return;
+				}
+
+				var values = [];
+				var seen = {};
+
+				dataTable.rows().every(function() {
+					var rowData = this.data() || {};
+					var value = $.trim(String(rowData[config.dataKey] || ''));
+
+					if (Number(rowData.titulo) !== 0 || value === '' || seen[value]) {
+						return;
+					}
+
+					seen[value] = true;
+					values.push(value);
+				});
+
+				values.sort(function(a, b) {
+					return a.localeCompare(b);
+				});
+
+				$filter.empty().append('<option value="">Todos</option>');
+
+				values.forEach(function(value) {
+					$filter.append($('<option></option>').val(value).text(value));
+				});
+			});
+		}
+
+		function bindPdcColumnFilters(dataTable) {
+			var $filterRow = getPdcFilterHeads(dataTable).find('tr.pdc-filter-row');
+
+			$filterRow.off('.pdcColumnFilters');
+			$filterRow.on('click.pdcColumnFilters', '.pdc-column-filter', function(e) {
+				e.stopPropagation();
+			});
+			$filterRow.on('keyup.pdcColumnFilters input.pdcColumnFilters change.pdcColumnFilters', '.pdc-column-filter', function() {
+				var $control = $(this);
+				var columnIndex = Number($control.data('column-index'));
+				var filterType = $control.data('filter-type');
+				var value = $.trim(String($control.val() || ''));
+
+				if (filterType === 'select' || filterType === 'date') {
+					if (value === '') {
+						dataTable.column(columnIndex).search('').draw();
+						return;
+					}
+
+					dataTable.column(columnIndex).search('^' + escapePdcRegex(value) + '$', true, false).draw();
+					return;
+				}
+
+				dataTable.column(columnIndex).search(value).draw();
+			});
+		}
+
 		/* DataTables Filtering Logic (Multi-Select) */
 		$.fn.dataTable.ext.search.push(
 			function(settings, data, dataIndex, rowData) {
@@ -876,14 +1617,16 @@
 			// Initial Height Calculation
 			var alturatabla = calcDataTableHeight();
 			document.getElementById('cuadroTabla').style.height = "auto"; // Let it grow/shrink
+			renderPdcColumnFilterRow();
 
 
 		  table = $("#dt_cliente").DataTable({
-		    "dom": "<'row filaBotones mb-2 align-items-center'<'col-auto mr-auto pl-0'<'toolbarAcciones'>><'col-auto ml-auto pr-0'<'toolbarNavegacion'>><'col-12 p-0 mt-2 d-flex align-items-center'<'toolbarFilaMensajes d-flex align-items-center' ><'ml-auto'<'toolbarFiltro d-flex align-items-center'>>>>t<'row'<'col-md-6'i>><'clear'>",
+		    "dom": "<'row filaBotones mb-2 align-items-center'<'col-auto mr-auto pl-0'<'toolbarAcciones'>><'col-auto ml-auto pr-0'<'toolbarNavegacion'>>><'row mt-2'<'col-12 p-0'<'toolbarFilaMensajes d-flex align-items-center'>>>t<'row'<'col-md-6'i>><'clear'>",
 		    "destroy": true,
 				"orderFixed":[35, "asc"],
 
 		    "autoWidth": false,
+				"orderCellsTop": true,
 		    "fixedHeader": false,
 		    "scrollX": false,
 		    //                console.log($(document).height());
@@ -953,6 +1696,10 @@
 						'targets': [6],
 						'width':'11%',
 						'render': function ( data, type, row, meta ) {
+							if (type !== 'display') {
+								return data || '';
+							}
+
 							var titulo=row["titulo"];
 								var texto = row["estado"];
 								var id = row["id"];
@@ -989,6 +1736,10 @@
 						'targets': [7],
 						'width':'9%',
 						'render': function ( data, type, row, meta ) {
+							if (type !== 'display') {
+								return data || '';
+							}
+
 							var titulo=row["titulo"];
 								var procesoIniciado=row["procesoIniciado"]*1;
 								var fechaInicioProceso= new Date(row["fechaElaboracionPliegos"]);
@@ -1091,11 +1842,10 @@
 
 				"createdRow": function( row, data, dataIndex){
 						var state = getPDCState(data);
+						$(row).removeClass('Titulo pdc-header pdc-missing-data pdc-critical-delay pdc-delayed pdc-completed-delayed pdc-completed-ontime pdc-not-started pdc-active');
 
 						if(state === 'header'){
-							$(row).addClass('Titulo');
-							$('td', row).css('background-color', '#035766');
-							$('td', row).css('color', '#ffffff');
+							$(row).addClass('Titulo pdc-header');
 						} 
 						else if(state === 'missing') $(row).addClass('pdc-missing-data');
 						else if(state === 'critical') $(row).addClass('pdc-critical-delay');
@@ -1125,6 +1875,11 @@
 					for(var k in counts) {
 						$('#count-'+k).text('('+counts[k]+')');
 					}
+				},
+				"initComplete": function() {
+					var api = this.api();
+					populatePdcSelectFilterOptions(api);
+					bindPdcColumnFilters(api);
 				},
 
 		    "language": idioma_espanol
@@ -1161,7 +1916,7 @@
 			$("div.toolbarAcciones").html('<div class="grupo_botones1 ps-toolbar-actions" role="group" aria-label="Actions"><button id="btn_actualizarPDC" class="btn btn-primary btn-sm ps-btn-gap" title="Actualizar items" onclick="actualizarPDC()">Actualizar <i class="fas fa-sync fa-lg"></i></button><button id="btn_definirContratosPDC" class="btn btn-warning btn-sm ps-btn-gap" title="Desglosar Subcontratos" onclick="obtener_data_definirContratos()">Desglosar <i class="fa fa-list-ol fa-lg" aria-hidden="true"></i></button></div>');
 			
 			// 2. Navigation Bar (Center/Middle)
-			$("div.toolbarNavegacion").html('<div class="grupo_botones_semanal_madre ps-toolbar-nav-wrap"><div class="ps-module-switcher" role="tablist" aria-label="Navegacion general"><button id="btn_Actividades" type="button" class="ps-module-tab" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_listadoActividades&semana='+semana+'\'" aria-label="Ir a Actividades"><i class="fas fa-table" aria-hidden="true"></i><span>Actividades</span></button><button id="btn_contratos" type="button" class="ps-module-tab" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_contratos&semana='+semana+'\'" aria-label="Ir a Contratos"><i class="fas fa-file-alt" aria-hidden="true"></i><span>Contratos</span></button><button id="btn_planCompras" type="button" class="ps-module-tab is-active" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=planCompras&semana='+semana+'\'" aria-label="Ir a Plan de Compras" aria-current="page"><i class="fas fa-shopping-cart" aria-hidden="true"></i><span>Plan de Compras</span></button></div></div>');
+			$("div.toolbarNavegacion").html('<div class="grupo_botones_semanal_madre ps-toolbar-nav-wrap"><div class="ps-module-switcher" role="tablist" aria-label="Navegacion general"><button id="btn_Actividades" type="button" class="ps-module-tab" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_listadoActividades&semana='+semana+'\'" aria-label="Ir a Actividades"><i class="fas fa-table" aria-hidden="true"></i><span>Actividades</span></button><button id="btn_contratos" type="button" class="ps-module-tab" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_contratos&semana='+semana+'\'" aria-label="Ir a Contratos"><i class="fas fa-file-alt" aria-hidden="true"></i><span>Contratos</span></button><button id="btn_planCompras" type="button" class="ps-module-tab is-active" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=planCompras&semana='+semana+'&origen=planCompras\'" aria-label="Ir a Plan de Compras" aria-current="page"><i class="fas fa-shopping-cart" aria-hidden="true"></i><span>Plan de Compras</span></button></div></div>');
 
 			$("div.toolbarFilaMensajes").html(`
 				<div class="pdc-legend">
@@ -1219,10 +1974,7 @@
 				table.draw();
 			};
 
-			$("div.toolbarFiltro").html('<div class="ps-toolbar-filter"><input id="input_buscador" type="text" class="input_buscador form-control form-control-sm ps-filter-input" placeholder="Filtro"><button id="btn_limpiar_buscador" type="button" class="btn btn-danger ps-filter-clear"><i class="fas fa-times-circle"></i> Limpiar</button></div>');
-
 			maestroPermisos(document.getElementById('permiso').value);
-			activarBuscador("#dt_cliente tbody", table);
 			obtener_data_editar("#dt_cliente tbody", table);
 			obtener_id_eliminar("#dt_cliente tbody", table);
 		}
@@ -1241,6 +1993,8 @@
 				e.stopPropagation();	
 				if (only_once == true) {
 					$("#nombrePaqueteContratacion, #tipoPaquete, #tipoProveedorAdjudicado, #idProveedorExistente, #numeroContrato, #aplicaPolizas, #fechaVencimientoPolizas, #valorPresupuesto, #valorPrimeraNegociacion, #valorAdjudicado, #valorAnticipo, #actividadesDelContrato, #fechaInicioContrato, #fechaActual, #diasElaboracionPliegos, #diasIngresoLicify, #diasEntregaPliegos, #diasReciboPropuestas, #diasCuadrosComparativos, #diasLegalizacionContrato, #diasFabricacion, #diasInsumosObra, #fechaRealElaboracionPliegos, #fechaRealIngresoLicify, #fechaRealEntregaPliegos, #fechaRealReciboPropuestas, #fechaRealCuadrosComparativos, #fechaRealLegalizacionContrato, #fechaRealFabricacion, #fechaRealInsumosObra, #fechaRealInicioProyectadaContrato, #observacionesContrato").val("");
+					actualizarEstadoProveedorBloqueado(false);
+					document.getElementById('mensajeModalInformacionAdjudicado').innerHTML = '';
 
 					$("#valorReclamado, #valorDevoluciones").val(0);
 
@@ -1310,6 +2064,7 @@
 							}
 						}else{
 							document.getElementById('nitAdjudicado').value = ""
+							actualizarEstadoProveedorBloqueado(false);
 						}
 
 						guardar_modificar();
@@ -1354,7 +2109,7 @@
 			$("#modalDefinirContratos").off("shown.bs.modal.dtDefinirContratos").on("shown.bs.modal.dtDefinirContratos", function(){
 				var alturatabla = getDefinirContratosTableHeight();
 				var tableDefinirContratos = $("#dt_definirContratos").DataTable({
-					"dom": "<'row filaMensajesDefinirContratos'<'col-md-2 ml-auto p-0'<'toolbarResetFiltroDefinirContratos'>><'col-md-4 ml-auto mr-2 p-0'<'toolbarFiltroDefinirContratos'>>>t<'row'<'col-md-12'>><'clear'>",
+					"dom": "t<'row'<'col-md-12'>><'clear'>",
 					"destroy": true,
 					"orderFixed":[4, "asc"],
 					"autoWidth": false,
@@ -1435,24 +2190,11 @@
 					tableDefinirContratos.columns.adjust().draw(false);
 				});
 
-				$("div.toolbarFiltroDefinirContratos").html('<div class="ps-toolbar-filter"><input id="input_buscadorDefinirContratos" type="text" class="input_buscadorDefinirContratos form-control form-control-sm ps-filter-input" placeholder="Fitro"></div>');
-
-				activarBuscadorDefinirContratos("#dt_definirContratos tbody", tableDefinirContratos);
 				editarDefinirContratos();
 			});
 			
 			$("#modalDefinirContratos").modal("show");
 
-		}
-
-		var activarBuscadorDefinirContratos = function(tbody, table){
-			$('#input_buscadorDefinirContratos').on("keyup", function (e) {
-				table.search( this.value ).draw();
-			});
-
-			if($("#input_buscadorDefinirContratos").val() != ''){
-				table.search( $("#input_buscadorDefinirContratos").val()).draw();
-			}
 		}
 
 		var editarDefinirContratos = function(){
@@ -1499,6 +2241,36 @@
 			});
 		}
 
+		var actualizarEstadoProveedorBloqueado = function(bloqueado) {
+			var campos = [
+				document.getElementById('subcontratistaAdjudicado'),
+				document.getElementById('correoAdjudicado'),
+				document.getElementById('tipoProveedorAdjudicado')
+			];
+			var badges = [
+				document.getElementById('lockBadgeSubcontratistaAdjudicado'),
+				document.getElementById('lockBadgeCorreoAdjudicado'),
+				document.getElementById('lockBadgeTipoProveedorAdjudicado')
+			];
+
+			campos.forEach(function(campo) {
+				if (!campo) {
+					return;
+				}
+
+				campo.classList.toggle('pdc-provider-locked', !!bloqueado);
+				campo.setAttribute('aria-readonly', bloqueado ? 'true' : 'false');
+			});
+
+			badges.forEach(function(badge) {
+				if (!badge) {
+					return;
+				}
+
+				badge.hidden = !bloqueado;
+			});
+		}
+
 		/*Verificar si un proveedor ya existe en la base de datos y si existe traer la información al formulario del contrato*/
 		var verificarProveedor = function(base) {
 		  var nitAdjudicado = document.getElementById('nitAdjudicado'),
@@ -1527,22 +2299,25 @@
 		  }).done(function(info) {
 		    var json_info = (typeof info === 'string' ? JSON.parse( info ) : info);
 		    //console.log(json_info);
-		    if (json_info == "No Existe") {
-		      idProveedorExistente.value = '';
-		      subcontratistaAdjudicado.value = '';
-		      correoAdjudicado.value = '';
-		      subcontratistaAdjudicado.removeAttribute("readonly", true);
-		      correoAdjudicado.removeAttribute("readonly", true);
-		      document.getElementById('mensajeModalInformacionAdjudicado').innerHTML = "Se creará un nuevo proveedor en la base de datos";
-		    } else {
-		      nitAdjudicado.value = json_info['data'][0]['NIT'];
-		      subcontratistaAdjudicado.value = json_info['data'][0]['subcontratista'];
-		      correoAdjudicado.value = json_info['data'][0]['correo_contacto'];
-		      idProveedorExistente.value = json_info['data'][0]['Id'];
-		      subcontratistaAdjudicado.setAttribute("readonly", true);
-		      correoAdjudicado.setAttribute("readonly", true);
-		      document.getElementById('mensajeModalInformacionAdjudicado').style.color = "blue";
-		      document.getElementById('mensajeModalInformacionAdjudicado').innerHTML = "Se ha encontrado un proveedor registrado en la base de datos";
+			    if (json_info == "No Existe") {
+			      idProveedorExistente.value = '';
+			      subcontratistaAdjudicado.value = '';
+			      correoAdjudicado.value = '';
+			      subcontratistaAdjudicado.removeAttribute("readonly", true);
+			      correoAdjudicado.removeAttribute("readonly", true);
+			      actualizarEstadoProveedorBloqueado(false);
+			      document.getElementById('mensajeModalInformacionAdjudicado').style.color = "#7a3b14";
+			      document.getElementById('mensajeModalInformacionAdjudicado').innerHTML = "Se creará un nuevo proveedor en la base de datos";
+			    } else {
+			      nitAdjudicado.value = json_info['data'][0]['NIT'];
+			      subcontratistaAdjudicado.value = json_info['data'][0]['subcontratista'];
+			      correoAdjudicado.value = json_info['data'][0]['correo_contacto'];
+			      idProveedorExistente.value = json_info['data'][0]['Id'];
+			      subcontratistaAdjudicado.setAttribute("readonly", true);
+			      correoAdjudicado.setAttribute("readonly", true);
+			      actualizarEstadoProveedorBloqueado(true);
+			      document.getElementById('mensajeModalInformacionAdjudicado').style.color = "#7a3b14";
+			      document.getElementById('mensajeModalInformacionAdjudicado').innerHTML = "Se ha encontrado un proveedor registrado en la base de datos";
 		      // $("#mensajeModalInformacionAdjudicado").fadeOut(10000, function(){
 		      // 	$(this).html("");
 		      // 	$(this).fadeIn(3000);
@@ -1992,10 +2767,11 @@
 			}
 		}
 
-		var actualizarPDC=function(){
+		var actualizarPDC=function(options){
+			options = options || {};
 			$("#modal_spinner").modal("show");
 			var db = document.getElementById('baseDatos').value;
-			var semana = document.getElementById('semana').value;
+			var semana = obtenerSemanaPdc();
 			$.ajax({
 				method:"POST",
 				url: "/legacy/pdc/actualizar_pdc.php?db="+db,
@@ -2006,6 +2782,14 @@
 				// console.log(json_info);
 				// console.log(json_info["respuesta"]);
 				if(json_info["respuesta"]=="BIEN"){
+					if (options.reloadOnSuccess === false) {
+						$("#modal_spinner").modal("hide");
+						if (typeof options.onSuccess === 'function') {
+							options.onSuccess(json_info);
+						}
+						return;
+					}
+
 					location.assign("/pdc");
 					// document.getElementById('mensaje').style.color = "blue";
 					// document.getElementById('mensaje').innerHTML = "El plan de compras se ha actualizado";
@@ -2013,6 +2797,19 @@
 					// 	$(this).html("");
 					// 	$(this).fadeIn(3000);
 					// });
+				} else {
+					$("#modal_spinner").modal("hide");
+					if (typeof options.onError === 'function') {
+						options.onError(json_info);
+					}
+				}
+			}).fail(function(xhr, status, error) {
+				$("#modal_spinner").modal("hide");
+				if (window.AIA && window.AIA.Notice && typeof window.AIA.Notice.error === 'function') {
+					window.AIA.Notice.error('No se pudo actualizar el Plan de Compras' + (pdcSyncOrigin ? ' desde ' + pdcSyncOrigin : '') + '.');
+				}
+				if (typeof options.onError === 'function') {
+					options.onError({"respuesta": "ERROR", "detalle": error || status || xhr.statusText || ''});
 				}
 			});
 		}
@@ -2024,17 +2821,46 @@
 				$("#nitAdjudicado").val(NIT_nuevo);
 		}
 
+		var parseFechaIsoLocal = function(valor) {
+			var match = /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/.exec($.trim(String(valor || '')));
+
+			if (!match) {
+				return null;
+			}
+
+			var year = parseInt(match[1], 10);
+			var month = parseInt(match[2], 10) - 1;
+			var day = parseInt(match[3], 10);
+			var fecha = new Date(year, month, day);
+
+			if (fecha.getFullYear() !== year || fecha.getMonth() !== month || fecha.getDate() !== day) {
+				return null;
+			}
+
+			return fecha;
+		}
+
 		var selectoresFecha=function(fecha){
-			$("#fechaReal" + fecha).datepicker( "destroy" );
-			dia = new Date($( "#fecha" + fecha ).val());
-			dia = new Date(dia.getFullYear()+"-"+(dia.getMonth()+1)+"-"+(dia.getDate()+1));
-			$( "#fechaReal" + fecha ).datepicker({dateFormat: 'yy-mm-dd',
-																					 changeMonth: true,
-																					 changeYear: true,
-																					 showOtherMonths: true,
-																					 selectOtherMonths: true,
-																					 defaultDate:dia,
-																					});
+			var $campoReal = $("#fechaReal" + fecha);
+			var fechaRealActual = parseFechaIsoLocal($campoReal.val());
+			var fechaBase = parseFechaIsoLocal($("#fecha" + fecha).val());
+			var fechaFallback = parseFechaIsoLocal($("#fecha" + fecha + "Teorica").val());
+			var fechaInicial = fechaRealActual || fechaBase || fechaFallback;
+
+			$campoReal.datepicker("destroy");
+			$campoReal.datepicker({dateFormat: 'yy-mm-dd',
+																 changeMonth: true,
+																 changeYear: true,
+																 showOtherMonths: true,
+																 selectOtherMonths: true,
+																 defaultDate: fechaInicial || null,
+																 beforeShow: function(input, inst) {
+																 	if (!$.trim($(input).val()) && fechaInicial) {
+																 		$(input).datepicker('setDate', fechaInicial);
+																 		$(input).val('');
+																 	}
+																 },
+															});
 		};
 
 		var bloqueoFechaVencimientoPolizas = function(){

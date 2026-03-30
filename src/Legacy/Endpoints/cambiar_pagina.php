@@ -3,10 +3,18 @@
 session_start();
 ob_start();
 if (isset($_SESSION['usuario'])) {
-    $seccion = $_GET['seccion'];
-    $semana = $_GET['semana'];
+    $seccionAnterior = (string)($_SESSION['seccion'] ?? '');
+    $seccion = $_GET['seccion'] ?? '';
+    $semana = $_GET['semana'] ?? 0;
+    $origen = trim((string)($_GET['origen'] ?? $seccionAnterior));
+
     $_SESSION['semana'] = $semana;
     $_SESSION['seccion'] = $seccion;
+
+    if ($seccion === 'planCompras' && $origen !== '' && $origen !== 'planCompras') {
+        $_SESSION['pdc_sync_on_load'] = true;
+        $_SESSION['pdc_sync_origin'] = $origen;
+    }
 
     if ($seccion == 'contenido') {
         header("Location: contenido/contenido.php");

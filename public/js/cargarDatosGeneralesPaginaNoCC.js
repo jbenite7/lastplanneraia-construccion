@@ -212,7 +212,10 @@ var cargarDatosGeneralesPagina = function (seccion) {
           '../cambiar_pagina.php?seccion=info_contratos&semana=' + datosGenerales.Max_Semana;
 
         document.getElementById('planCompras').href =
-          '../cambiar_pagina.php?seccion=planCompras&semana=' + datosGenerales.Max_Semana;
+          '../cambiar_pagina.php?seccion=planCompras&semana=' +
+          datosGenerales.Max_Semana +
+          '&origen=' +
+          encodeURIComponent(seccion || '');
 
         document.getElementById('informe_lps').href =
           '../cambiar_pagina.php?seccion=indicadores&semana=' + datosGenerales.Max_Semana;
