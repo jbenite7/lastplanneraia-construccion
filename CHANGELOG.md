@@ -17,6 +17,7 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ### Cambiado
 
+- **Shell Unificado de Modales en Compras:** Listado de Actividades, Contratos y PDC ahora comparten una base visual consistente para headers, formularios, acciones y estados responsive, reduciendo desalineaciones entre modales operativos.
 - **Refactor de Seguridad PDC:** El script `actualizar_pdc.php` ahora utiliza `ModuleRequestContext` para resolver la base de datos y semana, e integra `rbac_guard_require_permission` para validar permisos antes de cualquier operación de escritura.
 - **Hardening de APIs LPS:** Actualización de `PdcApiController`, `ContratosApiController` y `ListadoActividadesApiController` para mejorar la resolución de contexto y el manejo de excepciones mediante bloques `Throwable`.
 - **Blindaje de Escrituras por Semana Activa:** Las operaciones sensibles en Contratos, Listado de Actividades y PDC ahora se acotan al contexto operativo resuelto por `ModuleRequestContext` para reducir cruces de semana/proyecto.
@@ -27,6 +28,8 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ### Corregido
 
+- **Select2 Desanclado en Nueva Actividad:** El selector de tarea inicial vuelve a desplegarse ligado al campo correcto dentro del modal, con dropdown estable y sin desorganizar el layout al escribir o elegir opciones largas.
+- **Autoactualización de PDC al Navegar Entre Módulos:** El flujo hacia `/pdc` ahora conserva la semana operativa válida, marca el origen de navegación y ejecuta una sincronización one-shot del plan de compras al llegar desde Programa General, Actividades o Contratos.
 - **Compatibilidad SQL en Detección de Tablas:** Corrección del uso de placeholders en `SHOW TABLES LIKE` mediante el uso de `quote()` nativo de PDO, asegurando compatibilidad con el driver de base de datos en entornos SiteGround/Docker.
 - **Error 500 en Remoción de Proyectos:** Implementación de manejo de excepciones (`try-catch`) en `UserController::removeProject` y `ProjectController::removeMember` para evitar fallos catastróficos si el servicio de sincronización falla, devolviendo ahora errores descriptivos.
 - **Estabilidad en Gestión de Usuarios y Miembros:** Resolución de Error 500 al intentar eliminar usuarios o miembros, unificando el uso de `tableExists` seguro en el Core de la Base de Datos y blindando controladores con `try-catch`.
