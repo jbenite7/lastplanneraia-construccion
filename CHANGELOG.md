@@ -5,6 +5,20 @@ Todos los cambios notables en este proyecto serán documentados en este archivo.
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0/).
 
+## [1.1.0] - 2026-03-31
+
+### Añadido
+
+- **IA Agile Operative OS 2026:** Integración completa de la "Constitución IA" en `GEMINI.md`, definiendo el Protocolo Sniper, Kill Switch y planificación por fases (SDD/PDCA) para una operación de ingeniería de alta precisión.
+- **Apple-Style Design System (Fase 1):** Implementación de una arquitectura de diseño premium basada en CSS nativo y variables OKLCH/HSL en `styles.css` y `buttons.css`.
+- **Modernización de Vista PDC:** Refactorización estética y funcional de `views/pdc/pdc.view.php` con tipografías premium (Montserrat/Inter) y componentes visuales alineados al manual de marca AIA.
+- **Documentación de Flujo IA:** Incorporación de nuevos walkthroughs estratégicos para la operación del agente en entornos complejos.
+
+### Cambiado
+
+- **Refactor CSS Modular:** Migración de estilos hacia un motor de variables centralizado, facilitando la consistencia estética entre los módulos MVC y Legacy.
+- **Actualización de Gobernanza:** Endurecimiento de las reglas de edición y validación del agente para garantizar la integridad del código fuente.
+
 ## [Sin publicar]
 
 ### Añadido

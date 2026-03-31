@@ -27,6 +27,8 @@ gantt
     Analítica & Notificaciones  :active,  des4, 2026-03-05, 7d
     Migración LPS Core (Fase 4) :done,    des6, 2026-03-05, 2026-03-06
     Shared Schema (DB)         :         des5, after des6, 21d
+    Optimización IA Agile       :done,    des12, 2026-03-31, 1d
+    OS Operativo IA Sniper      :done,    des13, 2026-03-31, 1d
 ```
 
 ---
@@ -136,6 +138,8 @@ gantt
 - [x] **Estabilización Operativa de Listado/Contratos/PDC (2026-03-30)**: Listado de Actividades ahora toma la semana máxima activa y resuelve la tarea de inicio por consecutivo real; Contratos recibió un refactor visual del modal de edición; y PDC consolidó paquetes con `general_dias_procesos_contratacion` según el tipo de contrato para mejorar exactitud y navegación del flujo de compras.
 - [x] **Pulido Final de Navegación y Modales de Compras (2026-03-30)**: Se estabilizó el modal de Nueva Actividad con Select2 anclado al campo y layout consistente durante la captura, se unificó el shell visual de modales en Compras y PDC quedó configurado para autoactualizarse una sola vez al entrar desde PG, Actividades o Contratos manteniendo la semana operativa correcta.
 - [x] **Word Wrap en Selector de Proyectos (2026-03-26)**: Actualización de reglas CSS (`white-space: normal`, `word-break: break-word`) en el componente de selección de proyectos para revelar el nombre completo sin recortes, mejorando la usabilidad de lectura rápida.
+- [x] **Fase 11 - IA Agile Operative OS 2026 ✅ (2026-03-31)**: Adopción del Protocolo Sniper, Kill Switch de 5 intentos, ciclos PDCA y planificación por fases (Pro Planning) para maximizar la velocidad de entrega y la estabilidad del agente.
+- [x] **Configuración de la Bitácora IA**: Refactorización del `task-planner` para eliminar logs redundantes y favorecer planes quirúrgicos atómicos.
 - **Select2 Arquitectura Inteligente y UI/UX Premium (2026-03-04):** Consolidación de Select2 Múltiple paramétrico y aislado, evadiendo colisiones del motor "outside clicks" de Handsontable mediante DOM-nesting atado directamente a la celda activa (`this.TD`). Refinamiento exhaustivo inyectando CSS modular para arreglos de espaciado interactivo, alineación flexible (`flex-wrap`) de chips y erradicación de gaps inter-elementos vía resets absolutos. Se forzó despliegue con actualizador de cache manual.
 - **Erradicación de DataTables (2026-03-03):** Se eliminó por completo la dependencia visual y los archivos base (`*.view.nuevaBarra.php`) del antiguo jQuery DataTables en las vistas maestras de Programación General, Programación Intermedia y Programación Semanal, consolidando Handsontable como la única tecnología de grilla.
 - [x] **[Hito 2 completado en refactor]** Ajustar breakpoints y overflow del header (Navbar global). Implementados breakpoints `xl`, `clamp()` typography y truncado inteligente por CSS (`navbar.css` y archivos base JS/PHP actualizados).

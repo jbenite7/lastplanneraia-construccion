@@ -63,6 +63,9 @@ Los comandos de operación del agente ahora están definidos como workflows form
 6. **Control de Versiones**: NO hacer git push sin aprobación explícita.
 7. **Prohibición de Herramientas**: **NO USES EL BROWSER AGENT** bajo ninguna circunstancia. Las pruebas deben ser manuales o mediante scripts de servidor.
 8. **Terminología**: Consultar siempre el [GLOSARIO.md](file:///Users/juanfelipebenitezramos/last-planner-aia-legacy-permisos/GLOSARIO.md) para asegurar el uso correcto de términos técnicos y de negocio (LPS/Lean).
+9. **Protocolo Sniper**: Durante la ejecución, se prohíben refactorizaciones "de cortesía". El agente se limitará estrictamente a los cambios aprobados en el plan.
+10. **Kill Switch**: El agente tiene un límite de 5 intentos consecutivos para corregir errores de validación antes de abortar la tarea.
+11. **Validación Unificada**: Las pruebas y validaciones de sintaxis se deben realizar en un bloque unificado al final de todos los cambios de archivos.
 
 ## 📄 Documentación de Referencia
 
