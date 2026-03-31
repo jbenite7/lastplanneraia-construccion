@@ -354,7 +354,7 @@ function generarEstadoProceso($db, $dbName, $semana)
             }
         }
 
-        $diagnostico = ($posicion >= $deberiaHoy) ? "A tiempo" : "Atrasado!!";
+        $diagnostico = ($posicion >= $deberiaHoy) ? "En Curso" : "Atrasado!!";
 
         if ($posicion === 8) {
             $estadoFinal = ($pasos[8][0] > $pasos[8][1]) ? "Terminado con retrasos" : "Terminado a tiempo";

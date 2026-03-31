@@ -5,67 +5,7 @@
 	<!--Script cque va al archivo linksComunesHead2.js-->
 	<script type="text/javascript" src="/js/linksComunesHead2.js?v=20260325a" charset="utf-8"></script>
 	<style>
-		/* Modern 2026 PDC Styles */
-		.Titulo td,
-		.pdc-header td {
-			background-color: #8b4011 !important;
-			color: #fafafa !important;
-			font-family: 'Montserrat', sans-serif;
-			font-weight: 600;
-			letter-spacing: 0.02em;
-			border-color: rgba(232, 119, 34, 0.28) !important;
-		}
-		.Titulo td *,
-		.pdc-header td * {
-			color: #fafafa !important;
-		}
-		.Titulo td:first-child,
-		.pdc-header td:first-child {
-			box-shadow: inset 4px 0 0 #e87722 !important;
-		}
-		.pdc-missing-data td {
-			background-color: #f3e8ff !important;
-			color: #6b21a8 !important;
-		}
-		.pdc-critical-delay td {
-			background-color: #fecaca !important;
-			color: #7f1d1d !important;
-			font-weight: 600;
-		}
-		.pdc-delayed td {
-			background-color: #fee2e2 !important;
-			color: #991b1b !important;
-		}
-		.pdc-completed-delayed td {
-			background-color: #fffbeb !important;
-			color: #92400e !important;
-		}
-		.pdc-completed-ontime td {
-			background-color: #f0fdf4 !important;
-			color: #166534 !important;
-		}
-		.pdc-active td {
-			background-color: #dbeafe !important;
-			color: #1e40af !important;
-		}
-		.pdc-not-started td {
-			background-color: #f1f5f9 !important;
-			color: #475569 !important;
-		}
-		.pdc-missing-data td *,
-		.pdc-critical-delay td *,
-		.pdc-delayed td *,
-		.pdc-completed-delayed td *,
-		.pdc-completed-ontime td *,
-		.pdc-active td *,
-		.pdc-not-started td * {
-			color: inherit !important;
-		}
-		/* Hover effect for better readability - Clean & Modern */
-		#dt_cliente tbody tr:not(.Titulo):not(.pdc-missing-data):not(.pdc-critical-delay):not(.pdc-delayed):not(.pdc-completed-delayed):not(.pdc-completed-ontime):not(.pdc-active):not(.pdc-not-started):hover td {
-			background-color: #f1f5f9 !important; /* Slate-100 hover */
-			transition: background-color 0.2s ease;
-		}
+		/* PDC state colors and chips are now in public/css/styles.css */
 
 		/* Legend / Convenciones Styles */
 		.pdc-legend {
@@ -134,14 +74,7 @@
 			transform: scale(0.95);
 		}
 
-		/* Chip Colors */
-		.pdc-legend-item.missing { background-color: #f3e8ff; color: #6b21a8; border-color: #e9d5ff; }
-		.pdc-legend-item.critical { background-color: #fecaca; color: #7f1d1d; border-color: #fca5a5; }
-		.pdc-legend-item.delayed { background-color: #fee2e2; color: #991b1b; border-color: #fecaca; }
-		.pdc-legend-item.completed-late { background-color: #fffbeb; color: #92400e; border-color: #fde68a; }
-		.pdc-legend-item.completed-ontime { background-color: #f0fdf4; color: #166534; border-color: #bbf7d0; }
-		.pdc-legend-item.active { background-color: #dbeafe; color: #1e40af; border-color: #bfdbfe; }
-		.pdc-legend-item.not-started { background-color: #f1f5f9; color: #475569; border-color: #e2e8f0; }
+		/* Chip Colors: now in public/css/styles.css */
 
 		/* Chip Badge (Counter) */
 		.count-badge {
@@ -1423,6 +1356,17 @@
 
 		var table; // Global table variable
 		var activePDCFilters = []; // Store active filter states (Array)
+		var PDC_ROW_STATE_CLASSES = 'Titulo pdc-header pdc-missing-data pdc-critical-delay pdc-delayed pdc-completed-delayed pdc-completed-ontime pdc-not-started pdc-active';
+		var PDC_STATE_ROW_CLASS_MAP = {
+			header: 'Titulo pdc-header',
+			missing: 'pdc-missing-data',
+			critical: 'pdc-critical-delay',
+			delayed: 'pdc-delayed',
+			'completed-late': 'pdc-completed-delayed',
+			'completed-ontime': 'pdc-completed-ontime',
+			'not-started': 'pdc-not-started',
+			active: 'pdc-active'
+		};
 		var pdcColumnFilterConfig = {
 			3: { type: 'select', dataKey: 'tipoPaquete', ariaLabel: 'Filtrar tipo de contrato' },
 			4: { type: 'text', ariaLabel: 'Filtrar paquete de contratacion', placeholder: 'Filtrar' },
@@ -1435,20 +1379,42 @@
 			34: { type: 'text', ariaLabel: 'Filtrar observaciones', placeholder: 'Filtrar' }
 		};
 
+		function normalizePDCStatusDisplay(value) {
+			return String(value || '').replace(/^A tiempo(?=;|$)/, 'En Curso');
+		}
+
+		function isPDCMissingData(data) {
+			var fechaInicioProyectada = $.trim(String((data && data.fechaInicioProyectada) || ''));
+			var valorPresupuesto = data ? data.valorPresupuesto : null;
+
+			return fechaInicioProyectada === '' || valorPresupuesto === '' || valorPresupuesto === null || typeof valorPresupuesto === 'undefined';
+		}
+
 		/* Centralized Status Logic */
 		function getPDCState(data) {
-			if(data.titulo != 0) return 'header';
+			if (Number(data.titulo) !== 0) return 'header';
+			if (isPDCMissingData(data)) return 'missing';
 			
-			let estado = data.estado || "";
+			let estado = normalizePDCStatusDisplay(data.estado || '');
 			if(estado.includes("Atrasado") && (estado.includes("no iniciado") || estado.includes("No iniciado"))) return 'critical';
 			if(estado.includes("Atrasado")) return 'delayed';
 			if(estado.includes("Terminado con retrasos")) return 'completed-late';
 			if(estado.includes("Terminado a tiempo")) return 'completed-ontime';
 			if(estado.includes("no iniciado") || estado.includes("No iniciado")) return 'not-started';
-			if(estado.includes("A tiempo")) return 'active';
-			if(data.fechaInicioProyectada == "" || data.valorPresupuesto == "" || data.valorPresupuesto == null) return 'missing';
+			if(estado.includes("En Curso")) return 'active';
 			
 			return 'standard';
+		}
+
+		function applyPDCRowState(row, data) {
+			var state = getPDCState(data);
+			var className = PDC_STATE_ROW_CLASS_MAP[state] || '';
+
+			$(row).removeClass(PDC_ROW_STATE_CLASSES);
+
+			if (className !== '') {
+				$(row).addClass(className);
+			}
 		}
 
 		/* Dynamic Table Height Calculation */
@@ -1549,6 +1515,10 @@
 				dataTable.rows().every(function() {
 					var rowData = this.data() || {};
 					var value = $.trim(String(rowData[config.dataKey] || ''));
+
+					if (config.dataKey === 'estado') {
+						value = normalizePDCStatusDisplay(value);
+					}
 
 					if (Number(rowData.titulo) !== 0 || value === '' || seen[value]) {
 						return;
@@ -1696,12 +1666,13 @@
 						'targets': [6],
 						'width':'11%',
 						'render': function ( data, type, row, meta ) {
+							var texto = normalizePDCStatusDisplay(row["estado"] || '');
+
 							if (type !== 'display') {
-								return data || '';
+								return texto || '';
 							}
 
 							var titulo=row["titulo"];
-								var texto = row["estado"];
 								var id = row["id"];
 								var procesoIniciado=row["procesoIniciado"];
 								var fechaInicioProceso= new Date(row["fechaElaboracionPliegos"]);
@@ -1710,21 +1681,20 @@
 								if (id != ""){
 									if(titulo==0){
 										if(texto.includes("Terminado a tiempo")){
-											return "<i class='fas fa-grin-stars fa-lg pdc-icon-state pdc-icon-ok'></i>  " + data;
+											return "<i class='fas fa-grin-stars fa-lg pdc-icon-state pdc-icon-ok'></i>  " + texto;
 										}else if(texto.includes("Terminado con retrasos")){
-											// Changed to Orange to differentiate from On Time
-											return "<i class='fas fa-sad-cry fa-lg pdc-icon-state pdc-icon-amber'></i>  " + data;
-										}else if(texto.includes("A tiempo") && texto.includes("Proceso de contratación no iniciado")){
-											return "" + data;
-										}else if(texto.includes("A tiempo")){
-											return "<i class='fas fa-glasses fa-lg pdc-icon-state pdc-icon-warn'></i>  " + data;
+											return "<i class='fas fa-sad-cry fa-lg pdc-icon-state pdc-icon-amber'></i>  " + texto;
+										}else if(texto.includes("En Curso") && texto.includes("Proceso de contratación no iniciado")){
+											return texto;
+										}else if(texto.includes("En Curso")){
+											return "<i class='fas fa-glasses fa-lg pdc-icon-state pdc-icon-info'></i>  " + texto;
 										}else if(texto.includes("Atrasado!!")){
-											return "<i class='fas fa-skull-crossbones fa-lg pdc-icon-state pdc-icon-danger'></i>  " + data;
+											return "<i class='fas fa-skull-crossbones fa-lg pdc-icon-state pdc-icon-danger'></i>  " + texto;
 										}else{
 											return "<b>No Registrado</b>";
 										}
 									}else{
-										return data;
+										return texto;
 									}
 								}else{
 									return "";
@@ -1841,19 +1811,10 @@
 					],
 
 				"createdRow": function( row, data, dataIndex){
-						var state = getPDCState(data);
-						$(row).removeClass('Titulo pdc-header pdc-missing-data pdc-critical-delay pdc-delayed pdc-completed-delayed pdc-completed-ontime pdc-not-started pdc-active');
-
-						if(state === 'header'){
-							$(row).addClass('Titulo pdc-header');
-						} 
-						else if(state === 'missing') $(row).addClass('pdc-missing-data');
-						else if(state === 'critical') $(row).addClass('pdc-critical-delay');
-						else if(state === 'delayed') $(row).addClass('pdc-delayed');
-						else if(state === 'completed-late') $(row).addClass('pdc-completed-delayed');
-						else if(state === 'completed-ontime') $(row).addClass('pdc-completed-ontime');
-						else if(state === 'not-started') $(row).addClass('pdc-not-started');
-						else if(state === 'active') $(row).addClass('pdc-active');
+						applyPDCRowState(row, data);
+				},
+				"rowCallback": function(row, data) {
+						applyPDCRowState(row, data);
 				},
 				"drawCallback": function(settings) {
 					// Count visible rows by state
@@ -2605,12 +2566,12 @@
 		  }
 			//console.log(posicion >= deberiaHoy);
 		  if (posicion >= deberiaHoy) {
-		    divDiagnostico.innerHTML = "A tiempo";
+		    divDiagnostico.innerHTML = "En Curso";
 				//console.log((new Date(document.getElementById("fechaReal" + pasos[posicion][0]).value) -  new Date(document.getElementById("fecha" + pasos[posicion][0] + "Teorica").value))/(1000 * 3600 * 24));
 		    // if ((posicion == -1 && deberiaHoy == -1)) {
-		    //   divDiagnostico.innerHTML = "A tiempo";
+		    //   divDiagnostico.innerHTML = "En Curso";
 		    // } else if (document.getElementById("fechaReal" + pasos[posicion][0]).value <= document.getElementById("fecha" + pasos[posicion][0] + "Teorica").value) {
-		    //   divDiagnostico.innerHTML = "A tiempo";
+		    //   divDiagnostico.innerHTML = "En Curso";
 		    // } else {
 		    //   divDiagnostico.innerHTML = "Atrasado!!";
 		    // }
