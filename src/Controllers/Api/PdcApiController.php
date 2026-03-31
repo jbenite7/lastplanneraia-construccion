@@ -58,6 +58,7 @@ class PdcApiController
                     "diasInsumosObra" => "", "fechaRealInsumosObra" => "", "fechaInicio" => "",
                     "fechaInicioProyectada" => "", "fechaRealInicio" => "", "idProveedorAdjudicado" => "",
                     "fechaVencimientoPolizas" => "", "observacionesContrato" => "", "ordenVisual" => "",
+                    "diasDelta" => 0, "necesitaConfiguracion" => 0, "listoParaIniciar" => 0,
                 ];
                 $this->json($arreglo);
                 return;
@@ -69,6 +70,13 @@ class PdcApiController
                 [$semana]
             );
             $resultados = $stmt1->fetchAll();
+
+            $stmtFecha = $this->db->query(
+                "SELECT Fecha_Inicio_Sem FROM {$dbPrefix}_semanas_activas WHERE Semana = ?",
+                [$semana]
+            );
+            $dataFecha = $stmtFecha->fetch();
+            $semanaSem = $dataFecha["Fecha_Inicio_Sem"] ?? date('Y-m-d');
 
             $esquemaSI = 0;
             $esquemaMO = 0;
@@ -99,6 +107,9 @@ class PdcApiController
                             $data[$campo] = 1;
                         }
                     }
+
+                    $deltaInfo = $this->calcularDiasDelta($data, $semanaSem);
+                    $data["diasDelta"] = $deltaInfo['diasDelta'];
                 }
 
                 $tipoPaquete = $data["tipoPaquete"];
@@ -592,5 +603,77 @@ class PdcApiController
     {
         require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
         rbac_guard_require_permission($permissionKey, ['message' => $message]);
+    }
+
+    private function calcularDiasDelta(array $data, string $fechaSemana): array
+    {
+        $fechaInicio = $data['fechaInicio'] ?? '';
+        $fechaActual = date('Y-m-d');
+
+        $duraciones = [
+            (int)($data['diasElaboracionPliegos'] ?? 0),
+            (int)($data['diasIngresoLicify'] ?? 0),
+            (int)($data['diasEntregaPliegos'] ?? 0),
+            (int)($data['diasReciboPropuestas'] ?? 0),
+            (int)($data['diasCuadrosComparativos'] ?? 0),
+            (int)($data['diasLegalizacionContrato'] ?? 0),
+            (int)($data['diasFabricacion'] ?? 0),
+            (int)($data['diasInsumosObra'] ?? 0),
+        ];
+
+        $fechaRealFields = [
+            'fechaRealElaboracionPliegos', 'fechaRealIngresoLicify', 'fechaRealEntregaPliegos',
+            'fechaRealReciboPropuestas', 'fechaRealCuadrosComparativos', 'fechaRealLegalizacionContrato',
+            'fechaRealFabricacion', 'fechaRealInsumosObra', 'fechaRealInicio',
+        ];
+
+        $totalDias = array_sum($duraciones);
+
+        $fechasTeoricas = [];
+        $acumulado = $totalDias;
+        foreach ($duraciones as $i => $duracion) {
+            $fechasTeoricas[$i] = date('Y-m-d', strtotime("$fechaInicio - $acumulado days"));
+            $acumulado -= $duracion;
+        }
+        $fechasTeoricas[8] = $fechaInicio;
+
+        $posicion = -1;
+        foreach ($fechaRealFields as $i => $campo) {
+            if (!empty($data[$campo])) {
+                $posicion = $i;
+            }
+        }
+
+        $deberiaHoy = -1;
+        foreach ($fechasTeoricas as $i => $fecha) {
+            if ($fecha <= $fechaActual) {
+                $deberiaHoy = $i;
+            }
+        }
+
+        $diasDelta = 0;
+        if ($posicion === -1 && $deberiaHoy >= 0) {
+            for ($i = 0; $i <= $deberiaHoy && $i <= 8; $i++) {
+                $diasDelta += ($i < 8) ? $duraciones[$i] : 0;
+            }
+            $diasDelta = -$diasDelta;
+        } elseif ($posicion >= 0 && $deberiaHoy >= 0) {
+            if ($posicion < $deberiaHoy) {
+                for ($i = $posicion + 1; $i <= $deberiaHoy && $i <= 8; $i++) {
+                    $diasDelta += ($i < 8) ? $duraciones[$i] : 0;
+                }
+                $diasDelta = -$diasDelta;
+            } elseif ($posicion > $deberiaHoy) {
+                for ($i = $deberiaHoy + 1; $i <= $posicion && $i <= 8; $i++) {
+                    $diasDelta += ($i < 8) ? $duraciones[$i] : 0;
+                }
+            }
+        }
+
+        return [
+            'posicion' => $posicion,
+            'deberiaHoy' => $deberiaHoy,
+            'diasDelta' => $diasDelta,
+        ];
     }
 }
