@@ -5672,6 +5672,26 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
   color: #2f80c2;
 }
 
+.pdc-delta {
+  font-size: 0.72rem;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+.pdc-delta--ahead {
+  background-color: #fbead9;
+  color: #8b4011;
+}
+.pdc-delta--delay {
+  background-color: #fdecea;
+  color: #a92828;
+}
+
 .w-80 {
   inline-size: 80%;
 }

@@ -1662,34 +1662,43 @@
 							return data;
 						},
 					},
-					{
-						'targets': [6],
-						'width':'11%',
-						'render': function ( data, type, row, meta ) {
-							var texto = normalizePDCStatusDisplay(row["estado"] || '');
+				{
+					'targets': [6],
+					'width':'11%',
+					'render': function ( data, type, row, meta ) {
+						var texto = normalizePDCStatusDisplay(row["estado"] || '');
+						var diasDelta = row["diasDelta"] || 0;
 
-							if (type !== 'display') {
-								return texto || '';
+						if (type !== 'display') {
+							return texto || '';
+						}
+
+						var titulo=row["titulo"];
+							var id = row["id"];
+							var procesoIniciado=row["procesoIniciado"];
+							var fechaInicioProceso= new Date(row["fechaElaboracionPliegos"]);
+							var fechaInicioSemana = new Date(document.getElementById('Fecha_Inicio_SemYMD').value);
+							var dias = (fechaInicioProceso - fechaInicioSemana)/(1000 * 3600 * 24);
+							var deltaHtml = '';
+							if (id != "" && titulo == 0 && diasDelta !== 0) {
+								if (diasDelta > 0) {
+									deltaHtml = ' <span class="pdc-delta pdc-delta--ahead">' + diasDelta + ' días de adelanto</span>';
+								} else {
+									deltaHtml = ' <span class="pdc-delta pdc-delta--delay">' + Math.abs(diasDelta) + ' días de retraso</span>';
+								}
 							}
-
-							var titulo=row["titulo"];
-								var id = row["id"];
-								var procesoIniciado=row["procesoIniciado"];
-								var fechaInicioProceso= new Date(row["fechaElaboracionPliegos"]);
-								var fechaInicioSemana = new Date(document.getElementById('Fecha_Inicio_SemYMD').value);
-								var dias = (fechaInicioProceso - fechaInicioSemana)/(1000 * 3600 * 24);
-								if (id != ""){
-									if(titulo==0){
-										if(texto.includes("Terminado a tiempo")){
-											return "<i class='fas fa-grin-stars fa-lg pdc-icon-state pdc-icon-ok'></i>  " + texto;
+							if (id != ""){
+								if(titulo==0){
+									if(texto.includes("Terminado a tiempo")){
+										return "<i class='fas fa-grin-stars fa-lg pdc-icon-state pdc-icon-ok'></i>  " + texto + deltaHtml;
 										}else if(texto.includes("Terminado con retrasos")){
-											return "<i class='fas fa-sad-cry fa-lg pdc-icon-state pdc-icon-amber'></i>  " + texto;
+											return "<i class='fas fa-sad-cry fa-lg pdc-icon-state pdc-icon-amber'></i>  " + texto + deltaHtml;
 										}else if(texto.includes("En Curso") && texto.includes("Proceso de contratación no iniciado")){
 											return texto;
 										}else if(texto.includes("En Curso")){
-											return "<i class='fas fa-glasses fa-lg pdc-icon-state pdc-icon-info'></i>  " + texto;
+											return "<i class='fas fa-glasses fa-lg pdc-icon-state pdc-icon-info'></i>  " + texto + deltaHtml;
 										}else if(texto.includes("Atrasado!!")){
-											return "<i class='fas fa-skull-crossbones fa-lg pdc-icon-state pdc-icon-danger'></i>  " + texto;
+											return "<i class='fas fa-skull-crossbones fa-lg pdc-icon-state pdc-icon-danger'></i>  " + texto + deltaHtml;
 										}else{
 											return "<b>No Registrado</b>";
 										}
