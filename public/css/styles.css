@@ -980,148 +980,154 @@ button.borrarSoporte {
    Derived from PDC Module for Global Consistency
    ========================================= */
 
-/* Header Row - Teal (Matches PDC .pdc-header) */
+/* Header Row - Naranja Construccion */
 .row-header td {
-  background-color: #035766 !important;
-  color: #ffffff !important;
-  font-weight: 500;
-  letter-spacing: 0.5px;
+  background-color: #8b4011 !important;
+  color: #fafafa !important;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
-/* Base Hover Effect */
-table.dataTable tbody tr:hover td {
-  background-color: #f1f5f9 !important; /* Slate-100 hover */
+/* Base Hover Effect (exclude status rows) */
+table.dataTable tbody tr:not(.pdc-header):not(.pdc-missing-data):not(.pdc-critical-delay):not(.pdc-delayed):not(.pdc-completed-delayed):not(.pdc-completed-ontime):not(.pdc-active):not(.pdc-not-started):hover td {
+  background-color: #f1f5f9 !important;
   transition: background-color 0.2s ease;
 }
 
-/* Status: Critical Delay (Matches PDC .pdc-critical-delay - Red-200) */
-.row-critical-delay td {
-  background-color: #f3e8ff !important;
-  color: #6b21a8 !important;
+/* ==============================
+   PDC Unified Palette (Rows + Chips)
+   Source of truth for all PDC colors.
+   ============================== */
+:root {
+  --pdc-missing-bg: #f3e8ff;
+  --pdc-missing-border: #c084fc;
+  --pdc-missing-text: #6b21a8;
+  --pdc-critical-bg: #fee2e2;
+  --pdc-critical-border: #dc2626;
+  --pdc-critical-text: #991b1b;
+  --pdc-delayed-bg: #fff1e7;
+  --pdc-delayed-border: #e87722;
+  --pdc-delayed-text: #8a3f12;
+  --pdc-completed-late-bg: #fff7d6;
+  --pdc-completed-late-border: #d4a017;
+  --pdc-completed-late-text: #8a5a00;
+  --pdc-completed-ontime-bg: #e8f6ec;
+  --pdc-completed-ontime-border: #69b578;
+  --pdc-completed-ontime-text: #25643a;
+  --pdc-active-bg: #e6f0ff;
+  --pdc-active-border: #4a81bd;
+  --pdc-active-text: #1f4f82;
+  --pdc-not-started-bg: #f3f4f6;
+  --pdc-not-started-border: #c7cdd4;
+  --pdc-not-started-text: #4b5563;
+}
+
+/* Chip Colors (source of truth) */
+.pdc-legend-item.missing { background-color: var(--pdc-missing-bg); color: var(--pdc-missing-text); border-color: var(--pdc-missing-border); }
+.pdc-legend-item.critical { background-color: var(--pdc-critical-bg); color: var(--pdc-critical-text); border-color: var(--pdc-critical-border); }
+.pdc-legend-item.delayed { background-color: var(--pdc-delayed-bg); color: var(--pdc-delayed-text); border-color: var(--pdc-delayed-border); }
+.pdc-legend-item.completed-late { background-color: var(--pdc-completed-late-bg); color: var(--pdc-completed-late-text); border-color: var(--pdc-completed-late-border); }
+.pdc-legend-item.completed-ontime { background-color: var(--pdc-completed-ontime-bg); color: var(--pdc-completed-ontime-text); border-color: var(--pdc-completed-ontime-border); }
+.pdc-legend-item.active { background-color: var(--pdc-active-bg); color: var(--pdc-active-text); border-color: var(--pdc-active-border); }
+.pdc-legend-item.not-started { background-color: var(--pdc-not-started-bg); color: var(--pdc-not-started-text); border-color: var(--pdc-not-started-border); }
+
+/* Row Colors (must match chips) */
+.pdc-missing-data td,
+table.dataTable tbody tr.pdc-missing-data td {
+  background-color: var(--pdc-missing-bg) !important;
+  color: var(--pdc-missing-text) !important;
+}
+.pdc-missing-data td *,
+table.dataTable tbody tr.pdc-missing-data td * {
+  color: inherit !important;
+}
+
+.pdc-critical-delay td,
+table.dataTable tbody tr.pdc-critical-delay td {
+  background-color: var(--pdc-critical-bg) !important;
+  color: var(--pdc-critical-text) !important;
   font-weight: 600;
 }
-
-/* Status: Delayed (Matches PDC .pdc-delayed - Red-100) */
-.row-delayed td {
-  background-color: #fee2e2 !important;
-  color: #991b1b !important;
+.pdc-critical-delay td *,
+table.dataTable tbody tr.pdc-critical-delay td * {
+  color: inherit !important;
 }
 
-/* Status: Critical / Warning (Orange - Derived from PDC style for Critical-Future) */
-.row-warning td {
-  background-color: #fef9c3 !important; /* Yellow-100 */
-  color: #854d0e !important; /* Yellow-800 */
+.pdc-delayed td,
+table.dataTable tbody tr.pdc-delayed td {
+  background-color: var(--pdc-delayed-bg) !important;
+  color: var(--pdc-delayed-text) !important;
+}
+.pdc-delayed td *,
+table.dataTable tbody tr.pdc-delayed td * {
+  color: inherit !important;
 }
 
-/* Status: Info / Non-Critical (Yellow - Derived from PDC style for Non-Critical-Future) */
-.row-info td {
-  background-color: #dbeafe !important; /* Blue-100 */
-  color: #1e40af !important; /* Blue-800 */
+.pdc-completed-delayed td,
+table.dataTable tbody tr.pdc-completed-delayed td {
+  background-color: var(--pdc-completed-late-bg) !important;
+  color: var(--pdc-completed-late-text) !important;
 }
-
-/* Status: Success (Matches PDC .pdc-completed-ontime - Emerald-50) */
-.row-success td {
-  background-color: #f0fdf4 !important;
-  color: #166534 !important;
-}
-.row-success td:first-child {
-  box-shadow: inset 4px 0 0 #10b981 !important; /* Emerald-500 strip */
-}
-
-/* Status: Active / On Course (Matches PDC .pdc-active - Blue-100) */
-.row-active td {
-  background-color: #dbeafe !important;
-  color: #1e40af !important;
-}
-
-/* Status: Completed Late / Amber (Matches PDC .pdc-completed-delayed - Amber-50) */
-.row-completed-late td {
-  background-color: #fffbeb !important;
-  color: #92400e !important;
-}
-
-/* Status: Neutral / Not Started (Matches PDC .pdc-not-started - Slate-50) */
-.row-neutral td {
-  background-color: #f8fafc !important;
-  color: #475569 !important;
-}
-
-/* Modern 2026 PDC Styles (Global) */
-.pdc-header td {
-  background-color: #035766 !important;
-  color: #ffffff !important;
-  font-weight: 500;
-  letter-spacing: 0.5px;
-}
-.pdc-header {
-  /* Compatibility for legacy class name usage */
-  background-color: #035766 !important;
-  color: #ffffff !important;
-}
-
-/* Modern 2026 PDC Styles (Global) - User Defined Palette */
-/* Modern 2026 PDC Styles (Global) - User Defined Palette */
-/* VIOLET: Critical State */
-.pdc-critical-delay td {
-  background-color: #f3e8ff !important; /* Purple-100 */
-  color: #6b21a8 !important; /* Purple-800 */
-  font-weight: 600;
-}
-
-/* RED: Problems / Delayed */
-.pdc-delayed td {
-  background-color: #fee2e2 !important; /* Red-100 */
-  color: #991b1b !important; /* Red-800 */
-}
-
-/* YELLOW: Immediate Attention */
-.pdc-warning td {
-  background-color: #fef9c3 !important; /* Yellow-100 */
-  color: #854d0e !important; /* Yellow-800 */
-}
-
-/* BLUE: Attention but Time Available */
-.pdc-attention td {
-  background-color: #dbeafe !important; /* Blue-100 */
-  color: #1e40af !important; /* Blue-800 */
-}
-
-/* GREEN: OK / No Problems */
-.pdc-ok td {
-  background-color: #dcfce7 !important; /* Emerald-100 */
-  color: #166534 !important; /* Emerald-800 */
-}
-
-/* GRAY: Finished or Future (>6 weeks) */
-.pdc-finished td,
-.pdc-neutral td {
-  background-color: #f1f5f9 !important; /* Slate-100 */
-  color: #475569 !important; /* Slate-600 */
-}
-/* Re-mapping legacy classes to new palette to ensure safety in other modules */
-.pdc-active td {
-  /* Was Active, now maps to Green/Blue depending on usage? Default Green (OK) */
-  background-color: #dcfce7 !important;
-  color: #166534 !important;
-}
-
-.pdc-missing-data td {
-  /* Was Purple, now Blue? Or Yellow? "Sin Datos" -> Attention (Blue) */
-  background-color: #dbeafe !important;
-  color: #1e40af !important;
+.pdc-completed-delayed td *,
+table.dataTable tbody tr.pdc-completed-delayed td * {
+  color: inherit !important;
 }
 
 .pdc-completed-ontime td,
-.pdc-completed-delayed td {
-  /* All completed are Gray */
-  background-color: #f1f5f9 !important;
-  color: #475569 !important;
+table.dataTable tbody tr.pdc-completed-ontime td {
+  background-color: var(--pdc-completed-ontime-bg) !important;
+  color: var(--pdc-completed-ontime-text) !important;
+}
+.pdc-completed-ontime td *,
+table.dataTable tbody tr.pdc-completed-ontime td * {
+  color: inherit !important;
 }
 
-.pdc-not-started td {
-  /* Gray */
-  background-color: #f1f5f9 !important;
-  color: #475569 !important;
+.pdc-active td,
+table.dataTable tbody tr.pdc-active td {
+  background-color: var(--pdc-active-bg) !important;
+  color: var(--pdc-active-text) !important;
+}
+.pdc-active td *,
+table.dataTable tbody tr.pdc-active td * {
+  color: inherit !important;
+}
+
+.pdc-not-started td,
+table.dataTable tbody tr.pdc-not-started td {
+  background-color: var(--pdc-not-started-bg) !important;
+  color: var(--pdc-not-started-text) !important;
+}
+.pdc-not-started td *,
+table.dataTable tbody tr.pdc-not-started td * {
+  color: inherit !important;
+}
+
+/* Header / Title Rows */
+.pdc-header td,
+table.dataTable tbody tr.pdc-header td {
+  background-color: #8b4011 !important;
+  color: #fafafa !important;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border-color: rgba(232, 119, 34, 0.28) !important;
+}
+.pdc-header td *,
+table.dataTable tbody tr.pdc-header td * {
+  color: #fafafa !important;
+}
+.Titulo td:first-child,
+.pdc-header td:first-child,
+table.dataTable tbody tr.pdc-header td:first-child {
+  box-shadow: inset 4px 0 0 #e87722 !important;
+}
+
+/* Hover refinement to NOT break contrast */
+table.dataTable tbody tr.pdc-header:hover td {
+  background-color: #a34d16 !important;
+  color: #fafafa !important;
 }
 
 /* Legend / Convenciones Styles */
@@ -1229,55 +1235,6 @@ table.dataTable tbody tr:hover td {
   opacity: 0.4;
   filter: grayscale(0.8);
   transform: scale(0.95);
-}
-
-/* Chip Colors - Re-mapped */
-.pdc-legend-item.critical {
-  /* VIOLET */
-  background-color: #f3e8ff;
-  color: #6b21a8;
-  border-color: #e9d5ff;
-}
-.pdc-legend-item.delayed {
-  /* RED */
-  background-color: #fee2e2;
-  color: #991b1b;
-  border-color: #fecaca;
-}
-.pdc-legend-item.warning {
-  /* YELLOW */
-  background-color: #fef9c3;
-  color: #854d0e;
-  border-color: #fde047;
-}
-.pdc-legend-item.attention {
-  /* BLUE */
-  background-color: #dbeafe;
-  color: #1e40af;
-  border-color: #bfdbfe;
-}
-.pdc-legend-item.ok,
-.pdc-legend-item.active {
-  /* GREEN */
-  background-color: #dcfce7;
-  color: #166534;
-  border-color: #bbf7d0;
-}
-.pdc-legend-item.finished,
-.pdc-legend-item.neutral,
-.pdc-legend-item.completed-late,
-.pdc-legend-item.completed-ontime,
-.pdc-legend-item.not-started {
-  /* GRAY */
-  background-color: #f1f5f9;
-  color: #475569;
-  border-color: #e2e8f0;
-}
-.pdc-legend-item.missing {
-  /* BLUE (Attention) */
-  background-color: #dbeafe;
-  color: #1e40af;
-  border-color: #bfdbfe;
 }
 
 /* Chip Badge (Counter) */
@@ -2333,146 +2290,9 @@ table.dataTable select {
   padding-right: 15px !important; /* Space for arrow */
 }
 
-/* --- Row Status Coloring & Contrast (Nuclear Fix) --- */
+/* --- PDC Row Status Colors: now defined above in unified block --- */
 
-/* 1. Reset Global Color for Status Rows to ensure specificity */
-table.dataTable tbody tr.pdc-header td,
-table.dataTable tbody tr.pdc-critical-delay td,
-table.dataTable tbody tr.pdc-delayed td,
-table.dataTable tbody tr.pdc-warning td,
-table.dataTable tbody tr.pdc-attention td,
-table.dataTable tbody tr.pdc-ok td,
-table.dataTable tbody tr.pdc-completed-ontime td,
-table.dataTable tbody tr.pdc-not-started td {
-  color: inherit !important; /* Allow the TR class to control text color */
-}
-
-/* 2. Header / Title Rows - High Contrast */
-table.dataTable tbody tr.pdc-header {
-  background-color: #035766 !important; /* Deep Teal */
-  color: #ffffff !important;
-}
-table.dataTable tbody tr.pdc-header td {
-  color: #ffffff !important;
-  font-weight: 600 !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
-}
-
-/* 3. Critical Delay - Violet/Purple */
-table.dataTable tbody tr.pdc-critical-delay,
-table.dataTable tbody tr.row-critical-delay {
-  background-color: #f3e8ff !important;
-  color: #6b21a8 !important;
-}
-table.dataTable tbody tr.pdc-critical-delay td,
-table.dataTable tbody tr.row-critical-delay td {
-  color: #6b21a8 !important;
-}
-table.dataTable tbody tr.pdc-critical-delay td:first-child,
-table.dataTable tbody tr.row-critical-delay td:first-child {
-  border-left: 4px solid #9333ea !important;
-}
-
-/* 4. Delayed - Red */
-table.dataTable tbody tr.pdc-delayed,
-table.dataTable tbody tr.row-delayed {
-  background-color: #fee2e2 !important;
-  color: #991b1b !important;
-}
-table.dataTable tbody tr.pdc-delayed td,
-table.dataTable tbody tr.row-delayed td {
-  color: #991b1b !important;
-}
-table.dataTable tbody tr.pdc-delayed td:first-child,
-table.dataTable tbody tr.row-delayed td:first-child {
-  border-left: 4px solid #dc2626 !important;
-}
-
-/* 5. Warning / Attention - Yellow/Orange */
-table.dataTable tbody tr.pdc-warning,
-table.dataTable tbody tr.row-warning {
-  background-color: #fef9c3 !important;
-  color: #854d0e !important;
-}
-table.dataTable tbody tr.pdc-warning td,
-table.dataTable tbody tr.row-warning td {
-  color: #854d0e !important;
-}
-table.dataTable tbody tr.pdc-warning td:first-child,
-table.dataTable tbody tr.row-warning td:first-child {
-  border-left: 4px solid #eab308 !important;
-}
-
-/* 5b. Info / Attention - Blue */
-table.dataTable tbody tr.pdc-attention,
-table.dataTable tbody tr.row-info {
-  background-color: #dbeafe !important;
-  color: #1e40af !important;
-}
-table.dataTable tbody tr.pdc-attention td,
-table.dataTable tbody tr.row-info td {
-  color: #1e40af !important;
-}
-table.dataTable tbody tr.pdc-attention td:first-child,
-table.dataTable tbody tr.row-info td:first-child {
-  border-left: 4px solid #2563eb !important;
-}
-
-/* 6. Active / On Course - Light Green */
-table.dataTable tbody tr.pdc-active,
-table.dataTable tbody tr.row-active,
-table.dataTable tbody tr.row-success,
-table.dataTable tbody tr.pdc-ok {
-  background-color: #dcfce7 !important;
-  color: #166534 !important;
-}
-table.dataTable tbody tr.pdc-active td,
-table.dataTable tbody tr.row-active td,
-table.dataTable tbody tr.row-success td,
-table.dataTable tbody tr.pdc-ok td {
-  color: #166534 !important;
-}
-table.dataTable tbody tr.pdc-active td:first-child,
-table.dataTable tbody tr.row-active td:first-child,
-table.dataTable tbody tr.row-success td:first-child,
-table.dataTable tbody tr.pdc-ok td:first-child {
-  border-left: 4px solid #22c55e !important;
-}
-
-/* 7. Completed - Soft Emerald */
-table.dataTable tbody tr.pdc-completed-ontime {
-  background-color: #ecfdf5 !important;
-  color: #065f46 !important;
-}
-table.dataTable tbody tr.pdc-completed-ontime td {
-  color: #065f46 !important;
-}
-
-/* 8. Missing / Restrictions - Soft Purple */
-table.dataTable tbody tr.pdc-missing-data {
-  background-color: #f5f3ff !important; /* Purple-50/100 */
-  color: #5b21b6 !important; /* Purple-800 */
-}
-table.dataTable tbody tr.pdc-missing-data td {
-  color: #5b21b6 !important;
-}
-table.dataTable tbody tr.pdc-missing-data td:first-child {
-  border-left: 4px solid #8b5cf6 !important;
-}
-
-/* 9. Neutral / Not Started */
-table.dataTable tbody tr.pdc-not-started {
-  background-color: #f8fafc !important;
-  color: #475569 !important;
-}
-
-/* Hover refinement to NOT break contrast */
-table.dataTable tbody tr.pdc-header:hover td {
-  background-color: #046a7c !important; /* Slightly lighter teal */
-  color: #ffffff !important;
-}
-
-/* Scroll Bar Refinement (Repeated for safety at end) */
+/* Scroll Bar Refinement */
 .dataTables_scrollBody::-webkit-scrollbar {
   width: 8px;
   height: 8px;
