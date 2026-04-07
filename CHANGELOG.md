@@ -31,6 +31,9 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ### Añadido
 
+- **Panel "Solo Alertas" en PDC:** Botón rápido en la barra de herramientas que exprime el Plan de Compras filtrando en la grilla únicamente los paquetes críticos, retrasados o sin configurar.
+- **Iconografía de Riesgo PDC:** Insignias de semáforo (check-circle, cog, exclamation-triangle) inyectadas directamente en los botones de acción para rápida identificación de cuellos de botella en adquisiciones.
+- **Stitch Design System Docs:** Integración de la base de conocimiento y estándares operacionales `STITCH.md` para componentes UI/UX y modularización de estilos AIA.
 - **Sistema de Recuperación de Contraseña:** Implementación completa del flujo "Olvidé mi contraseña" con envío de correos (MailService), tokens de un solo uso (PasswordService) y vistas dedicadas tanto en la aplicación principal como en el panel administrativo.
 - **Infraestructura SMTP para Recuperación:** Integración de `phpmailer/phpmailer`, variables `APP_URL` + `MAIL_*` y plantilla Docker de entorno para soportar el envío de enlaces de restablecimiento.
 - **Protección CSRF para Auth:** Nuevo `CsrfTokenManager` para blindar los formularios de inicio de sesión y recuperación de credenciales contra ataques de falsificación de petición en sitios cruzados.

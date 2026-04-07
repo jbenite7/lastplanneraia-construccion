@@ -41,3 +41,10 @@ phpstan_errors.json
 
 # Debug scripts
 debug_*.php
+
+# Metadatos de macOS en discos ExFAT
+._*
+.DS_Store
+
+# Metadatos de macOS en discos ExFAT
+._*

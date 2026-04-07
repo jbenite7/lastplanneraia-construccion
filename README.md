@@ -49,6 +49,8 @@ plataforma, estructurada en el arco de tres actos que rige nuestra visión opera
   modernización.
 - **[Rutas del Sistema (docs/ROUTES.md)](docs/ROUTES.md)**: Direccionamiento del MVC, APIs e
   instrucciones del Front Controller.
+- **[Guía de Stitch (docs/STITCH.md)](docs/STITCH.md)**: Conexión, autenticación e interacción con
+  Stitch para generar el design system y las pantallas de la app.
 - **[Rutina de despliegue SiteGround](docs/siteground-deploy-routine.md)**: Checklist operativo para
   desplegar desde `main`, validar el sitio y tener rollback rápido.
 
