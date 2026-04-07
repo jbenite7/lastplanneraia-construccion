@@ -1753,12 +1753,23 @@
 								var titulo=row["titulo"];
 									var id = row["id"];
 									var subcontratoPaquete = row["subcontratoPaquete"];
+									var necesitaConfiguracion = row["necesitaConfiguracion"] || 0;
+									var listoParaIniciar = row["listoParaIniciar"] || 0;
+									var diasDelta = row["diasDelta"] || 0;
 									if (id != ""){
 										if(titulo==0){
+											var readyIcon = '';
+											if (listoParaIniciar === 1) {
+												readyIcon = '<i class="fas fa-check-circle pdc-ready-icon pdc-ready-icon--ok" title="Listo para iniciar"></i>';
+											} else if (necesitaConfiguracion === 1) {
+												readyIcon = '<i class="fas fa-cog pdc-ready-icon pdc-ready-icon--config" title="Necesita configurar duraciones"></i>';
+											} else if (diasDelta < 0) {
+												readyIcon = '<i class="fas fa-exclamation-triangle pdc-ready-icon pdc-ready-icon--risk" title="En riesgo de retraso"></i>';
+											}
 											if(subcontratoPaquete > 1){
-												boton="<button type= 'button' class='editar btn btn-primary btn-sm'  title='Editar Actividad' class='ps-btn-tight'><i class='fa fa-edit fa-xs'></i></button><button type='button' class='eliminar btn btn-danger btn-sm' title='Eliminar' class='ps-btn-tight'><i class='fa fa-trash-alt fa-xs'></i></button>"
+												boton=readyIcon + "<button type= 'button' class='editar btn btn-primary btn-sm'  title='Editar Actividad' class='ps-btn-tight'><i class='fa fa-edit fa-xs'></i></button><button type='button' class='eliminar btn btn-danger btn-sm' title='Eliminar' class='ps-btn-tight'><i class='fa fa-trash-alt fa-xs'></i></button>"
 											}else{
-												boton="<button type= 'button' class='editar btn btn-primary btn-sm'  title='Editar Actividad' class='ps-btn-tight'><i class='fa fa-edit fa-xs'></i></button>"	
+												boton=readyIcon + "<button type= 'button' class='editar btn btn-primary btn-sm'  title='Editar Actividad' class='ps-btn-tight'><i class='fa fa-edit fa-xs'></i></button>"	
 											}
 										}else{
 												boton="";
@@ -1883,7 +1894,7 @@
 			});
 
 			// 1. Action Buttons (Left)
-			$("div.toolbarAcciones").html('<div class="grupo_botones1 ps-toolbar-actions" role="group" aria-label="Actions"><button id="btn_actualizarPDC" class="btn btn-primary btn-sm ps-btn-gap" title="Actualizar items" onclick="actualizarPDC()">Actualizar <i class="fas fa-sync fa-lg"></i></button><button id="btn_definirContratosPDC" class="btn btn-warning btn-sm ps-btn-gap" title="Desglosar Subcontratos" onclick="obtener_data_definirContratos()">Desglosar <i class="fa fa-list-ol fa-lg" aria-hidden="true"></i></button></div>');
+			$("div.toolbarAcciones").html('<div class="grupo_botones1 ps-toolbar-actions" role="group" aria-label="Actions"><button id="btn_actualizarPDC" class="btn btn-primary btn-sm ps-btn-gap" title="Actualizar items" onclick="actualizarPDC()">Actualizar <i class="fas fa-sync fa-lg"></i></button><button id="btn_definirContratosPDC" class="btn btn-warning btn-sm ps-btn-gap" title="Desglosar Subcontratos" onclick="obtener_data_definirContratos()">Desglosar <i class="fa fa-list-ol fa-lg" aria-hidden="true"></i></button><button id="btn_soloAlertas" class="btn btn-sm ps-btn-gap pdc-btn-alertas" title="Mostrar solo paquetes que necesitan atención" onclick="toggleSoloAlertas()"><i class="fas fa-bell fa-lg"></i> Solo Alertas <span id="count-alertas" class="badge badge-light"></span></button></div>');
 			
 			// 2. Navigation Bar (Center/Middle)
 			$("div.toolbarNavegacion").html('<div class="grupo_botones_semanal_madre ps-toolbar-nav-wrap"><div class="ps-module-switcher" role="tablist" aria-label="Navegacion general"><button id="btn_Actividades" type="button" class="ps-module-tab" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_listadoActividades&semana='+semana+'\'" aria-label="Ir a Actividades"><i class="fas fa-table" aria-hidden="true"></i><span>Actividades</span></button><button id="btn_contratos" type="button" class="ps-module-tab" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_contratos&semana='+semana+'\'" aria-label="Ir a Contratos"><i class="fas fa-file-alt" aria-hidden="true"></i><span>Contratos</span></button><button id="btn_planCompras" type="button" class="ps-module-tab is-active" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=planCompras&semana='+semana+'&origen=planCompras\'" aria-label="Ir a Plan de Compras" aria-current="page"><i class="fas fa-shopping-cart" aria-hidden="true"></i><span>Plan de Compras</span></button></div></div>');
@@ -1943,6 +1954,43 @@
 				}
 				table.draw();
 			};
+
+			// Solo Alertas Mode
+			var soloAlertasActive = false;
+
+			window.toggleSoloAlertas = function() {
+				soloAlertasActive = !soloAlertasActive;
+				var $btn = $('#btn_soloAlertas');
+				
+				if (soloAlertasActive) {
+					$btn.addClass('active');
+					activePDCFilters = ['delayed', 'critical', 'needs-config'];
+				} else {
+					$btn.removeClass('active');
+					activePDCFilters = [];
+				}
+				
+				table.draw();
+			};
+
+			// Custom search function for Solo Alertas
+			$.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+				if (!soloAlertasActive) {
+					return true; // Show all when not active
+				}
+				
+				var rowData = table.row(dataIndex).data();
+				if (!rowData || rowData.titulo !== 0) {
+					return true; // Always show headers
+				}
+				
+				var state = getPDCState(rowData);
+				var necesitaConfig = rowData.necesitaConfiguracion || 0;
+				
+				return state === 'delayed' || 
+					   state === 'critical' || 
+					   necesitaConfig === 1;
+			});
 
 			maestroPermisos(document.getElementById('permiso').value);
 			obtener_data_editar("#dt_cliente tbody", table);

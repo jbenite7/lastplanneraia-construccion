@@ -102,11 +102,27 @@ class PdcApiController
                     $camposDias = ["diasElaboracionPliegos", "diasIngresoLicify", "diasEntregaPliegos",
                                    "diasReciboPropuestas", "diasCuadrosComparativos", "diasLegalizacionContrato",
                                    "diasFabricacion", "diasInsumosObra"];
+
+                    $todosEnUno = true;
+                    foreach ($camposDias as $campo) {
+                        if ((int)($data[$campo] ?? 1) !== 1) {
+                            $todosEnUno = false;
+                            break;
+                        }
+                    }
+                    $data["necesitaConfiguracion"] = $todosEnUno ? 1 : 0;
+
                     foreach ($camposDias as $campo) {
                         if (is_null($data[$campo])) {
                             $data[$campo] = 1;
                         }
                     }
+
+                    $data["listoParaIniciar"] = (
+                        !empty($data['fechaRealInsumosObra']) &&
+                        !empty($data['fechaInicio']) &&
+                        $data['fechaRealInsumosObra'] <= $data['fechaInicio']
+                    ) ? 1 : 0;
 
                     $deltaInfo = $this->calcularDiasDelta($data, $semanaSem);
                     $data["diasDelta"] = $deltaInfo['diasDelta'];
