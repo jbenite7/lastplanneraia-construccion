@@ -349,6 +349,7 @@
     <script>
         const container = document.getElementById('hot-container');
         let hot;
+        let persistedSubcontratistas = [];
         var dbPrefix = "<?php echo $_SESSION['db'] ?? 'Prueba'; ?>";
 
         $(document).ready(function() {
@@ -393,6 +394,18 @@
                         var data = response.data || response; 
                         
                         if(Array.isArray(data)) {
+                            persistedSubcontratistas = data
+                                .filter((row) => row && (row.Id || row.id))
+                                .map((row) => ({
+                                    Id: row.Id || row.id || null,
+                                    subcontratista: row.subcontratista || '',
+                                    correo_contacto: row.correo_contacto || '',
+                                    NIT: row.NIT || '',
+                                    alcance: row.alcance || '',
+                                    tipo_proveedor: row.tipo_proveedor || '',
+                                    activo: row.activo ? 1 : 0,
+                                }));
+
                             // Dual View Init
                             updateOrInitHandsontable(data);
                             renderMobileCards(data);
@@ -475,14 +488,14 @@
                 errors.push('El tipo de proveedor seleccionado no es valido.');
             }
 
-            const rows = hot ? hot.getSourceData() : [];
+            const rows = persistedSubcontratistas;
             rows.forEach((row) => {
                 if (!row) return;
                 if (excludeRowData && row === excludeRowData) return;
                 const rowId = row.Id || row.id || null;
                 if (currentId && String(rowId) === String(currentId)) return;
                 const candidate = buildSubcontratistaPayload(row);
-                if (!rowId && isSubcontratistaDraftEmpty(candidate)) return;
+
                 if (payload.subcontratista && candidate.subcontratista && payload.subcontratista.toLowerCase() === candidate.subcontratista.toLowerCase()) {
                     errors.push('Ya existe un subcontratista con ese nombre.');
                 }
