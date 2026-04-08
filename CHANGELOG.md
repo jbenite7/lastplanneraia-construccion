@@ -53,6 +53,7 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ### Corregido
 
+- **Fix Falsos Duplicados en Subcontratistas:** La fila borrador de la grilla ya no se valida contra sí misma al crear registros nuevos, evitando rechazos falsos simultáneos por nombre, correo y NIT.
 - **Select2 Desanclado en Nueva Actividad:** El selector de tarea inicial vuelve a desplegarse ligado al campo correcto dentro del modal, con dropdown estable y sin desorganizar el layout al escribir o elegir opciones largas.
 - **Autoactualización de PDC al Navegar Entre Módulos:** El flujo hacia `/pdc` ahora conserva la semana operativa válida, marca el origen de navegación y ejecuta una sincronización one-shot del plan de compras al llegar desde Programa General, Actividades o Contratos.
 - **Compatibilidad SQL en Detección de Tablas:** Corrección del uso de placeholders en `SHOW TABLES LIKE` mediante el uso de `quote()` nativo de PDO, asegurando compatibilidad con el driver de base de datos en entornos SiteGround/Docker.

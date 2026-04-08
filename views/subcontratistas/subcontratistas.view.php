@@ -456,7 +456,10 @@
             return !!(payload.subcontratista && payload.correo_contacto && payload.NIT && payload.alcance && payload.tipo_proveedor);
         }
 
-        function collectSubcontratistaValidationErrors(payload, currentId) {
+        function collectSubcontratistaValidationErrors(payload, options) {
+            const validationOptions = options || {};
+            const currentId = validationOptions.currentId || null;
+            const excludeRowData = validationOptions.excludeRowData || null;
             const errors = [];
             if (!payload.subcontratista) errors.push('El nombre del subcontratista es obligatorio.');
             if (!payload.correo_contacto) {
@@ -475,6 +478,7 @@
             const rows = hot ? hot.getSourceData() : [];
             rows.forEach((row) => {
                 if (!row) return;
+                if (excludeRowData && row === excludeRowData) return;
                 const rowId = row.Id || row.id || null;
                 if (currentId && String(rowId) === String(currentId)) return;
                 const candidate = buildSubcontratistaPayload(row);
@@ -609,18 +613,18 @@
 
                         if (!id) {
                             if (isSubcontratistaDraftEmpty(payload)) return;
-                            const draftErrors = collectSubcontratistaValidationErrors(payload, null);
+                            const draftErrors = collectSubcontratistaValidationErrors(payload, { excludeRowData: rowData });
                             if (draftErrors.length) {
                                 if (isSubcontratistaDraftComplete(payload)) {
                                     showValidationMessage(draftErrors, 'warning');
                                 }
                                 return;
                             }
-                            createSubcontratista(rowData);
+                            createSubcontratista(rowData, { excludeRowData: rowData });
                             return;
                         }
 
-                        const errors = collectSubcontratistaValidationErrors(payload, id);
+                        const errors = collectSubcontratistaValidationErrors(payload, { currentId: id });
                         if (errors.length) {
                             revertHandsontableChanges(instance, visualRow, rowChanges);
                             showValidationMessage(errors, 'warning');
@@ -716,7 +720,7 @@
             const currentRow = hot ? hot.getSourceData().find((item) => item && String(item.Id || item.id) === String(id)) : null;
             const mergedRow = Object.assign({}, currentRow || {}, rowData || {});
             mergedRow[column] = value;
-            const errors = collectSubcontratistaValidationErrors(buildSubcontratistaPayload(mergedRow), id);
+            const errors = collectSubcontratistaValidationErrors(buildSubcontratistaPayload(mergedRow), { currentId: id });
             if (errors.length) {
                 showValidationMessage(errors, 'warning');
                 loadData();
@@ -725,9 +729,9 @@
             saveRowChanges(id, mergedRow, [{ prop: column, oldValue: null, newValue: value }]);
         }
 
-        function createSubcontratista(rowData) {
+        function createSubcontratista(rowData, options) {
             const payload = buildSubcontratistaPayload(rowData);
-            const errors = collectSubcontratistaValidationErrors(payload, null);
+            const errors = collectSubcontratistaValidationErrors(payload, options || {});
             if (errors.length) {
                 showValidationMessage(errors, 'warning');
                 return;
@@ -914,7 +918,7 @@
                 activo: 1
             });
 
-            const errors = collectSubcontratistaValidationErrors(payload, null);
+            const errors = collectSubcontratistaValidationErrors(payload, {});
             if (errors.length) {
                 showValidationMessage(errors, 'warning');
                 return;
