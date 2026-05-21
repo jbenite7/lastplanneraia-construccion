@@ -486,7 +486,7 @@ function renderProgramaGeneralLegendModal() {
                 "<h6 class='pg-legend-quick-group-title'>Alertas secundarias de restricciones</h6>" +
                 "<p class='pg-legend-quick-alert-intro'>R0-R1-R2/3-R4/6 no cambian el estado principal. Solo anticipan desbloqueos.</p>" +
                 "<div class='pg-legend-quick-alert-grid'>" +
-                    "<div class='pg-legend-quick-alert-item'><span class='pg-legend-modal-swatch pg-legend-quick-swatch pg-state-restr-0'></span><strong>R0</strong><small>Arranque inmediato o vencido.</small></div>" +
+                    "<div class='pg-legend-quick-alert-item'><span class='pg-legend-modal-swatch pg-legend-quick-swatch pg-state-restr-0'></span><strong>R0</strong><small>inicio inmediato o vencido.</small></div>" +
                     "<div class='pg-legend-quick-alert-item'><span class='pg-legend-modal-swatch pg-legend-quick-swatch pg-state-restr-1'></span><strong>R1</strong><small>Debe quedar liberada en 1 semana.</small></div>" +
                     "<div class='pg-legend-quick-alert-item'><span class='pg-legend-modal-swatch pg-legend-quick-swatch pg-state-restr-2-3'></span><strong>R2-3</strong><small>Riesgo medio en ventana proxima.</small></div>" +
                     "<div class='pg-legend-quick-alert-item'><span class='pg-legend-modal-swatch pg-legend-quick-swatch pg-state-restr-4-6'></span><strong>R4-6</strong><small>Riesgo temprano del lookahead.</small></div>" +
