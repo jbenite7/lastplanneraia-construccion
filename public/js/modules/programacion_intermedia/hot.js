@@ -789,6 +789,62 @@
     $select.val(selectedValue);
   }
 
+  function appendSharedSelectOptions($select, values, placeholder, excludedValue) {
+    if (!$select || !$select.length) {
+      return;
+    }
+
+    var current = String($select.val() || '').trim();
+    var seen = {};
+    $select.empty().append($('<option></option>').val('').text(placeholder));
+
+    for (var i = 0; i < values.length; i++) {
+      var value = String(values[i] || '').trim();
+      if (!value || value === excludedValue || seen[value]) {
+        continue;
+      }
+
+      seen[value] = true;
+      $select.append($('<option></option>').val(value).text(value));
+    }
+
+    if (current && seen[current]) {
+      $select.val(current);
+    } else {
+      $select.val('');
+    }
+  }
+
+  function populateSharedAssignmentOptions() {
+    appendSharedSelectOptions($('#piSharedSubContratista'), subcontratistas, 'Sin cambio de Sub-Contratista', PI_CREATE_SUB);
+    appendSharedSelectOptions($('#piSharedResponsableAIA'), profesionales, 'Sin cambio de Responsable AIA', PI_CREATE_PROF);
+  }
+
+  function syncSharedOperationControls() {
+    var applyRestriction = $('#piSharedApplyRestriction').is(':checked');
+    var applyAssignments = $('#piSharedApplyAssignments').is(':checked');
+
+    $('#piSharedRestrictionType, #piSharedRestrictionValue').prop('disabled', !applyRestriction);
+    $('#piSharedAssignmentsFields').toggleClass('d-none', !applyAssignments);
+    $('#piSharedSubContratista, #piSharedResponsableAIA').prop('disabled', !applyAssignments);
+
+    if (!applyAssignments) {
+      $('#piSharedSubContratista, #piSharedResponsableAIA').val('');
+    }
+  }
+
+  function resolvePreviewFlag(content, opts, key, defaultValue) {
+    if (opts && opts[key] !== undefined) {
+      return normalizeSharedSelectionValue(opts[key]);
+    }
+
+    if (content && content[key] !== undefined) {
+      return normalizeSharedSelectionValue(content[key]);
+    }
+
+    return Boolean(defaultValue);
+  }
+
   function getPreviewValueLabel(value) {
     var formatted = formatPercent(value);
     if (formatted) {
@@ -872,6 +928,12 @@
     var typeLabel = restrictionTypeLabels[restrictionType] || restrictionType || '-';
     var targetRaw = (opts.target_value !== undefined) ? opts.target_value : (content.target_value !== undefined ? content.target_value : ($('#piSharedRestrictionValue').val() || ''));
     var targetLabel = getPreviewValueLabel(targetRaw);
+    var applyRestriction = resolvePreviewFlag(content, opts, 'apply_restriction', true) && Boolean(restrictionType);
+    var applyAssignments = resolvePreviewFlag(content, opts, 'apply_assignments', false);
+    var targetSubContratista = String((opts.sub_contratista !== undefined) ? opts.sub_contratista : (content.sub_contratista || '')).trim();
+    var targetResponsableAia = String((opts.responsable_aia !== undefined) ? opts.responsable_aia : (content.responsable_aia || '')).trim();
+    var updateSubContratista = applyAssignments && targetSubContratista !== '';
+    var updateResponsableAia = applyAssignments && targetResponsableAia !== '';
     var countTotal = Number(content.count_total || 0);
     var countFound = Number(content.count_found || 0);
     var countMissing = Number(content.count_missing || 0);
@@ -888,8 +950,14 @@
 
     var html = '<div class="pi-shared-preview-shell">';
     html += '<div class="pi-shared-kpis">';
-    html += '<div class="pi-shared-kpi"><span class="pi-shared-kpi-label">Tipo</span><span class="pi-shared-kpi-value">' + escapeHtml(typeLabel) + '</span></div>';
-    html += '<div class="pi-shared-kpi"><span class="pi-shared-kpi-label">Objetivo</span><span class="pi-shared-kpi-value">' + escapeHtml(targetLabel) + '</span></div>';
+    html += '<div class="pi-shared-kpi"><span class="pi-shared-kpi-label">Restricción</span><span class="pi-shared-kpi-value">' + escapeHtml(applyRestriction ? typeLabel : 'Sin cambio') + '</span></div>';
+    html += '<div class="pi-shared-kpi"><span class="pi-shared-kpi-label">Objetivo</span><span class="pi-shared-kpi-value">' + escapeHtml(applyRestriction ? targetLabel : 'Sin cambio') + '</span></div>';
+    if (updateSubContratista) {
+      html += '<div class="pi-shared-kpi"><span class="pi-shared-kpi-label">Sub-Contratista</span><span class="pi-shared-kpi-value">' + escapeHtml(targetSubContratista) + '</span></div>';
+    }
+    if (updateResponsableAia) {
+      html += '<div class="pi-shared-kpi"><span class="pi-shared-kpi-label">Responsable AIA</span><span class="pi-shared-kpi-value">' + escapeHtml(targetResponsableAia) + '</span></div>';
+    }
     html += '<div class="pi-shared-kpi"><span class="pi-shared-kpi-label">Coincidencias</span><span class="pi-shared-kpi-value">' + escapeHtml(String(countFound) + ' / ' + String(countTotal)) + '</span></div>';
     html += '<div class="pi-shared-kpi"><span class="pi-shared-kpi-label">No encontradas</span><span class="pi-shared-kpi-value">' + escapeHtml(String(countMissing)) + '</span></div>';
     html += '</div>';
@@ -906,7 +974,17 @@
     if (previewRows.length > 0) {
       var max = Math.min(previewRows.length, 12);
       html += '<div class="pi-shared-table-wrap"><table class="pi-shared-table">';
-      html += '<thead><tr><th>#</th><th>Actividad</th><th>Actual</th><th>Objetivo</th><th>Ajuste</th></tr></thead><tbody>';
+      html += '<thead><tr><th>#</th><th>Actividad</th>';
+      if (applyRestriction) {
+        html += '<th>Restric. actual</th><th>Restric. objetivo</th><th>Ajuste</th>';
+      }
+      if (updateSubContratista) {
+        html += '<th>Sub actual</th><th>Sub objetivo</th>';
+      }
+      if (updateResponsableAia) {
+        html += '<th>Resp actual</th><th>Resp objetivo</th>';
+      }
+      html += '</tr></thead><tbody>';
 
       for (var i = 0; i < max; i++) {
         var item = previewRows[i] || {};
@@ -920,15 +998,24 @@
           actividad = actividad.substring(0, 157) + '...';
         }
 
-        var valorActual = getPreviewValueLabel(item.valor_actual);
-        var deltaInfo = getPreviewDeltaInfo(item.valor_actual, targetRaw);
-
         html += '<tr>';
         html += '<td class="pi-shared-col-id">#' + escapeHtml(consecutivo) + '</td>';
         html += '<td class="pi-shared-activity-cell">' + escapeHtml(actividad) + '</td>';
-        html += '<td>' + escapeHtml(valorActual) + '</td>';
-        html += '<td>' + escapeHtml(targetLabel) + '</td>';
-        html += '<td><span class="pi-shared-delta ' + escapeHtml(deltaInfo.className) + '">' + escapeHtml(deltaInfo.label) + '</span></td>';
+        if (applyRestriction) {
+          var valorActual = getPreviewValueLabel(item.valor_actual);
+          var deltaInfo = getPreviewDeltaInfo(item.valor_actual, targetRaw);
+          html += '<td>' + escapeHtml(valorActual) + '</td>';
+          html += '<td>' + escapeHtml(targetLabel) + '</td>';
+          html += '<td><span class="pi-shared-delta ' + escapeHtml(deltaInfo.className) + '">' + escapeHtml(deltaInfo.label) + '</span></td>';
+        }
+        if (updateSubContratista) {
+          html += '<td>' + escapeHtml(getPreviewValueLabel(item.sub_contratista_actual)) + '</td>';
+          html += '<td>' + escapeHtml(targetSubContratista) + '</td>';
+        }
+        if (updateResponsableAia) {
+          html += '<td>' + escapeHtml(getPreviewValueLabel(item.responsable_aia_actual)) + '</td>';
+          html += '<td>' + escapeHtml(targetResponsableAia) + '</td>';
+        }
         html += '</tr>';
       }
 
@@ -949,7 +1036,12 @@
     var selectedIds = collectSelectedActivityIds();
     var type = String($('#piSharedRestrictionType').val() || 'D_y_E');
 
+    populateSharedAssignmentOptions();
     setSharedValueOptionsForType(type, false);
+    $('#piSharedApplyRestriction').prop('checked', true);
+    $('#piSharedApplyAssignments').prop('checked', false);
+    $('#piSharedSubContratista, #piSharedResponsableAIA').val('');
+    syncSharedOperationControls();
     $('#piSharedActivityIds').val(selectedIds.join(','));
     $('#piSharedNote').val('');
 
@@ -992,12 +1084,20 @@
   function buildSharedConstraintRequest(requireValue) {
     var db = getDb();
     var semana = getSemana();
-    var restrictionType = String($('#piSharedRestrictionType').val() || '').trim();
-    var targetValue = String($('#piSharedRestrictionValue').val() || '').trim();
+    var applyRestriction = $('#piSharedApplyRestriction').is(':checked');
+    var applyAssignments = $('#piSharedApplyAssignments').is(':checked');
+    var restrictionType = applyRestriction ? String($('#piSharedRestrictionType').val() || '').trim() : '';
+    var targetValue = applyRestriction ? String($('#piSharedRestrictionValue').val() || '').trim() : '';
     var activityIds = parseActivityIdsInput($('#piSharedActivityIds').val());
     var note = String($('#piSharedNote').val() || '').trim();
+    var subContratista = applyAssignments ? String($('#piSharedSubContratista').val() || '').trim() : '';
+    var responsableAia = applyAssignments ? String($('#piSharedResponsableAIA').val() || '').trim() : '';
 
-    if (!restrictionType) {
+    if (!applyRestriction && !applyAssignments) {
+      return { valid: false, error: 'Active al menos una operación de lote.' };
+    }
+
+    if (applyRestriction && !restrictionType) {
       return { valid: false, error: 'Seleccione tipo de restricción.' };
     }
 
@@ -1005,8 +1105,12 @@
       return { valid: false, error: 'Seleccione al menos una actividad.' };
     }
 
-    if (requireValue && !targetValue) {
+    if (requireValue && applyRestriction && !targetValue) {
       return { valid: false, error: 'Seleccione un valor objetivo.' };
+    }
+
+    if (applyAssignments && !subContratista && !responsableAia && !applyRestriction) {
+      return { valid: false, error: 'Seleccione Sub-Contratista o Responsable para aplicar asignaciones.' };
     }
 
     return {
@@ -1014,22 +1118,38 @@
       data: {
         db: db,
         semana: semana,
+        apply_restriction: applyRestriction ? 1 : 0,
+        apply_assignments: applyAssignments ? 1 : 0,
         restriction_type: restrictionType,
         target_value: targetValue,
+        sub_contratista: subContratista,
+        responsable_aia: responsableAia,
         activity_ids: activityIds,
         note: note,
       },
     };
   }
 
-  function updateRowsAfterSharedConstraintApply(updatedIds, restrictionType, targetValue) {
+  function updateRowsAfterSharedConstraintApply(updatedIds, responseData, requestData) {
     if (!Array.isArray(updatedIds) || updatedIds.length === 0) {
       return;
     }
 
-    var normalizedValue = normalizeRestrictionValue(restrictionType, targetValue);
-    if (normalizedValue === null) {
-      return;
+    var data = responseData || {};
+    var request = requestData || {};
+    var applyRestriction = resolvePreviewFlag(data, request, 'apply_restriction', true);
+    var applyAssignments = resolvePreviewFlag(data, request, 'apply_assignments', false);
+    var restrictionType = String(data.restriction_type || request.restriction_type || '').trim();
+    var targetValue = data.target_value !== undefined ? data.target_value : request.target_value;
+    var subContratista = String(data.sub_contratista !== undefined ? data.sub_contratista : (request.sub_contratista || '')).trim();
+    var responsableAia = String(data.responsable_aia !== undefined ? data.responsable_aia : (request.responsable_aia || '')).trim();
+    var normalizedValue = null;
+
+    if (applyRestriction) {
+      normalizedValue = normalizeRestrictionValue(restrictionType, targetValue);
+      if (normalizedValue === null) {
+        applyRestriction = false;
+      }
     }
 
     var idIndex = {};
@@ -1044,9 +1164,17 @@
         continue;
       }
 
-      row[restrictionType] = normalizedValue;
-      row.Estado_Restricciones = calculateRestrictionStateRatio(row);
-      row.estado_operativo = getStateLabel(row);
+      if (applyRestriction) {
+        row[restrictionType] = normalizedValue;
+        row.Estado_Restricciones = calculateRestrictionStateRatio(row);
+        row.estado_operativo = getStateLabel(row);
+      }
+      if (applyAssignments && subContratista) {
+        row.Sub_Contratista = subContratista;
+      }
+      if (applyAssignments && responsableAia) {
+        row.Responsable_AIA = responsableAia;
+      }
     }
   }
 
@@ -1068,8 +1196,12 @@
     }).done(function (response) {
       if (response && response.respuesta === 'BIEN') {
         renderSharedPreview(response.data || {}, {
+          apply_restriction: request.data.apply_restriction,
+          apply_assignments: request.data.apply_assignments,
           restriction_type: request.data.restriction_type,
           target_value: request.data.target_value,
+          sub_contratista: request.data.sub_contratista,
+          responsable_aia: request.data.responsable_aia,
         });
         return;
       }
@@ -1110,13 +1242,17 @@
       var updatedIds = Array.isArray(data.updated_ids) ? data.updated_ids : request.data.activity_ids;
       var targetValue = data.target_value !== undefined ? data.target_value : request.data.target_value;
 
-      updateRowsAfterSharedConstraintApply(updatedIds, request.data.restriction_type, targetValue);
+      updateRowsAfterSharedConstraintApply(updatedIds, data, request.data);
       pendingViewportState = captureViewportState();
       applyFiltersAndRender();
       showFeedback('success', 'Lote aplicado (' + Number(data.updated_count || updatedIds.length || 0) + ')');
       renderSharedPreview({
         restriction_type: request.data.restriction_type,
         target_value: targetValue,
+        apply_restriction: request.data.apply_restriction,
+        apply_assignments: request.data.apply_assignments,
+        sub_contratista: data.sub_contratista !== undefined ? data.sub_contratista : request.data.sub_contratista,
+        responsable_aia: data.responsable_aia !== undefined ? data.responsable_aia : request.data.responsable_aia,
         count_total: request.data.activity_ids.length,
         count_found: Number(data.updated_count || updatedIds.length || 0),
         count_missing: 0,
@@ -1124,6 +1260,10 @@
       }, {
         target_value: targetValue,
         restriction_type: request.data.restriction_type,
+        apply_restriction: request.data.apply_restriction,
+        apply_assignments: request.data.apply_assignments,
+        sub_contratista: data.sub_contratista !== undefined ? data.sub_contratista : request.data.sub_contratista,
+        responsable_aia: data.responsable_aia !== undefined ? data.responsable_aia : request.data.responsable_aia,
       });
 
       setTimeout(function () {
@@ -2620,6 +2760,7 @@
           });
           hot.updateSettings({ columns: cols });
         }
+        populateSharedAssignmentOptions();
         showFeedback('success', 'Listas actualizadas');
       } catch (e) {
         showFeedback('error', 'Error al procesar las listas');
@@ -2657,6 +2798,13 @@
     $('#piSharedRestrictionType').off('change.piSharedType').on('change.piSharedType', function () {
       setSharedValueOptionsForType(String($(this).val() || ''), true);
     });
+
+    $('#piSharedApplyRestriction, #piSharedApplyAssignments')
+      .off('change.piSharedOperations')
+      .on('change.piSharedOperations', function () {
+        syncSharedOperationControls();
+        renderSharedPreviewEmpty('Configuración actualizada. Pulse "Preview" para validar impacto.');
+      });
 
     $('#btn_pi_shared_preview').off('click.piSharedPreview').on('click.piSharedPreview', requestSharedConstraintPreview);
     $('#btn_pi_shared_apply').off('click.piSharedApply').on('click.piSharedApply', requestSharedConstraintApply);

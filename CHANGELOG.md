@@ -31,6 +31,7 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ### Añadido
 
+- **Asignaciones opcionales en Restricción Compartida PI:** El lote de Programación Intermedia permite aplicar Sub-Contratista y Responsable AIA comunes mediante checks explícitos, manteniendo por defecto la actualización exclusiva de restricciones para evitar sobrescrituras accidentales.
 - **Panel "Solo Alertas" en PDC:** Botón rápido en la barra de herramientas que exprime el Plan de Compras filtrando en la grilla únicamente los paquetes críticos, retrasados o sin configurar.
 - **Iconografía de Riesgo PDC:** Insignias de semáforo (check-circle, cog, exclamation-triangle) inyectadas directamente en los botones de acción para rápida identificación de cuellos de botella en adquisiciones.
 - **Documentación Stitch:** Guías de conexión, operación MCP, brief de design system AIA y catálogo técnico de módulos visuales.

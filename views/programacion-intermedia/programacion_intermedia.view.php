@@ -844,6 +844,23 @@
                 <div class="modal-body">
                     <div class="form-row">
                         <div class="form-group col-md-5">
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" id="piSharedApplyRestriction" checked>
+                                <label class="custom-control-label" for="piSharedApplyRestriction">Aplicar restricción al lote</label>
+                            </div>
+                            <small class="pi-shared-hint">Mantiene el comportamiento actual de restricción compartida.</small>
+                        </div>
+                        <div class="form-group col-md-7">
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" id="piSharedApplyAssignments">
+                                <label class="custom-control-label" for="piSharedApplyAssignments">Aplicar Sub-Contratista y Responsable comunes</label>
+                            </div>
+                            <small class="pi-shared-hint">Active solo si todas las actividades comparten estas asignaciones.</small>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-5">
                             <label for="piSharedRestrictionType">Tipo de restricción</label>
                             <select id="piSharedRestrictionType" class="form-control form-control-sm">
                                 <option value="D_y_E">Diseños y Especif.</option>
@@ -869,6 +886,19 @@
                                 <button id="btn_pi_shared_clear_ids" type="button" class="btn btn-outline-secondary">Limpiar lista</button>
                             </div>
                             <small id="piSharedSelectionInfo" class="pi-shared-selection-info">Marcadas: 0 | Visibles: 0</small>
+                        </div>
+                    </div>
+
+                    <div id="piSharedAssignmentsFields" class="form-row d-none">
+                        <div class="form-group col-md-6">
+                            <label for="piSharedSubContratista">Sub-Contratista común</label>
+                            <select id="piSharedSubContratista" class="form-control form-control-sm" disabled></select>
+                            <small class="pi-shared-hint">Si queda vacío, no se modifica el Sub-Contratista.</small>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="piSharedResponsableAIA">Responsable AIA común</label>
+                            <select id="piSharedResponsableAIA" class="form-control form-control-sm" disabled></select>
+                            <small class="pi-shared-hint">Si queda vacío, no se modifica el Responsable.</small>
                         </div>
                     </div>
 
@@ -941,7 +971,7 @@
         };
     </script>
     <script type="text/javascript" src="/js/HandsontableTomSelectEditor.js?v=tomselect30"></script>
-    <script src="/js/modules/programacion_intermedia/hot.js?v=hot31"></script>
+    <script src="/js/modules/programacion_intermedia/hot.js?v=hot32"></script>
 
     <script>
         function cargaParametros() {

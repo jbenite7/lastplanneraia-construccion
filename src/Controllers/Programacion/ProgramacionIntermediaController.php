@@ -291,6 +291,8 @@ class ProgramacionIntermediaController extends BaseController
                     'id_actividad' => $row['Id'] ?? '',
                     'actividad' => $row['Actividad'] ?? '',
                     'valor_actual' => $row[$payload['restrictionType']] ?? '',
+                    'sub_contratista_actual' => $row['Sub_Contratista'] ?? '',
+                    'responsable_aia_actual' => $row['Responsable_AIA'] ?? '',
                 ];
             }
 
@@ -301,6 +303,11 @@ class ProgramacionIntermediaController extends BaseController
                 'respuesta' => 'BIEN',
                 'data' => [
                     'restriction_type' => $payload['restrictionType'],
+                    'target_value' => $payload['targetValue'],
+                    'apply_restriction' => $payload['applyRestriction'] ? 1 : 0,
+                    'apply_assignments' => $payload['applyAssignments'] ? 1 : 0,
+                    'sub_contratista' => $payload['subContratista'],
+                    'responsable_aia' => $payload['responsableAia'],
                     'count_total' => count($payload['activityIds']),
                     'count_found' => count($foundIds),
                     'count_missing' => count($missingIds),
@@ -344,19 +351,39 @@ class ProgramacionIntermediaController extends BaseController
                 return;
             }
 
-            $normalizedValue = $this->normalizeSharedRestrictionInput($payload['restrictionType'], $payload['targetValue']);
-            if ($normalizedValue === null) {
-                echo json_encode(["respuesta" => "ERROR", "mensaje" => "Valor de restricción inválido."]);
-
-                return;
-            }
-
             $dbPrefix = $payload['dbPrefix'];
             $semana = $payload['semana'];
             $restrictionColumn = $payload['restrictionType'];
             $note = $payload['note'];
+            $applyRestriction = $payload['applyRestriction'];
+            $applyAssignments = $payload['applyAssignments'];
+            $subContratista = $payload['subContratista'];
+            $responsableAia = $payload['responsableAia'];
+            $normalizedValue = null;
 
-            $sharedTablesReady = $this->ensureSharedConstraintTables($dbPrefix);
+            if ($applyRestriction) {
+                $normalizedValue = $this->normalizeSharedRestrictionInput($restrictionColumn, $payload['targetValue']);
+                if ($normalizedValue === null) {
+                    echo json_encode(["respuesta" => "ERROR", "mensaje" => "Valor de restricción inválido."]);
+
+                    return;
+                }
+            }
+
+            $setClauses = [];
+            if ($applyRestriction) {
+                $setClauses[] = "{$restrictionColumn} = ?";
+                $setClauses[] = "Estado_Restricciones = ?";
+            }
+            if ($applyAssignments && $subContratista !== '') {
+                $setClauses[] = "Sub_Contratista = ?";
+            }
+            if ($applyAssignments && $responsableAia !== '') {
+                $setClauses[] = "Responsable_AIA = ?";
+            }
+            $setClauses[] = "Activa = 1";
+
+            $sharedTablesReady = $applyRestriction ? $this->ensureSharedConstraintTables($dbPrefix) : false;
             $this->db->beginTransaction();
 
             $sharedId = null;
@@ -388,7 +415,7 @@ class ProgramacionIntermediaController extends BaseController
                 }
             }
 
-            $updateSql = "UPDATE {$dbPrefix}_programa_consolidado SET {$restrictionColumn} = ?, Estado_Restricciones = ?, Activa = 1 WHERE Consecutivo_en_Programa = ? AND Semana = ? AND Titulo = 0";
+            $updateSql = "UPDATE {$dbPrefix}_programa_consolidado SET " . implode(', ', $setClauses) . " WHERE Consecutivo_en_Programa = ? AND Semana = ? AND Titulo = 0";
             $updateStmt = $this->db->prepare($updateSql);
 
             $updated = 0;
@@ -400,17 +427,24 @@ class ProgramacionIntermediaController extends BaseController
                     continue;
                 }
 
-                $row[$restrictionColumn] = $normalizedValue;
-                $estadoRestricciones = $this->calculateRestrictionState($row);
+                $updateParams = [];
+                if ($applyRestriction) {
+                    $row[$restrictionColumn] = $normalizedValue;
+                    $updateParams[] = $normalizedValue;
+                    $updateParams[] = $this->calculateRestrictionState($row);
+                }
+                if ($applyAssignments && $subContratista !== '') {
+                    $updateParams[] = $subContratista;
+                }
+                if ($applyAssignments && $responsableAia !== '') {
+                    $updateParams[] = $responsableAia;
+                }
+                $updateParams[] = $rowId;
+                $updateParams[] = $semana;
 
-                $updateStmt->execute([
-                    $normalizedValue,
-                    $estadoRestricciones,
-                    $rowId,
-                    $semana,
-                ]);
+                $updateStmt->execute($updateParams);
 
-                if ($trackSharedLinks && $insertLinkStmt) {
+                if ($applyRestriction && $trackSharedLinks && $insertLinkStmt) {
                     try {
                         $insertLinkStmt->execute([
                             $sharedId,
@@ -430,10 +464,33 @@ class ProgramacionIntermediaController extends BaseController
 
             $this->db->commit();
 
+            $camposNames = [
+                'D_y_E' => 'Diseños',
+                'Materiales' => 'Materiales',
+                'MdeO' => 'Mano de Obra',
+                'Equipos' => 'Equipos',
+                'Predecesora' => 'Predecesora',
+                'Pdto_Cons' => 'Pdto. Construcción',
+                'Modelo' => 'Modelo BIM'
+            ];
+            $operationParts = [];
+            if ($applyRestriction) {
+                $valDisplay = $normalizedValue === 'N/A' || $normalizedValue === 'n/a' ? 'N/A' : (round((float)$normalizedValue * 100) . '%');
+                $cName = $camposNames[$restrictionColumn] ?? $restrictionColumn;
+                $operationParts[] = "Restricción {$cName} a {$valDisplay}";
+            }
+            if ($applyAssignments && $subContratista !== '') {
+                $operationParts[] = "Sub-Contratista: {$subContratista}";
+            }
+            if ($applyAssignments && $responsableAia !== '') {
+                $operationParts[] = "Responsable AIA: {$responsableAia}";
+            }
+            $operationSummary = implode('; ', $operationParts);
+
             $this->db->logActivity(
                 'ProgramacionIntermedia',
                 'SHARED_RESTRICTION_APPLY',
-                "Aplicó restricción compartida {$restrictionColumn} en {$updated} actividades (semana {$semana})",
+                "Aplicó lote PI ({$operationSummary}) en {$updated} actividades (semana {$semana})",
                 $dbPrefix
             );
 
@@ -442,20 +499,7 @@ class ProgramacionIntermediaController extends BaseController
                 if ($updated > 0) {
                     $svc = new \App\Services\NotificationService();
                     $usersByRole = $svc->getUsersByRoleForProject($dbPrefix);
-                    
-                    $valDisplay = $normalizedValue === 'N/A' || $normalizedValue === 'n/a' ? 'N/A' : (round((float)$normalizedValue * 100) . '%');
-                    $camposNames = [
-                        'D_y_E' => 'Diseños',
-                        'Materiales' => 'Materiales',
-                        'MdeO' => 'Mano de Obra',
-                        'Equipos' => 'Equipos',
-                        'Predecesora' => 'Predecesora',
-                        'Pdto_Cons' => 'Pdto. Construcción',
-                        'Modelo' => 'Modelo BIM'
-                    ];
-                    $cName = $camposNames[$restrictionColumn] ?? $restrictionColumn;
-                    
-                    $msg = "⚡ Restricción múltiple: {$cName} a {$valDisplay} en {$updated} actividades — Semana {$semana}";
+                    $msg = "Lote PI: {$operationSummary} en {$updated} actividades - Semana {$semana}";
                     
                     // Notificar a D, R, A
                     $notifiedUids = [];
@@ -473,12 +517,19 @@ class ProgramacionIntermediaController extends BaseController
 
                     // Notificar a los Responsables AIA afectados (extrayendo únicos de $rows)
                     $affectedResponsibles = [];
-                    foreach ($rows as $r) {
-                        $rName = trim($r['Responsable_AIA'] ?? '');
-                        if ($rName !== '' && !isset($affectedResponsibles[$rName])) {
-                            $rUsername = $svc->findUsernameByName($rName);
-                            if ($rUsername) {
-                                $affectedResponsibles[$rName] = $rUsername;
+                    if ($applyAssignments && $responsableAia !== '') {
+                        $rUsername = $svc->findUsernameByName($responsableAia);
+                        if ($rUsername) {
+                            $affectedResponsibles[$responsableAia] = $rUsername;
+                        }
+                    } else {
+                        foreach ($rows as $r) {
+                            $rName = trim($r['Responsable_AIA'] ?? '');
+                            if ($rName !== '' && !isset($affectedResponsibles[$rName])) {
+                                $rUsername = $svc->findUsernameByName($rName);
+                                if ($rUsername) {
+                                    $affectedResponsibles[$rName] = $rUsername;
+                                }
                             }
                         }
                     }
@@ -502,8 +553,12 @@ class ProgramacionIntermediaController extends BaseController
                     'tracking_enabled' => $trackSharedLinks,
                     'updated_count' => $updated,
                     'updated_ids' => $updatedIds,
+                    'apply_restriction' => $applyRestriction ? 1 : 0,
+                    'apply_assignments' => $applyAssignments ? 1 : 0,
                     'restriction_type' => $restrictionColumn,
                     'target_value' => $normalizedValue,
+                    'sub_contratista' => $subContratista,
+                    'responsable_aia' => $responsableAia,
                 ],
             ], JSON_UNESCAPED_UNICODE);
         } catch (\Throwable $e) {
@@ -514,7 +569,7 @@ class ProgramacionIntermediaController extends BaseController
             error_log('Error applySharedConstraints: ' . $e->getMessage());
             $detail = trim((string)$e->getMessage());
             $detail = preg_replace('/\s+/', ' ', $detail);
-            $publicMessage = 'No se pudo aplicar la restricción compartida. Revise tipo/valor y permisos de escritura.';
+            $publicMessage = 'No se pudo aplicar el lote de Programación Intermedia. Revise datos y permisos de escritura.';
             if ($detail !== '') {
                 $publicMessage .= ' Detalle: ' . substr($detail, 0, 180);
             }
@@ -528,10 +583,14 @@ class ProgramacionIntermediaController extends BaseController
         $vars = $this->getSessionVars();
         $dbPrefix = $_POST['db'] ?? ($vars['dbName'] ?? '');
         $semana = isset($_POST['semana']) ? filter_var($_POST['semana'], FILTER_VALIDATE_INT) : ($vars['semana'] ?? null);
+        $applyRestriction = $this->parseSharedBool($_POST['apply_restriction'] ?? null, true);
+        $applyAssignments = $this->parseSharedBool($_POST['apply_assignments'] ?? null, false);
         $restrictionType = trim((string)($_POST['restriction_type'] ?? ''));
         $activityIds = $this->parseActivityIds($_POST['activity_ids'] ?? []);
         $note = trim((string)($_POST['note'] ?? ''));
         $targetValue = $_POST['target_value'] ?? null;
+        $subContratista = $applyAssignments ? trim((string)($_POST['sub_contratista'] ?? '')) : '';
+        $responsableAia = $applyAssignments ? trim((string)($_POST['responsable_aia'] ?? '')) : '';
 
         $allowedRestrictions = ['D_y_E', 'Materiales', 'MdeO', 'Equipos', 'Predecesora', 'Pdto_Cons', 'Modelo'];
 
@@ -543,27 +602,62 @@ class ProgramacionIntermediaController extends BaseController
             return ['ok' => false, 'mensaje' => 'Semana inválida.'];
         }
 
-        if (!in_array($restrictionType, $allowedRestrictions, true)) {
+        if (!$applyRestriction && !$applyAssignments) {
+            return ['ok' => false, 'mensaje' => 'Debe activar al menos una operación de lote.'];
+        }
+
+        if ($applyRestriction && !in_array($restrictionType, $allowedRestrictions, true)) {
             return ['ok' => false, 'mensaje' => 'Tipo de restricción inválido.'];
+        }
+
+        if (!$applyRestriction) {
+            $restrictionType = '';
+            $targetValue = '';
         }
 
         if (empty($activityIds)) {
             return ['ok' => false, 'mensaje' => 'Debe seleccionar al menos una actividad.'];
         }
 
-        if ($requireValue && ($targetValue === null || $targetValue === '')) {
+        if ($requireValue && $applyRestriction && ($targetValue === null || $targetValue === '')) {
             return ['ok' => false, 'mensaje' => 'Debe definir un valor objetivo para la restricción.'];
+        }
+
+        if ($applyAssignments && !$applyRestriction && $subContratista === '' && $responsableAia === '') {
+            return ['ok' => false, 'mensaje' => 'Debe seleccionar Sub-Contratista o Responsable para aplicar asignaciones.'];
         }
 
         return [
             'ok' => true,
             'dbPrefix' => $dbPrefix,
             'semana' => (int)$semana,
+            'applyRestriction' => $applyRestriction,
+            'applyAssignments' => $applyAssignments,
             'restrictionType' => $restrictionType,
             'activityIds' => $activityIds,
             'note' => $note,
             'targetValue' => $targetValue,
+            'subContratista' => $subContratista,
+            'responsableAia' => $responsableAia,
         ];
+    }
+
+    private function parseSharedBool($value, bool $default): bool
+    {
+        if ($value === null) {
+            return $default;
+        }
+
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        $text = strtolower(trim((string)$value));
+        if ($text === '') {
+            return $default;
+        }
+
+        return in_array($text, ['1', 'true', 'yes', 'on', 'si'], true);
     }
 
     private function parseActivityIds($rawIds): array
@@ -601,7 +695,7 @@ class ProgramacionIntermediaController extends BaseController
         }
 
         $placeholders = implode(',', array_fill(0, count($activityIds), '?'));
-        $sql = "SELECT Consecutivo_en_Programa, Id, Actividad, D_y_E, Materiales, MdeO, Equipos, Predecesora, Pdto_Cons, Modelo
+        $sql = "SELECT Consecutivo_en_Programa, Id, Actividad, D_y_E, Materiales, MdeO, Equipos, Predecesora, Pdto_Cons, Modelo, Sub_Contratista, Responsable_AIA
                 FROM {$dbPrefix}_programa_consolidado
                 WHERE Semana = ?
                   AND Titulo = 0
