@@ -335,17 +335,30 @@
     return Math.round((ratio + Number.EPSILON) * 100000) / 100000;
   }
 
+  function getSourceRowDataByVisualRow(instance, visualRow) {
+    if (!instance || !Number.isInteger(visualRow) || visualRow < 0) {
+      return null;
+    }
+
+    var physicalRow = typeof instance.toPhysicalRow === 'function' ? instance.toPhysicalRow(visualRow) : visualRow;
+    if (!Number.isInteger(physicalRow) || physicalRow < 0 || typeof instance.getSourceDataAtRow !== 'function') {
+      return null;
+    }
+
+    return instance.getSourceDataAtRow(physicalRow) || null;
+  }
+
+  function hasAssignedValue(value, createPlaceholder) {
+    var normalized = String(value === null || value === undefined ? '' : value).trim();
+    return normalized !== '' && normalized !== createPlaceholder;
+  }
+
   function recalculateRestrictionStateForVisualRow(visualRow) {
     if (!hot || !Number.isInteger(visualRow) || visualRow < 0) {
       return;
     }
 
-    var physicalRow = hot.toPhysicalRow(visualRow);
-    if (!Number.isInteger(physicalRow) || physicalRow < 0) {
-      return;
-    }
-
-    var rowData = hot.getSourceDataAtRow(physicalRow);
+    var rowData = getSourceRowDataByVisualRow(hot, visualRow);
     if (!rowData) {
       return;
     }
@@ -573,12 +586,7 @@
       return;
     }
 
-    var physicalRow = hot.toPhysicalRow(visualRow);
-    if (!Number.isInteger(physicalRow) || physicalRow < 0) {
-      return;
-    }
-
-    var rowData = hot.getSourceDataAtRow(physicalRow);
+    var rowData = getSourceRowDataByVisualRow(hot, visualRow);
     if (!rowData || getState(rowData) === 'header') {
       return;
     }
@@ -719,12 +727,7 @@
       var toRow = Math.max(range.from.row, range.to.row);
 
       for (var visualRow = fromRow; visualRow <= toRow; visualRow++) {
-        var physicalRow = hot.toPhysicalRow(visualRow);
-        if (!Number.isInteger(physicalRow) || physicalRow < 0) {
-          continue;
-        }
-
-        var rowData = hot.getSourceDataAtRow(physicalRow);
+        var rowData = getSourceRowDataByVisualRow(hot, visualRow);
         if (!rowData || getState(rowData) === 'header') {
           continue;
         }
@@ -1392,8 +1395,7 @@
   function saveRow(visualRow, prop, oldValue) {
     var db = getDb();
     var semana = getSemana();
-    var physicalRow = hot.toPhysicalRow(visualRow);
-    var row = hot.getSourceDataAtRow(physicalRow);
+    var row = getSourceRowDataByVisualRow(hot, visualRow);
 
     var payload = buildPayload(row || {});
     if (!payload.valid) {
@@ -1631,6 +1633,92 @@
         } catch (_err) {
         }
       }
+    }
+  }
+
+  function cloneHotFilterConditions(conditions) {
+    if (!Array.isArray(conditions)) {
+      return [];
+    }
+
+    return conditions.map(function (stack) {
+      var stackConditions = Array.isArray(stack && stack.conditions) ? stack.conditions : [];
+
+      return {
+        column: stack ? stack.column : null,
+        operation: (stack && stack.operation) || 'conjunction',
+        conditions: stackConditions.map(function (condition) {
+          return {
+            name: condition ? condition.name : '',
+            args: Array.isArray(condition && condition.args) ? condition.args.slice() : [],
+          };
+        }).filter(function (condition) {
+          return condition.name;
+        }),
+      };
+    }).filter(function (stack) {
+      return Number.isInteger(stack.column) && stack.conditions.length > 0;
+    });
+  }
+
+  function getHotFiltersPlugin() {
+    if (!hot || typeof hot.getPlugin !== 'function') {
+      return null;
+    }
+
+    try {
+      return hot.getPlugin('filters') || null;
+    } catch (_err) {
+      return null;
+    }
+  }
+
+  function captureHotFilterConditions() {
+    var filtersPlugin = getHotFiltersPlugin();
+    var conditionCollection = filtersPlugin && filtersPlugin.conditionCollection;
+
+    if (!conditionCollection || typeof conditionCollection.exportAllConditions !== 'function') {
+      return [];
+    }
+
+    try {
+      return cloneHotFilterConditions(conditionCollection.exportAllConditions());
+    } catch (_err) {
+      return [];
+    }
+  }
+
+  function restoreHotFilterConditions(conditions) {
+    var clonedConditions = cloneHotFilterConditions(conditions);
+    if (clonedConditions.length === 0) {
+      return;
+    }
+
+    var filtersPlugin = getHotFiltersPlugin();
+    var conditionCollection = filtersPlugin && filtersPlugin.conditionCollection;
+
+    if (!conditionCollection) {
+      return;
+    }
+
+    try {
+      if (typeof conditionCollection.clean === 'function' && typeof conditionCollection.addCondition === 'function') {
+        conditionCollection.clean();
+        clonedConditions.forEach(function (stack) {
+          stack.conditions.forEach(function (condition) {
+            conditionCollection.addCondition(stack.column, condition, stack.operation);
+          });
+        });
+      } else if (typeof conditionCollection.importAllConditions === 'function') {
+        conditionCollection.importAllConditions(clonedConditions);
+      } else {
+        return;
+      }
+
+      if (filtersPlugin && typeof filtersPlugin.filter === 'function') {
+        filtersPlugin.filter();
+      }
+    } catch (_err) {
     }
   }
 
@@ -1982,7 +2070,7 @@
       return;
     }
 
-    var rowData = instance.getSourceDataAtRow(row) || {};
+    var rowData = getSourceRowDataByVisualRow(instance, row) || {};
     if (getState(rowData) === 'header' || !isUserAllowedToEdit()) {
       return;
     }
@@ -2021,7 +2109,9 @@
     syncContainerHeight();
 
     if (hot) {
+      var filterConditions = captureHotFilterConditions();
       hot.loadData(data);
+      restoreHotFilterConditions(filterConditions);
       scheduleLayoutRefresh(0, true);
       return;
     }
@@ -2079,6 +2169,13 @@
       contextMenu: true,
       dropdownMenu: ['filter_by_condition', 'filter_by_value', 'filter_action_bar'],
       filters: true,
+      modifyFiltersMultiSelectValue: function (value, meta) {
+        if (meta && (meta.prop === 'Actividad' || meta.data === 'Actividad')) {
+          return getActividadPlainText(value);
+        }
+
+        return value;
+      },
       search: false,
       exportFile: true,
       columnSorting: false,
@@ -2243,9 +2340,11 @@
           }
 
           if (isRestrictionChange) {
-            var rowData = this.getSourceDataAtRow(row) || {};
-            var hasSub = rowData.Sub_Contratista && String(rowData.Sub_Contratista).trim() !== '' && rowData.Sub_Contratista !== PI_CREATE_SUB;
-            var hasResp = rowData.Responsable_AIA && String(rowData.Responsable_AIA).trim() !== '' && rowData.Responsable_AIA !== PI_CREATE_PROF;
+            var rowData = getSourceRowDataByVisualRow(this, row) || {};
+            var subValue = hasAssignedValue(rowData.Sub_Contratista, PI_CREATE_SUB) ? rowData.Sub_Contratista : this.getDataAtRowProp(row, 'Sub_Contratista');
+            var respValue = hasAssignedValue(rowData.Responsable_AIA, PI_CREATE_PROF) ? rowData.Responsable_AIA : this.getDataAtRowProp(row, 'Responsable_AIA');
+            var hasSub = hasAssignedValue(subValue, PI_CREATE_SUB);
+            var hasResp = hasAssignedValue(respValue, PI_CREATE_PROF);
             if (!hasSub || !hasResp) {
               revertCell(row, prop, oldValue);
               showFeedback('error', 'No puede gestionar restricciones de una actividad sin asignar Responsable y Subcontratista');
