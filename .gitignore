@@ -48,3 +48,6 @@ debug_*.php
 
 # Metadatos de macOS en discos ExFAT
 ._*
+
+# Archivos de configuración de IDEs
+GEMINI.md
