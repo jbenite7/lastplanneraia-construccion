@@ -33,7 +33,7 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 - **Panel "Solo Alertas" en PDC:** Botón rápido en la barra de herramientas que exprime el Plan de Compras filtrando en la grilla únicamente los paquetes críticos, retrasados o sin configurar.
 - **Iconografía de Riesgo PDC:** Insignias de semáforo (check-circle, cog, exclamation-triangle) inyectadas directamente en los botones de acción para rápida identificación de cuellos de botella en adquisiciones.
-- **Stitch Design System Docs:** Integración de la base de conocimiento y estándares operacionales `STITCH.md` para componentes UI/UX y modularización de estilos AIA.
+- **Documentación Stitch:** Guías de conexión, operación MCP, brief de design system AIA y catálogo técnico de módulos visuales.
 - **Sistema de Recuperación de Contraseña:** Implementación completa del flujo "Olvidé mi contraseña" con envío de correos (MailService), tokens de un solo uso (PasswordService) y vistas dedicadas tanto en la aplicación principal como en el panel administrativo.
 - **Infraestructura SMTP para Recuperación:** Integración de `phpmailer/phpmailer`, variables `APP_URL` + `MAIL_*` y plantilla Docker de entorno para soportar el envío de enlaces de restablecimiento.
 - **Protección CSRF para Auth:** Nuevo `CsrfTokenManager` para blindar los formularios de inicio de sesión y recuperación de credenciales contra ataques de falsificación de petición en sitios cruzados.
@@ -54,6 +54,8 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 ### Corregido
 
 - **Fix Falsos Duplicados en Subcontratistas:** La validación de unicidad ahora compara contra el snapshot persistido cargado desde la API, en lugar de las filas transitorias de Handsontable, evitando falsos duplicados al crear registros por nombre, correo y NIT.
+- **Programación Intermedia:** Persistencia de filtros nativos de Handsontable tras guardar, validación correcta de responsables con filtros activos y desbloqueo de edición en filas filtradas.
+- **Filtros Handsontable con HTML:** Los filtros nativos de Programa General, Programación Intermedia, Programación Semanal y Actualizar Cronograma muestran texto plano en columnas con render jerárquico HTML.
 - **Select2 Desanclado en Nueva Actividad:** El selector de tarea inicial vuelve a desplegarse ligado al campo correcto dentro del modal, con dropdown estable y sin desorganizar el layout al escribir o elegir opciones largas.
 - **Autoactualización de PDC al Navegar Entre Módulos:** El flujo hacia `/pdc` ahora conserva la semana operativa válida, marca el origen de navegación y ejecuta una sincronización one-shot del plan de compras al llegar desde Programa General, Actividades o Contratos.
 - **Compatibilidad SQL en Detección de Tablas:** Corrección del uso de placeholders en `SHOW TABLES LIKE` mediante el uso de `quote()` nativo de PDO, asegurando compatibilidad con el driver de base de datos en entornos SiteGround/Docker.
@@ -75,6 +77,10 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 - **Persistencia de Mapeo Físico:** El botón "Eliminar Actualización" ahora realiza un `DELETE` físico de borradores en la base de datos, garantizando un flujo de trabajo limpio y permitiendo reintentar mapeos desde cero.
 - **Página de Mantenimiento AIA:** Nueva página HTML standalone (`public/mantenimiento-aia.html`) con identidad corporativa, spinner animado y tagline de marca.
 - **Plan de Desacoplamiento Visual CSS:** Documento técnico (`docs/css-desacoplamiento-plan.md`) para migración aditiva de estilos CSS sin tocar lógica ni romper legacy.
+
+### Eliminado
+
+- **Plan de implementación obsoleto:** Remoción de `implementation_plan.md`, reemplazado por el seguimiento vigente en `ROADMAP.md` y documentación operativa actual.
 
 ### Cambiado
 
