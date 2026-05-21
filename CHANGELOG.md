@@ -31,6 +31,11 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ### Añadido
 
+- **LPS Contextual Drawers**: Paneles laterales deslizables (Bottom-Sheet responsive) integrados en Programa General, Programación Intermedia y Programación Semanal para guías y ayudas operativas contextuales.
+- **Motor de Escalamiento Semanal Inteligente**: Sistema de notificaciones express mitigador de spam con "Modo Simulación" (al portapapeles y Liquid Glass), Weekly Digest consolidador por subcontratista, y filtro automático para restringir las notificaciones individuales a tareas de Ruta Crítica (P1).
+- **Estética Liquid Glassmorphism**: Rediseño CSS modular con efectos traslúcidos Liquid Glass, animaciones fluidas spring y optimización mobile-first para resoluciones de obra.
+- **Bypass de Caché Agresivo**: Implementación de cache-busters de scripts (`?v=hot35` y `?v=hot45`) en PI y PS para invalidar el almacenamiento del cliente y forzar la inicialización reactiva del drawer.
+
 ## [1.2.0] - 2026-05-21
 
 ### Añadido
