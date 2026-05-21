@@ -678,7 +678,7 @@ class ReportController extends BaseController
                 'enfoque' => 'Resolver hoy',
                 'estado' => 'Debe Iniciar (Con Restricciones)',
                 'regla' => 'SI = 0, EJ = 0, ER < 0.999.',
-                'accion' => 'Cerrar liberacion y asegurar recursos antes del arranque.',
+                'accion' => 'Cerrar liberacion y asegurar recursos antes del inicio.',
                 'sla' => 'Hoy',
             ],
             [
