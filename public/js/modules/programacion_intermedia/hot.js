@@ -2986,6 +2986,10 @@
       observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class'] });
     })();
 
+    if (window.LPSContextualDrawer) {
+      window.LPSContextualDrawer.init(hot, 'programacion-intermedia', getStateView);
+    }
+
     scheduleLayoutRefresh(0, true);
   }
 

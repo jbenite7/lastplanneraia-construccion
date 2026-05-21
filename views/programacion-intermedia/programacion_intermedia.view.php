@@ -1439,6 +1439,7 @@
         };
     </script>
     <script type="text/javascript" src="/js/HandsontableTomSelectEditor.js?v=tomselect30"></script>
+    <script src="/js/modules/lps_drawer.js?v=20260521"></script>
     <script src="/js/modules/programacion_intermedia/hot.js?v=hot34"></script>
 
     <script>

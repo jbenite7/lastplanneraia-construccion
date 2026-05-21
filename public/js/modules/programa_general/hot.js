@@ -1962,6 +1962,10 @@
       true
     );
 
+    if (window.LPSContextualDrawer) {
+      window.LPSContextualDrawer.init(hot, 'programa-general', classifyPGRow);
+    }
+
     scheduleLayoutRefresh(0, true);
   }
 

@@ -2442,6 +2442,21 @@
     }, true);
 
     bindRowActionClicks();
+
+    if (window.LPSContextualDrawer) {
+      window.LPSContextualDrawer.init(hot, 'programacion-semanal', function(rowData) {
+        var stateKey = getStateKey(rowData);
+        var alertClass = getAlertClassByState(stateKey);
+        var label = getStateLabelByKey(stateKey);
+        return {
+          key: stateKey,
+          rowClass: alertClass,
+          label: label,
+          rowData: rowData
+        };
+      });
+    }
+
     scheduleLayoutRefresh(0, true);
   }
 

@@ -199,6 +199,7 @@ gantt
 - [x] **Pulido visual de etiquetas de Estado Operativo PI/PS (2026-05-21)**: Las etiquetas principales de Estado Operativo ahora usan layout interno en grid, contraste reforzado, multilinea controlada a dos líneas y pills con wrap limitado para mejorar lectura sin modificar el ancho de columna.
 - [x] **Labels compactos RC y Por Comprometer en Estado Operativo PS/PI (2026-05-21)**: Se abreviaron labels de ruta crítica como `RC`, se adoptó `Por Comprometer` en PS, se mantuvo la paleta vigente y se reforzó la diferenciación visual por criticidad sin modificar anchos de columna.
 - [x] **Restricciones blandas Pdto. Construcción y Modelo BIM (2026-05-21)**: PS/PI separan habilitantes duros de restricciones blandas. Pdto. Construcción y Modelo BIM quedan como seguimiento visual ámbar y texto explícito en leyendas/modales, sin bloquear habilitación, estado operativo ni autoprogramación.
+- [x] **LPS Contextual Drawers & Escalamiento Semanal (2026-05-21)**: Implementación de los paneles laterales contextuales responsivos, Liquid Glass de la marca AIA, con motor de simulación anti-spam (Weekly Digest) y filtrado de ruta crítica (P1) en los tres módulos principales (PG, PI, PS).
 
 ---
 
