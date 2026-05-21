@@ -53,14 +53,23 @@
   var restrictedOptions = ['', '0%', '33%', '66%', '100%', 'N/A'];
   var halfRestrictedOptions = ['', '0%', '50%', '100%', 'N/A'];
   var restrictionProps = ['D_y_E', 'Materiales', 'MdeO', 'Equipos', 'Predecesora', 'Pdto_Cons', 'Modelo'];
+  var hardRestrictionProps = ['D_y_E', 'Materiales', 'MdeO', 'Equipos', 'Predecesora'];
+  var softRestrictionProps = ['Pdto_Cons', 'Modelo'];
+  var hardRestrictionThresholds = {
+    D_y_E: 1,
+    Materiales: 1,
+    MdeO: 1,
+    Equipos: 1,
+    Predecesora: 0.5,
+  };
   var restrictionTypeLabels = {
     D_y_E: 'Diseños y Especif.',
     Materiales: 'Materiales',
     MdeO: 'Mano de Obra',
     Equipos: 'Equipos',
     Predecesora: 'Predecesora',
-    Pdto_Cons: 'Proced. Constructivo',
-    Modelo: 'Modelación BIM',
+    Pdto_Cons: 'Pdto. Constructivo (blanda)',
+    Modelo: 'Modelo BIM (blanda)',
   };
   // Popover content for restriction column headers (ported from legacy view)
   var popoverTitles = {
@@ -69,8 +78,8 @@
     MdeO: 'Restricciones de Mano de Obra',
     Equipos: 'Restricciones de Equipos',
     Predecesora: 'Restricciones de Actividades Predecesoras',
-    Pdto_Cons: 'Restricciones de Procedimiento Constructivo',
-    Modelo: 'Restricciones de Modelación BIM',
+    Pdto_Cons: 'Restricción blanda: Pdto. Constructivo',
+    Modelo: 'Restricción blanda: Modelo BIM',
   };
   var popoverContent = {
     D_y_E: '<ul class="pl-3 mb-0"><li><b>0%:</b> No están los diseños para construcción.</li><li><b>33%:</b> Diseños entregados pero no revisados por dirección/residentes.</li><li><b>66%:</b> Diseños con visto bueno de dirección y residentes.</li><li><b>100%:</b> Diseños aprobados entregados a contratistas/maestros.</li></ul>',
@@ -78,8 +87,8 @@
     MdeO: '<ul class="pl-3 mb-0"><li><b>0%:</b> No existen contratos de mano de obra.</li><li><b>33%:</b> Contratos existentes, recurso no ubicado.</li><li><b>66%:</b> Documentación y requisitos legales listos.</li><li><b>100%:</b> Personal ya está en el proyecto.</li></ul>',
     Equipos: '<ul class="pl-3 mb-0"><li><b>0%:</b> No existen contratos de equipos.</li><li><b>33%:</b> Al día en plan de compras.</li><li><b>66%:</b> Al día en plan de aprovisionamiento.</li><li><b>100%:</b> Equipos disponibles en el proyecto.</li></ul>',
     Predecesora: '<ul class="pl-3 mb-0"><li><b>0%:</b> Predecesoras no han iniciado o están atrasadas.</li><li><b>50%:</b> Predecesoras con rendimiento igual o superior al programa.</li><li><b>100%:</b> Predecesoras ya terminadas.</li></ul>',
-    Pdto_Cons: '<ul class="pl-3 mb-0"><li><b>0%:</b> No existe procedimiento constructivo.</li><li><b>50%:</b> Existe pero no se ha divulgado.</li><li><b>100%:</b> Divulgado y aprobado por el director.</li></ul>',
-    Modelo: '<ul class="pl-3 mb-0"><li><b>0%:</b> No hay modelos en el proyecto.</li><li><b>50%:</b> Modelos existentes pero no coordinados.</li><li><b>100%:</b> Modelos coordinados para todas las disciplinas.</li><li><b>N/A:</b> La tarea no aplica para ser modelada.</li></ul>',
+    Pdto_Cons: '<p class="mb-1"><b>Restricción blanda:</b> no bloquea habilitación ni autoprogramación.</p><ul class="pl-3 mb-0"><li><b>0%:</b> No existe procedimiento constructivo.</li><li><b>50%:</b> Existe pero no se ha divulgado.</li><li><b>100%:</b> Divulgado y aprobado por el director.</li></ul>',
+    Modelo: '<p class="mb-1"><b>Restricción blanda:</b> no bloquea habilitación ni autoprogramación.</p><ul class="pl-3 mb-0"><li><b>0%:</b> No hay modelos en el proyecto.</li><li><b>50%:</b> Modelos existentes pero no coordinados.</li><li><b>100%:</b> Modelos coordinados para todas las disciplinas.</li><li><b>N/A:</b> La tarea no aplica para ser modelada.</li></ul>',
   };
 
   var readinessActionProps = ['D_y_E', 'Materiales', 'MdeO', 'Equipos', 'Predecesora'];
@@ -133,13 +142,13 @@
 
   // Map colHeaders index to restriction prop for tooltip injection
   var headerIndexToRestrictionProp = {
-    8: 'D_y_E',
-    9: 'Materiales',
-    10: 'MdeO',
-    11: 'Equipos',
-    12: 'Predecesora',
-    13: 'Pdto_Cons',
-    14: 'Modelo',
+    7: 'D_y_E',
+    8: 'Materiales',
+    9: 'MdeO',
+    10: 'Equipos',
+    11: 'Predecesora',
+    12: 'Pdto_Cons',
+    13: 'Modelo',
   };
 
   var sharedRestrictionValueOptions = {
@@ -160,13 +169,13 @@
   };
 
   var stateLabels = {
-    'blocked-overdue-critical': 'Arranque vencido por habilitar (Crítica)',
-    'blocked-overdue': 'Arranque vencido por habilitar',
-    'blocked-due': 'Arranque por habilitar',
+    'blocked-overdue-critical': 'RC inicio vencido',
+    'blocked-overdue': 'Inicio Vencido',
+    'blocked-due': 'Inicio por Habilitar',
     'alert-1-week': 'Alistamiento urgente',
     'alert-2-3-weeks': 'Alistamiento en riesgo',
     'alert-4-6-weeks': 'Alistamiento pendiente',
-    'execution-blocked': 'En ejecución con condiciones pendientes',
+    'execution-blocked': 'Ejecución Pendiente',
     'liberated-control': 'Listo para comprometer',
     neutral: 'Control',
     header: 'Capítulo',
@@ -352,8 +361,8 @@
     var total = 0;
     var count = 0;
 
-    for (var i = 0; i < restrictionProps.length; i++) {
-      var prop = restrictionProps[i];
+    for (var i = 0; i < hardRestrictionProps.length; i++) {
+      var prop = hardRestrictionProps[i];
       var payloadValue = normalizeRestrictionForPayload(prop, row[prop]);
 
       if (!payloadValue || payloadValue === 'N/A') {
@@ -365,7 +374,7 @@
         continue;
       }
 
-      total += numeric;
+      total += Math.min(numeric / (hardRestrictionThresholds[prop] || 1), 1);
       count += 1;
     }
 
@@ -590,12 +599,10 @@
   }
 
   function renderOperationalStateCell(view) {
-    var count = view.actionItems.length;
-    var countBadge = count > 0 ? '<span class="ops-state-count">' + count + '</span>' : '';
-    var pills = count > 0 ? '<span class="ops-state-pills">' + renderStatePills(view.actionItems, 2) + '</span>' : '';
+    var pills = view.actionItems.length > 0 ? '<span class="ops-state-pills">' + renderStatePills(view.actionItems, 2) + '</span>' : '';
 
     return '<button type="button" class="ops-state-zoom" aria-label="Ver detalle operativo">'
-      + '<span class="ops-state-topline"><span class="ops-state-chip">' + escapeHtml(view.label) + '</span>' + countBadge + '</span>'
+      + '<span class="ops-state-topline"><span class="ops-state-chip">' + escapeHtml(view.label) + '</span></span>'
       + pills
       + '</button>';
   }
@@ -1722,25 +1729,25 @@
           "<h6 class='pi-legend-quick-group-title'>P1 - Resolver hoy</h6>" +
           "<div class='pi-legend-quick-row'>" +
             "<span class='pi-legend-modal-swatch pi-legend-quick-swatch pi-state-blocked-overdue-critical'></span>" +
-            "<div class='pi-legend-quick-state'><strong>Arranque vencido por habilitar (Critica)</strong><small>Debio iniciar y requiere condiciones de habilitacion en ruta critica.</small></div>" +
+            "<div class='pi-legend-quick-state'><strong>RC inicio vencido</strong><small>Debio iniciar y requiere condiciones de habilitacion en ruta critica.</small></div>" +
             "<div class='pi-legend-quick-action'>Escalar hoy, asignar responsable y cerrar las acciones de habilitacion.</div>" +
             "<span class='pi-legend-quick-priority is-p1'>P1</span>" +
           "</div>" +
           "<div class='pi-legend-quick-row'>" +
             "<span class='pi-legend-modal-swatch pi-legend-quick-swatch pi-state-blocked-overdue'></span>" +
-            "<div class='pi-legend-quick-state'><strong>Arranque vencido por habilitar</strong><small>Debio iniciar y aun tiene condiciones pendientes.</small></div>" +
+            "<div class='pi-legend-quick-state'><strong>Inicio Vencido</strong><small>Debio iniciar y aun tiene condiciones pendientes.</small></div>" +
             "<div class='pi-legend-quick-action'>Definir responsable y fecha de cierre en la reunion diaria.</div>" +
             "<span class='pi-legend-quick-priority is-p1'>P1</span>" +
           "</div>" +
           "<div class='pi-legend-quick-row'>" +
             "<span class='pi-legend-modal-swatch pi-legend-quick-swatch pi-state-blocked-due'></span>" +
-            "<div class='pi-legend-quick-state'><strong>Arranque por habilitar</strong><small>Inicia esta semana y requiere condiciones para comprometer.</small></div>" +
-            "<div class='pi-legend-quick-action'>Cerrar acciones de habilitacion antes del arranque.</div>" +
+            "<div class='pi-legend-quick-state'><strong>Inicio por Habilitar</strong><small>Inicia esta semana y requiere condiciones para comprometer.</small></div>" +
+            "<div class='pi-legend-quick-action'>Cerrar acciones de habilitacion antes del inicio.</div>" +
             "<span class='pi-legend-quick-priority is-p1'>P1</span>" +
           "</div>" +
           "<div class='pi-legend-quick-row'>" +
             "<span class='pi-legend-modal-swatch pi-legend-quick-swatch pi-state-execution-blocked'></span>" +
-            "<div class='pi-legend-quick-state'><strong>En ejecucion con condiciones pendientes</strong><small>Actividad iniciada con acciones de habilitacion abiertas.</small></div>" +
+            "<div class='pi-legend-quick-state'><strong>Ejecucion Pendiente</strong><small>Actividad iniciada con acciones de habilitacion abiertas.</small></div>" +
             "<div class='pi-legend-quick-action'>Cerrar condiciones pendientes para evitar retrabajos y paradas.</div>" +
             "<span class='pi-legend-quick-priority is-p1'>P1</span>" +
           "</div>" +
@@ -1775,6 +1782,16 @@
             "<div class='pi-legend-quick-state'><strong>Listo para comprometer</strong><small>Cumple la matriz de habilitacion para pasar a Programacion Semanal.</small></div>" +
             "<div class='pi-legend-quick-action'>Mantener control semanal y preparar compromiso viable.</div>" +
             "<span class='pi-legend-quick-priority is-p3'>P3</span>" +
+          "</div>" +
+        "</section>" +
+
+        "<section class='pi-legend-quick-group'>" +
+          "<h6 class='pi-legend-quick-group-title'>Restricciones blandas</h6>" +
+          "<div class='pi-legend-quick-row'>" +
+            "<span class='pi-legend-modal-swatch pi-legend-quick-swatch' style='background:#fef3c7;border-color:#f59e0b;'></span>" +
+            "<div class='pi-legend-quick-state'><strong>Pdto. Constructivo y Modelo BIM</strong><small>Seguimiento blando: no bloquean habilitacion, estado operativo ni autoprogramacion.</small></div>" +
+            "<div class='pi-legend-quick-action'>Completar para control tecnico, sin detener compromisos listos.</div>" +
+            "<span class='pi-legend-quick-priority is-p3'>Blanda</span>" +
           "</div>" +
         "</section>" +
       "</div>"
@@ -1827,6 +1844,7 @@
       row.Predecesora = normalizeRestrictionValue('Predecesora', row.Predecesora);
       row.Pdto_Cons = normalizeRestrictionValue('Pdto_Cons', row.Pdto_Cons);
       row.Modelo = normalizeRestrictionValue('Modelo', row.Modelo);
+      row.Estado_Restricciones = calculateRestrictionStateRatio(row);
       row.estado_operativo = getStateDisplay(row);
       row.__shared_selected = Boolean(sharedSelectionIndex[getRowActivityId(row)]);
 
@@ -2681,8 +2699,8 @@
         'Mano de Obra',
         'Equipos',
         'Predecesoras',
-        'Proced. Constructivo',
-        'Modelación BIM',
+        'Pdto. Constructivo',
+        'Modelo BIM',
         '% Liberación',
         'Estado Operativo',
         'Observaciones',
@@ -2700,8 +2718,8 @@
         { data: 'MdeO', type: 'dropdown', source: restrictedOptions, strict: false, allowInvalid: false, renderer: 'piPercentRenderer', className: 'htCenter htMiddle' },
         { data: 'Equipos', type: 'dropdown', source: restrictedOptions, strict: false, allowInvalid: false, renderer: 'piPercentRenderer', className: 'htCenter htMiddle' },
         { data: 'Predecesora', type: 'dropdown', source: halfRestrictedOptions, strict: false, allowInvalid: false, renderer: 'piPercentRenderer', className: 'htCenter htMiddle' },
-        { data: 'Pdto_Cons', type: 'dropdown', source: halfRestrictedOptions, strict: false, allowInvalid: false, renderer: 'piPercentRenderer', className: 'htCenter htMiddle' },
-        { data: 'Modelo', type: 'dropdown', source: halfRestrictedOptions, strict: false, allowInvalid: false, renderer: 'piPercentRenderer', className: 'htCenter htMiddle' },
+        { data: 'Pdto_Cons', type: 'dropdown', source: halfRestrictedOptions, strict: false, allowInvalid: false, renderer: 'piPercentRenderer', className: 'htCenter htMiddle pi-soft-restriction-cell' },
+        { data: 'Modelo', type: 'dropdown', source: halfRestrictedOptions, strict: false, allowInvalid: false, renderer: 'piPercentRenderer', className: 'htCenter htMiddle pi-soft-restriction-cell' },
         { data: 'Estado_Restricciones', readOnly: true, renderer: 'piPercentRenderer', className: 'htCenter htMiddle' },
         { data: 'estado_operativo', readOnly: true, renderer: 'piStateRenderer', className: 'htLeft htMiddle force-wrap' },
         { data: 'Observaciones', type: 'text', className: 'htLeft htMiddle force-wrap' },
@@ -2712,6 +2730,7 @@
       autoColumnSize: true,
       manualColumnResize: false,
       manualRowResize: true,
+      autoRowSize: true,
       contextMenu: true,
       dropdownMenu: ['filter_by_condition', 'filter_by_value', 'filter_action_bar'],
       filters: true,
@@ -2766,7 +2785,8 @@
         }
 
         var headerText = String(this.getColHeader(col) || '').replace(/\s+/g, ' ').trim();
-        headerNode.classList.remove('pi-header-single-word');
+        headerNode.classList.remove('pi-header-single-word', 'pi-soft-restriction-header');
+        TH.classList.remove('pi-soft-restriction-th');
 
         if (headerText && headerText.indexOf(' ') === -1) {
           headerNode.classList.add('pi-header-single-word');
@@ -2774,6 +2794,10 @@
 
         // Inject tooltip trigger alongside changeType
         var resProp = headerIndexToRestrictionProp[col];
+        if (softRestrictionProps.indexOf(resProp) > -1) {
+          TH.classList.add('pi-soft-restriction-th');
+          headerNode.classList.add('pi-soft-restriction-header');
+        }
         if (resProp && !TH.querySelector('.pi-help-trigger')) {
           var wrapper = TH.querySelector('.relative');
           var changeBtn = wrapper ? wrapper.querySelector('.changeType') : null;
@@ -2781,7 +2805,18 @@
           trigger.href = 'javascript:void(0);';
           trigger.className = 'pi-help-trigger';
           trigger.setAttribute('data-type', resProp);
+          if (softRestrictionProps.indexOf(resProp) > -1) {
+            trigger.setAttribute('data-soft-label', 'blanda');
+          }
           trigger.innerHTML = '<i class="fas fa-question-circle"></i>';
+          $(trigger).tooltip({
+            trigger: 'manual', html: true, placement: 'bottom', container: 'body', boundary: 'window',
+            template: '<div class="tooltip pi-help-tooltip" role="tooltip"><div class="arrow"></div><div class="tooltip-inner tooltip-inner--wide"></div></div>',
+            title: function () {
+              var type = $(this).attr('data-type') || resProp;
+              return '<h6 class="font-weight-bold border-bottom pb-2 mb-2">' + (popoverTitles[type] || '') + '</h6>' + (popoverContent[type] || '');
+            }
+          });
           if (changeBtn) {
             // Wrap both in a horizontal row
             var row = document.createElement('div');
@@ -3091,14 +3126,15 @@
       $('.pi-help-trigger').not($this).tooltip('hide');
       helpCurrentTrigger = $this;
       if (!$this.data('bs.tooltip')) {
+        var type = $this.attr('data-type');
         $this.tooltip({
           trigger: 'manual', html: true,
           placement: 'bottom', container: 'body',
           boundary: 'window',
           template: '<div class="tooltip pi-help-tooltip" role="tooltip"><div class="arrow"></div><div class="tooltip-inner tooltip-inner--wide"></div></div>',
           title: function () {
-            var type = $(this).data('type');
-            return '<h6 class="font-weight-bold border-bottom pb-2 mb-2">' + (popoverTitles[type] || '') + '</h6>' + (popoverContent[type] || '');
+            var typeAttr = $(this).attr('data-type') || type;
+            return '<h6 class="font-weight-bold border-bottom pb-2 mb-2">' + (popoverTitles[typeAttr] || '') + '</h6>' + (popoverContent[typeAttr] || '');
           },
         });
       }

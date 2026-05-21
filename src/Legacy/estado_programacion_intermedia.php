@@ -123,6 +123,67 @@ if (!function_exists('pi_filter_state_keys')) {
         return $normalized === '1' || $normalized === 'si' || $normalized === 'sí';
     }
 
+    function pi_is_not_applicable($value): bool
+    {
+        $normalized = strtoupper(trim((string)($value ?? '')));
+        return $normalized === 'N/A' || $normalized === 'NO APLICA';
+    }
+
+    function pi_restriction_ratio($value): ?float
+    {
+        if ($value === null || $value === '' || pi_is_not_applicable($value)) {
+            return null;
+        }
+
+        $raw = trim((string)$value);
+        $hasPercent = strpos($raw, '%') !== false;
+        $normalized = str_replace('%', '', preg_replace('/\s+/', '', $raw));
+        $commaPos = strrpos($normalized, ',');
+        $dotPos = strrpos($normalized, '.');
+
+        if ($commaPos !== false && $dotPos !== false) {
+            $normalized = $commaPos > $dotPos
+                ? str_replace(',', '.', str_replace('.', '', $normalized))
+                : str_replace(',', '', $normalized);
+        } elseif ($commaPos !== false) {
+            $normalized = str_replace(',', '.', $normalized);
+        }
+
+        if (!is_numeric($normalized)) {
+            return null;
+        }
+
+        $ratio = (float)$normalized;
+        if ($hasPercent) {
+            $ratio /= 100;
+        }
+        while ($ratio > 1 && $ratio <= 10000) {
+            $ratio /= 100;
+        }
+
+        return max(0.0, min(1.0, $ratio));
+    }
+
+    function pi_restriction_meets(array $row, string $column, float $minimum): bool
+    {
+        $value = $row[$column] ?? null;
+        if (pi_is_not_applicable($value)) {
+            return true;
+        }
+
+        $ratio = pi_restriction_ratio($value);
+        return $ratio !== null && ($ratio + 0.0001) >= $minimum;
+    }
+
+    function pi_is_ready_to_commit(array $row): bool
+    {
+        return pi_restriction_meets($row, 'D_y_E', 1.0)
+            && pi_restriction_meets($row, 'Materiales', 1.0)
+            && pi_restriction_meets($row, 'MdeO', 1.0)
+            && pi_restriction_meets($row, 'Equipos', 1.0)
+            && pi_restriction_meets($row, 'Predecesora', 0.5);
+    }
+
     function pi_classify_state(array $row): string
     {
         if ((int)($row['Titulo'] ?? 0) !== 0) {
@@ -130,11 +191,10 @@ if (!function_exists('pi_filter_state_keys')) {
         }
 
         $si = (int)round(pi_to_float($row['Semanas_Inicio'] ?? null, 999.0));
-        $er = pi_to_float($row['Estado_Restricciones'] ?? null, 0.0);
         $ej = pi_to_float($row['Ejecutado'] ?? null, 0.0);
         $isCritical = pi_is_critical_route($row['Ruta_Critica'] ?? '');
 
-        $isLiberated = $er >= 0.999;
+        $isLiberated = pi_is_ready_to_commit($row);
         $isStarted = $ej > 0 && $ej < 0.999;
         $isNotStarted = $ej <= 0;
         $isOverdueSignal = $si < 0;

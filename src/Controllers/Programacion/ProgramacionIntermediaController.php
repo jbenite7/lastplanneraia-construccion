@@ -104,6 +104,7 @@ class ProgramacionIntermediaController extends BaseController
 
             $filteredRows = [];
             foreach ($rows as $row) {
+                $row['Estado_Restricciones'] = $this->calculateRestrictionState($row);
                 $state = pi_classify_state($row);
                 if (!empty($activeStates) && !in_array($state, $activeStates, true)) {
                     continue;
@@ -177,7 +178,8 @@ class ProgramacionIntermediaController extends BaseController
 
         require_once PROJECT_ROOT . '/src/Legacy/estado_programacion_intermedia.php';
 
-        $query = "SELECT Titulo, Semanas_Inicio, Estado_Restricciones, Ejecutado, Estado, Ruta_Critica
+        $query = "SELECT Titulo, Semanas_Inicio, Estado_Restricciones, Ejecutado, Estado, Ruta_Critica,
+                         D_y_E, Materiales, MdeO, Equipos, Predecesora
                   FROM {$dbPrefix}_programa_consolidado
                   WHERE Semana = ?
                     AND Fecha_Inicio IS NOT NULL
@@ -508,7 +510,7 @@ class ProgramacionIntermediaController extends BaseController
                 'MdeO' => 'Mano de Obra',
                 'Equipos' => 'Equipos',
                 'Predecesora' => 'Predecesora',
-                'Pdto_Cons' => 'Pdto. Construcción',
+                'Pdto_Cons' => 'Pdto. Constructivo',
                 'Modelo' => 'Modelo BIM'
             ];
             $operationParts = [];
@@ -908,11 +910,17 @@ class ProgramacionIntermediaController extends BaseController
 
     private function calculateRestrictionState(array $row): float
     {
-        $fields = ['D_y_E', 'Materiales', 'MdeO', 'Equipos', 'Predecesora', 'Pdto_Cons', 'Modelo'];
+        $fields = [
+            'D_y_E' => 1.0,
+            'Materiales' => 1.0,
+            'MdeO' => 1.0,
+            'Equipos' => 1.0,
+            'Predecesora' => 0.5,
+        ];
         $sum = 0.0;
         $count = 0;
 
-        foreach ($fields as $field) {
+        foreach ($fields as $field => $threshold) {
             $value = $row[$field] ?? null;
             if ($value === null) {
                 continue;
@@ -928,7 +936,7 @@ class ProgramacionIntermediaController extends BaseController
                 continue;
             }
 
-            $sum += $ratio;
+            $sum += min($ratio / $threshold, 1.0);
             $count++;
         }
 

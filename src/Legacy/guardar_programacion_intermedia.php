@@ -198,14 +198,21 @@ function modificar($D_y_E, $Materiales, $MdeO, $Equipos, $Predecesora, $Pdto_Con
         $dbInstance->prepare($sql1)->execute([$D_y_E, $Materiales, $MdeO, $Equipos, $Predecesora, $Pdto_Cons, $Modelo, $Sub_Contratista, $Responsable_AIA, $Observaciones, $Id, $semana]);
 
         // Logic from modificar_rest, simplified for the single updated row
-        $campos = [$D_y_E, $Materiales, $MdeO, $Equipos, $Predecesora, $Pdto_Cons, $Modelo];
+        $campos = [
+            ['valor' => $D_y_E, 'threshold' => 1.0],
+            ['valor' => $Materiales, 'threshold' => 1.0],
+            ['valor' => $MdeO, 'threshold' => 1.0],
+            ['valor' => $Equipos, 'threshold' => 1.0],
+            ['valor' => $Predecesora, 'threshold' => 0.5],
+        ];
         $conteo = 0;
         $suma = 0;
 
-        foreach ($campos as $val) {
+        foreach ($campos as $campo) {
+            $val = $campo['valor'];
             if ($val !== "N/A") {
                 $conteo++;
-                $suma += round((float)$val, 5);
+                $suma += min(round((float)$val, 5) / $campo['threshold'], 1.0);
             }
         }
 

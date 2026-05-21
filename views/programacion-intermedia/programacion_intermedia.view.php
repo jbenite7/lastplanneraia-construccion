@@ -81,7 +81,9 @@
             flex: 0 1 auto !important;
             width: auto !important;
             white-space: nowrap !important;
+            height: auto !important;
             min-height: 32px;
+            max-height: none !important;
             margin: 0 !important;
         }
 
@@ -116,6 +118,7 @@
 
         .pi-page #hot-container td.ops-state-td {
             padding: 4px 6px !important;
+            overflow: visible !important;
             vertical-align: middle !important;
         }
 
@@ -140,26 +143,127 @@
         }
 
         .pi-page .ops-state-topline {
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: start;
+            gap: 4px;
+            width: 100%;
             min-width: 0;
         }
 
         .pi-page .ops-state-chip {
-            display: inline-flex;
+            display: block;
+            width: 100%;
+            min-width: 0;
             max-width: 100%;
-            align-items: center;
-            padding: 2px 7px;
-            border-radius: 999px;
-            background: rgba(255, 255, 255, 0.62);
+            padding: 4px 8px;
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.9);
             color: inherit;
+            font-weight: 900;
+            font-size: 0.78rem;
+            line-height: 1.18;
+            overflow: visible;
+            overflow-wrap: anywhere;
+            white-space: normal;
+            word-break: normal;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.48);
+        }
+
+        .pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-blocked-overdue-critical .ops-state-chip {
+            background: var(--pi-critical-bg, #fee2e2);
+            background: color-mix(in srgb, var(--pi-critical-bg, #fee2e2) 78%, #fff 22%);
+            border-color: var(--pi-critical-border, #dc2626);
+            color: var(--pi-critical-text, #991b1b);
+            font-weight: 900;
+            box-shadow: inset 0 0 0 1px rgba(220, 38, 38, 0.24), 0 1px 3px rgba(153, 27, 27, 0.14);
+        }
+
+        .pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-blocked-overdue .ops-state-chip,
+        .pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-blocked-due .ops-state-chip,
+        .pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-alert-1-week .ops-state-chip,
+        .pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-alert-2-3-weeks .ops-state-chip,
+        .pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-alert-4-6-weeks .ops-state-chip,
+        .pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-execution-blocked .ops-state-chip,
+        .pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-liberated-control .ops-state-chip {
             font-weight: 800;
-            font-size: 0.72rem;
+            box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.06);
+        }
+
+        .pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-blocked-overdue .ops-state-chip {
+            background: var(--pi-overdue-bg, #ffedd5);
+            background: color-mix(in srgb, var(--pi-overdue-bg, #ffedd5) 70%, #fff 30%);
+            border-color: var(--pi-overdue-border, #f97316);
+            color: var(--pi-overdue-text, #9a3412);
+        }
+
+        .pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-blocked-due .ops-state-chip {
+            background: var(--pi-due-bg, #fef3c7);
+            background: color-mix(in srgb, var(--pi-due-bg, #fef3c7) 68%, #fff 32%);
+            border-color: var(--pi-due-border, #f59e0b);
+            color: var(--pi-due-text, #92400e);
+        }
+
+        .pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-alert-1-week .ops-state-chip {
+            background: var(--pi-alert1-bg, #fef9c3);
+            background: color-mix(in srgb, var(--pi-alert1-bg, #fef9c3) 66%, #fff 34%);
+            border-color: var(--pi-alert1-border, #eab308);
+            color: var(--pi-alert1-text, #854d0e);
+        }
+
+        .pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-alert-2-3-weeks .ops-state-chip {
+            background: var(--pi-alert23-bg, #ecfccb);
+            background: color-mix(in srgb, var(--pi-alert23-bg, #ecfccb) 66%, #fff 34%);
+            border-color: var(--pi-alert23-border, #84cc16);
+            color: var(--pi-alert23-text, #3f6212);
+        }
+
+        .pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-alert-4-6-weeks .ops-state-chip {
+            background: var(--pi-alert46-bg, #dcfce7);
+            background: color-mix(in srgb, var(--pi-alert46-bg, #dcfce7) 66%, #fff 34%);
+            border-color: var(--pi-alert46-border, #22c55e);
+            color: var(--pi-alert46-text, #166534);
+        }
+
+        .pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-execution-blocked .ops-state-chip {
+            background: var(--pi-exec-blocked-bg, #fed7aa);
+            background: color-mix(in srgb, var(--pi-exec-blocked-bg, #fed7aa) 66%, #fff 34%);
+            border-color: var(--pi-exec-blocked-border, #fb923c);
+            color: var(--pi-exec-blocked-text, #9a3412);
+        }
+
+        .pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-liberated-control .ops-state-chip {
+            background: var(--pi-control-bg, #e0f2fe);
+            background: color-mix(in srgb, var(--pi-control-bg, #e0f2fe) 66%, #fff 34%);
+            border-color: var(--pi-control-border, #38bdf8);
+            color: var(--pi-control-text, #0c4a6e);
+        }
+
+        .pi-page .handsontable td.pi-soft-restriction-cell {
+            background: color-mix(in srgb, var(--pi-due-bg, #fef3c7) 62%, #fff 38%) !important;
+            color: var(--pi-due-text, #92400e) !important;
+            box-shadow: inset 0 0 0 1px rgba(245, 158, 11, 0.24);
+        }
+
+        .pi-page .handsontable th.pi-soft-restriction-th,
+        .pi-page .handsontable th.pi-soft-restriction-th .colHeader {
+            background: color-mix(in srgb, var(--pi-due-bg, #fef3c7) 70%, #fff 30%) !important;
+            color: var(--pi-due-text, #92400e) !important;
+        }
+
+        .pi-page .pi-soft-restriction-header::after {
+            content: " blanda";
+            display: inline-block;
+            margin-left: 4px;
+            padding: 1px 5px;
+            border-radius: 999px;
+            background: var(--pi-due-bg, #fef3c7);
+            color: var(--pi-due-text, #92400e);
+            font-size: 0.66rem;
+            font-weight: 800;
             line-height: 1.1;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            vertical-align: middle;
         }
 
         .pi-page .ops-state-count,
@@ -168,40 +272,45 @@
             align-items: center;
             justify-content: center;
             min-width: 20px;
-            height: 20px;
+            min-height: 20px;
+            height: auto;
             padding: 0 6px;
             border-radius: 999px;
             background: oklch(97% 0.02 80);
             color: oklch(38% 0.12 55);
             font-weight: 800;
-            font-size: 0.68rem;
+            font-size: 0.75rem;
             line-height: 1;
             box-shadow: inset 0 0 0 1px rgba(120, 53, 15, 0.12);
         }
 
         .pi-page .ops-state-pills {
             display: flex;
-            align-items: center;
-            gap: 4px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 3px;
             min-width: 0;
-            overflow: hidden;
-            white-space: nowrap;
+            overflow: visible;
+            max-height: none;
         }
 
         .pi-page .ops-state-pill,
         .pi-page .ops-state-ready {
             display: inline-flex;
-            align-items: center;
-            max-width: 86px;
-            padding: 2px 6px;
-            border-radius: 999px;
-            background: rgba(255, 255, 255, 0.42);
+            align-items: flex-start;
+            max-width: 100%;
+            padding: 3px 6px;
+            border: 1px solid rgba(120, 53, 15, 0.1);
+            border-radius: 7px;
+            background: rgba(255, 255, 255, 0.86);
             color: inherit;
-            font-weight: 700;
-            font-size: 0.66rem;
+            font-weight: 800;
+            font-size: 0.7rem;
             line-height: 1.1;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            white-space: normal;
+            overflow: visible;
+            overflow-wrap: anywhere;
+            text-overflow: clip;
         }
 
         .pi-page .ops-state-ready {
@@ -457,11 +566,11 @@
         }
 
         .pi-page #hot-container .handsontable thead th .colHeader.pi-header-single-word {
-            white-space: nowrap;
+            white-space: normal;
             word-break: normal;
-            overflow-wrap: normal;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            overflow-wrap: anywhere;
+            overflow: visible;
+            text-overflow: clip;
         }
 
         .pi-page #hot-container .handsontable .changeType {
@@ -1118,9 +1227,11 @@
 
         <div class="collapse d-md-block" id="pdcFiltersMobile">
             <div class="pdc-legend pi-legend pdc-legend-autoscaling" id="piLegend">
-                <span class="pdc-legend-item blocked-overdue-critical" data-filter="blocked-overdue-critical" role="button" tabindex="0"><span class="indicator"></span> Arranque Vencido Crítico <span id="count-blocked-overdue-critical" class="count-badge">(...)</span></span>
-                <span class="pdc-legend-item blocked-overdue" data-filter="blocked-overdue" role="button" tabindex="0"><span class="indicator"></span> Arranque Vencido <span id="count-blocked-overdue" class="count-badge">(...)</span></span>
-                <span class="pdc-legend-item blocked-due" data-filter="blocked-due" role="button" tabindex="0"><span class="indicator"></span> Arranque por Habilitar <span id="count-blocked-due" class="count-badge">(...)</span></span>
+                <span class="pdc-legend-item blocked-overdue-critical" data-filter="blocked-overdue-critical" role="button" tabindex="0"><span class="indicator"></span> RC inicio vencido <span id="count-blocked-overdue-critical" class="count-badge">(...)</span></span>
+
+                <span class="pdc-legend-item blocked-overdue" data-filter="blocked-overdue" role="button" tabindex="0"><span class="indicator"></span> Inicio Vencido <span id="count-blocked-overdue" class="count-badge">(...)</span></span>
+
+                <span class="pdc-legend-item blocked-due" data-filter="blocked-due" role="button" tabindex="0"><span class="indicator"></span> Inicio por Habilitar <span id="count-blocked-due" class="count-badge">(...)</span></span>
                 <span class="pdc-legend-item alert-1-week" data-filter="alert-1-week" role="button" tabindex="0"><span class="indicator"></span> Alistamiento Urgente <span id="count-alert-1-week" class="count-badge">(...)</span></span>
                 <span class="pdc-legend-item alert-2-3-weeks" data-filter="alert-2-3-weeks" role="button" tabindex="0"><span class="indicator"></span> Alistamiento en Riesgo <span id="count-alert-2-3-weeks" class="count-badge">(...)</span></span>
                 <span class="pdc-legend-item alert-4-6-weeks" data-filter="alert-4-6-weeks" role="button" tabindex="0"><span class="indicator"></span> Alistamiento Pendiente <span id="count-alert-4-6-weeks" class="count-badge">(...)</span></span>
