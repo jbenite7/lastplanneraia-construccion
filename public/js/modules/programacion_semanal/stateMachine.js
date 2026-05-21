@@ -79,6 +79,71 @@
     return true;
   }
 
+  function isNotApplicable(value) {
+    var normalized = String(value === null || value === undefined ? '' : value).trim().toUpperCase();
+    return normalized === 'N/A' || normalized === 'NO APLICA';
+  }
+
+  function restrictionValue(rowData, prop) {
+    if (!rowData) {
+      return null;
+    }
+    var aliased = rowData['restr_' + prop];
+    if (aliased !== undefined && aliased !== null && aliased !== '') {
+      return aliased;
+    }
+    return rowData[prop];
+  }
+
+  function toRestrictionRatio(value) {
+    if (value === null || value === undefined || value === '' || isNotApplicable(value)) {
+      return null;
+    }
+
+    var raw = String(value).trim();
+    var normalized = normalizeNumericString(raw.replace(/%/g, ''));
+    if (!normalized) {
+      return null;
+    }
+
+    var parsed = parseFloat(normalized);
+    if (isNaN(parsed)) {
+      return null;
+    }
+
+    if (raw.indexOf('%') > -1) {
+      parsed = parsed / 100;
+    }
+    while (parsed > 1 && parsed <= 10000) {
+      parsed = parsed / 100;
+    }
+
+    if (parsed < 0) {
+      return 0;
+    }
+    if (parsed > 1) {
+      return 1;
+    }
+    return parsed;
+  }
+
+  function restrictionMeets(rowData, prop, minimum) {
+    var value = restrictionValue(rowData, prop);
+    if (isNotApplicable(value)) {
+      return true;
+    }
+    var ratio = toRestrictionRatio(value);
+    return ratio !== null && ratio + 0.0001 >= minimum;
+  }
+
+  function hasPendingCommitConditions(rowData) {
+    return !(restrictionMeets(rowData, 'D_y_E', 1)
+      && restrictionMeets(rowData, 'Materiales', 1)
+      && restrictionMeets(rowData, 'MdeO', 1)
+      && restrictionMeets(rowData, 'Equipos', 1)
+      && restrictionMeets(rowData, 'Predecesora', 0.5));
+  }
+
   function classifyState(rowData, phaseKey) {
     if (!isActiveRow(rowData)) {
       return 'ps-no-activa';
@@ -92,7 +157,7 @@
 
     var compromisoVacio = compromiso === null || compromiso <= 0;
     var estaIncompleta = ejecutado === null || ejecutado < 0.999;
-    var sinLiberacion = liberacionFlag !== null ? liberacionFlag > 0 : false;
+    var sinLiberacion = (liberacionFlag !== null ? liberacionFlag > 0 : false) || hasPendingCommitConditions(rowData);
     var isCriticalRoute = critica !== null && critica >= 1;
     var subcontratistaVacio = isBlank(rowData.Sub_Contratista);
     var responsableVacio = isBlank(rowData.Responsable_AIA);
@@ -103,15 +168,19 @@
         return 'ps-no-activa';
       }
 
-      if (!compromisoVacio && !faltanResponsables) {
-        return 'prog-lista-para-confirmar';
-      }
-
-      if (compromisoVacio && sinLiberacion && isCriticalRoute) {
+      if (sinLiberacion && isCriticalRoute) {
         return 'prog-bloqueo-critico-sin-compromiso';
       }
 
-      return 'prog-sin-compromiso';
+      if (sinLiberacion) {
+        return 'prog-condiciones-pendientes';
+      }
+
+      if (compromisoVacio || faltanResponsables) {
+        return 'prog-sin-compromiso';
+      }
+
+      return 'prog-lista-para-confirmar';
     }
 
     if (compromisoVacio || ejecutadoReal === null) {
@@ -145,5 +214,6 @@
     hasCncComplete: hasCncComplete,
     classifyState: classifyState,
     requiresCnc: requiresCnc,
+    hasPendingCommitConditions: hasPendingCommitConditions,
   };
 })(window);

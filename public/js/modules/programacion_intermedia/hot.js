@@ -82,15 +82,64 @@
     Modelo: '<ul class="pl-3 mb-0"><li><b>0%:</b> No hay modelos en el proyecto.</li><li><b>50%:</b> Modelos existentes pero no coordinados.</li><li><b>100%:</b> Modelos coordinados para todas las disciplinas.</li><li><b>N/A:</b> La tarea no aplica para ser modelada.</li></ul>',
   };
 
+  var readinessActionProps = ['D_y_E', 'Materiales', 'MdeO', 'Equipos', 'Predecesora'];
+  var readinessActionLabels = {
+    D_y_E: 'Diseños',
+    Materiales: 'Materiales',
+    MdeO: 'MO',
+    Equipos: 'Equipos',
+    Predecesora: 'Pred.',
+  };
+  var readinessActionMatrix = {
+    D_y_E: {
+      threshold: 1,
+      actions: [
+        { max: 0.01, text: 'Solicitar diseños para construcción.' },
+        { max: 0.5, text: 'Revisar diseños con dirección y residentes.' },
+        { max: 1, text: 'Aprobar y entregar diseños a contratistas/maestros.' },
+      ],
+    },
+    Materiales: {
+      threshold: 1,
+      actions: [
+        { max: 0.01, text: 'Gestionar contratos de aprovisionamiento.' },
+        { max: 0.5, text: 'Pasar de plan de compras a plan de aprovisionamiento.' },
+        { max: 1, text: 'Confirmar materiales disponibles en el proyecto.' },
+      ],
+    },
+    MdeO: {
+      threshold: 1,
+      actions: [
+        { max: 0.01, text: 'Gestionar contratos de mano de obra.' },
+        { max: 0.5, text: 'Ubicar y confirmar recurso de mano de obra.' },
+        { max: 1, text: 'Movilizar personal al proyecto.' },
+      ],
+    },
+    Equipos: {
+      threshold: 1,
+      actions: [
+        { max: 0.01, text: 'Gestionar contratos de equipos.' },
+        { max: 0.5, text: 'Pasar de plan de compras a plan de aprovisionamiento de equipos.' },
+        { max: 1, text: 'Confirmar equipos disponibles en el proyecto.' },
+      ],
+    },
+    Predecesora: {
+      threshold: 0.5,
+      actions: [
+        { max: 0.5, text: 'Recuperar o iniciar actividad predecesora.' },
+      ],
+    },
+  };
+
   // Map colHeaders index to restriction prop for tooltip injection
   var headerIndexToRestrictionProp = {
-    7: 'D_y_E',
-    8: 'Materiales',
-    9: 'MdeO',
-    10: 'Equipos',
-    11: 'Predecesora',
-    12: 'Pdto_Cons',
-    13: 'Modelo',
+    8: 'D_y_E',
+    9: 'Materiales',
+    10: 'MdeO',
+    11: 'Equipos',
+    12: 'Predecesora',
+    13: 'Pdto_Cons',
+    14: 'Modelo',
   };
 
   var sharedRestrictionValueOptions = {
@@ -111,22 +160,22 @@
   };
 
   var stateLabels = {
-    'blocked-overdue-critical': 'Bloqueada Vencida (Crítica)',
-    'blocked-overdue': 'Bloqueada Vencida',
-    'blocked-due': 'Debe Iniciar (Con Restricciones)',
-    'alert-1-week': 'Alerta 1 Semana',
-    'alert-2-3-weeks': 'Alerta 2-3 Semanas',
-    'alert-4-6-weeks': 'Alerta 4-6 Semanas',
-    'execution-blocked': 'En Ejecución (Con Restricciones)',
-    'liberated-control': 'Liberada / Control',
+    'blocked-overdue-critical': 'Arranque vencido por habilitar (Crítica)',
+    'blocked-overdue': 'Arranque vencido por habilitar',
+    'blocked-due': 'Arranque por habilitar',
+    'alert-1-week': 'Alistamiento urgente',
+    'alert-2-3-weeks': 'Alistamiento en riesgo',
+    'alert-4-6-weeks': 'Alistamiento pendiente',
+    'execution-blocked': 'En ejecución con condiciones pendientes',
+    'liberated-control': 'Listo para comprometer',
     neutral: 'Control',
     header: 'Capítulo',
   };
 
-  var columnMinWidths = [44, 54, 150, 130, 130, 60, 72, 74, 74, 74, 74, 82, 94, 88, 92, 180];
-  var columnFloorWidths = [36, 44, 120, 100, 100, 52, 64, 64, 64, 64, 64, 70, 80, 76, 78, 130];
-  var columnMaxWidths = [90, 70, 460, 240, 240, 110, 110, 120, 120, 120, 120, 130, 148, 136, 136, 380];
-  var columnShrinkPriority = [15, 2, 3, 4, 14, 13, 12, 11, 9, 7, 8, 10, 6, 5, 1, 0];
+  var columnMinWidths = [44, 54, 150, 130, 130, 60, 72, 74, 74, 74, 74, 82, 94, 88, 92, 150, 180];
+  var columnFloorWidths = [36, 44, 120, 100, 100, 52, 64, 64, 64, 64, 64, 70, 80, 76, 78, 118, 130];
+  var columnMaxWidths = [90, 70, 460, 240, 240, 110, 110, 120, 120, 120, 120, 130, 148, 136, 136, 240, 380];
+  var columnShrinkPriority = [16, 2, 3, 4, 15, 14, 13, 11, 10, 8, 9, 7, 6, 5, 1, 12, 0];
 
   function getDb() {
     return $('#baseDatos_PHP').val() || $('#baseDatos').val() || '';
@@ -455,6 +504,179 @@
     return stateLabels[state] || 'Control';
   }
 
+  function getReadinessAction(prop, value) {
+    var config = readinessActionMatrix[prop];
+    if (!config) {
+      return '';
+    }
+
+    var raw = String(value === null || value === undefined ? '' : value).trim();
+    if (raw.toUpperCase() === 'N/A' || raw.toUpperCase() === 'NO APLICA') {
+      return '';
+    }
+
+    var ratio = raw === '' ? 0 : normalizePercentRatio(raw);
+    if (ratio === null || ratio + 0.0001 >= config.threshold) {
+      return '';
+    }
+
+    for (var i = 0; i < config.actions.length; i++) {
+      if (ratio < config.actions[i].max) {
+        return config.actions[i].text;
+      }
+    }
+
+    return config.actions.length ? config.actions[config.actions.length - 1].text : '';
+  }
+
+  function getReadinessActions(row) {
+    return getReadinessActionItems(row).map(function (item) { return item.text; });
+  }
+
+  function getReadinessActionItems(row) {
+    var items = [];
+    if (!row || getState(row) === 'header') {
+      return items;
+    }
+
+    for (var i = 0; i < readinessActionProps.length; i++) {
+      var prop = readinessActionProps[i];
+      var value = row[prop];
+      var action = getReadinessAction(prop, value);
+      if (action) {
+        items.push({
+          key: prop,
+          label: readinessActionLabels[prop] || prop,
+          text: action,
+          value: formatPercent(value || 0) || '0,0%',
+        });
+      }
+    }
+
+    return items;
+  }
+
+  function getStateView(row) {
+    var actionItems = getReadinessActionItems(row);
+    return {
+      label: getStateLabel(row),
+      state: getState(row),
+      actions: actionItems.map(function (item) { return item.text; }),
+      actionItems: actionItems,
+      activity: getActividadPlainText(row && row.Actividad),
+      id: row && row.Id,
+    };
+  }
+
+  function getStateDisplay(row) {
+    var view = getStateView(row);
+    if (!view.actions.length) {
+      return view.label;
+    }
+    return view.label + '\nAcciones de habilitación: ' + view.actions.join('; ');
+  }
+
+  function renderStatePills(actionItems, visibleLimit) {
+    var items = Array.isArray(actionItems) ? actionItems : [];
+    var limit = visibleLimit || 2;
+    var html = '';
+    for (var i = 0; i < Math.min(items.length, limit); i++) {
+      html += '<span class="ops-state-pill" title="' + escapeHtml(items[i].text) + '">' + escapeHtml(items[i].label) + '</span>';
+    }
+    if (items.length > limit) {
+      html += '<span class="ops-state-more">+' + (items.length - limit) + '</span>';
+    }
+    return html;
+  }
+
+  function renderOperationalStateCell(view) {
+    var count = view.actionItems.length;
+    var countBadge = count > 0 ? '<span class="ops-state-count">' + count + '</span>' : '';
+    var pills = count > 0 ? '<span class="ops-state-pills">' + renderStatePills(view.actionItems, 2) + '</span>' : '';
+
+    return '<button type="button" class="ops-state-zoom" aria-label="Ver detalle operativo">'
+      + '<span class="ops-state-topline"><span class="ops-state-chip">' + escapeHtml(view.label) + '</span>' + countBadge + '</span>'
+      + pills
+      + '</button>';
+  }
+
+  function ensureOperationalStateDrawer() {
+    if (document.getElementById('piOperationalStateDrawer')) {
+      return $('#piOperationalStateDrawer');
+    }
+
+    var html = '<div id="piOperationalStateDrawer" class="ops-state-drawer" aria-hidden="true">'
+      + '<div class="ops-state-backdrop" data-ops-close="1"></div>'
+      + '<aside class="ops-state-panel" role="dialog" aria-modal="false" aria-labelledby="piOpsDrawerTitle">'
+      + '<div class="ops-state-panel-header">'
+      + '<div><span class="ops-state-eyebrow">Detalle operativo</span><h5 id="piOpsDrawerTitle">Estado operativo</h5></div>'
+      + '<button type="button" class="ops-state-close" data-ops-close="1" aria-label="Cerrar">&times;</button>'
+      + '</div>'
+      + '<div class="ops-state-panel-body"></div>'
+      + '</aside>'
+      + '</div>';
+    $('body').append(html);
+    return $('#piOperationalStateDrawer');
+  }
+
+  function renderOperationalStateDrawerBody(view) {
+    var activity = view.activity || 'Actividad';
+    var id = view.id ? ('<span class="ops-state-activity-id">' + escapeHtml(view.id) + '</span>') : '';
+    var html = '<div class="ops-state-drawer-state"><span class="ops-state-chip">' + escapeHtml(view.label) + '</span>';
+    if (view.actionItems.length) {
+      html += '<span class="ops-state-count">' + view.actionItems.length + ' acciones</span>';
+    }
+    html += '</div>';
+    html += '<div class="ops-state-activity">' + id + '<strong>' + escapeHtml(activity) + '</strong></div>';
+
+    if (!view.actionItems.length) {
+      html += '<div class="ops-state-empty-detail">Sin acciones de habilitación pendientes.</div>';
+      return html;
+    }
+
+    html += '<h6>Acciones de habilitación</h6><ul class="ops-state-action-list">';
+    for (var i = 0; i < view.actionItems.length; i++) {
+      var item = view.actionItems[i];
+      html += '<li><span class="ops-state-action-label">' + escapeHtml(item.label) + '</span>'
+        + '<span class="ops-state-action-text">' + escapeHtml(item.text) + '</span>'
+        + '<span class="ops-state-action-value">' + escapeHtml(item.value || '') + '</span></li>';
+    }
+    html += '</ul>';
+    return html;
+  }
+
+  function openOperationalStateDrawer(rowData) {
+    var view = getStateView(rowData || {});
+    var $drawer = ensureOperationalStateDrawer();
+    $drawer.find('#piOpsDrawerTitle').text(view.label);
+    $drawer.find('.ops-state-panel-body').html(renderOperationalStateDrawerBody(view));
+    $drawer.addClass('is-open').attr('aria-hidden', 'false');
+  }
+
+  function closeOperationalStateDrawer() {
+    $('#piOperationalStateDrawer').removeClass('is-open').attr('aria-hidden', 'true');
+  }
+
+  function bindOperationalStateDrawer() {
+    $('#hot-container').off('click.piOpsState').on('click.piOpsState', '.ops-state-zoom', function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      var visualRow = parseInt($(this).data('row'), 10);
+      var rowData = hot && Number.isInteger(visualRow) ? hot.getSourceDataAtRow(visualRow) : null;
+      openOperationalStateDrawer(rowData || {});
+    });
+
+    $(document)
+      .off('click.piOpsStateClose')
+      .on('click.piOpsStateClose', '#piOperationalStateDrawer [data-ops-close="1"]', closeOperationalStateDrawer)
+      .off('keydown.piOpsStateClose')
+      .on('keydown.piOpsStateClose', function (event) {
+        if (event.key === 'Escape') {
+          closeOperationalStateDrawer();
+        }
+      });
+  }
+
   function isHalfRestrictionType(restrictionType) {
     return restrictionType === 'Predecesora' || restrictionType === 'Pdto_Cons' || restrictionType === 'Modelo';
   }
@@ -766,9 +988,8 @@
     return merged;
   }
 
-  function setSharedValueOptionsForType(restrictionType, keepCurrent) {
-    var $select = $('#piSharedRestrictionValue');
-    if (!$select.length) {
+  function populateSharedRestrictionValueSelect($select, restrictionType, keepCurrent) {
+    if (!$select || !$select.length) {
       return;
     }
 
@@ -787,6 +1008,158 @@
     }
 
     $select.val(selectedValue);
+  }
+
+  function populateSharedRestrictionGrid() {
+    $('.pi-shared-restriction-value').each(function () {
+      var $select = $(this);
+      populateSharedRestrictionValueSelect($select, String($select.data('restrictionType') || ''), true);
+    });
+  }
+
+  function syncSharedRestrictionRows() {
+    var applyRestriction = $('#piSharedApplyRestriction').is(':checked');
+
+    $('.pi-shared-restriction-check').each(function () {
+      var $check = $(this);
+      var restrictionType = String($check.data('restrictionType') || '').trim();
+      var checked = $check.is(':checked');
+      var $row = $('[data-restriction-row="' + restrictionType + '"]');
+      var $select = $('.pi-shared-restriction-value[data-restriction-type="' + restrictionType + '"]');
+
+      $check.prop('disabled', !applyRestriction);
+      $select.prop('disabled', !applyRestriction || !checked);
+      $row.toggleClass('is-disabled', !applyRestriction || !checked);
+    });
+  }
+
+  function setSharedRestrictionSelection(selected) {
+    $('.pi-shared-restriction-check').prop('checked', Boolean(selected));
+    syncSharedRestrictionRows();
+    renderSharedPreviewEmpty('Restricciones actualizadas. Pulse "Preview" para validar impacto.');
+  }
+
+  function normalizeSharedRestrictionList(rawValue) {
+    var raw = rawValue;
+    var parsed = [];
+
+    if (typeof raw === 'string') {
+      var text = raw.trim();
+      if (!text) {
+        return [];
+      }
+      try {
+        raw = JSON.parse(text);
+      } catch (_err) {
+        return [];
+      }
+    }
+
+    if (!Array.isArray(raw)) {
+      return [];
+    }
+
+    for (var i = 0; i < raw.length; i++) {
+      var item = raw[i] || {};
+      var type = String(item.type || item.restriction_type || '').trim();
+      var value = item.value !== undefined ? item.value : item.target_value;
+      value = String(value === null || value === undefined ? '' : value).trim();
+
+      if (!type || restrictionProps.indexOf(type) === -1) {
+        continue;
+      }
+
+      parsed.push({ type: type, value: value });
+    }
+
+    return parsed;
+  }
+
+  function collectSharedRestrictions(requireValue) {
+    var restrictions = [];
+
+    $('.pi-shared-restriction-check:checked').each(function () {
+      var type = String($(this).data('restrictionType') || '').trim();
+      var value = String($('.pi-shared-restriction-value[data-restriction-type="' + type + '"]').val() || '').trim();
+
+      if (!type || restrictionProps.indexOf(type) === -1) {
+        return;
+      }
+
+      if (requireValue && !value) {
+        restrictions = null;
+        return false;
+      }
+
+      restrictions.push({ type: type, value: value });
+    });
+
+    if (restrictions === null) {
+      return { valid: false, error: 'Seleccione valor objetivo en todas las restricciones marcadas.', items: [] };
+    }
+
+    if (restrictions.length === 0) {
+      return { valid: false, error: 'Seleccione al menos una restricción para aplicar.', items: [] };
+    }
+
+    return { valid: true, error: '', items: restrictions };
+  }
+
+  function getSharedRestrictionsFromPreview(content, opts) {
+    var restrictions = normalizeSharedRestrictionList(opts && opts.restrictions !== undefined ? opts.restrictions : null);
+    if (restrictions.length > 0) {
+      return restrictions;
+    }
+
+    restrictions = normalizeSharedRestrictionList(content && content.restrictions !== undefined ? content.restrictions : null);
+    if (restrictions.length > 0) {
+      return restrictions;
+    }
+
+    var fallbackType = String((content && content.restriction_type) || (opts && opts.restriction_type) || '').trim();
+    var fallbackValue = (opts && opts.target_value !== undefined) ? opts.target_value : (content && content.target_value !== undefined ? content.target_value : '');
+    if (fallbackType && restrictionProps.indexOf(fallbackType) > -1) {
+      return [{ type: fallbackType, value: String(fallbackValue === null || fallbackValue === undefined ? '' : fallbackValue).trim() }];
+    }
+
+    return [];
+  }
+
+  function getSharedRestrictionSummary(restrictions) {
+    if (!Array.isArray(restrictions) || restrictions.length === 0) {
+      return 'Sin cambio';
+    }
+
+    if (restrictions.length === 1) {
+      var single = restrictions[0] || {};
+      return (restrictionTypeLabels[single.type] || single.type || '-') + ' a ' + getPreviewValueLabel(single.value);
+    }
+
+    return restrictions.length + ' restricciones';
+  }
+
+  function renderSharedRestrictionChanges(item, restrictions) {
+    var actualValues = item && item.restricciones_actuales ? item.restricciones_actuales : {};
+    var html = '<div class="pi-shared-restriction-changes">';
+
+    for (var i = 0; i < restrictions.length; i++) {
+      var target = restrictions[i] || {};
+      var type = target.type;
+      var label = restrictionTypeLabels[type] || type || '-';
+      var fallbackValue = item && item.valor_actual !== undefined ? item.valor_actual : '';
+      var currentValue = actualValues[type] !== undefined ? actualValues[type] : fallbackValue;
+      var targetValue = target.value;
+      var deltaInfo = getPreviewDeltaInfo(currentValue, targetValue);
+
+      html += '<div class="pi-shared-restriction-change">';
+      html += '<strong>' + escapeHtml(label) + ':</strong> ';
+      html += escapeHtml(getPreviewValueLabel(currentValue)) + ' → ' + escapeHtml(getPreviewValueLabel(targetValue)) + ' ';
+      html += '<span class="pi-shared-delta ' + escapeHtml(deltaInfo.className) + '">' + escapeHtml(deltaInfo.label) + '</span>';
+      html += '</div>';
+    }
+
+    html += '</div>';
+    return html;
   }
 
   function appendSharedSelectOptions($select, values, placeholder, excludedValue) {
@@ -824,7 +1197,7 @@
     var applyRestriction = $('#piSharedApplyRestriction').is(':checked');
     var applyAssignments = $('#piSharedApplyAssignments').is(':checked');
 
-    $('#piSharedRestrictionType, #piSharedRestrictionValue').prop('disabled', !applyRestriction);
+    syncSharedRestrictionRows();
     $('#piSharedAssignmentsFields').toggleClass('d-none', !applyAssignments);
     $('#piSharedSubContratista, #piSharedResponsableAIA').prop('disabled', !applyAssignments);
 
@@ -924,11 +1297,8 @@
     }
 
     var opts = options || {};
-    var restrictionType = String(content.restriction_type || opts.restriction_type || '').trim();
-    var typeLabel = restrictionTypeLabels[restrictionType] || restrictionType || '-';
-    var targetRaw = (opts.target_value !== undefined) ? opts.target_value : (content.target_value !== undefined ? content.target_value : ($('#piSharedRestrictionValue').val() || ''));
-    var targetLabel = getPreviewValueLabel(targetRaw);
-    var applyRestriction = resolvePreviewFlag(content, opts, 'apply_restriction', true) && Boolean(restrictionType);
+    var restrictions = getSharedRestrictionsFromPreview(content, opts);
+    var applyRestriction = resolvePreviewFlag(content, opts, 'apply_restriction', true) && restrictions.length > 0;
     var applyAssignments = resolvePreviewFlag(content, opts, 'apply_assignments', false);
     var targetSubContratista = String((opts.sub_contratista !== undefined) ? opts.sub_contratista : (content.sub_contratista || '')).trim();
     var targetResponsableAia = String((opts.responsable_aia !== undefined) ? opts.responsable_aia : (content.responsable_aia || '')).trim();
@@ -948,10 +1318,20 @@
       coverage = 100;
     }
 
+    var targetSummary = 'Sin cambio';
+    if (applyRestriction) {
+      var targetParts = [];
+      for (var targetIndex = 0; targetIndex < restrictions.length; targetIndex++) {
+        var target = restrictions[targetIndex] || {};
+        targetParts.push((restrictionTypeLabels[target.type] || target.type || '-') + ': ' + getPreviewValueLabel(target.value));
+      }
+      targetSummary = targetParts.join(' | ');
+    }
+
     var html = '<div class="pi-shared-preview-shell">';
     html += '<div class="pi-shared-kpis">';
-    html += '<div class="pi-shared-kpi"><span class="pi-shared-kpi-label">Restricción</span><span class="pi-shared-kpi-value">' + escapeHtml(applyRestriction ? typeLabel : 'Sin cambio') + '</span></div>';
-    html += '<div class="pi-shared-kpi"><span class="pi-shared-kpi-label">Objetivo</span><span class="pi-shared-kpi-value">' + escapeHtml(applyRestriction ? targetLabel : 'Sin cambio') + '</span></div>';
+    html += '<div class="pi-shared-kpi"><span class="pi-shared-kpi-label">Restricciones</span><span class="pi-shared-kpi-value">' + escapeHtml(applyRestriction ? getSharedRestrictionSummary(restrictions) : 'Sin cambio') + '</span></div>';
+    html += '<div class="pi-shared-kpi"><span class="pi-shared-kpi-label">Objetivos</span><span class="pi-shared-kpi-value">' + escapeHtml(targetSummary) + '</span></div>';
     if (updateSubContratista) {
       html += '<div class="pi-shared-kpi"><span class="pi-shared-kpi-label">Sub-Contratista</span><span class="pi-shared-kpi-value">' + escapeHtml(targetSubContratista) + '</span></div>';
     }
@@ -976,7 +1356,7 @@
       html += '<div class="pi-shared-table-wrap"><table class="pi-shared-table">';
       html += '<thead><tr><th>#</th><th>Actividad</th>';
       if (applyRestriction) {
-        html += '<th>Restric. actual</th><th>Restric. objetivo</th><th>Ajuste</th>';
+        html += '<th>Cambios de restricciones</th>';
       }
       if (updateSubContratista) {
         html += '<th>Sub actual</th><th>Sub objetivo</th>';
@@ -1002,11 +1382,7 @@
         html += '<td class="pi-shared-col-id">#' + escapeHtml(consecutivo) + '</td>';
         html += '<td class="pi-shared-activity-cell">' + escapeHtml(actividad) + '</td>';
         if (applyRestriction) {
-          var valorActual = getPreviewValueLabel(item.valor_actual);
-          var deltaInfo = getPreviewDeltaInfo(item.valor_actual, targetRaw);
-          html += '<td>' + escapeHtml(valorActual) + '</td>';
-          html += '<td>' + escapeHtml(targetLabel) + '</td>';
-          html += '<td><span class="pi-shared-delta ' + escapeHtml(deltaInfo.className) + '">' + escapeHtml(deltaInfo.label) + '</span></td>';
+          html += '<td>' + renderSharedRestrictionChanges(item, restrictions) + '</td>';
         }
         if (updateSubContratista) {
           html += '<td>' + escapeHtml(getPreviewValueLabel(item.sub_contratista_actual)) + '</td>';
@@ -1034,10 +1410,11 @@
 
   function resetSharedConstraintModal() {
     var selectedIds = collectSelectedActivityIds();
-    var type = String($('#piSharedRestrictionType').val() || 'D_y_E');
 
     populateSharedAssignmentOptions();
-    setSharedValueOptionsForType(type, false);
+    populateSharedRestrictionGrid();
+    $('.pi-shared-restriction-check').prop('checked', false);
+    $('#piSharedRestriction_D_y_E').prop('checked', true);
     $('#piSharedApplyRestriction').prop('checked', true);
     $('#piSharedApplyAssignments').prop('checked', false);
     $('#piSharedSubContratista, #piSharedResponsableAIA').val('');
@@ -1086,8 +1463,11 @@
     var semana = getSemana();
     var applyRestriction = $('#piSharedApplyRestriction').is(':checked');
     var applyAssignments = $('#piSharedApplyAssignments').is(':checked');
-    var restrictionType = applyRestriction ? String($('#piSharedRestrictionType').val() || '').trim() : '';
-    var targetValue = applyRestriction ? String($('#piSharedRestrictionValue').val() || '').trim() : '';
+    var restrictionPayload = applyRestriction ? collectSharedRestrictions(requireValue) : { valid: true, items: [] };
+    var restrictions = restrictionPayload.items || [];
+    var firstRestriction = restrictions[0] || {};
+    var restrictionType = applyRestriction ? String(firstRestriction.type || '').trim() : '';
+    var targetValue = applyRestriction ? String(firstRestriction.value || '').trim() : '';
     var activityIds = parseActivityIdsInput($('#piSharedActivityIds').val());
     var note = String($('#piSharedNote').val() || '').trim();
     var subContratista = applyAssignments ? String($('#piSharedSubContratista').val() || '').trim() : '';
@@ -1097,16 +1477,12 @@
       return { valid: false, error: 'Active al menos una operación de lote.' };
     }
 
-    if (applyRestriction && !restrictionType) {
-      return { valid: false, error: 'Seleccione tipo de restricción.' };
+    if (applyRestriction && !restrictionPayload.valid) {
+      return { valid: false, error: restrictionPayload.error || 'Seleccione al menos una restricción.' };
     }
 
     if (activityIds.length === 0) {
       return { valid: false, error: 'Seleccione al menos una actividad.' };
-    }
-
-    if (requireValue && applyRestriction && !targetValue) {
-      return { valid: false, error: 'Seleccione un valor objetivo.' };
     }
 
     if (applyAssignments && !subContratista && !responsableAia && !applyRestriction) {
@@ -1122,6 +1498,7 @@
         apply_assignments: applyAssignments ? 1 : 0,
         restriction_type: restrictionType,
         target_value: targetValue,
+        restrictions: JSON.stringify(restrictions),
         sub_contratista: subContratista,
         responsable_aia: responsableAia,
         activity_ids: activityIds,
@@ -1139,22 +1516,28 @@
     var request = requestData || {};
     var applyRestriction = resolvePreviewFlag(data, request, 'apply_restriction', true);
     var applyAssignments = resolvePreviewFlag(data, request, 'apply_assignments', false);
-    var restrictionType = String(data.restriction_type || request.restriction_type || '').trim();
-    var targetValue = data.target_value !== undefined ? data.target_value : request.target_value;
+    var restrictions = getSharedRestrictionsFromPreview(data, request);
     var subContratista = String(data.sub_contratista !== undefined ? data.sub_contratista : (request.sub_contratista || '')).trim();
     var responsableAia = String(data.responsable_aia !== undefined ? data.responsable_aia : (request.responsable_aia || '')).trim();
-    var normalizedValue = null;
-
-    if (applyRestriction) {
-      normalizedValue = normalizeRestrictionValue(restrictionType, targetValue);
-      if (normalizedValue === null) {
-        applyRestriction = false;
-      }
-    }
+    var normalizedRestrictions = [];
 
     var idIndex = {};
     for (var i = 0; i < updatedIds.length; i++) {
       idIndex[String(updatedIds[i])] = true;
+    }
+
+    if (applyRestriction) {
+      for (var restrictionIndex = 0; restrictionIndex < restrictions.length; restrictionIndex++) {
+        var restriction = restrictions[restrictionIndex] || {};
+        var normalizedValue = normalizeRestrictionValue(restriction.type, restriction.value);
+        if (normalizedValue !== null) {
+          normalizedRestrictions.push({ type: restriction.type, value: normalizedValue });
+        }
+      }
+
+      if (normalizedRestrictions.length === 0) {
+        applyRestriction = false;
+      }
     }
 
     for (var rowIndex = 0; rowIndex < masterData.length; rowIndex++) {
@@ -1165,9 +1548,11 @@
       }
 
       if (applyRestriction) {
-        row[restrictionType] = normalizedValue;
+        for (var updateIndex = 0; updateIndex < normalizedRestrictions.length; updateIndex++) {
+          row[normalizedRestrictions[updateIndex].type] = normalizedRestrictions[updateIndex].value;
+        }
         row.Estado_Restricciones = calculateRestrictionStateRatio(row);
-        row.estado_operativo = getStateLabel(row);
+        row.estado_operativo = getStateDisplay(row);
       }
       if (applyAssignments && subContratista) {
         row.Sub_Contratista = subContratista;
@@ -1200,6 +1585,7 @@
           apply_assignments: request.data.apply_assignments,
           restriction_type: request.data.restriction_type,
           target_value: request.data.target_value,
+          restrictions: request.data.restrictions,
           sub_contratista: request.data.sub_contratista,
           responsable_aia: request.data.responsable_aia,
         });
@@ -1240,7 +1626,7 @@
 
       var data = response.data || {};
       var updatedIds = Array.isArray(data.updated_ids) ? data.updated_ids : request.data.activity_ids;
-      var targetValue = data.target_value !== undefined ? data.target_value : request.data.target_value;
+      var restrictions = data.restrictions !== undefined ? data.restrictions : request.data.restrictions;
 
       updateRowsAfterSharedConstraintApply(updatedIds, data, request.data);
       pendingViewportState = captureViewportState();
@@ -1248,7 +1634,8 @@
       showFeedback('success', 'Lote aplicado (' + Number(data.updated_count || updatedIds.length || 0) + ')');
       renderSharedPreview({
         restriction_type: request.data.restriction_type,
-        target_value: targetValue,
+        target_value: data.target_value !== undefined ? data.target_value : request.data.target_value,
+        restrictions: restrictions,
         apply_restriction: request.data.apply_restriction,
         apply_assignments: request.data.apply_assignments,
         sub_contratista: data.sub_contratista !== undefined ? data.sub_contratista : request.data.sub_contratista,
@@ -1258,8 +1645,9 @@
         count_missing: 0,
         preview: [],
       }, {
-        target_value: targetValue,
+        target_value: data.target_value !== undefined ? data.target_value : request.data.target_value,
         restriction_type: request.data.restriction_type,
+        restrictions: restrictions,
         apply_restriction: request.data.apply_restriction,
         apply_assignments: request.data.apply_assignments,
         sub_contratista: data.sub_contratista !== undefined ? data.sub_contratista : request.data.sub_contratista,
@@ -1334,26 +1722,26 @@
           "<h6 class='pi-legend-quick-group-title'>P1 - Resolver hoy</h6>" +
           "<div class='pi-legend-quick-row'>" +
             "<span class='pi-legend-modal-swatch pi-legend-quick-swatch pi-state-blocked-overdue-critical'></span>" +
-            "<div class='pi-legend-quick-state'><strong>Bloqueada Vencida (Critica)</strong><small>Debio iniciar y sigue bloqueada en ruta critica.</small></div>" +
-            "<div class='pi-legend-quick-action'>Escalar bloqueo, reasignar frente y cerrar causa raiz hoy.</div>" +
+            "<div class='pi-legend-quick-state'><strong>Arranque vencido por habilitar (Critica)</strong><small>Debio iniciar y requiere condiciones de habilitacion en ruta critica.</small></div>" +
+            "<div class='pi-legend-quick-action'>Escalar hoy, asignar responsable y cerrar las acciones de habilitacion.</div>" +
             "<span class='pi-legend-quick-priority is-p1'>P1</span>" +
           "</div>" +
           "<div class='pi-legend-quick-row'>" +
             "<span class='pi-legend-modal-swatch pi-legend-quick-swatch pi-state-blocked-overdue'></span>" +
-            "<div class='pi-legend-quick-state'><strong>Bloqueada Vencida</strong><small>Debio iniciar y aun tiene restricciones pendientes.</small></div>" +
-            "<div class='pi-legend-quick-action'>Definir responsable y fecha de destrabe en la reunion diaria.</div>" +
+            "<div class='pi-legend-quick-state'><strong>Arranque vencido por habilitar</strong><small>Debio iniciar y aun tiene condiciones pendientes.</small></div>" +
+            "<div class='pi-legend-quick-action'>Definir responsable y fecha de cierre en la reunion diaria.</div>" +
             "<span class='pi-legend-quick-priority is-p1'>P1</span>" +
           "</div>" +
           "<div class='pi-legend-quick-row'>" +
             "<span class='pi-legend-modal-swatch pi-legend-quick-swatch pi-state-blocked-due'></span>" +
-            "<div class='pi-legend-quick-state'><strong>Debe Iniciar (Con Restricciones)</strong><small>Inicia esta semana y no esta liberada.</small></div>" +
-            "<div class='pi-legend-quick-action'>Cerrar liberacion y asegurar cuadrilla/material antes del arranque.</div>" +
+            "<div class='pi-legend-quick-state'><strong>Arranque por habilitar</strong><small>Inicia esta semana y requiere condiciones para comprometer.</small></div>" +
+            "<div class='pi-legend-quick-action'>Cerrar acciones de habilitacion antes del arranque.</div>" +
             "<span class='pi-legend-quick-priority is-p1'>P1</span>" +
           "</div>" +
           "<div class='pi-legend-quick-row'>" +
             "<span class='pi-legend-modal-swatch pi-legend-quick-swatch pi-state-execution-blocked'></span>" +
-            "<div class='pi-legend-quick-state'><strong>En Ejecucion (Con Restricciones)</strong><small>Actividad iniciada pero con restricciones abiertas.</small></div>" +
-            "<div class='pi-legend-quick-action'>Eliminar restricciones activas para evitar retrabajos y paradas.</div>" +
+            "<div class='pi-legend-quick-state'><strong>En ejecucion con condiciones pendientes</strong><small>Actividad iniciada con acciones de habilitacion abiertas.</small></div>" +
+            "<div class='pi-legend-quick-action'>Cerrar condiciones pendientes para evitar retrabajos y paradas.</div>" +
             "<span class='pi-legend-quick-priority is-p1'>P1</span>" +
           "</div>" +
         "</section>" +
@@ -1362,14 +1750,14 @@
           "<h6 class='pi-legend-quick-group-title'>P2 - Gestion semanal</h6>" +
           "<div class='pi-legend-quick-row'>" +
             "<span class='pi-legend-modal-swatch pi-legend-quick-swatch pi-state-alert-1-week'></span>" +
-            "<div class='pi-legend-quick-state'><strong>Alerta 1 Semana</strong><small>Riesgo alto de no iniciar en el proximo corte.</small></div>" +
-            "<div class='pi-legend-quick-action'>Cerrar compras, permisos y acceso de frente esta semana.</div>" +
+            "<div class='pi-legend-quick-state'><strong>Alistamiento urgente</strong><small>Inicia en una semana y requiere acciones de habilitacion.</small></div>" +
+            "<div class='pi-legend-quick-action'>Cerrar las condiciones pendientes esta semana.</div>" +
             "<span class='pi-legend-quick-priority is-p2'>P2</span>" +
           "</div>" +
           "<div class='pi-legend-quick-row'>" +
             "<span class='pi-legend-modal-swatch pi-legend-quick-swatch pi-state-alert-2-3-weeks'></span>" +
-            "<div class='pi-legend-quick-state'><strong>Alerta 2-3 Semanas</strong><small>Riesgo medio en ventana proxima.</small></div>" +
-            "<div class='pi-legend-quick-action'>Plan preventivo con abastecimiento y mano de obra confirmados.</div>" +
+            "<div class='pi-legend-quick-state'><strong>Alistamiento en riesgo</strong><small>Inicia en 2 a 3 semanas y aun requiere preparacion.</small></div>" +
+            "<div class='pi-legend-quick-action'>Ejecutar plan preventivo de abastecimiento y recursos.</div>" +
             "<span class='pi-legend-quick-priority is-p2'>P2</span>" +
           "</div>" +
         "</section>" +
@@ -1378,14 +1766,14 @@
           "<h6 class='pi-legend-quick-group-title'>P3 - Seguimiento</h6>" +
           "<div class='pi-legend-quick-row'>" +
             "<span class='pi-legend-modal-swatch pi-legend-quick-swatch pi-state-alert-4-6-weeks'></span>" +
-            "<div class='pi-legend-quick-state'><strong>Alerta 4-6 Semanas</strong><small>Riesgo temprano del lookahead.</small></div>" +
-            "<div class='pi-legend-quick-action'>Monitorear preparacion y anticipar restricciones emergentes.</div>" +
+            "<div class='pi-legend-quick-state'><strong>Alistamiento pendiente</strong><small>Inicia en 4 a 6 semanas y requiere seguimiento temprano.</small></div>" +
+            "<div class='pi-legend-quick-action'>Monitorear preparacion y anticipar condiciones pendientes.</div>" +
             "<span class='pi-legend-quick-priority is-p3'>P3</span>" +
           "</div>" +
           "<div class='pi-legend-quick-row'>" +
             "<span class='pi-legend-modal-swatch pi-legend-quick-swatch pi-state-liberated-control'></span>" +
-            "<div class='pi-legend-quick-state'><strong>Liberada / Control</strong><small>Actividad lista para iniciar o en ejecucion con liberacion completa.</small></div>" +
-            "<div class='pi-legend-quick-action'>Mantener control semanal y no perder trazabilidad de compromisos.</div>" +
+            "<div class='pi-legend-quick-state'><strong>Listo para comprometer</strong><small>Cumple la matriz de habilitacion para pasar a Programacion Semanal.</small></div>" +
+            "<div class='pi-legend-quick-action'>Mantener control semanal y preparar compromiso viable.</div>" +
             "<span class='pi-legend-quick-priority is-p3'>P3</span>" +
           "</div>" +
         "</section>" +
@@ -1439,7 +1827,7 @@
       row.Predecesora = normalizeRestrictionValue('Predecesora', row.Predecesora);
       row.Pdto_Cons = normalizeRestrictionValue('Pdto_Cons', row.Pdto_Cons);
       row.Modelo = normalizeRestrictionValue('Modelo', row.Modelo);
-      row.estado_operativo = getStateLabel(row);
+      row.estado_operativo = getStateDisplay(row);
       row.__shared_selected = Boolean(sharedSelectionIndex[getRowActivityId(row)]);
 
       list.push(row);
@@ -1608,6 +1996,20 @@
       td.classList.add('htLeft');
     });
 
+    Handsontable.renderers.registerRenderer('piStateRenderer', function (instance, td, row, col, prop, value) {
+      Handsontable.renderers.TextRenderer.apply(this, arguments);
+      var rowData = instance.getSourceDataAtRow(row) || {};
+      var view = getStateView(rowData);
+      td.innerHTML = renderOperationalStateCell(view);
+      var trigger = td.querySelector('.ops-state-zoom');
+      if (trigger) {
+        trigger.setAttribute('data-row', String(row));
+      }
+      td.title = view.actions.length ? (view.label + ' - ' + view.actions.join('; ')) : view.label;
+      td.classList.add('htLeft', 'htMiddle', 'force-wrap', 'ops-state-td');
+    });
+
+    bindOperationalStateDrawer();
     renderersRegistered = true;
   }
 
@@ -2153,11 +2555,13 @@
     }
 
     if (liberadaFilter) {
-      var er = toNumber(row.Estado_Restricciones, 0);
-      if (liberadaFilter === 'NoLiberada' && er >= 0.999) {
+      var readyToCommit = window.PIStateMachine && typeof window.PIStateMachine.isReadyToCommit === 'function'
+        ? window.PIStateMachine.isReadyToCommit(row)
+        : toNumber(row.Estado_Restricciones, 0) >= 0.999;
+      if (liberadaFilter === 'NoLiberada' && readyToCommit) {
         return false;
       }
-      if (liberadaFilter === 'Liberada' && er < 0.999) {
+      if (liberadaFilter === 'Liberada' && !readyToCommit) {
         return false;
       }
     }
@@ -2280,6 +2684,7 @@
         'Proced. Constructivo',
         'Modelación BIM',
         '% Liberación',
+        'Estado Operativo',
         'Observaciones',
       ],
       columns: [
@@ -2298,6 +2703,7 @@
         { data: 'Pdto_Cons', type: 'dropdown', source: halfRestrictedOptions, strict: false, allowInvalid: false, renderer: 'piPercentRenderer', className: 'htCenter htMiddle' },
         { data: 'Modelo', type: 'dropdown', source: halfRestrictedOptions, strict: false, allowInvalid: false, renderer: 'piPercentRenderer', className: 'htCenter htMiddle' },
         { data: 'Estado_Restricciones', readOnly: true, renderer: 'piPercentRenderer', className: 'htCenter htMiddle' },
+        { data: 'estado_operativo', readOnly: true, renderer: 'piStateRenderer', className: 'htLeft htMiddle force-wrap' },
         { data: 'Observaciones', type: 'text', className: 'htLeft htMiddle force-wrap' },
       ],
       licenseKey: 'non-commercial-and-evaluation',
@@ -2795,9 +3201,24 @@
       $('#modal_shared_constraint').modal('show');
     });
 
-    $('#piSharedRestrictionType').off('change.piSharedType').on('change.piSharedType', function () {
-      setSharedValueOptionsForType(String($(this).val() || ''), true);
-    });
+    $('.pi-shared-restriction-check, .pi-shared-restriction-value')
+      .off('change.piSharedRestrictions')
+      .on('change.piSharedRestrictions', function () {
+        syncSharedRestrictionRows();
+        renderSharedPreviewEmpty('Restricciones actualizadas. Pulse "Preview" para validar impacto.');
+      });
+
+    $('#btn_pi_shared_select_all_restrictions')
+      .off('click.piSharedAllRestrictions')
+      .on('click.piSharedAllRestrictions', function () {
+        setSharedRestrictionSelection(true);
+      });
+
+    $('#btn_pi_shared_clear_restrictions')
+      .off('click.piSharedClearRestrictions')
+      .on('click.piSharedClearRestrictions', function () {
+        setSharedRestrictionSelection(false);
+      });
 
     $('#piSharedApplyRestriction, #piSharedApplyAssignments')
       .off('change.piSharedOperations')

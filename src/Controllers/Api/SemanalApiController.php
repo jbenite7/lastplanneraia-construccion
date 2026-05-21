@@ -50,7 +50,13 @@ class SemanalApiController
                 $Fecha_Inicio_Sem = date("Y-m-d", strtotime($dataSemanas["Fecha_Inicio_Sem"] ?? 'now'));
                 $Fecha_Fin_Sem = date("Y-m-d", strtotime($dataSemanas["Fecha_Fin_Sem"] ?? 'now'));
 
-                $queryData = "SELECT * FROM {$dbPrefix}_programacion_semanal WHERE Semana = ? AND (Activa = '1' OR Activa = 'NA') ORDER BY Consecutivo_En_Programa ASC, Activa ASC, Consecutivo ASC";
+                $queryData = "SELECT ps.*, pc.D_y_E AS restr_D_y_E, pc.Materiales AS restr_Materiales, pc.MdeO AS restr_MdeO, pc.Equipos AS restr_Equipos, pc.Predecesora AS restr_Predecesora, pc.Pdto_Cons AS restr_Pdto_Cons, pc.Modelo AS restr_Modelo
+                    FROM {$dbPrefix}_programacion_semanal ps
+                    LEFT JOIN {$dbPrefix}_programa_consolidado pc
+                      ON ps.Semana = pc.Semana
+                     AND ps.Consecutivo_En_Programa = pc.Consecutivo_en_Programa
+                    WHERE ps.Semana = ? AND (ps.Activa = '1' OR ps.Activa = 'NA')
+                    ORDER BY ps.Consecutivo_En_Programa ASC, ps.Activa ASC, ps.Consecutivo ASC";
                 $stmtData = $this->db->query($queryData, [$semana]);
 
                 $arreglo = ["data" => []];
@@ -192,6 +198,8 @@ class SemanalApiController
     private function autoprogramar(string $dbPrefix, int $semana): void
     {
         try {
+            $restrictionEligibilitySql = $this->getAutoprogramRestrictionEligibilitySql();
+
             // 1. Identificar actividades ya programadas
             $stmtExistentes = $this->db->query("SELECT DISTINCT(Consecutivo_En_Programa) FROM {$dbPrefix}_programacion_semanal WHERE Semana = ?", [$semana]);
             $existentes = $stmtExistentes->fetchAll(PDO::FETCH_COLUMN);
@@ -213,7 +221,7 @@ class SemanalApiController
                 '1', COALESCE(NULLIF(TRIM(unidad), ''), '%'), cantidad_ppto, codigo_actividad
             FROM {$dbPrefix}_programa_consolidado 
             WHERE Semana = ? AND Titulo = 0 
-              AND Estado_Restricciones >= 0.95
+              AND {$restrictionEligibilitySql}
               AND (
                 Estado='En Curso' OR Estado='Adelantada' OR Estado='Atrasada' OR Estado='Debe Iniciar esta Semana'
                 OR Estado='A Tiempo' OR Estado='Ya Debió Iniciar y Restricciones Pendientes' OR Estado='Debe Iniciar esta Semana y Restricciones Pendientes'
@@ -293,14 +301,47 @@ class SemanalApiController
 
     private function syncRestrictionFlags(string $dbPrefix, int $semana): void
     {
+        $restrictionEligibilitySql = $this->getAutoprogramRestrictionEligibilitySql('pc');
+
         $this->db->query("UPDATE {$dbPrefix}_programacion_semanal ps
             JOIN {$dbPrefix}_programa_consolidado pc
               ON ps.Consecutivo_En_Programa = pc.Consecutivo_en_Programa
              AND ps.Semana = pc.Semana
-            SET ps.Prog_Sin_Restricciones_100 = (CASE WHEN pc.Estado_Restricciones < 1 THEN 1 ELSE 0 END)
+            SET ps.Prog_Sin_Restricciones_100 = (CASE WHEN {$restrictionEligibilitySql} THEN 0 ELSE 1 END)
             WHERE ps.Semana = ? AND ps.Activa != 'NA'", [$semana]);
 
         $this->db->query("UPDATE {$dbPrefix}_programacion_semanal SET Prog_Sin_Restricciones_100 = 0 WHERE Semana = ? AND Activa = 'NA'", [$semana]);
+    }
+
+    private function getAutoprogramRestrictionEligibilitySql(string $alias = ''): string
+    {
+        $prefix = $alias !== '' ? $alias . '.' : '';
+
+        return '(' . implode(' AND ', [
+            $this->restrictionAtLeastOrNotApplicableSql($prefix . 'D_y_E', 1.0),
+            $this->restrictionAtLeastOrNotApplicableSql($prefix . 'Materiales', 1.0),
+            $this->restrictionAtLeastOrNotApplicableSql($prefix . 'MdeO', 1.0),
+            $this->restrictionAtLeastOrNotApplicableSql($prefix . 'Equipos', 1.0),
+            $this->restrictionAtLeastOrNotApplicableSql($prefix . 'Predecesora', 0.5),
+        ]) . ')';
+    }
+
+    private function restrictionAtLeastOrNotApplicableSql(string $column, float $minimumRatio): string
+    {
+        $text = "TRIM(COALESCE({$column}, ''))";
+        $normalized = $this->restrictionRatioSql($column);
+        $threshold = number_format($minimumRatio, 5, '.', '');
+
+        return "(UPPER({$text}) IN ('N/A', 'NO APLICA') OR {$normalized} >= {$threshold})";
+    }
+
+    private function restrictionRatioSql(string $column): string
+    {
+        $text = "TRIM(COALESCE({$column}, ''))";
+        $compact = "REPLACE({$text}, ' ', '')";
+        $numeric = "CAST(REPLACE(REPLACE({$compact}, '%', ''), ',', '.') AS DECIMAL(10,5))";
+
+        return "(CASE WHEN LOCATE('%', {$compact}) > 0 THEN {$numeric} / 100 WHEN {$numeric} > 1 AND {$numeric} <= 10000 THEN {$numeric} / 100 ELSE {$numeric} END)";
     }
 
     private function jsonResponse(string $res): void

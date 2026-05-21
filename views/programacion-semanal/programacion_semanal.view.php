@@ -308,6 +308,317 @@
             overflow-wrap: anywhere !important;
         }
 
+        .ps-page #hot-container td.ops-state-td {
+            padding: 4px 6px !important;
+            vertical-align: middle !important;
+        }
+
+        .ps-page .ops-state-zoom {
+            display: grid;
+            gap: 4px;
+            width: 100%;
+            min-width: 0;
+            padding: 0;
+            border: 0;
+            background: transparent;
+            color: inherit;
+            font: inherit;
+            text-align: left;
+            cursor: zoom-in;
+        }
+
+        .ps-page .ops-state-zoom:focus-visible {
+            outline: 2px solid oklch(62% 0.18 250);
+            outline-offset: 2px;
+            border-radius: 8px;
+        }
+
+        .ps-page .ops-state-topline {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 0;
+        }
+
+        .ps-page .ops-state-chip {
+            display: inline-flex;
+            max-width: 100%;
+            align-items: center;
+            padding: 2px 7px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.62);
+            color: inherit;
+            font-weight: 800;
+            font-size: 0.72rem;
+            line-height: 1.1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .ps-page .ops-state-count,
+        .ps-page .ops-state-more {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 20px;
+            height: 20px;
+            padding: 0 6px;
+            border-radius: 999px;
+            background: oklch(97% 0.02 80);
+            color: oklch(38% 0.12 55);
+            font-weight: 800;
+            font-size: 0.68rem;
+            line-height: 1;
+            box-shadow: inset 0 0 0 1px rgba(120, 53, 15, 0.12);
+        }
+
+        .ps-page .ops-state-pills {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            min-width: 0;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .ps-page .ops-state-pill,
+        .ps-page .ops-state-ready {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            max-width: 86px;
+            padding: 2px 6px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.42);
+            color: inherit;
+            font-weight: 700;
+            font-size: 0.66rem;
+            line-height: 1.1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .ps-page .ops-state-pill.is-done,
+        .ps-page .ops-state-action-list li.is-done .ops-state-action-label {
+            background: oklch(94% 0.07 145);
+            color: oklch(33% 0.12 145);
+        }
+
+        .ps-page .ops-state-pill.is-pending,
+        .ps-page .ops-state-action-list li.is-pending .ops-state-action-label {
+            background: oklch(95% 0.08 78);
+            color: oklch(38% 0.12 55);
+        }
+
+        .ps-page .ops-state-pill.is-partial,
+        .ps-page .ops-state-action-list li.is-partial .ops-state-action-label {
+            background: oklch(94% 0.09 88);
+            color: oklch(40% 0.13 65);
+        }
+
+        .ps-page .ops-state-pill.is-critical,
+        .ps-page .ops-state-action-list li.is-critical .ops-state-action-label {
+            background: oklch(93% 0.09 32);
+            color: oklch(36% 0.16 28);
+        }
+
+        .ps-page .ops-state-pill.is-conflict,
+        .ps-page .ops-state-action-list li.is-conflict .ops-state-action-label {
+            background: oklch(93% 0.08 305);
+            color: oklch(36% 0.15 305);
+        }
+
+        .ps-page .ops-state-action-list li.is-na .ops-state-action-label,
+        .ps-page .ops-state-action-list li.is-info .ops-state-action-label {
+            background: #eef2f7;
+            color: #64748b;
+        }
+
+        .ps-page .ops-state-pill-icon,
+        .ps-page .ops-state-action-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 12px;
+            height: 12px;
+            border-radius: 999px;
+            font-size: 0.62rem;
+            line-height: 1;
+            flex: 0 0 auto;
+        }
+
+        .ps-page .ops-state-ready {
+            max-width: 140px;
+            color: oklch(36% 0.12 150);
+        }
+
+        .ps-page .ops-state-drawer {
+            position: fixed;
+            inset: 0;
+            z-index: 2140;
+            pointer-events: none;
+        }
+
+        .ps-page .ops-state-drawer.is-open {
+            pointer-events: auto;
+        }
+
+        .ps-page .ops-state-backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.22);
+            opacity: 0;
+            transition: opacity 160ms ease;
+        }
+
+        .ps-page .ops-state-drawer.is-open .ops-state-backdrop {
+            opacity: 1;
+        }
+
+        .ps-page .ops-state-panel {
+            position: absolute;
+            top: 0;
+            right: 0;
+            display: grid;
+            grid-template-rows: auto 1fr;
+            width: min(420px, 92vw);
+            height: 100dvh;
+            background: #ffffff;
+            color: #1f2937;
+            box-shadow: -20px 0 40px rgba(15, 23, 42, 0.18);
+            transform: translateX(102%);
+            transition: transform 180ms ease;
+        }
+
+        .ps-page .ops-state-drawer.is-open .ops-state-panel {
+            transform: translateX(0);
+        }
+
+        .ps-page .ops-state-panel-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 18px 20px;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.28);
+        }
+
+        .ps-page .ops-state-eyebrow {
+            display: block;
+            color: #64748b;
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .ps-page .ops-state-panel-header h5 {
+            margin: 4px 0 0;
+            color: #111827;
+            font-weight: 800;
+        }
+
+        .ps-page .ops-state-close {
+            width: 34px;
+            height: 34px;
+            border: 0;
+            border-radius: 999px;
+            background: #f1f5f9;
+            color: #334155;
+            font-size: 1.4rem;
+            line-height: 1;
+            cursor: pointer;
+        }
+
+        .ps-page .ops-state-panel-body {
+            overflow: auto;
+            padding: 18px 20px 24px;
+        }
+
+        .ps-page .ops-state-drawer-state,
+        .ps-page .ops-state-activity {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .ps-page .ops-state-activity {
+            align-items: flex-start;
+            color: #334155;
+            line-height: 1.3;
+        }
+
+        .ps-page .ops-state-activity-id,
+        .ps-page .ops-state-action-label,
+        .ps-page .ops-state-action-value {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 7px;
+            border-radius: 999px;
+            background: #f8fafc;
+            color: #475569;
+            font-size: 0.74rem;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .ps-page .ops-state-panel-body h6 {
+            margin: 18px 0 10px;
+            color: #111827;
+            font-weight: 800;
+        }
+
+        .ps-page .ops-state-action-list {
+            display: grid;
+            gap: 10px;
+            padding: 0;
+            margin: 0;
+            list-style: none;
+        }
+
+        .ps-page .ops-state-action-list li {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 8px;
+            align-items: start;
+            padding: 10px;
+            border: 1px solid rgba(148, 163, 184, 0.24);
+            border-radius: 12px;
+            background: #f8fafc;
+        }
+
+        .ps-page .ops-state-action-list li.is-done {
+            border-color: oklch(84% 0.08 145);
+            background: oklch(98% 0.025 145);
+        }
+
+        .ps-page .ops-state-action-list li.is-pending,
+        .ps-page .ops-state-action-list li.is-partial {
+            border-color: oklch(86% 0.09 78);
+            background: oklch(98% 0.025 80);
+        }
+
+        .ps-page .ops-state-action-list li.is-critical,
+        .ps-page .ops-state-action-list li.is-conflict {
+            border-color: oklch(82% 0.1 32);
+            background: oklch(98% 0.025 35);
+        }
+
+        .ps-page .ops-state-action-text {
+            color: #1f2937;
+            line-height: 1.35;
+        }
+
+        .ps-page .ops-state-empty-detail {
+            padding: 14px;
+            border-radius: 12px;
+            background: oklch(97% 0.03 150);
+            color: oklch(35% 0.11 150);
+            font-weight: 700;
+        }
+
         .ps-page #hot-container td .ps-commit-value {
             display: inline-block;
             vertical-align: middle;
@@ -815,7 +1126,7 @@
 
     <script src="/public/vendor/handsontable/handsontable.full.min.js"></script>
     <script src="/public/vendor/handsontable/es-MX.js"></script>
-    <script type="text/javascript" src="/js/modules/programacion_semanal/stateMachine.js?v=ps2"></script>
+    <script type="text/javascript" src="/js/modules/programacion_semanal/stateMachine.js?v=ps3"></script>
     <script>
         window.PS_HOT_OPTIONS = {
             subcontratistas: <?php
@@ -856,7 +1167,7 @@
             ?>
         };
     </script>
-    <script src="/js/modules/programacion_semanal/hot.js?v=hot41"></script>
+    <script src="/js/modules/programacion_semanal/hot.js?v=hot43"></script>
 
     <script>
         function cargaParametros() {

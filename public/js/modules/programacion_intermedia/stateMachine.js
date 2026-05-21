@@ -58,17 +58,80 @@
     return normalized === '1' || normalized === 'si' || normalized === 'sí';
   }
 
+  function isNotApplicable(value) {
+    var normalized = String(value === null || value === undefined ? '' : value).trim().toUpperCase();
+    return normalized === 'N/A' || normalized === 'NO APLICA';
+  }
+
+  function restrictionValue(data, prop) {
+    if (!data) {
+      return null;
+    }
+    if (data[prop] !== undefined && data[prop] !== null && data[prop] !== '') {
+      return data[prop];
+    }
+    return data['restr_' + prop];
+  }
+
+  function toRestrictionRatio(value) {
+    if (value === null || value === undefined || value === '' || isNotApplicable(value)) {
+      return null;
+    }
+
+    var raw = String(value).trim();
+    var normalized = normalizeNumericString(raw.replace(/%/g, ''));
+    if (!normalized) {
+      return null;
+    }
+
+    var parsed = parseFloat(normalized);
+    if (!isFinite(parsed)) {
+      return null;
+    }
+
+    if (raw.indexOf('%') > -1) {
+      parsed = parsed / 100;
+    }
+    while (parsed > 1 && parsed <= 10000) {
+      parsed = parsed / 100;
+    }
+
+    if (parsed < 0) {
+      return 0;
+    }
+    if (parsed > 1) {
+      return 1;
+    }
+    return parsed;
+  }
+
+  function restrictionMeets(data, prop, minimum) {
+    var value = restrictionValue(data, prop);
+    if (isNotApplicable(value)) {
+      return true;
+    }
+    var ratio = toRestrictionRatio(value);
+    return ratio !== null && ratio + 0.0001 >= minimum;
+  }
+
+  function isReadyToCommit(data) {
+    return restrictionMeets(data, 'D_y_E', 1)
+      && restrictionMeets(data, 'Materiales', 1)
+      && restrictionMeets(data, 'MdeO', 1)
+      && restrictionMeets(data, 'Equipos', 1)
+      && restrictionMeets(data, 'Predecesora', 0.5);
+  }
+
   function getState(data) {
     if (!data || data.Titulo != 0) {
       return 'header';
     }
 
     var si = Math.round(toNumber(data.Semanas_Inicio, 999));
-    var er = toNumber(data.Estado_Restricciones, 0);
     var ej = toNumber(data.Ejecutado, 0);
     var critical = isCriticalRoute(data.Ruta_Critica);
 
-    var isLiberated = er >= 0.999;
+    var isLiberated = isReadyToCommit(data);
     var isStarted = ej > 0 && ej < 0.999;
     var isNotStarted = ej <= 0;
     var isOverdueSignal = si < 0;
@@ -111,5 +174,6 @@
   global.PIStateMachine = {
     toNumber: toNumber,
     getState: getState,
+    isReadyToCommit: isReadyToCommit,
   };
 })(window);

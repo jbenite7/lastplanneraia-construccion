@@ -114,6 +114,250 @@
             font-size: 0.74em !important;
         }
 
+        .pi-page #hot-container td.ops-state-td {
+            padding: 4px 6px !important;
+            vertical-align: middle !important;
+        }
+
+        .pi-page .ops-state-zoom {
+            display: grid;
+            gap: 4px;
+            width: 100%;
+            min-width: 0;
+            padding: 0;
+            border: 0;
+            background: transparent;
+            color: inherit;
+            font: inherit;
+            text-align: left;
+            cursor: zoom-in;
+        }
+
+        .pi-page .ops-state-zoom:focus-visible {
+            outline: 2px solid oklch(62% 0.18 250);
+            outline-offset: 2px;
+            border-radius: 8px;
+        }
+
+        .pi-page .ops-state-topline {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 0;
+        }
+
+        .pi-page .ops-state-chip {
+            display: inline-flex;
+            max-width: 100%;
+            align-items: center;
+            padding: 2px 7px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.62);
+            color: inherit;
+            font-weight: 800;
+            font-size: 0.72rem;
+            line-height: 1.1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .pi-page .ops-state-count,
+        .pi-page .ops-state-more {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 20px;
+            height: 20px;
+            padding: 0 6px;
+            border-radius: 999px;
+            background: oklch(97% 0.02 80);
+            color: oklch(38% 0.12 55);
+            font-weight: 800;
+            font-size: 0.68rem;
+            line-height: 1;
+            box-shadow: inset 0 0 0 1px rgba(120, 53, 15, 0.12);
+        }
+
+        .pi-page .ops-state-pills {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            min-width: 0;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .pi-page .ops-state-pill,
+        .pi-page .ops-state-ready {
+            display: inline-flex;
+            align-items: center;
+            max-width: 86px;
+            padding: 2px 6px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.42);
+            color: inherit;
+            font-weight: 700;
+            font-size: 0.66rem;
+            line-height: 1.1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .pi-page .ops-state-ready {
+            max-width: 140px;
+            color: oklch(36% 0.12 150);
+        }
+
+        .pi-page .ops-state-drawer {
+            position: fixed;
+            inset: 0;
+            z-index: 2140;
+            pointer-events: none;
+        }
+
+        .pi-page .ops-state-drawer.is-open {
+            pointer-events: auto;
+        }
+
+        .pi-page .ops-state-backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.22);
+            opacity: 0;
+            transition: opacity 160ms ease;
+        }
+
+        .pi-page .ops-state-drawer.is-open .ops-state-backdrop {
+            opacity: 1;
+        }
+
+        .pi-page .ops-state-panel {
+            position: absolute;
+            top: 0;
+            right: 0;
+            display: grid;
+            grid-template-rows: auto 1fr;
+            width: min(420px, 92vw);
+            height: 100dvh;
+            background: #ffffff;
+            color: #1f2937;
+            box-shadow: -20px 0 40px rgba(15, 23, 42, 0.18);
+            transform: translateX(102%);
+            transition: transform 180ms ease;
+        }
+
+        .pi-page .ops-state-drawer.is-open .ops-state-panel {
+            transform: translateX(0);
+        }
+
+        .pi-page .ops-state-panel-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 18px 20px;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.28);
+        }
+
+        .pi-page .ops-state-eyebrow {
+            display: block;
+            color: #64748b;
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .pi-page .ops-state-panel-header h5 {
+            margin: 4px 0 0;
+            color: #111827;
+            font-weight: 800;
+        }
+
+        .pi-page .ops-state-close {
+            width: 34px;
+            height: 34px;
+            border: 0;
+            border-radius: 999px;
+            background: #f1f5f9;
+            color: #334155;
+            font-size: 1.4rem;
+            line-height: 1;
+            cursor: pointer;
+        }
+
+        .pi-page .ops-state-panel-body {
+            overflow: auto;
+            padding: 18px 20px 24px;
+        }
+
+        .pi-page .ops-state-drawer-state,
+        .pi-page .ops-state-activity {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .pi-page .ops-state-activity {
+            align-items: flex-start;
+            color: #334155;
+            line-height: 1.3;
+        }
+
+        .pi-page .ops-state-activity-id,
+        .pi-page .ops-state-action-label,
+        .pi-page .ops-state-action-value {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 7px;
+            border-radius: 999px;
+            background: #f8fafc;
+            color: #475569;
+            font-size: 0.74rem;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .pi-page .ops-state-panel-body h6 {
+            margin: 18px 0 10px;
+            color: #111827;
+            font-weight: 800;
+        }
+
+        .pi-page .ops-state-action-list {
+            display: grid;
+            gap: 10px;
+            padding: 0;
+            margin: 0;
+            list-style: none;
+        }
+
+        .pi-page .ops-state-action-list li {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 8px;
+            align-items: start;
+            padding: 10px;
+            border: 1px solid rgba(148, 163, 184, 0.24);
+            border-radius: 12px;
+            background: #f8fafc;
+        }
+
+        .pi-page .ops-state-action-text {
+            color: #1f2937;
+            line-height: 1.35;
+        }
+
+        .pi-page .ops-state-empty-detail {
+            padding: 14px;
+            border-radius: 12px;
+            background: oklch(97% 0.03 150);
+            color: oklch(35% 0.11 150);
+            font-weight: 700;
+        }
+
         .pi-page #hot-container .handsontable td b,
         .pi-page #hot-container .handsontable td strong {
             font-weight: 600;
@@ -471,6 +715,19 @@
             border: 1px solid #d9e2ec;
         }
 
+        .pi-shared-restriction-changes {
+            display: grid;
+            gap: 4px;
+            min-width: 220px;
+        }
+
+        .pi-shared-restriction-change {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
         .pi-shared-more,
         .pi-shared-empty,
         .pi-shared-loading {
@@ -523,6 +780,57 @@
             color: #5b6b7a;
         }
 
+        .pi-shared-restrictions-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 4px;
+        }
+
+        .pi-shared-restriction-actions {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .pi-shared-restriction-actions .btn {
+            padding: 0.12rem 0.48rem;
+            font-size: 0.74rem;
+            line-height: 1.15;
+        }
+
+        .pi-shared-restrictions-panel {
+            display: grid;
+            gap: 6px;
+            border: 1px solid #d7e0ea;
+            border-radius: 8px;
+            background: #f8fbff;
+            padding: 8px;
+        }
+
+        .pi-shared-restriction-row {
+            display: grid;
+            grid-template-columns: minmax(170px, 1fr) minmax(96px, 124px);
+            gap: 8px;
+            align-items: center;
+            border: 1px solid #e0e8f2;
+            border-radius: 7px;
+            background: #ffffff;
+            padding: 6px 8px;
+        }
+
+        .pi-shared-restriction-row.is-disabled {
+            opacity: 0.58;
+        }
+
+        .pi-shared-restriction-row .custom-control-label {
+            font-size: 0.84rem;
+            line-height: 1.2;
+        }
+
         #shared-selection-count {
             min-width: 68px;
             text-align: center;
@@ -539,6 +847,10 @@
 
             .pi-shared-kpis {
                 grid-template-columns: repeat(2, minmax(110px, 1fr));
+            }
+
+            .pi-shared-restriction-row {
+                grid-template-columns: 1fr;
             }
         }
         /* Help trigger icons in restriction headers */
@@ -806,14 +1118,14 @@
 
         <div class="collapse d-md-block" id="pdcFiltersMobile">
             <div class="pdc-legend pi-legend pdc-legend-autoscaling" id="piLegend">
-                <span class="pdc-legend-item blocked-overdue-critical" data-filter="blocked-overdue-critical" role="button" tabindex="0"><span class="indicator"></span> Bloqueada Vencida (Crítica) <span id="count-blocked-overdue-critical" class="count-badge">(...)</span></span>
-                <span class="pdc-legend-item blocked-overdue" data-filter="blocked-overdue" role="button" tabindex="0"><span class="indicator"></span> Bloqueada Vencida <span id="count-blocked-overdue" class="count-badge">(...)</span></span>
-                <span class="pdc-legend-item blocked-due" data-filter="blocked-due" role="button" tabindex="0"><span class="indicator"></span> Debe Iniciar (Con Restric.) <span id="count-blocked-due" class="count-badge">(...)</span></span>
-                <span class="pdc-legend-item alert-1-week" data-filter="alert-1-week" role="button" tabindex="0"><span class="indicator"></span> Alerta 1 Semana <span id="count-alert-1-week" class="count-badge">(...)</span></span>
-                <span class="pdc-legend-item alert-2-3-weeks" data-filter="alert-2-3-weeks" role="button" tabindex="0"><span class="indicator"></span> Alerta 2-3 Sem <span id="count-alert-2-3-weeks" class="count-badge">(...)</span></span>
-                <span class="pdc-legend-item alert-4-6-weeks" data-filter="alert-4-6-weeks" role="button" tabindex="0"><span class="indicator"></span> Alerta 4-6 Sem <span id="count-alert-4-6-weeks" class="count-badge">(...)</span></span>
-                <span class="pdc-legend-item execution-blocked" data-filter="execution-blocked" role="button" tabindex="0"><span class="indicator"></span> En Ejecución (Con Restric.) <span id="count-execution-blocked" class="count-badge">(...)</span></span>
-                <span class="pdc-legend-item liberated-control" data-filter="liberated-control" role="button" tabindex="0"><span class="indicator"></span> Liberada / Control <span id="count-liberated-control" class="count-badge">(...)</span></span>
+                <span class="pdc-legend-item blocked-overdue-critical" data-filter="blocked-overdue-critical" role="button" tabindex="0"><span class="indicator"></span> Arranque Vencido Crítico <span id="count-blocked-overdue-critical" class="count-badge">(...)</span></span>
+                <span class="pdc-legend-item blocked-overdue" data-filter="blocked-overdue" role="button" tabindex="0"><span class="indicator"></span> Arranque Vencido <span id="count-blocked-overdue" class="count-badge">(...)</span></span>
+                <span class="pdc-legend-item blocked-due" data-filter="blocked-due" role="button" tabindex="0"><span class="indicator"></span> Arranque por Habilitar <span id="count-blocked-due" class="count-badge">(...)</span></span>
+                <span class="pdc-legend-item alert-1-week" data-filter="alert-1-week" role="button" tabindex="0"><span class="indicator"></span> Alistamiento Urgente <span id="count-alert-1-week" class="count-badge">(...)</span></span>
+                <span class="pdc-legend-item alert-2-3-weeks" data-filter="alert-2-3-weeks" role="button" tabindex="0"><span class="indicator"></span> Alistamiento en Riesgo <span id="count-alert-2-3-weeks" class="count-badge">(...)</span></span>
+                <span class="pdc-legend-item alert-4-6-weeks" data-filter="alert-4-6-weeks" role="button" tabindex="0"><span class="indicator"></span> Alistamiento Pendiente <span id="count-alert-4-6-weeks" class="count-badge">(...)</span></span>
+                <span class="pdc-legend-item execution-blocked" data-filter="execution-blocked" role="button" tabindex="0"><span class="indicator"></span> En Ejecución Pendiente <span id="count-execution-blocked" class="count-badge">(...)</span></span>
+                <span class="pdc-legend-item liberated-control" data-filter="liberated-control" role="button" tabindex="0"><span class="indicator"></span> Listo para Comprometer <span id="count-liberated-control" class="count-badge">(...)</span></span>
             </div>
         </div>
     </div>
@@ -860,21 +1172,66 @@
                     </div>
 
                     <div class="form-row">
-                        <div class="form-group col-md-5">
-                            <label for="piSharedRestrictionType">Tipo de restricción</label>
-                            <select id="piSharedRestrictionType" class="form-control form-control-sm">
-                                <option value="D_y_E">Diseños y Especif.</option>
-                                <option value="Materiales">Materiales</option>
-                                <option value="MdeO">Mano de Obra</option>
-                                <option value="Equipos">Equipos</option>
-                                <option value="Predecesora">Predecesora</option>
-                                <option value="Pdto_Cons">Proced. Constructivo</option>
-                                <option value="Modelo">Modelación BIM</option>
-                            </select>
-                        </div>
-                        <div class="form-group col-md-3">
-                            <label for="piSharedRestrictionValue">Valor objetivo</label>
-                            <select id="piSharedRestrictionValue" class="form-control form-control-sm"></select>
+                        <div class="form-group col-md-8">
+                            <div class="pi-shared-restrictions-header">
+                                <label class="mb-0">Restricciones objetivo</label>
+                                <div class="pi-shared-restriction-actions">
+                                    <button id="btn_pi_shared_select_all_restrictions" type="button" class="btn btn-outline-secondary">Seleccionar todas</button>
+                                    <button id="btn_pi_shared_clear_restrictions" type="button" class="btn btn-outline-secondary">Limpiar</button>
+                                </div>
+                            </div>
+                            <div id="piSharedRestrictionsPanel" class="pi-shared-restrictions-panel">
+                                <div class="pi-shared-restriction-row" data-restriction-row="D_y_E">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" class="custom-control-input pi-shared-restriction-check" id="piSharedRestriction_D_y_E" data-restriction-type="D_y_E" checked>
+                                        <label class="custom-control-label" for="piSharedRestriction_D_y_E">Diseños y Especif.</label>
+                                    </div>
+                                    <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="D_y_E"></select>
+                                </div>
+                                <div class="pi-shared-restriction-row" data-restriction-row="Materiales">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" class="custom-control-input pi-shared-restriction-check" id="piSharedRestriction_Materiales" data-restriction-type="Materiales">
+                                        <label class="custom-control-label" for="piSharedRestriction_Materiales">Materiales</label>
+                                    </div>
+                                    <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="Materiales"></select>
+                                </div>
+                                <div class="pi-shared-restriction-row" data-restriction-row="MdeO">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" class="custom-control-input pi-shared-restriction-check" id="piSharedRestriction_MdeO" data-restriction-type="MdeO">
+                                        <label class="custom-control-label" for="piSharedRestriction_MdeO">Mano de Obra</label>
+                                    </div>
+                                    <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="MdeO"></select>
+                                </div>
+                                <div class="pi-shared-restriction-row" data-restriction-row="Equipos">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" class="custom-control-input pi-shared-restriction-check" id="piSharedRestriction_Equipos" data-restriction-type="Equipos">
+                                        <label class="custom-control-label" for="piSharedRestriction_Equipos">Equipos</label>
+                                    </div>
+                                    <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="Equipos"></select>
+                                </div>
+                                <div class="pi-shared-restriction-row" data-restriction-row="Predecesora">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" class="custom-control-input pi-shared-restriction-check" id="piSharedRestriction_Predecesora" data-restriction-type="Predecesora">
+                                        <label class="custom-control-label" for="piSharedRestriction_Predecesora">Predecesora</label>
+                                    </div>
+                                    <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="Predecesora"></select>
+                                </div>
+                                <div class="pi-shared-restriction-row" data-restriction-row="Pdto_Cons">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" class="custom-control-input pi-shared-restriction-check" id="piSharedRestriction_Pdto_Cons" data-restriction-type="Pdto_Cons">
+                                        <label class="custom-control-label" for="piSharedRestriction_Pdto_Cons">Proced. Constructivo</label>
+                                    </div>
+                                    <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="Pdto_Cons"></select>
+                                </div>
+                                <div class="pi-shared-restriction-row" data-restriction-row="Modelo">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" class="custom-control-input pi-shared-restriction-check" id="piSharedRestriction_Modelo" data-restriction-type="Modelo">
+                                        <label class="custom-control-label" for="piSharedRestriction_Modelo">Modelación BIM</label>
+                                    </div>
+                                    <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="Modelo"></select>
+                                </div>
+                            </div>
+                            <small class="pi-shared-hint">Marque una, varias o todas las restricciones que desea actualizar en este lote.</small>
                         </div>
                         <div class="form-group col-md-4">
                             <label for="piSharedActivityIds">Consecutivos objetivo</label>
@@ -941,7 +1298,7 @@
 
     <script src="/public/vendor/handsontable/handsontable.full.min.js"></script>
     <script src="/public/vendor/handsontable/es-MX.js"></script>
-    <script type="text/javascript" src="/js/modules/programacion_intermedia/stateMachine.js?v=pi2"></script>
+    <script type="text/javascript" src="/js/modules/programacion_intermedia/stateMachine.js?v=pi3"></script>
     <script>
         window.PI_HOT_OPTIONS = {
             subcontratistas: <?php
@@ -971,7 +1328,7 @@
         };
     </script>
     <script type="text/javascript" src="/js/HandsontableTomSelectEditor.js?v=tomselect30"></script>
-    <script src="/js/modules/programacion_intermedia/hot.js?v=hot32"></script>
+    <script src="/js/modules/programacion_intermedia/hot.js?v=hot34"></script>
 
     <script>
         function cargaParametros() {

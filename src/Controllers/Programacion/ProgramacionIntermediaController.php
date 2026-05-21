@@ -291,6 +291,15 @@ class ProgramacionIntermediaController extends BaseController
                     'id_actividad' => $row['Id'] ?? '',
                     'actividad' => $row['Actividad'] ?? '',
                     'valor_actual' => $row[$payload['restrictionType']] ?? '',
+                    'restricciones_actuales' => [
+                        'D_y_E' => $row['D_y_E'] ?? '',
+                        'Materiales' => $row['Materiales'] ?? '',
+                        'MdeO' => $row['MdeO'] ?? '',
+                        'Equipos' => $row['Equipos'] ?? '',
+                        'Predecesora' => $row['Predecesora'] ?? '',
+                        'Pdto_Cons' => $row['Pdto_Cons'] ?? '',
+                        'Modelo' => $row['Modelo'] ?? '',
+                    ],
                     'sub_contratista_actual' => $row['Sub_Contratista'] ?? '',
                     'responsable_aia_actual' => $row['Responsable_AIA'] ?? '',
                 ];
@@ -304,6 +313,7 @@ class ProgramacionIntermediaController extends BaseController
                 'data' => [
                     'restriction_type' => $payload['restrictionType'],
                     'target_value' => $payload['targetValue'],
+                    'restrictions' => $payload['restrictions'],
                     'apply_restriction' => $payload['applyRestriction'] ? 1 : 0,
                     'apply_assignments' => $payload['applyAssignments'] ? 1 : 0,
                     'sub_contratista' => $payload['subContratista'],
@@ -356,23 +366,34 @@ class ProgramacionIntermediaController extends BaseController
             $restrictionColumn = $payload['restrictionType'];
             $note = $payload['note'];
             $applyRestriction = $payload['applyRestriction'];
+            $restrictions = $payload['restrictions'];
             $applyAssignments = $payload['applyAssignments'];
             $subContratista = $payload['subContratista'];
             $responsableAia = $payload['responsableAia'];
-            $normalizedValue = null;
+            $normalizedRestrictions = [];
 
             if ($applyRestriction) {
-                $normalizedValue = $this->normalizeSharedRestrictionInput($restrictionColumn, $payload['targetValue']);
-                if ($normalizedValue === null) {
-                    echo json_encode(["respuesta" => "ERROR", "mensaje" => "Valor de restricción inválido."]);
+                foreach ($restrictions as $restriction) {
+                    $type = $restriction['type'];
+                    $normalizedValue = $this->normalizeSharedRestrictionInput($type, $restriction['value']);
+                    if ($normalizedValue === null) {
+                        echo json_encode(["respuesta" => "ERROR", "mensaje" => "Valor de restricción inválido para {$type}."]);
 
-                    return;
+                        return;
+                    }
+
+                    $normalizedRestrictions[] = [
+                        'type' => $type,
+                        'value' => $normalizedValue,
+                    ];
                 }
             }
 
             $setClauses = [];
             if ($applyRestriction) {
-                $setClauses[] = "{$restrictionColumn} = ?";
+                foreach ($normalizedRestrictions as $restriction) {
+                    $setClauses[] = "{$restriction['type']} = ?";
+                }
                 $setClauses[] = "Estado_Restricciones = ?";
             }
             if ($applyAssignments && $subContratista !== '') {
@@ -386,7 +407,7 @@ class ProgramacionIntermediaController extends BaseController
             $sharedTablesReady = $applyRestriction ? $this->ensureSharedConstraintTables($dbPrefix) : false;
             $this->db->beginTransaction();
 
-            $sharedId = null;
+            $sharedIdsByType = [];
             $trackSharedLinks = false;
             $insertLinkStmt = null;
 
@@ -394,22 +415,29 @@ class ProgramacionIntermediaController extends BaseController
                 try {
                     $createdBy = (string)($_SESSION['nombre'] ?? $_SESSION['usuario'] ?? $_SESSION['nombre_usuario'] ?? 'system');
                     $insertSharedSql = "INSERT INTO {$dbPrefix}_pi_shared_constraints (Semana, Restriccion, ValorObjetivo, Nota, CreadoPor) VALUES (?, ?, ?, ?, ?)";
-                    $this->db->prepare($insertSharedSql)->execute([
-                        $semana,
-                        $restrictionColumn,
-                        (string)$normalizedValue,
-                        $note,
-                        $createdBy,
-                    ]);
+                    $insertSharedStmt = $this->db->prepare($insertSharedSql);
 
-                    $sharedId = (int)$this->db->lastInsertId();
+                    foreach ($normalizedRestrictions as $restriction) {
+                        $insertSharedStmt->execute([
+                            $semana,
+                            $restriction['type'],
+                            (string)$restriction['value'],
+                            $note,
+                            $createdBy,
+                        ]);
+
+                        $sharedId = (int)$this->db->lastInsertId();
+                        if ($sharedId > 0) {
+                            $sharedIdsByType[$restriction['type']] = $sharedId;
+                        }
+                    }
 
                     $insertLinkSql = "INSERT INTO {$dbPrefix}_pi_shared_constraint_links (SharedConstraintId, Semana, ConsecutivoEnPrograma, ValorAplicado) VALUES (?, ?, ?, ?)";
                     $insertLinkStmt = $this->db->prepare($insertLinkSql);
-                    $trackSharedLinks = ($sharedId > 0 && $insertLinkStmt !== false);
+                    $trackSharedLinks = (!empty($sharedIdsByType) && $insertLinkStmt !== false);
                 } catch (\Throwable $trackingError) {
                     $trackSharedLinks = false;
-                    $sharedId = null;
+                    $sharedIdsByType = [];
                     $insertLinkStmt = null;
                     error_log('Shared constraint tracking disabled: ' . $trackingError->getMessage());
                 }
@@ -429,8 +457,10 @@ class ProgramacionIntermediaController extends BaseController
 
                 $updateParams = [];
                 if ($applyRestriction) {
-                    $row[$restrictionColumn] = $normalizedValue;
-                    $updateParams[] = $normalizedValue;
+                    foreach ($normalizedRestrictions as $restriction) {
+                        $row[$restriction['type']] = $restriction['value'];
+                        $updateParams[] = $restriction['value'];
+                    }
                     $updateParams[] = $this->calculateRestrictionState($row);
                 }
                 if ($applyAssignments && $subContratista !== '') {
@@ -445,16 +475,24 @@ class ProgramacionIntermediaController extends BaseController
                 $updateStmt->execute($updateParams);
 
                 if ($applyRestriction && $trackSharedLinks && $insertLinkStmt) {
-                    try {
-                        $insertLinkStmt->execute([
-                            $sharedId,
-                            $semana,
-                            $rowId,
-                            (string)$normalizedValue,
-                        ]);
-                    } catch (\Throwable $linkError) {
-                        $trackSharedLinks = false;
-                        error_log('Shared constraint link tracking disabled: ' . $linkError->getMessage());
+                    foreach ($normalizedRestrictions as $restriction) {
+                        $sharedId = $sharedIdsByType[$restriction['type']] ?? 0;
+                        if ($sharedId <= 0) {
+                            continue;
+                        }
+
+                        try {
+                            $insertLinkStmt->execute([
+                                $sharedId,
+                                $semana,
+                                $rowId,
+                                (string)$restriction['value'],
+                            ]);
+                        } catch (\Throwable $linkError) {
+                            $trackSharedLinks = false;
+                            error_log('Shared constraint link tracking disabled: ' . $linkError->getMessage());
+                            break;
+                        }
                     }
                 }
 
@@ -475,9 +513,13 @@ class ProgramacionIntermediaController extends BaseController
             ];
             $operationParts = [];
             if ($applyRestriction) {
-                $valDisplay = $normalizedValue === 'N/A' || $normalizedValue === 'n/a' ? 'N/A' : (round((float)$normalizedValue * 100) . '%');
-                $cName = $camposNames[$restrictionColumn] ?? $restrictionColumn;
-                $operationParts[] = "Restricción {$cName} a {$valDisplay}";
+                $restrictionParts = [];
+                foreach ($normalizedRestrictions as $restriction) {
+                    $valDisplay = $restriction['value'] === 'N/A' || $restriction['value'] === 'n/a' ? 'N/A' : (round((float)$restriction['value'] * 100) . '%');
+                    $cName = $camposNames[$restriction['type']] ?? $restriction['type'];
+                    $restrictionParts[] = "{$cName} a {$valDisplay}";
+                }
+                $operationParts[] = 'Restricciones: ' . implode(', ', $restrictionParts);
             }
             if ($applyAssignments && $subContratista !== '') {
                 $operationParts[] = "Sub-Contratista: {$subContratista}";
@@ -549,14 +591,16 @@ class ProgramacionIntermediaController extends BaseController
             echo json_encode([
                 'respuesta' => 'BIEN',
                 'data' => [
-                    'shared_constraint_id' => $sharedId,
+                    'shared_constraint_id' => reset($sharedIdsByType) ?: null,
+                    'shared_constraint_ids' => $sharedIdsByType,
                     'tracking_enabled' => $trackSharedLinks,
                     'updated_count' => $updated,
                     'updated_ids' => $updatedIds,
                     'apply_restriction' => $applyRestriction ? 1 : 0,
                     'apply_assignments' => $applyAssignments ? 1 : 0,
                     'restriction_type' => $restrictionColumn,
-                    'target_value' => $normalizedValue,
+                    'target_value' => $normalizedRestrictions[0]['value'] ?? '',
+                    'restrictions' => $normalizedRestrictions,
                     'sub_contratista' => $subContratista,
                     'responsable_aia' => $responsableAia,
                 ],
@@ -593,6 +637,9 @@ class ProgramacionIntermediaController extends BaseController
         $responsableAia = $applyAssignments ? trim((string)($_POST['responsable_aia'] ?? '')) : '';
 
         $allowedRestrictions = ['D_y_E', 'Materiales', 'MdeO', 'Equipos', 'Predecesora', 'Pdto_Cons', 'Modelo'];
+        $restrictions = $applyRestriction
+            ? $this->parseSharedRestrictionsInput($_POST['restrictions'] ?? null, $restrictionType, $targetValue, $allowedRestrictions)
+            : [];
 
         if (!preg_match('/^[a-zA-Z0-9_]+$/', (string)$dbPrefix)) {
             return ['ok' => false, 'mensaje' => 'Base de datos inválida.'];
@@ -606,21 +653,28 @@ class ProgramacionIntermediaController extends BaseController
             return ['ok' => false, 'mensaje' => 'Debe activar al menos una operación de lote.'];
         }
 
-        if ($applyRestriction && !in_array($restrictionType, $allowedRestrictions, true)) {
-            return ['ok' => false, 'mensaje' => 'Tipo de restricción inválido.'];
+        if ($applyRestriction && empty($restrictions)) {
+            return ['ok' => false, 'mensaje' => 'Debe seleccionar al menos una restricción válida.'];
         }
 
         if (!$applyRestriction) {
             $restrictionType = '';
             $targetValue = '';
+        } else {
+            $restrictionType = $restrictions[0]['type'];
+            $targetValue = $restrictions[0]['value'];
         }
 
         if (empty($activityIds)) {
             return ['ok' => false, 'mensaje' => 'Debe seleccionar al menos una actividad.'];
         }
 
-        if ($requireValue && $applyRestriction && ($targetValue === null || $targetValue === '')) {
-            return ['ok' => false, 'mensaje' => 'Debe definir un valor objetivo para la restricción.'];
+        if ($requireValue && $applyRestriction) {
+            foreach ($restrictions as $restriction) {
+                if ($restriction['value'] === '') {
+                    return ['ok' => false, 'mensaje' => 'Debe definir valor objetivo para todas las restricciones seleccionadas.'];
+                }
+            }
         }
 
         if ($applyAssignments && !$applyRestriction && $subContratista === '' && $responsableAia === '') {
@@ -634,6 +688,7 @@ class ProgramacionIntermediaController extends BaseController
             'applyRestriction' => $applyRestriction,
             'applyAssignments' => $applyAssignments,
             'restrictionType' => $restrictionType,
+            'restrictions' => $restrictions,
             'activityIds' => $activityIds,
             'note' => $note,
             'targetValue' => $targetValue,
@@ -658,6 +713,50 @@ class ProgramacionIntermediaController extends BaseController
         }
 
         return in_array($text, ['1', 'true', 'yes', 'on', 'si'], true);
+    }
+
+    private function parseSharedRestrictionsInput($rawRestrictions, string $fallbackType, $fallbackValue, array $allowedRestrictions): array
+    {
+        $items = [];
+        $raw = $rawRestrictions;
+
+        if (is_string($raw)) {
+            $text = trim($raw);
+            if ($text !== '') {
+                $decoded = json_decode($text, true);
+                $raw = is_array($decoded) ? $decoded : [];
+            } else {
+                $raw = [];
+            }
+        }
+
+        if (is_array($raw)) {
+            foreach ($raw as $item) {
+                if (!is_array($item)) {
+                    continue;
+                }
+
+                $type = trim((string)($item['type'] ?? $item['restriction_type'] ?? ''));
+                if (!in_array($type, $allowedRestrictions, true)) {
+                    continue;
+                }
+
+                $value = $item['value'] ?? $item['target_value'] ?? '';
+                $items[$type] = [
+                    'type' => $type,
+                    'value' => trim((string)$value),
+                ];
+            }
+        }
+
+        if (empty($items) && in_array($fallbackType, $allowedRestrictions, true)) {
+            $items[$fallbackType] = [
+                'type' => $fallbackType,
+                'value' => trim((string)$fallbackValue),
+            ];
+        }
+
+        return array_values($items);
     }
 
     private function parseActivityIds($rawIds): array

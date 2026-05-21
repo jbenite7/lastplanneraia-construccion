@@ -34,45 +34,53 @@
     Observaciones_CNC: true,
   };
 
-  var LEGACY_HIDDEN_COLUMN_INDEXES = [0, 2, 4, 6, 9, 19, 20, 21];
+  var LEGACY_HIDDEN_COLUMN_INDEXES = [0, 2, 4, 5, 8, 18, 19, 20];
 
   var columnMinWidths = [
-    34, 64, 34, 210, 36, 138, 34, 120,
+    34, 64, 34, 210, 36, 34, 120,
     120, 36, 50, 64, 72, 78, 72, 80,
-    74, 54, 62, 36, 36, 36, 84,
+    74, 54, 62, 36, 36, 36, 160, 84,
   ];
   var columnFloorWidths = [
-    28, 54, 28, 160, 28, 110, 28, 92,
+    28, 54, 28, 160, 28, 28, 92,
     92, 28, 42, 54, 62, 68, 62, 70,
-    64, 46, 52, 28, 28, 28, 72,
+    64, 46, 52, 28, 28, 28, 122, 72,
   ];
   var columnMaxWidths = [
-    90, 98, 120, 460, 120, 240, 100, 238,
+    90, 98, 120, 460, 120, 100, 238,
     238, 120, 86, 108, 122, 136, 122, 120,
-    110, 84, 96, 170, 220, 260, 130,
+    110, 84, 96, 170, 220, 260, 250, 130,
   ];
   var columnShrinkPriority = [
-    21, 20, 19, 9, 6, 4, 2, 0,
+    21, 20, 19, 9, 6, 2, 0,
     13, 12, 14, 8, 7, 15, 16, 18,
-    17, 11, 10, 5, 3, 1, 22,
+    17, 11, 10, 5, 3, 1, 4, 22,
   ];
 
   var WEEKLY_ALERT_MODEL = {
     programacion: [
       {
         key: 'prog-bloqueo-critico-sin-compromiso',
-        label: 'Bloqueo Ruta Crítica sin Compromiso',
+        label: 'Ruta Crítica por Habilitar',
         className: 'ps-alert-critical-route',
         priority: 'p1',
-        description: 'Sin compromiso en actividad de ruta crítica.',
-        action: 'Escalar hoy, asignar compromiso mayor a cero y cerrar bloqueo del frente.',
+        description: 'Actividad de ruta crítica con condiciones pendientes para comprometer.',
+        action: 'Escalar hoy y cerrar las acciones de habilitación indicadas en la fila.',
+      },
+      {
+        key: 'prog-condiciones-pendientes',
+        label: 'Condiciones Pendientes',
+        className: 'ps-alert-critical',
+        priority: 'p1',
+        description: 'La actividad requiere acciones de habilitación antes de confirmar compromiso.',
+        action: 'Completar las acciones indicadas por restricción y volver a autoprogramar o validar la fila.',
       },
       {
         key: 'prog-sin-compromiso',
-        label: 'Sin Compromiso o sin Responsables',
+        label: 'Compromiso por Completar',
         className: 'ps-alert-critical',
         priority: 'p1',
-        description: 'Actividad activa sin compromiso semanal o sin asignaciones obligatorias (Responsable AIA/Sub-Contratista).',
+        description: 'Actividad habilitada, pero sin compromiso semanal o sin asignaciones obligatorias.',
         action: 'Definir cantidad, Responsable AIA y Sub-Contratista antes del cierre semanal.',
       },
       {
@@ -353,6 +361,497 @@
   function getPlainActivityLabel(value) {
     var plain = stripHtmlTags(value);
     return plain || 'Actividad';
+  }
+
+  function normalizeRestrictionRatio(value) {
+    if (value === null || value === undefined || value === '') {
+      return null;
+    }
+
+    var raw = String(value).trim();
+    var upper = raw.toUpperCase();
+    if (!raw || upper === 'N/A' || upper === 'NO APLICA') {
+      return null;
+    }
+
+    var numeric = toNumber(raw.replace(/%/g, ''), null);
+    if (numeric === null) {
+      return null;
+    }
+
+    if (raw.indexOf('%') > -1) {
+      numeric = numeric / 100;
+    }
+    while (numeric > 1 && numeric <= 10000) {
+      numeric = numeric / 100;
+    }
+    if (numeric < 0) {
+      return 0;
+    }
+    if (numeric > 1) {
+      return 1;
+    }
+    return Math.round((numeric + Number.EPSILON) * 10000) / 10000;
+  }
+
+  var readinessActionProps = ['D_y_E', 'Materiales', 'MdeO', 'Equipos', 'Predecesora'];
+  var readinessActionLabels = {
+    D_y_E: 'Diseños',
+    Materiales: 'Materiales',
+    MdeO: 'MO',
+    Equipos: 'Equipos',
+    Predecesora: 'Pred.',
+  };
+  var readinessDoneTexts = {
+    D_y_E: 'Diseños listos para construcción.',
+    Materiales: 'Materiales disponibles en el proyecto.',
+    MdeO: 'Personal disponible en el proyecto.',
+    Equipos: 'Equipos disponibles en el proyecto.',
+    Predecesora: 'Predecesora con avance suficiente.',
+  };
+  var readinessActionMatrix = {
+    D_y_E: {
+      threshold: 1,
+      actions: [
+        { max: 0.01, text: 'Solicitar diseños para construcción.' },
+        { max: 0.5, text: 'Revisar diseños con dirección y residentes.' },
+        { max: 1, text: 'Aprobar y entregar diseños a contratistas/maestros.' },
+      ],
+    },
+    Materiales: {
+      threshold: 1,
+      actions: [
+        { max: 0.01, text: 'Gestionar contratos de aprovisionamiento.' },
+        { max: 0.5, text: 'Pasar de plan de compras a plan de aprovisionamiento.' },
+        { max: 1, text: 'Confirmar materiales disponibles en el proyecto.' },
+      ],
+    },
+    MdeO: {
+      threshold: 1,
+      actions: [
+        { max: 0.01, text: 'Gestionar contratos de mano de obra.' },
+        { max: 0.5, text: 'Ubicar y confirmar recurso de mano de obra.' },
+        { max: 1, text: 'Movilizar personal al proyecto.' },
+      ],
+    },
+    Equipos: {
+      threshold: 1,
+      actions: [
+        { max: 0.01, text: 'Gestionar contratos de equipos.' },
+        { max: 0.5, text: 'Pasar de plan de compras a plan de aprovisionamiento de equipos.' },
+        { max: 1, text: 'Confirmar equipos disponibles en el proyecto.' },
+      ],
+    },
+    Predecesora: {
+      threshold: 0.5,
+      actions: [
+        { max: 0.5, text: 'Recuperar o iniciar actividad predecesora.' },
+      ],
+    },
+  };
+
+  function getRestrictionSourceValue(row, prop) {
+    if (!row) {
+      return null;
+    }
+    var aliased = row['restr_' + prop];
+    if (aliased !== undefined && aliased !== null && aliased !== '') {
+      return aliased;
+    }
+    return row[prop];
+  }
+
+  function makeActionItem(label, text, value, status, key) {
+    var iconMap = {
+      done: '✓',
+      pending: '!',
+      partial: '…',
+      critical: '!',
+      conflict: '!',
+      info: 'i',
+      na: '—',
+    };
+
+    return {
+      key: key || label,
+      label: label,
+      text: text,
+      value: value || '',
+      status: status || 'pending',
+      icon: iconMap[status] || '!',
+    };
+  }
+
+  function isOpenActionStatus(status) {
+    return status === 'pending' || status === 'partial' || status === 'critical' || status === 'conflict';
+  }
+
+  function getActionValueDisplay(value) {
+    var raw = String(value === null || value === undefined ? '' : value).trim();
+    if (!raw) {
+      return '0,0%';
+    }
+    var upper = raw.toUpperCase();
+    if (upper === 'N/A' || upper === 'NO APLICA') {
+      return 'N/A';
+    }
+    return formatPercent(raw, 1) || raw;
+  }
+
+  function getActivaText(row) {
+    return isBlank(row && row.Activa) ? '' : String(row.Activa).trim().toUpperCase();
+  }
+
+  function isInactiveByCnp(row) {
+    var activa = getActivaText(row);
+    return activa === '0' || activa === 'NO' || activa === 'N' || activa === 'FALSE';
+  }
+
+  function isManualActivity(row) {
+    return getActivaText(row) === 'NA';
+  }
+
+  function getReadinessAction(prop, value) {
+    var config = readinessActionMatrix[prop];
+    if (!config) {
+      return '';
+    }
+
+    var raw = String(value === null || value === undefined ? '' : value).trim();
+    var upper = raw.toUpperCase();
+    if (upper === 'N/A' || upper === 'NO APLICA') {
+      return '';
+    }
+
+    var ratio = raw === '' ? 0 : normalizeRestrictionRatio(raw);
+    if (ratio === null || ratio + 0.0001 >= config.threshold) {
+      return '';
+    }
+
+    for (var i = 0; i < config.actions.length; i++) {
+      if (ratio < config.actions[i].max) {
+        return config.actions[i].text;
+      }
+    }
+
+    return config.actions.length ? config.actions[config.actions.length - 1].text : '';
+  }
+
+  function getReadinessStatusItem(prop, row) {
+    var config = readinessActionMatrix[prop];
+    var label = readinessActionLabels[prop] || prop;
+    var value = getRestrictionSourceValue(row, prop);
+    var raw = String(value === null || value === undefined ? '' : value).trim();
+    var upper = raw.toUpperCase();
+
+    if (upper === 'N/A' || upper === 'NO APLICA') {
+      return makeActionItem(label, 'No aplica para esta actividad.', 'N/A', 'na', prop);
+    }
+
+    var ratio = raw === '' ? 0 : normalizeRestrictionRatio(raw);
+    if (!config || ratio === null) {
+      return makeActionItem(label, 'Revisar valor de la condición.', raw || 'Sin dato', 'conflict', prop);
+    }
+
+    if (ratio + 0.0001 >= config.threshold) {
+      var doneText = readinessDoneTexts[prop] || 'Condición lista.';
+      if (prop === 'Predecesora' && ratio >= 0.999) {
+        doneText = 'Predecesora terminada.';
+      }
+      return makeActionItem(label, doneText, getActionValueDisplay(value), 'done', prop);
+    }
+
+    return makeActionItem(label, getReadinessAction(prop, value), getActionValueDisplay(value), 'pending', prop);
+  }
+
+  function getReadinessActions(row) {
+    return getReadinessActionItems(row).map(function (item) { return item.text; });
+  }
+
+  function getReadinessActionItems(row) {
+    return getReadinessStatusItems(row).filter(function (item) {
+      return isOpenActionStatus(item.status);
+    });
+  }
+
+  function getReadinessStatusItems(row) {
+    var items = [];
+    for (var i = 0; i < readinessActionProps.length; i++) {
+      var prop = readinessActionProps[i];
+      items.push(getReadinessStatusItem(prop, row));
+    }
+    return items;
+  }
+
+  function getCommitmentActionItems(row) {
+    return getCommitmentStatusItems(row).filter(function (item) {
+      return isOpenActionStatus(item.status);
+    });
+  }
+
+  function getCommitmentStatusItems(row) {
+    var items = [];
+    var compromiso = toNumber(row && row.Compromiso, null);
+    if (compromiso === null || compromiso <= 0) {
+      items.push(makeActionItem('Compromiso', 'Definir compromiso mayor a cero.', '', 'pending', 'Compromiso'));
+    } else {
+      items.push(makeActionItem('Compromiso', 'Compromiso definido.', formatDecimalComma(compromiso, 1), 'done', 'Compromiso'));
+    }
+    if (isBlank(row && row.Responsable_AIA)) {
+      items.push(makeActionItem('Responsable', 'Asignar Responsable AIA.', '', 'pending', 'Responsable_AIA'));
+    } else {
+      items.push(makeActionItem('Responsable', 'Responsable AIA asignado.', row.Responsable_AIA, 'done', 'Responsable_AIA'));
+    }
+    if (isBlank(row && row.Sub_Contratista)) {
+      items.push(makeActionItem('Subcontratista', 'Asignar Sub-Contratista.', '', 'pending', 'Sub_Contratista'));
+    } else {
+      items.push(makeActionItem('Subcontratista', 'Sub-Contratista asignado.', row.Sub_Contratista, 'done', 'Sub_Contratista'));
+    }
+    return items;
+  }
+
+  function getCommitmentActions(row) {
+    return getCommitmentActionItems(row).map(function (item) { return item.text; });
+  }
+
+  function getCnpStatusItem(row) {
+    var hasCategory = !isBlank(row && row.Categoria_CNP);
+    var hasCause = !isBlank(row && row.CNP);
+    var hasObservations = !isBlank(row && row.Observaciones_CNP);
+    var hasAny = hasCategory || hasCause || hasObservations;
+
+    if (isManualActivity(row)) {
+      return makeActionItem('CNP', 'CNP no requerida para actividad manual.', '', 'na', 'CNP');
+    }
+
+    if (isInactiveByCnp(row)) {
+      if (hasCategory && hasCause) {
+        return makeActionItem('CNP', hasObservations ? 'CNP documentada.' : 'CNP registrada.', row.CNP || '', 'done', 'CNP');
+      }
+      if (hasAny) {
+        return makeActionItem('CNP', 'Completar categoría y causa de no programación.', row.CNP || row.Categoria_CNP || '', 'partial', 'CNP');
+      }
+      return makeActionItem('CNP', 'Registrar CNP.', '', 'pending', 'CNP');
+    }
+
+    if (hasAny) {
+      return makeActionItem('CNP', 'Revisar: actividad activa tiene CNP asignada.', row.CNP || row.Categoria_CNP || '', 'conflict', 'CNP');
+    }
+
+    return makeActionItem('CNP', 'CNP no requerida.', '', 'na', 'CNP');
+  }
+
+  function getCncStatusItem(row) {
+    var hasCategory = !isBlank(row && row.Categoria_CNC);
+    var hasCause = !isBlank(row && row.CNC);
+    var hasObservations = !isBlank(row && row.Observaciones_CNC);
+    var hasAny = hasCategory || hasCause || hasObservations;
+    var real = toNumber(row && row.Ejecutado_Real, null);
+    var needsCnc = window.PSStateMachine && typeof window.PSStateMachine.requiresCnc === 'function'
+      ? window.PSStateMachine.requiresCnc(row && row.Compromiso, row && row.Ejecutado_Real)
+      : false;
+    var critical = toNumber(row && row.Critica, 0) >= 1;
+
+    if (real === null) {
+      return makeActionItem('CNC', 'CNC se evalúa después de registrar ejecutado real.', '', 'na', 'CNC');
+    }
+
+    if (needsCnc) {
+      if (hasCategory && hasCause) {
+        return makeActionItem('CNC', hasObservations ? 'CNC documentada.' : 'CNC registrada.', row.CNC || '', 'done', 'CNC');
+      }
+      if (hasAny) {
+        return makeActionItem('CNC', 'Completar causa de no cumplimiento.', row.CNC || row.Categoria_CNC || '', 'partial', 'CNC');
+      }
+      return makeActionItem('CNC', critical ? 'Registrar CNC hoy y activar recuperación.' : 'Registrar CNC y plan correctivo.', '', critical ? 'critical' : 'pending', 'CNC');
+    }
+
+    if (hasAny) {
+      return makeActionItem('CNC', 'Revisar CNC: no parece requerida porque la actividad está cumplida.', row.CNC || row.Categoria_CNC || '', 'conflict', 'CNC');
+    }
+
+    return makeActionItem('CNC', 'CNC no requerida.', '', 'na', 'CNC');
+  }
+
+  function getRealStatusItem(row) {
+    var real = toNumber(row && row.Ejecutado_Real, null);
+    if (real === null) {
+      return makeActionItem('Real', 'Registrar ejecutado real.', '', 'pending', 'Ejecutado_Real');
+    }
+    return makeActionItem('Real', 'Ejecutado real registrado.', formatDecimalComma(real, 1), 'done', 'Ejecutado_Real');
+  }
+
+  function getOperationalActionItems(row) {
+    if (!row) {
+      return [];
+    }
+    if (getStateKey(row) === 'ps-no-activa') {
+      var cnpCompact = getCnpStatusItem(row);
+      return isOpenActionStatus(cnpCompact.status) || cnpCompact.status === 'done' ? [cnpCompact] : [];
+    }
+    if (weeklyPhaseKey === 'calificacion') {
+      var cnpStatus = getCnpStatusItem(row);
+      var calItems = [getRealStatusItem(row), getCncStatusItem(row)];
+      if (isOpenActionStatus(cnpStatus.status) || cnpStatus.status === 'done') {
+        calItems.push(cnpStatus);
+      }
+      return calItems.filter(function (item) {
+        return isOpenActionStatus(item.status) || ((item.key === 'CNC' || item.key === 'CNP') && item.status === 'done');
+      });
+    }
+
+    return getReadinessActionItems(row).concat(getCommitmentActionItems(row), [getCnpStatusItem(row)].filter(function (item) {
+      return isOpenActionStatus(item.status) || item.status === 'done';
+    }));
+  }
+
+  function getOperationalDetailItems(row) {
+    if (!row) {
+      return [];
+    }
+
+    if (getStateKey(row) === 'ps-no-activa') {
+      return [getCnpStatusItem(row)];
+    }
+
+    if (weeklyPhaseKey === 'calificacion') {
+      return [getRealStatusItem(row), getCncStatusItem(row), getCnpStatusItem(row)];
+    }
+
+    return getReadinessStatusItems(row).concat(getCommitmentStatusItems(row), [getCnpStatusItem(row)]);
+  }
+
+  function getOperationalActions(row) {
+    return getOperationalActionItems(row).map(function (item) { return item.text; });
+  }
+
+  function getStateDisplayText(row) {
+    var label = getStateLabelByKey(getStateKey(row));
+    var actions = getOperationalActions(row);
+    if (!actions.length) {
+      return label;
+    }
+    var actionPrefix = weeklyPhaseKey === 'calificacion' ? 'Acción: ' : 'Acciones de habilitación: ';
+    return label + '\n' + actionPrefix + actions.join('; ');
+  }
+
+  function getStateView(row) {
+    var compactItems = getOperationalActionItems(row);
+    var detailItems = getOperationalDetailItems(row);
+    return {
+      label: getStateLabelByKey(getStateKey(row)),
+      state: getStateKey(row),
+      actionItems: detailItems,
+      compactItems: compactItems,
+      actions: compactItems.map(function (item) { return item.text; }),
+      activity: getPlainActivityLabel(row && row.Actividad),
+      id: row && row.Id,
+      phase: weeklyPhaseKey,
+    };
+  }
+
+  function renderStatePills(actionItems, visibleLimit) {
+    var items = Array.isArray(actionItems) ? actionItems : [];
+    var limit = visibleLimit || 2;
+    var html = '';
+    for (var i = 0; i < Math.min(items.length, limit); i++) {
+      html += '<span class="ops-state-pill is-' + escapeHtml(items[i].status || 'pending') + '" title="' + escapeHtml(items[i].text) + '">'
+        + '<span class="ops-state-pill-icon">' + escapeHtml(items[i].icon || '!') + '</span>'
+        + escapeHtml(items[i].label) + '</span>';
+    }
+    if (items.length > limit) {
+      html += '<span class="ops-state-more">+' + (items.length - limit) + '</span>';
+    }
+    return html;
+  }
+
+  function renderOperationalStateCell(view) {
+    var count = view.compactItems.length;
+    var countBadge = count > 0 ? '<span class="ops-state-count">' + count + '</span>' : '';
+    var pills = count > 0 ? '<span class="ops-state-pills">' + renderStatePills(view.compactItems, 2) + '</span>' : '';
+
+    return '<button type="button" class="ops-state-zoom" aria-label="Ver detalle operativo">'
+      + '<span class="ops-state-topline"><span class="ops-state-chip">' + escapeHtml(view.label) + '</span>' + countBadge + '</span>'
+      + pills
+      + '</button>';
+  }
+
+  function ensureOperationalStateDrawer() {
+    if (document.getElementById('psOperationalStateDrawer')) {
+      return $('#psOperationalStateDrawer');
+    }
+
+    var html = '<div id="psOperationalStateDrawer" class="ops-state-drawer" aria-hidden="true">'
+      + '<div class="ops-state-backdrop" data-ops-close="1"></div>'
+      + '<aside class="ops-state-panel" role="dialog" aria-modal="false" aria-labelledby="psOpsDrawerTitle">'
+      + '<div class="ops-state-panel-header">'
+      + '<div><span class="ops-state-eyebrow">Detalle operativo</span><h5 id="psOpsDrawerTitle">Estado operativo</h5></div>'
+      + '<button type="button" class="ops-state-close" data-ops-close="1" aria-label="Cerrar">&times;</button>'
+      + '</div>'
+      + '<div class="ops-state-panel-body"></div>'
+      + '</aside>'
+      + '</div>';
+    $('body').append(html);
+    return $('#psOperationalStateDrawer');
+  }
+
+  function renderOperationalStateDrawerBody(view) {
+    var activity = view.activity || 'Actividad';
+    var id = view.id ? ('<span class="ops-state-activity-id">' + escapeHtml(view.id) + '</span>') : '';
+    var actionTitle = view.phase === 'calificacion' ? 'Acciones de calificación' : 'Acciones de habilitación';
+    var html = '<div class="ops-state-drawer-state"><span class="ops-state-chip">' + escapeHtml(view.label) + '</span>';
+    if (view.compactItems.length) {
+      html += '<span class="ops-state-count">' + view.compactItems.length + ' acciones</span>';
+    }
+    html += '</div>';
+    html += '<div class="ops-state-activity">' + id + '<strong>' + escapeHtml(activity) + '</strong></div>';
+
+    if (!view.actionItems.length) {
+      html += '<div class="ops-state-empty-detail">Sin acciones pendientes.</div>';
+      return html;
+    }
+
+    html += '<h6>' + escapeHtml(actionTitle) + '</h6><ul class="ops-state-action-list">';
+    for (var i = 0; i < view.actionItems.length; i++) {
+      var item = view.actionItems[i];
+      html += '<li class="is-' + escapeHtml(item.status || 'pending') + '"><span class="ops-state-action-label"><span class="ops-state-action-icon">' + escapeHtml(item.icon || '!') + '</span>' + escapeHtml(item.label) + '</span>'
+        + '<span class="ops-state-action-text">' + escapeHtml(item.text) + '</span>'
+        + '<span class="ops-state-action-value">' + escapeHtml(item.value || '') + '</span></li>';
+    }
+    html += '</ul>';
+    return html;
+  }
+
+  function openOperationalStateDrawer(rowData) {
+    var view = getStateView(rowData || {});
+    var $drawer = ensureOperationalStateDrawer();
+    $drawer.find('#psOpsDrawerTitle').text(view.label);
+    $drawer.find('.ops-state-panel-body').html(renderOperationalStateDrawerBody(view));
+    $drawer.addClass('is-open').attr('aria-hidden', 'false');
+  }
+
+  function closeOperationalStateDrawer() {
+    $('#psOperationalStateDrawer').removeClass('is-open').attr('aria-hidden', 'true');
+  }
+
+  function bindOperationalStateDrawer() {
+    $('#hot-container').off('click.psOpsState').on('click.psOpsState', '.ops-state-zoom', function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      var visualRow = parseInt($(this).data('row'), 10);
+      var rowData = hot && Number.isInteger(visualRow) ? hot.getSourceDataAtRow(visualRow) : null;
+      openOperationalStateDrawer(rowData || {});
+    });
+
+    $(document)
+      .off('click.psOpsStateClose')
+      .on('click.psOpsStateClose', '#psOperationalStateDrawer [data-ops-close="1"]', closeOperationalStateDrawer)
+      .off('keydown.psOpsStateClose')
+      .on('keydown.psOpsStateClose', function (event) {
+        if (event.key === 'Escape') {
+          closeOperationalStateDrawer();
+        }
+      });
   }
 
   function getAlertConfig(phaseKey) {
@@ -1215,7 +1714,7 @@
     for (var i = 0; i < rows.length; i++) {
       var row = rows[i] || {};
       row.cantidad_sugerida_auto = calculateSuggested(row);
-      row.estado_operativo = getStateLabelByKey(getStateKey(row));
+      row.estado_operativo = getStateDisplayText(row);
       output.push(row);
     }
     return output;
@@ -1418,7 +1917,7 @@
             $.extend(row, overrides);
           }
           row.cantidad_sugerida_auto = calculateSuggested(row);
-          row.estado_operativo = getStateLabelByKey(getStateKey(row));
+          row.estado_operativo = getStateDisplayText(row);
           // Forzar actualización visual de campos computados
           hot.setDataAtRowProp(visualRow, 'estado_operativo', row.estado_operativo, 'internal-update');
           hot.setDataAtRowProp(visualRow, 'cantidad_sugerida_auto', row.cantidad_sugerida_auto, 'internal-update');
@@ -1509,6 +2008,19 @@
       var numeric = toNumber(value, null);
       td.textContent = (numeric === 0) ? 'Sí' : ((numeric === 1) ? 'No' : '');
       td.classList.add('htCenter');
+    });
+
+    Handsontable.renderers.registerRenderer('psStateRenderer', function (instance, td, row, col, prop, value) {
+      Handsontable.renderers.TextRenderer.apply(this, arguments);
+      var rowData = instance.getSourceDataAtRow(row) || {};
+      var view = getStateView(rowData);
+      td.innerHTML = renderOperationalStateCell(view);
+      var trigger = td.querySelector('.ops-state-zoom');
+      if (trigger) {
+        trigger.setAttribute('data-row', String(row));
+      }
+      td.title = view.actions.length ? (view.label + ' - ' + view.actions.join('; ')) : view.label;
+      td.classList.add('htLeft', 'htMiddle', 'force-wrap', 'ops-state-td');
     });
 
     Handsontable.renderers.registerRenderer('psPacRenderer', function (instance, td, row, col, prop, value) {
@@ -1605,6 +2117,7 @@
       }
     });
 
+    bindOperationalStateDrawer();
     renderersRegistered = true;
   }
 
@@ -1634,7 +2147,6 @@
         'Código Actividad',
         'Actividad',
         'Ubicación',
-        'Estado Operativo',
         'Liberada',
         'Sub-Contratista',
         'Responsable AIA',
@@ -1651,6 +2163,7 @@
         'Categoría CNC',
         'CNC',
         'Obs. CNC',
+        'Estado Operativo',
         'Acciones',
       ],
       columns: [
@@ -1659,7 +2172,6 @@
         { data: 'codigo_actividad', readOnly: true, className: 'htCenter htMiddle' },
         { data: 'Actividad', readOnly: true, renderer: 'psActividadRenderer', className: 'htLeft htMiddle force-wrap' },
         { data: 'Ubicacion', type: 'text', className: 'htLeft htMiddle force-wrap' },
-        { data: 'estado_operativo', readOnly: true, className: 'htCenter htMiddle force-wrap' },
         { data: 'Prog_Sin_Restricciones_100', readOnly: true, renderer: 'psLiberadaRenderer', className: 'htCenter htMiddle' },
         { data: 'Sub_Contratista', type: 'dropdown', source: subcontratistas, strict: false, allowInvalid: false, renderer: 'psResponsableRenderer', className: 'htCenter htMiddle force-wrap' },
         { data: 'Responsable_AIA', type: 'dropdown', source: profesionales, strict: false, allowInvalid: false, renderer: 'psResponsableRenderer', className: 'htCenter htMiddle force-wrap' },
@@ -1676,6 +2188,7 @@
         { data: 'Categoria_CNC', type: 'text', className: 'htCenter htMiddle force-wrap' },
         { data: 'CNC', type: 'text', className: 'htLeft htMiddle force-wrap' },
         { data: 'Observaciones_CNC', type: 'text', className: 'htLeft htMiddle force-wrap' },
+        { data: 'estado_operativo', readOnly: true, renderer: 'psStateRenderer', className: 'htLeft htMiddle force-wrap' },
         { data: null, renderer: 'psActionsRenderer', readOnly: true },
       ],
       hiddenColumns: getLegacyHiddenColumnsConfig(),
@@ -2012,7 +2525,7 @@
     var phaseLabel = weeklyPhaseKey === 'calificacion' ? 'Calificación de Actividades' : 'Programación de Compromisos';
     var intro = weeklyPhaseKey === 'calificacion'
       ? 'Cierre incumplidas con CNC, ejecute recuperación y proteja la siguiente semana.'
-      : 'Defina compromisos viables, elimine bloqueos y confirme solo actividades ejecutables.';
+      : 'Defina compromisos viables, cierre condiciones pendientes y confirme solo actividades ejecutables.';
 
     var groupTitleMap = {
       p1: 'Resolver hoy',
@@ -2224,9 +2737,12 @@
       if (liberada !== null && liberada > 0) {
         summary.warningRestrictedCount += 1;
         if (summary.warningRestrictedItems.length < 8) {
+          var readinessActions = getReadinessActions(row);
           summary.warningRestrictedItems.push({
             actividad: escapeHtml(getPlainActivityLabel(row.Actividad)),
-            detalle: 'Actividad comprometida con restricciones no liberadas.',
+            detalle: readinessActions.length
+              ? 'Acciones de habilitación: ' + escapeHtml(readinessActions.join('; '))
+              : 'Actividad comprometida con condiciones pendientes.',
           });
         }
       }
@@ -2255,15 +2771,15 @@
 
     var html = "<div class='ps-close-summary'>" +
       "<div class='ps-close-summary-kpis'>" +
-      "<div class='ps-close-summary-kpi is-blocking'><strong>" + summary.blockingCount + "</strong><small>Bloqueantes</small></div>" +
+      "<div class='ps-close-summary-kpi is-blocking'><strong>" + summary.blockingCount + "</strong><small>Por completar</small></div>" +
       "<div class='ps-close-summary-kpi is-ready'><strong>" + summary.readyCount + "</strong><small>Listas para confirmar</small></div>" +
       "<div class='ps-close-summary-kpi is-warning'><strong>" + summary.warningLowCount + "</strong><small>Compromiso menor a sugerido</small></div>" +
-      "<div class='ps-close-summary-kpi is-warning'><strong>" + summary.warningRestrictedCount + "</strong><small>Compromiso con restricción</small></div>" +
+      "<div class='ps-close-summary-kpi is-warning'><strong>" + summary.warningRestrictedCount + "</strong><small>Compromiso con condiciones pendientes</small></div>" +
       "</div>";
 
-    html += renderSummaryList('Detalle de bloqueantes', summary.blockingItems, 'is-blocking');
+    html += renderSummaryList('Detalle por completar', summary.blockingItems, 'is-blocking');
     html += renderSummaryList('Detalle compromiso menor a sugerido', summary.warningLowItems, 'is-warning');
-    html += renderSummaryList('Detalle con restricciones no liberadas', summary.warningRestrictedItems, 'is-warning');
+    html += renderSummaryList('Detalle con condiciones pendientes', summary.warningRestrictedItems, 'is-warning');
     html += "<p class='ps-close-summary-note'>Al confirmar, no se podrán modificar compromisos ni eliminar actividades.</p></div>";
 
     $('#cerrar_compromisos_semana').html(html);
@@ -2672,12 +3188,12 @@
 
     var html = '<div class="modal fade" id="modalRestriccionesFaltantes" tabindex="-1" role="dialog">'
       + '<div class="modal-dialog modal-lg" role="document"><div class="modal-content">'
-      + '<div class="modal-header bg-danger text-white"><h5 class="modal-title"><i class="fas fa-lock"></i> Actividades no autoprogramadas (Restricciones Pendientes)</h5>'
+      + '<div class="modal-header bg-danger text-white"><h5 class="modal-title"><i class="fas fa-clipboard-list"></i> Actividades pendientes para autoprogramar</h5>'
       + '<button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button></div>'
-      + '<div class="modal-body"><p>Las siguientes <strong>' + alertas.length + '</strong> actividades se omitieron porque no tienen sus restricciones liberadas al 100%:</p>'
-      + '<div class="table-responsive"><table class="table table-sm table-bordered"><thead><tr><th>Id</th><th>Actividad</th><th>Restricciones Pendientes</th></tr></thead>'
+      + '<div class="modal-body"><p>Las siguientes <strong>' + alertas.length + '</strong> actividades se omitieron porque tienen condiciones pendientes para comprometer:</p>'
+      + '<div class="table-responsive"><table class="table table-sm table-bordered"><thead><tr><th>Id</th><th>Actividad</th><th>Condiciones pendientes</th></tr></thead>'
       + '<tbody>' + rows + '</tbody></table></div>'
-      + '<p class="text-muted mt-2"><small>Debe liberar estas restricciones desde la Programación Intermedia para que puedan ser autoprogramadas o agregadas manualmente.</small></p></div>'
+      + '<p class="text-muted mt-2"><small>Cierre las acciones de habilitación desde la Programación Intermedia para que puedan ser autoprogramadas o agregadas manualmente.</small></p></div>'
       + '<div class="modal-footer"><button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button></div>'
       + '</div></div></div>';
 
