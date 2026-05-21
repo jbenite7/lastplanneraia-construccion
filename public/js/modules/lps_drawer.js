@@ -6,7 +6,7 @@
  * e implementa la consolidación semanal inteligente (LPS Weekly Digest) para mitigar el spam.
  */
 
-const LPSContextualDrawer = (function() {
+window.LPSContextualDrawer = (function() {
   let activeHot = null;
   let activeModuleKey = null;
   let activeStateAdapter = null;

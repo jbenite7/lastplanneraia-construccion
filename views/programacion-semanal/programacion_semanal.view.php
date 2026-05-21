@@ -1223,7 +1223,7 @@
         };
     </script>
     <script src="/js/modules/lps_drawer.js?v=20260521"></script>
-    <script src="/js/modules/programacion_semanal/hot.js?v=hot44"></script>
+    <script src="/js/modules/programacion_semanal/hot.js?v=hot45"></script>
 
     <script>
         function cargaParametros() {
