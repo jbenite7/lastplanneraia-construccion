@@ -856,7 +856,7 @@
             ?>
         };
     </script>
-    <script src="/js/modules/programacion_semanal/hot.js?v=hot40"></script>
+    <script src="/js/modules/programacion_semanal/hot.js?v=hot41"></script>
 
     <script>
         function cargaParametros() {

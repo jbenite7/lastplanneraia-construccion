@@ -1688,6 +1688,13 @@
       contextMenu: true,
       dropdownMenu: ['filter_by_condition', 'filter_by_value', 'filter_action_bar'],
       filters: true,
+      modifyFiltersMultiSelectValue: function (value, meta) {
+        if (meta && (meta.prop === 'Actividad' || meta.data === 'Actividad')) {
+          return stripHtmlTags(value);
+        }
+
+        return value;
+      },
       search: false,
       exportFile: true,
       columnSorting: false,

@@ -79,6 +79,15 @@ window.HOTActualizarModule = (function() {
         return { valid: true, value: str };
     }
 
+    function getFilterPlainText(value) {
+        var raw = String(value === null || value === undefined ? '' : value);
+        if (!raw) return '';
+
+        var container = document.createElement('div');
+        container.innerHTML = raw;
+        return String(container.textContent || container.innerText || '').trim();
+    }
+
     /**
      * Renderizador Custom para la Actividad a Asociar
      * - Si está vacía o "*No Asociada*" => Fondo Naranja Corporativo
@@ -540,6 +549,14 @@ window.HOTActualizarModule = (function() {
             wordWrap: false,
             manualColumnResize: true,
             filters: true,
+            modifyFiltersMultiSelectValue: function(value, meta) {
+                var prop = meta && (meta.prop || meta.data);
+                if (prop === 'Actividad' || prop === 'programaAnteriorAsociar') {
+                    return getFilterPlainText(value);
+                }
+
+                return value;
+            },
             dropdownMenu: ['filter_by_condition', 'filter_by_value', 'filter_action_bar'],
             outsideClickDeselects: false, // Vital para Select2/TomSelect
             hiddenColumns: {

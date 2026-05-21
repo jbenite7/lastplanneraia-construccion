@@ -343,7 +343,7 @@
 	<script src="/js/HandsontableTomSelectEditor.js?v=tomselect30"></script>
 	
 	<!-- Módulos de Handsontable -->
-	<script src="/public/js/modules/programa_actualizar/hot_actualizar.js?v=202603241"></script>
+	<script src="/public/js/modules/programa_actualizar/hot_actualizar.js?v=202603242"></script>
 
 	<script>
 		/* Funciones Legacy requeridas a nivel global */
