@@ -92,6 +92,33 @@ if (!function_exists('ps_weekly_phase_key')) {
         return ps_is_blank($categoriaCnc) || ps_is_blank($cnc);
     }
 
+    function ps_has_pending_commit_conditions(array $row): bool
+    {
+        $notApplicableOrAtLeast = function (string $col, float $min): bool {
+            $raw = trim((string)($row[$col] ?? ''));
+            if (strtoupper($raw) === 'N/A' || strtoupper($raw) === 'NO APLICA') {
+                return true;
+            }
+            $normalized = str_replace(['%', ' ', ','], ['', '', '.'], $raw);
+            if (!is_numeric($normalized)) {
+                return false;
+            }
+            $value = (float)$normalized;
+            while ($value > 1 && $value <= 10000) {
+                $value /= 100;
+            }
+            return ($value + 0.0001) >= $min;
+        };
+
+        return !(
+            $notApplicableOrAtLeast('D_y_E', 1.0)
+            && $notApplicableOrAtLeast('Materiales', 1.0)
+            && $notApplicableOrAtLeast('MdeO', 1.0)
+            && $notApplicableOrAtLeast('Equipos', 1.0)
+            && $notApplicableOrAtLeast('Predecesora', 0.5)
+        );
+    }
+
     function ps_classify_state(array $row, string $phaseKey): string
     {
         if (!ps_is_active_row($row)) {
@@ -104,9 +131,13 @@ if (!function_exists('ps_weekly_phase_key')) {
 
         $hasCommitment = $compromiso !== null && $compromiso > 0;
         $isIncomplete = $ejecutado < 0.999;
+        $tieneEjecucion = $ejecutado > 0.001;
 
         $libFlag = ps_to_float($row['Prog_Sin_Restricciones_100'] ?? null, null);
         $sinLiberacion = $libFlag !== null ? ($libFlag > 0) : false;
+        if (!$sinLiberacion) {
+            $sinLiberacion = ps_has_pending_commit_conditions($row);
+        }
 
         $critica = ps_to_float($row['Critica'] ?? null, 0.0);
         $isCriticalRoute = ($critica >= 1);
@@ -119,15 +150,23 @@ if (!function_exists('ps_weekly_phase_key')) {
                 return 'ps-no-activa';
             }
 
-            if ($hasCommitment && !$missingAssignments) {
-                return 'prog-lista-para-confirmar';
+            if ($tieneEjecucion && $sinLiberacion) {
+                return 'prog-ejecucion-con-restricciones';
             }
 
-            if (!$hasCommitment && $sinLiberacion && $isCriticalRoute) {
+            if ($sinLiberacion && $isCriticalRoute) {
                 return 'prog-bloqueo-critico-sin-compromiso';
             }
 
-            return 'prog-sin-compromiso';
+            if ($sinLiberacion) {
+                return 'prog-condiciones-pendientes';
+            }
+
+            if (!$hasCommitment || $missingAssignments) {
+                return 'prog-sin-compromiso';
+            }
+
+            return 'prog-lista-para-confirmar';
         }
 
         if (!$hasCommitment || $ejecutadoReal === null) {

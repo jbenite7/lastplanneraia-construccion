@@ -28,6 +28,88 @@ try {
         throw new Exception("Semana activa no encontrada.");
     }
 
+    $restrictionRatioSql = function (string $column): string {
+        $text = "TRIM(COALESCE({$column}, ''))";
+        $compact = "REPLACE({$text}, ' ', '')";
+        $numeric = "CAST(REPLACE(REPLACE({$compact}, '%', ''), ',', '.') AS DECIMAL(10,5))";
+
+        return "(CASE WHEN LOCATE('%', {$compact}) > 0 THEN {$numeric} / 100 WHEN {$numeric} > 1 AND {$numeric} <= 10000 THEN {$numeric} / 100 ELSE {$numeric} END)";
+    };
+    $restrictionAtLeastSql = function (string $column, float $minimumRatio) use ($restrictionRatioSql): string {
+        $text = "TRIM(COALESCE({$column}, ''))";
+        $normalized = $restrictionRatioSql($column);
+        $threshold = number_format($minimumRatio, 5, '.', '');
+
+        return "(UPPER({$text}) IN ('N/A', 'NO APLICA') OR {$normalized} >= {$threshold})";
+    };
+    $buildHardEligibilitySql = function (string $prefix = '') use ($restrictionAtLeastSql): string {
+        return '(' . implode(' AND ', [
+            $restrictionAtLeastSql($prefix . 'D_y_E', 1.0),
+            $restrictionAtLeastSql($prefix . 'Materiales', 1.0),
+            $restrictionAtLeastSql($prefix . 'MdeO', 1.0),
+            $restrictionAtLeastSql($prefix . 'Equipos', 1.0),
+            $restrictionAtLeastSql($prefix . 'Predecesora', 0.5),
+        ]) . ')';
+    };
+    $parseRestrictionRatio = function ($value): ?float {
+        if ($value === null) {
+            return null;
+        }
+
+        $raw = trim((string)$value);
+        if ($raw === '' || strtolower($raw) === 'null') {
+            return null;
+        }
+
+        $hasPercent = strpos($raw, '%') !== false;
+        $normalized = str_replace('%', '', preg_replace('/\s+/', '', $raw));
+        $commaPos = strrpos($normalized, ',');
+        $dotPos = strrpos($normalized, '.');
+
+        if ($commaPos !== false && $dotPos !== false) {
+            $normalized = $commaPos > $dotPos
+                ? str_replace(',', '.', str_replace('.', '', $normalized))
+                : str_replace(',', '', $normalized);
+        } elseif ($commaPos !== false) {
+            $normalized = str_replace(',', '.', $normalized);
+        }
+
+        if (!is_numeric($normalized)) {
+            return null;
+        }
+
+        $ratio = (float)$normalized;
+        if ($hasPercent) {
+            $ratio /= 100;
+        }
+        while ($ratio > 1 && $ratio <= 10000) {
+            $ratio /= 100;
+        }
+
+        return max(0.0, min(1.0, $ratio));
+    };
+    $buildRestrictionAlertParts = function (array $row, array $rules) use ($parseRestrictionRatio): array {
+        $parts = [];
+        foreach ($rules as $col => $rule) {
+            $raw = trim((string)($row[$col] ?? ''));
+            $upper = strtoupper($raw);
+            if ($upper === 'N/A' || $upper === 'NO APLICA') {
+                continue;
+            }
+
+            $ratio = $parseRestrictionRatio($row[$col] ?? null);
+            if ($ratio !== null && ($ratio + 0.0001) >= (float)$rule['threshold']) {
+                continue;
+            }
+
+            $parts[] = $rule['label'] . ' (' . round(($ratio ?? 0.0) * 100) . '%)';
+        }
+
+        return $parts;
+    };
+    $hardEligibilitySql = $buildHardEligibilitySql();
+    $hardEligibilitySqlPc = $buildHardEligibilitySql('pc.');
+
     // 2. Identificar actividades ya programadas para evitar duplicados
     $stmtExistentes = $db->query("SELECT DISTINCT(Consecutivo_En_Programa) FROM {$dbName}_programacion_semanal WHERE Semana = ?", [$semana]);
     $existentes = $stmtExistentes->fetchAll(PDO::FETCH_COLUMN);
@@ -49,7 +131,7 @@ try {
         '1', COALESCE(NULLIF(TRIM(unidad), ''), '%'), cantidad_ppto, codigo_actividad
     FROM {$dbName}_programa_consolidado 
     WHERE Semana = ? AND Titulo = 0 
-      AND Estado_Restricciones >= 0.95
+      AND (COALESCE(Ejecutado, 0) > 0.001 OR {$hardEligibilitySql})
       AND (
         Estado='En Curso' OR Estado='Adelantada' OR Estado='Atrasada' OR Estado='Debe Iniciar esta Semana'
         OR Estado='A Tiempo' OR Estado='Ya Debió Iniciar y Restricciones Pendientes' OR Estado='Debe Iniciar esta Semana y Restricciones Pendientes'
@@ -158,7 +240,7 @@ try {
     // 6. Actualización final
     $db->query("UPDATE {$dbName}_programacion_semanal ps
                 JOIN {$dbName}_programa_consolidado pc ON ps.Consecutivo_En_Programa = pc.Consecutivo_en_Programa AND ps.Semana = pc.Semana
-                SET ps.Prog_Sin_Restricciones_100 = (CASE WHEN pc.Estado_Restricciones < 1 THEN 1 ELSE 0 END),
+                SET ps.Prog_Sin_Restricciones_100 = (CASE WHEN {$hardEligibilitySqlPc} THEN 0 ELSE 1 END),
                     ps.Ejecutado = pc.Ejecutado
                 WHERE ps.Semana = ? AND ps.Activa != 'NA'", [$semana]);
 
@@ -169,7 +251,7 @@ try {
         Id, Actividad, D_y_E, Materiales, MdeO, Equipos, Predecesora, Pdto_Cons, Modelo
     FROM {$dbName}_programa_consolidado 
     WHERE Semana = ? AND Titulo = 0 
-      AND Estado_Restricciones < 0.95
+      AND NOT {$hardEligibilitySql}
       AND (
         Estado='En Curso' OR Estado='Adelantada' OR Estado='Atrasada' OR Estado='Debe Iniciar esta Semana'
         OR Estado='A Tiempo' OR Estado='Ya Debió Iniciar y Restricciones Pendientes' OR Estado='Debe Iniciar esta Semana y Restricciones Pendientes'
@@ -180,32 +262,32 @@ try {
     $fallidas = $stmtRest->fetchAll(PDO::FETCH_ASSOC);
 
     $alertasRestricciones = [];
-    $mapLabels = [
-        'D_y_E' => 'D. y Especificaciones',
-        'Materiales' => 'Materiales',
-        'MdeO' => 'Mano de Obra',
-        'Equipos' => 'Equipos',
-        'Predecesora' => 'Predecesora',
-        'Pdto_Cons' => 'Pdto. Construcción',
-        'Modelo' => 'Modelo BIM'
+    $hardRestrictionLabels = [
+        'D_y_E' => ['label' => 'D. y Especificaciones', 'threshold' => 1.0],
+        'Materiales' => ['label' => 'Materiales', 'threshold' => 1.0],
+        'MdeO' => ['label' => 'Mano de Obra', 'threshold' => 1.0],
+        'Equipos' => ['label' => 'Equipos', 'threshold' => 1.0],
+        'Predecesora' => ['label' => 'Predecesora', 'threshold' => 0.5],
+    ];
+    $softRestrictionLabels = [
+        'Pdto_Cons' => ['label' => 'Pdto. Constructivo', 'threshold' => 1.0],
+        'Modelo' => ['label' => 'Modelo BIM', 'threshold' => 1.0],
     ];
 
     foreach ($fallidas as $row) {
-        $pendientes = [];
-        foreach ($mapLabels as $col => $label) {
-            $val = $row[$col] ?? null;
-            if ($val !== 'N/A' && $val !== 'n/a' && (float)$val < 0.99) {
-                $perc = round((float)$val * 100);
-                $pendientes[] = "$label ({$perc}%)";
-            }
+        $pendientes = $buildRestrictionAlertParts($row, $hardRestrictionLabels);
+        if (empty($pendientes)) {
+            continue;
         }
+        $blandas = $buildRestrictionAlertParts($row, $softRestrictionLabels);
         
         $actLabel = trim(preg_replace('/\s+/', ' ', preg_replace('/<[^>]*>/', ' ', (string)($row['Actividad'] ?? ''))));
 
         $alertasRestricciones[] = [
             'Id' => $row['Id'],
             'Actividad' => $actLabel,
-            'RestriccionesPendientes' => implode(', ', $pendientes)
+            'RestriccionesPendientes' => implode(', ', $pendientes),
+            'RestriccionesBlandas' => implode(', ', $blandas),
         ];
     }
 

@@ -36,6 +36,23 @@
 
   var LEGACY_HIDDEN_COLUMN_INDEXES = [0, 2, 4, 5, 8, 18, 19, 20];
 
+  var PHASE_HIDDEN_PROPS = {
+    programacion: ['Ejecutado_Real', 'PAC', 'P_Completado'],
+    calificacion: ['Ejecutado_Fin_Semana', 'cantidad_sugerida_auto', null],
+  };
+
+  function resolvePhaseHiddenIndexes(phaseKey, columnDefs) {
+    var props = PHASE_HIDDEN_PROPS[phaseKey] || [];
+    if (!Array.isArray(columnDefs)) { return []; }
+    return props.map(function (prop) {
+      for (var i = 0; i < columnDefs.length; i++) {
+        if (columnDefs[i].data === prop) { return i; }
+        if (prop === null && columnDefs[i].data === null && columnDefs[i].renderer === 'psActionsRenderer') { return i; }
+      }
+      return -1;
+    }).filter(function (idx) { return idx >= 0; });
+  }
+
   var columnMinWidths = [
     34, 64, 34, 210, 36, 34, 120,
     120, 36, 50, 64, 72, 78, 72, 80,
@@ -61,11 +78,19 @@
     programacion: [
       {
         key: 'prog-bloqueo-critico-sin-compromiso',
-        label: 'Ruta Crítica por Habilitar',
+        label: 'RC con restricciones',
         className: 'ps-alert-critical-route',
         priority: 'p1',
         description: 'Actividad de ruta crítica con condiciones pendientes para comprometer.',
         action: 'Escalar hoy y cerrar las acciones de habilitación indicadas en la fila.',
+      },
+      {
+        key: 'prog-ejecucion-con-restricciones',
+        label: 'Ejecución con restricciones',
+        className: 'ps-alert-high',
+        priority: 'p1',
+        description: 'Actividad con avance registrado, pero con condiciones habilitantes pendientes.',
+        action: 'Revisar restricciones pendientes antes de comprometer más producción.',
       },
       {
         key: 'prog-condiciones-pendientes',
@@ -77,7 +102,7 @@
       },
       {
         key: 'prog-sin-compromiso',
-        label: 'Compromiso por Completar',
+        label: 'Por Comprometer',
         className: 'ps-alert-critical',
         priority: 'p1',
         description: 'Actividad habilitada, pero sin compromiso semanal o sin asignaciones obligatorias.',
@@ -95,7 +120,7 @@
     calificacion: [
       {
         key: 'cal-incumplida-critica',
-        label: 'Incumplida (Ruta Crítica)',
+        label: 'Incumplida (RC)',
         className: 'ps-alert-critical-route',
         priority: 'p1',
         description: 'Compromiso no cumplido en ruta crítica.',
@@ -766,12 +791,10 @@
   }
 
   function renderOperationalStateCell(view) {
-    var count = view.compactItems.length;
-    var countBadge = count > 0 ? '<span class="ops-state-count">' + count + '</span>' : '';
-    var pills = count > 0 ? '<span class="ops-state-pills">' + renderStatePills(view.compactItems, 2) + '</span>' : '';
+    var pills = view.compactItems.length > 0 ? '<span class="ops-state-pills">' + renderStatePills(view.compactItems, 2) + '</span>' : '';
 
     return '<button type="button" class="ops-state-zoom" aria-label="Ver detalle operativo">'
-      + '<span class="ops-state-topline"><span class="ops-state-chip">' + escapeHtml(view.label) + '</span>' + countBadge + '</span>'
+      + '<span class="ops-state-topline"><span class="ops-state-chip">' + escapeHtml(view.label) + '</span></span>'
       + pills
       + '</button>';
   }
@@ -1165,7 +1188,13 @@
   }
 
   function isLegacyHiddenColumn(index) {
-    return LEGACY_HIDDEN_COLUMN_INDEXES.indexOf(index) > -1;
+    if (LEGACY_HIDDEN_COLUMN_INDEXES.indexOf(index) > -1) { return true; }
+    var columnDefs = hot ? hot.getSettings().columns : null;
+    if (Array.isArray(columnDefs)) {
+      var phaseHidden = resolvePhaseHiddenIndexes(weeklyPhaseKey, columnDefs);
+      if (phaseHidden.indexOf(index) > -1) { return true; }
+    }
+    return false;
   }
 
   function getVisibleColumnIndexes(columnCount) {
@@ -1664,31 +1693,26 @@
     }, Number.isFinite(delay) ? delay : 24);
   }
 
-  function getLegacyHiddenColumnsConfig() {
+  function getLegacyHiddenColumnsConfig(columnDefs) {
+    var phaseHidden = resolvePhaseHiddenIndexes(weeklyPhaseKey, columnDefs);
+    var allHidden = LEGACY_HIDDEN_COLUMN_INDEXES.slice().concat(phaseHidden).sort(function(a, b) { return a - b; });
     return {
-      columns: LEGACY_HIDDEN_COLUMN_INDEXES.slice(),
+      columns: allHidden,
       indicators: false,
       copyPasteEnabled: false,
     };
   }
 
   function applyLegacyColumnVisibility() {
-    if (!hot) {
-      return;
-    }
-
+    if (!hot) { return; }
     var settings = hot.getSettings() || {};
+    var columnDefs = settings.columns;
+    if (!Array.isArray(columnDefs)) { return; }
     var currentHidden = settings.hiddenColumns && Array.isArray(settings.hiddenColumns.columns)
-      ? settings.hiddenColumns.columns
-      : [];
-
-    if (arraysEqualNumbers(currentHidden, LEGACY_HIDDEN_COLUMN_INDEXES)) {
-      return;
-    }
-
-    hot.updateSettings({
-      hiddenColumns: getLegacyHiddenColumnsConfig(),
-    });
+      ? settings.hiddenColumns.columns : [];
+    var config = getLegacyHiddenColumnsConfig(columnDefs);
+    if (arraysEqualNumbers(currentHidden, config.columns)) { return; }
+    hot.updateSettings({ hiddenColumns: config });
   }
 
   function calculateSuggested(row) {
@@ -2138,6 +2162,32 @@
       return;
     }
 
+    var columnDefs = [
+      { data: 'Consecutivo', readOnly: true, className: 'htCenter htMiddle' },
+      { data: 'Id', readOnly: true, className: 'htCenter htMiddle' },
+      { data: 'codigo_actividad', readOnly: true, className: 'htCenter htMiddle' },
+      { data: 'Actividad', readOnly: true, renderer: 'psActividadRenderer', className: 'htLeft htMiddle force-wrap' },
+      { data: 'Ubicacion', type: 'text', className: 'htLeft htMiddle force-wrap' },
+      { data: 'Prog_Sin_Restricciones_100', readOnly: true, renderer: 'psLiberadaRenderer', className: 'htCenter htMiddle' },
+      { data: 'Sub_Contratista', type: 'dropdown', source: subcontratistas, strict: false, allowInvalid: false, renderer: 'psResponsableRenderer', className: 'htCenter htMiddle force-wrap' },
+      { data: 'Responsable_AIA', type: 'dropdown', source: profesionales, strict: false, allowInvalid: false, renderer: 'psResponsableRenderer', className: 'htCenter htMiddle force-wrap' },
+      { data: 'Empresa', readOnly: true, className: 'htCenter htMiddle force-wrap' },
+      { data: 'Unidad', readOnly: true, className: 'htCenter htMiddle' },
+      { data: 'cantidad_ppto', readOnly: true, renderer: 'psPptoRenderer', className: 'htCenter htMiddle' },
+      { data: 'Ejecutado', readOnly: true, renderer: 'psRatioRenderer', className: 'htCenter htMiddle' },
+      { data: 'Ejecutado_Fin_Semana', readOnly: true, renderer: 'psRatioRenderer', className: 'htCenter htMiddle' },
+      { data: 'cantidad_sugerida_auto', readOnly: true, renderer: 'psCompromisoRenderer', className: 'htCenter htMiddle' },
+      { data: 'Compromiso', type: 'numeric', numericFormat: { pattern: '0.0' }, renderer: 'psCompromisoRenderer', className: 'htCenter htMiddle' },
+      { data: 'Ejecutado_Real', type: 'numeric', numericFormat: { pattern: '0.0' }, renderer: 'psCompromisoRenderer', className: 'htCenter htMiddle' },
+      { data: 'PAC', readOnly: true, renderer: 'psPacRenderer', className: 'htCenter htMiddle' },
+      { data: 'P_Completado', readOnly: true, renderer: 'psPacRenderer', className: 'htCenter htMiddle' },
+      { data: 'Categoria_CNC', type: 'text', className: 'htCenter htMiddle force-wrap' },
+      { data: 'CNC', type: 'text', className: 'htLeft htMiddle force-wrap' },
+      { data: 'Observaciones_CNC', type: 'text', className: 'htLeft htMiddle force-wrap' },
+      { data: 'estado_operativo', readOnly: true, renderer: 'psStateRenderer', className: 'htLeft htMiddle force-wrap' },
+      { data: null, renderer: 'psActionsRenderer', readOnly: true },
+    ];
+
     hot = new Handsontable(container, {
       data: data,
       rowHeaders: false,
@@ -2166,32 +2216,8 @@
         'Estado Operativo',
         'Acciones',
       ],
-      columns: [
-        { data: 'Consecutivo', readOnly: true, className: 'htCenter htMiddle' },
-        { data: 'Id', readOnly: true, className: 'htCenter htMiddle' },
-        { data: 'codigo_actividad', readOnly: true, className: 'htCenter htMiddle' },
-        { data: 'Actividad', readOnly: true, renderer: 'psActividadRenderer', className: 'htLeft htMiddle force-wrap' },
-        { data: 'Ubicacion', type: 'text', className: 'htLeft htMiddle force-wrap' },
-        { data: 'Prog_Sin_Restricciones_100', readOnly: true, renderer: 'psLiberadaRenderer', className: 'htCenter htMiddle' },
-        { data: 'Sub_Contratista', type: 'dropdown', source: subcontratistas, strict: false, allowInvalid: false, renderer: 'psResponsableRenderer', className: 'htCenter htMiddle force-wrap' },
-        { data: 'Responsable_AIA', type: 'dropdown', source: profesionales, strict: false, allowInvalid: false, renderer: 'psResponsableRenderer', className: 'htCenter htMiddle force-wrap' },
-        { data: 'Empresa', readOnly: true, className: 'htCenter htMiddle force-wrap' },
-        { data: 'Unidad', readOnly: true, className: 'htCenter htMiddle' },
-        { data: 'cantidad_ppto', readOnly: true, renderer: 'psPptoRenderer', className: 'htCenter htMiddle' },
-        { data: 'Ejecutado', readOnly: true, renderer: 'psRatioRenderer', className: 'htCenter htMiddle' },
-        { data: 'Ejecutado_Fin_Semana', readOnly: true, renderer: 'psRatioRenderer', className: 'htCenter htMiddle' },
-        { data: 'cantidad_sugerida_auto', readOnly: true, renderer: 'psCompromisoRenderer', className: 'htCenter htMiddle' },
-        { data: 'Compromiso', type: 'numeric', numericFormat: { pattern: '0.0' }, renderer: 'psCompromisoRenderer', className: 'htCenter htMiddle' },
-        { data: 'Ejecutado_Real', type: 'numeric', numericFormat: { pattern: '0.0' }, renderer: 'psCompromisoRenderer', className: 'htCenter htMiddle' },
-        { data: 'PAC', readOnly: true, renderer: 'psPacRenderer', className: 'htCenter htMiddle' },
-        { data: 'P_Completado', readOnly: true, renderer: 'psPacRenderer', className: 'htCenter htMiddle' },
-        { data: 'Categoria_CNC', type: 'text', className: 'htCenter htMiddle force-wrap' },
-        { data: 'CNC', type: 'text', className: 'htLeft htMiddle force-wrap' },
-        { data: 'Observaciones_CNC', type: 'text', className: 'htLeft htMiddle force-wrap' },
-        { data: 'estado_operativo', readOnly: true, renderer: 'psStateRenderer', className: 'htLeft htMiddle force-wrap' },
-        { data: null, renderer: 'psActionsRenderer', readOnly: true },
-      ],
-      hiddenColumns: getLegacyHiddenColumnsConfig(),
+      columns: columnDefs,
+      hiddenColumns: getLegacyHiddenColumnsConfig(columnDefs),
       licenseKey: 'non-commercial-and-evaluation',
       language: 'es-MX',
       stretchH: 'none',
@@ -2514,8 +2540,8 @@
     var html = '';
     for (var i = 0; i < config.length; i++) {
       var item = config[i];
-      html += "<span class='pdc-legend-item " + item.className + "' data-filter='" + item.key + "' role='button' tabindex='0'><span class='indicator'></span>" +
-        item.label + " <span id='count-" + item.key + "' class='count-badge'>(...)</span></span>";
+      html += "<span class='pdc-legend-item " + escapeHtml(item.className) + "' data-filter='" + escapeHtml(item.key) + "' role='button' tabindex='0'><span class='indicator'></span>" +
+        escapeHtml(item.label) + " <span id='count-" + escapeHtml(item.key) + "' class='count-badge'>(...)</span></span>";
     }
     $('#psAlertsLegend').html(html);
   }
@@ -2562,9 +2588,9 @@
       for (var j = 0; j < list.length; j++) {
         var state = list[j];
         html += "<div class='ps-legend-quick-row'>" +
-          "<span class='ps-legend-modal-swatch ps-legend-quick-swatch " + state.className + "'></span>" +
-          "<div class='ps-legend-quick-state'><strong>" + state.label + '</strong><small>' + (state.description || '') + '</small></div>' +
-          "<div class='ps-legend-quick-action'><strong>Acción:</strong> " + (state.action || 'Gestionar según plan de obra.') + '</div>' +
+          "<span class='ps-legend-modal-swatch ps-legend-quick-swatch " + escapeHtml(state.className) + "'></span>" +
+          "<div class='ps-legend-quick-state'><strong>" + escapeHtml(state.label) + '</strong><small>' + escapeHtml(state.description || '') + '</small></div>' +
+          "<div class='ps-legend-quick-action'><strong>Acción:</strong> " + escapeHtml(state.action || 'Gestionar según plan de obra.') + '</div>' +
         '</div>';
       }
 
@@ -2578,11 +2604,12 @@
         "<div class='ps-legend-quick-alert-item'><span class='ps-legend-modal-swatch ps-legend-quick-swatch ps-alert-critical-route'></span><strong>Ruta crítica</strong><small>Escale de inmediato, defina responsable y fecha de cierre.</small></div>" +
         "<div class='ps-legend-quick-alert-item'><span class='ps-legend-modal-swatch ps-legend-quick-swatch ps-alert-critical'></span><strong>Fuera de ruta crítica</strong><small>Gestione en el ciclo semanal y evite escalamiento.</small></div>" +
       '</div>' +
+      "<p class='ps-legend-quick-alert-intro mt-2'><strong>Restricciones blandas:</strong> Pdto. Constructivo y Modelo BIM son seguimiento operativo. Se muestran en ámbar cuando están pendientes, pero no bloquean autoprogramación ni habilitación.</p>" +
     '</section>' +
     '</div>';
 
-    $('#modal_leyenda_colores_Label').text('Guía Operativa - Programación Semanal (' + phaseLabel + ')');
-    $('#modal_leyenda_colores_body').html(html);
+    $('#modal_leyenda_colores_ps_Label').text('Guía Operativa - Programación Semanal (' + phaseLabel + ')');
+    $('#modal_leyenda_colores_ps_body').html(html);
   }
 
   function syncLegendVisualState() {
@@ -2653,6 +2680,8 @@
 
     syncContextPhaseIndicator(weeklyPhaseKey, fechaCierre);
 
+    applyLegacyColumnVisibility();
+
     renderAlertLegend();
     updateAlertCounts(getFilteredRows());
     renderLegendModal();
@@ -2674,10 +2703,12 @@
       blockingCount: 0,
       warningLowCount: 0,
       warningRestrictedCount: 0,
+      executionRestrictionsCount: 0,
       blockingCriticalCount: 0,
       blockingItems: [],
       warningLowItems: [],
       warningRestrictedItems: [],
+      executionRestrictionsItems: [],
     };
 
     for (var i = 0; i < masterData.length; i++) {
@@ -2746,6 +2777,20 @@
           });
         }
       }
+
+      var stateKey = getStateKey(row);
+      if (stateKey === 'prog-ejecucion-con-restricciones') {
+        summary.executionRestrictionsCount += 1;
+        if (summary.executionRestrictionsItems.length < 8) {
+          var execReadinessActions = getReadinessActions(row);
+          summary.executionRestrictionsItems.push({
+            actividad: escapeHtml(getPlainActivityLabel(row.Actividad)),
+            detalle: execReadinessActions.length
+              ? 'Restricciones pendientes: ' + escapeHtml(execReadinessActions.join('; '))
+              : 'Actividad con avance y condiciones pendientes.',
+          });
+        }
+      }
     }
 
     return summary;
@@ -2775,11 +2820,13 @@
       "<div class='ps-close-summary-kpi is-ready'><strong>" + summary.readyCount + "</strong><small>Listas para confirmar</small></div>" +
       "<div class='ps-close-summary-kpi is-warning'><strong>" + summary.warningLowCount + "</strong><small>Compromiso menor a sugerido</small></div>" +
       "<div class='ps-close-summary-kpi is-warning'><strong>" + summary.warningRestrictedCount + "</strong><small>Compromiso con condiciones pendientes</small></div>" +
+      "<div class='ps-close-summary-kpi is-warning'><strong>" + summary.executionRestrictionsCount + "</strong><small>Ejecución con restricciones</small></div>" +
       "</div>";
 
     html += renderSummaryList('Detalle por completar', summary.blockingItems, 'is-blocking');
     html += renderSummaryList('Detalle compromiso menor a sugerido', summary.warningLowItems, 'is-warning');
     html += renderSummaryList('Detalle con condiciones pendientes', summary.warningRestrictedItems, 'is-warning');
+    html += renderSummaryList('Detalle ejecución con restricciones', summary.executionRestrictionsItems, 'is-warning');
     html += "<p class='ps-close-summary-note'>Al confirmar, no se podrán modificar compromisos ni eliminar actividades.</p></div>";
 
     $('#cerrar_compromisos_semana').html(html);
@@ -3181,19 +3228,28 @@
 
     var rows = '';
     for (var i = 0; i < alertas.length; i++) {
+      var hardText = alertas[i].RestriccionesPendientes || '';
+      var softText = alertas[i].RestriccionesBlandas || '';
+      var conditions = '<div class="text-danger font-weight-bold">' + escapeHtml(hardText) + '</div>';
+      if (softText) {
+        conditions += '<div class="mt-1 text-warning"><span class="badge badge-warning mr-1">Blandas</span>'
+          + escapeHtml(softText)
+          + '<small class="d-block text-muted">Pdto. Constructivo y Modelo BIM no bloquean autoprogramación.</small></div>';
+      }
       rows += '<tr><td>' + escapeHtml(alertas[i].Id || '') + '</td>';
       rows += '<td>' + escapeHtml(alertas[i].Actividad || '') + '</td>';
-      rows += '<td class="text-danger">' + escapeHtml(alertas[i].RestriccionesPendientes || '') + '</td></tr>';
+      rows += '<td>' + conditions + '</td></tr>';
     }
 
     var html = '<div class="modal fade" id="modalRestriccionesFaltantes" tabindex="-1" role="dialog">'
       + '<div class="modal-dialog modal-lg" role="document"><div class="modal-content">'
-      + '<div class="modal-header bg-danger text-white"><h5 class="modal-title"><i class="fas fa-clipboard-list"></i> Actividades pendientes para autoprogramar</h5>'
+      + '<div class="modal-header bg-danger text-white"><h5 class="modal-title"><i class="fas fa-clipboard-list"></i> Actividades pendientes por habilitantes</h5>'
       + '<button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button></div>'
-      + '<div class="modal-body"><p>Las siguientes <strong>' + alertas.length + '</strong> actividades se omitieron porque tienen condiciones pendientes para comprometer:</p>'
-      + '<div class="table-responsive"><table class="table table-sm table-bordered"><thead><tr><th>Id</th><th>Actividad</th><th>Condiciones pendientes</th></tr></thead>'
+      + '<div class="modal-body"><p>Las siguientes <strong>' + alertas.length + '</strong> actividades se omitieron porque tienen condiciones <strong>habilitantes</strong> pendientes para comprometer:</p>'
+      + '<p class="text-muted"><small><span class="badge badge-warning">Blandas</span> Pdto. Constructivo y Modelo BIM son seguimiento operativo; aparecen en ámbar y no bloquean la autoprogramación.</small></p>'
+      + '<div class="table-responsive"><table class="table table-sm table-bordered"><thead><tr><th>Id</th><th>Actividad</th><th>Condiciones</th></tr></thead>'
       + '<tbody>' + rows + '</tbody></table></div>'
-      + '<p class="text-muted mt-2"><small>Cierre las acciones de habilitación desde la Programación Intermedia para que puedan ser autoprogramadas o agregadas manualmente.</small></p></div>'
+      + '<p class="text-muted mt-2"><small>Cierre las acciones de habilitación duras desde la Programación Intermedia para que puedan ser autoprogramadas o agregadas manualmente.</small></p></div>'
       + '<div class="modal-footer"><button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button></div>'
       + '</div></div></div>';
 
@@ -3441,8 +3497,8 @@
       });
 
     $(document)
-      .off('show.bs.modal.psLegend', '#modal_leyenda_colores')
-      .on('show.bs.modal.psLegend', '#modal_leyenda_colores', renderLegendModal);
+      .off('show.bs.modal.psLegend', '#modal_leyenda_colores_ps')
+      .on('show.bs.modal.psLegend', '#modal_leyenda_colores_ps', renderLegendModal);
   }
 
   function updateTableHeight() {

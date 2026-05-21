@@ -46,15 +46,21 @@ try {
 
             $estadoRestricciones = 0;
             if ($titulo === 0) {
-                $campos = ['D_y_E', 'Materiales', 'MdeO', 'Equipos', 'Predecesora', 'Pdto_Cons', 'Modelo'];
+                $campos = [
+                    'D_y_E' => 1.0,
+                    'Materiales' => 1.0,
+                    'MdeO' => 1.0,
+                    'Equipos' => 1.0,
+                    'Predecesora' => 0.5,
+                ];
                 $conteo = 0;
                 $suma = 0;
 
-                foreach ($campos as $col) {
+                foreach ($campos as $col => $threshold) {
                     $val = $data[$col] ?? null;
                     if ($val !== 'N/A' && $val !== null && $val !== '') {
                         $conteo++;
-                        $suma += round((float)$val, 5);
+                        $suma += min(round((float)$val, 5) / $threshold, 1.0);
                     }
                 }
 

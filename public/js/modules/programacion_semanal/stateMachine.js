@@ -168,6 +168,12 @@
         return 'ps-no-activa';
       }
 
+      var tieneEjecucion = ejecutado !== null && ejecutado > 0.001;
+
+      if (tieneEjecucion && sinLiberacion) {
+        return 'prog-ejecucion-con-restricciones';
+      }
+
       if (sinLiberacion && isCriticalRoute) {
         return 'prog-bloqueo-critico-sin-compromiso';
       }
@@ -207,6 +213,13 @@
     return (ejecutadoRealNum + 0.0001) < compromisoNum;
   }
 
+  function hasExecutionWithPendingReadiness(rowData) {
+    if (!rowData) return false;
+    var ejecutado = toNumberOrNull(rowData.Ejecutado);
+    if (ejecutado === null || ejecutado <= 0.001) return false;
+    return hasPendingCommitConditions(rowData);
+  }
+
   global.PSStateMachine = {
     getPhaseKey: getPhaseKey,
     toNumberOrNull: toNumberOrNull,
@@ -215,5 +228,6 @@
     classifyState: classifyState,
     requiresCnc: requiresCnc,
     hasPendingCommitConditions: hasPendingCommitConditions,
+    hasExecutionWithPendingReadiness: hasExecutionWithPendingReadiness,
   };
 })(window);

@@ -207,7 +207,7 @@
         .ps-dropdown-nav {
             position: relative;
             display: inline-block;
-            z-index: 2000;
+            z-index: 1000;
         }
 
         /* Puente invisible para evitar que el dropdown se cierre en el espacio en blanco */
@@ -228,7 +228,7 @@
             background-color: #ffffff;
             min-width: 240px;
             box-shadow: 0px 10px 25px rgba(0,0,0,0.2);
-            z-index: 5000 !important;
+            z-index: 1001;
             border-radius: 4px;
             border: 1px solid #cbd5e1;
             overflow: visible !important;
@@ -334,26 +334,78 @@
         }
 
         .ps-page .ops-state-topline {
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: start;
+            gap: 4px;
+            width: 100%;
             min-width: 0;
         }
 
         .ps-page .ops-state-chip {
-            display: inline-flex;
+            display: -webkit-box;
+            width: 100%;
+            min-width: 0;
             max-width: 100%;
-            align-items: center;
-            padding: 2px 7px;
-            border-radius: 999px;
-            background: rgba(255, 255, 255, 0.62);
+            padding: 4px 8px;
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.9);
             color: inherit;
-            font-weight: 800;
-            font-size: 0.72rem;
-            line-height: 1.1;
-            white-space: nowrap;
+            font-weight: 900;
+            font-size: 0.78rem;
+            line-height: 1.18;
             overflow: hidden;
-            text-overflow: ellipsis;
+            overflow-wrap: anywhere;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.48);
+        }
+
+        .ps-page .handsontable td.ops-state-td.ps-row-state.ps-alert-critical-route .ops-state-chip {
+            background: #f3e8ff;
+            background: color-mix(in srgb, #f3e8ff 78%, #fff 22%);
+            border-color: #9333ea;
+            color: #581c87;
+            font-weight: 900;
+            box-shadow: inset 0 0 0 1px rgba(147, 51, 234, 0.24), 0 1px 3px rgba(88, 28, 135, 0.14);
+        }
+
+        .ps-page .handsontable td.ops-state-td.ps-row-state.ps-alert-critical .ops-state-chip {
+            background: var(--aia-alert-background, #fdecec);
+            background: color-mix(in srgb, var(--aia-alert-background, #fdecec) 76%, #fff 24%);
+            border-color: var(--aia-alert-high, #e53935);
+            color: var(--aia-alert-critical, #9a1f1f);
+            font-weight: 900;
+            box-shadow: inset 0 0 0 1px rgba(229, 57, 53, 0.2), 0 1px 3px rgba(154, 31, 31, 0.12);
+        }
+
+        .ps-page .handsontable td.ops-state-td.ps-row-state.ps-alert-high .ops-state-chip,
+        .ps-page .handsontable td.ops-state-td.ps-row-state.ps-alert-medium .ops-state-chip,
+        .ps-page .handsontable td.ops-state-td.ps-row-state.ps-alert-control .ops-state-chip {
+            font-weight: 800;
+            box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.06);
+        }
+
+        .ps-page .handsontable td.ops-state-td.ps-row-state.ps-alert-high .ops-state-chip {
+            background: var(--aia-orange-very-light, #fbead9);
+            background: color-mix(in srgb, var(--aia-orange-very-light, #fbead9) 68%, #fff 32%);
+            border-color: var(--aia-orange-primary, #b55211);
+            color: var(--aia-orange-dark, #8b4011);
+        }
+
+        .ps-page .handsontable td.ops-state-td.ps-row-state.ps-alert-medium .ops-state-chip {
+            background: var(--aia-warning-background, #fff8e1);
+            background: color-mix(in srgb, var(--aia-warning-background, #fff8e1) 68%, #fff 32%);
+            border-color: var(--aia-warning-high, #ffca28);
+            color: var(--aia-warning-critical, #a0731a);
+        }
+
+        .ps-page .handsontable td.ops-state-td.ps-row-state.ps-alert-control .ops-state-chip {
+            background: var(--aia-green-very-light, #d5e5db);
+            background: color-mix(in srgb, var(--aia-green-very-light, #d5e5db) 66%, #fff 34%);
+            border-color: var(--aia-green-primary, #1a5633);
+            color: var(--aia-green-dark, #1a3c2a);
         }
 
         .ps-page .ops-state-count,
@@ -368,7 +420,7 @@
             background: oklch(97% 0.02 80);
             color: oklch(38% 0.12 55);
             font-weight: 800;
-            font-size: 0.68rem;
+            font-size: 0.75rem;
             line-height: 1;
             box-shadow: inset 0 0 0 1px rgba(120, 53, 15, 0.12);
         }
@@ -376,10 +428,11 @@
         .ps-page .ops-state-pills {
             display: flex;
             align-items: center;
-            gap: 4px;
+            flex-wrap: wrap;
+            gap: 3px;
             min-width: 0;
             overflow: hidden;
-            white-space: nowrap;
+            max-height: 36px;
         }
 
         .ps-page .ops-state-pill,
@@ -387,14 +440,16 @@
             display: inline-flex;
             align-items: center;
             gap: 3px;
-            max-width: 86px;
-            padding: 2px 6px;
-            border-radius: 999px;
-            background: rgba(255, 255, 255, 0.42);
+            max-width: calc(100% - 24px);
+            padding: 3px 6px;
+            border: 1px solid rgba(120, 53, 15, 0.1);
+            border-radius: 7px;
+            background: rgba(255, 255, 255, 0.86);
             color: inherit;
-            font-weight: 700;
-            font-size: 0.66rem;
+            font-weight: 800;
+            font-size: 0.7rem;
             line-height: 1.1;
+            white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
@@ -793,7 +848,7 @@
         <div class="ps-actions-row">
             <div class="ps-toolbar-left">
                 <div class="ps-hot-toolbar-actions">
-                    <button type="button" class="leyenda_colores btn-pdc-modern" data-toggle="modal" data-target="#modal_leyenda_colores" aria-label="Ver leyenda de colores"><i class="fas fa-question-circle"></i> <span>Leyenda</span></button>
+                    <button type="button" class="leyenda_colores btn-pdc-modern" data-toggle="modal" data-target="#modal_leyenda_colores_ps" aria-label="Ver leyenda de colores"><i class="fas fa-question-circle"></i> <span>Leyenda</span></button>
                     <button id="btn_autoprogramar" class="btn-pdc-modern" aria-label="Autoprogramar Actividades"><i class="fas fa-upload"></i> <span>Autoprogramar Actividades</span></button>
                     <button id="btn_agregar_actividad" type="button" class="btn-pdc-modern" aria-label="Agregar Actividad Manual"><i class="fas fa-plus"></i> <span>Agregar Actividad</span></button>
                     <button id="btn_cerrar_compromisos_semana" type="button" class="btn-pdc-modern" data-toggle="modal" data-target="#modal_cerrar_compromisos" aria-label="Confirmar Compromisos de la Semana"><i class="fas fa-lock"></i> <span>Confirmar Compromisos</span></button>
@@ -841,14 +896,14 @@
 
     <div class="row ventanasModalesSemana" id="ventanasModalesSemana"></div>
 
-    <div class="modal fade" id="modal_leyenda_colores" role="dialog" data-backdrop="static">
+    <div class="modal fade" id="modal_leyenda_colores_ps" role="dialog" data-backdrop="static">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title" id="modal_leyenda_colores_Label">Guia Operativa - Programación Semanal</h4>
+                    <h4 class="modal-title" id="modal_leyenda_colores_ps_Label">Guia Operativa - Programación Semanal</h4>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">&times;</button>
                 </div>
-                <div class="modal-body" id="modal_leyenda_colores_body"></div>
+                <div class="modal-body" id="modal_leyenda_colores_ps_body"></div>
             </div>
         </div>
     </div>
@@ -1167,7 +1222,7 @@
             ?>
         };
     </script>
-    <script src="/js/modules/programacion_semanal/hot.js?v=hot43"></script>
+    <script src="/js/modules/programacion_semanal/hot.js?v=hot44"></script>
 
     <script>
         function cargaParametros() {

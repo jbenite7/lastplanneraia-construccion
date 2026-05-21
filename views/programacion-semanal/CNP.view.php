@@ -31,7 +31,7 @@
         .ps-dropdown-nav {
             position: relative;
             display: inline-block;
-            z-index: 2000;
+            z-index: 1000;
         }
 
         /* Puente invisible para evitar que el dropdown se cierre en el espacio en blanco */
@@ -52,7 +52,7 @@
             background-color: #ffffff;
             min-width: 240px;
             box-shadow: 0px 10px 25px rgba(0,0,0,0.2);
-            z-index: 5000 !important;
+            z-index: 1001;
             border-radius: 4px;
             border: 1px solid #cbd5e1;
             overflow: visible !important;

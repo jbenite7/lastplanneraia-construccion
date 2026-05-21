@@ -221,7 +221,7 @@ class SemanalApiController
                 '1', COALESCE(NULLIF(TRIM(unidad), ''), '%'), cantidad_ppto, codigo_actividad
             FROM {$dbPrefix}_programa_consolidado 
             WHERE Semana = ? AND Titulo = 0 
-              AND {$restrictionEligibilitySql}
+              AND (COALESCE(Ejecutado, 0) > 0.001 OR {$restrictionEligibilitySql})
               AND (
                 Estado='En Curso' OR Estado='Adelantada' OR Estado='Atrasada' OR Estado='Debe Iniciar esta Semana'
                 OR Estado='A Tiempo' OR Estado='Ya Debió Iniciar y Restricciones Pendientes' OR Estado='Debe Iniciar esta Semana y Restricciones Pendientes'
@@ -293,7 +293,51 @@ class SemanalApiController
 
             $this->syncRestrictionFlags($dbPrefix, $semana);
 
-            echo json_encode(["respuesta" => "OK", "alertasRestricciones" => []], JSON_UNESCAPED_UNICODE);
+            // 5. Identificar actividades que no se autoprogramaron por restricciones pendientes y ejecución cero
+            $sqlRestricciones = "SELECT
+                Id, Actividad, D_y_E, Materiales, MdeO, Equipos, Predecesora, Pdto_Cons, Modelo
+            FROM {$dbPrefix}_programa_consolidado
+            WHERE Semana = ? AND Titulo = 0
+              AND COALESCE(Ejecutado, 0) <= 0.001
+              AND NOT {$restrictionEligibilitySql}
+              AND (
+                Estado='En Curso' OR Estado='Adelantada' OR Estado='Atrasada' OR Estado='Debe Iniciar esta Semana'
+                OR Estado='A Tiempo' OR Estado='Ya Debió Iniciar y Restricciones Pendientes' OR Estado='Debe Iniciar esta Semana y Restricciones Pendientes'
+              )
+              $whereExistentes";
+
+            $stmtRest = $this->db->query($sqlRestricciones, $paramsInsert);
+            $fallidas = $stmtRest->fetchAll(PDO::FETCH_ASSOC);
+
+            $alertasRestricciones = [];
+            $hardRestrictionLabels = [
+                'D_y_E' => ['label' => 'D. y Especificaciones', 'threshold' => 1.0],
+                'Materiales' => ['label' => 'Materiales', 'threshold' => 1.0],
+                'MdeO' => ['label' => 'Mano de Obra', 'threshold' => 1.0],
+                'Equipos' => ['label' => 'Equipos', 'threshold' => 1.0],
+                'Predecesora' => ['label' => 'Predecesora', 'threshold' => 0.5],
+            ];
+            $softRestrictionLabels = [
+                'Pdto_Cons' => ['label' => 'Pdto. Constructivo', 'threshold' => 1.0],
+                'Modelo' => ['label' => 'Modelo BIM', 'threshold' => 1.0],
+            ];
+
+            foreach ($fallidas as $row) {
+                $pendientes = $this->buildRestrictionAlertParts($row, $hardRestrictionLabels);
+                if (empty($pendientes)) {
+                    continue;
+                }
+                $blandas = $this->buildRestrictionAlertParts($row, $softRestrictionLabels);
+                $actLabel = trim(preg_replace('/\s+/', ' ', preg_replace('/<[^>]*>/', ' ', (string)($row['Actividad'] ?? ''))));
+                $alertasRestricciones[] = [
+                    'Id' => $row['Id'],
+                    'Actividad' => $actLabel,
+                    'RestriccionesPendientes' => implode(', ', $pendientes),
+                    'RestriccionesBlandas' => implode(', ', $blandas),
+                ];
+            }
+
+            echo json_encode(["respuesta" => "OK", "alertasRestricciones" => $alertasRestricciones], JSON_UNESCAPED_UNICODE);
         } catch (Throwable $t) {
             $this->jsonError("Error Autoprogramar: " . $t->getMessage());
         }
@@ -342,6 +386,73 @@ class SemanalApiController
         $numeric = "CAST(REPLACE(REPLACE({$compact}, '%', ''), ',', '.') AS DECIMAL(10,5))";
 
         return "(CASE WHEN LOCATE('%', {$compact}) > 0 THEN {$numeric} / 100 WHEN {$numeric} > 1 AND {$numeric} <= 10000 THEN {$numeric} / 100 ELSE {$numeric} END)";
+    }
+
+    private function buildRestrictionAlertParts(array $row, array $rules): array
+    {
+        $parts = [];
+        foreach ($rules as $column => $rule) {
+            $value = $row[$column] ?? null;
+            if ($this->restrictionValueMeetsThreshold($value, (float)$rule['threshold'])) {
+                continue;
+            }
+
+            $ratio = $this->parseRestrictionRatioValue($value) ?? 0.0;
+            $parts[] = $rule['label'] . ' (' . round($ratio * 100) . '%)';
+        }
+
+        return $parts;
+    }
+
+    private function restrictionValueMeetsThreshold($value, float $threshold): bool
+    {
+        $text = trim((string)($value ?? ''));
+        $upper = strtoupper($text);
+        if ($upper === 'N/A' || $upper === 'NO APLICA') {
+            return true;
+        }
+
+        $ratio = $this->parseRestrictionRatioValue($value);
+        return $ratio !== null && ($ratio + 0.0001) >= $threshold;
+    }
+
+    private function parseRestrictionRatioValue($value): ?float
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $raw = trim((string)$value);
+        if ($raw === '' || strtolower($raw) === 'null') {
+            return null;
+        }
+
+        $hasPercent = strpos($raw, '%') !== false;
+        $normalized = str_replace('%', '', preg_replace('/\s+/', '', $raw));
+        $commaPos = strrpos($normalized, ',');
+        $dotPos = strrpos($normalized, '.');
+
+        if ($commaPos !== false && $dotPos !== false) {
+            $normalized = $commaPos > $dotPos
+                ? str_replace(',', '.', str_replace('.', '', $normalized))
+                : str_replace(',', '', $normalized);
+        } elseif ($commaPos !== false) {
+            $normalized = str_replace(',', '.', $normalized);
+        }
+
+        if (!is_numeric($normalized)) {
+            return null;
+        }
+
+        $ratio = (float)$normalized;
+        if ($hasPercent) {
+            $ratio /= 100;
+        }
+        while ($ratio > 1 && $ratio <= 10000) {
+            $ratio /= 100;
+        }
+
+        return max(0.0, min(1.0, $ratio));
     }
 
     private function jsonResponse(string $res): void
@@ -559,7 +670,15 @@ class SemanalApiController
 
     private function listarExcepciones(string $dbPrefix, int $semana): void
     {
-        $query = "SELECT Id, Actividad, Estado FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Titulo = 0 AND Semanas_Inicio <= 12 AND Semanas_Inicio >= 1 AND Ejecutado = 0";
+        $restrictionEligibilitySql = $this->getAutoprogramRestrictionEligibilitySql();
+        $query = "SELECT Id, Actividad, Estado FROM {$dbPrefix}_programa_consolidado
+            WHERE Semana = ? AND Titulo = 0
+              AND COALESCE(Ejecutado, 0) <= 0.001
+              AND NOT {$restrictionEligibilitySql}
+              AND (
+                Estado='En Curso' OR Estado='Adelantada' OR Estado='Atrasada' OR Estado='Debe Iniciar esta Semana'
+                OR Estado='A Tiempo' OR Estado='Ya Debió Iniciar y Restricciones Pendientes' OR Estado='Debe Iniciar esta Semana y Restricciones Pendientes'
+              )";
         $data = $this->db->query($query, [$semana])->fetchAll(PDO::FETCH_ASSOC);
         echo json_encode(["respuesta" => "BIEN", "data" => $data], JSON_UNESCAPED_UNICODE);
     }
