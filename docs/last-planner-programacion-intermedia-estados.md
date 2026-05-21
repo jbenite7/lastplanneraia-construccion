@@ -29,7 +29,7 @@ Umbral de liberacion:
 
 3. `blocked-due`
    - Regla: `SI = 0`, `EJ = 0`, `ER < 0.999`.
-   - Gestion: no cerrar jornada sin plan de arranque.
+   - Gestion: no cerrar jornada sin plan de inicio.
 
 4. `execution-blocked`
    - Regla: `0 < EJ < 0.999`, `ER < 0.999`.

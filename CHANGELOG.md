@@ -31,6 +31,10 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ### Añadido
 
+## [1.2.0] - 2026-05-21
+
+### Añadido
+
 - **Asignaciones opcionales en Restricción Compartida PI:** El lote de Programación Intermedia permite aplicar Sub-Contratista y Responsable AIA comunes mediante checks explícitos, manteniendo por defecto la actualización exclusiva de restricciones para evitar sobrescrituras accidentales.
 - **Panel "Solo Alertas" en PDC:** Botón rápido en la barra de herramientas que exprime el Plan de Compras filtrando en la grilla únicamente los paquetes críticos, retrasados o sin configurar.
 - **Iconografía de Riesgo PDC:** Insignias de semáforo (check-circle, cog, exclamation-triangle) inyectadas directamente en los botones de acción para rápida identificación de cuellos de botella en adquisiciones.
@@ -54,6 +58,7 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ### Corregido
 
+- **Estabilización de Popovers Ricos (PI)**: Recuperación del renderizado de tooltip enriquecido en las cabeceras de restricciones de Programación Intermedia e inyección unificada del template `.pi-help-tooltip`. Se solucionó el bug de parpadeo (titileo) al interactuar o pasar el cursor entre el trigger y el cuerpo del popover.
 - **Fix Falsos Duplicados en Subcontratistas:** La validación de unicidad ahora compara contra el snapshot persistido cargado desde la API, en lugar de las filas transitorias de Handsontable, evitando falsos duplicados al crear registros por nombre, correo y NIT.
 - **Programación Intermedia:** Persistencia de filtros nativos de Handsontable tras guardar, validación correcta de responsables con filtros activos y desbloqueo de edición en filas filtradas.
 - **Filtros Handsontable con HTML:** Los filtros nativos de Programa General, Programación Intermedia, Programación Semanal y Actualizar Cronograma muestran texto plano en columnas con render jerárquico HTML.

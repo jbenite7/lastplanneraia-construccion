@@ -381,7 +381,7 @@ Se considera completada la migracion cuando:
 
 ---
 
-## 12) Checklist ejecutivo de arranque (para cuando inicies)
+## 12) Checklist ejecutivo de inicio (para cuando inicies)
 
 - [ ] Confirmar equipo y responsables por fase.
 - [ ] Aprobar DDL final y criterios de exito.
