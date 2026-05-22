@@ -32,10 +32,20 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 ### Añadido
 
 - **LPS Contextual Drawers**: Paneles laterales deslizables (Bottom-Sheet responsive) integrados en Programa General, Programación Intermedia y Programación Semanal para guías y ayudas operativas contextuales.
+- **Matriz de severidad del Cajón Contextual LPS:** Nueva documentación operativa en `docs/matriz-severidad-cajon-contextual-lps.md` para normalizar severidades PG/PI/PS, restricciones duras/blandas, colores y comportamiento de sidebar.
 - **Motor de Escalamiento Semanal Inteligente**: Sistema de notificaciones express mitigador de spam con "Modo Simulación" (al portapapeles y Liquid Glass), Weekly Digest consolidador por subcontratista, y filtro automático para restringir las notificaciones individuales a tareas de Ruta Crítica (P1).
 - **Estética Liquid Glassmorphism**: Rediseño CSS modular con efectos traslúcidos Liquid Glass, animaciones fluidas spring y optimización mobile-first para resoluciones de obra.
 - **Bypass de Caché Agresivo**: Implementación de cache-busters de scripts (`?v=hot35` y `?v=hot45`) en PI y PS para invalidar el almacenamiento del cliente y forzar la inicialización reactiva del drawer.
 - **Unificación Cromática y Contraste Premium (Fase 3.1):** Reemplazo de colores en duro ad-hoc del disparador lateral fijo (Desktop) por las variables de marca oficiales `--aia-green-dark` (reposo) y `--aia-green` (hover). Corrección del contraste de headings del drawer y aprobación de la suite de pruebas del servidor en Docker.
+
+### Cambiado
+
+- **Cajón Contextual LPS:** Centralización de severidad `normal`, `attention`, `critical`, `info` y `neutral` en `lps_drawer.js`, con `isCrisis` reservado solo para estados críticos.
+- **Programación Semanal:** `Por Comprometer`, `Condiciones Pendientes` e incumplimientos no RC quedan como atención operativa sin escalamiento directivo.
+
+### Corregido
+
+- **Disparador lateral LPS:** Corrección visual del badge de atención/crisis para evitar recuadros o iconos desalineados en desktop y móvil.
 
 ## [1.2.0] - 2026-05-21
 
