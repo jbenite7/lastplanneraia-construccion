@@ -5,7 +5,7 @@
     <script src="https://code.jquery.com/ui/1.10.1/jquery-ui.js"></script>
     <script type="text/javascript" src="/js/linksComunesHead2.js?v=20260325a" charset="utf-8"></script>
     <link rel="stylesheet" href="/public/vendor/handsontable/handsontable.full.min.css" />
-    <link rel="stylesheet" href="/css/handsontable-module.css?v=hotfix-20260217c" />
+    <link rel="stylesheet" href="/css/handsontable-module.css?v=20260522" />
     <style>
         .hot-full-bleed {
             --hot-gutter: 8px;
@@ -1174,6 +1174,8 @@
         </div>
     </div>
 
+    <?php include __DIR__ . '/../partials/drawer_unificado.php'; ?>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js" charset="utf-8"></script>
@@ -1222,7 +1224,7 @@
             ?>
         };
     </script>
-    <script src="/js/modules/lps_drawer.js?v=20260521"></script>
+    <script src="/js/modules/lps_drawer.js?v=20260522"></script>
     <script src="/js/modules/programacion_semanal/hot.js?v=hot45"></script>
 
     <script>

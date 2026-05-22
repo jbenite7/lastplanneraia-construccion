@@ -139,6 +139,15 @@ $router->post('/api/cnp/list', [\App\Controllers\Api\CnpApiController::class, 'l
 $router->post('/api/cnp/save', [\App\Controllers\Api\CnpApiController::class, 'save']);
 $router->post('/api/cnp/reprogramar', [\App\Controllers\Api\CnpApiController::class, 'reprogramar']);
 
+// Api/LPS Contextual Drawers & Escalamientos
+$router->get('/api/lps/comments', [\App\Controllers\Api\LpsApiController::class, 'comments']);
+$router->post('/api/lps/comments', [\App\Controllers\Api\LpsApiController::class, 'addComment']);
+$router->post('/api/lps/comments/add', [\App\Controllers\Api\LpsApiController::class, 'addComment']);
+$router->post('/api/lps/crisis', [\App\Controllers\Api\LpsApiController::class, 'registerCrisis']);
+$router->post('/api/lps/crisis/register', [\App\Controllers\Api\LpsApiController::class, 'registerCrisis']);
+$router->post('/api/lps/crisis/close', [\App\Controllers\Api\LpsApiController::class, 'closeCrisis']);
+$router->get('/dashboard/escalamientos', [\App\Controllers\Core\DashboardController::class, 'escalamientos']);
+
 
 // Core
 $router->get('/api/notifications/unread', [\App\Controllers\Core\NotificationController::class, 'getUnread']);

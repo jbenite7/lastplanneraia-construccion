@@ -2010,7 +2010,9 @@
 
     Handsontable.renderers.registerRenderer('piActividadRenderer', function (instance, td, row, col, prop, value) {
       Handsontable.renderers.TextRenderer.apply(this, arguments);
-      td.innerHTML = sanitizeActividadHtml(value);
+      var rowData = instance.getSourceDataAtRow(row) || {};
+      var prefix = parseInt(rowData.alerta_crisis, 10) === 1 ? '🔥 ' : '';
+      td.innerHTML = prefix + sanitizeActividadHtml(value);
       td.classList.add('htLeft');
     });
 
@@ -2768,6 +2770,10 @@
 
         if (normalizeSharedSelectionValue(rowData.__shared_selected) && state !== 'header') {
           interactionClass += ' pi-row-shared-picked';
+        }
+
+        if (parseInt(rowData.alerta_crisis, 10) === 1 && state !== 'header') {
+          interactionClass += ' pi-row-crisis';
         }
 
         props.className = (baseClass + ' ' + 'pi-row-state ' + rowStateClass + ' ' + interactionClass).trim();

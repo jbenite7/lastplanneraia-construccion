@@ -8,7 +8,7 @@
 
 	<!-- Estilos Core Hot -->
 	<link rel="stylesheet" href="/public/vendor/handsontable/handsontable.full.min.css" />
-	<link rel="stylesheet" href="/css/handsontable-module.css" />
+	<link rel="stylesheet" href="/css/handsontable-module.css?v=20260522" />
 
 	<!-- Google Fonts: Montserrat & Inter -->
 	<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">

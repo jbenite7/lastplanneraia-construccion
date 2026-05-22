@@ -1,9 +1,8 @@
 /**
  * public/js/modules/lps_drawer.js
  * ================================
- * Motor reactivo y contextual para los LPS Contextual Drawers del sistema de planeación AIA.
- * Maneja la inyección del DOM, escucha los eventos de Handsontable, gestiona el Modo Simulación,
- * e implementa la consolidación semanal inteligente (LPS Weekly Digest) para mitigar el spam.
+ * Cajón Contextual LPS Premium para control de crisis, comentarios en hilos (Slack-style),
+ * cálculo del Termómetro Habilitador de Restricciones (ITR) y escalamiento jerárquico SOS.
  */
 
 window.LPSContextualDrawer = (function() {
@@ -11,127 +10,24 @@ window.LPSContextualDrawer = (function() {
   let activeModuleKey = null;
   let activeStateAdapter = null;
   let activeRowIndex = null;
+  let activeConsecutivo = null;
+  let activeParentId = null;
+  let activeAlertaId = null;
 
-  // Inicializar estado del modo simulación en localStorage si no existe
+  // Cargar/Inicializar modo simulación
   if (localStorage.getItem('lps_simulated_mode') === null) {
     localStorage.setItem('lps_simulated_mode', 'true');
   }
 
-  // Estructura HTML base inyectada dinámicamente
-  const drawerHtml = `
-    <div class="lps-drawer-overlay" id="lps_drawer_overlay"></div>
-    <div class="lps-drawer" id="lps_drawer">
-      <div class="lps-drawer-header">
-        <h3 id="lps_drawer_title">Ayuda Operativa LPS</h3>
-        <button class="lps-drawer-close" id="lps_drawer_close" aria-label="Cerrar">&times;</button>
-      </div>
-      <div class="lps-drawer-body">
-        <!-- Indicador de Contexto / Selección de Fila -->
-        <div class="lps-card-glass" id="lps_diagnostic_card">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-            <span class="lps-badge" id="lps_badge_priority">Prioridad</span>
-            <span style="font-size: 0.8rem; color: #666; font-weight: 500;" id="lps_consecutivo">Selecciona una fila</span>
-          </div>
-          <h4 style="margin: 0 0 6px 0; font-size: 1.05rem; color: #1a3c2a; font-weight: 600;" id="lps_actividad_title">Ninguna actividad seleccionada</h4>
-          <p style="margin: 0; font-size: 0.88rem; color: #495057; line-height: 1.4;" id="lps_diagnostico_desc">
-            Haz clic en cualquier celda de la planilla para recibir el diagnóstico clínico de la tarea, restricciones abiertas y el plan estratégico recomendado.
-          </p>
-        </div>
-
-        <!-- Acciones de Escalado y Comunicación -->
-        <div class="lps-card-glass" id="lps_action_card" style="display: none;">
-          <h4 style="margin: 0 0 10px 0; font-size: 0.95rem; color: #1a3c2a; font-weight: 600; text-transform: uppercase;">Escalamiento Express</h4>
-          
-          <button class="lps-btn lps-btn-success" id="lps_btn_whatsapp">
-            <span style="font-size: 1.1rem; line-height: 1;">💬</span> Escalar por WhatsApp
-          </button>
-          
-          <button class="lps-btn lps-btn-outline" id="lps_btn_email">
-            <span style="font-size: 1.1rem; line-height: 1;">✉️</span> Notificar por Correo
-          </button>
-
-          <!-- Previsualización de Mensaje Copiado -->
-          <div id="lps_sim_clipboard_card" style="display: none; border-top: 1px dashed rgba(26, 60, 42, 0.15); padding-top: 10px; margin-top: 10px;">
-            <span style="font-size: 0.75rem; font-weight: 600; color: #8b4011; text-transform: uppercase;">Previsualización de Alerta:</span>
-            <div class="lps-digest-preview" id="lps_alert_text_preview"></div>
-          </div>
-        </div>
-
-        <!-- LPS Weekly Digest (Consolidación Semanal) -->
-        <div class="lps-card-glass" id="lps_digest_section">
-          <h4 style="margin: 0 0 6px 0; font-size: 0.95rem; color: #1a3c2a; font-weight: 600; text-transform: uppercase;">Weekly Digest (Consolidado)</h4>
-          <p style="margin: 0 0 12px 0; font-size: 0.82rem; color: #666; line-height: 1.3;">
-            Recorre la planilla activa, agrupa todas las actividades P1 críticas y genera un reporte unificado de bloqueos para el contratista o director.
-          </p>
-          <button class="lps-btn lps-btn-outline" style="min-height: 44px; margin-bottom: 0;" id="lps_btn_digest">
-            <span style="font-size: 1.1rem; line-height: 1;">📊</span> Compilar Digest de Obra
-          </button>
-
-          <div class="lps-digest-card" id="lps_digest_result_card" style="display: none;">
-            <span style="font-size: 0.75rem; font-weight: 600; color: #1a3c2a; text-transform: uppercase;">Digest de Bloqueos:</span>
-            <div class="lps-digest-preview" id="lps_digest_text_preview"></div>
-            <button class="lps-btn lps-btn-success" style="min-height: 38px; margin: 10px 0 0 0; font-size: 0.85rem;" id="lps_btn_copy_digest">
-              Copiar Digest Completo
-            </button>
-          </div>
-        </div>
-
-        <!-- Guía de Colores y Leyendas Legacy (Modo Consulta) -->
-        <div class="lps-card-glass" id="lps_legend_ref_card" style="display: none;">
-          <h4 style="margin: 0 0 10px 0; font-size: 0.95rem; color: #1a3c2a; font-weight: 600; text-transform: uppercase;">Guía de Estados</h4>
-          <div id="lps_legend_items_container" style="display: flex; flex-direction: column; gap: 8px;"></div>
-        </div>
-      </div>
-
-      <!-- Configuración del Modo Simulación -->
-      <div class="lps-drawer-footer">
-        <div class="lps-sim-toggle-container">
-          <span class="lps-sim-label">Modo Simulación (Inactivo)</span>
-          <input type="checkbox" id="lps_sim_mode_toggle" style="width: 20px; height: 20px; cursor: pointer;" />
-        </div>
-        <p style="margin: 6px 0 0 0; font-size: 0.72rem; color: #7f8c8d; text-align: center; line-height: 1.2;">
-          Las notificaciones reales están bloqueadas. Los CTAs copiarán el reporte al portapapeles.
-        </p>
-      </div>
-    </div>
-  `;
-
-  // Estructura de descripciones y guías por Módulo/Estado (Storytelling Calibrado)
-  const guides = {
-    'programa-general': {
-      title: 'Monitoreo de Hitos del Proyecto',
-      legend: [
-        { label: 'Ruta Crítica Inicio Vencido', color: '#8b4011', desc: 'Hito crítico bloqueado. Afecta directamente la fecha de entrega.' },
-        { label: 'Alistamiento Lookahead (2-3 sem)', color: '#1f4f82', desc: 'En ventana de control. Verificar compras y suministros.' },
-        { label: 'Seguimiento Rutinario', color: '#1a3c2a', desc: 'Progreso conforme a la línea base teórica.' }
-      ]
-    },
-    'programacion-intermedia': {
-      title: 'Control de Lookahead & Restricciones',
-      legend: [
-        { label: 'Inicio Vencido con Restricción Abierta', color: '#8b4011', desc: 'Bloqueo logístico. Requiere escalado a compras o compras técnicas hoy.' },
-        { label: 'Liberación Próxima (< 7 días)', color: '#1f4f82', desc: 'Habilitación activa. Asegurar contratos, cuadrillas y permisos.' },
-        { label: 'Sin Restricciones / Listo', color: '#1a3c2a', desc: 'Actividad habilitada y lista para programar.' }
-      ]
-    },
-    'programacion-semanal': {
-      title: 'Compromisos Semanales de Campo',
-      legend: [
-        { label: 'Atraso Crítico / Frente Detenido', color: '#8b4011', desc: 'El subcontratista no puede avanzar. Acción: Intervención en campo hoy.' },
-        { label: 'Compromiso Pendiente / En Progreso', color: '#1f4f82', desc: 'Actividad en ejecución. Monitorear recursos.' },
-        { label: 'Completado con Éxito', color: '#1a3c2a', desc: 'Vía Libre. Compromiso semanal firmado y cumplido.' }
-      ]
-    }
-  };
-
-  function injectDOM() {
-    if (document.getElementById('lps_drawer')) return;
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = drawerHtml;
-    while (tempDiv.firstChild) {
-      document.body.appendChild(tempDiv.firstChild);
-    }
-    bindEvents();
+  function getSessionContext() {
+    const dbEl = document.getElementById('baseDatos_PHP');
+    const semEl = document.getElementById('semana_PHP');
+    const permEl = document.getElementById('permiso_PHP');
+    return {
+      dbName: dbEl ? dbEl.value : '',
+      semana: semEl ? parseInt(semEl.value, 10) : 0,
+      permiso: permEl ? permEl.value : ''
+    };
   }
 
   function bindEvents() {
@@ -139,52 +35,99 @@ window.LPSContextualDrawer = (function() {
     const drawer = document.getElementById('lps_drawer');
     const closeBtn = document.getElementById('lps_drawer_close');
     const toggle = document.getElementById('lps_sim_mode_toggle');
+    const sidebarTrigger = document.getElementById('lps_sidebar_trigger');
 
-    // Cerrar drawer
-    const closeDrawer = () => {
-      drawer.classList.remove('open');
-      overlay.classList.remove('active');
-    };
+    if (sidebarTrigger) {
+      sidebarTrigger.addEventListener('click', () => {
+        if (drawer) {
+          if (drawer.classList.contains('open')) {
+            drawerClose();
+          } else {
+            drawerOpen();
+          }
+        }
+      });
+    }
 
-    closeBtn.addEventListener('click', closeDrawer);
-    overlay.addEventListener('click', closeDrawer);
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => {
+        drawerClose();
+      });
+    }
+    if (overlay) {
+      overlay.addEventListener('click', () => {
+        drawerClose();
+      });
+    }
 
-    // Sync toggle de simulación
-    const simMode = localStorage.getItem('lps_simulated_mode') === 'true';
-    toggle.checked = simMode;
-    toggle.addEventListener('change', function() {
-      localStorage.setItem('lps_simulated_mode', this.checked ? 'true' : 'false');
-      showNotification(this.checked ? 'Modo Simulación Activado (Envíos Bloqueos)' : 'Modo Envíos Activos (Configurar Cuentas)');
-      updateContextFromActiveSelection();
-    });
+    // Sync toggle modo simulación
+    if (toggle) {
+      toggle.checked = localStorage.getItem('lps_simulated_mode') === 'true';
+      toggle.addEventListener('change', function() {
+        localStorage.setItem('lps_simulated_mode', this.checked ? 'true' : 'false');
+        showNotification(this.checked ? 'Modo Simulación Activado (Envíos Bloqueados)' : 'Modo Envíos Activos (Notificaciones Reales)');
+        refreshDrawerData();
+      });
+    }
 
-    // Bindeo de botones de escalado
-    document.getElementById('lps_btn_whatsapp').addEventListener('click', () => triggerEscalate('whatsapp'));
-    document.getElementById('lps_btn_email').addEventListener('click', () => triggerEscalate('email'));
+    // Botones de Escalamiento SOS
+    const btnWa = document.getElementById('lps_btn_whatsapp');
+    const btnEmail = document.getElementById('lps_btn_email');
+    if (btnWa) btnWa.addEventListener('click', () => triggerEscalate('whatsapp'));
+    if (btnEmail) btnEmail.addEventListener('click', () => triggerEscalate('email'));
 
-    // Bindeo de Digest Semanal
-    document.getElementById('lps_btn_digest').addEventListener('click', compileWeeklyDigest);
-    document.getElementById('lps_btn_copy_digest').addEventListener('click', copyDigestToClipboard);
+    // Botón enviar comentario
+    const btnSend = document.getElementById('lps_btn_send_comment');
+    if (btnSend) btnSend.addEventListener('click', postComment);
+
+    // Cancelar responder en hilo
+    const btnCancelReply = document.getElementById('lps_btn_cancel_reply');
+    if (btnCancelReply) {
+      btnCancelReply.addEventListener('click', () => {
+        activeParentId = null;
+        document.getElementById('lps_thread_replying_indicator').style.display = 'none';
+      });
+    }
+
+    // Validación interactiva de justificación de cierre
+    const closureInput = document.getElementById('lps_closure_justification');
+    const closureBtn = document.getElementById('lps_btn_close_crisis');
+    if (closureInput && closureBtn) {
+      closureInput.addEventListener('input', function() {
+        const len = this.value.trim().length;
+        const counter = document.getElementById('lps_closure_char_count');
+        if (counter) {
+          counter.textContent = `${len} / 100 caracteres`;
+          if (len >= 100) {
+            counter.style.color = '#198754';
+          } else {
+            counter.style.color = '#dc3545';
+          }
+        }
+        closureBtn.disabled = len < 100;
+      });
+
+      closureBtn.addEventListener('click', closeCrisisAlert);
+    }
+
+    // Digest Semanal
+    const btnDigest = document.getElementById('lps_btn_digest');
+    const btnCopyDigest = document.getElementById('lps_btn_copy_digest');
+    if (btnDigest) btnDigest.addEventListener('click', compileWeeklyDigest);
+    if (btnCopyDigest) btnCopyDigest.addEventListener('click', copyDigestToClipboard);
   }
 
   function showNotification(message) {
+    if (window.toastr) {
+      window.toastr.info(message);
+      return;
+    }
     const toast = document.createElement('div');
     toast.style.cssText = `
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(26, 60, 42, 0.95);
-      color: #ffffff;
-      padding: 12px 24px;
-      border-radius: 8px;
-      font-size: 0.88rem;
-      font-weight: 600;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-      z-index: 99999;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
-      font-family: 'Inter', sans-serif;
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      background: rgba(26, 60, 42, 0.96); color: #ffffff; padding: 10px 20px;
+      border-radius: 8px; font-size: 0.85rem; font-weight: 600; z-index: 99999;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15); pointer-events: none; transition: opacity 0.3s;
     `;
     toast.textContent = message;
     document.body.appendChild(toast);
@@ -194,12 +137,337 @@ window.LPSContextualDrawer = (function() {
     }, 2500);
   }
 
+  function calculateITR(rowData) {
+    const fields = ['D_y_E', 'Materiales', 'MdeO', 'Equipos', 'Predecesora'];
+    let liberadas = 0;
+    let aplicables = 0;
+
+    fields.forEach(f => {
+      if (rowData[f] !== undefined && rowData[f] !== null) {
+        const val = String(rowData[f]).trim().toUpperCase();
+        if (val !== 'N/A' && val !== 'NA' && val !== '') {
+          aplicables++;
+          const floatVal = parseFloat(val);
+          if (!isNaN(floatVal) && floatVal >= 0.999) {
+            liberadas++;
+          }
+        }
+      }
+    });
+
+    const porcentaje = aplicables > 0 ? (liberadas / aplicables) : 1.0;
+    return {
+      porcentaje: Math.round(porcentaje * 100),
+      liberadas,
+      aplicables
+    };
+  }
+
+  function updateITRVisuals(itr) {
+    const card = document.getElementById('lps_itr_card');
+    const bar = document.getElementById('lps_itr_bar');
+    const valText = document.getElementById('lps_itr_value');
+    const details = document.getElementById('lps_itr_details');
+
+    if (!card) return;
+    card.style.display = 'block';
+
+    if (bar) {
+      bar.style.width = `${itr.porcentaje}%`;
+      // Gradiente o colores según el porcentaje
+      if (itr.porcentaje >= 80) {
+        bar.style.background = '#198754'; // Verde
+      } else if (itr.porcentaje >= 50) {
+        bar.style.background = '#ffc107'; // Amarillo
+      } else {
+        bar.style.background = '#dc3545'; // Rojo
+      }
+    }
+    if (valText) valText.textContent = `${itr.porcentaje}%`;
+    if (details) {
+      details.textContent = `${itr.liberadas} de ${itr.aplicables} restricciones habilitantes liberadas.`;
+    }
+  }
+
+  function refreshDrawerData() {
+    if (activeConsecutivo === null) return;
+    loadCommentsAndCrisis();
+  }
+
+  function loadCommentsAndCrisis() {
+    const container = document.getElementById('lps_comments_container');
+    if (container) {
+      container.innerHTML = '<div style="font-size:0.8rem; color:#666;">Cargando bitácora de hilos...</div>';
+    }
+
+    fetch(`/api/lps/comments?consecutivo=${activeConsecutivo}`)
+      .then(res => res.json())
+      .then(response => {
+        if (response.respuesta === 'OK') {
+          renderCommentsTree(response.data);
+          detectActiveCrisis(response.data);
+        } else {
+          if (container) container.innerHTML = `<div style="color:#dc3545; font-size:0.8rem;">Error: ${response.mensaje}</div>`;
+        }
+      })
+      .catch(err => {
+        console.error("Error al cargar comentarios:", err);
+        if (container) container.innerHTML = '<div style="color:#dc3545; font-size:0.8rem;">Error de conexión.</div>';
+      });
+  }
+
+  function detectActiveCrisis(commentsData) {
+    // Buscar si hay algún escalamiento activo referenciado en los comentarios o consultar API
+    // En su defecto, comprobamos si el rowData de la fila tiene alerta_crisis = 1
+    const rowData = activeHot ? activeHot.getSourceDataAtRow(activeRowIndex) : null;
+    const isCrisis = rowData && (parseInt(rowData.alerta_crisis, 10) === 1 || rowData.alerta_crisis === true);
+
+    const closureCard = document.getElementById('lps_closure_card');
+    const actCard = document.getElementById('lps_action_card');
+
+    if (isCrisis) {
+      if (closureCard) closureCard.style.display = 'block';
+      if (actCard) actCard.style.display = 'block';
+
+      // Obtener el ID de la alerta desde los comentarios o setear fallback temporal
+      activeAlertaId = null;
+      for (let c of commentsData) {
+        if (c.escalamiento_id) {
+          activeAlertaId = c.escalamiento_id;
+          break;
+        }
+      }
+      // Fallback: Buscar en la base de datos a través de una llamada corta si es necesario o asumir el ID en caliente
+      if (!activeAlertaId && rowData) {
+        activeAlertaId = rowData.escalamiento_id || rowData.alerta_id || null;
+      }
+    } else {
+      if (closureCard) closureCard.style.display = 'none';
+      if (actCard) {
+        // Mostrar u ocultar SOS WhatsApp según prioridad Ruta Crítica P1
+        const isCritical = rowData && (rowData.Ruta_Critica === 1 || rowData.prioridad === 'P1');
+        actCard.style.display = isCritical ? 'block' : 'none';
+      }
+    }
+  }
+
+  function renderCommentsTree(comments) {
+    const container = document.getElementById('lps_comments_container');
+    const card = document.getElementById('lps_comments_card');
+    if (!container || !card) return;
+
+    card.style.display = 'block';
+    container.innerHTML = '';
+
+    if (!comments || comments.length === 0) {
+      container.innerHTML = '<div style="font-size:0.8rem; color:#888; text-align:center; padding:10px;">Sin comentarios registrados. Escribe uno para iniciar la bitácora.</div>';
+      return;
+    }
+
+    comments.forEach(c => {
+      const isSystem = c.usuario_id === 0 || c.autor_nombre === 'Sistema' || !c.autor_nombre;
+      const autor = isSystem ? 'Sistema AIA' : `${c.autor_nombre} (${c.autor_cargo || 'Cargo'})`;
+      
+      const commentDiv = document.createElement('div');
+      commentDiv.className = 'lps-comment';
+      commentDiv.style.cssText = `
+        padding: 8px 10px; background: rgba(0,0,0,0.02); border-radius: 8px; border-left: 3px solid #1a3c2a;
+        margin-bottom: 8px; font-size: 0.82rem;
+      `;
+      if (isSystem) {
+        commentDiv.style.borderLeftColor = '#dc3545';
+        commentDiv.style.background = 'rgba(220,53,69,0.03)';
+      }
+
+      // Reemplazar @D, @OT, etc. con badges
+      let commentText = escapeHtml(c.comentario);
+      commentText = commentText.replace(/@([A-Z]+)/g, '<span class="lps-mention-badge">@$1</span>');
+
+      commentDiv.innerHTML = `
+        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+          <strong style="color:#1a3c2a;">${escapeHtml(autor)}</strong>
+          <span style="font-size:0.7rem; color:#888;">${c.created_at}</span>
+        </div>
+        <div style="color:#2d3748; line-height:1.4; white-space:pre-wrap;">${commentText}</div>
+        <div style="margin-top:6px; display:flex; gap:12px; font-size:0.72rem;">
+          <a href="#" class="lps-reply-trigger" data-id="${c.id}" style="color:#198754; font-weight:700; text-decoration:none;">Responder</a>
+        </div>
+        <div class="lps-replies-container" style="margin-left: 16px; margin-top: 8px; border-left: 1px dashed rgba(0,0,0,0.08); padding-left: 10px;"></div>
+      `;
+
+      // Renderizar respuestas del hilo
+      const repliesContainer = commentDiv.querySelector('.lps-replies-container');
+      if (c.respuestas && c.respuestas.length > 0) {
+        c.respuestas.forEach(r => {
+          const rDiv = document.createElement('div');
+          rDiv.style.cssText = 'padding: 5px 8px; background: #ffffff; border-radius: 6px; margin-top: 4px; font-size: 0.8rem; box-shadow: 0 1px 2px rgba(0,0,0,0.02);';
+          
+          let replyText = escapeHtml(r.comentario);
+          replyText = replyText.replace(/@([A-Z]+)/g, '<span class="lps-mention-badge">@$1</span>');
+
+          const rSystem = r.usuario_id === 0 || !r.autor_nombre;
+          const rAutor = rSystem ? 'Sistema AIA' : `${r.autor_nombre} (${r.autor_cargo || 'Cargo'})`;
+
+          rDiv.innerHTML = `
+            <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+              <strong style="color: #495057;">${escapeHtml(rAutor)}</strong>
+              <span style="font-size:0.68rem; color:#aaa;">${r.created_at}</span>
+            </div>
+            <div style="color:#333; line-height:1.35; white-space:pre-wrap;">${replyText}</div>
+          `;
+          repliesContainer.appendChild(rDiv);
+        });
+      }
+
+      container.appendChild(commentDiv);
+    });
+
+    // Agregar listeners a los enlaces de respuesta
+    container.querySelectorAll('.lps-reply-trigger').forEach(el => {
+      el.addEventListener('click', function(e) {
+        e.preventDefault();
+        activeParentId = parseInt(this.getAttribute('data-id'), 10);
+        
+        const indicator = document.getElementById('lps_thread_replying_indicator');
+        if (indicator) {
+          indicator.style.display = 'flex';
+          const authorName = this.closest('.lps-comment').querySelector('strong').textContent;
+          indicator.querySelector('span').textContent = `Respondiendo al hilo de ${authorName}`;
+        }
+        
+        const input = document.getElementById('lps_comment_input');
+        if (input) input.focus();
+      });
+    });
+  }
+
+  function postComment() {
+    const input = document.getElementById('lps_comment_input');
+    if (!input) return;
+    const comentario = input.value.trim();
+    if (!comentario) return;
+
+    // Detectar menciones de roles
+    const menciones = [];
+    const matches = comentario.match(/@([A-Z]+)/g);
+    if (matches) {
+      matches.forEach(m => {
+        const rol = m.substring(1);
+        if (!menciones.includes(rol)) menciones.push(rol);
+      });
+    }
+
+    const formData = new FormData();
+    formData.append('consecutivo', activeConsecutivo);
+    formData.append('comentario', comentario);
+    if (activeParentId) formData.append('parent_id', activeParentId);
+    if (activeAlertaId) formData.append('escalamiento_id', activeAlertaId);
+    if (menciones.length > 0) formData.append('menciones', JSON.stringify({ roles: menciones }));
+
+    fetch('/api/lps/comments/add', {
+      method: 'POST',
+      body: formData
+    })
+      .then(res => res.json())
+      .then(response => {
+        if (response.respuesta === 'OK') {
+          input.value = '';
+          activeParentId = null;
+          const indicator = document.getElementById('lps_thread_replying_indicator');
+          if (indicator) indicator.style.display = 'none';
+          
+          showNotification('Comentario registrado.');
+          refreshDrawerData();
+        } else {
+          showNotification(`Error: ${response.mensaje}`);
+        }
+      })
+      .catch(err => {
+        console.error("Error al enviar comentario:", err);
+        showNotification('Error de conexión al enviar comentario.');
+      });
+  }
+
+  function closeCrisisAlert() {
+    const input = document.getElementById('lps_closure_justification');
+    if (!input || !activeAlertaId) return;
+
+    const justificacion = input.value.trim();
+    if (justificacion.length < 100) {
+      showNotification('La justificación debe tener al menos 100 caracteres.');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('alerta_id', activeAlertaId);
+    formData.append('justificacion', justificacion);
+
+    fetch('/api/lps/crisis/close', {
+      method: 'POST',
+      body: formData
+    })
+      .then(res => res.json())
+      .then(response => {
+        if (response.respuesta === 'OK') {
+          showNotification('¡Crisis mitigada y cerrada formalmente!');
+          input.value = '';
+          
+          // Limpiar banderas en caliente en Handsontable
+          if (activeHot && activeRowIndex !== null) {
+            activeHot.setDataAtRowProp(activeRowIndex, 'alerta_crisis', 0);
+          }
+
+          drawerClose();
+        } else {
+          showNotification(`Error: ${response.mensaje}`);
+        }
+      })
+      .catch(err => {
+        console.error("Error al cerrar crisis:", err);
+        showNotification('Error de conexión al cerrar la crisis.');
+      });
+  }
+
+  function drawerOpen() {
+    const drawer = document.getElementById('lps_drawer');
+    const overlay = document.getElementById('lps_drawer_overlay');
+    if (!drawer) return;
+
+    drawer.classList.add('open');
+
+    // Desplazamiento adaptable en desktop
+    if (window.innerWidth >= 992) {
+      document.body.classList.add('lps-drawer-open');
+      // Redibujado diferido tras la transición de apertura
+      setTimeout(() => {
+        if (activeHot) activeHot.render();
+      }, 300);
+    } else if (overlay) {
+      overlay.classList.add('active');
+    }
+  }
+
+  function drawerClose() {
+    const drawer = document.getElementById('lps_drawer');
+    const overlay = document.getElementById('lps_drawer_overlay');
+    if (drawer) drawer.classList.remove('open');
+    if (overlay) overlay.classList.remove('active');
+
+    // Quitar desplazamiento adaptable en desktop
+    document.body.classList.remove('lps-drawer-open');
+    // Redibujado diferido tras la transición de cierre
+    setTimeout(() => {
+      if (activeHot) {
+        activeHot.render();
+      }
+    }, 300);
+  }
+
   function triggerEscalate(type) {
     if (activeRowIndex === null || !activeHot) return;
     const rowData = activeHot.getSourceDataAtRow(activeRowIndex);
     const simulated = localStorage.getItem('lps_simulated_mode') === 'true';
 
-    // Construcción de la alerta
     const consecutivo = rowData.Consecutivo || rowData.id || activeRowIndex + 1;
     const actividad = rowData.Actividad || rowData.nombre || 'Actividad sin nombre';
     const subcontratista = rowData.Subcontratista || rowData.responsable || 'Sin Asignar';
@@ -207,16 +475,43 @@ window.LPSContextualDrawer = (function() {
     const telefono = rowData.Telefono || rowData.telefono_subcontratista || '';
     const correo = rowData.Correo || rowData.correo_responsable || '';
 
-    const text = ` Estimado ${subcontratista}, la actividad #${consecutivo} (${actividad}) presenta un bloqueo crítico debido a la restricción abierta de [${restriccion}]. Solicitamos su intervención urgente para liberar el frente. - Last Planner AIA`;
+    // Jerarquía de escalamiento SOS
+    const rolesNombres = { 1: 'Residente', 2: 'Director', 3: 'Coordinador de Integración', 4: 'Gerente de Construcción', 5: 'Gerente General' };
+    const nivelActual = parseInt(rowData.nivel_actual || 1, 10);
+    const siguienteNivel = Math.min(nivelActual + 1, 5);
+    const rolSuperior = rolesNombres[siguienteNivel];
+
+    const text = `🚨 [ALERTA SOS - CRISIS AIA] 🚨\n\nEstimado superior en calidad de ${rolSuperior}, se notifica bloqueo crítico en la obra.\n• Actividad: #${consecutivo} - ${actividad}\n• Subcontratista: ${subcontratista}\n• Restricción/Causa: ${restriccion}\n\nSe solicita intervención jerárquica urgente para liberar el frente y evitar retrasos acumulados en la línea base teórica. - Last Planner AIA`;
 
     if (simulated) {
       navigator.clipboard.writeText(text).then(() => {
-        showNotification('¡Texto copiado al portapapeles en Modo Simulación!');
+        showNotification('¡SOS copiado en Modo Simulación al portapapeles!');
       });
     } else {
+      // Registrar la detonación del escalamiento en la base de datos
+      const formData = new FormData();
+      formData.append('consecutivo', consecutivo);
+      formData.append('modulo', activeModuleKey === 'programa-general' ? 'PG' : (activeModuleKey === 'programacion-intermedia' ? 'PI' : 'PS'));
+      formData.append('trigger', `SOS-${rolSuperior.substring(0, 3).toUpperCase()}`);
+
+      fetch('/api/lps/crisis/register', {
+        method: 'POST',
+        body: formData
+      })
+        .then(res => res.json())
+        .then(response => {
+          if (response.respuesta === 'OK') {
+            // Actualizar Handsontable
+            activeHot.setDataAtRowProp(activeRowIndex, 'alerta_crisis', 1);
+            showNotification('Alerta SOS registrada.');
+            refreshDrawerData();
+          }
+        })
+        .catch(err => console.error("Error al registrar crisis por SOS:", err));
+
       if (type === 'whatsapp') {
         if (!telefono) {
-          showNotification('⚠️ Sin teléfono asignado. Usando copiado de contingencia.');
+          showNotification('⚠️ Sin teléfono asignado. Usando copiado al portapapeles.');
           navigator.clipboard.writeText(text);
           return;
         }
@@ -224,20 +519,14 @@ window.LPSContextualDrawer = (function() {
         window.open(waUrl, '_blank');
       } else {
         if (!correo) {
-          showNotification('⚠️ Sin correo asignado. Usando copiado de contingencia.');
+          showNotification('⚠️ Sin correo asignado. Usando copiado al portapapeles.');
           navigator.clipboard.writeText(text);
           return;
         }
-        const mailUrl = `mailto:${correo}?subject=${encodeURIComponent('[ALERTA LPS] Bloqueo de Actividad AIA')}&body=${encodeURIComponent(text)}`;
+        const mailUrl = `mailto:${correo}?subject=${encodeURIComponent('[SOS CRISIS LPS] Intervención Jerárquica Requeria')}&body=${encodeURIComponent(text)}`;
         window.open(mailUrl, '_blank');
       }
     }
-  }
-
-  function updateContextFromActiveSelection() {
-    if (activeRowIndex === null || !activeHot) return;
-    const rowData = activeHot.getSourceDataAtRow(activeRowIndex);
-    LPSContextualDrawer.updateContext(rowData, activeModuleKey);
   }
 
   function compileWeeklyDigest() {
@@ -246,15 +535,13 @@ window.LPSContextualDrawer = (function() {
     const criticallyBlocked = {};
 
     sourceData.forEach((row, idx) => {
-      // Filtrar únicamente Ruta Crítica P1 (Ruta_Critica === 1 o similar dependiente del módulo)
       const isCritical = row.Ruta_Critica === 1 || row.ruta_critica === 1 || row.prioridad === 'P1' || row.p1 === 1;
       const subcontratista = row.Subcontratista || row.responsable || 'Sin asignar';
       const consecutivo = row.Consecutivo || row.id || idx + 1;
       const actividad = row.Actividad || row.nombre || 'Tarea';
       const restriccion = row.Restriccion || row.causa_no_cumplimiento || 'Restricciones Abiertas';
 
-      // Detectamos si posee cuellos de botella (retraso, restricción, incompleto)
-      const hasBottleneck = row.atraso > 0 || row.Restriccion || row.causa_no_cumplimiento || row.compromiso_vencido;
+      const hasBottleneck = row.atraso > 0 || row.Restriccion || row.causa_no_cumplimiento || row.compromiso_vencido || parseInt(row.alerta_crisis, 10) === 1;
 
       if (isCritical && hasBottleneck) {
         if (!criticallyBlocked[subcontratista]) {
@@ -265,18 +552,21 @@ window.LPSContextualDrawer = (function() {
     });
 
     const subcontratistasKeys = Object.keys(criticallyBlocked);
+    const preview = document.getElementById('lps_digest_text_preview');
+    const resultCard = document.getElementById('lps_digest_result_card');
+
     if (subcontratistasKeys.length === 0) {
-      document.getElementById('lps_digest_text_preview').textContent = " Excelente. No se encontraron bloqueos críticos en actividades P1 (Ruta Crítica) para esta semana.";
-      document.getElementById('lps_digest_result_card').style.display = 'block';
+      if (preview) preview.textContent = "Excelente. No se encontraron bloqueos críticos en actividades P1 (Ruta Crítica) para esta semana.";
+      if (resultCard) resultCard.style.display = 'block';
       return;
     }
 
-    let digestText = `📋 REPORT CONSOLIDADO DE BLOQUEOS LPS - OBRA AIA\n`;
+    let digestText = `📋 REPORTE CONSOLIDADO DE BLOQUEOS LPS - OBRA AIA\n`;
     digestText += `Semana de Control: ${new Date().toLocaleDateString()}\n`;
     digestText += `==============================================\n\n`;
 
     subcontratistasKeys.forEach(sub => {
-      digestText += `▶️ RESPONSIBLE: ${sub}\n`;
+      digestText += `▶️ RESPONSABLE: ${sub}\n`;
       criticallyBlocked[sub].forEach(task => {
         digestText += `  • ${task}\n`;
       });
@@ -286,43 +576,38 @@ window.LPSContextualDrawer = (function() {
     digestText += `----------------------------------------------\n`;
     digestText += `Solicitamos a los líderes de frente asegurar recursos y coordinar la liberación de frentes para evitar atrasos en la línea base teórica.`;
 
-    document.getElementById('lps_digest_text_preview').textContent = digestText;
-    document.getElementById('lps_digest_result_card').style.display = 'block';
-    showNotification('¡Digest consolidado semanal compilado con éxito!');
+    if (preview) preview.textContent = digestText;
+    if (resultCard) resultCard.style.display = 'block';
+    showNotification('¡Digest consolidado semanal compilado!');
   }
 
   function copyDigestToClipboard() {
-    const text = document.getElementById('lps_digest_text_preview').textContent;
-    navigator.clipboard.writeText(text).then(() => {
-      showNotification('¡Digest consolidado copiado al portapapeles!');
+    const preview = document.getElementById('lps_digest_text_preview');
+    if (!preview) return;
+    navigator.clipboard.writeText(preview.textContent).then(() => {
+      showNotification('¡Digest copiado al portapapeles!');
     });
+  }
+
+  function escapeHtml(text) {
+    if (!text) return '';
+    return text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
   }
 
   return {
     init: function(hot, moduleKey, stateAdapter) {
-      injectDOM();
       activeHot = hot;
       activeModuleKey = moduleKey;
       activeStateAdapter = stateAdapter;
 
-      // Interceptar botón de Leyenda legacy
-      const legendBtn = document.querySelector('.leyenda_colores') || document.getElementById('btn_leyenda');
-      if (legendBtn) {
-        // Clonar botón para quitar modales de Bootstrap
-        const newBtn = legendBtn.cloneNode(true);
-        newBtn.removeAttribute('data-toggle');
-        newBtn.removeAttribute('data-target');
-        newBtn.removeAttribute('data-bs-toggle');
-        newBtn.removeAttribute('data-bs-target');
-        legendBtn.parentNode.replaceChild(newBtn, legendBtn);
+      bindEvents();
 
-        newBtn.addEventListener('click', function(e) {
-          e.preventDefault();
-          LPSContextualDrawer.openLegend(moduleKey);
-        });
-      }
-
-      // Escuchar selección en Handsontable
+      // Interceptar clics y selección en Handsontable
       hot.addHook('afterSelectionEnd', function(r, c, r2, c2) {
         if (r < 0) return;
         activeRowIndex = r;
@@ -333,145 +618,125 @@ window.LPSContextualDrawer = (function() {
 
     updateContext: function(rowData, moduleKey) {
       if (!rowData) return;
-      injectDOM();
 
       const drawer = document.getElementById('lps_drawer');
       const overlay = document.getElementById('lps_drawer_overlay');
-      
-      // Abrir drawer de forma reactiva
-      drawer.classList.add('open');
-      if (window.innerWidth < 992) {
-        overlay.classList.add('active');
+      if (!drawer) return;
+
+      // YA NO abrimos automáticamente el drawer de forma obligatoria.
+      // Solo actualizamos paddings de Handsontable si el drawer ya está abierto
+      const isDrawerOpen = drawer.classList.contains('open');
+
+      if (isDrawerOpen) {
+        // Desplazamiento adaptable en desktop
+        if (window.innerWidth >= 992) {
+          document.body.classList.add('lps-drawer-open');
+          // Redibujado diferido tras la transición de apertura
+          setTimeout(() => {
+            if (activeHot) activeHot.render();
+          }, 300);
+        } else if (overlay) {
+          overlay.classList.add('active');
+        }
       }
 
-      // Extraer datos de la fila
-      const consecutivo = rowData.Consecutivo || rowData.id || 'N/A';
+      // Extraer datos
+      activeConsecutivo = rowData.Consecutivo || rowData.id || 'N/A';
       const actividad = rowData.Actividad || rowData.nombre || 'Tarea sin nombre';
       const subcontratista = rowData.Subcontratista || rowData.responsable || 'Sin Asignar';
       const restriccion = rowData.Restriccion || rowData.causa_no_cumplimiento || 'Ninguna';
 
-      // Evaluar estado con el adapter del módulo
-      let stateInfo = { key: 'default', label: 'Seguimiento', rowClass: 'status-active' };
-      if (activeStateAdapter) {
-        try {
-          stateInfo = activeStateAdapter(rowData);
-        } catch(e) {
-          console.error("Error al adaptar estado de la fila:", e);
-        }
-      }
-
-      // Determinar si es Ruta Crítica (P1)
       const isCritical = rowData.Ruta_Critica === 1 || rowData.ruta_critica === 1 || rowData.prioridad === 'P1' || rowData.p1 === 1;
+
+      // Evaluar crisis activa para la Sidebar / FAB
+      const hasRestriccion = restriccion && restriccion !== 'Ninguna' && restriccion.trim() !== '';
+      const isCrisis = parseInt(rowData.alerta_crisis, 10) === 1 || rowData.alerta_crisis === true || (isCritical && hasRestriccion);
       
-      // Renderizar metadatos
-      document.getElementById('lps_consecutivo').textContent = `Actividad #${consecutivo}`;
-      document.getElementById('lps_actividad_title').textContent = actividad;
+      const sidebarTrigger = document.getElementById('lps_sidebar_trigger');
+      const sidebarBadge = document.getElementById('lps_sidebar_badge');
 
-      const badge = document.getElementById('lps_badge_priority');
-      badge.className = 'lps-badge';
-      
-      const diagCard = document.getElementById('lps_diagnostic_card');
-      diagCard.className = 'lps-card-glass';
-
-      let diagnosticText = '';
-
-      if (isCritical) {
-        badge.classList.add('lps-badge-p1');
-        badge.textContent = 'Ruta Crítica P1';
-        diagCard.classList.add('lps-state-p1');
-
-        if (restriccion && restriccion !== 'Ninguna') {
-          diagnosticText = `🚨 FRENTE DETENIDO. La tarea está en ruta crítica y posee la restricción activa de [${restriccion}]. Requiere intervención inmediata del Residente de Obra con el Director hoy para evitar desvíos en la fecha contractual de entrega.`;
+      if (sidebarTrigger) {
+        if (isCrisis) {
+          sidebarTrigger.classList.add('has-crisis');
+          if (sidebarBadge) {
+            sidebarBadge.style.display = 'flex';
+          }
         } else {
-          diagnosticText = `⚠️ HITO CRÍTICO DE OBRA. Actividad en ruta crítica con progreso activo. Asegurar recursos diarios, cuadrilla y frente liberado para mantener el ritmo operativo.`;
+          sidebarTrigger.classList.remove('has-crisis');
+          if (sidebarBadge) {
+            sidebarBadge.style.display = 'none';
+          }
         }
-        
-        // Habilitar controles de comunicación
-        document.getElementById('lps_action_card').style.display = 'block';
-        
-        // Generar previsualización del mensaje individual
-        const simulated = localStorage.getItem('lps_simulated_mode') === 'true';
-        if (simulated) {
-          document.getElementById('lps_sim_clipboard_card').style.display = 'block';
-          const alertText = `Estimado ${subcontratista}, la actividad #${consecutivo} (${actividad}) presenta un retraso crítico debido a la restricción [${restriccion}]. Rogamos coordinar liberación urgente. - Last Planner AIA`;
-          document.getElementById('lps_alert_text_preview').textContent = alertText;
-        } else {
-          document.getElementById('lps_sim_clipboard_card').style.display = 'none';
-        }
-
-      } else {
-        badge.classList.add('lps-badge-p3');
-        badge.textContent = 'Seguimiento P3';
-        diagCard.classList.add('lps-state-p3');
-        diagnosticText = `🟢 SEGUIMIENTO RUTINARIO. Actividad de soporte. No impacta directamente la holgura del proyecto. Lógica informativa activa; sin CTAs de escalado telefónico para evitar spam al contratista.`;
-        
-        // Ocultar controles de comunicación individual para mitigar fatiga comunicativa
-        document.getElementById('lps_action_card').style.display = 'none';
-        document.getElementById('lps_sim_clipboard_card').style.display = 'none';
       }
 
-      document.getElementById('lps_diagnostico_desc').textContent = diagnosticText;
-      document.getElementById('lps_legend_ref_card').style.display = 'none';
-    },
+      // Renderizar datos de cabecera
+      const titleEl = document.getElementById('lps_actividad_title');
+      const consecEl = document.getElementById('lps_consecutivo');
+      const priorityBadge = document.getElementById('lps_badge_priority');
+      const diagCard = document.getElementById('lps_diagnostic_card');
+      const descEl = document.getElementById('lps_diagnostico_desc');
+      const rolBadge = document.getElementById('lps_badge_rol');
 
-    openLegend: function(moduleKey) {
-      injectDOM();
+      if (titleEl) titleEl.innerHTML = actividad;
+      if (consecEl) consecEl.textContent = `Actividad #${activeConsecutivo}`;
       
-      const drawer = document.getElementById('lps_drawer');
-      const overlay = document.getElementById('lps_drawer_overlay');
-      
-      drawer.classList.add('open');
-      if (window.innerWidth < 992) {
-        overlay.classList.add('active');
+      // Siguiente rol en la jerarquía jerárquica AIA
+      const rolesNombres = { 1: 'Residente', 2: 'Director', 3: 'Coordinador de Integración', 4: 'Gerente de Construcción', 5: 'Gerente General' };
+      const nivelActual = parseInt(rowData.nivel_actual || 1, 10);
+      const siguienteNivel = Math.min(nivelActual + 1, 5);
+      if (rolBadge) {
+        rolBadge.textContent = `Escalamiento: Superior Inmediato (${rolesNombres[siguienteNivel]})`;
+        rolBadge.className = `lps-badge lps-badge-level-${siguienteNivel}`;
       }
 
-      // Cargar guía operativa del módulo
-      const moduleGuide = guides[moduleKey] || { title: 'Guía de Estados', legend: [] };
-      document.getElementById('lps_consecutivo').textContent = 'Guía Operativa';
-      document.getElementById('lps_actividad_title').textContent = moduleGuide.title;
-      document.getElementById('lps_diagnostico_desc').textContent = 'A continuación se listan las prioridades operativas de control establecidas para este módulo. Selecciona cualquier fila en el grid para ver el diagnóstico particular de tu tarea.';
-      
-      const badge = document.getElementById('lps_badge_priority');
-      badge.className = 'lps-badge lps-badge-p2';
-      badge.textContent = 'LPS AIA';
+      if (priorityBadge) {
+        priorityBadge.className = 'lps-badge';
+        if (isCritical) {
+          priorityBadge.classList.add('lps-badge-p1');
+          priorityBadge.textContent = 'Ruta Crítica P1';
+          if (diagCard) {
+            diagCard.className = 'lps-card-glass lps-state-p1';
+          }
+          if (descEl) {
+            descEl.textContent = `🚨 FRENTE EN CRISIS. Actividad de Ruta Crítica P1 con restricción activa: [${restriccion}]. Se requiere de manera imperativa coordinar la mitigación. El retraso acumulado impactará el cronograma general.`;
+          }
+        } else {
+          priorityBadge.classList.add('lps-badge-p3');
+          priorityBadge.textContent = 'Seguimiento P3';
+          if (diagCard) {
+            diagCard.className = 'lps-card-glass lps-state-p3';
+          }
+          if (descEl) {
+            descEl.textContent = `🟢 SEGUIMIENTO RUTINARIO. Actividad P3. No posee holgura cero. Mantener el ritmo operativo estándar. Sin alertas de crisis activadas.`;
+          }
+        }
+      }
 
-      const diagCard = document.getElementById('lps_diagnostic_card');
-      diagCard.className = 'lps-card-glass lps-state-p2';
+      // 2. Calcular y actualizar Termómetro ITR en vivo
+      const itr = calculateITR(rowData);
+      updateITRVisuals(itr);
 
-      // Ocultar acciones atómicas
-      document.getElementById('lps_action_card').style.display = 'none';
+      // 3. Cargar comentarios e hilos Slack-style
+      loadCommentsAndCrisis();
 
-      // Renderizar leyenda
-      const container = document.getElementById('lps_legend_items_container');
-      container.innerHTML = '';
-      moduleGuide.legend.forEach(item => {
-        const itemDiv = document.createElement('div');
-        itemDiv.style.cssText = `
-          display: flex;
-          align-items: flex-start;
-          gap: 10px;
-          padding: 8px 10px;
-          background: #ffffff;
-          border-radius: 8px;
-          border-left: 4px solid ${item.color};
-          font-size: 0.85rem;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-        `;
-        itemDiv.innerHTML = `
-          <div>
-            <strong style="color: ${item.color}; display: block; margin-bottom: 2px;">${item.label}</strong>
-            <span style="color: #555; line-height: 1.3;">${item.desc}</span>
-          </div>
-        `;
-        container.appendChild(itemDiv);
-      });
+      // Previsualizar texto de escalamiento individual si simulación está activa
+      const simulated = localStorage.getItem('lps_simulated_mode') === 'true';
+      const simCard = document.getElementById('lps_sim_clipboard_card');
+      const simPreview = document.getElementById('lps_alert_text_preview');
+      if (simCard && simPreview) {
+        if (simulated && isCritical) {
+          simCard.style.display = 'block';
+          const rolSuperior = rolesNombres[siguienteNivel];
+          simPreview.textContent = `🚨 [ALERTA SOS - CRISIS AIA] 🚨\nEstimado superior en calidad de ${rolSuperior}, se notifica bloqueo crítico en la obra.\n• Actividad: #${activeConsecutivo} - ${actividad}\n• Restricción/Causa: ${restriccion}`;
+        } else {
+          simCard.style.display = 'none';
+        }
+      }
 
-      document.getElementById('lps_legend_ref_card').style.display = 'block';
+      // Reiniciar reply state
+      activeParentId = null;
+      const indicator = document.getElementById('lps_thread_replying_indicator');
+      if (indicator) indicator.style.display = 'none';
     }
   };
 })();
-
-// Auto-inyección al cargar el script
-window.addEventListener('DOMContentLoaded', () => {
-  // Inicialización diferida por precaución
-});

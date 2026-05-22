@@ -1077,7 +1077,9 @@
       'pgActividadRenderer',
       function (instance, td, row, col, prop, value) {
         Handsontable.renderers.TextRenderer.apply(this, arguments);
-        td.innerHTML = sanitizeActividadHtml(value);
+        var rowData = instance.getSourceDataAtRow(row) || {};
+        var prefix = parseInt(rowData.alerta_crisis, 10) === 1 ? '🔥 ' : '';
+        td.innerHTML = prefix + sanitizeActividadHtml(value);
         td.classList.add('htLeft');
       }
     );
@@ -1865,6 +1867,10 @@
 
         if (classification.restrictionAlertKey) {
           composed += ' pg-state-' + classification.restrictionAlertKey;
+        }
+
+        if (parseInt(rowData.alerta_crisis, 10) === 1 && !isHeader) {
+          composed += ' pg-row-crisis';
         }
 
         props.className = (
