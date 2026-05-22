@@ -3510,9 +3510,9 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
 
 .pdc-legend-item.ps-alert-critical-route,
 .ps-legend-modal-swatch.ps-alert-critical-route {
-  background-color: #f3e8ff;
-  color: #6b21a8;
-  border-color: #9333ea;
+  background-color: var(--aia-alert-background, #fdecec);
+  color: var(--aia-alert-critical, #9a1f1f);
+  border-color: var(--aia-alert-high, #e53935);
 }
 
 .pdc-legend-item.ps-alert-critical,
@@ -3558,20 +3558,20 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-critical,
 
 table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-critical-route,
 .ps-page .handsontable td.ps-row-state.ps-alert-critical-route {
-  background-color: #f3e8ff !important;
-  color: #6b21a8 !important;
+  background-color: var(--aia-alert-background, #fdecec) !important;
+  color: var(--aia-alert-critical, #9a1f1f) !important;
 }
 
 table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-critical-route td,
 .ps-page .handsontable td.ps-row-state.ps-alert-critical-route {
-  color: #6b21a8 !important;
+  color: var(--aia-alert-critical, #9a1f1f) !important;
 }
 
 table.dt_programacionSemanal.dataTable
   tbody
   tr.ps-row-state.ps-alert-critical-route
   td:first-child {
-  border-left: 4px solid #9333ea !important;
+  border-left: 4px solid var(--aia-alert-high, #e53935) !important;
 }
 
 table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-critical td,

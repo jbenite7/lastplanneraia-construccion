@@ -237,7 +237,7 @@
     </style>
     
     <!-- CSS del drawer que ya creamos en el Ciclo 2 -->
-    <link rel="stylesheet" href="/css/handsontable-module.css?v=20260522" />
+    <link rel="stylesheet" href="/css/handsontable-module.css?v=20260522d" />
 </head>
 <body class="pi-page">
 
@@ -327,7 +327,7 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
     
     <!-- Script del Drawer -->
-    <script src="/js/modules/lps_drawer.js?v=20260522"></script>
+    <script src="/js/modules/lps_drawer.js?v=20260522c"></script>
 
     <script>
         let currentSelectedCardData = null;

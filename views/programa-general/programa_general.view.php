@@ -5,7 +5,7 @@
     <script src="https://code.jquery.com/ui/1.10.1/jquery-ui.js"></script>
     <script type="text/javascript" src="/js/linksComunesHead2.js?v=20260325a" charset="utf-8"></script>
     <link rel="stylesheet" href="/public/vendor/handsontable/handsontable.full.min.css" />
-    <link rel="stylesheet" href="/css/handsontable-module.css?v=20260522" />
+    <link rel="stylesheet" href="/css/handsontable-module.css?v=20260522d" />
     <style>
         .hot-full-bleed {
             --hot-gutter: 8px;
@@ -245,7 +245,7 @@
 
     <script src="/public/vendor/handsontable/handsontable.full.min.js"></script>
     <script src="/public/vendor/handsontable/es-MX.js"></script>
-    <script src="/js/modules/lps_drawer.js?v=20260522"></script>
+    <script src="/js/modules/lps_drawer.js?v=20260522c"></script>
     <?php $pgHotVersion = @filemtime(dirname(__DIR__, 2) . '/public/js/modules/programa_general/hot.js') ?: 'hot12'; ?>
     <script src="/js/modules/programa_general/hot.js?v=<?php echo urlencode((string)$pgHotVersion); ?>"></script>
 

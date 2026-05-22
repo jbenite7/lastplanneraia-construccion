@@ -95,16 +95,16 @@
       {
         key: 'prog-condiciones-pendientes',
         label: 'Condiciones Pendientes',
-        className: 'ps-alert-critical',
-        priority: 'p1',
+        className: 'ps-alert-medium',
+        priority: 'p2',
         description: 'La actividad requiere acciones de habilitación antes de confirmar compromiso.',
         action: 'Completar las acciones indicadas por restricción y volver a autoprogramar o validar la fila.',
       },
       {
         key: 'prog-sin-compromiso',
         label: 'Por Comprometer',
-        className: 'ps-alert-critical',
-        priority: 'p1',
+        className: 'ps-alert-medium',
+        priority: 'p2',
         description: 'Actividad habilitada, pero sin compromiso semanal o sin asignaciones obligatorias.',
         action: 'Definir cantidad, Responsable AIA y Sub-Contratista antes del cierre semanal.',
       },
@@ -129,8 +129,8 @@
       {
         key: 'cal-incumplida',
         label: 'Incumplida',
-        className: 'ps-alert-critical',
-        priority: 'p1',
+        className: 'ps-alert-medium',
+        priority: 'p2',
         description: 'Compromiso no cumplido.',
         action: 'Registrar CNC y ejecutar plan correctivo de corto plazo.',
       },
@@ -904,6 +904,14 @@
     }
 
     return 'ps-alert-neutral';
+  }
+
+  function getAlertClassForRow(row) {
+    var stateKey = getStateKey(row || {});
+    if (stateKey === 'prog-ejecucion-con-restricciones' && toNumber(row && row.Critica, 0) >= 1) {
+      return 'ps-alert-critical-route';
+    }
+    return getAlertClassByState(stateKey);
   }
 
   function getStateLabelByKey(stateKey) {
@@ -2011,8 +2019,7 @@
       td.classList.remove('ps-alert-critical-route', 'ps-alert-critical', 'ps-alert-high', 'ps-alert-medium', 'ps-alert-info', 'ps-alert-control', 'ps-alert-neutral');
 
       var rowData = instance.getSourceDataAtRow(row) || {};
-      var stateKey = getStateKey(rowData);
-      var alertClass = getAlertClassByState(stateKey);
+      var alertClass = getAlertClassForRow(rowData);
 
       td.classList.add('ps-row-state', alertClass);
       td.classList.add('htCenter', 'htMiddle');
@@ -2286,8 +2293,7 @@
       cells: function (row, col, prop) {
         var props = {};
         var rowData = this.instance.getSourceDataAtRow(row) || {};
-        var stateKey = getStateKey(rowData);
-        var alertClass = getAlertClassByState(stateKey);
+        var alertClass = getAlertClassForRow(rowData);
         var columnMeta = this.instance.getSettings().columns[col] || {};
         var baseClass = columnMeta.className || '';
 
@@ -2451,15 +2457,11 @@
 
     if (window.LPSContextualDrawer) {
       window.LPSContextualDrawer.init(hot, 'programacion-semanal', function(rowData) {
-        var stateKey = getStateKey(rowData);
-        var alertClass = getAlertClassByState(stateKey);
-        var label = getStateLabelByKey(stateKey);
-        return {
-          key: stateKey,
-          rowClass: alertClass,
-          label: label,
-          rowData: rowData
-        };
+        var view = getStateView(rowData);
+        view.key = view.state;
+        view.rowClass = getAlertClassForRow(rowData);
+        view.rowData = rowData;
+        return view;
       });
     }
 

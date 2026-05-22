@@ -5,7 +5,7 @@
     <script src="https://code.jquery.com/ui/1.10.1/jquery-ui.js"></script>
     <script type="text/javascript" src="/js/linksComunesHead2.js?v=20260325a" charset="utf-8"></script>
     <link rel="stylesheet" href="/public/vendor/handsontable/handsontable.full.min.css" />
-    <link rel="stylesheet" href="/css/handsontable-module.css?v=20260522" />
+    <link rel="stylesheet" href="/css/handsontable-module.css?v=20260522d" />
     <style>
         .hot-full-bleed {
             --hot-gutter: 8px;
@@ -363,12 +363,12 @@
         }
 
         .ps-page .handsontable td.ops-state-td.ps-row-state.ps-alert-critical-route .ops-state-chip {
-            background: #f3e8ff;
-            background: color-mix(in srgb, #f3e8ff 78%, #fff 22%);
-            border-color: #9333ea;
-            color: #581c87;
+            background: var(--aia-alert-background, #fdecec);
+            background: color-mix(in srgb, var(--aia-alert-background, #fdecec) 78%, #fff 22%);
+            border-color: var(--aia-alert-high, #e53935);
+            color: var(--aia-alert-critical, #9a1f1f);
             font-weight: 900;
-            box-shadow: inset 0 0 0 1px rgba(147, 51, 234, 0.24), 0 1px 3px rgba(88, 28, 135, 0.14);
+            box-shadow: inset 0 0 0 1px rgba(229, 57, 53, 0.2), 0 1px 3px rgba(154, 31, 31, 0.12);
         }
 
         .ps-page .handsontable td.ops-state-td.ps-row-state.ps-alert-critical .ops-state-chip {
@@ -1224,8 +1224,8 @@
             ?>
         };
     </script>
-    <script src="/js/modules/lps_drawer.js?v=20260522"></script>
-    <script src="/js/modules/programacion_semanal/hot.js?v=hot45"></script>
+    <script src="/js/modules/lps_drawer.js?v=20260522c"></script>
+    <script src="/js/modules/programacion_semanal/hot.js?v=hot47"></script>
 
     <script>
         function cargaParametros() {

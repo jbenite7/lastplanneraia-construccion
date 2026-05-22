@@ -7,7 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
     <script type="text/javascript" src="/js/linksComunesHead2.js?v=20260325a" charset="utf-8"></script>
     <link rel="stylesheet" href="/public/vendor/handsontable/handsontable.full.min.css" />
-    <link rel="stylesheet" href="/css/handsontable-module.css?v=20260522" />
+    <link rel="stylesheet" href="/css/handsontable-module.css?v=20260522d" />
     <style>
         .hot-full-bleed {
             --hot-gutter: 8px;
@@ -1442,7 +1442,7 @@
         };
     </script>
     <script type="text/javascript" src="/js/HandsontableTomSelectEditor.js?v=tomselect30"></script>
-    <script src="/js/modules/lps_drawer.js?v=20260522"></script>
+    <script src="/js/modules/lps_drawer.js?v=20260522c"></script>
     <script src="/js/modules/programacion_intermedia/hot.js?v=hot35"></script>
 
     <script>
