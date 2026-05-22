@@ -399,7 +399,7 @@ body {
   position: fixed;
   top: 0;
   right: 0;
-  width: 360px;
+  width: 320px;
   height: 100vh;
   background: rgba(250, 250, 250, 0.94);
   backdrop-filter: blur(16px) saturate(120%);
@@ -437,7 +437,7 @@ body {
 
 .lps-drawer-header {
   padding: 18px 20px;
-  background: #1a3c2a; /* Verde Corporativo AIA */
+  background: var(--aia-green-dark, oklch(35.5% 0.09 143.5)); /* Verde Oscuro Oficial AIA */
   color: #ffffff;
   display: flex;
   justify-content: space-between;
@@ -451,6 +451,7 @@ body {
   font-weight: 600;
   font-family: 'Montserrat', sans-serif;
   letter-spacing: 0.5px;
+  color: #ffffff !important;
 }
 
 .lps-drawer-close {
@@ -609,3 +610,266 @@ body {
     transform: translateY(0);
   }
 }
+
+/* Alertas de Crisis Activa AIA (Alto Contraste) */
+#hot-container td.pi-row-crisis,
+#hot-container td.pg-row-crisis,
+#hot-container td.ps-row-crisis {
+  background-color: oklch(0.65 0.22 18) !important;
+  color: #ffffff !important;
+}
+
+/* ========================================
+   DISPARADOR ADAPTATIVO DEL CAJÓN LPS (MOBILE FIRST)
+   ======================================== */
+
+/* Mobile & Tablets (< 992px): Botón Circular Flotante (FAB) */
+.lps-sidebar-trigger {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--aia-green-dark, oklch(35.5% 0.09 143.5)); /* Verde Oscuro Oficial AIA */
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.16);
+  z-index: 2050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+              background 0.3s ease, 
+              box-shadow 0.3s ease,
+              width 0.3s ease,
+              padding 0.3s ease;
+}
+
+.lps-sidebar-trigger:hover,
+.lps-sidebar-trigger:focus-visible {
+  transform: scale(1.08);
+  background: var(--aia-green, oklch(43.86% 0.084 142.5)); /* Feedback interactivo con Verde Primario */
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.24);
+}
+
+.lps-sidebar-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lps-sidebar-icon {
+  font-size: 1.4rem;
+  line-height: 1;
+  user-select: none;
+}
+
+.lps-sidebar-text {
+  display: none; /* Oculto en móvil */
+}
+
+/* Badge de Alerta en Móvil */
+.lps-sidebar-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: #dc3545;
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(220, 53, 69, 0.4);
+  border: 1px solid #ffffff;
+  z-index: 10;
+}
+
+/* Animación de Pulso para Crisis Activa */
+@keyframes lps-pulse-glow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7), -2px 0 8px rgba(0, 0, 0, 0.05);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(220, 53, 69, 0), -2px 0 12px rgba(220, 53, 69, 0.2);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(220, 53, 69, 0), -2px 0 8px rgba(0, 0, 0, 0.05);
+  }
+}
+
+.lps-sidebar-trigger.has-crisis {
+  background: linear-gradient(135deg, #8b4011 0%, #dc3545 100%) !important;
+  animation: lps-pulse-glow 2s infinite ease-in-out;
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.lps-sidebar-trigger.has-crisis .lps-sidebar-badge {
+  animation: heartbeat 1.5s infinite ease-in-out;
+}
+
+@keyframes heartbeat {
+  0% { transform: scale(1); }
+  14% { transform: scale(1.2); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.2); }
+  70% { transform: scale(1); }
+}
+
+/* ========================================
+   DESKTOP OPTIMIZATION (>= 992px): Sidebar Vertical Fija
+   ======================================== */
+@media (min-width: 992px) {
+  .lps-sidebar-trigger {
+    bottom: auto;
+    top: 0;
+    right: 0;
+    width: 42px;
+    height: 100vh;
+    border-radius: 0;
+    background: var(--aia-green-dark, oklch(35.5% 0.09 143.5));
+    backdrop-filter: blur(16px) saturate(120%);
+    -webkit-backdrop-filter: blur(16px) saturate(120%);
+    border: none;
+    border-left: 1px solid rgba(26, 60, 42, 0.12);
+    box-shadow: -2px 0 8px rgba(0, 0, 0, 0.04);
+    z-index: 2050;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 0;
+    box-sizing: border-box;
+  }
+
+  .lps-sidebar-trigger:hover,
+  .lps-sidebar-trigger:focus-visible {
+    transform: none;
+    width: 46px; /* Sutil aumento interactivo de ancho */
+    background: var(--aia-green, oklch(43.86% 0.084 142.5));
+    box-shadow: -4px 0 16px rgba(0, 0, 0, 0.08);
+  }
+
+  .lps-sidebar-content {
+    flex-direction: column;
+    gap: 20px;
+    height: 100%;
+    justify-content: center;
+  }
+
+  .lps-sidebar-icon {
+    font-size: 1.2rem;
+  }
+
+  .lps-sidebar-text {
+    display: block !important;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    white-space: nowrap;
+    margin-top: 10px;
+    transition: color 0.2s ease;
+  }
+
+  .lps-sidebar-trigger:hover .lps-sidebar-text {
+    color: #ffffff;
+  }
+
+  /* Posición del Badge de Alerta en Desktop */
+  .lps-sidebar-badge {
+    position: absolute;
+    top: 30px;
+    right: auto;
+    left: 50%;
+    transform: translateX(-50%);
+    box-shadow: none;
+    border: none;
+    background: transparent;
+    font-size: 1rem;
+    width: auto;
+    height: auto;
+  }
+
+  .lps-sidebar-trigger.has-crisis {
+    background: linear-gradient(180deg, #8b4011 0%, #dc3545 100%) !important;
+    animation: lps-pulse-glow 2s infinite ease-in-out;
+  }
+
+  .lps-sidebar-trigger.has-crisis .lps-sidebar-badge {
+    position: absolute;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    animation: heartbeat 1.5s infinite ease-in-out;
+  }
+
+  /* Ajuste Dinámico de Layout para Evitar Solapamiento de Sidebar y Drawer */
+  body {
+    padding-right: 42px !important;
+    transition: padding-right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  body.lps-drawer-open {
+    padding-right: 320px !important;
+  }
+
+  .navbar-aia.fixed-top {
+    left: 0 !important;
+    right: 42px !important;
+    width: auto !important;
+    transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+
+  body.lps-drawer-open .navbar-aia.fixed-top {
+    right: 320px !important;
+  }
+
+  /* Ajuste Responsivo y Fluido para la Barra de Contexto Superior (Subheader) */
+  .context-bar.fixed-top {
+    left: 0 !important;
+    right: 42px !important;
+    width: auto !important;
+    transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+
+  body.lps-drawer-open .context-bar.fixed-top {
+    right: 320px !important;
+  }
+
+  /* Compresión adaptativa del menú superior cuando el cajón LPS está abierto */
+  body.lps-drawer-open .navbar-aia {
+    padding-inline: 0.5rem !important;
+  }
+  body.lps-drawer-open .navbar-aia .navbar-brand {
+    font-size: 1.05rem !important;
+    margin-right: 8px !important;
+  }
+  body.lps-drawer-open .navbar-aia .navbar-brand i {
+    margin-right: 4px !important;
+  }
+  body.lps-drawer-open .navbar-aia .nav-link {
+    padding-inline: clamp(0.3rem, -1rem + 2vw, 0.5rem) !important;
+    font-size: clamp(0.75rem, 0.4rem + 0.4vw, 0.85rem) !important;
+  }
+  body.lps-drawer-open .navbar-aia #userDropdown {
+    max-width: 140px !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding-inline: 6px !important;
+  }
+  body.lps-drawer-open .navbar-aia .main-links {
+    margin-left: 8px !important;
+  }
+}
+
