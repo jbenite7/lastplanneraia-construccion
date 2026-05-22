@@ -23,6 +23,8 @@ gantt
     Estabilidad Miembros (500)  :done,    des9, 2026-03-27, 2026-03-27
     Recuperación de Contraseña   :done,    des10, 2026-03-29, 2026-03-29
     Hardening Contexto LPS/PDC   :done,    des11, 2026-03-29, 2026-03-29
+    Ecosistema Escalamiento & Drawers :done, des14, 2026-05-20, 2026-05-21
+    Disparador Adaptativo LPS (Fase 3) :done, des15, 2026-05-21, 2026-05-22
     section Próximo Macro-Sprint
     Analítica & Notificaciones  :active,  des4, 2026-03-05, 7d
     Migración LPS Core (Fase 4) :done,    des6, 2026-03-05, 2026-03-06
@@ -199,7 +201,11 @@ gantt
 - [x] **Pulido visual de etiquetas de Estado Operativo PI/PS (2026-05-21)**: Las etiquetas principales de Estado Operativo ahora usan layout interno en grid, contraste reforzado, multilinea controlada a dos líneas y pills con wrap limitado para mejorar lectura sin modificar el ancho de columna.
 - [x] **Labels compactos RC y Por Comprometer en Estado Operativo PS/PI (2026-05-21)**: Se abreviaron labels de ruta crítica como `RC`, se adoptó `Por Comprometer` en PS, se mantuvo la paleta vigente y se reforzó la diferenciación visual por criticidad sin modificar anchos de columna.
 - [x] **Restricciones blandas Pdto. Construcción y Modelo BIM (2026-05-21)**: PS/PI separan habilitantes duros de restricciones blandas. Pdto. Construcción y Modelo BIM quedan como seguimiento visual ámbar y texto explícito en leyendas/modales, sin bloquear habilitación, estado operativo ni autoprogramación.
-- [x] **LPS Contextual Drawers & Escalamiento Semanal (2026-05-21)**: Implementación de los paneles laterales contextuales responsivos, Liquid Glass de la marca AIA, con motor de simulación anti-spam (Weekly Digest) y filtrado de ruta crítica (P1) en los tres módulos principales (PG, PI, PS).
+- [x] **Ecosistema de Escalamiento, Drawers y Dashboard Kanban Directivo ✅ (2026-05-21):** Implementación integral de drawers contextuales responsivos (Liquid Glass, OKLCH, @layer 2026), motor de escalamiento semanal, botón y codificación de WhatsApp SOS, controlador directivo, y Dashboard Kanban jerárquico de 4 columnas con emulación reactiva mediante adaptador `dummyHot` para la mitigación y bitácora unificada.
+- [x] **Optimización de Drawer Contextual e ITR Habilitantes (Fase 2) ✅ (2026-05-22):** Ajuste del ancho del drawer a 320px con desplazamiento responsivo de grilla (`padding-right`) para prevenir superposiciones, renderizado jerárquico HTML (`innerHTML`), reajuste del termómetro de ITR para evaluar estrictamente las 5 restricciones habilitantes duras, y cache-busting global (`?v=20260522`) en 5 vistas maestras PHP.
+- [x] **Disparador Adaptativo LPS y Reactividad Silenciosa (Fase 3) ✅ (2026-05-22):** Cajón Contextual colapsado por defecto para mitigar intrusión en Handsontable. Implementación de disparador adaptable (Sidebar vertical en Desktop y FAB circular en Móviles/Tablets). Incorporación de reactividad silenciosa en segundo plano con badge parpadeante (`🔥`) que alerta dinámicamente de crisis y bloqueos P1. Refinamiento estético definitivo que evita la sobreposición del disparador y del drawer sobre la navbar fixed-top y el subheader en pantallas de escritorio, encogiendo y alineando el body y la barra de navegación coordinadamente.
+- [x] **Unificación Cromática y Contraste Premium (Fase 3.1) ✅ (2026-05-22):** Aplicación de variables corporativas oficiales `--aia-green` y `--aia-green-dark` al disparador lateral (vertical fijo en escritorio y móvil) y a la cabecera del Drawer Contextual, eliminando colores ad-hoc. Corrección de contraste para headings del cajón y aprobación exitosa de la suite de pruebas del servidor (100% PASS).
+
 
 ---
 
