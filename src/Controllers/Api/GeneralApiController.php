@@ -428,7 +428,8 @@ class GeneralApiController extends BaseController
             }
 
             $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($archivo['tmp_name']);
-            $excelData = $spreadsheet->getActiveSheet()->toArray();
+            $sheet = $spreadsheet->getActiveSheet();
+            $excelData = $sheet->toArray();
             $todoElExcel = $excelData; 
             array_shift($excelData); 
 
@@ -497,9 +498,20 @@ class GeneralApiController extends BaseController
                 $nombreActividadHtml = $this->formatTaskNameWithHierarchy($esquema, $todoElExcel, $colEsquema);
                 $nombreLimpio = strip_tags($nombreActividadHtml);
 
+                $excelRowNumber = $index + 2;
                 $titulo = (isset($row[2]) && (stripos($row[2], 'S') !== false || $row[2] == '1')) ? 1 : 0;
-                $fInicio = !empty($row[3]) ? date('Y-m-d', strtotime(str_replace('/', '-', $row[3]))) : null;
-                $fFin = !empty($row[4]) ? date('Y-m-d', strtotime(str_replace('/', '-', $row[4]))) : null;
+                $fInicio = $this->normalizeImportedDate(
+                    $this->getWorksheetRawValue($sheet, 3, $excelRowNumber),
+                    $row[3] ?? null,
+                    $excelRowNumber,
+                    'Fecha_Inicio'
+                );
+                $fFin = $this->normalizeImportedDate(
+                    $this->getWorksheetRawValue($sheet, 4, $excelRowNumber),
+                    $row[4] ?? null,
+                    $excelRowNumber,
+                    'Fecha_Fin'
+                );
                 $rutaCritica = (isset($row[5]) && (stripos($row[5], 'S') !== false || $row[5] == '1')) ? 1 : 0;
 
                 $prev = $historico[$nombreLimpio] ?? [];
@@ -603,6 +615,142 @@ class GeneralApiController extends BaseController
             http_response_code(500);
             echo json_encode(['respuesta' => 'ERROR', 'mensaje' => $e->getMessage()]);
         }
+    }
+
+    private function getWorksheetRawValue($sheet, int $zeroBasedColumnIndex, int $rowNumber)
+    {
+        $column = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($zeroBasedColumnIndex + 1);
+        return $sheet->getCell($column . $rowNumber)->getValue();
+    }
+
+    private function normalizeImportedDate($rawValue, $formattedValue, int $rowNumber, string $fieldName): ?string
+    {
+        if ($rawValue instanceof \DateTimeInterface) {
+            return $rawValue->format('Y-m-d');
+        }
+
+        if ($formattedValue instanceof \DateTimeInterface) {
+            return $formattedValue->format('Y-m-d');
+        }
+
+        $rawText = $this->dateValueToString($rawValue);
+        $formattedText = $this->dateValueToString($formattedValue);
+
+        if ($rawText === '' && $formattedText === '') {
+            return null;
+        }
+
+        if ($this->isExcelSerialCandidate($rawValue)) {
+            return $this->excelSerialToYmd((float)$rawValue, $rowNumber, $fieldName);
+        }
+
+        if ($this->isExcelSerialCandidate($rawText)) {
+            return $this->excelSerialToYmd((float)$rawText, $rowNumber, $fieldName);
+        }
+
+        $primaryText = $rawText !== '' ? $rawText : $formattedText;
+        $parsed = $this->parseDateTextToYmd($primaryText);
+        if ($parsed !== null) {
+            return $parsed;
+        }
+
+        if ($formattedText !== '' && $formattedText !== $primaryText && !$this->isExcelSerialCandidate($formattedText)) {
+            $parsed = $this->parseDateTextToYmd($formattedText);
+            if ($parsed !== null) {
+                return $parsed;
+            }
+        }
+
+        throw new Exception("Fecha inválida en fila {$rowNumber}, {$fieldName}: " . ($primaryText !== '' ? $primaryText : $formattedText));
+    }
+
+    private function dateValueToString($value): string
+    {
+        if ($value === null) {
+            return '';
+        }
+
+        if ($value instanceof \PhpOffice\PhpSpreadsheet\RichText\RichText) {
+            return trim($value->getPlainText());
+        }
+
+        if (is_bool($value)) {
+            return '';
+        }
+
+        $text = trim((string)$value);
+        $text = preg_replace('/\x{00A0}/u', ' ', $text) ?? $text;
+        return trim($text, " \t\n\r\0\x0B'\"");
+    }
+
+    private function isExcelSerialCandidate($value): bool
+    {
+        if ($value === null || $value instanceof \DateTimeInterface || is_bool($value)) {
+            return false;
+        }
+
+        $text = trim((string)$value);
+        if ($text === '' || !preg_match('/^\d+(?:\.\d+)?$/', $text)) {
+            return false;
+        }
+
+        $serial = (float)$text;
+        return $serial > 0 && $serial < 100000;
+    }
+
+    private function excelSerialToYmd(float $serial, int $rowNumber, string $fieldName): string
+    {
+        try {
+            $date = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($serial);
+            $year = (int)$date->format('Y');
+            if ($year < 1900 || $year > 2200) {
+                throw new Exception('Serial Excel fuera de rango.');
+            }
+
+            return $date->format('Y-m-d');
+        } catch (\Throwable $e) {
+            throw new Exception("Fecha Excel inválida en fila {$rowNumber}, {$fieldName}: {$serial}");
+        }
+    }
+
+    private function parseDateTextToYmd(string $value): ?string
+    {
+        $text = trim($value);
+        if ($text === '') {
+            return null;
+        }
+
+        $text = preg_replace('/\x{00A0}/u', ' ', $text) ?? $text;
+        $text = preg_replace('/\s+/', ' ', trim($text)) ?? trim($text);
+
+        if (preg_match('/^(\d{4})[-\/]([0-9]{1,2})[-\/]([0-9]{1,2})(?:[ T].*)?$/', $text, $parts)) {
+            $year = (int)$parts[1];
+            $middle = (int)$parts[2];
+            $last = (int)$parts[3];
+
+            return $this->buildYmd($year, $middle, $last)
+                ?? $this->buildYmd($year, $last, $middle);
+        }
+
+        if (preg_match('/^([0-9]{1,2})[-\/]([0-9]{1,2})[-\/](\d{4})(?:[ T].*)?$/', $text, $parts)) {
+            $first = (int)$parts[1];
+            $second = (int)$parts[2];
+            $year = (int)$parts[3];
+
+            return $this->buildYmd($year, $second, $first)
+                ?? $this->buildYmd($year, $first, $second);
+        }
+
+        return null;
+    }
+
+    private function buildYmd(int $year, int $month, int $day): ?string
+    {
+        if (!checkdate($month, $day, $year)) {
+            return null;
+        }
+
+        return sprintf('%04d-%02d-%02d', $year, $month, $day);
     }
 
     /**

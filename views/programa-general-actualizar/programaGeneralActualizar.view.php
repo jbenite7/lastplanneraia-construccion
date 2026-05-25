@@ -68,8 +68,8 @@
 	$semana = $_SESSION["semana"] ?? 0;
 	$dbPrefix = preg_replace('/[^a-zA-Z0-9_]/', '', $dbPrefix);
 
-	// Buscar actividades en la semana anterior
-	$semanaDropdown = max(1, (int)$semana - 1);
+	// Buscar actividades del cronograma activo actual para mapearlas contra el borrador actualizado.
+	$semanaDropdown = max(1, (int)$semana);
 	$query = "SELECT Id, Actividad, Fecha_Inicio FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Titulo = 0 AND Fecha_Inicio IS NOT NULL AND Fecha_Fin IS NOT NULL ORDER BY Consecutivo ASC";
 	$stmt = $dbInstance->query($query, [$semanaDropdown]);
 	$actividadesPrevias = [];
@@ -343,7 +343,7 @@
 	<script src="/js/HandsontableTomSelectEditor.js?v=tomselect30"></script>
 	
 	<!-- Módulos de Handsontable -->
-	<script src="/public/js/modules/programa_actualizar/hot_actualizar.js?v=202603242"></script>
+	<script src="/public/js/modules/programa_actualizar/hot_actualizar.js?v=20260525a"></script>
 
 	<script>
 		/* Funciones Legacy requeridas a nivel global */

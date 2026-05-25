@@ -45,6 +45,7 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ### Corregido
 
+- **Actualización de Cronograma desde Excel:** Corrección integral del flujo `/programa-general-actualizar`: la plantilla base vuelve a descargarse desde `/archivosBase`, el selector `Asociar con...` carga la semana activa correcta, los roles A/D pueden mapear sobre borradores aunque la semana esté cerrada y las fechas importadas desde Excel se normalizan a `yyyy-mm-dd` priorizando seriales numéricos.
 - **Disparador lateral LPS:** Corrección visual del badge de atención/crisis para evitar recuadros o iconos desalineados en desktop y móvil.
 
 ## [1.2.0] - 2026-05-21

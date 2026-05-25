@@ -40,9 +40,10 @@ window.HOTActualizarModule = (function() {
         var semanalConfirmada = parseInt($('#Semanal_Confirmada').val() || 0);
         var semanaActual = parseInt($('#semana').val() || 0);
         var maxSemana = parseInt($('#Max_Semana').val() || 0);
+        var directorRoles = ['A', 'D'];
 
-        // Si la semana ya está confirmada, nadie edita
-        if (semanalConfirmada === 1) return false;
+        // La actualización edita un borrador (semana actual + 1); A/D pueden mapear aunque la semana activa esté cerrada.
+        if (semanalConfirmada === 1 && directorRoles.indexOf(permiso) === -1) return false;
 
         // Roles permitidos: Administrador(A), Director(D), Residente(R), DCV
         var allowedRoles = ['A', 'D', 'R', 'DCV'];
