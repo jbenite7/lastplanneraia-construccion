@@ -45,6 +45,8 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ### Corregido
 
+- **Actualización de Cronograma estable:** La vista `/programa-general-actualizar` separa la semana base de la semana objetivo del borrador para evitar alternancia vacío/con datos al refrescar y mantener las peticiones siempre sobre el cronograma actualizado correcto.
+- **Plantilla de Listado de Actividades:** La descarga de `listadoActividades.csv` usa un endpoint MVC dedicado para no depender de reglas estáticas del servidor en `/archivosBase`.
 - **Actualización de Cronograma desde Excel:** Corrección integral del flujo `/programa-general-actualizar`: la plantilla base vuelve a descargarse desde `/archivosBase`, el selector `Asociar con...` carga la semana activa correcta, los roles A/D pueden mapear sobre borradores aunque la semana esté cerrada y las fechas importadas desde Excel se normalizan a `yyyy-mm-dd` priorizando seriales numéricos.
 - **Disparador lateral LPS:** Corrección visual del badge de atención/crisis para evitar recuadros o iconos desalineados en desktop y móvil.
 
