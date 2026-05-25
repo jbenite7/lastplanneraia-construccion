@@ -186,6 +186,22 @@ window.HOTActualizarModule = (function() {
             .catch(err => console.error("Error cargando códigos:", err));
     }
 
+    function getIntegerInputValue(id, fallback) {
+        var input = document.getElementById(id);
+        var value = input ? parseInt(input.value, 10) : NaN;
+        return isNaN(value) ? fallback : value;
+    }
+
+    function getBaseSemanaActualizacion() {
+        return getIntegerInputValue('semanaBaseActualizacion', getIntegerInputValue('semana', 0));
+    }
+
+    function getTargetSemanaActualizacion() {
+        var explicitTarget = getIntegerInputValue('semanaObjetivoActualizacion', 0);
+        if (explicitTarget > 0) return explicitTarget;
+        return getBaseSemanaActualizacion() + 1;
+    }
+
     /**
      * Cargar y Filtrar Datos
      */
@@ -193,13 +209,12 @@ window.HOTActualizarModule = (function() {
         console.log("🔥 [MapeoManual] Entrando a loadData().");
         $('#loading').show();
         var db = document.getElementById('baseDatos').value;
-        var semanaInput = document.getElementById('semana');
-        var semanaVal = semanaInput ? semanaInput.value : 'MISSING';
+        var semanaVal = getBaseSemanaActualizacion();
         
         console.log("🔥 [MapeoManual] Valor detectado en input #semana: ", semanaVal);
         
-        // Fetch desde el API: Consultamos la semana de borrador (siguiente a la activa)
-        var targetSemana = parseInt(semanaVal) + 1;
+        // Fetch desde el API: consultamos la semana objetivo calculada por backend.
+        var targetSemana = getTargetSemanaActualizacion();
         var fullUrl = "/api/general/list?db=" + db + "&semana=" + targetSemana + "&exclude_chapters=1";
         
         console.log("🔥 [MapeoManual] targetSemana calculado: ", targetSemana);
@@ -280,7 +295,7 @@ window.HOTActualizarModule = (function() {
     function autoSaveRow(visualRowIndex, changesObj, source) {
         var rowData = hot.getSourceDataAtRow(visualRowIndex);
         var rowId = rowData.Consecutivo_en_Programa || rowData.Id;
-        var targetSemana = (parseInt(document.getElementById('semana').value) + 1);
+        var targetSemana = getTargetSemanaActualizacion();
         var db = document.getElementById('baseDatos').value;
 
         // AIA 2026: Preservar avance porcentual (Ratio) al cambiar contexto (unidad/ppto)

@@ -65,11 +65,13 @@
 	// PRE-CARGA JSON: Opciones del cronograma anterior
 	$dbInstance = Database::getInstance();
 	$dbPrefix = $_SESSION["db"] ?? '';
-	$semana = $_SESSION["semana"] ?? 0;
+	$semanaBaseActualizacion = (int)($semanaBaseActualizacion ?? ($_SESSION["semana"] ?? 0));
+	$semanaObjetivoActualizacion = (int)($semanaObjetivoActualizacion ?? ($semanaBaseActualizacion + 1));
+	$semana = $semanaBaseActualizacion;
 	$dbPrefix = preg_replace('/[^a-zA-Z0-9_]/', '', $dbPrefix);
 
 	// Buscar actividades del cronograma activo actual para mapearlas contra el borrador actualizado.
-	$semanaDropdown = max(1, (int)$semana);
+	$semanaDropdown = max(1, $semanaBaseActualizacion);
 	$query = "SELECT Id, Actividad, Fecha_Inicio FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Titulo = 0 AND Fecha_Inicio IS NOT NULL AND Fecha_Fin IS NOT NULL ORDER BY Consecutivo ASC";
 	$stmt = $dbInstance->query($query, [$semanaDropdown]);
 	$actividadesPrevias = [];
@@ -89,6 +91,8 @@
 	<div class="encabezado" id="encabezado">
 		<input type="hidden" id="baseDatos" name="baseDatos" value="<?php echo $dbPrefix; ?>" aria-hidden="true">
 		<input type="hidden" id="semana" name="semana" value="<?php echo $semana; ?>" aria-hidden="true">
+		<input type="hidden" id="semanaBaseActualizacion" name="semanaBaseActualizacion" value="<?php echo $semanaBaseActualizacion; ?>" aria-hidden="true">
+		<input type="hidden" id="semanaObjetivoActualizacion" name="semanaObjetivoActualizacion" value="<?php echo $semanaObjetivoActualizacion; ?>" aria-hidden="true">
 		<input type="hidden" id="permiso" name="permiso" value="<?php echo $permiso; ?>" aria-hidden="true">
 		<input type="hidden" id="Max_Semana" name="Max_Semana" value="<?php echo $maxSemana; ?>" aria-hidden="true">
 		<input type="hidden" id="Semanal_Confirmada" name="Semanal_Confirmada" value="<?php echo $semanalConfirmada; ?>" aria-hidden="true">
@@ -343,7 +347,7 @@
 	<script src="/js/HandsontableTomSelectEditor.js?v=tomselect30"></script>
 	
 	<!-- Módulos de Handsontable -->
-	<script src="/public/js/modules/programa_actualizar/hot_actualizar.js?v=20260525a"></script>
+	<script src="/public/js/modules/programa_actualizar/hot_actualizar.js?v=20260525b"></script>
 
 	<script>
 		/* Funciones Legacy requeridas a nivel global */
@@ -363,7 +367,8 @@
 		  $("#modalCargarExcel form").off("submit").on("submit", function(e) {
 		    e.preventDefault();
 				var db = document.getElementById('baseDatos').value;
-				var semana = document.getElementById('semana').value;
+				var semanaBaseInput = document.getElementById('semanaBaseActualizacion') || document.getElementById('semana');
+				var semana = semanaBaseInput ? semanaBaseInput.value : document.getElementById('semana').value;
 		    var variables = new FormData($("#formCargarExcel")[0]);
 				var inputFecha = document.getElementById('f_inicio_importar');
 				var f_inicio_sem = inputFecha ? (inputFecha.value) : '';
@@ -408,7 +413,8 @@
 		          }
 
 							if (typeof cambiarSemanaSesion === 'function') {
-								cambiarSemanaSesion(semana_json, location.pathname);
+								var semanaBase = Number(json_info.semana_base || Math.max(0, Number(semana_json) - 1));
+								cambiarSemanaSesion(semanaBase, location.pathname);
 							} else {
 								location.reload();
 							}
@@ -442,12 +448,15 @@
 		  $("#modalEliminarActualizacion form").off("submit").on("submit", function(e) {
 		    e.preventDefault();
 				var db = document.getElementById('baseDatos').value;
-				var semana = document.getElementById('semana').value;
+				var semanaBaseInput = document.getElementById('semanaBaseActualizacion') || document.getElementById('semana');
+				var semanaObjetivoInput = document.getElementById('semanaObjetivoActualizacion');
+				var semana = semanaBaseInput ? semanaBaseInput.value : document.getElementById('semana').value;
+				var semanaObjetivo = semanaObjetivoInput ? semanaObjetivoInput.value : (Number(semana) + 1);
 		    var variables = new FormData($("#formEliminarActualizacion")[0]);
 		    
 		    $.ajax({
 		      type: "POST",
-		      url: "/api/general/delete-update?db="+db+"&semana="+(Number(semana)+1),
+		      url: "/api/general/delete-update?db="+db+"&semana="+semanaObjetivo,
 		      data: variables,
 					processData: false,
 					contentType: false,

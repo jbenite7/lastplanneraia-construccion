@@ -18,7 +18,10 @@ class ProgramaGeneralActualizarController extends BaseController
         // Autocuración y Blindaje de Contexto
         $maxOverall = 0;
         $maxConfirmed = null;
+        $maxProgramWeek = 0;
         $semanalConfirmada = 0;
+        $semanaBaseActualizacion = 0;
+        $semanaObjetivoActualizacion = 1;
 
         if ($dbName !== '') {
             try {
@@ -32,18 +35,33 @@ class ProgramaGeneralActualizarController extends BaseController
                 
                 $maxOverall = (int)($res['max_overall'] ?? 0);
                 $maxConfirmed = ($res['max_confirmed'] !== null) ? (int)$res['max_confirmed'] : null;
-                
-                // Si la semana en sesión es inválida (0, negativa o mayor al máximo del proyecto),
-                // aplicamos el Smart Default para este módulo.
-                if ($semana <= 0 || $semana > $maxOverall) {
-                    $_SESSION['semana'] = ($maxConfirmed !== null) ? $maxConfirmed : $maxOverall;
-                    $semana = $_SESSION['semana'];
+
+                $stmtProgram = $this->db->query("SELECT MAX(Semana) as max_program FROM {$dbName}_programa_consolidado");
+                $programRes = $stmtProgram->fetch();
+                $maxProgramWeek = (int)($programRes['max_program'] ?? 0);
+
+                if ($maxOverall <= 0) {
+                    $semanaBaseActualizacion = 0;
+                    $semanaObjetivoActualizacion = max(1, $maxProgramWeek ?: 1);
+                } elseif ($maxProgramWeek > $maxOverall) {
+                    $semanaObjetivoActualizacion = $maxProgramWeek;
+                    $semanaBaseActualizacion = max(1, min($maxOverall, $semanaObjetivoActualizacion - 1));
+                } else {
+                    $semanaBaseActualizacion = ($semana > 0 && $semana <= $maxOverall)
+                        ? $semana
+                        : (($maxConfirmed !== null) ? $maxConfirmed : $maxOverall);
+                    $semanaObjetivoActualizacion = $semanaBaseActualizacion + 1;
                 }
 
+                $_SESSION['semana'] = $semanaBaseActualizacion;
+                $semana = $semanaBaseActualizacion;
+
                 // Obtener estado específico de la semana actual
-                $stmtStatus = $this->db->prepare("SELECT Semanal_Confirmada FROM {$dbName}_semanas_activas WHERE Semana = ?");
-                $stmtStatus->execute([$semana]);
-                $semanalConfirmada = (int)($stmtStatus->fetchColumn() ?: 0);
+                if ($semanaBaseActualizacion > 0) {
+                    $stmtStatus = $this->db->prepare("SELECT Semanal_Confirmada FROM {$dbName}_semanas_activas WHERE Semana = ?");
+                    $stmtStatus->execute([$semanaBaseActualizacion]);
+                    $semanalConfirmada = (int)($stmtStatus->fetchColumn() ?: 0);
+                }
 
             } catch (\Exception $e) {
                 // Silencioso
@@ -54,6 +72,8 @@ class ProgramaGeneralActualizarController extends BaseController
         $vars = $this->getSessionVars();
         $vars['maxSemana'] = $maxOverall;
         $vars['semanalConfirmada'] = $semanalConfirmada;
+        $vars['semanaBaseActualizacion'] = $semanaBaseActualizacion;
+        $vars['semanaObjetivoActualizacion'] = $semanaObjetivoActualizacion;
         extract($vars); // $dbName, $semana, $proyecto, $permiso, $maxSemana, $semanalConfirmada etc.
 
         // Cargar vista Programa General Actualizar

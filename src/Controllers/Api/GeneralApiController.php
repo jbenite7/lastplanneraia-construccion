@@ -605,7 +605,8 @@ class GeneralApiController extends BaseController
             
             error_log("DEBUG IMPORT: Salida de modificar_sem_estado: " . $legacyOutput);
 
-            echo json_encode(['respuesta' => 'BIEN', 0 => (int)$semanaNueva]);
+            $semanaBase = ($maxSemAct > 0) ? min($maxSemAct, max(0, $semanaNueva - 1)) : 0;
+            echo json_encode(['respuesta' => 'BIEN', 0 => (int)$semanaNueva, 'semana_base' => (int)$semanaBase]);
 
         } catch (\Throwable $e) {
             if (isset($debug)) {
