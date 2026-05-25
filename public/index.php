@@ -109,6 +109,7 @@ $router->get('/control-cambios', [\App\Controllers\Integracion\ControlCambiosCon
 $router->post('/api/contratos/list', [\App\Controllers\Api\ContratosApiController::class, 'list']);
 $router->post('/api/contratos/save', [\App\Controllers\Api\ContratosApiController::class, 'save']);
 // Api/ListadoActividades
+$router->get('/api/listado-actividades/template', [\App\Controllers\Api\ListadoActividadesApiController::class, 'downloadTemplate']);
 $router->post('/api/listado-actividades/list', [\App\Controllers\Api\ListadoActividadesApiController::class, 'list']);
 $router->post('/api/listado-actividades/save', [\App\Controllers\Api\ListadoActividadesApiController::class, 'save']);
 // Api/PDC

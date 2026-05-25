@@ -178,7 +178,7 @@
 		                  <p class="aia-modal__hint">Usa la plantilla oficial para asegurar la estructura correcta del cargue masivo.</p>
 		                </div>
 		                <label for="descargarArchivoBase" class="control-label aia-modal__label">En el siguiente enlace puede descargar el archivo base para crear el listado de actividades desde Excel:</label>
-		                <a id="descargarArchivoBase" class="descargarArchivoBase btn btn-primary" download="listadoActividades.csv" href="/archivosBase/listadoActividades.csv">Descargar Archivo Base</a>
+		                <a id="descargarArchivoBase" class="descargarArchivoBase btn btn-primary" download="listadoActividades.csv" href="/api/listado-actividades/template">Descargar Archivo Base</a>
 		              </section>
 		              <section class="form-group parametro_cargarExcel aia-modal__section">
 		                <div class="aia-modal__section-header">

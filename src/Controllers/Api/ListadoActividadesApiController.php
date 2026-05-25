@@ -17,6 +17,25 @@ class ListadoActividadesApiController
         $this->db = \Database::getInstance(); // En legacy está mapeado globalmente o requiere su propio namespace
     }
 
+    public function downloadTemplate(): void
+    {
+        $path = PROJECT_ROOT . '/public/archivosBase/listadoActividades.csv';
+
+        if (!is_file($path) || !is_readable($path)) {
+            http_response_code(404);
+            header('Content-Type: text/plain; charset=utf-8');
+            echo 'Plantilla no disponible.';
+            return;
+        }
+
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="listadoActividades.csv"');
+        header('Content-Length: ' . filesize($path));
+        header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+        readfile($path);
+        exit;
+    }
+
     public function list(): void
     {
         try {
