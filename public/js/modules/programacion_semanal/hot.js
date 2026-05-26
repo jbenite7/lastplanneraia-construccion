@@ -862,7 +862,7 @@
       event.preventDefault();
       event.stopPropagation();
       var visualRow = parseInt($(this).data('row'), 10);
-      var rowData = hot && Number.isInteger(visualRow) ? hot.getSourceDataAtRow(visualRow) : null;
+      var rowData = hot && Number.isInteger(visualRow) ? getSourceRowDataByVisualRow(hot, visualRow) : null;
       openOperationalStateDrawer(rowData || {});
     });
 
@@ -1391,6 +1391,19 @@
     return document.querySelector('#hot-container .ht_master .wtHolder') || document.querySelector('#hot-container .wtHolder');
   }
 
+  function getSourceRowDataByVisualRow(instance, visualRow) {
+    if (!instance || !Number.isInteger(visualRow) || visualRow < 0) {
+      return null;
+    }
+
+    var physicalRow = typeof instance.toPhysicalRow === 'function' ? instance.toPhysicalRow(visualRow) : visualRow;
+    if (!Number.isInteger(physicalRow) || physicalRow < 0 || typeof instance.getSourceDataAtRow !== 'function') {
+      return null;
+    }
+
+    return instance.getSourceDataAtRow(physicalRow) || null;
+  }
+
   function captureViewportState() {
     var holder = getHotHolderElement();
     var selected = hot && typeof hot.getSelectedLast === 'function' ? hot.getSelectedLast() : null;
@@ -1429,6 +1442,92 @@
         } catch (_err) {
         }
       }
+    }
+  }
+
+  function cloneHotFilterConditions(conditions) {
+    if (!Array.isArray(conditions)) {
+      return [];
+    }
+
+    return conditions.map(function (stack) {
+      var stackConditions = Array.isArray(stack && stack.conditions) ? stack.conditions : [];
+
+      return {
+        column: stack ? stack.column : null,
+        operation: (stack && stack.operation) || 'conjunction',
+        conditions: stackConditions.map(function (condition) {
+          return {
+            name: condition ? condition.name : '',
+            args: Array.isArray(condition && condition.args) ? condition.args.slice() : [],
+          };
+        }).filter(function (condition) {
+          return condition.name;
+        }),
+      };
+    }).filter(function (stack) {
+      return Number.isInteger(stack.column) && stack.conditions.length > 0;
+    });
+  }
+
+  function getHotFiltersPlugin() {
+    if (!hot || typeof hot.getPlugin !== 'function') {
+      return null;
+    }
+
+    try {
+      return hot.getPlugin('filters') || null;
+    } catch (_err) {
+      return null;
+    }
+  }
+
+  function captureHotFilterConditions() {
+    var filtersPlugin = getHotFiltersPlugin();
+    var conditionCollection = filtersPlugin && filtersPlugin.conditionCollection;
+
+    if (!conditionCollection || typeof conditionCollection.exportAllConditions !== 'function') {
+      return [];
+    }
+
+    try {
+      return cloneHotFilterConditions(conditionCollection.exportAllConditions());
+    } catch (_err) {
+      return [];
+    }
+  }
+
+  function restoreHotFilterConditions(conditions) {
+    var clonedConditions = cloneHotFilterConditions(conditions);
+    if (clonedConditions.length === 0) {
+      return;
+    }
+
+    var filtersPlugin = getHotFiltersPlugin();
+    var conditionCollection = filtersPlugin && filtersPlugin.conditionCollection;
+
+    if (!conditionCollection) {
+      return;
+    }
+
+    try {
+      if (typeof conditionCollection.clean === 'function' && typeof conditionCollection.addCondition === 'function') {
+        conditionCollection.clean();
+        clonedConditions.forEach(function (stack) {
+          stack.conditions.forEach(function (condition) {
+            conditionCollection.addCondition(stack.column, condition, stack.operation);
+          });
+        });
+      } else if (typeof conditionCollection.importAllConditions === 'function') {
+        conditionCollection.importAllConditions(clonedConditions);
+      } else {
+        return;
+      }
+
+      if (filtersPlugin && typeof filtersPlugin.filter === 'function') {
+        filtersPlugin.filter();
+      }
+    } catch (_err) {
     }
   }
 
@@ -2018,7 +2117,7 @@
       Handsontable.dom.empty(td);
       td.classList.remove('ps-alert-critical-route', 'ps-alert-critical', 'ps-alert-high', 'ps-alert-medium', 'ps-alert-info', 'ps-alert-control', 'ps-alert-neutral');
 
-      var rowData = instance.getSourceDataAtRow(row) || {};
+      var rowData = instance && typeof instance.getSourceDataAtRow === 'function' ? (getSourceRowDataByVisualRow(instance, row) || {}) : {};
       var alertClass = getAlertClassForRow(rowData);
 
       td.classList.add('ps-row-state', alertClass);
@@ -2043,7 +2142,7 @@
 
     Handsontable.renderers.registerRenderer('psStateRenderer', function (instance, td, row, col, prop, value) {
       Handsontable.renderers.TextRenderer.apply(this, arguments);
-      var rowData = instance.getSourceDataAtRow(row) || {};
+      var rowData = instance && typeof instance.getSourceDataAtRow === 'function' ? (getSourceRowDataByVisualRow(instance, row) || {}) : {};
       var view = getStateView(rowData);
       td.innerHTML = renderOperationalStateCell(view);
       var trigger = td.querySelector('.ops-state-zoom');
@@ -2062,7 +2161,7 @@
 
     Handsontable.renderers.registerRenderer('psActividadRenderer', function (instance, td, row, col, prop, value) {
       Handsontable.renderers.TextRenderer.apply(this, arguments);
-      var rowData = instance.getSourceDataAtRow(row) || {};
+      var rowData = instance && typeof instance.getSourceDataAtRow === 'function' ? (getSourceRowDataByVisualRow(instance, row) || {}) : {};
       var prefix = parseInt(rowData.alerta_crisis, 10) === 1 ? '🔥 ' : '';
       td.textContent = prefix + stripHtmlTags(value);
       td.classList.add('htLeft', 'htMiddle', 'force-wrap');
@@ -2070,7 +2169,7 @@
 
     Handsontable.renderers.registerRenderer('psRatioRenderer', function (instance, td, row, col, prop, value) {
       Handsontable.renderers.TextRenderer.apply(this, arguments);
-      var rowData = instance.getSourceDataAtRow(row) || {};
+      var rowData = instance && typeof instance.getSourceDataAtRow === 'function' ? (getSourceRowDataByVisualRow(instance, row) || {}) : {};
       var ratio = toNumber(value, null);
       if (ratio === null) {
         td.textContent = '';
@@ -2088,7 +2187,7 @@
 
     Handsontable.renderers.registerRenderer('psCompromisoRenderer', function (instance, td, row, col, prop, value) {
       Handsontable.renderers.TextRenderer.apply(this, arguments);
-      var rowData = instance.getSourceDataAtRow(row) || {};
+      var rowData = instance && typeof instance.getSourceDataAtRow === 'function' ? (getSourceRowDataByVisualRow(instance, row) || {}) : {};
       var numeric = toNumber(value, null);
       if (numeric === null) {
         td.textContent = '';
@@ -2127,7 +2226,7 @@
 
     Handsontable.renderers.registerRenderer('psPptoRenderer', function (instance, td, row, col, prop, value) {
       Handsontable.renderers.TextRenderer.apply(this, arguments);
-      var rowData = instance.getSourceDataAtRow(row) || {};
+      var rowData = instance && typeof instance.getSourceDataAtRow === 'function' ? (getSourceRowDataByVisualRow(instance, row) || {}) : {};
       var unit = String(rowData.Unidad || '').trim();
       if (unit === '%') {
         td.textContent = 'N/A';
@@ -2139,7 +2238,7 @@
 
     Handsontable.renderers.registerRenderer('psResponsableRenderer', function (instance, td, row, col, prop, value) {
       Handsontable.renderers.DropdownRenderer.apply(this, arguments);
-      var rowData = instance.getSourceDataAtRow(row) || {};
+      var rowData = instance && typeof instance.getSourceDataAtRow === 'function' ? (getSourceRowDataByVisualRow(instance, row) || {}) : {};
       if (isBlank(value) && isActiveRowForCommitments(rowData)) {
         td.classList.add('ps-cell-empty-alert');
         td.innerHTML = '<span style="color:#d32f2f;font-size:14px" title="Falta asignación (Bloquea confirmación)">⚠ Sin asignar</span>';
@@ -2159,9 +2258,11 @@
     syncContainerHeight();
 
     if (hot) {
+      var filterConditions = captureHotFilterConditions();
       pendingViewportState = captureViewportState();
       hot.loadData(data);
       applyLegacyColumnVisibility();
+      restoreHotFilterConditions(filterConditions);
       scheduleLayoutRefresh(0, true);
       return;
     }
@@ -2292,7 +2393,7 @@
       },
       cells: function (row, col, prop) {
         var props = {};
-        var rowData = this.instance.getSourceDataAtRow(row) || {};
+        var rowData = this && typeof this.getSourceDataAtRow === 'function' ? (getSourceRowDataByVisualRow(this, row) || {}) : {};
         var alertClass = getAlertClassForRow(rowData);
         var columnMeta = this.instance.getSettings().columns[col] || {};
         var baseClass = columnMeta.className || '';
@@ -2346,7 +2447,7 @@
 
         if (toReject.length > 0) {
             setTimeout(function() {
-                var rowData = hot.getSourceDataAtRow(toReject[0]) || {};
+                var rowData = getSourceRowDataByVisualRow(hot, toReject[0]) || {};
                 var msg = 'Al asignar una cantidad 0 para esta actividad, debe analizar la Causa de No Programación (CNP). Al continuar, la actividad será desprogramada.';
                 
                 if (typeof AIA !== 'undefined' && AIA.Notice) {
@@ -2387,7 +2488,7 @@
             continue;
           }
 
-          var rowData = hot.getSourceDataAtRow(rowIndex) || {};
+          var rowData = getSourceRowDataByVisualRow(hot, rowIndex) || {};
 
           // HARD GUARD: Block real execution registration if missing assignees
           if (prop === 'Ejecutado_Real') {
@@ -2408,6 +2509,8 @@
                 // Prevenir guardado y abrir modal CNC (nuevo o actualización)
                 window._pendingCncSave = {
                   rowIndex: rowIndex,
+                  consecutivo: rowData.Consecutivo,
+                  sourceRowData: rowData,
                   oldValue: oldValue,
                   newValue: newValue,
                   prop: prop
@@ -3626,14 +3729,29 @@
 
       if (window._pendingCncSave && hot) {
         var pending = window._pendingCncSave;
+        var currentVisualRow = -1;
+        var sourceData = hot.getSourceData();
+        for (var r = 0; r < sourceData.length; r++) {
+          if (sourceData[r].Consecutivo === pending.consecutivo) {
+            currentVisualRow = hot.toVisualRow(r);
+            break;
+          }
+        }
+
+        if (currentVisualRow < 0) {
+          showFeedback('error', 'No se pudo localizar la fila origen. Recargue la página.');
+          window._pendingCncSave = null;
+          $('#modal_cnc_hot').modal('hide');
+          return;
+        }
         
         // Inyectamos los datos de CNC en la fila de Handsontable de forma visual
-        hot.setDataAtRowProp(pending.rowIndex, 'Categoria_CNC', cat, 'internal-update');
-        hot.setDataAtRowProp(pending.rowIndex, 'CNC', cnc, 'internal-update');
-        hot.setDataAtRowProp(pending.rowIndex, 'Observaciones_CNC', obs, 'internal-update');
+        hot.setDataAtRowProp(currentVisualRow, 'Categoria_CNC', cat, 'internal-update');
+        hot.setDataAtRowProp(currentVisualRow, 'CNC', cnc, 'internal-update');
+        hot.setDataAtRowProp(currentVisualRow, 'Observaciones_CNC', obs, 'internal-update');
         
         var normalized = normalizeCellValue(pending.prop, pending.newValue);
-        hot.setDataAtRowProp(pending.rowIndex, pending.prop, normalized.value, 'internal-update');
+        hot.setDataAtRowProp(currentVisualRow, pending.prop, normalized.value, 'internal-update');
         
         // Inyectamos overrides al request AJAX para obviar el delay asíncrono del buffer visual de HOT
         var overrides = {
@@ -3643,7 +3761,7 @@
         };
         overrides[pending.prop] = normalized.value;
         
-        saveRow(pending.rowIndex, pending.prop, pending.oldValue, overrides);
+        saveRow(currentVisualRow, pending.prop, pending.oldValue, overrides);
         
         window._pendingCncSave = null;
         $('#modal_cnc_hot').modal('hide');
