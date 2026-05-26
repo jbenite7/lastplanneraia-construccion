@@ -47,7 +47,7 @@ const RbacCapabilities = {
   },
 
   canManageWeeks: function (role) {
-    return ['A', 'D', 'OT'].includes(role);
+    return ['A', 'D', 'OT', 'R', 'DCV'].includes(role);
   },
 
   canEditGeneralProgram: function (role) {

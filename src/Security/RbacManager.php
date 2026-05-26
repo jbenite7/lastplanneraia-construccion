@@ -21,7 +21,7 @@ class RbacManager
         $isProfesionalDCV = ($role === 'DCV');
         $isVisualizer = ($role === 'V');
         $isSubcontractor = ($role === 'C');
-        $canManageWeeks = in_array($role, ['A', 'D', 'OT']);
+        $canManageWeeks = in_array($role, ['A', 'D', 'OT', 'R', 'DCV']);
         $canEditGeneralProgram = in_array($role, ['A', 'D', 'R', 'OT', 'DCV']);
         $canEditWeeklyProgram = in_array($role, ['A', 'D', 'R', 'S', 'G', 'SG', 'OT']);
         $canEditMediumTerm = in_array($role, ['A', 'D', 'R', 'OT']);

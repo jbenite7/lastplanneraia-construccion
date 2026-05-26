@@ -777,9 +777,6 @@ var maestroPermisos = function (permiso) {
 
       //Bloqueos Integración
 
-      //Bloqueos Semanas del Proyecto
-      $('.nueva_sem, .eliminar_sem').css('display', 'none');
-
       //Bloqueos Programa General
       $('#actualizarEjecucion').css('display', 'none');
 
@@ -804,7 +801,7 @@ var maestroPermisos = function (permiso) {
       //Bloqueos Integración
 
       //Bloqueos Semanas del Proyecto
-      $('.nueva_sem, .eliminar_sem, #btn_nuevo').css('display', 'none');
+      $('.eliminar_sem, #btn_nuevo').css('display', 'none');
 
       //Bloqueos Programa General
       $('#actualizarEjecucion').css('display', 'none');
