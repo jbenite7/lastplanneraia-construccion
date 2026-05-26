@@ -78,28 +78,9 @@ var nueva_sem = function (db, carpeta, seccion) {
               );
             });
           } else {
-            if (pdcConteo > 0 && semana > 1) {
-              $.ajax({
-                method: 'POST',
-                url: '/legacy/pdc/actualizar_pdc.php',
-                dataType: 'json',
-                data: { db: db, semana: semana },
-              }).done(function (info) {
-                location.assign(
-                  '/legacy/cambiar_pagina.php?seccion=programa_general&semana=' + semana
-                );
-              }).fail(function (xhr, status, error) {
-                $('#modal_spinner').modal('hide');
-                aiaNoticeInvoke('error', 'Error al actualizar el PDC: ' + (error || status));
-                location.assign(
-                  '/legacy/cambiar_pagina.php?seccion=programa_general&semana=' + semana
-                );
-              });
-            } else {
               location.assign(
                 '/legacy/cambiar_pagina.php?seccion=programa_general&semana=' + semana
               );
-            }
           }
         }).always(function() {
           $('#btn_guardar_nueva_sem').prop('disabled', false);
