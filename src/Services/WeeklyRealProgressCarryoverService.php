@@ -3,16 +3,20 @@
 namespace App\Services;
 
 use App\Core\Lps\LpsService;
+use App\Services\ProgramaConsolidadoNormalizationService;
 
 class WeeklyRealProgressCarryoverService
 {
     private $db;
     private LpsService $lpsService;
 
+    private ProgramaConsolidadoNormalizationService $normalizationService;
+
     public function __construct($db = null, ?LpsService $lpsService = null)
     {
         $this->db = $db ?: \Database::getInstance();
         $this->lpsService = $lpsService ?: new LpsService();
+        $this->normalizationService = new ProgramaConsolidadoNormalizationService($this->db);
     }
 
     public function syncWeek(string $dbPrefix, int $sourceWeek, int $targetWeek, ?int $sourceProgramId = null): array
@@ -83,6 +87,8 @@ class WeeklyRealProgressCarryoverService
             $updatedRows++;
             $updatedProgramIds[(int)$targetRow['Consecutivo_en_Programa']] = true;
         }
+
+        $this->normalizationService->normalizeChapters($dbPrefix, $targetWeek);
 
         return [
             'updatedProgramIds' => array_map('intval', array_keys($updatedProgramIds)),

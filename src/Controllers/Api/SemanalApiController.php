@@ -3,6 +3,7 @@
 namespace App\Controllers\Api;
 
 use App\Core\Lps\LpsService;
+use App\Services\ProgramaConsolidadoNormalizationService;
 use App\Services\WeeklyRealProgressCarryoverService;
 use PDO;
 use Throwable;
@@ -565,6 +566,10 @@ class SemanalApiController
         $query2 = "UPDATE {$dbPrefix}_programa_consolidado SET Ejecutado_Siguiente_Semana = ? WHERE Consecutivo_en_Programa = ? AND Semana = ?";
         $this->db->query($query1, [$id, $semana]);
         $res = $this->db->query($query2, [$ejecutado, $id, $semana]);
+
+        $normalizationService = new ProgramaConsolidadoNormalizationService($this->db);
+        $normalizationService->normalizeChapters($dbPrefix, $semana);
+
         $this->jsonResponse($res ? "BIEN" : "ERROR");
     }
 

@@ -31,6 +31,8 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ### Añadido
 
+- **Servicio de Normalización de Capítulos PG:** Nuevo `ProgramaConsolidadoNormalizationService` que auto-corrige capítulos con `Ejecutado > 0` y `Estado !== 'Capítulo'`. Integrado en GeneralApiController, SemanalApiController, creación de semana y cierre semanal.
+- **Guard Server-Side para Capítulos PG:** Rechazo con 403 de ediciones directas a filas de tipo capítulo (`Titulo=1`) en `GeneralApiController::update()`.
 - **LPS Contextual Drawers**: Paneles laterales deslizables (Bottom-Sheet responsive) integrados en Programa General, Programación Intermedia y Programación Semanal para guías y ayudas operativas contextuales.
 - **Matriz de severidad del Cajón Contextual LPS:** Nueva documentación operativa en `docs/matriz-severidad-cajon-contextual-lps.md` para normalizar severidades PG/PI/PS, restricciones duras/blandas, colores y comportamiento de sidebar.
 - **Motor de Escalamiento Semanal Inteligente**: Sistema de notificaciones express mitigador de spam con "Modo Simulación" (al portapapeles y Liquid Glass), Weekly Digest consolidador por subcontratista, y filtro automático para restringir las notificaciones individuales a tareas de Ruta Crítica (P1).
@@ -45,6 +47,7 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ### Corregido
 
+- **Fix Edición Ejecutado Real en PG (Consecutivo_en_Programa=0):** Resuelto bug donde el valor `Ejecutado Real` de la actividad "INICIO DEL PROYECTO (ESTIMADO)" se revertía al refrescar. Causa raíz: `Consecutivo_en_Programa=0` era falsey en JS, cayendo al `Id=1` del capítulo PREOPERATIVOS. Se corrigió `hot.js` y `GeneralApiController::update()` para usar `Consecutivo_en_Programa` como identificador canónico.
 - **Render estable de Actualización de Cronograma:** Corrección del mapeo de columnas en Handsontable usando `propToCol`, refresco explícito de dimensiones tras `loadData()` y uso de `semana_objetivo` para evitar que las peticiones al borrador cambien la semana base de sesión.
 - **Actualización de Cronograma estable:** La vista `/programa-general-actualizar` separa la semana base de la semana objetivo del borrador para evitar alternancia vacío/con datos al refrescar y mantener las peticiones siempre sobre el cronograma actualizado correcto.
 - **Plantilla de Listado de Actividades:** La descarga de `listadoActividades.csv` usa un endpoint MVC dedicado para no depender de reglas estáticas del servidor en `/archivosBase`.

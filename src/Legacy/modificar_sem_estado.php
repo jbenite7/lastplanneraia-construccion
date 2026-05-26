@@ -74,7 +74,9 @@ try {
 
     $dbInstance->query("UPDATE {$dbName}_programa_consolidado SET Ruta_Critica = 0 WHERE Titulo = 1 AND Semana = ?", [$semana]);
 
-    $dbInstance->query("UPDATE {$dbName}_programa_consolidado SET Ejecutado = 0, Semanas_Inicio = 0 WHERE Fecha_Inicio IS NULL AND Fecha_Fin IS NULL AND Titulo = 1 AND Semana = ?", [$semana]);
+    $normalizationService = $normalizationService ?? new \App\Services\ProgramaConsolidadoNormalizationService($dbInstance);
+    $normalizationService->normalizeChapters($dbName, $semana);
+    $dbInstance->query("UPDATE {$dbName}_programa_consolidado SET Semanas_Inicio = 0 WHERE Fecha_Inicio IS NULL AND Fecha_Fin IS NULL AND Titulo = 1 AND Semana = ?", [$semana]);
 
     $fechaFinSemana = $f_fin_sem ?? null;
     if (empty($fechaFinSemana)) {

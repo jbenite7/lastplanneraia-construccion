@@ -14,6 +14,8 @@ if (!isset($dbInstance)) {
     $dbInstance = Database::getInstance();
 }
 
+require_once __DIR__ . '/_pdc_functions.php';
+
 $db = $_GET['db'] ?? $_POST['db'] ?? '';
 $opcion = $_POST["opcion"] ?? "nueva_sem";
 $f_inicio_sem_raw = $_POST["f_inicio_sem"] ?? '';
@@ -21,6 +23,9 @@ $f_inicio_sem = date("Y-m-d", strtotime($f_inicio_sem_raw));
 $pdcActivo = $_SESSION['pdcActivo'] ?? 0;
 $rolCanon = $_SESSION['permiso_canonico'] ?? '';
 $esAdmin = ($rolCanon === 'A');
+
+require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
+rbac_guard_require_permission('lps.semana.crear');
 
 if (!preg_match('/^[a-zA-Z0-9_]+$/', $db)) {
     die(json_encode(["respuesta" => "ERROR", "mensaje" => "Nombre de base de datos inválido."]));
@@ -62,7 +67,9 @@ try {
             $sqlCopy = "INSERT INTO {$db}_programa_consolidado(Consecutivo, Semana, Consecutivo_en_Programa, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin, Ruta_Critica, medir_productividad, Ejecutado, Estado, Semanas_Inicio, Estado_Restricciones, D_y_E, Materiales, MdeO, Equipos, Predecesora, Pdto_Cons, Modelo, Responsable_AIA, Observaciones, Ult_Act_Est, Ult_Act_Restr, Ejecutado_Siguiente_Semana) 
                         SELECT NULL, ?, Consecutivo, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin, Ruta_Critica, 0, IFNULL(Ejecutado, 0), Estado, IFNULL(Semanas_Inicio, 0), IFNULL(Estado_Restricciones, '0'), IFNULL(D_y_E, '0'), IFNULL(Materiales, '0'), IFNULL(MdeO, '0'), IFNULL(Equipos, '0'), IFNULL(Predecesora, '0'), IFNULL(Pdto_Cons, '0'), IFNULL(Modelo, '0'), Responsable_AIA, Observaciones, Ult_Act_Est, Ult_Act_Restr, IFNULL(Ejecutado, 0) FROM {$db}_programa";
             $dbInstance->query($sqlCopy, [$semana_crear]);
-            $sqlReset = "UPDATE {$db}_programa_consolidado SET Semanas_Inicio=NULL, medir_productividad=NULL, unidad=NULL, cantidad_ppto=NULL, codigo_actividad=NULL, Ejecutado=0, D_y_E='0', Materiales='0', MdeO='0', Equipos='0', Predecesora='0', Pdto_Cons='0', Modelo='0', Sub_Contratista=NULL, Responsable_AIA=NULL, Observaciones=NULL, Ult_Act_Est=NULL, Ult_Act_Restr=NULL, Activa=0, Ejecutado_Siguiente_Semana=NULL WHERE Semana = ? AND Titulo=1";
+            $normalizationService = new \App\Services\ProgramaConsolidadoNormalizationService($dbInstance);
+            $normalizationService->normalizeChapters($db, $semana_crear);
+            $sqlReset = "UPDATE {$db}_programa_consolidado SET Semanas_Inicio=NULL, medir_productividad=NULL, unidad=NULL, cantidad_ppto=NULL, codigo_actividad=NULL, D_y_E='0', Materiales='0', MdeO='0', Equipos='0', Predecesora='0', Pdto_Cons='0', Modelo='0', Sub_Contratista=NULL, Responsable_AIA=NULL, Observaciones=NULL, Ult_Act_Est=NULL, Ult_Act_Restr=NULL, Activa=0 WHERE Semana = ? AND Titulo=1";
             $dbInstance->query($sqlReset, [$semana_crear]);
 
         } else {
@@ -120,7 +127,9 @@ try {
                 $dbInstance->query($sqlInsertCopy, [$semana_crear, $conteo]);
             }
 
-            $dbInstance->query("UPDATE {$db}_programa_consolidado SET Semanas_Inicio=NULL, medir_productividad=NULL, unidad=NULL, cantidad_ppto=NULL, codigo_actividad=NULL, Ejecutado=0, D_y_E='0', Materiales='0', MdeO='0', Equipos='0', Predecesora='0', Pdto_Cons='0', Modelo='0', Sub_Contratista=NULL, Responsable_AIA=NULL, Observaciones=NULL, Ult_Act_Est=NULL, Ult_Act_Restr=NULL, Activa=0, Ejecutado_Siguiente_Semana=NULL WHERE Semana = ? AND Titulo=1", [$semana_crear]);
+            $normalizationService = new \App\Services\ProgramaConsolidadoNormalizationService($dbInstance);
+            $normalizationService->normalizeChapters($db, $semana_crear);
+            $dbInstance->query("UPDATE {$db}_programa_consolidado SET Semanas_Inicio=NULL, medir_productividad=NULL, unidad=NULL, cantidad_ppto=NULL, codigo_actividad=NULL, D_y_E='0', Materiales='0', MdeO='0', Equipos='0', Predecesora='0', Pdto_Cons='0', Modelo='0', Sub_Contratista=NULL, Responsable_AIA=NULL, Observaciones=NULL, Ult_Act_Est=NULL, Ult_Act_Restr=NULL, Activa=0 WHERE Semana = ? AND Titulo=1", [$semana_crear]);
             $dbInstance->query("UPDATE {$db}_programa_consolidado SET Ejecutado = 0, Estado_Restricciones = '0', D_y_E = '0', Materiales = '0', MdeO = '0', Equipos = '0', Predecesora = '0', Pdto_Cons = '0', Modelo = '0' WHERE Ejecutado IS NULL AND Semana = ? AND Titulo=0", [$semana_crear]);
 
 
@@ -133,10 +142,14 @@ try {
                                 SELECT ?, titulo, tipoPaquete, paqueteContratacion, contratos, numeroSubcontratos, subcontratoPaquete, estado, fechaElaboracionPliegos, diasElaboracionPliegos, fechaRealElaboracionPliegos, fechaIngresoLicify, diasIngresoLicify, fechaRealIngresoLicify, fechaEntregaPliegos, diasEntregaPliegos, fechaRealEntregaPliegos, fechaReciboPropuestas, diasReciboPropuestas, fechaRealReciboPropuestas, fechaCuadrosComparativos, diasCuadrosComparativos, fechaRealCuadrosComparativos, fechaLegalizacionContrato, diasLegalizacionContrato, fechaRealLegalizacionContrato, fechaFabricacion, diasFabricacion, fechaRealFabricacion, fechaInsumosObra, diasInsumosObra, fechaRealInsumosObra, fechaInicio, fechaInicioProyectada, fechaRealInicio, idProveedorAdjudicado, numeroContrato, fechaVencimientoPolizas, valorPresupuesto, valorPrimeraNegociacion, valorAdjudicado, valorAnticipo, valorReclamado, valorDevoluciones, observacionesContrato 
                                 FROM `{$db}_pdc` WHERE `semana` = ?";
                 $dbInstance->query($sqlCopyPDC, [$semana_crear, $conteo]);
+
+                pdc_insertarPaquetes($dbInstance, $db, $semana_crear, '', '', '');
+                pdc_crearSubcontratosDuplicados($dbInstance, $db, $semana_crear);
+                pdc_generarEstadoProceso($dbInstance, $db, $semana_crear);
             }
         }
 
-        $conteoPDC = 1;
+        $conteoPDC = $pdcActivo;
         $semana = $semana_crear;
         $ejecucionActualizada = 1;
         $dbName = $db;

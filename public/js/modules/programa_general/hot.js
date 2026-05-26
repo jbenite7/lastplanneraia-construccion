@@ -798,7 +798,9 @@
 
   function buildUpdatePayload(rowData, prop, overrides) {
     var payloadRow = $.extend({}, rowData || {}, overrides || {});
-    var id = payloadRow.Consecutivo_en_Programa || payloadRow.Id;
+    var id = payloadRow.Consecutivo_en_Programa != null && payloadRow.Consecutivo_en_Programa !== ''
+        ? payloadRow.Consecutivo_en_Programa
+        : payloadRow.Id;
     var fechaInicio = String(payloadRow.Fecha_Inicio || '').trim();
     var fechaFin = String(payloadRow.Fecha_Fin || '').trim();
     var physicalVal = toNumber(payloadRow.EjecutadoDisplay, null);
@@ -826,7 +828,7 @@
 
     var physicalToSubmit = physicalVal;
 
-    if (!id) {
+    if (id === null || id === undefined || id === '') {
       return { valid: false, error: 'Id de fila inválido' };
     }
 
@@ -853,7 +855,8 @@
     return {
       valid: true,
       data: {
-        Id: id,
+        Consecutivo_en_Programa: id,
+        Id: payloadRow.Id,
         Ejecutado: physicalToSubmit.toFixed(2),
         EjecutadoRatio: ratioVal.toFixed(6),
         codigo_actividad: String(payloadRow.codigo_actividad || '').trim(),
@@ -1309,6 +1312,91 @@
     }
   }
 
+  function cloneHotFilterConditions(conditions) {
+    if (!Array.isArray(conditions)) {
+      return [];
+    }
+
+    return conditions.map(function (stack) {
+      var stackConditions = Array.isArray(stack && stack.conditions) ? stack.conditions : [];
+
+      return {
+        column: stack ? stack.column : null,
+        operation: (stack && stack.operation) || 'conjunction',
+        conditions: stackConditions.map(function (condition) {
+          return {
+            name: condition ? condition.name : '',
+            args: Array.isArray(condition && condition.args) ? condition.args.slice() : [],
+          };
+        }).filter(function (condition) {
+          return condition.name;
+        }),
+      };
+    }).filter(function (stack) {
+      return Number.isInteger(stack.column) && stack.conditions.length > 0;
+    });
+  }
+
+  function getHotFiltersPlugin() {
+    if (!hot || typeof hot.getPlugin !== 'function') {
+      return null;
+    }
+
+    try {
+      return hot.getPlugin('filters') || null;
+    } catch (_err) {
+      return null;
+    }
+  }
+
+  function captureHotFilterConditions() {
+    var filtersPlugin = getHotFiltersPlugin();
+    var conditionCollection = filtersPlugin && filtersPlugin.conditionCollection;
+
+    if (!conditionCollection || typeof conditionCollection.exportAllConditions !== 'function') {
+      return [];
+    }
+
+    try {
+      return cloneHotFilterConditions(conditionCollection.exportAllConditions());
+    } catch (_err) {
+      return [];
+    }
+  }
+
+  function restoreHotFilterConditions(conditions) {
+    var clonedConditions = cloneHotFilterConditions(conditions);
+    if (clonedConditions.length === 0) {
+      return;
+    }
+
+    var filtersPlugin = getHotFiltersPlugin();
+    var conditionCollection = filtersPlugin && filtersPlugin.conditionCollection;
+
+    if (!conditionCollection) {
+      return;
+    }
+
+    try {
+      if (typeof conditionCollection.clean === 'function' && typeof conditionCollection.addCondition === 'function') {
+        conditionCollection.clean();
+        clonedConditions.forEach(function (stack) {
+          stack.conditions.forEach(function (condition) {
+            conditionCollection.addCondition(stack.column, condition, stack.operation);
+          });
+        });
+      } else if (typeof conditionCollection.importAllConditions === 'function') {
+        conditionCollection.importAllConditions(clonedConditions);
+      } else {
+        return;
+      }
+
+      if (filtersPlugin && typeof filtersPlugin.filter === 'function') {
+        filtersPlugin.filter();
+      }
+    } catch (_err) {}
+  }
+
   function getBaseColumnWidths(columnCount) {
     var widths = [];
     var plugin = hot && hot.getPlugin ? hot.getPlugin('autoColumnSize') : null;
@@ -1723,7 +1811,10 @@
     syncContainerHeight();
 
     if (hot) {
+      var filterConditions = captureHotFilterConditions();
+      pendingViewportState = captureViewportState();
       hot.loadData(data);
+      restoreHotFilterConditions(filterConditions);
       scheduleLayoutRefresh(0, true);
       return;
     }

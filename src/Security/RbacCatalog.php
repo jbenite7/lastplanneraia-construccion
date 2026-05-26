@@ -85,6 +85,7 @@ class RbacCatalog
             ['key' => 'lps.subcontratistas.editar', 'module' => 'lps', 'action' => 'subcontratistas_editar', 'description' => 'Editar subcontratistas'],
             ['key' => 'lps.indicadores.ver', 'module' => 'lps', 'action' => 'indicadores_ver', 'description' => 'Ver indicadores'],
             ['key' => 'lps.reportes.generar', 'module' => 'lps', 'action' => 'reportes_generar', 'description' => 'Generar reportes'],
+            ['key' => 'lps.semana.crear', 'module' => 'lps', 'action' => 'semana_crear', 'description' => 'Crear nuevas semanas en el proyecto'],
 
             ['key' => 'notificaciones.resumen_semanal', 'module' => 'notificaciones', 'action' => 'resumen_semanal', 'description' => 'Recibir resumen semanal'],
             ['key' => 'notificaciones.cic_especialidad', 'module' => 'notificaciones', 'action' => 'cic_especialidad', 'description' => 'Recibir alertas CIC por especialidad'],
@@ -147,6 +148,7 @@ class RbacCatalog
                 $allRead,
                 $allWrite,
                 [
+                    'lps.semana.crear',
                     'notificaciones.resumen_semanal',
                     'notificaciones.cic_especialidad',
                     'notificaciones.lps_operativas',
@@ -158,6 +160,7 @@ class RbacCatalog
 
             // Residente y DCV: edita LPS, pero solo visualiza Listado/Contratos/PDC.
             'R' => [
+                'lps.semana.crear',
                 'lps.programa_general.ver',
                 'lps.programa_general.editar',
                 'lps.programa_general_actualizar.ver',
@@ -188,6 +191,7 @@ class RbacCatalog
                 'notificaciones.preferencias_personales',
             ],
             'DCV' => [
+                'lps.semana.crear',
                 'lps.programa_general.ver',
                 'lps.programa_general.editar',
                 'lps.programa_general_actualizar.ver',
@@ -220,6 +224,7 @@ class RbacCatalog
 
             // Oficina tecnica: solo edita Listado/Contratos/PDC; lo demas lectura.
             'OT' => [
+                'lps.semana.crear',
                 'lps.programa_general.ver',
                 'lps.programa_general_actualizar.ver',
                 'lps.programacion_intermedia.ver',

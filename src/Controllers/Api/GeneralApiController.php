@@ -4,6 +4,7 @@ namespace App\Controllers\Api;
 
 use App\Controllers\BaseController;
 use App\Core\Lps\LpsService;
+use App\Services\ProgramaConsolidadoNormalizationService;
 use PDO;
 use Exception;
 
@@ -141,11 +142,23 @@ class GeneralApiController extends BaseController
 
             $semanaParam = $_GET['semana_objetivo'] ?? $_GET['semana'] ?? null;
             $semana = $semanaParam !== null ? filter_var($semanaParam, FILTER_VALIDATE_INT) : ($vars['semana'] ?? 0);
-            $id = $_POST['Id'] ?? null;
+            $id = $_POST['Consecutivo_en_Programa'] ?? $_POST['Id'] ?? null;
 
             if (($id === null || $id === '') || !$semana) {
                 error_log("🔥 [DebugUpdate] Faltan parámetros. ID: " . var_export($id, true) . ", Semana: " . var_export($semana, true));
                 throw new Exception("Faltan parámetros requeridos (Id, Semana).");
+            }
+
+            $checkStmt = $this->db->prepare("SELECT Titulo FROM {$dbPrefix}_programa_consolidado WHERE Consecutivo_en_Programa = ? AND Semana = ?");
+            $checkStmt->execute([$id, $semana]);
+            $existingRow = $checkStmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$existingRow) {
+                throw new Exception("No se encontró la actividad en Programa General.");
+            }
+
+            if ($existingRow['Titulo'] == 1) {
+                throw new Exception("No se puede editar un capítulo directamente. Use las actividades hijas.");
             }
 
             $rawInput = $_POST["Ejecutado"] ?? null;
@@ -192,6 +205,12 @@ class GeneralApiController extends BaseController
             $medirProductividad = 0;
 
             $actividadAsociar = $_POST['actividadAsociar'] ?? null;
+
+            $auditStmt = $this->db->prepare("SELECT Ejecutado, Ejecutado_Siguiente_Semana, Estado, Titulo, unidad, cantidad_ppto FROM {$dbPrefix}_programa_consolidado WHERE Consecutivo_en_Programa = ? AND Semana = ? LIMIT 1");
+            $auditStmt->execute([$id, $semana]);
+            $auditBefore = $auditStmt->fetch(PDO::FETCH_ASSOC);
+            $auditStartTime = microtime(true);
+            error_log("[PGAudit] INICIO | usuario={$vars['user']} | db={$dbPrefix} | semana={$semana} | id={$id} | Titulo={$auditBefore['Titulo']} | Ejecutado_antes={$auditBefore['Ejecutado']} | EjecSigSem_antes={$auditBefore['Ejecutado_Siguiente_Semana']} | Estado_antes={$auditBefore['Estado']} | unidad={$auditBefore['unidad']} | cantidad_ppto={$auditBefore['cantidad_ppto']} | POST_Ejecutado={$rawInput} | POST_EjecutadoRatio=" . ($_POST["EjecutadoRatio"] ?? 'null') . " | POST_unidad={$unidadRaw} | POST_cantidad_ppto=" . ($_POST["cantidad_ppto"] ?? 'null') . " | ejecutado_calculado={$ejecutado}");
 
             // 4. Update Principal (Incluyendo Mapeo)
             $sql = "UPDATE {$dbPrefix}_programa_consolidado SET 
@@ -306,6 +325,16 @@ class GeneralApiController extends BaseController
 
             $this->db->prepare("UPDATE {$dbPrefix}_programa_consolidado SET Estado = ?, Semanas_Inicio = ? WHERE Consecutivo_en_Programa = ? AND Semana = ?")
                      ->execute([$nuevoEstado, $semanasInicio, $id, $semana]);
+
+            $auditEndTime = microtime(true);
+            $auditDuration = round(($auditEndTime - $auditStartTime) * 1000, 2);
+            $auditStmt2 = $this->db->prepare("SELECT Ejecutado, Ejecutado_Siguiente_Semana, Estado FROM {$dbPrefix}_programa_consolidado WHERE Consecutivo_en_Programa = ? AND Semana = ? LIMIT 1");
+            $auditStmt2->execute([$id, $semana]);
+            $auditAfter = $auditStmt2->fetch(PDO::FETCH_ASSOC);
+            error_log("[PGAudit] FINAL | usuario={$vars['user']} | semana={$semana} | id={$id} | Ejecutado_despues={$auditAfter['Ejecutado']} | EjecSigSem_despues={$auditAfter['Ejecutado_Siguiente_Semana']} | Estado_despues={$auditAfter['Estado']} | duracion_ms={$auditDuration}");
+
+            $normalizationService = new ProgramaConsolidadoNormalizationService($this->db);
+            $normalizationService->normalizeChapters($dbPrefix, $semana);
 
             $response = [
                 'respuesta' => 'BIEN', 
