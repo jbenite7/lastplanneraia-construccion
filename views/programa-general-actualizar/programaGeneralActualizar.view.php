@@ -347,7 +347,7 @@
 	<script src="/js/HandsontableTomSelectEditor.js?v=tomselect30"></script>
 	
 	<!-- Módulos de Handsontable -->
-	<script src="/public/js/modules/programa_actualizar/hot_actualizar.js?v=20260525b"></script>
+	<script src="/public/js/modules/programa_actualizar/hot_actualizar.js?v=20260526a"></script>
 
 	<script>
 		/* Funciones Legacy requeridas a nivel global */
@@ -456,7 +456,7 @@
 		    
 		    $.ajax({
 		      type: "POST",
-		      url: "/api/general/delete-update?db="+db+"&semana="+semanaObjetivo,
+		      url: "/api/general/delete-update?db="+db+"&semana_objetivo="+semanaObjetivo,
 		      data: variables,
 					processData: false,
 					contentType: false,

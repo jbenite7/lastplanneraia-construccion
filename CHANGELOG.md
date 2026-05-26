@@ -45,6 +45,7 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ### Corregido
 
+- **Render estable de Actualización de Cronograma:** Corrección del mapeo de columnas en Handsontable usando `propToCol`, refresco explícito de dimensiones tras `loadData()` y uso de `semana_objetivo` para evitar que las peticiones al borrador cambien la semana base de sesión.
 - **Actualización de Cronograma estable:** La vista `/programa-general-actualizar` separa la semana base de la semana objetivo del borrador para evitar alternancia vacío/con datos al refrescar y mantener las peticiones siempre sobre el cronograma actualizado correcto.
 - **Plantilla de Listado de Actividades:** La descarga de `listadoActividades.csv` usa un endpoint MVC dedicado para no depender de reglas estáticas del servidor en `/archivosBase`.
 - **Actualización de Cronograma desde Excel:** Corrección integral del flujo `/programa-general-actualizar`: la plantilla base vuelve a descargarse desde `/archivosBase`, el selector `Asociar con...` carga la semana activa correcta, los roles A/D pueden mapear sobre borradores aunque la semana esté cerrada y las fechas importadas desde Excel se normalizan a `yyyy-mm-dd` priorizando seriales numéricos.

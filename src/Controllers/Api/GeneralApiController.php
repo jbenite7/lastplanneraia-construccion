@@ -27,7 +27,8 @@ class GeneralApiController extends BaseController
         try {
             $vars = $this->getSessionVars();
             $dbPrefix = $_GET['db'] ?? ($vars['dbName'] ?? '');
-            $semana = isset($_GET['semana']) ? filter_var($_GET['semana'], FILTER_VALIDATE_INT) : ($vars['semana'] ?? 0);
+            $semanaParam = $_GET['semana_objetivo'] ?? $_GET['semana'] ?? null;
+            $semana = $semanaParam !== null ? filter_var($semanaParam, FILTER_VALIDATE_INT) : ($vars['semana'] ?? 0);
 
             if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
                 throw new Exception("Base de datos inválida.");
@@ -138,7 +139,8 @@ class GeneralApiController extends BaseController
                 throw new Exception("Base de datos inválida.");
             }
 
-            $semana = isset($_GET['semana']) ? filter_var($_GET['semana'], FILTER_VALIDATE_INT) : ($vars['semana'] ?? 0);
+            $semanaParam = $_GET['semana_objetivo'] ?? $_GET['semana'] ?? null;
+            $semana = $semanaParam !== null ? filter_var($semanaParam, FILTER_VALIDATE_INT) : ($vars['semana'] ?? 0);
             $id = $_POST['Id'] ?? null;
 
             if (($id === null || $id === '') || !$semana) {
@@ -765,7 +767,7 @@ class GeneralApiController extends BaseController
         try {
             $vars = $this->getSessionVars();
             $dbPrefix = $_GET['db'] ?? ($vars['dbName'] ?? '');
-            $semana = $_GET['semana'] ?? $_POST['semana'] ?? ($vars['semana'] ?? 0);
+            $semana = (int)($_GET['semana_objetivo'] ?? $_GET['semana'] ?? $_POST['semana_objetivo'] ?? $_POST['semana'] ?? ($vars['semana'] ?? 0));
 
             if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
                 throw new Exception("Base de datos inválida.");

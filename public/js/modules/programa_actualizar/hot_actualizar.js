@@ -7,6 +7,7 @@ window.HOTActualizarModule = (function() {
     var hot = null;
     var rawData = [];
     var showingUnmappedOnly = true;
+    var layoutTimer = null;
 
     // Configuración de validadores y regexs
     const regexNumerico = /^-?\d*(\.\d+)?$/;
@@ -87,6 +88,67 @@ window.HOTActualizarModule = (function() {
         var container = document.createElement('div');
         container.innerHTML = raw;
         return String(container.textContent || container.innerText || '').trim();
+    }
+
+    function getColumnIndexByProp(prop) {
+        if (!hot) return -1;
+
+        if (typeof hot.propToCol === 'function') {
+            var mappedCol = hot.propToCol(prop);
+            if (typeof mappedCol === 'number' && mappedCol >= 0) return mappedCol;
+        }
+
+        var settings = typeof hot.getSettings === 'function' ? hot.getSettings() : {};
+        var columns = Array.isArray(settings.columns) ? settings.columns : [];
+        for (var i = 0; i < columns.length; i++) {
+            if (columns[i] && columns[i].data === prop) return i;
+        }
+
+        return -1;
+    }
+
+    function getViewportHeight() {
+        if (window.visualViewport && Number.isFinite(window.visualViewport.height) && window.visualViewport.height > 0) {
+            return Math.floor(window.visualViewport.height);
+        }
+
+        var docHeight = document.documentElement && document.documentElement.clientHeight;
+        var winHeight = window.innerHeight;
+        var height = Number.isFinite(winHeight) && winHeight > 0 ? winHeight : docHeight;
+        return Number.isFinite(height) && height > 0 ? Math.floor(height) : 0;
+    }
+
+    function syncContainerHeight() {
+        var container = document.getElementById('hot-container');
+        if (!container || !container.getBoundingClientRect) return 0;
+
+        var viewportHeight = getViewportHeight();
+        if (!viewportHeight) return 0;
+
+        var rect = container.getBoundingClientRect();
+        var top = Math.max(0, Math.floor(rect.top || 0));
+        var resolved = Math.max(260, Math.floor(viewportHeight - top - 2));
+
+        container.style.height = resolved + 'px';
+        return resolved;
+    }
+
+    function refreshHotLayout(delay) {
+        clearTimeout(layoutTimer);
+        layoutTimer = setTimeout(function() {
+            if (!hot) return;
+
+            var containerHeight = syncContainerHeight();
+            if (containerHeight > 0) {
+                hot.updateSettings({ height: Math.max(220, containerHeight - 2) });
+            }
+
+            if (typeof hot.refreshDimensions === 'function') {
+                hot.refreshDimensions();
+            }
+
+            hot.render();
+        }, Number.isFinite(delay) ? delay : 0);
     }
 
     /**
@@ -174,12 +236,13 @@ window.HOTActualizarModule = (function() {
             .then(res => res.json())
             .then(response => {
                 if (response.data && hot) {
-                    var codes = response.data.map(c => c.codigo);
-                    var colIndex = hot.getPropToCol('codigo_actividad');
+                    var codes = response.data.map(c => c.codigo_actividad || c.codigo || '').filter(Boolean);
+                    var colIndex = getColumnIndexByProp('codigo_actividad');
                     if (colIndex !== -1) {
                         var settings = hot.getSettings();
                         settings.columns[colIndex].source = codes;
                         hot.updateSettings({ columns: settings.columns });
+                        refreshHotLayout(0);
                     }
                 }
             })
@@ -215,7 +278,7 @@ window.HOTActualizarModule = (function() {
         
         // Fetch desde el API: consultamos la semana objetivo calculada por backend.
         var targetSemana = getTargetSemanaActualizacion();
-        var fullUrl = "/api/general/list?db=" + db + "&semana=" + targetSemana + "&exclude_chapters=1";
+        var fullUrl = "/api/general/list?db=" + db + "&semana_objetivo=" + targetSemana + "&exclude_chapters=1";
         
         console.log("🔥 [MapeoManual] targetSemana calculado: ", targetSemana);
         console.log("🔥 [MapeoManual] Iniciando fetch GET: ", fullUrl);
@@ -258,6 +321,7 @@ window.HOTActualizarModule = (function() {
                 setTimeout(() => {
                     $('#loading').hide();
                     console.log("🔥 [MapeoManual] Loader ocultado.");
+                    refreshHotLayout(0);
                 }, 500);
             });
     }
@@ -283,8 +347,10 @@ window.HOTActualizarModule = (function() {
         console.log("🔥 [MapeoManual] Renderizando tabla. Datos mostrados: ", filteredData.length);
         if (hot) {
             hot.loadData(filteredData);
+            refreshHotLayout(0);
         } else {
             initHandsontable(filteredData);
+            refreshHotLayout(0);
             console.log("🔥 [MapeoManual] Handsontable inicializado.");
         }
     }
@@ -328,7 +394,8 @@ window.HOTActualizarModule = (function() {
             var physicalBefore = parseFloat(rowData.Ejecutado || 0);
             
             // Reconstruimos el contexto "viejo"
-            var oldUnidad = (changesObj['unidad'] !== undefined) ? hot.getCellMeta(visualRowIndex, hot.getPropToCol('unidad'))._oldValue || currentUnidad : currentUnidad;
+            var unidadCol = getColumnIndexByProp('unidad');
+            var oldUnidad = (changesObj['unidad'] !== undefined && unidadCol >= 0) ? hot.getCellMeta(visualRowIndex, unidadCol)._oldValue || currentUnidad : currentUnidad;
             // Handsontable meta no siempre guarda _oldValue de forma fiable así que usamos una lógica más simple:
             // Si el usuario cambió de % a ml, el valor '80' significaba 80%.
             // Si cambió de ml a %, el valor '160' significaba (160/oldPpto).
@@ -400,7 +467,7 @@ window.HOTActualizarModule = (function() {
             return; // Bloquea el envío al servidor
         }
 
-        fetch("/api/general/update?db=" + db + "&semana=" + targetSemana, {
+        fetch("/api/general/update?db=" + db + "&semana_objetivo=" + targetSemana, {
             method: 'POST',
             body: formData,
             headers: {
@@ -467,6 +534,7 @@ window.HOTActualizarModule = (function() {
      */
     function initHandsontable(data) {
         var container = document.getElementById('hot-container');
+        var initialHeight = syncContainerHeight() || '100%';
 
         var hotConfig = {
             data: data,
@@ -548,7 +616,8 @@ window.HOTActualizarModule = (function() {
                 }
 
                 props.readOnly = !canEdit;
-                props.className = (this.instance.getSettings().columns[col].className || '') + 
+                var columnMeta = this.instance.getSettings().columns[col] || {};
+                props.className = (columnMeta.className || '') +
                                   (canEdit ? ' pg-cell-editable' : ' pg-cell-readonly');
                 
                 return props;
@@ -560,7 +629,7 @@ window.HOTActualizarModule = (function() {
             autoWrapCol: false,
             autoRowSize: true, // Habilitar cálculo de altura automática por contenido
             width: '100%',
-            height: '100%',
+            height: initialHeight,
             licenseKey: 'non-commercial-and-evaluation',
             wordWrap: false,
             manualColumnResize: true,
@@ -636,12 +705,19 @@ window.HOTActualizarModule = (function() {
         };
 
         hot = new Handsontable(container, hotConfig);
+        refreshHotLayout(0);
 
         // Bind Custom Togglers
         $("#btn_toggleFiltroMapeo").on("click", function() {
             showingUnmappedOnly = !showingUnmappedOnly;
             applyFilterAndRender();
         });
+
+        $(window)
+            .off('resize.hotActualizar orientationchange.hotActualizar')
+            .on('resize.hotActualizar orientationchange.hotActualizar', function() {
+                refreshHotLayout(80);
+            });
     }
 
     return {
