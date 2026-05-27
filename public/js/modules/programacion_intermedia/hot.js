@@ -2784,7 +2784,9 @@
       height: getContainerAvailableHeight() || '100%',
       cells: function (row, col, prop) {
         var props = {};
-        var rowData = getSourceRowDataByVisualRow(this, row) || {};
+        var hotInstance = (this && this.instance) || hot;
+        var rowData = getSourceRowDataByVisualRow(hotInstance, row) || {};
+
         var state = getState(rowData);
         var columnMeta = this.instance.getSettings().columns[col] || {};
         var baseClass = columnMeta.className || '';

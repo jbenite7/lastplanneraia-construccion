@@ -265,14 +265,16 @@ function normalizeEstadoToStateKey(estado) {
         case 'atrasada':
         case 'ya debio iniciar y restricciones pendientes':
             return 'atrasada';
+        case 'debe iniciar':
         case 'debe iniciar esta semana':
-        case 'debe iniciar esta semana y restricciones pendientes':
             return 'debe-iniciar';
         case 'en curso':
         case 'a tiempo':
+        case 'adelantada':
             return 'en-curso';
         case 'actividad futura':
         case 'en liberacion de restricciones':
+        case 'no requerida':
             return 'actividad-futura';
         case 'sin datos':
             return 'sin-datos';
@@ -442,7 +444,7 @@ function renderProgramaGeneralLegendModal() {
                 "</div>" +
                 "<div class='pg-legend-quick-row'>" +
                     "<span class='pg-legend-modal-swatch pg-legend-quick-swatch pg-state-en-curso'></span>" +
-                    "<div class='pg-legend-quick-state'><strong>En Curso</strong><small>Ejecucion alineada o por encima de la curva teorica semanal. <em>Si va adelantada se marca con icono.</em></small></div>" +
+                    "<div class='pg-legend-quick-state'><strong>En Curso</strong><small>Ejecucion alineada o por encima de la curva teorica semanal.</small></div>" +
                     "<div class='pg-legend-quick-action'>Sostener ritmo diario y control de productividad.</div>" +
                     "<span class='pg-legend-quick-priority is-p2'>P2</span>" +
                 "</div>" +
@@ -465,7 +467,7 @@ function renderProgramaGeneralLegendModal() {
                 "</div>" +
                 "<div class='pg-legend-quick-row'>" +
                     "<span class='pg-legend-modal-swatch pg-legend-quick-swatch pg-state-terminada'></span>" +
-                    "<div class='pg-legend-quick-state'><strong>Terminada</strong><small>Actividad cerrada (a tiempo o adelantada).</small></div>" +
+                    "<div class='pg-legend-quick-state'><strong>Terminada</strong><small>Actividad cerrada.</small></div>" +
                     "<div class='pg-legend-quick-action'>Cerrar trazabilidad y liberar foco del equipo.</div>" +
                     "<span class='pg-legend-quick-priority is-p3'>P3</span>" +
                 "</div>" +
@@ -1066,33 +1068,28 @@ var actualizarBarraFiltros = function(db, semana, opcionListar){
         data: {"db":db, "semana":semana},
     }).done( function( info ){
         var json_info = (typeof info === 'string' ? JSON.parse( info ) : info);
-        var no_requeridas=json_info["data"]["no_requeridas"];
         var lookahead=json_info["data"]["lookahead"];
         var no_iniciadas=json_info["data"]["no_iniciadas"];
         var a_tiempo=json_info["data"]["a_tiempo"];
         var atrasadas=json_info["data"]["atrasadas"];
         var terminadas=json_info["data"]["terminadas"];
         var total=json_info["data"]["total"]*1;
-        var activa_no_requeridas=json_info["data"]["activa_no_requeridas"];
         var activa_lookahead=json_info["data"]["activa_lookahead"];
         var activa_no_iniciadas=json_info["data"]["activa_no_iniciadas"];
         var activa_a_tiempo=json_info["data"]["activa_a_tiempo"];
         var activa_atrasadas=json_info["data"]["activa_atrasadas"];
         var activa_terminadas=json_info["data"]["activa_terminadas"];
-        var scriptBarraFiltros = "&activa_no_requeridas="+activa_no_requeridas+"&activa_lookahead="+activa_lookahead+"&activa_no_iniciadas="+activa_no_iniciadas+"&activa_a_tiempo="+activa_a_tiempo+"&activa_atrasadas="+activa_atrasadas+"&activa_terminadas="+activa_terminadas;
+        var scriptBarraFiltros = "&activa_lookahead="+activa_lookahead+"&activa_no_iniciadas="+activa_no_iniciadas+"&activa_a_tiempo="+activa_a_tiempo+"&activa_atrasadas="+activa_atrasadas+"&activa_terminadas="+activa_terminadas;
 
         document.getElementById('scriptBarraFiltros').value = scriptBarraFiltros;
 
-        //console.log(no_requeridas, lookahead, no_iniciadas, a_tiempo, terminadas, total)
         if(total!=0){
-            var p_no_requeridas = formatDecimalComma((no_requeridas/total*100), PG_DECIMALS) +'%';
             var p_lookahead = formatDecimalComma((lookahead/total*100), PG_DECIMALS) +'%';
             var p_no_iniciadas = formatDecimalComma((no_iniciadas/total*100), PG_DECIMALS) +'%';
             var p_a_tiempo = formatDecimalComma((a_tiempo/total*100), PG_DECIMALS) +'%';
             var p_atrasadas = formatDecimalComma((atrasadas/total*100), PG_DECIMALS) +'%';
             var p_terminadas = formatDecimalComma((terminadas/total*100), PG_DECIMALS) +'%';
         }else{
-            var p_no_requeridas='0,0%';
             var p_lookahead='0,0%';
             var p_no_iniciadas='0,0%';
             var p_a_tiempo='0,0%';
@@ -1105,16 +1102,12 @@ var actualizarBarraFiltros = function(db, semana, opcionListar){
         }
 
 
-        $("#btn_no_requeridas").html("<p class='pg-kpi-line'>No Requeridas <br>"+p_no_requeridas+"</p>");
         $("#btn_lookahead").html("<p class='pg-kpi-line'>Actividad Futura <br>"+p_lookahead+"</p>");
         $("#btn_no_iniciadas").html("<p class='pg-kpi-line'>Debe Iniciar <br>"+p_no_iniciadas+"</p>");
-        $("#btn_a_tiempo").html("<p class='pg-kpi-line'>En Curso + Adelant. <br>"+p_a_tiempo+"</p>");
+        $("#btn_a_tiempo").html("<p class='pg-kpi-line'>En Curso <br>"+p_a_tiempo+"</p>");
         $("#btn_atrasadas").html("<p class='pg-kpi-line'>Atrasadas <br>"+p_atrasadas+"</p>");
         $("#btn_terminadas").html("<p class='pg-kpi-line'>Terminadas <br>"+p_terminadas+"</p>");
 
-        if(activa_no_requeridas==1){
-            $("#btn_no_requeridas").addClass('btn-success');
-        }
         if(activa_lookahead==1){
             $("#btn_lookahead").addClass('btn-success');
         }
@@ -1130,29 +1123,19 @@ var actualizarBarraFiltros = function(db, semana, opcionListar){
         if(activa_terminadas==1){
             $("#btn_terminadas").addClass('btn-success');
         }
-        if(activa_no_requeridas==0 && activa_lookahead==0 && activa_no_iniciadas==0 && activa_a_tiempo==0 && activa_atrasadas==0 && activa_terminadas==0){
+        if(activa_lookahead==0 && activa_no_iniciadas==0 && activa_a_tiempo==0 && activa_atrasadas==0 && activa_terminadas==0){
             $("#btn_total").addClass('btn-success');
         }
     });
 }
 
 var cambiarClaseBarraFiltros=function(p){
-    //console.log(p);
-    if(p=='no_requeridas'){
-        if($('#btn_no_requeridas').hasClass('btn-success')==true){
-            var activa = 0;
-        }else{
-            var activa = 1;
-            if($('#btn_lookahead').hasClass('btn-success')==true && $('#btn_no_iniciadas').hasClass('btn-success')==true && $('#btn_a_tiempo').hasClass('btn-success')==true && $('#btn_atrasadas').hasClass('btn-success')==true && $('#btn_terminadas').hasClass('btn-success')==true){
-                p = 'total';
-            }
-        }
-    }else if(p=='lookahead'){
+    if(p=='lookahead'){
         if($('#btn_lookahead').hasClass('btn-success')==true){
             var activa = 0;
         }else{
             var activa = 1;
-            if($('#btn_no_requeridas').hasClass('btn-success')==true && $('#btn_no_iniciadas').hasClass('btn-success')==true && $('#btn_a_tiempo').hasClass('btn-success')==true && $('#btn_atrasadas').hasClass('btn-success')==true && $('#btn_terminadas').hasClass('btn-success')==true){
+            if($('#btn_no_iniciadas').hasClass('btn-success')==true && $('#btn_a_tiempo').hasClass('btn-success')==true && $('#btn_atrasadas').hasClass('btn-success')==true && $('#btn_terminadas').hasClass('btn-success')==true){
                     p = 'total';
             }
         }
@@ -1161,7 +1144,7 @@ var cambiarClaseBarraFiltros=function(p){
             var activa = 0;
         }else{
             var activa = 1;
-            if($('#btn_no_requeridas').hasClass('btn-success')==true && $('#btn_lookahead').hasClass('btn-success')==true && $('#btn_a_tiempo').hasClass('btn-success')==true && $('#btn_atrasadas').hasClass('btn-success')==true && $('#btn_terminadas').hasClass('btn-success')==true){
+            if($('#btn_lookahead').hasClass('btn-success')==true && $('#btn_a_tiempo').hasClass('btn-success')==true && $('#btn_atrasadas').hasClass('btn-success')==true && $('#btn_terminadas').hasClass('btn-success')==true){
                 p = 'total';
             }
         }
@@ -1170,7 +1153,7 @@ var cambiarClaseBarraFiltros=function(p){
             var activa = 0;
         }else{
             var activa = 1;
-            if($('#btn_no_requeridas').hasClass('btn-success')==true && $('#btn_lookahead').hasClass('btn-success')==true && $('#btn_no_iniciadas').hasClass('btn-success')==true && $('#btn_atrasadas').hasClass('btn-success')==true && $('#btn_terminadas').hasClass('btn-success')==true){
+            if($('#btn_lookahead').hasClass('btn-success')==true && $('#btn_no_iniciadas').hasClass('btn-success')==true && $('#btn_atrasadas').hasClass('btn-success')==true && $('#btn_terminadas').hasClass('btn-success')==true){
                 p = 'total';
             }
         }
@@ -1179,7 +1162,7 @@ var cambiarClaseBarraFiltros=function(p){
             var activa = 0;
         }else{
             var activa = 1;
-            if($('#btn_no_requeridas').hasClass('btn-success')==true && $('#btn_lookahead').hasClass('btn-success')==true && $('#btn_no_iniciadas').hasClass('btn-success')==true && $('#btn_a_tiempo').hasClass('btn-success')==true && $('#btn_atrasadas').hasClass('btn-success')==true && $('#btn_terminadas').hasClass('btn-success')==true){
+            if($('#btn_lookahead').hasClass('btn-success')==true && $('#btn_no_iniciadas').hasClass('btn-success')==true && $('#btn_a_tiempo').hasClass('btn-success')==true && $('#btn_terminadas').hasClass('btn-success')==true){
                 p = 'total';
             }
         }
@@ -1188,7 +1171,7 @@ var cambiarClaseBarraFiltros=function(p){
             var activa = 0;
         }else{
             var activa = 1;
-            if($('#btn_no_requeridas').hasClass('btn-success')==true && $('#btn_lookahead').hasClass('btn-success')==true && $('#btn_no_iniciadas').hasClass('btn-success')==true && $('#btn_a_tiempo').hasClass('btn-success')==true && $('#btn_atrasadas').hasClass('btn-success')==true){
+            if($('#btn_lookahead').hasClass('btn-success')==true && $('#btn_no_iniciadas').hasClass('btn-success')==true && $('#btn_a_tiempo').hasClass('btn-success')==true && $('#btn_atrasadas').hasClass('btn-success')==true){
                 p = 'total';
             }
         }

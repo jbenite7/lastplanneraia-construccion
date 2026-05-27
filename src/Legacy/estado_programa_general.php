@@ -186,7 +186,7 @@ function pg_calculate_status(
     }
 
     if ($fiTs <= $feTs) {
-        return 'Debe Iniciar esta Semana';
+        return 'Debe Iniciar';
     }
 
     return 'Actividad Futura';

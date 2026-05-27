@@ -144,7 +144,7 @@ class LpsService
         $fsTs = $this->toTimestamp($fechaInicioSemana);
 
         if ($fiTs === null || $ffTs === null || $fsTs === null) {
-            return ($ej > 0.1) ? 'En Curso' : 'No Requerida';
+            return ($ej > 0.1) ? 'En Curso' : 'Sin Datos';
         }
 
         if ($ffTs < $fiTs) {
@@ -164,27 +164,18 @@ class LpsService
         }
 
         if ($ej <= 0.001 && $fiTs >= $fsTs && $fiTs <= $feTs) {
-            return 'Debe Iniciar esta Semana';
+            return 'Debe Iniciar';
         }
 
         if ($ej > 0.001) {
-            if ($delta < -0.05) {
-                return 'Adelantada';
-            }
-
             return 'En Curso';
         }
 
         if ($ej <= 0.001 && $fiTs > $feTs) {
-            $horizonEndTs = $feTs + (42 * 86400); // 42 days lookahead
-            if ($fiTs <= $horizonEndTs) {
-                return 'Actividad Futura';
-            }
-
-            return 'No Requerida';
+            return 'Actividad Futura';
         }
 
-        return 'No Requerida';
+        return 'Actividad Futura';
     }
 
     public function calculateTheoreticalProgress($fechaInicioActividad, $fechaFinActividad, $fechaInicioSemana): float

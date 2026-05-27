@@ -400,14 +400,16 @@
       case 'atrasada':
       case 'ya debio iniciar y restricciones pendientes':
         return 'atrasada';
+      case 'debe iniciar':
       case 'debe iniciar esta semana':
-      case 'debe iniciar esta semana y restricciones pendientes':
         return 'debe-iniciar';
       case 'en curso':
       case 'a tiempo':
+      case 'adelantada':
         return 'en-curso';
       case 'actividad futura':
       case 'en liberacion de restricciones':
+      case 'no requerida':
         return 'actividad-futura';
       case 'sin datos':
         return 'sin-datos';
@@ -618,7 +620,7 @@
         '</div>' +
         "<div class='pg-legend-quick-row'>" +
         "<span class='pg-legend-modal-swatch pg-legend-quick-swatch pg-state-en-curso'></span>" +
-        "<div class='pg-legend-quick-state'><strong>En Curso</strong><small>Ejecucion alineada o por encima de la curva teorica semanal. <em>Si va adelantada se marca con icono.</em></small></div>" +
+        "<div class='pg-legend-quick-state'><strong>En Curso</strong><small>Ejecucion alineada o por encima de la curva teorica semanal.</small></div>" +
         "<div class='pg-legend-quick-action'>Sostener ritmo diario y control de productividad.</div>" +
         "<span class='pg-legend-quick-priority is-p2'>P2</span>" +
         '</div>' +
@@ -639,7 +641,7 @@
         '</div>' +
         "<div class='pg-legend-quick-row'>" +
         "<span class='pg-legend-modal-swatch pg-legend-quick-swatch pg-state-terminada'></span>" +
-        "<div class='pg-legend-quick-state'><strong>Terminada</strong><small>Actividad cerrada (a tiempo o adelantada).</small></div>" +
+        "<div class='pg-legend-quick-state'><strong>Terminada</strong><small>Actividad cerrada.</small></div>" +
         "<div class='pg-legend-quick-action'>Cerrar trazabilidad y liberar foco del equipo.</div>" +
         "<span class='pg-legend-quick-priority is-p3'>P3</span>" +
         '</div>' +
@@ -675,7 +677,6 @@
       function (info) {
         var data = info && info.data ? info.data : {};
         var flags = [
-          'activa_no_requeridas',
           'activa_lookahead',
           'activa_no_iniciadas',
           'activa_a_tiempo',
@@ -1922,7 +1923,8 @@
       className: 'htMiddle',
       cells: function (row, col, prop) {
         var props = {};
-        var rowData = getSourceRowDataByVisualRow(this, row) || {};
+        var hotInstance = (this && this.instance) || hot;
+        var rowData = getSourceRowDataByVisualRow(hotInstance, row) || {};
         var classification = classifyPGRow(rowData);
         var stateClass = classification.rowClass || 'pg-state-actividad-futura';
         var composed = 'pg-row-state ' + stateClass;

@@ -4208,9 +4208,7 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
   --pg-future-bg: #ecfccb;
   --pg-future-text: #3f6212;
   --pg-future-border: #84cc16;
-  --pg-ahead-bg: #dbeafe;
-  --pg-ahead-text: #1d4ed8;
-  --pg-ahead-border: #3b82f6;
+
   --pg-progress-bg: #dcfce7;
   --pg-progress-text: #166534;
   --pg-progress-border: #22c55e;
@@ -4317,11 +4315,7 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
   border-color: var(--pg-future-border);
 }
 
-.pg-page .pg-legend .pdc-legend-item.adelantada {
-  background-color: var(--pg-ahead-bg);
-  color: var(--pg-ahead-text);
-  border-color: var(--pg-ahead-border);
-}
+
 
 .pg-page .pg-legend .pdc-legend-item.en-curso {
   background-color: var(--pg-progress-bg);

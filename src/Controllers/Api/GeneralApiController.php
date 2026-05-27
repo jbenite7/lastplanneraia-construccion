@@ -39,17 +39,14 @@ class GeneralApiController extends BaseController
             // 2. Construir Filtros
             $conditions = [];
 
-            if (!empty($_GET["activa_no_requeridas"])) {
-                $conditions[] = "(Titulo = 0 AND Estado = 'No Requerida')";
-            }
             if (!empty($_GET["activa_lookahead"])) {
                 $conditions[] = "(Titulo = 0 AND (Estado = 'Actividad Futura' OR Estado = 'En Liberación de Restricciones'))";
             }
             if (!empty($_GET["activa_no_iniciadas"])) {
-                $conditions[] = "(Titulo = 0 AND (Estado = 'Debe Iniciar esta Semana' OR Estado = 'Debe Iniciar esta Semana y Restricciones Pendientes'))";
+                $conditions[] = "(Titulo = 0 AND Estado = 'Debe Iniciar')";
             }
             if (!empty($_GET["activa_a_tiempo"])) {
-                $conditions[] = "(Titulo = 0 AND (Estado = 'En Curso' OR Estado = 'Adelantada' OR Estado = 'A Tiempo'))";
+                $conditions[] = "(Titulo = 0 AND (Estado = 'En Curso' OR Estado = 'A Tiempo'))";
             }
             if (!empty($_GET["activa_atrasadas"])) {
                 $conditions[] = "(Titulo = 0 AND (Estado = 'Atrasada' OR Estado = 'Ya Debió Iniciar y Restricciones Pendientes'))";

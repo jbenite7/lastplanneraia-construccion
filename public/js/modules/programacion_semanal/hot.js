@@ -2390,7 +2390,9 @@
       },
       cells: function (row, col, prop) {
         var props = {};
-        var rowData = this && typeof this.getSourceDataAtRow === 'function' ? (getSourceRowDataByVisualRow(this, row) || {}) : {};
+        var hotInstance = (this && this.instance) || hot;
+        var rowData = hotInstance && typeof hotInstance.getSourceDataAtRow === 'function' ? (getSourceRowDataByVisualRow(hotInstance, row) || {}) : {};
+
         var alertClass = getAlertClassForRow(rowData);
         var columnMeta = this.instance.getSettings().columns[col] || {};
         var baseClass = columnMeta.className || '';

@@ -126,7 +126,7 @@ class ProgramaGeneralController extends BaseController
         );
 
         $arreglo = [];
-        $sessionKeys = ['no_requeridas', 'lookahead', 'no_iniciadas', 'a_tiempo', 'atrasadas', 'terminadas'];
+        $sessionKeys = ['lookahead', 'no_iniciadas', 'a_tiempo', 'atrasadas', 'terminadas'];
 
         // Cargar estado actual de los filtros desde la sesión
         foreach ($sessionKeys as $key) {
@@ -135,17 +135,16 @@ class ProgramaGeneralController extends BaseController
 
         // Consultas para contar registros por estado persistido (fuente única)
         $query = "SELECT 
-            (SELECT COUNT(*) FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Titulo = 0 AND Estado = 'No Requerida') AS no_requeridas,
-            (SELECT COUNT(*) FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Titulo = 0 AND (Estado = 'Actividad Futura' OR Estado = 'En Liberación de Restricciones')) AS lookahead,
-            (SELECT COUNT(*) FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Titulo = 0 AND (Estado = 'Debe Iniciar esta Semana' OR Estado = 'Debe Iniciar esta Semana y Restricciones Pendientes')) AS no_iniciadas,
-            (SELECT COUNT(*) FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Titulo = 0 AND (Estado = 'En Curso' OR Estado = 'Adelantada' OR Estado = 'A Tiempo')) AS a_tiempo,
+            (SELECT COUNT(*) FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Titulo = 0 AND (Estado = 'Actividad Futura' OR Estado = 'En Liberación de Restricciones' OR Estado = 'No Requerida')) AS lookahead,
+            (SELECT COUNT(*) FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Titulo = 0 AND Estado = 'Debe Iniciar') AS no_iniciadas,
+            (SELECT COUNT(*) FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Titulo = 0 AND (Estado = 'En Curso' OR Estado = 'A Tiempo')) AS a_tiempo,
             (SELECT COUNT(*) FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Titulo = 0 AND (Estado = 'Atrasada' OR Estado = 'Ya Debió Iniciar y Restricciones Pendientes')) AS atrasadas,
             (SELECT COUNT(*) FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Titulo = 0 AND (Estado = 'Terminada' OR Estado = 'Terminada Antes')) AS terminadas,
             (SELECT COUNT(*) FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Titulo = 0) AS total";
 
         try {
             $stmt = $this->db->prepare($query);
-            $stmt->execute([$semana, $semana, $semana, $semana, $semana, $semana, $semana]);
+            $stmt->execute([$semana, $semana, $semana, $semana, $semana, $semana]);
             $data = $stmt->fetch();
 
             if ($data) {
@@ -175,7 +174,6 @@ class ProgramaGeneralController extends BaseController
 
         // Reset general logic
         if ($clase == "total") {
-            $_SESSION["no_requeridas"] = 0;
             $_SESSION["lookahead"] = 0;
             $_SESSION["no_iniciadas"] = 0;
             $_SESSION["a_tiempo"] = 0;
@@ -187,7 +185,7 @@ class ProgramaGeneralController extends BaseController
         }
 
         // Logic for specific filters
-        $validFilters = ['no_requeridas', 'lookahead', 'no_iniciadas', 'a_tiempo', 'atrasadas', 'terminadas'];
+        $validFilters = ['lookahead', 'no_iniciadas', 'a_tiempo', 'atrasadas', 'terminadas'];
 
         if (in_array($clase, $validFilters)) {
             $_SESSION[$clase] = ($activa == 1) ? 1 : 0;
