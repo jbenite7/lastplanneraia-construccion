@@ -30,12 +30,9 @@ window.LPSContextualDrawer = (function() {
   const PG_STATE_LABELS = {
     'debe-iniciar': 'Debe iniciar esta semana',
     'actividad-futura': 'Actividad futura',
-    adelantada: 'Adelantada',
     'en-curso': 'En curso',
-    'atrasada-critica': 'Atrasada crítica',
     atrasada: 'Atrasada',
     terminada: 'Terminada',
-    'no-requerida': 'No requerida',
     header: 'Capítulo'
   };
 
@@ -43,7 +40,6 @@ window.LPSContextualDrawer = (function() {
     'liberated-control',
     'neutral',
     'terminada',
-    'no-requerida',
     'prog-lista-para-confirmar',
     'cal-cumplida-control',
     'ps-no-activa',
@@ -473,9 +469,8 @@ window.LPSContextualDrawer = (function() {
     const state = context.stateKey;
 
     if (state === 'header') return 'neutral';
-    if (state === 'no-requerida' || state === 'neutral') return 'neutral';
-    if (state === 'terminada' || state === 'adelantada') return 'normal';
-    if (state === 'atrasada-critica') return 'critical';
+    if (state === 'neutral') return 'neutral';
+    if (state === 'terminada') return 'normal';
     if (state === 'atrasada' || state === 'blocked-overdue') return 'attention';
     if (state === 'blocked-overdue-critical') return 'critical';
     if (state === 'execution-blocked') return context.isCritical ? 'critical' : 'attention';
@@ -606,7 +601,7 @@ window.LPSContextualDrawer = (function() {
     context.severityVisual = getSeverityVisualState(context.severity);
     context.isCrisis = context.severity === 'critical';
     context.isPredictiveCrisis = context.isCrisis && context.moduleKey !== 'programacion-semanal' && !context.isLiberada;
-    context.isReactiveCrisis = context.isCrisis && context.moduleKey !== 'programacion-semanal' && context.isLiberada && context.isStartedByProgress && context.isDueOrOverdue && (atraso >= 10 || semanasInicio <= -2 || stateKey === 'atrasada-critica');
+    context.isReactiveCrisis = context.isCrisis && context.moduleKey !== 'programacion-semanal' && context.isLiberada && context.isStartedByProgress && context.isDueOrOverdue && (atraso >= 10 || semanasInicio <= -2);
 
     return context;
   }

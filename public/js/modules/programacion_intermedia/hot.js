@@ -2006,13 +2006,7 @@
           hot.setDataAtRowProp(visualRow, 'estado_operativo', row.estado_operativo, 'internal-update');
         }
 
-        var filteredRows = [];
-        for (var i = 0; i < masterData.length; i++) {
-          if (rowMatchesFilters(masterData[i])) {
-            filteredRows.push(masterData[i]);
-          }
-        }
-        updateLegendCounts(filteredRows);
+        updateLegendCounts(getFilteredRows());
 
         hot.render();
         showFeedback('success', 'Guardado');
@@ -2047,7 +2041,7 @@
 
     Handsontable.renderers.registerRenderer('piActividadRenderer', function (instance, td, row, col, prop, value) {
       Handsontable.renderers.TextRenderer.apply(this, arguments);
-      var rowData = instance.getSourceDataAtRow(row) || {};
+      var rowData = getSourceRowDataByVisualRow(instance, row) || {};
       var prefix = parseInt(rowData.alerta_crisis, 10) === 1 ? '🔥 ' : '';
       td.innerHTML = prefix + sanitizeActividadHtml(value);
       td.classList.add('htLeft');
@@ -2055,7 +2049,7 @@
 
     Handsontable.renderers.registerRenderer('piStateRenderer', function (instance, td, row, col, prop, value) {
       Handsontable.renderers.TextRenderer.apply(this, arguments);
-      var rowData = instance.getSourceDataAtRow(row) || {};
+      var rowData = getSourceRowDataByVisualRow(instance, row) || {};
       var view = getStateView(rowData);
       td.innerHTML = renderOperationalStateCell(view);
       var trigger = td.querySelector('.ops-state-zoom');
@@ -2711,6 +2705,7 @@
 
     if (hot) {
       var filterConditions = captureHotFilterConditions();
+      pendingViewportState = captureViewportState();
       hot.loadData(data);
       restoreHotFilterConditions(filterConditions);
       scheduleLayoutRefresh(0, true);
@@ -2789,7 +2784,7 @@
       height: getContainerAvailableHeight() || '100%',
       cells: function (row, col, prop) {
         var props = {};
-        var rowData = this.instance.getSourceDataAtRow(row) || {};
+        var rowData = getSourceRowDataByVisualRow(this, row) || {};
         var state = getState(rowData);
         var columnMeta = this.instance.getSettings().columns[col] || {};
         var baseClass = columnMeta.className || '';
@@ -3036,14 +3031,18 @@
     scheduleLayoutRefresh(0, true);
   }
 
-  function applyFiltersAndRender() {
+  function getFilteredRows() {
     var filtered = [];
     for (var i = 0; i < masterData.length; i++) {
       if (rowMatchesFilters(masterData[i])) {
         filtered.push(masterData[i]);
       }
     }
+    return filtered;
+  }
 
+  function applyFiltersAndRender() {
+    var filtered = getFilteredRows();
     updateLegendCounts(filtered);
     updateOrInitHot(filtered);
     updateSharedSelectionCountIndicator();

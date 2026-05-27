@@ -2075,11 +2075,7 @@
           }
         }
 
-        pendingViewportState = captureViewportState();
-
         if (response.reload_hot === true) {
-            // Se desdobló la actividad por tener +1 subcontratista,
-            // la fila original se guardó, pero para ver los clones se recarga todo.
             if (typeof loadData === 'function') {
                 loadData();
             }
@@ -2087,7 +2083,8 @@
             return;
         }
 
-        applyFiltersAndRender();
+        hot.render();
+        updateLegendCounts(getFilteredRows());
 
         if (response.alerta_bolsa) {
             showFeedback('warning', response.alerta_bolsa);
@@ -2621,7 +2618,7 @@
     return true;
   }
 
-  function updateAlertCounts(rows) {
+  function updateLegendCounts(rows) {
     var config = getAlertConfig(weeklyPhaseKey);
     var counts = {};
 
@@ -2657,7 +2654,7 @@
   function applyFiltersAndRender() {
     var filtered = getFilteredRows();
 
-    updateAlertCounts(filtered);
+    updateLegendCounts(filtered);
     updateOrInitHot(filtered);
   }
 
@@ -2809,7 +2806,7 @@
     applyLegacyColumnVisibility();
 
     renderAlertLegend();
-    updateAlertCounts(getFilteredRows());
+    updateLegendCounts(getFilteredRows());
     renderLegendModal();
     syncLegendVisualState();
     scheduleActionsRowFit(0);

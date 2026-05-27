@@ -4238,18 +4238,12 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
   --pg-notrequired-bg: #f8fafc;
   --pg-notrequired-text: #64748b;
   --pg-notrequired-border: #e2e8f0;
+  --pg-nodata-bg: #f1f5f9;
+  --pg-nodata-text: #64748b;
+  --pg-nodata-border: #cbd5e1;
 }
 
 .pg-page table.dataTable tbody tr.pg-state-atrasado-critico td,
-.pg-page table.dataTable tbody tr.pg-state-atrasada-critica td,
-.pg-page .handsontable td.pg-state-atrasado-critico,
-.pg-page .handsontable td.pg-state-atrasada-critica {
-  background-color: var(--pg-critical-bg) !important;
-  color: var(--pg-critical-text) !important;
-  border-color: var(--pg-critical-border) !important;
-  font-weight: 600;
-}
-
 .pg-page table.dataTable tbody tr.pg-state-atrasado td,
 .pg-page table.dataTable tbody tr.pg-state-atrasada td,
 .pg-page .handsontable td.pg-state-atrasado,
@@ -4284,13 +4278,6 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
   border-color: var(--pg-progress-border) !important;
 }
 
-.pg-page table.dataTable tbody tr.pg-state-adelantada td,
-.pg-page .handsontable td.pg-state-adelantada {
-  background-color: var(--pg-ahead-bg) !important;
-  color: var(--pg-ahead-text) !important;
-  border-color: var(--pg-ahead-border) !important;
-}
-
 .pg-page table.dataTable tbody tr.pg-state-terminada td,
 .pg-page .handsontable td.pg-state-terminada {
   background-color: var(--pg-done-bg) !important;
@@ -4298,11 +4285,12 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
   border-color: var(--pg-done-border) !important;
 }
 
-.pg-page table.dataTable tbody tr.pg-state-no-requerida td,
-.pg-page .handsontable td.pg-state-no-requerida {
-  background-color: var(--pg-notrequired-bg) !important;
-  color: var(--pg-notrequired-text) !important;
-  border-color: var(--pg-notrequired-border) !important;
+.pg-page table.dataTable tbody tr.pg-state-sin-datos td,
+.pg-page .handsontable td.pg-state-sin-datos {
+  background-color: var(--pg-nodata-bg) !important;
+  color: var(--pg-nodata-text) !important;
+  border-color: var(--pg-nodata-border) !important;
+  border-style: dashed !important;
 }
 
 .pg-page .pg-legend .pdc-legend-item.restr-4-6 {
@@ -4391,6 +4379,13 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
   border-color: var(--pg-done-border);
 }
 
+.pg-page .pg-legend .pdc-legend-item.sin-datos {
+  background-color: var(--pg-nodata-bg);
+  color: var(--pg-nodata-text);
+  border-color: var(--pg-nodata-border);
+  border-style: dashed;
+}
+
 .pg-page .pg-legend-modal {
   display: grid;
   gap: 0.5rem;
@@ -4422,12 +4417,6 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
   margin-top: 0.2rem;
 }
 
-.pg-page .pg-legend-modal-swatch.pg-state-atrasado-critico,
-.pg-page .pg-legend-modal-swatch.pg-state-atrasada-critica {
-  background-color: var(--pg-critical-bg);
-  border-color: var(--pg-critical-border);
-}
-
 .pg-page .pg-legend-modal-swatch.pg-state-atrasado,
 .pg-page .pg-legend-modal-swatch.pg-state-atrasada {
   background-color: var(--pg-delayed-bg);
@@ -4442,11 +4431,6 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
 .pg-page .pg-legend-modal-swatch.pg-state-actividad-futura {
   background-color: var(--pg-future-bg);
   border-color: var(--pg-future-border);
-}
-
-.pg-page .pg-legend-modal-swatch.pg-state-adelantada {
-  background-color: var(--pg-ahead-bg);
-  border-color: var(--pg-ahead-border);
 }
 
 .pg-page .pg-legend-modal-swatch.pg-state-en-curso {
@@ -4484,9 +4468,10 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
   border-color: var(--pg-done-border);
 }
 
-.pg-page .pg-legend-modal-swatch.pg-state-no-requerida {
-  background-color: var(--pg-notrequired-bg);
-  border-color: var(--pg-notrequired-border);
+.pg-page .pg-legend-modal-swatch.pg-state-sin-datos {
+  background-color: var(--pg-nodata-bg);
+  border-color: var(--pg-nodata-border);
+  border-style: dashed;
 }
 
 .pg-page #modal_leyenda_colores .modal-dialog {

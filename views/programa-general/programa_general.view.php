@@ -208,12 +208,10 @@
                 <span class="pdc-legend-item alerta-restricciones" data-filter="con-alerta-restricciones" role="button" tabindex="0"><span class="indicator"></span> Con Alerta Restricciones <span id="count-con-alerta-restricciones" class="count-badge">(...)</span></span>
                 <span class="pdc-legend-item debe-iniciar" data-filter="debe-iniciar" role="button" tabindex="0"><span class="indicator"></span> Debe Iniciar <span id="count-debe-iniciar" class="count-badge">(...)</span></span>
                 <span class="pdc-legend-item actividad-futura" data-filter="actividad-futura" role="button" tabindex="0"><span class="indicator"></span> Actividad Futura <span id="count-actividad-futura" class="count-badge">(...)</span></span>
-                <span class="pdc-legend-item adelantada" data-filter="adelantada" role="button" tabindex="0"><span class="indicator"></span> Adelantada <span id="count-adelantada" class="count-badge">(...)</span></span>
                 <span class="pdc-legend-item en-curso" data-filter="en-curso" role="button" tabindex="0"><span class="indicator"></span> En Curso <span id="count-en-curso" class="count-badge">(...)</span></span>
-                <span class="pdc-legend-item atrasada-critica" data-filter="atrasada-critica" role="button" tabindex="0"><span class="indicator"></span> Atrasada (Crítica) <span id="count-atrasada-critica" class="count-badge">(...)</span></span>
                 <span class="pdc-legend-item atrasada" data-filter="atrasada" role="button" tabindex="0"><span class="indicator"></span> Atrasada <span id="count-atrasada" class="count-badge">(...)</span></span>
                 <span class="pdc-legend-item terminada" data-filter="terminada" role="button" tabindex="0"><span class="indicator"></span> Terminada <span id="count-terminada" class="count-badge">(...)</span></span>
-                <span class="pdc-legend-item no-requerida" data-filter="no-requerida" role="button" tabindex="0"><span class="indicator"></span> No Requerida <span id="count-no-requerida" class="count-badge">(...)</span></span>
+                <span class="pdc-legend-item sin-datos" data-filter="sin-datos" role="button" tabindex="0"><span class="indicator"></span> Sin Datos <span id="count-sin-datos" class="count-badge">(...)</span></span>
             </div>
         </div>
     </div>

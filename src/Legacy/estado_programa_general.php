@@ -154,7 +154,11 @@ function pg_calculate_status(
     $fsTs = pg_to_timestamp($fechaInicioSemana);
 
     if ($fiTs === null || $ffTs === null || $fsTs === null) {
-        return ($ej > $eps) ? 'En Curso' : 'No Requerida';
+        if ($ej > $eps) {
+            return 'En Curso';
+        }
+
+        return 'Sin Datos';
     }
 
     if ($ffTs < $fiTs) {
@@ -166,33 +170,24 @@ function pg_calculate_status(
         $feTs = $fsTs + (6 * 86400);
     }
 
-    $ejecutadoTeorico = pg_calculate_theoretical_progress($fechaInicioActividad, $fechaFinActividad, $fechaInicioSemana);
-    $delta = round($ejecutadoTeorico - $ej, 3);
-
-    if ($delta > $eps) {
-        return 'Atrasada';
-    }
-
-    if ($ej <= $eps && $fiTs >= $fsTs && $fiTs <= $feTs) {
-        return 'Debe Iniciar esta Semana';
-    }
-
     if ($ej > $eps) {
-        if ($delta < (-1 * $aheadTolerance)) {
-            return 'Adelantada';
+        $ejecutadoTeorico = pg_calculate_theoretical_progress($fechaInicioActividad, $fechaFinActividad, $fechaInicioSemana);
+        $delta = round($ejecutadoTeorico - $ej, 3);
+
+        if ($delta > $eps) {
+            return 'Atrasada';
         }
 
         return 'En Curso';
     }
 
-    if ($ej <= $eps && $fiTs > $feTs) {
-        $horizonEndTs = $feTs + (PG_LOOKAHEAD_DAYS * 86400);
-        if ($fiTs <= $horizonEndTs) {
-            return 'Actividad Futura';
-        }
-
-        return 'No Requerida';
+    if ($fiTs < $fsTs) {
+        return 'Atrasada';
     }
 
-    return 'No Requerida';
+    if ($fiTs <= $feTs) {
+        return 'Debe Iniciar esta Semana';
+    }
+
+    return 'Actividad Futura';
 }

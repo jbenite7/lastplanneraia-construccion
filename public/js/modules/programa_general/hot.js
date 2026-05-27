@@ -27,12 +27,9 @@
   var trackedStates = [
     'debe-iniciar',
     'actividad-futura',
-    'adelantada',
     'en-curso',
-    'atrasada-critica',
     'atrasada',
     'terminada',
-    'no-requerida',
     'header',
   ];
 
@@ -406,17 +403,14 @@
       case 'debe iniciar esta semana':
       case 'debe iniciar esta semana y restricciones pendientes':
         return 'debe-iniciar';
-      case 'adelantada':
-        return 'adelantada';
       case 'en curso':
       case 'a tiempo':
         return 'en-curso';
       case 'actividad futura':
       case 'en liberacion de restricciones':
         return 'actividad-futura';
-      case 'no requerida':
-      case 'ni':
-        return 'no-requerida';
+      case 'sin datos':
+        return 'sin-datos';
       default:
         return '';
     }
@@ -433,7 +427,11 @@
       return 'terminada';
     }
 
-    if (semanasInicio < 0 && ejecutado < 0.999) {
+    if (semanasInicio > 900 && ejecutado <= 0) {
+      return 'sin-datos';
+    }
+
+    if (semanasInicio < 0) {
       return 'atrasada';
     }
 
@@ -441,19 +439,11 @@
       return 'debe-iniciar';
     }
 
-    if (semanasInicio > 0 && semanasInicio <= 6 && ejecutado <= 0) {
-      return 'actividad-futura';
-    }
-
-    if (semanasInicio > 6 && ejecutado <= 0) {
-      return 'no-requerida';
-    }
-
     if (ejecutado > 0 && ejecutado < 0.999) {
       return 'en-curso';
     }
 
-    return 'no-requerida';
+    return 'actividad-futura';
   }
 
   function areHardRestrictionsMet(data) {
@@ -526,21 +516,19 @@
       rutaCriticaRaw === 'sí' ||
       rutaCriticaRaw === 'true';
     var baseKey = normalizeEstadoToStateKey(data.Estado) || getFallbackStateKey(data);
-    var stateKey = baseKey === 'atrasada' && isCritical ? 'atrasada-critica' : baseKey;
+    var stateKey = baseKey;
     var rowClassMap = {
-      'atrasada-critica': 'pg-state-atrasada-critica',
       atrasada: 'pg-state-atrasada',
       'debe-iniciar': 'pg-state-debe-iniciar',
       'actividad-futura': 'pg-state-actividad-futura',
-      adelantada: 'pg-state-adelantada',
       'en-curso': 'pg-state-en-curso',
       terminada: 'pg-state-terminada',
-      'no-requerida': 'pg-state-no-requerida',
+      'sin-datos': 'pg-state-sin-datos',
     };
 
     return {
       key: stateKey,
-      rowClass: rowClassMap[stateKey] || 'pg-state-no-requerida',
+      rowClass: rowClassMap[stateKey] || 'pg-state-actividad-futura',
       restrictionAlertKey: getRestrictionAlertKey(data),
     };
   }
@@ -614,14 +602,8 @@
         "<section class='pg-legend-quick-group'>" +
         "<h6 class='pg-legend-quick-group-title'>P1 - Resolver hoy</h6>" +
         "<div class='pg-legend-quick-row'>" +
-        "<span class='pg-legend-modal-swatch pg-legend-quick-swatch pg-state-atrasada-critica'></span>" +
-        "<div class='pg-legend-quick-state'><strong>Atrasada (Critica)</strong><small>Debajo del teorico semanal en ruta critica.</small></div>" +
-        "<div class='pg-legend-quick-action'>Escalar bloqueo y activar recuperacion.</div>" +
-        "<span class='pg-legend-quick-priority is-p1'>P1</span>" +
-        '</div>' +
-        "<div class='pg-legend-quick-row'>" +
         "<span class='pg-legend-modal-swatch pg-legend-quick-swatch pg-state-atrasada'></span>" +
-        "<div class='pg-legend-quick-state'><strong>Atrasada</strong><small>Por debajo de la curva teorica al inicio de semana.</small></div>" +
+        "<div class='pg-legend-quick-state'><strong>Atrasada</strong><small>Por debajo de la curva teorica al inicio de semana. <em>Si tiene ruta critica se marca con icono.</em></small></div>" +
         "<div class='pg-legend-quick-action'>Reprogramar frente y cerrar causa del atraso.</div>" +
         "<span class='pg-legend-quick-priority is-p1'>P1</span>" +
         '</div>' +
@@ -630,13 +612,13 @@
         "<h6 class='pg-legend-quick-group-title'>P2 - Gestion semanal</h6>" +
         "<div class='pg-legend-quick-row'>" +
         "<span class='pg-legend-modal-swatch pg-legend-quick-swatch pg-state-debe-iniciar'></span>" +
-        "<div class='pg-legend-quick-state'><strong>Debe Iniciar esta Semana</strong><small>Inicio dentro de la semana actual y sin avance.</small></div>" +
+        "<div class='pg-legend-quick-state'><strong>Debe Iniciar</strong><small>Inicio dentro de la semana actual y sin avance.</small></div>" +
         "<div class='pg-legend-quick-action'>Asegurar recursos, cuadrilla y frente liberado.</div>" +
         "<span class='pg-legend-quick-priority is-p2'>P2</span>" +
         '</div>' +
         "<div class='pg-legend-quick-row'>" +
         "<span class='pg-legend-modal-swatch pg-legend-quick-swatch pg-state-en-curso'></span>" +
-        "<div class='pg-legend-quick-state'><strong>En Curso</strong><small>Ejecucion alineada con la curva teorica semanal.</small></div>" +
+        "<div class='pg-legend-quick-state'><strong>En Curso</strong><small>Ejecucion alineada o por encima de la curva teorica semanal. <em>Si va adelantada se marca con icono.</em></small></div>" +
         "<div class='pg-legend-quick-action'>Sostener ritmo diario y control de productividad.</div>" +
         "<span class='pg-legend-quick-priority is-p2'>P2</span>" +
         '</div>' +
@@ -644,27 +626,21 @@
         "<section class='pg-legend-quick-group'>" +
         "<h6 class='pg-legend-quick-group-title'>P3 - Seguimiento</h6>" +
         "<div class='pg-legend-quick-row'>" +
-        "<span class='pg-legend-modal-swatch pg-legend-quick-swatch pg-state-adelantada'></span>" +
-        "<div class='pg-legend-quick-state'><strong>Adelantada</strong><small>En curso por encima del cronograma teorico.</small></div>" +
-        "<div class='pg-legend-quick-action'>Proteger el adelanto para no perder rendimiento.</div>" +
+        "<span class='pg-legend-modal-swatch pg-legend-quick-swatch pg-state-actividad-futura'></span>" +
+        "<div class='pg-legend-quick-state'><strong>Actividad Futura</strong><small>Inicia dentro del horizonte de 6 semanas o fuera de el.</small></div>" +
+        "<div class='pg-legend-quick-action'>Preparar compras, mano de obra y permisos.</div>" +
         "<span class='pg-legend-quick-priority is-p3'>P3</span>" +
         '</div>' +
         "<div class='pg-legend-quick-row'>" +
-        "<span class='pg-legend-modal-swatch pg-legend-quick-swatch pg-state-actividad-futura'></span>" +
-        "<div class='pg-legend-quick-state'><strong>Actividad Futura</strong><small>Inicia dentro del horizonte de 6 semanas.</small></div>" +
-        "<div class='pg-legend-quick-action'>Preparar compras, mano de obra y permisos.</div>" +
+        "<span class='pg-legend-modal-swatch pg-legend-quick-swatch pg-state-sin-datos'></span>" +
+        "<div class='pg-legend-quick-state'><strong>Sin Datos</strong><small>Actividad sin fecha de inicio ni ejecucion registrada. Requiere programacion.</small></div>" +
+        "<div class='pg-legend-quick-action'>Asignar fechas y liberar restricciones.</div>" +
         "<span class='pg-legend-quick-priority is-p3'>P3</span>" +
         '</div>' +
         "<div class='pg-legend-quick-row'>" +
         "<span class='pg-legend-modal-swatch pg-legend-quick-swatch pg-state-terminada'></span>" +
         "<div class='pg-legend-quick-state'><strong>Terminada</strong><small>Actividad cerrada (a tiempo o adelantada).</small></div>" +
         "<div class='pg-legend-quick-action'>Cerrar trazabilidad y liberar foco del equipo.</div>" +
-        "<span class='pg-legend-quick-priority is-p3'>P3</span>" +
-        '</div>' +
-        "<div class='pg-legend-quick-row'>" +
-        "<span class='pg-legend-modal-swatch pg-legend-quick-swatch pg-state-no-requerida'></span>" +
-        "<div class='pg-legend-quick-state'><strong>No Requerida</strong><small>Fuera del lookahead de 6 semanas.</small></div>" +
-        "<div class='pg-legend-quick-action'>Mantener en monitoreo de mediano plazo.</div>" +
         "<span class='pg-legend-quick-priority is-p3'>P3</span>" +
         '</div>' +
         '</section>' +
@@ -909,34 +885,30 @@
     }
   }
 
-  function getPhysicalRowIndex(visualRow) {
-    if (!hot || typeof hot.toPhysicalRow !== 'function') {
-      return visualRow;
-    }
-
-    var physicalRow = hot.toPhysicalRow(visualRow);
-    return Number.isInteger(physicalRow) && physicalRow >= 0 ? physicalRow : visualRow;
-  }
-
-  function getRowDataByVisualRow(visualRow) {
-    if (!hot) {
+  function getSourceRowDataByVisualRow(instance, visualRow) {
+    if (!instance || !Number.isInteger(visualRow) || visualRow < 0) {
       return null;
     }
 
-    return hot.getSourceDataAtRow(getPhysicalRowIndex(visualRow));
+    var physicalRow = typeof instance.toPhysicalRow === 'function' ? instance.toPhysicalRow(visualRow) : visualRow;
+    if (!Number.isInteger(physicalRow) || physicalRow < 0 || typeof instance.getSourceDataAtRow !== 'function') {
+      return null;
+    }
+
+    return instance.getSourceDataAtRow(physicalRow) || null;
   }
 
   function saveRow(visualRow, prop, oldValue, source, options) {
     var db = getDb();
     var semana = getSemana();
-    var rowData = getRowDataByVisualRow(visualRow) || {};
+    var rowData = getSourceRowDataByVisualRow(hot, visualRow) || {};
     var saveOptions = options || {};
     var payloadOverrides = saveOptions.payloadOverrides || null;
 
     if (!payloadOverrides && prop === 'EjecutadoDisplay') {
         var editedRatio = ratioFromDisplayContext(buildDisplayContext(rowData));
         hot.setDataAtRowProp(visualRow, 'Ejecutado', normalizeRatio(editedRatio), 'internal-update');
-        rowData = getRowDataByVisualRow(visualRow) || {};
+        rowData = getSourceRowDataByVisualRow(hot, visualRow) || {};
     }
 
     if (!payloadOverrides && (prop === 'unidad' || prop === 'cantidad_ppto')) {
@@ -944,7 +916,7 @@
         if (preservedRatio !== null) {
           var newDisplay = displayFromRatioForContext(preservedRatio, buildDisplayContext(rowData));
           hot.setDataAtRowProp(visualRow, 'EjecutadoDisplay', newDisplay, 'internal-update');
-          rowData = getRowDataByVisualRow(visualRow) || {};
+          rowData = getSourceRowDataByVisualRow(hot, visualRow) || {};
         }
     }
 
@@ -975,7 +947,7 @@
           }
           if (response.Ejecutado !== undefined && response.Ejecutado !== null) {
             var resRatio = parseFloat(response.Ejecutado);
-            var updatedRowData = getRowDataByVisualRow(visualRow) || rowData || {};
+            var updatedRowData = getSourceRowDataByVisualRow(hot, visualRow) || rowData || {};
             var mappedUnit = String((response.unidad !== undefined ? response.unidad : updatedRowData.unidad) || '').trim();
             if (response.unidad !== undefined) {
               hot.setDataAtRowProp(visualRow, 'unidad', mappedUnit, 'internal-update');
@@ -984,7 +956,7 @@
               hot.setDataAtRowProp(visualRow, 'cantidad_ppto', response.cantidad_ppto, 'internal-update');
             }
             hot.setDataAtRowProp(visualRow, 'Ejecutado', normalizeRatio(resRatio), 'internal-update');
-            updatedRowData = getRowDataByVisualRow(visualRow) || updatedRowData;
+            updatedRowData = getSourceRowDataByVisualRow(hot, visualRow) || updatedRowData;
             hot.setDataAtRowProp(
               visualRow,
               'EjecutadoDisplay',
@@ -994,10 +966,7 @@
           }
 
           hot.render();
-          updateLegendCounts(masterData);
-          if (prop === 'unidad' || prop === 'cantidad_ppto' || saveOptions.reloadAfterSuccess) {
-            loadData();
-          }
+          updateLegendCounts(getFilteredRows());
           showFeedback('success', 'Guardado');
           return;
         }
@@ -1093,7 +1062,7 @@
       'pgActividadRenderer',
       function (instance, td, row, col, prop, value) {
         Handsontable.renderers.TextRenderer.apply(this, arguments);
-        var rowData = instance.getSourceDataAtRow(row) || {};
+        var rowData = getSourceRowDataByVisualRow(instance, row) || {};
         var prefix = parseInt(rowData.alerta_crisis, 10) === 1 ? '🔥 ' : '';
         td.innerHTML = prefix + sanitizeActividadHtml(value);
         td.classList.add('htLeft');
@@ -1104,7 +1073,7 @@
       'pgEjecutadoTeoricoRenderer',
       function (instance, td, row, col, prop, value) {
         Handsontable.renderers.TextRenderer.apply(this, arguments);
-        var rowData = instance.getSourceDataAtRow(row) || {};
+        var rowData = getSourceRowDataByVisualRow(instance, row) || {};
         var cantidadPpto = toNumber(rowData.cantidad_ppto, null);
         var unidad = String(rowData.unidad || '').trim();
         var ratio = toNumber(value, null);
@@ -1123,7 +1092,7 @@
       'pgEjecutadoRealRenderer',
       function (instance, td, row, col, prop, value) {
         Handsontable.renderers.NumericRenderer.apply(this, arguments);
-        var rowData = instance.getSourceDataAtRow(row) || {};
+        var rowData = getSourceRowDataByVisualRow(instance, row) || {};
         var cantidadPpto = toNumber(rowData.cantidad_ppto, null);
         var physicalVal = toNumber(value, null);
         var ratio = getEjecutadoRatio(rowData);
@@ -1796,12 +1765,10 @@
       'con-alerta-restricciones': 0,
       'debe-iniciar': 0,
       'actividad-futura': 0,
-      adelantada: 0,
       'en-curso': 0,
-      'atrasada-critica': 0,
       atrasada: 0,
       terminada: 0,
-      'no-requerida': 0,
+      'sin-datos': 0,
     };
 
     for (var i = 0; i < rows.length; i++) {
@@ -1955,9 +1922,9 @@
       className: 'htMiddle',
       cells: function (row, col, prop) {
         var props = {};
-        var rowData = this.instance.getSourceDataAtRow(row) || {};
+        var rowData = getSourceRowDataByVisualRow(this, row) || {};
         var classification = classifyPGRow(rowData);
-        var stateClass = classification.rowClass || 'pg-state-no-requerida';
+        var stateClass = classification.rowClass || 'pg-state-actividad-futura';
         var composed = 'pg-row-state ' + stateClass;
         var columnMeta = this.instance.getSettings().columns[col] || {};
         var baseClass = columnMeta.className || '';
@@ -1966,6 +1933,10 @@
 
         // Bloquear cantidad_ppto si la unidad es %
         if (canEdit && prop === 'cantidad_ppto' && isPercentLikeUnit(rowData.unidad)) {
+          canEdit = false;
+        }
+
+        if (canEdit && prop === 'EjecutadoDisplay' && classification.key === 'sin-datos') {
           canEdit = false;
         }
 
@@ -2020,7 +1991,7 @@
             hot.setDataAtRowProp(row, prop, normalized.value, 'internal-update');
           }
 
-          var currentRowData = getRowDataByVisualRow(row) || {};
+          var currentRowData = getSourceRowDataByVisualRow(hot, row) || {};
           var previousContext = null;
           if (prop === 'unidad' || prop === 'cantidad_ppto') {
             previousContext = buildDisplayContext(currentRowData, {
@@ -2031,7 +2002,7 @@
 
           // Auto-clear cantidad_ppto al cambiar unidad a %
           if (prop === 'unidad') {
-            var rd = getRowDataByVisualRow(row) || {};
+            var rd = getSourceRowDataByVisualRow(hot, row) || {};
             var isPercent = isPercentLikeUnit(normalized.value);
             var hasCantidad = rd.cantidad_ppto !== null && rd.cantidad_ppto !== '' && rd.cantidad_ppto !== undefined;
 
@@ -2039,7 +2010,7 @@
               revertCell(row, prop, oldValue);
               (function (vRow, newUnit, oldUnit, previousUnitContext, cantVal) {
                 showUnitChangeConfirm(cantVal, function () {
-                  var currentUnitRowData = getRowDataByVisualRow(vRow) || {};
+                  var currentUnitRowData = getSourceRowDataByVisualRow(hot, vRow) || {};
                   var percentPayloadOverrides = buildPercentUnitPayloadOverrides(currentUnitRowData, newUnit);
                   saveRow(vRow, 'unidad', oldUnit, 'unit-change-confirm', {
                     previousContext: previousUnitContext,
@@ -2079,7 +2050,7 @@
     scheduleLayoutRefresh(0, true);
   }
 
-  function applyFiltersAndRender() {
+  function getFilteredRows() {
     var filtered = [];
 
     for (var i = 0; i < masterData.length; i++) {
@@ -2090,6 +2061,11 @@
       }
     }
 
+    return filtered;
+  }
+
+  function applyFiltersAndRender() {
+    var filtered = getFilteredRows();
     updateLegendCounts(filtered);
     updateOrInitHot(filtered);
   }

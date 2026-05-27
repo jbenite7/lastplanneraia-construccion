@@ -268,17 +268,14 @@ function normalizeEstadoToStateKey(estado) {
         case 'debe iniciar esta semana':
         case 'debe iniciar esta semana y restricciones pendientes':
             return 'debe-iniciar';
-        case 'adelantada':
-            return 'adelantada';
         case 'en curso':
         case 'a tiempo':
             return 'en-curso';
         case 'actividad futura':
         case 'en liberacion de restricciones':
             return 'actividad-futura';
-        case 'no requerida':
-        case 'ni':
-            return 'no-requerida';
+        case 'sin datos':
+            return 'sin-datos';
         default:
             return '';
     }
@@ -292,7 +289,11 @@ function getFallbackStateKey(data) {
         return 'terminada';
     }
 
-    if (semanasInicio < 0 && ejecutado < 0.999) {
+    if (semanasInicio > 900 && ejecutado <= 0) {
+        return 'sin-datos';
+    }
+
+    if (semanasInicio < 0) {
         return 'atrasada';
     }
 
@@ -300,19 +301,11 @@ function getFallbackStateKey(data) {
         return 'debe-iniciar';
     }
 
-    if (semanasInicio > 0 && semanasInicio <= 6 && ejecutado <= 0) {
-        return 'actividad-futura';
-    }
-
-    if (semanasInicio > 6 && ejecutado <= 0) {
-        return 'no-requerida';
-    }
-
     if (ejecutado > 0 && ejecutado < 0.999) {
         return 'en-curso';
     }
 
-    return 'no-requerida';
+    return 'actividad-futura';
 }
 
 /* Centralized State Logic for Programa General (UI = estado persistido) */
@@ -330,22 +323,20 @@ function classifyPGRow(data) {
     var rutaCriticaRaw = String(data.Ruta_Critica === undefined ? '' : data.Ruta_Critica).trim().toLowerCase();
     var isCritical = (rutaCriticaRaw === '1' || rutaCriticaRaw === 'si' || rutaCriticaRaw === 'sí' || rutaCriticaRaw === 'true');
     var baseKey = normalizeEstadoToStateKey(data.Estado) || getFallbackStateKey(data);
-    var stateKey = (baseKey === 'atrasada' && isCritical) ? 'atrasada-critica' : baseKey;
+    var stateKey = baseKey;
     var rowClassMap = {
-        'atrasada-critica': 'pg-state-atrasada-critica',
         'atrasada': 'pg-state-atrasada',
         'debe-iniciar': 'pg-state-debe-iniciar',
         'actividad-futura': 'pg-state-actividad-futura',
-        'adelantada': 'pg-state-adelantada',
         'en-curso': 'pg-state-en-curso',
         'terminada': 'pg-state-terminada',
-        'no-requerida': 'pg-state-no-requerida',
+        'sin-datos': 'pg-state-sin-datos',
     };
 
     return {
         key: stateKey,
         baseKey: baseKey,
-        rowClass: rowClassMap[stateKey] || 'pg-state-no-requerida',
+        rowClass: rowClassMap[stateKey] || 'pg-state-actividad-futura',
         isCritical: isCritical,
         restrictionAlertKey: getRestrictionAlertKey(data),
     };
@@ -358,17 +349,15 @@ function getProgGenState(data) {
 function getProgGenStateLabel(stateKey) {
     var labels = {
         'header': 'Capítulo',
-        'debe-iniciar': 'Debe Iniciar esta Semana',
+        'debe-iniciar': 'Debe Iniciar',
         'actividad-futura': 'Actividad Futura',
-        'adelantada': 'Adelantada',
         'en-curso': 'En Curso',
-        'atrasada-critica': 'Atrasada (Crítica)',
         'atrasada': 'Atrasada',
         'terminada': 'Terminada',
-        'no-requerida': 'No Requerida',
+        'sin-datos': 'Sin Datos',
     };
 
-    return labels[stateKey] || 'En Curso';
+    return labels[stateKey] || 'Sin Datos';
 }
 
 function escapeHtml(value) {
@@ -381,10 +370,6 @@ function escapeHtml(value) {
 }
 
 function getProgGenStateIcon(stateKey, isCritical) {
-    if (stateKey === 'atrasada-critica') {
-        return "<i class='fas fa-skull-crossbones fa-xl pg-state-icon'></i>";
-    }
-
     if (stateKey === 'atrasada') {
         return "<i class='fas fa-radiation fa-xl pg-state-icon'></i>";
     }
@@ -397,10 +382,6 @@ function getProgGenStateIcon(stateKey, isCritical) {
         return "<i class='fas fa-calendar-alt fa-xl pg-state-icon'></i>";
     }
 
-    if (stateKey === 'adelantada') {
-        return "<i class='fas fa-forward fa-xl pg-state-icon'></i>";
-    }
-
     if (stateKey === 'en-curso') {
         return isCritical
             ? "<i class='fas fa-bell fa-xl pg-state-icon'></i>"
@@ -409,6 +390,10 @@ function getProgGenStateIcon(stateKey, isCritical) {
 
     if (stateKey === 'terminada') {
         return "<i class='fas fa-check-circle fa-xl pg-state-icon'></i>";
+    }
+
+    if (stateKey === 'sin-datos') {
+        return "<i class='fas fa-question-circle fa-xl pg-state-icon'></i>";
     }
 
     return '';
@@ -439,14 +424,8 @@ function renderProgramaGeneralLegendModal() {
             "<section class='pg-legend-quick-group'>" +
                 "<h6 class='pg-legend-quick-group-title'>P1 - Resolver hoy</h6>" +
                 "<div class='pg-legend-quick-row'>" +
-                    "<span class='pg-legend-modal-swatch pg-legend-quick-swatch pg-state-atrasada-critica'></span>" +
-                    "<div class='pg-legend-quick-state'><strong>Atrasada (Critica)</strong><small>Debajo del teorico semanal en ruta critica.</small></div>" +
-                    "<div class='pg-legend-quick-action'>Escalar bloqueo y activar recuperacion.</div>" +
-                    "<span class='pg-legend-quick-priority is-p1'>P1</span>" +
-                "</div>" +
-                "<div class='pg-legend-quick-row'>" +
                     "<span class='pg-legend-modal-swatch pg-legend-quick-swatch pg-state-atrasada'></span>" +
-                    "<div class='pg-legend-quick-state'><strong>Atrasada</strong><small>Por debajo de la curva teorica al inicio de semana.</small></div>" +
+                    "<div class='pg-legend-quick-state'><strong>Atrasada</strong><small>Por debajo de la curva teorica al inicio de semana. <em>Si tiene ruta critica se marca con icono.</em></small></div>" +
                     "<div class='pg-legend-quick-action'>Reprogramar frente y cerrar causa del atraso.</div>" +
                     "<span class='pg-legend-quick-priority is-p1'>P1</span>" +
                 "</div>" +
@@ -457,13 +436,13 @@ function renderProgramaGeneralLegendModal() {
                 "<h6 class='pg-legend-quick-group-title'>P2 - Gestion semanal</h6>" +
                 "<div class='pg-legend-quick-row'>" +
                     "<span class='pg-legend-modal-swatch pg-legend-quick-swatch pg-state-debe-iniciar'></span>" +
-                    "<div class='pg-legend-quick-state'><strong>Debe Iniciar esta Semana</strong><small>Inicio dentro de la semana actual y sin avance.</small></div>" +
+                    "<div class='pg-legend-quick-state'><strong>Debe Iniciar</strong><small>Inicio dentro de la semana actual y sin avance.</small></div>" +
                     "<div class='pg-legend-quick-action'>Asegurar recursos, cuadrilla y frente liberado.</div>" +
                     "<span class='pg-legend-quick-priority is-p2'>P2</span>" +
                 "</div>" +
                 "<div class='pg-legend-quick-row'>" +
                     "<span class='pg-legend-modal-swatch pg-legend-quick-swatch pg-state-en-curso'></span>" +
-                    "<div class='pg-legend-quick-state'><strong>En Curso</strong><small>Ejecucion alineada con la curva teorica semanal.</small></div>" +
+                    "<div class='pg-legend-quick-state'><strong>En Curso</strong><small>Ejecucion alineada o por encima de la curva teorica semanal. <em>Si va adelantada se marca con icono.</em></small></div>" +
                     "<div class='pg-legend-quick-action'>Sostener ritmo diario y control de productividad.</div>" +
                     "<span class='pg-legend-quick-priority is-p2'>P2</span>" +
                 "</div>" +
@@ -473,27 +452,21 @@ function renderProgramaGeneralLegendModal() {
             "<section class='pg-legend-quick-group'>" +
                 "<h6 class='pg-legend-quick-group-title'>P3 - Seguimiento</h6>" +
                 "<div class='pg-legend-quick-row'>" +
-                    "<span class='pg-legend-modal-swatch pg-legend-quick-swatch pg-state-adelantada'></span>" +
-                    "<div class='pg-legend-quick-state'><strong>Adelantada</strong><small>En curso por encima del cronograma teorico.</small></div>" +
-                    "<div class='pg-legend-quick-action'>Proteger el adelanto para no perder rendimiento.</div>" +
+                    "<span class='pg-legend-modal-swatch pg-legend-quick-swatch pg-state-actividad-futura'></span>" +
+                    "<div class='pg-legend-quick-state'><strong>Actividad Futura</strong><small>Inicia dentro del horizonte de 6 semanas o fuera de el.</small></div>" +
+                    "<div class='pg-legend-quick-action'>Preparar compras, mano de obra y permisos.</div>" +
                     "<span class='pg-legend-quick-priority is-p3'>P3</span>" +
                 "</div>" +
                 "<div class='pg-legend-quick-row'>" +
-                    "<span class='pg-legend-modal-swatch pg-legend-quick-swatch pg-state-actividad-futura'></span>" +
-                    "<div class='pg-legend-quick-state'><strong>Actividad Futura</strong><small>Inicia dentro del horizonte de 6 semanas.</small></div>" +
-                    "<div class='pg-legend-quick-action'>Preparar compras, mano de obra y permisos.</div>" +
+                    "<span class='pg-legend-modal-swatch pg-legend-quick-swatch pg-state-sin-datos'></span>" +
+                    "<div class='pg-legend-quick-state'><strong>Sin Datos</strong><small>Actividad sin fecha de inicio ni ejecucion registrada. Requiere programacion.</small></div>" +
+                    "<div class='pg-legend-quick-action'>Asignar fechas y liberar restricciones.</div>" +
                     "<span class='pg-legend-quick-priority is-p3'>P3</span>" +
                 "</div>" +
                 "<div class='pg-legend-quick-row'>" +
                     "<span class='pg-legend-modal-swatch pg-legend-quick-swatch pg-state-terminada'></span>" +
                     "<div class='pg-legend-quick-state'><strong>Terminada</strong><small>Actividad cerrada (a tiempo o adelantada).</small></div>" +
                     "<div class='pg-legend-quick-action'>Cerrar trazabilidad y liberar foco del equipo.</div>" +
-                    "<span class='pg-legend-quick-priority is-p3'>P3</span>" +
-                "</div>" +
-                "<div class='pg-legend-quick-row'>" +
-                    "<span class='pg-legend-modal-swatch pg-legend-quick-swatch pg-state-no-requerida'></span>" +
-                    "<div class='pg-legend-quick-state'><strong>No Requerida</strong><small>Fuera del lookahead de 6 semanas.</small></div>" +
-                    "<div class='pg-legend-quick-action'>Mantener en monitoreo de mediano plazo.</div>" +
                     "<span class='pg-legend-quick-priority is-p3'>P3</span>" +
                 "</div>" +
             "</section>" +
@@ -841,9 +814,6 @@ var listar = function() {
                 }
 
                 var badges = '';
-                if (classification.key === 'atrasada-critica') {
-                    badges += " <span class='pg-alert-badge pg-alert-critical'>Crítica</span>";
-                }
 
                 if (classification.restrictionAlertKey) {
                     var alertLabel = getRestrictionAlertLabel(classification.restrictionAlertKey);
@@ -869,12 +839,10 @@ var listar = function() {
             'con-alerta-restricciones': 0,
             'debe-iniciar': 0,
             'actividad-futura': 0,
-            'adelantada': 0,
             'en-curso': 0,
-            'atrasada-critica': 0,
             'atrasada': 0,
             'terminada': 0,
-            'no-requerida': 0,
+            'sin-datos': 0,
         };
         
         var api = this.api();
@@ -962,12 +930,10 @@ var listar = function() {
                 <span class="pdc-legend-item alerta-restricciones" data-filter="con-alerta-restricciones" role="button" tabindex="0" onclick="filterPDC('con-alerta-restricciones', event)" onkeypress="if(event.key === 'Enter') filterPDC('con-alerta-restricciones', event)"><span class="indicator"></span> Con Alerta Restricciones <span id="count-con-alerta-restricciones" class="count-badge">(...)</span></span>
                 <span class="pdc-legend-item debe-iniciar" data-filter="debe-iniciar" role="button" tabindex="0" onclick="filterPDC('debe-iniciar', event)" onkeypress="if(event.key === 'Enter') filterPDC('debe-iniciar', event)"><span class="indicator"></span> Debe Iniciar <span id="count-debe-iniciar" class="count-badge">(...)</span></span>
                 <span class="pdc-legend-item actividad-futura" data-filter="actividad-futura" role="button" tabindex="0" onclick="filterPDC('actividad-futura', event)" onkeypress="if(event.key === 'Enter') filterPDC('actividad-futura', event)"><span class="indicator"></span> Actividad Futura <span id="count-actividad-futura" class="count-badge">(...)</span></span>
-                <span class="pdc-legend-item adelantada" data-filter="adelantada" role="button" tabindex="0" onclick="filterPDC('adelantada', event)" onkeypress="if(event.key === 'Enter') filterPDC('adelantada', event)"><span class="indicator"></span> Adelantada <span id="count-adelantada" class="count-badge">(...)</span></span>
                 <span class="pdc-legend-item en-curso" data-filter="en-curso" role="button" tabindex="0" onclick="filterPDC('en-curso', event)" onkeypress="if(event.key === 'Enter') filterPDC('en-curso', event)"><span class="indicator"></span> En Curso <span id="count-en-curso" class="count-badge">(...)</span></span>
-                <span class="pdc-legend-item atrasada-critica" data-filter="atrasada-critica" role="button" tabindex="0" onclick="filterPDC('atrasada-critica', event)" onkeypress="if(event.key === 'Enter') filterPDC('atrasada-critica', event)"><span class="indicator"></span> Atrasada (Crítica) <span id="count-atrasada-critica" class="count-badge">(...)</span></span>
                 <span class="pdc-legend-item atrasada" data-filter="atrasada" role="button" tabindex="0" onclick="filterPDC('atrasada', event)" onkeypress="if(event.key === 'Enter') filterPDC('atrasada', event)"><span class="indicator"></span> Atrasada <span id="count-atrasada" class="count-badge">(...)</span></span>
                 <span class="pdc-legend-item terminada" data-filter="terminada" role="button" tabindex="0" onclick="filterPDC('terminada', event)" onkeypress="if(event.key === 'Enter') filterPDC('terminada', event)"><span class="indicator"></span> Terminada <span id="count-terminada" class="count-badge">(...)</span></span>
-                <span class="pdc-legend-item no-requerida" data-filter="no-requerida" role="button" tabindex="0" onclick="filterPDC('no-requerida', event)" onkeypress="if(event.key === 'Enter') filterPDC('no-requerida', event)"><span class="indicator"></span> No Requerida <span id="count-no-requerida" class="count-badge">(...)</span></span>
+                <span class="pdc-legend-item sin-datos" data-filter="sin-datos" role="button" tabindex="0" onclick="filterPDC('sin-datos', event)" onkeypress="if(event.key === 'Enter') filterPDC('sin-datos', event)"><span class="indicator"></span> Sin Datos <span id="count-sin-datos" class="count-badge">(...)</span></span>
             </div>
         </div>
     `);
@@ -1258,6 +1224,11 @@ var obtener_data_editar = function(tbody, table) {
         if (only_once == true) {
                 var data= table.row($(this).parents("tr")).data();
                 if(data.Titulo==0){
+                    var pgState = classifyPGRow(data).key;
+                    if (pgState === 'sin-datos') {
+                        obtener_data_editar("#dt_cliente tbody", table);
+                        return;
+                    }
                     var Id=$("#Id").val(data.Consecutivo_en_Programa),
                     //medir_productividad=$("#medir_productividad").val(data.medir_productividad),
                     opcion = $("#opcion").val("modificar");

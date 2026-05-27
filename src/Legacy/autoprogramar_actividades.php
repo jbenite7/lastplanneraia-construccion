@@ -133,7 +133,7 @@ try {
     WHERE Semana = ? AND Titulo = 0 
       AND (COALESCE(Ejecutado, 0) > 0.001 OR {$hardEligibilitySql})
       AND (
-        Estado='En Curso' OR Estado='Adelantada' OR Estado='Atrasada' OR Estado='Debe Iniciar esta Semana'
+        Estado='En Curso' OR Estado='Atrasada' OR Estado='Debe Iniciar esta Semana'
         OR Estado='A Tiempo' OR Estado='Ya Debió Iniciar y Restricciones Pendientes' OR Estado='Debe Iniciar esta Semana y Restricciones Pendientes'
       )
       $whereExistentes";
@@ -253,7 +253,7 @@ try {
     WHERE Semana = ? AND Titulo = 0 
       AND NOT {$hardEligibilitySql}
       AND (
-        Estado='En Curso' OR Estado='Adelantada' OR Estado='Atrasada' OR Estado='Debe Iniciar esta Semana'
+        Estado='En Curso' OR Estado='Atrasada' OR Estado='Debe Iniciar esta Semana'
         OR Estado='A Tiempo' OR Estado='Ya Debió Iniciar y Restricciones Pendientes' OR Estado='Debe Iniciar esta Semana y Restricciones Pendientes'
       )
       $whereExistentes";

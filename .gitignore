@@ -51,4 +51,12 @@ debug_*.php
 ._*
 
 # Archivos de configuración de IDEs
-GEMINI.md   
+GEMINI.md
+
+# Node.js / Playwright testing
+node_modules/
+package-lock.json
+package.json
+test-output/
+tests/browser/
+.playwright-mcp/
