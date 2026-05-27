@@ -619,8 +619,7 @@ window.LPSContextualDrawer = (function() {
     const computedRatio = aplicables > 0
       ? applicableItems.reduce((sum, item) => sum + item.progress, 0) / aplicables
       : 1.0;
-    const aggregateRatio = parseRatioValue(firstValue(rowData, ['Estado_Restricciones', 'estado_restricciones']));
-    const porcentaje = aplicables > 0 ? computedRatio : (aggregateRatio !== null ? aggregateRatio : computedRatio);
+    const porcentaje = aplicables > 0 ? computedRatio : 1.0;
 
     return {
       porcentaje: Math.round(porcentaje * 100),

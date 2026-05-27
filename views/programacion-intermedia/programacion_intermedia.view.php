@@ -1442,8 +1442,8 @@
         };
     </script>
     <script type="text/javascript" src="/js/HandsontableTomSelectEditor.js?v=tomselect30"></script>
-    <script src="/js/modules/lps_drawer.js?v=20260522c"></script>
-    <script src="/js/modules/programacion_intermedia/hot.js?v=hot37"></script>
+    <script src="/js/modules/lps_drawer.js?v=20260522d"></script>
+    <script src="/js/modules/programacion_intermedia/hot.js?v=hot38"></script>
 
     <script>
         function cargaParametros() {

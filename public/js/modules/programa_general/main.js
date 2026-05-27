@@ -194,15 +194,32 @@ function normalizeEstadoLabel(value) {
         .replace(/[\u0300-\u036f]/g, '');
 }
 
+function areHardRestrictionsMet(data) {
+    var hardGates = [
+        { key: 'D_y_E', threshold: 1.0 },
+        { key: 'Materiales', threshold: 1.0 },
+        { key: 'MdeO', threshold: 1.0 },
+        { key: 'Equipos', threshold: 1.0 },
+        { key: 'Predecesora', threshold: 0.5 },
+    ];
+    for (var i = 0; i < hardGates.length; i++) {
+        var gate = hardGates[i];
+        var val = toNumber(data[gate.key], null);
+        if (val !== null && val < gate.threshold) {
+            return false;
+        }
+    }
+    return true;
+}
+
 function getRestrictionAlertKey(data) {
     if (!data || Number(data.Titulo) !== 0) {
         return '';
     }
 
-    var estadoRestricciones = toNumber(data.Estado_Restricciones, 1);
     var ejecutado = toNumber(data.Ejecutado, 0);
 
-    if (estadoRestricciones >= 0.999 || ejecutado >= 0.999) {
+    if (areHardRestrictionsMet(data) || ejecutado >= 0.999) {
         return '';
     }
 

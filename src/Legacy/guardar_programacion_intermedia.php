@@ -204,6 +204,8 @@ function modificar($D_y_E, $Materiales, $MdeO, $Equipos, $Predecesora, $Pdto_Con
             ['valor' => $MdeO, 'threshold' => 1.0],
             ['valor' => $Equipos, 'threshold' => 1.0],
             ['valor' => $Predecesora, 'threshold' => 0.5],
+            ['valor' => $Pdto_Cons, 'threshold' => 1.0],
+            ['valor' => $Modelo, 'threshold' => 1.0],
         ];
         $conteo = 0;
         $suma = 0;

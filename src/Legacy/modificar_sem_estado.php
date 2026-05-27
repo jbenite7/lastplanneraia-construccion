@@ -33,6 +33,8 @@ try {
                     "MdeO" => 1.0,
                     "Equipos" => 1.0,
                     "Predecesora" => 0.5,
+                    "Pdto_Cons" => 1.0,
+                    "Modelo" => 1.0,
                 ];
                 $conteo_rest = 0;
                 $suma_rest = 0;

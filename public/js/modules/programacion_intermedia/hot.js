@@ -357,12 +357,27 @@
     return restrictionRatioToPayload(nearest);
   }
 
+  function areHardRestrictionsMet(row) {
+    for (var i = 0; i < hardRestrictionProps.length; i++) {
+      var prop = hardRestrictionProps[i];
+      var payloadValue = normalizeRestrictionForPayload(prop, row[prop]);
+      if (!payloadValue || payloadValue === 'N/A') {
+        continue;
+      }
+      var numeric = toNumber(payloadValue, null);
+      if (numeric === null || numeric < (hardRestrictionThresholds[prop] || 0)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   function calculateRestrictionStateRatio(row) {
     var total = 0;
     var count = 0;
 
-    for (var i = 0; i < hardRestrictionProps.length; i++) {
-      var prop = hardRestrictionProps[i];
+    for (var i = 0; i < restrictionProps.length; i++) {
+      var prop = restrictionProps[i];
       var payloadValue = normalizeRestrictionForPayload(prop, row[prop]);
 
       if (!payloadValue || payloadValue === 'N/A') {
@@ -2599,7 +2614,7 @@
     if (liberadaFilter) {
       var readyToCommit = window.PIStateMachine && typeof window.PIStateMachine.isReadyToCommit === 'function'
         ? window.PIStateMachine.isReadyToCommit(row)
-        : toNumber(row.Estado_Restricciones, 0) >= 0.999;
+        : areHardRestrictionsMet(row);
       if (liberadaFilter === 'NoLiberada' && readyToCommit) {
         return false;
       }
