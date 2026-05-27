@@ -2,7 +2,7 @@
 
 session_start();
 require_once __DIR__ . '/rbac_guard.php';
-rbac_guard_require_permission('lps.semana.crear');
+rbac_guard_require_permission('lps.semana.eliminar');
 require_once __DIR__ . "/conexion.php";
 
 /** @var Database $dbInstance */

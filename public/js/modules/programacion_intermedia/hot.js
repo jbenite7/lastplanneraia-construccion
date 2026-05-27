@@ -749,20 +749,32 @@
 
   function getVisibleActivityIds() {
     var ids = [];
-    var rows = [];
 
-    if (hot && typeof hot.getSourceData === 'function') {
-      rows = hot.getSourceData() || [];
-    } else {
-      for (var i = 0; i < masterData.length; i++) {
-        if (rowMatchesFilters(masterData[i])) {
-          rows.push(masterData[i]);
+    if (hot && typeof hot.countRows === 'function') {
+      var visualRowCount = hot.countRows();
+      for (var visualRow = 0; visualRow < visualRowCount; visualRow++) {
+        var rowData = getSourceRowDataByVisualRow(hot, visualRow);
+        if (!rowData || getState(rowData) === 'header') {
+          continue;
         }
+
+        var id = getRowActivityId(rowData);
+        if (!id || ids.indexOf(id) > -1) {
+          continue;
+        }
+
+        ids.push(id);
       }
+
+      return ids;
     }
 
-    for (var rowIndex = 0; rowIndex < rows.length; rowIndex++) {
-      var id = getRowActivityId(rows[rowIndex]);
+    for (var rowIndex = 0; rowIndex < masterData.length; rowIndex++) {
+      if (!rowMatchesFilters(masterData[rowIndex]) || getState(masterData[rowIndex]) === 'header') {
+        continue;
+      }
+
+      var id = getRowActivityId(masterData[rowIndex]);
       if (!id || ids.indexOf(id) > -1) {
         continue;
       }
@@ -1974,10 +1986,20 @@
           if (response.estado !== undefined && response.estado !== null && response.estado !== '') {
             row.Estado = response.estado;
           }
+
+          row.estado_operativo = getStateDisplay(row);
+          hot.setDataAtRowProp(visualRow, 'estado_operativo', row.estado_operativo, 'internal-update');
         }
 
-        pendingViewportState = captureViewportState();
-        applyFiltersAndRender();
+        var filteredRows = [];
+        for (var i = 0; i < masterData.length; i++) {
+          if (rowMatchesFilters(masterData[i])) {
+            filteredRows.push(masterData[i]);
+          }
+        }
+        updateLegendCounts(filteredRows);
+
+        hot.render();
         showFeedback('success', 'Guardado');
         return;
       }

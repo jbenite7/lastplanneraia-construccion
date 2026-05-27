@@ -96,7 +96,7 @@ var nueva_sem = function (db, carpeta, seccion) {
 
 var eliminar_sem = function (semana, db, carpeta, seccion) {
   $('#modal-eliminar-semana-body-texto').text('¿Desea Eliminar la Semana ' + semana + '?');
-  $('#btn_eliminar_sem').on('click', function () {
+  $('#btn_eliminar_sem').off('click').on('click', function () {
     $('#modal_spinner').modal('show');
     var semanaFinal = semana - 1,
       opcion = 'eliminar_sem';
@@ -106,24 +106,36 @@ var eliminar_sem = function (semana, db, carpeta, seccion) {
       url: url,
       contenttype: 'charset=utf-8',
       data: { semana: semana, opcion: opcion },
-    }).done(function (info) {
-      var json_info = typeof info === 'string' ? JSON.parse(info) : info;
-      if (json_info['puedeEliminar'] == 'SI') {
-        location.assign(
-          '/legacy/cambiar_pagina.php?seccion=programa_general&semana=' + semanaFinal
-        );
-      } else {
-        aiaNoticeInvoke(
-          'warning',
-          'No se puede eliminar una semana menor a la máxima del proyecto (Semana ' +
-            json_info['maxSemana'] +
-            ')',
-          'Acción No Permitida'
-        ).then(() => {
-          location.reload();
-        });
-      }
-    });
+    })
+      .done(function (info) {
+        var json_info = typeof info === 'string' ? JSON.parse(info) : info;
+        if (json_info['puedeEliminar'] == 'SI') {
+          location.assign(
+            '/legacy/cambiar_pagina.php?seccion=programa_general&semana=' + semanaFinal
+          );
+        } else {
+          aiaNoticeInvoke(
+            'warning',
+            'No se puede eliminar una semana menor a la máxima del proyecto (Semana ' +
+              json_info['maxSemana'] +
+              ')',
+            'Acción No Permitida'
+          ).then(function () {
+            location.reload();
+          });
+        }
+      })
+      .fail(function (xhr, status, error) {
+        var msg = 'Error al eliminar la semana';
+        try {
+          var errJson = JSON.parse(xhr.responseText);
+          msg = errJson.mensaje || msg;
+        } catch (e) {}
+        aiaNoticeInvoke('error', msg, 'Error');
+      })
+      .always(function () {
+        $('#modal_spinner').modal('hide');
+      });
   });
 };
 
