@@ -26,6 +26,7 @@ Thumbs.db
 # Bases de datos
 *.sql
 !database/migrations/*.sql
+!database/patches/*.sql
 backups/
 DB_server_produccion.sql
 
