@@ -23,6 +23,7 @@ class GeneralApiController extends BaseController
     public function list()
     {
         $this->requireAuth();
+        $this->authorizePermission('lps.programa_general.ver');
         header('Content-Type: application/json; charset=utf-8');
 
         try {
@@ -127,6 +128,7 @@ class GeneralApiController extends BaseController
     public function update()
     {
         $this->requireAuth();
+        $this->authorizePermission('lps.programa_general.editar');
         header('Content-Type: application/json; charset=utf-8');
 
         header('Content-Type: application/json; charset=utf-8');
@@ -372,6 +374,7 @@ class GeneralApiController extends BaseController
     public function updateBatch()
     {
         $this->requireAuth();
+        $this->authorizePermission('lps.programa_general.editar');
         header('Content-Type: application/json; charset=utf-8');
 
         try {
@@ -424,6 +427,7 @@ class GeneralApiController extends BaseController
     public function getCodigos()
     {
         $this->requireAuth();
+        $this->authorizePermission('lps.programa_general.ver');
         header('Content-Type: application/json; charset=utf-8');
 
         try {
@@ -441,6 +445,7 @@ class GeneralApiController extends BaseController
     public function importExcel()
     {
         $this->requireAuth();
+        $this->authorizePermission('lps.programa_general.editar');
         header('Content-Type: application/json; charset=utf-8');
 
         try {
@@ -791,6 +796,7 @@ class GeneralApiController extends BaseController
     public function deleteUpdate()
     {
         $this->requireAuth();
+        $this->authorizePermission('lps.programa_general.editar');
         header('Content-Type: application/json; charset=utf-8');
 
         try {

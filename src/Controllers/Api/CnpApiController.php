@@ -16,6 +16,8 @@ class CnpApiController
 
     public function list(): void
     {
+        require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
+        rbac_guard_require_permission('lps.cnp.ver');
         $dbPrefix = $_SESSION['db'] ?? '';
         $semana = filter_var($_POST['semana'] ?? $_GET['semana'] ?? 0, FILTER_VALIDATE_INT);
 
@@ -37,6 +39,8 @@ class CnpApiController
 
     public function save(): void
     {
+        require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
+        rbac_guard_require_permission('lps.cnp.editar');
         $dbPrefix = $_SESSION['db'] ?? '';
         $id = $_POST["Consecutivo"] ?? null;
 
@@ -56,6 +60,8 @@ class CnpApiController
 
     public function reprogramar(): void
     {
+        require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
+        rbac_guard_require_permission('lps.cnp.editar');
         $dbPrefix = $_SESSION['db'] ?? '';
         $id = $_POST["Id"] ?? null;
 

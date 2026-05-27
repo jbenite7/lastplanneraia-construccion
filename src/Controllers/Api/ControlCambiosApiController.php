@@ -16,6 +16,8 @@ class ControlCambiosApiController
 
     public function list(): void
     {
+        require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
+        rbac_guard_require_permission('lps.control_cambios.ver');
         $dbPrefix = $_GET['db'] ?? '';
 
         if (!preg_match('/^[a-zA-Z0-9_-]+$/', $dbPrefix)) {
@@ -51,6 +53,8 @@ class ControlCambiosApiController
 
     public function save(): void
     {
+        require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
+        rbac_guard_require_permission('lps.control_cambios.editar');
         $dbPrefix = $_GET['db'] ?? '';
         $opcion = $_POST["opcion"] ?? '';
 
@@ -203,9 +207,9 @@ class ControlCambiosApiController
     {
         $f_inicio_sem = date("Y-m-d", strtotime($_POST["f_inicio_sem"]));
         // Replicating legacy require logic
-        require_once "/Users/juanfelipebenitezramos/last-planner-aia-legacy-permisos/src/Legacy/nueva_semana.php";
-        require_once "/Users/juanfelipebenitezramos/last-planner-aia-legacy-permisos/src/Legacy/modificar_sem_estado.php";
-        
+        require_once PROJECT_ROOT . '/src/Legacy/nueva_semana.php';
+        require_once PROJECT_ROOT . '/src/Legacy/modificar_sem_estado.php';
+
         $this->db->logActivity('ControlCambios', 'NUEVA_SEMANA', "Creó nueva semana iniciada el $f_inicio_sem", $dbPrefix);
         $this->json(["respuesta" => "BIEN"]);
     }
@@ -213,8 +217,8 @@ class ControlCambiosApiController
     private function eliminar_sem(string $dbPrefix): void
     {
         $semana = filter_var($_POST["semana"], FILTER_VALIDATE_INT);
-        require_once "/Users/juanfelipebenitezramos/last-planner-aia-legacy-permisos/src/Legacy/eliminar_semana.php";
-        
+        require_once PROJECT_ROOT . '/src/Legacy/eliminar_semana.php';
+
         $this->db->logActivity('ControlCambios', 'ELIMINAR_SEMANA', "Eliminó semana $semana", $dbPrefix);
         $this->json(["respuesta" => "BIEN"]);
     }

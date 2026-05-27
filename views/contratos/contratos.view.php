@@ -431,7 +431,7 @@
 
 			$("div.toolbarFiltro").html('<div class="d-flex ml-auto"><label for="input_buscador" class="sr-only">Buscar en contratos</label><input id="input_buscador" type="text" class="input_buscador form-control form-control-sm mr-1 ml-auto max-w-60" placeholder="Filtro"><button id="btn_limpiar_buscador" type="button" class="btn btn-danger mr-1 ml-0 d-none max-w-40"><i class="fas fa-times-circle"></i> Limpiar</button></div>');
 
-			maestroPermisos(document.getElementById('permiso').value);
+			maestroPermisos(document.getElementById('permiso_canonico').value);
 			activarBuscador("#dt_cliente tbody", table);
 		  obtener_data_editar("#dt_cliente tbody", table);
 		}
@@ -439,7 +439,7 @@
 
 		/*Toma los datos de la fila en la que se presionó el botón editar*/
 		var obtener_data_editar = function(tbody, table) {
-		  var permiso = document.getElementById('permiso').value;
+		  var permiso = document.getElementById('permiso_canonico').value;
 			var db = document.getElementById('baseDatos').value;
 		  if (permiso=="C") {
 		    var only_once = false;

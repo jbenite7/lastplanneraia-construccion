@@ -101,7 +101,7 @@ window.LPSContextualDrawer = (function() {
   function getSessionContext() {
     const dbEl = document.getElementById('baseDatos_PHP');
     const semEl = document.getElementById('semana_PHP');
-    const permEl = document.getElementById('permiso_PHP');
+    const permEl = document.getElementById('permiso_canonico');
     return {
       dbName: dbEl ? dbEl.value : '',
       semana: semEl ? parseInt(semEl.value, 10) : 0,

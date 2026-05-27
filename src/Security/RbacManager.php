@@ -22,9 +22,9 @@ class RbacManager
         $isVisualizer = ($role === 'V');
         $isSubcontractor = ($role === 'C');
         $canManageWeeks = in_array($role, ['A', 'D', 'OT', 'R', 'DCV']);
-        $canEditGeneralProgram = in_array($role, ['A', 'D', 'R', 'OT', 'DCV']);
-        $canEditWeeklyProgram = in_array($role, ['A', 'D', 'R', 'S', 'G', 'SG', 'OT']);
-        $canEditMediumTerm = in_array($role, ['A', 'D', 'R', 'OT']);
+        $canEditGeneralProgram = in_array($role, ['A', 'D', 'R', 'DCV']);
+        $canEditWeeklyProgram = in_array($role, ['A', 'D', 'R', 'S', 'G', 'SG']);
+        $canEditMediumTerm = in_array($role, ['A', 'D', 'R', 'DCV']);
         $canManageContracts = in_array($role, ['A', 'D', 'OT']);
 
         return [
@@ -38,7 +38,7 @@ class RbacManager
             'canManageWeeklyProgram' => $canEditWeeklyProgram,
             'canEditMediumTerm' => $canEditMediumTerm,
             'canManageMediumTermProgram' => $canEditMediumTerm,
-            'canEditConstraints' => in_array($role, ['A', 'D', 'R', 'S', 'G', 'SG', 'OT']),
+            'canEditConstraints' => in_array($role, ['A', 'D', 'R', 'DCV', 'S', 'G', 'SG', 'OT']),
             'canEditFinancial' => in_array($role, ['A', 'D', 'OT']),
             'canEditSST' => in_array($role, ['A', 'S', 'SG']),
             'canEditAmbiental' => in_array($role, ['A', 'G', 'SG']),

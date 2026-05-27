@@ -49,6 +49,7 @@ class ProgramacionIntermediaController extends BaseController
     public function list()
     {
         $this->requireAuth();
+        $this->authorizePermission('lps.programacion_intermedia.ver');
         header('Content-Type: application/json; charset=utf-8');
 
         require_once PROJECT_ROOT . '/src/Legacy/estado_programacion_intermedia.php';
@@ -131,6 +132,7 @@ class ProgramacionIntermediaController extends BaseController
     public function save()
     {
         $this->requireAuth();
+        $this->authorizePermission('lps.programacion_intermedia.editar');
         header('Content-Type: application/json; charset=utf-8');
 
         require_once PROJECT_ROOT . '/src/Legacy/estado_programa_general.php';
@@ -159,6 +161,7 @@ class ProgramacionIntermediaController extends BaseController
     public function getFilters()
     {
         $this->requireAuth();
+        $this->authorizePermission('lps.programacion_intermedia.ver');
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             http_response_code(405);
@@ -262,6 +265,7 @@ class ProgramacionIntermediaController extends BaseController
     public function previewSharedConstraints()
     {
         $this->requireAuth();
+        $this->authorizePermission('lps.programacion_intermedia.ver');
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             http_response_code(405);
@@ -340,6 +344,7 @@ class ProgramacionIntermediaController extends BaseController
     public function applySharedConstraints()
     {
         $this->requireAuth();
+        $this->authorizePermission('lps.programacion_intermedia.editar');
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             http_response_code(405);

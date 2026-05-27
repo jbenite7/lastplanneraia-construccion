@@ -27,7 +27,7 @@ const RbacCapabilities = {
     var isEditableWeek = maxWeek - 2 >= currentWeek ? false : true;
 
     if (isEditableWeek) {
-      const allowedRoles = ['R', 'DCV', 'OT', 'G', 'S', 'SG'];
+      const allowedRoles = ['R', 'DCV'];
       return allowedRoles.includes(role);
     }
 
@@ -51,7 +51,7 @@ const RbacCapabilities = {
   },
 
   canEditGeneralProgram: function (role) {
-    return ['A', 'D', 'R', 'OT', 'DCV'].includes(role);
+    return ['A', 'D', 'R', 'DCV'].includes(role);
   },
 
   canEditPastGeneralProgram: function (role) {
@@ -63,11 +63,11 @@ const RbacCapabilities = {
   },
 
   canManageMediumTermProgram: function (role) {
-    return ['A', 'D', 'R', 'OT'].includes(role);
+    return ['A', 'D', 'R', 'DCV'].includes(role);
   },
 
   canManageWeeklyProgram: function (role) {
-    return ['A', 'D', 'R', 'S', 'G', 'SG', 'OT'].includes(role);
+    return ['A', 'D', 'R', 'S', 'G', 'SG'].includes(role);
   },
 
   /**
@@ -99,17 +99,8 @@ const RbacCapabilities = {
 };
 
 function readRbacRole() {
-  var canonical = document.getElementById('permiso_canonico');
-  var legacy = document.getElementById('permiso');
-  var raw = '';
-
-  if (canonical && canonical.value) {
-    raw = canonical.value;
-  } else if (legacy && legacy.value) {
-    raw = legacy.value;
-  }
-
-  return String(raw || '').trim().toUpperCase();
+  var el = document.getElementById('permiso_canonico');
+  return String(el ? el.value : '').trim().toUpperCase();
 }
 
 function buildLegacyCapabilities() {

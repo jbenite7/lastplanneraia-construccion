@@ -23,6 +23,8 @@ class SemanalApiController
 
     public function list(): void
     {
+        require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
+        rbac_guard_require_permission('lps.programacion_semanal.ver');
         $dbPrefix = $_GET['db'] ?? '';
         $semana = filter_var($_GET['semana'] ?? 0, FILTER_VALIDATE_INT);
 
@@ -76,6 +78,8 @@ class SemanalApiController
 
     public function save(): void
     {
+        require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
+        rbac_guard_require_permission('lps.programacion_semanal.editar');
         $dbPrefix = $_GET['db'] ?? $_POST['db'] ?? '';
         $opcion = $_POST["opcion"] ?? '';
         $semana = filter_var($_POST['semana'] ?? $_GET['semana'] ?? 0, FILTER_VALIDATE_INT);

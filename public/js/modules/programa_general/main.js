@@ -740,7 +740,7 @@ var listar = function() {
             {
                 'targets': [1],
                 'render': function ( data, type, full, meta ) {
-                    var permiso=document.getElementById("permiso").value;
+                    var permiso=document.getElementById("permiso_canonico").value;
                     if(data=="Boton"){
                         boton="";
                     }else{
@@ -1217,38 +1217,19 @@ var cambiarClaseBarraFiltros=function(p){
 var obtener_data_editar = function(tbody, table) {
     var max_semana = document.getElementById('Max_Semana').value;
     var semana = document.getElementById('semana').value;
-    var permiso = document.getElementById('permiso').value;
 
     var only_once = true;
 
-    if (typeof window.rbacCapabilities !== 'undefined') {
-        // En PG, Semanas pasadas (< max_semana - 2) solo se editan bajo reglas muy particulares o si eres Admin root (P, Root)
-        // En este contexto legacy priorizamos usar la Capability, pero si no la hay, mantenemos el fallback original.
-        if ((max_semana - 2) >= semana) {
-            only_once = window.rbacCapabilities.canEditPastGeneralProgram ? false : true;
-        } else {
-            only_once = !window.rbacCapabilities.canEditGeneralProgram;
-        }
+    if ((max_semana - 2) >= semana) {
+        only_once = window.rbacCapabilities.canEditPastGeneralProgram ? false : true;
     } else {
-        if ((max_semana - 2) >= semana) {
-            if (permiso == "P") {
-                only_once = true;
-            } else {
-                only_once = false;
-            }
-        } else {
-            if (permiso == "G" || permiso == "S" || permiso == "SG" || permiso == "OT" || permiso == "DCV" || permiso == "V" || permiso == "C") {
-                only_once = false;
-            } else {
-                only_once = true;
-            }
-        }
+        only_once = !window.rbacCapabilities.canEditGeneralProgram;
     }
 
     var Semanal_Confirmada = document.getElementById('Semanal_Confirmada').value;
 
   $(tbody).one("click", "td", function() {
-        if(Semanal_Confirmada == 1 && permiso!="P"){
+        if(Semanal_Confirmada == 1 && !window.rbacCapabilities.canEditPastGeneralProgram){
             if (only_once == true) {
                 $(".texto_semanal_confirmada").html("<p>En esta Semana los compromisos de la <b>Programación Semanal</b> ya fueron confirmados. Por esto, el programa general ya no puede ser modificado hasta que se cree la <b>Semana "+(Number(semana)+1)+"</b>.</p><p> Recuerde que el procedimiento de Last Planner debe seguirse con la siguiente metodología: </p><p><b>1.</b> Calificar la semana que se termina (En este caso la Semana "+(Number(semana))+").<br><b>2.</b> Abrir la pestaña <b>\"Semanas del Proyecto\"</b> y crear la nueva Semana (En este caso se debe crear la Semana "+(Number(semana)+1)+").<br><b>3.</b> Actualizar el estado de ejecución de las actividades en el <b>\"Programa General\"</b>, en la semana creada (Semana "+(Number(semana)+1)+").<br><b>4.</b> Actualizar la <b>\"Liberación de Restricciones\"</b> de la semana creada (Semana "+(Number(semana)+1)+").<br><b>5.</b> Generar los compromisos de la <b>\"Programación Semanal\"</b> de la semana creada (Semana "+(Number(semana)+1)+").</p>");
                 $("#modal_semanal_confirmada_Label").html("<b>Programa General Bloqueado!!</b>");

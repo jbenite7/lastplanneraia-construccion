@@ -327,7 +327,7 @@
 
     <!-- Hidden inputs for Context -->
     <input type="hidden" id="baseDatos" value="<?php echo $_SESSION['db'] ?? 'Prueba'; ?>">
-    <input type="hidden" id="permiso" value="<?php echo $_SESSION['permiso'] ?? 'V'; ?>">
+    <input type="hidden" id="permiso_canonico" value="<?php echo $_SESSION['permiso'] ?? 'V'; ?>">
 
     <div class="header-actions">
         <h4>Profesionales (Live Edición)</h4>

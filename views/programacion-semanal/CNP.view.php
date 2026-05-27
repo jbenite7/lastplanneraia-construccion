@@ -442,7 +442,7 @@
 
 			activarBuscador("#dt_cliente tbody", table);
 			
-			var permisoElem = document.getElementById('permiso');
+			var permisoElem = document.getElementById('permiso_canonico');
 			var permiso = permisoElem ? permisoElem.value : '';
 			
 			if (typeof maestroPermisos === "function") {
@@ -456,7 +456,7 @@
 		var obtener_data_editar = function(tbody, table) {
 			var max_semana = document.getElementById('Max_Semana') ? document.getElementById('Max_Semana').value : 100;
 			var semana = document.getElementById('semana') ? document.getElementById('semana').value : document.getElementById('semana_PHP').value;
-			var permisoElem = document.getElementById('permiso');
+			var permisoElem = document.getElementById('permiso_canonico');
 			var permiso = permisoElem ? permisoElem.value : '';
 
 			var canEdit = window.RbacCapabilities ? RbacCapabilities.canEditLps(permiso, parseInt(semana), parseInt(max_semana)) : false;
@@ -605,7 +605,7 @@
 		var obtener_id_reprogramar=function(tbody, table){
 			var max_semana = document.getElementById('Max_Semana') ? document.getElementById('Max_Semana').value : 100;
 			var semana = document.getElementById('semana') ? document.getElementById('semana').value : document.getElementById('semana_PHP').value;
-			var elementoPermiso = document.getElementById('permiso');
+			var elementoPermiso = document.getElementById('permiso_canonico');
 			var permiso = elementoPermiso ? elementoPermiso.value : '';
 			var canEdit = window.RbacCapabilities ? RbacCapabilities.canEditLps(permiso, parseInt(semana), parseInt(max_semana)) : false;
 

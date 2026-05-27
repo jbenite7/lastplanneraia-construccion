@@ -1992,7 +1992,7 @@
 					   necesitaConfig === 1;
 			});
 
-			maestroPermisos(document.getElementById('permiso').value);
+			maestroPermisos(document.getElementById('permiso_canonico').value);
 			obtener_data_editar("#dt_cliente tbody", table);
 			obtener_id_eliminar("#dt_cliente tbody", table);
 		}
@@ -2000,7 +2000,7 @@
 
 		/*Toma los datos de la fila en la que se presionó el botón editar*/
 		var obtener_data_editar = function(tbody, table) {
-		  var permiso = document.getElementById('permiso').value;
+		  var permiso = document.getElementById('permiso_canonico').value;
 			var semana = document.getElementById('semana').value;
 		  if (permiso=="C") {
 		    var only_once = false;
@@ -2102,7 +2102,7 @@
 
 		/*Toma los datos de la fila en la que se presionó el Definir Contratos*/
 		var obtener_data_definirContratos = function() {
-		  	var permiso = document.getElementById('permiso').value;
+			var permiso = document.getElementById('permiso_canonico').value;
 			var db = document.getElementById('baseDatos').value;
 			var semana = document.getElementById('semana').value;
 			var Max_Semana = document.getElementById('Max_Semana').value;
@@ -2953,7 +2953,7 @@
 			if (typeof window.rbacCapabilities !== 'undefined') {
 				canEdit = window.rbacCapabilities.canManagePdC || window.rbacCapabilities.canManageContracts || false;
 			} else {
-				var permiso = document.getElementById('permiso').value;
+				var permiso = document.getElementById('permiso_canonico').value;
 		  		if (!(permiso==="G" || permiso==="S" || permiso==="SG" || permiso==="R" || permiso==="DCV" || permiso==="V" || permiso==="C")) {
 					canEdit = true;
 				}

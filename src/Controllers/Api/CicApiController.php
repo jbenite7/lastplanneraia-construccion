@@ -16,6 +16,8 @@ class CicApiController
 
     public function list(): void
     {
+        require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
+        rbac_guard_require_permission('lps.cic.ver');
         $dbPrefix = $_SESSION['db'] ?? '';
         $semana = filter_var($_POST['semana'] ?? $_GET['semana'] ?? 0, FILTER_VALIDATE_INT);
 
@@ -76,6 +78,8 @@ class CicApiController
 
     public function save(): void
     {
+        require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
+        rbac_guard_require_permission('lps.cic.editar');
         $dbPrefix = $_SESSION['db'] ?? '';
         $opcion = $_POST["opcion"] ?? '';
         $id = $_POST["Id"] ?? null;

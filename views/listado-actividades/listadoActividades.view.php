@@ -343,7 +343,7 @@
 				rol = readRbacRole();
 			} else {
 				var permisoCanonico = document.getElementById('permiso_canonico');
-				var permisoLegacy = document.getElementById('permiso');
+				var permisoLegacy = document.getElementById('permiso_canonico');
 
 				if (permisoCanonico && permisoCanonico.value) {
 					rol = permisoCanonico.value;
@@ -543,7 +543,7 @@
 
 			$("div.toolbarFiltro").html('<div class="d-flex ml-auto"><label for="input_buscador" class="sr-only">Buscar en listado</label><input id="input_buscador" type="text" class="input_buscador form-control form-control-sm mr-1 ml-auto max-w-60" placeholder="Filtro"><button id="btn_limpiar_buscador" type="button" class="btn btn-danger mr-1 ml-0 d-none max-w-40"><i class="fas fa-times-circle"></i> Limpiar</button></div>');
 
-			maestroPermisos(document.getElementById('permiso').value);
+			maestroPermisos(document.getElementById('permiso_canonico').value);
 			activarBuscador("#dt_cliente tbody", table);
 		  obtener_data_editar("#dt_cliente tbody", table);
 		  obtener_id_eliminar("#dt_cliente tbody", table);

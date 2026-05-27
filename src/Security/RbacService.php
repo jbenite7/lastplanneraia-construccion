@@ -204,13 +204,22 @@ class RbacService
         }
 
         $map = [];
+        $hasExplicitAllow = false;
         foreach ($rows as $row) {
             $key = strtolower((string)($row['permission_key'] ?? ''));
             if ($key === '') {
                 continue;
             }
 
-            $map[$key] = ((int)($row['allowed'] ?? 0) === 1);
+            $allowed = ((int)($row['allowed'] ?? 0) === 1);
+            $map[$key] = $allowed;
+            if ($allowed) {
+                $hasExplicitAllow = true;
+            }
+        }
+
+        if (!$hasExplicitAllow) {
+            return [];
         }
 
         return $map;

@@ -22,6 +22,8 @@ class SubcontratistasApiController
 
     public function list(): void
     {
+        require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
+        rbac_guard_require_permission('lps.subcontratistas.ver');
         $dbPrefix = $_GET['db'] ?? $_POST['db'] ?? '';
 
         if (!preg_match('/^[a-zA-Z0-9_-]+$/', $dbPrefix)) {
@@ -63,6 +65,8 @@ class SubcontratistasApiController
 
     public function save(): void
     {
+        require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
+        rbac_guard_require_permission('lps.subcontratistas.editar');
         $dbPrefix = $_GET['db'] ?? $_POST['db'] ?? '';
         $opcion = $_POST["opcion"] ?? '';
 

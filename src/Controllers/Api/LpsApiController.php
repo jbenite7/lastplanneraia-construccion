@@ -49,6 +49,8 @@ class LpsApiController
 
     public function comments(): void
     {
+        require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
+        rbac_guard_require_permission('lps.programacion_semanal.ver');
         header('Content-Type: application/json; charset=utf-8');
         $context = $this->getContext();
         if (empty($context)) {
@@ -74,6 +76,8 @@ class LpsApiController
 
     public function addComment(): void
     {
+        require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
+        rbac_guard_require_permission('lps.programacion_semanal.editar');
         header('Content-Type: application/json; charset=utf-8');
         $context = $this->getContext();
         if (empty($context)) {
@@ -117,6 +121,8 @@ class LpsApiController
 
     public function registerCrisis(): void
     {
+        require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
+        rbac_guard_require_permission('lps.programacion_semanal.editar');
         header('Content-Type: application/json; charset=utf-8');
         $context = $this->getContext();
         if (empty($context)) {
@@ -151,6 +157,8 @@ class LpsApiController
 
     public function closeCrisis(): void
     {
+        require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
+        rbac_guard_require_permission('lps.programacion_semanal.editar');
         header('Content-Type: application/json; charset=utf-8');
         $context = $this->getContext();
         if (empty($context)) {

@@ -93,7 +93,7 @@
 		<input type="hidden" id="semana" name="semana" value="<?php echo $semana; ?>" aria-hidden="true">
 		<input type="hidden" id="semanaBaseActualizacion" name="semanaBaseActualizacion" value="<?php echo $semanaBaseActualizacion; ?>" aria-hidden="true">
 		<input type="hidden" id="semanaObjetivoActualizacion" name="semanaObjetivoActualizacion" value="<?php echo $semanaObjetivoActualizacion; ?>" aria-hidden="true">
-		<input type="hidden" id="permiso" name="permiso" value="<?php echo $permiso; ?>" aria-hidden="true">
+		<input type="hidden" id="permiso_canonico" name="permiso_canonico" value="<?php echo $permiso; ?>" aria-hidden="true">
 		<input type="hidden" id="Max_Semana" name="Max_Semana" value="<?php echo $maxSemana; ?>" aria-hidden="true">
 		<input type="hidden" id="Semanal_Confirmada" name="Semanal_Confirmada" value="<?php echo $semanalConfirmada; ?>" aria-hidden="true">
 		<input type="hidden" name="seccion" id="seccion" value="actualizarCronograma" aria-hidden="true">

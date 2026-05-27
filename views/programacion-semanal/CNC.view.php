@@ -388,7 +388,7 @@
 			$("div.toolbarFiltro").html('<div class="ps-toolbar-filter"><input id="input_buscador" type="text" class="input_buscador form-control form-control-sm ps-filter-input" placeholder="Filtro" aria-label="Buscar en la tabla"><button id="btn_limpiar_buscador" type="button" class="btn btn-danger ps-filter-clear" aria-label="Limpiar búsqueda"><i class="fas fa-times-circle" aria-hidden="true"></i> Limpiar</button></div>');
 
 			activarBuscador("#dt_cliente tbody", table);
-			maestroPermisos(document.getElementById('permiso').value);
+			maestroPermisos(document.getElementById('permiso_canonico').value);
 			obtener_data_editar("#dt_cliente tbody", table);
 		}
 
@@ -396,7 +396,7 @@
 		var obtener_data_editar = function(tbody, table) {
 			var max_semana = document.getElementById('Max_Semana').value;
 			var semana = document.getElementById('semana') ? document.getElementById('semana').value : document.getElementById('semana_PHP').value;
-		  var permiso = document.getElementById('permiso').value;
+		  var permiso = document.getElementById('permiso_canonico').value;
 
 			var canEdit = RbacCapabilities.canEditLps(permiso, parseInt(semana), parseInt(max_semana));
 			var only_once = !canEdit;

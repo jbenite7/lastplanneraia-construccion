@@ -40,6 +40,8 @@ class ProfesionalesApiController
 
     public function list(): void
     {
+        require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
+        rbac_guard_require_permission('lps.profesionales.ver');
         $dbPrefix = $_GET['db'] ?? '';
 
         if (!preg_match('/^[a-zA-Z0-9_-]+$/', $dbPrefix)) {
@@ -101,6 +103,8 @@ class ProfesionalesApiController
 
     public function save(): void
     {
+        require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
+        rbac_guard_require_permission('lps.profesionales.editar');
         $dbPrefix = $_GET['db'] ?? '';
         $opcion = $_POST["opcion"] ?? '';
 

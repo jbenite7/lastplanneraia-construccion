@@ -252,6 +252,9 @@ class RbacCatalog
 
             // SST, Ambiental y mixto: solo CIC.
             'G' => [
+                'lps.programa_general.ver',
+                'lps.programacion_intermedia.ver',
+                'lps.programacion_semanal.ver',
                 'lps.cic.ver',
                 'lps.cic.editar',
                 'notificaciones.resumen_semanal',
@@ -259,6 +262,9 @@ class RbacCatalog
                 'notificaciones.preferencias_personales',
             ],
             'S' => [
+                'lps.programa_general.ver',
+                'lps.programacion_intermedia.ver',
+                'lps.programacion_semanal.ver',
                 'lps.cic.ver',
                 'lps.cic.editar',
                 'notificaciones.resumen_semanal',
@@ -266,6 +272,9 @@ class RbacCatalog
                 'notificaciones.preferencias_personales',
             ],
             'SG' => [
+                'lps.programa_general.ver',
+                'lps.programacion_intermedia.ver',
+                'lps.programacion_semanal.ver',
                 'lps.cic.ver',
                 'lps.cic.editar',
                 'notificaciones.resumen_semanal',

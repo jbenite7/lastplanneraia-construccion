@@ -37,7 +37,7 @@ window.HOTActualizarModule = (function() {
      * Valida permisos globales
      */
     function isUserAllowedToEdit() {
-        var permiso = String($('#permiso').val() || 'V').trim().toUpperCase();
+        var permiso = String($('#permiso_canonico').val() || 'V').trim().toUpperCase();
         var semanalConfirmada = parseInt($('#Semanal_Confirmada').val() || 0);
         var semanaActual = parseInt($('#semana').val() || 0);
         var maxSemana = parseInt($('#Max_Semana').val() || 0);

@@ -835,7 +835,7 @@
         <input type="hidden" name="seccion" id="seccion" value="programacion_semanal" aria-hidden="true">
         <input type="hidden" id="baseDatos_PHP" value="<?php echo htmlspecialchars($dbName ?? '', ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true">
         <input type="hidden" id="semana_PHP" value="<?php echo (int)($semana ?? 0); ?>" aria-hidden="true">
-        <input type="hidden" id="permiso_PHP" value="<?php echo htmlspecialchars($permiso ?? '', ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true">
+        <input type="hidden" id="permiso_canonico" value="<?php echo htmlspecialchars($permiso ?? '', ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true">
         <input type="hidden" id="scriptBarraFiltros" value="" aria-hidden="true">
     </div>
 

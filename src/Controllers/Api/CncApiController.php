@@ -16,6 +16,8 @@ class CncApiController
 
     public function list(): void
     {
+        require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
+        rbac_guard_require_permission('lps.cnc.ver');
         $dbPrefix = $_SESSION['db'] ?? '';
         $semana = filter_var($_POST['semana'] ?? $_GET['semana'] ?? 0, FILTER_VALIDATE_INT);
 
@@ -37,6 +39,8 @@ class CncApiController
 
     public function save(): void
     {
+        require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
+        rbac_guard_require_permission('lps.cnc.editar');
         $dbPrefix = $_SESSION['db'] ?? '';
         $id = $_POST["Consecutivo"] ?? null;
 
@@ -56,6 +60,8 @@ class CncApiController
 
     public function reasons(): void
     {
+        require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
+        rbac_guard_require_permission('lps.cnc.ver');
         $categoria = $_POST["categoria"] ?? '';
         $query = "SELECT CNC FROM general_cnc WHERE Categoria_CNC = ?";
         $data = $this->db->query($query, [$categoria])->fetchAll(PDO::FETCH_ASSOC);

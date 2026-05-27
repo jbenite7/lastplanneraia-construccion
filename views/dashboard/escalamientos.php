@@ -320,7 +320,7 @@
     <!-- Contexto PHP para JS -->
     <input type="hidden" id="baseDatos_PHP" value="<?= htmlspecialchars($dbName) ?>" />
     <input type="hidden" id="semana_PHP" value="<?= htmlspecialchars($_SESSION['semana'] ?? 0) ?>" />
-    <input type="hidden" id="permiso_PHP" value="<?= htmlspecialchars($_SESSION['permiso'] ?? '') ?>" />
+    <input type="hidden" id="permiso_canonico" value="<?= htmlspecialchars($_SESSION['permiso'] ?? '') ?>" />
 
     <!-- Scripts de Terceros y Utilidades -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>

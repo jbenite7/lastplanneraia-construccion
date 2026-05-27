@@ -86,7 +86,7 @@
 		var cargaParametros = function() {
 			listar('informeFichaResumen');
 			ocultos();
-			maestroPermisos(document.getElementById('permiso').value);
+			maestroPermisos(document.getElementById('permiso_canonico').value);
 		}
 
 		/*Acá se inicia la datatable y se crean sus valores por defecto como el ordenamiento, las celdas que se muestran, los datos, las opciones de longitud de los registros, y el color de las filas dependiendo del estado de las actividades*/
@@ -95,7 +95,7 @@
 			var semana = document.getElementById('semana').value;
 			var Max_Semana = document.getElementById('Max_Semana').value;
 			var proyecto = document.getElementById('proyecto').value;
-			var permiso = document.getElementById('permiso').value;
+			var permiso = document.getElementById('permiso_canonico').value;
 			const permisos = ["G", "S", "SG", "C"];
 			if(permisos.includes(permiso)){
 				seccion = "informeProveedores";
@@ -153,7 +153,7 @@
 		var ocultos=function(table){
 			var max_semana = document.getElementById('Max_Semana').value;
 			var semana = document.getElementById('semana').value;
-		    var permiso = document.getElementById('permiso').value;
+		    var permiso = document.getElementById('permiso_canonico').value;
 
             if (typeof window.rbacCapabilities !== "undefined") {
                 if (!window.rbacCapabilities.canManageWeeks) {

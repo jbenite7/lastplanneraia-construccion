@@ -22,6 +22,8 @@ class IndicadoresApiController extends BaseController
      */
     public function generar()
     {
+        $this->requireAuth();
+        $this->authorizePermission('lps.indicadores.ver');
         $semana = $_POST['semana'] ?? ($_GET['semana'] ?? null);
         $dbName = $_POST['db'] ?? ($_GET['db'] ?? null);
 

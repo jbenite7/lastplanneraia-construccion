@@ -195,7 +195,7 @@
   }
 
   function getPermiso() {
-    var permiso = String($('#permiso_PHP').val() || $('#permiso').val() || '').trim().toUpperCase();
+    var permiso = String($('#permiso_canonico').val() || '').trim().toUpperCase();
     return ({ P: 'D', U: 'V' }[permiso] || permiso);
   }
 
@@ -3315,7 +3315,7 @@
     }
 
     if (typeof window.maestroPermisos === 'function') {
-      window.maestroPermisos($('#permiso').val() || getPermiso());
+      window.maestroPermisos($('#permiso_canonico').val() || getPermiso());
     }
 
     syncLegendVisualState();
