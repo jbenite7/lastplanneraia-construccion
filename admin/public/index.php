@@ -10,8 +10,11 @@ error_log("Solicitud recibida en index.php: " . $_SERVER['REQUEST_URI']);
 // 1. Cargar el Autoloader de Composer para las dependencias
 require_once __DIR__ . '/../../vendor/autoload.php';
 
+// 1.5 Definir constante de raíz del proyecto
+define('ADMIN_PROJECT_ROOT', __DIR__ . '/../..');
+
 // 2. Cargar las variables de entorno (.env)
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../../');
+$dotenv = Dotenv\Dotenv::createImmutable(ADMIN_PROJECT_ROOT);
 $dotenv->load();
 
 // 3. Configuración del sistema de logs
@@ -60,8 +63,10 @@ $router->add('GET', '/', 'DashboardController@index');
 
 $router->add('GET', '/dashboard', 'DashboardController@index');
 $router->add('POST', '/dashboard/toggle-console-logs', 'DashboardController@toggleConsoleLogs');
+$router->add('POST', '/dashboard/toggle-maintenance', 'DashboardController@toggleMaintenance');
 $router->add('POST', '/dashboard/forzar-cambio-clave', 'DashboardController@forcePasswordChange');
 $router->add('POST', '/dashboard/run-reportes', 'DashboardController@runReportes');
+$router->add('GET', '/dashboard/report-progress', 'DashboardController@reportProgress');
 
 
 

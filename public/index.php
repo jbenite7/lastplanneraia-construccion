@@ -7,6 +7,13 @@ require_once __DIR__ . '/../vendor/autoload.php';
 // Ajustamos la ruta para apuntar a la raíz del proyecto
 define('PROJECT_ROOT', dirname(__DIR__));
 
+// 2.5 Maintenance mode check
+if (file_exists(PROJECT_ROOT . '/.maintenance')) {
+    http_response_code(503);
+    readfile(__DIR__ . '/mantenimiento-aia.html');
+    exit;
+}
+
 if (file_exists(PROJECT_ROOT . '/.env')) {
     $dotenv = Dotenv\Dotenv::createImmutable(PROJECT_ROOT);
     $dotenv->safeLoad();

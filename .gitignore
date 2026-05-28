@@ -39,6 +39,9 @@ construccion/check_db_prefix.php
 .php-cs-fixer.cache
 phpstan_errors.json
 
+# Maintenance mode flag
+.maintenance
+
 # Debug scripts
 debug_*.php
 

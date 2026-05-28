@@ -5,6 +5,7 @@ namespace Admin\Controllers;
 use Admin\Core\Security;
 use Admin\Models\Project;
 use Admin\Models\User;
+use App\Core\ProgressTracker;
 use App\Services\FeatureFlagService;
 use App\Services\ReportProcessor;
 use Database;
@@ -68,6 +69,7 @@ class DashboardController extends AdminController
             'backup_status' => $backupStatus,
             'audit_logs' => $this->getAuditLogs(10),
             'console_logs_enabled' => $featureFlags->isConsoleLogsEnabled(),
+            'maintenance_active' => file_exists(ADMIN_PROJECT_ROOT . '/.maintenance'),
             'password_stats' => $passwordStats,
         ];
 
@@ -123,6 +125,64 @@ class DashboardController extends AdminController
     }
 
     /**
+     * Toggle maintenance mode for the platform (creates/deletes .maintenance flag file).
+     */
+    public function toggleMaintenance()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            $this->json(['success' => false, 'message' => 'Método no permitido']);
+        }
+
+        if (!Security::validateCsrfToken($_POST['csrf_token'] ?? '')) {
+            http_response_code(403);
+            $this->json(['success' => false, 'message' => 'Token CSRF inválido']);
+        }
+
+        $maintenanceFile = ADMIN_PROJECT_ROOT . '/.maintenance';
+        $enabled = $_POST['enabled'] ?? null;
+
+        if (!in_array((string) $enabled, ['0', '1'], true)) {
+            http_response_code(400);
+            $this->json(['success' => false, 'message' => 'Valor inválido para el switch']);
+        }
+
+        $updatedBy = $_SESSION['admin_user']['usuario'] ?? 'admin';
+
+        if ($enabled === '1') {
+            if (!file_exists($maintenanceFile)) {
+                touch($maintenanceFile);
+            }
+            Database::getInstance()->logActivity(
+                'Configuracion',
+                'ACTIVAR',
+                "{$updatedBy} activó el modo mantenimiento. La plataforma muestra la pantalla de mantenimiento a los usuarios.",
+                null
+            );
+            $this->json([
+                'success' => true,
+                'enabled' => true,
+                'message' => 'Modo mantenimiento activado. Los usuarios ven la pantalla de mantenimiento.',
+            ]);
+        } else {
+            if (file_exists($maintenanceFile)) {
+                unlink($maintenanceFile);
+            }
+            Database::getInstance()->logActivity(
+                'Configuracion',
+                'DESACTIVAR',
+                "{$updatedBy} desactivó el modo mantenimiento. La plataforma funciona con normalidad.",
+                null
+            );
+            $this->json([
+                'success' => true,
+                'enabled' => false,
+                'message' => 'Modo mantenimiento desactivado. La plataforma funciona con normalidad.',
+            ]);
+        }
+    }
+
+    /**
      * Force password change for all users.
      */
     public function forcePasswordChange()
@@ -156,7 +216,8 @@ class DashboardController extends AdminController
     }
 
     /**
-     * Run all report consolidation processes.
+     * Run all report consolidation processes (asynchronous, progress tracked via ProgressTracker).
+     * Spawns a background PHP process to avoid Apache/PHP timeout issues.
      */
     public function runReportes()
     {
@@ -170,51 +231,93 @@ class DashboardController extends AdminController
             $this->json(['success' => false, 'message' => 'Token CSRF inválido']);
         }
 
-        $processor = new ReportProcessor();
-        $parts = [];
-        $hasErrors = false;
+        // Accept client-generated token for immediate polling
+        $clientToken = $_POST['_token'] ?? '';
+        if ($clientToken !== '' && preg_match('/^[a-f0-9]{32}$/i', $clientToken)) {
+            $token = $clientToken;
+        } else {
+            $token = bin2hex(random_bytes(16));
+        }
 
-        $steps = [
-            'Curva S'         => 'generateCurvaS',
-            'General'         => 'generateReporteGeneral',
-            'Restricciones'   => 'generateRestriccionesGeneral',
-            'PDC'             => 'generateReportePDC',
-            'Subcontratistas' => 'generateReporteSubcontratistas',
-        ];
-
-        foreach ($steps as $label => $method) {
-            try {
-                $processor->{$method}();
-                $parts[] = "\xE2\x9C\x93 {$label}";
-            } catch (\Exception $e) {
-                $hasErrors = true;
-                $parts[] = "\xE2\x9C\x97 {$label} (" . $e->getMessage() . ")";
+        // Check if consolidation is already running (different token)
+        $existingFiles = glob(sys_get_temp_dir() . '/lps-consolidation-*.json');
+        foreach ($existingFiles as $existingFile) {
+            $content = @file_get_contents($existingFile);
+            if ($content === false) {
+                continue;
+            }
+            $data = json_decode($content, true);
+            if (is_array($data) && ($data['status'] ?? '') === 'running' && (time() - ($data['updated_at'] ?? 0)) < 60) {
+                $this->json(['success' => false, 'message' => 'Ya hay una consolidación en curso.', 'token' => $data['token'] ?? '']);
+                return;
             }
         }
 
-        try {
-            $processor->updateCICProyectos(null);
-            $parts[] = "\xE2\x9C\x93 CIC";
-        } catch (\Exception $e) {
-            $hasErrors = true;
-            $parts[] = "\xE2\x9C\x97 CIC (" . $e->getMessage() . ")";
+        $tracker = new ProgressTracker($token);
+
+        // Count total project-level steps across all report types
+        $totalSteps = $this->countProjectSteps();
+        $tracker->init($totalSteps);
+
+        // Clear stale files before spawning (keep only current)
+        ProgressTracker::cleanup();
+
+        // Spawn background PHP process
+        $phpBin = PHP_BINARY;
+        $scriptPath = ADMIN_PROJECT_ROOT . '/async/consolidate.php';
+        $escapedToken = escapeshellarg($token);
+        $escapedUser = escapeshellarg($_SESSION['admin_user']['usuario'] ?? 'admin');
+        $cmd = sprintf('%s %s %s %s > /dev/null 2>&1 &',
+            escapeshellarg($phpBin),
+            escapeshellarg($scriptPath),
+            $escapedToken,
+            $escapedUser
+        );
+        exec($cmd);
+
+        error_log('[CONSOLIDACION] Async process spawned for token: ' . $token . ', cmd: ' . $cmd);
+
+        $this->json(['success' => true, 'token' => $token, 'completed' => false]);
+    }
+
+    /**
+     * GET endpoint: poll progress of consolidation process.
+     */
+    public function reportProgress()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+            http_response_code(405);
+            $this->json(['success' => false, 'message' => 'Método no permitido']);
         }
 
-        $prefix = $hasErrors ? 'Reportes consolidados con errores' : 'Reportes consolidados';
-        $message = $prefix . ': ' . implode(', ', $parts);
+        $token = $_GET['token'] ?? '';
+        if (empty($token) || !preg_match('/^[a-f0-9]{32}$/i', $token)) {
+            http_response_code(400);
+            $this->json(['success' => false, 'message' => 'Token inválido']);
+        }
 
-        $updatedBy = $_SESSION['admin_user']['usuario'] ?? 'admin';
-        Database::getInstance()->logActivity(
-            'Admin',
-            'CONSOLIDAR_REPORTES',
-            "{$updatedBy} ejecutó consolidación de reportes. {$message}",
-            null
-        );
+        $tracker = ProgressTracker::fromToken($token);
+        if ($tracker === null) {
+            $this->json(['success' => false, 'message' => 'Proceso no encontrado o ya expiró']);
+        }
 
-        $this->json([
-            'success' => !$hasErrors,
-            'notification' => $message,
-        ]);
+        $this->json(['success' => true, 'progress' => $tracker->toArray()]);
+    }
+
+    /**
+     * Count total project-level steps across all report types.
+     */
+    private function countProjectSteps(): int
+    {
+        $db = Database::getInstance();
+        $allCount = (int)$db->query(
+            "SELECT COUNT(*) FROM general_proyectos_procesos WHERE Area='Construccion' AND Activo=1"
+        )->fetchColumn();
+        $pdcCount = (int)$db->query(
+            "SELECT COUNT(*) FROM general_proyectos_procesos WHERE Area='Construccion' AND Activo=1 AND pdcActivo=1"
+        )->fetchColumn();
+
+        return $allCount * 5 + $pdcCount * 2;
     }
 
     /**

@@ -172,11 +172,39 @@
 
         <div class="d-flex justify-content-between align-items-center mb-3">
           <div>
+            <strong>Modo Mantenimiento</strong>
+            <div class="text-muted small">Muestra pantalla de mantenimiento a los usuarios.</div>
+          </div>
+          <div class="custom-control custom-switch">
+            <input type="checkbox"
+                   class="custom-control-input"
+                   id="maintenanceModeToggle"
+                   <?php echo $stats['maintenance_active'] ? 'checked' : ''; ?>>
+            <label class="custom-control-label" for="maintenanceModeToggle"></label>
+          </div>
+        </div>
+
+        <hr class="my-3">
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
             <strong>Consolidar Reportes</strong>
             <div class="text-muted small">Ejecuta Curva S, General, Restricciones, PDC, Subcontratistas y CIC.</div>
           </div>
           <button class="btn btn-sm btn-primary" id="btnRunReportes">
             <i class="fas fa-chart-bar mr-1"></i> Consolidar
+          </button>
+        </div>
+
+        <div id="consolidation-progress" style="display:none;">
+          <div class="progress" style="height:16px;">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" id="progressBar" style="width:0%;">0%</div>
+          </div>
+          <div id="currentProgressStep" class="small text-muted mt-1"></div>
+          <div id="progressStepsList" class="mt-1 small" style="max-height:180px;overflow-y:auto;font-size:12px;"></div>
+          <div id="progressError" class="small text-danger mt-1" style="display:none;"></div>
+          <button class="btn btn-sm btn-outline-secondary mt-1" id="btnCloseProgress" style="display:none;">
+            <i class="fas fa-times mr-1"></i> Cerrar
           </button>
         </div>
 
@@ -409,6 +437,40 @@ document.addEventListener('DOMContentLoaded', function() {
         updateConsoleLogsBadge(consoleLogsToggle.checked);
     }
 
+    const maintenanceToggle = document.getElementById('maintenanceModeToggle');
+    if (maintenanceToggle) {
+        maintenanceToggle.addEventListener('change', function() {
+            const toggle = this;
+            const enabled = toggle.checked ? 1 : 0;
+            const previousState = !toggle.checked;
+            const formData = new FormData();
+
+            formData.append('enabled', String(enabled));
+            formData.append('csrf_token', '<?php echo $csrf_token; ?>');
+
+            toggle.disabled = true;
+
+            fetch('/admin/dashboard/toggle-maintenance', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    throw new Error(data.message || 'No se pudo cambiar el modo mantenimiento');
+                }
+                AIA.Notice.success(data.message);
+            })
+            .catch(error => {
+                toggle.checked = previousState;
+                AIA.Notice.error(error.message || 'No se pudo actualizar el estado.');
+            })
+            .finally(() => {
+                toggle.disabled = false;
+            });
+        });
+    }
+
     // Filtro de Logs
     const filterLinks = document.querySelectorAll('.log-filter');
     const logRows = document.querySelectorAll('.log-row-all');
@@ -547,37 +609,221 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // 5. Consolidar Reportes
+    // 5. Consolidar Reportes (async with progress bar)
     const btnRunReportes = document.getElementById('btnRunReportes');
-    if (btnRunReportes) {
+    const progressBox = document.getElementById('consolidation-progress');
+    const progressBar = document.getElementById('progressBar');
+    const currentStepEl = document.getElementById('currentProgressStep');
+    const stepsList = document.getElementById('progressStepsList');
+    const progressError = document.getElementById('progressError');
+    const btnCloseProgress = document.getElementById('btnCloseProgress');
+
+    const POLL_INTERVAL = 2000;
+    const STALE_TIMEOUT = 60000; // 60s without update = stale
+    let pollTimer = null;
+    let currentToken = null;
+    let lastUpdateTime = null;
+    let staleTimer = null;
+
+    function showProgress() {
+        btnRunReportes.style.display = 'none';
+        progressBox.style.display = 'block';
+        stepsList.innerHTML = '';
+        currentStepEl.textContent = 'Iniciando consolidación...';
+        progressError.style.display = 'none';
+        btnCloseProgress.style.display = 'none';
+    }
+
+    function hideProgress() {
+        btnRunReportes.style.display = '';
+        progressBox.style.display = 'none';
+        if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+        if (staleTimer) { clearInterval(staleTimer); staleTimer = null; }
+        currentToken = null;
+    }
+
+    function updateProgressUI(data) {
+        const p = data.progress || data;
+        const percent = p.percent || 0;
+        progressBar.style.width = percent + '%';
+        progressBar.textContent = Math.round(percent) + '%';
+        progressBar.setAttribute('aria-valuenow', percent);
+
+        const step = p.current_step || '';
+        const project = p.current_project || '';
+        const idx = p.current_index || 0;
+        const total = p.current_total || 0;
+
+        if (step && project) {
+            currentStepEl.textContent = step + ' — ' + project + ' (' + idx + '/' + total + ')';
+        } else if (step) {
+            currentStepEl.textContent = step;
+        } else {
+            currentStepEl.textContent = 'Procesando...';
+        }
+
+        // Build compressed log
+        const recentHistory = (p.history || []).slice(-50);
+        if (recentHistory.length > 0) {
+            const lastEntry = recentHistory[recentHistory.length - 1];
+            const statusIcon = lastEntry.status === 'ok' ? '✓' : (lastEntry.status === 'error' ? '✗' : (lastEntry.status === 'skip' ? '–' : '⟳'));
+            const statusClass = lastEntry.status === 'ok' ? 'text-success' : (lastEntry.status === 'error' ? 'text-danger' : 'text-muted');
+
+            // Only keep last 20 items in the list for performance
+            const displayHistory = recentHistory.slice(-20);
+            let html = '';
+            displayHistory.forEach(function(entry) {
+                const icon = entry.status === 'ok' ? '✓' : (entry.status === 'error' ? '✗' : (entry.status === 'skip' ? '–' : '⟳'));
+                const cls = entry.status === 'ok' ? 'text-success' : (entry.status === 'error' ? 'text-danger' : 'text-muted');
+                const msg = entry.project ? entry.step + ' / ' + entry.project : entry.step;
+                html += '<div class="' + cls + '">' + icon + ' ' + msg + '</div>';
+            });
+            stepsList.innerHTML = html;
+            stepsList.scrollTop = stepsList.scrollHeight;
+        }
+
+        lastUpdateTime = Date.now();
+    }
+
+    function handlePollComplete(token, msg) {
+        AIA.Notice.success(msg || 'Consolidación completada exitosamente.');
+        if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+        if (staleTimer) { clearInterval(staleTimer); staleTimer = null; }
+        btnCloseProgress.style.display = '';
+        progressBar.classList.remove('progress-bar-animated', 'progress-bar-striped');
+        currentStepEl.textContent = 'Completado ✓';
+    }
+
+    function handlePollError(token, msg) {
+        AIA.Notice.error(msg || 'La consolidación finalizó con errores.');
+        if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+        if (staleTimer) { clearInterval(staleTimer); staleTimer = null; }
+        btnCloseProgress.style.display = '';
+        progressBar.classList.remove('progress-bar-animated', 'progress-bar-striped');
+        currentStepEl.textContent = 'Finalizado con errores';
+    }
+
+    function handlePollStale(token) {
+        if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+        if (staleTimer) { clearInterval(staleTimer); staleTimer = null; }
+        progressBar.classList.remove('progress-bar-animated', 'progress-bar-striped');
+        progressError.style.display = 'block';
+        progressError.textContent = 'Sin actualización desde hace más de 60s. El proceso pudo detenerse.';
+        currentStepEl.textContent = 'Conexión perdida';
+        btnCloseProgress.style.display = '';
+    }
+
+    function pollProgress(token) {
+        if (pollTimer) { clearInterval(pollTimer); }
+        if (staleTimer) { clearInterval(staleTimer); }
+
+        var notFoundRetries = 0;
+        var MAX_NOT_FOUND_RETRIES = 30; // 30 * 2s = 60s max wait
+
+        pollTimer = setInterval(function() {
+            fetch('/admin/dashboard/report-progress?token=' + encodeURIComponent(token))
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (!data.success) {
+                        // Process not created yet - retry silently
+                        notFoundRetries++;
+                        if (notFoundRetries <= MAX_NOT_FOUND_RETRIES) {
+                            return;
+                        }
+                        handlePollError(token, data.message || 'Error al consultar progreso');
+                        return;
+                    }
+
+                    // Reset retry counter on success
+                    notFoundRetries = 0;
+
+                    const p = data.progress || data;
+                    updateProgressUI(data);
+
+                    // Check for staleness
+                    if (p.status === 'stale') {
+                        handlePollStale(token);
+                        return;
+                    }
+
+                    // Reset stale timer on each update
+                    if (staleTimer) { clearInterval(staleTimer); }
+                    staleTimer = setTimeout(function() {
+                        handlePollStale(token);
+                    }, STALE_TIMEOUT);
+
+                    if (p.status === 'completed') {
+                        handlePollComplete(token, p.message || 'Consolidación completada.');
+                    } else if (p.status === 'completed_with_errors') {
+                        handlePollError(token, p.message || 'Consolidación con errores.');
+                    }
+                })
+                .catch(function(err) {
+                    console.error('Poll error:', err);
+                });
+        }, POLL_INTERVAL);
+    }
+
+    if (btnRunReportes && progressBox) {
+        // Helper: generate random 32-char hex token
+        function generateToken() {
+            var arr = new Uint8Array(16);
+            crypto.getRandomValues(arr);
+            return Array.from(arr, function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+        }
+
         btnRunReportes.addEventListener('click', function() {
             const btn = this;
             btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Consolidando...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Iniciando...';
+
+            // Pre-generate token so we can start polling immediately
+            const clientToken = generateToken();
+            currentToken = clientToken;
+            showProgress();
+
+            // Start polling before the POST completes
+            // (will retry until server creates the progress file)
+            setTimeout(function() {
+                pollProgress(clientToken);
+            }, 300);
 
             const formData = new FormData();
             formData.append('csrf_token', '<?php echo $csrf_token; ?>');
+            formData.append('_token', clientToken);
 
             fetch('/admin/dashboard/run-reportes', {
                 method: 'POST',
                 body: formData
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    AIA.Notice.success(data.notification);
-                } else {
-                    AIA.Notice.error(data.notification || 'Error al consolidar reportes');
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                if (!data.success) {
+                    if (data.token) {
+                        AIA.Notice.warning('Ya hay una consolidación en curso. Mostrando progreso...');
+                    } else {
+                        AIA.Notice.error(data.message || 'Error al iniciar consolidación');
+                        hideProgress();
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fas fa-chart-bar mr-1"></i> Consolidar';
+                    }
+                    return;
+                }
+
+                if (data.completed) {
+                    handlePollComplete(clientToken, 'Consolidación completada exitosamente.');
                 }
             })
-            .catch(error => {
+            .catch(function(error) {
                 console.error('Error:', error);
                 AIA.Notice.error('Fallo en la comunicación con el servidor.');
-            })
-            .finally(() => {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-chart-bar mr-1"></i> Consolidar';
             });
+        });
+
+        btnCloseProgress.addEventListener('click', function() {
+            hideProgress();
+            btnRunReportes.disabled = false;
+            btnRunReportes.innerHTML = '<i class="fas fa-chart-bar mr-1"></i> Consolidar';
         });
     }
 });
