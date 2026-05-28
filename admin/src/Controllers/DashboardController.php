@@ -216,8 +216,9 @@ class DashboardController extends AdminController
     }
 
     /**
-     * Run all report consolidation processes (asynchronous, progress tracked via ProgressTracker).
-     * Spawns a background PHP process to avoid Apache/PHP timeout issues.
+     * POST endpoint: run consolidation of reports (Curva S, General, Restricciones, PDC, CIC).
+     * Sends response immediately via fastcgi_finish_request() then runs inline
+     * to avoid dependency on exec() (disabled on some hosting).
      */
     public function runReportes()
     {
@@ -231,7 +232,6 @@ class DashboardController extends AdminController
             $this->json(['success' => false, 'message' => 'Token CSRF inválido']);
         }
 
-        // Accept client-generated token for immediate polling
         $clientToken = $_POST['_token'] ?? '';
         if ($clientToken !== '' && preg_match('/^[a-f0-9]{32}$/i', $clientToken)) {
             $token = $clientToken;
@@ -239,7 +239,6 @@ class DashboardController extends AdminController
             $token = bin2hex(random_bytes(16));
         }
 
-        // Check if consolidation is already running (different token)
         $existingFiles = glob(sys_get_temp_dir() . '/lps-consolidation-*.json');
         foreach ($existingFiles as $existingFile) {
             $content = @file_get_contents($existingFile);
@@ -254,69 +253,118 @@ class DashboardController extends AdminController
         }
 
         $tracker = new ProgressTracker($token);
-
-        // Count total project-level steps across all report types
         $totalSteps = $this->countProjectSteps();
         $tracker->init($totalSteps);
-
-        // Clear stale files before spawning (keep only current)
         ProgressTracker::cleanup();
 
-        // Spawn background PHP process
-        $phpBin = $this->resolvePhpBinary();
-        if ($phpBin === null) {
-            $tracker->complete(false, 'No se encontró un binario PHP CLI ejecutable para iniciar la consolidación.');
-            http_response_code(500);
-            $this->json(['success' => false, 'message' => 'No se pudo iniciar la consolidación: PHP CLI no disponible.', 'token' => $token]);
-        }
+        $usuario = $_SESSION['admin_user']['usuario'] ?? 'admin';
 
-        $adminRoot = dirname(__DIR__, 2);
-        $scriptPath = $adminRoot . '/async/consolidate.php';
-        $logPath = $adminRoot . '/logs/consolidation_async.log';
-        if (!is_file($scriptPath)) {
-            $tracker->complete(false, 'No se encontró el script async de consolidación.');
-            http_response_code(500);
-            $this->json(['success' => false, 'message' => 'No se pudo iniciar la consolidación: script async no encontrado.', 'token' => $token]);
-        }
-
-        $escapedToken = escapeshellarg($token);
-        $escapedUser = escapeshellarg($_SESSION['admin_user']['usuario'] ?? 'admin');
-        $cmd = sprintf('%s %s %s %s >> %s 2>&1 &',
-            escapeshellarg($phpBin),
-            escapeshellarg($scriptPath),
-            $escapedToken,
-            $escapedUser,
-            escapeshellarg($logPath)
-        );
-        exec($cmd);
-
-        error_log('[CONSOLIDACION] Async process spawned for token: ' . $token . ', cmd: ' . $cmd);
-
-        $this->json(['success' => true, 'token' => $token, 'completed' => false]);
-    }
-
-    private function resolvePhpBinary(): ?string
-    {
-        $candidates = [];
-
-        if (defined('PHP_BINARY') && PHP_BINARY !== '') {
-            $candidates[] = PHP_BINARY;
-        }
-
-        if (defined('PHP_BINDIR') && PHP_BINDIR !== '') {
-            $candidates[] = PHP_BINDIR . DIRECTORY_SEPARATOR . 'php';
-        }
-
-        $candidates[] = '/usr/local/bin/php';
-        $candidates[] = '/usr/bin/php';
-
-        foreach (array_unique($candidates) as $candidate) {
-            if (is_string($candidate) && $candidate !== '' && is_executable($candidate)) {
-                return $candidate;
+        // Send JSON response immediately so client can start polling
+        if (!headers_sent()) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => true, 'token' => $token, 'completed' => false]);
+            if (function_exists('fastcgi_finish_request')) {
+                fastcgi_finish_request();
+            } else {
+                ob_flush();
+                flush();
             }
         }
 
-        return null;
+        error_log('[CONSOLIDACION] Starting inline consolidation for token: ' . $token);
+
+        $this->executeConsolidation($token, $usuario);
+    }
+
+    /**
+     * Run consolidation synchronously after sending the HTTP response.
+     * Extracted from admin/async/consolidate.php but runs in-web without exec().
+     */
+    private function executeConsolidation(string $token, string $usuario): void
+    {
+        try {
+            ignore_user_abort(true);
+            set_time_limit(0);
+
+            $db = Database::getInstance();
+            $tracker = new ProgressTracker($token);
+
+            $totalSteps = $this->countProjectSteps();
+            $tracker->init($totalSteps);
+
+            $processor = new ReportProcessor();
+            $parts = [];
+            $hasErrors = false;
+
+            $processor->setProgressCallback(function (string $reportLabel, string $project, int $index, int $total, string $status, ?string $message = null) use ($tracker) {
+                $tracker->update($reportLabel, $project, $index, $total, $status, $message);
+            });
+
+            $processor->setSubprocessCallback(function (string $step, string $project, string $subprocess, string $status, ?string $message = null) use ($tracker) {
+                $tracker->updateSubprocess($step, $project, $subprocess, $status, $message);
+            });
+
+            register_shutdown_function(function () use ($tracker) {
+                $error = error_get_last();
+                if ($error && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR])) {
+                    $msg = sprintf('FATAL: %s in %s:%d', $error['message'], $error['file'], $error['line']);
+                    error_log('[CONSOLIDACION] ' . $msg);
+                    $tracker->update('', '', 0, 0, 'error', $msg);
+                }
+            });
+
+            $steps = [
+                'Curva S'         => 'generateCurvaS',
+                'General'         => 'generateReporteGeneral',
+                'Restricciones'   => 'generateRestriccionesGeneral',
+                'PDC'             => 'generateReportePDC',
+                'Subcontratistas' => 'generateReporteSubcontratistas',
+            ];
+
+            foreach ($steps as $label => $method) {
+                try {
+                    error_log('[CONSOLIDACION] Starting step: ' . $label);
+                    $processor->{$method}();
+                    $parts[] = "\xE2\x9C\x93 {$label}";
+                    error_log('[CONSOLIDACION] Completed step: ' . $label);
+                } catch (\Exception $e) {
+                    $hasErrors = true;
+                    $parts[] = "\xE2\x9C\x97 {$label} (" . $e->getMessage() . ")";
+                    error_log('[CONSOLIDACION] Exception in step ' . $label . ': ' . $e->getMessage());
+                }
+            }
+
+            try {
+                $processor->updateCICProyectos(null);
+                $parts[] = "\xE2\x9C\x93 CIC";
+            } catch (\Exception $e) {
+                $hasErrors = true;
+                $parts[] = "\xE2\x9C\x97 CIC (" . $e->getMessage() . ")";
+            }
+
+            foreach (($tracker->toArray()['history'] ?? []) as $entry) {
+                if (($entry['status'] ?? '') === 'error') {
+                    $hasErrors = true;
+                    break;
+                }
+            }
+
+            $prefix = $hasErrors ? 'Reportes consolidados con errores' : 'Reportes consolidados';
+            $message = $prefix . ': ' . implode(', ', $parts);
+            $db->logActivity('Admin', 'CONSOLIDAR_REPORTES', "{$usuario} ejecutó consolidación de reportes. {$message}", null);
+
+            $tracker->complete(!$hasErrors, $message);
+
+            error_log('[CONSOLIDACION] Finished. ' . $message);
+        } catch (\Exception $e) {
+            error_log('[CONSOLIDACION] Fatal inline error: ' . $e->getMessage());
+            try {
+                $tracker = new ProgressTracker($token);
+                $tracker->complete(false, 'Error fatal: ' . $e->getMessage());
+            } catch (\Exception $inner) {
+                error_log('[CONSOLIDACION] Failed to write fatal error to tracker: ' . $inner->getMessage());
+            }
+        }
     }
 
     /**
