@@ -167,9 +167,21 @@
             <label class="custom-control-label" for="consoleLogsGlobalToggle"></label>
           </div>
         </div>
-        
+
         <hr class="my-3">
-        
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <strong>Consolidar Reportes</strong>
+            <div class="text-muted small">Ejecuta Curva S, General, Restricciones, PDC, Subcontratistas y CIC.</div>
+          </div>
+          <button class="btn btn-sm btn-primary" id="btnRunReportes">
+            <i class="fas fa-chart-bar mr-1"></i> Consolidar
+          </button>
+        </div>
+
+        <hr class="my-3">
+
         <div class="d-flex justify-content-between align-items-center">
           <div>
             <strong>Seguridad de Claves</strong>
@@ -530,6 +542,45 @@ document.addEventListener('DOMContentLoaded', function() {
                         console.error('Error:', error);
                         AIA.Notice.error('Fallo en la comunicación con el servidor.');
                     });
+                }
+            });
+        }
+    });
+
+    // 5. Consolidar Reportes
+    const btnRunReportes = document.getElementById('btnRunReportes');
+    if (btnRunReportes) {
+        btnRunReportes.addEventListener('click', function() {
+            const btn = this;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Consolidando...';
+
+            const formData = new FormData();
+            formData.append('csrf_token', '<?php echo $csrf_token; ?>');
+
+            fetch('/admin/dashboard/run-reportes', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    AIA.Notice.success(data.notification);
+                } else {
+                    AIA.Notice.error(data.notification || 'Error al consolidar reportes');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                AIA.Notice.error('Fallo en la comunicación con el servidor.');
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-chart-bar mr-1"></i> Consolidar';
+            });
+        });
+    }
+});
                 }
             });
         });

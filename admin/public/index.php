@@ -61,6 +61,7 @@ $router->add('GET', '/', 'DashboardController@index');
 $router->add('GET', '/dashboard', 'DashboardController@index');
 $router->add('POST', '/dashboard/toggle-console-logs', 'DashboardController@toggleConsoleLogs');
 $router->add('POST', '/dashboard/forzar-cambio-clave', 'DashboardController@forcePasswordChange');
+$router->add('POST', '/dashboard/run-reportes', 'DashboardController@runReportes');
 
 
 

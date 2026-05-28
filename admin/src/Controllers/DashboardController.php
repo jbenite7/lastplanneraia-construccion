@@ -6,6 +6,7 @@ use Admin\Core\Security;
 use Admin\Models\Project;
 use Admin\Models\User;
 use App\Services\FeatureFlagService;
+use App\Services\ReportProcessor;
 use Database;
 
 class DashboardController extends AdminController
@@ -151,6 +152,68 @@ class DashboardController extends AdminController
         $this->json([
             'success' => true,
             'message' => "Se ha activado el cambio de contraseña obligatorio para {$affected} usuarios.",
+        ]);
+    }
+
+    /**
+     * Run all report consolidation processes.
+     */
+    public function runReportes()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            $this->json(['success' => false, 'message' => 'Método no permitido']);
+        }
+
+        if (!Security::validateCsrfToken($_POST['csrf_token'] ?? '')) {
+            http_response_code(403);
+            $this->json(['success' => false, 'message' => 'Token CSRF inválido']);
+        }
+
+        $processor = new ReportProcessor();
+        $parts = [];
+        $hasErrors = false;
+
+        $steps = [
+            'Curva S'         => 'generateCurvaS',
+            'General'         => 'generateReporteGeneral',
+            'Restricciones'   => 'generateRestriccionesGeneral',
+            'PDC'             => 'generateReportePDC',
+            'Subcontratistas' => 'generateReporteSubcontratistas',
+        ];
+
+        foreach ($steps as $label => $method) {
+            try {
+                $processor->{$method}();
+                $parts[] = "\xE2\x9C\x93 {$label}";
+            } catch (\Exception $e) {
+                $hasErrors = true;
+                $parts[] = "\xE2\x9C\x97 {$label} (" . $e->getMessage() . ")";
+            }
+        }
+
+        try {
+            $processor->updateCICProyectos(null);
+            $parts[] = "\xE2\x9C\x93 CIC";
+        } catch (\Exception $e) {
+            $hasErrors = true;
+            $parts[] = "\xE2\x9C\x97 CIC (" . $e->getMessage() . ")";
+        }
+
+        $prefix = $hasErrors ? 'Reportes consolidados con errores' : 'Reportes consolidados';
+        $message = $prefix . ': ' . implode(', ', $parts);
+
+        $updatedBy = $_SESSION['admin_user']['usuario'] ?? 'admin';
+        Database::getInstance()->logActivity(
+            'Admin',
+            'CONSOLIDAR_REPORTES',
+            "{$updatedBy} ejecutó consolidación de reportes. {$message}",
+            null
+        );
+
+        $this->json([
+            'success' => !$hasErrors,
+            'notification' => $message,
         ]);
     }
 

@@ -27,6 +27,9 @@ class NotificationType
     public const PI_BLOCKED_DUE              = 'pi_blocked_due';
     public const PI_EXECUTION_BLOCKED        = 'pi_execution_blocked';
 
+    // --- Group: report ---
+    public const REPORT_RUN_ALL = 'report_run_all';
+
     /**
      * Mapa de metadatos por tipo.
      * group: grupo al que pertenece.
@@ -94,6 +97,14 @@ class NotificationType
             'title'        => 'En Ejecución con restricciones abiertas',
             'title_plural' => 'Actividades en ejecución con restricciones',
             'roles'        => ['R', 'DCV'],
+        ],
+
+        // --- Group: report ---
+        self::REPORT_RUN_ALL => [
+            'group'        => NotificationGroup::REPORT,
+            'title'        => 'Consolidación de reportes',
+            'title_plural' => 'Consolidaciones de reportes',
+            'roles'        => ['A'],
         ],
     ];
 

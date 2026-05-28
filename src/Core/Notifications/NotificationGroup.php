@@ -13,4 +13,5 @@ class NotificationGroup
     public const PI_SHARED_CONSTRAINT  = 'pi_shared_constraint';
     public const PI_ASSIGNMENT         = 'pi_assignment';
     public const PI_STATE_ALERT        = 'pi_state_alert';
+    public const REPORT                = 'report';
 }

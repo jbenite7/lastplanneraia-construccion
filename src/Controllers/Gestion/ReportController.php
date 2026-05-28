@@ -3,6 +3,8 @@
 namespace App\Controllers\Gestion;
 
 use App\Controllers\BaseController;
+use App\Core\Notifications\NotificationType;
+use App\Services\NotificationService;
 use Exception;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Border;
@@ -67,32 +69,94 @@ class ReportController extends BaseController
                     // Run All (Cron Job Equivalent)
                 case 'run-all':
                     $results = [];
+                    $parts = [];
+                    $hasErrors = false;
 
                     // 1. Curva S
-                    $results['curva_s'] = $this->reportProcessor->generateCurvaS();
-
-                    // 2. Reporte General
-                    $results['general'] = $this->reportProcessor->generateReporteGeneral();
-
-                    // 3. Restricciones General
-                    $results['restricciones'] = $this->reportProcessor->generateRestriccionesGeneral();
-
-                    // 4. Reporte PDC
-                    $results['pdc'] = $this->reportProcessor->generateReportePDC();
-
-                    // 5. Reporte Subcontratistas
-                    $results['subcontratistas'] = $this->reportProcessor->generateReporteSubcontratistas();
-
-                    // 6. CIC Update
-                    $semana = $_GET['semana'] ?? null;
-                    if ($semana && is_numeric($semana)) {
-                        $results['cic'] = $this->reportProcessor->updateCICProyectos((int)$semana);
-                    } else {
-                        // Default: Auto-detect last week per project
-                        $results['cic'] = $this->reportProcessor->updateCICProyectos(null);
+                    try {
+                        $results['curva_s'] = $this->reportProcessor->generateCurvaS();
+                        $parts[] = "\xE2\x9C\x93 Curva S";
+                    } catch (Exception $e) {
+                        $hasErrors = true;
+                        $results['curva_s'] = ['success' => false, 'error' => $e->getMessage()];
+                        $parts[] = "\xE2\x9C\x97 Curva S (" . $e->getMessage() . ")";
                     }
 
-                    echo json_encode(['success' => true, 'results' => $results]);
+                    // 2. Reporte General
+                    try {
+                        $results['general'] = $this->reportProcessor->generateReporteGeneral();
+                        $parts[] = "\xE2\x9C\x93 General";
+                    } catch (Exception $e) {
+                        $hasErrors = true;
+                        $results['general'] = ['success' => false, 'error' => $e->getMessage()];
+                        $parts[] = "\xE2\x9C\x97 General (" . $e->getMessage() . ")";
+                    }
+
+                    // 3. Restricciones General
+                    try {
+                        $results['restricciones'] = $this->reportProcessor->generateRestriccionesGeneral();
+                        $parts[] = "\xE2\x9C\x93 Restricciones";
+                    } catch (Exception $e) {
+                        $hasErrors = true;
+                        $results['restricciones'] = ['success' => false, 'error' => $e->getMessage()];
+                        $parts[] = "\xE2\x9C\x97 Restricciones (" . $e->getMessage() . ")";
+                    }
+
+                    // 4. Reporte PDC
+                    try {
+                        $results['pdc'] = $this->reportProcessor->generateReportePDC();
+                        $parts[] = "\xE2\x9C\x93 PDC";
+                    } catch (Exception $e) {
+                        $hasErrors = true;
+                        $results['pdc'] = ['success' => false, 'error' => $e->getMessage()];
+                        $parts[] = "\xE2\x9C\x97 PDC (" . $e->getMessage() . ")";
+                    }
+
+                    // 5. Reporte Subcontratistas
+                    try {
+                        $results['subcontratistas'] = $this->reportProcessor->generateReporteSubcontratistas();
+                        $parts[] = "\xE2\x9C\x93 Subcontratistas";
+                    } catch (Exception $e) {
+                        $hasErrors = true;
+                        $results['subcontratistas'] = ['success' => false, 'error' => $e->getMessage()];
+                        $parts[] = "\xE2\x9C\x97 Subcontratistas (" . $e->getMessage() . ")";
+                    }
+
+                    // 6. CIC Update
+                    try {
+                        $semana = $_GET['semana'] ?? null;
+                        if ($semana && is_numeric($semana)) {
+                            $results['cic'] = $this->reportProcessor->updateCICProyectos((int)$semana);
+                        } else {
+                            $results['cic'] = $this->reportProcessor->updateCICProyectos(null);
+                        }
+                        $parts[] = "\xE2\x9C\x93 CIC";
+                    } catch (Exception $e) {
+                        $hasErrors = true;
+                        $results['cic'] = ['success' => false, 'error' => $e->getMessage()];
+                        $parts[] = "\xE2\x9C\x97 CIC (" . $e->getMessage() . ")";
+                    }
+
+                    // Build notification message
+                    $prefix = $hasErrors ? 'Reportes consolidados con errores' : 'Reportes consolidados';
+                    $message = $prefix . ': ' . implode(', ', $parts);
+
+                    // Emit notification to current user
+                    try {
+                        $usuario = $_SESSION['usuario'] ?? null;
+                        if ($usuario) {
+                            $svc = new NotificationService();
+                            $svc->emit($usuario, NotificationType::REPORT_RUN_ALL, $message);
+                        }
+                    } catch (\Throwable $e) {
+                        error_log("REPORT_RUN_ALL_NOTIF_ERROR: " . $e->getMessage());
+                    }
+
+                    echo json_encode([
+                        'success' => !$hasErrors,
+                        'results' => $results,
+                        'notification' => $message,
+                    ]);
                     exit;
 
                 default:
