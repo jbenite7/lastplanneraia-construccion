@@ -263,21 +263,60 @@ class DashboardController extends AdminController
         ProgressTracker::cleanup();
 
         // Spawn background PHP process
-        $phpBin = PHP_BINARY;
-        $scriptPath = ADMIN_PROJECT_ROOT . '/async/consolidate.php';
+        $phpBin = $this->resolvePhpBinary();
+        if ($phpBin === null) {
+            $tracker->complete(false, 'No se encontró un binario PHP CLI ejecutable para iniciar la consolidación.');
+            http_response_code(500);
+            $this->json(['success' => false, 'message' => 'No se pudo iniciar la consolidación: PHP CLI no disponible.', 'token' => $token]);
+        }
+
+        $adminRoot = dirname(__DIR__, 2);
+        $scriptPath = $adminRoot . '/async/consolidate.php';
+        $logPath = $adminRoot . '/logs/consolidation_async.log';
+        if (!is_file($scriptPath)) {
+            $tracker->complete(false, 'No se encontró el script async de consolidación.');
+            http_response_code(500);
+            $this->json(['success' => false, 'message' => 'No se pudo iniciar la consolidación: script async no encontrado.', 'token' => $token]);
+        }
+
         $escapedToken = escapeshellarg($token);
         $escapedUser = escapeshellarg($_SESSION['admin_user']['usuario'] ?? 'admin');
-        $cmd = sprintf('%s %s %s %s > /dev/null 2>&1 &',
+        $cmd = sprintf('%s %s %s %s >> %s 2>&1 &',
             escapeshellarg($phpBin),
             escapeshellarg($scriptPath),
             $escapedToken,
-            $escapedUser
+            $escapedUser,
+            escapeshellarg($logPath)
         );
         exec($cmd);
 
         error_log('[CONSOLIDACION] Async process spawned for token: ' . $token . ', cmd: ' . $cmd);
 
         $this->json(['success' => true, 'token' => $token, 'completed' => false]);
+    }
+
+    private function resolvePhpBinary(): ?string
+    {
+        $candidates = [];
+
+        if (defined('PHP_BINARY') && PHP_BINARY !== '') {
+            $candidates[] = PHP_BINARY;
+        }
+
+        if (defined('PHP_BINDIR') && PHP_BINDIR !== '') {
+            $candidates[] = PHP_BINDIR . DIRECTORY_SEPARATOR . 'php';
+        }
+
+        $candidates[] = '/usr/local/bin/php';
+        $candidates[] = '/usr/bin/php';
+
+        foreach (array_unique($candidates) as $candidate) {
+            if (is_string($candidate) && $candidate !== '' && is_executable($candidate)) {
+                return $candidate;
+            }
+        }
+
+        return null;
     }
 
     /**

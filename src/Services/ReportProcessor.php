@@ -9,10 +9,23 @@ use PDO;
 class ReportProcessor
 {
     private $db;
+    private $progressCallback;
 
     public function __construct()
     {
         $this->db = Database::getInstance();
+    }
+
+    public function setProgressCallback(callable $callback): void
+    {
+        $this->progressCallback = $callback;
+    }
+
+    private function reportProgress(string $reportLabel, string $project, int $index, int $total, string $status, ?string $message = null): void
+    {
+        if ($this->progressCallback) {
+            ($this->progressCallback)($reportLabel, $project, $index, $total, $status, $message);
+        }
     }
 
     private function isValidDbPrefix($dbPrefix)
@@ -61,9 +74,35 @@ class ReportProcessor
             return false;
         }
 
-        $stmt = $this->db->query("SHOW TABLES LIKE ?", [$tableName]);
+        $stmt = $this->db->query(
+            "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ?",
+            [$tableName]
+        );
 
-        return $stmt->rowCount() > 0;
+        return (int)$stmt->fetchColumn() > 0;
+    }
+
+    private function hasReportablePdc(string $dbPrefix, bool $requiresDates = false): bool
+    {
+        if (!$this->isValidDbPrefix($dbPrefix)) {
+            return false;
+        }
+
+        if (!$this->tableExists("{$dbPrefix}_pdc")) {
+            return false;
+        }
+
+        $where = "titulo = 0";
+
+        if ($requiresDates) {
+            $where .= " AND fechaElaboracionPliegos IS NOT NULL AND fechaFabricacion IS NOT NULL";
+        }
+
+        $count = (int)$this->db
+            ->query("SELECT COUNT(*) FROM {$dbPrefix}_pdc WHERE {$where}")
+            ->fetchColumn();
+
+        return $count > 0;
     }
 
     public function generateCurvaS()
@@ -76,14 +115,18 @@ class ReportProcessor
             $this->db->query("TRUNCATE TABLE general_curvas_pdc_apr");
 
             $proyectos = $this->getConstructionProjects();
+            $totalProyectos = count($proyectos);
+            $idx = 0;
 
             foreach ($proyectos as $data1) {
                 try {
                     $proyecto = $data1["Proyecto_Proceso"];
                     $dbPrefix = $data1["Base_de_Datos"];
+                    $idx++;
 
                     // Validar prefijo
                     if ($this->collectInvalidDbPrefixMessage($dbPrefix, $proyecto, $results)) {
+                        $this->reportProgress('Curva S', $proyecto, $idx, $totalProyectos, 'skip');
                         continue;
                     }
 
@@ -202,8 +245,11 @@ class ReportProcessor
                         ]);
                     }
 
+                    $this->reportProgress('Curva S', $proyecto, $idx, $totalProyectos, 'ok');
+
                 } catch (\Exception $e) {
                     $results[] = "$proyecto - Error: " . $e->getMessage();
+                    $this->reportProgress('Curva S', $proyecto, $idx, $totalProyectos, 'error', $e->getMessage());
                 }
             }
 
@@ -233,11 +279,17 @@ class ReportProcessor
             if (count($proyectosPDC) === 0) {
                 $results[] = "Curva S PDC APR - No hay proyectos";
             } else {
+                $totalPDC = count($proyectosPDC);
+                $pdcIdx = 0;
                 foreach ($proyectosPDC as $data1) {
+                    $pdcProyecto = $data1["Proyecto_Proceso"];
+                    $pdcIdx++;
                     try {
-                        $this->processProjectPDC_APR($data1);
+                        $pdcProcessed = $this->processProjectPDC_APR($data1);
+                        $this->reportProgress('Curva S PDC APR', $pdcProyecto, $pdcIdx, $totalPDC, $pdcProcessed === false ? 'skip' : 'ok');
                     } catch (\Exception $e) {
-                        $results[] = $data1["Proyecto_Proceso"] . " - Error PDC: " . $e->getMessage();
+                        $results[] = $pdcProyecto . " - Error PDC: " . $e->getMessage();
+                        $this->reportProgress('Curva S PDC APR', $pdcProyecto, $pdcIdx, $totalPDC, 'error', $e->getMessage());
                     }
                 }
 
@@ -261,6 +313,10 @@ class ReportProcessor
 
         if (!$this->isValidDbPrefix($dbPrefix)) {
             throw new Exception("Nombre de base de datos inválido: {$dbPrefix}");
+        }
+
+        if (!$this->hasReportablePdc($dbPrefix, true)) {
+            return false;
         }
 
         // Weeks calculation for PDC
@@ -441,6 +497,8 @@ class ReportProcessor
             $porcentajeTeoricoAnt = $pActual;
             $porcentajeTeoricoGenAnt = $pActualGen;
         }
+
+        return true;
     }
 
     public function generateReporteGeneral()
@@ -450,13 +508,17 @@ class ReportProcessor
 
         $result = $this->getConstructionProjects();
         $messages = [];
+        $totalGeneral = count($result);
+        $genIdx = 0;
 
         foreach ($result as $data1) {
             try {
                 $proyecto = $data1["Proyecto_Proceso"];
                 $dbPrefix = $data1["Base_de_Datos"];
+                $genIdx++;
 
                 if ($this->collectInvalidDbPrefixMessage($dbPrefix, $proyecto, $messages)) {
+                    $this->reportProgress('General', $proyecto, $genIdx, $totalGeneral, 'skip');
                     continue;
                 }
 
@@ -504,8 +566,10 @@ class ReportProcessor
                 $this->db->query($sqlInsert, [$proyecto, $proyecto]);
                 $this->db->query("DELETE FROM general_informe_consolidado WHERE Fecha_Inicio_Sem IS NULL OR Fecha_Fin_Sem IS NULL");
                 $messages[] = "$proyecto - OK";
+                $this->reportProgress('General', $proyecto, $genIdx, $totalGeneral, 'ok');
             } catch (\Exception $e) {
                 $messages[] = "$proyecto - Error: " . $e->getMessage();
+                $this->reportProgress('General', $proyecto, $genIdx, $totalGeneral, 'error', $e->getMessage());
             }
         }
 
@@ -520,6 +584,8 @@ class ReportProcessor
         $this->db->query("TRUNCATE TABLE general_informe_restricciones_consolidado");
         $proyectos = $this->getConstructionProjects();
         $messages = ["Liberación de Restricciones - OK"];
+        $totalRest = count($proyectos);
+        $restIdx = 0;
 
         $restricciones = [
             'D_y_E' => 'D_y_E',
@@ -535,8 +601,10 @@ class ReportProcessor
             try {
                 $proyecto = $data1["Proyecto_Proceso"];
                 $dbPrefix = $data1["Base_de_Datos"];
+                $restIdx++;
 
                 if ($this->collectInvalidDbPrefixMessage($dbPrefix, $proyecto, $messages)) {
+                    $this->reportProgress('Restricciones', $proyecto, $restIdx, $totalRest, 'skip');
                     continue;
                 }
 
@@ -573,8 +641,10 @@ class ReportProcessor
                     $this->db->query($sqlInsert, [$proyecto, $nombreLabel]);
                 }
                 $messages[] = "$proyecto - OK";
+                $this->reportProgress('Restricciones', $proyecto, $restIdx, $totalRest, 'ok');
             } catch (\Exception $e) {
                 $messages[] = "$proyecto - Error: " . $e->getMessage();
+                $this->reportProgress('Restricciones', $proyecto, $restIdx, $totalRest, 'error', $e->getMessage());
             }
         }
 
@@ -593,12 +663,22 @@ class ReportProcessor
         if (count($proyectos) === 0) {
             $messages[] = "Plan de Compras - No hay proyectos activos";
         } else {
+            $totalPDC = count($proyectos);
+            $pdcIdx = 0;
             foreach ($proyectos as $data1) {
                 try {
                     $proyecto = $data1["Proyecto_Proceso"];
                     $dbPrefix = $data1["Base_de_Datos"];
+                    $pdcIdx++;
 
                     if ($this->collectInvalidDbPrefixMessage($dbPrefix, $proyecto, $messages)) {
+                        $this->reportProgress('PDC', $proyecto, $pdcIdx, $totalPDC, 'skip');
+                        continue;
+                    }
+
+                    if (!$this->hasReportablePdc($dbPrefix)) {
+                        $messages[] = "$proyecto - Skip: PDC requerido pero pendiente de elaboración";
+                        $this->reportProgress('PDC', $proyecto, $pdcIdx, $totalPDC, 'skip', 'PDC pendiente de elaboración');
                         continue;
                     }
 
@@ -679,8 +759,10 @@ class ReportProcessor
                     $this->db->query($sqlInsert, [$proyecto, $proyecto]);
 
                     $messages[] = "$proyecto - OK";
+                    $this->reportProgress('PDC', $proyecto, $pdcIdx, $totalPDC, 'ok');
                 } catch (\Exception $e) {
                     $messages[] = "$proyecto - Error: " . $e->getMessage();
+                    $this->reportProgress('PDC', $proyecto, $pdcIdx, $totalPDC, 'error', $e->getMessage());
                 }
             }
         }
@@ -695,15 +777,19 @@ class ReportProcessor
         $this->db->query("TRUNCATE TABLE general_informe_subcontratistas");
         $proyectos = $this->getConstructionProjects();
         $messages = [];
+        $totalSub = count($proyectos);
+        $subIdx = 0;
 
         foreach ($proyectos as $proyectoData) {
             try {
                 $proyecto = $proyectoData["Proyecto_Proceso"];
                 $base_de_datos = $proyectoData["Base_de_Datos"];
+                $subIdx++;
 
                 if (!$this->isValidDbPrefix($base_de_datos)) {
                     error_log("Nombre de base de datos no válido encontrado: " . $base_de_datos);
                     $messages[] = "$proyecto - Error: Nombre de base de datos inválido.";
+                    $this->reportProgress('Subcontratistas', $proyecto, $subIdx, $totalSub, 'skip');
                     continue;
                 }
 
@@ -730,7 +816,7 @@ class ReportProcessor
                 sa.Fecha_Fin_Sem,
                 cic.subcontratista, cic.correo_contacto, cic.NIT, cic.alcance, cic.tipo_proveedor, cic.PAC, cic.PAC_Acum,
                 cic.P_Completado, cic.P_Completado_Acum, cic.Calidad, cic.Calidad_Acum, cic.GSA, cic.GSA_Acum, cic.SST, cic.SST_Acum,
-                cic.ADM, cic.ADM_Acum, cic.Cal_Integral, cic.Cal_Integral_Acum, cic.Observaciones, cic.mdo_cal_1, cic.mdo_cal_2,
+                cic.ADM, cic.ADM_Acum, COALESCE(cic.Cal_Integral, 'NR'), COALESCE(cic.Cal_Integral_Acum, 'NR'), cic.Observaciones, cic.mdo_cal_1, cic.mdo_cal_2,
                 cic.mdo_cal_3, cic.mdo_adm_1, cic.mdo_adm_2, cic.mdo_adm_3, cic.mdo_adm_4, cic.mdo_adm_5, cic.mdo_gsa_1,
                 cic.mdo_gsa_2, cic.mdo_gsa_3, cic.mdo_gsa_4, cic.mdo_gsa_5, cic.mdo_gsa_6, cic.mdo_gsa_7, cic.mdo_gsa_8,
                 cic.mdo_sst_1, cic.mdo_sst_2, cic.mdo_sst_3, cic.mdo_sst_4, cic.mdo_sst_5, cic.mdo_sst_6, cic.mdo_sst_7,
@@ -745,8 +831,10 @@ class ReportProcessor
                 $this->db->query($sql, [$proyecto, $proyecto]);
 
                 $messages[] = "$proyecto - OK";
+                $this->reportProgress('Subcontratistas', $proyecto, $subIdx, $totalSub, 'ok');
             } catch (\Exception $e) {
                 $messages[] = "$proyecto - Error: " . $e->getMessage();
+                $this->reportProgress('Subcontratistas', $proyecto, $subIdx, $totalSub, 'error', $e->getMessage());
             }
         }
 
@@ -760,14 +848,18 @@ class ReportProcessor
 
         $proyectos = $this->getConstructionProjects();
         $messages = [];
+        $totalCIC = count($proyectos);
+        $cicIdx = 0;
 
         $messages[] = "Calificación Integral:";
 
         foreach ($proyectos as $dataProyectos) {
             $proyecto = $dataProyectos["Proyecto_Proceso"];
             $dbName = $dataProyectos["Base_de_Datos"];
+            $cicIdx++;
 
             if ($this->collectInvalidDbPrefixMessage($dbName, $proyecto, $messages)) {
+                $this->reportProgress('CIC', $proyecto, $cicIdx, $totalCIC, 'skip');
                 continue;
             }
 
@@ -777,6 +869,7 @@ class ReportProcessor
 
                 if (!$semanaProyecto) {
                     $messages[] = "$proyecto - Skip: No hay semanas activas";
+                    $this->reportProgress('CIC', $proyecto, $cicIdx, $totalCIC, 'skip');
                     continue;
                 }
 
@@ -807,9 +900,11 @@ class ReportProcessor
                 );
 
                 $messages[] = "$proyecto (Semana $semanaProyecto) - OK";
+                $this->reportProgress('CIC', $proyecto, $cicIdx, $totalCIC, 'ok');
 
             } catch (\Exception $e) {
                 $messages[] = "$proyecto - Error CIC: " . $e->getMessage();
+                $this->reportProgress('CIC', $proyecto, $cicIdx, $totalCIC, 'error', $e->getMessage());
             }
         }
 

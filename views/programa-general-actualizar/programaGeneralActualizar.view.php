@@ -426,6 +426,27 @@
 		          location.reload();
 		        }
 		      }
+		    }).fail(function(xhr) {
+				var mensaje = 'No se pudo importar el cronograma.';
+				var respuesta = xhr.responseJSON;
+
+				if (!respuesta && xhr.responseText) {
+					try {
+						respuesta = JSON.parse(xhr.responseText);
+					} catch (error) {
+						respuesta = null;
+					}
+				}
+
+				if (respuesta && respuesta.mensaje) {
+					mensaje += ' ' + respuesta.mensaje;
+				}
+
+				if (window.AIA && window.AIA.Notice) {
+					window.AIA.Notice.error(mensaje);
+				} else {
+					alert(mensaje);
+				}
 		    });
 		  });
 

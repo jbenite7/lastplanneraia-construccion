@@ -619,7 +619,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnCloseProgress = document.getElementById('btnCloseProgress');
 
     const POLL_INTERVAL = 2000;
-    const STALE_TIMEOUT = 60000; // 60s without update = stale
+    const STALE_TIMEOUT = 900000; // 15 min without update = stale
     let pollTimer = null;
     let currentToken = null;
     let lastUpdateTime = null;
@@ -642,6 +642,57 @@ document.addEventListener('DOMContentLoaded', function() {
         currentToken = null;
     }
 
+    function renderProjectDetail(history) {
+        const MODULE_ORDER = ['Curva S', 'General', 'Restricciones', 'PDC', 'Subcontratistas', 'CIC'];
+        const groups = {};
+        (history || []).forEach(function(entry) {
+            const step = entry.step;
+            if (!step) return;
+            if (!groups[step]) groups[step] = [];
+            groups[step].push(entry);
+        });
+        let html = '<div class="font-weight-bold mb-1" style="font-size:0.85rem;">Detalle por proyecto</div>';
+        MODULE_ORDER.forEach(function(moduleName) {
+            const entries = groups[moduleName];
+            if (!entries || entries.length === 0) return;
+            html += '<div class="font-weight-bold mt-1" style="font-size:0.8rem;">' + moduleName + '</div>';
+            entries.forEach(function(entry) {
+                const icon = entry.status === 'ok' ? '✓' : (entry.status === 'error' ? '✗' : (entry.status === 'skip' ? '–' : '⟳'));
+                const cls = entry.status === 'ok' ? 'text-success' : (entry.status === 'error' ? 'text-danger' : 'text-muted');
+                let line = icon + ' ' + entry.project;
+                if (entry.message) line += ' — ' + entry.message;
+                html += '<div class="' + cls + '" style="padding-left:1rem;font-size:0.78rem;">' + line + '</div>';
+            });
+        });
+        return html;
+    }
+
+    function renderModuleSummary(history) {
+        const MODULE_ORDER = ['Curva S', 'General', 'Restricciones', 'PDC', 'Subcontratistas', 'CIC'];
+        const groups = {};
+        (history || []).forEach(function(entry) {
+            const step = entry.step;
+            if (!step) return;
+            if (!groups[step]) groups[step] = { ok: 0, skip: 0, error: 0 };
+            if (groups[step][entry.status] !== undefined) groups[step][entry.status]++;
+        });
+        let html = '';
+        MODULE_ORDER.forEach(function(moduleName) {
+            const counts = groups[moduleName];
+            if (!counts) return;
+            let statusIcon, statusClass;
+            if (counts.error > 0) { statusIcon = '✗'; statusClass = 'text-danger'; }
+            else if (counts.ok > 0) { statusIcon = '✓'; statusClass = 'text-success'; }
+            else { statusIcon = '–'; statusClass = 'text-muted'; }
+            const parts = [];
+            if (counts.ok > 0) parts.push(counts.ok + ' OK');
+            if (counts.skip > 0) parts.push(counts.skip + ' omitido' + (counts.skip > 1 ? 's' : ''));
+            if (counts.error > 0) parts.push(counts.error + ' error' + (counts.error > 1 ? 'es' : ''));
+            html += '<div class="' + statusClass + '">' + statusIcon + ' ' + moduleName + ': ' + parts.join(', ') + '</div>';
+        });
+        return html;
+    }
+
     function updateProgressUI(data) {
         const p = data.progress || data;
         const percent = p.percent || 0;
@@ -662,24 +713,26 @@ document.addEventListener('DOMContentLoaded', function() {
             currentStepEl.textContent = 'Procesando...';
         }
 
-        // Build compressed log
-        const recentHistory = (p.history || []).slice(-50);
-        if (recentHistory.length > 0) {
-            const lastEntry = recentHistory[recentHistory.length - 1];
-            const statusIcon = lastEntry.status === 'ok' ? '✓' : (lastEntry.status === 'error' ? '✗' : (lastEntry.status === 'skip' ? '–' : '⟳'));
-            const statusClass = lastEntry.status === 'ok' ? 'text-success' : (lastEntry.status === 'error' ? 'text-danger' : 'text-muted');
+        // Show grouped module summary at completion, or recent items during execution
+        const isComplete = p.status === 'completed' || p.status === 'completed_with_errors';
+        const history = p.history || [];
 
-            // Only keep last 20 items in the list for performance
-            const displayHistory = recentHistory.slice(-20);
-            let html = '';
-            displayHistory.forEach(function(entry) {
-                const icon = entry.status === 'ok' ? '✓' : (entry.status === 'error' ? '✗' : (entry.status === 'skip' ? '–' : '⟳'));
-                const cls = entry.status === 'ok' ? 'text-success' : (entry.status === 'error' ? 'text-danger' : 'text-muted');
-                const msg = entry.project ? entry.step + ' / ' + entry.project : entry.step;
-                html += '<div class="' + cls + '">' + icon + ' ' + msg + '</div>';
-            });
-            stepsList.innerHTML = html;
-            stepsList.scrollTop = stepsList.scrollHeight;
+        if (isComplete && history.length > 0) {
+            stepsList.style.maxHeight = '500px';
+            stepsList.innerHTML = renderProjectDetail(history) + '<hr class="my-2">' + renderModuleSummary(history);
+        } else {
+            const recentItems = history.slice(-20);
+            if (recentItems.length > 0) {
+                let html = '';
+                recentItems.forEach(function(entry) {
+                    const icon = entry.status === 'ok' ? '✓' : (entry.status === 'error' ? '✗' : (entry.status === 'skip' ? '–' : '⟳'));
+                    const cls = entry.status === 'ok' ? 'text-success' : (entry.status === 'error' ? 'text-danger' : 'text-muted');
+                    const msg = entry.project ? entry.step + ' / ' + entry.project : entry.step;
+                    html += '<div class="' + cls + '">' + icon + ' ' + msg + '</div>';
+                });
+                stepsList.innerHTML = html;
+                stepsList.scrollTop = stepsList.scrollHeight;
+            }
         }
 
         lastUpdateTime = Date.now();
@@ -708,7 +761,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (staleTimer) { clearInterval(staleTimer); staleTimer = null; }
         progressBar.classList.remove('progress-bar-animated', 'progress-bar-striped');
         progressError.style.display = 'block';
-        progressError.textContent = 'Sin actualización desde hace más de 60s. El proceso pudo detenerse.';
+        progressError.textContent = 'Sin actualización desde hace más de 15 min. El proceso pudo detenerse.';
         currentStepEl.textContent = 'Conexión perdida';
         btnCloseProgress.style.display = '';
     }

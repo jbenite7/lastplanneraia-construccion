@@ -463,8 +463,10 @@ class GeneralApiController extends BaseController
             $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($archivo['tmp_name']);
             $sheet = $spreadsheet->getActiveSheet();
             $excelData = $sheet->toArray();
-            $todoElExcel = $excelData; 
-            array_shift($excelData); 
+            $headerRow = $excelData[0] ?? [];
+            $columnMap = $this->detectImportColumnMap($headerRow);
+            $todoElExcel = $excelData;
+            array_shift($excelData);
 
             // 1. Detección inteligente de
             $stmtMaxCons = $this->db->prepare("SELECT MAX(Semana) as max_sem FROM {$dbPrefix}_programa_consolidado");
@@ -496,18 +498,9 @@ class GeneralApiController extends BaseController
             $debug("DEBUG IMPORT: Semana Actual: $semana. Max Consolidado: $maxSemCons. Max Activas: $maxSemAct. Destino: $semanaNueva");
             $debug("DEBUG IMPORT: Filas en Excel (sin header): " . count($excelData));
 
-            // 2. Encontrar columna de esquema (puede no ser la 0)
-            $colEsquema = 0;
-            if (!empty($excelData)) {
-                $primeraFila = $excelData[0];
-                foreach ($primeraFila as $i => $cell) {
-                    if (preg_match('/^\d+(\.\d+)*$/', (string)$cell)) {
-                        $colEsquema = $i;
-                        $debug("DEBUG IMPORT: Columna de esquema detectada en índice: $colEsquema");
-                        break;
-                    }
-                }
-            }
+            $colEsquema = $columnMap['schema'];
+            $colActividad = $columnMap['task'];
+            $debug("DEBUG IMPORT: Columnas detectadas: " . json_encode($columnMap));
 
             // Herencia inteligente: buscar en la semana activa más reciente
             $semanaOrigen = ($maxSemAct > 0) ? $maxSemAct : $semana;
@@ -518,7 +511,8 @@ class GeneralApiController extends BaseController
             $itemsParaInsertar = [];
 
             foreach ($excelData as $index => $row) {
-                if (empty($row[$colEsquema])) {
+                $esquema = $this->normalizeImportCellText($row[$colEsquema] ?? null);
+                if ($esquema === '') {
                     $debug("DEBUG IMPORT: Fila $index omitida (Esquema vacío en col $colEsquema)");
                     continue;
                 }
@@ -527,25 +521,24 @@ class GeneralApiController extends BaseController
                     $debug("DEBUG IMPORT: Procesando primera fila de datos: " . json_encode($row));
                 }
 
-                $esquema = (string)$row[$colEsquema];
-                $nombreActividadHtml = $this->formatTaskNameWithHierarchy($esquema, $todoElExcel, $colEsquema);
+                $nombreActividadHtml = $this->formatTaskNameWithHierarchy($esquema, $todoElExcel, $colEsquema, $colActividad);
                 $nombreLimpio = strip_tags($nombreActividadHtml);
 
                 $excelRowNumber = $index + 2;
-                $titulo = (isset($row[2]) && (stripos($row[2], 'S') !== false || $row[2] == '1')) ? 1 : 0;
+                $titulo = $this->isTruthyImportedFlag($row[$columnMap['summary']] ?? null) ? 1 : 0;
                 $fInicio = $this->normalizeImportedDate(
-                    $this->getWorksheetRawValue($sheet, 3, $excelRowNumber),
-                    $row[3] ?? null,
+                    $this->getWorksheetRawValue($sheet, $columnMap['start'], $excelRowNumber),
+                    $row[$columnMap['start']] ?? null,
                     $excelRowNumber,
                     'Fecha_Inicio'
                 );
                 $fFin = $this->normalizeImportedDate(
-                    $this->getWorksheetRawValue($sheet, 4, $excelRowNumber),
-                    $row[4] ?? null,
+                    $this->getWorksheetRawValue($sheet, $columnMap['end'], $excelRowNumber),
+                    $row[$columnMap['end']] ?? null,
                     $excelRowNumber,
                     'Fecha_Fin'
                 );
-                $rutaCritica = (isset($row[5]) && (stripos($row[5], 'S') !== false || $row[5] == '1')) ? 1 : 0;
+                $rutaCritica = $this->isTruthyImportedFlag($row[$columnMap['critical']] ?? null) ? 1 : 0;
 
                 $prev = $historico[$nombreLimpio] ?? [];
                 
@@ -655,6 +648,89 @@ class GeneralApiController extends BaseController
     {
         $column = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($zeroBasedColumnIndex + 1);
         return $sheet->getCell($column . $rowNumber)->getValue();
+    }
+
+    private function detectImportColumnMap(array $headerRow): array
+    {
+        $aliases = [
+            'schema' => ['numero de esquema', 'esquema', 'wbs', 'edt', 'id'],
+            'task' => ['nombre de tarea', 'actividad', 'tarea', 'nombre'],
+            'summary' => ['resumen', 'titulo', 'summary'],
+            'start' => ['comienzo', 'fecha inicio', 'fecha de inicio', 'inicio', 'start'],
+            'end' => ['fin', 'fecha fin', 'fecha de fin', 'finish'],
+            'critical' => ['tareas criticas', 'ruta critica', 'critica', 'critical'],
+        ];
+
+        $columnMap = [];
+        foreach ($headerRow as $index => $heading) {
+            $normalizedHeading = $this->normalizeImportHeading($heading);
+            if ($normalizedHeading === '') {
+                continue;
+            }
+
+            foreach ($aliases as $field => $fieldAliases) {
+                if (!isset($columnMap[$field]) && in_array($normalizedHeading, $fieldAliases, true)) {
+                    $columnMap[$field] = (int)$index;
+                    break;
+                }
+            }
+        }
+
+        $required = ['schema', 'task', 'summary', 'start', 'end', 'critical'];
+        $missing = array_values(array_diff($required, array_keys($columnMap)));
+        if (!empty($missing)) {
+            throw new Exception(
+                'Formato de Excel inválido. No se detectaron las columnas requeridas: ' . implode(', ', $missing) .
+                '. Descarga y usa la plantilla base de Actualización de Cronograma.'
+            );
+        }
+
+        return $columnMap;
+    }
+
+    private function normalizeImportHeading($value): string
+    {
+        $text = $this->normalizeImportCellText($value);
+        if ($text === '') {
+            return '';
+        }
+
+        $text = function_exists('mb_strtolower') ? mb_strtolower($text, 'UTF-8') : strtolower($text);
+        $text = strtr($text, [
+            'á' => 'a', 'à' => 'a', 'ä' => 'a', 'â' => 'a', 'Á' => 'a', 'À' => 'a', 'Ä' => 'a', 'Â' => 'a',
+            'é' => 'e', 'è' => 'e', 'ë' => 'e', 'ê' => 'e', 'É' => 'e', 'È' => 'e', 'Ë' => 'e', 'Ê' => 'e',
+            'í' => 'i', 'ì' => 'i', 'ï' => 'i', 'î' => 'i', 'Í' => 'i', 'Ì' => 'i', 'Ï' => 'i', 'Î' => 'i',
+            'ó' => 'o', 'ò' => 'o', 'ö' => 'o', 'ô' => 'o', 'Ó' => 'o', 'Ò' => 'o', 'Ö' => 'o', 'Ô' => 'o',
+            'ú' => 'u', 'ù' => 'u', 'ü' => 'u', 'û' => 'u', 'Ú' => 'u', 'Ù' => 'u', 'Ü' => 'u', 'Û' => 'u',
+            'ñ' => 'n', 'Ñ' => 'n',
+        ]);
+        $text = preg_replace('/[^a-z0-9]+/', ' ', $text) ?? $text;
+
+        return trim($text);
+    }
+
+    private function normalizeImportCellText($value): string
+    {
+        if ($value === null || is_bool($value)) {
+            return '';
+        }
+
+        if ($value instanceof \PhpOffice\PhpSpreadsheet\RichText\RichText) {
+            $value = $value->getPlainText();
+        }
+
+        $text = trim((string)$value);
+        $text = preg_replace('/\x{00A0}/u', ' ', $text) ?? $text;
+        $text = preg_replace('/\s+/', ' ', $text) ?? $text;
+
+        return trim($text, " \t\n\r\0\x0B'\"");
+    }
+
+    private function isTruthyImportedFlag($value): bool
+    {
+        $text = $this->normalizeImportHeading($value);
+
+        return in_array($text, ['1', 's', 'si', 'yes', 'true'], true);
     }
 
     private function normalizeImportedDate($rawValue, $formattedValue, int $rowNumber, string $fieldName): ?string
@@ -837,7 +913,7 @@ class GeneralApiController extends BaseController
     /**
      * Reconstruye el nombre de la tarea con formato de jerarquía (HTML).
      */
-    private function formatTaskNameWithHierarchy(string $esquema, array $todoElExcel, int $colEsquema = 0): string
+    private function formatTaskNameWithHierarchy(string $esquema, array $todoElExcel, int $colEsquema = 0, int $colActividad = 1): string
     {
         $niveles = explode('.', (string)$esquema);
         $contadorNiveles = count($niveles);
@@ -847,14 +923,17 @@ class GeneralApiController extends BaseController
         foreach ($niveles as $nivel) {
             $esquemaParcial = ($esquemaParcial === '') ? $nivel : "{$esquemaParcial}.{$nivel}";
             foreach ($todoElExcel as $row) {
-                if ((string)($row[$colEsquema] ?? '') === $esquemaParcial) {
-                    $jerarquia[] = $row[$colEsquema + 1] ?? 'Sin Nombre';
+                if ($this->normalizeImportCellText($row[$colEsquema] ?? null) === $esquemaParcial) {
+                    $jerarquia[] = $this->normalizeImportCellText($row[$colActividad] ?? null) ?: 'Sin Nombre';
                     break;
                 }
             }
         }
 
         $nombrePrincipal = end($jerarquia);
+        if ($nombrePrincipal === false) {
+            $nombrePrincipal = 'Sin Nombre';
+        }
         
         // AIA 2026: Si el nombre principal ya contiene jerarquía (ej. exportado previo), evitamos duplicar
         if (strpos($nombrePrincipal, '[Capítulo:') !== false) {
