@@ -7,8 +7,13 @@ require_once __DIR__ . '/../vendor/autoload.php';
 // Ajustamos la ruta para apuntar a la raíz del proyecto
 define('PROJECT_ROOT', dirname(__DIR__));
 
-// 2.5 Maintenance mode check
-if (file_exists(PROJECT_ROOT . '/.maintenance')) {
+// 2.5 Maintenance mode check (exempt runtime config for admin/frontend to work)
+$requestUri = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?: '/';
+$maintenanceExempt = ['/runtime/frontend-config.js'];
+if (
+    file_exists(PROJECT_ROOT . '/.maintenance')
+    && !in_array($requestUri, $maintenanceExempt, true)
+) {
     http_response_code(503);
     readfile(__DIR__ . '/mantenimiento-aia.html');
     exit;
@@ -34,7 +39,6 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // 3.5 Verificar Sesión y Timeout (Protección Universal)
 // Excluimos las rutas públicas para permitir inicio de sesión y configuración temprana del frontend
-$requestUri = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH);
 $publicRoutes = ['/', '/login', '/password/forgot', '/password/reset', '/password/update', '/runtime/frontend-config.js'];
 if (!in_array($requestUri, $publicRoutes, true)) {
     \App\Core\SessionMiddleware::check();
