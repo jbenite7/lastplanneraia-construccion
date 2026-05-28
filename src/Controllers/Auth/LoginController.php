@@ -2,6 +2,7 @@
 
 namespace App\Controllers\Auth;
 
+use App\Core\MaintenanceMode;
 use App\Services\Auth\UserPasswordService;
 use Database;
 
@@ -19,27 +20,22 @@ class LoginController
 
     public function index()
     {
-        // 1. Si ya hay sesión completa y no debe cambiar clave, redirigir al dashboard
         if (isset($_SESSION['usuario']) && !isset($_SESSION['must_change_password'])) {
             header('Location: /dashboard');
             exit();
         }
 
-        // 2. Mostrar la vista
-        // Las vistas legacy suelen requerir variables globales o paths relativos complejos.
-        // Vamos a incluir la vista legacy, pero saneada.
+        $requestUri = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?: '/';
+        $formAction = $requestUri === MaintenanceMode::SECRET_PATH
+            ? MaintenanceMode::SECRET_PATH
+            : '/login';
 
         $timeoutNotice = ($_GET['timeout'] ?? '') === '1';
         $inactiveNotice = ($_GET['inactive'] ?? '') === '1';
         $resetNotice = ($_GET['reset'] ?? '') === '1';
-        $errores = ''; // Inicializar variable para la vista
+        $errores = '';
 
-        // Exponer $db para la vista legacy
         $db = $this->db;
-
-        // Ajuste de rutas para que los includes de la vista funcionen
-        // La vista espera estar en 'views/auth',
-        // Mejor opción: Incluir la vista desde su ruta absoluta.
         require PROJECT_ROOT . '/views/auth/login.view.php';
     }
 
@@ -63,30 +59,9 @@ class LoginController
                 return;
             }
 
-            // 1. Buscar usuario (sin filtrar por proyecto)
-            // Obtenemos el primer registro activo para validar contraseña
-            $stmt = $this->db->prepare("SELECT * FROM general_usuarios WHERE usuario = ? LIMIT 1");
-            $stmt->execute([$usuario]);
-            $data = $stmt->fetch();
-
-            $password_valida = false;
+            $data = $this->verifyCredentials($usuario, $password);
 
             if ($data) {
-                // 2. Verificar contraseña
-                if (password_verify($password, $data['password'])) {
-                    $password_valida = true;
-                } elseif (hash_equals($data['password'], hash('sha512', $password))) {
-                    $password_valida = true;
-                    // Migración transparente a BCRYPT
-                    $newHash = password_hash($password, PASSWORD_DEFAULT);
-                    // Actualizar contraseña para TODAS las entradas de este usuario
-                    $updateQ = "UPDATE general_usuarios SET password = ? WHERE usuario = ?";
-                    $stmtUpd = $this->db->prepare($updateQ);
-                    $stmtUpd->execute([$newHash, $usuario]);
-                }
-            }
-
-            if ($password_valida) {
                 if (isset($data['activo']) && (int)$data['activo'] !== 1) {
                     $errores .= "<li>Tu cuenta está inactiva. Contacta al administrador.</li>";
                     if (method_exists($this->db, 'logActivity')) {
@@ -192,12 +167,14 @@ class LoginController
                 exit();
             }
 
-            // Elevar a sesión definitiva si estaba en temp
             if (isset($_SESSION['usuario_temp'])) {
                 $_SESSION['usuario'] = $_SESSION['usuario_temp'];
                 unset($_SESSION['usuario_temp']);
-                
-                // Limpiar variables de proyecto anterior si existen
+
+                if (MaintenanceMode::isActive()) {
+                    $_SESSION['maintenance_bypass'] = true;
+                }
+
                 unset($_SESSION['proyecto']);
                 unset($_SESSION['db']);
                 unset($_SESSION['semana']);
@@ -216,6 +193,112 @@ class LoginController
         } catch (\Throwable $e) {
             echo json_encode(['success' => false, 'message' => 'Error al actualizar la contraseña: ' . $e->getMessage()]);
         }
+        exit();
+    }
+
+    private function verifyCredentials(string $usuario, string $password): ?array
+    {
+        $stmt = $this->db->prepare("SELECT * FROM general_usuarios WHERE usuario = ? LIMIT 1");
+        $stmt->execute([$usuario]);
+        $data = $stmt->fetch();
+
+        if (!$data) {
+            return null;
+        }
+
+        if (password_verify($password, $data['password'])) {
+            return $data;
+        }
+
+        if (hash_equals($data['password'], hash('sha512', $password))) {
+            $newHash = password_hash($password, PASSWORD_DEFAULT);
+            $updateQ = "UPDATE general_usuarios SET password = ? WHERE usuario = ?";
+            $stmtUpd = $this->db->prepare($updateQ);
+            $stmtUpd->execute([$newHash, $usuario]);
+            return $data;
+        }
+
+        return null;
+    }
+
+    private function userHasGlobalAdminRole(string $usuario): bool
+    {
+        $stmt = $this->db->prepare(
+            "SELECT COUNT(*) FROM project_members pm
+             INNER JOIN general_usuarios u ON u.id = pm.user_id
+             INNER JOIN general_proyectos_procesos p ON p.ID = pm.project_id
+             WHERE u.usuario = ?
+               AND pm.role = 'A'
+               AND p.Area = 'Construccion'
+               AND p.Activo = 1"
+        );
+        $stmt->execute([$usuario]);
+        return (int)$stmt->fetchColumn() > 0;
+    }
+
+    public function maintenanceLogin()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            exit;
+        }
+
+        $usuario = htmlspecialchars(strtolower($_POST['usuario'] ?? ''));
+        $password = $_POST['password'] ?? '';
+
+        if (empty($usuario) || empty($password)) {
+            MaintenanceMode::renderPage();
+        }
+
+        $data = $this->verifyCredentials($usuario, $password);
+
+        if (!$data) {
+            MaintenanceMode::renderPage();
+        }
+
+        if (isset($data['activo']) && (int)$data['activo'] !== 1) {
+            if (method_exists($this->db, 'logActivity')) {
+                $this->db->logActivity('Login', 'LOGIN_BLOQUEADO_INACTIVO', "Intento de acceso con cuenta inactiva: $usuario");
+            }
+            MaintenanceMode::renderPage();
+        }
+
+        if (!$this->userHasGlobalAdminRole($usuario)) {
+            if (method_exists($this->db, 'logActivity')) {
+                $this->db->logActivity('Login', 'MAINTENANCE_BLOQUEADO', "Usuario $usuario sin rol A intentó acceso por ruta oculta");
+            }
+            MaintenanceMode::renderPage();
+        }
+
+        $_SESSION['maintenance_bypass'] = true;
+
+        if (isset($data['force_password_change']) && $data['force_password_change'] == 1) {
+            $_SESSION['usuario_temp'] = $usuario;
+            $_SESSION['nombreUsuario'] = $data['nombre'];
+            $_SESSION['must_change_password'] = true;
+
+            if (method_exists($this->db, 'logActivity')) {
+                $this->db->logActivity('Login', 'LOGIN_PENDIENTE_CLAVE', "Usuario $usuario requiere cambio de contraseña.");
+            }
+
+            header("Location: " . MaintenanceMode::SECRET_PATH);
+            exit();
+        }
+
+        $_SESSION['usuario'] = $usuario;
+        $_SESSION['nombreUsuario'] = $data['nombre'];
+
+        unset($_SESSION['proyecto']);
+        unset($_SESSION['db']);
+        unset($_SESSION['semana']);
+        unset($_SESSION['permiso']);
+        unset($_SESSION['pdcActivo']);
+
+        if (method_exists($this->db, 'logActivity')) {
+            $this->db->logActivity('Login', 'MAINTENANCE_LOGIN', "Admin $usuario accedió por ruta oculta durante mantenimiento");
+        }
+
+        header("Location: /proyectos");
         exit();
     }
 }

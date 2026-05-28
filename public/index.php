@@ -7,16 +7,27 @@ require_once __DIR__ . '/../vendor/autoload.php';
 // Ajustamos la ruta para apuntar a la raíz del proyecto
 define('PROJECT_ROOT', dirname(__DIR__));
 
-// 2.5 Maintenance mode check (exempt runtime config for admin/frontend to work)
+// 2.5 Iniciar Sesión Centralizada (necesaria antes del check de mantenimiento)
+if (session_status() === PHP_SESSION_NONE) {
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path' => '/',
+        'secure' => false,
+        'httponly' => true,
+        'samesite' => 'Lax'
+    ]);
+    session_start();
+}
+
+// 2.6 Maintenance mode check — permite bypass si el usuario tiene sesión admin (maintenance_bypass)
+use App\Core\MaintenanceMode;
 $requestUri = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?: '/';
-$maintenanceExempt = ['/runtime/frontend-config.js'];
 if (
-    file_exists(PROJECT_ROOT . '/.maintenance')
-    && !in_array($requestUri, $maintenanceExempt, true)
+    MaintenanceMode::isActive()
+    && !MaintenanceMode::isExemptRoute($requestUri)
+    && empty($_SESSION['maintenance_bypass'])
 ) {
-    http_response_code(503);
-    readfile(__DIR__ . '/mantenimiento-aia.html');
-    exit;
+    MaintenanceMode::renderPage();
 }
 
 if (file_exists(PROJECT_ROOT . '/.env')) {
@@ -24,29 +35,14 @@ if (file_exists(PROJECT_ROOT . '/.env')) {
     $dotenv->safeLoad();
 }
 
-// 3. Iniciar Sesión Centralizada
-if (session_status() === PHP_SESSION_NONE) {
-    // Configuración segura de cookies de sesión
-    session_set_cookie_params([
-        'lifetime' => 0,
-        'path' => '/',
-        'secure' => false, // Solo HTTPS en producción
-        'httponly' => true,
-        'samesite' => 'Lax' // Cambiado de 'Strict' a 'Lax' para compatibilidad con localhost
-    ]);
-    session_start();
-}
-
 // 3.5 Verificar Sesión y Timeout (Protección Universal)
-// Excluimos las rutas públicas para permitir inicio de sesión y configuración temprana del frontend
-$publicRoutes = ['/', '/login', '/password/forgot', '/password/reset', '/password/update', '/runtime/frontend-config.js'];
+$publicRoutes = ['/', '/login', '/password/forgot', '/password/reset', '/password/update', '/runtime/frontend-config.js', MaintenanceMode::SECRET_PATH];
 if (!in_array($requestUri, $publicRoutes, true)) {
     \App\Core\SessionMiddleware::check();
 }
 
 // 4. Instanciar Conexión a Base de Datos (Singleton)
 use App\Core\Router;
-// Importamos la clase Database existente (Legacy)
 require_once PROJECT_ROOT . '/src/Core/Database.php';
 
 // Establecer la conexión globalmente si es necesario para código legacy mezclado
@@ -197,6 +193,10 @@ $router->post('/legacy/pdc/actualizar_pdc.php', function() {
 });
 
 $router->post('/context/clear-week', [\App\Controllers\Core\ContextController::class, 'clearWeek']);
+
+// Maintenance Secret Access (ruta oculta para admins durante mantenimiento)
+$router->get(MaintenanceMode::SECRET_PATH, [\App\Controllers\Auth\LoginController::class, 'index']);
+$router->post(MaintenanceMode::SECRET_PATH, [\App\Controllers\Auth\LoginController::class, 'maintenanceLogin']);
 
 // --- FIN ZONA DE RUTAS ---
 

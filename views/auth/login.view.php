@@ -42,7 +42,7 @@
                     </div>
                 <?php endif; ?>
 
-                <form action="/login" method="post" id="loginForm">
+                <form action="<?php echo htmlspecialchars($formAction ?? '/login', ENT_QUOTES, 'UTF-8'); ?>" method="post" id="loginForm">
                     <div class="input-group mb-3">
                         <label for="usuario" class="sr-only">Usuario</label>
                         <input type="text" id="usuario" name="usuario" class="form-control" placeholder="Usuario" autocomplete="username" required>
