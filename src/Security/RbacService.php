@@ -189,7 +189,7 @@ class RbacService
             return [];
         }
 
-        $sql = "SELECT p.permission_key, COALESCE(rp.allowed, 0) AS allowed
+        $sql = "SELECT p.permission_key, rp.allowed
                 FROM rbac_permissions p
                 LEFT JOIN rbac_role_permissions rp
                     ON rp.permission_key = p.permission_key
@@ -203,26 +203,27 @@ class RbacService
             return [];
         }
 
-        $map = [];
-        $hasExplicitAllow = false;
+        $anyDbRow = false;
+        $dbMap = [];
         foreach ($rows as $row) {
             $key = strtolower((string)($row['permission_key'] ?? ''));
             if ($key === '') {
                 continue;
             }
+            $anyDbRow = true;
 
-            $allowed = ((int)($row['allowed'] ?? 0) === 1);
-            $map[$key] = $allowed;
-            if ($allowed) {
-                $hasExplicitAllow = true;
+            if ($row['allowed'] !== null) {
+                $dbMap[$key] = ((int)$row['allowed'] === 1);
             }
         }
 
-        if (!$hasExplicitAllow) {
+        if (!$anyDbRow) {
             return [];
         }
 
-        return $map;
+        $fallbackMap = $this->loadRolePermissionsFromFallback($role);
+
+        return array_merge($fallbackMap, $dbMap);
     }
 
     private function loadRolePermissionsFromFallback(string $role): array

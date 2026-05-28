@@ -142,13 +142,21 @@ class RoleManager
         if (str_contains($c, 'costo') || str_contains($c, 'compra') || str_contains($c, 'licitaci') || str_contains($c, 'aprovisionamiento')) {
             return 'OT';
         }
+        if (str_contains($c, 'oficina tecnica')) {
+            return 'OT';
+        }
         if (str_contains($c, 'dcv')) {
+            return 'DCV';
+        }
+        if (str_contains($c, 'diseno') && str_contains($c, 'construccion')) {
             return 'DCV';
         }
         if (str_contains($c, 'planeaci') || str_contains($c, 'programaci') || str_contains($c, 'control')) {
             return 'D';
         }
-
+        if (str_contains($c, 'administrador')) {
+            return 'A';
+        }
         if (str_contains($c, 'director') || str_contains($c, 'gerente') || str_contains($c, 'jefe')) {
             return 'A';
         }
