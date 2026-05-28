@@ -74,6 +74,10 @@ $processor->setProgressCallback(function (string $reportLabel, string $project, 
     $tracker->update($reportLabel, $project, $index, $total, $status, $message);
 });
 
+$processor->setSubprocessCallback(function (string $step, string $project, string $subprocess, string $status, ?string $message = null) use ($tracker) {
+    $tracker->updateSubprocess($step, $project, $subprocess, $status, $message);
+});
+
 register_shutdown_function(function () use ($tracker) {
     $error = error_get_last();
     if ($error && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR])) {

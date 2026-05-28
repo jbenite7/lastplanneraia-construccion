@@ -159,12 +159,19 @@
             <strong>Console Logs Frontend</strong>
             <div class="text-muted small">Controla <code>console.log</code> en toda la app.</div>
           </div>
-          <div class="custom-control custom-switch">
-            <input type="checkbox"
-                   class="custom-control-input"
-                   id="consoleLogsGlobalToggle"
-                   <?php echo $stats['console_logs_enabled'] ? 'checked' : ''; ?>>
-            <label class="custom-control-label" for="consoleLogsGlobalToggle"></label>
+          <div class="d-flex align-items-center">
+            <div class="custom-control custom-switch mr-2">
+              <input type="checkbox"
+                     class="custom-control-input"
+                     id="consoleLogsGlobalToggle"
+                     <?php echo $stats['console_logs_enabled'] ? 'checked' : ''; ?>>
+              <label class="custom-control-label" for="consoleLogsGlobalToggle"></label>
+            </div>
+            <span id="consoleLogsStatusBadge"
+                  class="badge badge-sm <?php echo $stats['console_logs_enabled'] ? 'badge-success' : 'badge-secondary'; ?>"
+                  style="font-size:0.72rem;">
+              <?php echo $stats['console_logs_enabled'] ? 'Activos' : 'Ocultos'; ?>
+            </span>
           </div>
         </div>
 
@@ -624,6 +631,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentToken = null;
     let lastUpdateTime = null;
     let staleTimer = null;
+    let lastSubprocessTime = 0;
 
     function showProgress() {
         btnRunReportes.style.display = 'none';
@@ -632,6 +640,7 @@ document.addEventListener('DOMContentLoaded', function() {
         currentStepEl.textContent = 'Iniciando consolidación...';
         progressError.style.display = 'none';
         btnCloseProgress.style.display = 'none';
+        lastSubprocessTime = 0;
     }
 
     function hideProgress() {
@@ -642,7 +651,7 @@ document.addEventListener('DOMContentLoaded', function() {
         currentToken = null;
     }
 
-    function renderProjectDetail(history) {
+    function renderProjectDetail(history, subprocesses) {
         const MODULE_ORDER = ['Curva S', 'General', 'Restricciones', 'PDC', 'Subcontratistas', 'CIC'];
         const groups = {};
         (history || []).forEach(function(entry) {
@@ -650,6 +659,13 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!step) return;
             if (!groups[step]) groups[step] = [];
             groups[step].push(entry);
+        });
+        // Group subprocesses by (step, project)
+        const spGroups = {};
+        (subprocesses || []).forEach(function(sp) {
+            const key = sp.step + '||' + sp.project;
+            if (!spGroups[key]) spGroups[key] = [];
+            spGroups[key].push(sp);
         });
         let html = '<div class="font-weight-bold mb-1" style="font-size:0.85rem;">Detalle por proyecto</div>';
         MODULE_ORDER.forEach(function(moduleName) {
@@ -662,6 +678,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 let line = icon + ' ' + entry.project;
                 if (entry.message) line += ' — ' + entry.message;
                 html += '<div class="' + cls + '" style="padding-left:1rem;font-size:0.78rem;">' + line + '</div>';
+                // Render subprocesses for this project & step
+                var spKey = moduleName + '||' + entry.project;
+                var spEntries = spGroups[spKey];
+                if (spEntries) {
+                    spEntries.forEach(function(sp) {
+                        var spIcon = sp.status === 'ok' ? '▸' : (sp.status === 'error' ? '▸' : (sp.status === 'skip' ? '▸' : '▸'));
+                        var spCls = sp.status === 'ok' ? 'text-success' : (sp.status === 'error' ? 'text-danger' : 'text-muted');
+                        var spLine = '&nbsp;&nbsp;' + spIcon + ' ' + sp.subprocess;
+                        if (sp.message) spLine += ' — ' + sp.message;
+                        html += '<div class="' + spCls + '" style="padding-left:2rem;font-size:0.72rem;">' + spLine + '</div>';
+                    });
+                }
             });
         });
         return html;
@@ -704,13 +732,34 @@ document.addEventListener('DOMContentLoaded', function() {
         const project = p.current_project || '';
         const idx = p.current_index || 0;
         const total = p.current_total || 0;
+        const sub = p.current_subprocess || '';
 
+        let stepText = '';
         if (step && project) {
-            currentStepEl.textContent = step + ' — ' + project + ' (' + idx + '/' + total + ')';
+            stepText = step + ' — ' + project + ' (' + idx + '/' + total + ')';
         } else if (step) {
-            currentStepEl.textContent = step;
+            stepText = step;
         } else {
-            currentStepEl.textContent = 'Procesando...';
+            stepText = 'Procesando...';
+        }
+        if (sub) {
+            stepText += ' › ' + sub;
+        }
+        currentStepEl.textContent = stepText;
+
+        // Log new subprocess entries to console if enabled
+        const subprocesses = p.subprocesses || [];
+        const consoleEnabled = window.AIA && window.AIA.runtimeFlags && window.AIA.runtimeFlags.consoleLogsEnabled;
+        subprocesses.forEach(function(sp) {
+            if (sp.time > lastSubprocessTime) {
+                if (consoleEnabled) {
+                    var icon = sp.status === 'ok' ? '✓' : (sp.status === 'error' ? '✗' : (sp.status === 'skip' ? '–' : '⟳'));
+                    console.log('[SUBPROCESS] ' + icon + ' ' + sp.step + ' / ' + sp.project + ' / ' + sp.subprocess + (sp.message ? ' — ' + sp.message : ''));
+                }
+            }
+        });
+        if (subprocesses.length > 0) {
+            lastSubprocessTime = Math.max.apply(null, subprocesses.map(function(s) { return s.time; }));
         }
 
         // Show grouped module summary at completion, or recent items during execution
@@ -719,7 +768,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (isComplete && history.length > 0) {
             stepsList.style.maxHeight = '500px';
-            stepsList.innerHTML = renderProjectDetail(history) + '<hr class="my-2">' + renderModuleSummary(history);
+            stepsList.innerHTML = renderProjectDetail(history, subprocesses) + '<hr class="my-2">' + renderModuleSummary(history);
         } else {
             const recentItems = history.slice(-20);
             if (recentItems.length > 0) {

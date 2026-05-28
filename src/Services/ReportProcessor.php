@@ -10,6 +10,7 @@ class ReportProcessor
 {
     private $db;
     private $progressCallback;
+    private $subprocessCallback;
 
     public function __construct()
     {
@@ -21,10 +22,23 @@ class ReportProcessor
         $this->progressCallback = $callback;
     }
 
+    public function setSubprocessCallback(callable $callback): void
+    {
+        $this->subprocessCallback = $callback;
+    }
+
     private function reportProgress(string $reportLabel, string $project, int $index, int $total, string $status, ?string $message = null): void
     {
         if ($this->progressCallback) {
             ($this->progressCallback)($reportLabel, $project, $index, $total, $status, $message);
+        }
+    }
+
+    private function reportSubprocess(string $reportLabel, string $project, string $subprocess, string $status, ?string $message = null): void
+    {
+        error_log("[REPORT] {$reportLabel} / {$project} / {$subprocess}: {$status}" . ($message !== null ? " — {$message}" : ""));
+        if ($this->subprocessCallback) {
+            ($this->subprocessCallback)($reportLabel, $project, $subprocess, $status, $message);
         }
     }
 
@@ -132,11 +146,13 @@ class ReportProcessor
 
                     // Verify table exists
                     $this->db->query("SELECT 1 FROM {$dbPrefix}_programa_consolidado LIMIT 1");
+                    $this->reportSubprocess('Curva S', $proyecto, 'Validando programa consolidado', 'ok');
 
                     // Calculate total weeks
                     $sqlSemanas = "SELECT CEIL(((DATEDIFF((SELECT MAX(Fecha_Fin) FROM {$dbPrefix}_programa_consolidado WHERE Semana = (SELECT MAX(Semana) FROM {$dbPrefix}_semanas_activas)), MIN(Fecha_Inicio))+1)/7)) AS semanasProyecto FROM {$dbPrefix}_programa_consolidado";
                     $dataSemanasProyecto = $this->db->query($sqlSemanas)->fetch();
                     $semanasProyecto = (int)($dataSemanasProyecto["semanasProyecto"] ?? 0);
+                    $this->reportSubprocess('Curva S', $proyecto, 'Calculando semanas', 'ok', "{$semanasProyecto} semanas");
 
                     // Get active weeks
                     $stmtSemanasActivas = $this->db->query("SELECT Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem FROM {$dbPrefix}_semanas_activas");
@@ -196,6 +212,8 @@ class ReportProcessor
                         ]);
                     }
 
+                    $this->reportSubprocess('Curva S', $proyecto, 'Insertando semanas reales', 'ok', count($semanasActivas) . ' semanas');
+
                     // Process projected weeks
                     for ($i = ($ultimaSemanaActiva + 1); $i <= $semanasProyecto; $i++) {
                         $fechaInicioSem = date("Y-m-d", strtotime($ultimaFechaFinSem . "+ 1 days"));
@@ -245,6 +263,8 @@ class ReportProcessor
                         ]);
                     }
 
+                    $proyectadas = max(0, $semanasProyecto - $ultimaSemanaActiva);
+                    $this->reportSubprocess('Curva S', $proyecto, 'Insertando semanas proyectadas', 'ok', $proyectadas . ' semanas');
                     $this->reportProgress('Curva S', $proyecto, $idx, $totalProyectos, 'ok');
 
                 } catch (\Exception $e) {
@@ -271,6 +291,7 @@ class ReportProcessor
                 $this->db->query("UPDATE general_curvas SET diferenciaPorcentajeCompletadoTeorico = ? WHERE id = ?", [$diferencia, $row['id']]);
             }
 
+            $this->reportSubprocess('Curva S', '', 'Calculando diferencias', 'ok');
             $results[] = "Curva S - OK";
 
             // --- Curva S PDC APR ---
@@ -284,10 +305,14 @@ class ReportProcessor
                 foreach ($proyectosPDC as $data1) {
                     $pdcProyecto = $data1["Proyecto_Proceso"];
                     $pdcIdx++;
+                    $this->reportSubprocess('Curva S PDC APR', $pdcProyecto, 'Procesando PDC APR', 'running');
                     try {
                         $pdcProcessed = $this->processProjectPDC_APR($data1);
-                        $this->reportProgress('Curva S PDC APR', $pdcProyecto, $pdcIdx, $totalPDC, $pdcProcessed === false ? 'skip' : 'ok');
+                        $status = $pdcProcessed === false ? 'skip' : 'ok';
+                        $this->reportSubprocess('Curva S PDC APR', $pdcProyecto, 'Procesando PDC APR', $status, $pdcProcessed === false ? 'sin PDC con fechas' : null);
+                        $this->reportProgress('Curva S PDC APR', $pdcProyecto, $pdcIdx, $totalPDC, $status);
                     } catch (\Exception $e) {
+                        $this->reportSubprocess('Curva S PDC APR', $pdcProyecto, 'Procesando PDC APR', 'error', $e->getMessage());
                         $results[] = $pdcProyecto . " - Error PDC: " . $e->getMessage();
                         $this->reportProgress('Curva S PDC APR', $pdcProyecto, $pdcIdx, $totalPDC, 'error', $e->getMessage());
                     }
@@ -323,6 +348,7 @@ class ReportProcessor
         $sqlSemanas = "SELECT CEIL(((DATEDIFF((SELECT MAX(Fecha_Fin) FROM {$dbPrefix}_programa_consolidado WHERE Semana = (SELECT MAX(Semana) FROM {$dbPrefix}_semanas_activas)), MIN(Fecha_Inicio))+1)/7)) AS semanasProyecto FROM {$dbPrefix}_programa_consolidado";
         $dataSemanasProyecto = $this->db->query($sqlSemanas)->fetch();
         $semanasProyecto = (int)($dataSemanasProyecto["semanasProyecto"] ?? 0);
+        $this->reportSubprocess('Curva S PDC APR', $proyecto, 'Calculando semanas PDC APR', 'ok', "{$semanasProyecto} semanas");
 
         $stmtSemanasActivas = $this->db->query("SELECT Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem FROM {$dbPrefix}_semanas_activas");
         $semanasActivas = $stmtSemanasActivas->fetchAll();
@@ -400,6 +426,8 @@ class ReportProcessor
             ]);
         }
 
+        $this->reportSubprocess('Curva S PDC APR', $proyecto, 'Insertando semanas reales PDC APR', 'ok', count($semanasActivas) . ' semanas');
+
         // Projected
         for ($i = ($ultimaSemanaActiva + 1); $i <= $semanasProyecto; $i++) {
             $fechaInicioSem = date("Y-m-d", strtotime($ultimaFechaFinSem . "+ 1 days"));
@@ -455,6 +483,9 @@ class ReportProcessor
             ]);
         }
 
+        $proyectadas = max(0, $semanasProyecto - $ultimaSemanaActiva);
+        $this->reportSubprocess('Curva S PDC APR', $proyecto, 'Insertando semanas proyectadas PDC APR', 'ok', $proyectadas . ' semanas');
+
         // Integration with General Curve
         $sqlJoin = "SELECT tablaPDC.id, tablaPDC.Proyecto, tablaPDC.semana, 
                            tablaPDC.porcentajeCompletadoTeorico,
@@ -498,6 +529,7 @@ class ReportProcessor
             $porcentajeTeoricoGenAnt = $pActualGen;
         }
 
+        $this->reportSubprocess('Curva S PDC APR', $proyecto, 'Integrando con curva general', 'ok');
         return true;
     }
 
@@ -564,7 +596,9 @@ class ReportProcessor
             WHERE prog.Semana >= ((SELECT MAX(Semana) FROM {$dbPrefix}_programacion_semanal) - 1)";
 
                 $this->db->query($sqlInsert, [$proyecto, $proyecto]);
+                $this->reportSubprocess('General', $proyecto, 'Insertando informe consolidado', 'ok');
                 $this->db->query("DELETE FROM general_informe_consolidado WHERE Fecha_Inicio_Sem IS NULL OR Fecha_Fin_Sem IS NULL");
+                $this->reportSubprocess('General', $proyecto, 'Limpiando registros inválidos', 'ok');
                 $messages[] = "$proyecto - OK";
                 $this->reportProgress('General', $proyecto, $genIdx, $totalGeneral, 'ok');
             } catch (\Exception $e) {
@@ -608,6 +642,7 @@ class ReportProcessor
                     continue;
                 }
 
+                $restriccionesCount = 0;
                 foreach ($restricciones as $nombreLabel => $columna) {
                     $sqlInsert = "INSERT INTO general_informe_restricciones_consolidado (
                     Proyecto, Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem, Actividad, 
@@ -639,8 +674,10 @@ class ReportProcessor
                   AND sem.Fecha_Inicio_Sem IS NOT NULL";
 
                     $this->db->query($sqlInsert, [$proyecto, $nombreLabel]);
+                    $restriccionesCount++;
                 }
                 $messages[] = "$proyecto - OK";
+                $this->reportSubprocess('Restricciones', $proyecto, 'Insertando restricciones', 'ok', $restriccionesCount . ' tipos');
                 $this->reportProgress('Restricciones', $proyecto, $restIdx, $totalRest, 'ok');
             } catch (\Exception $e) {
                 $messages[] = "$proyecto - Error: " . $e->getMessage();
@@ -759,6 +796,7 @@ class ReportProcessor
                     $this->db->query($sqlInsert, [$proyecto, $proyecto]);
 
                     $messages[] = "$proyecto - OK";
+                    $this->reportSubprocess('PDC', $proyecto, 'Insertando informe PDC', 'ok');
                     $this->reportProgress('PDC', $proyecto, $pdcIdx, $totalPDC, 'ok');
                 } catch (\Exception $e) {
                     $messages[] = "$proyecto - Error: " . $e->getMessage();
@@ -831,6 +869,7 @@ class ReportProcessor
                 $this->db->query($sql, [$proyecto, $proyecto]);
 
                 $messages[] = "$proyecto - OK";
+                $this->reportSubprocess('Subcontratistas', $proyecto, 'Insertando informe subcontratistas', 'ok');
                 $this->reportProgress('Subcontratistas', $proyecto, $subIdx, $totalSub, 'ok');
             } catch (\Exception $e) {
                 $messages[] = "$proyecto - Error: " . $e->getMessage();
@@ -874,6 +913,7 @@ class ReportProcessor
                 }
 
                 // --- PROCESAR SUB-CONTRATISTAS (CIC) ---
+                $this->reportSubprocess('CIC', $proyecto, 'Procesando CIC subcontratistas', 'running');
                 $this->processCalificacionEntidad(
                     $proyecto,
                     $dbName,
@@ -887,6 +927,7 @@ class ReportProcessor
                 );
 
                 // --- PROCESAR PROFESIONALES (CIP) ---
+                $this->reportSubprocess('CIC', $proyecto, 'Procesando CIP profesionales', 'running');
                 $this->processCalificacionEntidad(
                     $proyecto,
                     $dbName,
@@ -926,19 +967,25 @@ class ReportProcessor
     ) {
         try {
             $tableName = "{$dbName}_{$tableSuffix}";
+            $this->reportSubprocess($warningLabel, $proyecto, 'Verificando tabla', 'running', $tableName);
             if (!$this->tableExists($tableName)) {
                 return;
             }
+            $this->reportSubprocess($warningLabel, $proyecto, 'Verificando tabla', 'ok', 'Tabla existe');
 
             $stmtConteo = $this->db->query("SELECT COUNT(*) as conteo FROM {$tableName} WHERE Semana = ?", [$semanaProyecto]);
             $conteo = (int)($stmtConteo->fetchColumn() ?: 0);
             if ($conteo > 0) {
+                $this->reportSubprocess($warningLabel, $proyecto, 'Actualizando PAC existentes', 'running');
                 call_user_func($updateCallback, $semanaProyecto, $dbName, $semanaProyecto);
+                $this->reportSubprocess($warningLabel, $proyecto, 'Actualizando PAC existentes', 'ok');
             }
 
+            $this->reportSubprocess($warningLabel, $proyecto, 'Generando registros faltantes', 'running');
             $stmtExisting = $this->db->query("SELECT {$entityColumn} FROM {$tableName} WHERE Semana = ?", [$semanaProyecto]);
             $excludeEntities = $stmtExisting->fetchAll(\PDO::FETCH_COLUMN);
             call_user_func($generateCallback, $semanaProyecto, $dbName, $excludeEntities);
+            $this->reportSubprocess($warningLabel, $proyecto, 'Generando registros faltantes', 'ok');
         } catch (\Exception $e) {
             $messages[] = "$proyecto - Warning {$warningLabel}: " . $e->getMessage();
         }

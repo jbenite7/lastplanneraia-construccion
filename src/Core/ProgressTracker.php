@@ -47,10 +47,12 @@ class ProgressTracker
             'processed_steps' => 0,
             'current_step' => '',
             'current_project' => '',
+            'current_subprocess' => '',
             'current_index' => 0,
             'current_total' => 0,
             'percent' => 0,
             'history' => [],
+            'subprocesses' => [],
             'message' => '',
             'updated_at' => time(),
             'started_at' => time(),
@@ -84,6 +86,46 @@ class ProgressTracker
             if ($this->data['status'] === 'running') {
                 $this->data['status'] = 'running_with_errors';
             }
+        }
+
+        $this->write();
+    }
+
+    public function updateSubprocess(string $step, string $project, string $subprocess, string $status, ?string $message = null): void
+    {
+        $this->data['current_step'] = $step;
+        $this->data['current_project'] = $project;
+        $this->data['current_subprocess'] = $subprocess;
+        $this->data['updated_at'] = time();
+
+        $found = false;
+        foreach ($this->data['subprocesses'] as $i => $entry) {
+            if (($entry['step'] ?? '') === $step
+                && ($entry['project'] ?? '') === $project
+                && ($entry['subprocess'] ?? '') === $subprocess
+            ) {
+                $this->data['subprocesses'][$i]['status'] = $status;
+                $this->data['subprocesses'][$i]['time'] = time();
+                if ($message !== null) {
+                    $this->data['subprocesses'][$i]['message'] = $message;
+                }
+                $found = true;
+                break;
+            }
+        }
+
+        if (!$found) {
+            $entry = [
+                'step' => $step,
+                'project' => $project,
+                'subprocess' => $subprocess,
+                'status' => $status,
+                'time' => time(),
+            ];
+            if ($message !== null) {
+                $entry['message'] = $message;
+            }
+            $this->data['subprocesses'][] = $entry;
         }
 
         $this->write();
