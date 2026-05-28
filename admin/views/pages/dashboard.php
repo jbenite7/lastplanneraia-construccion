@@ -544,8 +544,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
                 }
             });
-        }
-    });
+        });
+    }
 
     // 5. Consolidar Reportes
     const btnRunReportes = document.getElementById('btnRunReportes');
@@ -577,11 +577,6 @@ document.addEventListener('DOMContentLoaded', function() {
             .finally(() => {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-chart-bar mr-1"></i> Consolidar';
-            });
-        });
-    }
-});
-                }
             });
         });
     }
