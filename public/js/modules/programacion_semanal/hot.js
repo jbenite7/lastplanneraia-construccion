@@ -17,6 +17,7 @@
   var weeklyAlertFilters = [];
   var weeklyPhaseKey = 'programacion';
   var pendingDeleteRow = null;
+  var sanitizedOnLoad = false;
 
   var options = window.PS_HOT_OPTIONS || {};
   var subcontratistas = Array.isArray(options.subcontratistas) ? options.subcontratistas : [];
@@ -1874,7 +1875,22 @@
   function loadData() {
     weeklyPhaseKey = getPhaseKey();
     showLoading(true);
-    requestList();
+
+    if (!sanitizedOnLoad && canManageToolbarActions()) {
+      sanitizedOnLoad = true;
+      var db = getDb();
+      var semana = getSemana();
+      $.ajax({
+        method: 'POST',
+        url: '/api/semanal/save?db=' + encodeURIComponent(db),
+        dataType: 'json',
+        data: { opcion: 'sanear', semana: semana },
+      }).always(function () {
+        requestList();
+      });
+    } else {
+      requestList();
+    }
   }
 
   function scheduleReload() {

@@ -118,6 +118,9 @@ class SemanalApiController
                 case 'importar_actividad_no_requerida':
                     $this->importarActividadNoRequerida($dbPrefix, $semana);
                     break;
+                case 'sanear':
+                    $this->sanear($dbPrefix, $semana);
+                    break;
                 default:
                     $this->jsonError("Opción no válida.");
                     break;
@@ -255,8 +258,8 @@ class SemanalApiController
                 }
             }
 
-            // 3. Actualizar detalles y compromisos (Preservando Subcontratista Split)
-            $stmtSemanal = $this->db->query("SELECT Consecutivo, Consecutivo_En_Programa, Sub_Contratista FROM {$dbPrefix}_programacion_semanal WHERE Semana = ? AND Activa != 'NA'", [$semana]);
+            // 3. Actualizar detalles y compromisos (Preservando Subcontratista Split, sin tocar actividades con compromiso)
+            $stmtSemanal = $this->db->query("SELECT Consecutivo, Consecutivo_En_Programa, Sub_Contratista FROM {$dbPrefix}_programacion_semanal WHERE Semana = ? AND Activa != 'NA' AND (Compromiso IS NULL OR Compromiso <= 0)", [$semana]);
             $actividadesSemanales = $stmtSemanal->fetchAll();
 
             foreach ($actividadesSemanales as $item) {
@@ -293,8 +296,19 @@ class SemanalApiController
                 ]);
             }
 
-            // 4. Limpieza: Actividades iniciadas o con compromisos pero ya no requeridas según el programa
-            $this->db->query("DELETE FROM {$dbPrefix}_programacion_semanal WHERE Semana = ? AND Activa != 'NA' AND Consecutivo_En_Programa NOT IN (SELECT Consecutivo_en_Programa FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Titulo = 0)", [$semana, $semana]);
+            // 4. Limpieza: actividades que ya no califican (sin compromiso ni avance real)
+            $eligibleSubSql = "SELECT Consecutivo_en_Programa FROM {$dbPrefix}_programa_consolidado 
+                WHERE Semana = ? AND Titulo = 0 
+                  AND (COALESCE(Ejecutado, 0) > 0.001 OR {$restrictionEligibilitySql})
+                  AND (Estado='En Curso' OR Estado='Atrasada' OR Estado='Debe Iniciar'
+                    OR Estado='A Tiempo' OR Estado='Ya Debió Iniciar y Restricciones Pendientes')";
+            $this->db->query("
+                DELETE FROM {$dbPrefix}_programacion_semanal 
+                WHERE Semana = ? AND Activa = '1'
+                  AND (Ejecutado_Real IS NULL OR Ejecutado_Real <= 0)
+                  AND (Compromiso IS NULL OR Compromiso <= 0)
+                  AND Consecutivo_En_Programa NOT IN ({$eligibleSubSql})
+            ", [$semana, $semana]);
 
             $this->syncRestrictionFlags($dbPrefix, $semana);
 
@@ -342,6 +356,10 @@ class SemanalApiController
                 ];
             }
 
+            $this->db->query(
+                "UPDATE {$dbPrefix}_semanas_activas SET fecha_ultimo_saneo = NOW() WHERE Semana = ?",
+                [$semana]
+            );
             echo json_encode(["respuesta" => "OK", "alertasRestricciones" => $alertasRestricciones], JSON_UNESCAPED_UNICODE);
         } catch (Throwable $t) {
             $this->jsonError("Error Autoprogramar: " . $t->getMessage());
@@ -690,6 +708,161 @@ class SemanalApiController
               )";
         $data = $this->db->query($query, [$semana])->fetchAll(PDO::FETCH_ASSOC);
         echo json_encode(["respuesta" => "BIEN", "data" => $data], JSON_UNESCAPED_UNICODE);
+    }
+
+    
+    private function sanear(string $dbPrefix, int $semana): void
+    {
+        try {
+            $confirmada = $this->db->query(
+                "SELECT Semanal_Confirmada FROM {$dbPrefix}_semanas_activas WHERE Semana = ?",
+                [$semana]
+            )->fetchColumn();
+
+            if ($confirmada == 1) {
+                $this->jsonResponse("OK");
+                return;
+            }
+
+            $fechaUltimoSaneo = $this->db->query(
+                "SELECT fecha_ultimo_saneo FROM {$dbPrefix}_semanas_activas WHERE Semana = ?",
+                [$semana]
+            )->fetchColumn();
+
+            if ($fechaUltimoSaneo !== null && $fechaUltimoSaneo !== false) {
+                $lastChange = $this->db->query(
+                    "SELECT GREATEST(
+                        COALESCE(MAX(Ult_Act_Est), '1970-01-01'),
+                        COALESCE(MAX(Ult_Act_Restr), '1970-01-01')
+                    ) FROM {$dbPrefix}_programa_consolidado WHERE Semana = ?",
+                    [$semana]
+                )->fetchColumn();
+
+                if ($lastChange !== null && $lastChange !== false && $lastChange <= $fechaUltimoSaneo) {
+                    $this->jsonResponse("OK");
+                    return;
+                }
+            }
+
+            $restrictionEligibilitySql = $this->getAutoprogramRestrictionEligibilitySql();
+            $eligibleSubSql = "SELECT Consecutivo_en_Programa FROM {$dbPrefix}_programa_consolidado 
+                WHERE Semana = ? AND Titulo = 0 
+                  AND (COALESCE(Ejecutado, 0) > 0.001 OR {$restrictionEligibilitySql})
+                  AND (Estado='En Curso' OR Estado='Atrasada' OR Estado='Debe Iniciar'
+                    OR Estado='A Tiempo' OR Estado='Ya Debió Iniciar y Restricciones Pendientes')";
+
+            $this->db->query("
+                DELETE FROM {$dbPrefix}_programacion_semanal 
+                WHERE Semana = ? AND Activa = '1'
+                  AND (Ejecutado_Real IS NULL OR Ejecutado_Real <= 0)
+                  AND (Compromiso IS NULL OR Compromiso <= 0)
+                  AND Consecutivo_En_Programa NOT IN ({$eligibleSubSql})
+            ", [$semana, $semana]);
+
+            $stmtExistentes = $this->db->query(
+                "SELECT DISTINCT(Consecutivo_En_Programa) FROM {$dbPrefix}_programacion_semanal WHERE Semana = ?",
+                [$semana]
+            );
+            $existentes = $stmtExistentes->fetchAll(PDO::FETCH_COLUMN);
+
+            $whereExistentes = "";
+            $paramsInsert = [$semana, $semana];
+            if (!empty($existentes)) {
+                $placeholders = implode(',', array_fill(0, count($existentes), '?'));
+                $whereExistentes = "AND Consecutivo_en_Programa NOT IN ($placeholders)";
+                $paramsInsert = array_merge($paramsInsert, $existentes);
+            }
+
+            $sqlSelectNuevas = "SELECT 
+                {$semana}, Consecutivo_en_Programa, Id, Actividad, Fecha_Inicio, Fecha_Fin,
+                Sub_Contratista, Responsable_AIA, 'AIA', Ejecutado, 0,
+                Ruta_Critica,
+                CASE WHEN (Estado='Atrasada' OR Estado='Ya Debió Iniciar y Restricciones Pendientes') THEN 1 ELSE 0 END,
+                '1', COALESCE(NULLIF(TRIM(unidad), ''), '%'), cantidad_ppto, codigo_actividad
+            FROM {$dbPrefix}_programa_consolidado
+            WHERE Semana = ? AND Titulo = 0
+              AND (COALESCE(Ejecutado, 0) > 0.001 OR {$restrictionEligibilitySql})
+              AND (Estado='En Curso' OR Estado='Atrasada' OR Estado='Debe Iniciar'
+                OR Estado='A Tiempo' OR Estado='Ya Debió Iniciar y Restricciones Pendientes')
+              {$whereExistentes}";
+
+            array_shift($paramsInsert);
+            $stmtNuevas = $this->db->query($sqlSelectNuevas, $paramsInsert);
+            $nuevasFilas = $stmtNuevas->fetchAll(PDO::FETCH_NUM);
+
+            if (!empty($nuevasFilas)) {
+                $queryInsertSingle = "INSERT INTO {$dbPrefix}_programacion_semanal (
+                    Semana, Consecutivo_En_Programa, Id, Actividad, Fecha_Inicio, Fecha_Fin,
+                    Sub_Contratista, Responsable_AIA, Empresa, Ejecutado, medir_productividad,
+                    Critica, Atrasada, Activa, Unidad, cantidad_ppto, codigo_actividad
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+                foreach ($nuevasFilas as $f) {
+                    $subsRaw = $f[6] ?? '';
+                    $subs = array_filter(array_map('trim', explode(',', $subsRaw)));
+                    if (empty($subs)) $subs = [''];
+                    foreach ($subs as $sub) {
+                        $f[6] = $sub;
+                        $this->db->query($queryInsertSingle, $f);
+                    }
+                }
+            }
+
+            $stmtSemanal = $this->db->query(
+                "SELECT Consecutivo, Consecutivo_En_Programa, Sub_Contratista FROM {$dbPrefix}_programacion_semanal WHERE Semana = ? AND Activa != 'NA' AND (Compromiso IS NULL OR Compromiso <= 0)",
+                [$semana]
+            );
+            foreach ($stmtSemanal->fetchAll() as $item) {
+                $con_pk = $item["Consecutivo"];
+                $con_pg = $item["Consecutivo_En_Programa"];
+                $sub_split = $item["Sub_Contratista"];
+
+                $dataCons = $this->db->query(
+                    "SELECT * FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Consecutivo_en_programa = ?",
+                    [$semana, $con_pg]
+                )->fetch();
+                if (!$dataCons) continue;
+
+                $dataAnt = $this->db->query(
+                    "SELECT Responsable_AIA, Empresa, Descripcion, Ubicacion FROM {$dbPrefix}_programacion_semanal WHERE Semana = ? AND Consecutivo_En_programa = ? AND Sub_Contratista = ?",
+                    [$semana - 1, $con_pg, $sub_split]
+                )->fetch();
+                if (!$dataAnt) {
+                    $dataAnt = $this->db->query(
+                        "SELECT Responsable_AIA, Empresa, Descripcion, Ubicacion FROM {$dbPrefix}_programacion_semanal WHERE Semana = ? AND Consecutivo_En_programa = ?",
+                        [$semana - 1, $con_pg]
+                    )->fetch();
+                }
+
+                $sub = $sub_split ?: ($dataCons["Sub_Contratista"] ?? null);
+                $resp = $dataCons["Responsable_AIA"] ?: ($dataAnt["Responsable_AIA"] ?? null);
+
+                $this->db->query("UPDATE {$dbPrefix}_programacion_semanal SET
+                    Fecha_Inicio = ?, Fecha_Fin = ?, Sub_Contratista = ?, Responsable_AIA = ?,
+                    Ejecutado = ?, medir_productividad = ?, Critica = ?,
+                    Atrasada = (CASE WHEN ? IN ('Atrasada','Ya Debió Iniciar y Restricciones Pendientes') THEN 1 ELSE 0 END),
+                    Descripcion = ?, Ubicacion = ?, Empresa = ?, Unidad = COALESCE(NULLIF(TRIM(?), ''), '%'),
+                    cantidad_ppto = ?, codigo_actividad = ?
+                    WHERE Semana = ? AND Consecutivo = ?", [
+                    $dataCons['Fecha_Inicio'], $dataCons['Fecha_Fin'], $sub, $resp,
+                    (float)$dataCons['Ejecutado'], 0, (int)($dataCons["Ruta_Critica"] ?? 0),
+                    $dataCons["Estado"], $dataAnt["Descripcion"] ?? null, $dataAnt["Ubicacion"] ?? null,
+                    $dataAnt["Empresa"] ?? 'AIA', $dataCons["unidad"],
+                    ((float)($dataCons["cantidad_ppto"] ?? 0) > 0 ? (float)$dataCons["cantidad_ppto"] : null),
+                    $dataCons["codigo_actividad"], $semana, $con_pk
+                ]);
+            }
+
+            $this->syncRestrictionFlags($dbPrefix, $semana);
+            $this->db->query(
+                "UPDATE {$dbPrefix}_semanas_activas SET fecha_ultimo_saneo = NOW() WHERE Semana = ?",
+                [$semana]
+            );
+            $this->jsonResponse("OK");
+        } catch (Throwable $t) {
+            error_log("Error sanear PS: " . $t->getMessage());
+            $this->jsonResponse("OK");
+        }
     }
 
     private function importarActividadNoRequerida(string $dbPrefix, int $semana): void
