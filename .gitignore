@@ -2,10 +2,9 @@
 /vendor/
 
 
-# Archivos de configuración local
-.env
-.env.docker
-.env.docker.local
+# Archivos de configuración local y templates
+.env*
+!.env.docker.example
 
 # Logs y archivos temporales
 *.log
@@ -53,9 +52,12 @@ debug_*.php
 # Archivos de configuración de IDEs
 GEMINI.md
 
+# OpenCode / Claude tooling local
+.opencode/
+
 # Node.js / Playwright testing
 node_modules/
-package-lock.json
+**/package-lock.json
 package.json
 test-output/
 tests/browser/
