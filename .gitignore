@@ -1,10 +1,8 @@
 # Composer
 /vendor/
 
-
-# Archivos de configuración local y templates
+# Archivos de configuración local
 .env*
-!.env.docker.example
 
 # Logs y archivos temporales
 *.log
@@ -18,6 +16,7 @@ ordenes/
 # Archivos del sistema operativo
 .DS_Store
 Thumbs.db
+._*
 
 # Configuración del editor
 .vscode/
@@ -31,6 +30,7 @@ DB_server_produccion.sql
 
 # Documentación externa
 "Diseño Panel Administración Web PHP.pdf"
+
 # Dev tools
 construccion/autologin_antigravity.php
 construccion/check_db_prefix.php
@@ -42,15 +42,9 @@ phpstan_errors.json
 # Debug scripts
 debug_*.php
 
-# Metadatos de macOS en discos ExFAT
-._*
-.DS_Store
-
-# Metadatos de macOS en discos ExFAT
-._*
-
-# Archivos de configuración de IDEs
+# Archivos de configuración de IDEs y prompts de IA
 GEMINI.md
+AGENTS.md
 
 # OpenCode / Claude tooling local
 .opencode/
