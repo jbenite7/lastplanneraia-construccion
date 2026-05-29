@@ -49,6 +49,9 @@ debug_*.php
 GEMINI.md
 AGENTS.md
 
+# Documentación interna (no desplegar a producción)
+docs/ROUTES.md
+
 # OpenCode / Claude tooling local
 .opencode/
 
