@@ -235,8 +235,8 @@ body {
   letter-spacing: -0.5px;
 }
 
-/* Mobile Drawer Implementation (iOS Slide Over) — Extended to 1399px for Tablet Coverage (accounts for 0.85 viewport scale) */
-@media (max-width: 1399px) {
+/* Mobile Drawer Implementation (iOS Slide Over) — Extended to 1199px for Tablet Coverage (accounts for 0.85 viewport scale) */
+@media (max-width: 1199.98px) {
   .navbar-collapse {
     position: fixed;
     top: 0;
@@ -364,8 +364,8 @@ body {
   }
 }
 
-/* Force Collapse on Tablets (992px-1399px) — Full Bootstrap navbar-expand-xl Neutralization */
-@media (min-width: 992px) and (max-width: 1399px) {
+/* Force Collapse on Tablets (992px-1199px) — Full Bootstrap navbar-expand-xl Neutralization */
+@media (min-width: 992px) and (max-width: 1199.98px) {
   /* 1. Hide collapsed navbar, show toggler */
   .navbar-expand-xl .navbar-collapse {
     display: none !important;
@@ -1000,22 +1000,22 @@ table.dataTable tbody tr:not(.pdc-header):not(.pdc-missing-data):not(.pdc-critic
    Source of truth for all PDC colors.
    ============================== */
 :root {
-  --pdc-missing-bg: #f3e8ff;
+  --pdc-missing-bg: #e9d5ff;
   --pdc-missing-border: #c084fc;
   --pdc-missing-text: #6b21a8;
-  --pdc-critical-bg: #fee2e2;
+  --pdc-critical-bg: #fecaca;
   --pdc-critical-border: #dc2626;
   --pdc-critical-text: #991b1b;
-  --pdc-delayed-bg: #fff1e7;
+  --pdc-delayed-bg: #fed7aa;
   --pdc-delayed-border: #e87722;
   --pdc-delayed-text: #8a3f12;
-  --pdc-completed-late-bg: #fff7d6;
+  --pdc-completed-late-bg: #fef08a;
   --pdc-completed-late-border: #d4a017;
   --pdc-completed-late-text: #8a5a00;
-  --pdc-completed-ontime-bg: #e8f6ec;
+  --pdc-completed-ontime-bg: #bbf7d0;
   --pdc-completed-ontime-border: #69b578;
   --pdc-completed-ontime-text: #25643a;
-  --pdc-active-bg: #e6f0ff;
+  --pdc-active-bg: #bae6fd;
   --pdc-active-border: #4a81bd;
   --pdc-active-text: #1f4f82;
   --pdc-not-started-bg: #f3f4f6;
@@ -1721,6 +1721,11 @@ table.dataTable tbody tr.pdc-header:hover td {
 
 /* AIA Modal Shell */
 .aia-modal {
+  --aia-modal-green-dark: #1a3c2a;
+  --aia-modal-green-primary: #1a5633;
+  --aia-modal-green-light: #d5e5db;
+  --aia-modal-green-soft: #eef5f1;
+  --aia-modal-border: rgba(26, 86, 51, 0.18);
   color: #24313a;
 }
 
@@ -1733,8 +1738,8 @@ table.dataTable tbody tr.pdc-header:hover td {
   border: 0;
   border-radius: 1.25rem;
   overflow: hidden;
-  background: linear-gradient(180deg, #fafafa 0%, #f4f1ea 100%);
-  box-shadow: 0 24px 60px rgba(36, 49, 58, 0.18);
+  background: #f4f1ea;
+  box-shadow: var(--shadow-glass, 0 8px 32px rgba(30, 30, 30, 0.12));
 }
 
 .aia-modal .modal-header {
@@ -1743,23 +1748,45 @@ table.dataTable tbody tr.pdc-header:hover td {
   justify-content: space-between;
   gap: 1rem;
   padding: 1.5rem 1.75rem 1.25rem;
-  border-bottom: 1px solid rgba(181, 82, 17, 0.14);
-  background: linear-gradient(135deg, #f7efe3 0%, #fafafa 100%);
+  color: #fafafa;
+  border-bottom: 1px solid rgba(213, 229, 219, 0.32);
+  background: linear-gradient(135deg, var(--aia-modal-green-dark) 0%, var(--aia-modal-green-primary) 100%);
 }
 
 .aia-modal .modal-title {
   margin: 0;
   max-width: calc(100% - 3rem);
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  color: #fafafa;
+}
+
+.aia-modal .modal-title p {
+  margin: 0;
+  color: inherit;
+}
+
+.aia-modal .modal-header .aia-modal__headline,
+.aia-modal .modal-header .aia-modal__title,
+.aia-modal .modal-header .aia-modal__subtitle,
+.aia-modal .modal-header [class*="modal-body-texto"] {
+  color: #fafafa;
+}
+
+.aia-modal .modal-header .aia-modal__subtitle,
+.aia-modal .modal-header [class*="modal-body-texto"] {
+  opacity: 0.9;
 }
 
 .aia-modal .modal-body {
   padding: 1.5rem 1.75rem 1.75rem;
+  background: #f4f1ea;
 }
 
 .aia-modal .modal-footer {
   padding: 1rem 1.75rem 1.5rem;
-  border-top: 1px solid rgba(181, 82, 17, 0.1);
-  background: transparent;
+  border-top: 1px solid var(--aia-modal-border);
+  background: #fafafa;
 }
 
 .aia-modal .close {
@@ -1767,9 +1794,10 @@ table.dataTable tbody tr.pdc-header:hover td {
   padding: 0.25rem;
   font-size: 1.8rem;
   line-height: 1;
-  color: #7a3b14;
+  color: #fafafa;
   opacity: 0.8;
   background: transparent;
+  text-shadow: none;
 }
 
 .aia-modal .close:hover {
@@ -1784,8 +1812,8 @@ table.dataTable tbody tr.pdc-header:hover td {
   margin-bottom: 0.65rem;
   padding: 0.35rem 0.75rem;
   border-radius: 999px;
-  background: rgba(181, 82, 17, 0.12);
-  color: #7a3b14;
+  background: rgba(213, 229, 219, 0.96);
+  color: var(--aia-modal-green-dark);
   font-family: 'Montserrat', sans-serif;
   font-size: 0.75rem;
   font-weight: 700;
@@ -1845,7 +1873,7 @@ table.dataTable tbody tr.pdc-header:hover td {
   display: block;
   inline-size: 100%;
   padding: 1.1rem 1.15rem 1.2rem;
-  border: 1px solid rgba(181, 82, 17, 0.14);
+  border: 1px solid var(--aia-modal-border);
   border-radius: 1rem;
   background: rgba(250, 250, 250, 0.94);
   box-shadow: 0 10px 24px rgba(36, 49, 58, 0.06);
@@ -1861,7 +1889,7 @@ table.dataTable tbody tr.pdc-header:hover td {
   gap: 0.35rem;
   margin-bottom: 1rem;
   padding-bottom: 0.85rem;
-  border-bottom: 1px solid rgba(181, 82, 17, 0.12);
+  border-bottom: 1px solid var(--aia-modal-border);
 }
 
 .aia-modal__section-title {
@@ -1900,7 +1928,7 @@ table.dataTable tbody tr.pdc-header:hover td {
 .aia-modal .select2-container--default .select2-selection--single,
 .aia-modal .select2-container--default .select2-selection--multiple {
   border-radius: 0.8rem !important;
-  border: 1px solid rgba(104, 116, 125, 0.24) !important;
+  border: 1px solid var(--aia-modal-border) !important;
   background: #fff !important;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
 }
@@ -1920,8 +1948,25 @@ table.dataTable tbody tr.pdc-header:hover td {
 .aia-modal .select2-container--default.select2-container--focus .select2-selection--multiple,
 .aia-modal .select2-container--default.select2-container--open .select2-selection--single,
 .aia-modal .select2-container--default.select2-container--open .select2-selection--multiple {
-  border-color: rgba(181, 82, 17, 0.45) !important;
-  box-shadow: 0 0 0 0.2rem rgba(181, 82, 17, 0.12) !important;
+  border-color: rgba(26, 86, 51, 0.5) !important;
+  box-shadow: 0 0 0 0.2rem rgba(26, 86, 51, 0.18) !important;
+}
+
+.aia-modal .table thead th,
+.aia-modal .table thead td {
+  background: var(--aia-modal-green-light);
+  border-color: rgba(26, 86, 51, 0.2);
+  color: var(--aia-modal-green-dark);
+}
+
+.aia-modal .table td,
+.aia-modal .table th {
+  border-color: rgba(26, 86, 51, 0.14);
+}
+
+.aia-modal .table-hover tbody tr:hover,
+.aia-modal .table tbody tr:hover {
+  background: var(--aia-modal-green-soft);
 }
 
 #modalNuevaActividad .modal-body {
@@ -2015,7 +2060,7 @@ table.dataTable tbody tr.pdc-header:hover td {
 }
 
 #modalNuevaActividad .select2-results__option--highlighted[aria-selected] {
-  background: #b55211;
+  background: #1a5633;
   color: #fafafa;
 }
 
@@ -2036,7 +2081,8 @@ table.dataTable tbody tr.pdc-header:hover td {
 .aia-modal__actions .btn,
 .aia-modal .btn.aia-btn-primary,
 .aia-modal .btn.aia-btn-secondary,
-.aia-modal .btn.aia-btn-danger {
+.aia-modal .btn.aia-btn-danger,
+.aia-modal .modal-footer .btn {
   min-width: 140px;
   padding: 0.8rem 1.35rem;
   border-radius: 999px;
@@ -2046,43 +2092,61 @@ table.dataTable tbody tr.pdc-header:hover td {
 }
 
 .aia-modal .btn.aia-btn-primary,
+.aia-modal .modal-footer .btn.btn-primary,
+.aia-modal .modal-footer .btn.btn-success,
 .aia-modal__actions .btn.btn-primary,
 .aia-modal__actions .btn.btn-success {
-  background: #b55211;
-  border-color: #b55211;
+  background: var(--aia-modal-green-primary);
+  border-color: var(--aia-modal-green-primary);
   color: #fafafa;
-  box-shadow: 0 12px 22px rgba(181, 82, 17, 0.18);
+  box-shadow: 0 12px 22px rgba(26, 86, 51, 0.18);
 }
 
 .aia-modal .btn.aia-btn-primary:hover,
 .aia-modal .btn.aia-btn-primary:focus,
+.aia-modal .modal-footer .btn.btn-primary:hover,
+.aia-modal .modal-footer .btn.btn-primary:focus,
+.aia-modal .modal-footer .btn.btn-success:hover,
+.aia-modal .modal-footer .btn.btn-success:focus,
 .aia-modal__actions .btn.btn-primary:hover,
 .aia-modal__actions .btn.btn-primary:focus,
 .aia-modal__actions .btn.btn-success:hover,
 .aia-modal__actions .btn.btn-success:focus {
-  background: #8f430f;
-  border-color: #8f430f;
+  background: var(--aia-modal-green-dark);
+  border-color: var(--aia-modal-green-dark);
 }
 
 .aia-modal .btn.aia-btn-secondary,
 .aia-modal .btn.aia-btn-danger,
+.aia-modal .modal-footer .btn.btn-secondary,
+.aia-modal .modal-footer .btn.btn-outline-secondary,
+.aia-modal .modal-footer .btn.btn-danger,
+.aia-modal .modal-footer .btn.btn-default,
 .aia-modal__actions .btn.btn-danger,
 .aia-modal__actions .btn.btn-default {
   background: transparent;
-  border: 1px solid rgba(122, 59, 20, 0.35);
-  color: #7a3b14;
+  border: 1px solid rgba(26, 86, 51, 0.35);
+  color: var(--aia-modal-green-primary);
 }
 
 .aia-modal .btn.aia-btn-secondary:hover,
 .aia-modal .btn.aia-btn-secondary:focus,
 .aia-modal .btn.aia-btn-danger:hover,
 .aia-modal .btn.aia-btn-danger:focus,
+.aia-modal .modal-footer .btn.btn-secondary:hover,
+.aia-modal .modal-footer .btn.btn-secondary:focus,
+.aia-modal .modal-footer .btn.btn-outline-secondary:hover,
+.aia-modal .modal-footer .btn.btn-outline-secondary:focus,
+.aia-modal .modal-footer .btn.btn-danger:hover,
+.aia-modal .modal-footer .btn.btn-danger:focus,
+.aia-modal .modal-footer .btn.btn-default:hover,
+.aia-modal .modal-footer .btn.btn-default:focus,
 .aia-modal__actions .btn.btn-danger:hover,
 .aia-modal__actions .btn.btn-danger:focus,
 .aia-modal__actions .btn.btn-default:hover,
 .aia-modal__actions .btn.btn-default:focus {
-  background: rgba(181, 82, 17, 0.08);
-  color: #7a3b14;
+  background: rgba(26, 86, 51, 0.08);
+  color: var(--aia-modal-green-dark);
 }
 
 .aia-modal__message,
@@ -2186,11 +2250,12 @@ table.dataTable thead th {
   font-size: 0.95rem !important;
 }
 
-/* Larger Legend Items */
+/* Larger Legend Items - Comentado para permitir la unificación de legend-items en Fase D
 .pdc-legend-item {
-  font-size: 0.9rem !important; /* Approx 14.4px */
+  font-size: 0.9rem !important;
   padding: 6px 12px !important;
 }
+*/
 
 /* Larger Dropdowns */
 .dropdown-item {
@@ -2564,8 +2629,8 @@ table.dataTable td.dt-min-width-300,
 }
 
 #formulario_nuevo .modal-content {
-  border: 1px solid oklch(89% 0.014 251);
-  background: linear-gradient(180deg, oklch(99% 0.004 250), oklch(98.5% 0.006 250));
+  border: 0;
+  background: #f4f1ea;
   display: flex;
   flex-direction: column;
   max-height: calc(100dvh - 1rem);
@@ -2574,7 +2639,7 @@ table.dataTable td.dt-min-width-300,
 #formulario_nuevo .modal-header {
   padding-block: 1rem;
   padding-inline: 1.25rem;
-  background: oklch(96.5% 0.012 249);
+  background: linear-gradient(135deg, #1a3c2a 0%, #1a5633 100%);
 }
 
 #formulario_nuevo .modal-title {
@@ -2582,6 +2647,7 @@ table.dataTable td.dt-min-width-300,
   line-height: 1.1;
   font-weight: 650;
   letter-spacing: -0.02em;
+  color: #fafafa;
 }
 
 #formulario_nuevo .modal-body {
@@ -3550,21 +3616,36 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
   border-color: var(--aia-green-primary, #1a5633);
 }
 
+.ps-page {
+  --ps-critical-bg: #fecaca;
+  --ps-critical-text: #9a1f1f;
+  --ps-high-bg: #fed7aa;
+  --ps-high-text: #8b4011;
+  --ps-medium-bg: #fde68a;
+  --ps-medium-text: #a0731a;
+  --ps-info-bg: #bae6fd;
+  --ps-info-text: #2a5a8f;
+  --ps-control-bg: #bbf7d0;
+  --ps-control-text: #1a3c2a;
+  --ps-neutral-bg: #f1f5f9;
+  --ps-neutral-text: #475569;
+}
+
 table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-critical,
-.ps-page .handsontable td.ps-row-state.ps-alert-critical {
-  background-color: var(--aia-alert-background, #fdecec) !important;
-  color: var(--aia-alert-critical, #9a1f1f) !important;
+.ps-page #hot-container .handsontable td.ps-row-state.ps-alert-critical {
+  background-color: var(--ps-critical-bg) !important;
+  color: var(--ps-critical-text) !important;
 }
 
 table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-critical-route,
-.ps-page .handsontable td.ps-row-state.ps-alert-critical-route {
-  background-color: var(--aia-alert-background, #fdecec) !important;
-  color: var(--aia-alert-critical, #9a1f1f) !important;
+.ps-page #hot-container .handsontable td.ps-row-state.ps-alert-critical-route {
+  background-color: var(--ps-critical-bg) !important;
+  color: var(--ps-critical-text) !important;
 }
 
 table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-critical-route td,
-.ps-page .handsontable td.ps-row-state.ps-alert-critical-route {
-  color: var(--aia-alert-critical, #9a1f1f) !important;
+.ps-page #hot-container .handsontable td.ps-row-state.ps-alert-critical-route {
+  color: var(--ps-critical-text) !important;
 }
 
 table.dt_programacionSemanal.dataTable
@@ -3575,8 +3656,8 @@ table.dt_programacionSemanal.dataTable
 }
 
 table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-critical td,
-.ps-page .handsontable td.ps-row-state.ps-alert-critical {
-  color: var(--aia-alert-critical, #9a1f1f) !important;
+.ps-page #hot-container .handsontable td.ps-row-state.ps-alert-critical {
+  color: var(--ps-critical-text) !important;
 }
 
 table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-critical td:first-child {
@@ -3584,14 +3665,14 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-critical t
 }
 
 table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-high,
-.ps-page .handsontable td.ps-row-state.ps-alert-high {
-  background-color: var(--aia-orange-very-light, #fbead9) !important;
-  color: var(--aia-orange-dark, #8b4011) !important;
+.ps-page #hot-container .handsontable td.ps-row-state.ps-alert-high {
+  background-color: var(--ps-high-bg) !important;
+  color: var(--ps-high-text) !important;
 }
 
 table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-high td,
-.ps-page .handsontable td.ps-row-state.ps-alert-high {
-  color: var(--aia-orange-dark, #8b4011) !important;
+.ps-page #hot-container .handsontable td.ps-row-state.ps-alert-high {
+  color: var(--ps-high-text) !important;
 }
 
 table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-high td:first-child {
@@ -3599,14 +3680,14 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-high td:fi
 }
 
 table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-medium,
-.ps-page .handsontable td.ps-row-state.ps-alert-medium {
-  background-color: var(--aia-warning-background, #fff8e1) !important;
-  color: var(--aia-warning-critical, #a0731a) !important;
+.ps-page #hot-container .handsontable td.ps-row-state.ps-alert-medium {
+  background-color: var(--ps-medium-bg) !important;
+  color: var(--ps-medium-text) !important;
 }
 
 table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-medium td,
-.ps-page .handsontable td.ps-row-state.ps-alert-medium {
-  color: var(--aia-warning-critical, #a0731a) !important;
+.ps-page #hot-container .handsontable td.ps-row-state.ps-alert-medium {
+  color: var(--ps-medium-text) !important;
 }
 
 table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-medium td:first-child {
@@ -3614,14 +3695,14 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-medium td:
 }
 
 table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-info,
-.ps-page .handsontable td.ps-row-state.ps-alert-info {
-  background-color: var(--aia-blue-very-light, #e6f0fa) !important;
-  color: var(--aia-blue-dark, #2a5a8f) !important;
+.ps-page #hot-container .handsontable td.ps-row-state.ps-alert-info {
+  background-color: var(--ps-info-bg) !important;
+  color: var(--ps-info-text) !important;
 }
 
 table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-info td,
-.ps-page .handsontable td.ps-row-state.ps-alert-info {
-  color: var(--aia-blue-dark, #2a5a8f) !important;
+.ps-page #hot-container .handsontable td.ps-row-state.ps-alert-info {
+  color: var(--ps-info-text) !important;
 }
 
 table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-info td:first-child {
@@ -3629,14 +3710,14 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-info td:fi
 }
 
 table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-control,
-.ps-page .handsontable td.ps-row-state.ps-alert-control {
-  background-color: var(--aia-green-very-light, #d5e5db) !important;
-  color: var(--aia-green-dark, #1a3c2a) !important;
+.ps-page #hot-container .handsontable td.ps-row-state.ps-alert-control {
+  background-color: var(--ps-control-bg) !important;
+  color: var(--ps-control-text) !important;
 }
 
 table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-control td,
-.ps-page .handsontable td.ps-row-state.ps-alert-control {
-  color: var(--aia-green-dark, #1a3c2a) !important;
+.ps-page #hot-container .handsontable td.ps-row-state.ps-alert-control {
+  color: var(--ps-control-text) !important;
 }
 
 table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-control td:first-child {
@@ -3644,14 +3725,14 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-control td
 }
 
 table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral,
-.ps-page .handsontable td.ps-row-state.ps-alert-neutral {
-  background-color: #f1f5f9 !important;
-  color: #475569 !important;
+.ps-page #hot-container .handsontable td.ps-row-state.ps-alert-neutral {
+  background-color: var(--ps-neutral-bg) !important;
+  color: var(--ps-neutral-text) !important;
 }
 
 table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td,
-.ps-page .handsontable td.ps-row-state.ps-alert-neutral {
-  color: #475569 !important;
+.ps-page #hot-container .handsontable td.ps-row-state.ps-alert-neutral {
+  color: var(--ps-neutral-text) !important;
 }
 
 table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td:first-child {
@@ -4196,47 +4277,47 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
 }
 
 .pg-page {
-  --pg-critical-bg: #fee2e2;
+  --pg-critical-bg: #fecaca;
   --pg-critical-text: #b91c1c;
   --pg-critical-border: #dc2626;
-  --pg-delayed-bg: #ffedd5;
+  --pg-delayed-bg: #fed7aa;
   --pg-delayed-text: #c2410c;
   --pg-delayed-border: #f97316;
-  --pg-due-bg: #fef3c7;
+  --pg-due-bg: #fde68a;
   --pg-due-text: #92400e;
   --pg-due-border: #d97706;
-  --pg-future-bg: #ecfccb;
+  --pg-future-bg: #d9f99d;
   --pg-future-text: #3f6212;
   --pg-future-border: #84cc16;
 
-  --pg-progress-bg: #dcfce7;
-  --pg-progress-text: #166534;
-  --pg-progress-border: #22c55e;
-  --pg-alert-bg: #fffbeb;
+  --pg-progress-bg: #bae6fd;
+  --pg-progress-text: #1f4f82;
+  --pg-progress-border: #4a81bd;
+  --pg-alert-bg: #fde68a;
   --pg-alert-text: #92400e;
   --pg-alert-border: #f59e0b;
-  --pg-restr-0-bg: #fef3c7;
+  --pg-restr-0-bg: #fde68a;
   --pg-restr-0-text: #92400e;
   --pg-restr-0-border: #d97706;
-  --pg-restr-1-bg: #fef3c7;
+  --pg-restr-1-bg: #fed7aa;
   --pg-restr-1-text: #b45309;
   --pg-restr-1-border: #f59e0b;
-  --pg-restr-2-3-bg: #fef9c3;
+  --pg-restr-2-3-bg: #fef08a;
   --pg-restr-2-3-text: #a16207;
   --pg-restr-2-3-border: #eab308;
-  --pg-restr-4-6-bg: #ecfccb;
+  --pg-restr-4-6-bg: #bbf7d0;
   --pg-restr-4-6-text: #3f6212;
   --pg-restr-4-6-border: #84cc16;
-  --pg-ontime-bg: #dcfce7;
+  --pg-ontime-bg: #bbf7d0;
   --pg-ontime-text: #166534;
   --pg-ontime-border: #22c55e;
-  --pg-done-bg: #fafafa;
+  --pg-done-bg: #f1f5f9;
   --pg-done-text: #475569;
-  --pg-done-border: #94a3b8;
+  --pg-done-border: #cbd5e1;
   --pg-notrequired-bg: #f8fafc;
   --pg-notrequired-text: #64748b;
   --pg-notrequired-border: #e2e8f0;
-  --pg-nodata-bg: #f1f5f9;
+  --pg-nodata-bg: #e2e8f0;
   --pg-nodata-text: #64748b;
   --pg-nodata-border: #cbd5e1;
 }
@@ -4244,8 +4325,8 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
 .pg-page table.dataTable tbody tr.pg-state-atrasado-critico td,
 .pg-page table.dataTable tbody tr.pg-state-atrasado td,
 .pg-page table.dataTable tbody tr.pg-state-atrasada td,
-.pg-page .handsontable td.pg-state-atrasado,
-.pg-page .handsontable td.pg-state-atrasada {
+.pg-page #hot-container .handsontable td.pg-state-atrasado,
+.pg-page #hot-container .handsontable td.pg-state-atrasada {
   background-color: var(--pg-delayed-bg) !important;
   color: var(--pg-delayed-text) !important;
   border-color: var(--pg-delayed-border) !important;
@@ -4253,15 +4334,15 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
 
 .pg-page table.dataTable tbody tr.pg-state-restr-0 td,
 .pg-page table.dataTable tbody tr.pg-state-debe-iniciar td,
-.pg-page .handsontable td.pg-state-restr-0,
-.pg-page .handsontable td.pg-state-debe-iniciar {
+.pg-page #hot-container .handsontable td.pg-state-restr-0,
+.pg-page #hot-container .handsontable td.pg-state-debe-iniciar {
   background-color: var(--pg-due-bg) !important;
   color: var(--pg-due-text) !important;
   border-color: var(--pg-due-border) !important;
 }
 
 .pg-page table.dataTable tbody tr.pg-state-actividad-futura td,
-.pg-page .handsontable td.pg-state-actividad-futura {
+.pg-page #hot-container .handsontable td.pg-state-actividad-futura {
   background-color: var(--pg-future-bg) !important;
   color: var(--pg-future-text) !important;
   border-color: var(--pg-future-border) !important;
@@ -4269,22 +4350,22 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
 
 .pg-page table.dataTable tbody tr.pg-state-a-tiempo-en-curso td,
 .pg-page table.dataTable tbody tr.pg-state-en-curso td,
-.pg-page .handsontable td.pg-state-a-tiempo-en-curso,
-.pg-page .handsontable td.pg-state-en-curso {
+.pg-page #hot-container .handsontable td.pg-state-a-tiempo-en-curso,
+.pg-page #hot-container .handsontable td.pg-state-en-curso {
   background-color: var(--pg-progress-bg) !important;
   color: var(--pg-progress-text) !important;
   border-color: var(--pg-progress-border) !important;
 }
 
 .pg-page table.dataTable tbody tr.pg-state-terminada td,
-.pg-page .handsontable td.pg-state-terminada {
+.pg-page #hot-container .handsontable td.pg-state-terminada {
   background-color: var(--pg-done-bg) !important;
   color: var(--pg-done-text) !important;
   border-color: var(--pg-done-border) !important;
 }
 
 .pg-page table.dataTable tbody tr.pg-state-sin-datos td,
-.pg-page .handsontable td.pg-state-sin-datos {
+.pg-page #hot-container .handsontable td.pg-state-sin-datos {
   background-color: var(--pg-nodata-bg) !important;
   color: var(--pg-nodata-text) !important;
   border-color: var(--pg-nodata-border) !important;
@@ -4795,34 +4876,35 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
   --pi-tooltip-bg: var(--aia-orange-primary, #b55211);
   --pi-tooltip-fg: var(--aia-bg-alabaster, #fafafa);
   --pi-tooltip-separator: rgb(255 255 255 / 30%);
-  --pi-critical-bg: #fee2e2;
-  --pi-critical-text: #991b1b;
+  --pi-critical-bg: #fecaca;
+  --pi-critical-text: #7f1d1d;
   --pi-critical-border: #dc2626;
-  --pi-overdue-bg: #ffedd5;
-  --pi-overdue-text: #9a3412;
-  --pi-overdue-border: #f97316;
-  --pi-due-bg: #fef3c7;
-  --pi-due-text: #92400e;
-  --pi-due-border: #f59e0b;
-  --pi-alert1-bg: #fef9c3;
-  --pi-alert1-text: #854d0e;
-  --pi-alert1-border: #eab308;
-  --pi-alert23-bg: #ecfccb;
-  --pi-alert23-text: #3f6212;
-  --pi-alert23-border: #84cc16;
-  --pi-alert46-bg: #dcfce7;
-  --pi-alert46-text: #166534;
-  --pi-alert46-border: #22c55e;
-  --pi-exec-blocked-bg: #fed7aa;
-  --pi-exec-blocked-text: #9a3412;
-  --pi-exec-blocked-border: #fb923c;
-  --pi-control-bg: #e0f2fe;
+  --pi-overdue-bg: #fed7aa;
+  --pi-overdue-text: #7c2d12;
+  --pi-overdue-border: #ea580c;
+  --pi-due-bg: #fde68a;
+  --pi-due-text: #78350f;
+  --pi-due-border: #d97706;
+  --pi-alert1-bg: #fef08a;
+  --pi-alert1-text: #713f12;
+  --pi-alert1-border: #ca8a04;
+  --pi-alert23-bg: #d9f99d;
+  --pi-alert23-text: #365314;
+  --pi-alert23-border: #65a30d;
+  --pi-alert46-bg: #bbf7d0;
+  --pi-alert46-text: #14532d;
+  --pi-alert46-border: #16a34a;
+  --pi-exec-blocked-bg: #fdba74;
+  --pi-exec-blocked-text: #7c2d12;
+  --pi-exec-blocked-border: #ea580c;
+  --pi-control-bg: #bae6fd;
   --pi-control-text: #0c4a6e;
-  --pi-control-border: #38bdf8;
+  --pi-control-border: #0284c7;
 }
 
 .pi-page table.dataTable tbody tr.pi-state-blocked-overdue-critical td,
-.pi-page .handsontable td.pi-state-blocked-overdue-critical {
+.pi-page .handsontable td.pi-state-blocked-overdue-critical,
+.pi-page #hot-container .handsontable td.pi-state-blocked-overdue-critical {
   background-color: var(--pi-critical-bg) !important;
   color: var(--pi-critical-text) !important;
   border-color: var(--pi-critical-border) !important;
@@ -4830,58 +4912,66 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
 }
 
 .pi-page table.dataTable tbody tr.pi-state-blocked-overdue td,
-.pi-page .handsontable td.pi-state-blocked-overdue {
+.pi-page .handsontable td.pi-state-blocked-overdue,
+.pi-page #hot-container .handsontable td.pi-state-blocked-overdue {
   background-color: var(--pi-overdue-bg) !important;
   color: var(--pi-overdue-text) !important;
   border-color: var(--pi-overdue-border) !important;
 }
 
 .pi-page table.dataTable tbody tr.pi-state-blocked-due td,
-.pi-page .handsontable td.pi-state-blocked-due {
+.pi-page .handsontable td.pi-state-blocked-due,
+.pi-page #hot-container .handsontable td.pi-state-blocked-due {
   background-color: var(--pi-due-bg) !important;
   color: var(--pi-due-text) !important;
   border-color: var(--pi-due-border) !important;
 }
 
 .pi-page table.dataTable tbody tr.pi-state-alert-1-week td,
-.pi-page .handsontable td.pi-state-alert-1-week {
+.pi-page .handsontable td.pi-state-alert-1-week,
+.pi-page #hot-container .handsontable td.pi-state-alert-1-week {
   background-color: var(--pi-alert1-bg) !important;
   color: var(--pi-alert1-text) !important;
   border-color: var(--pi-alert1-border) !important;
 }
 
 .pi-page table.dataTable tbody tr.pi-state-alert-2-3-weeks td,
-.pi-page .handsontable td.pi-state-alert-2-3-weeks {
+.pi-page .handsontable td.pi-state-alert-2-3-weeks,
+.pi-page #hot-container .handsontable td.pi-state-alert-2-3-weeks {
   background-color: var(--pi-alert23-bg) !important;
   color: var(--pi-alert23-text) !important;
   border-color: var(--pi-alert23-border) !important;
 }
 
 .pi-page table.dataTable tbody tr.pi-state-alert-4-6-weeks td,
-.pi-page .handsontable td.pi-state-alert-4-6-weeks {
+.pi-page .handsontable td.pi-state-alert-4-6-weeks,
+.pi-page #hot-container .handsontable td.pi-state-alert-4-6-weeks {
   background-color: var(--pi-alert46-bg) !important;
   color: var(--pi-alert46-text) !important;
   border-color: var(--pi-alert46-border) !important;
 }
 
 .pi-page table.dataTable tbody tr.pi-state-execution-blocked td,
-.pi-page .handsontable td.pi-state-execution-blocked {
+.pi-page .handsontable td.pi-state-execution-blocked,
+.pi-page #hot-container .handsontable td.pi-state-execution-blocked {
   background-color: var(--pi-exec-blocked-bg) !important;
   color: var(--pi-exec-blocked-text) !important;
   border-color: var(--pi-exec-blocked-border) !important;
 }
 
 .pi-page table.dataTable tbody tr.pi-state-liberated-control td,
-.pi-page .handsontable td.pi-state-liberated-control {
+.pi-page .handsontable td.pi-state-liberated-control,
+.pi-page #hot-container .handsontable td.pi-state-liberated-control {
   background-color: var(--pi-control-bg) !important;
   color: var(--pi-control-text) !important;
   border-color: var(--pi-control-border) !important;
 }
 
 .pi-page table.dataTable tbody tr.pi-state-neutral td,
-.pi-page .handsontable td.pi-state-neutral {
-  background-color: #f8fafc !important;
-  color: #64748b !important;
+.pi-page .handsontable td.pi-state-neutral,
+.pi-page #hot-container .handsontable td.pi-state-neutral {
+  background-color: #f1f5f9 !important;
+  color: #475569 !important;
 }
 
 .pi-page .pi-legend .pdc-legend-item.blocked-overdue-critical {
@@ -5255,15 +5345,15 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
 #modalEditarContratos .ct-modal-content {
   border: 0;
   border-radius: 1.25rem;
-  background: linear-gradient(180deg, #fafafa 0%, #f4f1ea 100%);
-  box-shadow: 0 24px 60px rgba(36, 49, 58, 0.18);
+  background: #f4f1ea;
+  box-shadow: var(--shadow-glass, 0 8px 32px rgba(30, 30, 30, 0.12));
 }
 
 #modalEditarContratos .ct-modal-header {
   align-items: flex-start;
   padding: 1.5rem 1.75rem 1.25rem;
-  background: linear-gradient(135deg, #f7efe3 0%, #fafafa 100%);
-  border-bottom: 1px solid rgba(181, 82, 17, 0.14);
+  background: linear-gradient(135deg, #1a3c2a 0%, #1a5633 100%);
+  border-bottom: 1px solid rgba(213, 229, 219, 0.32);
 }
 
 #modalEditarContratos .ct-modal-title {
@@ -5272,7 +5362,7 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
   font-size: 1.05rem;
   line-height: 1.3;
   font-weight: 500;
-  color: #24313a;
+  color: #fafafa;
 }
 
 #modalEditarContratos .ct-modal-title .aia-modal__headline {
@@ -5287,7 +5377,7 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
   line-height: 1;
   opacity: 0.8;
   box-shadow: none;
-  color: #7a3b14;
+  color: #fafafa;
 }
 
 #modalEditarContratos .ct-modal-close:hover {
@@ -5297,7 +5387,7 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
 
 #modalEditarContratos .ct-modal-body {
   padding: 1.5rem 1.75rem 1.75rem;
-  background: transparent;
+  background: #f4f1ea;
 }
 
 #formularioEditarContratos.ct-contract-form {
@@ -5311,7 +5401,7 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
   inline-size: 100%;
   margin: 0;
   padding: 1.1rem 1.15rem 1.2rem;
-  border: 1px solid rgba(181, 82, 17, 0.14);
+  border: 1px solid rgba(26, 86, 51, 0.18);
   border-radius: 1rem;
   background: rgba(250, 250, 250, 0.94);
   box-shadow: 0 10px 24px rgba(36, 49, 58, 0.06);
@@ -5326,9 +5416,9 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
 
 #modalEditarContratos .ct-contract-section__banner {
   margin-bottom: 1rem;
-  border: 1px solid rgba(181, 82, 17, 0.14);
+  border: 1px solid rgba(26, 86, 51, 0.18);
   border-radius: 0.9rem;
-  background: linear-gradient(180deg, #f8f1e7 0%, #f4f1ea 100%);
+  background: linear-gradient(180deg, #eef5f1 0%, #f4f1ea 100%);
   overflow: hidden;
 }
 
@@ -5360,7 +5450,7 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
   font-size: 0.85rem;
   font-weight: 700;
   text-align: center;
-  color: #7a3b14;
+  color: #1a3c2a;
 }
 
 #modalEditarContratos .ct-contract-list {
@@ -5402,8 +5492,8 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
 
 #modalEditarContratos .ct-contract-field .form-control:focus,
 #modalEditarContratos .ct-contract-field .form-control:focus-visible {
-  border-color: rgba(181, 82, 17, 0.45);
-  box-shadow: 0 0 0 0.2rem rgba(181, 82, 17, 0.12);
+  border-color: rgba(26, 86, 51, 0.5);
+  box-shadow: 0 0 0 0.2rem rgba(26, 86, 51, 0.18);
 }
 
 #modalEditarContratos .ct-contract-field .select2-container {
@@ -5454,8 +5544,8 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
   margin-top: 0 !important;
   border: none;
   border-radius: 999px;
-  background: rgba(181, 82, 17, 0.12);
-  color: #7a3b14;
+  background: rgba(26, 86, 51, 0.12);
+  color: #1a3c2a;
   padding: 0.18rem 0.55rem 0.18rem 0.4rem;
   font-size: 0.82rem;
 }
@@ -5469,8 +5559,8 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
 #modalEditarContratos .ct-contract-field .select2-container--default.select2-container--focus .select2-selection--multiple,
 #modalEditarContratos .ct-contract-field .select2-container--default.select2-container--open .select2-selection--single,
 #modalEditarContratos .ct-contract-field .select2-container--default.select2-container--open .select2-selection--multiple {
-  border-color: rgba(181, 82, 17, 0.45);
-  box-shadow: 0 0 0 0.2rem rgba(181, 82, 17, 0.12);
+  border-color: rgba(26, 86, 51, 0.5);
+  box-shadow: 0 0 0 0.2rem rgba(26, 86, 51, 0.18);
 }
 
 #modalEditarContratos .select2-dropdown {
@@ -5746,6 +5836,202 @@ table.dataTable tbody tr.pdc-not-started td .pdc-ready-icon--risk {
 .ps-cell-readonly {
   cursor: not-allowed !important;
 }
+
+/* ==========================================================================
+   UNIFICACIÓN DE TAMAÑOS DE LEGEND ITEMS (Filtros Tipo Píldora/Cápsula)
+   Alineación Adaptativa Premium Mobile-First (2026 Standards)
+   ========================================================================== */
+
+/* 1. MÓVILES (Pantallas de hasta 576px) - Barras Unificadas de Ancho Completo */
+@media (max-width: 576px) {
+  html body .pdc-legend-item,
+  html body .pg-page #pgLegend .pdc-legend-item,
+  html body .pi-page #piLegend .pdc-legend-item,
+  html body .ps-page #psAlertsLegend .pdc-legend-item,
+  html body .pdc-legend .pdc-legend-item {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
+    flex: 1 1 100% !important;
+    justify-content: center !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+    box-sizing: border-box !important;
+    font-size: 0.75rem !important; /* Slightly larger for easier tap on mobile */
+    padding: 6px 12px !important;   /* Comfortable touch targets (A11y/Mobile) */
+    min-height: 34px !important;   /* Match standard touch target metrics */
+    height: auto !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    margin: 3px 0 !important;
+  }
+}
+
+/* 2. TABLETS (Pantallas entre 577px y 992px) - Grilla de 2 Columnas Simétricas */
+@media (min-width: 577px) and (max-width: 992px) {
+  html body .pdc-legend-item,
+  html body .pg-page #pgLegend .pdc-legend-item,
+  html body .pi-page #piLegend .pdc-legend-item,
+  html body .ps-page #psAlertsLegend .pdc-legend-item,
+  html body .pdc-legend .pdc-legend-item {
+    width: calc(50% - 6px) !important;
+    max-width: calc(50% - 6px) !important;
+    min-width: calc(50% - 6px) !important;
+    flex: 0 0 calc(50% - 6px) !important;
+    justify-content: center !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+    box-sizing: border-box !important;
+    font-size: 0.72rem !important;
+    padding: 5px 10px !important;
+    min-height: 32px !important;
+    height: 32px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    margin: 3px !important;
+  }
+}
+
+/* 3. ESCRITORIO (Pantallas de 993px en adelante) - Ancho Fijo Premium de 205px */
+@media (min-width: 993px) {
+  html body .pdc-legend-item,
+  html body .pg-page #pgLegend .pdc-legend-item,
+  html body .pi-page #piLegend .pdc-legend-item,
+  html body .ps-page #psAlertsLegend .pdc-legend-item,
+  html body .pdc-legend .pdc-legend-item {
+    width: 205px !important;
+    max-width: 205px !important;
+    min-width: 205px !important;
+    flex: 0 0 205px !important;
+    justify-content: center !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+    box-sizing: border-box !important;
+    font-size: 0.72rem !important;
+    padding: 4px 8px !important;
+    min-height: 30px !important;
+    height: 30px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    margin: 2px !important;
+  }
+}
+
+/* Optimización para el centrado interno de indicador + texto + contador */
+html body .pdc-legend-item .indicator {
+  margin-right: 6px !important;
+  flex-shrink: 0 !important;
+}
+
+html body .pdc-legend-item .count-badge {
+  margin-left: 6px !important;
+  flex-shrink: 0 !important;
+  font-size: 0.72rem !important;
+}
+
+/* ==========================================================================
+   OPTIMIZACIÓN PREMIUM 2026: Leyendas Responsivas Simétricas Unificadas (AIA Flex-Wrap)
+   Garantiza caja flexible, consistencia transversal absoluta (misma altura,
+   mismo tamaño de letra, paddings y márgenes) en PG, PI y PS con wrap limpio.
+   Selectores de especificidad suprema para anular de forma absoluta cualquier 
+   regla lógica conflictiva intermedia del archivo (como inline-size o block-size).
+   ========================================================================== */
+body.pi-page #piLegend.pdc-legend-autoscaling,
+body.pg-page #pgLegend.pdc-legend-autoscaling,
+body.ps-page #psAlertsLegend.pdc-legend-autoscaling,
+#piLegend.pdc-legend-autoscaling,
+#pgLegend.pdc-legend-autoscaling,
+#psAlertsLegend.pdc-legend-autoscaling {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: flex-start !important;
+  gap: 8px !important;
+  width: auto !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  inline-size: auto !important; /* Desactivar el inline-size: 100% de la línea 4822 */
+  max-inline-size: 100% !important;
+  padding: 4px 0 !important;
+  box-sizing: border-box !important;
+  margin: 0 0 10px 0 !important;
+  overflow: visible !important;
+}
+
+/* Todos los chips de leyenda de los tres módulos adoptan exactamente las mismas dimensiones y tipografía */
+body.pi-page #piLegend.pdc-legend-autoscaling .pdc-legend-item,
+body.pg-page #pgLegend.pdc-legend-autoscaling .pdc-legend-item,
+body.ps-page #psAlertsLegend.pdc-legend-autoscaling .pdc-legend-item,
+#piLegend.pdc-legend-autoscaling .pdc-legend-item,
+#pgLegend.pdc-legend-autoscaling .pdc-legend-item,
+#psAlertsLegend.pdc-legend-autoscaling .pdc-legend-item {
+  width: 155px !important;
+  max-width: 155px !important;
+  min-width: 155px !important;
+  flex: 0 0 155px !important;
+  box-sizing: border-box !important;
+  padding: 4px 8px !important; /* Padding simétrico regular */
+  font-size: 0.72rem !important; /* Tamaño de letra idéntico y legible en todas las pantallas */
+  font-weight: 500 !important;
+  line-height: 1.2 !important;
+  min-height: 32px !important; /* Altura mínima uniforme y cómoda para pulsación táctil */
+  height: 32px !important;
+  block-size: 32px !important; /* Anular el block-size: auto de la línea 4862 */
+  min-inline-size: 0 !important; /* Anular el min-inline-size de la línea 4857 */
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  margin: 4px !important; /* Margen uniforme regular a los lados para dar aire en múltiples filas */
+  border-radius: 4px !important;
+  white-space: normal !important; /* Permitir wrap de texto dentro del chip si es muy largo */
+  word-break: break-word !important;
+}
+
+/* MÓVILES (Pantallas de hasta 576px) - Cuadrícula simétrica perfecta de 2 columnas */
+@media (max-width: 576px) {
+  body.pi-page #piLegend.pdc-legend-autoscaling,
+  body.pg-page #pgLegend.pdc-legend-autoscaling,
+  body.ps-page #psAlertsLegend.pdc-legend-autoscaling,
+  #piLegend.pdc-legend-autoscaling,
+  #pgLegend.pdc-legend-autoscaling,
+  #psAlertsLegend.pdc-legend-autoscaling {
+    justify-content: center !important;
+    gap: 6px !important;
+    width: 100% !important;
+    inline-size: 100% !important;
+  }
+
+  body.pi-page #piLegend.pdc-legend-autoscaling .pdc-legend-item,
+  body.pg-page #pgLegend.pdc-legend-autoscaling .pdc-legend-item,
+  body.ps-page #psAlertsLegend.pdc-legend-autoscaling .pdc-legend-item,
+  #piLegend.pdc-legend-autoscaling .pdc-legend-item,
+  #pgLegend.pdc-legend-autoscaling .pdc-legend-item,
+  #psAlertsLegend.pdc-legend-autoscaling .pdc-legend-item {
+    width: calc(50% - 8px) !important;
+    max-width: calc(50% - 8px) !important;
+    min-width: calc(50% - 8px) !important;
+    flex: 0 0 calc(50% - 8px) !important;
+    margin: 3px !important;
+    font-size: 0.70rem !important;
+    min-height: 32px !important;
+    height: auto !important;
+    block-size: auto !important;
+  }
+}
+
+/* Ocultar barra de scroll horizontal por compatibilidad estética */
+#piLegend.pdc-legend-autoscaling::-webkit-scrollbar,
+#pgLegend.pdc-legend-autoscaling::-webkit-scrollbar,
+#psAlertsLegend.pdc-legend-autoscaling::-webkit-scrollbar {
+  display: none !important;
+}
+
+#piLegend.pdc-legend-autoscaling,
+#pgLegend.pdc-legend-autoscaling,
+#psAlertsLegend.pdc-legend-autoscaling {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
 }
 /* Fin Layer Components */
 
@@ -5787,3 +6073,70 @@ table.dataTable tbody tr.pdc-not-started td .pdc-ready-icon--risk {
   justify-content: center !important;
   align-items: center !important;
 }
+
+}
+
+/* ==========================================================================
+   UNIFICACIÓN TRANSVERSAL DE BORDES Y DEMARCACIÓN DE TABLAS
+   ========================================================================== */
+
+/* 5. Handsontable Borders & Demarcation (Garantiza líneas visibles) */
+#hot-container .handsontable td,
+#hot-container .handsontable th {
+  border-right: 1px solid #cbd5e1 !important;
+  border-bottom: 1px solid #cbd5e1 !important;
+}
+#hot-container .handsontable th:first-child,
+#hot-container .handsontable td:first-child {
+  border-left: 1px solid #cbd5e1 !important;
+}
+#hot-container .handsontable tr:first-child th,
+#hot-container .handsontable tr:first-child td {
+  border-top: 1px solid #cbd5e1 !important;
+}
+
+/* 6. DataTables & Bordered Tables Borders & Demarcation */
+table.dataTable,
+table.dataTable th,
+table.dataTable td,
+.table-bordered th,
+.table-bordered td {
+  border-right-color: #cbd5e1 !important;
+  border-bottom-color: #cbd5e1 !important;
+  border-left-color: #cbd5e1 !important;
+  border-top-color: #cbd5e1 !important;
+  border-width: 1px !important;
+}
+
+/* ==========================================================================
+   UNIFICACIÓN CROMÁTICA Y ALTO CONTRASTE PARA DATA-TABLES (CNC, CNP, CIC)
+   ========================================================================== */
+
+/* Atrasado Crítico (Rojo): Contraste Perfecto */
+table.dataTable tbody tr.row-critical-delay td {
+  background-color: var(--pi-critical-bg, #fecaca) !important;
+  color: var(--pi-critical-text, #7f1d1d) !important;
+  font-weight: 600;
+}
+table.dataTable tbody tr.row-critical-delay td * {
+  color: inherit !important;
+}
+
+/* Atrasado / Riesgo Alto (Naranja) */
+table.dataTable tbody tr.row-delayed td {
+  background-color: var(--pi-overdue-bg, #fed7aa) !important;
+  color: var(--pi-overdue-text, #7c2d12) !important;
+}
+table.dataTable tbody tr.row-delayed td * {
+  color: inherit !important;
+}
+
+/* Alerta / Crítico sin retraso (Amarillo) */
+table.dataTable tbody tr.row-warning td {
+  background-color: var(--pi-due-bg, #fde68a) !important;
+  color: var(--pi-due-text, #78350f) !important;
+}
+table.dataTable tbody tr.row-warning td * {
+  color: inherit !important;
+}
+

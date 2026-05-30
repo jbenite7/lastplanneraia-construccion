@@ -157,7 +157,7 @@ class RbacCatalog
                     'notificaciones.gestion_pdc_contratos',
                     'notificaciones.ejecutivas',
                     'notificaciones.preferencias_personales',
-                ]
+                ],
             ),
 
             // Residente y DCV: edita LPS, pero solo visualiza Listado/Contratos/PDC.
@@ -302,7 +302,7 @@ class RbacCatalog
                     'notificaciones.resumen_semanal',
                     'notificaciones.lps_operativas',
                     'notificaciones.preferencias_personales',
-                ]
+                ],
             ),
         ];
     }

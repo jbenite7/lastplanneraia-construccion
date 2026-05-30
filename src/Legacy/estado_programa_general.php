@@ -22,7 +22,7 @@ function pg_normalize_numeric($value): string
         return '';
     }
 
-    $normalized = preg_replace('/\s+/', '', trim((string)$value));
+    $normalized = preg_replace('/\s+/', '', trim((string) $value));
     if ($normalized === '' || strtolower($normalized) === 'nulo') {
         return '';
     }
@@ -51,7 +51,7 @@ function pg_to_float($value, float $default = 0.0): float
         return $default;
     }
 
-    return (float)$normalized;
+    return (float) $normalized;
 }
 
 function pg_to_timestamp($dateValue): ?int
@@ -60,7 +60,7 @@ function pg_to_timestamp($dateValue): ?int
         return null;
     }
 
-    $value = trim((string)$dateValue);
+    $value = trim((string) $dateValue);
     if ($value === '') {
         return null;
     }
@@ -95,8 +95,8 @@ function pg_calculate_week_offset($fechaInicioActividad, $fechaInicioSemana): ?i
         return null;
     }
 
-    $dias = (int)floor(($fiTs - $fsTs) / 86400);
-    return (int)floor($dias / 7);
+    $dias = (int) floor(($fiTs - $fsTs) / 86400);
+    return (int) floor($dias / 7);
 }
 
 function pg_calculate_theoretical_progress($fechaInicioActividad, $fechaFinActividad, $fechaInicioSemana): float
@@ -113,8 +113,8 @@ function pg_calculate_theoretical_progress($fechaInicioActividad, $fechaFinActiv
         $ffTs = $fiTs;
     }
 
-    $duracionDias = max(1, (int)floor(($ffTs - $fiTs) / 86400) + 1);
-    $diasTranscurridos = (int)floor(($fsTs - $fiTs) / 86400);
+    $duracionDias = max(1, (int) floor(($ffTs - $fiTs) / 86400) + 1);
+    $diasTranscurridos = (int) floor(($fsTs - $fiTs) / 86400);
 
     if ($diasTranscurridos < 1) {
         return 0.0;
@@ -136,9 +136,9 @@ function pg_calculate_status(
     $fechaFinSemana = null,
     float $eps = PG_STATUS_EPS,
     float $aheadTolerance = PG_STATUS_AHEAD_TOL,
-    float $doneThreshold = PG_STATUS_DONE_THRESHOLD
+    float $doneThreshold = PG_STATUS_DONE_THRESHOLD,
 ): string {
-    if ((int)$titulo === 1) {
+    if ((int) $titulo === 1) {
         return 'Capítulo';
     }
 

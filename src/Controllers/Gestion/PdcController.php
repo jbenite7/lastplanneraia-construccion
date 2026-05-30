@@ -11,13 +11,13 @@ class PdcController extends BaseController
         // Validar autenticación
         $this->requireAuth();
 
-        $dbName = (string)($_SESSION['db'] ?? '');
-        $semana = (int)($_SESSION['semana'] ?? 0);
+        $dbName = (string) ($_SESSION['db'] ?? '');
+        $semana = (int) ($_SESSION['semana'] ?? 0);
 
         if ($dbName !== '') {
             try {
                 $stmt = $this->db->query("SELECT MAX(Semana) AS maxSemana FROM {$dbName}_semanas_activas");
-                $maxSemana = (int)($stmt->fetch()['maxSemana'] ?? 0);
+                $maxSemana = (int) ($stmt->fetch()['maxSemana'] ?? 0);
 
                 if ($maxSemana > 0 && ($semana <= 0 || $semana > $maxSemana)) {
                     $_SESSION['semana'] = $maxSemana;
@@ -28,7 +28,7 @@ class PdcController extends BaseController
         }
 
         $autoSyncPdcOnLoad = !empty($_SESSION['pdc_sync_on_load']);
-        $pdcSyncOrigin = (string)($_SESSION['pdc_sync_origin'] ?? '');
+        $pdcSyncOrigin = (string) ($_SESSION['pdc_sync_origin'] ?? '');
         unset($_SESSION['pdc_sync_on_load'], $_SESSION['pdc_sync_origin']);
         $_SESSION['seccion'] = 'planCompras';
 

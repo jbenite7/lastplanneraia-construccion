@@ -170,7 +170,7 @@ class UserController extends AdminController
         $string = str_replace(
             ['á', 'é', 'í', 'ó', 'ú', 'ñ', 'ü'],
             ['a', 'e', 'i', 'o', 'u', 'n', 'u'],
-            $string
+            $string,
         );
         // Eliminar cualquier cosa que no sea letras, números, espacios o puntos
         $string = preg_replace('/[^a-z0-9\s.]/', '', $string);
@@ -237,7 +237,7 @@ class UserController extends AdminController
             Database::getInstance()->logActivity(
                 'Usuarios',
                 'CREAR',
-                "Se creó el usuario '{$data['usuario']}' ({$data['nombre']}) con " . count($assignments) . " proyecto(s) asignado(s)"
+                "Se creó el usuario '{$data['usuario']}' ({$data['nombre']}) con " . count($assignments) . " proyecto(s) asignado(s)",
             );
 
             $this->json(['success' => true, 'message' => 'Usuario creado correctamente']);
@@ -270,7 +270,7 @@ class UserController extends AdminController
             'pageTitle' => 'Editar Usuario',
             'breadcrumb' => 'Usuarios / Editar',
             'user' => $user,
-            'assignments' => $this->userModel->getProjectAssignments((int)$id),
+            'assignments' => $this->userModel->getProjectAssignments((int) $id),
             'csrf_token' => Security::generateCsrfToken(),
             'roles' => RoleManager::getAll(),
             'projects' => $this->projectModel->getAll(),
@@ -297,8 +297,8 @@ class UserController extends AdminController
         }
 
         $assignments = $this->parseAssignments($_POST['assignments'] ?? []);
-        $currentAdminId = (int)($_SESSION['admin_user']['id'] ?? 0);
-        $isSelfUpdate = $currentAdminId > 0 && $currentAdminId === (int)$id;
+        $currentAdminId = (int) ($_SESSION['admin_user']['id'] ?? 0);
+        $isSelfUpdate = $currentAdminId > 0 && $currentAdminId === (int) $id;
 
         $data = [
             'nombre' => trim($_POST['nombre'] ?? ''),
@@ -315,7 +315,7 @@ class UserController extends AdminController
             $this->json(['success' => false, 'message' => 'Nombre y usuario son requeridos']);
         }
 
-        if ($isSelfUpdate && (int)$data['activo'] !== 1) {
+        if ($isSelfUpdate && (int) $data['activo'] !== 1) {
             $this->json(['success' => false, 'message' => 'No puedes inactivar tu propia cuenta desde la sesión actual.']);
         }
 
@@ -325,27 +325,27 @@ class UserController extends AdminController
         }
 
         $existingByName = $this->userModel->findByName($data['nombre']);
-        if ($existingByName && (int)$existingByName['id'] !== (int)$id) {
+        if ($existingByName && (int) $existingByName['id'] !== (int) $id) {
             $this->json(['success' => false, 'message' => 'Ya existe un usuario con este nombre completo']);
         }
 
         $existingByEmail = $this->userModel->findByEmail($data['email']);
-        if (!empty($data['email']) && $existingByEmail && (int)$existingByEmail['id'] !== (int)$id) {
+        if (!empty($data['email']) && $existingByEmail && (int) $existingByEmail['id'] !== (int) $id) {
             $this->json(['success' => false, 'message' => 'Ya existe un usuario con este correo electrónico']);
         }
 
         $existingByUsername = $this->userModel->findByUsername($data['usuario']);
-        if ($existingByUsername && (int)$existingByUsername['id'] !== (int)$id) {
+        if ($existingByUsername && (int) $existingByUsername['id'] !== (int) $id) {
             $this->json(['success' => false, 'message' => 'El nombre de usuario ya existe']);
         }
 
-        $previousAssignments = $this->userModel->getProjectAssignments((int)$id);
+        $previousAssignments = $this->userModel->getProjectAssignments((int) $id);
         $removedAssignments = $this->findRemovedAssignments($previousAssignments, $assignments);
 
         if ($this->userModel->update($id, $data)) {
-            $emailForRevocation = trim((string)($user['email'] ?? ''));
+            $emailForRevocation = trim((string) ($user['email'] ?? ''));
             if ($emailForRevocation === '') {
-                $emailForRevocation = trim((string)($data['email'] ?? ''));
+                $emailForRevocation = trim((string) ($data['email'] ?? ''));
             }
 
             $this->blockProfessionalAccess($removedAssignments, $emailForRevocation);
@@ -354,7 +354,7 @@ class UserController extends AdminController
             \Database::getInstance()->logActivity(
                 'Usuarios',
                 'MODIFICAR',
-                "Se actualizó el usuario con ID: $id ('{$data['usuario']}'), estado " . ((int)$data['activo'] === 1 ? 'activo' : 'inactivo') . ", cambio de clave " . ((int)$data['force_password_change'] === 1 ? 'pendiente' : 'normal') . " y " . count($assignments) . " proyecto(s)"
+                "Se actualizó el usuario con ID: $id ('{$data['usuario']}'), estado " . ((int) $data['activo'] === 1 ? 'activo' : 'inactivo') . ", cambio de clave " . ((int) $data['force_password_change'] === 1 ? 'pendiente' : 'normal') . " y " . count($assignments) . " proyecto(s)",
             );
 
             $this->json(['success' => true, 'message' => 'Usuario actualizado correctamente']);
@@ -381,14 +381,14 @@ class UserController extends AdminController
             $this->json(['success' => false, 'message' => 'Token CSRF inválido']);
         }
 
-        $id = (int)($_POST['id'] ?? 0);
+        $id = (int) ($_POST['id'] ?? 0);
         $active = $this->normalizeBooleanInput($_POST['value'] ?? '0') === 1;
 
         if ($id <= 0) {
             $this->json(['success' => false, 'message' => 'ID de usuario no proporcionado']);
         }
 
-        if ((int)($_SESSION['admin_user']['id'] ?? 0) === $id && !$active) {
+        if ((int) ($_SESSION['admin_user']['id'] ?? 0) === $id && !$active) {
             $this->json(['success' => false, 'message' => 'No puedes inactivar tu propia cuenta desde la sesión actual.']);
         }
 
@@ -404,7 +404,7 @@ class UserController extends AdminController
         Database::getInstance()->logActivity(
             'Usuarios',
             'ESTADO',
-            "Se marcó al usuario '{$user['usuario']}' como " . ($active ? 'activo' : 'inactivo')
+            "Se marcó al usuario '{$user['usuario']}' como " . ($active ? 'activo' : 'inactivo'),
         );
 
         $this->json([
@@ -422,7 +422,7 @@ class UserController extends AdminController
             $this->json(['success' => false, 'message' => 'Token CSRF inválido']);
         }
 
-        $id = (int)($_POST['id'] ?? 0);
+        $id = (int) ($_POST['id'] ?? 0);
         $enabled = $this->normalizeBooleanInput($_POST['value'] ?? '0') === 1;
 
         if ($id <= 0) {
@@ -441,7 +441,7 @@ class UserController extends AdminController
         Database::getInstance()->logActivity(
             'Usuarios',
             'SEGURIDAD',
-            "Se " . ($enabled ? 'activó' : 'desactivó') . " el cambio obligatorio de contraseña para '{$user['usuario']}'"
+            "Se " . ($enabled ? 'activó' : 'desactivó') . " el cambio obligatorio de contraseña para '{$user['usuario']}'",
         );
 
         $this->json([
@@ -459,12 +459,12 @@ class UserController extends AdminController
             $this->json(['success' => false, 'message' => 'Token CSRF inválido']);
         }
 
-        $userId = (int)($_POST['id'] ?? 0);
+        $userId = (int) ($_POST['id'] ?? 0);
         if ($userId <= 0) {
             $this->json(['success' => false, 'message' => 'ID de usuario no proporcionado']);
         }
 
-        if ((int)($_SESSION['admin_user']['id'] ?? 0) === $userId) {
+        if ((int) ($_SESSION['admin_user']['id'] ?? 0) === $userId) {
             $this->json(['success' => false, 'message' => 'No puedes revocar todos tus permisos desde tu propia sesión.']);
         }
 
@@ -479,12 +479,12 @@ class UserController extends AdminController
         }
 
         $assignments = $result['assignments'];
-        $this->blockProfessionalAccess($assignments, (string)($user['email'] ?? ''));
+        $this->blockProfessionalAccess($assignments, (string) ($user['email'] ?? ''));
 
         Database::getInstance()->logActivity(
             'Usuarios',
             'REVOCAR_TODOS_PROYECTOS',
-            "Se revocaron todos los permisos de '{$user['usuario']}' en " . count($assignments) . ' proyecto(s) sin borrar su historial.'
+            "Se revocaron todos los permisos de '{$user['usuario']}' en " . count($assignments) . ' proyecto(s) sin borrar su historial.',
         );
 
         $message = empty($assignments)
@@ -507,8 +507,8 @@ class UserController extends AdminController
             $this->json(['success' => false, 'message' => 'Token CSRF inválido']);
         }
 
-        $userId = (int)($_POST['user_id'] ?? 0);
-        $projectId = (int)($_POST['project_id'] ?? 0);
+        $userId = (int) ($_POST['user_id'] ?? 0);
+        $projectId = (int) ($_POST['project_id'] ?? 0);
 
         if ($userId <= 0 || $projectId <= 0) {
             $this->json(['success' => false, 'message' => 'Parámetros inválidos']);
@@ -531,7 +531,7 @@ class UserController extends AdminController
             if ($project && !empty($project['Base_de_Datos']) && $user && !empty($user['email'])) {
                 try {
                     (new ProjectProfessionalsSyncService(Database::getInstance()))
-                        ->blockProfessionalByEmail((string)$project['Base_de_Datos'], (string)$user['email']);
+                        ->blockProfessionalByEmail((string) $project['Base_de_Datos'], (string) $user['email']);
                 } catch (\Throwable $e) {
                     error_log("Error al bloquear profesional en SyncService: " . $e->getMessage());
                 }
@@ -543,7 +543,7 @@ class UserController extends AdminController
             Database::getInstance()->logActivity(
                 'Usuarios',
                 'QUITAR_PROYECTO',
-                "Se retiró a '{$userName}' del proyecto '{$projectName}'"
+                "Se retiró a '{$userName}' del proyecto '{$projectName}'",
             );
 
             $this->json(['success' => true, 'message' => 'Proyecto retirado correctamente']);
@@ -566,14 +566,14 @@ class UserController extends AdminController
                 continue;
             }
 
-            $projectId = (int)($row['project_id'] ?? 0);
+            $projectId = (int) ($row['project_id'] ?? 0);
             if ($projectId <= 0) {
                 continue;
             }
 
             $normalized[$projectId] = [
                 'project_id' => $projectId,
-                'role' => RoleManager::normalizeRole((string)($row['role'] ?? 'V')),
+                'role' => RoleManager::normalizeRole((string) ($row['role'] ?? 'V')),
             ];
         }
 
@@ -587,11 +587,11 @@ class UserController extends AdminController
         $validProjects = $this->projectModel->getAll();
         $validProjectIds = [];
         foreach ($validProjects as $project) {
-            $validProjectIds[(int)$project['Id']] = true;
+            $validProjectIds[(int) $project['Id']] = true;
         }
 
         foreach ($assignments as $assignment) {
-            $projectId = (int)($assignment['project_id'] ?? 0);
+            $projectId = (int) ($assignment['project_id'] ?? 0);
             if ($projectId <= 0 || !isset($validProjectIds[$projectId])) {
                 return 'Una de las asignaciones tiene un proyecto inválido.';
             }
@@ -602,14 +602,14 @@ class UserController extends AdminController
 
     private function normalizeBooleanInput($value): int
     {
-        return in_array((string)$value, ['1', 'true', 'on'], true) ? 1 : 0;
+        return in_array((string) $value, ['1', 'true', 'on'], true) ? 1 : 0;
     }
 
     private function findRemovedAssignments(array $previousAssignments, array $nextAssignments): array
     {
         $nextProjectIds = [];
         foreach ($nextAssignments as $assignment) {
-            $projectId = (int)($assignment['project_id'] ?? 0);
+            $projectId = (int) ($assignment['project_id'] ?? 0);
             if ($projectId > 0) {
                 $nextProjectIds[$projectId] = true;
             }
@@ -617,7 +617,7 @@ class UserController extends AdminController
 
         $removed = [];
         foreach ($previousAssignments as $assignment) {
-            $projectId = (int)($assignment['project_id'] ?? 0);
+            $projectId = (int) ($assignment['project_id'] ?? 0);
             if ($projectId > 0 && !isset($nextProjectIds[$projectId])) {
                 $removed[] = $assignment;
             }
@@ -635,7 +635,7 @@ class UserController extends AdminController
 
         $syncService = new ProjectProfessionalsSyncService(Database::getInstance());
         foreach ($assignments as $assignment) {
-            $projectId = (int)($assignment['project_id'] ?? 0);
+            $projectId = (int) ($assignment['project_id'] ?? 0);
             if ($projectId <= 0) {
                 continue;
             }
@@ -646,7 +646,7 @@ class UserController extends AdminController
             }
 
             try {
-                $syncService->blockProfessionalByEmail((string)$project['Base_de_Datos'], $normalizedEmail);
+                $syncService->blockProfessionalByEmail((string) $project['Base_de_Datos'], $normalizedEmail);
             } catch (\Throwable $e) {
                 error_log('Error al bloquear profesional por revocación administrativa: ' . $e->getMessage());
             }

@@ -126,7 +126,7 @@ class ReportController extends BaseController
                     try {
                         $semana = $_GET['semana'] ?? null;
                         if ($semana && is_numeric($semana)) {
-                            $results['cic'] = $this->reportProcessor->updateCICProyectos((int)$semana);
+                            $results['cic'] = $this->reportProcessor->updateCICProyectos((int) $semana);
                         } else {
                             $results['cic'] = $this->reportProcessor->updateCICProyectos(null);
                         }
@@ -193,7 +193,7 @@ class ReportController extends BaseController
         if ($proyecto === '') {
             $stmtProyecto = $db->query(
                 "SELECT Proyecto_Proceso FROM general_proyectos_procesos WHERE Base_de_Datos = :db LIMIT 1",
-                [':db' => $dbName]
+                [':db' => $dbName],
             );
             $proyecto = $stmtProyecto->fetchColumn() ?: '';
         }
@@ -228,7 +228,7 @@ class ReportController extends BaseController
                 return 0.0;
             }
 
-            $numeric = (float)$value;
+            $numeric = (float) $value;
 
             return $numeric <= 1 ? $numeric * 100 : $numeric;
         };
@@ -242,13 +242,13 @@ class ReportController extends BaseController
             $Fecha_Inicio_Assemble = $data["Fecha_Inicio"] ? date("m/d/Y", strtotime($data["Fecha_Inicio"])) : "";
             $Fecha_Fin_Assemble = $data["Fecha_Fin"] ? date("m/d/Y", strtotime($data["Fecha_Fin"])) : "";
 
-            $Ejecutado = is_numeric($data["Ejecutado"] ?? null) ? round((float)$data["Ejecutado"], 1) : null;
-            $cantidad_ppto = is_numeric($data["cantidad_ppto"] ?? null) ? round((float)$data["cantidad_ppto"], 1) : null;
+            $Ejecutado = is_numeric($data["Ejecutado"] ?? null) ? round((float) $data["Ejecutado"], 1) : null;
+            $cantidad_ppto = is_numeric($data["cantidad_ppto"] ?? null) ? round((float) $data["cantidad_ppto"], 1) : null;
             if ($cantidad_ppto !== null && $cantidad_ppto <= 0) {
                 $cantidad_ppto = null;
             }
 
-            $unidad = trim((string)($data["unidad"] ?? ''));
+            $unidad = trim((string) ($data["unidad"] ?? ''));
 
             $cantidadEjecutada = null;
             if ($Ejecutado !== null) {
@@ -266,7 +266,7 @@ class ReportController extends BaseController
 
             $Ruta_Critica = ($data["Ruta_Critica"] == 1) ? "Ruta critica" : "Actividades NO criticas";
 
-            $semanasInicio = is_numeric($data["Semanas_Inicio"] ?? null) ? (int)$data["Semanas_Inicio"] : 999;
+            $semanasInicio = is_numeric($data["Semanas_Inicio"] ?? null) ? (int) $data["Semanas_Inicio"] : 999;
             $estadoRestricciones = $resolvePercentValue($data["Estado_Restricciones"] ?? 0);
             $ejecutadoActual = $resolvePercentValue($data["EjecutadoRaw"] ?? 0);
 
@@ -516,7 +516,7 @@ class ReportController extends BaseController
                 return '';
             }
 
-            return number_format((float)$value, $decimals, ',', '');
+            return number_format((float) $value, $decimals, ',', '');
         };
 
         while ($data = $stmt->fetch(\PDO::FETCH_ASSOC)) {
@@ -530,10 +530,10 @@ class ReportController extends BaseController
 
             if ($data["unidad"] == "" || !$data["unidad"] || $data["unidad"] == null || $data["unidad"] == '%') {
                 $unidad = "%";
-                $Ejecutado = $formatDecimalComma(((float)$data["Ejecutado"] * $cantidad_ppto), 1) . "$unidad";
+                $Ejecutado = $formatDecimalComma(((float) $data["Ejecutado"] * $cantidad_ppto), 1) . "$unidad";
             } else {
                 $unidad = $data["unidad"];
-                $Ejecutado = $formatDecimalComma(((float)$data["Ejecutado"] * $cantidad_ppto), 1) . " $unidad (" . $formatDecimalComma(((float)$data["Ejecutado"] * 100), 1) . "%)";
+                $Ejecutado = $formatDecimalComma(((float) $data["Ejecutado"] * $cantidad_ppto), 1) . " $unidad (" . $formatDecimalComma(((float) $data["Ejecutado"] * 100), 1) . "%)";
             }
 
             $formatPercent = function ($val) use ($formatDecimalComma) {
@@ -541,7 +541,7 @@ class ReportController extends BaseController
                     return $val;
                 }
 
-                return $formatDecimalComma(((float)$val * 100), 1) . "%";
+                return $formatDecimalComma(((float) $val * 100), 1) . "%";
             };
 
             $Estado_Restricciones = $formatPercent($data["Estado_Restricciones"] ?? null);
@@ -909,7 +909,7 @@ class ReportController extends BaseController
         try {
             $stmtProyecto = $db->query(
                 "SELECT Proyecto_Proceso FROM general_proyectos_procesos WHERE Base_de_Datos = :db",
-                [':db' => $dbName]
+                [':db' => $dbName],
             );
             $proyecto = $stmtProyecto->fetchColumn();
 
@@ -920,7 +920,7 @@ class ReportController extends BaseController
 
             $stmtFechas = $db->query(
                 "SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem, Semanal_Confirmada FROM {$dbName}_semanas_activas WHERE Semana = :semana",
-                [':semana' => $semana]
+                [':semana' => $semana],
             );
             $fechas = $stmtFechas->fetch(\PDO::FETCH_ASSOC);
 
@@ -936,7 +936,7 @@ class ReportController extends BaseController
 
             $stmtData = $db->query(
                 "SELECT * FROM {$dbName}_programacion_semanal WHERE Semana = :semana AND (Activa = '1' OR Activa = 'NA')",
-                [':semana' => $semana]
+                [':semana' => $semana],
             );
 
             $tabla = [[
@@ -961,23 +961,23 @@ class ReportController extends BaseController
                     return '';
                 }
 
-                return number_format((float)$value, $decimals, ',', '');
+                return number_format((float) $value, $decimals, ',', '');
             };
 
             while ($data = $stmtData->fetch(\PDO::FETCH_ASSOC)) {
-                $actividad = str_replace(["<small>", "</small>", "<b>", "</b>"], "", (string)($data['Actividad'] ?? ''));
-                $unidad = (string)($data['Unidad'] ?? '');
+                $actividad = str_replace(["<small>", "</small>", "<b>", "</b>"], "", (string) ($data['Actividad'] ?? ''));
+                $unidad = (string) ($data['Unidad'] ?? '');
 
-                $cantidadPpto = (float)($data['cantidad_ppto'] ?? 100);
+                $cantidadPpto = (float) ($data['cantidad_ppto'] ?? 100);
                 if ($cantidadPpto <= 0) {
                     $cantidadPpto = 100;
                 }
 
-                $ejecutado = $formatDecimalComma((((float)($data['Ejecutado'] ?? 0)) * $cantidadPpto), 1) . $unidad;
-                $compromiso = $formatDecimalComma(((float)($data['Compromiso'] ?? 0)), 1) . $unidad;
+                $ejecutado = $formatDecimalComma((((float) ($data['Ejecutado'] ?? 0)) * $cantidadPpto), 1) . $unidad;
+                $compromiso = $formatDecimalComma(((float) ($data['Compromiso'] ?? 0)), 1) . $unidad;
                 $ejecutadoReal = '';
                 if (isset($data['Ejecutado_Real']) && $data['Ejecutado_Real'] !== '') {
-                    $ejecutadoReal = $formatDecimalComma(((float)$data['Ejecutado_Real']), 1) . $unidad;
+                    $ejecutadoReal = $formatDecimalComma(((float) $data['Ejecutado_Real']), 1) . $unidad;
                 }
 
                 $pac = empty($data['PAC']) ? '0,0%' : $formatDecimalComma((floatval($data['PAC']) * 100), 1) . '%';

@@ -66,7 +66,7 @@ if (!function_exists('pi_filter_state_keys')) {
             return $fallback;
         }
 
-        $normalized = preg_replace('/\s+/', '', trim((string)$value));
+        $normalized = preg_replace('/\s+/', '', trim((string) $value));
         if ($normalized === '' || strtolower($normalized) === 'null') {
             return $fallback;
         }
@@ -89,7 +89,7 @@ if (!function_exists('pi_filter_state_keys')) {
             return $fallback;
         }
 
-        return (float)$normalized;
+        return (float) $normalized;
     }
 
     function pi_normalize_estado($value): string
@@ -98,7 +98,7 @@ if (!function_exists('pi_filter_state_keys')) {
             return '';
         }
 
-        $text = trim((string)$value);
+        $text = trim((string) $value);
         if ($text === '') {
             return '';
         }
@@ -119,13 +119,13 @@ if (!function_exists('pi_filter_state_keys')) {
 
     function pi_is_critical_route($value): bool
     {
-        $normalized = trim(pi_to_lower((string)$value));
+        $normalized = trim(pi_to_lower((string) $value));
         return $normalized === '1' || $normalized === 'si' || $normalized === 'sí';
     }
 
     function pi_is_not_applicable($value): bool
     {
-        $normalized = strtoupper(trim((string)($value ?? '')));
+        $normalized = strtoupper(trim((string) ($value ?? '')));
         return $normalized === 'N/A' || $normalized === 'NO APLICA';
     }
 
@@ -135,7 +135,7 @@ if (!function_exists('pi_filter_state_keys')) {
             return null;
         }
 
-        $raw = trim((string)$value);
+        $raw = trim((string) $value);
         $hasPercent = strpos($raw, '%') !== false;
         $normalized = str_replace('%', '', preg_replace('/\s+/', '', $raw));
         $commaPos = strrpos($normalized, ',');
@@ -153,7 +153,7 @@ if (!function_exists('pi_filter_state_keys')) {
             return null;
         }
 
-        $ratio = (float)$normalized;
+        $ratio = (float) $normalized;
         if ($hasPercent) {
             $ratio /= 100;
         }
@@ -186,11 +186,11 @@ if (!function_exists('pi_filter_state_keys')) {
 
     function pi_classify_state(array $row): string
     {
-        if ((int)($row['Titulo'] ?? 0) !== 0) {
+        if ((int) ($row['Titulo'] ?? 0) !== 0) {
             return 'header';
         }
 
-        $si = (int)round(pi_to_float($row['Semanas_Inicio'] ?? null, 999.0));
+        $si = (int) round(pi_to_float($row['Semanas_Inicio'] ?? null, 999.0));
         $ej = pi_to_float($row['Ejecutado'] ?? null, 0.0);
         $isCritical = pi_is_critical_route($row['Ruta_Critica'] ?? '');
 

@@ -3,10 +3,10 @@
 session_start();
 ob_start();
 if (isset($_SESSION['usuario'])) {
-    $seccionAnterior = (string)($_SESSION['seccion'] ?? '');
+    $seccionAnterior = (string) ($_SESSION['seccion'] ?? '');
     $seccion = $_GET['seccion'] ?? '';
     $semana = $_GET['semana'] ?? 0;
-    $origen = trim((string)($_GET['origen'] ?? $seccionAnterior));
+    $origen = trim((string) ($_GET['origen'] ?? $seccionAnterior));
 
     $_SESSION['semana'] = $semana;
     $_SESSION['seccion'] = $seccion;

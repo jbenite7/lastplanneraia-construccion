@@ -2,11 +2,12 @@
 
 namespace App\View\Components;
 
-class NavbarComponent {
-    
-    public static function render($activeSection = '') {
+class NavbarComponent
+{
+    public static function render($activeSection = '')
+    {
         $usuarioRaw = trim($_SESSION['nombreUsuario'] ?? 'Usuario');
-        
+
         // Abreviatura Inteligente (Ej: "Juan Felipe Benitez Ramos" -> "Juan F. Benitez R.")
         $usuario = $usuarioRaw;
         $nameParts = explode(' ', $usuarioRaw);
@@ -18,7 +19,7 @@ class NavbarComponent {
             $usuario = trim("$firstName $secondName $lastName $secondLastName");
         }
         // Base URL helper could be improved, using simple relative for now or absolute if cleaner
-        
+
         ob_start();
         ?>
         <!-- Unified Navbar Component -->
@@ -57,32 +58,44 @@ class NavbarComponent {
                     <ul class="navbar-nav mr-auto ml-lg-4 main-links">
                         <li class="nav-item">
                             <a id="informacionGeneral" class="nav-link <?php echo $activeSection == 'general' ? 'active' : ''; ?>" href="#">
-                                <i class="fas fa-info-circle d-xl-none"></i> Información General
+                                <i class="fas fa-info-circle nav-icon"></i>
+                                <span class="nav-text-full">Información General</span>
+                                <span class="nav-text-compact">I. General</span>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link <?php echo $activeSection == 'integracion' ? 'active' : ''; ?>" href="#">
-                                <i class="fas fa-network-wired d-xl-none"></i> Integración
+                                <i class="fas fa-network-wired nav-icon"></i>
+                                <span class="nav-text-full">Integración</span>
+                                <span class="nav-text-compact">Integración</span>
                             </a>
                         </li>
                          <li class="nav-item">
                             <a class="nav-link <?php echo $activeSection == 'semanas' ? 'active' : ''; ?>" href="#">
-                                <i class="far fa-calendar-alt d-xl-none"></i> Semanas del Proyecto
+                                <i class="far fa-calendar-alt nav-icon"></i>
+                                <span class="nav-text-full">Semanas del Proyecto</span>
+                                <span class="nav-text-compact">Semanas</span>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link <?php echo $activeSection == 'programa_general' ? 'active' : ''; ?>" href="/programa-general">
-                                <i class="fas fa-project-diagram d-xl-none"></i> Programa General
+                                <i class="fas fa-project-diagram nav-icon"></i>
+                                <span class="nav-text-full">Programa General</span>
+                                <span class="nav-text-compact">P. General</span>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a id="programacion_intermedia" class="nav-link <?php echo $activeSection == 'programacion_intermedia' ? 'active' : ''; ?>" href="/programacion-intermedia">
-                                <i class="fas fa-tasks d-xl-none"></i> Liberación de Restricciones
+                                <i class="fas fa-clipboard-list nav-icon"></i>
+                                <span class="nav-text-full">Liberación de Restricciones</span>
+                                <span class="nav-text-compact">Restricciones</span>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a id="programacion_semanal" class="nav-link <?php echo $activeSection == 'programacion_semanal' ? 'active' : ''; ?>" href="/programacion-semanal">
-                                <i class="fas fa-tasks d-xl-none"></i> Programación Semanal
+                                <i class="fas fa-tasks nav-icon"></i>
+                                <span class="nav-text-full">Programación Semanal</span>
+                                <span class="nav-text-compact">P. Semanal</span>
                             </a>
                         </li>
                     </ul>
@@ -142,9 +155,9 @@ class NavbarComponent {
                             <div class="user-info">
                                 <div class="user-name"><?php echo htmlspecialchars($usuario); ?></div>
                                 <div class="user-role">
-                                    <?php 
-                                        echo isset($_SESSION['rol']) ? htmlspecialchars($_SESSION['rol']) : 'Usuario'; 
-                                    ?>
+                                    <?php
+                                        echo isset($_SESSION['rol']) ? htmlspecialchars($_SESSION['rol']) : 'Usuario';
+        ?>
                                 </div>
                             </div>
                         </div>

@@ -1398,11 +1398,16 @@
     }
 
     var physicalRow = typeof instance.toPhysicalRow === 'function' ? instance.toPhysicalRow(visualRow) : visualRow;
-    if (!Number.isInteger(physicalRow) || physicalRow < 0 || typeof instance.getSourceDataAtRow !== 'function') {
+    if (!Number.isInteger(physicalRow) || physicalRow < 0) {
       return null;
     }
 
-    return instance.getSourceDataAtRow(physicalRow) || null;
+    var sourceData = typeof instance.getSourceData === 'function' ? instance.getSourceData() : null;
+    if (Array.isArray(sourceData) && physicalRow < sourceData.length) {
+      return sourceData[physicalRow] || null;
+    }
+
+    return typeof instance.getSourceDataAtRow === 'function' ? (instance.getSourceDataAtRow(physicalRow) || null) : null;
   }
 
   function captureViewportState() {
@@ -1866,6 +1871,7 @@
       applyFiltersAndRender();
       showLoading(false);
       syncPhaseUI();
+      afterDataLoaded();
     }).fail(function () {
       showLoading(false);
       showFeedback('error', 'Error cargando datos');
@@ -2033,7 +2039,8 @@
   function saveRow(visualRow, prop, oldValue, overrides) {
     var db = getDb();
     var physicalRow = hot.toPhysicalRow(visualRow);
-    var row = hot.getSourceDataAtRow(physicalRow);
+    var sourceData = typeof hot.getSourceData === 'function' ? hot.getSourceData() : null;
+    var row = (Array.isArray(sourceData) && physicalRow !== null && physicalRow >= 0 && physicalRow < sourceData.length) ? (sourceData[physicalRow] || null) : null;
 
     var payload = buildPayload(row || {}, prop, overrides || {});
     if (!payload.valid) {
@@ -2121,12 +2128,41 @@
     });
   }
 
+  function enforcePsCellClasses(instance, td, row, col, prop) {
+    var rowData = getSourceRowDataByVisualRow(instance, row) || {};
+    var alertClass = getAlertClassForRow(rowData);
+    var columnMeta = instance.getSettings().columns[col] || {};
+    var baseClass = columnMeta.className || '';
+    var isReadOnly = (columnMeta.renderer === 'psActionsRenderer') ? true : isPropReadOnly(prop);
+    var finalClass = ('ps-row-state ' + alertClass).trim();
+
+    if (isReadOnly) {
+      finalClass += ' ps-cell-readonly';
+    }
+    if (parseInt(rowData.alerta_crisis, 10) === 1) {
+      finalClass += ' ps-row-crisis';
+    }
+
+    // Limpieza estricta de clases de estado residuales de PS para prevenir acumulación por reuso DOM
+    td.classList.remove(
+      'ps-alert-critical-route', 'ps-alert-critical', 'ps-alert-high', 'ps-alert-medium',
+      'ps-alert-info', 'ps-alert-control', 'ps-alert-neutral', 'ps-cell-readonly', 'ps-row-crisis'
+    );
+
+    var classList = (baseClass + ' ' + finalClass).trim().split(/\s+/);
+    for (var i = 0; i < classList.length; i++) {
+      if (classList[i]) {
+        td.classList.add(classList[i]);
+      }
+    }
+  }
+
   function setupRenderers() {
     if (renderersRegistered) {
       return;
     }
 
-    Handsontable.renderers.registerRenderer('psActionsRenderer', function (instance, td, row) {
+    Handsontable.renderers.registerRenderer('psActionsRenderer', function (instance, td, row, col, prop, value) {
       Handsontable.dom.empty(td);
       td.classList.remove('ps-alert-critical-route', 'ps-alert-critical', 'ps-alert-high', 'ps-alert-medium', 'ps-alert-info', 'ps-alert-control', 'ps-alert-neutral');
 
@@ -2144,6 +2180,7 @@
         html += "<button type='button' class='ps-action-btn eliminar btn btn-danger btn-sm btn-action-gap' data-action='delete' title='Eliminar Actividad'><i class='fa fa-trash-alt fa-xs'></i></button>";
       }
       td.innerHTML = html;
+      enforcePsCellClasses(instance, td, row, col, prop);
     });
 
     Handsontable.renderers.registerRenderer('psLiberadaRenderer', function (instance, td, row, col, prop, value) {
@@ -2151,6 +2188,7 @@
       var numeric = toNumber(value, null);
       td.textContent = (numeric === 0) ? 'Sí' : ((numeric === 1) ? 'No' : '');
       td.classList.add('htCenter');
+      enforcePsCellClasses(instance, td, row, col, prop);
     });
 
     Handsontable.renderers.registerRenderer('psStateRenderer', function (instance, td, row, col, prop, value) {
@@ -2164,12 +2202,14 @@
       }
       td.title = view.actions.length ? (view.label + ' - ' + view.actions.join('; ')) : view.label;
       td.classList.add('htLeft', 'htMiddle', 'force-wrap', 'ops-state-td');
+      enforcePsCellClasses(instance, td, row, col, prop);
     });
 
     Handsontable.renderers.registerRenderer('psPacRenderer', function (instance, td, row, col, prop, value) {
       Handsontable.renderers.TextRenderer.apply(this, arguments);
       td.textContent = formatPercent(value, 1);
       td.classList.add('htCenter');
+      enforcePsCellClasses(instance, td, row, col, prop);
     });
 
     Handsontable.renderers.registerRenderer('psActividadRenderer', function (instance, td, row, col, prop, value) {
@@ -2178,6 +2218,7 @@
       var prefix = parseInt(rowData.alerta_crisis, 10) === 1 ? '🔥 ' : '';
       td.textContent = prefix + stripHtmlTags(value);
       td.classList.add('htLeft', 'htMiddle', 'force-wrap');
+      enforcePsCellClasses(instance, td, row, col, prop);
     });
 
     Handsontable.renderers.registerRenderer('psRatioRenderer', function (instance, td, row, col, prop, value) {
@@ -2196,6 +2237,7 @@
         }
       }
       td.classList.add('htCenter');
+      enforcePsCellClasses(instance, td, row, col, prop);
     });
 
     Handsontable.renderers.registerRenderer('psCompromisoRenderer', function (instance, td, row, col, prop, value) {
@@ -2235,6 +2277,7 @@
         }
       }
       td.classList.add('htCenter');
+      enforcePsCellClasses(instance, td, row, col, prop);
     });
 
     Handsontable.renderers.registerRenderer('psPptoRenderer', function (instance, td, row, col, prop, value) {
@@ -2247,6 +2290,7 @@
         td.textContent = isBlank(value) ? '' : value;
       }
       td.classList.add('htCenter', 'htMiddle');
+      enforcePsCellClasses(instance, td, row, col, prop);
     });
 
     Handsontable.renderers.registerRenderer('psResponsableRenderer', function (instance, td, row, col, prop, value) {
@@ -2260,6 +2304,7 @@
         td.style.backgroundColor = '';
         td.title = '';
       }
+      enforcePsCellClasses(instance, td, row, col, prop);
     });
 
     bindOperationalStateDrawer();
@@ -2404,10 +2449,11 @@
           tryAutoOpenDropdownSelection();
         }, 0);
       },
-      cells: function (row, col, prop) {
+       cells: function (row, col, prop) {
         var props = {};
         var hotInstance = (this && this.instance) || hot;
-        var rowData = hotInstance && typeof hotInstance.getSourceDataAtRow === 'function' ? (getSourceRowDataByVisualRow(hotInstance, row) || {}) : {};
+        var sourceData = hotInstance && typeof hotInstance.getSourceData === 'function' ? hotInstance.getSourceData() : null;
+        var rowData = (Array.isArray(sourceData) && row >= 0 && row < sourceData.length) ? (sourceData[row] || {}) : {};
 
         var alertClass = getAlertClassForRow(rowData);
         var columnMeta = this.instance.getSettings().columns[col] || {};
@@ -2489,21 +2535,28 @@
 
         for (var i = 0; i < changes.length; i++) {
           var change = changes[i];
-          var rowIndex = change[0];
+          if (!change) continue;
+          var physicalRow = change[0];
           var prop = change[1];
           var oldValue = change[2];
           var newValue = change[3];
+
+          var visualRow = this.toVisualRow(physicalRow);
+          if (visualRow === null || visualRow < 0) {
+            continue;
+          }
 
           if (!editableProps[prop] || oldValue === newValue) {
             continue;
           }
 
           if (isPropReadOnly(prop)) {
-            revertCell(rowIndex, prop, oldValue);
+            revertCell(visualRow, prop, oldValue);
             continue;
           }
 
-          var rowData = getSourceRowDataByVisualRow(hot, rowIndex) || {};
+          var sourceData = typeof this.getSourceData === 'function' ? this.getSourceData() : null;
+          var rowData = (Array.isArray(sourceData) && physicalRow !== null && physicalRow >= 0 && physicalRow < sourceData.length) ? (sourceData[physicalRow] || {}) : {};
 
           // HARD GUARD: Block real execution registration if missing assignees
           if (prop === 'Ejecutado_Real') {
@@ -2511,7 +2564,7 @@
             var isResMissing = isBlank(rowData.Responsable_AIA);
             
             if (isSubMissing || isResMissing) {
-              revertCell(rowIndex, prop, oldValue);
+              revertCell(visualRow, prop, oldValue);
               showFeedback('error', 'Falta Sub-Contratista o Resp. AIA para registrar avance');
               continue;
             }
@@ -2523,7 +2576,7 @@
             if (realVal !== null && compromiso !== null && realVal < compromiso) {
                 // Prevenir guardado y abrir modal CNC (nuevo o actualización)
                 window._pendingCncSave = {
-                  rowIndex: rowIndex,
+                  rowIndex: visualRow,
                   consecutivo: rowData.Consecutivo,
                   sourceRowData: rowData,
                   oldValue: oldValue,
@@ -2543,23 +2596,23 @@
 
                 $('#modal_cnc_hot').modal('show');
                 
-                revertCell(rowIndex, prop, oldValue);
+                revertCell(visualRow, prop, oldValue);
                 continue;
             }
           }
 
           var normalized = normalizeCellValue(prop, newValue);
           if (!normalized.valid) {
-            revertCell(rowIndex, prop, oldValue);
+            revertCell(visualRow, prop, oldValue);
             showFeedback('error', normalized.error);
             continue;
           }
 
           if (normalized.value !== newValue) {
-            hot.setDataAtRowProp(rowIndex, prop, normalized.value, 'internal-update');
+            hot.setDataAtRowProp(visualRow, prop, normalized.value, 'internal-update');
           }
 
-          saveRow(rowIndex, prop, oldValue);
+          saveRow(visualRow, prop, oldValue);
         }
       },
     });
@@ -3203,7 +3256,8 @@
       }
 
       var physicalRow = hot.toPhysicalRow(coords.row);
-      var row = hot.getSourceDataAtRow(physicalRow) || {};
+      var sourceData = typeof hot.getSourceData === 'function' ? hot.getSourceData() : null;
+      var row = (Array.isArray(sourceData) && physicalRow !== null && physicalRow >= 0 && physicalRow < sourceData.length) ? (sourceData[physicalRow] || {}) : {};
 
       if (!canManageToolbarActions() || getPermiso() === 'C' || getSemanalConfirmada() === 1) {
         showFeedback('error', 'Acción bloqueada: No tiene permisos de edición');
@@ -3307,13 +3361,13 @@
       var answer = (response && typeof response === 'object') ? String(response.respuesta || '') : String(response || '');
       if (answer === 'BIEN' || answer === 'OK') {
         showFeedback('success', 'Autoprogramación ejecutada');
-        
-        var alertas = (response && Array.isArray(response.alertasRestricciones)) ? response.alertasRestricciones : [];
-        if (alertas.length > 0) {
-          showRestriccionesFaltantesModal(alertas);
-        }
 
         loadData();
+        setTimeout(function () {
+          if (window.ChangeMonitor && typeof window.ChangeMonitor.checkAndShow === 'function') {
+            window.ChangeMonitor.checkAndShow();
+          }
+        }, 800);
         return;
       }
       var message = (response && typeof response === 'object')
@@ -3339,9 +3393,9 @@
       rows += '<td class="text-danger">' + escapeHtml(faltantes[i].CamposFaltantes || '') + '</td></tr>';
     }
 
-    var html = '<div class="modal fade" id="modalDatosFaltantes" tabindex="-1" role="dialog">'
-      + '<div class="modal-dialog modal-lg" role="document"><div class="modal-content">'
-      + '<div class="modal-header bg-warning"><h5 class="modal-title"><i class="fas fa-exclamation-triangle"></i> Actividades con Datos Incompletos</h5>'
+    var html = '<div class="modal fade aia-modal" id="modalDatosFaltantes" tabindex="-1" role="dialog">'
+      + '<div class="modal-dialog modal-lg modal-dialog-centered" role="document"><div class="modal-content">'
+      + '<div class="modal-header"><h5 class="modal-title"><i class="fas fa-exclamation-triangle"></i> Actividades con Datos Incompletos</h5>'
       + '<button type="button" class="close" data-dismiss="modal"><span>&times;</span></button></div>'
       + '<div class="modal-body"><p>Las siguientes <strong>' + faltantes.length + '</strong> actividades candidatas tienen datos faltantes:</p>'
       + '<div class="table-responsive"><table class="table table-sm table-bordered"><thead><tr><th>Id</th><th>Actividad</th><th>Campos Faltantes</th></tr></thead>'
@@ -3382,9 +3436,9 @@
       rows += '<td>' + conditions + '</td></tr>';
     }
 
-    var html = '<div class="modal fade" id="modalRestriccionesFaltantes" tabindex="-1" role="dialog">'
-      + '<div class="modal-dialog modal-lg" role="document"><div class="modal-content">'
-      + '<div class="modal-header bg-danger text-white"><h5 class="modal-title"><i class="fas fa-clipboard-list"></i> Actividades pendientes por habilitantes</h5>'
+    var html = '<div class="modal fade aia-modal" id="modalRestriccionesFaltantes" tabindex="-1" role="dialog">'
+      + '<div class="modal-dialog modal-lg modal-dialog-centered" role="document"><div class="modal-content">'
+      + '<div class="modal-header"><h5 class="modal-title"><i class="fas fa-clipboard-list"></i> Actividades pendientes por habilitantes</h5>'
       + '<button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button></div>'
       + '<div class="modal-body"><p>Las siguientes <strong>' + alertas.length + '</strong> actividades se omitieron porque tienen condiciones <strong>habilitantes</strong> pendientes para comprometer:</p>'
       + '<p class="text-muted"><small><span class="badge badge-warning">Blandas</span> Pdto. Constructivo y Modelo BIM son seguimiento operativo; aparecen en ámbar y no bloquean la autoprogramación.</small></p>'
@@ -3806,8 +3860,15 @@
     scheduleActionsRowFit(0);
   }
 
+  function afterDataLoaded() {
+    if (window.ChangeMonitor && typeof window.ChangeMonitor.run === 'function') {
+      setTimeout(function() { window.ChangeMonitor.run(); }, 500);
+    }
+  }
+
   window.PSHotModule = {
     init: init,
+    reload: loadData,
     getHotInstance: function () { return hot; },
   };
 })(window, jQuery);

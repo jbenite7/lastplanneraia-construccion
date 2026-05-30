@@ -42,8 +42,8 @@
 |-------|-------|------------|-----|
 | `--aia-green-primary` | `oklch(32% 0.07 148.5)` | `#1a5633` | Verde corporativo AIA, navbar |
 | `--aia-green-dark` | `oklch(27.8% 0.05 147.1)` | `#1a3c2a` | Verde oscuro, fondo drawer móvil |
-| `--aia-orange-primary` | `oklch(45% 0.16 46.2)` | `#b55211` | Naranja construcción, headers PDC/CIC/CNC |
-| `--aia-orange-dark` | `oklch(35% 0.13 46.2)` | `#8b4011` | Naranja oscuro, filas header PDC |
+| `--aia-orange-primary` | `oklch(45% 0.16 46.2)` | `#b55211` | Naranja construcción, acentos legacy y alertas operativas |
+| `--aia-orange-dark` | `oklch(35% 0.13 46.2)` | `#8b4011` | Naranja oscuro, estados y acentos legacy |
 | `--aia-blue-primary` | `oklch(56% 0.12 247.1)` | `#4a81bd` | Azul arquitectura |
 | `--aia-aqua-primary` | `oklch(61% 0.13 189)` | `#00a499` | Aqua, acentos de proyectos |
 
@@ -58,6 +58,22 @@
 | **Completed On Time** (completado a tiempo) | `#e8f6ec` | `#69b578` | `#25643a` |
 | **Active** (en curso) | `#e6f0ff` | `#4a81bd` | `#1f4f82` |
 | **Not Started** (no iniciado) | `#f3f4f6` | `#c7cdd4` | `#4b5563` |
+
+### Sistema de Modales `.aia-modal`
+
+| Elemento | Estándar |
+|----------|----------|
+| Contenedor | Todo modal Bootstrap visible debe usar `.modal.aia-modal` |
+| Header | Gradiente Verde AIA `#1a3c2a → #1a5633`, texto blanco |
+| Body | Fondo Linen `#F4F1EA` |
+| Footer | Fondo Alabaster `#FAFAFA`, borde verde sutil |
+| Botones | `.aia-btn-primary` / `.aia-btn-secondary` o selectores descendientes `.aia-modal .modal-footer .btn` |
+| Formularios | Inputs dentro de `.aia-modal` heredan borde y focus ring verde |
+| Tablas | `.aia-modal .table` usa head verde claro `#d5e5db` y hover `#eef5f1` |
+| Mobile | Cada `.modal-dialog` debe incluir `modal-dialog-centered`; validado a `375px` |
+| IDs | Unicidad dentro del DOM renderizado; no renombrar IDs repetidos en vistas independientes |
+
+Validación recomendada: `node tests/browser/modal-brand.mjs`.
 
 ### Colores Apple System (`public/css/styles.css`, capa theme)
 
@@ -414,13 +430,13 @@
 - Modal `#modal_cerrar_compromisos` — confirmar compromisos semanales
 - Modal `#formulario_nuevo` — agregar actividad manual con bandeja de excepciones
 - Modal `#modal_eliminar_actividad` — eliminar con razón CNP
-- Modal `#modal_cnc_hot` — justificación CNC (header naranja `#b55211`)
+- Modal `#modal_cnc_hot` — justificación CNC con `.aia-modal` y header Verde AIA
 - Chips de leyenda de filtros (colapsables en móvil)
 
 **Colores:**
 - Celdas editables: tinte verde `rgba(34, 197, 94, 0.06)`
 - Celdas readonly: tinte slate `rgba(148, 163, 184, 0.08)`
-- Modal CNC: header naranja `#b55211`
+- Modal CNC: header Verde AIA `#1a5633`
 - Dropdown: azul `#1e5ea8` estado activo
 
 **Estilo de diseño:**
@@ -607,7 +623,7 @@
 - Modal `#modal_semanal_confirmada` — aviso de programa bloqueado
 
 **Colores:**
-- Modal éxito: naranja `#b55211`, verde `#1a3c2a`, fondo `#fbead9`
+- Modal éxito: Verde AIA `#1a5633`, verde oscuro `#1a3c2a`, fondo verde claro `#d5e5db`
 - Dropdown TomSelect: paleta naranja AIA
 
 **Estilo de diseño:**

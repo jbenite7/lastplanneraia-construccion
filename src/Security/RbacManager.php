@@ -10,7 +10,7 @@ class RbacManager
     public static function getCapabilities(string $role): array
     {
         $role = strtoupper(trim($role));
-        
+
         $isSystemAdmin = ($role === 'A');
         $isDirector = ($role === 'D');
         $isResident = ($role === 'R');

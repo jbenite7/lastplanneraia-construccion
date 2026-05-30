@@ -67,7 +67,7 @@
   }
 
   function isActiveRow(rowData) {
-    if (!rowData) {
+    if (!rowData || rowData.Consecutivo_en_Programa === undefined) {
       return false;
     }
 

@@ -15,7 +15,7 @@ $db = Database::getInstance();
 try {
     $context = ModuleRequestContext::resolve();
     $dbName = $context['dbPrefix'];
-    $semana = (int)($_POST['semana'] ?? ($_GET['semana'] ?? $context['semana']));
+    $semana = (int) ($_POST['semana'] ?? ($_GET['semana'] ?? $context['semana']));
 
     rbac_guard_require_permission('lps.pdc.editar', [
         'message' => 'No autorizado para actualizar el plan de compras.',
@@ -26,15 +26,15 @@ try {
     $sqlPdcActivo = "SELECT pdcActivo FROM general_proyectos_procesos WHERE Base_de_datos = ? AND Area = 'Construcción'";
     $stmtPdcActivo = $db->query($sqlPdcActivo, [$dbName]);
     $dataPdcActivo = $stmtPdcActivo->fetch();
-    $pdcActivo = (int)($dataPdcActivo["pdcActivo"] ?? 0);
+    $pdcActivo = (int) ($dataPdcActivo["pdcActivo"] ?? 0);
 
     // Solo ejecuta la lógica pesada si pdcActivo está habilitado (1), igual que el archivo legacy
     if ($pdcActivo === 1) {
-        
+
         $sqlConteo = "SELECT COUNT(*) AS conteo FROM {$dbName}_pdc WHERE titulo = 0 AND semana = ? AND fechaInicio IS NOT NULL";
         $stmtConteo = $db->query($sqlConteo, [$semana]);
         $dataConteo = $stmtConteo->fetch();
-        $conteo = (int)($dataConteo["conteo"] ?? 0);
+        $conteo = (int) ($dataConteo["conteo"] ?? 0);
 
         if ($conteo === 0) {
             $contratosVigentesSI = "";

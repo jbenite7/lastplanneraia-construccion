@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="es">
 <head id="head">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://code.jquery.com/ui/1.10.1/jquery-ui.js"></script>
-    <script type="text/javascript" src="/js/linksComunesHead2.js?v=20260325a" charset="utf-8"></script>
+    <script src="/public/vendor/jquery.min.js"></script>
+    <script src="/public/vendor/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="/js/linksComunesHead2.js?v=headLoaderV20260530" charset="utf-8"></script>
     <link rel="stylesheet" href="/public/vendor/handsontable/handsontable.full.min.css" />
-    <link rel="stylesheet" href="/css/handsontable-module.css?v=20260522d" />
+    <link rel="stylesheet" href="/css/handsontable-module.css?v=20260529a" />
+
     <style>
         .hot-full-bleed {
             --hot-gutter: 8px;
@@ -64,13 +65,37 @@
             overflow-wrap: anywhere !important;
         }
 
-        .pg-page #hot-container td.pg-cell-editable {
+        .pg-page #hot-container td.pg-cell-editable:not(.pg-state-atrasado):not(.pg-state-atrasada):not(.pg-state-restr-0):not(.pg-state-debe-iniciar):not(.pg-state-actividad-futura):not(.pg-state-en-curso):not(.pg-state-a-tiempo-en-curso):not(.pg-state-terminada):not(.pg-state-sin-datos) {
             box-shadow: inset 0 0 0 9999px rgba(34, 197, 94, 0.06);
             cursor: text;
         }
 
-        .pg-page #hot-container td.pg-cell-readonly {
+        .pg-page #hot-container td.pg-cell-editable.pg-state-atrasado,
+        .pg-page #hot-container td.pg-cell-editable.pg-state-atrasada,
+        .pg-page #hot-container td.pg-cell-editable.pg-state-restr-0,
+        .pg-page #hot-container td.pg-cell-editable.pg-state-debe-iniciar,
+        .pg-page #hot-container td.pg-cell-editable.pg-state-actividad-futura,
+        .pg-page #hot-container td.pg-cell-editable.pg-state-en-curso,
+        .pg-page #hot-container td.pg-cell-editable.pg-state-a-tiempo-en-curso,
+        .pg-page #hot-container td.pg-cell-editable.pg-state-terminada,
+        .pg-page #hot-container td.pg-cell-editable.pg-state-sin-datos {
+            cursor: text;
+        }
+
+        .pg-page #hot-container td.pg-cell-readonly:not(.pg-state-atrasado):not(.pg-state-atrasada):not(.pg-state-restr-0):not(.pg-state-debe-iniciar):not(.pg-state-actividad-futura):not(.pg-state-en-curso):not(.pg-state-a-tiempo-en-curso):not(.pg-state-terminada):not(.pg-state-sin-datos) {
             box-shadow: inset 0 0 0 9999px rgba(148, 163, 184, 0.08);
+            cursor: not-allowed;
+        }
+
+        .pg-page #hot-container td.pg-cell-readonly.pg-state-atrasado,
+        .pg-page #hot-container td.pg-cell-readonly.pg-state-atrasada,
+        .pg-page #hot-container td.pg-cell-readonly.pg-state-restr-0,
+        .pg-page #hot-container td.pg-cell-readonly.pg-state-debe-iniciar,
+        .pg-page #hot-container td.pg-cell-readonly.pg-state-actividad-futura,
+        .pg-page #hot-container td.pg-cell-readonly.pg-state-en-curso,
+        .pg-page #hot-container td.pg-cell-readonly.pg-state-a-tiempo-en-curso,
+        .pg-page #hot-container td.pg-cell-readonly.pg-state-terminada,
+        .pg-page #hot-container td.pg-cell-readonly.pg-state-sin-datos {
             cursor: not-allowed;
         }
 
@@ -166,8 +191,8 @@
     </style>
     <link rel="stylesheet" href="/css/handsontable-header-global.css?v=20260223a" />
     <!-- Toastr (Mensajes Emergentes) -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <link rel="stylesheet" href="/public/vendor/toastr.min.css" />
+    <script src="/public/vendor/toastr.min.js"></script>
 </head>
 <body class="pg-page">
     <div id="loading"><div class="spinner-border text-primary" role="status"><span class="sr-only">Cargando...</span></div></div>
@@ -175,7 +200,7 @@
     <div class="encabezado" id="encabezado">
         <input type="hidden" name="seccion" id="seccion" value="programa_general" aria-hidden="true">
         <input type="hidden" id="baseDatos_PHP" value="<?php echo htmlspecialchars($dbName ?? '', ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true">
-        <input type="hidden" id="semana_PHP" value="<?php echo (int)($semana ?? 0); ?>" aria-hidden="true">
+        <input type="hidden" id="semana_PHP" value="<?php echo (int) ($semana ?? 0); ?>" aria-hidden="true">
         <input type="hidden" id="permiso_canonico" value="<?php echo htmlspecialchars($permiso ?? '', ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true">
         <input type="hidden" id="scriptBarraFiltros" value="" aria-hidden="true">
     </div>
@@ -204,7 +229,7 @@
         </div>
 
         <div class="collapse d-md-block" id="pdcFiltersMobile">
-            <div class="pdc-legend pg-legend" id="pgLegend">
+            <div class="pdc-legend pg-legend pdc-legend-autoscaling" id="pgLegend">
                 <span class="pdc-legend-item alerta-restricciones" data-filter="con-alerta-restricciones" role="button" tabindex="0"><span class="indicator"></span> Con Alerta Restricciones <span id="count-con-alerta-restricciones" class="count-badge">(...)</span></span>
                 <span class="pdc-legend-item debe-iniciar" data-filter="debe-iniciar" role="button" tabindex="0"><span class="indicator"></span> Debe Iniciar <span id="count-debe-iniciar" class="count-badge">(...)</span></span>
                 <span class="pdc-legend-item actividad-futura" data-filter="actividad-futura" role="button" tabindex="0"><span class="indicator"></span> Actividad Futura <span id="count-actividad-futura" class="count-badge">(...)</span></span>
@@ -220,8 +245,8 @@
     <div id="mobile-card-view" style="display:none;"></div>
     </div>
 
-    <div class="modal fade" id="modal_leyenda_colores" role="dialog" data-backdrop="static">
-        <div class="modal-dialog modal-lg">
+    <div class="modal fade aia-modal" id="modal_leyenda_colores" role="dialog" data-backdrop="static">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h4 class="modal-title" id="modal_leyenda_colores_Label">Guia Operativa - Programa General</h4>
@@ -236,8 +261,8 @@
 
     <?php include __DIR__ . '/../partials/drawer_unificado.php'; ?>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="/public/vendor/popper.min.js"></script>
+    <script src="/public/vendor/bootstrap/bootstrap.min.js"></script>
     <script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js" charset="utf-8"></script>
     <script type="text/javascript" src="/js/funcionesGenerales6.js" charset="utf-8"></script>
 
@@ -245,7 +270,7 @@
     <script src="/public/vendor/handsontable/es-MX.js"></script>
     <script src="/js/modules/lps_drawer.js?v=20260522d"></script>
     <?php $pgHotVersion = @filemtime(dirname(__DIR__, 2) . '/public/js/modules/programa_general/hot.js') ?: 'hot12'; ?>
-    <script src="/js/modules/programa_general/hot.js?v=<?php echo urlencode((string)$pgHotVersion); ?>"></script>
+    <script src="/js/modules/programa_general/hot.js?v=<?php echo urlencode((string) $pgHotVersion); ?>"></script>
 
     <script>
         function cargaParametros() {

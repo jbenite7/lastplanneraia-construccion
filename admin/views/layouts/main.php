@@ -51,11 +51,11 @@
     <!-- Right navbar links -->
     <ul class="navbar-nav ml-auto">
       <?php if (isset($_SESSION['admin_user']['nombre'])): ?>
-        <?php 
+        <?php
             $adminName = $_SESSION['admin_user']['nombre'];
-            $adminRole = $_SESSION['admin_user']['permiso'] ?? '';
-            $adminRoleName = class_exists('\App\Security\RbacCatalog') ? \App\Security\RbacCatalog::getRoleName($adminRole) : 'Admin';
-        ?>
+          $adminRole = $_SESSION['admin_user']['permiso'] ?? '';
+          $adminRoleName = class_exists('\App\Security\RbacCatalog') ? \App\Security\RbacCatalog::getRoleName($adminRole) : 'Admin';
+          ?>
         <li class="nav-item d-flex align-items-center mr-3">
           <span class="text-muted" style="line-height:1.2;text-align:right">
             <?php echo htmlspecialchars($adminName); ?>

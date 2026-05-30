@@ -30,7 +30,7 @@ class LpsService
                 continue;
             }
 
-            $val = trim((string)$row[$campo]);
+            $val = trim((string) $row[$campo]);
             $upper = strtoupper($val);
 
             // Excluir N/A del cálculo
@@ -39,7 +39,7 @@ class LpsService
             }
 
             $aplicables++;
-            $floatVal = (float)$val;
+            $floatVal = (float) $val;
             if ($floatVal >= 0.999) {
                 $liberadas++;
             }
@@ -50,7 +50,7 @@ class LpsService
         return [
             'porcentaje' => $porcentaje,
             'liberadas' => $liberadas,
-            'aplicables' => $aplicables
+            'aplicables' => $aplicables,
         ];
     }
 
@@ -64,7 +64,7 @@ class LpsService
         int $semana,
         int $consecutivo,
         string $modulo,
-        string $trigger
+        string $trigger,
     ): bool {
         if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
             return false;
@@ -76,7 +76,7 @@ class LpsService
             // 1. Validar si ya existe una alerta activa para esta actividad en esta semana
             $stmt = $this->db->prepare(
                 "SELECT id FROM `{$dbPrefix}_lps_escalamientos` 
-                 WHERE proyecto_id = ? AND semana = ? AND consecutivo_en_programa = ? AND estado = 'Activo' LIMIT 1"
+                 WHERE proyecto_id = ? AND semana = ? AND consecutivo_en_programa = ? AND estado = 'Activo' LIMIT 1",
             );
             $stmt->execute([$proyectoId, $semana, $consecutivo]);
             $exists = $stmt->fetch();
@@ -86,7 +86,7 @@ class LpsService
                 $stmtInsert = $this->db->prepare(
                     "INSERT INTO `{$dbPrefix}_lps_escalamientos` 
                      (proyecto_id, semana, consecutivo_en_programa, modulo, trigger_origen, nivel_actual, estado) 
-                     VALUES (?, ?, ?, ?, ?, 1, 'Activo')"
+                     VALUES (?, ?, ?, ?, ?, 1, 'Activo')",
                 );
                 $stmtInsert->execute([$proyectoId, $semana, $consecutivo, $modulo, $trigger]);
             }
@@ -95,7 +95,7 @@ class LpsService
             $stmtConsolidado = $this->db->prepare(
                 "UPDATE `{$dbPrefix}_programa_consolidado` 
                  SET alerta_crisis = 1 
-                 WHERE Consecutivo_en_Programa = ? AND Semana = ?"
+                 WHERE Consecutivo_en_Programa = ? AND Semana = ?",
             );
             $stmtConsolidado->execute([$consecutivo, $semana]);
 
@@ -103,7 +103,7 @@ class LpsService
             $stmtSemanal = $this->db->prepare(
                 "UPDATE `{$dbPrefix}_programacion_semanal` 
                  SET alerta_crisis = 1 
-                 WHERE Consecutivo_En_Programa = ? AND Semana = ?"
+                 WHERE Consecutivo_En_Programa = ? AND Semana = ?",
             );
             $stmtSemanal->execute([$consecutivo, $semana]);
 
@@ -133,7 +133,7 @@ class LpsService
             $query = "SELECT id, nivel_actual, trigger_origen FROM `{$dbPrefix}_lps_escalamientos` 
                       WHERE proyecto_id = ? AND estado = 'Activo' AND nivel_actual < 5 
                         AND DATEDIFF(CURRENT_TIMESTAMP, COALESCE(fecha_ultimo_escalamiento, fecha_detonacion)) >= 7";
-            
+
             $stmt = $this->db->prepare($query);
             $stmt->execute([$proyectoId]);
             $alertas = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -146,7 +146,7 @@ class LpsService
             $updateStmt = $this->db->prepare(
                 "UPDATE `{$dbPrefix}_lps_escalamientos` 
                  SET nivel_actual = nivel_actual + 1, fecha_ultimo_escalamiento = CURRENT_TIMESTAMP 
-                 WHERE id = ?"
+                 WHERE id = ?",
             );
 
             foreach ($alertas as $alerta) {
@@ -181,7 +181,7 @@ class LpsService
         string $comentario,
         ?int $parentId = null,
         ?int $escalamientoId = null,
-        ?array $menciones = null
+        ?array $menciones = null,
     ): int {
         if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
             return 0;
@@ -189,11 +189,11 @@ class LpsService
 
         try {
             $mencionesJson = $menciones ? json_encode($menciones) : null;
-            
+
             $query = "INSERT INTO `{$dbPrefix}_lps_drawer_comentarios` 
                       (proyecto_id, consecutivo_en_programa, semana, usuario_id, comentario, parent_id, escalamiento_id, menciones) 
                       VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-            
+
             $stmt = $this->db->prepare($query);
             $stmt->execute([
                 $proyectoId,
@@ -203,10 +203,10 @@ class LpsService
                 $comentario,
                 $parentId,
                 $escalamientoId,
-                $mencionesJson
+                $mencionesJson,
             ]);
 
-            return (int)$this->db->lastInsertId();
+            return (int) $this->db->lastInsertId();
         } catch (Throwable $e) {
             error_log("Error al agregar comentario en drawer: " . $e->getMessage());
             return 0;
@@ -229,14 +229,14 @@ class LpsService
                       FROM `{$dbPrefix}_lps_drawer_comentarios` c
                       LEFT JOIN `general_usuarios` u ON c.usuario_id = u.Id 
                       WHERE c.consecutivo_en_programa = ? AND c.semana = ?";
-            
+
             if ($escalamientoId !== null) {
                 $query .= " AND (c.escalamiento_id = ? OR c.escalamiento_id IS NULL)";
                 $params[] = $escalamientoId;
             }
 
             $query .= " ORDER BY c.created_at ASC";
-            
+
             $stmt = $this->db->prepare($query);
             $stmt->execute($params);
             $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -277,7 +277,7 @@ class LpsService
         string $dbPrefix,
         int $alertaId,
         int $usuarioCierreId,
-        string $justificacion
+        string $justificacion,
     ): bool {
         if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
             return false;
@@ -293,7 +293,7 @@ class LpsService
             // 1. Obtener detalles de la alerta
             $stmt = $this->db->prepare(
                 "SELECT consecutivo_en_programa, semana, proyecto_id FROM `{$dbPrefix}_lps_escalamientos` 
-                 WHERE id = ? AND estado = 'Activo'"
+                 WHERE id = ? AND estado = 'Activo'",
             );
             $stmt->execute([$alertaId]);
             $alerta = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -311,7 +311,7 @@ class LpsService
                 "UPDATE `{$dbPrefix}_lps_escalamientos` 
                  SET estado = 'Cerrado', fecha_cierre = CURRENT_TIMESTAMP, 
                      usuario_cierre_id = ?, justificacion_cierre = ? 
-                 WHERE id = ?"
+                 WHERE id = ?",
             );
             $stmtClose->execute([$usuarioCierreId, trim($justificacion), $alertaId]);
 
@@ -319,7 +319,7 @@ class LpsService
             $stmtConsolidado = $this->db->prepare(
                 "UPDATE `{$dbPrefix}_programa_consolidado` 
                  SET alerta_crisis = 0 
-                 WHERE Consecutivo_en_Programa = ? AND Semana = ?"
+                 WHERE Consecutivo_en_Programa = ? AND Semana = ?",
             );
             $stmtConsolidado->execute([$consecutivo, $semana]);
 
@@ -327,7 +327,7 @@ class LpsService
             $stmtSemanal = $this->db->prepare(
                 "UPDATE `{$dbPrefix}_programacion_semanal` 
                  SET alerta_crisis = 0 
-                 WHERE Consecutivo_En_Programa = ? AND Semana = ?"
+                 WHERE Consecutivo_En_Programa = ? AND Semana = ?",
             );
             $stmtSemanal->execute([$consecutivo, $semana]);
 
@@ -343,9 +343,10 @@ class LpsService
     }
 
     public function getActiveCrisisByProject(string $dbPrefix, int $proyectoId): array
-
     {
-        if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) return [];
+        if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
+            return [];
+        }
         try {
             $q = "SELECT e.*, c.Actividad as actividad_nombre, c.Sub_Contratista as subcontratista,
                          c.Observaciones as restriccion_desc

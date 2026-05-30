@@ -12,11 +12,11 @@ final class ModuleRequestContext
             session_start();
         }
 
-        $allowZeroWeek = (bool)($options['allow_zero_week'] ?? true);
-        $syncSession = (bool)($options['sync_session'] ?? true);
+        $allowZeroWeek = (bool) ($options['allow_zero_week'] ?? true);
+        $syncSession = (bool) ($options['sync_session'] ?? true);
 
-        $requestDb = trim((string)($_GET['db'] ?? ($_POST['db'] ?? '')));
-        $sessionDb = trim((string)($_SESSION['db'] ?? ''));
+        $requestDb = trim((string) ($_GET['db'] ?? ($_POST['db'] ?? '')));
+        $sessionDb = trim((string) ($_SESSION['db'] ?? ''));
 
         if ($requestDb !== '' && !self::isValidDbPrefix($requestDb)) {
             self::logWarning('Base de datos solicitada inválida; se ignorará el valor recibido por request.', [
@@ -77,7 +77,7 @@ final class ModuleRequestContext
 
         return [
             'dbPrefix' => $dbPrefix,
-            'semana' => (int)($semana ?? 0),
+            'semana' => (int) ($semana ?? 0),
             'sessionDb' => $sessionDb,
             'sessionWeek' => $sessionWeek,
             'requestDb' => $requestDb,
@@ -98,7 +98,7 @@ final class ModuleRequestContext
             return null;
         }
 
-        return (int)$parsed;
+        return (int) $parsed;
     }
 
     private static function isValidDbPrefix(string $value): bool

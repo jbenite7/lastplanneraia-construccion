@@ -3,7 +3,7 @@
 <head id="head">
 	<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 	<!--Script cque va al archivo linksComunesHead2.js-->
-	<script type="text/javascript" src="/js/linksComunesHead2.js?v=20260325a" charset="utf-8"></script>
+	<script type="text/javascript" src="/js/linksComunesHead2.js?v=piStateColorsSuperFresh3" charset="utf-8"></script>
 </head>
 
 <!--Etiqueta superior-->
@@ -83,11 +83,11 @@
 
 	<div class="row ventanasModalesEspecificas" id="ventanasModalesEspecificas">
 		<div class="modal_EditarContratos modal fade aia-modal" id="modalEditarContratos" tabindex="-1" role="dialog" aria-labelledby="modalEditarContratosLabel" aria-hidden="true">
-			<div class="modal-dialog modal-xl modal-dialog-scrollable ct-modal-dialog" role="document">
+			<div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable ct-modal-dialog" role="document">
 				<div class="modal-content ct-modal-content">
 					<div class="modal-header ct-modal-header">
 						<div class="modal-title ct-modal-title" id="modalEditarContratosLabel">
-							<div class="aia-modal__eyebrow">AIA Construccion</div>
+							<div class="aia-modal__eyebrow">AIA Corporativo</div>
 							<h2 class="aia-modal__headline"><span class="modal-body-texto-EditarContratos" id="modal-body-texto-EditarContratos"></span></h2>
 							<p class="aia-modal__subtitle">Configura los paquetes e insumos asociados a la actividad seleccionada.</p>
 						</div>
@@ -102,32 +102,32 @@
 									<input type="hidden" id="tipoContrato" name="tipoContrato" value="">
 									<input type="hidden" id="actividadModificar" name="actividadModificar" value="">
 									<?php
-									$contractSections = [
-										[
-											'id' => 'parametro_EditarContratosS',
-											'title' => 'Contratos de Suministro',
-											'packagePrefix' => 'paqueteS',
-											'resourcePrefix' => 'S',
-											'packageLabel' => 'Paquete Suministro',
-											'resourceLabel' => 'Insumos Suministro',
-										],
-										[
-											'id' => 'parametro_EditarContratosMO',
-											'title' => 'Contratos de Mano de Obra',
-											'packagePrefix' => 'paqueteMO',
-											'resourcePrefix' => 'MO',
-											'packageLabel' => 'Paquete Mano de Obra',
-											'resourceLabel' => 'Insumos Mano de Obra',
-										],
-										[
-											'id' => 'parametro_EditarContratosSI',
-											'title' => 'Contratos de Suministro e Instalación',
-											'packagePrefix' => 'paqueteSI',
-											'resourcePrefix' => 'SI',
-											'packageLabel' => 'Paquete Suministro e Instalación',
-											'resourceLabel' => 'Insumos Suministro e Instalación',
-										],
-									];
+                                    $contractSections = [
+                                        [
+                                            'id' => 'parametro_EditarContratosS',
+                                            'title' => 'Contratos de Suministro',
+                                            'packagePrefix' => 'paqueteS',
+                                            'resourcePrefix' => 'S',
+                                            'packageLabel' => 'Paquete Suministro',
+                                            'resourceLabel' => 'Insumos Suministro',
+                                        ],
+                                        [
+                                            'id' => 'parametro_EditarContratosMO',
+                                            'title' => 'Contratos de Mano de Obra',
+                                            'packagePrefix' => 'paqueteMO',
+                                            'resourcePrefix' => 'MO',
+                                            'packageLabel' => 'Paquete Mano de Obra',
+                                            'resourceLabel' => 'Insumos Mano de Obra',
+                                        ],
+                                        [
+                                            'id' => 'parametro_EditarContratosSI',
+                                            'title' => 'Contratos de Suministro e Instalación',
+                                            'packagePrefix' => 'paqueteSI',
+                                            'resourcePrefix' => 'SI',
+                                            'packageLabel' => 'Paquete Suministro e Instalación',
+                                            'resourceLabel' => 'Insumos Suministro e Instalación',
+                                        ],
+                                    ];
 									?>
 									<?php foreach ($contractSections as $section): ?>
 										<section class="form-group parametro_EditarContratos ct-contract-section" id="<?php echo $section['id']; ?>">
@@ -142,9 +142,9 @@
 											<div class="ct-contract-list">
 												<?php for ($i = 1; $i <= 5; $i++): ?>
 													<?php
-													$packageId = $section['packagePrefix'] . $i;
-													$resourceId = $section['resourcePrefix'] . $i;
-													?>
+									                $packageId = $section['packagePrefix'] . $i;
+												    $resourceId = $section['resourcePrefix'] . $i;
+												    ?>
 													<div class="ct-contract-row">
 														<label for="<?php echo $packageId; ?>" class="control-label ct-contract-index"><?php echo $i; ?>.</label>
 														<div class="ct-contract-field">

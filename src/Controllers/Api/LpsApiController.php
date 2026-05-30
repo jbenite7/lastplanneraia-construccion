@@ -20,7 +20,7 @@ class LpsApiController
     private function getContext(): array
     {
         $dbPrefix = $_SESSION['db'] ?? '';
-        $semana = (int)($_SESSION['semana'] ?? 0);
+        $semana = (int) ($_SESSION['semana'] ?? 0);
         $proyecto = $_SESSION['proyecto'] ?? '';
 
         if (!$dbPrefix || $semana <= 0 || !$proyecto) {
@@ -31,19 +31,19 @@ class LpsApiController
         $userStmt = $this->db->prepare("SELECT Id FROM general_usuarios WHERE usuario = ? LIMIT 1");
         $userStmt->execute([$_SESSION['usuario'] ?? '']);
         $user = $userStmt->fetch(PDO::FETCH_ASSOC);
-        $usuarioId = $user ? (int)$user['Id'] : 0;
+        $usuarioId = $user ? (int) $user['Id'] : 0;
 
         // Consultar ID de proyecto
         $projStmt = $this->db->prepare("SELECT ID FROM general_proyectos_procesos WHERE Proyecto_Proceso = ? AND Area = 'Construccion' LIMIT 1");
         $projStmt->execute([$proyecto]);
         $proj = $projStmt->fetch(PDO::FETCH_ASSOC);
-        $proyectoId = $proj ? (int)$proj['ID'] : 0;
+        $proyectoId = $proj ? (int) $proj['ID'] : 0;
 
         return [
             'dbPrefix' => $dbPrefix,
             'semana' => $semana,
             'usuarioId' => $usuarioId,
-            'proyectoId' => $proyectoId
+            'proyectoId' => $proyectoId,
         ];
     }
 
@@ -104,9 +104,9 @@ class LpsApiController
                 $context['semana'],
                 $context['usuarioId'],
                 $comentario,
-                $parentId ? (int)$parentId : null,
-                $escalamientoId ? (int)$escalamientoId : null,
-                $menciones
+                $parentId ? (int) $parentId : null,
+                $escalamientoId ? (int) $escalamientoId : null,
+                $menciones,
             );
 
             if ($commentId > 0) {
@@ -146,7 +146,7 @@ class LpsApiController
                 $context['semana'],
                 $consecutivo,
                 $modulo,
-                $trigger
+                $trigger,
             );
 
             echo json_encode(["respuesta" => $res ? "OK" : "ERROR", "mensaje" => $res ? "Alerta registrada" : "No se pudo registrar la alerta"], JSON_UNESCAPED_UNICODE);
@@ -177,9 +177,9 @@ class LpsApiController
         try {
             $res = $this->lpsService->closeCrisisAlert(
                 $context['dbPrefix'],
-                (int)$alertaId,
+                (int) $alertaId,
                 $context['usuarioId'],
-                $justificacion
+                $justificacion,
             );
 
             echo json_encode(["respuesta" => $res ? "OK" : "ERROR", "mensaje" => $res ? "Crisis mitigada exitosamente" : "No se pudo mitigar la crisis"], JSON_UNESCAPED_UNICODE);

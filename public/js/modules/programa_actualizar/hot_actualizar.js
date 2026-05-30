@@ -198,7 +198,9 @@ window.HOTActualizarModule = (function() {
      */
     function pgEjecutadoRealRenderer(instance, td, row, col, prop, value, cellProperties) {
         Handsontable.renderers.NumericRenderer.apply(this, arguments);
-        var rowData = instance.getSourceDataAtRow(row) || {};
+        var physicalRow = typeof instance.toPhysicalRow === 'function' ? instance.toPhysicalRow(row) : row;
+        var sourceData = typeof instance.getSourceData === 'function' ? instance.getSourceData() : null;
+        var rowData = (Array.isArray(sourceData) && physicalRow !== null && physicalRow >= 0 && physicalRow < sourceData.length) ? (sourceData[physicalRow] || {}) : {};
         var unity = String(rowData.unidad || '').trim();
         var ppto = parseFloat(rowData.cantidad_ppto || 0);
         var physicalVal = parseFloat(value || 0);
@@ -359,7 +361,9 @@ window.HOTActualizarModule = (function() {
      * Guardado al Vuelo (AJAX Update)
      */
     function autoSaveRow(visualRowIndex, changesObj, source) {
-        var rowData = hot.getSourceDataAtRow(visualRowIndex);
+        var physicalRow = typeof hot.toPhysicalRow === 'function' ? hot.toPhysicalRow(visualRowIndex) : visualRowIndex;
+        var sourceData = typeof hot.getSourceData === 'function' ? hot.getSourceData() : null;
+        var rowData = (Array.isArray(sourceData) && physicalRow !== null && physicalRow >= 0 && physicalRow < sourceData.length) ? (sourceData[physicalRow] || {}) : {};
         var rowId = rowData.Consecutivo_en_Programa || rowData.Id;
         var targetSemana = getTargetSemanaActualizacion();
         var db = document.getElementById('baseDatos').value;
@@ -600,7 +604,9 @@ window.HOTActualizarModule = (function() {
             cells: function(row, col, prop) {
                 var props = {};
                 var canEdit = Boolean(editableProps[prop]) && isUserAllowedToEdit();
-                var rowData = this.instance.getSourceDataAtRow(row) || {};
+                var physicalRow = this.instance.toPhysicalRow(row);
+                var sourceData = typeof this.instance.getSourceData === 'function' ? this.instance.getSourceData() : null;
+                var rowData = (Array.isArray(sourceData) && physicalRow !== null && physicalRow >= 0 && physicalRow < sourceData.length) ? (sourceData[physicalRow] || {}) : {};
 
                 // Bloquear cantidad_ppto si la unidad es %
                 if (canEdit && prop === 'cantidad_ppto' && String(rowData.unidad || '').trim() === '%') {
@@ -628,6 +634,7 @@ window.HOTActualizarModule = (function() {
             autoWrapRow: false,
             autoWrapCol: false,
             autoRowSize: true, // Habilitar cálculo de altura automática por contenido
+            autoColumnSize: false,
             width: '100%',
             height: initialHeight,
             licenseKey: 'non-commercial-and-evaluation',
@@ -639,7 +646,6 @@ window.HOTActualizarModule = (function() {
                 if (prop === 'Actividad' || prop === 'programaAnteriorAsociar') {
                     return getFilterPlainText(value);
                 }
-
                 return value;
             },
             dropdownMenu: ['filter_by_condition', 'filter_by_value', 'filter_action_bar'],
@@ -655,10 +661,16 @@ window.HOTActualizarModule = (function() {
                // Agrupar cambios por fila
                var rowChanges = {};
                changes.forEach(function(change) {
-                   var visualRow = change[0];
+                   if (!change) return;
+                   var physicalRow = change[0];
                    var prop = change[1];
                    var oldVal = change[2];
                    var newVal = change[3];
+
+                   var visualRow = this.toVisualRow(physicalRow);
+                   if (visualRow === null || visualRow < 0) {
+                       return;
+                   }
 
                    if (oldVal !== newVal) {
                        // Validar y Normalizar
@@ -674,8 +686,13 @@ window.HOTActualizarModule = (function() {
                            normalized.value = '*No Asociada*';
                        }
 
-                       if (!rowChanges[visualRow]) rowChanges[visualRow] = {};
-                       rowChanges[visualRow][prop] = normalized.value;
+                       if (!rowChanges[physicalRow]) {
+                           rowChanges[physicalRow] = {
+                               visualRow: visualRow,
+                               changes: {}
+                           };
+                       }
+                       rowChanges[physicalRow].changes[prop] = normalized.value;
 
                        // Update visual si hubo normalización (ej: coma a punto)
                        if (normalized.value !== newVal) {
@@ -690,18 +707,17 @@ window.HOTActualizarModule = (function() {
                }.bind(this));
 
                // Disparar guardado por cada fila modificada
-                Object.keys(rowChanges).forEach(function(visualRowStr) {
-                   var visualRow = parseInt(visualRowStr);
-                   var rowData = this.getSourceDataAtRow(visualRow);
-                   var idRow = rowData.Consecutivo_en_Programa; // Usar consecutivo interno para SQL
-                   autoSaveRow(visualRow, rowChanges[visualRow], source);
-                }.bind(this));
+               Object.keys(rowChanges).forEach(function(physicalRowStr) {
+                   var physicalRow = parseInt(physicalRowStr);
+                   var group = rowChanges[physicalRow];
+                   autoSaveRow(group.visualRow, group.changes, source);
+               }.bind(this));
 
                // Si el cambio fue en asociación, re-renderizar para actualizar el fondo de la fila entera
-               if (changes.some(c => c[1] === 'programaAnteriorAsociar')) {
+               if (changes.some(c => c && c[1] === 'programaAnteriorAsociar')) {
                    this.render();
                }
-           }
+            }
         };
 
         hot = new Handsontable(container, hotConfig);

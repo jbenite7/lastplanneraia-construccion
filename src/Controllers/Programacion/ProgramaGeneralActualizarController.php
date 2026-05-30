@@ -13,7 +13,7 @@ class ProgramaGeneralActualizarController extends BaseController
 
         // Recuperación de contexto si la semana se perdió (Refresco)
         $dbName = $_SESSION['db'] ?? '';
-        $semana = (int)($_SESSION['semana'] ?? 0);
+        $semana = (int) ($_SESSION['semana'] ?? 0);
 
         // Autocuración y Blindaje de Contexto
         $maxOverall = 0;
@@ -32,13 +32,13 @@ class ProgramaGeneralActualizarController extends BaseController
                           FROM {$dbName}_semanas_activas";
                 $stmt = $this->db->query($query);
                 $res = $stmt->fetch();
-                
-                $maxOverall = (int)($res['max_overall'] ?? 0);
-                $maxConfirmed = ($res['max_confirmed'] !== null) ? (int)$res['max_confirmed'] : null;
+
+                $maxOverall = (int) ($res['max_overall'] ?? 0);
+                $maxConfirmed = ($res['max_confirmed'] !== null) ? (int) $res['max_confirmed'] : null;
 
                 $stmtProgram = $this->db->query("SELECT MAX(Semana) as max_program FROM {$dbName}_programa_consolidado");
                 $programRes = $stmtProgram->fetch();
-                $maxProgramWeek = (int)($programRes['max_program'] ?? 0);
+                $maxProgramWeek = (int) ($programRes['max_program'] ?? 0);
 
                 if ($maxOverall <= 0) {
                     $semanaBaseActualizacion = 0;
@@ -60,7 +60,7 @@ class ProgramaGeneralActualizarController extends BaseController
                 if ($semanaBaseActualizacion > 0) {
                     $stmtStatus = $this->db->prepare("SELECT Semanal_Confirmada FROM {$dbName}_semanas_activas WHERE Semana = ?");
                     $stmtStatus->execute([$semanaBaseActualizacion]);
-                    $semanalConfirmada = (int)($stmtStatus->fetchColumn() ?: 0);
+                    $semanalConfirmada = (int) ($stmtStatus->fetchColumn() ?: 0);
                 }
 
             } catch (\Exception $e) {

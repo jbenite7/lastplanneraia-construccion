@@ -3,7 +3,7 @@
 if (!function_exists('ps_weekly_phase_key')) {
     function ps_weekly_phase_key($semanalConfirmada): string
     {
-        return ((int)$semanalConfirmada === 1) ? 'calificacion' : 'programacion';
+        return ((int) $semanalConfirmada === 1) ? 'calificacion' : 'programacion';
     }
 
     function ps_is_blank($value): bool
@@ -12,7 +12,7 @@ if (!function_exists('ps_weekly_phase_key')) {
             return true;
         }
 
-        $text = trim((string)$value);
+        $text = trim((string) $value);
         if ($text === '') {
             return true;
         }
@@ -27,7 +27,7 @@ if (!function_exists('ps_weekly_phase_key')) {
             return $fallback;
         }
 
-        $normalized = preg_replace('/\s+/', '', trim((string)$value));
+        $normalized = preg_replace('/\s+/', '', trim((string) $value));
 
         $commaPos = strrpos($normalized, ',');
         $dotPos = strrpos($normalized, '.');
@@ -47,13 +47,13 @@ if (!function_exists('ps_weekly_phase_key')) {
             return $fallback;
         }
 
-        return (float)$normalized;
+        return (float) $normalized;
     }
 
     function ps_is_active_row(array $row): bool
     {
         $activaRaw = $row['Activa'] ?? '';
-        $activa = strtoupper(trim((string)$activaRaw));
+        $activa = strtoupper(trim((string) $activaRaw));
 
         if ($activa === '' || $activa === 'NA' || $activa === '0' || $activa === 'N' || $activa === 'NO' || $activa === 'FALSE') {
             return false;
@@ -95,7 +95,7 @@ if (!function_exists('ps_weekly_phase_key')) {
     function ps_has_pending_commit_conditions(array $row): bool
     {
         $notApplicableOrAtLeast = function (string $col, float $min): bool {
-            $raw = trim((string)($row[$col] ?? ''));
+            $raw = trim((string) ($row[$col] ?? ''));
             if (strtoupper($raw) === 'N/A' || strtoupper($raw) === 'NO APLICA') {
                 return true;
             }
@@ -103,7 +103,7 @@ if (!function_exists('ps_weekly_phase_key')) {
             if (!is_numeric($normalized)) {
                 return false;
             }
-            $value = (float)$normalized;
+            $value = (float) $normalized;
             while ($value > 1 && $value <= 10000) {
                 $value /= 100;
             }

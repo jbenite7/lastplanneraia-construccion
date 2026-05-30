@@ -1,6 +1,32 @@
 document.getElementById('ventanasModalesSemana').innerHTML =
   "<!-- Se crea el Modal que contiene el formulario para crear una nueva semana en el proyecto --><div class='modal_nueva_sem modal fade' id='modal_nueva_sem' tabindex='-1' role='dialog' aria-labelledby='modal_nueva_semLabel'><div class='modal-dialog' role='document'><div class='modal-content'><div class='modal-header'><h4 class='modal-title' id='modalEliminarLabel'>Crear Semana LPS</h4><button type='button' class='close' data-dismiss='modal' aria-label='Close'><span aria-hidden='true'>&times;</span></button></div><div class='modal-body'><div class='row'><div id='cuadroModal' class='cuadroModal col-sm-12 col-md-12 col-lg-12 '><form class='form form-horizontal' action='' method='POST'><input type='hidden' id='Id' name='Id' value='0'><input type='hidden' id='opcion' name='opcion' value='registrar'><div class='form-group' style='width:100%;'><label for='inicio_sem' class='col-sm-12 control-label'>Seleccione Fecha de Inicio de la Semana</label><div class='col-sm-6'><input id='inicio_sem' name='inicio_sem' class='form-control' type='text' readonly></div></div><!--Se crean los botones Guardar y Listar--><div class='form-group'><div class='col-sm-offset-2 col-sm-8'><input id='btn_guardar_nueva_sem' type='button' class='btn btn-primary' data-dismiss='modal' value='Guardar'><input id='btn_cancelar' type='button' class='btn btn-danger' data-dismiss='modal' value='Cancelar' ></div></div></form></div></div></div><!-- <div class='modal-footer'><button type='button' id='eliminar-usuario' class='btn btn-primary' data-dismiss='modal' >Aceptar</button><button type='button' class='btn btn-default' data-dismiss='modal'>Cancelar</button></div> --></div></div></div><!-- Modal --><!-- Se crea el Modal que solicita la confirmación de eliminar una semana del proyecto --><div class='modal_eliminar_sem modal fade' id='modal_eliminar_sem' tabindex='-1' role='dialog' aria-labelledby='modal_nueva_semLabel'><div class='modal-dialog' role='document'><div class='modal-content'><div class='modal-header'><h4 class='modal-title' id='modalEliminarLabel'>Eliminar Semana LPS</h4><button type='button' class='close' data-dismiss='modal' aria-label='Close'><span aria-hidden='true'>&times;</span></button></div><div class='modal-body'><div class='row'><div id='cuadro5' class='cuadro5 col-sm-12 col-md-12 col-lg-12 '><form class='form form-horizontal' action='' method='POST'><p class='modal-eliminar-semana-body-texto' id='modal-eliminar-semana-body-texto'></p><!--Se crean los botones Guardar y Listar--><div class='form-group'><div class='col-sm-offset-2 col-sm-8'><input id='btn_eliminar_sem' type='button' class='btn btn-primary' data-dismiss='modal' value='Eliminar'><input id='btn_cancelar_semana' type='button' class='btn btn-danger' data-dismiss='modal' value='Cancelar' ></div></div></form></div></div></div></div></div></div><!-- Modal --><!-- Se crea el modal que explica la leyenda de colores de las tablas --><div class='modal fade' id='modal_leyenda_colores' role='dialog' data-backdrop='static'><div class='modal-dialog modal-lg'><!-- Modal content--><div class='modal-content'><div class='modal-header'><h4 class='modal-title' id='modal_leyenda_colores_Label'>Leyenda de Colores de Las Actividades</h4><button type='button' class='close' data-dismiss='modal'>&times;</button></div><div class='modal-body' style='margin:auto'><img src='/img/Leyenda_Actividades.png' class='d-inline-block align-top' style='margin:auto; width:100%; max-width:800px' alt=''></div><div class='modal-footer'><button type='button' class='btn btn-default btn-primary' data-dismiss='modal'>Close</button></div></div></div></div><!-- Modal --><!-- Se crea el Modal que coloca el spinner cuando se está ejecutando un código que se demora varios segundos --><div class='modal fade' id='modal_spinner' role='dialog'><div class='modal-dialog modal-sm modal-dialog-centered'><!-- Modal content--><div class='spinner-border' style='width: 300px; height: 300px; color: white' role='status'><span class='sr-only'>Cargando...</span></div></div></div></div>";
 
+(function normalizeAiaGeneratedModals() {
+  var container = document.getElementById('ventanasModalesSemana');
+  if (!container) {
+    return;
+  }
+
+  Array.prototype.forEach.call(container.querySelectorAll('.modal'), function (modal) {
+    modal.classList.add('aia-modal');
+    var dialog = modal.querySelector('.modal-dialog');
+    if (dialog) {
+      dialog.classList.add('modal-dialog-centered');
+    }
+  });
+
+  var spinner = document.getElementById('modal_spinner');
+  if (!spinner) {
+    return;
+  }
+
+  spinner.classList.add('aia-modal');
+  spinner.setAttribute('role', 'dialog');
+  spinner.setAttribute('aria-live', 'polite');
+  spinner.setAttribute('aria-label', 'Procesando');
+  spinner.innerHTML = "<div class='modal-dialog modal-sm modal-dialog-centered' role='document'><div class='modal-content'><div class='modal-body text-center'><div class='spinner-border text-success' role='status' aria-hidden='true'></div><p class='aia-modal__message mt-3 mb-0'>Procesando...</p></div></div></div>";
+})();
+
 function aiaNoticeText(message, title) {
   return title ? title + '\n\n' + (message || '') : (message || '');
 }

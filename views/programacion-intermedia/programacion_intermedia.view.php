@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
 <head id="head">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://code.jquery.com/ui/1.10.1/jquery-ui.js"></script>
+    <script src="/public/vendor/jquery.min.js"></script>
+    <script src="/public/vendor/jquery-ui.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap4.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
-    <script type="text/javascript" src="/js/linksComunesHead2.js?v=20260325a" charset="utf-8"></script>
+    <script type="text/javascript" src="/js/linksComunesHead2.js?v=headLoaderV20260530" charset="utf-8"></script>
     <link rel="stylesheet" href="/public/vendor/handsontable/handsontable.full.min.css" />
-    <link rel="stylesheet" href="/css/handsontable-module.css?v=20260522d" />
+    <link rel="stylesheet" href="/css/handsontable-module.css?v=20260529a" />
     <style>
         .hot-full-bleed {
             --hot-gutter: 8px;
@@ -68,24 +68,6 @@
             line-height: 1.1;
         }
 
-        .pi-page #piLegend.pdc-legend-autoscaling {
-            flex-wrap: wrap !important;
-            justify-content: flex-start !important;
-            gap: 6px !important;
-            overflow-x: hidden;
-            overflow-y: visible;
-            padding: 4px 0 !important;
-        }
-
-        .pi-page #piLegend.pdc-legend-autoscaling .pdc-legend-item {
-            flex: 0 1 auto !important;
-            width: auto !important;
-            white-space: nowrap !important;
-            height: auto !important;
-            min-height: 32px;
-            max-height: none !important;
-            margin: 0 !important;
-        }
 
         .pi-page #hot-container td.force-wrap,
         .pi-page #hot-container th.force-wrap {
@@ -240,9 +222,9 @@
             color: var(--pi-control-text, #0c4a6e);
         }
 
-        .pi-page .handsontable td.pi-soft-restriction-cell {
-            background: color-mix(in srgb, var(--pi-due-bg, #fef3c7) 62%, #fff 38%) !important;
-            color: var(--pi-due-text, #92400e) !important;
+        .pi-page .handsontable td.pi-soft-restriction-cell:not(.pi-row-state) {
+            background: color-mix(in srgb, var(--pi-due-bg, #fde68a) 62%, #fff 38%) !important;
+            color: var(--pi-due-text, #78350f) !important;
             box-shadow: inset 0 0 0 1px rgba(245, 158, 11, 0.24);
         }
 
@@ -472,19 +454,27 @@
             font-weight: 600;
         }
 
-        .pi-page #hot-container td.pi-cell-editable {
+        .pi-page #hot-container td.pi-cell-editable:not(.pi-row-state) {
             box-shadow: inset 0 0 0 9999px rgba(34, 197, 94, 0.05);
             cursor: text;
         }
 
-        .pi-page #hot-container td.pi-cell-readonly {
+        .pi-page #hot-container td.pi-cell-editable.pi-row-state {
+            cursor: text;
+        }
+
+        .pi-page #hot-container td.pi-cell-readonly:not(.pi-row-state) {
             box-shadow: inset 0 0 0 9999px rgba(148, 163, 184, 0.06);
+            cursor: not-allowed;
+        }
+
+        .pi-page #hot-container td.pi-cell-readonly.pi-row-state {
             cursor: not-allowed;
         }
 
         .pi-page #hot-container td.pi-cell-editable.current,
         .pi-page #hot-container td.pi-cell-editable.area {
-            box-shadow: inset 0 0 0 9999px rgba(34, 197, 94, 0.08), inset 0 0 0 2px rgba(22, 163, 74, 0.32);
+            box-shadow: inset 0 0 0 2px rgba(22, 163, 74, 0.32);
         }
 
         .pi-page #hot-container td.pi-cell-dropdown {
@@ -1179,7 +1169,7 @@
     <div class="encabezado" id="encabezado">
         <input type="hidden" name="seccion" id="seccion" value="programacion_intermedia" aria-hidden="true">
         <input type="hidden" id="baseDatos_PHP" value="<?php echo htmlspecialchars($dbName ?? '', ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true">
-        <input type="hidden" id="semana_PHP" value="<?php echo (int)($semana ?? 0); ?>" aria-hidden="true">
+        <input type="hidden" id="semana_PHP" value="<?php echo (int) ($semana ?? 0); ?>" aria-hidden="true">
         <input type="hidden" id="permiso_canonico" value="<?php echo htmlspecialchars($permiso ?? '', ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true">
         <input type="hidden" id="scriptBarraFiltros" value="" aria-hidden="true">
     </div>
@@ -1245,8 +1235,8 @@
     <div id="mobile-card-view" style="display:none;"></div>
     </div>
 
-    <div class="modal fade" id="modal_leyenda_colores" role="dialog" data-backdrop="static">
-        <div class="modal-dialog modal-lg">
+    <div class="modal fade aia-modal" id="modal_leyenda_colores" role="dialog" data-backdrop="static">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h4 class="modal-title" id="modal_leyenda_colores_Label">Guia Operativa - Programación Intermedia</h4>
@@ -1257,8 +1247,8 @@
         </div>
     </div>
 
-    <div class="modal fade" id="modal_shared_constraint" role="dialog" data-backdrop="static" aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
+    <div class="modal fade aia-modal" id="modal_shared_constraint" role="dialog" data-backdrop="static" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title"><b>Aplicar Restricción Compartida</b></h5>
@@ -1417,28 +1407,28 @@
         window.PI_HOT_OPTIONS = {
             subcontratistas: <?php
                 $piSubcontratistas = ['AIA (MO Directa)'];
-                if (!empty($subcontratistas) && is_array($subcontratistas)) {
-                    foreach ($subcontratistas as $sub) {
-                        if (!empty($sub['subcontratista'])) {
-                            $piSubcontratistas[] = $sub['subcontratista'];
-                        }
-                    }
+        if (!empty($subcontratistas) && is_array($subcontratistas)) {
+            foreach ($subcontratistas as $sub) {
+                if (!empty($sub['subcontratista'])) {
+                    $piSubcontratistas[] = $sub['subcontratista'];
                 }
-                $piSubcontratistas = array_values(array_unique(array_filter($piSubcontratistas)));
-                echo json_encode($piSubcontratistas, JSON_UNESCAPED_UNICODE);
-            ?>,
+            }
+        }
+        $piSubcontratistas = array_values(array_unique(array_filter($piSubcontratistas)));
+        echo json_encode($piSubcontratistas, JSON_UNESCAPED_UNICODE);
+        ?>,
             profesionales: <?php
-                $piProfesionales = [];
-                if (!empty($profesionales) && is_array($profesionales)) {
-                    foreach ($profesionales as $prof) {
-                        if (!empty($prof['nombre'])) {
-                            $piProfesionales[] = $prof['nombre'];
-                        }
-                    }
+            $piProfesionales = [];
+        if (!empty($profesionales) && is_array($profesionales)) {
+            foreach ($profesionales as $prof) {
+                if (!empty($prof['nombre'])) {
+                    $piProfesionales[] = $prof['nombre'];
                 }
-                $piProfesionales = array_values(array_unique(array_filter($piProfesionales)));
-                echo json_encode($piProfesionales, JSON_UNESCAPED_UNICODE);
-            ?>
+            }
+        }
+        $piProfesionales = array_values(array_unique(array_filter($piProfesionales)));
+        echo json_encode($piProfesionales, JSON_UNESCAPED_UNICODE);
+        ?>
         };
     </script>
     <script type="text/javascript" src="/js/HandsontableTomSelectEditor.js?v=tomselect30"></script>

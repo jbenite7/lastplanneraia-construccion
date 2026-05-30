@@ -501,12 +501,26 @@
   }
 
   function classifyPGRow(data) {
-    if (!data || Number(data.Titulo) !== 0) {
+    if (!data || data.Consecutivo_en_Programa === undefined) {
       return {
+        key: 'sin-datos',
+        rowClass: 'pg-state-sin-datos',
+        restrictionAlertKey: '',
+      };
+    }
+
+    if (data._classification) {
+      return data._classification;
+    }
+
+    if (Number(data.Titulo) !== 0) {
+      var headerResult = {
         key: 'header',
         rowClass: 'pdc-header',
         restrictionAlertKey: '',
       };
+      data._classification = headerResult;
+      return headerResult;
     }
 
     var rutaCriticaRaw = String(data.Ruta_Critica === undefined ? '' : data.Ruta_Critica)
@@ -528,11 +542,14 @@
       'sin-datos': 'pg-state-sin-datos',
     };
 
-    return {
+    var result = {
       key: stateKey,
       rowClass: rowClassMap[stateKey] || 'pg-state-actividad-futura',
       restrictionAlertKey: getRestrictionAlertKey(data),
     };
+
+    data._classification = result;
+    return result;
   }
 
   function showLoading(show) {
@@ -892,11 +909,16 @@
     }
 
     var physicalRow = typeof instance.toPhysicalRow === 'function' ? instance.toPhysicalRow(visualRow) : visualRow;
-    if (!Number.isInteger(physicalRow) || physicalRow < 0 || typeof instance.getSourceDataAtRow !== 'function') {
+    if (!Number.isInteger(physicalRow) || physicalRow < 0) {
       return null;
     }
 
-    return instance.getSourceDataAtRow(physicalRow) || null;
+    var sourceData = typeof instance.getSourceData === 'function' ? instance.getSourceData() : null;
+    if (Array.isArray(sourceData) && physicalRow < sourceData.length) {
+      return sourceData[physicalRow] || null;
+    }
+
+    return typeof instance.getSourceDataAtRow === 'function' ? (instance.getSourceDataAtRow(physicalRow) || null) : null;
   }
 
   function saveRow(visualRow, prop, oldValue, source, options) {
@@ -993,8 +1015,8 @@
 
     if (!$modal.length) {
       var html =
-        '<div class="modal fade" id="' + modalId + '" role="dialog" data-backdrop="static">' +
-        '  <div class="modal-dialog" role="document">' +
+        '<div class="modal fade aia-modal" id="' + modalId + '" role="dialog" data-backdrop="static">' +
+        '  <div class="modal-dialog modal-dialog-centered" role="document">' +
         '    <div class="modal-content">' +
         '      <div class="modal-header">' +
         '        <h4 class="modal-title"><b>Cambio de Unidad</b></h4>' +
@@ -1026,6 +1048,45 @@
     $modal.modal('show');
   }
 
+  function enforcePgCellClasses(instance, td, row, col, prop) {
+    var rowData = getSourceRowDataByVisualRow(instance, row) || {};
+    var classification = classifyPGRow(rowData);
+    var stateClass = classification.rowClass || 'pg-state-actividad-futura';
+    var composed = 'pg-row-state ' + stateClass;
+    var columnMeta = instance.getSettings().columns[col] || {};
+    var baseClass = columnMeta.className || '';
+    var isHeader = Number(rowData.Titulo) === 1;
+    var canEdit = Boolean(editableProps[prop]) && !isHeader && isUserAllowedToEdit();
+
+    if (canEdit && prop === 'cantidad_ppto' && isPercentLikeUnit(rowData.unidad)) {
+      canEdit = false;
+    }
+    if (canEdit && prop === 'EjecutadoDisplay' && classification.key === 'sin-datos') {
+      canEdit = false;
+    }
+    if (classification.restrictionAlertKey) {
+      composed += ' pg-state-' + classification.restrictionAlertKey;
+    }
+    if (parseInt(rowData.alerta_crisis, 10) === 1 && !isHeader) {
+      composed += ' pg-row-crisis';
+    }
+
+    // Limpieza estricta de clases de estado residuales de PG para prevenir acumulación por reuso DOM
+    td.classList.remove(
+      'pdc-header', 'pg-state-atrasada', 'pg-state-debe-iniciar', 'pg-state-actividad-futura',
+      'pg-state-en-curso', 'pg-state-terminada', 'pg-state-sin-datos',
+      'pg-state-r0', 'pg-state-r1', 'pg-state-r2-3', 'pg-state-r4-6',
+      'pg-cell-editable', 'pg-cell-readonly', 'pg-row-crisis'
+    );
+
+    var classList = (baseClass + ' ' + composed + ' ' + (canEdit ? 'pg-cell-editable' : 'pg-cell-readonly')).trim().split(/\s+/);
+    for (var i = 0; i < classList.length; i++) {
+      if (classList[i]) {
+        td.classList.add(classList[i]);
+      }
+    }
+  }
+
   function setupRenderers() {
     if (renderersRegistered) {
       return;
@@ -1037,6 +1098,7 @@
         Handsontable.renderers.TextRenderer.apply(this, arguments);
         td.textContent = formatPercent(value);
         td.classList.add('htCenter');
+        enforcePgCellClasses(instance, td, row, col, prop);
       }
     );
 
@@ -1046,6 +1108,7 @@
         Handsontable.renderers.TextRenderer.apply(this, arguments);
         td.textContent = formatPercentValue(value);
         td.classList.add('htCenter');
+        enforcePgCellClasses(instance, td, row, col, prop);
       }
     );
 
@@ -1056,6 +1119,7 @@
         var numeric = toNumber(value, null);
         td.textContent = numeric === 1 ? 'Sí' : numeric === 0 ? 'No' : String(value || '');
         td.classList.add('htCenter');
+        enforcePgCellClasses(instance, td, row, col, prop);
       }
     );
 
@@ -1067,6 +1131,7 @@
         var prefix = parseInt(rowData.alerta_crisis, 10) === 1 ? '🔥 ' : '';
         td.innerHTML = prefix + sanitizeActividadHtml(value);
         td.classList.add('htLeft');
+        enforcePgCellClasses(instance, td, row, col, prop);
       }
     );
 
@@ -1078,7 +1143,7 @@
         var cantidadPpto = toNumber(rowData.cantidad_ppto, null);
         var unidad = String(rowData.unidad || '').trim();
         var ratio = toNumber(value, null);
-        if (ratio === null) { td.textContent = ''; td.classList.add('htCenter'); return; }
+        if (ratio === null) { td.textContent = ''; td.classList.add('htCenter'); enforcePgCellClasses(instance, td, row, col, prop); return; }
         if (isPercentLikeUnit(unidad) || cantidadPpto === null || cantidadPpto <= 0) {
           td.textContent = formatPercentValue(value);
         } else {
@@ -1086,6 +1151,7 @@
           td.innerHTML = "<span class='pg-cell-main'>" + formatValueWithUnit(qty, rowData.unidad) + "</span> <span class='pg-cell-meta'>(" + formatPercentValue(value) + ")</span>";
         }
         td.classList.add('htCenter');
+        enforcePgCellClasses(instance, td, row, col, prop);
       }
     );
 
@@ -1098,7 +1164,7 @@
         var physicalVal = toNumber(value, null);
         var ratio = getEjecutadoRatio(rowData);
         
-        if (physicalVal === null) { td.textContent = ''; td.classList.add('htCenter'); return; }
+        if (physicalVal === null) { td.textContent = ''; td.classList.add('htCenter'); enforcePgCellClasses(instance, td, row, col, prop); return; }
         
         var unidad = String(rowData.unidad || '').trim();
         
@@ -1115,6 +1181,7 @@
             td.innerHTML = "<span class='pg-cell-main'>" + formatValueWithUnit(physicalDisplay, unidad) + "</span> <span class='pg-cell-meta'>(" + percentDisplay + "%)</span>";
         }
         td.classList.add('htCenter');
+        enforcePgCellClasses(instance, td, row, col, prop);
       }
     );
 
@@ -1900,7 +1967,7 @@
       licenseKey: 'non-commercial-and-evaluation',
       language: 'es-MX',
       stretchH: 'none',
-      autoColumnSize: true,
+      autoColumnSize: false,
       manualColumnResize: false,
       manualRowResize: true,
       contextMenu: true,
@@ -1924,7 +1991,9 @@
       cells: function (row, col, prop) {
         var props = {};
         var hotInstance = (this && this.instance) || hot;
-        var rowData = getSourceRowDataByVisualRow(hotInstance, row) || {};
+        var physicalRow = typeof hotInstance.toPhysicalRow === 'function' ? hotInstance.toPhysicalRow(row) : row;
+        var sourceData = typeof hotInstance.getSourceData === 'function' ? hotInstance.getSourceData() : null;
+        var rowData = (Array.isArray(sourceData) && physicalRow >= 0 && physicalRow < sourceData.length) ? (sourceData[physicalRow] || {}) : {};
         var classification = classifyPGRow(rowData);
         var stateClass = classification.rowClass || 'pg-state-actividad-futura';
         var composed = 'pg-row-state ' + stateClass;
@@ -1973,10 +2042,24 @@
 
         for (var i = 0; i < changes.length; i++) {
           var change = changes[i];
-          var row = change[0];
+          if (!change) continue;
+          var physicalRow = change[0];
           var prop = change[1];
           var oldValue = change[2];
           var newValue = change[3];
+
+          var visualRow = this.toVisualRow(physicalRow);
+          if (visualRow === null || visualRow < 0) {
+            continue;
+          }
+
+          var sourceData = typeof this.getSourceData === 'function' ? this.getSourceData() : null;
+          var currentRowData = (Array.isArray(sourceData) && physicalRow !== null && physicalRow >= 0 && physicalRow < sourceData.length) ? (sourceData[physicalRow] || {}) : {};
+
+          // Invalidar clasificación memoizada ante cualquier edición
+          if (currentRowData._classification) {
+            delete currentRowData._classification;
+          }
 
           if (!editableProps[prop] || oldValue === newValue) {
             continue;
@@ -1984,16 +2067,17 @@
 
           var normalized = normalizeCellValue(prop, newValue);
           if (!normalized.valid) {
-            revertCell(row, prop, oldValue);
+            revertCell(visualRow, prop, oldValue);
             showFeedback('error', normalized.error);
             continue;
           }
 
           if (normalized.value !== newValue) {
-            hot.setDataAtRowProp(row, prop, normalized.value, 'internal-update');
+            hot.setDataAtRowProp(visualRow, prop, normalized.value, 'internal-update');
           }
 
-          var currentRowData = getSourceRowDataByVisualRow(hot, row) || {};
+          var sourceData = typeof this.getSourceData === 'function' ? this.getSourceData() : null;
+          var currentRowData = (Array.isArray(sourceData) && physicalRow !== null && physicalRow >= 0 && physicalRow < sourceData.length) ? (sourceData[physicalRow] || {}) : {};
           var previousContext = null;
           if (prop === 'unidad' || prop === 'cantidad_ppto') {
             previousContext = buildDisplayContext(currentRowData, {
@@ -2004,12 +2088,12 @@
 
           // Auto-clear cantidad_ppto al cambiar unidad a %
           if (prop === 'unidad') {
-            var rd = getSourceRowDataByVisualRow(hot, row) || {};
+            var rd = (Array.isArray(sourceData) && physicalRow !== null && physicalRow >= 0 && physicalRow < sourceData.length) ? (sourceData[physicalRow] || {}) : {};
             var isPercent = isPercentLikeUnit(normalized.value);
             var hasCantidad = rd.cantidad_ppto !== null && rd.cantidad_ppto !== '' && rd.cantidad_ppto !== undefined;
 
             if (isPercent && hasCantidad) {
-              revertCell(row, prop, oldValue);
+              revertCell(visualRow, prop, oldValue);
               (function (vRow, newUnit, oldUnit, previousUnitContext, cantVal) {
                 showUnitChangeConfirm(cantVal, function () {
                   var currentUnitRowData = getSourceRowDataByVisualRow(hot, vRow) || {};
@@ -2020,12 +2104,12 @@
                     reloadAfterSuccess: true,
                   });
                 });
-              })(row, normalized.value, oldValue, previousContext, rd.cantidad_ppto);
+              })(visualRow, normalized.value, oldValue, previousContext, rd.cantidad_ppto);
               continue;
             }
           }
 
-          saveRow(row, prop, oldValue, source, {
+          saveRow(visualRow, prop, oldValue, source, {
             previousContext: previousContext,
           });
         }

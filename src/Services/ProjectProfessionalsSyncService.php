@@ -53,14 +53,14 @@ class ProjectProfessionalsSyncService
             $existingByEmail = $this->fetchExistingProfessionalsByEmail($dbPrefix, $summary);
 
             foreach ($members as $member) {
-                $role = strtoupper(trim((string)($member['role'] ?? '')));
+                $role = strtoupper(trim((string) ($member['role'] ?? '')));
                 if (!isset(self::ROLE_TO_CARGO[$role])) {
                     continue;
                 }
 
                 $email = $this->normalizarEmail($member['email'] ?? '');
                 $nombre = $adminCanonicalNames[$email] ?? $this->limpiarTexto($member['nombre'] ?? '');
-                $usuario = trim((string)($member['usuario'] ?? ''));
+                $usuario = trim((string) ($member['usuario'] ?? ''));
                 $cargo = self::ROLE_TO_CARGO[$role];
 
                 if ($nombre === '') {
@@ -87,11 +87,11 @@ class ProjectProfessionalsSyncService
                     if (!isset($existingByEmail[$email])) {
                         $this->db->query(
                             "INSERT INTO {$dbPrefix}_profesionales (nombre, email, cargo, activo) VALUES (?, ?, ?, 0)",
-                            [$nombre, $email, '']
+                            [$nombre, $email, ''],
                         );
 
                         $existingByEmail[$email] = [
-                            'id' => (int)$this->db->lastInsertId(),
+                            'id' => (int) $this->db->lastInsertId(),
                             'nombre' => $nombre,
                             'email' => $email,
                             'cargo' => '',
@@ -103,7 +103,7 @@ class ProjectProfessionalsSyncService
                         $blockedFields = [];
                         $blockedParams = [];
 
-                        if ((int)($existingByEmail[$email]['activo'] ?? 0) !== 0) {
+                        if ((int) ($existingByEmail[$email]['activo'] ?? 0) !== 0) {
                             $blockedFields[] = 'activo = ?';
                             $blockedParams[] = 0;
                             $existingByEmail[$email]['activo'] = 0;
@@ -128,7 +128,7 @@ class ProjectProfessionalsSyncService
                             $blockedParams[] = $existingByEmail[$email]['id'];
                             $this->db->query(
                                 "UPDATE {$dbPrefix}_profesionales SET " . implode(', ', $blockedFields) . ' WHERE id = ?',
-                                $blockedParams
+                                $blockedParams,
                             );
                         }
                     }
@@ -144,11 +144,11 @@ class ProjectProfessionalsSyncService
                 if (!isset($existingByEmail[$email])) {
                     $this->db->query(
                         "INSERT INTO {$dbPrefix}_profesionales (nombre, email, cargo, activo) VALUES (?, ?, ?, 1)",
-                        [$nombre, $email, $cargo]
+                        [$nombre, $email, $cargo],
                     );
 
                     $existingByEmail[$email] = [
-                        'id' => (int)$this->db->lastInsertId(),
+                        'id' => (int) $this->db->lastInsertId(),
                         'nombre' => $nombre,
                         'email' => $email,
                         'cargo' => $cargo,
@@ -183,7 +183,7 @@ class ProjectProfessionalsSyncService
                     $params[] = $existing['id'];
                     $this->db->query(
                         "UPDATE {$dbPrefix}_profesionales SET " . implode(', ', $fields) . ' WHERE id = ?',
-                        $params
+                        $params,
                     );
                     if ($nameChanged) {
                         $this->replaceProfessionalDependencies($dbPrefix, $existingName, $existing['nombre']);
@@ -201,7 +201,7 @@ class ProjectProfessionalsSyncService
                     $duplicateFields = [];
                     $duplicateParams = [];
 
-                    if ((int)($existing['activo'] ?? 0) !== 0) {
+                    if ((int) ($existing['activo'] ?? 0) !== 0) {
                         $duplicateFields[] = 'activo = ?';
                         $duplicateParams[] = 0;
                         $summary['blocked']++;
@@ -219,7 +219,7 @@ class ProjectProfessionalsSyncService
                         $duplicateParams[] = $existing['id'];
                         $this->db->query(
                             "UPDATE {$dbPrefix}_profesionales SET " . implode(', ', $duplicateFields) . ' WHERE id = ?',
-                            $duplicateParams
+                            $duplicateParams,
                         );
                     }
                     continue;
@@ -239,7 +239,7 @@ class ProjectProfessionalsSyncService
                     $nameChanged = true;
                 }
 
-                if (!isset($currentMemberEmails[$email]) && (int)($existing['activo'] ?? 0) !== 0) {
+                if (!isset($currentMemberEmails[$email]) && (int) ($existing['activo'] ?? 0) !== 0) {
                     $fields[] = 'activo = ?';
                     $params[] = 0;
                     $existing['activo'] = 0;
@@ -250,7 +250,7 @@ class ProjectProfessionalsSyncService
                     $params[] = $existing['id'];
                     $this->db->query(
                         "UPDATE {$dbPrefix}_profesionales SET " . implode(', ', $fields) . ' WHERE id = ?',
-                        $params
+                        $params,
                     );
 
                     if ($nameChanged) {
@@ -289,7 +289,7 @@ class ProjectProfessionalsSyncService
             $lockInfo = $this->resolveLockInfo(
                 $this->normalizarEmail($row['email'] ?? ''),
                 $adminEmailStats,
-                $currentMemberEmails
+                $currentMemberEmails,
             );
 
             $row['is_admin_managed'] = $lockInfo['is_admin_managed'];
@@ -306,7 +306,7 @@ class ProjectProfessionalsSyncService
         return $this->resolveLockInfo(
             $this->normalizarEmail($email),
             $this->fetchAdminEmailStats(),
-            $this->fetchCurrentMemberEmails($dbPrefix)
+            $this->fetchCurrentMemberEmails($dbPrefix),
         );
     }
 
@@ -325,9 +325,9 @@ class ProjectProfessionalsSyncService
             return false;
         }
 
-        $count = (int)$this->db->query(
+        $count = (int) $this->db->query(
             "SELECT COUNT(*) FROM {$dbPrefix}_profesionales WHERE LOWER(TRIM(email)) = ?",
-            [$normalizedEmail]
+            [$normalizedEmail],
         )->fetchColumn();
 
         if ($count === 0) {
@@ -336,7 +336,7 @@ class ProjectProfessionalsSyncService
 
         $this->db->query(
             "UPDATE {$dbPrefix}_profesionales SET activo = 0 WHERE LOWER(TRIM(email)) = ?",
-            [$normalizedEmail]
+            [$normalizedEmail],
         );
 
         return true;
@@ -386,7 +386,7 @@ class ProjectProfessionalsSyncService
             "SELECT LOWER(TRIM(email)) AS email_normalized, COUNT(*) AS total
              FROM general_usuarios
              WHERE email IS NOT NULL AND TRIM(email) != ''
-             GROUP BY LOWER(TRIM(email))"
+             GROUP BY LOWER(TRIM(email))",
         )->fetchAll(PDO::FETCH_ASSOC);
 
         $stats = [];
@@ -395,7 +395,7 @@ class ProjectProfessionalsSyncService
             if ($email === '') {
                 continue;
             }
-            $stats[$email] = (int)($row['total'] ?? 0);
+            $stats[$email] = (int) ($row['total'] ?? 0);
         }
 
         return $stats;
@@ -410,7 +410,7 @@ class ProjectProfessionalsSyncService
              WHERE email IS NOT NULL AND TRIM(email) != ''
              GROUP BY LOWER(TRIM(email))
              HAVING COUNT(*) = 1
-                AND MAX(CASE WHEN nombre IS NOT NULL AND TRIM(nombre) != '' THEN 1 ELSE 0 END) = 1"
+                AND MAX(CASE WHEN nombre IS NOT NULL AND TRIM(nombre) != '' THEN 1 ELSE 0 END) = 1",
         )->fetchAll(PDO::FETCH_ASSOC);
 
         $map = [];
@@ -438,10 +438,10 @@ class ProjectProfessionalsSyncService
                     MAX(CASE WHEN nombre IS NOT NULL AND TRIM(nombre) != '' THEN TRIM(nombre) ELSE '' END) AS nombre
              FROM general_usuarios
              WHERE LOWER(TRIM(email)) = ?",
-            [$email]
+            [$email],
         )->fetch(PDO::FETCH_ASSOC);
 
-        if ((int)($row['total'] ?? 0) !== 1) {
+        if ((int) ($row['total'] ?? 0) !== 1) {
             return null;
         }
 
@@ -455,7 +455,7 @@ class ProjectProfessionalsSyncService
         $this->consolidateExistingProfessionals($dbPrefix, $summary);
 
         $rows = $this->db->query(
-            "SELECT id, nombre, email, cargo, activo FROM {$dbPrefix}_profesionales ORDER BY id ASC"
+            "SELECT id, nombre, email, cargo, activo FROM {$dbPrefix}_profesionales ORDER BY id ASC",
         )->fetchAll(PDO::FETCH_ASSOC);
 
         $map = [];
@@ -470,7 +470,7 @@ class ProjectProfessionalsSyncService
                 continue;
             }
 
-            $row['id'] = (int)($row['id'] ?? 0);
+            $row['id'] = (int) ($row['id'] ?? 0);
             $row['email'] = $email;
             $map[$email] = $row;
         }
@@ -481,7 +481,7 @@ class ProjectProfessionalsSyncService
     private function consolidateExistingProfessionals(string $dbPrefix, array &$summary): void
     {
         $rows = $this->db->query(
-            "SELECT id, nombre, email, cargo, activo FROM {$dbPrefix}_profesionales ORDER BY id ASC"
+            "SELECT id, nombre, email, cargo, activo FROM {$dbPrefix}_profesionales ORDER BY id ASC",
         )->fetchAll(PDO::FETCH_ASSOC);
 
         $grouped = [];
@@ -491,7 +491,7 @@ class ProjectProfessionalsSyncService
                 continue;
             }
 
-            $row['id'] = (int)($row['id'] ?? 0);
+            $row['id'] = (int) ($row['id'] ?? 0);
             $row['email'] = $email;
             $grouped[$email][] = $row;
         }
@@ -505,7 +505,7 @@ class ProjectProfessionalsSyncService
             $survivorName = $this->limpiarTexto($survivor['nombre'] ?? '');
 
             foreach ($duplicates as $candidate) {
-                if ((int)$candidate['id'] === (int)$survivor['id']) {
+                if ((int) $candidate['id'] === (int) $survivor['id']) {
                     continue;
                 }
 
@@ -513,7 +513,7 @@ class ProjectProfessionalsSyncService
                 if ($survivorName === '' && $candidateName !== '') {
                     $this->db->query(
                         "UPDATE {$dbPrefix}_profesionales SET nombre = ? WHERE id = ?",
-                        [$candidateName, $survivor['id']]
+                        [$candidateName, $survivor['id']],
                     );
                     $survivorName = $candidateName;
                 }
@@ -541,7 +541,7 @@ class ProjectProfessionalsSyncService
                 return $dependencyDiff;
             }
 
-            return ((int)$a['id']) <=> ((int)$b['id']);
+            return ((int) $a['id']) <=> ((int) $b['id']);
         });
 
         return $scored[0];
@@ -555,9 +555,9 @@ class ProjectProfessionalsSyncService
 
         $total = 0;
         foreach ($this->getProfessionalDependencyTables($dbPrefix) as $table => $column) {
-            $total += (int)$this->db->query(
+            $total += (int) $this->db->query(
                 "SELECT COUNT(*) FROM {$table} WHERE {$column} = ?",
-                [$nombre]
+                [$nombre],
             )->fetchColumn();
         }
 
@@ -576,7 +576,7 @@ class ProjectProfessionalsSyncService
         foreach ($this->getProfessionalDependencyTables($dbPrefix) as $table => $column) {
             $this->db->query(
                 "UPDATE {$table} SET {$column} = ? WHERE {$column} = ?",
-                [$newName, $oldName]
+                [$newName, $oldName],
             );
         }
     }
@@ -603,12 +603,12 @@ class ProjectProfessionalsSyncService
 
     private function limpiarTexto($valor): string
     {
-        return preg_replace('/\s+/u', ' ', trim((string)$valor)) ?? '';
+        return preg_replace('/\s+/u', ' ', trim((string) $valor)) ?? '';
     }
 
     private function normalizarEmail($valor): string
     {
-        $email = trim((string)$valor);
+        $email = trim((string) $valor);
         return function_exists('mb_strtolower') ? mb_strtolower($email, 'UTF-8') : strtolower($email);
     }
 

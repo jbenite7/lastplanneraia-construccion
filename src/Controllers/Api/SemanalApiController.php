@@ -3,6 +3,7 @@
 namespace App\Controllers\Api;
 
 use App\Core\Lps\LpsService;
+use App\Services\ProgramChangeDetector;
 use App\Services\ProgramaConsolidadoNormalizationService;
 use App\Services\WeeklyRealProgressCarryoverService;
 use PDO;
@@ -153,7 +154,7 @@ class SemanalApiController
 
     private function modificar(string $dbPrefix, int $semana): void
     {
-        $id = (int)($_POST["Id"] ?? 0);
+        $id = (int) ($_POST["Id"] ?? 0);
         $sourceProgramId = $this->getWeeklyProgramId($dbPrefix, $id);
         if ($sourceProgramId === null) {
             $this->jsonError("No se encontró la actividad semanal a actualizar.");
@@ -188,11 +189,11 @@ class SemanalApiController
         $obs = ($pac == 1) ? null : ($_POST["Observaciones_CNC"] ?: null);
 
         $params = [
-            $_POST["Descripcion"], $_POST["Ubicacion"], explode(',', $_POST["Sub_Contratista"])[0], 
-            $_POST["Responsable_AIA"], $_POST["Empresa"], $compromiso, 
+            $_POST["Descripcion"], $_POST["Ubicacion"], explode(',', $_POST["Sub_Contratista"])[0],
+            $_POST["Responsable_AIA"], $_POST["Empresa"], $compromiso,
             $this->parseLocalizedFloat($_POST["Cantidad_Sugerida"] ?? null),
             $real, $pCompletado, $pac, $_POST["Rendimientos"] ?: null,
-            $catCnc, $cnc, $obs, $id
+            $catCnc, $cnc, $obs, $id,
         ];
 
         $this->db->beginTransaction();
@@ -246,11 +247,13 @@ class SemanalApiController
                     Sub_Contratista, Responsable_AIA, Empresa, Ejecutado, medir_productividad, 
                     Critica, Atrasada, Activa, Unidad, cantidad_ppto, codigo_actividad
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            
+
                 foreach ($nuevasFilas as $f) {
                     $subsRaw = $f[6] ?? '';
                     $subs = array_filter(array_map('trim', explode(',', $subsRaw)));
-                    if (empty($subs)) $subs = [''];
+                    if (empty($subs)) {
+                        $subs = [''];
+                    }
                     foreach ($subs as $sub) {
                         $f[6] = $sub;
                         $this->db->query($queryInsertSingle, $f);
@@ -268,16 +271,18 @@ class SemanalApiController
                 $sub_split = $item["Sub_Contratista"];
 
                 $dataCons = $this->db->query("SELECT * FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Consecutivo_en_programa = ?", [$semana, $con_pg])->fetch();
-                if (!$dataCons) continue;
+                if (!$dataCons) {
+                    continue;
+                }
 
                 $dataAnt = $this->db->query("SELECT Responsable_AIA, Empresa, Descripcion, Ubicacion FROM {$dbPrefix}_programacion_semanal WHERE Semana = ? AND Consecutivo_En_programa = ? AND Sub_Contratista = ?", [$semana - 1, $con_pg, $sub_split])->fetch();
                 if (!$dataAnt) {
-                     $dataAnt = $this->db->query("SELECT Responsable_AIA, Empresa, Descripcion, Ubicacion FROM {$dbPrefix}_programacion_semanal WHERE Semana = ? AND Consecutivo_En_programa = ?", [$semana - 1, $con_pg])->fetch();
+                    $dataAnt = $this->db->query("SELECT Responsable_AIA, Empresa, Descripcion, Ubicacion FROM {$dbPrefix}_programacion_semanal WHERE Semana = ? AND Consecutivo_En_programa = ?", [$semana - 1, $con_pg])->fetch();
                 }
 
                 $sub = $sub_split ?: ($dataCons["Sub_Contratista"] ?? null);
                 $resp = $dataCons["Responsable_AIA"] ?: ($dataAnt["Responsable_AIA"] ?? null);
-                
+
                 $sqlActSemana = "UPDATE {$dbPrefix}_programacion_semanal SET 
                     Fecha_Inicio = ?, Fecha_Fin = ?, Sub_Contratista = ?, Responsable_AIA = ?, 
                     Ejecutado = ?, medir_productividad = ?, Critica = ?, 
@@ -288,20 +293,18 @@ class SemanalApiController
 
                 $this->db->query($sqlActSemana, [
                     $dataCons['Fecha_Inicio'], $dataCons['Fecha_Fin'], $sub, $resp,
-                    (float)$dataCons['Ejecutado'], 0, (int)($dataCons["Ruta_Critica"] ?? 0),
-                    $dataCons["Estado"], $dataAnt["Descripcion"] ?? null, $dataAnt["Ubicacion"] ?? null, 
+                    (float) $dataCons['Ejecutado'], 0, (int) ($dataCons["Ruta_Critica"] ?? 0),
+                    $dataCons["Estado"], $dataAnt["Descripcion"] ?? null, $dataAnt["Ubicacion"] ?? null,
                     $dataAnt["Empresa"] ?? 'AIA', $dataCons["unidad"],
-                    ((float)($dataCons["cantidad_ppto"] ?? 0) > 0 ? (float)$dataCons["cantidad_ppto"] : null),
-                    $dataCons["codigo_actividad"], $semana, $con_pk
+                    ((float) ($dataCons["cantidad_ppto"] ?? 0) > 0 ? (float) $dataCons["cantidad_ppto"] : null),
+                    $dataCons["codigo_actividad"], $semana, $con_pk,
                 ]);
             }
 
             // 4. Limpieza: actividades que ya no califican (sin compromiso ni avance real)
             $eligibleSubSql = "SELECT Consecutivo_en_Programa FROM {$dbPrefix}_programa_consolidado 
                 WHERE Semana = ? AND Titulo = 0 
-                  AND (COALESCE(Ejecutado, 0) > 0.001 OR {$restrictionEligibilitySql})
-                  AND (Estado='En Curso' OR Estado='Atrasada' OR Estado='Debe Iniciar'
-                    OR Estado='A Tiempo' OR Estado='Ya Debió Iniciar y Restricciones Pendientes')";
+                  AND Estado NOT IN ('Terminada', 'Terminada Antes', 'Sin Datos')";
             $this->db->query("
                 DELETE FROM {$dbPrefix}_programacion_semanal 
                 WHERE Semana = ? AND Activa = '1'
@@ -347,7 +350,7 @@ class SemanalApiController
                     continue;
                 }
                 $blandas = $this->buildRestrictionAlertParts($row, $softRestrictionLabels);
-                $actLabel = trim(preg_replace('/\s+/', ' ', preg_replace('/<[^>]*>/', ' ', (string)($row['Actividad'] ?? ''))));
+                $actLabel = trim(preg_replace('/\s+/', ' ', preg_replace('/<[^>]*>/', ' ', (string) ($row['Actividad'] ?? ''))));
                 $alertasRestricciones[] = [
                     'Id' => $row['Id'],
                     'Actividad' => $actLabel,
@@ -358,7 +361,7 @@ class SemanalApiController
 
             $this->db->query(
                 "UPDATE {$dbPrefix}_semanas_activas SET fecha_ultimo_saneo = NOW() WHERE Semana = ?",
-                [$semana]
+                [$semana],
             );
             echo json_encode(["respuesta" => "OK", "alertasRestricciones" => $alertasRestricciones], JSON_UNESCAPED_UNICODE);
         } catch (Throwable $t) {
@@ -416,7 +419,7 @@ class SemanalApiController
         $parts = [];
         foreach ($rules as $column => $rule) {
             $value = $row[$column] ?? null;
-            if ($this->restrictionValueMeetsThreshold($value, (float)$rule['threshold'])) {
+            if ($this->restrictionValueMeetsThreshold($value, (float) $rule['threshold'])) {
                 continue;
             }
 
@@ -429,7 +432,7 @@ class SemanalApiController
 
     private function restrictionValueMeetsThreshold($value, float $threshold): bool
     {
-        $text = trim((string)($value ?? ''));
+        $text = trim((string) ($value ?? ''));
         $upper = strtoupper($text);
         if ($upper === 'N/A' || $upper === 'NO APLICA') {
             return true;
@@ -445,7 +448,7 @@ class SemanalApiController
             return null;
         }
 
-        $raw = trim((string)$value);
+        $raw = trim((string) $value);
         if ($raw === '' || strtolower($raw) === 'null') {
             return null;
         }
@@ -467,7 +470,7 @@ class SemanalApiController
             return null;
         }
 
-        $ratio = (float)$normalized;
+        $ratio = (float) $normalized;
         if ($hasPercent) {
             $ratio /= 100;
         }
@@ -490,9 +493,11 @@ class SemanalApiController
 
     private function parseLocalizedFloat($value): ?float
     {
-        if ($value === null || $value === '') return null;
+        if ($value === null || $value === '') {
+            return null;
+        }
         $normalized = str_replace(['$', ' ', ','], ['', '', '.'], $value);
-        return is_numeric($normalized) ? (float)$normalized : null;
+        return is_numeric($normalized) ? (float) $normalized : null;
     }
 
     private function getWeeklyProgramId(string $dbPrefix, int $weeklyRowId): ?int
@@ -503,14 +508,14 @@ class SemanalApiController
 
         $programId = $this->db->query(
             "SELECT Consecutivo_En_Programa FROM {$dbPrefix}_programacion_semanal WHERE Consecutivo = ? LIMIT 1",
-            [$weeklyRowId]
+            [$weeklyRowId],
         )->fetchColumn();
 
         if ($programId === false || $programId === null) {
             return null;
         }
 
-        return (int)$programId;
+        return (int) $programId;
     }
 
     private function syncNextWeekCarryover(string $dbPrefix, int $sourceWeek, int $sourceProgramId): void
@@ -520,9 +525,9 @@ class SemanalApiController
         }
 
         $targetWeek = $sourceWeek + 1;
-        $exists = (int)$this->db->query(
+        $exists = (int) $this->db->query(
             "SELECT COUNT(*) FROM {$dbPrefix}_semanas_activas WHERE Semana = ?",
-            [$targetWeek]
+            [$targetWeek],
         )->fetchColumn();
 
         if ($exists === 0) {
@@ -539,14 +544,14 @@ class SemanalApiController
 
     private function refreshGeneralStatuses(string $dbPrefix, int $semana, array $programIds): void
     {
-        $programIds = array_values(array_unique(array_filter(array_map('intval', $programIds), static fn ($id) => $id > 0)));
+        $programIds = array_values(array_unique(array_filter(array_map('intval', $programIds), static fn($id) => $id > 0)));
         if (empty($programIds)) {
             return;
         }
 
         $semanaData = $this->db->query(
             "SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem FROM {$dbPrefix}_semanas_activas WHERE Semana = ? LIMIT 1",
-            [$semana]
+            [$semana],
         )->fetch(PDO::FETCH_ASSOC);
 
         if (!$semanaData) {
@@ -559,7 +564,7 @@ class SemanalApiController
             "SELECT Consecutivo_en_Programa, Titulo, Ejecutado, Fecha_Inicio, Fecha_Fin
              FROM {$dbPrefix}_programa_consolidado
              WHERE Semana = ? AND Consecutivo_en_Programa IN ({$placeholders})",
-            $params
+            $params,
         )->fetchAll(PDO::FETCH_ASSOC);
 
         foreach ($rows as $row) {
@@ -569,12 +574,12 @@ class SemanalApiController
                 $row['Fecha_Inicio'] ?? null,
                 $row['Fecha_Fin'] ?? null,
                 $semanaData['Fecha_Inicio_Sem'] ?? null,
-                $semanaData['Fecha_Fin_Sem'] ?? null
+                $semanaData['Fecha_Fin_Sem'] ?? null,
             );
 
             $this->db->query(
                 "UPDATE {$dbPrefix}_programa_consolidado SET Estado = ? WHERE Semana = ? AND Consecutivo_en_Programa = ?",
-                [$estado, $semana, $row['Consecutivo_en_Programa']]
+                [$estado, $semana, $row['Consecutivo_en_Programa']],
             );
         }
     }
@@ -597,7 +602,7 @@ class SemanalApiController
 
     private function eliminar(string $dbPrefix, int $semana): void
     {
-        $id = (int)($_POST["Id"] ?? 0);
+        $id = (int) ($_POST["Id"] ?? 0);
         $sourceProgramId = $this->getWeeklyProgramId($dbPrefix, $id);
         if ($sourceProgramId === null) {
             $this->jsonError("No se encontró la actividad semanal a eliminar.");
@@ -622,7 +627,7 @@ class SemanalApiController
 
     private function duplicar(string $dbPrefix, int $semana): void
     {
-        $id = (int)($_POST["Id"] ?? 0);
+        $id = (int) ($_POST["Id"] ?? 0);
         $sourceProgramId = $this->getWeeklyProgramId($dbPrefix, $id);
         if ($sourceProgramId === null) {
             $this->jsonError("No se encontró la actividad semanal a duplicar.");
@@ -638,11 +643,12 @@ class SemanalApiController
     }
     private function nuevo(string $dbPrefix, int $semana): void
     {
-        $idBase = trim((string)($_POST["idNuevo"] ?? ''));
+        $idBase = trim((string) ($_POST["idNuevo"] ?? ''));
         $query0 = "SELECT * FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Id = ? AND Titulo = 0 AND Semanas_Inicio <= 12 AND Semanas_Inicio >= 1 AND Ejecutado = 0 LIMIT 1";
         $data0 = $this->db->query($query0, [$semana, $idBase])->fetch(PDO::FETCH_ASSOC);
         if (!$data0) {
-            $this->jsonError("Actividad base no válida."); return;
+            $this->jsonError("Actividad base no válida.");
+            return;
         }
         $queryInsert = "INSERT INTO {$dbPrefix}_programacion_semanal (Semana, Consecutivo_En_Programa, Id, Actividad, Descripcion, Ubicacion, Fecha_Inicio, Fecha_Fin, Sub_Contratista, Responsable_AIA, Empresa, Ejecutado, medir_productividad, Unidad, cantidad_ppto, Compromiso, Critica, Atrasada, Activa, Prog_Sin_Restricciones_100, codigo_actividad) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 'NA', 0, ?)";
         $subs = array_filter(array_map('trim', explode(',', $_POST["Sub_Contratista"])));
@@ -652,7 +658,7 @@ class SemanalApiController
             $this->db->query($queryInsert, [$semana, $data0["Consecutivo_en_Programa"], $idBase, $_POST["Actividad"], $_POST["Descripcion"], $_POST["Ubicacion"], $data0["Fecha_Inicio"], $data0["Fecha_Fin"], $sub, $_POST["Responsable_AIA"], $_POST["Empresa"], $data0["Ejecutado"], $data0["medir_productividad"], $_POST["Unidad"] ?: '%', $data0["cantidad_ppto"], $isFirst ? $this->parseLocalizedFloat($_POST["Compromiso"]) : null, $data0["codigo_actividad"]]);
             $isFirst = false;
         }
-        $this->syncNextWeekCarryover($dbPrefix, $semana, (int)$data0["Consecutivo_en_Programa"]);
+        $this->syncNextWeekCarryover($dbPrefix, $semana, (int) $data0["Consecutivo_en_Programa"]);
         $this->db->commit();
         $this->jsonResponse("BIEN");
     }
@@ -661,7 +667,8 @@ class SemanalApiController
     {
         $queryCount = "SELECT COUNT(*) FROM {$dbPrefix}_programacion_semanal WHERE Semana = ? AND Activa = 1 AND (Compromiso IS NULL OR Compromiso <= 0 OR TRIM(COALESCE(Sub_Contratista, '')) = '' OR LOWER(TRIM(COALESCE(Sub_Contratista, ''))) = 'null' OR TRIM(COALESCE(Responsable_AIA, '')) = '' OR LOWER(TRIM(COALESCE(Responsable_AIA, ''))) = 'null')";
         if ($this->db->query($queryCount, [$semana])->fetchColumn() > 0) {
-            echo json_encode(["respuesta" => "No_Bloqueado", "mensaje" => "Hay actividades sin compromiso o sin asignaciones obligatorias."]); return;
+            echo json_encode(["respuesta" => "No_Bloqueado", "mensaje" => "Hay actividades sin compromiso o sin asignaciones obligatorias."]);
+            return;
         }
         $res = $this->db->query("UPDATE {$dbPrefix}_semanas_activas SET Semanal_Confirmada = 1, fechaCierreCompromisos = ? WHERE Semana = ?", [$_POST["fechaCierreCompromisos"] ?: null, $semana]);
         if ($res) {
@@ -710,13 +717,13 @@ class SemanalApiController
         echo json_encode(["respuesta" => "BIEN", "data" => $data], JSON_UNESCAPED_UNICODE);
     }
 
-    
+
     private function sanear(string $dbPrefix, int $semana): void
     {
         try {
             $confirmada = $this->db->query(
                 "SELECT Semanal_Confirmada FROM {$dbPrefix}_semanas_activas WHERE Semana = ?",
-                [$semana]
+                [$semana],
             )->fetchColumn();
 
             if ($confirmada == 1) {
@@ -726,7 +733,7 @@ class SemanalApiController
 
             $fechaUltimoSaneo = $this->db->query(
                 "SELECT fecha_ultimo_saneo FROM {$dbPrefix}_semanas_activas WHERE Semana = ?",
-                [$semana]
+                [$semana],
             )->fetchColumn();
 
             if ($fechaUltimoSaneo !== null && $fechaUltimoSaneo !== false) {
@@ -735,7 +742,7 @@ class SemanalApiController
                         COALESCE(MAX(Ult_Act_Est), '1970-01-01'),
                         COALESCE(MAX(Ult_Act_Restr), '1970-01-01')
                     ) FROM {$dbPrefix}_programa_consolidado WHERE Semana = ?",
-                    [$semana]
+                    [$semana],
                 )->fetchColumn();
 
                 if ($lastChange !== null && $lastChange !== false && $lastChange <= $fechaUltimoSaneo) {
@@ -747,9 +754,7 @@ class SemanalApiController
             $restrictionEligibilitySql = $this->getAutoprogramRestrictionEligibilitySql();
             $eligibleSubSql = "SELECT Consecutivo_en_Programa FROM {$dbPrefix}_programa_consolidado 
                 WHERE Semana = ? AND Titulo = 0 
-                  AND (COALESCE(Ejecutado, 0) > 0.001 OR {$restrictionEligibilitySql})
-                  AND (Estado='En Curso' OR Estado='Atrasada' OR Estado='Debe Iniciar'
-                    OR Estado='A Tiempo' OR Estado='Ya Debió Iniciar y Restricciones Pendientes')";
+                  AND Estado NOT IN ('Terminada', 'Terminada Antes', 'Sin Datos')";
 
             $this->db->query("
                 DELETE FROM {$dbPrefix}_programacion_semanal 
@@ -761,7 +766,7 @@ class SemanalApiController
 
             $stmtExistentes = $this->db->query(
                 "SELECT DISTINCT(Consecutivo_En_Programa) FROM {$dbPrefix}_programacion_semanal WHERE Semana = ?",
-                [$semana]
+                [$semana],
             );
             $existentes = $stmtExistentes->fetchAll(PDO::FETCH_COLUMN);
 
@@ -800,7 +805,9 @@ class SemanalApiController
                 foreach ($nuevasFilas as $f) {
                     $subsRaw = $f[6] ?? '';
                     $subs = array_filter(array_map('trim', explode(',', $subsRaw)));
-                    if (empty($subs)) $subs = [''];
+                    if (empty($subs)) {
+                        $subs = [''];
+                    }
                     foreach ($subs as $sub) {
                         $f[6] = $sub;
                         $this->db->query($queryInsertSingle, $f);
@@ -810,7 +817,7 @@ class SemanalApiController
 
             $stmtSemanal = $this->db->query(
                 "SELECT Consecutivo, Consecutivo_En_Programa, Sub_Contratista FROM {$dbPrefix}_programacion_semanal WHERE Semana = ? AND Activa != 'NA' AND (Compromiso IS NULL OR Compromiso <= 0)",
-                [$semana]
+                [$semana],
             );
             foreach ($stmtSemanal->fetchAll() as $item) {
                 $con_pk = $item["Consecutivo"];
@@ -819,18 +826,20 @@ class SemanalApiController
 
                 $dataCons = $this->db->query(
                     "SELECT * FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Consecutivo_en_programa = ?",
-                    [$semana, $con_pg]
+                    [$semana, $con_pg],
                 )->fetch();
-                if (!$dataCons) continue;
+                if (!$dataCons) {
+                    continue;
+                }
 
                 $dataAnt = $this->db->query(
                     "SELECT Responsable_AIA, Empresa, Descripcion, Ubicacion FROM {$dbPrefix}_programacion_semanal WHERE Semana = ? AND Consecutivo_En_programa = ? AND Sub_Contratista = ?",
-                    [$semana - 1, $con_pg, $sub_split]
+                    [$semana - 1, $con_pg, $sub_split],
                 )->fetch();
                 if (!$dataAnt) {
                     $dataAnt = $this->db->query(
                         "SELECT Responsable_AIA, Empresa, Descripcion, Ubicacion FROM {$dbPrefix}_programacion_semanal WHERE Semana = ? AND Consecutivo_En_programa = ?",
-                        [$semana - 1, $con_pg]
+                        [$semana - 1, $con_pg],
                     )->fetch();
                 }
 
@@ -845,18 +854,18 @@ class SemanalApiController
                     cantidad_ppto = ?, codigo_actividad = ?
                     WHERE Semana = ? AND Consecutivo = ?", [
                     $dataCons['Fecha_Inicio'], $dataCons['Fecha_Fin'], $sub, $resp,
-                    (float)$dataCons['Ejecutado'], 0, (int)($dataCons["Ruta_Critica"] ?? 0),
+                    (float) $dataCons['Ejecutado'], 0, (int) ($dataCons["Ruta_Critica"] ?? 0),
                     $dataCons["Estado"], $dataAnt["Descripcion"] ?? null, $dataAnt["Ubicacion"] ?? null,
                     $dataAnt["Empresa"] ?? 'AIA', $dataCons["unidad"],
-                    ((float)($dataCons["cantidad_ppto"] ?? 0) > 0 ? (float)$dataCons["cantidad_ppto"] : null),
-                    $dataCons["codigo_actividad"], $semana, $con_pk
+                    ((float) ($dataCons["cantidad_ppto"] ?? 0) > 0 ? (float) $dataCons["cantidad_ppto"] : null),
+                    $dataCons["codigo_actividad"], $semana, $con_pk,
                 ]);
             }
 
             $this->syncRestrictionFlags($dbPrefix, $semana);
             $this->db->query(
                 "UPDATE {$dbPrefix}_semanas_activas SET fecha_ultimo_saneo = NOW() WHERE Semana = ?",
-                [$semana]
+                [$semana],
             );
             $this->jsonResponse("OK");
         } catch (Throwable $t) {
@@ -870,5 +879,71 @@ class SemanalApiController
         $id = $_POST["Consecutivo"];
         $data = $this->db->query("SELECT Actividad, Responsable_AIA, Sub_Contratista, unidad, cantidad_ppto FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Id = ?", [$semana, $id])->fetch(PDO::FETCH_ASSOC);
         echo json_encode(["respuesta" => "BIEN", "data" => $data], JSON_UNESCAPED_UNICODE);
+    }
+
+    public function autoProgram(): void
+    {
+        require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
+        rbac_guard_require_permission('lps.programacion_semanal.editar');
+
+        $dbPrefix = $_POST['db'] ?? $_GET['db'] ?? '';
+        $semana = filter_var($_POST['semana'] ?? $_GET['semana'] ?? 0, FILTER_VALIDATE_INT);
+
+        if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
+            $this->jsonError('Parámetro de base de datos inválido.');
+            return;
+        }
+        if ($semana <= 0) {
+            $this->jsonError('Semana inválida.');
+            return;
+        }
+
+        try {
+            $detector = new ProgramChangeDetector();
+            $log = $detector->run($dbPrefix, $semana);
+
+            $this->syncRestrictionFlags($dbPrefix, $semana);
+
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode([
+                'success' => true,
+                'log' => $log,
+                'total_acciones' => count($log),
+            ], JSON_UNESCAPED_UNICODE);
+        } catch (Throwable $t) {
+            $this->jsonError('Error al auto-programar: ' . $t->getMessage());
+        }
+    }
+
+    public function getAutoProgramLog(): void
+    {
+        require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
+        rbac_guard_require_permission('lps.programacion_semanal.ver');
+
+        $dbPrefix = $_GET['db'] ?? '';
+        $semana = filter_var($_GET['semana'] ?? 0, FILTER_VALIDATE_INT);
+
+        if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
+            $this->jsonError('Parámetro de base de datos inválido.');
+            return;
+        }
+        if ($semana <= 0) {
+            $this->jsonError('Semana inválida.');
+            return;
+        }
+
+        try {
+            $detector = new ProgramChangeDetector();
+            $log = $detector->getLog($dbPrefix, $semana);
+
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode([
+                'success' => true,
+                'log' => $log,
+                'total' => count($log),
+            ], JSON_UNESCAPED_UNICODE);
+        } catch (Throwable $t) {
+            $this->jsonError('Error al obtener log: ' . $t->getMessage());
+        }
     }
 }

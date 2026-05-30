@@ -17,7 +17,7 @@ class RbacService
 
     public function normalizeRole(?string $role): string
     {
-        $role = strtoupper(trim((string)$role));
+        $role = strtoupper(trim((string) $role));
         if ($role === '') {
             return RbacCatalog::DEFAULT_ROLE;
         }
@@ -36,7 +36,7 @@ class RbacService
 
     public function resolveCurrentRole(): string
     {
-        $usuario = (string)($_SESSION['usuario'] ?? ($_SESSION['admin_user']['usuario'] ?? ''));
+        $usuario = (string) ($_SESSION['usuario'] ?? ($_SESSION['admin_user']['usuario'] ?? ''));
         $projectName = $_SESSION['proyecto'] ?? null;
         $dbName = $_SESSION['db'] ?? null;
 
@@ -78,7 +78,7 @@ class RbacService
     {
         $usuario = trim($usuario);
         $projectName = trim($projectName);
-        $dbName = trim((string)$dbName);
+        $dbName = trim((string) $dbName);
 
         if ($usuario === '' || ($projectName === '' && $dbName === '')) {
             return false;
@@ -160,7 +160,7 @@ class RbacService
                 return null;
             }
 
-            return (string)$row['role'];
+            return (string) $row['role'];
         }
 
         $sql = "SELECT pm.role
@@ -180,7 +180,7 @@ class RbacService
             return null;
         }
 
-        return (string)$row['role'];
+        return (string) $row['role'];
     }
 
     private function loadRolePermissionsFromDb(string $role): array
@@ -206,14 +206,14 @@ class RbacService
         $anyDbRow = false;
         $dbMap = [];
         foreach ($rows as $row) {
-            $key = strtolower((string)($row['permission_key'] ?? ''));
+            $key = strtolower((string) ($row['permission_key'] ?? ''));
             if ($key === '') {
                 continue;
             }
             $anyDbRow = true;
 
             if ($row['allowed'] !== null) {
-                $dbMap[$key] = ((int)$row['allowed'] === 1);
+                $dbMap[$key] = ((int) $row['allowed'] === 1);
             }
         }
 
@@ -260,7 +260,7 @@ class RbacService
             $stmt = $this->db->prepare($sql);
             $stmt->execute([$tableName]);
             $row = $stmt->fetch();
-            $exists = ((int)($row['total'] ?? 0) > 0);
+            $exists = ((int) ($row['total'] ?? 0) > 0);
         } catch (\Throwable $e) {
             $exists = false;
         }

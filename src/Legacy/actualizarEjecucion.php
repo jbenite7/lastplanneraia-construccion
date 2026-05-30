@@ -7,7 +7,7 @@ require_once __DIR__ . "/conexion.php";
 $db = Database::getInstance();
 
 $dbName = $_GET['db'] ?? $_POST['db'] ?? '';
-$semana = (int)($_POST["semana"] ?? 0);
+$semana = (int) ($_POST["semana"] ?? 0);
 $semanaAnterior = $semana - 1;
 $f_inicio_sem = date("Y-m-d", strtotime($_POST["f_inicio_sem"] ?? 'now'));
 
@@ -34,11 +34,11 @@ try {
     } else {
         foreach ($actividades as $data) {
             $Actividad = $data["Actividad"];
-            $Ejecutado = (float)($data["Ejecutado"] ?? 0);
-            $cantidad_ppto = (float)($data["cantidad_ppto"] ?? 0);
+            $Ejecutado = (float) ($data["Ejecutado"] ?? 0);
+            $cantidad_ppto = (float) ($data["cantidad_ppto"] ?? 0);
             $Responsable_AIA = $data["Responsable_AIA"] ?? null;
             $Sub_Contratista = $data["Sub_Contratista"] ?? null;
-            $Ejecutado_Real = (float)($data["Ejecutado_Real"] ?? 0);
+            $Ejecutado_Real = (float) ($data["Ejecutado_Real"] ?? 0);
 
             if ($cantidad_ppto <= 0) {
                 // Fallback: actividades tipo % usan 100 como base de cálculo

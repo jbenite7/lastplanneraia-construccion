@@ -1,13 +1,13 @@
 <?php
 $projectOptionsHtml = '';
 foreach (($projects ?? []) as $project) {
-    $projectId = (int)($project['Id'] ?? 0);
+    $projectId = (int) ($project['Id'] ?? 0);
     if ($projectId <= 0) {
         continue;
     }
 
-    $projectName = htmlspecialchars((string)($project['Proyecto_Proceso'] ?? 'Proyecto'));
-    $inactiveLabel = ((int)($project['Activo'] ?? 0) === 1) ? '' : ' (Inactivo)';
+    $projectName = htmlspecialchars((string) ($project['Proyecto_Proceso'] ?? 'Proyecto'));
+    $inactiveLabel = ((int) ($project['Activo'] ?? 0) === 1) ? '' : ' (Inactivo)';
     $projectOptionsHtml .= '<option value="' . $projectId . '">' . $projectName . $inactiveLabel . '</option>';
 }
 
@@ -20,13 +20,13 @@ foreach (($roles ?? []) as $code => $role) {
 $initialAssignments = [];
 foreach (($assignments ?? []) as $assignment) {
     $initialAssignments[] = [
-        'project_id' => (int)($assignment['project_id'] ?? 0),
-        'role' => strtoupper((string)($assignment['role'] ?? 'V')),
+        'project_id' => (int) ($assignment['project_id'] ?? 0),
+        'role' => strtoupper((string) ($assignment['role'] ?? 'V')),
     ];
 }
 
-$isUserActive = (int)($user['activo'] ?? 1) === 1;
-$forcePasswordChangeEnabled = (int)($user['force_password_change'] ?? 0) === 1;
+$isUserActive = (int) ($user['activo'] ?? 1) === 1;
+$forcePasswordChangeEnabled = (int) ($user['force_password_change'] ?? 0) === 1;
 ?>
 
 <div class="card card-info">
@@ -36,24 +36,24 @@ $forcePasswordChangeEnabled = (int)($user['force_password_change'] ?? 0) === 1;
 
   <form id="editUserForm">
     <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
-    <input type="hidden" name="id" value="<?php echo (int)$user['id']; ?>">
+    <input type="hidden" name="id" value="<?php echo (int) $user['id']; ?>">
 
     <div class="card-body">
       <div class="row">
         <div class="col-md-6">
           <div class="form-group">
             <label for="nombre">Nombre Completo</label>
-            <input type="text" name="nombre" class="form-control" id="nombre" value="<?php echo htmlspecialchars((string)$user['nombre']); ?>" required>
+            <input type="text" name="nombre" class="form-control" id="nombre" value="<?php echo htmlspecialchars((string) $user['nombre']); ?>" required>
           </div>
 
           <div class="form-group">
             <label for="email">Email</label>
-            <input type="email" name="email" class="form-control" id="email" value="<?php echo htmlspecialchars((string)$user['email']); ?>">
+            <input type="email" name="email" class="form-control" id="email" value="<?php echo htmlspecialchars((string) $user['email']); ?>">
           </div>
 
           <div class="form-group">
             <label for="cargo">Cargo</label>
-            <input type="text" name="cargo" class="form-control" id="cargo" value="<?php echo htmlspecialchars((string)$user['cargo']); ?>">
+            <input type="text" name="cargo" class="form-control" id="cargo" value="<?php echo htmlspecialchars((string) $user['cargo']); ?>">
           </div>
 
           <div class="form-group mb-0">
@@ -70,7 +70,7 @@ $forcePasswordChangeEnabled = (int)($user['force_password_change'] ?? 0) === 1;
         <div class="col-md-6">
           <div class="form-group">
             <label for="usuario">Usuario</label>
-            <input type="text" name="usuario" class="form-control" id="usuario" value="<?php echo htmlspecialchars((string)$user['usuario']); ?>" required>
+            <input type="text" name="usuario" class="form-control" id="usuario" value="<?php echo htmlspecialchars((string) $user['usuario']); ?>" required>
           </div>
 
           <div class="form-group">
@@ -144,7 +144,7 @@ $(function () {
   const projectOptionsHtml = <?php echo json_encode($projectOptionsHtml); ?>;
   const roleOptionsHtml = <?php echo json_encode($roleOptionsHtml); ?>;
   const initialAssignments = <?php echo json_encode($initialAssignments, JSON_UNESCAPED_UNICODE); ?>;
-  const userId = <?php echo (int)$user['id']; ?>;
+  const userId = <?php echo (int) $user['id']; ?>;
   const csrfToken = <?php echo json_encode($csrf_token); ?>;
   let assignmentIndex = 0;
 

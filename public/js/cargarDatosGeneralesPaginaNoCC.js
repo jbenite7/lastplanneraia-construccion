@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 var navInformacionGeneral =
-  "<ul class='navbar-nav ml-4 mr-auto mt-2 mt-lg-0 main-links'><li class='nav-item dropdown'><a class='nav-link dropdown-toggle' href='#' id='informacionGeneral' role='button' data-toggle='dropdown' aria-expanded='false'>Información General</a><ul class='dropdown-menu' id='informacionGeneralMenu' aria-labelledby='informacionGeneral'>";
+  "<ul class='navbar-nav ml-4 mr-auto mt-2 mt-lg-0 main-links'><li class='nav-item dropdown'><a class='nav-link dropdown-toggle' href='#' id='informacionGeneral' role='button' data-toggle='dropdown' aria-expanded='false'><i class='fas fa-info-circle nav-icon'></i> <span class='nav-text-full'>Información General</span><span class='nav-text-compact'>I. General</span></a><ul class='dropdown-menu' id='informacionGeneralMenu' aria-labelledby='informacionGeneral'>";
 
 navInformacionGeneral +=
   "<li id='tituloInteresados' style='border-bottom: 1px solid white; border-top:1px solid white'><p class='ml-auto mr-auto' align='center' style='color:white; margin:3px 0'><b>Interesados</b></p></li><li><a class='dropdown-item' id='info_profesionales' href='#'>Profesionales AIA</a></li><li><a class='dropdown-item' id='info_subcontratistas' href='#'>Sub-Contratistas</a></li>";
@@ -60,19 +60,19 @@ navInformacionGeneral +=
   "<li id='tituloActualizarCronograma' style='border-bottom: 1px solid white; border-top:1px solid white; margin-top:10px'><p class='ml-auto mr-auto' align='center' style='color:white; margin:3px 0'><b>Cronograma </b></p></li><li><a class='dropdown-item' id='actualizarCronograma' href='#'>Actualizar Cronograma</a></li></ul></li>";
 
 var navIntegracion =
-  "<!--<li class='nav-item dropdown'><a class='nav-link dropdown-toggle' href='#' id='integracion' role='button' data-toggle='dropdown' aria-expanded='false'>Integración</a><ul class='dropdown-menu' id='integracionMenu' aria-labelledby='integracion'><li><a class='dropdown-item' id='controlCambios' href='#'>Control de Cambios</a></li></ul></li>-->";
+  "<!--<li class='nav-item dropdown'><a class='nav-link dropdown-toggle' href='#' id='integracion' role='button' data-toggle='dropdown' aria-expanded='false'><i class='fas fa-network-wired nav-icon'></i> <span class='nav-text-full'>Integración</span><span class='nav-text-compact'>Integración</span></a><ul class='dropdown-menu' id='integracionMenu' aria-labelledby='integracion'><li><a class='dropdown-item' id='controlCambios' href='#'>Control de Cambios</a></li></ul></li>-->";
 
 var navSemanasProyecto =
-  "<li class='nav-item dropdown'><a class='nav-link dropdown-toggle' href='#' id='semanasProyecto' role='button' data-toggle='dropdown' aria-expanded='false'>Semanas del Proyecto</a><ul class='dropdown-menu' id='semanasProyectoMenu' aria-labelledby='semanasProyecto'></ul></li>";
+  "<li class='nav-item dropdown'><a class='nav-link dropdown-toggle' href='#' id='semanasProyecto' role='button' data-toggle='dropdown' aria-expanded='false'><i class='far fa-calendar-alt nav-icon'></i> <span class='nav-text-full'>Semanas del Proyecto</span><span class='nav-text-compact'>Semanas</span></a><ul class='dropdown-menu' id='semanasProyectoMenu' aria-labelledby='semanasProyecto'></ul></li>";
 
 var navProgramaGeneral =
-  "<li class='nav-item dropdown'><a class='nav-link dropdown-toggle' id='programa_general' href='#' role='button' data-toggle='dropdown' aria-expanded='false'>Programa General</a><ul class='dropdown-menu' id='programa_generalMenu' aria-labelledby='programa_general'></ul></li>";
+  "<li class='nav-item dropdown'><a class='nav-link dropdown-toggle' id='programa_general' href='#' role='button' data-toggle='dropdown' aria-expanded='false'><i class='fas fa-project-diagram nav-icon'></i> <span class='nav-text-full'>Programa General</span><span class='nav-text-compact'>P. General</span></a><ul class='dropdown-menu' id='programa_generalMenu' aria-labelledby='programa_general'></ul></li>";
 
 var navProgramacionIntermedia =
-  "<li class='nav-item dropdown'><a class='nav-link dropdown-toggle' id='programacion_intermedia' href='#' role='button' data-toggle='dropdown' aria-expanded='false'>Liberación de Restricciones</a><ul class='dropdown-menu' id='programacion_intermediaMenu' aria-labelledby='programacion_intermedia'></ul></li>";
+  "<li class='nav-item dropdown'><a class='nav-link dropdown-toggle' id='programacion_intermedia' href='#' role='button' data-toggle='dropdown' aria-expanded='false'><i class='fas fa-clipboard-list nav-icon'></i> <span class='nav-text-full'>Liberación de Restricciones</span><span class='nav-text-compact'>Restricciones</span></a><ul class='dropdown-menu' id='programacion_intermediaMenu' aria-labelledby='programacion_intermedia'></ul></li>";
 
 var navProgramacionSemanal =
-  "<li class='nav-item dropdown'><a class='nav-link dropdown-toggle' href='#' id='programacion_semanal' role='button' data-toggle='dropdown' aria-expanded='false'>Programación Semanal</a><ul class='dropdown-menu' id='programacion_semanalMenu' aria-labelledby='programacion_semanal'></ul></li></ul>";
+  "<li class='nav-item dropdown'><a class='nav-link dropdown-toggle' href='#' id='programacion_semanal' role='button' data-toggle='dropdown' aria-expanded='false'><i class='fas fa-tasks nav-icon'></i> <span class='nav-text-full'>Programación Semanal</span><span class='nav-text-compact'>P. Semanal</span></a><ul class='dropdown-menu' id='programacion_semanalMenu' aria-labelledby='programacion_semanal'></ul></li></ul>";
 
 var navNombreUsuario = 
   "<ul class='navbar-nav ml-auto align-items-center d-none d-xl-flex'>" +

@@ -4,11 +4,11 @@
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 	<script src="https://code.jquery.com/ui/1.10.1/jquery-ui.js"></script>
 	<!--Script cque va al archivo linksComunesHead2.js-->
-	<script type="text/javascript" src="/js/linksComunesHead2.js?v=20260325a" charset="utf-8"></script>
+	<script type="text/javascript" src="/js/linksComunesHead2.js?v=piStateColorsFresh" charset="utf-8"></script>
 
 	<!-- Estilos Core Hot -->
 	<link rel="stylesheet" href="/public/vendor/handsontable/handsontable.full.min.css" />
-	<link rel="stylesheet" href="/css/handsontable-module.css?v=20260522d" />
+	<link rel="stylesheet" href="/css/handsontable-module.css?v=20260529a" />
 
 	<!-- Google Fonts: Montserrat & Inter -->
 	<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -39,13 +39,37 @@
 		.pg-page .htDropdownMenu:not(.htGhostTable), .pg-page .htFiltersConditionsMenu:not(.htGhostTable) { z-index: 1085; }
 
 		/* Celdas Handsontable AIA 2026 */
-		.pg-page #hot-container td.pg-cell-editable {
+		.pg-page #hot-container td.pg-cell-editable:not(.pg-state-atrasado):not(.pg-state-atrasada):not(.pg-state-restr-0):not(.pg-state-debe-iniciar):not(.pg-state-actividad-futura):not(.pg-state-en-curso):not(.pg-state-a-tiempo-en-curso):not(.pg-state-terminada):not(.pg-state-sin-datos) {
 			box-shadow: inset 0 0 0 9999px rgba(34, 197, 94, 0.06);
 			cursor: text;
 		}
 
-		.pg-page #hot-container td.pg-cell-readonly {
+		.pg-page #hot-container td.pg-cell-editable.pg-state-atrasado,
+		.pg-page #hot-container td.pg-cell-editable.pg-state-atrasada,
+		.pg-page #hot-container td.pg-cell-editable.pg-state-restr-0,
+		.pg-page #hot-container td.pg-cell-editable.pg-state-debe-iniciar,
+		.pg-page #hot-container td.pg-cell-editable.pg-state-actividad-futura,
+		.pg-page #hot-container td.pg-cell-editable.pg-state-en-curso,
+		.pg-page #hot-container td.pg-cell-editable.pg-state-a-tiempo-en-curso,
+		.pg-page #hot-container td.pg-cell-editable.pg-state-terminada,
+		.pg-page #hot-container td.pg-cell-editable.pg-state-sin-datos {
+			cursor: text;
+		}
+
+		.pg-page #hot-container td.pg-cell-readonly:not(.pg-state-atrasado):not(.pg-state-atrasada):not(.pg-state-restr-0):not(.pg-state-debe-iniciar):not(.pg-state-actividad-futura):not(.pg-state-en-curso):not(.pg-state-a-tiempo-en-curso):not(.pg-state-terminada):not(.pg-state-sin-datos) {
 			box-shadow: inset 0 0 0 9999px rgba(148, 163, 184, 0.08);
+			cursor: not-allowed;
+		}
+
+		.pg-page #hot-container td.pg-cell-readonly.pg-state-atrasado,
+		.pg-page #hot-container td.pg-cell-readonly.pg-state-atrasada,
+		.pg-page #hot-container td.pg-cell-readonly.pg-state-restr-0,
+		.pg-page #hot-container td.pg-cell-readonly.pg-state-debe-iniciar,
+		.pg-page #hot-container td.pg-cell-readonly.pg-state-actividad-futura,
+		.pg-page #hot-container td.pg-cell-readonly.pg-state-en-curso,
+		.pg-page #hot-container td.pg-cell-readonly.pg-state-a-tiempo-en-curso,
+		.pg-page #hot-container td.pg-cell-readonly.pg-state-terminada,
+		.pg-page #hot-container td.pg-cell-readonly.pg-state-sin-datos {
 			cursor: not-allowed;
 		}
 
@@ -62,11 +86,11 @@
 	<div id="loading"><div class="spinner-border text-primary" role="status"><span class="sr-only">Cargando...</span></div></div>
 
 	<?php
-	// PRE-CARGA JSON: Opciones del cronograma anterior
-	$dbInstance = Database::getInstance();
+    // PRE-CARGA JSON: Opciones del cronograma anterior
+    $dbInstance = Database::getInstance();
 	$dbPrefix = $_SESSION["db"] ?? '';
-	$semanaBaseActualizacion = (int)($semanaBaseActualizacion ?? ($_SESSION["semana"] ?? 0));
-	$semanaObjetivoActualizacion = (int)($semanaObjetivoActualizacion ?? ($semanaBaseActualizacion + 1));
+	$semanaBaseActualizacion = (int) ($semanaBaseActualizacion ?? ($_SESSION["semana"] ?? 0));
+	$semanaObjetivoActualizacion = (int) ($semanaObjetivoActualizacion ?? ($semanaBaseActualizacion + 1));
 	$semana = $semanaBaseActualizacion;
 	$dbPrefix = preg_replace('/[^a-zA-Z0-9_]/', '', $dbPrefix);
 
@@ -76,14 +100,14 @@
 	$stmt = $dbInstance->query($query, [$semanaDropdown]);
 	$actividadesPrevias = [];
 	while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-			// Formato TomSelect requerido: id, title, label
-			$cleanName = strip_tags($row['Actividad']);
-			$title = $row['Id'] . ". " . $cleanName;
-			$actividadesPrevias[] = [
-					"id" => $cleanName, // Guardamos el nombre limpio para evitar etiquetas en DB
-					"title" => $title, 
-					"subtitle" => "Inicia: " . $row['Fecha_Inicio']
-			];
+	    // Formato TomSelect requerido: id, title, label
+	    $cleanName = strip_tags($row['Actividad']);
+	    $title = $row['Id'] . ". " . $cleanName;
+	    $actividadesPrevias[] = [
+	        "id" => $cleanName, // Guardamos el nombre limpio para evitar etiquetas en DB
+	        "title" => $title,
+	        "subtitle" => "Inicia: " . $row['Fecha_Inicio'],
+	    ];
 	}
 	$opcionesDropdownJSON = json_encode($actividadesPrevias, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
 	?>
@@ -133,8 +157,8 @@
 
 	<div class="row ventanasModalesEspecificas" id="ventanasModalesEspecificas">
 		<!-- General el modal para descargar y cargar el CSV con el que se puede agregar el listado de actividades desde excel -->
-		<div class="modal_cargarExcel modal fade" id="modalCargarExcel" role="dialog" aria-labelledby="modal_cargarExcelLabel">
-		  <div class="modal-dialog modal-lg" role="document">
+		<div class="modal_cargarExcel modal fade aia-modal" id="modalCargarExcel" role="dialog" aria-labelledby="modal_cargarExcelLabel">
+		  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
 		    <div class="modal-content">
 		      <div class="modal-header">
 		        <h5 class="modal-title" id="modalCargarExcelLabel">
@@ -198,8 +222,8 @@
 		<!-- Modal -->
 
 		<!-- General el modal para descargar y cargar el CSV con el que se puede agregar el listado de actividades desde excel -->
-		<div class="modal_eliminarActualizacion modal fade" id="modalEliminarActualizacion" role="dialog" aria-labelledby="modal_eliminarActualizacionLabel">
-		  <div class="modal-dialog modal-m" role="document">
+		<div class="modal_eliminarActualizacion modal fade aia-modal" id="modalEliminarActualizacion" role="dialog" aria-labelledby="modal_eliminarActualizacionLabel">
+		  <div class="modal-dialog modal-m modal-dialog-centered" role="document">
 		    <div class="modal-content">
 		      <div class="modal-header">
 		        <h5 class="modal-title" id="modalEliminarActualizacionLabel">
@@ -233,20 +257,20 @@
 		</div>
 		<!-- Modal -->
 
-		<!-- Modal de Éxito - Marca AIA (Línea Construcción) -->
-		<div class="modal fade" id="modalImportacionExitosa" role="dialog" data-backdrop="static">
+		<!-- Modal de Éxito - Marca AIA corporativa -->
+		<div class="modal fade aia-modal" id="modalImportacionExitosa" role="dialog" data-backdrop="static">
 		  <div class="modal-dialog modal-dialog-centered">
 		    <div class="modal-content" style="border-radius: 12px; border: none; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
 		      <div class="modal-body text-center" style="padding: 40px 20px;">
-		        <div style="width: 80px; height: 80px; background: #fbead9; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
-		          <i class="fas fa-check" style="color: #b55211; font-size: 40px;"></i>
+		        <div style="width: 80px; height: 80px; background: #d5e5db; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+		          <i class="fas fa-check" style="color: #1a5633; font-size: 40px;"></i>
 		        </div>
 		        <h3 style="font-family: 'Montserrat', sans-serif; font-weight: 700; color: #1a3c2a; margin-bottom: 10px;">¡Carga Exitosa!</h3>
 		        <p style="font-family: 'Inter', sans-serif; color: #4a4a4d; font-size: 16px; margin-bottom: 25px;">
 		          El cronograma y la primera semana han sido creados correctamente. <br>
 		          Hemos preparado todo para que inicies tu seguimiento.
 		        </p>
-		        <button type="button" class="btn btn-lg" id="btnIrAlPrograma" style="background: #b55211; color: white; border-radius: 8px; padding: 12px 30px; font-weight: 600; border: none; transition: background 0.3s;">
+		        <button type="button" class="btn btn-lg aia-btn-primary" id="btnIrAlPrograma">
 		          Ir al Programa General
 		        </button>
 		      </div>
@@ -256,8 +280,8 @@
 
 
 		<!-- Se crea el Modal que explica el significado de la columna 'Ejecutado Teórico' -->
-		<div class='modal fade' id='modal_Ejecutado_Teorico' role='dialog' data-backdrop='static'>
-		  <div class='modal-dialog modal-lg'>
+		<div class='modal fade aia-modal' id='modal_Ejecutado_Teorico' role='dialog' data-backdrop='static'>
+		  <div class='modal-dialog modal-lg modal-dialog-centered'>
 		    <!-- Modal content-->
 		    <div class='modal-content'>
 		      <div class='modal-header'>
@@ -276,8 +300,8 @@
 		<!-- Modal -->
 
 		<!-- Se crea el Modal que avisa que la cantidad que se está comprometiendo en una actividad, es inferior a la cantidad sugerida por el programa -->
-		<div class="modal fade" id="modal_cantidad_ejecutada_error" role="dialog">
-			<div class="modal-dialog modal-lg">
+		<div class="modal fade aia-modal" id="modal_cantidad_ejecutada_error" role="dialog">
+			<div class="modal-dialog modal-lg modal-dialog-centered">
 				<!-- Modal content-->
 				<div class="modal-content">
 					<div class="modal-header">
@@ -298,8 +322,8 @@
 		</div>
 
 			<!-- Se crea el Modal que avisa que la cantidad que se está comprometiendo en una actividad, es inferior a la cantidad sugerida por el programa -->
-			<div class="modal fade" id="modal_semanal_confirmada" role="dialog">
-				<div class="modal-dialog modal-lg">
+			<div class="modal fade aia-modal" id="modal_semanal_confirmada" role="dialog">
+				<div class="modal-dialog modal-lg modal-dialog-centered">
 					<!-- Modal content-->
 					<div class="modal-content">
 						<div class="modal-header">

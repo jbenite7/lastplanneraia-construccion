@@ -53,8 +53,8 @@ class SubcontratistasApiController
             $data = $this->db->query($query)->fetchAll(PDO::FETCH_ASSOC);
 
             foreach ($data as &$row) {
-                $row['activo'] = (bool)$row['activo'];
-                $row['has_dependencies'] = (bool)$row['has_dependencies'];
+                $row['activo'] = (bool) $row['activo'];
+                $row['has_dependencies'] = (bool) $row['has_dependencies'];
             }
 
             $this->json(["status" => "success", "data" => $data]);
@@ -114,7 +114,7 @@ class SubcontratistasApiController
 
         $changesById = [];
         foreach ($changes as $change) {
-            $id = (int)($change['id'] ?? 0);
+            $id = (int) ($change['id'] ?? 0);
             $columna = $change['prop'] ?? '';
 
             if ($id <= 0) {
@@ -154,7 +154,7 @@ class SubcontratistasApiController
                     $actualizado['tipo_proveedor'],
                     $actualizado['activo'],
                     $id,
-                ]
+                ],
             );
 
             if ($resultado) {
@@ -246,7 +246,9 @@ class SubcontratistasApiController
         foreach ($tables as $tbl => $col) {
             if ($this->db->query("SHOW TABLES LIKE '$tbl'")->fetch()) {
                 if ($this->db->query("SHOW COLUMNS FROM $tbl LIKE '$col'")->fetch()) {
-                    if ($this->db->query("SELECT COUNT(*) FROM $tbl WHERE $col = ?", [$nombre])->fetchColumn() > 0) return true;
+                    if ($this->db->query("SELECT COUNT(*) FROM $tbl WHERE $col = ?", [$nombre])->fetchColumn() > 0) {
+                        return true;
+                    }
                 }
             }
         }
@@ -362,7 +364,7 @@ class SubcontratistasApiController
 
     private function limpiarTexto($valor): string
     {
-        return preg_replace('/\s+/u', ' ', trim((string)$valor)) ?? '';
+        return preg_replace('/\s+/u', ' ', trim((string) $valor)) ?? '';
     }
 
     private function normalizarTexto($valor): string
@@ -374,13 +376,13 @@ class SubcontratistasApiController
 
     private function normalizarEmail($valor): string
     {
-        $email = trim((string)$valor);
+        $email = trim((string) $valor);
         return function_exists('mb_strtolower') ? mb_strtolower($email, 'UTF-8') : strtolower($email);
     }
 
     private function normalizarNitComparacion($valor): string
     {
-        $nit = trim((string)$valor);
+        $nit = trim((string) $valor);
         return preg_replace('/[^a-zA-Z0-9]/', '', $nit) ?? '';
     }
 

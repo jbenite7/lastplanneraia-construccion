@@ -84,8 +84,8 @@ body {
 #hot-container th {
   display: table-cell !important;
   padding: 0 !important;
-  border-right: 1px solid #ededed !important;
-  border-bottom: 1px solid #ededed !important;
+  border-right: 1px solid #cbd5e1 !important;
+  border-bottom: 1px solid #cbd5e1 !important;
 }
 
 /* 2b. Proteger editores internos de Handsontable */
@@ -924,11 +924,11 @@ body {
     font-size: clamp(0.75rem, 0.4rem + 0.4vw, 0.85rem) !important;
   }
   body.lps-drawer-open .navbar-aia #userDropdown {
-    max-width: 140px !important;
+    max-width: 220px !important;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    padding-inline: 6px !important;
+    padding-inline: 8px !important;
   }
   body.lps-drawer-open .navbar-aia .main-links {
     margin-left: 8px !important;

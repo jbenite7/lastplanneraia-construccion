@@ -5,19 +5,91 @@
 (function () {
   var head = document.getElementById('head') || document.getElementsByTagName('head')[0];
 
-  // HTML String for META and static CSS/JS
-  // Note: We will parse this or just purely append elements for critical scripts.
-  // For simplicity given the existing structure, we will use a hybrid approach:
-  // 1. Set innerHTML for static tags (Meta, Title, CSS)
-  // 2. Proactively load functionality scripts via createElement
+  // Target localized static content paths
+  // Using document.createElement instead of innerHTML to avoid destroying the existing head elements (scripts, styles, metadata)
+  var metaCharset = document.querySelector('meta[charset]') || document.createElement('meta');
+  if (!metaCharset.parentNode) {
+    metaCharset.setAttribute('charset', 'UTF-8');
+    head.appendChild(metaCharset);
+  }
 
-  var staticContent =
-    "<meta charset='UTF-8'><title>Last Planner AIA</title><link rel='shortcut icon' href='/img/florAIA.png'><meta name='viewport' content='width=device-width, user-scalable=no,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0'><!-- Fuentes de Google--><link href='https://fonts.googleapis.com/css?family=Roboto&display=swap' rel='stylesheet'><!-- Font Awesome (Íconos)--><link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.css'><!--Iniciar estilos de Bootstrap--><link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css'><!--Iniciar estilos de Datatables--><link rel='stylesheet' type='text/css' href='https://cdn.datatables.net/1.11.4/css/jquery.dataTables.css'><link rel='stylesheet' type='text/css' href='https://cdn.datatables.net/1.11.4/css/dataTables.bootstrap4.min.css'><link rel='stylesheet' type='text/css' href='https://cdn.datatables.net/buttons/1.6.1/css/buttons.bootstrap4.min.css'><!-- Estilos Personalizados --><link rel='stylesheet' href='/css/tokens.css?v=1.0'><link rel='stylesheet' href='/css/styles.css?v=mobileFix13'><link rel='stylesheet' href='/css/access.css?v=1.0'><!-- Checkboxes DataTables --><link type='text/css' href='//gyrocode.github.io/jquery-datatables-checkboxes/1.2.11/css/dataTables.checkboxes.css' rel='stylesheet'><!--Selector de fechas --><link rel='stylesheet' href='https://code.jquery.com/ui/1.10.1/themes/base/jquery-ui.css'><!--Estilos Any Chart--><link href='https://cdn.anychart.com/releases/v8/css/anychart-ui.min.css?hcode=c11e6e3cfefb406e8ce8d99fa8368d33' type='text/css' rel='stylesheet'><link href='https://cdn.anychart.com/releases/v8/fonts/css/anychart-font.min.css?hcode=c11e6e3cfefb406e8ce8d99fa8368d33' type='text/css' rel='stylesheet'><!-- Lista desplegable con buscador --><link href='https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css' rel='stylesheet'/><!-- SweetAlert2 --><link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.4.24/sweetalert2.min.css'/>";
+  var titleTag = document.getElementsByTagName('title')[0] || document.createElement('title');
+  titleTag.textContent = 'Last Planner AIA';
+  if (!titleTag.parentNode) {
+    head.appendChild(titleTag);
+  }
 
-  head.innerHTML = staticContent;
+  // Helper to inject link stylesheet if not already present
+  function injectStylesheet(href, id) {
+    var query = id ? '#' + id : 'link[href*="' + href.split('?')[0] + '"]';
+    if (!document.querySelector(query)) {
+      var link = document.createElement('link');
+      link.rel = 'stylesheet';
+      if (id) link.id = id;
+      link.href = href;
+      head.appendChild(link);
+    }
+  }
+
+  // Inject meta viewport
+  if (!document.querySelector('meta[name="viewport"]')) {
+    var metaView = document.createElement('meta');
+    metaView.name = 'viewport';
+    metaView.content = 'width=device-width, user-scalable=no,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0';
+    head.appendChild(metaView);
+  }
+
+  // Icon
+  if (!document.querySelector('link[rel*="icon"]')) {
+    var favicon = document.createElement('link');
+    favicon.rel = 'shortcut icon';
+    favicon.href = '/img/florAIA.png';
+    head.appendChild(favicon);
+  }
+
+  // Fuentes de Google (Mantenido CDN por ahora ya que es tipográfico, pero cargado de forma no bloqueante)
+  injectStylesheet('https://fonts.googleapis.com/css?family=Roboto&display=swap');
+
+  // VENDORS LOCALIZADOS (Carga local instantánea 0ms)
+  injectStylesheet('/public/vendor/font-awesome/css/all.css');
+  injectStylesheet('/public/vendor/bootstrap/bootstrap.min.css');
+  
+  // DataTables local
+  injectStylesheet('/public/vendor/datatables/jquery.dataTables.css');
+  injectStylesheet('/public/vendor/datatables/dataTables.bootstrap4.min.css');
+  injectStylesheet('/public/vendor/datatables/buttons.bootstrap4.min.css');
+  injectStylesheet('/public/vendor/datatables/dataTables.checkboxes.css');
+
+  // jQuery UI local
+  injectStylesheet('/public/vendor/jquery-ui.css');
+
+  // AnyChart local
+  injectStylesheet('/public/vendor/anychart/anychart-ui.min.css');
+  injectStylesheet('/public/vendor/anychart/anychart-font.min.css');
+
+  // Select2 local
+  injectStylesheet('/public/vendor/select2/select2.min.css');
+
+  // SweetAlert2 local
+  injectStylesheet('/public/vendor/sweetalert2.min.css');
+
+  // Estilos Personalizados Locales
+  injectStylesheet('/css/tokens.css?v=1.0');
+  injectStylesheet('/css/styles.css?v=piStateColors15');
+  injectStylesheet('/css/access.css?v=1.0');
+
+  // Inyectar escudo de bordes unificados de altísima especificidad contra la caché agresiva del navegador
+  var dynamicStyle = document.createElement('style');
+  dynamicStyle.innerHTML = "html body .table th, html body .table td, html body table.dataTable tbody tr td, html body .table-bordered tbody tr td, html body table.dataTable thead tr th, html body .table-bordered thead tr th { border-color: #cbd5e1 !important; border-right: 1px solid #cbd5e1 !important; border-bottom: 1px solid #cbd5e1 !important; border-left-color: #cbd5e1 !important; border-top-color: #cbd5e1 !important; } html body #hot-container .handsontable tbody tr td { border-right: 1px solid #cbd5e1 !important; border-bottom: 1px solid #cbd5e1 !important; }";
+  head.appendChild(dynamicStyle);
 
   // Helper to load script
   function loadScript(src) {
+    // Evitar duplicaciones
+    var cleanSrc = src.split('?')[0];
+    if (document.querySelector('script[src*="' + cleanSrc + '"]')) {
+      return;
+    }
     var script = document.createElement('script');
     script.type = 'text/javascript';
     script.src = src;
@@ -38,3 +110,4 @@
   // Script de Capacidades RBAC Moderno
   loadScript('/js/rbac_capabilities.js?v=1.0');
 })();
+

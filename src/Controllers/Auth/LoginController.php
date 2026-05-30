@@ -62,7 +62,7 @@ class LoginController
             $data = $this->verifyCredentials($usuario, $password);
 
             if ($data) {
-                if (isset($data['activo']) && (int)$data['activo'] !== 1) {
+                if (isset($data['activo']) && (int) $data['activo'] !== 1) {
                     $errores .= "<li>Tu cuenta está inactiva. Contacta al administrador.</li>";
                     if (method_exists($this->db, 'logActivity')) {
                         $this->db->logActivity('Login', 'LOGIN_BLOQUEADO_INACTIVO', "Intento de acceso con cuenta inactiva: $usuario");
@@ -79,11 +79,11 @@ class LoginController
                     $_SESSION['usuario_temp'] = $usuario;
                     $_SESSION['nombreUsuario'] = $data['nombre'];
                     $_SESSION['must_change_password'] = true;
-                    
+
                     if (method_exists($this->db, 'logActivity')) {
                         $this->db->logActivity('Login', 'LOGIN_PENDIENTE_CLAVE', "Usuario $usuario requiere cambio de contraseña.");
                     }
-                    
+
                     header("Location: /login");
                     exit();
                 }
@@ -230,10 +230,10 @@ class LoginController
              WHERE u.usuario = ?
                AND pm.role = 'A'
                AND p.Area = 'Construccion'
-               AND p.Activo = 1"
+               AND p.Activo = 1",
         );
         $stmt->execute([$usuario]);
-        return (int)$stmt->fetchColumn() > 0;
+        return (int) $stmt->fetchColumn() > 0;
     }
 
     public function maintenanceLogin()
@@ -256,7 +256,7 @@ class LoginController
             MaintenanceMode::renderPage();
         }
 
-        if (isset($data['activo']) && (int)$data['activo'] !== 1) {
+        if (isset($data['activo']) && (int) $data['activo'] !== 1) {
             if (method_exists($this->db, 'logActivity')) {
                 $this->db->logActivity('Login', 'LOGIN_BLOQUEADO_INACTIVO', "Intento de acceso con cuenta inactiva: $usuario");
             }

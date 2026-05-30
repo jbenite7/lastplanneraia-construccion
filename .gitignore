@@ -62,3 +62,9 @@ package.json
 test-output/
 tests/browser/
 .playwright-mcp/
+
+# Scratch and tests
+scratch/
+.claude/
+test-output-*/
+.php-cs-fixer.dist.php

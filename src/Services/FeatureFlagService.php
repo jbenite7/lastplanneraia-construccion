@@ -29,7 +29,7 @@ class FeatureFlagService
             self::CONSOLE_LOGS_KEY,
             $enabled,
             'Controla la visualizacion global de console.log en el frontend.',
-            $updatedBy
+            $updatedBy,
         );
     }
 

@@ -107,12 +107,53 @@ class CicApiController
 
     private function generateMissingSubs(string $db, int $s): void
     {
+        // 1. Auto-curación de registros huérfanos/nulos cruzando con el catálogo
+        $this->db->query("
+            UPDATE {$db}_cic c
+            INNER JOIN {$db}_subcontratistas s ON c.subcontratista = s.subcontratista
+            SET c.correo_contacto = COALESCE(c.correo_contacto, s.correo_contacto),
+                c.NIT = COALESCE(c.NIT, s.NIT),
+                c.alcance = COALESCE(c.alcance, s.alcance),
+                c.tipo_proveedor = COALESCE(c.tipo_proveedor, s.tipo_proveedor)
+            WHERE c.tipo_proveedor IS NULL OR c.tipo_proveedor = ''
+        ");
+
+        // 2. Auto-curación de fallback específico para mano de obra directa interna
+        $this->db->query("
+            UPDATE {$db}_cic
+            SET tipo_proveedor = 'Mano de Obra',
+                alcance = 'Mano de Obra'
+            WHERE subcontratista = 'AIA (MO Directa)' AND (tipo_proveedor IS NULL OR tipo_proveedor = '')
+        ");
+
         $subsInCic = $this->db->query("SELECT subcontratista FROM {$db}_cic WHERE Semana = ?", [$s])->fetchAll(PDO::FETCH_COLUMN);
         $subsInPs = $this->db->query("SELECT DISTINCT Sub_Contratista FROM {$db}_programacion_semanal WHERE Semana = ? AND Sub_Contratista !='' AND (Activa='1' OR Activa='NA')", [$s])->fetchAll(PDO::FETCH_COLUMN);
-        
+
         $missing = array_diff($subsInPs, $subsInCic);
         foreach ($missing as $sub) {
-            $this->db->query("INSERT INTO {$db}_cic (Semana, subcontratista) VALUES (?, ?)", [$s, $sub]);
+            // Caso especial: AIA (MO Directa)
+            if ($sub === 'AIA (MO Directa)') {
+                $this->db->query(
+                    "INSERT INTO {$db}_cic (Semana, subcontratista, tipo_proveedor, alcance) VALUES (?, ?, 'Mano de Obra', 'Mano de Obra')",
+                    [$s, $sub],
+                );
+                continue;
+            }
+
+            // Consultar catálogo
+            $meta = $this->db->query(
+                "SELECT correo_contacto, NIT, alcance, tipo_proveedor FROM {$db}_subcontratistas WHERE subcontratista = ? LIMIT 1",
+                [$sub],
+            )->fetch(PDO::FETCH_ASSOC);
+
+            if ($meta) {
+                $this->db->query(
+                    "INSERT INTO {$db}_cic (Semana, subcontratista, correo_contacto, NIT, alcance, tipo_proveedor) VALUES (?, ?, ?, ?, ?, ?)",
+                    [$s, $sub, $meta['correo_contacto'], $meta['NIT'], $meta['alcance'], $meta['tipo_proveedor']],
+                );
+            } else {
+                $this->db->query("INSERT INTO {$db}_cic (Semana, subcontratista) VALUES (?, ?)", [$s, $sub]);
+            }
         }
     }
 
@@ -163,15 +204,19 @@ class CicApiController
         $results = [];
 
         foreach ($disciplineConfig as $disc => $items) {
-            $count = 0; $countNR = 0; $sum = 0;
+            $count = 0;
+            $countNR = 0;
+            $sum = 0;
             foreach ($items as $item) {
                 $k = $prefix . $item;
                 $v = $values[$k] ?? null;
                 if ($v === 'NA' || $v === 'NR') {
-                    if ($v === 'NR') $countNR++;
+                    if ($v === 'NR') {
+                        $countNR++;
+                    }
                 } else {
                     $count++;
-                    $sum += (float)$v;
+                    $sum += (float) $v;
                 }
             }
             if ($count === 0) {
@@ -184,7 +229,7 @@ class CicApiController
         // 3. Write discipline scores
         $this->db->query(
             "UPDATE {$db}_cic SET Calidad=?, GSA=?, SST=?, ADM=? WHERE Semana=? AND Id=?",
-            [$results['Calidad'], $results['GSA'], $results['SST'], $results['ADM'], $semana, $id]
+            [$results['Calidad'], $results['GSA'], $results['SST'], $results['ADM'], $semana, $id],
         );
 
         // 4. Recalculate PAC + Integral
@@ -197,7 +242,7 @@ class CicApiController
         // Fetch the row to determine its semana
         $row = $this->db->query("SELECT Semana FROM {$db}_cic WHERE Id = ?", [$id])->fetch(\PDO::FETCH_ASSOC);
         if ($row) {
-            $this->updateIntegral($db, (int)$row['Semana']);
+            $this->updateIntegral($db, (int) $row['Semana']);
         }
     }
 
@@ -219,7 +264,7 @@ class CicApiController
 
             $acum = $this->db->query($sql, $p)->fetch(\PDO::FETCH_ASSOC);
             $this->db->query("UPDATE {$db}_cic SET PAC_Acum=?, P_Completado_Acum=?, Calidad_Acum=?, GSA_Acum=?, SST_Acum=?, ADM_Acum=? WHERE Id=?", [
-                $acum['PAC_Acum'], $acum['P_Completado_Acum'], $acum['Calidad_Acum'], $acum['GSA_Acum'], $acum['SST_Acum'], $acum['ADM_Acum'], $id
+                $acum['PAC_Acum'], $acum['P_Completado_Acum'], $acum['Calidad_Acum'], $acum['GSA_Acum'], $acum['SST_Acum'], $acum['ADM_Acum'], $id,
             ]);
 
             // Cal_Integral calculation (weighted formula from legacy)
@@ -232,18 +277,26 @@ class CicApiController
 
     private function calcIntegral($pac, $cal, $sst, $gsa, $adm): ?float
     {
-        if ($pac === '' || $pac === null) return null;
+        if ($pac === '' || $pac === null) {
+            return null;
+        }
         $dims = ['cal' => $cal, 'sst' => $sst, 'gsa' => $gsa, 'adm' => $adm];
         $weights = ['cal' => 0.2, 'sst' => 0.2, 'gsa' => 0.2, 'adm' => 0.1];
-        $pacW = 0.3; $spare = 0;
-        $active = []; 
+        $pacW = 0.3;
+        $spare = 0;
+        $active = [];
         foreach ($dims as $k => $v) {
-            if ($v === 'NA' || $v === 'NR' || $v === '' || $v === null) { $spare += $weights[$k]; }
-            else { $active[$k] = (float)$v; }
+            if ($v === 'NA' || $v === 'NR' || $v === '' || $v === null) {
+                $spare += $weights[$k];
+            } else {
+                $active[$k] = (float) $v;
+            }
         }
-        if (empty($active)) return round((float)$pac * 1.0, 3);
+        if (empty($active)) {
+            return round((float) $pac * 1.0, 3);
+        }
         $totalActiveW = array_sum(array_intersect_key($weights, $active));
-        $result = (float)$pac * ($pacW + $spare * ($pacW / ($pacW + $totalActiveW)));
+        $result = (float) $pac * ($pacW + $spare * ($pacW / ($pacW + $totalActiveW)));
         foreach ($active as $k => $v) {
             $result += $v * ($weights[$k] + $spare * ($weights[$k] / ($pacW + $totalActiveW)));
         }

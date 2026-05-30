@@ -260,18 +260,18 @@
             2 => ['titulo' => 'Director de Obra', 'clase' => 'col-director', 'color' => 'var(--color-director)', 'items' => []],
             3 => ['titulo' => 'Coordinador Integración', 'clase' => 'col-coordinador', 'color' => 'var(--color-coordinador)', 'items' => []],
             4 => ['titulo' => 'Gerente de Construcción', 'clase' => 'col-gerente-c', 'color' => 'var(--color-gerente-c)', 'items' => []],
-            5 => ['titulo' => 'Gerente General', 'clase' => 'col-gerente-g', 'color' => 'var(--color-gerente-g)', 'items' => []]
+            5 => ['titulo' => 'Gerente General', 'clase' => 'col-gerente-g', 'color' => 'var(--color-gerente-g)', 'items' => []],
         ];
 
-        foreach ($crisis as $c) {
-            $nivel = (int)$c['nivel_actual'];
-            // Si el nivel es 1 (Residente), lo mostramos en la columna del Director ya que el Director es el superior inmediato del Residente
-            $colNivel = $nivel === 1 ? 2 : $nivel;
-            if (isset($columnas[$colNivel])) {
-                $columnas[$colNivel]['items'][] = $c;
-            }
-        }
-        ?>
+foreach ($crisis as $c) {
+    $nivel = (int) $c['nivel_actual'];
+    // Si el nivel es 1 (Residente), lo mostramos en la columna del Director ya que el Director es el superior inmediato del Residente
+    $colNivel = $nivel === 1 ? 2 : $nivel;
+    if (isset($columnas[$colNivel])) {
+        $columnas[$colNivel]['items'][] = $c;
+    }
+}
+?>
 
         <div class="kanban-board">
             <?php foreach ($columnas as $nivelId => $col): ?>

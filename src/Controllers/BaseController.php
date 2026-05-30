@@ -54,9 +54,9 @@ abstract class BaseController
         $rbac = new \App\Security\RbacService($this->db);
         if (!$rbac->can($permissionKey)) {
             http_response_code(403);
-            $isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') 
+            $isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')
                       || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false);
-            
+
             if ($isAjax) {
                 echo json_encode(['error' => $errorMessage]);
             } else {
@@ -75,7 +75,7 @@ abstract class BaseController
     {
         return [
             'dbName' => $_SESSION['db'] ?? '',
-            'semana' => (int)($_SESSION['semana'] ?? 0),
+            'semana' => (int) ($_SESSION['semana'] ?? 0),
             'proyecto' => $_SESSION['proyecto'] ?? '',
             'permiso' => $_SESSION['permiso'] ?? '',
             'pdcActivo' => $_SESSION['pdcActivo'] ?? '',

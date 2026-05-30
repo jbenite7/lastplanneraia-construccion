@@ -9,7 +9,7 @@
           <?php echo $stats['active_projects_count']; ?> / <?php echo $stats['total_projects']; ?>
           <i class="fas fa-info-circle info-icon" data-toggle="tooltip" data-html="true" 
              title="<div class='text-left'><b>Proyectos Activos Actualmente:</b><ul class='mb-0 pl-3'><?php foreach ($stats['active_projects_list'] as $proj) {
-                 echo '<li>'.htmlspecialchars($proj).'</li>';
+                 echo '<li>' . htmlspecialchars($proj) . '</li>';
              } ?></ul><hr class='border-light my-1'><b>¿Cómo se mide?</b> Filtra proyectos con estado 'Activo' en la tabla maestra.</div>"></i>
         </h3>
         <p>Proyectos Activos</p>
@@ -93,12 +93,12 @@
         <i class="fas fa-key"></i>
       </div>
       <div class="small-box-footer">
-        <?php 
-          $percent = $stats['password_stats']['total'] > 0 
-            ? round(($stats['password_stats']['completed'] / $stats['password_stats']['total']) * 100) 
+        <?php
+          $percent = $stats['password_stats']['total'] > 0
+            ? round(($stats['password_stats']['completed'] / $stats['password_stats']['total']) * 100)
             : 100;
           echo "$percent% completado";
-        ?>
+          ?>
       </div>
     </div>
   </div>

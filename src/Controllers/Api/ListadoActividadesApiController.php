@@ -188,7 +188,7 @@ class ListadoActividadesApiController
 
                 $stmtInsert = $this->db->query($queryInsert, $params);
                 $this->db->logActivity('ListadoActividades', 'CREAR', "Creó actividad: $Actividad", $dbPrefix);
-                
+
                 $this->verificar_resultado(true, '');
                 return;
             }
@@ -215,7 +215,7 @@ class ListadoActividadesApiController
             $params = [$Actividad, $descripcionActividad, $actividadInicio, $semana, $actividadInicio, $fechaInicio, $tipoContrato, $semana, $Id, $semana];
             $stmtUpdate = $this->db->query($queryUpdate, $params);
             $this->db->logActivity('ListadoActividades', 'MODIFICAR', "Modificó actividad ID $Id", $dbPrefix);
-            
+
             $this->verificar_resultado(true, '');
             return;
         }

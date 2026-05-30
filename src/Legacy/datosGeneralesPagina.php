@@ -1,4 +1,5 @@
 <?php
+
 use App\Security\RbacCatalog;
 
 session_start();
@@ -8,7 +9,7 @@ require_once __DIR__ . "/conexion.php";
 $dbInstance = Database::getInstance();
 
 $dbName = $_SESSION['db'] ?? '';
-$semana = (int)($_SESSION['semana'] ?? 0);
+$semana = (int) ($_SESSION['semana'] ?? 0);
 
 if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbName)) {
     die(json_encode(["respuesta" => "ERROR", "mensaje" => "Nombre de base de datos inválido."]));
@@ -32,7 +33,7 @@ $arreglo = [
 try {
     $stmtConteo = $dbInstance->query("SELECT COUNT(*) AS total FROM {$dbName}_semanas_activas");
     $dataConteo = $stmtConteo->fetch();
-    $conteo = (int)($dataConteo["total"] ?? 0);
+    $conteo = (int) ($dataConteo["total"] ?? 0);
 
     if ($conteo === 0) {
         $fechaInicioSem = date("Y-m-d");

@@ -3,7 +3,7 @@
 <head id="head">
 	<!--Script cque va al archivo linksComunesHead2.js-->
 	<!--Script cque va al archivo linksComunesHead2.js-->
-	<script type="text/javascript" src="/js/linksComunesHead2.js?v=20260325a" charset="utf-8"></script>
+	<script type="text/javascript" src="/js/linksComunesHead2.js?v=piStateColors3" charset="utf-8"></script>
     <style>
         .filaBotones, .ps-actions-row {
             overflow: visible !important;
@@ -237,8 +237,8 @@
 
 	<div class="row ventanasModalesEspecificas" id="ventanasModalesEspecificas">
 		<!-- Se crea el Modal que solicita calificar a un contratista de Suministro e Instalación -->
-		<div class="modal_cic_si modal fade" id="modalcic_si" tabindex="-1" role="dialog" aria-labelledby="modal_cic_siLabel">
-		  <div class="modal-dialog modal-xl" role="document">
+		<div class="modal_cic_si modal fade aia-modal" id="modalcic_si" tabindex="-1" role="dialog" aria-labelledby="modal_cic_siLabel">
+		  <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
 		    <div class="modal-content">
 		      <div class="modal-header">
 		        <h5 class="modal-title" id="modalcic_siLabel">
@@ -676,8 +676,8 @@
 		<!-- Modal -->
 
 		<!-- Se crea el Modal que solicita calificar a un contratista de Mano de Obra -->
-		<div class="modal_cic_mdo modal fade" id="modalcic_mdo" tabindex="-1" role="dialog" aria-labelledby="modal_cic_mdoLabel">
-		  <div class="modal-dialog modal-xl" role="document">
+		<div class="modal_cic_mdo modal fade aia-modal" id="modalcic_mdo" tabindex="-1" role="dialog" aria-labelledby="modal_cic_mdoLabel">
+		  <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
 		    <div class="modal-content">
 		      <div class="modal-header">
 		        <h5 class="modal-title" id="modalcic_mdoLabel">

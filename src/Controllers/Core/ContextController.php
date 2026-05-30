@@ -15,7 +15,7 @@ class ContextController extends BaseController
         $semana = $input['semana'] ?? $_POST['semana'] ?? null;
 
         if ($semana && is_numeric($semana)) {
-            $_SESSION['semana'] = (int)$semana;
+            $_SESSION['semana'] = (int) $semana;
 
             echo json_encode(['success' => true, 'message' => 'Semana actualizada a ' . $semana]);
         } else {

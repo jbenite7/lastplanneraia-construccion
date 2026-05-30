@@ -102,7 +102,7 @@ class ControlCambiosApiController
     {
         $params = $this->getPostParams();
         $query = "INSERT INTO {$dbPrefix}_cambios (id, solicitanteCambio, detalleSolicitanteOtro, fechaSolicitud, prioridad, tipoCambio, responsableSolucion, detalleResponsableSolucion, justificacion, descripcion, incidenciaAlcance, tiempoCronograma, tiempoCronogramaAfectado, incidenciaCronograma, valorPresupuesto, costoDirecto, costoDirectoAIU, costoDirectoAIUIVA, valorAprobado, incidenciaPresupuesto, incidenciaCalidad, incidenciaRiesgo, incidenciaRecurso, fechaTentativaDefinicion, fechaEntregaInterventoria, fechaDefinicion, aprobacion, soportes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        
+
         $res = $this->db->query($query, $params);
         if ($res) {
             $this->db->logActivity('ControlCambios', 'CREAR', "Creó solicitud de cambio ID {$params[0]}", $dbPrefix);
@@ -118,7 +118,7 @@ class ControlCambiosApiController
         $params[] = $id;
 
         $query = "UPDATE {$dbPrefix}_cambios SET solicitanteCambio=?, detalleSolicitanteOtro=?, fechaSolicitud=?, prioridad=?, tipoCambio=?, responsableSolucion=?, detalleResponsableSolucion=?, justificacion=?, descripcion=?, incidenciaAlcance=?, tiempoCronograma=?, tiempoCronogramaAfectado=?, incidenciaCronograma=?, valorPresupuesto=?, costoDirecto=?, costoDirectoAIU=?, costoDirectoAIUIVA=?, valorAprobado=?, incidenciaPresupuesto=?, incidenciaCalidad=?, incidenciaRiesgo=?, incidenciaRecurso=?, fechaTentativaDefinicion=?, fechaEntregaInterventoria=?, Observaciones=NULL, fechaDefinicion=?, aprobacion=?, soportes=? WHERE id=?";
-        
+
         $res = $this->db->query($query, $params);
         if ($res) {
             $this->db->logActivity('ControlCambios', 'MODIFICAR', "Modificó solicitud de cambio ID $id", $dbPrefix);
@@ -128,14 +128,16 @@ class ControlCambiosApiController
 
     private function getPostParams(): array
     {
-        $cleanNum = function ($v) { return floatval(str_replace(['$', ','], '', $v ?? 0)); };
-        
+        $cleanNum = function ($v) {
+            return floatval(str_replace(['$', ','], '', $v ?? 0));
+        };
+
         $consecutivo = $_POST['inputConsecutivo'] ?? null;
         $solicitante = $_POST['inputSolicitanteCambio'] ?? null;
         $detalleSolicitante = $_POST['inputDetalleSolicitanteOtro'] ?? null;
         $fechaSolicitud = !empty($_POST['inputFechaSolicitud']) ? $_POST['inputFechaSolicitud'] : null;
         $prioridad = $_POST['inputPrioridad'] ?? null;
-        
+
         $tiposArr = [
             "Alcance" => $_POST['inputTipoCambioAlcance'] ?? 0,
             "Cronograma" => $_POST['inputTipoCambioCronograma'] ?? 0,
@@ -169,7 +171,7 @@ class ControlCambiosApiController
             !empty($_POST['inputFechaEntregaInterventoria']) ? $_POST['inputFechaEntregaInterventoria'] : null,
             !empty($_POST['inputFechaDefinicion']) ? $_POST['inputFechaDefinicion'] : null,
             $_POST['inputAprobacion'] ?? null,
-            $_POST['soportes'] ?? null
+            $_POST['soportes'] ?? null,
         ];
     }
 

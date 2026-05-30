@@ -26,7 +26,7 @@ class RoleManager
 
     private static function normalizeRoleCode($code)
     {
-        $code = strtoupper(trim((string)$code));
+        $code = strtoupper(trim((string) $code));
         if (isset(self::$roleAliases[$code])) {
             $code = self::$roleAliases[$code];
         }
@@ -184,7 +184,7 @@ class RoleManager
             "INSERT INTO role_intelligence (cargo_title, suggested_role) 
              VALUES (?, ?) 
              ON DUPLICATE KEY UPDATE suggested_role = ?",
-            [$cleanCargo, $normalizedRole, $normalizedRole]
+            [$cleanCargo, $normalizedRole, $normalizedRole],
         );
     }
 }

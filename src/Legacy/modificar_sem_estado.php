@@ -23,7 +23,7 @@ try {
     if (count($actividades) > 0) {
         foreach ($actividades as $data) {
             $Id = $data["Consecutivo_en_Programa"];
-            $Titulo = (int)($data["Titulo"] ?? 0);
+            $Titulo = (int) ($data["Titulo"] ?? 0);
             $Estado_Restricciones = '0';
 
             if ($Titulo === 0) {
@@ -43,7 +43,7 @@ try {
                     $valor = $data[$campo];
                     if ($valor !== "N/A" && $valor !== null) {
                         $conteo_rest++;
-                        $suma_rest += min(round((float)$valor, 5) / $threshold, 1.0);
+                        $suma_rest += min(round((float) $valor, 5) / $threshold, 1.0);
                     }
                 }
 
@@ -100,12 +100,12 @@ try {
             $rowEstado['Fecha_Inicio'] ?? null,
             $rowEstado['Fecha_Fin'] ?? null,
             $f_inicio_sem,
-            $fechaFinSemana
+            $fechaFinSemana,
         );
 
         $dbInstance->query(
             "UPDATE {$dbName}_programa_consolidado SET Estado = ? WHERE Consecutivo_en_Programa = ? AND Semana = ?",
-            [$estado, $rowEstado['Consecutivo_en_Programa'], $semana]
+            [$estado, $rowEstado['Consecutivo_en_Programa'], $semana],
         );
     }
 

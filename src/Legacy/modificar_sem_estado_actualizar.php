@@ -15,12 +15,12 @@ if (!preg_match('/^[a-zA-Z0-9_]+$/', $db)) {
 try {
     $stmtMax = $dbInstance->query("SELECT MAX(Semana) as maxVal FROM {$db}_semanas_activas");
     $dataMax = $stmtMax->fetch();
-    $maxSemana = (int)($dataMax['maxVal'] ?? 0);
+    $maxSemana = (int) ($dataMax['maxVal'] ?? 0);
 
     for ($semana = 1; $semana <= $maxSemana; $semana++) {
         $stmtSemana = $dbInstance->query(
             "SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem FROM {$db}_semanas_activas WHERE Semana = ?",
-            [$semana]
+            [$semana],
         );
         $dataSemana = $stmtSemana->fetch();
 
@@ -36,13 +36,13 @@ try {
                     D_y_E, Materiales, MdeO, Equipos, Predecesora, Pdto_Cons, Modelo
              FROM {$db}_programa_consolidado
              WHERE Semana = ?",
-            [$semana]
+            [$semana],
         );
         $rowsProg = $stmtProg->fetchAll();
 
         foreach ($rowsProg as $data) {
-            $id = (int)$data['Consecutivo_en_Programa'];
-            $titulo = (int)($data['Titulo'] ?? 0);
+            $id = (int) $data['Consecutivo_en_Programa'];
+            $titulo = (int) ($data['Titulo'] ?? 0);
 
             $estadoRestricciones = 0;
             if ($titulo === 0) {
@@ -62,7 +62,7 @@ try {
                     $val = $data[$col] ?? null;
                     if ($val !== 'N/A' && $val !== null && $val !== '') {
                         $conteo++;
-                        $suma += min(round((float)$val, 5) / $threshold, 1.0);
+                        $suma += min(round((float) $val, 5) / $threshold, 1.0);
                     }
                 }
 
@@ -77,14 +77,14 @@ try {
                 $data['Fecha_Inicio'] ?? null,
                 $data['Fecha_Fin'] ?? null,
                 $fechaInicioSemana,
-                $fechaFinSemana
+                $fechaFinSemana,
             );
 
             $dbInstance->query(
                 "UPDATE {$db}_programa_consolidado
                  SET Semanas_Inicio = ?, Estado_Restricciones = ?, Estado = ?
                  WHERE Consecutivo_en_Programa = ? AND Semana = ?",
-                [$semanasInicio, $estadoRestricciones, $estado, $id, $semana]
+                [$semanasInicio, $estadoRestricciones, $estado, $id, $semana],
             );
         }
 
@@ -94,14 +94,14 @@ try {
             "UPDATE {$db}_programa_consolidado
              SET Ruta_Critica = NULL
              WHERE Titulo = 1 AND Semana = ?",
-            [$semana]
+            [$semana],
         );
 
         $dbInstance->query(
             "UPDATE {$db}_programa_consolidado
              SET Ejecutado = NULL, Semanas_Inicio = NULL
              WHERE Fecha_Inicio IS NULL AND Fecha_Fin IS NULL AND Titulo = 1 AND Semana = ?",
-            [$semana]
+            [$semana],
         );
 
         echo "<li>Semana $semana OK";

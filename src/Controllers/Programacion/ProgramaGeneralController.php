@@ -122,7 +122,7 @@ class ProgramaGeneralController extends BaseController
             $_SESSION["lookahead_intermedia"],
             $_SESSION["no_iniciadas_intermedia"],
             $_SESSION["a_tiempo_intermedia"],
-            $_SESSION["terminadas_intermedia"]
+            $_SESSION["terminadas_intermedia"],
         );
 
         $arreglo = [];
@@ -135,16 +135,18 @@ class ProgramaGeneralController extends BaseController
 
         // Consultas para contar registros por estado persistido (fuente única)
         $query = "SELECT 
-            (SELECT COUNT(*) FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Titulo = 0 AND (Estado = 'Actividad Futura' OR Estado = 'En Liberación de Restricciones' OR Estado = 'No Requerida')) AS lookahead,
-            (SELECT COUNT(*) FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Titulo = 0 AND Estado = 'Debe Iniciar') AS no_iniciadas,
-            (SELECT COUNT(*) FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Titulo = 0 AND (Estado = 'En Curso' OR Estado = 'A Tiempo')) AS a_tiempo,
-            (SELECT COUNT(*) FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Titulo = 0 AND (Estado = 'Atrasada' OR Estado = 'Ya Debió Iniciar y Restricciones Pendientes')) AS atrasadas,
-            (SELECT COUNT(*) FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Titulo = 0 AND (Estado = 'Terminada' OR Estado = 'Terminada Antes')) AS terminadas,
-            (SELECT COUNT(*) FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Titulo = 0) AS total";
+            COALESCE(SUM(CASE WHEN (Estado = 'Actividad Futura' OR Estado = 'En Liberación de Restricciones' OR Estado = 'No Requerida') THEN 1 ELSE 0 END), 0) AS lookahead,
+            COALESCE(SUM(CASE WHEN Estado = 'Debe Iniciar' THEN 1 ELSE 0 END), 0) AS no_iniciadas,
+            COALESCE(SUM(CASE WHEN (Estado = 'En Curso' OR Estado = 'A Tiempo') THEN 1 ELSE 0 END), 0) AS a_tiempo,
+            COALESCE(SUM(CASE WHEN (Estado = 'Atrasada' OR Estado = 'Ya Debió Iniciar y Restricciones Pendientes') THEN 1 ELSE 0 END), 0) AS atrasadas,
+            COALESCE(SUM(CASE WHEN (Estado = 'Terminada' OR Estado = 'Terminada Antes') THEN 1 ELSE 0 END), 0) AS terminadas,
+            COUNT(*) AS total
+            FROM {$dbPrefix}_programa_consolidado 
+            WHERE Semana = ? AND Titulo = 0";
 
         try {
             $stmt = $this->db->prepare($query);
-            $stmt->execute([$semana, $semana, $semana, $semana, $semana, $semana]);
+            $stmt->execute([$semana]);
             $data = $stmt->fetch();
 
             if ($data) {

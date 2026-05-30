@@ -12,8 +12,8 @@ if (session_status() === PHP_SESSION_NONE) {
 /** @var Database $dbInstance */
 $dbInstance = Database::getInstance();
 
-$dbSession = trim((string)($_SESSION['db'] ?? ''));
-$dbRequest = trim((string)($_GET['db'] ?? ($_POST['db'] ?? '')));
+$dbSession = trim((string) ($_SESSION['db'] ?? ''));
+$dbRequest = trim((string) ($_GET['db'] ?? ($_POST['db'] ?? '')));
 
 $dbPrefix = $dbRequest !== '' ? $dbRequest : $dbSession;
 $opcion = $_POST["opcion"] ?? '';
@@ -41,7 +41,7 @@ if (!function_exists('pi_parse_positive_int')) {
             return null;
         }
 
-        return (int)$parsed;
+        return (int) $parsed;
     }
 }
 
@@ -79,7 +79,7 @@ if (!function_exists('pi_parse_ratio_input')) {
             return null;
         }
 
-        $raw = trim((string)$value);
+        $raw = trim((string) $value);
         if ($raw === '' || strcasecmp($raw, 'N/A') === 0 || strcasecmp($raw, 'NO APLICA') === 0) {
             return null;
         }
@@ -89,7 +89,7 @@ if (!function_exists('pi_parse_ratio_input')) {
             return null;
         }
 
-        $ratio = (float)$normalized;
+        $ratio = (float) $normalized;
 
         if (strpos($raw, '%') !== false) {
             $ratio = $ratio / 100;
@@ -114,11 +114,11 @@ if (!function_exists('pi_parse_ratio_input')) {
 if (!function_exists('pi_snap_allowed_ratio')) {
     function pi_snap_allowed_ratio(float $ratio, array $allowed): float
     {
-        $nearest = (float)$allowed[0];
+        $nearest = (float) $allowed[0];
         $minDiff = abs($nearest - $ratio);
 
         foreach ($allowed as $candidate) {
-            $candidateRatio = (float)$candidate;
+            $candidateRatio = (float) $candidate;
             $diff = abs($candidateRatio - $ratio);
             if ($diff < $minDiff) {
                 $minDiff = $diff;
@@ -214,7 +214,7 @@ function modificar($D_y_E, $Materiales, $MdeO, $Equipos, $Predecesora, $Pdto_Con
             $val = $campo['valor'];
             if ($val !== "N/A") {
                 $conteo++;
-                $suma += min(round((float)$val, 5) / $campo['threshold'], 1.0);
+                $suma += min(round((float) $val, 5) / $campo['threshold'], 1.0);
             }
         }
 
@@ -263,7 +263,7 @@ function modificar_estado_act($Id, $semana, $inicio_semana, $dbPrefix, $dbInstan
     $stmtActividad = $dbInstance->prepare(
         "SELECT Consecutivo_en_Programa, Titulo, Ejecutado, Fecha_Inicio, Fecha_Fin
          FROM {$dbPrefix}_programa_consolidado
-         WHERE Consecutivo_en_Programa = ? AND Semana = ?"
+         WHERE Consecutivo_en_Programa = ? AND Semana = ?",
     );
     $stmtActividad->execute([$Id, $semana]);
     $dataAct = $stmtActividad->fetch(PDO::FETCH_ASSOC);
@@ -279,13 +279,13 @@ function modificar_estado_act($Id, $semana, $inicio_semana, $dbPrefix, $dbInstan
         $dataAct['Fecha_Inicio'] ?? null,
         $dataAct['Fecha_Fin'] ?? null,
         $fechaInicioSemana,
-        $fechaFinSemana
+        $fechaFinSemana,
     );
 
     $stmtUpdate = $dbInstance->prepare(
         "UPDATE {$dbPrefix}_programa_consolidado
          SET Semanas_Inicio = ?, Estado = ?
-         WHERE Consecutivo_en_Programa = ? AND Semana = ?"
+         WHERE Consecutivo_en_Programa = ? AND Semana = ?",
     );
     $stmtUpdate->execute([$semanasInicio, $estado, $Id, $semana]);
 

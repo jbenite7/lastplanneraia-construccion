@@ -18,7 +18,7 @@ class NotificationController
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
-        
+
         $userId = $_SESSION['usuario'] ?? null;
 
         if (!$userId) {
@@ -28,7 +28,7 @@ class NotificationController
         }
 
         $notifications = $this->notificationService->getUnreadByUser($userId);
-        
+
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode(['success' => true, 'data' => $notifications]);
     }
@@ -38,7 +38,7 @@ class NotificationController
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
-        
+
         $userId = $_SESSION['usuario'] ?? null;
 
         if (!$userId) {

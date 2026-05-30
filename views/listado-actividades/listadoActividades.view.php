@@ -3,40 +3,40 @@
 <head id="head">
 	<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 	<!--Script cque va al archivo linksComunesHead2.js-->
-	<script type="text/javascript" src="/js/linksComunesHead2.js?v=20260325a" charset="utf-8"></script>
+	<script type="text/javascript" src="/js/linksComunesHead2.js?v=piStateColors3" charset="utf-8"></script>
 </head>
 
 <!--Etiqueta superior-->
 <body>
 	<?php
-		$dbPrefixListadoActividades = $_SESSION['db'] ?? '';
-		$maxSemanaListadoActividades = (int) ($_SESSION['Max_Semana'] ?? ($_SESSION['semana'] ?? 0));
-		$actividadInicioOptionsHtml = '';
+        $dbPrefixListadoActividades = $_SESSION['db'] ?? '';
+	$maxSemanaListadoActividades = (int) ($_SESSION['Max_Semana'] ?? ($_SESSION['semana'] ?? 0));
+	$actividadInicioOptionsHtml = '';
 
-		if (empty($dbPrefixListadoActividades) || !preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefixListadoActividades)) {
-			$actividadInicioOptionsHtml = '<option value="">Error: Database prefix not set</option>';
-		} else {
-			try {
-				$dbInstance = Database::getInstance();
-				$queryActividadInicio = "SELECT Consecutivo_en_Programa, Id, Actividad, Fecha_Inicio FROM {$dbPrefixListadoActividades}_programa_consolidado WHERE Semana=? AND Titulo=0 AND Fecha_Inicio IS NOT NULL AND Fecha_Fin IS NOT NULL ORDER BY Fecha_Inicio ASC";
-				$stmtActividadInicio = $dbInstance->query($queryActividadInicio, [$maxSemanaListadoActividades]);
-				$actividadInicioOptions = [];
+	if (empty($dbPrefixListadoActividades) || !preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefixListadoActividades)) {
+	    $actividadInicioOptionsHtml = '<option value="">Error: Database prefix not set</option>';
+	} else {
+	    try {
+	        $dbInstance = Database::getInstance();
+	        $queryActividadInicio = "SELECT Consecutivo_en_Programa, Id, Actividad, Fecha_Inicio FROM {$dbPrefixListadoActividades}_programa_consolidado WHERE Semana=? AND Titulo=0 AND Fecha_Inicio IS NOT NULL AND Fecha_Fin IS NOT NULL ORDER BY Fecha_Inicio ASC";
+	        $stmtActividadInicio = $dbInstance->query($queryActividadInicio, [$maxSemanaListadoActividades]);
+	        $actividadInicioOptions = [];
 
-				while ($valores = $stmtActividadInicio->fetch(PDO::FETCH_ASSOC)) {
-					$actividadValue = (string) ($valores['Consecutivo_en_Programa'] ?? '');
-					$actividadTexto = (string) ($valores['Actividad'] ?? '');
-					$actividadDisplay = html_entity_decode(strip_tags($actividadTexto), ENT_QUOTES, 'UTF-8');
-					$actividadDisplay = preg_replace('/\s+/u', ' ', $actividadDisplay);
-					$actividadDisplay = trim((string) $actividadDisplay);
-					$actividadLabel = trim(($valores['Id'] ?? '') . '. ' . $actividadDisplay . ' (Inicia el: ' . ($valores['Fecha_Inicio'] ?? '') . ')');
-					$actividadInicioOptions[] = '<option value="' . htmlspecialchars($actividadValue, ENT_QUOTES, 'UTF-8') . '">' . htmlspecialchars($actividadLabel, ENT_QUOTES, 'UTF-8') . '</option>';
-				}
+	        while ($valores = $stmtActividadInicio->fetch(PDO::FETCH_ASSOC)) {
+	            $actividadValue = (string) ($valores['Consecutivo_en_Programa'] ?? '');
+	            $actividadTexto = (string) ($valores['Actividad'] ?? '');
+	            $actividadDisplay = html_entity_decode(strip_tags($actividadTexto), ENT_QUOTES, 'UTF-8');
+	            $actividadDisplay = preg_replace('/\s+/u', ' ', $actividadDisplay);
+	            $actividadDisplay = trim((string) $actividadDisplay);
+	            $actividadLabel = trim(($valores['Id'] ?? '') . '. ' . $actividadDisplay . ' (Inicia el: ' . ($valores['Fecha_Inicio'] ?? '') . ')');
+	            $actividadInicioOptions[] = '<option value="' . htmlspecialchars($actividadValue, ENT_QUOTES, 'UTF-8') . '">' . htmlspecialchars($actividadLabel, ENT_QUOTES, 'UTF-8') . '</option>';
+	        }
 
-				$actividadInicioOptionsHtml = implode('', $actividadInicioOptions);
-			} catch (Throwable $t) {
-				$actividadInicioOptionsHtml = '<option value="">Error loading data: ' . htmlspecialchars($t->getMessage(), ENT_QUOTES, 'UTF-8') . '</option>';
-			}
-		}
+	        $actividadInicioOptionsHtml = implode('', $actividadInicioOptions);
+	    } catch (Throwable $t) {
+	        $actividadInicioOptionsHtml = '<option value="">Error loading data: ' . htmlspecialchars($t->getMessage(), ENT_QUOTES, 'UTF-8') . '</option>';
+	    }
+	}
 	?>
 
 	<div class="encabezado" id="encabezado">
@@ -86,11 +86,11 @@
 	<div class="row ventanasModalesEspecificas" id="ventanasModalesEspecificas">
 		<!--Genera el modal con el formulario de registro de una nueva actividad para el proyecto-->
 		<div class="modal_nuevaActividad modal fade aia-modal" id="modalNuevaActividad" tabindex="-1" role="dialog" aria-labelledby="modalNuevaActividadLabel" aria-hidden="true">
-		  <div class="modal-dialog modal-lg" role="document">
+		  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
 		    <div class="modal-content">
 		      <div class="modal-header">
 		        <div class="modal-title" id="modalNuevaActividadLabel">
-		          <div class="aia-modal__eyebrow">AIA Construccion</div>
+		          <div class="aia-modal__eyebrow">AIA Corporativo</div>
 		          <h2 class="aia-modal__headline">Registrar Nueva Actividad</h2>
 		          <p class="aia-modal__subtitle modal-body-texto-nuevaActividad" id="modal-body-texto-nuevaActividad">Completa la informacion base de la actividad y su relacion con el cronograma.</p>
 		        </div>
@@ -153,11 +153,11 @@
 
 		<!-- General el modal para descargar y cargar el CSV con el que se puede agregar el listado de actividades desde excel -->
 		<div class="modal_cargarExcel modal fade aia-modal" id="modalCargarExcel" role="dialog" aria-labelledby="modal_cargarExcelLabel">
-		  <div class="modal-dialog modal-lg" role="document">
+		  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
 		    <div class="modal-content">
 		      <div class="modal-header">
 		        <div class="modal-title" id="modalCargarExcelLabel">
-		          <div class="aia-modal__eyebrow">AIA Construccion</div>
+		          <div class="aia-modal__eyebrow">AIA Corporativo</div>
 		          <h2 class="aia-modal__headline">Cargar Actividades desde Excel</h2>
 		          <p class="aia-modal__subtitle modal-body-texto-cargarExcel" id="modal-body-texto-cargarExcel">Descarga la plantilla base y carga el archivo CSV completo del listado de actividades.</p>
 		        </div>
@@ -214,7 +214,7 @@
 
 		<!-- Se crea el Modal que solicita la confirmación de eliminar un registro o no -->
 		<div class="modal fade aia-modal aia-modal__confirm" id="modalEliminar" tabindex="-1" role="dialog" aria-labelledby="modalEliminarLabel">
-		  <div class="modal-dialog" role="document">
+		  <div class="modal-dialog modal-dialog-centered" role="document">
 		    <div class="modal-content">
 		      <div class="modal-header">
 		        <div class="modal-title" id="modalEliminarLabel">

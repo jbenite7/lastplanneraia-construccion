@@ -41,7 +41,7 @@
       return true;
     }
 
-    var isTouchTabletWindow = (touchPoints > 1 || coarsePointer) && minEdge >= 600 && minEdge <= 1100 && maxEdge <= 1800;
+    var isTouchTabletWindow = (touchPoints > 1 || coarsePointer) && minEdge >= 600 && minEdge <= 1100 && maxEdge <= TABLET_WIDTH_MAX;
     return isTouchTabletWindow;
   }
 

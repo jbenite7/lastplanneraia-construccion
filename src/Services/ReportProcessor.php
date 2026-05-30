@@ -73,13 +73,13 @@ class ReportProcessor
     private function resolveSemanaProyecto($dbName, $semana)
     {
         if ($semana !== null) {
-            return (int)$semana;
+            return (int) $semana;
         }
 
         $stmtMax = $this->db->query("SELECT MAX(Semana) FROM {$dbName}_programacion_semanal");
         $semanaProyecto = $stmtMax->fetchColumn();
 
-        return $semanaProyecto ? (int)$semanaProyecto : null;
+        return $semanaProyecto ? (int) $semanaProyecto : null;
     }
 
     private function tableExists($tableName)
@@ -90,10 +90,10 @@ class ReportProcessor
 
         $stmt = $this->db->query(
             "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ?",
-            [$tableName]
+            [$tableName],
         );
 
-        return (int)$stmt->fetchColumn() > 0;
+        return (int) $stmt->fetchColumn() > 0;
     }
 
     private function hasReportablePdc(string $dbPrefix, bool $requiresDates = false): bool
@@ -112,7 +112,7 @@ class ReportProcessor
             $where .= " AND fechaElaboracionPliegos IS NOT NULL AND fechaFabricacion IS NOT NULL";
         }
 
-        $count = (int)$this->db
+        $count = (int) $this->db
             ->query("SELECT COUNT(*) FROM {$dbPrefix}_pdc WHERE {$where}")
             ->fetchColumn();
 
@@ -151,7 +151,7 @@ class ReportProcessor
                     // Calculate total weeks
                     $sqlSemanas = "SELECT CEIL(((DATEDIFF((SELECT MAX(Fecha_Fin) FROM {$dbPrefix}_programa_consolidado WHERE Semana = (SELECT MAX(Semana) FROM {$dbPrefix}_semanas_activas)), MIN(Fecha_Inicio))+1)/7)) AS semanasProyecto FROM {$dbPrefix}_programa_consolidado";
                     $dataSemanasProyecto = $this->db->query($sqlSemanas)->fetch();
-                    $semanasProyecto = (int)($dataSemanasProyecto["semanasProyecto"] ?? 0);
+                    $semanasProyecto = (int) ($dataSemanasProyecto["semanasProyecto"] ?? 0);
                     $this->reportSubprocess('Curva S', $proyecto, 'Calculando semanas', 'ok', "{$semanasProyecto} semanas");
 
                     // Get active weeks
@@ -283,7 +283,7 @@ class ReportProcessor
                     $proyectoAnterior = $row['Proyecto'];
                 }
 
-                $porcentajeActual = (float)$row['porcentajeCompletadoTeorico'];
+                $porcentajeActual = (float) $row['porcentajeCompletadoTeorico'];
 
                 $diferencia = $porcentajeActual - $porcentajeAnterior;
                 $porcentajeAnterior = $porcentajeActual;
@@ -347,7 +347,7 @@ class ReportProcessor
         // Weeks calculation for PDC
         $sqlSemanas = "SELECT CEIL(((DATEDIFF((SELECT MAX(Fecha_Fin) FROM {$dbPrefix}_programa_consolidado WHERE Semana = (SELECT MAX(Semana) FROM {$dbPrefix}_semanas_activas)), MIN(Fecha_Inicio))+1)/7)) AS semanasProyecto FROM {$dbPrefix}_programa_consolidado";
         $dataSemanasProyecto = $this->db->query($sqlSemanas)->fetch();
-        $semanasProyecto = (int)($dataSemanasProyecto["semanasProyecto"] ?? 0);
+        $semanasProyecto = (int) ($dataSemanasProyecto["semanasProyecto"] ?? 0);
         $this->reportSubprocess('Curva S PDC APR', $proyecto, 'Calculando semanas PDC APR', 'ok', "{$semanasProyecto} semanas");
 
         $stmtSemanasActivas = $this->db->query("SELECT Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem FROM {$dbPrefix}_semanas_activas");
@@ -508,9 +508,9 @@ class ReportProcessor
                 $proyectoAnt = $row['Proyecto'];
             }
 
-            $pActual = (float)$row['porcentajeCompletadoTeorico'];
-            $pActualGen = (float)$row['porcentajeCompletadoTeoricoGeneral'];
-            $pRealGen = (float)$row['porcentajeCompletadoRealGeneral'];
+            $pActual = (float) $row['porcentajeCompletadoTeorico'];
+            $pActualGen = (float) $row['porcentajeCompletadoTeoricoGeneral'];
+            $pRealGen = (float) $row['porcentajeCompletadoRealGeneral'];
 
             $difTeorico = round($pActual - $porcentajeTeoricoAnt, 4);
             $difTeoricoGen = round($pActualGen - $porcentajeTeoricoGenAnt, 4);
@@ -522,7 +522,7 @@ class ReportProcessor
                 diferenciaPorcentajeCompletadoTeorico = ?,
                 diferenciaPorcentajeCompletadoTeoricoGeneral = ?
                 WHERE id = ?",
-                [$pActualGen, $pRealGen, $difTeorico, $difTeoricoGen, $row['id']]
+                [$pActualGen, $pRealGen, $difTeorico, $difTeoricoGen, $row['id']],
             );
 
             $porcentajeTeoricoAnt = $pActual;
@@ -923,7 +923,7 @@ class ReportProcessor
                     'CIC Subcontratistas',
                     [$this, 'updatePACSubcontratistas'],
                     [$this, 'generateSubcontratistas'],
-                    $messages
+                    $messages,
                 );
 
                 // --- PROCESAR PROFESIONALES (CIP) ---
@@ -937,7 +937,7 @@ class ReportProcessor
                     'CIC Profesionales',
                     [$this, 'updatePACProfesionales'],
                     [$this, 'generateProfesionales'],
-                    $messages
+                    $messages,
                 );
 
                 $messages[] = "$proyecto (Semana $semanaProyecto) - OK";
@@ -963,7 +963,7 @@ class ReportProcessor
         $warningLabel,
         callable $updateCallback,
         callable $generateCallback,
-        array &$messages
+        array &$messages,
     ) {
         try {
             $tableName = "{$dbName}_{$tableSuffix}";
@@ -974,7 +974,7 @@ class ReportProcessor
             $this->reportSubprocess($warningLabel, $proyecto, 'Verificando tabla', 'ok', 'Tabla existe');
 
             $stmtConteo = $this->db->query("SELECT COUNT(*) as conteo FROM {$tableName} WHERE Semana = ?", [$semanaProyecto]);
-            $conteo = (int)($stmtConteo->fetchColumn() ?: 0);
+            $conteo = (int) ($stmtConteo->fetchColumn() ?: 0);
             if ($conteo > 0) {
                 $this->reportSubprocess($warningLabel, $proyecto, 'Actualizando PAC existentes', 'running');
                 call_user_func($updateCallback, $semanaProyecto, $dbName, $semanaProyecto);
@@ -1192,10 +1192,10 @@ class ReportProcessor
             ]);
 
             $cal_integral = $this->calculateLogicaIntegral($cic['PAC'] ?? 'NA', $cic['Calidad'] ?? 'NA', $cic['SST'] ?? 'NA', $cic['GSA'] ?? 'NA', $cic['ADM'] ?? 'NA');
-            $cal_integral_val = is_numeric($cal_integral) ? (float)$cal_integral : 0.0;
+            $cal_integral_val = is_numeric($cal_integral) ? (float) $cal_integral : 0.0;
 
             $cal_integral_acum = $this->calculateLogicaIntegral($acum['PAC_Acum'] ?? 'NA', $acum['Calidad_Acum'] ?? 'NA', $acum['SST_Acum'] ?? 'NA', $acum['GSA_Acum'] ?? 'NA', $acum['ADM_Acum'] ?? 'NA');
-            $cal_integral_acum_val = is_numeric($cal_integral_acum) ? (float)$cal_integral_acum : 0.0;
+            $cal_integral_acum_val = is_numeric($cal_integral_acum) ? (float) $cal_integral_acum : 0.0;
 
             $cal_integral_str = $cal_integral_val ? number_format($cal_integral_val, 3, '.', '') : '0';
             $cal_integral_acum_str = $cal_integral_acum_val ? number_format($cal_integral_acum_val, 3, '.', '') : '0';
@@ -1263,17 +1263,17 @@ class ReportProcessor
                 $cip['PAC'] ?? 'NA',
                 $stats['Act_Criticas_Cumplidas'] ?? 'NA',
                 $stats['Act_No_Criticas_Cumplidas'] ?? 'NA',
-                $stats['Act_Atrasadas_Cumplidas'] ?? 'NA'
+                $stats['Act_Atrasadas_Cumplidas'] ?? 'NA',
             );
-            $pac_cons_val = is_numeric($pac_cons) ? (float)$pac_cons : 0.0;
+            $pac_cons_val = is_numeric($pac_cons) ? (float) $pac_cons : 0.0;
 
             $pac_cons_acum = $this->calculatePACConsolidado(
                 $acum['PAC_Acum'] ?? 'NA',
                 $acum['Act_Criticas_Acum'] ?? 'NA',
                 $acum['Act_No_Criticas_Acum'] ?? 'NA',
-                $acum['Act_Atrasadas_Acum'] ?? 'NA'
+                $acum['Act_Atrasadas_Acum'] ?? 'NA',
             );
-            $pac_cons_acum_val = is_numeric($pac_cons_acum) ? (float)$pac_cons_acum : 0.0;
+            $pac_cons_acum_val = is_numeric($pac_cons_acum) ? (float) $pac_cons_acum : 0.0;
 
             $pac_cons_str = $pac_cons_val ? number_format($pac_cons_val, 3, '.', '') : '0';
             $pac_cons_acum_str = $pac_cons_acum_val ? number_format($pac_cons_acum_val, 3, '.', '') : '0';
@@ -1288,11 +1288,11 @@ class ReportProcessor
     private function calculateLogicaIntegral($pac, $calidad, $sst, $gsa, $adm)
     {
         // Safe defaults for math operations
-        $pac = ($pac === 'NA' || $pac === 'NR' || $pac === null) ? 0 : (float)$pac;
-        $calidad_num = ($calidad === 'NA' || $calidad === 'NR' || $calidad === null) ? 0 : (float)$calidad;
-        $sst_num = ($sst === 'NA' || $sst === 'NR' || $sst === null) ? 0 : (float)$sst;
-        $gsa_num = ($gsa === 'NA' || $gsa === 'NR' || $gsa === null) ? 0 : (float)$gsa;
-        $adm_num = ($adm === 'NA' || $adm === 'NR' || $adm === null) ? 0 : (float)$adm;
+        $pac = ($pac === 'NA' || $pac === 'NR' || $pac === null) ? 0 : (float) $pac;
+        $calidad_num = ($calidad === 'NA' || $calidad === 'NR' || $calidad === null) ? 0 : (float) $calidad;
+        $sst_num = ($sst === 'NA' || $sst === 'NR' || $sst === null) ? 0 : (float) $sst;
+        $gsa_num = ($gsa === 'NA' || $gsa === 'NR' || $gsa === null) ? 0 : (float) $gsa;
+        $adm_num = ($adm === 'NA' || $adm === 'NR' || $adm === null) ? 0 : (float) $adm;
 
         if ($calidad == 'NA' || $calidad == 'NR') {
             if ($sst == 'NA' || $sst == 'NR') {

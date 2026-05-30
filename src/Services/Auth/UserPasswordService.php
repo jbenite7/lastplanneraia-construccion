@@ -19,7 +19,7 @@ class UserPasswordService
         string $username,
         string $password,
         string $confirm,
-        bool $clearForcePasswordChange = true
+        bool $clearForcePasswordChange = true,
     ): array {
         $user = $this->findFirstByUsername($username);
         if ($user === null) {

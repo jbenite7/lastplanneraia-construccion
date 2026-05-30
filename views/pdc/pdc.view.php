@@ -3,7 +3,7 @@
 <head id="head">
 	<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 	<!--Script cque va al archivo linksComunesHead2.js-->
-	<script type="text/javascript" src="/js/linksComunesHead2.js?v=20260325a" charset="utf-8"></script>
+	<script type="text/javascript" src="/js/linksComunesHead2.js?v=piStateColorsV4" charset="utf-8"></script>
 	<style>
 		/* PDC state colors and chips are now in public/css/styles.css */
 
@@ -140,14 +140,14 @@
 			border: 0;
 			border-radius: 1.25rem;
 			overflow: hidden;
-			background: linear-gradient(180deg, #fafafa 0%, #f4f1ea 100%);
-			box-shadow: 0 24px 60px rgba(36, 49, 58, 0.18);
+			background: #f4f1ea;
+			box-shadow: var(--shadow-glass, 0 8px 32px rgba(30, 30, 30, 0.12));
 		}
 
 		#modalContrato .modal-header {
 			padding: 1.5rem 1.75rem 1.25rem;
-			border-bottom: 1px solid rgba(181, 82, 17, 0.14);
-			background: linear-gradient(135deg, #f7efe3 0%, #fafafa 100%);
+			border-bottom: 1px solid rgba(213, 229, 219, 0.32);
+			background: linear-gradient(135deg, #1a3c2a 0%, #1a5633 100%);
 			align-items: flex-start;
 		}
 
@@ -161,7 +161,7 @@
 			padding: 0.25rem;
 			font-size: 1.8rem;
 			line-height: 1;
-			color: #7a3b14;
+			color: #fafafa;
 			opacity: 0.8;
 		}
 
@@ -181,8 +181,8 @@
 			margin-bottom: 0.65rem;
 			padding: 0.35rem 0.75rem;
 			border-radius: 999px;
-			background: rgba(181, 82, 17, 0.12);
-			color: #7a3b14;
+			background: rgba(213, 229, 219, 0.96);
+			color: #1a3c2a;
 			font-family: 'Montserrat', sans-serif;
 			font-size: 0.75rem;
 			font-weight: 700;
@@ -194,11 +194,11 @@
 			font-family: 'Inter', sans-serif;
 			font-size: 0.96rem;
 			line-height: 1.55;
-			color: #46535b;
+			color: rgba(250, 250, 250, 0.9);
 		}
 
 		#modalContrato .modal-body-texto-Contrato b {
-			color: #24313a;
+			color: #fafafa;
 			font-family: 'Montserrat', sans-serif;
 			font-weight: 700;
 		}
@@ -210,7 +210,7 @@
 
 		#modalContrato .pdc-contract-section {
 			padding: 1.1rem 1.15rem 1.2rem;
-			border: 1px solid rgba(181, 82, 17, 0.14);
+			border: 1px solid rgba(26, 86, 51, 0.18);
 			border-radius: 1rem;
 			background: rgba(250, 250, 250, 0.94);
 			box-shadow: 0 10px 24px rgba(36, 49, 58, 0.06);
@@ -223,7 +223,7 @@
 			gap: 1rem;
 			margin-bottom: 1rem;
 			padding-bottom: 0.85rem;
-			border-bottom: 1px solid rgba(181, 82, 17, 0.12);
+			border-bottom: 1px solid rgba(26, 86, 51, 0.18);
 		}
 
 		#modalContrato .pdc-contract-section__title {
@@ -315,8 +315,8 @@
 		#modalContrato textarea.form-control:focus,
 		#modalContrato input.form-control:focus,
 		#modalContrato select.form-control:focus {
-			border-color: rgba(181, 82, 17, 0.45);
-			box-shadow: 0 0 0 0.2rem rgba(181, 82, 17, 0.12);
+			border-color: rgba(26, 86, 51, 0.5);
+			box-shadow: 0 0 0 0.2rem rgba(26, 86, 51, 0.18);
 		}
 
 		#modalContrato #actividadesDelContrato,
@@ -358,9 +358,9 @@
 
 		#modalContrato .labelFormularioContratos {
 			padding: 1rem 1rem 1rem 1.1rem;
-			border: 1px solid rgba(181, 82, 17, 0.08);
+			border: 1px solid rgba(26, 86, 51, 0.12);
 			border-radius: 0.9rem;
-			background: linear-gradient(180deg, #f8f1e7 0%, #f4f1ea 100%);
+			background: linear-gradient(180deg, #eef5f1 0%, #f4f1ea 100%);
 			text-align: left;
 		}
 
@@ -379,7 +379,7 @@
 			justify-content: center;
 			padding: 0.8rem 0.6rem;
 			border-radius: 0.9rem;
-			background: #b55211;
+			background: #1a5633;
 			font-family: 'Montserrat', sans-serif;
 			font-size: 0.82rem;
 			font-weight: 700;
@@ -394,7 +394,7 @@
 			justify-content: center;
 			gap: 0.5rem;
 			padding: 0.8rem 0.75rem;
-			border: 1px solid rgba(181, 82, 17, 0.1);
+			border: 1px solid rgba(26, 86, 51, 0.14);
 			border-radius: 0.9rem;
 			background: #fff;
 			box-shadow: 0 6px 16px rgba(36, 49, 58, 0.04);
@@ -418,7 +418,7 @@
 			margin: 0;
 			padding: 0;
 			font-size: 1rem;
-			color: #b55211;
+			color: #1a5633;
 		}
 
 		#modalContrato .pdc-bg-muted {
@@ -435,7 +435,7 @@
 		#modalContrato .informacionAdjudicacionContrato,
 		#modalContrato .seguimientoContrato {
 			padding: 1rem 1.05rem;
-			border: 1px solid rgba(181, 82, 17, 0.1);
+			border: 1px solid rgba(26, 86, 51, 0.14);
 			border-radius: 0.95rem;
 			background: #fffdfa;
 		}
@@ -451,7 +451,7 @@
 			font-family: 'Montserrat', sans-serif;
 			font-size: 1rem;
 			font-weight: 700;
-			color: #7a3b14;
+			color: #1a3c2a;
 		}
 
 		#modalContrato .mensajeModalInformacionAdjudicado,
@@ -464,11 +464,11 @@
 		}
 
 		#modalContrato .pdc-provider-locked {
-			border-color: rgba(181, 82, 17, 0.22) !important;
-			background: linear-gradient(180deg, #f3ede4 0%, #ece2d5 100%) !important;
-			color: #6a4a34 !important;
+			border-color: rgba(26, 86, 51, 0.22) !important;
+			background: linear-gradient(180deg, #eef5f1 0%, #d5e5db 100%) !important;
+      		color: #1a3c2a !important;
 			cursor: not-allowed;
-			box-shadow: inset 0 0 0 1px rgba(181, 82, 17, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.72);
+			box-shadow: inset 0 0 0 1px rgba(26, 86, 51, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.72);
 		}
 
 		#modalContrato .pdc-provider-locked::placeholder {
@@ -483,8 +483,8 @@
 			margin-top: 0.45rem;
 			padding: 0.22rem 0.55rem;
 			border-radius: 999px;
-			background: rgba(181, 82, 17, 0.1);
-			color: #7a3b14;
+			background: rgba(26, 86, 51, 0.12);
+			color: #1a3c2a;
 			font-family: 'Montserrat', sans-serif;
 			font-size: 0.72rem;
 			font-weight: 700;
@@ -522,27 +522,27 @@
 		}
 
 		#modalContrato #btn_guardar_pdc {
-			background: #b55211;
-			border-color: #b55211;
-			box-shadow: 0 12px 22px rgba(181, 82, 17, 0.18);
+			background: #1a5633;
+			border-color: #1a5633;
+			box-shadow: 0 12px 22px rgba(26, 86, 51, 0.18);
 		}
 
 		#modalContrato #btn_guardar_pdc:hover,
 		#modalContrato #btn_guardar_pdc:focus {
-			background: #8f430f;
-			border-color: #8f430f;
+			background: #1a3c2a;
+			border-color: #1a3c2a;
 		}
 
 		#modalContrato #btn_cancelar_editar {
 			background: transparent;
-			border: 1px solid rgba(122, 59, 20, 0.35);
-			color: #7a3b14;
+			border: 1px solid rgba(26, 86, 51, 0.35);
+			color: #1a5633;
 		}
 
 		#modalContrato #btn_cancelar_editar:hover,
 		#modalContrato #btn_cancelar_editar:focus {
-			background: rgba(181, 82, 17, 0.08);
-			color: #7a3b14;
+			background: rgba(26, 86, 51, 0.08);
+			color: #1a3c2a;
 		}
 
 		#modalContrato .pdc-contract-note {
@@ -598,7 +598,7 @@
 				grid-template-columns: 1fr;
 				gap: 0.7rem;
 				padding: 1rem;
-				border: 1px solid rgba(181, 82, 17, 0.12);
+				border: 1px solid rgba(26, 86, 51, 0.12);
 				border-radius: 0.95rem;
 				background: #fff;
 			}
@@ -621,7 +621,7 @@
 				font-weight: 700;
 				letter-spacing: 0.04em;
 				text-transform: uppercase;
-				color: #7a3b14;
+				color: #1a3c2a;
 			}
 
 			#modalContrato .pasoProcesoContratacion .inputFormularioContratos:nth-child(2)::before {
@@ -741,11 +741,11 @@
 
 	<div class="row ventanasModalesEspecificas" id="ventanasModalesEspecificas">
 		<div class="modal_Contrato modal fade aia-modal" id="modalContrato" tabindex="-1" role="dialog" aria-labelledby="modal_ContratoLabel">
-			<div class="modal-dialog modal-xl modal-dialog-scrollable" role="document">
+			<div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" role="document">
 				<div class="modal-content">
 					<div class="modal-header">
 						<div class="modal-title" id="modalContratoLabel">
-							<div class="pdc-contract-modal__eyebrow">AIA Construccion</div>
+							<div class="aia-modal__eyebrow">AIA Corporativo</div>
 							<div class="modal-body-texto-Contrato mb-0" id="modal-body-texto-Contrato"></div>
 						</div>
 						<button type="button" class="close" data-dismiss="modal" aria-label="Close" onClick="recargarTabla('')"><span aria-hidden="true">&times;</span></button>
@@ -1182,11 +1182,11 @@
 		<!-- Modal -->
 
 		<div class="modal_DefinirContrato modal fade aia-modal" id="modalDefinirContratos" tabindex="-1" role="dialog" aria-labelledby="modal_DefinirContratoLabel">
-			<div class="modal-dialog modal-lg" role="document">
+			<div class="modal-dialog modal-lg modal-dialog-centered" role="document">
 				<div class="modal-content">
 					<div class="modal-header">
 						<div class="modal-title" id="modalDefinirContratosLabel">
-							<div class="aia-modal__eyebrow">AIA Construccion</div>
+							<div class="aia-modal__eyebrow">AIA Corporativo</div>
 							<h2 class="aia-modal__headline modal-body-texto-DefinirContrato" id="modal-body-texto-DefinirContrato">Definir Contratos</h2>
 							<p class="aia-modal__subtitle">Configura el numero de contratos asociados a cada paquete antes de guardar.</p>
 						</div>
@@ -1235,7 +1235,7 @@
 
 		<!-- Se crea el Modal que solicita la confirmación de eliminar un registro o no -->
 		<div class="modal fade aia-modal aia-modal__confirm" id="modalEliminar" tabindex="-1" role="dialog" aria-labelledby="modalEliminarLabel">
-		  <div class="modal-dialog" role="document">
+		  <div class="modal-dialog modal-dialog-centered" role="document">
 		    <div class="modal-content">
 		      <div class="modal-header">
 		        <div class="modal-title" id="modalEliminarLabel">
@@ -2324,7 +2324,7 @@
 			      subcontratistaAdjudicado.removeAttribute("readonly", true);
 			      correoAdjudicado.removeAttribute("readonly", true);
 			      actualizarEstadoProveedorBloqueado(false);
-			      document.getElementById('mensajeModalInformacionAdjudicado').style.color = "#7a3b14";
+			      document.getElementById('mensajeModalInformacionAdjudicado').style.color = "#1a3c2a";
 			      document.getElementById('mensajeModalInformacionAdjudicado').innerHTML = "Se creará un nuevo proveedor en la base de datos";
 			    } else {
 			      nitAdjudicado.value = json_info['data'][0]['NIT'];
@@ -2334,7 +2334,7 @@
 			      subcontratistaAdjudicado.setAttribute("readonly", true);
 			      correoAdjudicado.setAttribute("readonly", true);
 			      actualizarEstadoProveedorBloqueado(true);
-			      document.getElementById('mensajeModalInformacionAdjudicado').style.color = "#7a3b14";
+			      document.getElementById('mensajeModalInformacionAdjudicado').style.color = "#1a3c2a";
 			      document.getElementById('mensajeModalInformacionAdjudicado').innerHTML = "Se ha encontrado un proveedor registrado en la base de datos";
 		      // $("#mensajeModalInformacionAdjudicado").fadeOut(10000, function(){
 		      // 	$(this).html("");

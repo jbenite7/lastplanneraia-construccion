@@ -53,7 +53,7 @@ class NotificationService
         $type,
         $title,
         $message,
-        $projectId = null
+        $projectId = null,
     ) {
         $sql = "INSERT INTO system_notifications
                 (user_id, type, title, message, project_id)
@@ -80,7 +80,7 @@ class NotificationService
         string $userId,
         string $type,
         string $message,
-        ?string $projectId = null
+        ?string $projectId = null,
     ): bool {
         $meta = NotificationType::getMeta($type);
         if (!$meta) {
@@ -91,7 +91,7 @@ class NotificationService
         $existing = $this->findGroupable(
             $userId,
             $type,
-            $projectId
+            $projectId,
         );
 
         if ($existing) {
@@ -99,7 +99,7 @@ class NotificationService
                 (int) $existing['id'],
                 $type,
                 $message,
-                (int) $existing['item_count']
+                (int) $existing['item_count'],
             );
         }
 
@@ -109,7 +109,7 @@ class NotificationService
             $type,
             $title,
             $message,
-            $projectId
+            $projectId,
         );
     }
 
@@ -124,7 +124,7 @@ class NotificationService
         string $type,
         string $message,
         array $usersByRole,
-        ?string $projectId = null
+        ?string $projectId = null,
     ): int {
         $roles = NotificationType::getRoles($type);
         $notified = [];
@@ -154,7 +154,7 @@ class NotificationService
      * @return array ['A'=>['u1'], 'D'=>['u2'], ...]
      */
     public function getUsersByRoleForProject(
-        string $dbPrefix
+        string $dbPrefix,
     ): array {
         $sql = "SELECT u.usuario, pm.role
                 FROM project_members pm
@@ -231,7 +231,7 @@ class NotificationService
     private function findGroupable(
         string $userId,
         string $type,
-        ?string $projectId
+        ?string $projectId,
     ): ?array {
         if ($projectId !== null) {
             $sql = "SELECT id, item_count
@@ -270,7 +270,7 @@ class NotificationService
         int $id,
         string $type,
         string $newMessage,
-        int $currentCount
+        int $currentCount,
     ): bool {
         $nextCount = $currentCount + 1;
         $title = NotificationType::getTitle($type, $nextCount);

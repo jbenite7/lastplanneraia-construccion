@@ -10,7 +10,7 @@ require_once __DIR__ . "/productividad_temporal.php";
 $db = Database::getInstance();
 
 $dbName = $dbPrefix ?? $_POST['db'] ?? $_GET['db'] ?? '';
-$semana = (int)($semana ?? $_POST['semana'] ?? $_GET['semana'] ?? 0);
+$semana = (int) ($semana ?? $_POST['semana'] ?? $_GET['semana'] ?? 0);
 
 disable_productivity_measurement_temporarily($db);
 
@@ -56,7 +56,7 @@ try {
             return null;
         }
 
-        $raw = trim((string)$value);
+        $raw = trim((string) $value);
         if ($raw === '' || strtolower($raw) === 'null') {
             return null;
         }
@@ -78,7 +78,7 @@ try {
             return null;
         }
 
-        $ratio = (float)$normalized;
+        $ratio = (float) $normalized;
         if ($hasPercent) {
             $ratio /= 100;
         }
@@ -91,14 +91,14 @@ try {
     $buildRestrictionAlertParts = function (array $row, array $rules) use ($parseRestrictionRatio): array {
         $parts = [];
         foreach ($rules as $col => $rule) {
-            $raw = trim((string)($row[$col] ?? ''));
+            $raw = trim((string) ($row[$col] ?? ''));
             $upper = strtoupper($raw);
             if ($upper === 'N/A' || $upper === 'NO APLICA') {
                 continue;
             }
 
             $ratio = $parseRestrictionRatio($row[$col] ?? null);
-            if ($ratio !== null && ($ratio + 0.0001) >= (float)$rule['threshold']) {
+            if ($ratio !== null && ($ratio + 0.0001) >= (float) $rule['threshold']) {
                 continue;
             }
 
@@ -150,11 +150,13 @@ Estado='En Curso' OR Estado='Atrasada' OR Estado='Debe Iniciar'
             Sub_Contratista, Responsable_AIA, Empresa, Ejecutado, medir_productividad, 
             Critica, Atrasada, Activa, Unidad, cantidad_ppto, codigo_actividad
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    
+
         foreach ($nuevasFilas as $f) {
             $subsRaw = $f[6] ?? '';
             $subs = array_filter(array_map('trim', explode(',', $subsRaw)));
-            if (empty($subs)) $subs = [''];
+            if (empty($subs)) {
+                $subs = [''];
+            }
             foreach ($subs as $sub) {
                 $f[6] = $sub;
                 $db->query($queryInsertSingle, $f);
@@ -178,11 +180,11 @@ Estado='En Curso' OR Estado='Atrasada' OR Estado='Debe Iniciar'
             continue;
         }
 
-        $ejecutadoActual = (float)$dataCons["Ejecutado"];
-        $cantidadPpto = (float)($dataCons["cantidad_ppto"] ?? 0);
+        $ejecutadoActual = (float) $dataCons["Ejecutado"];
+        $cantidadPpto = (float) ($dataCons["cantidad_ppto"] ?? 0);
         $compromisoFinal = null;
         if ($item["Compromiso"] !== null && $item["Compromiso"] !== '') {
-            $compromisoFinal = (float)$item["Compromiso"];
+            $compromisoFinal = (float) $item["Compromiso"];
             if ($compromisoFinal <= 0) {
                 $compromisoFinal = null;
             }
@@ -191,11 +193,11 @@ Estado='En Curso' OR Estado='Atrasada' OR Estado='Debe Iniciar'
         // Buscar en la semana anterior priorizando el subcontratista dividido
         $stmtAnterior = $db->query("SELECT Responsable_AIA, Empresa, Descripcion, Ubicacion FROM {$dbName}_programacion_semanal WHERE Semana = ? AND Consecutivo_En_programa = ? AND Sub_Contratista = ?", [$semana - 1, $consecutivo_pg, $subcontratista_split]);
         $dataAnt = $stmtAnterior->fetch();
-        
+
         // Si no lo encuentra, buscar solo por Consecutivo_En_Programa
         if (!$dataAnt) {
-             $stmtAnteriorFallBack = $db->query("SELECT Responsable_AIA, Empresa, Descripcion, Ubicacion FROM {$dbName}_programacion_semanal WHERE Semana = ? AND Consecutivo_En_programa = ?", [$semana - 1, $consecutivo_pg]);
-             $dataAnt = $stmtAnteriorFallBack->fetch();
+            $stmtAnteriorFallBack = $db->query("SELECT Responsable_AIA, Empresa, Descripcion, Ubicacion FROM {$dbName}_programacion_semanal WHERE Semana = ? AND Consecutivo_En_programa = ?", [$semana - 1, $consecutivo_pg]);
+            $dataAnt = $stmtAnteriorFallBack->fetch();
         }
 
         // Preservamos el subcontratista que ya viene dividido en $item (insertado en el Paso 3)
@@ -215,7 +217,7 @@ Estado='En Curso' OR Estado='Atrasada' OR Estado='Debe Iniciar'
 
         $db->query($sqlActSemana, [
             $dataCons['Fecha_Inicio'], $dataCons['Fecha_Fin'], $sub, $resp,
-            $ejecutadoActual, 0, (int)($dataCons["Ruta_Critica"] ?? 0),
+            $ejecutadoActual, 0, (int) ($dataCons["Ruta_Critica"] ?? 0),
             $dataCons["Estado"], $desc, $ubica, $empresa, $dataCons["unidad"],
             ($cantidadPpto > 0 ? $cantidadPpto : null), $dataCons["codigo_actividad"], $compromisoFinal,
             $semana, $consecutivo_pk,
@@ -280,8 +282,8 @@ Estado='En Curso' OR Estado='Atrasada' OR Estado='Debe Iniciar'
             continue;
         }
         $blandas = $buildRestrictionAlertParts($row, $softRestrictionLabels);
-        
-        $actLabel = trim(preg_replace('/\s+/', ' ', preg_replace('/<[^>]*>/', ' ', (string)($row['Actividad'] ?? ''))));
+
+        $actLabel = trim(preg_replace('/\s+/', ' ', preg_replace('/<[^>]*>/', ' ', (string) ($row['Actividad'] ?? ''))));
 
         $alertasRestricciones[] = [
             'Id' => $row['Id'],
@@ -294,7 +296,7 @@ Estado='En Curso' OR Estado='Atrasada' OR Estado='Debe Iniciar'
     $db->logActivity('Sistema', 'AUTOPROGRAMAR', "Actividades autoprogramadas para semana $semana");
     echo json_encode([
         "respuesta" => "OK",
-        "alertasRestricciones" => $alertasRestricciones
+        "alertasRestricciones" => $alertasRestricciones,
     ], JSON_UNESCAPED_UNICODE);
 
 } catch (Exception $e) {

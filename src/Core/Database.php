@@ -23,6 +23,8 @@ class Database
 
         try {
             $this->pdo = new PDO($dsn, $user, $pass, $options);
+            // Configurar la zona horaria de la sesión de base de datos a Bogotá (UTC-5)
+            $this->pdo->exec("SET time_zone = '-05:00'");
         } catch (PDOException $e) {
             error_log('Error de conexión a la base de datos: ' . $e->getMessage());
             die('Error: No se pudo conectar a la base de datos. Por favor, intente más tarde.');
@@ -169,9 +171,7 @@ class Database
     }
 
     // Evitar clonación del objeto
-    private function __clone()
-    {
-    }
+    private function __clone() {}
 
     // Evitar deserialización del objeto
     public function __wakeup()

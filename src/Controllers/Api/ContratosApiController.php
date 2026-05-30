@@ -233,21 +233,21 @@ class ContratosApiController extends BaseController
             $stmtMO = $db->query("SELECT paqueteContratacion FROM general_dias_procesos_contratacion WHERE tipoPaquete = 'Mano de Obra'");
             $scriptMO = "<option value=''></option>";
             while ($row = $stmtMO->fetch()) {
-                $scriptMO .= "<option value='".htmlspecialchars($row["paqueteContratacion"], ENT_QUOTES)."'>".htmlspecialchars($row["paqueteContratacion"], ENT_QUOTES)."</option>";
+                $scriptMO .= "<option value='" . htmlspecialchars($row["paqueteContratacion"], ENT_QUOTES) . "'>" . htmlspecialchars($row["paqueteContratacion"], ENT_QUOTES) . "</option>";
             }
             $res["listadoMO"] = $scriptMO;
 
             $stmtS = $db->query("SELECT paqueteContratacion FROM general_dias_procesos_contratacion WHERE tipoPaquete = 'Suministro'");
             $scriptS = "<option value=''></option>";
             while ($row = $stmtS->fetch()) {
-                $scriptS .= "<option value='".htmlspecialchars($row["paqueteContratacion"], ENT_QUOTES)."'>".htmlspecialchars($row["paqueteContratacion"], ENT_QUOTES)."</option>";
+                $scriptS .= "<option value='" . htmlspecialchars($row["paqueteContratacion"], ENT_QUOTES) . "'>" . htmlspecialchars($row["paqueteContratacion"], ENT_QUOTES) . "</option>";
             }
             $res["listadoS"] = $scriptS;
         } elseif ($tipoContrato == 2) {
             $stmtSI = $db->query("SELECT paqueteContratacion FROM general_dias_procesos_contratacion WHERE tipoPaquete = 'Suministro e Instalación'");
             $scriptSI = "<option value=''></option>";
             while ($row = $stmtSI->fetch()) {
-                $scriptSI .= "<option value='".htmlspecialchars($row["paqueteContratacion"], ENT_QUOTES)."'>".htmlspecialchars($row["paqueteContratacion"], ENT_QUOTES)."</option>";
+                $scriptSI .= "<option value='" . htmlspecialchars($row["paqueteContratacion"], ENT_QUOTES) . "'>" . htmlspecialchars($row["paqueteContratacion"], ENT_QUOTES) . "</option>";
             }
             $res["listadoSI"] = $scriptSI;
         }

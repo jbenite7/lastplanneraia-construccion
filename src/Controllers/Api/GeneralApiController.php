@@ -72,8 +72,9 @@ class GeneralApiController extends BaseController
             $stmtFechas = $this->db->prepare("SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem FROM {$dbPrefix}_semanas_activas WHERE Semana = ? LIMIT 1");
             $stmtFechas->execute([$semana]);
             $fechasSemana = $stmtFechas->fetch(PDO::FETCH_ASSOC);
-            
+
             $fechaInicioSemana = $fechasSemana['Fecha_Inicio_Sem'] ?? date('Y-m-d');
+            $fechaInicioSemanaTs = $this->lpsService->toTimestamp($fechaInicioSemana);
 
             // 4. Consulta Principal
             $sql = "SELECT * 
@@ -87,7 +88,7 @@ class GeneralApiController extends BaseController
             $data = [];
 
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                $unidad = trim((string)($row['unidad'] ?? ''));
+                $unidad = trim((string) ($row['unidad'] ?? ''));
                 if ($unidad === '') {
                     $unidad = '%';
                 }
@@ -101,11 +102,11 @@ class GeneralApiController extends BaseController
                     $row['boton'] = "No Boton";
                     $row['Ejecutado_Teorico'] = null;
                 } else {
-                    $row['boton'] = "Boton"; 
+                    $row['boton'] = "Boton";
                     $row['Ejecutado_Teorico'] = $this->lpsService->calculateTheoreticalProgress(
                         $row['Fecha_Inicio'] ?? null,
                         $row['Fecha_Fin'] ?? null,
-                        $fechaInicioSemana
+                        $fechaInicioSemanaTs,
                     );
                 }
                 $data[] = $row;
@@ -167,11 +168,15 @@ class GeneralApiController extends BaseController
             $unidadRaw = trim($_POST["unidad"] ?? '');
             $unidad = ($unidadRaw === '') ? '%' : $unidadRaw;
             $cantidadPpto = $this->lpsService->toFloat($_POST["cantidad_ppto"] ?? null);
-            
+
             if ($cantidadPpto !== null) {
-                if ($cantidadPpto < 0) throw new Exception("La cantidad en presupuesto no puede ser negativa.");
+                if ($cantidadPpto < 0) {
+                    throw new Exception("La cantidad en presupuesto no puede ser negativa.");
+                }
                 $cantidadPpto = round($cantidadPpto, 1);
-                if ($cantidadPpto === 0.0) $cantidadPpto = null;
+                if ($cantidadPpto === 0.0) {
+                    $cantidadPpto = null;
+                }
             }
 
             if ($unidad === '%') {
@@ -186,7 +191,7 @@ class GeneralApiController extends BaseController
                     $ejecutado = ($ejecutadoVisible / 100);
                 }
             }
-            
+
             if ($ejecutado !== null) {
                 if ($ejecutado < -0.0001 || $ejecutado > 1.0001) {
                     $pctDisplay = round($ejecutado * 100, 2);
@@ -224,11 +229,11 @@ class GeneralApiController extends BaseController
                     Fecha_Fin = ?,
                     programaAnteriorAsociar = ?
                     WHERE Consecutivo_en_Programa = ? AND Semana = ?";
-            
+
             $updateStmt = $this->db->prepare($sql);
             $updateStmt->execute([
-                $ejecutado, $medirProductividad, $unidad, $cantidadPpto, 
-                $codigoActividad, $ejecutado, $fechaInicio, $fechaFin, $actividadAsociar, $id, $semana
+                $ejecutado, $medirProductividad, $unidad, $cantidadPpto,
+                $codigoActividad, $ejecutado, $fechaInicio, $fechaFin, $actividadAsociar, $id, $semana,
             ]);
 
             $verifyStmt = $this->db->prepare("SELECT unidad, cantidad_ppto, Ejecutado FROM {$dbPrefix}_programa_consolidado WHERE Consecutivo_en_Programa = ? AND Semana = ? LIMIT 1");
@@ -239,7 +244,7 @@ class GeneralApiController extends BaseController
                 throw new Exception("No se encontró la actividad a actualizar en Programa General.");
             }
 
-            $unidad = trim((string)($updatedRow['unidad'] ?? ''));
+            $unidad = trim((string) ($updatedRow['unidad'] ?? ''));
             if ($unidad === '') {
                 $unidad = '%';
             }
@@ -295,7 +300,7 @@ class GeneralApiController extends BaseController
                         $dataHerencia['Responsable_AIA'], $dataHerencia['Sub_Contratista'], $dataHerencia['Observaciones'], $dataHerencia['codigo_actividad'],
                         $dataHerencia['medir_productividad'], $dataHerencia['cantidad_ppto'], $dataHerencia['unidad'],
                         $dataHerencia['Estado_Restricciones'], $dataHerencia['D_y_E'], $dataHerencia['Materiales'], $dataHerencia['MdeO'], $dataHerencia['Equipos'],
-                        $dataHerencia['Predecesora'], $dataHerencia['Pdto_Cons'], $dataHerencia['Modelo'], $dataHerencia['Ejecutado'], $id, $semana
+                        $dataHerencia['Predecesora'], $dataHerencia['Pdto_Cons'], $dataHerencia['Modelo'], $dataHerencia['Ejecutado'], $id, $semana,
                     ]);
 
                     $ejecutado = $dataHerencia['Ejecutado'];
@@ -315,7 +320,7 @@ class GeneralApiController extends BaseController
             $stmtFechas = $this->db->prepare("SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem FROM {$dbPrefix}_semanas_activas WHERE Semana = ?");
             $stmtFechas->execute([$semana]);
             $inicioSemanaRow = $stmtFechas->fetch(PDO::FETCH_ASSOC);
-            
+
             $fechaCorte = $inicioSemanaRow['Fecha_Inicio_Sem'] ?? date('Y-m-d');
             $fechaFinSemana = $inicioSemanaRow['Fecha_Fin_Sem'] ?? null;
 
@@ -336,14 +341,14 @@ class GeneralApiController extends BaseController
             $normalizationService->normalizeChapters($dbPrefix, $semana);
 
             $response = [
-                'respuesta' => 'BIEN', 
-                'estado' => $nuevoEstado, 
+                'respuesta' => 'BIEN',
+                'estado' => $nuevoEstado,
                 'Semanas_Inicio' => $semanasInicio,
                 'unidad' => $unidad,
                 'cantidad_ppto' => $cantidadPpto,
-                'Ejecutado' => $ejecutado // Retornamos el ratio decimal calculado
+                'Ejecutado' => $ejecutado, // Retornamos el ratio decimal calculado
             ];
-            
+
             // Si hubo herencia, devolvemos los campos actualizados (prioridad sobre el input manual)
             if (!empty($_POST['editarActividadAsociar']) && !empty($actividadAsociar) && $actividadAsociar !== '*No Asociada*') {
                 $inheritanceFields = "unidad, cantidad_ppto, Ejecutado, Estado_Restricciones, D_y_E, Materiales, MdeO, Equipos, Predecesora, Pdto_Cons, Modelo";
@@ -448,7 +453,7 @@ class GeneralApiController extends BaseController
         try {
             $vars = $this->getSessionVars();
             $dbPrefix = $_GET['db'] ?? ($vars['dbName'] ?? '');
-            $semana = (int)($_GET['semana'] ?? ($vars['semana'] ?? 0));
+            $semana = (int) ($_GET['semana'] ?? ($vars['semana'] ?? 0));
             $f_inicio_sem = $_GET['f_inicio_sem'] ?? date('Y-m-d');
 
             if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
@@ -471,17 +476,17 @@ class GeneralApiController extends BaseController
             // 1. Detección inteligente de
             $stmtMaxCons = $this->db->prepare("SELECT MAX(Semana) as max_sem FROM {$dbPrefix}_programa_consolidado");
             $stmtMaxCons->execute();
-            $maxSemCons = (int)($stmtMaxCons->fetch(PDO::FETCH_ASSOC)['max_sem'] ?? 0);
+            $maxSemCons = (int) ($stmtMaxCons->fetch(PDO::FETCH_ASSOC)['max_sem'] ?? 0);
 
             $stmtMaxAct = $this->db->prepare("SELECT MAX(Semana) as max_sem FROM {$dbPrefix}_semanas_activas");
             $stmtMaxAct->execute();
-            $maxSemAct = (int)($stmtMaxAct->fetch(PDO::FETCH_ASSOC)['max_sem'] ?? 0);
-            
+            $maxSemAct = (int) ($stmtMaxAct->fetch(PDO::FETCH_ASSOC)['max_sem'] ?? 0);
+
             // Lógica de Autodetección de Semana Destino:
             if ($maxSemCons === 0) {
                 // Caso A: Proyecto Nuevo -> Semana 1
                 $semanaNueva = 1;
-            } else if ($maxSemCons > $maxSemAct) {
+            } elseif ($maxSemCons > $maxSemAct) {
                 // Caso B: Ya existe un borrador (Draft) -> Mantener en la misma semana para re-importar/mapear
                 $semanaNueva = $maxSemCons;
             } else {
@@ -490,7 +495,7 @@ class GeneralApiController extends BaseController
             }
 
             $logFile = PROJECT_ROOT . "/public/debug_import.log";
-            $debug = function($msg) use ($logFile) {
+            $debug = function ($msg) use ($logFile) {
                 $timestamp = date('Y-m-d H:i:s');
                 file_put_contents($logFile, "[$timestamp] $msg\n", FILE_APPEND);
             };
@@ -516,7 +521,7 @@ class GeneralApiController extends BaseController
                     $debug("DEBUG IMPORT: Fila $index omitida (Esquema vacío en col $colEsquema)");
                     continue;
                 }
-                
+
                 if ($index === 0) {
                     $debug("DEBUG IMPORT: Procesando primera fila de datos: " . json_encode($row));
                 }
@@ -530,18 +535,18 @@ class GeneralApiController extends BaseController
                     $this->getWorksheetRawValue($sheet, $columnMap['start'], $excelRowNumber),
                     $row[$columnMap['start']] ?? null,
                     $excelRowNumber,
-                    'Fecha_Inicio'
+                    'Fecha_Inicio',
                 );
                 $fFin = $this->normalizeImportedDate(
                     $this->getWorksheetRawValue($sheet, $columnMap['end'], $excelRowNumber),
                     $row[$columnMap['end']] ?? null,
                     $excelRowNumber,
-                    'Fecha_Fin'
+                    'Fecha_Fin',
                 );
                 $rutaCritica = $this->isTruthyImportedFlag($row[$columnMap['critical']] ?? null) ? 1 : 0;
 
                 $prev = $historico[$nombreLimpio] ?? [];
-                
+
                 // Si no hay match exacto con el nombre limpio, intentamos una búsqueda más flexible (opcional pero recomendado)
                 if (empty($prev)) {
                     foreach ($historico as $hKey => $hRow) {
@@ -556,23 +561,23 @@ class GeneralApiController extends BaseController
                     'Semana' => $semanaNueva, 'Consecutivo_en_Programa' => $consecutivoEnProg++,
                     'Id' => $esquema, 'Actividad' => $nombreActividadHtml, 'Titulo' => $titulo,
                     'Fecha_Inicio' => $fInicio, 'Fecha_Fin' => $fFin, 'Ruta_Critica' => $rutaCritica,
-                    'Ejecutado' => isset($prev['Ejecutado']) ? $prev['Ejecutado'] : 0, 
+                    'Ejecutado' => isset($prev['Ejecutado']) ? $prev['Ejecutado'] : 0,
                     'Responsable_AIA' => $prev['Responsable_AIA'] ?? null,
-                    'Sub_Contratista' => $prev['Sub_Contratista'] ?? null, 
+                    'Sub_Contratista' => $prev['Sub_Contratista'] ?? null,
                     'Observaciones' => $prev['Observaciones'] ?? null,
-                    'codigo_actividad' => $prev['codigo_actividad'] ?? null, 
+                    'codigo_actividad' => $prev['codigo_actividad'] ?? null,
                     'medir_productividad' => $prev['medir_productividad'] ?? null,
-                    'cantidad_ppto' => $prev['cantidad_ppto'] ?? null, 
+                    'cantidad_ppto' => $prev['cantidad_ppto'] ?? null,
                     'unidad' => $prev['unidad'] ?? null,
-                    'Estado_Restricciones' => isset($prev['Estado_Restricciones']) ? $prev['Estado_Restricciones'] : 0, 
+                    'Estado_Restricciones' => isset($prev['Estado_Restricciones']) ? $prev['Estado_Restricciones'] : 0,
                     'D_y_E' => $prev['D_y_E'] ?? '0',
-                    'Materiales' => $prev['Materiales'] ?? '0', 
-                    'MdeO' => $prev['MdeO'] ?? '0', 
+                    'Materiales' => $prev['Materiales'] ?? '0',
+                    'MdeO' => $prev['MdeO'] ?? '0',
                     'Equipos' => $prev['Equipos'] ?? '0',
-                    'Predecesora' => $prev['Predecesora'] ?? '0', 
-                    'Pdto_Cons' => $prev['Pdto_Cons'] ?? '0', 
+                    'Predecesora' => $prev['Predecesora'] ?? '0',
+                    'Pdto_Cons' => $prev['Pdto_Cons'] ?? '0',
                     'Modelo' => $prev['Modelo'] ?? '0',
-                    'programaAnteriorAsociar' => empty($prev) ? '*No Asociada*' : $nombreLimpio
+                    'programaAnteriorAsociar' => empty($prev) ? '*No Asociada*' : $nombreLimpio,
                 ];
             }
 
@@ -590,7 +595,7 @@ class GeneralApiController extends BaseController
             // 1B. Borrar borrador anterior en consolidado
             $this->db->prepare("DELETE FROM {$dbPrefix}_programa_consolidado WHERE Semana = ?")->execute([$semanaNueva]);
 
-             // 2. Insertar nuevos registros
+            // 2. Insertar nuevos registros
             $queryInsert = "INSERT INTO {$dbPrefix}_programa_consolidado (
                 Semana, Consecutivo_en_Programa, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin, Ruta_Critica, 
                 Ejecutado, Responsable_AIA, Sub_Contratista, Observaciones, codigo_actividad, medir_productividad, cantidad_ppto, unidad,
@@ -605,7 +610,7 @@ class GeneralApiController extends BaseController
             // 3. Activar semana (Solo automáticamente para S1; S2+ queda como borrador)
             $stmtCheckSem = $this->db->prepare("SELECT COUNT(*) FROM {$dbPrefix}_semanas_activas WHERE Semana = ?");
             $stmtCheckSem->execute([$semanaNueva]);
-            $existeSemana = (int)$stmtCheckSem->fetchColumn();
+            $existeSemana = (int) $stmtCheckSem->fetchColumn();
 
             if ($existeSemana == 0 && $semanaNueva === 1) {
                 $f_final_sem = date('Y-m-d', strtotime($f_inicio_sem . ' + 6 days'));
@@ -622,23 +627,25 @@ class GeneralApiController extends BaseController
             $dbName = $dbPrefix; // Variable esperada por script legacy
             $semana = $semanaNueva; // Variable esperada por script legacy
             $ejecucionActualizada = 1;
-            
+
             error_log("DEBUG IMPORT: Iniciando integración legacy para Semana $semanaNueva");
-            
+
             ob_start();
             require PROJECT_ROOT . "/src/Legacy/modificar_sem_estado.php";
             $legacyOutput = ob_get_clean();
-            
+
             error_log("DEBUG IMPORT: Salida de modificar_sem_estado: " . $legacyOutput);
 
             $semanaBase = ($maxSemAct > 0) ? min($maxSemAct, max(0, $semanaNueva - 1)) : 0;
-            echo json_encode(['respuesta' => 'BIEN', 0 => (int)$semanaNueva, 'semana_base' => (int)$semanaBase]);
+            echo json_encode(['respuesta' => 'BIEN', 0 => (int) $semanaNueva, 'semana_base' => (int) $semanaBase]);
 
         } catch (\Throwable $e) {
             if (isset($debug)) {
                 $debug("FATAL ERROR: " . $e->getMessage() . " in " . $e->getFile() . " line " . $e->getLine());
             }
-            if ($this->db->inTransaction()) $this->db->rollBack();
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
             http_response_code(500);
             echo json_encode(['respuesta' => 'ERROR', 'mensaje' => $e->getMessage()]);
         }
@@ -670,7 +677,7 @@ class GeneralApiController extends BaseController
 
             foreach ($aliases as $field => $fieldAliases) {
                 if (!isset($columnMap[$field]) && in_array($normalizedHeading, $fieldAliases, true)) {
-                    $columnMap[$field] = (int)$index;
+                    $columnMap[$field] = (int) $index;
                     break;
                 }
             }
@@ -680,8 +687,8 @@ class GeneralApiController extends BaseController
         $missing = array_values(array_diff($required, array_keys($columnMap)));
         if (!empty($missing)) {
             throw new Exception(
-                'Formato de Excel inválido. No se detectaron las columnas requeridas: ' . implode(', ', $missing) .
-                '. Descarga y usa la plantilla base de Actualización de Cronograma.'
+                'Formato de Excel inválido. No se detectaron las columnas requeridas: ' . implode(', ', $missing)
+                . '. Descarga y usa la plantilla base de Actualización de Cronograma.',
             );
         }
 
@@ -719,7 +726,7 @@ class GeneralApiController extends BaseController
             $value = $value->getPlainText();
         }
 
-        $text = trim((string)$value);
+        $text = trim((string) $value);
         $text = preg_replace('/\x{00A0}/u', ' ', $text) ?? $text;
         $text = preg_replace('/\s+/', ' ', $text) ?? $text;
 
@@ -751,11 +758,11 @@ class GeneralApiController extends BaseController
         }
 
         if ($this->isExcelSerialCandidate($rawValue)) {
-            return $this->excelSerialToYmd((float)$rawValue, $rowNumber, $fieldName);
+            return $this->excelSerialToYmd((float) $rawValue, $rowNumber, $fieldName);
         }
 
         if ($this->isExcelSerialCandidate($rawText)) {
-            return $this->excelSerialToYmd((float)$rawText, $rowNumber, $fieldName);
+            return $this->excelSerialToYmd((float) $rawText, $rowNumber, $fieldName);
         }
 
         $primaryText = $rawText !== '' ? $rawText : $formattedText;
@@ -788,7 +795,7 @@ class GeneralApiController extends BaseController
             return '';
         }
 
-        $text = trim((string)$value);
+        $text = trim((string) $value);
         $text = preg_replace('/\x{00A0}/u', ' ', $text) ?? $text;
         return trim($text, " \t\n\r\0\x0B'\"");
     }
@@ -799,12 +806,12 @@ class GeneralApiController extends BaseController
             return false;
         }
 
-        $text = trim((string)$value);
+        $text = trim((string) $value);
         if ($text === '' || !preg_match('/^\d+(?:\.\d+)?$/', $text)) {
             return false;
         }
 
-        $serial = (float)$text;
+        $serial = (float) $text;
         return $serial > 0 && $serial < 100000;
     }
 
@@ -812,7 +819,7 @@ class GeneralApiController extends BaseController
     {
         try {
             $date = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($serial);
-            $year = (int)$date->format('Y');
+            $year = (int) $date->format('Y');
             if ($year < 1900 || $year > 2200) {
                 throw new Exception('Serial Excel fuera de rango.');
             }
@@ -834,18 +841,18 @@ class GeneralApiController extends BaseController
         $text = preg_replace('/\s+/', ' ', trim($text)) ?? trim($text);
 
         if (preg_match('/^(\d{4})[-\/]([0-9]{1,2})[-\/]([0-9]{1,2})(?:[ T].*)?$/', $text, $parts)) {
-            $year = (int)$parts[1];
-            $middle = (int)$parts[2];
-            $last = (int)$parts[3];
+            $year = (int) $parts[1];
+            $middle = (int) $parts[2];
+            $last = (int) $parts[3];
 
             return $this->buildYmd($year, $middle, $last)
                 ?? $this->buildYmd($year, $last, $middle);
         }
 
         if (preg_match('/^([0-9]{1,2})[-\/]([0-9]{1,2})[-\/](\d{4})(?:[ T].*)?$/', $text, $parts)) {
-            $first = (int)$parts[1];
-            $second = (int)$parts[2];
-            $year = (int)$parts[3];
+            $first = (int) $parts[1];
+            $second = (int) $parts[2];
+            $year = (int) $parts[3];
 
             return $this->buildYmd($year, $second, $first)
                 ?? $this->buildYmd($year, $first, $second);
@@ -875,7 +882,7 @@ class GeneralApiController extends BaseController
         try {
             $vars = $this->getSessionVars();
             $dbPrefix = $_GET['db'] ?? ($vars['dbName'] ?? '');
-            $semana = (int)($_GET['semana_objetivo'] ?? $_GET['semana'] ?? $_POST['semana_objetivo'] ?? $_POST['semana'] ?? ($vars['semana'] ?? 0));
+            $semana = (int) ($_GET['semana_objetivo'] ?? $_GET['semana'] ?? $_POST['semana_objetivo'] ?? $_POST['semana'] ?? ($vars['semana'] ?? 0));
 
             if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
                 throw new Exception("Base de datos inválida.");
@@ -884,7 +891,7 @@ class GeneralApiController extends BaseController
             // 1. Determinar la última semana activa oficialmente
             $stmtMax = $this->db->prepare("SELECT MAX(Semana) FROM {$dbPrefix}_semanas_activas");
             $stmtMax->execute();
-            $maxSemanaActiva = (int)$stmtMax->fetchColumn();
+            $maxSemanaActiva = (int) $stmtMax->fetchColumn();
 
             // 2. Si la semana que se quiere eliminar es superior a la activa, es un borrador (Draft)
             // Procedemos con el borrado físico para que el usuario pueda re-importar/mapear de cero
@@ -902,7 +909,7 @@ class GeneralApiController extends BaseController
 
             echo json_encode([
                 'respuesta' => 'BIEN',
-                'semana_activa' => $maxSemanaActiva
+                'semana_activa' => $maxSemanaActiva,
             ]);
 
         } catch (Exception $e) {
@@ -915,7 +922,7 @@ class GeneralApiController extends BaseController
      */
     private function formatTaskNameWithHierarchy(string $esquema, array $todoElExcel, int $colEsquema = 0, int $colActividad = 1): string
     {
-        $niveles = explode('.', (string)$esquema);
+        $niveles = explode('.', (string) $esquema);
         $contadorNiveles = count($niveles);
         $jerarquia = [];
         $esquemaParcial = '';
@@ -934,7 +941,7 @@ class GeneralApiController extends BaseController
         if ($nombrePrincipal === false) {
             $nombrePrincipal = 'Sin Nombre';
         }
-        
+
         // AIA 2026: Si el nombre principal ya contiene jerarquía (ej. exportado previo), evitamos duplicar
         if (strpos($nombrePrincipal, '[Capítulo:') !== false) {
             return "<b>" . htmlspecialchars($nombrePrincipal) . "</b>";
@@ -960,12 +967,12 @@ class GeneralApiController extends BaseController
         $results = $stmt->fetchAll();
         $mapped = [];
         foreach ($results as $row) {
-            $key = trim(strip_tags((string)$row['Actividad']));
-            
-            // Priorización AIA 2026: Si ya tenemos un registro con este nombre, 
+            $key = trim(strip_tags((string) $row['Actividad']));
+
+            // Priorización AIA 2026: Si ya tenemos un registro con este nombre,
             // solo lo reemplazamos si el nuevo registro tiene "más datos" o el actual está vacío.
             $hasData = (!empty($row['unidad']) && $row['unidad'] !== '%') || !empty($row['cantidad_ppto']) || !empty($row['Ejecutado']);
-            
+
             if (!isset($mapped[$key]) || ($hasData && empty($mapped[$key]['cantidad_ppto']))) {
                 $mapped[$key] = $row;
             }

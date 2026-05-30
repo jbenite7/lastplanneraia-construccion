@@ -1,13 +1,13 @@
 <?php
 $projectOptionsHtml = '';
 foreach (($projects ?? []) as $project) {
-    $projectId = (int)($project['Id'] ?? 0);
+    $projectId = (int) ($project['Id'] ?? 0);
     if ($projectId <= 0) {
         continue;
     }
 
-    $projectName = htmlspecialchars((string)($project['Proyecto_Proceso'] ?? 'Proyecto'));
-    $inactiveLabel = ((int)($project['Activo'] ?? 0) === 1) ? '' : ' (Inactivo)';
+    $projectName = htmlspecialchars((string) ($project['Proyecto_Proceso'] ?? 'Proyecto'));
+    $inactiveLabel = ((int) ($project['Activo'] ?? 0) === 1) ? '' : ' (Inactivo)';
     $projectOptionsHtml .= '<option value="' . $projectId . '">' . $projectName . $inactiveLabel . '</option>';
 }
 

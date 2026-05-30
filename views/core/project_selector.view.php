@@ -123,9 +123,10 @@
     <div class="content">
       <div class="container">
         
-        <?php if(isset($_SESSION['error'])): ?>
+        <?php if (isset($_SESSION['error'])): ?>
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <?php echo $_SESSION['error']; unset($_SESSION['error']); ?>
+                <?php echo $_SESSION['error'];
+            unset($_SESSION['error']); ?>
                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -133,7 +134,7 @@
         <?php endif; ?>
 
         <div class="row" id="projectGrid">
-            <?php foreach($proyectos as $proyecto): ?>
+            <?php foreach ($proyectos as $proyecto): ?>
             <div class="col-lg-4 col-md-6 mb-4 project-item" data-name="<?php echo strtolower($proyecto['Proyecto_Proceso']); ?>">
                 <div class="card project-card shadow-sm">
                     <div class="card-header-project d-flex justify-content-between align-items-center">
@@ -170,7 +171,7 @@
             </div>
             <?php endforeach; ?>
             
-            <?php if(empty($proyectos)): ?>
+            <?php if (empty($proyectos)): ?>
                 <div class="col-12 text-center py-5">
                     <img src="/img/empty_state.svg" alt="No projects" style="max-height: 150px; opacity: 0.5; margin-bottom: 20px;">
                     <h4 class="text-muted">No tienes proyectos asignados</h4>

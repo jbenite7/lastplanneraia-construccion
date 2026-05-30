@@ -34,13 +34,13 @@ if (!preg_match('/^[a-zA-Z0-9_]+$/', $db)) {
 try {
     $stmt = $dbInstance->query("SELECT COUNT(*) AS conteo FROM {$db}_semanas_activas");
     $data = $stmt->fetch();
-    $conteo = (int)($data["conteo"] ?? 0);
+    $conteo = (int) ($data["conteo"] ?? 0);
 
     $semanalConfirmada = 0;
     if ($conteo > 0) {
         $stmtVerif = $dbInstance->query("SELECT Semanal_Confirmada FROM {$db}_semanas_activas WHERE Semana = ?", [$conteo]);
         $dataVerif = $stmtVerif->fetch();
-        $semanalConfirmada = (int)($dataVerif["Semanal_Confirmada"] ?? 0);
+        $semanalConfirmada = (int) ($dataVerif["Semanal_Confirmada"] ?? 0);
     }
 
     if ($conteo > 0 && $semanalConfirmada == 0 && !$esAdmin) {
@@ -57,7 +57,7 @@ try {
         if ($conteo == 0) {
             // Validar que el Programa Maestro tenga actividades antes de copiar
             $stmtPrograma = $dbInstance->query("SELECT COUNT(*) AS c FROM {$db}_programa");
-            if ((int)$stmtPrograma->fetch()['c'] === 0) {
+            if ((int) $stmtPrograma->fetch()['c'] === 0) {
                 // Rollback: eliminar la semana recién creada
                 $dbInstance->query("DELETE FROM {$db}_semanas_activas WHERE Semana = ?", [$semana_crear]);
                 echo json_encode(["respuesta" => "ERROR", "mensaje" => "No hay actividades en el Programa Maestro. Cargue el programa antes de crear la primera semana."]);
@@ -75,7 +75,7 @@ try {
         } else {
             $stmtMax = $dbInstance->query("SELECT MAX(Semana) AS max_semana FROM {$db}_programa_consolidado");
             $dataMax = $stmtMax->fetch();
-            $maxSemanaProgramaConsolidado = (int)($dataMax["max_semana"] ?? $conteo);
+            $maxSemanaProgramaConsolidado = (int) ($dataMax["max_semana"] ?? $conteo);
 
             // Limpiar datos huérfanos si hay semanas superiores a la esperada
             if ($maxSemanaProgramaConsolidado > $semana_crear) {

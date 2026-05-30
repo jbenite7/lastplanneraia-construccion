@@ -3,7 +3,7 @@
 <head id="head">
 	<!--Script cque va al archivo linksComunesHead2.js-->
 	<!--Script cque va al archivo linksComunesHead2.js-->
-	<script type="text/javascript" src="/js/linksComunesHead2.js?v=20260325a" charset="utf-8"></script>
+	<script type="text/javascript" src="/js/linksComunesHead2.js?v=piStateColors3" charset="utf-8"></script>
     <style>
         .filaBotones, .ps-actions-row {
             overflow: visible !important;
@@ -178,8 +178,8 @@
 
 	<div class="row ventanasModalesEspecificas" id="ventanasModalesEspecificas">
 		<!-- Se crea el Modal que solicita la confirmación de eliminar un registro o no -->
-		<div class="modal fade" id="modalReprogramar" tabindex="-1" role="dialog" aria-labelledby="modalReprogramarLabel">
-		  <div class="modal-dialog" role="document">
+		<div class="modal fade aia-modal" id="modalReprogramar" tabindex="-1" role="dialog" aria-labelledby="modalReprogramarLabel">
+		  <div class="modal-dialog modal-dialog-centered" role="document">
 		    <div class="modal-content">
 		      <div class="modal-header">
 		        <h4 class="modal-title" id="modalReprogramarLabel">Reprogramar Actividad</h4>
@@ -472,21 +472,21 @@
 					var opcion = $("#opcion").val("modificar");
 
 					var Responsable_AIA = <?php
-					        $dbInstance = Database::getInstance();
-					$db = $_SESSION["db"];
-					$query = "SELECT * FROM {$db}_profesionales WHERE Activo=1";
-					try {
-					    $stmt = $dbInstance->query($query);
-					    $Responsable_AIA = "";
-					    while ($valores = $stmt->fetch(PDO::FETCH_ASSOC)) {
-					        $valor = $valores["nombre"];
-					        $Responsable_AIA .= "<option value='$valor'>$valor</option>";
-					    };
-					    echo '"' . $Responsable_AIA . '"';
-					} catch (PDOException $e) {
-					    echo '""';
-					}
-					?> ;
+                            $dbInstance = Database::getInstance();
+    $db = $_SESSION["db"];
+    $query = "SELECT * FROM {$db}_profesionales WHERE Activo=1";
+    try {
+        $stmt = $dbInstance->query($query);
+        $Responsable_AIA = "";
+        while ($valores = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $valor = $valores["nombre"];
+            $Responsable_AIA .= "<option value='$valor'>$valor</option>";
+        };
+        echo '"' . $Responsable_AIA . '"';
+    } catch (PDOException $e) {
+        echo '""';
+    }
+    ?> ;
 					var codigo_html_Responsable_AIA = "<select id='select_Responsable_AIA' name='Responsable_AIA' class='form-control form-control-sm' ><option value=''></option>" + Responsable_AIA + "</select>";
 					$(this).parent().find('.input_Responsable_AIA').html(codigo_html_Responsable_AIA);
 					var codigo_html_Categoria_CNC = "<select id='select_Categoria_CNC' name='Categoria_CNC' class='form-control form-control-sm'><option value='' selected></option><option value='Rendimiento'>Rendimiento</option><option value='Programación'>Programación</option><option value='Mano de Obra'>Mano de Obra</option><option value='Materiales'>Materiales</option><option value='Equipos'>Equipos</option><option value='Diseños'>Diseños</option><option value='Administrativas'>Administrativas</option><option value='Causas Exógenas'>Causas Exógenas</option></select>";

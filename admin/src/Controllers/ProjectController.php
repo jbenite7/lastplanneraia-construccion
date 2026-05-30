@@ -161,7 +161,7 @@ class ProjectController extends AdminController
                         // Sincronización con el servicio de profesionales (puede fallar en algunos proyectos)
                         try {
                             (new ProjectProfessionalsSyncService(\Database::getInstance()))
-                                ->blockProfessionalByEmail((string)$project['Base_de_Datos'], (string)$user['email']);
+                                ->blockProfessionalByEmail((string) $project['Base_de_Datos'], (string) $user['email']);
                         } catch (\Throwable $syncError) {
                             error_log("Error de sincronización al quitar miembro: " . $syncError->getMessage());
                         }
@@ -422,7 +422,7 @@ class ProjectController extends AdminController
 
         $id = $_POST['id'] ?? null;
         $field = $_POST['field'] ?? 'Activo';
-        $value = isset($_POST['value']) ? (int)$_POST['value'] : null;
+        $value = isset($_POST['value']) ? (int) $_POST['value'] : null;
 
         if ($id === null || $value === null) {
             echo json_encode(['success' => false, 'message' => 'Parámetros insuficientes']);

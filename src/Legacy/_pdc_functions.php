@@ -70,13 +70,13 @@ function pdc_crearSubcontratosDuplicados($db, $dbName, $semana)
 
     foreach ($items as $data) {
         $consecutivo = $data["consecutivo"];
-        $numeroSubcontratos = (int)$data["numeroSubcontratos"];
+        $numeroSubcontratos = (int) $data["numeroSubcontratos"];
         $paqueteContratacion = $data["paqueteContratacion"];
 
         $stmtInfo = $db->query("SELECT COUNT(*) as conteo, MAX(subcontratoPaquete) as maxSub FROM {$dbName}_pdc WHERE semana = ? AND titulo = 0 AND paqueteContratacion = ?", [$semana, $paqueteContratacion]);
         $info = $stmtInfo->fetch();
-        $conteoActual = (int)$info["conteo"];
-        $maxSub = (int)$info["maxSub"];
+        $conteoActual = (int) $info["conteo"];
+        $maxSub = (int) $info["maxSub"];
 
         if ($conteoActual < $numeroSubcontratos) {
             for ($i = $conteoActual + 1; $i <= $numeroSubcontratos; $i++) {
@@ -110,14 +110,14 @@ function pdc_generarEstadoProceso($db, $dbName, $semana)
         $consecutivo = $data["consecutivo"];
 
         $duraciones = [
-            'elaboracion' => (int)$data["diasElaboracionPliegos"],
-            'licify' => (int)$data["diasIngresoLicify"],
-            'entrega' => (int)$data["diasEntregaPliegos"],
-            'recibo' => (int)$data["diasReciboPropuestas"],
-            'cuadros' => (int)$data["diasCuadrosComparativos"],
-            'legalizacion' => (int)$data["diasLegalizacionContrato"],
-            'fabricacion' => (int)$data["diasFabricacion"],
-            'insumos' => (int)$data["diasInsumosObra"],
+            'elaboracion' => (int) $data["diasElaboracionPliegos"],
+            'licify' => (int) $data["diasIngresoLicify"],
+            'entrega' => (int) $data["diasEntregaPliegos"],
+            'recibo' => (int) $data["diasReciboPropuestas"],
+            'cuadros' => (int) $data["diasCuadrosComparativos"],
+            'legalizacion' => (int) $data["diasLegalizacionContrato"],
+            'fabricacion' => (int) $data["diasFabricacion"],
+            'insumos' => (int) $data["diasInsumosObra"],
         ];
 
         $totalDias = array_sum($duraciones);
@@ -128,7 +128,7 @@ function pdc_generarEstadoProceso($db, $dbName, $semana)
             'fechaEntregaPliegos'     => date('Y-m-d', strtotime("$fechaInicio - " . ($totalDias - $duraciones['elaboracion'] - $duraciones['licify']) . " days")),
             'fechaReciboPropuestas'    => date('Y-m-d', strtotime("$fechaInicio - " . ($totalDias - $duraciones['elaboracion'] - $duraciones['licify'] - $duraciones['entrega']) . " days")),
             'fechaCuadrosComparativos' => date('Y-m-d', strtotime("$fechaInicio - " . ($duraciones['cuadros'] + $duraciones['legalizacion'] + $duraciones['fabricacion'] + $duraciones['insumos']) . " days")),
-            'fechaLegalizacionContrato'=> date('Y-m-d', strtotime("$fechaInicio - " . ($duraciones['legalizacion'] + $duraciones['fabricacion'] + $duraciones['insumos']) . " days")),
+            'fechaLegalizacionContrato' => date('Y-m-d', strtotime("$fechaInicio - " . ($duraciones['legalizacion'] + $duraciones['fabricacion'] + $duraciones['insumos']) . " days")),
             'fechaFabricacion'        => date('Y-m-d', strtotime("$fechaInicio - " . ($duraciones['fabricacion'] + $duraciones['insumos']) . " days")),
             'fechaInsumosObra'        => date('Y-m-d', strtotime("$fechaInicio - " . $duraciones['insumos'] . " days")),
         ];

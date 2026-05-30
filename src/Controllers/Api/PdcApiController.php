@@ -24,7 +24,7 @@ class PdcApiController
     // ─── LIST ───────────────────────────────────────────────────────────
     public function list(): void
     {
-        $definirContratos = (int)($_GET['definirContratos'] ?? 0);
+        $definirContratos = (int) ($_GET['definirContratos'] ?? 0);
 
         $condicionContratos = ($definirContratos == 1)
             ? "AND numeroSubcontratos IS NOT NULL AND titulo = 0 "
@@ -39,9 +39,9 @@ class PdcApiController
 
             $stmt = $this->db->query(
                 "SELECT COUNT(*) AS conteo FROM {$dbPrefix}_pdc WHERE semana = ? $condicionContratos",
-                [$semana]
+                [$semana],
             );
-            $conteo = (int)($stmt->fetch()["conteo"] ?? 0);
+            $conteo = (int) ($stmt->fetch()["conteo"] ?? 0);
 
             if ($conteo == 0) {
                 $arreglo["data"][] = [
@@ -67,13 +67,13 @@ class PdcApiController
             $stmt1 = $this->db->query(
                 "SELECT * FROM {$dbPrefix}_pdc WHERE semana = ? $condicionContratos 
                  ORDER BY tipoPaquete DESC, titulo DESC, fechaElaboracionPliegos ASC, subcontratoPaquete ASC",
-                [$semana]
+                [$semana],
             );
             $resultados = $stmt1->fetchAll();
 
             $stmtFecha = $this->db->query(
                 "SELECT Fecha_Inicio_Sem FROM {$dbPrefix}_semanas_activas WHERE Semana = ?",
-                [$semana]
+                [$semana],
             );
             $dataFecha = $stmtFecha->fetch();
             $semanaSem = $dataFecha["Fecha_Inicio_Sem"] ?? date('Y-m-d');
@@ -92,20 +92,20 @@ class PdcApiController
                 }
                 if ($data["titulo"] == 0) {
                     $data["procesoIniciado"] = (
-                        is_null($data["fechaRealElaboracionPliegos"]) && is_null($data["fechaRealIngresoLicify"]) &&
-                        is_null($data["fechaRealEntregaPliegos"]) && is_null($data["fechaRealReciboPropuestas"]) &&
-                        is_null($data["fechaRealCuadrosComparativos"]) && is_null($data["fechaRealLegalizacionContrato"]) &&
-                        is_null($data["fechaRealFabricacion"]) && is_null($data["fechaRealInsumosObra"]) &&
-                        is_null($data["fechaRealInicio"])
+                        is_null($data["fechaRealElaboracionPliegos"]) && is_null($data["fechaRealIngresoLicify"])
+                        && is_null($data["fechaRealEntregaPliegos"]) && is_null($data["fechaRealReciboPropuestas"])
+                        && is_null($data["fechaRealCuadrosComparativos"]) && is_null($data["fechaRealLegalizacionContrato"])
+                        && is_null($data["fechaRealFabricacion"]) && is_null($data["fechaRealInsumosObra"])
+                        && is_null($data["fechaRealInicio"])
                     ) ? 0 : 1;
 
                     $camposDias = ["diasElaboracionPliegos", "diasIngresoLicify", "diasEntregaPliegos",
-                                   "diasReciboPropuestas", "diasCuadrosComparativos", "diasLegalizacionContrato",
-                                   "diasFabricacion", "diasInsumosObra"];
+                        "diasReciboPropuestas", "diasCuadrosComparativos", "diasLegalizacionContrato",
+                        "diasFabricacion", "diasInsumosObra"];
 
                     $todosEnUno = true;
                     foreach ($camposDias as $campo) {
-                        if ((int)($data[$campo] ?? 1) !== 1) {
+                        if ((int) ($data[$campo] ?? 1) !== 1) {
                             $todosEnUno = false;
                             break;
                         }
@@ -119,9 +119,9 @@ class PdcApiController
                     }
 
                     $data["listoParaIniciar"] = (
-                        !empty($data['fechaRealInsumosObra']) &&
-                        !empty($data['fechaInicio']) &&
-                        $data['fechaRealInsumosObra'] <= $data['fechaInicio']
+                        !empty($data['fechaRealInsumosObra'])
+                        && !empty($data['fechaInicio'])
+                        && $data['fechaRealInsumosObra'] <= $data['fechaInicio']
                     ) ? 1 : 0;
 
                     $deltaInfo = $this->calcularDiasDelta($data, $semanaSem);
@@ -263,9 +263,9 @@ class PdcApiController
         $estado = "Proceso de contratación no iniciado";
 
         $campos = ['fechaElaboracionPliegos','diasElaboracionPliegos','fechaIngresoLicify','diasIngresoLicify',
-                    'fechaEntregaPliegos','diasEntregaPliegos','fechaReciboPropuestas','diasReciboPropuestas',
-                    'fechaCuadrosComparativos','diasCuadrosComparativos','fechaLegalizacionContrato','diasLegalizacionContrato',
-                    'fechaFabricacion','diasFabricacion','fechaInsumosObra','diasInsumosObra','fechaInicio'];
+            'fechaEntregaPliegos','diasEntregaPliegos','fechaReciboPropuestas','diasReciboPropuestas',
+            'fechaCuadrosComparativos','diasCuadrosComparativos','fechaLegalizacionContrato','diasLegalizacionContrato',
+            'fechaFabricacion','diasFabricacion','fechaInsumosObra','diasInsumosObra','fechaInicio'];
 
         $vals = array_map(fn($c) => $this->checkNull($_POST[$c] ?? ''), $campos);
 
@@ -286,8 +286,8 @@ class PdcApiController
     {
         $id = $_POST['id'];
         $fields = ['idProveedorAdjudicado','numeroContrato','fechaVencimientoPolizas','valorPresupuesto',
-                    'valorPrimeraNegociacion','valorAdjudicado','valorAnticipo','valorReclamado',
-                    'valorDevoluciones','observacionesContrato'];
+            'valorPrimeraNegociacion','valorAdjudicado','valorAnticipo','valorReclamado',
+            'valorDevoluciones','observacionesContrato'];
         $vals = array_map(fn($c) => $this->checkNull($_POST[$c] ?? ''), $fields);
 
         $sql = "UPDATE {$p}_pdc SET 
@@ -317,13 +317,24 @@ class PdcApiController
         $vDev  = $cleanCurrency('valorDevoluciones');
 
         $cn = fn($k) => $this->checkNull($_POST[$k] ?? '');
-        $dEl=$cn('diasElaboracionPliegos'); $dIL=$cn('diasIngresoLicify'); $dEP=$cn('diasEntregaPliegos');
-        $dRP=$cn('diasReciboPropuestas'); $dCC=$cn('diasCuadrosComparativos'); $dLC=$cn('diasLegalizacionContrato');
-        $dF=$cn('diasFabricacion'); $dIO=$cn('diasInsumosObra');
+        $dEl = $cn('diasElaboracionPliegos');
+        $dIL = $cn('diasIngresoLicify');
+        $dEP = $cn('diasEntregaPliegos');
+        $dRP = $cn('diasReciboPropuestas');
+        $dCC = $cn('diasCuadrosComparativos');
+        $dLC = $cn('diasLegalizacionContrato');
+        $dF = $cn('diasFabricacion');
+        $dIO = $cn('diasInsumosObra');
 
-        $fREl=$cn('fechaRealElaboracionPliegos'); $fRIL=$cn('fechaRealIngresoLicify'); $fREP=$cn('fechaRealEntregaPliegos');
-        $fRRP=$cn('fechaRealReciboPropuestas'); $fRCC=$cn('fechaRealCuadrosComparativos'); $fRLC=$cn('fechaRealLegalizacionContrato');
-        $fRF=$cn('fechaRealFabricacion'); $fRIO=$cn('fechaRealInsumosObra'); $fRIn=$cn('fechaRealInicioProyectadaContrato');
+        $fREl = $cn('fechaRealElaboracionPliegos');
+        $fRIL = $cn('fechaRealIngresoLicify');
+        $fREP = $cn('fechaRealEntregaPliegos');
+        $fRRP = $cn('fechaRealReciboPropuestas');
+        $fRCC = $cn('fechaRealCuadrosComparativos');
+        $fRLC = $cn('fechaRealLegalizacionContrato');
+        $fRF = $cn('fechaRealFabricacion');
+        $fRIO = $cn('fechaRealInsumosObra');
+        $fRIn = $cn('fechaRealInicioProyectadaContrato');
 
         $obs = $cn('observacionesContrato');
         $est = $_POST['estadoProceso'] ?? '';
@@ -367,7 +378,7 @@ class PdcApiController
 
     private function adjudicarContrato(string $p): void
     {
-        $idProv = (int)($_POST['idProveedorAdjudicado'] ?? 0);
+        $idProv = (int) ($_POST['idProveedorAdjudicado'] ?? 0);
         $proveedor = $this->sanitizarProveedorPdc([
             'subcontratista' => $_POST['Subcontratista'] ?? '',
             'correo_contacto' => $_POST['email'] ?? '',
@@ -386,7 +397,8 @@ class PdcApiController
             $stmtOld = $this->db->query("SELECT subcontratista FROM {$p}_subcontratistas WHERE id=?", [$idProv]);
             $oldName = ($stmtOld->fetch())['subcontratista'] ?? '';
 
-            $this->db->query("UPDATE {$p}_subcontratistas SET subcontratista=?, correo_contacto=?, NIT=?, alcance=?, tipo_proveedor=? WHERE id=?",
+            $this->db->query(
+                "UPDATE {$p}_subcontratistas SET subcontratista=?, correo_contacto=?, NIT=?, alcance=?, tipo_proveedor=? WHERE id=?",
                 [
                     $proveedor['subcontratista'],
                     $proveedor['correo_contacto'],
@@ -394,7 +406,8 @@ class PdcApiController
                     $proveedor['alcance'],
                     $proveedor['tipo_proveedor'],
                     $idProv,
-                ]);
+                ],
+            );
 
             if ($oldName && $this->normalizarTextoPdc($oldName) !== $this->normalizarTextoPdc($proveedor['subcontratista'])) {
                 $tables = [
@@ -409,14 +422,16 @@ class PdcApiController
             }
             $this->json(["respuesta" => "BIEN", "idProveedor" => $idProv]);
         } else {
-            $this->db->query("INSERT INTO {$p}_subcontratistas (subcontratista, correo_contacto, NIT, alcance, tipo_proveedor) VALUES (?,?,?,?,?)",
+            $this->db->query(
+                "INSERT INTO {$p}_subcontratistas (subcontratista, correo_contacto, NIT, alcance, tipo_proveedor) VALUES (?,?,?,?,?)",
                 [
                     $proveedor['subcontratista'],
                     $proveedor['correo_contacto'],
                     $proveedor['NIT'],
                     $proveedor['alcance'],
                     $proveedor['tipo_proveedor'],
-                ]);
+                ],
+            );
             $this->json(["respuesta" => "BIEN", "idProveedor" => $this->db->lastInsertId()]);
         }
     }
@@ -438,12 +453,19 @@ class PdcApiController
     private function recalcularProcesoContratacion(): void
     {
         $fechaInicio = $_POST['fechaInicioContrato'] ?? '';
-        if (!$fechaInicio) { $this->json(["data" => [[]]]); return; }
+        if (!$fechaInicio) {
+            $this->json(["data" => [[]]]);
+            return;
+        }
 
-        $dIO=(int)($_POST['diasInsumosObra']??0); $dF=(int)($_POST['diasFabricacion']??0);
-        $dLC=(int)($_POST['diasLegalizacionContrato']??0); $dCC=(int)($_POST['diasCuadrosComparativos']??0);
-        $dRP=(int)($_POST['diasReciboPropuestas']??0); $dEP=(int)($_POST['diasEntregaPliegos']??0);
-        $dIL=(int)($_POST['diasIngresoLicify']??0); $dEl=(int)($_POST['diasElaboracionPliegos']??0);
+        $dIO = (int) ($_POST['diasInsumosObra'] ?? 0);
+        $dF = (int) ($_POST['diasFabricacion'] ?? 0);
+        $dLC = (int) ($_POST['diasLegalizacionContrato'] ?? 0);
+        $dCC = (int) ($_POST['diasCuadrosComparativos'] ?? 0);
+        $dRP = (int) ($_POST['diasReciboPropuestas'] ?? 0);
+        $dEP = (int) ($_POST['diasEntregaPliegos'] ?? 0);
+        $dIL = (int) ($_POST['diasIngresoLicify'] ?? 0);
+        $dEl = (int) ($_POST['diasElaboracionPliegos'] ?? 0);
 
         $fIO = date('Y-m-d', strtotime("$fechaInicio - $dIO days"));
         $fF  = date('Y-m-d', strtotime("$fIO - $dF days"));
@@ -566,7 +588,7 @@ class PdcApiController
 
     private function limpiarTextoPdc($valor): string
     {
-        return preg_replace('/\s+/u', ' ', trim((string)$valor)) ?? '';
+        return preg_replace('/\s+/u', ' ', trim((string) $valor)) ?? '';
     }
 
     private function normalizarTextoPdc($valor): string
@@ -578,13 +600,13 @@ class PdcApiController
 
     private function normalizarEmailPdc($valor): string
     {
-        $email = trim((string)$valor);
+        $email = trim((string) $valor);
         return function_exists('mb_strtolower') ? mb_strtolower($email, 'UTF-8') : strtolower($email);
     }
 
     private function normalizarNitPdc($valor): string
     {
-        $nit = trim((string)$valor);
+        $nit = trim((string) $valor);
         return preg_replace('/[^a-zA-Z0-9]/', '', $nit) ?? '';
     }
 
@@ -627,14 +649,14 @@ class PdcApiController
         $fechaActual = date('Y-m-d');
 
         $duraciones = [
-            (int)($data['diasElaboracionPliegos'] ?? 0),
-            (int)($data['diasIngresoLicify'] ?? 0),
-            (int)($data['diasEntregaPliegos'] ?? 0),
-            (int)($data['diasReciboPropuestas'] ?? 0),
-            (int)($data['diasCuadrosComparativos'] ?? 0),
-            (int)($data['diasLegalizacionContrato'] ?? 0),
-            (int)($data['diasFabricacion'] ?? 0),
-            (int)($data['diasInsumosObra'] ?? 0),
+            (int) ($data['diasElaboracionPliegos'] ?? 0),
+            (int) ($data['diasIngresoLicify'] ?? 0),
+            (int) ($data['diasEntregaPliegos'] ?? 0),
+            (int) ($data['diasReciboPropuestas'] ?? 0),
+            (int) ($data['diasCuadrosComparativos'] ?? 0),
+            (int) ($data['diasLegalizacionContrato'] ?? 0),
+            (int) ($data['diasFabricacion'] ?? 0),
+            (int) ($data['diasInsumosObra'] ?? 0),
         ];
 
         $fechaRealFields = [

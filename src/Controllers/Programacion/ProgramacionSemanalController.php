@@ -13,7 +13,7 @@ class ProgramacionSemanalController extends BaseController
         $this->healWeeklyContext();
 
         $dbName = $_SESSION['db'] ?? '';
-        $semana = (int)($_SESSION['semana'] ?? 0);
+        $semana = (int) ($_SESSION['semana'] ?? 0);
         $proyecto = $_SESSION['proyecto'] ?? '';
         $nombreUsuario = $_SESSION['nombreUsuario'] ?? '';
         $permiso = $_SESSION['permiso'] ?? ''; // Requerido para lógica de permisos en vistas
@@ -50,7 +50,7 @@ class ProgramacionSemanalController extends BaseController
         $this->healWeeklyContext();
 
         $dbName = $_SESSION['db'] ?? '';
-        $semana = (int)($_SESSION['semana'] ?? 0);
+        $semana = (int) ($_SESSION['semana'] ?? 0);
         $proyecto = $_SESSION['proyecto'] ?? '';
         $nombreUsuario = $_SESSION['nombreUsuario'] ?? '';
 
@@ -63,7 +63,7 @@ class ProgramacionSemanalController extends BaseController
         $this->healWeeklyContext();
 
         $dbName = $_SESSION['db'] ?? '';
-        $semana = (int)($_SESSION['semana'] ?? 0);
+        $semana = (int) ($_SESSION['semana'] ?? 0);
         $proyecto = $_SESSION['proyecto'] ?? '';
         $nombreUsuario = $_SESSION['nombreUsuario'] ?? '';
 
@@ -76,7 +76,7 @@ class ProgramacionSemanalController extends BaseController
         $this->healWeeklyContext();
 
         $dbName = $_SESSION['db'] ?? '';
-        $semana = (int)($_SESSION['semana'] ?? 0);
+        $semana = (int) ($_SESSION['semana'] ?? 0);
         $proyecto = $_SESSION['proyecto'] ?? '';
         $nombreUsuario = $_SESSION['nombreUsuario'] ?? '';
 

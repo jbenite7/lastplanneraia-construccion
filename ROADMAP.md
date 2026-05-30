@@ -88,6 +88,17 @@ gantt
 - [x] **Parche RBAC Producción G/S/SG (2026-05-27):** Creado `database/patches/20260527_rbac_g_s_sg_lps_read_permissions.sql` para conceder lectura explícita de Programa General, Programación Intermedia y Programación Semanal a roles Ambiental, SST y SST + Ambiental tras las validaciones server-side locales.
 - [x] **Fix Importación Inicial de Cronograma (2026-05-28):** El importador de `/api/general/import` detecta columnas por encabezado real de la plantilla, conserva el esquema `0` en cargas iniciales y muestra errores de importación en la UI sin depender de consola.
 - [x] **Fix Arranque Async Consolidación Reportes (2026-05-28):** El panel admin resuelve de forma robusta el binario PHP CLI y la ruta real de `admin/async/consolidate.php`, conserva logs en `admin/logs/consolidation_async.log`, amplía el umbral de `stale` para reportes largos y blinda reportes PDC/CIC ante datos vacíos o calificaciones integrales nulas, evitando falsos estados de conexión perdida.
+- [x] **Fix de Coloreado y Edición Inmune a Filtros Nativos HOT (2026-05-30):** Se erradicaron todas las llamadas residuales e inestables de `getSourceDataAtRow` a lo largo de los cuatro módulos Handsontable (PI, PG, PS, Actualizar) y en el panel lateral de restricciones (`lps_drawer.js`). Se reemplazaron por lecturas físicas directas del array de origen nativo en memoria (`instance.getSourceData()[physicalRow]`), haciendo al coloreado y la edición 100% inmunes a los filtros del plugin de columnas de Handsontable 14. Validación Playwright completada con éxito rotundo (16/16 pruebas superadas sin fallos).
+- [x] **Rediseño Responsivo en Caja Flexible (Flex-Wrap) de Leyendas PG/PI/PS (2026-05-30):** Consolidación visual transversal absoluta. Se eliminaron el CSS Grid y los estiramientos horizontales que deformaban las píldoras de color y desbarataban las barras de herramientas. Se migró a un layout unificado de caja flexible (`display: flex`, `flex-wrap: wrap`, `justify-content: flex-start`) con chips de ancho idéntico compacto (`155px`), misma altura (`32px`), tipografía homologada (`0.72rem`) y paddings simétricos. En móviles, se autoalinean en una cuadrícula simétrica de 2 columnas de ancho idéntico (`calc(50% - 8px)`). Validación de Playwright con éxito en Escritorio, Tablet y Móvil.
+- [x] **Aislamiento de Logs por Corrida Única en Autoprogramar (2026-05-30)**: Se limitó la visibilidad de logs en el modal "Actividades Auto-gestionadas" y en el badge a los cambios ejecutados exclusivamente en la última corrida de la función. Se implementó una arquitectura de batching temporal con marcas de control en la tabla `_auto_program_log`, logrando un aislamiento determinista y retrocompatible validado con Caso 5 exitoso.
+- [x] **Inmunidad de Actividades Reprogramadas en Autoprogramar (2026-05-29)**: Se corrigió el bug de desprogramación automática en Programación Semanal. Se otorgó inmunidad en `ProgramChangeDetector.php` para que actividades futuras reprogramadas voluntariamente (`estaActiva = true`) mantengan su estado activo, y se ajustó `$eligibleSubSql` en `autoprogramar()` y `sanear()` de `SemanalApiController.php` para evitar que la limpieza física elimine actividades viables no terminadas del consolidado. Suite de pruebas con Caso 4 validada con 100% de éxito en Docker.
+- [x] **Unificación de Modales `.aia-modal` Verde AIA (2026-05-29):** Estandarización visual de modales Bootstrap visibles con header Verde AIA, body Linen, footer Alabaster, `modal-dialog-centered`, corrección de IDs duplicados reales en modales críticos y prueba Playwright no destructiva `tests/browser/modal-brand.mjs` validada en viewport móvil 375px. Validación final: `modal-brand.mjs` 59/59, `change-monitor.mjs` 30/30 y `filter-persistence.mjs` 16/16 sin fallos. Auditoría visual: 144 capturas desktop/móvil generadas en `test-output/modal-screenshots/`.
+- [x] **Fix Monitor de Cambios PG/PI -> PS (2026-05-29):** Corrección del flujo de confirmación de acciones para usar promesas de `AIA.Notice.confirm`, envío de `db`/`semana` al endpoint `/api/semanal/apply-changes`, recarga segura de Programación Semanal tras aplicar cambios y rediseño responsive del modal con selección visible, filtros activos y confirmación clara.
+- [x] **Estabilización de Autoprogramación en Cascada PG → PI → PS (2026-05-29):** Corrección quirúrgica del cálculo en `ProgramChangeDetector.php:resolvePaso3` para descomprometer de forma incondicional actividades finalizadas (estado "Terminada") y aquellas con restricciones rotas sin compromiso manual en PS. Validación integral determinista ejecutada mediante suite Playwright `tests/browser/auto-program.mjs` con 100% de éxito (23/23 validaciones exitosas). Generación de capturas de pantalla de evidencia y reporte detallado en `test-output-auto-program/REPORTE-AUTO-PROGRAM.md`.
+- [x] **Fix Priorización de Ejecución Real sobre Restricciones en PS (2026-05-29):** Corrección del bug en el backend (`ProgramChangeDetector.php`) para respetar la regla que prioriza el avance ejecutado físico real (`Ejecutado > 0.001` en PG) sobre la verificación de restricciones en la programación semanal activa. Esto evita que actividades ya en curso sean desprogramadas (`Activa = 0`) o reciban CNC/CNP por preparativos pendientes, permitiendo su continuidad operativa y alineando la lógica PHP con la elegibilidad del frontend.
+- [x] **Gobernanza de Decisiones de Usuario en Autoprogramación PS (2026-05-29):** Endurecimiento del motor de auto-programación semanal (`ProgramChangeDetector.php`) para respetar la soberanía del usuario: (1) Se omiten completamente modificaciones en actividades manuales (`Activa = 'NA'`), (2) se bloquean reactivaciones automáticas sobre actividades desprogramadas voluntariamente por el usuario (`Activa = '0'`) con Causas de No Programación (CNP) propias, y (3) se garantiza la inmunidad ante el saneamiento para actividades reprogramadas manualmente a activa (`Activa = '1'`) por el usuario a pesar de tener restricciones rotas, evitando bucles infinitos de sobreescritura silenciosa en el backend.
+- [x] **Fix Renderizado de Actividades en Modal Auto-gestionadas (2026-05-29):** Corrección visual del modal de registro de auto-programación semanal en `changeMonitor.js` cambiando el método `.text()` por **`.html()`** al inyectar el nombre de la actividad. Esto resuelve la anomalía de renderizado en la que las etiquetas HTML de capítulo (`<b>`, `<small>`) aparecían como texto plano escapado, asegurando la consistencia estética con el resto de la plataforma y validando 13/16 smoke tests de Playwright exitosamente.
+- [x] **Fix Carga de Contratistas en Módulo CIC (2026-05-29):** Se refactorizó la generación de registros en la tabla de calificaciones del proyecto (`generateMissingSubs`) para evitar campos `NULL` en `tipo_proveedor`, `correo_contacto`, `NIT` y `alcance`. Se incorporó auto-curación y mapeo para `'AIA (MO Directa)'` como `'Mano de Obra'`, solucionando la omisión de contratistas en el listado SQL.
 - [x] **Fix Selección Visible PI (2026-05-27):** El botón `Seleccionar visibles` y el modal de restricción compartida ahora toman los índices visuales actuales de Handsontable, respetando filtros nativos de columna y evitando marcar todo el dataset cargado.
 - [x] **Fix Edición PI con Filtros Activos (2026-05-27):** Eliminado `applyFiltersAndRender()` del guardado individual. Tras editar una celda ya no se recarga toda la tabla, evitando que se guarde en actividad incorrecta (stale visualRow) y preservando todos los filtros nativos activos. El `estado_operativo` y los contadores de leyenda se actualizan inline.
 - [x] **Redefinición % Liberación como Promedio de 7 Restricciones (2026-05-27):** `Estado_Restricciones` ahora promedia las 7 restricciones (D_y_E, Materiales, MdeO, Equipos, Predecesora, Pdto_Cons, Modelo) excluyendo N/A, en vez de solo las 5 duras. Se actualizaron `calculateRestrictionStateRatio` (PI hot.js), `calculateRestrictionState` (PHP Controller), `guardar_programacion_intermedia.php`, `modificar_sem_estado.php` y `modificar_sem_estado_actualizar.php`. El estado operativo `Listo para comprometer` y alertas de restricciones en PG/PS siguen usando compuertas duras individuales (no el promedio). Se agregó `areHardRestrictionsMet()` en PI hot.js, PG hot.js y PG main.js para mantener la lógica de habilitación binaria basada en umbrales individuales. LPS drawer ya no usa `Estado_Restricciones` como fallback de ITR. Cache-buster: `hot37→hot38`, `lps_drawer.js→20260522d`.
@@ -207,6 +218,11 @@ gantt
 
 </details>
 
+- [x] **Optimización del Cargador de Head y Localización de CDNs (2026-05-30) (Fase GOAL) ✅:**
+    - Localización masiva de 15+ dependencias de CDNs externos (FontAwesome v5.11.2, Bootstrap v4.3.1, DataTables v1.11.4, AnyChart v8, Select2, SweetAlert2, Toastr, jQuery y jQuery UI) en `/public/vendor/` servidos localmente a **0ms** reales de red.
+    - Mitigación del comportamiento destructivo de `head.innerHTML = staticContent` en `linksComunesHead2.js` mediante la implementación de inyecciones secuenciales dinámicas no intrusivas con `document.createElement` y validación de existencia previa para preservar la caché del navegador.
+    - Reducción del tiempo de renderizado de la grilla de Handsontable (HoT Render) de **~6.4 segundos a 15 ms** en frío, eliminando el bloqueo acumulativo de conexiones externas.
+    - Validación del 100% de la suite de telemetría de red con Playwright (`diagnose-cascade.mjs`) en el contenedor Docker.
 - [x] **Estado `Ejecución con restricciones` en Programación Semanal (2026-05-21)**: Nueva clasificación no bloqueante para actividades con avance registrado pero restricciones habilitantes pendientes (Diseños, Materiales, MO, etc.). Se agregó el estado `prog-ejecucion-con-restricciones` en `stateMachine.js`, `hot.js` (chip + leyenda + KPI en cierre semanal) y `estado_programacion_semanal.php`. Sin bloqueo de compromiso, solo alerta visual informativa.
 - [x] **Gate de Autoprogramación: Ejecución vs Restricciones (2026-05-21)**: La autoprogramación (API y legacy) ahora permite insertar nuevas actividades si `Ejecutado > 0` o restricciones liberadas. Actividades con `Ejecutado = 0` y restricciones pendientes quedan bloqueadas, listadas como excepciones y reportadas en el modal de alertas. `listarExcepciones()` filtrado por la misma regla de elegibilidad.
 - [x] **Pulido visual de etiquetas de Estado Operativo PI/PS (2026-05-21)**: Las etiquetas principales de Estado Operativo ahora usan layout interno en grid, contraste reforzado, multilinea controlada a dos líneas y pills con wrap limitado para mejorar lectura sin modificar el ancho de columna.
@@ -222,6 +238,7 @@ gantt
 - [x] **Modo Mantenimiento (2026-05-28):** Implementación de toggle de mantenimiento desde el panel admin. Crea/elimina archivo `.maintenance` en la raíz del proyecto. El Front Controller de la app (`public/index.php`) detecta el archivo y sirve `public/mantenimiento-aia.html` con HTTP 503. El panel admin (`admin/`) no se bloquea para permitir desactivación. Toggle visible en Configuración y Seguridad del dashboard admin.
 - [x] **Implementación de Severidad Única en Sidebar y Cajón LPS (2026-05-22):** `lps_drawer.js` centraliza `normal`, `attention`, `critical`, `info` y `neutral`; `isCrisis` queda ligado solo a `critical`; el disparador lateral distingue atención ámbar sin pulso y crisis roja con badge; PS evita escalar `Por Comprometer`, `Condiciones Pendientes` e incumplimientos no RC, y PG/PI dejan de convertir actividades futuras 4-6 semanas en crisis.
 - [x] **Fix Visual del Disparador LPS Attention/Critical (2026-05-22):** Normalización del badge superior del sidebar en desktop y móvil para evitar recuadros desalineados; atención mantiene badge ámbar sin pulso y crisis conserva badge rojo centrado con animación compatible con `translateX(-50%)`.
+- [x] **Resaltado, Contraste WCAG AA y Overlays Fix Transversal en Todo el Sistema LPS (2026-05-29):** Replicación completa e impecable en todo el ecosistema Handsontable y DataTables de los 12 módulos de la aplicación (PG, PS, PDC, PI, CNC, CNP, CIC, Profesionales, Subcontratistas, Contratos, Listado Actividades, control-cambios y Actualizar Cronograma). Se intensificaron los colores de estado de fila (escala Tailwind 200/300) garantizando contraste de texto semántico oscuro superior a 4.5:1 (WCAG AA). Se forzaron líneas de demarcación (bordes grises nítidos `#cbd5e1 !important`) de forma global para Handsontable y DataTables, impidiendo que el background cubra las divisiones. Se corrigieron los overlays de box-shadow `:not(...)` y se inyectaron las clases de fila condicionales de CNC, CNP y CIC en `styles.css`. Se incrementó el cache-buster a `styles.css?v=piStateColors3`.
 
 
 ---
@@ -262,6 +279,43 @@ gantt
 - Transición escalonada a tablas vinculadas estandarizadas (`lps_shared_constraints`, `lps_constraint_links`).
 - Implementación del concepto **"Inteligencia de Agrupación"** y Dashboards Reactivos de la **Bitácora LPS Operativa**.
 </details>
+
+---
+
+## ✨ Feature: Monitor de Cambios PG/PI → PS (2026-05-28)
+
+### Estado: ✅ Implementado
+
+### Descripción
+Monitor de cambios en Programa General (PG) y Programación Intermedia (PI) que detecta automáticamente actividades que pueden ser comprometidas en PS o que ya no cumplen restricciones duras.
+
+### Tipos de cambio detectados
+| Tipo | Descripción |
+|---|---|
+| A | Restricción liberada (todas las restricciones duras pasaron a OK) |
+| B | Nueva actividad en PG (no estaba en PS ni en tracking previo) |
+| C | Fecha de inicio/fin modificada en PG |
+| D | Estado de actividad cambiado en PG |
+| E | Actividad eliminada de PG (ya existe en PS) |
+
+### Archivos creados
+- `src/Services/ProgramChangeDetector.php` — Core de detección y aplicación de cambios
+- `public/js/modules/programacion_semanal/changeMonitor.js` — Módulo frontend (modal, badge, acciones)
+- `views/programacion-semanal/partials/_changeMonitorModal.php` — Modal con tabla de cambios y acciones
+- `database/patches/20260529_monitor_cambios_pg_tracking.sql` — Parche SQL para tabla de snapshots
+
+### Archivos modificados
+- `public/index.php` — +2 rutas: detect-changes, apply-changes
+- `src/Controllers/Api/SemanalApiController.php` — +2 métodos API
+- `views/programacion-semanal/programacion_semanal.view.php` — Include modal + init JS
+- `public/js/modules/programacion_semanal/hot.js` — Hook afterDataLoaded()
+
+### Flujo
+1. Al cargar PS → `ChangeMonitor.check()` → `POST /api/semanal/detect-changes`
+2. Si hay cambios → badge "N cambios" en toolbar + modal automático (primera vez)
+3. Usuario selecciona actividades y ejecuta: Comprometer / Descomprometer / Ignorar
+4. Acciones se envían a `POST /api/semanal/apply-changes`
+5. Grilla PS se refresca automáticamente
 
 ---
 

@@ -44,7 +44,7 @@ class PasswordResetService
         $this->invalidateTokensByUsername((string) $user['usuario'], $scope);
 
         $stmt = $this->db->prepare(
-            'INSERT INTO password_reset_tokens (user_id, scope, token_hash, requested_ip, expires_at) VALUES (?, ?, ?, ?, ?)'
+            'INSERT INTO password_reset_tokens (user_id, scope, token_hash, requested_ip, expires_at) VALUES (?, ?, ?, ?, ?)',
         );
         $stmt->execute([(int) $user['id'], $scope, $tokenHash, $requestedIp, $expiresAt]);
         $tokenId = (int) $this->db->lastInsertId();
@@ -57,7 +57,7 @@ class PasswordResetService
                 (string) ($user['nombre'] ?? $user['usuario']),
                 'Restablece tu contraseña en Last Planner AIA',
                 $this->buildHtmlMessage((string) ($user['nombre'] ?? $user['usuario']), $scope, $resetUrl, $appUrl),
-                $this->buildTextMessage((string) ($user['nombre'] ?? $user['usuario']), $scope, $resetUrl)
+                $this->buildTextMessage((string) ($user['nombre'] ?? $user['usuario']), $scope, $resetUrl),
             );
         } catch (\Throwable $e) {
             $this->deleteToken($tokenId);
@@ -89,7 +89,7 @@ class PasswordResetService
                AND prt.used_at IS NULL
                AND prt.expires_at >= NOW()
              ORDER BY prt.id DESC
-             LIMIT 1'
+             LIMIT 1',
         );
         $stmt->execute([$tokenHash, $scope]);
         $row = $stmt->fetch();
@@ -120,7 +120,7 @@ class PasswordResetService
         $this->invalidateTokensByUsername((string) $tokenData['usuario'], $this->normalizeScope($scope));
         $this->audit(
             'RESET_CLAVE_COMPLETADO',
-            "El usuario {$tokenData['usuario']} restableció su contraseña desde {$this->normalizeScope($scope)}"
+            "El usuario {$tokenData['usuario']} restableció su contraseña desde {$this->normalizeScope($scope)}",
         );
 
         return ['success' => true, 'message' => 'Contraseña restablecida correctamente.'];
@@ -132,7 +132,7 @@ class PasswordResetService
             'SELECT id, usuario, nombre, email, activo
              FROM general_usuarios
              WHERE LOWER(TRIM(email)) = ?
-             ORDER BY activo DESC, id ASC'
+             ORDER BY activo DESC, id ASC',
         );
         $stmt->execute([$email]);
         $rows = $stmt->fetchAll();
@@ -173,7 +173,7 @@ class PasswordResetService
              SET prt.used_at = NOW()
              WHERE u.usuario = ?
                AND prt.scope = ?
-               AND prt.used_at IS NULL'
+               AND prt.used_at IS NULL',
         );
         $stmt->execute([$username, $scope]);
     }

@@ -46,7 +46,7 @@ if (!function_exists('disable_productivity_measurement_temporarily')) {
 
         foreach ($tables as $tableName) {
             // Defensa adicional: solo nombres seguros para evitar SQL injection en identificadores.
-            if (!preg_match('/^[a-zA-Z0-9_]+$/', (string)$tableName)) {
+            if (!preg_match('/^[a-zA-Z0-9_]+$/', (string) $tableName)) {
                 continue;
             }
 
@@ -56,7 +56,7 @@ if (!function_exists('disable_productivity_measurement_temporarily')) {
 
             $stmtUpdate = $db->query($sqlDisable);
             $summary['tables'] += 1;
-            $summary['rows'] += (int)$stmtUpdate->rowCount();
+            $summary['rows'] += (int) $stmtUpdate->rowCount();
         }
 
         return $summary;

@@ -1,5 +1,8 @@
 <?php
 
+// 0. Configurar zona horaria a America/Bogota de forma consistente
+date_default_timezone_set('America/Bogota');
+
 // 1. Cargar Autoloader de Composer
 require_once __DIR__ . '/../vendor/autoload.php';
 
@@ -14,13 +17,14 @@ if (session_status() === PHP_SESSION_NONE) {
         'path' => '/',
         'secure' => false,
         'httponly' => true,
-        'samesite' => 'Lax'
+        'samesite' => 'Lax',
     ]);
     session_start();
 }
 
 // 2.6 Maintenance mode check — permite bypass si el usuario tiene sesión admin (maintenance_bypass)
 use App\Core\MaintenanceMode;
+
 $requestUri = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?: '/';
 if (
     MaintenanceMode::isActive()
@@ -43,6 +47,7 @@ if (!in_array($requestUri, $publicRoutes, true)) {
 
 // 4. Instanciar Conexión a Base de Datos (Singleton)
 use App\Core\Router;
+
 require_once PROJECT_ROOT . '/src/Core/Database.php';
 
 // Establecer la conexión globalmente si es necesario para código legacy mezclado
@@ -135,6 +140,8 @@ $router->post('/api/control-cambios/save', [\App\Controllers\Api\ControlCambiosA
 $router->get('/api/semanal/list', [\App\Controllers\Api\SemanalApiController::class, 'list']);
 $router->post('/api/semanal/list', [\App\Controllers\Api\SemanalApiController::class, 'list']);
 $router->post('/api/semanal/save', [\App\Controllers\Api\SemanalApiController::class, 'save']);
+$router->post('/api/semanal/auto-program', [\App\Controllers\Api\SemanalApiController::class, 'autoProgram']);
+$router->get('/api/semanal/auto-program-log', [\App\Controllers\Api\SemanalApiController::class, 'getAutoProgramLog']);
 // Api/CIC (Fase 4)
 $router->post('/api/cic/list', [\App\Controllers\Api\CicApiController::class, 'list']);
 $router->post('/api/cic/save', [\App\Controllers\Api\CicApiController::class, 'save']);
@@ -165,30 +172,30 @@ $router->get('/runtime/frontend-config.js', [\App\Controllers\Core\FrontendConfi
 $router->post('/session/touch', [\App\Controllers\Core\SessionController::class, 'touch']);
 $router->post('/context/week', [\App\Controllers\Core\ContextController::class, 'setWeek']);
 
-$router->get('/legacy/cambiar_pagina.php', function() {
+$router->get('/legacy/cambiar_pagina.php', function () {
     require_once PROJECT_ROOT . '/src/Legacy/Endpoints/cambiar_pagina.php';
 });
-$router->post('/legacy/cambiar_pagina.php', function() {
+$router->post('/legacy/cambiar_pagina.php', function () {
     require_once PROJECT_ROOT . '/src/Legacy/Endpoints/cambiar_pagina.php';
 });
 
 // Endpoint faltante para Cargar Datos Generales (Cargos/Nombres)
-$router->post('/legacy/funciones_generales/php/datosGeneralesPagina.php', function() {
+$router->post('/legacy/funciones_generales/php/datosGeneralesPagina.php', function () {
     require_once PROJECT_ROOT . '/src/Legacy/datosGeneralesPagina.php';
 });
-$router->post('/legacy/funciones_generales/php/nueva_semana.php', function() {
+$router->post('/legacy/funciones_generales/php/nueva_semana.php', function () {
     require_once PROJECT_ROOT . '/src/Legacy/nueva_semana.php';
 });
-$router->post('/legacy/funciones_generales/php/verificarCICActualizada.php', function() {
+$router->post('/legacy/funciones_generales/php/verificarCICActualizada.php', function () {
     require_once PROJECT_ROOT . '/src/Legacy/verificarCICActualizada.php';
 });
-$router->post('/legacy/funciones_generales/php/eliminar_semana.php', function() {
+$router->post('/legacy/funciones_generales/php/eliminar_semana.php', function () {
     require_once PROJECT_ROOT . '/src/Legacy/eliminar_semana.php';
 });
-$router->post('/legacy/funciones_generales/php/buscadorTabla.php', function() {
+$router->post('/legacy/funciones_generales/php/buscadorTabla.php', function () {
     require_once PROJECT_ROOT . '/src/Legacy/buscadorTabla.php';
 });
-$router->post('/legacy/pdc/actualizar_pdc.php', function() {
+$router->post('/legacy/pdc/actualizar_pdc.php', function () {
     require_once PROJECT_ROOT . '/src/Legacy/actualizar_pdc.php';
 });
 

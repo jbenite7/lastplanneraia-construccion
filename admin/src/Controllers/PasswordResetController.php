@@ -36,7 +36,7 @@ class PasswordResetController extends BaseController
         $this->service->request($email, 'admin');
         $this->renderForgot(
             'Si el correo existe y está habilitado, enviaremos un enlace de restablecimiento en unos minutos.',
-            'success'
+            'success',
         );
     }
 
@@ -66,7 +66,7 @@ class PasswordResetController extends BaseController
             $token,
             'admin',
             (string) ($_POST['password'] ?? ''),
-            (string) ($_POST['confirm_password'] ?? '')
+            (string) ($_POST['confirm_password'] ?? ''),
         );
 
         if ($result['success']) {

@@ -13,8 +13,11 @@
 
   /* --- Global Navbar Styles --- */
   .navbar-aia {
-    background-color: var(--aia-green);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: rgba(26, 86, 51, 0.92) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
     padding: 0 1rem;
     height: var(--navbar-height);
     font-family: 'Roboto', 'Helvetica', sans-serif;
@@ -36,29 +39,51 @@
 }
 
 @layer components {
-  /* --- Desktop Navigation (>= 1400px) --- */
-  @media (width >= 1400px) {
+  /* --- Desktop Navigation (>= 1200px) --- */
+  @media (width >= 1200px) {
     .navbar-aia {
       .nav-link {
         color: rgba(255, 255, 255, 0.85) !important;
         font-weight: 500;
-        /* Fluid padding: from 8px at 1200px to 12px at higher res */
-        padding-inline: clamp(0.5rem, -1.6rem + 2.8vw, 0.75rem) !important;
+        /* Fluid padding: compact for screen sizes 1200px-1399px, wider for >=1400px */
+        padding-inline: clamp(0.4rem, -1.2rem + 2.2vw, 0.75rem) !important;
         /* Fluid font size: from 13.5px at 1200px to 16px at 1400px+ */
-        font-size: clamp(0.84375rem, 0.45rem + 0.5vw, 1rem) !important;
+        font-size: clamp(0.82rem, 0.4rem + 0.45vw, 0.95rem) !important;
         height: var(--navbar-height);
         display: flex !important;
         align-items: center !important;
-        transition: all 0.2s;
+        transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
         border-bottom: 3px solid transparent;
 
-        /* Abbreviations removed — handled in JS (cargarDatosGeneralesPagina2.js) */
+        /* Premium Icon Hover Micro-animation */
+        .nav-icon {
+          margin-right: 6px;
+          font-size: 0.95rem;
+          opacity: 0.8;
+          transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s;
+        }
 
-        &:hover,
+        &:hover {
+          color: #fff !important;
+          background-color: rgba(255, 255, 255, 0.08);
+          border-bottom-color: rgba(255, 255, 255, 0.8);
+          
+          .nav-icon {
+            transform: scale(1.2) translateY(-1px);
+            opacity: 1;
+          }
+        }
+
         &.active {
           color: #fff !important;
-          background-color: rgba(255, 255, 255, 0.1);
+          background-color: rgba(255, 255, 255, 0.12);
           border-bottom-color: #fff;
+          font-weight: 600;
+
+          .nav-icon {
+            opacity: 1;
+            transform: scale(1.05);
+          }
         }
       }
 
@@ -75,25 +100,76 @@
         background-color: var(--aia-green);
         color: #fff !important;
       }
+
+      #userDropdown {
+        max-width: none !important;
+        flex-shrink: 0 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+      }
+
+      #labelNombreUsuario {
+        max-width: 240px !important;
+        display: inline-block !important;
+        vertical-align: middle !important;
+        line-height: 1.25 !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+        text-align: left !important;
+      }
+
+      .navbar-nav.ml-auto {
+        flex-shrink: 0 !important;
+      }
     }
   }
 
-  /* --- Tablet & Small Desktop Intermediate (768–1399.98px) --- */
-  @media (width >= 768px) and (width <= 1399.98px) {
+  /* --- Adaptive Menu Texts (Desktop Ranges) --- */
+  .nav-text-full {
+    display: inline;
+  }
+  .nav-text-compact {
+    display: none;
+  }
+
+  @media (width >= 1200px) and (width < 1440px) {
+    .nav-text-full {
+      display: none !important;
+    }
+    .nav-text-compact {
+      display: inline !important;
+    }
+  }
+
+  /* Activar menú compacto si el cajón LPS está abierto en pantallas de menos de 1720px */
+  @media (width >= 1200px) and (width < 1720px) {
+    body.lps-drawer-open .navbar-aia {
+      .nav-text-full {
+        display: none !important;
+      }
+      .nav-text-compact {
+        display: inline !important;
+      }
+    }
+  }
+
+  /* --- Tablet & Small Desktop Intermediate (768–1199.98px) --- */
+  @media (width >= 768px) and (width <= 1199.98px) {
     .navbar-aia .nav-link {
-      padding: 0 8px !important;
-      font-size: 0.85rem;
+      padding: 0 6px !important;
+      font-size: 0.8rem;
     }
 
     .navbar-aia #userDropdown, .navbar-aia #nombreUsuario {
-      max-width: 160px;
+      max-width: 140px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
 
     .navbar-aia .navbar-brand {
-      font-size: 1.05rem;
+      font-size: 1rem;
     }
   }
 
@@ -142,7 +218,7 @@
 }
 
 @layer aia-premium-drawer {
-  @media (width < 1400px) {
+  @media (width < 1200px) {
     :root {
       --drawer-bg-oklch: oklch(28% 0.08 142.5); /* Vibrant Institutional AIA Green - Clearly Green on Tablets */
       --drawer-text: oklch(100% 0 0);
@@ -504,7 +580,7 @@
    Bootstrap 4 is loaded without @layer, so layered styles ALWAYS
    lose. These rules live OUTSIDE any @layer to match priority.
    ============================================================= */
-@media (min-width: 992px) and (max-width: 1399.98px) {
+@media (min-width: 992px) and (max-width: 1199.98px) {
   .navbar-expand-xl .navbar-collapse {
     display: none !important;
   }

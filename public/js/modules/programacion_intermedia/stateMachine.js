@@ -123,7 +123,10 @@
   }
 
   function getState(data) {
-    if (!data || data.Titulo != 0) {
+    if (!data || data.Consecutivo_en_Programa === undefined) {
+      return 'neutral';
+    }
+    if (Number(data.Titulo) !== 0) {
       return 'header';
     }
 

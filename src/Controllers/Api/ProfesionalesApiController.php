@@ -74,11 +74,11 @@ class ProfesionalesApiController
             $data = $this->syncService->decorateProjectProfessionals($dbPrefix, $data);
 
             foreach ($data as &$row) {
-                $row['activo'] = (bool)$row['activo'];
-                $row['has_dependencies'] = (bool)$row['has_dependencies'];
-                $row['is_admin_managed'] = (bool)($row['is_admin_managed'] ?? false);
-                $row['is_current_member'] = (bool)($row['is_current_member'] ?? false);
-                $row['is_blocked'] = (bool)($row['is_blocked'] ?? false);
+                $row['activo'] = (bool) $row['activo'];
+                $row['has_dependencies'] = (bool) $row['has_dependencies'];
+                $row['is_admin_managed'] = (bool) ($row['is_admin_managed'] ?? false);
+                $row['is_current_member'] = (bool) ($row['is_current_member'] ?? false);
+                $row['is_blocked'] = (bool) ($row['is_blocked'] ?? false);
                 $row['can_edit_identity'] = !$row['is_admin_managed'] && !$row['is_blocked'];
                 $row['can_edit_active'] = !$row['is_blocked'] && (!$row['is_admin_managed'] || $row['is_current_member']);
                 $row['identity_edit_reason'] = $this->resolverMotivoEdicionIdentidad($row);
@@ -147,7 +147,7 @@ class ProfesionalesApiController
 
         $changesById = [];
         foreach ($changes as $change) {
-            $id = (int)($change['id'] ?? 0);
+            $id = (int) ($change['id'] ?? 0);
             $columna = $change['prop'] ?? '';
 
             if ($id <= 0) {
@@ -170,7 +170,7 @@ class ProfesionalesApiController
                 continue;
             }
 
-            $lockInfo = $this->syncService->getProfessionalLockInfo($dbPrefix, (string)($actual['email'] ?? ''));
+            $lockInfo = $this->syncService->getProfessionalLockInfo($dbPrefix, (string) ($actual['email'] ?? ''));
             $columnasCambiadas = array_keys($rowChanges);
             $soloActivo = !empty($columnasCambiadas) && count(array_diff($columnasCambiadas, ['activo'])) === 0;
 
@@ -188,7 +188,7 @@ class ProfesionalesApiController
                 $activo = $this->normalizarBooleano($rowChanges['activo'] ?? $actual['activo']);
                 $resultado = $this->db->query(
                     "UPDATE {$dbPrefix}_profesionales SET activo = ? WHERE id = ?",
-                    [$activo, $id]
+                    [$activo, $id],
                 );
 
                 if ($resultado) {
@@ -203,7 +203,7 @@ class ProfesionalesApiController
             $actualizado = $this->aplicarCambiosProfesional($actual, $rowChanges);
             $actualizado['nombre'] = $this->syncService->resolveCanonicalProfessionalName(
                 $actualizado['email'],
-                $actualizado['nombre']
+                $actualizado['nombre'],
             );
             $erroresFila = $this->validarProfesional($dbPrefix, $actualizado, $id);
             if (!empty($erroresFila)) {
@@ -213,7 +213,7 @@ class ProfesionalesApiController
 
             $resultado = $this->db->query(
                 "UPDATE {$dbPrefix}_profesionales SET nombre = ?, email = ?, cargo = ?, activo = ? WHERE id = ?",
-                [$actualizado['nombre'], $actualizado['email'], $actualizado['cargo'], $actualizado['activo'], $id]
+                [$actualizado['nombre'], $actualizado['email'], $actualizado['cargo'], $actualizado['activo'], $id],
             );
 
             if ($resultado) {
@@ -267,7 +267,7 @@ class ProfesionalesApiController
         }
 
         $res = $this->db->query("INSERT INTO {$dbPrefix}_profesionales (nombre, email, cargo, activo) VALUES (?, ?, ?, 1)", [
-            $data['nombre'], $data['email'], $data['cargo']
+            $data['nombre'], $data['email'], $data['cargo'],
         ]);
 
         if ($res) {
@@ -280,7 +280,7 @@ class ProfesionalesApiController
     private function eliminar(string $dbPrefix): void
     {
         $id = $_POST['id'] ?? 0;
-        $profesional = $this->obtenerProfesional($dbPrefix, (int)$id);
+        $profesional = $this->obtenerProfesional($dbPrefix, (int) $id);
         $nombre = $profesional['nombre'] ?? null;
 
         if (!$nombre) {
@@ -288,7 +288,7 @@ class ProfesionalesApiController
             return;
         }
 
-        $lockInfo = $this->syncService->getProfessionalLockInfo($dbPrefix, (string)($profesional['email'] ?? ''));
+        $lockInfo = $this->syncService->getProfessionalLockInfo($dbPrefix, (string) ($profesional['email'] ?? ''));
         if (!empty($lockInfo['is_admin_managed'])) {
             $mensaje = !empty($lockInfo['is_blocked'])
                 ? ($lockInfo['block_reason'] ?: 'Este profesional está bloqueado y no puede eliminarse.')
@@ -416,7 +416,7 @@ class ProfesionalesApiController
 
     private function limpiarTexto($valor): string
     {
-        return preg_replace('/\s+/u', ' ', trim((string)$valor)) ?? '';
+        return preg_replace('/\s+/u', ' ', trim((string) $valor)) ?? '';
     }
 
     private function normalizarTexto($valor): string
@@ -428,7 +428,7 @@ class ProfesionalesApiController
 
     private function normalizarEmail($valor): string
     {
-        $email = trim((string)$valor);
+        $email = trim((string) $valor);
         return function_exists('mb_strtolower') ? mb_strtolower($email, 'UTF-8') : strtolower($email);
     }
 

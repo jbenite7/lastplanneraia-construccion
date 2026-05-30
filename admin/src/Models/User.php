@@ -29,14 +29,14 @@ class User
             return false;
         }
 
-        $role = strtoupper(trim((string)$user['permiso']));
+        $role = strtoupper(trim((string) $user['permiso']));
         if ($role === 'P') {
             $role = 'D';
         } elseif ($role === 'U') {
             $role = 'V';
         }
 
-        $permission = strtoupper(trim((string)$permission));
+        $permission = strtoupper(trim((string) $permission));
         if ($permission === 'P') {
             $permission = 'D';
         } elseif ($permission === 'U') {
@@ -67,11 +67,11 @@ class User
                AND p.Area = 'Construccion'
              ORDER BY " . self::ROLE_ORDER_SQL . " ASC
              LIMIT 1",
-            [$userId]
+            [$userId],
         );
         $row = $stmt->fetch();
 
-        return $row ? (string)$row['role'] : 'V';
+        return $row ? (string) $row['role'] : 'V';
     }
 
     /**
@@ -179,7 +179,7 @@ class User
                      WHERE pm2.user_id = u.id
                         AND p2.Area = 'Construccion') AS projects_count
               FROM {$this->table} u
-              ORDER BY u.activo DESC, u.nombre ASC"
+              ORDER BY u.activo DESC, u.nombre ASC",
         );
 
         return $stmt->fetchAll();
@@ -203,7 +203,7 @@ class User
              WHERE pm.user_id = ?
                AND p.Area = 'Construccion'
              ORDER BY p.Proyecto_Proceso ASC",
-            [$userId]
+            [$userId],
         );
 
         return $stmt->fetchAll();
@@ -230,13 +230,13 @@ class User
                 $data['cargo'],
                 $data['usuario'],
                 $password,
-                (int)($data['activo'] ?? 1),
-                (int)($data['force_password_change'] ?? 0),
+                (int) ($data['activo'] ?? 1),
+                (int) ($data['force_password_change'] ?? 0),
             ]);
 
             $userId = $this->db->lastInsertId();
 
-            $this->syncProjectMembers((int)$userId, $data['assignments'] ?? []);
+            $this->syncProjectMembers((int) $userId, $data['assignments'] ?? []);
 
             $this->db->commit();
             return true;
@@ -279,21 +279,21 @@ class User
 
             if (array_key_exists('activo', $data)) {
                 $fields[] = 'activo = ?';
-                $params[] = (int)$data['activo'];
+                $params[] = (int) $data['activo'];
             }
 
             if (array_key_exists('force_password_change', $data)) {
                 $fields[] = 'force_password_change = ?';
-                $params[] = (int)$data['force_password_change'];
+                $params[] = (int) $data['force_password_change'];
             }
 
             $params[] = $id;
             $sql = "UPDATE {$this->table} SET " . implode(', ', $fields) . " WHERE id = ?";
-            
+
             $this->db->query($sql, $params);
 
             if (array_key_exists('assignments', $data)) {
-                $this->syncProjectMembers((int)$id, $data['assignments']);
+                $this->syncProjectMembers((int) $id, $data['assignments']);
             }
 
             $this->db->commit();
@@ -309,7 +309,7 @@ class User
         try {
             $this->db->query(
                 "UPDATE {$this->table} SET activo = ? WHERE id = ?",
-                [$active ? 1 : 0, $id]
+                [$active ? 1 : 0, $id],
             );
 
             return true;
@@ -323,7 +323,7 @@ class User
         try {
             $this->db->query(
                 "UPDATE {$this->table} SET force_password_change = ? WHERE id = ?",
-                [$enabled ? 1 : 0, $id]
+                [$enabled ? 1 : 0, $id],
             );
 
             return true;
@@ -372,12 +372,12 @@ class User
                 continue;
             }
 
-            $projectId = (int)($assignment['project_id'] ?? 0);
+            $projectId = (int) ($assignment['project_id'] ?? 0);
             if ($projectId <= 0 || !isset($validProjectIds[$projectId]) || isset($seen[$projectId])) {
                 continue;
             }
 
-            $role = $this->normalizeRole((string)($assignment['role'] ?? 'V'));
+            $role = $this->normalizeRole((string) ($assignment['role'] ?? 'V'));
             $this->db->query($insertSql, [$projectId, $userId, $role]);
             $seen[$projectId] = true;
         }
@@ -390,7 +390,7 @@ class User
         $result = [];
 
         foreach ($rows as $row) {
-            $projectId = (int)($row['Id'] ?? 0);
+            $projectId = (int) ($row['Id'] ?? 0);
             if ($projectId > 0) {
                 $result[$projectId] = true;
             }
@@ -445,11 +445,11 @@ class User
              FROM general_proyectos_procesos
              WHERE Area = 'Construccion'
                AND Base_de_Datos IS NOT NULL
-               AND TRIM(Base_de_Datos) != ''"
+               AND TRIM(Base_de_Datos) != ''",
         )->fetchAll();
 
         foreach ($projects as $project) {
-            $dbPrefix = trim((string)($project['Base_de_Datos'] ?? ''));
+            $dbPrefix = trim((string) ($project['Base_de_Datos'] ?? ''));
             if ($dbPrefix === '' || !preg_match('/^[A-Za-z0-9_\-]+$/', $dbPrefix)) {
                 continue;
             }
@@ -459,13 +459,13 @@ class User
                 continue;
             }
 
-            $hasReference = (int)$this->db->query(
+            $hasReference = (int) $this->db->query(
                 "SELECT COUNT(*) FROM {$tableName} WHERE LOWER(TRIM(email)) = ?",
-                [$email]
+                [$email],
             )->fetchColumn();
 
             if ($hasReference > 0) {
-                $references[] = trim((string)($project['Proyecto_Proceso'] ?? $dbPrefix));
+                $references[] = trim((string) ($project['Proyecto_Proceso'] ?? $dbPrefix));
             }
         }
 
@@ -482,7 +482,7 @@ class User
         // 2. Get project info
         $project = $this->db->query(
             "SELECT Id, Activo, Base_de_Datos FROM general_proyectos_procesos WHERE Id = ?",
-            [$projectId]
+            [$projectId],
         )->fetch();
 
         if (!$project) {
@@ -490,12 +490,12 @@ class User
         }
 
         // 3. Inactive project → always removable
-        if ((int)($project['Activo'] ?? 0) === 0) {
+        if ((int) ($project['Activo'] ?? 0) === 0) {
             return null;
         }
 
         // 4. Active project → check for activities
-        $dbPrefix = trim((string)($project['Base_de_Datos'] ?? ''));
+        $dbPrefix = trim((string) ($project['Base_de_Datos'] ?? ''));
         if ($dbPrefix === '') {
             return null; // No tables, no activities
         }
@@ -505,11 +505,13 @@ class User
             return 'Usuario no encontrado.';
         }
 
-        $userName = trim((string)($user['nombre'] ?? ''));
+        $userName = trim((string) ($user['nombre'] ?? ''));
         $userEmail = $this->normalizeEmail($user['email'] ?? '');
 
         return $this->checkUserActivityInProject(
-            $dbPrefix, $userName, $userEmail
+            $dbPrefix,
+            $userName,
+            $userEmail,
         );
     }
 
@@ -519,13 +521,15 @@ class User
     private function checkUserActivityInProject(
         string $dbPrefix,
         string $userName,
-        string $userEmail
+        string $userEmail,
     ): ?string {
         // A) Check {prefix}_profesionales (activo = 1)
         $profTable = "{$dbPrefix}_profesionales";
         if ($this->tableExists($profTable)) {
             $found = $this->findProfessionalMatch(
-                $profTable, $userName, $userEmail
+                $profTable,
+                $userName,
+                $userEmail,
             );
             if ($found) {
                 return "No se puede quitar: el usuario está como profesional activo en el proyecto ('{$found}').";
@@ -536,7 +540,9 @@ class User
         $consTable = "{$dbPrefix}_programa_consolidado";
         if ($this->tableExists($consTable)) {
             $found = $this->findResponsableMatch(
-                $consTable, $userName, $userEmail
+                $consTable,
+                $userName,
+                $userEmail,
             );
             if ($found) {
                 return "No se puede quitar: el usuario tiene actividades en el programa consolidado.";
@@ -547,7 +553,9 @@ class User
         $semTable = "{$dbPrefix}_programacion_semanal";
         if ($this->tableExists($semTable)) {
             $found = $this->findResponsableMatch(
-                $semTable, $userName, $userEmail
+                $semTable,
+                $userName,
+                $userEmail,
             );
             if ($found) {
                 return "No se puede quitar: el usuario tiene actividades en la programación semanal.";
@@ -560,8 +568,8 @@ class User
     private function tableExists(string $table): bool
     {
         $quotedTable = $this->db->quote($table);
-        return (bool)$this->db->query(
-            "SHOW TABLES LIKE " . $quotedTable
+        return (bool) $this->db->query(
+            "SHOW TABLES LIKE " . $quotedTable,
         )->fetch();
     }
 
@@ -571,7 +579,7 @@ class User
     private function findProfessionalMatch(
         string $table,
         string $name,
-        string $email
+        string $email,
     ): ?string {
         if (empty($name)) {
             return null;
@@ -579,7 +587,7 @@ class User
 
         $rows = $this->db->query(
             "SELECT nombre, email FROM {$table} WHERE activo = 1 AND TRIM(nombre) = ?",
-            [$name]
+            [$name],
         )->fetchAll();
 
         if (count($rows) === 1) {
@@ -604,16 +612,16 @@ class User
     private function findResponsableMatch(
         string $table,
         string $name,
-        string $email
+        string $email,
     ): bool {
         if (empty($name)) {
             return false;
         }
 
         // 1. Search by Name
-        $count = (int)$this->db->query(
+        $count = (int) $this->db->query(
             "SELECT COUNT(*) FROM {$table} WHERE TRIM(Responsable_AIA) = ?",
-            [$name]
+            [$name],
         )->fetchColumn();
 
         if ($count > 0) {
@@ -622,9 +630,9 @@ class User
 
         // 2. Fallback to Email
         if (!empty($email)) {
-            $count = (int)$this->db->query(
+            $count = (int) $this->db->query(
                 "SELECT COUNT(*) FROM {$table} WHERE TRIM(Responsable_AIA) = ?",
-                [$email]
+                [$email],
             )->fetchColumn();
         }
 
@@ -636,15 +644,15 @@ class User
      */
     public function removeFromProject(int $userId, int $projectId): bool
     {
-        return (bool)$this->db->query(
+        return (bool) $this->db->query(
             "DELETE FROM project_members WHERE user_id = ? AND project_id = ?",
-            [$userId, $projectId]
+            [$userId, $projectId],
         );
     }
 
     private function normalizeEmail($email): string
     {
-        $value = trim((string)$email);
+        $value = trim((string) $email);
         return function_exists('mb_strtolower') ? mb_strtolower($value, 'UTF-8') : strtolower($value);
     }
 
@@ -668,8 +676,8 @@ class User
      */
     public function getPasswordChangeStats()
     {
-        $total = (int)$this->db->query(
-            "SELECT COUNT(*) FROM {$this->table} WHERE activo = 1"
+        $total = (int) $this->db->query(
+            "SELECT COUNT(*) FROM {$this->table} WHERE activo = 1",
         )->fetchColumn();
 
         $sqlPending = "SELECT COUNT(*) as pending FROM {$this->table} WHERE activo = 1 AND force_password_change = 1";

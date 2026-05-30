@@ -69,14 +69,14 @@ class AuthController extends BaseController
             }
 
             if ($password_valida) {
-                if (isset($user['activo']) && (int)$user['activo'] !== 1) {
+                if (isset($user['activo']) && (int) $user['activo'] !== 1) {
                     $this->events->emit(
                         'seguridad.auth',
                         'login_bloqueado_inactivo',
                         "Intento de acceso bloqueado por cuenta inactiva: $username",
                         ['scope' => 'admin'],
                         null,
-                        'warning'
+                        'warning',
                     );
 
                     $this->json(['success' => false, 'message' => 'Tu cuenta está inactiva. Contacta al administrador.']);
@@ -106,7 +106,7 @@ class AuthController extends BaseController
             "Intento de acceso fallido para el usuario: $username",
             ['scope' => 'admin'],
             null,
-            'error'
+            'error',
         );
 
         $this->json(['success' => false, 'message' => 'Credenciales incorrectas']);

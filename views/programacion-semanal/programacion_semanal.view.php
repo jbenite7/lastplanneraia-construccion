@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="es">
 <head id="head">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://code.jquery.com/ui/1.10.1/jquery-ui.js"></script>
-    <script type="text/javascript" src="/js/linksComunesHead2.js?v=20260325a" charset="utf-8"></script>
+    <script src="/public/vendor/jquery.min.js"></script>
+    <script src="/public/vendor/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="/js/linksComunesHead2.js?v=headLoaderV20260530" charset="utf-8"></script>
     <link rel="stylesheet" href="/public/vendor/handsontable/handsontable.full.min.css" />
-    <link rel="stylesheet" href="/css/handsontable-module.css?v=20260522d" />
+    <link rel="stylesheet" href="/css/handsontable-module.css?v=20260529a" />
     <style>
         .hot-full-bleed {
             --hot-gutter: 8px;
@@ -185,22 +185,6 @@
             border-radius: 0 4px 4px 0 !important;
         }
 
-        .ps-page #psAlertsLegend.pdc-legend-autoscaling {
-            flex-wrap: wrap !important;
-            justify-content: flex-start !important;
-            gap: 6px !important;
-            overflow-x: hidden;
-            overflow-y: visible;
-            padding: 4px 0 !important;
-        }
-
-        .ps-page #psAlertsLegend.pdc-legend-autoscaling .pdc-legend-item {
-            flex: 0 1 auto !important;
-            width: auto !important;
-            white-space: nowrap !important;
-            min-height: 32px;
-            margin: 0 !important;
-        }
 
         /* Dropdown de Navegación por Hover */
         /* Dropdown de Navegación por Hover - Visibility Fix */
@@ -834,7 +818,7 @@
     <div class="encabezado" id="encabezado">
         <input type="hidden" name="seccion" id="seccion" value="programacion_semanal" aria-hidden="true">
         <input type="hidden" id="baseDatos_PHP" value="<?php echo htmlspecialchars($dbName ?? '', ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true">
-        <input type="hidden" id="semana_PHP" value="<?php echo (int)($semana ?? 0); ?>" aria-hidden="true">
+        <input type="hidden" id="semana_PHP" value="<?php echo (int) ($semana ?? 0); ?>" aria-hidden="true">
         <input type="hidden" id="permiso_canonico" value="<?php echo htmlspecialchars($permiso ?? '', ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true">
         <input type="hidden" id="scriptBarraFiltros" value="" aria-hidden="true">
     </div>
@@ -896,8 +880,8 @@
 
     <div class="row ventanasModalesSemana" id="ventanasModalesSemana"></div>
 
-    <div class="modal fade" id="modal_leyenda_colores_ps" role="dialog" data-backdrop="static">
-        <div class="modal-dialog modal-lg">
+    <div class="modal fade aia-modal" id="modal_leyenda_colores_ps" role="dialog" data-backdrop="static">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h4 class="modal-title" id="modal_leyenda_colores_ps_Label">Guia Operativa - Programación Semanal</h4>
@@ -908,8 +892,8 @@
         </div>
     </div>
 
-    <div class="modal fade" id="modal_cerrar_compromisos" role="dialog" data-backdrop="static">
-        <div class="modal-dialog modal-lg">
+    <div class="modal fade aia-modal" id="modal_cerrar_compromisos" role="dialog" data-backdrop="static">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h4 class="modal-title"><b>Cierre de Compromisos</b></h4>
@@ -924,8 +908,8 @@
         </div>
     </div>
 
-    <div class="modal fade" id="modal_aceptar_cerrar_compromisos" role="dialog" data-backdrop="static">
-        <div class="modal-dialog modal-lg">
+    <div class="modal fade aia-modal" id="modal_aceptar_cerrar_compromisos" role="dialog" data-backdrop="static">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h4 class="modal-title"><b>Resultado de Cierre</b></h4>
@@ -939,8 +923,8 @@
         </div>
     </div>
 
-    <div class="modal fade" id="formulario_nuevo" tabindex="-1" role="dialog" aria-labelledby="formularioNuevoLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl modal-dialog-scrollable ps-modal-nueva-actividad" role="document">
+    <div class="modal fade aia-modal" id="formulario_nuevo" tabindex="-1" role="dialog" aria-labelledby="formularioNuevoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable ps-modal-nueva-actividad" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="formularioNuevoLabel">Agregar Actividad Manual</h5>
@@ -983,21 +967,21 @@
                                             <option value=""></option>
                                             <?php
                                             $dbInstance = Database::getInstance();
-                                            $db = $_SESSION['db'];
-                                            $semana = $_SESSION['semana'];
-                                            $query = "SELECT * FROM {$db}_programa_consolidado WHERE Semana=? AND Titulo=0 AND Semanas_Inicio<=12 AND Semanas_Inicio>=1 AND Ejecutado=0";
-                                            try {
-                                                $stmt = $dbInstance->prepare($query);
-                                                $stmt->execute([$semana]);
-                                                while ($valores = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                                                    $Actividad = strip_tags((string)($valores["Actividad"] ?? ""));
-                                                    $Actividad = str_replace('"', '\"', $Actividad);
-                                                    $Actividad = str_replace("'", "\'", $Actividad);
-                                                    echo '<option value="'.$valores["Id"].'">('.$valores["Id"].') - '. $Actividad .'</option>';
-                                                }
-                                            } catch (PDOException $e) {
-                                            }
-                                            ?>
+        $db = $_SESSION['db'];
+        $semana = $_SESSION['semana'];
+        $query = "SELECT * FROM {$db}_programa_consolidado WHERE Semana=? AND Titulo=0 AND Semanas_Inicio<=12 AND Semanas_Inicio>=1 AND Ejecutado=0";
+        try {
+            $stmt = $dbInstance->prepare($query);
+            $stmt->execute([$semana]);
+            while ($valores = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $Actividad = strip_tags((string) ($valores["Actividad"] ?? ""));
+                $Actividad = str_replace('"', '\"', $Actividad);
+                $Actividad = str_replace("'", "\'", $Actividad);
+                echo '<option value="' . $valores["Id"] . '">(' . $valores["Id"] . ') - ' . $Actividad . '</option>';
+            }
+        } catch (PDOException $e) {
+        }
+        ?>
                                         </select>
                                     </div>
                                 </div>
@@ -1016,15 +1000,15 @@
                                         <select id="Sub_Contratista" name="Sub_Contratista" class="form-control">
                                             <option value=""></option>
                                             <?php
-                                            if (!empty($subcontratistas) && is_array($subcontratistas)) {
-                                                foreach ($subcontratistas as $sub) {
-                                                    if (!empty($sub['subcontratista'])) {
-                                                        $value = htmlspecialchars($sub['subcontratista'], ENT_QUOTES, 'UTF-8');
-                                                        echo "<option value=\"{$value}\">{$value}</option>";
-                                                    }
-                                                }
-                                            }
-                                            ?>
+        if (!empty($subcontratistas) && is_array($subcontratistas)) {
+            foreach ($subcontratistas as $sub) {
+                if (!empty($sub['subcontratista'])) {
+                    $value = htmlspecialchars($sub['subcontratista'], ENT_QUOTES, 'UTF-8');
+                    echo "<option value=\"{$value}\">{$value}</option>";
+                }
+            }
+        }
+        ?>
                                         </select>
                                     </div>
                                 </div>
@@ -1034,15 +1018,15 @@
                                         <select id="Responsable_AIA" name="Responsable_AIA" class="form-control">
                                             <option value=""></option>
                                             <?php
-                                            if (!empty($profesionales) && is_array($profesionales)) {
-                                                foreach ($profesionales as $prof) {
-                                                    if (!empty($prof['nombre'])) {
-                                                        $value = htmlspecialchars($prof['nombre'], ENT_QUOTES, 'UTF-8');
-                                                        echo "<option value=\"{$value}\">{$value}</option>";
-                                                    }
-                                                }
-                                            }
-                                            ?>
+        if (!empty($profesionales) && is_array($profesionales)) {
+            foreach ($profesionales as $prof) {
+                if (!empty($prof['nombre'])) {
+                    $value = htmlspecialchars($prof['nombre'], ENT_QUOTES, 'UTF-8');
+                    echo "<option value=\"{$value}\">{$value}</option>";
+                }
+            }
+        }
+        ?>
                                         </select>
                                     </div>
                                 </div>
@@ -1078,8 +1062,8 @@
         </div>
     </div>
 
-    <div class="modal fade" id="modal_eliminar_actividad" role="dialog" data-backdrop="static">
-        <div class="modal-dialog modal-lg" role="document">
+    <div class="modal fade aia-modal" id="modal_eliminar_actividad" role="dialog" data-backdrop="static">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <h4 class="modal-title"><b>Eliminar Actividad</b></h4>
@@ -1100,7 +1084,7 @@
                                         }
                                     }
                                 }
-                            ?>
+        ?>
                         </select>
                     </div>
                     <div class="form-group">
@@ -1140,40 +1124,41 @@
     </div>
     
     <!-- Modal CNC (Handsontable Handler) -->
-    <div class="modal fade" id="modal_cnc_hot" role="dialog" data-backdrop="static" style="font-family: 'Inter', sans-serif;">
-        <div class="modal-dialog modal-md" role="document">
-            <div class="modal-content" style="border: none; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
-                <div class="modal-header text-white" style="background-color: #b55211; border-radius: 8px 8px 0 0; padding: 1.25rem 1.5rem;">
-                    <h4 class="modal-title" style="font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 1.15rem; letter-spacing: -0.02em;">Justificación de Incumplimiento (CNC)</h4>
-                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar" style="opacity: 1; text-shadow: none;">&times;</button>
+    <div class="modal fade aia-modal" id="modal_cnc_hot" role="dialog" data-backdrop="static">
+        <div class="modal-dialog modal-md modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header text-white">
+                    <h4 class="modal-title" style="font-size: 1.15rem; letter-spacing: -0.02em;">Justificación de Incumplimiento (CNC)</h4>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">&times;</button>
                 </div>
-                <div class="modal-body" style="padding: 1.5rem;">
-                    <p style="color: #4a5568; font-size: 0.95rem; line-height: 1.5; margin-bottom: 1.5rem;">El avance real digitado es <strong style="color: #b55211; font-family: 'Montserrat', sans-serif;">inferior al compromiso</strong>. Obligatoriamente debes justificar el motivo a continuación. Al guardar, actualizaremos la fila en la tabla y en el servidor.</p>
+                <div class="modal-body">
+                    <p style="color: #4a5568; font-size: 0.95rem; line-height: 1.5; margin-bottom: 1.5rem;">El avance real digitado es <strong style="color: #1a5633; font-family: 'Montserrat', sans-serif;">inferior al compromiso</strong>. Obligatoriamente debes justificar el motivo a continuación. Al guardar, actualizaremos la fila en la tabla y en el servidor.</p>
                     <div class="form-group mt-3 mb-4">
-                        <label for="hot_cat_cnc" style="font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 0.9rem; color: #2d3748;">Categoría CNC <span style="color: #b55211;">*</span></label>
+                        <label for="hot_cat_cnc" style="font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 0.9rem; color: #2d3748;">Categoría CNC <span style="color: #1a5633;">*</span></label>
                         <select id="hot_cat_cnc" class="form-control" style="border-radius: 6px; border: 1px solid #e2e8f0; padding: 0.5rem 0.75rem; height: auto;">
                             <option value=""></option>
                         </select>
                     </div>
                     <div class="form-group mb-4">
-                        <label for="hot_cnc" style="font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 0.9rem; color: #2d3748;">Causa de No Cumplimiento <span style="color: #b55211;">*</span></label>
+                        <label for="hot_cnc" style="font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 0.9rem; color: #2d3748;">Causa de No Cumplimiento <span style="color: #1a5633;">*</span></label>
                         <select id="hot_cnc" class="form-control" disabled style="border-radius: 6px; border: 1px solid #e2e8f0; padding: 0.5rem 0.75rem; height: auto;">
                             <option value=""></option>
                         </select>
                     </div>
                     <div class="form-group mb-0">
-                        <label for="hot_obs_cnc" style="font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 0.9rem; color: #2d3748;">Observaciones <span style="color: #b55211;">*</span></label>
+                        <label for="hot_obs_cnc" style="font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 0.9rem; color: #2d3748;">Observaciones <span style="color: #1a5633;">*</span></label>
                         <textarea id="hot_obs_cnc" class="form-control" rows="3" placeholder="Detalle la causa del incumplimiento..." style="border-radius: 6px; border: 1px solid #e2e8f0; padding: 0.75rem; resize: vertical;"></textarea>
                     </div>
                 </div>
-                <div class="modal-footer" style="padding: 1.25rem 1.5rem; background-color: #f8fafc; border-top: 1px solid #edf2f7; border-radius: 0 0 8px 8px; justify-content: space-between;">
+                <div class="modal-footer" style="justify-content: space-between;">
                     <button id="btn_cancelar_cnc_hot" type="button" class="btn btn-outline-secondary" data-dismiss="modal" style="font-family: 'Montserrat', sans-serif; font-weight: 600; border-radius: 6px; padding: 0.5rem 1.25rem;">Cancelar</button>
-                    <button id="btn_guardar_cnc_hot" type="button" class="btn" style="background-color: #b55211; color: white; font-family: 'Montserrat', sans-serif; font-weight: 600; border-radius: 6px; padding: 0.5rem 1.25rem; border: none; box-shadow: 0 4px 6px rgba(181, 82, 17, 0.2);">Guardar y Confirmar</button>
+                    <button id="btn_guardar_cnc_hot" type="button" class="btn aia-btn-primary">Guardar y Confirmar</button>
                 </div>
             </div>
         </div>
     </div>
 
+    <?php include __DIR__ . '/partials/_changeMonitorModal.php'; ?>
     <?php include __DIR__ . '/../partials/drawer_unificado.php'; ?>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
@@ -1188,49 +1173,53 @@
         window.PS_HOT_OPTIONS = {
             subcontratistas: <?php
                 $psSubcontratistas = ['AIA (MO Directa)'];
-                if (!empty($subcontratistas) && is_array($subcontratistas)) {
-                    foreach ($subcontratistas as $sub) {
-                        if (!empty($sub['subcontratista'])) {
-                            $psSubcontratistas[] = $sub['subcontratista'];
-                        }
-                    }
+        if (!empty($subcontratistas) && is_array($subcontratistas)) {
+            foreach ($subcontratistas as $sub) {
+                if (!empty($sub['subcontratista'])) {
+                    $psSubcontratistas[] = $sub['subcontratista'];
                 }
-                $psSubcontratistas = array_values(array_unique(array_filter($psSubcontratistas)));
-                echo json_encode($psSubcontratistas, JSON_UNESCAPED_UNICODE);
-            ?>,
+            }
+        }
+        $psSubcontratistas = array_values(array_unique(array_filter($psSubcontratistas)));
+        echo json_encode($psSubcontratistas, JSON_UNESCAPED_UNICODE);
+        ?>,
             profesionales: <?php
-                $psProfesionales = [];
-                if (!empty($profesionales) && is_array($profesionales)) {
-                    foreach ($profesionales as $prof) {
-                        if (!empty($prof['nombre'])) {
-                            $psProfesionales[] = $prof['nombre'];
-                        }
-                    }
+            $psProfesionales = [];
+        if (!empty($profesionales) && is_array($profesionales)) {
+            foreach ($profesionales as $prof) {
+                if (!empty($prof['nombre'])) {
+                    $psProfesionales[] = $prof['nombre'];
                 }
-                $psProfesionales = array_values(array_unique(array_filter($psProfesionales)));
-                echo json_encode($psProfesionales, JSON_UNESCAPED_UNICODE);
-            ?>,
+            }
+        }
+        $psProfesionales = array_values(array_unique(array_filter($psProfesionales)));
+        echo json_encode($psProfesionales, JSON_UNESCAPED_UNICODE);
+        ?>,
             categoriasCnc: <?php
-                $psCategoriasCnc = [];
-                if (!empty($categoriasCnc) && is_array($categoriasCnc)) {
-                    foreach ($categoriasCnc as $cnc) {
-                        if (!empty($cnc['Categoria_CNC'])) {
-                            $psCategoriasCnc[] = $cnc['Categoria_CNC'];
-                        }
-                    }
+            $psCategoriasCnc = [];
+        if (!empty($categoriasCnc) && is_array($categoriasCnc)) {
+            foreach ($categoriasCnc as $cnc) {
+                if (!empty($cnc['Categoria_CNC'])) {
+                    $psCategoriasCnc[] = $cnc['Categoria_CNC'];
                 }
-                $psCategoriasCnc = array_values(array_unique(array_filter($psCategoriasCnc)));
-                echo json_encode($psCategoriasCnc, JSON_UNESCAPED_UNICODE);
-            ?>
+            }
+        }
+        $psCategoriasCnc = array_values(array_unique(array_filter($psCategoriasCnc)));
+        echo json_encode($psCategoriasCnc, JSON_UNESCAPED_UNICODE);
+        ?>
         };
     </script>
     <script src="/js/modules/lps_drawer.js?v=20260522c"></script>
-    <script src="/js/modules/programacion_semanal/hot.js?v=hot49"></script>
+    <script src="/js/modules/programacion_semanal/hot.js?v=hot50"></script>
+    <script src="/js/modules/programacion_semanal/changeMonitor.js?v=ap1"></script>
 
     <script>
         function cargaParametros() {
             if (window.PSHotModule && typeof window.PSHotModule.init === 'function') {
                 window.PSHotModule.init();
+            }
+            if (window.ChangeMonitor && typeof window.ChangeMonitor.init === 'function') {
+                window.ChangeMonitor.init();
             }
         }
 

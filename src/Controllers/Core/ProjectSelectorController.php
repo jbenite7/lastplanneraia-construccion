@@ -24,7 +24,7 @@ class ProjectSelectorController
             exit();
         }
 
-        $usuario = (string)$_SESSION['usuario'];
+        $usuario = (string) $_SESSION['usuario'];
 
         $sql = "SELECT p.ID,
                        p.Proyecto_Proceso,
@@ -47,7 +47,7 @@ class ProjectSelectorController
 
         foreach ($proyectos as &$project) {
             $project['progreso'] = rand(0, 100);
-            $normalizedRole = $this->normalizeRoleCode((string)($project['permiso'] ?? 'V'));
+            $normalizedRole = $this->normalizeRoleCode((string) ($project['permiso'] ?? 'V'));
             $project['permiso'] = $normalizedRole;
             $project['rol_nombre'] = RoleManager::getRoleName($normalizedRole);
         }
@@ -67,8 +67,8 @@ class ProjectSelectorController
             exit();
         }
 
-        $usuario = (string)$_SESSION['usuario'];
-        $proyectoSeleccionado = trim((string)($_POST['proyecto'] ?? ''));
+        $usuario = (string) $_SESSION['usuario'];
+        $proyectoSeleccionado = trim((string) ($_POST['proyecto'] ?? ''));
 
         if ($proyectoSeleccionado === '') {
             $_SESSION['error'] = 'Debes seleccionar un proyecto.';
@@ -101,10 +101,10 @@ class ProjectSelectorController
             exit();
         }
 
-        $dbName = (string)($accessData['Base_de_Datos'] ?? '');
-        $permiso = $this->normalizeRoleCode((string)($accessData['role'] ?? 'V'));
+        $dbName = (string) ($accessData['Base_de_Datos'] ?? '');
+        $permiso = $this->normalizeRoleCode((string) ($accessData['role'] ?? 'V'));
 
-        if ((int)($accessData['Acceso'] ?? 1) === 0 && !in_array($permiso, ['A', 'D'], true)) {
+        if ((int) ($accessData['Acceso'] ?? 1) === 0 && !in_array($permiso, ['A', 'D'], true)) {
             $_SESSION['error'] = 'El proyecto seleccionado se encuentra inactivo para tu perfil.';
             header('Location: /proyectos');
             exit();
@@ -124,7 +124,7 @@ class ProjectSelectorController
                 'Login',
                 'ACCESO_PROYECTO',
                 "Usuario $usuario ingresó a proyecto $proyectoSeleccionado",
-                $dbName
+                $dbName,
             );
         }
 

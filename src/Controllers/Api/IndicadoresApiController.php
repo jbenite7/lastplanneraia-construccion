@@ -32,17 +32,17 @@ class IndicadoresApiController extends BaseController
         }
 
         try {
-            $this->actualizarIndicadoresGenerales((int)$semana, $dbName);
-            $this->actualizarCicCip((int)$semana, $dbName);
+            $this->actualizarIndicadoresGenerales((int) $semana, $dbName);
+            $this->actualizarCicCip((int) $semana, $dbName);
 
             return $this->jsonResponse([
                 'respuesta' => 'OK',
-                'mensaje' => "Indicadores de la semana {$semana} generados correctamente."
+                'mensaje' => "Indicadores de la semana {$semana} generados correctamente.",
             ]);
         } catch (\Exception $e) {
             return $this->jsonResponse([
                 'respuesta' => 'ERROR',
-                'mensaje' => 'Error al generar indicadores: ' . $e->getMessage()
+                'mensaje' => 'Error al generar indicadores: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -82,7 +82,7 @@ SELECT 'consolidado general' AS 'subcontratista_profesional',
     (SELECT COUNT(*) FROM {$dbName}_programacion_semanal WHERE Categoria_CNC='Administrativas' AND Semana=? AND (Activa=1 OR Activa='NA')) AS 'CNC_Administrativas',
     (SELECT COUNT(*) FROM {$dbName}_programacion_semanal WHERE Categoria_CNC='Causas Exógenas' AND Semana=? AND (Activa=1 OR Activa='NA')) AS 'CNC_Causas_Exogenas'
 SQL;
-        // Nota: Se omiten intencionalmente los campos de "Act_Inician_Sem_X" por brevedad en este bloque, 
+        // Nota: Se omiten intencionalmente los campos de "Act_Inician_Sem_X" por brevedad en este bloque,
         // pero se asume que forman parte de la migración completa si el front los requiere.
 
         $stats = $db->query($sqlStats, array_fill(0, 10, $semana))->fetch(PDO::FETCH_ASSOC);
@@ -96,7 +96,9 @@ SQL;
             $updates = [];
             $values = [];
             foreach ($stats as $col => $val) {
-                if ($col === 'subcontratista_profesional' || $col === 'rol') continue;
+                if ($col === 'subcontratista_profesional' || $col === 'rol') {
+                    continue;
+                }
                 $updates[] = "$col = ?";
                 $values[] = $val;
             }
@@ -112,10 +114,10 @@ SQL;
 
         // 1. Actualizar PAC de Subcontratistas en tabla CIC
         $subs = $db->query("SELECT DISTINCT Sub_Contratista FROM {$dbName}_programacion_semanal WHERE Semana = ? AND Sub_Contratista !='' AND (Activa='1' OR Activa='NA')", [$semana])->fetchAll(PDO::FETCH_COLUMN);
-        
+
         foreach ($subs as $sub) {
             $stats = $db->query("SELECT ROUND(AVG(P_Completado),3) as P_Com, ROUND(AVG(PAC),3) as PAC FROM {$dbName}_programacion_semanal WHERE Semana=? AND Sub_Contratista =? AND (Activa=1 OR Activa='NA')", [$semana, $sub])->fetch(PDO::FETCH_ASSOC);
-            
+
             $exists = $db->query("SELECT 1 FROM {$dbName}_cic WHERE Semana = ? AND subcontratista = ?", [$semana, $sub])->fetchColumn();
             if (!$exists) {
                 $db->query("INSERT INTO {$dbName}_cic (Semana, subcontratista, P_Completado, PAC) VALUES (?, ?, ?, ?)", [$semana, $sub, $stats['P_Com'] ?? 0, $stats['PAC'] ?? 0]);
@@ -126,10 +128,10 @@ SQL;
 
         // 2. Actualizar PAC de Profesionales en tabla CIP
         $profs = $db->query("SELECT DISTINCT Responsable_AIA FROM {$dbName}_programacion_semanal WHERE Semana = ? AND Responsable_AIA !='' AND (Activa='1' OR Activa='NA')", [$semana])->fetchAll(PDO::FETCH_COLUMN);
-        
+
         foreach ($profs as $prof) {
             $stats = $db->query("SELECT ROUND(AVG(P_Completado),3) as P_Com, ROUND(AVG(PAC),3) as PAC FROM {$dbName}_programacion_semanal WHERE Semana=? AND Responsable_AIA =? AND (Activa=1 OR Activa='NA')", [$semana, $prof])->fetch(PDO::FETCH_ASSOC);
-            
+
             $exists = $db->query("SELECT 1 FROM {$dbName}_cip WHERE Semana = ? AND profesional = ?", [$semana, $prof])->fetchColumn();
             if (!$exists) {
                 $db->query("INSERT INTO {$dbName}_cip (Semana, profesional, P_Completado, PAC) VALUES (?, ?, ?, ?)", [$semana, $prof, $stats['P_Com'] ?? 0, $stats['PAC'] ?? 0]);

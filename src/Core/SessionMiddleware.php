@@ -35,10 +35,10 @@ class SessionMiddleware
         try {
             $db = \Database::getInstance();
             $stmt = $db->prepare("SELECT activo FROM general_usuarios WHERE usuario = ? LIMIT 1");
-            $stmt->execute([(string)$_SESSION['usuario']]);
+            $stmt->execute([(string) $_SESSION['usuario']]);
             $user = $stmt->fetch();
 
-            if ($user && isset($user['activo']) && (int)$user['activo'] !== 1) {
+            if ($user && isset($user['activo']) && (int) $user['activo'] !== 1) {
                 session_unset();
                 session_destroy();
                 self::finishUnauthorized('/login?inactive=1', 'inactive');
@@ -65,7 +65,7 @@ class SessionMiddleware
 
         // Actualizar semana en sesión si viene por parámetro GET (patrón legacy)
         if (isset($_GET['semana'])) {
-            $_SESSION['semana'] = (int)$_GET['semana'];
+            $_SESSION['semana'] = (int) $_GET['semana'];
         }
     }
 

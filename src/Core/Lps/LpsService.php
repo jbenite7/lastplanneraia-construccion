@@ -4,6 +4,7 @@ namespace App\Core\Lps;
 
 class LpsService
 {
+    private array $timestampCache = [];
     // --- Lógica de Programación Semanal (PS) ---
 
     public function getWeeklyPhaseKey(int $semanalConfirmada): string
@@ -17,7 +18,7 @@ class LpsService
             return true;
         }
 
-        $text = trim((string)$value);
+        $text = trim((string) $value);
         if ($text === '') {
             return true;
         }
@@ -32,7 +33,7 @@ class LpsService
             return $fallback;
         }
 
-        $normalized = preg_replace('/\s+/', '', trim((string)$value));
+        $normalized = preg_replace('/\s+/', '', trim((string) $value));
 
         $commaPos = strrpos($normalized, ',');
         $dotPos = strrpos($normalized, '.');
@@ -52,13 +53,13 @@ class LpsService
             return $fallback;
         }
 
-        return (float)$normalized;
+        return (float) $normalized;
     }
 
     public function isActiveRow(array $row): bool
     {
         $activaRaw = $row['Activa'] ?? '';
-        $activa = strtoupper(trim((string)$activaRaw));
+        $activa = strtoupper(trim((string) $activaRaw));
 
         if ($activa === '' || $activa === 'NA' || $activa === '0' || $activa === 'N' || $activa === 'NO' || $activa === 'FALSE') {
             return false;
@@ -126,9 +127,9 @@ class LpsService
         $fechaInicioActividad,
         $fechaFinActividad,
         $fechaInicioSemana,
-        $fechaFinSemana = null
+        $fechaFinSemana = null,
     ): string {
-        if ((int)$titulo === 1) {
+        if ((int) $titulo === 1) {
             return 'Capítulo';
         }
 
@@ -182,7 +183,7 @@ class LpsService
     {
         $fiTs = $this->toTimestamp($fechaInicioActividad);
         $ffTs = $this->toTimestamp($fechaFinActividad);
-        $fsTs = $this->toTimestamp($fechaInicioSemana);
+        $fsTs = is_int($fechaInicioSemana) ? $fechaInicioSemana : $this->toTimestamp($fechaInicioSemana);
 
         if ($fiTs === null || $ffTs === null || $fsTs === null) {
             return 0.0;
@@ -192,8 +193,8 @@ class LpsService
             $ffTs = $fiTs;
         }
 
-        $duracionDias = max(1, (int)floor(($ffTs - $fiTs) / 86400) + 1);
-        $diasTranscurridos = (int)floor(($fsTs - $fiTs) / 86400);
+        $duracionDias = max(1, (int) floor(($ffTs - $fiTs) / 86400) + 1);
+        $diasTranscurridos = (int) floor(($fsTs - $fiTs) / 86400);
 
         if ($diasTranscurridos < 1) {
             return 0.0;
@@ -212,17 +213,30 @@ class LpsService
             return null;
         }
 
-        $value = trim((string)$dateValue);
+        $value = trim((string) $dateValue);
         if ($value === '') {
             return null;
         }
 
+        if (isset($this->timestampCache[$value])) {
+            return $this->timestampCache[$value];
+        }
+
         $timestamp = strtotime($value);
         if ($timestamp === false) {
+            $this->timestampCache[$value] = null;
             return null;
         }
 
-        return strtotime(date('Y-m-d', $timestamp));
+        // Si la cadena ya viene en formato estándar YYYY-MM-DD, strtotime ya devuelve la medianoche
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+            $this->timestampCache[$value] = $timestamp;
+            return $timestamp;
+        }
+
+        $result = strtotime(date('Y-m-d', $timestamp));
+        $this->timestampCache[$value] = $result;
+        return $result;
     }
 
     public function clamp(float $value, float $min, float $max): float
@@ -238,7 +252,7 @@ class LpsService
     {
         $fInicioAct = date("Y-m-d", strtotime($data['Fecha_Inicio']));
         $fFinAct = date("Y-m-d", strtotime($data['Fecha_Fin']));
-        $ejecutado = (float)($data['Ejecutado'] ?? 0);
+        $ejecutado = (float) ($data['Ejecutado'] ?? 0);
 
         $diasTotales = ((strtotime($fFinAct) - strtotime($fInicioAct)) / 86400) + 1;
         $diasTranscurridos = ((strtotime($fFinSem) - strtotime($fInicioAct)) / 86400) + 1;
@@ -247,7 +261,7 @@ class LpsService
 
         $inicioOverlap = max(strtotime($fInicioSem), strtotime($fInicioAct));
         $finOverlap = min(strtotime($fFinSem), strtotime($fFinAct));
-        
+
         $diasEnSemana = ($inicioOverlap <= $finOverlap) ? (($finOverlap - $inicioOverlap) / 86400) + 1 : 0;
         $diasRestantesDesdeInicioSemana = ((strtotime($fFinAct) - $inicioOverlap) / 86400) + 1;
 
@@ -269,9 +283,9 @@ class LpsService
         } else {
             $data["Ejecutado_Fin_Semana"] = $ejecutado + $proyeccion;
         }
-        
-        $data["Ejecutado_Fin_Semana"] = min(1.0, (float)$data["Ejecutado_Fin_Semana"]);
-        
+
+        $data["Ejecutado_Fin_Semana"] = min(1.0, (float) $data["Ejecutado_Fin_Semana"]);
+
         return $data;
     }
 
@@ -310,7 +324,7 @@ class LpsService
         $tables = $stmtTables->fetchAll(\PDO::FETCH_COLUMN);
 
         foreach ($tables as $tableName) {
-            if (!preg_match('/^[a-zA-Z0-9_]+$/', (string)$tableName)) {
+            if (!preg_match('/^[a-zA-Z0-9_]+$/', (string) $tableName)) {
                 continue;
             }
 
@@ -320,7 +334,7 @@ class LpsService
 
             $stmtUpdate = $db->query($sqlDisable);
             $summary['tables'] += 1;
-            $summary['rows'] += (int)$stmtUpdate->rowCount();
+            $summary['rows'] += (int) $stmtUpdate->rowCount();
         }
 
         return $summary;

@@ -541,7 +541,8 @@ window.LPSContextualDrawer = (function() {
       ? activeHot.toPhysicalRow(activeRowIndex)
       : activeRowIndex;
     if (!Number.isInteger(physicalRow) || physicalRow < 0) return null;
-    return activeHot.getSourceDataAtRow(physicalRow) || null;
+    const sourceData = typeof activeHot.getSourceData === 'function' ? activeHot.getSourceData() : null;
+    return (Array.isArray(sourceData) && physicalRow < sourceData.length) ? (sourceData[physicalRow] || null) : null;
   }
 
   function hideActivityCards() {
@@ -1240,7 +1241,8 @@ window.LPSContextualDrawer = (function() {
         if (r < 0) return;
         activeRowIndex = r;
         const physicalRow = typeof hot.toPhysicalRow === 'function' ? hot.toPhysicalRow(r) : r;
-        const rowData = Number.isInteger(physicalRow) && physicalRow >= 0 ? hot.getSourceDataAtRow(physicalRow) : null;
+        const sourceData = typeof hot.getSourceData === 'function' ? hot.getSourceData() : null;
+        const rowData = (Array.isArray(sourceData) && Number.isInteger(physicalRow) && physicalRow >= 0 && physicalRow < sourceData.length) ? (sourceData[physicalRow] || null) : null;
         LPSContextualDrawer.updateContext(rowData, moduleKey);
       });
     },

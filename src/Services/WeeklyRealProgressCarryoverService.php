@@ -65,7 +65,7 @@ class WeeklyRealProgressCarryoverService
                 $subcontratista = $this->normalizeNullableText($baseProgram['Sub_Contratista'] ?? null);
                 ['unit' => $unidad, 'quantity' => $cantidadPpto] = $this->normalizeMeasurement(
                     $baseProgram['unidad'] ?? null,
-                    $baseProgram['cantidad_ppto'] ?? null
+                    $baseProgram['cantidad_ppto'] ?? null,
                 );
             }
 
@@ -81,11 +81,11 @@ class WeeklyRealProgressCarryoverService
                     $cantidadPpto,
                     $targetWeek,
                     $targetRow['Consecutivo'],
-                ]
+                ],
             );
 
             $updatedRows++;
-            $updatedProgramIds[(int)$targetRow['Consecutivo_en_Programa']] = true;
+            $updatedProgramIds[(int) $targetRow['Consecutivo_en_Programa']] = true;
         }
 
         $this->normalizationService->normalizeChapters($dbPrefix, $targetWeek);
@@ -102,14 +102,14 @@ class WeeklyRealProgressCarryoverService
             "SELECT Consecutivo_en_Programa, Actividad, Ejecutado, Ejecutado_Siguiente_Semana, unidad, cantidad_ppto, Responsable_AIA, Sub_Contratista
              FROM {$dbPrefix}_programa_consolidado
              WHERE Semana = ? AND Titulo = 0",
-            [$sourceWeek]
+            [$sourceWeek],
         )->fetchAll();
 
         $byId = [];
         $byActivity = [];
 
         foreach ($rows as $row) {
-            $programId = (int)($row['Consecutivo_en_Programa'] ?? 0);
+            $programId = (int) ($row['Consecutivo_en_Programa'] ?? 0);
             if ($programId <= 0) {
                 continue;
             }
@@ -132,7 +132,7 @@ class WeeklyRealProgressCarryoverService
             "SELECT Consecutivo, Consecutivo_en_Programa, Actividad, programaAnteriorAsociar, Ejecutado, Ejecutado_Siguiente_Semana
              FROM {$dbPrefix}_programa_consolidado
              WHERE Semana = ? AND Titulo = 0",
-            [$targetWeek]
+            [$targetWeek],
         )->fetchAll();
     }
 
@@ -154,7 +154,7 @@ class WeeklyRealProgressCarryoverService
         $byActivity = [];
 
         foreach ($rows as $row) {
-            $programId = (int)($row['Consecutivo_En_Programa'] ?? 0);
+            $programId = (int) ($row['Consecutivo_En_Programa'] ?? 0);
             if ($programId <= 0) {
                 continue;
             }
@@ -210,7 +210,7 @@ class WeeklyRealProgressCarryoverService
         ['unit' => $unit, 'quantity' => $quantity, 'signature' => $signature] = $this->normalizeMeasurement(
             $row['Unidad'] ?? null,
             $row['cantidad_ppto'] ?? null,
-            true
+            true,
         );
 
         $real = $this->lpsService->toFloat($row['Ejecutado_Real'] ?? null, 0.0);
@@ -267,11 +267,11 @@ class WeeklyRealProgressCarryoverService
         array $sourcePrograms,
         array $weeklyGroups,
         ?int $sourceProgramId,
-        ?string $filterActivityKey
+        ?string $filterActivityKey,
     ): ?array {
         $mappingKey = $this->normalizeActivityKey($targetRow['programaAnteriorAsociar'] ?? null);
         $targetActivityKey = $this->normalizeActivityKey($targetRow['Actividad'] ?? null);
-        $targetProgramId = (int)($targetRow['Consecutivo_en_Programa'] ?? 0);
+        $targetProgramId = (int) ($targetRow['Consecutivo_en_Programa'] ?? 0);
 
         $baseProgram = null;
         $overlayGroup = null;
@@ -303,7 +303,7 @@ class WeeklyRealProgressCarryoverService
             if ($isNameMatch) {
                 $matchesFilter = ($filterActivityKey !== null && $sourceKey === $filterActivityKey);
             } else {
-                $matchesFilter = ((int)$sourceKey === $sourceProgramId);
+                $matchesFilter = ((int) $sourceKey === $sourceProgramId);
             }
 
             if (!$matchesFilter) {
@@ -332,14 +332,14 @@ class WeeklyRealProgressCarryoverService
 
     private function normalizeActivityKey($value): string
     {
-        $text = html_entity_decode(strip_tags((string)($value ?? '')), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $text = html_entity_decode(strip_tags((string) ($value ?? '')), ENT_QUOTES | ENT_HTML5, 'UTF-8');
         $text = preg_replace('/\s+/u', ' ', trim($text));
         return function_exists('mb_strtolower') ? mb_strtolower($text, 'UTF-8') : strtolower($text);
     }
 
     private function normalizeMeasurement($unitValue, $quantityValue, bool $includeSignature = false): array
     {
-        $unit = trim((string)($unitValue ?? ''));
+        $unit = trim((string) ($unitValue ?? ''));
         $quantity = $this->lpsService->toFloat($quantityValue ?? null, null);
 
         if ($quantity !== null) {
@@ -368,13 +368,13 @@ class WeeklyRealProgressCarryoverService
             return null;
         }
 
-        $text = preg_replace('/\s+/u', ' ', trim((string)$value));
+        $text = preg_replace('/\s+/u', ' ', trim((string) $value));
         return ($text === '') ? null : $text;
     }
 
     private function joinDistinctValues(array $values): ?string
     {
-        $items = array_values(array_filter($values, static fn ($value) => $value !== null && $value !== ''));
+        $items = array_values(array_filter($values, static fn($value) => $value !== null && $value !== ''));
         if (empty($items)) {
             return null;
         }

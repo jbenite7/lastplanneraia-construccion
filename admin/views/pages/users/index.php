@@ -1,5 +1,6 @@
 <?php
 use Admin\Core\RoleManager;
+
 ?>
 
 <div class="card">
@@ -37,8 +38,8 @@ use Admin\Core\RoleManager;
        </thead>
        <tbody>
          <?php foreach ($users as $user): ?>
-        <?php $isActive = (int)($user['activo'] ?? 1) === 1; ?>
-        <tr data-active="<?php echo $isActive ? 1 : 0; ?>" data-has-projects="<?php echo ((int)($user['projects_count'] ?? 0) > 0) ? 1 : 0; ?>" class="<?php echo $isActive ? '' : 'user-row-inactive'; ?>">
+        <?php $isActive = (int) ($user['activo'] ?? 1) === 1; ?>
+        <tr data-active="<?php echo $isActive ? 1 : 0; ?>" data-has-projects="<?php echo ((int) ($user['projects_count'] ?? 0) > 0) ? 1 : 0; ?>" class="<?php echo $isActive ? '' : 'user-row-inactive'; ?>">
           <td class="text-center"><?php echo $user['id']; ?></td>
           <td><?php echo htmlspecialchars($user['nombre']); ?></td>
           <td class="text-break"><?php echo htmlspecialchars($user['usuario']); ?></td>
@@ -46,15 +47,15 @@ use Admin\Core\RoleManager;
           <td><?php echo htmlspecialchars($user['cargo']); ?></td>
           <td class="text-center">
             <?php
-              $roleCode = strtoupper((string)($user['permiso'] ?? 'V'));
-              if ($roleCode === 'P') {
-                  $roleCode = 'D';
-              } elseif ($roleCode === 'U') {
-                  $roleCode = 'V';
-              }
-              $roleColor = RoleManager::getRoleColor($roleCode);
-              $roleName = RoleManager::getRoleName($roleCode);
-            ?>
+              $roleCode = strtoupper((string) ($user['permiso'] ?? 'V'));
+             if ($roleCode === 'P') {
+                 $roleCode = 'D';
+             } elseif ($roleCode === 'U') {
+                 $roleCode = 'V';
+             }
+             $roleColor = RoleManager::getRoleColor($roleCode);
+             $roleName = RoleManager::getRoleName($roleCode);
+             ?>
             <span class="badge bg-<?php echo htmlspecialchars($roleColor); ?>" title="<?php echo htmlspecialchars($roleCode); ?>">
               <?php echo htmlspecialchars($roleCode . ' - ' . $roleName); ?>
             </span>
@@ -73,15 +74,15 @@ use Admin\Core\RoleManager;
                 <?php echo $isActive ? 'Activo' : 'Inactivo'; ?>
               </span>
             </div>
-            <?php if ((int)($user['force_password_change'] ?? 0) === 1): ?>
+            <?php if ((int) ($user['force_password_change'] ?? 0) === 1): ?>
               <div class="mt-1">
                 <span class="badge badge-warning">Clave pendiente</span>
               </div>
             <?php endif; ?>
           </td>
           <td class="text-center">
-            <span class="badge badge-secondary"><?php echo (int)($user['projects_count'] ?? 0); ?></span>
-            <?php if ((int)($user['projects_count'] ?? 0) === 0): ?>
+            <span class="badge badge-secondary"><?php echo (int) ($user['projects_count'] ?? 0); ?></span>
+            <?php if ((int) ($user['projects_count'] ?? 0) === 0): ?>
               <div class="mt-1">
                 <span class="badge badge-light border">Sin proyectos</span>
               </div>

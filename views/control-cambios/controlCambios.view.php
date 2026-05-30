@@ -2,7 +2,7 @@
 <html lang="es">
 <head id="head">
 	<!--Script cque va al archivo linksComunesHead2.js-->
-	<script type="text/javascript" src="/js/linksComunesHead2.js?v=20260325a" charset="utf-8"></script>
+	<script type="text/javascript" src="/js/linksComunesHead2.js?v=piStateColors3" charset="utf-8"></script>
 </head>
 
 <!--Etiqueta superior-->
@@ -136,8 +136,8 @@
 
 		<style>
 	</style>
-	<div class="modal_ordenDeCambio modal fade" id="modalordenDeCambio" role="dialog" aria-labelledby="modal_ordenDeCambioLabel" data-keyboard="false">
-				<div class="modal-dialog modal-xl" role="document">
+	<div class="modal_ordenDeCambio modal fade aia-modal" id="modalordenDeCambio" role="dialog" aria-labelledby="modal_ordenDeCambioLabel" data-keyboard="false">
+				<div class="modal-dialog modal-xl modal-dialog-centered" role="document">
 					<div class="modal-content" id="modalordenDeCambioContent">
 						<div class="modal-header p-0">
 							<div class="col-sm-12 p-0 h-100">
@@ -164,7 +164,7 @@
 								<!-- Se crean los inputs del formulario de contratos de suministro -->
 								<div class="col-sm-12 p-0 mb-4 border-2 border-top-0 rounded border-dark">
 									<div class="tituloFormularioCambios form-group mb-0">
-										<h3 id='form_general'>Información General</h3>
+									<h3 class="form_general">Información General</h3>
 									</div>
 									<div class="row m-0 mb-3">
 									<div class="form-group col-sm mt-0 mb-0 pt-3 pb-3 h-100">
@@ -191,19 +191,19 @@
 											<div class="form-group mb-0">
 												<label for="radioSolicitanteCambio"><b>Solicitante del Cambio</b></label>
 											</div>
-											<div class="form-check form-check-inline" id="radioSolicitanteCambio">
+											<div class="form-check form-check-inline" data-field-group="radioSolicitanteCambio">
 												<input type="radio" class="form-check-input" name="inputSolicitanteCambio" id="inputSolicitanteCambioObra" value="1" onclick="document.getElementById('inputDetalleSolicitanteOtro').disabled = true; document.getElementById('inputDetalleSolicitanteOtro').value=''">
 												<label class="form-check-label" for="inputSolicitanteCambioObra">Obra</label>
 											</div>
-											<div class="form-check form-check-inline" id="radioSolicitanteCambio">
+											<div class="form-check form-check-inline" data-field-group="radioSolicitanteCambio">
 												<input type="radio" class="form-check-input" name="inputSolicitanteCambio" id="inputSolicitanteCambioCliente" value="2" onclick="document.getElementById('inputDetalleSolicitanteOtro').disabled = true; document.getElementById('inputDetalleSolicitanteOtro').value=''">
 												<label class="form-check-label" for="inputSolicitanteCambioCliente">Cliente</label>
 											</div>
-											<div class="form-check form-check-inline" id="radioSolicitanteCambio">
+											<div class="form-check form-check-inline" data-field-group="radioSolicitanteCambio">
 												<input type="radio" class="form-check-input" name="inputSolicitanteCambio" id="inputSolicitanteCambioInterventoria" value="3" onclick="document.getElementById('inputDetalleSolicitanteOtro').disabled = true; document.getElementById('inputDetalleSolicitanteOtro').value=''">
 												<label class="form-check-label" for="inputSolicitanteCambioInterventoria">Interventoría</label>
 											</div>
-											<div class="form-check form-check-inline col-sm-6" id="radioSolicitanteCambio">
+											<div class="form-check form-check-inline col-sm-6" data-field-group="radioSolicitanteCambio">
 												<input type="radio" class="form-check-input" name="inputSolicitanteCambio" id="inputSolicitanteCambioOtro" value="4" onclick="document.getElementById('inputDetalleSolicitanteOtro').disabled = false;">
 												<label class="form-check-label" for="inputSolicitanteCambioOtro">Otro:&nbsp&nbsp</label>
 												<input type="text" class="form-control" name="inputDetalleSolicitanteOtro" id="inputDetalleSolicitanteOtro" placeholder="¿Quien?" disabled autocomplete="off">
@@ -213,15 +213,15 @@
 											<div class="form-group mb-0">
 												<label for="radioPrioridad"><b>Prioridad</b></label>
 											</div>
-											<div class="form-check form-check-inline" id="radioPrioridad">
+											<div class="form-check form-check-inline" data-field-group="radioPrioridad">
 												<input type="radio" class="form-check-input" name="inputPrioridad" id="inputPrioridadAlta" value="1">
 												<label class="form-check-label" for="inputPrioridadAlta">Alta</label>
 											</div>
-											<div class="form-check form-check-inline" id="radioPrioridad">
+											<div class="form-check form-check-inline" data-field-group="radioPrioridad">
 												<input type="radio" class="form-check-input" name="inputPrioridad" id="inputPrioridadMedia" value="2">
 												<label class="form-check-label" for="inputPrioridadMedia">Media</label>
 											</div>
-											<div class="form-check form-check-inline" id="radioPrioridad">
+											<div class="form-check form-check-inline" data-field-group="radioPrioridad">
 												<input type="radio" class="form-check-input" name="inputPrioridad" id="inputPrioridadBaja" value="3">
 												<label class="form-check-label" for="inputPrioridadBaja">Baja</label>
 											</div>
@@ -233,29 +233,29 @@
 												<label for="checkboxTipoCambio"><b>Tipo de Cambio</b></label>
 											</div>
 											<div class="row m-0">
-												<div class="form-check form-check-inline" id="checkboxTipoCambio">
+												<div class="form-check form-check-inline" data-field-group="checkboxTipoCambio">
 													<input type="checkbox" class="form-check-input" name="inputTipoCambioAlcance" id="inputTipoCambioAlcance" value="1">
 													<label class="form-check-label" for="inputTipoCambioAlcance">Alcance</label>
 												</div>
-												<div class="form-check form-check-inline" id="checkboxTipoCambio">
+												<div class="form-check form-check-inline" data-field-group="checkboxTipoCambio">
 													<input type="checkbox" class="form-check-input" name="inputTipoCambioCronograma" id="inputTipoCambioCronograma" value="1">
 													<label class="form-check-label" for="inputTipoCambioCronograma">Cronograma</label>
 												</div>	
-												<div class="form-check form-check-inline" id="checkboxTipoCambio">
+												<div class="form-check form-check-inline" data-field-group="checkboxTipoCambio">
 													<input type="checkbox" class="form-check-input" name="inputTipoCambioCosto" id="inputTipoCambioCosto" value="1">
 													<label class="form-check-label" for="inputTipoCambioCosto">Costo</label>
 												</div>	
 											</div>
 											<div class="row mt-1">
-												<div class="form-check form-check-inline" id="checkboxTipoCambio">
+												<div class="form-check form-check-inline" data-field-group="checkboxTipoCambio">
 													<input type="checkbox" class="form-check-input" name="inputTipoCambioCalidad" id="inputTipoCambioCalidad" value="1">
 													<label class="form-check-label" for="inputTipoCambioCalidad">Calidad</label>
 												</div>	
-												<div class="form-check form-check-inline" id="checkboxTipoCambio">
+												<div class="form-check form-check-inline" data-field-group="checkboxTipoCambio">
 													<input type="checkbox" class="form-check-input" name="inputTipoCambioRiesgo" id="inputTipoCambioRiesgo" value="1">
 													<label class="form-check-label" for="inputTipoCambioRiesgo">Riesgo</label>
 												</div>	
-												<div class="form-check form-check-inline" id="checkboxTipoCambio">
+												<div class="form-check form-check-inline" data-field-group="checkboxTipoCambio">
 													<input type="checkbox" class="form-check-input" name="inputTipoCambioRecurso" id="inputTipoCambioRecurso" value="1">
 													<label class="form-check-label" for="inputTipoCambioRecurso">Recurso</label>
 												</div>	
@@ -265,19 +265,19 @@
 											<div class="form-group mb-0">
 												<label for="radioResponsableSolucion"><b>Responsable de la Definición de Cambio</b></label>
 											</div>
-											<div class="form-check form-check-inline" id="radioResponsableSolucion">
+											<div class="form-check form-check-inline" data-field-group="radioResponsableSolucion">
 												<input type="radio" class="form-check-input" name="inputResponsableSolucion" id="inputResponsableSolucionObra" value="1" onclick="document.getElementById('inputDetalleResponsableSolucion').disabled = true; document.getElementById('inputDetalleResponsableSolucion').value=''">
 												<label class="form-check-label" for="inputResponsableSolucionObra">Obra</label>
 											</div>
-											<div class="form-check form-check-inline" id="radioResponsableSolucion">
+											<div class="form-check form-check-inline" data-field-group="radioResponsableSolucion">
 												<input type="radio" class="form-check-input" name="inputResponsableSolucion" id="inputResponsableSolucionCliente" value="2" onclick="document.getElementById('inputDetalleResponsableSolucion').disabled = true; document.getElementById('inputDetalleResponsableSolucion').value=''">
 												<label class="form-check-label" for="inputResponsableSolucionCliente">Cliente</label>
 											</div>
-											<div class="form-check form-check-inline" id="radioResponsableSolucion">
+											<div class="form-check form-check-inline" data-field-group="radioResponsableSolucion">
 												<input type="radio" class="form-check-input" name="inputResponsableSolucion" id="inputResponsableSolucionInterventoria" value="3" onclick="document.getElementById('inputDetalleResponsableSolucion').disabled = true; document.getElementById('inputDetalleResponsableSolucion').value=''">
 												<label class="form-check-label" for="inputResponsableSolucionInterventoria">Interventoría</label>
 											</div>
-											<div class="form-check form-check-inline col-sm-6" id="radioResponsableSolucion">
+											<div class="form-check form-check-inline col-sm-6" data-field-group="radioResponsableSolucion">
 												<input type="radio" class="form-check-input" name="inputResponsableSolucion" id="inputResponsableSolucionOtro" value="4" onclick="document.getElementById('inputDetalleResponsableSolucion').disabled = false;">
 												<label class="form-check-label" for="inputResponsableSolucionOtro">Otro:&nbsp&nbsp</label>
 												<input type="text" class="form-control" name="inputDetalleResponsableSolucion" id="inputDetalleResponsableSolucion" placeholder="¿Quien?" disabled autocomplete="off">
@@ -287,7 +287,7 @@
 								</div>
 								<div class="col-sm-12 p-0 mb-4 border-2 border-top-0 rounded border-dark">
 									<div class="tituloFormularioCambios form-group mb-0">
-										<h3 id='form_general'>Detalle del Cambio</h3>
+									<h3 class="form_general">Detalle del Cambio</h3>
 									</div>
 									<div class="row m-0 mb-3 border rounded shadow-sm">
 										<div class="col-sm-3 p-2 bg-light d-flex align-items-center justify-content-center border-right">
@@ -480,30 +480,30 @@
 								</div>
 								<div class="col-sm-12 p-0 mb-4 border-2 border-top-0 rounded border-dark">
 									<div class="tituloFormularioCambios form-group mb-0">
-										<h3 id='form_general'>Aprobación</h3>
+									<h3 class="form_general">Aprobación</h3>
 									</div>
 									<div class="row m-0">
 									<div class="form-group col-sm-8 mt-0 mb-0 pt-3 pb-3 border-right h-100">
 											<div class="form-group mb-0">
 												<label for="radioAprobacion"><b>Estado de Aprobación</b></label>
 											</div>
-											<div class="form-check form-check-inline" id="radioAprobacion">
+											<div class="form-check form-check-inline" data-field-group="radioAprobacion">
 												<input type="radio" class="form-check-input" name="inputAprobacion" id="inputAprobacionEstudio" value="4">
 												<label class="form-check-label" for="inputAprobacionEstudio">En Estudio</label>
 											</div>
-											<div class="form-check form-check-inline" id="radioAprobacion">
+											<div class="form-check form-check-inline" data-field-group="radioAprobacion">
 												<input type="radio" class="form-check-input" name="inputAprobacion" id="inputAprobacionAprobado" value="1">
 												<label class="form-check-label" for="inputAprobacionAprobado">Aprobado</label>
 											</div>
-											<div class="form-check form-check-inline" id="radioAprobacion">
+											<div class="form-check form-check-inline" data-field-group="radioAprobacion">
 												<input type="radio" class="form-check-input" name="inputAprobacion" id="inputAprobacionAprobadoRestricciones" value="2">
 												<label class="form-check-label" for="inputAprobacionAprobadoRestricciones">Aprobado con Restricciones</label>
 											</div>
-											<div class="form-check form-check-inline" id="radioAprobacion">
+											<div class="form-check form-check-inline" data-field-group="radioAprobacion">
 												<input type="radio" class="form-check-input" name="inputAprobacion" id="inputAprobacionNoAprobado" value="3">
 												<label class="form-check-label" for="inputAprobacionNoAprobado">No Aprobado</label>
 											</div>
-											<div class="form-check form-check-inline" id="radioAprobacion">
+											<div class="form-check form-check-inline" data-field-group="radioAprobacion">
 												<input type="radio" class="form-check-input" name="inputAprobacion" id="inputAprobacionDesistido" value="5">
 												<label class="form-check-label" for="inputAprobacionDesistido">Desistido</label>
 											</div>
@@ -518,7 +518,7 @@
 								</div>
 								<div class="col-sm-12 p-0 border-2 border-top-0 rounded border-dark">
 									<div class="tituloFormularioCambios form-group mb-0">
-										<h3 id='form_general'>Archivos de Soporte</h3>
+									<h3 class="form_general">Archivos de Soporte</h3>
 									</div>
 									<div class="row mt-4 mb-4 col-sm-12">
 										<div class="col-sm-11 ml-auto mr-auto">
@@ -566,7 +566,7 @@
 		</div>
 
 		<!-- Se crea el Modal que solicita la confirmación de eliminar una orden de cambio o no -->
-		<div class="modal fade" id="modalEliminar" tabindex="-1" role="dialog" aria-labelledby="modalEliminarLabel" data-keyboard="false">
+		<div class="modal fade aia-modal" id="modalEliminar" tabindex="-1" role="dialog" aria-labelledby="modalEliminarLabel" data-keyboard="false">
 		  <div class="modal-dialog modal-dialog-centered" role="document">
 		    <div class="modal-content">
 		      <div class="modal-header">

@@ -40,7 +40,7 @@ class PasswordResetController
         $this->service->request($emailValue, 'app');
         $this->renderForgot(
             'Si el correo existe y está habilitado, enviaremos un enlace de restablecimiento en unos minutos.',
-            'success'
+            'success',
         );
     }
 
@@ -74,7 +74,7 @@ class PasswordResetController
             $token,
             'app',
             (string) ($_POST['password'] ?? ''),
-            (string) ($_POST['confirm_password'] ?? '')
+            (string) ($_POST['confirm_password'] ?? ''),
         );
 
         if ($result['success']) {

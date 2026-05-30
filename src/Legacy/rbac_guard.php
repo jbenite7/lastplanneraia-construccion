@@ -68,7 +68,7 @@ if (!function_exists('rbac_guard_require_permission')) {
             'user' => $_SESSION['usuario'] ?? ($_SESSION['admin_user']['usuario'] ?? 'desconocido'),
         ], $project);
 
-        http_response_code((int)($options['http_code'] ?? 403));
+        http_response_code((int) ($options['http_code'] ?? 403));
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode([
             'respuesta' => 'ERROR',

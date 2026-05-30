@@ -20,7 +20,7 @@ class EventService
         string $description = '',
         array $context = [],
         ?string $project = null,
-        string $result = 'ok'
+        string $result = 'ok',
     ): bool {
         $eventCode = strtolower(trim($eventCode));
         $eventAction = strtolower(trim($eventAction));
@@ -56,7 +56,7 @@ class EventService
             'Intento de acceso denegado por RBAC',
             $payload,
             $project,
-            'denegado'
+            'denegado',
         );
     }
 
@@ -116,7 +116,7 @@ class EventService
             $stmt = $this->db->prepare($sql);
             $stmt->execute([$tableName]);
             $row = $stmt->fetch();
-            $exists = ((int)($row['total'] ?? 0) > 0);
+            $exists = ((int) ($row['total'] ?? 0) > 0);
         } catch (\Throwable $e) {
             $exists = false;
         }

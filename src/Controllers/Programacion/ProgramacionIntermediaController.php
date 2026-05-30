@@ -68,7 +68,7 @@ class ProgramacionIntermediaController extends BaseController
 
         foreach ($stateKeys as $stateKey) {
             $suffix = str_replace('-', '_', $stateKey);
-            $isActive = isset($_GET['activa_' . $suffix]) ? (int)$_GET['activa_' . $suffix] : 0;
+            $isActive = isset($_GET['activa_' . $suffix]) ? (int) $_GET['activa_' . $suffix] : 0;
             if ($isActive === 1) {
                 $activeStates[] = $stateKey;
             }
@@ -76,10 +76,10 @@ class ProgramacionIntermediaController extends BaseController
 
         if (empty($activeStates)) {
             $legacyFlags = [
-                'lookahead' => isset($_GET['activa_lookahead']) ? (int)$_GET['activa_lookahead'] : 0,
-                'no_iniciadas' => isset($_GET['activa_no_iniciadas']) ? (int)$_GET['activa_no_iniciadas'] : 0,
-                'en_ejecucion_pendientes' => isset($_GET['activa_en_ejecucion_pendientes']) ? (int)$_GET['activa_en_ejecucion_pendientes'] : 0,
-                'en_ejecucion_terminadas' => isset($_GET['activa_en_ejecucion_terminadas']) ? (int)$_GET['activa_en_ejecucion_terminadas'] : 0,
+                'lookahead' => isset($_GET['activa_lookahead']) ? (int) $_GET['activa_lookahead'] : 0,
+                'no_iniciadas' => isset($_GET['activa_no_iniciadas']) ? (int) $_GET['activa_no_iniciadas'] : 0,
+                'en_ejecucion_pendientes' => isset($_GET['activa_en_ejecucion_pendientes']) ? (int) $_GET['activa_en_ejecucion_pendientes'] : 0,
+                'en_ejecucion_terminadas' => isset($_GET['activa_en_ejecucion_terminadas']) ? (int) $_GET['activa_en_ejecucion_terminadas'] : 0,
             ];
             foreach ($legacyFlags as $legacyClass => $legacyActive) {
                 if ($legacyActive === 1) {
@@ -143,7 +143,7 @@ class ProgramacionIntermediaController extends BaseController
         $semanaReq = $_POST['semana'] ?? $_GET['semana'] ?? null;
 
         if ($semanaReq !== null && $semanaReq !== '') {
-            $_SESSION['semana'] = (int)$semanaReq;
+            $_SESSION['semana'] = (int) $semanaReq;
         }
 
         if ($dbPrefix !== '' && (!isset($_SESSION['db']) || $_SESSION['db'] === '')) {
@@ -203,7 +203,7 @@ class ProgramacionIntermediaController extends BaseController
                 $suffix = str_replace('-', '_', $stateKey);
                 $counters[$stateKey] = 0;
                 $payload['count_' . $suffix] = 0;
-                $payload['activa_' . $suffix] = (isset($_SESSION[\pi_state_session_key($stateKey)]) && (int)$_SESSION[\pi_state_session_key($stateKey)] === 1) ? 1 : 0;
+                $payload['activa_' . $suffix] = (isset($_SESSION[\pi_state_session_key($stateKey)]) && (int) $_SESSION[\pi_state_session_key($stateKey)] === 1) ? 1 : 0;
             }
 
             foreach ($rows as $row) {
@@ -238,7 +238,7 @@ class ProgramacionIntermediaController extends BaseController
         require_once PROJECT_ROOT . '/src/Legacy/estado_programacion_intermedia.php';
 
         $clase = $_GET['clase'] ?? '';
-        $activa = isset($_GET['activa']) ? (int)$_GET['activa'] : 0;
+        $activa = isset($_GET['activa']) ? (int) $_GET['activa'] : 0;
 
         $states = \pi_filter_state_keys();
 
@@ -287,7 +287,7 @@ class ProgramacionIntermediaController extends BaseController
             $preview = [];
 
             foreach ($rows as $row) {
-                $id = (string)($row['Consecutivo_en_Programa'] ?? '');
+                $id = (string) ($row['Consecutivo_en_Programa'] ?? '');
                 if ($id !== '') {
                     $foundIds[] = $id;
                 }
@@ -406,7 +406,7 @@ class ProgramacionIntermediaController extends BaseController
             if ($applyAssignments && $subContratista !== '') {
                 $setClauses[] = "Sub_Contratista = ?";
             }
-            if ($applyAssignments && $responsableAia !== '') {
+            if ($responsableAia !== '') {
                 $setClauses[] = "Responsable_AIA = ?";
             }
             $setClauses[] = "Activa = 1";
@@ -420,7 +420,7 @@ class ProgramacionIntermediaController extends BaseController
 
             if ($sharedTablesReady) {
                 try {
-                    $createdBy = (string)($_SESSION['nombre'] ?? $_SESSION['usuario'] ?? $_SESSION['nombre_usuario'] ?? 'system');
+                    $createdBy = (string) ($_SESSION['nombre'] ?? $_SESSION['usuario'] ?? $_SESSION['nombre_usuario'] ?? 'system');
                     $insertSharedSql = "INSERT INTO {$dbPrefix}_pi_shared_constraints (Semana, Restriccion, ValorObjetivo, Nota, CreadoPor) VALUES (?, ?, ?, ?, ?)";
                     $insertSharedStmt = $this->db->prepare($insertSharedSql);
 
@@ -428,12 +428,12 @@ class ProgramacionIntermediaController extends BaseController
                         $insertSharedStmt->execute([
                             $semana,
                             $restriction['type'],
-                            (string)$restriction['value'],
+                            (string) $restriction['value'],
                             $note,
                             $createdBy,
                         ]);
 
-                        $sharedId = (int)$this->db->lastInsertId();
+                        $sharedId = (int) $this->db->lastInsertId();
                         if ($sharedId > 0) {
                             $sharedIdsByType[$restriction['type']] = $sharedId;
                         }
@@ -457,7 +457,7 @@ class ProgramacionIntermediaController extends BaseController
             $updatedIds = [];
 
             foreach ($rows as $row) {
-                $rowId = (string)($row['Consecutivo_en_Programa'] ?? '');
+                $rowId = (string) ($row['Consecutivo_en_Programa'] ?? '');
                 if ($rowId === '') {
                     continue;
                 }
@@ -493,7 +493,7 @@ class ProgramacionIntermediaController extends BaseController
                                 $sharedId,
                                 $semana,
                                 $rowId,
-                                (string)$restriction['value'],
+                                (string) $restriction['value'],
                             ]);
                         } catch (\Throwable $linkError) {
                             $trackSharedLinks = false;
@@ -516,13 +516,13 @@ class ProgramacionIntermediaController extends BaseController
                 'Equipos' => 'Equipos',
                 'Predecesora' => 'Predecesora',
                 'Pdto_Cons' => 'Pdto. Constructivo',
-                'Modelo' => 'Modelo BIM'
+                'Modelo' => 'Modelo BIM',
             ];
             $operationParts = [];
             if ($applyRestriction) {
                 $restrictionParts = [];
                 foreach ($normalizedRestrictions as $restriction) {
-                    $valDisplay = $restriction['value'] === 'N/A' || $restriction['value'] === 'n/a' ? 'N/A' : (round((float)$restriction['value'] * 100) . '%');
+                    $valDisplay = $restriction['value'] === 'N/A' || $restriction['value'] === 'n/a' ? 'N/A' : (round((float) $restriction['value'] * 100) . '%');
                     $cName = $camposNames[$restriction['type']] ?? $restriction['type'];
                     $restrictionParts[] = "{$cName} a {$valDisplay}";
                 }
@@ -540,7 +540,7 @@ class ProgramacionIntermediaController extends BaseController
                 'ProgramacionIntermedia',
                 'SHARED_RESTRICTION_APPLY',
                 "Aplicó lote PI ({$operationSummary}) en {$updated} actividades (semana {$semana})",
-                $dbPrefix
+                $dbPrefix,
             );
 
             // Emitir Notificación de Restricción Compartida (Fase 5)
@@ -549,11 +549,11 @@ class ProgramacionIntermediaController extends BaseController
                     $svc = new \App\Services\NotificationService();
                     $usersByRole = $svc->getUsersByRoleForProject($dbPrefix);
                     $msg = "Lote PI: {$operationSummary} en {$updated} actividades - Semana {$semana}";
-                    
+
                     // Notificar a D, R, A
                     $notifiedUids = [];
                     $roles = \App\Core\Notifications\NotificationType::getRoles(\App\Core\Notifications\NotificationType::PI_SHARED_APPLIED);
-                    
+
                     foreach ($roles as $role) {
                         $users = $usersByRole[$role] ?? [];
                         foreach ($users as $uid) {
@@ -618,7 +618,7 @@ class ProgramacionIntermediaController extends BaseController
             }
 
             error_log('Error applySharedConstraints: ' . $e->getMessage());
-            $detail = trim((string)$e->getMessage());
+            $detail = trim((string) $e->getMessage());
             $detail = preg_replace('/\s+/', ' ', $detail);
             $publicMessage = 'No se pudo aplicar el lote de Programación Intermedia. Revise datos y permisos de escritura.';
             if ($detail !== '') {
@@ -636,23 +636,23 @@ class ProgramacionIntermediaController extends BaseController
         $semana = isset($_POST['semana']) ? filter_var($_POST['semana'], FILTER_VALIDATE_INT) : ($vars['semana'] ?? null);
         $applyRestriction = $this->parseSharedBool($_POST['apply_restriction'] ?? null, true);
         $applyAssignments = $this->parseSharedBool($_POST['apply_assignments'] ?? null, false);
-        $restrictionType = trim((string)($_POST['restriction_type'] ?? ''));
+        $restrictionType = trim((string) ($_POST['restriction_type'] ?? ''));
         $activityIds = $this->parseActivityIds($_POST['activity_ids'] ?? []);
-        $note = trim((string)($_POST['note'] ?? ''));
+        $note = trim((string) ($_POST['note'] ?? ''));
         $targetValue = $_POST['target_value'] ?? null;
-        $subContratista = $applyAssignments ? trim((string)($_POST['sub_contratista'] ?? '')) : '';
-        $responsableAia = $applyAssignments ? trim((string)($_POST['responsable_aia'] ?? '')) : '';
+        $subContratista = $applyAssignments ? trim((string) ($_POST['sub_contratista'] ?? '')) : '';
+        $responsableAia = trim((string) ($_POST['responsable_aia'] ?? ''));
 
         $allowedRestrictions = ['D_y_E', 'Materiales', 'MdeO', 'Equipos', 'Predecesora', 'Pdto_Cons', 'Modelo'];
         $restrictions = $applyRestriction
             ? $this->parseSharedRestrictionsInput($_POST['restrictions'] ?? null, $restrictionType, $targetValue, $allowedRestrictions)
             : [];
 
-        if (!preg_match('/^[a-zA-Z0-9_]+$/', (string)$dbPrefix)) {
+        if (!preg_match('/^[a-zA-Z0-9_]+$/', (string) $dbPrefix)) {
             return ['ok' => false, 'mensaje' => 'Base de datos inválida.'];
         }
 
-        if ($semana === false || $semana === null || (int)$semana <= 0) {
+        if ($semana === false || $semana === null || (int) $semana <= 0) {
             return ['ok' => false, 'mensaje' => 'Semana inválida.'];
         }
 
@@ -684,6 +684,10 @@ class ProgramacionIntermediaController extends BaseController
             }
         }
 
+        if ($applyRestriction && $responsableAia === '') {
+            return ['ok' => false, 'mensaje' => 'Responsable AIA es obligatorio para aplicar restricciones en lote.'];
+        }
+
         if ($applyAssignments && !$applyRestriction && $subContratista === '' && $responsableAia === '') {
             return ['ok' => false, 'mensaje' => 'Debe seleccionar Sub-Contratista o Responsable para aplicar asignaciones.'];
         }
@@ -691,7 +695,7 @@ class ProgramacionIntermediaController extends BaseController
         return [
             'ok' => true,
             'dbPrefix' => $dbPrefix,
-            'semana' => (int)$semana,
+            'semana' => (int) $semana,
             'applyRestriction' => $applyRestriction,
             'applyAssignments' => $applyAssignments,
             'restrictionType' => $restrictionType,
@@ -714,7 +718,7 @@ class ProgramacionIntermediaController extends BaseController
             return $value;
         }
 
-        $text = strtolower(trim((string)$value));
+        $text = strtolower(trim((string) $value));
         if ($text === '') {
             return $default;
         }
@@ -743,7 +747,7 @@ class ProgramacionIntermediaController extends BaseController
                     continue;
                 }
 
-                $type = trim((string)($item['type'] ?? $item['restriction_type'] ?? ''));
+                $type = trim((string) ($item['type'] ?? $item['restriction_type'] ?? ''));
                 if (!in_array($type, $allowedRestrictions, true)) {
                     continue;
                 }
@@ -751,7 +755,7 @@ class ProgramacionIntermediaController extends BaseController
                 $value = $item['value'] ?? $item['target_value'] ?? '';
                 $items[$type] = [
                     'type' => $type,
-                    'value' => trim((string)$value),
+                    'value' => trim((string) $value),
                 ];
             }
         }
@@ -759,7 +763,7 @@ class ProgramacionIntermediaController extends BaseController
         if (empty($items) && in_array($fallbackType, $allowedRestrictions, true)) {
             $items[$fallbackType] = [
                 'type' => $fallbackType,
-                'value' => trim((string)$fallbackValue),
+                'value' => trim((string) $fallbackValue),
             ];
         }
 
@@ -773,7 +777,7 @@ class ProgramacionIntermediaController extends BaseController
         if (is_array($rawIds)) {
             $tokens = $rawIds;
         } else {
-            $rawText = trim((string)$rawIds);
+            $rawText = trim((string) $rawIds);
             if ($rawText === '') {
                 return [];
             }
@@ -781,7 +785,7 @@ class ProgramacionIntermediaController extends BaseController
         }
 
         foreach ($tokens as $token) {
-            $value = trim((string)$token);
+            $value = trim((string) $token);
             if ($value === '' || !preg_match('/^[0-9]+$/', $value)) {
                 continue;
             }
@@ -816,7 +820,7 @@ class ProgramacionIntermediaController extends BaseController
 
     private function normalizeSharedRestrictionInput(string $restrictionType, $value)
     {
-        $text = trim((string)$value);
+        $text = trim((string) $value);
         if ($text === '') {
             return '';
         }
@@ -862,7 +866,7 @@ class ProgramacionIntermediaController extends BaseController
             return null;
         }
 
-        $raw = trim((string)$value);
+        $raw = trim((string) $value);
         if ($raw === '') {
             return null;
         }
@@ -893,7 +897,7 @@ class ProgramacionIntermediaController extends BaseController
             return null;
         }
 
-        $ratio = (float)$normalized;
+        $ratio = (float) $normalized;
         if ($hasPercent) {
             $ratio = $ratio / 100;
         }
@@ -933,7 +937,7 @@ class ProgramacionIntermediaController extends BaseController
                 continue;
             }
 
-            $text = trim((string)$value);
+            $text = trim((string) $value);
             if ($text === '' || strcasecmp($text, 'N/A') === 0) {
                 continue;
             }

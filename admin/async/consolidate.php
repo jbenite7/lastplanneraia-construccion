@@ -49,11 +49,11 @@ use App\Core\ProgressTracker;
 $tracker = new ProgressTracker($token);
 
 // Count steps
-$allCount = (int)$db->query(
-    "SELECT COUNT(*) FROM general_proyectos_procesos WHERE Area='Construccion' AND Activo=1"
+$allCount = (int) $db->query(
+    "SELECT COUNT(*) FROM general_proyectos_procesos WHERE Area='Construccion' AND Activo=1",
 )->fetchColumn();
-$pdcCount = (int)$db->query(
-    "SELECT COUNT(*) FROM general_proyectos_procesos WHERE Area='Construccion' AND Activo=1 AND pdcActivo=1"
+$pdcCount = (int) $db->query(
+    "SELECT COUNT(*) FROM general_proyectos_procesos WHERE Area='Construccion' AND Activo=1 AND pdcActivo=1",
 )->fetchColumn();
 $totalSteps = $allCount * 5 + $pdcCount * 2;
 

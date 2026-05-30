@@ -112,7 +112,7 @@ class DashboardController extends AdminController
             'Configuracion',
             'ACTUALIZAR',
             "{$updatedBy} {$actionText} la visualizacion global de console.log en el frontend.",
-            null
+            null,
         );
 
         $this->json([
@@ -157,7 +157,7 @@ class DashboardController extends AdminController
                 'Configuracion',
                 'ACTIVAR',
                 "{$updatedBy} activó el modo mantenimiento. La plataforma muestra la pantalla de mantenimiento a los usuarios.",
-                null
+                null,
             );
             $this->json([
                 'success' => true,
@@ -172,7 +172,7 @@ class DashboardController extends AdminController
                 'Configuracion',
                 'DESACTIVAR',
                 "{$updatedBy} desactivó el modo mantenimiento. La plataforma funciona con normalidad.",
-                null
+                null,
             );
             $this->json([
                 'success' => true,
@@ -206,7 +206,7 @@ class DashboardController extends AdminController
             'Seguridad',
             'RESETEAR_CLAVES',
             "{$updatedBy} activó el cambio de contraseña obligatorio para {$affected} usuarios activos.",
-            null
+            null,
         );
 
         $this->json([
@@ -397,11 +397,11 @@ class DashboardController extends AdminController
     private function countProjectSteps(): int
     {
         $db = Database::getInstance();
-        $allCount = (int)$db->query(
-            "SELECT COUNT(*) FROM general_proyectos_procesos WHERE Area='Construccion' AND Activo=1"
+        $allCount = (int) $db->query(
+            "SELECT COUNT(*) FROM general_proyectos_procesos WHERE Area='Construccion' AND Activo=1",
         )->fetchColumn();
-        $pdcCount = (int)$db->query(
-            "SELECT COUNT(*) FROM general_proyectos_procesos WHERE Area='Construccion' AND Activo=1 AND pdcActivo=1"
+        $pdcCount = (int) $db->query(
+            "SELECT COUNT(*) FROM general_proyectos_procesos WHERE Area='Construccion' AND Activo=1 AND pdcActivo=1",
         )->fetchColumn();
 
         return $allCount * 5 + $pdcCount * 2;
@@ -480,8 +480,8 @@ class DashboardController extends AdminController
         if ($handle) {
             while (($line = fgets($handle)) !== false) {
                 // Buscamos la fecha de hoy y palabras clave de error (insensible a mayúsculas)
-                if (strpos($line, $today) !== false &&
-                   (stripos($line, 'error') !== false || stripos($line, 'exception') !== false || stripos($line, 'fatal') !== false)) {
+                if (strpos($line, $today) !== false
+                   && (stripos($line, 'error') !== false || stripos($line, 'exception') !== false || stripos($line, 'fatal') !== false)) {
                     $count++;
                 }
             }
@@ -542,11 +542,11 @@ class DashboardController extends AdminController
             }
 
             // Capturar errores, actividad de Router o CSRF
-            if (stripos($line, 'error') !== false ||
-                stripos($line, 'exception') !== false ||
-                stripos($line, 'fatal') !== false ||
-                strpos($line, 'Router') !== false ||
-                strpos($line, 'CSRF') !== false) {
+            if (stripos($line, 'error') !== false
+                || stripos($line, 'exception') !== false
+                || stripos($line, 'fatal') !== false
+                || strpos($line, 'Router') !== false
+                || strpos($line, 'CSRF') !== false) {
 
                 $results[] = $line;
                 // Safety break to not overload the browser if logs are massive

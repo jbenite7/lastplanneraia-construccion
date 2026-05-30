@@ -25,10 +25,10 @@ abstract class AdminController extends BaseController
         try {
             $db = \Database::getInstance();
             $stmt = $db->prepare("SELECT activo FROM general_usuarios WHERE usuario = ? LIMIT 1");
-            $stmt->execute([(string)($_SESSION['admin_user']['usuario'] ?? '')]);
+            $stmt->execute([(string) ($_SESSION['admin_user']['usuario'] ?? '')]);
             $user = $stmt->fetch();
 
-            if ($user && isset($user['activo']) && (int)$user['activo'] !== 1) {
+            if ($user && isset($user['activo']) && (int) $user['activo'] !== 1) {
                 unset($_SESSION['admin_user']);
 
                 if ($this->isAjaxRequest()) {
