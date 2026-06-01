@@ -70,7 +70,11 @@
     if (data[prop] !== undefined && data[prop] !== null && data[prop] !== '') {
       return data[prop];
     }
-    return data['restr_' + prop];
+    var fallback = data['restr_' + prop];
+    if (window.__PI_DEBUG_COLOR && fallback !== undefined) {
+      console.warn('[PI-DEBUG] restrictionValue fallback:', { prop: prop, direct: data[prop], fallback: fallback });
+    }
+    return fallback;
   }
 
   function toRestrictionRatio(value) {

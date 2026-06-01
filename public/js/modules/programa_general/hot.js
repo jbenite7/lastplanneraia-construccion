@@ -1940,6 +1940,7 @@
       pendingViewportState = captureViewportState();
       hot.loadData(data);
       restoreHotFilterConditions(filterConditions);
+      hot.render();
       scheduleLayoutRefresh(0, true);
       return;
     }

@@ -483,12 +483,36 @@
 
   function getPIRowMeta(physicalRow, rowData) {
     if (Number.isInteger(physicalRow) && physicalRow >= 0 && _rowMetaCache[physicalRow]) {
+      if (window.__PI_DEBUG_COLOR && (physicalRow === 2 || physicalRow === 52 || physicalRow === 77 || physicalRow < 7)) {
+        console.log('[PI-DEBUG] getPIRowMeta cache HIT:', {
+          physicalRow: physicalRow,
+          rowDataId: (rowData || {}).Id,
+          cachedState: _rowMetaCache[physicalRow].state,
+          cachedClass: _rowMetaCache[physicalRow].rowClass,
+          rowClassCache: _rowClassCache[physicalRow],
+        });
+      }
       return _rowMetaCache[physicalRow];
     }
 
     var state = Number.isInteger(physicalRow) && physicalRow >= 0 ? _rowStateCache[physicalRow] : null;
     if (!state) {
+      if (window.__PI_DEBUG_COLOR) {
+        console.warn('[PI-DEBUG] getPIRowMeta cache miss:', {
+          physicalRow: physicalRow,
+          cacheLength: _rowMetaCache.length,
+          rowDataId: (rowData || {}).Id,
+          estado_operativo: (rowData || {}).estado_operativo,
+        });
+      }
       state = getState(rowData || {});
+    } else if (window.__PI_DEBUG_COLOR && (physicalRow === 2 || physicalRow === 52 || physicalRow === 77 || physicalRow < 7)) {
+      console.log('[PI-DEBUG] getPIRowMeta recompute:', {
+        physicalRow: physicalRow,
+        rowDataId: (rowData || {}).Id,
+        computedState: state,
+        rowClassCache: _rowClassCache[physicalRow],
+      });
     }
 
     var meta = buildPIRowMeta(rowData || {}, state);
@@ -542,20 +566,62 @@
     };
   }
 
-  function refreshCellMetaForVisualRow(visualRow) {
-    if (!hot || !Number.isInteger(visualRow) || visualRow < 0) {
+  function stripPIRowStateClasses(className) {
+    return String(className || '')
+      .replace(/\bpi-row-state\b/g, '')
+      .replace(/\bpi-state-[^\s]+/g, '')
+      .replace(/\bpdc-header\b/g, '')
+      .replace(/\bpi-row-shared-picked\b/g, '')
+      .replace(/\bpi-row-crisis\b/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function applyPIRowStateClass(element, rowClass) {
+    if (!element || !rowClass) {
       return;
     }
 
-    var physicalRow = getPhysicalRowFromVisualRow(hot, visualRow);
-    if (!Number.isInteger(physicalRow) || physicalRow < 0) {
+    var cleanClass = stripPIRowStateClasses(element.className || '');
+    element.className = (cleanClass + ' ' + rowClass).trim();
+  }
+
+  function applyRowClassesToDOM(instance) {
+    if (!instance) return;
+    var data = instance.getSourceData();
+    if (!data) return;
+    for (var i = 0; i < data.length; i++) {
+      var visualRow = typeof instance.toVisualRow === 'function' ? instance.toVisualRow(i) : i;
+      if (!Number.isInteger(visualRow) || visualRow < 0) continue;
+      var meta = _rowMetaCache[i];
+      if (!meta || !meta.rowClass) continue;
+      var td = instance.getCell(visualRow, 0);
+      if (!td) continue;
+      var tr = td.closest ? td.closest('tr') : td.parentNode;
+      if (!tr) continue;
+      applyPIRowStateClass(tr, meta.rowClass);
+
+      var cells = tr.querySelectorAll ? tr.querySelectorAll('td') : [];
+      for (var col = 0; col < cells.length; col++) {
+        applyPIRowStateClass(cells[col], meta.rowClass);
+      }
+    }
+  }
+
+  function refreshCellMetaForVisualRow(visualRow) {
+    if (!hot || !Number.isInteger(visualRow) || visualRow < 0) {
       return;
     }
 
     var colCount = typeof hot.countCols === 'function' ? hot.countCols() : 0;
     for (var col = 0; col < colCount; col++) {
       if (typeof hot.removeCellMeta === 'function') {
-        hot.removeCellMeta(physicalRow, col, 'className');
+        try {
+          hot.removeCellMeta(visualRow, col, 'className');
+        } catch (e) {
+          // removeCellMeta espera índice visual; si falla (e.g. el índice visual
+          // no es el último que conoce HT tras filtro), lo ignoramos.
+        }
       }
     }
   }
@@ -571,6 +637,21 @@
     for (var i = 0; i < rows.length; i++) {
       var rowData = rows[i] || {};
       var state = getState(rowData);
+      if (window.__PI_DEBUG_COLOR) {
+        console.log('[PI-DEBUG] buildRowClassCache[' + i + ']:', {
+          Id: rowData.Id,
+          Semanas_Inicio: rowData.Semanas_Inicio,
+          Ejecutado: rowData.Ejecutado,
+          D_y_E: rowData.D_y_E,
+          Materiales: rowData.Materiales,
+          MdeO: rowData.MdeO,
+          Equipos: rowData.Equipos,
+          Predecesora: rowData.Predecesora,
+          isReadyToCommit: window.PIStateMachine.isReadyToCommit(rowData),
+          state: state,
+          estado_operativo_label: rowData.estado_operativo,
+        });
+      }
       var meta = buildPIRowMeta(rowData, state);
       _rowStateCache[i] = state;
       _rowClassCache[i] = meta.rowClass;
@@ -2483,6 +2564,13 @@
 
   function restoreHotFilterConditions(conditions) {
     var clonedConditions = cloneHotFilterConditions(conditions);
+    if (window.__PI_DEBUG_COLOR) {
+      console.log('[PI-DEBUG] restoreHotFilterConditions:', {
+        originalCount: Array.isArray(conditions) ? conditions.length : 0,
+        clonedCount: clonedConditions.length,
+        columns: clonedConditions.map(function (s) { return s.column; }),
+      });
+    }
     if (clonedConditions.length === 0) {
       return;
     }
@@ -2909,6 +2997,7 @@
       pendingViewportState = captureViewportState();
       hot.loadData(data);
       restoreHotFilterConditions(filterConditions);
+      hot.render();
       scheduleLayoutRefresh(0, true);
       return;
     }
@@ -2996,7 +3085,26 @@
         var rowData = getSourceRowDataByVisualRow(hotInstance, row);
 
         if (!rowData) {
+          if (window.__PI_DEBUG_COLOR) {
+            console.warn('[PI-DEBUG] cells: no rowData for visualRow', row, 'physicalRow', physicalRow);
+          }
+          // Fallback a cache cuando rowData no está disponible (durante re-render post-filter)
+          if (Number.isInteger(physicalRow) && physicalRow >= 0 && _rowMetaCache[physicalRow]) {
+            return buildPICellProperties(
+              getColumnBaseClass(hotInstance, col),
+              hotInstance && typeof hotInstance.colToProp === 'function' ? hotInstance.colToProp(col) : null,
+              _rowMetaCache[physicalRow]
+            );
+          }
           return cellProperties;
+        }
+
+        if (window.__PI_DEBUG_COLOR) {
+          var targetPhys = [2, 16, 20, 21, 23, 52, 77];
+          var isTarget = targetPhys.indexOf(physicalRow) >= 0 || targetPhys.indexOf(row) >= 0;
+          if (isTarget) {
+            console.log('[PI-DEBUG] cells called:', { cellsRow: row, visualRow: row, physicalRow: physicalRow, col: col, Id: rowData.Id, estado_operativo: String(rowData.estado_operativo).substring(0, 50) });
+          }
         }
 
         return buildPICellProperties(
@@ -3026,6 +3134,9 @@
       height: getContainerAvailableHeight() || '100%',
       afterLoadData: function (sourceData, initialLoad, source) {
         // lazy rendering con cells nativo
+      },
+      afterRender: function () {
+        applyRowClassesToDOM(this);
       },
       afterGetColHeader: function (col, TH) {
         if (!TH || !TH.querySelector) {
@@ -3215,6 +3326,18 @@
     // Fix: Asegurar que HOT mantenga el listening activo.
     // Bootstrap/jQuery roban el foco a nivel de document.
     hot.listen();
+
+    // Hook post-filter: actualiza directamente el className de las celdas visibles.
+    // El callback cells de Handsontable no re-evalúa celdas con cellMeta cacheado,
+    // por lo que hot.render() no corrige las clases existentes. Este hook bypass
+    // el cache de cellMeta y aplica las clases correctas directamente al DOM.
+    hot.addHook('afterFilter', function () {
+      if (!hot) return;
+      resetPIRowCaches();
+      buildRowClassCache(hot.getSourceData());
+      applyRowClassesToDOM(hot);
+    });
+
     container.addEventListener('mousedown', function () {
       if (hot && !hot.isDestroyed) { hot.listen(); }
     }, true);

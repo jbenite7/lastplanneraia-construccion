@@ -172,11 +172,16 @@ Por:
 
 ### ACT
 
-#### Si es exitoso
+#### Ejecutado vía Fase 2 + Fase 5
 
-- [ ] Validar PG y PS: aplicar mismo patrón si existe callback de guardado equivalente
-- [ ] Agregar entrada en `ROADMAP.md` documentando fix Ciclo 3
-- [ ] Documentar comportamiento: "Al editar una celda filtrada, el filtro se re-evalúa automáticamente"
+- [x] Validar PG y PS: el callback equivalente existe en `programa_general/hot.js:1077-1080` y `programacion_semanal/hot.js:2115-2118`. Mismo patrón aplicado en ambos.
+- [x] **Fix complementario detectado en auditoría 2026-06-01**: `updateOrInitHot` también requiere `hot.render()` tras `restoreHotFilterConditions` cuando se re-cargan datos (no solo en save callback). Aplicado en PI:2976, PG:1942, PS:2295. Sin este render, el row trim map queda desincronizado con el cell meta cache al recargar con filtros nativos activos.
+- [x] Entrada en `ROADMAP.md` (ver hito "Re-evaluación Automática de Filtros Nativos Tras Editar Celda Filtrada — Ciclo 3")
+- [x] Documentar comportamiento: "Al editar una celda filtrada, el filtro se re-evalúa automáticamente. Al recargar con filtros nativos activos, el render se fuerza para estabilizar el row trim map."
+
+#### Pendiente (Fase 4 del plan global)
+
+- [ ] Verificación UI manual P1-P9 con sesión real en navegador
 
 #### Si no es exitoso
 

@@ -309,12 +309,13 @@ function refreshCellMetaForVisualRow(visualRow) {
 
 - [x] Validar que PG y PS no tienen el mismo bug de coloreado (no tienen `refreshCellMetaForVisualRow`)
 - [x] Documentar hallazgo: `_cellMetaCache` no existe en HOT 14.6.1, usar `removeCellMeta` en su lugar
+- [x] **Divergencia detectada vs doc PDCA** (auditoría 2026-06-01): la implementación real usa `removeCellMeta(visualRow, col, 'className')` con `try/catch` por columna (PI hot.js:588-604), no `physicalRow` puro como proponía la hipótesis original. Funcionalmente equivalente bajo el row trim map estabilizado por el fix de Fase 2 (`hot.render()` post-restore). Documentado.
+- [x] Entrada en `ROADMAP.md` (ver hito "Fix Coloreado PI con Filtros Nativos Activos — Ciclo 2")
 
 #### Pendiente
 
-- [ ] Agregar entrada en `ROADMAP.md` documentando el fix del Ciclo 2
-- [ ] Considerar test de regresión en Playwright
-- [ ] Verificación UI manual de P9-P12
+- [ ] Considerar test de regresión en Playwright (TODO no obligatorio)
+- [ ] Verificación UI manual de P9-P12 (Fase 4 — requiere sesión del usuario)
 
 ---
 
@@ -371,6 +372,7 @@ function refreshCellMetaForVisualRow(visualRow) {
 - [ ] P12: Editar restricción → % Liberación → coloreado
 - [ ] P13: Sin errores de consola
 
-#### ACT — pendiente
-- [ ] ROADMAP.md actualizado con fix Ciclo 2
-- [ ] PG/PS validados por mismo bug (no tienen `refreshCellMetaForVisualRow`)
+#### ACT — completado vía Fase 5
+- [x] ROADMAP.md actualizado con fix Ciclo 2 (ver hito Ciclo 2)
+- [x] PG/PS validados por mismo bug (no tienen `refreshCellMetaForVisualRow`)
+- [x] Divergencia `removeCellMeta(visualRow + try/catch)` vs doc `physicalRow` documentada en ACT

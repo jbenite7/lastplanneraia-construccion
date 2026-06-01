@@ -2293,6 +2293,7 @@
       hot.loadData(data);
       applyLegacyColumnVisibility();
       restoreHotFilterConditions(filterConditions);
+      hot.render();
       scheduleLayoutRefresh(0, true);
       return;
     }
