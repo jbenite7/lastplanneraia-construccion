@@ -952,6 +952,18 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        @layer components {
+            @media (max-width: 768px) {
+                .pi-page #hot-container {
+                    display: block !important;
+                }
+
+                .pi-page #mobile-card-view {
+                    display: none !important;
+                }
+            }
+        }
         /* Help trigger icons in restriction headers */
         .pi-header-controls {
             display: flex;
