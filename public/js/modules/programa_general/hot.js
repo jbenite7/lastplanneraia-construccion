@@ -1749,7 +1749,7 @@
           hot.refreshDimensions();
         }
 
-        applyResponsiveColumnWidths(Boolean(force));
+        // Prueba piloto porcentajes: applyResponsiveColumnWidths(Boolean(force));
         hot.render();
 
         if (viewportState) {
@@ -2060,7 +2060,17 @@
       exportFile: true,
       columnSorting: false,
       wordWrap: true,
-      colWidths: [60, 100, 300, 100, 100, 100, 80, 80, 100, 100, 100, 150, 100],
+      colWidths: function(index) {
+        var container = document.getElementById('hot-container');
+        var baseWidth = container ? container.clientWidth : window.innerWidth;
+        // Restar 60px para acomodar el scrollbar y la barra lateral derecha (Concurrencia LPS)
+        var cw = baseWidth - 60;
+        // Suma exacta = 1.0 (100%)
+        // [Id, Cod, Actividad, SemIni, F.Ini, F.Fin, Crit, Unidad, PPTO, Ej.Teo, Ej.Real, Estado, Lib.Restr]
+        var p = [0.04, 0.05, 0.25, 0.05, 0.08, 0.08, 0.04, 0.04, 0.06, 0.07, 0.07, 0.10, 0.07]; 
+        var w = Math.floor(cw * p[index]);
+        return Math.max(w, 20); 
+      },
       autoRowSize: false,
       rowHeights: 45,
       renderAllRows: false,
