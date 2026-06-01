@@ -1007,24 +1007,67 @@
               );
             }
 
-            // Invalidar caché de clasificación para que al renderizar se actualicen los colores
             var physicalRow = hot.toPhysicalRow(visualRow);
-            if (physicalRow !== null && physicalRow >= 0) {
-              if (typeof hot.getSourceDataAtRow === 'function') {
-                var rowData = hot.getSourceDataAtRow(physicalRow);
-                if (rowData) delete rowData._classification;
-              } else {
-                var srcData = hot.getSourceData();
-                if (srcData && srcData[physicalRow]) {
-                   delete srcData[physicalRow]._classification;
+            var rd = getSourceRowDataByVisualRow(hot, visualRow);
+            
+            // 1. Destruir rastros de caché y pre-actualizar objeto crudo para evitar recálculos obsoletos en ciclos de HT
+            if (rd) {
+              if (response.estado) rd.Estado = response.estado;
+              delete rd._classification;
+            }
+            if (typeof masterData !== 'undefined' && Array.isArray(masterData) && rd && rd.Id) {
+              for (var md = 0; md < masterData.length; md++) {
+                if (masterData[md] && masterData[md].Id === rd.Id) {
+                   if (response.estado) masterData[md].Estado = response.estado;
+                   delete masterData[md]._classification;
+                   break;
                 }
               }
+            }
+            
+            if (physicalRow !== null && physicalRow >= 0) {
               _rowClassCache[physicalRow] = undefined;
               if (typeof _rowMetaCache !== 'undefined') _rowMetaCache[physicalRow] = undefined;
+              if (typeof hot.getSourceDataAtRow === 'function') {
+                var rowDataClass = hot.getSourceDataAtRow(physicalRow);
+                if (rowDataClass) delete rowDataClass._classification;
+              }
             }
 
+            // 2. Notificar a Handsontable del cambio de dato formalmente
             if (response.estado) {
               hot.setDataAtRowProp(visualRow, 'Estado', response.estado, 'internal-update');
+            }
+
+            // Forzar actualización de cellMeta para toda la fila para que los colores se actualicen en vivo
+            var rd = getSourceRowDataByVisualRow(hot, visualRow);
+            if (rd) {
+              var cls = classifyPGRow(rd);
+              var hdr = Number(rd.Titulo) === 1;
+              var st = cls.rowClass || 'pg-state-actividad-futura';
+              var composed = 'pg-row-state ' + st;
+              if (cls.restrictionAlertKey) {
+                composed += ' pg-state-' + cls.restrictionAlertKey;
+              }
+              if (parseInt(rd.alerta_crisis, 10) === 1 && !hdr) {
+                composed += ' pg-row-crisis';
+              }
+              
+              var colCount = hot.countCols();
+              var colsSettings = hot.getSettings().columns || [];
+              for (var c = 0; c < colCount; c++) {
+                var baseClass = '';
+                if (colsSettings[c] && colsSettings[c].className) {
+                  baseClass = colsSettings[c].className;
+                }
+                var p = hot.colToProp(c);
+                var canEdit = Boolean(p && editableProps[p]) && !hdr && _canEditGlobal;
+                if (canEdit && p === 'cantidad_ppto' && isPercentLikeUnit(rd.unidad)) canEdit = false;
+                if (canEdit && p === 'EjecutadoDisplay' && cls.key === 'sin-datos') canEdit = false;
+                
+                var finalClass = ('htMiddle ' + baseClass + ' ' + composed + ' ' + (canEdit ? 'pg-cell-editable' : 'pg-cell-readonly') + (hdr ? ' pdc-header' : '')).trim();
+                hot.setCellMeta(visualRow, c, 'className', finalClass);
+              }
             }
 
           } finally {
