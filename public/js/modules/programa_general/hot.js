@@ -1006,7 +1006,7 @@
                 'internal-update'
               );
             }
-            
+
             // Invalidar caché de clasificación para que al renderizar se actualicen los colores
             var physicalRow = hot.toPhysicalRow(visualRow);
             if (physicalRow !== null && physicalRow >= 0) {
@@ -1020,8 +1020,13 @@
                 }
               }
               _rowClassCache[physicalRow] = undefined;
-              _rowMetaCache[physicalRow] = undefined;
+              if (typeof _rowMetaCache !== 'undefined') _rowMetaCache[physicalRow] = undefined;
             }
+
+            if (response.estado) {
+              hot.setDataAtRowProp(visualRow, 'Estado', response.estado, 'internal-update');
+            }
+
           } finally {
             hot.resumeRender();
             hot.render();
@@ -2011,8 +2016,9 @@
       search: false,
       exportFile: true,
       columnSorting: false,
-      wordWrap: false,
-      rowHeights: 28,
+      wordWrap: true,
+      colWidths: [60, 100, 300, 100, 100, 100, 80, 80, 100, 100, 100, 150, 100],
+      autoRowSize: true,
       renderAllRows: false,
       viewportRowRenderingOffset: 20,
       viewportColumnRenderingOffset: 10,
@@ -2020,9 +2026,10 @@
       width: '100%',
       height: getContainerAvailableHeight() || '100%',
       className: 'htMiddle',
-      cells: function (row, col) {
+      cells: function (row, col, prop) {
         var cellProperties = {};
-        var rd = getSourceRowDataByVisualRow(this, row) || {};
+        var hotInstance = (this && this.instance) || (window.PGHotModule && window.PGHotModule.getHotInstance && window.PGHotModule.getHotInstance());
+        var rd = getSourceRowDataByVisualRow(hotInstance, row) || {};
         var hdr = Number(rd.Titulo) === 1;
         var cls = classifyPGRow(rd);
         var st = cls.rowClass || 'pg-state-actividad-futura';
@@ -2033,12 +2040,18 @@
         if (parseInt(rd.alerta_crisis, 10) === 1 && !hdr) {
           composed += ' pg-row-crisis';
         }
-        var prop = (this.instance.getSettings().columns[col] || {}).data;
-        var canEdit = Boolean(editableProps[prop]) && !hdr && _canEditGlobal;
+        
+        var baseClass = '';
+        var colSettings = hotInstance && hotInstance.getSettings && hotInstance.getSettings().columns ? hotInstance.getSettings().columns[col] : null;
+        if (colSettings) {
+          baseClass = colSettings.className || '';
+        }
+        
+        var canEdit = Boolean(prop && editableProps[prop]) && !hdr && _canEditGlobal;
         if (canEdit && prop === 'cantidad_ppto' && isPercentLikeUnit(rd.unidad)) canEdit = false;
         if (canEdit && prop === 'EjecutadoDisplay' && cls.key === 'sin-datos') canEdit = false;
 
-        cellProperties.className = ('htMiddle ' + composed + ' ' + (canEdit ? 'pg-cell-editable' : 'pg-cell-readonly') + (hdr ? ' pdc-header' : '')).trim();
+        cellProperties.className = ('htMiddle ' + baseClass + ' ' + composed + ' ' + (canEdit ? 'pg-cell-editable' : 'pg-cell-readonly') + (hdr ? ' pdc-header' : '')).trim();
         cellProperties.readOnly = !canEdit;
 
         return cellProperties;
@@ -2114,6 +2127,10 @@
               })(visualRow, normalized.value, oldValue, previousContext, rd.cantidad_ppto);
               continue;
             }
+          }
+
+          if (prop === 'EjecutadoDisplay') {
+            currentRowData.Estado = '';
           }
 
           saveRow(visualRow, prop, oldValue, source, {
