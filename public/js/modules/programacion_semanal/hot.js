@@ -2111,6 +2111,12 @@
         }
 
         hot.render();
+
+        var fp = hot.getPlugin('filters');
+        if (fp && fp.isEnabled() && fp.conditionCollection && typeof fp.conditionCollection.isEmpty === 'function' && !fp.conditionCollection.isEmpty()) {
+            fp.filter();
+        }
+
         updateLegendCounts(getFilteredRows());
 
         if (response.alerta_bolsa) {

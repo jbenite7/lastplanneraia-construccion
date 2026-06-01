@@ -548,19 +548,15 @@
     }
 
     var physicalRow = getPhysicalRowFromVisualRow(hot, visualRow);
-    var rowData = getSourceRowDataByVisualRow(hot, visualRow);
-    if (!rowData) {
+    if (!Number.isInteger(physicalRow) || physicalRow < 0) {
       return;
     }
 
-    var meta = getPIRowMeta(physicalRow, rowData);
     var colCount = typeof hot.countCols === 'function' ? hot.countCols() : 0;
     for (var col = 0; col < colCount; col++) {
-      var prop = typeof hot.colToProp === 'function' ? hot.colToProp(col) : null;
-      var baseClass = getColumnBaseClass(hot, col);
-      var cell = buildPICellProperties(baseClass, prop, meta);
-      hot.setCellMeta(visualRow, col, 'className', cell.className);
-      hot.setCellMeta(visualRow, col, 'readOnly', cell.readOnly);
+      if (typeof hot.removeCellMeta === 'function') {
+        hot.removeCellMeta(physicalRow, col, 'className');
+      }
     }
   }
 
@@ -2204,6 +2200,12 @@
         }
 
         hot.render();
+
+        var fp = hot.getPlugin('filters');
+        if (fp && fp.isEnabled() && fp.conditionCollection && typeof fp.conditionCollection.isEmpty === 'function' && !fp.conditionCollection.isEmpty()) {
+            fp.filter();
+        }
+
         updateLegendCounts(getFilteredRows());
         showFeedback('success', 'Guardado');
         return;
