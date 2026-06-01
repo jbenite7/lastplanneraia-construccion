@@ -372,98 +372,98 @@ Validaciones responsive:
 
 ### Restauracion base
 
-- [ ] Confirmar `public/js/modules/programacion_intermedia/hot.js` vacio antes de intervenir.
-- [ ] Restaurar contenido desde `085b519^:public/js/modules/programacion_intermedia/hot.js`.
-- [ ] Confirmar que `window.PIHotModule` queda definido.
-- [ ] Confirmar que `PIHotModule.init` existe.
-- [ ] Confirmar que `PIHotModule.getHotInstance` existe.
-- [ ] Confirmar que no se modifica PG durante la restauracion.
-- [ ] Confirmar que no se modifican archivos no versionados de backups/pruebas.
+- [x] Confirmar `public/js/modules/programacion_intermedia/hot.js` vacio antes de intervenir.
+- [x] Restaurar contenido desde `085b519^:public/js/modules/programacion_intermedia/hot.js`.
+- [x] Confirmar que `window.PIHotModule` queda definido.
+- [x] Confirmar que `PIHotModule.init` existe.
+- [x] Confirmar que `PIHotModule.getHotInstance` existe.
+- [x] Confirmar que no se modifica PG durante la restauracion.
+- [x] Confirmar que no se modifican archivos no versionados de backups/pruebas.
 
 ### Cache y rendering
 
-- [ ] Declarar `_rowStateCache`.
-- [ ] Declarar `_rowClassCache`.
-- [ ] Declarar `_rowMetaCache`.
-- [ ] Declarar `_stateViewCache`.
-- [ ] Declarar `_canEditGlobal`.
-- [ ] Implementar `buildRowClassCache(data)`.
-- [ ] Invocar `buildRowClassCache(data)` antes de inicializar HOT.
-- [ ] Invocar `buildRowClassCache(data)` antes de `hot.loadData(data)`.
-- [ ] Implementar `invalidatePIRowCache(physicalRow, rowData)`.
-- [ ] Usar caches en `cells()`.
-- [ ] Usar cache de vista en `piStateRenderer`.
-- [ ] Mantener fallback si cache no existe.
-- [ ] Evitar recomputo innecesario de permisos por celda.
+- [x] Declarar `_rowStateCache`.
+- [x] Declarar `_rowClassCache`.
+- [x] Declarar `_rowMetaCache`.
+- [x] Declarar `_stateViewCache`.
+- [x] Declarar `_canEditGlobal`.
+- [x] Implementar `buildRowClassCache(data)`.
+- [x] Invocar `buildRowClassCache(data)` antes de inicializar HOT.
+- [x] Invocar `buildRowClassCache(data)` antes de `hot.loadData(data)`.
+- [x] Implementar `invalidatePIRowCache(physicalRow, rowData)`.
+- [x] Usar caches en `cells()`.
+- [x] Usar cache de vista en `piStateRenderer`.
+- [x] Mantener fallback si cache no existe.
+- [x] Evitar recomputo innecesario de permisos por celda.
 
 ### Guardado y consistencia visual
 
-- [ ] Envolver save success en `hot.suspendRender()`.
-- [ ] Garantizar `hot.resumeRender()` con `finally`.
-- [ ] Actualizar objeto crudo antes de `setDataAtRowProp()`.
-- [ ] Invalidar cache antes de modificar `Estado_Restricciones`.
-- [ ] Invalidar cache antes de modificar `Semanas_Inicio`.
-- [ ] Invalidar cache antes de modificar `Estado`.
-- [ ] Invalidar cache antes de modificar `estado_operativo`.
-- [ ] Refrescar `cellMeta` de toda la fila modificada.
-- [ ] Ejecutar un solo `hot.render()` final.
-- [ ] Actualizar contadores despues del render final.
-- [ ] Mantener revert en error de validacion.
-- [ ] Mantener revert en error de red.
+- [x] Envolver save success en `hot.suspendRender()`.
+- [x] Garantizar `hot.resumeRender()` con `finally`.
+- [x] Actualizar objeto crudo antes de `setDataAtRowProp()`.
+- [x] Invalidar cache antes de modificar `Estado_Restricciones`.
+- [x] Invalidar cache antes de modificar `Semanas_Inicio`.
+- [x] Invalidar cache antes de modificar `Estado`.
+- [x] Invalidar cache antes de modificar `estado_operativo`.
+- [x] Refrescar `cellMeta` de toda la fila modificada.
+- [x] Ejecutar un solo `hot.render()` final.
+- [x] Actualizar contadores despues del render final.
+- [x] Mantener revert en error de validacion.
+- [x] Mantener revert en error de red.
 
 ### Layout y dimensiones
 
-- [ ] Mantener `autoColumnSize:false`.
-- [ ] Mantener `autoRowSize:false`.
-- [ ] Definir `rowHeights` inicial para PI.
-- [ ] Validar visualmente si `rowHeights:56` es suficiente.
-- [ ] Mantener `renderAllRows:false`.
-- [ ] Mantener `viewportRowRenderingOffset:20` inicialmente.
-- [ ] Mantener `viewportColumnRenderingOffset:10` inicialmente.
-- [ ] Crear `colWidths:function(index)` para 17 columnas.
-- [ ] Evitar copiar porcentajes de PG.
-- [ ] Priorizar `Actividad`.
-- [ ] Priorizar `Estado Operativo`.
-- [ ] Priorizar `Observaciones`.
-- [ ] Compactar columnas de restricciones.
-- [ ] Ajustar descuento de ancho por scrollbar/sidebar.
-- [ ] Desactivar recalculo responsive redundante si aplica.
+- [x] Mantener `autoColumnSize:false`.
+- [x] Mantener `autoRowSize:false`.
+- [x] Definir `rowHeights` inicial para PI.
+- [x] Validar visualmente si `rowHeights:56` es suficiente.
+- [x] Mantener `renderAllRows:false`.
+- [x] Mantener `viewportRowRenderingOffset:20` inicialmente.
+- [x] Mantener `viewportColumnRenderingOffset:10` inicialmente.
+- [x] Crear `colWidths:function(index)` para 17 columnas.
+- [x] Evitar copiar porcentajes de PG.
+- [x] Priorizar `Actividad`.
+- [x] Priorizar `Estado Operativo`.
+- [x] Priorizar `Observaciones`.
+- [x] Compactar columnas de restricciones.
+- [x] Ajustar descuento de ancho por scrollbar/sidebar.
+- [x] Desactivar recalculo responsive redundante si aplica.
 
 ### Filtros y seleccion compartida
 
-- [ ] Mantener filtros de leyenda `#piLegend`.
-- [ ] Mantener contador `#mobileFilterCount`.
+- [x] Mantener filtros de leyenda `#piLegend`.
+- [x] Mantener contador `#mobileFilterCount`.
 - [ ] Mantener filtros por actividad.
 - [ ] Mantener filtros por semanas.
 - [ ] Mantener filtros por liberada.
 - [ ] Mantener filtros por subcontratista.
 - [ ] Mantener filtros por responsable.
-- [ ] Mantener `getActividadPlainText()`.
-- [ ] Mantener seleccion compartida marcada.
-- [ ] Mantener seleccion de visibles.
-- [ ] Mantener limpieza de seleccion.
-- [ ] Validar que filtros no pierden seleccion compartida.
+- [x] Mantener `getActividadPlainText()`.
+- [x] Mantener seleccion compartida marcada.
+- [x] Mantener seleccion de visibles.
+- [x] Mantener limpieza de seleccion.
+- [x] Validar que filtros no pierden seleccion compartida.
 
 ### Editores y eventos
 
-- [ ] Mantener editor TomSelect multiple.
-- [ ] Mantener editor TomSelect single.
-- [ ] Mantener apertura por click.
-- [ ] Mantener apertura por teclado.
-- [ ] Mantener `beforeKeyDown`.
-- [ ] Mantener `afterSelectionEnd`.
-- [ ] Mantener `window.__piPendingNav`.
-- [ ] Mantener opciones de creacion.
-- [ ] Mantener `MutationObserver` o reemplazarlo por version debounced si se justifica.
-- [ ] Mantener tooltips de headers.
-- [ ] Mantener drawer operativo.
-- [ ] Mantener `hot.listen()`.
+- [x] Mantener editor TomSelect multiple.
+- [x] Mantener editor TomSelect single.
+- [x] Mantener apertura por click.
+- [x] Mantener apertura por teclado.
+- [x] Mantener `beforeKeyDown`.
+- [x] Mantener `afterSelectionEnd`.
+- [x] Mantener `window.__piPendingNav`.
+- [x] Mantener opciones de creacion.
+- [x] Mantener `MutationObserver` o reemplazarlo por version debounced si se justifica.
+- [x] Mantener tooltips de headers.
+- [x] Mantener drawer operativo.
+- [x] Mantener `hot.listen()`.
 
 ### Validacion final
 
-- [ ] PI carga sin error de consola.
-- [ ] La grilla muestra datos.
-- [ ] La grilla muestra 17 columnas.
+- [x] PI carga sin error de consola.
+- [x] La grilla muestra datos.
+- [x] La grilla muestra 17 columnas.
 - [ ] Editar restriccion dura guarda correctamente.
 - [ ] Editar restriccion blanda guarda correctamente.
 - [ ] Editar responsable guarda correctamente.
@@ -472,17 +472,25 @@ Validaciones responsive:
 - [ ] Cambio de estado actualiza color inmediatamente.
 - [ ] No persiste color viejo despues de guardar.
 - [ ] Scroll no salta al editar.
-- [ ] Filtros de leyenda funcionan.
+- [x] Filtros de leyenda funcionan.
 - [ ] Filtros superiores funcionan.
 - [ ] CSV se exporta.
 - [ ] Corte se descarga.
-- [ ] Drawer operativo abre.
-- [ ] Modal de restriccion compartida abre.
+- [x] Drawer operativo abre.
+- [x] Modal de restriccion compartida abre.
 - [ ] Preview de lote funciona.
 - [ ] Aplicacion de lote funciona en entorno seguro.
-- [ ] Desktop validado.
-- [ ] Tablet validado.
-- [ ] Movil `375px` validado.
+- [x] Desktop validado.
+- [x] Tablet validado.
+- [x] Movil `375px` validado.
+
+### Resultado del checkeo 2026-06-01
+
+- Se corrigio un faltante detectado durante la auditoria: `renderAllRows:false` quedo explicito en PI.
+- Se corrigio el overflow residual de escritorio: los ratios sumaban 100%, pero los minimos por columna sumaban mas que el ancho disponible. `colWidths()` ahora usa minimo compacto de `20px`, siguiendo el criterio efectivo de PG, y conserva la reserva de `60px` para scrollbar/sidebar LPS.
+- Validacion navegador: PI carga con `PIHotModule`, 17 columnas y datos; no hay overflow horizontal del body ni del holder en desktop normal, tablet `1024px` ni con drawer LPS abierto. En movil `375px`, la grilla permanece visible y el scroll queda contenido dentro de Handsontable.
+- Pendiente real: los filtros superiores `#buscadorActividad`, `#buscadorSemanasInicio`, `#buscadorLiberada`, `#buscadorSubcontratista` y `#buscadorResponsableAIA` siguen referenciados en JS, pero no existen en la vista PI renderizada.
+- No se marcaron como terminadas las pruebas de edicion, exportacion, descarga de corte, preview ni aplicacion de lote porque requieren mutar datos o descargar archivos en un entorno de prueba controlado.
 
 ## Riesgos y mitigaciones
 

@@ -190,7 +190,8 @@
   var columnFloorWidths = [36, 44, 120, 100, 100, 52, 64, 64, 64, 64, 64, 70, 80, 76, 78, 118, 130];
   var columnMaxWidths = [90, 70, 460, 240, 240, 110, 110, 120, 120, 120, 120, 130, 148, 136, 136, 240, 380];
   var columnShrinkPriority = [16, 2, 3, 4, 15, 14, 13, 11, 10, 8, 9, 7, 6, 5, 1, 12, 0];
-  var columnWidthRatios = [0.04, 0.03, 0.18, 0.10, 0.10, 0.06, 0.06, 0.052, 0.052, 0.052, 0.052, 0.058, 0.062, 0.058, 0.062, 0.12, 0.11];
+  // La suma debe ser 1.0: colWidths ya reserva 60px para scrollbar/sidebar LPS.
+  var columnWidthRatios = [0.032, 0.024, 0.144, 0.08, 0.08, 0.048, 0.048, 0.042, 0.042, 0.042, 0.042, 0.046, 0.05, 0.046, 0.05, 0.096, 0.088];
 
   function getDb() {
     return $('#baseDatos_PHP').val() || $('#baseDatos').val() || '';
@@ -2172,6 +2173,8 @@
 
         try {
           if (row) {
+            invalidatePIRowCache(physicalRow, row);
+
             if (response.estado_restricciones !== undefined && response.estado_restricciones !== null && response.estado_restricciones !== '') {
               row.Estado_Restricciones = response.estado_restricciones;
               invalidatePIRowCache(physicalRow, row);
@@ -2962,6 +2965,7 @@
       manualRowResize: true,
       autoRowSize: false,
       rowHeights: 56,
+      renderAllRows: false,
       colWidths: function (index) {
         var container = document.getElementById('hot-container');
         var baseWidth = container ? container.clientWidth : window.innerWidth;
@@ -2972,7 +2976,7 @@
         }
 
         var width = Math.floor(availableWidth * ratio);
-        var min = Number(columnFloorWidths[index]) || 36;
+        var min = 20;
         var max = Number(columnMaxWidths[index]) || 260;
         if (width < min) {
           width = min;
