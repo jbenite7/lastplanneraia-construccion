@@ -319,6 +319,8 @@ Monitor de cambios en Programa General (PG) y Programación Intermedia (PI) que 
 4. Acciones se envían a `POST /api/semanal/apply-changes`
 5. Grilla PS se refresca automáticamente
 
+- [x] **Fix Edición PI/PG/PS con Filtros Nativos de Columna Activos (2026-06-01):** Se corrigió el mapeo visualRow/physicalRow en el handler `afterChange` de los tres módulos Handsontable (PI, PG, PS). `change[0]` ya es visual row, pero se trataba como physical row llamando `toVisualRow()` sobre él. Con filtros de columna activos (row trim map), esto causaba que `toVisualRow()` retornara `null` (fila filtrada en ese índice) o un visual row incorrecto, impidiendo el guardado y la actualización de estado/coloreado. Fix: `var visualRow = change[0]; var physicalRow = this.toPhysicalRow(visualRow);`. Archivos: `public/js/modules/programacion_intermedia/hot.js`, `programa_general/hot.js`, `programacion_semanal/hot.js`.
+
 ---
 
 ## 📚 Documentos Históricos de Referencia Oficial

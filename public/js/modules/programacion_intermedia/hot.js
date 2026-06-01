@@ -3134,12 +3134,12 @@
         for (var i = 0; i < changes.length; i++) {
           var change = changes[i];
           if (!change) continue;
-          var physicalRow = change[0];
+          var visualRow = change[0];
           var prop = change[1];
           var oldValue = change[2];
           var newValue = change[3];
 
-          var visualRow = this.toVisualRow(physicalRow);
+          var physicalRow = this.toPhysicalRow(visualRow);
           if (visualRow === null || visualRow < 0) {
             continue;
           }
