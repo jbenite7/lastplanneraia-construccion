@@ -15,6 +15,11 @@
   var currentColumnWidths = [];
   var pendingViewportState = null;
 
+  // Performance cache: pre-computed row classes to avoid per-cell classifyPGRow during render
+  var _rowClassCache = [];
+  var _rowMetaCache = [];
+  var _canEditGlobal = false;
+
   var editableProps = {
     codigo_actividad: true,
     Fecha_Inicio: true,
@@ -552,6 +557,7 @@
     return result;
   }
 
+
   function showLoading(show) {
     if (show) {
       $('#loading').show();
@@ -904,21 +910,18 @@
   }
 
   function getSourceRowDataByVisualRow(instance, visualRow) {
-    if (!instance || !Number.isInteger(visualRow) || visualRow < 0) {
+    if (!instance || visualRow === null || visualRow === undefined || visualRow < 0) {
       return null;
     }
-
     var physicalRow = typeof instance.toPhysicalRow === 'function' ? instance.toPhysicalRow(visualRow) : visualRow;
-    if (!Number.isInteger(physicalRow) || physicalRow < 0) {
-      return null;
+    if (typeof instance.getSourceDataAtRow === 'function') {
+      return instance.getSourceDataAtRow(physicalRow) || null;
     }
-
     var sourceData = typeof instance.getSourceData === 'function' ? instance.getSourceData() : null;
     if (Array.isArray(sourceData) && physicalRow < sourceData.length) {
       return sourceData[physicalRow] || null;
     }
-
-    return typeof instance.getSourceDataAtRow === 'function' ? (instance.getSourceDataAtRow(physicalRow) || null) : null;
+    return null;
   }
 
   function saveRow(visualRow, prop, oldValue, source, options) {
@@ -962,33 +965,68 @@
     })
       .done(function (response) {
         if (response && response.respuesta === 'BIEN') {
-          if (response.estado) {
-            hot.setDataAtRowProp(visualRow, 'Estado', response.estado, 'internal-update');
-          }
-          if (response.Semanas_Inicio !== undefined && response.Semanas_Inicio !== null) {
-            hot.setDataAtRowProp(visualRow, 'Semanas_Inicio', response.Semanas_Inicio, 'internal-update');
-          }
-          if (response.Ejecutado !== undefined && response.Ejecutado !== null) {
-            var resRatio = parseFloat(response.Ejecutado);
-            var updatedRowData = getSourceRowDataByVisualRow(hot, visualRow) || rowData || {};
-            var mappedUnit = String((response.unidad !== undefined ? response.unidad : updatedRowData.unidad) || '').trim();
-            if (response.unidad !== undefined) {
-              hot.setDataAtRowProp(visualRow, 'unidad', mappedUnit, 'internal-update');
+          // Iniciar lote de actualizaciones para evitar múltiples re-renders sincrónicos
+          hot.suspendRender();
+          try {
+            if (response.estado) {
+              hot.setDataAtRowProp(visualRow, 'Estado', response.estado, 'internal-update');
             }
-            if (response.cantidad_ppto !== undefined) {
-              hot.setDataAtRowProp(visualRow, 'cantidad_ppto', response.cantidad_ppto, 'internal-update');
+            if (response.Semanas_Inicio !== undefined && response.Semanas_Inicio !== null) {
+              hot.setDataAtRowProp(visualRow, 'Semanas_Inicio', response.Semanas_Inicio, 'internal-update');
             }
-            hot.setDataAtRowProp(visualRow, 'Ejecutado', normalizeRatio(resRatio), 'internal-update');
-            updatedRowData = getSourceRowDataByVisualRow(hot, visualRow) || updatedRowData;
-            hot.setDataAtRowProp(
-              visualRow,
-              'EjecutadoDisplay',
-              displayFromRatioForContext(normalizeRatio(resRatio), buildDisplayContext(updatedRowData)),
-              'internal-update'
-            );
+            if (response.Ejecutado !== undefined && response.Ejecutado !== null) {
+              var resRatio = parseFloat(response.Ejecutado);
+              var updatedRowData = getSourceRowDataByVisualRow(hot, visualRow) || rowData || {};
+              var mappedUnit = String((response.unidad !== undefined ? response.unidad : updatedRowData.unidad) || '').trim();
+              if (response.unidad !== undefined) {
+                hot.setDataAtRowProp(visualRow, 'unidad', mappedUnit, 'internal-update');
+              }
+              if (response.cantidad_ppto !== undefined) {
+                hot.setDataAtRowProp(visualRow, 'cantidad_ppto', response.cantidad_ppto, 'internal-update');
+              }
+              
+              var physicalRow = hot.toPhysicalRow(visualRow);
+              if (physicalRow !== null && physicalRow >= 0) {
+                if (typeof hot.getSourceDataAtRow === 'function') {
+                  var rowData = hot.getSourceDataAtRow(physicalRow);
+                  if (rowData) rowData.Ejecutado = normalizeRatio(resRatio);
+                } else {
+                  var srcData = hot.getSourceData();
+                  if (srcData && srcData[physicalRow]) {
+                    srcData[physicalRow].Ejecutado = normalizeRatio(resRatio);
+                  }
+                }
+              }
+              
+              updatedRowData = getSourceRowDataByVisualRow(hot, visualRow) || updatedRowData;
+              hot.setDataAtRowProp(
+                visualRow,
+                'EjecutadoDisplay',
+                displayFromRatioForContext(normalizeRatio(resRatio), buildDisplayContext(updatedRowData)),
+                'internal-update'
+              );
+            }
+            
+            // Invalidar caché de clasificación para que al renderizar se actualicen los colores
+            var physicalRow = hot.toPhysicalRow(visualRow);
+            if (physicalRow !== null && physicalRow >= 0) {
+              if (typeof hot.getSourceDataAtRow === 'function') {
+                var rowData = hot.getSourceDataAtRow(physicalRow);
+                if (rowData) delete rowData._classification;
+              } else {
+                var srcData = hot.getSourceData();
+                if (srcData && srcData[physicalRow]) {
+                   delete srcData[physicalRow]._classification;
+                }
+              }
+              _rowClassCache[physicalRow] = undefined;
+              _rowMetaCache[physicalRow] = undefined;
+            }
+          } finally {
+            hot.resumeRender();
+            hot.render();
           }
 
-          hot.render();
           updateLegendCounts(getFilteredRows());
           showFeedback('success', 'Guardado');
           return;
@@ -1048,140 +1086,107 @@
     $modal.modal('show');
   }
 
-  function enforcePgCellClasses(instance, td, row, col, prop) {
-    var rowData = getSourceRowDataByVisualRow(instance, row) || {};
-    var classification = classifyPGRow(rowData);
-    var stateClass = classification.rowClass || 'pg-state-actividad-futura';
-    var composed = 'pg-row-state ' + stateClass;
-    var columnMeta = instance.getSettings().columns[col] || {};
-    var baseClass = columnMeta.className || '';
-    var isHeader = Number(rowData.Titulo) === 1;
-    var canEdit = Boolean(editableProps[prop]) && !isHeader && isUserAllowedToEdit();
 
-    if (canEdit && prop === 'cantidad_ppto' && isPercentLikeUnit(rowData.unidad)) {
-      canEdit = false;
-    }
-    if (canEdit && prop === 'EjecutadoDisplay' && classification.key === 'sin-datos') {
-      canEdit = false;
-    }
-    if (classification.restrictionAlertKey) {
-      composed += ' pg-state-' + classification.restrictionAlertKey;
-    }
-    if (parseInt(rowData.alerta_crisis, 10) === 1 && !isHeader) {
-      composed += ' pg-row-crisis';
-    }
-
-    // Limpieza estricta de clases de estado residuales de PG para prevenir acumulación por reuso DOM
-    td.classList.remove(
-      'pdc-header', 'pg-state-atrasada', 'pg-state-debe-iniciar', 'pg-state-actividad-futura',
-      'pg-state-en-curso', 'pg-state-terminada', 'pg-state-sin-datos',
-      'pg-state-r0', 'pg-state-r1', 'pg-state-r2-3', 'pg-state-r4-6',
-      'pg-cell-editable', 'pg-cell-readonly', 'pg-row-crisis'
-    );
-
-    var classList = (baseClass + ' ' + composed + ' ' + (canEdit ? 'pg-cell-editable' : 'pg-cell-readonly')).trim().split(/\s+/);
-    for (var i = 0; i < classList.length; i++) {
-      if (classList[i]) {
-        td.classList.add(classList[i]);
-      }
-    }
-  }
 
   function setupRenderers() {
     if (renderersRegistered) {
       return;
     }
 
+    Handsontable.renderers.registerRenderer('pgGenericTextRenderer', function () {
+      Handsontable.renderers.TextRenderer.apply(this, arguments);
+    });
+
+    Handsontable.renderers.registerRenderer('pgGenericDateRenderer', function () {
+      var dateRenderer = Handsontable.renderers.getRenderer('date') || Handsontable.renderers.TextRenderer;
+      dateRenderer.apply(this, arguments);
+    });
+
+    Handsontable.renderers.registerRenderer('pgGenericNumericRenderer', function () {
+      var numericRenderer = Handsontable.renderers.getRenderer('numeric') || Handsontable.renderers.NumericRenderer;
+      numericRenderer.apply(this, arguments);
+    });
+
+    Handsontable.renderers.registerRenderer('pgGenericDropdownRenderer', function () {
+      var dropdownRenderer = Handsontable.renderers.getRenderer('dropdown') || Handsontable.renderers.AutocompleteRenderer;
+      dropdownRenderer.apply(this, arguments);
+    });
+
     Handsontable.renderers.registerRenderer(
       'pgPercentRenderer',
-      function (instance, td, row, col, prop, value) {
+      function (instance, td, row, col, prop, value, cellProperties) {
         Handsontable.renderers.TextRenderer.apply(this, arguments);
         td.textContent = formatPercent(value);
-        td.classList.add('htCenter');
-        enforcePgCellClasses(instance, td, row, col, prop);
       }
     );
 
     Handsontable.renderers.registerRenderer(
       'pgPercentValueRenderer',
-      function (instance, td, row, col, prop, value) {
+      function (instance, td, row, col, prop, value, cellProperties) {
         Handsontable.renderers.TextRenderer.apply(this, arguments);
         td.textContent = formatPercentValue(value);
-        td.classList.add('htCenter');
-        enforcePgCellClasses(instance, td, row, col, prop);
       }
     );
 
     Handsontable.renderers.registerRenderer(
       'pgCriticaRenderer',
-      function (instance, td, row, col, prop, value) {
+      function (instance, td, row, col, prop, value, cellProperties) {
         Handsontable.renderers.TextRenderer.apply(this, arguments);
         var numeric = toNumber(value, null);
         td.textContent = numeric === 1 ? 'Sí' : numeric === 0 ? 'No' : String(value || '');
-        td.classList.add('htCenter');
-        enforcePgCellClasses(instance, td, row, col, prop);
       }
     );
 
     Handsontable.renderers.registerRenderer(
       'pgActividadRenderer',
-      function (instance, td, row, col, prop, value) {
+      function (instance, td, row, col, prop, value, cellProperties) {
         Handsontable.renderers.TextRenderer.apply(this, arguments);
         var rowData = getSourceRowDataByVisualRow(instance, row) || {};
         var prefix = parseInt(rowData.alerta_crisis, 10) === 1 ? '🔥 ' : '';
         td.innerHTML = prefix + sanitizeActividadHtml(value);
-        td.classList.add('htLeft');
-        enforcePgCellClasses(instance, td, row, col, prop);
       }
     );
 
     Handsontable.renderers.registerRenderer(
       'pgEjecutadoTeoricoRenderer',
-      function (instance, td, row, col, prop, value) {
+      function (instance, td, row, col, prop, value, cellProperties) {
         Handsontable.renderers.TextRenderer.apply(this, arguments);
         var rowData = getSourceRowDataByVisualRow(instance, row) || {};
         var cantidadPpto = toNumber(rowData.cantidad_ppto, null);
         var unidad = String(rowData.unidad || '').trim();
         var ratio = toNumber(value, null);
-        if (ratio === null) { td.textContent = ''; td.classList.add('htCenter'); enforcePgCellClasses(instance, td, row, col, prop); return; }
+        if (ratio === null) { td.textContent = ''; return; }
         if (isPercentLikeUnit(unidad) || cantidadPpto === null || cantidadPpto <= 0) {
           td.textContent = formatPercentValue(value);
         } else {
           var qty = Math.round((cantidadPpto * ratio + Number.EPSILON) * 10) / 10;
           td.innerHTML = "<span class='pg-cell-main'>" + formatValueWithUnit(qty, rowData.unidad) + "</span> <span class='pg-cell-meta'>(" + formatPercentValue(value) + ")</span>";
         }
-        td.classList.add('htCenter');
-        enforcePgCellClasses(instance, td, row, col, prop);
       }
     );
 
     Handsontable.renderers.registerRenderer(
       'pgEjecutadoRealRenderer',
-      function (instance, td, row, col, prop, value) {
+      function (instance, td, row, col, prop, value, cellProperties) {
         Handsontable.renderers.NumericRenderer.apply(this, arguments);
         var rowData = getSourceRowDataByVisualRow(instance, row) || {};
         var cantidadPpto = toNumber(rowData.cantidad_ppto, null);
         var physicalVal = toNumber(value, null);
         var ratio = getEjecutadoRatio(rowData);
         
-        if (physicalVal === null) { td.textContent = ''; td.classList.add('htCenter'); enforcePgCellClasses(instance, td, row, col, prop); return; }
+        if (physicalVal === null) { td.textContent = ''; return; }
         
         var unidad = String(rowData.unidad || '').trim();
         
-        // Formateo natural de display
         var physicalDisplay = formatDecimalComma(physicalVal, 1);
         
         if (isPercentLikeUnit(unidad) || cantidadPpto === null || cantidadPpto <= 0) {
-            // Si es %, el valor físico YA ES el porcentaje
             td.textContent = physicalDisplay + '%';
         } else {
-            // Calcular porcentaje pasivo de lectura
             var percent = ratio === null ? (physicalVal / cantidadPpto * 100) : (ratio * 100);
             var percentDisplay = formatDecimalComma(percent, 1);
             td.innerHTML = "<span class='pg-cell-main'>" + formatValueWithUnit(physicalDisplay, unidad) + "</span> <span class='pg-cell-meta'>(" + percentDisplay + "%)</span>";
         }
-        td.classList.add('htCenter');
-        enforcePgCellClasses(instance, td, row, col, prop);
       }
     );
 
@@ -1450,16 +1455,6 @@
   function getBaseColumnWidths(columnCount) {
     var widths = [];
     var plugin = hot && hot.getPlugin ? hot.getPlugin('autoColumnSize') : null;
-
-    if (plugin) {
-      try {
-        if (typeof plugin.recalculateAllColumnsWidth === 'function') {
-          plugin.recalculateAllColumnsWidth();
-        } else if (typeof plugin.calculateVisibleColumnsWidth === 'function') {
-          plugin.calculateVisibleColumnsWidth();
-        }
-      } catch (_err) {}
-    }
 
     for (var col = 0; col < columnCount; col++) {
       var min = getColumnMinWidth(col);
@@ -1854,9 +1849,38 @@
     });
   }
 
+  function buildRowClassCache(data) {
+    _canEditGlobal = isUserAllowedToEdit();
+    _rowClassCache = new Array(data.length);
+    _rowMetaCache = new Array(data.length);
+
+    for (var i = 0; i < data.length; i++) {
+      var rowData = data[i] || {};
+      var classification = classifyPGRow(rowData);
+      var stateClass = classification.rowClass || 'pg-state-actividad-futura';
+      var composed = 'pg-row-state ' + stateClass;
+      var isHeader = Number(rowData.Titulo) === 1;
+
+      if (classification.restrictionAlertKey) {
+        composed += ' pg-state-' + classification.restrictionAlertKey;
+      }
+      if (parseInt(rowData.alerta_crisis, 10) === 1 && !isHeader) {
+        composed += ' pg-row-crisis';
+      }
+
+      _rowClassCache[i] = composed;
+      _rowMetaCache[i] = {
+        isHeader: isHeader,
+        isPercentUnit: isPercentLikeUnit(rowData.unidad),
+        sinDatos: classification.key === 'sin-datos',
+      };
+    }
+  }
+
   function updateOrInitHot(data) {
     setupRenderers();
     syncContainerHeight();
+    buildRowClassCache(data);
 
     if (hot) {
       var filterConditions = captureHotFilterConditions();
@@ -1908,12 +1932,13 @@
           renderer: 'pgActividadRenderer',
           className: 'htLeft htMiddle force-wrap',
         },
-        { data: 'Semanas_Inicio', readOnly: true, className: 'htCenter htMiddle' },
+        { data: 'Semanas_Inicio', readOnly: true, renderer: 'pgGenericTextRenderer', className: 'htCenter htMiddle' },
         {
           data: 'Fecha_Inicio',
           type: 'date',
           dateFormat: 'YYYY-MM-DD',
           correctFormat: true,
+          renderer: 'pgGenericDateRenderer',
           className: 'htCenter htMiddle',
         },
         {
@@ -1921,6 +1946,7 @@
           type: 'date',
           dateFormat: 'YYYY-MM-DD',
           correctFormat: true,
+          renderer: 'pgGenericDateRenderer',
           className: 'htCenter htMiddle',
         },
         {
@@ -1935,12 +1961,14 @@
           source: unitOptions,
           strict: false,
           allowInvalid: false,
+          renderer: 'pgGenericDropdownRenderer',
           className: 'htCenter htMiddle',
         },
         {
           data: 'cantidad_ppto',
           type: 'numeric',
           numericFormat: { pattern: '0.0' },
+          renderer: 'pgGenericNumericRenderer',
           className: 'htCenter htMiddle',
         },
         {
@@ -1956,7 +1984,7 @@
           renderer: 'pgEjecutadoRealRenderer',
           className: 'htCenter htMiddle',
         },
-        { data: 'Estado', readOnly: true, className: 'htCenter htMiddle force-wrap' },
+        { data: 'Estado', readOnly: true, renderer: 'pgGenericTextRenderer', className: 'htCenter htMiddle force-wrap' },
         {
           data: 'Estado_Restricciones',
           readOnly: true,
@@ -1983,60 +2011,40 @@
       search: false,
       exportFile: true,
       columnSorting: false,
-      wordWrap: true,
+      wordWrap: false,
+      rowHeights: 28,
+      renderAllRows: false,
+      viewportRowRenderingOffset: 20,
+      viewportColumnRenderingOffset: 10,
       colHeaderHeight: 48,
       width: '100%',
       height: getContainerAvailableHeight() || '100%',
       className: 'htMiddle',
-      cells: function (row, col, prop) {
-        var props = {};
-        var hotInstance = (this && this.instance) || hot;
-        var physicalRow = typeof hotInstance.toPhysicalRow === 'function' ? hotInstance.toPhysicalRow(row) : row;
-        var sourceData = typeof hotInstance.getSourceData === 'function' ? hotInstance.getSourceData() : null;
-        var rowData = (Array.isArray(sourceData) && physicalRow >= 0 && physicalRow < sourceData.length) ? (sourceData[physicalRow] || {}) : {};
-        var classification = classifyPGRow(rowData);
-        var stateClass = classification.rowClass || 'pg-state-actividad-futura';
-        var composed = 'pg-row-state ' + stateClass;
-        var columnMeta = this.instance.getSettings().columns[col] || {};
-        var baseClass = columnMeta.className || '';
-        var isHeader = Number(rowData.Titulo) === 1;
-        var canEdit = Boolean(editableProps[prop]) && !isHeader && isUserAllowedToEdit();
-
-        // Bloquear cantidad_ppto si la unidad es %
-        if (canEdit && prop === 'cantidad_ppto' && isPercentLikeUnit(rowData.unidad)) {
-          canEdit = false;
+      cells: function (row, col) {
+        var cellProperties = {};
+        var rd = getSourceRowDataByVisualRow(this, row) || {};
+        var hdr = Number(rd.Titulo) === 1;
+        var cls = classifyPGRow(rd);
+        var st = cls.rowClass || 'pg-state-actividad-futura';
+        var composed = 'pg-row-state ' + st;
+        if (cls.restrictionAlertKey) {
+          composed += ' pg-state-' + cls.restrictionAlertKey;
         }
-
-        if (canEdit && prop === 'EjecutadoDisplay' && classification.key === 'sin-datos') {
-          canEdit = false;
-        }
-
-        if (classification.restrictionAlertKey) {
-          composed += ' pg-state-' + classification.restrictionAlertKey;
-        }
-
-        if (parseInt(rowData.alerta_crisis, 10) === 1 && !isHeader) {
+        if (parseInt(rd.alerta_crisis, 10) === 1 && !hdr) {
           composed += ' pg-row-crisis';
         }
+        var prop = (this.instance.getSettings().columns[col] || {}).data;
+        var canEdit = Boolean(editableProps[prop]) && !hdr && _canEditGlobal;
+        if (canEdit && prop === 'cantidad_ppto' && isPercentLikeUnit(rd.unidad)) canEdit = false;
+        if (canEdit && prop === 'EjecutadoDisplay' && cls.key === 'sin-datos') canEdit = false;
 
-        props.className = (
-          baseClass +
-          ' ' +
-          composed +
-          ' ' +
-          (canEdit ? 'pg-cell-editable' : 'pg-cell-readonly')
-        ).trim();
-        props.readOnly = !canEdit;
+        cellProperties.className = ('htMiddle ' + composed + ' ' + (canEdit ? 'pg-cell-editable' : 'pg-cell-readonly') + (hdr ? ' pdc-header' : '')).trim();
+        cellProperties.readOnly = !canEdit;
 
-        return props;
+        return cellProperties;
       },
       afterChange: function (changes, source) {
-        if (
-          !changes ||
-          source === 'loadData' ||
-          source === 'revert' ||
-          source === 'internal-update'
-        ) {
+        if (!changes || source === 'loadData' || source === 'revert' || source === 'internal-update') {
           return;
         }
 
@@ -2053,12 +2061,13 @@
             continue;
           }
 
-          var sourceData = typeof this.getSourceData === 'function' ? this.getSourceData() : null;
-          var currentRowData = (Array.isArray(sourceData) && physicalRow !== null && physicalRow >= 0 && physicalRow < sourceData.length) ? (sourceData[physicalRow] || {}) : {};
+          var currentRowData = typeof this.getSourceDataAtRow === 'function' ? (this.getSourceDataAtRow(physicalRow) || {}) : {};
 
-          // Invalidar clasificación memoizada ante cualquier edición
           if (currentRowData._classification) {
             delete currentRowData._classification;
+          }
+          if (physicalRow >= 0) {
+            _rowClassCache[physicalRow] = undefined;
           }
 
           if (!editableProps[prop] || oldValue === newValue) {
@@ -2076,8 +2085,7 @@
             hot.setDataAtRowProp(visualRow, prop, normalized.value, 'internal-update');
           }
 
-          var sourceData = typeof this.getSourceData === 'function' ? this.getSourceData() : null;
-          var currentRowData = (Array.isArray(sourceData) && physicalRow !== null && physicalRow >= 0 && physicalRow < sourceData.length) ? (sourceData[physicalRow] || {}) : {};
+          currentRowData = typeof this.getSourceDataAtRow === 'function' ? (this.getSourceDataAtRow(physicalRow) || {}) : {};
           var previousContext = null;
           if (prop === 'unidad' || prop === 'cantidad_ppto') {
             previousContext = buildDisplayContext(currentRowData, {
@@ -2086,7 +2094,6 @@
             });
           }
 
-          // Auto-clear cantidad_ppto al cambiar unidad a %
           if (prop === 'unidad') {
             var rd = (Array.isArray(sourceData) && physicalRow !== null && physicalRow >= 0 && physicalRow < sourceData.length) ? (sourceData[physicalRow] || {}) : {};
             var isPercent = isPercentLikeUnit(normalized.value);
@@ -2113,6 +2120,8 @@
             previousContext: previousContext,
           });
         }
+        
+        this.render();
       },
     });
 

@@ -404,7 +404,6 @@
     if (ratio > 1) {
       ratio = 1;
     }
-
     return Math.round((ratio + Number.EPSILON) * 100000) / 100000;
   }
 
@@ -418,12 +417,11 @@
       return null;
     }
 
-    var sourceData = typeof instance.getSourceData === 'function' ? instance.getSourceData() : null;
-    if (Array.isArray(sourceData) && physicalRow < sourceData.length) {
-      return sourceData[physicalRow] || null;
+    if (typeof instance.getSourceDataAtRow === 'function') {
+      return instance.getSourceDataAtRow(physicalRow) || null;
     }
 
-    return typeof instance.getSourceDataAtRow === 'function' ? (instance.getSourceDataAtRow(physicalRow) || null) : null;
+    return null;
   }
 
   function hasAssignedValue(value, createPlaceholder) {
@@ -520,6 +518,7 @@
 
     return output;
   }
+
 
   function getState(row) {
     if (window.PIStateMachine && typeof window.PIStateMachine.getState === 'function') {
@@ -692,8 +691,12 @@
       var rowData = null;
       if (hot && Number.isInteger(visualRow) && visualRow >= 0) {
         var physicalRow = typeof hot.toPhysicalRow === 'function' ? hot.toPhysicalRow(visualRow) : visualRow;
-        var sourceData = typeof hot.getSourceData === 'function' ? hot.getSourceData() : null;
-        rowData = (Array.isArray(sourceData) && physicalRow !== null && physicalRow >= 0 && physicalRow < sourceData.length) ? (sourceData[physicalRow] || null) : null;
+        if (typeof hot.getSourceDataAtRow === 'function') {
+          rowData = hot.getSourceDataAtRow(physicalRow) || null;
+        } else {
+          var sourceData = typeof hot.getSourceData === 'function' ? hot.getSourceData() : null;
+          rowData = (Array.isArray(sourceData) && physicalRow !== null && physicalRow >= 0 && physicalRow < sourceData.length) ? (sourceData[physicalRow] || null) : null;
+        }
       }
       openOperationalStateDrawer(rowData || {});
     });
@@ -2042,46 +2045,6 @@
     });
   }
 
-  function enforcePiCellClasses(instance, td, row, col, prop) {
-    var rowData = getSourceRowDataByVisualRow(instance, row) || {};
-    var state = getState(rowData);
-    var columnMeta = instance.getSettings().columns[col] || {};
-    var baseClass = columnMeta.className || '';
-    var rowStateClass = (state === 'header') ? 'pdc-header' : ('pi-state-' + state);
-    var isSharedSelector = prop === '__shared_selected';
-    var canEdit = isSharedSelector ? (state !== 'header') : (Boolean(editableProps[prop]) && state !== 'header' && isUserAllowedToEdit());
-    var isDropdownCell = Boolean(dropdownProps[prop]) && state !== 'header';
-    var interactionClass = canEdit ? 'pi-cell-editable' : 'pi-cell-readonly';
-
-    if (isSharedSelector) {
-      interactionClass += ' pi-shared-selector';
-    }
-    if (isDropdownCell && canEdit) {
-      interactionClass += ' pi-cell-dropdown';
-    }
-    if (normalizeSharedSelectionValue(rowData.__shared_selected) && state !== 'header') {
-      interactionClass += ' pi-row-shared-picked';
-    }
-    if (parseInt(rowData.alerta_crisis, 10) === 1 && state !== 'header') {
-      interactionClass += ' pi-row-crisis';
-    }
-
-    // Limpieza estricta de clases de estado residuales de PI para prevenir acumulación por reuso DOM
-    td.classList.remove(
-      'pdc-header',
-      'pi-state-neutral', 'pi-state-liberated-control', 'pi-state-execution-blocked',
-      'pi-state-blocked-overdue-critical', 'pi-state-blocked-overdue', 'pi-state-blocked-due',
-      'pi-state-alert-1-week', 'pi-state-alert-2-3-weeks', 'pi-state-alert-4-6-weeks',
-      'pi-cell-editable', 'pi-cell-readonly', 'pi-cell-dropdown', 'pi-row-shared-picked', 'pi-row-crisis'
-    );
-
-    var classList = (baseClass + ' pi-row-state ' + rowStateClass + ' ' + interactionClass).trim().split(/\s+/);
-    for (var i = 0; i < classList.length; i++) {
-      if (classList[i]) {
-        td.classList.add(classList[i]);
-      }
-    }
-  }
 
   function setupRenderers() {
     if (renderersRegistered) {
@@ -2092,7 +2055,6 @@
       Handsontable.renderers.TextRenderer.apply(this, arguments);
       td.textContent = formatPercent(value);
       td.classList.add('htCenter');
-      enforcePiCellClasses(instance, td, row, col, prop);
     });
 
     Handsontable.renderers.registerRenderer('piActividadRenderer', function (instance, td, row, col, prop, value) {
@@ -2101,7 +2063,6 @@
       var prefix = parseInt(rowData.alerta_crisis, 10) === 1 ? '🔥 ' : '';
       td.innerHTML = prefix + sanitizeActividadHtml(value);
       td.classList.add('htLeft');
-      enforcePiCellClasses(instance, td, row, col, prop);
     });
 
     Handsontable.renderers.registerRenderer('piStateRenderer', function (instance, td, row, col, prop, value) {
@@ -2115,7 +2076,6 @@
       }
       td.title = view.actions.length ? (view.label + ' - ' + view.actions.join('; ')) : view.label;
       td.classList.add('htLeft', 'htMiddle', 'force-wrap', 'ops-state-td');
-      enforcePiCellClasses(instance, td, row, col, prop);
     });
 
     bindOperationalStateDrawer();
@@ -2819,10 +2779,45 @@
       licenseKey: 'non-commercial-and-evaluation',
       language: 'es-MX',
       stretchH: 'none',
-      autoColumnSize: true,
+      autoColumnSize: false,
       manualColumnResize: false,
       manualRowResize: true,
-      autoRowSize: true,
+      autoRowSize: false,
+      colWidths: [60, 40, 250, 150, 150, 100, 100, 80, 80, 80, 80, 80, 80, 80, 100, 150, 250],
+      cells: function (row, col) {
+        var cellProperties = {};
+        var physicalRow = typeof this.instance.toPhysicalRow === 'function' ? this.instance.toPhysicalRow(row) : row;
+        var rowData = typeof this.instance.getSourceDataAtRow === 'function' ? this.instance.getSourceDataAtRow(physicalRow) : null;
+        
+        if (!rowData) {
+          return cellProperties;
+        }
+
+        var prop = this.instance.colToProp(col);
+        var state = getState(rowData);
+        var rowStateClass = (state === 'header') ? 'pdc-header' : ('pi-state-' + state);
+        var isSharedSelector = prop === '__shared_selected';
+        var canEdit = isSharedSelector ? (state !== 'header') : (Boolean(editableProps[prop]) && state !== 'header' && isUserAllowedToEdit());
+        var isDropdownCell = Boolean(dropdownProps[prop]) && state !== 'header';
+
+        var interactionClass = canEdit ? 'pi-cell-editable' : 'pi-cell-readonly';
+        if (isSharedSelector) interactionClass += ' pi-shared-selector';
+        if (isDropdownCell && canEdit) interactionClass += ' pi-cell-dropdown';
+        if (normalizeSharedSelectionValue(rowData.__shared_selected) && state !== 'header') interactionClass += ' pi-row-shared-picked';
+        if (parseInt(rowData.alerta_crisis, 10) === 1 && state !== 'header') interactionClass += ' pi-row-crisis';
+
+        var baseClass = '';
+        if (this.instance.getSettings().columns && this.instance.getSettings().columns[col]) {
+          baseClass = this.instance.getSettings().columns[col].className || '';
+        }
+
+        cellProperties.className = ('htMiddle ' + baseClass + ' pi-row-state ' + rowStateClass + ' ' + interactionClass).trim();
+        cellProperties.readOnly = !canEdit;
+
+        return cellProperties;
+      },
+      viewportRowRenderingOffset: 20,
+      viewportColumnRenderingOffset: 10,
       contextMenu: true,
       dropdownMenu: ['filter_by_condition', 'filter_by_value', 'filter_action_bar'],
       filters: true,
@@ -2840,38 +2835,8 @@
       colHeaderHeight: 48,
       width: '100%',
       height: getContainerAvailableHeight() || '100%',
-      cells: function (row, col, prop) {
-        var props = {};
-        var hotInstance = (this && this.instance) || hot;
-        var sourceData = hotInstance && typeof hotInstance.getSourceData === 'function' ? hotInstance.getSourceData() : null;
-        var rowData = (Array.isArray(sourceData) && row >= 0 && row < sourceData.length) ? (sourceData[row] || {}) : {};
-
-        var state = getState(rowData);
-        var columnMeta = hotInstance && typeof hotInstance.getSettings === 'function' ? (hotInstance.getSettings().columns[col] || {}) : {};
-        var baseClass = columnMeta.className || '';
-        var rowStateClass = (state === 'header') ? 'pdc-header' : ('pi-state-' + state);
-        var isSharedSelector = prop === '__shared_selected';
-        var canEdit = isSharedSelector ? (state !== 'header') : (Boolean(editableProps[prop]) && state !== 'header' && isUserAllowedToEdit());
-        var isDropdownCell = Boolean(dropdownProps[prop]) && state !== 'header';
-        var interactionClass = canEdit ? 'pi-cell-editable' : 'pi-cell-readonly';
-        if (isSharedSelector) {
-          interactionClass += ' pi-shared-selector';
-        }
-        if (isDropdownCell && canEdit) {
-          interactionClass += ' pi-cell-dropdown';
-        }
-
-        if (normalizeSharedSelectionValue(rowData.__shared_selected) && state !== 'header') {
-          interactionClass += ' pi-row-shared-picked';
-        }
-
-        if (parseInt(rowData.alerta_crisis, 10) === 1 && state !== 'header') {
-          interactionClass += ' pi-row-crisis';
-        }
-
-        props.className = (baseClass + ' ' + 'pi-row-state ' + rowStateClass + ' ' + interactionClass).trim();
-        props.readOnly = !canEdit;
-        return props;
+      afterLoadData: function (sourceData, initialLoad, source) {
+        // lazy rendering con cells nativo
       },
       afterGetColHeader: function (col, TH) {
         if (!TH || !TH.querySelector) {
@@ -3027,8 +2992,7 @@
           }
 
           if (isRestrictionChange) {
-            var sourceData = typeof this.getSourceData === 'function' ? this.getSourceData() : null;
-            var rowData = (Array.isArray(sourceData) && physicalRow !== null && physicalRow >= 0 && physicalRow < sourceData.length) ? (sourceData[physicalRow] || {}) : {};
+            var rowData = typeof this.getSourceDataAtRow === 'function' ? (this.getSourceDataAtRow(physicalRow) || {}) : {};
             var respValue = hasAssignedValue(rowData.Responsable_AIA, PI_CREATE_PROF) ? rowData.Responsable_AIA : this.getDataAtRowProp(visualRow, 'Responsable_AIA');
             var hasResp = hasAssignedValue(respValue, PI_CREATE_PROF);
             if (!hasResp) {
@@ -3055,8 +3019,6 @@
 
           saveRow(visualRow, prop, oldValue);
         }
-
-        hot.render();
       },
     });
 

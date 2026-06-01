@@ -1210,7 +1210,8 @@
         };
     </script>
     <script src="/js/modules/lps_drawer.js?v=20260522c"></script>
-    <script src="/js/modules/programacion_semanal/hot.js?v=hot50"></script>
+    <?php $psHotVersion = @filemtime(dirname(__DIR__, 2) . '/public/js/modules/programacion_semanal/hot.js') ?: 'hot50'; ?>
+    <script src="/js/modules/programacion_semanal/hot.js?v=<?php echo urlencode((string) $psHotVersion); ?>"></script>
     <script src="/js/modules/programacion_semanal/changeMonitor.js?v=ap1"></script>
 
     <script>

@@ -8,6 +8,7 @@ window.HOTActualizarModule = (function() {
     var rawData = [];
     var showingUnmappedOnly = true;
     var layoutTimer = null;
+    var _canEditGlobal = false;
 
     // Configuración de validadores y regexs
     const regexNumerico = /^-?\d*(\.\d+)?$/;
@@ -602,39 +603,36 @@ window.HOTActualizarModule = (function() {
                 }
             ],
             cells: function(row, col, prop) {
-                var props = {};
-                var canEdit = Boolean(editableProps[prop]) && isUserAllowedToEdit();
+                var canEdit = Boolean(editableProps[prop]) && _canEditGlobal;
                 var physicalRow = this.instance.toPhysicalRow(row);
                 var sourceData = typeof this.instance.getSourceData === 'function' ? this.instance.getSourceData() : null;
                 var rowData = (Array.isArray(sourceData) && physicalRow !== null && physicalRow >= 0 && physicalRow < sourceData.length) ? (sourceData[physicalRow] || {}) : {};
 
-                // Bloquear cantidad_ppto si la unidad es %
                 if (canEdit && prop === 'cantidad_ppto' && String(rowData.unidad || '').trim() === '%') {
                     canEdit = false;
                 }
 
-                // Bloquear campos críticos si la actividad está mapeada (automapeada o manual)
                 var isMapped = rowData.programaAnteriorAsociar && rowData.programaAnteriorAsociar !== '*No Asociada*';
-                var restrictedMappedProps = ['Ejecutado', 'unidad', 'cantidad_ppto'];
-                
-                if (canEdit && isMapped && restrictedMappedProps.indexOf(prop) !== -1) {
+                if (canEdit && isMapped && (prop === 'Ejecutado' || prop === 'unidad' || prop === 'cantidad_ppto')) {
                     canEdit = false;
                 }
 
-                props.readOnly = !canEdit;
                 var columnMeta = this.instance.getSettings().columns[col] || {};
-                props.className = (columnMeta.className || '') +
-                                  (canEdit ? ' pg-cell-editable' : ' pg-cell-readonly');
-                
-                return props;
+                return {
+                    readOnly: !canEdit,
+                    className: (columnMeta.className || '') + (canEdit ? ' pg-cell-editable' : ' pg-cell-readonly'),
+                };
             },
             
             // Características UX AIA 2026
             stretchH: 'all',
             autoWrapRow: false,
             autoWrapCol: false,
-            autoRowSize: true, // Habilitar cálculo de altura automática por contenido
+            autoRowSize: false,
             autoColumnSize: false,
+            rowHeights: 28,
+            renderAllRows: false,
+            viewportRowRenderingOffset: 20,
             width: '100%',
             height: initialHeight,
             licenseKey: 'non-commercial-and-evaluation',
@@ -699,10 +697,6 @@ window.HOTActualizarModule = (function() {
                            this.setDataAtRowProp(visualRow, prop, normalized.value, 'internal');
                        }
 
-                       // Si cambió la unidad, forzar renderizado para bloquear/desbloquear cantidad_ppto
-                       if (prop === 'unidad') {
-                           this.render();
-                       }
                    }
                }.bind(this));
 
@@ -713,13 +707,10 @@ window.HOTActualizarModule = (function() {
                    autoSaveRow(group.visualRow, group.changes, source);
                }.bind(this));
 
-               // Si el cambio fue en asociación, re-renderizar para actualizar el fondo de la fila entera
-               if (changes.some(c => c && c[1] === 'programaAnteriorAsociar')) {
-                   this.render();
-               }
             }
         };
 
+        _canEditGlobal = isUserAllowedToEdit();
         hot = new Handsontable(container, hotConfig);
         refreshHotLayout(0);
 

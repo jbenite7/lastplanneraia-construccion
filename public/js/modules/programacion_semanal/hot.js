@@ -314,6 +314,7 @@
     return false;
   }
 
+
   function showLoading(show) {
     if (show) {
       $('#loading').show();
@@ -1402,6 +1403,10 @@
       return null;
     }
 
+    var physicalRow = typeof instance.toPhysicalRow === 'function' ? instance.toPhysicalRow(visualRow) : visualRow;
+    if (typeof instance.getSourceDataAtRow === 'function') {
+      return instance.getSourceDataAtRow(physicalRow) || null;
+    }
     var sourceData = typeof instance.getSourceData === 'function' ? instance.getSourceData() : null;
     if (Array.isArray(sourceData) && physicalRow < sourceData.length) {
       return sourceData[physicalRow] || null;
@@ -2039,8 +2044,7 @@
   function saveRow(visualRow, prop, oldValue, overrides) {
     var db = getDb();
     var physicalRow = hot.toPhysicalRow(visualRow);
-    var sourceData = typeof hot.getSourceData === 'function' ? hot.getSourceData() : null;
-    var row = (Array.isArray(sourceData) && physicalRow !== null && physicalRow >= 0 && physicalRow < sourceData.length) ? (sourceData[physicalRow] || null) : null;
+    var row = typeof hot.getSourceDataAtRow === 'function' ? (hot.getSourceDataAtRow(physicalRow) || null) : null;
 
     var payload = buildPayload(row || {}, prop, overrides || {});
     if (!payload.valid) {
@@ -2128,35 +2132,6 @@
     });
   }
 
-  function enforcePsCellClasses(instance, td, row, col, prop) {
-    var rowData = getSourceRowDataByVisualRow(instance, row) || {};
-    var alertClass = getAlertClassForRow(rowData);
-    var columnMeta = instance.getSettings().columns[col] || {};
-    var baseClass = columnMeta.className || '';
-    var isReadOnly = (columnMeta.renderer === 'psActionsRenderer') ? true : isPropReadOnly(prop);
-    var finalClass = ('ps-row-state ' + alertClass).trim();
-
-    if (isReadOnly) {
-      finalClass += ' ps-cell-readonly';
-    }
-    if (parseInt(rowData.alerta_crisis, 10) === 1) {
-      finalClass += ' ps-row-crisis';
-    }
-
-    // Limpieza estricta de clases de estado residuales de PS para prevenir acumulación por reuso DOM
-    td.classList.remove(
-      'ps-alert-critical-route', 'ps-alert-critical', 'ps-alert-high', 'ps-alert-medium',
-      'ps-alert-info', 'ps-alert-control', 'ps-alert-neutral', 'ps-cell-readonly', 'ps-row-crisis'
-    );
-
-    var classList = (baseClass + ' ' + finalClass).trim().split(/\s+/);
-    for (var i = 0; i < classList.length; i++) {
-      if (classList[i]) {
-        td.classList.add(classList[i]);
-      }
-    }
-  }
-
   function setupRenderers() {
     if (renderersRegistered) {
       return;
@@ -2180,7 +2155,6 @@
         html += "<button type='button' class='ps-action-btn eliminar btn btn-danger btn-sm btn-action-gap' data-action='delete' title='Eliminar Actividad'><i class='fa fa-trash-alt fa-xs'></i></button>";
       }
       td.innerHTML = html;
-      enforcePsCellClasses(instance, td, row, col, prop);
     });
 
     Handsontable.renderers.registerRenderer('psLiberadaRenderer', function (instance, td, row, col, prop, value) {
@@ -2188,7 +2162,6 @@
       var numeric = toNumber(value, null);
       td.textContent = (numeric === 0) ? 'Sí' : ((numeric === 1) ? 'No' : '');
       td.classList.add('htCenter');
-      enforcePsCellClasses(instance, td, row, col, prop);
     });
 
     Handsontable.renderers.registerRenderer('psStateRenderer', function (instance, td, row, col, prop, value) {
@@ -2202,14 +2175,12 @@
       }
       td.title = view.actions.length ? (view.label + ' - ' + view.actions.join('; ')) : view.label;
       td.classList.add('htLeft', 'htMiddle', 'force-wrap', 'ops-state-td');
-      enforcePsCellClasses(instance, td, row, col, prop);
     });
 
     Handsontable.renderers.registerRenderer('psPacRenderer', function (instance, td, row, col, prop, value) {
       Handsontable.renderers.TextRenderer.apply(this, arguments);
       td.textContent = formatPercent(value, 1);
       td.classList.add('htCenter');
-      enforcePsCellClasses(instance, td, row, col, prop);
     });
 
     Handsontable.renderers.registerRenderer('psActividadRenderer', function (instance, td, row, col, prop, value) {
@@ -2218,7 +2189,6 @@
       var prefix = parseInt(rowData.alerta_crisis, 10) === 1 ? '🔥 ' : '';
       td.textContent = prefix + stripHtmlTags(value);
       td.classList.add('htLeft', 'htMiddle', 'force-wrap');
-      enforcePsCellClasses(instance, td, row, col, prop);
     });
 
     Handsontable.renderers.registerRenderer('psRatioRenderer', function (instance, td, row, col, prop, value) {
@@ -2237,7 +2207,6 @@
         }
       }
       td.classList.add('htCenter');
-      enforcePsCellClasses(instance, td, row, col, prop);
     });
 
     Handsontable.renderers.registerRenderer('psCompromisoRenderer', function (instance, td, row, col, prop, value) {
@@ -2277,7 +2246,6 @@
         }
       }
       td.classList.add('htCenter');
-      enforcePsCellClasses(instance, td, row, col, prop);
     });
 
     Handsontable.renderers.registerRenderer('psPptoRenderer', function (instance, td, row, col, prop, value) {
@@ -2290,7 +2258,6 @@
         td.textContent = isBlank(value) ? '' : value;
       }
       td.classList.add('htCenter', 'htMiddle');
-      enforcePsCellClasses(instance, td, row, col, prop);
     });
 
     Handsontable.renderers.registerRenderer('psResponsableRenderer', function (instance, td, row, col, prop, value) {
@@ -2304,7 +2271,6 @@
         td.style.backgroundColor = '';
         td.title = '';
       }
-      enforcePsCellClasses(instance, td, row, col, prop);
     });
 
     bindOperationalStateDrawer();
@@ -2389,7 +2355,49 @@
       licenseKey: 'non-commercial-and-evaluation',
       language: 'es-MX',
       stretchH: 'none',
-      autoColumnSize: true,
+      autoColumnSize: false,
+      autoRowSize: false,
+      viewportColumnRenderingOffset: 10,
+      viewportRowRenderingOffset: 20,
+      colWidths: [60, 60, 80, 250, 150, 80, 150, 150, 150, 80, 80, 80, 80, 80, 80, 80, 80, 80, 100, 150, 200, 150, 100],
+      cells: function (row, col) {
+        var cellProperties = {};
+        var physicalRow = typeof this.instance.toPhysicalRow === 'function' ? this.instance.toPhysicalRow(row) : row;
+        var rowData = typeof this.instance.getSourceDataAtRow === 'function' ? this.instance.getSourceDataAtRow(physicalRow) : null;
+
+        if (!rowData) {
+          return cellProperties;
+        }
+
+        var prop = this.instance.colToProp(col);
+        var alertClass = getAlertClassForRow(rowData);
+        var isCrisis = parseInt(rowData.alerta_crisis, 10) === 1;
+
+        var baseClass = '';
+        if (this.instance.getSettings().columns && this.instance.getSettings().columns[col]) {
+          baseClass = this.instance.getSettings().columns[col].className || '';
+        }
+
+        var isReadOnly = false;
+        if (this.instance.getSettings().columns && this.instance.getSettings().columns[col] && this.instance.getSettings().columns[col].renderer === 'psActionsRenderer') {
+          isReadOnly = true;
+        } else {
+          isReadOnly = isPropReadOnly(prop);
+        }
+
+        var finalClass = ('htMiddle ' + baseClass + ' ps-row-state ' + alertClass).trim();
+        if (isReadOnly) {
+          finalClass += ' ps-cell-readonly';
+        }
+        if (isCrisis) {
+          finalClass += ' ps-row-crisis';
+        }
+
+        cellProperties.className = finalClass;
+        cellProperties.readOnly = isReadOnly;
+
+        return cellProperties;
+      },
       manualColumnResize: false,
       manualRowResize: true,
       contextMenu: true,
@@ -2449,37 +2457,8 @@
           tryAutoOpenDropdownSelection();
         }, 0);
       },
-       cells: function (row, col, prop) {
-        var props = {};
-        var hotInstance = (this && this.instance) || hot;
-        var sourceData = hotInstance && typeof hotInstance.getSourceData === 'function' ? hotInstance.getSourceData() : null;
-        var rowData = (Array.isArray(sourceData) && row >= 0 && row < sourceData.length) ? (sourceData[row] || {}) : {};
-
-        var alertClass = getAlertClassForRow(rowData);
-        var columnMeta = this.instance.getSettings().columns[col] || {};
-        var baseClass = columnMeta.className || '';
-
-        var isReadOnly = false;
-        var finalClass = (baseClass + ' ' + 'ps-row-state ' + alertClass).trim();
-
-        if (columnMeta.renderer === 'psActionsRenderer') {
-          isReadOnly = true;
-        } else {
-          isReadOnly = isPropReadOnly(prop);
-        }
-
-        if (isReadOnly) {
-          finalClass += ' ps-cell-readonly';
-        }
-
-        if (parseInt(rowData.alerta_crisis, 10) === 1) {
-          finalClass += ' ps-row-crisis';
-        }
-
-        props.className = finalClass.trim();
-        props.readOnly = isReadOnly;
-        
-        return props;
+      afterLoadData: function (sourceData, initialLoad, source) {
+        // lazy rendering con cells nativo
       },
       beforeChange: function (changes, source) {
         if (!changes || source === 'loadData' || source === 'revert' || source === 'internal-update') {
@@ -2555,8 +2534,7 @@
             continue;
           }
 
-          var sourceData = typeof this.getSourceData === 'function' ? this.getSourceData() : null;
-          var rowData = (Array.isArray(sourceData) && physicalRow !== null && physicalRow >= 0 && physicalRow < sourceData.length) ? (sourceData[physicalRow] || {}) : {};
+          var rowData = typeof this.getSourceDataAtRow === 'function' ? (this.getSourceDataAtRow(physicalRow) || {}) : {};
 
           // HARD GUARD: Block real execution registration if missing assignees
           if (prop === 'Ejecutado_Real') {
@@ -3256,8 +3234,7 @@
       }
 
       var physicalRow = hot.toPhysicalRow(coords.row);
-      var sourceData = typeof hot.getSourceData === 'function' ? hot.getSourceData() : null;
-      var row = (Array.isArray(sourceData) && physicalRow !== null && physicalRow >= 0 && physicalRow < sourceData.length) ? (sourceData[physicalRow] || {}) : {};
+      var row = typeof hot.getSourceDataAtRow === 'function' ? (hot.getSourceDataAtRow(physicalRow) || {}) : {};
 
       if (!canManageToolbarActions() || getPermiso() === 'C' || getSemanalConfirmada() === 1) {
         showFeedback('error', 'Acción bloqueada: No tiene permisos de edición');
