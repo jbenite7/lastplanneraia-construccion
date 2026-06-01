@@ -2368,6 +2368,7 @@
       viewportRowRenderingOffset: 20,
       colWidths: [60, 60, 80, 250, 150, 80, 150, 150, 150, 80, 80, 80, 80, 80, 80, 80, 80, 80, 100, 150, 200, 150, 100],
       cells: function (row, col) {
+        var cellProperties = {};
         var physicalRow = typeof this.instance.toPhysicalRow === 'function' ? this.instance.toPhysicalRow(row) : row;
         var rowData = typeof this.instance.getSourceDataAtRow === 'function' ? this.instance.getSourceDataAtRow(physicalRow) : null;
 
