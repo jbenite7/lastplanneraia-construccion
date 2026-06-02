@@ -33,13 +33,14 @@ class ProgramacionIntermediaController extends BaseController
             $profesionales = $stmt->fetchAll();
         }
 
-        // Fusionar datos
+        $viewAll = isset($_SESSION['pi_view_all']) && (int) $_SESSION['pi_view_all'] === 1;
+
         $data = array_merge($vars, [
             'subcontratistas' => $subcontratistas,
             'profesionales' => $profesionales,
+            'viewAll' => $viewAll,
         ]);
 
-        // Cargar vista Handsontable con autoguardado
         $this->render('/views/programacion-intermedia/programacion_intermedia.view.php', $data);
     }
 
@@ -89,14 +90,20 @@ class ProgramacionIntermediaController extends BaseController
         }
 
         try {
+            $viewAll = isset($_SESSION['pi_view_all']) && (int) $_SESSION['pi_view_all'] === 1;
+
+            $where = "Semana = ?
+                      AND Fecha_Inicio IS NOT NULL
+                      AND Fecha_Fin IS NOT NULL
+                      AND Ejecutado < 1
+                      AND Titulo = 0";
+            if (!$viewAll) {
+                $where .= " AND Semanas_Inicio <= 6";
+            }
+
             $query = "SELECT *
                       FROM {$dbPrefix}_programa_consolidado
-                      WHERE Semana = ?
-                        AND Fecha_Inicio IS NOT NULL
-                        AND Fecha_Fin IS NOT NULL
-                        AND Semanas_Inicio <= 6
-                        AND Ejecutado < 1
-                        AND Titulo = 0
+                      WHERE {$where}
                       ORDER BY Semanas_Inicio ASC";
 
             $stmt = $this->db->prepare($query);
@@ -181,6 +188,8 @@ class ProgramacionIntermediaController extends BaseController
 
         require_once PROJECT_ROOT . '/src/Legacy/estado_programacion_intermedia.php';
 
+        $viewAll = isset($_SESSION['pi_view_all']) && (int) $_SESSION['pi_view_all'] === 1;
+
         $query = "SELECT Titulo, Semanas_Inicio, Estado_Restricciones, Ejecutado, Estado, Ruta_Critica,
                          D_y_E, Materiales, MdeO, Equipos, Predecesora
                   FROM {$dbPrefix}_programa_consolidado
@@ -205,6 +214,9 @@ class ProgramacionIntermediaController extends BaseController
                 $payload['count_' . $suffix] = 0;
                 $payload['activa_' . $suffix] = (isset($_SESSION[\pi_state_session_key($stateKey)]) && (int) $_SESSION[\pi_state_session_key($stateKey)] === 1) ? 1 : 0;
             }
+
+            $payload['view_all'] = $viewAll ? 1 : 0;
+            $payload['window_label'] = $viewAll ? 'Ventana 6 sem.' : null;
 
             foreach ($rows as $row) {
                 $state = \pi_classify_state($row);
@@ -253,6 +265,42 @@ class ProgramacionIntermediaController extends BaseController
             foreach ($targets as $stateKey) {
                 $_SESSION[\pi_state_session_key($stateKey)] = ($activa === 1) ? 1 : 0;
             }
+        }
+
+        header('Location: /programacion-intermedia');
+        exit;
+    }
+
+    /**
+     * Alterna el modo "Ver Todas las Actividades" en PI.
+     * Cuando esta activo, el listado se calcula sin la barrera
+     * Semanas_Inicio <= 6, mostrando tambien actividades que aun
+     * no entran en la ventana de liberacion de restricciones.
+     * Por defecto: desactivado.
+     *
+     * Soporta dos modos:
+     *  - AJAX (X-Requested-With: XMLHttpRequest o ?ajax=1): devuelve JSON.
+     *  - Navegacion normal: redirige a /programacion-intermedia.
+     */
+    public function setViewAll()
+    {
+        $this->requireAuth();
+        $this->authorizePermission('lps.programacion_intermedia.editar');
+
+        $activa = isset($_GET['activa']) ? (int) $_GET['activa'] : 0;
+        $_SESSION['pi_view_all'] = ($activa === 1) ? 1 : 0;
+
+        $isAjax = (isset($_GET['ajax']) && (int) $_GET['ajax'] === 1)
+            || (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strcasecmp($_SERVER['HTTP_X_REQUESTED_WITH'], 'XMLHttpRequest') === 0);
+
+        if ($isAjax) {
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode([
+                'respuesta' => 'BIEN',
+                'view_all' => $_SESSION['pi_view_all'],
+                'redirect' => '/programacion-intermedia',
+            ], JSON_UNESCAPED_UNICODE);
+            exit;
         }
 
         header('Location: /programacion-intermedia');

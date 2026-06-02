@@ -2081,6 +2081,9 @@
     );
   }
 
+  var piViewAll = false;
+  var piServerCounts = {};
+
   function fetchFilterFlags() {
     var db = getDb();
     var semana = getSemana();
@@ -2097,10 +2100,13 @@
     }).then(function (info) {
       var data = info && info.data ? info.data : {};
       var params = [];
+      piViewAll = !!data.view_all;
+      piServerCounts = {};
 
       for (var i = 0; i < trackedStates.length; i++) {
         var key = trackedStates[i].replace(/-/g, '_');
         params.push('activa_' + key + '=' + (data['activa_' + key] ? 1 : 0));
+        piServerCounts[trackedStates[i]] = Number(data['count_' + key] || 0);
       }
 
       var query = '&' + params.join('&');
@@ -2108,6 +2114,12 @@
       return query;
     }, function () {
       return '';
+    });
+  }
+
+  function updateLegendCountsFromServer() {
+    Object.keys(piServerCounts).forEach(function (key) {
+      $('#count-' + key).text('(' + piServerCounts[key] + ')');
     });
   }
 
@@ -2287,7 +2299,11 @@
             fp.filter();
         }
 
-        updateLegendCounts(getFilteredRows());
+        if (piViewAll) {
+          updateLegendCountsFromServer();
+        } else {
+          updateLegendCounts(getFilteredRows());
+        }
         showFeedback('success', 'Guardado');
         return;
       }
@@ -3385,7 +3401,11 @@
 
   function applyFiltersAndRender() {
     var filtered = getFilteredRows();
-    updateLegendCounts(filtered);
+    if (piViewAll) {
+      updateLegendCountsFromServer();
+    } else {
+      updateLegendCounts(filtered);
+    }
     updateOrInitHot(filtered);
     updateSharedSelectionCountIndicator();
   }
@@ -3624,6 +3644,45 @@
       resetSharedConstraintModal();
       $('#modal_shared_constraint').modal('show');
     });
+
+    $('#piViewAllToggle')
+      .off('change.piViewAll')
+      .on('change.piViewAll', function () {
+        var $checkbox = $(this);
+        var activa = $checkbox.is(':checked') ? 1 : 0;
+        var $wrapper = $checkbox.closest('.pi-view-all-toggle');
+
+        $checkbox.prop('disabled', true);
+        $wrapper.toggleClass('is-on', !!activa);
+
+        $.ajax({
+          method: 'GET',
+          url: '/programacion-intermedia/set-view-all',
+          dataType: 'json',
+          data: { activa: activa, ajax: 1 },
+          headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        }).done(function (response) {
+          if (response && response.respuesta === 'BIEN') {
+            loadData();
+            showFeedback(
+              'success',
+              activa
+                ? 'Mostrando todas las actividades (incluyendo las que estan fuera de la ventana de 6 semanas).'
+                : 'Vista limitada a la ventana de 6 semanas de liberacion de restricciones.'
+            );
+          } else {
+            $checkbox.prop('checked', !activa);
+            $wrapper.toggleClass('is-on', !activa);
+            showFeedback('error', 'No se pudo cambiar la vista de actividades.');
+          }
+        }).fail(function () {
+          $checkbox.prop('checked', !activa);
+          $wrapper.toggleClass('is-on', !activa);
+          showFeedback('error', 'Error de red al cambiar la vista de actividades.');
+        }).always(function () {
+          $checkbox.prop('disabled', false);
+        });
+      });
 
     $('.pi-shared-restriction-check, .pi-shared-restriction-value')
       .off('change.piSharedRestrictions')

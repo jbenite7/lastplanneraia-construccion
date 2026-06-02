@@ -1198,6 +1198,59 @@
         background-color: #1a5633 !important;
         color: #fff !important;
       }
+
+      /* Ver Todas las Actividades: toggle slider en el toolbar */
+      .pi-view-all-toggle {
+        gap: 4px;
+      }
+      .pi-view-all-toggle-label {
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: #4a5568;
+        letter-spacing: 0.01em;
+        white-space: nowrap;
+      }
+      /* Switch: estado apagado (look neutro, sin el primary azul por defecto) */
+      .pi-view-all-toggle .custom-control-label::before {
+        background-color: #cbd5e0;
+        border-color: #cbd5e0;
+      }
+      /* Switch: estado encendido (verde AIA brand #1a5633) */
+      .pi-view-all-toggle .custom-control-input:checked ~ .custom-control-label::before {
+        background-color: #1a5633;
+        border-color: #1a5633;
+      }
+      .pi-view-all-toggle .custom-control-input:focus ~ .custom-control-label::before {
+        box-shadow: 0 0 0 0.2rem rgba(26, 86, 51, 0.25);
+        border-color: #1a5633;
+      }
+      .pi-view-all-toggle .custom-control-input:active ~ .custom-control-label::before {
+        background-color: #1a5633;
+        border-color: #1a5633;
+      }
+      .pi-view-all-toggle .custom-control-input:checked ~ .custom-control-label::after {
+        background-color: #ffffff;
+      }
+      /* Refleja el estado en el texto del label (oscurece cuando está activo) */
+      .pi-view-all-toggle.is-on .pi-view-all-toggle-label {
+        color: #1a5633;
+        font-weight: 700;
+      }
+      /* Badge en el semaforo que recuerda que los conteos son de la ventana de 6 sem. */
+      .pi-legend-window-label {
+        display: inline-block;
+        padding: 2px 8px;
+        margin-right: 8px;
+        border-radius: 999px;
+        background: #fef3c7;
+        color: #92400e;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        align-self: center;
+        border: 1px solid #fde68a;
+      }
+      .pi-legend-window-label:not(.is-active) { display: none; }
     </style>
 
     <div class="hot-full-bleed">
@@ -1212,6 +1265,13 @@
                 <button id="btn_informe_compromisos" type="button" class="btn-pdc-modern">Descargar Corte <i class="fas fa-download ml-1"></i></button>
                 <button id="btn-export" class="btn-pdc-modern">Exportar CSV</button>
                 <button id="btn-refresh" class="btn-pdc-modern">Recargar</button>
+                <div class="pi-view-all-toggle d-inline-flex align-items-center mx-2 <?= $viewAll ? 'is-on' : '' ?>" title="<?= $viewAll ? 'Volver a la ventana de 6 semanas de liberacion de restricciones' : 'Mostrar todas las actividades, incluyendo las que aun no entran en la ventana de 6 semanas' ?>">
+                    <span class="pi-view-all-toggle-label"><i class="fas fa-layer-group mr-1"></i>Ver Todas las Actividades</span>
+                    <div class="custom-control custom-switch mb-0 ml-2">
+                        <input type="checkbox" class="custom-control-input" id="piViewAllToggle" <?= $viewAll ? 'checked' : '' ?> aria-label="Ver Todas las Actividades">
+                        <label class="custom-control-label" for="piViewAllToggle"></label>
+                    </div>
+                </div>
                 <button id="btn-shared-constraint" class="btn-pdc-modern">Restricción Compartida</button>
                 <button id="btn-refresh-listas" class="btn-pdc-modern" title="Recargar listas de Subcontratistas y Profesionales">🔄 Listas</button>
                 <button id="btn-shared-select-visible" class="btn-pdc-modern">Seleccionar visibles</button>
@@ -1229,6 +1289,7 @@
 
         <div class="collapse d-md-block" id="pdcFiltersMobile">
             <div class="pdc-legend pi-legend pdc-legend-autoscaling" id="piLegend">
+                <span class="pi-legend-window-label <?= $viewAll ? 'is-active' : '' ?>" title="Los conteos del semaforo se calculan sobre la ventana de 6 semanas, no sobre la vista actual.">(Ventana 6 sem.)</span>
                 <span class="pdc-legend-item blocked-overdue-critical" data-filter="blocked-overdue-critical" role="button" tabindex="0"><span class="indicator"></span> RC inicio vencido <span id="count-blocked-overdue-critical" class="count-badge">(...)</span></span>
 
                 <span class="pdc-legend-item blocked-overdue" data-filter="blocked-overdue" role="button" tabindex="0"><span class="indicator"></span> Inicio Vencido <span id="count-blocked-overdue" class="count-badge">(...)</span></span>

@@ -86,6 +86,7 @@ $router->get('/programacion-semanal/cic', [\App\Controllers\Programacion\Program
 $router->get('/programacion-intermedia', [\App\Controllers\Programacion\ProgramacionIntermediaController::class, 'index']);
 $router->post('/programacion-intermedia/filtros', [\App\Controllers\Programacion\ProgramacionIntermediaController::class, 'getFilters']);
 $router->get('/programacion-intermedia/set-filtro', [\App\Controllers\Programacion\ProgramacionIntermediaController::class, 'setFilter']);
+$router->get('/programacion-intermedia/set-view-all', [\App\Controllers\Programacion\ProgramacionIntermediaController::class, 'setViewAll']);
 $router->post('/programacion-intermedia/shared-constraints/preview', [\App\Controllers\Programacion\ProgramacionIntermediaController::class, 'previewSharedConstraints']);
 $router->post('/programacion-intermedia/shared-constraints/apply', [\App\Controllers\Programacion\ProgramacionIntermediaController::class, 'applySharedConstraints']);
 $router->get('/api/pi/list', [\App\Controllers\Programacion\ProgramacionIntermediaController::class, 'list']);

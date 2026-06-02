@@ -191,8 +191,15 @@ function modificar($D_y_E, $Materiales, $MdeO, $Equipos, $Predecesora, $Pdto_Con
     try {
         $dbInstance->beginTransaction();
 
-        $sql = "UPDATE {$dbPrefix}_programa_consolidado SET Activa = 1 WHERE Consecutivo_en_Programa = ? AND Semana = ?";
-        $dbInstance->prepare($sql)->execute([$Id, $semana]);
+        $stmtSi = $dbInstance->prepare("SELECT Semanas_Inicio FROM {$dbPrefix}_programa_consolidado WHERE Consecutivo_en_Programa = ? AND Semana = ?");
+        $stmtSi->execute([$Id, $semana]);
+        $rowSi = $stmtSi->fetch(PDO::FETCH_ASSOC);
+        $si = is_numeric($rowSi['Semanas_Inicio'] ?? null) ? (int) $rowSi['Semanas_Inicio'] : 999;
+
+        if ($si <= 6) {
+            $sql = "UPDATE {$dbPrefix}_programa_consolidado SET Activa = 1 WHERE Consecutivo_en_Programa = ? AND Semana = ?";
+            $dbInstance->prepare($sql)->execute([$Id, $semana]);
+        }
 
         $sql1 = "UPDATE {$dbPrefix}_programa_consolidado SET D_y_E = ?, Materiales = ?, MdeO = ?, Equipos = ?, Predecesora = ?, Pdto_Cons = ?, Modelo = ?, Sub_Contratista = ?, Responsable_AIA = ?, Observaciones = ? WHERE Consecutivo_en_Programa = ? AND Semana = ?";
         $dbInstance->prepare($sql1)->execute([$D_y_E, $Materiales, $MdeO, $Equipos, $Predecesora, $Pdto_Cons, $Modelo, $Sub_Contratista, $Responsable_AIA, $Observaciones, $Id, $semana]);
