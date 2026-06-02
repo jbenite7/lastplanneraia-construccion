@@ -218,6 +218,7 @@ class ProgramChangeDetector
             $accion = $this->resolvePaso3($grupo, $compromiso, $restriccionesOk, $estaActiva, $reprogramadaPorUsuario);
 
             if ($accion === 'descomprometer') {
+                $esRestriccion = ($grupo === 'debe_comprometer' && !$restriccionesOk);
                 $this->doDecommit($dbPrefix, $semana, $consecutivo, $pg);
                 $this->logAction(
                     $dbPrefix,
@@ -225,11 +226,10 @@ class ProgramChangeDetector
                     $consecutivo,
                     'descomprometer',
                     "Actividad desprogramada: estado {$estado} y restricciones " . ($restriccionesOk ? 'OK' : 'NO OK') . '.',
-                    null,
-                    null,
+                    $esRestriccion ? 'Programación' : null,
+                    $esRestriccion ? 'Restricciones habilitantes no cumplidas' : null,
                     $batchTime,
                 );
-                $esRestriccion = ($grupo === 'debe_comprometer' && !$restriccionesOk);
                 $log[] = [
                     'consecutivo' => $consecutivo,
                     'accion' => 'descomprometer',
