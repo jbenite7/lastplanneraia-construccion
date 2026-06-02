@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Core\Notifications\NotificationType;
 use PDO;
 
 class ProgramChangeDetector
@@ -79,9 +80,16 @@ class ProgramChangeDetector
                     'Actividad eliminada de Programación Semanal porque ya no existe en el Programa General.',
                     null,
                     null,
-                    $batchTime
+                    $batchTime,
                 );
-                $log[] = ['consecutivo' => $consecutivo, 'accion' => 'descomprometer', 'motivo' => 'PS huérfana'];
+                $log[] = [
+                    'consecutivo' => $consecutivo,
+                    'accion' => 'descomprometer',
+                    'motivo' => 'PS huérfana',
+                    'categoria_cnp' => null,
+                    'cnp' => null,
+                    'detalle' => 'Actividad eliminada de Programación Semanal porque ya no existe en el Programa General.',
+                ];
             }
         }
 
@@ -112,9 +120,16 @@ class ProgramChangeDetector
                         'Actividad auto-programada: cumple restricciones duras y estado propicio.',
                         null,
                         null,
-                        $batchTime
+                        $batchTime,
                     );
-                    $log[] = ['consecutivo' => $consecutivo, 'accion' => 'comprometer', 'motivo' => 'Nueva actividad + restricciones OK'];
+                    $log[] = [
+                        'consecutivo' => $consecutivo,
+                        'accion' => 'comprometer',
+                        'motivo' => 'Nueva actividad + restricciones OK',
+                        'categoria_cnp' => null,
+                        'cnp' => null,
+                        'detalle' => 'Actividad auto-programada: cumple restricciones duras y estado propicio.',
+                    ];
                 } else {
                     $this->doInsertCnp(
                         $dbPrefix,
@@ -132,9 +147,16 @@ class ProgramChangeDetector
                         'Actividad insertada con CNP: no cumple restricciones habilitantes.',
                         'Programación',
                         'Restricciones habilitantes no cumplidas',
-                        $batchTime
+                        $batchTime,
                     );
-                    $log[] = ['consecutivo' => $consecutivo, 'accion' => 'insert_cnp', 'motivo' => 'Nueva actividad + restricciones NO OK'];
+                    $log[] = [
+                        'consecutivo' => $consecutivo,
+                        'accion' => 'insert_cnp',
+                        'motivo' => 'Nueva actividad + restricciones NO OK',
+                        'categoria_cnp' => 'Programación',
+                        'cnp' => 'Restricciones habilitantes no cumplidas',
+                        'detalle' => 'Actividad insertada con CNP: no cumple restricciones habilitantes.',
+                    ];
                 }
             }
             // Terminada y Actividad Futura → Skip en PG nueva
@@ -178,8 +200,9 @@ class ProgramChangeDetector
             $grupo = $this->classifyState($estado);
             $restriccionesOk = $this->checkRestrictionsMet($pg);
             $estaActiva = $psRecord['Activa'] === '1';
+            $reprogramadaPorUsuario = (int) ($psRecord['Reprogramada_Por_Usuario'] ?? 0) === 1;
 
-            $accion = $this->resolvePaso3($grupo, $compromiso, $restriccionesOk, $estaActiva);
+            $accion = $this->resolvePaso3($grupo, $compromiso, $restriccionesOk, $estaActiva, $reprogramadaPorUsuario);
 
             if ($accion === 'descomprometer') {
                 $this->doDecommit($dbPrefix, $semana, $consecutivo, $pg);
@@ -191,9 +214,17 @@ class ProgramChangeDetector
                     "Actividad desprogramada: estado {$estado} y restricciones " . ($restriccionesOk ? 'OK' : 'NO OK') . '.',
                     null,
                     null,
-                    $batchTime
+                    $batchTime,
                 );
-                $log[] = ['consecutivo' => $consecutivo, 'accion' => 'descomprometer', 'motivo' => "Estado {$grupo} + sin compromiso + restricciones NO OK"];
+                $esRestriccion = ($grupo === 'debe_comprometer' && !$restriccionesOk);
+                $log[] = [
+                    'consecutivo' => $consecutivo,
+                    'accion' => 'descomprometer',
+                    'motivo' => "Estado {$grupo} + sin compromiso + restricciones " . ($restriccionesOk ? 'OK' : 'NO OK'),
+                    'categoria_cnp' => $esRestriccion ? 'Programación' : null,
+                    'cnp' => $esRestriccion ? 'Restricciones habilitantes no cumplidas' : null,
+                    'detalle' => "Actividad desprogramada: estado {$estado} y restricciones " . ($restriccionesOk ? 'OK' : 'NO OK') . '.',
+                ];
             } elseif ($accion === 'comprometer') {
                 $this->doComprometer($dbPrefix, $semana, $consecutivo, $pg);
                 $this->logAction(
@@ -204,9 +235,16 @@ class ProgramChangeDetector
                     "Actividad reactivada y auto-programada al cumplir restricciones duras y estado propicio.",
                     null,
                     null,
-                    $batchTime
+                    $batchTime,
                 );
-                $log[] = ['consecutivo' => $consecutivo, 'accion' => 'comprometer', 'motivo' => "Reactivación: restricciones reparadas y OK"];
+                $log[] = [
+                    'consecutivo' => $consecutivo,
+                    'accion' => 'comprometer',
+                    'motivo' => "Reactivación: restricciones reparadas y OK",
+                    'categoria_cnp' => null,
+                    'cnp' => null,
+                    'detalle' => 'Actividad reactivada y auto-programada al cumplir restricciones duras y estado propicio.',
+                ];
             }
         }
 
@@ -216,13 +254,53 @@ class ProgramChangeDetector
         // Insertar registro de control de esta corrida
         $this->logAction($dbPrefix, $semana, 0, 'comprometer', 'Corrida de control', null, null, $batchTime);
 
+        // Notificar (campana global) si hubo autodesprogramaciones por restricciones duras
+        $this->notifyRestrictionCnp($dbPrefix, $semana, $log);
+
         return $log;
+    }
+
+    private function notifyRestrictionCnp(string $dbPrefix, int $semana, array $log): void
+    {
+        $cnpList = array_values(array_filter($log, static function ($entry) {
+            return isset($entry['accion'], $entry['categoria_cnp'])
+                && in_array($entry['accion'], ['descomprometer', 'insert_cnp'], true)
+                && $entry['categoria_cnp'] === 'Programación';
+        }));
+
+        if (empty($cnpList)) {
+            return;
+        }
+
+        $count = count($cnpList);
+        $titulo = NotificationType::getTitle(
+            NotificationType::PS_AUTOPROGRAMMED_CNP_RESTRICTION,
+            $count,
+        );
+        $cuerpo = sprintf(
+            '%d actividad(es) en la semana %d pasaron a CNP genérica porque no cumplen las restricciones duras (D_y_E, Materiales, MdeO, Equipos, Predecesora). Revisa el módulo CNP.',
+            $count,
+            $semana,
+        );
+
+        try {
+            $notificationService = new NotificationService();
+            $usersByRole = $notificationService->getUsersByRoleForProject($dbPrefix);
+            $notificationService->emitToRoles(
+                NotificationType::PS_AUTOPROGRAMMED_CNP_RESTRICTION,
+                $cuerpo,
+                $usersByRole,
+                $dbPrefix,
+            );
+        } catch (\Throwable $t) {
+            error_log('[ProgramChangeDetector] notifyRestrictionCnp failed: ' . $t->getMessage());
+        }
     }
 
     private function getPsRecord(string $dbPrefix, int $semana, int $consecutivo): ?array
     {
         return $this->db->query(
-            "SELECT Activa, Categoria_CNP, CNP, Compromiso FROM {$dbPrefix}_programacion_semanal WHERE Semana = ? AND Consecutivo_En_Programa = ? LIMIT 1",
+            "SELECT Activa, Categoria_CNP, CNP, Compromiso, Reprogramada_Por_Usuario FROM {$dbPrefix}_programacion_semanal WHERE Semana = ? AND Consecutivo_En_Programa = ? LIMIT 1",
             [$semana, $consecutivo],
         )->fetch(PDO::FETCH_ASSOC) ?: null;
     }
@@ -237,7 +315,7 @@ class ProgramChangeDetector
         return $f > 0 ? $f : null;
     }
 
-    private function resolvePaso3(string $grupo, ?float $compromiso, bool $restriccionesOk, bool $estaActiva): string
+    private function resolvePaso3(string $grupo, ?float $compromiso, bool $restriccionesOk, bool $estaActiva, bool $reprogramadaPorUsuario): string
     {
         $tieneCompromiso = $compromiso !== null && $compromiso > 0;
 
@@ -250,9 +328,15 @@ class ProgramChangeDetector
             if ($restriccionesOk) {
                 return $estaActiva ? 'no_tocar' : 'comprometer';
             }
-            // Si ya está activa en PS y tiene restricciones pendientes, se mantiene
-            // activa con su alerta visual en el frontend (no se vuelve a desprogramar sola).
-            return 'no_tocar';
+            // Restricciones NO OK: distinguir entre autoprogramada por el sistema
+            // y reactivada manualmente por el usuario desde CNP.
+            if ($estaActiva && $reprogramadaPorUsuario) {
+                // El usuario la reactivó voluntariamente: se respeta la soberanía.
+                return 'no_tocar';
+            }
+            // Autoprogramada por el sistema (o sin flag) y con restricciones pendientes:
+            // autodescomprometer con CNP genérica.
+            return 'descomprometer';
         }
 
         if ($grupo === 'terminada') {
@@ -302,7 +386,7 @@ class ProgramChangeDetector
 
         $lastBatchTime = $this->db->query(
             "SELECT creado_en FROM {$dbPrefix}_auto_program_log WHERE semana = ? AND consecutivo = 0 ORDER BY id DESC LIMIT 1",
-            [$semana]
+            [$semana],
         )->fetchColumn();
 
         if (!$lastBatchTime) {
@@ -372,8 +456,8 @@ class ProgramChangeDetector
 
         if ($exists > 0) {
             $this->db->query(
-                "UPDATE {$dbPrefix}_programacion_semanal 
-                 SET Activa = '1', Categoria_CNP = NULL, CNP = NULL, Observaciones_CNP = NULL 
+                "UPDATE {$dbPrefix}_programacion_semanal
+                 SET Activa = '1', Categoria_CNP = NULL, CNP = NULL, Observaciones_CNP = NULL, Reprogramada_Por_Usuario = 0
                  WHERE Semana = ? AND Consecutivo_En_Programa = ? AND Activa != '1'",
                 [$semana, $consecutivo],
             );
@@ -426,8 +510,8 @@ class ProgramChangeDetector
         }
 
         $this->db->query(
-            "UPDATE {$dbPrefix}_programacion_semanal 
-             SET Activa = '0', Categoria_CNP = ?, CNP = ?, Observaciones_CNP = NULL
+            "UPDATE {$dbPrefix}_programacion_semanal
+             SET Activa = '0', Categoria_CNP = ?, CNP = ?, Observaciones_CNP = NULL, Reprogramada_Por_Usuario = 0
              WHERE Semana = ? AND Consecutivo_En_Programa = ?",
             ['Programación', 'Restricciones habilitantes no cumplidas', $semana, $consecutivo],
         );

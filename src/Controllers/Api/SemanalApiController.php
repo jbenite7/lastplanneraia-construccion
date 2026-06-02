@@ -304,7 +304,9 @@ class SemanalApiController
             // 4. Limpieza: actividades que ya no califican (sin compromiso ni avance real)
             $eligibleSubSql = "SELECT Consecutivo_en_Programa FROM {$dbPrefix}_programa_consolidado 
                 WHERE Semana = ? AND Titulo = 0 
-                  AND Estado NOT IN ('Terminada', 'Terminada Antes', 'Sin Datos')";
+                  AND (COALESCE(Ejecutado, 0) > 0.001 OR {$restrictionEligibilitySql})
+                  AND (Estado='En Curso' OR Estado='Atrasada' OR Estado='Debe Iniciar'
+                    OR Estado='A Tiempo' OR Estado='Ya Debió Iniciar y Restricciones Pendientes')";
             $this->db->query("
                 DELETE FROM {$dbPrefix}_programacion_semanal 
                 WHERE Semana = ? AND Activa = '1'
@@ -616,7 +618,7 @@ class SemanalApiController
         if ($data && $data["Activa"] === "NA") {
             $res = $this->db->query("DELETE FROM {$dbPrefix}_programacion_semanal WHERE Consecutivo = ?", [$id]);
         } else {
-            $queryUpdate = "UPDATE {$dbPrefix}_programacion_semanal SET Activa = '0', Responsable_AIA = ?, Categoria_CNP = ?, CNP = ?, Observaciones_CNP = ? WHERE Consecutivo = ?";
+            $queryUpdate = "UPDATE {$dbPrefix}_programacion_semanal SET Activa = '0', Responsable_AIA = ?, Categoria_CNP = ?, CNP = ?, Observaciones_CNP = ?, Reprogramada_Por_Usuario = 0 WHERE Consecutivo = ?";
             $res = $this->db->query($queryUpdate, [$_POST["Responsable_AIA"], $_POST["Categoria_CNP"], $_POST["CNP"], $_POST["Observaciones_CNP"], $id]);
         }
 
@@ -754,7 +756,9 @@ class SemanalApiController
             $restrictionEligibilitySql = $this->getAutoprogramRestrictionEligibilitySql();
             $eligibleSubSql = "SELECT Consecutivo_en_Programa FROM {$dbPrefix}_programa_consolidado 
                 WHERE Semana = ? AND Titulo = 0 
-                  AND Estado NOT IN ('Terminada', 'Terminada Antes', 'Sin Datos')";
+                  AND (COALESCE(Ejecutado, 0) > 0.001 OR {$restrictionEligibilitySql})
+                  AND (Estado='En Curso' OR Estado='Atrasada' OR Estado='Debe Iniciar'
+                    OR Estado='A Tiempo' OR Estado='Ya Debió Iniciar y Restricciones Pendientes')";
 
             $this->db->query("
                 DELETE FROM {$dbPrefix}_programacion_semanal 

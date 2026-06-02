@@ -314,7 +314,6 @@
     return false;
   }
 
-
   function showLoading(show) {
     if (show) {
       $('#loading').show();
@@ -1399,20 +1398,11 @@
     }
 
     var physicalRow = typeof instance.toPhysicalRow === 'function' ? instance.toPhysicalRow(visualRow) : visualRow;
-    if (!Number.isInteger(physicalRow) || physicalRow < 0) {
+    if (!Number.isInteger(physicalRow) || physicalRow < 0 || typeof instance.getSourceDataAtRow !== 'function') {
       return null;
     }
 
-    var physicalRow = typeof instance.toPhysicalRow === 'function' ? instance.toPhysicalRow(visualRow) : visualRow;
-    if (typeof instance.getSourceDataAtRow === 'function') {
-      return instance.getSourceDataAtRow(physicalRow) || null;
-    }
-    var sourceData = typeof instance.getSourceData === 'function' ? instance.getSourceData() : null;
-    if (Array.isArray(sourceData) && physicalRow < sourceData.length) {
-      return sourceData[physicalRow] || null;
-    }
-
-    return typeof instance.getSourceDataAtRow === 'function' ? (instance.getSourceDataAtRow(physicalRow) || null) : null;
+    return instance.getSourceDataAtRow(physicalRow) || null;
   }
 
   function captureViewportState() {
@@ -1876,7 +1866,6 @@
       applyFiltersAndRender();
       showLoading(false);
       syncPhaseUI();
-      afterDataLoaded();
     }).fail(function () {
       showLoading(false);
       showFeedback('error', 'Error cargando datos');
@@ -2044,7 +2033,7 @@
   function saveRow(visualRow, prop, oldValue, overrides) {
     var db = getDb();
     var physicalRow = hot.toPhysicalRow(visualRow);
-    var row = typeof hot.getSourceDataAtRow === 'function' ? (hot.getSourceDataAtRow(physicalRow) || null) : null;
+    var row = hot.getSourceDataAtRow(physicalRow);
 
     var payload = buildPayload(row || {}, prop, overrides || {});
     if (!payload.valid) {
@@ -2111,12 +2100,6 @@
         }
 
         hot.render();
-
-        var fp = hot.getPlugin('filters');
-        if (fp && fp.isEnabled() && fp.conditionCollection && typeof fp.conditionCollection.isEmpty === 'function' && !fp.conditionCollection.isEmpty()) {
-            fp.filter();
-        }
-
         updateLegendCounts(getFilteredRows());
 
         if (response.alerta_bolsa) {
@@ -2143,7 +2126,7 @@
       return;
     }
 
-    Handsontable.renderers.registerRenderer('psActionsRenderer', function (instance, td, row, col, prop, value) {
+    Handsontable.renderers.registerRenderer('psActionsRenderer', function (instance, td, row) {
       Handsontable.dom.empty(td);
       td.classList.remove('ps-alert-critical-route', 'ps-alert-critical', 'ps-alert-high', 'ps-alert-medium', 'ps-alert-info', 'ps-alert-control', 'ps-alert-neutral');
 
@@ -2293,7 +2276,6 @@
       hot.loadData(data);
       applyLegacyColumnVisibility();
       restoreHotFilterConditions(filterConditions);
-      hot.render();
       scheduleLayoutRefresh(0, true);
       return;
     }
@@ -2362,49 +2344,7 @@
       licenseKey: 'non-commercial-and-evaluation',
       language: 'es-MX',
       stretchH: 'none',
-      wordWrap: true,
-      autoColumnSize: false,
-      viewportColumnRenderingOffset: 10,
-      viewportRowRenderingOffset: 20,
-      colWidths: [60, 60, 80, 250, 150, 80, 150, 150, 150, 80, 80, 80, 80, 80, 80, 80, 80, 80, 100, 150, 200, 150, 100],
-      cells: function (row, col) {
-        var cellProperties = {};
-        var physicalRow = typeof this.instance.toPhysicalRow === 'function' ? this.instance.toPhysicalRow(row) : row;
-        var rowData = typeof this.instance.getSourceDataAtRow === 'function' ? this.instance.getSourceDataAtRow(physicalRow) : null;
-
-        if (!rowData) {
-          return cellProperties;
-        }
-
-        var prop = this.instance.colToProp(col);
-        var alertClass = getAlertClassForRow(rowData);
-        var isCrisis = parseInt(rowData.alerta_crisis, 10) === 1;
-
-        var baseClass = '';
-        if (this.instance.getSettings().columns && this.instance.getSettings().columns[col]) {
-          baseClass = this.instance.getSettings().columns[col].className || '';
-        }
-
-        var isReadOnly = false;
-        if (this.instance.getSettings().columns && this.instance.getSettings().columns[col] && this.instance.getSettings().columns[col].renderer === 'psActionsRenderer') {
-          isReadOnly = true;
-        } else {
-          isReadOnly = isPropReadOnly(prop);
-        }
-
-        var finalClass = ('htMiddle ' + baseClass + ' ps-row-state ' + alertClass).trim();
-        if (isReadOnly) {
-          finalClass += ' ps-cell-readonly';
-        }
-        if (isCrisis) {
-          finalClass += ' ps-row-crisis';
-        }
-
-        cellProperties.className = finalClass;
-        cellProperties.readOnly = isReadOnly;
-
-        return cellProperties;
-      },
+      autoColumnSize: true,
       manualColumnResize: false,
       manualRowResize: true,
       contextMenu: true,
@@ -2464,8 +2404,36 @@
           tryAutoOpenDropdownSelection();
         }, 0);
       },
-      afterLoadData: function (sourceData, initialLoad, source) {
-        // lazy rendering con cells nativo
+      cells: function (row, col, prop) {
+        var props = {};
+        var hotInstance = (this && this.instance) || hot;
+        var rowData = hotInstance && typeof hotInstance.getSourceDataAtRow === 'function' ? (getSourceRowDataByVisualRow(hotInstance, row) || {}) : {};
+
+        var alertClass = getAlertClassForRow(rowData);
+        var columnMeta = this.instance.getSettings().columns[col] || {};
+        var baseClass = columnMeta.className || '';
+
+        var isReadOnly = false;
+        var finalClass = (baseClass + ' ' + 'ps-row-state ' + alertClass).trim();
+
+        if (columnMeta.renderer === 'psActionsRenderer') {
+          isReadOnly = true;
+        } else {
+          isReadOnly = isPropReadOnly(prop);
+        }
+
+        if (isReadOnly) {
+          finalClass += ' ps-cell-readonly';
+        }
+
+        if (parseInt(rowData.alerta_crisis, 10) === 1) {
+          finalClass += ' ps-row-crisis';
+        }
+
+        props.className = finalClass.trim();
+        props.readOnly = isReadOnly;
+        
+        return props;
       },
       beforeChange: function (changes, source) {
         if (!changes || source === 'loadData' || source === 'revert' || source === 'internal-update') {
@@ -2521,27 +2489,21 @@
 
         for (var i = 0; i < changes.length; i++) {
           var change = changes[i];
-          if (!change) continue;
-          var visualRow = change[0];
+          var rowIndex = change[0];
           var prop = change[1];
           var oldValue = change[2];
           var newValue = change[3];
-
-          var physicalRow = this.toPhysicalRow(visualRow);
-          if (visualRow === null || visualRow < 0) {
-            continue;
-          }
 
           if (!editableProps[prop] || oldValue === newValue) {
             continue;
           }
 
           if (isPropReadOnly(prop)) {
-            revertCell(visualRow, prop, oldValue);
+            revertCell(rowIndex, prop, oldValue);
             continue;
           }
 
-          var rowData = typeof this.getSourceDataAtRow === 'function' ? (this.getSourceDataAtRow(physicalRow) || {}) : {};
+          var rowData = getSourceRowDataByVisualRow(hot, rowIndex) || {};
 
           // HARD GUARD: Block real execution registration if missing assignees
           if (prop === 'Ejecutado_Real') {
@@ -2549,7 +2511,7 @@
             var isResMissing = isBlank(rowData.Responsable_AIA);
             
             if (isSubMissing || isResMissing) {
-              revertCell(visualRow, prop, oldValue);
+              revertCell(rowIndex, prop, oldValue);
               showFeedback('error', 'Falta Sub-Contratista o Resp. AIA para registrar avance');
               continue;
             }
@@ -2561,7 +2523,7 @@
             if (realVal !== null && compromiso !== null && realVal < compromiso) {
                 // Prevenir guardado y abrir modal CNC (nuevo o actualización)
                 window._pendingCncSave = {
-                  rowIndex: visualRow,
+                  rowIndex: rowIndex,
                   consecutivo: rowData.Consecutivo,
                   sourceRowData: rowData,
                   oldValue: oldValue,
@@ -2581,23 +2543,23 @@
 
                 $('#modal_cnc_hot').modal('show');
                 
-                revertCell(visualRow, prop, oldValue);
+                revertCell(rowIndex, prop, oldValue);
                 continue;
             }
           }
 
           var normalized = normalizeCellValue(prop, newValue);
           if (!normalized.valid) {
-            revertCell(visualRow, prop, oldValue);
+            revertCell(rowIndex, prop, oldValue);
             showFeedback('error', normalized.error);
             continue;
           }
 
           if (normalized.value !== newValue) {
-            hot.setDataAtRowProp(visualRow, prop, normalized.value, 'internal-update');
+            hot.setDataAtRowProp(rowIndex, prop, normalized.value, 'internal-update');
           }
 
-          saveRow(visualRow, prop, oldValue);
+          saveRow(rowIndex, prop, oldValue);
         }
       },
     });
@@ -3241,7 +3203,7 @@
       }
 
       var physicalRow = hot.toPhysicalRow(coords.row);
-      var row = typeof hot.getSourceDataAtRow === 'function' ? (hot.getSourceDataAtRow(physicalRow) || {}) : {};
+      var row = hot.getSourceDataAtRow(physicalRow) || {};
 
       if (!canManageToolbarActions() || getPermiso() === 'C' || getSemanalConfirmada() === 1) {
         showFeedback('error', 'Acción bloqueada: No tiene permisos de edición');
@@ -3345,13 +3307,13 @@
       var answer = (response && typeof response === 'object') ? String(response.respuesta || '') : String(response || '');
       if (answer === 'BIEN' || answer === 'OK') {
         showFeedback('success', 'Autoprogramación ejecutada');
+        
+        var alertas = (response && Array.isArray(response.alertasRestricciones)) ? response.alertasRestricciones : [];
+        if (alertas.length > 0) {
+          showRestriccionesFaltantesModal(alertas);
+        }
 
         loadData();
-        setTimeout(function () {
-          if (window.ChangeMonitor && typeof window.ChangeMonitor.checkAndShow === 'function') {
-            window.ChangeMonitor.checkAndShow();
-          }
-        }, 800);
         return;
       }
       var message = (response && typeof response === 'object')
@@ -3377,9 +3339,9 @@
       rows += '<td class="text-danger">' + escapeHtml(faltantes[i].CamposFaltantes || '') + '</td></tr>';
     }
 
-    var html = '<div class="modal fade aia-modal" id="modalDatosFaltantes" tabindex="-1" role="dialog">'
-      + '<div class="modal-dialog modal-lg modal-dialog-centered" role="document"><div class="modal-content">'
-      + '<div class="modal-header"><h5 class="modal-title"><i class="fas fa-exclamation-triangle"></i> Actividades con Datos Incompletos</h5>'
+    var html = '<div class="modal fade" id="modalDatosFaltantes" tabindex="-1" role="dialog">'
+      + '<div class="modal-dialog modal-lg" role="document"><div class="modal-content">'
+      + '<div class="modal-header bg-warning"><h5 class="modal-title"><i class="fas fa-exclamation-triangle"></i> Actividades con Datos Incompletos</h5>'
       + '<button type="button" class="close" data-dismiss="modal"><span>&times;</span></button></div>'
       + '<div class="modal-body"><p>Las siguientes <strong>' + faltantes.length + '</strong> actividades candidatas tienen datos faltantes:</p>'
       + '<div class="table-responsive"><table class="table table-sm table-bordered"><thead><tr><th>Id</th><th>Actividad</th><th>Campos Faltantes</th></tr></thead>'
@@ -3420,9 +3382,9 @@
       rows += '<td>' + conditions + '</td></tr>';
     }
 
-    var html = '<div class="modal fade aia-modal" id="modalRestriccionesFaltantes" tabindex="-1" role="dialog">'
-      + '<div class="modal-dialog modal-lg modal-dialog-centered" role="document"><div class="modal-content">'
-      + '<div class="modal-header"><h5 class="modal-title"><i class="fas fa-clipboard-list"></i> Actividades pendientes por habilitantes</h5>'
+    var html = '<div class="modal fade" id="modalRestriccionesFaltantes" tabindex="-1" role="dialog">'
+      + '<div class="modal-dialog modal-lg" role="document"><div class="modal-content">'
+      + '<div class="modal-header bg-danger text-white"><h5 class="modal-title"><i class="fas fa-clipboard-list"></i> Actividades pendientes por habilitantes</h5>'
       + '<button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button></div>'
       + '<div class="modal-body"><p>Las siguientes <strong>' + alertas.length + '</strong> actividades se omitieron porque tienen condiciones <strong>habilitantes</strong> pendientes para comprometer:</p>'
       + '<p class="text-muted"><small><span class="badge badge-warning">Blandas</span> Pdto. Constructivo y Modelo BIM son seguimiento operativo; aparecen en ámbar y no bloquean la autoprogramación.</small></p>'
@@ -3842,11 +3804,14 @@
     syncPhaseUI();
     loadData();
     scheduleActionsRowFit(0);
-  }
 
-  function afterDataLoaded() {
-    if (window.ChangeMonitor && typeof window.ChangeMonitor.run === 'function') {
-      setTimeout(function() { window.ChangeMonitor.run(); }, 500);
+    if (window.ChangeMonitor && typeof window.ChangeMonitor.init === 'function') {
+      window.ChangeMonitor.init();
+      setTimeout(function () {
+        if (window.ChangeMonitor && typeof window.ChangeMonitor.run === 'function') {
+          window.ChangeMonitor.run();
+        }
+      }, 500);
     }
   }
 

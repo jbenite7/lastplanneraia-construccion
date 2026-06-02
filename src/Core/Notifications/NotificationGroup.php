@@ -14,4 +14,5 @@ class NotificationGroup
     public const PI_ASSIGNMENT         = 'pi_assignment';
     public const PI_STATE_ALERT        = 'pi_state_alert';
     public const REPORT                = 'report';
+    public const PS_AUTO_PROGRAM       = 'ps_auto_program';
 }

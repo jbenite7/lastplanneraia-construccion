@@ -30,6 +30,9 @@ class NotificationType
     // --- Group: report ---
     public const REPORT_RUN_ALL = 'report_run_all';
 
+    // --- Group: ps_auto_program ---
+    public const PS_AUTOPROGRAMMED_CNP_RESTRICTION = 'ps_autoprogrammed_cnp_restriction';
+
     /**
      * Mapa de metadatos por tipo.
      * group: grupo al que pertenece.
@@ -105,6 +108,14 @@ class NotificationType
             'title'        => 'Consolidación de reportes',
             'title_plural' => 'Consolidaciones de reportes',
             'roles'        => ['A'],
+        ],
+
+        // --- Group: ps_auto_program ---
+        self::PS_AUTOPROGRAMMED_CNP_RESTRICTION => [
+            'group'        => NotificationGroup::PS_AUTO_PROGRAM,
+            'title'        => 'Actividad autodesprogramada por restricciones',
+            'title_plural' => 'Actividades autodesprogramadas por restricciones',
+            'roles'        => ['A', 'D', 'R', 'DCV'],
         ],
     ];
 
