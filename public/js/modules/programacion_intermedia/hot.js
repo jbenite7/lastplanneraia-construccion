@@ -2256,6 +2256,8 @@
       data: payload.data,
     }).done(function (response) {
       if (response && response.respuesta === 'BIEN') {
+        var savedViewport = captureViewportState();
+
         if (hot && typeof hot.suspendRender === 'function') {
           hot.suspendRender();
         }
@@ -2297,6 +2299,10 @@
         var fp = hot.getPlugin('filters');
         if (fp && fp.isEnabled() && fp.conditionCollection && typeof fp.conditionCollection.isEmpty === 'function' && !fp.conditionCollection.isEmpty()) {
             fp.filter();
+        }
+
+        if (savedViewport) {
+          setTimeout(function () { restoreViewportState(savedViewport); }, 0);
         }
 
         if (piViewAll) {
