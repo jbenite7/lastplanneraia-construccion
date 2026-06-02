@@ -4,6 +4,7 @@
   var autoProgramLog = [];
   var isRunning = false;
   var hasRunOnce = false;
+  var cmCurrentFilter = null;
 
   function getDb() {
     return document.getElementById('baseDatos_PHP')?.value || '';
@@ -13,22 +14,22 @@
     return parseInt(document.getElementById('semana_PHP')?.value || '0', 10);
   }
 
-  function showNotice(level, message, title) {
-    if (!window.AIA || !window.AIA.Notice) {
-      return;
-    }
-    var fn = window.AIA.Notice[level];
-    if (typeof fn === 'function') {
-      fn(message, title);
-    }
+  function isRestrictionEntry(entry) {
+    return (entry.accion === 'descomprometer' || entry.accion === 'insert_cnp')
+      && entry.categoria_cnp === 'Programación';
   }
 
   function countCnpGenericas(log) {
     if (!Array.isArray(log)) return 0;
-    return log.filter(function (e) {
-      return (e.accion === 'descomprometer' || e.accion === 'insert_cnp')
-        && e.categoria_cnp === 'Programación';
-    }).length;
+    return log.filter(isRestrictionEntry).length;
+  }
+
+  function applyFilter(log, filter) {
+    if (!Array.isArray(log)) return [];
+    if (filter === 'restricciones') {
+      return log.filter(isRestrictionEntry);
+    }
+    return log;
   }
 
   function run(force) {
@@ -72,8 +73,43 @@
     if (count <= 0) {
       return;
     }
-    var mensaje = count + ' actividad(es) no se pueden programar por restricciones habilitantes sin cumplir. Revisa el módulo CNP.';
-    showNotice('warning', mensaje, 'Restricciones pendientes');
+    if (!window.AIA || !window.AIA.Notice || typeof window.AIA.Notice.dialog !== 'function') {
+      return;
+    }
+
+    var semana = getSemana();
+    var cnpUrl = '/legacy/cambiar_pagina.php?seccion=CNP&semana=' + encodeURIComponent(semana);
+    var html = count + ' actividad(es) no se pueden programar por restricciones habilitantes sin cumplir. '
+      + '<a href="' + cnpUrl + '" class="cm-cnp-link">Revisa el módulo CNP</a>.';
+
+    window.AIA.Notice.dialog({
+      icon: 'warning',
+      title: 'Restricciones pendientes',
+      html: html,
+      showDenyButton: true,
+      denyButtonText: '<i class="fas fa-list"></i> Ver Actividades no programadas',
+      confirmButtonText: 'Ir a Programar la semana',
+      customClass: {
+        popup: 'aia-glass-popup',
+        title: 'swal2-title',
+        htmlContainer: 'swal2-html-container',
+        confirmButton: 'aia-glass-confirm-btn',
+        denyButton: 'aia-glass-deny-btn'
+      },
+      buttonsStyling: false,
+      allowOutsideClick: false
+    }).then(function (result) {
+      if (!result) return;
+      if (result.isDenied) {
+        openModal('restricciones');
+      } else if (result.isConfirmed) {
+        if (window.PSHotModule && typeof window.PSHotModule.reload === 'function') {
+          window.PSHotModule.reload();
+        } else {
+          window.location.reload();
+        }
+      }
+    });
   }
 
   function fetchLog() {
@@ -121,15 +157,60 @@
     }
   }
 
-  function openModal() {
+  function openModal(filter) {
     var $modal = $('#modal_change_monitor');
     if ($modal.length === 0) return;
+
+    cmCurrentFilter = filter || null;
+    ensureFilterToggle();
+    ensureFilterIndicator();
+    ensureRestrictionsCounter();
 
     var $tbody = $('#cm-table-body');
     $tbody.html('<tr><td colspan="6" class="cm-empty-state"><i class="fas fa-spinner fa-spin"></i> Cargando registro...</td></tr>');
 
     fetchLog();
     $modal.modal('show');
+  }
+
+  function ensureFilterToggle() {
+    var $modal = $('#modal_change_monitor');
+    if ($modal.length === 0) return;
+    var $header = $('#modal_change_monitor .cm-modal-header').first();
+    if ($header.length === 0) return;
+
+    if ($('#cm-filter-toggle').length === 0) {
+      var $toggle = $(
+        '<label class="cm-filter-toggle">' +
+          '<input type="checkbox" id="cm-filter-toggle"> ' +
+          '<i class="fas fa-filter"></i> Solo restricciones' +
+        '</label>'
+      );
+      $toggle.find('input').on('change', function () {
+        cmCurrentFilter = this.checked ? 'restricciones' : null;
+        renderTable();
+      });
+      $header.append($toggle);
+    }
+
+    $('#cm-filter-toggle').prop('checked', cmCurrentFilter === 'restricciones');
+  }
+
+  function ensureFilterIndicator() {
+    var $toolbar = $('#modal_change_monitor .cm-toolbar').first();
+    if ($toolbar.length === 0) return;
+    if ($('#cm-filter-indicator').length === 0) {
+      $toolbar.append('<div id="cm-filter-indicator" style="display:none"></div>');
+    }
+  }
+
+  function ensureRestrictionsCounter() {
+    var $titleRow = $('#modal_change_monitor .cm-title-row').first();
+    if ($titleRow.length === 0) return;
+    if ($('#cm-count-restricciones-header').length === 0) {
+      var $badge = $('<span class="cm-total-badge cm-restricciones-badge" id="cm-count-restricciones-header" title="Actividades con restricciones pendientes">0</span>');
+      $titleRow.append($badge);
+    }
   }
 
   function classifyEntry(entry) {
@@ -150,11 +231,10 @@
     $tbody.empty();
 
     var semana = getSemana();
+    var filteredLog = applyFilter(autoProgramLog, cmCurrentFilter);
     var total = autoProgramLog.length;
-    var restriccionesCount = autoProgramLog.filter(function (e) {
-      return (e.accion === 'descomprometer' || e.accion === 'insert_cnp')
-        && e.categoria_cnp === 'Programación';
-    }).length;
+    var restriccionesCount = countCnpGenericas(autoProgramLog);
+    var showing = filteredLog.length;
 
     var $headerTotal = $('#cm-count-total-header');
     if ($headerTotal.length) $headerTotal.text(total);
@@ -162,12 +242,26 @@
     var $headerRestricciones = $('#cm-count-restricciones-header');
     if ($headerRestricciones.length) $headerRestricciones.text(restriccionesCount);
 
+    var $indicator = $('#cm-filter-indicator');
+    if ($indicator.length) {
+      if (cmCurrentFilter === 'restricciones' && showing < total) {
+        $indicator.html('<i class="fas fa-filter"></i> Mostrando ' + showing + ' de ' + total + ' (filtrado por restricciones pendientes)').show();
+      } else {
+        $indicator.empty().hide();
+      }
+    }
+
     if (total === 0) {
       $tbody.html('<tr><td colspan="6" class="cm-empty-state">No hay actividades auto-gestionadas en esta semana.</td></tr>');
       return;
     }
 
-    autoProgramLog.forEach(function (entry) {
+    if (showing === 0) {
+      $tbody.html('<tr><td colspan="6" class="cm-empty-state">No hay actividades que coincidan con el filtro activo.</td></tr>');
+      return;
+    }
+
+    filteredLog.forEach(function (entry) {
       var info = classifyEntry(entry);
 
       var accionLabel = '';

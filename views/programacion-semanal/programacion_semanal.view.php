@@ -811,6 +811,7 @@
         }
     </style>
     <link rel="stylesheet" href="/css/handsontable-header-global.css?v=20260223a" />
+    <link rel="stylesheet" href="/css/change-monitor.css?v=20260602a" />
 </head>
 <body class="ps-page">
     <div id="loading"><div class="spinner-border text-primary" role="status"><span class="sr-only">Cargando...</span></div></div>

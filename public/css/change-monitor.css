@@ -1,0 +1,71 @@
+/* ===========================================================================
+   Change Monitor — estilos específicos
+   Capa 1 (toast modal restricciones) y Capa 2 (modal lista auto-gestionadas)
+   =========================================================================== */
+
+.cm-cnp-link {
+    color: #f4d35e !important;
+    text-decoration: underline;
+    font-weight: 600;
+    transition: color 0.15s ease;
+}
+.cm-cnp-link:hover,
+.cm-cnp-link:focus {
+    color: #ffd84d !important;
+    text-decoration: underline;
+}
+
+/* Toggle "Solo restricciones" en header del modal Capa 2 */
+.cm-filter-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.85rem;
+    margin-left: 0.75rem;
+    background: #FAFAFA;
+    color: #1a5633;
+    border: 1.5px solid #1a5633;
+    border-radius: 18px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.15s ease;
+}
+.cm-filter-toggle:hover {
+    background: #e8f1ea;
+}
+.cm-filter-toggle input[type="checkbox"] {
+    margin: 0;
+    cursor: pointer;
+    accent-color: #1a5633;
+}
+.cm-filter-toggle input[type="checkbox"]:checked + i {
+    color: #d9534f;
+}
+
+/* Indicador de filtro activo */
+#cm-filter-indicator {
+    display: none;
+    padding: 0.5rem 0.85rem;
+    margin: 0.5rem 0 0.75rem 0;
+    background: #fff8e1;
+    border-left: 3px solid #f4d35e;
+    color: #5d4a00;
+    border-radius: 4px;
+    font-size: 0.88rem;
+    font-weight: 500;
+}
+#cm-filter-indicator i {
+    margin-right: 0.3rem;
+    color: #d99a00;
+}
+
+/* Badge de restricciones en header */
+.cm-restricciones-badge {
+    background: #f4d35e !important;
+    color: #5d4a00 !important;
+    font-size: 0.7rem !important;
+    min-width: 24px !important;
+    height: 24px !important;
+}

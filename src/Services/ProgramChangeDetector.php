@@ -202,6 +202,19 @@ class ProgramChangeDetector
             $estaActiva = $psRecord['Activa'] === '1';
             $reprogramadaPorUsuario = (int) ($psRecord['Reprogramada_Por_Usuario'] ?? 0) === 1;
 
+            // REGLA 3 (idempotencia): Si la actividad ya está desprogramada con la CNP
+            // genérica de restricciones y las restricciones siguen rotas, no ejecutar
+            // UPDATE redundante ni agregar entrada de log. El cascade solo debe tocarla
+            // cuando hay un cambio real (restricciones se cumplen → reactivar; o se
+            // rompe desde OK → autodescomprometer). Esto evita que el modal de
+            // notificación se muestre en cada F5 sin cambios.
+            if (!$estaActiva
+                && trim((string) ($psRecord['Categoria_CNP'] ?? '')) === 'Programación'
+                && trim((string) ($psRecord['CNP'] ?? '')) === 'Restricciones habilitantes no cumplidas'
+                && !$restriccionesOk) {
+                continue;
+            }
+
             $accion = $this->resolvePaso3($grupo, $compromiso, $restriccionesOk, $estaActiva, $reprogramadaPorUsuario);
 
             if ($accion === 'descomprometer') {

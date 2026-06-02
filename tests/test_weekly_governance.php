@@ -420,6 +420,67 @@ if ($c8_activa_ok && $c8_cnp_ok && $c8_flag_ok) {
     exit(1);
 }
 
+// ==========================================
+// CASO 9: Idempotencia del Cascade (sin cambio real no se registra log)
+// Tras autodescomprometer con Caso A, una 2da corrida del cascade con
+// la misma actividad (ya desprogramada, misma CNP, mismas restricciones rotas)
+// NO debe agregar entrada de log. Esto evita que el modal Capa 1 se muestre
+// en cada F5 sin cambios reales.
+// ==========================================
+echo "--- CASO 9: Probando Idempotencia del Cascade ---\n";
+
+// 1. Limpiar logs anteriores
+$db->query("DELETE FROM optimizacionJMC_auto_program_log WHERE semana = 2");
+
+// 2. Estado: actividad autodescomprometida con CNP genérica, flag=0, restricciones rotas
+$db->query("UPDATE optimizacionJMC_programacion_semanal
+            SET Activa = '0', Categoria_CNP = 'Programación', CNP = 'Restricciones habilitantes no cumplidas', Ejecutado = 0.0, Reprogramada_Por_Usuario = 0
+            WHERE Consecutivo_En_Programa = 5 AND Semana = 2");
+
+$db->query("UPDATE optimizacionJMC_programa_consolidado
+            SET D_y_E = '1', Materiales = '1', MdeO = '1', Equipos = '1', Predecesora = '0', Ejecutado = 0.0, Estado = 'Atrasada'
+            WHERE Id = '2.4' AND Semana = 2");
+
+// 3. Primera corrida: dado que la actividad YA está desprogramada con la CNP genérica,
+// el cascade debe saltarla (idempotencia). El log no debe tener entrada para esta actividad.
+$log9_1 = $detector->run('optimizacionJMC', 2);
+
+$log9_tiene_actividad_5 = false;
+foreach ($log9_1 as $entry) {
+    if ((int)($entry['consecutivo'] ?? 0) === 5) {
+        $log9_tiene_actividad_5 = true;
+        break;
+    }
+}
+
+$log9_global = $detector->getLog('optimizacionJMC', 2);
+$log9_global_tiene_actividad_5 = false;
+foreach ($log9_global as $entry) {
+    if ((int)($entry['consecutivo'] ?? 0) === 5) {
+        $log9_global_tiene_actividad_5 = true;
+        break;
+    }
+}
+
+echo "Corrida 1 - log retornado por run() para actividad 5: " . ($log9_tiene_actividad_5 ? 'SÍ (FALLO)' : 'NO (OK)') . "\n";
+echo "Corrida 1 - log persistido para actividad 5: " . ($log9_global_tiene_actividad_5 ? 'SÍ (FALLO)' : 'NO (OK)') . "\n";
+
+// 4. Validar estado: la actividad sigue Activa=0, CNP genérica intacta
+$record9 = $db->query("SELECT Activa, Categoria_CNP, CNP, Reprogramada_Por_Usuario FROM optimizacionJMC_programacion_semanal WHERE Consecutivo_En_Programa = 5 AND Semana = 2")->fetch();
+
+$c9_activa_ok = ($record9['Activa'] === '0');
+$c9_categoria_ok = ($record9['Categoria_CNP'] === 'Programación');
+$c9_cnp_ok = ($record9['CNP'] === 'Restricciones habilitantes no cumplidas');
+$c9_flag_ok = ((int) $record9['Reprogramada_Por_Usuario'] === 0);
+
+if (!$log9_tiene_actividad_5 && !$log9_global_tiene_actividad_5 && $c9_activa_ok && $c9_categoria_ok && $c9_cnp_ok && $c9_flag_ok) {
+    echo "✅ CASO 9 EXITOSO: El cascade es idempotente. Una actividad ya desprogramada con CNP genérica y mismas restricciones rotas NO se vuelve a procesar, evitando ruido en el log y en el modal Capa 1.\n\n";
+} else {
+    echo "❌ CASO 9 FALLIDO: La actividad fue procesada nuevamente a pesar de estar en estado objetivo.\n\n";
+    print_r($record9);
+    exit(1);
+}
+
 // --- LIMPIEZA FINAL ---
 // Dejar el registro en su estado original correcto (Activa = 1, Ejecutado = 0.5 y restricciones al 100%)
 $db->query("UPDATE optimizacionJMC_programacion_semanal

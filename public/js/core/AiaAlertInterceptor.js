@@ -83,6 +83,28 @@ window.AIA = window.AIA || {};
                 box-shadow: 0 6px 20px rgba(26, 86, 51, 0.4) !important;
                 background: #237a46 !important;
             }
+            .aia-glass-deny-btn {
+                background: #FAFAFA !important; /* Alabaster */
+                color: #1a5633 !important; /* Verde AIA */
+                border-radius: 12px !important;
+                padding: 14px 28px !important;
+                font-weight: 600 !important;
+                letter-spacing: 0.3px !important;
+                border: 1.5px solid #1a5633 !important;
+                box-shadow: 0 2px 8px rgba(26, 86, 51, 0.15) !important;
+                transition: all 0.2s ease !important;
+                margin-right: 0.75rem !important;
+            }
+            .aia-glass-deny-btn:hover {
+                background: #e8f1ea !important;
+                transform: translateY(-2px) !important;
+                box-shadow: 0 4px 12px rgba(26, 86, 51, 0.25) !important;
+            }
+            .aia-glass-deny-btn:focus,
+            .aia-glass-confirm-btn:focus {
+                outline: 3px solid rgba(26, 86, 51, 0.4) !important;
+                outline-offset: 2px !important;
+            }
             .aia-glass-cancel-btn {
                 background: rgba(255, 255, 255, 0.05) !important;
                 color: #ffffff !important;
