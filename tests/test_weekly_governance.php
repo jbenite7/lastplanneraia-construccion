@@ -447,7 +447,7 @@ $log9_1 = $detector->run('optimizacionJMC', 2);
 
 $log9_tiene_actividad_5 = false;
 foreach ($log9_1 as $entry) {
-    if ((int)($entry['consecutivo'] ?? 0) === 5) {
+    if ((int) ($entry['consecutivo'] ?? 0) === 5) {
         $log9_tiene_actividad_5 = true;
         break;
     }
@@ -456,7 +456,7 @@ foreach ($log9_1 as $entry) {
 $log9_global = $detector->getLog('optimizacionJMC', 2);
 $log9_global_tiene_actividad_5 = false;
 foreach ($log9_global as $entry) {
-    if ((int)($entry['consecutivo'] ?? 0) === 5) {
+    if ((int) ($entry['consecutivo'] ?? 0) === 5) {
         $log9_global_tiene_actividad_5 = true;
         break;
     }
