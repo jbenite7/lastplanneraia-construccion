@@ -506,7 +506,7 @@
   }
 
   function classifyPGRow(data) {
-    if (!data || data.Consecutivo_en_Programa === undefined) {
+    if (!data || (data.Consecutivo_en_Programa === undefined && data.Consecutivo === undefined && data.Id === undefined)) {
       return {
         key: 'sin-datos',
         rowClass: 'pg-state-sin-datos',
@@ -909,19 +909,148 @@
     }
   }
 
+  function getVisualRowDataSnapshot(instance, visualRow) {
+    if (!instance || typeof instance.getDataAtRowProp !== 'function') {
+      return null;
+    }
+
+    var props = [
+      'Consecutivo_en_Programa', 'Consecutivo', 'Id', 'Titulo', 'Estado', 'Semanas_Inicio',
+      'Fecha_Inicio', 'Fecha_Fin', 'Ruta_Critica', 'Ejecutado', 'EjecutadoDisplay',
+      'unidad', 'cantidad_ppto', 'codigo_actividad', 'Estado_Restricciones',
+      'D_y_E', 'Materiales', 'MdeO', 'Equipos', 'Predecesora', 'alerta_crisis'
+    ];
+    var rowData = {};
+    var hasValue = false;
+
+    for (var i = 0; i < props.length; i++) {
+      var prop = props[i];
+      var value = instance.getDataAtRowProp(visualRow, prop);
+      if (value !== undefined) {
+        rowData[prop] = value;
+        hasValue = true;
+      }
+    }
+
+    return hasValue ? rowData : null;
+  }
+
   function getSourceRowDataByVisualRow(instance, visualRow) {
     if (!instance || visualRow === null || visualRow === undefined || visualRow < 0) {
       return null;
     }
     var physicalRow = typeof instance.toPhysicalRow === 'function' ? instance.toPhysicalRow(visualRow) : visualRow;
+    if (!Number.isInteger(physicalRow) || physicalRow < 0) {
+      return getVisualRowDataSnapshot(instance, visualRow);
+    }
     if (typeof instance.getSourceDataAtRow === 'function') {
-      return instance.getSourceDataAtRow(physicalRow) || null;
+      return instance.getSourceDataAtRow(physicalRow) || getVisualRowDataSnapshot(instance, visualRow);
     }
     var sourceData = typeof instance.getSourceData === 'function' ? instance.getSourceData() : null;
     if (Array.isArray(sourceData) && physicalRow < sourceData.length) {
       return sourceData[physicalRow] || null;
     }
-    return null;
+    return getVisualRowDataSnapshot(instance, visualRow);
+  }
+
+  function getPGColumnProp(instance, col, prop) {
+    if (prop !== undefined && prop !== null && prop !== '') {
+      return prop;
+    }
+
+    return instance && typeof instance.colToProp === 'function'
+      ? instance.colToProp(col)
+      : prop;
+  }
+
+  function buildPGCellProperties(instance, visualRow, col, prop, rowData) {
+    var rd = rowData || getSourceRowDataByVisualRow(instance, visualRow) || {};
+    var resolvedProp = getPGColumnProp(instance, col, prop);
+    var hdr = Number(rd.Titulo) === 1;
+    var cls = classifyPGRow(rd);
+    var st = cls.rowClass || 'pg-state-actividad-futura';
+    var composed = 'pg-row-state ' + st;
+
+    if (cls.restrictionAlertKey) {
+      composed += ' pg-state-' + cls.restrictionAlertKey;
+    }
+    if (parseInt(rd.alerta_crisis, 10) === 1 && !hdr) {
+      composed += ' pg-row-crisis';
+    }
+
+    var baseClass = '';
+    var colSettings = instance && instance.getSettings && instance.getSettings().columns ? instance.getSettings().columns[col] : null;
+    if (colSettings) {
+      baseClass = colSettings.className || '';
+    }
+
+    var canEdit = Boolean(resolvedProp && editableProps[resolvedProp]) && !hdr && _canEditGlobal;
+    if (canEdit && resolvedProp === 'cantidad_ppto' && isPercentLikeUnit(rd.unidad)) canEdit = false;
+    if (canEdit && resolvedProp === 'EjecutadoDisplay' && cls.key === 'sin-datos') canEdit = false;
+
+    return {
+      className: ('htMiddle ' + baseClass + ' ' + composed + ' ' + (canEdit ? 'pg-cell-editable' : 'pg-cell-readonly') + (hdr ? ' pdc-header' : '')).trim(),
+      readOnly: !canEdit,
+    };
+  }
+
+  function normalizeClassList(className) {
+    var seen = {};
+    return String(className || '')
+      .split(/\s+/)
+      .filter(function (item) {
+        if (!item || seen[item]) {
+          return false;
+        }
+        seen[item] = true;
+        return true;
+      })
+      .join(' ');
+  }
+
+  function stripPGCellStateClasses(className) {
+    return String(className || '')
+      .replace(/\bpg-row-state\b/g, '')
+      .replace(/\bpg-state-[^\s]+/g, '')
+      .replace(/\bpg-cell-editable\b/g, '')
+      .replace(/\bpg-cell-readonly\b/g, '')
+      .replace(/\bpg-row-crisis\b/g, '')
+      .replace(/\bpdc-header\b/g, '')
+      .replace(/\bhtDimmed\b/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function applyPGCellDomClass(cell, cellProperties) {
+    if (!cell || !cellProperties) {
+      return;
+    }
+
+    var className = stripPGCellStateClasses(cell.className || '') + ' ' + (cellProperties.className || '');
+    if (cellProperties.readOnly) {
+      className += ' htDimmed';
+    }
+    cell.className = normalizeClassList(className);
+  }
+
+  function refreshVisiblePGCellMeta(instance) {
+    if (!instance || typeof instance.countRows !== 'function' || typeof instance.countCols !== 'function') {
+      return;
+    }
+
+    var rowCount = instance.countRows();
+    var colCount = instance.countCols();
+    for (var visualRow = 0; visualRow < rowCount; visualRow++) {
+      var rowData = getSourceRowDataByVisualRow(instance, visualRow) || {};
+      for (var col = 0; col < colCount; col++) {
+        if (typeof instance.setCellMeta === 'function') {
+          var cellProperties = buildPGCellProperties(instance, visualRow, col, null, rowData);
+          instance.setCellMeta(visualRow, col, 'className', cellProperties.className);
+          instance.setCellMeta(visualRow, col, 'readOnly', cellProperties.readOnly);
+          applyPGCellDomClass(instance.getCell(visualRow, col), cellProperties);
+        }
+      }
+    }
   }
 
   function saveRow(visualRow, prop, oldValue, source, options) {
@@ -2085,36 +2214,13 @@
       colHeaderHeight: 48,
       width: '100%',
       height: getContainerAvailableHeight() || '100%',
+      afterRender: function () {
+        refreshVisiblePGCellMeta(this);
+      },
       className: 'htMiddle',
       cells: function (row, col, prop) {
-        var cellProperties = {};
         var hotInstance = (this && this.instance) || (window.PGHotModule && window.PGHotModule.getHotInstance && window.PGHotModule.getHotInstance());
-        var rd = getSourceRowDataByVisualRow(hotInstance, row) || {};
-        var hdr = Number(rd.Titulo) === 1;
-        var cls = classifyPGRow(rd);
-        var st = cls.rowClass || 'pg-state-actividad-futura';
-        var composed = 'pg-row-state ' + st;
-        if (cls.restrictionAlertKey) {
-          composed += ' pg-state-' + cls.restrictionAlertKey;
-        }
-        if (parseInt(rd.alerta_crisis, 10) === 1 && !hdr) {
-          composed += ' pg-row-crisis';
-        }
-        
-        var baseClass = '';
-        var colSettings = hotInstance && hotInstance.getSettings && hotInstance.getSettings().columns ? hotInstance.getSettings().columns[col] : null;
-        if (colSettings) {
-          baseClass = colSettings.className || '';
-        }
-        
-        var canEdit = Boolean(prop && editableProps[prop]) && !hdr && _canEditGlobal;
-        if (canEdit && prop === 'cantidad_ppto' && isPercentLikeUnit(rd.unidad)) canEdit = false;
-        if (canEdit && prop === 'EjecutadoDisplay' && cls.key === 'sin-datos') canEdit = false;
-
-        cellProperties.className = ('htMiddle ' + baseClass + ' ' + composed + ' ' + (canEdit ? 'pg-cell-editable' : 'pg-cell-readonly') + (hdr ? ' pdc-header' : '')).trim();
-        cellProperties.readOnly = !canEdit;
-
-        return cellProperties;
+        return buildPGCellProperties(hotInstance, row, col, prop);
       },
       afterChange: function (changes, source) {
         if (!changes || source === 'loadData' || source === 'revert' || source === 'internal-update') {
@@ -2130,7 +2236,7 @@
           var newValue = change[3];
 
           var physicalRow = this.toPhysicalRow(visualRow);
-          if (visualRow === null || visualRow < 0) {
+          if (visualRow === null || visualRow < 0 || !Number.isInteger(physicalRow) || physicalRow < 0) {
             continue;
           }
 
@@ -2205,6 +2311,15 @@
     // Fix: Asegurar que HOT mantenga el listening activo.
     // Bootstrap/jQuery roban el foco a nivel de document.
     hot.listen();
+    hot.addHook('afterFilter', function () {
+      if (!hot) return;
+      window.setTimeout(function () {
+        if (!hot) return;
+        buildRowClassCache(hot.getSourceData());
+        refreshVisiblePGCellMeta(hot);
+        hot.render();
+      }, 0);
+    });
     container.addEventListener(
       'mousedown',
       function () {
