@@ -71,7 +71,7 @@ class CnpApiController
         }
 
         try {
-            $query = "UPDATE {$dbPrefix}_programacion_semanal SET Activa='1', Categoria_CNP=NULL, CNP=NULL, Observaciones_CNP=NULL WHERE Consecutivo=?";
+            $query = "UPDATE {$dbPrefix}_programacion_semanal SET Activa='1', Categoria_CNP=NULL, CNP=NULL, Observaciones_CNP=NULL, Reprogramada_Por_Usuario=1 WHERE Consecutivo=?";
             $res = $this->db->query($query, [$id]);
             $this->jsonResponse($res ? "BIEN" : "ERROR");
         } catch (Throwable $t) {

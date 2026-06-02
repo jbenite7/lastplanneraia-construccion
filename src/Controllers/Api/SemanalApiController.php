@@ -618,7 +618,7 @@ class SemanalApiController
         if ($data && $data["Activa"] === "NA") {
             $res = $this->db->query("DELETE FROM {$dbPrefix}_programacion_semanal WHERE Consecutivo = ?", [$id]);
         } else {
-            $queryUpdate = "UPDATE {$dbPrefix}_programacion_semanal SET Activa = '0', Responsable_AIA = ?, Categoria_CNP = ?, CNP = ?, Observaciones_CNP = ? WHERE Consecutivo = ?";
+            $queryUpdate = "UPDATE {$dbPrefix}_programacion_semanal SET Activa = '0', Responsable_AIA = ?, Categoria_CNP = ?, CNP = ?, Observaciones_CNP = ?, Reprogramada_Por_Usuario = 0 WHERE Consecutivo = ?";
             $res = $this->db->query($queryUpdate, [$_POST["Responsable_AIA"], $_POST["Categoria_CNP"], $_POST["CNP"], $_POST["Observaciones_CNP"], $id]);
         }
 
