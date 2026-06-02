@@ -80,7 +80,7 @@
     var semana = getSemana();
     var cnpUrl = '/legacy/cambiar_pagina.php?seccion=CNP&semana=' + encodeURIComponent(semana);
     var html = count + ' actividad(es) no se pueden programar por restricciones habilitantes sin cumplir. '
-      + '<a href="' + cnpUrl + '" class="cm-cnp-link">Revisa el módulo CNP</a>.';
+      + '<a href="' + cnpUrl + '" class="cm-cnp-link">Revisa el módulo de Causas de No Programación</a>.';
 
     window.AIA.Notice.dialog({
       icon: 'warning',
@@ -90,11 +90,12 @@
       denyButtonText: '<i class="fas fa-list"></i> Ver Actividades no programadas',
       confirmButtonText: 'Ir a Programar la semana',
       customClass: {
-        popup: 'aia-glass-popup',
+        popup: 'aia-glass-popup cm-capa1-popup',
         title: 'swal2-title',
         htmlContainer: 'swal2-html-container',
         confirmButton: 'aia-glass-confirm-btn',
-        denyButton: 'aia-glass-deny-btn'
+        denyButton: 'aia-glass-deny-btn',
+        actions: 'swal2-actions-vertical'
       },
       buttonsStyling: false,
       allowOutsideClick: false
@@ -330,7 +331,7 @@
           '<div id="cm-footer-cta" class="cm-footer-cta">' +
             '<i class="fas fa-exclamation-triangle"></i> ' +
             restriccionesCount + ' actividad(es) requieren atención en el módulo CNP. ' +
-            '<a href="' + cnpUrl + '" class="btn btn-sm btn-warning cm-cta-btn">' +
+            '<a href="' + cnpUrl + '" class="cm-cta-btn">' +
               '<i class="fas fa-external-link-alt"></i> Ir al módulo CNP' +
             '</a>' +
           '</div>'
@@ -343,7 +344,7 @@
         $footerCta.html(
           '<i class="fas fa-exclamation-triangle"></i> ' +
           restriccionesCount + ' actividad(es) requieren atención en el módulo CNP. ' +
-          '<a href="' + cnpUrl + '" class="btn btn-sm btn-warning cm-cta-btn">' +
+          '<a href="' + cnpUrl + '" class="cm-cta-btn">' +
             '<i class="fas fa-external-link-alt"></i> Ir al módulo CNP' +
           '</a>'
         );

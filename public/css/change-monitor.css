@@ -4,15 +4,31 @@
    =========================================================================== */
 
 .cm-cnp-link {
-    color: #f4d35e !important;
+    color: #7ed957 !important;
     text-decoration: underline;
-    font-weight: 600;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+    font-weight: 700;
     transition: color 0.15s ease;
 }
 .cm-cnp-link:hover,
 .cm-cnp-link:focus {
-    color: #ffd84d !important;
+    color: #a8e863 !important;
     text-decoration: underline;
+}
+
+/* Capa 1 — botones separados verticalmente para que no choquen visualmente */
+.swal2-actions-vertical {
+    flex-direction: column !important;
+    gap: 0.6rem !important;
+    width: 100% !important;
+}
+.swal2-actions-vertical .swal2-deny,
+.swal2-actions-vertical .swal2-confirm {
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 280px !important;
+    justify-content: center !important;
 }
 
 /* Toggle "Solo restricciones" en header del modal Capa 2 */
@@ -68,4 +84,44 @@
     font-size: 0.7rem !important;
     min-width: 24px !important;
     height: 24px !important;
+}
+
+/* Footer CTA — separación de la tabla y estilo del botón */
+.cm-footer-cta {
+    margin-top: 1.25rem;
+    padding: 0.85rem 1rem;
+    background: #e8f1ea;
+    border: 1px solid #c9dfd0;
+    border-radius: 6px;
+    color: #1a5633;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+.cm-footer-cta .cm-cta-btn {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.95rem;
+    background-color: #1a5633 !important;
+    border: 1px solid #1a5633 !important;
+    border-radius: 6px;
+    color: #fff !important;
+    font-size: 0.88rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    text-decoration: none !important;
+    transition: background-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+.cm-footer-cta .cm-cta-btn:hover,
+.cm-footer-cta .cm-cta-btn:focus {
+    background-color: #144626 !important;
+    border-color: #144626 !important;
+    color: #fff !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(26, 86, 51, 0.25);
+    text-decoration: none !important;
 }
