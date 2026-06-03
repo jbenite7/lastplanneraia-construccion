@@ -346,3 +346,13 @@ Las siguientes guías establecen el soporte del desarrollo asíncrono y la decla
 4. [**Diccionario de Eventos Canónicos** (`docs/rbac_event_dictionary.md`)](docs/rbac_event_dictionary.md)
 5. [**Migración Shared Schema (Architectural Ready)** (`docs/plan-migracion-shared-schema-sin-reporteria.md`)](docs/plan-migracion-shared-schema-sin-reporteria.md)
 6. [**Migración Datos Cero Pérdida (Architectural Ready)** (`docs/plan-migracion-datos-zero-loss.md`)](docs/plan-migracion-datos-zero-loss.md)
+
+---
+
+## 📊 Lo que cambió para ti — Feb a Jun 2026
+
+Una vista no técnica de los últimos 5 meses de evolución de Last Planner AIA, dirigida a residentes, directores, subcontratistas, oficina técnica y profesionales SST/Ambiental. Cuenta, en lenguaje cotidiano, cómo la plataforma pasó de ser una carga a una aliada, y a quién escalar según el tipo de necesidad (CALISOF, responsables de metodología, soporte técnico).
+
+📄 [**`docs/analisis-productividad-feb-jun-2026.md`**](docs/analisis-productividad-feb-jun-2026.md)
+
+> **Audiencia:** usuarios finales en obra. **Tono:** storytelling persuasivo, segunda persona, sin tecnicismos de software. **Enfoque:** productividad del día a día, antes vs. ahora, capacidades por perfil de usuario, invitación al feedback.
