@@ -738,6 +738,63 @@
             line-height: 1.3;
         }
 
+        .pi-shared-kpi.pi-shared-kpi-conflict {
+            border-color: #f1b5aa;
+            background: #fff4f1;
+        }
+        .pi-shared-kpi.pi-shared-kpi-conflict .pi-shared-kpi-value {
+            color: #9d321f;
+        }
+
+        .pi-shared-conflicts {
+            border: 1px solid #f1b5aa;
+            border-radius: 8px;
+            background: #fff4f1;
+            padding: 9px 11px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 0.82rem;
+            line-height: 1.32;
+            color: #6f281b;
+        }
+        .pi-shared-conflicts-title {
+            font-weight: 700;
+            color: #8f3a2f;
+        }
+        .pi-shared-conflict-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: #fde2dc;
+            border: 1px solid #f1b5aa;
+            color: #6f281b;
+            font-size: 0.76rem;
+            font-weight: 600;
+            margin-right: 4px;
+        }
+        .pi-shared-conflict-badge b {
+            color: #8f3a2f;
+        }
+        .pi-shared-conflicts-hint {
+            font-size: 0.74rem;
+            color: #7a4434;
+            font-style: italic;
+        }
+        .pi-shared-table tr.pi-shared-row-conflict {
+            background: #fff8f6;
+        }
+        .pi-shared-table tr.pi-shared-row-conflict:hover {
+            background: #ffece6;
+        }
+        .pi-shared-table td.pi-shared-cell-conflict {
+            color: #8f3a2f;
+            font-weight: 600;
+            background: #fff0eb;
+        }
+
         .pi-shared-table-wrap {
             border: 1px solid #dbe6f1;
             border-radius: 8px;
@@ -1341,7 +1398,7 @@
                                 <input type="checkbox" class="custom-control-input" id="piSharedApplyAssignments">
                                 <label class="custom-control-label" for="piSharedApplyAssignments">Aplicar Sub-Contratista y Responsable comunes</label>
                             </div>
-                            <small class="pi-shared-hint">Active solo si todas las actividades comparten estas asignaciones.</small>
+                            <small class="pi-shared-hint">Al activar, se unificarán Sub-Contratista y Responsable AIA en todas las actividades marcadas. Use Preview para revisar el impacto antes de aplicar.</small>
                         </div>
                     </div>
 
@@ -1440,11 +1497,11 @@
 
                     <div class="form-group mb-0">
                         <label class="mb-1">Preview de impacto</label>
-                        <div id="piSharedPreview" class="pi-shared-preview">Seleccione filas y pulse "Preview".</div>
+                        <div id="piSharedPreview" class="pi-shared-preview">Seleccione filas y pulse "Ver Conflictos" para validar el impacto de la asignación.</div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button id="btn_pi_shared_preview" type="button" class="btn btn-outline-primary">Preview</button>
+                    <button id="btn_pi_shared_preview" type="button" class="btn btn-outline-primary">Ver Conflictos</button>
                     <button id="btn_pi_shared_apply" type="button" class="btn btn-primary">Aplicar en Lote</button>
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                 </div>
