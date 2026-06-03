@@ -78,6 +78,7 @@
     Pdto_Cons: 'Pdto. Constructivo (blanda)',
     Modelo: 'Modelo BIM (blanda)',
   };
+  var sharedRestrictionTypes = ['D_y_E', 'Materiales', 'MdeO', 'Equipos', 'Predecesora', 'Pdto_Cons', 'Modelo'];
   // Popover content for restriction column headers (ported from legacy view)
   var popoverTitles = {
     D_y_E: 'Restricciones de Diseños y Especificaciones',
@@ -1878,13 +1879,70 @@
     }
   }
 
+  function autoPopulateHomogeneousRestrictions(selectedIds) {
+    if (!Array.isArray(selectedIds) || selectedIds.length < 2) {
+      return { populated: 0, total: sharedRestrictionTypes.length };
+    }
+
+    var byId = {};
+    for (var i = 0; i < masterData.length; i++) {
+      var row = masterData[i] || {};
+      var id = getRowActivityId(row);
+      if (id) byId[id] = row;
+    }
+
+    var populated = 0;
+    for (var t = 0; t < sharedRestrictionTypes.length; t++) {
+      var type = sharedRestrictionTypes[t];
+      var $check = $('#piSharedRestriction_' + type);
+      var $select = $('.pi-shared-restriction-value[data-restriction-type="' + type + '"]');
+      if (!$check.length || !$select.length) {
+        continue;
+      }
+
+      var values = [];
+      for (var j = 0; j < selectedIds.length; j++) {
+        var row = byId[selectedIds[j]];
+        if (!row) {
+          continue;
+        }
+        var raw = row[type];
+        var normalized = raw == null ? '' : String(raw).trim();
+        values.push(normalized);
+      }
+
+      if (values.length < 2) {
+        $check.prop('checked', false);
+        continue;
+      }
+
+      var first = values[0];
+      var allEqual = true;
+      for (var k = 1; k < values.length; k++) {
+        if (values[k] !== first) {
+          allEqual = false;
+          break;
+        }
+      }
+
+      if (allEqual && first !== '' && $select.find('option[value="' + first + '"]').length > 0) {
+        $check.prop('checked', true);
+        $select.val(first);
+        populated++;
+      } else {
+        $check.prop('checked', false);
+      }
+    }
+
+    return { populated: populated, total: sharedRestrictionTypes.length };
+  }
+
   function resetSharedConstraintModal() {
     var selectedIds = collectSelectedActivityIds();
 
     populateSharedAssignmentOptions();
     populateSharedRestrictionGrid();
     $('.pi-shared-restriction-check').prop('checked', false);
-    $('#piSharedRestriction_D_y_E').prop('checked', true);
     $('#piSharedApplyRestriction').prop('checked', true);
     $('#piSharedApplyAssignments').prop('checked', false);
     $('#piSharedSubContratista, #piSharedResponsableAIA').val('');
@@ -1892,10 +1950,18 @@
     $('#piSharedActivityIds').val(selectedIds.join(','));
     $('#piSharedNote').val('');
 
-    if (selectedIds.length > 0) {
-      renderSharedPreviewEmpty('Filas detectadas: ' + selectedIds.length + '. Pulse "Ver Conflictos" para validar impacto.');
-    } else {
+    var autoResult = { populated: 0, total: sharedRestrictionTypes.length };
+    if (selectedIds.length >= 2) {
+      autoResult = autoPopulateHomogeneousRestrictions(selectedIds);
+    }
+    syncSharedOperationControls();
+
+    if (selectedIds.length === 0) {
       renderSharedPreviewEmpty('Sin actividades cargadas. Use "Cargar marcadas" o "Usar visibles" antes del preview.');
+    } else if (autoResult.populated > 0) {
+      renderSharedPreviewEmpty('Filas detectadas: ' + selectedIds.length + '. Se pre-cargaron ' + autoResult.populated + ' restricción(es) con valor uniforme en todas las actividades. Pulse "Ver Conflictos" para validar impacto.');
+    } else {
+      renderSharedPreviewEmpty('Filas detectadas: ' + selectedIds.length + '. Las restricciones seleccionadas tienen valores heterogéneos. Marque manualmente las casillas que desea unificar. Pulse "Ver Conflictos" para validar impacto.');
     }
 
     $('#btn_pi_shared_preview').prop('disabled', false);
@@ -3857,6 +3923,12 @@
 
       if (!isUserAllowedToEdit()) {
         showFeedback('error', 'No tiene permiso para aplicar restricciones en lote.');
+        return;
+      }
+
+      var selectedIdsForOpen = collectSelectedActivityIds();
+      if (selectedIdsForOpen.length < 2) {
+        showFeedback('error', 'Seleccione al menos 2 actividades (marcadas o visibles) para abrir Restricciones Compartidas. Con una sola actividad no hay lote que comparar.');
         return;
       }
 
