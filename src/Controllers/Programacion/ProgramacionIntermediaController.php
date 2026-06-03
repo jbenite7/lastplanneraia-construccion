@@ -454,7 +454,7 @@ class ProgramacionIntermediaController extends BaseController
             if ($applyAssignments && $subContratista !== '') {
                 $setClauses[] = "Sub_Contratista = ?";
             }
-            if ($responsableAia !== '') {
+            if ($applyAssignments && $responsableAia !== '') {
                 $setClauses[] = "Responsable_AIA = ?";
             }
             $setClauses[] = "Activa = 1";
@@ -732,12 +732,8 @@ class ProgramacionIntermediaController extends BaseController
             }
         }
 
-        if ($applyRestriction && $responsableAia === '') {
-            return ['ok' => false, 'mensaje' => 'Responsable AIA es obligatorio para aplicar restricciones en lote.'];
-        }
-
-        if ($applyAssignments && !$applyRestriction && $subContratista === '' && $responsableAia === '') {
-            return ['ok' => false, 'mensaje' => 'Debe seleccionar Sub-Contratista o Responsable para aplicar asignaciones.'];
+        if ($applyAssignments && $subContratista === '' && $responsableAia === '') {
+            return ['ok' => false, 'mensaje' => 'Active "Aplicar asignaciones comunes" y seleccione Sub-Contratista o Responsable AIA, o desactive el check.'];
         }
 
         return [
