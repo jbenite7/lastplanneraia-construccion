@@ -3794,10 +3794,11 @@
       if (response && response.url) {
         window.location.href = response.url;
       } else {
-        showFeedback('error', 'No se pudo generar el reporte');
+        showFeedback('error', (response && response.error) ? response.error : 'No se pudo generar el reporte');
       }
-    }).fail(function () {
-      showFeedback('error', 'Error de red al generar reporte');
+    }).fail(function (jqXHR) {
+      var serverError = (jqXHR && jqXHR.responseJSON && jqXHR.responseJSON.error) ? jqXHR.responseJSON.error : null;
+      showFeedback('error', serverError || 'Error de red al generar reporte');
     }).always(function () {
       $('#btn_informe_compromisos').prop('disabled', false).html('Descargar Corte <i class="fas fa-download ml-1"></i>');
     });

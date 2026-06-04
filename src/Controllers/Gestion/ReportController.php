@@ -447,7 +447,7 @@ class ReportController extends BaseController
 
         // 5. Response
         if (file_exists($fullPath)) {
-            echo json_encode(["url" => "/cortesProgramacion/" . $filename]);
+            echo json_encode(["url" => "/public/storage/cortesProgramacion/" . $filename]);
         } else {
             echo json_encode(["error" => "No se pudo crear el archivo"]);
         }

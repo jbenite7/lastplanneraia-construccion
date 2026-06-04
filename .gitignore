@@ -10,6 +10,9 @@ php_errorlog
 !admin/logs/.gitkeep
 cortesProgramacion/
 cortesRestricciones/
+!public/storage/cortesRestricciones/
+!public/storage/cortesRestricciones/plantillaLiberacionRestricciones.xlsx
+!public/storage/cortesRestricciones/.gitkeep
 compromisosSemana/
 ordenes/
 
