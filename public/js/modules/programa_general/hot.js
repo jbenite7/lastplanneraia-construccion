@@ -987,6 +987,10 @@
     var canEdit = Boolean(resolvedProp && editableProps[resolvedProp]) && !hdr && _canEditGlobal;
     if (canEdit && resolvedProp === 'cantidad_ppto' && isPercentLikeUnit(rd.unidad)) canEdit = false;
     if (canEdit && resolvedProp === 'EjecutadoDisplay' && cls.key === 'sin-datos') canEdit = false;
+    // Ejecutado Real (EjecutadoDisplay) siempre editable, independiente de
+    // _canEditGlobal. El usuario debe poder registrar avance real incluso
+    // cuando la semana está confirmada o el rol no es director.
+    if (resolvedProp === 'EjecutadoDisplay' && !hdr) canEdit = true;
 
     return {
       className: ('htMiddle ' + baseClass + ' ' + composed + ' ' + (canEdit ? 'pg-cell-editable' : 'pg-cell-readonly') + (hdr ? ' pdc-header' : '')).trim(),
@@ -1195,6 +1199,9 @@
                 var canEdit = Boolean(p && editableProps[p]) && !hdr && _canEditGlobal;
                 if (canEdit && p === 'cantidad_ppto' && isPercentLikeUnit(rd.unidad)) canEdit = false;
                 if (canEdit && p === 'EjecutadoDisplay' && cls.key === 'sin-datos') canEdit = false;
+                // Ejecutado Real siempre editable, incluso cuando la semana
+                // está confirmada o el rol no es director.
+                if (p === 'EjecutadoDisplay' && !hdr) canEdit = true;
                 
                 var finalClass = ('htMiddle ' + baseClass + ' ' + composed + ' ' + (canEdit ? 'pg-cell-editable' : 'pg-cell-readonly') + (hdr ? ' pdc-header' : '')).trim();
                 hot.setCellMeta(visualRow, c, 'className', finalClass);
