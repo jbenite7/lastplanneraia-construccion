@@ -71,9 +71,12 @@ class WeeklyRealProgressCarryoverService
 
             $this->db->query(
                 "UPDATE {$dbPrefix}_programa_consolidado
-                 SET Ejecutado = ?, Responsable_AIA = ?, Sub_Contratista = ?, unidad = ?, cantidad_ppto = ?
+                 SET Ejecutado = ?,
+                     Ejecutado_Siguiente_Semana = ?,
+                     Responsable_AIA = ?, Sub_Contratista = ?, unidad = ?, cantidad_ppto = ?
                  WHERE Semana = ? AND Consecutivo = ?",
                 [
+                    $finalRatio,
                     $finalRatio,
                     $responsable,
                     $subcontratista,
@@ -316,15 +319,19 @@ class WeeklyRealProgressCarryoverService
 
     private function resolveBaseRatio(array $baseProgram, array $targetRow): float
     {
-        $base = $this->lpsService->toFloat($baseProgram['Ejecutado_Siguiente_Semana'] ?? null, null);
+        // Hotfix 2026-06-04: preferir Ejecutado (valor visible en UI de PG) sobre
+        // Ejecutado_Siguiente_Semana. Este último puede contener un valor viejo
+        // heredado de semanas anteriores y desincronizar el carryover (síntoma:
+        // 90% + 10% quedaba en 65% en lugar de 100%).
+        $base = $this->lpsService->toFloat($baseProgram['Ejecutado'] ?? null, null);
         if ($base === null) {
-            $base = $this->lpsService->toFloat($baseProgram['Ejecutado'] ?? null, null);
+            $base = $this->lpsService->toFloat($baseProgram['Ejecutado_Siguiente_Semana'] ?? null, null);
         }
         if ($base === null) {
-            $base = $this->lpsService->toFloat($targetRow['Ejecutado_Siguiente_Semana'] ?? null, null);
+            $base = $this->lpsService->toFloat($targetRow['Ejecutado'] ?? null, null);
         }
         if ($base === null) {
-            $base = $this->lpsService->toFloat($targetRow['Ejecutado'] ?? null, 0.0);
+            $base = $this->lpsService->toFloat($targetRow['Ejecutado_Siguiente_Semana'] ?? null, 0.0);
         }
 
         return $this->clampRatio($base ?? 0.0);
