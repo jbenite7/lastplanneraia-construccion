@@ -5,6 +5,7 @@ namespace App\Controllers\Api;
 use App\Controllers\BaseController;
 use App\Core\Lps\LpsService;
 use App\Services\ProgramaConsolidadoNormalizationService;
+use App\Services\WeeklyRealProgressCarryoverService;
 use PDO;
 use Exception;
 
@@ -372,6 +373,8 @@ class GeneralApiController extends BaseController
 
     /**
      * API: Actualización masiva de estados y semanas de inicio.
+     * Consume avances de PS de la semana anterior (N-1) y los aplica al consolidado
+     * de la semana actual (N) vía WeeklyRealProgressCarryoverService.
      */
     public function updateBatch()
     {
@@ -399,6 +402,21 @@ class GeneralApiController extends BaseController
             $inicioSemana = $dataSemana['Fecha_Inicio_Sem'];
             $finSemana = $dataSemana['Fecha_Fin_Sem'] ?? null;
 
+            // 1) Consumir avances de PS semana N-1 hacia PG semana N (semántica legacy).
+            //    El carryover service usa programaAnteriorAsociar con normalización
+            //    (strip_tags + lowercase) por lo que también maneja el caso en que
+            //    el cronograma fue actualizado (IDs/nombres cambiaron).
+            $carryoverActualizadas = 0;
+            if ($semana > 1) {
+                $carryoverService = new WeeklyRealProgressCarryoverService($this->db, $this->lpsService);
+                $carryoverResult = $carryoverService->syncWeek($dbPrefix, $semana - 1, $semana);
+                $carryoverActualizadas = (int) ($carryoverResult['updatedRows'] ?? 0);
+                $updatedProgramIds = $carryoverResult['updatedProgramIds'] ?? [];
+                if (!empty($updatedProgramIds)) {
+                    $this->refreshGeneralStatuses($dbPrefix, $semana, $updatedProgramIds);
+                }
+            }
+
             $this->db->prepare("UPDATE {$dbPrefix}_programa_consolidado SET Activa = 1 WHERE Semana = ?")->execute([$semana]);
             $this->db->prepare("UPDATE {$dbPrefix}_programa_consolidado SET Estado = 'Capítulo' WHERE Semana = ? AND Titulo = 1")->execute([$semana]);
 
@@ -416,10 +434,59 @@ class GeneralApiController extends BaseController
                 $actualizadas++;
             }
 
-            echo json_encode(['respuesta' => 'BIEN', 'actualizadas' => $actualizadas]);
+            echo json_encode([
+                'respuesta' => 'BIEN',
+                'actualizadas' => $actualizadas,
+                'carryover_actualizadas' => $carryoverActualizadas,
+            ]);
         } catch (Exception $e) {
             http_response_code(500);
             echo json_encode(['respuesta' => 'ERROR', 'mensaje' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Refresca el campo Estado de las actividades indicadas, usando las fechas
+     * de la semana activa. Mismo patrón que SemanalApiController::refreshGeneralStatuses.
+     */
+    private function refreshGeneralStatuses(string $dbPrefix, int $semana, array $programIds): void
+    {
+        $programIds = array_values(array_unique(array_filter(array_map('intval', $programIds), static fn($id) => $id > 0)));
+        if (empty($programIds)) {
+            return;
+        }
+
+        $semanaData = $this->db->prepare("SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem FROM {$dbPrefix}_semanas_activas WHERE Semana = ? LIMIT 1");
+        $semanaData->execute([$semana]);
+        $semanaRow = $semanaData->fetch(PDO::FETCH_ASSOC);
+        if (!$semanaRow) {
+            return;
+        }
+
+        $placeholders = implode(',', array_fill(0, count($programIds), '?'));
+        $params = array_merge([$semana], $programIds);
+        $stmt = $this->db->prepare(
+            "SELECT Consecutivo_en_Programa, Titulo, Ejecutado, Fecha_Inicio, Fecha_Fin
+             FROM {$dbPrefix}_programa_consolidado
+             WHERE Semana = ? AND Consecutivo_en_Programa IN ({$placeholders})"
+        );
+        $stmt->execute($params);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $updateEstado = $this->db->prepare(
+            "UPDATE {$dbPrefix}_programa_consolidado SET Estado = ? WHERE Semana = ? AND Consecutivo_en_Programa = ?"
+        );
+
+        foreach ($rows as $row) {
+            $estado = $this->lpsService->calculateGeneralStatus(
+                $row['Titulo'] ?? 0,
+                $row['Ejecutado'] ?? 0,
+                $row['Fecha_Inicio'] ?? null,
+                $row['Fecha_Fin'] ?? null,
+                $semanaRow['Fecha_Inicio_Sem'] ?? null,
+                $semanaRow['Fecha_Fin_Sem'] ?? null,
+            );
+            $updateEstado->execute([$estado, $semana, $row['Consecutivo_en_Programa']]);
         }
     }
 
