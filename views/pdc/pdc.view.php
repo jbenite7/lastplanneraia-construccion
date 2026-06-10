@@ -703,9 +703,6 @@
 						<th>INICIO DEL PROCESO DE CONTRATACIÓN</th>
 						<th></th>
 						<th></th>
-						<th>INGRESO A PLATAFORMA LICIFY</th>
-						<th></th>
-						<th></th>
 						<th>ENTREGA DE PLIEGOS Y/O CARTA, ELABORACIÓN DE PROPUESTA</th>
 						<th></th>
 						<th></th>
@@ -917,7 +914,7 @@
 													<input id='fechaRealLegalizacionContrato' name='fechaRealLegalizacionContrato' class='form-control' type='text' value='' placeholder='Fecha Inicio Real' autocomplete="off" onchange="calcularProcesoContratacionTeorico('LegalizacionContrato');" onkeyup="calcularProcesoContratacionTeorico('LegalizacionContrato');">
 												</div>
 											</div>
-											<div class="container informacionAdjudicacionProveedor">
+											<div class="container informacionAdjudicacionProveedor" style="display:none">
 												<input type="hidden" id="activoInformacionAdjudicacionProveedor" name="activoInformacionAdjudicacionProveedor" value="0">
 												<input type="hidden" id="idProveedorExistente" name="idProveedorExistente" value="0">
 												<div class="row pdc-row-center">
@@ -1044,7 +1041,7 @@
 											<input type="hidden" id="estadoProceso" name="estadoProceso" value="">
 										</div>
 									</section>
-									<section class="parametro_Contrato pdc-contract-section" id="seccionSeguimientoContrato">
+									<section class="parametro_Contrato pdc-contract-section" id="seccionSeguimientoContrato" style="display:none">
 										<div class="pdc-contract-section__header">
 											<div>
 												<h3 class="pdc-contract-section__title">Seguimiento al Contrato</h3>
@@ -1052,7 +1049,7 @@
 											</div>
 										</div>
 										<div class="pdc-contract-section__body">
-											<div class="container informacionAdjudicacionContrato">
+											<div class="container informacionAdjudicacionContrato" style="display:none">
 												<input type="hidden" id="activoInformacionAdjudicacionContrato" name="activoInformacionAdjudicacionContrato" value="0">
 												<div class="row pdc-row-center">
 													<h5><b>Información del Contrato Adjudicado</b></h5>
@@ -1102,7 +1099,7 @@
 									<p class="mensajeModalInformacionContrato pdc-inline-msg" id="mensajeModalInformacionContrato"></p>
 								</div>
 											</div>
-											<div class="container seguimientoContrato">
+											<div class="container seguimientoContrato" style="display:none">
 												<input type="hidden" id="activoSeguimientoContrato" name="activoSeguimientoContrato" value="0">
 												<div class="row pdc-row-center">
 													<h5><b>Devoluciones al Proveedor</b></h5>
@@ -1573,7 +1570,7 @@
 		  table = $("#dt_cliente").DataTable({
 		    "dom": "<'row filaBotones mb-2 align-items-center'<'col-auto mr-auto pl-0'<'toolbarAcciones'>><'col-auto ml-auto pr-0'<'toolbarNavegacion'>>><'row mt-2'<'col-12 p-0'<'toolbarFilaMensajes d-flex align-items-center'>>>t<'row'<'col-md-6'i>><'clear'>",
 		    "destroy": true,
-				"orderFixed":[35, "asc"],
+				"orderFixed":[32, "asc"],
 
 		    "autoWidth": false,
 				"orderCellsTop": true,
@@ -1591,11 +1588,11 @@
 		    "lengthMenu": [100, 200, 500],
 				'columnDefs': [
 
-            // { orderable: true, className: 'reorder', targets: 35 },
+            // { orderable: true, className: 'reorder', targets: 32 },
             { orderable: false, targets: '_all' },
 
 					{
-						'targets': [1,2,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,35],
+						'targets': [1,2,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,32],
 						'render': function ( data, type, full, meta ) {
 						 return data;
 						 },
@@ -1629,14 +1626,14 @@
 						},
 					},
 					{
-						'targets': [31,32,33],
+						'targets': [28,29,30],
 						'width':'9%',
 						'render': function ( data, type, full, meta ) {
 							return data;
 						},
 					},
 					{
-						'targets': [34],
+						'targets': [31],
 						'width':'13%',
 						'render': function ( data, type, full, meta ) {
 							return data;
@@ -1767,7 +1764,7 @@
 								'className': 'celdaBotones'
 						},
 						{
-								'targets': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35],
+								'targets': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32],
 								'className': 'celdaContenido'
 						},
 					],
@@ -1783,9 +1780,6 @@
 							{"data":"fechaElaboracionPliegos"},
 							{"data":"diasElaboracionPliegos", "visible":false},
 							{"data":"fechaRealElaboracionPliegos", "visible":false},
-							{"data":"_licify1", "visible":false, "defaultContent":""},
-							{"data":"_licify2", "visible":false, "defaultContent":""},
-							{"data":"_licify3", "visible":false, "defaultContent":""},
 							{"data":"fechaEntregaPliegos", "visible":false},
 							{"data":"diasEntregaPliegos", "visible":false},
 							{"data":"fechaRealEntregaPliegos", "visible":false},
@@ -2554,7 +2548,7 @@
 		  var deberiaHoy = -1;
 		  var fechaActual = document.getElementById("fechaActual").value;
 		  var fechaEvaluar = "";
-		  for (i = 0; i < 9; i++) {
+		  for (i = 0; i < 8; i++) {
 		    if (document.getElementById("fechaReal" + pasos[i][0]).value != "") {
 		      posicion = i;
 		    }
@@ -2594,8 +2588,8 @@
 		  } else {
 		    divDiagnostico.innerHTML = "Atrasado!!";
 		  }
-		  if (divEstadoProceso.innerHTML == pasos[8][1]) {
-		    if (document.getElementById("fechaReal" + pasos[8][0]).value > document.getElementById("fecha" + pasos[8][0] + "Teorica").value) {
+		  if (divEstadoProceso.innerHTML == pasos[7][1]) {
+		    if (document.getElementById("fechaReal" + pasos[7][0]).value > document.getElementById("fecha" + pasos[7][0] + "Teorica").value) {
 		      divDiagnostico.innerHTML = "Terminado con retrasos";
 		      document.getElementById("estadoProceso").value = "Terminado con retrasos";
 		    } else {
@@ -2606,7 +2600,7 @@
 		    document.getElementById("estadoProceso").value = divDiagnostico.innerHTML + "; " + divEstadoProceso.innerHTML;
 		  }
 		  generarIconoReal(pasos, posicion);
-		  for (i = posicion; i < 9; i++) {
+		  for (i = posicion; i < 8; i++) {
 		    if (i > -1) {
 		      generarIconoProyectado(pasos[i][0]);
 		    }
@@ -2697,7 +2691,7 @@
 		    celda.classList.remove('fa-skull-crossbones');
 		    celda.classList.remove('iconoContratoRojo');
 		  }
-		  for (i = 0; i < 9; i++) {
+		  for (i = 0; i < 8; i++) {
 		    if (i > -1) {
 		      var paso = pasos[i][0];
 		      var teorica = document.getElementById("fecha" + paso + "Teorica");

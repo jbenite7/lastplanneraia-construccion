@@ -363,6 +363,10 @@
 			guardarNuevaActividad();
 			guardarCargarExcel();
       eliminar();
+			$(document).off('click.agregarFila').on('click.agregarFila', '#btn_agregar_fila', function(e) {
+				e.preventDefault();
+				agregarFilaVacia();
+			});
 		}
 
 		/* Ejecuta la funcione listar, solo cuando se presiona el botón Listar */
@@ -527,7 +531,7 @@
 				table.columns.adjust();
 			});
 
-			$("div.toolbarFilaBotones").html('<div class="grupo_botones1" role="group" aria-label="Basic example" style="padding:5; max-width:50%;display:inline-block; "><button id="btn_cargarActividadesExcel" class="btn btn-secondary btn-sm" title="Cargar listado de actividades desde Excel" data-toggle="modal" data-target="#modalCargarExcel">Cargar desde Excel <i class="fas fa-upload fa-lg"></i></button><button id="btn_nueva_actividad" class="btn btn-primary btn-sm" title="Registrar nueva actividad del proyecto" data-toggle="modal" data-target="#modalNuevaActividad" style="margin: auto 5px">Nueva Actividad <i class="fas fa-plus fa-lg"></i></button></div><div class="grupo_botones_semanal_madre"  style="padding:5; max-width:69%"><div class="grupo_botones_semanal btn-group" role="group" aria-label="Basic example"><button id="btn_Actividades" type="button" class="btn btn-success btn-sm active" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_listadoActividades&semana='+semana+'\'">Actividades <i class="fas fa-arrow-right fa-m"></i></button><button id="btn_contratos" type="button" class="btn btn-success btn-sm" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_contratos&semana='+semana+'\'">Contratos <i class="fas fa-arrow-right fa-m"></i></button><button id="btn_planCompras" type="button" class="btn btn-success btn-sm" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=planCompras&semana='+semana+'&origen=info_listadoActividades\'">Plan de Compras</button></div></div>');
+			$("div.toolbarFilaBotones").html('<div class="grupo_botones1" role="group" aria-label="Basic example" style="padding:5; max-width:50%;display:inline-block; "><button id="btn_agregar_fila" class="btn btn-success btn-sm" title="Agregar fila vacía directamente en la tabla" style="margin: auto 5px">Agregar fila <i class="fas fa-plus fa-xs"></i></button><button id="btn_cargarActividadesExcel" class="btn btn-secondary btn-sm" title="Cargar listado de actividades desde Excel" data-toggle="modal" data-target="#modalCargarExcel">Cargar desde Excel <i class="fas fa-upload fa-lg"></i></button><button id="btn_nueva_actividad" class="btn btn-primary btn-sm" title="Registrar nueva actividad del proyecto" data-toggle="modal" data-target="#modalNuevaActividad" style="margin: auto 5px">Nueva Actividad <i class="fas fa-plus fa-lg"></i></button></div><div class="grupo_botones_semanal_madre"  style="padding:5; max-width:69%"><div class="grupo_botones_semanal btn-group" role="group" aria-label="Basic example"><button id="btn_Actividades" type="button" class="btn btn-success btn-sm active" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_listadoActividades&semana='+semana+'\'">Actividades <i class="fas fa-arrow-right fa-m"></i></button><button id="btn_contratos" type="button" class="btn btn-success btn-sm" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_contratos&semana='+semana+'\'">Contratos <i class="fas fa-arrow-right fa-m"></i></button><button id="btn_planCompras" type="button" class="btn btn-success btn-sm" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=planCompras&semana='+semana+'&origen=info_listadoActividades\'">Plan de Compras</button></div></div>');
 
 			$("div.toolbarFilaBotones .grupo_botones1")
 				.addClass("ps-toolbar-actions")
@@ -548,6 +552,93 @@
 		  obtener_data_editar("#dt_cliente tbody", table);
 		  obtener_id_eliminar("#dt_cliente tbody", table);
 		}
+
+		/* Agrega una fila vacía al inicio de la tabla con campos inline para creación directa */
+		var agregarFilaVacia = function() {
+			if (!puedeEditarListadoActividades()) {
+				return;
+			}
+			var table = $('#dt_cliente').DataTable();
+			var opcionesSelect = <?php echo json_encode($actividadInicioOptionsHtml, JSON_UNESCAPED_UNICODE); ?>;
+			var db = document.getElementById('baseDatos').value;
+
+			var newRowData = {
+				Id: '', codigo: '', actividad: '', descripcionActividad: '',
+				actividadInicio: '', nombreActividadInicio: '',
+				fechaInicio: '', tipoContrato: '', semanaActualizacion: ''
+			};
+			var newNode = table.row.add(newRowData).draw(false).node();
+			$(newNode).addClass('aia-inline-new');
+
+			var htmlActividad = "<input id='new_Actividad' name='Actividad' class='form-control form-control-sm' type='text' placeholder='Nombre actividad' autocomplete='off'>";
+			$(newNode).find('td:eq(2)').html(htmlActividad);
+
+			var htmlDesc = "<input id='new_descripcionActividad' name='descripcionActividad' class='form-control form-control-sm' type='text' placeholder='Descripción' autocomplete='off'>";
+			$(newNode).find('td:eq(3)').html(htmlDesc);
+
+			var htmlActInicio = "<select id='new_actividadInicio' name='actividadInicio' class='form-control form-control-sm'><option value=''></option>" + opcionesSelect + "</select>";
+			$(newNode).find('td:eq(4)').html(htmlActInicio);
+			$(newNode).find('td:eq(5)').html('');
+
+			var htmlTipo = "<select id='new_tipoContrato' name='tipoContrato' class='form-control form-control-sm'><option value=''></option><option value=1>Mano de Obra y Suministro Por Separado</option><option value=2>Suministro e Instalación</option></select>";
+			$(newNode).find('td:eq(6)').html(htmlTipo);
+
+			var htmlBotones = "<button type='button' id='btn_guardar_nueva' class='btn btn-success btn-sm btn-action-gap' title='Guardar'><i class='fa fa-save fa-xs'></i></button><button type='button' id='btn_cancelar_nueva' class='btn btn-danger btn-sm btn-action-gap' title='Cancelar'><i class='fa fa-undo fa-xs'></i></button>";
+			$(newNode).find('td:eq(0)').html(htmlBotones);
+
+			configurarSelectActividadInicio('#new_actividadInicio');
+			$('#new_Actividad').focus();
+
+			$(newNode).on('click', '#btn_guardar_nueva', function(e) {
+				e.preventDefault();
+				e.stopPropagation();
+				var actividad = $('#new_Actividad').val();
+				var desc = $('#new_descripcionActividad').val();
+				var actInicio = $('#new_actividadInicio').val();
+				var tipo = $('#new_tipoContrato').val();
+				if (!actividad || !desc || !actInicio || !tipo) {
+					if (typeof AIA !== 'undefined' && AIA.Notice) {
+						AIA.Notice.show({ type: 'warning', title: 'Campos incompletos', message: 'Complete todos los campos para crear la actividad.' });
+					}
+					return;
+				}
+				var semana = document.getElementById('Max_Semana').value;
+				$.ajax({
+					method: "POST",
+					url: "/api/listado-actividades/save?db=" + db,
+					data: {
+						actividad: actividad,
+						descripcionActividad: desc,
+						actividadInicio: actInicio,
+						tipoContrato: tipo,
+						opcion: "registrar",
+						semana: semana
+					}
+				}).done(function(info) {
+					var json_info = (typeof info === 'string' ? JSON.parse(info) : info);
+					if (json_info.respuesta == "BIEN") {
+						recargarTabla('');
+					}
+					if (typeof mostrar_mensaje === 'function') {
+						mostrar_mensaje(json_info);
+					}
+				});
+			});
+
+			$(newNode).on('click', '#btn_cancelar_nueva', function(e) {
+				e.preventDefault();
+				e.stopPropagation();
+				table.row(newNode).remove().draw(false);
+			});
+
+			$(newNode).on('keydown', '#new_Actividad, #new_descripcionActividad, #new_actividadInicio, #new_tipoContrato', function(e) {
+				if (e.keyCode === 13) {
+					$('#btn_guardar_nueva', newNode).click();
+				} else if (e.keyCode === 27) {
+					$('#btn_cancelar_nueva', newNode).click();
+				}
+			});
+		};
 
 		/*Toma los datos de la fila en la que se presionó el botón editar*/
 		var obtener_data_editar = function(tbody, table) {
