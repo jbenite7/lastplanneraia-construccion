@@ -1121,7 +1121,6 @@
           var cellProperties = buildPGCellProperties(instance, visualRow, col, null, rowData);
           instance.setCellMeta(visualRow, col, 'className', cellProperties.className);
           instance.setCellMeta(visualRow, col, 'readOnly', cellProperties.readOnly);
-          applyPGCellDomClass(instance.getCell(visualRow, col), cellProperties);
         }
       }
     }
