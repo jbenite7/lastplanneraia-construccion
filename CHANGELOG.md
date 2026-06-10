@@ -29,6 +29,10 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [Sin publicar]
 
+### Corregido
+
+- **Fix Color PG con Filtro + Scroll:** Se agregó hook `afterLoadData` en `hot.js` de Programa General para invalidar el cache de clasificación (`_pgClassificationCache`) y refrescar el cellMeta cuando Handsontable reemplaza el source data completo. Esto previene que el cache quede desincronizado tras recargas de datos, causando que filas filtradas perdieran su clase de estado (`pg-state-*`) y mostraran `pg-state-sin-datos` incorrectamente. Test E2E `test-pg-color-fix.mjs` valida que filas filtradas mantienen clases de estado correctas tras scroll a 8000px.
+
 ### Añadido
 
 - **Servicio de Normalización de Capítulos PG:** Nuevo `ProgramaConsolidadoNormalizationService` que auto-corrige capítulos con `Ejecutado > 0` y `Estado !== 'Capítulo'`. Integrado en GeneralApiController, SemanalApiController, creación de semana y cierre semanal.
