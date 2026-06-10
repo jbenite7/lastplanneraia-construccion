@@ -38,6 +38,11 @@
     var tdRect = this.TD.getBoundingClientRect();
     var calculatedWidth = Math.max(300, tdRect.width);
 
+    // Auto-flip: si el dropdown no cabe debajo de la celda, se abrira hacia arriba
+    var DROPDOWN_MAX_HEIGHT = 220;
+    var MIN_SPACE = DROPDOWN_MAX_HEIGHT + 12;
+    this._flipUp = (window.innerHeight - tdRect.bottom) < MIN_SPACE && tdRect.top >= MIN_SPACE;
+
     this.$wrapper.css({
       top:   tdRect.top + 'px',
       left:  tdRect.left + 'px',
@@ -97,6 +102,13 @@
         this.tomSelectInstance.dropdown.style.width = calculatedWidth + 'px';
         this.tomSelectInstance.dropdown.style.left = '0px';
       }
+    }
+
+    // Aplicar flip dinamico al dropdown
+    if (this._flipUp) {
+      this.$wrapper.attr('data-flip', 'up');
+    } else {
+      this.$wrapper.removeAttr('data-flip');
     }
 
     // Detectar opción "Crear" via item_add (Tom Select la añade en su mousedown):
@@ -242,6 +254,11 @@
     var tdRect = this.TD.getBoundingClientRect();
     var calculatedWidth = Math.max(300, tdRect.width);
 
+    // Auto-flip: si el dropdown no cabe debajo de la celda, se abrira hacia arriba
+    var DROPDOWN_MAX_HEIGHT = 220;
+    var MIN_SPACE = DROPDOWN_MAX_HEIGHT + 12;
+    this._flipUp = (window.innerHeight - tdRect.bottom) < MIN_SPACE && tdRect.top >= MIN_SPACE;
+
     this.$wrapper.css({
       top:   tdRect.top + 'px',
       left:  tdRect.left + 'px',
@@ -296,6 +313,13 @@
         this.tomSelectInstance.dropdown.style.width = calculatedWidth + 'px';
         this.tomSelectInstance.dropdown.style.left = '0px';
       }
+    }
+
+    // Aplicar flip dinamico al dropdown
+    if (this._flipUp) {
+      this.$wrapper.attr('data-flip', 'up');
+    } else {
+      this.$wrapper.removeAttr('data-flip');
     }
 
     // ─── FIX PRINCIPAL ─────────────────────────────────────────────

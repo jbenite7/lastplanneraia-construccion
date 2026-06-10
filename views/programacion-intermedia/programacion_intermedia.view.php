@@ -1145,6 +1145,17 @@
             overflow-y: auto !important;
         }
 
+        /* Auto-flip: dropdown hacia arriba cuando la celda esta cerca del bottom */
+        .htTomSelectWrapper[data-flip="up"] .ts-dropdown {
+            top: auto !important;
+            bottom: 100% !important;
+            border-top: 1.5px solid #b55211 !important;
+            border-bottom: none !important;
+            border-radius: 6px 6px 0 0 !important;
+            margin-top: 0 !important;
+            margin-bottom: -1px !important;
+        }
+
         /* Opción normal */
         .htTomSelectWrapper .ts-dropdown .ts-option {
             padding: 8px 12px !important;

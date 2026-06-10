@@ -120,6 +120,17 @@
         border-top-style: solid;
     }
 
+    /* Auto-flip: dropdown hacia arriba cuando la celda esta cerca del bottom del viewport */
+    .htTomSelectWrapper[data-flip="up"] .ts-dropdown {
+        top: auto !important;
+        bottom: 100% !important;
+        border-top: 1.5px solid var(--aia-orange-primary, #b55211) !important;
+        border-bottom: none !important;
+        border-radius: var(--radius-md, 6px) var(--radius-md, 6px) 0 0 !important;
+        margin-top: 0 !important;
+        margin-bottom: -1px !important;
+    }
+
     /* Create Action Option */
     .htTomSelectWrapper .ts-dropdown .ts-create-option {
         background: var(--aia-orange-primary) !important;
