@@ -2403,6 +2403,19 @@
         hot.render();
       }, 0);
     });
+    hot.addHook('afterLoadData', function () {
+      invalidatePGClassificationCache();
+      _pgCellMetaVersion++;
+      if (!hot) return;
+      window.setTimeout(function () {
+        if (!hot) return;
+        var sourceData = hot.getSourceData();
+        if (!Array.isArray(sourceData) || sourceData.length === 0) return;
+        buildRowClassCache(sourceData);
+        refreshVisiblePGCellMeta(hot);
+        hot.render();
+      }, 0);
+    });
     container.addEventListener(
       'mousedown',
       function () {
