@@ -48,8 +48,8 @@ class PdcApiController
                     "boton" => "", "consecutivo" => "", "id" => "", "titulo" => "", "semana" => "",
                     "tipoPaquete" => "", "paqueteContratacion" => "", "contratos" => "", "numeroSubcontratos" => "",
                     "subcontratoPaquete" => "", "estado" => "", "fechaElaboracionPliegos" => "",
-                    "diasElaboracionPliegos" => "", "fechaRealElaboracionPliegos" => "", "fechaIngresoLicify" => "",
-                    "diasIngresoLicify" => "", "fechaRealIngresoLicify" => "", "fechaEntregaPliegos" => "",
+                    "diasElaboracionPliegos" => "", "fechaRealElaboracionPliegos" => "", "fechaEntregaPliegos" => "",
+                    "diasEntregaPliegos" => "", "fechaRealEntregaPliegos" => "", "fechaReciboPropuestas" => "",
                     "diasEntregaPliegos" => "", "fechaRealEntregaPliegos" => "", "fechaReciboPropuestas" => "",
                     "diasReciboPropuestas" => "", "fechaRealReciboPropuestas" => "", "fechaCuadrosComparativos" => "",
                     "diasCuadrosComparativos" => "", "fechaRealCuadrosComparativos" => "", "fechaLegalizacionContrato" => "",
@@ -92,14 +92,14 @@ class PdcApiController
                 }
                 if ($data["titulo"] == 0) {
                     $data["procesoIniciado"] = (
-                        is_null($data["fechaRealElaboracionPliegos"]) && is_null($data["fechaRealIngresoLicify"])
+                        is_null($data["fechaRealElaboracionPliegos"]) && is_null($data["fechaRealEntregaPliegos"])
                         && is_null($data["fechaRealEntregaPliegos"]) && is_null($data["fechaRealReciboPropuestas"])
                         && is_null($data["fechaRealCuadrosComparativos"]) && is_null($data["fechaRealLegalizacionContrato"])
                         && is_null($data["fechaRealFabricacion"]) && is_null($data["fechaRealInsumosObra"])
                         && is_null($data["fechaRealInicio"])
                     ) ? 0 : 1;
 
-                    $camposDias = ["diasElaboracionPliegos", "diasIngresoLicify", "diasEntregaPliegos",
+                    $camposDias = ["diasElaboracionPliegos", "diasEntregaPliegos",
                         "diasReciboPropuestas", "diasCuadrosComparativos", "diasLegalizacionContrato",
                         "diasFabricacion", "diasInsumosObra"];
 
@@ -262,7 +262,7 @@ class PdcApiController
 
         $estado = "Proceso de contratación no iniciado";
 
-        $campos = ['fechaElaboracionPliegos','diasElaboracionPliegos','fechaIngresoLicify','diasIngresoLicify',
+        $campos = ['fechaElaboracionPliegos','diasElaboracionPliegos','fechaEntregaPliegos','diasEntregaPliegos',
             'fechaEntregaPliegos','diasEntregaPliegos','fechaReciboPropuestas','diasReciboPropuestas',
             'fechaCuadrosComparativos','diasCuadrosComparativos','fechaLegalizacionContrato','diasLegalizacionContrato',
             'fechaFabricacion','diasFabricacion','fechaInsumosObra','diasInsumosObra','fechaInicio'];
@@ -271,7 +271,7 @@ class PdcApiController
 
         $sql = "INSERT INTO {$p}_pdc (
             semana, titulo, tipoPaquete, paqueteContratacion, contratos, subcontratoPaquete, estado,
-            fechaElaboracionPliegos, diasElaboracionPliegos, fechaIngresoLicify, diasIngresoLicify,
+            fechaElaboracionPliegos, diasElaboracionPliegos, fechaEntregaPliegos, diasEntregaPliegos,
             fechaEntregaPliegos, diasEntregaPliegos, fechaReciboPropuestas, diasReciboPropuestas,
             fechaCuadrosComparativos, diasCuadrosComparativos, fechaLegalizacionContrato, diasLegalizacionContrato,
             fechaFabricacion, diasFabricacion, fechaInsumosObra, diasInsumosObra, fechaInicio
@@ -318,7 +318,7 @@ class PdcApiController
 
         $cn = fn($k) => $this->checkNull($_POST[$k] ?? '');
         $dEl = $cn('diasElaboracionPliegos');
-        $dIL = $cn('diasIngresoLicify');
+        $dIL = $cn('diasEntregaPliegos');
         $dEP = $cn('diasEntregaPliegos');
         $dRP = $cn('diasReciboPropuestas');
         $dCC = $cn('diasCuadrosComparativos');
@@ -327,7 +327,7 @@ class PdcApiController
         $dIO = $cn('diasInsumosObra');
 
         $fREl = $cn('fechaRealElaboracionPliegos');
-        $fRIL = $cn('fechaRealIngresoLicify');
+        $fRIL = $cn('fechaRealEntregaPliegos');
         $fREP = $cn('fechaRealEntregaPliegos');
         $fRRP = $cn('fechaRealReciboPropuestas');
         $fRCC = $cn('fechaRealCuadrosComparativos');
@@ -343,9 +343,9 @@ class PdcApiController
             idProveedorAdjudicado=?, numeroContrato=?, aplicaPolizas=?, fechaVencimientoPolizas=?,
             valorPresupuesto=?, valorPrimeraNegociacion=?, valorAdjudicado=?, valorAnticipo=?,
             valorReclamado=?, valorDevoluciones=?, 
-            diasElaboracionPliegos=?, diasIngresoLicify=?, diasEntregaPliegos=?, diasReciboPropuestas=?,
+            diasElaboracionPliegos=?, diasEntregaPliegos=?, diasReciboPropuestas=?,
             diasCuadrosComparativos=?, diasLegalizacionContrato=?, diasFabricacion=?, diasInsumosObra=?,
-            fechaRealElaboracionPliegos=?, fechaRealIngresoLicify=?, fechaRealEntregaPliegos=?, 
+            fechaRealElaboracionPliegos=?, fechaRealEntregaPliegos=?, 
             fechaRealReciboPropuestas=?, fechaRealCuadrosComparativos=?, fechaRealLegalizacionContrato=?,
             fechaRealFabricacion=?, fechaRealInsumosObra=?, fechaRealInicio=?,
             observacionesContrato=?, estado=?
@@ -464,7 +464,7 @@ class PdcApiController
         $dCC = (int) ($_POST['diasCuadrosComparativos'] ?? 0);
         $dRP = (int) ($_POST['diasReciboPropuestas'] ?? 0);
         $dEP = (int) ($_POST['diasEntregaPliegos'] ?? 0);
-        $dIL = (int) ($_POST['diasIngresoLicify'] ?? 0);
+        $dIL = (int) ($_POST['diasEntregaPliegos'] ?? 0);
         $dEl = (int) ($_POST['diasElaboracionPliegos'] ?? 0);
 
         $fIO = date('Y-m-d', strtotime("$fechaInicio - $dIO days"));
@@ -480,7 +480,7 @@ class PdcApiController
             "fechaInsumosObra" => $fIO, "fechaFabricacion" => $fF,
             "fechaLegalizacionContrato" => $fLC, "fechaCuadrosComparativos" => $fCC,
             "fechaReciboPropuestas" => $fRP, "fechaEntregaPliegos" => $fEP,
-            "fechaIngresoLicify" => $fIL, "fechaElaboracionPliegos" => $fEl,
+            "fechaEntregaPliegos" => $fIL, "fechaElaboracionPliegos" => $fEl,
             "fechaInicioProyectada" => $fechaInicio,
         ]]]);
     }
@@ -650,7 +650,7 @@ class PdcApiController
 
         $duraciones = [
             (int) ($data['diasElaboracionPliegos'] ?? 0),
-            (int) ($data['diasIngresoLicify'] ?? 0),
+            (int) ($data['diasEntregaPliegos'] ?? 0),
             (int) ($data['diasEntregaPliegos'] ?? 0),
             (int) ($data['diasReciboPropuestas'] ?? 0),
             (int) ($data['diasCuadrosComparativos'] ?? 0),
@@ -660,7 +660,7 @@ class PdcApiController
         ];
 
         $fechaRealFields = [
-            'fechaRealElaboracionPliegos', 'fechaRealIngresoLicify', 'fechaRealEntregaPliegos',
+            'fechaRealElaboracionPliegos', 'fechaRealEntregaPliegos',
             'fechaRealReciboPropuestas', 'fechaRealCuadrosComparativos', 'fechaRealLegalizacionContrato',
             'fechaRealFabricacion', 'fechaRealInsumosObra', 'fechaRealInicio',
         ];

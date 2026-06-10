@@ -191,7 +191,7 @@ class ContratosApiController extends BaseController
                                 $queryCheck = "SELECT 1 FROM general_dias_procesos_contratacion WHERE paqueteContratacion = ? AND tipoPaquete = ?";
                                 $stmtCheck = $db->query($queryCheck, [$pVal, $tipo]);
                                 if (!$stmtCheck->fetch()) {
-                                    $queryIns = "INSERT INTO general_dias_procesos_contratacion (paqueteContratacion, tipoPaquete, diasElaboracionPliegos, diasIngresoLicify, diasEntregaPliegos, diasReciboPropuestas, diasCuadrosComparativos, diasLegalizacionContrato, diasFabricacion, diasInsumosObra) VALUES (?, ?, 1, 1, 1, 1, 1, 1, 1, 1)";
+                                    $queryIns = "INSERT INTO general_dias_procesos_contratacion (paqueteContratacion, tipoPaquete, diasElaboracionPliegos, diasEntregaPliegos, diasReciboPropuestas, diasCuadrosComparativos, diasLegalizacionContrato, diasFabricacion, diasInsumosObra) VALUES (?, ?, 1, 1, 1, 1, 1, 1, 1)";
                                     $db->query($queryIns, [$pVal, $tipo]);
                                     $db->logActivity('Contratos', 'CREAR_DIAS_PROCESO', "Se creó configuración de días para el paquete: $pVal ($tipo)", $dbPrefix);
                                 }

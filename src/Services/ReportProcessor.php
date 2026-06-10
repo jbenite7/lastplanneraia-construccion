@@ -393,8 +393,7 @@ class ReportProcessor
                             WHEN {$dbPrefix}_pdc.fechaCuadrosComparativos <= ? THEN 5 
                             WHEN {$dbPrefix}_pdc.fechaReciboPropuestas <= ? THEN 4 
                             WHEN {$dbPrefix}_pdc.fechaEntregaPliegos <= ? THEN 3 
-                            WHEN {$dbPrefix}_pdc.fechaIngresoLicify <= ? THEN 2 
-                            WHEN {$dbPrefix}_pdc.fechaELaboracionPliegos <= ? THEN 1 
+                            WHEN {$dbPrefix}_pdc.fechaELaboracionPliegos <= ? THEN 2 
                             ELSE 0 
                         END)/7
                     ) AS diasCompletadosTeorico,
@@ -407,8 +406,7 @@ class ReportProcessor
                             WHEN {$dbPrefix}_pdc.fechaRealCuadrosComparativos IS NOT NULL THEN 5 
                             WHEN {$dbPrefix}_pdc.fechaRealReciboPropuestas IS NOT NULL THEN 4 
                             WHEN {$dbPrefix}_pdc.fechaRealEntregaPliegos IS NOT NULL THEN 3 
-                            WHEN {$dbPrefix}_pdc.fechaRealIngresoLicify IS NOT NULL THEN 2 
-                            WHEN {$dbPrefix}_pdc.fechaRealELaboracionPliegos IS NOT NULL THEN 1 
+                            WHEN {$dbPrefix}_pdc.fechaRealELaboracionPliegos IS NOT NULL THEN 2 
                             ELSE 0 
                         END)/7
                     ) AS diasCompletadosReal,
@@ -463,8 +461,7 @@ class ReportProcessor
                             WHEN {$dbPrefix}_pdc.fechaCuadrosComparativos <= ? THEN 5 
                             WHEN {$dbPrefix}_pdc.fechaReciboPropuestas <= ? THEN 4 
                             WHEN {$dbPrefix}_pdc.fechaEntregaPliegos <= ? THEN 3 
-                            WHEN {$dbPrefix}_pdc.fechaIngresoLicify <= ? THEN 2 
-                            WHEN {$dbPrefix}_pdc.fechaELaboracionPliegos <= ? THEN 1 
+                            WHEN {$dbPrefix}_pdc.fechaELaboracionPliegos <= ? THEN 2 
                             ELSE 0 
                         END)/7
                     ) AS diasCompletadosTeorico,
@@ -723,7 +720,6 @@ class ReportProcessor
                     Proyecto, semana, Fecha_Inicio_Sem, Fecha_Fin_Sem, fechaHoy, maxSemana, Proyecto_maxSemana, 
                     tipoPaquete, paqueteContratacion, contratos, numeroSubcontratos, subcontratoPaquete, estado, 
                     fechaElaboracionPliegos, diasElaboracionPliegos, fechaRealElaboracionPliegos, 
-                    fechaIngresoLicify, diasIngresoLicify, fechaRealIngresoLicify, 
                     fechaEntregaPliegos, diasEntregaPliegos, fechaRealEntregaPliegos, 
                     fechaReciboPropuestas, diasReciboPropuestas, fechaRealReciboPropuestas, 
                     fechaCuadrosComparativos, diasCuadrosComparativos, fechaRealCuadrosComparativos, 
@@ -752,9 +748,6 @@ class ReportProcessor
                     pdc.fechaElaboracionPliegos, 
                     pdc.diasElaboracionPliegos, 
                     pdc.fechaRealElaboracionPliegos, 
-                    pdc.fechaIngresoLicify, 
-                    pdc.diasIngresoLicify, 
-                    pdc.fechaRealIngresoLicify, 
                     pdc.fechaEntregaPliegos, 
                     pdc.diasEntregaPliegos, 
                     pdc.fechaRealEntregaPliegos, 

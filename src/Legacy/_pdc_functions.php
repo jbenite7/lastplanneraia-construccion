@@ -24,15 +24,14 @@ function pdc_insertarPaquetes($db, $dbName, $semana, $cvSI, $cvS, $cvMO)
 
         $sqlInsert = <<<SQL
 INSERT INTO {$dbName}_pdc (titulo, semana, tipoPaquete, paqueteContratacion, contratos, fechaInicio, 
-              diasElaboracionPliegos, diasIngresoLicify, diasEntregaPliegos, diasReciboPropuestas, 
+              diasElaboracionPliegos, diasEntregaPliegos, diasReciboPropuestas, 
               diasCuadrosComparativos, diasLegalizacionContrato, diasFabricacion, diasInsumosObra,
-              fechaElaboracionPliegos, fechaIngresoLicify, fechaEntregaPliegos, fechaReciboPropuestas, 
+              fechaElaboracionPliegos, fechaEntregaPliegos, fechaReciboPropuestas, 
               fechaCuadrosComparativos, fechaLegalizacionContrato, fechaFabricacion, fechaInsumosObra)
 SELECT 0, ?, ?, SubAct.paqueteContratacion, GROUP_CONCAT(SubAct.actividad SEPARATOR '; '), MIN(SubAct.fechaInicio),
-       MAX(gpc.diasElaboracionPliegos), MAX(gpc.diasIngresoLicify), MAX(gpc.diasEntregaPliegos), MAX(gpc.diasReciboPropuestas),
+       MAX(gpc.diasElaboracionPliegos), MAX(gpc.diasEntregaPliegos), MAX(gpc.diasReciboPropuestas),
        MAX(gpc.diasCuadrosComparativos), MAX(gpc.diasLegalizacionContrato), MAX(gpc.diasFabricacion), MAX(gpc.diasInsumosObra),
-       DATE_SUB(MIN(SubAct.fechaInicio), INTERVAL (IFNULL(MAX(gpc.diasInsumosObra),0) + IFNULL(MAX(gpc.diasFabricacion),0) + IFNULL(MAX(gpc.diasLegalizacionContrato),0) + IFNULL(MAX(gpc.diasCuadrosComparativos),0) + IFNULL(MAX(gpc.diasReciboPropuestas),0) + IFNULL(MAX(gpc.diasEntregaPliegos),0) + IFNULL(MAX(gpc.diasIngresoLicify),0) + IFNULL(MAX(gpc.diasElaboracionPliegos),0)) DAY),
-       DATE_SUB(MIN(SubAct.fechaInicio), INTERVAL (IFNULL(MAX(gpc.diasInsumosObra),0) + IFNULL(MAX(gpc.diasFabricacion),0) + IFNULL(MAX(gpc.diasLegalizacionContrato),0) + IFNULL(MAX(gpc.diasCuadrosComparativos),0) + IFNULL(MAX(gpc.diasReciboPropuestas),0) + IFNULL(MAX(gpc.diasEntregaPliegos),0) + IFNULL(MAX(gpc.diasIngresoLicify),0)) DAY),
+       DATE_SUB(MIN(SubAct.fechaInicio), INTERVAL (IFNULL(MAX(gpc.diasInsumosObra),0) + IFNULL(MAX(gpc.diasFabricacion),0) + IFNULL(MAX(gpc.diasLegalizacionContrato),0) + IFNULL(MAX(gpc.diasCuadrosComparativos),0) + IFNULL(MAX(gpc.diasReciboPropuestas),0) + IFNULL(MAX(gpc.diasEntregaPliegos),0) + IFNULL(MAX(gpc.diasElaboracionPliegos),0)) DAY),
        DATE_SUB(MIN(SubAct.fechaInicio), INTERVAL (IFNULL(MAX(gpc.diasInsumosObra),0) + IFNULL(MAX(gpc.diasFabricacion),0) + IFNULL(MAX(gpc.diasLegalizacionContrato),0) + IFNULL(MAX(gpc.diasCuadrosComparativos),0) + IFNULL(MAX(gpc.diasReciboPropuestas),0) + IFNULL(MAX(gpc.diasEntregaPliegos),0)) DAY),
        DATE_SUB(MIN(SubAct.fechaInicio), INTERVAL (IFNULL(MAX(gpc.diasInsumosObra),0) + IFNULL(MAX(gpc.diasFabricacion),0) + IFNULL(MAX(gpc.diasLegalizacionContrato),0) + IFNULL(MAX(gpc.diasCuadrosComparativos),0) + IFNULL(MAX(gpc.diasReciboPropuestas),0)) DAY),
        DATE_SUB(MIN(SubAct.fechaInicio), INTERVAL (IFNULL(MAX(gpc.diasInsumosObra),0) + IFNULL(MAX(gpc.diasFabricacion),0) + IFNULL(MAX(gpc.diasLegalizacionContrato),0) + IFNULL(MAX(gpc.diasCuadrosComparativos),0)) DAY),
@@ -82,11 +81,11 @@ function pdc_crearSubcontratosDuplicados($db, $dbName, $semana)
             for ($i = $conteoActual + 1; $i <= $numeroSubcontratos; $i++) {
                 $maxSub++;
                 $sqlDup = "INSERT INTO {$dbName}_pdc (semana, titulo, tipoPaquete, paqueteContratacion, contratos, subcontratoPaquete, estado, 
-                           fechaElaboracionPliegos, diasIngresoLicify, fechaEntregaPliegos, diasEntregaPliegos, fechaReciboPropuestas, 
+                           fechaElaboracionPliegos, fechaEntregaPliegos, diasEntregaPliegos, fechaReciboPropuestas, 
                            diasReciboPropuestas, fechaCuadrosComparativos, diasCuadrosComparativos, fechaLegalizacionContrato, 
                            diasLegalizacionContrato, fechaFabricacion, diasFabricacion, fechaInsumosObra, diasInsumosObra, fechaInicio) 
                            SELECT semana, titulo, tipoPaquete, paqueteContratacion, contratos, ?, estado, 
-                                  fechaElaboracionPliegos, diasIngresoLicify, fechaEntregaPliegos, diasEntregaPliegos, fechaReciboPropuestas, 
+                                  fechaElaboracionPliegos, fechaEntregaPliegos, diasEntregaPliegos, fechaReciboPropuestas, 
                                   diasReciboPropuestas, fechaCuadrosComparativos, diasCuadrosComparativos, fechaLegalizacionContrato, 
                                   diasLegalizacionContrato, fechaFabricacion, diasFabricacion, fechaInsumosObra, diasInsumosObra, fechaInicio 
                            FROM {$dbName}_pdc WHERE consecutivo = ?";
@@ -111,7 +110,6 @@ function pdc_generarEstadoProceso($db, $dbName, $semana)
 
         $duraciones = [
             'elaboracion' => (int) $data["diasElaboracionPliegos"],
-            'licify' => (int) $data["diasIngresoLicify"],
             'entrega' => (int) $data["diasEntregaPliegos"],
             'recibo' => (int) $data["diasReciboPropuestas"],
             'cuadros' => (int) $data["diasCuadrosComparativos"],
@@ -124,9 +122,8 @@ function pdc_generarEstadoProceso($db, $dbName, $semana)
 
         $fechasCalculadas = [
             'fechaElaboracionPliegos' => date('Y-m-d', strtotime("$fechaInicio - $totalDias days")),
-            'fechaIngresoLicify'      => date('Y-m-d', strtotime("$fechaInicio - " . ($totalDias - $duraciones['elaboracion']) . " days")),
-            'fechaEntregaPliegos'     => date('Y-m-d', strtotime("$fechaInicio - " . ($totalDias - $duraciones['elaboracion'] - $duraciones['licify']) . " days")),
-            'fechaReciboPropuestas'    => date('Y-m-d', strtotime("$fechaInicio - " . ($totalDias - $duraciones['elaboracion'] - $duraciones['licify'] - $duraciones['entrega']) . " days")),
+            'fechaEntregaPliegos'     => date('Y-m-d', strtotime("$fechaInicio - " . ($totalDias - $duraciones['elaboracion']) . " days")),
+            'fechaReciboPropuestas'    => date('Y-m-d', strtotime("$fechaInicio - " . ($totalDias - $duraciones['elaboracion'] - $duraciones['entrega']) . " days")),
             'fechaCuadrosComparativos' => date('Y-m-d', strtotime("$fechaInicio - " . ($duraciones['cuadros'] + $duraciones['legalizacion'] + $duraciones['fabricacion'] + $duraciones['insumos']) . " days")),
             'fechaLegalizacionContrato' => date('Y-m-d', strtotime("$fechaInicio - " . ($duraciones['legalizacion'] + $duraciones['fabricacion'] + $duraciones['insumos']) . " days")),
             'fechaFabricacion'        => date('Y-m-d', strtotime("$fechaInicio - " . ($duraciones['fabricacion'] + $duraciones['insumos']) . " days")),
@@ -135,7 +132,6 @@ function pdc_generarEstadoProceso($db, $dbName, $semana)
 
         $pasos = [
             [$data["fechaRealElaboracionPliegos"],  $fechasCalculadas['fechaElaboracionPliegos'], "Elaborando pliegos del contrato"],
-            [$data["fechaRealIngresoLicify"],       $fechasCalculadas['fechaIngresoLicify'],      "Ingresando el contrato a Licify"],
             [$data["fechaRealEntregaPliegos"],      $fechasCalculadas['fechaEntregaPliegos'],     "Entregando pliegos a los proveedores invitados"],
             [$data["fechaRealReciboPropuestas"],    $fechasCalculadas['fechaReciboPropuestas'],   "Recibiendo propuestas de los proveedores invitados"],
             [$data["fechaRealCuadrosComparativos"], $fechasCalculadas['fechaCuadrosComparativos'],"Elaborando cuadros comparativos, análisis y adjudicación del contrato"],
@@ -148,7 +144,7 @@ function pdc_generarEstadoProceso($db, $dbName, $semana)
         $posicion = -1;
         $deberiaHoy = -1;
 
-        for ($i = 0; $i < 9; $i++) {
+        for ($i = 0; $i < 8; $i++) {
             if (!empty($pasos[$i][0])) {
                 $posicion = $i;
             }
@@ -159,20 +155,20 @@ function pdc_generarEstadoProceso($db, $dbName, $semana)
 
         $diagnostico = ($posicion >= $deberiaHoy) ? "En Curso" : "Atrasado!!";
 
-        if ($posicion === 8) {
-            $estadoFinal = ($pasos[8][0] > $pasos[8][1]) ? "Terminado con retrasos" : "Terminado a tiempo";
+        if ($posicion === 7) {
+            $estadoFinal = ($pasos[7][0] > $pasos[7][1]) ? "Terminado con retrasos" : "Terminado a tiempo";
         } else {
             $estadoFinal = "$diagnostico; " . ($posicion === -1 ? "Proceso de contratación no iniciado" : $pasos[$posicion][2]);
         }
 
         $sqlAct = "UPDATE {$dbName}_pdc SET 
-                   fechaElaboracionPliegos = ?, fechaIngresoLicify = ?, fechaEntregaPliegos = ?, 
+                   fechaElaboracionPliegos = ?, fechaEntregaPliegos = ?, 
                    fechaReciboPropuestas = ?, fechaCuadrosComparativos = ?, fechaLegalizacionContrato = ?, 
                    fechaFabricacion = ?, fechaInsumosObra = ?, estado = ?
                    WHERE consecutivo = ?";
 
         $db->query($sqlAct, [
-            $fechasCalculadas['fechaElaboracionPliegos'], $fechasCalculadas['fechaIngresoLicify'],
+            $fechasCalculadas['fechaElaboracionPliegos'],
             $fechasCalculadas['fechaEntregaPliegos'], $fechasCalculadas['fechaReciboPropuestas'],
             $fechasCalculadas['fechaCuadrosComparativos'], $fechasCalculadas['fechaLegalizacionContrato'],
             $fechasCalculadas['fechaFabricacion'], $fechasCalculadas['fechaInsumosObra'],

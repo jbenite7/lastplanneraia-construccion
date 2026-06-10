@@ -839,27 +839,7 @@
 											</div>
 											<div class="pasoProcesoContratacion">
 												<div class="labelFormularioContratos">
-													<span class="h6 font-weight-bold">2. Ingreso a plataforma Licify:</span>
-												</div>
-												<div class="inputFormularioContratos">
-													<input id='diasIngresoLicify' name='diasIngresoLicify' class='form-control' type='text' value='' placeholder='Duración' autocomplete="off" onkeyup="calcularProcesoContratacionTeorico('');">
-												</div>
-												<div class="inputFormularioContratos">
-													<i id="iconFechaIngresoLicifyTeorica" class='fas fa-lg'></i>
-													<input id='fechaIngresoLicifyTeorica' name='fechaIngresoLicifyTeorica' class='form-control' type='text' value='' placeholder='Fecha Inicio Teórica' autocomplete="off">
-												</div>
-												<div class="inputFormularioContratos">
-													<i id="iconFechaIngresoLicify" class='fas fa-lg'></i>
-													<input id='fechaIngresoLicify' name='fechaIngresoLicify' class='form-control' type='text' value='' placeholder='Fecha Inicio Proyectada' autocomplete="off">
-												</div>
-												<div class="inputFormularioContratos">
-													<i id="iconFechaRealIngresoLicify" class='fas fa-lg'></i>
-													<input id='fechaRealIngresoLicify' name='fechaRealIngresoLicify' class='form-control' type='text' value='' placeholder='Fecha Inicio Real' autocomplete="off" onchange="calcularProcesoContratacionTeorico('IngresoLicify');" onkeyup="calcularProcesoContratacionTeorico('IngresoLicify');">
-												</div>
-											</div>
-											<div class="pasoProcesoContratacion">
-												<div class="labelFormularioContratos">
-													<span class="h6 font-weight-bold">3. Entrega de pliegos y/o carta. Elaboración de propuesta:</span>
+													<span class="h6 font-weight-bold">2. Entrega de pliegos y/o carta. Elaboración de propuesta:</span>
 												</div>
 												<div class="inputFormularioContratos">
 													<input id='diasEntregaPliegos' name='diasEntregaPliegos' class='form-control' type='text' value='' placeholder='Duración' autocomplete="off" onkeyup="calcularProcesoContratacionTeorico('');">
@@ -879,7 +859,7 @@
 											</div>
 											<div class="pasoProcesoContratacion">
 												<div class="labelFormularioContratos">
-													<span class="h6 font-weight-bold">4. Recibo de propuestas:</span>
+													<span class="h6 font-weight-bold">3. Recibo de propuestas:</span>
 												</div>
 												<div class="inputFormularioContratos">
 													<input id='diasReciboPropuestas' name='diasReciboPropuestas' class='form-control' type='text' value='' placeholder='Duración' autocomplete="off" onkeyup="calcularProcesoContratacionTeorico('');">
@@ -899,7 +879,7 @@
 											</div>
 											<div class="pasoProcesoContratacion">
 												<div class="labelFormularioContratos">
-													<span class="h6 font-weight-bold">5. Cuadros comparativos, análisis y adjudicación:</span>
+													<span class="h6 font-weight-bold">4. Cuadros comparativos, análisis y adjudicación:</span>
 												</div>
 												<div class="inputFormularioContratos">
 													<input id='diasCuadrosComparativos' name='diasCuadrosComparativos' class='form-control' type='text' value='' placeholder='Duración' autocomplete="off" onkeyup="calcularProcesoContratacionTeorico('');">
@@ -919,7 +899,7 @@
 											</div>
 											<div class="pasoProcesoContratacion">
 												<div class="labelFormularioContratos">
-													<span class="h6 font-weight-bold">6. Legalización del contrato:</span>
+													<span class="h6 font-weight-bold">5. Legalización del contrato:</span>
 												</div>
 												<div class="inputFormularioContratos">
 													<input id='diasLegalizacionContrato' name='diasLegalizacionContrato' class='form-control' type='text' value='' placeholder='Duración' autocomplete="off" onkeyup="calcularProcesoContratacionTeorico('');">
@@ -972,7 +952,7 @@
 											</div>
 											<div class="pasoProcesoContratacion">
 												<div class="labelFormularioContratos">
-													<span class="h6 font-weight-bold">7. Periodo de fabricación, producción, importaciones, transportes, movilización, etc:</span>
+													<span class="h6 font-weight-bold">6. Periodo de fabricación, producción, importaciones, transportes, movilización, etc:</span>
 												</div>
 												<div class="inputFormularioContratos">
 													<input id='diasFabricacion' name='diasFabricacion' class='form-control' type='text' value='' placeholder='Duración' autocomplete="off" onkeyup="calcularProcesoContratacionTeorico('');">
@@ -992,7 +972,7 @@
 											</div>
 											<div class="pasoProcesoContratacion">
 												<div class="labelFormularioContratos">
-													<span class="h6 font-weight-bold">8. Anticipación de insumos en obra:</span>
+													<span class="h6 font-weight-bold">7. Anticipación de insumos en obra:</span>
 												</div>
 												<div class="inputFormularioContratos">
 													<input id='diasInsumosObra' name='diasInsumosObra' class='form-control' type='text' value='' placeholder='Duración' autocomplete="off" onkeyup="calcularProcesoContratacionTeorico('');">
@@ -1012,7 +992,7 @@
 											</div>
 											<div class="pasoProcesoContratacion">
 												<div class="labelFormularioContratos">
-													<span class="h6 font-weight-bold">9. Comienzo de las actividades en la obra:</span>
+													<span class="h6 font-weight-bold">8. Comienzo de las actividades en la obra:</span>
 												</div>
 												<div class="inputFormularioContratos pdc-bg-muted">
 													<input id='diasInicioProyectadaContrato' name='diasInicioProyectadaContrato' class='form-control' type='text' value='' placeholder='' autocomplete="off" readonly>
@@ -1662,6 +1642,7 @@
 							return data;
 						},
 					},
+
 				{
 					'targets': [6],
 					'width':'11%',
@@ -1802,9 +1783,9 @@
 							{"data":"fechaElaboracionPliegos"},
 							{"data":"diasElaboracionPliegos", "visible":false},
 							{"data":"fechaRealElaboracionPliegos", "visible":false},
-							{"data":"fechaIngresoLicify", "visible":false},
-							{"data":"diasIngresoLicify", "visible":false},
-							{"data":"fechaRealIngresoLicify", "visible":false},
+							{"data":"_licify1", "visible":false, "defaultContent":""},
+							{"data":"_licify2", "visible":false, "defaultContent":""},
+							{"data":"_licify3", "visible":false, "defaultContent":""},
 							{"data":"fechaEntregaPliegos", "visible":false},
 							{"data":"diasEntregaPliegos", "visible":false},
 							{"data":"fechaRealEntregaPliegos", "visible":false},
@@ -2010,7 +1991,7 @@
 		  $(tbody).one("click", "td.celdaContenido, button.editar", function(e) {
 				e.stopPropagation();	
 				if (only_once == true) {
-					$("#nombrePaqueteContratacion, #tipoPaquete, #tipoProveedorAdjudicado, #idProveedorExistente, #numeroContrato, #aplicaPolizas, #fechaVencimientoPolizas, #valorPresupuesto, #valorPrimeraNegociacion, #valorAdjudicado, #valorAnticipo, #actividadesDelContrato, #fechaInicioContrato, #fechaActual, #diasElaboracionPliegos, #diasIngresoLicify, #diasEntregaPliegos, #diasReciboPropuestas, #diasCuadrosComparativos, #diasLegalizacionContrato, #diasFabricacion, #diasInsumosObra, #fechaRealElaboracionPliegos, #fechaRealIngresoLicify, #fechaRealEntregaPliegos, #fechaRealReciboPropuestas, #fechaRealCuadrosComparativos, #fechaRealLegalizacionContrato, #fechaRealFabricacion, #fechaRealInsumosObra, #fechaRealInicioProyectadaContrato, #observacionesContrato").val("");
+					$("#nombrePaqueteContratacion, #tipoPaquete, #tipoProveedorAdjudicado, #idProveedorExistente, #numeroContrato, #aplicaPolizas, #fechaVencimientoPolizas, #valorPresupuesto, #valorPrimeraNegociacion, #valorAdjudicado, #valorAnticipo, #actividadesDelContrato, #fechaInicioContrato, #fechaActual, #diasElaboracionPliegos, #diasEntregaPliegos, #diasReciboPropuestas, #diasCuadrosComparativos, #diasLegalizacionContrato, #diasFabricacion, #diasInsumosObra, #fechaRealElaboracionPliegos, #fechaRealEntregaPliegos, #fechaRealReciboPropuestas, #fechaRealCuadrosComparativos, #fechaRealLegalizacionContrato, #fechaRealFabricacion, #fechaRealInsumosObra, #fechaRealInicioProyectadaContrato, #observacionesContrato").val("");
 					actualizarEstadoProveedorBloqueado(false);
 					document.getElementById('mensajeModalInformacionAdjudicado').innerHTML = '';
 
@@ -2052,7 +2033,6 @@
 
 
 						$("#diasElaboracionPliegos").val(data.diasElaboracionPliegos);
-						$("#diasIngresoLicify").val(data.diasIngresoLicify);
 						$("#diasEntregaPliegos").val(data.diasEntregaPliegos);
 						$("#diasReciboPropuestas").val(data.diasReciboPropuestas);
 						$("#diasCuadrosComparativos").val(data.diasCuadrosComparativos);
@@ -2061,7 +2041,6 @@
 						$("#diasInsumosObra").val(data.diasInsumosObra);
 
 						$("#fechaRealElaboracionPliegos").val(data.fechaRealElaboracionPliegos);
-						$("#fechaRealIngresoLicify").val(data.fechaRealIngresoLicify);
 						$("#fechaRealEntregaPliegos").val(data.fechaRealEntregaPliegos);
 						$("#fechaRealReciboPropuestas").val(data.fechaRealReciboPropuestas);
 						$("#fechaRealCuadrosComparativos").val(data.fechaRealCuadrosComparativos);
@@ -2361,8 +2340,6 @@
 		    fechaRealReciboPropuestas = null,
 		    diasEntregaPliegos = parseInt(document.getElementById('diasEntregaPliegos').value),
 		    fechaRealEntregaPliegos = null,
-		    diasIngresoLicify = parseInt(document.getElementById('diasIngresoLicify').value),
-		    fechaRealIngresoLicify = null,
 		    diasElaboracionPliegos = parseInt(document.getElementById('diasElaboracionPliegos').value),
 		    fechaRealElaboracionPliegos = "No Aplica";
 		  if (isNaN(diasInsumosObra)) {
@@ -2383,13 +2360,10 @@
 		  if (isNaN(diasEntregaPliegos)) {
 		    diasEntregaPliegos = 0;
 		  }
-		  if (isNaN(diasIngresoLicify)) {
-		    diasIngresoLicify = 0;
-		  }
 		  if (isNaN(diasElaboracionPliegos)) {
 		    diasElaboracionPliegos = 0;
 		  }
-		  var diasTotales = diasInsumosObra + diasFabricacion + diasLegalizacionContrato + diasCuadrosComparativos + diasReciboPropuestas + diasEntregaPliegos + diasIngresoLicify + diasElaboracionPliegos;
+		  var diasTotales = diasInsumosObra + diasFabricacion + diasLegalizacionContrato + diasCuadrosComparativos + diasReciboPropuestas + diasEntregaPliegos + diasElaboracionPliegos;
 		  var opcion = "recalcularProcesoContratacion";
 		  db = document.getElementById('baseDatos').value;
 		  $.ajax({
@@ -2409,7 +2383,6 @@
 		      "diasCuadrosComparativos": diasCuadrosComparativos,
 		      "diasReciboPropuestas": diasReciboPropuestas,
 		      "diasEntregaPliegos": diasEntregaPliegos,
-		      "diasIngresoLicify": diasIngresoLicify,
 		      "diasElaboracionPliegos": diasElaboracionPliegos,
 		      "fechaRealInsumosObra": fechaRealInsumosObra,
 		      "fechaRealFabricacion": fechaRealFabricacion,
@@ -2417,13 +2390,11 @@
 		      "fechaRealCuadrosComparativos": fechaRealCuadrosComparativos,
 		      "fechaRealReciboPropuestas": fechaRealReciboPropuestas,
 		      "fechaRealEntregaPliegos": fechaRealEntregaPliegos,
-		      "fechaRealIngresoLicify": fechaRealIngresoLicify,
 		      "fechaRealElaboracionPliegos": fechaRealElaboracionPliegos
 		    }
 		  }).done(function(info) {
 		    var json_info = (typeof info === 'string' ? JSON.parse( info ) : info);
 		    document.getElementById('fechaElaboracionPliegosTeorica').value = json_info["data"][0]["fechaElaboracionPliegos"];
-		    document.getElementById('fechaIngresoLicifyTeorica').value = json_info["data"][0]["fechaIngresoLicify"];
 		    document.getElementById('fechaEntregaPliegosTeorica').value = json_info["data"][0]["fechaEntregaPliegos"];
 		    document.getElementById('fechaReciboPropuestasTeorica').value = json_info["data"][0]["fechaReciboPropuestas"];
 		    document.getElementById('fechaCuadrosComparativosTeorica').value = json_info["data"][0]["fechaCuadrosComparativos"];
@@ -2451,8 +2422,6 @@
 		    fechaRealReciboPropuestas = document.getElementById('fechaRealReciboPropuestas').value,
 		    diasEntregaPliegos = parseInt(document.getElementById('diasEntregaPliegos').value),
 		    fechaRealEntregaPliegos = document.getElementById('fechaRealEntregaPliegos').value,
-		    diasIngresoLicify = parseInt(document.getElementById('diasIngresoLicify').value),
-		    fechaRealIngresoLicify = document.getElementById('fechaRealIngresoLicify').value,
 		    diasElaboracionPliegos = parseInt(document.getElementById('diasElaboracionPliegos').value),
 		    fechaRealElaboracionPliegos = document.getElementById('fechaRealElaboracionPliegos').value;
 
@@ -2467,7 +2436,7 @@
 			  finSemanaActual = anio + "-" + mesConCero + "-" + diaConCero;
 
 				//console.log(fechaActual, finSemanaActual);
-		  if (finSemanaActual >= fechaRealInicioProyectadaContrato && finSemanaActual >= fechaRealInsumosObra && finSemanaActual >= fechaRealFabricacion && finSemanaActual >= fechaRealLegalizacionContrato && finSemanaActual >= fechaRealCuadrosComparativos && finSemanaActual >= fechaRealReciboPropuestas && finSemanaActual >= fechaRealEntregaPliegos && finSemanaActual >= fechaRealIngresoLicify && finSemanaActual >= fechaRealElaboracionPliegos) {
+		  if (finSemanaActual >= fechaRealInicioProyectadaContrato && finSemanaActual >= fechaRealInsumosObra && finSemanaActual >= fechaRealFabricacion && finSemanaActual >= fechaRealLegalizacionContrato && finSemanaActual >= fechaRealCuadrosComparativos && finSemanaActual >= fechaRealReciboPropuestas && finSemanaActual >= fechaRealEntregaPliegos && finSemanaActual >= fechaRealElaboracionPliegos) {
 		    if (isNaN(diasInsumosObra) || diasInsumosObra < 0) {
 		      diasInsumosObra = 0;
 		      document.getElementById('diasInsumosObra').value = "";
@@ -2492,15 +2461,11 @@
 		      diasEntregaPliegos = 0;
 		      document.getElementById('diasEntregaPliegos').value = "";
 		    }
-		    if (isNaN(diasIngresoLicify) || diasIngresoLicify < 0) {
-		      diasIngresoLicify = 0;
-		      document.getElementById('diasIngresoLicify').value = "";
-		    }
 		    if (isNaN(diasElaboracionPliegos) || diasElaboracionPliegos < 0) {
 		      diasElaboracionPliegos = 0;
 		      document.getElementById('diasElaboracionPliegos').value = "";
 		    }
-		    var diasTotales = diasInsumosObra + diasFabricacion + diasLegalizacionContrato + diasCuadrosComparativos + diasReciboPropuestas + diasEntregaPliegos + diasIngresoLicify + diasElaboracionPliegos;
+		    var diasTotales = diasInsumosObra + diasFabricacion + diasLegalizacionContrato + diasCuadrosComparativos + diasReciboPropuestas + diasEntregaPliegos + diasElaboracionPliegos;
 		    var opcion = "recalcularProcesoContratacion";
 		    db = document.getElementById('baseDatos').value;
 		    $.ajax({
@@ -2520,7 +2485,6 @@
 		        "diasCuadrosComparativos": diasCuadrosComparativos,
 		        "diasReciboPropuestas": diasReciboPropuestas,
 		        "diasEntregaPliegos": diasEntregaPliegos,
-		        "diasIngresoLicify": diasIngresoLicify,
 		        "diasElaboracionPliegos": diasElaboracionPliegos,
 		        "fechaRealInsumosObra": fechaRealInsumosObra,
 		        "fechaRealFabricacion": fechaRealFabricacion,
@@ -2528,13 +2492,11 @@
 		        "fechaRealCuadrosComparativos": fechaRealCuadrosComparativos,
 		        "fechaRealReciboPropuestas": fechaRealReciboPropuestas,
 		        "fechaRealEntregaPliegos": fechaRealEntregaPliegos,
-		        "fechaRealIngresoLicify": fechaRealIngresoLicify,
 		        "fechaRealElaboracionPliegos": fechaRealElaboracionPliegos
 		      }
 		    }).done(function(info) {
 		      var json_info = (typeof info === 'string' ? JSON.parse( info ) : info);
 		      document.getElementById('fechaElaboracionPliegos').value = json_info["data"][0]["fechaElaboracionPliegos"];
-		      document.getElementById('fechaIngresoLicify').value = json_info["data"][0]["fechaIngresoLicify"];
 		      document.getElementById('fechaEntregaPliegos').value = json_info["data"][0]["fechaEntregaPliegos"];
 		      document.getElementById('fechaReciboPropuestas').value = json_info["data"][0]["fechaReciboPropuestas"];
 		      document.getElementById('fechaCuadrosComparativos').value = json_info["data"][0]["fechaCuadrosComparativos"];
@@ -2548,7 +2510,6 @@
 		      selectoresFecha("CuadrosComparativos");
 		      selectoresFecha("ReciboPropuestas");
 		      selectoresFecha("EntregaPliegos");
-		      selectoresFecha("IngresoLicify");
 		      selectoresFecha("ElaboracionPliegos");
 		      selectoresFecha("InicioProyectadaContrato");
 		      generarEstadoProceso();
@@ -2564,7 +2525,6 @@
 		      selectoresFecha("CuadrosComparativos");
 		      selectoresFecha("ReciboPropuestas");
 		      selectoresFecha("EntregaPliegos");
-		      selectoresFecha("IngresoLicify");
 		      selectoresFecha("ElaboracionPliegos");
 		      selectoresFecha("InicioProyectadaContrato");
 		      generarEstadoProceso();
@@ -2582,7 +2542,6 @@
 		  var fechaInicioCronograma = document.getElementById("fechaInicioContrato");
 		  var pasos = [
 		    ["ElaboracionPliegos", "Elaborando pliegos del contrato"],
-		    ["IngresoLicify", "Ingresando el contrato a Licify"],
 		    ["EntregaPliegos", "Entregando pliegos a los proveedores invitados"],
 		    ["ReciboPropuestas", "Recibiendo propuestas de los proveedores invitados"],
 		    ["CuadrosComparativos", "Elaborando cuadros comparativos, análisis y adjudicación del contrato"],
