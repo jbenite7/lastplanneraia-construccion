@@ -31,7 +31,7 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ### Corregido
 
-- **Fix Color PG con Filtro + Scroll:** Se agregó hook `afterLoadData` en `hot.js` de Programa General para invalidar el cache de clasificación (`_pgClassificationCache`) y refrescar el cellMeta cuando Handsontable reemplaza el source data completo. Esto previene que el cache quede desincronizado tras recargas de datos, causando que filas filtradas perdieran su clase de estado (`pg-state-*`) y mostraran `pg-state-sin-datos` incorrectamente. Test E2E `test-pg-color-fix.mjs` valida que filas filtradas mantienen clases de estado correctas tras scroll a 8000px.
+- **Fix Color PG con Filtro + Scroll:** Se agregó hook `beforeRenderer` en `hot.js` de Programa General que intercepta cada celda ANTES del render del DOM y sobrescribe `cellProperties.className` con el valor correcto del estado. Esto reemplaza el enfoque anterior (`afterRender` + `applyPGCellDomClass`) que fallaba en virtual scrolling por race conditions con el ciclo interno de renderizado de Handsontable 14.6.1. El hook `beforeRenderer` modifica las propiedades de la celda ANTES de que HT las aplique al DOM, eliminando race conditions. También se agregó `afterLoadData` hook para invalidar el cache de clasificación al recargar datos. Test E2E `test-pg-color-fix.mjs` valida que filas filtradas mantienen clases de estado correctas tras scroll a 8000px.
 
 ### Añadido
 
