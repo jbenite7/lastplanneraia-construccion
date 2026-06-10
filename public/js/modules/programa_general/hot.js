@@ -20,6 +20,61 @@
   var _rowMetaCache = [];
   var _canEditGlobal = false;
 
+  // Persistent classification cache keyed by Consecutivo_en_Programa.
+  // The previous in-row `_classification` cache was unreliable because
+  // Handsontable 14.x hands `getSourceDataAtRow` a proxy/copy of the row
+  // object, so writes to the cache never landed on the canonical row and
+  // the next render (or filter / scroll) re-classified a row whose
+  // `Estado` had not yet been resolved, defaulting it to `sin-datos`.
+  var _pgClassificationCache = new Map();
+  var _pgCellMetaVersion = 0;
+
+  function invalidatePGClassificationCache() {
+    _pgClassificationCache.clear();
+  }
+
+  function getCachedPGClassification(data) {
+    if (!data) {
+      return null;
+    }
+    var key = data.Consecutivo_en_Programa;
+    if (key === undefined || key === null) {
+      return null;
+    }
+    var entry = _pgClassificationCache.get(key);
+    if (!entry) {
+      return null;
+    }
+    if (
+      entry.estado === data.Estado &&
+      entry.titulo === data.Titulo &&
+      entry.semanasInicio === data.Semanas_Inicio &&
+      entry.ejecutado === data.Ejecutado &&
+      entry.alertaCrisis === data.alerta_crisis
+    ) {
+      return entry.classification;
+    }
+    return null;
+  }
+
+  function setCachedPGClassification(data, classification) {
+    if (!data) {
+      return;
+    }
+    var key = data.Consecutivo_en_Programa;
+    if (key === undefined || key === null) {
+      return;
+    }
+    _pgClassificationCache.set(key, {
+      estado: data.Estado,
+      titulo: data.Titulo,
+      semanasInicio: data.Semanas_Inicio,
+      ejecutado: data.Ejecutado,
+      alertaCrisis: data.alerta_crisis,
+      classification: classification,
+    });
+  }
+
   var editableProps = {
     codigo_actividad: true,
     Fecha_Inicio: true,
@@ -509,22 +564,30 @@
     if (!data || (data.Consecutivo_en_Programa === undefined && data.Consecutivo === undefined && data.Id === undefined)) {
       return {
         key: 'sin-datos',
+        baseKey: 'sin-datos',
         rowClass: 'pg-state-sin-datos',
+        isCritical: false,
         restrictionAlertKey: '',
       };
     }
 
-    if (data._classification) {
-      return data._classification;
+    // Prefer the persistent global cache so the classification survives
+    // across proxy/copy boundaries that Handsontable introduces when
+    // handing rows to the cells callback.
+    var cached = getCachedPGClassification(data);
+    if (cached) {
+      return cached;
     }
 
     if (Number(data.Titulo) !== 0) {
       var headerResult = {
         key: 'header',
+        baseKey: 'header',
         rowClass: 'pdc-header',
+        isCritical: false,
         restrictionAlertKey: '',
       };
-      data._classification = headerResult;
+      setCachedPGClassification(data, headerResult);
       return headerResult;
     }
 
@@ -549,11 +612,13 @@
 
     var result = {
       key: stateKey,
+      baseKey: baseKey,
       rowClass: rowClassMap[stateKey] || 'pg-state-actividad-futura',
+      isCritical: isCritical,
       restrictionAlertKey: getRestrictionAlertKey(data),
     };
 
-    data._classification = result;
+    setCachedPGClassification(data, result);
     return result;
   }
 
@@ -736,6 +801,11 @@
       cache: false,
     })
       .done(function (response) {
+        // Bust classification cache because the source data set has been
+        // replaced wholesale and previous entries (keyed by
+        // Consecutivo_en_Programa) might no longer correspond.
+        invalidatePGClassificationCache();
+        _pgCellMetaVersion++;
         masterData = response && Array.isArray(response.data) ? response.data : [];
 
         for (var i = 0; i < masterData.length; i++) {
