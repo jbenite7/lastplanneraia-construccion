@@ -2416,6 +2416,16 @@
         hot.render();
       }, 0);
     });
+    hot.addHook('beforeRenderer', function (TD, row, col, prop, value, cellProperties) {
+      if (!hot || hot.isDestroyed || !cellProperties) return;
+      var rowData = getSourceRowDataByVisualRow(hot, row);
+      if (!rowData) return;
+      var newProps = buildPGCellProperties(hot, row, col, prop, rowData);
+      cellProperties.className = newProps.className;
+      if (newProps.readOnly) {
+        cellProperties.readOnly = true;
+      }
+    });
     container.addEventListener(
       'mousedown',
       function () {
