@@ -128,6 +128,21 @@ $router->post('/api/listado-actividades/save', [\App\Controllers\Api\ListadoActi
 // Api/PDC
 $router->post('/api/pdc/list', [\App\Controllers\Api\PdcApiController::class, 'list']);
 $router->post('/api/pdc/save', [\App\Controllers\Api\PdcApiController::class, 'save']);
+$router->get('/api/pdc/duracion-sugerida', [\App\Controllers\Api\PdcApiController::class, 'duracionSugerida']);
+// Api/PDC Plantillas
+$router->get('/api/pdc/plantillas', [\App\Controllers\Api\PdcPlantillaController::class, 'list']);
+$router->get('/api/pdc/plantillas/{id}', [\App\Controllers\Api\PdcPlantillaController::class, 'show']);
+$router->get('/api/pdc/plantillas/{id}/items', [\App\Controllers\Api\PdcPlantillaController::class, 'items']);
+$router->get('/api/pdc/categorias-recurso', [\App\Controllers\Api\PdcPlantillaController::class, 'categorias']);
+// Api/PDC Auto-generación
+$router->post('/api/pdc/auto/suggest', [\App\Controllers\Api\PdcAutoGenerateController::class, 'suggest']);
+$router->get('/api/pdc/auto/inventory', [\App\Controllers\Api\PdcAutoGenerateController::class, 'inventory']);
+$router->post('/api/pdc/auto/apply', [\App\Controllers\Api\PdcAutoGenerateController::class, 'apply']);
+// Api/PDC Wizard
+$router->post('/api/pdc/wizard-generate', [\App\Controllers\Api\PdcApiController::class, 'wizardGenerate']);
+// Api/PG Breadcrumb
+$router->post('/api/pg/breadcrumb-estandarizar', [\App\Controllers\Api\PgBreadcrumbController::class, 'standardize']);
+$router->post('/api/pg/breadcrumb-preview', [\App\Controllers\Api\PgBreadcrumbController::class, 'preview']);
 // Api/Profesionales
 $router->post('/api/profesionales/list', [\App\Controllers\Api\ProfesionalesApiController::class, 'list']);
 $router->post('/api/profesionales/save', [\App\Controllers\Api\ProfesionalesApiController::class, 'save']);

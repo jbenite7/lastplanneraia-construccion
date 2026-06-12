@@ -51,23 +51,32 @@ debug_*.php
 # Archivos de configuración de IDEs y prompts de IA
 GEMINI.md
 AGENTS.md
+CLAUDE.md
+MEMORY.md
+.php-cs-fixer.dist.php
 
 # Documentación interna (no desplegar a producción)
 docs/ROUTES.md
+docs/pdc/
 
-# OpenCode / Claude tooling local
+# AI tooling local
 .opencode/
+.claude/
+.gemini/
 
 # Node.js / Playwright testing
 node_modules/
 **/package-lock.json
 package.json
 test-output/
+test-output-*/
+test-results/
 tests/browser/
 .playwright-mcp/
 
-# Scratch and tests
+# Scratch y debugging
 scratch/
-.claude/
-test-output-*/
-.php-cs-fixer.dist.php
+scripts/
+/*.png
+analisis_actividades_por_disciplina.md
+pg_activities_complete.txt

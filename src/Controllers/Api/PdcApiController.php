@@ -714,4 +714,206 @@ class PdcApiController
             'diasDelta' => $diasDelta,
         ];
     }
+
+    // ─── DURACION SUGERIDA ──────────────────────────────────────────────
+    public function duracionSugerida(): void
+    {
+        try {
+            $this->requirePermission('lps.pdc.ver', 'No autorizado para consultar duraciones.');
+
+            $paquete = trim((string) ($_GET['paquete'] ?? ''));
+            $tipoPaquete = trim((string) ($_GET['tipoPaquete'] ?? ''));
+            $categoria = trim((string) ($_GET['categoria'] ?? ''));
+
+            if ($paquete === '') {
+                $this->jsonError('El parámetro "paquete" es requerido.');
+                return;
+            }
+
+            // Nivel 1: Catálogo existente (general_dias_procesos_contratacion)
+            $catalog = $this->findCatalogDuration($paquete, $tipoPaquete);
+            if ($catalog !== null) {
+                $this->json([
+                    'respuesta' => 'BIEN',
+                    'fuente' => 'catalogo',
+                    'paquete' => $paquete,
+                    'duracion' => $catalog,
+                ]);
+                return;
+            }
+
+            // Nivel 2: Mediana histórica de {db}_pdc de todos los proyectos
+            $median = $this->calculateHistoricalMedian($paquete);
+            if ($median !== null) {
+                $this->json([
+                    'respuesta' => 'BIEN',
+                    'fuente' => 'historico',
+                    'paquete' => $paquete,
+                    'duracion' => $median,
+                ]);
+                return;
+            }
+
+            // Nivel 3: Defaults por categoría
+            $defaults = $this->getCategoryDefaults($categoria);
+            $this->json([
+                'respuesta' => 'BIEN',
+                'fuente' => 'default',
+                'paquete' => $paquete,
+                'duracion' => $defaults,
+            ]);
+        } catch (Throwable $e) {
+            error_log('Error en PdcApiController@duracionSugerida: ' . $e->getMessage());
+            $this->jsonError('No se pudo obtener la duración sugerida.', 500);
+        }
+    }
+
+    private function findCatalogDuration(string $paquete, string $tipoPaquete): ?array
+    {
+        $params = [$paquete];
+        $sql = "SELECT diasElaboracionPliegos, diasEntregaPliegos, diasReciboPropuestas,
+                       diasCuadrosComparativos, diasLegalizacionContrato, diasFabricacion, diasInsumosObra
+                FROM general_dias_procesos_contratacion
+                WHERE paqueteContratacion = ?";
+
+        if ($tipoPaquete !== '') {
+            $sql .= " AND tipoPaquete = ?";
+            $params[] = $tipoPaquete;
+        }
+
+        $sql .= " LIMIT 1";
+        $stmt = $this->db->query($sql, $params);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($row === false) {
+            return null;
+        }
+
+        // Solo devolver si tiene duraciones reales (no todas 1)
+        $dias = [
+            'dias_elaboracion' => (int) $row['diasElaboracionPliegos'],
+            'dias_entrega' => (int) $row['diasEntregaPliegos'],
+            'dias_recibo' => (int) $row['diasReciboPropuestas'],
+            'dias_cuadros' => (int) $row['diasCuadrosComparativos'],
+            'dias_legalizacion' => (int) $row['diasLegalizacionContrato'],
+            'dias_fabricacion' => (int) $row['diasFabricacion'],
+            'dias_insumos' => (int) $row['diasInsumosObra'],
+        ];
+
+        $nonDefault = count(array_filter($dias, static fn($v) => $v > 1));
+        return $nonDefault >= 2 ? $dias : null;
+    }
+
+    private function calculateHistoricalMedian(string $paquete): ?array
+    {
+        // Buscar paquetes con nombre similar en todas las tablas PDC de proyectos
+        $stmt = $this->db->query(
+            "SELECT TABLE_NAME FROM information_schema.tables
+             WHERE table_schema = DATABASE() AND table_name LIKE '%_pdc'"
+        );
+        $tables = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+        if (empty($tables)) {
+            return null;
+        }
+
+        $allDurations = [];
+        foreach ($tables as $table) {
+            try {
+                $stmt = $this->db->query(
+                    "SELECT diasElaboracionPliegos, diasEntregaPliegos, diasReciboPropuestas,
+                            diasCuadrosComparativos, diasLegalizacionContrato, diasFabricacion, diasInsumosObra
+                     FROM `{$table}`
+                     WHERE titulo = 0 AND paqueteContratacion = ?
+                       AND diasElaboracionPliegos IS NOT NULL AND diasElaboracionPliegos > 1",
+                    [$paquete]
+                );
+                foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+                    $allDurations[] = $row;
+                }
+            } catch (Throwable $e) {
+                // Tabla sin columnas de duración (ej: general_curvas_pdc), skip
+                continue;
+            }
+        }
+
+        if (count($allDurations) < 1) {
+            return null;
+        }
+
+        // Calcular medianas por campo
+        $fields = [
+            'dias_elaboracion' => 'diasElaboracionPliegos',
+            'dias_entrega' => 'diasEntregaPliegos',
+            'dias_recibo' => 'diasReciboPropuestas',
+            'dias_cuadros' => 'diasCuadrosComparativos',
+            'dias_legalizacion' => 'diasLegalizacionContrato',
+            'dias_fabricacion' => 'diasFabricacion',
+            'dias_insumos' => 'diasInsumosObra',
+        ];
+
+        $result = [];
+        foreach ($fields as $key => $col) {
+            $values = array_map(static fn($r) => (int) $r[$col], $allDurations);
+            sort($values);
+            $count = count($values);
+            $mid = (int) floor(($count - 1) / 2);
+            $result[$key] = ($count % 2 !== 0)
+                ? $values[$mid]
+                : (int) round(($values[$mid] + $values[$mid + 1]) / 2);
+        }
+
+        return $result;
+    }
+
+    private function getCategoryDefaults(string $categoria): array
+    {
+        // Mapear categorías de familias a categorías de defaults
+        $categoryMap = [
+            'PRELIMINARES' => 'PRELIMINARES',
+            'CIMENTACION' => 'CIMENTACION',
+            'ESTRUCTURA' => 'ESTRUCTURA',
+            'MAMPOSTERIA' => 'MAMPOSTERIA',
+            'ACABADOS' => 'ACABADOS',
+            'INSTALACIONES' => 'INSTALACIONES',
+            'URBANISMO' => 'URBANISMO',
+            'MANO DE OBRA' => 'MANO DE OBRA',
+            'EQUIPOS' => 'EQUIPOS',
+            'INSUMOS' => 'INSUMOS',
+        ];
+
+        $dbCategory = $categoryMap[strtoupper($categoria)] ?? null;
+
+        if ($dbCategory !== null) {
+            $stmt = $this->db->query(
+                "SELECT dias_elaboracion, dias_entrega, dias_recibo, dias_cuadros,
+                        dias_legalizacion, dias_fabricacion, dias_insumos
+                 FROM general_dias_defaults_categoria WHERE categoria = ?",
+                [$dbCategory]
+            );
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($row !== false) {
+                return [
+                    'dias_elaboracion' => (int) $row['dias_elaboracion'],
+                    'dias_entrega' => (int) $row['dias_entrega'],
+                    'dias_recibo' => (int) $row['dias_recibo'],
+                    'dias_cuadros' => (int) $row['dias_cuadros'],
+                    'dias_legalizacion' => (int) $row['dias_legalizacion'],
+                    'dias_fabricacion' => (int) $row['dias_fabricacion'],
+                    'dias_insumos' => (int) $row['dias_insumos'],
+                ];
+            }
+        }
+
+        // Fallback: defaults genéricos (Estructura)
+        return [
+            'dias_elaboracion' => 8,
+            'dias_entrega' => 7,
+            'dias_recibo' => 1,
+            'dias_cuadros' => 5,
+            'dias_legalizacion' => 10,
+            'dias_fabricacion' => 0,
+            'dias_insumos' => 0,
+        ];
+    }
 }
