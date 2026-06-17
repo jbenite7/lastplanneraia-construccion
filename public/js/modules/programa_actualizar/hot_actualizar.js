@@ -730,6 +730,11 @@ window.HOTActualizarModule = (function() {
     return {
         init: function() {
             console.log("🔥 [MapeoManual] HOTActualizarModule.init() alcanzado.");
+            if (window.HOTActualizarModule._initialized) {
+                console.log("🔥 [MapeoManual] init() ya fue ejecutado. Saltando.");
+                return;
+            }
+            window.HOTActualizarModule._initialized = true;
             try {
                 fetchCodigosActividad();
                 loadData();

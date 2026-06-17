@@ -524,6 +524,15 @@
 			cargarDatosGeneralesPagina(document.getElementById('seccion').value);
 			guardarCargarExcel();
 			guardarEliminarActualizacion();
+
+			// Fallback: inicializar Handsontable aunque el AJAX legacy falle.
+			// cargaParametros() también lo llama; HOTActualizarModule.init() es idempotente.
+			setTimeout(function() {
+				if (window.HOTActualizarModule && !window.HOTActualizarModule._initialized) {
+					console.warn("⚠️ [Fallback] cargaParametros no fue invocado por AJAX legacy. Inicializando Handsontable directamente.");
+					window.HOTActualizarModule.init();
+				}
+			}, 3000);
 		});
 	</script>
 </body>
