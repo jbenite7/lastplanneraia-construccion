@@ -206,14 +206,65 @@
 		            </form>
 		          </div>
 		        </div>
-		      </div>
-		    </div>
-		  </div>
 		</div>
-		<!-- Modal -->
+		</div>
+	  </div>
+	</div>
+	<!-- Modal -->
 
-		<style>
-		/* Modal Auto-PDC: estilos mobile-first */
+	<!-- Modal Auto-Generar Listado de Actividades desde Programa General -->
+	<div class="modal_autoGenerarListado modal fade aia-modal" id="modalAutoGenerarListado" role="dialog" aria-labelledby="modalAutoGenerarListadoLabel">
+	  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <div class="modal-title" id="modalAutoGenerarListadoLabel">
+	          <div class="aia-modal__eyebrow">AIA Corporativo</div>
+	          <h2 class="aia-modal__headline">Auto-Generar Listado de Actividades</h2>
+	          <p class="aia-modal__subtitle" id="modalAutoGenerarListadoSubtitle">Analiza el Programa General y crea actividades vinculadas automáticamente.</p>
+	        </div>
+	        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+	      </div>
+	      <div class="modal-body">
+	        <div class="row">
+	          <div class="cuadro4 col-sm-12 col-md-12 col-lg-12">
+	            <div class="aia-modal__section aia-modal__section--plain">
+	              <div class="aia-modal__section-header">
+	                <h3 class="aia-modal__section-title">Resumen de Detección</h3>
+	              </div>
+	              <div class="alert alert-info" id="autoGenListadoResumen">
+	                Presiona "Analizar" para detectar actividades en el Programa General.
+	              </div>
+	            </div>
+	            <div class="table-responsive" style="max-height: 40vh; overflow-y: auto;">
+	              <table class="table table-sm table-bordered table-hover mb-0" id="autoGenListadoTable">
+	                <thead class="thead-light">
+	                  <tr>
+	                    <th style="width: 50px;">#</th>
+	                    <th>Actividad (PG)</th>
+	                    <th>Fecha Inicio</th>
+	                    <th>Familia Detectada</th>
+	                    <th>Confianza</th>
+	                    <th>Estado</th>
+	                  </tr>
+	                </thead>
+	                <tbody id="autoGenListadoBody"></tbody>
+	              </table>
+	            </div>
+	          </div>
+	        </div>
+	      </div>
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+	        <button type="button" class="btn btn-outline-primary" id="btnAutoGenListadoAnalizar" disabled><i class="fas fa-search"></i> Analizar</button>
+	        <button type="button" class="btn btn-warning" id="btnAutoGenListadoAplicar" disabled><i class="fas fa-magic"></i> Aplicar</button>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+	<!-- Modal -->
+
+	<style>
+	/* Modal Auto-PDC: estilos mobile-first */
 		#modalPdcAutoGenerar .modal-body {
 			max-height: calc(100vh - 230px);
 			overflow-y: auto;
@@ -717,6 +768,97 @@
 			});
 		};
 
+		var inicializarAutoGenerarListado = function() {
+			var pdcAutoListadoSuggestions = [];
+
+			$(document).off('click.autoGenListado', '#btn_auto_generar_listado').on('click.autoGenListado', '#btn_auto_generar_listado', function(e) {
+				e.preventDefault();
+				$('#modalAutoGenerarListado').modal('show');
+			});
+
+			$('#modalAutoGenerarListado').off('show.bs.modal.autoGenListado').on('show.bs.modal.autoGenListado', function() {
+				$('#autoGenListadoResumen').removeClass('alert-danger alert-success').addClass('alert-info').html('Presiona "Analizar" para detectar actividades en el Programa General.');
+				$('#autoGenListadoBody').html('');
+				$('#btnAutoGenListadoAplicar').prop('disabled', true);
+				$('#btnAutoGenListadoAnalizar').prop('disabled', false);
+			});
+
+			$('#btnAutoGenListadoAnalizar').off('click.autoGenListado').on('click.autoGenListado', function(e) {
+				e.preventDefault();
+				var btn = $(this);
+				var db = document.getElementById('baseDatos').value;
+				var semana = document.getElementById('Max_Semana').value;
+
+				btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Analizando...');
+				$('#autoGenListadoResumen').removeClass('alert-danger alert-success').addClass('alert-info').html('Analizando actividades del Programa General...');
+				$('#autoGenListadoBody').html('');
+
+				$.ajax({
+					method: 'POST',
+					url: '/api/listado-actividades/auto-generate?db=' + encodeURIComponent(db) + '&semana=' + encodeURIComponent(semana),
+					dataType: 'json'
+				}).done(function(response) {
+					if (!response || response.respuesta !== 'BIEN') {
+						$('#autoGenListadoResumen').removeClass('alert-info alert-success').addClass('alert-danger').html(escaparHtml((response && response.mensaje) || 'No se pudieron cargar sugerencias.'));
+						btn.prop('disabled', false).html('<i class="fas fa-search"></i> Analizar');
+						return;
+					}
+
+					var sugerencias = response.sugerencias || [];
+					var gruposCreadas = response.gruposCreadas || [];
+					var totalGrupos = response.totalGrupos || 0;
+					var estrategia = response.estrategia || 'familia';
+					var ratio = response.totalProcesadas > 0 ? (response.totalProcesadas / Math.max(response.creadas, 1)).toFixed(1) + ':1' : 'N/A';
+
+					var msg = 'PG: <strong>' + response.totalProcesadas + '</strong> · ';
+					msg += 'Familias/Grupos: <strong>' + totalGrupos + '</strong> · ';
+					msg += 'Actividades consolidadas: <strong>' + response.creadas + '</strong> · ';
+					msg += 'Ratio: <strong>' + ratio + '</strong> · ';
+					msg += 'Estrategia: <strong>' + estrategia + '</strong> · ';
+					msg += 'Sin match: <strong>' + response.sinMatch + '</strong>';
+					$('#autoGenListadoResumen').removeClass('alert-info alert-danger').addClass('alert-success').html(msg);
+
+					// Mostrar primero los grupos consolidados creados
+					var html = '';
+					if (gruposCreadas.length > 0) {
+						html += '<tr style="background-color: #d4edda; font-weight: bold;"><td colspan="6"><i class="fas fa-layer-group"></i> GRUPOS CONSOLIDADOS CREADOS (' + gruposCreadas.length + ')</td></tr>';
+						for (var g = 0; g < gruposCreadas.length; g++) {
+							var gr = gruposCreadas[g];
+							var badgeGrupo = '<span class="badge badge-success">+' + gr.totalActividades + ' PG</span>';
+							html += '<tr style="background-color: #f0f8ff;">';
+							html += '<td>' + (g + 1) + '</td>';
+							html += '<td><strong>' + escaparHtml(gr.familia) + '</strong><br><small class="text-muted">' + escaparHtml(gr.descripcion.substring(0, 120)) + (gr.descripcion.length > 120 ? '...' : '') + '</small></td>';
+							html += '<td>' + escaparHtml(gr.fechaInicio || '-') + '</td>';
+							html += '<td>' + escaparHtml(gr.familiaCodigo) + '</td>';
+							html += '<td>' + (gr.confianzaMin || 0) + '%</td>';
+							html += '<td>' + badgeGrupo + ' Consolidado</td>';
+							html += '</tr>';
+						}
+						if (sugerencias.length > 0) {
+							html += '<tr style="background-color: #fff3cd;"><td colspan="6"><i class="fas fa-exclamation-triangle"></i> SIN MATCH DE FAMILIA (' + sugerencias.length + ')</td></tr>';
+						}
+					}
+
+					// Mostrar sugerencias sin match
+					for (var i = 0; i < sugerencias.length; i++) {
+						var s = sugerencias[i];
+						var badge = '<span class="badge badge-secondary">Sin match</span>';
+						var estado = escaparHtml(s.motivo || 'Sin familia detectada');
+						html += '<tr><td>' + (i + 1) + '</td><td>' + escaparHtml(s.actividad ? s.actividad.replace(/<[^>]+>/g, '').substring(0, 80) : '') + '</td><td>' + escaparHtml(s.fechaInicio || '-') + '</td><td>-</td><td>-</td><td>' + badge + ' ' + estado + '</td></tr>';
+					}
+					$('#autoGenListadoBody').html(html);
+					btn.prop('disabled', false).html('<i class="fas fa-search"></i> Analizar');
+				}).fail(function(xhr) {
+					var mensaje = 'Error de conexión al analizar.';
+					if (xhr.responseJSON && xhr.responseJSON.mensaje) {
+						mensaje = xhr.responseJSON.mensaje;
+					}
+					$('#autoGenListadoResumen').removeClass('alert-info alert-success').addClass('alert-danger').html(escaparHtml(mensaje));
+					btn.prop('disabled', false).html('<i class="fas fa-search"></i> Analizar');
+				});
+			});
+		};
+
 		var cargarSugerenciasPdc = function() {
 			var db = document.getElementById('baseDatos').value;
 			var semana = document.getElementById('Max_Semana').value;
@@ -876,6 +1018,7 @@
 			inicializarModalNuevaActividad();
 			inicializarAutoPdc();
 			inicializarBreadcrumbPg();
+			inicializarAutoGenerarListado();
       listar();
 			guardarNuevaActividad();
 			guardarCargarExcel();
@@ -1056,6 +1199,7 @@
 			$("div.toolbarFilaBotones .grupo_botones1 .btn").addClass("ps-btn-gap");
 			if (puedeEditarListadoActividades()) {
 				$("div.toolbarFilaBotones .grupo_botones1").append('<button id="btn_auto_generar_pdc" class="btn btn-info btn-sm ps-btn-gap" title="Auto-generar paquetes del Plan de Compras desde el Programa General">Auto-generar Plan de Compras <i class="fas fa-magic fa-lg"></i></button>');
+				$("div.toolbarFilaBotones .grupo_botones1").append('<button id="btn_auto_generar_listado" class="btn btn-warning btn-sm ps-btn-gap" title="Auto-generar listado de actividades desde el Programa General">Auto-generar Listado <i class="fas fa-list fa-lg"></i></button>');
 				$("div.toolbarFilaBotones .grupo_botones1").append('<button id="btn_estandarizar_pg" class="btn btn-outline-secondary btn-sm ps-btn-gap" title="Estandarizar breadcrumbs del Programa General para mejorar la detección de familias">Estandarizar PG <i class="fas fa-sitemap"></i></button>');
 			}
 			$("div.toolbarFilaBotones #btn_nueva_actividad").removeAttr("style");

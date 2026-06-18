@@ -145,6 +145,246 @@ class ListadoActividadesApiController
         }
     }
 
+    public function autoGenerate(): void
+    {
+        try {
+            $context = ModuleRequestContext::resolve();
+            $dbPrefix = $context['dbPrefix'];
+            $semana = $this->resolveMaxSemana($dbPrefix);
+
+            $this->requirePermission('lps.listado_actividades.editar', 'No autorizado para auto-generar el listado de actividades.');
+
+            $activities = $this->loadProjectActivities($dbPrefix, $semana);
+            $matcher = new \App\Support\ActivityMatcher();
+            $rules = $matcher->loadRules();
+
+            // Cargar estrategia de agrupación del proyecto
+            $estrategia = $this->loadProjectAgrupacionStrategy($dbPrefix, $semana);
+
+            $grupos = [];
+            $sinMatch = 0;
+            $sugerencias = [];
+            $totalProcesadas = 0;
+
+            // PASO 1-3: Match each PG activity y agrupar por familia
+            foreach ($activities as $activity) {
+                $totalProcesadas++;
+                $consecutivoPrograma = (int) ($activity['Consecutivo_en_Programa'] ?? 0);
+                if ($consecutivoPrograma <= 0) {
+                    $sinMatch++;
+                    continue;
+                }
+
+                $match = $matcher->matchActivity($activity, $rules);
+                if ($match === null) {
+                    $sinMatch++;
+                    $sugerencias[] = [
+                        'consecutivoPrograma' => $consecutivoPrograma,
+                        'actividad' => $activity['Actividad'] ?? '',
+                        'fechaInicio' => $activity['Fecha_Inicio'] ?? '',
+                        'match' => false,
+                        'motivo' => 'Sin familia detectada',
+                    ];
+                    continue;
+                }
+
+                // Agrupar según estrategia
+                $groupKey = $this->getAgrupacionKey($activity, $match, $estrategia);
+
+                if (!isset($grupos[$groupKey])) {
+                    $grupos[$groupKey] = [
+                        'familiaId' => (int) $match['familia_id'],
+                        'familiaNombre' => (string) ($match['familia_nombre'] ?? 'Sin nombre'),
+                        'familiaCodigo' => (string) ($match['familia_codigo'] ?? ''),
+                        'categoria' => (string) ($match['categoria'] ?? ''),
+                        'confianzaMin' => (int) ($match['confianza'] ?? 0),
+                        'actividades' => [],
+                    ];
+                }
+
+                $grupos[$groupKey]['actividades'][] = [
+                    'pg' => $activity,
+                    'match' => $match,
+                ];
+                $grupos[$groupKey]['confianzaMin'] = min(
+                    $grupos[$groupKey]['confianzaMin'],
+                    (int) ($match['confianza'] ?? 0)
+                );
+            }
+
+            // PASO 4-5: Para cada grupo, calcular ancla y crear 1 actividad consolidada
+            $creadas = 0;
+            $existentes = 0;
+            $gruposCreadas = [];
+
+            foreach ($grupos as $groupKey => $grupo) {
+                if (empty($grupo['actividades'])) {
+                    continue;
+                }
+
+                // Ordenar por Fecha_Inicio ASC para encontrar el ancla
+                usort($grupo['actividades'], function ($a, $b) {
+                    return strcmp(
+                        $a['pg']['Fecha_Inicio'] ?? '9999-12-31',
+                        $b['pg']['Fecha_Inicio'] ?? '9999-12-31'
+                    );
+                });
+
+                $anchor = $grupo['actividades'][0]['pg'];
+                $anchorConsecutivo = (int) ($anchor['Consecutivo_en_Programa'] ?? 0);
+                $anchorFecha = $this->normalizeDate($anchor['Fecha_Inicio'] ?? null);
+
+                // Verificar si ya existe una actividad para este grupo
+                if ($this->activityExists($dbPrefix, $semana, $anchorConsecutivo)) {
+                    $existentes++;
+                    $sugerencias[] = [
+                        'grupoKey' => $groupKey,
+                        'familia' => $grupo['familiaNombre'],
+                        'familiaCodigo' => $grupo['familiaCodigo'],
+                        'totalActividades' => count($grupo['actividades']),
+                        'actividadInicio' => $anchorConsecutivo,
+                        'yaExistia' => true,
+                    ];
+                    continue;
+                }
+
+                // Concatenar descripciones únicas de las PG activities del grupo
+                $descripciones = [];
+                foreach ($grupo['actividades'] as $item) {
+                    $actText = strip_tags($item['pg']['Actividad'] ?? '');
+                    $actText = trim(preg_replace('/\s*\[Capítulo:.*\]$/', '', $actText));
+                    $actText = trim(rtrim($actText, ','));
+                    if ($actText !== '' && !in_array($actText, $descripciones, true)) {
+                        $descripciones[] = $actText;
+                    }
+                }
+                $descripcionConsolidada = implode(', ', $descripciones);
+
+                // Crear la actividad consolidada
+                $created = $this->createGroupedActivityFromPg(
+                    $dbPrefix,
+                    $semana,
+                    $grupo['familiaNombre'],
+                    $descripcionConsolidada,
+                    $anchorConsecutivo,
+                    $anchorFecha,
+                    $grupo
+                );
+
+                if ($created) {
+                    $creadas++;
+                    $gruposCreadas[] = [
+                        'grupoKey' => $groupKey,
+                        'familia' => $grupo['familiaNombre'],
+                        'familiaCodigo' => $grupo['familiaCodigo'],
+                        'totalActividades' => count($grupo['actividades']),
+                        'actividadInicio' => $anchorConsecutivo,
+                        'fechaInicio' => $anchorFecha,
+                        'descripcion' => $descripcionConsolidada,
+                        'confianzaMin' => $grupo['confianzaMin'],
+                    ];
+                    $sugerencias[] = [
+                        'grupoKey' => $groupKey,
+                        'familia' => $grupo['familiaNombre'],
+                        'familiaCodigo' => $grupo['familiaCodigo'],
+                        'totalActividades' => count($grupo['actividades']),
+                        'actividadInicio' => $anchorConsecutivo,
+                        'fechaInicio' => $anchorFecha,
+                        'confianzaMin' => $grupo['confianzaMin'],
+                        'creada' => true,
+                    ];
+                }
+            }
+
+            $this->jsonResponse([
+                'respuesta' => 'BIEN',
+                'creadas' => $creadas,
+                'existentes' => $existentes,
+                'sinMatch' => $sinMatch,
+                'totalProcesadas' => $totalProcesadas,
+                'totalGrupos' => count($grupos),
+                'estrategia' => $estrategia,
+                'gruposCreadas' => $gruposCreadas,
+                'sugerencias' => $sugerencias,
+            ]);
+
+        } catch (Throwable $e) {
+            error_log("Error en ListadoActividadesApiController@autoGenerate: " . $e->getMessage());
+            $this->jsonError('No se pudo auto-generar el listado de actividades.', 500);
+        }
+    }
+
+    private function getAgrupacionKey(array $activity, array $match, string $estrategia): string
+    {
+        switch ($estrategia) {
+            case 'categoria':
+                return 'cat:' . ($match['categoria'] ?? 'OTROS');
+            case 'capitulo':
+                return 'cap:' . ($activity['__capitulo'] ?? 'OTROS');
+            case 'familia':
+            default:
+                return 'fam:' . $match['familia_id'];
+        }
+    }
+
+    private function loadProjectAgrupacionStrategy(string $dbPrefix, int $semana): string
+    {
+        try {
+            $stmt = $this->db->query(
+                "SELECT estrategia_agrupacion
+                 FROM general_pdc_project_family_strategy
+                 WHERE db_prefix = ? AND semana = ? AND estrategia_agrupacion IS NOT NULL
+                 ORDER BY id ASC
+                 LIMIT 1",
+                [$dbPrefix, $semana]
+            );
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($row && !empty($row['estrategia_agrupacion'])) {
+                return $row['estrategia_agrupacion'];
+            }
+        } catch (Throwable $e) {
+            error_log("Error cargando estrategia: " . $e->getMessage());
+        }
+        return 'familia';
+    }
+
+    private function createGroupedActivityFromPg(
+        string $dbPrefix,
+        int $semana,
+        string $actividadNombre,
+        string $descripcion,
+        int $actividadInicio,
+        ?string $fechaInicio,
+        array $grupo
+    ): bool {
+        try {
+            if ($actividadInicio <= 0 || $fechaInicio === null) {
+                return false;
+            }
+
+            $maxCode = $this->getNextCodigo($dbPrefix);
+
+            $queryInsert = "INSERT INTO {$dbPrefix}_actividades
+                            (codigo, actividad, descripcionActividad, actividadInicio, nombreActividadInicio, fechaInicio, tipoContrato, semanaActualizacion)
+                            VALUES (?, ?, ?, ?, (SELECT CONCAT(Id, '. ', Actividad, ' (Inicia en: ', Fecha_Inicio, ')') FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Consecutivo_en_Programa = ? LIMIT 1), ?, NULL, ?)";
+            $params = [$maxCode, $actividadNombre, $descripcion, $actividadInicio, $semana, $actividadInicio, $fechaInicio, $semana];
+            $this->db->query($queryInsert, $params);
+
+            $familiaNombre = $grupo['familiaNombre'] ?? 'N/A';
+            $totalActividades = count($grupo['actividades'] ?? []);
+            $this->db->logActivity(
+                'ListadoActividades',
+                'AUTO_CREAR_GRUPO',
+                "Auto-creó actividad consolidada: $actividadNombre (familia: $familiaNombre, $totalActividades PG activities consolidadas)",
+                $dbPrefix
+            );
+            return true;
+        } catch (Throwable $e) {
+            error_log("Error creando actividad consolidada: " . $e->getMessage());
+            return false;
+        }
+    }
+
     private function resolveMaxSemana(string $dbPrefix): int
     {
         $query = "SELECT MAX(Semana) FROM {$dbPrefix}_semanas_activas";
@@ -199,8 +439,8 @@ class ListadoActividadesApiController
     private function modificar(string $dbPrefix, int $semana): void
     {
         $Id = $_POST['Id'] ?? 0;
-        $Actividad = !empty($_POST['Actividad']) ? trim($_POST['Actividad']) : '';
-        $descripcionActividad = !empty($_POST['descripcionActividad']) ? trim($_POST['descripcionActividad']) : '';
+        $Actividad = !empty($_POST['Actividad']) ? trim($_POST['Actividad']) : (!empty($_POST['select_Actividad']) ? trim($_POST['select_Actividad']) : '');
+        $descripcionActividad = !empty($_POST['descripcionActividad']) ? trim($_POST['descripcionActividad']) : (!empty($_POST['select_descripcionActividad']) ? trim($_POST['select_descripcionActividad']) : '');
         $fechaInicio = !empty($_POST['fechaInicio']) ? date("Y-m-d", strtotime($_POST["fechaInicio"])) : null;
         $tipoContrato = $_POST['tipoContrato'] ?? '';
         $actividadInicio = !empty($_POST['actividadInicio']) ? $_POST['actividadInicio'] : null;
@@ -306,6 +546,121 @@ class ListadoActividadesApiController
         }
     }
 
+    private function activityExists(string $dbPrefix, int $semana, int $consecutivoPrograma): bool
+    {
+        $stmt = $this->db->query(
+            "SELECT Id FROM {$dbPrefix}_actividades WHERE actividadInicio = ? AND semanaActualizacion = ? LIMIT 1",
+            [$consecutivoPrograma, $semana]
+        );
+        return $stmt->fetchColumn() !== false;
+    }
+
+    private function createActivityFromPg(string $dbPrefix, int $semana, array $pgActivity, array $match): bool
+    {
+        $consecutivoPrograma = (int) ($pgActivity['Consecutivo_en_Programa'] ?? 0);
+        $actividad = trim((string) ($pgActivity['Actividad'] ?? ''));
+        $fechaInicio = $this->normalizeDate($pgActivity['Fecha_Inicio'] ?? null);
+
+        if ($consecutivoPrograma <= 0 || $actividad === '' || $fechaInicio === null) {
+            return false;
+        }
+
+        try {
+            $maxCode = $this->getNextCodigo($dbPrefix);
+
+            $queryInsert = "INSERT INTO {$dbPrefix}_actividades 
+                            (codigo, actividad, descripcionActividad, actividadInicio, nombreActividadInicio, fechaInicio, tipoContrato, semanaActualizacion) 
+                            VALUES (?, ?, '', ?, (SELECT CONCAT(Id, '. ', Actividad, ' (Inicia en: ', Fecha_Inicio, ')') FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Consecutivo_en_Programa = ? LIMIT 1), ?, NULL, ?)";
+            $params = [$maxCode, $actividad, $consecutivoPrograma, $semana, $consecutivoPrograma, $fechaInicio, $semana];
+            $this->db->query($queryInsert, $params);
+
+            $familiaNombre = $match['familia_nombre'] ?? 'N/A';
+            $this->db->logActivity('ListadoActividades', 'AUTO_CREAR', "Auto-creó actividad desde PG: $actividad (familia: $familiaNombre)", $dbPrefix);
+            return true;
+        } catch (Throwable $e) {
+            error_log("Error creando actividad desde PG: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    private function loadProjectActivities(string $dbPrefix, int $semana): array
+    {
+        $stmt = $this->db->query(
+            "SELECT Consecutivo, Consecutivo_en_Programa, Id, Actividad, Fecha_Inicio, COALESCE(Titulo, 0) AS Titulo
+             FROM {$dbPrefix}_programa_consolidado
+             WHERE Semana = ? AND COALESCE(Actividad, '') <> ''
+             ORDER BY Consecutivo_en_Programa ASC, Consecutivo ASC",
+            [$semana]
+        );
+
+        $leaves = [];
+        $currentChapter = '';
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+            if ((int) $row['Titulo'] !== 0) {
+                $chapterName = $this->extractLeafName($this->normalizeActivityText((string) $row['Actividad']));
+                if ($chapterName !== '') {
+                    $currentChapter = $chapterName;
+                }
+                continue;
+            }
+            $row['__capitulo'] = $currentChapter;
+            $leaves[] = $row;
+        }
+        return $leaves;
+    }
+
+    private function getNextCodigo(string $dbPrefix): int
+    {
+        $stmt = $this->db->query("SELECT COALESCE(MAX(codigo), 0) + 1 FROM {$dbPrefix}_actividades");
+        return (int) $stmt->fetchColumn();
+    }
+
+    private function normalizeDate($value): ?string
+    {
+        $value = trim((string) $value);
+        if ($value === '') {
+            return null;
+        }
+        $timestamp = strtotime($value);
+        if ($timestamp === false) {
+            return null;
+        }
+        return date('Y-m-d', $timestamp);
+    }
+
+    private function normalizeActivityText(string $raw): string
+    {
+        $text = strip_tags($raw);
+        $text = html_entity_decode($text, ENT_QUOTES, 'UTF-8');
+        $text = mb_strtoupper($text, 'UTF-8');
+        $text = $this->removeAccents($text);
+        $text = preg_replace('/\s+/u', ' ', $text) ?? $text;
+        return trim($text);
+    }
+
+    private function removeAccents(string $text): string
+    {
+        if (class_exists(\Transliterator::class)) {
+            $transliterator = \Transliterator::create('NFD; [:Nonspacing Mark:] Remove; NFC');
+            if ($transliterator !== null) {
+                $result = $transliterator->transliterate($text);
+                if ($result !== false) {
+                    return $result;
+                }
+            }
+        }
+        return strtr($text, [
+            'Á' => 'A', 'É' => 'E', 'Í' => 'I', 'Ó' => 'O', 'Ú' => 'U', 'Ü' => 'U', 'Ñ' => 'N',
+            'á' => 'A', 'é' => 'E', 'í' => 'I', 'ó' => 'O', 'ú' => 'U', 'ü' => 'U', 'ñ' => 'N',
+        ]);
+    }
+
+    private function extractLeafName(string $normalized): string
+    {
+        $pos = mb_strpos($normalized, '[CAPITULO:');
+        $leaf = $pos === false ? $normalized : mb_substr($normalized, 0, $pos);
+        return trim(rtrim(trim($leaf), ','));
+    }
     private function verificar_resultado(bool $success, string $errores): void
     {
         $informacion = [];

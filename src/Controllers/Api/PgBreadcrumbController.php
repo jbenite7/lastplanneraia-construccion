@@ -110,6 +110,9 @@ class PgBreadcrumbController
                 'sinId' => $sinId,
                 'errores' => $errores,
                 'semana' => $semana,
+                'sugerencia' => $sinId > 0
+                    ? "Hay {$sinId} actividades sin jerarquía (IDs sin puntos). El Auto-Generar PDC creará actividades vinculadas automáticamente."
+                    : null,
             ]);
 
         } catch (\Throwable $e) {
