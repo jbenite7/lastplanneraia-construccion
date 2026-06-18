@@ -218,6 +218,148 @@ class ContratosApiController extends BaseController
         }
     }
 
+    public function autoAssign(): void
+    {
+        try {
+            $context = ModuleRequestContext::resolve();
+            $dbPrefix = $context['dbPrefix'];
+            $semana = $context['semana'];
+
+            $this->requirePermission('lps.contratos.editar', 'No autorizado para auto-asignar contratos.');
+
+            $db = Database::getInstance();
+
+            $stmt = $db->query(
+                "SELECT Id, codigo, actividad, descripcionActividad, actividadInicio, fechaInicio, tipoContrato
+                 FROM {$dbPrefix}_actividades
+                 WHERE semanaActualizacion = ? AND (tipoContrato IS NULL OR tipoContrato = '')
+                 ORDER BY Id ASC",
+                [$semana]
+            );
+            $activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            if (empty($activities)) {
+                $this->jsonResponse([
+                    'respuesta' => 'BIEN',
+                    'mensaje' => 'No hay actividades pendientes por asignar. Todas ya tienen tipo de contrato.',
+                    'asignadas' => 0,
+                    'sinMatch' => 0,
+                    'total' => 0,
+                    'sugerencias' => [],
+                ]);
+                return;
+            }
+
+            $matcher = new \App\Support\ActivityMatcher();
+            $rules = $matcher->loadRules();
+            $optionsByFamily = $this->loadFamilyContractOptions($db);
+
+            $asignadas = 0;
+            $sinMatch = 0;
+            $sugerencias = [];
+
+            foreach ($activities as $activity) {
+                $actId = (int) $activity['Id'];
+
+                $pgActivity = $this->loadPgActivityForContratos($db, $dbPrefix, $semana, $activity['actividadInicio'] ?? '');
+                if ($pgActivity === null) {
+                    $sinMatch++;
+                    $sugerencias[] = [
+                        'Id' => $actId,
+                        'actividad' => $activity['actividad'] ?? '',
+                        'match' => false,
+                        'motivo' => 'Sin actividad vinculada en PG',
+                    ];
+                    continue;
+                }
+
+                $match = $matcher->matchActivity($pgActivity, $rules);
+                if ($match === null) {
+                    $sinMatch++;
+                    $sugerencias[] = [
+                        'Id' => $actId,
+                        'actividad' => $activity['actividad'] ?? '',
+                        'match' => false,
+                        'motivo' => 'Sin familia detectada',
+                    ];
+                    continue;
+                }
+
+                $familyId = (int) $match['familia_id'];
+                $family = $optionsByFamily[$familyId] ?? null;
+                $options = $family['opciones'] ?? [];
+
+                if (empty($options)) {
+                    $sinMatch++;
+                    $sugerencias[] = [
+                        'Id' => $actId,
+                        'actividad' => $activity['actividad'] ?? '',
+                        'match' => true,
+                        'familia' => $match['familia_nombre'] ?? '',
+                        'familiaCodigo' => $match['familia_codigo'] ?? '',
+                        'confianza' => (int) ($match['confianza'] ?? 0),
+                        'motivo' => 'Familia sin opciones de contrato configuradas',
+                    ];
+                    continue;
+                }
+
+                $bestOption = $this->selectBestContratoOption($options, $match);
+                if ($bestOption === null) {
+                    $sinMatch++;
+                    $sugerencias[] = [
+                        'Id' => $actId,
+                        'actividad' => $activity['actividad'] ?? '',
+                        'match' => true,
+                        'familia' => $match['familia_nombre'] ?? '',
+                        'motivo' => 'No se pudo seleccionar opción de contrato',
+                    ];
+                    continue;
+                }
+
+                $tipoContrato = (int) $bestOption['tipo_contrato'];
+
+                $result = $this->assignContratoToActivity($db, $dbPrefix, $actId, $tipoContrato, $bestOption['items'], $semana);
+                if ($result) {
+                    $asignadas++;
+                    $sugerencias[] = [
+                        'Id' => $actId,
+                        'actividad' => $activity['actividad'] ?? '',
+                        'match' => true,
+                        'familia' => $match['familia_nombre'] ?? '',
+                        'familiaCodigo' => $match['familia_codigo'] ?? '',
+                        'confianza' => (int) ($match['confianza'] ?? 0),
+                        'tipoContrato' => $tipoContrato,
+                        'tipoContratoLabel' => $tipoContrato === 2 ? 'SI' : 'MO+S',
+                        'paquetes' => $this->formatAssignedPackages($bestOption['items']),
+                        'asignada' => true,
+                    ];
+                } else {
+                    $sinMatch++;
+                    $sugerencias[] = [
+                        'Id' => $actId,
+                        'actividad' => $activity['actividad'] ?? '',
+                        'match' => true,
+                        'familia' => $match['familia_nombre'] ?? '',
+                        'motivo' => 'Error al actualizar la actividad',
+                    ];
+                }
+            }
+
+            $db->logActivity('Contratos', 'AUTO_ASIGNAR', "Auto-asignó contratos: {$asignadas} asignadas, {$sinMatch} sin match", $dbPrefix);
+
+            $this->jsonResponse([
+                'respuesta' => 'BIEN',
+                'asignadas' => $asignadas,
+                'sinMatch' => $sinMatch,
+                'total' => count($activities),
+                'sugerencias' => $sugerencias,
+            ]);
+
+        } catch (Throwable $e) {
+            error_log("Error en ContratosApiController@autoAssign: " . $e->getMessage());
+            $this->jsonError('No se pudo auto-asignar contratos.', 500);
+        }
+    }
     private function actualizarFechaInicio($Id, $semana, $dbPrefix, $db)
     {
         $query = "SELECT Fecha_Inicio FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND (Consecutivo_en_Programa = ? OR Actividad = ?) ORDER BY Fecha_Inicio ASC LIMIT 1";
@@ -350,5 +492,177 @@ class ContratosApiController extends BaseController
     private function escapeHtml(string $value): string
     {
         return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+    }
+
+    private function loadFamilyContractOptions($db): array
+    {
+        $stmt = $db->query(
+            "SELECT f.id AS familia_id, f.codigo AS familia_codigo, f.nombre AS familia_nombre,
+                    o.id AS option_id, o.tipo_contrato, o.tipo_paquete,
+                    i.id AS item_id, COALESCE(i.tipo_contrato, o.tipo_contrato) AS item_tipo_contrato,
+                    COALESCE(i.tipo_paquete, o.tipo_paquete) AS item_tipo_paquete, i.paquete_nombre
+             FROM general_pdc_familias f
+             LEFT JOIN general_pdc_family_contract_options o ON o.familia_id = f.id AND o.activa = 1
+             LEFT JOIN general_pdc_family_contract_option_items i ON i.option_id = o.id
+             ORDER BY f.orden ASC, o.tipo_paquete ASC, i.orden ASC"
+        );
+
+        $families = [];
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+            $familyId = (int) $row['familia_id'];
+            if (!isset($families[$familyId])) {
+                $families[$familyId] = [
+                    'familiaId' => $familyId,
+                    'familiaCodigo' => $row['familia_codigo'],
+                    'familiaNombre' => $row['familia_nombre'],
+                    'opciones' => [],
+                ];
+            }
+            if (empty($row['option_id'])) {
+                continue;
+            }
+            $optionId = (int) $row['option_id'];
+            if (!isset($families[$familyId]['opciones'][$optionId])) {
+                $families[$familyId]['opciones'][$optionId] = [
+                    'optionId' => $optionId,
+                    'tipo_contrato' => (int) $row['tipo_contrato'],
+                    'tipo_paquete' => $row['tipo_paquete'],
+                    'items' => [],
+                ];
+            }
+            if (!empty($row['item_id'])) {
+                $families[$familyId]['opciones'][$optionId]['items'][] = [
+                    'item_id' => (int) $row['item_id'],
+                    'tipo_contrato' => (int) $row['item_tipo_contrato'],
+                    'tipo_paquete' => $row['item_tipo_paquete'],
+                    'paquete_nombre' => $row['paquete_nombre'],
+                ];
+            }
+        }
+
+        foreach ($families as &$family) {
+            $family['opciones'] = array_values($family['opciones']);
+        }
+        unset($family);
+
+        return $families;
+    }
+
+    private function loadPgActivityForContratos($db, string $dbPrefix, int $semana, string $actividadInicio): ?array
+    {
+        if (empty($actividadInicio)) {
+            return null;
+        }
+
+        $stmt = $db->query(
+            "SELECT Consecutivo, Consecutivo_en_Programa, Id, Actividad, Fecha_Inicio, COALESCE(Titulo, 0) AS Titulo
+             FROM {$dbPrefix}_programa_consolidado
+             WHERE Semana = ? AND Consecutivo_en_Programa = ? LIMIT 1",
+            [$semana, $actividadInicio]
+        );
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$row) {
+            return null;
+        }
+
+        $row['__capitulo'] = '';
+        return $row;
+    }
+
+    private function selectBestContratoOption(array $options, array $match): ?array
+    {
+        $modalidadSugerida = $match['modalidad_sugerida'] ?? '';
+
+        foreach ($options as $option) {
+            if ($option['tipo_paquete'] === $modalidadSugerida && !empty($option['items'])) {
+                return $option;
+            }
+        }
+
+        foreach ($options as $option) {
+            if (!empty($option['items'])) {
+                return $option;
+            }
+        }
+
+        return null;
+    }
+
+    private function assignContratoToActivity($db, string $dbPrefix, int $actId, int $tipoContrato, array $items, int $semana): bool
+    {
+        try {
+            $prefixMap = [
+                'Suministro e Instalación' => 'SI',
+                'Suministro' => 'S',
+                'Mano de Obra' => 'MO',
+            ];
+
+            // Normalizar encoding: reparar mojibake común
+            $encodingFixes = [
+                'instalaciÃ³n' => 'instalación',
+                'InstalaciÃ³n' => 'Instalación',
+                'Suministro e InstalaciÃ³n' => 'Suministro e Instalación',
+            ];
+
+            $updates = ['tipoContrato = ?'];
+            $params = [$tipoContrato];
+
+            $tipos = ['SI', 'S', 'MO'];
+            foreach ($tipos as $t) {
+                for ($i = 1; $i <= 5; $i++) {
+                    $updates[] = "paquete{$t}{$i} = NULL";
+                    $updates[] = "{$t}{$i} = NULL";
+                }
+            }
+
+            $packageCounts = ['SI' => 0, 'S' => 0, 'MO' => 0];
+            foreach ($items as $item) {
+                $itemTipoPaquete = $item['tipo_paquete'] ?? '';
+                $itemTipoPaquete = str_replace(array_keys($encodingFixes), array_values($encodingFixes), $itemTipoPaquete);
+                $prefix = $prefixMap[$itemTipoPaquete] ?? null;
+                if ($prefix === null) {
+                    continue;
+                }
+
+                $paqueteNombre = trim((string) ($item['paquete_nombre'] ?? ''));
+                $paqueteNombre = str_replace(array_keys($encodingFixes), array_values($encodingFixes), $paqueteNombre);
+                if ($paqueteNombre === '') {
+                    continue;
+                }
+
+                $slotIndex = $packageCounts[$prefix] + 1;
+                if ($slotIndex > 5) {
+                    continue;
+                }
+
+                $updates[] = "paquete{$prefix}{$slotIndex} = ?";
+                $params[] = $paqueteNombre;
+                $packageCounts[$prefix] = $slotIndex;
+            }
+
+            $params[] = $actId;
+            $params[] = $semana;
+
+            $sql = "UPDATE {$dbPrefix}_actividades SET " . implode(', ', $updates) . " WHERE Id = ? AND semanaActualizacion = ?";
+            $db->query($sql, $params);
+
+            return true;
+        } catch (Throwable $e) {
+            error_log("Error en assignContratoToActivity: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    private function formatAssignedPackages(array $items): array
+    {
+        $packages = [];
+        foreach ($items as $item) {
+            $packages[] = [
+                'tipoPaquete' => $item['tipo_paquete'] ?? '',
+                'paqueteNombre' => $item['paquete_nombre'] ?? '',
+            ];
+        }
+        return $packages;
     }
 }

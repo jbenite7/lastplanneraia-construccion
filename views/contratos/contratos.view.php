@@ -183,6 +183,48 @@
 		<!-- Modal -->
 	</div>
 
+	<!-- Modal Auto-Definir Contratos -->
+	<div class="modal fade aia-modal" id="modalAutoAsignarContratos" tabindex="-1" role="dialog" aria-labelledby="modalAutoAsignarContratosLabel" aria-hidden="true">
+		<div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<div class="modal-title" id="modalAutoAsignarContratosLabel">
+						<div class="aia-modal__eyebrow">AIA Corporativo</div>
+						<h2 class="aia-modal__headline">Auto-Definir Contratos</h2>
+						<p class="aia-modal__subtitle">Detecta automáticamente el tipo de contrato y paquetes para actividades sin asignar.</p>
+					</div>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				</div>
+				<div class="modal-body">
+					<div class="alert alert-info" id="autoAsignarResumen">
+						Presiona "Analizar" para detectar actividades pendientes de asignación.
+					</div>
+					<div class="table-responsive" style="max-height: 40vh; overflow-y: auto;">
+						<table class="table table-sm table-bordered table-hover mb-0" id="autoAsignarTable">
+							<thead class="thead-light">
+								<tr>
+									<th style="width: 50px;">#</th>
+									<th>Actividad</th>
+									<th>Familia</th>
+									<th>Tipo Contrato</th>
+									<th>Paquetes</th>
+									<th>Estado</th>
+								</tr>
+							</thead>
+							<tbody id="autoAsignarBody"></tbody>
+						</table>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+					<button type="button" class="btn btn-outline-primary" id="btnAutoAsignarAnalizar"><i class="fas fa-search"></i> Analizar</button>
+					<button type="button" class="btn btn-warning" id="btnAutoAsignarAplicar" disabled><i class="fas fa-magic"></i> Aplicar</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Modal -->
+
 	<!-- Iniciar Jquery-->
 	<script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-1.12.4.js"></script>
 	<!-- Iniciar Popper-->
@@ -240,6 +282,7 @@
 				});
 			});
 
+			inicializarAutoAsignarContratos();
       listar();
 		}
 
@@ -430,6 +473,11 @@
 			$("div.toolbarFilaMensajes").html('<p id="mensajeActualizacion"></p>');
 
 			$("div.toolbarFiltro").html('<div class="d-flex ml-auto"><label for="input_buscador" class="sr-only">Buscar en contratos</label><input id="input_buscador" type="text" class="input_buscador form-control form-control-sm mr-1 ml-auto max-w-60" placeholder="Filtro"><button id="btn_limpiar_buscador" type="button" class="btn btn-danger mr-1 ml-0 d-none max-w-40"><i class="fas fa-times-circle"></i> Limpiar</button></div>');
+
+			var permiso = document.getElementById('permiso_canonico').value;
+			if (permiso === 'A' || permiso === 'D' || permiso === 'OT') {
+				$("div.toolbarFilaMensajes").before('<div class="row mb-2"><div class="col-12"><button id="btn_auto_asignar_contratos" class="btn btn-warning btn-sm" title="Auto-definir tipo de contrato y paquetes para actividades sin asignar">Auto-Definir Contratos <i class="fas fa-magic"></i></button></div></div>');
+			}
 
 			maestroPermisos(document.getElementById('permiso_canonico').value);
 			activarBuscador("#dt_cliente tbody", table);
@@ -734,7 +782,84 @@
 		  "buttons": {
 		    "copy": "Copiar",
 		    "colvis": "Visibilidad"
-		  }
+		}
+		}
+
+		/* Auto-Asignar Contratos */
+		var inicializarAutoAsignarContratos = function() {
+			$(document).off('click.autoAsignar', '#btn_auto_asignar_contratos').on('click.autoAsignar', '#btn_auto_asignar_contratos', function(e) {
+				e.preventDefault();
+				$('#modalAutoAsignarContratos').modal('show');
+			});
+
+			$('#modalAutoAsignarContratos').off('show.bs.modal.autoAsignar').on('show.bs.modal.autoAsignar', function() {
+				$('#autoAsignarResumen').removeClass('alert-danger alert-success').addClass('alert-info').html('Presiona "Analizar" para detectar actividades pendientes de asignación.');
+				$('#autoAsignarBody').html('');
+				$('#btnAutoAsignarAplicar').prop('disabled', true);
+				$('#btnAutoAsignarAnalizar').prop('disabled', false);
+			});
+
+			$('#btnAutoAsignarAnalizar').off('click.autoAsignar').on('click.autoAsignar', function(e) {
+				e.preventDefault();
+				var btn = $(this);
+				var db = document.getElementById('baseDatos').value;
+				var semana = document.getElementById('semana').value;
+
+				btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Analizando...');
+				$('#autoAsignarResumen').removeClass('alert-danger alert-success').addClass('alert-info').html('Analizando actividades pendientes...');
+				$('#autoAsignarBody').html('');
+
+				$.ajax({
+					method: 'POST',
+					url: '/api/contratos/auto-assign?db=' + encodeURIComponent(db) + '&semana=' + encodeURIComponent(semana),
+					dataType: 'json'
+				}).done(function(response) {
+					if (!response || response.respuesta !== 'BIEN') {
+						$('#autoAsignarResumen').removeClass('alert-info alert-success').addClass('alert-danger').html(escaparHtml((response && response.mensaje) || 'No se pudieron cargar sugerencias.'));
+						btn.prop('disabled', false).html('<i class="fas fa-search"></i> Analizar');
+						return;
+					}
+
+					var sugerencias = response.sugerencias || [];
+					var msg = 'Total pendientes: <strong>' + response.total + '</strong> · Asignadas: <strong>' + response.asignadas + '</strong> · Sin match: <strong>' + response.sinMatch + '</strong>';
+					$('#autoAsignarResumen').removeClass('alert-info alert-danger').addClass('alert-success').html(msg);
+
+					var html = '';
+					for (var i = 0; i < sugerencias.length; i++) {
+						var s = sugerencias[i];
+						var badge = '';
+						var estado = '';
+						if (!s.match) {
+							badge = '<span class="badge badge-secondary">Sin match</span>';
+							estado = escaparHtml(s.motivo || 'Sin familia detectada');
+						} else if (s.asignada) {
+							badge = '<span class="badge badge-success">Asignada</span>';
+							estado = '<strong>' + escaparHtml(s.tipoContratoLabel || '') + '</strong>: ' + (s.paquetes || []).map(function(p) { return escaparHtml(p.paqueteNombre); }).join(', ');
+						} else if (s.motivo) {
+							badge = '<span class="badge badge-warning">Pendiente</span>';
+							estado = escaparHtml(s.motivo);
+						}
+						var familia = s.familia ? escaparHtml(s.familia) : '-';
+						html += '<tr><td>' + (i + 1) + '</td><td>' + escaparHtml(s.actividad || '') + '</td><td>' + familia + '</td><td>' + (s.tipoContratoLabel ? escaparHtml(s.tipoContratoLabel) : '-') + '</td><td>' + (s.paquetes ? s.paquetes.map(function(p) { return escaparHtml(p.paqueteNombre); }).join(', ') : '-') + '</td><td>' + badge + ' ' + estado + '</td></tr>';
+					}
+					$('#autoAsignarBody').html(html);
+					btn.prop('disabled', false).html('<i class="fas fa-search"></i> Analizar');
+				}).fail(function(xhr) {
+					var mensaje = 'Error de conexión al analizar.';
+					if (xhr.responseJSON && xhr.responseJSON.mensaje) {
+						mensaje = xhr.responseJSON.mensaje;
+					}
+					$('#autoAsignarResumen').removeClass('alert-info alert-success').addClass('alert-danger').html(escaparHtml(mensaje));
+					btn.prop('disabled', false).html('<i class="fas fa-search"></i> Analizar');
+				});
+			});
+		};
+
+		function escaparHtml(texto) {
+			if (!texto) return '';
+			var div = document.createElement('div');
+			div.appendChild(document.createTextNode(texto));
+			return div.innerHTML;
 		}
 
 	</script>
