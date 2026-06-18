@@ -9,6 +9,9 @@ window.HOTActualizarModule = (function() {
     var showingUnmappedOnly = true;
     var layoutTimer = null;
     var _canEditGlobal = false;
+    var _rowMetaCache = {};
+    var _pendingChanges = {};
+    var _saveTimer = null;
 
     // Configuración de validadores y regexs
     const regexNumerico = /^-?\d*(\.\d+)?$/;
@@ -359,6 +362,29 @@ window.HOTActualizarModule = (function() {
     }
 
     /**
+     * Flush de cambios pendientes (debounce). Agrupa cambios por fila y dispara autoSaveRow.
+     */
+    function flushPendingChanges() {
+        var keys = Object.keys(_pendingChanges);
+        if (keys.length === 0) return;
+
+        var changesToSend = _pendingChanges;
+        _pendingChanges = {};
+        _saveTimer = null;
+
+        // Ocultar badge de guardando
+        var $saveStatus = $('#save-status');
+        $saveStatus.stop(true, true).addClass('badge-badge-hidden').removeClass('badge-warning badge-success').fadeOut(120);
+
+        keys.forEach(function(visualRowStr) {
+            var visualRow = parseInt(visualRowStr);
+            var group = changesToSend[visualRowStr];
+            delete _rowMetaCache[hot.toPhysicalRow(visualRow)];
+            autoSaveRow(visualRow, group, 'debounced');
+        });
+    }
+
+    /**
      * Guardado al Vuelo (AJAX Update)
      */
     function autoSaveRow(visualRowIndex, changesObj, source) {
@@ -541,6 +567,21 @@ window.HOTActualizarModule = (function() {
         var container = document.getElementById('hot-container');
         var initialHeight = syncContainerHeight() || '100%';
 
+        function getRowMeta(physicalRow, rowData) {
+            if (Number.isInteger(physicalRow) && physicalRow >= 0 && _rowMetaCache[physicalRow]) {
+                return _rowMetaCache[physicalRow];
+            }
+
+            var isMapped = rowData.programaAnteriorAsociar && rowData.programaAnteriorAsociar !== '*No Asociada*';
+            var meta = { isMapped: Boolean(isMapped) };
+
+            if (Number.isInteger(physicalRow) && physicalRow >= 0) {
+                _rowMetaCache[physicalRow] = meta;
+            }
+
+            return meta;
+        }
+
         var hotConfig = {
             data: data,
             rowHeaders: false,
@@ -557,39 +598,35 @@ window.HOTActualizarModule = (function() {
                 "Ejec. Real"
             ],
             columns: [
-                { data: 'Consecutivo_en_Programa', type: 'numeric', readOnly: true, width: 40 },
-                { data: 'Id', type: 'text', readOnly: true, width: 40 },
-                { data: 'Actividad', type: 'text', readOnly: true, width: 350, renderer: ReadOnlyRenderer },
+                { data: 'Consecutivo_en_Programa', type: 'numeric', readOnly: true },
+                { data: 'Id', type: 'text', readOnly: true },
+                { data: 'Actividad', type: 'text', readOnly: true, renderer: ReadOnlyRenderer },
                 { 
                     data: 'programaAnteriorAsociar', 
                     type: 'text',
-                    width: 300, 
                     className: "htCenter htMiddle",
                     editor: 'tomSelectSingle',
                     tomSelectOptions: sourceDataHistorica,
                     renderer: ActivityMappingRenderer
                 },
-                { data: 'Fecha_Inicio', type: 'date', dateFormat: 'YYYY-MM-DD', width: 90, className: "htCenter htMiddle" },
-                { data: 'Fecha_Fin', type: 'date', dateFormat: 'YYYY-MM-DD', width: 90, className: "htCenter htMiddle" },
+                { data: 'Fecha_Inicio', type: 'date', dateFormat: 'YYYY-MM-DD', className: "htCenter htMiddle" },
+                { data: 'Fecha_Fin', type: 'date', dateFormat: 'YYYY-MM-DD', className: "htCenter htMiddle" },
                 { 
                     data: 'unidad', 
                     type: 'dropdown', 
                     source: unitOptions, 
-                    width: 60, 
                     className: "htCenter htMiddle" 
                 },
                 { 
                     data: 'cantidad_ppto', 
                     type: 'numeric', 
                     numericFormat: { pattern: '0.0' }, 
-                    width: 80, 
                     className: "htCenter htMiddle" 
                 },
                 { 
                     data: 'Estado_Restricciones', 
                     type: 'numeric', 
                     readOnly: true,
-                    width: 100, 
                     className: "htCenter htMiddle",
                     renderer: pgPercentRenderer
                 },
@@ -597,7 +634,6 @@ window.HOTActualizarModule = (function() {
                     data: 'Ejecutado', 
                     type: 'numeric', 
                     numericFormat: { pattern: '0.0' }, 
-                    width: 140, 
                     className: "htCenter htMiddle",
                     renderer: pgEjecutadoRealRenderer 
                 }
@@ -612,8 +648,8 @@ window.HOTActualizarModule = (function() {
                     canEdit = false;
                 }
 
-                var isMapped = rowData.programaAnteriorAsociar && rowData.programaAnteriorAsociar !== '*No Asociada*';
-                if (canEdit && isMapped && (prop === 'Ejecutado' || prop === 'unidad' || prop === 'cantidad_ppto')) {
+                var meta = getRowMeta(physicalRow, rowData);
+                if (canEdit && meta.isMapped && (prop === 'Ejecutado' || prop === 'unidad' || prop === 'cantidad_ppto')) {
                     canEdit = false;
                 }
 
@@ -625,7 +661,7 @@ window.HOTActualizarModule = (function() {
             },
             
             // Características UX AIA 2026
-            stretchH: 'all',
+            stretchH: 'none',
             autoWrapRow: false,
             autoWrapCol: false,
             autoRowSize: false,
@@ -633,11 +669,24 @@ window.HOTActualizarModule = (function() {
             rowHeights: 28,
             renderAllRows: false,
             viewportRowRenderingOffset: 20,
+            viewportColumnRenderingOffset: 10,
+            language: 'es-MX',
+            colHeaderHeight: 48,
             width: '100%',
             height: initialHeight,
+            colWidths: function(index) {
+                var container = document.getElementById('hot-container');
+                var baseWidth = container ? container.clientWidth : window.innerWidth;
+                var cw = baseWidth - 20; // gutter
+                // Ratios based on original widths: [40, 40, 350, 300, 90, 90, 60, 80, 100, 140]
+                // Total = 1290
+                var p = [0.031, 0.031, 0.271, 0.233, 0.070, 0.070, 0.047, 0.062, 0.078, 0.109];
+                var w = Math.floor(cw * p[index]);
+                return Math.max(w, 20);
+            },
             licenseKey: 'non-commercial-and-evaluation',
             wordWrap: false,
-            manualColumnResize: true,
+            manualColumnResize: false,
             filters: true,
             modifyFiltersMultiSelectValue: function(value, meta) {
                 var prop = meta && (meta.prop || meta.data);
@@ -700,12 +749,25 @@ window.HOTActualizarModule = (function() {
                    }
                }.bind(this));
 
-               // Disparar guardado por cada fila modificada
-               Object.keys(rowChanges).forEach(function(physicalRowStr) {
-                   var physicalRow = parseInt(physicalRowStr);
-                   var group = rowChanges[physicalRow];
-                   autoSaveRow(group.visualRow, group.changes, source);
-               }.bind(this));
+                // Cola de cambios con debounce (800ms)
+                Object.keys(rowChanges).forEach(function(physicalRowStr) {
+                    var physicalRow = parseInt(physicalRowStr);
+                    var group = rowChanges[physicalRow];
+                    delete _rowMetaCache[physicalRow];
+                    _pendingChanges[group.visualRow] = Object.assign(_pendingChanges[group.visualRow] || {}, group.changes);
+                });
+
+                clearTimeout(_saveTimer);
+                _saveTimer = setTimeout(flushPendingChanges, 800);
+
+                var pendingCount = Object.keys(_pendingChanges).length;
+                var $saveStatus = $('#save-status');
+                $saveStatus
+                    .stop(true, true)
+                    .removeClass('badge-badge-hidden badge-success')
+                    .addClass('badge-warning')
+                    .text('Guardando... (' + pendingCount + ')')
+                    .fadeIn(120);
 
             }
         };
@@ -725,6 +787,32 @@ window.HOTActualizarModule = (function() {
             .on('resize.hotActualizar orientationchange.hotActualizar', function() {
                 refreshHotLayout(80);
             });
+
+        // Wave 3 Task 7: beforeunload handler — flush pending changes on navigation
+        $(window).on('beforeunload.hotActualizar', function() {
+            if (Object.keys(_pendingChanges).length > 0) {
+                if (_saveTimer) {
+                    clearTimeout(_saveTimer);
+                    _saveTimer = null;
+                }
+                // Primary: flush via regular AJAX (debounce bypassed)
+                flushPendingChanges();
+
+                // Fallback: sendBeacon is more reliable than fetch() during page unload
+                try {
+                    var dbEl = document.getElementById('baseDatos');
+                    if (dbEl && typeof navigator.sendBeacon === 'function') {
+                        var payload = JSON.stringify({
+                            pending: _pendingChanges,
+                            db: dbEl.value
+                        });
+                        navigator.sendBeacon('/api/general/update', payload);
+                    }
+                } catch (_e) {
+                    // sendBeacon not supported or failed — data loss acceptable during unload
+                }
+            }
+        });
     }
 
     return {

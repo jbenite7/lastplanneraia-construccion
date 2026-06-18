@@ -346,8 +346,6 @@
 
 	</div>
 
-	<!-- Iniciar Jquery-->
-	<script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-1.12.4.js"></script>
 	<!-- Iniciar Popper-->
 	<script type="text/javascript" charset="utf8" src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
 	<!-- Iniciar Bootstrap-->
