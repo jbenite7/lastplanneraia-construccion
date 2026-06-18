@@ -863,6 +863,7 @@ window.HOTActualizarModule = (function() {
     }
 
     return {
+        get hot() { return hot; },
         init: function() {
             console.log("🔥 [MapeoManual] HOTActualizarModule.init() alcanzado.");
             if (_initDone) {
