@@ -953,6 +953,7 @@ window.HOTActualizarModule = (function() {
     function renderReviewItem(item, index) {
         var candidates = item.candidates || [];
         var topCandidates = candidates.slice(0, 3);
+        var targetName = item.activityName || 'Actividad sin nombre';
 
         var candidatesHtml = topCandidates.map(function(c, ci) {
             var pct = (c.confidence * 100).toFixed(0);
@@ -962,24 +963,22 @@ window.HOTActualizarModule = (function() {
 
             return '' +
                 '<div class="match-candidate ' + tierClass + '" data-row="' + (item.row !== undefined ? item.row : '') + '" data-candidate="' + ci + '">' +
-                    '<div class="match-candidate-name">' + escapeHtml(candidateName) + '</div>' +
-                    '<div class="match-candidate-bar-wrap">' +
-                        '<div class="match-candidate-bar">' +
-                            '<div class="match-candidate-bar-fill" style="width: ' + pct + '%;"></div>' +
+                    '<div class="match-candidate-info">' +
+                        '<div class="match-candidate-name">' + escapeHtml(candidateName) + '</div>' +
+                        '<div class="match-candidate-bar-wrap">' +
+                            '<div class="match-candidate-bar">' +
+                                '<div class="match-candidate-bar-fill" style="width: ' + pct + '%;"></div>' +
+                            '</div>' +
+                            '<span class="match-candidate-pct">' + displayConf + '%</span>' +
                         '</div>' +
-                        '<span class="match-candidate-pct">' + displayConf + '%</span>' +
                     '</div>' +
                     '<div class="match-candidate-actions">' +
                         '<button type="button" class="btn btn-sm btn-success js-accept-match" ' +
                             'data-row="' + (item.row !== undefined ? item.row : '') + '" ' +
                             'data-candidate-name="' + escapeAttr(candidateName) + '" ' +
+                            'data-index="' + index + '" ' +
                             'title="Asociar con este candidato">' +
                             '<i class="fas fa-check"></i> Aceptar' +
-                        '</button>' +
-                        '<button type="button" class="btn btn-sm btn-outline-secondary js-skip-match" ' +
-                            'data-row="' + (item.row !== undefined ? item.row : '') + '" ' +
-                            'title="Marcar como nueva actividad">' +
-                            'Marcar Nueva' +
                         '</button>' +
                     '</div>' +
                 '</div>';
@@ -996,24 +995,22 @@ window.HOTActualizarModule = (function() {
 
                 return '' +
                     '<div class="match-candidate ' + tierClass + ' js-extra-candidate" data-row="' + (item.row !== undefined ? item.row : '') + '" data-candidate="' + (ci + 3) + '" style="display:none;">' +
-                        '<div class="match-candidate-name">' + escapeHtml(candidateName) + '</div>' +
-                        '<div class="match-candidate-bar-wrap">' +
-                            '<div class="match-candidate-bar">' +
-                                '<div class="match-candidate-bar-fill" style="width: ' + pct + '%;"></div>' +
+                        '<div class="match-candidate-info">' +
+                            '<div class="match-candidate-name">' + escapeHtml(candidateName) + '</div>' +
+                            '<div class="match-candidate-bar-wrap">' +
+                                '<div class="match-candidate-bar">' +
+                                    '<div class="match-candidate-bar-fill" style="width: ' + pct + '%;"></div>' +
+                                '</div>' +
+                                '<span class="match-candidate-pct">' + displayConf + '%</span>' +
                             '</div>' +
-                            '<span class="match-candidate-pct">' + displayConf + '%</span>' +
                         '</div>' +
                         '<div class="match-candidate-actions">' +
                             '<button type="button" class="btn btn-sm btn-success js-accept-match" ' +
                                 'data-row="' + (item.row !== undefined ? item.row : '') + '" ' +
                                 'data-candidate-name="' + escapeAttr(candidateName) + '" ' +
+                                'data-index="' + index + '" ' +
                                 'title="Asociar con este candidato">' +
                                 '<i class="fas fa-check"></i> Aceptar' +
-                            '</button>' +
-                            '<button type="button" class="btn btn-sm btn-outline-secondary js-skip-match" ' +
-                                'data-row="' + (item.row !== undefined ? item.row : '') + '" ' +
-                                'title="Marcar como nueva actividad">' +
-                                'Marcar Nueva' +
                             '</button>' +
                         '</div>' +
                     '</div>';
@@ -1032,12 +1029,30 @@ window.HOTActualizarModule = (function() {
 
         return '' +
             '<div class="match-item" data-index="' + index + '" data-row="' + (item.row !== undefined ? item.row : '') + '">' +
-                '<div class="match-activity-name">' +
-                    '<i class="fas fa-exclamation-triangle text-warning mr-1"></i> ' +
-                    escapeHtml(item.activityName || 'Actividad sin nombre') +
+                '<div class="match-item-header">' +
+                    '<div class="match-target-label">' +
+                        '<span class="match-label match-label-target"><i class="fas fa-crosshairs mr-1"></i> Actividad a asociar</span>' +
+                    '</div>' +
+                    '<div class="match-activity-name">' +
+                        escapeHtml(targetName) +
+                    '</div>' +
                 '</div>' +
-                candidatesHtml +
-                extraHtml +
+                '<div class="match-item-body">' +
+                    '<div class="match-source-label">' +
+                        '<span class="match-label match-label-source"><i class="fas fa-database mr-1"></i> Candidatos de la semana anterior</span>' +
+                        '<button type="button" class="btn btn-sm btn-outline-danger js-skip-match" ' +
+                            'data-row="' + (item.row !== undefined ? item.row : '') + '" ' +
+                            'data-index="' + index + '" ' +
+                            'title="Marcar como actividad nueva (sin asociar)">' +
+                            '<i class="fas fa-times"></i> Sin coincidencia' +
+                        '</button>' +
+                    '</div>' +
+                    '<div class="match-candidates-list">' +
+                        candidatesHtml +
+                        extraHtml +
+                    '</div>' +
+                '</div>' +
+                '<div class="match-item-status" data-index="' + index + '" style="display:none;"></div>' +
             '</div>';
     }
 
@@ -1118,11 +1133,11 @@ window.HOTActualizarModule = (function() {
             var $btn = $(this);
             var physicalRow = parseInt($btn.data('row'), 10);
             var candidateName = $btn.data('candidate-name');
+            var itemIndex = $btn.data('index');
 
             if (isNaN(physicalRow) || !candidateName) return;
 
             if (hot) {
-                // Convert physical row index (from API) to visual row index (for setDataAtRowProp)
                 var visualRow = hot.toVisualRow(physicalRow);
                 if (visualRow !== null && visualRow >= 0) {
                     hot.setDataAtRowProp(visualRow, 'programaAnteriorAsociar', candidateName, 'edit');
@@ -1130,9 +1145,19 @@ window.HOTActualizarModule = (function() {
             }
 
             var $item = $btn.closest('.match-item');
-            $item.css('opacity', '0.5');
-            $btn.prop('disabled', true).html('<i class="fas fa-check-double"></i> Asociado');
-            $item.find('.js-skip-match').prop('disabled', true);
+            $item.addClass('match-item-resolved match-item-accepted');
+            $item.find('.js-accept-match, .js-skip-match').prop('disabled', true);
+
+            var $status = $item.find('.match-item-status');
+            $status.html(
+                '<div class="match-resolved-badge match-resolved-accepted">' +
+                    '<i class="fas fa-check-circle"></i> ' +
+                    '<span>Asociada con: <strong>' + escapeHtml(candidateName) + '</strong></span>' +
+                '</div>'
+            ).show();
+
+            $item.find('.match-candidate').css('opacity', '0.4');
+            $btn.closest('.match-candidate').css('opacity', '1');
 
             if (typeof toastr !== 'undefined') {
                 toastr.success('Asociado: ' + candidateName);
@@ -1143,6 +1168,7 @@ window.HOTActualizarModule = (function() {
             e.preventDefault();
             var $btn = $(this);
             var physicalRow = parseInt($btn.data('row'), 10);
+            var itemIndex = $btn.data('index');
 
             if (isNaN(physicalRow)) return;
 
@@ -1154,9 +1180,16 @@ window.HOTActualizarModule = (function() {
             }
 
             var $item = $btn.closest('.match-item');
-            $item.css('opacity', '0.5');
-            $btn.prop('disabled', true).html('<i class="fas fa-times"></i> Marcada');
-            $item.find('.js-accept-match').prop('disabled', true);
+            $item.addClass('match-item-resolved match-item-skipped');
+            $item.find('.js-accept-match, .js-skip-match').prop('disabled', true);
+
+            var $status = $item.find('.match-item-status');
+            $status.html(
+                '<div class="match-resolved-badge match-resolved-skipped">' +
+                    '<i class="fas fa-times-circle"></i> ' +
+                    '<span>Marcada como actividad nueva</span>' +
+                '</div>'
+            ).show();
 
             if (typeof toastr !== 'undefined') {
                 toastr.info('Actividad marcada como nueva');

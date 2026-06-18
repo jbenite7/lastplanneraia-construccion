@@ -164,59 +164,114 @@
 			border-radius: var(--radius-md, 0.5rem);
 			padding: var(--spacing-md, 1rem);
 			margin-bottom: var(--spacing-md, 1rem);
+			transition: opacity 0.3s ease, border-color 0.3s ease;
 		}
 		.match-item:last-child {
 			margin-bottom: 0;
 		}
+		.match-item-resolved {
+			opacity: 0.7;
+		}
+		.match-item-accepted {
+			border-color: var(--aia-green-primary, #1a5633);
+		}
+		.match-item-skipped {
+			border-color: #6c757d;
+		}
+
+		.match-item-header {
+			margin-bottom: var(--spacing-sm, 0.5rem);
+		}
+		.match-item-body {
+			padding-top: var(--spacing-sm, 0.5rem);
+			border-top: 1px solid var(--aia-separators, #d1d1d1);
+		}
+
+		.match-label {
+			display: inline-block;
+			font-family: 'Inter', sans-serif;
+			font-size: 0.7rem;
+			font-weight: 600;
+			text-transform: uppercase;
+			letter-spacing: 0.05em;
+			padding: 2px 8px;
+			border-radius: 4px;
+			margin-bottom: var(--spacing-xs, 0.25rem);
+		}
+		.match-label-target {
+			background: rgba(181, 82, 17, 0.1);
+			color: #8b4011;
+		}
+		.match-label-source {
+			background: rgba(26, 86, 51, 0.1);
+			color: var(--aia-green-primary, #1a5633);
+		}
+
 		.match-item .match-activity-name {
 			font-family: 'Montserrat', sans-serif;
 			font-weight: 600;
 			font-size: 0.95rem;
 			color: var(--aia-text-primary, #1c1c1e);
+		}
+
+		.match-source-label {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
 			margin-bottom: var(--spacing-sm, 0.5rem);
-			padding-bottom: var(--spacing-sm, 0.5rem);
-			border-bottom: 1px solid var(--aia-separators, #d1d1d1);
+		}
+
+		.match-candidates-list {
+			margin-top: var(--spacing-sm, 0.5rem);
 		}
 
 		.match-candidate {
 			display: flex;
 			align-items: center;
 			gap: var(--spacing-md, 1rem);
-			padding: var(--spacing-sm, 0.5rem) 0;
+			padding: var(--spacing-sm, 0.5rem) var(--spacing-sm, 0.5rem);
+			border-radius: var(--radius-sm, 0.25rem);
+			transition: background 0.2s ease, opacity 0.3s ease;
+		}
+		.match-candidate:hover {
+			background: rgba(0, 0, 0, 0.03);
 		}
 		.match-candidate + .match-candidate {
 			border-top: 1px solid rgba(0, 0, 0, 0.05);
 		}
-		.match-candidate .match-candidate-name {
+		.match-candidate-info {
 			flex: 1;
-			font-family: 'Inter', sans-serif;
-			font-size: 0.875rem;
-			color: var(--aia-text-secondary, #4a4a4d);
 			min-width: 0;
 		}
+		.match-candidate .match-candidate-name {
+			font-family: 'Inter', sans-serif;
+			font-size: 0.875rem;
+			color: var(--aia-text-primary, #1c1c1e);
+			font-weight: 500;
+			margin-bottom: 2px;
+		}
 		.match-candidate .match-candidate-bar-wrap {
-			flex: 0 0 120px;
 			display: flex;
 			align-items: center;
 			gap: var(--spacing-sm, 0.5rem);
 		}
 		.match-candidate .match-candidate-bar {
 			flex: 1;
-			height: 8px;
+			height: 6px;
 			background: var(--aia-bg-gray-light, #eaeaea);
-			border-radius: 4px;
+			border-radius: 3px;
 			overflow: hidden;
 		}
 		.match-candidate .match-candidate-bar-fill {
 			height: 100%;
-			border-radius: 4px;
+			border-radius: 3px;
 			transition: width var(--transition-normal, 0.3s ease-in-out);
 		}
 		.match-candidate .match-candidate-pct {
 			font-family: 'Inter', sans-serif;
-			font-size: 0.75rem;
+			font-size: 0.7rem;
 			font-weight: 600;
-			min-width: 36px;
+			min-width: 32px;
 			text-align: right;
 		}
 		.match-candidate .match-candidate-actions {
@@ -242,6 +297,36 @@
 			background: #6c757d;
 		}
 		.match-confidence-none .match-candidate-pct {
+			color: #6c757d;
+		}
+
+		.match-item-status {
+			margin-top: var(--spacing-sm, 0.5rem);
+			padding-top: var(--spacing-sm, 0.5rem);
+			border-top: 1px solid var(--aia-separators, #d1d1d1);
+		}
+		.match-resolved-badge {
+			display: flex;
+			align-items: center;
+			gap: var(--spacing-xs, 0.25rem);
+			font-family: 'Inter', sans-serif;
+			font-size: 0.85rem;
+			font-weight: 500;
+			padding: var(--spacing-xs, 0.25rem) var(--spacing-sm, 0.5rem);
+			border-radius: var(--radius-sm, 0.25rem);
+		}
+		.match-resolved-accepted {
+			background: rgba(26, 86, 51, 0.1);
+			color: var(--aia-green-primary, #1a5633);
+		}
+		.match-resolved-accepted i {
+			color: var(--aia-green-primary, #1a5633);
+		}
+		.match-resolved-skipped {
+			background: rgba(108, 117, 125, 0.1);
+			color: #6c757d;
+		}
+		.match-resolved-skipped i {
 			color: #6c757d;
 		}
 	</style>
@@ -580,7 +665,7 @@
 	<script src="/js/HandsontableTomSelectEditor.js?v=tomselect30"></script>
 	
 	<!-- Módulos de Handsontable -->
-	<script src="/public/js/modules/programa_actualizar/hot_actualizar.js?v=20260618a"></script>
+	<script src="/public/js/modules/programa_actualizar/hot_actualizar.js?v=20260618b"></script>
 
 	<script>
 		/* Funciones Legacy requeridas a nivel global */
