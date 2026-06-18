@@ -331,6 +331,12 @@ window.HOTActualizarModule = (function() {
                     rawData = []; 
                 }
                 applyFilterAndRender();
+
+                // Auto-associate trigger after XLSX upload
+                if (sessionStorage.getItem('autoAssociatePending') === '1') {
+                    sessionStorage.removeItem('autoAssociatePending');
+                    setTimeout(runAutoAssociate, 1500);
+                }
             })
             .catch(err => {
                 console.error("🔥 [MapeoManual] Error en fetch: ", err);
@@ -843,6 +849,8 @@ window.HOTActualizarModule = (function() {
             applyFilterAndRender();
         });
 
+        $("#btn_autoAsociar").on("click", runAutoAssociate);
+
         $(window)
             .off('resize.hotActualizar orientationchange.hotActualizar')
             .on('resize.hotActualizar orientationchange.hotActualizar', function() {
@@ -862,8 +870,395 @@ window.HOTActualizarModule = (function() {
         });
     }
 
+    /**
+     * Ejecuta la asociación automática de actividades vía API.
+     * Lee baseDatos y semanaObjetivoActualizacion de hidden inputs.
+     */
+    function runAutoAssociate() {
+        var btn = $("#btn_autoAsociar");
+        var db = $("#baseDatos").val();
+        var semanaObjetivo = $("#semanaObjetivoActualizacion").val();
+
+        if (!db || !semanaObjetivo) {
+            toastr.error("Faltan datos de contexto (base de datos o semana objetivo).");
+            return;
+        }
+
+        var originalHtml = btn.html();
+        btn.prop("disabled", true).html('<i class="fas fa-spinner fa-spin"></i> Procesando...');
+
+        fetch("/api/general/auto-associate", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: new URLSearchParams({
+                db: db,
+                semana_objetivo: semanaObjetivo
+            })
+        })
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(data) {
+            console.log("🔥 [AutoAssociate] Results:", data);
+            btn.prop("disabled", false).html(originalHtml);
+            if (data.success) {
+                toastr.success("Asociación completada: " + (data.data ? data.data.asociados + " actividades" : ""));
+            } else {
+                toastr.error(data.error || "Error en la asociación automática");
+            }
+        })
+        .catch(function(error) {
+            console.error("🔥 [AutoAssociate] Error:", error);
+            btn.prop("disabled", false).html(originalHtml);
+            toastr.error("Error de conexión al asociar actividades");
+        });
+    }
+
+    /**
+     * Popula las 4 tarjetas estadísticas del modal de revisión.
+     * @param {Object} data - data identical/high/medium/none arrays.
+     */
+    function populateModalStats(data) {
+        var identicalCount = (data.identical || []).length;
+        var highCount = (data.high || []).length;
+        var mediumCount = (data.medium || []).length;
+        var noneCount = (data.none || []).length;
+
+        $('#stat_identical').text(identicalCount);
+        $('#stat_high').text(highCount);
+        $('#stat_medium').text(mediumCount);
+        $('#stat_none').text(noneCount);
+    }
+
+    /**
+     * Determina la clase CSS de confianza para una barra.
+     * @param {number} confidence - Score 0..1.
+     * @returns {string} 'match-confidence-high' | 'match-confidence-medium' | 'match-confidence-none'
+     */
+    function confidenceTierClass(confidence) {
+        if (confidence >= 0.8) return 'match-confidence-high';
+        if (confidence >= 0.5) return 'match-confidence-medium';
+        return 'match-confidence-none';
+    }
+
+    /**
+     * Renderiza el HTML para un ítem de revisión (actividad con confianza media).
+     * Muestra nombre de actividad + top-3 candidatos con barra de confianza.
+     * @param {Object} item - { activityName, candidates, row, rowId }
+     * @param {number} index - Índice del ítem en la lista (para IDs únicos).
+     * @returns {string} HTML string.
+     */
+    function renderReviewItem(item, index) {
+        var candidates = item.candidates || [];
+        var topCandidates = candidates.slice(0, 3);
+
+        var candidatesHtml = topCandidates.map(function(c, ci) {
+            var pct = (c.confidence * 100).toFixed(0);
+            var tierClass = confidenceTierClass(c.confidence);
+            var candidateName = c.name || c.actividad || c.title || 'Sin nombre';
+            var displayConf = c.display_confidence !== undefined ? c.display_confidence : pct;
+
+            return '' +
+                '<div class="match-candidate ' + tierClass + '" data-row="' + (item.row !== undefined ? item.row : '') + '" data-candidate="' + ci + '">' +
+                    '<div class="match-candidate-name">' + escapeHtml(candidateName) + '</div>' +
+                    '<div class="match-candidate-bar-wrap">' +
+                        '<div class="match-candidate-bar">' +
+                            '<div class="match-candidate-bar-fill" style="width: ' + pct + '%;"></div>' +
+                        '</div>' +
+                        '<span class="match-candidate-pct">' + displayConf + '%</span>' +
+                    '</div>' +
+                    '<div class="match-candidate-actions">' +
+                        '<button type="button" class="btn btn-sm btn-success js-accept-match" ' +
+                            'data-row="' + (item.row !== undefined ? item.row : '') + '" ' +
+                            'data-candidate-name="' + escapeAttr(candidateName) + '" ' +
+                            'title="Asociar con este candidato">' +
+                            '<i class="fas fa-check"></i> Aceptar' +
+                        '</button>' +
+                        '<button type="button" class="btn btn-sm btn-outline-secondary js-skip-match" ' +
+                            'data-row="' + (item.row !== undefined ? item.row : '') + '" ' +
+                            'title="Marcar como nueva actividad">' +
+                            'Marcar Nueva' +
+                        '</button>' +
+                    '</div>' +
+                '</div>';
+        }).join('');
+
+        var extraHtml = '';
+        if (candidates.length > 3) {
+            var extraCandidates = candidates.slice(3);
+            var extraHtmlItems = extraCandidates.map(function(c, ci) {
+                var pct = (c.confidence * 100).toFixed(0);
+                var tierClass = confidenceTierClass(c.confidence);
+                var candidateName = c.name || c.actividad || c.title || 'Sin nombre';
+                var displayConf = c.display_confidence !== undefined ? c.display_confidence : pct;
+
+                return '' +
+                    '<div class="match-candidate ' + tierClass + ' js-extra-candidate" data-row="' + (item.row !== undefined ? item.row : '') + '" data-candidate="' + (ci + 3) + '" style="display:none;">' +
+                        '<div class="match-candidate-name">' + escapeHtml(candidateName) + '</div>' +
+                        '<div class="match-candidate-bar-wrap">' +
+                            '<div class="match-candidate-bar">' +
+                                '<div class="match-candidate-bar-fill" style="width: ' + pct + '%;"></div>' +
+                            '</div>' +
+                            '<span class="match-candidate-pct">' + displayConf + '%</span>' +
+                        '</div>' +
+                        '<div class="match-candidate-actions">' +
+                            '<button type="button" class="btn btn-sm btn-success js-accept-match" ' +
+                                'data-row="' + (item.row !== undefined ? item.row : '') + '" ' +
+                                'data-candidate-name="' + escapeAttr(candidateName) + '" ' +
+                                'title="Asociar con este candidato">' +
+                                '<i class="fas fa-check"></i> Aceptar' +
+                            '</button>' +
+                            '<button type="button" class="btn btn-sm btn-outline-secondary js-skip-match" ' +
+                                'data-row="' + (item.row !== undefined ? item.row : '') + '" ' +
+                                'title="Marcar como nueva actividad">' +
+                                'Marcar Nueva' +
+                            '</button>' +
+                        '</div>' +
+                    '</div>';
+            }).join('');
+
+            extraHtml = '' +
+                '<div class="text-center mt-2">' +
+                    '<button type="button" class="btn btn-sm btn-link js-toggle-extra" data-index="' + index + '">' +
+                        'Ver más opciones (' + candidates.length + ' total)' +
+                    '</button>' +
+                '</div>' +
+                '<div class="js-extra-options" data-index="' + index + '" style="display:none;">' +
+                    extraHtmlItems +
+                '</div>';
+        }
+
+        return '' +
+            '<div class="match-item" data-index="' + index + '" data-row="' + (item.row !== undefined ? item.row : '') + '">' +
+                '<div class="match-activity-name">' +
+                    '<i class="fas fa-exclamation-triangle text-warning mr-1"></i> ' +
+                    escapeHtml(item.activityName || 'Actividad sin nombre') +
+                '</div>' +
+                candidatesHtml +
+                extraHtml +
+            '</div>';
+    }
+
+    /**
+     * Escapa HTML básico para prevenir XSS en texto de candidatos.
+     * @param {string} str
+     * @returns {string}
+     */
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    /**
+     * Escapa atributos HTML.
+     * @param {string} str
+     * @returns {string}
+     */
+    function escapeAttr(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
+
+    /**
+     * Muestra el modal de revisión de auto-asociación.
+     * Puebla stats, renderiza ítems de media confianza, y bindinea eventos de accept/skip/expand.
+     * @param {Object} results - { identical:[], high:[], medium:[], none:[] }
+     */
+    function showReviewModal(results) {
+        var data = results.data || results;
+
+        populateModalStats(data);
+
+        var mediumItems = data.medium || [];
+        var $reviewList = $('#review-list');
+        $reviewList.empty();
+
+        if (mediumItems.length === 0) {
+            $reviewList.html(
+                '<div class="text-center py-4" style="color: var(--aia-text-secondary, #4a4a4d);">' +
+                    '<i class="fas fa-check-circle fa-2x mb-2" style="color: var(--aia-green-primary, #1a5633);"></i>' +
+                    '<p>No hay actividades con confianza media para revisar.</p>' +
+                '</div>'
+            );
+        } else {
+            var html = mediumItems.map(function(item, idx) {
+                return renderReviewItem(item, idx);
+            }).join('');
+            $reviewList.html(html);
+        }
+
+        _bindReviewModalEvents($reviewList);
+
+        $('#modalAutoAsociar').modal('show');
+    }
+
+    /**
+     * Bindea eventos delegados en el contenedor de revisión:
+     * - Aceptar: asocia la actividad con el candidato seleccionado
+     * - Marcar Nueva: omite la actividad
+     * - Ver más opciones: expande candidatos extra
+     * @param {jQuery} $container - El contenedor #review-list
+     */
+    function _bindReviewModalEvents($container) {
+        $container.off('.reviewModal');
+
+        $container.on('click.reviewModal', '.js-accept-match', function(e) {
+            e.preventDefault();
+            var $btn = $(this);
+            var row = parseInt($btn.data('row'), 10);
+            var candidateName = $btn.data('candidate-name');
+
+            if (isNaN(row) || !candidateName) return;
+
+            if (hot) {
+                hot.setDataAtRowProp(row, 'programaAnteriorAsociar', candidateName, 'edit');
+            }
+
+            var $item = $btn.closest('.match-item');
+            $item.css('opacity', '0.5');
+            $btn.prop('disabled', true).html('<i class="fas fa-check-double"></i> Asociado');
+            $item.find('.js-skip-match').prop('disabled', true);
+
+            if (typeof toastr !== 'undefined') {
+                toastr.success('Asociado: ' + candidateName);
+            }
+        });
+
+        $container.on('click.reviewModal', '.js-skip-match', function(e) {
+            e.preventDefault();
+            var $btn = $(this);
+            var row = parseInt($btn.data('row'), 10);
+
+            if (isNaN(row)) return;
+
+            if (hot) {
+                hot.setDataAtRowProp(row, 'programaAnteriorAsociar', '*No Asociada*', 'edit');
+            }
+
+            var $item = $btn.closest('.match-item');
+            $item.css('opacity', '0.5');
+            $btn.prop('disabled', true).html('<i class="fas fa-times"></i> Marcada');
+            $item.find('.js-accept-match').prop('disabled', true);
+
+            if (typeof toastr !== 'undefined') {
+                toastr.info('Actividad marcada como nueva');
+            }
+        });
+
+        $container.on('click.reviewModal', '.js-toggle-extra', function(e) {
+            e.preventDefault();
+            var $btn = $(this);
+            var idx = $btn.data('index');
+            var $extras = $container.find('.js-extra-options[data-index="' + idx + '"]');
+            var isVisible = $extras.is(':visible');
+
+            if (isVisible) {
+                $extras.slideUp(200);
+                $btn.text($btn.text().replace('Ocultar', 'Ver más'));
+            } else {
+                $extras.slideDown(200);
+                $btn.text($btn.text().replace('Ver más', 'Ocultar'));
+            }
+        });
+    }
+
+    /**
+     * Aplica clases CSS de confianza a las celdas de la grilla según los resultados de asociación.
+     * - pg-match-auto: identical + high confidence
+     * - pg-match-review: medium confidence
+     * - pg-match-new: no match (none)
+     * @param {Object} results - Resultados con data.identical, data.high, data.medium, data.none.
+     */
+    function applyGridHighlighting(results) {
+        if (!hot) return;
+
+        var data = results.data || results;
+        var colIndex = hot.propToCol('programaAnteriorAsociar');
+        if (typeof colIndex !== 'number' || colIndex < 0) return;
+
+        // Identical + High → pg-match-auto (green)
+        var autoItems = [].concat(data.identical || [], data.high || []);
+        autoItems.forEach(function(item) {
+            if (item.row !== undefined && item.row >= 0) {
+                hot.setCellMeta(item.row, colIndex, 'className', 'pg-match-auto');
+            }
+        });
+
+        // Medium → pg-match-review (yellow)
+        var mediumItems = data.medium || [];
+        mediumItems.forEach(function(item) {
+            if (item.row !== undefined && item.row >= 0) {
+                hot.setCellMeta(item.row, colIndex, 'className', 'pg-match-review');
+            }
+        });
+
+        // None → pg-match-new (gray)
+        var noneItems = data.none || [];
+        noneItems.forEach(function(item) {
+            if (item.row !== undefined && item.row >= 0) {
+                hot.setCellMeta(item.row, colIndex, 'className', 'pg-match-new');
+            }
+        });
+
+        hot.render();
+    }
+
+    /**
+     * Aplica resultados de asociación en la UI: resalta grilla + abre modal si hay media confianza.
+     * @param {Object} results - Resultados de la asociación automática.
+     */
+    function applyMatchResults(results) {
+        console.log("🔥 [AutoAssociate] applyMatchResults called:", results);
+
+        if (!results || (!results.data && !results.identical && !results.high)) {
+            console.warn("🔥 [AutoAssociate] No results to display.");
+            return;
+        }
+
+        // Apply grid highlighting for all confidence tiers
+        applyGridHighlighting(results);
+
+        var data = results.data || results;
+        var mediumItems = data.medium || [];
+
+        if (mediumItems.length > 0) {
+            // Medium items exist → show review modal for user action
+            showReviewModal(results);
+        } else {
+            // No medium items → show summary toast
+            var identicalCount = (data.identical || []).length;
+            var highCount = (data.high || []).length;
+            var noneCount = (data.none || []).length;
+            var autoCount = identicalCount + highCount;
+
+            if (typeof toastr !== 'undefined') {
+                toastr.success(
+                    autoCount + ' asociadas automáticamente, ' +
+                    noneCount + ' nuevas detectadas'
+                );
+            }
+        }
+    }
+
     return {
         get hot() { return hot; },
+        runAutoAssociate: runAutoAssociate,
+        applyMatchResults: applyMatchResults,
+        applyGridHighlighting: applyGridHighlighting,
+        showReviewModal: showReviewModal,
+        populateModalStats: populateModalStats,
+        renderReviewItem: renderReviewItem,
         init: function() {
             console.log("🔥 [MapeoManual] HOTActualizarModule.init() alcanzado.");
             if (_initDone) {

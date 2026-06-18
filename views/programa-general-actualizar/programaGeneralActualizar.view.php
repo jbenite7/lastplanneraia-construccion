@@ -77,6 +77,173 @@
 		.pg-actions-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
 		
 		@media (max-width: 991px) { .hot-full-bleed { height: calc(100vh - 250px); } }
+
+		/* Matching confidence tiers for Cronograma Actualizar */
+		.pg-page #hot-container td.pg-match-auto {
+			background: rgba(26, 86, 51, 0.12) !important;
+		}
+		.pg-page #hot-container td.pg-match-auto::after {
+			content: " ✓";
+			color: #1a5633;
+			margin-left: 4px;
+			pointer-events: none;
+		}
+
+		.pg-page #hot-container td.pg-match-review {
+			background: rgba(255, 193, 7, 0.15) !important;
+		}
+		.pg-page #hot-container td.pg-match-review::after {
+			content: " ⚠";
+			color: #b8860b;
+			margin-left: 4px;
+			pointer-events: none;
+		}
+
+		.pg-page #hot-container td.pg-match-new {
+			background: rgba(108, 117, 125, 0.12) !important;
+		}
+		.pg-page #hot-container td.pg-match-new::after {
+			content: " NUEVA";
+			color: #6c757d;
+			font-weight: bold;
+			margin-left: 4px;
+			pointer-events: none;
+		}
+
+		/* ========================================
+		   Modal Auto-Asociación — Estilos de revisión
+		   ======================================== */
+		.match-stats {
+			display: grid;
+			grid-template-columns: repeat(4, 1fr);
+			gap: var(--spacing-md, 1rem);
+			margin-bottom: var(--spacing-lg, 1.5rem);
+		}
+		.match-stats .match-stat-card {
+			background: var(--aia-bg-alabaster, #fafafa);
+			border: 1px solid var(--aia-separators, #d1d1d1);
+			border-radius: var(--radius-md, 0.5rem);
+			padding: var(--spacing-md, 1rem);
+			text-align: center;
+		}
+		.match-stats .match-stat-card .match-stat-value {
+			font-family: 'Montserrat', sans-serif;
+			font-size: 1.75rem;
+			font-weight: 700;
+			color: var(--aia-green-primary, #1a5633);
+			line-height: 1.2;
+		}
+		.match-stats .match-stat-card .match-stat-label {
+			font-family: 'Inter', sans-serif;
+			font-size: 0.75rem;
+			color: var(--aia-text-secondary, #4a4a4d);
+			text-transform: uppercase;
+			letter-spacing: 0.05em;
+			margin-top: var(--spacing-xs, 0.25rem);
+		}
+		.match-stats .match-stat-card.match-stat-none .match-stat-value {
+			color: var(--aia-text-tertiary, #a9a9a9);
+		}
+
+		#review-list {
+			max-height: 400px;
+			overflow-y: auto;
+			padding-right: var(--spacing-sm, 0.5rem);
+		}
+		#review-list::-webkit-scrollbar {
+			width: 6px;
+		}
+		#review-list::-webkit-scrollbar-thumb {
+			background: var(--aia-separators, #d1d1d1);
+			border-radius: 3px;
+		}
+
+		.match-item {
+			background: var(--aia-bg-alabaster, #fafafa);
+			border: 1px solid var(--aia-separators, #d1d1d1);
+			border-radius: var(--radius-md, 0.5rem);
+			padding: var(--spacing-md, 1rem);
+			margin-bottom: var(--spacing-md, 1rem);
+		}
+		.match-item:last-child {
+			margin-bottom: 0;
+		}
+		.match-item .match-activity-name {
+			font-family: 'Montserrat', sans-serif;
+			font-weight: 600;
+			font-size: 0.95rem;
+			color: var(--aia-text-primary, #1c1c1e);
+			margin-bottom: var(--spacing-sm, 0.5rem);
+			padding-bottom: var(--spacing-sm, 0.5rem);
+			border-bottom: 1px solid var(--aia-separators, #d1d1d1);
+		}
+
+		.match-candidate {
+			display: flex;
+			align-items: center;
+			gap: var(--spacing-md, 1rem);
+			padding: var(--spacing-sm, 0.5rem) 0;
+		}
+		.match-candidate + .match-candidate {
+			border-top: 1px solid rgba(0, 0, 0, 0.05);
+		}
+		.match-candidate .match-candidate-name {
+			flex: 1;
+			font-family: 'Inter', sans-serif;
+			font-size: 0.875rem;
+			color: var(--aia-text-secondary, #4a4a4d);
+			min-width: 0;
+		}
+		.match-candidate .match-candidate-bar-wrap {
+			flex: 0 0 120px;
+			display: flex;
+			align-items: center;
+			gap: var(--spacing-sm, 0.5rem);
+		}
+		.match-candidate .match-candidate-bar {
+			flex: 1;
+			height: 8px;
+			background: var(--aia-bg-gray-light, #eaeaea);
+			border-radius: 4px;
+			overflow: hidden;
+		}
+		.match-candidate .match-candidate-bar-fill {
+			height: 100%;
+			border-radius: 4px;
+			transition: width var(--transition-normal, 0.3s ease-in-out);
+		}
+		.match-candidate .match-candidate-pct {
+			font-family: 'Inter', sans-serif;
+			font-size: 0.75rem;
+			font-weight: 600;
+			min-width: 36px;
+			text-align: right;
+		}
+		.match-candidate .match-candidate-actions {
+			display: flex;
+			gap: var(--spacing-xs, 0.25rem);
+			flex-shrink: 0;
+		}
+
+		/* Confidence tier colors */
+		.match-confidence-high .match-candidate-bar-fill {
+			background: var(--aia-green-primary, #1a5633);
+		}
+		.match-confidence-high .match-candidate-pct {
+			color: var(--aia-green-primary, #1a5633);
+		}
+		.match-confidence-medium .match-candidate-bar-fill {
+			background: #b8860b;
+		}
+		.match-confidence-medium .match-candidate-pct {
+			color: #b8860b;
+		}
+		.match-confidence-none .match-candidate-bar-fill {
+			background: #6c757d;
+		}
+		.match-confidence-none .match-candidate-pct {
+			color: #6c757d;
+		}
 	</style>
 	<link rel="stylesheet" href="/css/handsontable-header-global.css?v=20260313" />
 	<link rel="stylesheet" href="/css/tom-select-premium-aia.css?v=20260314" />
@@ -137,6 +304,7 @@
 					<button id="btn_cargarCronogramaExcel" type="button" class="btn btn-success btn-sm" title="Cargar actualización del cronograma desde Excel" data-toggle="modal" data-target="#modalCargarExcel" aria-label="Cargar cronograma desde Excel">Cargar desde Excel <i class="fas fa-upload fa-lg" aria-hidden="true"></i></button>
 					<button id="btn_eliminarActualizacion" type="button" class="btn btn-danger btn-sm" title="Eliminar actualización del cronograma" data-toggle="modal" data-target="#modalEliminarActualizacion" aria-label="Eliminar actualización">Eliminar Actualización <i class="far fa-trash-alt fa-lg" aria-hidden="true"></i></button>
 					<button id="btn_toggleFiltroMapeo" type="button" class="btn btn-outline-primary btn-sm active" title="Alternar visualización de actividades" aria-label="Alternar visualización">Mostrando Pendientes <i class="fas fa-filter fa-lg"></i></button>
+					<button id="btn_autoAsociar" type="button" class="btn btn-info btn-sm" title="Asociar automáticamente"><i class="fas fa-magic fa-lg" aria-hidden="true"></i> Auto-Asociar</button>
 				</div>
 				<div class="pg-status-badges">
 					<span id="save-status" class="badge badge-success badge-badge-hidden">Auto-Guardado</span>
@@ -344,6 +512,50 @@
 			</div>
 		</div>
 
+		<!-- Modal de Revisión de Auto-Asociación -->
+		<div class="modal fade aia-modal" id="modalAutoAsociar" role="dialog" aria-labelledby="modalAutoAsociarLabel" data-backdrop="static">
+			<div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" role="document">
+				<div class="modal-content">
+					<div class="modal-header" style="background: #1a5633; color: white;">
+						<div class="modal-title" id="modalAutoAsociarLabel">
+							<div class="aia-modal__eyebrow" style="color: rgba(255,255,255,0.7);">AIA Corporativo</div>
+							<h5 style="margin: 0; font-family: 'Montserrat', sans-serif; font-weight: 600; color: white;">Resultados de Auto-Asociación</h5>
+						</div>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: white; opacity: 0.8;">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body" style="background: #F4F1EA;">
+						<!-- Resumen estadístico -->
+						<div class="match-stats" id="match-stats">
+							<div class="match-stat-card">
+								<div class="match-stat-value" id="stat_identical">0</div>
+								<div class="match-stat-label">Idénticas</div>
+							</div>
+							<div class="match-stat-card">
+								<div class="match-stat-value" id="stat_high">0</div>
+								<div class="match-stat-label">Alta confianza</div>
+							</div>
+							<div class="match-stat-card">
+								<div class="match-stat-value" id="stat_medium">0</div>
+								<div class="match-stat-label">Media confianza</div>
+							</div>
+							<div class="match-stat-card match-stat-none">
+								<div class="match-stat-value" id="stat_none">0</div>
+								<div class="match-stat-label">Sin coincidencia</div>
+							</div>
+						</div>
+
+						<!-- Lista de ítems para revisar (media confianza) -->
+						<div id="review-list"></div>
+					</div>
+					<div class="modal-footer" style="background: #FAFAFA;">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Cerrar revisión">Cerrar</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
 	</div>
 
 	<!-- Iniciar Popper-->
@@ -428,10 +640,13 @@
 		            }
 		          }, 10000);
 		        } else {
-		          // Actualización de cronograma
+		        // Actualización de cronograma
 		          if (window.AIA && window.AIA.Notice) {
 		            window.AIA.Notice.badge('success', "¡Cronograma cargado con éxito en la Semana " + semana_json + "! Ahora puedes realizar el mapeo de actividades.");
 		          }
+
+							// Trigger auto-associate after page reload
+							sessionStorage.setItem('autoAssociatePending', '1');
 
 							if (typeof cambiarSemanaSesion === 'function') {
 								var semanaBase = Number(json_info.semana_base || Math.max(0, Number(semana_json) - 1));

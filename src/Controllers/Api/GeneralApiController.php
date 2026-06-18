@@ -5,6 +5,7 @@ namespace App\Controllers\Api;
 use App\Controllers\BaseController;
 use App\Core\Lps\LpsService;
 use App\Services\ProgramaConsolidadoNormalizationService;
+use App\Services\ActivityMatcherService;
 use App\Services\WeeklyRealProgressCarryoverService;
 use PDO;
 use Exception;
@@ -1045,5 +1046,165 @@ class GeneralApiController extends BaseController
             }
         }
         return $mapped;
+    }
+
+    /**
+     * Auto-asociación semántica entre programa anterior (semana - 1) y actual (semana objetivo).
+     *
+     * Queries source/target activities, runs fuzzy matching via ActivityMatcherService,
+     * and auto-persists high-confidence matches into programmaAnteriorAsociar column.
+     *
+     * POST /api/general/auto-associate
+     * @param string $db           Database prefix
+     * @param int    $semana_objetivo  Target week number
+     *
+     * @return JSON {success, data: {identical: N, high: N, medium: [...], none: N, updated: N}}
+     */
+    public function autoAssociate()
+    {
+        $this->requireAuth();
+        $this->authorizePermission('lps.programa_general_actualizar.editar');
+        header('Content-Type: application/json; charset=utf-8');
+
+        try {
+            $vars = $this->getSessionVars();
+            $dbPrefix = $_POST['db'] ?? ($_GET['db'] ?? ($vars['dbName'] ?? ''));
+            $semanaObjetivo = isset($_POST['semana_objetivo'])
+                ? filter_var($_POST['semana_objetivo'], FILTER_VALIDATE_INT)
+                : (isset($_GET['semana_objetivo'])
+                    ? filter_var($_GET['semana_objetivo'], FILTER_VALIDATE_INT)
+                    : null);
+
+            if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
+                throw new Exception("Base de datos inválida.");
+            }
+
+            if ($semanaObjetivo === false || $semanaObjetivo === null || $semanaObjetivo <= 0) {
+                throw new Exception("semana_objetivo inválida o no especificada.");
+            }
+
+            $semanaSource = $semanaObjetivo - 1;
+            $matcher = new ActivityMatcherService();
+
+            // ── 1. Query SOURCE activities (previous week, activities only) ──
+            $sqlSource = "SELECT Id, Actividad FROM {$dbPrefix}_programa_consolidado 
+                          WHERE Semana = ? AND Titulo = 0";
+            $stmtSource = $this->db->prepare($sqlSource);
+            $stmtSource->execute([$semanaSource]);
+            $sourceRows = $stmtSource->fetchAll(PDO::FETCH_ASSOC);
+
+            // ── 2. Query TARGET activities (current week, activities only) ──
+            $sqlTarget = "SELECT Consecutivo_en_Programa, Id, Actividad FROM {$dbPrefix}_programa_consolidado 
+                          WHERE Semana = ? AND Titulo = 0";
+            $stmtTarget = $this->db->prepare($sqlTarget);
+            $stmtTarget->execute([$semanaObjetivo]);
+            $targetRows = $stmtTarget->fetchAll(PDO::FETCH_ASSOC);
+
+            // Edge case: no activities found in either week
+            if (empty($targetRows)) {
+                echo json_encode([
+                    'success' => true,
+                    'data' => [
+                        'identical' => 0,
+                        'high' => 0,
+                        'medium' => [],
+                        'none' => 0,
+                        'updated' => 0,
+                    ],
+                ], JSON_UNESCAPED_UNICODE);
+                return;
+            }
+
+            if (empty($sourceRows)) {
+                // No source to match against — all targets are "none"
+                echo json_encode([
+                    'success' => true,
+                    'data' => [
+                        'identical' => 0,
+                        'high' => 0,
+                        'medium' => [],
+                        'none' => count($targetRows),
+                        'updated' => 0,
+                    ],
+                ], JSON_UNESCAPED_UNICODE);
+                return;
+            }
+
+            // ── 3. Prepare arrays for matchAll ──
+            // matchAll expects ['name' => raw, 'chapter' => null, 'row' => dbRow]
+            $sources = array_map(fn($row) => [
+                'name' => $row['Actividad'],
+                'chapter' => $matcher->extractChapter($row['Actividad']),
+                'row' => $row,
+            ], $sourceRows);
+            $targets = array_map(fn($row) => [
+                'name' => $row['Actividad'],
+                'chapter' => $matcher->extractChapter($row['Actividad']),
+                'row' => $row,
+            ], $targetRows);
+
+            // ── 4. Run fuzzy matching ──
+            $matches = $matcher->matchAll($targets, $sources);
+
+            // ── 5. Auto-persist identical + high confidence matches ──
+            // Pre-existing matchAll thresholds: identical (1.0+exact), high (≥0.8), medium (≥0.5), none (<0.5)
+            $updated = 0;
+            $autoItems = array_merge($matches['identical'], $matches['high']);
+
+            if (!empty($autoItems)) {
+                $this->db->beginTransaction();
+                try {
+                    $sqlUpdate = "UPDATE {$dbPrefix}_programa_consolidado 
+                                  SET programaAnteriorAsociar = ? 
+                                  WHERE Consecutivo_en_Programa = ? AND Semana = ?";
+                    $stmtUpdate = $this->db->prepare($sqlUpdate);
+
+                    foreach ($autoItems as $item) {
+                        // Pre-existing matchAll: 'target' is the full input item, 'matched' is the best source
+                        $sourceRow = $item['matched']['row'] ?? null;
+                        $targetRow = $item['target']['row'] ?? null;
+                        $sourceId = $sourceRow['Id'] ?? null;
+                        $targetConsecutivo = $targetRow['Consecutivo_en_Programa'] ?? null;
+
+                        if ($sourceId !== null && $targetConsecutivo !== null) {
+                            $stmtUpdate->execute([$sourceId, $targetConsecutivo, $semanaObjetivo]);
+                            $updated++;
+                        }
+                    }
+
+                    $this->db->commit();
+                } catch (Exception $e) {
+                    $this->db->rollBack();
+                    throw $e;
+                }
+            }
+
+            // ── 6. Build response ──
+            // Medium items: include candidates with name, chapter, confidence
+            $mediumItems = array_map(fn($item) => [
+                'row' => $item['target']['row'] ?? $item['target'],
+                'activityName' => strip_tags($item['target']['name'] ?? ''),
+                'candidates' => array_map(fn($c) => [
+                    'name' => strip_tags($c['activity']['name'] ?? ''),
+                    'chapter' => $c['activity']['chapter'] ?? null,
+                    'confidence' => $c['confidence'],
+                ], $item['candidates'] ?? []),
+            ], $matches['medium']);
+
+            echo json_encode([
+                'success' => true,
+                'data' => [
+                    'identical' => count($matches['identical']),
+                    'high' => count($matches['high']),
+                    'medium' => $mediumItems,
+                    'none' => count($matches['none']),
+                    'updated' => $updated,
+                ],
+            ], JSON_UNESCAPED_UNICODE);
+
+        } catch (Exception $e) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => $e->getMessage()], JSON_UNESCAPED_UNICODE);
+        }
     }
 }
