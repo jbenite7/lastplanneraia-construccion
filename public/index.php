@@ -121,10 +121,12 @@ $router->get('/control-cambios', [\App\Controllers\Integracion\ControlCambiosCon
 // Api/Contratos
 $router->post('/api/contratos/list', [\App\Controllers\Api\ContratosApiController::class, 'list']);
 $router->post('/api/contratos/save', [\App\Controllers\Api\ContratosApiController::class, 'save']);
+$router->post('/api/contratos/auto-assign', [\App\Controllers\Api\ContratosApiController::class, 'autoAssign']);
 // Api/ListadoActividades
 $router->get('/api/listado-actividades/template', [\App\Controllers\Api\ListadoActividadesApiController::class, 'downloadTemplate']);
 $router->post('/api/listado-actividades/list', [\App\Controllers\Api\ListadoActividadesApiController::class, 'list']);
 $router->post('/api/listado-actividades/save', [\App\Controllers\Api\ListadoActividadesApiController::class, 'save']);
+$router->post('/api/listado-actividades/auto-generate', [\App\Controllers\Api\ListadoActividadesApiController::class, 'autoGenerate']);
 // Api/PDC
 $router->post('/api/pdc/list', [\App\Controllers\Api\PdcApiController::class, 'list']);
 $router->post('/api/pdc/save', [\App\Controllers\Api\PdcApiController::class, 'save']);
@@ -138,6 +140,7 @@ $router->get('/api/pdc/categorias-recurso', [\App\Controllers\Api\PdcPlantillaCo
 $router->post('/api/pdc/auto/suggest', [\App\Controllers\Api\PdcAutoGenerateController::class, 'suggest']);
 $router->get('/api/pdc/auto/inventory', [\App\Controllers\Api\PdcAutoGenerateController::class, 'inventory']);
 $router->post('/api/pdc/auto/apply', [\App\Controllers\Api\PdcAutoGenerateController::class, 'apply']);
+$router->post('/api/pdc/auto/apply-from-actividades', [\App\Controllers\Api\PdcAutoGenerateController::class, 'applyFromActividades']);
 // Api/PDC Wizard
 $router->post('/api/pdc/wizard-generate', [\App\Controllers\Api\PdcApiController::class, 'wizardGenerate']);
 // Api/PG Breadcrumb
