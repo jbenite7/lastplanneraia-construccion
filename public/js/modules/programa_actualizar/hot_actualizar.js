@@ -541,6 +541,9 @@ window.HOTActualizarModule = (function() {
                 }
 
                 // Reflejar cambios heredados si existen en la respuesta (Herencia AIA 2026)
+                var editorOpen = hot.getActiveEditor && hot.getActiveEditor() && hot.getActiveEditor().isOpened && hot.getActiveEditor().isOpened();
+                if (editorOpen) { return; }
+
                 if (res.unidad !== undefined) hot.setDataAtRowProp(visualRowIndex, 'unidad', res.unidad, 'internal');
                 if (res.cantidad_ppto !== undefined) hot.setDataAtRowProp(visualRowIndex, 'cantidad_ppto', res.cantidad_ppto, 'internal');
                 if (res.Ejecutado !== undefined) {
@@ -657,7 +660,9 @@ window.HOTActualizarModule = (function() {
                 }
             ],
             cells: function(row, col, prop) {
-                var canEdit = Boolean(editableProps[prop]) && _canEditGlobal;
+                // AIA 2026: "Asociar con..." SIEMPRE es editable — el mapeo de actividades
+                // es la función principal de esta página y no depende del estado de confirmación semanal.
+                var canEdit = (prop === 'programaAnteriorAsociar') || (Boolean(editableProps[prop]) && _canEditGlobal);
                 var physicalRow = this.instance.toPhysicalRow(row);
 
                 var sourceData = _cachedSourceData;
@@ -726,8 +731,34 @@ window.HOTActualizarModule = (function() {
             dropdownMenu: ['filter_by_condition', 'filter_by_value', 'filter_action_bar'],
             outsideClickDeselects: false, // Vital para Select2/TomSelect
             hiddenColumns: {
-                columns: [0], // Ocultar Consecutivo por defecto
+                columns: [0],
                 indicators: false
+            },
+
+            afterOnCellMouseDown: function(event, coords) {
+                if (!coords || coords.row < 0 || coords.col < 0) return;
+                if (!event || event.button !== 0 || event.shiftKey || event.ctrlKey || event.metaKey || event.altKey) return;
+
+                var prop = this.colToProp(coords.col);
+                if (prop !== 'programaAnteriorAsociar') return;
+
+                var instance = this;
+                var currentValue = instance.getDataAtRowProp(coords.row, prop);
+
+                instance.selectCell(coords.row, coords.col, coords.row, coords.col, false, false);
+
+                setTimeout(function() {
+                    if (!instance) return;
+                    var editor = instance.getActiveEditor ? instance.getActiveEditor() : null;
+                    if (!editor) { return; }
+                    try {
+                        if (typeof editor.enableFullEditMode === 'function') editor.enableFullEditMode();
+                        editor.beginEditing(currentValue, event);
+                        if (typeof editor.open === 'function' && (!editor.isOpened || !editor.isOpened())) {
+                            editor.open(event);
+                        }
+                    } catch(_err) {}
+                }, 0);
             },
 
             afterChange: function(changes, source) {
