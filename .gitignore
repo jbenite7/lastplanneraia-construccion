@@ -63,6 +63,7 @@ docs/pdc/
 .opencode/
 .claude/
 .gemini/
+.omo/
 
 # Node.js / Playwright testing
 node_modules/
@@ -73,6 +74,7 @@ test-output-*/
 test-results/
 tests/browser/
 .playwright-mcp/
+.tmp-e2e/
 
 # Scratch y debugging
 scratch/

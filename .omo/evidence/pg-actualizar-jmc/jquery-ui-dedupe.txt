@@ -1,6 +1,0 @@
-# jQuery UI Dedupe Evidence
-Date: 2026-06-18
-Before: 2 occurrences of jquery-ui.js (line 5 head, line 355 body)
-After: 1 occurrence of jquery-ui.js (line 5 head)
-Removed: line 355 body duplicate
-Datepicker dependency: Preserved (jQuery UI still loaded in head)
