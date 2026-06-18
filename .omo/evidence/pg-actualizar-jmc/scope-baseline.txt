@@ -1,0 +1,95 @@
+# Scope Baseline — pg-actualizar-jmc
+## Recorded: 2026-06-17T19:40 -05:00 (America/Bogota)
+
+---
+
+## Commands Used
+
+```bash
+GIT_MASTER=1 git status
+GIT_MASTER=1 git diff --name-only
+GIT_MASTER=1 git diff --staged --name-only
+GIT_MASTER=1 git log --oneline -3
+GIT_MASTER=1 git diff --stat
+```
+
+---
+
+## Working Tree Summary
+
+**Branch:** `main` (up to date with `origin/main`)
+**Staged changes:** 0 files
+**Unstaged modifications:** 10 files
+**Untracked files:** 11 entries (dirs counted as 1)
+
+---
+
+## Classification
+
+### 🔵 IN SCOPE — Source files this plan may modify
+
+| File | Status | Notes |
+|------|--------|-------|
+| `public/js/modules/programa_actualizar/hot_actualizar.js` | Modified (unstaged) | 128 lines changed |
+| `views/programa-general-actualizar/programaGeneralActualizar.view.php` | Modified (unstaged) | 2 lines removed |
+
+These are the **only** source files that implementers should touch for this plan.
+
+---
+
+### 🟡 ALLOWED — Supporting / evidence files for this plan
+
+| File | Status | Notes |
+|------|--------|-------|
+| `.omo/` (directory) | Untracked | Plan artifacts, evidence destination |
+
+---
+
+### 🔴 UNRELATED / PRE-EXISTING — Do NOT touch
+
+#### Modified (unstaged) — Belongs to prior work, not this plan
+| File | Δ lines | Likely purpose |
+|------|---------|----------------|
+| `public/index.php` | +3 | Route changes (pdc-auto-generate breadcrumb) |
+| `src/Controllers/Api/ContratosApiController.php` | +314 | Contract list API expansion |
+| `src/Controllers/Api/ListadoActividadesApiController.php` | +359 | Activity listing API expansion |
+| `src/Controllers/Api/PdcAutoGenerateController.php` | +286 | New PDC auto-generate controller |
+| `src/Controllers/Api/PgBreadcrumbController.php` | +3 | Breadcrumb tweak |
+| `views/contratos/contratos.view.php` | +127 | Contract view update |
+| `views/listado-actividades/listadoActividades.view.php` | +156 | Activity list view update |
+| `views/pdc/pdc.view.php` | +67 | PDC view update |
+
+#### Untracked — Pre-existing test/output artifacts
+| File | Notes |
+|------|-------|
+| `.tmp-e2e/` | E2E test temp directory |
+| `database/patches/20260613_pdc_estrategia_agrupacion.sql` | PDC strategy patch |
+| `src/Support/ActivityMatcher.php` | Activity matching helper |
+| `test-output-pg-actualizar*.mjs` (6 files) | Test output logs from prior runs |
+
+---
+
+## Warning for Implementers
+
+> ⚠️ **Scope boundary:** Modify **only** these two files for source changes:
+>   1. `public/js/modules/programa_actualizar/hot_actualizar.js`
+>   2. `views/programa-general-actualizar/programaGeneralActualizar.view.php`
+>
+> All other modified files and untracked artifacts are **pre-existing/unrelated**. Do not stage, commit, revert, or edit them. Do not run formatters (php-cs-fixer, etc.) on any file. Preserve user changes entirely.
+
+---
+
+## Snapshot of Target Diffs
+
+```diff
+ public/js/modules/programa_actualizar/hot_actualizar.js
+   +128 -30 (net +98 lines)
+```
+
+```diff
+ views/programa-general-actualizar/programaGeneralActualizar.view.php
+   +0 -2 (net -2 lines)
+```
+
+Total Δ across all working-tree files: +1413 / -32 lines across 10 files.
+Target files account for ~9% of the change volume.

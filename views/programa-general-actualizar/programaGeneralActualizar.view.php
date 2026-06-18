@@ -352,7 +352,6 @@
 	<script type="text/javascript" charset="utf8" src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 	
 	<!--Selector de fechas -->
-	<script src="https://code.jquery.com/ui/1.10.1/jquery-ui.js"></script>
 
 	<!--Global AJAX Loaders-->
 	<script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js" charset="utf-8"></script>
@@ -369,7 +368,7 @@
 	<script src="/js/HandsontableTomSelectEditor.js?v=tomselect30"></script>
 	
 	<!-- Módulos de Handsontable -->
-	<script src="/public/js/modules/programa_actualizar/hot_actualizar.js?v=20260526a"></script>
+	<script src="/public/js/modules/programa_actualizar/hot_actualizar.js?v=20260618a"></script>
 
 	<script>
 		/* Funciones Legacy requeridas a nivel global */

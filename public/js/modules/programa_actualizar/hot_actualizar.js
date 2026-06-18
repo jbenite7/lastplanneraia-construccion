@@ -12,6 +12,13 @@ window.HOTActualizarModule = (function() {
     var _rowMetaCache = {};
     var _pendingChanges = {};
     var _saveTimer = null;
+    var _lastAppliedContainerHeight = 0;
+    var _colWidthCache = null;
+    var _colContainerWidth = 0;
+    var _cachedColumns = null;
+    var _cachedSourceData = null;
+    var _initDone = false;
+    var _loadDataFetched = false;
 
     // Configuración de validadores y regexs
     const regexNumerico = /^-?\d*(\.\d+)?$/;
@@ -144,14 +151,18 @@ window.HOTActualizarModule = (function() {
 
             var containerHeight = syncContainerHeight();
             if (containerHeight > 0) {
-                hot.updateSettings({ height: Math.max(220, containerHeight - 2) });
+                var newHeight = Math.max(220, containerHeight - 2);
+                if (newHeight !== _lastAppliedContainerHeight) {
+                    _lastAppliedContainerHeight = newHeight;
+                    hot.updateSettings({ height: newHeight });
+                }
             }
 
+            // refreshDimensions recalculates the visible area after settings changes.
+            // updateSettings already triggers a render, so no explicit hot.render() needed.
             if (typeof hot.refreshDimensions === 'function') {
                 hot.refreshDimensions();
             }
-
-            hot.render();
         }, Number.isFinite(delay) ? delay : 0);
     }
 
@@ -203,7 +214,7 @@ window.HOTActualizarModule = (function() {
     function pgEjecutadoRealRenderer(instance, td, row, col, prop, value, cellProperties) {
         Handsontable.renderers.NumericRenderer.apply(this, arguments);
         var physicalRow = typeof instance.toPhysicalRow === 'function' ? instance.toPhysicalRow(row) : row;
-        var sourceData = typeof instance.getSourceData === 'function' ? instance.getSourceData() : null;
+        var sourceData = _cachedSourceData || (typeof instance.getSourceData === 'function' ? instance.getSourceData() : null);
         var rowData = (Array.isArray(sourceData) && physicalRow !== null && physicalRow >= 0 && physicalRow < sourceData.length) ? (sourceData[physicalRow] || {}) : {};
         var unity = String(rowData.unidad || '').trim();
         var ppto = parseFloat(rowData.cantidad_ppto || 0);
@@ -229,7 +240,7 @@ window.HOTActualizarModule = (function() {
     function pgPercentRenderer(instance, td, row, col, prop, value, cellProperties) {
         Handsontable.renderers.NumericRenderer.apply(this, arguments);
         var val = parseFloat(value || 0);
-        td.innerHTML = (val * 100).toFixed(1) + '%';
+        td.textContent = (val * 100).toFixed(1) + '%';
         td.className = (td.className || '') + ' htCenter htMiddle';
     }
 
@@ -275,6 +286,11 @@ window.HOTActualizarModule = (function() {
      * Cargar y Filtrar Datos
      */
     function loadData() {
+        if (_loadDataFetched) {
+            console.log("🔥 [MapeoManual] loadData() ya ejecutado. Saltando fetch duplicado.");
+            return;
+        }
+        _loadDataFetched = true;
         console.log("🔥 [MapeoManual] Entrando a loadData().");
         $('#loading').show();
         var db = document.getElementById('baseDatos').value;
@@ -353,6 +369,8 @@ window.HOTActualizarModule = (function() {
         console.log("🔥 [MapeoManual] Renderizando tabla. Datos mostrados: ", filteredData.length);
         if (hot) {
             hot.loadData(filteredData);
+            _cachedSourceData = hot.getSourceData();
+            _rowMetaCache = {};
             refreshHotLayout(0);
         } else {
             initHandsontable(filteredData);
@@ -641,7 +659,11 @@ window.HOTActualizarModule = (function() {
             cells: function(row, col, prop) {
                 var canEdit = Boolean(editableProps[prop]) && _canEditGlobal;
                 var physicalRow = this.instance.toPhysicalRow(row);
-                var sourceData = typeof this.instance.getSourceData === 'function' ? this.instance.getSourceData() : null;
+
+                var sourceData = _cachedSourceData;
+                if (!sourceData) {
+                    sourceData = typeof this.instance.getSourceData === 'function' ? this.instance.getSourceData() : null;
+                }
                 var rowData = (Array.isArray(sourceData) && physicalRow !== null && physicalRow >= 0 && physicalRow < sourceData.length) ? (sourceData[physicalRow] || {}) : {};
 
                 if (canEdit && prop === 'cantidad_ppto' && String(rowData.unidad || '').trim() === '%') {
@@ -653,7 +675,8 @@ window.HOTActualizarModule = (function() {
                     canEdit = false;
                 }
 
-                var columnMeta = this.instance.getSettings().columns[col] || {};
+                var columns = _cachedColumns || (this.instance.getSettings().columns || []);
+                var columnMeta = columns[col] || {};
                 return {
                     readOnly: !canEdit,
                     className: (columnMeta.className || '') + (canEdit ? ' pg-cell-editable' : ' pg-cell-readonly'),
@@ -677,12 +700,17 @@ window.HOTActualizarModule = (function() {
             colWidths: function(index) {
                 var container = document.getElementById('hot-container');
                 var baseWidth = container ? container.clientWidth : window.innerWidth;
-                var cw = baseWidth - 20; // gutter
-                // Ratios based on original widths: [40, 40, 350, 300, 90, 90, 60, 80, 100, 140]
-                // Total = 1290
-                var p = [0.031, 0.031, 0.271, 0.233, 0.070, 0.070, 0.047, 0.062, 0.078, 0.109];
-                var w = Math.floor(cw * p[index]);
-                return Math.max(w, 20);
+                var cw = baseWidth - 20;
+
+                if (_colWidthCache === null || _colContainerWidth !== cw) {
+                    _colContainerWidth = cw;
+                    // Original ratios: [0.031, 0.031, 0.271, 0.233, 0.070, 0.070, 0.047, 0.062, 0.078, 0.109] → sum ~1.002
+                    // Normalized to sum exactly 1.0 to eliminate right-side gap
+                    var raw = [0.031, 0.031, 0.271, 0.233, 0.070, 0.070, 0.047, 0.062, 0.078, 0.109];
+                    var sum = raw.reduce(function(a, b) { return a + b; }, 0);
+                    _colWidthCache = raw.map(function(r) { return Math.max(Math.floor(cw * r / sum), 20); });
+                }
+                return _colWidthCache[index];
             },
             licenseKey: 'non-commercial-and-evaluation',
             wordWrap: false,
@@ -774,6 +802,8 @@ window.HOTActualizarModule = (function() {
 
         _canEditGlobal = isUserAllowedToEdit();
         hot = new Handsontable(container, hotConfig);
+        _cachedColumns = hot.getSettings().columns || [];
+        _cachedSourceData = hot.getSourceData();
         refreshHotLayout(0);
 
         // Bind Custom Togglers
@@ -785,6 +815,7 @@ window.HOTActualizarModule = (function() {
         $(window)
             .off('resize.hotActualizar orientationchange.hotActualizar')
             .on('resize.hotActualizar orientationchange.hotActualizar', function() {
+                _colWidthCache = null;
                 refreshHotLayout(80);
             });
 
@@ -795,22 +826,7 @@ window.HOTActualizarModule = (function() {
                     clearTimeout(_saveTimer);
                     _saveTimer = null;
                 }
-                // Primary: flush via regular AJAX (debounce bypassed)
                 flushPendingChanges();
-
-                // Fallback: sendBeacon is more reliable than fetch() during page unload
-                try {
-                    var dbEl = document.getElementById('baseDatos');
-                    if (dbEl && typeof navigator.sendBeacon === 'function') {
-                        var payload = JSON.stringify({
-                            pending: _pendingChanges,
-                            db: dbEl.value
-                        });
-                        navigator.sendBeacon('/api/general/update', payload);
-                    }
-                } catch (_e) {
-                    // sendBeacon not supported or failed — data loss acceptable during unload
-                }
             }
         });
     }
@@ -818,10 +834,11 @@ window.HOTActualizarModule = (function() {
     return {
         init: function() {
             console.log("🔥 [MapeoManual] HOTActualizarModule.init() alcanzado.");
-            if (window.HOTActualizarModule._initialized) {
+            if (_initDone) {
                 console.log("🔥 [MapeoManual] init() ya fue ejecutado. Saltando.");
                 return;
             }
+            _initDone = true;
             window.HOTActualizarModule._initialized = true;
             try {
                 fetchCodigosActividad();

@@ -1,0 +1,103 @@
+{
+  "timestamp": "2026-06-18T14:00:28Z",
+  "project": "Optimización Aeropuerto JMC",
+  "db": "optimizacionJMC",
+  "targetWeek": 3,
+  "metrics": {
+    "domContentLoaded": "69ms",
+    "domComplete": "79ms",
+    "loadEventEnd": "80ms",
+    "timeToGridRows": "32 DOM rows rendered within 7s wait",
+    "rowCount": {
+      "domRowsWithContent": 32,
+      "totalDomRows": 32,
+      "apiDataLength": 1475,
+      "renderedAfterFilter": 348,
+      "note": "32 visible DOM rows (virtualized), 1475 total API rows, 348 rendered as 'Pendientes'"
+    },
+    "handsontable": {
+      "version": "14.6.1",
+      "containerFound": true,
+      "containerId": "#hot-container",
+      "containerHTMLSize": 72810,
+      "gridWidth": 1382,
+      "gridHeight": 729,
+      "handsontableElementCount": 7,
+      "autocompleteCells": 96,
+      "dimmedCells": 96
+    },
+    "apiResponse": {
+      "endpoint": "/api/general/list?db=optimizacionJMC&semana_objetivo=3&exclude_chapters=1",
+      "firstCallDuration": "52ms",
+      "secondCallDuration": "40ms",
+      "transferSize": 1474278,
+      "decodedBodySize": 1473978,
+      "transferSizeFormatted": "1.47MB",
+      "duplicateCalls": true,
+      "codigosEndpointDuration": "15ms",
+      "codigosTransferSize": 909
+    },
+    "consoleMessages": {
+      "errors": 0,
+      "warnings": 1,
+      "warningMessage": "[Fallback] cargaParametros no fue invocado por AJAX legacy. Inicializando Handsontable directamente.",
+      "keyLogs": [
+        "HOTActualizarModule.init() alcanzado",
+        "Entrando a loadData()",
+        "targetSemana calculado: 3",
+        "JSON parseado. Data length: 1475",
+        "Renderizando tabla. Datos mostrados: 348",
+        "Handsontable inicializado",
+        "Loader ocultado"
+      ],
+      "doubleInitDetected": true,
+      "doubleInitNote": "HOTActualizarModule.init() was called twice, resulting in duplicate API calls"
+    },
+    "networkRequests": {
+      "total": 61,
+      "apiRequests": 6,
+      "jsRequests": 10,
+      "cssRequests": 13,
+      "staticRequests": 53
+    },
+    "scrollSmoothness": {
+      "scrollTo500px": "0ms (instant)",
+      "note": "scrollTop set programmatically, no jank detected"
+    },
+    "toggleResponse": {
+      "pendientesToTodas": "12553ms",
+      "todasToPendientes": "2934ms",
+      "note": "First toggle is extremely slow (12.5s), second is faster (2.9s) - likely due to first toggle requiring full re-render"
+    },
+    "editorOpenTime": "503ms",
+    "editorNote": "Cell click registered but no date picker/editor overlay appeared",
+    "hiddenInputs": {
+      "permisoCanonico": "R",
+      "semana": "2",
+      "semanaObjetivoActualizacion": "3",
+      "maxSemana": "2"
+    },
+    "moduleStatus": {
+      "HOTActualizarModuleExists": true,
+      "moduleKeys": ["init"],
+      "hotPropertyExists": false,
+      "initialized": false
+    }
+  },
+  "blocker": null,
+  "screenshots": [
+    "baseline-full-page.png",
+    "baseline-viewport.png",
+    "baseline-after-toggle.png"
+  ],
+  "keyFindings": [
+    "1475 rows returned by API, 348 rendered as 'Pendientes' view",
+    "Toggle from Pendientes to Todas takes 12.5 seconds - CRITICAL performance issue",
+    "Duplicate API calls detected (HOTActualizarModule.init() called twice)",
+    "API response is 1.47MB - large payload for a single endpoint",
+    "Handsontable 14.6.1 with 7 hot elements on page",
+    "No date picker/editor overlay appears on cell click (custom implementation)",
+    "DOM content loaded in 69ms - fast initial load",
+    "Grid dimensions: 1382x729px"
+  ]
+}
