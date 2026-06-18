@@ -903,8 +903,8 @@ window.HOTActualizarModule = (function() {
         .then(function(data) {
             console.log("🔥 [AutoAssociate] Results:", data);
             btn.prop("disabled", false).html(originalHtml);
-            if (data.success) {
-                toastr.success("Asociación completada: " + (data.data ? data.data.asociados + " actividades" : ""));
+            if (data.success && data.data) {
+                applyMatchResults(data.data);
             } else {
                 toastr.error(data.error || "Error en la asociación automática");
             }
@@ -921,10 +921,10 @@ window.HOTActualizarModule = (function() {
      * @param {Object} data - data identical/high/medium/none arrays.
      */
     function populateModalStats(data) {
-        var identicalCount = (data.identical || []).length;
-        var highCount = (data.high || []).length;
-        var mediumCount = (data.medium || []).length;
-        var noneCount = (data.none || []).length;
+        var identicalCount = typeof data.identical === 'number' ? data.identical : (data.identical || []).length;
+        var highCount = typeof data.high === 'number' ? data.high : (data.high || []).length;
+        var mediumCount = typeof data.medium === 'number' ? data.medium : (data.medium || []).length;
+        var noneCount = typeof data.none === 'number' ? data.none : (data.none || []).length;
 
         $('#stat_identical').text(identicalCount);
         $('#stat_high').text(highCount);
@@ -1187,29 +1187,32 @@ window.HOTActualizarModule = (function() {
         var colIndex = hot.propToCol('programaAnteriorAsociar');
         if (typeof colIndex !== 'number' || colIndex < 0) return;
 
-        // Identical + High → pg-match-auto (green)
-        var autoItems = [].concat(data.identical || [], data.high || []);
-        autoItems.forEach(function(item) {
+        var sourceData = hot.getSourceData();
+
+        // Medium items have row indices from the API
+        var mediumRows = {};
+        (data.medium || []).forEach(function(item) {
             if (item.row !== undefined && item.row >= 0) {
-                hot.setCellMeta(item.row, colIndex, 'className', 'pg-match-auto');
+                mediumRows[item.row] = true;
             }
         });
 
-        // Medium → pg-match-review (yellow)
-        var mediumItems = data.medium || [];
-        mediumItems.forEach(function(item) {
-            if (item.row !== undefined && item.row >= 0) {
-                hot.setCellMeta(item.row, colIndex, 'className', 'pg-match-review');
-            }
-        });
+        // Highlight based on actual grid state after auto-associate
+        for (var i = 0; i < sourceData.length; i++) {
+            var row = sourceData[i];
+            var val = row.programaAnteriorAsociar;
+            var className;
 
-        // None → pg-match-new (gray)
-        var noneItems = data.none || [];
-        noneItems.forEach(function(item) {
-            if (item.row !== undefined && item.row >= 0) {
-                hot.setCellMeta(item.row, colIndex, 'className', 'pg-match-new');
+            if (mediumRows[i]) {
+                className = 'pg-match-review';
+            } else if (val && val !== '*No Asociada*' && val !== '') {
+                className = 'pg-match-auto';
+            } else {
+                className = 'pg-match-new';
             }
-        });
+
+            hot.setCellMeta(i, colIndex, 'className', className);
+        }
 
         hot.render();
     }
@@ -1226,29 +1229,33 @@ window.HOTActualizarModule = (function() {
             return;
         }
 
-        // Apply grid highlighting for all confidence tiers
-        applyGridHighlighting(results);
-
         var data = results.data || results;
         var mediumItems = data.medium || [];
 
-        if (mediumItems.length > 0) {
-            // Medium items exist → show review modal for user action
-            showReviewModal(results);
-        } else {
-            // No medium items → show summary toast
-            var identicalCount = (data.identical || []).length;
-            var highCount = (data.high || []).length;
-            var noneCount = (data.none || []).length;
-            var autoCount = identicalCount + highCount;
+        // Reload grid data so highlighting reflects the DB state after auto-associate
+        _loadDataFetched = false;
+        loadData();
 
-            if (typeof toastr !== 'undefined') {
-                toastr.success(
-                    autoCount + ' asociadas automáticamente, ' +
-                    noneCount + ' nuevas detectadas'
-                );
+        // Apply highlighting after data reloads
+        setTimeout(function() {
+            applyGridHighlighting(results);
+
+            if (mediumItems.length > 0) {
+                showReviewModal(results);
+            } else {
+                var identicalCount = typeof data.identical === 'number' ? data.identical : (data.identical || []).length;
+                var highCount = typeof data.high === 'number' ? data.high : (data.high || []).length;
+                var noneCount = typeof data.none === 'number' ? data.none : (data.none || []).length;
+                var autoCount = identicalCount + highCount;
+
+                if (typeof toastr !== 'undefined') {
+                    toastr.success(
+                        autoCount + ' asociadas automáticamente, ' +
+                        noneCount + ' nuevas detectadas'
+                    );
+                }
             }
-        }
+        }, 2000);
     }
 
     return {
