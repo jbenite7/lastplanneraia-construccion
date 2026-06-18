@@ -1116,13 +1116,17 @@ window.HOTActualizarModule = (function() {
         $container.on('click.reviewModal', '.js-accept-match', function(e) {
             e.preventDefault();
             var $btn = $(this);
-            var row = parseInt($btn.data('row'), 10);
+            var physicalRow = parseInt($btn.data('row'), 10);
             var candidateName = $btn.data('candidate-name');
 
-            if (isNaN(row) || !candidateName) return;
+            if (isNaN(physicalRow) || !candidateName) return;
 
             if (hot) {
-                hot.setDataAtRowProp(row, 'programaAnteriorAsociar', candidateName, 'edit');
+                // Convert physical row index (from API) to visual row index (for setDataAtRowProp)
+                var visualRow = hot.toVisualRow(physicalRow);
+                if (visualRow !== null && visualRow >= 0) {
+                    hot.setDataAtRowProp(visualRow, 'programaAnteriorAsociar', candidateName, 'edit');
+                }
             }
 
             var $item = $btn.closest('.match-item');
@@ -1138,12 +1142,15 @@ window.HOTActualizarModule = (function() {
         $container.on('click.reviewModal', '.js-skip-match', function(e) {
             e.preventDefault();
             var $btn = $(this);
-            var row = parseInt($btn.data('row'), 10);
+            var physicalRow = parseInt($btn.data('row'), 10);
 
-            if (isNaN(row)) return;
+            if (isNaN(physicalRow)) return;
 
             if (hot) {
-                hot.setDataAtRowProp(row, 'programaAnteriorAsociar', '*No Asociada*', 'edit');
+                var visualRow = hot.toVisualRow(physicalRow);
+                if (visualRow !== null && visualRow >= 0) {
+                    hot.setDataAtRowProp(visualRow, 'programaAnteriorAsociar', '*No Asociada*', 'edit');
+                }
             }
 
             var $item = $btn.closest('.match-item');
@@ -1211,7 +1218,10 @@ window.HOTActualizarModule = (function() {
                 className = 'pg-match-new';
             }
 
-            hot.setCellMeta(i, colIndex, 'className', className);
+            var visualRow = hot.toVisualRow(i);
+            if (visualRow !== null && visualRow >= 0) {
+                hot.setCellMeta(visualRow, colIndex, 'className', className);
+            }
         }
 
         hot.render();
