@@ -1156,7 +1156,8 @@ class GeneralApiController extends BaseController
                 try {
                     $sqlUpdate = "UPDATE {$dbPrefix}_programa_consolidado 
                                   SET programaAnteriorAsociar = ? 
-                                  WHERE Consecutivo_en_Programa = ? AND Semana = ?";
+                                  WHERE Consecutivo_en_Programa = ? AND Semana = ?
+                                  AND (programaAnteriorAsociar IS NULL OR programaAnteriorAsociar = '' OR programaAnteriorAsociar = '*No Asociada*')";
                     $stmtUpdate = $this->db->prepare($sqlUpdate);
 
                     foreach ($autoItems as $item) {
