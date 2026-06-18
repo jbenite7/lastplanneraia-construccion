@@ -1917,7 +1917,7 @@
 			});
 
 			// 1. Action Buttons (Left)
-			$("div.toolbarAcciones").html('<div class="grupo_botones1 ps-toolbar-actions" role="group" aria-label="Actions"><button id="btn_actualizarPDC" class="btn btn-primary btn-sm ps-btn-gap" title="Actualizar items" onclick="actualizarPDC()">Actualizar <i class="fas fa-sync fa-lg"></i></button><button id="btn_definirContratosPDC" class="btn btn-warning btn-sm ps-btn-gap" title="Desglosar Subcontratos" onclick="obtener_data_definirContratos()">Desglosar <i class="fa fa-list-ol fa-lg" aria-hidden="true"></i></button><button id="btn_pdc_wizard" class="btn btn-success btn-sm ps-btn-gap" title="Configuración rápida del Plan de Compras" onclick="$(\'#modalPdcWizard\').modal(\'show\')"><i class="fas fa-hat-wizard"></i> Wizard</button><button id="btn_soloAlertas" class="btn btn-sm ps-btn-gap pdc-btn-alertas" title="Mostrar solo paquetes que necesitan atención" onclick="toggleSoloAlertas()"><i class="fas fa-bell fa-lg"></i> Solo Alertas <span id="count-alertas" class="badge badge-light"></span></button></div>');
+			$("div.toolbarAcciones").html('<div class="grupo_botones1 ps-toolbar-actions" role="group" aria-label="Actions"><button id="btn_actualizarPDC" class="btn btn-primary btn-sm ps-btn-gap" title="Actualizar items" onclick="actualizarPDC()">Actualizar <i class="fas fa-sync fa-lg"></i></button><button id="btn_definirContratosPDC" class="btn btn-warning btn-sm ps-btn-gap" title="Desglosar Subcontratos" onclick="obtener_data_definirContratos()">Desglosar <i class="fa fa-list-ol fa-lg" aria-hidden="true"></i></button><button id="btn_pdc_wizard" class="btn btn-success btn-sm ps-btn-gap" title="Configuración rápida del Plan de Compras" onclick="$(\'#modalPdcWizard\').modal(\'show\')"><i class="fas fa-hat-wizard"></i> Wizard</button><button id="btn_auto_generar_desde_actividades" class="btn btn-info btn-sm ps-btn-gap" title="Auto-generar Plan de Compras desde actividades con contratos asignados"><i class="fas fa-magic"></i> Auto-Generar desde Actividades</button><button id="btn_soloAlertas" class="btn btn-sm ps-btn-gap pdc-btn-alertas" title="Mostrar solo paquetes que necesitan atención" onclick="toggleSoloAlertas()"><i class="fas fa-bell fa-lg"></i> Solo Alertas <span id="count-alertas" class="badge badge-light"></span></button></div>');
 			
 			// 2. Navigation Bar (Center/Middle)
 			$("div.toolbarNavegacion").html('<div class="grupo_botones_semanal_madre ps-toolbar-nav-wrap"><div class="ps-module-switcher" role="tablist" aria-label="Navegacion general"><button id="btn_Actividades" type="button" class="ps-module-tab" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_listadoActividades&semana='+semana+'\'" aria-label="Ir a Actividades"><i class="fas fa-table" aria-hidden="true"></i><span>Actividades</span></button><button id="btn_contratos" type="button" class="ps-module-tab" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_contratos&semana='+semana+'\'" aria-label="Ir a Contratos"><i class="fas fa-file-alt" aria-hidden="true"></i><span>Contratos</span></button><button id="btn_planCompras" type="button" class="ps-module-tab is-active" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=planCompras&semana='+semana+'&origen=planCompras\'" aria-label="Ir a Plan de Compras" aria-current="page"><i class="fas fa-shopping-cart" aria-hidden="true"></i><span>Plan de Compras</span></button></div></div>');
@@ -3418,6 +3418,71 @@
 			wizardShowStep(1);
 			wizardLoadSuggestions();
 		});
+
+		/* Auto-Generar desde Actividades (Fase 3) */
+		$(document).off('click.autoGenFromAct', '#btn_auto_generar_desde_actividades').on('click.autoGenFromAct', '#btn_auto_generar_desde_actividades', function(e) {
+			e.preventDefault();
+			var btn = $(this);
+			var db = document.getElementById('baseDatos').value;
+			var semana = document.getElementById('semana').value;
+
+			if (typeof AIA !== 'undefined' && AIA.Notice && AIA.Notice.confirm) {
+				AIA.Notice.confirm(
+					'Esto generará/actualizará el Plan de Compras desde las actividades con contratos asignados. ¿Continuar?',
+					'Auto-Generar PDC'
+				).then(function(confirmed) {
+					if (!confirmed) return;
+					ejecutarAutoGenerarDesdeActividades(btn, db, semana);
+				});
+			} else {
+				if (!confirm('¿Generar/actualizar el Plan de Compras desde las actividades con contratos asignados?')) return;
+				ejecutarAutoGenerarDesdeActividades(btn, db, semana);
+			}
+		});
+
+		function ejecutarAutoGenerarDesdeActividades(btn, db, semana) {
+			btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Generando...');
+
+			$.ajax({
+				method: 'POST',
+				url: '/api/pdc/auto/apply-from-actividades?db=' + encodeURIComponent(db) + '&semana=' + encodeURIComponent(semana),
+				dataType: 'json'
+			}).done(function(response) {
+				if (!response || response.respuesta !== 'BIEN') {
+					if (typeof AIA !== 'undefined' && AIA.Notice) {
+						AIA.Notice.error((response && response.mensaje) || 'No se pudo generar el Plan de Compras.');
+					} else {
+						alert((response && response.mensaje) || 'No se pudo generar el Plan de Compras.');
+					}
+					btn.prop('disabled', false).html('<i class="fas fa-magic"></i> Auto-Generar desde Actividades');
+					return;
+				}
+
+				var msg = 'Paquetes creados: <strong>' + (response.paquetesCreados || 0) + '</strong> · Actualizados: <strong>' + (response.paquetesActualizados || 0) + '</strong>';
+				if (typeof AIA !== 'undefined' && AIA.Notice) {
+					AIA.Notice.success(msg);
+				} else {
+					alert(msg.replace(/<[^>]+>/g, ''));
+				}
+
+				btn.prop('disabled', false).html('<i class="fas fa-magic"></i> Auto-Generar desde Actividades');
+
+				if (typeof recargarTabla === 'function') {
+					recargarTabla();
+				}
+			}).fail(function(xhr) {
+				var mensaje = 'Error de conexión al generar el Plan de Compras.';
+				if (xhr.responseJSON && xhr.responseJSON.mensaje) {
+					mensaje = xhr.responseJSON.mensaje;
+				}
+				if (typeof AIA !== 'undefined' && AIA.Notice) {
+					AIA.Notice.error(mensaje);
+				} else {
+					alert(mensaje);
+				}
+				btn.prop('disabled', false).html('<i class="fas fa-magic"></i> Auto-Generar desde Actividades');
+			});
+		}
 
 	</script>
 </body>

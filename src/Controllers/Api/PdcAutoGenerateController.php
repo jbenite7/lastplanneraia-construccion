@@ -272,6 +272,140 @@ class PdcAutoGenerateController
         }
     }
 
+    public function applyFromActividades(): void
+    {
+        try {
+            $this->requirePermission('lps.pdc.auto_generar', 'No autorizado para auto-generar el plan de compras.');
+            $this->requirePermission('lps.pdc.editar', 'No autorizado para modificar el plan de compras.');
+
+            $context = $this->resolveContext();
+            $dbPrefix = $context['dbPrefix'];
+            $semana = $context['semana'];
+
+            if (!$this->projectTableExists("{$dbPrefix}_pdc")) {
+                $this->jsonError('No existe la tabla PDC del proyecto.', 404);
+                return;
+            }
+
+            $activities = $this->loadActividadesWithPackages($dbPrefix, $semana);
+            if (empty($activities)) {
+                $this->jsonResponse([
+                    'respuesta' => 'BIEN',
+                    'mensaje' => 'No hay actividades con paquetes asignados para generar PDC.',
+                    'paquetesCreados' => 0,
+                    'paquetesActualizados' => 0,
+                    'paquetesExistentes' => 0,
+                ]);
+                return;
+            }
+
+            $existingPdc = $this->loadExistingPdcPackages($dbPrefix, $semana);
+            $prefixMap = array_flip(self::PACKAGE_TYPE_LABELS);
+
+            $this->db->beginTransaction();
+
+            $paquetesCreados = 0;
+            $paquetesActualizados = 0;
+            $paquetesExistentes = 0;
+            $paquetesOmitidos = 0;
+
+            foreach ($activities as $activity) {
+                $fechaInicio = $this->normalizeDate($activity['fechaInicio'] ?? null);
+                $actividadNombre = trim((string) ($activity['actividad'] ?? ''));
+
+                foreach (['SI', 'S', 'MO'] as $prefix) {
+                    for ($i = 1; $i <= 5; $i++) {
+                        $paqueteNombre = trim((string) ($activity["paquete{$prefix}{$i}"] ?? ''));
+                        if ($paqueteNombre === '') {
+                            continue;
+                        }
+
+                        $tipoPaquete = self::PACKAGE_TYPE_LABELS[$prefix] ?? null;
+                        if ($tipoPaquete === null) {
+                            continue;
+                        }
+
+                        $existingKey = mb_strtolower($tipoPaquete . '|' . $paqueteNombre);
+                        if (isset($existingPdc[$existingKey])) {
+                            $pdcRow = $existingPdc[$existingKey];
+                            $this->updateExistingPdcDates($dbPrefix, (int) $pdcRow['consecutivo'], $fechaInicio, $semana);
+                            $paquetesActualizados++;
+                            continue;
+                        }
+
+                        $familyMatch = $this->matchActivityForPdc($activity, $actividadNombre);
+                        $contratos = $familyMatch ? ($familyMatch['familia_nombre'] ?? $actividadNombre) : $actividadNombre;
+
+                        $option = $familyMatch ? $this->findOptionForTipoPaquete($familyMatch['familia_id'], $tipoPaquete) : null;
+                        $durations = $option ? $this->resolveDurations($option, ['tipo_paquete' => $tipoPaquete, 'paquete_nombre' => $paqueteNombre, 'dias_reales' => null]) : $this->defaultDurations();
+
+                        $dates = $this->calculateProcessDates($fechaInicio, $durations);
+                        $this->ensureTitleRow($dbPrefix, $semana, $tipoPaquete);
+                        $subcontractIndex = $this->nextSubcontractIndex($dbPrefix, $semana, $tipoPaquete);
+
+                        $this->db->query(
+                            "INSERT INTO {$dbPrefix}_pdc (
+                                semana, titulo, tipoPaquete, paqueteContratacion, contratos,
+                                numeroSubcontratos, subcontratoPaquete, estado,
+                                fechaElaboracionPliegos, diasElaboracionPliegos,
+                                fechaEntregaPliegos, diasEntregaPliegos,
+                                fechaReciboPropuestas, diasReciboPropuestas,
+                                fechaCuadrosComparativos, diasCuadrosComparativos,
+                                fechaLegalizacionContrato, diasLegalizacionContrato,
+                                fechaFabricacion, diasFabricacion,
+                                fechaInsumosObra, diasInsumosObra,
+                                fechaInicio, fechaInicioProyectada
+                            ) VALUES (?, 0, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                            [
+                                $semana,
+                                $tipoPaquete,
+                                $paqueteNombre,
+                                $contratos,
+                                $subcontractIndex,
+                                'En Curso; Proceso de contratación no iniciado',
+                                $dates['fechaElaboracionPliegos'],
+                                $durations['dias_elaboracion'],
+                                $dates['fechaEntregaPliegos'],
+                                $durations['dias_entrega'],
+                                $dates['fechaReciboPropuestas'],
+                                $durations['dias_recibo'],
+                                $dates['fechaCuadrosComparativos'],
+                                $durations['dias_cuadros'],
+                                $dates['fechaLegalizacionContrato'],
+                                $durations['dias_legalizacion'],
+                                $dates['fechaFabricacion'],
+                                $durations['dias_fabricacion'],
+                                $dates['fechaInsumosObra'],
+                                $durations['dias_insumos'],
+                                $fechaInicio,
+                                $fechaInicio,
+                            ]
+                        );
+                        $paquetesCreados++;
+                    }
+                }
+            }
+
+            $this->db->commit();
+            $this->db->logActivity('PDC', 'AUTO_GENERAR_FROM_ACTIVIDADES', "Desde _actividades: {$paquetesCreados} creados, {$paquetesActualizados} actualizados", $dbPrefix);
+
+            $this->jsonResponse([
+                'respuesta' => 'BIEN',
+                'paquetesCreados' => $paquetesCreados,
+                'paquetesActualizados' => $paquetesActualizados,
+                'paquetesExistentes' => $paquetesExistentes,
+                'paquetesOmitidos' => $paquetesOmitidos,
+            ]);
+
+        } catch (Throwable $e) {
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+            error_log('Error en PdcAutoGenerateController@applyFromActividades: ' . $e->getMessage());
+            $this->jsonError('No se pudo generar el plan de compras desde actividades.', 500);
+        }
+    }
+
     private function resolveContext(): array
     {
         $context = ModuleRequestContext::resolve();
@@ -675,6 +809,158 @@ class PdcAutoGenerateController
         return null;
     }
 
+    private function loadActividadesWithPackages(string $dbPrefix, int $semana): array
+    {
+        $stmt = $this->db->query(
+            "SELECT Id, codigo, actividad, descripcionActividad, actividadInicio, fechaInicio, tipoContrato,
+                    paqueteSI1, paqueteSI2, paqueteSI3, paqueteSI4, paqueteSI5,
+                    paqueteS1, paqueteS2, paqueteS3, paqueteS4, paqueteS5,
+                    paqueteMO1, paqueteMO2, paqueteMO3, paqueteMO4, paqueteMO5
+             FROM {$dbPrefix}_actividades
+             WHERE semanaActualizacion = ? AND tipoContrato IS NOT NULL AND tipoContrato != ''
+             ORDER BY Id ASC",
+            [$semana]
+        );
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    private function loadExistingPdcPackages(string $dbPrefix, int $semana): array
+    {
+        $stmt = $this->db->query(
+            "SELECT consecutivo, tipoPaquete, paqueteContratacion, fechaInicio
+             FROM {$dbPrefix}_pdc
+             WHERE semana = ? AND titulo = 0",
+            [$semana]
+        );
+
+        $map = [];
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+            $key = mb_strtolower(trim($row['tipoPaquete']) . '|' . trim($row['paqueteContratacion']));
+            $map[$key] = $row;
+        }
+        return $map;
+    }
+
+    private function updateExistingPdcDates(string $dbPrefix, int $consecutivo, ?string $fechaInicio, int $newSemana): void
+    {
+        if ($fechaInicio === null) {
+            $this->db->query(
+                "UPDATE {$dbPrefix}_pdc SET semana = ? WHERE consecutivo = ?",
+                [$newSemana, $consecutivo]
+            );
+            return;
+        }
+
+        $stmt = $this->db->query(
+            "SELECT diasElaboracionPliegos, diasEntregaPliegos, diasReciboPropuestas,
+                    diasCuadrosComparativos, diasLegalizacionContrato, diasFabricacion, diasInsumosObra
+             FROM {$dbPrefix}_pdc WHERE consecutivo = ?",
+            [$consecutivo]
+        );
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$row) {
+            return;
+        }
+
+        $durations = [
+            'dias_elaboracion' => (int) ($row['diasElaboracionPliegos'] ?? 1),
+            'dias_entrega' => (int) ($row['diasEntregaPliegos'] ?? 1),
+            'dias_recibo' => (int) ($row['diasReciboPropuestas'] ?? 1),
+            'dias_cuadros' => (int) ($row['diasCuadrosComparativos'] ?? 1),
+            'dias_legalizacion' => (int) ($row['diasLegalizacionContrato'] ?? 1),
+            'dias_fabricacion' => (int) ($row['diasFabricacion'] ?? 1),
+            'dias_insumos' => (int) ($row['diasInsumosObra'] ?? 1),
+        ];
+
+        $dates = $this->calculateProcessDates($fechaInicio, $durations);
+
+        $this->db->query(
+            "UPDATE {$dbPrefix}_pdc SET
+                semana = ?,
+                fechaInicio = ?, fechaInicioProyectada = ?,
+                fechaElaboracionPliegos = ?, fechaEntregaPliegos = ?,
+                fechaReciboPropuestas = ?, fechaCuadrosComparativos = ?,
+                fechaLegalizacionContrato = ?, fechaFabricacion = ?,
+                fechaInsumosObra = ?
+             WHERE consecutivo = ?",
+            [
+                $newSemana,
+                $fechaInicio, $fechaInicio,
+                $dates['fechaElaboracionPliegos'],
+                $dates['fechaEntregaPliegos'],
+                $dates['fechaReciboPropuestas'],
+                $dates['fechaCuadrosComparativos'],
+                $dates['fechaLegalizacionContrato'],
+                $dates['fechaFabricacion'],
+                $dates['fechaInsumosObra'],
+                $consecutivo,
+            ]
+        );
+    }
+
+    private function matchActivityForPdc(array $activity, string $actividadNombre): ?array
+    {
+        $matcher = new \App\Support\ActivityMatcher();
+        $rules = $matcher->loadRules();
+
+        $pgActivity = [
+            'Actividad' => $actividadNombre,
+            '__capitulo' => '',
+        ];
+
+        return $matcher->matchActivity($pgActivity, $rules);
+    }
+
+    private function findOptionForTipoPaquete(int $familyId, string $tipoPaquete): ?array
+    {
+        $families = $this->loadOptionsByFamily();
+        $family = $families[$familyId] ?? null;
+        if ($family === null) {
+            return null;
+        }
+
+        foreach ($family['opciones'] as $option) {
+            if ($option['tipoPaquete'] === $tipoPaquete) {
+                $option['familia_id'] = $familyId;
+                $option['familia_codigo'] = $family['familiaCodigo'];
+                $option['familia_nombre'] = $family['familiaNombre'];
+                $option['tipo_contrato'] = $option['tipoContrato'];
+                $option['tipo_paquete'] = $option['tipoPaquete'];
+                $option['dias_elaboracion'] = $option['dias']['dias_elaboracion'];
+                $option['dias_entrega'] = $option['dias']['dias_entrega'];
+                $option['dias_recibo'] = $option['dias']['dias_recibo'];
+                $option['dias_cuadros'] = $option['dias']['dias_cuadros'];
+                $option['dias_legalizacion'] = $option['dias']['dias_legalizacion'];
+                $option['dias_fabricacion'] = $option['dias']['dias_fabricacion'];
+                $option['dias_insumos'] = $option['dias']['dias_insumos'];
+                $option['items'] = array_map(static function ($item) {
+                    return [
+                        'tipo_contrato' => $item['tipoContrato'],
+                        'tipo_paquete' => $item['tipoPaquete'],
+                        'paquete_nombre' => $item['paqueteNombre'],
+                        'dias_reales' => $item['diasReales'],
+                    ];
+                }, $option['items']);
+                return $option;
+            }
+        }
+
+        return null;
+    }
+
+    private function defaultDurations(): array
+    {
+        return [
+            'dias_elaboracion' => 8,
+            'dias_entrega' => 10,
+            'dias_recibo' => 1,
+            'dias_cuadros' => 10,
+            'dias_legalizacion' => 10,
+            'dias_fabricacion' => 0,
+            'dias_insumos' => 0,
+        ];
+    }
     private function resolveDurations(array $option, array $item): array
     {
         $real = $item['dias_reales'] ?? [];
