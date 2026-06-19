@@ -1151,6 +1151,16 @@ class GeneralApiController extends BaseController
             $updated = 0;
             $autoItems = array_merge($matches['identical'], $matches['high']);
 
+            // Clean up previously stored numeric IDs (legacy bug: stored consecutive numbers instead of activity names)
+            $sqlCleanup = "UPDATE {$dbPrefix}_programa_consolidado 
+                           SET programaAnteriorAsociar = '*No Asociada*' 
+                           WHERE Semana = ? AND Titulo = 0
+                           AND programaAnteriorAsociar IS NOT NULL AND programaAnteriorAsociar != ''
+                           AND programmaAnteriorAsociar != '*No Asociada*'
+                           AND programmaAnteriorAsociar REGEXP '^[0-9]+(\\.[0-9]+)*$'";
+            $stmtCleanup = $this->db->prepare($sqlCleanup);
+            $stmtCleanup->execute([$semanaObjetivo]);
+
             if (!empty($autoItems)) {
                 $this->db->beginTransaction();
                 try {
@@ -1164,11 +1174,11 @@ class GeneralApiController extends BaseController
                         // Pre-existing matchAll: 'target' is the full input item, 'matched' is the best source
                         $sourceRow = $item['matched']['row'] ?? null;
                         $targetRow = $item['target']['row'] ?? null;
-                        $sourceId = $sourceRow['Id'] ?? null;
+                        $sourceName = $sourceRow['Actividad'] ?? null;
                         $targetConsecutivo = $targetRow['Consecutivo_en_Programa'] ?? null;
 
-                        if ($sourceId !== null && $targetConsecutivo !== null) {
-                            $stmtUpdate->execute([$sourceId, $targetConsecutivo, $semanaObjetivo]);
+                        if ($sourceName !== null && $targetConsecutivo !== null) {
+                            $stmtUpdate->execute([$sourceName, $targetConsecutivo, $semanaObjetivo]);
                             $updated++;
                         }
                     }
