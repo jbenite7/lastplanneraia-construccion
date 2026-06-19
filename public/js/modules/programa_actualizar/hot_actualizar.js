@@ -1131,15 +1131,21 @@ window.HOTActualizarModule = (function() {
         $container.on('click.reviewModal', '.js-accept-match', function(e) {
             e.preventDefault();
             var $btn = $(this);
-            var physicalRow = parseInt($btn.data('row'), 10);
+            var consecutivo = $btn.data('row');
             var candidateName = $btn.data('candidate-name');
-            var itemIndex = $btn.data('index');
 
-            if (isNaN(physicalRow) || !candidateName) return;
+            if (!consecutivo || !candidateName) return;
 
             if (hot) {
-                var visualRow = hot.toVisualRow(physicalRow);
-                if (visualRow !== null && visualRow >= 0) {
+                var sourceData = hot.getSourceData();
+                var visualRow = null;
+                for (var i = 0; i < sourceData.length; i++) {
+                    if (sourceData[i].Consecutivo_en_Programa === consecutivo) {
+                        visualRow = i;
+                        break;
+                    }
+                }
+                if (visualRow !== null) {
                     hot.setDataAtRowProp(visualRow, 'programaAnteriorAsociar', candidateName, 'edit');
                 }
             }
@@ -1167,14 +1173,20 @@ window.HOTActualizarModule = (function() {
         $container.on('click.reviewModal', '.js-skip-match', function(e) {
             e.preventDefault();
             var $btn = $(this);
-            var physicalRow = parseInt($btn.data('row'), 10);
-            var itemIndex = $btn.data('index');
+            var consecutivo = $btn.data('row');
 
-            if (isNaN(physicalRow)) return;
+            if (!consecutivo) return;
 
             if (hot) {
-                var visualRow = hot.toVisualRow(physicalRow);
-                if (visualRow !== null && visualRow >= 0) {
+                var sourceData = hot.getSourceData();
+                var visualRow = null;
+                for (var i = 0; i < sourceData.length; i++) {
+                    if (sourceData[i].Consecutivo_en_Programa === consecutivo) {
+                        visualRow = i;
+                        break;
+                    }
+                }
+                if (visualRow !== null) {
                     hot.setDataAtRowProp(visualRow, 'programaAnteriorAsociar', '*No Asociada*', 'edit');
                 }
             }
@@ -1229,10 +1241,10 @@ window.HOTActualizarModule = (function() {
 
         var sourceData = hot.getSourceData();
 
-        // Medium items have row indices from the API
+        // Medium items have Consecutivo_en_Programa as row identifier
         var mediumRows = {};
         (data.medium || []).forEach(function(item) {
-            if (item.row !== undefined && item.row >= 0) {
+            if (item.row) {
                 mediumRows[item.row] = true;
             }
         });
@@ -1241,9 +1253,10 @@ window.HOTActualizarModule = (function() {
         for (var i = 0; i < sourceData.length; i++) {
             var row = sourceData[i];
             var val = row.programaAnteriorAsociar;
+            var consecutivo = row.Consecutivo_en_Programa;
             var className;
 
-            if (mediumRows[i]) {
+            if (mediumRows[consecutivo]) {
                 className = 'pg-match-review';
             } else if (val && val !== '*No Asociada*' && val !== '') {
                 className = 'pg-match-auto';

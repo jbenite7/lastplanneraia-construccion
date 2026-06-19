@@ -1182,8 +1182,9 @@ class GeneralApiController extends BaseController
 
             // ── 6. Build response ──
             // Medium items: include candidates with name, chapter, confidence
+            // 'row' returns the Consecutivo_en_Programa so JS can find the visual row index
             $mediumItems = array_map(fn($item) => [
-                'row' => $item['target']['row'] ?? $item['target'],
+                'row' => $item['target']['row']['Consecutivo_en_Programa'] ?? null,
                 'activityName' => strip_tags($item['target']['name'] ?? ''),
                 'candidates' => array_map(fn($c) => [
                     'name' => strip_tags($c['activity']['name'] ?? ''),
