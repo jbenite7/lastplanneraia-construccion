@@ -1121,7 +1121,7 @@ window.HOTActualizarModule = (function() {
             _renderReviewSections(mediumItems);
         }
 
-        _bindReviewModalEvents($('#reviewContent'));
+        _bindReviewModalEvents($('#modalAutoAsociar'));
         _updateGuardarBtnState();
 
         // Bind unsaved changes confirmation on hide
