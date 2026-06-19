@@ -1170,7 +1170,13 @@ window.HOTActualizarModule = (function() {
     function _handleModalClose(e) {
         if (!_reviewDecisions) return;
 
-        var count = Object.keys(_reviewDecisions).length;
+        var count = 0;
+        var keys = Object.keys(_reviewDecisions);
+        for (var i = 0; i < keys.length; i++) {
+            if (_reviewDecisions[keys[i]] && _reviewDecisions[keys[i]].action !== '__revert__') {
+                count++;
+            }
+        }
         if (count === 0) return;
 
         // Evitar doble prompt si ya se mostró
@@ -1220,8 +1226,23 @@ window.HOTActualizarModule = (function() {
             var cons = String(item.row !== undefined ? item.row : '');
             var decision = _reviewDecisions ? _reviewDecisions[cons] : null;
 
-            if (decision) {
+            if (decision && decision.action === '__revert__') {
+                // User reverted from "already associated" — show in pending
+                pendingItems.push({ item: item, idx: idx });
+            } else if (decision) {
+                // User made a manual decision — use it
                 processedItems.push({ item: item, idx: idx, decision: decision });
+            } else if (item.alreadyAssociated) {
+                // Already associated from a previous run — show as processed
+                processedItems.push({
+                    item: item,
+                    idx: idx,
+                    decision: {
+                        action: 'accept',
+                        candidateName: item.currentAssociation || '',
+                        existing: true
+                    }
+                });
             } else {
                 pendingItems.push({ item: item, idx: idx });
             }
@@ -1284,16 +1305,27 @@ window.HOTActualizarModule = (function() {
      */
     function _renderProcessedItem(item, idx, decision) {
         var targetName = item.activityName || 'Actividad sin nombre';
+        var isExisting = decision.existing === true;
         var isAccepted = decision.action === 'accept';
-        var badgeClass = isAccepted ? 'match-resolved-accepted' : 'match-resolved-skipped';
-        var icon = isAccepted ? 'fa-check-circle' : 'fa-times-circle';
-        var label = isAccepted
-            ? 'Asociada con: <strong>' + escapeHtml(decision.candidateName) + '</strong>'
-            : 'Marcada como actividad nueva';
+        var badgeClass = isExisting ? 'match-resolved-existing' : (isAccepted ? 'match-resolved-accepted' : 'match-resolved-skipped');
         var cons = String(item.row !== undefined ? item.row : '');
+        var label;
+
+        if (isExisting) {
+            label = '<i class="fas fa-history" style="color: #6c757d;"></i> ' +
+                'Asociación previa: <strong>' + escapeHtml(decision.candidateName || '—') + '</strong>';
+        } else if (isAccepted) {
+            label = '<i class="fas fa-check-circle" style="color: #1a5633;"></i> ' +
+                'Asociada con: <strong>' + escapeHtml(decision.candidateName) + '</strong>';
+        } else {
+            label = '<i class="fas fa-times-circle"></i> Marcada como actividad nueva';
+        }
+
+        var changeButtonClass = isExisting ? 'js-revert-existing' : 'js-change-decision';
+        var changeTitle = isExisting ? 'Reasignar esta actividad' : 'Volver a evaluar esta actividad';
 
         return '' +
-            '<div class="match-item match-item-resolved ' + (isAccepted ? 'match-item-accepted' : 'match-item-skipped') + '" data-index="' + idx + '" data-row="' + cons + '">' +
+            '<div class="match-item match-item-resolved ' + (isExisting ? 'match-item-existing' : (isAccepted ? 'match-item-accepted' : 'match-item-skipped')) + '" data-index="' + idx + '" data-row="' + cons + '">' +
                 '<div class="match-item-header">' +
                     '<div class="match-target-label">' +
                         '<span class="match-label match-label-target"><i class="fas fa-crosshairs mr-1"></i> Actividad</span>' +
@@ -1304,13 +1336,12 @@ window.HOTActualizarModule = (function() {
                 '</div>' +
                 '<div class="match-item-body">' +
                     '<div class="match-resolved-badge ' + badgeClass + '" style="margin-bottom: 0.5rem;">' +
-                        '<i class="fas ' + icon + '"></i> ' +
                         '<span>' + label + '</span>' +
                     '</div>' +
-                    '<button type="button" class="btn btn-sm btn-outline-secondary js-change-decision" ' +
+                    '<button type="button" class="btn btn-sm btn-outline-secondary ' + changeButtonClass + '" ' +
                         'data-row="' + cons + '" ' +
                         'data-index="' + idx + '" ' +
-                        'title="Volver a evaluar esta actividad">' +
+                        'title="' + changeTitle + '">' +
                         '<i class="fas fa-undo"></i> Cambiar' +
                     '</button>' +
                 '</div>' +
@@ -1386,6 +1417,23 @@ window.HOTActualizarModule = (function() {
             _refreshReviewUI();
         });
 
+        // Revertir asociación existente a Pendientes
+        $container.on('click.reviewModal', '.js-revert-existing', function(e) {
+            e.preventDefault();
+            var $btn = $(this);
+            var consecutivo = String($btn.data('row'));
+
+            if (!consecutivo) return;
+
+            _reviewDecisions[consecutivo] = { action: '__revert__' };
+
+            if (typeof toastr !== 'undefined') {
+                toastr.info('Actividad movida a Pendientes para reasignación.');
+            }
+
+            _refreshReviewUI();
+        });
+
         // Ver más opciones (expandir candidatos extra)
         $container.on('click.reviewModal', '.js-toggle-extra', function(e) {
             e.preventDefault();
@@ -1428,7 +1476,17 @@ window.HOTActualizarModule = (function() {
      */
     function _saveReviewDecisions() {
         var decisions = _reviewDecisions;
-        if (!decisions || Object.keys(decisions).length === 0) {
+        var hasRealChanges = false;
+
+        if (decisions) {
+            Object.keys(decisions).forEach(function(key) {
+                if (decisions[key] && decisions[key].action !== '__revert__') {
+                    hasRealChanges = true;
+                }
+            });
+        }
+
+        if (!hasRealChanges) {
             if (typeof toastr !== 'undefined') {
                 toastr.warning('No hay cambios para guardar.');
             }
@@ -1480,7 +1538,15 @@ window.HOTActualizarModule = (function() {
      */
     function _updateGuardarBtnState() {
         var $btn = $('#btn-guardar-cambios');
-        var count = _reviewDecisions ? Object.keys(_reviewDecisions).length : 0;
+        var count = 0;
+
+        if (_reviewDecisions) {
+            Object.keys(_reviewDecisions).forEach(function(key) {
+                if (_reviewDecisions[key] && _reviewDecisions[key].action !== '__revert__') {
+                    count++;
+                }
+            });
+        }
 
         if (count > 0) {
             $btn.prop('disabled', false);

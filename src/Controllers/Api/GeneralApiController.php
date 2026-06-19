@@ -1094,10 +1094,9 @@ class GeneralApiController extends BaseController
             $sourceRows = $stmtSource->fetchAll(PDO::FETCH_ASSOC);
 
             // ── 2. Query TARGET activities (current week, activities only) ──
-            // Exclude activities that already have an association (re-run safe)
-            $sqlTarget = "SELECT Consecutivo_en_Programa, Id, Actividad FROM {$dbPrefix}_programa_consolidado 
-                          WHERE Semana = ? AND Titulo = 0
-                          AND (programaAnteriorAsociar IS NULL OR programaAnteriorAsociar = '' OR programaAnteriorAsociar = '*No Asociada*')";
+            // Include ALL non-title activities so the modal always appears for verification/editing
+            $sqlTarget = "SELECT Consecutivo_en_Programa, Id, Actividad, programaAnteriorAsociar FROM {$dbPrefix}_programa_consolidado 
+                          WHERE Semana = ? AND Titulo = 0";
             $stmtTarget = $this->db->prepare($sqlTarget);
             $stmtTarget->execute([$semanaObjetivo]);
             $targetRows = $stmtTarget->fetchAll(PDO::FETCH_ASSOC);
@@ -1207,6 +1206,13 @@ class GeneralApiController extends BaseController
                     'id' => $c['activity']['id'] ?? null,
                     'confidence' => $c['confidence'],
                 ], $item['candidates'] ?? []),
+                // Mark if this activity already has an association (for re-run display)
+                'alreadyAssociated' => !empty($item['target']['row']['programaAnteriorAsociar'])
+                    && $item['target']['row']['programaAnteriorAsociar'] !== '*No Asociada*',
+                'currentAssociation' => (!empty($item['target']['row']['programaAnteriorAsociar'])
+                    && $item['target']['row']['programaAnteriorAsociar'] !== '*No Asociada*')
+                    ? $item['target']['row']['programaAnteriorAsociar']
+                    : null,
             ], $matches['medium']);
 
             echo json_encode([
