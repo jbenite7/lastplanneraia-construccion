@@ -1131,7 +1131,7 @@ window.HOTActualizarModule = (function() {
         $container.on('click.reviewModal', '.js-accept-match', function(e) {
             e.preventDefault();
             var $btn = $(this);
-            var consecutivo = $btn.data('row');
+            var consecutivo = String($btn.data('row'));
             var candidateName = $btn.data('candidate-name');
 
             if (!consecutivo || !candidateName) return;
@@ -1140,7 +1140,7 @@ window.HOTActualizarModule = (function() {
                 var sourceData = hot.getSourceData();
                 var visualRow = null;
                 for (var i = 0; i < sourceData.length; i++) {
-                    if (sourceData[i].Consecutivo_en_Programa === consecutivo) {
+                    if (String(sourceData[i].Consecutivo_en_Programa) === consecutivo) {
                         visualRow = i;
                         break;
                     }
@@ -1173,7 +1173,7 @@ window.HOTActualizarModule = (function() {
         $container.on('click.reviewModal', '.js-skip-match', function(e) {
             e.preventDefault();
             var $btn = $(this);
-            var consecutivo = $btn.data('row');
+            var consecutivo = String($btn.data('row'));
 
             if (!consecutivo) return;
 
@@ -1181,7 +1181,7 @@ window.HOTActualizarModule = (function() {
                 var sourceData = hot.getSourceData();
                 var visualRow = null;
                 for (var i = 0; i < sourceData.length; i++) {
-                    if (sourceData[i].Consecutivo_en_Programa === consecutivo) {
+                    if (String(sourceData[i].Consecutivo_en_Programa) === consecutivo) {
                         visualRow = i;
                         break;
                     }
@@ -1245,7 +1245,7 @@ window.HOTActualizarModule = (function() {
         var mediumRows = {};
         (data.medium || []).forEach(function(item) {
             if (item.row) {
-                mediumRows[item.row] = true;
+                mediumRows[String(item.row)] = true;
             }
         });
 
@@ -1253,7 +1253,7 @@ window.HOTActualizarModule = (function() {
         for (var i = 0; i < sourceData.length; i++) {
             var row = sourceData[i];
             var val = row.programaAnteriorAsociar;
-            var consecutivo = row.Consecutivo_en_Programa;
+            var consecutivo = String(row.Consecutivo_en_Programa);
             var className;
 
             if (mediumRows[consecutivo]) {
