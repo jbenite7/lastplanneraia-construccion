@@ -10,6 +10,48 @@ namespace App\Services;
  */
 class ActivityMatcherService
 {
+    private static ?array $thresholdsCache = null;
+    private array $thresholds;
+
+    public function __construct()
+    {
+        $this->thresholds = self::getThresholds();
+    }
+
+    /**
+     * Read matching thresholds from DB config table, with fallback to defaults.
+     * Cached in a static variable per request to avoid N+1 queries.
+     *
+     * @return array{high: float, medium: float, chapter: float}
+     */
+    public static function getThresholds(): array
+    {
+        if (self::$thresholdsCache !== null) {
+            return self::$thresholdsCache;
+        }
+
+        $defaults = ['high' => 0.90, 'medium' => 0.70, 'chapter' => 0.70];
+
+        try {
+            $db = \Database::getInstance();
+            $stmt = $db->query("SELECT config_key, config_value FROM general_matching_config");
+            $rows = $stmt->fetchAll(\PDO::FETCH_KEY_PAIR);
+            if (!empty($rows)) {
+                self::$thresholdsCache = [
+                    'high'    => (float)($rows['high_threshold'] ?? $defaults['high']),
+                    'medium'  => (float)($rows['medium_threshold'] ?? $defaults['medium']),
+                    'chapter' => (float)($rows['chapter_threshold'] ?? $defaults['chapter']),
+                ];
+                return self::$thresholdsCache;
+            }
+        } catch (\Exception $e) {
+            // Table doesn't exist or DB error — use defaults
+        }
+
+        self::$thresholdsCache = $defaults;
+        return $defaults;
+    }
+
     // ─── Normalization ──────────────────────────────────────────────────
 
     /**
@@ -317,8 +359,11 @@ class ActivityMatcherService
     /**
      * Find the best matching activity from a source list for a given target.
      *
-     * Iterates ALL source activities, computes confidence for each, and returns
-     * the best match along with the top 3 candidates.
+     * Uses a 4-stage cascade:
+     *   Stage 0 — Chapter hard-filter: only sources matching the target chapter.
+     *   Stage 1 — Confidence scoring: weighted fuzzy match, keep top 5.
+     *   Stage 2 — Location scoring: build-direction-aware proximity, keep top 2.
+     *   Stage 3 — Date tiebreaker: earliest Fecha_Inicio wins.
      *
      * @param string      $targetName    Raw or normalized target activity name.
      * @param string|null $targetChapter Raw or normalized target chapter.
@@ -327,7 +372,7 @@ class ActivityMatcherService
      * @return array{best: array|null, confidence: float, candidates: array}
      *         best = highest-confidence source activity (or null if no sources).
      *         confidence = score of best match.
-     *         candidates = top 3 by confidence, each with ['activity' => ..., 'confidence' => float].
+     *         candidates = top 5 from stage 1, each with ['activity' => ..., 'confidence' => float].
      */
     public function findBestMatch(
         string $targetName,
@@ -338,26 +383,34 @@ class ActivityMatcherService
             return ['best' => null, 'confidence' => 0.0, 'candidates' => []];
         }
 
-        $scored = [];
-
+        // ── Stage 0: Chapter filter (HARD) ──────────────────────────────
+        $chapterFiltered = [];
         foreach ($sourceActivities as $source) {
-            $srcName = $source['name'] ?? '';
-            $srcChapter = $source['chapter'] ?? null;
+            $sourceChapter = $source['chapter'] ?? null;
+            if ($this->chapterMatch($targetChapter, $sourceChapter, $this->thresholds['chapter'])) {
+                $chapterFiltered[] = $source;
+            }
+        }
 
+        // If no source matched by chapter, skip filter (use all sources)
+        $pool = !empty($chapterFiltered) ? $chapterFiltered : $sourceActivities;
+
+        // ── Stage 1: Confidence scoring — keep top 5 ───────────────────
+        $scored = [];
+        foreach ($pool as $source) {
             $confidence = $this->calculateConfidence(
                 $targetName,
                 $targetChapter,
-                $srcName,
-                $srcChapter,
+                $source['name'],
+                $source['chapter'] ?? null,
             );
-
             $scored[] = [
                 'activity' => $source,
                 'confidence' => $confidence,
             ];
         }
 
-        // Sort descending by confidence, then by name for stability
+        // Sort by confidence DESC, name ASC (stable tiebreaker)
         usort($scored, function ($a, $b) {
             if ($b['confidence'] !== $a['confidence']) {
                 return $b['confidence'] <=> $a['confidence'];
@@ -366,13 +419,66 @@ class ActivityMatcherService
             return strcmp($a['activity']['name'] ?? '', $b['activity']['name'] ?? '');
         });
 
-        $best = $scored[0];
-        $candidates = array_slice($scored, 0, 3);
+        $top5 = array_slice($scored, 0, 5);
+
+        // ── Stage 2: Location scoring — keep top 2 ─────────────────────
+        foreach ($top5 as &$candidate) {
+            $candidate['locationScore'] = $this->scoreLocation(
+                ['name' => $targetName, 'chapter' => $targetChapter],
+                $candidate['activity'],
+            );
+        }
+        unset($candidate);
+
+        usort($top5, function ($a, $b) {
+            if ($b['locationScore'] !== $a['locationScore']) {
+                return $b['locationScore'] <=> $a['locationScore'];
+            }
+
+            if ($b['confidence'] !== $a['confidence']) {
+                return $b['confidence'] <=> $a['confidence'];
+            }
+
+            return strcmp($a['activity']['name'] ?? '', $b['activity']['name'] ?? '');
+        });
+
+        $top2 = array_slice($top5, 0, 2);
+
+        // ── Stage 3: Final selection — confidence DESC, then date ASC (tiebreaker) ──
+        usort($top2, function ($a, $b) {
+            // Primary: confidence DESC
+            if ($b['confidence'] !== $a['confidence']) {
+                return $b['confidence'] <=> $a['confidence'];
+            }
+
+            // Secondary: earlier date wins (tiebreaker)
+            $dateA = $a['activity']['fecha_inicio'] ?? null;
+            $dateB = $b['activity']['fecha_inicio'] ?? null;
+
+            // NULL dates lose against non-NULL dates
+            if ($dateA === null && $dateB !== null) {
+                return 1;
+            }
+            if ($dateA !== null && $dateB === null) {
+                return -1;
+            }
+            if ($dateA !== null && $dateB !== null) {
+                $cmp = strcmp($dateA, $dateB);
+                if ($cmp !== 0) {
+                    return $cmp;
+                }
+            }
+
+            // Tertiary: name ASC (stable tiebreaker)
+            return strcmp($a['activity']['name'] ?? '', $b['activity']['name'] ?? '');
+        });
+
+        $winner = $top2[0];
 
         return [
-            'best' => $best['activity'],
-            'confidence' => $best['confidence'],
-            'candidates' => $candidates,
+            'best'       => $winner['activity'],
+            'confidence' => $winner['confidence'],
+            'candidates' => array_slice($scored, 0, 5), // top 5 from stage 1
         ];
     }
 
@@ -381,9 +487,9 @@ class ActivityMatcherService
      *
      * For each target, finds the best match from sources and classifies by confidence:
      *   - identical: confidence === 1.0 AND normalized names match exactly
-     *   - high:      confidence >= 0.8
-     *   - medium:    confidence >= 0.5 && < 0.8
-     *   - none:      confidence < 0.5
+     *   - high:      confidence >= high_threshold (dynamic, default 0.90)
+     *   - medium:    confidence >= medium_threshold (dynamic, default 0.70) && < high
+     *   - none:      confidence < medium_threshold
      *
      * Each entry in the result arrays includes the target data, matched source, and confidence.
      *
@@ -408,18 +514,30 @@ class ActivityMatcherService
 
             $confidence = $match['confidence'];
             $bestSource = $match['best'];
+            $candidates = $match['candidates'];
+
+            // Find the MAX confidence across all candidates (not just the cascade winner).
+            // The cascade selects by location+date, but tier should reflect the best possible match.
+            $maxConfidence = $confidence;
+            $maxConfidenceSource = $bestSource;
+            foreach ($candidates as $c) {
+                if (($c['confidence'] ?? 0) > $maxConfidence) {
+                    $maxConfidence = $c['confidence'];
+                    $maxConfidenceSource = $c['activity'] ?? null;
+                }
+            }
 
             $entry = [
                 'target' => $target,
                 'matched' => $bestSource,
-                'confidence' => $confidence,
-                'candidates' => $match['candidates'],
+                'confidence' => $maxConfidence,
+                'candidates' => $candidates,
             ];
 
-            // Check for identical: exact normalized name match
-            if ($bestSource !== null && $confidence === 1.0) {
+            // Check for identical: exact normalized name match (use source with max confidence)
+            if ($maxConfidenceSource !== null && $maxConfidence === 1.0) {
                 $tgtNormalized = $this->normalizeActivityName($tgtName);
-                $srcNormalized = $this->normalizeActivityName($bestSource['name'] ?? '');
+                $srcNormalized = $this->normalizeActivityName($maxConfidenceSource['name'] ?? '');
 
                 if ($tgtNormalized === $srcNormalized) {
                     $result['identical'][] = $entry;
@@ -427,9 +545,9 @@ class ActivityMatcherService
                 }
             }
 
-            if ($confidence >= 0.8) {
+            if ($maxConfidence >= $this->thresholds['high']) {
                 $result['high'][] = $entry;
-            } elseif ($confidence >= 0.5) {
+            } elseif ($maxConfidence >= $this->thresholds['medium']) {
                 $result['medium'][] = $entry;
             } else {
                 $result['none'][] = $entry;
@@ -440,6 +558,230 @@ class ActivityMatcherService
     }
 
     // ─── Private helpers ────────────────────────────────────────────────
+
+    /**
+     * Extract a numeric location value from an activity name.
+     *
+     * Parses common Spanish construction location patterns (Piso, Nivel, Etapa, etc.)
+     * and returns a float for sorting. Returns null if no pattern matches.
+     *
+     * Patterns are checked in priority order — first match wins.
+     * Word boundary anchors (\b) are used for generic codes to avoid false positives.
+     *
+     * @param string $activityName The raw activity name.
+     * @return float|null Location value, or null if none found.
+     */
+    private function extractLocationValue(string $activityName): ?float
+    {
+        // Floor
+        if (preg_match('/Piso\s*(\d+)/iu', $activityName, $m)) {
+            return (float) $m[1];
+        }
+
+        // Level
+        if (preg_match('/Nivel\s*(\d+)/iu', $activityName, $m)) {
+            return (float) $m[1];
+        }
+
+        // Stage
+        if (preg_match('/Etapa\s*(\d+)/iu', $activityName, $m)) {
+            return (float) $m[1];
+        }
+
+        // Basement (accented and unaccented)
+        if (preg_match('/S[oó]tano\s*(\d+)/iu', $activityName, $m)) {
+            return -(float) $m[1];
+        }
+
+        // Tower letter → number (A=1, B=2, ... Z=26)
+        if (preg_match('/Torre\s*([A-Z])/iu', $activityName, $m)) {
+            return (float) (ord(strtoupper($m[1])) - ord('A') + 1);
+        }
+
+        // Zone
+        if (preg_match('/Zona\s*(\d+)/iu', $activityName, $m)) {
+            return (float) $m[1];
+        }
+
+        // Sector
+        if (preg_match('/Sector\s*(\d+)/iu', $activityName, $m)) {
+            return (float) $m[1];
+        }
+
+        // Segment (Tramo)
+        if (preg_match('/Tramo\s*(\d+)/iu', $activityName, $m)) {
+            return (float) $m[1];
+        }
+
+        // Area with letter-digit pattern (e.g., "Area A-1") → numeric part only
+        if (preg_match('/Area\s*[A-Z]-(\d+)/iu', $activityName, $m)) {
+            return (float) $m[1];
+        }
+
+        // Mezzanine (exact word, case-insensitive)
+        if (preg_match('/\bmezanine\b/iu', $activityName)) {
+            return 0.5;
+        }
+
+        // Level code: P followed by 2+ digits at word boundary (e.g., "P01", "P12")
+        if (preg_match('/\bP(\d{2,})\b/', $activityName, $m)) {
+            return (float) $m[1];
+        }
+
+        // Basement code: S followed by 1-2 digits at word boundary (e.g., "S1", "S02")
+        if (preg_match('/\bS(\d{1,2})\b/', $activityName, $m)) {
+            return -(float) $m[1];
+        }
+
+        return null;
+    }
+
+    /**
+     * Classify whether construction direction is top-down or bottom-up.
+     *
+     * Checks the activity name first (lowercase), then the chapter text if provided.
+     * Falls back to 'bottom-up' as the default for most construction work.
+     *
+     * @param string $activityName The raw activity name.
+     * @param string $chapterText  Optional chapter text to check as secondary source.
+     * @return string 'top-down' or 'bottom-up'.
+     */
+    private function classifyBuildDirection(string $activityName, string $chapterText = ''): string
+    {
+        $nameLower = strtolower($activityName);
+
+        // Top-down indicators in name
+        if (
+            str_contains($nameLower, 'impermeabiliza')
+            || str_contains($nameLower, 'aseo')
+            || str_contains($nameLower, 'impermeabilizacion')
+            || str_contains($nameLower, 'obra civil')
+        ) {
+            return 'top-down';
+        }
+
+        // Bottom-up indicators in name
+        $bottomUpKeywords = [
+            'acabados',
+            'instalaciones',
+            'albañileria',
+            'albanileria',
+            'estructura',
+            'mamposteria',
+            'mampostería',
+            'columna',
+            'viga',
+            'placa',
+            'muro',
+        ];
+
+        foreach ($bottomUpKeywords as $keyword) {
+            if (str_contains($nameLower, $keyword)) {
+                return 'bottom-up';
+            }
+        }
+
+        // Check chapter text as secondary source
+        if ($chapterText !== '') {
+            $chapterLower = strtolower($chapterText);
+
+            if (
+                str_contains($chapterLower, 'impermeabiliza')
+                || str_contains($chapterLower, 'aseo')
+                || str_contains($chapterLower, 'impermeabilizacion')
+                || str_contains($chapterLower, 'obra civil')
+            ) {
+                return 'top-down';
+            }
+
+            foreach ($bottomUpKeywords as $keyword) {
+                if (str_contains($chapterLower, $keyword)) {
+                    return 'bottom-up';
+                }
+            }
+        }
+
+        return 'bottom-up';
+    }
+
+    /**
+     * Score location match between target and source activities.
+     *
+     * Considers build direction (top-down prefers higher locations, bottom-up prefers lower).
+     * Returns a value in [0, 1] representing location compatibility.
+     *
+     * @param array $target Target activity ['name' => string, 'chapter' => ?string, ...].
+     * @param array $source Source activity ['name' => string, 'chapter' => ?string, ...].
+     * @return float Location score in [0, 1].
+     */
+    private function scoreLocation(array $target, array $source): float
+    {
+        $targetLoc = $this->extractLocationValue($target['name'] ?? '');
+        $sourceLoc = $this->extractLocationValue($source['name'] ?? '');
+
+        $direction = $this->classifyBuildDirection(
+            $target['name'] ?? '',
+            $target['chapter'] ?? '',
+        );
+
+        // Both have location data
+        if ($targetLoc !== null && $sourceLoc !== null) {
+            $rawDiff = abs($targetLoc - $sourceLoc);
+            $maxVal  = max(1, max($targetLoc, $sourceLoc));
+            $proximityScore = 1.0 - ($rawDiff / $maxVal);
+
+            // Apply build direction preference to break ties
+            // top-down: prefer sources at or above target level
+            // bottom-up: prefer sources at or below target level
+            if ($direction === 'top-down') {
+                $directionBonus = ($sourceLoc >= $targetLoc) ? 0.15 : -0.15;
+            } else {
+                $directionBonus = ($sourceLoc <= $targetLoc) ? 0.15 : -0.15;
+            }
+
+            return max(0.0, min(1.0, $proximityScore + $directionBonus));
+        }
+
+        // Target has location, source does not → penalize
+        if ($targetLoc !== null && $sourceLoc === null) {
+            return 0.3;
+        }
+
+        // Target has no location, source does → weak preference for data
+        if ($targetLoc === null && $sourceLoc !== null) {
+            return 0.7;
+        }
+
+        // Neither has location → neutral
+        return 0.5;
+    }
+
+    /**
+     * Check if two chapter strings match above a similarity threshold.
+     *
+     * Both inputs are normalized via normalizeActivityName(), then compared
+     * with levenshteinRatio(). Returns false if either is null or empty.
+     *
+     * @param string|null $targetChapter Target chapter text.
+     * @param string|null $sourceChapter Source chapter text.
+     * @param float       $threshold     Minimum similarity ratio (default 0.70).
+     * @return bool True if chapters match at or above threshold.
+     */
+    private function chapterMatch(?string $targetChapter, ?string $sourceChapter, float $threshold = 0.70): bool
+    {
+        if ($targetChapter === null || $targetChapter === '') {
+            return false;
+        }
+
+        if ($sourceChapter === null || $sourceChapter === '') {
+            return false;
+        }
+
+        $normalized1 = $this->normalizeActivityName($targetChapter);
+        $normalized2 = $this->normalizeActivityName($sourceChapter);
+
+        return $this->levenshteinRatio($normalized1, $normalized2) >= $threshold;
+    }
 
     /**
      * Tokenize a string into space-separated words, filtering empty tokens.

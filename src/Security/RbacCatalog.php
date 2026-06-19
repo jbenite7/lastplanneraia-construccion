@@ -54,6 +54,7 @@ class RbacCatalog
             ['key' => 'admin.miembros.gestionar', 'module' => 'admin', 'action' => 'gestionar_miembros', 'description' => 'Gestion de miembros'],
             ['key' => 'admin.permisos.gestionar', 'module' => 'admin', 'action' => 'gestionar_permisos', 'description' => 'Gestion de permisos'],
             ['key' => 'admin.auditoria.ver', 'module' => 'admin', 'action' => 'ver_auditoria', 'description' => 'Ver auditoria'],
+            ['key' => 'admin.matching.config.editar', 'module' => 'admin', 'action' => 'editar_config_matching', 'description' => 'Editar configuracion de matching semantico'],
 
             ['key' => 'lps.programa_general.ver', 'module' => 'lps', 'action' => 'programa_general_ver', 'description' => 'Ver programa general'],
             ['key' => 'lps.programa_general.editar', 'module' => 'lps', 'action' => 'programa_general_editar', 'description' => 'Editar programa general'],

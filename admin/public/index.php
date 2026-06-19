@@ -118,6 +118,9 @@ $router->add('POST', '/proyectos/miembros/agregar', 'ProjectController@addMember
 $router->add('POST', '/proyectos/miembros/quitar', 'ProjectController@removeMember');
 $router->add('GET', '/proyectos/sugerir-rol', 'ProjectController@suggestRole');
 
+// Configuración de Matching
+$router->add('GET', '/matching/config', 'ConfigController@index');
+$router->add('POST', '/matching/config', 'ConfigController@update');
 
 
 // Ejecutar el ruteo

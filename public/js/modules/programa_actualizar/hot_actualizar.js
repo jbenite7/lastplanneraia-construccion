@@ -947,6 +947,33 @@ window.HOTActualizarModule = (function() {
     }
 
     /**
+     * Construye el bloque HTML con Id y fecha de inicio de un candidato.
+     * Si no hay ni Id ni fecha, retorna string vacío (no se renderiza nada).
+     * Estilo: línea sutil en verde AIA (#1a5633), fuente Inter, icono FA.
+     * @param {string|number|null|undefined} id - Id numérico de la actividad.
+     * @param {string|null|undefined} fechaInicio - Fecha en formato YYYY-MM-DD o null.
+     * @returns {string} HTML string (vacío si no hay datos).
+     */
+    function buildCandidateMetaHtml(id, fechaInicio) {
+        var parts = [];
+        if (id != null && id !== '') {
+            parts.push('<span style="font-weight: 500;">Id: ' + escapeHtml(String(id)) + '</span>');
+        }
+        if (fechaInicio) {
+            parts.push('<span><i class="fas fa-calendar-alt" style="font-size: 0.7rem; opacity: 0.75;"></i> ' + escapeHtml(fechaInicio) + '</span>');
+        }
+        if (parts.length === 0) {
+            return '';
+        }
+        return '<div class="match-candidate-meta" ' +
+            'style="font-family: \'Inter\', sans-serif; font-size: 0.72rem; font-weight: 400; ' +
+            'color: #1a5633; margin-bottom: 4px; display: inline-flex; align-items: center; ' +
+            'gap: 5px; opacity: 0.85; letter-spacing: 0.01em;">' +
+            parts.join('<span style="opacity: 0.4; margin: 0 3px;">&middot;</span>') +
+            '</div>';
+    }
+
+    /**
      * Renderiza el HTML para un ítem de revisión (actividad con confianza media).
      * Muestra nombre de actividad + top-3 candidatos con barra de confianza.
      * @param {Object} item - { activityName, candidates, row, rowId }
@@ -963,11 +990,13 @@ window.HOTActualizarModule = (function() {
             var tierClass = confidenceTierClass(c.confidence);
             var candidateName = c.name || c.actividad || c.title || 'Sin nombre';
             var displayConf = c.display_confidence !== undefined ? c.display_confidence : pct;
+            var metaHtml = buildCandidateMetaHtml(c.id, c.fecha_inicio);
 
             return '' +
                 '<div class="match-candidate ' + tierClass + '" data-row="' + (item.row !== undefined ? item.row : '') + '" data-candidate="' + ci + '">' +
                     '<div class="match-candidate-info">' +
                         '<div class="match-candidate-name">' + escapeHtml(candidateName) + '</div>' +
+                        metaHtml +
                         '<div class="match-candidate-bar-wrap">' +
                             '<div class="match-candidate-bar">' +
                                 '<div class="match-candidate-bar-fill" style="width: ' + pct + '%;"></div>' +
@@ -995,11 +1024,13 @@ window.HOTActualizarModule = (function() {
                 var tierClass = confidenceTierClass(c.confidence);
                 var candidateName = c.name || c.actividad || c.title || 'Sin nombre';
                 var displayConf = c.display_confidence !== undefined ? c.display_confidence : pct;
+                var metaHtml = buildCandidateMetaHtml(c.id, c.fecha_inicio);
 
                 return '' +
-                    '<div class="match-candidate ' + tierClass + ' js-extra-candidate" data-row="' + (item.row !== undefined ? item.row : '') + '" data-candidate="' + (ci + 3) + '" style="display:none;">' +
+                    '<div class="match-candidate ' + tierClass + ' js-extra-candidate" data-row="' + (item.row !== undefined ? item.row : '') + '" data-candidate="' + (ci + 3) + '">' +
                         '<div class="match-candidate-info">' +
                             '<div class="match-candidate-name">' + escapeHtml(candidateName) + '</div>' +
+                            metaHtml +
                             '<div class="match-candidate-bar-wrap">' +
                                 '<div class="match-candidate-bar">' +
                                     '<div class="match-candidate-bar-fill" style="width: ' + pct + '%;"></div>' +
@@ -1423,10 +1454,12 @@ window.HOTActualizarModule = (function() {
             if (visualRow === null) return;
 
             if (decision.action === 'accept') {
-                hot.setDataAtRowProp(visualRow, 'programaAnteriorAsociar', decision.candidateName, 'edit');
+                autoSaveRow(visualRow, {'programaAnteriorAsociar': decision.candidateName}, 'edit');
+                hot.setDataAtRowProp(visualRow, 'programaAnteriorAsociar', decision.candidateName, 'internal');
                 accepted++;
             } else if (decision.action === 'skip') {
-                hot.setDataAtRowProp(visualRow, 'programaAnteriorAsociar', '*No Asociada*', 'edit');
+                autoSaveRow(visualRow, {'programaAnteriorAsociar': '*No Asociada*'}, 'edit');
+                hot.setDataAtRowProp(visualRow, 'programaAnteriorAsociar', '*No Asociada*', 'internal');
                 skipped++;
             }
         });

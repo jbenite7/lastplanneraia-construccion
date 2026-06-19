@@ -104,6 +104,13 @@
               <p>Usuarios</p>
             </a>
           </li>
+          <li class="nav-header">SISTEMA</li>
+          <li class="nav-item">
+            <a href="/admin/matching/config" class="nav-link">
+              <i class="nav-icon fas fa-sliders-h"></i>
+              <p>Matching Config</p>
+            </a>
+          </li>
         </ul>
       </nav>
       <!-- /.sidebar-menu -->

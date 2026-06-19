@@ -1087,15 +1087,17 @@ class GeneralApiController extends BaseController
             $matcher = new ActivityMatcherService();
 
             // ── 1. Query SOURCE activities (previous week, activities only) ──
-            $sqlSource = "SELECT Id, Actividad FROM {$dbPrefix}_programa_consolidado 
+            $sqlSource = "SELECT Id, Actividad, Fecha_Inicio FROM {$dbPrefix}_programa_consolidado 
                           WHERE Semana = ? AND Titulo = 0";
             $stmtSource = $this->db->prepare($sqlSource);
             $stmtSource->execute([$semanaSource]);
             $sourceRows = $stmtSource->fetchAll(PDO::FETCH_ASSOC);
 
             // ── 2. Query TARGET activities (current week, activities only) ──
+            // Exclude activities that already have an association (re-run safe)
             $sqlTarget = "SELECT Consecutivo_en_Programa, Id, Actividad FROM {$dbPrefix}_programa_consolidado 
-                          WHERE Semana = ? AND Titulo = 0";
+                          WHERE Semana = ? AND Titulo = 0
+                          AND (programaAnteriorAsociar IS NULL OR programaAnteriorAsociar = '' OR programaAnteriorAsociar = '*No Asociada*')";
             $stmtTarget = $this->db->prepare($sqlTarget);
             $stmtTarget->execute([$semanaObjetivo]);
             $targetRows = $stmtTarget->fetchAll(PDO::FETCH_ASSOC);
@@ -1133,9 +1135,11 @@ class GeneralApiController extends BaseController
             // ── 3. Prepare arrays for matchAll ──
             // matchAll expects ['name' => raw, 'chapter' => null, 'row' => dbRow]
             $sources = array_map(fn($row) => [
-                'name' => $row['Actividad'],
-                'chapter' => $matcher->extractChapter($row['Actividad']),
-                'row' => $row,
+                'name'         => $row['Actividad'],
+                'chapter'      => $matcher->extractChapter($row['Actividad']),
+                'fecha_inicio' => $row['Fecha_Inicio'] ?? null,
+                'id'           => $row['Id'],
+                'row'          => $row,
             ], $sourceRows);
             $targets = array_map(fn($row) => [
                 'name' => $row['Actividad'],
@@ -1199,6 +1203,8 @@ class GeneralApiController extends BaseController
                 'candidates' => array_map(fn($c) => [
                     'name' => strip_tags($c['activity']['name'] ?? ''),
                     'chapter' => $c['activity']['chapter'] ?? null,
+                    'fecha_inicio' => $c['activity']['fecha_inicio'] ?? null,
+                    'id' => $c['activity']['id'] ?? null,
                     'confidence' => $c['confidence'],
                 ], $item['candidates'] ?? []),
             ], $matches['medium']);
