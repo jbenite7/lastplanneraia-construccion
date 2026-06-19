@@ -906,13 +906,13 @@ window.HOTActualizarModule = (function() {
             if (data.success && data.data) {
                 applyMatchResults(data.data);
             } else {
-                toastr.error(data.error || "Error en la asociación automática");
+                if (typeof toastr !== 'undefined') { toastr.error(data.error || "Error en la asociación automática"); } else { console.error("🔥 [AutoAssociate] " + (data.error || "Error")); }
             }
         })
         .catch(function(error) {
             console.error("🔥 [AutoAssociate] Error:", error);
             btn.prop("disabled", false).html(originalHtml);
-            toastr.error("Error de conexión al asociar actividades");
+            if (typeof toastr !== 'undefined') { toastr.error("Error de conexión al asociar actividades"); } else { console.error("🔥 [AutoAssociate] Error de conexión"); }
         });
     }
 
@@ -1249,7 +1249,20 @@ window.HOTActualizarModule = (function() {
             }
         });
 
-        // Highlight based on actual grid state after auto-associate
+        // Store results and colIndex for re-application via afterRender hook
+        hot._highlightData = { sourceData: sourceData, mediumRows: mediumRows, colIndex: colIndex, results: results };
+
+        _applyHighlightClasses();
+    }
+
+    function _applyHighlightClasses() {
+        if (!hot || !hot._highlightData) return;
+
+        var hd = hot._highlightData;
+        var sourceData = hd.sourceData;
+        var mediumRows = hd.mediumRows;
+        var colIndex = hd.colIndex;
+
         for (var i = 0; i < sourceData.length; i++) {
             var row = sourceData[i];
             var val = row.programaAnteriorAsociar;
@@ -1266,11 +1279,21 @@ window.HOTActualizarModule = (function() {
 
             var visualRow = hot.toVisualRow(i);
             if (visualRow !== null && visualRow >= 0) {
-                hot.setCellMeta(visualRow, colIndex, 'className', className);
+                var td = hot.getCell(visualRow, colIndex);
+                if (td) {
+                    td.classList.add(className);
+                }
             }
         }
 
-        hot.render();
+        // Register afterRender hook once so classes persist after scroll/edit/re-render
+        if (!hot._highlightHookRegistered) {
+            hot._highlightFn = function() {
+                _applyHighlightClasses();
+            };
+            hot._highlightHookRegistered = true;
+            hot.addHook('afterRender', hot._highlightFn);
+        }
     }
 
     /**
@@ -1287,6 +1310,9 @@ window.HOTActualizarModule = (function() {
 
         var data = results.data || results;
         var mediumItems = data.medium || [];
+
+        // Show ALL rows (not only unmapped) so highlighting covers the full dataset
+        showingUnmappedOnly = false;
 
         // Reload grid data so highlighting reflects the DB state after auto-associate
         _loadDataFetched = false;

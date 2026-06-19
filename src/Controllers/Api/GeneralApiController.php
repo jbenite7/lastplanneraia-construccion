@@ -1156,8 +1156,8 @@ class GeneralApiController extends BaseController
                            SET programaAnteriorAsociar = '*No Asociada*' 
                            WHERE Semana = ? AND Titulo = 0
                            AND programaAnteriorAsociar IS NOT NULL AND programaAnteriorAsociar != ''
-                           AND programmaAnteriorAsociar != '*No Asociada*'
-                           AND programmaAnteriorAsociar REGEXP '^[0-9]+(\\.[0-9]+)*$'";
+                           AND programaAnteriorAsociar != '*No Asociada*'
+                           AND programaAnteriorAsociar REGEXP '^[0-9]+(\\.[0-9]+)*$'";
             $stmtCleanup = $this->db->prepare($sqlCleanup);
             $stmtCleanup->execute([$semanaObjetivo]);
 
