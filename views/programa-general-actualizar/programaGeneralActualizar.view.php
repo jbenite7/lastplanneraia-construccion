@@ -329,6 +329,93 @@
 		.match-resolved-skipped i {
 			color: #6c757d;
 		}
+
+		/* ========================================
+		   Opción C: Split view tabs + Cambiar + Guardar
+		   ======================================== */
+		.review-tabs {
+			border-bottom: 2px solid var(--aia-separators, #d1d1d1);
+			margin-bottom: var(--spacing-md, 1rem);
+		}
+		.review-tabs .nav-link {
+			font-family: 'Inter', sans-serif;
+			font-weight: 600;
+			font-size: 0.85rem;
+			color: var(--aia-text-secondary, #4a4a4d);
+			border: none;
+			padding: 0.5rem 1rem;
+			transition: color 0.2s ease, border-color 0.2s ease;
+		}
+		.review-tabs .nav-link.active {
+			color: var(--aia-green-primary, #1a5633);
+			border-bottom: 2px solid var(--aia-green-primary, #1a5633);
+			background: transparent;
+		}
+		.review-tabs .nav-link:hover {
+			color: var(--aia-green-primary, #1a5633);
+			border-color: transparent;
+		}
+		.review-tab-content {
+			max-height: 400px;
+			overflow-y: auto;
+			padding-right: var(--spacing-sm, 0.5rem);
+		}
+		.review-tab-content::-webkit-scrollbar {
+			width: 6px;
+		}
+		.review-tab-content::-webkit-scrollbar-thumb {
+			background: var(--aia-separators, #d1d1d1);
+			border-radius: 3px;
+		}
+		.review-tab-content .match-item:last-child {
+			margin-bottom: 0;
+		}
+
+		/* Botón Cambiar en ítems procesados */
+		.js-change-decision {
+			font-family: 'Inter', sans-serif;
+			font-size: 0.8rem;
+			font-weight: 500;
+			transition: all 0.2s ease;
+		}
+		.js-change-decision:hover {
+			background: var(--aia-green-primary, #1a5633);
+			color: white;
+			border-color: var(--aia-green-primary, #1a5633);
+		}
+
+		/* Botón Guardar Cambios */
+		#btn-guardar-cambios {
+			font-family: 'Montserrat', sans-serif;
+			font-weight: 600;
+			font-size: 0.85rem;
+			padding: 0.4rem 1.2rem;
+			transition: all 0.2s ease;
+		}
+		#btn-guardar-cambios:not(:disabled):hover {
+			transform: translateY(-1px);
+			box-shadow: 0 2px 8px rgba(26, 86, 51, 0.3);
+		}
+		#btn-guardar-cambios .guardar-count {
+			font-size: 0.75rem;
+			opacity: 0.8;
+		}
+
+		/* Badges en tabs */
+		.review-tabs .badge {
+			font-size: 0.7rem;
+			font-weight: 600;
+			padding: 0.2em 0.5em;
+			border-radius: 10px;
+		}
+		.review-tabs .badge-warning {
+			background: #ffc107;
+			color: #1c1c1e;
+		}
+		.review-tabs .badge-success {
+			background: var(--aia-green-primary, #1a5633);
+			color: white;
+		}
 	</style>
 	<link rel="stylesheet" href="/css/handsontable-header-global.css?v=20260313" />
 	<link rel="stylesheet" href="/css/tom-select-premium-aia.css?v=20260314" />
@@ -597,7 +684,7 @@
 			</div>
 		</div>
 
-		<!-- Modal de Revisión de Auto-Asociación -->
+		<!-- Modal de Revisión de Auto-Asociación (Opción C: split Pendientes/Procesadas + Guardar Cambios batch) -->
 		<div class="modal fade aia-modal" id="modalAutoAsociar" role="dialog" aria-labelledby="modalAutoAsociarLabel" data-backdrop="static">
 			<div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" role="document">
 				<div class="modal-content">
@@ -631,11 +718,45 @@
 							</div>
 						</div>
 
-						<!-- Lista de ítems para revisar (media confianza) -->
-						<div id="review-list"></div>
+						<!-- Split view: tabs Pendientes / Procesadas -->
+						<div id="review-sections">
+							<ul class="nav nav-tabs review-tabs" id="reviewTabs" role="tablist">
+								<li class="nav-item">
+									<a class="nav-link active" id="tab-pending" data-toggle="tab" href="#review-pending" role="tab" aria-controls="review-pending" aria-selected="true">
+										<i class="fas fa-clock"></i> Pendientes
+										<span class="badge badge-warning ml-1" id="tab-pending-badge">0</span>
+									</a>
+								</li>
+								<li class="nav-item">
+									<a class="nav-link" id="tab-processed" data-toggle="tab" href="#review-processed" role="tab" aria-controls="review-processed" aria-selected="false">
+										<i class="fas fa-check-circle"></i> Procesadas
+										<span class="badge badge-success ml-1" id="tab-processed-badge">0</span>
+									</a>
+								</li>
+							</ul>
+							<div class="tab-content review-tab-content" id="reviewContent">
+								<div class="tab-pane fade show active" id="review-pending" role="tabpanel" aria-labelledby="tab-pending">
+									<div id="review-list-pending"></div>
+								</div>
+								<div class="tab-pane fade" id="review-processed" role="tabpanel" aria-labelledby="tab-processed">
+									<div id="review-list-processed"></div>
+								</div>
+							</div>
+						</div>
+
+						<!-- Fallback single list (sin split) cuando no hay ítems -->
+						<div id="review-list" style="display:none;"></div>
 					</div>
-					<div class="modal-footer" style="background: #FAFAFA;">
-						<button type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Cerrar revisión">Cerrar</button>
+					<div class="modal-footer" style="background: #FAFAFA; display: flex; justify-content: space-between; align-items: center;">
+						<div>
+							<button type="button" class="btn btn-primary" id="btn-guardar-cambios" disabled>
+								<i class="fas fa-save"></i> Guardar Cambios
+								<span class="guardar-count ml-1"></span>
+							</button>
+						</div>
+						<div>
+							<button type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Cerrar revisión">Cerrar</button>
+						</div>
 					</div>
 				</div>
 			</div>

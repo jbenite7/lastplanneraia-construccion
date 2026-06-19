@@ -19,6 +19,9 @@ window.HOTActualizarModule = (function() {
     var _cachedSourceData = null;
     var _initDone = false;
     var _loadDataFetched = false;
+    var _reviewDecisions = null;      // { consecutivo: { action: 'accept'|'skip', candidateName: '...' } }
+    var _reviewResultsRef = null;     // raw results data ref for re-rendering
+    var _hasShownSavePrompt = false;  // guard for double-prompt
 
     // Configuración de validadores y regexs
     const regexNumerico = /^-?\d*(\.\d+)?$/;
@@ -1086,12 +1089,18 @@ window.HOTActualizarModule = (function() {
     }
 
     /**
-     * Muestra el modal de revisión de auto-asociación.
-     * Puebla stats, renderiza ítems de media confianza, y bindinea eventos de accept/skip/expand.
+     * Muestra el modal de revisión de auto-asociación con split Pendientes/Procesadas.
+     * Inicializa _reviewDecisions, renderiza tabs y bindinea eventos.
      * @param {Object} results - { identical:[], high:[], medium:[], none:[] }
      */
     function showReviewModal(results) {
         var data = results.data || results;
+        _reviewResultsRef = results;
+
+        // Resetear decisiones si es la primera apertura
+        if (_reviewDecisions === null) {
+            _reviewDecisions = {};
+        }
 
         populateModalStats(data);
 
@@ -1106,28 +1115,189 @@ window.HOTActualizarModule = (function() {
                     '<p>No hay actividades con confianza media para revisar.</p>' +
                 '</div>'
             );
+            $('#review-sections').hide();
         } else {
-            var html = mediumItems.map(function(item, idx) {
-                return renderReviewItem(item, idx);
-            }).join('');
-            $reviewList.html(html);
+            $('#review-sections').show();
+            _renderReviewSections(mediumItems);
         }
 
-        _bindReviewModalEvents($reviewList);
+        _bindReviewModalEvents($('#reviewContent'));
+        _updateGuardarBtnState();
+
+        // Bind unsaved changes confirmation on hide
+        $('#modalAutoAsociar').off('.unsavedGuard').on('hide.bs.modal.unsavedGuard', function(e) {
+            _handleModalClose(e);
+        });
 
         $('#modalAutoAsociar').modal('show');
     }
 
     /**
-     * Bindea eventos delegados en el contenedor de revisión:
-     * - Aceptar: asocia la actividad con el candidato seleccionado
-     * - Marcar Nueva: omite la actividad
+     * Intercepta el cierre del modal si hay decisiones sin guardar.
+     * Usa confirm() como fallback si SweetAlert2 no está disponible.
+     */
+    function _handleModalClose(e) {
+        if (!_reviewDecisions) return;
+
+        var count = Object.keys(_reviewDecisions).length;
+        if (count === 0) return;
+
+        // Evitar doble prompt si ya se mostró
+        if (_hasShownSavePrompt) {
+            e.preventDefault();
+            return;
+        }
+        _hasShownSavePrompt = true;
+
+        e.preventDefault();
+
+        var doClose = function(confirmed) {
+            _hasShownSavePrompt = false;
+            if (confirmed) {
+                $('#modalAutoAsociar').off('.unsavedGuard');
+                $('#modalAutoAsociar').modal('hide');
+            }
+        };
+
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: '¿Salir sin guardar?',
+                text: 'Tienes ' + count + ' decision(es) sin guardar. Se perderán si cierras ahora.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, salir',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#1a5633'
+            }).then(function(result) {
+                doClose(result.isConfirmed);
+            });
+        } else {
+            doClose(confirm('Tienes ' + count + ' decision(es) sin guardar. ¿Salir de todas formas?'));
+        }
+    }
+
+    /**
+     * Renderiza las dos secciones del split view: Pendientes y Procesadas.
+     * @param {Array} mediumItems - Lista de ítems de confianza media.
+     */
+    function _renderReviewSections(mediumItems) {
+        var pendingItems = [];
+        var processedItems = [];
+
+        mediumItems.forEach(function(item, idx) {
+            var cons = String(item.row !== undefined ? item.row : '');
+            var decision = _reviewDecisions ? _reviewDecisions[cons] : null;
+
+            if (decision) {
+                processedItems.push({ item: item, idx: idx, decision: decision });
+            } else {
+                pendingItems.push({ item: item, idx: idx });
+            }
+        });
+
+        // Render pending section
+        var $pendingList = $('#review-list-pending');
+        $pendingList.empty();
+
+        if (pendingItems.length === 0) {
+            $pendingList.html(
+                '<div class="text-center py-3" style="color: var(--aia-text-secondary, #4a4a4d);">' +
+                    '<i class="fas fa-check-circle" style="color: var(--aia-green-primary, #1a5633);"></i> ' +
+                    'Todas las actividades han sido procesadas.' +
+                '</div>'
+            );
+        } else {
+            var pendingHtml = pendingItems.map(function(p) {
+                return renderReviewItem(p.item, p.idx);
+            }).join('');
+            $pendingList.html(pendingHtml);
+        }
+
+        // Render processed section
+        var $processedList = $('#review-list-processed');
+        $processedList.empty();
+
+        if (processedItems.length === 0) {
+            $processedList.html(
+                '<div class="text-center py-3" style="color: var(--aia-text-secondary, #4a4a4d);">' +
+                    '<i class="fas fa-inbox"></i> ' +
+                    'Aún no has procesado ninguna actividad.' +
+                '</div>'
+            );
+        } else {
+            var processedHtml = processedItems.map(function(p) {
+                return _renderProcessedItem(p.item, p.idx, p.decision);
+            }).join('');
+            $processedList.html(processedHtml);
+        }
+
+        // Update tab badges
+        $('#tab-pending-badge').text(pendingItems.length);
+        $('#tab-processed-badge').text(processedItems.length);
+
+        // If no pending, auto-switch to processed
+        if (pendingItems.length === 0) {
+            $('#tab-processed').tab('show');
+        }
+
+        _updateGuardarBtnState();
+    }
+
+    /**
+     * Renderiza un ítem ya procesado (section Procesadas) con badge + botón Cambiar.
+     * @param {Object} item - Ítem original de medium.
+     * @param {number} idx - Índice original.
+     * @param {Object} decision - { action: 'accept'|'skip', candidateName: '...' }
+     * @returns {string} HTML.
+     */
+    function _renderProcessedItem(item, idx, decision) {
+        var targetName = item.activityName || 'Actividad sin nombre';
+        var isAccepted = decision.action === 'accept';
+        var badgeClass = isAccepted ? 'match-resolved-accepted' : 'match-resolved-skipped';
+        var icon = isAccepted ? 'fa-check-circle' : 'fa-times-circle';
+        var label = isAccepted
+            ? 'Asociada con: <strong>' + escapeHtml(decision.candidateName) + '</strong>'
+            : 'Marcada como actividad nueva';
+        var cons = String(item.row !== undefined ? item.row : '');
+
+        return '' +
+            '<div class="match-item match-item-resolved ' + (isAccepted ? 'match-item-accepted' : 'match-item-skipped') + '" data-index="' + idx + '" data-row="' + cons + '">' +
+                '<div class="match-item-header">' +
+                    '<div class="match-target-label">' +
+                        '<span class="match-label match-label-target"><i class="fas fa-crosshairs mr-1"></i> Actividad</span>' +
+                    '</div>' +
+                    '<div class="match-activity-name">' +
+                        escapeHtml(targetName) +
+                    '</div>' +
+                '</div>' +
+                '<div class="match-item-body">' +
+                    '<div class="match-resolved-badge ' + badgeClass + '" style="margin-bottom: 0.5rem;">' +
+                        '<i class="fas ' + icon + '"></i> ' +
+                        '<span>' + label + '</span>' +
+                    '</div>' +
+                    '<button type="button" class="btn btn-sm btn-outline-secondary js-change-decision" ' +
+                        'data-row="' + cons + '" ' +
+                        'data-index="' + idx + '" ' +
+                        'title="Volver a evaluar esta actividad">' +
+                        '<i class="fas fa-undo"></i> Cambiar' +
+                    '</button>' +
+                '</div>' +
+            '</div>';
+    }
+
+    /**
+     * Bindea eventos delegados del modal de revisión:
+     * - Aceptar: guarda decisión local en _reviewDecisions
+     * - Marcar Nueva: guarda decisión local
+     * - Cambiar: revierte decisión local
      * - Ver más opciones: expande candidatos extra
-     * @param {jQuery} $container - El contenedor #review-list
+     * - Guardar Cambios: persiste todas las decisiones en batch
      */
     function _bindReviewModalEvents($container) {
         $container.off('.reviewModal');
 
+        // Guardar decisión de aceptar
         $container.on('click.reviewModal', '.js-accept-match', function(e) {
             e.preventDefault();
             var $btn = $(this);
@@ -1136,40 +1306,19 @@ window.HOTActualizarModule = (function() {
 
             if (!consecutivo || !candidateName) return;
 
-            if (hot) {
-                var sourceData = hot.getSourceData();
-                var visualRow = null;
-                for (var i = 0; i < sourceData.length; i++) {
-                    if (String(sourceData[i].Consecutivo_en_Programa) === consecutivo) {
-                        visualRow = i;
-                        break;
-                    }
-                }
-                if (visualRow !== null) {
-                    hot.setDataAtRowProp(visualRow, 'programaAnteriorAsociar', candidateName, 'edit');
-                }
-            }
-
-            var $item = $btn.closest('.match-item');
-            $item.addClass('match-item-resolved match-item-accepted');
-            $item.find('.js-accept-match, .js-skip-match').prop('disabled', true);
-
-            var $status = $item.find('.match-item-status');
-            $status.html(
-                '<div class="match-resolved-badge match-resolved-accepted">' +
-                    '<i class="fas fa-check-circle"></i> ' +
-                    '<span>Asociada con: <strong>' + escapeHtml(candidateName) + '</strong></span>' +
-                '</div>'
-            ).show();
-
-            $item.find('.match-candidate').css('opacity', '0.4');
-            $btn.closest('.match-candidate').css('opacity', '1');
+            _reviewDecisions[consecutivo] = {
+                action: 'accept',
+                candidateName: candidateName
+            };
 
             if (typeof toastr !== 'undefined') {
                 toastr.success('Asociado: ' + candidateName);
             }
+
+            _refreshReviewUI();
         });
 
+        // Guardar decisión de saltar (marcar como nueva)
         $container.on('click.reviewModal', '.js-skip-match', function(e) {
             e.preventDefault();
             var $btn = $(this);
@@ -1177,37 +1326,36 @@ window.HOTActualizarModule = (function() {
 
             if (!consecutivo) return;
 
-            if (hot) {
-                var sourceData = hot.getSourceData();
-                var visualRow = null;
-                for (var i = 0; i < sourceData.length; i++) {
-                    if (String(sourceData[i].Consecutivo_en_Programa) === consecutivo) {
-                        visualRow = i;
-                        break;
-                    }
-                }
-                if (visualRow !== null) {
-                    hot.setDataAtRowProp(visualRow, 'programaAnteriorAsociar', '*No Asociada*', 'edit');
-                }
-            }
-
-            var $item = $btn.closest('.match-item');
-            $item.addClass('match-item-resolved match-item-skipped');
-            $item.find('.js-accept-match, .js-skip-match').prop('disabled', true);
-
-            var $status = $item.find('.match-item-status');
-            $status.html(
-                '<div class="match-resolved-badge match-resolved-skipped">' +
-                    '<i class="fas fa-times-circle"></i> ' +
-                    '<span>Marcada como actividad nueva</span>' +
-                '</div>'
-            ).show();
+            _reviewDecisions[consecutivo] = {
+                action: 'skip',
+                candidateName: '*No Asociada*'
+            };
 
             if (typeof toastr !== 'undefined') {
                 toastr.info('Actividad marcada como nueva');
             }
+
+            _refreshReviewUI();
         });
 
+        // Cambiar decisión (revertir)
+        $container.on('click.reviewModal', '.js-change-decision', function(e) {
+            e.preventDefault();
+            var $btn = $(this);
+            var consecutivo = String($btn.data('row'));
+
+            if (!consecutivo) return;
+
+            delete _reviewDecisions[consecutivo];
+
+            if (typeof toastr !== 'undefined') {
+                toastr.info('Decisión revertida. Re-evalúa la actividad.');
+            }
+
+            _refreshReviewUI();
+        });
+
+        // Ver más opciones (expandir candidatos extra)
         $container.on('click.reviewModal', '.js-toggle-extra', function(e) {
             e.preventDefault();
             var $btn = $(this);
@@ -1223,6 +1371,91 @@ window.HOTActualizarModule = (function() {
                 $btn.text($btn.text().replace('Ver más', 'Ocultar'));
             }
         });
+
+        // Guardar Cambios batch
+        $container.on('click.reviewModal', '#btn-guardar-cambios', function(e) {
+            e.preventDefault();
+            _saveReviewDecisions();
+        });
+    }
+
+    /**
+     * Re-renderiza las secciones Pendientes/Procesadas y actualiza botón Guardar.
+     * Se llama tras cada decisión o cambio.
+     */
+    function _refreshReviewUI() {
+        var data = _reviewResultsRef ? (_reviewResultsRef.data || _reviewResultsRef) : null;
+        if (!data) return;
+
+        var mediumItems = data.medium || [];
+        _renderReviewSections(mediumItems);
+    }
+
+    /**
+     * Persiste en batch todas las decisiones acumuladas en _reviewDecisions.
+     * Escribe en la grilla y muestra resultado.
+     */
+    function _saveReviewDecisions() {
+        var decisions = _reviewDecisions;
+        if (!decisions || Object.keys(decisions).length === 0) {
+            if (typeof toastr !== 'undefined') {
+                toastr.warning('No hay cambios para guardar.');
+            }
+            return;
+        }
+
+        var accepted = 0;
+        var skipped = 0;
+
+        Object.keys(decisions).forEach(function(consecutivo) {
+            var decision = decisions[consecutivo];
+            if (!hot) return;
+
+            var sourceData = hot.getSourceData();
+            var visualRow = null;
+            for (var i = 0; i < sourceData.length; i++) {
+                if (String(sourceData[i].Consecutivo_en_Programa) === consecutivo) {
+                    visualRow = i;
+                    break;
+                }
+            }
+
+            if (visualRow === null) return;
+
+            if (decision.action === 'accept') {
+                hot.setDataAtRowProp(visualRow, 'programaAnteriorAsociar', decision.candidateName, 'edit');
+                accepted++;
+            } else if (decision.action === 'skip') {
+                hot.setDataAtRowProp(visualRow, 'programaAnteriorAsociar', '*No Asociada*', 'edit');
+                skipped++;
+            }
+        });
+
+        // Limpiar decisiones guardadas
+        _reviewDecisions = {};
+        _refreshReviewUI();
+
+        if (typeof toastr !== 'undefined') {
+            toastr.success(
+                accepted + ' asociada(s), ' + skipped + ' nueva(s) — Guardadas correctamente.'
+            );
+        }
+    }
+
+    /**
+     * Actualiza el estado del botón Guardar Cambios según decisiones pendientes.
+     */
+    function _updateGuardarBtnState() {
+        var $btn = $('#btn-guardar-cambios');
+        var count = _reviewDecisions ? Object.keys(_reviewDecisions).length : 0;
+
+        if (count > 0) {
+            $btn.prop('disabled', false);
+            $btn.find('.guardar-count').text('(' + count + ')');
+        } else {
+            $btn.prop('disabled', true);
+            $btn.find('.guardar-count').text('');
+        }
     }
 
     /**
@@ -1348,6 +1581,8 @@ window.HOTActualizarModule = (function() {
         showReviewModal: showReviewModal,
         populateModalStats: populateModalStats,
         renderReviewItem: renderReviewItem,
+        saveReviewDecisions: _saveReviewDecisions,
+        get reviewDecisions() { return _reviewDecisions; },
         init: function() {
             console.log("🔥 [MapeoManual] HOTActualizarModule.init() alcanzado.");
             if (_initDone) {
