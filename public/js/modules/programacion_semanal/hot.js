@@ -2027,6 +2027,7 @@
         CNC: rawData.CNC || '',
         Observaciones_CNC: rawData.Observaciones_CNC || '',
         Rendimientos: rawData.Rendimientos || '',
+        Es_TNP: rawData.Es_TNP || '',
       },
     };
   }
@@ -2077,10 +2078,14 @@
           hot.setDataAtRowProp(visualRow, 'estado_operativo', row.estado_operativo, 'internal-update');
           hot.setDataAtRowProp(visualRow, 'cantidad_sugerida_auto', row.cantidad_sugerida_auto, 'internal-update');
 
-          // Recalcular PAC y P_Completado localmente
+          // Recalcular PAC y P_Completado localmente (skip TNP rows)
+          var esTnpRow = row.Es_TNP === 1 || row.Es_TNP === '1';
+          if (!esTnpRow && typeof getStateKey === 'function') {
+            esTnpRow = (getStateKey(row) === 'cal-tnp');
+          }
           var comp = toNumber(payload.data.Compromiso, null);
           var real = toNumber(payload.data.Real, null);
-          if (comp !== null && comp > 0 && real !== null && real >= 0) {
+          if (!esTnpRow && comp !== null && comp > 0 && real !== null && real >= 0) {
             row.P_Completado = real / comp;
             row.PAC = (real < comp) ? 0 : 1;
             // Forzar actualización visual en celdas readOnly
@@ -2175,6 +2180,19 @@
     });
 
     Handsontable.renderers.registerRenderer('psPacRenderer', function (instance, td, row, col, prop, value) {
+      // TNP exclusion: show dash instead of PAC value for TNP rows
+      var rowData = instance && typeof instance.getSourceDataAtRow === 'function' ? (getSourceRowDataByVisualRow(instance, row) || {}) : {};
+      var esTnp = rowData.Es_TNP === 1 || rowData.Es_TNP === '1';
+      if (!esTnp && typeof getStateKey === 'function') {
+        var state = getStateKey(rowData);
+        esTnp = (state === 'cal-tnp');
+      }
+      if (esTnp) {
+        Handsontable.renderers.TextRenderer.apply(this, arguments);
+        td.innerHTML = '<span style="color: #6c757d; font-style: italic;">—</span>';
+        td.classList.add('htCenter');
+        return;
+      }
       Handsontable.renderers.TextRenderer.apply(this, arguments);
       td.textContent = formatPercent(value, 1);
       td.classList.add('htCenter');
@@ -2519,6 +2537,16 @@
 
           var rowData = getSourceRowDataByVisualRow(hot, rowIndex) || {};
 
+          if (prop === 'Ejecutado_Real') {
+            var esTnpRow = rowData.Es_TNP === 1 || rowData.Es_TNP === '1';
+            if (!esTnpRow && typeof getStateKey === 'function') {
+              esTnpRow = (getStateKey(rowData) === 'cal-tnp');
+            }
+            if (esTnpRow) {
+              continue;
+            }
+          }
+
           // HARD GUARD: Block real execution registration if missing assignees
           if (prop === 'Ejecutado_Real') {
             var isSubMissing = isBlank(rowData.Sub_Contratista);
@@ -2813,6 +2841,11 @@
       $('#btn_agregar_actividad').hide();
       $('#btn_cerrar_compromisos_semana').hide();
       $('#btn_informe_compromisos').show();
+      if (isSemanalEditorRole(getPermiso())) {
+        $('#btn_tnp').show();
+      } else {
+        $('#btn_tnp').hide();
+      }
       if (fechaCierre) {
         $('#textoFechaCierreCompromisos').text('Compromisos cerrados el ' + fechaCierre);
       } else {
@@ -2825,6 +2858,7 @@
       $('#btn_agregar_actividad').show();
       $('#btn_cerrar_compromisos_semana').show();
       $('#btn_informe_compromisos').hide();
+      $('#btn_tnp').hide();
       $('#textoFechaCierreCompromisos').text('');
     }
 
@@ -3654,6 +3688,42 @@
     $(document)
       .off('show.bs.modal.psLegend', '#modal_leyenda_colores_ps')
       .on('show.bs.modal.psLegend', '#modal_leyenda_colores_ps', renderLegendModal);
+
+    $('#btn_tnp').off('click.psTnp').on('click.psTnp', function () {
+      if (!canManageToolbarActions()) {
+        showFeedback('error', 'No tiene permisos para registrar TNP.');
+        return;
+      }
+      if (getSemanalConfirmada() !== 1) {
+        showFeedback('error', 'Solo puede registrar TNP en fase de Calificación.');
+        return;
+      }
+
+      var consecutivo = '';
+      var idActividad = '';
+      var ejecutadoReal = '';
+
+      if (hot) {
+        var selected = hot.getSelected();
+        if (selected) {
+          var row = selected[0];
+          var rowData = hot.getDataItem(row);
+          if (rowData) {
+            consecutivo = rowData.Consecutivo || '';
+            idActividad = rowData.Id || '';
+            ejecutadoReal = rowData.Ejecutado_Real || '';
+          }
+        }
+      }
+
+      $('#tnp_consecutivo').val(consecutivo);
+      $('#tnp_id_actividad').val(idActividad);
+      $('#tnp_ejecutado_real').val(ejecutadoReal);
+      $('#tnp_categoria_cp').val('');
+      $('#tnp_cp').val('');
+      $('#tnp_observaciones_cp').val('');
+      $('#modal_tnp').modal('show');
+    });
   }
 
   function updateTableHeight() {
@@ -3802,12 +3872,68 @@
     });
   }
 
+  function bindTnpModal() {
+    $('#btn_guardar_tnp').off('click.psTnp').on('click.psTnp', function () {
+      var categoria = String($('#tnp_categoria_cp').val() || '').trim();
+      var ejecutadoReal = parseFloat($('#tnp_ejecutado_real').val());
+
+      if (!categoria) {
+        showFeedback('error', 'Seleccione una Causa de Programación');
+        return;
+      }
+      if (isNaN(ejecutadoReal) || ejecutadoReal <= 0) {
+        showFeedback('error', 'Ingrese un valor válido para Ejecutado Real');
+        return;
+      }
+
+      var payload = {
+        opcion: 'tnp',
+        db: getDb(),
+        semana: getSemana(),
+        Consecutivo: $('#tnp_consecutivo').val() || null,
+        Id: $('#tnp_id_actividad').val() || null,
+        Ejecutado_Real: ejecutadoReal,
+        Categoria_CP: categoria,
+        CP: $('#tnp_cp').val() || null,
+        Observaciones_CP: $('#tnp_observaciones_cp').val() || null
+      };
+
+      $.ajax({
+        url: '/api/semanal/save',
+        method: 'POST',
+        data: payload,
+        success: function (response) {
+          if (response.success) {
+            showFeedback('success', 'TNP registrado correctamente');
+            $('#modal_tnp').modal('hide');
+            loadData();
+          } else {
+            showFeedback('error', response.message || 'Error al guardar TNP');
+          }
+        },
+        error: function () {
+          showFeedback('error', 'Error de conexión al guardar TNP');
+        }
+      });
+    });
+
+    $('#modal_tnp').off('hidden.bs.modal.psTnp').on('hidden.bs.modal.psTnp', function () {
+      $('#tnp_consecutivo').val('');
+      $('#tnp_id_actividad').val('');
+      $('#tnp_categoria_cp').val('');
+      $('#tnp_cp').val('');
+      $('#tnp_ejecutado_real').val('');
+      $('#tnp_observaciones_cp').val('');
+    });
+  }
+
   function init() {
     if (!initialized) {
       bindToolbarActions();
       bindFilters();
       bindResize();
       bindCncModal();
+      bindTnpModal();
       initialized = true;
     }
 
