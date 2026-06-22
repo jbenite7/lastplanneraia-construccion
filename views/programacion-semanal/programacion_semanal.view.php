@@ -1,3 +1,16 @@
+<?php
+$categoriasCP = [
+    "Buen Rendimiento",
+    "Oportunidad Detectada",
+    "Mano de Obra Disponible",
+    "Materiales Disponibles",
+    "Equipos Disponibles",
+    "Disenos Listos",
+    "Gestion Resuelta",
+    "Condiciones Favorables",
+    "Compensacion de Frente"
+];
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head id="head">
@@ -1160,11 +1173,61 @@
                     <button id="btn_cancelar_cnc_hot" type="button" class="btn btn-outline-secondary" data-dismiss="modal" style="font-family: 'Montserrat', sans-serif; font-weight: 600; border-radius: 6px; padding: 0.5rem 1.25rem;">Cancelar</button>
                     <button id="btn_guardar_cnc_hot" type="button" class="btn aia-btn-primary">Guardar y Confirmar</button>
                 </div>
-            </div>
         </div>
     </div>
+</div>
 
-    <?php include __DIR__ . '/partials/_changeMonitorModal.php'; ?>
+<!-- Modal TNP - Trabajo No Planificado -->
+<div class="modal fade aia-modal" id="modal_tnp" tabindex="-1" role="dialog" aria-labelledby="modal_tnp_label">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header" style="background-color: #2E7D32; color: white;">
+        <h5 class="modal-title" id="modal_tnp_label">
+          Registrar Trabajo No Planificado
+          <small class="d-block mt-1" style="font-weight: normal; opacity: 0.9;">¿Por qué decidiste ejecutarla?</small>
+        </h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body" style="background-color: #faf8f5;">
+        <input type="hidden" id="tnp_consecutivo" value="">
+        <input type="hidden" id="tnp_id_actividad" value="">
+        
+        <div class="form-group">
+          <label for="tnp_categoria_cp"><strong>Causa de Programación (CP) *</strong></label>
+          <select id="tnp_categoria_cp" class="form-control" required>
+            <option value="">Seleccione una causa...</option>
+            <?php foreach ($categoriasCP as $cat): ?>
+              <option value="<?= htmlspecialchars($cat) ?>"><?= htmlspecialchars($cat) ?></option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="tnp_cp"><strong>CP (Detalle adicional)</strong></label>
+          <input type="text" id="tnp_cp" class="form-control" maxlength="255" placeholder="Detalle opcional de la causa">
+        </div>
+        
+        <div class="form-group">
+          <label for="tnp_ejecutado_real"><strong>Ejecutado Real *</strong></label>
+          <input type="number" id="tnp_ejecutado_real" class="form-control" step="0.1" min="0.1" required placeholder="Cantidad ejecutada">
+        </div>
+        
+        <div class="form-group">
+          <label for="tnp_observaciones_cp"><strong>Observaciones</strong></label>
+          <textarea id="tnp_observaciones_cp" class="form-control" maxlength="500" rows="3" placeholder="Observaciones opcionales (máx. 500 caracteres)"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer" style="background-color: #f5f3f0;">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+        <button type="button" class="btn btn-success" id="btn_guardar_tnp">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<?php include __DIR__ . '/partials/_changeMonitorModal.php'; ?>
     <?php include __DIR__ . '/../partials/drawer_unificado.php'; ?>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
