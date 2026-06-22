@@ -2229,15 +2229,20 @@
 
           td.innerHTML = "<span class='ps-commit-value'>" + escapeHtml(textValue) + "</span><span class='" + indicatorClass + "' title='" + escapeHtml(indicatorTitle) + "' aria-label='" + escapeHtml(indicatorTitle) + "'>" + indicatorIcon + '</span>';
         } else if (prop === 'Ejecutado_Real' && weeklyPhaseKey === 'calificacion') {
-          var compromisoRow = toNumber(rowData.Compromiso, 0);
-          var isRealLow = numeric < (compromisoRow - 0.0001);
-          var indicatorClassReal = isRealLow ? 'ps-commit-indicator is-low' : 'ps-commit-indicator is-ok';
-          var indicatorIconReal = isRealLow ? '⚠' : '✓';
-          var indicatorTitleReal = isRealLow
-            ? 'Ejecutado menor al compromiso (Requiere CNC)'
-            : 'Compromiso cumplido';
+          var esTnp = rowData.Es_TNP === 1 || rowData.Es_TNP === '1';
+          if (esTnp) {
+            td.innerHTML = "<span class='badge badge-info' style='background-color: #4a81bd; color: white; font-size: 0.75em; padding: 2px 6px; border-radius: 3px; margin-right: 4px;'>TNP</span><span class='ps-commit-value'>" + escapeHtml(textValue) + '</span>';
+          } else {
+            var compromisoRow = toNumber(rowData.Compromiso, 0);
+            var isRealLow = numeric < (compromisoRow - 0.0001);
+            var indicatorClassReal = isRealLow ? 'ps-commit-indicator is-low' : 'ps-commit-indicator is-ok';
+            var indicatorIconReal = isRealLow ? '⚠' : '✓';
+            var indicatorTitleReal = isRealLow
+              ? 'Ejecutado menor al compromiso (Requiere CNC)'
+              : 'Compromiso cumplido';
 
-          td.innerHTML = "<span class='ps-commit-value'>" + escapeHtml(textValue) + "</span><span class='" + indicatorClassReal + "' title='" + escapeHtml(indicatorTitleReal) + "' aria-label='" + escapeHtml(indicatorTitleReal) + "'>" + indicatorIconReal + '</span>';
+            td.innerHTML = "<span class='ps-commit-value'>" + escapeHtml(textValue) + "</span><span class='" + indicatorClassReal + "' title='" + escapeHtml(indicatorTitleReal) + "' aria-label='" + escapeHtml(indicatorTitleReal) + "'>" + indicatorIconReal + '</span>';
+          }
         } else {
           td.textContent = textValue;
         }
@@ -2310,6 +2315,7 @@
       { data: 'cantidad_sugerida_auto', readOnly: true, renderer: 'psCompromisoRenderer', className: 'htCenter htMiddle' },
       { data: 'Compromiso', type: 'numeric', numericFormat: { pattern: '0.0' }, renderer: 'psCompromisoRenderer', className: 'htCenter htMiddle' },
       { data: 'Ejecutado_Real', type: 'numeric', numericFormat: { pattern: '0.0' }, renderer: 'psCompromisoRenderer', className: 'htCenter htMiddle' },
+      { data: 'Es_TNP', type: 'numeric', readOnly: true, visible: false, className: 'htCenter' },
       { data: 'PAC', readOnly: true, renderer: 'psPacRenderer', className: 'htCenter htMiddle' },
       { data: 'P_Completado', readOnly: true, renderer: 'psPacRenderer', className: 'htCenter htMiddle' },
       { data: 'Categoria_CNC', type: 'text', className: 'htCenter htMiddle force-wrap' },
