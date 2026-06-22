@@ -3744,6 +3744,26 @@
             $select.append($('<option>', { value: act.Id, text: text }));
           });
 
+          function formatTnpOption(option) {
+            if (!option.id) return option.text;
+            var actividades = window.tnpActividadesData || [];
+            var act = null;
+            for (var i = 0; i < actividades.length; i++) {
+              if (String(actividades[i].Id) === String(option.id)) {
+                act = actividades[i];
+                break;
+              }
+            }
+            if (!act) return option.text;
+            var $el = $('<div class="tnp-option" style="padding: 4px 0;">');
+            $el.append('<div style="font-weight: 600; font-size: 0.95rem; color: #1a3c2a;">' + (act.Actividad || 'Actividad #' + act.Id) + '</div>');
+            var sub = '';
+            if (act.Sub_Contratista) sub += '<span style="color: #555;">Sub: ' + act.Sub_Contratista + '</span>';
+            if (act.Responsable_AIA) { if (sub) sub += ' &nbsp;|&nbsp; '; sub += '<span style="color: #555;">Resp: ' + act.Responsable_AIA + '</span>'; }
+            if (sub) $el.append('<div style="font-size: 0.8rem; margin-top: 2px;">' + sub + '</div>');
+            return $el;
+          }
+
           // Initialize Select2
           if ($select.data('select2')) {
             $select.select2('destroy');
@@ -3752,7 +3772,9 @@
             width: '100%',
             language: 'es',
             allowClear: true,
-            placeholder: $select.find('option:first').text()
+            placeholder: $select.find('option:first').text(),
+            templateResult: formatTnpOption,
+            escapeMarkup: function (m) { return m; }
           });
 
           // Preselect if a row was selected
