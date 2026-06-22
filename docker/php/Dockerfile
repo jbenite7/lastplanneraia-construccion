@@ -33,6 +33,9 @@ WORKDIR /var/www/html
 
 COPY . /var/www/html
 
+RUN composer install --no-dev --no-interaction --optimize-autoloader \
+    && rm -rf /root/.composer/cache
+
 RUN mkdir -p \
         /var/www/html/backups \
         /var/www/html/cortesProgramacion \

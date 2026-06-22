@@ -99,6 +99,7 @@ $router->post('/api/general/import', [\App\Controllers\Api\GeneralApiController:
 $router->post('/api/general/delete-update', [\App\Controllers\Api\GeneralApiController::class, 'deleteUpdate']);
 $router->get('/api/general/codigos', [\App\Controllers\Api\GeneralApiController::class, 'getCodigos']);
 $router->post('/api/general/auto-associate', [\App\Controllers\Api\GeneralApiController::class, 'autoAssociate']);
+$router->post('/api/general/decision-log', [\App\Controllers\Api\GeneralApiController::class, 'decisionLog']);
 $router->post('/api/indicadores/generar', [\App\Controllers\Api\IndicadoresApiController::class, 'generar']);
 $router->get('/programa-general-actualizar', [\App\Controllers\Programacion\ProgramaGeneralActualizarController::class, 'index']);
 

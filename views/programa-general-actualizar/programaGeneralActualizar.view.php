@@ -785,6 +785,10 @@
 	<!-- Handsontable Plugin para TomSelect (Requiere Hot y TomSelect cargados) -->
 	<script src="/js/HandsontableTomSelectEditor.js?v=tomselect30"></script>
 	
+	<!-- Reglas Progresivas ML-Ready -->
+	<script src="/public/js/modules/programa_actualizar/rule_engine.js?v=20260622"></script>
+	<script src="/public/js/modules/programa_actualizar/decision_logger.js?v=20260622"></script>
+	
 	<!-- Módulos de Handsontable -->
 	<script src="/public/js/modules/programa_actualizar/hot_actualizar.js?v=20260618b"></script>
 
