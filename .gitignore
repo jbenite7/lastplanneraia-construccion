@@ -49,7 +49,6 @@ phpstan_errors.json
 debug_*.php
 
 # Archivos de configuración de IDEs y prompts de IA
-GEMINI.md
 AGENTS.md
 CLAUDE.md
 MEMORY.md
