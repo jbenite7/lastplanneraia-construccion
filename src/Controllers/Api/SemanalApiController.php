@@ -975,16 +975,19 @@ class SemanalApiController
         }
 
         try {
-            $query = "SELECT Id, Consecutivo_en_Programa, Actividad, Sub_Contratista, Responsable_AIA, codigo_actividad
-                      FROM {$dbPrefix}_programa_consolidado
-                      WHERE Semana = ? AND Titulo = 0
-                        AND Semanas_Inicio <= 12
-                        AND Semanas_Inicio >= 1
-                        AND Activa = 0
-                        AND Ejecutado = 0
-                      ORDER BY codigo_actividad ASC";
+            $query = "SELECT pc.Id, pc.Consecutivo_en_Programa, pc.Actividad, pc.Sub_Contratista, pc.Responsable_AIA, pc.codigo_actividad,
+                           CASE WHEN ps.Consecutivo_En_Programa IS NOT NULL THEN 1 ELSE 0 END AS previamente_programada
+                    FROM {$dbPrefix}_programa_consolidado pc
+                    LEFT JOIN {$dbPrefix}_programacion_semanal ps
+                      ON pc.Consecutivo_en_Programa = ps.Consecutivo_En_Programa AND ps.Semana = ?
+                    WHERE pc.Semana = ? AND pc.Titulo = 0
+                      AND pc.Semanas_Inicio <= 12
+                      AND pc.Semanas_Inicio >= 1
+                      AND pc.Activa = 0
+                      AND pc.Ejecutado = 0
+                    ORDER BY previamente_programada ASC, pc.codigo_actividad ASC";
 
-            $stmt = $this->db->query($query, [$semana]);
+            $stmt = $this->db->query($query, [$semana, $semana]);
             $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             header('Content-Type: application/json; charset=utf-8');

@@ -3761,6 +3761,9 @@
             if (act.Sub_Contratista) sub += '<span style="color: #555;">Sub: ' + act.Sub_Contratista + '</span>';
             if (act.Responsable_AIA) { if (sub) sub += ' &nbsp;|&nbsp; '; sub += '<span style="color: #555;">Resp: ' + act.Responsable_AIA + '</span>'; }
             if (sub) $el.append('<div style="font-size: 0.8rem; margin-top: 2px;">' + sub + '</div>');
+            if (act.previamente_programada) {
+              $el.append('<div style="margin-top: 4px;"><span style="background: #fff3cd; color: #856404; font-size: 0.7rem; padding: 1px 6px; border-radius: 3px; font-weight: 500;">Previamente eliminada</span></div>');
+            }
             return $el;
           }
 
