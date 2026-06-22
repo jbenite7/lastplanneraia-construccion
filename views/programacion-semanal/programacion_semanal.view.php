@@ -19,6 +19,7 @@ $categoriasCP = [
     <script type="text/javascript" src="/js/linksComunesHead2.js?v=headLoaderV20260530" charset="utf-8"></script>
     <link rel="stylesheet" href="/public/vendor/handsontable/handsontable.full.min.css" />
     <link rel="stylesheet" href="/css/handsontable-module.css?v=20260529a" />
+    <link rel="stylesheet" href="/public/vendor/select2/select2.min.css" />
     <style>
         .hot-full-bleed {
             --hot-gutter: 8px;
@@ -1320,6 +1321,7 @@ $categoriasCP = [
     </script>
     <script src="/js/modules/lps_drawer.js?v=20260522c"></script>
     <?php $psHotVersion = @filemtime(dirname(__DIR__, 2) . '/public/js/modules/programacion_semanal/hot.js') ?: 'hot50'; ?>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
     <script src="/js/modules/programacion_semanal/hot.js?v=<?php echo urlencode((string) $psHotVersion); ?>"></script>
     <script src="/js/modules/programacion_semanal/changeMonitor.js?v=ap1"></script>
 
