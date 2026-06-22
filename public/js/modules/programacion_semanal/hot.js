@@ -3737,7 +3737,7 @@
           window.tnpActividadesData = actividades;
 
           $.each(actividades, function (i, act) {
-            var text = act.Actividad || 'Actividad #' + act.Id;
+            var text = act.Id + ' - ' + (act.Actividad || 'Actividad #' + act.Id);
             if (act.Subcontratista || act.subcontratista) {
               text += ' - ' + (act.Subcontratista || act.subcontratista);
             }
@@ -3756,7 +3756,7 @@
             }
             if (!act) return option.text;
             var $el = $('<div class="tnp-option" style="padding: 4px 0;">');
-            $el.append('<div style="font-weight: 600; font-size: 0.95rem; color: #1a3c2a;">' + (act.Actividad || 'Actividad #' + act.Id) + '</div>');
+            $el.append('<div style="font-weight: 600; font-size: 0.95rem; color: #1a3c2a;">' + act.Id + ' - ' + (act.Actividad || 'Actividad #' + act.Id) + '</div>');
             var sub = '';
             if (act.Sub_Contratista) sub += '<span style="color: #555;">Sub: ' + act.Sub_Contratista + '</span>';
             if (act.Responsable_AIA) { if (sub) sub += ' &nbsp;|&nbsp; '; sub += '<span style="color: #555;">Resp: ' + act.Responsable_AIA + '</span>'; }
@@ -3774,6 +3774,9 @@
             allowClear: true,
             placeholder: $select.find('option:first').text(),
             templateResult: formatTnpOption,
+            templateSelection: function (option) {
+              return option.text || option.id;
+            },
             escapeMarkup: function (m) { return m; }
           });
 
