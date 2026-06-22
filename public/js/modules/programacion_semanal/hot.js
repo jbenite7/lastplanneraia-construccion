@@ -151,6 +151,14 @@
         description: 'Compromiso cumplido o superado.',
         action: 'Documentar práctica efectiva y sostener ritmo de producción.',
       },
+      {
+        key: 'cal-tnp',
+        label: 'Trabajo No Planificado',
+        className: 'ps-alert-tnp',
+        priority: 'p3',
+        description: 'Actividad ejecutada sin compromiso previo',
+        action: 'Registrar causa de programacion',
+      },
     ],
   };
 

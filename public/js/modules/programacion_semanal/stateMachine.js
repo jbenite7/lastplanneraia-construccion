@@ -189,6 +189,11 @@
       return 'prog-lista-para-confirmar';
     }
 
+    // TNP: Compromiso vacio pero tiene ejecucion real
+    if (compromisoVacio && ejecutadoReal !== null && ejecutadoReal > 0) {
+      return 'cal-tnp';
+    }
+
     if (compromisoVacio || ejecutadoReal === null) {
       return 'cal-sin-calificar';
     }

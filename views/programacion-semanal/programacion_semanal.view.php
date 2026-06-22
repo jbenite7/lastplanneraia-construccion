@@ -392,6 +392,11 @@
             color: var(--aia-green-dark, #1a3c2a);
         }
 
+        .ps-alert-tnp {
+            border-left: 3px solid #4a81bd;
+            background-color: #e6f0fa;
+        }
+
         .ps-page .ops-state-count,
         .ps-page .ops-state-more {
             display: inline-flex;
