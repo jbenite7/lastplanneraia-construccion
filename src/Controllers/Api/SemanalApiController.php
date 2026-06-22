@@ -167,15 +167,16 @@ class SemanalApiController
         $compromiso = $this->lpsService->toFloat($_POST["Compromiso"] ?? null);
         $real = $this->lpsService->toFloat($_POST["Real"] ?? null);
 
-        if ($compromiso !== null && $compromiso <= 0) {
+        $esTnp = isset($_POST['Es_TNP']) && ($_POST['Es_TNP'] == 1 || $_POST['Es_TNP'] === '1');
+        if (!$esTnp && $compromiso !== null && $compromiso <= 0) {
             $this->jsonError("El compromiso no puede ser 0. Use CNP para desprogramar.");
             return;
         }
 
-        // Calculation of PAC/P_Completado
+        // Calculation of PAC/P_Completado (skip for TNP rows)
         $pac = null;
         $pCompletado = null;
-        if ($compromiso !== null && $real !== null && $compromiso > 0 && $real >= 0) {
+        if (!$esTnp && $compromiso !== null && $real !== null && $compromiso > 0 && $real >= 0) {
             $pCompletado = ($real / $compromiso);
             $pac = ($real < $compromiso) ? 0 : 1;
         }
