@@ -122,6 +122,9 @@ class SemanalApiController
                 case 'sanear':
                     $this->sanear($dbPrefix, $semana);
                     break;
+                case 'tnp':
+                    $this->tnp($dbPrefix, $semana);
+                    break;
                 default:
                     $this->jsonError("Opción no válida.");
                     break;
@@ -875,6 +878,73 @@ class SemanalApiController
         } catch (Throwable $t) {
             error_log("Error sanear PS: " . $t->getMessage());
             $this->jsonResponse("OK");
+        }
+    }
+
+    private function tnp(string $dbPrefix, int $semana): void
+    {
+        $consecutivo = filter_input(INPUT_POST, 'Consecutivo', FILTER_VALIDATE_INT);
+        $id = filter_input(INPUT_POST, 'Id', FILTER_VALIDATE_INT);
+        $ejecutadoReal = filter_input(INPUT_POST, 'Ejecutado_Real', FILTER_VALIDATE_FLOAT);
+        $categoriaCp = trim($_POST['Categoria_CP'] ?? '');
+        $cp = trim($_POST['CP'] ?? '');
+        $observacionesCp = trim($_POST['Observaciones_CP'] ?? '');
+
+        if ($ejecutadoReal === false || $ejecutadoReal <= 0) {
+            $this->jsonError("Ejecutado Real debe ser mayor a 0");
+            return;
+        }
+
+        if (!$consecutivo && !$id) {
+            $this->jsonError("Se requiere Consecutivo o Id de actividad");
+            return;
+        }
+
+        try {
+            if ($consecutivo) {
+                $query = "UPDATE {$dbPrefix}_programacion_semanal SET 
+                    Ejecutado_Real = ?, Es_TNP = 1, Categoria_CP = ?, CP = ?, 
+                    Observaciones_CP = ?, PAC = NULL
+                    WHERE Consecutivo = ? AND Semana = ?";
+                $res = $this->db->query($query, [
+                    $ejecutadoReal, $categoriaCp, $cp, $observacionesCp,
+                    $consecutivo, $semana,
+                ]);
+            } else {
+                $pgData = $this->db->query(
+                    "SELECT * FROM {$dbPrefix}_programa_consolidado WHERE Id = ? AND Semana = ?",
+                    [$id, $semana],
+                )->fetch(PDO::FETCH_ASSOC);
+
+                if (!$pgData) {
+                    $this->jsonError("Actividad no encontrada en Programa Consolidado");
+                    return;
+                }
+
+                $maxCon = $this->db->query(
+                    "SELECT MAX(Consecutivo) as maxCon FROM {$dbPrefix}_programacion_semanal WHERE Semana = ?",
+                    [$semana],
+                )->fetch(PDO::FETCH_ASSOC);
+                $nextConsecutivo = ($maxCon['maxCon'] ?? 0) + 1;
+
+                $queryInsert = "INSERT INTO {$dbPrefix}_programacion_semanal 
+                    (Consecutivo, Semana, Id_Actividad, Actividad, Unidad, Cuantia, 
+                     Compromiso, Ejecutado_Real, Activa, Es_TNP, Categoria_CP, CP, Observaciones_CP,
+                     PAC, Sub_Contratista, Responsable_AIA, Frente)
+                    VALUES (?, ?, ?, ?, ?, ?, NULL, ?, '1', 1, ?, ?, ?, NULL, ?, ?, ?)";
+                $res = $this->db->query($queryInsert, [
+                    $nextConsecutivo, $semana,
+                    $pgData['Id'] ?? null, $pgData['Actividad'] ?? '', $pgData['Unidad'] ?? '',
+                    $pgData['Cuantia'] ?? 0, $ejecutadoReal,
+                    $categoriaCp, $cp, $observacionesCp,
+                    $pgData['Sub_Contratista'] ?? null, $pgData['Responsable_AIA'] ?? null,
+                    $pgData['Frente'] ?? null,
+                ]);
+            }
+
+            $this->jsonResponse("BIEN");
+        } catch (Throwable $t) {
+            $this->jsonError("Error TNP: " . $t->getMessage());
         }
     }
 
