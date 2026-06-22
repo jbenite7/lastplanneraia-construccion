@@ -975,7 +975,7 @@ class SemanalApiController
         }
 
         try {
-            $query = "SELECT Id, Actividad, Sub_Contratista, Responsable_AIA, codigo_actividad
+            $query = "SELECT Id, Consecutivo_en_Programa, Actividad, Sub_Contratista, Responsable_AIA, codigo_actividad
                       FROM {$dbPrefix}_programa_consolidado
                       WHERE Semana = ? AND Titulo = 0
                         AND Semanas_Inicio <= 12

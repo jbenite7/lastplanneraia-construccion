@@ -1234,14 +1234,6 @@ $categoriasCP = [
             </div>
           </div>
         </div>
-
-        <div class="form-group">
-          <label for="tnp_actividad"><strong>Actividad *</strong></label>
-          <select id="tnp_actividad" class="form-control" required>
-            <option value="">Seleccione una actividad...</option>
-          </select>
-        </div>
-        
         <div class="form-group">
           <label for="tnp_categoria_cp"><strong>Causa de Programación (CP) *</strong></label>
           <select id="tnp_categoria_cp" class="form-control" required>

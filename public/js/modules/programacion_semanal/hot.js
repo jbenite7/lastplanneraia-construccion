@@ -3718,22 +3718,6 @@
 
       $('#tnp_consecutivo').val(consecutivo);
       $('#tnp_id_actividad').val(idActividad);
-      
-      // Populate activity dropdown from masterData
-      var $tnpActividad = $('#tnp_actividad');
-      $tnpActividad.empty().append(new Option('Seleccione una actividad...', ''));
-      if (Array.isArray(masterData)) {
-        for (var i = 0; i < masterData.length; i++) {
-          var act = masterData[i];
-          if (act && act.Id) {
-            var label = '(' + act.Id + ') - ' + (stripHtmlTags(act.Actividad) || 'Actividad');
-            $tnpActividad.append(new Option(label, act.Id));
-          }
-        }
-      }
-      if (idActividad) {
-        $tnpActividad.val(idActividad);
-      }
       $('#tnp_ejecutado_real').val(ejecutadoReal);
       $('#tnp_categoria_cp').val('');
       $('#tnp_cp').val('');
@@ -3753,7 +3737,7 @@
           window.tnpActividadesData = actividades;
 
           $.each(actividades, function (i, act) {
-            var text = (act.Descripcion || act.descripcion || act.Nombre || act.nombre || 'Actividad #' + act.Id);
+            var text = act.Actividad || 'Actividad #' + act.Id;
             if (act.Subcontratista || act.subcontratista) {
               text += ' - ' + (act.Subcontratista || act.subcontratista);
             }
@@ -4009,6 +3993,7 @@
       }
 
       $('#tnp_id_actividad').val(act.Id);
+      $('#tnp_consecutivo').val(act.Consecutivo_en_Programa || '');
       $('#tnp_info_subcontratista').text(act.Sub_Contratista || '-');
       $('#tnp_info_residente').text(act.Responsable_AIA || '-');
       var unidadCol = act.unidad || act.Unidad || '-';
