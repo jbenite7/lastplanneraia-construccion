@@ -980,6 +980,7 @@ class SemanalApiController
                       WHERE Semana = ? AND Titulo = 0
                         AND Semanas_Inicio <= 12
                         AND Semanas_Inicio >= 1
+                        AND Activa = 0
                         AND Ejecutado = 0
                       ORDER BY codigo_actividad ASC";
 
