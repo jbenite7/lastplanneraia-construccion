@@ -985,7 +985,7 @@ class SemanalApiController
                       AND pc.Semanas_Inicio >= 1
                       AND pc.Activa = 0
                       AND pc.Ejecutado = 0
-                    ORDER BY previamente_programada ASC, pc.codigo_actividad ASC";
+                    ORDER BY previamente_programada DESC, pc.codigo_actividad ASC";
 
             $stmt = $this->db->query($query, [$semana, $semana]);
             $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
