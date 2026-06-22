@@ -137,6 +137,7 @@
     background: none;
     border: 0;
     cursor: pointer;
+    margin-inline-end: 0.65rem;
 }
 
 .cm-close:hover {

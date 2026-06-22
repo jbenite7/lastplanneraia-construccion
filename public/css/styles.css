@@ -1792,6 +1792,7 @@ table.dataTable tbody tr.pdc-header:hover td {
 .aia-modal .close {
   margin: 0;
   padding: 0.25rem;
+  margin-inline-end: 0.65rem;
   font-size: 1.8rem;
   line-height: 1;
   color: #fafafa;
@@ -5350,8 +5351,8 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
 }
 
 #modalEditarContratos .ct-modal-header {
-  align-items: flex-start;
-  padding: 1.5rem 1.75rem 1.25rem;
+    align-items: flex-start;
+   padding: 1.5rem 1.75rem 1.25rem;
   background: linear-gradient(135deg, #1a3c2a 0%, #1a5633 100%);
   border-bottom: 1px solid rgba(213, 229, 219, 0.32);
 }
@@ -5378,6 +5379,7 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
   opacity: 0.8;
   box-shadow: none;
   color: #fafafa;
+  margin-inline-end: 0.65rem;
 }
 
 #modalEditarContratos .ct-modal-close:hover {
