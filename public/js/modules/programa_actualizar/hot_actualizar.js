@@ -1514,10 +1514,46 @@ window.HOTActualizarModule = (function() {
             if (decision.action === 'accept') {
                 autoSaveRow(visualRow, {'programaAnteriorAsociar': decision.candidateName}, 'edit');
                 hot.setDataAtRowProp(visualRow, 'programaAnteriorAsociar', decision.candidateName, 'internal');
+                // Log manual review decisions
+                if (window.DecisionLogger) {
+                    DecisionLogger.log({
+                        actividad: {
+                            nombre: hot.getDataAtRowProp(visualRow, 'Actividad') || '',
+                            posicion_pg: consecutivo || 0
+                        },
+                        sugerencia: {
+                            proceso: decision.candidateName || '',
+                            confianza: 0.5,
+                            engine: 'manual_review'
+                        },
+                        decisionUsuario: {
+                            accion: 'accept',
+                            proceso_elegido: decision.candidateName || '*No Asociada*'
+                        }
+                    });
+                }
                 accepted++;
             } else if (decision.action === 'skip') {
                 autoSaveRow(visualRow, {'programaAnteriorAsociar': '*No Asociada*'}, 'edit');
                 hot.setDataAtRowProp(visualRow, 'programaAnteriorAsociar', '*No Asociada*', 'internal');
+                // Log manual review decisions
+                if (window.DecisionLogger) {
+                    DecisionLogger.log({
+                        actividad: {
+                            nombre: hot.getDataAtRowProp(visualRow, 'Actividad') || '',
+                            posicion_pg: consecutivo || 0
+                        },
+                        sugerencia: {
+                            proceso: decision.candidateName || '',
+                            confianza: 0.5,
+                            engine: 'manual_review'
+                        },
+                        decisionUsuario: {
+                            accion: 'skip',
+                            proceso_elegido: decision.candidateName || '*No Asociada*'
+                        }
+                    });
+                }
                 skipped++;
             }
         });
@@ -1653,6 +1689,35 @@ window.HOTActualizarModule = (function() {
         // Apply highlighting after data reloads
         setTimeout(function() {
             applyGridHighlighting(results);
+
+            // Log auto-accepted decisions (identical + high confidence)
+            if (window.DecisionLogger) {
+                var autoItems = (results.data || results).identical || [];
+                var highItems = (results.data || results).high || [];
+                var allAuto = [].concat(autoItems, highItems);
+                allAuto.forEach(function(item) {
+                    var targetRow = item.target && item.target.row ? item.target.row : null;
+                    if (targetRow) {
+                        DecisionLogger.log({
+                            actividad: {
+                                nombre: item.target.name || '',
+                                posicion_pg: targetRow.Consecutivo_en_Programa || 0,
+                                capitulo: item.target.chapter || null
+                            },
+                            sugerencia: {
+                                proceso: (item.matched && item.matched.name) || '',
+                                confianza: item.confidence || 1.0,
+                                engine: 'auto-associate',
+                                regla: item.confidence >= 0.95 ? 'identical' : 'high_confidence'
+                            },
+                            decisionUsuario: {
+                                accion: 'accept',
+                                proceso_elegido: (item.matched && item.matched.name) || ''
+                            }
+                        });
+                    }
+                });
+            }
 
             if (mediumItems.length > 0) {
                 showReviewModal(results);

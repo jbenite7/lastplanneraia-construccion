@@ -1231,4 +1231,87 @@ class GeneralApiController extends BaseController
             echo json_encode(['success' => false, 'error' => $e->getMessage()], JSON_UNESCAPED_UNICODE);
         }
     }
+
+    /**
+     * Registra una decisión de asociación del usuario para entrenamiento ML futuro.
+     *
+     * POST /api/general/decision-log
+     * @return JSON {success: true, id: int} | {success: false, error: string}
+     */
+    public function decisionLog()
+    {
+        $this->requireAuth();
+        $this->authorizePermission('lps.programa_general_actualizar.editar');
+        header('Content-Type: application/json; charset=utf-8');
+
+        try {
+            $proyectoId = $_POST['proyecto_id'] ?? '';
+            $semanaObjetivo = filter_var($_POST['semana_objetivo'] ?? 0, FILTER_VALIDATE_INT);
+            $actividadConsecutivo = $_POST['actividad_consecutivo'] ?? '';
+            $actividadNombre = $_POST['actividad_nombre'] ?? '';
+            $actividadTokens = $_POST['actividad_tokens'] ?? '[]';
+            $actividadPosicionPg = filter_var($_POST['actividad_posicion_pg'] ?? 0, FILTER_VALIDATE_INT);
+            $actividadVecinos = $_POST['actividad_vecinos'] ?? '[]';
+            $actividadCapitulo = $_POST['actividad_capitulo'] ?? null;
+            $engineUsado = $_POST['engine_usado'] ?? 'rule_engine';
+            $procesoSugerido = $_POST['proceso_sugerido'] ?? null;
+            $confianza = filter_var($_POST['confianza'] ?? 0, FILTER_VALIDATE_FLOAT);
+            $reglaAplicada = $_POST['regla_aplicada'] ?? null;
+            $candidatosAlternativos = $_POST['candidatos_alternativos'] ?? '[]';
+            $explicacion = $_POST['explicacion'] ?? null;
+            $decisionUsuario = $_POST['decision_usuario'] ?? '';
+            $procesoFinal = $_POST['proceso_final'] ?? '';
+            $procesoFinalId = isset($_POST['proceso_final_id']) ? filter_var($_POST['proceso_final_id'], FILTER_VALIDATE_INT) : null;
+
+            // Validate required fields
+            if (empty($proyectoId) || $semanaObjetivo <= 0 || empty($actividadConsecutivo) || empty($actividadNombre)) {
+                throw new Exception("Faltan parámetros requeridos (proyecto_id, semana_objetivo, actividad_consecutivo, actividad_nombre).");
+            }
+
+            $validDecisions = ['accept', 'correct', 'skip', 'manual'];
+            if (!in_array($decisionUsuario, $validDecisions, true)) {
+                throw new Exception("decision_usuario inválido. Debe ser: " . implode(', ', $validDecisions));
+            }
+
+            if (empty($procesoFinal)) {
+                throw new Exception("proceso_final es requerido.");
+            }
+
+            $vars = $this->getSessionVars();
+            $usuarioId = $vars['user'] ?? null;
+
+            $sql = "INSERT INTO general_decision_log (
+                proyecto_id, semana_objetivo, actividad_consecutivo, actividad_nombre,
+                actividad_tokens, actividad_posicion_pg, actividad_vecinos, actividad_capitulo,
+                engine_usado, proceso_sugerido, confianza, regla_aplicada,
+                candidatos_alternativos, explicacion, decision_usuario, proceso_final,
+                proceso_final_id, usuario_id
+            ) VALUES (
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+            )";
+
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([
+                $proyectoId, $semanaObjetivo, $actividadConsecutivo, $actividadNombre,
+                $actividadTokens, $actividadPosicionPg, $actividadVecinos, $actividadCapitulo,
+                $engineUsado, $procesoSugerido, $confianza, $reglaAplicada,
+                $candidatosAlternativos, $explicacion, $decisionUsuario, $procesoFinal,
+                $procesoFinalId, $usuarioId,
+            ]);
+
+            $insertedId = $this->db->lastInsertId();
+
+            echo json_encode([
+                'success' => true,
+                'id' => $insertedId,
+            ], JSON_UNESCAPED_UNICODE);
+
+        } catch (Exception $e) {
+            http_response_code(400);
+            echo json_encode([
+                'success' => false,
+                'error' => $e->getMessage(),
+            ], JSON_UNESCAPED_UNICODE);
+        }
+    }
 }
