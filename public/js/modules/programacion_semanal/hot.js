@@ -3738,6 +3738,49 @@
       $('#tnp_categoria_cp').val('');
       $('#tnp_cp').val('');
       $('#tnp_observaciones_cp').val('');
+      $('#tnp_actividad_info').hide();
+
+      // Load activities from API
+      var $select = $('#tnp_actividad_select');
+      $select.find('option:not(:first)').remove();
+
+      $.ajax({
+        url: '/api/semanal/tnp-actividades',
+        method: 'GET',
+        data: { db: getDb(), semana: getSemana() },
+        success: function (response) {
+          var actividades = response.data || response || [];
+          window.tnpActividadesData = actividades;
+
+          $.each(actividades, function (i, act) {
+            var text = (act.Descripcion || act.descripcion || act.Nombre || act.nombre || 'Actividad #' + act.Id);
+            if (act.Subcontratista || act.subcontratista) {
+              text += ' - ' + (act.Subcontratista || act.subcontratista);
+            }
+            $select.append($('<option>', { value: act.Id, text: text }));
+          });
+
+          // Initialize Select2
+          if ($select.data('select2')) {
+            $select.select2('destroy');
+          }
+          $select.select2({
+            width: '100%',
+            language: 'es',
+            allowClear: true,
+            placeholder: $select.find('option:first').text()
+          });
+
+          // Preselect if a row was selected
+          if (idActividad) {
+            $select.val(idActividad).trigger('change');
+          }
+        },
+        error: function () {
+          showFeedback('error', 'Error al cargar actividades');
+        }
+      });
+
       $('#modal_tnp').modal('show');
     });
   }
@@ -3893,6 +3936,13 @@
       var categoria = String($('#tnp_categoria_cp').val() || '').trim();
       var ejecutadoReal = parseFloat($('#tnp_ejecutado_real').val());
 
+      var consecutivo = $('#tnp_consecutivo').val() || '';
+      var idActividad = $('#tnp_id_actividad').val() || '';
+
+      if (!consecutivo && !idActividad) {
+        showFeedback('error', 'Seleccione una actividad');
+        return;
+      }
       if (!categoria) {
         showFeedback('error', 'Seleccione una Causa de Programación');
         return;
@@ -3906,8 +3956,8 @@
         opcion: 'tnp',
         db: getDb(),
         semana: getSemana(),
-        Consecutivo: $('#tnp_consecutivo').val() || null,
-        Id: $('#tnp_id_actividad').val() || null,
+        Consecutivo: consecutivo || null,
+        Id: idActividad || null,
         Ejecutado_Real: ejecutadoReal,
         Categoria_CP: categoria,
         CP: $('#tnp_cp').val() || null,
@@ -3933,29 +3983,58 @@
       });
     });
 
-    $('#tnp_actividad').off('change.psTnp').on('change.psTnp', function () {
-      var selectedId = $(this).val() || '';
-      $('#tnp_id_actividad').val(selectedId);
-      var consecutivo = '';
-      if (selectedId && Array.isArray(masterData)) {
-        for (var i = 0; i < masterData.length; i++) {
-          if (String(masterData[i].Id) === String(selectedId)) {
-            consecutivo = masterData[i].Consecutivo || '';
-            break;
-          }
+    $('#tnp_actividad_select').off('change.psTnp').on('change.psTnp', function () {
+      var val = $(this).val();
+      var $info = $('#tnp_actividad_info');
+
+      if (!val) {
+        $('#tnp_id_actividad').val('');
+        $info.hide();
+        return;
+      }
+
+      var actividades = window.tnpActividadesData || [];
+      var act = null;
+      for (var i = 0; i < actividades.length; i++) {
+        if (String(actividades[i].Id) === String(val)) {
+          act = actividades[i];
+          break;
         }
       }
-      $('#tnp_consecutivo').val(consecutivo);
+
+      if (!act) {
+        $('#tnp_id_actividad').val('');
+        $info.hide();
+        return;
+      }
+
+      $('#tnp_id_actividad').val(act.Id);
+      $('#tnp_info_subcontratista').text(act.Sub_Contratista || '-');
+      $('#tnp_info_residente').text(act.Responsable_AIA || '-');
+      var unidadCol = act.unidad || act.Unidad || '-';
+      var frenteCol = act.Frente || act.frente || '-';
+      var cuantiaCol = act.Cuantia || act.cuantia || '-';
+      $('#tnp_info_frente').text(frenteCol);
+      $('#tnp_info_unidad').text(unidadCol);
+      $('#tnp_info_cuantia').text(cuantiaCol);
+      $info.show();
     });
 
     $('#modal_tnp').off('hidden.bs.modal.psTnp').on('hidden.bs.modal.psTnp', function () {
+      var $sel = $('#tnp_actividad_select');
+      if ($sel.data('select2')) {
+        $sel.val(null).trigger('change');
+      } else {
+        $sel.val('');
+      }
+      $('#tnp_actividad_info').hide();
       $('#tnp_consecutivo').val('');
       $('#tnp_id_actividad').val('');
       $('#tnp_categoria_cp').val('');
       $('#tnp_cp').val('');
       $('#tnp_ejecutado_real').val('');
       $('#tnp_observaciones_cp').val('');
-      $('#tnp_actividad').val('');
+      window.tnpActividadesData = null;
     });
   }
 

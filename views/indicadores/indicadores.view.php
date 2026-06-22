@@ -36,7 +36,7 @@
 	</div>
 
   <!--Se crea la estructura de la tabla, y Se crea el mensaje emergente que dice si los comandos fueron ejecutados correctamente o no (se repite el mismo de la línea anterior) -->
-	<div class="row tabla" id="contenedorInformeDataStudio" style="text-align: center; margin:2px auto 10px auto; width:100%; max-width:1300px">
+	<div class="tabla" id="contenedorInformeDataStudio" style="text-align: center; margin:2px auto 10px auto; width:100%; max-width:1300px">
 	</div>
 
 	<div class="row ventanasModalesSemana" id="ventanasModalesSemana">

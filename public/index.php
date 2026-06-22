@@ -163,6 +163,8 @@ $router->post('/api/semanal/list', [\App\Controllers\Api\SemanalApiController::c
 $router->post('/api/semanal/save', [\App\Controllers\Api\SemanalApiController::class, 'save']);
 $router->post('/api/semanal/auto-program', [\App\Controllers\Api\SemanalApiController::class, 'autoProgram']);
 $router->get('/api/semanal/auto-program-log', [\App\Controllers\Api\SemanalApiController::class, 'getAutoProgramLog']);
+$router->get('/api/semanal/tnp-actividades', [\App\Controllers\Api\SemanalApiController::class, 'getTnpActivities']);
+$router->post('/api/semanal/tnp-actividades', [\App\Controllers\Api\SemanalApiController::class, 'getTnpActivities']);
 // Api/CIC (Fase 4)
 $router->post('/api/cic/list', [\App\Controllers\Api\CicApiController::class, 'list']);
 $router->post('/api/cic/save', [\App\Controllers\Api\CicApiController::class, 'save']);

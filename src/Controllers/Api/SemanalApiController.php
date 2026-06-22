@@ -956,6 +956,43 @@ class SemanalApiController
         echo json_encode(["respuesta" => "BIEN", "data" => $data], JSON_UNESCAPED_UNICODE);
     }
 
+
+
+
+    
+
+
+
+    public function getTnpActivities(): void
+    {
+        require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
+        rbac_guard_require_permission('lps.programacion_semanal.ver');
+        $dbPrefix = $_GET['db'] ?? '';
+        $semana = filter_var($_GET['semana'] ?? 0, FILTER_VALIDATE_INT);
+
+        if (!$this->validateContext($dbPrefix, $semana)) {
+            return;
+        }
+
+        try {
+            $query = "SELECT Id, Actividad, Sub_Contratista, Responsable_AIA, codigo_actividad
+                      FROM {$dbPrefix}_programa_consolidado
+                      WHERE Semana = ? AND Titulo = 0
+                        AND Semanas_Inicio <= 12
+                        AND Semanas_Inicio >= 1
+                        AND Ejecutado = 0
+                      ORDER BY codigo_actividad ASC";
+
+            $stmt = $this->db->query($query, [$semana]);
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode(['success' => true, 'data' => $rows], JSON_UNESCAPED_UNICODE);
+        } catch (Throwable $t) {
+            $this->jsonError("Error del servidor: " . $t->getMessage());
+        }
+    }
+
     public function autoProgram(): void
     {
         require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';

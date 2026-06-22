@@ -1194,7 +1194,47 @@ $categoriasCP = [
       <div class="modal-body" style="background-color: #faf8f5;">
         <input type="hidden" id="tnp_consecutivo" value="">
         <input type="hidden" id="tnp_id_actividad" value="">
-        
+
+        <!-- Activity Selector -->
+        <div class="form-group">
+          <label for="tnp_actividad_select"><strong>Actividad *</strong></label>
+          <select id="tnp_actividad_select" class="form-control" data-placeholder="Buscar actividad..." required>
+            <option value="">Seleccione una actividad...</option>
+          </select>
+        </div>
+
+        <!-- Activity Info Panel -->
+        <div id="tnp_actividad_info" style="display: none;">
+          <div class="card mb-3" style="border-left: 4px solid #2E7D32;">
+            <div class="card-body py-2 px-3">
+              <div class="row">
+                <div class="col-6">
+                  <small class="text-muted d-block">Subcontratista</small>
+                  <strong id="tnp_info_subcontratista">-</strong>
+                </div>
+                <div class="col-6">
+                  <small class="text-muted d-block">Responsable AIA</small>
+                  <strong id="tnp_info_residente">-</strong>
+                </div>
+              </div>
+              <div class="row mt-2">
+                <div class="col-4">
+                  <small class="text-muted d-block">Frente</small>
+                  <strong id="tnp_info_frente">-</strong>
+                </div>
+                <div class="col-4">
+                  <small class="text-muted d-block">Unidad</small>
+                  <strong id="tnp_info_unidad">-</strong>
+                </div>
+                <div class="col-4">
+                  <small class="text-muted d-block">Cuantía</small>
+                  <strong id="tnp_info_cuantia">-</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="form-group">
           <label for="tnp_actividad"><strong>Actividad *</strong></label>
           <select id="tnp_actividad" class="form-control" required>
