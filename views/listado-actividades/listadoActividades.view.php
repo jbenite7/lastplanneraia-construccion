@@ -844,7 +844,7 @@
 						var s = sugerencias[i];
 						var badge = '<span class="badge badge-secondary">Sin match</span>';
 						var estado = escaparHtml(s.motivo || 'Sin familia detectada');
-						html += '<tr><td>' + (i + 1) + '</td><td>' + escaparHtml(s.actividad ? s.actividad.replace(/<[^>]+>/g, '').substring(0, 80) : '') + '</td><td>' + escaparHtml(s.fechaInicio || '-') + '</td><td>-</td><td>-</td><td>' + badge + ' ' + estado + '</td></tr>';
+						html += '<tr><td>' + (i + 1) + '</td><td>' + escaparHtml(s.actividad ? s.actividad.replace(/<[^>]+>/g, '').substring(0, 80) : 'Sin nombre') + '</td><td>' + escaparHtml(s.fechaInicio || '-') + '</td><td>-</td><td>-</td><td>' + badge + ' ' + estado + '</td></tr>';
 					}
 					$('#autoGenListadoBody').html(html);
 					btn.prop('disabled', false).html('<i class="fas fa-search"></i> Analizar');
