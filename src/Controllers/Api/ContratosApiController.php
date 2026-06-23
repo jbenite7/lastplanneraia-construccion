@@ -143,9 +143,12 @@ class ContratosApiController extends BaseController
                     }
                 }
 
-                if ($tipoContrato == 2 && empty($paquetes['paqueteSI1']) && empty($paquetes['paqueteSI2']) && empty($paquetes['paqueteSI3']) && empty($paquetes['paqueteSI4']) && empty($paquetes['paqueteSI5'])) {
+                $modalidades = array_map('trim', explode(',', $tipoContrato));
+
+                if (in_array('SI', $modalidades) && empty($paquetes['paqueteSI1']) && empty($paquetes['paqueteSI2']) && empty($paquetes['paqueteSI3']) && empty($paquetes['paqueteSI4']) && empty($paquetes['paqueteSI5'])) {
                     $errores .= "No se han asignado paquetes de contratación de Suministro e Instalación para la actividad; ";
-                } elseif ($tipoContrato == 1) {
+                }
+                if (in_array('MO', $modalidades) || in_array('S', $modalidades)) {
                     $hasMO = !empty($paquetes['paqueteMO1']) || !empty($paquetes['paqueteMO2']) || !empty($paquetes['paqueteMO3']) || !empty($paquetes['paqueteMO4']) || !empty($paquetes['paqueteMO5']);
                     $hasS = !empty($paquetes['paqueteS1']) || !empty($paquetes['paqueteS2']) || !empty($paquetes['paqueteS3']) || !empty($paquetes['paqueteS4']) || !empty($paquetes['paqueteS5']);
                     if (!$hasMO && !$hasS) {
@@ -316,7 +319,8 @@ class ContratosApiController extends BaseController
                     continue;
                 }
 
-                $tipoContrato = (int) $bestOption['tipo_contrato'];
+                $tipoContratoInt = (int) $bestOption['tipo_contrato'];
+                $tipoContrato = $this->intToModalityCode($tipoContratoInt);
 
                 $result = $this->assignContratoToActivity($db, $dbPrefix, $actId, $tipoContrato, $bestOption['items'], $semana);
                 if ($result) {
@@ -329,7 +333,7 @@ class ContratosApiController extends BaseController
                         'familiaCodigo' => $match['familia_codigo'] ?? '',
                         'confianza' => (int) ($match['confianza'] ?? 0),
                         'tipoContrato' => $tipoContrato,
-                        'tipoContratoLabel' => $tipoContrato === 2 ? 'SI' : 'MO+S',
+                        'tipoContratoLabel' => $this->modalityCodeToLabel($tipoContrato),
                         'paquetes' => $this->formatAssignedPackages($bestOption['items']),
                         'asignada' => true,
                     ];
@@ -371,7 +375,9 @@ class ContratosApiController extends BaseController
     private function actualizarListadoPaquetesContratacion($tipoContrato, $dbPrefix, $db)
     {
         $res = ["listadoMO" => "", "listadoS" => "", "listadoSI" => ""];
-        if ($tipoContrato == 1) {
+        $modalidades = array_map('trim', explode(',', $tipoContrato));
+
+        if (in_array('MO', $modalidades) || in_array('S', $modalidades)) {
             $stmtMO = $db->query("SELECT paqueteContratacion FROM general_dias_procesos_contratacion WHERE tipoPaquete = 'Mano de Obra'");
             $scriptMO = "<option value=''></option>";
             while ($row = $stmtMO->fetch()) {
@@ -385,7 +391,9 @@ class ContratosApiController extends BaseController
                 $scriptS .= "<option value='" . htmlspecialchars($row["paqueteContratacion"], ENT_QUOTES) . "'>" . htmlspecialchars($row["paqueteContratacion"], ENT_QUOTES) . "</option>";
             }
             $res["listadoS"] = $scriptS;
-        } elseif ($tipoContrato == 2) {
+        }
+
+        if (in_array('SI', $modalidades)) {
             $stmtSI = $db->query("SELECT paqueteContratacion FROM general_dias_procesos_contratacion WHERE tipoPaquete = 'Suministro e Instalación'");
             $scriptSI = "<option value=''></option>";
             while ($row = $stmtSI->fetch()) {
@@ -399,7 +407,9 @@ class ContratosApiController extends BaseController
     private function actualizarInsumosRecursos($tipoContrato, $dbPrefix, $db, $semana)
     {
         $res = ["listadoMO" => "", "listadoS" => "", "listadoSI" => ""];
-        if ($tipoContrato == 1) {
+        $modalidades = array_map('trim', explode(',', $tipoContrato));
+
+        if (in_array('MO', $modalidades) || in_array('S', $modalidades)) {
             $queryMO = "SELECT MO1 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND MO1 IS NOT NULL AND MO1 != '' UNION SELECT MO2 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND MO2 IS NOT NULL AND MO2 != '' UNION SELECT MO3 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND MO3 IS NOT NULL AND MO3 != '' UNION SELECT MO4 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND MO4 IS NOT NULL AND MO4 != '' UNION SELECT MO5 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND MO5 IS NOT NULL AND MO5 != ''";
             $insumosMO = $this->obtenerInsumosUnicos($db->query($queryMO, [$semana, $semana, $semana, $semana, $semana]));
             $res["listadoMO"] = $this->generarOpcionesInsumos($insumosMO);
@@ -407,7 +417,9 @@ class ContratosApiController extends BaseController
             $queryS = "SELECT S1 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND S1 IS NOT NULL AND S1 != '' UNION SELECT S2 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND S2 IS NOT NULL AND S2 != '' UNION SELECT S3 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND S3 IS NOT NULL AND S3 != '' UNION SELECT S4 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND S4 IS NOT NULL AND S4 != '' UNION SELECT S5 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND S5 IS NOT NULL AND S5 != ''";
             $insumosS = $this->obtenerInsumosUnicos($db->query($queryS, [$semana, $semana, $semana, $semana, $semana]));
             $res["listadoS"] = $this->generarOpcionesInsumos($insumosS);
-        } elseif ($tipoContrato == 2) {
+        }
+
+        if (in_array('SI', $modalidades)) {
             $querySI = "SELECT SI1 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND SI1 IS NOT NULL AND SI1 != '' UNION SELECT SI2 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND SI2 IS NOT NULL AND SI2 != '' UNION SELECT SI3 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND SI3 IS NOT NULL AND SI3 != '' UNION SELECT SI4 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND SI4 IS NOT NULL AND SI4 != '' UNION SELECT SI5 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND SI5 IS NOT NULL AND SI5 != ''";
             $insumosSI = $this->obtenerInsumosUnicos($db->query($querySI, [$semana, $semana, $semana, $semana, $semana]));
             $res["listadoSI"] = $this->generarOpcionesInsumos($insumosSI);
@@ -589,7 +601,7 @@ class ContratosApiController extends BaseController
         return null;
     }
 
-    private function assignContratoToActivity($db, string $dbPrefix, int $actId, int $tipoContrato, array $items, int $semana): bool
+    private function assignContratoToActivity($db, string $dbPrefix, int $actId, string $tipoContrato, array $items, int $semana): bool
     {
         try {
             $prefixMap = [
@@ -664,5 +676,41 @@ class ContratosApiController extends BaseController
             ];
         }
         return $packages;
+    }
+
+    /**
+     * Convierte el entero tipo_contrato de general_pdc_family_contract_options
+     * al codigo de modalidad separado por comas.
+     */
+    private function intToModalityCode(int $tipoContrato): string
+    {
+        return match ($tipoContrato) {
+            1 => 'MO,S',
+            2 => 'SI',
+            3 => 'S',
+            4 => 'MO',
+            5 => 'OC',
+            default => '',
+        };
+    }
+
+    /**
+     * Convierte el codigo de modalidad comma-separated a etiqueta legible.
+     */
+    private function modalityCodeToLabel(string $tipoContrato): string
+    {
+        $codes = explode(',', $tipoContrato);
+        $labels = [];
+        foreach ($codes as $code) {
+            $code = trim($code);
+            $labels[] = match ($code) {
+                'SI' => 'Suministro e Instalación',
+                'MO' => 'Mano de Obra',
+                'S'  => 'Suministro',
+                'OC' => 'Orden de Compra',
+                default => $code,
+            };
+        }
+        return implode(' + ', $labels);
     }
 }

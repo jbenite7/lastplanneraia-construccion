@@ -99,6 +99,15 @@
 						<div class="row">
 							<div id="cuadro4" class="cuadro4 col-sm-12 col-md-12 col-lg-12">
 								<form id="formularioEditarContratos" class="form form-horizontal ct-contract-form" action="" method="POST" autocomplete="off">
+									<div class="form-group ct-modalidad-group">
+										<label class="ct-modalidad-label">Modalidad de Contratación</label>
+										<div class="ct-checkbox-group">
+											<label class="ct-checkbox-item"><input type="checkbox" id="modalidadSI" name="modalidades[]" value="SI"> Suministro e Instalación</label>
+											<label class="ct-checkbox-item"><input type="checkbox" id="modalidadMO" name="modalidades[]" value="MO"> Mano de Obra</label>
+											<label class="ct-checkbox-item"><input type="checkbox" id="modalidadS" name="modalidades[]" value="S"> Suministro</label>
+											<label class="ct-checkbox-item"><input type="checkbox" id="modalidadOC" name="modalidades[]" value="OC"> Orden de Compra</label>
+										</div>
+									</div>
 									<input type="hidden" id="tipoContrato" name="tipoContrato" value="">
 									<input type="hidden" id="actividadModificar" name="actividadModificar" value="">
 									<?php
@@ -127,9 +136,35 @@
                                             'packageLabel' => 'Paquete Suministro e Instalación',
                                             'resourceLabel' => 'Insumos Suministro e Instalación',
                                         ],
+                                        [
+                                            'id' => 'parametro_EditarContratosOC',
+                                            'title' => 'Orden de Compra',
+                                            'type' => 'oc',
+                                        ],
                                     ];
 									?>
-									<?php foreach ($contractSections as $section): ?>
+								<?php foreach ($contractSections as $section): ?>
+									<?php if (($section['type'] ?? '') === 'oc'): ?>
+										<section class="form-group parametro_EditarContratos ct-contract-section" id="<?php echo $section['id']; ?>">
+											<div class="form_eval form-group ct-contract-section__banner">
+												<h3 class="ct-contract-section__title"><?php echo $section['title']; ?></h3>
+											</div>
+											<div class="ct-contract-list">
+												<div class="ct-contract-row">
+													<label for="ocProveedor" class="control-label ct-contract-index">1.</label>
+													<div class="ct-contract-field">
+														<input type="text" id="ocProveedor" name="ocProveedor" class="form-control ct-contract-control" placeholder="Proveedor" aria-label="Proveedor Orden de Compra">
+													</div>
+												</div>
+												<div class="ct-contract-row">
+													<label for="ocNumero" class="control-label ct-contract-index">2.</label>
+													<div class="ct-contract-field">
+														<input type="text" id="ocNumero" name="ocNumero" class="form-control ct-contract-control" placeholder="Orden de Compra #" aria-label="Número de Orden de Compra">
+													</div>
+												</div>
+											</div>
+										</section>
+									<?php else: ?>
 										<section class="form-group parametro_EditarContratos ct-contract-section" id="<?php echo $section['id']; ?>">
 											<div class="form_eval form-group ct-contract-section__banner">
 												<h3 class="ct-contract-section__title"><?php echo $section['title']; ?></h3>
@@ -161,7 +196,8 @@
 												<?php endfor; ?>
 											</div>
 										</section>
-									<?php endforeach; ?>
+									<?php endif; ?>
+								<?php endforeach; ?>
 
 									<div class="form-group ct-contract-actions">
 										<div class="col-sm-12 ct-contract-actions__buttons">
@@ -352,20 +388,32 @@
 		    },
 		    "lengthMenu": [100, 200, 500],
 				'columnDefs': [
-					{
-					'targets': [8],
-					'width':'14%',
-					'render': function ( data, type, full, meta ) {
-						if(data==1){
-							return "Mano de Obra y Suministro Por Separado";
-						}else if(data==2){
-							return "Suministro e Instalación";
-						}else{
-							return data;
+				{
+				'targets': [8],
+				'width':'14%',
+				'render': function ( data, type, full, meta ) {
+					if (!data || data === '') {
+						return '<span class="text-muted">Sin asignar</span>';
+					}
+					var modalidades = data.split(',');
+					var badges = {
+						'SI': '<span class="badge badge-primary">SI</span>',
+						'MO': '<span class="badge badge-info">MO</span>',
+						'S':  '<span class="badge badge-secondary">S</span>',
+						'OC': '<span class="badge badge-dark">OC</span>'
+					};
+					var result = [];
+					for (var i = 0; i < modalidades.length; i++) {
+						var m = modalidades[i].trim();
+						if (badges[m]) {
+							result.push(badges[m]);
+						} else if (m) {
+							result.push(m);
 						}
-
-						},
+					}
+					return result.length > 0 ? result.join(' ') : '<span class="text-muted">Sin asignar</span>';
 					},
+				},
 					{
 							'targets': [0],
 							'width':'4%',
@@ -500,10 +548,18 @@
 				var Id=$("#Id").val(data.Id),
 						opcion = $("#opcion").val("modificar");
 		    if (only_once == true) {
-					var tipoContrato = data.tipoContrato;
+					var tipoContrato = data.tipoContrato || '';
 					document.getElementById('tipoContrato').value = tipoContrato;
 					document.getElementById('actividadModificar').value = data.actividad;
 
+					// Parse comma-separated modalidades and set checkboxes
+					var modalidades = tipoContrato.split(',').map(function(s) { return s.trim(); });
+					$('#modalidadSI').prop('checked', modalidades.indexOf('SI') >= 0);
+					$('#modalidadMO').prop('checked', modalidades.indexOf('MO') >= 0);
+					$('#modalidadS').prop('checked', modalidades.indexOf('S') >= 0);
+					$('#modalidadOC').prop('checked', modalidades.indexOf('OC') >= 0);
+
+					// Load package lists based on comma-separated modalidades
 					$.ajax({
 						method: "POST",
 						url: "/api/contratos/save?db="+db,
@@ -517,76 +573,18 @@
 							url: "/api/contratos/save?db="+db,
 							contenttype: "charset=utf-8",
 							data: {"opcion": "actualizarInsumosRecursos", "tipoContrato": tipoContrato}
-						}).done(function(info) {
-							var json_info2 = (typeof info === 'string' ? JSON.parse(info) : info);
-							if(tipoContrato==1){
+						}).done(function(info2) {
+							var json_info2 = (typeof info2 === 'string' ? JSON.parse(info2) : info2);
 
-								$("#S1, #S2, #S3, #S4, #S5").html(json_info2["listadoS"]).change();
+							var hasSI = modalidades.indexOf('SI') >= 0;
+							var hasMO = modalidades.indexOf('MO') >= 0;
+							var hasS = modalidades.indexOf('S') >= 0;
+							var hasOC = modalidades.indexOf('OC') >= 0;
 
-								$("#MO1, #MO2, #MO3, #MO4, #MO5").html(json_info2["listadoMO"]).change();
-
-								$("#SI1, #SI2, #SI3, #SI4, #SI5").html('<option value=""></option>').change();
-
-								$("#paqueteS1, #paqueteS2, #paqueteS3, #paqueteS4, #paqueteS5").html(json_info["listadoS"]).change();
-
-								$("#paqueteMO1, #paqueteMO2, #paqueteMO3, #paqueteMO4, #paqueteMO5").html(json_info["listadoMO"]).change();
-
-								$("#paqueteSI1, #paqueteSI2, #paqueteSI3, #paqueteSI4, #paqueteSI5").html('<option value=""></option>').change();
-
-								$("#parametro_EditarContratosSI").css('display', 'none');
-								$("#parametro_EditarContratosMO").css('display', 'block');
-								$("#parametro_EditarContratosS").css('display', 'block');
-
-								$("#SI1").val('').change();
-								$("#SI2").val('').change();
-								$("#SI3").val('').change();
-								$("#SI4").val('').change();
-								$("#SI5").val('').change();
-								$("#paqueteSI1").val('').change();
-								$("#paqueteSI2").val('').change();
-								$("#paqueteSI3").val('').change();
-								$("#paqueteSI4").val('').change();
-								$("#paqueteSI5").val('').change();
-
-								var MO1 = (data.MO1 && data.MO1 != '') ? $("#MO1").val(data.MO1.split(';')).change() : '';
-								var MO2 = (data.MO2 && data.MO2 != '') ? $("#MO2").val(data.MO2.split(';')).change() : '';
-								var MO3 = (data.MO3 && data.MO3 != '') ? $("#MO3").val(data.MO3.split(';')).change() : '';
-								var MO4 = (data.MO4 && data.MO4 != '') ? $("#MO4").val(data.MO4.split(';')).change() : '';
-								var MO5 = (data.MO5 && data.MO5 != '') ? $("#MO5").val(data.MO5.split(';')).change() : '';
-								$("#paqueteMO1").val(data.paqueteMO1).change();
-								$("#paqueteMO2").val(data.paqueteMO2).change();
-								$("#paqueteMO3").val(data.paqueteMO3).change();
-								$("#paqueteMO4").val(data.paqueteMO4).change();
-								$("#paqueteMO5").val(data.paqueteMO5).change();
-
-								var S1 = (data.S1 && data.S1 != '') ? $("#S1").val(data.S1.split(';')).change() : '';
-								var S2 = (data.S2 && data.S2 != '') ? $("#S2").val(data.S2.split(';')).change() : '';
-								var S3 = (data.S3 && data.S3 != '') ? $("#S3").val(data.S3.split(';')).change() : '';
-								var S4 = (data.S4 && data.S4 != '') ? $("#S4").val(data.S4.split(';')).change() : '';
-								var S5 = (data.S5 && data.S5 != '') ? $("#S5").val(data.S5.split(';')).change() : '';
-								$("#paqueteS1").val(data.paqueteS1).change();
-								$("#paqueteS2").val(data.paqueteS2).change();
-								$("#paqueteS3").val(data.paqueteS3).change();
-								$("#paqueteS4").val(data.paqueteS4).change();
-								$("#paqueteS5").val(data.paqueteS5).change();
-							}else if(tipoContrato==2){
-
-								$("#S1, #S2, #S3, #S4, #S5").html('<option value=""></option').change();
-
-								$("#MO1, #MO2, #MO3, #MO4, #MO5").html('<option value=""></option').change();
-
-								$("#SI1, #SI2, #SI3, #SI4, #SI5").html(json_info2["listadoSI"]).change();
-
-								$("#paqueteS1, #paqueteS2, #paqueteS3, #paqueteS4, #paqueteS5").html('<option value=""></option').change();
-
-								$("#paqueteMO1, #paqueteMO2, #paqueteMO3, #paqueteMO4, #paqueteMO5").html('<option value=""></option').change();
-
-								$("#paqueteSI1, #paqueteSI2, #paqueteSI3, #paqueteSI4, #paqueteSI5").html(json_info["listadoSI"]).change();
-
-								$("#parametro_EditarContratosSI").css('display', 'block');
-								$("#parametro_EditarContratosMO").css('display', 'none');
-								$("#parametro_EditarContratosS").css('display', 'none');
-
+							// Populate SI section
+							if (hasSI) {
+								$("#SI1, #SI2, #SI3, #SI4, #SI5").html(json_info2["listadoSI"] || '<option value=""></option>').change();
+								$("#paqueteSI1, #paqueteSI2, #paqueteSI3, #paqueteSI4, #paqueteSI5").html(json_info["listadoSI"] || '<option value=""></option>').change();
 								var SI1 = (data.SI1 && data.SI1 != '') ? $("#SI1").val(data.SI1.split(';')).change() : '';
 								var SI2 = (data.SI2 && data.SI2 != '') ? $("#SI2").val(data.SI2.split(';')).change() : '';
 								var SI3 = (data.SI3 && data.SI3 != '') ? $("#SI3").val(data.SI3.split(';')).change() : '';
@@ -597,29 +595,69 @@
 								$("#paqueteSI3").val(data.paqueteSI3).change();
 								$("#paqueteSI4").val(data.paqueteSI4).change();
 								$("#paqueteSI5").val(data.paqueteSI5).change();
-
-								$("#MO1").val('').change();
-								$("#MO2").val('').change();
-								$("#MO3").val('').change();
-								$("#MO4").val('').change();
-								$("#MO5").val('').change();
-								$("#paqueteMO1").val('').change();
-								$("#paqueteMO2").val('').change();
-								$("#paqueteMO3").val('').change();
-								$("#paqueteMO4").val('').change();
-								$("#paqueteMO5").val('').change();
-
-								$("#S1").val('').change();
-								$("#S2").val('').change();
-								$("#S3").val('').change();
-								$("#S4").val('').change();
-								$("#S5").val('').change();
-								$("#paqueteS1").val('').change();
-								$("#paqueteS2").val('').change();
-								$("#paqueteS3").val('').change();
-								$("#paqueteS4").val('').change();
-								$("#paqueteS5").val('').change();
+							} else {
+								$("#SI1, #SI2, #SI3, #SI4, #SI5").html('<option value=""></option>').change();
+								$("#paqueteSI1, #paqueteSI2, #paqueteSI3, #paqueteSI4, #paqueteSI5").html('<option value=""></option>').change();
+								$("#SI1,#SI2,#SI3,#SI4,#SI5").val('').change();
+								$("#paqueteSI1,#paqueteSI2,#paqueteSI3,#paqueteSI4,#paqueteSI5").val('').change();
 							}
+
+							// Populate MO section
+							if (hasMO) {
+								$("#MO1, #MO2, #MO3, #MO4, #MO5").html(json_info2["listadoMO"] || '<option value=""></option>').change();
+								$("#paqueteMO1, #paqueteMO2, #paqueteMO3, #paqueteMO4, #paqueteMO5").html(json_info["listadoMO"] || '<option value=""></option>').change();
+								var MO1 = (data.MO1 && data.MO1 != '') ? $("#MO1").val(data.MO1.split(';')).change() : '';
+								var MO2 = (data.MO2 && data.MO2 != '') ? $("#MO2").val(data.MO2.split(';')).change() : '';
+								var MO3 = (data.MO3 && data.MO3 != '') ? $("#MO3").val(data.MO3.split(';')).change() : '';
+								var MO4 = (data.MO4 && data.MO4 != '') ? $("#MO4").val(data.MO4.split(';')).change() : '';
+								var MO5 = (data.MO5 && data.MO5 != '') ? $("#MO5").val(data.MO5.split(';')).change() : '';
+								$("#paqueteMO1").val(data.paqueteMO1).change();
+								$("#paqueteMO2").val(data.paqueteMO2).change();
+								$("#paqueteMO3").val(data.paqueteMO3).change();
+								$("#paqueteMO4").val(data.paqueteMO4).change();
+								$("#paqueteMO5").val(data.paqueteMO5).change();
+							} else {
+								$("#MO1, #MO2, #MO3, #MO4, #MO5").html('<option value=""></option>').change();
+								$("#paqueteMO1, #paqueteMO2, #paqueteMO3, #paqueteMO4, #paqueteMO5").html('<option value=""></option>').change();
+								$("#MO1,#MO2,#MO3,#MO4,#MO5").val('').change();
+								$("#paqueteMO1,#paqueteMO2,#paqueteMO3,#paqueteMO4,#paqueteMO5").val('').change();
+							}
+
+							// Populate S section
+							if (hasS) {
+								$("#S1, #S2, #S3, #S4, #S5").html(json_info2["listadoS"] || '<option value=""></option>').change();
+								$("#paqueteS1, #paqueteS2, #paqueteS3, #paqueteS4, #paqueteS5").html(json_info["listadoS"] || '<option value=""></option>').change();
+								var S1 = (data.S1 && data.S1 != '') ? $("#S1").val(data.S1.split(';')).change() : '';
+								var S2 = (data.S2 && data.S2 != '') ? $("#S2").val(data.S2.split(';')).change() : '';
+								var S3 = (data.S3 && data.S3 != '') ? $("#S3").val(data.S3.split(';')).change() : '';
+								var S4 = (data.S4 && data.S4 != '') ? $("#S4").val(data.S4.split(';')).change() : '';
+								var S5 = (data.S5 && data.S5 != '') ? $("#S5").val(data.S5.split(';')).change() : '';
+								$("#paqueteS1").val(data.paqueteS1).change();
+								$("#paqueteS2").val(data.paqueteS2).change();
+								$("#paqueteS3").val(data.paqueteS3).change();
+								$("#paqueteS4").val(data.paqueteS4).change();
+								$("#paqueteS5").val(data.paqueteS5).change();
+							} else {
+								$("#S1, #S2, #S3, #S4, #S5").html('<option value=""></option>').change();
+								$("#paqueteS1, #paqueteS2, #paqueteS3, #paqueteS4, #paqueteS5").html('<option value=""></option>').change();
+								$("#S1,#S2,#S3,#S4,#S5").val('').change();
+								$("#paqueteS1,#paqueteS2,#paqueteS3,#paqueteS4,#paqueteS5").val('').change();
+							}
+
+							// Populate OC section (maps to S1=supplier, paqueteS1=OC#)
+							if (hasOC) {
+								$('#ocProveedor').val(data.S1 || '');
+								$('#ocNumero').val(data.paqueteS1 || '');
+							} else {
+								$('#ocProveedor').val('');
+								$('#ocNumero').val('');
+							}
+
+							// Update section visibility
+							updateSections();
+
+							// Update checkbox enable/disable state
+							updateCheckboxState();
 						});
 					});
 
@@ -637,6 +675,66 @@
 		  });
 		}
 
+		/* Checkbox modalidad logic: SI exclusive, MO/S/OC combinable */
+		function syncHiddenTipoContrato() {
+			var parts = [];
+			if ($('#modalidadSI').is(':checked')) parts.push('SI');
+			if ($('#modalidadMO').is(':checked')) parts.push('MO');
+			if ($('#modalidadS').is(':checked')) parts.push('S');
+			if ($('#modalidadOC').is(':checked')) parts.push('OC');
+			$('#tipoContrato').val(parts.join(','));
+		}
+
+		function updateSections() {
+			var tc = $('#tipoContrato').val() || '';
+			var codes = tc.split(',').map(function(s) { return s.trim(); });
+			var hasSI = codes.indexOf('SI') >= 0;
+			var hasMO = codes.indexOf('MO') >= 0;
+			var hasS = codes.indexOf('S') >= 0;
+			var hasOC = codes.indexOf('OC') >= 0;
+
+			$('#parametro_EditarContratosSI').toggle(hasSI);
+			$('#parametro_EditarContratosMO').toggle(hasMO);
+			$('#parametro_EditarContratosS').toggle(hasS);
+			$('#parametro_EditarContratosOC').toggle(hasOC);
+		}
+
+		function updateCheckboxState() {
+			var siChecked = $('#modalidadSI').is(':checked');
+			var anyOther = $('#modalidadMO').is(':checked') || $('#modalidadS').is(':checked') || $('#modalidadOC').is(':checked');
+
+			if (siChecked) {
+				$('#modalidadMO, #modalidadS, #modalidadOC').prop('disabled', true);
+			} else if (anyOther) {
+				$('#modalidadSI').prop('disabled', true);
+			} else {
+				$('#modalidadSI, #modalidadMO, #modalidadS, #modalidadOC').prop('disabled', false);
+			}
+		}
+
+		// SI checkbox: if checked → uncheck + disable MO/S/OC
+		$(document).on('change', '#modalidadSI', function() {
+			if ($(this).is(':checked')) {
+				$('#modalidadMO, #modalidadS, #modalidadOC').prop('checked', false).prop('disabled', true);
+			} else {
+				$('#modalidadMO, #modalidadS, #modalidadOC').prop('disabled', false);
+			}
+			syncHiddenTipoContrato();
+			updateSections();
+		});
+
+		// MO/S/OC checkboxes: if any checked → uncheck + disable SI
+		$(document).on('change', '#modalidadMO, #modalidadS, #modalidadOC', function() {
+			var anyChecked = $('#modalidadMO').is(':checked') || $('#modalidadS').is(':checked') || $('#modalidadOC').is(':checked');
+			if (anyChecked) {
+				$('#modalidadSI').prop('checked', false).prop('disabled', true);
+			} else {
+				$('#modalidadSI').prop('disabled', false);
+			}
+			syncHiddenTipoContrato();
+			updateSections();
+		});
+
 		/* Ejecuta la funcion guardar, solo cuando se presiona el botón guardar. La función guardar busca la informacion registrada en el formulario de registro de usuarios y lo envia por medio de AJAX para que se ejecute la funcion modificar en guardar.php */
 		var guardar_modificar = function() {
 		  $("#btn_guardar_contratos").one("click", function(e) {
@@ -645,22 +743,44 @@
 				var semana = document.getElementById('semana').value;
 				var Id = document.getElementById('Id').value;
 				var opcion = document.getElementById('opcion').value;
-		    var frm = $("form").serialize();
-		    frm = frm + "&Id=" + Id + "&opcion=" + opcion + "&semana=" + semana;
-		    // console.log(frm);
+				var tipoContrato = document.getElementById('tipoContrato').value;
+
+				// Build form data manually to handle OC mapping
+				var frm = $("form").serializeArray();
+				// Remove ocProveedor, ocNumero, modalidades[] from form data
+				frm = frm.filter(function(f) {
+					return f.name !== 'ocProveedor' && f.name !== 'ocNumero' && f.name !== 'modalidades[]';
+				});
+
+				// If OC is checked, map OC fields to S1/paqueteS1
+				var modalidades = tipoContrato.split(',').map(function(s) { return s.trim(); });
+				if (modalidades.indexOf('OC') >= 0) {
+					var ocProveedor = $('#ocProveedor').val() || '';
+					var ocNumero = $('#ocNumero').val() || '';
+					// Remove existing S1 and paqueteS1 entries
+					frm = frm.filter(function(f) {
+						return f.name !== 'S1' && f.name !== 'paqueteS1';
+					});
+					frm.push({ name: 'S1', value: ocProveedor });
+					frm.push({ name: 'paqueteS1', value: ocNumero });
+				}
+
+				frm.push({ name: 'Id', value: Id });
+				frm.push({ name: 'opcion', value: opcion });
+				frm.push({ name: 'semana', value: semana });
+				frm.push({ name: 'tipoContrato', value: tipoContrato });
+
+				var frmStr = $.param(frm);
+
 		    $.ajax({
 		      method: "POST",
 		      url: "/api/contratos/save?db="+db,
 		      contenttype: "charset=utf-8",
-		      data: frm,
+		      data: frmStr,
 		    }).done(function(info) {
 		      var json_info = (typeof info === 'string' ? JSON.parse(info) : info);
-		      //mostrar_mensaje(json_info);
-		      // console.log(json_info);
 		      if (json_info.respuesta == "BIEN") {
-		        // var posicion = $('.dataTables_scrollBody').scrollTop();
 		        $("#modalEditarContratos").modal("hide");
-		        // location.assign("posicion_contratos.php?posicion_contratos=" + posicion);
 						recargarTabla();
 		      } else {
 						$(".mensaje").html(json_info["respuesta"]).css({

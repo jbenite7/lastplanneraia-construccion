@@ -125,14 +125,6 @@
 		                <div class="col-sm-12 aia-modal__field">
 		                  <label for="fechaInicio" class="control-label aia-modal__label">Fecha de Inicio</label><input id="fechaInicio" name="fechaInicio" type="text" class="form-control">
 		                </div>
-		                <div class="col-sm-12 aia-modal__field">
-		                  <label for="tipoContrato" class="control-label aia-modal__label">Tipo de Contrato</label>
-		                  <select id="tipoContrato" name="tipoContrato" class="form-control">
-		                    <option value=""></option>
-		                    <option value=1>Mano de Obra y Suministro por separado</option>
-		                    <option value=2>Suministro e Instalación</option>
-		                  </select>
-		                </div>
 		                </div>
 		              </section>
 		              <div class="form-group aia-modal__actions">
@@ -1134,19 +1126,31 @@
 							}
 						}
 					},
-					{
-					'targets': [8],
-					'render': function ( data, type, full, meta ) {
-							if(data==1){
-								return "Mano de Obra y Suministro por separado";
-							}else if(data==2){
-								return "Suministro e Instalación";
-							}else{
-								return data;
+				{
+				'targets': [8],
+				'render': function ( data, type, full, meta ) {
+						if (!data || data === '') {
+							return '<span class="text-muted">Sin asignar</span>';
+						}
+						var modalidades = data.split(',');
+						var badges = {
+							'SI': '<span class="badge badge-primary">SI</span>',
+							'MO': '<span class="badge badge-info">MO</span>',
+							'S':  '<span class="badge badge-secondary">S</span>',
+							'OC': '<span class="badge badge-dark">OC</span>'
+						};
+						var result = [];
+						for (var i = 0; i < modalidades.length; i++) {
+							var m = modalidades[i].trim();
+							if (badges[m]) {
+								result.push(badges[m]);
+							} else if (m) {
+								result.push(m);
 							}
-
-						},
+						}
+						return result.length > 0 ? result.join(' ') : '<span class="text-muted">Sin asignar</span>';
 					},
+				},
 					{
 						'targets': [0],
 						'width':'4%',
@@ -1274,7 +1278,7 @@
 			$(newNode).find('td:eq(4)').html(htmlActInicio);
 			$(newNode).find('td:eq(5)').html('');
 
-			var htmlTipo = "<select id='new_tipoContrato' name='tipoContrato' class='form-control form-control-sm'><option value=''></option><option value=1>Mano de Obra y Suministro por separado</option><option value=2>Suministro e Instalación</option></select>";
+			var htmlTipo = "<span class='text-muted'>Sin asignar</span>";
 			$(newNode).find('td:eq(6)').html(htmlTipo);
 
 			var htmlBotones = "<button type='button' id='btn_guardar_nueva' class='btn btn-success btn-sm btn-action-gap' title='Guardar'><i class='fa fa-save fa-xs'></i></button><button type='button' id='btn_cancelar_nueva' class='btn btn-danger btn-sm btn-action-gap' title='Cancelar'><i class='fa fa-undo fa-xs'></i></button>";
@@ -1289,8 +1293,7 @@
 				var actividad = $('#new_Actividad').val();
 				var desc = $('#new_descripcionActividad').val();
 				var actInicio = $('#new_actividadInicio').val();
-				var tipo = $('#new_tipoContrato').val();
-				if (!actividad || !desc || !actInicio || !tipo) {
+				if (!actividad || !desc || !actInicio) {
 					if (typeof AIA !== 'undefined' && AIA.Notice) {
 						AIA.Notice.show({ type: 'warning', title: 'Campos incompletos', message: 'Complete todos los campos para crear la actividad.' });
 					}
@@ -1304,7 +1307,6 @@
 						actividad: actividad,
 						descripcionActividad: desc,
 						actividadInicio: actInicio,
-						tipoContrato: tipo,
 						opcion: "registrar",
 						semana: semana
 					}
@@ -1325,7 +1327,7 @@
 				table.row(newNode).remove().draw(false);
 			});
 
-			$(newNode).on('keydown', '#new_Actividad, #new_descripcionActividad, #new_actividadInicio, #new_tipoContrato', function(e) {
+			$(newNode).on('keydown', '#new_Actividad, #new_descripcionActividad, #new_actividadInicio', function(e) {
 				if (e.keyCode === 13) {
 					$('#btn_guardar_nueva', newNode).click();
 				} else if (e.keyCode === 27) {
@@ -1387,18 +1389,11 @@
 
 
 
-					var codigo_html_tipoContrato =  "<select id='select_tipoContrato' name='tipoContrato' class='form-control form-control-sm' ><option value=''></option><option value=1>Mano de Obra y Suministro por separado</option><option value=2>Suministro e Instalación</option></select>";
-					$row.find('td:eq(6)').html(codigo_html_tipoContrato);
-
-					// var codigo_html_paqueteContratacion =  "<select id='select_paqueteContratacion' name='paqueteContratacion' class='form-control form-control-sm' ><option value=''></option><option value='1'>(1) - Paquete 1</option><option value='2'>(2) - Paquete 2</option><option value='3'>(3) - Paquete 3</option></select>";
-					// $row.find('td:eq(6)').html(codigo_html_paqueteContratacion);
+				var codigo_html_tipoContrato =  "<span class='text-muted'>" + escaparHtml(data.tipoContrato || 'Sin asignar') + "</span>";
+				$row.find('td:eq(6)').html(codigo_html_tipoContrato);
 
 					var codigo_html_botones = "<button type= 'button' id='btn_guardar_editar' class='guardar btn btn-success btn-sm btn-action-gap' title='Guardar la edición'><i class='fa fa-save fa-xs' aria-hidden='true' ></i></button><button type= 'button' id='btn_cancelar_editar' class='cancelar btn btn-danger btn-sm btn-action-gap' title='Cancelar la edición'><i class='fa fa-undo fa-xs' aria-hidden='true' ></i></button>";
 					$row.find('td:eq(0)').html(codigo_html_botones);
-
-					$("#select_tipoContrato").val(data.tipoContrato).change();
-
-					$("#select_paqueteContratacion").val(data.idPaqueteContratacion).change();
 
 					$("#select_actividadInicio").val(data.actividadInicio).change();
 
@@ -1518,9 +1513,8 @@
 				var descripcionActividad = $("#select_descripcionActividad").serialize();
 				var actividadInicio = $("#select_actividadInicio").serialize();
 				var fechaInicio = $("#select_fechaInicio").serialize();
-				var tipoContrato = $("#select_tipoContrato").serialize();
 
-				frm = Id + "&" + opcion + "&" + codigo + "&" + Actividad + "&" + descripcionActividad + "&" + actividadInicio + "&" + fechaInicio + "&" + tipoContrato + "&semana=" + semana;
+				frm = Id + "&" + opcion + "&" + codigo + "&" + Actividad + "&" + descripcionActividad + "&" + actividadInicio + "&" + fechaInicio + "&semana=" + semana;
 				// console.log(frm);
 				$.ajax({
 					method: "POST",
