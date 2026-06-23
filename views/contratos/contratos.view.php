@@ -397,10 +397,10 @@
 					}
 					var modalidades = data.split(',');
 					var badges = {
-						'SI': '<span class="badge badge-primary">SI</span>',
-						'MO': '<span class="badge badge-info">MO</span>',
-						'S':  '<span class="badge badge-secondary">S</span>',
-						'OC': '<span class="badge badge-dark">OC</span>'
+						'SI': '<span class="badge badge-primary">Suministro e Instalación</span>',
+						'MO': '<span class="badge badge-info">Mano de Obra</span>',
+						'S':  '<span class="badge badge-secondary">Suministro</span>',
+						'OC': '<span class="badge badge-dark">Orden de Compra</span>'
 					};
 					var result = [];
 					for (var i = 0; i < modalidades.length; i++) {
