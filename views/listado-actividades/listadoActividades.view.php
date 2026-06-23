@@ -755,7 +755,6 @@
 						AIA.Notice.error('Error de conexión al estandarizar.');
 					}).always(function() {
 						btn.prop('disabled', false).html('Estandarizar PG <i class="fas fa-sitemap"></i>');
-					});
 				});
 			});
 		};
@@ -787,7 +786,7 @@
 
 				$.ajax({
 					method: 'POST',
-					url: '/api/listado-actividades/auto-generate?db=' + encodeURIComponent(db) + '&semana=' + encodeURIComponent(semana),
+					url: '/api/listado-actividades/auto-generate?db=' + encodeURIComponent(db) + '&semana=' + encodeURIComponent(semana) + '&preview=1',
 					dataType: 'json'
 				}).done(function(response) {
 					if (!response || response.respuesta !== 'BIEN') {
@@ -797,14 +796,20 @@
 					}
 
 					var sugerencias = response.sugerencias || [];
+					var gruposPreview = response.gruposPreview || [];
 					var gruposCreadas = response.gruposCreadas || [];
+					var gruposToShow = response.preview ? gruposPreview : gruposCreadas;
 					var totalGrupos = response.totalGrupos || 0;
 					var estrategia = response.estrategia || 'familia';
 					var ratio = response.totalProcesadas > 0 ? (response.totalProcesadas / Math.max(response.creadas, 1)).toFixed(1) + ':1' : 'N/A';
 
 					var msg = 'PG: <strong>' + response.totalProcesadas + '</strong> · ';
 					msg += 'Familias/Grupos: <strong>' + totalGrupos + '</strong> · ';
-					msg += 'Actividades consolidadas: <strong>' + response.creadas + '</strong> · ';
+					if (response.preview) {
+						msg += 'Se crearán: <strong>' + response.creadas + '</strong> · ';
+					} else {
+						msg += 'Actividades consolidadas: <strong>' + response.creadas + '</strong> · ';
+					}
 					msg += 'Ratio: <strong>' + ratio + '</strong> · ';
 					msg += 'Estrategia: <strong>' + estrategia + '</strong> · ';
 					msg += 'Sin match: <strong>' + response.sinMatch + '</strong>';
@@ -822,20 +827,22 @@
 						}
 					}
 
-					// Mostrar primero los grupos consolidados creados
+					// Mostrar primero los grupos consolidados (preview o creados)
 					var html = '';
-					if (gruposCreadas.length > 0) {
-						html += '<tr style="background-color: #d4edda; font-weight: bold;"><td colspan="6"><i class="fas fa-layer-group"></i> GRUPOS CONSOLIDADOS CREADOS (' + gruposCreadas.length + ')</td></tr>';
-						for (var g = 0; g < gruposCreadas.length; g++) {
-							var gr = gruposCreadas[g];
+					if (gruposToShow.length > 0) {
+						var sectionTitle = response.preview ? 'GRUPOS A CREAR' : 'GRUPOS CONSOLIDADOS CREADOS';
+						var sectionIcon = response.preview ? 'fa-calculator' : 'fa-layer-group';
+						html += '<tr style="background-color: #d4edda; font-weight: bold;"><td colspan="6"><i class="fas ' + sectionIcon + '"></i> ' + sectionTitle + ' (' + gruposToShow.length + ')</td></tr>';
+						for (var g = 0; g < gruposToShow.length; g++) {
+							var gr = gruposToShow[g];
 							var badgeGrupo = '<span class="badge badge-success">+' + gr.totalActividades + ' PG</span>';
 							html += '<tr style="background-color: #f0f8ff;">';
 							html += '<td>' + (g + 1) + '</td>';
-							html += '<td><strong>' + escaparHtml(gr.familia) + '</strong><br><small class="text-muted">' + escaparHtml(gr.descripcion.substring(0, 120)) + (gr.descripcion.length > 120 ? '...' : '') + '</small></td>';
+							html += '<td><strong>' + escaparHtml(gr.familia) + '</strong><br><small class="text-muted">' + escaparHtml((gr.descripcion || '').substring(0, 120)) + ((gr.descripcion || '').length > 120 ? '...' : '') + '</small></td>';
 							html += '<td>' + escaparHtml(gr.fechaInicio || '-') + '</td>';
 							html += '<td>' + escaparHtml(gr.familiaCodigo) + '</td>';
 							html += '<td>' + (gr.confianzaMin || 0) + '%</td>';
-							html += '<td>' + badgeGrupo + ' Consolidado</td>';
+							html += '<td>' + badgeGrupo + ' ' + (response.preview ? 'Preview' : 'Consolidado') + '</td>';
 							html += '</tr>';
 						}
 					}
@@ -869,6 +876,10 @@
 					}
 					$('#autoGenListadoBody').html(html);
 					btn.prop('disabled', false).html('<i class="fas fa-search"></i> Analizar');
+					// Enable Aplicar button if there are groups to create
+					if (response.preview && (response.creadas > 0 || gruposPreview.length > 0)) {
+						$('#btnAutoGenListadoAplicar').prop('disabled', false);
+					}
 				}).fail(function(xhr) {
 					var mensaje = 'Error de conexión al analizar.';
 					if (xhr.responseJSON && xhr.responseJSON.mensaje) {
@@ -877,6 +888,66 @@
 					$('#autoGenListadoResumen').removeClass('alert-info alert-success').addClass('alert-danger').html(escaparHtml(mensaje));
 					btn.prop('disabled', false).html('<i class="fas fa-search"></i> Analizar');
 				});
+			});
+
+			// Aplicar: create activities in DB (no preview)
+			$('#btnAutoGenListadoAplicar').off('click.autoGenListado').on('click.autoGenListado', function(e) {
+				e.preventDefault();
+				var btn = $(this);
+				var db = document.getElementById('baseDatos').value;
+				var semana = document.getElementById('Max_Semana').value;
+
+				btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Creando...');
+				$('#btnAutoGenListadoAnalizar').prop('disabled', true);
+				$('#autoGenListadoResumen').removeClass('alert-info alert-danger alert-success').addClass('alert-info').html('Creando actividades en el listado...');
+
+				$.ajax({
+					method: 'POST',
+					url: '/api/listado-actividades/auto-generate?db=' + encodeURIComponent(db) + '&semana=' + encodeURIComponent(semana),
+					dataType: 'json'
+				}).done(function(response) {
+					if (!response || response.respuesta !== 'BIEN') {
+						$('#autoGenListadoResumen').removeClass('alert-info alert-success').addClass('alert-danger').html(escaparHtml((response && response.mensaje) || 'No se pudieron crear las actividades.'));
+						btn.prop('disabled', false).html('<i class="fas fa-magic"></i> Aplicar');
+						$('#btnAutoGenListadoAnalizar').prop('disabled', false).html('<i class="fas fa-search"></i> Analizar');
+						return;
+					}
+
+					var msg = 'Actividades creadas: <strong>' + response.creadas + '</strong>';
+					if (response.existentes > 0) {
+						msg += ' · Ya existentes: <strong>' + response.existentes + '</strong>';
+					}
+					if (response.sinMatch > 0) {
+						msg += ' · Sin match: <strong>' + response.sinMatch + '</strong>';
+					}
+					msg += '. El listado se ha actualizado.';
+					$('#autoGenListadoResumen').removeClass('alert-info alert-danger').addClass('alert-success').html(msg);
+					$('#autoGenListadoBody').html('');
+
+					// Close modal and refresh table after short delay
+					setTimeout(function() {
+						$('#modalAutoGenerarListado').modal('hide');
+						recargarTabla('');
+					}, 1200);
+
+				}).fail(function(xhr) {
+					var mensaje = 'Error de conexión al crear actividades.';
+					if (xhr.responseJSON && xhr.responseJSON.mensaje) {
+						mensaje = xhr.responseJSON.mensaje;
+					}
+					$('#autoGenListadoResumen').removeClass('alert-info alert-success').addClass('alert-danger').html(escaparHtml(mensaje));
+					btn.prop('disabled', false).html('<i class="fas fa-magic"></i> Aplicar');
+					$('#btnAutoGenListadoAnalizar').prop('disabled', false).html('<i class="fas fa-search"></i> Analizar');
+				});
+			});
+
+			// Cleanup on modal dismiss
+			$('#modalAutoGenerarListado').off('hidden.bs.modal.autoGenListado').on('hidden.bs.modal.autoGenListado', function() {
+				$('#autoGenListadoBody').html('');
+				$('#autoGenListadoResumen').removeClass('alert-danger alert-success alert-warning').addClass('alert-info').html('Presiona "Analizar" para detectar actividades en el Programa General.');
+				$('#btnAutoGenListadoAplicar').prop('disabled', true);
+				$('#btnAutoGenListadoAnalizar').prop('disabled', false).html('<i class="fas fa-search"></i> Analizar');
+				recargarTabla('');
 			});
 		};
 
