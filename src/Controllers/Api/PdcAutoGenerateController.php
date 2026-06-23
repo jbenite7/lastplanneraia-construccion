@@ -19,9 +19,19 @@ class PdcAutoGenerateController
 
     private $db;
 
+    private ?\App\Support\ActivityMatcher $activityMatcher = null;
+
     public function __construct()
     {
         $this->db = \Database::getInstance();
+    }
+
+    private function getActivityMatcher(): \App\Support\ActivityMatcher
+    {
+        if ($this->activityMatcher === null) {
+            $this->activityMatcher = new \App\Support\ActivityMatcher();
+        }
+        return $this->activityMatcher;
     }
 
     public function suggest(): void
@@ -46,7 +56,7 @@ class PdcAutoGenerateController
             $manualReview = [];
 
             foreach ($activities as $activity) {
-                $match = $this->matchActivity($activity, $rules);
+                $match = $this->getActivityMatcher()->matchActivity($activity, $rules);
                 if ($match === null) {
                     $manualReview[] = $this->manualActivity($activity, 'Sin regla de mapeo confiable.');
                     continue;
@@ -592,94 +602,6 @@ class PdcAutoGenerateController
         }
 
         return $strategies;
-    }
-
-    private function matchActivity(array $activity, array $rules): ?array
-    {
-        $normalized = $this->normalizeActivityText((string) ($activity['Actividad'] ?? ''));
-        if ($normalized === '') {
-            return null;
-        }
-
-        $leafName = $this->extractLeafName($normalized);
-        if ($this->isJmcCode($leafName)) {
-            return null;
-        }
-
-        if ($leafName !== '') {
-            $match = $this->matchAgainstText($leafName, $rules);
-            if ($match !== null) {
-                $match['matchedBy'] = 'nombre';
-                $match['breadcrumbLevel'] = null;
-                return $match;
-            }
-        }
-
-        foreach ($this->extractChapterHierarchy($normalized) as $index => $chapterLevel) {
-            $match = $this->matchAgainstText($chapterLevel, $rules);
-            if ($match !== null) {
-                $match['matchedBy'] = 'breadcrumb';
-                $match['breadcrumbLevel'] = $index + 1;
-                return $match;
-            }
-        }
-
-        $parentChapter = (string) ($activity['__capitulo'] ?? '');
-        if ($parentChapter !== '') {
-            $match = $this->matchAgainstText($parentChapter, $rules);
-            if ($match !== null) {
-                $match['matchedBy'] = 'capitulo';
-                $match['breadcrumbLevel'] = null;
-                return $match;
-            }
-        }
-
-        return null;
-    }
-
-    private function matchAgainstText(string $text, array $rules): ?array
-    {
-        $matches = [];
-        foreach ($rules as $rule) {
-            $pattern = (string) $rule['patron_regex'];
-            if (@preg_match($pattern, $text) === 1) {
-                $matches[] = $rule;
-            }
-        }
-
-        if (empty($matches)) {
-            return null;
-        }
-
-        usort($matches, static function ($a, $b) {
-            return ((int) $b['prioridad'] <=> (int) $a['prioridad'])
-                ?: ((int) $b['confianza'] <=> (int) $a['confianza']);
-        });
-
-        $best = $matches[0];
-        $sameRank = array_filter($matches, static function ($item) use ($best) {
-            return (int) $item['prioridad'] === (int) $best['prioridad']
-                && (int) $item['confianza'] === (int) $best['confianza']
-                && (int) $item['familia_id'] !== (int) $best['familia_id'];
-        });
-
-        $reviewRequired = false;
-        $reviewReason = '';
-        if ((int) $best['confianza'] < self::AUTO_CONFIDENCE_THRESHOLD) {
-            $reviewRequired = true;
-            $reviewReason = 'Confianza inferior al umbral automático.';
-        } elseif (!empty($sameRank)) {
-            $reviewRequired = true;
-            $reviewReason = 'Actividad ambigua: coincide con más de una familia.';
-        } elseif ((int) ($best['siempre_revision'] ?? 0) === 1) {
-            $reviewRequired = true;
-            $reviewReason = 'Familia configurada para revisión manual obligatoria.';
-        }
-
-        $best['reviewRequired'] = $reviewRequired;
-        $best['reviewReason'] = $reviewReason;
-
-        return $best;
     }
 
     private function normalizeActivityText(string $raw): string
@@ -1306,11 +1228,6 @@ class PdcAutoGenerateController
         return array_merge($this->formatActivity($activity), [
             'motivo' => $reason,
         ]);
-    }
-
-    private function isJmcCode(string $name): bool
-    {
-        return preg_match('/^[A-Z]{1,3}-\d{2,}/', trim($name)) === 1;
     }
 
     private function minDate(?string $current, ?string $candidate): ?string
