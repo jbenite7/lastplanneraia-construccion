@@ -688,78 +688,6 @@
 			});
 		};
 
-		var inicializarAutoPdc = function() {
-			$(document).off('click.pdcAutoOpen', '#btn_auto_generar_pdc').on('click.pdcAutoOpen', '#btn_auto_generar_pdc', function(e) {
-				e.preventDefault();
-				$('#modalPdcAutoGenerar').modal('show');
-				cargarSugerenciasPdc();
-			});
-
-			$('#btn_pdc_auto_recargar').off('click.pdcAutoReload').on('click.pdcAutoReload', function(e) {
-				e.preventDefault();
-				cargarSugerenciasPdc();
-			});
-
-			$('#btn_pdc_auto_aplicar').off('click.pdcAutoApply').on('click.pdcAutoApply', function(e) {
-				e.preventDefault();
-				aplicarSugerenciasPdc();
-			});
-
-			/* Ruta de degradación: si el CDN de TomSelect falla, el select nativo sigue
-			   sincronizando estado por este handler delegado. */
-			$(document).off('change.pdcAutoOption', '.pdc-auto-option').on('change.pdcAutoOption', '.pdc-auto-option', function() {
-				sincronizarOpcionPdc(parseInt($(this).data('index'), 10), $(this).val());
-			});
-
-			$(document).off('change.pdcAutoSelected', '.pdc-auto-selected').on('change.pdcAutoSelected', '.pdc-auto-selected', function() {
-				var index = parseInt($(this).data('index'), 10);
-				if (!isNaN(index) && pdcAutoSuggestions[index]) {
-					pdcAutoSuggestions[index].selected = $(this).is(':checked');
-				}
-			});
-
-			$('#modalPdcAutoGenerar').off('hidden.bs.modal.pdcAuto').on('hidden.bs.modal.pdcAuto', function() {
-				destruirTomSelectsPdc();
-			});
-		};
-
-		var inicializarBreadcrumbPg = function() {
-			$(document).off('click.pgBreadcrumb', '#btn_estandarizar_pg').on('click.pgBreadcrumb', '#btn_estandarizar_pg', function(e) {
-				e.preventDefault();
-				var btn = $(this);
-				var db = document.getElementById('baseDatos').value;
-				var semana = document.getElementById('Max_Semana').value;
-
-				AIA.Notice.confirm(
-					'Esto mejorará los breadcrumbs del Programa General para que el motor de detección funcione mejor. ¿Continuar?',
-					'Estandarizar PG'
-				).then(function(confirmed) {
-					if (!confirmed) return;
-
-					btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Procesando...');
-
-					$.ajax({
-						method: 'POST',
-						url: '/api/pg/breadcrumb-estandarizar?db=' + encodeURIComponent(db) + '&semana=' + encodeURIComponent(semana),
-						dataType: 'json'
-					}).done(function(response) {
-						if (!response || response.respuesta !== 'BIEN') {
-							AIA.Notice.error((response && response.mensaje) || 'Error al estandarizar.');
-							return;
-						}
-						var msg = 'Actualizados: ' + response.actualizados +
-							', Ya tenían: ' + response.yaTenian +
-							', Sin jerarquía: ' + response.sinId;
-						AIA.Notice.success(msg);
-					}).fail(function() {
-						AIA.Notice.error('Error de conexión al estandarizar.');
-					}).always(function() {
-						btn.prop('disabled', false).html('Estandarizar PG <i class="fas fa-sitemap"></i>');
-				});
-			});
-		});
-	};
-
 		var inicializarAutoGenerarListado = function() {
 			var pdcAutoListadoSuggestions = [];
 
@@ -1109,8 +1037,6 @@
 
 		var cargaParametros = function() {
 			inicializarModalNuevaActividad();
-			inicializarAutoPdc();
-			inicializarBreadcrumbPg();
 			inicializarAutoGenerarListado();
       listar();
 			guardarNuevaActividad();
@@ -1206,10 +1132,10 @@
 						}
 						var modalidades = data.split(',');
 						var badges = {
-							'SI': '<span class="badge badge-primary">SI</span>',
-							'MO': '<span class="badge badge-info">MO</span>',
-							'S':  '<span class="badge badge-secondary">S</span>',
-							'OC': '<span class="badge badge-dark">OC</span>'
+							'SI': '<span class="badge badge-primary">Suministro e Instalación</span>',
+							'MO': '<span class="badge badge-info">Mano de Obra</span>',
+							'S':  '<span class="badge badge-secondary">Suministro</span>',
+							'OC': '<span class="badge badge-dark">Orden de Compra</span>'
 						};
 						var result = [];
 						for (var i = 0; i < modalidades.length; i++) {
@@ -1303,9 +1229,7 @@
 				.removeAttr("style");
 			$("div.toolbarFilaBotones .grupo_botones1 .btn").addClass("ps-btn-gap");
 			if (puedeEditarListadoActividades()) {
-				$("div.toolbarFilaBotones .grupo_botones1").append('<button id="btn_auto_generar_pdc" class="btn btn-info btn-sm ps-btn-gap" title="Auto-generar paquetes del Plan de Compras desde el Programa General">Auto-generar Plan de Compras <i class="fas fa-magic fa-lg"></i></button>');
 				$("div.toolbarFilaBotones .grupo_botones1").append('<button id="btn_auto_generar_listado" class="btn btn-warning btn-sm ps-btn-gap" title="Auto-generar listado de actividades desde el Programa General">Auto-generar Listado <i class="fas fa-list fa-lg"></i></button>');
-				$("div.toolbarFilaBotones .grupo_botones1").append('<button id="btn_estandarizar_pg" class="btn btn-outline-secondary btn-sm ps-btn-gap" title="Estandarizar breadcrumbs del Programa General para mejorar la detección de familias">Estandarizar PG <i class="fas fa-sitemap"></i></button>');
 			}
 			$("div.toolbarFilaBotones #btn_nueva_actividad").removeAttr("style");
 			$("div.toolbarFilaBotones .grupo_botones_semanal_madre")
