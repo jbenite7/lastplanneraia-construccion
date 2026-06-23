@@ -757,7 +757,8 @@
 						btn.prop('disabled', false).html('Estandarizar PG <i class="fas fa-sitemap"></i>');
 				});
 			});
-		};
+		});
+	};
 
 		var inicializarAutoGenerarListado = function() {
 			var pdcAutoListadoSuggestions = [];
