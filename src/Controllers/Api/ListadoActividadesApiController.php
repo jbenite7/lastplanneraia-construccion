@@ -588,7 +588,7 @@ class ListadoActividadesApiController
         $stmt = $this->db->query(
             "SELECT Consecutivo, Consecutivo_en_Programa, Id, Actividad, Fecha_Inicio, COALESCE(Titulo, 0) AS Titulo
              FROM {$dbPrefix}_programa_consolidado
-             WHERE Semana = ? AND COALESCE(Actividad, '') <> ''
+             WHERE Semana = ? AND COALESCE(TRIM(REGEXP_REPLACE(REGEXP_REPLACE(Actividad, '<[^>]+>', ''), '&nbsp;', ' ')), '') <> ''
              ORDER BY Consecutivo_en_Programa ASC, Consecutivo ASC",
             [$semana]
         );
