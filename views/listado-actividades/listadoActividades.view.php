@@ -818,6 +818,18 @@
 					msg += 'Sin match: <strong>' + response.sinMatch + '</strong>';
 					$('#autoGenListadoResumen').removeClass('alert-info alert-danger').addClass('alert-success').html(msg);
 
+					// Separar sugerencias por tipo: sin match vs ya existia vs creada
+					var sinMatchList = [];
+					var yaExistiaList = [];
+					for (var i = 0; i < sugerencias.length; i++) {
+						var s = sugerencias[i];
+						if (s.yaExistia === true) {
+							yaExistiaList.push(s);
+						} else if (s.creada !== true) {
+							sinMatchList.push(s);
+						}
+					}
+
 					// Mostrar primero los grupos consolidados creados
 					var html = '';
 					if (gruposCreadas.length > 0) {
@@ -834,14 +846,31 @@
 							html += '<td>' + badgeGrupo + ' Consolidado</td>';
 							html += '</tr>';
 						}
-						if (sugerencias.length > 0) {
-							html += '<tr style="background-color: #fff3cd;"><td colspan="6"><i class="fas fa-exclamation-triangle"></i> SIN MATCH DE FAMILIA (' + sugerencias.length + ')</td></tr>';
+					}
+
+					// Mostrar grupos ya existentes (no son sin match, ya estaban creados)
+					if (yaExistiaList.length > 0) {
+						html += '<tr style="background-color: #e3f2fd; font-weight: bold;"><td colspan="6"><i class="fas fa-check-circle"></i> GRUPOS YA EXISTENTES (' + yaExistiaList.length + ')</td></tr>';
+						for (var e = 0; e < yaExistiaList.length; e++) {
+							var ex = yaExistiaList[e];
+							var badgeEx = '<span class="badge badge-info">' + ex.totalActividades + ' PG</span>';
+							html += '<tr style="background-color: #f5f5f5;">';
+							html += '<td>' + (e + 1) + '</td>';
+							html += '<td><strong>' + escaparHtml(ex.familia || 'N/A') + '</strong></td>';
+							html += '<td>-</td>';
+							html += '<td>' + escaparHtml(ex.familiaCodigo || '-') + '</td>';
+							html += '<td>-</td>';
+							html += '<td>' + badgeEx + ' Ya existe</td>';
+							html += '</tr>';
 						}
 					}
 
-					// Mostrar sugerencias sin match
-					for (var i = 0; i < sugerencias.length; i++) {
-						var s = sugerencias[i];
+					// Mostrar sugerencias sin match (solo las reales)
+					if (sinMatchList.length > 0) {
+						html += '<tr style="background-color: #fff3cd; font-weight: bold;"><td colspan="6"><i class="fas fa-exclamation-triangle"></i> SIN MATCH DE FAMILIA (' + sinMatchList.length + ')</td></tr>';
+					}
+					for (var i = 0; i < sinMatchList.length; i++) {
+						var s = sinMatchList[i];
 						var badge = '<span class="badge badge-secondary">Sin match</span>';
 						var estado = escaparHtml(s.motivo || 'Sin familia detectada');
 						html += '<tr><td>' + (i + 1) + '</td><td>' + escaparHtml(s.actividad ? s.actividad.replace(/<[^>]+>/g, '').substring(0, 80) : 'Sin nombre') + '</td><td>' + escaparHtml(s.fechaInicio || '-') + '</td><td>-</td><td>-</td><td>' + badge + ' ' + estado + '</td></tr>';
