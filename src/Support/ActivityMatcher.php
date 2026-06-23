@@ -41,6 +41,41 @@ class ActivityMatcher
             return null;
         }
 
+        // Stage 0: Filter rules by chapter context
+        $filteredRules = $this->filterRulesByChapter($activity, $rules);
+
+        // Try matching with filtered rules first
+        $match = $this->tryMatchCascade($normalized, $leafName, $activity, $filteredRules);
+        if ($match !== null) {
+            $match['chapterFiltered'] = ($filteredRules !== $rules);
+            return $match;
+        }
+
+        // Fallback: if filtering happened but no match found, try ALL rules
+        if ($filteredRules !== $rules) {
+            $fallbackMatch = $this->tryMatchCascade($normalized, $leafName, $activity, $rules);
+            if ($fallbackMatch !== null) {
+                $fallbackMatch['chapterFiltered'] = false;
+                $fallbackMatch['reviewRequired'] = true;
+                $fallbackMatch['reviewReason'] = 'Match encontrado via fallback sin filtro de capítulo — verificar asignación de familia.';
+                return $fallbackMatch;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Run the 3-tier matching cascade (leafName → breadcrumb → __capitulo) against a set of rules.
+     *
+     * @param string $normalized  Normalized activity text
+     * @param string $leafName    Extracted leaf name
+     * @param array  $activity    Original activity array (for __capitulo access)
+     * @param array  $rules       Rules to match against (may be filtered or all)
+     * @return array|null Match result or null
+     */
+    private function tryMatchCascade(string $normalized, string $leafName, array $activity, array $rules): ?array
+    {
         if ($leafName !== '') {
             $match = $this->matchAgainstText($leafName, $rules);
             if ($match !== null) {
@@ -70,6 +105,93 @@ class ActivityMatcher
         }
 
         return null;
+    }
+
+    /**
+     * Filter rules by chapter context extracted from the activity.
+     *
+     * Extracts all chapter sources (breadcrumb hierarchy + positional __capitulo),
+     * looks up matching categories in general_pdc_chapter_category_map,
+     * and filters rules to those in matching categories.
+     *
+     * Soft filter: if no chapter sources found, no categories matched, or
+     * filtered set is empty, returns the original rules unchanged.
+     *
+     * @param array $activity Activity array with 'Actividad' and optional '__capitulo'
+     * @param array $rules    All loaded rules (each has 'categoria' key)
+     * @return array Filtered rules (subset) or original rules if no filter applies
+     */
+    private function filterRulesByChapter(array $activity, array $rules): array
+    {
+        // 1. Extract all chapter sources
+        $normalized = $this->normalizeActivityText((string) ($activity['Actividad'] ?? ''));
+        $chapterSources = $this->extractChapterHierarchy($normalized);
+
+        $parentChapter = (string) ($activity['__capitulo'] ?? '');
+        if ($parentChapter !== '') {
+            $chapterSources[] = $this->normalizeActivityText($parentChapter);
+        }
+
+        // No chapter info at all → no filter
+        if (empty($chapterSources)) {
+            return $rules;
+        }
+
+        // 2. Load chapter-to-category mappings from DB
+        $mappings = $this->loadChapterCategoryMap();
+        if (empty($mappings)) {
+            return $rules;
+        }
+
+        // 3. Match chapter sources against keywords (substring match)
+        $matchedCategories = [];
+        foreach ($mappings as $mapping) {
+            $keyword = $this->normalizeActivityText($mapping['chapter_keyword']);
+            foreach ($chapterSources as $source) {
+                if ($keyword !== '' && mb_stripos($source, $keyword) !== false) {
+                    $matchedCategories[$mapping['categoria']] = true;
+                    break;
+                }
+            }
+        }
+
+        // No categories matched → no filter
+        if (empty($matchedCategories)) {
+            return $rules;
+        }
+
+        // 4. Filter rules to matching categories
+        $filtered = array_filter($rules, static function ($rule) use ($matchedCategories) {
+            return isset($matchedCategories[$rule['categoria'] ?? '']);
+        });
+
+        // Filtered set empty → return all (soft fallback)
+        if (empty($filtered)) {
+            return $rules;
+        }
+
+        return array_values($filtered);
+    }
+
+    /**
+     * Load chapter-to-category mappings from the database.
+     *
+     * @return array List of ['chapter_keyword' => string, 'categoria' => string]
+     */
+    private function loadChapterCategoryMap(): array
+    {
+        try {
+            $stmt = $this->db->query(
+                "SELECT chapter_keyword, categoria
+                 FROM general_pdc_chapter_category_map
+                 WHERE activa = 1
+                 ORDER BY prioridad DESC, chapter_keyword ASC"
+            );
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (\Throwable $e) {
+            // Table might not exist yet — degrade gracefully to no filter
+            return [];
+        }
     }
 
     private function matchAgainstText(string $text, array $rules): ?array

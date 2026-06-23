@@ -37,3 +37,15 @@ INSERT IGNORE INTO `general_pdc_chapter_category_map` (`chapter_keyword`, `categ
   ('SKATE PARK',           'URBANISMO',    100),
   ('CONTENCION',           'CIMENTACION',  100),
   ('PILOTEAJE',            'CIMENTACION',  100);
+
+INSERT IGNORE INTO `general_pdc_chapter_category_map` (`chapter_keyword`, `categoria`, `prioridad`) VALUES
+  ('PRELIMINARES',         'MANO DE OBRA', 90),
+  ('MOVIMIENTO DE TIERRA', 'MANO DE OBRA', 90),
+  ('EXCAVACION',           'MANO DE OBRA', 90),
+  ('ESTRUCTURA',           'MANO DE OBRA', 90),
+  ('ACABADOS',             'MANO DE OBRA', 90),
+  ('MAMPOSTERIA',          'MANO DE OBRA', 90),
+  ('REDES',                'MANO DE OBRA', 90),
+  ('RED ELECTRICA',        'MANO DE OBRA', 90),
+  ('URBANISMO',            'MANO DE OBRA', 90),
+  ('VIAS',                 'MANO DE OBRA', 90);
