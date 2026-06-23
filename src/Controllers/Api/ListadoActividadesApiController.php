@@ -154,6 +154,9 @@ class ListadoActividadesApiController
 
             $this->requirePermission('lps.listado_actividades.editar', 'No autorizado para auto-generar el listado de actividades.');
 
+            $preview = (isset($_GET['preview']) && $_GET['preview'] === '1')
+                    || (isset($_POST['preview']) && $_POST['preview'] === '1');
+
             $activities = $this->loadProjectActivities($dbPrefix, $semana);
             $matcher = new \App\Support\ActivityMatcher();
             $rules = $matcher->loadRules();
@@ -216,6 +219,7 @@ class ListadoActividadesApiController
             $creadas = 0;
             $existentes = 0;
             $gruposCreadas = [];
+            $gruposPreview = [];
 
             foreach ($grupos as $groupKey => $grupo) {
                 if (empty($grupo['actividades'])) {
@@ -260,7 +264,38 @@ class ListadoActividadesApiController
                 }
                 $descripcionConsolidada = implode(', ', $descripciones);
 
-                // Crear la actividad consolidada
+                // === PREVIEW MODE: don't create, just collect for preview ===
+                if ($preview) {
+                    $gruposPreview[] = [
+                        'grupoKey' => $groupKey,
+                        'familia' => $grupo['familiaNombre'],
+                        'familiaCodigo' => $grupo['familiaCodigo'],
+                        'categoria' => $grupo['categoria'],
+                        'totalActividades' => count($grupo['actividades']),
+                        'actividadInicio' => $anchorConsecutivo,
+                        'fechaInicio' => $anchorFecha,
+                        'descripcion' => $descripcionConsolidada,
+                        'confianzaMin' => $grupo['confianzaMin'],
+                    ];
+                    $creadas++;
+                    $sugerencias[] = [
+                        'grupoKey' => $groupKey,
+                        'familia' => $grupo['familiaNombre'],
+                        'familiaCodigo' => $grupo['familiaCodigo'],
+                        'totalActividades' => count($grupo['actividades']),
+                        'actividadInicio' => $anchorConsecutivo,
+                        'fechaInicio' => $anchorFecha,
+                        'confianzaMin' => $grupo['confianzaMin'],
+                        'creada' => true,
+                    ];
+                    continue;
+                }
+
+                // === APPLY MODE: create in DB ===
+                // Resolve intelligent tipoContrato from family contract options
+                $familiaId = (int) ($grupo['familiaId'] ?? 0);
+                $tipoContratoAuto = $this->resolveTipoContratoForFamily($familiaId);
+
                 $created = $this->createGroupedActivityFromPg(
                     $dbPrefix,
                     $semana,
@@ -268,7 +303,8 @@ class ListadoActividadesApiController
                     $descripcionConsolidada,
                     $anchorConsecutivo,
                     $anchorFecha,
-                    $grupo
+                    $grupo,
+                    $tipoContratoAuto
                 );
 
                 if ($created) {
@@ -298,13 +334,15 @@ class ListadoActividadesApiController
 
             $this->jsonResponse([
                 'respuesta' => 'BIEN',
+                'preview' => $preview,
                 'creadas' => $creadas,
                 'existentes' => $existentes,
                 'sinMatch' => $sinMatch,
                 'totalProcesadas' => $totalProcesadas,
                 'totalGrupos' => count($grupos),
                 'estrategia' => $estrategia,
-                'gruposCreadas' => $gruposCreadas,
+                'gruposCreadas' => $preview ? [] : $gruposCreadas,
+                'gruposPreview' => $preview ? $gruposPreview : [],
                 'sugerencias' => $sugerencias,
             ]);
 
@@ -355,7 +393,8 @@ class ListadoActividadesApiController
         string $descripcion,
         int $actividadInicio,
         ?string $fechaInicio,
-        array $grupo
+        array $grupo,
+        string $tipoContrato = 'S'
     ): bool {
         try {
             if ($actividadInicio <= 0 || $fechaInicio === null) {
@@ -366,8 +405,8 @@ class ListadoActividadesApiController
 
             $queryInsert = "INSERT INTO {$dbPrefix}_actividades
                             (codigo, actividad, descripcionActividad, actividadInicio, nombreActividadInicio, fechaInicio, tipoContrato, semanaActualizacion)
-                            VALUES (?, ?, ?, ?, (SELECT CONCAT(Id, '. ', Actividad, ' (Inicia en: ', Fecha_Inicio, ')') FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Consecutivo_en_Programa = ? LIMIT 1), ?, NULL, ?)";
-            $params = [$maxCode, $actividadNombre, $descripcion, $actividadInicio, $semana, $actividadInicio, $fechaInicio, $semana];
+                            VALUES (?, ?, ?, ?, (SELECT CONCAT(Id, '. ', Actividad, ' (Inicia en: ', Fecha_Inicio, ')') FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Consecutivo_en_Programa = ? LIMIT 1), ?, ?, ?)";
+            $params = [$maxCode, $actividadNombre, $descripcion, $actividadInicio, $semana, $actividadInicio, $fechaInicio, $tipoContrato, $semana];
             $this->db->query($queryInsert, $params);
 
             $familiaNombre = $grupo['familiaNombre'] ?? 'N/A';
@@ -382,6 +421,49 @@ class ListadoActividadesApiController
         } catch (Throwable $e) {
             error_log("Error creando actividad consolidada: " . $e->getMessage());
             return false;
+        }
+    }
+
+    private function resolveTipoContratoForFamily(int $familiaId): string
+    {
+        try {
+            $query = "SELECT tipo_paquete FROM general_pdc_family_contract_options WHERE familia_id = ?";
+            $stmt = $this->db->query($query, [$familiaId]);
+            $options = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+            if (empty($options)) {
+                return 'S';
+            }
+
+            $codes = [];
+            foreach ($options as $tipoPaquete) {
+                $paquete = mb_strtolower(trim($tipoPaquete));
+                if (strpos($paquete, 'suministro e instalación') !== false || strpos($paquete, 'suministro e instalacion') !== false) {
+                    $codes[] = 'SI';
+                } elseif (strpos($paquete, 'mano de obra y suministro') !== false) {
+                    $codes[] = 'MO';
+                    $codes[] = 'S';
+                } elseif (strpos($paquete, 'mano de obra') !== false) {
+                    $codes[] = 'MO';
+                } elseif (strpos($paquete, 'suministro') !== false) {
+                    $codes[] = 'S';
+                }
+            }
+
+            $codes = array_unique($codes);
+            if (empty($codes)) {
+                return 'S';
+            }
+
+            // SI is exclusive — if SI is present, don't combine with MO or S
+            if (in_array('SI', $codes)) {
+                return 'SI';
+            }
+
+            return implode(',', $codes);
+        } catch (Throwable $e) {
+            error_log("Error resolving tipoContrato for family $familiaId: " . $e->getMessage());
+            return 'S';
         }
     }
 
@@ -446,12 +528,12 @@ class ListadoActividadesApiController
         $actividadInicio = !empty($_POST['actividadInicio']) ? $_POST['actividadInicio'] : null;
 
         $errores = '';
-        if (empty($Actividad) || empty($descripcionActividad) || empty($fechaInicio) || empty($tipoContrato) || empty($semana)) {
+        if (empty($Actividad) || empty($descripcionActividad) || empty($fechaInicio) || empty($semana)) {
             $errores = 'Debe rellenar todos los campos';
         } else {
             $queryUpdate = "UPDATE {$dbPrefix}_actividades SET actividad=?, descripcionActividad=?, actividadInicio=?, 
                              nombreActividadInicio=(SELECT CONCAT(Id, '. ', Actividad, ' (Inicia en: ', Fecha_Inicio, ')') FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Consecutivo_en_Programa = ? LIMIT 1), 
-                             fechaInicio=?, tipoContrato=?, semanaActualizacion=? WHERE Id=? AND semanaActualizacion=?";
+                             fechaInicio=?, tipoContrato=COALESCE(NULLIF(?, ''), tipoContrato), semanaActualizacion=? WHERE Id=? AND semanaActualizacion=?";
             $params = [$Actividad, $descripcionActividad, $actividadInicio, $semana, $actividadInicio, $fechaInicio, $tipoContrato, $semana, $Id, $semana];
             $stmtUpdate = $this->db->query($queryUpdate, $params);
             $this->db->logActivity('ListadoActividades', 'MODIFICAR', "Modificó actividad ID $Id", $dbPrefix);
