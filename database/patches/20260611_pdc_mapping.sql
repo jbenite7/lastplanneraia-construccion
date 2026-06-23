@@ -245,10 +245,9 @@ INSERT INTO `general_pdc_familias` (`codigo`, `nombre`, `categoria`, `orden`) VA
 ('BAÑOS_PORTATILES', 'Baños Portátiles', 'PROVISIONALES', 54),
 ('PMT', 'Implementación PMT', 'PROVISIONALES', 55),
 -- MANO DE OBRA
-('MO_ESTRUCTURA', 'Mano de Obra - Estructura', 'MANO DE OBRA', 60),
-('MO_MAMPOSTERIA', 'Mano de Obra - Mampostería', 'MANO DE OBRA', 61),
-('MO_ACABADOS', 'Mano de Obra - Acabados', 'MANO DE OBRA', 62),
-('MO_INSTALACIONES', 'Mano de Obra - Instalaciones', 'MANO DE OBRA', 63)
+('ESTRUCTURA', 'Mano de Obra - Estructura', 'MANO DE OBRA', 60),
+('ACABADOS', 'Mano de Obra - Acabados', 'MANO DE OBRA', 62),
+('INSTALACIONES', 'Mano de Obra - Instalaciones', 'MANO DE OBRA', 63)
 ON DUPLICATE KEY UPDATE nombre = VALUES(nombre), categoria = VALUES(categoria), orden = VALUES(orden);
 
 -- ═══════════════════════════════════════════════════════════════════════════
@@ -317,10 +316,9 @@ INSERT IGNORE INTO `general_pdc_activity_rules` (`familia_id`, `patron_regex`, `
 
 -- MANO DE OBRA
 INSERT IGNORE INTO `general_pdc_activity_rules` (`familia_id`, `patron_regex`, `modalidad_sugerida`, `confianza`, `prioridad`, `descripcion`) VALUES
-((SELECT id FROM general_pdc_familias WHERE codigo = 'MO_ESTRUCTURA'), '/MO.*ESTRUCTURA|MANO.*OBRA.*ESTRUCTURA|OPERARIO.*ESTRUCTURA/i', 'Mano de Obra', 85, 100, 'Mano de Obra - Estructura'),
-((SELECT id FROM general_pdc_familias WHERE codigo = 'MO_MAMPOSTERIA'), '/MO.*MAMPOSTERIA|MANO.*OBRA.*MAMPOSTERIA|OPERARIO.*MAMPOSTERIA/i', 'Mano de Obra', 85, 100, 'Mano de Obra - Mampostería'),
-((SELECT id FROM general_pdc_familias WHERE codigo = 'MO_ACABADOS'), '/MO.*ACABADOS|MO.*REVOQUE|MO.*ENCHAPES|MO.*PINTURA|MANO.*OBRA.*ACABADOS/i', 'Mano de Obra', 85, 100, 'Mano de Obra - Acabados'),
-((SELECT id FROM general_pdc_familias WHERE codigo = 'MO_INSTALACIONES'), '/MO.*INSTALACION|MANO.*OBRA.*INSTALACION|OPERARIO.*INSTALACION/i', 'Mano de Obra', 85, 100, 'Mano de Obra - Instalaciones');
+((SELECT id FROM general_pdc_familias WHERE codigo = 'ESTRUCTURA'), '/MO.*ESTRUCTURA|MANO.*OBRA.*ESTRUCTURA|OPERARIO.*ESTRUCTURA/i', 'Mano de Obra', 85, 100, 'Mano de Obra - Estructura'),
+((SELECT id FROM general_pdc_familias WHERE codigo = 'ACABADOS'), '/MO.*ACABADOS|MO.*REVOQUE|MO.*ENCHAPES|MO.*PINTURA|MANO.*OBRA.*ACABADOS/i', 'Mano de Obra', 85, 100, 'Mano de Obra - Acabados'),
+((SELECT id FROM general_pdc_familias WHERE codigo = 'INSTALACIONES'), '/MO.*INSTALACION|MANO.*OBRA.*INSTALACION|OPERARIO.*INSTALACION/i', 'Mano de Obra', 85, 100, 'Mano de Obra - Instalaciones');
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- SEED DATA — Opciones de contrato por familia

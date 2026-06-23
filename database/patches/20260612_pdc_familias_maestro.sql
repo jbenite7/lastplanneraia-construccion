@@ -218,13 +218,11 @@ INSERT INTO `general_pdc_familias` (`codigo`, `nombre`, `categoria`, `orden`, `s
 ('MOBILIARIO', 'Mobiliario Urbano', 'URBANISMO', 83, 0),
 ('VIAS_PAVIMENTOS', 'Vias y Pavimentos', 'URBANISMO', 84, 0),
 
-('MO_ESTRUCTURA', 'Mano de Obra - Estructura', 'MANO DE OBRA', 90, 0),
-('MO_MAMPOSTERIA', 'Mano de Obra - Mamposteria', 'MANO DE OBRA', 91, 0),
-('MO_ACABADOS', 'Mano de Obra - Acabados', 'MANO DE OBRA', 92, 0),
-('MO_INSTALACIONES', 'Mano de Obra - Instalaciones', 'MANO DE OBRA', 93, 0),
-('MO_CIMENTACION', 'Mano de Obra - Cimentacion', 'MANO DE OBRA', 94, 0),
-('MO_EXCAVACIONES', 'Mano de Obra - Excavaciones', 'MANO DE OBRA', 95, 0),
-('MO_URBANISMO', 'Mano de Obra - Urbanismo', 'MANO DE OBRA', 96, 0),
+('ESTRUCTURA', 'Mano de Obra - Estructura', 'MANO DE OBRA', 90, 0),
+('ACABADOS', 'Mano de Obra - Acabados', 'MANO DE OBRA', 92, 0),
+('INSTALACIONES', 'Mano de Obra - Instalaciones', 'MANO DE OBRA', 93, 0),
+('CIMENTACION', 'Mano de Obra - Cimentacion', 'MANO DE OBRA', 94, 0),
+('URBANISMO', 'Mano de Obra - Urbanismo', 'MANO DE OBRA', 96, 0),
 
 ('BOMBA_CONCRETO', 'Bomba de Concreto', 'EQUIPOS', 100, 0),
 ('TORREGRUA', 'Torregrua', 'EQUIPOS', 101, 0),
@@ -276,7 +274,7 @@ FROM (
     UNION ALL SELECT 'PRELIMINARES', '/PRELIMINAR|CERRAMIENTO.*PROVISIONAL|CERRAMIENTOS|REPLANTEO|LOCALIZACION.*REPLANTEO/u', 'Suministro', 80, 70, 'Preliminares genericos'
 
     UNION ALL SELECT 'EXCAVACION_MANUAL', '/EXCAVACION.*MANUAL|MANUAL.*EXCAVACION|EXCAVADO.*MANO|EXCAVADA.*MANO/u', 'Suministro', 95, 120, 'Excavacion manual'
-    UNION ALL SELECT 'EXCAVACIONES', '/EXCAVACION|EXCAVACIONES|MOVIMIENTO.*TIERRA|LLENO|LLENOS|RELLENO|TERRAPLEN|CORTE.*TIERRA/u', 'Suministro', 88, 90, 'Excavaciones y movimiento de tierra'
+    UNION ALL SELECT 'EXCAVACIONES', '/EXCAVACION|EXCAVACIONES|MOVIMIENTO.*TIERRA|LLENO|LLENOS|RELLENO|TERRAPLEN|CORTE.*TIERRA|PERFILACION/u', 'Suministro', 88, 90, 'Excavaciones y movimiento de tierra'
     UNION ALL SELECT 'PILAS_MECANICAS', '/PILA.*MECANICA|PILAS.*MECANICAS|CAISSON.*MECANICO/u', 'Suministro', 95, 120, 'Pilas mecanicas'
     UNION ALL SELECT 'PILAS_EXCAVADAS', '/PILA.*EXCAVADA|PILAS.*EXCAVADAS|PILA.*MANO|CAISSON.*MANO/u', 'Suministro', 95, 120, 'Pilas excavadas'
     UNION ALL SELECT 'PILOTEAJE', '/PILOTE|PILOTES|PILOTEAJE|MICROPILOTE|MICROPILOTES/u', 'Suministro', 92, 110, 'Piloteaje'
@@ -334,13 +332,11 @@ FROM (
     UNION ALL SELECT 'MOBILIARIO', '/MOBILIARIO|BANCA|BANCAS|CANECAS|PAPELERA|BOLARDOS|JUEGOS.*INFANTILES/u', 'Suministro e Instalación', 84, 90, 'Mobiliario urbano'
     UNION ALL SELECT 'VIAS_PAVIMENTOS', '/VIA|VIAS|PAVIMENTO|PAVIMENTOS|ASFALTO|CARPETA.*ASFALTICA|SUBBASE|BASE.*GRANULAR|BORDILLO|ANDEN/u', 'Suministro e Instalación', 88, 100, 'Vias y pavimentos'
 
-    UNION ALL SELECT 'MO_CIMENTACION', '/MO.*CIMENTACION|MANO.*OBRA.*CIMENTACION|CUADRILLA.*CIMENTACION/u', 'Mano de Obra', 90, 120, 'MO cimentacion'
-    UNION ALL SELECT 'MO_EXCAVACIONES', '/MO.*EXCAVACION|MANO.*OBRA.*EXCAVACION|CUADRILLA.*EXCAVACION/u', 'Mano de Obra', 90, 120, 'MO excavaciones'
-    UNION ALL SELECT 'MO_ESTRUCTURA', '/MO.*ESTRUCTURA|MANO.*OBRA.*ESTRUCTURA|CUADRILLA.*ESTRUCTURA/u', 'Mano de Obra', 90, 110, 'MO estructura'
-    UNION ALL SELECT 'MO_MAMPOSTERIA', '/MO.*MAMPOSTERIA|MANO.*OBRA.*MAMPOSTERIA|CUADRILLA.*MAMPOSTERIA/u', 'Mano de Obra', 90, 110, 'MO mamposteria'
-    UNION ALL SELECT 'MO_INSTALACIONES', '/MO.*INSTALACION|MANO.*OBRA.*INSTALACION|CUADRILLA.*INSTALACION/u', 'Mano de Obra', 88, 100, 'MO instalaciones'
-    UNION ALL SELECT 'MO_URBANISMO', '/MO.*URBANISMO|MANO.*OBRA.*URBANISMO|CUADRILLA.*URBANISMO/u', 'Mano de Obra', 88, 100, 'MO urbanismo'
-    UNION ALL SELECT 'MO_ACABADOS', '/MO.*ACABADOS|MANO.*OBRA.*ACABADOS|MO.*REVOQUE|MO.*PINTURA|MO.*ENCHAPE|CUADRILLA.*ACABADOS/u', 'Mano de Obra', 88, 90, 'MO acabados'
+    UNION ALL SELECT 'CIMENTACION', '/MO.*CIMENTACION|MANO.*OBRA.*CIMENTACION|CUADRILLA.*CIMENTACION/u', 'Mano de Obra', 90, 120, 'MO cimentacion'
+    UNION ALL SELECT 'ESTRUCTURA', '/MO.*ESTRUCTURA|MANO.*OBRA.*ESTRUCTURA|CUADRILLA.*ESTRUCTURA/u', 'Mano de Obra', 90, 110, 'MO estructura'
+    UNION ALL SELECT 'INSTALACIONES', '/MO.*INSTALACION|MANO.*OBRA.*INSTALACION|CUADRILLA.*INSTALACION/u', 'Mano de Obra', 88, 100, 'MO instalaciones'
+    UNION ALL SELECT 'URBANISMO', '/MO.*URBANISMO|MANO.*OBRA.*URBANISMO|CUADRILLA.*URBANISMO|^URBANISMO$/u', 'Mano de Obra', 88, 100, 'MO urbanismo'
+    UNION ALL SELECT 'ACABADOS', '/MO.*ACABADOS|MANO.*OBRA.*ACABADOS|MO.*REVOQUE|MO.*PINTURA|MO.*ENCHAPE|CUADRILLA.*ACABADOS/u', 'Mano de Obra', 88, 90, 'MO acabados'
 
     UNION ALL SELECT 'BOMBA_CONCRETO', '/BOMBA.*CONCRETO|BOMBEO.*CONCRETO|LANZADORA.*CONCRETO/u', 'Suministro e Instalación', 95, 120, 'Bomba concreto'
     UNION ALL SELECT 'TORREGRUA', '/TORREGRUA|TORRE.*GRUA|GRUA.*TORRE/u', 'Suministro e Instalación', 95, 120, 'Torregrua'
@@ -406,9 +402,9 @@ FROM (
     UNION ALL SELECT 'NOMENCLATURA', '/SENAL.*VERTICAL|SENAL.*HORIZONTAL|DEMARCACION|PLACAS.*NOMENCLATURA/u', 'Suministro e Instalación', 88, 105, 'Senalizacion variantes'
     UNION ALL SELECT 'VIAS_PAVIMENTOS', '/ANDENES|SARDINEL|BORDILLOS|ADOQUIN|ADOQUINES|PLACA.*HUELLA/u', 'Suministro e Instalación', 88, 100, 'Urbanismo pavimentos variantes'
 
-    UNION ALL SELECT 'MO_ACABADOS', '/MANO.*OBRA.*PINTURA|MANO.*OBRA.*REVOQUE|MANO.*OBRA.*ENCHAPE|MANO.*OBRA.*PISO/u', 'Mano de Obra', 90, 105, 'MO acabados especificos'
-    UNION ALL SELECT 'MO_ESTRUCTURA', '/CUADRILLA.*CONCRETO|CUADRILLA.*ACERO|MANO.*OBRA.*CONCRETO/u', 'Mano de Obra', 90, 105, 'MO estructura especifica'
-    UNION ALL SELECT 'MO_INSTALACIONES', '/MANO.*OBRA.*ELECTRICA|MANO.*OBRA.*HIDROSANITARIA|MANO.*OBRA.*GAS/u', 'Mano de Obra', 90, 105, 'MO instalaciones especifica'
+    UNION ALL SELECT 'ACABADOS', '/MANO.*OBRA.*PINTURA|MANO.*OBRA.*REVOQUE|MANO.*OBRA.*ENCHAPE|MANO.*OBRA.*PISO/u', 'Mano de Obra', 90, 105, 'MO acabados especificos'
+    UNION ALL SELECT 'ESTRUCTURA', '/CUADRILLA.*CONCRETO|CUADRILLA.*ACERO|MANO.*OBRA.*CONCRETO/u', 'Mano de Obra', 90, 105, 'MO estructura especifica'
+    UNION ALL SELECT 'INSTALACIONES', '/MANO.*OBRA.*ELECTRICA|MANO.*OBRA.*HIDROSANITARIA|MANO.*OBRA.*GAS/u', 'Mano de Obra', 90, 105, 'MO instalaciones especifica'
 
     UNION ALL SELECT 'BOMBA_CONCRETO', '/SERVICIO.*BOMBEO|BOMBEO.*PREMEZCLADO/u', 'Suministro e Instalación', 92, 110, 'Bombeo concreto sinonimos'
     UNION ALL SELECT 'TORREGRUA', '/GRUA.*TORRE|TORRE.*GRUA.*ALQUILER/u', 'Suministro e Instalación', 92, 110, 'Torregrua sinonimos'
@@ -496,13 +492,11 @@ FROM (
     UNION ALL SELECT 'MOBILIARIO', 2, 'Suministro e Instalación', 8, 7, 5, 10, 0, 0, 'Mobiliario urbano SI'
     UNION ALL SELECT 'VIAS_PAVIMENTOS', 2, 'Suministro e Instalación', 8, 7, 5, 10, 0, 0, 'Vias y pavimentos SI'
 
-    UNION ALL SELECT 'MO_ESTRUCTURA', 1, 'Mano de Obra', 10, 15, 10, 20, 30, 0, 'Mano de obra estructura'
-    UNION ALL SELECT 'MO_MAMPOSTERIA', 1, 'Mano de Obra', 10, 15, 10, 20, 30, 0, 'Mano de obra mamposteria'
-    UNION ALL SELECT 'MO_ACABADOS', 1, 'Mano de Obra', 10, 15, 10, 20, 30, 0, 'Mano de obra acabados'
-    UNION ALL SELECT 'MO_INSTALACIONES', 1, 'Mano de Obra', 10, 15, 10, 20, 30, 0, 'Mano de obra instalaciones'
-    UNION ALL SELECT 'MO_CIMENTACION', 1, 'Mano de Obra', 10, 15, 10, 20, 30, 0, 'Mano de obra cimentacion'
-    UNION ALL SELECT 'MO_EXCAVACIONES', 1, 'Mano de Obra', 10, 15, 10, 20, 30, 0, 'Mano de obra excavaciones'
-    UNION ALL SELECT 'MO_URBANISMO', 1, 'Mano de Obra', 10, 15, 10, 20, 30, 0, 'Mano de obra urbanismo'
+    UNION ALL SELECT 'ESTRUCTURA', 1, 'Mano de Obra', 10, 15, 10, 20, 30, 0, 'Mano de obra estructura'
+    UNION ALL SELECT 'ACABADOS', 1, 'Mano de Obra', 10, 15, 10, 20, 30, 0, 'Mano de obra acabados'
+    UNION ALL SELECT 'INSTALACIONES', 1, 'Mano de Obra', 10, 15, 10, 20, 30, 0, 'Mano de obra instalaciones'
+    UNION ALL SELECT 'CIMENTACION', 1, 'Mano de Obra', 10, 15, 10, 20, 30, 0, 'Mano de obra cimentacion'
+    UNION ALL SELECT 'URBANISMO', 1, 'Mano de Obra', 10, 15, 10, 20, 30, 0, 'Mano de obra urbanismo'
 
     UNION ALL SELECT 'BOMBA_CONCRETO', 2, 'Suministro e Instalación', 10, 15, 10, 20, 30, 0, 'Bomba concreto'
     UNION ALL SELECT 'TORREGRUA', 2, 'Suministro e Instalación', 10, 15, 10, 20, 30, 0, 'Torregrua'
@@ -625,13 +619,11 @@ FROM (
     UNION ALL SELECT 'MOBILIARIO', 'Suministro e Instalación', 2, 'Suministro e Instalación', 'MOBILIARIO URBANO', 'MOBILIARIO%', 1
     UNION ALL SELECT 'VIAS_PAVIMENTOS', 'Suministro e Instalación', 2, 'Suministro e Instalación', 'VIAS Y PAVIMENTOS', 'PAVIMENTOS%', 1
 
-    UNION ALL SELECT 'MO_ESTRUCTURA', 'Mano de Obra', 1, 'Mano de Obra', 'MANO DE OBRA ESTRUCTURA', 'MANO DE OBRA ESTRUCTURA%', 1
-    UNION ALL SELECT 'MO_MAMPOSTERIA', 'Mano de Obra', 1, 'Mano de Obra', 'MANO DE OBRA MAMPOSTERIA', 'MANO DE OBRA MAMPOSTERIA%', 1
-    UNION ALL SELECT 'MO_ACABADOS', 'Mano de Obra', 1, 'Mano de Obra', 'MANO DE OBRA ACABADOS', 'MANO DE OBRA ACABADOS%', 1
-    UNION ALL SELECT 'MO_INSTALACIONES', 'Mano de Obra', 1, 'Mano de Obra', 'MANO DE OBRA INSTALACIONES', 'MANO DE OBRA INSTALACIONES%', 1
-    UNION ALL SELECT 'MO_CIMENTACION', 'Mano de Obra', 1, 'Mano de Obra', 'MANO DE OBRA CIMENTACION', 'MANO DE OBRA CIMENTACION%', 1
-    UNION ALL SELECT 'MO_EXCAVACIONES', 'Mano de Obra', 1, 'Mano de Obra', 'MANO DE OBRA EXCAVACIONES', 'MANO DE OBRA EXCAVACIONES%', 1
-    UNION ALL SELECT 'MO_URBANISMO', 'Mano de Obra', 1, 'Mano de Obra', 'MANO DE OBRA URBANISMO', 'MANO DE OBRA URBANISMO%', 1
+    UNION ALL SELECT 'ESTRUCTURA', 'Mano de Obra', 1, 'Mano de Obra', 'MANO DE OBRA ESTRUCTURA', 'MANO DE OBRA ESTRUCTURA%', 1
+    UNION ALL SELECT 'ACABADOS', 'Mano de Obra', 1, 'Mano de Obra', 'MANO DE OBRA ACABADOS', 'MANO DE OBRA ACABADOS%', 1
+    UNION ALL SELECT 'INSTALACIONES', 'Mano de Obra', 1, 'Mano de Obra', 'MANO DE OBRA INSTALACIONES', 'MANO DE OBRA INSTALACIONES%', 1
+    UNION ALL SELECT 'CIMENTACION', 'Mano de Obra', 1, 'Mano de Obra', 'MANO DE OBRA CIMENTACION', 'MANO DE OBRA CIMENTACION%', 1
+    UNION ALL SELECT 'URBANISMO', 'Mano de Obra', 1, 'Mano de Obra', 'MANO DE OBRA URBANISMO', 'MANO DE OBRA URBANISMO%', 1
 
     UNION ALL SELECT 'BOMBA_CONCRETO', 'Suministro e Instalación', 2, 'Suministro e Instalación', 'BOMBA DE CONCRETO', 'BOMBA DE CONCRETO%', 1
     UNION ALL SELECT 'TORREGRUA', 'Suministro e Instalación', 2, 'Suministro e Instalación', 'TORREGRUA', 'TORREGR%A%', 1
