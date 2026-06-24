@@ -453,7 +453,17 @@ class Project
               `MO4` varchar(200) DEFAULT NULL,
               `paqueteMO4` varchar(200) DEFAULT NULL,
               `MO5` varchar(200) DEFAULT NULL,
-              `paqueteMO5` varchar(200) DEFAULT NULL
+              `paqueteMO5` varchar(200) DEFAULT NULL,
+              `OC1` varchar(200) DEFAULT NULL,
+              `paqueteOC1` varchar(200) DEFAULT NULL,
+              `OC2` varchar(200) DEFAULT NULL,
+              `paqueteOC2` varchar(200) DEFAULT NULL,
+              `OC3` varchar(200) DEFAULT NULL,
+              `paqueteOC3` varchar(200) DEFAULT NULL,
+              `OC4` varchar(200) DEFAULT NULL,
+              `paqueteOC4` varchar(200) DEFAULT NULL,
+              `OC5` varchar(200) DEFAULT NULL,
+              `paqueteOC5` varchar(200) DEFAULT NULL
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci",
 
             // milanCampestre_cambios

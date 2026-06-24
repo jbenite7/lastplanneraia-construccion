@@ -1627,14 +1627,17 @@ table.dataTable tbody tr.pdc-header:hover td {
 
 /* Buttons - Pill Shape */
 .btn {
-  border-radius: 999px !important; /* Pill shape */
-  padding: 0.6em 1.25em;
+  border-radius: 14px !important;
+  padding: 0.45rem 1rem;
   font-weight: 500;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   letter-spacing: -0.01em;
+  line-height: 1.4;
   transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  border: none;
+  border: 1px solid transparent;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  text-transform: none !important; /* No caps lock style */
+  text-transform: none !important;
+  gap: 5px;
 }
 
 .btn:hover {
@@ -1646,37 +1649,63 @@ table.dataTable tbody tr.pdc-header:hover td {
   transform: scale(0.97);
 }
 
-/* Button Variants */
+/* Button Variants - AIA Brand Colors (Color Theory) */
 .btn-primary {
-  background-color: var(--primary) !important;
+  background-color: var(--aia-green-primary) !important;
+  border-color: var(--aia-green-dark) !important;
   color: white !important;
 }
 .btn-primary:hover {
-  background-color: var(--primary-dark) !important;
+  background-color: var(--aia-green-dark) !important;
 }
 
 .btn-success {
-  background-color: var(--status-ok) !important;
+  background-color: var(--aia-green-medium) !important;
+  border-color: var(--aia-green-primary) !important;
+  color: white !important;
+}
+.btn-success:hover {
+  background-color: var(--aia-green-primary) !important;
 }
 
 .btn-danger {
-  background-color: var(--status-critical) !important;
+  background-color: var(--aia-alert-high) !important;
+  border-color: var(--aia-alert-critical) !important;
+  color: white !important;
+}
+.btn-danger:hover {
+  background-color: var(--aia-alert-critical) !important;
 }
 
 .btn-warning {
-  background-color: var(--status-warning) !important;
-  color: white !important;
+  background-color: var(--aia-warning-high) !important;
+  border-color: var(--aia-warning-critical) !important;
+  color: var(--aia-text-primary) !important;
+}
+.btn-warning:hover {
+  background-color: var(--aia-warning-medium) !important;
 }
 
 .btn-info {
-  background-color: var(--status-attention) !important;
+  background-color: var(--aia-blue-primary) !important;
+  border-color: var(--aia-blue-dark) !important;
   color: white !important;
+}
+.btn-info:hover {
+  background-color: var(--aia-blue-dark) !important;
 }
 
 .btn-secondary,
 .btn-light {
-  background-color: rgba(0, 0, 0, 0.05) !important;
-  color: var(--text-main) !important;
+  background-color: #ffffff !important;
+  border: 1px solid var(--aia-separators) !important;
+  color: var(--aia-text-primary) !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+.btn-secondary:hover,
+.btn-light:hover {
+  background-color: var(--aia-bg-secondary) !important;
+  border-color: var(--aia-text-tertiary) !important;
 }
 
 /* Modals - Glass & Radius */
@@ -2244,11 +2273,14 @@ table.dataTable thead th {
   font-size: 0.95rem !important; /* Approx 15px */
 }
 
-/* Larger Buttons */
+/* Apple-style Standardized Button Sizes */
 .btn,
 .btn-sm,
 .btn-group-sm > .btn {
-  font-size: 0.95rem !important;
+  font-size: 0.9rem !important;
+}
+.btn-lg {
+  font-size: 1rem !important;
 }
 
 /* Larger Legend Items - Comentado para permitir la unificación de legend-items en Fase D
@@ -3384,7 +3416,19 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
 .filaBotones .ps-toolbar-nav-wrap .btn-group {
   display: flex;
   align-items: center;
-  gap: 0.375rem;
+  gap: 1px; /* minimal gap for connected look */
+}
+
+.filaBotones .ps-toolbar-nav-wrap .btn-group > .btn:first-child:not(:last-child) {
+  border-radius: 14px 0 0 14px !important;
+}
+
+.filaBotones .ps-toolbar-nav-wrap .btn-group > .btn:last-child:not(:first-child) {
+  border-radius: 0 14px 14px 0 !important;
+}
+
+.filaBotones .ps-toolbar-nav-wrap .btn-group > .btn:not(:first-child):not(:last-child) {
+  border-radius: 0 !important;
 }
 
 .filaBotones .ps-toolbar-nav-wrap .grupo_botones_semanal .btn.btn-success {
@@ -3396,7 +3440,7 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
 .filaBotones .ps-toolbar-nav-wrap .btn-group > .btn,
 .filaBotones .ps-toolbar-nav-wrap .btn-group > .btn:not(:first-child) {
   margin-left: 0 !important;
-  border-radius: var(--radius-sm);
+  border-radius: 14px;
 }
 
 .filaBotones .ps-toolbar-actions .btn,
@@ -3409,7 +3453,7 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
   align-items: center;
   justify-content: center;
   gap: var(--ps-btn-gap-inline);
-  border-radius: 999px;
+  border-radius: 14px;
   font-weight: 600;
   letter-spacing: 0.01em;
   border: 1px solid transparent;

@@ -489,11 +489,13 @@ class SemanalApiController
 
     private function jsonResponse(string $res): void
     {
+        header('Content-Type: application/json; charset=utf-8');
         echo json_encode(["respuesta" => $res], JSON_UNESCAPED_UNICODE);
     }
 
     private function jsonError(string $msg): void
     {
+        header('Content-Type: application/json; charset=utf-8');
         echo json_encode(["respuesta" => "ERROR", "mensaje" => $msg], JSON_UNESCAPED_UNICODE);
     }
 
@@ -885,7 +887,7 @@ class SemanalApiController
     private function tnp(string $dbPrefix, int $semana): void
     {
         $consecutivo = filter_input(INPUT_POST, 'Consecutivo', FILTER_VALIDATE_INT);
-        $id = filter_input(INPUT_POST, 'Id', FILTER_VALIDATE_INT);
+        $id = trim($_POST['Id'] ?? '');
         $ejecutadoReal = filter_input(INPUT_POST, 'Ejecutado_Real', FILTER_VALIDATE_FLOAT);
         $categoriaCp = trim($_POST['Categoria_CP'] ?? '');
         $cp = trim($_POST['CP'] ?? '');
@@ -903,45 +905,57 @@ class SemanalApiController
 
         try {
             if ($consecutivo) {
-                $query = "UPDATE {$dbPrefix}_programacion_semanal SET 
-                    Ejecutado_Real = ?, Es_TNP = 1, Categoria_CP = ?, CP = ?, 
-                    Observaciones_CP = ?, PAC = NULL
-                    WHERE Consecutivo = ? AND Semana = ?";
-                $res = $this->db->query($query, [
-                    $ejecutadoReal, $categoriaCp, $cp, $observacionesCp,
-                    $consecutivo, $semana,
-                ]);
-            } else {
-                $pgData = $this->db->query(
-                    "SELECT * FROM {$dbPrefix}_programa_consolidado WHERE Id = ? AND Semana = ?",
-                    [$id, $semana],
-                )->fetch(PDO::FETCH_ASSOC);
+                // Try UPDATE first — if matching row exists in programacion_semanal
+                $stmt = $this->db->query(
+                    "SELECT COUNT(*) FROM {$dbPrefix}_programacion_semanal WHERE Consecutivo_En_Programa = ? AND Semana = ?",
+                    [$consecutivo, $semana],
+                );
+                $exists = (int) $stmt->fetchColumn();
 
-                if (!$pgData) {
-                    $this->jsonError("Actividad no encontrada en Programa Consolidado");
+                if ($exists > 0) {
+                    $this->db->query(
+                        "UPDATE {$dbPrefix}_programacion_semanal SET 
+                         Ejecutado_Real = ?, Es_TNP = 1, Categoria_CP = ?, CP = ?, 
+                         Observaciones_CP = ?, PAC = NULL
+                         WHERE Consecutivo_En_Programa = ? AND Semana = ?",
+                        [$ejecutadoReal, $categoriaCp, $cp, $observacionesCp,
+                         $consecutivo, $semana],
+                    );
+                    $this->jsonResponse("BIEN");
                     return;
                 }
-
-                $maxCon = $this->db->query(
-                    "SELECT MAX(Consecutivo) as maxCon FROM {$dbPrefix}_programacion_semanal WHERE Semana = ?",
-                    [$semana],
-                )->fetch(PDO::FETCH_ASSOC);
-                $nextConsecutivo = ($maxCon['maxCon'] ?? 0) + 1;
-
-                $queryInsert = "INSERT INTO {$dbPrefix}_programacion_semanal 
-                    (Consecutivo, Semana, Id_Actividad, Actividad, Unidad, Cuantia, 
-                     Compromiso, Ejecutado_Real, Activa, Es_TNP, Categoria_CP, CP, Observaciones_CP,
-                     PAC, Sub_Contratista, Responsable_AIA, Frente)
-                    VALUES (?, ?, ?, ?, ?, ?, NULL, ?, '1', 1, ?, ?, ?, NULL, ?, ?, ?)";
-                $res = $this->db->query($queryInsert, [
-                    $nextConsecutivo, $semana,
-                    $pgData['Id'] ?? null, $pgData['Actividad'] ?? '', $pgData['Unidad'] ?? '',
-                    $pgData['Cuantia'] ?? 0, $ejecutadoReal,
-                    $categoriaCp, $cp, $observacionesCp,
-                    $pgData['Sub_Contratista'] ?? null, $pgData['Responsable_AIA'] ?? null,
-                    $pgData['Frente'] ?? null,
-                ]);
             }
+
+            // INSERT — activity not in programacion_semanal
+            $pgData = $this->db->query(
+                "SELECT * FROM {$dbPrefix}_programa_consolidado WHERE Id = ? AND Semana = ?",
+                [$id, $semana],
+            )->fetch(PDO::FETCH_ASSOC);
+
+            if (!$pgData) {
+                $this->jsonError("Actividad no encontrada en Programa Consolidado");
+                return;
+            }
+
+            $maxCon = $this->db->query(
+                "SELECT MAX(Consecutivo) as maxCon FROM {$dbPrefix}_programacion_semanal WHERE Semana = ?",
+                [$semana],
+            )->fetch(PDO::FETCH_ASSOC);
+            $nextConsecutivo = ($maxCon['maxCon'] ?? 0) + 1;
+
+            $this->db->query(
+                "INSERT INTO {$dbPrefix}_programacion_semanal 
+                 (Consecutivo, Semana, Consecutivo_En_Programa, Id, Actividad, Unidad, cantidad_ppto,
+                  Compromiso, Ejecutado_Real, Activa, Es_TNP, Categoria_CP, CP, Observaciones_CP,
+                  PAC, Sub_Contratista, Responsable_AIA)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, NULL, ?, '1', 1, ?, ?, ?, NULL, ?, ?)",
+                [$nextConsecutivo, $semana,
+                 $consecutivo ?: ($pgData['Consecutivo_en_Programa'] ?? null),
+                 $pgData['Id'] ?? null, $pgData['Actividad'] ?? '', $pgData['Unidad'] ?? '',
+                 $pgData['Cuantia'] ?? $pgData['cantidad_ppto'] ?? 0, $ejecutadoReal,
+                 $categoriaCp, $cp, $observacionesCp,
+                 $pgData['Sub_Contratista'] ?? null, $pgData['Responsable_AIA'] ?? null,
+            ]);
 
             $this->jsonResponse("BIEN");
         } catch (Throwable $t) {
@@ -983,8 +997,8 @@ class SemanalApiController
                     WHERE pc.Semana = ? AND pc.Titulo = 0
                       AND pc.Semanas_Inicio <= 12
                       AND pc.Semanas_Inicio >= 1
-                      AND pc.Activa = 0
                       AND pc.Ejecutado = 0
+                      AND (pc.Activa = 0 OR ps.Consecutivo_En_Programa IS NULL)
                     ORDER BY previamente_programada DESC, pc.codigo_actividad ASC";
 
             $stmt = $this->db->query($query, [$semana, $semana]);

@@ -14,7 +14,7 @@
     <!-- AdminLTE / Bootstrap -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.4.24/sweetalert2.min.css">
-    <link rel="stylesheet" href="/css/login-brand-unified.css?v=1.2">
+    <link rel="stylesheet" href="/css/login-brand-unified.css?v=1.3">
 </head>
 <body class="hold-transition login-page login-brand-page">
 

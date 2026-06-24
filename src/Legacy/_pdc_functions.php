@@ -1,11 +1,12 @@
 <?php
 
-function pdc_insertarPaquetes($db, $dbName, $semana, $cvSI, $cvS, $cvMO)
+function pdc_insertarPaquetes($db, $dbName, $semana, $cvSI, $cvS, $cvMO, $cvOC = '')
 {
     $tipos = [
         ['Suministro e Instalación', 'SI', 2],
         ['Mano de Obra', 'MO', 1],
         ['Suministro', 'S', 1],
+        ['Orden de Compra', 'OC', 1],
     ];
 
     foreach ($tipos as $t) {
@@ -20,6 +21,8 @@ function pdc_insertarPaquetes($db, $dbName, $semana, $cvSI, $cvS, $cvMO)
             $whereClause = $cvS;
         } elseif ($prefix === 'MO') {
             $whereClause = $cvMO;
+        } elseif ($prefix === 'OC') {
+            $whereClause = $cvOC;
         }
 
         $sqlInsert = <<<SQL

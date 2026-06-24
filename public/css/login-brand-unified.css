@@ -136,7 +136,7 @@
   body.login-brand-page .btn-aia,
   body.login-brand-page .btn-primary {
     min-height: 3rem;
-    border-radius: var(--aia-radius-md);
+    border-radius: 14px !important;
     border: 1px solid var(--aia-brand);
     background: linear-gradient(180deg, oklch(46% 0.11 152), var(--aia-brand));
     color: oklch(99% 0 0) !important;

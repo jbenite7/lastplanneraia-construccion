@@ -99,6 +99,138 @@
     color: var(--aia-alert-critical);
   }
 
+  /* ========================================
+     APPLE-STYLE BUTTONS (Admin)
+     ======================================== */
+
+  /* Admin Button Radius System */
+  .btn {
+    border-radius: 14px !important;
+  }
+
+  .btn-sm {
+    border-radius: 10px !important;
+  }
+
+  .btn-xs {
+    border-radius: 10px !important;
+  }
+
+  .btn-lg {
+    border-radius: 18px !important;
+  }
+
+  /* Primary - AIA Architecture Blue (for admin) */
+  .btn-primary {
+    background-color: var(--aia-blue-primary) !important;
+    border-color: var(--aia-blue-dark) !important;
+    color: white !important;
+    border-radius: 14px !important;
+  }
+  .btn-primary:hover,
+  .btn-primary:first-child:active {
+    background-color: var(--aia-blue-dark) !important;
+    border-color: var(--aia-blue-dark) !important;
+    color: white !important;
+  }
+
+  /* Success - AIA Green */
+  .btn-success {
+    background-color: var(--aia-green-medium) !important;
+    border-color: var(--aia-green-primary) !important;
+    color: white !important;
+  }
+  .btn-success:hover {
+    background-color: var(--aia-green-primary) !important;
+  }
+
+  /* Danger - Alert Red */
+  .btn-danger {
+    background-color: var(--aia-alert-high) !important;
+    border-color: var(--aia-alert-critical) !important;
+    color: white !important;
+  }
+  .btn-danger:hover {
+    background-color: var(--aia-alert-critical) !important;
+  }
+
+  /* Warning - Yellow */
+  .btn-warning {
+    background-color: var(--aia-warning-high) !important;
+    border-color: var(--aia-warning-critical) !important;
+    color: var(--aia-text-primary) !important;
+  }
+
+  /* Info - Blue */
+  .btn-info {
+    background-color: var(--aia-blue-primary) !important;
+    border-color: var(--aia-blue-dark) !important;
+    color: white !important;
+  }
+  .btn-info:hover {
+    background-color: var(--aia-blue-dark) !important;
+  }
+
+  /* Secondary / Default */
+  .btn-default {
+    background-color: #ffffff !important;
+    border: 1px solid var(--aia-separators) !important;
+    color: var(--aia-text-primary) !important;
+  }
+  .btn-default:hover {
+    background-color: var(--aia-bg-secondary) !important;
+  }
+
+  /* Outline variants */
+  .btn-outline-primary {
+    border: 1.5px solid var(--aia-blue-primary) !important;
+    color: var(--aia-blue-primary) !important;
+    background-color: transparent !important;
+  }
+  .btn-outline-primary:hover {
+    background-color: var(--aia-blue-primary) !important;
+    color: white !important;
+  }
+
+  .btn-outline-secondary {
+    border: 1.5px solid var(--aia-separators) !important;
+    color: var(--aia-text-secondary) !important;
+  }
+  .btn-outline-secondary:hover {
+    background-color: var(--aia-bg-secondary) !important;
+    color: var(--aia-text-primary) !important;
+  }
+
+  .btn-outline-danger {
+    border: 1.5px solid var(--aia-alert-high) !important;
+    color: var(--aia-alert-high) !important;
+  }
+  .btn-outline-danger:hover {
+    background-color: var(--aia-alert-high) !important;
+    color: white !important;
+  }
+
+  /* Login button (.btn-aia) - AIA Green */
+  body.login-brand-page .btn-aia,
+  body.login-brand-page .btn-primary {
+    min-height: 3rem;
+    border-radius: 14px !important;
+    border: 1px solid var(--aia-green-primary);
+    background: var(--aia-green-primary);
+    color: oklch(99% 0 0) !important;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    transition: transform 0.18s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  }
+  body.login-brand-page .btn-aia:hover,
+  body.login-brand-page .btn-primary:hover {
+    border-color: var(--aia-green-dark);
+    background: var(--aia-green-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 10px 20px oklch(35% 0.08 152 / 0.22);
+  }
+
   /* Dashboard Specifics */
   .tooltip-inner {
     max-width: 350px !important;

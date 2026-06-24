@@ -40,11 +40,12 @@ try {
             $contratosVigentesSI = "";
             $contratosVigentesS = "";
             $contratosVigentesMO = "";
+            $contratosVigentesOC = "";
 
             $sqlDelete = "DELETE FROM {$dbName}_pdc WHERE (titulo = 1 AND semana = ?) OR (titulo = 0 AND fechaInicio IS NULL AND semana = ?)";
             $db->query($sqlDelete, [$semana, $semana]);
 
-            pdc_insertarPaquetes($db, $dbName, $semana, $contratosVigentesSI, $contratosVigentesS, $contratosVigentesMO);
+            pdc_insertarPaquetes($db, $dbName, $semana, $contratosVigentesSI, $contratosVigentesS, $contratosVigentesMO, $contratosVigentesOC);
 
             sleep(1);
             pdc_generarEstadoProceso($db, $dbName, $semana);
@@ -69,11 +70,16 @@ FROM (SELECT DISTINCT paqueteSI1 AS paqueteContratacion, 'Suministro e Instalaci
             UNION SELECT DISTINCT paqueteS2 AS paqueteContratacion, 'Suministro' AS tipoPaquete FROM {$dbName}_actividades WHERE fechaInicio IS NOT NULL AND semanaActualizacion = ? AND paqueteS2 IS NOT NULL AND paqueteS2 != ''
             UNION SELECT DISTINCT paqueteS3 AS paqueteContratacion, 'Suministro' AS tipoPaquete FROM {$dbName}_actividades WHERE fechaInicio IS NOT NULL AND semanaActualizacion = ? AND paqueteS3 IS NOT NULL AND paqueteS3 != ''
             UNION SELECT DISTINCT paqueteS4 AS paqueteContratacion, 'Suministro' AS tipoPaquete FROM {$dbName}_actividades WHERE fechaInicio IS NOT NULL AND semanaActualizacion = ? AND paqueteS4 IS NOT NULL AND paqueteS4 != ''
-            UNION SELECT DISTINCT paqueteS5 AS paqueteContratacion, 'Suministro' AS tipoPaquete FROM {$dbName}_actividades WHERE fechaInicio IS NOT NULL AND semanaActualizacion = ? AND paqueteS5 IS NOT NULL AND paqueteS5 != '')
+            UNION SELECT DISTINCT paqueteS5 AS paqueteContratacion, 'Suministro' AS tipoPaquete FROM {$dbName}_actividades WHERE fechaInicio IS NOT NULL AND semanaActualizacion = ? AND paqueteS5 IS NOT NULL AND paqueteS5 != ''
+            UNION SELECT DISTINCT paqueteOC1 AS paqueteContratacion, 'Orden de Compra' AS tipoPaquete FROM {$dbName}_actividades WHERE fechaInicio IS NOT NULL AND semanaActualizacion = ? AND paqueteOC1 IS NOT NULL AND paqueteOC1 != ''
+            UNION SELECT DISTINCT paqueteOC2 AS paqueteContratacion, 'Orden de Compra' AS tipoPaquete FROM {$dbName}_actividades WHERE fechaInicio IS NOT NULL AND semanaActualizacion = ? AND paqueteOC2 IS NOT NULL AND paqueteOC2 != ''
+            UNION SELECT DISTINCT paqueteOC3 AS paqueteContratacion, 'Orden de Compra' AS tipoPaquete FROM {$dbName}_actividades WHERE fechaInicio IS NOT NULL AND semanaActualizacion = ? AND paqueteOC3 IS NOT NULL AND paqueteOC3 != ''
+            UNION SELECT DISTINCT paqueteOC4 AS paqueteContratacion, 'Orden de Compra' AS tipoPaquete FROM {$dbName}_actividades WHERE fechaInicio IS NOT NULL AND semanaActualizacion = ? AND paqueteOC4 IS NOT NULL AND paqueteOC4 != ''
+            UNION SELECT DISTINCT paqueteOC5 AS paqueteContratacion, 'Orden de Compra' AS tipoPaquete FROM {$dbName}_actividades WHERE fechaInicio IS NOT NULL AND semanaActualizacion = ? AND paqueteOC5 IS NOT NULL AND paqueteOC5 != '')
 AS Tabla
 SQL;
 
-            $paramsVigentes = array_fill(0, 15, $semana);
+            $paramsVigentes = array_fill(0, 20, $semana);
             $stmtVigentes = $db->query($sqlVigentes, $paramsVigentes);
             $dataVigentes = $stmtVigentes->fetch();
             $contratosVigentes = $dataVigentes["contratos"] ?? '';
@@ -91,6 +97,7 @@ SQL;
             $contratosVigentesSI = "";
             $contratosVigentesS = "";
             $contratosVigentesMO = "";
+            $contratosVigentesOC = "";
 
             foreach ($actividadesPdc as $data) {
                 $queryUpdate = true;
@@ -109,6 +116,10 @@ SQL;
                     $tipoContrato = 1;
                     $grupo = "MO";
                     $contratosVigentesMO .= "SubAct.paqueteContratacion != " . $db->quote($paqueteContratacion) . " AND ";
+                } elseif ($tipoPaquete == "Orden de Compra") {
+                    $tipoContrato = 1;
+                    $grupo = "OC";
+                    $contratosVigentesOC .= "SubAct.paqueteContratacion != " . $db->quote($paqueteContratacion) . " AND ";
                 }
 
                 $sqlUpdate = "UPDATE {$dbName}_pdc SET 
@@ -152,7 +163,7 @@ SQL;
             }
 
             if (!$queryUpdate) {
-                pdc_insertarPaquetes($db, $dbName, $semana, $contratosVigentesSI, $contratosVigentesS, $contratosVigentesMO);
+                pdc_insertarPaquetes($db, $dbName, $semana, $contratosVigentesSI, $contratosVigentesS, $contratosVigentesMO, $contratosVigentesOC);
                 sleep(1);
                 pdc_crearSubcontratosDuplicados($db, $dbName, $semana);
                 pdc_generarEstadoProceso($db, $dbName, $semana);
@@ -167,8 +178,11 @@ SQL;
                 if ($contratosVigentesMO != "") {
                     $contratosVigentesMO = "WHERE " . rtrim($contratosVigentesMO, " AND ");
                 }
+                if ($contratosVigentesOC != "") {
+                    $contratosVigentesOC = "WHERE " . rtrim($contratosVigentesOC, " AND ");
+                }
 
-                pdc_insertarPaquetes($db, $dbName, $semana, $contratosVigentesSI, $contratosVigentesS, $contratosVigentesMO);
+                pdc_insertarPaquetes($db, $dbName, $semana, $contratosVigentesSI, $contratosVigentesS, $contratosVigentesMO, $contratosVigentesOC);
                 sleep(1);
                 pdc_crearSubcontratosDuplicados($db, $dbName, $semana);
                 pdc_generarEstadoProceso($db, $dbName, $semana);

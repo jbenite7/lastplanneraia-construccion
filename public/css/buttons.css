@@ -1,26 +1,735 @@
 @layer components {
-/* 
-   Scalable Toolbar V3 - Unified Sizing System
-   ALL buttons and inputs now share the same visual height and consistent spacing
-*/
+/* ================================================================
+   AIA Button Design System
+   Apple-Style Rounded Corners + AIA Brand Colors (OKLCH)
+   
+   Color Theory:
+     Green  = Primary, Trust, Corporate
+     Orange = Construction, Energy, Action
+     Blue   = Architecture, Info, Admin
+     Red    = Danger, Destructive
+     Yellow = Warning, Caution
+   
+   Border Radius (Apple iOS 16+ rounded rect):
+     Standard:  14px
+     Small:     10px
+     Large:     18px
+     Pill:      999px (chips/badges only)
+   ================================================================ */
 
-/* ========================================
-   CONSISTENT SIZING SYSTEM
-   ======================================== */
 
-/* Define consistent height and font size for ALL interactive elements */
+/* ================================================================
+   1. BASE BUTTON — Foundation
+   ================================================================ */
+
+.btn {
+  /* Typography */
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight: 500;
+  font-size: 0.85rem;
+  letter-spacing: -0.01em;
+  line-height: 1.5;
+
+  /* Apple-style border radius */
+  border-radius: 14px !important;
+
+  /* Layout */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 0.45em 1em;
+  white-space: nowrap;
+
+  /* Appearance */
+  border: none;
+  box-shadow: 0 1px 2px oklch(0% 0 0 / 0.05);
+
+  /* Transitions — Apple spring curve */
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+  /* Reset */
+  text-transform: none !important;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  outline: none;
+}
+
+/* Focus-visible ring — accessibility */
+.btn:focus-visible {
+  outline: 2px solid var(--aia-blue-primary, oklch(56% 0.12 247.1));
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px oklch(56% 0.12 247.1 / 0.25);
+}
+
+/* Hover — lift + shadow */
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px oklch(0% 0 0 / 0.1);
+}
+
+/* Active — press down */
+.btn:active {
+  transform: scale(0.97);
+  box-shadow: 0 1px 2px oklch(0% 0 0 / 0.08);
+}
+
+/* Disabled */
+.btn:disabled,
+.btn.disabled,
+.btn[disabled] {
+  opacity: var(--opacity-disabled, 0.6);
+  pointer-events: none;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Remove Bootstrap outline on focus */
+.btn:focus,
+.btn:focus:not(:focus-visible) {
+  outline: none;
+  box-shadow: 0 1px 2px oklch(0% 0 0 / 0.05);
+}
+
+
+/* ================================================================
+   2. BUTTON SIZES — Apple Scale
+   ================================================================ */
+
+.btn-xs {
+  font-size: 0.75rem;
+  padding: 0.12rem 0.4rem;
+  border-radius: 10px !important;
+  gap: 3px;
+}
+
+.btn-sm {
+  font-size: 0.78rem;
+  padding: 0.25rem 0.65em;
+  border-radius: 10px !important;
+}
+
+.btn-lg {
+  font-size: 0.95rem;
+  padding: 0.6em 1.25em;
+  border-radius: 18px !important;
+  gap: 6px;
+  font-weight: 500;
+}
+
+
+/* ================================================================
+   3. COLOR VARIANTS — AIA Brand Palette
+   ================================================================ */
+
+/* --- Primary: Corporate Green (Trust) --- */
+.btn-primary {
+  background-color: var(--aia-green-primary, oklch(32% 0.07 148.5));
+  color: #ffffff;
+  border-color: var(--aia-green-primary, oklch(32% 0.07 148.5));
+}
+.btn-primary:hover {
+  background-color: var(--aia-green-dark, oklch(27.8% 0.05 147.1));
+  border-color: var(--aia-green-dark, oklch(27.8% 0.05 147.1));
+  color: #ffffff;
+}
+.btn-primary:active {
+  background-color: var(--aia-green-dark, oklch(27.8% 0.05 147.1));
+}
+.btn-primary:disabled,
+.btn-primary.disabled {
+  background-color: var(--aia-green-light, oklch(75.5% 0.06 149.8));
+  border-color: var(--aia-green-light, oklch(75.5% 0.06 149.8));
+  color: #ffffff;
+}
+
+/* --- Success: Green Medium (Confirm) --- */
+.btn-success {
+  background-color: var(--aia-green-medium, oklch(52% 0.08 149.8));
+  color: #ffffff;
+  border-color: var(--aia-green-medium, oklch(52% 0.08 149.8));
+}
+.btn-success:hover {
+  background-color: var(--aia-green-primary, oklch(32% 0.07 148.5));
+  border-color: var(--aia-green-primary, oklch(32% 0.07 148.5));
+  color: #ffffff;
+}
+.btn-success:active {
+  background-color: var(--aia-green-primary, oklch(32% 0.07 148.5));
+}
+.btn-success:disabled,
+.btn-success.disabled {
+  background-color: var(--aia-green-light, oklch(75.5% 0.06 149.8));
+  border-color: var(--aia-green-light, oklch(75.5% 0.06 149.8));
+  color: #ffffff;
+}
+
+/* --- Construction: Orange (Energy) --- */
+.btn-construction {
+  background-color: var(--aia-orange-primary, oklch(45% 0.16 46.2));
+  color: #ffffff;
+  border-color: var(--aia-orange-primary, oklch(45% 0.16 46.2));
+}
+.btn-construction:hover {
+  background-color: var(--aia-orange-dark, oklch(35% 0.13 46.2));
+  border-color: var(--aia-orange-dark, oklch(35% 0.13 46.2));
+  color: #ffffff;
+}
+.btn-construction:active {
+  background-color: var(--aia-orange-dark, oklch(35% 0.13 46.2));
+}
+.btn-construction:disabled,
+.btn-construction.disabled {
+  background-color: var(--aia-orange-light, oklch(87% 0.1 46.2));
+  border-color: var(--aia-orange-light, oklch(87% 0.1 46.2));
+  color: #ffffff;
+}
+
+/* --- Info: Blue (Architecture, Admin) --- */
+.btn-info {
+  background-color: var(--aia-blue-primary, oklch(56% 0.12 247.1));
+  color: #ffffff;
+  border-color: var(--aia-blue-primary, oklch(56% 0.12 247.1));
+}
+.btn-info:hover {
+  background-color: var(--aia-blue-dark, oklch(42% 0.1 247.1));
+  border-color: var(--aia-blue-dark, oklch(42% 0.1 247.1));
+  color: #ffffff;
+}
+.btn-info:active {
+  background-color: var(--aia-blue-dark, oklch(42% 0.1 247.1));
+}
+.btn-info:disabled,
+.btn-info.disabled {
+  background-color: var(--aia-blue-light, oklch(85% 0.05 247.1));
+  border-color: var(--aia-blue-light, oklch(85% 0.05 247.1));
+  color: #ffffff;
+}
+
+/* --- Danger: Red (Destructive) --- */
+.btn-danger {
+  background-color: var(--aia-alert-high, oklch(55% 0.22 26.3));
+  color: #ffffff;
+  border-color: var(--aia-alert-high, oklch(55% 0.22 26.3));
+}
+.btn-danger:hover {
+  background-color: var(--aia-alert-critical, oklch(25.5% 0.16 26.3));
+  border-color: var(--aia-alert-critical, oklch(25.5% 0.16 26.3));
+  color: #ffffff;
+}
+.btn-danger:active {
+  background-color: var(--aia-alert-critical, oklch(25.5% 0.16 26.3));
+}
+.btn-danger:disabled,
+.btn-danger.disabled {
+  background-color: var(--aia-alert-medium, oklch(65% 0.18 26.3));
+  border-color: var(--aia-alert-medium, oklch(65% 0.18 26.3));
+  color: #ffffff;
+}
+
+/* --- Warning: Yellow (Caution) --- */
+.btn-warning {
+  background-color: var(--aia-warning-high, oklch(85% 0.18 85));
+  color: var(--aia-text-primary, oklch(14.5% 0.003 260));
+  border-color: var(--aia-warning-high, oklch(85% 0.18 85));
+}
+.btn-warning:hover {
+  background-color: var(--aia-warning-critical, oklch(55% 0.16 85));
+  border-color: var(--aia-warning-critical, oklch(55% 0.16 85));
+  color: #ffffff;
+}
+.btn-warning:active {
+  background-color: var(--aia-warning-critical, oklch(55% 0.16 85));
+}
+.btn-warning:disabled,
+.btn-warning.disabled {
+  background-color: var(--aia-warning-medium, oklch(90% 0.15 85));
+  border-color: var(--aia-warning-medium, oklch(90% 0.15 85));
+  color: var(--aia-text-secondary, oklch(35% 0.002 260));
+}
+
+/* --- Secondary: Neutral (White + Gray) --- */
+.btn-secondary {
+  background-color: #ffffff;
+  color: var(--aia-text-secondary, oklch(35% 0.002 260));
+  border: 1px solid var(--aia-separators, oklch(86% 0 0));
+  box-shadow: 0 1px 2px oklch(0% 0 0 / 0.04);
+}
+.btn-secondary:hover {
+  background-color: var(--aia-bg-secondary, oklch(94% 0 0));
+  border-color: var(--aia-text-tertiary, oklch(72% 0 0));
+  color: var(--aia-text-primary, oklch(14.5% 0.003 260));
+  box-shadow: 0 2px 4px oklch(0% 0 0 / 0.08);
+}
+.btn-secondary:active {
+  background-color: var(--aia-bg-secondary, oklch(94% 0 0));
+}
+.btn-secondary:disabled,
+.btn-secondary.disabled {
+  background-color: #ffffff;
+  color: var(--aia-text-tertiary, oklch(72% 0 0));
+  border-color: var(--aia-bg-secondary, oklch(94% 0 0));
+}
+
+/* --- Light: Subtle Background --- */
+.btn-light {
+  background-color: var(--aia-bg-alabaster, oklch(98% 0 0));
+  color: var(--aia-text-secondary, oklch(35% 0.002 260));
+  border: 1px solid var(--aia-separators, oklch(86% 0 0));
+}
+.btn-light:hover {
+  background-color: #ffffff;
+  color: var(--aia-text-primary, oklch(14.5% 0.003 260));
+  box-shadow: 0 2px 4px oklch(0% 0 0 / 0.08);
+}
+.btn-light:active {
+  background-color: var(--aia-bg-secondary, oklch(94% 0 0));
+}
+.btn-light:disabled,
+.btn-light.disabled {
+  background-color: var(--aia-bg-alabaster, oklch(98% 0 0));
+  color: var(--aia-text-tertiary, oklch(72% 0 0));
+}
+
+/* --- Default: Bootstrap compat --- */
+.btn-default {
+  background-color: #ffffff;
+  color: var(--aia-text-secondary, oklch(35% 0.002 260));
+  border: 1px solid var(--aia-separators, oklch(86% 0 0));
+}
+.btn-default:hover {
+  background-color: var(--aia-bg-secondary, oklch(94% 0 0));
+  color: var(--aia-text-primary, oklch(14.5% 0.003 260));
+}
+
+
+/* ================================================================
+   4. OUTLINE VARIANTS — Ghost Buttons
+   ================================================================ */
+
+.btn-outline-primary {
+  background-color: transparent;
+  color: var(--aia-green-primary, oklch(32% 0.07 148.5));
+  border: 1.5px solid var(--aia-green-primary, oklch(32% 0.07 148.5));
+  box-shadow: none;
+}
+.btn-outline-primary:hover {
+  background-color: var(--aia-green-very-light, oklch(91.5% 0.02 149.8));
+  color: var(--aia-green-dark, oklch(27.8% 0.05 147.1));
+  border-color: var(--aia-green-primary, oklch(32% 0.07 148.5));
+}
+.btn-outline-primary:active {
+  background-color: var(--aia-green-light, oklch(75.5% 0.06 149.8));
+}
+
+.btn-outline-success {
+  background-color: transparent;
+  color: var(--aia-green-medium, oklch(52% 0.08 149.8));
+  border: 1.5px solid var(--aia-green-medium, oklch(52% 0.08 149.8));
+  box-shadow: none;
+}
+.btn-outline-success:hover {
+  background-color: var(--aia-green-very-light, oklch(91.5% 0.02 149.8));
+  color: var(--aia-green-primary, oklch(32% 0.07 148.5));
+  border-color: var(--aia-green-medium, oklch(52% 0.08 149.8));
+}
+
+.btn-outline-construction {
+  background-color: transparent;
+  color: var(--aia-orange-primary, oklch(45% 0.16 46.2));
+  border: 1.5px solid var(--aia-orange-primary, oklch(45% 0.16 46.2));
+  box-shadow: none;
+}
+.btn-outline-construction:hover {
+  background-color: var(--aia-orange-very-light, oklch(95.5% 0.04 46.2));
+  color: var(--aia-orange-dark, oklch(35% 0.13 46.2));
+  border-color: var(--aia-orange-primary, oklch(45% 0.16 46.2));
+}
+
+.btn-outline-info {
+  background-color: transparent;
+  color: var(--aia-blue-primary, oklch(56% 0.12 247.1));
+  border: 1.5px solid var(--aia-blue-primary, oklch(56% 0.12 247.1));
+  box-shadow: none;
+}
+.btn-outline-info:hover {
+  background-color: var(--aia-blue-very-light, oklch(95% 0.02 247.1));
+  color: var(--aia-blue-dark, oklch(42% 0.1 247.1));
+  border-color: var(--aia-blue-primary, oklch(56% 0.12 247.1));
+}
+
+.btn-outline-danger {
+  background-color: transparent;
+  color: var(--aia-alert-high, oklch(55% 0.22 26.3));
+  border: 1.5px solid var(--aia-alert-high, oklch(55% 0.22 26.3));
+  box-shadow: none;
+}
+.btn-outline-danger:hover {
+  background-color: var(--aia-alert-background, oklch(96% 0.02 26.3));
+  color: var(--aia-alert-critical, oklch(25.5% 0.16 26.3));
+  border-color: var(--aia-alert-high, oklch(55% 0.22 26.3));
+}
+
+.btn-outline-secondary {
+  background-color: transparent;
+  color: var(--aia-text-secondary, oklch(35% 0.002 260));
+  border: 1.5px solid var(--aia-separators, oklch(86% 0 0));
+  box-shadow: none;
+}
+.btn-outline-secondary:hover {
+  background-color: var(--aia-bg-secondary, oklch(94% 0 0));
+  color: var(--aia-text-primary, oklch(14.5% 0.003 260));
+  border-color: var(--aia-text-tertiary, oklch(72% 0 0));
+}
+
+
+/* ================================================================
+   5. BUTTON GROUPS — Apple-Style Connected Corners
+   ================================================================ */
+
+.btn-group {
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px oklch(0% 0 0 / 0.06);
+}
+
+.btn-group > .btn {
+  border-radius: 0 !important;
+  margin: 0;
+  border: none;
+  box-shadow: none;
+}
+
+/* Connected corners — first item */
+.btn-group > .btn:first-child {
+  border-radius: 14px 0 0 14px !important;
+}
+
+/* Connected corners — last item */
+.btn-group > .btn:last-child {
+  border-radius: 0 14px 14px 0 !important;
+}
+
+/* Only two items — first AND last */
+.btn-group > .btn:nth-child(1):nth-last-child(2) {
+  border-radius: 14px 0 0 14px !important;
+}
+.btn-group > .btn:nth-child(2):nth-last-child(1) {
+  border-radius: 0 14px 14px 0 !important;
+}
+
+/* Three+ items — middle items have no radius */
+.btn-group > .btn:not(:first-child):not(:last-child) {
+  border-radius: 0 !important;
+}
+
+/* Divider lines between group items */
+.btn-group > .btn + .btn {
+  border-left: 1px solid oklch(0% 0 0 / 0.1);
+}
+
+/* Size-aware group radius */
+.btn-group-sm {
+  border-radius: 10px;
+}
+.btn-group-sm > .btn:first-child {
+  border-radius: 10px 0 0 10px !important;
+}
+.btn-group-sm > .btn:last-child {
+  border-radius: 0 10px 10px 0 !important;
+}
+.btn-group-sm > .btn {
+  font-size: 0.8rem;
+}
+
+.btn-group-lg {
+  border-radius: 18px;
+}
+.btn-group-lg > .btn:first-child {
+  border-radius: 18px 0 0 18px !important;
+}
+.btn-group-lg > .btn:last-child {
+  border-radius: 0 18px 18px 0 !important;
+}
+
+
+/* ================================================================
+   6. LINK & ICON BUTTONS
+   ================================================================ */
+
+.btn-link {
+  background: none;
+  border: none;
+  box-shadow: none;
+  color: var(--aia-blue-primary, oklch(56% 0.12 247.1));
+  padding: 0;
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition: all 0.2s ease;
+}
+.btn-link:hover {
+  color: var(--aia-blue-dark, oklch(42% 0.1 247.1));
+  text-decoration-color: currentColor;
+  transform: none;
+  box-shadow: none;
+}
+.btn-link:active {
+  transform: none;
+}
+
+/* Icon-only buttons — square-ish with generous radius */
+.btn-icon {
+  padding: 0.5em;
+  min-width: 2.5em;
+  min-height: 2.5em;
+  border-radius: 12px !important;
+}
+.btn-icon.btn-sm {
+  min-width: 2em;
+  min-height: 2em;
+  border-radius: 10px !important;
+}
+.btn-icon.btn-lg {
+  min-width: 3em;
+  min-height: 3em;
+  border-radius: 14px !important;
+}
+
+/* Close button (X) */
+.btn-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2em;
+  height: 2em;
+  border-radius: 999px !important;
+  background-color: var(--aia-bg-secondary, oklch(94% 0 0));
+  color: var(--aia-text-secondary, oklch(35% 0.002 260));
+  border: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-close:hover {
+  background-color: var(--aia-separators, oklch(86% 0 0));
+  color: var(--aia-text-primary, oklch(14.5% 0.003 260));
+}
+
+
+/* ================================================================
+   7. AUTO BUTTONS — Brand Standard (Regla #12)
+   Custom buttons for Programa General, Listado, Contratos, PDC
+   ================================================================ */
+
+.btn-auto {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: 14px !important;
+  border: 1px solid transparent;
+  cursor: pointer;
+  line-height: 1.5;
+  white-space: nowrap;
+
+  /* Apple spring transition */
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.btn-auto:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px oklch(0% 0 0 / 0.12);
+}
+
+.btn-auto:active {
+  transform: scale(0.97);
+  box-shadow: 0 1px 2px oklch(0% 0 0 / 0.08);
+}
+
+.btn-auto:disabled,
+.btn-auto.disabled {
+  opacity: var(--opacity-disabled, 0.6);
+  pointer-events: none;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* --- btn-auto: Green (Corporate/Trust) --- */
+/* Used for: Programa General, Listado Actividades */
+.btn-auto-green {
+  background-color: var(--aia-green-primary, oklch(32% 0.07 148.5));
+  color: #ffffff;
+  border-color: var(--aia-green-dark, oklch(27.8% 0.05 147.1));
+}
+.btn-auto-green:hover {
+  background-color: var(--aia-orange-primary, oklch(45% 0.16 46.2));
+  border-color: var(--aia-orange-dark, oklch(35% 0.13 46.2));
+  color: #ffffff;
+}
+.btn-auto-green:active {
+  background-color: var(--aia-orange-dark, oklch(35% 0.13 46.2));
+}
+.btn-auto-green:disabled,
+.btn-auto-green.disabled {
+  background-color: var(--aia-green-light, oklch(75.5% 0.06 149.8));
+  border-color: var(--aia-green-light, oklch(75.5% 0.06 149.8));
+  color: #ffffff;
+}
+
+/* --- btn-auto: Orange (Construction/Energy) --- */
+/* Used for: Contratos, PDC, Programacion Semanal */
+.btn-auto-orange {
+  background-color: var(--aia-orange-primary, oklch(45% 0.16 46.2));
+  color: #ffffff;
+  border-color: var(--aia-orange-dark, oklch(35% 0.13 46.2));
+}
+.btn-auto-orange:hover {
+  background-color: var(--aia-orange-dark, oklch(35% 0.13 46.2));
+  border-color: var(--aia-green-dark, oklch(27.8% 0.05 147.1));
+  color: #ffffff;
+}
+.btn-auto-orange:active {
+  background-color: var(--aia-green-dark, oklch(27.8% 0.05 147.1));
+}
+.btn-auto-orange:disabled,
+.btn-auto-orange.disabled {
+  background-color: var(--aia-orange-light, oklch(87% 0.1 46.2));
+  border-color: var(--aia-orange-light, oklch(87% 0.1 46.2));
+  color: #ffffff;
+}
+
+/* --- btn-auto: Small --- */
+.btn-auto.btn-sm {
+  padding: 0.2rem 0.6rem;
+  font-size: 0.8rem;
+  gap: 4px;
+  border-radius: 10px !important;
+}
+
+
+/* ================================================================
+   8. PDC MODERN BUTTON — Elevated White
+   Used for toolbar actions in PDC views
+   ================================================================ */
+
+.btn-pdc-modern {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #ffffff;
+  color: var(--aia-text-secondary, oklch(35% 0.002 260));
+  border: 1px solid var(--aia-separators, oklch(86% 0 0));
+  border-radius: 14px !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight: 500;
+  font-size: 0.85rem;
+  padding: 0.3rem 0.8rem;
+  box-shadow: 0 1px 2px oklch(0% 0 0 / 0.05);
+  cursor: pointer;
+  white-space: nowrap;
+
+  /* Apple spring transition */
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.btn-pdc-modern:hover {
+  background-color: var(--aia-bg-alabaster, oklch(98% 0 0));
+  color: var(--aia-text-primary, oklch(14.5% 0.003 260));
+  border-color: var(--aia-text-tertiary, oklch(72% 0 0));
+  box-shadow: 0 4px 6px -1px oklch(0% 0 0 / 0.1), 0 2px 4px -1px oklch(0% 0 0 / 0.06);
+  transform: translateY(-1px);
+}
+
+.btn-pdc-modern:active {
+  transform: scale(0.97);
+  box-shadow: 0 1px 2px oklch(0% 0 0 / 0.06);
+  background-color: var(--aia-bg-secondary, oklch(94% 0 0));
+}
+
+.btn-pdc-modern:disabled {
+  opacity: var(--opacity-disabled, 0.6);
+  pointer-events: none;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-pdc-modern i {
+  color: var(--aia-text-tertiary, oklch(72% 0 0));
+  transition: color 0.2s ease;
+}
+.btn-pdc-modern:hover i {
+  color: var(--aia-text-secondary, oklch(35% 0.002 260));
+}
+
+
+/* ================================================================
+   9. FILTER TOOLBAR — Mobile Toggle
+   ================================================================ */
+
+.btn-filter-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: #ffffff;
+  border: 1px solid var(--aia-separators, oklch(86% 0 0));
+  color: var(--aia-text-secondary, oklch(35% 0.002 260));
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 10px;
+  border-radius: 14px !important;
+  box-shadow: 0 1px 2px oklch(0% 0 0 / 0.05);
+  cursor: pointer;
+
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.btn-filter-toggle:hover {
+  background-color: var(--aia-bg-alabaster, oklch(98% 0 0));
+  border-color: var(--aia-text-tertiary, oklch(72% 0 0));
+  box-shadow: 0 2px 4px oklch(0% 0 0 / 0.08);
+}
+
+.btn-filter-toggle:active {
+  background-color: var(--aia-bg-secondary, oklch(94% 0 0));
+  transform: scale(0.98);
+}
+
+.btn-filter-toggle .badge {
+  background-color: var(--aia-blue-primary, oklch(56% 0.12 247.1));
+  color: #ffffff;
+  border-radius: 999px;
+  padding: 3px 7px;
+  font-size: 0.75rem;
+  vertical-align: middle;
+}
+
+
+/* ================================================================
+   10. SCALABLE TOOLBAR — Unified Sizing System
+   ================================================================ */
+
+/* Consistent height and font size for ALL interactive elements */
 :root {
-  --toolbar-height: calc(1.5em + 0.5rem + 2px); /* Bootstrap btn-sm standard */
+  --toolbar-height: calc(1.5em + 0.5rem + 2px);
   --toolbar-font-size: clamp(0.7rem, 1.2vw + 0.2rem, 0.875rem);
   --toolbar-padding-y: clamp(3px, 0.4vw, 6px);
   --toolbar-padding-x: clamp(6px, 1vw, 12px);
   --toolbar-gap: clamp(3px, 0.5vw, 8px);
 }
 
-/* ========================================
-   ACTION BUTTONS TOOLBAR
-   ======================================== */
-
+/* --- Action Buttons Toolbar --- */
 .btn-toolbar-scalable {
   display: flex !important;
   flex-wrap: nowrap !important;
@@ -48,7 +757,7 @@
   gap: var(--toolbar-gap) !important;
 }
 
-/* ALL ACTION BUTTONS - Consistent Size */
+/* Unified sizing for ALL action buttons inside toolbar */
 .btn-toolbar-scalable .btn,
 .btn-toolbar-scalable button,
 .btn-toolbar-scalable input[type='button'] {
@@ -64,12 +773,15 @@
   overflow: hidden !important;
   text-overflow: ellipsis !important;
 
-  /* UNIFIED SIZING */
+  /* Unified sizing */
   height: var(--toolbar-height) !important;
   font-size: var(--toolbar-font-size) !important;
   padding: var(--toolbar-padding-y) var(--toolbar-padding-x) !important;
   line-height: 1.2 !important;
   margin: 0 !important;
+
+  /* Inherit Apple-style border-radius from .btn (14px) */
+  /* Do NOT override — let the base .btn radius flow through */
 }
 
 .btn-toolbar-scalable i,
@@ -79,10 +791,7 @@
   flex-shrink: 0;
 }
 
-/* ========================================
-   FILTER TOOLBAR
-   ======================================== */
-
+/* --- Filter Toolbar --- */
 .filter-toolbar-scalable {
   display: flex !important;
   flex-wrap: nowrap !important;
@@ -92,7 +801,7 @@
   gap: var(--toolbar-gap) !important;
 }
 
-/* Filter Inputs - SAME HEIGHT as buttons */
+/* Filter inputs — same height as buttons */
 .filter-toolbar-scalable input.form-control,
 .filter-toolbar-scalable input[type='text'] {
   flex: 1 1 auto !important;
@@ -100,7 +809,7 @@
   max-width: 100% !important;
   width: auto !important;
 
-  /* UNIFIED SIZING */
+  /* Unified sizing */
   height: var(--toolbar-height) !important;
   font-size: var(--toolbar-font-size) !important;
   padding: var(--toolbar-padding-y) var(--toolbar-padding-x) !important;
@@ -110,13 +819,13 @@
   display: inline-block !important;
 }
 
-/* Filter Buttons - SAME HEIGHT as action buttons */
+/* Filter buttons — same height as action buttons */
 .filter-toolbar-scalable .btn,
 .filter-toolbar-scalable button {
   flex: 0 0 auto !important;
   white-space: nowrap !important;
 
-  /* UNIFIED SIZING */
+  /* Unified sizing */
   height: var(--toolbar-height) !important;
   font-size: var(--toolbar-font-size) !important;
   padding: var(--toolbar-padding-y) var(--toolbar-padding-x) !important;
@@ -124,11 +833,7 @@
   margin: 0 !important;
 }
 
-/* ========================================
-   GLOBAL BUTTON SIZE ENFORCEMENT
-   Force ALL Bootstrap btn-sm to use unified sizing
-   ======================================== */
-
+/* --- Global btn-sm enforcement inside toolbars --- */
 .btn-toolbar-scalable .btn-sm,
 .filter-toolbar-scalable .btn-sm,
 .btn-toolbar-scalable input.btn-sm,
@@ -139,14 +844,199 @@
   line-height: 1.2 !important;
 }
 
-/* ========================================
-   RESPONSIVE OPTIMIZATIONS
-   ======================================== */
+
+/* ================================================================
+   11. MESSAGES / LEGEND AREA
+   ================================================================ */
+
+.toolbarFilaMensajes {
+  display: flex !important;
+  align-items: center !important;
+  font-size: 0.85rem;
+  color: var(--aia-text-tertiary, oklch(72% 0 0));
+  flex: 1 1 auto;
+  min-width: 0 !important;
+  overflow: hidden;
+}
+
+.toolbarFilaMensajes p {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+
+/* ================================================================
+   12. PDC LEGEND — Chips / Badges
+   ================================================================ */
+
+.pdc-legend {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  gap: 2px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  width: 100% !important;
+  padding: 1px 0 !important;
+  -webkit-overflow-scrolling: touch !important;
+  scrollbar-width: thin !important;
+}
+
+.pdc-legend::-webkit-scrollbar {
+  height: 2px !important;
+}
+.pdc-legend::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+.pdc-legend::-webkit-scrollbar-thumb {
+  background: oklch(0% 0 0 / 0.2) !important;
+  border-radius: 2px !important;
+}
+
+/* Individual legend chips — pill shape */
+.pdc-legend-item {
+  display: inline-flex !important;
+  align-items: center !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+
+  /* Compact chip sizing */
+  height: auto !important;
+  min-height: 18px !important;
+  max-height: 20px !important;
+  font-size: 0.5rem !important;
+  padding: 1px 4px !important;
+  line-height: 1 !important;
+
+  cursor: pointer !important;
+  user-select: none !important;
+
+  /* Pill style — different from buttons */
+  border-radius: 999px !important;
+
+  transition: background-color 0.15s ease !important;
+  border: 1px solid oklch(0% 0 0 / 0.1) !important;
+}
+
+.pdc-legend-item .indicator {
+  display: block !important;
+  flex-shrink: 0 !important;
+  margin-right: 2px !important;
+  width: 5px !important;
+  height: 5px !important;
+  border-radius: 50% !important;
+}
+
+.pdc-legend-item .count-badge {
+  display: inline-block !important;
+  flex-shrink: 0 !important;
+  margin-left: 2px !important;
+  font-size: 0.45rem !important;
+  font-weight: 700 !important;
+  background-color: oklch(255 0 0 / 0.3) !important;
+  padding: 0 3px !important;
+  border-radius: 4px !important;
+}
+
+/* --- Legend state colors --- */
+.pdc-legend-item.missing .indicator          { background-color: var(--aia-text-tertiary, oklch(72% 0 0)); }
+.pdc-legend-item.critical .indicator         { background-color: var(--aia-alert-high, oklch(55% 0.22 26.3)); }
+.pdc-legend-item.delayed .indicator          { background-color: var(--aia-orange-primary, oklch(45% 0.16 46.2)); }
+.pdc-legend-item.completed-ontime .indicator { background-color: var(--aia-green-medium, oklch(52% 0.08 149.8)); }
+.pdc-legend-item.active .indicator           { background-color: var(--aia-aqua-primary, oklch(61% 0.13 189)); }
+.pdc-legend-item.pending-future .indicator   { background-color: var(--aia-green-medium, oklch(52% 0.08 149.8)); }
+.pdc-legend-item.pending-2-weeks .indicator  { background-color: var(--aia-warning-high, oklch(85% 0.18 85)); }
+.pdc-legend-item.pending-1-week .indicator   { background-color: var(--aia-orange-primary, oklch(45% 0.16 46.2)); }
+.pdc-legend-item.should-start-liberated .indicator { background-color: var(--aia-orange-primary, oklch(45% 0.16 46.2)); }
+.pdc-legend-item.should-start-pending .indicator   { background-color: var(--aia-alert-high, oklch(55% 0.22 26.3)); }
+.pdc-legend-item.started-liberated .indicator      { background-color: var(--aia-green-medium, oklch(52% 0.08 149.8)); }
+.pdc-legend-item.started-pending .indicator        { background-color: var(--aia-orange-primary, oklch(45% 0.16 46.2)); }
+.pdc-legend-item.critical-delay .indicator   { background-color: var(--aia-alert-high, oklch(55% 0.22 26.3)); }
+.pdc-legend-item.on-track .indicator         { background-color: var(--aia-warning-high, oklch(85% 0.18 85)); }
+.pdc-legend-item.completed .indicator        { background-color: var(--aia-text-tertiary, oklch(72% 0 0)); }
+
+
+/* ================================================================
+   13. DROPDOWN & TOGGLE BUTTONS
+   ================================================================ */
+
+/* Dropdown toggle — Apple-style caret */
+.btn.dropdown-toggle {
+  border-radius: 14px !important;
+}
+
+.btn.dropdown-toggle::after {
+  margin-left: 0.4em;
+  border-top: 0.35em solid;
+  border-right: 0.3em solid transparent;
+  border-left: 0.3em solid transparent;
+  vertical-align: middle;
+}
+
+/* Split button groups */
+.btn-group .btn + .dropdown-toggle {
+  border-radius: 0 14px 14px 0 !important;
+  padding-left: 0.5em;
+}
+
+/* Toggle active state */
+.btn-check:checked + .btn {
+  background-color: var(--aia-green-primary, oklch(32% 0.07 148.5));
+  color: #ffffff;
+  border-color: var(--aia-green-primary, oklch(32% 0.07 148.5));
+}
+
+.btn-check:checked + .btn-outline-primary {
+  background-color: var(--aia-green-primary, oklch(32% 0.07 148.5));
+  color: #ffffff;
+}
+
+
+/* ================================================================
+   14. CLOSE / DISMISS BUTTONS
+   ================================================================ */
+
+/* Bootstrap .btn-close override */
+.btn-close {
+  box-sizing: content-box;
+  width: 1em;
+  height: 1em;
+  padding: 0.25em 0.25em;
+  color: var(--aia-text-secondary, oklch(35% 0.002 260));
+  border: none;
+  border-radius: 999px !important;
+  opacity: 0.5;
+  transition: opacity 0.2s ease;
+}
+
+.btn-close:hover {
+  opacity: 1;
+}
+
+.btn-close:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px oklch(56% 0.12 247.1 / 0.25);
+}
+
+
+/* ================================================================
+   15. RESPONSIVE BEHAVIOR
+   ================================================================ */
 
 @media (max-width: 992px) {
   .btn-toolbar-scalable,
   .filter-toolbar-scalable {
     gap: 4px !important;
+  }
+
+  .pdc-legend {
+    gap: 2px !important;
+  }
+
+  .pdc-legend-item {
+    font-size: 0.5rem !important;
+    padding: 1px 3px !important;
+    min-height: 18px !important;
   }
 }
 
@@ -165,172 +1055,68 @@
   .filter-toolbar-scalable {
     justify-content: space-between !important;
   }
-}
 
-/* ========================================
-   MESSAGES/LEGEND AREA
-   ======================================== */
-
-.toolbarFilaMensajes {
-  display: flex !important;
-  align-items: center !important;
-  font-size: 0.85rem;
-  color: #6c757d;
-  flex: 1 1 auto;
-  min-width: 0 !important; /* Critical for shrinking */
-  overflow: hidden; /* Prevent content from breaking layout */
-}
-
-.toolbarFilaMensajes p {
-  margin: 0 !important;
-  padding: 0 !important;
-}
-
-/* ========================================
-   PDC LEGEND (Programación Intermedia)
-   CRITICAL: Force single-line layout
-   ======================================== */
-
-.pdc-legend {
-  display: flex !important;
-  flex-wrap: nowrap !important; /* STRICT: No wrapping allowed */
-  align-items: center !important;
-  gap: 2px !important; /* Minimal gap */
-  overflow-x: auto !important; /* Allow horizontal scroll if absolutely needed */
-  overflow-y: hidden !important;
-  width: 100% !important;
-  padding: 1px 0 !important;
-  -webkit-overflow-scrolling: touch !important; /* Smooth scroll on iOS */
-  scrollbar-width: thin !important;
-}
-
-/* Hide scrollbar but keep functionality */
-.pdc-legend::-webkit-scrollbar {
-  height: 2px !important;
-}
-
-.pdc-legend::-webkit-scrollbar-track {
-  background: transparent !important;
-}
-
-.pdc-legend::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.2) !important;
-  border-radius: 2px !important;
-}
-
-.pdc-legend-item {
-  display: inline-flex !important;
-  align-items: center !important;
-  white-space: nowrap !important; /* Force text to stay on one line */
-  flex-shrink: 0 !important; /* Prevent items from shrinking */
-
-  /* ULTRA AGGRESSIVE SIZE REDUCTION - GLOBAL OVERRIDE */
-  height: auto !important;
-  min-height: 18px !important;
-  max-height: 20px !important;
-  font-size: 0.5rem !important; /* Minimal size */
-  padding: 1px 4px !important; /* Tighter padding */
-  line-height: 1 !important;
-
-  cursor: pointer !important;
-  user-select: none !important;
-  border-radius: 2px !important;
-  transition: background-color 0.15s ease !important;
-  border: 1px solid rgba(0, 0, 0, 0.1) !important;
-}
-
-.pdc-legend-item .indicator {
-  display: block !important; /* Ensure visibility if it was hidden */
-  flex-shrink: 0 !important;
-  margin-right: 2px !important;
-  width: 5px !important;
-  height: 5px !important;
-  border-radius: 50% !important;
-}
-
-.pdc-legend-item .count-badge {
-  display: inline-block !important;
-  flex-shrink: 0 !important;
-  margin-left: 2px !important;
-  font-size: 0.45rem !important;
-  font-weight: 700 !important;
-  background-color: rgba(255, 255, 255, 0.3) !important;
-  padding: 0 3px !important;
-  border-radius: 4px !important;
-}
-
-/* Responsive: Even tighter on tablets */
-@media (max-width: 992px) {
+  /* Allow legend wrapping on mobile */
   .pdc-legend {
-    gap: 2px !important;
-  }
-
-  .pdc-legend-item {
-    font-size: 0.5rem !important;
-    padding: 1px 3px !important;
-    min-height: 18px !important;
-  }
-}
-
-/* Mobile: Stack if absolutely necessary */
-@media (max-width: 768px) {
-  .pdc-legend {
-    flex-wrap: wrap !important; /* Allow wrapping only on mobile */
+    flex-wrap: wrap !important;
     overflow-x: visible;
   }
+
+  /* Slightly larger touch targets on mobile */
+  .btn-sm {
+    min-height: 36px;
+  }
+
+  .btn-auto.btn-sm {
+    min-height: 36px;
+  }
 }
 
-/* ========================================
-   STATE-SPECIFIC COLORS
-   ======================================== */
-
-/* Programación General & Programación Intermedia */
-.pdc-legend-item.missing .indicator {
-  background-color: #6c757d;
-} /* Gray */
-.pdc-legend-item.critical .indicator {
-  background-color: #dc3545;
-} /* Red */
-.pdc-legend-item.delayed .indicator {
-  background-color: #fd7e14;
-} /* Orange */
-.pdc-legend-item.completed-ontime .indicator {
-  background-color: #28a745;
-} /* Green */
-.pdc-legend-item.active .indicator {
-  background-color: #17a2b8;
-} /* Cyan */
-.pdc-legend-item.pending-future .indicator {
-  background-color: #28a745;
-}
-.pdc-legend-item.pending-2-weeks .indicator {
-  background-color: #ffc107;
-}
-.pdc-legend-item.pending-1-week .indicator {
-  background-color: #fd7e14;
-}
-.pdc-legend-item.should-start-liberated .indicator {
-  background-color: #fd7e14;
-}
-.pdc-legend-item.should-start-pending .indicator {
-  background-color: #dc3545;
-}
-.pdc-legend-item.started-liberated .indicator {
-  background-color: #28a745;
-}
-.pdc-legend-item.started-pending .indicator {
-  background-color: #fd7e14;
+/* Hover media query — disable hover effects on touch */
+@media (hover: none) {
+  .btn:hover,
+  .btn-auto:hover,
+  .btn-pdc-modern:hover,
+  .btn-filter-toggle:hover {
+    transform: none;
+    box-shadow: 0 1px 2px oklch(0% 0 0 / 0.05);
+  }
 }
 
-/* Programación Semanal - New States */
-.pdc-legend-item.critical-delay .indicator {
-  background-color: #dc3545;
-} /* Red - Atrasado Crítico */
-.pdc-legend-item.on-track .indicator {
-  background-color: #ffc107;
-} /* Yellow - En Curso */
-.pdc-legend-item.completed .indicator {
-  background-color: #6c757d;
-} /* Gray - Completado */
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .btn,
+  .btn-auto,
+  .btn-pdc-modern,
+  .btn-filter-toggle,
+  .pdc-legend-item {
+    transition: none !important;
+    animation: none !important;
+  }
+  .btn:hover,
+  .btn-auto:hover,
+  .btn-pdc-modern:hover {
+    transform: none !important;
+  }
+  .btn:active,
+  .btn-auto:active {
+    transform: none !important;
+  }
+}
 
-/* Completed states */
+
+/* ================================================================
+   16. PRINT STYLES
+   ================================================================ */
+
+@media print {
+  .btn,
+  .btn-auto,
+  .btn-pdc-modern,
+  .btn-filter-toggle {
+    box-shadow: none !important;
+    transform: none !important;
+  }
+}
+
+} /* End @layer components */

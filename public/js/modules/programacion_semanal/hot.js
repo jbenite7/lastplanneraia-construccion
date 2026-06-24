@@ -3314,7 +3314,7 @@
     var db = getDb();
     var semana = getSemana();
 
-    $('#btn_autoprogramar').prop('disabled', true).text('Verificando...');
+    $('#btn_autoprogramar').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Verificando...');
     scheduleActionsRowFit(0);
 
     // Preflight: detectar datos faltantes
@@ -3331,7 +3331,7 @@
         showDatosFaltantesModal(faltantes, function () {
           ejecutarAutoprogramar(db, semana);
         });
-        $('#btn_autoprogramar').prop('disabled', false).html('Autoprogramar Actividades <i class="fas fa-upload"></i>');
+        $('#btn_autoprogramar').prop('disabled', false).html('<i class="fas fa-magic"></i> Autoprogramar Actividades');
         scheduleActionsRowFit(0);
       } else {
         ejecutarAutoprogramar(db, semana);
@@ -3342,7 +3342,7 @@
   }
 
   function ejecutarAutoprogramar(db, semana) {
-    $('#btn_autoprogramar').prop('disabled', true).text('Ejecutando...');
+    $('#btn_autoprogramar').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Ejecutando...');
     scheduleActionsRowFit(0);
 
     $.ajax({
@@ -3371,7 +3371,7 @@
     }).fail(function () {
       showFeedback('error', 'Error ejecutando autoprogramación');
     }).always(function () {
-      $('#btn_autoprogramar').prop('disabled', false).html('Autoprogramar Actividades <i class="fas fa-upload"></i>');
+      $('#btn_autoprogramar').prop('disabled', false).html('<i class="fas fa-magic"></i> Autoprogramar Actividades');
       scheduleActionsRowFit(0);
     });
   }
@@ -3981,7 +3981,7 @@
         method: 'POST',
         data: payload,
         success: function (response) {
-          if (response.success) {
+          if (response.respuesta === "BIEN" || response.success) {
             showFeedback('success', 'TNP registrado correctamente');
             $('#modal_tnp').modal('hide');
             loadData();

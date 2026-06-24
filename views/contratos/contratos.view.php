@@ -71,6 +71,16 @@
 						<th>paqueteMO4</th>
 						<th>MO5</th>
 						<th>paqueteMO5</th>
+						<th>OC1</th>
+						<th>paqueteOC1</th>
+						<th>OC2</th>
+						<th>paqueteOC2</th>
+						<th>OC3</th>
+						<th>paqueteOC3</th>
+						<th>OC4</th>
+						<th>paqueteOC4</th>
+						<th>OC5</th>
+						<th>paqueteOC5</th>
 						<th>Paquetes de Contratación Asociados</th>
 					</tr>
 				</thead>
@@ -139,64 +149,45 @@
                                         [
                                             'id' => 'parametro_EditarContratosOC',
                                             'title' => 'Orden de Compra',
-                                            'type' => 'oc',
+                                            'packagePrefix' => 'paqueteOC',
+                                            'resourcePrefix' => 'OC',
+                                            'packageLabel' => 'Paquete Orden de Compra',
+                                            'resourceLabel' => 'Insumos Orden de Compra',
                                         ],
                                     ];
 									?>
 								<?php foreach ($contractSections as $section): ?>
-									<?php if (($section['type'] ?? '') === 'oc'): ?>
-										<section class="form-group parametro_EditarContratos ct-contract-section" id="<?php echo $section['id']; ?>">
-											<div class="form_eval form-group ct-contract-section__banner">
-												<h3 class="ct-contract-section__title"><?php echo $section['title']; ?></h3>
-											</div>
-											<div class="ct-contract-list">
+									<section class="form-group parametro_EditarContratos ct-contract-section" id="<?php echo $section['id']; ?>">
+										<div class="form_eval form-group ct-contract-section__banner">
+											<h3 class="ct-contract-section__title"><?php echo $section['title']; ?></h3>
+										</div>
+										<div class="ct-contract-header" aria-hidden="true">
+											<div class="ct-contract-header__spacer"></div>
+											<div class="ct-contract-header__cell">Paquete de Contratación</div>
+											<div class="ct-contract-header__cell">Insumo / Recurso</div>
+										</div>
+										<div class="ct-contract-list">
+											<?php for ($i = 1; $i <= 5; $i++): ?>
+												<?php
+								                $packageId = $section['packagePrefix'] . $i;
+											    $resourceId = $section['resourcePrefix'] . $i;
+											    ?>
 												<div class="ct-contract-row">
-													<label for="ocProveedor" class="control-label ct-contract-index">1.</label>
+													<label for="<?php echo $packageId; ?>" class="control-label ct-contract-index"><?php echo $i; ?>.</label>
 													<div class="ct-contract-field">
-														<input type="text" id="ocProveedor" name="ocProveedor" class="form-control ct-contract-control" placeholder="Proveedor" aria-label="Proveedor Orden de Compra">
+														<select id="<?php echo $packageId; ?>" name="<?php echo $packageId; ?>" class="form-control ct-contract-control" aria-label="<?php echo $section['packageLabel'] . ' ' . $i; ?>">
+															<option value=""></option>
+														</select>
+													</div>
+													<div class="ct-contract-field">
+														<select id="<?php echo $resourceId; ?>" name="<?php echo $resourceId; ?>[]" class="form-control ct-contract-control ct-contract-control--multiple" multiple="multiple" aria-label="<?php echo $section['resourceLabel'] . ' ' . $i; ?>">
+															<option value=""></option>
+														</select>
 													</div>
 												</div>
-												<div class="ct-contract-row">
-													<label for="ocNumero" class="control-label ct-contract-index">2.</label>
-													<div class="ct-contract-field">
-														<input type="text" id="ocNumero" name="ocNumero" class="form-control ct-contract-control" placeholder="Orden de Compra #" aria-label="Número de Orden de Compra">
-													</div>
-												</div>
-											</div>
-										</section>
-									<?php else: ?>
-										<section class="form-group parametro_EditarContratos ct-contract-section" id="<?php echo $section['id']; ?>">
-											<div class="form_eval form-group ct-contract-section__banner">
-												<h3 class="ct-contract-section__title"><?php echo $section['title']; ?></h3>
-											</div>
-											<div class="ct-contract-header" aria-hidden="true">
-												<div class="ct-contract-header__spacer"></div>
-												<div class="ct-contract-header__cell">Paquete de Contratación</div>
-												<div class="ct-contract-header__cell">Insumo / Recurso</div>
-											</div>
-											<div class="ct-contract-list">
-												<?php for ($i = 1; $i <= 5; $i++): ?>
-													<?php
-									                $packageId = $section['packagePrefix'] . $i;
-												    $resourceId = $section['resourcePrefix'] . $i;
-												    ?>
-													<div class="ct-contract-row">
-														<label for="<?php echo $packageId; ?>" class="control-label ct-contract-index"><?php echo $i; ?>.</label>
-														<div class="ct-contract-field">
-															<select id="<?php echo $packageId; ?>" name="<?php echo $packageId; ?>" class="form-control ct-contract-control" aria-label="<?php echo $section['packageLabel'] . ' ' . $i; ?>">
-																<option value=""></option>
-															</select>
-														</div>
-														<div class="ct-contract-field">
-															<select id="<?php echo $resourceId; ?>" name="<?php echo $resourceId; ?>[]" class="form-control ct-contract-control ct-contract-control--multiple" multiple="multiple" aria-label="<?php echo $section['resourceLabel'] . ' ' . $i; ?>">
-																<option value=""></option>
-															</select>
-														</div>
-													</div>
-												<?php endfor; ?>
-											</div>
-										</section>
-									<?php endif; ?>
+											<?php endfor; ?>
+										</div>
+									</section>
 								<?php endforeach; ?>
 
 									<div class="form-group ct-contract-actions">
@@ -254,7 +245,7 @@
 				<div class="modal-footer">
 					<button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
 					<button type="button" class="btn btn-outline-primary" id="btnAutoAsignarAnalizar"><i class="fas fa-search"></i> Analizar</button>
-					<button type="button" class="btn btn-warning" id="btnAutoAsignarAplicar" disabled><i class="fas fa-magic"></i> Aplicar</button>
+					<button type="button" class="btn-auto btn-auto-orange" id="btnAutoAsignarAplicar" disabled><i class="fas fa-magic"></i> Aplicar</button>
 				</div>
 			</div>
 		</div>
@@ -300,7 +291,7 @@
 		});
 
 		var cargaParametros = function() {
-			var $contractSelects = $('#S1,#S2,#S3,#S4,#S5,#paqueteS1,#paqueteS2,#paqueteS3,#paqueteS4,#paqueteS5,#MO1,#MO2,#MO3,#MO4,#MO5,#paqueteMO1,#paqueteMO2,#paqueteMO3,#paqueteMO4,#paqueteMO5,#SI1,#SI2,#SI3,#SI4,#SI5,#paqueteSI1,#paqueteSI2,#paqueteSI3,#paqueteSI4,#paqueteSI5');
+			var $contractSelects = $('#S1,#S2,#S3,#S4,#S5,#paqueteS1,#paqueteS2,#paqueteS3,#paqueteS4,#paqueteS5,#MO1,#MO2,#MO3,#MO4,#MO5,#paqueteMO1,#paqueteMO2,#paqueteMO3,#paqueteMO4,#paqueteMO5,#SI1,#SI2,#SI3,#SI4,#SI5,#paqueteSI1,#paqueteSI2,#paqueteSI3,#paqueteSI4,#paqueteSI5,#OC1,#OC2,#OC3,#OC4,#OC5,#paqueteOC1,#paqueteOC2,#paqueteOC3,#paqueteOC4,#paqueteOC5');
 
 			$contractSelects.each(function() {
 				var $select = $(this);
@@ -435,11 +426,11 @@
 							'width':'10%',
 					},
 					{
-							'targets': [40],
+							'targets': [50],
 							'width':'22%',
 					},
 					{
-							'targets': [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40],
+							'targets': [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50],
 							'render': function ( data, type, full, meta ) {
 							 return data;
 							},
@@ -486,6 +477,16 @@
 						{"data":"paqueteMO4", "visible":false},
 						{"data":"MO5", "visible":false},
 						{"data":"paqueteMO5", "visible":false},
+						{"data":"OC1", "visible":false},
+						{"data":"paqueteOC1", "visible":false},
+						{"data":"OC2", "visible":false},
+						{"data":"paqueteOC2", "visible":false},
+						{"data":"OC3", "visible":false},
+						{"data":"paqueteOC3", "visible":false},
+						{"data":"OC4", "visible":false},
+						{"data":"paqueteOC4", "visible":false},
+						{"data":"OC5", "visible":false},
+						{"data":"paqueteOC5", "visible":false},
 						{"data":"contratosAsociados"}
 				],
 		    "language": idioma_espanol
@@ -520,11 +521,11 @@
 
 			$("div.toolbarFilaMensajes").html('<p id="mensajeActualizacion"></p>');
 
-			$("div.toolbarFiltro").html('<div class="d-flex ml-auto"><label for="input_buscador" class="sr-only">Buscar en contratos</label><input id="input_buscador" type="text" class="input_buscador form-control form-control-sm mr-1 ml-auto max-w-60" placeholder="Filtro"><button id="btn_limpiar_buscador" type="button" class="btn btn-danger mr-1 ml-0 d-none max-w-40"><i class="fas fa-times-circle"></i> Limpiar</button></div>');
+			$("div.toolbarFiltro").html('<div class="d-flex ml-auto"><label for="input_buscador" class="sr-only">Buscar en contratos</label><input id="input_buscador" type="text" class="input_buscador form-control form-control-sm mr-1 ml-auto max-w-60" placeholder="Filtro"><button id="btn_limpiar_buscador" type="button" class="btn-pdc-modern mr-1 ml-0 d-none max-w-40"><i class="fas fa-times-circle"></i> Limpiar</button></div>');
 
 			var permiso = document.getElementById('permiso_canonico').value;
 			if (permiso === 'A' || permiso === 'D' || permiso === 'OT') {
-				$("div.toolbarFilaMensajes").before('<div class="row mb-2"><div class="col-12"><button id="btn_auto_asignar_contratos" class="btn btn-warning btn-sm" title="Auto-definir tipo de contrato y paquetes para actividades sin asignar">Auto-Definir Contratos <i class="fas fa-magic"></i></button></div></div>');
+				$("div.toolbarFilaMensajes").before('<div class="row mb-2"><div class="col-12"><button id="btn_auto_asignar_contratos" class="btn-pdc-modern" title="Auto-definir tipo de contrato y paquetes para actividades sin asignar"><i class="fas fa-magic"></i> Auto-Definir Contratos</button></div></div>');
 			}
 
 			maestroPermisos(document.getElementById('permiso_canonico').value);
@@ -644,13 +645,25 @@
 								$("#paqueteS1,#paqueteS2,#paqueteS3,#paqueteS4,#paqueteS5").val('').change();
 							}
 
-							// Populate OC section (maps to S1=supplier, paqueteS1=OC#)
+							// Populate OC section
 							if (hasOC) {
-								$('#ocProveedor').val(data.S1 || '');
-								$('#ocNumero').val(data.paqueteS1 || '');
+								$("#OC1, #OC2, #OC3, #OC4, #OC5").html(json_info2["listadoOC"] || '<option value=""></option>').change();
+								$("#paqueteOC1, #paqueteOC2, #paqueteOC3, #paqueteOC4, #paqueteOC5").html(json_info["listadoOC"] || '<option value=""></option>').change();
+								var OC1 = (data.OC1 && data.OC1 != '') ? $("#OC1").val(data.OC1.split(';')).change() : '';
+								var OC2 = (data.OC2 && data.OC2 != '') ? $("#OC2").val(data.OC2.split(';')).change() : '';
+								var OC3 = (data.OC3 && data.OC3 != '') ? $("#OC3").val(data.OC3.split(';')).change() : '';
+								var OC4 = (data.OC4 && data.OC4 != '') ? $("#OC4").val(data.OC4.split(';')).change() : '';
+								var OC5 = (data.OC5 && data.OC5 != '') ? $("#OC5").val(data.OC5.split(';')).change() : '';
+								$("#paqueteOC1").val(data.paqueteOC1).change();
+								$("#paqueteOC2").val(data.paqueteOC2).change();
+								$("#paqueteOC3").val(data.paqueteOC3).change();
+								$("#paqueteOC4").val(data.paqueteOC4).change();
+								$("#paqueteOC5").val(data.paqueteOC5).change();
 							} else {
-								$('#ocProveedor').val('');
-								$('#ocNumero').val('');
+								$("#OC1, #OC2, #OC3, #OC4, #OC5").html('<option value=""></option>').change();
+								$("#paqueteOC1, #paqueteOC2, #paqueteOC3, #paqueteOC4, #paqueteOC5").html('<option value=""></option>').change();
+								$("#OC1,#OC2,#OC3,#OC4,#OC5").val('').change();
+								$("#paqueteOC1,#paqueteOC2,#paqueteOC3,#paqueteOC4,#paqueteOC5").val('').change();
 							}
 
 							// Update section visibility
@@ -745,25 +758,12 @@
 				var opcion = document.getElementById('opcion').value;
 				var tipoContrato = document.getElementById('tipoContrato').value;
 
-				// Build form data manually to handle OC mapping
+				// Build form data manually
 				var frm = $("form").serializeArray();
-				// Remove ocProveedor, ocNumero, modalidades[] from form data
+				// Remove modalidades[] from form data
 				frm = frm.filter(function(f) {
-					return f.name !== 'ocProveedor' && f.name !== 'ocNumero' && f.name !== 'modalidades[]';
+					return f.name !== 'modalidades[]';
 				});
-
-				// If OC is checked, map OC fields to S1/paqueteS1
-				var modalidades = tipoContrato.split(',').map(function(s) { return s.trim(); });
-				if (modalidades.indexOf('OC') >= 0) {
-					var ocProveedor = $('#ocProveedor').val() || '';
-					var ocNumero = $('#ocNumero').val() || '';
-					// Remove existing S1 and paqueteS1 entries
-					frm = frm.filter(function(f) {
-						return f.name !== 'S1' && f.name !== 'paqueteS1';
-					});
-					frm.push({ name: 'S1', value: ocProveedor });
-					frm.push({ name: 'paqueteS1', value: ocNumero });
-				}
 
 				frm.push({ name: 'Id', value: Id });
 				frm.push({ name: 'opcion', value: opcion });

@@ -39,6 +39,7 @@ class ContratosApiController extends BaseController
                     "S2" => "", "paqueteS2" => "", "S3" => "", "paqueteS3" => "", "S4" => "", "paqueteS4" => "",
                     "S5" => "", "paqueteS5" => "", "MO1" => "", "paqueteMO1" => "", "MO2" => "", "paqueteMO2" => "",
                     "MO3" => "", "paqueteMO3" => "", "MO4" => "", "paqueteMO4" => "", "MO5" => "", "paqueteMO5" => "",
+                    "OC1" => "", "paqueteOC1" => "", "OC2" => "", "paqueteOC2" => "", "OC3" => "", "paqueteOC3" => "", "OC4" => "", "paqueteOC4" => "", "OC5" => "", "paqueteOC5" => "",
                     "contratosAsociados" => "",
                 ];
             } else {
@@ -48,7 +49,8 @@ class ContratosApiController extends BaseController
                         act.`fechaInicio`, act.`tipoContrato`, act.`semanaActualizacion`, 
                         act.`SI1`, act.`paqueteSI1`, act.`SI2`, act.`paqueteSI2`, act.`SI3`, act.`paqueteSI3`, act.`SI4`, act.`paqueteSI4`, act.`SI5`, act.`paqueteSI5`, 
                         act.`S1`, act.`paqueteS1`, act.`S2`, act.`paqueteS2`, act.`S3`, act.`paqueteS3`, act.`S4`, act.`paqueteS4`, act.`S5`, act.`paqueteS5`, 
-                        act.`MO1`, act.`paqueteMO1`, act.`MO2`, act.`paqueteMO2`, act.`MO3`, act.`paqueteMO3`, act.`MO4`, act.`paqueteMO4`, act.`MO5`, act.`paqueteMO5` 
+                        act.`MO1`, act.`paqueteMO1`, act.`MO2`, act.`paqueteMO2`, act.`MO3`, act.`paqueteMO3`, act.`MO4`, act.`paqueteMO4`, act.`MO5`, act.`paqueteMO5`, 
+                        act.`OC1`, act.`paqueteOC1`, act.`OC2`, act.`paqueteOC2`, act.`OC3`, act.`paqueteOC3`, act.`OC4`, act.`paqueteOC4`, act.`OC5`, act.`paqueteOC5` 
                     FROM {$dbPrefix}_actividades act 
                     LEFT JOIN {$dbPrefix}_programa_consolidado prog ON prog.`Consecutivo_en_Programa` = act.`actividadInicio` AND prog.`Semana` = act.`semanaActualizacion` 
                     WHERE act.semanaActualizacion = ? AND act.tipoContrato IS NOT NULL AND act.fechaInicio IS NOT NULL 
@@ -96,7 +98,20 @@ class ContratosApiController extends BaseController
                         $contratosAsociadosMO = "<b class='ct-text-success'>- Mano de Obra: </b>" . $contratosAsociadosMO . ".<br>";
                     }
 
-                    $data["contratosAsociados"] = $contratosAsociadosSI . $contratosAsociadosMO . $contratosAsociadosS;
+                    $contratosAsociadosOC = "";
+                    for ($i = 1; $i <= 5; $i++) {
+                        if (!empty($data["paqueteOC$i"])) {
+                            $contratosAsociadosOC .= $data["paqueteOC$i"] . ", ";
+                        }
+                    }
+                    if ($contratosAsociadosOC != "") {
+                        $contratosAsociadosOC = substr($contratosAsociadosOC, 0, -2);
+                        $contratosAsociadosOC = str_replace(';', ", ", $contratosAsociadosOC);
+                        $contratosAsociadosOC = $this->escapeHtml($contratosAsociadosOC);
+                        $contratosAsociadosOC = "<b class='ct-text-dark'>- Orden de Compra: </b>" . $contratosAsociadosOC . ".<br> ";
+                    }
+
+                    $data["contratosAsociados"] = $contratosAsociadosSI . $contratosAsociadosMO . $contratosAsociadosS . $contratosAsociadosOC;
                     $arreglo["data"][] = $data;
                 }
             }
@@ -130,7 +145,7 @@ class ContratosApiController extends BaseController
                 $errores = '';
 
                 $paquetes = [];
-                $tipos = ['SI', 'S', 'MO'];
+                $tipos = ['SI', 'S', 'MO', 'OC'];
                 foreach ($tipos as $t) {
                     for ($i = 1; $i <= 5; $i++) {
                         $pKey = "paquete$t$i";
@@ -155,6 +170,9 @@ class ContratosApiController extends BaseController
                         $errores .= "No se han asignado paquetes de contratación de Suministro o de Mano de Obra para la actividad; ";
                     }
                 }
+                if (in_array('OC', $modalidades) && empty($paquetes['paqueteOC1']) && empty($paquetes['paqueteOC2']) && empty($paquetes['paqueteOC3']) && empty($paquetes['paqueteOC4']) && empty($paquetes['paqueteOC5'])) {
+                    $errores .= "No se han asignado paquetes de contratación de Orden de Compra para la actividad; ";
+                }
 
                 if (!empty($errores)) {
                     $stmt = false;
@@ -163,6 +181,7 @@ class ContratosApiController extends BaseController
                         SI1=?, paqueteSI1=?, SI2=?, paqueteSI2=?, SI3=?, paqueteSI3=?, SI4=?, paqueteSI4=?, SI5=?, paqueteSI5=?, 
                         S1=?, paqueteS1=?, S2=?, paqueteS2=?, S3=?, paqueteS3=?, S4=?, paqueteS4=?, S5=?, paqueteS5=?, 
                         MO1=?, paqueteMO1=?, MO2=?, paqueteMO2=?, MO3=?, paqueteMO3=?, MO4=?, paqueteMO4=?, MO5=?, paqueteMO5=?, 
+                        OC1=?, paqueteOC1=?, OC2=?, paqueteOC2=?, OC3=?, paqueteOC3=?, OC4=?, paqueteOC4=?, OC5=?, paqueteOC5=?, 
                         semanaActualizacion=? 
                         WHERE Id=? AND semanaActualizacion=?";
 
@@ -170,6 +189,7 @@ class ContratosApiController extends BaseController
                         $paquetes['SI1'], $paquetes['paqueteSI1'], $paquetes['SI2'], $paquetes['paqueteSI2'], $paquetes['SI3'], $paquetes['paqueteSI3'], $paquetes['SI4'], $paquetes['paqueteSI4'], $paquetes['SI5'], $paquetes['paqueteSI5'],
                         $paquetes['S1'], $paquetes['paqueteS1'], $paquetes['S2'], $paquetes['paqueteS2'], $paquetes['S3'], $paquetes['paqueteS3'], $paquetes['S4'], $paquetes['paqueteS4'], $paquetes['S5'], $paquetes['paqueteS5'],
                         $paquetes['MO1'], $paquetes['paqueteMO1'], $paquetes['MO2'], $paquetes['paqueteMO2'], $paquetes['MO3'], $paquetes['paqueteMO3'], $paquetes['MO4'], $paquetes['paqueteMO4'], $paquetes['MO5'], $paquetes['paqueteMO5'],
+                        $paquetes['OC1'], $paquetes['paqueteOC1'], $paquetes['OC2'], $paquetes['paqueteOC2'], $paquetes['OC3'], $paquetes['paqueteOC3'], $paquetes['OC4'], $paquetes['paqueteOC4'], $paquetes['OC5'], $paquetes['paqueteOC5'],
                         $semanaActualizacion, $Id, $semanaActualizacion,
                     ];
 
@@ -183,6 +203,7 @@ class ContratosApiController extends BaseController
                         ['SI', 'Suministro e Instalación'],
                         ['MO', 'Mano de Obra'],
                         ['S', 'Suministro'],
+                        ['OC', 'Orden de Compra'],
                     ];
 
                     foreach ($insertTargets as $target) {
@@ -374,7 +395,7 @@ class ContratosApiController extends BaseController
 
     private function actualizarListadoPaquetesContratacion($tipoContrato, $dbPrefix, $db)
     {
-        $res = ["listadoMO" => "", "listadoS" => "", "listadoSI" => ""];
+        $res = ["listadoMO" => "", "listadoS" => "", "listadoSI" => "", "listadoOC" => ""];
         $modalidades = array_map('trim', explode(',', $tipoContrato));
 
         if (in_array('MO', $modalidades) || in_array('S', $modalidades)) {
@@ -401,12 +422,21 @@ class ContratosApiController extends BaseController
             }
             $res["listadoSI"] = $scriptSI;
         }
+
+        if (in_array('OC', $modalidades)) {
+            $stmtOC = $db->query("SELECT paqueteContratacion FROM general_dias_procesos_contratacion WHERE tipoPaquete = 'Orden de Compra'");
+            $scriptOC = "<option value=''></option>";
+            while ($row = $stmtOC->fetch()) {
+                $scriptOC .= "<option value='" . htmlspecialchars($row["paqueteContratacion"], ENT_QUOTES) . "'>" . htmlspecialchars($row["paqueteContratacion"], ENT_QUOTES) . "</option>";
+            }
+            $res["listadoOC"] = $scriptOC;
+        }
         $this->jsonResponse($res);
     }
 
     private function actualizarInsumosRecursos($tipoContrato, $dbPrefix, $db, $semana)
     {
-        $res = ["listadoMO" => "", "listadoS" => "", "listadoSI" => ""];
+        $res = ["listadoMO" => "", "listadoS" => "", "listadoSI" => "", "listadoOC" => ""];
         $modalidades = array_map('trim', explode(',', $tipoContrato));
 
         if (in_array('MO', $modalidades) || in_array('S', $modalidades)) {
@@ -423,6 +453,12 @@ class ContratosApiController extends BaseController
             $querySI = "SELECT SI1 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND SI1 IS NOT NULL AND SI1 != '' UNION SELECT SI2 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND SI2 IS NOT NULL AND SI2 != '' UNION SELECT SI3 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND SI3 IS NOT NULL AND SI3 != '' UNION SELECT SI4 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND SI4 IS NOT NULL AND SI4 != '' UNION SELECT SI5 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND SI5 IS NOT NULL AND SI5 != ''";
             $insumosSI = $this->obtenerInsumosUnicos($db->query($querySI, [$semana, $semana, $semana, $semana, $semana]));
             $res["listadoSI"] = $this->generarOpcionesInsumos($insumosSI);
+        }
+
+        if (in_array('OC', $modalidades)) {
+            $queryOC = "SELECT OC1 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND OC1 IS NOT NULL AND OC1 != '' UNION SELECT OC2 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND OC2 IS NOT NULL AND OC2 != '' UNION SELECT OC3 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND OC3 IS NOT NULL AND OC3 != '' UNION SELECT OC4 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND OC4 IS NOT NULL AND OC4 != '' UNION SELECT OC5 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND OC5 IS NOT NULL AND OC5 != ''";
+            $insumosOC = $this->obtenerInsumosUnicos($db->query($queryOC, [$semana, $semana, $semana, $semana, $semana]));
+            $res["listadoOC"] = $this->generarOpcionesInsumos($insumosOC);
         }
         $this->jsonResponse($res);
     }
@@ -608,6 +644,7 @@ class ContratosApiController extends BaseController
                 'Suministro e Instalación' => 'SI',
                 'Suministro' => 'S',
                 'Mano de Obra' => 'MO',
+                'Orden de Compra' => 'OC',
             ];
 
             // Normalizar encoding: reparar mojibake común
@@ -620,7 +657,7 @@ class ContratosApiController extends BaseController
             $updates = ['tipoContrato = ?'];
             $params = [$tipoContrato];
 
-            $tipos = ['SI', 'S', 'MO'];
+            $tipos = ['SI', 'S', 'MO', 'OC'];
             foreach ($tipos as $t) {
                 for ($i = 1; $i <= 5; $i++) {
                     $updates[] = "paquete{$t}{$i} = NULL";
@@ -628,7 +665,7 @@ class ContratosApiController extends BaseController
                 }
             }
 
-            $packageCounts = ['SI' => 0, 'S' => 0, 'MO' => 0];
+            $packageCounts = ['SI' => 0, 'S' => 0, 'MO' => 0, 'OC' => 0];
             foreach ($items as $item) {
                 $itemTipoPaquete = $item['tipo_paquete'] ?? '';
                 $itemTipoPaquete = str_replace(array_keys($encodingFixes), array_values($encodingFixes), $itemTipoPaquete);

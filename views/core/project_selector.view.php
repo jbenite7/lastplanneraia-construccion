@@ -70,7 +70,7 @@
         .btn-enter {
             background-color: #19692c; /* WCAG AA Contrast Improvement */
             color: white;
-            border-radius: 4px;
+            border-radius: 14px;
             text-transform: uppercase;
             font-weight: 600;
             font-size: 0.85rem;

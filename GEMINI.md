@@ -66,6 +66,9 @@ Los comandos de operación del agente ahora están definidos como workflows form
 9. **Protocolo Sniper**: Durante la ejecución, se prohíben refactorizaciones "de cortesía". El agente se limitará estrictamente a los cambios aprobados en el plan.
 10. **Kill Switch**: El agente tiene un límite de 5 intentos consecutivos para corregir errores de validación antes de abortar la tarea.
 11. **Validación Unificada**: Las pruebas y validaciones de sintaxis se deben realizar en un bloque unificado al final de todos los cambios de archivos.
+12. **Auto* Functions Branding**: Toda función "Auto*..." (auto-generate, auto-assign, auto-associate, auto-program, etc.) DEBE incluir:
+    - **Ícono**: `<i class="fas fa-magic"></i>` (wizard) consistente en todos los botones/acciones Auto*.
+    - **Color**: Validado contra el manual de marca AIA (`brand-manual` skill). Usar variables CSS del sistema de tokens (`--aia-*`) según la línea temática del módulo. No usar clases Bootstrap genéricas (`btn-info`, `btn-warning`) sin sobreescribir con colores de marca.
 
 ## 📄 Documentación de Referencia
 
