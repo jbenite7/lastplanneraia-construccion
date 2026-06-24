@@ -236,6 +236,10 @@ class ActivityMatcher
         $best['reviewRequired'] = $reviewRequired;
         $best['reviewReason'] = $reviewReason;
 
+        // Export confidence as float (preserves decimal from DB DECIMAL column)
+        // while confianza remains as-is for backward compatibility.
+        $best['confidence'] = (float) $best['confianza'];
+
         return $best;
     }
 

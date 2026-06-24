@@ -43,6 +43,7 @@ class RbacManager
             'canEditSST' => in_array($role, ['A', 'S', 'SG']),
             'canEditAmbiental' => in_array($role, ['A', 'G', 'SG']),
             'canManageContracts' => $canManageContracts,
+            'canAutoDefineContracts' => $canManageContracts,
             'canManagePdC' => $canManageContracts,
             'canSeeReports' => true,
             'isExternal' => ($role === 'C'),

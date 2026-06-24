@@ -670,6 +670,14 @@
   color: var(--aia-text-secondary, oklch(35% 0.002 260));
 }
 
+/* Action Bar Container — standard class for all action bars */
+.action-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
 
 /* ================================================================
    9. FILTER TOOLBAR — Mobile Toggle

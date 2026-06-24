@@ -365,10 +365,10 @@ window.HOTActualizarModule = (function() {
                 return row.programaAnteriorAsociar === '*No Asociada*' || row.programaAnteriorAsociar === null || row.programaAnteriorAsociar === '';
             });
             $("#btn_toggleFiltroMapeo").html('Mostrando Pendientes <i class="fas fa-filter fa-lg"></i>');
-            $("#btn_toggleFiltroMapeo").addClass('btn-outline-primary active').removeClass('btn-primary');
+            $("#btn_toggleFiltroMapeo").removeClass('btn-primary btn-outline-primary active');
         } else {
             $("#btn_toggleFiltroMapeo").html('Mostrando Todas <i class="fas fa-list fa-lg"></i>');
-            $("#btn_toggleFiltroMapeo").addClass('btn-primary').removeClass('btn-outline-primary active');
+            $("#btn_toggleFiltroMapeo").removeClass('btn-primary btn-outline-primary active');
         }
 
         if (filteredData.length === 0) {

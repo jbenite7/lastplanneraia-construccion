@@ -2115,7 +2115,7 @@
   }
 
   function getQuickFilterText() {
-    return String($('#input_buscador').val() || '')
+    return ''
       .trim()
       .toLowerCase();
   }
@@ -2123,7 +2123,7 @@
   function getActividadFilterText() {
     var text = String($('#buscadorActividad').val() || '').trim();
     if (!text) {
-      text = String($('#input_buscador').val() || '').trim();
+      text = '';
     }
     return text.toLowerCase();
   }
@@ -2634,7 +2634,7 @@
 
   function bindFilters() {
     $('#buscadorActividad').off('input.pg').on('input.pg', applyFiltersAndRender);
-    $('#input_buscador').off('input.pgquick').on('input.pgquick', applyFiltersAndRender);
+
     $('#buscadorSemanasInicio').off('change.pg').on('change.pg', applyFiltersAndRender);
     $('#buscadorCritica').off('change.pg').on('change.pg', applyFiltersAndRender);
     $('#buscadorEstado')
@@ -2648,7 +2648,7 @@
       .off('click.pg')
       .on('click.pg', function () {
         $('#buscadorActividad').val('');
-        $('#input_buscador').val('');
+
         $('#buscadorSemanasInicio').val('');
         $('#buscadorCritica').val('');
         $('#buscadorEstado').val('');

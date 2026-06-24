@@ -318,7 +318,7 @@
     <input type="hidden" id="baseDatos" value="<?php echo $_SESSION['db'] ?? 'Prueba'; ?>">
     <input type="hidden" id="permiso_canonico" value="<?php echo $_SESSION['permiso'] ?? 'V'; ?>">
 
-    <div class="header-actions">
+<div class="header-actions action-bar">
         <h4><?php echo $isPreConstruccion ? 'Interesados Externos (Live Edición)' : 'Subcontratistas (Live Edición)'; ?></h4>
         <?php if ($isPreConstruccion): ?>
             <small class="text-muted d-block mt-1">Gestión de interesados externos del proyecto: Socios, Ventas, Gerencia, Diseñadores, Entidades.</small>
@@ -326,7 +326,7 @@
         <div>
             <span id="save-status" class="badge badge-success" style="display:none;">Guardado</span>
             <span id="save-error" class="badge badge-danger" style="display:none;">Error al guardar</span>
-            <button id="btn-export" class="btn btn-sm btn-outline-secondary" onclick="exportCSV()"><i class="fas fa-file-excel"></i> Exportar</button>
+            <button id="btn-export" class="btn-pdc-modern" onclick="exportCSV()"><i class="fas fa-file-excel"></i> Exportar</button>
         </div>
     </div>
 

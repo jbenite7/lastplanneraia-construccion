@@ -494,7 +494,11 @@ class Project
               `OC4` varchar(200) DEFAULT NULL,
               `paqueteOC4` varchar(200) DEFAULT NULL,
               `OC5` varchar(200) DEFAULT NULL,
-              `paqueteOC5` varchar(200) DEFAULT NULL
+              `paqueteOC5` varchar(200) DEFAULT NULL,
+              `numeroSubcontratos` tinyint NOT NULL DEFAULT 1,
+              `confianza_deteccion` decimal(5,2) DEFAULT NULL,
+              `ultimo_auto_definir` datetime DEFAULT NULL,
+              `fechaInicioProyectada` date DEFAULT NULL
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci",
 
             // milanCampestre_cambios

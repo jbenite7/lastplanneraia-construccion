@@ -210,42 +210,230 @@
 		<!-- Modal -->
 	</div>
 
+	<!-- Scoped styles for Auto-Definir Contratos modal -->
+	<style>
+		/* --- Auto-Definir Contratos: modal table & responsive --- */
+		#aad-modal .modal-header {
+			background: linear-gradient(135deg, var(--aia-modal-green-dark, #1a3c2a) 0%, var(--aia-modal-green-primary, #1a5633) 100%);
+			border-bottom: none;
+		}
+		#aad-modal .modal-header .close { color: #fff; opacity: 0.85; }
+		#aad-modal .modal-header .close:hover { opacity: 1; }
+
+		/* Summary badges row */
+		#aad-resumen-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+		#aad-resumen-badges .badge {
+			font-size: 0.75rem;
+			font-weight: 600;
+			padding: 3px 8px;
+			border-radius: 10px;
+		}
+		#aad-resumen-badges .badge-aad-total   { background: rgba(255,255,255,0.18); color: #fff; }
+		#aad-resumen-badges .badge-aad-match   { background: var(--aia-green, #28a745); color: #fff; }
+		#aad-resumen-badges .badge-aad-revision { background: var(--aia-amber, #e0a800); color: #1a1a1a; }
+		#aad-resumen-badges .badge-aad-manual   { background: rgba(255,255,255,0.28); color: #fff; }
+
+		/* Header undo button */
+		#aad-btn-undo {
+			font-size: 0.78rem;
+			padding: 4px 10px;
+			border-radius: 10px;
+			color: rgba(255,255,255,0.85);
+			border: 1px solid rgba(255,255,255,0.35);
+			background: transparent;
+			margin-top: 6px;
+		}
+		#aad-btn-undo:hover { background: rgba(255,255,255,0.12); color: #fff; }
+
+		/* Table wrapper */
+		#aad-table-wrap {
+			max-height: 42vh;
+			overflow-y: auto;
+			border: 1px solid var(--aia-modal-border, rgba(26,86,51,0.18));
+			border-radius: 8px;
+		}
+		#aad-table-wrap::-webkit-scrollbar { width: 6px; }
+		#aad-table-wrap::-webkit-scrollbar-thumb { background: var(--aia-green-light, #d5e5db); border-radius: 3px; }
+
+		/* Table header */
+		#aad-table { margin-bottom: 0; font-size: 0.88rem; }
+		#aad-table thead th {
+			position: sticky;
+			top: 0;
+			z-index: 2;
+			background: var(--aia-modal-green-light, #d5e5db);
+			color: var(--aia-modal-green-dark, #1a3c2a);
+			font-weight: 700;
+			font-size: 0.8rem;
+			text-transform: uppercase;
+			letter-spacing: 0.03em;
+			white-space: nowrap;
+			border-bottom: 2px solid var(--aia-green-primary, #1a5633);
+			vertical-align: middle;
+			padding: 8px 6px;
+		}
+		#aad-table tbody td {
+			vertical-align: middle;
+			padding: 6px;
+		}
+
+		/* Confidence badge */
+		.aad-conf-badge {
+			display: inline-block;
+			font-size: 0.72rem;
+			font-weight: 700;
+			padding: 2px 7px;
+			border-radius: 8px;
+			line-height: 1.4;
+		}
+		.aad-conf-high   { background: var(--aia-green-light, #d5e5db); color: var(--aia-green-dark, #1a3c2a); }
+		.aad-conf-medium { background: #fff3cd; color: #856404; }
+		.aad-conf-low    { background: #f8d7da; color: #721c24; }
+		.aad-conf-none   { background: #e9ecef; color: #6c757d; }
+
+		/* Status badge */
+		.aad-status-badge {
+			display: inline-block;
+			font-size: 0.72rem;
+			font-weight: 600;
+			padding: 2px 8px;
+			border-radius: 8px;
+		}
+		.aad-status-auto    { background: var(--aia-green, #28a745); color: #fff; }
+		.aad-status-revisar { background: var(--aia-amber, #e0a800); color: #1a1a1a; }
+		.aad-status-manual  { background: #dee2e6; color: #495057; }
+
+		/* Package chips */
+		.aad-chip {
+			display: inline-block;
+			font-size: 0.72rem;
+			font-weight: 500;
+			padding: 2px 7px;
+			border-radius: 8px;
+			background: var(--aia-green-very-light, #eef5f1);
+			color: var(--aia-green-dark, #1a3c2a);
+			margin: 1px 2px;
+			white-space: nowrap;
+		}
+
+		/* Editable select / input inside table */
+		#aad-table .aad-select,
+		#aad-table .aad-input-num {
+			font-size: 0.82rem;
+			padding: 4px 6px;
+			border-radius: 6px;
+			border: 1px solid var(--aia-modal-border, rgba(26,86,51,0.18));
+			background: #fff;
+			min-height: 36px;
+			width: 100%;
+		}
+		#aad-table .aad-select:focus,
+		#aad-table .aad-input-num:focus {
+			border-color: var(--aia-green-primary, #1a5633);
+			box-shadow: 0 0 0 2px rgba(26,86,51,0.12);
+			outline: none;
+		}
+
+		/* Checkbox column */
+		#aad-table th.aad-col-check,
+		#aad-table td.aad-col-check { text-align: center; width: 40px; }
+		#aad-table .aad-check { width: 16px; height: 16px; cursor: pointer; accent-color: var(--aia-green-primary, #1a5633); }
+
+		/* Modalidad multi-select checkboxes */
+		.aad-checks label { margin-right: 8px; font-size: 0.85em; cursor: pointer; white-space: nowrap; }
+		.aad-checks input[type="checkbox"] { accent-color: var(--aia-green-primary, #1a5633); margin-right: 2px; }
+
+		/* Row number */
+		.aad-row-num { color: #6c757d; font-weight: 600; font-size: 0.8rem; }
+
+		/* Hidden utility */
+		#aad-btn-undo.d-none { display: none !important; }
+
+		/* --- Mobile-first responsive --- */
+		@media (max-width: 767.98px) {
+			#modalAutoAsignarContratos .modal-dialog { max-width: calc(100vw - 0.5rem); margin: 0.25rem auto; }
+			#aad-modal .modal-header,
+			#aad-modal .modal-body,
+			#aad-modal .modal-footer { padding-left: 0.75rem; padding-right: 0.75rem; }
+
+			#aad-table { font-size: 0.82rem; }
+			#aad-table thead th { font-size: 0.72rem; padding: 6px 4px; }
+			#aad-table tbody td { padding: 5px 4px; }
+
+			/* Stack labels above controls on small screens */
+			#aad-table .aad-select,
+			#aad-table .aad-input-num {
+				min-height: 44px; /* touch target */
+				font-size: 16px; /* prevent iOS zoom */
+			}
+			#aad-table .aad-check { width: 20px; height: 20px; }
+
+			/* Hide less critical columns on mobile */
+			#aad-table .aad-col-hide-mobile { display: none; }
+
+			#aad-resumen-badges { gap: 4px; }
+			#aad-resumen-badges .badge { font-size: 0.7rem; padding: 2px 6px; }
+
+			#aad-modal .modal-footer { flex-wrap: wrap; gap: 6px; }
+			#aad-modal .modal-footer .btn { flex: 1 1 45%; min-height: 44px; }
+		}
+
+		@media (min-width: 768px) and (max-width: 991.98px) {
+			#aad-table .aad-col-hide-tablet { display: none; }
+		}
+	</style>
+
 	<!-- Modal Auto-Definir Contratos -->
 	<div class="modal fade aia-modal" id="modalAutoAsignarContratos" tabindex="-1" role="dialog" aria-labelledby="modalAutoAsignarContratosLabel" aria-hidden="true">
 		<div class="modal-dialog modal-lg modal-dialog-centered" role="document">
-			<div class="modal-content">
+			<div class="modal-content" id="aad-modal">
+				<!-- HEADER -->
 				<div class="modal-header">
 					<div class="modal-title" id="modalAutoAsignarContratosLabel">
 						<div class="aia-modal__eyebrow">AIA Corporativo</div>
-						<h2 class="aia-modal__headline">Auto-Definir Contratos</h2>
-						<p class="aia-modal__subtitle">Detecta automáticamente el tipo de contrato y paquetes para actividades sin asignar.</p>
+						<h2 class="aia-modal__headline"><i class="fas fa-magic" aria-hidden="true"></i> Auto-Definir Contratos</h2>
+						<p class="aia-modal__subtitle">Detecta y asigna automáticamente tipo de contrato y paquetes para actividades pendientes.</p>
+						<div id="aad-resumen-badges" style="display:none;">
+							<span class="badge badge-aad-total">Total: <strong id="aad-count-total">0</strong></span>
+							<span class="badge badge-aad-match">Con match: <strong id="aad-count-match">0</strong></span>
+							<span class="badge badge-aad-revision">Revisión: <strong id="aad-count-revision">0</strong></span>
+							<span class="badge badge-aad-manual">Manual: <strong id="aad-count-manual">0</strong></span>
+						</div>
+						<button type="button" class="btn d-none" id="aad-btn-undo" title="Deshacer última corrida"><i class="fas fa-undo"></i> Deshacer</button>
 					</div>
 					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 				</div>
-				<div class="modal-body">
-					<div class="alert alert-info" id="autoAsignarResumen">
+
+				<!-- BODY -->
+				<div class="modal-body" style="padding-top:0.5rem;">
+					<div class="alert alert-info mb-2" id="autoAsignarResumen" style="font-size:0.85rem;">
 						Presiona "Analizar" para detectar actividades pendientes de asignación.
 					</div>
-					<div class="table-responsive" style="max-height: 40vh; overflow-y: auto;">
-						<table class="table table-sm table-bordered table-hover mb-0" id="autoAsignarTable">
-							<thead class="thead-light">
+
+					<div id="aad-table-wrap">
+						<table class="table table-sm table-bordered table-hover" id="autoAsignarTable">
+							<thead>
 								<tr>
-									<th style="width: 50px;">#</th>
+									<th class="aad-col-check"><input type="checkbox" id="aad-check-all" class="aad-check" title="Seleccionar todas"></th>
+									<th style="width:36px;">#</th>
 									<th>Actividad</th>
-									<th>Familia</th>
-									<th>Tipo Contrato</th>
+									<th>Familia + Confianza</th>
+									<th class="aad-col-hide-mobile">Modalidad</th>
 									<th>Paquetes</th>
-									<th>Estado</th>
+									<th class="aad-col-hide-mobile" style="width:90px;">N Proveedores</th>
+									<th style="width:90px;">Estado</th>
 								</tr>
 							</thead>
 							<tbody id="autoAsignarBody"></tbody>
 						</table>
 					</div>
 				</div>
+
+				<!-- FOOTER -->
 				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+					<button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times"></i> Cerrar</button>
 					<button type="button" class="btn btn-outline-primary" id="btnAutoAsignarAnalizar"><i class="fas fa-search"></i> Analizar</button>
-					<button type="button" class="btn-auto btn-auto-orange" id="btnAutoAsignarAplicar" disabled><i class="fas fa-magic"></i> Aplicar</button>
+					<button type="button" class="btn-auto btn-auto-orange" id="btnAutoAsignarAplicar" disabled><i class="fas fa-magic"></i> Aplicar seleccionadas</button>
 				</div>
 			</div>
 		</div>
@@ -311,6 +499,7 @@
 			});
 
 			inicializarAutoAsignarContratos();
+			actualizarBadgePendientesContratos();
       listar();
 		}
 
@@ -514,7 +703,7 @@
 				table.columns.adjust();
 			});
 
-			$("div.toolbarFilaBotones").html('<div class="grupo_botones_semanal_madre ps-toolbar-nav-wrap"><div class="grupo_botones_semanal btn-group" role="group" aria-label="Basic example"><button id="btn_Actividades" type="button" class="btn btn-success btn-sm" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_listadoActividades&semana='+semana+'\'">Actividades <i class="fas fa-arrow-right fa-m"></i></button><button id="btn_contratos" type="button" class="btn btn-success btn-sm active" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_contratos&semana='+semana+'\'">Contratos <i class="fas fa-arrow-right fa-m"></i></button><button id="btn_planCompras" type="button" class="btn btn-success btn-sm" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=planCompras&semana='+semana+'&origen=info_contratos\'">Plan de Compras</button></div></div>');
+			$("div.toolbarFilaBotones").html('<div class="grupo_botones_semanal_madre ps-toolbar-nav-wrap"><div class="grupo_botones_semanal btn-group" role="group" aria-label="Basic example"><button id="btn_Actividades" type="button" class="btn-pdc-modern" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_listadoActividades&semana='+semana+'\'">Actividades <i class="fas fa-arrow-right fa-m"></i></button><button id="btn_contratos" type="button" class="btn-pdc-modern active" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_contratos&semana='+semana+'\'">Contratos <i class="fas fa-arrow-right fa-m"></i></button><button id="btn_planCompras" type="button" class="btn-pdc-modern" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=planCompras&semana='+semana+'&origen=info_contratos\'">Plan de Compras</button></div></div>');
 
 			$("div.toolbarFilaBotones .grupo_botones_semanal_madre")
 				.addClass("ps-toolbar-nav-wrap")
@@ -522,15 +711,14 @@
 
 			$("div.toolbarFilaMensajes").html('<p id="mensajeActualizacion"></p>');
 
-			$("div.toolbarFiltro").html('<div class="d-flex ml-auto"><label for="input_buscador" class="sr-only">Buscar en contratos</label><input id="input_buscador" type="text" class="input_buscador form-control form-control-sm mr-1 ml-auto max-w-60" placeholder="Filtro"><button id="btn_limpiar_buscador" type="button" class="btn-pdc-modern mr-1 ml-0 d-none max-w-40"><i class="fas fa-times-circle"></i> Limpiar</button></div>');
+			$("div.toolbarFiltro").html('<div class="d-flex ml-auto"><label class="sr-only">Buscar en contratos</label><button id="btn_limpiar_buscador" type="button" class="btn-pdc-modern mr-1 ml-0 d-none max-w-40"><i class="fas fa-times-circle"></i> Limpiar</button></div>');
 
 			var permiso = document.getElementById('permiso_canonico').value;
 			if (permiso === 'A' || permiso === 'D' || permiso === 'OT') {
-				$("div.toolbarFilaMensajes").before('<div class="row mb-2"><div class="col-12"><button id="btn_auto_asignar_contratos" class="btn-pdc-modern" title="Auto-definir tipo de contrato y paquetes para actividades sin asignar"><i class="fas fa-magic"></i> Auto-Definir Contratos</button></div></div>');
+				$("div.toolbarFilaBotones").prepend('<button id="btn_auto_asignar_contratos" class="btn-pdc-modern ml-2" title="Auto-definir tipo de contrato y paquetes para actividades sin asignar"><i class="fas fa-magic"></i> Auto-Definir Contratos<span class="badge badge-pill badge-danger ml-1" id="badgePendientesContratos" style="display:none;font-size:0.65rem;vertical-align:middle;line-height:1;min-width:1.4em;">0</span></button>');
 			}
 
 			maestroPermisos(document.getElementById('permiso_canonico').value);
-			activarBuscador("#dt_cliente tbody", table);
 		  obtener_data_editar("#dt_cliente tbody", table);
 		}
 
@@ -906,73 +1094,407 @@
 		}
 		}
 
-		/* Auto-Asignar Contratos */
-		var inicializarAutoAsignarContratos = function() {
-			$(document).off('click.autoAsignar', '#btn_auto_asignar_contratos').on('click.autoAsignar', '#btn_auto_asignar_contratos', function(e) {
-				e.preventDefault();
-				$('#modalAutoAsignarContratos').modal('show');
+		/* ============================================================
+		   Auto-Definir Contratos — Modal JS (Task 7)
+		   ============================================================ */
+
+		/* --- Helper: obtain db/semana context --- */
+		function _aad_ctx() {
+			return {
+				db: document.getElementById('baseDatos').value,
+				semana: document.getElementById('semana').value
+			};
+		}
+
+		/* --- Confidence badge: verde ≥80, ambar ≥50, rojo >0, gris 0 --- */
+		function _aad_confBadge(conf) {
+			var pct = Math.round((conf || 0) * 100);
+			var cls = 'aad-conf-none';
+			if (pct >= 80)      cls = 'aad-conf-high';
+			else if (pct >= 50) cls = 'aad-conf-medium';
+			else if (pct > 0)   cls = 'aad-conf-low';
+			return '<span class="aad-conf-badge ' + cls + '">' + pct + '%</span>';
+		}
+
+		/* --- Status badge: Auto ≥80%, Revisar <80%, Manual if isManualOverride --- */
+		function _aad_statusBadge(s) {
+			if (s.isManualOverride) return '<span class="aad-status-badge aad-status-manual">Manual</span>';
+			if ((s.confidence || 0) >= 0.8) return '<span class="aad-status-badge aad-status-auto">Auto</span>';
+			return '<span class="aad-status-badge aad-status-revisar">Revisar</span>';
+		}
+
+		/* --- Package chips --- */
+		function _aad_paquetesChips(paquetes) {
+			if (!paquetes || !paquetes.length) return '<span class="text-muted">&mdash;</span>';
+			var h = '';
+			for (var i = 0; i < paquetes.length; i++) {
+				h += '<span class="aad-chip">' + escaparHtml(paquetes[i].paqueteNombre || '') + '</span>';
+			}
+			return h;
+		}
+
+		/* --- Modalidad checkboxes for a row --- */
+		function _aad_modalidadSelect(s) {
+			var current = (s.tipoContrato || '').toUpperCase();
+			var codes  = ['SI', 'MO', 'S', 'OC'];
+			var labels = { SI:'SI', MO:'MO', S:'S', OC:'OC' };
+			var h = '<div class="aad-checks" data-row-id="' + s.Id + '">';
+			for (var i = 0; i < codes.length; i++) {
+				var isChecked = (current === codes[i] || current.indexOf(codes[i]) >= 0) ? ' checked' : '';
+				h += '<label><input type="checkbox" value="' + codes[i] + '"' + isChecked +
+					' onchange="onChangeModalidad(this,' + s.Id + ')"> ' + labels[codes[i]] + '</label>';
+			}
+			return h + '</div>';
+		}
+
+		/* --- Build one <tr> for a suggestion --- */
+		function _aad_rowHtml(s, idx) {
+			var autoCheck = ((s.confidence || 0) >= 0.8 || s.isManualOverride) ? ' checked' : '';
+			var noMatch   = (!s.tipoContrato && !s.match) ? ' disabled' : '';
+			return '<tr data-aad-id="' + s.Id + '">' +
+				'<td class="aad-col-check"><input type="checkbox" class="aad-check aad-check-row"' + autoCheck + noMatch + ' onchange="_aad_toggleApplyBtn()"></td>' +
+				'<td class="aad-row-num">' + (idx + 1) + '</td>' +
+				'<td>' + escaparHtml(s.actividad || '') + '</td>' +
+				'<td>' + (s.familia ? escaparHtml(s.familia) : '<span class="text-muted">&mdash;</span>') + ' ' + _aad_confBadge(s.confidence) + '</td>' +
+				'<td class="aad-col-hide-mobile">' + (s.tipoContrato ? _aad_modalidadSelect(s) : '<span class="text-muted">&mdash;</span>') + '</td>' +
+				'<td class="aad-paquetes-cell">' + _aad_paquetesChips(s.paquetes) + '</td>' +
+				'<td class="aad-col-hide-mobile"><input type="number" class="aad-input-num aad-num-prov" min="1" value="' + (s.numeroSubcontratos || 1) + '"></td>' +
+				'<td>' + _aad_statusBadge(s) + '</td>' +
+				'</tr>';
+		}
+
+		/* --- Enable/disable Apply button based on checkboxes --- */
+		function _aad_toggleApplyBtn() {
+			var any = $('#autoAsignarBody .aad-check-row:checked').length > 0;
+			$('#btnAutoAsignarAplicar').prop('disabled', !any);
+		}
+
+		/* --- Reset modal to initial state --- */
+		function resetAutoDefineModal() {
+			$('#autoAsignarBody').html('');
+			$('#autoAsignarResumen')
+				.removeClass('alert-danger alert-success alert-info')
+				.addClass('alert-info')
+				.html('Presiona \u201cAnalizar\u201d para detectar actividades pendientes de asignaci\u00f3n.');
+			$('#aad-resumen-badges').hide();
+			$('#aad-count-total').text('0');
+			$('#aad-count-match').text('0');
+			$('#aad-count-revision').text('0');
+			$('#aad-count-manual').text('0');
+			$('#btnAutoAsignarAplicar').prop('disabled', true);
+			$('#btnAutoAsignarAnalizar').prop('disabled', false);
+			$('#aad-btn-undo').addClass('d-none');
+			$('#aad-check-all').prop('checked', false);
+		}
+
+		/* --- Load suggestions from API --- */
+		function cargarSugerenciasAutoDefine() {
+			var ctx = _aad_ctx();
+			var btn = $('#btnAutoAsignarAnalizar');
+
+			btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Analizando\u2026');
+			$('#autoAsignarResumen')
+				.removeClass('alert-danger alert-success alert-info')
+				.addClass('alert-info')
+				.html('Analizando actividades pendientes\u2026');
+			$('#autoAsignarBody').html('');
+			$('#aad-resumen-badges').hide();
+			$('#aad-btn-undo').addClass('d-none');
+
+			$.ajax({
+				method: 'POST',
+				url: '/api/contratos/auto-define?db=' + encodeURIComponent(ctx.db) + '&semana=' + encodeURIComponent(ctx.semana),
+				dataType: 'json'
+			}).done(function(r) {
+				btn.prop('disabled', false).html('<i class="fas fa-search"></i> Analizar');
+
+				if (!r || r.respuesta !== 'BIEN') {
+					AIA.Notice.error(escaparHtml((r && r.mensaje) || 'No se pudieron cargar sugerencias.'));
+					$('#autoAsignarResumen').removeClass('alert-info alert-success').addClass('alert-danger')
+						.html(escaparHtml((r && r.mensaje) || 'Error al analizar.'));
+					return;
+				}
+
+				var sugs = r.sugerencias || [];
+				var total = r.total || 0;
+
+				/* Summary badges */
+				$('#aad-count-total').text(total);
+				$('#aad-count-match').text(r.conMatch || 0);
+				$('#aad-count-revision').text(r.sinMatch || 0);
+				$('#aad-count-manual').text(r.manualOverrides || 0);
+				$('#aad-resumen-badges').show();
+
+				if (total === 0) {
+					$('#autoAsignarResumen').removeClass('alert-info alert-danger').addClass('alert-success')
+						.html('No hay actividades pendientes por analizar.');
+					return;
+				}
+
+				$('#autoAsignarResumen').removeClass('alert-info alert-danger alert-success').addClass('alert-info')
+					.html('Se encontraron <strong>' + total + '</strong> actividades: ' +
+						'<strong>' + (r.conMatch || 0) + '</strong> con sugerencia, ' +
+						'<strong>' + (r.sinMatch || 0) + '</strong> sin match, ' +
+						'<strong>' + (r.manualOverrides || 0) + '</strong> manuales.');
+
+				/* Render rows */
+				var html = '';
+				for (var i = 0; i < sugs.length; i++) {
+					html += _aad_rowHtml(sugs[i], i);
+				}
+				$('#autoAsignarBody').html(html);
+
+				/* Store original suggestion data on each <tr> */
+				for (var j = 0; j < sugs.length; j++) {
+					$('#autoAsignarBody tr').eq(j).data('aad', {
+						Id: sugs[j].Id,
+						tipoContrato: sugs[j].tipoContrato || '',
+						paquetes: sugs[j].paquetes || [],
+						fechaInicioProyectada: sugs[j].fechaInicioProyectada || '',
+						confidence: sugs[j].confidence || 0,
+						numeroSubcontratos: sugs[j].numeroSubcontratos || 1,
+						isManualOverride: !!sugs[j].isManualOverride
+					});
+				}
+
+				$('#aad-check-all').prop('checked', false);
+				_aad_toggleApplyBtn();
+				$('#aad-btn-undo').removeClass('d-none');
+				actualizarBadgePendientesContratos();
+
+			}).fail(function(xhr) {
+				var msg = 'Error de conexi\u00f3n al analizar.';
+				if (xhr.responseJSON && xhr.responseJSON.mensaje) msg = xhr.responseJSON.mensaje;
+				AIA.Notice.error(msg);
+				$('#autoAsignarResumen').removeClass('alert-info alert-success').addClass('alert-danger').html(escaparHtml(msg));
+				btn.prop('disabled', false).html('<i class="fas fa-search"></i> Analizar');
 			});
+		}
 
-			$('#modalAutoAsignarContratos').off('show.bs.modal.autoAsignar').on('show.bs.modal.autoAsignar', function() {
-				$('#autoAsignarResumen').removeClass('alert-danger alert-success').addClass('alert-info').html('Presiona "Analizar" para detectar actividades pendientes de asignación.');
-				$('#autoAsignarBody').html('');
-				$('#btnAutoAsignarAplicar').prop('disabled', true);
-				$('#btnAutoAsignarAnalizar').prop('disabled', false);
+		/* --- On modalidad checkbox change: re-analyze single row --- */
+		function onChangeModalidad(cbEl, rowId) {
+			var ctx  = _aad_ctx();
+			var $cb  = $(cbEl);
+			var $tr  = $cb.closest('tr');
+			var $checks = $tr.find('.aad-checks input[type="checkbox"]');
+
+			/* SI exclusivity: SI vs MO/S/OC */
+			if (cbEl.checked && cbEl.value === 'SI') {
+				$checks.filter('[value="MO"],[value="S"],[value="OC"]').prop('checked', false);
+			} else if (cbEl.checked && (cbEl.value === 'MO' || cbEl.value === 'S' || cbEl.value === 'OC')) {
+				$checks.filter('[value="SI"]').prop('checked', false);
+			}
+
+			/* Collect all checked values */
+			var selected = [];
+			$checks.each(function() { if (this.checked) selected.push(this.value); });
+
+			/* If nothing checked, default to first option */
+			if (selected.length === 0) {
+				$checks.first().prop('checked', true);
+				selected.push($checks.first().val());
+			}
+
+			var nuevaModalidad = selected.join(',');
+
+			$tr.css('opacity', '0.6');
+			$checks.prop('disabled', true);
+
+			$.ajax({
+				method: 'POST',
+				url: '/api/contratos/auto-define/reanalyze?db=' + encodeURIComponent(ctx.db) +
+					'&semana=' + encodeURIComponent(ctx.semana) +
+					'&Id=' + encodeURIComponent(rowId) +
+					'&modalidad=' + encodeURIComponent(nuevaModalidad),
+				dataType: 'json'
+			}).done(function(r) {
+				$tr.css('opacity', '1');
+				$checks.prop('disabled', false);
+
+				if (!r || r.respuesta !== 'BIEN') {
+					AIA.Notice.error(escaparHtml((r && r.mensaje) || 'No se pudo re-analizar.'));
+					return;
+				}
+
+				/* Update stored data */
+				var stored = $tr.data('aad') || {};
+				stored.tipoContrato = r.tipoContrato || '';
+				stored.paquetes = r.paquetes || [];
+				stored.fechaInicioProyectada = r.fechaInicioProyectada || '';
+				stored.confidence = r.confidence || 0;
+				$tr.data('aad', stored);
+
+				/* Update paquetes cell */
+				$tr.find('.aad-paquetes-cell').html(_aad_paquetesChips(r.paquetes));
+
+				AIA.Notice.success('Modalidad actualizada: ' + (r.tipoContratoLabel || nuevaModalidad));
+			}).fail(function(xhr) {
+				$tr.css('opacity', '1');
+				$checks.prop('disabled', false);
+				/* Revert checkboxes to stored value */
+				var stored = $tr.data('aad');
+				if (stored && stored.tipoContrato) {
+					var savedCodes = stored.tipoContrato.split(',').map(function(c){ return c.trim().toUpperCase(); });
+					$checks.each(function(){ $(this).prop('checked', savedCodes.indexOf(this.value) >= 0); });
+				}
+				var msg = 'Error al re-analizar.';
+				if (xhr.responseJSON && xhr.responseJSON.mensaje) msg = xhr.responseJSON.mensaje;
+				AIA.Notice.error(msg);
 			});
+		}
 
-			$('#btnAutoAsignarAnalizar').off('click.autoAsignar').on('click.autoAsignar', function(e) {
-				e.preventDefault();
-				var btn = $(this);
-				var db = document.getElementById('baseDatos').value;
-				var semana = document.getElementById('semana').value;
+		/* --- Apply selected suggestions --- */
+		function aplicarSeleccionadas() {
+			var payload = [];
 
-				btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Analizando...');
-				$('#autoAsignarResumen').removeClass('alert-danger alert-success').addClass('alert-info').html('Analizando actividades pendientes...');
-				$('#autoAsignarBody').html('');
+			$('#autoAsignarBody tr').each(function() {
+				var $tr = $(this);
+				if (!$tr.find('.aad-check-row:checked').length) return;
 
-				$.ajax({
-					method: 'POST',
-					url: '/api/contratos/auto-assign?db=' + encodeURIComponent(db) + '&semana=' + encodeURIComponent(semana),
-					dataType: 'json'
-				}).done(function(response) {
-					if (!response || response.respuesta !== 'BIEN') {
-						$('#autoAsignarResumen').removeClass('alert-info alert-success').addClass('alert-danger').html(escaparHtml((response && response.mensaje) || 'No se pudieron cargar sugerencias.'));
-						btn.prop('disabled', false).html('<i class="fas fa-search"></i> Analizar');
-						return;
-					}
+				var stored = $tr.data('aad') || {};
+				var numProv = parseInt($tr.find('.aad-num-prov').val(), 10) || 1;
 
-					var sugerencias = response.sugerencias || [];
-					var msg = 'Total pendientes: <strong>' + response.total + '</strong> · Asignadas: <strong>' + response.asignadas + '</strong> · Sin match: <strong>' + response.sinMatch + '</strong>';
-					$('#autoAsignarResumen').removeClass('alert-info alert-danger').addClass('alert-success').html(msg);
-
-					var html = '';
-					for (var i = 0; i < sugerencias.length; i++) {
-						var s = sugerencias[i];
-						var badge = '';
-						var estado = '';
-						if (!s.match) {
-							badge = '<span class="badge badge-secondary">Sin match</span>';
-							estado = escaparHtml(s.motivo || 'Sin familia detectada');
-						} else if (s.asignada) {
-							badge = '<span class="badge badge-success">Asignada</span>';
-							estado = '<strong>' + escaparHtml(s.tipoContratoLabel || '') + '</strong>: ' + (s.paquetes || []).map(function(p) { return escaparHtml(p.paqueteNombre); }).join(', ');
-						} else if (s.motivo) {
-							badge = '<span class="badge badge-warning">Pendiente</span>';
-							estado = escaparHtml(s.motivo);
-						}
-						var familia = s.familia ? escaparHtml(s.familia) : '-';
-						html += '<tr><td>' + (i + 1) + '</td><td>' + escaparHtml(s.actividad || '') + '</td><td>' + familia + '</td><td>' + (s.tipoContratoLabel ? escaparHtml(s.tipoContratoLabel) : '-') + '</td><td>' + (s.paquetes ? s.paquetes.map(function(p) { return escaparHtml(p.paqueteNombre); }).join(', ') : '-') + '</td><td>' + badge + ' ' + estado + '</td></tr>';
-					}
-					$('#autoAsignarBody').html(html);
-					btn.prop('disabled', false).html('<i class="fas fa-search"></i> Analizar');
-				}).fail(function(xhr) {
-					var mensaje = 'Error de conexión al analizar.';
-					if (xhr.responseJSON && xhr.responseJSON.mensaje) {
-						mensaje = xhr.responseJSON.mensaje;
-					}
-					$('#autoAsignarResumen').removeClass('alert-info alert-success').addClass('alert-danger').html(escaparHtml(mensaje));
-					btn.prop('disabled', false).html('<i class="fas fa-search"></i> Analizar');
+				payload.push({
+					Id: stored.Id || parseInt($tr.data('aad-id'), 10),
+					tipoContrato: stored.tipoContrato || '',
+					modalidad: (function() {
+						var codes = [];
+						$tr.find('.aad-checks input[type="checkbox"]:checked').each(function(){ codes.push(this.value); });
+						return codes.join(',') || stored.tipoContrato || '';
+					})(),
+					paquetes: stored.paquetes || [],
+					fechaInicioProyectada: stored.fechaInicioProyectada || '',
+					numeroSubcontratos: numProv,
+					confidence: stored.confidence || 0
 				});
+			});
+
+			if (payload.length === 0) {
+				AIA.Notice.warningToast('Selecciona al menos una sugerencia para aplicar.');
+				return;
+			}
+
+			var btn = $('#btnAutoAsignarAplicar');
+			btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Aplicando\u2026');
+
+			$.ajax({
+				method: 'POST',
+				url: '/api/contratos/auto-define/apply',
+				data: JSON.stringify({ sugerencias: payload }),
+				contentType: 'application/json',
+				dataType: 'json'
+			}).done(function(r) {
+				btn.prop('disabled', false).html('<i class="fas fa-magic"></i> Aplicar seleccionadas');
+
+				if (!r || r.respuesta !== 'BIEN') {
+					AIA.Notice.error(escaparHtml((r && r.mensaje) || 'No se pudieron aplicar las sugerencias.'));
+					return;
+				}
+
+				var msg = 'Se aplicaron <strong>' + r.aplicadas + '</strong> sugerencias.';
+				if (r.errores > 0) msg += ' <strong>' + r.errores + '</strong> errores.';
+				AIA.Notice.success(msg);
+
+				$('#modalAutoAsignarContratos').modal('hide');
+				actualizarBadgePendientesContratos();
+				if (typeof recargarTabla === 'function') {
+					recargarTabla('listar');
+				}
+			}).fail(function(xhr) {
+				btn.prop('disabled', false).html('<i class="fas fa-magic"></i> Aplicar seleccionadas');
+				var msg = 'Error de conexi\u00f3n al aplicar.';
+				if (xhr.responseJSON && xhr.responseJSON.mensaje) msg = xhr.responseJSON.mensaje;
+				AIA.Notice.error(msg);
+			});
+		}
+
+		/* --- Undo last batch --- */
+		function deshacerUltimaCorrida() {
+			var ctx = _aad_ctx();
+
+			$.ajax({
+				method: 'POST',
+				url: '/api/contratos/auto-define/undo?db=' + encodeURIComponent(ctx.db) + '&semana=' + encodeURIComponent(ctx.semana),
+				dataType: 'json'
+			}).done(function(r) {
+				if (!r || r.respuesta !== 'BIEN') {
+					AIA.Notice.error(escaparHtml((r && r.mensaje) || 'No se pudo deshacer.'));
+					return;
+				}
+				AIA.Notice.success('Se deshicieron <strong>' + r.revertidas + '</strong> asignaciones.');
+				actualizarBadgePendientesContratos();
+				cargarSugerenciasAutoDefine();
+			}).fail(function(xhr) {
+				var msg = 'Error de conexi\u00f3n al deshacer.';
+				if (xhr.responseJSON && xhr.responseJSON.mensaje) msg = xhr.responseJSON.mensaje;
+				AIA.Notice.error(msg);
+			});
+		}
+
+		/* --- Entry point (called from cargaParametros) --- */
+		var inicializarAutoAsignarContratos = function() {
+			/* Open modal */
+			$(document).off('click.autoDefinir', '#btn_auto_asignar_contratos')
+				.on('click.autoDefinir', '#btn_auto_asignar_contratos', function(e) {
+					e.preventDefault();
+					$('#modalAutoAsignarContratos').modal('show');
+				});
+
+			/* Reset on modal show */
+			$('#modalAutoAsignarContratos').off('show.bs.modal.autoDefinir')
+				.on('show.bs.modal.autoDefinir', function() {
+					resetAutoDefineModal();
+				});
+
+			/* Analizar */
+			$('#btnAutoAsignarAnalizar').off('click.autoDefinir')
+				.on('click.autoDefinir', function(e) {
+					e.preventDefault();
+					cargarSugerenciasAutoDefine();
+				});
+
+			/* Aplicar */
+			$('#btnAutoAsignarAplicar').off('click.autoDefinir')
+				.on('click.autoDefinir', function(e) {
+					e.preventDefault();
+					aplicarSeleccionadas();
+				});
+
+			/* Deshacer */
+			$('#aad-btn-undo').off('click.autoDefinir')
+				.on('click.autoDefinir', function(e) {
+					e.preventDefault();
+					deshacerUltimaCorrida();
+				});
+
+			/* Select-all toggle */
+			$('#aad-check-all').off('change.autoDefinir')
+				.on('change.autoDefinir', function() {
+					var checked = $(this).prop('checked');
+					$('#autoAsignarBody .aad-check-row').not(':disabled').prop('checked', checked);
+					_aad_toggleApplyBtn();
+				});
+		};
+
+		/* Badge de pendientes en botón Auto-Definir */
+		var actualizarBadgePendientesContratos = function() {
+			var $badge = $('#badgePendientesContratos');
+			if (!$badge.length) return;
+
+			var ctx = _aad_ctx();
+
+			$.ajax({
+				method: 'POST',
+				url: '/api/contratos/auto-define?db=' + encodeURIComponent(ctx.db) + '&semana=' + encodeURIComponent(ctx.semana),
+				dataType: 'json'
+			}).done(function(response) {
+				if (response && response.respuesta === 'BIEN' && typeof response.total === 'number' && response.total > 0) {
+					$badge.text(response.total).show();
+				} else {
+					$badge.hide();
+				}
+			}).fail(function() {
+				$badge.hide();
 			});
 		};
 

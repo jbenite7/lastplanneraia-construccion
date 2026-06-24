@@ -5,6 +5,7 @@ namespace App\Security;
 class RbacCatalog
 {
     public const DEFAULT_ROLE = 'C';
+    public const PERM_AUTO_DEFINIR_CONTRATOS = 'lps.contratos.auto_definir';
 
     public static function roleAliases(): array
     {
@@ -74,6 +75,7 @@ class RbacCatalog
             ['key' => 'lps.listado_actividades.editar', 'module' => 'lps', 'action' => 'listado_actividades_editar', 'description' => 'Editar listado de actividades'],
             ['key' => 'lps.contratos.ver', 'module' => 'lps', 'action' => 'contratos_ver', 'description' => 'Ver contratos'],
             ['key' => 'lps.contratos.editar', 'module' => 'lps', 'action' => 'contratos_editar', 'description' => 'Editar contratos'],
+            ['key' => 'lps.contratos.auto_definir', 'module' => 'lps', 'action' => 'contratos_auto_definir', 'description' => 'Auto-definir contratos con preview y confianza'],
             ['key' => 'lps.pdc.ver', 'module' => 'lps', 'action' => 'pdc_ver', 'description' => 'Ver PDC'],
             ['key' => 'lps.pdc.editar', 'module' => 'lps', 'action' => 'pdc_editar', 'description' => 'Editar PDC'],
             ['key' => 'lps.pdc.auto_generar', 'module' => 'lps', 'action' => 'pdc_auto_generar', 'description' => 'Auto-generar PDC desde el programa general'],
@@ -115,9 +117,13 @@ class RbacCatalog
             'lps.cic.ver',
             'lps.cnc.ver',
             'lps.cnp.ver',
-            'lps.listado_actividades.ver',
-            'lps.contratos.ver',
-            'lps.pdc.ver',
+                'lps.listado_actividades.ver',
+                'lps.listado_actividades.editar',
+                'lps.contratos.ver',
+                'lps.contratos.editar',
+                'lps.pdc.ver',
+                'lps.pdc.editar',
+                'lps.pdc.auto_generar',
             'lps.control_cambios.ver',
             'lps.paquetes_contratacion.ver',
             'lps.profesionales.ver',
@@ -152,6 +158,7 @@ class RbacCatalog
                 $allRead,
                 $allWrite,
                 [
+                    'lps.contratos.auto_definir',
                     'lps.semana.crear',
                     'lps.semana.eliminar',
                     'notificaciones.resumen_semanal',
@@ -163,7 +170,7 @@ class RbacCatalog
                 ],
             ),
 
-            // Residente y DCV: edita LPS, pero solo visualiza Listado/Contratos/PDC.
+            // Residente: edita LPS y Listado/Contratos/PDC completos.
             'R' => [
                 'lps.semana.crear',
                 'lps.semana.eliminar',
@@ -184,8 +191,12 @@ class RbacCatalog
                 'lps.control_cambios.ver',
                 'lps.control_cambios.editar',
                 'lps.listado_actividades.ver',
+                'lps.listado_actividades.editar',
                 'lps.contratos.ver',
+                'lps.contratos.editar',
                 'lps.pdc.ver',
+                'lps.pdc.editar',
+                'lps.pdc.auto_generar',
                 'lps.paquetes_contratacion.ver',
                 'lps.profesionales.ver',
                 'lps.subcontratistas.ver',
@@ -232,6 +243,7 @@ class RbacCatalog
 
             // Oficina tecnica: solo edita Listado/Contratos/PDC; lo demas lectura.
             'OT' => [
+                'lps.contratos.auto_definir',
                 'lps.semana.crear',
                 'lps.semana.eliminar',
                 'lps.programa_general.ver',

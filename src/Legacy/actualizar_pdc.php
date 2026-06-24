@@ -54,6 +54,9 @@ try {
             echo json_encode(["respuesta" => "BIEN"]);
 
         } else {
+            // Bump GROUP_CONCAT limit to avoid truncation with many contract packages
+            $db->query("SET SESSION group_concat_max_len = 100000");
+
             $sqlVigentes = <<<SQL
 SELECT GROUP_CONCAT(CONCAT("CONCAT(paqueteContratacion, '&', tipoPaquete) != '", paqueteContratacion, "&", tipoPaquete, "'") SEPARATOR ' AND ') AS contratos
 FROM (SELECT DISTINCT paqueteSI1 AS paqueteContratacion, 'Suministro e Instalación' AS tipoPaquete FROM {$dbName}_actividades WHERE fechaInicio IS NOT NULL AND semanaActualizacion = ? AND paqueteSI1 IS NOT NULL AND paqueteSI1 != ''

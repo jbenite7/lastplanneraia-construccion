@@ -1,0 +1,15 @@
+-- 20260624_fix_pdc_mojibake.sql
+-- Purpose: Repair double-encoded UTF-8 mojibake in general_pdc_family_contract_option_items.paquete_nombre
+-- Problem: 386/880 rows have accented characters (Á,É,Í,Ó,Ú,Ñ,á,é,í,ó,ú,ñ,ü) stored as
+--   double-encoded bytes. Example: Í (UTF-8: C3 8D) was misinterpreted as Latin-1 bytes
+--   C3 (Ã) + 8D (control) and re-encoded to C3 83 C2 8D.
+-- Solution: PHP script fix_mojibake.php handles the repair using iconv() to reverse the
+--   double-encoding. Pure SQL approaches (CONVERT/CAST/REPLACE chains) are fragile for
+--   arbitrary byte patterns in utf8mb4 columns. The PHP script is idempotent and can be
+--   re-run safely.
+-- Execution: docker compose exec app php database/patches/fix_mojibake.php
+-- Rollback: None needed (data is only fixed, never deleted)
+-- Verification:
+--   SELECT COUNT(*) FROM general_pdc_family_contract_option_items
+--     WHERE HEX(paquete_nombre) LIKE '%C383%';  -- should return 0
+--   SELECT COUNT(*) FROM general_pdc_family_contract_option_items;  -- should return 880
