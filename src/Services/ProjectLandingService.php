@@ -23,13 +23,43 @@ class ProjectLandingService
         $normalizedRole = $this->normalizeRole($role);
 
         if ($area === 'Pre-Construccion') {
+            if (!$this->isValidDbPrefix($dbName)) {
+                return [
+                    'route' => '/programa-general',
+                    'module' => 'programa-general',
+                    'week' => 0,
+                    'hasActiveWeeks' => false,
+                    'maxActiveWeek' => 0,
+                    'maxConfirmedWeek' => null,
+                    'reason' => 'pre-construccion-invalid-db',
+                ];
+            }
+
+            $weekMetadata = $this->getWeekMetadata($dbName);
+            $maxActiveWeek = $weekMetadata['maxActiveWeek'];
+            $maxConfirmedWeek = $weekMetadata['maxConfirmedWeek'];
+
+            if ($maxActiveWeek <= 0) {
+                return [
+                    'route' => '/programa-general-actualizar',
+                    'module' => 'programa-general-actualizar',
+                    'week' => 0,
+                    'hasActiveWeeks' => false,
+                    'maxActiveWeek' => 0,
+                    'maxConfirmedWeek' => null,
+                    'reason' => 'pre-construccion-no-weeks',
+                ];
+            }
+
+            $preferredContext = $this->determinePreferredContext($dbName, $weekMetadata);
+
             return [
                 'route' => '/programa-general',
                 'module' => 'programa-general',
-                'week' => 0,
-                'hasActiveWeeks' => false,
-                'maxActiveWeek' => 0,
-                'maxConfirmedWeek' => null,
+                'week' => $preferredContext['week'],
+                'hasActiveWeeks' => true,
+                'maxActiveWeek' => $maxActiveWeek,
+                'maxConfirmedWeek' => $maxConfirmedWeek,
                 'reason' => 'pre-construccion',
             ];
         }
