@@ -408,8 +408,9 @@
 					var Id=$("#Id").val(data.Consecutivo);
 					var opcion = $("#opcion").val("modificar");
 
-					var codigo_html_Categoria_CNC = "<select id='select_Categoria_CNC' name='Categoria_CNC' class='form-control form-control-sm'><option value='' selected></option><option value='Rendimiento'>Rendimiento</option><option value='Programación'>Programación</option><option value='Mano de Obra'>Mano de Obra</option><option value='Materiales'>Materiales</option><option value='Equipos'>Equipos</option><option value='Diseños'>Diseños</option><option value='Administrativas'>Administrativas</option><option value='Causas Exógenas'>Causas Exógenas</option></select>";
-					$(this).parent().find('.input_Categoria_CNC').html(codigo_html_Categoria_CNC);
+				var codigo_html_Categoria_CNC = "<select id='select_Categoria_CNC' name='Categoria_CNC' class='form-control form-control-sm'><option value='' selected></option></select>";
+				$(this).parent().find('.input_Categoria_CNC').html(codigo_html_Categoria_CNC);
+				cargarCategoriasCNC(data.Categoria_CNC);
 					var codigo_html_CNC = "<select id='select_CNC' name='CNC' class='form-control form-control-sm'><option value='' selected></option></select>";
 					$(this).parent().find('.input_CNC').html(codigo_html_CNC);
 					var codigo_html_Observaciones_CNC = "<textarea id='select_Observaciones_CNC' name='Observaciones_CNC' class='form-control form-control-sm'>'" + data.Observaciones_CNC + "'</textarea>";
@@ -457,7 +458,7 @@
 		    $.ajax({
 		      method: "POST",
 		      url: "/api/cnc/reasons",
-		      data: { "categoria": categoria },
+		      data: { "categoria": categoria, "area": window.__PROJECT_AREA__ || 'Construccion' },
 		      success: function(data) {
 		        var optionsHtml = "<option value=''></option>";
 		        if (Array.isArray(data)) {
@@ -486,7 +487,7 @@
 		    $.ajax({
 		      method: "POST",
 		      url: "/api/cnc/reasons",
-		      data: { "categoria": categoria },
+		      data: { "categoria": categoria, "area": window.__PROJECT_AREA__ || 'Construccion' },
 		      success: function(data) {
 		        var optionsHtml = "<option value=''></option>";
 		        if (Array.isArray(data)) {
@@ -502,6 +503,24 @@
 		    });
 		    }
 		  });
+		}
+
+		var cargarCategoriasCNC = function(selectedValue) {
+		  var area = window.__PROJECT_AREA__ || 'Construccion';
+		  var categorias = [];
+		  if (area === 'Pre-Construccion') {
+		    categorias = ['Diseños', 'Modelación', 'Presupuesto', 'Contratación', 'Trámites'];
+		  } else {
+		    categorias = ['Rendimiento', 'Programación', 'Mano de Obra', 'Materiales', 'Equipos', 'Diseños', 'Administrativas', 'Causas Exógenas'];
+		  }
+		  var optionsHtml = "<option value='' selected></option>";
+		  categorias.forEach(function(cat) {
+		    optionsHtml += "<option value='" + cat + "'>" + cat + "</option>";
+		  });
+		  $('#select_Categoria_CNC').html(optionsHtml);
+		  if (selectedValue) {
+		    $('#select_Categoria_CNC').val(selectedValue);
+		  }
 		}
 
 

@@ -3193,7 +3193,7 @@
     $.ajax({
       method: 'POST',
       url: '/api/cnc/reasons',
-      data: { categoria: categoria },
+      data: { categoria: categoria, area: window.__PROJECT_AREA__ || 'Construccion' },
     }).done(function (data) {
       var optionsHtml = "<option value=''></option>";
       if (Array.isArray(data)) {
@@ -3894,7 +3894,7 @@
       $.ajax({
         method: 'POST',
         url: '/api/cnc/reasons',
-        data: { categoria: cat },
+        data: { categoria: cat, area: window.__PROJECT_AREA__ || 'Construccion' },
       }).done(function (data) {
         var optionsHtml = "<option value=''></option>";
         if (Array.isArray(data)) {
