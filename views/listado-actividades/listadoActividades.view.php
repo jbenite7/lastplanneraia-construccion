@@ -786,14 +786,14 @@
 				table.columns.adjust();
 			});
 
-			$("div.toolbarFilaBotones").html('<div class="grupo_botones1" role="group" aria-label="Basic example" style="padding:5; max-width:50%;display:inline-block; "><button id="btn_cargarActividadesExcel" class="btn-pdc-modern" title="Cargar listado de actividades desde Excel" data-toggle="modal" data-target="#modalCargarExcel">Cargar desde Excel <i class="fas fa-upload fa-lg"></i></button><button id="btn_nueva_actividad" class="btn-pdc-modern" title="Registrar nueva actividad del proyecto" data-toggle="modal" data-target="#modalNuevaActividad" style="margin: auto 5px">Nueva Actividad <i class="fas fa-plus fa-lg"></i></button></div><div class="grupo_botones_semanal_madre"  style="padding:5; max-width:69%"><div class="grupo_botones_semanal btn-group" role="group" aria-label="Basic example"><button id="btn_Actividades" type="button" class="btn btn-success btn-sm active" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_listadoActividades&semana='+semana+'\'">Actividades <i class="fas fa-arrow-right fa-m"></i></button><button id="btn_contratos" type="button" class="btn btn-success btn-sm" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_contratos&semana='+semana+'\'">Contratos <i class="fas fa-arrow-right fa-m"></i></button><button id="btn_planCompras" type="button" class="btn btn-success btn-sm" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=planCompras&semana='+semana+'&origen=info_listadoActividades\'">Plan de Compras</button></div></div>');
+			$("div.toolbarFilaBotones").html('<div class="grupo_botones1" role="group" aria-label="Basic example" style="padding:5; max-width:50%;display:inline-block; "><button id="btn_cargarActividadesExcel" class="btn btn-secondary btn-sm" title="Cargar listado de actividades desde Excel" data-toggle="modal" data-target="#modalCargarExcel">Cargar desde Excel <i class="fas fa-upload fa-lg"></i></button><button id="btn_nueva_actividad" class="btn btn-primary btn-sm" title="Registrar nueva actividad del proyecto" data-toggle="modal" data-target="#modalNuevaActividad" style="margin: auto 5px">Nueva Actividad <i class="fas fa-plus fa-lg"></i></button></div><div class="grupo_botones_semanal_madre"  style="padding:5; max-width:69%"><div class="grupo_botones_semanal btn-group" role="group" aria-label="Basic example"><button id="btn_Actividades" type="button" class="btn btn-success btn-sm active" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_listadoActividades&semana='+semana+'\'">Actividades <i class="fas fa-arrow-right fa-m"></i></button><button id="btn_contratos" type="button" class="btn btn-success btn-sm" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_contratos&semana='+semana+'\'">Contratos <i class="fas fa-arrow-right fa-m"></i></button><button id="btn_planCompras" type="button" class="btn btn-success btn-sm" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=planCompras&semana='+semana+'&origen=info_listadoActividades\'">Plan de Compras</button></div></div>');
 
 			$("div.toolbarFilaBotones .grupo_botones1")
 				.addClass("ps-toolbar-actions")
 				.removeAttr("style");
 			$("div.toolbarFilaBotones .grupo_botones1 .btn").addClass("ps-btn-gap");
 			if (puedeEditarListadoActividades()) {
-				$("div.toolbarFilaBotones .grupo_botones1").append('<button id="btn_auto_generar_listado" class="btn-pdc-modern ps-btn-gap" title="Auto-generar listado de actividades desde el Programa General"><i class="fas fa-magic"></i> Auto-generar Listado</button>');
+				$("div.toolbarFilaBotones .grupo_botones1").append('<button id="btn_auto_generar_listado" class="btn-auto btn-auto-green btn-sm ps-btn-gap" title="Auto-generar listado de actividades desde el Programa General"><i class="fas fa-magic"></i> Auto-generar Listado</button>');
 			}
 			$("div.toolbarFilaBotones #btn_nueva_actividad").removeAttr("style");
 			$("div.toolbarFilaBotones .grupo_botones_semanal_madre")
@@ -803,7 +803,7 @@
 
 			$("div.toolbarFilaMensajes").html('<p id="mensajeActualizacion"></p>');
 
-			$("div.toolbarFiltro").html('<div class="d-flex ml-auto"><label class="sr-only">Buscar en listado</label><button id="btn_limpiar_buscador" type="button" class="btn-pdc-modern mr-1 ml-0 d-none max-w-40"><i class="fas fa-times-circle"></i> Limpiar</button></div>');
+			$("div.toolbarFiltro").html('<div class="d-flex ml-auto"><label class="sr-only">Buscar en listado</label><button id="btn_limpiar_buscador" type="button" class="btn btn-danger btn-sm mr-1 ml-0 d-none max-w-40"><i class="fas fa-times-circle"></i> Limpiar</button></div>');
 
 			maestroPermisos(document.getElementById('permiso_canonico').value);
 		  obtener_data_editar("#dt_cliente tbody", table);
