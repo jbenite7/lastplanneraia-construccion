@@ -33,63 +33,45 @@
   subcontratistas.push(PI_CREATE_SUB);
   profesionales.push(PI_CREATE_PROF);
 
-  var editableProps = {
-    D_y_E: true,
-    Materiales: true,
-    MdeO: true,
-    Equipos: true,
-    Predecesora: true,
-    Pdto_Cons: true,
-    Modelo: true,
-    Sub_Contratista: true,
-    Responsable_AIA: true,
-    Observaciones: true,
+  // --- Restriction Config (dynamic from API, fallback: construction defaults) ---
+  var _activeConfig = null;
+  var _activeRestrictions = [];
+
+  var CONSTRUCTION_DEFAULTS = {
+    area: 'Construccion',
+    restrictions: [
+      { key: 'D_y_E', label: 'Diseños y Especif.', type: 'hard', threshold: 100, options: ['0%', '33%', '66%', '100%', 'N/A'] },
+      { key: 'Materiales', label: 'Materiales', type: 'hard', threshold: 100, options: ['0%', '33%', '66%', '100%', 'N/A'] },
+      { key: 'MdeO', label: 'Mano de Obra', type: 'hard', threshold: 100, options: ['0%', '33%', '66%', '100%', 'N/A'] },
+      { key: 'Equipos', label: 'Equipos', type: 'hard', threshold: 100, options: ['0%', '33%', '66%', '100%', 'N/A'] },
+      { key: 'Predecesora', label: 'Predecesora', type: 'hard', threshold: 50, options: ['0%', '33%', '66%', '100%', 'N/A'] },
+      { key: 'Pdto_Cons', label: 'Pdto. Constructivo (blanda)', type: 'soft', threshold: 100, options: ['0%', '50%', '100%', 'N/A'] },
+      { key: 'Modelo', label: 'Modelo BIM (blanda)', type: 'soft', threshold: 100, options: ['0%', '50%', '100%', 'N/A'] },
+    ],
+    hardRestrictions: ['D_y_E', 'Materiales', 'MdeO', 'Equipos', 'Predecesora'],
+    softRestrictions: ['Pdto_Cons', 'Modelo'],
   };
 
-  var trackedStates = [
-    'blocked-overdue-critical',
-    'blocked-overdue',
-    'blocked-due',
-    'alert-1-week',
-    'alert-2-3-weeks',
-    'alert-4-6-weeks',
-    'execution-blocked',
-    'liberated-control',
-  ];
+  // --- Dynamic restriction variables (populated by applyRestrictionConfig) ---
+  var editableProps = {};
+  var restrictedOptions = [];
+  var halfRestrictedOptions = [];
+  var restrictionProps = [];
+  var hardRestrictionProps = [];
+  var softRestrictionProps = [];
+  var hardRestrictionThresholds = {};
+  var restrictionTypeLabels = {};
+  var sharedRestrictionTypes = [];
+  var popoverTitles = {};
+  var popoverContent = {};
+  var readinessActionProps = [];
+  var readinessActionLabels = {};
+  var readinessActionMatrix = {};
+  var headerIndexToRestrictionProp = {};
+  var dropdownProps = {};
 
-  var restrictedOptions = ['', '0%', '33%', '66%', '100%', 'N/A'];
-  var halfRestrictedOptions = ['', '0%', '50%', '100%', 'N/A'];
-  var restrictionProps = ['D_y_E', 'Materiales', 'MdeO', 'Equipos', 'Predecesora', 'Pdto_Cons', 'Modelo'];
-  var hardRestrictionProps = ['D_y_E', 'Materiales', 'MdeO', 'Equipos', 'Predecesora'];
-  var softRestrictionProps = ['Pdto_Cons', 'Modelo'];
-  var hardRestrictionThresholds = {
-    D_y_E: 1,
-    Materiales: 1,
-    MdeO: 1,
-    Equipos: 1,
-    Predecesora: 0.5,
-  };
-  var restrictionTypeLabels = {
-    D_y_E: 'Diseños y Especif.',
-    Materiales: 'Materiales',
-    MdeO: 'Mano de Obra',
-    Equipos: 'Equipos',
-    Predecesora: 'Predecesora',
-    Pdto_Cons: 'Pdto. Constructivo (blanda)',
-    Modelo: 'Modelo BIM (blanda)',
-  };
-  var sharedRestrictionTypes = ['D_y_E', 'Materiales', 'MdeO', 'Equipos', 'Predecesora', 'Pdto_Cons', 'Modelo'];
-  // Popover content for restriction column headers (ported from legacy view)
-  var popoverTitles = {
-    D_y_E: 'Restricciones de Diseños y Especificaciones',
-    Materiales: 'Restricciones de Materiales',
-    MdeO: 'Restricciones de Mano de Obra',
-    Equipos: 'Restricciones de Equipos',
-    Predecesora: 'Restricciones de Actividades Predecesoras',
-    Pdto_Cons: 'Restricción blanda: Pdto. Constructivo',
-    Modelo: 'Restricción blanda: Modelo BIM',
-  };
-  var popoverContent = {
+  // Popover content defaults for construction (detailed educational text)
+  var DEFAULT_POPOVER_CONTENT = {
     D_y_E: '<ul class="pl-3 mb-0"><li><b>0%:</b> No están los diseños para construcción.</li><li><b>33%:</b> Diseños entregados pero no revisados por dirección/residentes.</li><li><b>66%:</b> Diseños con visto bueno de dirección y residentes.</li><li><b>100%:</b> Diseños aprobados entregados a contratistas/maestros.</li></ul>',
     Materiales: '<ul class="pl-3 mb-0"><li><b>0%:</b> No existen contratos de aprovisionamiento.</li><li><b>33%:</b> Al día en plan de compras.</li><li><b>66%:</b> Al día en plan de aprovisionamiento.</li><li><b>100%:</b> Materiales disponibles en el proyecto.</li></ul>',
     MdeO: '<ul class="pl-3 mb-0"><li><b>0%:</b> No existen contratos de mano de obra.</li><li><b>33%:</b> Contratos existentes, recurso no ubicado.</li><li><b>66%:</b> Documentación y requisitos legales listos.</li><li><b>100%:</b> Personal ya está en el proyecto.</li></ul>',
@@ -99,15 +81,26 @@
     Modelo: '<p class="mb-1"><b>Restricción blanda:</b> no bloquea habilitación ni autoprogramación.</p><ul class="pl-3 mb-0"><li><b>0%:</b> No hay modelos en el proyecto.</li><li><b>50%:</b> Modelos existentes pero no coordinados.</li><li><b>100%:</b> Modelos coordinados para todas las disciplinas.</li><li><b>N/A:</b> La tarea no aplica para ser modelada.</li></ul>',
   };
 
-  var readinessActionProps = ['D_y_E', 'Materiales', 'MdeO', 'Equipos', 'Predecesora'];
-  var readinessActionLabels = {
+  var DEFAULT_POPOVER_TITLES = {
+    D_y_E: 'Restricciones de Diseños y Especificaciones',
+    Materiales: 'Restricciones de Materiales',
+    MdeO: 'Restricciones de Mano de Obra',
+    Equipos: 'Restricciones de Equipos',
+    Predecesora: 'Restricciones de Actividades Predecesoras',
+    Pdto_Cons: 'Restricción blanda: Pdto. Constructivo',
+    Modelo: 'Restricción blanda: Modelo BIM',
+  };
+
+  // Readiness action defaults for construction (detailed action texts)
+  var DEFAULT_READINESS_ACTION_LABELS = {
     D_y_E: 'Diseños',
     Materiales: 'Materiales',
     MdeO: 'MO',
     Equipos: 'Equipos',
     Predecesora: 'Pred.',
   };
-  var readinessActionMatrix = {
+
+  var DEFAULT_READINESS_ACTION_MATRIX = {
     D_y_E: {
       threshold: 1,
       actions: [
@@ -148,33 +141,256 @@
     },
   };
 
-  // Map colHeaders index to restriction prop for tooltip injection
-  var headerIndexToRestrictionProp = {
-    7: 'D_y_E',
-    8: 'Materiales',
-    9: 'MdeO',
-    10: 'Equipos',
-    11: 'Predecesora',
-    12: 'Pdto_Cons',
-    13: 'Modelo',
-  };
+  var trackedStates = [
+    'blocked-overdue-critical',
+    'blocked-overdue',
+    'blocked-due',
+    'alert-1-week',
+    'alert-2-3-weeks',
+    'alert-4-6-weeks',
+    'execution-blocked',
+    'liberated-control',
+  ];
 
-  var sharedRestrictionValueOptions = {
-    long: ['0%', '33%', '66%', '100%', 'N/A'],
-    half: ['0%', '50%', '100%', 'N/A'],
-  };
+  function _findRestrictionByKey(key) {
+    if (!_activeRestrictions) return null;
+    for (var i = 0; i < _activeRestrictions.length; i++) {
+      if (_activeRestrictions[i].key === key) return _activeRestrictions[i];
+    }
+    return null;
+  }
 
-  var dropdownProps = {
-    D_y_E: true,
-    Materiales: true,
-    MdeO: true,
-    Equipos: true,
-    Predecesora: true,
-    Pdto_Cons: true,
-    Modelo: true,
-    Sub_Contratista: true,
-    Responsable_AIA: true,
-  };
+  function applyRestrictionConfig(config) {
+    _activeConfig = config;
+    var restrictions = config.restrictions || CONSTRUCTION_DEFAULTS.restrictions;
+    var hardKeys = config.hardRestrictions || CONSTRUCTION_DEFAULTS.hardRestrictions;
+    var softKeys = config.softRestrictions || CONSTRUCTION_DEFAULTS.softRestrictions;
+
+    _activeRestrictions = restrictions;
+
+    var byKey = {};
+    for (var i = 0; i < restrictions.length; i++) {
+      byKey[restrictions[i].key] = restrictions[i];
+    }
+
+    // Core arrays
+    restrictionProps = restrictions.map(function (r) { return r.key; });
+    hardRestrictionProps = hardKeys.slice();
+    softRestrictionProps = softKeys.slice();
+    sharedRestrictionTypes = restrictionProps.slice();
+
+    // Editable / dropdown props
+    editableProps = {};
+    dropdownProps = {};
+    for (var j = 0; j < restrictionProps.length; j++) {
+      editableProps[restrictionProps[j]] = true;
+      dropdownProps[restrictionProps[j]] = true;
+    }
+    editableProps.Sub_Contratista = true;
+    editableProps.Responsable_AIA = true;
+    editableProps.Observaciones = true;
+    dropdownProps.Sub_Contratista = true;
+    dropdownProps.Responsable_AIA = true;
+
+    // Options arrays (fallback for shared-value drawers)
+    var firstHard = byKey[hardKeys[0]];
+    var firstSoft = byKey[softKeys[0]];
+    restrictedOptions = [''].concat(firstHard ? firstHard.options : ['0%', '33%', '66%', '100%', 'N/A']);
+    halfRestrictedOptions = [''].concat(firstSoft ? firstSoft.options : ['0%', '50%', '100%', 'N/A']);
+
+    // Thresholds (convert from percentage → ratio)
+    hardRestrictionThresholds = {};
+    for (var k = 0; k < hardKeys.length; k++) {
+      var hr = byKey[hardKeys[k]];
+      if (hr) {
+        hardRestrictionThresholds[hardKeys[k]] = (hr.threshold || 100) / 100;
+      }
+    }
+
+    // Labels
+    restrictionTypeLabels = {};
+    readinessActionLabels = {};
+    for (var m = 0; m < restrictions.length; m++) {
+      restrictionTypeLabels[restrictions[m].key] = restrictions[m].label;
+    }
+    // Use construction-default short labels when available, else derive from full label
+    for (var n = 0; n < hardKeys.length; n++) {
+      readinessActionLabels[hardKeys[n]] = DEFAULT_READINESS_ACTION_LABELS[hardKeys[n]] || restrictionTypeLabels[hardKeys[n]] || hardKeys[n];
+    }
+
+    // Popover titles & content: prefer construction defaults, then API label, then key
+    popoverTitles = {};
+    popoverContent = {};
+    for (var p = 0; p < restrictions.length; p++) {
+      var rk = restrictions[p].key;
+      popoverTitles[rk] = DEFAULT_POPOVER_TITLES[rk] || ('Restricción: ' + restrictions[p].label);
+      popoverContent[rk] = DEFAULT_POPOVER_CONTENT[rk] || ('<p class="mb-1">' + restrictions[p].label + '</p>');
+    }
+
+    // Readiness action props = hard restrictions
+    readinessActionProps = hardKeys.slice();
+
+    // Readiness action matrix: prefer construction defaults, else generic
+    readinessActionMatrix = {};
+    for (var q = 0; q < hardKeys.length; q++) {
+      var hk = hardKeys[q];
+      if (DEFAULT_READINESS_ACTION_MATRIX[hk]) {
+        readinessActionMatrix[hk] = DEFAULT_READINESS_ACTION_MATRIX[hk];
+      } else {
+        var thr = (byKey[hk] && byKey[hk].threshold) || 100;
+        readinessActionMatrix[hk] = {
+          threshold: thr / 100,
+          actions: [
+            { max: 0.01, text: 'Iniciar gestión de ' + (restrictionTypeLabels[hk] || hk).toLowerCase() + '.' },
+            { max: 0.5, text: 'Avanzar en resolución de ' + (restrictionTypeLabels[hk] || hk).toLowerCase() + '.' },
+            { max: 1, text: 'Completar ' + (restrictionTypeLabels[hk] || hk).toLowerCase() + '.' },
+          ],
+        };
+      }
+    }
+
+    // Header-index → restriction prop (7 fixed cols before restriction cols)
+    headerIndexToRestrictionProp = {};
+    for (var t = 0; t < restrictions.length; t++) {
+      headerIndexToRestrictionProp[7 + t] = restrictions[t].key;
+    }
+
+    // Rebuild column sizing arrays for the current restriction count
+    buildColumnSizing();
+  }
+
+  function fetchRestrictionConfig(callback) {
+    if (window.__RESTRICTION_CONFIG__) {
+      applyRestrictionConfig(window.__RESTRICTION_CONFIG__);
+      if (typeof callback === 'function') { callback(); }
+      return;
+    }
+
+    $.ajax({
+      method: 'GET',
+      url: '/api/general/restriction-config',
+      dataType: 'json',
+      cache: true,
+      timeout: 5000,
+    }).done(function (response) {
+      if (response && typeof response === 'object' && Array.isArray(response.restrictions) && response.restrictions.length > 0) {
+        window.__RESTRICTION_CONFIG__ = response;
+        applyRestrictionConfig(response);
+      } else {
+        applyRestrictionConfig(CONSTRUCTION_DEFAULTS);
+      }
+    }).fail(function () {
+      applyRestrictionConfig(CONSTRUCTION_DEFAULTS);
+    }).always(function () {
+      if (typeof callback === 'function') { callback(); }
+    });
+  }
+
+  function buildColumnHeaders() {
+    var config = _activeConfig || CONSTRUCTION_DEFAULTS;
+    var restrictions = config.restrictions || CONSTRUCTION_DEFAULTS.restrictions;
+    var headers = [
+      'Id', 'Lote', 'Actividad', 'Sub-Contratista', 'Responsable AIA',
+      'Semanas Inicio', 'Ejecutado',
+    ];
+    for (var i = 0; i < restrictions.length; i++) {
+      headers.push(restrictions[i].label);
+    }
+    headers.push('% Liberación', 'Estado Operativo', 'Observaciones');
+    return headers;
+  }
+
+  function buildColumnDefinitions() {
+    var config = _activeConfig || CONSTRUCTION_DEFAULTS;
+    var restrictions = config.restrictions || CONSTRUCTION_DEFAULTS.restrictions;
+    var softKeys = config.softRestrictions || CONSTRUCTION_DEFAULTS.softRestrictions;
+    var cols = [
+      { data: 'Id', readOnly: true, className: 'htCenter htMiddle' },
+      { data: '__shared_selected', type: 'checkbox', className: 'htCenter htMiddle pi-shared-select-cell' },
+      { data: 'Actividad', readOnly: true, renderer: 'piActividadRenderer', className: 'htLeft htMiddle force-wrap' },
+      { data: 'Sub_Contratista', editor: 'tomSelectMultiple', tomSelectOptions: subcontratistas, className: 'htCenter htMiddle force-wrap' },
+      { data: 'Responsable_AIA', editor: 'tomSelectSingle', tomSelectOptions: profesionales, className: 'htCenter htMiddle force-wrap' },
+      { data: 'Semanas_Inicio', readOnly: true, className: 'htCenter htMiddle' },
+      { data: 'Ejecutado', readOnly: true, renderer: 'piPercentRenderer', className: 'htCenter htMiddle' },
+    ];
+    for (var i = 0; i < restrictions.length; i++) {
+      var r = restrictions[i];
+      var isSoft = softKeys.indexOf(r.key) > -1;
+      cols.push({
+        data: r.key,
+        type: 'dropdown',
+        source: [''].concat(r.options || []),
+        strict: false,
+        allowInvalid: false,
+        renderer: 'piPercentRenderer',
+        className: 'htCenter htMiddle' + (isSoft ? ' pi-soft-restriction-cell' : ''),
+      });
+    }
+    cols.push(
+      { data: 'Estado_Restricciones', readOnly: true, renderer: 'piPercentRenderer', className: 'htCenter htMiddle' },
+      { data: 'estado_operativo', readOnly: true, renderer: 'piStateRenderer', className: 'htLeft htMiddle force-wrap' },
+      { data: 'Observaciones', type: 'text', className: 'htLeft htMiddle force-wrap' },
+    );
+    return cols;
+  }
+
+  function buildColumnSizing() {
+    var config = _activeConfig || CONSTRUCTION_DEFAULTS;
+    var restrictions = config.restrictions || CONSTRUCTION_DEFAULTS.restrictions;
+    var numRestrictions = restrictions.length;
+
+    // Fixed leading columns (7): Id, Lote, Actividad, Sub, Resp, Semana, Ejecutado
+    var fixedLeading = {
+      min:   [44, 54, 150, 130, 130, 60, 72],
+      floor: [36, 44, 120, 100, 100, 52, 64],
+      max:   [90, 70, 460, 240, 240, 110, 110],
+      ratio: [0.032, 0.024, 0.144, 0.08, 0.08, 0.048, 0.048],
+    };
+
+    // Fixed trailing columns (3): Estado_Restricciones, estado_operativo, Observaciones
+    var fixedTrailing = {
+      min:   [92, 150, 180],
+      floor: [78, 118, 130],
+      max:   [136, 240, 380],
+      ratio: [0.05, 0.096, 0.088],
+    };
+
+    // Dynamic restriction columns: uniform sizing
+    var restrictionMin = [];
+    var restrictionFloor = [];
+    var restrictionMax = [];
+    var restrictionRatio = [];
+    for (var i = 0; i < numRestrictions; i++) {
+      restrictionMin.push(74);
+      restrictionFloor.push(64);
+      restrictionMax.push(130);
+    }
+
+    // Compute ratio budget for restriction cols (reserve 1 - fixedLeading - fixedTrailing)
+    var fixedRatioSum = 0;
+    for (var fi = 0; fi < fixedLeading.ratio.length; fi++) { fixedRatioSum += fixedLeading.ratio[fi]; }
+    for (var ft = 0; ft < fixedTrailing.ratio.length; ft++) { fixedRatioSum += fixedTrailing.ratio[ft]; }
+    var restrictionBudget = Math.max(0, 1 - fixedRatioSum);
+    var perRestrictionRatio = numRestrictions > 0 ? restrictionBudget / numRestrictions : 0;
+    for (var ri = 0; ri < numRestrictions; ri++) {
+      restrictionRatio.push(perRestrictionRatio);
+    }
+
+    // Assemble full arrays
+    columnMinWidths = fixedLeading.min.concat(restrictionMin, fixedTrailing.min);
+    columnFloorWidths = fixedLeading.floor.concat(restrictionFloor, fixedTrailing.floor);
+    columnMaxWidths = fixedLeading.max.concat(restrictionMax, fixedTrailing.max);
+    columnWidthRatios = fixedLeading.ratio.concat(restrictionRatio, fixedTrailing.ratio);
+
+    // Shrink priority: lower index = shrinks first; trailing Observaciones shrinks last (0)
+    var totalCols = 7 + numRestrictions + 3;
+    columnShrinkPriority = [];
+    for (var sp = 0; sp < totalCols; sp++) {
+      columnShrinkPriority.push(totalCols - 1 - sp);
+    }
+    // Observaciones (last col) always shrinks last
+    columnShrinkPriority[totalCols - 1] = 0;
+  }
 
   var stateLabels = {
     'blocked-overdue-critical': 'RC inicio vencido',
@@ -312,10 +528,10 @@
   }
 
   function getAllowedRestrictionRatios(prop) {
-    if (prop === 'Predecesora' || prop === 'Pdto_Cons' || prop === 'Modelo') {
+    var r = _findRestrictionByKey(prop);
+    if (r && r.options && r.options.indexOf('50%') > -1 && r.options.indexOf('33%') === -1) {
       return [0, 0.5, 1];
     }
-
     return [0, 0.33, 0.66, 1];
   }
 
@@ -949,11 +1165,16 @@
   }
 
   function isHalfRestrictionType(restrictionType) {
-    return restrictionType === 'Predecesora' || restrictionType === 'Pdto_Cons' || restrictionType === 'Modelo';
+    var r = _findRestrictionByKey(restrictionType);
+    return r && r.options && r.options.indexOf('50%') > -1 && r.options.indexOf('33%') === -1;
   }
 
   function getSharedValueOptionsForType(restrictionType) {
-    return isHalfRestrictionType(restrictionType) ? sharedRestrictionValueOptions.half : sharedRestrictionValueOptions.long;
+    var r = _findRestrictionByKey(restrictionType);
+    if (r && r.options && r.options.length > 0) {
+      return r.options;
+    }
+    return isHalfRestrictionType(restrictionType) ? ['0%', '50%', '100%', 'N/A'] : ['0%', '33%', '66%', '100%', 'N/A'];
   }
 
   function getRowActivityId(row) {
@@ -2411,13 +2632,10 @@
     for (var i = 0; i < rows.length; i++) {
       var row = rows[i] || {};
 
-      row.D_y_E = normalizeRestrictionValue('D_y_E', row.D_y_E);
-      row.Materiales = normalizeRestrictionValue('Materiales', row.Materiales);
-      row.MdeO = normalizeRestrictionValue('MdeO', row.MdeO);
-      row.Equipos = normalizeRestrictionValue('Equipos', row.Equipos);
-      row.Predecesora = normalizeRestrictionValue('Predecesora', row.Predecesora);
-      row.Pdto_Cons = normalizeRestrictionValue('Pdto_Cons', row.Pdto_Cons);
-      row.Modelo = normalizeRestrictionValue('Modelo', row.Modelo);
+      for (var j = 0; j < restrictionProps.length; j++) {
+        var prop = restrictionProps[j];
+        row[prop] = normalizeRestrictionValue(prop, row[prop]);
+      }
       row.Estado_Restricciones = calculateRestrictionStateRatio(row);
       row.estado_operativo = getStateDisplay(row);
       row.__shared_selected = Boolean(sharedSelectionIndex[getRowActivityId(row)]);
@@ -2488,20 +2706,16 @@
 
     return {
       valid: true,
-      data: {
-        opcion: 'modificar',
-        Id: id,
-        D_y_E: normalizedRestrictions.D_y_E,
-        Materiales: normalizedRestrictions.Materiales,
-        MdeO: normalizedRestrictions.MdeO,
-        Equipos: normalizedRestrictions.Equipos,
-        Predecesora: normalizedRestrictions.Predecesora,
-        Pdto_Cons: normalizedRestrictions.Pdto_Cons,
-        Modelo: normalizedRestrictions.Modelo,
-        Sub_Contratista: row.Sub_Contratista || '',
-        Responsable_AIA: row.Responsable_AIA || '',
-        Observaciones: row.Observaciones || '',
-      },
+      data: (function () {
+        var d = { opcion: 'modificar', Id: id };
+        for (var k = 0; k < restrictionProps.length; k++) {
+          d[restrictionProps[k]] = normalizedRestrictions[restrictionProps[k]];
+        }
+        d.Sub_Contratista = row.Sub_Contratista || '';
+        d.Responsable_AIA = row.Responsable_AIA || '';
+        d.Observaciones = row.Observaciones || '';
+        return d;
+      })(),
     };
   }
 
@@ -3311,44 +3525,8 @@
     hot = new Handsontable(container, {
       data: data,
       rowHeaders: false,
-      colHeaders: [
-        'Id',
-        'Lote',
-        'Actividad',
-        'Sub-Contratista',
-        'Responsable AIA',
-        'Semanas Inicio',
-        'Ejecutado',
-        'Diseños y Especif.',
-        'Materiales',
-        'Mano de Obra',
-        'Equipos',
-        'Predecesoras',
-        'Pdto. Constructivo',
-        'Modelo BIM',
-        '% Liberación',
-        'Estado Operativo',
-        'Observaciones',
-      ],
-      columns: [
-        { data: 'Id', readOnly: true, className: 'htCenter htMiddle' },
-        { data: '__shared_selected', type: 'checkbox', className: 'htCenter htMiddle pi-shared-select-cell' },
-        { data: 'Actividad', readOnly: true, renderer: 'piActividadRenderer', className: 'htLeft htMiddle force-wrap' },
-        { data: 'Sub_Contratista', editor: 'tomSelectMultiple', tomSelectOptions: subcontratistas, className: 'htCenter htMiddle force-wrap' },
-        { data: 'Responsable_AIA', editor: 'tomSelectSingle', tomSelectOptions: profesionales, className: 'htCenter htMiddle force-wrap' },
-        { data: 'Semanas_Inicio', readOnly: true, className: 'htCenter htMiddle' },
-        { data: 'Ejecutado', readOnly: true, renderer: 'piPercentRenderer', className: 'htCenter htMiddle' },
-        { data: 'D_y_E', type: 'dropdown', source: restrictedOptions, strict: false, allowInvalid: false, renderer: 'piPercentRenderer', className: 'htCenter htMiddle' },
-        { data: 'Materiales', type: 'dropdown', source: restrictedOptions, strict: false, allowInvalid: false, renderer: 'piPercentRenderer', className: 'htCenter htMiddle' },
-        { data: 'MdeO', type: 'dropdown', source: restrictedOptions, strict: false, allowInvalid: false, renderer: 'piPercentRenderer', className: 'htCenter htMiddle' },
-        { data: 'Equipos', type: 'dropdown', source: restrictedOptions, strict: false, allowInvalid: false, renderer: 'piPercentRenderer', className: 'htCenter htMiddle' },
-        { data: 'Predecesora', type: 'dropdown', source: halfRestrictedOptions, strict: false, allowInvalid: false, renderer: 'piPercentRenderer', className: 'htCenter htMiddle' },
-        { data: 'Pdto_Cons', type: 'dropdown', source: halfRestrictedOptions, strict: false, allowInvalid: false, renderer: 'piPercentRenderer', className: 'htCenter htMiddle pi-soft-restriction-cell' },
-        { data: 'Modelo', type: 'dropdown', source: halfRestrictedOptions, strict: false, allowInvalid: false, renderer: 'piPercentRenderer', className: 'htCenter htMiddle pi-soft-restriction-cell' },
-        { data: 'Estado_Restricciones', readOnly: true, renderer: 'piPercentRenderer', className: 'htCenter htMiddle' },
-        { data: 'estado_operativo', readOnly: true, renderer: 'piStateRenderer', className: 'htLeft htMiddle force-wrap' },
-        { data: 'Observaciones', type: 'text', className: 'htLeft htMiddle force-wrap' },
-      ],
+      colHeaders: buildColumnHeaders(),
+      columns: buildColumnDefinitions(),
       licenseKey: 'non-commercial-and-evaluation',
       language: 'es-MX',
       stretchH: 'none',
@@ -4053,7 +4231,9 @@
 
     syncLegendVisualState();
     updateSharedSelectionCountIndicator();
-    loadData();
+    fetchRestrictionConfig(function () {
+      loadData();
+    });
   }
 
   window.PIHotModule = {

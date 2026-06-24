@@ -95,6 +95,130 @@
 
   var unitOptions = ['', 'ml', 'm2', 'm3', 'un', 'gl', 'kg', '%', 'Niveles'];
 
+  // ── Restriction config (dynamic from API, with construction defaults) ──
+  var _DEFAULT_RESTRICTION_CONFIG = {
+    hardRestrictions: [
+      { key: 'D_y_E', threshold: 1.0 },
+      { key: 'Materiales', threshold: 1.0 },
+      { key: 'MdeO', threshold: 1.0 },
+      { key: 'Equipos', threshold: 1.0 },
+      { key: 'Predecesora', threshold: 0.5 },
+    ],
+    softAlerts: [
+      { weeksBefore: 0, label: 'R0' },
+      { weeksBefore: 1, label: 'R1' },
+      { weeksBefore: 2, maxWeeks: 3, label: 'R2-3' },
+      { weeksBefore: 4, maxWeeks: 6, label: 'R4-6' },
+    ],
+  };
+
+  function getRestrictionConfig() {
+    return window.__RESTRICTION_CONFIG__ || _DEFAULT_RESTRICTION_CONFIG;
+  }
+
+  function getRestrictionKeys() {
+    var cfg = getRestrictionConfig();
+    if (Array.isArray(cfg.hardRestrictions)) {
+      return cfg.hardRestrictions.map(function (r) { return r.key; });
+    }
+    // Legacy fallback: array of strings
+    if (Array.isArray(cfg.restrictionKeys)) {
+      return cfg.restrictionKeys;
+    }
+    return _DEFAULT_RESTRICTION_CONFIG.hardRestrictions.map(function (r) { return r.key; });
+  }
+
+  function fetchRestrictionConfig() {
+    var db = getDb();
+    if (!db) {
+      window.__RESTRICTION_CONFIG__ = _DEFAULT_RESTRICTION_CONFIG;
+      return $.Deferred().resolve().promise();
+    }
+
+    return $.getJSON('/api/general/restriction-config', { db: db })
+      .done(function (response) {
+        if (response && response.success && response.data) {
+          window.__RESTRICTION_CONFIG__ = normalizeApiConfig(response.data);
+        } else {
+          window.__RESTRICTION_CONFIG__ = _DEFAULT_RESTRICTION_CONFIG;
+        }
+      })
+      .fail(function () {
+        window.__RESTRICTION_CONFIG__ = _DEFAULT_RESTRICTION_CONFIG;
+      });
+  }
+
+  function normalizeApiConfig(raw) {
+    if (!raw || typeof raw !== 'object') {
+      return _DEFAULT_RESTRICTION_CONFIG;
+    }
+
+    var restrictions = Array.isArray(raw.restrictions) ? raw.restrictions : [];
+    var hardKeys = Array.isArray(raw.hardRestrictions) ? raw.hardRestrictions : [];
+    var softKeys = Array.isArray(raw.softRestrictions) ? raw.softRestrictions : [];
+
+    var lookup = {};
+    for (var i = 0; i < restrictions.length; i++) {
+      if (restrictions[i] && restrictions[i].key) {
+        lookup[restrictions[i].key] = restrictions[i];
+      }
+    }
+
+    // Normalize hardRestrictions: if API returns key strings, build [{key, threshold}] from lookup
+    var hardGates;
+    if (hardKeys.length > 0 && typeof hardKeys[0] === 'string') {
+      hardGates = [];
+      for (var j = 0; j < hardKeys.length; j++) {
+        var key = hardKeys[j];
+        var entry = lookup[key];
+        hardGates.push({
+          key: key,
+          threshold: (entry && entry.threshold !== undefined) ? entry.threshold : 1.0,
+        });
+      }
+    } else if (hardKeys.length > 0 && typeof hardKeys[0] === 'object') {
+      // Already in [{key, threshold}] format (e.g. internal/default)
+      hardGates = hardKeys;
+    } else {
+      hardGates = _DEFAULT_RESTRICTION_CONFIG.hardRestrictions;
+    }
+
+    var softEntries = [];
+    if (softKeys.length > 0 && typeof softKeys[0] === 'string') {
+      for (var k = 0; k < softKeys.length; k++) {
+        var sEntry = lookup[softKeys[k]];
+        softEntries.push({
+          key: softKeys[k],
+          label: (sEntry && sEntry.label) ? sEntry.label : softKeys[k],
+          type: 'soft',
+        });
+      }
+    }
+
+    return {
+      hardRestrictions: hardGates,
+      softAlerts: Array.isArray(raw.softAlerts)
+        ? raw.softAlerts
+        : _DEFAULT_RESTRICTION_CONFIG.softAlerts,
+      restrictions: restrictions,
+      hardRestrictionKeys: hardKeys,
+      softRestrictions: softKeys,
+      softEntries: softEntries,
+    };
+  }
+
+  function getRestrictionLabel(key) {
+    var cfg = getRestrictionConfig();
+    if (Array.isArray(cfg.restrictions)) {
+      for (var i = 0; i < cfg.restrictions.length; i++) {
+        if (cfg.restrictions[i].key === key && cfg.restrictions[i].label) {
+          return cfg.restrictions[i].label;
+        }
+      }
+    }
+    return key;
+  }
+
   var columnMinWidths = [34, 52, 120, 44, 72, 72, 42, 42, 54, 64, 64, 78, 70];
   var columnFloorWidths = [28, 44, 90, 36, 60, 60, 34, 34, 44, 52, 52, 60, 56];
   var columnMaxWidths = [84, 156, 420, 110, 132, 132, 86, 86, 128, 138, 138, 260, 190];
@@ -509,13 +633,8 @@
   }
 
   function areHardRestrictionsMet(data) {
-    var hardGates = [
-      { key: 'D_y_E', threshold: 1.0 },
-      { key: 'Materiales', threshold: 1.0 },
-      { key: 'MdeO', threshold: 1.0 },
-      { key: 'Equipos', threshold: 1.0 },
-      { key: 'Predecesora', threshold: 0.5 },
-    ];
+    var cfg = getRestrictionConfig();
+    var hardGates = Array.isArray(cfg.hardRestrictions) ? cfg.hardRestrictions : _DEFAULT_RESTRICTION_CONFIG.hardRestrictions;
     for (var i = 0; i < hardGates.length; i++) {
       var gate = hardGates[i];
       var val = normalizeRatio(data[gate.key]);
@@ -679,6 +798,22 @@
     $('#modal_leyenda_colores_Label').text(
       'Guia Operativa - Programa General'
     );
+
+    var _cfg = getRestrictionConfig();
+    var _hardKeys = getRestrictionKeys();
+    var _hardLabels = [];
+    for (var _ri = 0; _ri < _hardKeys.length; _ri++) {
+      _hardLabels.push(getRestrictionLabel(_hardKeys[_ri]));
+    }
+    var _restrictionInfoHtml = _hardLabels.length > 0
+      ? "<section class='pg-legend-quick-group'>" +
+        "<h6 class='pg-legend-quick-group-title'>Restricciones Obligatorias (" + _hardLabels.length + ")</h6>" +
+        "<div class='pg-legend-quick-row'>" +
+        "<div class='pg-legend-quick-state'><small>" + escapeHtml(_hardLabels.join(' | ')) + "</small></div>" +
+        '</div>' +
+        '</section>'
+      : '';
+
     $('#modal_leyenda_colores_body').html(
       "<div class='pg-legend-quick'>" +
         "<div class='pg-legend-quick-header'>" +
@@ -734,6 +869,7 @@
         "<span class='pg-legend-quick-priority is-p3'>P3</span>" +
         '</div>' +
         '</section>' +
+        _restrictionInfoHtml +
         "<section class='pg-legend-quick-alerts'>" +
         "<h6 class='pg-legend-quick-group-title'>Alertas secundarias de restricciones</h6>" +
         "<p class='pg-legend-quick-alert-intro'>R0-R1-R2/3-R4/6 no cambian el estado principal. Solo anticipan desbloqueos.</p>" +
@@ -988,8 +1124,8 @@
       'Consecutivo_en_Programa', 'Consecutivo', 'Id', 'Titulo', 'Estado', 'Semanas_Inicio',
       'Fecha_Inicio', 'Fecha_Fin', 'Ruta_Critica', 'Ejecutado', 'EjecutadoDisplay',
       'unidad', 'cantidad_ppto', 'codigo_actividad', 'Estado_Restricciones',
-      'D_y_E', 'Materiales', 'MdeO', 'Equipos', 'Predecesora', 'alerta_crisis'
-    ];
+      'alerta_crisis'
+    ].concat(getRestrictionKeys());
     var rowData = {};
     var hasValue = false;
 
@@ -2668,7 +2804,9 @@
     }
 
     syncLegendVisualState();
-    loadData();
+    fetchRestrictionConfig().always(function () {
+      loadData();
+    });
   }
 
   window.PGHotModule = {

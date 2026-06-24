@@ -39,6 +39,7 @@ class ProgramacionIntermediaController extends BaseController
             'subcontratistas' => $subcontratistas,
             'profesionales' => $profesionales,
             'viewAll' => $viewAll,
+            'area' => $_SESSION['area'] ?? 'Construccion',
         ]);
 
         $this->render('/views/programacion-intermedia/programacion_intermedia.view.php', $data);

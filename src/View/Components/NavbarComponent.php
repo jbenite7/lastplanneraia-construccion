@@ -6,6 +6,9 @@ class NavbarComponent
 {
     public static function render($activeSection = '')
     {
+        // Detectar si el proyecto es Pre-Construcción
+        $isPreConstruccion = ($_SESSION['area'] ?? 'Construccion') === 'Pre-Construccion';
+        
         $usuarioRaw = trim($_SESSION['nombreUsuario'] ?? 'Usuario');
 
         // Abreviatura Inteligente (Ej: "Juan Felipe Benitez Ramos" -> "Juan F. Benitez R.")
@@ -37,6 +40,11 @@ class NavbarComponent
                     <!-- Icon Placeholder (No Image loaded yet as per request) -->
                     <i class="fas fa-drafting-compass mr-2"></i> 
                     Last Planner AIA
+                    <?php if ($isPreConstruccion): ?>
+                    <span class="badge badge-warning ml-2" style="font-size: 0.55rem; vertical-align: middle;">
+                        <i class="fas fa-hard-hat mr-1"></i>Pre-Construcción
+                    </span>
+                    <?php endif; ?>
                 </a>
 
                 <!-- Mobile Toggler -->
@@ -98,6 +106,36 @@ class NavbarComponent
                                 <span class="nav-text-compact">P. Semanal</span>
                             </a>
                         </li>
+                        <?php if (!$isPreConstruccion): ?>
+                        <li class="nav-item">
+                            <a class="nav-link <?php echo $activeSection == 'listado_actividades' ? 'active' : ''; ?>" href="/listado-actividades">
+                                <i class="fas fa-list-ul nav-icon"></i>
+                                <span class="nav-text-full">Listado de Actividades</span>
+                                <span class="nav-text-compact">Listado</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?php echo $activeSection == 'pdc' ? 'active' : ''; ?>" href="/pdc">
+                                <i class="fas fa-clipboard-check nav-icon"></i>
+                                <span class="nav-text-full">PDC</span>
+                                <span class="nav-text-compact">PDC</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?php echo $activeSection == 'contratos' ? 'active' : ''; ?>" href="/contratos">
+                                <i class="fas fa-file-contract nav-icon"></i>
+                                <span class="nav-text-full">Contratos</span>
+                                <span class="nav-text-compact">Contratos</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?php echo $activeSection == 'cic' ? 'active' : ''; ?>" href="/programacion-semanal/cic">
+                                <i class="fas fa-chart-bar nav-icon"></i>
+                                <span class="nav-text-full">CIC</span>
+                                <span class="nav-text-compact">CIC</span>
+                            </a>
+                        </li>
+                        <?php endif; ?>
                     </ul>
                     <?php else: ?>
                     <!-- Empty Spacer for Center if needed or just auto margin -->

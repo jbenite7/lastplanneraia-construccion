@@ -1340,11 +1340,15 @@
                         <label class="custom-control-label" for="piViewAllToggle"></label>
                     </div>
                 </div>
+                <?php if ($area !== 'Pre-Construccion'): ?>
                 <button id="btn-shared-constraint" class="btn-pdc-modern">Restricción Compartida</button>
+                <?php endif; ?>
+                <?php if ($area !== 'Pre-Construccion'): ?>
                 <button id="btn-refresh-listas" class="btn-pdc-modern" title="Recargar listas de Subcontratistas y Profesionales">🔄 Listas</button>
                 <button id="btn-shared-select-visible" class="btn-pdc-modern">Seleccionar visibles</button>
                 <button id="btn-shared-clear-selection" class="btn-pdc-modern">Limpiar selección</button>
                 <span id="shared-selection-count" class="badge badge-secondary">0 selec.</span>
+                <?php endif; ?>
                 <div class="pi-status-badges">
                     <span id="save-status" class="badge badge-success" style="display:none;">Guardado</span>
                     <span id="save-error" class="badge badge-danger" style="display:none;">Error al guardar</span>
@@ -1358,6 +1362,9 @@
         <div class="collapse d-md-block" id="pdcFiltersMobile">
             <div class="pdc-legend pi-legend pdc-legend-autoscaling" id="piLegend">
                 <span class="pi-legend-window-label <?= $viewAll ? 'is-active' : '' ?>" title="Los conteos del semaforo se calculan sobre la ventana de 6 semanas, no sobre la vista actual.">(Ventana 6 sem.)</span>
+                <?php if ($area === 'Pre-Construccion'): ?>
+                <span class="pi-legend-window-label is-active" title="Pre-Construccion: 4 restricciones activas" style="background:#dbeafe;color:#1e40af;border-color:#93c5fd;">Pre-Cons. 4R</span>
+                <?php endif; ?>
                 <span class="pdc-legend-item blocked-overdue-critical" data-filter="blocked-overdue-critical" role="button" tabindex="0"><span class="indicator"></span> RC inicio vencido <span id="count-blocked-overdue-critical" class="count-badge">(...)</span></span>
 
                 <span class="pdc-legend-item blocked-overdue" data-filter="blocked-overdue" role="button" tabindex="0"><span class="indicator"></span> Inicio Vencido <span id="count-blocked-overdue" class="count-badge">(...)</span></span>
@@ -1430,6 +1437,7 @@
                                     </div>
                                     <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="D_y_E"></select>
                                 </div>
+                                <?php if ($area !== 'Pre-Construccion'): ?>
                                 <div class="pi-shared-restriction-row" data-restriction-row="Materiales">
                                     <div class="custom-control custom-checkbox">
                                         <input type="checkbox" class="custom-control-input pi-shared-restriction-check" id="piSharedRestriction_Materiales" data-restriction-type="Materiales">
@@ -1451,6 +1459,7 @@
                                     </div>
                                     <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="Equipos"></select>
                                 </div>
+                                <?php endif; ?>
                                 <div class="pi-shared-restriction-row" data-restriction-row="Predecesora">
                                     <div class="custom-control custom-checkbox">
                                         <input type="checkbox" class="custom-control-input pi-shared-restriction-check" id="piSharedRestriction_Predecesora" data-restriction-type="Predecesora">
@@ -1538,7 +1547,8 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js?v=gen02" charset="utf-8"></script>
+    <script>window.__PROJECT_AREA__ = <?php echo json_encode($_SESSION['area'] ?? 'Construccion'); ?>;</script>
+	<script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js?v=gen02" charset="utf-8"></script>
     <script type="text/javascript" src="/js/funcionesGenerales6.js" charset="utf-8"></script>
 
     <script src="/public/vendor/handsontable/handsontable.full.min.js"></script>
@@ -1569,9 +1579,23 @@
         }
         $piProfesionales = array_values(array_unique(array_filter($piProfesionales)));
         echo json_encode($piProfesionales, JSON_UNESCAPED_UNICODE);
-        ?>
+        ?>;
+    </script>
+    <?php if ($area === 'Pre-Construccion'): ?>
+    <script>
+        window.__RESTRICTION_CONFIG__ = {
+            area: 'Pre-Construccion',
+            restrictions: [
+                { key: 'D_y_E', label: 'Diseños y Especif.', type: 'hard', threshold: 100, options: ['0%', '33%', '66%', '100%', 'N/A'] },
+                { key: 'Predecesora', label: 'Predecesora', type: 'hard', threshold: 50, options: ['0%', '33%', '66%', '100%', 'N/A'] },
+                { key: 'Pdto_Cons', label: 'Pdto. Constructivo (blanda)', type: 'soft', threshold: 100, options: ['0%', '50%', '100%', 'N/A'] },
+                { key: 'Modelo', label: 'Modelo BIM (blanda)', type: 'soft', threshold: 100, options: ['0%', '50%', '100%', 'N/A'] },
+            ],
+            hardRestrictions: ['D_y_E', 'Predecesora'],
+            softRestrictions: ['Pdto_Cons', 'Modelo'],
         };
     </script>
+    <?php endif; ?>
     <script type="text/javascript" src="/js/HandsontableTomSelectEditor.js?v=tomselect30"></script>
     <script src="/js/modules/lps_drawer.js?v=20260522d"></script>
     <?php $piHotVersion = @filemtime(dirname(__DIR__, 2) . '/public/js/modules/programacion_intermedia/hot.js') ?: 'hot38'; ?>

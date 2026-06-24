@@ -80,6 +80,7 @@ abstract class BaseController
             'permiso' => $_SESSION['permiso'] ?? '',
             'pdcActivo' => $_SESSION['pdcActivo'] ?? '',
             'nombreUsuario' => $_SESSION['nombreUsuario'] ?? '',
+            'area' => $_SESSION['area'] ?? 'Construccion',
         ];
     }
 

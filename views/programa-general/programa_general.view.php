@@ -202,11 +202,17 @@
         <input type="hidden" id="baseDatos_PHP" value="<?php echo htmlspecialchars($dbName ?? '', ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true">
         <input type="hidden" id="semana_PHP" value="<?php echo (int) ($semana ?? 0); ?>" aria-hidden="true">
         <input type="hidden" id="permiso_canonico" value="<?php echo htmlspecialchars($permiso ?? '', ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true">
+        <input type="hidden" id="area_PHP" value="<?php echo htmlspecialchars($area ?? 'Construccion', ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true">
         <input type="hidden" id="scriptBarraFiltros" value="" aria-hidden="true">
     </div>
 
     <div class="hot-full-bleed">
     <div class="row direccionSeccion" style="margin:0;">
+        <?php if ($area === 'Pre-Construccion'): ?>
+        <div class="col-sm-12 text-left mb-1">
+            <small class="text-muted"><i class="fas fa-drafting-compass mr-1"></i>Pre-Construcción</small>
+        </div>
+        <?php endif; ?>
         <div class="col-sm-10 col-md-10 col-lg-10 ml-0 mr-auto text-left" id="textoDireccionSeccion"></div>
     </div>
 
@@ -214,8 +220,10 @@
         <div class="pg-actions-row">
             <div class="d-flex flex-wrap align-items-center" style="gap:6px;">
                 <button type="button" class="leyenda_colores btn-pdc-modern" data-toggle="modal" data-target="#modal_leyenda_colores">Leyenda <i class="fas fa-question-circle ml-1"></i></button>
+                <?php if ($area !== 'Pre-Construccion'): ?>
                 <button type="button" id="actualizarEjecucion" class="btn-pdc-modern">Actualizar Ejecución <i class="fas fa-sync ml-1"></i></button>
                 <button type="button" id="descargarCorteProgramacion" class="btn-pdc-modern">Descargar Corte <i class="fas fa-download ml-1"></i></button>
+                <?php endif; ?>
                 <button id="btn-export" class="btn-pdc-modern">Exportar CSV</button>
                 <button id="btn-refresh" class="btn-pdc-modern">Recargar</button>
             </div>
@@ -229,6 +237,17 @@
         </div>
 
         <div class="collapse d-md-block" id="pdcFiltersMobile">
+            <?php if ($area === 'Pre-Construccion'): ?>
+            <div class="pdc-legend pg-legend pdc-legend-autoscaling" id="pgLegend">
+                <span class="pdc-legend-item alerta-restricciones" data-filter="con-alerta-restricciones" role="button" tabindex="0"><span class="indicator"></span> Con Restricción Pendiente <span id="count-con-alerta-restricciones" class="count-badge">(...)</span></span>
+                <span class="pdc-legend-item debe-iniciar" data-filter="debe-iniciar" role="button" tabindex="0"><span class="indicator"></span> Por Iniciar <span id="count-debe-iniciar" class="count-badge">(...)</span></span>
+                <span class="pdc-legend-item actividad-futura" data-filter="actividad-futura" role="button" tabindex="0"><span class="indicator"></span> Actividad Futura <span id="count-actividad-futura" class="count-badge">(...)</span></span>
+                <span class="pdc-legend-item en-curso" data-filter="en-curso" role="button" tabindex="0"><span class="indicator"></span> En Ejecución <span id="count-en-curso" class="count-badge">(...)</span></span>
+                <span class="pdc-legend-item atrasada" data-filter="atrasada" role="button" tabindex="0"><span class="indicator"></span> Atrasada <span id="count-atrasada" class="count-badge">(...)</span></span>
+                <span class="pdc-legend-item terminada" data-filter="terminada" role="button" tabindex="0"><span class="indicator"></span> Completada <span id="count-terminada" class="count-badge">(...)</span></span>
+                <span class="pdc-legend-item sin-datos" data-filter="sin-datos" role="button" tabindex="0"><span class="indicator"></span> Sin Datos <span id="count-sin-datos" class="count-badge">(...)</span></span>
+            </div>
+            <?php else: ?>
             <div class="pdc-legend pg-legend pdc-legend-autoscaling" id="pgLegend">
                 <span class="pdc-legend-item alerta-restricciones" data-filter="con-alerta-restricciones" role="button" tabindex="0"><span class="indicator"></span> Con Alerta Restricciones <span id="count-con-alerta-restricciones" class="count-badge">(...)</span></span>
                 <span class="pdc-legend-item debe-iniciar" data-filter="debe-iniciar" role="button" tabindex="0"><span class="indicator"></span> Debe Iniciar <span id="count-debe-iniciar" class="count-badge">(...)</span></span>
@@ -238,6 +257,7 @@
                 <span class="pdc-legend-item terminada" data-filter="terminada" role="button" tabindex="0"><span class="indicator"></span> Terminada <span id="count-terminada" class="count-badge">(...)</span></span>
                 <span class="pdc-legend-item sin-datos" data-filter="sin-datos" role="button" tabindex="0"><span class="indicator"></span> Sin Datos <span id="count-sin-datos" class="count-badge">(...)</span></span>
             </div>
+            <?php endif; ?>
         </div>
     </div>
 
@@ -249,7 +269,7 @@
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title" id="modal_leyenda_colores_Label">Guia Operativa - Programa General</h4>
+                    <h4 class="modal-title" id="modal_leyenda_colores_Label">Guia Operativa - Programa General<?php if ($area === 'Pre-Construccion'): ?> (Pre-Construcción)<?php endif; ?></h4>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">&times;</button>
                 </div>
                 <div class="modal-body" id="modal_leyenda_colores_body"></div>
@@ -263,12 +283,18 @@
 
     <script src="/public/vendor/popper.min.js"></script>
     <script src="/public/vendor/bootstrap/bootstrap.min.js"></script>
-    <script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js" charset="utf-8"></script>
+    <script>window.__PROJECT_AREA__ = <?php echo json_encode($_SESSION['area'] ?? 'Construccion'); ?>;</script>
+	<script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js" charset="utf-8"></script>
     <script type="text/javascript" src="/js/funcionesGenerales6.js" charset="utf-8"></script>
 
     <script src="/public/vendor/handsontable/handsontable.full.min.js"></script>
     <script src="/public/vendor/handsontable/es-MX.js"></script>
     <script src="/js/modules/lps_drawer.js?v=20260522d"></script>
+    <?php if ($area === 'Pre-Construccion' && $restrictionConfig): ?>
+    <script>
+        window.__RESTRICTION_CONFIG__ = <?php echo json_encode($restrictionConfig, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
+    </script>
+    <?php endif; ?>
     <?php $pgHotVersion = @filemtime(dirname(__DIR__, 2) . '/public/js/modules/programa_general/hot.js') ?: 'hot14'; ?>
     <script src="/js/modules/programa_general/hot.js?v=<?php echo urlencode((string) $pgHotVersion); ?>"></script>
 

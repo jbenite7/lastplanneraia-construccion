@@ -18,9 +18,21 @@ class ProjectLandingService
         $this->lpsService = new LpsService();
     }
 
-    public function resolve(string $dbName, string $role): array
+    public function resolve(string $dbName, string $role, string $area = 'Construccion'): array
     {
         $normalizedRole = $this->normalizeRole($role);
+
+        if ($area === 'Pre-Construccion') {
+            return [
+                'route' => '/programa-general',
+                'module' => 'programa-general',
+                'week' => 0,
+                'hasActiveWeeks' => false,
+                'maxActiveWeek' => 0,
+                'maxConfirmedWeek' => null,
+                'reason' => 'pre-construccion',
+            ];
+        }
 
         if (!$this->isValidDbPrefix($dbName)) {
             return [

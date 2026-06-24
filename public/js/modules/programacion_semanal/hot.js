@@ -484,6 +484,37 @@
     },
   };
 
+  var CONSTRUCTION_DEFAULTS = {
+    restrictions: readinessActionProps,
+    labels: readinessActionLabels,
+    doneTexts: readinessDoneTexts,
+    matrix: readinessActionMatrix,
+  };
+
+  function getConfigRestrictions() {
+    var cached = window.__RESTRICTION_CONFIG__;
+    return (cached && Array.isArray(cached.restrictions) && cached.restrictions.length > 0)
+      ? cached.restrictions : CONSTRUCTION_DEFAULTS.restrictions;
+  }
+
+  function getConfigLabels() {
+    var cached = window.__RESTRICTION_CONFIG__;
+    return (cached && cached.labels && typeof cached.labels === 'object' && Object.keys(cached.labels).length > 0)
+      ? cached.labels : CONSTRUCTION_DEFAULTS.labels;
+  }
+
+  function getConfigDoneTexts() {
+    var cached = window.__RESTRICTION_CONFIG__;
+    return (cached && cached.doneTexts && typeof cached.doneTexts === 'object' && Object.keys(cached.doneTexts).length > 0)
+      ? cached.doneTexts : CONSTRUCTION_DEFAULTS.doneTexts;
+  }
+
+  function getConfigMatrix() {
+    var cached = window.__RESTRICTION_CONFIG__;
+    return (cached && cached.matrix && typeof cached.matrix === 'object' && Object.keys(cached.matrix).length > 0)
+      ? cached.matrix : CONSTRUCTION_DEFAULTS.matrix;
+  }
+
   function getRestrictionSourceValue(row, prop) {
     if (!row) {
       return null;
@@ -546,7 +577,7 @@
   }
 
   function getReadinessAction(prop, value) {
-    var config = readinessActionMatrix[prop];
+    var config = getConfigMatrix()[prop];
     if (!config) {
       return '';
     }
@@ -572,8 +603,8 @@
   }
 
   function getReadinessStatusItem(prop, row) {
-    var config = readinessActionMatrix[prop];
-    var label = readinessActionLabels[prop] || prop;
+    var config = getConfigMatrix()[prop];
+    var label = getConfigLabels()[prop] || prop;
     var value = getRestrictionSourceValue(row, prop);
     var raw = String(value === null || value === undefined ? '' : value).trim();
     var upper = raw.toUpperCase();
@@ -588,7 +619,7 @@
     }
 
     if (ratio + 0.0001 >= config.threshold) {
-      var doneText = readinessDoneTexts[prop] || 'Condición lista.';
+      var doneText = getConfigDoneTexts()[prop] || 'Condición lista.';
       if (prop === 'Predecesora' && ratio >= 0.999) {
         doneText = 'Predecesora terminada.';
       }
@@ -610,8 +641,9 @@
 
   function getReadinessStatusItems(row) {
     var items = [];
-    for (var i = 0; i < readinessActionProps.length; i++) {
-      var prop = readinessActionProps[i];
+    var restrictionProps = getConfigRestrictions();
+    for (var i = 0; i < restrictionProps.length; i++) {
+      var prop = restrictionProps[i];
       items.push(getReadinessStatusItem(prop, row));
     }
     return items;
@@ -4051,6 +4083,29 @@
     });
   }
 
+  function fetchRestrictionConfig(callback) {
+    if (window.__RESTRICTION_CONFIG__) {
+      if (typeof callback === 'function') { callback(); }
+      return;
+    }
+
+    $.ajax({
+      method: 'GET',
+      url: '/api/general/restriction-config',
+      dataType: 'json',
+      cache: true,
+      timeout: 5000,
+    }).done(function (response) {
+      if (response && typeof response === 'object' && Array.isArray(response.restrictions) && response.restrictions.length > 0) {
+        window.__RESTRICTION_CONFIG__ = response;
+      }
+    }).fail(function () {
+      // Fallback: construction defaults remain active (already in CONSTRUCTION_DEFAULTS)
+    }).always(function () {
+      if (typeof callback === 'function') { callback(); }
+    });
+  }
+
   function init() {
     if (!initialized) {
       bindToolbarActions();
@@ -4066,7 +4121,9 @@
     }
 
     syncPhaseUI();
-    loadData();
+    fetchRestrictionConfig(function () {
+      loadData();
+    });
     scheduleActionsRowFit(0);
 
     if (window.ChangeMonitor && typeof window.ChangeMonitor.init === 'function') {

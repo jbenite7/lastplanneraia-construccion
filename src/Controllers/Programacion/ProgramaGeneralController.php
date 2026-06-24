@@ -18,6 +18,7 @@ class ProgramaGeneralController extends BaseController
         $proyecto = $vars['proyecto'] ?? '';
         $permiso = $vars['permiso'] ?? '';
         $pdcActivo = $vars['pdcActivo'] ?? '';
+        $area = $vars['area'] ?? 'Construccion';
 
         $maxSemana = 0;
         $fechaInicioSem = '';
@@ -29,6 +30,7 @@ class ProgramaGeneralController extends BaseController
         $fechaCierreCompromisos = '';
         $fechaCreacionSemana = '';
         $versionCronograma = '';
+        $restrictionConfig = null;
 
         try {
             if (!empty($dbName) && preg_match('/^[a-zA-Z0-9_]+$/', $dbName)) {
@@ -62,6 +64,70 @@ class ProgramaGeneralController extends BaseController
             }
         } catch (\PDOException $e) {
             error_log("Error cargando variables ProgramaGeneral: " . $e->getMessage());
+        }
+
+        // Pre-construction: build restriction config for server-side injection
+        if ($area === 'Pre-Construccion') {
+            $pcLabel2 = 'Restricción 2';
+            $pcLabel3 = 'Restricción 3';
+            $pcLabel4 = 'Restricción 4';
+
+            try {
+                if (!empty($dbName) && preg_match('/^[a-zA-Z0-9_]+$/', $dbName)) {
+                    $stmtPc = $this->db->prepare(
+                        "SELECT pc_restr_2_nombre, pc_restr_3_nombre, pc_restr_4_nombre
+                         FROM general_proyectos_procesos
+                         WHERE Base_de_Datos = ?
+                         LIMIT 1"
+                    );
+                    $stmtPc->execute([$dbName]);
+                    $proyectoPc = $stmtPc->fetch(\PDO::FETCH_ASSOC);
+
+                    if ($proyectoPc) {
+                        $pcLabel2 = !empty($proyectoPc['pc_restr_2_nombre']) ? $proyectoPc['pc_restr_2_nombre'] : $pcLabel2;
+                        $pcLabel3 = !empty($proyectoPc['pc_restr_3_nombre']) ? $proyectoPc['pc_restr_3_nombre'] : $pcLabel3;
+                        $pcLabel4 = !empty($proyectoPc['pc_restr_4_nombre']) ? $proyectoPc['pc_restr_4_nombre'] : $pcLabel4;
+                    }
+                }
+            } catch (\PDOException $e) {
+                error_log("Error cargando restricciones PC: " . $e->getMessage());
+            }
+
+            $restrictionConfig = [
+                'area' => 'Pre-Construccion',
+                'restrictions' => [
+                    [
+                        'key'       => 'restriccion_pc_1',
+                        'label'     => 'Predecesora',
+                        'type'      => 'hard',
+                        'threshold' => 50,
+                        'options'   => ['0%', '33%', '66%', '100%', 'N/A'],
+                    ],
+                    [
+                        'key'       => 'restriccion_pc_2',
+                        'label'     => $pcLabel2,
+                        'type'      => 'soft',
+                        'threshold' => 100,
+                        'options'   => ['0%', '50%', '100%', 'N/A'],
+                    ],
+                    [
+                        'key'       => 'restriccion_pc_3',
+                        'label'     => $pcLabel3,
+                        'type'      => 'soft',
+                        'threshold' => 100,
+                        'options'   => ['0%', '50%', '100%', 'N/A'],
+                    ],
+                    [
+                        'key'       => 'restriccion_pc_4',
+                        'label'     => $pcLabel4,
+                        'type'      => 'soft',
+                        'threshold' => 100,
+                        'options'   => ['0%', '50%', '100%', 'N/A'],
+                    ],
+                ],
+                'hardRestrictions' => ['restriccion_pc_1'],
+                'softRestrictions' => ['restriccion_pc_2', 'restriccion_pc_3', 'restriccion_pc_4'],
+            ];
         }
 
         require PROJECT_ROOT . '/views/programa-general/programa_general.view.php';

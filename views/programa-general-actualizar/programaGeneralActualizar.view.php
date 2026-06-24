@@ -772,6 +772,7 @@
 	<!--Selector de fechas -->
 
 	<!--Global AJAX Loaders-->
+	<script>window.__PROJECT_AREA__ = <?php echo json_encode($_SESSION['area'] ?? 'Construccion'); ?>;</script>
 	<script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js" charset="utf-8"></script>
 	<script type="text/javascript" src="/js/funcionesGenerales6.js" charset="utf-8"></script>
 

@@ -289,11 +289,11 @@ class Project
         if ($result) {
             // Si el prefijo cambió, renombrar tablas existentes
             if (!empty($oldPrefix) && !empty($newPrefix) && $oldPrefix !== $newPrefix) {
-                $this->renameProjectTables($oldPrefix, $newPrefix);
+                $this->renameProjectTables($oldPrefix, $newPrefix, $data['area']);
             }
             // Si antes no tenía prefijo pero ahora sí, o simplemente para asegurar integridad
             elseif (!empty($newPrefix)) {
-                $this->createProjectTables($newPrefix);
+                $this->createProjectTables($newPrefix, $data['area']);
             }
         }
 
@@ -306,9 +306,10 @@ class Project
      *
      * @param string $oldPrefix
      * @param string $newPrefix
+     * @param string $area
      * @return void
      */
-    private function renameProjectTables($oldPrefix, $newPrefix)
+    private function renameProjectTables($oldPrefix, $newPrefix, $area = 'Construccion')
     {
         $suffixes = [
             '_actividades', '_cambios', '_cic', '_pdc', '_profesionales',
@@ -356,7 +357,7 @@ class Project
         }
 
         // Asegurar que todas las tablas existan para el nuevo prefijo (crear las faltantes si no existían en el viejo)
-        $this->createProjectTables($newPrefix);
+        $this->createProjectTables($newPrefix, $area);
     }
 
 
@@ -370,6 +371,17 @@ class Project
     {
         // Auto-generate Base_de_Datos if not provided
         $base_datos = $this->generateDatabaseName($data['nombre'], $data['area']);
+
+        // Validate uniqueness of Base_de_Datos across ALL projects
+        $stmt = $this->db->query(
+            "SELECT COUNT(*) AS cnt FROM {$this->table} WHERE Base_de_Datos = ?",
+            [$base_datos]
+        );
+        $row = $stmt->fetch();
+        if (($row['cnt'] ?? 0) > 0) {
+            error_log("Project create failed: Base_de_Datos '{$base_datos}' already exists.");
+            return false;
+        }
 
         $sql = "INSERT INTO {$this->table} (
                     Proyecto_Proceso, 
@@ -398,7 +410,7 @@ class Project
         ]);
 
         if ($result && $base_datos) {
-            $this->createProjectTables($base_datos);
+            $this->createProjectTables($base_datos, $data['area']);
         }
 
         return $result;
@@ -408,10 +420,17 @@ class Project
      * Crea las tablas específicas para el proyecto basadas en la plantilla.
      *
      * @param string $prefix El prefijo (Base_de_Datos) para las tablas.
+     * @param string $area   Área del proyecto ('Construccion', 'PI', 'Pre-Construccion').
      * @return void
      */
-    private function createProjectTables($prefix)
+    private function createProjectTables($prefix, $area = 'Construccion')
     {
+        // Pre-Construccion: solo tablas mínimas para MVP
+        if (strtoupper($area) === 'PRE-CONSTRUCCION') {
+            $this->createPreConstructionTables($prefix);
+            return;
+        }
+
         $queries = [
             // milanCampestre_actividades
             "CREATE TABLE IF NOT EXISTS `{$prefix}_actividades` (
@@ -773,6 +792,142 @@ class Project
 
 
     /**
+     * Crea las tablas mínimas para proyectos de Pre-Construccion (MVP).
+     * Incluye: _programa, _programa_consolidado, _semanas_activas,
+     * _profesionales, _subcontratistas (Interesados Externos), _cnc, _cnp.
+     *
+     * @param string $prefix El prefijo (Base_de_Datos) para las tablas.
+     * @return void
+     */
+    private function createPreConstructionTables($prefix)
+    {
+        $queries = [
+            // _programa (reutiliza esquema de construcción)
+            "CREATE TABLE IF NOT EXISTS `{$prefix}_programa` (
+              `Consecutivo` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+              `Id` varchar(500) DEFAULT NULL,
+              `Actividad` varchar(500) DEFAULT NULL,
+              `Titulo` int(11) DEFAULT NULL,
+              `Fecha_Inicio` date DEFAULT NULL,
+              `Fecha_Fin` date DEFAULT NULL,
+              `Ruta_Critica` int(11) DEFAULT NULL,
+              `Ejecutado` float DEFAULT 0,
+              `Estado` varchar(50) DEFAULT NULL,
+              `Semanas_Inicio` int(1) DEFAULT 0,
+              `Estado_Restricciones` float DEFAULT 0,
+              `D_y_E` float DEFAULT 0,
+              `Materiales` float DEFAULT 0,
+              `MdeO` float DEFAULT 0,
+              `Equipos` float DEFAULT 0,
+              `Predecesora` float DEFAULT 0,
+              `Pdto_Cons` float DEFAULT 0,
+              `Modelo` varchar(9) DEFAULT '0',
+              `Responsable_AIA` varchar(100) DEFAULT NULL,
+              `Observaciones` mediumtext DEFAULT NULL,
+              `Ult_Act_Est` date DEFAULT NULL,
+              `Ult_Act_Restr` date DEFAULT NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci",
+
+            // _programa_consolidado (reutiliza esquema de construcción)
+            "CREATE TABLE IF NOT EXISTS `{$prefix}_programa_consolidado` (
+              `Consecutivo` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+              `Semana` int(3) NOT NULL,
+              `Consecutivo_en_Programa` int(11) NOT NULL,
+              `Id` varchar(500) DEFAULT NULL,
+              `Actividad` varchar(500) DEFAULT NULL,
+              `Titulo` int(11) DEFAULT NULL,
+              `Fecha_Inicio` date DEFAULT NULL,
+              `Fecha_Fin` date DEFAULT NULL,
+              `Ruta_Critica` int(11) DEFAULT NULL,
+              `Ejecutado` float DEFAULT 0,
+              `Estado` varchar(100) DEFAULT NULL,
+              `Semanas_Inicio` int(10) DEFAULT 0,
+              `Estado_Restricciones` float NOT NULL DEFAULT 0,
+              `D_y_E` varchar(9) NOT NULL DEFAULT '0',
+              `Materiales` varchar(9) NOT NULL DEFAULT '0',
+              `MdeO` varchar(9) NOT NULL DEFAULT '0',
+              `Equipos` varchar(9) NOT NULL DEFAULT '0',
+              `Predecesora` varchar(9) NOT NULL DEFAULT '0',
+              `Pdto_Cons` varchar(9) NOT NULL DEFAULT '0',
+              `Modelo` varchar(9) NOT NULL DEFAULT '0',
+              `Sub_Contratista` varchar(100) DEFAULT NULL,
+              `Responsable_AIA` varchar(100) DEFAULT NULL,
+              `Observaciones` mediumtext DEFAULT NULL,
+              `Ult_Act_Est` date DEFAULT NULL,
+              `Ult_Act_Restr` date DEFAULT NULL,
+              `Activa` int(1) NOT NULL DEFAULT 0,
+              `Ejecutado_Siguiente_Semana` float DEFAULT NULL,
+              `codigo_actividad` varchar(11) DEFAULT NULL,
+              `medir_productividad` int(11) DEFAULT 0,
+              `cantidad_ppto` int(11) DEFAULT NULL,
+              `unidad` varchar(20) DEFAULT NULL,
+              `programaAnteriorAsociar` varchar(500) DEFAULT NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci",
+
+            // _semanas_activas
+            "CREATE TABLE IF NOT EXISTS `{$prefix}_semanas_activas` (
+              `Id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+              `Semana` int(11) NOT NULL,
+              `Fecha_Inicio_Sem` date NOT NULL,
+              `Fecha_Fin_Sem` date NOT NULL,
+              `Semanal_Confirmada` int(1) DEFAULT 0,
+              `fechaCierreCompromisos` date DEFAULT NULL,
+              `fechaCreacionSemana` date DEFAULT NULL,
+              `reprogramacion` int(11) NOT NULL DEFAULT 0,
+              `diferenciaEstructuraCron` int(11) NOT NULL DEFAULT 0
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci",
+
+            // _profesionales
+            "CREATE TABLE IF NOT EXISTS `{$prefix}_profesionales` (
+              `id` int(3) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+              `nombre` varchar(100) NOT NULL,
+              `email` varchar(100) NOT NULL,
+              `cargo` varchar(100) NOT NULL,
+              `activo` int(11) NOT NULL DEFAULT 1
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci",
+
+            // _subcontratistas (Interesados Externos)
+            "CREATE TABLE IF NOT EXISTS `{$prefix}_subcontratistas` (
+              `Id` int(3) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+              `subcontratista` varchar(200) NOT NULL,
+              `correo_contacto` varchar(200) NOT NULL,
+              `NIT` bigint(10) NOT NULL,
+              `alcance` varchar(200) NOT NULL,
+              `tipo_proveedor` varchar(200) NOT NULL,
+              `activo` int(11) NOT NULL DEFAULT 1
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci",
+
+            // _cnc (Causas de No Cumplimiento - Pre-Construccion)
+            "CREATE TABLE IF NOT EXISTS `{$prefix}_cnc` (
+              `Id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+              `Semana` int(3) DEFAULT NULL,
+              `subcontratista` varchar(200) DEFAULT NULL,
+              `categoria` varchar(200) DEFAULT NULL,
+              `causa` varchar(500) DEFAULT NULL,
+              `observaciones` mediumtext DEFAULT NULL,
+              `responsable` varchar(200) DEFAULT NULL,
+              `fecha_registro` date DEFAULT NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci",
+
+            // _cnp (Causas de No Programación - Pre-Construccion)
+            "CREATE TABLE IF NOT EXISTS `{$prefix}_cnp` (
+              `Id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+              `Semana` int(3) DEFAULT NULL,
+              `subcontratista` varchar(200) DEFAULT NULL,
+              `categoria` varchar(200) DEFAULT NULL,
+              `causa` varchar(500) DEFAULT NULL,
+              `observaciones` mediumtext DEFAULT NULL,
+              `responsable` varchar(200) DEFAULT NULL,
+              `fecha_registro` date DEFAULT NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci",
+        ];
+
+        foreach ($queries as $sql) {
+            $this->db->query($sql);
+        }
+    }
+
+    /**
      * Genera el nombre de la base de datos siguiendo el patrón del proyecto.
      */
     private function generateDatabaseName($name, $area)
@@ -782,9 +937,14 @@ class Project
 
         // Pattern from general_proyectos_procesos.sql:
         // PI projects usually have _pi suffix
-        if (strtoupper($area) === 'PI') {
+        $areaUpper = strtoupper($area);
+        if ($areaUpper === 'PI') {
             if (!str_ends_with($slug, '_pi')) {
                 $slug .= '_pi';
+            }
+        } elseif ($areaUpper === 'PRE-CONSTRUCCION') {
+            if (!str_ends_with($slug, '_pc')) {
+                $slug .= '_pc';
             }
         }
 
@@ -853,7 +1013,10 @@ class Project
     public function updateField($id, $field, $value)
     {
         // Lista blanca de campos permitidos para actualización directa
-        $allowedFields = ['Activo', 'Acceso', 'pdcActivo'];
+        $allowedFields = [
+            'Activo', 'Acceso', 'pdcActivo',
+            'pc_restr_2_nombre', 'pc_restr_3_nombre', 'pc_restr_4_nombre',
+        ];
         if (!in_array($field, $allowedFields)) {
             return false;
         }

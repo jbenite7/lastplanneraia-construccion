@@ -136,6 +136,23 @@ document.getElementById('encabezado').innerHTML =
   navProgramacionSemanal +
   navNombreUsuario;
 
+// --- Pre-Construction Area: Hide construction-only modules ---
+if (window.__PROJECT_AREA__ === 'Pre-Construccion') {
+  function _hideNavItem(childId) {
+    var el = document.getElementById(childId);
+    if (el) {
+      var li = el.closest('li');
+      if (li) li.style.display = 'none';
+    }
+  }
+  _hideNavItem('info_listadoActividades');
+  _hideNavItem('info_contratos');
+  _hideNavItem('planCompras');
+  _hideNavItem('programacion_semanal');
+  var _titAct = document.getElementById('tituloActividadesProyecto');
+  if (_titAct) _titAct.style.display = 'none';
+}
+
 // Inyectar Script Notifications (DESPUÉS del innerHTML)
 if (!document.querySelector('script[src*="notifications.js"]')) {
   var scriptNotif = document.createElement('script');

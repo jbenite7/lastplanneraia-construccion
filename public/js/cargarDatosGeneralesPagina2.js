@@ -211,6 +211,29 @@ var finalNavbarHTML =
 document.getElementById('encabezado').innerHTML =
   document.getElementById('encabezado').innerHTML + inputosOcultos + finalNavbarHTML;
 
+// --- Pre-Construction Area: Hide construction-only modules ---
+if (window.__PROJECT_AREA__ === 'Pre-Construccion') {
+  // Helper: hide a nav-item (the <li> wrapper) by child element id
+  function _hideNavItem(childId) {
+    var el = document.getElementById(childId);
+    if (el) {
+      var li = el.closest('li');
+      if (li) li.style.display = 'none';
+    }
+  }
+  // Listado de Actividades
+  _hideNavItem('info_listadoActividades');
+  // Contratos
+  _hideNavItem('info_contratos');
+  // Plan de Compras (PDC)
+  _hideNavItem('planCompras');
+  // Programación Semanal (contains CIC / Calificación Integral de Proveedores)
+  _hideNavItem('programacion_semanal');
+  // Hide "Actividades del Proyecto" section header if both children hidden
+  var _titAct = document.getElementById('tituloActividadesProyecto');
+  if (_titAct) _titAct.style.display = 'none';
+}
+
 // Inyectar Script Notifications (DESPUÉS del innerHTML para que existan los elementos)
 if (!document.querySelector('script[src*="notifications.js"]')) {
   var scriptNotif = document.createElement('script');

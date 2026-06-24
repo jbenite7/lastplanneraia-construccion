@@ -840,6 +840,7 @@ $categoriasCP = [
         <input type="hidden" id="baseDatos_PHP" value="<?php echo htmlspecialchars($dbName ?? '', ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true">
         <input type="hidden" id="semana_PHP" value="<?php echo (int) ($semana ?? 0); ?>" aria-hidden="true">
         <input type="hidden" id="permiso_canonico" value="<?php echo htmlspecialchars($permiso ?? '', ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true">
+        <input type="hidden" id="area_PHP" value="<?php echo htmlspecialchars($area ?? 'Construccion', ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true">
         <input type="hidden" id="scriptBarraFiltros" value="" aria-hidden="true">
     </div>
 
@@ -1273,7 +1274,8 @@ $categoriasCP = [
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js" charset="utf-8"></script>
+    <script>window.__PROJECT_AREA__ = <?php echo json_encode($_SESSION['area'] ?? 'Construccion'); ?>;</script>
+	<script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js" charset="utf-8"></script>
     <script type="text/javascript" src="/js/funcionesGenerales6.js" charset="utf-8"></script>
 
     <script src="/public/vendor/handsontable/handsontable.full.min.js"></script>
@@ -1319,6 +1321,26 @@ $categoriasCP = [
         ?>
         };
     </script>
+    <?php if (($area ?? 'Construccion') === 'Pre-Construccion'): ?>
+    <script>
+        /* Pre-Construccion: inline restriction config (4 restrictions) so hot.js skips the AJAX fetch.
+           Keys match consolidado DB columns so getRestrictionSourceValue() resolves correctly. */
+        (function () {
+            if (window.__RESTRICTION_CONFIG__) { return; }
+            window.__RESTRICTION_CONFIG__ = {
+                area: 'Pre-Construccion',
+                restrictions: [
+                    { key: 'D_y_E',     label: 'Disenos y Especificaciones', type: 'hard', threshold: 100, options: ['0%','33%','66%','100%','N/A'] },
+                    { key: 'Materiales', label: 'Materiales',               type: 'hard', threshold: 100, options: ['0%','33%','66%','100%','N/A'] },
+                    { key: 'MdeO',      label: 'Mano de Obra',              type: 'hard', threshold: 100, options: ['0%','33%','66%','100%','N/A'] },
+                    { key: 'Equipos',   label: 'Equipos y Herramienta',     type: 'hard', threshold: 100, options: ['0%','33%','66%','100%','N/A'] }
+                ],
+                hardRestrictions: ['D_y_E','Materiales','MdeO','Equipos'],
+                softRestrictions: []
+            };
+        })();
+    </script>
+    <?php endif; ?>
     <script src="/js/modules/lps_drawer.js?v=20260522c"></script>
     <?php $psHotVersion = @filemtime(dirname(__DIR__, 2) . '/public/js/modules/programacion_semanal/hot.js') ?: 'hot50'; ?>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>

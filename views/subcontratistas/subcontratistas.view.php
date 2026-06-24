@@ -301,6 +301,7 @@
     <link rel="stylesheet" href="/css/handsontable-header-global.css?v=20260223a" />
 </head>
 <body>
+<?php $isPreConstruccion = (($area ?? $_SESSION['area'] ?? 'Construccion') === 'Pre-Construccion'); ?>
 
     <div id="loading"><div class="spinner-border text-primary" role="status"><span class="sr-only">Cargando...</span></div></div>
 
@@ -318,7 +319,10 @@
     <input type="hidden" id="permiso_canonico" value="<?php echo $_SESSION['permiso'] ?? 'V'; ?>">
 
     <div class="header-actions">
-        <h4>Subcontratistas (Live Edición)</h4>
+        <h4><?php echo $isPreConstruccion ? 'Interesados Externos (Live Edición)' : 'Subcontratistas (Live Edición)'; ?></h4>
+        <?php if ($isPreConstruccion): ?>
+            <small class="text-muted d-block mt-1">Gestión de interesados externos del proyecto: Socios, Ventas, Gerencia, Diseñadores, Entidades.</small>
+        <?php endif; ?>
         <div>
             <span id="save-status" class="badge badge-success" style="display:none;">Guardado</span>
             <span id="save-error" class="badge badge-danger" style="display:none;">Error al guardar</span>
@@ -339,7 +343,8 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 
     <!-- Common Scripts for Navigation (Depends on jQuery) -->
-    <script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js" charset="utf-8"></script>
+    <script>window.__PROJECT_AREA__ = <?php echo json_encode($_SESSION['area'] ?? 'Construccion'); ?>;</script>
+	<script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js" charset="utf-8"></script>
 
     <!-- Handsontable Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/handsontable@14.6.1/dist/handsontable.full.min.js"></script>
@@ -355,6 +360,31 @@
         $(document).ready(function() {
             // Load Navigation
             cargarDatosGeneralesPagina(document.getElementById('seccion').value);
+
+            // Pre-Construccion: Rebrand sidebar & breadcrumb labels
+            <?php if ($isPreConstruccion): ?>
+            setTimeout(function() {
+                // Override sidebar active label
+                var sidebarLinks = document.querySelectorAll('.nav-link.active, .sidebar .active a, #navbarSupportedContent .active a');
+                sidebarLinks.forEach(function(el) {
+                    if (el.textContent.trim() === 'Subcontratistas') {
+                        el.textContent = 'Interesados Externos';
+                    }
+                });
+                // Override breadcrumb
+                var breadcrumbItems = document.querySelectorAll('.breadcrumb-item, .breadcrumb li');
+                breadcrumbItems.forEach(function(el) {
+                    if (el.textContent.trim() === 'Sub-Contratistas' || el.textContent.trim() === 'Subcontratistas') {
+                        el.textContent = 'Interesados Externos';
+                    }
+                });
+                // Override page section title if injected by nav
+                var dirSeccion = document.getElementById('textoDireccionSeccion');
+                if (dirSeccion && dirSeccion.textContent.trim() === 'Sub-Contratistas') {
+                    dirSeccion.textContent = 'Interesados Externos';
+                }
+            }, 500);
+            <?php endif; ?>
             
             // Recalcular columnas cuando cambia el tamaño de la ventana
             let resizeTimeout;
@@ -474,7 +504,7 @@
             const currentId = validationOptions.currentId || null;
             const excludeRowData = validationOptions.excludeRowData || null;
             const errors = [];
-            if (!payload.subcontratista) errors.push('El nombre del subcontratista es obligatorio.');
+            if (!payload.subcontratista) errors.push('<?php echo $isPreConstruccion ? 'El nombre del interesado es obligatorio.' : 'El nombre del subcontratista es obligatorio.'; ?>');
             if (!payload.correo_contacto) {
                 errors.push('El correo de contacto es obligatorio.');
             } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.correo_contacto)) {
@@ -497,13 +527,13 @@
                 const candidate = buildSubcontratistaPayload(row);
 
                 if (payload.subcontratista && candidate.subcontratista && payload.subcontratista.toLowerCase() === candidate.subcontratista.toLowerCase()) {
-                    errors.push('Ya existe un subcontratista con ese nombre.');
+                    errors.push('<?php echo $isPreConstruccion ? 'Ya existe un interesado con ese nombre.' : 'Ya existe un subcontratista con ese nombre.'; ?>');
                 }
                 if (payload.correo_contacto && candidate.correo_contacto && payload.correo_contacto === candidate.correo_contacto) {
-                    errors.push('Ya existe un subcontratista con ese correo.');
+                    errors.push('<?php echo $isPreConstruccion ? 'Ya existe un interesado con ese correo.' : 'Ya existe un subcontratista con ese correo.'; ?>');
                 }
                 if (payload.NIT && candidate.NIT && normalizeNitForCompare(payload.NIT) === normalizeNitForCompare(candidate.NIT)) {
-                    errors.push('Ya existe un subcontratista con ese NIT.');
+                    errors.push('<?php echo $isPreConstruccion ? 'Ya existe un interesado con esa identificación.' : 'Ya existe un subcontratista con ese NIT.'; ?>');
                 }
             });
 
@@ -535,7 +565,7 @@
                 data: data,
                 rowHeaders: true,
                 rowHeaderWidth: 50,
-                colHeaders: ['ID', 'Subcontratista', 'Correo Contacto', 'NIT', 'Alcance', 'Tipo Proveedor', 'Activo', 'Acciones'],
+                colHeaders: [<?php echo $isPreConstruccion ? "'ID', 'Interesado', 'Correo Contacto', 'Identificación', 'Rol/Interés', 'Tipo de Interesado', 'Activo', 'Acciones'" : "'ID', 'Subcontratista', 'Correo Contacto', 'NIT', 'Alcance', 'Tipo Proveedor', 'Activo', 'Acciones'"; ?>],
                 columns: [
                     { data: 'Id', readOnly: true, className: 'htCenter htMiddle' },
                     { data: 'subcontratista', type: 'text', className: 'htCenter htMiddle force-wrap' },
@@ -673,7 +703,7 @@
                                 return;
                             }
                             if (window.AIA && window.AIA.Notice) {
-                                window.AIA.Notice.confirm('¿Seguro que desea eliminar a ' + (rowData.subcontratista || 'este registro') + '?', 'Eliminar Subcontratista').then((confirmed) => {
+                                window.AIA.Notice.confirm('¿Seguro que desea eliminar a ' + (rowData.subcontratista || 'este registro') + '?', '<?php echo $isPreConstruccion ? 'Eliminar Interesado' : 'Eliminar Subcontratista'; ?>').then((confirmed) => {
                                     if (confirmed) deleteRow(recordId);
                                 });
                             }
@@ -721,7 +751,7 @@
                 },
                 error: function(err) {
                     console.error(err);
-                    if (window.AIA && window.AIA.Notice) window.AIA.Notice.error('Error de red al guardar subcontratista.');
+                    if (window.AIA && window.AIA.Notice) window.AIA.Notice.error('<?php echo $isPreConstruccion ? 'Error de red al guardar interesado.' : 'Error de red al guardar subcontratista.'; ?>');
                     showFeedback('error');
                     loadData();
                 }
@@ -772,13 +802,13 @@
                         loadData(); // Recargar para obtener el nuevo Id
                     } else {
                         rowData.__creating = false;
-                        showValidationMessage(res.errors || [res.message || 'No se pudo crear el subcontratista.'], 'warning');
+                        showValidationMessage(res.errors || [res.message || '<?php echo $isPreConstruccion ? 'No se pudo crear el interesado.' : 'No se pudo crear el subcontratista.'; ?>'], 'warning');
                     }
                 },
                 error: function(err) {
                     console.error(err);
                     rowData.__creating = false;
-                    if (window.AIA && window.AIA.Notice) window.AIA.Notice.error("Error de red al crear subcontratista");
+                    if (window.AIA && window.AIA.Notice) window.AIA.Notice.error("<?php echo $isPreConstruccion ? 'Error de red al crear interesado' : 'Error de red al crear subcontratista'; ?>");
                 }
             });
         }
@@ -841,10 +871,10 @@
                     <h5 style="color:#007aff; text-align:center; margin-bottom:15px; font-weight:bold;">
                         <i class="fas fa-plus-circle"></i> Agregar Nuevo
                     </h5>
-                     <div class="form-group"><input type="text" class="form-control" id="new-mobile-subcontratista" placeholder="Nombre Subcontratista"></div>
+                     <div class="form-group"><input type="text" class="form-control" id="new-mobile-subcontratista" placeholder="<?php echo $isPreConstruccion ? 'Nombre Interesado' : 'Nombre Subcontratista'; ?>"></div>
                      <div class="form-group"><input type="email" class="form-control" id="new-mobile-correo" placeholder="Correo electrónico"></div>
-                     <div class="form-group"><input type="text" class="form-control" id="new-mobile-nit" placeholder="NIT"></div>
-                     <div class="form-group"><textarea class="form-control" id="new-mobile-alcance" placeholder="Alcance"></textarea></div>
+                     <div class="form-group"><input type="text" class="form-control" id="new-mobile-nit" placeholder="<?php echo $isPreConstruccion ? 'Identificación' : 'NIT'; ?>"></div>
+                     <div class="form-group"><textarea class="form-control" id="new-mobile-alcance" placeholder="<?php echo $isPreConstruccion ? 'Rol/Interés' : 'Alcance'; ?>"></textarea></div>
                      <div class="form-group">
                         <select class="form-control" id="new-mobile-tipo">
                             <option value="">Seleccione Tipo...</option>
@@ -867,7 +897,7 @@
                 html += `
                 <div class="mobile-card">
                     <div class="mobile-card-row">
-                        <span class="mobile-label">Nombre</span>
+                        <span class="mobile-label"><?php echo $isPreConstruccion ? 'Interesado' : 'Nombre'; ?></span>
                         <input type="text" class="form-control" style="flex:1; margin-left:20px; text-align:right;"
                                value="${row.subcontratista || ''}"
                                onchange="updateMobileRow(${id}, 'subcontratista', this.value)">
@@ -879,18 +909,18 @@
                                onchange="updateMobileRow(${id}, 'correo_contacto', this.value)">
                     </div>
                     <div class="mobile-card-row">
-                        <span class="mobile-label">NIT</span>
+                        <span class="mobile-label"><?php echo $isPreConstruccion ? 'Identificación' : 'NIT'; ?></span>
                         <input type="text" class="form-control" style="flex:1; margin-left:20px; text-align:right;" 
                                value="${row.NIT || ''}" 
                                onchange="updateMobileRow(${id}, 'NIT', this.value)">
                     </div>
                     <div class="mobile-card-row" style="flex-direction:column; align-items:flex-start;">
-                        <span class="mobile-label" style="margin-bottom:5px;">Alcance</span>
+                        <span class="mobile-label" style="margin-bottom:5px;"><?php echo $isPreConstruccion ? 'Rol/Interés' : 'Alcance'; ?></span>
                         <textarea class="form-control" style="width:100%;" 
                                   onchange="updateMobileRow(${id}, 'alcance', this.value)">${row.alcance || ''}</textarea>
                     </div>
                     <div class="mobile-card-row">
-                        <span class="mobile-label">Tipo</span>
+                        <span class="mobile-label"><?php echo $isPreConstruccion ? 'Tipo de Interesado' : 'Tipo'; ?></span>
                         <select class="form-control" style="flex:1; margin-left:20px;" 
                                 onchange="updateMobileRow(${id}, 'tipo_proveedor', this.value)">
                             ${providerTypes.map(t => `<option value="${t}" ${row.tipo_proveedor == t ? 'selected' : ''}>${t}</option>`).join('')}
@@ -954,18 +984,18 @@
                 success: function(res) {
                     if (res.status === 'success') {
                         loadData();
-                        if (window.AIA && window.AIA.Notice) window.AIA.Notice.badge('success', "Subcontratista registrado correctamente");
+                        if (window.AIA && window.AIA.Notice) window.AIA.Notice.badge('success', "<?php echo $isPreConstruccion ? 'Interesado registrado correctamente' : 'Subcontratista registrado correctamente'; ?>");
                         $('#new-mobile-subcontratista').val('');
                         $('#new-mobile-correo').val('');
                         $('#new-mobile-nit').val('');
                         $('#new-mobile-alcance').val('');
                         $('#new-mobile-tipo').val('');
                     } else {
-                        showValidationMessage(res.errors || [res.message || res.respuesta || 'No se pudo crear el subcontratista.'], 'warning');
+                        showValidationMessage(res.errors || [res.message || res.respuesta || '<?php echo $isPreConstruccion ? 'No se pudo crear el interesado.' : 'No se pudo crear el subcontratista.'; ?>'], 'warning');
                     }
                 },
                 error: function() {
-                    if (window.AIA && window.AIA.Notice) window.AIA.Notice.error('Error de red al crear subcontratista.');
+                    if (window.AIA && window.AIA.Notice) window.AIA.Notice.error('<?php echo $isPreConstruccion ? 'Error de red al crear interesado.' : 'Error de red al crear subcontratista.'; ?>');
                 }
             });
         }
@@ -976,7 +1006,7 @@
 
         function deleteMobileRow(id, nombre) {
             if (window.AIA && window.AIA.Notice) {
-                window.AIA.Notice.confirm('¿Seguro que desea eliminar a ' + (nombre || 'este registro') + '?', 'Eliminar Subcontratista').then((confirmed) => {
+                window.AIA.Notice.confirm('¿Seguro que desea eliminar a ' + (nombre || 'este registro') + '?', '<?php echo $isPreConstruccion ? 'Eliminar Interesado' : 'Eliminar Subcontratista'; ?>').then((confirmed) => {
                     if (confirmed) deleteRow(id);
                 });
             }

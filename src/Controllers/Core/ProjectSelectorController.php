@@ -36,7 +36,7 @@ class ProjectSelectorController
                 INNER JOIN general_usuarios u ON u.id = pm.user_id
                 INNER JOIN general_proyectos_procesos p ON p.ID = pm.project_id
                 WHERE u.usuario = ?
-                  AND p.Area = 'Construccion'
+                  AND p.Area IN ('Construccion', 'Pre-Construccion')
                   AND p.Activo = 1
                   AND (p.Acceso = 1 OR pm.role IN ('A', 'D'))
                 ORDER BY p.Proyecto_Proceso ASC";
@@ -81,13 +81,14 @@ class ProjectSelectorController
                        p.Base_de_Datos,
                        p.Acceso,
                        p.pdcActivo,
+                       p.Area,
                        pm.role
                 FROM project_members pm
                 INNER JOIN general_usuarios u ON u.id = pm.user_id
                 INNER JOIN general_proyectos_procesos p ON p.ID = pm.project_id
                 WHERE u.usuario = ?
                   AND p.Proyecto_Proceso = ?
-                  AND p.Area = 'Construccion'
+                  AND p.Area IN ('Construccion', 'Pre-Construccion')
                   AND p.Activo = 1
                 LIMIT 1";
 
@@ -115,8 +116,9 @@ class ProjectSelectorController
         $_SESSION['permiso'] = $permiso;
         $_SESSION['permiso_canonico'] = $permiso;
         $_SESSION['pdcActivo'] = $accessData['pdcActivo'] ?? 0;
+        $_SESSION['area'] = $accessData['Area'] ?? 'Construccion';
 
-        $landing = $this->projectLandingService->resolve($dbName, $permiso);
+        $landing = $this->projectLandingService->resolve($dbName, $permiso, $_SESSION['area']);
         $_SESSION['semana'] = (int) ($landing['week'] ?? 0);
 
         if (method_exists($this->db, 'logActivity')) {

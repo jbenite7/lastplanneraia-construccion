@@ -1314,4 +1314,149 @@ class GeneralApiController extends BaseController
             ], JSON_UNESCAPED_UNICODE);
         }
     }
+
+    /**
+     * API: Configuración dinámica de restricciones según el área de sesión.
+     *
+     * GET /api/general/restriction-config
+     *
+     * Para Area='Construccion' devuelve el conjunto estándar de 7 restricciones.
+     * Para Area='Pre-Construccion' consulta los nombres personalizados desde
+     * general_proyectos_procesos (pc_restr_2_nombre, pc_restr_3_nombre, pc_restr_4_nombre).
+     *
+     * @return JSON con estructura {area, restrictions[], hardRestrictions[], softRestrictions[]}
+     */
+    public function restrictionConfig()
+    {
+        $this->requireAuth();
+        header('Content-Type: application/json; charset=utf-8');
+
+        try {
+            $vars = $this->getSessionVars();
+            $area = $vars['area'] ?? 'Construccion';
+
+            if ($area === 'Pre-Construccion') {
+                $dbPrefix = $vars['dbName'] ?? '';
+                $label2 = 'Restricción 2';
+                $label3 = 'Restricción 3';
+                $label4 = 'Restricción 4';
+
+                if (!empty($dbPrefix) && preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
+                    $stmt = $this->db->prepare(
+                        "SELECT pc_restr_2_nombre, pc_restr_3_nombre, pc_restr_4_nombre
+                         FROM general_proyectos_procesos
+                         WHERE Base_de_Datos = ?
+                         LIMIT 1"
+                    );
+                    $stmt->execute([$dbPrefix]);
+                    $proyecto = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                    if ($proyecto) {
+                        $label2 = !empty($proyecto['pc_restr_2_nombre']) ? $proyecto['pc_restr_2_nombre'] : $label2;
+                        $label3 = !empty($proyecto['pc_restr_3_nombre']) ? $proyecto['pc_restr_3_nombre'] : $label3;
+                        $label4 = !empty($proyecto['pc_restr_4_nombre']) ? $proyecto['pc_restr_4_nombre'] : $label4;
+                    }
+                }
+
+                $response = [
+                    'area' => $area,
+                    'restrictions' => [
+                        [
+                            'key'       => 'restriccion_pc_1',
+                            'label'     => 'Predecesora',
+                            'type'      => 'hard',
+                            'threshold' => 50,
+                            'options'   => ['0%', '33%', '66%', '100%', 'N/A'],
+                        ],
+                        [
+                            'key'       => 'restriccion_pc_2',
+                            'label'     => $label2,
+                            'type'      => 'soft',
+                            'threshold' => 100,
+                            'options'   => ['0%', '50%', '100%', 'N/A'],
+                        ],
+                        [
+                            'key'       => 'restriccion_pc_3',
+                            'label'     => $label3,
+                            'type'      => 'soft',
+                            'threshold' => 100,
+                            'options'   => ['0%', '50%', '100%', 'N/A'],
+                        ],
+                        [
+                            'key'       => 'restriccion_pc_4',
+                            'label'     => $label4,
+                            'type'      => 'soft',
+                            'threshold' => 100,
+                            'options'   => ['0%', '50%', '100%', 'N/A'],
+                        ],
+                    ],
+                    'hardRestrictions' => ['restriccion_pc_1'],
+                    'softRestrictions' => ['restriccion_pc_2', 'restriccion_pc_3', 'restriccion_pc_4'],
+                ];
+            } else {
+                $response = [
+                    'area' => 'Construccion',
+                    'restrictions' => [
+                        [
+                            'key'       => 'D_y_E',
+                            'label'     => 'Diseños y Especificaciones',
+                            'type'      => 'hard',
+                            'threshold' => 100,
+                            'options'   => ['0%', '33%', '66%', '100%', 'N/A'],
+                        ],
+                        [
+                            'key'       => 'Materiales',
+                            'label'     => 'Materiales',
+                            'type'      => 'hard',
+                            'threshold' => 100,
+                            'options'   => ['0%', '33%', '66%', '100%', 'N/A'],
+                        ],
+                        [
+                            'key'       => 'MdeO',
+                            'label'     => 'Mano de Obra',
+                            'type'      => 'hard',
+                            'threshold' => 100,
+                            'options'   => ['0%', '33%', '66%', '100%', 'N/A'],
+                        ],
+                        [
+                            'key'       => 'Equipos',
+                            'label'     => 'Equipos y Herramienta',
+                            'type'      => 'hard',
+                            'threshold' => 100,
+                            'options'   => ['0%', '33%', '66%', '100%', 'N/A'],
+                        ],
+                        [
+                            'key'       => 'Predecesora',
+                            'label'     => 'Actividad Predecesora',
+                            'type'      => 'hard',
+                            'threshold' => 50,
+                            'options'   => ['0%', '33%', '66%', '100%', 'N/A'],
+                        ],
+                        [
+                            'key'       => 'Pdto_Cons',
+                            'label'     => 'Procedimiento Constructivo',
+                            'type'      => 'soft',
+                            'threshold' => 100,
+                            'options'   => ['0%', '50%', '100%', 'N/A'],
+                        ],
+                        [
+                            'key'       => 'Modelo',
+                            'label'     => 'Modelación BIM',
+                            'type'      => 'soft',
+                            'threshold' => 100,
+                            'options'   => ['0%', '50%', '100%', 'N/A'],
+                        ],
+                    ],
+                    'hardRestrictions' => ['D_y_E', 'Materiales', 'MdeO', 'Equipos', 'Predecesora'],
+                    'softRestrictions' => ['Pdto_Cons', 'Modelo'],
+                ];
+            }
+
+            echo json_encode($response, JSON_UNESCAPED_UNICODE);
+
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => $e->getMessage()], JSON_UNESCAPED_UNICODE);
+        }
+    }
 }

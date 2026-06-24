@@ -18,6 +18,7 @@ class ProgramacionSemanalController extends BaseController
         $nombreUsuario = $_SESSION['nombreUsuario'] ?? '';
         $permiso = $_SESSION['permiso'] ?? ''; // Requerido para lógica de permisos en vistas
         $pdcActivo = $_SESSION['pdcActivo'] ?? '';
+        $area = $_SESSION['area'] ?? 'Construccion';
 
         $subcontratistas = [];
         $profesionales = [];
