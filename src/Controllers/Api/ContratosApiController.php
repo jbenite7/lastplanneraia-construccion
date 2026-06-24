@@ -647,13 +647,6 @@ class ContratosApiController extends BaseController
                 'Orden de Compra' => 'OC',
             ];
 
-            // Normalizar encoding: reparar mojibake común
-            $encodingFixes = [
-                'instalaciÃ³n' => 'instalación',
-                'InstalaciÃ³n' => 'Instalación',
-                'Suministro e InstalaciÃ³n' => 'Suministro e Instalación',
-            ];
-
             $updates = ['tipoContrato = ?'];
             $params = [$tipoContrato];
 
@@ -668,14 +661,12 @@ class ContratosApiController extends BaseController
             $packageCounts = ['SI' => 0, 'S' => 0, 'MO' => 0, 'OC' => 0];
             foreach ($items as $item) {
                 $itemTipoPaquete = $item['tipo_paquete'] ?? '';
-                $itemTipoPaquete = str_replace(array_keys($encodingFixes), array_values($encodingFixes), $itemTipoPaquete);
                 $prefix = $prefixMap[$itemTipoPaquete] ?? null;
                 if ($prefix === null) {
                     continue;
                 }
 
                 $paqueteNombre = trim((string) ($item['paquete_nombre'] ?? ''));
-                $paqueteNombre = str_replace(array_keys($encodingFixes), array_values($encodingFixes), $paqueteNombre);
                 if ($paqueteNombre === '') {
                     continue;
                 }

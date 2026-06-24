@@ -1188,16 +1188,6 @@ class PdcAutoGenerateController
 
     private function normalizeLabel(string $value): string
     {
-        $map = [
-            'instalaciÃ³n' => 'instalación',
-            'InstalaciÃ³n' => 'Instalación',
-            'instalación' => 'instalación',
-        ];
-
-        foreach ($map as $bad => $good) {
-            $value = str_replace($bad, $good, $value);
-        }
-
         return trim($value);
     }
 
