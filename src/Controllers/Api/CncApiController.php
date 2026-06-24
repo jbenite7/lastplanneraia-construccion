@@ -63,8 +63,9 @@ class CncApiController
         require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
         rbac_guard_require_permission('lps.cnc.ver');
         $categoria = $_POST["categoria"] ?? '';
-        $query = "SELECT CNC FROM general_cnc WHERE Categoria_CNC = ?";
-        $data = $this->db->query($query, [$categoria])->fetchAll(PDO::FETCH_ASSOC);
+        $area = $_POST["area"] ?? 'Construccion';
+        $query = "SELECT CNC FROM general_cnc WHERE Categoria_CNC = ? AND Area = ?";
+        $data = $this->db->query($query, [$categoria, $area])->fetchAll(PDO::FETCH_ASSOC);
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode($data, JSON_UNESCAPED_UNICODE);
     }

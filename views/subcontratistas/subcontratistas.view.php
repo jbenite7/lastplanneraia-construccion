@@ -462,7 +462,9 @@
             });
         }
 
-        const providerTypes = ['Mano de Obra', 'Suministro e Instalación', 'Suministro de Materiales, Herramientas o Equipos'];
+        const providerTypes = <?php echo json_encode($isPreConstruccion
+            ? ['Socio', 'Ventas', 'Gerencia', 'Diseñador', 'Consultor', 'Entidad', 'Interventoría', 'Cliente', 'Inversionista', 'Promotor']
+            : ['Mano de Obra', 'Suministro e Instalación', 'Suministro de Materiales, Herramientas o Equipos']); ?>;
 
         function normalizeTextValue(value) {
             return (value || '').toString().trim().replace(/\s+/g, ' ');

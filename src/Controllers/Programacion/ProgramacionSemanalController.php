@@ -32,7 +32,8 @@ class ProgramacionSemanalController extends BaseController
                 $stmtProf = $this->db->query("SELECT nombre FROM {$dbName}_profesionales WHERE Activo = 1 ORDER BY nombre ASC");
                 $profesionales = $stmtProf->fetchAll();
 
-                $stmtCnc = $this->db->query("SELECT DISTINCT Categoria_CNC FROM general_cnc ORDER BY Categoria_CNC ASC");
+                $stmtCnc = $this->db->prepare("SELECT DISTINCT Categoria_CNC FROM general_cnc WHERE Area = ? ORDER BY Categoria_CNC ASC");
+                $stmtCnc->execute([$area]);
                 $categoriasCnc = $stmtCnc->fetchAll();
             } catch (\Throwable $e) {
                 error_log('Error cargando listas de programación semanal: ' . $e->getMessage());
@@ -54,6 +55,7 @@ class ProgramacionSemanalController extends BaseController
         $semana = (int) ($_SESSION['semana'] ?? 0);
         $proyecto = $_SESSION['proyecto'] ?? '';
         $nombreUsuario = $_SESSION['nombreUsuario'] ?? '';
+        $area = $_SESSION['area'] ?? 'Construccion';
 
         require PROJECT_ROOT . '/views/programacion-semanal/CNP.view.php';
     }
@@ -67,6 +69,7 @@ class ProgramacionSemanalController extends BaseController
         $semana = (int) ($_SESSION['semana'] ?? 0);
         $proyecto = $_SESSION['proyecto'] ?? '';
         $nombreUsuario = $_SESSION['nombreUsuario'] ?? '';
+        $area = $_SESSION['area'] ?? 'Construccion';
 
         require PROJECT_ROOT . '/views/programacion-semanal/CNC.view.php';
     }

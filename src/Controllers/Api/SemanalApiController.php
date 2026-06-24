@@ -211,7 +211,8 @@ class SemanalApiController
     private function autoprogramar(string $dbPrefix, int $semana): void
     {
         try {
-            $restrictionEligibilitySql = $this->getAutoprogramRestrictionEligibilitySql();
+            $area = $_SESSION['area'] ?? 'Construccion';
+            $restrictionEligibilitySql = $this->getAutoprogramRestrictionEligibilitySql('', $area);
 
             // 1. Identificar actividades ya programadas
             $stmtExistentes = $this->db->query("SELECT DISTINCT(Consecutivo_En_Programa) FROM {$dbPrefix}_programacion_semanal WHERE Semana = ?", [$semana]);
@@ -319,11 +320,16 @@ class SemanalApiController
                   AND Consecutivo_En_Programa NOT IN ({$eligibleSubSql})
             ", [$semana, $semana]);
 
-            $this->syncRestrictionFlags($dbPrefix, $semana);
+            $this->syncRestrictionFlags($dbPrefix, $semana, $area);
 
             // 5. Identificar actividades que no se autoprogramaron por restricciones pendientes y ejecución cero
+            if ($area === 'Pre-Construccion') {
+                $alertColumns = 'restriccion_pc_1, restriccion_pc_2, restriccion_pc_3, restriccion_pc_4';
+            } else {
+                $alertColumns = 'D_y_E, Materiales, MdeO, Equipos, Predecesora, Pdto_Cons, Modelo';
+            }
             $sqlRestricciones = "SELECT
-                Id, Actividad, D_y_E, Materiales, MdeO, Equipos, Predecesora, Pdto_Cons, Modelo
+                Id, Actividad, {$alertColumns}
             FROM {$dbPrefix}_programa_consolidado
             WHERE Semana = ? AND Titulo = 0
               AND COALESCE(Ejecutado, 0) <= 0.001
@@ -338,17 +344,28 @@ class SemanalApiController
             $fallidas = $stmtRest->fetchAll(PDO::FETCH_ASSOC);
 
             $alertasRestricciones = [];
-            $hardRestrictionLabels = [
-                'D_y_E' => ['label' => 'D. y Especificaciones', 'threshold' => 1.0],
-                'Materiales' => ['label' => 'Materiales', 'threshold' => 1.0],
-                'MdeO' => ['label' => 'Mano de Obra', 'threshold' => 1.0],
-                'Equipos' => ['label' => 'Equipos', 'threshold' => 1.0],
-                'Predecesora' => ['label' => 'Predecesora', 'threshold' => 0.5],
-            ];
-            $softRestrictionLabels = [
-                'Pdto_Cons' => ['label' => 'Pdto. Constructivo', 'threshold' => 1.0],
-                'Modelo' => ['label' => 'Modelo BIM', 'threshold' => 1.0],
-            ];
+            if ($area === 'Pre-Construccion') {
+                $hardRestrictionLabels = [
+                    'restriccion_pc_1' => ['label' => 'Predecesora', 'threshold' => 0.5],
+                ];
+                $softRestrictionLabels = [
+                    'restriccion_pc_2' => ['label' => 'Restricción PC 2', 'threshold' => 1.0],
+                    'restriccion_pc_3' => ['label' => 'Restricción PC 3', 'threshold' => 1.0],
+                    'restriccion_pc_4' => ['label' => 'Restricción PC 4', 'threshold' => 1.0],
+                ];
+            } else {
+                $hardRestrictionLabels = [
+                    'D_y_E' => ['label' => 'D. y Especificaciones', 'threshold' => 1.0],
+                    'Materiales' => ['label' => 'Materiales', 'threshold' => 1.0],
+                    'MdeO' => ['label' => 'Mano de Obra', 'threshold' => 1.0],
+                    'Equipos' => ['label' => 'Equipos', 'threshold' => 1.0],
+                    'Predecesora' => ['label' => 'Predecesora', 'threshold' => 0.5],
+                ];
+                $softRestrictionLabels = [
+                    'Pdto_Cons' => ['label' => 'Pdto. Constructivo', 'threshold' => 1.0],
+                    'Modelo' => ['label' => 'Modelo BIM', 'threshold' => 1.0],
+                ];
+            }
 
             foreach ($fallidas as $row) {
                 $pendientes = $this->buildRestrictionAlertParts($row, $hardRestrictionLabels);
@@ -375,9 +392,10 @@ class SemanalApiController
         }
     }
 
-    private function syncRestrictionFlags(string $dbPrefix, int $semana): void
+    private function syncRestrictionFlags(string $dbPrefix, int $semana, string $area = 'Construccion'): void
     {
-        $restrictionEligibilitySql = $this->getAutoprogramRestrictionEligibilitySql('pc');
+        $alias = $area === 'Pre-Construccion' ? '' : 'pc';
+        $restrictionEligibilitySql = $this->getAutoprogramRestrictionEligibilitySql($alias, $area);
 
         $this->db->query("UPDATE {$dbPrefix}_programacion_semanal ps
             JOIN {$dbPrefix}_programa_consolidado pc
@@ -389,9 +407,13 @@ class SemanalApiController
         $this->db->query("UPDATE {$dbPrefix}_programacion_semanal SET Prog_Sin_Restricciones_100 = 0 WHERE Semana = ? AND Activa = 'NA'", [$semana]);
     }
 
-    private function getAutoprogramRestrictionEligibilitySql(string $alias = ''): string
+    private function getAutoprogramRestrictionEligibilitySql(string $alias = '', string $area = 'Construccion'): string
     {
         $prefix = $alias !== '' ? $alias . '.' : '';
+
+        if ($area === 'Pre-Construccion') {
+            return '(' . $this->restrictionAtLeastOrNotApplicableSql($prefix . 'restriccion_pc_1', 0.5) . ')';
+        }
 
         return '(' . implode(' AND ', [
             $this->restrictionAtLeastOrNotApplicableSql($prefix . 'D_y_E', 1.0),
@@ -712,7 +734,8 @@ class SemanalApiController
 
     private function listarExcepciones(string $dbPrefix, int $semana): void
     {
-        $restrictionEligibilitySql = $this->getAutoprogramRestrictionEligibilitySql();
+        $area = $_SESSION['area'] ?? 'Construccion';
+        $restrictionEligibilitySql = $this->getAutoprogramRestrictionEligibilitySql('', $area);
         $query = "SELECT Id, Actividad, Estado FROM {$dbPrefix}_programa_consolidado
             WHERE Semana = ? AND Titulo = 0
               AND COALESCE(Ejecutado, 0) <= 0.001
@@ -729,6 +752,7 @@ class SemanalApiController
     private function sanear(string $dbPrefix, int $semana): void
     {
         try {
+            $area = $_SESSION['area'] ?? 'Construccion';
             $confirmada = $this->db->query(
                 "SELECT Semanal_Confirmada FROM {$dbPrefix}_semanas_activas WHERE Semana = ?",
                 [$semana],
@@ -759,7 +783,7 @@ class SemanalApiController
                 }
             }
 
-            $restrictionEligibilitySql = $this->getAutoprogramRestrictionEligibilitySql();
+            $restrictionEligibilitySql = $this->getAutoprogramRestrictionEligibilitySql('', $area);
             $eligibleSubSql = "SELECT Consecutivo_en_Programa FROM {$dbPrefix}_programa_consolidado 
                 WHERE Semana = ? AND Titulo = 0 
                   AND (COALESCE(Ejecutado, 0) > 0.001 OR {$restrictionEligibilitySql})
@@ -872,7 +896,7 @@ class SemanalApiController
                 ]);
             }
 
-            $this->syncRestrictionFlags($dbPrefix, $semana);
+            $this->syncRestrictionFlags($dbPrefix, $semana, $area);
             $this->db->query(
                 "UPDATE {$dbPrefix}_semanas_activas SET fecha_ultimo_saneo = NOW() WHERE Semana = ?",
                 [$semana],
@@ -1029,10 +1053,11 @@ class SemanalApiController
         }
 
         try {
+            $area = $_SESSION['area'] ?? 'Construccion';
             $detector = new ProgramChangeDetector();
             $log = $detector->run($dbPrefix, $semana);
 
-            $this->syncRestrictionFlags($dbPrefix, $semana);
+            $this->syncRestrictionFlags($dbPrefix, $semana, $area);
 
             header('Content-Type: application/json; charset=utf-8');
             echo json_encode([

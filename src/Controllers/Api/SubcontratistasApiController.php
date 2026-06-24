@@ -7,12 +7,6 @@ use Throwable;
 
 class SubcontratistasApiController
 {
-    private const ALLOWED_PROVIDER_TYPES = [
-        'Mano de Obra',
-        'Suministro e Instalación',
-        'Suministro de Materiales, Herramientas o Equipos',
-    ];
-
     private $db;
 
     public function __construct()
@@ -294,6 +288,32 @@ class SubcontratistasApiController
         ];
     }
 
+    private function getAllowedProviderTypes(): array
+    {
+        $area = $_SESSION['area'] ?? $_GET['area'] ?? 'Construccion';
+
+        if ($area === 'Pre-Construccion' || $area === 'PC') {
+            return [
+                'Socio',
+                'Ventas',
+                'Gerencia',
+                'Diseñador',
+                'Consultor',
+                'Entidad',
+                'Interventoría',
+                'Cliente',
+                'Inversionista',
+                'Promotor',
+            ];
+        }
+
+        return [
+            'Mano de Obra',
+            'Suministro e Instalación',
+            'Suministro de Materiales, Herramientas o Equipos',
+        ];
+    }
+
     private function validarSubcontratista(string $dbPrefix, array $data, ?int $excludeId = null): array
     {
         $errores = [];
@@ -318,7 +338,7 @@ class SubcontratistasApiController
 
         if ($data['tipo_proveedor'] === '') {
             $errores[] = 'El tipo de proveedor es obligatorio.';
-        } elseif (!in_array($data['tipo_proveedor'], self::ALLOWED_PROVIDER_TYPES, true)) {
+        } elseif (!in_array($data['tipo_proveedor'], $this->getAllowedProviderTypes(), true)) {
             $errores[] = 'El tipo de proveedor seleccionado no es válido.';
         }
 

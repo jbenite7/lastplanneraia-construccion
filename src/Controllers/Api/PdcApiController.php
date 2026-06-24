@@ -8,17 +8,40 @@ use Throwable;
 
 class PdcApiController
 {
-    private const ALLOWED_PROVIDER_TYPES = [
-        'Mano de Obra',
-        'Suministro e Instalación',
-        'Suministro de Materiales, Herramientas o Equipos',
-    ];
-
     private $db;
 
     public function __construct()
     {
         $this->db = \Database::getInstance();
+    }
+
+    /**
+     * Returns allowed provider types based on the current project area.
+     */
+    private function getAllowedProviderTypes(): array
+    {
+        $area = $_SESSION['area'] ?? $_GET['area'] ?? 'Construccion';
+
+        if ($area === 'Pre-Construccion') {
+            return [
+                'Socio',
+                'Ventas',
+                'Gerencia',
+                'Diseñador',
+                'Consultor',
+                'Entidad',
+                'Interventoría',
+                'Cliente',
+                'Inversionista',
+                'Promotor',
+            ];
+        }
+
+        return [
+            'Mano de Obra',
+            'Suministro e Instalación',
+            'Suministro de Materiales, Herramientas o Equipos',
+        ];
     }
 
     // ─── LIST ───────────────────────────────────────────────────────────
@@ -544,7 +567,7 @@ class PdcApiController
 
         if ($data['tipo_proveedor'] === '') {
             $errores[] = 'El tipo de proveedor es obligatorio.';
-        } elseif (!in_array($data['tipo_proveedor'], self::ALLOWED_PROVIDER_TYPES, true)) {
+        } elseif (!in_array($data['tipo_proveedor'], $this->getAllowedProviderTypes(), true)) {
             $errores[] = 'El tipo de proveedor seleccionado no es válido.';
         }
 
