@@ -1581,21 +1581,7 @@
         echo json_encode($piProfesionales, JSON_UNESCAPED_UNICODE);
         ?>;
     </script>
-    <?php if ($area === 'Pre-Construccion'): ?>
-    <script>
-        window.__RESTRICTION_CONFIG__ = {
-            area: 'Pre-Construccion',
-            restrictions: [
-                { key: 'D_y_E', label: 'Diseños y Especif.', type: 'hard', threshold: 100, options: ['0%', '33%', '66%', '100%', 'N/A'] },
-                { key: 'Predecesora', label: 'Predecesora', type: 'hard', threshold: 50, options: ['0%', '33%', '66%', '100%', 'N/A'] },
-                { key: 'Pdto_Cons', label: 'Pdto. Constructivo (blanda)', type: 'soft', threshold: 100, options: ['0%', '50%', '100%', 'N/A'] },
-                { key: 'Modelo', label: 'Modelo BIM (blanda)', type: 'soft', threshold: 100, options: ['0%', '50%', '100%', 'N/A'] },
-            ],
-            hardRestrictions: ['D_y_E', 'Predecesora'],
-            softRestrictions: ['Pdto_Cons', 'Modelo'],
-        };
-    </script>
-    <?php endif; ?>
+
     <script type="text/javascript" src="/js/HandsontableTomSelectEditor.js?v=tomselect30"></script>
     <script src="/js/modules/lps_drawer.js?v=20260522d"></script>
     <?php $piHotVersion = @filemtime(dirname(__DIR__, 2) . '/public/js/modules/programacion_intermedia/hot.js') ?: 'hot38'; ?>

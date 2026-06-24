@@ -228,7 +228,7 @@ if (window.__PROJECT_AREA__ === 'Pre-Construccion') {
   // Plan de Compras (PDC)
   _hideNavItem('planCompras');
   // Programación Semanal (contains CIC / Calificación Integral de Proveedores)
-  _hideNavItem('programacion_semanal');
+  //_hideNavItem('programacion_semanal');
   // Hide "Actividades del Proyecto" section header if both children hidden
   var _titAct = document.getElementById('tituloActividadesProyecto');
   if (_titAct) _titAct.style.display = 'none';

@@ -148,7 +148,7 @@ if (window.__PROJECT_AREA__ === 'Pre-Construccion') {
   _hideNavItem('info_listadoActividades');
   _hideNavItem('info_contratos');
   _hideNavItem('planCompras');
-  _hideNavItem('programacion_semanal');
+  //_hideNavItem('programacion_semanal');
   var _titAct = document.getElementById('tituloActividadesProyecto');
   if (_titAct) _titAct.style.display = 'none';
 }
