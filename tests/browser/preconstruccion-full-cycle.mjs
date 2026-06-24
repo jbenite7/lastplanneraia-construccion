@@ -372,8 +372,8 @@ test.describe('Pre-Construction: Restriction Config API', () => {
     const labels = config.restrictions.map((r) => r.label);
     expect(labels).toContain('Predecesora');
     expect(labels).toContain('Permisos Ambientales');
-    expect(labels).toContain('Disenos');
-    expect(labels).toContain('Apropiacion Presupuestal');
+    expect(labels).toContain('Diseños');
+    expect(labels).toContain('Licencia');
 
     // Key structure
     const keys = config.restrictions.map((r) => r.key);

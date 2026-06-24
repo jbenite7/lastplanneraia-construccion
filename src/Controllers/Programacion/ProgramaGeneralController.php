@@ -68,9 +68,9 @@ class ProgramaGeneralController extends BaseController
 
         // Pre-construction: build restriction config for server-side injection
         if ($area === 'Pre-Construccion') {
-            $pcLabel2 = 'Restricción 2';
-            $pcLabel3 = 'Restricción 3';
-            $pcLabel4 = 'Restricción 4';
+            $pcLabel2 = null;
+            $pcLabel3 = null;
+            $pcLabel4 = null;
 
             try {
                 if (!empty($dbName) && preg_match('/^[a-zA-Z0-9_]+$/', $dbName)) {
@@ -84,49 +84,63 @@ class ProgramaGeneralController extends BaseController
                     $proyectoPc = $stmtPc->fetch(\PDO::FETCH_ASSOC);
 
                     if ($proyectoPc) {
-                        $pcLabel2 = !empty($proyectoPc['pc_restr_2_nombre']) ? $proyectoPc['pc_restr_2_nombre'] : $pcLabel2;
-                        $pcLabel3 = !empty($proyectoPc['pc_restr_3_nombre']) ? $proyectoPc['pc_restr_3_nombre'] : $pcLabel3;
-                        $pcLabel4 = !empty($proyectoPc['pc_restr_4_nombre']) ? $proyectoPc['pc_restr_4_nombre'] : $pcLabel4;
+                        $pcLabel2 = !empty($proyectoPc['pc_restr_2_nombre']) ? $proyectoPc['pc_restr_2_nombre'] : null;
+                        $pcLabel3 = !empty($proyectoPc['pc_restr_3_nombre']) ? $proyectoPc['pc_restr_3_nombre'] : null;
+                        $pcLabel4 = !empty($proyectoPc['pc_restr_4_nombre']) ? $proyectoPc['pc_restr_4_nombre'] : null;
                     }
                 }
             } catch (\PDOException $e) {
                 error_log("Error cargando restricciones PC: " . $e->getMessage());
             }
 
+            $restrictions = [
+                [
+                    'key'       => 'restriccion_pc_1',
+                    'label'     => 'Predecesora',
+                    'type'      => 'hard',
+                    'threshold' => 50,
+                    'options'   => ['0%', '33%', '66%', '100%', 'N/A'],
+                ],
+            ];
+
+            $softRestrictions = [];
+
+            if ($pcLabel2 !== null) {
+                $restrictions[] = [
+                    'key'       => 'restriccion_pc_2',
+                    'label'     => $pcLabel2,
+                    'type'      => 'soft',
+                    'threshold' => 100,
+                    'options'   => ['0%', '50%', '100%', 'N/A'],
+                ];
+                $softRestrictions[] = 'restriccion_pc_2';
+            }
+            if ($pcLabel3 !== null) {
+                $restrictions[] = [
+                    'key'       => 'restriccion_pc_3',
+                    'label'     => $pcLabel3,
+                    'type'      => 'soft',
+                    'threshold' => 100,
+                    'options'   => ['0%', '50%', '100%', 'N/A'],
+                ];
+                $softRestrictions[] = 'restriccion_pc_3';
+            }
+            if ($pcLabel4 !== null) {
+                $restrictions[] = [
+                    'key'       => 'restriccion_pc_4',
+                    'label'     => $pcLabel4,
+                    'type'      => 'soft',
+                    'threshold' => 100,
+                    'options'   => ['0%', '50%', '100%', 'N/A'],
+                ];
+                $softRestrictions[] = 'restriccion_pc_4';
+            }
+
             $restrictionConfig = [
                 'area' => 'Pre-Construccion',
-                'restrictions' => [
-                    [
-                        'key'       => 'restriccion_pc_1',
-                        'label'     => 'Predecesora',
-                        'type'      => 'hard',
-                        'threshold' => 50,
-                        'options'   => ['0%', '33%', '66%', '100%', 'N/A'],
-                    ],
-                    [
-                        'key'       => 'restriccion_pc_2',
-                        'label'     => $pcLabel2,
-                        'type'      => 'soft',
-                        'threshold' => 100,
-                        'options'   => ['0%', '50%', '100%', 'N/A'],
-                    ],
-                    [
-                        'key'       => 'restriccion_pc_3',
-                        'label'     => $pcLabel3,
-                        'type'      => 'soft',
-                        'threshold' => 100,
-                        'options'   => ['0%', '50%', '100%', 'N/A'],
-                    ],
-                    [
-                        'key'       => 'restriccion_pc_4',
-                        'label'     => $pcLabel4,
-                        'type'      => 'soft',
-                        'threshold' => 100,
-                        'options'   => ['0%', '50%', '100%', 'N/A'],
-                    ],
-                ],
+                'restrictions' => $restrictions,
                 'hardRestrictions' => ['restriccion_pc_1'],
-                'softRestrictions' => ['restriccion_pc_2', 'restriccion_pc_3', 'restriccion_pc_4'],
+                'softRestrictions' => $softRestrictions,
             ];
         }
 

@@ -1358,9 +1358,9 @@ class GeneralApiController extends BaseController
 
             if ($area === 'Pre-Construccion') {
                 $dbPrefix = $vars['dbName'] ?? '';
-                $label2 = 'Restricción 2';
-                $label3 = 'Restricción 3';
-                $label4 = 'Restricción 4';
+                $label2 = null;
+                $label3 = null;
+                $label4 = null;
 
                 if (!empty($dbPrefix) && preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
                     $stmt = $this->db->prepare(
@@ -1373,46 +1373,62 @@ class GeneralApiController extends BaseController
                     $proyecto = $stmt->fetch(PDO::FETCH_ASSOC);
 
                     if ($proyecto) {
-                        $label2 = !empty($proyecto['pc_restr_2_nombre']) ? $proyecto['pc_restr_2_nombre'] : $label2;
-                        $label3 = !empty($proyecto['pc_restr_3_nombre']) ? $proyecto['pc_restr_3_nombre'] : $label3;
-                        $label4 = !empty($proyecto['pc_restr_4_nombre']) ? $proyecto['pc_restr_4_nombre'] : $label4;
+                        $label2 = !empty($proyecto['pc_restr_2_nombre']) ? $proyecto['pc_restr_2_nombre'] : null;
+                        $label3 = !empty($proyecto['pc_restr_3_nombre']) ? $proyecto['pc_restr_3_nombre'] : null;
+                        $label4 = !empty($proyecto['pc_restr_4_nombre']) ? $proyecto['pc_restr_4_nombre'] : null;
                     }
+                }
+
+                // Always include hard restriction (Predecesora)
+                $restrictions = [
+                    [
+                        'key'       => 'restriccion_pc_1',
+                        'label'     => 'Predecesora',
+                        'type'      => 'hard',
+                        'threshold' => 50,
+                        'options'   => ['0%', '33%', '66%', '100%', 'N/A'],
+                    ],
+                ];
+
+                $softRestrictions = [];
+
+                // Only include soft restrictions that have a custom name
+                if ($label2 !== null) {
+                    $restrictions[] = [
+                        'key'       => 'restriccion_pc_2',
+                        'label'     => $label2,
+                        'type'      => 'soft',
+                        'threshold' => 100,
+                        'options'   => ['0%', '50%', '100%', 'N/A'],
+                    ];
+                    $softRestrictions[] = 'restriccion_pc_2';
+                }
+                if ($label3 !== null) {
+                    $restrictions[] = [
+                        'key'       => 'restriccion_pc_3',
+                        'label'     => $label3,
+                        'type'      => 'soft',
+                        'threshold' => 100,
+                        'options'   => ['0%', '50%', '100%', 'N/A'],
+                    ];
+                    $softRestrictions[] = 'restriccion_pc_3';
+                }
+                if ($label4 !== null) {
+                    $restrictions[] = [
+                        'key'       => 'restriccion_pc_4',
+                        'label'     => $label4,
+                        'type'      => 'soft',
+                        'threshold' => 100,
+                        'options'   => ['0%', '50%', '100%', 'N/A'],
+                    ];
+                    $softRestrictions[] = 'restriccion_pc_4';
                 }
 
                 $response = [
                     'area' => $area,
-                    'restrictions' => [
-                        [
-                            'key'       => 'restriccion_pc_1',
-                            'label'     => 'Predecesora',
-                            'type'      => 'hard',
-                            'threshold' => 50,
-                            'options'   => ['0%', '33%', '66%', '100%', 'N/A'],
-                        ],
-                        [
-                            'key'       => 'restriccion_pc_2',
-                            'label'     => $label2,
-                            'type'      => 'soft',
-                            'threshold' => 100,
-                            'options'   => ['0%', '50%', '100%', 'N/A'],
-                        ],
-                        [
-                            'key'       => 'restriccion_pc_3',
-                            'label'     => $label3,
-                            'type'      => 'soft',
-                            'threshold' => 100,
-                            'options'   => ['0%', '50%', '100%', 'N/A'],
-                        ],
-                        [
-                            'key'       => 'restriccion_pc_4',
-                            'label'     => $label4,
-                            'type'      => 'soft',
-                            'threshold' => 100,
-                            'options'   => ['0%', '50%', '100%', 'N/A'],
-                        ],
-                    ],
+                    'restrictions' => $restrictions,
                     'hardRestrictions' => ['restriccion_pc_1'],
-                    'softRestrictions' => ['restriccion_pc_2', 'restriccion_pc_3', 'restriccion_pc_4'],
+                    'softRestrictions' => $softRestrictions,
                 ];
             } else {
                 $response = [
