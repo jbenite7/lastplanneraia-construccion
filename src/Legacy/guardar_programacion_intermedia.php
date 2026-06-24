@@ -164,29 +164,44 @@ switch ($opcion) {
             break;
         }
 
+        // Detect area type for dynamic field handling
+        $isPreConstruccion = isset($_SESSION['area']) && stripos($_SESSION['area'], 'Pre-Construccion') !== false;
+
         $longScale = [0.0, 0.33, 0.66, 1.0];
         $halfScale = [0.0, 0.5, 1.0];
 
-        $D_y_E = pi_clean_restriction_input($_POST['D_y_E'] ?? 'N/A', $longScale);
-        $Materiales = pi_clean_restriction_input($_POST['Materiales'] ?? 'N/A', $longScale);
-        $MdeO = pi_clean_restriction_input($_POST['MdeO'] ?? 'N/A', $longScale);
-        $Equipos = pi_clean_restriction_input($_POST['Equipos'] ?? 'N/A', $longScale);
-        $Predecesora = pi_clean_restriction_input($_POST['Predecesora'] ?? 'N/A', $halfScale);
-        $Pdto_Cons = pi_clean_restriction_input($_POST['Pdto_Cons'] ?? 'N/A', $halfScale);
-        $Modelo = pi_clean_restriction_input($_POST['Modelo'] ?? 'N/A', $halfScale);
+        if ($isPreConstruccion) {
+            // Pre-Construction uses 4 restriction fields
+            $D_y_E = pi_clean_restriction_input($_POST['restriccion_pc_1'] ?? 'N/A', $longScale);
+            $Materiales = pi_clean_restriction_input($_POST['restriccion_pc_2'] ?? 'N/A', $longScale);
+            $MdeO = pi_clean_restriction_input($_POST['restriccion_pc_3'] ?? 'N/A', $longScale);
+            $Equipos = pi_clean_restriction_input($_POST['restriccion_pc_4'] ?? 'N/A', $longScale);
+            $Predecesora = 'N/A';
+            $Pdto_Cons = 'N/A';
+            $Modelo = 'N/A';
+        } else {
+            // Construction uses original 7 fields
+            $D_y_E = pi_clean_restriction_input($_POST['D_y_E'] ?? 'N/A', $longScale);
+            $Materiales = pi_clean_restriction_input($_POST['Materiales'] ?? 'N/A', $longScale);
+            $MdeO = pi_clean_restriction_input($_POST['MdeO'] ?? 'N/A', $longScale);
+            $Equipos = pi_clean_restriction_input($_POST['Equipos'] ?? 'N/A', $longScale);
+            $Predecesora = pi_clean_restriction_input($_POST['Predecesora'] ?? 'N/A', $halfScale);
+            $Pdto_Cons = pi_clean_restriction_input($_POST['Pdto_Cons'] ?? 'N/A', $halfScale);
+            $Modelo = pi_clean_restriction_input($_POST['Modelo'] ?? 'N/A', $halfScale);
+        }
 
         $Sub_Contratista = $_POST['Sub_Contratista'] ?? '';
         $Responsable_AIA = $_POST['Responsable_AIA'] ?? '';
         $Observaciones = $_POST['Observaciones'] ?? '';
 
-        modificar($D_y_E, $Materiales, $MdeO, $Equipos, $Predecesora, $Pdto_Cons, $Modelo, $Sub_Contratista, $Responsable_AIA, $Observaciones, $Id, $semana, fecha_inicio_sem($semana, $dbPrefix, $dbInstance), $dbPrefix, $dbInstance);
+        modificar($D_y_E, $Materiales, $MdeO, $Equipos, $Predecesora, $Pdto_Cons, $Modelo, $Sub_Contratista, $Responsable_AIA, $Observaciones, $Id, $semana, fecha_inicio_sem($semana, $dbPrefix, $dbInstance), $dbPrefix, $dbInstance, $isPreConstruccion);
         break;
     default:
         pi_json_error('Opcion no valida para programacion intermedia.', 400);
         break;
 }
 
-function modificar($D_y_E, $Materiales, $MdeO, $Equipos, $Predecesora, $Pdto_Cons, $Modelo, $Sub_Contratista, $Responsable_AIA, $Observaciones, $Id, $semana, $inicio_semana, $dbPrefix, $dbInstance)
+function modificar($D_y_E, $Materiales, $MdeO, $Equipos, $Predecesora, $Pdto_Cons, $Modelo, $Sub_Contratista, $Responsable_AIA, $Observaciones, $Id, $semana, $inicio_semana, $dbPrefix, $dbInstance, $isPreConstruccion)
 {
     try {
         $dbInstance->beginTransaction();
@@ -201,8 +216,13 @@ function modificar($D_y_E, $Materiales, $MdeO, $Equipos, $Predecesora, $Pdto_Con
             $dbInstance->prepare($sql)->execute([$Id, $semana]);
         }
 
-        $sql1 = "UPDATE {$dbPrefix}_programa_consolidado SET D_y_E = ?, Materiales = ?, MdeO = ?, Equipos = ?, Predecesora = ?, Pdto_Cons = ?, Modelo = ?, Sub_Contratista = ?, Responsable_AIA = ?, Observaciones = ? WHERE Consecutivo_en_Programa = ? AND Semana = ?";
-        $dbInstance->prepare($sql1)->execute([$D_y_E, $Materiales, $MdeO, $Equipos, $Predecesora, $Pdto_Cons, $Modelo, $Sub_Contratista, $Responsable_AIA, $Observaciones, $Id, $semana]);
+        if ($isPreConstruccion) {
+            $sql1 = "UPDATE {$dbPrefix}_programa_consolidado SET restriccion_pc_1 = ?, restriccion_pc_2 = ?, restriccion_pc_3 = ?, restriccion_pc_4 = ?, Sub_Contratista = ?, Responsable_AIA = ?, Observaciones = ? WHERE Consecutivo_en_Programa = ? AND Semana = ?";
+            $dbInstance->prepare($sql1)->execute([$D_y_E, $Materiales, $MdeO, $Equipos, $Sub_Contratista, $Responsable_AIA, $Observaciones, $Id, $semana]);
+        } else {
+            $sql1 = "UPDATE {$dbPrefix}_programa_consolidado SET D_y_E = ?, Materiales = ?, MdeO = ?, Equipos = ?, Predecesora = ?, Pdto_Cons = ?, Modelo = ?, Sub_Contratista = ?, Responsable_AIA = ?, Observaciones = ? WHERE Consecutivo_en_Programa = ? AND Semana = ?";
+            $dbInstance->prepare($sql1)->execute([$D_y_E, $Materiales, $MdeO, $Equipos, $Predecesora, $Pdto_Cons, $Modelo, $Sub_Contratista, $Responsable_AIA, $Observaciones, $Id, $semana]);
+        }
 
         // Logic from modificar_rest, simplified for the single updated row
         $campos = [
