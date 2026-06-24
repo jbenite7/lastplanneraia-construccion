@@ -269,7 +269,10 @@ class Project
                 fechaInicioLineaBase = ?,
                 fechaFinLineaBase = ?,
                 costoDiaRetraso = ?,
-                urlCambios = ?
+                urlCambios = ?,
+                pc_restr_2_nombre = ?,
+                pc_restr_3_nombre = ?,
+                pc_restr_4_nombre = ?
                 WHERE Id = ?";
 
         $result = $this->db->query($sql, [
@@ -283,6 +286,9 @@ class Project
             $data['fecha_fin_lb'] ?: null,
             $data['costo_retraso'],
             $data['url_cambios'],
+            $data['pc_restr_2_nombre'] ?? null,
+            $data['pc_restr_3_nombre'] ?? null,
+            $data['pc_restr_4_nombre'] ?? null,
             $id,
         ]);
 
@@ -393,8 +399,11 @@ class Project
                     fechaInicioLineaBase, 
                     fechaFinLineaBase, 
                     costoDiaRetraso, 
-                    urlCambios
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    urlCambios,
+                    pc_restr_2_nombre,
+                    pc_restr_3_nombre,
+                    pc_restr_4_nombre
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         $result = $this->db->query($sql, [
             $data['nombre'],
@@ -407,6 +416,9 @@ class Project
             $data['fecha_fin_lb'] ?: null,
             $data['costo_retraso'] ?? 5000000,
             $data['url_cambios'] ?? null,
+            $data['pc_restr_2_nombre'] ?? null,
+            $data['pc_restr_3_nombre'] ?? null,
+            $data['pc_restr_4_nombre'] ?? null,
         ]);
 
         if ($result && $base_datos) {

@@ -228,6 +228,9 @@ class ProjectController extends AdminController
         $nombre = $_POST['nombre'] ?? '';
         $base_datos = $_POST['base_datos'] ?? ''; // Aunque no se configure en creación, puede ser útil en edición
         $area = $_POST['area'] ?? 'Construccion';
+        $pc_restr_2_nombre = $_POST['pc_restr_2_nombre'] ?? null;
+        $pc_restr_3_nombre = $_POST['pc_restr_3_nombre'] ?? null;
+        $pc_restr_4_nombre = $_POST['pc_restr_4_nombre'] ?? null;
         $activo = isset($_POST['activo']) ? 1 : 0;
         $acceso = isset($_POST['acceso']) ? 1 : 0;
         $pdc_activo = isset($_POST['pdc_activo']) ? 1 : 0;
@@ -252,6 +255,9 @@ class ProjectController extends AdminController
             'fecha_fin_lb' => $fecha_fin_lb,
             'costo_retraso' => $costo_retraso,
             'url_cambios' => $url_cambios,
+            'pc_restr_2_nombre' => $pc_restr_2_nombre,
+            'pc_restr_3_nombre' => $pc_restr_3_nombre,
+            'pc_restr_4_nombre' => $pc_restr_4_nombre,
         ];
 
         if ($this->projectModel->update($id, $data)) {
@@ -293,6 +299,9 @@ class ProjectController extends AdminController
 
         $nombre = $_POST['nombre'] ?? '';
         $area = $_POST['area'] ?? 'Construccion';
+        $pc_restr_2_nombre = $_POST['pc_restr_2_nombre'] ?? null;
+        $pc_restr_3_nombre = $_POST['pc_restr_3_nombre'] ?? null;
+        $pc_restr_4_nombre = $_POST['pc_restr_4_nombre'] ?? null;
         $activo = isset($_POST['activo']) ? 1 : 0;
         $acceso = isset($_POST['acceso']) ? 1 : 0;
         $pdc_activo = isset($_POST['pdc_activo']) ? 1 : 0;
@@ -316,6 +325,9 @@ class ProjectController extends AdminController
             'fecha_fin_lb' => $fecha_fin_lb,
             'costo_retraso' => $costo_retraso,
             'url_cambios' => $url_cambios,
+            'pc_restr_2_nombre' => $pc_restr_2_nombre,
+            'pc_restr_3_nombre' => $pc_restr_3_nombre,
+            'pc_restr_4_nombre' => $pc_restr_4_nombre,
         ];
 
         if ($this->projectModel->create($data)) {

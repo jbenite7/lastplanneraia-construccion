@@ -520,6 +520,7 @@ class GeneralApiController extends BaseController
 
         try {
             $vars = $this->getSessionVars();
+            $isPc = ($vars['area'] ?? 'Construccion') === 'Pre-Construccion';
             $dbPrefix = $_GET['db'] ?? ($vars['dbName'] ?? '');
             $semana = (int) ($_GET['semana'] ?? ($vars['semana'] ?? 0));
             $f_inicio_sem = $_GET['f_inicio_sem'] ?? date('Y-m-d');
@@ -569,6 +570,7 @@ class GeneralApiController extends BaseController
             };
 
             $debug("DEBUG IMPORT: Semana Actual: $semana. Max Consolidado: $maxSemCons. Max Activas: $maxSemAct. Destino: $semanaNueva");
+            $debug("DEBUG IMPORT: Modo Pre-Construccion: " . ($isPc ? 'SI' : 'NO'));
             $debug("DEBUG IMPORT: Filas en Excel (sin header): " . count($excelData));
 
             $colEsquema = $columnMap['schema'];
@@ -625,7 +627,7 @@ class GeneralApiController extends BaseController
                     }
                 }
 
-                $itemsParaInsertar[] = [
+                $item = [
                     'Semana' => $semanaNueva, 'Consecutivo_en_Programa' => $consecutivoEnProg++,
                     'Id' => $esquema, 'Actividad' => $nombreActividadHtml, 'Titulo' => $titulo,
                     'Fecha_Inicio' => $fInicio, 'Fecha_Fin' => $fFin, 'Ruta_Critica' => $rutaCritica,
@@ -638,15 +640,28 @@ class GeneralApiController extends BaseController
                     'cantidad_ppto' => $prev['cantidad_ppto'] ?? null,
                     'unidad' => $prev['unidad'] ?? null,
                     'Estado_Restricciones' => isset($prev['Estado_Restricciones']) ? $prev['Estado_Restricciones'] : 0,
-                    'D_y_E' => $prev['D_y_E'] ?? '0',
-                    'Materiales' => $prev['Materiales'] ?? '0',
-                    'MdeO' => $prev['MdeO'] ?? '0',
-                    'Equipos' => $prev['Equipos'] ?? '0',
-                    'Predecesora' => $prev['Predecesora'] ?? '0',
-                    'Pdto_Cons' => $prev['Pdto_Cons'] ?? '0',
-                    'Modelo' => $prev['Modelo'] ?? '0',
-                    'programaAnteriorAsociar' => empty($prev) ? '*No Asociada*' : $nombreLimpio,
                 ];
+
+                if ($isPc) {
+                    // Pre-Construccion: restricciones PC en vez de D_y_E, Materiales, MdeO, Equipos
+                    $item['restriccion_pc_1'] = $prev['restriccion_pc_1'] ?? '0';
+                    $item['restriccion_pc_2'] = $prev['restriccion_pc_2'] ?? '0';
+                    $item['restriccion_pc_3'] = $prev['restriccion_pc_3'] ?? '0';
+                    $item['restriccion_pc_4'] = $prev['restriccion_pc_4'] ?? '0';
+                } else {
+                    // Construccion: columnas clásicas
+                    $item['D_y_E'] = $prev['D_y_E'] ?? '0';
+                    $item['Materiales'] = $prev['Materiales'] ?? '0';
+                    $item['MdeO'] = $prev['MdeO'] ?? '0';
+                    $item['Equipos'] = $prev['Equipos'] ?? '0';
+                }
+
+                $item['Predecesora'] = $prev['Predecesora'] ?? '0';
+                $item['Pdto_Cons'] = $prev['Pdto_Cons'] ?? '0';
+                $item['Modelo'] = $prev['Modelo'] ?? '0';
+                $item['programaAnteriorAsociar'] = empty($prev) ? '*No Asociada*' : $nombreLimpio;
+
+                $itemsParaInsertar[] = $item;
             }
 
             $this->db->beginTransaction();
@@ -664,11 +679,17 @@ class GeneralApiController extends BaseController
             $this->db->prepare("DELETE FROM {$dbPrefix}_programa_consolidado WHERE Semana = ?")->execute([$semanaNueva]);
 
             // 2. Insertar nuevos registros
-            $queryInsert = "INSERT INTO {$dbPrefix}_programa_consolidado (
-                Semana, Consecutivo_en_Programa, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin, Ruta_Critica, 
-                Ejecutado, Responsable_AIA, Sub_Contratista, Observaciones, codigo_actividad, medir_productividad, cantidad_ppto, unidad,
-                Estado_Restricciones, D_y_E, Materiales, MdeO, Equipos, Predecesora, Pdto_Cons, Modelo, programaAnteriorAsociar
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            $baseColumns = 'Semana, Consecutivo_en_Programa, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin, Ruta_Critica, Ejecutado, Responsable_AIA, Sub_Contratista, Observaciones, codigo_actividad, medir_productividad, cantidad_ppto, unidad, Estado_Restricciones';
+            if ($isPc) {
+                $dynamicColumns = 'restriccion_pc_1, restriccion_pc_2, restriccion_pc_3, restriccion_pc_4';
+            } else {
+                $dynamicColumns = 'D_y_E, Materiales, MdeO, Equipos';
+            }
+            $tailColumns = 'Predecesora, Pdto_Cons, Modelo, programaAnteriorAsociar';
+            $allColumns = "{$baseColumns}, {$dynamicColumns}, {$tailColumns}";
+            $placeholderCount = substr_count($allColumns, ',') + 1;
+            $placeholders = implode(', ', array_fill(0, $placeholderCount, '?'));
+            $queryInsert = "INSERT INTO {$dbPrefix}_programa_consolidado ({$allColumns}) VALUES ({$placeholders})";
             $stmtInsert = $this->db->prepare($queryInsert);
 
             foreach ($itemsParaInsertar as $item) {
