@@ -858,10 +858,8 @@ $categoriasCP = [
                     <button id="btn_cerrar_compromisos_semana" type="button" class="btn-pdc-modern" data-toggle="modal" data-target="#modal_cerrar_compromisos" aria-label="Confirmar Compromisos de la Semana"><i class="fas fa-lock"></i> <span>Confirmar Compromisos</span></button>
                     <button id="btn_tnp" type="button" class="btn-pdc-modern" style="display: none;" aria-label="Registrar Trabajo No Planificado"><i class="fas fa-bolt"></i> <span>Registrar TNP</span></button>
                     <button id="btn_informe_compromisos" type="button" class="btn-pdc-modern" aria-label="Imprimir Informe de Compromisos"><i class="fas fa-print"></i> <span>Imprimir</span></button>
-                    <div class="btn-group-pdc">
-                        <button id="btn-export" class="btn-pdc-modern" aria-label="Exportar datos a CSV"><i class="fas fa-file-csv"></i> <span>Exportar CSV</span></button>
-                        <button id="btn-refresh" class="btn-pdc-modern" aria-label="Recargar tabla de actividades"><i class="fas fa-sync"></i> <span>Recargar</span></button>
-                    </div>
+                    <button id="btn-export" class="btn-pdc-modern" aria-label="Exportar datos a CSV"><i class="fas fa-file-csv"></i> <span>Exportar CSV</span></button>
+                    <button id="btn-refresh" class="btn-pdc-modern" aria-label="Recargar tabla de actividades"><i class="fas fa-sync"></i> <span>Recargar</span></button>
                 </div>
             </div>
 
