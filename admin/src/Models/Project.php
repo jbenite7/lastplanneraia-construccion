@@ -21,7 +21,7 @@ class Project
      */
     public function count()
     {
-        $stmt = $this->db->query("SELECT COUNT(*) as total FROM {$this->table} WHERE Area = 'Construccion'");
+        $stmt = $this->db->query("SELECT COUNT(*) as total FROM {$this->table}");
         $row = $stmt->fetch();
 
         return (int) ($row['total'] ?? 0);
@@ -149,7 +149,7 @@ class Project
      */
     public function getActiveNames()
     {
-        $stmt = $this->db->query("SELECT Proyecto_Proceso FROM {$this->table} WHERE Area = 'Construccion' AND Activo = 1");
+        $stmt = $this->db->query("SELECT Proyecto_Proceso FROM {$this->table} WHERE Activo = 1");
 
         return $stmt->fetchAll(\PDO::FETCH_COLUMN);
     }
@@ -217,13 +217,13 @@ class Project
     }
 
     /**
-     * Get all active construction projects.
+     * Get all active projects.
      *
      * @return array
      */
     public function getAllActive()
     {
-        $stmt = $this->db->query("SELECT * FROM {$this->table} WHERE Area = 'Construccion' AND Activo = 1");
+        $stmt = $this->db->query("SELECT * FROM {$this->table} WHERE Activo = 1");
 
         return $stmt->fetchAll();
     }
@@ -235,7 +235,7 @@ class Project
      */
     public function getAll()
     {
-        $stmt = $this->db->query("SELECT * FROM {$this->table} WHERE Area = 'Construccion'");
+        $stmt = $this->db->query("SELECT * FROM {$this->table}");
 
         return $stmt->fetchAll();
     }
