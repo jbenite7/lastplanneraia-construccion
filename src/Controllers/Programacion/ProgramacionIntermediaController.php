@@ -105,6 +105,7 @@ class ProgramacionIntermediaController extends BaseController
             $query = "SELECT *
                       FROM {$dbPrefix}_programa_consolidado
                       WHERE {$where}
+                      GROUP BY Consecutivo_en_Programa
                       ORDER BY Semanas_Inicio ASC";
 
             $stmt = $this->db->prepare($query);
