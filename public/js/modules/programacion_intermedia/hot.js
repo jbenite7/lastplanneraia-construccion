@@ -4037,8 +4037,8 @@
     if (!db) { showFeedback('error', 'No hay proyecto seleccionado'); return; }
     $('#btn-refresh-listas').prop('disabled', true).text('Cargando...');
 
-    var urlSub = '/legacy/subcontratistas/listar_subcontratistas.php?db=' + encodeURIComponent(db);
-    var urlProf = '/legacy/profesionales/listar_profesionales.php?db=' + encodeURIComponent(db);
+    var urlSub = '/api/subcontratistas/list?db=' + encodeURIComponent(db);
+    var urlProf = '/api/profesionales/list?db=' + encodeURIComponent(db);
 
     $.when(
       $.getJSON(urlSub),

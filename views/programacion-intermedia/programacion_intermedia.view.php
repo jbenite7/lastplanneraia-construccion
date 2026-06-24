@@ -1579,7 +1579,8 @@
         }
         $piProfesionales = array_values(array_unique(array_filter($piProfesionales)));
         echo json_encode($piProfesionales, JSON_UNESCAPED_UNICODE);
-        ?>;
+        ?>
+    };
     </script>
 
     <script type="text/javascript" src="/js/HandsontableTomSelectEditor.js?v=tomselect30"></script>
