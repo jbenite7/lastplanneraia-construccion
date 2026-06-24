@@ -124,6 +124,10 @@ $router->get('/control-cambios', [\App\Controllers\Integracion\ControlCambiosCon
 $router->post('/api/contratos/list', [\App\Controllers\Api\ContratosApiController::class, 'list']);
 $router->post('/api/contratos/save', [\App\Controllers\Api\ContratosApiController::class, 'save']);
 $router->post('/api/contratos/auto-assign', [\App\Controllers\Api\ContratosApiController::class, 'autoAssign']);
+$router->post('/api/contratos/auto-define', [\App\Controllers\Api\ContratosApiController::class, 'autoDefine']);
+$router->post('/api/contratos/auto-define/apply', [\App\Controllers\Api\ContratosApiController::class, 'autoDefineApply']);
+$router->post('/api/contratos/auto-define/undo', [\App\Controllers\Api\ContratosApiController::class, 'autoDefineUndo']);
+$router->post('/api/contratos/auto-define/reanalyze', [\App\Controllers\Api\ContratosApiController::class, 'autoDefineReanalyze']);
 // Api/ListadoActividades
 $router->get('/api/listado-actividades/template', [\App\Controllers\Api\ListadoActividadesApiController::class, 'downloadTemplate']);
 $router->post('/api/listado-actividades/list', [\App\Controllers\Api\ListadoActividadesApiController::class, 'list']);
@@ -138,13 +142,7 @@ $router->get('/api/pdc/plantillas', [\App\Controllers\Api\PdcPlantillaController
 $router->get('/api/pdc/plantillas/{id}', [\App\Controllers\Api\PdcPlantillaController::class, 'show']);
 $router->get('/api/pdc/plantillas/{id}/items', [\App\Controllers\Api\PdcPlantillaController::class, 'items']);
 $router->get('/api/pdc/categorias-recurso', [\App\Controllers\Api\PdcPlantillaController::class, 'categorias']);
-// Api/PDC Auto-generación
-$router->post('/api/pdc/auto/suggest', [\App\Controllers\Api\PdcAutoGenerateController::class, 'suggest']);
-$router->get('/api/pdc/auto/inventory', [\App\Controllers\Api\PdcAutoGenerateController::class, 'inventory']);
-$router->post('/api/pdc/auto/apply', [\App\Controllers\Api\PdcAutoGenerateController::class, 'apply']);
 $router->post('/api/pdc/auto/apply-from-actividades', [\App\Controllers\Api\PdcAutoGenerateController::class, 'applyFromActividades']);
-// Api/PDC Wizard
-$router->post('/api/pdc/wizard-generate', [\App\Controllers\Api\PdcApiController::class, 'wizardGenerate']);
 // Api/PG Breadcrumb
 $router->post('/api/pg/breadcrumb-estandarizar', [\App\Controllers\Api\PgBreadcrumbController::class, 'standardize']);
 $router->post('/api/pg/breadcrumb-preview', [\App\Controllers\Api\PgBreadcrumbController::class, 'preview']);

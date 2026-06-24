@@ -385,9 +385,7 @@
 
 			$("div.toolbarFilaMensajes").html('<p id="mensajeActualizacion"></p>');
 
-			$("div.toolbarFiltro").html('<div class="ps-toolbar-filter"><input id="input_buscador" type="text" class="input_buscador form-control form-control-sm ps-filter-input" placeholder="Filtro" aria-label="Buscar en la tabla"><button id="btn_limpiar_buscador" type="button" class="btn btn-danger ps-filter-clear" aria-label="Limpiar búsqueda"><i class="fas fa-times-circle" aria-hidden="true"></i> Limpiar</button></div>');
-
-			activarBuscador("#dt_cliente tbody", table);
+			$("div.toolbarFiltro").html('<div class="ps-toolbar-filter"><button id="btn_limpiar_buscador" type="button" class="btn-pdc-modern ps-filter-clear" aria-label="Limpiar búsqueda"><i class="fas fa-times-circle" aria-hidden="true"></i> Limpiar</button></div>');
 			maestroPermisos(document.getElementById('permiso_canonico').value);
 			obtener_data_editar("#dt_cliente tbody", table);
 		}

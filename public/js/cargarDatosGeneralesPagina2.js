@@ -660,11 +660,6 @@ window.cambiarSemanaSesion = function (semana, redirectUrl) {
 var maestroPermisos = function (permiso) {
   switch (permiso) {
     case 'R':
-      //Bloqueos Información General
-      $(
-        '#btn_cargarActividadesExcel, #btn_nueva_actividad, #btn_guardar_contratos, #btn_guardar_pdc, #btn_actualizarPDC'
-      ).css('display', 'none');
-
       //Bloqueos Integración
 
       //Bloqueos Semanas del Proyecto

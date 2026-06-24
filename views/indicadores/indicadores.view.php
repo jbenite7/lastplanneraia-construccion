@@ -24,13 +24,13 @@
 	<!-- <div class="row formularioRegistro">
 	</div> -->
 
-	<div class="row filaBotones">
+	<div class="row filaBotones action-bar">
 		<div class="col-sm-12 col-md-12 col-lg-12 ml-auto mr-auto p-0" id="filaBotones" style="text-align: center; margin:5px auto 2px auto; width:100%; max-width:1300px">
 			<div class="grupo_botones_informes btn-group" id="grupo_botones_informes" role="group" aria-label="Basic example" style="margin: 0 auto">
-				<button id="btn_informeFichaResumen" type="button" class="btn btn-outline-secondary btn-sm" onclick="listar('informeFichaResumen')" disabled>Resumen</button>
-				<button id="btn_informeProgramaGeneral" type="button" class="btn btn-outline-secondary btn-sm" onclick="listar('informeProgramaGeneral')" disabled>Programa General</button>
-				<button id="btn_informeProgramacionIntermedia" type="button" class="btn btn-outline-secondary btn-sm" onclick="listar('informeProgramacionIntermedia')">Liberación de Restricciones</button>
-				<button id="btn_informeProgramacionSemanal" type="button" class="btn btn-outline-secondary btn-sm" onclick="listar('informeProgramacionSemanal')">Programación Semanal</button>
+				<button id="btn_informeFichaResumen" type="button" class="btn-pdc-modern" onclick="listar('informeFichaResumen')" disabled>Resumen</button>
+				<button id="btn_informeProgramaGeneral" type="button" class="btn-pdc-modern" onclick="listar('informeProgramaGeneral')" disabled>Programa General</button>
+				<button id="btn_informeProgramacionIntermedia" type="button" class="btn-pdc-modern" onclick="listar('informeProgramacionIntermedia')">Liberación de Restricciones</button>
+				<button id="btn_informeProgramacionSemanal" type="button" class="btn-pdc-modern" onclick="listar('informeProgramacionSemanal')">Programación Semanal</button>
 			</div>
 		</div>
 	</div>
@@ -130,7 +130,7 @@
 			console.log(url);
 			var informe = '<iframe width="100%" height="100%" src=\''+ url +'\' frameborder="0" style="border:0" allowfullscreen></iframe>';
 
-			var filaBotones = '<button id="btn_informeFichaResumen" type="button" class="btn btn-outline-secondary btn-sm" onclick="listar(\'informeFichaResumen\')">Resumen</button><button id="btn_informeProgramaGeneral" type="button" class="btn btn-outline-secondary btn-sm" onclick="listar(\'informeProgramaGeneral\')">Programa General</button><button id="btn_informeProgramacionIntermedia" type="button" class="btn btn-outline-secondary btn-sm" onclick="listar(\'informeProgramacionIntermedia\')">Liberación de Restricciones</button><button id="btn_informeProgramacionSemanal" type="button" class="btn btn-outline-secondary btn-sm" onclick="listar(\'informeProgramacionSemanal\')">Programación Semanal</button><button id="btn_informePDC" type="button" class="btn btn-outline-secondary btn-sm" onclick="listar(\'informePDC\')">Plan de Compras</button><button id="btn_informeProveedores" type="button" class="btn btn-outline-secondary btn-sm" onclick="listar(\'informeProveedores\')">Calificación de Subcontratistas</button>';
+			var filaBotones = '<button id="btn_informeFichaResumen" type="button" class="btn-pdc-modern" onclick="listar(\'informeFichaResumen\')">Resumen</button><button id="btn_informeProgramaGeneral" type="button" class="btn-pdc-modern" onclick="listar(\'informeProgramaGeneral\')">Programa General</button><button id="btn_informeProgramacionIntermedia" type="button" class="btn-pdc-modern" onclick="listar(\'informeProgramacionIntermedia\')">Liberación de Restricciones</button><button id="btn_informeProgramacionSemanal" type="button" class="btn-pdc-modern" onclick="listar(\'informeProgramacionSemanal\')">Programación Semanal</button><button id="btn_informePDC" type="button" class="btn-pdc-modern" onclick="listar(\'informePDC\')">Plan de Compras</button><button id="btn_informeProveedores" type="button" class="btn-pdc-modern" onclick="listar(\'informeProveedores\')">Calificación de Subcontratistas</button>';
 
 
 			document.getElementById('contenedorInformeDataStudio').innerHTML = informe;

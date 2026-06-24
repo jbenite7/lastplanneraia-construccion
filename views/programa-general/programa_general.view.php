@@ -210,7 +210,7 @@
         <div class="col-sm-10 col-md-10 col-lg-10 ml-0 mr-auto text-left" id="textoDireccionSeccion"></div>
     </div>
 
-    <div class="header-actions">
+    <div class="header-actions action-bar">
         <div class="pg-actions-row">
             <div class="d-flex flex-wrap align-items-center" style="gap:6px;">
                 <button type="button" class="leyenda_colores btn-pdc-modern" data-toggle="modal" data-target="#modal_leyenda_colores">Leyenda <i class="fas fa-question-circle ml-1"></i></button>

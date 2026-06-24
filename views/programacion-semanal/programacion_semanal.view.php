@@ -848,15 +848,15 @@ $categoriasCP = [
         <div class="col-sm-10 col-md-10 col-lg-10 ml-0 mr-auto text-left" id="textoDireccionSeccion"></div>
     </div>
 
-    <div class="header-actions ps-hot-toolbar-shell">
+    <div class="header-actions action-bar ps-hot-toolbar-shell">
         <div class="ps-actions-row">
             <div class="ps-toolbar-left">
                 <div class="ps-hot-toolbar-actions">
                     <button type="button" class="leyenda_colores btn-pdc-modern" data-toggle="modal" data-target="#modal_leyenda_colores_ps" aria-label="Ver leyenda de colores"><i class="fas fa-question-circle"></i> <span>Leyenda</span></button>
-                    <button id="btn_autoprogramar" class="btn-auto btn-auto-orange" aria-label="Autoprogramar Actividades"><i class="fas fa-magic"></i> <span>Autoprogramar Actividades</span></button>
+                    <button id="btn_autoprogramar" class="btn-pdc-modern" aria-label="Autoprogramar Actividades"><i class="fas fa-magic"></i> <span>Autoprogramar Actividades</span></button>
                     <button id="btn_agregar_actividad" type="button" class="btn-pdc-modern" aria-label="Agregar Actividad Manual"><i class="fas fa-plus"></i> <span>Agregar Actividad</span></button>
                     <button id="btn_cerrar_compromisos_semana" type="button" class="btn-pdc-modern" data-toggle="modal" data-target="#modal_cerrar_compromisos" aria-label="Confirmar Compromisos de la Semana"><i class="fas fa-lock"></i> <span>Confirmar Compromisos</span></button>
-                    <button id="btn_tnp" type="button" class="btn-pdc-modern" style="display: none; background-color: #4a81bd; border-color: #3a6a9d;" aria-label="Registrar Trabajo No Planificado"><i class="fas fa-bolt"></i> <span>Registrar TNP</span></button>
+                    <button id="btn_tnp" type="button" class="btn-pdc-modern" style="display: none;" aria-label="Registrar Trabajo No Planificado"><i class="fas fa-bolt"></i> <span>Registrar TNP</span></button>
                     <button id="btn_informe_compromisos" type="button" class="btn-pdc-modern" aria-label="Imprimir Informe de Compromisos"><i class="fas fa-print"></i> <span>Imprimir</span></button>
                     <div class="btn-group-pdc">
                         <button id="btn-export" class="btn-pdc-modern" aria-label="Exportar datos a CSV"><i class="fas fa-file-csv"></i> <span>Exportar CSV</span></button>

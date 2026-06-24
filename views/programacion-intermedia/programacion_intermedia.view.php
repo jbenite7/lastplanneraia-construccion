@@ -1326,7 +1326,7 @@
         <div class="col-sm-10 col-md-10 col-lg-10 ml-0 mr-auto text-left" id="textoDireccionSeccion"></div>
     </div>
 
-    <div class="header-actions">
+    <div class="header-actions action-bar">
         <div class="pi-actions-row">
             <div class="pi-toolbar-actions">
                 <button type="button" class="leyenda_colores btn-pdc-modern" data-toggle="modal" data-target="#modal_leyenda_colores">Leyenda <i class="fas fa-question-circle ml-1"></i></button>

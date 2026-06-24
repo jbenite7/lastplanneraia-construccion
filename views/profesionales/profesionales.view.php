@@ -329,12 +329,12 @@
     <input type="hidden" id="baseDatos" value="<?php echo $_SESSION['db'] ?? 'Prueba'; ?>">
     <input type="hidden" id="permiso_canonico" value="<?php echo $_SESSION['permiso'] ?? 'V'; ?>">
 
-    <div class="header-actions">
+    <div class="header-actions action-bar">
         <h4>Profesionales (Live Edición)</h4>
         <div>
             <span id="save-status" class="badge badge-success" style="display:none;">Guardado</span>
             <span id="save-error" class="badge badge-danger" style="display:none;">Error al guardar</span>
-            <button id="btn-export" class="btn btn-sm btn-outline-secondary"><i class="fas fa-file-excel"></i> Exportar</button>
+            <button id="btn-export" class="btn-pdc-modern"><i class="fas fa-file-excel"></i> Exportar</button>
         </div>
     </div>
 

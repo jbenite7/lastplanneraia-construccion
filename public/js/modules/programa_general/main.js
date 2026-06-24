@@ -953,9 +953,8 @@ var listar = function() {
         table.columns.adjust().draw(false);
     }
 
-    $("div.toolbarFiltro").html('<div class="pg-toolbar-filter"><input id="input_buscador" type="text" class="input_buscador form-control form-control-sm pg-filter-input" placeholder="Fitro"><button id="btn_limpiar_buscador" type="button" class="btn btn-danger pg-filter-clear"><i class="fas fa-times-circle"></i> Limpiar</button></div>');
+    $("div.toolbarFiltro").html('<div class="pg-toolbar-filter"><button id="btn_limpiar_buscador" type="button" class="btn btn-danger pg-filter-clear"><i class="fas fa-times-circle"></i> Limpiar</button></div>');
 
-    // activarBuscador("#dt_cliente tbody", table);
     // ocultos(table);
     // obtener_data_editar("#dt_cliente tbody", table); // Moved to drawCallback
     //obtener_id_editar("#dt_general tbody", table);
