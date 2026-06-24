@@ -248,111 +248,14 @@
 	      <div class="modal-footer">
 	        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
 	        <button type="button" class="btn btn-outline-primary" id="btnAutoGenListadoAnalizar" disabled><i class="fas fa-search"></i> Analizar</button>
-	        <button type="button" class="btn btn-warning" id="btnAutoGenListadoAplicar" disabled><i class="fas fa-magic"></i> Aplicar</button>
+	        <button type="button" class="btn-auto btn-auto-green" id="btnAutoGenListadoAplicar" disabled><i class="fas fa-magic"></i> Aplicar</button>
 	      </div>
 	    </div>
 	  </div>
 	</div>
 	<!-- Modal -->
 
-	<style>
-	/* Modal Auto-PDC: estilos mobile-first */
-		#modalPdcAutoGenerar .modal-body {
-			max-height: calc(100vh - 230px);
-			overflow-y: auto;
-			-webkit-overflow-scrolling: touch;
-		}
-		.pdc-auto-card {
-			margin-bottom: 1rem;
-			border-left: 4px solid #6c757d;
-		}
-		.pdc-auto-card--auto { border-left-color: #28a745; }
-		.pdc-auto-card--warning { border-left-color: #ffc107; }
-		.pdc-auto-card--manual { border-left-color: #dc3545; }
-		.pdc-auto-card__header {
-			display: flex;
-			flex-direction: column;
-			gap: .25rem;
-		}
-		.pdc-auto-card__check {
-			display: flex;
-			align-items: center;
-			gap: .5rem;
-			min-height: 44px;
-			margin-bottom: 0;
-		}
-		.pdc-auto-card__check input[type="checkbox"] {
-			width: 1.25rem;
-			height: 1.25rem;
-			flex-shrink: 0;
-		}
-		.pdc-auto-card__badges {
-			display: flex;
-			align-items: center;
-			gap: .5rem;
-		}
-		.pdc-auto-fuente { color: #6c757d; }
-		.pdc-auto-dias {
-			display: flex;
-			flex-wrap: wrap;
-			gap: .35rem;
-			margin: .5rem 0;
-		}
-		.pdc-auto-dias__chip {
-			background: #f4f1ea;
-			border-radius: 999px;
-			padding: .2rem .6rem;
-			font-size: .75rem;
-			white-space: nowrap;
-		}
-		.pdc-auto-dias--option .pdc-auto-dias__chip { font-size: .7rem; }
-		#modalPdcAutoGenerar details > summary {
-			min-height: 44px;
-			padding: .6rem 0;
-			cursor: pointer;
-		}
-		#modalPdcAutoGenerar .ts-control { min-height: 44px; }
-		.pdc-auto-manual {
-			margin-top: 1rem;
-			padding-top: .5rem;
-			border-top: 1px solid #dee2e6;
-		}
-		@media (min-width: 768px) {
-			.pdc-auto-card__header {
-				flex-direction: row;
-				justify-content: space-between;
-				align-items: flex-start;
-			}
-		}
-	</style>
-
-	<!-- Wizard para auto-generar PDC desde el Programa General -->
-		<div class="modal fade aia-modal" id="modalPdcAutoGenerar" tabindex="-1" role="dialog" aria-labelledby="modalPdcAutoGenerarLabel" aria-hidden="true">
-		  <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
-		    <div class="modal-content">
-		      <div class="modal-header">
-		        <div class="modal-title" id="modalPdcAutoGenerarLabel">
-		          <div class="aia-modal__eyebrow">AIA Plan de Compras</div>
-		          <h2 class="aia-modal__headline">Auto-generar Plan de Compras desde Programa General</h2>
-		          <p class="aia-modal__subtitle">Revisa las familias detectadas en el Programa General y confirma las modalidades antes de crear paquetes.</p>
-		        </div>
-		        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-		      </div>
-		      <div class="modal-body">
-		        <div id="pdcAutoResumen" class="alert alert-info mb-3">Presiona cargar sugerencias para analizar el programa general.</div>
-		        <div id="pdcAutoListado" class="pdc-auto-list"></div>
-		      </div>
-		      <div class="modal-footer aia-modal__buttons">
-		        <button type="button" id="btn_pdc_auto_recargar" class="btn btn-secondary">Recargar sugerencias</button>
-		        <button type="button" id="btn_pdc_auto_aplicar" class="btn btn-primary" disabled>Crear paquetes seleccionados</button>
-		        <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
-		      </div>
-		    </div>
-		  </div>
-		</div>
-		<!-- Modal -->
-
-		<!-- Se crea el Modal que solicita la confirmación de eliminar un registro o no -->
+	<!-- Se crea el Modal que solicita la confirmación de eliminar un registro o no -->
 		<div class="modal fade aia-modal aia-modal__confirm" id="modalEliminar" tabindex="-1" role="dialog" aria-labelledby="modalEliminarLabel">
 		  <div class="modal-dialog modal-dialog-centered" role="document">
 		    <div class="modal-content">
@@ -498,11 +401,8 @@
 
 			rol = String(rol || '').trim().toUpperCase();
 
-			return rol === 'A' || rol === 'D' || rol === 'OT';
+			return rol === 'A' || rol === 'D' || rol === 'OT' || rol === 'R';
 		};
-
-		var pdcAutoSuggestions = [];
-		var pdcAutoTomSelects = [];
 
 		var escaparHtml = function(value) {
 			return String(value == null ? '' : value)
@@ -513,184 +413,7 @@
 				.replace(/'/g, '&#039;');
 		};
 
-		/* El backend envía la actividad con HTML embebido (<b>, <small>, &Oacute;...):
-		   se limpian tags y se decodifican entidades antes de volver a escapar. */
-		var limpiarTextoActividad = function(value) {
-			var sinTags = String(value == null ? '' : value).replace(/<[^>]*>/g, ' ');
-			var decodificado = $('<textarea>').html(sinTags).text();
-			return decodificado.replace(/\s+/g, ' ').trim();
-		};
-
-		var obtenerBadgeConfianzaPdc = function(confianza) {
-			var valor = parseInt(confianza, 10) || 0;
-			if (valor >= 80) {
-				return { clase: 'badge-success', texto: 'Auto', mod: 'auto' };
-			}
-			if (valor >= 50) {
-				return { clase: 'badge-warning', texto: 'Revisión', mod: 'warning' };
-			}
-			return { clase: 'badge-danger', texto: 'Manual', mod: 'manual' };
-		};
-
-		var iconoFuentePdc = function(matchedBy) {
-			var mapa = {
-				nombre: { icono: 'fa-tag', titulo: 'Detectada por nombre de actividad' },
-				breadcrumb: { icono: 'fa-layer-group', titulo: 'Detectada por capítulo (breadcrumb)' },
-				capitulo: { icono: 'fa-sitemap', titulo: 'Detectada por capítulo padre' }
-			};
-			var fuente = mapa[matchedBy];
-			if (!fuente) {
-				return '';
-			}
-			return '<i class="fas ' + fuente.icono + ' pdc-auto-fuente" title="' + fuente.titulo + '"></i>';
-		};
-
-		var fuenteDominantePdc = function(actividades) {
-			var conteo = {};
-			var dominante = null;
-			var maximo = 0;
-			(actividades || []).forEach(function(actividad) {
-				if (!actividad.matchedBy) {
-					return;
-				}
-				conteo[actividad.matchedBy] = (conteo[actividad.matchedBy] || 0) + 1;
-				if (conteo[actividad.matchedBy] > maximo) {
-					maximo = conteo[actividad.matchedBy];
-					dominante = actividad.matchedBy;
-				}
-			});
-			return dominante;
-		};
-
-		var pdcAutoEtiquetasDias = {
-			dias_elaboracion: 'Elaboración',
-			dias_entrega: 'Entrega',
-			dias_recibo: 'Recibo',
-			dias_cuadros: 'Cuadros',
-			dias_legalizacion: 'Legalización',
-			dias_fabricacion: 'Fabricación',
-			dias_insumos: 'Insumos'
-		};
-
-		var renderizarDiasPdc = function(dias) {
-			var chips = [];
-			Object.keys(pdcAutoEtiquetasDias).forEach(function(clave) {
-				var valor = parseInt(dias && dias[clave], 10) || 0;
-				if (valor > 0) {
-					chips.push('<span class="pdc-auto-dias__chip">' + pdcAutoEtiquetasDias[clave] + ': ' + valor + ' d</span>');
-				}
-			});
-			if (!chips.length) {
-				return '<small class="text-muted">Sin duraciones configuradas</small>';
-			}
-			return chips.join('');
-		};
-
-		var construirOpcionesSelectPdc = function(item) {
-			var grupos = {};
-			var ordenGrupos = [];
-			(item.opciones || []).forEach(function(opcion) {
-				var grupo = (opcion.tipoContratoNombre || '').trim() || 'Otras modalidades';
-				if (!grupos[grupo]) {
-					grupos[grupo] = [];
-					ordenGrupos.push(grupo);
-				}
-				var textParts = [];
-				if (opcion.tipoPaquete && opcion.tipoPaquete.trim()) {
-					textParts.push(escaparHtml(opcion.tipoPaquete));
-				}
-				var items = (opcion.items || []).map(function(paquete) {
-					var parts = [];
-					if (paquete.tipoPaquete && paquete.tipoPaquete.trim()) {
-						parts.push(escaparHtml(paquete.tipoPaquete));
-					}
-					if (paquete.paqueteNombre && paquete.paqueteNombre.trim()) {
-						parts.push(escaparHtml(paquete.paqueteNombre));
-					}
-					return parts.join(': ');
-				}).filter(function(v) { return v; }).join(' / ');
-				if (items) {
-					textParts.push(items);
-				}
-				var selected = parseInt(opcion.optionId, 10) === parseInt(item.optionId, 10) ? ' selected' : '';
-				grupos[grupo].push('<option value="' + opcion.optionId + '"' + selected + '>' + textParts.join(' · ') + '</option>');
-			});
-			return ordenGrupos.map(function(grupo) {
-				return '<optgroup label="' + escaparHtml(grupo) + '">' + grupos[grupo].join('') + '</optgroup>';
-			}).join('');
-		};
-
-		var buscarOpcionPdc = function(item, optionId) {
-			var encontrada = null;
-			(item && item.opciones || []).forEach(function(opcion) {
-				if (parseInt(opcion.optionId, 10) === parseInt(optionId, 10)) {
-					encontrada = opcion;
-				}
-			});
-			return encontrada;
-		};
-
-		var destruirTomSelectsPdc = function() {
-			pdcAutoTomSelects.forEach(function(ts) {
-				try { ts.destroy(); } catch (e) {}
-			});
-			pdcAutoTomSelects = [];
-		};
-
-		var actualizarDiasPdc = function(index) {
-			var item = pdcAutoSuggestions[index];
-			if (!item) {
-				return;
-			}
-			var opcion = buscarOpcionPdc(item, item.optionId);
-			$('#pdcAutoDias-' + index).html(renderizarDiasPdc(opcion ? opcion.dias : null));
-		};
-
-		var sincronizarOpcionPdc = function(index, value) {
-			if (isNaN(index) || !pdcAutoSuggestions[index]) {
-				return;
-			}
-			var optionId = parseInt(value, 10) || null;
-			pdcAutoSuggestions[index].optionId = optionId;
-			pdcAutoSuggestions[index].selected = !!optionId;
-			$('.pdc-auto-selected[data-index="' + index + '"]').prop('checked', !!optionId);
-			actualizarDiasPdc(index);
-		};
-
-		var inicializarTomSelectsPdc = function() {
-			if (typeof window.TomSelect !== 'function') {
-				return;
-			}
-			$('#pdcAutoListado .pdc-auto-option').each(function() {
-				var select = this;
-				var index = parseInt($(select).data('index'), 10);
-				if (select.disabled || isNaN(index)) {
-					return;
-				}
-				var ts = new TomSelect(select, {
-					maxItems: 1,
-					create: false,
-					allowEmptyOption: false,
-					placeholder: 'Selecciona modalidad...',
-					searchField: ['text', 'optgroup'],
-					render: {
-						option: function(dataOpt, escape) {
-							var opcion = buscarOpcionPdc(pdcAutoSuggestions[index], dataOpt.value);
-							var dias = opcion ? '<div class="pdc-auto-dias pdc-auto-dias--option">' + renderizarDiasPdc(opcion.dias) + '</div>' : '';
-							return '<div>' + escape(dataOpt.text) + dias + '</div>';
-						}
-					},
-					onChange: function(value) {
-						sincronizarOpcionPdc(index, value);
-					}
-				});
-				pdcAutoTomSelects.push(ts);
-			});
-		};
-
 		var inicializarAutoGenerarListado = function() {
-			var pdcAutoListadoSuggestions = [];
-
 			$(document).off('click.autoGenListado', '#btn_auto_generar_listado').on('click.autoGenListado', '#btn_auto_generar_listado', function(e) {
 				e.preventDefault();
 				$('#modalAutoGenerarListado').modal('show');
@@ -880,161 +603,6 @@
 			});
 		};
 
-		var cargarSugerenciasPdc = function() {
-			var db = document.getElementById('baseDatos').value;
-			var semana = document.getElementById('Max_Semana').value;
-			$('#pdcAutoResumen').removeClass('alert-danger alert-success').addClass('alert-info').html('Analizando actividades del programa general...');
-			destruirTomSelectsPdc();
-			$('#pdcAutoListado').html('');
-			$('#btn_pdc_auto_aplicar').prop('disabled', true);
-
-			$.ajax({
-				method: 'POST',
-				url: '/api/pdc/auto/suggest?db=' + encodeURIComponent(db) + '&semana=' + encodeURIComponent(semana),
-				dataType: 'json'
-			}).done(function(response) {
-				if (!response || response.respuesta !== 'BIEN') {
-					$('#pdcAutoResumen').removeClass('alert-info alert-success').addClass('alert-danger').html(escaparHtml((response && response.mensaje) || 'No se pudieron cargar sugerencias.'));
-					return;
-				}
-
-				pdcAutoSuggestions = response.data.suggestions || [];
-				renderizarSugerenciasPdc(response.data);
-			}).fail(function(xhr) {
-				var mensaje = 'No se pudieron cargar sugerencias.';
-				if (xhr.responseJSON && xhr.responseJSON.mensaje) {
-					mensaje = xhr.responseJSON.mensaje;
-				}
-				$('#pdcAutoResumen').removeClass('alert-info alert-success').addClass('alert-danger').html(escaparHtml(mensaje));
-			});
-		};
-
-		var renderizarCardSugerenciaPdc = function(item, index) {
-			var badge = obtenerBadgeConfianzaPdc(item.confianza);
-			var fuenteFamilia = iconoFuentePdc(fuenteDominantePdc(item.actividades));
-			var motivos = (item.motivosRevision || []).map(escaparHtml).join('<br>');
-			var tieneOpciones = (item.opciones || []).length > 0;
-			var opcionActiva = buscarOpcionPdc(item, item.optionId);
-			var totalActividades = (item.actividades || []).length;
-
-			var selectHtml;
-			if (tieneOpciones) {
-				selectHtml = '<select class="form-control pdc-auto-option" id="pdcAutoOption-' + index + '" data-index="' + index + '">' + construirOpcionesSelectPdc(item) + '</select>';
-			} else {
-				selectHtml = '<select class="form-control pdc-auto-option" id="pdcAutoOption-' + index + '" data-index="' + index + '" disabled><option value="">Sin opciones predefinidas (gestión en Fase 4)</option></select>';
-			}
-
-			var actividades = (item.actividades || []).map(function(actividad) {
-				var icono = iconoFuentePdc(actividad.matchedBy);
-				return '<li>' + (icono ? icono + ' ' : '') + escaparHtml(actividad.id || actividad.consecutivoPrograma) + ' · ' + escaparHtml(limpiarTextoActividad(actividad.actividad)) + ' <small>(' + escaparHtml(actividad.fechaInicio || 'sin fecha') + ')</small></li>';
-			}).join('');
-
-			return '<div class="card pdc-auto-card pdc-auto-card--' + badge.mod + '">'
-				+ '<div class="card-body">'
-				+ '<div class="pdc-auto-card__header">'
-				+ '<label class="pdc-auto-card__check"><input type="checkbox" class="pdc-auto-selected" data-index="' + index + '"' + (item.selected ? ' checked' : '') + (tieneOpciones ? '' : ' disabled') + '> <strong>' + escaparHtml(item.familiaNombre) + '</strong></label>'
-				+ '<div class="pdc-auto-card__badges"><span class="badge ' + badge.clase + '">' + badge.texto + '</span>' + fuenteFamilia + '</div>'
-				+ '</div>'
-				+ '<div class="pdc-auto-card__meta"><small>' + escaparHtml(item.categoria || 'Familia constructiva') + ' · Confianza ' + (parseInt(item.confianza, 10) || 0) + '% · Inicio ' + escaparHtml(item.fechaInicio || 'sin fecha') + '</small></div>'
-				+ '<div class="form-group mt-2 mb-1"><label class="mb-1" for="pdcAutoOption-' + index + '">Modalidad / paquetes</label>' + selectHtml + '</div>'
-				+ '<div class="pdc-auto-dias" id="pdcAutoDias-' + index + '">' + renderizarDiasPdc(opcionActiva ? opcionActiva.dias : null) + '</div>'
-				+ (motivos ? '<div class="alert alert-warning py-2 mb-2"><small>' + motivos + '</small></div>' : '')
-				+ '<details class="pdc-auto-detalle"><summary>Actividades asociadas (' + totalActividades + ')</summary><ul class="mt-2 mb-0 pl-3">' + actividades + '</ul></details>'
-				+ '</div></div>';
-		};
-
-		var renderizarManualReviewPdc = function(lista) {
-			if (!(lista || []).length) {
-				return '';
-			}
-			var items = lista.map(function(actividad) {
-				var detalle = [];
-				detalle.push(escaparHtml(actividad.fechaInicio || 'sin fecha'));
-				if (actividad.motivo) {
-					detalle.push(escaparHtml(actividad.motivo));
-				}
-				return '<li>' + escaparHtml(actividad.id || actividad.consecutivoPrograma) + ' · ' + escaparHtml(limpiarTextoActividad(actividad.actividad)) + ' <small>(' + detalle.join(' · ') + ')</small></li>';
-			}).join('');
-			return '<details class="pdc-auto-manual"><summary><i class="fas fa-question-circle"></i> Actividades sin familia detectada (' + lista.length + ')</summary><ul class="mt-2 mb-0">' + items + '</ul></details>';
-		};
-
-		var renderizarSugerenciasPdc = function(data) {
-			destruirTomSelectsPdc();
-
-			var resumen = 'Actividades del Programa General: <strong>' + data.totalActividades + '</strong> · Familias detectadas: <strong>' + data.familiasSugeridas + '</strong> · Auto-seleccionadas: <strong>' + data.autoSeleccionadas + '</strong> · Revisión: <strong>' + data.requierenRevision + '</strong> · Sin mapeo: <strong>' + data.sinMapeo + '</strong>';
-			$('#pdcAutoResumen').removeClass('alert-danger').addClass('alert-info').html(resumen);
-
-			if (!pdcAutoSuggestions.length) {
-				$('#pdcAutoListado').html('<div class="alert alert-warning">No se encontraron familias configuradas para crear paquetes.</div>' + renderizarManualReviewPdc(data.manualReview));
-				return;
-			}
-
-			var html = pdcAutoSuggestions.map(renderizarCardSugerenciaPdc).join('') + renderizarManualReviewPdc(data.manualReview);
-			$('#pdcAutoListado').html(html);
-			inicializarTomSelectsPdc();
-			$('#btn_pdc_auto_aplicar').prop('disabled', false);
-		};
-
-		var aplicarSugerenciasPdc = function() {
-			var db = document.getElementById('baseDatos').value;
-			var semana = document.getElementById('Max_Semana').value;
-			var seleccionadas = pdcAutoSuggestions.filter(function(item) {
-				return item.selected && item.optionId;
-			});
-
-			if (!seleccionadas.length) {
-				$('#pdcAutoResumen').removeClass('alert-info alert-success').addClass('alert-danger').html('Selecciona al menos una familia con modalidad válida.');
-				return;
-			}
-
-			$('#btn_pdc_auto_aplicar').prop('disabled', true);
-			$('#pdcAutoResumen').removeClass('alert-danger alert-success').addClass('alert-info').html('Creando paquetes en el PDC...');
-
-			$.ajax({
-				method: 'POST',
-				url: '/api/pdc/auto/apply?db=' + encodeURIComponent(db) + '&semana=' + encodeURIComponent(semana),
-				contentType: 'application/json; charset=utf-8',
-				dataType: 'json',
-				data: JSON.stringify({ suggestions: seleccionadas })
-			}).done(function(response) {
-				if (!response || response.respuesta !== 'BIEN') {
-					$('#pdcAutoResumen').removeClass('alert-info alert-success').addClass('alert-danger').html(escaparHtml((response && response.mensaje) || 'No se pudieron crear los paquetes.'));
-					$('#btn_pdc_auto_aplicar').prop('disabled', false);
-					return;
-				}
-
-				var msg = 'Paquetes creados: <strong>' + response.insertados + '</strong> · Omitidos: <strong>' + response.omitidos + '</strong>';
-				if (typeof response.writeBacks === 'number') {
-					msg += ' · Sincronizados: <strong>' + response.writeBacks + '</strong>';
-				}
-				msg += '. Revisa la pestaña Plan de Compras.';
-
-				var conflictos = response.conflictos || [];
-				if (conflictos.length > 0) {
-					msg += '<br><br><strong><i class="fas fa-exclamation-triangle text-warning"></i> Conflictos detectados (' + conflictos.length + '):</strong>';
-					msg += '<div class="table-responsive mt-1"><table class="table table-sm table-bordered mb-0" style="font-size:0.82rem">';
-					msg += '<thead><tr><th>Actividad</th><th>Paquete intentado</th><th>Motivo</th></tr></thead><tbody>';
-					for (var c = 0; c < conflictos.length; c++) {
-						var cf = conflictos[c];
-						msg += '<tr><td>' + escaparHtml(cf.actividad || ('ID ' + cf.actividadId)) + '</td>';
-						msg += '<td>' + escaparHtml(cf.paqueteIntentado || '') + '</td>';
-						msg += '<td>' + escaparHtml(cf.motivo || 'Columnas ocupadas') + '</td></tr>';
-					}
-					msg += '</tbody></table></div>';
-					$('#pdcAutoResumen').removeClass('alert-info alert-danger').addClass('alert-warning').html(msg);
-				} else {
-					$('#pdcAutoResumen').removeClass('alert-info alert-danger').addClass('alert-success').html(msg);
-				}
-			}).fail(function(xhr) {
-				var mensaje = 'No se pudieron crear los paquetes.';
-				if (xhr.responseJSON && xhr.responseJSON.mensaje) {
-					mensaje = xhr.responseJSON.mensaje;
-				}
-				$('#pdcAutoResumen').removeClass('alert-info alert-success').addClass('alert-danger').html(escaparHtml(mensaje));
-				$('#btn_pdc_auto_aplicar').prop('disabled', false);
-			});
-		};
-
 		var cargaParametros = function() {
 			inicializarModalNuevaActividad();
 			inicializarAutoGenerarListado();
@@ -1042,10 +610,6 @@
 			guardarNuevaActividad();
 			guardarCargarExcel();
       eliminar();
-			$(document).off('click.agregarFila').on('click.agregarFila', '#btn_agregar_fila', function(e) {
-				e.preventDefault();
-				agregarFilaVacia();
-			});
 		}
 
 		/* Ejecuta la funcione listar, solo cuando se presiona el botón Listar */
@@ -1222,14 +786,14 @@
 				table.columns.adjust();
 			});
 
-			$("div.toolbarFilaBotones").html('<div class="grupo_botones1" role="group" aria-label="Basic example" style="padding:5; max-width:50%;display:inline-block; "><button id="btn_agregar_fila" class="btn btn-success btn-sm" title="Agregar fila vacía directamente en la tabla" style="margin: auto 5px">Agregar fila <i class="fas fa-plus fa-xs"></i></button><button id="btn_cargarActividadesExcel" class="btn btn-secondary btn-sm" title="Cargar listado de actividades desde Excel" data-toggle="modal" data-target="#modalCargarExcel">Cargar desde Excel <i class="fas fa-upload fa-lg"></i></button><button id="btn_nueva_actividad" class="btn btn-primary btn-sm" title="Registrar nueva actividad del proyecto" data-toggle="modal" data-target="#modalNuevaActividad" style="margin: auto 5px">Nueva Actividad <i class="fas fa-plus fa-lg"></i></button></div><div class="grupo_botones_semanal_madre"  style="padding:5; max-width:69%"><div class="grupo_botones_semanal btn-group" role="group" aria-label="Basic example"><button id="btn_Actividades" type="button" class="btn btn-success btn-sm active" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_listadoActividades&semana='+semana+'\'">Actividades <i class="fas fa-arrow-right fa-m"></i></button><button id="btn_contratos" type="button" class="btn btn-success btn-sm" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_contratos&semana='+semana+'\'">Contratos <i class="fas fa-arrow-right fa-m"></i></button><button id="btn_planCompras" type="button" class="btn btn-success btn-sm" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=planCompras&semana='+semana+'&origen=info_listadoActividades\'">Plan de Compras</button></div></div>');
+			$("div.toolbarFilaBotones").html('<div class="grupo_botones1" role="group" aria-label="Basic example" style="padding:5; max-width:50%;display:inline-block; "><button id="btn_cargarActividadesExcel" class="btn-pdc-modern" title="Cargar listado de actividades desde Excel" data-toggle="modal" data-target="#modalCargarExcel">Cargar desde Excel <i class="fas fa-upload fa-lg"></i></button><button id="btn_nueva_actividad" class="btn-pdc-modern" title="Registrar nueva actividad del proyecto" data-toggle="modal" data-target="#modalNuevaActividad" style="margin: auto 5px">Nueva Actividad <i class="fas fa-plus fa-lg"></i></button></div><div class="grupo_botones_semanal_madre"  style="padding:5; max-width:69%"><div class="grupo_botones_semanal btn-group" role="group" aria-label="Basic example"><button id="btn_Actividades" type="button" class="btn btn-success btn-sm active" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_listadoActividades&semana='+semana+'\'">Actividades <i class="fas fa-arrow-right fa-m"></i></button><button id="btn_contratos" type="button" class="btn btn-success btn-sm" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_contratos&semana='+semana+'\'">Contratos <i class="fas fa-arrow-right fa-m"></i></button><button id="btn_planCompras" type="button" class="btn btn-success btn-sm" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=planCompras&semana='+semana+'&origen=info_listadoActividades\'">Plan de Compras</button></div></div>');
 
 			$("div.toolbarFilaBotones .grupo_botones1")
 				.addClass("ps-toolbar-actions")
 				.removeAttr("style");
 			$("div.toolbarFilaBotones .grupo_botones1 .btn").addClass("ps-btn-gap");
 			if (puedeEditarListadoActividades()) {
-				$("div.toolbarFilaBotones .grupo_botones1").append('<button id="btn_auto_generar_listado" class="btn btn-warning btn-sm ps-btn-gap" title="Auto-generar listado de actividades desde el Programa General">Auto-generar Listado <i class="fas fa-list fa-lg"></i></button>');
+				$("div.toolbarFilaBotones .grupo_botones1").append('<button id="btn_auto_generar_listado" class="btn-pdc-modern ps-btn-gap" title="Auto-generar listado de actividades desde el Programa General"><i class="fas fa-magic"></i> Auto-generar Listado</button>');
 			}
 			$("div.toolbarFilaBotones #btn_nueva_actividad").removeAttr("style");
 			$("div.toolbarFilaBotones .grupo_botones_semanal_madre")
@@ -1239,98 +803,12 @@
 
 			$("div.toolbarFilaMensajes").html('<p id="mensajeActualizacion"></p>');
 
-			$("div.toolbarFiltro").html('<div class="d-flex ml-auto"><label for="input_buscador" class="sr-only">Buscar en listado</label><input id="input_buscador" type="text" class="input_buscador form-control form-control-sm mr-1 ml-auto max-w-60" placeholder="Filtro"><button id="btn_limpiar_buscador" type="button" class="btn btn-danger mr-1 ml-0 d-none max-w-40"><i class="fas fa-times-circle"></i> Limpiar</button></div>');
+			$("div.toolbarFiltro").html('<div class="d-flex ml-auto"><label class="sr-only">Buscar en listado</label><button id="btn_limpiar_buscador" type="button" class="btn-pdc-modern mr-1 ml-0 d-none max-w-40"><i class="fas fa-times-circle"></i> Limpiar</button></div>');
 
 			maestroPermisos(document.getElementById('permiso_canonico').value);
-			activarBuscador("#dt_cliente tbody", table);
 		  obtener_data_editar("#dt_cliente tbody", table);
 		  obtener_id_eliminar("#dt_cliente tbody", table);
 		}
-
-		/* Agrega una fila vacía al inicio de la tabla con campos inline para creación directa */
-		var agregarFilaVacia = function() {
-			if (!puedeEditarListadoActividades()) {
-				return;
-			}
-			var table = $('#dt_cliente').DataTable();
-			var opcionesSelect = <?php echo json_encode($actividadInicioOptionsHtml, JSON_UNESCAPED_UNICODE); ?>;
-			var db = document.getElementById('baseDatos').value;
-
-			var newRowData = {
-				Id: '', codigo: '', actividad: '', descripcionActividad: '',
-				actividadInicio: '', nombreActividadInicio: '',
-				fechaInicio: '', tipoContrato: '', semanaActualizacion: ''
-			};
-			var newNode = table.row.add(newRowData).draw(false).node();
-			$(newNode).addClass('aia-inline-new');
-
-			var htmlActividad = "<input id='new_Actividad' name='Actividad' class='form-control form-control-sm' type='text' placeholder='Nombre actividad' autocomplete='off'>";
-			$(newNode).find('td:eq(2)').html(htmlActividad);
-
-			var htmlDesc = "<input id='new_descripcionActividad' name='descripcionActividad' class='form-control form-control-sm' type='text' placeholder='Descripción' autocomplete='off'>";
-			$(newNode).find('td:eq(3)').html(htmlDesc);
-
-			var htmlActInicio = "<select id='new_actividadInicio' name='actividadInicio' class='form-control form-control-sm'><option value=''></option>" + opcionesSelect + "</select>";
-			$(newNode).find('td:eq(4)').html(htmlActInicio);
-			$(newNode).find('td:eq(5)').html('');
-
-			var htmlTipo = "<span class='text-muted'>Sin asignar</span>";
-			$(newNode).find('td:eq(6)').html(htmlTipo);
-
-			var htmlBotones = "<button type='button' id='btn_guardar_nueva' class='btn btn-success btn-sm btn-action-gap' title='Guardar'><i class='fa fa-save fa-xs'></i></button><button type='button' id='btn_cancelar_nueva' class='btn btn-danger btn-sm btn-action-gap' title='Cancelar'><i class='fa fa-undo fa-xs'></i></button>";
-			$(newNode).find('td:eq(0)').html(htmlBotones);
-
-			configurarSelectActividadInicio('#new_actividadInicio');
-			$('#new_Actividad').focus();
-
-			$(newNode).on('click', '#btn_guardar_nueva', function(e) {
-				e.preventDefault();
-				e.stopPropagation();
-				var actividad = $('#new_Actividad').val();
-				var desc = $('#new_descripcionActividad').val();
-				var actInicio = $('#new_actividadInicio').val();
-				if (!actividad || !desc || !actInicio) {
-					if (typeof AIA !== 'undefined' && AIA.Notice) {
-						AIA.Notice.show({ type: 'warning', title: 'Campos incompletos', message: 'Complete todos los campos para crear la actividad.' });
-					}
-					return;
-				}
-				var semana = document.getElementById('Max_Semana').value;
-				$.ajax({
-					method: "POST",
-					url: "/api/listado-actividades/save?db=" + db,
-					data: {
-						actividad: actividad,
-						descripcionActividad: desc,
-						actividadInicio: actInicio,
-						opcion: "registrar",
-						semana: semana
-					}
-				}).done(function(info) {
-					var json_info = (typeof info === 'string' ? JSON.parse(info) : info);
-					if (json_info.respuesta == "BIEN") {
-						recargarTabla('');
-					}
-					if (typeof mostrar_mensaje === 'function') {
-						mostrar_mensaje(json_info);
-					}
-				});
-			});
-
-			$(newNode).on('click', '#btn_cancelar_nueva', function(e) {
-				e.preventDefault();
-				e.stopPropagation();
-				table.row(newNode).remove().draw(false);
-			});
-
-			$(newNode).on('keydown', '#new_Actividad, #new_descripcionActividad, #new_actividadInicio', function(e) {
-				if (e.keyCode === 13) {
-					$('#btn_guardar_nueva', newNode).click();
-				} else if (e.keyCode === 27) {
-					$('#btn_cancelar_nueva', newNode).click();
-				}
-			});
-		};
 
 		/*Toma los datos de la fila en la que se presionó el botón editar*/
 		var obtener_data_editar = function(tbody, table) {
