@@ -1,5 +1,7 @@
 <?php
 
+use App\Services\RestrictionConfigResolver;
+
 if (!function_exists('ps_weekly_phase_key')) {
     function ps_weekly_phase_key($semanalConfirmada): string
     {
@@ -92,9 +94,9 @@ if (!function_exists('ps_weekly_phase_key')) {
         return ps_is_blank($categoriaCnc) || ps_is_blank($cnc);
     }
 
-    function ps_has_pending_commit_conditions(array $row): bool
+    function ps_has_pending_commit_conditions(array $row, string $projectArea = 'Construccion'): bool
     {
-        $notApplicableOrAtLeast = function (string $col, float $min): bool {
+        $notApplicableOrAtLeast = function (string $col, float $min) use ($row): bool {
             $raw = trim((string) ($row[$col] ?? ''));
             if (strtoupper($raw) === 'N/A' || strtoupper($raw) === 'NO APLICA') {
                 return true;
@@ -110,16 +112,17 @@ if (!function_exists('ps_weekly_phase_key')) {
             return ($value + 0.0001) >= $min;
         };
 
+        $hardColumns = RestrictionConfigResolver::getHardRestrictionColumns($projectArea);
+        $thresholds  = RestrictionConfigResolver::getThresholds($projectArea);
+
         return !(
-            $notApplicableOrAtLeast('D_y_E', 1.0)
-            && $notApplicableOrAtLeast('Materiales', 1.0)
-            && $notApplicableOrAtLeast('MdeO', 1.0)
-            && $notApplicableOrAtLeast('Equipos', 1.0)
-            && $notApplicableOrAtLeast('Predecesora', 0.5)
+            array_reduce($hardColumns, function (bool $carry, string $col) use ($notApplicableOrAtLeast, $thresholds): bool {
+                return $carry && $notApplicableOrAtLeast($col, $thresholds[$col] ?? 1.0);
+            }, true)
         );
     }
 
-    function ps_classify_state(array $row, string $phaseKey): string
+    function ps_classify_state(array $row, string $phaseKey, string $projectArea = 'Construccion'): string
     {
         if (!ps_is_active_row($row)) {
             return 'ps-no-activa';
@@ -136,7 +139,7 @@ if (!function_exists('ps_weekly_phase_key')) {
         $libFlag = ps_to_float($row['Prog_Sin_Restricciones_100'] ?? null, null);
         $sinLiberacion = $libFlag !== null ? ($libFlag > 0) : false;
         if (!$sinLiberacion) {
-            $sinLiberacion = ps_has_pending_commit_conditions($row);
+            $sinLiberacion = ps_has_pending_commit_conditions($row, $projectArea);
         }
 
         $critica = ps_to_float($row['Critica'] ?? null, 0.0);
