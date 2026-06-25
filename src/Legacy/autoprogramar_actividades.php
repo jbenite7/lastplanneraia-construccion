@@ -5,6 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 require_once(PROJECT_ROOT . "/src/Legacy/conexion.php");
 require_once __DIR__ . "/productividad_temporal.php";
+use App\Services\RestrictionConfigResolver;
 
 /** @var Database $db */
 $db = Database::getInstance();
@@ -19,6 +20,10 @@ if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbName)) {
 }
 
 try {
+    // Resolve restriction config once based on project Area
+    $restrictionConfig = RestrictionConfigResolver::resolve($dbName);
+    $isPreConstruccion = $restrictionConfig['isPreConstruccion'];
+
     // 1. Obtener fechas de la semana activa
     $sqlSemana = "SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem FROM {$dbName}_semanas_activas WHERE Semana = ?";
     $stmtSemana = $db->query($sqlSemana, [$semana]);
@@ -42,14 +47,14 @@ try {
 
         return "(UPPER({$text}) IN ('N/A', 'NO APLICA') OR {$normalized} >= {$threshold})";
     };
-    $buildHardEligibilitySql = function (string $prefix = '') use ($restrictionAtLeastSql): string {
-        return '(' . implode(' AND ', [
-            $restrictionAtLeastSql($prefix . 'D_y_E', 1.0),
-            $restrictionAtLeastSql($prefix . 'Materiales', 1.0),
-            $restrictionAtLeastSql($prefix . 'MdeO', 1.0),
-            $restrictionAtLeastSql($prefix . 'Equipos', 1.0),
-            $restrictionAtLeastSql($prefix . 'Predecesora', 0.5),
-        ]) . ')';
+    $buildHardEligibilitySql = function (string $prefix = '') use ($restrictionAtLeastSql, $restrictionConfig): string {
+        $conditions = [];
+        foreach ($restrictionConfig['hardRestrictions'] as $col) {
+            $threshold = $restrictionConfig['thresholds'][$col] ?? 1.0;
+            $conditions[] = $restrictionAtLeastSql($prefix . $col, $threshold);
+        }
+
+        return '(' . implode(' AND ', $conditions) . ')';
     };
     $parseRestrictionRatio = function ($value): ?float {
         if ($value === null) {
@@ -249,8 +254,9 @@ Estado='En Curso' OR Estado='Atrasada' OR Estado='Debe Iniciar'
     $db->query("UPDATE {$dbName}_programacion_semanal SET Prog_Sin_Restricciones_100 = 0 WHERE Semana = ? AND Activa = 'NA'", [$semana]);
 
     // 7. Identificar actividades que no se autoprogramaron por restricciones pendientes
+    $restrictionColsSql = implode(', ', $restrictionConfig['allRestrictions']);
     $sqlRestricciones = "SELECT 
-        Id, Actividad, D_y_E, Materiales, MdeO, Equipos, Predecesora, Pdto_Cons, Modelo
+        Id, Actividad, {$restrictionColsSql}
     FROM {$dbName}_programa_consolidado 
     WHERE Semana = ? AND Titulo = 0 
       AND NOT {$hardEligibilitySql}
@@ -264,17 +270,35 @@ Estado='En Curso' OR Estado='Atrasada' OR Estado='Debe Iniciar'
     $fallidas = $stmtRest->fetchAll(PDO::FETCH_ASSOC);
 
     $alertasRestricciones = [];
-    $hardRestrictionLabels = [
-        'D_y_E' => ['label' => 'D. y Especificaciones', 'threshold' => 1.0],
-        'Materiales' => ['label' => 'Materiales', 'threshold' => 1.0],
-        'MdeO' => ['label' => 'Mano de Obra', 'threshold' => 1.0],
-        'Equipos' => ['label' => 'Equipos', 'threshold' => 1.0],
-        'Predecesora' => ['label' => 'Predecesora', 'threshold' => 0.5],
+    // Build display labels from column names; explicit map for well-known columns
+    $restrictionDisplayLabels = [
+        'D_y_E' => 'D. y Especificaciones',
+        'Materiales' => 'Materiales',
+        'MdeO' => 'Mano de Obra',
+        'Equipos' => 'Equipos',
+        'Predecesora' => 'Predecesora',
+        'Pdto_Cons' => 'Pdto. Constructivo',
+        'Modelo' => 'Modelo BIM',
+        'restriccion_pc_1' => 'Restricción PC 1',
+        'restriccion_pc_2' => 'Restricción PC 2',
+        'restriccion_pc_3' => 'Restricción PC 3',
+        'restriccion_pc_4' => 'Restricción PC 4',
     ];
-    $softRestrictionLabels = [
-        'Pdto_Cons' => ['label' => 'Pdto. Constructivo', 'threshold' => 1.0],
-        'Modelo' => ['label' => 'Modelo BIM', 'threshold' => 1.0],
-    ];
+
+    $hardRestrictionLabels = [];
+    foreach ($restrictionConfig['hardRestrictions'] as $col) {
+        $hardRestrictionLabels[$col] = [
+            'label' => $restrictionDisplayLabels[$col] ?? $col,
+            'threshold' => $restrictionConfig['thresholds'][$col] ?? 1.0,
+        ];
+    }
+    $softRestrictionLabels = [];
+    foreach ($restrictionConfig['softRestrictions'] as $col) {
+        $softRestrictionLabels[$col] = [
+            'label' => $restrictionDisplayLabels[$col] ?? $col,
+            'threshold' => $restrictionConfig['thresholds'][$col] ?? 1.0,
+        ];
+    }
 
     foreach ($fallidas as $row) {
         $pendientes = $buildRestrictionAlertParts($row, $hardRestrictionLabels);
