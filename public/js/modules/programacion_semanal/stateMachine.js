@@ -136,12 +136,44 @@
     return ratio !== null && ratio + 0.0001 >= minimum;
   }
 
+  function getHardRestrictions() {
+    var config = window.__RESTRICTION_CONFIG__;
+    if (config && Array.isArray(config.restrictions) && config.restrictions.length > 0) {
+      var hardKeys = Array.isArray(config.hardRestrictions) ? config.hardRestrictions : null;
+      var result = [];
+      for (var i = 0; i < config.restrictions.length; i++) {
+        var r = config.restrictions[i];
+        var isHard = r.type === 'hard' || (hardKeys && hardKeys.indexOf(r.key) > -1);
+        if (isHard) {
+          result.push({
+            name: r.key,
+            threshold: typeof r.threshold === 'number' ? r.threshold / 100 : 1
+          });
+        }
+      }
+      if (result.length > 0) {
+        return result;
+      }
+    }
+    // Fallback to Construction defaults
+    return [
+      { name: 'D_y_E', threshold: 1 },
+      { name: 'Materiales', threshold: 1 },
+      { name: 'MdeO', threshold: 1 },
+      { name: 'Equipos', threshold: 1 },
+      { name: 'Predecesora', threshold: 0.5 }
+    ];
+  }
+
   function hasPendingCommitConditions(rowData) {
-    return !(restrictionMeets(rowData, 'D_y_E', 1)
-      && restrictionMeets(rowData, 'Materiales', 1)
-      && restrictionMeets(rowData, 'MdeO', 1)
-      && restrictionMeets(rowData, 'Equipos', 1)
-      && restrictionMeets(rowData, 'Predecesora', 0.5));
+    var hardRestrictions = getHardRestrictions();
+    for (var i = 0; i < hardRestrictions.length; i++) {
+      var r = hardRestrictions[i];
+      if (!restrictionMeets(rowData, r.name, r.threshold)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   function classifyState(rowData, phaseKey) {
