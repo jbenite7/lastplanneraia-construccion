@@ -145,6 +145,10 @@
                         <span class="badge badge-warning badge-status mr-2" style="font-size: 0.65rem;">
                             <i class="fas fa-hard-hat mr-1"></i>Pre-Construcción
                         </span>
+                        <?php elseif (($proyecto['Area'] ?? 'Construccion') === 'Construccion'): ?>
+                        <span class="badge badge-info badge-status mr-2" style="font-size: 0.65rem;">
+                            <i class="fas fa-hard-hat mr-1"></i>Construcción
+                        </span>
                         <?php endif; ?>
                         <span class="badge badge-success badge-status"><?php echo $proyecto['Activo'] == 1 ? 'Active' : 'Inactive'; ?></span>
                     </div>
