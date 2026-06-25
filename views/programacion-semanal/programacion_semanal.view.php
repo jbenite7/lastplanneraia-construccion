@@ -1,15 +1,29 @@
 <?php
-$categoriasCP = [
-    "Buen Rendimiento",
-    "Oportunidad Detectada",
-    "Mano de Obra Disponible",
-    "Materiales Disponibles",
-    "Equipos Disponibles",
-    "Disenos Listos",
-    "Gestion Resuelta",
-    "Condiciones Favorables",
-    "Compensacion de Frente"
-];
+if (($area ?? 'Construccion') === 'Pre-Construccion') {
+    $categoriasCP = [
+        "Buen Rendimiento",
+        "Oportunidad Detectada",
+        "Disenos Listos",
+        "Modelacion BIM Disponible",
+        "Presupuesto Disponible",
+        "Contratacion Disponible",
+        "Tramites Resueltos",
+        "Condiciones Favorables",
+        "Compensacion de Frente"
+    ];
+} else {
+    $categoriasCP = [
+        "Buen Rendimiento",
+        "Oportunidad Detectada",
+        "Mano de Obra Disponible",
+        "Materiales Disponibles",
+        "Equipos Disponibles",
+        "Disenos Listos",
+        "Gestion Resuelta",
+        "Condiciones Favorables",
+        "Compensacion de Frente"
+    ];
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -1115,13 +1129,21 @@ $categoriasCP = [
                         <label for="psDeleteCategoriaCNP">Categoria</label>
                         <select id="psDeleteCategoriaCNP" class="form-control">
                             <option value=""></option>
-                            <option value="Programación">Programacion</option>
-                            <option value="Mano de Obra">Mano de Obra</option>
-                            <option value="Materiales">Materiales</option>
-                            <option value="Equipos">Equipos</option>
-                            <option value="Diseños">Diseños</option>
-                            <option value="Administrativas">Administrativas</option>
-                            <option value="Causas Exógenas">Causas Exógenas</option>
+                            <?php if (($area ?? 'Construccion') === 'Pre-Construccion'): ?>
+                                <option value="Diseños">Diseños</option>
+                                <option value="Modelación">Modelación</option>
+                                <option value="Presupuesto">Presupuesto</option>
+                                <option value="Contratación">Contratación</option>
+                                <option value="Trámites">Trámites</option>
+                            <?php else: ?>
+                                <option value="Programación">Programacion</option>
+                                <option value="Mano de Obra">Mano de Obra</option>
+                                <option value="Materiales">Materiales</option>
+                                <option value="Equipos">Equipos</option>
+                                <option value="Diseños">Diseños</option>
+                                <option value="Administrativas">Administrativas</option>
+                                <option value="Causas Exógenas">Causas Exógenas</option>
+                            <?php endif; ?>
                         </select>
                     </div>
                     <div class="form-group">
