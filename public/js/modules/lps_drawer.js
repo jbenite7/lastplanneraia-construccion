@@ -39,6 +39,12 @@ window.LPSContextualDrawer = (function() {
     if (_restrictionConfig) return Promise.resolve(_restrictionConfig);
     if (_configFetchPromise) return _configFetchPromise;
 
+    // Fast path: check window.__RESTRICTION_CONFIG__ (set by PHP view before scripts load)
+    if (window.__RESTRICTION_CONFIG__ && Array.isArray(window.__RESTRICTION_CONFIG__.restrictions) && window.__RESTRICTION_CONFIG__.restrictions.length > 0) {
+      _restrictionConfig = window.__RESTRICTION_CONFIG__;
+      return Promise.resolve(_restrictionConfig);
+    }
+
     _configFetchPromise = fetch('/api/general/restriction-config')
       .then(function(res) { return res.json(); })
       .then(function(config) {
@@ -94,6 +100,34 @@ window.LPSContextualDrawer = (function() {
         threshold: r.threshold / 100
       };
     });
+  }
+
+  function getRestrictionDefinitions() {
+    var config = window.__RESTRICTION_CONFIG__ || _restrictionConfig;
+    if (config && config.restrictions) {
+      var hard = [], soft = [];
+      config.restrictions.forEach(function(r) {
+        var entry = { name: r.key, threshold: (r.threshold || 100) / 100 };
+        if (r.type === 'hard') hard.push(entry);
+        else soft.push(entry);
+      });
+      if (hard.length > 0 || soft.length > 0) {
+        return { hardRestrictions: hard, softRestrictions: soft };
+      }
+    }
+    return {
+      hardRestrictions: [
+        { name: 'D_y_E', threshold: 1.0 },
+        { name: 'Materiales', threshold: 1.0 },
+        { name: 'MdeO', threshold: 1.0 },
+        { name: 'Equipos', threshold: 1.0 },
+        { name: 'Predecesora', threshold: 0.5 }
+      ],
+      softRestrictions: [
+        { name: 'Pdto_Cons', threshold: 1.0 },
+        { name: 'Modelo', threshold: 1.0 }
+      ]
+    };
   }
 
   const PG_STATE_LABELS = {

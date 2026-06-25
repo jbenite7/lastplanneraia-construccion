@@ -36,6 +36,14 @@ window.HOTActualizarModule = (function() {
         'codigo_actividad': true
     };
 
+    function getSilentFields() {
+        var config = window.__RESTRICTION_CONFIG__;
+        if (config && config.restrictions) {
+            return config.restrictions.map(function(r) { return r.key; });
+        }
+        return ['D_y_E', 'Materiales', 'MdeO', 'Equipos', 'Predecesora', 'Pdto_Cons', 'Modelo'];
+    }
+
     // Obtenemos el JSON de opciones pre-cargado desde PHP
     var sourceDataHistorica = [];
     try {
@@ -572,7 +580,7 @@ window.HOTActualizarModule = (function() {
                 if (res.estado !== undefined) hot.setDataAtRowProp(visualRowIndex, 'Estado', res.estado, 'internal');
                 
                 // Herencia de las 7 restricciones individuales (persistidas pero no visibles)
-                const silentFields = ['D_y_E', 'Materiales', 'MdeO', 'Equipos', 'Predecesora', 'Pdto_Cons', 'Modelo'];
+                const silentFields = getSilentFields();
                 silentFields.forEach(field => {
                     if (res[field] !== undefined) hot.setDataAtRowProp(visualRowIndex, field, res[field], 'internal');
                 });
