@@ -16,6 +16,8 @@ if (!isset($dbInstance)) {
 
 require_once __DIR__ . '/_pdc_functions.php';
 
+use App\Services\RestrictionConfigResolver;
+
 $db = $_GET['db'] ?? $_POST['db'] ?? '';
 $opcion = $_POST["opcion"] ?? "nueva_sem";
 $f_inicio_sem_raw = $_POST["f_inicio_sem"] ?? '';
@@ -30,6 +32,9 @@ rbac_guard_require_permission('lps.semana.crear');
 if (!preg_match('/^[a-zA-Z0-9_]+$/', $db)) {
     die(json_encode(["respuesta" => "ERROR", "mensaje" => "Nombre de base de datos inválido."]));
 }
+
+$restrictionConfig = RestrictionConfigResolver::resolve($db);
+$isPreConstruccion = $restrictionConfig['isPreConstruccion'];
 
 try {
     $stmt = $dbInstance->query("SELECT COUNT(*) AS conteo FROM {$db}_semanas_activas");
@@ -64,12 +69,21 @@ try {
                 return;
             }
 
-            $sqlCopy = "INSERT INTO {$db}_programa_consolidado(Consecutivo, Semana, Consecutivo_en_Programa, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin, Ruta_Critica, medir_productividad, Ejecutado, Estado, Semanas_Inicio, Estado_Restricciones, D_y_E, Materiales, MdeO, Equipos, Predecesora, Pdto_Cons, Modelo, Responsable_AIA, Observaciones, Ult_Act_Est, Ult_Act_Restr, Ejecutado_Siguiente_Semana) 
-                        SELECT NULL, ?, Consecutivo, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin, Ruta_Critica, 0, IFNULL(Ejecutado, 0), Estado, IFNULL(Semanas_Inicio, 0), IFNULL(Estado_Restricciones, '0'), IFNULL(D_y_E, '0'), IFNULL(Materiales, '0'), IFNULL(MdeO, '0'), IFNULL(Equipos, '0'), IFNULL(Predecesora, '0'), IFNULL(Pdto_Cons, '0'), IFNULL(Modelo, '0'), Responsable_AIA, Observaciones, Ult_Act_Est, Ult_Act_Restr, IFNULL(Ejecutado, 0) FROM {$db}_programa";
+            if ($isPreConstruccion) {
+                $sqlCopy = "INSERT INTO {$db}_programa_consolidado(Consecutivo, Semana, Consecutivo_en_Programa, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin, Ruta_Critica, medir_productividad, Ejecutado, Estado, Semanas_Inicio, Estado_Restricciones, restriccion_pc_1, restriccion_pc_2, restriccion_pc_3, restriccion_pc_4, Responsable_AIA, Observaciones, Ult_Act_Est, Ult_Act_Restr, Ejecutado_Siguiente_Semana)
+                            SELECT NULL, ?, Consecutivo, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin, Ruta_Critica, 0, IFNULL(Ejecutado, 0), Estado, IFNULL(Semanas_Inicio, 0), IFNULL(Estado_Restricciones, '0'), IFNULL(restriccion_pc_1, '0%'), IFNULL(restriccion_pc_2, '0%'), IFNULL(restriccion_pc_3, '0%'), IFNULL(restriccion_pc_4, '0%'), Responsable_AIA, Observaciones, Ult_Act_Est, Ult_Act_Restr, IFNULL(Ejecutado, 0) FROM {$db}_programa";
+            } else {
+                $sqlCopy = "INSERT INTO {$db}_programa_consolidado(Consecutivo, Semana, Consecutivo_en_Programa, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin, Ruta_Critica, medir_productividad, Ejecutado, Estado, Semanas_Inicio, Estado_Restricciones, D_y_E, Materiales, MdeO, Equipos, Predecesora, Pdto_Cons, Modelo, Responsable_AIA, Observaciones, Ult_Act_Est, Ult_Act_Restr, Ejecutado_Siguiente_Semana)
+                            SELECT NULL, ?, Consecutivo, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin, Ruta_Critica, 0, IFNULL(Ejecutado, 0), Estado, IFNULL(Semanas_Inicio, 0), IFNULL(Estado_Restricciones, '0'), IFNULL(D_y_E, '0'), IFNULL(Materiales, '0'), IFNULL(MdeO, '0'), IFNULL(Equipos, '0'), IFNULL(Predecesora, '0'), IFNULL(Pdto_Cons, '0'), IFNULL(Modelo, '0'), Responsable_AIA, Observaciones, Ult_Act_Est, Ult_Act_Restr, IFNULL(Ejecutado, 0) FROM {$db}_programa";
+            }
             $dbInstance->query($sqlCopy, [$semana_crear]);
             $normalizationService = new \App\Services\ProgramaConsolidadoNormalizationService($dbInstance);
             $normalizationService->normalizeChapters($db, $semana_crear);
-            $sqlReset = "UPDATE {$db}_programa_consolidado SET Semanas_Inicio=NULL, medir_productividad=NULL, unidad=NULL, cantidad_ppto=NULL, codigo_actividad=NULL, D_y_E='0', Materiales='0', MdeO='0', Equipos='0', Predecesora='0', Pdto_Cons='0', Modelo='0', Sub_Contratista=NULL, Responsable_AIA=NULL, Observaciones=NULL, Ult_Act_Est=NULL, Ult_Act_Restr=NULL, Activa=0 WHERE Semana = ? AND Titulo=1";
+            if ($isPreConstruccion) {
+                $sqlReset = "UPDATE {$db}_programa_consolidado SET Semanas_Inicio=NULL, medir_productividad=NULL, unidad=NULL, cantidad_ppto=NULL, codigo_actividad=NULL, restriccion_pc_1='0%', restriccion_pc_2='0%', restriccion_pc_3='0%', restriccion_pc_4='0%', Sub_Contratista=NULL, Responsable_AIA=NULL, Observaciones=NULL, Ult_Act_Est=NULL, Ult_Act_Restr=NULL, Activa=0 WHERE Semana = ? AND Titulo=1";
+            } else {
+                $sqlReset = "UPDATE {$db}_programa_consolidado SET Semanas_Inicio=NULL, medir_productividad=NULL, unidad=NULL, cantidad_ppto=NULL, codigo_actividad=NULL, D_y_E='0', Materiales='0', MdeO='0', Equipos='0', Predecesora='0', Pdto_Cons='0', Modelo='0', Sub_Contratista=NULL, Responsable_AIA=NULL, Observaciones=NULL, Ult_Act_Est=NULL, Ult_Act_Restr=NULL, Activa=0 WHERE Semana = ? AND Titulo=1";
+            }
             $dbInstance->query($sqlReset, [$semana_crear]);
 
         } else {
@@ -84,11 +98,18 @@ try {
             }
 
             if ($maxSemanaProgramaConsolidado == $semana_crear) {
-                $campos = "Ejecutado, Estado, Semanas_Inicio, Estado_Restricciones, D_y_E, Materiales, MdeO, Equipos, Predecesora, Pdto_Cons, Modelo, Sub_Contratista, Responsable_AIA, Observaciones, Ult_Act_Est, Ult_Act_Restr, Activa, Ejecutado_Siguiente_Semana, codigo_actividad, medir_productividad, cantidad_ppto, unidad";
+                if ($isPreConstruccion) {
+                    $campos = "Ejecutado, Estado, Semanas_Inicio, Estado_Restricciones, restriccion_pc_1, restriccion_pc_2, restriccion_pc_3, restriccion_pc_4, Sub_Contratista, Responsable_AIA, Observaciones, Ult_Act_Est, Ult_Act_Restr, Activa, Ejecutado_Siguiente_Semana, codigo_actividad, medir_productividad, cantidad_ppto, unidad";
+                } else {
+                    $campos = "Ejecutado, Estado, Semanas_Inicio, Estado_Restricciones, D_y_E, Materiales, MdeO, Equipos, Predecesora, Pdto_Cons, Modelo, Sub_Contratista, Responsable_AIA, Observaciones, Ult_Act_Est, Ult_Act_Restr, Activa, Ejecutado_Siguiente_Semana, codigo_actividad, medir_productividad, cantidad_ppto, unidad";
+                }
+                $ifnullCheck = $isPreConstruccion
+                    ? ['restriccion_pc_1', 'restriccion_pc_2', 'restriccion_pc_3', 'restriccion_pc_4', 'Ejecutado', 'Estado_Restricciones']
+                    : ['D_y_E', 'Materiales', 'MdeO', 'Equipos', 'Predecesora', 'Pdto_Cons', 'Modelo', 'Ejecutado', 'Estado_Restricciones'];
                 $setClause = "";
                 foreach (explode(',', $campos) as $campoRaw) {
                     $campo = trim($campoRaw);
-                    if (in_array($campo, ['D_y_E', 'Materiales', 'MdeO', 'Equipos', 'Predecesora', 'Pdto_Cons', 'Modelo', 'Ejecutado', 'Estado_Restricciones'])) {
+                    if (in_array($campo, $ifnullCheck)) {
                         $setClause .= "dest.$campo = IFNULL(src.$campo, 0), ";
                     } else {
                         $setClause .= "dest.$campo = src.$campo, ";
@@ -107,14 +128,21 @@ try {
                 $dbInstance->query($sqlReprog, [$semana_crear, $semana_crear]);
 
             } else {
-                $cols = "Consecutivo_en_Programa, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin, Ruta_Critica, unidad, cantidad_ppto, codigo_actividad, medir_productividad, Ejecutado, Estado, Semanas_Inicio, Estado_Restricciones, D_y_E, Materiales, MdeO, Equipos, Predecesora, Pdto_Cons, Modelo, Sub_Contratista, Responsable_AIA, Observaciones, Ult_Act_Est, Ult_Act_Restr, Ejecutado_Siguiente_Semana, programaAnteriorAsociar";
+                if ($isPreConstruccion) {
+                    $cols = "Consecutivo_en_Programa, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin, Ruta_Critica, unidad, cantidad_ppto, codigo_actividad, medir_productividad, Ejecutado, Estado, Semanas_Inicio, Estado_Restricciones, restriccion_pc_1, restriccion_pc_2, restriccion_pc_3, restriccion_pc_4, Sub_Contratista, Responsable_AIA, Observaciones, Ult_Act_Est, Ult_Act_Restr, Ejecutado_Siguiente_Semana, programaAnteriorAsociar";
+                } else {
+                    $cols = "Consecutivo_en_Programa, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin, Ruta_Critica, unidad, cantidad_ppto, codigo_actividad, medir_productividad, Ejecutado, Estado, Semanas_Inicio, Estado_Restricciones, D_y_E, Materiales, MdeO, Equipos, Predecesora, Pdto_Cons, Modelo, Sub_Contratista, Responsable_AIA, Observaciones, Ult_Act_Est, Ult_Act_Restr, Ejecutado_Siguiente_Semana, programaAnteriorAsociar";
+                }
 
                 // Generate safe select columns dealing with potential NULLs for NOT NULL columns
                 $arrCols = explode(', ', $cols);
                 $arrSelect = [];
+                $ifnullCheckCols = $isPreConstruccion
+                    ? ['restriccion_pc_1', 'restriccion_pc_2', 'restriccion_pc_3', 'restriccion_pc_4', 'Ejecutado', 'Estado_Restricciones']
+                    : ['D_y_E', 'Materiales', 'MdeO', 'Equipos', 'Predecesora', 'Pdto_Cons', 'Modelo', 'Ejecutado', 'Estado_Restricciones'];
                 foreach ($arrCols as $c) {
                     $c = trim($c);
-                    if (in_array($c, ['D_y_E', 'Materiales', 'MdeO', 'Equipos', 'Predecesora', 'Pdto_Cons', 'Modelo', 'Ejecutado', 'Estado_Restricciones'])) {
+                    if (in_array($c, $ifnullCheckCols)) {
                         $arrSelect[] = "IFNULL($c, 0)";
                     } else {
                         $arrSelect[] = $c;
@@ -129,8 +157,13 @@ try {
 
             $normalizationService = new \App\Services\ProgramaConsolidadoNormalizationService($dbInstance);
             $normalizationService->normalizeChapters($db, $semana_crear);
-            $dbInstance->query("UPDATE {$db}_programa_consolidado SET Semanas_Inicio=NULL, medir_productividad=NULL, unidad=NULL, cantidad_ppto=NULL, codigo_actividad=NULL, D_y_E='0', Materiales='0', MdeO='0', Equipos='0', Predecesora='0', Pdto_Cons='0', Modelo='0', Sub_Contratista=NULL, Responsable_AIA=NULL, Observaciones=NULL, Ult_Act_Est=NULL, Ult_Act_Restr=NULL, Activa=0 WHERE Semana = ? AND Titulo=1", [$semana_crear]);
-            $dbInstance->query("UPDATE {$db}_programa_consolidado SET Ejecutado = 0, Estado_Restricciones = '0', D_y_E = '0', Materiales = '0', MdeO = '0', Equipos = '0', Predecesora = '0', Pdto_Cons = '0', Modelo = '0' WHERE Ejecutado IS NULL AND Semana = ? AND Titulo=0", [$semana_crear]);
+            if ($isPreConstruccion) {
+                $dbInstance->query("UPDATE {$db}_programa_consolidado SET Semanas_Inicio=NULL, medir_productividad=NULL, unidad=NULL, cantidad_ppto=NULL, codigo_actividad=NULL, restriccion_pc_1='0%', restriccion_pc_2='0%', restriccion_pc_3='0%', restriccion_pc_4='0%', Sub_Contratista=NULL, Responsable_AIA=NULL, Observaciones=NULL, Ult_Act_Est=NULL, Ult_Act_Restr=NULL, Activa=0 WHERE Semana = ? AND Titulo=1", [$semana_crear]);
+                $dbInstance->query("UPDATE {$db}_programa_consolidado SET Ejecutado = 0, Estado_Restricciones = '0', restriccion_pc_1 = '0%', restriccion_pc_2 = '0%', restriccion_pc_3 = '0%', restriccion_pc_4 = '0%' WHERE Ejecutado IS NULL AND Semana = ? AND Titulo=0", [$semana_crear]);
+            } else {
+                $dbInstance->query("UPDATE {$db}_programa_consolidado SET Semanas_Inicio=NULL, medir_productividad=NULL, unidad=NULL, cantidad_ppto=NULL, codigo_actividad=NULL, D_y_E='0', Materiales='0', MdeO='0', Equipos='0', Predecesora='0', Pdto_Cons='0', Modelo='0', Sub_Contratista=NULL, Responsable_AIA=NULL, Observaciones=NULL, Ult_Act_Est=NULL, Ult_Act_Restr=NULL, Activa=0 WHERE Semana = ? AND Titulo=1", [$semana_crear]);
+                $dbInstance->query("UPDATE {$db}_programa_consolidado SET Ejecutado = 0, Estado_Restricciones = '0', D_y_E = '0', Materiales = '0', MdeO = '0', Equipos = '0', Predecesora = '0', Pdto_Cons = '0', Modelo = '0' WHERE Ejecutado IS NULL AND Semana = ? AND Titulo=0", [$semana_crear]);
+            }
 
 
 
