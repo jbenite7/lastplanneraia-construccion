@@ -5,6 +5,7 @@ namespace App\Controllers\Api;
 use App\Core\Lps\LpsService;
 use App\Services\ProgramChangeDetector;
 use App\Services\ProgramaConsolidadoNormalizationService;
+use App\Services\RestrictionConfigResolver;
 use App\Services\WeeklyRealProgressCarryoverService;
 use PDO;
 use Throwable;
@@ -54,7 +55,21 @@ class SemanalApiController
                 $Fecha_Inicio_Sem = date("Y-m-d", strtotime($dataSemanas["Fecha_Inicio_Sem"] ?? 'now'));
                 $Fecha_Fin_Sem = date("Y-m-d", strtotime($dataSemanas["Fecha_Fin_Sem"] ?? 'now'));
 
-                $queryData = "SELECT ps.*, pc.D_y_E AS restr_D_y_E, pc.Materiales AS restr_Materiales, pc.MdeO AS restr_MdeO, pc.Equipos AS restr_Equipos, pc.Predecesora AS restr_Predecesora, pc.Pdto_Cons AS restr_Pdto_Cons, pc.Modelo AS restr_Modelo
+                // Resolve restriction columns based on project Area
+                try {
+                    $restrConfig = RestrictionConfigResolver::resolve($dbPrefix);
+                    $area = $restrConfig['area'];
+                } catch (\Throwable $e) {
+                    $area = 'Construccion';
+                }
+                $restrictionColumns = RestrictionConfigResolver::getAllRestrictionColumns($area);
+                $restrictionSelects = array_map(
+                    static fn(string $col) => "pc.{$col} AS restr_{$col}",
+                    $restrictionColumns
+                );
+                $restrictionSelectSql = implode(', ', $restrictionSelects);
+
+                $queryData = "SELECT ps.*, {$restrictionSelectSql}
                     FROM {$dbPrefix}_programacion_semanal ps
                     LEFT JOIN {$dbPrefix}_programa_consolidado pc
                       ON ps.Semana = pc.Semana
