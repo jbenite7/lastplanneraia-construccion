@@ -5,6 +5,7 @@ namespace App\Services;
 use Database;
 use Exception;
 use PDO;
+use App\Services\RestrictionConfigResolver;
 
 class ReportProcessor
 {
@@ -618,16 +619,6 @@ class ReportProcessor
         $totalRest = count($proyectos);
         $restIdx = 0;
 
-        $restricciones = [
-            'D_y_E' => 'D_y_E',
-            'Materiales' => 'Materiales',
-            'MdeO' => 'MdeO',
-            'Equipos' => 'Equipos',
-            'Predecesora' => 'Predecesora',
-            'Pdto_Cons' => 'Pdto_Cons',
-            'Modelo' => 'Modelo',
-        ];
-
         foreach ($proyectos as $data1) {
             try {
                 $proyecto = $data1["Proyecto_Proceso"];
@@ -637,6 +628,62 @@ class ReportProcessor
                 if ($this->collectInvalidDbPrefixMessage($dbPrefix, $proyecto, $messages)) {
                     $this->reportProgress('Restricciones', $proyecto, $restIdx, $totalRest, 'skip');
                     continue;
+                }
+
+                // Resolve restriction config per project
+                try {
+                    $restrConfig = RestrictionConfigResolver::resolve($dbPrefix);
+                    $area = $restrConfig['area'];
+                } catch (\Throwable $e) {
+                    error_log("ReportProcessor: RestrictionConfigResolver failed for {$dbPrefix}: " . $e->getMessage());
+                    $area = 'Construccion';
+                }
+
+                // Build restriction label => column map based on Area
+                if ($area === 'Pre-Construccion') {
+                    $pcLabel2 = 'Restricción 2';
+                    $pcLabel3 = 'Restricción 3';
+                    $pcLabel4 = 'Restricción 4';
+
+                    try {
+                        $stmtPc = $this->db->query(
+                            "SELECT pc_restr_2_nombre, pc_restr_3_nombre, pc_restr_4_nombre
+                             FROM general_proyectos_procesos
+                             WHERE Base_de_Datos = ? LIMIT 1",
+                            [$dbPrefix]
+                        );
+                        $proyectoPc = $stmtPc->fetch(PDO::FETCH_ASSOC);
+                        if ($proyectoPc) {
+                            if (!empty($proyectoPc['pc_restr_2_nombre'])) {
+                                $pcLabel2 = $proyectoPc['pc_restr_2_nombre'];
+                            }
+                            if (!empty($proyectoPc['pc_restr_3_nombre'])) {
+                                $pcLabel3 = $proyectoPc['pc_restr_3_nombre'];
+                            }
+                            if (!empty($proyectoPc['pc_restr_4_nombre'])) {
+                                $pcLabel4 = $proyectoPc['pc_restr_4_nombre'];
+                            }
+                        }
+                    } catch (\Throwable $e) {
+                        error_log("ReportProcessor: Error loading PC restriction labels for {$dbPrefix}: " . $e->getMessage());
+                    }
+
+                    $restricciones = [
+                        'Predecesora' => 'restriccion_pc_1',
+                        $pcLabel2 => 'restriccion_pc_2',
+                        $pcLabel3 => 'restriccion_pc_3',
+                        $pcLabel4 => 'restriccion_pc_4',
+                    ];
+                } else {
+                    $restricciones = [
+                        'D_y_E' => 'D_y_E',
+                        'Materiales' => 'Materiales',
+                        'MdeO' => 'MdeO',
+                        'Equipos' => 'Equipos',
+                        'Predecesora' => 'Predecesora',
+                        'Pdto_Cons' => 'Pdto_Cons',
+                        'Modelo' => 'Modelo',
+                    ];
                 }
 
                 $restriccionesCount = 0;

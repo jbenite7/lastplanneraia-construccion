@@ -5,6 +5,7 @@ namespace App\Controllers\Gestion;
 use App\Controllers\BaseController;
 use App\Core\Notifications\NotificationType;
 use App\Services\NotificationService;
+use App\Services\RestrictionConfigResolver;
 use Exception;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Border;
@@ -495,7 +496,63 @@ class ReportController extends BaseController
 
         require_once PROJECT_ROOT . '/src/Legacy/estado_programacion_intermedia.php';
 
-        $tabla = [["Semana", "Consecutivo", "Id", "Actividad", "Semanas al Inicio", "Ejecutado", "Diseños y Especif.", "Materiales", "Mano de Obra", "Equipos", "Predecesoras", "Proced. Constructivo", "Modelación BIM", "% Liberación"]];
+        // Resolve restriction config based on project Area
+        try {
+            $restrConfig = RestrictionConfigResolver::resolve($dbName);
+            $area = $restrConfig['area'];
+        } catch (\Throwable $e) {
+            error_log("ReportController: RestrictionConfigResolver failed for {$dbName}: " . $e->getMessage());
+            $area = 'Construccion';
+        }
+
+        // Build dynamic restriction labels and column names
+        $restrictionColumns = [];
+        $restrictionLabels = [];
+
+        if ($area === 'Pre-Construccion') {
+            // PC labels: "Predecesora" for restriccion_pc_1 + dynamic names from DB
+            $pcLabel2 = 'Restricción 2';
+            $pcLabel3 = 'Restricción 3';
+            $pcLabel4 = 'Restricción 4';
+
+            try {
+                $stmtPc = $db->query(
+                    "SELECT pc_restr_2_nombre, pc_restr_3_nombre, pc_restr_4_nombre
+                     FROM general_proyectos_procesos
+                     WHERE Base_de_Datos = :db LIMIT 1",
+                    [':db' => $dbName]
+                );
+                $proyectoPc = $stmtPc->fetch(\PDO::FETCH_ASSOC);
+                if ($proyectoPc) {
+                    if (!empty($proyectoPc['pc_restr_2_nombre'])) {
+                        $pcLabel2 = $proyectoPc['pc_restr_2_nombre'];
+                    }
+                    if (!empty($proyectoPc['pc_restr_3_nombre'])) {
+                        $pcLabel3 = $proyectoPc['pc_restr_3_nombre'];
+                    }
+                    if (!empty($proyectoPc['pc_restr_4_nombre'])) {
+                        $pcLabel4 = $proyectoPc['pc_restr_4_nombre'];
+                    }
+                }
+            } catch (\Throwable $e) {
+                error_log("ReportController: Error loading PC restriction labels: " . $e->getMessage());
+            }
+
+            $restrictionColumns = ['restriccion_pc_1', 'restriccion_pc_2', 'restriccion_pc_3', 'restriccion_pc_4'];
+            $restrictionLabels = ['Predecesora', $pcLabel2, $pcLabel3, $pcLabel4];
+        } else {
+            // Construccion: standard columns
+            $restrictionColumns = ['D_y_E', 'Materiales', 'MdeO', 'Equipos', 'Predecesora', 'Pdto_Cons', 'Modelo'];
+            $restrictionLabels = ['Diseños y Especif.', 'Materiales', 'Mano de Obra', 'Equipos', 'Predecesoras', 'Proced. Constructivo', 'Modelación BIM'];
+        }
+
+        // Build header: fixed columns + dynamic restriction columns + % Liberación
+        $headerRow = array_merge(
+            ["Semana", "Consecutivo", "Id", "Actividad", "Semanas al Inicio", "Ejecutado"],
+            $restrictionLabels,
+            ["% Liberación"]
+        );
+        $tabla = [$headerRow];
         $tabla2 = [["Sub-Contratista", "Responsable AIA", "Observaciones"]];
         $restrictionRowStyles = [];
 
@@ -549,14 +606,12 @@ class ReportController extends BaseController
             $stateKey = \pi_classify_state($data);
             $restrictionRowStyles[] = $stateToExcelStyle[$stateKey] ?? 'pi-neutral';
 
-            $tabla[] = [
-                $data["Semana"], $data["Consecutivo"], $data["Id"], $Actividad,
-                $data["Semanas_Inicio"], $Ejecutado,
-                $formatPercent($data["D_y_E"]), $formatPercent($data["Materiales"]),
-                $formatPercent($data["MdeO"]), $formatPercent($data["Equipos"]),
-                $formatPercent($data["Predecesora"]), $formatPercent($data["Pdto_Cons"]),
-                $formatPercent($data["Modelo"]), $Estado_Restricciones,
-            ];
+            $tabla[] = array_merge(
+                [$data["Semana"], $data["Consecutivo"], $data["Id"], $Actividad,
+                 $data["Semanas_Inicio"], $Ejecutado],
+                array_map(fn($col) => $formatPercent($data[$col] ?? null), $restrictionColumns),
+                [$Estado_Restricciones],
+            );
 
             $tabla2[] = [$data["Sub_Contratista"], $data["Responsable_AIA"], $data["Observaciones"]];
         }
