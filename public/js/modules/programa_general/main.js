@@ -194,18 +194,42 @@ function normalizeEstadoLabel(value) {
         .replace(/[\u0300-\u036f]/g, '');
 }
 
+function getRestrictionThresholds() {
+    var config = window.__RESTRICTION_CONFIG__;
+    if (config && Array.isArray(config.hardRestrictions) && Array.isArray(config.restrictions)) {
+        var thresholds = {};
+        var lookup = {};
+        for (var i = 0; i < config.restrictions.length; i++) {
+            var r = config.restrictions[i];
+            if (r && r.key) {
+                lookup[r.key] = r.threshold;
+            }
+        }
+        for (var j = 0; j < config.hardRestrictions.length; j++) {
+            var entry = config.hardRestrictions[j];
+            var hKey = typeof entry === 'string' ? entry : (entry && entry.key);
+            if (!hKey) { continue; }
+            var rawThreshold = (typeof entry === 'object' && entry.threshold !== undefined)
+                ? entry.threshold
+                : (lookup[hKey] !== undefined ? lookup[hKey] : 1.0);
+            // API threshold is 0-100; convert to ratio 0-1
+            thresholds[hKey] = (rawThreshold > 1) ? rawThreshold / 100 : rawThreshold;
+        }
+        if (Object.keys(thresholds).length > 0) {
+            return thresholds;
+        }
+    }
+    // Fallback to Construction defaults (ratio scale)
+    return { D_y_E: 1.0, Materiales: 1.0, MdeO: 1.0, Equipos: 1.0, Predecesora: 0.5 };
+}
+
 function areHardRestrictionsMet(data) {
-    var hardGates = [
-        { key: 'D_y_E', threshold: 1.0 },
-        { key: 'Materiales', threshold: 1.0 },
-        { key: 'MdeO', threshold: 1.0 },
-        { key: 'Equipos', threshold: 1.0 },
-        { key: 'Predecesora', threshold: 0.5 },
-    ];
-    for (var i = 0; i < hardGates.length; i++) {
-        var gate = hardGates[i];
-        var val = toNumber(data[gate.key], null);
-        if (val !== null && val < gate.threshold) {
+    var thresholds = getRestrictionThresholds();
+    var keys = Object.keys(thresholds);
+    for (var i = 0; i < keys.length; i++) {
+        var key = keys[i];
+        var val = toNumber(data[key], null);
+        if (val !== null && val < thresholds[key]) {
             return false;
         }
     }

@@ -632,13 +632,54 @@
     return 'actividad-futura';
   }
 
-  function areHardRestrictionsMet(data) {
+  function getRestrictionThresholds() {
     var cfg = getRestrictionConfig();
-    var hardGates = Array.isArray(cfg.hardRestrictions) ? cfg.hardRestrictions : _DEFAULT_RESTRICTION_CONFIG.hardRestrictions;
-    for (var i = 0; i < hardGates.length; i++) {
-      var gate = hardGates[i];
-      var val = normalizeRatio(data[gate.key]);
-      if (val !== null && val < gate.threshold) {
+    var thresholds = {};
+
+    var lookup = {};
+    if (Array.isArray(cfg.restrictions)) {
+      for (var i = 0; i < cfg.restrictions.length; i++) {
+        var r = cfg.restrictions[i];
+        if (r && r.key) {
+          lookup[r.key] = r.threshold;
+        }
+      }
+    }
+
+    var hardEntries = Array.isArray(cfg.hardRestrictions) ? cfg.hardRestrictions : [];
+    for (var j = 0; j < hardEntries.length; j++) {
+      var entry = hardEntries[j];
+      var key = typeof entry === 'string' ? entry : (entry && entry.key);
+      if (!key) { continue; }
+      var rawThreshold;
+      if (typeof entry === 'object' && entry.threshold !== undefined) {
+        rawThreshold = entry.threshold;
+      } else if (lookup[key] !== undefined) {
+        rawThreshold = lookup[key];
+      } else {
+        rawThreshold = 1.0;
+      }
+      // API threshold is 0-100; convert to ratio 0-1
+      thresholds[key] = (rawThreshold > 1) ? rawThreshold / 100 : rawThreshold;
+    }
+
+    if (Object.keys(thresholds).length === 0) {
+      var defaults = _DEFAULT_RESTRICTION_CONFIG.hardRestrictions;
+      for (var k = 0; k < defaults.length; k++) {
+        thresholds[defaults[k].key] = defaults[k].threshold;
+      }
+    }
+
+    return thresholds;
+  }
+
+  function areHardRestrictionsMet(data) {
+    var thresholds = getRestrictionThresholds();
+    var keys = Object.keys(thresholds);
+    for (var i = 0; i < keys.length; i++) {
+      var key = keys[i];
+      var val = normalizeRatio(data[key]);
+      if (val !== null && val < thresholds[key]) {
         return false;
       }
     }

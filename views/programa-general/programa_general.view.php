@@ -220,10 +220,8 @@
         <div class="pg-actions-row">
             <div class="d-flex flex-wrap align-items-center" style="gap:6px;">
                 <button type="button" class="leyenda_colores btn-pdc-modern" data-toggle="modal" data-target="#modal_leyenda_colores">Leyenda <i class="fas fa-question-circle ml-1"></i></button>
-                <?php if ($area !== 'Pre-Construccion'): ?>
                 <button type="button" id="actualizarEjecucion" class="btn-pdc-modern">Actualizar Ejecución <i class="fas fa-sync ml-1"></i></button>
                 <button type="button" id="descargarCorteProgramacion" class="btn-pdc-modern">Descargar Corte <i class="fas fa-download ml-1"></i></button>
-                <?php endif; ?>
                 <button id="btn-export" class="btn-pdc-modern">Exportar CSV</button>
                 <button id="btn-refresh" class="btn-pdc-modern">Recargar</button>
             </div>

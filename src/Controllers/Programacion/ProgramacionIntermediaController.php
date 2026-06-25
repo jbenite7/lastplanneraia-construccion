@@ -35,11 +35,37 @@ class ProgramacionIntermediaController extends BaseController
 
         $viewAll = isset($_SESSION['pi_view_all']) && (int) $_SESSION['pi_view_all'] === 1;
 
+        // Consultar nombres de restricciones personalizadas PC para el modal de Restricción Compartida
+        $pcRestrictionNames = [null, null, null, null]; // índices 1-4 (0 sin usar)
+        if (($vars['area'] ?? 'Construccion') === 'Pre-Construccion') {
+            $dbPrefix = $vars['dbName'] ?? '';
+            if (!empty($dbPrefix) && preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
+                try {
+                    $stmtPc = $this->db->prepare(
+                        "SELECT pc_restr_2_nombre, pc_restr_3_nombre, pc_restr_4_nombre
+                         FROM general_proyectos_procesos
+                         WHERE Base_de_Datos = ?
+                         LIMIT 1"
+                    );
+                    $stmtPc->execute([$dbPrefix]);
+                    $proyectoPc = $stmtPc->fetch(\PDO::FETCH_ASSOC);
+                    if ($proyectoPc) {
+                        $pcRestrictionNames[2] = !empty($proyectoPc['pc_restr_2_nombre']) ? $proyectoPc['pc_restr_2_nombre'] : null;
+                        $pcRestrictionNames[3] = !empty($proyectoPc['pc_restr_3_nombre']) ? $proyectoPc['pc_restr_3_nombre'] : null;
+                        $pcRestrictionNames[4] = !empty($proyectoPc['pc_restr_4_nombre']) ? $proyectoPc['pc_restr_4_nombre'] : null;
+                    }
+                } catch (\PDOException $e) {
+                    error_log("Error cargando restricciones PC para PI view: " . $e->getMessage());
+                }
+            }
+        }
+
         $data = array_merge($vars, [
             'subcontratistas' => $subcontratistas,
             'profesionales' => $profesionales,
             'viewAll' => $viewAll,
             'area' => $_SESSION['area'] ?? 'Construccion',
+            'pcRestrictionNames' => $pcRestrictionNames,
         ]);
 
         $this->render('/views/programacion-intermedia/programacion_intermedia.view.php', $data);
@@ -105,7 +131,6 @@ class ProgramacionIntermediaController extends BaseController
             $query = "SELECT *
                       FROM {$dbPrefix}_programa_consolidado
                       WHERE {$where}
-                      GROUP BY Consecutivo_en_Programa
                       ORDER BY Semanas_Inicio ASC";
 
             $stmt = $this->db->prepare($query);
@@ -693,7 +718,10 @@ class ProgramacionIntermediaController extends BaseController
         $subContratista = $applyAssignments ? trim((string) ($_POST['sub_contratista'] ?? '')) : '';
         $responsableAia = trim((string) ($_POST['responsable_aia'] ?? ''));
 
-        $allowedRestrictions = ['D_y_E', 'Materiales', 'MdeO', 'Equipos', 'Predecesora', 'Pdto_Cons', 'Modelo'];
+        $area = $vars['area'] ?? 'Construccion';
+        $allowedRestrictions = $area === 'Pre-Construccion'
+            ? ['restriccion_pc_1', 'restriccion_pc_2', 'restriccion_pc_3', 'restriccion_pc_4']
+            : ['D_y_E', 'Materiales', 'MdeO', 'Equipos', 'Predecesora', 'Pdto_Cons', 'Modelo'];
         $restrictions = $applyRestriction
             ? $this->parseSharedRestrictionsInput($_POST['restrictions'] ?? null, $restrictionType, $targetValue, $allowedRestrictions)
             : [];

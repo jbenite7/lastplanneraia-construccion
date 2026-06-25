@@ -19,7 +19,6 @@
                         <label for="area">Área</label>
                         <select class="form-control" id="area" name="area">
                             <option value="Construccion">Construcción</option>
-                            <option value="PI">PI (Proyectos Inmobiliarios)</option>
                             <option value="Pre-Construccion">Pre-Construcción</option>
                         </select>
                     </div>

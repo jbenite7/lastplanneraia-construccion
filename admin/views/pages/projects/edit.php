@@ -30,7 +30,6 @@
                         <label for="area">Área</label>
                         <select class="form-control" id="area" name="area">
                             <option value="Construccion" <?php echo ($project['Area'] === 'Construccion') ? 'selected' : ''; ?>>Construcción</option>
-                            <option value="PI" <?php echo ($project['Area'] === 'PI') ? 'selected' : ''; ?>>PI (Proyectos Inmobiliarios)</option>
                             <option value="Pre-Construccion" <?php echo ($project['Area'] === 'Pre-Construccion') ? 'selected' : ''; ?>>Pre-Construcción</option>
                         </select>
                     </div>
