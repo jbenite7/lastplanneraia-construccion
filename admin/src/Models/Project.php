@@ -432,7 +432,7 @@ class Project
      * Crea las tablas específicas para el proyecto basadas en la plantilla.
      *
      * @param string $prefix El prefijo (Base_de_Datos) para las tablas.
-     * @param string $area   Área del proyecto ('Construccion', 'PI', 'Pre-Construccion').
+     * @param string $area   Área del proyecto ('Construccion', 'Pre-Construccion').
      * @return void
      */
     private function createProjectTables($prefix, $area = 'Construccion')
@@ -810,7 +810,15 @@ class Project
     /**
      * Crea las tablas mínimas para proyectos de Pre-Construccion (MVP).
      * Incluye: _programa, _programa_consolidado, _semanas_activas,
-     * _profesionales, _subcontratistas (Interesados Externos), _cnc, _cnp.
+     * _profesionales, _subcontratistas (Interesados Externos),
+     * _programacion_semanal, _cic.
+     *
+     * CNC/CNP no necesitan tablas per-proyecto: el catálogo global es
+     * general_cnc (columna Area distingue Construccion/Pre-Construccion)
+     * y los registros van en columnas de _programacion_semanal.
+     *
+     * _programacion_semanal y _cic son requeridos por SemanalApiController
+     * (autoprogramar, confirmarSemana, sanear), que no distingue Area.
      *
      * @param string $prefix El prefijo (Base_de_Datos) para las tablas.
      * @return void
@@ -838,6 +846,10 @@ class Project
               `Predecesora` float DEFAULT 0,
               `Pdto_Cons` float DEFAULT 0,
               `Modelo` varchar(9) DEFAULT '0',
+              `restriccion_pc_1` VARCHAR(10) DEFAULT '0%',
+              `restriccion_pc_2` VARCHAR(10) DEFAULT '0%',
+              `restriccion_pc_3` VARCHAR(10) DEFAULT '0%',
+              `restriccion_pc_4` VARCHAR(10) DEFAULT '0%',
               `Responsable_AIA` varchar(100) DEFAULT NULL,
               `Observaciones` mediumtext DEFAULT NULL,
               `Ult_Act_Est` date DEFAULT NULL,
@@ -866,6 +878,10 @@ class Project
               `Predecesora` varchar(9) NOT NULL DEFAULT '0',
               `Pdto_Cons` varchar(9) NOT NULL DEFAULT '0',
               `Modelo` varchar(9) NOT NULL DEFAULT '0',
+              `restriccion_pc_1` VARCHAR(10) DEFAULT '0%',
+              `restriccion_pc_2` VARCHAR(10) DEFAULT '0%',
+              `restriccion_pc_3` VARCHAR(10) DEFAULT '0%',
+              `restriccion_pc_4` VARCHAR(10) DEFAULT '0%',
               `Sub_Contratista` varchar(100) DEFAULT NULL,
               `Responsable_AIA` varchar(100) DEFAULT NULL,
               `Observaciones` mediumtext DEFAULT NULL,
@@ -888,6 +904,7 @@ class Project
               `Fecha_Fin_Sem` date NOT NULL,
               `Semanal_Confirmada` int(1) DEFAULT 0,
               `fechaCierreCompromisos` date DEFAULT NULL,
+              `fecha_ultimo_saneo` DATETIME NULL DEFAULT NULL,
               `fechaCreacionSemana` date DEFAULT NULL,
               `reprogramacion` int(11) NOT NULL DEFAULT 0,
               `diferenciaEstructuraCron` int(11) NOT NULL DEFAULT 0
@@ -913,28 +930,138 @@ class Project
               `activo` int(11) NOT NULL DEFAULT 1
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci",
 
-            // _cnc (Causas de No Cumplimiento - Pre-Construccion)
-            "CREATE TABLE IF NOT EXISTS `{$prefix}_cnc` (
-              `Id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            // _programacion_semanal (requerido por SemanalApiController: autoprogramar,
+            // confirmarSemana, sanear, etc. Schema completo igual a Construccion para
+            // que el controlador PS -que no distingue Area- funcione en PC).
+            "CREATE TABLE IF NOT EXISTS `{$prefix}_programacion_semanal` (
+              `Consecutivo` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
               `Semana` int(3) DEFAULT NULL,
-              `subcontratista` varchar(200) DEFAULT NULL,
-              `categoria` varchar(200) DEFAULT NULL,
-              `causa` varchar(500) DEFAULT NULL,
-              `observaciones` mediumtext DEFAULT NULL,
-              `responsable` varchar(200) DEFAULT NULL,
-              `fecha_registro` date DEFAULT NULL
+              `Consecutivo_En_Programa` int(11) NOT NULL,
+              `Id` varchar(500) DEFAULT NULL,
+              `Actividad` varchar(500) DEFAULT NULL,
+              `Descripcion` mediumtext DEFAULT NULL,
+              `Ubicacion` mediumtext DEFAULT NULL,
+              `Fecha_Inicio` date DEFAULT NULL,
+              `Fecha_Fin` date DEFAULT NULL,
+              `Sub_Contratista` varchar(200) DEFAULT NULL,
+              `Responsable_AIA` varchar(200) DEFAULT NULL,
+              `Empresa` varchar(200) NOT NULL DEFAULT 'AIA',
+              `Ejecutado` float DEFAULT NULL,
+              `medir_productividad` int(11) DEFAULT 0,
+              `Unidad` varchar(10) DEFAULT NULL,
+              `cantidad_ppto` int(11) DEFAULT NULL,
+              `Cantidad_Sugerida` float DEFAULT NULL,
+              `Compromiso` float DEFAULT NULL,
+              `Ejecutado_Real` float DEFAULT NULL,
+              `P_Completado` float DEFAULT NULL,
+              `PAC` int(1) DEFAULT NULL,
+              `Critica` int(1) DEFAULT NULL,
+              `Atrasada` int(1) DEFAULT NULL,
+              `Activa` varchar(3) DEFAULT NULL,
+              `Reprogramada_Por_Usuario` TINYINT(1) NOT NULL DEFAULT 0,
+              `Es_TNP` TINYINT(1) NOT NULL DEFAULT 0,
+              `Categoria_CP` VARCHAR(100) DEFAULT NULL,
+              `CP` VARCHAR(255) DEFAULT NULL,
+              `Observaciones_CP` TEXT DEFAULT NULL,
+              `Prog_Sin_Restricciones_100` int(1) DEFAULT NULL,
+              `Categoria_CNP` varchar(100) DEFAULT NULL,
+              `CNP` varchar(100) DEFAULT NULL,
+              `Observaciones_CNP` mediumtext DEFAULT NULL,
+              `Categoria_CNC` varchar(100) DEFAULT NULL,
+              `CNC` varchar(100) DEFAULT NULL,
+              `Observaciones_CNC` mediumtext DEFAULT NULL,
+              `Rendimientos` varchar(500) DEFAULT NULL,
+              `codigo_actividad` varchar(11) DEFAULT NULL,
+              `alerta_crisis` TINYINT(1) NOT NULL DEFAULT 0,
+              `reprogramaciones_semanales` INT NOT NULL DEFAULT 0,
+              INDEX `idx_crisis_semanal` (`Semana`, `alerta_crisis`),
+              INDEX `idx_consecutivo_semanal` (`Consecutivo_En_Programa`, `Semana`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci",
 
-            // _cnp (Causas de No Programación - Pre-Construccion)
-            "CREATE TABLE IF NOT EXISTS `{$prefix}_cnp` (
+            // _cic (requerido por SemanalApiController::syncCic al confirmar semana).
+            // Schema completo igual a Construccion.
+            "CREATE TABLE IF NOT EXISTS `{$prefix}_cic` (
               `Id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
               `Semana` int(3) DEFAULT NULL,
               `subcontratista` varchar(200) DEFAULT NULL,
-              `categoria` varchar(200) DEFAULT NULL,
-              `causa` varchar(500) DEFAULT NULL,
-              `observaciones` mediumtext DEFAULT NULL,
-              `responsable` varchar(200) DEFAULT NULL,
-              `fecha_registro` date DEFAULT NULL
+              `correo_contacto` varchar(200) DEFAULT NULL,
+              `NIT` varchar(10) DEFAULT NULL,
+              `alcance` varchar(200) DEFAULT NULL,
+              `tipo_proveedor` varchar(200) DEFAULT NULL,
+              `PAC` varchar(11) DEFAULT 'NA',
+              `PAC_Acum` varchar(11) DEFAULT 'NA',
+              `P_Completado` varchar(11) DEFAULT 'NA',
+              `P_Completado_Acum` varchar(11) DEFAULT 'NA',
+              `Calidad` varchar(11) NOT NULL DEFAULT 'NR',
+              `Calidad_Acum` varchar(11) NOT NULL DEFAULT 'NR',
+              `GSA` varchar(11) NOT NULL DEFAULT 'NR',
+              `GSA_Acum` varchar(11) NOT NULL DEFAULT 'NR',
+              `SST` varchar(11) NOT NULL DEFAULT 'NR',
+              `SST_Acum` varchar(11) NOT NULL DEFAULT 'NR',
+              `ADM` varchar(11) NOT NULL DEFAULT 'NR',
+              `ADM_Acum` varchar(11) NOT NULL DEFAULT 'NR',
+              `Cal_Integral` float DEFAULT NULL,
+              `Cal_Integral_Acum` float DEFAULT NULL,
+              `Observaciones` mediumtext DEFAULT NULL,
+              `mdo_cal_1` varchar(5) DEFAULT 'NR',
+              `mdo_cal_2` varchar(5) DEFAULT 'NR',
+              `mdo_cal_3` varchar(5) DEFAULT 'NR',
+              `mdo_adm_1` varchar(5) DEFAULT 'NR',
+              `mdo_adm_2` varchar(5) DEFAULT 'NR',
+              `mdo_adm_3` varchar(5) DEFAULT 'NR',
+              `mdo_adm_4` varchar(5) DEFAULT 'NR',
+              `mdo_adm_5` varchar(5) DEFAULT 'NR',
+              `mdo_gsa_1` varchar(5) DEFAULT 'NR',
+              `mdo_gsa_2` varchar(5) DEFAULT 'NR',
+              `mdo_gsa_3` varchar(5) DEFAULT 'NR',
+              `mdo_gsa_4` varchar(5) DEFAULT 'NR',
+              `mdo_gsa_5` varchar(5) DEFAULT 'NR',
+              `mdo_gsa_6` varchar(5) DEFAULT 'NR',
+              `mdo_gsa_7` varchar(5) DEFAULT 'NR',
+              `mdo_gsa_8` varchar(5) DEFAULT 'NR',
+              `mdo_sst_1` varchar(5) DEFAULT 'NR',
+              `mdo_sst_2` varchar(5) DEFAULT 'NR',
+              `mdo_sst_3` varchar(5) DEFAULT 'NR',
+              `mdo_sst_4` varchar(5) DEFAULT 'NR',
+              `mdo_sst_5` varchar(5) DEFAULT 'NR',
+              `mdo_sst_6` varchar(5) DEFAULT 'NR',
+              `mdo_sst_7` varchar(5) DEFAULT 'NR',
+              `mdo_sst_8` varchar(5) DEFAULT 'NR',
+              `mdo_sst_9` varchar(5) DEFAULT 'NR',
+              `mdo_sst_10` varchar(5) DEFAULT 'NR',
+              `si_cal_1` varchar(5) DEFAULT 'NR',
+              `si_cal_2` varchar(5) DEFAULT 'NR',
+              `si_cal_3` varchar(5) DEFAULT 'NR',
+              `si_adm_1` varchar(5) DEFAULT 'NR',
+              `si_adm_2` varchar(5) DEFAULT 'NR',
+              `si_adm_3` varchar(5) DEFAULT 'NR',
+              `si_adm_4` varchar(5) DEFAULT 'NR',
+              `si_adm_5` varchar(5) DEFAULT 'NR',
+              `si_adm_6` varchar(5) DEFAULT 'NR',
+              `si_gsa_1` varchar(5) DEFAULT 'NR',
+              `si_gsa_2` varchar(5) DEFAULT 'NR',
+              `si_gsa_3` varchar(5) DEFAULT 'NR',
+              `si_gsa_4` varchar(5) DEFAULT 'NR',
+              `si_gsa_5` varchar(5) DEFAULT 'NR',
+              `si_gsa_6` varchar(5) DEFAULT 'NR',
+              `si_gsa_7` varchar(5) DEFAULT 'NR',
+              `si_gsa_8` varchar(5) DEFAULT 'NR',
+              `si_gsa_9` varchar(5) DEFAULT 'NR',
+              `si_gsa_10` varchar(5) DEFAULT 'NR',
+              `si_gsa_11` varchar(5) DEFAULT 'NR',
+              `si_gsa_12` varchar(5) DEFAULT 'NR',
+              `si_gsa_13` varchar(5) DEFAULT 'NR',
+              `si_gsa_14` varchar(5) DEFAULT 'NR',
+              `si_sst_1` varchar(5) DEFAULT 'NR',
+              `si_sst_2` varchar(5) DEFAULT 'NR',
+              `si_sst_3` varchar(5) DEFAULT 'NR',
+              `si_sst_4` varchar(5) DEFAULT 'NR',
+              `si_sst_5` varchar(5) DEFAULT 'NR',
+              `si_sst_6` varchar(5) DEFAULT 'NR',
+              `si_sst_7` varchar(5) DEFAULT 'NR',
+              `si_sst_8` varchar(5) DEFAULT 'NR',
+              `si_sst_9` varchar(5) DEFAULT 'NR',
+              `si_sst_10` varchar(5) DEFAULT 'NR'
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci",
         ];
 
@@ -952,13 +1079,9 @@ class Project
         $slug = $this->slugify($name);
 
         // Pattern from general_proyectos_procesos.sql:
-        // PI projects usually have _pi suffix
+        // Pre-Construccion projects have _pc suffix
         $areaUpper = strtoupper($area);
-        if ($areaUpper === 'PI') {
-            if (!str_ends_with($slug, '_pi')) {
-                $slug .= '_pi';
-            }
-        } elseif ($areaUpper === 'PRE-CONSTRUCCION') {
+        if ($areaUpper === 'PRE-CONSTRUCCION') {
             if (!str_ends_with($slug, '_pc')) {
                 $slug .= '_pc';
             }
