@@ -141,6 +141,11 @@
                         <h5 class="project-title" title="<?php echo htmlspecialchars($proyecto['Proyecto_Proceso']); ?>">
                             <?php echo htmlspecialchars($proyecto['Proyecto_Proceso']); ?>
                         </h5>
+                        <?php if (($proyecto['Area'] ?? 'Construccion') === 'Pre-Construccion'): ?>
+                        <span class="badge badge-warning badge-status mr-2" style="font-size: 0.65rem;">
+                            <i class="fas fa-hard-hat mr-1"></i>Pre-Construcción
+                        </span>
+                        <?php endif; ?>
                         <span class="badge badge-success badge-status"><?php echo $proyecto['Activo'] == 1 ? 'Active' : 'Inactive'; ?></span>
                     </div>
                     

@@ -40,11 +40,6 @@ class NavbarComponent
                     <!-- Icon Placeholder (No Image loaded yet as per request) -->
                     <i class="fas fa-drafting-compass mr-2"></i> 
                     Last Planner AIA
-                    <?php if ($isPreConstruccion): ?>
-                    <span class="badge badge-warning ml-2" style="font-size: 0.55rem; vertical-align: middle;">
-                        <i class="fas fa-hard-hat mr-1"></i>Pre-Construcción
-                    </span>
-                    <?php endif; ?>
                 </a>
 
                 <!-- Mobile Toggler -->
