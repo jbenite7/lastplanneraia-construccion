@@ -9,11 +9,8 @@ class ProgramChangeDetector
 {
     private $db;
 
-    private const RESTRICTION_COLUMNS = [
-        'D_y_E', 'Materiales', 'MdeO', 'Equipos', 'Predecesora',
-    ];
-
-    private const HARD_RESTRICTIONS = ['D_y_E', 'Materiales', 'MdeO', 'Equipos', 'Predecesora'];
+    /** @var string Project area resolved from dbPrefix ('Construccion' | 'Pre-Construccion') */
+    private string $projectArea = 'Construccion';
 
     private const DEBE_COMPROMETER_STATES = [
         'En Curso', 'Atrasada', 'Debe Iniciar',
@@ -42,6 +39,10 @@ class ProgramChangeDetector
     {
         $batchTime = date('Y-m-d H:i:s');
         $log = [];
+
+        // Resolve project Area once per run via the static cache
+        $config = RestrictionConfigResolver::resolve($dbPrefix);
+        $this->projectArea = $config['area'];
 
         // Saneamiento preventivo de registros duplicados CNP (Activa = 0) en base de datos
         $this->db->query("
@@ -605,7 +606,9 @@ class ProgramChangeDetector
             return true;
         }
 
-        foreach (self::HARD_RESTRICTIONS as $col) {
+        $config = RestrictionConfigResolver::resolveByArea($this->projectArea);
+
+        foreach ($config['hardRestrictions'] as $col) {
             $val = trim((string) ($pg[$col] ?? ''));
             if (empty($val)) {
                 return false;
@@ -618,7 +621,7 @@ class ProgramChangeDetector
             if ($ratio === null) {
                 return false;
             }
-            $threshold = ($col === 'Predecesora') ? 0.5 : 1.0;
+            $threshold = $config['thresholds'][$col] ?? 1.0;
             if (($ratio + 0.0001) < $threshold) {
                 return false;
             }
@@ -676,13 +679,13 @@ class ProgramChangeDetector
     private function buildEligibilitySql(string $alias = ''): string
     {
         $prefix = $alias !== '' ? $alias . '.' : '';
-        return '(' . implode(' AND ', [
-            $this->restrictionSql($prefix . 'D_y_E', 1.0),
-            $this->restrictionSql($prefix . 'Materiales', 1.0),
-            $this->restrictionSql($prefix . 'MdeO', 1.0),
-            $this->restrictionSql($prefix . 'Equipos', 1.0),
-            $this->restrictionSql($prefix . 'Predecesora', 0.5),
-        ]) . ')';
+        $config = RestrictionConfigResolver::resolveByArea($this->projectArea);
+        $conditions = [];
+        foreach ($config['hardRestrictions'] as $col) {
+            $threshold = $config['thresholds'][$col] ?? 1.0;
+            $conditions[] = $this->restrictionSql($prefix . $col, $threshold);
+        }
+        return '(' . implode(' AND ', $conditions) . ')';
     }
 
     private function restrictionSql(string $column, float $minimumRatio): string
