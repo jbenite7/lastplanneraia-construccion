@@ -18,10 +18,14 @@ class LpsService
     /**
      * Calcula en vivo el Índice de Restricciones Habilitadas (ITR) de una actividad.
      * Retorna un arreglo con el porcentaje (0.00 a 1.00), el conteo de liberadas y el total aplicable.
+     *
+     * @param array  $row  Fila de datos de la actividad con columnas de restricciones
+     * @param string $area Área del proyecto ('Construccion' o 'Pre-Construccion').
+     *                     Determina qué columnas de restricción aplicar vía RestrictionConfigResolver.
      */
-    public function calculateLiveITR(array $row): array
+    public function calculateLiveITR(array $row, string $area = 'Construccion'): array
     {
-        $campos = ['D_y_E', 'Materiales', 'MdeO', 'Equipos', 'Predecesora', 'Pdto_Cons', 'Modelo'];
+        $campos = RestrictionConfigResolver::getAllRestrictionColumns($area);
         $liberadas = 0;
         $aplicables = 0;
 
