@@ -14,6 +14,7 @@ if (!isset($dbInstance)) {
 
 require_once __DIR__ . '/estado_programa_general.php';
 
+use App\Services\RestrictionConfigResolver;
 
 try {
     $sqlSelect = "SELECT * FROM {$dbName}_programa_consolidado WHERE Semana = ?";
@@ -21,37 +22,16 @@ try {
     $actividades = $stmt->fetchAll();
 
     if (count($actividades) > 0) {
+        $restrictionConfig = isset($dbName) ? RestrictionConfigResolver::resolve($dbName) : null;
+        $projectArea = $restrictionConfig['area'] ?? 'Construccion';
+
         foreach ($actividades as $data) {
             $Id = $data["Consecutivo_en_Programa"];
             $Titulo = (int) ($data["Titulo"] ?? 0);
             $Estado_Restricciones = '0';
 
             if ($Titulo === 0) {
-                $campos = [
-                    "D_y_E" => 1.0,
-                    "Materiales" => 1.0,
-                    "MdeO" => 1.0,
-                    "Equipos" => 1.0,
-                    "Predecesora" => 0.5,
-                    "Pdto_Cons" => 1.0,
-                    "Modelo" => 1.0,
-                ];
-                $conteo_rest = 0;
-                $suma_rest = 0;
-
-                foreach ($campos as $campo => $threshold) {
-                    $valor = $data[$campo];
-                    if ($valor !== "N/A" && $valor !== null) {
-                        $conteo_rest++;
-                        $suma_rest += min(round((float) $valor, 5) / $threshold, 1.0);
-                    }
-                }
-
-                if ($conteo_rest === 0) {
-                    $Estado_Restricciones = 1;
-                } else {
-                    $Estado_Restricciones = round(($suma_rest / $conteo_rest), 5);
-                }
+                $Estado_Restricciones = RestrictionConfigResolver::calculateEstadoRestricciones($data, $projectArea);
             }
 
             $semanas_val = pg_calculate_week_offset($data["Fecha_Inicio"] ?? null, $f_inicio_sem);
