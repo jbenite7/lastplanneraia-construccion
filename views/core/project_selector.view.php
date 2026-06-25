@@ -137,7 +137,7 @@
             <?php foreach ($proyectos as $proyecto): ?>
             <div class="col-lg-4 col-md-6 mb-4 project-item" data-name="<?php echo strtolower($proyecto['Proyecto_Proceso']); ?>">
                 <div class="card project-card shadow-sm">
-                    <div class="card-header-project d-flex justify-content-between align-items-center">
+                    <div class="card-header-project d-flex justify-content-between align-items-start">
                         <h5 class="project-title" title="<?php echo htmlspecialchars($proyecto['Proyecto_Proceso']); ?>">
                             <?php echo htmlspecialchars($proyecto['Proyecto_Proceso']); ?>
                         </h5>
