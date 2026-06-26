@@ -67,6 +67,18 @@ class SessionMiddleware
         if (isset($_GET['semana'])) {
             $_SESSION['semana'] = (int) $_GET['semana'];
         }
+
+        // Auto-establecer contexto de proyecto para tablas globales (USE_GLOBAL_TABLES=true)
+        if (isset($_SESSION['db']) && $_SESSION['db'] !== '') {
+            try {
+                $projectId = \TableResolver::getProjectIdByPrefix($_SESSION['db']);
+                if ($projectId) {
+                    \Database::getInstance()->setProjectContext($projectId);
+                }
+            } catch (\Throwable $e) {
+                error_log('SessionMiddleware: No se pudo establecer contexto de proyecto: ' . $e->getMessage());
+            }
+        }
     }
 
     private static function shouldRefreshTimeout(): bool

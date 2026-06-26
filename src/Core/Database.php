@@ -54,6 +54,17 @@ class Database
      */
     public function query($sql, $params = [])
     {
+        // Auto-inyectar project_id para queries raw que bypass queryWithProject()
+        // Solo cuando hay contexto de proyecto y USE_GLOBAL_TABLES=true
+        if ($this->currentProjectId !== null && \TableResolver::useGlobalTables()) {
+            $injected = $this->injectProjectId($sql, $this->currentProjectId);
+            if ($injected !== null) {
+                // injectProjectId agregó placeholder ? al final → agregar project_id al final de params
+                $params[] = $this->currentProjectId;
+                $sql = $injected;
+            }
+        }
+
         try {
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute($params);
