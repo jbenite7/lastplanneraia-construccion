@@ -4,6 +4,7 @@ namespace App\Controllers\Gestion;
 
 use App\Controllers\BaseController;
 
+use TableResolver;
 class PdcController extends BaseController
 {
     public function index()
@@ -16,7 +17,7 @@ class PdcController extends BaseController
 
         if ($dbName !== '') {
             try {
-                $stmt = $this->db->query("SELECT MAX(Semana) AS maxSemana FROM {$dbName}_semanas_activas");
+                $stmt = $this->db->queryWithProject("SELECT MAX(Semana) AS maxSemana FROM " . TableResolver::resolveByPrefix($dbName, 'semanas_activas') . "");
                 $maxSemana = (int) ($stmt->fetch()['maxSemana'] ?? 0);
 
                 if ($maxSemana > 0 && ($semana <= 0 || $semana > $maxSemana)) {

@@ -23,7 +23,7 @@ class PdcPlantillaController
         $this->requirePermission('lps.pdc.ver', 'No autorizado para consultar plantillas PDC.');
 
         try {
-            $stmt = $this->db->query(
+            $stmt = $this->db->queryWithProject(
                 "SELECT p.*, 
                     (SELECT COUNT(*) FROM general_pdc_plantilla_items WHERE plantilla_id = p.id) AS total_items
                  FROM general_pdc_plantillas p
@@ -57,7 +57,7 @@ class PdcPlantillaController
         }
 
         try {
-            $stmt = $this->db->query(
+            $stmt = $this->db->queryWithProject(
                 "SELECT p.*, 
                     (SELECT COUNT(*) FROM general_pdc_plantilla_items WHERE plantilla_id = p.id) AS total_items
                  FROM general_pdc_plantillas p
@@ -96,7 +96,7 @@ class PdcPlantillaController
         }
 
         try {
-            $stmt = $this->db->query(
+            $stmt = $this->db->queryWithProject(
                 "SELECT i.*, cr.nombre AS categoria_nombre
                  FROM general_pdc_plantilla_items i
                  LEFT JOIN general_pdc_categoria_recurso cr ON cr.nombre = i.tipo_paquete OR cr.nombre = i.capitulo
@@ -143,7 +143,7 @@ class PdcPlantillaController
         $this->requirePermission('lps.pdc.ver', 'No autorizado para consultar categorías.');
 
         try {
-            $stmt = $this->db->query(
+            $stmt = $this->db->queryWithProject(
                 "SELECT * FROM general_pdc_categoria_recurso ORDER BY orden ASC"
             );
             $categorias = $stmt->fetchAll(PDO::FETCH_ASSOC);

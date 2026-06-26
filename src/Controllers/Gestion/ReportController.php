@@ -14,6 +14,7 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Style;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
+use TableResolver;
 class ReportController extends BaseController
 {
     private $reportProcessor;
@@ -204,7 +205,7 @@ class ReportController extends BaseController
             $query = "SELECT Semana, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin, Ruta_Critica,
                              Ejecutado AS EjecutadoRaw, ROUND(Ejecutado*100,1) AS Ejecutado,
                              Semanas_Inicio, Estado_Restricciones, cantidad_ppto, unidad 
-                      FROM {$dbName}_programa_consolidado 
+                      FROM " . TableResolver::resolveByPrefix($dbName, 'programa_consolidado') . " 
                       WHERE Semana = :semana";
 
             $stmt = $db->query($query, [':semana' => $semana]);
@@ -478,13 +479,13 @@ class ReportController extends BaseController
         $proyecto = $stmt->fetchColumn() ?: '';
 
         // Dates
-        $stmt = $db->query("SELECT * FROM {$dbName}_semanas_activas WHERE Semana = :semana", [':semana' => $semana]);
+        $stmt = $db->query("SELECT * FROM " . TableResolver::resolveByPrefix($dbName, 'semanas_activas') . " WHERE Semana = :semana", [':semana' => $semana]);
         $fechas = $stmt->fetch(\PDO::FETCH_ASSOC);
         $fechaInicio = isset($fechas["Fecha_Inicio_Sem"]) ? date("Y-m-d", strtotime($fechas["Fecha_Inicio_Sem"])) : '';
         $fechaFin = isset($fechas["Fecha_Fin_Sem"]) ? date("Y-m-d", strtotime($fechas["Fecha_Fin_Sem"])) : '';
 
         // Program Data
-        $query = "SELECT * FROM {$dbName}_programa_consolidado 
+        $query = "SELECT * FROM " . TableResolver::resolveByPrefix($dbName, 'programa_consolidado') . " 
                   WHERE Semana = :semana 
                   AND Fecha_Inicio IS NOT NULL 
                   AND Fecha_Fin IS NOT NULL 
@@ -617,14 +618,14 @@ class ReportController extends BaseController
         }
 
         // Professionals
-        $stmt = $db->query("SELECT nombre FROM {$dbName}_profesionales WHERE activo = 1");
+        $stmt = $db->query("SELECT nombre FROM " . TableResolver::resolveByPrefix($dbName, 'profesionales') . " WHERE activo = 1");
         $tablaProfesionales = [["nombre"]];
         while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
             $tablaProfesionales[] = [$row["nombre"]];
         }
 
         // Subcontractors
-        $stmt = $db->query("SELECT subcontratista FROM {$dbName}_subcontratistas WHERE activo = 1");
+        $stmt = $db->query("SELECT subcontratista FROM " . TableResolver::resolveByPrefix($dbName, 'subcontratistas') . " WHERE activo = 1");
         $tablaSubcontratistas = [["subcontratista"]];
         while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
             $tablaSubcontratistas[] = [$row["subcontratista"]];
@@ -974,7 +975,7 @@ class ReportController extends BaseController
             }
 
             $stmtFechas = $db->query(
-                "SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem, Semanal_Confirmada FROM {$dbName}_semanas_activas WHERE Semana = :semana",
+                "SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem, Semanal_Confirmada FROM " . TableResolver::resolveByPrefix($dbName, 'semanas_activas') . " WHERE Semana = :semana",
                 [':semana' => $semana],
             );
             $fechas = $stmtFechas->fetch(\PDO::FETCH_ASSOC);
@@ -990,7 +991,7 @@ class ReportController extends BaseController
             $phaseKey = \ps_weekly_phase_key($fechas['Semanal_Confirmada'] ?? 0);
 
             $stmtData = $db->query(
-                "SELECT * FROM {$dbName}_programacion_semanal WHERE Semana = :semana AND (Activa = '1' OR Activa = 'NA')",
+                "SELECT * FROM " . TableResolver::resolveByPrefix($dbName, 'programacion_semanal') . " WHERE Semana = :semana AND (Activa = '1' OR Activa = 'NA')",
                 [':semana' => $semana],
             );
 
@@ -1179,7 +1180,7 @@ class ReportController extends BaseController
 
         // 1. Fetch Data
         try {
-            $query = "SELECT * FROM {$dbName}_cambios";
+            $query = "SELECT * FROM " . TableResolver::resolveByPrefix($dbName, 'cambios') . "";
             $stmt = $db->query($query);
             $results = $stmt->fetchAll(\PDO::FETCH_ASSOC);
         } catch (Exception $e) {

@@ -18,8 +18,10 @@
 	} else {
 	    try {
 	        $dbInstance = Database::getInstance();
-	        $queryActividadInicio = "SELECT Consecutivo_en_Programa, Id, Actividad, Fecha_Inicio FROM {$dbPrefixListadoActividades}_programa_consolidado WHERE Semana=? AND Titulo=0 AND Fecha_Inicio IS NOT NULL AND Fecha_Fin IS NOT NULL ORDER BY Fecha_Inicio ASC";
-	        $stmtActividadInicio = $dbInstance->query($queryActividadInicio, [$maxSemanaListadoActividades]);
+	        $tableName = TableResolver::resolveByPrefix($dbPrefixListadoActividades, 'programa_consolidado');
+	        $projectId = TableResolver::getProjectIdByPrefix($dbPrefixListadoActividades);
+	        $queryActividadInicio = "SELECT Consecutivo_en_Programa, Id, Actividad, Fecha_Inicio FROM {$tableName} WHERE Semana=? AND Titulo=0 AND Fecha_Inicio IS NOT NULL AND Fecha_Fin IS NOT NULL ORDER BY Fecha_Inicio ASC";
+	        $stmtActividadInicio = $dbInstance->queryWithProject($queryActividadInicio, [$maxSemanaListadoActividades], $projectId);
 	        $actividadInicioOptions = [];
 
 	        while ($valores = $stmtActividadInicio->fetch(PDO::FETCH_ASSOC)) {

@@ -5,6 +5,7 @@ namespace App\Controllers\Core;
 use Admin\Core\RoleManager;
 use App\Services\ProjectLandingService;
 use Database;
+use TableResolver;
 
 class ProjectSelectorController
 {
@@ -41,8 +42,7 @@ class ProjectSelectorController
                   AND (p.Acceso = 1 OR pm.role IN ('A', 'D'))
                 ORDER BY p.Proyecto_Proceso ASC";
 
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([$usuario]);
+        $stmt = $this->db->queryWithProject($sql, [$usuario]);
         $proyectos = $stmt->fetchAll();
 
         foreach ($proyectos as &$project) {
@@ -92,8 +92,7 @@ class ProjectSelectorController
                   AND p.Activo = 1
                 LIMIT 1";
 
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([$usuario, $proyectoSeleccionado]);
+        $stmt = $this->db->queryWithProject($sql, [$usuario, $proyectoSeleccionado]);
         $accessData = $stmt->fetch();
 
         if (!$accessData) {
@@ -114,6 +113,12 @@ class ProjectSelectorController
         $_SESSION['proyecto'] = $proyectoSeleccionado;
         $_SESSION['db'] = $dbName;
         $_SESSION['permiso'] = $permiso;
+
+        // Centralizar contexto de proyecto en Database
+        $projectId = TableResolver::getProjectIdByPrefix($dbName);
+        if ($projectId) {
+            $this->db->setProjectContext($projectId);
+        }
         $_SESSION['permiso_canonico'] = $permiso;
         $_SESSION['pdcActivo'] = $accessData['pdcActivo'] ?? 0;
         $_SESSION['area'] = $accessData['Area'] ?? 'Construccion';

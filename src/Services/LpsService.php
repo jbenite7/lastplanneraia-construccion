@@ -5,6 +5,7 @@ namespace App\Services;
 use Database;
 use Throwable;
 use PDO;
+use TableResolver;
 
 class LpsService
 {
@@ -74,42 +75,47 @@ class LpsService
             return false;
         }
 
+        $tEscalamientos = TableResolver::resolveByPrefix($dbPrefix, 'lps_escalamientos');
+        $tProgCons = TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado');
+        $tProgSemanal = TableResolver::resolveByPrefix($dbPrefix, 'programacion_semanal');
+
         try {
             $this->db->beginTransaction();
 
             // 1. Validar si ya existe una alerta activa para esta actividad en esta semana
-            $stmt = $this->db->prepare(
-                "SELECT id FROM `{$dbPrefix}_lps_escalamientos` 
+            $exists = $this->db->queryWithProject(
+                "SELECT id FROM `{$tEscalamientos}` 
                  WHERE proyecto_id = ? AND semana = ? AND consecutivo_en_programa = ? AND estado = 'Activo' LIMIT 1",
-            );
-            $stmt->execute([$proyectoId, $semana, $consecutivo]);
-            $exists = $stmt->fetch();
+                [$proyectoId, $semana, $consecutivo],
+                $proyectoId,
+            )->fetch();
 
             if (!$exists) {
                 // Insertar nueva alerta
-                $stmtInsert = $this->db->prepare(
-                    "INSERT INTO `{$dbPrefix}_lps_escalamientos` 
-                     (proyecto_id, semana, consecutivo_en_programa, modulo, trigger_origen, nivel_actual, estado) 
-                     VALUES (?, ?, ?, ?, ?, 1, 'Activo')",
-                );
-                $stmtInsert->execute([$proyectoId, $semana, $consecutivo, $modulo, $trigger]);
+                $sql = "INSERT INTO `{$tEscalamientos}` 
+                         (proyecto_id, semana, consecutivo_en_programa, modulo, trigger_origen, nivel_actual, estado) 
+                         VALUES (?, ?, ?, ?, ?, 1, 'Activo')";
+                [$sql, $params] = $this->db->insertProjectId($sql, $proyectoId, [$proyectoId, $semana, $consecutivo, $modulo, $trigger]);
+                $this->db->query($sql, $params);
             }
 
             // 2. Marcar en programa_consolidado
-            $stmtConsolidado = $this->db->prepare(
-                "UPDATE `{$dbPrefix}_programa_consolidado` 
+            $this->db->queryWithProject(
+                "UPDATE `{$tProgCons}` 
                  SET alerta_crisis = 1 
                  WHERE Consecutivo_en_Programa = ? AND Semana = ?",
+                [$consecutivo, $semana],
+                $proyectoId,
             );
-            $stmtConsolidado->execute([$consecutivo, $semana]);
 
             // 3. Marcar en programacion_semanal
-            $stmtSemanal = $this->db->prepare(
-                "UPDATE `{$dbPrefix}_programacion_semanal` 
+            $this->db->queryWithProject(
+                "UPDATE `{$tProgSemanal}` 
                  SET alerta_crisis = 1 
                  WHERE Consecutivo_En_Programa = ? AND Semana = ?",
+                [$consecutivo, $semana],
+                $proyectoId,
             );
-            $stmtSemanal->execute([$consecutivo, $semana]);
 
             $this->db->commit();
             return true;
@@ -132,29 +138,32 @@ class LpsService
             return 0;
         }
 
+        $tEscalamientos = TableResolver::resolveByPrefix($dbPrefix, 'lps_escalamientos');
+
         try {
             // Buscar alertas activas cuyo último cambio supere los 7 días
-            $query = "SELECT id, nivel_actual, trigger_origen FROM `{$dbPrefix}_lps_escalamientos` 
-                      WHERE proyecto_id = ? AND estado = 'Activo' AND nivel_actual < 5 
-                        AND DATEDIFF(CURRENT_TIMESTAMP, COALESCE(fecha_ultimo_escalamiento, fecha_detonacion)) >= 7";
-
-            $stmt = $this->db->prepare($query);
-            $stmt->execute([$proyectoId]);
-            $alertas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $alertas = $this->db->queryWithProject(
+                "SELECT id, nivel_actual, trigger_origen FROM `{$tEscalamientos}` 
+                          WHERE proyecto_id = ? AND estado = 'Activo' AND nivel_actual < 5 
+                            AND DATEDIFF(CURRENT_TIMESTAMP, COALESCE(fecha_ultimo_escalamiento, fecha_detonacion)) >= 7",
+                [$proyectoId],
+                $proyectoId,
+            )->fetchAll(PDO::FETCH_ASSOC);
 
             if (empty($alertas)) {
                 return 0;
             }
 
             $escaladas = 0;
-            $updateStmt = $this->db->prepare(
-                "UPDATE `{$dbPrefix}_lps_escalamientos` 
-                 SET nivel_actual = nivel_actual + 1, fecha_ultimo_escalamiento = CURRENT_TIMESTAMP 
-                 WHERE id = ?",
-            );
 
             foreach ($alertas as $alerta) {
-                $updateStmt->execute([$alerta['id']]);
+                $this->db->queryWithProject(
+                    "UPDATE `{$tEscalamientos}` 
+                     SET nivel_actual = nivel_actual + 1, fecha_ultimo_escalamiento = CURRENT_TIMESTAMP 
+                     WHERE id = ?",
+                    [$alerta['id']],
+                    $proyectoId,
+                );
                 $escaladas++;
 
                 // Inyectar comentario de sistema informando del auto-escalamiento
@@ -192,14 +201,13 @@ class LpsService
         }
 
         try {
+            $t = TableResolver::resolveByPrefix($dbPrefix, 'lps_drawer_comentarios');
             $mencionesJson = $menciones ? json_encode($menciones) : null;
 
-            $query = "INSERT INTO `{$dbPrefix}_lps_drawer_comentarios` 
+            $sql = "INSERT INTO `{$t}` 
                       (proyecto_id, consecutivo_en_programa, semana, usuario_id, comentario, parent_id, escalamiento_id, menciones) 
                       VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-
-            $stmt = $this->db->prepare($query);
-            $stmt->execute([
+            $params = [
                 $proyectoId,
                 $consecutivo,
                 $semana,
@@ -208,7 +216,9 @@ class LpsService
                 $parentId,
                 $escalamientoId,
                 $mencionesJson,
-            ]);
+            ];
+            [$sql, $params] = $this->db->insertProjectId($sql, $proyectoId, $params);
+            $this->db->query($sql, $params);
 
             return (int) $this->db->lastInsertId();
         } catch (Throwable $e) {
@@ -227,10 +237,13 @@ class LpsService
             return [];
         }
 
+        $t = TableResolver::resolveByPrefix($dbPrefix, 'lps_drawer_comentarios');
+        $projectId = TableResolver::getProjectIdByPrefix($dbPrefix);
+
         try {
             $params = [$consecutivo, $semana];
             $query = "SELECT c.*, u.nombre as autor_nombre, u.cargo as autor_cargo 
-                      FROM `{$dbPrefix}_lps_drawer_comentarios` c
+                      FROM `{$t}` c
                       LEFT JOIN `general_usuarios` u ON c.usuario_id = u.Id 
                       WHERE c.consecutivo_en_programa = ? AND c.semana = ?";
 
@@ -241,8 +254,7 @@ class LpsService
 
             $query .= " ORDER BY c.created_at ASC";
 
-            $stmt = $this->db->prepare($query);
-            $stmt->execute($params);
+            $stmt = $this->db->queryWithProject($query, $params, $projectId);
             $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             // Estructurar en árbol (Slack style)
@@ -291,16 +303,19 @@ class LpsService
             return false;
         }
 
+        $tEscalamientos = TableResolver::resolveByPrefix($dbPrefix, 'lps_escalamientos');
+        $tProgCons = TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado');
+        $tProgSemanal = TableResolver::resolveByPrefix($dbPrefix, 'programacion_semanal');
+
         try {
             $this->db->beginTransaction();
 
             // 1. Obtener detalles de la alerta
-            $stmt = $this->db->prepare(
-                "SELECT consecutivo_en_programa, semana, proyecto_id FROM `{$dbPrefix}_lps_escalamientos` 
+            $alerta = $this->db->query(
+                "SELECT consecutivo_en_programa, semana, proyecto_id FROM `{$tEscalamientos}` 
                  WHERE id = ? AND estado = 'Activo'",
-            );
-            $stmt->execute([$alertaId]);
-            $alerta = $stmt->fetch(PDO::FETCH_ASSOC);
+                [$alertaId],
+            )->fetch(PDO::FETCH_ASSOC);
 
             if (!$alerta) {
                 $this->db->rollBack();
@@ -309,31 +324,34 @@ class LpsService
 
             $consecutivo = $alerta['consecutivo_en_programa'];
             $semana = $alerta['semana'];
+            $proyectoId = (int) $alerta['proyecto_id'];
 
             // 2. Cerrar alerta en tabla de escalamientos
-            $stmtClose = $this->db->prepare(
-                "UPDATE `{$dbPrefix}_lps_escalamientos` 
+            $this->db->query(
+                "UPDATE `{$tEscalamientos}` 
                  SET estado = 'Cerrado', fecha_cierre = CURRENT_TIMESTAMP, 
                      usuario_cierre_id = ?, justificacion_cierre = ? 
                  WHERE id = ?",
+                [$usuarioCierreId, trim($justificacion), $alertaId],
             );
-            $stmtClose->execute([$usuarioCierreId, trim($justificacion), $alertaId]);
 
             // 3. Remover bandera alerta_crisis en consolidado
-            $stmtConsolidado = $this->db->prepare(
-                "UPDATE `{$dbPrefix}_programa_consolidado` 
+            $this->db->queryWithProject(
+                "UPDATE `{$tProgCons}` 
                  SET alerta_crisis = 0 
                  WHERE Consecutivo_en_Programa = ? AND Semana = ?",
+                [$consecutivo, $semana],
+                $proyectoId,
             );
-            $stmtConsolidado->execute([$consecutivo, $semana]);
 
             // 4. Remover bandera alerta_crisis en programacion_semanal
-            $stmtSemanal = $this->db->prepare(
-                "UPDATE `{$dbPrefix}_programacion_semanal` 
+            $this->db->queryWithProject(
+                "UPDATE `{$tProgSemanal}` 
                  SET alerta_crisis = 0 
                  WHERE Consecutivo_En_Programa = ? AND Semana = ?",
+                [$consecutivo, $semana],
+                $proyectoId,
             );
-            $stmtSemanal->execute([$consecutivo, $semana]);
 
             $this->db->commit();
             return true;
@@ -351,16 +369,19 @@ class LpsService
         if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
             return [];
         }
+
+        $tEscalamientos = TableResolver::resolveByPrefix($dbPrefix, 'lps_escalamientos');
+        $tProgCons = TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado');
+
         try {
             $q = "SELECT e.*, c.Actividad as actividad_nombre, c.Sub_Contratista as subcontratista,
                          c.Observaciones as restriccion_desc
-                  FROM `{$dbPrefix}_lps_escalamientos` e
-                  LEFT JOIN `{$dbPrefix}_programa_consolidado` c 
+                  FROM `{$tEscalamientos}` e
+                  LEFT JOIN `{$tProgCons}` c 
                     ON e.consecutivo_en_programa = c.Consecutivo_en_Programa AND e.semana = c.Semana
                   WHERE e.proyecto_id = ? AND e.estado = 'Activo'
                   ORDER BY e.nivel_actual DESC, e.fecha_detonacion ASC";
-            $stmt = $this->db->prepare($q);
-            $stmt->execute([$proyectoId]);
+            $stmt = $this->db->queryWithProject($q, [$proyectoId], $proyectoId);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (Throwable $e) {
             error_log("Error crisis activas: " . $e->getMessage());

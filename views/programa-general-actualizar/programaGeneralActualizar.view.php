@@ -435,8 +435,10 @@
 
 	// Buscar actividades del cronograma activo actual para mapearlas contra el borrador actualizado.
 	$semanaDropdown = max(1, $semanaBaseActualizacion);
-	$query = "SELECT Id, Actividad, Fecha_Inicio FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Titulo = 0 AND Fecha_Inicio IS NOT NULL AND Fecha_Fin IS NOT NULL ORDER BY Consecutivo ASC";
-	$stmt = $dbInstance->query($query, [$semanaDropdown]);
+	$tableName = TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado');
+	$projectId = TableResolver::getProjectIdByPrefix($dbPrefix);
+	$query = "SELECT Id, Actividad, Fecha_Inicio FROM {$tableName} WHERE Semana = ? AND Titulo = 0 AND Fecha_Inicio IS NOT NULL AND Fecha_Fin IS NOT NULL ORDER BY Consecutivo ASC";
+	$stmt = $dbInstance->queryWithProject($query, [$semanaDropdown], $projectId);
 	$actividadesPrevias = [];
 	while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 	    // Formato TomSelect requerido: id, title, label

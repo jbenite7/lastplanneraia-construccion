@@ -4,6 +4,7 @@ namespace App\Controllers\Programacion;
 
 use App\Controllers\BaseController;
 
+use TableResolver;
 class ProgramaGeneralActualizarController extends BaseController
 {
     public function index()
@@ -29,14 +30,14 @@ class ProgramaGeneralActualizarController extends BaseController
                 $query = "SELECT 
                             MAX(Semana) as max_overall,
                             MAX(CASE WHEN Semanal_Confirmada = 1 THEN Semana ELSE NULL END) as max_confirmed
-                          FROM {$dbName}_semanas_activas";
-                $stmt = $this->db->query($query);
+                          FROM " . TableResolver::resolveByPrefix($dbName, 'semanas_activas') . "";
+                $stmt = $this->db->queryWithProject($query);
                 $res = $stmt->fetch();
 
                 $maxOverall = (int) ($res['max_overall'] ?? 0);
                 $maxConfirmed = ($res['max_confirmed'] !== null) ? (int) $res['max_confirmed'] : null;
 
-                $stmtProgram = $this->db->query("SELECT MAX(Semana) as max_program FROM {$dbName}_programa_consolidado");
+                $stmtProgram = $this->db->queryWithProject("SELECT MAX(Semana) as max_program FROM " . TableResolver::resolveByPrefix($dbName, 'programa_consolidado') . "");
                 $programRes = $stmtProgram->fetch();
                 $maxProgramWeek = (int) ($programRes['max_program'] ?? 0);
 
@@ -58,8 +59,7 @@ class ProgramaGeneralActualizarController extends BaseController
 
                 // Obtener estado específico de la semana actual
                 if ($semanaBaseActualizacion > 0) {
-                    $stmtStatus = $this->db->prepare("SELECT Semanal_Confirmada FROM {$dbName}_semanas_activas WHERE Semana = ?");
-                    $stmtStatus->execute([$semanaBaseActualizacion]);
+                    $this->db->queryWithProject("SELECT Semanal_Confirmada FROM " . TableResolver::resolveByPrefix($dbName, 'semanas_activas') . " WHERE Semana = ?", [$semanaBaseActualizacion]);
                     $semanalConfirmada = (int) ($stmtStatus->fetchColumn() ?: 0);
                 }
 

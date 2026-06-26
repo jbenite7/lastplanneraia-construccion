@@ -6,6 +6,7 @@ use App\Support\ModuleRequestContext;
 use PDO;
 use Throwable;
 
+use TableResolver;
 class PdcAutoGenerateController
 {
     private const AUTO_CONFIDENCE_THRESHOLD = 70;
@@ -48,7 +49,7 @@ class PdcAutoGenerateController
         $totalConflictos = [];
         $totalOmitidas = 0;
 
-        if (!$this->projectTableExists("{$dbPrefix}_programa_consolidado")) {
+        if (!$this->projectTableExists("" . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . "")) {
             return ['asignadas' => 0, 'conflictos' => [], 'omitidas' => 0];
         }
 
@@ -120,7 +121,7 @@ class PdcAutoGenerateController
             $dbPrefix = $context['dbPrefix'];
             $semana = $context['semana'];
 
-            if (!$this->projectTableExists("{$dbPrefix}_pdc")) {
+            if (!$this->projectTableExists("" . TableResolver::resolveByPrefix($dbPrefix, 'pdc') . "")) {
                 $this->jsonError('No existe la tabla PDC del proyecto.', 404);
                 return;
             }
@@ -184,8 +185,8 @@ class PdcAutoGenerateController
                         $this->ensureTitleRow($dbPrefix, $semana, $tipoPaquete);
                         $subcontractIndex = $this->nextSubcontractIndex($dbPrefix, $semana, $tipoPaquete);
 
-                        $this->db->query(
-                            "INSERT INTO {$dbPrefix}_pdc (
+                        $this->db->queryWithProject(
+                            "INSERT INTO " . TableResolver::resolveByPrefix($dbPrefix, 'pdc') . " (
                                 semana, titulo, tipoPaquete, paqueteContratacion, contratos,
                                 numeroSubcontratos, subcontratoPaquete, estado,
                                 fechaElaboracionPliegos, diasElaboracionPliegos,
@@ -267,7 +268,7 @@ class PdcAutoGenerateController
 
     private function projectTableExists(string $tableName): bool
     {
-        $stmt = $this->db->query(
+        $stmt = $this->db->queryWithProject(
             "SELECT COUNT(*)
              FROM information_schema.tables
              WHERE table_schema = DATABASE() AND table_name = ?",
@@ -279,7 +280,7 @@ class PdcAutoGenerateController
 
     private function resolveMaxSemana(string $dbPrefix): int
     {
-        $stmt = $this->db->query("SELECT MAX(Semana) FROM {$dbPrefix}_semanas_activas");
+        $stmt = $this->db->queryWithProject("SELECT MAX(Semana) FROM " . TableResolver::resolveByPrefix($dbPrefix, 'semanas_activas') . "");
         return max(1, (int) $stmt->fetchColumn());
     }
 
@@ -287,7 +288,7 @@ class PdcAutoGenerateController
 
     private function loadOptionsByFamily(): array
     {
-        $stmt = $this->db->query(
+        $stmt = $this->db->queryWithProject(
             "SELECT f.id AS familia_id, f.codigo AS familia_codigo, f.nombre AS familia_nombre, f.categoria, f.orden AS familia_orden,
                     f.siempre_revision,
                     o.id AS option_id, o.tipo_contrato AS option_tipo_contrato, o.tipo_paquete AS option_tipo_paquete,
@@ -413,13 +414,13 @@ class PdcAutoGenerateController
 
     private function loadActividadesWithPackages(string $dbPrefix, int $semana): array
     {
-        $stmt = $this->db->query(
+        $stmt = $this->db->queryWithProject(
             "SELECT Id, codigo, actividad, descripcionActividad, actividadInicio, fechaInicio, tipoContrato,
                     paqueteSI1, paqueteSI2, paqueteSI3, paqueteSI4, paqueteSI5,
                     paqueteS1, paqueteS2, paqueteS3, paqueteS4, paqueteS5,
                     paqueteMO1, paqueteMO2, paqueteMO3, paqueteMO4, paqueteMO5,
                     paqueteOC1, paqueteOC2, paqueteOC3, paqueteOC4, paqueteOC5
-             FROM {$dbPrefix}_actividades
+             FROM " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . "
              WHERE semanaActualizacion = ? AND tipoContrato IS NOT NULL AND tipoContrato != ''
              ORDER BY Id ASC",
             [$semana]
@@ -429,9 +430,9 @@ class PdcAutoGenerateController
 
     private function loadExistingPdcPackages(string $dbPrefix, int $semana): array
     {
-        $stmt = $this->db->query(
+        $stmt = $this->db->queryWithProject(
             "SELECT consecutivo, tipoPaquete, paqueteContratacion, fechaInicio
-             FROM {$dbPrefix}_pdc
+             FROM " . TableResolver::resolveByPrefix($dbPrefix, 'pdc') . "
              WHERE semana = ? AND titulo = 0",
             [$semana]
         );
@@ -447,17 +448,17 @@ class PdcAutoGenerateController
     private function updateExistingPdcDates(string $dbPrefix, int $consecutivo, ?string $fechaInicio, int $newSemana): void
     {
         if ($fechaInicio === null) {
-            $this->db->query(
-                "UPDATE {$dbPrefix}_pdc SET semana = ? WHERE consecutivo = ?",
+            $this->db->queryWithProject(
+                "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'pdc') . " SET semana = ? WHERE consecutivo = ?",
                 [$newSemana, $consecutivo]
             );
             return;
         }
 
-        $stmt = $this->db->query(
+        $stmt = $this->db->queryWithProject(
             "SELECT diasElaboracionPliegos, diasEntregaPliegos, diasReciboPropuestas,
                     diasCuadrosComparativos, diasLegalizacionContrato, diasFabricacion, diasInsumosObra
-             FROM {$dbPrefix}_pdc WHERE consecutivo = ?",
+             FROM " . TableResolver::resolveByPrefix($dbPrefix, 'pdc') . " WHERE consecutivo = ?",
             [$consecutivo]
         );
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -478,8 +479,8 @@ class PdcAutoGenerateController
 
         $dates = $this->calculateProcessDates($fechaInicio, $durations);
 
-        $this->db->query(
-            "UPDATE {$dbPrefix}_pdc SET
+        $this->db->queryWithProject(
+            "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'pdc') . " SET
                 semana = ?,
                 fechaInicio = ?, fechaInicioProyectada = ?,
                 fechaElaboracionPliegos = ?, fechaEntregaPliegos = ?,
@@ -635,8 +636,8 @@ class PdcAutoGenerateController
 
     private function pdcPackageExists(string $dbPrefix, int $semana, string $tipoPaquete, string $paquete): bool
     {
-        $stmt = $this->db->query(
-            "SELECT COUNT(*) FROM {$dbPrefix}_pdc
+        $stmt = $this->db->queryWithProject(
+            "SELECT COUNT(*) FROM " . TableResolver::resolveByPrefix($dbPrefix, 'pdc') . "
              WHERE semana = ? AND titulo = 0 AND tipoPaquete = ? AND paqueteContratacion = ?",
             [$semana, $tipoPaquete, $paquete],
         );
@@ -646,8 +647,8 @@ class PdcAutoGenerateController
 
     private function ensureTitleRow(string $dbPrefix, int $semana, string $tipoPaquete): void
     {
-        $stmt = $this->db->query(
-            "SELECT COUNT(*) FROM {$dbPrefix}_pdc WHERE semana = ? AND titulo = 1 AND tipoPaquete = ?",
+        $stmt = $this->db->queryWithProject(
+            "SELECT COUNT(*) FROM " . TableResolver::resolveByPrefix($dbPrefix, 'pdc') . " WHERE semana = ? AND titulo = 1 AND tipoPaquete = ?",
             [$semana, $tipoPaquete],
         );
 
@@ -655,8 +656,8 @@ class PdcAutoGenerateController
             return;
         }
 
-        $this->db->query(
-            "INSERT INTO {$dbPrefix}_pdc (semana, titulo, tipoPaquete, paqueteContratacion, subcontratoPaquete)
+        $this->db->queryWithProject(
+            "INSERT INTO " . TableResolver::resolveByPrefix($dbPrefix, 'pdc') . " (semana, titulo, tipoPaquete, paqueteContratacion, subcontratoPaquete)
              VALUES (?, 1, ?, ?, 1)",
             [$semana, $tipoPaquete, $tipoPaquete],
         );
@@ -664,9 +665,9 @@ class PdcAutoGenerateController
 
     private function loadProjectActivities(string $dbPrefix, int $semana): array
     {
-        $stmt = $this->db->query(
+        $stmt = $this->db->queryWithProject(
             "SELECT Consecutivo, Consecutivo_en_Programa, Id, Actividad, Fecha_Inicio, COALESCE(Titulo, 0) AS Titulo
-             FROM {$dbPrefix}_programa_consolidado
+             FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . "
              WHERE Semana = ? AND COALESCE(Actividad, '') <> ''
              ORDER BY Consecutivo_en_Programa ASC, Consecutivo ASC",
             [$semana],
@@ -694,7 +695,7 @@ class PdcAutoGenerateController
 
     private function loadRules(): array
     {
-        $stmt = $this->db->query(
+        $stmt = $this->db->queryWithProject(
             "SELECT r.id, r.familia_id, r.patron_regex, r.modalidad_sugerida, r.confianza, r.prioridad,
                     f.codigo AS familia_codigo, f.nombre AS familia_nombre, f.categoria, f.siempre_revision
              FROM general_pdc_activity_rules r
@@ -708,7 +709,7 @@ class PdcAutoGenerateController
 
     private function loadProjectStrategies(string $dbPrefix, int $semana): array
     {
-        $stmt = $this->db->query(
+        $stmt = $this->db->queryWithProject(
             "SELECT familia_id, option_id
              FROM general_pdc_project_family_strategy
              WHERE db_prefix = ? AND semana = ?",
@@ -804,7 +805,7 @@ class PdcAutoGenerateController
 
     private function saveProjectStrategy(string $dbPrefix, int $semana, int $familyId, int $optionId): void
     {
-        $this->db->query(
+        $this->db->queryWithProject(
             "INSERT INTO general_pdc_project_family_strategy (db_prefix, semana, familia_id, option_id, aplicada)
              VALUES (?, ?, ?, ?, 1)
              ON DUPLICATE KEY UPDATE option_id = VALUES(option_id), aplicada = 1",
@@ -839,8 +840,8 @@ class PdcAutoGenerateController
             $paquete = $escritura['paquete'];
             $actId = $escritura['actividadId'];
 
-            $this->db->query(
-                "UPDATE {$dbPrefix}_actividades SET {$col} = ?, semanaActualizacion = ? WHERE Id = ?",
+            $this->db->queryWithProject(
+                "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . " SET {$col} = ?, semanaActualizacion = ? WHERE Id = ?",
                 [$paquete, $semana, $actId],
             );
             $escritas++;
@@ -865,12 +866,12 @@ class PdcAutoGenerateController
      */
     private function mapActividadesByConsecutivo(string $dbPrefix, int $semana): array
     {
-        $stmt = $this->db->query(
+        $stmt = $this->db->queryWithProject(
             "SELECT Id, codigo, actividad, actividadInicio, fechaInicio, tipoContrato,
                     paqueteSI1, paqueteSI2, paqueteSI3, paqueteSI4, paqueteSI5,
                     paqueteMO1, paqueteMO2, paqueteMO3, paqueteMO4, paqueteMO5,
                     paqueteS1, paqueteS2, paqueteS3, paqueteS4, paqueteS5
-             FROM {$dbPrefix}_actividades
+             FROM " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . "
              WHERE semanaActualizacion = ?",
             [$semana],
         );
@@ -1026,9 +1027,9 @@ class PdcAutoGenerateController
 
     private function nextSubcontractIndex(string $dbPrefix, int $semana, string $tipoPaquete): int
     {
-        $stmt = $this->db->query(
+        $stmt = $this->db->queryWithProject(
             "SELECT COALESCE(MAX(subcontratoPaquete), 0) + 1
-             FROM {$dbPrefix}_pdc
+             FROM " . TableResolver::resolveByPrefix($dbPrefix, 'pdc') . "
              WHERE semana = ? AND titulo = 0 AND tipoPaquete = ?",
             [$semana, $tipoPaquete],
         );

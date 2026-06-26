@@ -1003,10 +1003,11 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
                                             $dbInstance = Database::getInstance();
         $db = $_SESSION['db'];
         $semana = $_SESSION['semana'];
-        $query = "SELECT * FROM {$db}_programa_consolidado WHERE Semana=? AND Titulo=0 AND Semanas_Inicio<=12 AND Semanas_Inicio>=1 AND Ejecutado=0";
+        $tableName = TableResolver::resolveByPrefix($db, 'programa_consolidado');
+        $projectId = TableResolver::getProjectIdByPrefix($db);
+        $query = "SELECT * FROM {$tableName} WHERE Semana=? AND Titulo=0 AND Semanas_Inicio<=12 AND Semanas_Inicio>=1 AND Ejecutado=0";
         try {
-            $stmt = $dbInstance->prepare($query);
-            $stmt->execute([$semana]);
+            $stmt = $dbInstance->queryWithProject($query, [$semana], $projectId);
             while ($valores = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 $Actividad = strip_tags((string) ($valores["Actividad"] ?? ""));
                 $Actividad = str_replace('"', '\"', $Actividad);

@@ -15,6 +15,15 @@ if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbName)) {
     die(json_encode(["respuesta" => "ERROR", "mensaje" => "Nombre de base de datos inválido."]));
 }
 
+// Resolve table names via TableResolver
+$tSemanasActivas = TableResolver::resolveByPrefix($dbName, 'semanas_activas');
+
+// Set project context for queryWithProject auto-injection
+$projectId = TableResolver::getProjectIdByPrefix($dbName);
+if ($projectId) {
+    $dbInstance->setProjectContext($projectId);
+}
+
 $permisoCodigo = $_SESSION['permiso'] ?? '';
 $rolHumano = RbacCatalog::getRoleName($permisoCodigo);
 
@@ -31,7 +40,7 @@ $arreglo = [
 ];
 
 try {
-    $stmtConteo = $dbInstance->query("SELECT COUNT(*) AS total FROM {$dbName}_semanas_activas");
+    $stmtConteo = $dbInstance->queryWithProject("SELECT COUNT(*) AS total FROM {$tSemanasActivas}");
     $dataConteo = $stmtConteo->fetch();
     $conteo = (int) ($dataConteo["total"] ?? 0);
 
@@ -48,8 +57,8 @@ try {
         $_SESSION["Max_Semana"] = 0;
         $arreglo["listadoSemanas"] = [""];
     } else {
-        $sqlUltima = "SELECT Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem FROM {$dbName}_semanas_activas WHERE Semana = (SELECT MAX(Semana) FROM {$dbName}_semanas_activas)";
-        $stmtUltima = $dbInstance->query($sqlUltima);
+        $sqlUltima = "SELECT Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem FROM {$tSemanasActivas} WHERE Semana = (SELECT MAX(Semana) FROM {$tSemanasActivas})";
+        $stmtUltima = $dbInstance->queryWithProject($sqlUltima);
         $dataUltima = $stmtUltima->fetch();
 
         $arreglo["Fecha_Inicio_SemYMD"] = $dataUltima["Fecha_Inicio_Sem"];
@@ -62,11 +71,11 @@ try {
         $arreglo["Max_Semana"] = $dataUltima["Semana"];
         $_SESSION["Max_Semana"] = $dataUltima["Semana"];
 
-        $sqlDetalles = "SELECT Semanal_Confirmada, fechaCierreCompromisos, fechaCreacionSemana, 
-                       (SELECT SUM(reprogramacion) FROM {$dbName}_semanas_activas WHERE Semana <= ?) AS versionCronograma 
-                       FROM {$dbName}_semanas_activas WHERE Semana = ?";
+        $sqlDetalles = "SELECT Semanal_Confirmada, fechaCierreCompromisos, fechaCreacionSemana,
+                       (SELECT SUM(reprogramacion) FROM {$tSemanasActivas} WHERE Semana <= ?) AS versionCronograma
+                       FROM {$tSemanasActivas} WHERE Semana = ?";
 
-        $stmtDetalles = $dbInstance->query($sqlDetalles, [$semana, $semana]);
+        $stmtDetalles = $dbInstance->queryWithProject($sqlDetalles, [$semana, $semana]);
         $dataDetalles = $stmtDetalles->fetch();
 
         if ($dataDetalles) {
@@ -83,7 +92,7 @@ try {
             $_SESSION["versionCronograma"] = $dataDetalles["versionCronograma"];
         }
 
-        $stmtLista = $dbInstance->query("SELECT Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem FROM {$dbName}_semanas_activas");
+        $stmtLista = $dbInstance->queryWithProject("SELECT Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem FROM {$tSemanasActivas}");
         while ($row = $stmtLista->fetch()) {
             $arreglo["listadoSemanas"][] = $row;
         }

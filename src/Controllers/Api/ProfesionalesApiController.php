@@ -8,6 +8,7 @@ use App\Security\RbacManager;
 use PDO;
 use Throwable;
 
+use TableResolver;
 class ProfesionalesApiController
 {
     private const ALLOWED_CARGOS = [
@@ -53,15 +54,15 @@ class ProfesionalesApiController
             $syncSummary = $this->syncService->syncProjectProfessionals($dbPrefix);
 
             $tables = [
-                "{$dbPrefix}_programa" => "Responsable_AIA",
-                "{$dbPrefix}_cip" => "profesional",
-                "{$dbPrefix}_programacion_semanal" => "Responsable_AIA",
-                "{$dbPrefix}_programa_consolidado" => "Responsable_AIA",
+                "" . TableResolver::resolveByPrefix($dbPrefix, 'programa') . "" => "Responsable_AIA",
+                "" . TableResolver::resolveByPrefix($dbPrefix, 'cip') . "" => "profesional",
+                "" . TableResolver::resolveByPrefix($dbPrefix, 'programacion_semanal') . "" => "Responsable_AIA",
+                "" . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . "" => "Responsable_AIA",
             ];
 
             $dependencyChecks = [];
             foreach ($tables as $tbl => $col) {
-                $check = $this->db->query("SHOW TABLES LIKE '$tbl'")->fetch();
+                $check = $this->db->queryWithProject("SHOW TABLES LIKE '$tbl'")->fetch();
                 if ($check) {
                     $dependencyChecks[] = "(SELECT COUNT(*) FROM $tbl WHERE $tbl.$col = p.nombre) > 0";
                 }
@@ -69,8 +70,8 @@ class ProfesionalesApiController
 
             $depSql = !empty($dependencyChecks) ? ", ( " . implode(" OR ", $dependencyChecks) . " ) as has_dependencies" : ", 0 as has_dependencies";
 
-            $query = "SELECT p.id, p.nombre, p.email, p.cargo, p.activo $depSql FROM {$dbPrefix}_profesionales p WHERE p.nombre IS NOT NULL AND TRIM(p.nombre) != '' ORDER BY p.id ASC";
-            $data = $this->db->query($query)->fetchAll(PDO::FETCH_ASSOC);
+            $query = "SELECT p.id, p.nombre, p.email, p.cargo, p.activo $depSql FROM " . TableResolver::resolveByPrefix($dbPrefix, 'profesionales') . " p WHERE p.nombre IS NOT NULL AND TRIM(p.nombre) != '' ORDER BY p.id ASC";
+            $data = $this->db->queryWithProject($query)->fetchAll(PDO::FETCH_ASSOC);
             $data = $this->syncService->decorateProjectProfessionals($dbPrefix, $data);
 
             foreach ($data as &$row) {
@@ -186,8 +187,8 @@ class ProfesionalesApiController
                 }
 
                 $activo = $this->normalizarBooleano($rowChanges['activo'] ?? $actual['activo']);
-                $resultado = $this->db->query(
-                    "UPDATE {$dbPrefix}_profesionales SET activo = ? WHERE id = ?",
+                $resultado = $this->db->queryWithProject(
+                    "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'profesionales') . " SET activo = ? WHERE id = ?",
                     [$activo, $id],
                 );
 
@@ -211,8 +212,8 @@ class ProfesionalesApiController
                 continue;
             }
 
-            $resultado = $this->db->query(
-                "UPDATE {$dbPrefix}_profesionales SET nombre = ?, email = ?, cargo = ?, activo = ? WHERE id = ?",
+            $resultado = $this->db->queryWithProject(
+                "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'profesionales') . " SET nombre = ?, email = ?, cargo = ?, activo = ? WHERE id = ?",
                 [$actualizado['nombre'], $actualizado['email'], $actualizado['cargo'], $actualizado['activo'], $id],
             );
 
@@ -236,16 +237,16 @@ class ProfesionalesApiController
     private function actualizar_dependencias_nombre(string $dbPrefix, string $oldName, string $newName): void
     {
         $tablesToUpdate = [
-            "{$dbPrefix}_programa" => "Responsable_AIA",
-            "{$dbPrefix}_programacion_semanal" => "Responsable_AIA",
-            "{$dbPrefix}_programa_consolidado" => "Responsable_AIA",
-            "{$dbPrefix}_cip" => "profesional",
-            "{$dbPrefix}_indicadores_generales" => "subcontratista_profesional",
+            "" . TableResolver::resolveByPrefix($dbPrefix, 'programa') . "" => "Responsable_AIA",
+            "" . TableResolver::resolveByPrefix($dbPrefix, 'programacion_semanal') . "" => "Responsable_AIA",
+            "" . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . "" => "Responsable_AIA",
+            "" . TableResolver::resolveByPrefix($dbPrefix, 'cip') . "" => "profesional",
+            "" . TableResolver::resolveByPrefix($dbPrefix, 'indicadores_generales') . "" => "subcontratista_profesional",
         ];
 
         foreach ($tablesToUpdate as $tbl => $col) {
-            if ($this->db->query("SHOW TABLES LIKE '$tbl'")->fetch()) {
-                $this->db->query("UPDATE $tbl SET $col = ? WHERE $col = ?", [$newName, $oldName]);
+            if ($this->db->queryWithProject("SHOW TABLES LIKE '$tbl'")->fetch()) {
+                $this->db->queryWithProject("UPDATE $tbl SET $col = ? WHERE $col = ?", [$newName, $oldName]);
             }
         }
     }
@@ -266,7 +267,7 @@ class ProfesionalesApiController
             return;
         }
 
-        $res = $this->db->query("INSERT INTO {$dbPrefix}_profesionales (nombre, email, cargo, activo) VALUES (?, ?, ?, 1)", [
+        $res = $this->db->queryWithProject("INSERT INTO " . TableResolver::resolveByPrefix($dbPrefix, 'profesionales') . " (nombre, email, cargo, activo) VALUES (?, ?, ?, 1)", [
             $data['nombre'], $data['email'], $data['cargo'],
         ]);
 
@@ -298,22 +299,22 @@ class ProfesionalesApiController
         }
 
         $tables = [
-            "{$dbPrefix}_programa" => "Responsable_AIA",
-            "{$dbPrefix}_cip" => "profesional",
-            "{$dbPrefix}_programacion_semanal" => "Responsable_AIA",
-            "{$dbPrefix}_programa_consolidado" => "Responsable_AIA",
+            "" . TableResolver::resolveByPrefix($dbPrefix, 'programa') . "" => "Responsable_AIA",
+            "" . TableResolver::resolveByPrefix($dbPrefix, 'cip') . "" => "profesional",
+            "" . TableResolver::resolveByPrefix($dbPrefix, 'programacion_semanal') . "" => "Responsable_AIA",
+            "" . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . "" => "Responsable_AIA",
         ];
 
         foreach ($tables as $tbl => $col) {
-            if ($this->db->query("SHOW TABLES LIKE '$tbl'")->fetch()) {
-                if ($this->db->query("SELECT COUNT(*) FROM $tbl WHERE $col = ?", [$nombre])->fetchColumn() > 0) {
+            if ($this->db->queryWithProject("SHOW TABLES LIKE '$tbl'")->fetch()) {
+                if ($this->db->queryWithProject("SELECT COUNT(*) FROM $tbl WHERE $col = ?", [$nombre])->fetchColumn() > 0) {
                     $this->json(["status" => "error", "message" => "No se puede eliminar: Tiene registros asociados."]);
                     return;
                 }
             }
         }
 
-        if ($this->db->query("DELETE FROM {$dbPrefix}_profesionales WHERE id = ?", [$id])) {
+        if ($this->db->queryWithProject("DELETE FROM " . TableResolver::resolveByPrefix($dbPrefix, 'profesionales') . " WHERE id = ?", [$id])) {
             $this->db->logActivity('Profesionales', 'ELIMINAR', "Eliminó profesional: $nombre", $dbPrefix);
             $this->json(["status" => "success", "message" => "Profesional eliminado."]);
         } else {
@@ -330,7 +331,7 @@ class ProfesionalesApiController
 
     private function obtenerProfesional(string $dbPrefix, int $id): ?array
     {
-        $stmt = $this->db->query("SELECT id, nombre, email, cargo, activo FROM {$dbPrefix}_profesionales WHERE id = ?", [$id]);
+        $stmt = $this->db->queryWithProject("SELECT id, nombre, email, cargo, activo FROM " . TableResolver::resolveByPrefix($dbPrefix, 'profesionales') . " WHERE id = ?", [$id]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         return $row ?: null;
     }
@@ -395,14 +396,14 @@ class ProfesionalesApiController
     {
         $errores = [];
         $params = [];
-        $sql = "SELECT id, email FROM {$dbPrefix}_profesionales";
+        $sql = "SELECT id, email FROM " . TableResolver::resolveByPrefix($dbPrefix, 'profesionales') . "";
 
         if ($excludeId !== null) {
             $sql .= ' WHERE id != ?';
             $params[] = $excludeId;
         }
 
-        $rows = $this->db->query($sql, $params)->fetchAll(PDO::FETCH_ASSOC);
+        $rows = $this->db->queryWithProject($sql, $params)->fetchAll(PDO::FETCH_ASSOC);
         $emailNormalizado = $this->normalizarEmail($data['email']);
 
         foreach ($rows as $row) {

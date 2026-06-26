@@ -5,6 +5,7 @@ namespace App\Controllers\Api;
 use PDO;
 use Throwable;
 
+use TableResolver;
 class CnpApiController
 {
     private $db;
@@ -27,8 +28,8 @@ class CnpApiController
         }
 
         try {
-            $query = "SELECT * FROM {$dbPrefix}_programacion_semanal WHERE Semana = ? AND Activa = 0";
-            $data = $this->db->query($query, [$semana])->fetchAll(PDO::FETCH_ASSOC);
+            $query = "SELECT * FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programacion_semanal') . " WHERE Semana = ? AND Activa = 0";
+            $data = $this->db->queryWithProject($query, [$semana])->fetchAll(PDO::FETCH_ASSOC);
 
             header('Content-Type: application/json; charset=utf-8');
             echo json_encode(["data" => $data], JSON_UNESCAPED_UNICODE);
@@ -50,8 +51,8 @@ class CnpApiController
         }
 
         try {
-            $query = "UPDATE {$dbPrefix}_programacion_semanal SET Categoria_CNP = ?, CNP = ?, Observaciones_CNP = ? WHERE Consecutivo = ?";
-            $res = $this->db->query($query, [$_POST["Categoria_CNP"], $_POST["CNP"], $_POST["Observaciones_CNP"] ?? '', $id]);
+            $query = "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'programacion_semanal') . " SET Categoria_CNP = ?, CNP = ?, Observaciones_CNP = ? WHERE Consecutivo = ?";
+            $res = $this->db->queryWithProject($query, [$_POST["Categoria_CNP"], $_POST["CNP"], $_POST["Observaciones_CNP"] ?? '', $id]);
             $this->jsonResponse($res ? "BIEN" : "ERROR");
         } catch (Throwable $t) {
             $this->jsonError("Error CNP Save: " . $t->getMessage());
@@ -71,8 +72,8 @@ class CnpApiController
         }
 
         try {
-            $query = "UPDATE {$dbPrefix}_programacion_semanal SET Activa='1', Categoria_CNP=NULL, CNP=NULL, Observaciones_CNP=NULL, Reprogramada_Por_Usuario=1 WHERE Consecutivo=?";
-            $res = $this->db->query($query, [$id]);
+            $query = "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'programacion_semanal') . " SET Activa='1', Categoria_CNP=NULL, CNP=NULL, Observaciones_CNP=NULL, Reprogramada_Por_Usuario=1 WHERE Consecutivo=?";
+            $res = $this->db->queryWithProject($query, [$id]);
             $this->jsonResponse($res ? "BIEN" : "ERROR");
         } catch (Throwable $t) {
             $this->jsonError("Error CNP Reprogramar: " . $t->getMessage());

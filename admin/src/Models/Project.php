@@ -437,13 +437,79 @@ class Project
      */
     private function createProjectTables($prefix, $area = 'Construccion')
     {
-        // Pre-Construccion: solo tablas mínimas para MVP
+        // Pre-Construccion: tablas completas + columnas PC
         if (strtoupper($area) === 'PRE-CONSTRUCCION') {
             $this->createPreConstructionTables($prefix);
             return;
         }
 
-        $queries = [
+        // 1. Siempre crear tablas por-proyecto (compatibilidad hacia atrás)
+        foreach ($this->getProjectTableQueries($prefix) as $sql) {
+            $this->db->query($sql);
+        }
+
+        // 2. Si USE_GLOBAL_TABLES=ON, también crear las tablas globales (sin prefijo, con project_id)
+        if (\TableResolver::useGlobalTables()) {
+            $this->createGlobalTables();
+        }
+    }
+
+    /**
+     * Crea las 10 tablas globales (sin prefijo de proyecto) con project_id.
+     * Solo se ejecuta cuando USE_GLOBAL_TABLES=true.
+     *
+     * @return void
+     */
+    private function createGlobalTables()
+    {
+        $suffixes = $this->getTableSuffixes();
+        foreach ($suffixes as $suffix) {
+            // Generar CREATE TABLE sin prefijo y agregar project_id como primera columna
+            $tableType = ltrim($suffix, '_');
+            $queries = $this->getProjectTableQueries('__placeholder__');
+            $idx = array_search($suffix, $suffixes);
+            if ($idx !== false && isset($queries[$idx])) {
+                $sql = $queries[$idx];
+                // Reemplazar el prefijo place holder por el nombre de tabla global
+                $sql = str_replace('__placeholder__' . $suffix, $tableType, $sql);
+                // Insertar project_id después de AUTO_INCREMENT PRIMARY KEY
+                $sql = preg_replace(
+                    '/(AUTO_INCREMENT PRIMARY KEY)/',
+                    '$1,`project_id` int NOT NULL',
+                    $sql
+                );
+                // Añadir índice en project_id
+                $sql = rtrim($sql, ')');
+                $sql .= ', KEY `idx_project_id` (`project_id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci';
+                $this->db->query($sql);
+            }
+        }
+    }
+
+    /**
+     * Retorna los sufijos de tabla estándar del proyecto.
+     *
+     * @return string[]
+     */
+    private function getTableSuffixes()
+    {
+        return [
+            '_actividades', '_cambios', '_cic', '_pdc', '_profesionales',
+            '_programa', '_programacion_semanal', '_programa_consolidado',
+            '_semanas_activas', '_subcontratistas',
+        ];
+    }
+
+    /**
+     * Retorna las 10 consultas CREATE TABLE estándar para proyectos.
+     * Las tablas se crean con IF NOT EXISTS para idempotencia.
+     *
+     * @param string $prefix Prefijo de base de datos del proyecto.
+     * @return array
+     */
+    private function getProjectTableQueries($prefix)
+    {
+        return [
             // milanCampestre_actividades
             "CREATE TABLE IF NOT EXISTS `{$prefix}_actividades` (
               `Id` int(4) NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -800,273 +866,211 @@ class Project
               `activo` int(11) NOT NULL DEFAULT 1
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci",
         ];
-
-        foreach ($queries as $sql) {
-            $this->db->query($sql);
-        }
     }
 
 
     /**
-     * Crea las tablas mínimas para proyectos de Pre-Construccion (MVP).
-     * Incluye: _programa, _programa_consolidado, _semanas_activas,
-     * _profesionales, _subcontratistas (Interesados Externos),
-     * _programacion_semanal, _cic.
+     * Crea las 16 tablas estándar para proyectos de Pre-Construccion
+     * (misma estructura que Construccion) más las columnas específicas de PC.
      *
-     * CNC/CNP no necesitan tablas per-proyecto: el catálogo global es
-     * general_cnc (columna Area distingue Construccion/Pre-Construccion)
-     * y los registros van en columnas de _programacion_semanal.
-     *
-     * _programacion_semanal y _cic son requeridos por SemanalApiController
-     * (autoprogramar, confirmarSemana, sanear), que no distingue Area.
+     * 1. Crea las 10 tablas estándar via getProjectTableQueries()
+     * 2. Crea las 6 tablas adicionales (_auto_program_log, _lps_*, _pg_tracking, _pi_shared_*)
+     * 3. Aplica columnas PC específicas via applyPcColumnModifications()
      *
      * @param string $prefix El prefijo (Base_de_Datos) para las tablas.
      * @return void
      */
     private function createPreConstructionTables($prefix)
     {
-        $queries = [
-            // _programa (reutiliza esquema de construcción)
-            "CREATE TABLE IF NOT EXISTS `{$prefix}_programa` (
-              `Consecutivo` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-              `Id` varchar(500) DEFAULT NULL,
-              `Actividad` varchar(500) DEFAULT NULL,
-              `Titulo` int(11) DEFAULT NULL,
-              `Fecha_Inicio` date DEFAULT NULL,
-              `Fecha_Fin` date DEFAULT NULL,
-              `Ruta_Critica` int(11) DEFAULT NULL,
-              `Ejecutado` float DEFAULT 0,
-              `Estado` varchar(50) DEFAULT NULL,
-              `Semanas_Inicio` int(1) DEFAULT 0,
-              `Estado_Restricciones` float DEFAULT 0,
-              `D_y_E` float DEFAULT 0,
-              `Materiales` float DEFAULT 0,
-              `MdeO` float DEFAULT 0,
-              `Equipos` float DEFAULT 0,
-              `Predecesora` float DEFAULT 0,
-              `Pdto_Cons` float DEFAULT 0,
-              `Modelo` varchar(9) DEFAULT '0',
-              `restriccion_pc_1` VARCHAR(10) DEFAULT '0%',
-              `restriccion_pc_2` VARCHAR(10) DEFAULT '0%',
-              `restriccion_pc_3` VARCHAR(10) DEFAULT '0%',
-              `restriccion_pc_4` VARCHAR(10) DEFAULT '0%',
-              `Responsable_AIA` varchar(100) DEFAULT NULL,
-              `Observaciones` mediumtext DEFAULT NULL,
-              `Ult_Act_Est` date DEFAULT NULL,
-              `Ult_Act_Restr` date DEFAULT NULL
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci",
+        // Paso 1: 10 tablas estándar (mismas que Construccion)
+        foreach ($this->getProjectTableQueries($prefix) as $sql) {
+            $this->db->query($sql);
+        }
 
-            // _programa_consolidado (reutiliza esquema de construcción)
-            "CREATE TABLE IF NOT EXISTS `{$prefix}_programa_consolidado` (
-              `Consecutivo` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-              `Semana` int(3) NOT NULL,
-              `Consecutivo_en_Programa` int(11) NOT NULL,
-              `Id` varchar(500) DEFAULT NULL,
-              `Actividad` varchar(500) DEFAULT NULL,
-              `Titulo` int(11) DEFAULT NULL,
-              `Fecha_Inicio` date DEFAULT NULL,
-              `Fecha_Fin` date DEFAULT NULL,
-              `Ruta_Critica` int(11) DEFAULT NULL,
-              `Ejecutado` float DEFAULT 0,
-              `Estado` varchar(100) DEFAULT NULL,
-              `Semanas_Inicio` int(10) DEFAULT 0,
-              `Estado_Restricciones` float NOT NULL DEFAULT 0,
-              `D_y_E` varchar(9) NOT NULL DEFAULT '0',
-              `Materiales` varchar(9) NOT NULL DEFAULT '0',
-              `MdeO` varchar(9) NOT NULL DEFAULT '0',
-              `Equipos` varchar(9) NOT NULL DEFAULT '0',
-              `Predecesora` varchar(9) NOT NULL DEFAULT '0',
-              `Pdto_Cons` varchar(9) NOT NULL DEFAULT '0',
-              `Modelo` varchar(9) NOT NULL DEFAULT '0',
-              `restriccion_pc_1` VARCHAR(10) DEFAULT '0%',
-              `restriccion_pc_2` VARCHAR(10) DEFAULT '0%',
-              `restriccion_pc_3` VARCHAR(10) DEFAULT '0%',
-              `restriccion_pc_4` VARCHAR(10) DEFAULT '0%',
-              `Sub_Contratista` varchar(100) DEFAULT NULL,
-              `Responsable_AIA` varchar(100) DEFAULT NULL,
-              `Observaciones` mediumtext DEFAULT NULL,
-              `Ult_Act_Est` date DEFAULT NULL,
-              `Ult_Act_Restr` date DEFAULT NULL,
-              `Activa` int(1) NOT NULL DEFAULT 0,
-              `Ejecutado_Siguiente_Semana` float DEFAULT NULL,
-              `codigo_actividad` varchar(11) DEFAULT NULL,
-              `medir_productividad` int(11) DEFAULT 0,
-              `cantidad_ppto` int(11) DEFAULT NULL,
-              `unidad` varchar(20) DEFAULT NULL,
-              `programaAnteriorAsociar` varchar(500) DEFAULT NULL
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci",
+        // 1b. Si USE_GLOBAL_TABLES=ON, también crear las tablas globales
+        if (\TableResolver::useGlobalTables()) {
+            $this->createGlobalTables();
+        }
 
-            // _semanas_activas
-            "CREATE TABLE IF NOT EXISTS `{$prefix}_semanas_activas` (
-              `Id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-              `Semana` int(11) NOT NULL,
-              `Fecha_Inicio_Sem` date NOT NULL,
-              `Fecha_Fin_Sem` date NOT NULL,
-              `Semanal_Confirmada` int(1) DEFAULT 0,
-              `fechaCierreCompromisos` date DEFAULT NULL,
-              `fecha_ultimo_saneo` DATETIME NULL DEFAULT NULL,
-              `fechaCreacionSemana` date DEFAULT NULL,
-              `reprogramacion` int(11) NOT NULL DEFAULT 0,
-              `diferenciaEstructuraCron` int(11) NOT NULL DEFAULT 0
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci",
+        // Paso 2: 6 tablas adicionales estándar (creadas por patches en Construccion)
+        $extraQueries = [
+            // _auto_program_log
+            "CREATE TABLE IF NOT EXISTS `{$prefix}_auto_program_log` (
+                `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                `semana` INT NOT NULL,
+                `consecutivo` INT NOT NULL,
+                `accion` ENUM('comprometer','descomprometer','insert_cnp') NOT NULL,
+                `detalle` TEXT,
+                `categoria_cnp` VARCHAR(100) DEFAULT NULL,
+                `cnp` VARCHAR(100) DEFAULT NULL,
+                `creado_en` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                KEY `idx_semana` (`semana`),
+                KEY `idx_consecutivo` (`consecutivo`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
 
-            // _profesionales
-            "CREATE TABLE IF NOT EXISTS `{$prefix}_profesionales` (
-              `id` int(3) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-              `nombre` varchar(100) NOT NULL,
-              `email` varchar(100) NOT NULL,
-              `cargo` varchar(100) NOT NULL,
-              `activo` int(11) NOT NULL DEFAULT 1
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci",
+            // _lps_escalamientos
+            "CREATE TABLE IF NOT EXISTS `{$prefix}_lps_escalamientos` (
+                `id` int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                `proyecto_id` int NOT NULL,
+                `semana` int NOT NULL,
+                `consecutivo_en_programa` int NOT NULL,
+                `modulo` ENUM('PG','PI','PS') NOT NULL,
+                `trigger_origen` varchar(50) NOT NULL,
+                `nivel_actual` tinyint NOT NULL DEFAULT 1,
+                `estado` ENUM('Activo','Mitigado','Cerrado') NOT NULL DEFAULT 'Activo',
+                `fecha_detonacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+                `fecha_ultimo_escalamiento` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+                `fecha_cierre` timestamp NULL DEFAULT NULL,
+                `usuario_cierre_id` int DEFAULT NULL,
+                `justificacion_cierre` mediumtext,
+                KEY `idx_semana_consecutivo` (`semana`,`consecutivo_en_programa`),
+                KEY `idx_estado_nivel` (`estado`,`nivel_actual`),
+                KEY `idx_proyecto` (`proyecto_id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
 
-            // _subcontratistas (Interesados Externos)
-            "CREATE TABLE IF NOT EXISTS `{$prefix}_subcontratistas` (
-              `Id` int(3) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-              `subcontratista` varchar(200) NOT NULL,
-              `correo_contacto` varchar(200) NOT NULL,
-              `NIT` bigint(10) NOT NULL,
-              `alcance` varchar(200) NOT NULL,
-              `tipo_proveedor` varchar(200) NOT NULL,
-              `activo` int(11) NOT NULL DEFAULT 1
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci",
+            // _lps_drawer_comentarios (sin FK para idempotencia)
+            "CREATE TABLE IF NOT EXISTS `{$prefix}_lps_drawer_comentarios` (
+                `id` int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                `proyecto_id` int NOT NULL,
+                `consecutivo_en_programa` int NOT NULL,
+                `semana` int NOT NULL,
+                `usuario_id` int NOT NULL,
+                `comentario` mediumtext NOT NULL,
+                `escalamiento_id` int DEFAULT NULL,
+                `parent_id` int DEFAULT NULL,
+                `menciones` json DEFAULT NULL,
+                `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+                KEY `idx_comentario_actividad` (`consecutivo_en_programa`,`semana`),
+                KEY `idx_parent` (`parent_id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
 
-            // _programacion_semanal (requerido por SemanalApiController: autoprogramar,
-            // confirmarSemana, sanear, etc. Schema completo igual a Construccion para
-            // que el controlador PS -que no distingue Area- funcione en PC).
-            "CREATE TABLE IF NOT EXISTS `{$prefix}_programacion_semanal` (
-              `Consecutivo` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-              `Semana` int(3) DEFAULT NULL,
-              `Consecutivo_En_Programa` int(11) NOT NULL,
-              `Id` varchar(500) DEFAULT NULL,
-              `Actividad` varchar(500) DEFAULT NULL,
-              `Descripcion` mediumtext DEFAULT NULL,
-              `Ubicacion` mediumtext DEFAULT NULL,
-              `Fecha_Inicio` date DEFAULT NULL,
-              `Fecha_Fin` date DEFAULT NULL,
-              `Sub_Contratista` varchar(200) DEFAULT NULL,
-              `Responsable_AIA` varchar(200) DEFAULT NULL,
-              `Empresa` varchar(200) NOT NULL DEFAULT 'AIA',
-              `Ejecutado` float DEFAULT NULL,
-              `medir_productividad` int(11) DEFAULT 0,
-              `Unidad` varchar(10) DEFAULT NULL,
-              `cantidad_ppto` int(11) DEFAULT NULL,
-              `Cantidad_Sugerida` float DEFAULT NULL,
-              `Compromiso` float DEFAULT NULL,
-              `Ejecutado_Real` float DEFAULT NULL,
-              `P_Completado` float DEFAULT NULL,
-              `PAC` int(1) DEFAULT NULL,
-              `Critica` int(1) DEFAULT NULL,
-              `Atrasada` int(1) DEFAULT NULL,
-              `Activa` varchar(3) DEFAULT NULL,
-              `Reprogramada_Por_Usuario` TINYINT(1) NOT NULL DEFAULT 0,
-              `Es_TNP` TINYINT(1) NOT NULL DEFAULT 0,
-              `Categoria_CP` VARCHAR(100) DEFAULT NULL,
-              `CP` VARCHAR(255) DEFAULT NULL,
-              `Observaciones_CP` TEXT DEFAULT NULL,
-              `Prog_Sin_Restricciones_100` int(1) DEFAULT NULL,
-              `Categoria_CNP` varchar(100) DEFAULT NULL,
-              `CNP` varchar(100) DEFAULT NULL,
-              `Observaciones_CNP` mediumtext DEFAULT NULL,
-              `Categoria_CNC` varchar(100) DEFAULT NULL,
-              `CNC` varchar(100) DEFAULT NULL,
-              `Observaciones_CNC` mediumtext DEFAULT NULL,
-              `Rendimientos` varchar(500) DEFAULT NULL,
-              `codigo_actividad` varchar(11) DEFAULT NULL,
-              `alerta_crisis` TINYINT(1) NOT NULL DEFAULT 0,
-              `reprogramaciones_semanales` INT NOT NULL DEFAULT 0,
-              INDEX `idx_crisis_semanal` (`Semana`, `alerta_crisis`),
-              INDEX `idx_consecutivo_semanal` (`Consecutivo_En_Programa`, `Semana`)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci",
+            // _pg_tracking
+            "CREATE TABLE IF NOT EXISTS `{$prefix}_pg_tracking` (
+                `consecutivo_en_programa` INT NOT NULL,
+                `semana` INT NOT NULL,
+                `fecha_inicio` DATE DEFAULT NULL,
+                `fecha_fin` DATE DEFAULT NULL,
+                `estado` VARCHAR(100) DEFAULT NULL,
+                `restricciones_hash` CHAR(32) DEFAULT NULL,
+                `fechas_hash` CHAR(32) DEFAULT NULL,
+                `estado_hash` CHAR(32) DEFAULT NULL,
+                `titulo` TINYINT(1) NOT NULL DEFAULT 0,
+                `ultimo_detectado` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                PRIMARY KEY (`consecutivo_en_programa`, `semana`),
+                KEY `idx_semana` (`semana`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
 
-            // _cic (requerido por SemanalApiController::syncCic al confirmar semana).
-            // Schema completo igual a Construccion.
-            "CREATE TABLE IF NOT EXISTS `{$prefix}_cic` (
-              `Id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-              `Semana` int(3) DEFAULT NULL,
-              `subcontratista` varchar(200) DEFAULT NULL,
-              `correo_contacto` varchar(200) DEFAULT NULL,
-              `NIT` varchar(10) DEFAULT NULL,
-              `alcance` varchar(200) DEFAULT NULL,
-              `tipo_proveedor` varchar(200) DEFAULT NULL,
-              `PAC` varchar(11) DEFAULT 'NA',
-              `PAC_Acum` varchar(11) DEFAULT 'NA',
-              `P_Completado` varchar(11) DEFAULT 'NA',
-              `P_Completado_Acum` varchar(11) DEFAULT 'NA',
-              `Calidad` varchar(11) NOT NULL DEFAULT 'NR',
-              `Calidad_Acum` varchar(11) NOT NULL DEFAULT 'NR',
-              `GSA` varchar(11) NOT NULL DEFAULT 'NR',
-              `GSA_Acum` varchar(11) NOT NULL DEFAULT 'NR',
-              `SST` varchar(11) NOT NULL DEFAULT 'NR',
-              `SST_Acum` varchar(11) NOT NULL DEFAULT 'NR',
-              `ADM` varchar(11) NOT NULL DEFAULT 'NR',
-              `ADM_Acum` varchar(11) NOT NULL DEFAULT 'NR',
-              `Cal_Integral` float DEFAULT NULL,
-              `Cal_Integral_Acum` float DEFAULT NULL,
-              `Observaciones` mediumtext DEFAULT NULL,
-              `mdo_cal_1` varchar(5) DEFAULT 'NR',
-              `mdo_cal_2` varchar(5) DEFAULT 'NR',
-              `mdo_cal_3` varchar(5) DEFAULT 'NR',
-              `mdo_adm_1` varchar(5) DEFAULT 'NR',
-              `mdo_adm_2` varchar(5) DEFAULT 'NR',
-              `mdo_adm_3` varchar(5) DEFAULT 'NR',
-              `mdo_adm_4` varchar(5) DEFAULT 'NR',
-              `mdo_adm_5` varchar(5) DEFAULT 'NR',
-              `mdo_gsa_1` varchar(5) DEFAULT 'NR',
-              `mdo_gsa_2` varchar(5) DEFAULT 'NR',
-              `mdo_gsa_3` varchar(5) DEFAULT 'NR',
-              `mdo_gsa_4` varchar(5) DEFAULT 'NR',
-              `mdo_gsa_5` varchar(5) DEFAULT 'NR',
-              `mdo_gsa_6` varchar(5) DEFAULT 'NR',
-              `mdo_gsa_7` varchar(5) DEFAULT 'NR',
-              `mdo_gsa_8` varchar(5) DEFAULT 'NR',
-              `mdo_sst_1` varchar(5) DEFAULT 'NR',
-              `mdo_sst_2` varchar(5) DEFAULT 'NR',
-              `mdo_sst_3` varchar(5) DEFAULT 'NR',
-              `mdo_sst_4` varchar(5) DEFAULT 'NR',
-              `mdo_sst_5` varchar(5) DEFAULT 'NR',
-              `mdo_sst_6` varchar(5) DEFAULT 'NR',
-              `mdo_sst_7` varchar(5) DEFAULT 'NR',
-              `mdo_sst_8` varchar(5) DEFAULT 'NR',
-              `mdo_sst_9` varchar(5) DEFAULT 'NR',
-              `mdo_sst_10` varchar(5) DEFAULT 'NR',
-              `si_cal_1` varchar(5) DEFAULT 'NR',
-              `si_cal_2` varchar(5) DEFAULT 'NR',
-              `si_cal_3` varchar(5) DEFAULT 'NR',
-              `si_adm_1` varchar(5) DEFAULT 'NR',
-              `si_adm_2` varchar(5) DEFAULT 'NR',
-              `si_adm_3` varchar(5) DEFAULT 'NR',
-              `si_adm_4` varchar(5) DEFAULT 'NR',
-              `si_adm_5` varchar(5) DEFAULT 'NR',
-              `si_adm_6` varchar(5) DEFAULT 'NR',
-              `si_gsa_1` varchar(5) DEFAULT 'NR',
-              `si_gsa_2` varchar(5) DEFAULT 'NR',
-              `si_gsa_3` varchar(5) DEFAULT 'NR',
-              `si_gsa_4` varchar(5) DEFAULT 'NR',
-              `si_gsa_5` varchar(5) DEFAULT 'NR',
-              `si_gsa_6` varchar(5) DEFAULT 'NR',
-              `si_gsa_7` varchar(5) DEFAULT 'NR',
-              `si_gsa_8` varchar(5) DEFAULT 'NR',
-              `si_gsa_9` varchar(5) DEFAULT 'NR',
-              `si_gsa_10` varchar(5) DEFAULT 'NR',
-              `si_gsa_11` varchar(5) DEFAULT 'NR',
-              `si_gsa_12` varchar(5) DEFAULT 'NR',
-              `si_gsa_13` varchar(5) DEFAULT 'NR',
-              `si_gsa_14` varchar(5) DEFAULT 'NR',
-              `si_sst_1` varchar(5) DEFAULT 'NR',
-              `si_sst_2` varchar(5) DEFAULT 'NR',
-              `si_sst_3` varchar(5) DEFAULT 'NR',
-              `si_sst_4` varchar(5) DEFAULT 'NR',
-              `si_sst_5` varchar(5) DEFAULT 'NR',
-              `si_sst_6` varchar(5) DEFAULT 'NR',
-              `si_sst_7` varchar(5) DEFAULT 'NR',
-              `si_sst_8` varchar(5) DEFAULT 'NR',
-              `si_sst_9` varchar(5) DEFAULT 'NR',
-              `si_sst_10` varchar(5) DEFAULT 'NR'
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci",
+            // _pi_shared_constraints
+            "CREATE TABLE IF NOT EXISTS `{$prefix}_pi_shared_constraints` (
+                `Id` bigint unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                `Semana` int NOT NULL,
+                `Restriccion` varchar(40) NOT NULL,
+                `ValorObjetivo` varchar(20) NOT NULL,
+                `Nota` text,
+                `CreadoPor` varchar(120) DEFAULT NULL,
+                `CreadoEn` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                `ActualizadoEn` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                KEY `idx_semana` (`Semana`),
+                KEY `idx_restriccion` (`Restriccion`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+
+            // _pi_shared_constraint_links
+            "CREATE TABLE IF NOT EXISTS `{$prefix}_pi_shared_constraint_links` (
+                `Id` bigint unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                `SharedConstraintId` bigint unsigned NOT NULL,
+                `Semana` int NOT NULL,
+                `ConsecutivoEnPrograma` varchar(64) NOT NULL,
+                `ValorAplicado` varchar(20) NOT NULL,
+                `OverrideLocal` tinyint(1) NOT NULL DEFAULT 0,
+                `AplicadoEn` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                KEY `idx_shared` (`SharedConstraintId`),
+                KEY `idx_semana_consecutivo` (`Semana`,`ConsecutivoEnPrograma`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
         ];
 
-        foreach ($queries as $sql) {
+        foreach ($extraQueries as $sql) {
             $this->db->query($sql);
+        }
+
+        // Paso 3: Columnas PC específicas (idempotente via information_schema)
+        $this->applyPcColumnModifications($prefix);
+    }
+
+    /**
+     * Aplica columnas e índices específicos de Pre-Construccion
+     * a las tablas estándar. Usa information_schema para ser idempotente.
+     *
+     * @param string $prefix Prefijo de base de datos del proyecto.
+     * @return void
+     */
+    private function applyPcColumnModifications($prefix)
+    {
+        // Columnas PC por tabla
+        $tableColumns = [
+            "{$prefix}_programa" => [
+                ['name' => 'restriccion_pc_1', 'def' => "VARCHAR(10) DEFAULT '0%'"],
+                ['name' => 'restriccion_pc_2', 'def' => "VARCHAR(10) DEFAULT '0%'"],
+                ['name' => 'restriccion_pc_3', 'def' => "VARCHAR(10) DEFAULT '0%'"],
+                ['name' => 'restriccion_pc_4', 'def' => "VARCHAR(10) DEFAULT '0%'"],
+            ],
+            "{$prefix}_programa_consolidado" => [
+                ['name' => 'restriccion_pc_1', 'def' => "VARCHAR(10) DEFAULT '0%'"],
+                ['name' => 'restriccion_pc_2', 'def' => "VARCHAR(10) DEFAULT '0%'"],
+                ['name' => 'restriccion_pc_3', 'def' => "VARCHAR(10) DEFAULT '0%'"],
+                ['name' => 'restriccion_pc_4', 'def' => "VARCHAR(10) DEFAULT '0%'"],
+            ],
+            "{$prefix}_programacion_semanal" => [
+                ['name' => 'Reprogramada_Por_Usuario', 'def' => "TINYINT(1) NOT NULL DEFAULT 0"],
+                ['name' => 'Es_TNP', 'def' => "TINYINT(1) NOT NULL DEFAULT 0"],
+                ['name' => 'Categoria_CP', 'def' => "VARCHAR(100) DEFAULT NULL"],
+                ['name' => 'CP', 'def' => "VARCHAR(255) DEFAULT NULL"],
+                ['name' => 'Observaciones_CP', 'def' => "TEXT DEFAULT NULL"],
+                ['name' => 'alerta_crisis', 'def' => "TINYINT(1) NOT NULL DEFAULT 0"],
+                ['name' => 'reprogramaciones_semanales', 'def' => "INT NOT NULL DEFAULT 0"],
+            ],
+            "{$prefix}_semanas_activas" => [
+                ['name' => 'fecha_ultimo_saneo', 'def' => "DATETIME NULL DEFAULT NULL"],
+            ],
+        ];
+
+        foreach ($tableColumns as $tableName => $columns) {
+            foreach ($columns as $col) {
+                $stmt = $this->db->query(
+                    "SELECT COUNT(*) FROM information_schema.COLUMNS
+                     WHERE TABLE_SCHEMA = DATABASE()
+                     AND TABLE_NAME = '{$tableName}'
+                     AND COLUMN_NAME = '{$col['name']}'"
+                );
+                if ($stmt->fetchColumn() == 0) {
+                    $this->db->query(
+                        "ALTER TABLE `{$tableName}` ADD COLUMN `{$col['name']}` {$col['def']}"
+                    );
+                }
+            }
+        }
+
+        // Índices PC en _programacion_semanal
+        $tableIndexes = [
+            "{$prefix}_programacion_semanal" => [
+                ['name' => 'idx_crisis_semanal', 'def' => "(`Semana`, `alerta_crisis`)"],
+                ['name' => 'idx_consecutivo_semanal', 'def' => "(`Consecutivo_En_Programa`, `Semana`)"],
+            ],
+        ];
+
+        foreach ($tableIndexes as $tableName => $indexes) {
+            foreach ($indexes as $idx) {
+                $stmt = $this->db->query(
+                    "SELECT COUNT(*) FROM information_schema.STATISTICS
+                     WHERE TABLE_SCHEMA = DATABASE()
+                     AND TABLE_NAME = '{$tableName}'
+                     AND INDEX_NAME = '{$idx['name']}'"
+                );
+                if ($stmt->fetchColumn() == 0) {
+                    $this->db->query(
+                        "ALTER TABLE `{$tableName}` ADD INDEX `{$idx['name']}` {$idx['def']}"
+                    );
+                }
+            }
         }
     }
 
@@ -1178,13 +1182,9 @@ class Project
 
         $prefix = $project['Base_de_Datos'] ?? '';
 
-        // Si tiene prefijo, eliminar sus tablas asociadas
+        // Si tiene prefijo, eliminar sus tablas asociadas por-proyecto
         if (!empty($prefix)) {
-            $suffixes = [
-                '_actividades', '_cambios', '_cic', '_pdc', '_profesionales',
-                '_programa', '_programacion_semanal', '_programa_consolidado',
-                '_semanas_activas', '_subcontratistas',
-            ];
+            $suffixes = $this->getTableSuffixes();
 
             foreach ($suffixes as $suffix) {
                 $tableName = "{$prefix}{$suffix}";
@@ -1192,6 +1192,20 @@ class Project
                     $this->db->query("DROP TABLE IF EXISTS `{$tableName}`");
                 } catch (\Exception $e) {
                     error_log("Error al eliminar tabla {$tableName}: " . $e->getMessage());
+                }
+            }
+        }
+
+        // Si USE_GLOBAL_TABLES=ON, también limpiar filas de tablas globales para este proyecto
+        if (\TableResolver::useGlobalTables()) {
+            $suffixes = $this->getTableSuffixes();
+            foreach ($suffixes as $suffix) {
+                $tableType = ltrim($suffix, '_');
+                try {
+                    $tableName = \TableResolver::resolveByPrefix($prefix, $tableType);
+                    $this->db->query("DELETE FROM `{$tableName}` WHERE project_id = ?", [$id]);
+                } catch (\Exception $e) {
+                    error_log("Error al limpiar tabla global {$tableType}: " . $e->getMessage());
                 }
             }
         }

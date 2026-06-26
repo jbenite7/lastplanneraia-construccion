@@ -6,6 +6,7 @@ use App\Controllers\BaseController;
 use App\Core\Lps\LpsService;
 use PDO;
 
+use TableResolver;
 class IndicadoresApiController extends BaseController
 {
     private LpsService $lpsService;
@@ -63,7 +64,7 @@ class IndicadoresApiController extends BaseController
         $db = $this->db;
 
         // --- CONSOLIDADO GENERAL ---
-        $queryConsolidado = "SELECT COUNT(*) FROM {$dbName}_indicadores_generales WHERE Semana = ? AND subcontratista_profesional = 'consolidado general'";
+        $queryConsolidado = "SELECT COUNT(*) FROM " . TableResolver::resolveByPrefix($dbName, 'indicadores_generales') . " WHERE Semana = ? AND subcontratista_profesional = 'consolidado general'";
         $exists = $db->query($queryConsolidado, [$semana])->fetchColumn() > 0;
 
         // Query masiva de cálculos (Simplificada para el ejemplo, pero manteniendo la estructura legacy)
@@ -71,16 +72,16 @@ class IndicadoresApiController extends BaseController
         $sqlStats = <<<SQL
 SELECT 'consolidado general' AS 'subcontratista_profesional',
     'consolidado general' AS 'rol',
-    (SELECT CASE WHEN COUNT(*)=0 THEN 'NA' ELSE ROUND(AVG(PAC),3) END FROM {$dbName}_programacion_semanal WHERE Semana=? AND (Activa=1 OR Activa='NA')) AS 'PAC',
-    (SELECT CASE WHEN COUNT(*)=0 THEN 'NA' ELSE ROUND(AVG(P_Completado),3) END FROM {$dbName}_programacion_semanal WHERE Semana=? AND (Activa=1 OR Activa='NA')) AS 'P_Completado',
-    (SELECT COUNT(*) FROM {$dbName}_programacion_semanal WHERE Categoria_CNC='Rendimiento' AND Semana=? AND (Activa=1 OR Activa='NA')) AS 'CNC_Rendimiento',
-    (SELECT COUNT(*) FROM {$dbName}_programacion_semanal WHERE Categoria_CNC='Programación' AND Semana=? AND (Activa=1 OR Activa='NA')) AS 'CNC_Programacion',
-    (SELECT COUNT(*) FROM {$dbName}_programacion_semanal WHERE Categoria_CNC='Mano de Obra' AND Semana=? AND (Activa=1 OR Activa='NA')) AS 'CNC_MdeO',
-    (SELECT COUNT(*) FROM {$dbName}_programacion_semanal WHERE Categoria_CNC='Materiales' AND Semana=? AND (Activa=1 OR Activa='NA')) AS 'CNC_Materiales',
-    (SELECT COUNT(*) FROM {$dbName}_programacion_semanal WHERE Categoria_CNC='Equipos' AND Semana=? AND (Activa=1 OR Activa='NA')) AS 'CNC_Equipos',
-    (SELECT COUNT(*) FROM {$dbName}_programacion_semanal WHERE Categoria_CNC='Disenos' AND Semana=? AND (Activa=1 OR Activa='NA')) AS 'CNC_Disenos',
-    (SELECT COUNT(*) FROM {$dbName}_programacion_semanal WHERE Categoria_CNC='Administrativas' AND Semana=? AND (Activa=1 OR Activa='NA')) AS 'CNC_Administrativas',
-    (SELECT COUNT(*) FROM {$dbName}_programacion_semanal WHERE Categoria_CNC='Causas Exógenas' AND Semana=? AND (Activa=1 OR Activa='NA')) AS 'CNC_Causas_Exogenas'
+    (SELECT CASE WHEN COUNT(*)=0 THEN 'NA' ELSE ROUND(AVG(PAC),3) END FROM " . TableResolver::resolveByPrefix($dbName, 'programacion_semanal') . " WHERE Semana=? AND (Activa=1 OR Activa='NA')) AS 'PAC',
+    (SELECT CASE WHEN COUNT(*)=0 THEN 'NA' ELSE ROUND(AVG(P_Completado),3) END FROM " . TableResolver::resolveByPrefix($dbName, 'programacion_semanal') . " WHERE Semana=? AND (Activa=1 OR Activa='NA')) AS 'P_Completado',
+    (SELECT COUNT(*) FROM " . TableResolver::resolveByPrefix($dbName, 'programacion_semanal') . " WHERE Categoria_CNC='Rendimiento' AND Semana=? AND (Activa=1 OR Activa='NA')) AS 'CNC_Rendimiento',
+    (SELECT COUNT(*) FROM " . TableResolver::resolveByPrefix($dbName, 'programacion_semanal') . " WHERE Categoria_CNC='Programación' AND Semana=? AND (Activa=1 OR Activa='NA')) AS 'CNC_Programacion',
+    (SELECT COUNT(*) FROM " . TableResolver::resolveByPrefix($dbName, 'programacion_semanal') . " WHERE Categoria_CNC='Mano de Obra' AND Semana=? AND (Activa=1 OR Activa='NA')) AS 'CNC_MdeO',
+    (SELECT COUNT(*) FROM " . TableResolver::resolveByPrefix($dbName, 'programacion_semanal') . " WHERE Categoria_CNC='Materiales' AND Semana=? AND (Activa=1 OR Activa='NA')) AS 'CNC_Materiales',
+    (SELECT COUNT(*) FROM " . TableResolver::resolveByPrefix($dbName, 'programacion_semanal') . " WHERE Categoria_CNC='Equipos' AND Semana=? AND (Activa=1 OR Activa='NA')) AS 'CNC_Equipos',
+    (SELECT COUNT(*) FROM " . TableResolver::resolveByPrefix($dbName, 'programacion_semanal') . " WHERE Categoria_CNC='Disenos' AND Semana=? AND (Activa=1 OR Activa='NA')) AS 'CNC_Disenos',
+    (SELECT COUNT(*) FROM " . TableResolver::resolveByPrefix($dbName, 'programacion_semanal') . " WHERE Categoria_CNC='Administrativas' AND Semana=? AND (Activa=1 OR Activa='NA')) AS 'CNC_Administrativas',
+    (SELECT COUNT(*) FROM " . TableResolver::resolveByPrefix($dbName, 'programacion_semanal') . " WHERE Categoria_CNC='Causas Exógenas' AND Semana=? AND (Activa=1 OR Activa='NA')) AS 'CNC_Causas_Exogenas'
 SQL;
         // Nota: Se omiten intencionalmente los campos de "Act_Inician_Sem_X" por brevedad en este bloque,
         // pero se asume que forman parte de la migración completa si el front los requiere.
@@ -90,7 +91,7 @@ SQL;
         if (!$exists) {
             $stats['Semana'] = $semana;
             $cols = array_keys($stats);
-            $sql = "INSERT INTO {$dbName}_indicadores_generales (" . implode(',', $cols) . ") VALUES (" . implode(',', array_fill(0, count($cols), '?')) . ")";
+            $sql = "INSERT INTO " . TableResolver::resolveByPrefix($dbName, 'indicadores_generales') . " (" . implode(',', $cols) . ") VALUES (" . implode(',', array_fill(0, count($cols), '?')) . ")";
             $db->query($sql, array_values($stats));
         } else {
             $updates = [];
@@ -103,7 +104,7 @@ SQL;
                 $values[] = $val;
             }
             $values[] = $semana;
-            $sql = "UPDATE {$dbName}_indicadores_generales SET " . implode(',', $updates) . " WHERE Semana = ? AND subcontratista_profesional = 'consolidado general'";
+            $sql = "UPDATE " . TableResolver::resolveByPrefix($dbName, 'indicadores_generales') . " SET " . implode(',', $updates) . " WHERE Semana = ? AND subcontratista_profesional = 'consolidado general'";
             $db->query($sql, $values);
         }
     }
@@ -113,30 +114,30 @@ SQL;
         $db = $this->db;
 
         // 1. Actualizar PAC de Subcontratistas en tabla CIC
-        $subs = $db->query("SELECT DISTINCT Sub_Contratista FROM {$dbName}_programacion_semanal WHERE Semana = ? AND Sub_Contratista !='' AND (Activa='1' OR Activa='NA')", [$semana])->fetchAll(PDO::FETCH_COLUMN);
+        $subs = $db->query("SELECT DISTINCT Sub_Contratista FROM " . TableResolver::resolveByPrefix($dbName, 'programacion_semanal') . " WHERE Semana = ? AND Sub_Contratista !='' AND (Activa='1' OR Activa='NA')", [$semana])->fetchAll(PDO::FETCH_COLUMN);
 
         foreach ($subs as $sub) {
-            $stats = $db->query("SELECT ROUND(AVG(P_Completado),3) as P_Com, ROUND(AVG(PAC),3) as PAC FROM {$dbName}_programacion_semanal WHERE Semana=? AND Sub_Contratista =? AND (Activa=1 OR Activa='NA')", [$semana, $sub])->fetch(PDO::FETCH_ASSOC);
+            $stats = $db->query("SELECT ROUND(AVG(P_Completado),3) as P_Com, ROUND(AVG(PAC),3) as PAC FROM " . TableResolver::resolveByPrefix($dbName, 'programacion_semanal') . " WHERE Semana=? AND Sub_Contratista =? AND (Activa=1 OR Activa='NA')", [$semana, $sub])->fetch(PDO::FETCH_ASSOC);
 
-            $exists = $db->query("SELECT 1 FROM {$dbName}_cic WHERE Semana = ? AND subcontratista = ?", [$semana, $sub])->fetchColumn();
+            $exists = $db->query("SELECT 1 FROM " . TableResolver::resolveByPrefix($dbName, 'cic') . " WHERE Semana = ? AND subcontratista = ?", [$semana, $sub])->fetchColumn();
             if (!$exists) {
-                $db->query("INSERT INTO {$dbName}_cic (Semana, subcontratista, P_Completado, PAC) VALUES (?, ?, ?, ?)", [$semana, $sub, $stats['P_Com'] ?? 0, $stats['PAC'] ?? 0]);
+                $db->query("INSERT INTO " . TableResolver::resolveByPrefix($dbName, 'cic') . " (Semana, subcontratista, P_Completado, PAC) VALUES (?, ?, ?, ?)", [$semana, $sub, $stats['P_Com'] ?? 0, $stats['PAC'] ?? 0]);
             } else {
-                $db->query("UPDATE {$dbName}_cic SET P_Completado = ?, PAC = ? WHERE subcontratista = ? AND Semana = ?", [$stats['P_Com'] ?? 0, $stats['PAC'] ?? 0, $sub, $semana]);
+                $db->query("UPDATE " . TableResolver::resolveByPrefix($dbName, 'cic') . " SET P_Completado = ?, PAC = ? WHERE subcontratista = ? AND Semana = ?", [$stats['P_Com'] ?? 0, $stats['PAC'] ?? 0, $sub, $semana]);
             }
         }
 
         // 2. Actualizar PAC de Profesionales en tabla CIP
-        $profs = $db->query("SELECT DISTINCT Responsable_AIA FROM {$dbName}_programacion_semanal WHERE Semana = ? AND Responsable_AIA !='' AND (Activa='1' OR Activa='NA')", [$semana])->fetchAll(PDO::FETCH_COLUMN);
+        $profs = $db->query("SELECT DISTINCT Responsable_AIA FROM " . TableResolver::resolveByPrefix($dbName, 'programacion_semanal') . " WHERE Semana = ? AND Responsable_AIA !='' AND (Activa='1' OR Activa='NA')", [$semana])->fetchAll(PDO::FETCH_COLUMN);
 
         foreach ($profs as $prof) {
-            $stats = $db->query("SELECT ROUND(AVG(P_Completado),3) as P_Com, ROUND(AVG(PAC),3) as PAC FROM {$dbName}_programacion_semanal WHERE Semana=? AND Responsable_AIA =? AND (Activa=1 OR Activa='NA')", [$semana, $prof])->fetch(PDO::FETCH_ASSOC);
+            $stats = $db->query("SELECT ROUND(AVG(P_Completado),3) as P_Com, ROUND(AVG(PAC),3) as PAC FROM " . TableResolver::resolveByPrefix($dbName, 'programacion_semanal') . " WHERE Semana=? AND Responsable_AIA =? AND (Activa=1 OR Activa='NA')", [$semana, $prof])->fetch(PDO::FETCH_ASSOC);
 
-            $exists = $db->query("SELECT 1 FROM {$dbName}_cip WHERE Semana = ? AND profesional = ?", [$semana, $prof])->fetchColumn();
+            $exists = $db->query("SELECT 1 FROM " . TableResolver::resolveByPrefix($dbName, 'cip') . " WHERE Semana = ? AND profesional = ?", [$semana, $prof])->fetchColumn();
             if (!$exists) {
-                $db->query("INSERT INTO {$dbName}_cip (Semana, profesional, P_Completado, PAC) VALUES (?, ?, ?, ?)", [$semana, $prof, $stats['P_Com'] ?? 0, $stats['PAC'] ?? 0]);
+                $db->query("INSERT INTO " . TableResolver::resolveByPrefix($dbName, 'cip') . " (Semana, profesional, P_Completado, PAC) VALUES (?, ?, ?, ?)", [$semana, $prof, $stats['P_Com'] ?? 0, $stats['PAC'] ?? 0]);
             } else {
-                $db->query("UPDATE {$dbName}_cip SET P_Completado = ?, PAC = ? WHERE profesional = ? AND Semana = ?", [$stats['P_Com'] ?? 0, $stats['PAC'] ?? 0, $prof, $semana]);
+                $db->query("UPDATE " . TableResolver::resolveByPrefix($dbName, 'cip') . " SET P_Completado = ?, PAC = ? WHERE profesional = ? AND Semana = ?", [$stats['P_Com'] ?? 0, $stats['PAC'] ?? 0, $prof, $semana]);
             }
         }
     }

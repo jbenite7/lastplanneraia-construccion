@@ -5,6 +5,7 @@ namespace App\Controllers\Programacion;
 use App\Controllers\BaseController;
 use App\Services\ProjectLandingService;
 
+use TableResolver;
 class ProgramaGeneralController extends BaseController
 {
     public function index()
@@ -34,8 +35,8 @@ class ProgramaGeneralController extends BaseController
 
         try {
             if (!empty($dbName) && preg_match('/^[a-zA-Z0-9_]+$/', $dbName)) {
-                $sqlUltima = "SELECT Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem FROM {$dbName}_semanas_activas WHERE Semana = (SELECT MAX(Semana) FROM {$dbName}_semanas_activas)";
-                $stmtUltima = $this->db->query($sqlUltima);
+                $sqlUltima = "SELECT Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem FROM " . TableResolver::resolveByPrefix($dbName, 'semanas_activas') . " WHERE Semana = (SELECT MAX(Semana) FROM " . TableResolver::resolveByPrefix($dbName, 'semanas_activas') . ")";
+                $stmtUltima = $this->db->queryWithProject($sqlUltima);
                 $dataUltima = $stmtUltima->fetch();
 
                 if ($dataUltima) {
@@ -49,10 +50,9 @@ class ProgramaGeneralController extends BaseController
                 }
 
                 $sqlDetalles = "SELECT Semanal_Confirmada, fechaCierreCompromisos, fechaCreacionSemana, 
-                               (SELECT SUM(reprogramacion) FROM {$dbName}_semanas_activas WHERE Semana <= ?) AS versionCronograma 
-                               FROM {$dbName}_semanas_activas WHERE Semana = ?";
-                $stmtDetalles = $this->db->prepare($sqlDetalles);
-                $stmtDetalles->execute([$semana, $semana]);
+                               (SELECT SUM(reprogramacion) FROM " . TableResolver::resolveByPrefix($dbName, 'semanas_activas') . " WHERE Semana <= ?) AS versionCronograma 
+                               FROM " . TableResolver::resolveByPrefix($dbName, 'semanas_activas') . " WHERE Semana = ?";
+                $stmtDetalles = $this->db->queryWithProject($sqlDetalles, [$semana, $semana]);
                 $dataDetalles = $stmtDetalles->fetch();
 
                 if ($dataDetalles) {
@@ -74,13 +74,13 @@ class ProgramaGeneralController extends BaseController
 
             try {
                 if (!empty($dbName) && preg_match('/^[a-zA-Z0-9_]+$/', $dbName)) {
-                    $stmtPc = $this->db->prepare(
+                    $stmtPc = $this->db->queryWithProject(
                         "SELECT pc_restr_2_nombre, pc_restr_3_nombre, pc_restr_4_nombre
                          FROM general_proyectos_procesos
                          WHERE Base_de_Datos = ?
-                         LIMIT 1"
+                         LIMIT 1",
+                        [$dbName]
                     );
-                    $stmtPc->execute([$dbName]);
                     $proyectoPc = $stmtPc->fetch(\PDO::FETCH_ASSOC);
 
                     if ($proyectoPc) {
@@ -221,12 +221,11 @@ class ProgramaGeneralController extends BaseController
             COALESCE(SUM(CASE WHEN (Estado = 'Atrasada' OR Estado = 'Ya Debió Iniciar y Restricciones Pendientes') THEN 1 ELSE 0 END), 0) AS atrasadas,
             COALESCE(SUM(CASE WHEN (Estado = 'Terminada' OR Estado = 'Terminada Antes') THEN 1 ELSE 0 END), 0) AS terminadas,
             COUNT(*) AS total
-            FROM {$dbPrefix}_programa_consolidado 
+            FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " 
             WHERE Semana = ? AND Titulo = 0";
 
         try {
-            $stmt = $this->db->prepare($query);
-            $stmt->execute([$semana]);
+            $stmt = $this->db->queryWithProject($query, [$semana]);
             $data = $stmt->fetch();
 
             if ($data) {

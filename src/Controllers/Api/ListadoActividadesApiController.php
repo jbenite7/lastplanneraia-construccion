@@ -8,6 +8,7 @@ use PDO;
 use Throwable;
 use SplFileInfo;
 
+use TableResolver;
 class ListadoActividadesApiController
 {
     private $db;
@@ -45,8 +46,8 @@ class ListadoActividadesApiController
 
             $this->requirePermission('lps.listado_actividades.ver', 'No autorizado para consultar el listado de actividades.');
 
-            $query = "SELECT COUNT(*) FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ?";
-            $stmt = $this->db->query($query, [$semana]);
+            $query = "SELECT COUNT(*) FROM " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . " WHERE semanaActualizacion = ?";
+            $stmt = $this->db->queryWithProject($query, [$semana]);
             $conteo = $stmt->fetchColumn();
 
             $response = ["data" => []];
@@ -73,7 +74,7 @@ class ListadoActividadesApiController
                             COALESCE(
                                 (
                                     SELECT pc.Consecutivo_en_Programa
-                                    FROM {$dbPrefix}_programa_consolidado pc
+                                    FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " pc
                                     WHERE pc.Semana = a.semanaActualizacion
                                       AND (pc.Consecutivo_en_Programa = a.actividadInicio OR pc.Actividad = a.actividadInicio)
                                     ORDER BY pc.Fecha_Inicio ASC
@@ -84,7 +85,7 @@ class ListadoActividadesApiController
                             COALESCE(
                                 (
                                     SELECT CONCAT(pc.Id, '. ', pc.Actividad, ' (Inicia en: ', pc.Fecha_Inicio, ')')
-                                    FROM {$dbPrefix}_programa_consolidado pc
+                                    FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " pc
                                     WHERE pc.Semana = a.semanaActualizacion
                                       AND (pc.Consecutivo_en_Programa = a.actividadInicio OR pc.Actividad = a.actividadInicio)
                                     ORDER BY pc.Fecha_Inicio ASC
@@ -95,11 +96,11 @@ class ListadoActividadesApiController
                             a.fechaInicio, 
                             a.tipoContrato, 
                             a.semanaActualizacion 
-                           FROM {$dbPrefix}_actividades AS a
+                           FROM " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . " AS a
                            WHERE a.semanaActualizacion = ? 
                            ORDER BY a.Id";
 
-                $stmt1 = $this->db->query($query1, [$semana]);
+                $stmt1 = $this->db->queryWithProject($query1, [$semana]);
                 $response["data"] = $stmt1->fetchAll(PDO::FETCH_ASSOC);
             }
 
@@ -368,7 +369,7 @@ class ListadoActividadesApiController
     private function loadProjectAgrupacionStrategy(string $dbPrefix, int $semana): string
     {
         try {
-            $stmt = $this->db->query(
+            $stmt = $this->db->queryWithProject(
                 "SELECT estrategia_agrupacion
                  FROM general_pdc_project_family_strategy
                  WHERE db_prefix = ? AND semana = ? AND estrategia_agrupacion IS NOT NULL
@@ -403,11 +404,11 @@ class ListadoActividadesApiController
 
             $maxCode = $this->getNextCodigo($dbPrefix);
 
-            $queryInsert = "INSERT INTO {$dbPrefix}_actividades
+            $queryInsert = "INSERT INTO " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . "
                             (codigo, actividad, descripcionActividad, actividadInicio, nombreActividadInicio, fechaInicio, tipoContrato, semanaActualizacion)
-                            VALUES (?, ?, ?, ?, (SELECT CONCAT(Id, '. ', Actividad, ' (Inicia en: ', Fecha_Inicio, ')') FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Consecutivo_en_Programa = ? LIMIT 1), ?, ?, ?)";
+                            VALUES (?, ?, ?, ?, (SELECT CONCAT(Id, '. ', Actividad, ' (Inicia en: ', Fecha_Inicio, ')') FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " WHERE Semana = ? AND Consecutivo_en_Programa = ? LIMIT 1), ?, ?, ?)";
             $params = [$maxCode, $actividadNombre, $descripcion, $actividadInicio, $semana, $actividadInicio, $fechaInicio, $tipoContrato, $semana];
-            $this->db->query($queryInsert, $params);
+            $this->db->queryWithProject($queryInsert, $params);
 
             $familiaNombre = $grupo['familiaNombre'] ?? 'N/A';
             $totalActividades = count($grupo['actividades'] ?? []);
@@ -428,7 +429,7 @@ class ListadoActividadesApiController
     {
         try {
             $query = "SELECT tipo_paquete FROM general_pdc_family_contract_options WHERE familia_id = ?";
-            $stmt = $this->db->query($query, [$familiaId]);
+            $stmt = $this->db->queryWithProject($query, [$familiaId]);
             $options = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
             if (empty($options)) {
@@ -469,8 +470,8 @@ class ListadoActividadesApiController
 
     private function resolveMaxSemana(string $dbPrefix): int
     {
-        $query = "SELECT MAX(Semana) FROM {$dbPrefix}_semanas_activas";
-        $maxSemana = (int) $this->db->query($query)->fetchColumn();
+        $query = "SELECT MAX(Semana) FROM " . TableResolver::resolveByPrefix($dbPrefix, 'semanas_activas') . "";
+        $maxSemana = (int) $this->db->queryWithProject($query)->fetchColumn();
 
         if (session_status() === PHP_SESSION_ACTIVE) {
             $_SESSION['Max_Semana'] = $maxSemana;
@@ -492,23 +493,23 @@ class ListadoActividadesApiController
         if (empty($Actividad) || empty($descripcionActividad) || empty($fechaInicio) || empty($tipoContrato) || empty($semana)) {
             $errores = 'Debe rellenar todos los campos';
         } else {
-            $queryCheck = "SELECT COUNT(*) FROM {$dbPrefix}_actividades WHERE actividad = ? LIMIT 1";
-            $stmtCheck = $this->db->query($queryCheck, [$Actividad]);
+            $queryCheck = "SELECT COUNT(*) FROM " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . " WHERE actividad = ? LIMIT 1";
+            $stmtCheck = $this->db->queryWithProject($queryCheck, [$Actividad]);
             if ($stmtCheck->fetchColumn() > 0) {
                 $errores = 'La actividad que estás intentando registrar ya existe';
             }
 
             if (empty($errores)) {
-                $queryMax = "SELECT MAX(codigo) FROM {$dbPrefix}_actividades";
-                $stmtMax = $this->db->query($queryMax);
+                $queryMax = "SELECT MAX(codigo) FROM " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . "";
+                $stmtMax = $this->db->queryWithProject($queryMax);
                 $maxCode = $stmtMax->fetchColumn();
                 $codigo = empty($maxCode) ? 1 : $maxCode + 1;
 
-                $queryInsert = "INSERT INTO {$dbPrefix}_actividades (codigo, actividad, descripcionActividad, actividadInicio, nombreActividadInicio, fechaInicio, tipoContrato, semanaActualizacion) 
-                                VALUES (?, ?, ?, ?, (SELECT CONCAT(Id, '. ', Actividad, ' (Inicia en: ', Fecha_Inicio, ')') FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Consecutivo_en_Programa = ? LIMIT 1), ?, ?, ?)";
+                $queryInsert = "INSERT INTO " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . " (codigo, actividad, descripcionActividad, actividadInicio, nombreActividadInicio, fechaInicio, tipoContrato, semanaActualizacion) 
+                                VALUES (?, ?, ?, ?, (SELECT CONCAT(Id, '. ', Actividad, ' (Inicia en: ', Fecha_Inicio, ')') FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " WHERE Semana = ? AND Consecutivo_en_Programa = ? LIMIT 1), ?, ?, ?)";
                 $params = [$codigo, $Actividad, $descripcionActividad, $actividadInicio, $semana, $actividadInicio, $fechaInicio, $tipoContrato, $semana];
 
-                $stmtInsert = $this->db->query($queryInsert, $params);
+                $stmtInsert = $this->db->queryWithProject($queryInsert, $params);
                 $this->db->logActivity('ListadoActividades', 'CREAR', "Creó actividad: $Actividad", $dbPrefix);
 
                 $this->verificar_resultado(true, '');
@@ -531,11 +532,11 @@ class ListadoActividadesApiController
         if (empty($Actividad) || empty($descripcionActividad) || empty($fechaInicio) || empty($semana)) {
             $errores = 'Debe rellenar todos los campos';
         } else {
-            $queryUpdate = "UPDATE {$dbPrefix}_actividades SET actividad=?, descripcionActividad=?, actividadInicio=?, 
-                             nombreActividadInicio=(SELECT CONCAT(Id, '. ', Actividad, ' (Inicia en: ', Fecha_Inicio, ')') FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Consecutivo_en_Programa = ? LIMIT 1), 
+            $queryUpdate = "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . " SET actividad=?, descripcionActividad=?, actividadInicio=?, 
+                             nombreActividadInicio=(SELECT CONCAT(Id, '. ', Actividad, ' (Inicia en: ', Fecha_Inicio, ')') FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " WHERE Semana = ? AND Consecutivo_en_Programa = ? LIMIT 1), 
                              fechaInicio=?, tipoContrato=COALESCE(NULLIF(?, ''), tipoContrato), semanaActualizacion=? WHERE Id=? AND semanaActualizacion=?";
             $params = [$Actividad, $descripcionActividad, $actividadInicio, $semana, $actividadInicio, $fechaInicio, $tipoContrato, $semana, $Id, $semana];
-            $stmtUpdate = $this->db->query($queryUpdate, $params);
+            $stmtUpdate = $this->db->queryWithProject($queryUpdate, $params);
             $this->db->logActivity('ListadoActividades', 'MODIFICAR', "Modificó actividad ID $Id", $dbPrefix);
 
             $this->verificar_resultado(true, '');
@@ -547,8 +548,8 @@ class ListadoActividadesApiController
     private function eliminar(string $dbPrefix, int $semana): void
     {
         $Id = $_POST["Id"] ?? 0;
-        $query = "DELETE FROM {$dbPrefix}_actividades WHERE Id = ? AND semanaActualizacion = ?";
-        $stmt = $this->db->query($query, [$Id, $semana]);
+        $query = "DELETE FROM " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . " WHERE Id = ? AND semanaActualizacion = ?";
+        $stmt = $this->db->queryWithProject($query, [$Id, $semana]);
         $this->db->logActivity('ListadoActividades', 'ELIMINAR', "Eliminó actividad ID $Id", $dbPrefix);
         $this->verificar_resultado(true, '');
     }
@@ -558,8 +559,8 @@ class ListadoActividadesApiController
         $Id = $_POST["idActividad"] ?? '';
 
         try {
-            $query = "SELECT Fecha_Inicio FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Consecutivo_en_Programa = ? LIMIT 1";
-            $stmt = $this->db->query($query, [$semana, $Id]);
+            $query = "SELECT Fecha_Inicio FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " WHERE Semana = ? AND Consecutivo_en_Programa = ? LIMIT 1";
+            $stmt = $this->db->queryWithProject($query, [$semana, $Id]);
             $data = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if ($data) {
@@ -591,10 +592,10 @@ class ListadoActividadesApiController
                 try {
                     $this->db->beginTransaction();
 
-                    $this->db->query("TRUNCATE TABLE {$dbPrefix}_actividades");
+                    $this->db->queryWithProject("TRUNCATE TABLE " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . "");
 
-                    $sql = "INSERT INTO {$dbPrefix}_actividades (codigo, actividad, descripcionActividad, semanaActualizacion) VALUES (?, ?, ?, ?)";
-                    $stmt = $this->db->prepare($sql);
+                    $sql = "INSERT INTO " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . " (codigo, actividad, descripcionActividad, semanaActualizacion) VALUES (?, ?, ?, ?)";
+                    $stmt = $this->db->prepareWithProject($sql);
 
                     $numeroFila = 0;
                     while (($data = fgetcsv($handle, 10000, ";")) !== false) {
@@ -630,8 +631,8 @@ class ListadoActividadesApiController
 
     private function activityExists(string $dbPrefix, int $semana, int $consecutivoPrograma): bool
     {
-        $stmt = $this->db->query(
-            "SELECT Id FROM {$dbPrefix}_actividades WHERE actividadInicio = ? AND semanaActualizacion = ? LIMIT 1",
+        $stmt = $this->db->queryWithProject(
+            "SELECT Id FROM " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . " WHERE actividadInicio = ? AND semanaActualizacion = ? LIMIT 1",
             [$consecutivoPrograma, $semana]
         );
         return $stmt->fetchColumn() !== false;
@@ -650,11 +651,11 @@ class ListadoActividadesApiController
         try {
             $maxCode = $this->getNextCodigo($dbPrefix);
 
-            $queryInsert = "INSERT INTO {$dbPrefix}_actividades 
+            $queryInsert = "INSERT INTO " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . " 
                             (codigo, actividad, descripcionActividad, actividadInicio, nombreActividadInicio, fechaInicio, tipoContrato, semanaActualizacion) 
-                            VALUES (?, ?, '', ?, (SELECT CONCAT(Id, '. ', Actividad, ' (Inicia en: ', Fecha_Inicio, ')') FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Consecutivo_en_Programa = ? LIMIT 1), ?, NULL, ?)";
+                            VALUES (?, ?, '', ?, (SELECT CONCAT(Id, '. ', Actividad, ' (Inicia en: ', Fecha_Inicio, ')') FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " WHERE Semana = ? AND Consecutivo_en_Programa = ? LIMIT 1), ?, NULL, ?)";
             $params = [$maxCode, $actividad, $consecutivoPrograma, $semana, $consecutivoPrograma, $fechaInicio, $semana];
-            $this->db->query($queryInsert, $params);
+            $this->db->queryWithProject($queryInsert, $params);
 
             $familiaNombre = $match['familia_nombre'] ?? 'N/A';
             $this->db->logActivity('ListadoActividades', 'AUTO_CREAR', "Auto-creó actividad desde PG: $actividad (familia: $familiaNombre)", $dbPrefix);
@@ -667,9 +668,9 @@ class ListadoActividadesApiController
 
     private function loadProjectActivities(string $dbPrefix, int $semana): array
     {
-        $stmt = $this->db->query(
+        $stmt = $this->db->queryWithProject(
             "SELECT Consecutivo, Consecutivo_en_Programa, Id, Actividad, Fecha_Inicio, COALESCE(Titulo, 0) AS Titulo
-             FROM {$dbPrefix}_programa_consolidado
+             FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . "
              WHERE Semana = ? AND COALESCE(TRIM(REGEXP_REPLACE(REGEXP_REPLACE(Actividad, '<[^>]+>', ''), '&nbsp;', ' ')), '') <> ''
              ORDER BY Consecutivo_en_Programa ASC, Consecutivo ASC",
             [$semana]
@@ -693,7 +694,7 @@ class ListadoActividadesApiController
 
     private function getNextCodigo(string $dbPrefix): int
     {
-        $stmt = $this->db->query("SELECT COALESCE(MAX(codigo), 0) + 1 FROM {$dbPrefix}_actividades");
+        $stmt = $this->db->queryWithProject("SELECT COALESCE(MAX(codigo), 0) + 1 FROM " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . "");
         return (int) $stmt->fetchColumn();
     }
 

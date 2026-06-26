@@ -8,6 +8,7 @@ use Database;
 use PDO;
 use Throwable;
 
+use TableResolver;
 class ContratosApiController extends BaseController
 {
     public function __construct()
@@ -26,7 +27,7 @@ class ContratosApiController extends BaseController
             $this->requirePermission('lps.contratos.ver', 'No autorizado para consultar contratos.');
 
             $db = Database::getInstance();
-            $queryCount = "SELECT COUNT(*) as total FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND tipoContrato IS NOT NULL AND fechaInicio IS NOT NULL";
+            $queryCount = "SELECT COUNT(*) as total FROM " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . " WHERE semanaActualizacion = ? AND tipoContrato IS NOT NULL AND fechaInicio IS NOT NULL";
             $stmtCount = $db->query($queryCount, [$semana]);
             $conteo = $stmtCount->fetch(PDO::FETCH_ASSOC)['total'] ?? 0;
 
@@ -51,8 +52,8 @@ class ContratosApiController extends BaseController
                         act.`S1`, act.`paqueteS1`, act.`S2`, act.`paqueteS2`, act.`S3`, act.`paqueteS3`, act.`S4`, act.`paqueteS4`, act.`S5`, act.`paqueteS5`, 
                         act.`MO1`, act.`paqueteMO1`, act.`MO2`, act.`paqueteMO2`, act.`MO3`, act.`paqueteMO3`, act.`MO4`, act.`paqueteMO4`, act.`MO5`, act.`paqueteMO5`, 
                         act.`OC1`, act.`paqueteOC1`, act.`OC2`, act.`paqueteOC2`, act.`OC3`, act.`paqueteOC3`, act.`OC4`, act.`paqueteOC4`, act.`OC5`, act.`paqueteOC5` 
-                    FROM {$dbPrefix}_actividades act 
-                    LEFT JOIN {$dbPrefix}_programa_consolidado prog ON prog.`Consecutivo_en_Programa` = act.`actividadInicio` AND prog.`Semana` = act.`semanaActualizacion` 
+                    FROM " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . " act 
+                    LEFT JOIN " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " prog ON prog.`Consecutivo_en_Programa` = act.`actividadInicio` AND prog.`Semana` = act.`semanaActualizacion` 
                     WHERE act.semanaActualizacion = ? AND act.tipoContrato IS NOT NULL AND act.fechaInicio IS NOT NULL 
                     ORDER BY act.`Id`";
 
@@ -177,7 +178,7 @@ class ContratosApiController extends BaseController
                 if (!empty($errores)) {
                     $stmt = false;
                 } else {
-                    $queryUpdate = "UPDATE {$dbPrefix}_actividades SET 
+                    $queryUpdate = "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . " SET 
                         SI1=?, paqueteSI1=?, SI2=?, paqueteSI2=?, SI3=?, paqueteSI3=?, SI4=?, paqueteSI4=?, SI5=?, paqueteSI5=?, 
                         S1=?, paqueteS1=?, S2=?, paqueteS2=?, S3=?, paqueteS3=?, S4=?, paqueteS4=?, S5=?, paqueteS5=?, 
                         MO1=?, paqueteMO1=?, MO2=?, paqueteMO2=?, MO3=?, paqueteMO3=?, MO4=?, paqueteMO4=?, MO5=?, paqueteMO5=?, 
@@ -255,7 +256,7 @@ class ContratosApiController extends BaseController
 
             $stmt = $db->query(
                 "SELECT Id, codigo, actividad, descripcionActividad, actividadInicio, fechaInicio, tipoContrato
-                 FROM {$dbPrefix}_actividades
+                 FROM " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . "
                  WHERE semanaActualizacion = ? AND (tipoContrato IS NULL OR tipoContrato = '')
                  ORDER BY Id ASC",
                 [$semana]
@@ -400,7 +401,7 @@ class ContratosApiController extends BaseController
             // 1. Activities without tipoContrato — need matching
             $stmt1 = $db->query(
                 "SELECT Id, codigo, actividad, descripcionActividad, actividadInicio, fechaInicio, tipoContrato, ultimo_auto_definir
-                 FROM {$dbPrefix}_actividades
+                 FROM " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . "
                  WHERE semanaActualizacion = ? AND (tipoContrato IS NULL OR tipoContrato = '')
                  ORDER BY Id ASC",
                 [$semana]
@@ -415,7 +416,7 @@ class ContratosApiController extends BaseController
                         paqueteS1, paqueteS2, paqueteS3, paqueteS4, paqueteS5,
                         paqueteMO1, paqueteMO2, paqueteMO3, paqueteMO4, paqueteMO5,
                         paqueteOC1, paqueteOC2, paqueteOC3, paqueteOC4, paqueteOC5
-                 FROM {$dbPrefix}_actividades
+                 FROM " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . "
                  WHERE semanaActualizacion = ? AND tipoContrato IS NOT NULL AND tipoContrato != '' AND ultimo_auto_definir IS NULL
                  ORDER BY Id ASC",
                 [$semana]
@@ -651,7 +652,7 @@ class ContratosApiController extends BaseController
                     $aplicadas++;
 
                     $db->query(
-                        "INSERT INTO {$dbPrefix}_auto_contrato_log (semana, Id_actividad, accion, tipo_contrato, paquetes, confianza, fecha_inicio_proyectada, num_proveedores, usuario, batch_id) VALUES (?, ?, 'asignar', ?, ?, ?, ?, ?, ?, ?)",
+                        "INSERT INTO " . TableResolver::resolveByPrefix($dbPrefix, 'auto_contrato_log') . " (semana, Id_actividad, accion, tipo_contrato, paquetes, confianza, fecha_inicio_proyectada, num_proveedores, usuario, batch_id) VALUES (?, ?, 'asignar', ?, ?, ?, ?, ?, ?, ?)",
                         [
                             $semana,
                             $actId,
@@ -705,7 +706,7 @@ class ContratosApiController extends BaseController
 
             $stmt = $db->query(
                 "SELECT Id, codigo, actividad, descripcionActividad, actividadInicio, fechaInicio, tipoContrato
-                 FROM {$dbPrefix}_actividades WHERE Id = ? AND semanaActualizacion = ? LIMIT 1",
+                 FROM " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . " WHERE Id = ? AND semanaActualizacion = ? LIMIT 1",
                 [$actId, $semana]
             );
             $activity = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -799,7 +800,7 @@ class ContratosApiController extends BaseController
 
     private function actualizarFechaInicio($Id, $semana, $dbPrefix, $db)
     {
-        $query = "SELECT Fecha_Inicio FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND (Consecutivo_en_Programa = ? OR Actividad = ?) ORDER BY Fecha_Inicio ASC LIMIT 1";
+        $query = "SELECT Fecha_Inicio FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " WHERE Semana = ? AND (Consecutivo_en_Programa = ? OR Actividad = ?) ORDER BY Fecha_Inicio ASC LIMIT 1";
         $stmt = $db->query($query, [$semana, $Id, $Id]);
         $data = $stmt->fetch(PDO::FETCH_ASSOC);
         $this->jsonResponse(["data" => $data ?: ["Fecha_Inicio" => ""]]);
@@ -852,23 +853,23 @@ class ContratosApiController extends BaseController
         $modalidades = array_map('trim', explode(',', $tipoContrato));
 
         if (in_array('MO', $modalidades) || in_array('S', $modalidades)) {
-            $queryMO = "SELECT MO1 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND MO1 IS NOT NULL AND MO1 != '' UNION SELECT MO2 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND MO2 IS NOT NULL AND MO2 != '' UNION SELECT MO3 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND MO3 IS NOT NULL AND MO3 != '' UNION SELECT MO4 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND MO4 IS NOT NULL AND MO4 != '' UNION SELECT MO5 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND MO5 IS NOT NULL AND MO5 != ''";
+            $queryMO = "SELECT MO1 FROM " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . " WHERE semanaActualizacion = ? AND MO1 IS NOT NULL AND MO1 != '' UNION SELECT MO2 FROM " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . " WHERE semanaActualizacion = ? AND MO2 IS NOT NULL AND MO2 != '' UNION SELECT MO3 FROM " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . " WHERE semanaActualizacion = ? AND MO3 IS NOT NULL AND MO3 != '' UNION SELECT MO4 FROM " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . " WHERE semanaActualizacion = ? AND MO4 IS NOT NULL AND MO4 != '' UNION SELECT MO5 FROM " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . " WHERE semanaActualizacion = ? AND MO5 IS NOT NULL AND MO5 != ''";
             $insumosMO = $this->obtenerInsumosUnicos($db->query($queryMO, [$semana, $semana, $semana, $semana, $semana]));
             $res["listadoMO"] = $this->generarOpcionesInsumos($insumosMO);
 
-            $queryS = "SELECT S1 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND S1 IS NOT NULL AND S1 != '' UNION SELECT S2 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND S2 IS NOT NULL AND S2 != '' UNION SELECT S3 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND S3 IS NOT NULL AND S3 != '' UNION SELECT S4 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND S4 IS NOT NULL AND S4 != '' UNION SELECT S5 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND S5 IS NOT NULL AND S5 != ''";
+            $queryS = "SELECT S1 FROM " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . " WHERE semanaActualizacion = ? AND S1 IS NOT NULL AND S1 != '' UNION SELECT S2 FROM " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . " WHERE semanaActualizacion = ? AND S2 IS NOT NULL AND S2 != '' UNION SELECT S3 FROM " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . " WHERE semanaActualizacion = ? AND S3 IS NOT NULL AND S3 != '' UNION SELECT S4 FROM " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . " WHERE semanaActualizacion = ? AND S4 IS NOT NULL AND S4 != '' UNION SELECT S5 FROM " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . " WHERE semanaActualizacion = ? AND S5 IS NOT NULL AND S5 != ''";
             $insumosS = $this->obtenerInsumosUnicos($db->query($queryS, [$semana, $semana, $semana, $semana, $semana]));
             $res["listadoS"] = $this->generarOpcionesInsumos($insumosS);
         }
 
         if (in_array('SI', $modalidades)) {
-            $querySI = "SELECT SI1 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND SI1 IS NOT NULL AND SI1 != '' UNION SELECT SI2 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND SI2 IS NOT NULL AND SI2 != '' UNION SELECT SI3 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND SI3 IS NOT NULL AND SI3 != '' UNION SELECT SI4 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND SI4 IS NOT NULL AND SI4 != '' UNION SELECT SI5 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND SI5 IS NOT NULL AND SI5 != ''";
+            $querySI = "SELECT SI1 FROM " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . " WHERE semanaActualizacion = ? AND SI1 IS NOT NULL AND SI1 != '' UNION SELECT SI2 FROM " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . " WHERE semanaActualizacion = ? AND SI2 IS NOT NULL AND SI2 != '' UNION SELECT SI3 FROM " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . " WHERE semanaActualizacion = ? AND SI3 IS NOT NULL AND SI3 != '' UNION SELECT SI4 FROM " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . " WHERE semanaActualizacion = ? AND SI4 IS NOT NULL AND SI4 != '' UNION SELECT SI5 FROM " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . " WHERE semanaActualizacion = ? AND SI5 IS NOT NULL AND SI5 != ''";
             $insumosSI = $this->obtenerInsumosUnicos($db->query($querySI, [$semana, $semana, $semana, $semana, $semana]));
             $res["listadoSI"] = $this->generarOpcionesInsumos($insumosSI);
         }
 
         if (in_array('OC', $modalidades)) {
-            $queryOC = "SELECT OC1 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND OC1 IS NOT NULL AND OC1 != '' UNION SELECT OC2 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND OC2 IS NOT NULL AND OC2 != '' UNION SELECT OC3 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND OC3 IS NOT NULL AND OC3 != '' UNION SELECT OC4 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND OC4 IS NOT NULL AND OC4 != '' UNION SELECT OC5 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND OC5 IS NOT NULL AND OC5 != ''";
+            $queryOC = "SELECT OC1 FROM " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . " WHERE semanaActualizacion = ? AND OC1 IS NOT NULL AND OC1 != '' UNION SELECT OC2 FROM " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . " WHERE semanaActualizacion = ? AND OC2 IS NOT NULL AND OC2 != '' UNION SELECT OC3 FROM " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . " WHERE semanaActualizacion = ? AND OC3 IS NOT NULL AND OC3 != '' UNION SELECT OC4 FROM " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . " WHERE semanaActualizacion = ? AND OC4 IS NOT NULL AND OC4 != '' UNION SELECT OC5 FROM " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . " WHERE semanaActualizacion = ? AND OC5 IS NOT NULL AND OC5 != ''";
             $insumosOC = $this->obtenerInsumosUnicos($db->query($queryOC, [$semana, $semana, $semana, $semana, $semana]));
             $res["listadoOC"] = $this->generarOpcionesInsumos($insumosOC);
         }
@@ -1016,7 +1017,7 @@ class ContratosApiController extends BaseController
 
         $stmt = $db->query(
             "SELECT Consecutivo, Consecutivo_en_Programa, Id, Actividad, Fecha_Inicio, COALESCE(Titulo, 0) AS Titulo
-             FROM {$dbPrefix}_programa_consolidado
+             FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . "
              WHERE Semana = ? AND Consecutivo_en_Programa = ? LIMIT 1",
             [$semana, $actividadInicio]
         );
@@ -1096,7 +1097,7 @@ class ContratosApiController extends BaseController
             $params[] = $actId;
             $params[] = $semana;
 
-            $sql = "UPDATE {$dbPrefix}_actividades SET " . implode(', ', $updates) . " WHERE Id = ? AND semanaActualizacion = ?";
+            $sql = "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . " SET " . implode(', ', $updates) . " WHERE Id = ? AND semanaActualizacion = ?";
             $db->query($sql, $params);
 
             return true;
@@ -1301,7 +1302,7 @@ class ContratosApiController extends BaseController
         $params[] = $actId;
         $params[] = $semana;
 
-        $sql = "UPDATE {$dbPrefix}_actividades SET " . implode(', ', $updates) . " WHERE Id = ? AND semanaActualizacion = ?";
+        $sql = "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . " SET " . implode(', ', $updates) . " WHERE Id = ? AND semanaActualizacion = ?";
         $db->query($sql, $params);
 
         return true;
@@ -1352,7 +1353,7 @@ class ContratosApiController extends BaseController
 
             // Find the most recent batch_id
             $stmtBatch = $db->query(
-                "SELECT DISTINCT batch_id FROM {$dbPrefix}_auto_contrato_log ORDER BY creado_en DESC LIMIT 1"
+                "SELECT DISTINCT batch_id FROM " . TableResolver::resolveByPrefix($dbPrefix, 'auto_contrato_log') . " ORDER BY creado_en DESC LIMIT 1"
             );
             $batchRow = $stmtBatch->fetch(PDO::FETCH_ASSOC);
 
@@ -1365,7 +1366,7 @@ class ContratosApiController extends BaseController
 
             // Fetch all 'asignar' records for this batch
             $stmtLog = $db->query(
-                "SELECT * FROM {$dbPrefix}_auto_contrato_log WHERE batch_id = ? AND accion = 'asignar' ORDER BY id ASC",
+                "SELECT * FROM " . TableResolver::resolveByPrefix($dbPrefix, 'auto_contrato_log') . " WHERE batch_id = ? AND accion = 'asignar' ORDER BY id ASC",
                 [$batchId]
             );
             $records = $stmtLog->fetchAll(PDO::FETCH_ASSOC);
@@ -1387,7 +1388,7 @@ class ContratosApiController extends BaseController
 
                 try {
                     $db->query(
-                        "UPDATE {$dbPrefix}_actividades SET
+                        "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'actividades') . " SET
                             tipoContrato = NULL,
                             paqueteSI1 = NULL, SI1 = NULL, paqueteSI2 = NULL, SI2 = NULL,
                             paqueteSI3 = NULL, SI3 = NULL, paqueteSI4 = NULL, SI4 = NULL,
@@ -1412,7 +1413,7 @@ class ContratosApiController extends BaseController
 
                     // Insert 'deshacer' log entry
                     $db->query(
-                        "INSERT INTO {$dbPrefix}_auto_contrato_log (semana, Id_actividad, accion, tipo_contrato, paquetes, confianza, fecha_inicio_proyectada, num_proveedores, usuario, batch_id) VALUES (?, ?, 'deshacer', ?, ?, ?, ?, ?, ?, ?)",
+                        "INSERT INTO " . TableResolver::resolveByPrefix($dbPrefix, 'auto_contrato_log') . " (semana, Id_actividad, accion, tipo_contrato, paquetes, confianza, fecha_inicio_proyectada, num_proveedores, usuario, batch_id) VALUES (?, ?, 'deshacer', ?, ?, ?, ?, ?, ?, ?)",
                         [
                             $semana,
                             $actId,
@@ -1453,7 +1454,7 @@ class ContratosApiController extends BaseController
     {
         $db = Database::getInstance();
         $db->query("
-            CREATE TABLE IF NOT EXISTS `{$dbPrefix}_auto_contrato_log` (
+            CREATE TABLE IF NOT EXISTS `" . TableResolver::resolveByPrefix($dbPrefix, 'auto_contrato_log') . "` (
                 `id` INT NOT NULL AUTO_INCREMENT,
                 `semana` INT NOT NULL,
                 `Id_actividad` INT NOT NULL,

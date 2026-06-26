@@ -16,12 +16,22 @@ if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbName)) {
     die("Error: Nombre de base de datos inválido.");
 }
 
+// Resolve table names via TableResolver
+$tProgSemanal = TableResolver::resolveByPrefix($dbName, 'programacion_semanal');
+$tProgConsolidado = TableResolver::resolveByPrefix($dbName, 'programa_consolidado');
+
+// Set project context for queryWithProject auto-injection
+$projectId = TableResolver::getProjectIdByPrefix($dbName);
+if ($projectId) {
+    $db->setProjectContext($projectId);
+}
+
 try {
-    $sqlSelect = "SELECT Actividad, Consecutivo_En_Programa, Id, Ejecutado, Unidad, cantidad_ppto, Compromiso, Ejecutado_Real, Responsable_AIA, Sub_Contratista 
-                  FROM {$dbName}_programacion_semanal 
+    $sqlSelect = "SELECT Actividad, Consecutivo_En_Programa, Id, Ejecutado, Unidad, cantidad_ppto, Compromiso, Ejecutado_Real, Responsable_AIA, Sub_Contratista
+                  FROM {$tProgSemanal}
                   WHERE Semana = ? AND (Activa = '1' OR Activa = 'NA')";
 
-    $stmt = $db->query($sqlSelect, [$semanaAnterior]);
+    $stmt = $db->queryWithProject($sqlSelect, [$semanaAnterior]);
     $actividades = $stmt->fetchAll();
 
     $conteo_actividades = count($actividades);
@@ -51,11 +61,11 @@ try {
                 $Ejecutado_fin_semana = (($Ejecutado_Real / $cantidad_ppto) * 100) + $Ejecutado;
             }
 
-            $sqlUpdate = "UPDATE {$dbName}_programa_consolidado 
-                          SET Ejecutado = ?, Responsable_AIA = ?, Sub_Contratista = ? 
+            $sqlUpdate = "UPDATE {$tProgConsolidado}
+                          SET Ejecutado = ?, Responsable_AIA = ?, Sub_Contratista = ?
                           WHERE Semana = ? AND (Actividad = ? OR programaAnteriorAsociar = ?)";
 
-            $db->query($sqlUpdate, [
+            $db->queryWithProject($sqlUpdate, [
                 $Ejecutado_fin_semana,
                 $Responsable_AIA,
                 $Sub_Contratista,

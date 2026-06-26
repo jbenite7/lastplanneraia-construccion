@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Core\Lps\LpsService;
 use App\Services\ProgramaConsolidadoNormalizationService;
+use TableResolver;
 
 class WeeklyRealProgressCarryoverService
 {
@@ -29,14 +30,17 @@ class WeeklyRealProgressCarryoverService
             return ['updatedProgramIds' => [], 'updatedRows' => 0];
         }
 
-        $sourcePrograms = $this->loadSourcePrograms($dbPrefix, $sourceWeek);
-        $targetRows = $this->loadTargetRows($dbPrefix, $targetWeek);
+        $projectId = TableResolver::getProjectIdByPrefix($dbPrefix);
+        $tProgConsolidado = TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado');
+
+        $sourcePrograms = $this->loadSourcePrograms($dbPrefix, $sourceWeek, $projectId);
+        $targetRows = $this->loadTargetRows($dbPrefix, $targetWeek, $projectId);
 
         if (empty($targetRows)) {
             return ['updatedProgramIds' => [], 'updatedRows' => 0];
         }
 
-        $weeklyGroups = $this->loadWeeklyGroups($dbPrefix, $sourceWeek, $sourceProgramId);
+        $weeklyGroups = $this->loadWeeklyGroups($dbPrefix, $sourceWeek, $projectId, $sourceProgramId);
         $filterActivityKey = $this->resolveFilterActivityKey($sourcePrograms, $sourceProgramId);
 
         $updatedProgramIds = [];
@@ -69,8 +73,8 @@ class WeeklyRealProgressCarryoverService
                 );
             }
 
-            $this->db->query(
-                "UPDATE {$dbPrefix}_programa_consolidado
+            $this->db->queryWithProject(
+                "UPDATE {$tProgConsolidado}
                  SET Ejecutado = ?,
                      Ejecutado_Siguiente_Semana = ?,
                      Responsable_AIA = ?, Sub_Contratista = ?, unidad = ?, cantidad_ppto = ?
@@ -85,6 +89,7 @@ class WeeklyRealProgressCarryoverService
                     $targetWeek,
                     $targetRow['Consecutivo'],
                 ],
+                $projectId,
             );
 
             $updatedRows++;
@@ -99,13 +104,15 @@ class WeeklyRealProgressCarryoverService
         ];
     }
 
-    private function loadSourcePrograms(string $dbPrefix, int $sourceWeek): array
+    private function loadSourcePrograms(string $dbPrefix, int $sourceWeek, ?int $projectId = null): array
     {
-        $rows = $this->db->query(
+        $t = TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado');
+        $rows = $this->db->queryWithProject(
             "SELECT Consecutivo_en_Programa, Actividad, Ejecutado, Ejecutado_Siguiente_Semana, unidad, cantidad_ppto, Responsable_AIA, Sub_Contratista
-             FROM {$dbPrefix}_programa_consolidado
+             FROM {$t}
              WHERE Semana = ? AND Titulo = 0",
             [$sourceWeek],
+            $projectId,
         )->fetchAll();
 
         $byId = [];
@@ -129,21 +136,24 @@ class WeeklyRealProgressCarryoverService
         return ['byId' => $byId, 'byActivity' => $byActivity];
     }
 
-    private function loadTargetRows(string $dbPrefix, int $targetWeek): array
+    private function loadTargetRows(string $dbPrefix, int $targetWeek, ?int $projectId = null): array
     {
-        return $this->db->query(
+        $t = TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado');
+        return $this->db->queryWithProject(
             "SELECT Consecutivo, Consecutivo_en_Programa, Actividad, programaAnteriorAsociar, Ejecutado, Ejecutado_Siguiente_Semana
-             FROM {$dbPrefix}_programa_consolidado
+             FROM {$t}
              WHERE Semana = ? AND Titulo = 0",
             [$targetWeek],
+            $projectId,
         )->fetchAll();
     }
 
-    private function loadWeeklyGroups(string $dbPrefix, int $sourceWeek, ?int $sourceProgramId = null): array
+    private function loadWeeklyGroups(string $dbPrefix, int $sourceWeek, ?int $projectId = null, ?int $sourceProgramId = null): array
     {
+        $t = TableResolver::resolveByPrefix($dbPrefix, 'programacion_semanal');
         $params = [$sourceWeek];
         $sql = "SELECT Consecutivo_En_Programa, Actividad, Unidad, cantidad_ppto, Ejecutado_Real, Responsable_AIA, Sub_Contratista
-                FROM {$dbPrefix}_programacion_semanal
+                FROM {$t}
                 WHERE Semana = ? AND (Activa = '1' OR Activa = 'NA')";
 
         if ($sourceProgramId !== null) {
@@ -151,7 +161,7 @@ class WeeklyRealProgressCarryoverService
             $params[] = $sourceProgramId;
         }
 
-        $rows = $this->db->query($sql, $params)->fetchAll();
+        $rows = $this->db->queryWithProject($sql, $params, $projectId)->fetchAll();
 
         $byId = [];
         $byActivity = [];

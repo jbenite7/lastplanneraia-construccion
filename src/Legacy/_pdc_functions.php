@@ -2,6 +2,9 @@
 
 function pdc_insertarPaquetes($db, $dbName, $semana, $cvSI, $cvS, $cvMO, $cvOC = '')
 {
+    $tPdc = TableResolver::resolveByPrefix($dbName, 'pdc');
+    $tActividades = TableResolver::resolveByPrefix($dbName, 'actividades');
+
     $tipos = [
         ['Suministro e Instalación', 'SI', 2],
         ['Mano de Obra', 'MO', 1],
@@ -12,7 +15,7 @@ function pdc_insertarPaquetes($db, $dbName, $semana, $cvSI, $cvS, $cvMO, $cvOC =
     foreach ($tipos as $t) {
         list($label, $prefix, $tipoId) = $t;
 
-        $db->query("INSERT IGNORE INTO {$dbName}_pdc (titulo, semana, tipoPaquete, paqueteContratacion) VALUES (1, ?, ?, ?)", [$semana, $label, $label]);
+        $db->queryWithProject("INSERT IGNORE INTO {$tPdc} (titulo, semana, tipoPaquete, paqueteContratacion) VALUES (1, ?, ?, ?)", [$semana, $label, $label]);
 
         $whereClause = "";
         if ($prefix === 'SI') {
@@ -26,7 +29,7 @@ function pdc_insertarPaquetes($db, $dbName, $semana, $cvSI, $cvS, $cvMO, $cvOC =
         }
 
         $sqlInsert = <<<SQL
-INSERT INTO {$dbName}_pdc (titulo, semana, tipoPaquete, paqueteContratacion, contratos, fechaInicio, 
+INSERT INTO {$tPdc} (titulo, semana, tipoPaquete, paqueteContratacion, contratos, fechaInicio, 
               diasElaboracionPliegos, diasEntregaPliegos, diasReciboPropuestas, 
               diasCuadrosComparativos, diasLegalizacionContrato, diasFabricacion, diasInsumosObra,
               fechaElaboracionPliegos, fechaEntregaPliegos, fechaReciboPropuestas, 
@@ -42,18 +45,18 @@ SELECT 0, ?, ?, SubAct.paqueteContratacion, GROUP_CONCAT(SubAct.actividad SEPARA
        DATE_SUB(MIN(SubAct.fechaInicio), INTERVAL (IFNULL(MAX(gpc.diasInsumosObra),0) + IFNULL(MAX(gpc.diasFabricacion),0)) DAY),
        DATE_SUB(MIN(SubAct.fechaInicio), INTERVAL IFNULL(MAX(gpc.diasInsumosObra),0) DAY)
 FROM (
-    SELECT actividad, fechaInicio, paquete{$prefix}1 AS paqueteContratacion FROM {$dbName}_actividades WHERE semanaActualizacion = ? AND tipoContrato = ? AND paquete{$prefix}1 IS NOT NULL AND paquete{$prefix}1 != ''
-    UNION SELECT actividad, fechaInicio, paquete{$prefix}2 AS paqueteContratacion FROM {$dbName}_actividades WHERE semanaActualizacion = ? AND tipoContrato = ? AND paquete{$prefix}2 IS NOT NULL AND paquete{$prefix}2 != ''
-    UNION SELECT actividad, fechaInicio, paquete{$prefix}3 AS paqueteContratacion FROM {$dbName}_actividades WHERE semanaActualizacion = ? AND tipoContrato = ? AND paquete{$prefix}3 IS NOT NULL AND paquete{$prefix}3 != ''
-    UNION SELECT actividad, fechaInicio, paquete{$prefix}4 AS paqueteContratacion FROM {$dbName}_actividades WHERE semanaActualizacion = ? AND tipoContrato = ? AND paquete{$prefix}4 IS NOT NULL AND paquete{$prefix}4 != ''
-    UNION SELECT actividad, fechaInicio, paquete{$prefix}5 AS paqueteContratacion FROM {$dbName}_actividades WHERE semanaActualizacion = ? AND tipoContrato = ? AND paquete{$prefix}5 IS NOT NULL AND paquete{$prefix}5 != ''
+    SELECT actividad, fechaInicio, paquete{$prefix}1 AS paqueteContratacion FROM {$tActividades} WHERE semanaActualizacion = ? AND tipoContrato = ? AND paquete{$prefix}1 IS NOT NULL AND paquete{$prefix}1 != ''
+    UNION SELECT actividad, fechaInicio, paquete{$prefix}2 AS paqueteContratacion FROM {$tActividades} WHERE semanaActualizacion = ? AND tipoContrato = ? AND paquete{$prefix}2 IS NOT NULL AND paquete{$prefix}2 != ''
+    UNION SELECT actividad, fechaInicio, paquete{$prefix}3 AS paqueteContratacion FROM {$tActividades} WHERE semanaActualizacion = ? AND tipoContrato = ? AND paquete{$prefix}3 IS NOT NULL AND paquete{$prefix}3 != ''
+    UNION SELECT actividad, fechaInicio, paquete{$prefix}4 AS paqueteContratacion FROM {$tActividades} WHERE semanaActualizacion = ? AND tipoContrato = ? AND paquete{$prefix}4 IS NOT NULL AND paquete{$prefix}4 != ''
+    UNION SELECT actividad, fechaInicio, paquete{$prefix}5 AS paqueteContratacion FROM {$tActividades} WHERE semanaActualizacion = ? AND tipoContrato = ? AND paquete{$prefix}5 IS NOT NULL AND paquete{$prefix}5 != ''
 ) AS SubAct
 LEFT JOIN general_dias_procesos_contratacion AS gpc ON SubAct.paqueteContratacion = gpc.paqueteContratacion AND gpc.tipoPaquete = ?
 $whereClause
 GROUP BY SubAct.paqueteContratacion
 SQL;
 
-        $db->query($sqlInsert, [
+        $db->queryWithProject($sqlInsert, [
             $semana, $label,
             $semana, $tipoId,
             $semana, $tipoId,
@@ -67,7 +70,9 @@ SQL;
 
 function pdc_crearSubcontratosDuplicados($db, $dbName, $semana)
 {
-    $stmt = $db->query("SELECT * FROM {$dbName}_pdc WHERE semana = ? AND titulo = 0 AND numeroSubcontratos > 1", [$semana]);
+    $tPdc = TableResolver::resolveByPrefix($dbName, 'pdc');
+
+    $stmt = $db->queryWithProject("SELECT * FROM {$tPdc} WHERE semana = ? AND titulo = 0 AND numeroSubcontratos > 1", [$semana]);
     $items = $stmt->fetchAll();
 
     foreach ($items as $data) {
@@ -75,7 +80,7 @@ function pdc_crearSubcontratosDuplicados($db, $dbName, $semana)
         $numeroSubcontratos = (int) $data["numeroSubcontratos"];
         $paqueteContratacion = $data["paqueteContratacion"];
 
-        $stmtInfo = $db->query("SELECT COUNT(*) as conteo, MAX(subcontratoPaquete) as maxSub FROM {$dbName}_pdc WHERE semana = ? AND titulo = 0 AND paqueteContratacion = ?", [$semana, $paqueteContratacion]);
+        $stmtInfo = $db->queryWithProject("SELECT COUNT(*) as conteo, MAX(subcontratoPaquete) as maxSub FROM {$tPdc} WHERE semana = ? AND titulo = 0 AND paqueteContratacion = ?", [$semana, $paqueteContratacion]);
         $info = $stmtInfo->fetch();
         $conteoActual = (int) $info["conteo"];
         $maxSub = (int) $info["maxSub"];
@@ -83,16 +88,16 @@ function pdc_crearSubcontratosDuplicados($db, $dbName, $semana)
         if ($conteoActual < $numeroSubcontratos) {
             for ($i = $conteoActual + 1; $i <= $numeroSubcontratos; $i++) {
                 $maxSub++;
-                $sqlDup = "INSERT INTO {$dbName}_pdc (semana, titulo, tipoPaquete, paqueteContratacion, contratos, subcontratoPaquete, estado, 
-                           fechaElaboracionPliegos, fechaEntregaPliegos, diasEntregaPliegos, fechaReciboPropuestas, 
-                           diasReciboPropuestas, fechaCuadrosComparativos, diasCuadrosComparativos, fechaLegalizacionContrato, 
-                           diasLegalizacionContrato, fechaFabricacion, diasFabricacion, fechaInsumosObra, diasInsumosObra, fechaInicio) 
-                           SELECT semana, titulo, tipoPaquete, paqueteContratacion, contratos, ?, estado, 
-                                  fechaElaboracionPliegos, fechaEntregaPliegos, diasEntregaPliegos, fechaReciboPropuestas, 
-                                  diasReciboPropuestas, fechaCuadrosComparativos, diasCuadrosComparativos, fechaLegalizacionContrato, 
-                                  diasLegalizacionContrato, fechaFabricacion, diasFabricacion, fechaInsumosObra, diasInsumosObra, fechaInicio 
-                           FROM {$dbName}_pdc WHERE consecutivo = ?";
-                $db->query($sqlDup, [$maxSub, $consecutivo]);
+                $sqlDup = "INSERT INTO {$tPdc} (semana, titulo, tipoPaquete, paqueteContratacion, contratos, subcontratoPaquete, estado,
+                           fechaElaboracionPliegos, fechaEntregaPliegos, diasEntregaPliegos, fechaReciboPropuestas,
+                           diasReciboPropuestas, fechaCuadrosComparativos, diasCuadrosComparativos, fechaLegalizacionContrato,
+                           diasLegalizacionContrato, fechaFabricacion, diasFabricacion, fechaInsumosObra, diasInsumosObra, fechaInicio)
+                           SELECT semana, titulo, tipoPaquete, paqueteContratacion, contratos, ?, estado,
+                                  fechaElaboracionPliegos, fechaEntregaPliegos, diasEntregaPliegos, fechaReciboPropuestas,
+                                  diasReciboPropuestas, fechaCuadrosComparativos, diasCuadrosComparativos, fechaLegalizacionContrato,
+                                  diasLegalizacionContrato, fechaFabricacion, diasFabricacion, fechaInsumosObra, diasInsumosObra, fechaInicio
+                           FROM {$tPdc} WHERE consecutivo = ?";
+                $db->queryWithProject($sqlDup, [$maxSub, $consecutivo]);
             }
         }
     }
@@ -100,10 +105,13 @@ function pdc_crearSubcontratosDuplicados($db, $dbName, $semana)
 
 function pdc_generarEstadoProceso($db, $dbName, $semana)
 {
-    $stmt = $db->query("SELECT * FROM {$dbName}_pdc WHERE semana = ? AND titulo = 0 AND fechaInicio IS NOT NULL", [$semana]);
+    $tPdc = TableResolver::resolveByPrefix($dbName, 'pdc');
+    $tSemanasActivas = TableResolver::resolveByPrefix($dbName, 'semanas_activas');
+
+    $stmt = $db->queryWithProject("SELECT * FROM {$tPdc} WHERE semana = ? AND titulo = 0 AND fechaInicio IS NOT NULL", [$semana]);
     $actividades = $stmt->fetchAll();
 
-    $stmtFecha = $db->query("SELECT Fecha_Inicio_Sem FROM {$dbName}_semanas_activas WHERE Semana = ?", [$semana]);
+    $stmtFecha = $db->queryWithProject("SELECT Fecha_Inicio_Sem FROM {$tSemanasActivas} WHERE Semana = ?", [$semana]);
     $dataFecha = $stmtFecha->fetch();
     $fechaActual = date('Y-m-d', strtotime($dataFecha["Fecha_Inicio_Sem"] ?? 'now'));
 
@@ -164,13 +172,13 @@ function pdc_generarEstadoProceso($db, $dbName, $semana)
             $estadoFinal = "$diagnostico; " . ($posicion === -1 ? "Proceso de contratación no iniciado" : $pasos[$posicion][2]);
         }
 
-        $sqlAct = "UPDATE {$dbName}_pdc SET 
-                   fechaElaboracionPliegos = ?, fechaEntregaPliegos = ?, 
-                   fechaReciboPropuestas = ?, fechaCuadrosComparativos = ?, fechaLegalizacionContrato = ?, 
+        $sqlAct = "UPDATE {$tPdc} SET
+                   fechaElaboracionPliegos = ?, fechaEntregaPliegos = ?,
+                   fechaReciboPropuestas = ?, fechaCuadrosComparativos = ?, fechaLegalizacionContrato = ?,
                    fechaFabricacion = ?, fechaInsumosObra = ?, estado = ?
                    WHERE consecutivo = ?";
 
-        $db->query($sqlAct, [
+        $db->queryWithProject($sqlAct, [
             $fechasCalculadas['fechaElaboracionPliegos'],
             $fechasCalculadas['fechaEntregaPliegos'], $fechasCalculadas['fechaReciboPropuestas'],
             $fechasCalculadas['fechaCuadrosComparativos'], $fechasCalculadas['fechaLegalizacionContrato'],

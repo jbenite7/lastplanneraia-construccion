@@ -1,0 +1,161 @@
+{
+  "audit_timestamp": "2026-06-25T14:55:58.627602Z",
+  "total_table_types": 16,
+  "total_projects": 9,
+  "total_tables_checked": 144,
+  "drift_summary": {
+    "tables_with_zero_drift": 14,
+    "tables_with_cosmetic_drift": 1,
+    "tables_with_documented_exception": 1,
+    "tables_requiring_fix": 0
+  },
+  "sections": {
+    "programa": {
+      "table_type": "programa",
+      "reference_project": "27",
+      "reference_column_count": 26,
+      "projects_present": 9,
+      "status": "NO_DRIFT"
+    },
+    "actividades": {
+      "table_type": "actividades",
+      "reference_project": "27",
+      "reference_column_count": 53,
+      "projects_present": 9,
+      "status": "COSMETIC_DRIFT"
+    },
+    "cambios": {
+      "table_type": "cambios",
+      "reference_project": "27",
+      "reference_column_count": 29,
+      "projects_present": 9,
+      "status": "NO_DRIFT"
+    },
+    "cic": {
+      "table_type": "cic",
+      "reference_project": "27",
+      "reference_column_count": 81,
+      "projects_present": 9,
+      "status": "NO_DRIFT"
+    },
+    "pdc": {
+      "table_type": "pdc",
+      "reference_project": "27",
+      "reference_column_count": 44,
+      "projects_present": 9,
+      "status": "NO_DRIFT"
+    },
+    "profesionales": {
+      "table_type": "profesionales",
+      "reference_project": "27",
+      "reference_column_count": 5,
+      "projects_present": 9,
+      "status": "NO_DRIFT"
+    },
+    "programacion_semanal": {
+      "table_type": "programacion_semanal",
+      "reference_project": "27",
+      "reference_column_count": 40,
+      "projects_present": 9,
+      "status": "NO_DRIFT"
+    },
+    "programa_consolidado": {
+      "table_type": "programa_consolidado",
+      "reference_project": "27",
+      "reference_column_count": 39,
+      "projects_present": 9,
+      "status": "NO_DRIFT"
+    },
+    "semanas_activas": {
+      "table_type": "semanas_activas",
+      "reference_project": "27",
+      "reference_column_count": 10,
+      "projects_present": 9,
+      "status": "NO_DRIFT"
+    },
+    "subcontratistas": {
+      "table_type": "subcontratistas",
+      "reference_project": "27",
+      "reference_column_count": 7,
+      "projects_present": 9,
+      "status": "NO_DRIFT"
+    },
+    "auto_program_log": {
+      "table_type": "auto_program_log",
+      "reference_project": "27",
+      "reference_column_count": 8,
+      "projects_present": 9,
+      "status": "NO_DRIFT"
+    },
+    "lps_drawer_comentarios": {
+      "table_type": "lps_drawer_comentarios",
+      "reference_project": "27",
+      "reference_column_count": 10,
+      "projects_present": 9,
+      "status": "NO_DRIFT"
+    },
+    "lps_escalamientos": {
+      "table_type": "lps_escalamientos",
+      "reference_project": "27",
+      "reference_column_count": 13,
+      "projects_present": 9,
+      "status": "NO_DRIFT"
+    },
+    "pg_tracking": {
+      "table_type": "pg_tracking",
+      "reference_project": "27",
+      "reference_column_count": 10,
+      "projects_present": 9,
+      "status": "NO_DRIFT"
+    },
+    "pi_shared_constraints": {
+      "table_type": "pi_shared_constraints",
+      "reference_project": "27",
+      "reference_column_count": 8,
+      "projects_present": 9,
+      "status": "NO_DRIFT"
+    },
+    "pi_shared_constraint_links": {
+      "table_type": "pi_shared_constraint_links",
+      "reference_project": "27",
+      "reference_column_count": 7,
+      "projects_present": 9,
+      "status": "DOCUMENTED_EXCEPTION"
+    }
+  },
+  "fixes_applied": [
+    "programa: Added restriccion_pc_1-4 columns to projects 27,68-74",
+    "programa_consolidado: Added alerta_crisis, reprogramaciones_acumuladas, dias_reprogramacion_acumulada to project 75",
+    "programa_consolidado: Added restriccion_pc_1-4 columns to projects 27,68-74",
+    "programa_consolidado: Fixed composite indexes (idx_consecutivo_consolidado, idx_crisis_hot) on project 75",
+    "lps_drawer_comentarios: Added escalamiento_id index to project 75",
+    "actividades: Added confianza_deteccion, fechaInicioProyectada, numeroSubcontratos, ultimo_auto_definir to projects 68-74",
+    "cic: Added si_adm_6 to project 75"
+  ],
+  "documented_exceptions": [
+    {
+      "table": "pi_shared_constraint_links",
+      "issue": "ConsecutivoEnPrograma column type mismatch: bigint (reference) vs varchar(64) in projects 73,74,75",
+      "reason": "Type change would require data conversion; not forced to avoid data loss. Will be normalized during global table creation (Task 5).",
+      "affected_projects": [
+        73,
+        74,
+        75
+      ]
+    },
+    {
+      "table": "actividades",
+      "issue": "numeroSubcontratos: tinyint vs tinyint(1) - display width difference only",
+      "reason": "Functionally identical in MySQL 8 (display width deprecated). No action needed.",
+      "affected_projects": [
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74
+      ]
+    }
+  ]
+}

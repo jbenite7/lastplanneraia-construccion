@@ -473,9 +473,11 @@
 					var Responsable_AIA = <?php
                             $dbInstance = Database::getInstance();
     $db = $_SESSION["db"];
-    $query = "SELECT * FROM {$db}_profesionales WHERE Activo=1";
+    $tableName = TableResolver::resolveByPrefix($db, 'profesionales');
+    $projectId = TableResolver::getProjectIdByPrefix($db);
+    $query = "SELECT * FROM {$tableName} WHERE Activo=1";
     try {
-        $stmt = $dbInstance->query($query);
+        $stmt = $dbInstance->queryWithProject($query, [], $projectId);
         $Responsable_AIA = "";
         while ($valores = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $valor = $valores["nombre"];

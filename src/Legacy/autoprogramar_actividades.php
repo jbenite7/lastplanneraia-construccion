@@ -19,14 +19,25 @@ if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbName)) {
     die(json_encode(["respuesta" => "ERROR", "mensaje" => "Nombre de base de datos inválido."]));
 }
 
+// Resolve table names via TableResolver
+$tSemanasActivas = TableResolver::resolveByPrefix($dbName, 'semanas_activas');
+$tProgSemanal = TableResolver::resolveByPrefix($dbName, 'programacion_semanal');
+$tProgConsolidado = TableResolver::resolveByPrefix($dbName, 'programa_consolidado');
+
+// Set project context for queryWithProject auto-injection
+$projectId = TableResolver::getProjectIdByPrefix($dbName);
+if ($projectId) {
+    $db->setProjectContext($projectId);
+}
+
 try {
     // Resolve restriction config once based on project Area
     $restrictionConfig = RestrictionConfigResolver::resolve($dbName);
     $isPreConstruccion = $restrictionConfig['isPreConstruccion'];
 
     // 1. Obtener fechas de la semana activa
-    $sqlSemana = "SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem FROM {$dbName}_semanas_activas WHERE Semana = ?";
-    $stmtSemana = $db->query($sqlSemana, [$semana]);
+    $sqlSemana = "SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem FROM {$tSemanasActivas} WHERE Semana = ?";
+    $stmtSemana = $db->queryWithProject($sqlSemana, [$semana]);
     $dataSemana = $stmtSemana->fetch();
 
     if (!$dataSemana) {
@@ -116,7 +127,7 @@ try {
     $hardEligibilitySqlPc = $buildHardEligibilitySql('pc.');
 
     // 2. Identificar actividades ya programadas para evitar duplicados
-    $stmtExistentes = $db->query("SELECT DISTINCT(Consecutivo_En_Programa) FROM {$dbName}_programacion_semanal WHERE Semana = ?", [$semana]);
+    $stmtExistentes = $db->queryWithProject("SELECT DISTINCT(Consecutivo_En_Programa) FROM {$tProgSemanal} WHERE Semana = ?", [$semana]);
     $existentes = $stmtExistentes->fetchAll(PDO::FETCH_COLUMN);
 
     $whereExistentes = "";
@@ -128,14 +139,14 @@ try {
     }
 
     // 3. Insertar nuevas actividades desde el consolidado (Con Split)
-    $sqlSelectNuevas = "SELECT 
-        {$semana}, Consecutivo_en_Programa, Id, Actividad, Fecha_Inicio, Fecha_Fin, 
-        Sub_Contratista, Responsable_AIA, 'AIA', Ejecutado, 0, 
-        Ruta_Critica, 
-        CASE WHEN (Estado='Atrasada' OR Estado='Ya Debió Iniciar y Restricciones Pendientes') THEN 1 ELSE 0 END, 
+    $sqlSelectNuevas = "SELECT
+        {$semana}, Consecutivo_en_Programa, Id, Actividad, Fecha_Inicio, Fecha_Fin,
+        Sub_Contratista, Responsable_AIA, 'AIA', Ejecutado, 0,
+        Ruta_Critica,
+        CASE WHEN (Estado='Atrasada' OR Estado='Ya Debió Iniciar y Restricciones Pendientes') THEN 1 ELSE 0 END,
         '1', COALESCE(NULLIF(TRIM(unidad), ''), '%'), cantidad_ppto, codigo_actividad
-    FROM {$dbName}_programa_consolidado 
-    WHERE Semana = ? AND Titulo = 0 
+    FROM {$tProgConsolidado}
+    WHERE Semana = ? AND Titulo = 0
       AND (COALESCE(Ejecutado, 0) > 0.001 OR {$hardEligibilitySql})
       AND (
 Estado='En Curso' OR Estado='Atrasada' OR Estado='Debe Iniciar'
@@ -146,11 +157,11 @@ Estado='En Curso' OR Estado='Atrasada' OR Estado='Debe Iniciar'
     // Remover el primer param de los inserts porque ahora lo inyectamos directamente arriba
     array_shift($paramsInsert);
 
-    $stmtNuevas = $db->query($sqlSelectNuevas, $paramsInsert);
+    $stmtNuevas = $db->queryWithProject($sqlSelectNuevas, $paramsInsert);
     $nuevasFilas = $stmtNuevas->fetchAll(PDO::FETCH_NUM);
 
     if (!empty($nuevasFilas)) {
-        $queryInsertSingle = "INSERT INTO {$dbName}_programacion_semanal (
+        $queryInsertSingle = "INSERT INTO {$tProgSemanal} (
             Semana, Consecutivo_En_Programa, Id, Actividad, Fecha_Inicio, Fecha_Fin, 
             Sub_Contratista, Responsable_AIA, Empresa, Ejecutado, medir_productividad, 
             Critica, Atrasada, Activa, Unidad, cantidad_ppto, codigo_actividad
@@ -164,13 +175,14 @@ Estado='En Curso' OR Estado='Atrasada' OR Estado='Debe Iniciar'
             }
             foreach ($subs as $sub) {
                 $f[6] = $sub;
-                $db->query($queryInsertSingle, $f);
+                list($insSql, $insParams) = Database::getInstance()->insertProjectId($queryInsertSingle, $projectId ?? 0, $f);
+                $db->queryWithProject($insSql, $insParams);
             }
         }
     }
 
     // 4. Actualizar detalles y compromisos de las actividades programadas
-    $stmtSemanal = $db->query("SELECT Consecutivo, Consecutivo_En_Programa, Ejecutado, Compromiso, Activa, Sub_Contratista FROM {$dbName}_programacion_semanal WHERE Semana = ? AND Activa != 'NA'", [$semana]);
+    $stmtSemanal = $db->queryWithProject("SELECT Consecutivo, Consecutivo_En_Programa, Ejecutado, Compromiso, Activa, Sub_Contratista FROM {$tProgSemanal} WHERE Semana = ? AND Activa != 'NA'", [$semana]);
     $actividadesSemanales = $stmtSemanal->fetchAll();
 
     foreach ($actividadesSemanales as $item) {
@@ -178,7 +190,7 @@ Estado='En Curso' OR Estado='Atrasada' OR Estado='Debe Iniciar'
         $consecutivo_pg = $item["Consecutivo_En_Programa"];
         $subcontratista_split = $item["Sub_Contratista"];
 
-        $stmtCons = $db->query("SELECT * FROM {$dbName}_programa_consolidado WHERE Semana = ? AND Consecutivo_en_programa = ?", [$semana, $consecutivo_pg]);
+        $stmtCons = $db->queryWithProject("SELECT * FROM {$tProgConsolidado} WHERE Semana = ? AND Consecutivo_en_programa = ?", [$semana, $consecutivo_pg]);
         $dataCons = $stmtCons->fetch();
 
         if (!$dataCons) {
@@ -196,12 +208,12 @@ Estado='En Curso' OR Estado='Atrasada' OR Estado='Debe Iniciar'
         }
 
         // Buscar en la semana anterior priorizando el subcontratista dividido
-        $stmtAnterior = $db->query("SELECT Responsable_AIA, Empresa, Descripcion, Ubicacion FROM {$dbName}_programacion_semanal WHERE Semana = ? AND Consecutivo_En_programa = ? AND Sub_Contratista = ?", [$semana - 1, $consecutivo_pg, $subcontratista_split]);
+        $stmtAnterior = $db->queryWithProject("SELECT Responsable_AIA, Empresa, Descripcion, Ubicacion FROM {$tProgSemanal} WHERE Semana = ? AND Consecutivo_En_programa = ? AND Sub_Contratista = ?", [$semana - 1, $consecutivo_pg, $subcontratista_split]);
         $dataAnt = $stmtAnterior->fetch();
 
         // Si no lo encuentra, buscar solo por Consecutivo_En_Programa
         if (!$dataAnt) {
-            $stmtAnteriorFallBack = $db->query("SELECT Responsable_AIA, Empresa, Descripcion, Ubicacion FROM {$dbName}_programacion_semanal WHERE Semana = ? AND Consecutivo_En_programa = ?", [$semana - 1, $consecutivo_pg]);
+            $stmtAnteriorFallBack = $db->queryWithProject("SELECT Responsable_AIA, Empresa, Descripcion, Ubicacion FROM {$tProgSemanal} WHERE Semana = ? AND Consecutivo_En_programa = ?", [$semana - 1, $consecutivo_pg]);
             $dataAnt = $stmtAnteriorFallBack->fetch();
         }
 
@@ -212,7 +224,7 @@ Estado='En Curso' OR Estado='Atrasada' OR Estado='Debe Iniciar'
         $desc = $dataAnt["Descripcion"] ?? null;
         $ubica = $dataAnt["Ubicacion"] ?? null;
 
-        $sqlActSemana = "UPDATE {$dbName}_programacion_semanal SET 
+        $sqlActSemana = "UPDATE {$tProgSemanal} SET
             Fecha_Inicio = ?, Fecha_Fin = ?, Sub_Contratista = ?, Responsable_AIA = ?, 
             Ejecutado = ?, medir_productividad = ?, Critica = ?, 
             Atrasada = (CASE WHEN ? IN ('Atrasada', 'Ya Debió Iniciar y Restricciones Pendientes') THEN 1 ELSE 0 END), 
@@ -220,7 +232,7 @@ Estado='En Curso' OR Estado='Atrasada' OR Estado='Debe Iniciar'
             cantidad_ppto = ?, codigo_actividad = ?, Compromiso = ?
             WHERE Semana = ? AND Consecutivo = ?";
 
-        $db->query($sqlActSemana, [
+        $db->queryWithProject($sqlActSemana, [
             $dataCons['Fecha_Inicio'], $dataCons['Fecha_Fin'], $sub, $resp,
             $ejecutadoActual, 0, (int) ($dataCons["Ruta_Critica"] ?? 0),
             $dataCons["Estado"], $desc, $ubica, $empresa, $dataCons["unidad"],
@@ -230,7 +242,7 @@ Estado='En Curso' OR Estado='Atrasada' OR Estado='Debe Iniciar'
     }
 
     // 5. Limpieza
-    $stmtConsLimpieza = $db->query("SELECT Consecutivo_en_Programa FROM {$dbName}_programa_consolidado WHERE Semana = ? AND Ejecutado = 0 AND Semanas_Inicio > 0 AND Activa != 'NA'", [$semana]);
+    $stmtConsLimpieza = $db->queryWithProject("SELECT Consecutivo_en_Programa FROM {$tProgConsolidado} WHERE Semana = ? AND Ejecutado = 0 AND Semanas_Inicio > 0 AND Activa != 'NA'", [$semana]);
     $noIniciadas = $stmtConsLimpieza->fetchAll(PDO::FETCH_COLUMN);
 
     $whereLimpieza = "";
@@ -241,23 +253,23 @@ Estado='En Curso' OR Estado='Atrasada' OR Estado='Debe Iniciar'
         $paramsDelete = array_merge($paramsDelete, $noIniciadas);
     }
 
-    $sqlDeleteLimpieza = "DELETE FROM {$dbName}_programacion_semanal WHERE Semana = ? AND ((Ejecutado = 1 AND Activa != 'NA') $whereLimpieza)";
-    $db->query($sqlDeleteLimpieza, $paramsDelete);
+    $sqlDeleteLimpieza = "DELETE FROM {$tProgSemanal} WHERE Semana = ? AND ((Ejecutado = 1 AND Activa != 'NA') $whereLimpieza)";
+    $db->queryWithProject($sqlDeleteLimpieza, $paramsDelete);
 
     // 6. Actualización final
-    $db->query("UPDATE {$dbName}_programacion_semanal ps
-                JOIN {$dbName}_programa_consolidado pc ON ps.Consecutivo_En_Programa = pc.Consecutivo_en_Programa AND ps.Semana = pc.Semana
+    $db->queryWithProject("UPDATE {$tProgSemanal} ps
+                JOIN {$tProgConsolidado} pc ON ps.Consecutivo_En_Programa = pc.Consecutivo_en_Programa AND ps.Semana = pc.Semana
                 SET ps.Prog_Sin_Restricciones_100 = (CASE WHEN {$hardEligibilitySqlPc} THEN 0 ELSE 1 END),
                     ps.Ejecutado = pc.Ejecutado
                 WHERE ps.Semana = ? AND ps.Activa != 'NA'", [$semana]);
 
-    $db->query("UPDATE {$dbName}_programacion_semanal SET Prog_Sin_Restricciones_100 = 0 WHERE Semana = ? AND Activa = 'NA'", [$semana]);
+    $db->queryWithProject("UPDATE {$tProgSemanal} SET Prog_Sin_Restricciones_100 = 0 WHERE Semana = ? AND Activa = 'NA'", [$semana]);
 
     // 7. Identificar actividades que no se autoprogramaron por restricciones pendientes
     $restrictionColsSql = implode(', ', $restrictionConfig['allRestrictions']);
-    $sqlRestricciones = "SELECT 
+    $sqlRestricciones = "SELECT
         Id, Actividad, {$restrictionColsSql}
-    FROM {$dbName}_programa_consolidado 
+    FROM {$tProgConsolidado}
     WHERE Semana = ? AND Titulo = 0 
       AND NOT {$hardEligibilitySql}
       AND (
@@ -266,7 +278,7 @@ Estado='En Curso' OR Estado='Atrasada' OR Estado='Debe Iniciar'
       )
       $whereExistentes";
 
-    $stmtRest = $db->query($sqlRestricciones, $paramsInsert);
+    $stmtRest = $db->queryWithProject($sqlRestricciones, $paramsInsert);
     $fallidas = $stmtRest->fetchAll(PDO::FETCH_ASSOC);
 
     $alertasRestricciones = [];

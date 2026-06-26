@@ -4,6 +4,7 @@ namespace App\Controllers\Programacion;
 
 use App\Controllers\BaseController;
 
+use TableResolver;
 class ProgramacionIntermediaController extends BaseController
 {
     public function index()
@@ -21,7 +22,7 @@ class ProgramacionIntermediaController extends BaseController
         // 1. Subcontratistas
         $subcontratistas = [];
         if ($dbName) {
-            $stmt = $this->db->query("SELECT * FROM {$dbName}_subcontratistas WHERE activo=1");
+            $stmt = $this->db->queryWithProject("SELECT * FROM " . TableResolver::resolveByPrefix($dbName, 'subcontratistas') . " WHERE activo=1");
             $subcontratistas = $stmt->fetchAll();
         }
 
@@ -29,7 +30,7 @@ class ProgramacionIntermediaController extends BaseController
         $profesionales = [];
         if ($dbName) {
             // Nota: 'Activo' con mayúscula según convención original
-            $stmt = $this->db->query("SELECT * FROM {$dbName}_profesionales WHERE Activo=1");
+            $stmt = $this->db->queryWithProject("SELECT * FROM " . TableResolver::resolveByPrefix($dbName, 'profesionales') . " WHERE Activo=1");
             $profesionales = $stmt->fetchAll();
         }
 
@@ -41,13 +42,13 @@ class ProgramacionIntermediaController extends BaseController
             $dbPrefix = $vars['dbName'] ?? '';
             if (!empty($dbPrefix) && preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
                 try {
-                    $stmtPc = $this->db->prepare(
+                    $stmtPc = $this->db->queryWithProject(
                         "SELECT pc_restr_2_nombre, pc_restr_3_nombre, pc_restr_4_nombre
                          FROM general_proyectos_procesos
                          WHERE Base_de_Datos = ?
-                         LIMIT 1"
+                         LIMIT 1",
+                        [$dbPrefix]
                     );
-                    $stmtPc->execute([$dbPrefix]);
                     $proyectoPc = $stmtPc->fetch(\PDO::FETCH_ASSOC);
                     if ($proyectoPc) {
                         $pcRestrictionNames[2] = !empty($proyectoPc['pc_restr_2_nombre']) ? $proyectoPc['pc_restr_2_nombre'] : null;
@@ -129,12 +130,11 @@ class ProgramacionIntermediaController extends BaseController
             }
 
             $query = "SELECT *
-                      FROM {$dbPrefix}_programa_consolidado
+                      FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . "
                       WHERE {$where}
                       ORDER BY Semanas_Inicio ASC";
 
-            $stmt = $this->db->prepare($query);
-            $stmt->execute([$semana]);
+            $stmt = $this->db->queryWithProject($query, [$semana]);
             $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
             $filteredRows = [];
@@ -219,7 +219,7 @@ class ProgramacionIntermediaController extends BaseController
 
         $query = "SELECT Titulo, Semanas_Inicio, Estado_Restricciones, Ejecutado, Estado, Ruta_Critica,
                          D_y_E, Materiales, MdeO, Equipos, Predecesora
-                  FROM {$dbPrefix}_programa_consolidado
+                  FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . "
                   WHERE Semana = ?
                     AND Fecha_Inicio IS NOT NULL
                     AND Fecha_Fin IS NOT NULL
@@ -228,8 +228,7 @@ class ProgramacionIntermediaController extends BaseController
                     AND Titulo = 0";
 
         try {
-            $stmt = $this->db->prepare($query);
-            $stmt->execute([$semana]);
+            $stmt = $this->db->queryWithProject($query, [$semana]);
             $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
             $payload = [];
@@ -496,8 +495,8 @@ class ProgramacionIntermediaController extends BaseController
             if ($sharedTablesReady) {
                 try {
                     $createdBy = (string) ($_SESSION['nombre'] ?? $_SESSION['usuario'] ?? $_SESSION['nombre_usuario'] ?? 'system');
-                    $insertSharedSql = "INSERT INTO {$dbPrefix}_pi_shared_constraints (Semana, Restriccion, ValorObjetivo, Nota, CreadoPor) VALUES (?, ?, ?, ?, ?)";
-                    $insertSharedStmt = $this->db->prepare($insertSharedSql);
+                    $insertSharedSql = "INSERT INTO " . TableResolver::resolveByPrefix($dbPrefix, 'pi_shared_constraints') . " (Semana, Restriccion, ValorObjetivo, Nota, CreadoPor) VALUES (?, ?, ?, ?, ?)";
+                    $insertSharedStmt = $this->db->prepareWithProject($insertSharedSql);
 
                     foreach ($normalizedRestrictions as $restriction) {
                         $insertSharedStmt->execute([
@@ -514,8 +513,8 @@ class ProgramacionIntermediaController extends BaseController
                         }
                     }
 
-                    $insertLinkSql = "INSERT INTO {$dbPrefix}_pi_shared_constraint_links (SharedConstraintId, Semana, ConsecutivoEnPrograma, ValorAplicado) VALUES (?, ?, ?, ?)";
-                    $insertLinkStmt = $this->db->prepare($insertLinkSql);
+                    $insertLinkSql = "INSERT INTO " . TableResolver::resolveByPrefix($dbPrefix, 'pi_shared_constraint_links') . " (SharedConstraintId, Semana, ConsecutivoEnPrograma, ValorAplicado) VALUES (?, ?, ?, ?)";
+                    $insertLinkStmt = $this->db->prepareWithProject($insertLinkSql);
                     $trackSharedLinks = (!empty($sharedIdsByType) && $insertLinkStmt !== false);
                 } catch (\Throwable $trackingError) {
                     $trackSharedLinks = false;
@@ -525,8 +524,8 @@ class ProgramacionIntermediaController extends BaseController
                 }
             }
 
-            $updateSql = "UPDATE {$dbPrefix}_programa_consolidado SET " . implode(', ', $setClauses) . " WHERE Consecutivo_en_Programa = ? AND Semana = ? AND Titulo = 0";
-            $updateStmt = $this->db->prepare($updateSql);
+            $updateSql = "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " SET " . implode(', ', $setClauses) . " WHERE Consecutivo_en_Programa = ? AND Semana = ? AND Titulo = 0";
+            $updateStmt = $this->db->prepareWithProject($updateSql);
 
             $updated = 0;
             $updatedIds = [];
@@ -880,14 +879,13 @@ class ProgramacionIntermediaController extends BaseController
 
         $placeholders = implode(',', array_fill(0, count($activityIds), '?'));
         $sql = "SELECT Consecutivo_en_Programa, Id, Actividad, D_y_E, Materiales, MdeO, Equipos, Predecesora, Pdto_Cons, Modelo, Sub_Contratista, Responsable_AIA
-                FROM {$dbPrefix}_programa_consolidado
+                FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . "
                 WHERE Semana = ?
                   AND Titulo = 0
                   AND Consecutivo_en_Programa IN ({$placeholders})";
 
         $params = array_merge([$semana], $activityIds);
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute($params);
+        $stmt = $this->db->queryWithProject($sql, $params);
 
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
@@ -1044,7 +1042,7 @@ class ProgramacionIntermediaController extends BaseController
     private function ensureSharedConstraintTables(string $dbPrefix): bool
     {
         try {
-            $sqlShared = "CREATE TABLE IF NOT EXISTS {$dbPrefix}_pi_shared_constraints (
+            $sqlShared = "CREATE TABLE IF NOT EXISTS " . TableResolver::resolveByPrefix($dbPrefix, 'pi_shared_constraints') . " (
                 Id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
                 Semana INT NOT NULL,
                 Restriccion VARCHAR(40) NOT NULL,
@@ -1057,7 +1055,7 @@ class ProgramacionIntermediaController extends BaseController
                 INDEX idx_restriccion (Restriccion)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
 
-            $sqlLinks = "CREATE TABLE IF NOT EXISTS {$dbPrefix}_pi_shared_constraint_links (
+            $sqlLinks = "CREATE TABLE IF NOT EXISTS " . TableResolver::resolveByPrefix($dbPrefix, 'pi_shared_constraint_links') . " (
                 Id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
                 SharedConstraintId BIGINT UNSIGNED NOT NULL,
                 Semana INT NOT NULL,
@@ -1069,8 +1067,8 @@ class ProgramacionIntermediaController extends BaseController
                 INDEX idx_semana_consecutivo (Semana, ConsecutivoEnPrograma)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
 
-            $this->db->query($sqlShared);
-            $this->db->query($sqlLinks);
+            $this->db->queryWithProject($sqlShared);
+            $this->db->queryWithProject($sqlLinks);
 
             return true;
         } catch (\Throwable $e) {
