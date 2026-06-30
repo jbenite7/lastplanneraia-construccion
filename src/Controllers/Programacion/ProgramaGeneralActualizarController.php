@@ -59,7 +59,7 @@ class ProgramaGeneralActualizarController extends BaseController
 
                 // Obtener estado específico de la semana actual
                 if ($semanaBaseActualizacion > 0) {
-                    $this->db->queryWithProject("SELECT Semanal_Confirmada FROM " . TableResolver::resolveByPrefix($dbName, 'semanas_activas') . " WHERE Semana = ?", [$semanaBaseActualizacion]);
+                    $stmtStatus = $this->db->queryWithProject("SELECT Semanal_Confirmada FROM " . TableResolver::resolveByPrefix($dbName, 'semanas_activas') . " WHERE Semana = ?", [$semanaBaseActualizacion]);
                     $semanalConfirmada = (int) ($stmtStatus->fetchColumn() ?: 0);
                 }
 

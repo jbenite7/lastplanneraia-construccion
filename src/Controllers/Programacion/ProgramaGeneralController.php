@@ -35,7 +35,10 @@ class ProgramaGeneralController extends BaseController
 
         try {
             if (!empty($dbName) && preg_match('/^[a-zA-Z0-9_]+$/', $dbName)) {
-                $sqlUltima = "SELECT Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem FROM " . TableResolver::resolveByPrefix($dbName, 'semanas_activas') . " WHERE Semana = (SELECT MAX(Semana) FROM " . TableResolver::resolveByPrefix($dbName, 'semanas_activas') . ")";
+                $projectId = TableResolver::getProjectIdByPrefix($dbName);
+                $tSa = TableResolver::resolveByPrefix($dbName, 'semanas_activas');
+
+                $sqlUltima = "SELECT Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem FROM {$tSa} ORDER BY Semana DESC LIMIT 1";
                 $stmtUltima = $this->db->queryWithProject($sqlUltima);
                 $dataUltima = $stmtUltima->fetch();
 
@@ -50,9 +53,9 @@ class ProgramaGeneralController extends BaseController
                 }
 
                 $sqlDetalles = "SELECT Semanal_Confirmada, fechaCierreCompromisos, fechaCreacionSemana, 
-                               (SELECT SUM(reprogramacion) FROM " . TableResolver::resolveByPrefix($dbName, 'semanas_activas') . " WHERE Semana <= ?) AS versionCronograma 
-                               FROM " . TableResolver::resolveByPrefix($dbName, 'semanas_activas') . " WHERE Semana = ?";
-                $stmtDetalles = $this->db->queryWithProject($sqlDetalles, [$semana, $semana]);
+                               (SELECT SUM(reprogramacion) FROM {$tSa} WHERE Semana <= ? AND project_id = ?) AS versionCronograma 
+                               FROM {$tSa} WHERE Semana = ? AND project_id = ?";
+                $stmtDetalles = $this->db->queryWithProject($sqlDetalles, [$semana, $projectId, $semana, $projectId]);
                 $dataDetalles = $stmtDetalles->fetch();
 
                 if ($dataDetalles) {
