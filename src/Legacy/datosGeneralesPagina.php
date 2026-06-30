@@ -57,7 +57,7 @@ try {
         $_SESSION["Max_Semana"] = 0;
         $arreglo["listadoSemanas"] = [""];
     } else {
-        $sqlUltima = "SELECT Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem FROM {$tSemanasActivas} WHERE Semana = (SELECT MAX(Semana) FROM {$tSemanasActivas})";
+        $sqlUltima = "SELECT Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem FROM {$tSemanasActivas} ORDER BY Semana DESC LIMIT 1";
         $stmtUltima = $dbInstance->queryWithProject($sqlUltima);
         $dataUltima = $stmtUltima->fetch();
 
@@ -72,10 +72,10 @@ try {
         $_SESSION["Max_Semana"] = $dataUltima["Semana"];
 
         $sqlDetalles = "SELECT Semanal_Confirmada, fechaCierreCompromisos, fechaCreacionSemana,
-                       (SELECT SUM(reprogramacion) FROM {$tSemanasActivas} WHERE Semana <= ?) AS versionCronograma
-                       FROM {$tSemanasActivas} WHERE Semana = ?";
+                       (SELECT SUM(reprogramacion) FROM {$tSemanasActivas} WHERE Semana <= ? AND project_id = ?) AS versionCronograma
+                       FROM {$tSemanasActivas} WHERE Semana = ? AND project_id = ?";
 
-        $stmtDetalles = $dbInstance->queryWithProject($sqlDetalles, [$semana, $semana]);
+        $stmtDetalles = $dbInstance->queryWithProject($sqlDetalles, [$semana, $projectId, $semana, $projectId]);
         $dataDetalles = $stmtDetalles->fetch();
 
         if ($dataDetalles) {
