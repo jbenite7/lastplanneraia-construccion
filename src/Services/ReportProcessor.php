@@ -174,8 +174,8 @@ class ReportProcessor
 
                     // Calculate total weeks
                     $tSemanasActivas = TableResolver::resolveByPrefix($dbPrefix, 'semanas_activas');
-                    $sqlSemanas = "SELECT CEIL(((DATEDIFF((SELECT MAX(Fecha_Fin) FROM {$tProgCons} WHERE Semana = (SELECT MAX(Semana) FROM {$tSemanasActivas})), MIN(Fecha_Inicio))+1)/7)) AS semanasProyecto FROM {$tProgCons}";
-                    $dataSemanasProyecto = $this->db->queryWithProject($sqlSemanas, [], $projectId)->fetch();
+                    $sqlSemanas = "SELECT CEIL(((DATEDIFF((SELECT MAX(Fecha_Fin) FROM {$tProgCons} WHERE Semana = (SELECT MAX(Semana) FROM {$tSemanasActivas} WHERE project_id = ?) AND project_id = ?), MIN(Fecha_Inicio))+1)/7)) AS semanasProyecto FROM {$tProgCons} WHERE project_id = ?";
+                    $dataSemanasProyecto = $this->db->queryWithProject($sqlSemanas, [$projectId, $projectId, $projectId], $projectId)->fetch();
                     $semanasProyecto = (int) ($dataSemanasProyecto["semanasProyecto"] ?? 0);
                     $this->reportSubprocess('Curva S', $proyecto, 'Calculando semanas', 'ok', "{$semanasProyecto} semanas");
 
@@ -371,8 +371,10 @@ class ReportProcessor
 
         // Weeks calculation for PDC
         $projectId = $this->pid($dbPrefix);
-        $sqlSemanas = "SELECT CEIL(((DATEDIFF((SELECT MAX(Fecha_Fin) FROM {$this->t($dbPrefix, 'programa_consolidado')} WHERE Semana = (SELECT MAX(Semana) FROM {$this->t($dbPrefix, 'semanas_activas')})), MIN(Fecha_Inicio))+1)/7)) AS semanasProyecto FROM {$this->t($dbPrefix, 'programa_consolidado')}";
-        $dataSemanasProyecto = $this->db->queryWithProject($sqlSemanas, [], $projectId)->fetch();
+        $tProgCons374 = $this->t($dbPrefix, 'programa_consolidado');
+        $tSA374 = $this->t($dbPrefix, 'semanas_activas');
+        $sqlSemanas = "SELECT CEIL(((DATEDIFF((SELECT MAX(Fecha_Fin) FROM {$tProgCons374} WHERE Semana = (SELECT MAX(Semana) FROM {$tSA374} WHERE project_id = ?) AND project_id = ?), MIN(Fecha_Inicio))+1)/7)) AS semanasProyecto FROM {$tProgCons374} WHERE project_id = ?";
+        $dataSemanasProyecto = $this->db->queryWithProject($sqlSemanas, [$projectId, $projectId, $projectId], $projectId)->fetch();
         $semanasProyecto = (int) ($dataSemanasProyecto["semanasProyecto"] ?? 0);
         $this->reportSubprocess('Curva S PDC APR', $proyecto, 'Calculando semanas PDC APR', 'ok', "{$semanasProyecto} semanas");
 
@@ -578,6 +580,8 @@ class ReportProcessor
                 }
 
                 $projectId = $this->pid($dbPrefix);
+                $tPS = $this->t($dbPrefix, 'programacion_semanal');
+                $tSA595 = $this->t($dbPrefix, 'semanas_activas');
                 $sqlInsert = "INSERT INTO general_informe_consolidado (
                 Proyecto, Semana, maxSemana, Proyecto_maxSemana, Actividad, 
                 Fecha_Inicio, Fecha_Fin, Fecha_Inicio_Sem, Fecha_Fin_Sem, 
@@ -589,8 +593,8 @@ class ReportProcessor
             SELECT 
                 ? AS Proyecto, 
                 prog.Semana, 
-                (SELECT MAX(Semana) FROM {$this->t($dbPrefix, 'programacion_semanal')}) AS maxSemana,
-                CONCAT(?, ' (', (SELECT Fecha_Fin_Sem FROM {$this->t($dbPrefix, 'semanas_activas')} WHERE Semana = (SELECT MAX(Semana) FROM {$this->t($dbPrefix, 'programacion_semanal')})), ')') AS Proyecto_maxSemana,
+                (SELECT MAX(Semana) FROM {$tPS} WHERE project_id = ?) AS maxSemana,
+                CONCAT(?, ' (', (SELECT Fecha_Fin_Sem FROM {$tSA595} WHERE Semana = (SELECT MAX(Semana) FROM {$tPS} WHERE project_id = ?) AND project_id = ?), ')') AS Proyecto_maxSemana,
                 prog.Actividad, 
                 prog.Fecha_Inicio, 
                 prog.Fecha_Fin, 
@@ -615,11 +619,12 @@ class ReportProcessor
                 prog.Observaciones_CNC, 
                 prog.Responsable_AIA, 
                 prog.Sub_Contratista
-            FROM {$this->t($dbPrefix, 'programacion_semanal')} AS prog
-            LEFT JOIN {$this->t($dbPrefix, 'semanas_activas')} AS sem ON sem.Semana = prog.Semana
-            WHERE prog.Semana >= ((SELECT MAX(Semana) FROM {$this->t($dbPrefix, 'programacion_semanal')}) - 1)";
+            FROM {$tPS} AS prog
+            LEFT JOIN {$tSA595} AS sem ON sem.Semana = prog.Semana
+            WHERE prog.Semana >= ((SELECT MAX(Semana) FROM {$tPS} WHERE project_id = ?) - 1)
+              AND prog.project_id = ?";
 
-                $this->db->queryWithProject($sqlInsert, [$proyecto, $proyecto], $projectId);
+                $this->db->queryWithProject($sqlInsert, [$proyecto, $projectId, $proyecto, $projectId, $projectId, $projectId, $projectId], $projectId);
                 $this->reportSubprocess('General', $proyecto, 'Insertando informe consolidado', 'ok');
                 $this->db->query("DELETE FROM general_informe_consolidado WHERE Fecha_Inicio_Sem IS NULL OR Fecha_Fin_Sem IS NULL");
                 $this->reportSubprocess('General', $proyecto, 'Limpiando registros inválidos', 'ok');
@@ -791,6 +796,8 @@ class ReportProcessor
                     }
 
                     $projectId = $this->pid($dbPrefix);
+                    $tPDC = $this->t($dbPrefix, 'pdc');
+                    $tSA818 = $this->t($dbPrefix, 'semanas_activas');
                     $sqlInsert = "INSERT INTO general_informe_pdc (
                     Proyecto, semana, Fecha_Inicio_Sem, Fecha_Fin_Sem, fechaHoy, maxSemana, Proyecto_maxSemana, 
                     tipoPaquete, paqueteContratacion, contratos, numeroSubcontratos, subcontratoPaquete, estado, 
@@ -812,8 +819,8 @@ class ReportProcessor
                     sem.Fecha_Inicio_Sem, 
                     sem.Fecha_Fin_Sem, 
                     DATE(NOW()) AS fechaHoy, 
-                    (SELECT MAX(semana) FROM {$this->t($dbPrefix, 'pdc')}) AS maxSemana,
-                    CONCAT(?, ' (', (SELECT Fecha_Fin_Sem FROM {$this->t($dbPrefix, 'semanas_activas')} WHERE Semana = (SELECT MAX(semana) FROM {$this->t($dbPrefix, 'pdc')})), ')') AS Proyecto_maxSemana,
+                    (SELECT MAX(semana) FROM {$tPDC} WHERE project_id = ?) AS maxSemana,
+                    CONCAT(?, ' (', (SELECT Fecha_Fin_Sem FROM {$tSA818} WHERE Semana = (SELECT MAX(semana) FROM {$tPDC} WHERE project_id = ?) AND project_id = ?), ')') AS Proyecto_maxSemana,
                     pdc.tipoPaquete, 
                     pdc.paqueteContratacion, 
                     pdc.contratos, 
@@ -856,12 +863,13 @@ class ReportProcessor
                     pdc.valorReclamado, 
                     pdc.valorDevoluciones, 
                     pdc.observacionesContrato
-                FROM {$this->t($dbPrefix, 'pdc')} AS pdc
-                LEFT JOIN {$this->t($dbPrefix, 'semanas_activas')} AS sem ON sem.Semana = pdc.semana
+                FROM {$tPDC} AS pdc
+                LEFT JOIN {$tSA818} AS sem ON sem.Semana = pdc.semana
                 LEFT JOIN {$this->t($dbPrefix, 'subcontratistas')} AS sub ON sub.Id = pdc.idProveedorAdjudicado
-                WHERE pdc.titulo = 0 AND pdc.semana <= (SELECT MAX(semana) FROM {$this->t($dbPrefix, 'pdc')})";
+                WHERE pdc.titulo = 0 AND pdc.semana <= (SELECT MAX(semana) FROM {$tPDC} WHERE project_id = ?)
+                  AND pdc.project_id = ?";
 
-                    $this->db->queryWithProject($sqlInsert, [$proyecto, $proyecto], $projectId);
+                    $this->db->queryWithProject($sqlInsert, [$proyecto, $projectId, $proyecto, $projectId, $projectId, $projectId, $projectId], $projectId);
 
                     $messages[] = "$proyecto - OK";
                     $this->reportSubprocess('PDC', $proyecto, 'Insertando informe PDC', 'ok');
