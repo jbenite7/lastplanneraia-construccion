@@ -16,11 +16,20 @@ if (!preg_match('/^[a-zA-Z0-9_]+$/', $db)) {
     die(json_encode(0));
 }
 
+// Resolve table names via TableResolver
+$tCic = TableResolver::resolveByPrefix($db, 'cic');
+
+// Set project context for queryWithProject auto-injection
+$projectId = TableResolver::getProjectIdByPrefix($db);
+if ($projectId) {
+    $dbInstance->setProjectContext($projectId);
+}
+
 try {
     if ($db == 'cedi_pasto' || empty($db)) {
         $faltaCalificar = 0;
     } else {
-        $faltaCalificar = listar($db, $semana, $dbInstance);
+        $faltaCalificar = listar($db, $semana, $dbInstance, $tCic);
     }
 } catch (Throwable $e) {
     error_log("Error fatal en verificarCICActualizada.php: " . $e->getMessage());
@@ -28,16 +37,16 @@ try {
 }
 echo json_encode($faltaCalificar);
 
-function listar($db, $semana, $dbInstance)
+function listar($db, $semana, $dbInstance, $tCic)
 {
-    $stmt = $dbInstance->query("SELECT COUNT(*) AS conteo FROM {$db}_cic WHERE (Semana <= ?) AND tipo_proveedor != 'Suministro de Materiales, Herramientas o Equipos'", [$semana]);
+    $stmt = $dbInstance->queryWithProject("SELECT COUNT(*) AS conteo FROM {$tCic} WHERE (Semana <= ?) AND tipo_proveedor != 'Suministro de Materiales, Herramientas o Equipos'", [$semana]);
     $data = $stmt->fetch();
     $conteo = $data["conteo"] ?? 0;
 
     if ($conteo == 0) {
         return 0;
     } else {
-        $stmt1 = $dbInstance->query("SELECT DISTINCT(subcontratista) FROM {$db}_cic WHERE (Semana <= ?) AND tipo_proveedor != 'Suministro de Materiales, Herramientas o Equipos' ORDER BY `subcontratista` ASC", [$semana]);
+        $stmt1 = $dbInstance->queryWithProject("SELECT DISTINCT(subcontratista) FROM {$tCic} WHERE (Semana <= ?) AND tipo_proveedor != 'Suministro de Materiales, Herramientas o Equipos' ORDER BY `subcontratista` ASC", [$semana]);
         $rows1 = $stmt1->fetchAll();
 
         if (count($rows1) > 0) {
@@ -54,7 +63,7 @@ function listar($db, $semana, $dbInstance)
                 $subSafe = $dbInstance->quote($subcontratista);
 
                 // Note: The original query logic involves a subquery to get 'semanasEnProyecto' and filtered by MAX week.
-                $part = "SELECT `Id`, `Semana`, (SELECT COUNT(*) FROM {$db}_cic WHERE `subcontratista` = $subSafe AND Semana <= $semana AND tipo_proveedor != 'Suministro de Materiales, Herramientas o Equipos') AS `semanasEnProyecto`, `subcontratista`, `correo_contacto`, `alcance`, `tipo_proveedor`, `PAC`, `PAC_Acum`, `P_Completado`, `P_Completado_Acum`, `Calidad`, `Calidad_Acum`, `GSA`, `GSA_Acum`, `SST`, `SST_Acum`, `ADM`, `ADM_Acum`, `Cal_Integral`, `Cal_Integral_Acum`, `Observaciones` FROM {$db}_cic WHERE `subcontratista` = $subSafe AND Semana = (SELECT MAX(`Semana`) FROM {$db}_cic WHERE `subcontratista` = $subSafe AND Semana <= $semana AND tipo_proveedor != 'Suministro de Materiales, Herramientas o Equipos') AND tipo_proveedor != 'Suministro de Materiales, Herramientas o Equipos'";
+                $part = "SELECT `Id`, `Semana`, (SELECT COUNT(*) FROM {$tCic} WHERE `subcontratista` = $subSafe AND Semana <= $semana AND tipo_proveedor != 'Suministro de Materiales, Herramientas o Equipos') AS `semanasEnProyecto`, `subcontratista`, `correo_contacto`, `alcance`, `tipo_proveedor`, `PAC`, `PAC_Acum`, `P_Completado`, `P_Completado_Acum`, `Calidad`, `Calidad_Acum`, `GSA`, `GSA_Acum`, `SST`, `SST_Acum`, `ADM`, `ADM_Acum`, `Cal_Integral`, `Cal_Integral_Acum`, `Observaciones` FROM {$tCic} WHERE `subcontratista` = $subSafe AND Semana = (SELECT MAX(`Semana`) FROM {$tCic} WHERE `subcontratista` = $subSafe AND Semana <= $semana AND tipo_proveedor != 'Suministro de Materiales, Herramientas o Equipos') AND tipo_proveedor != 'Suministro de Materiales, Herramientas o Equipos'";
                 $unionParts[] = $part;
             }
 
@@ -66,7 +75,7 @@ function listar($db, $semana, $dbInstance)
             $query2 .= ") AS tabla WHERE MOD(tabla.`semanasEnProyecto`, 8) = 0 AND (tabla.`Calidad`='NR' OR tabla.`GSA`='NR' OR tabla.`SST`='NR' OR tabla.`ADM`='NR')";
 
             try {
-                $stmt2 = $dbInstance->query($query2);
+                $stmt2 = $dbInstance->queryWithProject($query2);
                 $dataFaltaCalificar = $stmt2->fetch();
                 $conteoFaltaCalificar = $dataFaltaCalificar["conteo"] ?? 0;
 

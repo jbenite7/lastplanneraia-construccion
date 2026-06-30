@@ -5,6 +5,7 @@ namespace App\Controllers\Api;
 use PDO;
 use Throwable;
 
+use TableResolver;
 class CncApiController
 {
     private $db;
@@ -27,8 +28,8 @@ class CncApiController
         }
 
         try {
-            $query = "SELECT * FROM {$dbPrefix}_programacion_semanal WHERE Semana = ? AND Activa = 1 AND Categoria_CNC IS NOT NULL";
-            $data = $this->db->query($query, [$semana])->fetchAll(PDO::FETCH_ASSOC);
+            $query = "SELECT * FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programacion_semanal') . " WHERE Semana = ? AND Activa = 1 AND Categoria_CNC IS NOT NULL";
+            $data = $this->db->queryWithProject($query, [$semana])->fetchAll(PDO::FETCH_ASSOC);
 
             header('Content-Type: application/json; charset=utf-8');
             echo json_encode(["data" => $data], JSON_UNESCAPED_UNICODE);
@@ -50,8 +51,8 @@ class CncApiController
         }
 
         try {
-            $query = "UPDATE {$dbPrefix}_programacion_semanal SET Categoria_CNC = ?, CNC = ?, Observaciones_CNC = ? WHERE Consecutivo = ?";
-            $res = $this->db->query($query, [$_POST["Categoria_CNC"], $_POST["CNC"], $_POST["Observaciones_CNC"] ?? '', $id]);
+            $query = "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'programacion_semanal') . " SET Categoria_CNC = ?, CNC = ?, Observaciones_CNC = ? WHERE Consecutivo = ?";
+            $res = $this->db->queryWithProject($query, [$_POST["Categoria_CNC"], $_POST["CNC"], $_POST["Observaciones_CNC"] ?? '', $id]);
             $this->jsonResponse($res ? "BIEN" : "ERROR");
         } catch (Throwable $t) {
             $this->jsonError("Error CNC Save: " . $t->getMessage());
@@ -63,8 +64,9 @@ class CncApiController
         require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
         rbac_guard_require_permission('lps.cnc.ver');
         $categoria = $_POST["categoria"] ?? '';
-        $query = "SELECT CNC FROM general_cnc WHERE Categoria_CNC = ?";
-        $data = $this->db->query($query, [$categoria])->fetchAll(PDO::FETCH_ASSOC);
+        $area = $_POST["area"] ?? 'Construccion';
+        $query = "SELECT CNC FROM general_cnc WHERE Categoria_CNC = ? AND Area = ?";
+        $data = $this->db->queryWithProject($query, [$categoria, $area])->fetchAll(PDO::FETCH_ASSOC);
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode($data, JSON_UNESCAPED_UNICODE);
     }

@@ -16,17 +16,17 @@
             gap: 6px;
         }
         /* Nuclear specificity to force rectangular tools for DataTable Header */
-        body #dt_cliente_wrapper .filaBotones .btn, 
-        body #dt_cliente_wrapper .filaBotones button, 
-        body #dt_cliente_wrapper .filaMensajes .btn, 
-        body #dt_cliente_wrapper .filaMensajes button, 
-        body #dt_cliente_wrapper .filaMensajes .form-control, 
+        body #dt_cliente_wrapper .filaBotones .btn,
+        body #dt_cliente_wrapper .filaBotones button,
+        body #dt_cliente_wrapper .filaMensajes .btn,
+        body #dt_cliente_wrapper .filaMensajes button,
+        body #dt_cliente_wrapper .filaMensajes .form-control,
         body #dt_cliente_wrapper .dataTables_filter input {
             border-radius: 4px !important;
             -webkit-appearance: none !important;
             appearance: none !important;
         }
-        
+
         /* Dropdown de Navegación por Hover - Visibility Fix */
         .ps-dropdown-nav {
             position: relative;
@@ -267,7 +267,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_cal_1" id="si_cal_1_50" value="0.5"><label class="form-check-label font-weight-normal" for="si_cal_1_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_cal_1" id="si_cal_1_100" value="1"><label class="form-check-label font-weight-normal" for="si_cal_1_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_cal_1" id="si_cal_1_NA" value="NA"><label class="form-check-label font-weight-normal" for="si_cal_1_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -278,7 +278,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_cal_2" id="si_cal_2_50" value="0.5"><label class="form-check-label font-weight-normal" for="si_cal_2_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_cal_2" id="si_cal_2_100" value="1"><label class="form-check-label font-weight-normal" for="si_cal_2_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_cal_2" id="si_cal_2_NA" value="NA"><label class="form-check-label font-weight-normal" for="si_cal_2_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -289,7 +289,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_cal_3" id="si_cal_3_50" value="0.5"><label class="form-check-label font-weight-normal" for="si_cal_3_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_cal_3" id="si_cal_3_100" value="1"><label class="form-check-label font-weight-normal" for="si_cal_3_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_cal_3" id="si_cal_3_NA" value="NA"><label class="form-check-label font-weight-normal" for="si_cal_3_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 										</div>
@@ -307,7 +307,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_adm_1" id="si_adm_1_50" value="0.5"><label class="form-check-label font-weight-normal" for="si_adm_1_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_adm_1" id="si_adm_1_100" value="1"><label class="form-check-label font-weight-normal" for="si_adm_1_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_adm_1" id="si_adm_1_NA" value="NA"><label class="form-check-label font-weight-normal" for="si_adm_1_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -318,7 +318,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_adm_2" id="si_adm_2_50" value="0.5"><label class="form-check-label font-weight-normal" for="si_adm_2_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_adm_2" id="si_adm_2_100" value="1"><label class="form-check-label font-weight-normal" for="si_adm_2_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_adm_2" id="si_adm_2_NA" value="NA"><label class="form-check-label font-weight-normal" for="si_adm_2_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -329,7 +329,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_adm_3" id="si_adm_3_50" value="0.5"><label class="form-check-label font-weight-normal" for="si_adm_3_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_adm_3" id="si_adm_3_100" value="1"><label class="form-check-label font-weight-normal" for="si_adm_3_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_adm_3" id="si_adm_3_NA" value="NA"><label class="form-check-label font-weight-normal" for="si_adm_3_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -340,7 +340,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_adm_4" id="si_adm_4_50" value="0.5"><label class="form-check-label font-weight-normal" for="si_adm_4_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_adm_4" id="si_adm_4_100" value="1"><label class="form-check-label font-weight-normal" for="si_adm_4_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_adm_4" id="si_adm_4_NA" value="NA"><label class="form-check-label font-weight-normal" for="si_adm_4_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -351,7 +351,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_adm_5" id="si_adm_5_50" value="0.5"><label class="form-check-label font-weight-normal" for="si_adm_5_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_adm_5" id="si_adm_5_100" value="1"><label class="form-check-label font-weight-normal" for="si_adm_5_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_adm_5" id="si_adm_5_NA" value="NA"><label class="form-check-label font-weight-normal" for="si_adm_5_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -362,7 +362,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_adm_6" id="si_adm_6_50" value="0.5"><label class="form-check-label font-weight-normal" for="si_adm_6_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_adm_6" id="si_adm_6_100" value="1"><label class="form-check-label font-weight-normal" for="si_adm_6_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_adm_6" id="si_adm_6_NA" value="NA"><label class="form-check-label font-weight-normal" for="si_adm_6_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 										</div>
@@ -380,7 +380,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_gsa_1" id="si_gsa_1_50" value="0.5"><label class="form-check-label font-weight-normal" for="si_gsa_1_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_gsa_1" id="si_gsa_1_100" value="1"><label class="form-check-label font-weight-normal" for="si_gsa_1_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_gsa_1" id="si_gsa_1_NA" value="NA"><label class="form-check-label font-weight-normal" for="si_gsa_1_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -391,7 +391,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_gsa_2" id="si_gsa_2_50" value="0.5"><label class="form-check-label font-weight-normal" for="si_gsa_2_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_gsa_2" id="si_gsa_2_100" value="1"><label class="form-check-label font-weight-normal" for="si_gsa_2_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_gsa_2" id="si_gsa_2_NA" value="NA"><label class="form-check-label font-weight-normal" for="si_gsa_2_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -402,7 +402,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_gsa_3" id="si_gsa_3_50" value="0.5"><label class="form-check-label font-weight-normal" for="si_gsa_3_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_gsa_3" id="si_gsa_3_100" value="1"><label class="form-check-label font-weight-normal" for="si_gsa_3_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_gsa_3" id="si_gsa_3_NA" value="NA"><label class="form-check-label font-weight-normal" for="si_gsa_3_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -413,7 +413,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_gsa_4" id="si_gsa_4_50" value="0.5"><label class="form-check-label font-weight-normal" for="si_gsa_4_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_gsa_4" id="si_gsa_4_100" value="1"><label class="form-check-label font-weight-normal" for="si_gsa_4_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_gsa_4" id="si_gsa_4_NA" value="NA"><label class="form-check-label font-weight-normal" for="si_gsa_4_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -424,7 +424,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_gsa_5" id="si_gsa_5_50" value="0.5"><label class="form-check-label font-weight-normal" for="si_gsa_5_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_gsa_5" id="si_gsa_5_100" value="1"><label class="form-check-label font-weight-normal" for="si_gsa_5_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_gsa_5" id="si_gsa_5_NA" value="NA"><label class="form-check-label font-weight-normal" for="si_gsa_5_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -435,7 +435,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_gsa_6" id="si_gsa_6_50" value="0.5"><label class="form-check-label font-weight-normal" for="si_gsa_6_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_gsa_6" id="si_gsa_6_100" value="1"><label class="form-check-label font-weight-normal" for="si_gsa_6_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_gsa_6" id="si_gsa_6_NA" value="NA"><label class="form-check-label font-weight-normal" for="si_gsa_6_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -446,7 +446,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_gsa_7" id="si_gsa_7_50" value="0.5"><label class="form-check-label font-weight-normal" for="si_gsa_7_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_gsa_7" id="si_gsa_7_100" value="1"><label class="form-check-label font-weight-normal" for="si_gsa_7_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_gsa_7" id="si_gsa_7_NA" value="NA"><label class="form-check-label font-weight-normal" for="si_gsa_7_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -457,7 +457,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_gsa_8" id="si_gsa_8_50" value="0.5"><label class="form-check-label font-weight-normal" for="si_gsa_8_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_gsa_8" id="si_gsa_8_100" value="1"><label class="form-check-label font-weight-normal" for="si_gsa_8_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_gsa_8" id="si_gsa_8_NA" value="NA"><label class="form-check-label font-weight-normal" for="si_gsa_8_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -468,7 +468,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_gsa_9" id="si_gsa_9_50" value="0.5"><label class="form-check-label font-weight-normal" for="si_gsa_9_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_gsa_9" id="si_gsa_9_100" value="1"><label class="form-check-label font-weight-normal" for="si_gsa_9_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_gsa_9" id="si_gsa_9_NA" value="NA"><label class="form-check-label font-weight-normal" for="si_gsa_9_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -479,7 +479,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_gsa_10" id="si_gsa_10_50" value="0.5"><label class="form-check-label font-weight-normal" for="si_gsa_10_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_gsa_10" id="si_gsa_10_100" value="1"><label class="form-check-label font-weight-normal" for="si_gsa_10_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_gsa_10" id="si_gsa_10_NA" value="NA"><label class="form-check-label font-weight-normal" for="si_gsa_10_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -490,7 +490,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_gsa_11" id="si_gsa_11_50" value="0.5"><label class="form-check-label font-weight-normal" for="si_gsa_11_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_gsa_11" id="si_gsa_11_100" value="1"><label class="form-check-label font-weight-normal" for="si_gsa_11_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_gsa_11" id="si_gsa_11_NA" value="NA"><label class="form-check-label font-weight-normal" for="si_gsa_11_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -501,7 +501,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_gsa_12" id="si_gsa_12_50" value="0.5"><label class="form-check-label font-weight-normal" for="si_gsa_12_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_gsa_12" id="si_gsa_12_100" value="1"><label class="form-check-label font-weight-normal" for="si_gsa_12_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_gsa_12" id="si_gsa_12_NA" value="NA"><label class="form-check-label font-weight-normal" for="si_gsa_12_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -512,7 +512,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_gsa_13" id="si_gsa_13_50" value="0.5"><label class="form-check-label font-weight-normal" for="si_gsa_13_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_gsa_13" id="si_gsa_13_100" value="1"><label class="form-check-label font-weight-normal" for="si_gsa_13_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_gsa_13" id="si_gsa_13_NA" value="NA"><label class="form-check-label font-weight-normal" for="si_gsa_13_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -523,7 +523,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_gsa_14" id="si_gsa_14_50" value="0.5"><label class="form-check-label font-weight-normal" for="si_gsa_14_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_gsa_14" id="si_gsa_14_100" value="1"><label class="form-check-label font-weight-normal" for="si_gsa_14_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_gsa_14" id="si_gsa_14_NA" value="NA"><label class="form-check-label font-weight-normal" for="si_gsa_14_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 										</div>
@@ -541,7 +541,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_sst_1" id="si_sst_1_50" value="0.5"><label class="form-check-label font-weight-normal" for="si_sst_1_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_sst_1" id="si_sst_1_100" value="1"><label class="form-check-label font-weight-normal" for="si_sst_1_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_sst_1" id="si_sst_1_NA" value="NA"><label class="form-check-label font-weight-normal" for="si_sst_1_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -552,7 +552,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_sst_2" id="si_sst_2_50" value="0.5"><label class="form-check-label font-weight-normal" for="si_sst_2_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_sst_2" id="si_sst_2_100" value="1"><label class="form-check-label font-weight-normal" for="si_sst_2_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_sst_2" id="si_sst_2_NA" value="NA"><label class="form-check-label font-weight-normal" for="si_sst_2_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -563,7 +563,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_sst_3" id="si_sst_3_50" value="0.5"><label class="form-check-label font-weight-normal" for="si_sst_3_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_sst_3" id="si_sst_3_100" value="1"><label class="form-check-label font-weight-normal" for="si_sst_3_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_sst_3" id="si_sst_3_NA" value="NA"><label class="form-check-label font-weight-normal" for="si_sst_3_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -574,7 +574,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_sst_4" id="si_sst_4_50" value="0.5"><label class="form-check-label font-weight-normal" for="si_sst_4_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_sst_4" id="si_sst_4_100" value="1"><label class="form-check-label font-weight-normal" for="si_sst_4_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_sst_4" id="si_sst_4_NA" value="NA"><label class="form-check-label font-weight-normal" for="si_sst_4_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -585,7 +585,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_sst_5" id="si_sst_5_50" value="0.5"><label class="form-check-label font-weight-normal" for="si_sst_5_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_sst_5" id="si_sst_5_100" value="1"><label class="form-check-label font-weight-normal" for="si_sst_5_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_sst_5" id="si_sst_5_NA" value="NA"><label class="form-check-label font-weight-normal" for="si_sst_5_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -596,7 +596,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_sst_6" id="si_sst_6_50" value="0.5"><label class="form-check-label font-weight-normal" for="si_sst_6_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_sst_6" id="si_sst_6_100" value="1"><label class="form-check-label font-weight-normal" for="si_sst_6_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_sst_6" id="si_sst_6_NA" value="NA"><label class="form-check-label font-weight-normal" for="si_sst_6_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -607,7 +607,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_sst_7" id="si_sst_7_50" value="0.5"><label class="form-check-label font-weight-normal" for="si_sst_7_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_sst_7" id="si_sst_7_100" value="1"><label class="form-check-label font-weight-normal" for="si_sst_7_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_sst_7" id="si_sst_7_NA" value="NA"><label class="form-check-label font-weight-normal" for="si_sst_7_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -618,7 +618,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_sst_8" id="si_sst_8_50" value="0.5"><label class="form-check-label font-weight-normal" for="si_sst_8_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_sst_8" id="si_sst_8_100" value="1"><label class="form-check-label font-weight-normal" for="si_sst_8_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_sst_8" id="si_sst_8_NA" value="NA"><label class="form-check-label font-weight-normal" for="si_sst_8_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -629,7 +629,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_sst_9" id="si_sst_9_50" value="0.5"><label class="form-check-label font-weight-normal" for="si_sst_9_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_sst_9" id="si_sst_9_100" value="1"><label class="form-check-label font-weight-normal" for="si_sst_9_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_sst_9" id="si_sst_9_NA" value="NA"><label class="form-check-label font-weight-normal" for="si_sst_9_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -640,7 +640,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_sst_10" id="si_sst_10_50" value="0.5"><label class="form-check-label font-weight-normal" for="si_sst_10_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_sst_10" id="si_sst_10_100" value="1"><label class="form-check-label font-weight-normal" for="si_sst_10_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="si_sst_10" id="si_sst_10_NA" value="NA"><label class="form-check-label font-weight-normal" for="si_sst_10_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 										</div>
@@ -706,7 +706,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_cal_1" id="mdo_cal_1_50" value="0.5"><label class="form-check-label font-weight-normal" for="mdo_cal_1_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_cal_1" id="mdo_cal_1_100" value="1"><label class="form-check-label font-weight-normal" for="mdo_cal_1_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_cal_1" id="mdo_cal_1_NA" value="NA"><label class="form-check-label font-weight-normal" for="mdo_cal_1_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -717,7 +717,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_cal_2" id="mdo_cal_2_50" value="0.5"><label class="form-check-label font-weight-normal" for="mdo_cal_2_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_cal_2" id="mdo_cal_2_100" value="1"><label class="form-check-label font-weight-normal" for="mdo_cal_2_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_cal_2" id="mdo_cal_2_NA" value="NA"><label class="form-check-label font-weight-normal" for="mdo_cal_2_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -728,7 +728,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_cal_3" id="mdo_cal_3_50" value="0.5"><label class="form-check-label font-weight-normal" for="mdo_cal_3_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_cal_3" id="mdo_cal_3_100" value="1"><label class="form-check-label font-weight-normal" for="mdo_cal_3_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_cal_3" id="mdo_cal_3_NA" value="NA"><label class="form-check-label font-weight-normal" for="mdo_cal_3_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 										</div>
@@ -746,7 +746,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_adm_1" id="mdo_adm_1_50" value="0.5"><label class="form-check-label font-weight-normal" for="mdo_adm_1_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_adm_1" id="mdo_adm_1_100" value="1"><label class="form-check-label font-weight-normal" for="mdo_adm_1_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_adm_1" id="mdo_adm_1_NA" value="NA"><label class="form-check-label font-weight-normal" for="mdo_adm_1_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -757,7 +757,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_adm_2" id="mdo_adm_2_50" value="0.5"><label class="form-check-label font-weight-normal" for="mdo_adm_2_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_adm_2" id="mdo_adm_2_100" value="1"><label class="form-check-label font-weight-normal" for="mdo_adm_2_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_adm_2" id="mdo_adm_2_NA" value="NA"><label class="form-check-label font-weight-normal" for="mdo_adm_2_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -768,7 +768,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_adm_3" id="mdo_adm_3_50" value="0.5"><label class="form-check-label font-weight-normal" for="mdo_adm_3_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_adm_3" id="mdo_adm_3_100" value="1"><label class="form-check-label font-weight-normal" for="mdo_adm_3_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_adm_3" id="mdo_adm_3_NA" value="NA"><label class="form-check-label font-weight-normal" for="mdo_adm_3_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -779,7 +779,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_adm_4" id="mdo_adm_4_50" value="0.5"><label class="form-check-label font-weight-normal" for="mdo_adm_4_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_adm_4" id="mdo_adm_4_100" value="1"><label class="form-check-label font-weight-normal" for="mdo_adm_4_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_adm_4" id="mdo_adm_4_NA" value="NA"><label class="form-check-label font-weight-normal" for="mdo_adm_4_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -790,7 +790,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_adm_5" id="mdo_adm_5_50" value="0.5"><label class="form-check-label font-weight-normal" for="mdo_adm_5_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_adm_5" id="mdo_adm_5_100" value="1"><label class="form-check-label font-weight-normal" for="mdo_adm_5_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_adm_5" id="mdo_adm_5_NA" value="NA"><label class="form-check-label font-weight-normal" for="mdo_adm_5_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 										</div>
@@ -808,7 +808,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_gsa_1" id="mdo_gsa_1_50" value="0.5"><label class="form-check-label font-weight-normal" for="mdo_gsa_1_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_gsa_1" id="mdo_gsa_1_100" value="1"><label class="form-check-label font-weight-normal" for="mdo_gsa_1_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_gsa_1" id="mdo_gsa_1_NA" value="NA"><label class="form-check-label font-weight-normal" for="mdo_gsa_1_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -819,7 +819,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_gsa_2" id="mdo_gsa_2_50" value="0.5"><label class="form-check-label font-weight-normal" for="mdo_gsa_2_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_gsa_2" id="mdo_gsa_2_100" value="1"><label class="form-check-label font-weight-normal" for="mdo_gsa_2_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_gsa_2" id="mdo_gsa_2_NA" value="NA"><label class="form-check-label font-weight-normal" for="mdo_gsa_2_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -830,7 +830,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_gsa_3" id="mdo_gsa_3_50" value="0.5"><label class="form-check-label font-weight-normal" for="mdo_gsa_3_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_gsa_3" id="mdo_gsa_3_100" value="1"><label class="form-check-label font-weight-normal" for="mdo_gsa_3_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_gsa_3" id="mdo_gsa_3_NA" value="NA"><label class="form-check-label font-weight-normal" for="mdo_gsa_3_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -841,7 +841,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_gsa_4" id="mdo_gsa_4_50" value="0.5"><label class="form-check-label font-weight-normal" for="mdo_gsa_4_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_gsa_4" id="mdo_gsa_4_100" value="1"><label class="form-check-label font-weight-normal" for="mdo_gsa_4_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_gsa_4" id="mdo_gsa_4_NA" value="NA"><label class="form-check-label font-weight-normal" for="mdo_gsa_4_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -852,7 +852,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_gsa_5" id="mdo_gsa_5_50" value="0.5"><label class="form-check-label font-weight-normal" for="mdo_gsa_5_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_gsa_5" id="mdo_gsa_5_100" value="1"><label class="form-check-label font-weight-normal" for="mdo_gsa_5_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_gsa_5" id="mdo_gsa_5_NA" value="NA"><label class="form-check-label font-weight-normal" for="mdo_gsa_5_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -863,7 +863,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_gsa_6" id="mdo_gsa_6_50" value="0.5"><label class="form-check-label font-weight-normal" for="mdo_gsa_6_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_gsa_6" id="mdo_gsa_6_100" value="1"><label class="form-check-label font-weight-normal" for="mdo_gsa_6_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_gsa_6" id="mdo_gsa_6_NA" value="NA"><label class="form-check-label font-weight-normal" for="mdo_gsa_6_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -874,7 +874,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_gsa_7" id="mdo_gsa_7_50" value="0.5"><label class="form-check-label font-weight-normal" for="mdo_gsa_7_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_gsa_7" id="mdo_gsa_7_100" value="1"><label class="form-check-label font-weight-normal" for="mdo_gsa_7_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_gsa_7" id="mdo_gsa_7_NA" value="NA"><label class="form-check-label font-weight-normal" for="mdo_gsa_7_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -885,7 +885,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_gsa_8" id="mdo_gsa_8_50" value="0.5"><label class="form-check-label font-weight-normal" for="mdo_gsa_8_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_gsa_8" id="mdo_gsa_8_100" value="1"><label class="form-check-label font-weight-normal" for="mdo_gsa_8_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_gsa_8" id="mdo_gsa_8_NA" value="NA"><label class="form-check-label font-weight-normal" for="mdo_gsa_8_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 										</div>
@@ -903,7 +903,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_sst_1" id="mdo_sst_1_50" value="0.5"><label class="form-check-label font-weight-normal" for="mdo_sst_1_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_sst_1" id="mdo_sst_1_100" value="1"><label class="form-check-label font-weight-normal" for="mdo_sst_1_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_sst_1" id="mdo_sst_1_NA" value="NA"><label class="form-check-label font-weight-normal" for="mdo_sst_1_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -914,7 +914,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_sst_2" id="mdo_sst_2_50" value="0.5"><label class="form-check-label font-weight-normal" for="mdo_sst_2_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_sst_2" id="mdo_sst_2_100" value="1"><label class="form-check-label font-weight-normal" for="mdo_sst_2_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_sst_2" id="mdo_sst_2_NA" value="NA"><label class="form-check-label font-weight-normal" for="mdo_sst_2_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -925,7 +925,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_sst_3" id="mdo_sst_3_50" value="0.5"><label class="form-check-label font-weight-normal" for="mdo_sst_3_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_sst_3" id="mdo_sst_3_100" value="1"><label class="form-check-label font-weight-normal" for="mdo_sst_3_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_sst_3" id="mdo_sst_3_NA" value="NA"><label class="form-check-label font-weight-normal" for="mdo_sst_3_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -936,7 +936,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_sst_4" id="mdo_sst_4_50" value="0.5"><label class="form-check-label font-weight-normal" for="mdo_sst_4_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_sst_4" id="mdo_sst_4_100" value="1"><label class="form-check-label font-weight-normal" for="mdo_sst_4_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_sst_4" id="mdo_sst_4_NA" value="NA"><label class="form-check-label font-weight-normal" for="mdo_sst_4_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -947,7 +947,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_sst_5" id="mdo_sst_5_50" value="0.5"><label class="form-check-label font-weight-normal" for="mdo_sst_5_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_sst_5" id="mdo_sst_5_100" value="1"><label class="form-check-label font-weight-normal" for="mdo_sst_5_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_sst_5" id="mdo_sst_5_NA" value="NA"><label class="form-check-label font-weight-normal" for="mdo_sst_5_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -958,7 +958,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_sst_6" id="mdo_sst_6_50" value="0.5"><label class="form-check-label font-weight-normal" for="mdo_sst_6_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_sst_6" id="mdo_sst_6_100" value="1"><label class="form-check-label font-weight-normal" for="mdo_sst_6_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_sst_6" id="mdo_sst_6_NA" value="NA"><label class="form-check-label font-weight-normal" for="mdo_sst_6_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -969,7 +969,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_sst_7" id="mdo_sst_7_50" value="0.5"><label class="form-check-label font-weight-normal" for="mdo_sst_7_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_sst_7" id="mdo_sst_7_100" value="1"><label class="form-check-label font-weight-normal" for="mdo_sst_7_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_sst_7" id="mdo_sst_7_NA" value="NA"><label class="form-check-label font-weight-normal" for="mdo_sst_7_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -980,7 +980,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_sst_8" id="mdo_sst_8_50" value="0.5"><label class="form-check-label font-weight-normal" for="mdo_sst_8_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_sst_8" id="mdo_sst_8_100" value="1"><label class="form-check-label font-weight-normal" for="mdo_sst_8_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_sst_8" id="mdo_sst_8_NA" value="NA"><label class="form-check-label font-weight-normal" for="mdo_sst_8_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -991,7 +991,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_sst_9" id="mdo_sst_9_50" value="0.5"><label class="form-check-label font-weight-normal" for="mdo_sst_9_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_sst_9" id="mdo_sst_9_100" value="1"><label class="form-check-label font-weight-normal" for="mdo_sst_9_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_sst_9" id="mdo_sst_9_NA" value="NA"><label class="form-check-label font-weight-normal" for="mdo_sst_9_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 												<fieldset class="pregunta form-group">
@@ -1002,7 +1002,7 @@
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_sst_10" id="mdo_sst_10_50" value="0.5"><label class="form-check-label font-weight-normal" for="mdo_sst_10_50" style="cursor: pointer;">50%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_sst_10" id="mdo_sst_10_100" value="1"><label class="form-check-label font-weight-normal" for="mdo_sst_10_100" style="cursor: pointer;">100%</label></div>
 															<div class="form-check mb-1 pl-4"><input class="form-check-input" type="radio" name="mdo_sst_10" id="mdo_sst_10_NA" value="NA"><label class="form-check-label font-weight-normal" for="mdo_sst_10_NA" style="cursor: pointer;">N/A</label></div>
-												
+
 </fieldset>
 
 										</div>
@@ -1063,6 +1063,7 @@
 	<!-- Lista desplegable con buscador -->
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
 	<!--Script con la funcion que carga los datos generales del archivo-->
+	<script>window.__PROJECT_AREA__ = <?php echo json_encode($_SESSION['area'] ?? 'Construccion'); ?>;</script>
 	<script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js" charset="utf-8"></script>
 	<!--Script con las funciones NUEVA SEMANA y ELIMINAR SEMANA-->
 	<script type="text/javascript" src="/js/funcionesGenerales6.js" charset="utf-8"></script>

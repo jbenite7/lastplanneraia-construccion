@@ -5,6 +5,7 @@ namespace App\Controllers\Gestion;
 use App\Controllers\BaseController;
 use App\Core\Notifications\NotificationType;
 use App\Services\NotificationService;
+use App\Services\RestrictionConfigResolver;
 use Exception;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Border;
@@ -13,6 +14,7 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Style;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
+use TableResolver;
 class ReportController extends BaseController
 {
     private $reportProcessor;
@@ -202,8 +204,8 @@ class ReportController extends BaseController
         try {
             $query = "SELECT Semana, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin, Ruta_Critica,
                              Ejecutado AS EjecutadoRaw, ROUND(Ejecutado*100,1) AS Ejecutado,
-                             Semanas_Inicio, Estado_Restricciones, cantidad_ppto, unidad 
-                      FROM {$dbName}_programa_consolidado 
+                             Semanas_Inicio, Estado_Restricciones, cantidad_ppto, unidad
+                      FROM " . TableResolver::resolveByPrefix($dbName, 'programa_consolidado') . "
                       WHERE Semana = :semana";
 
             $stmt = $db->query($query, [':semana' => $semana]);
@@ -477,25 +479,81 @@ class ReportController extends BaseController
         $proyecto = $stmt->fetchColumn() ?: '';
 
         // Dates
-        $stmt = $db->query("SELECT * FROM {$dbName}_semanas_activas WHERE Semana = :semana", [':semana' => $semana]);
+        $stmt = $db->query("SELECT * FROM " . TableResolver::resolveByPrefix($dbName, 'semanas_activas') . " WHERE Semana = :semana", [':semana' => $semana]);
         $fechas = $stmt->fetch(\PDO::FETCH_ASSOC);
         $fechaInicio = isset($fechas["Fecha_Inicio_Sem"]) ? date("Y-m-d", strtotime($fechas["Fecha_Inicio_Sem"])) : '';
         $fechaFin = isset($fechas["Fecha_Fin_Sem"]) ? date("Y-m-d", strtotime($fechas["Fecha_Fin_Sem"])) : '';
 
         // Program Data
-        $query = "SELECT * FROM {$dbName}_programa_consolidado 
-                  WHERE Semana = :semana 
-                  AND Fecha_Inicio IS NOT NULL 
-                  AND Fecha_Fin IS NOT NULL 
-                  AND Semanas_Inicio <= 6 
-                  AND Ejecutado < 1 
-                  AND Titulo = 0 
+        $query = "SELECT * FROM " . TableResolver::resolveByPrefix($dbName, 'programa_consolidado') . "
+                  WHERE Semana = :semana
+                  AND Fecha_Inicio IS NOT NULL
+                  AND Fecha_Fin IS NOT NULL
+                  AND Semanas_Inicio <= 6
+                  AND Ejecutado < 1
+                  AND Titulo = 0
                   ORDER BY Semanas_Inicio ASC, Estado_Restricciones DESC";
         $stmt = $db->query($query, [':semana' => $semana]);
 
         require_once PROJECT_ROOT . '/src/Legacy/estado_programacion_intermedia.php';
 
-        $tabla = [["Semana", "Consecutivo", "Id", "Actividad", "Semanas al Inicio", "Ejecutado", "Diseños y Especif.", "Materiales", "Mano de Obra", "Equipos", "Predecesoras", "Proced. Constructivo", "Modelación BIM", "% Liberación"]];
+        // Resolve restriction config based on project Area
+        try {
+            $restrConfig = RestrictionConfigResolver::resolve($dbName);
+            $area = $restrConfig['area'];
+        } catch (\Throwable $e) {
+            error_log("ReportController: RestrictionConfigResolver failed for {$dbName}: " . $e->getMessage());
+            $area = 'Construccion';
+        }
+
+        // Build dynamic restriction labels and column names
+        $restrictionColumns = [];
+        $restrictionLabels = [];
+
+        if ($area === 'Pre-Construccion') {
+            // PC labels: "Predecesora" for restriccion_pc_1 + dynamic names from DB
+            $pcLabel2 = 'Restricción 2';
+            $pcLabel3 = 'Restricción 3';
+            $pcLabel4 = 'Restricción 4';
+
+            try {
+                $stmtPc = $db->query(
+                    "SELECT pc_restr_2_nombre, pc_restr_3_nombre, pc_restr_4_nombre
+                     FROM general_proyectos_procesos
+                     WHERE Base_de_Datos = :db LIMIT 1",
+                    [':db' => $dbName]
+                );
+                $proyectoPc = $stmtPc->fetch(\PDO::FETCH_ASSOC);
+                if ($proyectoPc) {
+                    if (!empty($proyectoPc['pc_restr_2_nombre'])) {
+                        $pcLabel2 = $proyectoPc['pc_restr_2_nombre'];
+                    }
+                    if (!empty($proyectoPc['pc_restr_3_nombre'])) {
+                        $pcLabel3 = $proyectoPc['pc_restr_3_nombre'];
+                    }
+                    if (!empty($proyectoPc['pc_restr_4_nombre'])) {
+                        $pcLabel4 = $proyectoPc['pc_restr_4_nombre'];
+                    }
+                }
+            } catch (\Throwable $e) {
+                error_log("ReportController: Error loading PC restriction labels: " . $e->getMessage());
+            }
+
+            $restrictionColumns = ['restriccion_pc_1', 'restriccion_pc_2', 'restriccion_pc_3', 'restriccion_pc_4'];
+            $restrictionLabels = ['Predecesora', $pcLabel2, $pcLabel3, $pcLabel4];
+        } else {
+            // Construccion: standard columns
+            $restrictionColumns = ['D_y_E', 'Materiales', 'MdeO', 'Equipos', 'Predecesora', 'Pdto_Cons', 'Modelo'];
+            $restrictionLabels = ['Diseños y Especif.', 'Materiales', 'Mano de Obra', 'Equipos', 'Predecesoras', 'Proced. Constructivo', 'Modelación BIM'];
+        }
+
+        // Build header: fixed columns + dynamic restriction columns + % Liberación
+        $headerRow = array_merge(
+            ["Semana", "Consecutivo", "Id", "Actividad", "Semanas al Inicio", "Ejecutado"],
+            $restrictionLabels,
+            ["% Liberación"]
+        );
+        $tabla = [$headerRow];
         $tabla2 = [["Sub-Contratista", "Responsable AIA", "Observaciones"]];
         $restrictionRowStyles = [];
 
@@ -549,27 +607,25 @@ class ReportController extends BaseController
             $stateKey = \pi_classify_state($data);
             $restrictionRowStyles[] = $stateToExcelStyle[$stateKey] ?? 'pi-neutral';
 
-            $tabla[] = [
-                $data["Semana"], $data["Consecutivo"], $data["Id"], $Actividad,
-                $data["Semanas_Inicio"], $Ejecutado,
-                $formatPercent($data["D_y_E"]), $formatPercent($data["Materiales"]),
-                $formatPercent($data["MdeO"]), $formatPercent($data["Equipos"]),
-                $formatPercent($data["Predecesora"]), $formatPercent($data["Pdto_Cons"]),
-                $formatPercent($data["Modelo"]), $Estado_Restricciones,
-            ];
+            $tabla[] = array_merge(
+                [$data["Semana"], $data["Consecutivo"], $data["Id"], $Actividad,
+                 $data["Semanas_Inicio"], $Ejecutado],
+                array_map(fn($col) => $formatPercent($data[$col] ?? null), $restrictionColumns),
+                [$Estado_Restricciones],
+            );
 
             $tabla2[] = [$data["Sub_Contratista"], $data["Responsable_AIA"], $data["Observaciones"]];
         }
 
         // Professionals
-        $stmt = $db->query("SELECT nombre FROM {$dbName}_profesionales WHERE activo = 1");
+        $stmt = $db->query("SELECT nombre FROM " . TableResolver::resolveByPrefix($dbName, 'profesionales') . " WHERE activo = 1");
         $tablaProfesionales = [["nombre"]];
         while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
             $tablaProfesionales[] = [$row["nombre"]];
         }
 
         // Subcontractors
-        $stmt = $db->query("SELECT subcontratista FROM {$dbName}_subcontratistas WHERE activo = 1");
+        $stmt = $db->query("SELECT subcontratista FROM " . TableResolver::resolveByPrefix($dbName, 'subcontratistas') . " WHERE activo = 1");
         $tablaSubcontratistas = [["subcontratista"]];
         while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
             $tablaSubcontratistas[] = [$row["subcontratista"]];
@@ -919,7 +975,7 @@ class ReportController extends BaseController
             }
 
             $stmtFechas = $db->query(
-                "SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem, Semanal_Confirmada FROM {$dbName}_semanas_activas WHERE Semana = :semana",
+                "SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem, Semanal_Confirmada FROM " . TableResolver::resolveByPrefix($dbName, 'semanas_activas') . " WHERE Semana = :semana",
                 [':semana' => $semana],
             );
             $fechas = $stmtFechas->fetch(\PDO::FETCH_ASSOC);
@@ -935,7 +991,7 @@ class ReportController extends BaseController
             $phaseKey = \ps_weekly_phase_key($fechas['Semanal_Confirmada'] ?? 0);
 
             $stmtData = $db->query(
-                "SELECT * FROM {$dbName}_programacion_semanal WHERE Semana = :semana AND (Activa = '1' OR Activa = 'NA')",
+                "SELECT * FROM " . TableResolver::resolveByPrefix($dbName, 'programacion_semanal') . " WHERE Semana = :semana AND (Activa = '1' OR Activa = 'NA')",
                 [':semana' => $semana],
             );
 
@@ -1124,7 +1180,7 @@ class ReportController extends BaseController
 
         // 1. Fetch Data
         try {
-            $query = "SELECT * FROM {$dbName}_cambios";
+            $query = "SELECT * FROM " . TableResolver::resolveByPrefix($dbName, 'cambios') . "";
             $stmt = $db->query($query);
             $results = $stmt->fetchAll(\PDO::FETCH_ASSOC);
         } catch (Exception $e) {

@@ -74,7 +74,7 @@ var navProgramacionIntermedia =
 var navProgramacionSemanal =
   "<li class='nav-item dropdown'><a class='nav-link dropdown-toggle' href='#' id='programacion_semanal' role='button' data-toggle='dropdown' aria-expanded='false'><i class='fas fa-tasks nav-icon'></i> <span class='nav-text-full'>Programación Semanal</span><span class='nav-text-compact'>P. Semanal</span></a><ul class='dropdown-menu' id='programacion_semanalMenu' aria-labelledby='programacion_semanal'></ul></li></ul>";
 
-var navNombreUsuario = 
+var navNombreUsuario =
   "<ul class='navbar-nav ml-auto align-items-center d-none d-xl-flex'>" +
   "<!-- Notificaciones (Campana) Desktop -->" +
   "<li class='nav-item dropdown mr-2'>" +
@@ -135,6 +135,23 @@ document.getElementById('encabezado').innerHTML =
   navProgramacionIntermedia +
   navProgramacionSemanal +
   navNombreUsuario;
+
+// --- Pre-Construction Area: Hide construction-only modules ---
+if (window.__PROJECT_AREA__ === 'Pre-Construccion') {
+  function _hideNavItem(childId) {
+    var el = document.getElementById(childId);
+    if (el) {
+      var li = el.closest('li');
+      if (li) li.style.display = 'none';
+    }
+  }
+  _hideNavItem('info_listadoActividades');
+  _hideNavItem('info_contratos');
+  _hideNavItem('planCompras');
+  //_hideNavItem('programacion_semanal');
+  var _titAct = document.getElementById('tituloActividadesProyecto');
+  if (_titAct) _titAct.style.display = 'none';
+}
 
 // Inyectar Script Notifications (DESPUÉS del innerHTML)
 if (!document.querySelector('script[src*="notifications.js"]')) {

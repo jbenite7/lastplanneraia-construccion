@@ -1065,14 +1065,14 @@
 															<div class="form-group col-4">
 																<select class="form-control" id="aplicaPolizas" name="aplicaPolizas" onchange="bloqueoFechaVencimientoPolizas()">
 																	<option value=1 selected>Aplica</option>
-																	<option value=0>No Aplica</option>	
+																	<option value=0>No Aplica</option>
 																</select>
 															</div>
 															<div class="form-group col-8">
 																<input type="text" class="form-control" id="fechaVencimientoPolizas" name="fechaVencimientoPolizas" placeholder="Fecha de Vencimiento de Pólizas">
-															</div>	
+															</div>
 														</div>
-																									
+
 													</div>
 												</div>
 												<div class="row">
@@ -1265,6 +1265,7 @@
 	<!--Formatos de números-->
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/numeral.js/2.0.6/numeral.min.js"></script>
 	<!--Script con la funcion que carga los datos generales del archivo-->
+	<script>window.__PROJECT_AREA__ = <?php echo json_encode($_SESSION['area'] ?? 'Construccion'); ?>;</script>
 	<script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js" charset="utf-8"></script>
 	<!--Script con las funciones NUEVA SEMANA y ELIMINAR SEMANA-->
 	<script type="text/javascript" src="/js/funcionesGenerales6.js" charset="utf-8"></script>
@@ -1374,7 +1375,7 @@
 		function getPDCState(data) {
 			if (Number(data.titulo) !== 0) return 'header';
 			if (isPDCMissingData(data)) return 'missing';
-			
+
 			let estado = normalizePDCStatusDisplay(data.estado || '');
 			if(estado.includes("Atrasado") && (estado.includes("no iniciado") || estado.includes("No iniciado"))) return 'critical';
 			if(estado.includes("Atrasado")) return 'delayed';
@@ -1382,7 +1383,7 @@
 			if(estado.includes("Terminado a tiempo")) return 'completed-ontime';
 			if(estado.includes("no iniciado") || estado.includes("No iniciado")) return 'not-started';
 			if(estado.includes("En Curso")) return 'active';
-			
+
 			return 'standard';
 		}
 
@@ -1563,7 +1564,7 @@
 			var db = document.getElementById('baseDatos').value;
 			var semana = document.getElementById('semana').value;
 			var Max_Semana = document.getElementById('Max_Semana').value;
-		  
+
 			// Initial Height Calculation
 			var alturatabla = calcDataTableHeight();
 			document.getElementById('cuadroTabla').style.height = "auto"; // Let it grow/shrink
@@ -1750,7 +1751,7 @@
 											if(subcontratoPaquete > 1){
 												boton=readyIcon + "<button type= 'button' class='editar btn btn-primary btn-sm'  title='Editar Actividad' class='ps-btn-tight'><i class='fa fa-edit fa-xs'></i></button><button type='button' class='eliminar btn btn-danger btn-sm' title='Eliminar' class='ps-btn-tight'><i class='fa fa-trash-alt fa-xs'></i></button>"
 											}else{
-												boton=readyIcon + "<button type= 'button' class='editar btn btn-primary btn-sm'  title='Editar Actividad' class='ps-btn-tight'><i class='fa fa-edit fa-xs'></i></button>"	
+												boton=readyIcon + "<button type= 'button' class='editar btn btn-primary btn-sm'  title='Editar Actividad' class='ps-btn-tight'><i class='fa fa-edit fa-xs'></i></button>"
 											}
 										}else{
 												boton="";
@@ -1817,13 +1818,13 @@
 				"drawCallback": function(settings) {
 					// Count visible rows by state
 					var counts = {
-						'missing': 0, 'critical': 0, 'delayed': 0, 
-						'completed-late': 0, 'completed-ontime': 0, 
+						'missing': 0, 'critical': 0, 'delayed': 0,
+						'completed-late': 0, 'completed-ontime': 0,
 						'active': 0, 'not-started': 0
 					};
-					
+
 					var api = this.api();
-					var allData = api.rows({search:'applied'}).data(); 
+					var allData = api.rows({search:'applied'}).data();
 
 					allData.each(function(rowData) {
 						var s = getPDCState(rowData);
@@ -1880,7 +1881,7 @@
 					refresh: function() { recargarTabla('listar'); }
 				});
 			}
-			
+
 			// 2. Navigation Bar (Center/Middle)
 			$("div.toolbarNavegacion").html('<div class="grupo_botones_semanal_madre ps-toolbar-nav-wrap"><div class="ps-module-switcher" role="tablist" aria-label="Navegacion general"><button id="btn_Actividades" type="button" class="ps-module-tab" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_listadoActividades&semana='+semana+'\'" aria-label="Ir a Actividades"><i class="fas fa-table" aria-hidden="true"></i><span>Actividades</span></button><button id="btn_contratos" type="button" class="ps-module-tab" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_contratos&semana='+semana+'\'" aria-label="Ir a Contratos"><i class="fas fa-file-alt" aria-hidden="true"></i><span>Contratos</span></button><button id="btn_planCompras" type="button" class="ps-module-tab is-active" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=planCompras&semana='+semana+'&origen=planCompras\'" aria-label="Ir a Plan de Compras" aria-current="page"><i class="fas fa-shopping-cart" aria-hidden="true"></i><span>Plan de Compras</span></button></div></div>');
 
@@ -1897,16 +1898,16 @@
 				</div>
 				<!-- Removed inline message -->
 			`);
-			
+
 			// Inject Toast Container if not exists
 			if ($("#mensajeActualizacion").length === 0) {
 				$("body").append('<div id="mensajeActualizacion" class="pdc-toast"></div>');
 			}
-			
+
 			// Click Handler Function (Multi-Select with Ctrl/Cmd)
 			window.filterPDC = function(filterState, e) {
 				var index = activePDCFilters.indexOf(filterState);
-				
+
 				// Standard Click (Exclusive Selection)
 				if (!e.ctrlKey && !e.metaKey) {
 					if (activePDCFilters.length === 1 && activePDCFilters[0] === filterState) {
@@ -1916,7 +1917,7 @@
 						// Select only this one
 						activePDCFilters = [filterState];
 					}
-				} 
+				}
 				// Ctrl/Cmd Click (Multi-Selection)
 				else {
 					if (index > -1) {
@@ -1946,7 +1947,7 @@
 			window.toggleSoloAlertas = function() {
 				soloAlertasActive = !soloAlertasActive;
 				var $btn = $('#btn_soloAlertas');
-				
+
 				if (soloAlertasActive) {
 					$btn.addClass('active');
 					activePDCFilters = ['delayed', 'critical', 'needs-config'];
@@ -1954,7 +1955,7 @@
 					$btn.removeClass('active');
 					activePDCFilters = [];
 				}
-				
+
 				table.draw();
 			};
 
@@ -1963,17 +1964,17 @@
 				if (!soloAlertasActive) {
 					return true; // Show all when not active
 				}
-				
+
 				var rowData = table.row(dataIndex).data();
 				if (!rowData || rowData.titulo !== 0) {
 					return true; // Always show headers
 				}
-				
+
 				var state = getPDCState(rowData);
 				var necesitaConfig = rowData.necesitaConfiguracion || 0;
-				
-				return state === 'delayed' || 
-					   state === 'critical' || 
+
+				return state === 'delayed' ||
+					   state === 'critical' ||
 					   necesitaConfig === 1;
 			});
 
@@ -1993,7 +1994,7 @@
 		    var only_once = true;
 		  }
 		  $(tbody).one("click", "td.celdaContenido, button.editar", function(e) {
-				e.stopPropagation();	
+				e.stopPropagation();
 				if (only_once == true) {
 					$("#nombrePaqueteContratacion, #tipoPaquete, #tipoProveedorAdjudicado, #idProveedorExistente, #numeroContrato, #aplicaPolizas, #fechaVencimientoPolizas, #valorPresupuesto, #valorPrimeraNegociacion, #valorAdjudicado, #valorAnticipo, #actividadesDelContrato, #fechaInicioContrato, #fechaActual, #diasElaboracionPliegos, #diasEntregaPliegos, #diasReciboPropuestas, #diasCuadrosComparativos, #diasLegalizacionContrato, #diasFabricacion, #diasInsumosObra, #fechaRealElaboracionPliegos, #fechaRealEntregaPliegos, #fechaRealReciboPropuestas, #fechaRealCuadrosComparativos, #fechaRealLegalizacionContrato, #fechaRealFabricacion, #fechaRealInsumosObra, #fechaRealInicioProyectadaContrato, #observacionesContrato").val("");
 					actualizarEstadoProveedorBloqueado(false);
@@ -2077,7 +2078,7 @@
 						$("#btn_cancelar_editar").on("click", function(){
 								only_once = true;
 						});
-					}	
+					}
 				}
 				cancelarEdicionFila();
 		  	});
@@ -2150,7 +2151,7 @@
 						{"data":"numeroSubcontratos",
 							'render': function(data, type, row, meta) {
 								data = "<input type='number' class='numeroSubcontratos w-80' step='1' min='1' value=" + data + ">";
-			
+
 								return data;
 							}
 						},
@@ -2158,7 +2159,7 @@
 						{"data":"ordenVisual", "visible":false},
 					],
 
-					"createdRow": function( row, data, dataIndex){			
+					"createdRow": function( row, data, dataIndex){
 					},
 
 					"language": idioma_espanol
@@ -2193,7 +2194,7 @@
 
 				editarDefinirContratos();
 			});
-			
+
 			$("#modalDefinirContratos").modal("show");
 
 		}
@@ -2656,7 +2657,7 @@
 		    $("#activoSeguimientoContrato").val(0).change();
 
 		  } else {
-			
+
 
 		    $(".informacionAdjudicacionProveedor").show("slow");
 		    $("#activoInformacionAdjudicacionProveedor").val(1).change();
@@ -2677,7 +2678,7 @@
 			} else {
 				$(".seguimientoContrato").show("slow");
 			}
-			
+
 		    $("#activoSeguimientoContrato").val(1).change();
 		  }
 		}
@@ -2870,7 +2871,7 @@
 				var Id = document.getElementById('Id').value;
 				var opcion = document.getElementById('opcion').value;
 				var tipoPaquete = document.getElementById('tipoPaquete').value;
-				
+
 
 				frm = frm + "&db=" + db + "&Id=" + Id + "&opcion=" + opcion + "&tipoPaquete=" + tipoPaquete + "&semana=" + semana + "&" + fechaVencimientoPolizas;
         		//console.log(frm);
@@ -3000,7 +3001,7 @@
 									.show()
 									.delay(4000)
 									.fadeOut(1000, function(){
-										$(this).html(""); 
+										$(this).html("");
 									});
 						} else{
 								$(".mensaje").html( texto ).css({"color": color });

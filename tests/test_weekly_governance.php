@@ -2,28 +2,53 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Database.php';
+require_once __DIR__ . '/../src/Core/TableResolver.php';
 require_once __DIR__ . '/../src/Services/ProgramChangeDetector.php';
 
 $db = Database::getInstance();
 $detector = new App\Services\ProgramChangeDetector();
 
+// Resolve table names via TableResolver so tests work in BOTH flag modes
+$tPS  = TableResolver::resolveByPrefix('optimizacionJMC', 'programacion_semanal');
+$tPC  = TableResolver::resolveByPrefix('optimizacionJMC', 'programa_consolidado');
+$tLog = TableResolver::resolveByPrefix('optimizacionJMC', 'auto_program_log');
+$pid  = 68; // optimizacionJMC project ID
+
+/**
+ * Query helper — delegates to queryWithProject for project-scoped operations.
+ */
+function qp(string $sql, array $params = []): \PDOStatement {
+    global $db, $pid;
+    return $db->queryWithProject($sql, $params, $pid);
+}
+
 echo "=== INICIANDO PRUEBAS DE INTEGRACIÓN: CASOS DE GOBERNANZA ===\n\n";
 
 // --- PREPARACIÓN INICIAL ---
+// Set project context so all $db->query() calls auto-scope via queryWithProject
+$db->setProjectContext($pid);
 // Limpiar la base de datos de pruebas anteriores
-$db->query("DELETE FROM optimizacionJMC_programacion_semanal WHERE Consecutivo_En_Programa = 5 AND Semana = 2");
-$db->query("DELETE FROM optimizacionJMC_programa_consolidado WHERE Id = '2.4' AND Semana = 2");
-$db->query("DELETE FROM optimizacionJMC_auto_program_log WHERE semana = 2");
+$db->queryWithProject("DELETE FROM {$tPS} WHERE Consecutivo_En_Programa = ? AND Semana = ?", [5, 2], $pid);
+$db->queryWithProject("DELETE FROM {$tPS} WHERE Consecutivo = ?", [5], $pid);
+$db->queryWithProject("DELETE FROM {$tPC} WHERE Id = ? AND Semana = ?", ['2.4', 2], $pid);
+$db->queryWithProject("DELETE FROM {$tLog} WHERE semana = ?", [2], $pid);
 
 // Insertar la actividad base en la programación semanal de la Semana 2
-$db->query("INSERT INTO optimizacionJMC_programacion_semanal (
-    Semana, Consecutivo_En_Programa, Id, Actividad, Activa, Empresa, Ejecutado
-) VALUES (2, 5, '2.4', 'Actas de vecindad frentes de obra iniciales', '0', 'AIA', 0.5)");
+$pid = 68; // optimizacionJMC project ID
+$sql = "INSERT INTO {$tPS} (
+    Consecutivo, Semana, Consecutivo_En_Programa, Id, Actividad, Activa, Empresa, Ejecutado
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+$params = [5, 2, 5, '2.4', 'Actas de vecindad frentes de obra iniciales', '0', 'AIA', 0.5];
+[$sql, $params] = $db->insertProjectId($sql, $pid, $params);
+$db->query($sql, $params);
 
 // Insertar la actividad base en el Programa Consolidado (necesario para que el cascade la vea)
-$db->query("INSERT INTO optimizacionJMC_programa_consolidado (
-    Consecutivo_en_Programa, Id, Semana, Titulo, Estado, D_y_E, Materiales, MdeO, Equipos, Predecesora, Ejecutado, Activa
-) VALUES (5, '2.4', 2, 0, 'Atrasada', '1', '1', '1', '1', '0', 0.0, 1)");
+$sql = "INSERT INTO {$tPC} (
+    Consecutivo, Consecutivo_en_Programa, Id, Semana, Titulo, Estado, D_y_E, Materiales, MdeO, Equipos, Predecesora, Ejecutado, Activa
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+$params = [5, 5, '2.4', 2, 0, 'Atrasada', '1', '1', '1', '1', '0', 0.0, 1];
+[$sql, $params] = $db->insertProjectId($sql, $pid, $params);
+$db->query($sql, $params);
 
 // ==========================================
 // CASO 1: Reactivación Automática
@@ -32,12 +57,12 @@ $db->query("INSERT INTO optimizacionJMC_programa_consolidado (
 echo "--- CASO 1: Probando Reactivación Automática ---\n";
 
 // 1. Configurar CNP genérica de restricciones en la programación semanal
-$db->query("UPDATE optimizacionJMC_programacion_semanal
+qp("UPDATE {$tPS}
             SET Activa = '0', Categoria_CNP = 'Programación', CNP = 'Restricciones habilitantes no cumplidas', Ejecutado = 0.0, Reprogramada_Por_Usuario = 0
             WHERE Consecutivo_En_Programa = 5 AND Semana = 2");
 
 // 2. Liberar todas las restricciones duras (al 100%) en el Programa Consolidado
-$db->query("UPDATE optimizacionJMC_programa_consolidado
+qp("UPDATE {$tPC}
             SET D_y_E = '1', Materiales = '1', MdeO = '1', Equipos = '1', Predecesora = '1', Ejecutado = 0.0
             WHERE Id = '2.4' AND Semana = 2");
 
@@ -47,7 +72,7 @@ echo "Log del detector (Caso 1):\n";
 print_r($log1);
 
 // 4. Validar el estado resultante en la base de datos
-$record1 = $db->query("SELECT Activa, Categoria_CNP, CNP, Reprogramada_Por_Usuario FROM optimizacionJMC_programacion_semanal WHERE Consecutivo_En_Programa = 5 AND Semana = 2")->fetch();
+$record1 = qp("SELECT Activa, Categoria_CNP, CNP, Reprogramada_Por_Usuario FROM {$tPS} WHERE Consecutivo_En_Programa = 5 AND Semana = 2")->fetch();
 
 $c1_activa_ok = ($record1['Activa'] === '1');
 $c1_cnp_ok = ($record1['CNP'] === null || $record1['CNP'] === '');
@@ -70,7 +95,7 @@ if ($c1_activa_ok && $c1_cnp_ok && $c1_flag_ok) {
 echo "--- CASO 2: Probando Soberanía de Desprogramación ---\n";
 
 // 1. Configurar una CNP manual propia en la programación semanal
-$db->query("UPDATE optimizacionJMC_programacion_semanal
+qp("UPDATE {$tPS}
             SET Activa = '0', Categoria_CNP = 'Mano de Obra', CNP = 'Causa Manual del Usuario', Ejecutado = 0.0, Reprogramada_Por_Usuario = 0
             WHERE Consecutivo_En_Programa = 5 AND Semana = 2");
 
@@ -80,7 +105,7 @@ echo "Log del detector (Caso 2):\n";
 print_r($log2);
 
 // 3. Validar el estado resultante en la base de datos
-$record2 = $db->query("SELECT Activa, Categoria_CNP, CNP FROM optimizacionJMC_programacion_semanal WHERE Consecutivo_En_Programa = 5 AND Semana = 2")->fetch();
+$record2 = qp("SELECT Activa, Categoria_CNP, CNP FROM {$tPS} WHERE Consecutivo_En_Programa = 5 AND Semana = 2")->fetch();
 
 $c2_activa_ok = ($record2['Activa'] === '0');
 $c2_cnp_ok = ($record2['CNP'] === 'Causa Manual del Usuario');
@@ -104,36 +129,35 @@ if ($c2_activa_ok && $c2_cnp_ok) {
 echo "--- CASO 3: Probando Reprogramación Manual e Inmunidad ante Saneamiento ---\n";
 
 // 1. Configurar inicialmente como inactiva por restricciones genéricas
-$db->query("UPDATE optimizacionJMC_programacion_semanal
+qp("UPDATE {$tPS}
             SET Activa = '0', Categoria_CNP = 'Programación', CNP = 'Restricciones habilitantes no cumplidas', Ejecutado = 0.0, Reprogramada_Por_Usuario = 0
             WHERE Consecutivo_En_Programa = 5 AND Semana = 2");
 
 // 2. Simular reprogramación manual del usuario desde el módulo de CNP (Activa = 1, flag = 1)
-$db->query("UPDATE optimizacionJMC_programacion_semanal
+qp("UPDATE {$tPS}
             SET Activa = '1', Categoria_CNP = NULL, CNP = NULL, Observaciones_CNP = NULL, Reprogramada_Por_Usuario = 1
             WHERE Consecutivo_En_Programa = 5 AND Semana = 2");
 
 // 3. Romper las restricciones duras en el Programa Consolidado (Predecesora = 0 y Ejecutado = 0)
-$db->query("UPDATE optimizacionJMC_programa_consolidado
+qp("UPDATE {$tPC}
             SET D_y_E = '1', Materiales = '1', MdeO = '1', Equipos = '1', Predecesora = '0', Ejecutado = 0.0, Estado = 'Atrasada'
             WHERE Id = '2.4' AND Semana = 2");
 
 // 4. Simular la limpieza física del botón "Autoprogramar" en SemanalApiController (con la nueva consulta corregida)
-$eligibleSubSql = "SELECT Consecutivo_en_Programa FROM optimizacionJMC_programa_consolidado
+$eligibleSubSql = "SELECT Consecutivo_en_Programa FROM {$tPC}
     WHERE Semana = 2 AND Titulo = 0
       AND (Estado='En Curso' OR Estado='Atrasada' OR Estado='Debe Iniciar'
         OR Estado='A Tiempo' OR Estado='Ya Debió Iniciar y Restricciones Pendientes')";
 
-$db->query("
-    DELETE FROM optimizacionJMC_programacion_semanal
+qp("
+    DELETE FROM {$tPS}
     WHERE Semana = 2 AND Activa = '1'
       AND (Ejecutado_Real IS NULL OR Ejecutado_Real <= 0)
       AND (Compromiso IS NULL OR Compromiso <= 0)
       AND Consecutivo_En_Programa NOT IN ({$eligibleSubSql})
 ");
-
 // 5. Validar que la actividad NO haya sido borrada físicamente
-$existeFisico = (int) $db->query("SELECT COUNT(*) FROM optimizacionJMC_programacion_semanal WHERE Consecutivo_En_Programa = 5 AND Semana = 2")->fetchColumn();
+$existeFisico = (int) qp("SELECT COUNT(*) FROM {$tPS} WHERE Consecutivo_En_Programa = 5 AND Semana = 2")->fetchColumn();
 if ($existeFisico > 0) {
     echo "✅ Sub-verificación: La actividad reprogramada sobrevivió a la limpieza física del botón Autoprogramar.\n";
 } else {
@@ -147,7 +171,7 @@ echo "Log del detector (Caso 3):\n";
 print_r($log3);
 
 // 7. Validar el estado resultante en la base de datos
-$record3 = $db->query("SELECT Activa, Categoria_CNP, CNP, Reprogramada_Por_Usuario FROM optimizacionJMC_programacion_semanal WHERE Consecutivo_En_Programa = 5 AND Semana = 2")->fetch();
+$record3 = qp("SELECT Activa, Categoria_CNP, CNP, Reprogramada_Por_Usuario FROM {$tPS} WHERE Consecutivo_En_Programa = 5 AND Semana = 2")->fetch();
 
 $c3_activa_ok = ($record3['Activa'] === '1');
 $c3_cnp_ok = ($record3['CNP'] === null || $record3['CNP'] === '');
@@ -173,27 +197,27 @@ if ($c3_activa_ok && $c3_cnp_ok && $c3_flag_ok) {
 echo "--- CASO 4: Probando Inmunidad de Actividades Futuras Reprogramadas ---\n";
 
 // 1. Configurar inicialmente como inactiva por restricciones genéricas
-$db->query("UPDATE optimizacionJMC_programacion_semanal
+qp("UPDATE {$tPS}
             SET Activa = '0', Categoria_CNP = 'Programación', CNP = 'Restricciones habilitantes no cumplidas', Ejecutado = 0.0, Reprogramada_Por_Usuario = 0
             WHERE Consecutivo_En_Programa = 5 AND Semana = 2");
 
 // 2. Simular reprogramación manual del usuario desde el módulo de CNP (Activa = 1, flag = 1)
-$db->query("UPDATE optimizacionJMC_programacion_semanal
+qp("UPDATE {$tPS}
             SET Activa = '1', Categoria_CNP = NULL, CNP = NULL, Observaciones_CNP = NULL, Reprogramada_Por_Usuario = 1
             WHERE Consecutivo_En_Programa = 5 AND Semana = 2");
 
 // 3. Establecer estado en consolidado como 'En Liberación de Restricciones' y restricciones pendientes (Predecesora = 0, Ejecutado = 0.0)
-$db->query("UPDATE optimizacionJMC_programa_consolidado
+qp("UPDATE {$tPC}
             SET D_y_E = '1', Materiales = '1', MdeO = '1', Equipos = '1', Predecesora = '0', Ejecutado = 0.0, Estado = 'En Liberación de Restricciones'
             WHERE Id = '2.4' AND Semana = 2");
 
 // 4. Simular la limpieza física de Autoprogramar con la nueva consulta (Estado NOT IN ('Terminada', 'Terminada Antes', 'Sin Datos'))
-$eligibleSubSql = "SELECT Consecutivo_en_Programa FROM optimizacionJMC_programa_consolidado
+$eligibleSubSql = "SELECT Consecutivo_en_Programa FROM {$tPC}
     WHERE Semana = 2 AND Titulo = 0
       AND Estado NOT IN ('Terminada', 'Terminada Antes', 'Sin Datos')";
 
 $db->query("
-    DELETE FROM optimizacionJMC_programacion_semanal
+    DELETE FROM {$tPS}
     WHERE Semana = 2 AND Activa = '1'
       AND (Ejecutado_Real IS NULL OR Ejecutado_Real <= 0)
       AND (Compromiso IS NULL OR Compromiso <= 0)
@@ -201,7 +225,7 @@ $db->query("
 ");
 
 // 5. Validar que la actividad futura reprogramada NO haya sido borrada físicamente
-$existeFisico4 = (int) $db->query("SELECT COUNT(*) FROM optimizacionJMC_programacion_semanal WHERE Consecutivo_En_Programa = 5 AND Semana = 2")->fetchColumn();
+$existeFisico4 = (int) qp("SELECT COUNT(*) FROM {$tPS} WHERE Consecutivo_En_Programa = 5 AND Semana = 2")->fetchColumn();
 if ($existeFisico4 > 0) {
     echo "✅ Sub-verificación: La actividad futura reprogramada sobrevivió a la limpieza física.\n";
 } else {
@@ -215,7 +239,7 @@ echo "Log del detector (Caso 4):\n";
 print_r($log4);
 
 // 7. Validar el estado resultante en la base de datos (debe seguir Activa = 1, flag=1, limpia)
-$record4 = $db->query("SELECT Activa, Categoria_CNP, CNP, Reprogramada_Por_Usuario FROM optimizacionJMC_programacion_semanal WHERE Consecutivo_En_Programa = 5 AND Semana = 2")->fetch();
+$record4 = qp("SELECT Activa, Categoria_CNP, CNP, Reprogramada_Por_Usuario FROM {$tPS} WHERE Consecutivo_En_Programa = 5 AND Semana = 2")->fetch();
 
 $c4_activa_ok = ($record4['Activa'] === '1');
 $c4_cnp_ok = ($record4['CNP'] === null || $record4['CNP'] === '');
@@ -240,15 +264,15 @@ if ($c4_activa_ok && $c4_cnp_ok && $c4_flag_ok) {
 echo "--- CASO 5: Probando Aislamiento de Logs por Corrida Única ---\n";
 
 // 1. Limpiar logs anteriores
-$db->query("DELETE FROM optimizacionJMC_auto_program_log WHERE semana = 2");
+qp("DELETE FROM {$tLog} WHERE semana = 2");
 
 // 2. Configurar inicialmente como inactiva por restricciones genéricas
-$db->query("UPDATE optimizacionJMC_programacion_semanal
+qp("UPDATE {$tPS}
             SET Activa = '0', Categoria_CNP = 'Programación', CNP = 'Restricciones habilitantes no cumplidas', Ejecutado = 0.0, Reprogramada_Por_Usuario = 0
             WHERE Consecutivo_En_Programa = 5 AND Semana = 2");
 
 // 3. Liberar todas las restricciones duras (al 100%) en el consolidado para forzar reactivación
-$db->query("UPDATE optimizacionJMC_programa_consolidado
+qp("UPDATE {$tPC}
             SET D_y_E = '1', Materiales = '1', MdeO = '1', Equipos = '1', Predecesora = '1', Ejecutado = 0.0, Estado = 'Debe Iniciar'
             WHERE Id = '2.4' AND Semana = 2");
 
@@ -292,14 +316,14 @@ if ($has_changes_1 && !$has_changes_2) {
 echo "--- CASO 6: Probando Autodescompromiso por Restricciones Rotas ---\n";
 
 // 1. Limpiar logs anteriores
-$db->query("DELETE FROM optimizacionJMC_auto_program_log WHERE semana = 2");
+qp("DELETE FROM {$tLog} WHERE semana = 2");
 
 // 2. Estado: actividad autoprogramada (Activa=1, flag=0) con restricciones rotas en consolidado
-$db->query("UPDATE optimizacionJMC_programacion_semanal
+qp("UPDATE {$tPS}
             SET Activa = '1', Categoria_CNP = NULL, CNP = NULL, Observaciones_CNP = NULL, Reprogramada_Por_Usuario = 0, Ejecutado = 0.0
             WHERE Consecutivo_En_Programa = 5 AND Semana = 2");
 
-$db->query("UPDATE optimizacionJMC_programa_consolidado
+qp("UPDATE {$tPC}
             SET D_y_E = '1', Materiales = '1', MdeO = '1', Equipos = '1', Predecesora = '0', Ejecutado = 0.0, Estado = 'Atrasada'
             WHERE Id = '2.4' AND Semana = 2");
 
@@ -309,7 +333,7 @@ echo "Log del detector (Caso 6):\n";
 print_r($log6);
 
 // 4. Validar el estado resultante
-$record6 = $db->query("SELECT Activa, Categoria_CNP, CNP, Reprogramada_Por_Usuario FROM optimizacionJMC_programacion_semanal WHERE Consecutivo_En_Programa = 5 AND Semana = 2")->fetch();
+$record6 = qp("SELECT Activa, Categoria_CNP, CNP, Reprogramada_Por_Usuario FROM {$tPS} WHERE Consecutivo_En_Programa = 5 AND Semana = 2")->fetch();
 
 $c6_activa_ok = ($record6['Activa'] === '0');
 $c6_categoria_ok = ($record6['Categoria_CNP'] === 'Programación');
@@ -344,11 +368,11 @@ if ($c6_activa_ok && $c6_categoria_ok && $c6_cnp_ok && $c6_flag_ok && $log6_tien
 echo "--- CASO 7: Probando Inmunidad por Reprogramación Manual del Usuario ---\n";
 
 // 1. Estado: actividad autodescomprometida con CNP genérica, luego usuario la reprogra desde CNP
-$db->query("UPDATE optimizacionJMC_programacion_semanal
+qp("UPDATE {$tPS}
             SET Activa = '1', Categoria_CNP = NULL, CNP = NULL, Observaciones_CNP = NULL, Reprogramada_Por_Usuario = 1, Ejecutado = 0.0
             WHERE Consecutivo_En_Programa = 5 AND Semana = 2");
 
-$db->query("UPDATE optimizacionJMC_programa_consolidado
+qp("UPDATE {$tPC}
             SET D_y_E = '1', Materiales = '1', MdeO = '1', Equipos = '1', Predecesora = '0', Ejecutado = 0.0, Estado = 'Atrasada'
             WHERE Id = '2.4' AND Semana = 2");
 
@@ -358,7 +382,7 @@ echo "Log del detector (Caso 7):\n";
 print_r($log7);
 
 // 3. Validar el estado resultante
-$record7 = $db->query("SELECT Activa, Categoria_CNP, CNP, Reprogramada_Por_Usuario FROM optimizacionJMC_programacion_semanal WHERE Consecutivo_En_Programa = 5 AND Semana = 2")->fetch();
+$record7 = qp("SELECT Activa, Categoria_CNP, CNP, Reprogramada_Por_Usuario FROM {$tPS} WHERE Consecutivo_En_Programa = 5 AND Semana = 2")->fetch();
 
 $c7_activa_ok = ($record7['Activa'] === '1');
 $c7_cnp_ok = ($record7['CNP'] === null || $record7['CNP'] === '');
@@ -390,11 +414,11 @@ if ($c7_activa_ok && $c7_cnp_ok && $c7_flag_ok && $log7_sin_descompromiso) {
 echo "--- CASO 8: Probando Reset del Flag al Reactivar ---\n";
 
 // 1. Estado: actividad desprogramada con CNP genérica, flag = 1 (estado anómalo de prueba), restricciones OK
-$db->query("UPDATE optimizacionJMC_programacion_semanal
+qp("UPDATE {$tPS}
             SET Activa = '0', Categoria_CNP = 'Programación', CNP = 'Restricciones habilitantes no cumplidas', Ejecutado = 0.0, Reprogramada_Por_Usuario = 1
             WHERE Consecutivo_En_Programa = 5 AND Semana = 2");
 
-$db->query("UPDATE optimizacionJMC_programa_consolidado
+qp("UPDATE {$tPC}
             SET D_y_E = '1', Materiales = '1', MdeO = '1', Equipos = '1', Predecesora = '1', Ejecutado = 0.0, Estado = 'Debe Iniciar'
             WHERE Id = '2.4' AND Semana = 2");
 
@@ -404,7 +428,7 @@ echo "Log del detector (Caso 8):\n";
 print_r($log8);
 
 // 3. Validar el estado resultante: Activa=1, CNP NULL, flag=0
-$record8 = $db->query("SELECT Activa, Categoria_CNP, CNP, Reprogramada_Por_Usuario FROM optimizacionJMC_programacion_semanal WHERE Consecutivo_En_Programa = 5 AND Semana = 2")->fetch();
+$record8 = qp("SELECT Activa, Categoria_CNP, CNP, Reprogramada_Por_Usuario FROM {$tPS} WHERE Consecutivo_En_Programa = 5 AND Semana = 2")->fetch();
 
 $c8_activa_ok = ($record8['Activa'] === '1');
 $c8_cnp_ok = ($record8['CNP'] === null || $record8['CNP'] === '');
@@ -430,14 +454,14 @@ if ($c8_activa_ok && $c8_cnp_ok && $c8_flag_ok) {
 echo "--- CASO 9: Probando Idempotencia del Cascade ---\n";
 
 // 1. Limpiar logs anteriores
-$db->query("DELETE FROM optimizacionJMC_auto_program_log WHERE semana = 2");
+qp("DELETE FROM {$tLog} WHERE semana = 2");
 
 // 2. Estado: actividad autodescomprometida con CNP genérica, flag=0, restricciones rotas
-$db->query("UPDATE optimizacionJMC_programacion_semanal
+qp("UPDATE {$tPS}
             SET Activa = '0', Categoria_CNP = 'Programación', CNP = 'Restricciones habilitantes no cumplidas', Ejecutado = 0.0, Reprogramada_Por_Usuario = 0
             WHERE Consecutivo_En_Programa = 5 AND Semana = 2");
 
-$db->query("UPDATE optimizacionJMC_programa_consolidado
+qp("UPDATE {$tPC}
             SET D_y_E = '1', Materiales = '1', MdeO = '1', Equipos = '1', Predecesora = '0', Ejecutado = 0.0, Estado = 'Atrasada'
             WHERE Id = '2.4' AND Semana = 2");
 
@@ -466,7 +490,7 @@ echo "Corrida 1 - log retornado por run() para actividad 5: " . ($log9_tiene_act
 echo "Corrida 1 - log persistido para actividad 5: " . ($log9_global_tiene_actividad_5 ? 'SÍ (FALLO)' : 'NO (OK)') . "\n";
 
 // 4. Validar estado: la actividad sigue Activa=0, CNP genérica intacta
-$record9 = $db->query("SELECT Activa, Categoria_CNP, CNP, Reprogramada_Por_Usuario FROM optimizacionJMC_programacion_semanal WHERE Consecutivo_En_Programa = 5 AND Semana = 2")->fetch();
+$record9 = qp("SELECT Activa, Categoria_CNP, CNP, Reprogramada_Por_Usuario FROM {$tPS} WHERE Consecutivo_En_Programa = 5 AND Semana = 2")->fetch();
 
 $c9_activa_ok = ($record9['Activa'] === '0');
 $c9_categoria_ok = ($record9['Categoria_CNP'] === 'Programación');
@@ -483,11 +507,11 @@ if (!$log9_tiene_actividad_5 && !$log9_global_tiene_actividad_5 && $c9_activa_ok
 
 // --- LIMPIEZA FINAL ---
 // Dejar el registro en su estado original correcto (Activa = 1, Ejecutado = 0.5 y restricciones al 100%)
-$db->query("UPDATE optimizacionJMC_programacion_semanal
+qp("UPDATE {$tPS}
             SET Activa = '1', Categoria_CNP = NULL, CNP = NULL, Observaciones_CNP = NULL, Ejecutado = 0.5, Reprogramada_Por_Usuario = 0
             WHERE Consecutivo_En_Programa = 5 AND Semana = 2");
 
-$db->query("UPDATE optimizacionJMC_programa_consolidado
+qp("UPDATE {$tPC}
             SET D_y_E = '1', Materiales = '1', MdeO = '1', Equipos = '1', Predecesora = '0', Ejecutado = 0.5
             WHERE Id = '2.4' AND Semana = 2");
 

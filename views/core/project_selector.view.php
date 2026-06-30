@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
     <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet">
-    
+
     <style>
         body {
             background-color: #f4f6f9;
@@ -122,7 +122,7 @@
     <!-- Main Content -->
     <div class="content">
       <div class="container">
-        
+
         <?php if (isset($_SESSION['error'])): ?>
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                 <?php echo $_SESSION['error'];
@@ -137,19 +137,30 @@
             <?php foreach ($proyectos as $proyecto): ?>
             <div class="col-lg-4 col-md-6 mb-4 project-item" data-name="<?php echo strtolower($proyecto['Proyecto_Proceso']); ?>">
                 <div class="card project-card shadow-sm">
-                    <div class="card-header-project d-flex justify-content-between align-items-center">
+                    <div class="card-header-project d-flex justify-content-between align-items-start">
                         <h5 class="project-title" title="<?php echo htmlspecialchars($proyecto['Proyecto_Proceso']); ?>">
                             <?php echo htmlspecialchars($proyecto['Proyecto_Proceso']); ?>
                         </h5>
-                        <span class="badge badge-success badge-status"><?php echo $proyecto['Activo'] == 1 ? 'Active' : 'Inactive'; ?></span>
+                        <div class="d-flex align-items-center">
+                            <?php if (($proyecto['Area'] ?? 'Construccion') === 'Pre-Construccion'): ?>
+                            <span class="badge badge-warning badge-status mr-2" style="font-size: 0.65rem;">
+                                <i class="fas fa-hard-hat mr-1"></i>Pre-Construcción
+                            </span>
+                            <?php elseif (($proyecto['Area'] ?? 'Construccion') === 'Construccion'): ?>
+                            <span class="badge badge-info badge-status mr-2" style="font-size: 0.65rem;">
+                                <i class="fas fa-hard-hat mr-1"></i>Construcción
+                            </span>
+                            <?php endif; ?>
+                            <span class="badge badge-success badge-status"><?php echo $proyecto['Activo'] == 1 ? 'Active' : 'Inactive'; ?></span>
+                        </div>
                     </div>
-                    
+
                     <div class="card-body-project">
                         <div class="meta-row">
                             <i class="fas fa-hard-hat"></i>
                             <span>Rol: <b><?php echo htmlspecialchars($proyecto['rol_nombre'] ?? $proyecto['permiso']); ?></b></span>
                         </div>
-                        
+
                         <div class="mt-3 d-none">
                             <div class="d-flex justify-content-between mb-1">
                                 <span class="text-xs text-muted">Progreso Estimado</span>
@@ -170,7 +181,7 @@
                 </div>
             </div>
             <?php endforeach; ?>
-            
+
             <?php if (empty($proyectos)): ?>
                 <div class="col-12 text-center py-5">
                     <img src="/img/empty_state.svg" alt="No projects" style="max-height: 150px; opacity: 0.5; margin-bottom: 20px;">

@@ -3,6 +3,8 @@
 require('./conexion.php');
 require_once __DIR__ . '/estado_programa_general.php';
 
+use App\Services\RestrictionConfigResolver;
+
 /** @var Database $dbInstance */
 $dbInstance = Database::getInstance();
 
@@ -12,14 +14,30 @@ if (!preg_match('/^[a-zA-Z0-9_]+$/', $db)) {
     die('Error: Nombre de DB inválido');
 }
 
+// Resolve table names via TableResolver
+$tSemanasActivas = TableResolver::resolveByPrefix($db, 'semanas_activas');
+$tProgConsolidado = TableResolver::resolveByPrefix($db, 'programa_consolidado');
+
+// Set project context for queryWithProject auto-injection
+$projectId = TableResolver::getProjectIdByPrefix($db);
+if ($projectId) {
+    $dbInstance->setProjectContext($projectId);
+}
+
 try {
-    $stmtMax = $dbInstance->query("SELECT MAX(Semana) as maxVal FROM {$db}_semanas_activas");
+    $stmtMax = $dbInstance->queryWithProject("SELECT MAX(Semana) as maxVal FROM {$tSemanasActivas}");
     $dataMax = $stmtMax->fetch();
     $maxSemana = (int) ($dataMax['maxVal'] ?? 0);
 
+    // Resolve project Area ONCE before the loop (avoid N+1 queries)
+    $config = RestrictionConfigResolver::resolve($db);
+    $projectArea = $config['area'];
+    $restrictionColumns = $config['allRestrictions'];
+    $restrictionColumnsSql = implode(', ', $restrictionColumns);
+
     for ($semana = 1; $semana <= $maxSemana; $semana++) {
-        $stmtSemana = $dbInstance->query(
-            "SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem FROM {$db}_semanas_activas WHERE Semana = ?",
+        $stmtSemana = $dbInstance->queryWithProject(
+            "SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem FROM {$tSemanasActivas} WHERE Semana = ?",
             [$semana],
         );
         $dataSemana = $stmtSemana->fetch();
@@ -31,10 +49,10 @@ try {
         $fechaInicioSemana = $dataSemana['Fecha_Inicio_Sem'];
         $fechaFinSemana = $dataSemana['Fecha_Fin_Sem'] ?? null;
 
-        $stmtProg = $dbInstance->query(
+        $stmtProg = $dbInstance->queryWithProject(
             "SELECT Consecutivo_en_Programa, Titulo, Ejecutado, Fecha_Inicio, Fecha_Fin,
-                    D_y_E, Materiales, MdeO, Equipos, Predecesora, Pdto_Cons, Modelo
-             FROM {$db}_programa_consolidado
+                    {$restrictionColumnsSql}
+             FROM {$tProgConsolidado}
              WHERE Semana = ?",
             [$semana],
         );
@@ -46,27 +64,7 @@ try {
 
             $estadoRestricciones = 0;
             if ($titulo === 0) {
-                $campos = [
-                    'D_y_E' => 1.0,
-                    'Materiales' => 1.0,
-                    'MdeO' => 1.0,
-                    'Equipos' => 1.0,
-                    'Predecesora' => 0.5,
-                    'Pdto_Cons' => 1.0,
-                    'Modelo' => 1.0,
-                ];
-                $conteo = 0;
-                $suma = 0;
-
-                foreach ($campos as $col => $threshold) {
-                    $val = $data[$col] ?? null;
-                    if ($val !== 'N/A' && $val !== null && $val !== '') {
-                        $conteo++;
-                        $suma += min(round((float) $val, 5) / $threshold, 1.0);
-                    }
-                }
-
-                $estadoRestricciones = ($conteo === 0) ? 1 : round(($suma / $conteo), 5);
+                $estadoRestricciones = RestrictionConfigResolver::calculateEstadoRestricciones($data, $projectArea);
             }
 
             $semanasInicio = pg_calculate_week_offset($data['Fecha_Inicio'] ?? null, $fechaInicioSemana);
@@ -80,8 +78,8 @@ try {
                 $fechaFinSemana,
             );
 
-            $dbInstance->query(
-                "UPDATE {$db}_programa_consolidado
+            $dbInstance->queryWithProject(
+                "UPDATE {$tProgConsolidado}
                  SET Semanas_Inicio = ?, Estado_Restricciones = ?, Estado = ?
                  WHERE Consecutivo_en_Programa = ? AND Semana = ?",
                 [$semanasInicio, $estadoRestricciones, $estado, $id, $semana],
@@ -90,15 +88,15 @@ try {
 
         usleep(500000);
 
-        $dbInstance->query(
-            "UPDATE {$db}_programa_consolidado
+        $dbInstance->queryWithProject(
+            "UPDATE {$tProgConsolidado}
              SET Ruta_Critica = NULL
              WHERE Titulo = 1 AND Semana = ?",
             [$semana],
         );
 
-        $dbInstance->query(
-            "UPDATE {$db}_programa_consolidado
+        $dbInstance->queryWithProject(
+            "UPDATE {$tProgConsolidado}
              SET Ejecutado = NULL, Semanas_Inicio = NULL
              WHERE Fecha_Inicio IS NULL AND Fecha_Fin IS NULL AND Titulo = 1 AND Semana = ?",
             [$semana],

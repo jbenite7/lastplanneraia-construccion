@@ -5,15 +5,9 @@ namespace App\Controllers\Api;
 use PDO;
 use Throwable;
 
+use TableResolver;
 class SubcontratistasApiController
 {
-    private const ALLOWED_PROVIDER_TYPES = [
-        'Mano de Obra',
-        'Suministro e Instalación',
-        'Suministro de Materiales, Herramientas o Equipos',
-        'Consultor',
-    ];
-
     private $db;
 
     public function __construct()
@@ -34,15 +28,15 @@ class SubcontratistasApiController
 
         try {
             $tables = [
-                "{$dbPrefix}_cic" => "subcontratista",
-                "{$dbPrefix}_programacion_semanal" => "Sub_Contratista",
-                "{$dbPrefix}_pdc" => "Sub_Contratista",
+                "" . TableResolver::resolveByPrefix($dbPrefix, 'cic') . "" => "subcontratista",
+                "" . TableResolver::resolveByPrefix($dbPrefix, 'programacion_semanal') . "" => "Sub_Contratista",
+                "" . TableResolver::resolveByPrefix($dbPrefix, 'pdc') . "" => "Sub_Contratista",
             ];
 
             $dependencyChecks = [];
             foreach ($tables as $tbl => $col) {
-                if ($this->db->query("SHOW TABLES LIKE '$tbl'")->fetch()) {
-                    if ($this->db->query("SHOW COLUMNS FROM $tbl LIKE '$col'")->fetch()) {
+                if ($this->db->queryWithProject("SHOW TABLES LIKE '$tbl'")->fetch()) {
+                    if ($this->db->queryWithProject("SHOW COLUMNS FROM $tbl LIKE '$col'")->fetch()) {
                         $dependencyChecks[] = "(SELECT COUNT(*) FROM $tbl WHERE $tbl.$col = s.subcontratista) > 0";
                     }
                 }
@@ -50,8 +44,8 @@ class SubcontratistasApiController
 
             $depSql = !empty($dependencyChecks) ? ", ( " . implode(" OR ", $dependencyChecks) . " ) as has_dependencies" : ", 0 as has_dependencies";
 
-            $query = "SELECT s.Id, s.subcontratista, s.correo_contacto, s.NIT, s.alcance, s.tipo_proveedor, s.activo $depSql FROM {$dbPrefix}_subcontratistas s ORDER BY s.subcontratista ASC";
-            $data = $this->db->query($query)->fetchAll(PDO::FETCH_ASSOC);
+            $query = "SELECT s.Id, s.subcontratista, s.correo_contacto, s.NIT, s.alcance, s.tipo_proveedor, s.activo $depSql FROM " . TableResolver::resolveByPrefix($dbPrefix, 'subcontratistas') . " s ORDER BY s.subcontratista ASC";
+            $data = $this->db->queryWithProject($query)->fetchAll(PDO::FETCH_ASSOC);
 
             foreach ($data as &$row) {
                 $row['activo'] = (bool) $row['activo'];
@@ -145,8 +139,8 @@ class SubcontratistasApiController
                 continue;
             }
 
-            $resultado = $this->db->query(
-                "UPDATE {$dbPrefix}_subcontratistas SET subcontratista = ?, correo_contacto = ?, NIT = ?, alcance = ?, tipo_proveedor = ?, activo = ? WHERE project_id = ? AND Id = ?",
+            $resultado = $this->db->queryWithProject(
+                "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'subcontratistas') . " SET subcontratista = ?, correo_contacto = ?, NIT = ?, alcance = ?, tipo_proveedor = ?, activo = ? WHERE Id = ?",
                 [
                     $actualizado['subcontratista'],
                     $actualizado['correo_contacto'],
@@ -154,7 +148,6 @@ class SubcontratistasApiController
                     $actualizado['alcance'],
                     $actualizado['tipo_proveedor'],
                     $actualizado['activo'],
-                    (int) ($_SESSION['project_id'] ?? 0),
                     $id,
                 ],
             );
@@ -178,14 +171,11 @@ class SubcontratistasApiController
 
     private function actualizar_dependencias_nombre(string $dbPrefix, string $oldName, string $newName): void
     {
-        $tables = ["{$dbPrefix}_cic" => "subcontratista", "{$dbPrefix}_programacion_semanal" => "Sub_Contratista", "{$dbPrefix}_pdc" => "Sub_Contratista"];
+        $tables = ["" . TableResolver::resolveByPrefix($dbPrefix, 'cic') . "" => "subcontratista", "" . TableResolver::resolveByPrefix($dbPrefix, 'programacion_semanal') . "" => "Sub_Contratista", "" . TableResolver::resolveByPrefix($dbPrefix, 'pdc') . "" => "Sub_Contratista"];
         foreach ($tables as $tbl => $col) {
-            if ($this->db->query("SHOW TABLES LIKE '$tbl'")->fetch()) {
-                if ($this->db->query("SHOW COLUMNS FROM $tbl LIKE '$col'")->fetch()) {
-                    $this->db->query(
-                        "UPDATE $tbl SET $col = ? WHERE project_id = ? AND $col = ?",
-                        [$newName, (int) ($_SESSION['project_id'] ?? 0), $oldName],
-                    );
+            if ($this->db->queryWithProject("SHOW TABLES LIKE '$tbl'")->fetch()) {
+                if ($this->db->queryWithProject("SHOW COLUMNS FROM $tbl LIKE '$col'")->fetch()) {
+                    $this->db->queryWithProject("UPDATE $tbl SET $col = ? WHERE $col = ?", [$newName, $oldName]);
                 }
             }
         }
@@ -208,7 +198,7 @@ class SubcontratistasApiController
             return;
         }
 
-        $res = $this->db->query("INSERT INTO {$dbPrefix}_subcontratistas (subcontratista, correo_contacto, NIT, alcance, tipo_proveedor, activo) VALUES (?, ?, ?, ?, ?, 1)", [
+        $res = $this->db->queryWithProject("INSERT INTO " . TableResolver::resolveByPrefix($dbPrefix, 'subcontratistas') . " (subcontratista, correo_contacto, NIT, alcance, tipo_proveedor, activo) VALUES (?, ?, ?, ?, ?, 1)", [
             $data['subcontratista'],
             $data['correo_contacto'],
             $data['NIT'],
@@ -217,11 +207,7 @@ class SubcontratistasApiController
         ]);
 
         if ($res) {
-            $id = $this->db->query(
-                "SELECT Id FROM {$dbPrefix}_subcontratistas WHERE correo_contacto = ? ORDER BY Id DESC LIMIT 1",
-                [$data['correo_contacto']],
-            )->fetchColumn();
-            $this->json(["status" => "success", "id" => (int) $id, "respuesta" => "BIEN", "message" => "Subcontratista creado."]);
+            $this->json(["status" => "success", "id" => $this->db->lastInsertId(), "respuesta" => "BIEN", "message" => "Subcontratista creado."]);
         } else {
             $this->json(["status" => "error", "message" => "Error al crear subcontratista."]);
         }
@@ -230,7 +216,7 @@ class SubcontratistasApiController
     private function eliminar(string $dbPrefix): void
     {
         $id = $_POST['Id'] ?? $_POST['id'] ?? '';
-        $nombre = $this->db->query("SELECT subcontratista FROM {$dbPrefix}_subcontratistas WHERE project_id = ? AND Id = ?", [(int) ($_SESSION['project_id'] ?? 0), $id])->fetchColumn();
+        $nombre = $this->db->queryWithProject("SELECT subcontratista FROM " . TableResolver::resolveByPrefix($dbPrefix, 'subcontratistas') . " WHERE Id = ?", [$id])->fetchColumn();
 
         if (!$nombre) {
             $this->json(['status' => 'error', 'message' => 'Subcontratista no encontrado']);
@@ -242,7 +228,7 @@ class SubcontratistasApiController
             return;
         }
 
-        if ($this->db->query("DELETE FROM {$dbPrefix}_subcontratistas WHERE project_id = ? AND Id = ?", [(int) ($_SESSION['project_id'] ?? 0), $id])) {
+        if ($this->db->queryWithProject("DELETE FROM " . TableResolver::resolveByPrefix($dbPrefix, 'subcontratistas') . " WHERE Id = ?", [$id])) {
             $this->json(["status" => "success", "respuesta" => "BIEN", "message" => "Subcontratista eliminado."]);
         } else {
             $this->json(["status" => "error", "message" => "Error al eliminar."]);
@@ -251,11 +237,11 @@ class SubcontratistasApiController
 
     private function tiene_dependencias(string $dbPrefix, string $nombre): bool
     {
-        $tables = ["{$dbPrefix}_cic" => "subcontratista", "{$dbPrefix}_programacion_semanal" => "Sub_Contratista", "{$dbPrefix}_pdc" => "Sub_Contratista"];
+        $tables = ["" . TableResolver::resolveByPrefix($dbPrefix, 'cic') . "" => "subcontratista", "" . TableResolver::resolveByPrefix($dbPrefix, 'programacion_semanal') . "" => "Sub_Contratista", "" . TableResolver::resolveByPrefix($dbPrefix, 'pdc') . "" => "Sub_Contratista"];
         foreach ($tables as $tbl => $col) {
-            if ($this->db->query("SHOW TABLES LIKE '$tbl'")->fetch()) {
-                if ($this->db->query("SHOW COLUMNS FROM $tbl LIKE '$col'")->fetch()) {
-                    if ($this->db->query("SELECT COUNT(*) FROM $tbl WHERE $col = ?", [$nombre])->fetchColumn() > 0) {
+            if ($this->db->queryWithProject("SHOW TABLES LIKE '$tbl'")->fetch()) {
+                if ($this->db->queryWithProject("SHOW COLUMNS FROM $tbl LIKE '$col'")->fetch()) {
+                    if ($this->db->queryWithProject("SELECT COUNT(*) FROM $tbl WHERE $col = ?", [$nombre])->fetchColumn() > 0) {
                         return true;
                     }
                 }
@@ -272,7 +258,7 @@ class SubcontratistasApiController
 
     private function obtenerSubcontratista(string $dbPrefix, int $id): ?array
     {
-        $stmt = $this->db->query("SELECT Id, subcontratista, correo_contacto, NIT, alcance, tipo_proveedor, activo FROM {$dbPrefix}_subcontratistas WHERE project_id = ? AND Id = ?", [(int) ($_SESSION['project_id'] ?? 0), $id]);
+        $stmt = $this->db->queryWithProject("SELECT Id, subcontratista, correo_contacto, NIT, alcance, tipo_proveedor, activo FROM " . TableResolver::resolveByPrefix($dbPrefix, 'subcontratistas') . " WHERE Id = ?", [$id]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         return $row ?: null;
     }
@@ -303,6 +289,32 @@ class SubcontratistasApiController
         ];
     }
 
+    private function getAllowedProviderTypes(): array
+    {
+        $area = $_SESSION['area'] ?? $_GET['area'] ?? 'Construccion';
+
+        if ($area === 'Pre-Construccion' || $area === 'PC') {
+            return [
+                'Socio',
+                'Ventas',
+                'Gerencia',
+                'Diseñador',
+                'Consultor',
+                'Entidad',
+                'Interventoría',
+                'Cliente',
+                'Inversionista',
+                'Promotor',
+            ];
+        }
+
+        return [
+            'Mano de Obra',
+            'Suministro e Instalación',
+            'Suministro de Materiales, Herramientas o Equipos',
+        ];
+    }
+
     private function validarSubcontratista(string $dbPrefix, array $data, ?int $excludeId = null): array
     {
         $errores = [];
@@ -327,7 +339,7 @@ class SubcontratistasApiController
 
         if ($data['tipo_proveedor'] === '') {
             $errores[] = 'El tipo de proveedor es obligatorio.';
-        } elseif (!in_array($data['tipo_proveedor'], self::ALLOWED_PROVIDER_TYPES, true)) {
+        } elseif (!in_array($data['tipo_proveedor'], $this->getAllowedProviderTypes(), true)) {
             $errores[] = 'El tipo de proveedor seleccionado no es válido.';
         }
 
@@ -342,14 +354,14 @@ class SubcontratistasApiController
     {
         $errores = [];
         $params = [];
-        $sql = "SELECT Id, subcontratista, correo_contacto, NIT FROM {$dbPrefix}_subcontratistas";
+        $sql = "SELECT Id, subcontratista, correo_contacto, NIT FROM " . TableResolver::resolveByPrefix($dbPrefix, 'subcontratistas') . "";
 
         if ($excludeId !== null) {
             $sql .= ' WHERE Id != ?';
             $params[] = $excludeId;
         }
 
-        $rows = $this->db->query($sql, $params)->fetchAll(PDO::FETCH_ASSOC);
+        $rows = $this->db->queryWithProject($sql, $params)->fetchAll(PDO::FETCH_ASSOC);
         $nombreNormalizado = $this->normalizarTexto($data['subcontratista']);
         $correoNormalizado = $this->normalizarEmail($data['correo_contacto']);
         $nitNormalizado = $this->normalizarNitComparacion($data['NIT']);

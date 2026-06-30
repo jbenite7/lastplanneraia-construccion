@@ -21,10 +21,13 @@ class ProgramaConsolidadoNormalizationService
             return;
         }
 
-        $sql = "UPDATE {$dbPrefix}_programa_consolidado 
+        $t = \TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado');
+        $projectId = \TableResolver::getProjectIdByPrefix($dbPrefix);
+
+        $sql = "UPDATE {$t}
                 SET Ejecutado = 0, Ejecutado_Siguiente_Semana = NULL, Estado = 'Capítulo'
                 WHERE Titulo = 1 AND Semana = ?";
 
-        $this->db->query($sql, [$semana]);
+        $this->db->queryWithProject($sql, [$semana], $projectId);
     }
 }

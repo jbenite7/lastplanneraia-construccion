@@ -1,5 +1,7 @@
 <?php
 
+use App\Services\RestrictionConfigResolver;
+
 if (!function_exists('pi_filter_state_keys')) {
     function pi_filter_state_keys(): array
     {
@@ -175,16 +177,21 @@ if (!function_exists('pi_filter_state_keys')) {
         return $ratio !== null && ($ratio + 0.0001) >= $minimum;
     }
 
-    function pi_is_ready_to_commit(array $row): bool
+    function pi_is_ready_to_commit(array $row, string $projectArea = 'Construccion'): bool
     {
-        return pi_restriction_meets($row, 'D_y_E', 1.0)
-            && pi_restriction_meets($row, 'Materiales', 1.0)
-            && pi_restriction_meets($row, 'MdeO', 1.0)
-            && pi_restriction_meets($row, 'Equipos', 1.0)
-            && pi_restriction_meets($row, 'Predecesora', 0.5);
+        $hardColumns = RestrictionConfigResolver::getHardRestrictionColumns($projectArea);
+        $thresholds  = RestrictionConfigResolver::getThresholds($projectArea);
+
+        foreach ($hardColumns as $col) {
+            if (!pi_restriction_meets($row, $col, $thresholds[$col] ?? 1.0)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
-    function pi_classify_state(array $row): string
+    function pi_classify_state(array $row, string $projectArea = 'Construccion'): string
     {
         if ((int) ($row['Titulo'] ?? 0) !== 0) {
             return 'header';
@@ -194,7 +201,7 @@ if (!function_exists('pi_filter_state_keys')) {
         $ej = pi_to_float($row['Ejecutado'] ?? null, 0.0);
         $isCritical = pi_is_critical_route($row['Ruta_Critica'] ?? '');
 
-        $isLiberated = pi_is_ready_to_commit($row);
+        $isLiberated = pi_is_ready_to_commit($row, $projectArea);
         $isStarted = $ej > 0 && $ej < 0.999;
         $isNotStarted = $ej <= 0;
         $isOverdueSignal = $si < 0;

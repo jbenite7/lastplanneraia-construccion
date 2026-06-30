@@ -194,18 +194,42 @@ function normalizeEstadoLabel(value) {
         .replace(/[\u0300-\u036f]/g, '');
 }
 
+function getRestrictionThresholds() {
+    var config = window.__RESTRICTION_CONFIG__;
+    if (config && Array.isArray(config.hardRestrictions) && Array.isArray(config.restrictions)) {
+        var thresholds = {};
+        var lookup = {};
+        for (var i = 0; i < config.restrictions.length; i++) {
+            var r = config.restrictions[i];
+            if (r && r.key) {
+                lookup[r.key] = r.threshold;
+            }
+        }
+        for (var j = 0; j < config.hardRestrictions.length; j++) {
+            var entry = config.hardRestrictions[j];
+            var hKey = typeof entry === 'string' ? entry : (entry && entry.key);
+            if (!hKey) { continue; }
+            var rawThreshold = (typeof entry === 'object' && entry.threshold !== undefined)
+                ? entry.threshold
+                : (lookup[hKey] !== undefined ? lookup[hKey] : 1.0);
+            // API threshold is 0-100; convert to ratio 0-1
+            thresholds[hKey] = (rawThreshold > 1) ? rawThreshold / 100 : rawThreshold;
+        }
+        if (Object.keys(thresholds).length > 0) {
+            return thresholds;
+        }
+    }
+    // Fallback to Construction defaults (ratio scale)
+    return { D_y_E: 1.0, Materiales: 1.0, MdeO: 1.0, Equipos: 1.0, Predecesora: 0.5 };
+}
+
 function areHardRestrictionsMet(data) {
-    var hardGates = [
-        { key: 'D_y_E', threshold: 1.0 },
-        { key: 'Materiales', threshold: 1.0 },
-        { key: 'MdeO', threshold: 1.0 },
-        { key: 'Equipos', threshold: 1.0 },
-        { key: 'Predecesora', threshold: 0.5 },
-    ];
-    for (var i = 0; i < hardGates.length; i++) {
-        var gate = hardGates[i];
-        var val = toNumber(data[gate.key], null);
-        if (val !== null && val < gate.threshold) {
+    var thresholds = getRestrictionThresholds();
+    var keys = Object.keys(thresholds);
+    for (var i = 0; i < keys.length; i++) {
+        var key = keys[i];
+        var val = toNumber(data[key], null);
+        if (val !== null && val < thresholds[key]) {
             return false;
         }
     }
@@ -515,7 +539,7 @@ var listar = function() {
     var scriptBarraFiltros = document.getElementById('scriptBarraFiltros').value;
     var fechaCreacionSemana = document.getElementById('fechaCreacionSemana_PHP') ? document.getElementById('fechaCreacionSemana_PHP').value : document.getElementById('fechaCreacionSemana').value;
     var versionCronograma = document.getElementById('versionCronograma_PHP') ? document.getElementById('versionCronograma_PHP').value : document.getElementById('versionCronograma').value;
-    
+
     if(fechaCreacionSemana=='' || fechaCreacionSemana==null){
     }else{
         // Inyectar en la Barra de Contexto Global (sin sobreescribir el badge)
@@ -846,9 +870,9 @@ var listar = function() {
             'terminada': 0,
             'sin-datos': 0,
         };
-        
+
         var api = this.api();
-        var allData = api.rows({search:'applied'}).data(); 
+        var allData = api.rows({search:'applied'}).data();
 
         allData.each(function(rowData) {
             var classification = classifyPGRow(rowData);
@@ -1023,7 +1047,7 @@ var listar = function() {
         selectedStateFilter = String($(this).val() || '').trim();
         table.draw();
     });
-    
+
     // Click Handler for Legend
     window.filterPDC = function(filterState, e) {
         var index = activeFilters.indexOf(filterState);
@@ -1311,17 +1335,17 @@ var obtener_data_editar = function(tbody, table) {
 
 var bloquear_unidad = function() {
     var codigo = $("#select_codigo_actividad").val();
-    
+
     if (codigo == '') {
         $("#select_unidad").attr('disabled', false);
     } else {
         $("#select_unidad").attr('disabled', true);
-        
+
         // Find unit in local cache
         var actividad = global_actividades_data.find(function(item) {
             return item.codigo_actividad == codigo;
         });
-        
+
         if (actividad) {
             $("#select_unidad").val(actividad.unidad).change();
         }
@@ -1463,7 +1487,7 @@ var actualizarEjecucion = function() {
 var descargarCorteProgramacion = function() {
     var db = document.getElementById('baseDatos_PHP') ? document.getElementById('baseDatos_PHP').value : document.getElementById('baseDatos').value;
     var semana = document.getElementById('semana_PHP') ? document.getElementById('semana_PHP').value : document.getElementById('semana').value;
-    
+
     $("#descargarCorteProgramacion").attr('disabled', true);
     $("#descargarCorteProgramacion").html('Generando... <i class="fas fa-spinner fa-spin ml-2"></i>');
 
@@ -1500,7 +1524,7 @@ var recargarTabla = function(accion){
     var db = document.getElementById('baseDatos_PHP') ? document.getElementById('baseDatos_PHP').value : document.getElementById('baseDatos').value;
     var semana = document.getElementById('semana_PHP') ? document.getElementById('semana_PHP').value : document.getElementById('semana').value;
     var scriptBarraFiltros = document.getElementById('scriptBarraFiltros').value;
-    
+
     if(accion == "listar"){
         table.ajax.url("/api/general/list?db="+db+"&semana="+semana+scriptBarraFiltros).load();
     }

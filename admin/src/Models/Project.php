@@ -21,7 +21,7 @@ class Project
      */
     public function count()
     {
-        $stmt = $this->db->query("SELECT COUNT(*) as total FROM {$this->table} WHERE Area = 'Construccion'");
+        $stmt = $this->db->query("SELECT COUNT(*) as total FROM {$this->table}");
         $row = $stmt->fetch();
 
         return (int) ($row['total'] ?? 0);
@@ -34,22 +34,6 @@ class Project
      */
     public function getIntegrityReport()
     {
-        if ($this->db->isUsingGlobalTables()) {
-            $missing = [];
-            foreach (Database::globalTableNames() as $table) {
-                $stmt = $this->db->query("SHOW TABLES LIKE '{$table}'");
-                if (!$stmt->fetch()) {
-                    $missing[] = $table;
-                }
-            }
-
-            return empty($missing) ? [] : [[
-                'id' => 0,
-                'nombre' => 'Tablas globales',
-                'missing' => $missing,
-            ]];
-        }
-
         $projects = $this->getAll();
         $suffixes = [
             '_actividades', '_cambios', '_cic', '_pdc', '_profesionales',
@@ -112,10 +96,6 @@ class Project
                 continue;
             }
 
-            if ($this->db->isUsingGlobalTables() && in_array($table, Database::globalTableNames(), true)) {
-                continue;
-            }
-
             $isProjectTable = false;
             $currentPrefix = '';
 
@@ -169,7 +149,7 @@ class Project
      */
     public function getActiveNames()
     {
-        $stmt = $this->db->query("SELECT Proyecto_Proceso FROM {$this->table} WHERE Area = 'Construccion' AND Activo = 1");
+        $stmt = $this->db->query("SELECT Proyecto_Proceso FROM {$this->table} WHERE Activo = 1");
 
         return $stmt->fetchAll(\PDO::FETCH_COLUMN);
     }
@@ -237,13 +217,13 @@ class Project
     }
 
     /**
-     * Get all active construction projects.
+     * Get all active projects.
      *
      * @return array
      */
     public function getAllActive()
     {
-        $stmt = $this->db->query("SELECT * FROM {$this->table} WHERE Area = 'Construccion' AND Activo = 1");
+        $stmt = $this->db->query("SELECT * FROM {$this->table} WHERE Activo = 1");
 
         return $stmt->fetchAll();
     }
@@ -255,7 +235,7 @@ class Project
      */
     public function getAll()
     {
-        $stmt = $this->db->query("SELECT * FROM {$this->table} WHERE Area = 'Construccion'");
+        $stmt = $this->db->query("SELECT * FROM {$this->table}");
 
         return $stmt->fetchAll();
     }
@@ -279,9 +259,9 @@ class Project
         $oldPrefix = $oldProject['Base_de_Datos'] ?? '';
         $newPrefix = $data['base_datos'] ?? '';
 
-        $sql = "UPDATE {$this->table} SET 
-                Proyecto_Proceso = ?, 
-                Base_de_Datos = ?, 
+        $sql = "UPDATE {$this->table} SET
+                Proyecto_Proceso = ?,
+                Base_de_Datos = ?,
                 Area = ?,
                 Activo = ?,
                 Acceso = ?,
@@ -289,7 +269,10 @@ class Project
                 fechaInicioLineaBase = ?,
                 fechaFinLineaBase = ?,
                 costoDiaRetraso = ?,
-                urlCambios = ?
+                urlCambios = ?,
+                pc_restr_2_nombre = ?,
+                pc_restr_3_nombre = ?,
+                pc_restr_4_nombre = ?
                 WHERE Id = ?";
 
         $result = $this->db->query($sql, [
@@ -303,17 +286,20 @@ class Project
             $data['fecha_fin_lb'] ?: null,
             $data['costo_retraso'],
             $data['url_cambios'],
+            $data['pc_restr_2_nombre'] ?? null,
+            $data['pc_restr_3_nombre'] ?? null,
+            $data['pc_restr_4_nombre'] ?? null,
             $id,
         ]);
 
         if ($result) {
             // Si el prefijo cambió, renombrar tablas existentes
             if (!empty($oldPrefix) && !empty($newPrefix) && $oldPrefix !== $newPrefix) {
-                $this->renameProjectTables($oldPrefix, $newPrefix);
+                $this->renameProjectTables($oldPrefix, $newPrefix, $data['area']);
             }
             // Si antes no tenía prefijo pero ahora sí, o simplemente para asegurar integridad
             elseif (!empty($newPrefix)) {
-                $this->createProjectTables($newPrefix);
+                $this->createProjectTables($newPrefix, $data['area']);
             }
         }
 
@@ -326,14 +312,11 @@ class Project
      *
      * @param string $oldPrefix
      * @param string $newPrefix
+     * @param string $area
      * @return void
      */
-    private function renameProjectTables($oldPrefix, $newPrefix)
+    private function renameProjectTables($oldPrefix, $newPrefix, $area = 'Construccion')
     {
-        if ($this->db->isUsingGlobalTables()) {
-            return;
-        }
-
         $suffixes = [
             '_actividades', '_cambios', '_cic', '_pdc', '_profesionales',
             '_programa', '_programacion_semanal', '_programa_consolidado',
@@ -380,7 +363,7 @@ class Project
         }
 
         // Asegurar que todas las tablas existan para el nuevo prefijo (crear las faltantes si no existían en el viejo)
-        $this->createProjectTables($newPrefix);
+        $this->createProjectTables($newPrefix, $area);
     }
 
 
@@ -395,18 +378,32 @@ class Project
         // Auto-generate Base_de_Datos if not provided
         $base_datos = $this->generateDatabaseName($data['nombre'], $data['area']);
 
+        // Validate uniqueness of Base_de_Datos across ALL projects
+        $stmt = $this->db->query(
+            "SELECT COUNT(*) AS cnt FROM {$this->table} WHERE Base_de_Datos = ?",
+            [$base_datos]
+        );
+        $row = $stmt->fetch();
+        if (($row['cnt'] ?? 0) > 0) {
+            error_log("Project create failed: Base_de_Datos '{$base_datos}' already exists.");
+            return false;
+        }
+
         $sql = "INSERT INTO {$this->table} (
-                    Proyecto_Proceso, 
-                    Base_de_Datos, 
-                    Area, 
-                    Activo, 
-                    Acceso, 
-                    pdcActivo, 
-                    fechaInicioLineaBase, 
-                    fechaFinLineaBase, 
-                    costoDiaRetraso, 
-                    urlCambios
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    Proyecto_Proceso,
+                    Base_de_Datos,
+                    Area,
+                    Activo,
+                    Acceso,
+                    pdcActivo,
+                    fechaInicioLineaBase,
+                    fechaFinLineaBase,
+                    costoDiaRetraso,
+                    urlCambios,
+                    pc_restr_2_nombre,
+                    pc_restr_3_nombre,
+                    pc_restr_4_nombre
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         $result = $this->db->query($sql, [
             $data['nombre'],
@@ -419,10 +416,13 @@ class Project
             $data['fecha_fin_lb'] ?: null,
             $data['costo_retraso'] ?? 5000000,
             $data['url_cambios'] ?? null,
+            $data['pc_restr_2_nombre'] ?? null,
+            $data['pc_restr_3_nombre'] ?? null,
+            $data['pc_restr_4_nombre'] ?? null,
         ]);
 
         if ($result && $base_datos) {
-            $this->createProjectTables($base_datos);
+            $this->createProjectTables($base_datos, $data['area']);
         }
 
         return $result;
@@ -432,15 +432,84 @@ class Project
      * Crea las tablas específicas para el proyecto basadas en la plantilla.
      *
      * @param string $prefix El prefijo (Base_de_Datos) para las tablas.
+     * @param string $area   Área del proyecto ('Construccion', 'Pre-Construccion').
      * @return void
      */
-    private function createProjectTables($prefix)
+    private function createProjectTables($prefix, $area = 'Construccion')
     {
-        if ($this->db->isUsingGlobalTables()) {
+        // Pre-Construccion: tablas completas + columnas PC
+        if (strtoupper($area) === 'PRE-CONSTRUCCION') {
+            $this->createPreConstructionTables($prefix);
             return;
         }
 
-        $queries = [
+        // 1. Siempre crear tablas por-proyecto (compatibilidad hacia atrás)
+        foreach ($this->getProjectTableQueries($prefix) as $sql) {
+            $this->db->query($sql);
+        }
+
+        // 2. Si USE_GLOBAL_TABLES=ON, también crear las tablas globales (sin prefijo, con project_id)
+        if (\TableResolver::useGlobalTables()) {
+            $this->createGlobalTables();
+        }
+    }
+
+    /**
+     * Crea las 10 tablas globales (sin prefijo de proyecto) con project_id.
+     * Solo se ejecuta cuando USE_GLOBAL_TABLES=true.
+     *
+     * @return void
+     */
+    private function createGlobalTables()
+    {
+        $suffixes = $this->getTableSuffixes();
+        foreach ($suffixes as $suffix) {
+            // Generar CREATE TABLE sin prefijo y agregar project_id como primera columna
+            $tableType = ltrim($suffix, '_');
+            $queries = $this->getProjectTableQueries('__placeholder__');
+            $idx = array_search($suffix, $suffixes);
+            if ($idx !== false && isset($queries[$idx])) {
+                $sql = $queries[$idx];
+                // Reemplazar el prefijo place holder por el nombre de tabla global
+                $sql = str_replace('__placeholder__' . $suffix, $tableType, $sql);
+                // Insertar project_id después de AUTO_INCREMENT PRIMARY KEY
+                $sql = preg_replace(
+                    '/(AUTO_INCREMENT PRIMARY KEY)/',
+                    '$1,`project_id` int NOT NULL',
+                    $sql
+                );
+                // Añadir índice en project_id
+                $sql = rtrim($sql, ')');
+                $sql .= ', KEY `idx_project_id` (`project_id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci';
+                $this->db->query($sql);
+            }
+        }
+    }
+
+    /**
+     * Retorna los sufijos de tabla estándar del proyecto.
+     *
+     * @return string[]
+     */
+    private function getTableSuffixes()
+    {
+        return [
+            '_actividades', '_cambios', '_cic', '_pdc', '_profesionales',
+            '_programa', '_programacion_semanal', '_programa_consolidado',
+            '_semanas_activas', '_subcontratistas',
+        ];
+    }
+
+    /**
+     * Retorna las 10 consultas CREATE TABLE estándar para proyectos.
+     * Las tablas se crean con IF NOT EXISTS para idempotencia.
+     *
+     * @param string $prefix Prefijo de base de datos del proyecto.
+     * @return array
+     */
+    private function getProjectTableQueries($prefix)
+    {
+        return [
             // milanCampestre_actividades
             "CREATE TABLE IF NOT EXISTS `{$prefix}_actividades` (
               `Id` int(4) NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -797,12 +866,213 @@ class Project
               `activo` int(11) NOT NULL DEFAULT 1
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci",
         ];
-
-        foreach ($queries as $sql) {
-            $this->db->query($sql);
-        }
     }
 
+
+    /**
+     * Crea las 16 tablas estándar para proyectos de Pre-Construccion
+     * (misma estructura que Construccion) más las columnas específicas de PC.
+     *
+     * 1. Crea las 10 tablas estándar via getProjectTableQueries()
+     * 2. Crea las 6 tablas adicionales (_auto_program_log, _lps_*, _pg_tracking, _pi_shared_*)
+     * 3. Aplica columnas PC específicas via applyPcColumnModifications()
+     *
+     * @param string $prefix El prefijo (Base_de_Datos) para las tablas.
+     * @return void
+     */
+    private function createPreConstructionTables($prefix)
+    {
+        // Paso 1: 10 tablas estándar (mismas que Construccion)
+        foreach ($this->getProjectTableQueries($prefix) as $sql) {
+            $this->db->query($sql);
+        }
+
+        // 1b. Si USE_GLOBAL_TABLES=ON, también crear las tablas globales
+        if (\TableResolver::useGlobalTables()) {
+            $this->createGlobalTables();
+        }
+
+        // Paso 2: 6 tablas adicionales estándar (creadas por patches en Construccion)
+        $extraQueries = [
+            // _auto_program_log
+            "CREATE TABLE IF NOT EXISTS `{$prefix}_auto_program_log` (
+                `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                `semana` INT NOT NULL,
+                `consecutivo` INT NOT NULL,
+                `accion` ENUM('comprometer','descomprometer','insert_cnp') NOT NULL,
+                `detalle` TEXT,
+                `categoria_cnp` VARCHAR(100) DEFAULT NULL,
+                `cnp` VARCHAR(100) DEFAULT NULL,
+                `creado_en` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                KEY `idx_semana` (`semana`),
+                KEY `idx_consecutivo` (`consecutivo`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+
+            // _lps_escalamientos
+            "CREATE TABLE IF NOT EXISTS `{$prefix}_lps_escalamientos` (
+                `id` int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                `proyecto_id` int NOT NULL,
+                `semana` int NOT NULL,
+                `consecutivo_en_programa` int NOT NULL,
+                `modulo` ENUM('PG','PI','PS') NOT NULL,
+                `trigger_origen` varchar(50) NOT NULL,
+                `nivel_actual` tinyint NOT NULL DEFAULT 1,
+                `estado` ENUM('Activo','Mitigado','Cerrado') NOT NULL DEFAULT 'Activo',
+                `fecha_detonacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+                `fecha_ultimo_escalamiento` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+                `fecha_cierre` timestamp NULL DEFAULT NULL,
+                `usuario_cierre_id` int DEFAULT NULL,
+                `justificacion_cierre` mediumtext,
+                KEY `idx_semana_consecutivo` (`semana`,`consecutivo_en_programa`),
+                KEY `idx_estado_nivel` (`estado`,`nivel_actual`),
+                KEY `idx_proyecto` (`proyecto_id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+
+            // _lps_drawer_comentarios (sin FK para idempotencia)
+            "CREATE TABLE IF NOT EXISTS `{$prefix}_lps_drawer_comentarios` (
+                `id` int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                `proyecto_id` int NOT NULL,
+                `consecutivo_en_programa` int NOT NULL,
+                `semana` int NOT NULL,
+                `usuario_id` int NOT NULL,
+                `comentario` mediumtext NOT NULL,
+                `escalamiento_id` int DEFAULT NULL,
+                `parent_id` int DEFAULT NULL,
+                `menciones` json DEFAULT NULL,
+                `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+                KEY `idx_comentario_actividad` (`consecutivo_en_programa`,`semana`),
+                KEY `idx_parent` (`parent_id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+
+            // _pg_tracking
+            "CREATE TABLE IF NOT EXISTS `{$prefix}_pg_tracking` (
+                `consecutivo_en_programa` INT NOT NULL,
+                `semana` INT NOT NULL,
+                `fecha_inicio` DATE DEFAULT NULL,
+                `fecha_fin` DATE DEFAULT NULL,
+                `estado` VARCHAR(100) DEFAULT NULL,
+                `restricciones_hash` CHAR(32) DEFAULT NULL,
+                `fechas_hash` CHAR(32) DEFAULT NULL,
+                `estado_hash` CHAR(32) DEFAULT NULL,
+                `titulo` TINYINT(1) NOT NULL DEFAULT 0,
+                `ultimo_detectado` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                PRIMARY KEY (`consecutivo_en_programa`, `semana`),
+                KEY `idx_semana` (`semana`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+
+            // _pi_shared_constraints
+            "CREATE TABLE IF NOT EXISTS `{$prefix}_pi_shared_constraints` (
+                `Id` bigint unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                `Semana` int NOT NULL,
+                `Restriccion` varchar(40) NOT NULL,
+                `ValorObjetivo` varchar(20) NOT NULL,
+                `Nota` text,
+                `CreadoPor` varchar(120) DEFAULT NULL,
+                `CreadoEn` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                `ActualizadoEn` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                KEY `idx_semana` (`Semana`),
+                KEY `idx_restriccion` (`Restriccion`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+
+            // _pi_shared_constraint_links
+            "CREATE TABLE IF NOT EXISTS `{$prefix}_pi_shared_constraint_links` (
+                `Id` bigint unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                `SharedConstraintId` bigint unsigned NOT NULL,
+                `Semana` int NOT NULL,
+                `ConsecutivoEnPrograma` varchar(64) NOT NULL,
+                `ValorAplicado` varchar(20) NOT NULL,
+                `OverrideLocal` tinyint(1) NOT NULL DEFAULT 0,
+                `AplicadoEn` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                KEY `idx_shared` (`SharedConstraintId`),
+                KEY `idx_semana_consecutivo` (`Semana`,`ConsecutivoEnPrograma`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+        ];
+
+        foreach ($extraQueries as $sql) {
+            $this->db->query($sql);
+        }
+
+        // Paso 3: Columnas PC específicas (idempotente via information_schema)
+        $this->applyPcColumnModifications($prefix);
+    }
+
+    /**
+     * Aplica columnas e índices específicos de Pre-Construccion
+     * a las tablas estándar. Usa information_schema para ser idempotente.
+     *
+     * @param string $prefix Prefijo de base de datos del proyecto.
+     * @return void
+     */
+    private function applyPcColumnModifications($prefix)
+    {
+        // Columnas PC por tabla
+        $tableColumns = [
+            "{$prefix}_programa" => [
+                ['name' => 'restriccion_pc_1', 'def' => "VARCHAR(10) DEFAULT '0%'"],
+                ['name' => 'restriccion_pc_2', 'def' => "VARCHAR(10) DEFAULT '0%'"],
+                ['name' => 'restriccion_pc_3', 'def' => "VARCHAR(10) DEFAULT '0%'"],
+                ['name' => 'restriccion_pc_4', 'def' => "VARCHAR(10) DEFAULT '0%'"],
+            ],
+            "{$prefix}_programa_consolidado" => [
+                ['name' => 'restriccion_pc_1', 'def' => "VARCHAR(10) DEFAULT '0%'"],
+                ['name' => 'restriccion_pc_2', 'def' => "VARCHAR(10) DEFAULT '0%'"],
+                ['name' => 'restriccion_pc_3', 'def' => "VARCHAR(10) DEFAULT '0%'"],
+                ['name' => 'restriccion_pc_4', 'def' => "VARCHAR(10) DEFAULT '0%'"],
+            ],
+            "{$prefix}_programacion_semanal" => [
+                ['name' => 'Reprogramada_Por_Usuario', 'def' => "TINYINT(1) NOT NULL DEFAULT 0"],
+                ['name' => 'Es_TNP', 'def' => "TINYINT(1) NOT NULL DEFAULT 0"],
+                ['name' => 'Categoria_CP', 'def' => "VARCHAR(100) DEFAULT NULL"],
+                ['name' => 'CP', 'def' => "VARCHAR(255) DEFAULT NULL"],
+                ['name' => 'Observaciones_CP', 'def' => "TEXT DEFAULT NULL"],
+                ['name' => 'alerta_crisis', 'def' => "TINYINT(1) NOT NULL DEFAULT 0"],
+                ['name' => 'reprogramaciones_semanales', 'def' => "INT NOT NULL DEFAULT 0"],
+            ],
+            "{$prefix}_semanas_activas" => [
+                ['name' => 'fecha_ultimo_saneo', 'def' => "DATETIME NULL DEFAULT NULL"],
+            ],
+        ];
+
+        foreach ($tableColumns as $tableName => $columns) {
+            foreach ($columns as $col) {
+                $stmt = $this->db->query(
+                    "SELECT COUNT(*) FROM information_schema.COLUMNS
+                     WHERE TABLE_SCHEMA = DATABASE()
+                     AND TABLE_NAME = '{$tableName}'
+                     AND COLUMN_NAME = '{$col['name']}'"
+                );
+                if ($stmt->fetchColumn() == 0) {
+                    $this->db->query(
+                        "ALTER TABLE `{$tableName}` ADD COLUMN `{$col['name']}` {$col['def']}"
+                    );
+                }
+            }
+        }
+
+        // Índices PC en _programacion_semanal
+        $tableIndexes = [
+            "{$prefix}_programacion_semanal" => [
+                ['name' => 'idx_crisis_semanal', 'def' => "(`Semana`, `alerta_crisis`)"],
+                ['name' => 'idx_consecutivo_semanal', 'def' => "(`Consecutivo_En_Programa`, `Semana`)"],
+            ],
+        ];
+
+        foreach ($tableIndexes as $tableName => $indexes) {
+            foreach ($indexes as $idx) {
+                $stmt = $this->db->query(
+                    "SELECT COUNT(*) FROM information_schema.STATISTICS
+                     WHERE TABLE_SCHEMA = DATABASE()
+                     AND TABLE_NAME = '{$tableName}'
+                     AND INDEX_NAME = '{$idx['name']}'"
+                );
+                if ($stmt->fetchColumn() == 0) {
+                    $this->db->query(
+                        "ALTER TABLE `{$tableName}` ADD INDEX `{$idx['name']}` {$idx['def']}"
+                    );
+                }
+            }
+        }
+    }
 
     /**
      * Genera el nombre de la base de datos siguiendo el patrón del proyecto.
@@ -813,10 +1083,11 @@ class Project
         $slug = $this->slugify($name);
 
         // Pattern from general_proyectos_procesos.sql:
-        // PI projects usually have _pi suffix
-        if (strtoupper($area) === 'PI') {
-            if (!str_ends_with($slug, '_pi')) {
-                $slug .= '_pi';
+        // Pre-Construccion projects have _pc suffix
+        $areaUpper = strtoupper($area);
+        if ($areaUpper === 'PRE-CONSTRUCCION') {
+            if (!str_ends_with($slug, '_pc')) {
+                $slug .= '_pc';
             }
         }
 
@@ -885,7 +1156,10 @@ class Project
     public function updateField($id, $field, $value)
     {
         // Lista blanca de campos permitidos para actualización directa
-        $allowedFields = ['Activo', 'Acceso', 'pdcActivo'];
+        $allowedFields = [
+            'Activo', 'Acceso', 'pdcActivo',
+            'pc_restr_2_nombre', 'pc_restr_3_nombre', 'pc_restr_4_nombre',
+        ];
         if (!in_array($field, $allowedFields)) {
             return false;
         }
@@ -908,25 +1182,9 @@ class Project
 
         $prefix = $project['Base_de_Datos'] ?? '';
 
-        if ($this->db->isUsingGlobalTables()) {
-            foreach (Database::globalTableNames() as $tableName) {
-                try {
-                    $this->db->query("DELETE FROM `{$tableName}` WHERE project_id = ?", [(int) $id]);
-                } catch (\Exception $e) {
-                    error_log("Error al limpiar tabla global {$tableName} para proyecto {$id}: " . $e->getMessage());
-                }
-            }
-
-            return $this->db->query("DELETE FROM {$this->table} WHERE Id = ?", [$id]);
-        }
-
-        // Si tiene prefijo, eliminar sus tablas asociadas
+        // Si tiene prefijo, eliminar sus tablas asociadas por-proyecto
         if (!empty($prefix)) {
-            $suffixes = [
-                '_actividades', '_cambios', '_cic', '_pdc', '_profesionales',
-                '_programa', '_programacion_semanal', '_programa_consolidado',
-                '_semanas_activas', '_subcontratistas',
-            ];
+            $suffixes = $this->getTableSuffixes();
 
             foreach ($suffixes as $suffix) {
                 $tableName = "{$prefix}{$suffix}";
@@ -934,6 +1192,20 @@ class Project
                     $this->db->query("DROP TABLE IF EXISTS `{$tableName}`");
                 } catch (\Exception $e) {
                     error_log("Error al eliminar tabla {$tableName}: " . $e->getMessage());
+                }
+            }
+        }
+
+        // Si USE_GLOBAL_TABLES=ON, también limpiar filas de tablas globales para este proyecto
+        if (\TableResolver::useGlobalTables()) {
+            $suffixes = $this->getTableSuffixes();
+            foreach ($suffixes as $suffix) {
+                $tableType = ltrim($suffix, '_');
+                try {
+                    $tableName = \TableResolver::resolveByPrefix($prefix, $tableType);
+                    $this->db->query("DELETE FROM `{$tableName}` WHERE project_id = ?", [$id]);
+                } catch (\Exception $e) {
+                    error_log("Error al limpiar tabla global {$tableType}: " . $e->getMessage());
                 }
             }
         }

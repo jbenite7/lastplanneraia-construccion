@@ -14,18 +14,121 @@ window.LPSContextualDrawer = (function() {
   let activeParentId = null;
   let activeAlertaId = null;
 
-  const HARD_RESTRICTIONS = [
-    { key: 'D_y_E', aliases: ['D_y_E', 'restr_D_y_E'], label: 'Diseños y Especif.', threshold: 1 },
-    { key: 'Materiales', aliases: ['Materiales', 'restr_Materiales'], label: 'Materiales', threshold: 1 },
-    { key: 'MdeO', aliases: ['MdeO', 'restr_MdeO'], label: 'Mano de Obra', threshold: 1 },
-    { key: 'Equipos', aliases: ['Equipos', 'restr_Equipos'], label: 'Equipos', threshold: 1 },
-    { key: 'Predecesora', aliases: ['Predecesora', 'restr_Predecesora'], label: 'Predecesora', threshold: 0.5 }
-  ];
+  // Dynamic restriction config cache (fetched from API, falls back to construction defaults)
+  let _restrictionConfig = null;
+  let _configFetchPromise = null;
 
-  const SOFT_RESTRICTIONS = [
-    { key: 'Pdto_Cons', aliases: ['Pdto_Cons', 'restr_Pdto_Cons'], label: 'Procedimiento Constructivo', threshold: 1 },
-    { key: 'Modelo', aliases: ['Modelo', 'restr_Modelo'], label: 'Modelación BIM', threshold: 1 }
-  ];
+  function buildDefaultRestrictionConfig() {
+    return {
+      area: 'Construccion',
+      restrictions: [
+        { key: 'D_y_E', label: 'Diseños y Especif.', type: 'hard', threshold: 100 },
+        { key: 'Materiales', label: 'Materiales', type: 'hard', threshold: 100 },
+        { key: 'MdeO', label: 'Mano de Obra', type: 'hard', threshold: 100 },
+        { key: 'Equipos', label: 'Equipos', type: 'hard', threshold: 100 },
+        { key: 'Predecesora', label: 'Predecesora', type: 'hard', threshold: 50 },
+        { key: 'Pdto_Cons', label: 'Procedimiento Constructivo', type: 'soft', threshold: 100 },
+        { key: 'Seguimiento', label: 'Seguimiento', type: 'soft', threshold: 100 }
+      ],
+      hardRestrictions: ['D_y_E', 'Materiales', 'MdeO', 'Equipos', 'Predecesora'],
+      softRestrictions: ['Pdto_Cons', 'Seguimiento']
+    };
+  }
+
+  function fetchRestrictionConfig() {
+    if (_restrictionConfig) return Promise.resolve(_restrictionConfig);
+    if (_configFetchPromise) return _configFetchPromise;
+
+    // Fast path: check window.__RESTRICTION_CONFIG__ (set by PHP view before scripts load)
+    if (window.__RESTRICTION_CONFIG__ && Array.isArray(window.__RESTRICTION_CONFIG__.restrictions) && window.__RESTRICTION_CONFIG__.restrictions.length > 0) {
+      _restrictionConfig = window.__RESTRICTION_CONFIG__;
+      return Promise.resolve(_restrictionConfig);
+    }
+
+    _configFetchPromise = fetch('/api/general/restriction-config')
+      .then(function(res) { return res.json(); })
+      .then(function(config) {
+        if (config && Array.isArray(config.restrictions) && config.restrictions.length > 0) {
+          _restrictionConfig = config;
+        } else {
+          console.warn('Restriction config response invalid, using defaults.');
+          _restrictionConfig = buildDefaultRestrictionConfig();
+        }
+        return _restrictionConfig;
+      })
+      .catch(function(err) {
+        console.warn('Error fetching restriction config, using defaults:', err);
+        _restrictionConfig = buildDefaultRestrictionConfig();
+        return _restrictionConfig;
+      });
+    return _configFetchPromise;
+  }
+
+  function _resolveRestrictionArray(keys) {
+    var config = _restrictionConfig || buildDefaultRestrictionConfig();
+    return keys.map(function(key) {
+      var r = null;
+      for (var i = 0; i < config.restrictions.length; i++) {
+        if (config.restrictions[i].key === key) { r = config.restrictions[i]; break; }
+      }
+      return {
+        key: key,
+        aliases: [key, 'restr_' + key],
+        label: r ? r.label : key,
+        threshold: r ? r.threshold / 100 : 1
+      };
+    });
+  }
+
+  function getHardRestrictions() {
+    var config = _restrictionConfig || buildDefaultRestrictionConfig();
+    return _resolveRestrictionArray(config.hardRestrictions);
+  }
+
+  function getSoftRestrictions() {
+    var config = _restrictionConfig || buildDefaultRestrictionConfig();
+    return _resolveRestrictionArray(config.softRestrictions);
+  }
+
+  function getAllRestrictions() {
+    var config = _restrictionConfig || buildDefaultRestrictionConfig();
+    return config.restrictions.map(function(r) {
+      return {
+        key: r.key,
+        aliases: [r.key, 'restr_' + r.key],
+        label: r.label,
+        threshold: r.threshold / 100
+      };
+    });
+  }
+
+  function getRestrictionDefinitions() {
+    var config = window.__RESTRICTION_CONFIG__ || _restrictionConfig;
+    if (config && config.restrictions) {
+      var hard = [], soft = [];
+      config.restrictions.forEach(function(r) {
+        var entry = { name: r.key, threshold: (r.threshold || 100) / 100 };
+        if (r.type === 'hard') hard.push(entry);
+        else soft.push(entry);
+      });
+      if (hard.length > 0 || soft.length > 0) {
+        return { hardRestrictions: hard, softRestrictions: soft };
+      }
+    }
+    return {
+      hardRestrictions: [
+        { name: 'D_y_E', threshold: 1.0 },
+        { name: 'Materiales', threshold: 1.0 },
+        { name: 'MdeO', threshold: 1.0 },
+        { name: 'Equipos', threshold: 1.0 },
+        { name: 'Predecesora', threshold: 0.5 }
+      ],
+      softRestrictions: [
+        { name: 'Pdto_Cons', threshold: 1.0 },
+        { name: 'Modelo', threshold: 1.0 }
+      ]
+    };
+  }
 
   const PG_STATE_LABELS = {
     'debe-iniciar': 'Debe iniciar esta semana',
@@ -608,22 +711,20 @@ window.LPSContextualDrawer = (function() {
   }
 
   function calculateITR(rowData) {
-    const items = HARD_RESTRICTIONS.map(config => getRestrictionInfo(rowData, config));
-    const applicableItems = items.filter(item => item.applicable);
-    const aplicables = applicableItems.length;
-    const liberadas = applicableItems.filter(item => item.met).length;
-    const computedRatio = aplicables > 0
-      ? applicableItems.reduce((sum, item) => sum + item.progress, 0) / aplicables
-      : 1.0;
-    const porcentaje = aplicables > 0 ? computedRatio : 1.0;
+    var allRestrictions = getAllRestrictions();
+    var items = allRestrictions.map(function(config) { return getRestrictionInfo(rowData, config); });
+    var configCount = (_restrictionConfig || buildDefaultRestrictionConfig()).restrictions.length;
+    var liberadas = items.filter(function(item) { return item.met; }).length;
+    var sumProgress = items.reduce(function(sum, item) { return sum + item.progress; }, 0);
+    var porcentaje = configCount > 0 ? sumProgress / configCount : 1.0;
 
     return {
       porcentaje: Math.round(porcentaje * 100),
       ratio: porcentaje,
-      liberadas,
-      aplicables,
-      isComplete: aplicables === 0 ? porcentaje >= 0.999 : liberadas === aplicables,
-      items
+      liberadas: liberadas,
+      aplicables: configCount,
+      isComplete: configCount === 0 ? porcentaje >= 0.999 : liberadas === configCount,
+      items: items
     };
   }
 
@@ -663,7 +764,7 @@ window.LPSContextualDrawer = (function() {
 
     if (softContainer && rowData) {
       softContainer.innerHTML = '';
-      const softRestrictions = SOFT_RESTRICTIONS;
+      const softRestrictions = getSoftRestrictions();
 
       let hasSoft = false;
       let html = '<div style="font-size: 0.75rem; font-weight: 700; color: #1a3c2a; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.3px;">Restricciones Blandas (Informativas)</div><div style="display:flex; flex-direction:column; gap:4px;">';
@@ -782,7 +883,7 @@ window.LPSContextualDrawer = (function() {
     comments.forEach(c => {
       const isSystem = c.usuario_id === 0 || c.autor_nombre === 'Sistema' || !c.autor_nombre;
       const autor = isSystem ? 'Sistema AIA' : `${c.autor_nombre} (${c.autor_cargo || 'Cargo'})`;
-      
+
       const commentDiv = document.createElement('div');
       commentDiv.className = 'lps-comment';
       commentDiv.style.cssText = `
@@ -816,7 +917,7 @@ window.LPSContextualDrawer = (function() {
         c.respuestas.forEach(r => {
           const rDiv = document.createElement('div');
           rDiv.style.cssText = 'padding: 5px 8px; background: #ffffff; border-radius: 6px; margin-top: 4px; font-size: 0.8rem; box-shadow: 0 1px 2px rgba(0,0,0,0.02);';
-          
+
           let replyText = escapeHtml(r.comentario);
           replyText = replyText.replace(/@([A-Z]+)/g, '<span class="lps-mention-badge">@$1</span>');
 
@@ -842,14 +943,14 @@ window.LPSContextualDrawer = (function() {
       el.addEventListener('click', function(e) {
         e.preventDefault();
         activeParentId = parseInt(this.getAttribute('data-id'), 10);
-        
+
         const indicator = document.getElementById('lps_thread_replying_indicator');
         if (indicator) {
           indicator.style.display = 'flex';
           const authorName = this.closest('.lps-comment').querySelector('strong').textContent;
           indicator.querySelector('span').textContent = `Respondiendo al hilo de ${authorName}`;
         }
-        
+
         const input = document.getElementById('lps_comment_input');
         if (input) input.focus();
       });
@@ -890,7 +991,7 @@ window.LPSContextualDrawer = (function() {
           activeParentId = null;
           const indicator = document.getElementById('lps_thread_replying_indicator');
           if (indicator) indicator.style.display = 'none';
-          
+
           showNotification('Comentario registrado.');
           refreshDrawerData();
         } else {
@@ -926,7 +1027,7 @@ window.LPSContextualDrawer = (function() {
         if (response.respuesta === 'OK') {
           showNotification('¡Crisis mitigada y cerrada formalmente!');
           input.value = '';
-          
+
           // Limpiar banderas en caliente en Handsontable
           if (activeHot && activeRowIndex !== null) {
             activeHot.setDataAtRowProp(activeRowIndex, 'alerta_crisis', 0);
@@ -1233,6 +1334,8 @@ window.LPSContextualDrawer = (function() {
       activeHot = hot;
       activeModuleKey = moduleKey;
       activeStateAdapter = stateAdapter;
+
+      fetchRestrictionConfig();
 
       bindEvents();
 

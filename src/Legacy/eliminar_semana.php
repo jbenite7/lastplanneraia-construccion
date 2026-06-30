@@ -15,9 +15,23 @@ if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbName)) {
     die(json_encode(["respuesta" => "ERROR", "mensaje" => "Nombre de base de datos inválido."]));
 }
 
+// Resolve table names via TableResolver
+$tSemanasActivas = TableResolver::resolveByPrefix($dbName, 'semanas_activas');
+$tProgConsolidado = TableResolver::resolveByPrefix($dbName, 'programa_consolidado');
+$tProgSemanal = TableResolver::resolveByPrefix($dbName, 'programacion_semanal');
+$tCic = TableResolver::resolveByPrefix($dbName, 'cic');
+$tPdc = TableResolver::resolveByPrefix($dbName, 'pdc');
+$tActividades = TableResolver::resolveByPrefix($dbName, 'actividades');
+
+// Set project context for queryWithProject auto-injection
+$projectId = TableResolver::getProjectIdByPrefix($dbName);
+if ($projectId) {
+    $dbInstance->setProjectContext($projectId);
+}
+
 try {
     // 1. Verificar si es la última semana
-    $stmtMax = $dbInstance->query("SELECT MAX(Semana) AS maxSemana FROM {$dbName}_semanas_activas");
+    $stmtMax = $dbInstance->queryWithProject("SELECT MAX(Semana) AS maxSemana FROM {$tSemanasActivas}");
     $dataMax = $stmtMax->fetch();
     $maxSemana = (int) ($dataMax["maxSemana"] ?? 0);
 
@@ -31,16 +45,16 @@ try {
     } else {
         // 2. Realizar eliminación en cascada de la semana seleccionada (y superiores por seguridad)
         $tablas = [
-            "{$dbName}_semanas_activas" => "Semana",
-            "{$dbName}_programa_consolidado" => "Semana",
-            "{$dbName}_programacion_semanal" => "Semana",
-            "{$dbName}_cic" => "Semana",
-            "{$dbName}_pdc" => "semana",
-            "{$dbName}_actividades" => "semanaActualizacion",
+            "{$tSemanasActivas}" => "Semana",
+            "{$tProgConsolidado}" => "Semana",
+            "{$tProgSemanal}" => "Semana",
+            "{$tCic}" => "Semana",
+            "{$tPdc}" => "semana",
+            "{$tActividades}" => "semanaActualizacion",
         ];
 
         foreach ($tablas as $tabla => $columna) {
-            $dbInstance->query("DELETE FROM $tabla WHERE $columna >= ?", [$semana]);
+            $dbInstance->queryWithProject("DELETE FROM $tabla WHERE $columna >= ?", [$semana]);
         }
 
         $dbInstance->logActivity('Sistema', 'ELIMINAR_SEMANA', "Eliminación de semana $semana y superiores en proyecto $dbName");

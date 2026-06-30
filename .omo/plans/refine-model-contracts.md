@@ -140,7 +140,7 @@ Your next move: approve to proceed with execution.
   Parallelization: Wave 1 | Blocked by: — | Blocks: 2, 3
   References: database/patches/20260612_pdc_familias_maestro.sql:13-22 (familias schema), :24-37 (rules schema), :154-236 (existing families), :266-417 (existing rules), :193 (SANITARIOS row)
   Acceptance criteria: SQL executes without error. `SELECT COUNT(*) FROM general_pdc_familias` returns 93 (75 existing + 18 new). `SELECT codigo FROM general_pdc_familias WHERE codigo='APARATOS_SANITARIOS'` returns 1. `SELECT codigo FROM general_pdc_familias WHERE codigo='SANITARIOS'` returns 0. Each new family has ≥1 regex rule.
-  QA scenarios: `docker compose exec db mysql -uapp -psecret last_planner -e "SELECT codigo, nombre FROM general_pdc_familias WHERE codigo IN ('ASEO','EQUIPOS_COCINA','LAVAPLATOS','LAVADERO','ACCESORIOS_SANITARIOS','APARATOS_SANITARIOS','DEMOLICIONES','PASAMANOS','MUEBLES','EQUIPOS_ESPECIALES','APUNTALAMIENTO','SENALETICA','INFRAESTRUCTURA_DRENES','RESANES','CCTV_SEGURIDAD','SONIDO_VIDEO','SISTEMA_DATOS','AUTOMATIZACION_BMS')"` → 18 rows. Evidence: .omo/evidence/task-1-refine-model-contracts.txt
+  QA scenarios: `docker compose exec db mysql -uapp -p'<DB_PASSWORD>' last_planner -e "SELECT codigo, nombre FROM general_pdc_familias WHERE codigo IN ('ASEO','EQUIPOS_COCINA','LAVAPLATOS','LAVADERO','ACCESORIOS_SANITARIOS','APARATOS_SANITARIOS','DEMOLICIONES','PASAMANOS','MUEBLES','EQUIPOS_ESPECIALES','APUNTALAMIENTO','SENALETICA','INFRAESTRUCTURA_DRENES','RESANES','CCTV_SEGURIDAD','SONIDO_VIDEO','SISTEMA_DATOS','AUTOMATIZACION_BMS')"` → 18 rows. Evidence: .omo/evidence/task-1-refine-model-contracts.txt
   Commit: Y | feat(families): add 18 new construction process families with regex rules
 
 - [ ] 2. SQL patch: contract options + option items for 18 new families
@@ -184,16 +184,16 @@ Your next move: approve to proceed with execution.
   Use `INSERT INTO general_pdc_activity_rules` with familia_id from `SELECT id FROM general_pdc_familias WHERE codigo='...'`.
 
   SUB-TASK B — Migration script `database/migrations/migrate_tipos_contrato.php`:
-  - Connect to DB (app/secret/last_planner)
+  - Connect to DB (`app` / `<DB_PASSWORD>` / `last_planner`)
   - Query: `SELECT Base_de_Datos FROM general_proyectos_procesos WHERE Base_de_Datos IS NOT NULL AND Base_de_Datos != ''`
   - For each db_prefix, run: `UPDATE {db_prefix}_actividades SET tipoContrato='MO,S' WHERE tipoContrato='1'` and `UPDATE {db_prefix}_actividades SET tipoContrato='SI' WHERE tipoContrato='2'`
 
   SUB-TASK C — Deploy to Docker:
   ```
   docker compose cp database/patches/20260614_new_families.sql db:/tmp/
-  docker compose exec db mysql -uapp -psecret last_planner -e "SOURCE /tmp/20260614_new_families.sql"
+  docker compose exec db mysql -uapp -p'<DB_PASSWORD>' last_planner -e "SOURCE /tmp/20260614_new_families.sql"
   docker compose cp database/patches/20260615_regex_expansions.sql db:/tmp/  # if separate file
-  docker compose exec db mysql -uapp -psecret last_planner -e "SOURCE /tmp/20260615_regex_expansions.sql"
+  docker compose exec db mysql -uapp -p'<DB_PASSWORD>' last_planner -e "SOURCE /tmp/20260615_regex_expansions.sql"
   docker compose cp database/migrations/migrate_tipos_contrato.php app:/var/www/html/database/migrations/
   docker compose exec app php database/migrations/migrate_tipos_contrato.php
   ```
@@ -344,7 +344,7 @@ Your next move: approve to proceed with execution.
     ```
     Run PHP migration script if not already run in task 3.
     Full Playwright QA:
-    1. Login as test.A/aia2026
+    1. Login as `test.A` / `<TEST_PASSWORD>`
     2. /listado-actividades/ — verify badges (MO+S = 2 badges, SI = 1 badge, empty = "Sin asignar"). Create modal has no tipoContrato. Inline edit shows text.
     3. /contratos/ — verify 4 checkboxes in edit modal. Check SI → others disabled, SI section visible. Uncheck SI, check MO+S → both sections visible. Check OC → OC section visible.
     4. Auto-generate on Da Porto — verify new families (ASEO, EQUIPOS_COCINA, DEMOLICIONES, PASAMANOS, etc.) match if PG has those activities. Verify sin-match count decreased.

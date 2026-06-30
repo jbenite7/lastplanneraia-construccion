@@ -9,7 +9,7 @@
             <form action="/admin/proyectos/actualizar" method="POST">
                 <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
                 <input type="hidden" name="id" value="<?php echo $project['Id']; ?>">
-                
+
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-8">
@@ -30,8 +30,21 @@
                         <label for="area">Área</label>
                         <select class="form-control" id="area" name="area">
                             <option value="Construccion" <?php echo ($project['Area'] === 'Construccion') ? 'selected' : ''; ?>>Construcción</option>
-                            <option value="PI" <?php echo ($project['Area'] === 'PI') ? 'selected' : ''; ?>>PI (Planeación e Ingeniería)</option>
+                            <option value="Pre-Construccion" <?php echo ($project['Area'] === 'Pre-Construccion') ? 'selected' : ''; ?>>Pre-Construcción</option>
                         </select>
+                    </div>
+
+                    <div class="form-group pc-restriction-fields" style="display:<?php echo ($project['Area'] === 'Pre-Construccion') ? 'block' : 'none'; ?>;">
+                        <label for="pc_restr_2_nombre">Nombre Restricción #2</label>
+                        <input type="text" class="form-control" id="pc_restr_2_nombre" name="pc_restr_2_nombre" value="<?php echo htmlspecialchars($project['pc_restr_2_nombre'] ?? ''); ?>" placeholder="Ej: Permisos Ambientales">
+                    </div>
+                    <div class="form-group pc-restriction-fields" style="display:<?php echo ($project['Area'] === 'Pre-Construccion') ? 'block' : 'none'; ?>;">
+                        <label for="pc_restr_3_nombre">Nombre Restricción #3</label>
+                        <input type="text" class="form-control" id="pc_restr_3_nombre" name="pc_restr_3_nombre" value="<?php echo htmlspecialchars($project['pc_restr_3_nombre'] ?? ''); ?>" placeholder="Ej: Diseños">
+                    </div>
+                    <div class="form-group pc-restriction-fields" style="display:<?php echo ($project['Area'] === 'Pre-Construccion') ? 'block' : 'none'; ?>;">
+                        <label for="pc_restr_4_nombre">Nombre Restricción #4</label>
+                        <input type="text" class="form-control" id="pc_restr_4_nombre" name="pc_restr_4_nombre" value="<?php echo htmlspecialchars($project['pc_restr_4_nombre'] ?? ''); ?>" placeholder="Ej: Apropiación Presupuestal">
                     </div>
 
                     <div class="row">
@@ -96,3 +109,10 @@
         </div>
     </div>
 </div>
+<script>
+document.getElementById('area').addEventListener('change', function() {
+    document.querySelectorAll('.pc-restriction-fields').forEach(function(el) {
+        el.style.display = this.value === 'Pre-Construccion' ? 'block' : 'none';
+    }.bind(this));
+});
+</script>

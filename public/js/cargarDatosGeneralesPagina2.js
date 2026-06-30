@@ -95,7 +95,7 @@ var navbarComponentStart = `
     <div class="container-fluid">
         <!-- Brand / Logo -->
         <a class="navbar-brand" href="/proyectos">
-            <i class="fas fa-drafting-compass mr-2"></i> 
+            <i class="fas fa-drafting-compass mr-2"></i>
             Last Planner AIA
         </a>
 
@@ -106,7 +106,7 @@ var navbarComponentStart = `
 
         <!-- Navbar Content (Desktop: Row, Mobile: Drawer) -->
         <div class="collapse navbar-collapse navbar-collapse-drawer" id="aiaNavbar">
-            
+
             <!-- Mobile Drawer Header -->
             <div class="drawer-header d-xl-none">
                 <h5 class="m-0">Menú</h5>
@@ -122,7 +122,7 @@ var navbarComponentEnd = `
 
             <!-- User Profile & Actions (Right - Desktop Only) -->
             <ul class="navbar-nav ml-auto align-items-center d-none d-xl-flex">
-                
+
                 <!-- Notificaciones (Campana) Desktop -->
                 <li class="nav-item dropdown mr-2">
                     <a class="nav-link dropdown-toggle" href="#" id="notificationDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="position: relative;">
@@ -145,7 +145,7 @@ var navbarComponentEnd = `
                         </div>
                         <span id="labelNombreUsuario">Usuario</span>
                     </a>
-                    
+
                     <!-- Dropdown Menu -->
                     <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
                         <a class="dropdown-item" href="/proyectos">
@@ -174,7 +174,7 @@ var navbarComponentEnd = `
                     <a href="/proyectos" class="island-btn">
                         <i class="fas fa-exchange-alt"></i> Proyecto
                     </a>
-                    
+
                     <!-- Notificaciones Dropdown Mobile -->
                     <div class="dropdown" style="display: flex;">
                         <a href="#" class="island-btn w-100 island-notification-btn" id="notificationDropdownMobile" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -202,7 +202,7 @@ var navbarComponentEnd = `
 <div class="context-bar fixed-top" style="top: 56px; z-index: 1020; background: #e9ecef; border-bottom: 1px solid #dee2e6; padding: 0.25rem 1rem;">
     <div class="container-fluid d-flex align-items-center justify-content-between">
         <div class="context-breadcrumb">
-             <i class="fas fa-building text-muted mr-1"></i> 
+             <i class="fas fa-building text-muted mr-1"></i>
              <span class="font-weight-bold" id="ctxProyecto">Proyecto...</span>
              <span class="text-muted mx-2">/</span>
              <span id="ctxModulo" class="text-primary">Módulo...</span>
@@ -230,6 +230,29 @@ var finalNavbarHTML =
 
 document.getElementById('encabezado').innerHTML =
   document.getElementById('encabezado').innerHTML + inputosOcultos + finalNavbarHTML;
+
+// --- Pre-Construction Area: Hide construction-only modules ---
+if (window.__PROJECT_AREA__ === 'Pre-Construccion') {
+  // Helper: hide a nav-item (the <li> wrapper) by child element id
+  function _hideNavItem(childId) {
+    var el = document.getElementById(childId);
+    if (el) {
+      var li = el.closest('li');
+      if (li) li.style.display = 'none';
+    }
+  }
+  // Listado de Actividades
+  _hideNavItem('info_listadoActividades');
+  // Contratos
+  _hideNavItem('info_contratos');
+  // Plan de Compras (PDC)
+  _hideNavItem('planCompras');
+  // Programación Semanal (contains CIC / Calificación Integral de Proveedores)
+  //_hideNavItem('programacion_semanal');
+  // Hide "Actividades del Proyecto" section header if both children hidden
+  var _titAct = document.getElementById('tituloActividadesProyecto');
+  if (_titAct) _titAct.style.display = 'none';
+}
 
 // Inyectar Script Notifications (DESPUÉS del innerHTML para que existan los elementos)
 if (!document.querySelector('script[src*="notifications.js"]')) {

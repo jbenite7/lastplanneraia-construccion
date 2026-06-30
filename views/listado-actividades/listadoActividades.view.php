@@ -19,7 +19,7 @@
 	} else {
 	    try {
 	        $dbInstance = Database::getInstance();
-	        $queryActividadInicio = "SELECT Consecutivo_en_Programa, Id, Actividad, Fecha_Inicio FROM {$dbPrefixListadoActividades}_programa_consolidado WHERE project_id = ? AND Semana=? AND Titulo=0 AND Fecha_Inicio IS NOT NULL AND Fecha_Fin IS NOT NULL ORDER BY Fecha_Inicio ASC";
+	        $queryActividadInicio = "SELECT Consecutivo_en_Programa, Id, Actividad, Fecha_Inicio FROM programa_consolidado WHERE project_id = ? AND Semana=? AND Titulo=0 AND Fecha_Inicio IS NOT NULL AND Fecha_Fin IS NOT NULL ORDER BY Fecha_Inicio ASC";
 	        $stmtActividadInicio = $dbInstance->query($queryActividadInicio, [$projectIdListadoActividades, $maxSemanaListadoActividades]);
 	        $actividadInicioOptions = [];
 

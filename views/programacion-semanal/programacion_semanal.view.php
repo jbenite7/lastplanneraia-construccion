@@ -1,15 +1,29 @@
 <?php
-$categoriasCP = [
-    "Buen Rendimiento",
-    "Oportunidad Detectada",
-    "Mano de Obra Disponible",
-    "Materiales Disponibles",
-    "Equipos Disponibles",
-    "Disenos Listos",
-    "Gestion Resuelta",
-    "Condiciones Favorables",
-    "Compensacion de Frente"
-];
+if (($area ?? 'Construccion') === 'Pre-Construccion') {
+    $categoriasCP = [
+        "Buen Rendimiento",
+        "Oportunidad Detectada",
+        "Disenos Listos",
+        "Modelacion BIM Disponible",
+        "Presupuesto Disponible",
+        "Contratacion Disponible",
+        "Tramites Resueltos",
+        "Condiciones Favorables",
+        "Compensacion de Frente"
+    ];
+} else {
+    $categoriasCP = [
+        "Buen Rendimiento",
+        "Oportunidad Detectada",
+        "Mano de Obra Disponible",
+        "Materiales Disponibles",
+        "Equipos Disponibles",
+        "Disenos Listos",
+        "Gestion Resuelta",
+        "Condiciones Favorables",
+        "Compensacion de Frente"
+    ];
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -840,6 +854,7 @@ $categoriasCP = [
         <input type="hidden" id="baseDatos_PHP" value="<?php echo htmlspecialchars($dbName ?? '', ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true">
         <input type="hidden" id="semana_PHP" value="<?php echo (int) ($semana ?? 0); ?>" aria-hidden="true">
         <input type="hidden" id="permiso_canonico" value="<?php echo htmlspecialchars($permiso ?? '', ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true">
+        <input type="hidden" id="area_PHP" value="<?php echo htmlspecialchars($area ?? 'Construccion', ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true">
         <input type="hidden" id="scriptBarraFiltros" value="" aria-hidden="true">
     </div>
 
@@ -988,10 +1003,11 @@ $categoriasCP = [
                                             $dbInstance = Database::getInstance();
         $db = $_SESSION['db'];
         $semana = $_SESSION['semana'];
-        $query = "SELECT * FROM {$db}_programa_consolidado WHERE Semana=? AND Titulo=0 AND Semanas_Inicio<=12 AND Semanas_Inicio>=1 AND Ejecutado=0";
+        $tableName = TableResolver::resolveByPrefix($db, 'programa_consolidado');
+        $projectId = TableResolver::getProjectIdByPrefix($db);
+        $query = "SELECT * FROM {$tableName} WHERE Semana=? AND Titulo=0 AND Semanas_Inicio<=12 AND Semanas_Inicio>=1 AND Ejecutado=0";
         try {
-            $stmt = $dbInstance->prepare($query);
-            $stmt->execute([$semana]);
+            $stmt = $dbInstance->queryWithProject($query, [$semana], $projectId);
             while ($valores = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 $Actividad = strip_tags((string) ($valores["Actividad"] ?? ""));
                 $Actividad = str_replace('"', '\"', $Actividad);
@@ -1114,13 +1130,21 @@ $categoriasCP = [
                         <label for="psDeleteCategoriaCNP">Categoria</label>
                         <select id="psDeleteCategoriaCNP" class="form-control">
                             <option value=""></option>
-                            <option value="Programación">Programacion</option>
-                            <option value="Mano de Obra">Mano de Obra</option>
-                            <option value="Materiales">Materiales</option>
-                            <option value="Equipos">Equipos</option>
-                            <option value="Diseños">Diseños</option>
-                            <option value="Administrativas">Administrativas</option>
-                            <option value="Causas Exógenas">Causas Exógenas</option>
+                            <?php if (($area ?? 'Construccion') === 'Pre-Construccion'): ?>
+                                <option value="Diseños">Diseños</option>
+                                <option value="Modelación">Modelación</option>
+                                <option value="Presupuesto">Presupuesto</option>
+                                <option value="Contratación">Contratación</option>
+                                <option value="Trámites">Trámites</option>
+                            <?php else: ?>
+                                <option value="Programación">Programacion</option>
+                                <option value="Mano de Obra">Mano de Obra</option>
+                                <option value="Materiales">Materiales</option>
+                                <option value="Equipos">Equipos</option>
+                                <option value="Diseños">Diseños</option>
+                                <option value="Administrativas">Administrativas</option>
+                                <option value="Causas Exógenas">Causas Exógenas</option>
+                            <?php endif; ?>
                         </select>
                     </div>
                     <div class="form-group">
@@ -1141,7 +1165,7 @@ $categoriasCP = [
             </div>
         </div>
     </div>
-    
+
     <!-- Modal CNC (Handsontable Handler) -->
     <div class="modal fade aia-modal" id="modal_cnc_hot" role="dialog" data-backdrop="static">
         <div class="modal-dialog modal-md modal-dialog-centered" role="document">
@@ -1242,17 +1266,17 @@ $categoriasCP = [
             <?php endforeach; ?>
           </select>
         </div>
-        
+
         <div class="form-group">
           <label for="tnp_cp"><strong>CP (Detalle adicional)</strong></label>
           <input type="text" id="tnp_cp" class="form-control" maxlength="255" placeholder="Detalle opcional de la causa">
         </div>
-        
+
         <div class="form-group">
           <label for="tnp_ejecutado_real"><strong>Ejecutado Real *</strong></label>
           <input type="number" id="tnp_ejecutado_real" class="form-control" step="0.1" min="0.1" required placeholder="Cantidad ejecutada">
         </div>
-        
+
         <div class="form-group">
           <label for="tnp_observaciones_cp"><strong>Observaciones</strong></label>
           <textarea id="tnp_observaciones_cp" class="form-control" maxlength="500" rows="3" placeholder="Observaciones opcionales (máx. 500 caracteres)"></textarea>
@@ -1271,7 +1295,8 @@ $categoriasCP = [
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js" charset="utf-8"></script>
+    <script>window.__PROJECT_AREA__ = <?php echo json_encode($_SESSION['area'] ?? 'Construccion'); ?>;</script>
+	<script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js" charset="utf-8"></script>
     <script type="text/javascript" src="/js/funcionesGenerales6.js" charset="utf-8"></script>
 
     <script src="/public/vendor/handsontable/handsontable.full.min.js"></script>

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use PDO;
 use Throwable;
+use TableResolver;
 
 class ProjectProfessionalsSyncService
 {
@@ -35,6 +36,9 @@ class ProjectProfessionalsSyncService
             'deduplicated' => 0,
             'warnings' => [],
         ];
+
+        $tProf = TableResolver::resolveByPrefix($dbPrefix, 'profesionales');
+        $projectId = TableResolver::getProjectIdByPrefix($dbPrefix);
 
         $members = $this->fetchEligibleProjectMembers($dbPrefix);
         $seenMemberEmails = [];
@@ -85,10 +89,9 @@ class ProjectProfessionalsSyncService
 
                 if ($hasAdminDuplicates) {
                     if (!isset($existingByEmail[$email])) {
-                        $this->db->query(
-                            "INSERT INTO {$dbPrefix}_profesionales (nombre, email, cargo, activo) VALUES (?, ?, ?, 0)",
-                            [$nombre, $email, ''],
-                        );
+                        $sql = "INSERT INTO {$tProf} (nombre, email, cargo, activo) VALUES (?, ?, ?, 0)";
+                        [$sql, $params] = $this->db->insertProjectId($sql, $projectId ?? 0, [$nombre, $email, '']);
+                        $this->db->query($sql, $params);
 
                         $existingByEmail[$email] = [
                             'id' => (int) $this->db->lastInsertId(),
@@ -126,9 +129,10 @@ class ProjectProfessionalsSyncService
 
                         if (!empty($blockedFields)) {
                             $blockedParams[] = $existingByEmail[$email]['id'];
-                            $this->db->query(
-                                "UPDATE {$dbPrefix}_profesionales SET " . implode(', ', $blockedFields) . ' WHERE id = ?',
+                            $this->db->queryWithProject(
+                                "UPDATE {$tProf} SET " . implode(', ', $blockedFields) . ' WHERE id = ?',
                                 $blockedParams,
+                                $projectId,
                             );
                         }
                     }
@@ -142,10 +146,9 @@ class ProjectProfessionalsSyncService
                 }
 
                 if (!isset($existingByEmail[$email])) {
-                    $this->db->query(
-                        "INSERT INTO {$dbPrefix}_profesionales (nombre, email, cargo, activo) VALUES (?, ?, ?, 1)",
-                        [$nombre, $email, $cargo],
-                    );
+                    $sql = "INSERT INTO {$tProf} (nombre, email, cargo, activo) VALUES (?, ?, ?, 1)";
+                    [$sql, $params] = $this->db->insertProjectId($sql, $projectId ?? 0, [$nombre, $email, $cargo]);
+                    $this->db->query($sql, $params);
 
                     $existingByEmail[$email] = [
                         'id' => (int) $this->db->lastInsertId(),
@@ -181,9 +184,10 @@ class ProjectProfessionalsSyncService
 
                 if (!empty($fields)) {
                     $params[] = $existing['id'];
-                    $this->db->query(
-                        "UPDATE {$dbPrefix}_profesionales SET " . implode(', ', $fields) . ' WHERE id = ?',
+                    $this->db->queryWithProject(
+                        "UPDATE {$tProf} SET " . implode(', ', $fields) . ' WHERE id = ?',
                         $params,
+                        $projectId,
                     );
                     if ($nameChanged) {
                         $this->replaceProfessionalDependencies($dbPrefix, $existingName, $existing['nombre']);
@@ -217,9 +221,10 @@ class ProjectProfessionalsSyncService
 
                     if (!empty($duplicateFields)) {
                         $duplicateParams[] = $existing['id'];
-                        $this->db->query(
-                            "UPDATE {$dbPrefix}_profesionales SET " . implode(', ', $duplicateFields) . ' WHERE id = ?',
+                        $this->db->queryWithProject(
+                            "UPDATE {$tProf} SET " . implode(', ', $duplicateFields) . ' WHERE id = ?',
                             $duplicateParams,
+                            $projectId,
                         );
                     }
                     continue;
@@ -248,9 +253,10 @@ class ProjectProfessionalsSyncService
 
                 if (!empty($fields)) {
                     $params[] = $existing['id'];
-                    $this->db->query(
-                        "UPDATE {$dbPrefix}_profesionales SET " . implode(', ', $fields) . ' WHERE id = ?',
+                    $this->db->queryWithProject(
+                        "UPDATE {$tProf} SET " . implode(', ', $fields) . ' WHERE id = ?',
                         $params,
+                        $projectId,
                     );
 
                     if ($nameChanged) {
@@ -321,22 +327,27 @@ class ProjectProfessionalsSyncService
             return false;
         }
 
-        if (!$this->db->tableExists("{$dbPrefix}_profesionales")) {
+        $tProf = TableResolver::resolveByPrefix($dbPrefix, 'profesionales');
+        $projectId = TableResolver::getProjectIdByPrefix($dbPrefix);
+
+        if (!$this->db->tableExists($tProf)) {
             return false;
         }
 
-        $count = (int) $this->db->query(
-            "SELECT COUNT(*) FROM {$dbPrefix}_profesionales WHERE LOWER(TRIM(email)) = ?",
+        $count = (int) $this->db->queryWithProject(
+            "SELECT COUNT(*) FROM {$tProf} WHERE LOWER(TRIM(email)) = ?",
             [$normalizedEmail],
+            $projectId,
         )->fetchColumn();
 
         if ($count === 0) {
             return false;
         }
 
-        $this->db->query(
-            "UPDATE {$dbPrefix}_profesionales SET activo = 0 WHERE LOWER(TRIM(email)) = ?",
+        $this->db->queryWithProject(
+            "UPDATE {$tProf} SET activo = 0 WHERE LOWER(TRIM(email)) = ?",
             [$normalizedEmail],
+            $projectId,
         );
 
         return true;
@@ -454,8 +465,13 @@ class ProjectProfessionalsSyncService
     {
         $this->consolidateExistingProfessionals($dbPrefix, $summary);
 
-        $rows = $this->db->query(
-            "SELECT id, nombre, email, cargo, activo FROM {$dbPrefix}_profesionales ORDER BY id ASC",
+        $tProf = TableResolver::resolveByPrefix($dbPrefix, 'profesionales');
+        $projectId = TableResolver::getProjectIdByPrefix($dbPrefix);
+
+        $rows = $this->db->queryWithProject(
+            "SELECT id, nombre, email, cargo, activo FROM {$tProf} ORDER BY id ASC",
+            [],
+            $projectId,
         )->fetchAll(PDO::FETCH_ASSOC);
 
         $map = [];
@@ -480,8 +496,13 @@ class ProjectProfessionalsSyncService
 
     private function consolidateExistingProfessionals(string $dbPrefix, array &$summary): void
     {
-        $rows = $this->db->query(
-            "SELECT id, nombre, email, cargo, activo FROM {$dbPrefix}_profesionales ORDER BY id ASC",
+        $tProf = TableResolver::resolveByPrefix($dbPrefix, 'profesionales');
+        $projectId = TableResolver::getProjectIdByPrefix($dbPrefix);
+
+        $rows = $this->db->queryWithProject(
+            "SELECT id, nombre, email, cargo, activo FROM {$tProf} ORDER BY id ASC",
+            [],
+            $projectId,
         )->fetchAll(PDO::FETCH_ASSOC);
 
         $grouped = [];
@@ -511,15 +532,16 @@ class ProjectProfessionalsSyncService
 
                 $candidateName = $this->limpiarTexto($candidate['nombre'] ?? '');
                 if ($survivorName === '' && $candidateName !== '') {
-                    $this->db->query(
-                        "UPDATE {$dbPrefix}_profesionales SET nombre = ? WHERE id = ?",
+                    $this->db->queryWithProject(
+                        "UPDATE {$tProf} SET nombre = ? WHERE id = ?",
                         [$candidateName, $survivor['id']],
+                        $projectId,
                     );
                     $survivorName = $candidateName;
                 }
 
                 $this->replaceProfessionalDependencies($dbPrefix, $candidateName, $survivorName);
-                $this->db->query("DELETE FROM {$dbPrefix}_profesionales WHERE id = ?", [$candidate['id']]);
+                $this->db->queryWithProject("DELETE FROM {$tProf} WHERE id = ?", [$candidate['id']], $projectId);
                 $summary['deduplicated']++;
             }
 
@@ -553,11 +575,13 @@ class ProjectProfessionalsSyncService
             return 0;
         }
 
+        $projectId = TableResolver::getProjectIdByPrefix($dbPrefix);
         $total = 0;
         foreach ($this->getProfessionalDependencyTables($dbPrefix) as $table => $column) {
-            $total += (int) $this->db->query(
+            $total += (int) $this->db->queryWithProject(
                 "SELECT COUNT(*) FROM {$table} WHERE {$column} = ?",
                 [$nombre],
+                $projectId,
             )->fetchColumn();
         }
 
@@ -573,10 +597,12 @@ class ProjectProfessionalsSyncService
             return;
         }
 
+        $projectId = TableResolver::getProjectIdByPrefix($dbPrefix);
         foreach ($this->getProfessionalDependencyTables($dbPrefix) as $table => $column) {
-            $this->db->query(
+            $this->db->queryWithProject(
                 "UPDATE {$table} SET {$column} = ? WHERE {$column} = ?",
                 [$newName, $oldName],
+                $projectId,
             );
         }
     }
@@ -584,11 +610,11 @@ class ProjectProfessionalsSyncService
     private function getProfessionalDependencyTables(string $dbPrefix): array
     {
         $tables = [
-            "{$dbPrefix}_programa" => 'Responsable_AIA',
-            "{$dbPrefix}_programacion_semanal" => 'Responsable_AIA',
-            "{$dbPrefix}_programa_consolidado" => 'Responsable_AIA',
-            "{$dbPrefix}_cip" => 'profesional',
-            "{$dbPrefix}_indicadores_generales" => 'subcontratista_profesional',
+            TableResolver::resolveByPrefix($dbPrefix, 'programa') => 'Responsable_AIA',
+            TableResolver::resolveByPrefix($dbPrefix, 'programacion_semanal') => 'Responsable_AIA',
+            TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') => 'Responsable_AIA',
+            TableResolver::resolveByPrefix($dbPrefix, 'cip') => 'profesional',
+            TableResolver::resolveByPrefix($dbPrefix, 'indicadores_generales') => 'subcontratista_profesional',
         ];
 
         $existingTables = [];

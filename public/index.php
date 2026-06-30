@@ -10,6 +10,9 @@ require_once __DIR__ . '/../vendor/autoload.php';
 // Ajustamos la ruta para apuntar a la raíz del proyecto
 define('PROJECT_ROOT', dirname(__DIR__));
 
+require_once PROJECT_ROOT . '/src/Core/Database.php';
+require_once PROJECT_ROOT . '/src/Core/TableResolver.php';
+
 // 2.5 Iniciar Sesión Centralizada (necesaria antes del check de mantenimiento)
 if (session_status() === PHP_SESSION_NONE) {
     session_set_cookie_params([
@@ -47,8 +50,6 @@ if (!in_array($requestUri, $publicRoutes, true)) {
 
 // 4. Instanciar Conexión a Base de Datos (Singleton)
 use App\Core\Router;
-
-require_once PROJECT_ROOT . '/src/Core/Database.php';
 
 // Establecer la conexión globalmente si es necesario para código legacy mezclado
 // $db = Database::getInstance()->getConnection();

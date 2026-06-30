@@ -1,0 +1,642 @@
+{
+  "generated_at": "2026-06-25",
+  "generated_by": "Sisyphus-Junior query-inventory audit",
+  "purpose": "Wave 4 query migration scope estimation — Momus blocker #4 inventory of ALL PHP files that construct per-project table names dynamically",
+  "previous_estimate": "29 files (underestimated)",
+  "actual_count": "45 files with 460 query() calls",
+  "methodology": "Searched for {$dbName}, {$db}, {$dbPrefix}, {$p} patterns in PHP SQL strings across src/, views/, admin/",
+  "summary": {
+    "total_files": 45,
+    "total_query_calls": 460,
+    "by_layer": {
+      "Services": 6,
+      "Controllers": 21,
+      "Legacy": 12,
+      "Views": 3,
+      "Core": 2,
+      "Admin": 1
+    },
+    "by_operation": {
+      "SELECT": "present in all files (primary operation)",
+      "INSERT": "present in ~18 files",
+      "UPDATE": "present in ~28 files",
+      "DELETE": "present in ~12 files"
+    }
+  },
+  "files": [
+    {
+      "path": "src/Services/ReportProcessor.php",
+      "layer": "Services",
+      "query_calls": 50,
+      "table_patterns": ["{$dbName}_"],
+      "tables": [
+        "{$dbName}_programacion_semanal",
+        "{$dbName}_programa_consolidado",
+        "{$dbName}_cic",
+        "{$dbName}_cip",
+        "{$dbName}_subcontratistas",
+        "{$dbName}_profesionales"
+      ],
+      "operations": ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      "complexity": "complex",
+      "migration_notes": "Heaviest service file. 50 query() calls across 6+ project tables. Also uses deleteRowsNotInProcessedEntities() helper that accepts $dbName-prefixed table names. Critical migration target."
+    },
+    {
+      "path": "src/Services/ProjectLandingService.php",
+      "layer": "Services",
+      "query_calls": 2,
+      "table_patterns": ["{$dbName}_"],
+      "tables": [
+        "{$dbName}_semanas_activas",
+        "{$dbName}_programacion_semanal"
+      ],
+      "operations": ["SELECT"],
+      "complexity": "simple",
+      "migration_notes": "2 SELECT queries only. Low complexity."
+    },
+    {
+      "path": "src/Services/ProgramChangeDetector.php",
+      "layer": "Services",
+      "query_calls": 18,
+      "table_patterns": ["{$dbPrefix}_"],
+      "tables": [
+        "{$dbPrefix}_programacion_semanal",
+        "{$dbPrefix}_auto_program_log"
+      ],
+      "operations": ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      "complexity": "complex",
+      "migration_notes": "18 query() calls across project tables. Includes DELETE JOIN operations."
+    },
+    {
+      "path": "src/Services/ProgramaConsolidadoNormalizationService.php",
+      "layer": "Services",
+      "query_calls": 1,
+      "table_patterns": ["{$dbPrefix}_"],
+      "tables": [
+        "{$dbPrefix}_programa_consolidado"
+      ],
+      "operations": ["UPDATE"],
+      "complexity": "simple",
+      "migration_notes": "Single UPDATE query. Low complexity."
+    },
+    {
+      "path": "src/Services/ProjectProfessionalsSyncService.php",
+      "layer": "Services",
+      "query_calls": 18,
+      "table_patterns": ["{$dbPrefix}_"],
+      "tables": [
+        "{$dbPrefix}_profesionales",
+        "project_members",
+        "general_usuarios"
+      ],
+      "operations": ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      "complexity": "medium",
+      "migration_notes": "Mix of project-specific ({$dbPrefix}_profesionales) and system tables."
+    },
+    {
+      "path": "src/Services/WeeklyRealProgressCarryoverService.php",
+      "layer": "Services",
+      "query_calls": 4,
+      "table_patterns": ["{$dbPrefix}_"],
+      "tables": [
+        "{$dbPrefix}_programa_consolidado",
+        "{$dbPrefix}_programacion_semanal"
+      ],
+      "operations": ["SELECT", "UPDATE"],
+      "complexity": "medium",
+      "migration_notes": "4 query() calls over project tables. Multiple sub-queries per call."
+    },
+    {
+      "path": "src/Controllers/Api/CicApiController.php",
+      "layer": "Controllers",
+      "query_calls": 22,
+      "table_patterns": ["{$db}_"],
+      "tables": [
+        "{$db}_programacion_semanal",
+        "{$db}_cic",
+        "{$db}_subcontratistas"
+      ],
+      "operations": ["SELECT", "INSERT", "UPDATE"],
+      "complexity": "complex",
+      "migration_notes": "22 query() calls with {$db} variable (from $_SESSION). Complex sub-queries for cumulative averages. Uses variable $subSafe interpolation in SQL strings (security review needed)."
+    },
+    {
+      "path": "src/Controllers/Api/CncApiController.php",
+      "layer": "Controllers",
+      "query_calls": 3,
+      "table_patterns": ["{$dbPrefix}_"],
+      "tables": [
+        "{$dbPrefix}_programacion_semanal",
+        "general_cnc"
+      ],
+      "operations": ["SELECT", "UPDATE"],
+      "complexity": "simple",
+      "migration_notes": "3 query() calls, 2 on {$dbPrefix}_ tables."
+    },
+    {
+      "path": "src/Controllers/Api/CnpApiController.php",
+      "layer": "Controllers",
+      "query_calls": 3,
+      "table_patterns": ["{$dbPrefix}_"],
+      "tables": [
+        "{$dbPrefix}_programacion_semanal"
+      ],
+      "operations": ["SELECT", "UPDATE"],
+      "complexity": "simple",
+      "migration_notes": "3 query() calls, all on {$dbPrefix}_ tables."
+    },
+    {
+      "path": "src/Controllers/Api/ContratosApiController.php",
+      "layer": "Controllers",
+      "query_calls": 30,
+      "table_patterns": ["{$dbPrefix}_", "{$p}_"],
+      "tables": [
+        "{$dbPrefix}_semanas_activas",
+        "{$dbPrefix}_pdc",
+        "{$dbPrefix}_subcontratistas",
+        "{$p}_pdc",
+        "{$p}_papelera_pdc",
+        "{$p}_subcontratistas"
+      ],
+      "operations": ["SELECT", "INSERT", "UPDATE"],
+      "complexity": "complex",
+      "migration_notes": "30 query() calls. Uses both {$dbPrefix} and {$p} patterns (aliases for same value). Complex PDC update logic with multi-table JOINs."
+    },
+    {
+      "path": "src/Controllers/Api/ControlCambiosApiController.php",
+      "layer": "Controllers",
+      "query_calls": 8,
+      "table_patterns": ["{$dbPrefix}_"],
+      "tables": [
+        "{$dbPrefix}_cambios",
+        "{$dbPrefix}_programa_consolidado"
+      ],
+      "operations": ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      "complexity": "medium",
+      "migration_notes": "8 query() calls on project tables."
+    },
+    {
+      "path": "src/Controllers/Api/GeneralApiController.php",
+      "layer": "Controllers",
+      "query_calls": 1,
+      "table_patterns": ["{$dbPrefix}_"],
+      "tables": [
+        "{$dbPrefix}_semanas_activas",
+        "{$dbPrefix}_programa_consolidado",
+        "{$dbPrefix}_programacion_semanal"
+      ],
+      "operations": ["SELECT", "UPDATE"],
+      "complexity": "complex",
+      "migration_notes": "Uses both ->query() and ->prepare() patterns. Heavy reliance on prepare()+execute() pattern (also constructs dynamic table names). 1 query() + many prepare() calls."
+    },
+    {
+      "path": "src/Controllers/Api/IndicadoresApiController.php",
+      "layer": "Controllers",
+      "query_calls": 14,
+      "table_patterns": ["{$dbName}_"],
+      "tables": [
+        "{$dbName}_indicadores_generales",
+        "{$dbName}_programacion_semanal",
+        "{$dbName}_cic",
+        "{$dbName}_cip"
+      ],
+      "operations": ["SELECT", "INSERT", "UPDATE"],
+      "complexity": "complex",
+      "migration_notes": "14 query() calls with complex sub-queries for indicator calculation. Multi-table aggregation logic."
+    },
+    {
+      "path": "src/Controllers/Api/ListadoActividadesApiController.php",
+      "layer": "Controllers",
+      "query_calls": 17,
+      "table_patterns": ["{$dbPrefix}_"],
+      "tables": [
+        "{$dbPrefix}_programa_consolidado",
+        "{$dbPrefix}_programacion_semanal",
+        "{$dbPrefix}_semanas_activas",
+        "{$dbPrefix}_actividades",
+        "{$dbPrefix}_subcontratistas",
+        "{$dbPrefix}_profesionales"
+      ],
+      "operations": ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      "complexity": "complex",
+      "migration_notes": "17 query() calls across 6+ project tables. Mixed operations."
+    },
+    {
+      "path": "src/Controllers/Api/PdcApiController.php",
+      "layer": "Controllers",
+      "query_calls": 23,
+      "table_patterns": ["{$dbPrefix}_", "{$p}_"],
+      "tables": [
+        "{$dbPrefix}_pdc",
+        "{$dbPrefix}_semanas_activas",
+        "{$dbPrefix}_subcontratistas",
+        "{$p}_pdc",
+        "{$p}_papelera_pdc",
+        "{$p}_subcontratistas"
+      ],
+      "operations": ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      "complexity": "complex",
+      "migration_notes": "23 query() calls with both {$dbPrefix} and {$p} patterns. PDC management with recycle bin logic."
+    },
+    {
+      "path": "src/Controllers/Api/PdcAutoGenerateController.php",
+      "layer": "Controllers",
+      "query_calls": 19,
+      "table_patterns": ["{$dbPrefix}_"],
+      "tables": [
+        "{$dbPrefix}_pdc",
+        "{$dbPrefix}_semanas_activas",
+        "{$dbPrefix}_actividades",
+        "{$dbPrefix}_subcontratistas"
+      ],
+      "operations": ["SELECT", "INSERT", "UPDATE"],
+      "complexity": "complex",
+      "migration_notes": "19 query() calls for auto-generating PDC entries from activity data."
+    },
+    {
+      "path": "src/Controllers/Api/PgBreadcrumbController.php",
+      "layer": "Controllers",
+      "query_calls": 5,
+      "table_patterns": ["{$dbPrefix}_"],
+      "tables": [
+        "{$dbPrefix}_semanas_activas",
+        "{$dbPrefix}_programa_consolidado"
+      ],
+      "operations": ["SELECT", "UPDATE"],
+      "complexity": "simple",
+      "migration_notes": "5 query() calls, lightweight breadcrumb data retrieval."
+    },
+    {
+      "path": "src/Controllers/Api/ProfesionalesApiController.php",
+      "layer": "Controllers",
+      "query_calls": 12,
+      "table_patterns": ["{$dbPrefix}_"],
+      "tables": [
+        "{$dbPrefix}_profesionales",
+        "{$dbPrefix}_programacion_semanal",
+        "{$dbPrefix}_semanas_activas"
+      ],
+      "operations": ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      "complexity": "medium",
+      "migration_notes": "12 query() calls on {$dbPrefix}_ profesionales and related tables."
+    },
+    {
+      "path": "src/Controllers/Api/SemanalApiController.php",
+      "layer": "Controllers",
+      "query_calls": 59,
+      "table_patterns": ["{$dbPrefix}_"],
+      "tables": [
+        "{$dbPrefix}_programacion_semanal",
+        "{$dbPrefix}_programa_consolidado",
+        "{$dbPrefix}_semanas_activas"
+      ],
+      "operations": ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      "complexity": "complex",
+      "migration_notes": "59 query() calls — the single heaviest file. Full CRUD on programacion_semanal with restriction config. Uses RestrictionConfigResolver::resolve($dbPrefix) for dynamic restriction columns."
+    },
+    {
+      "path": "src/Controllers/Api/SubcontratistasApiController.php",
+      "layer": "Controllers",
+      "query_calls": 15,
+      "table_patterns": ["{$dbPrefix}_"],
+      "tables": [
+        "{$dbPrefix}_subcontratistas",
+        "{$dbPrefix}_pdc",
+        "{$dbPrefix}_programacion_semanal",
+        "{$dbPrefix}_semanas_activas"
+      ],
+      "operations": ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      "complexity": "medium",
+      "migration_notes": "15 query() calls across project subcontratistas and related PDC tables."
+    },
+    {
+      "path": "src/Controllers/Gestion/ListadoActividadesController.php",
+      "layer": "Controllers",
+      "query_calls": 1,
+      "table_patterns": ["{$dbName}_"],
+      "tables": [
+        "{$dbName}_semanas_activas"
+      ],
+      "operations": ["SELECT"],
+      "complexity": "simple",
+      "migration_notes": "Single SELECT query. $dbName from extract($vars)."
+    },
+    {
+      "path": "src/Controllers/Gestion/PdcController.php",
+      "layer": "Controllers",
+      "query_calls": 1,
+      "table_patterns": ["{$dbName}_"],
+      "tables": [
+        "{$dbName}_semanas_activas"
+      ],
+      "operations": ["SELECT"],
+      "complexity": "simple",
+      "migration_notes": "Single SELECT query. $dbName from extract($vars)."
+    },
+    {
+      "path": "src/Controllers/Gestion/ReportController.php",
+      "layer": "Controllers",
+      "query_calls": 12,
+      "table_patterns": ["{$dbName}_"],
+      "tables": [
+        "{$dbName}_programa_consolidado",
+        "{$dbName}_semanas_activas",
+        "{$dbName}_programacion_semanal",
+        "{$dbName}_cambios",
+        "{$dbName}_profesionales",
+        "{$dbName}_subcontratistas"
+      ],
+      "operations": ["SELECT", "INSERT", "UPDATE"],
+      "complexity": "complex",
+      "migration_notes": "12 query() calls across 6 tables. Heavy Excel report generation. Uses RestrictionConfigResolver. Also constructs filenames with {$dbName} prefix."
+    },
+    {
+      "path": "src/Controllers/Programacion/ProgramaGeneralActualizarController.php",
+      "layer": "Controllers",
+      "query_calls": 2,
+      "table_patterns": ["{$dbName}_"],
+      "tables": [
+        "{$dbName}_semanas_activas",
+        "{$dbName}_programa_consolidado"
+      ],
+      "operations": ["SELECT"],
+      "complexity": "simple",
+      "migration_notes": "2 SELECT queries. Also uses ->prepare() pattern."
+    },
+    {
+      "path": "src/Controllers/Programacion/ProgramaGeneralController.php",
+      "layer": "Controllers",
+      "query_calls": 1,
+      "table_patterns": ["{$dbName}_"],
+      "tables": [
+        "{$dbName}_semanas_activas"
+      ],
+      "operations": ["SELECT"],
+      "complexity": "simple",
+      "migration_notes": "Single SELECT with sub-query. Also has prepare() calls."
+    },
+    {
+      "path": "src/Controllers/Programacion/ProgramacionIntermediaController.php",
+      "layer": "Controllers",
+      "query_calls": 4,
+      "table_patterns": ["{$dbName}_"],
+      "tables": [
+        "{$dbName}_subcontratistas",
+        "{$dbName}_profesionales"
+      ],
+      "operations": ["SELECT", "INSERT", "UPDATE"],
+      "complexity": "medium",
+      "migration_notes": "4 query() calls. Also has prepare() calls for UPDATE and INSERT."
+    },
+    {
+      "path": "src/Controllers/Programacion/ProgramacionSemanalController.php",
+      "layer": "Controllers",
+      "query_calls": 2,
+      "table_patterns": ["{$dbName}_"],
+      "tables": [
+        "{$dbName}_subcontratistas",
+        "{$dbName}_profesionales"
+      ],
+      "operations": ["SELECT"],
+      "complexity": "simple",
+      "migration_notes": "2 SELECT queries."
+    },
+    {
+      "path": "src/Legacy/nueva_semana.php",
+      "layer": "Legacy",
+      "query_calls": 17,
+      "table_patterns": ["{$db}_"],
+      "tables": [
+        "{$db}_semanas_activas",
+        "{$db}_programa_consolidado",
+        "{$db}_programa",
+        "{$db}_pdc"
+      ],
+      "operations": ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      "complexity": "complex",
+      "migration_notes": "17 query() calls. Complex week creation logic with program copy, reset, and reprog flags. Heavy multi-table operations."
+    },
+    {
+      "path": "src/Legacy/autoprogramar_actividades.php",
+      "layer": "Legacy",
+      "query_calls": 14,
+      "table_patterns": ["{$dbName}_"],
+      "tables": [
+        "{$dbName}_semanas_activas",
+        "{$dbName}_programacion_semanal",
+        "{$dbName}_programa_consolidado"
+      ],
+      "operations": ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      "complexity": "complex",
+      "migration_notes": "14 query() calls. Auto-scheduling logic with multi-table JOIN UPDATE."
+    },
+    {
+      "path": "src/Legacy/actualizar_pdc.php",
+      "layer": "Legacy",
+      "query_calls": 9,
+      "table_patterns": ["{$dbName}_"],
+      "tables": [
+        "{$dbName}_pdc",
+        "{$dbName}_actividades"
+      ],
+      "operations": ["SELECT", "UPDATE", "DELETE"],
+      "complexity": "complex",
+      "migration_notes": "9 query() calls. Complex PDC update with UNION sub-queries and conditional DELETE."
+    },
+    {
+      "path": "src/Legacy/_pdc_functions.php",
+      "layer": "Legacy",
+      "query_calls": 8,
+      "table_patterns": ["{$dbName}_", "{$prefix}_"],
+      "tables": [
+        "{$dbName}_pdc",
+        "{$dbName}_actividades",
+        "{$dbName}_semanas_activas"
+      ],
+      "operations": ["SELECT", "INSERT", "UPDATE"],
+      "complexity": "complex",
+      "migration_notes": "8 query() calls. Also uses {$prefix} for dynamic column names (paquete{$prefix}1-5). PDC contract package detection queries."
+    },
+    {
+      "path": "src/Legacy/modificar_sem_estado.php",
+      "layer": "Legacy",
+      "query_calls": 7,
+      "table_patterns": ["{$dbName}_"],
+      "tables": [
+        "{$dbName}_programa_consolidado",
+        "{$dbName}_semanas_activas"
+      ],
+      "operations": ["SELECT", "UPDATE"],
+      "complexity": "medium",
+      "migration_notes": "7 query() calls. Estado update logic with prepared statement helpers."
+    },
+    {
+      "path": "src/Legacy/actualizarEjecucion.php",
+      "layer": "Legacy",
+      "query_calls": 2,
+      "table_patterns": ["{$dbName}_"],
+      "tables": [
+        "{$dbName}_programacion_semanal",
+        "{$dbName}_programa_consolidado"
+      ],
+      "operations": ["SELECT", "UPDATE"],
+      "complexity": "simple",
+      "migration_notes": "2 query() calls."
+    },
+    {
+      "path": "src/Legacy/datosGeneralesPagina.php",
+      "layer": "Legacy",
+      "query_calls": 4,
+      "table_patterns": ["{$dbName}_"],
+      "tables": [
+        "{$dbName}_semanas_activas"
+      ],
+      "operations": ["SELECT"],
+      "complexity": "simple",
+      "migration_notes": "4 SELECT queries on semanas_activas."
+    },
+    {
+      "path": "src/Legacy/eliminar_semana.php",
+      "layer": "Legacy",
+      "query_calls": 2,
+      "table_patterns": ["{$dbName}_"],
+      "tables": [
+        "{$dbName}_semanas_activas",
+        "{$dbName}_programa_consolidado",
+        "{$dbName}_programacion_semanal",
+        "{$dbName}_cic",
+        "{$dbName}_pdc",
+        "{$dbName}_actividades"
+      ],
+      "operations": ["SELECT", "DELETE"],
+      "complexity": "medium",
+      "migration_notes": "2 query() calls + array of 6 {$dbName}_ table names for dynamic DELETE loop. Also references table name keys in an associative array."
+    },
+    {
+      "path": "src/Legacy/guardar_programacion_intermedia.php",
+      "layer": "Legacy",
+      "query_calls": 1,
+      "table_patterns": ["{$dbPrefix}_"],
+      "tables": [
+        "{$dbPrefix}_programa_consolidado",
+        "{$dbPrefix}_semanas_activas"
+      ],
+      "operations": ["SELECT", "UPDATE"],
+      "complexity": "medium",
+      "migration_notes": "1 query() + 9 prepare() calls on {$dbPrefix}_ tables. The prepare() calls also construct dynamic table names."
+    },
+    {
+      "path": "src/Legacy/modificar_sem_estado_actualizar.php",
+      "layer": "Legacy",
+      "query_calls": 6,
+      "table_patterns": ["{$db}_"],
+      "tables": [
+        "{$db}_semanas_activas",
+        "{$db}_programa_consolidado"
+      ],
+      "operations": ["SELECT", "UPDATE"],
+      "complexity": "medium",
+      "migration_notes": "6 query() calls on {$db}_ tables."
+    },
+    {
+      "path": "src/Legacy/productividad_temporal.php",
+      "layer": "Legacy",
+      "query_calls": 2,
+      "table_patterns": ["{$dbPrefix}_"],
+      "tables": [
+        "{$dbPrefix}_semanas_activas",
+        "{$dbPrefix}_programa_consolidado",
+        "{$dbPrefix}_programacion_semanal"
+      ],
+      "operations": ["SELECT", "UPDATE"],
+      "complexity": "medium",
+      "migration_notes": "2 query() calls + information_schema queries for dynamic column discovery."
+    },
+    {
+      "path": "src/Legacy/verificarCICActualizada.php",
+      "layer": "Legacy",
+      "query_calls": 3,
+      "table_patterns": ["{$db}_"],
+      "tables": [
+        "{$db}_cic"
+      ],
+      "operations": ["SELECT"],
+      "complexity": "medium",
+      "migration_notes": "3 SELECT queries on {$db}_cic with dynamic sub-query for cumulative stats."
+    },
+    {
+      "path": "src/Core/TableResolver.php",
+      "layer": "Core",
+      "query_calls": 2,
+      "table_patterns": ["general_proyectos_procesos", "prefix + suffix"],
+      "tables": [
+        "general_proyectos_procesos"
+      ],
+      "operations": ["SELECT"],
+      "complexity": "medium",
+      "migration_notes": "KEY FILE — This IS the TableResolver that other files depend on. It queries general_proyectos_procesos for the project's Base_de_Datos prefix and constructs `{prefix}_{tableType}`. Migration target: replace with new resolver."
+    },
+    {
+      "path": "src/Core/Lps/LpsService.php",
+      "layer": "Core",
+      "query_calls": 2,
+      "table_patterns": ["information_schema"],
+      "tables": [
+        "information_schema.COLUMNS",
+        "dynamic UPDATE on project table names"
+      ],
+      "operations": ["SELECT", "UPDATE"],
+      "complexity": "medium",
+      "migration_notes": "Uses information_schema to discover programacion_semanal/programa_consolidado tables dynamically. Direct UPDATE on discovered table names. Migration edge case."
+    },
+    {
+      "path": "views/listado-actividades/listadoActividades.view.php",
+      "layer": "Views",
+      "query_calls": 1,
+      "table_patterns": ["{$dbPrefixListadoActividades}_"],
+      "tables": [
+        "{$dbPrefixListadoActividades}_programa_consolidado"
+      ],
+      "operations": ["SELECT"],
+      "complexity": "simple",
+      "migration_notes": "1 SELECT query in view file. Uses $_SESSION['db'] for prefix."
+    },
+    {
+      "path": "views/programa-general-actualizar/programaGeneralActualizar.view.php",
+      "layer": "Views",
+      "query_calls": 1,
+      "table_patterns": ["{$dbPrefix}_"],
+      "tables": [
+        "{$dbPrefix}_programa_consolidado"
+      ],
+      "operations": ["SELECT"],
+      "complexity": "simple",
+      "migration_notes": "1 SELECT query in view file. Uses $_SESSION['db'] for prefix."
+    },
+    {
+      "path": "views/programacion-semanal/CNP.view.php",
+      "layer": "Views",
+      "query_calls": 1,
+      "table_patterns": ["{$db}_"],
+      "tables": [
+        "{$db}_profesionales"
+      ],
+      "operations": ["SELECT"],
+      "complexity": "simple",
+      "migration_notes": "1 SELECT query in view file. Uses $_SESSION['db'] for prefix."
+    },
+    {
+      "path": "admin/src/Models/Project.php",
+      "layer": "Admin",
+      "query_calls": 31,
+      "table_patterns": ["{$this->table} (general_proyectos_procesos)", "{$prefix}{$suffix}"],
+      "tables": [
+        "general_proyectos_procesos",
+        "{$prefix}{$suffix} (dynamic project tables)"
+      ],
+      "operations": ["SELECT", "INSERT", "UPDATE", "DELETE", "DDL (DROP, CREATE, RENAME)"],
+      "complexity": "complex",
+      "migration_notes": "31 query() calls. Core admin model for project management. Constructs project table names from Base_de_Datos + suffix for backup, restore, rename, clone operations. Also uses SHOW TABLES, SHOW CREATE TABLE, DROP TABLE, RENAME TABLE — DDL operations that need special handling."
+    }
+  ]
+}

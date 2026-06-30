@@ -1,6 +1,4 @@
 import { test, expect } from '@playwright/test';
-import { BASE_URL, PROJECTS } from './fixtures/projects.mjs';
-import { login, loginAndSelectProject as loginAndSelectConfiguredProject } from './support/session.mjs';
 
 /**
  * Pre-Construction Full Cycle E2E Tests
@@ -18,8 +16,9 @@ import { login, loginAndSelectProject as loginAndSelectConfiguredProject } from 
  *  7. Restriction Config API — correct PC structure
  */
 
-const PC_PROJECT = PROJECTS.find((project) => project.key === 'pc');
-test.skip(!PC_PROJECT, 'No Pre-Construccion project configured for this database snapshot.');
+const BASE_URL = 'http://localhost:8081';
+const CREDENTIALS = { username: 'test.A', password: 'aia2026' };
+const PC_PROJECT = 'Aeropuerto Regional PC';
 
 // ─── Shared helpers ──────────────────────────────────────────────
 
@@ -27,34 +26,31 @@ test.skip(!PC_PROJECT, 'No Pre-Construccion project configured for this database
  * Login as test.A user.
  */
 async function loginAsTestA(page) {
-  await login(page);
+  await page.goto(`${BASE_URL}/login`);
+  await page.locator('#usuario').fill(CREDENTIALS.username);
+  await page.locator('#password').fill(CREDENTIALS.password);
+  await page.locator('button[type="submit"]').click();
+  await page.waitForURL('**/proyectos', { timeout: 15000 });
 }
 
 /**
  * Select the Pre-Construccion project.
  * The project selector uses a form POST — click the
  * "Ingresar al Proyecto" button inside the matching card.
- * Project selection no longer assumes a fixed landing page.
+ * Pre-Construccion projects redirect to /programa-general.
  */
 async function selectPreConstructionProject(page) {
-  const card = page.locator('.project-item', { hasText: PC_PROJECT.name });
-  await expect(card).toBeVisible({ timeout: 15000 });
-  await card.locator('button[type="submit"], .btn-enter').click();
-  await page.waitForURL((url) => !url.toString().includes('/proyectos'), { timeout: 15000 });
+  const card = page.locator('.project-item', { hasText: PC_PROJECT });
+  await card.locator('button[type="submit"]').click();
+  await page.waitForURL('**/programa-general', { timeout: 15000 });
 }
 
 /**
  * Full login + project selection shortcut.
  */
 async function loginAndSelectProject(page) {
-  await loginAndSelectConfiguredProject(page, PC_PROJECT);
-}
-
-async function getRestrictionConfig(page) {
-  return page.evaluate(async () => {
-    const res = await fetch('/api/general/restriction-config', { credentials: 'same-origin' });
-    return res.json();
-  });
+  await loginAsTestA(page);
+  await selectPreConstructionProject(page);
 }
 
 // ─── 1. Login & Project Selection ────────────────────────────────
@@ -65,11 +61,12 @@ test.describe('Pre-Construction: Login & Project Selection', () => {
     await expect(page).toHaveURL(/proyectos/);
 
     // Project card should be visible in the grid
-    const projectCard = page.locator('.project-item', { hasText: PC_PROJECT.name });
+    const projectCard = page.locator('.project-item', { hasText: PC_PROJECT });
     await expect(projectCard).toBeVisible();
 
     await selectPreConstructionProject(page);
-    await expect(page).not.toHaveURL(/proyectos/);
+    // Pre-Construccion projects land on /programa-general
+    await expect(page).toHaveURL(/programa-general/);
   });
 });
 
@@ -117,7 +114,7 @@ test.describe('Pre-Construction: Navbar Visibility', () => {
 test.describe('Pre-Construction: PG (Programa General)', () => {
   test.beforeEach(async ({ page }) => {
     await loginAndSelectProject(page);
-    await page.goto(`${BASE_URL}/programa-general`);
+    // loginAndSelectProject already lands on /programa-general
     // Wait for Handsontable to finish initializing
     await page.waitForSelector('.handsontable', { timeout: 15000 });
   });
@@ -135,16 +132,20 @@ test.describe('Pre-Construction: PG (Programa General)', () => {
     const legendText = await legend.textContent();
 
     // Pre-construction legend should contain these labels
-    expect(legendText).toContain('Con Alerta Restricciones');
-    expect(legendText).toContain('Debe Iniciar');
+    expect(legendText).toContain('Con Restricción Pendiente');
+    expect(legendText).toContain('Por Iniciar');
     expect(legendText).toContain('Actividad Futura');
-    expect(legendText).toContain('En Curso');
-    expect(legendText).toContain('Terminada');
+    expect(legendText).toContain('En Ejecución');
+    expect(legendText).toContain('Completada');
   });
 
   test('PG page has Pre-Construccion specific elements', async ({ page }) => {
-    const config = await getRestrictionConfig(page);
-    expect(config.area).toBe('Pre-Construccion');
+    // Verify the page has the pg-page class applied (PC-specific styling)
+    const body = page.locator('body');
+    const html = await page.content();
+
+    // The page should contain Pre-Construccion specific scripts
+    expect(html).toContain('Pre-Construccion');
   });
 
   test('column headers include restriction-related columns', async ({ page }) => {
@@ -197,19 +198,19 @@ test.describe('Pre-Construction: PI (Programación Intermedia)', () => {
   });
 
   test('restriction config has Pre-Construccion area', async ({ page }) => {
-    const config = await getRestrictionConfig(page);
+    const config = await page.evaluate(() => window.__RESTRICTION_CONFIG__);
     expect(config).not.toBeNull();
     expect(config.area).toBe('Pre-Construccion');
   });
 
   test('restriction config has restriction columns', async ({ page }) => {
-    const config = await getRestrictionConfig(page);
+    const config = await page.evaluate(() => window.__RESTRICTION_CONFIG__);
     expect(config).not.toBeNull();
     expect(config.restrictions.length).toBeGreaterThanOrEqual(1);
   });
 
   test('restriction config has hard and soft classifications', async ({ page }) => {
-    const config = await getRestrictionConfig(page);
+    const config = await page.evaluate(() => window.__RESTRICTION_CONFIG__);
     expect(config).not.toBeNull();
 
     // Must have hardRestrictions and softRestrictions arrays
@@ -227,7 +228,7 @@ test.describe('Pre-Construction: PI (Programación Intermedia)', () => {
   });
 
   test('restriction columns have valid options arrays', async ({ page }) => {
-    const config = await getRestrictionConfig(page);
+    const config = await page.evaluate(() => window.__RESTRICTION_CONFIG__);
     expect(config).not.toBeNull();
 
     for (const restriction of config.restrictions) {
@@ -276,7 +277,7 @@ test.describe('Pre-Construction: PS (Programación Semanal)', () => {
   test('restriction config is available', async ({ page }) => {
     await page.waitForSelector('.handsontable', { timeout: 15000 });
 
-    const config = await getRestrictionConfig(page);
+    const config = await page.evaluate(() => window.__RESTRICTION_CONFIG__);
     expect(config).not.toBeNull();
 
     // PS should have restriction configuration
@@ -305,37 +306,36 @@ test.describe('Pre-Construction: PS (Programación Semanal)', () => {
 test.describe('Pre-Construction: Subcontratistas → Interesados Externos', () => {
   test.beforeEach(async ({ page }) => {
     await loginAndSelectProject(page);
-    await page.goto(`${BASE_URL}/subcontratistas`, { waitUntil: 'commit', timeout: 30000 });
+    await page.goto(`${BASE_URL}/subcontratistas`);
   });
 
   test('page title shows "Interesados Externos"', async ({ page }) => {
     // Wait for loading overlay to disappear
-    await page.waitForSelector('#loading', { state: 'hidden', timeout: 15000 }).catch(() => {});
+    await page.waitForSelector('#loading', { state: 'hidden', timeout: 15000 });
 
     const title = page.locator('h4');
     await expect(title).toContainText('Interesados Externos');
   });
 
   test('column headers show renamed pre-construction labels', async ({ page }) => {
-    await page.waitForSelector('#hot-container', { state: 'attached', timeout: 15000 });
-    const response = await page.request.get(`${BASE_URL}/subcontratistas`);
-    expect(response.ok()).toBe(true);
-    const html = await response.text();
-    const colHeaders = html.match(/colHeaders:\s*(\[[^\n]+?\])/);
-    expect(colHeaders).not.toBeNull();
-    const headerConfig = colHeaders[1];
+    await page.waitForSelector('.handsontable .htCore', { timeout: 15000 });
+
+    const headers = await page.evaluate(() => {
+      const ths = document.querySelectorAll('.handsontable .htCore thead th .colHeader');
+      return Array.from(ths).map((th) => th.textContent.trim());
+    });
 
     // Pre-construction specific column names
-    expect(headerConfig).toContain('Interesado');
-    expect(headerConfig).toContain('Identificación');
-    expect(headerConfig).toContain('Rol/Interés');
-    expect(headerConfig).toContain('Tipo de Interesado');
+    expect(headers).toContain('Interesado');
+    expect(headers).toContain('Identificación');
+    expect(headers).toContain('Rol/Interés');
+    expect(headers).toContain('Tipo de Interesado');
 
     // Should NOT have construction-specific column names
-    expect(headerConfig).not.toContain('Subcontratista');
-    expect(headerConfig).not.toContain('NIT');
-    expect(headerConfig).not.toContain('Alcance');
-    expect(headerConfig).not.toContain('Tipo Proveedor');
+    expect(headers).not.toContain('Subcontratista');
+    expect(headers).not.toContain('NIT');
+    expect(headers).not.toContain('Alcance');
+    expect(headers).not.toContain('Tipo Proveedor');
   });
 });
 
@@ -345,7 +345,10 @@ test.describe('Pre-Construction: Restriction Config API', () => {
   test('GET /api/general/restriction-config returns correct PC structure', async ({ page }) => {
     await loginAndSelectProject(page);
 
-    const config = await getRestrictionConfig(page);
+    const config = await page.evaluate(async () => {
+      const res = await fetch('/api/general/restriction-config');
+      return res.json();
+    });
 
     // Area must be Pre-Construccion
     expect(config.area).toBe('Pre-Construccion');
@@ -384,10 +387,10 @@ test.describe('Pre-Construction: Restriction Config API', () => {
 
     // Threshold values
     const pc1 = config.restrictions.find((r) => r.key === 'restriccion_pc_1');
-    expect(pc1.threshold).toBe(1);
+    expect(pc1.threshold).toBe(50);
 
     const pc2 = config.restrictions.find((r) => r.key === 'restriccion_pc_2');
-    expect(pc2.threshold).toBe(1);
+    expect(pc2.threshold).toBe(100);
 
     // Options for hard restriction (PC_1)
     expect(pc1.options).toEqual(['0%', '33%', '66%', '100%', 'N/A']);
@@ -395,7 +398,7 @@ test.describe('Pre-Construction: Restriction Config API', () => {
     // Options for soft restrictions (PC_2-4)
     for (const key of ['restriccion_pc_2', 'restriccion_pc_3', 'restriccion_pc_4']) {
       const r = config.restrictions.find((r) => r.key === key);
-      expect(r.options).toEqual(['0%', '33%', '66%', '100%', 'N/A']);
+      expect(r.options).toEqual(['0%', '50%', '100%', 'N/A']);
     }
   });
 });

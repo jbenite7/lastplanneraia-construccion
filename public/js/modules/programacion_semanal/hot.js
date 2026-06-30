@@ -484,6 +484,37 @@
     },
   };
 
+  var CONSTRUCTION_DEFAULTS = {
+    restrictions: readinessActionProps,
+    labels: readinessActionLabels,
+    doneTexts: readinessDoneTexts,
+    matrix: readinessActionMatrix,
+  };
+
+  function getConfigRestrictions() {
+    var cached = window.__RESTRICTION_CONFIG__;
+    return (cached && Array.isArray(cached.restrictions) && cached.restrictions.length > 0)
+      ? cached.restrictions : CONSTRUCTION_DEFAULTS.restrictions;
+  }
+
+  function getConfigLabels() {
+    var cached = window.__RESTRICTION_CONFIG__;
+    return (cached && cached.labels && typeof cached.labels === 'object' && Object.keys(cached.labels).length > 0)
+      ? cached.labels : CONSTRUCTION_DEFAULTS.labels;
+  }
+
+  function getConfigDoneTexts() {
+    var cached = window.__RESTRICTION_CONFIG__;
+    return (cached && cached.doneTexts && typeof cached.doneTexts === 'object' && Object.keys(cached.doneTexts).length > 0)
+      ? cached.doneTexts : CONSTRUCTION_DEFAULTS.doneTexts;
+  }
+
+  function getConfigMatrix() {
+    var cached = window.__RESTRICTION_CONFIG__;
+    return (cached && cached.matrix && typeof cached.matrix === 'object' && Object.keys(cached.matrix).length > 0)
+      ? cached.matrix : CONSTRUCTION_DEFAULTS.matrix;
+  }
+
   function getRestrictionSourceValue(row, prop) {
     if (!row) {
       return null;
@@ -546,7 +577,7 @@
   }
 
   function getReadinessAction(prop, value) {
-    var config = readinessActionMatrix[prop];
+    var config = getConfigMatrix()[prop];
     if (!config) {
       return '';
     }
@@ -572,8 +603,8 @@
   }
 
   function getReadinessStatusItem(prop, row) {
-    var config = readinessActionMatrix[prop];
-    var label = readinessActionLabels[prop] || prop;
+    var config = getConfigMatrix()[prop];
+    var label = getConfigLabels()[prop] || prop;
     var value = getRestrictionSourceValue(row, prop);
     var raw = String(value === null || value === undefined ? '' : value).trim();
     var upper = raw.toUpperCase();
@@ -588,7 +619,7 @@
     }
 
     if (ratio + 0.0001 >= config.threshold) {
-      var doneText = readinessDoneTexts[prop] || 'Condición lista.';
+      var doneText = getConfigDoneTexts()[prop] || 'Condición lista.';
       if (prop === 'Predecesora' && ratio >= 0.999) {
         doneText = 'Predecesora terminada.';
       }
@@ -610,8 +641,9 @@
 
   function getReadinessStatusItems(row) {
     var items = [];
-    for (var i = 0; i < readinessActionProps.length; i++) {
-      var prop = readinessActionProps[i];
+    var restrictionProps = getConfigRestrictions();
+    for (var i = 0; i < restrictionProps.length; i++) {
+      var prop = restrictionProps[i];
       items.push(getReadinessStatusItem(prop, row));
     }
     return items;
@@ -1938,7 +1970,7 @@
   function buildPayload(row, editedProp, overrides) {
     var rawData = $.extend({}, row, overrides || {});
     var compromiso = normalizePositive(rawData.Compromiso);
-    
+
     if (editedProp === 'Compromiso' && compromiso === null) {
       return { valid: false, error: 'Compromiso inválido (debe ser > 0)' };
     }
@@ -2048,7 +2080,7 @@
     if (!payload.valid) {
       revertCell(visualRow, prop, oldValue);
       showFeedback('warning', payload.error); // Warning en lugar de Error para validaciones de negocio
-      
+
       var colIndex = hot.propToCol(prop);
       var td = hot.getCell(visualRow, colIndex);
       if (td) {
@@ -2464,7 +2496,7 @@
 
         props.className = finalClass.trim();
         props.readOnly = isReadOnly;
-        
+
         return props;
       },
       beforeChange: function (changes, source) {
@@ -2481,10 +2513,10 @@
           var newValue = change[3];
 
           if (prop === 'Compromiso' && newValue !== oldValue && newValue !== null && newValue !== '') {
-            var numericVal = window.PSStateMachine && typeof window.PSStateMachine.toNumberOrNull === 'function' 
-              ? window.PSStateMachine.toNumberOrNull(newValue) 
+            var numericVal = window.PSStateMachine && typeof window.PSStateMachine.toNumberOrNull === 'function'
+              ? window.PSStateMachine.toNumberOrNull(newValue)
               : parseFloat(String(newValue).replace(',', '.'));
-              
+
             if (numericVal !== null && !isNaN(numericVal) && numericVal >= 0 && numericVal < 0.001) {
                 changes[i] = null; // Rechazar el cambio
                 toReject.push(rowIndex);
@@ -2496,7 +2528,7 @@
             setTimeout(function() {
                 var rowData = getSourceRowDataByVisualRow(hot, toReject[0]) || {};
                 var msg = 'Al asignar una cantidad 0 para esta actividad, debe analizar la Causa de No Programación (CNP). Al continuar, la actividad será desprogramada.';
-                
+
                 if (typeof AIA !== 'undefined' && AIA.Notice) {
                     AIA.Notice.dialog({
                         title: 'Compromiso Cero (CNP Obligatoria)',
@@ -2551,7 +2583,7 @@
           if (prop === 'Ejecutado_Real') {
             var isSubMissing = isBlank(rowData.Sub_Contratista);
             var isResMissing = isBlank(rowData.Responsable_AIA);
-            
+
             if (isSubMissing || isResMissing) {
               revertCell(rowIndex, prop, oldValue);
               showFeedback('error', 'Falta Sub-Contratista o Resp. AIA para registrar avance');
@@ -2560,7 +2592,7 @@
 
             var compromiso = toNumber(rowData.Compromiso, null);
             var realVal = toNumber(newValue, null);
-            
+
             // Si el avance real es menor al compromiso, SIEMPRE pedir CNC
             if (realVal !== null && compromiso !== null && realVal < compromiso) {
                 // Prevenir guardado y abrir modal CNC (nuevo o actualización)
@@ -2572,7 +2604,7 @@
                   newValue: newValue,
                   prop: prop
                 };
-                
+
                 // Pre-cargar datos CNC existentes si los hay
                 $('#hot_cat_cnc').val(rowData.Categoria_CNC || '');
                 $('#hot_cnc').val(rowData.CNC || '').prop('disabled', isBlank(rowData.Categoria_CNC));
@@ -2584,7 +2616,7 @@
                 }
 
                 $('#modal_cnc_hot').modal('show');
-                
+
                 revertCell(rowIndex, prop, oldValue);
                 continue;
             }
@@ -2922,14 +2954,14 @@
       if (!hasCommitment || subcontratistaFalta || responsableFalta) {
         summary.blockingCount += 1;
         var detalleBloqueo = [];
-        
+
         if (!hasCommitment) {
           detalleBloqueo.push(critica ? 'En ruta crítica sin compromiso' : 'Compromiso sin definir');
           if (critica) {
             summary.blockingCriticalCount += 1;
           }
         }
-        
+
         if (subcontratistaFalta) detalleBloqueo.push('Falta Sub-Contratista');
         if (responsableFalta) detalleBloqueo.push('Falta Responsable AIA');
 
@@ -3161,7 +3193,7 @@
     $.ajax({
       method: 'POST',
       url: '/api/cnc/reasons',
-      data: { categoria: categoria },
+      data: { categoria: categoria, area: window.__PROJECT_AREA__ || 'Construccion' },
     }).done(function (data) {
       var optionsHtml = "<option value=''></option>";
       if (Array.isArray(data)) {
@@ -3355,7 +3387,7 @@
       var answer = (response && typeof response === 'object') ? String(response.respuesta || '') : String(response || '');
       if (answer === 'BIEN' || answer === 'OK') {
         showFeedback('success', 'Autoprogramación ejecutada');
-        
+
         var alertas = (response && Array.isArray(response.alertasRestricciones)) ? response.alertasRestricciones : [];
         if (alertas.length > 0) {
           showRestriccionesFaltantesModal(alertas);
@@ -3548,7 +3580,7 @@
     }).done(function (raw) {
       var response = parseResponse(raw);
       var data = (response && Array.isArray(response.data)) ? response.data : [];
-      
+
       if (data.length === 0) {
         $tbody.html('<tr><td colspan="4" class="text-center text-muted">No se encontraron actividades pendientes.</td></tr>');
         return;
@@ -3575,17 +3607,17 @@
 
   function useExceptionActivity(item) {
     if (!item) return;
-    
+
     $('#idNuevo').val(String(item.Id)).change();
     $('#Actividad').val(String(item.Actividad || ''));
     $('#Sub_Contratista').val(String(item.Sub_Contratista || '')).change();
     $('#Responsable_AIA').val(String(item.Responsable_AIA || '')).change();
     $('#Unidad').val(String(item.Unidad || '%'));
-    
+
     // Feedback visual de selección
     $('#tbody_excepciones_no_autoprogramadas tr').removeClass('ps-row-selected');
     $('#tbody_excepciones_no_autoprogramadas tr[data-id="' + escapeHtml(item.Id) + '"]').addClass('ps-row-selected');
-    
+
     showFeedback('info', 'Actividad cargada en el formulario');
   }
 
@@ -3672,7 +3704,7 @@
         var id = $(this).attr('id');
         var semanaActual = typeof getSemana === 'function' ? getSemana() : '';
         var sufijo = semanaActual ? '&semana=' + semanaActual : '';
-        
+
         if (id === 'btn_Actividades') window.location.href = '/legacy/cambiar_pagina.php?seccion=programacion_semanal' + sufijo;
         else if (id === 'btn_CNP') window.location.href = '/legacy/cambiar_pagina.php?seccion=CNP' + sufijo;
         else if (id === 'btn_CNC') window.location.href = '/legacy/cambiar_pagina.php?seccion=CNC' + sufijo;
@@ -3802,18 +3834,18 @@
     var header = document.querySelector('.header-actions');
     var nav = document.querySelector('.ps-dropdown-nav');
     if (!header) return;
-    
+
     var headerHeight = header.offsetHeight || 0;
     var vh = window.innerHeight;
     var offset = 180; // Offset base para otros elementos (Navbar, Breadcrumb, etc)
-    
+
     if (window.innerWidth <= 991) {
       offset = 220; // Ajuste para móviles
     }
-    
+
     var availableHeight = vh - headerHeight - offset;
     availableHeight = Math.max(300, availableHeight); // Mínimo de seguridad
-    
+
     var container = document.getElementById('hot-container');
     if (container) {
       container.style.height = availableHeight + 'px';
@@ -3829,7 +3861,7 @@
         scheduleActionsRowFit(80);
         updateTableHeight();
       });
-      
+
     var header = document.querySelector('.header-actions');
     if (header && window.ResizeObserver) {
       var ro = new ResizeObserver(function() {
@@ -3862,7 +3894,7 @@
       $.ajax({
         method: 'POST',
         url: '/api/cnc/reasons',
-        data: { categoria: cat },
+        data: { categoria: cat, area: window.__PROJECT_AREA__ || 'Construccion' },
       }).done(function (data) {
         var optionsHtml = "<option value=''></option>";
         if (Array.isArray(data)) {
@@ -3882,7 +3914,7 @@
       var cat = String($('#hot_cat_cnc').val() || '').trim();
       var cnc = String($('#hot_cnc').val() || '').trim();
       var obs = String($('#hot_obs_cnc').val() || '').trim();
-      
+
       var isCncStandard = cnc && cnc !== 'Otra' && cnc !== 'Otra...' && cnc !== 'Otros' && cnc !== 'Otros...';
 
       if (!cat) {
@@ -3890,7 +3922,7 @@
         return;
       }
 
-      // Nueva regla (Permisiva): 
+      // Nueva regla (Permisiva):
       // Se puede guardar si (Hay una Causa Estándar) OR (No hay Causa estándar, pero SÍ hay Observación explícita)
       if (!isCncStandard && !obs) {
         showFeedback('error', 'Debe brindar Observaciones obligatoriamente si no asigna una Causa específica.');
@@ -3914,15 +3946,15 @@
           $('#modal_cnc_hot').modal('hide');
           return;
         }
-        
+
         // Inyectamos los datos de CNC en la fila de Handsontable de forma visual
         hot.setDataAtRowProp(currentVisualRow, 'Categoria_CNC', cat, 'internal-update');
         hot.setDataAtRowProp(currentVisualRow, 'CNC', cnc, 'internal-update');
         hot.setDataAtRowProp(currentVisualRow, 'Observaciones_CNC', obs, 'internal-update');
-        
+
         var normalized = normalizeCellValue(pending.prop, pending.newValue);
         hot.setDataAtRowProp(currentVisualRow, pending.prop, normalized.value, 'internal-update');
-        
+
         // Inyectamos overrides al request AJAX para obviar el delay asíncrono del buffer visual de HOT
         var overrides = {
             Categoria_CNC: cat,
@@ -3930,9 +3962,9 @@
             Observaciones_CNC: obs
         };
         overrides[pending.prop] = normalized.value;
-        
+
         saveRow(currentVisualRow, pending.prop, pending.oldValue, overrides);
-        
+
         window._pendingCncSave = null;
         $('#modal_cnc_hot').modal('hide');
       }
@@ -4051,6 +4083,29 @@
     });
   }
 
+  function fetchRestrictionConfig(callback) {
+    if (window.__RESTRICTION_CONFIG__) {
+      if (typeof callback === 'function') { callback(); }
+      return;
+    }
+
+    $.ajax({
+      method: 'GET',
+      url: '/api/general/restriction-config',
+      dataType: 'json',
+      cache: true,
+      timeout: 5000,
+    }).done(function (response) {
+      if (response && typeof response === 'object' && Array.isArray(response.restrictions) && response.restrictions.length > 0) {
+        window.__RESTRICTION_CONFIG__ = response;
+      }
+    }).fail(function () {
+      // Fallback: construction defaults remain active (already in CONSTRUCTION_DEFAULTS)
+    }).always(function () {
+      if (typeof callback === 'function') { callback(); }
+    });
+  }
+
   function init() {
     if (!initialized) {
       bindToolbarActions();
@@ -4066,7 +4121,9 @@
     }
 
     syncPhaseUI();
-    loadData();
+    fetchRestrictionConfig(function () {
+      loadData();
+    });
     scheduleActionsRowFit(0);
 
     if (window.ChangeMonitor && typeof window.ChangeMonitor.init === 'function') {

@@ -5,6 +5,7 @@ namespace App\Controllers\Api;
 use App\Support\ModuleRequestContext;
 use PDO;
 
+use TableResolver;
 class PgBreadcrumbController
 {
     private $db;
@@ -23,7 +24,7 @@ class PgBreadcrumbController
             $dbPrefix = $context['dbPrefix'];
             $semana = $context['semana'];
 
-            $tabla = "{$dbPrefix}_programa_consolidado";
+            $tabla = "" . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . "";
             if (!$this->tableExists($tabla)) {
                 $this->jsonError('No existe el programa general del proyecto.', 404);
                 return;
@@ -37,7 +38,7 @@ class PgBreadcrumbController
                 return;
             }
 
-            $stmt = $this->db->query(
+            $stmt = $this->db->queryWithProject(
                 "SELECT Consecutivo, Consecutivo_en_Programa, Id, Actividad, Titulo
                  FROM `{$tabla}`
                  WHERE Semana = :semana
@@ -91,7 +92,7 @@ class PgBreadcrumbController
                 $newActividad = '<b>' . htmlspecialchars($cleanName) . ', </b> <small>[Capítulo:' . htmlspecialchars($fullBreadcrumb) . ']</small>';
 
                 try {
-                    $this->db->query(
+                    $this->db->queryWithProject(
                         "UPDATE `{$tabla}` SET Actividad = :actividad WHERE Consecutivo = :id",
                         [':actividad' => $newActividad, ':id' => $row['Consecutivo']]
                     );
@@ -129,7 +130,7 @@ class PgBreadcrumbController
             $dbPrefix = $context['dbPrefix'];
             $semana = $context['semana'];
 
-            $tabla = "{$dbPrefix}_programa_consolidado";
+            $tabla = "" . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . "";
             if (!$this->tableExists($tabla)) {
                 $this->jsonError('No existe el programa general del proyecto.', 404);
                 return;
@@ -139,7 +140,7 @@ class PgBreadcrumbController
                 $semana = $this->resolveMaxSemana($tabla);
             }
 
-            $stmt = $this->db->query(
+            $stmt = $this->db->queryWithProject(
                 "SELECT Consecutivo, Consecutivo_en_Programa, Id, Actividad, Titulo
                  FROM `{$tabla}`
                  WHERE Semana = :semana
@@ -265,7 +266,7 @@ class PgBreadcrumbController
 
     private function resolveMaxSemana(string $tabla): int
     {
-        $stmt = $this->db->query("SELECT MAX(Semana) as max_sem FROM `{$tabla}`");
+        $stmt = $this->db->queryWithProject("SELECT MAX(Semana) as max_sem FROM `{$tabla}`");
         $row = $stmt->fetch();
         return (int) ($row['max_sem'] ?? 0);
     }
@@ -273,7 +274,7 @@ class PgBreadcrumbController
     private function tableExists(string $table): bool
     {
         try {
-            $stmt = $this->db->query(
+            $stmt = $this->db->queryWithProject(
                 "SELECT COUNT(*) as cnt FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = :t",
                 [':t' => $table]
             );

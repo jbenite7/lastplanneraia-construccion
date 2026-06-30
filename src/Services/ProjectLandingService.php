@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Core\Lps\LpsService;
 use Database;
 use PDO;
+use TableResolver;
 use Throwable;
 
 class ProjectLandingService
@@ -18,9 +19,21 @@ class ProjectLandingService
         $this->lpsService = new LpsService();
     }
 
-    public function resolve(string $dbName, string $role): array
+    public function resolve(string $dbName, string $role, string $area = 'Construccion'): array
     {
         $normalizedRole = $this->normalizeRole($role);
+
+        if ($area === 'Pre-Construccion') {
+            return [
+                'route' => '/programa-general',
+                'module' => 'programa-general',
+                'week' => 0,
+                'hasActiveWeeks' => false,
+                'maxActiveWeek' => 0,
+                'maxConfirmedWeek' => null,
+                'reason' => 'pre-construccion',
+            ];
+        }
 
         if (!$this->isValidDbPrefix($dbName)) {
             return [
@@ -123,8 +136,10 @@ class ProjectLandingService
         $maxConfirmedWeek = null;
 
         try {
-            $query = "SELECT Semana, Semanal_Confirmada FROM {$dbName}_semanas_activas ORDER BY Semana ASC";
-            $rows = $this->db->query($query)->fetchAll(PDO::FETCH_ASSOC);
+            $tSemanasActivas = TableResolver::resolveByPrefix($dbName, 'semanas_activas');
+            $projectId = TableResolver::getProjectIdByPrefix($dbName);
+            $query = "SELECT Semana, Semanal_Confirmada FROM {$tSemanasActivas} ORDER BY Semana ASC";
+            $rows = $this->db->queryWithProject($query, [], $projectId)->fetchAll(PDO::FETCH_ASSOC);
         } catch (Throwable $e) {
             error_log('ProjectLandingService week metadata error: ' . $e->getMessage());
 
@@ -166,8 +181,10 @@ class ProjectLandingService
         }
 
         try {
-            $query = "SELECT Activa, Ejecutado, Compromiso, Ejecutado_Real, Critica, Prog_Sin_Restricciones_100, Categoria_CNC, CNC FROM {$dbName}_programacion_semanal WHERE Semana = ?";
-            $rows = $this->db->query($query, [$week])->fetchAll(PDO::FETCH_ASSOC);
+            $tProgSemanal = TableResolver::resolveByPrefix($dbName, 'programacion_semanal');
+            $projectId = TableResolver::getProjectIdByPrefix($dbName);
+            $query = "SELECT Activa, Ejecutado, Compromiso, Ejecutado_Real, Critica, Prog_Sin_Restricciones_100, Categoria_CNC, CNC FROM {$tProgSemanal} WHERE Semana = ?";
+            $rows = $this->db->queryWithProject($query, [$week], $projectId)->fetchAll(PDO::FETCH_ASSOC);
         } catch (Throwable $e) {
             error_log('ProjectLandingService pending calificacion check error: ' . $e->getMessage());
 

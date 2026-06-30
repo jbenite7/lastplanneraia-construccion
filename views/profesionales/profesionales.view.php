@@ -19,7 +19,7 @@
             padding: 0;
             overflow: hidden; /* Handsontable handles scrolls on Desktop */
         }
-        
+
         /* Allow scroll on Mobile */
         @media (max-width: 768px) {
             html, body {
@@ -27,7 +27,7 @@
                 height: auto !important;
             }
         }
-        
+
         /* Flex layout to handle dynamic header height */
         body {
             display: flex;
@@ -59,7 +59,7 @@
         /* Custom Renderers */
         .status-active { color: green; font-weight: bold; }
         .status-inactive { color: red; }
-        
+
         /* Loading overlay */
         #loading {
             position: fixed; top:0; left:0; width:100%; height:100%;
@@ -80,16 +80,16 @@
         }
 
         /* Neutralize Mobile-First "Card View" overrides from styles.css */
-        
+
         /* 1. Hide the injected labels from mobile-table-fix.js */
-        #hot-container td::before, 
+        #hot-container td::before,
         #hot-container th::before {
             content: none !important;
             display: none !important;
         }
 
         /* 2. Restore standard table display properties for Handsontable components */
-        #hot-container td, 
+        #hot-container td,
         #hot-container th {
             display: table-cell !important; /* Force back from 'flex' used in mobile-fix */
             /* text-align: inherit !important;  <-- REMOVED: This was blocking .htCenter */
@@ -120,31 +120,31 @@
             display: table-row !important;
             height: auto !important;
         }
-        
+
         #hot-container {
             width: 100% !important;
             max-width: 100vw !important;
             overflow: hidden !important;
         }
-        
+
         /* DYNAMIC FONT SIZE - Scales with viewport */
         #hot-container td,
         #hot-container th {
             font-size: clamp(10px, 1.1vw, 14px) !important;
         }
-        
+
         /* Force table to ALWAYS fit container width */
         #hot-container .wtHider,
         #hot-container .wtHolder {
             width: 100% !important;
             max-width: 100% !important;
         }
-        
+
         #hot-container table.htCore {
             width: 100% !important;
             table-layout: fixed !important;
         }
-        
+
         .force-wrap {
             white-space: pre-wrap !important;
             word-wrap: break-word !important;
@@ -160,11 +160,11 @@
             max-width: 100% !important;
         }
 
-        /* 
-           CRITICAL MOBILE OVERRIDES - VERTICAL CARD VIEW 
-           Transforms the grid into an aesthetic vertical list for mobile editing 
+        /*
+           CRITICAL MOBILE OVERRIDES - VERTICAL CARD VIEW
+           Transforms the grid into an aesthetic vertical list for mobile editing
         */
-        /* 
+        /*
            MOBILE VISIBILITY CONTROL
            We use a dual-view strategy:
            1. Desktop: Handsontable (#hot-container)
@@ -264,7 +264,7 @@
                 background: rgba(0,0,0,0.5);
                 z-index: -1;
             }
-            
+
             /* Text Colors & Contrast */
             .navbar-nav .nav-link {
                 color: #000000 !important;
@@ -272,7 +272,7 @@
                 padding: 12px 20px !important;
                 border-bottom: 1px solid #f0f0f0;
             }
-            
+
             .navbar-nav .dropdown-menu {
                 background-color: #f8f9fa !important; /* Light Grey for submenus */
                 border: none !important;
@@ -285,7 +285,7 @@
                  white-space: normal !important; /* Wrap long text */
                  height: auto !important;
             }
-            
+
             /* Remove margins that might hide content */
             .navbar-nav.ml-4 {
                 margin-left: 0 !important;
@@ -340,7 +340,7 @@
 
     <!-- Handsontable Container (Desktop) -->
     <div id="hot-container"></div>
-    
+
     <!-- Custom Mobile Card View (Hidden on Desktop) -->
     <div id="mobile-card-view" style="display:none;">
         <!-- JS will populate cards here -->
@@ -351,7 +351,8 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 
     <!-- Common Scripts for Navigation (Depends on jQuery) -->
-    <script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js" charset="utf-8"></script>
+    <script>window.__PROJECT_AREA__ = <?php echo json_encode($_SESSION['area'] ?? 'Construccion'); ?>;</script>
+	<script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js" charset="utf-8"></script>
 
     <!-- Handsontable Scripts -->
     <!-- Handsontable Scripts -->
@@ -366,7 +367,7 @@
         $(document).ready(function() {
             // Load Navigation
             cargarDatosGeneralesPagina(document.getElementById('seccion').value);
-            
+
             // Recalcular columnas cuando cambia el tamaño de la ventana
             let resizeTimeout;
             window.addEventListener('resize', function() {
@@ -524,7 +525,7 @@
                 hot.loadData(data);
                 return;
             }
-            
+
             hot = new Handsontable(container, {
                 data: data,
                 rowHeaders: true,
@@ -533,17 +534,17 @@
                     { data: 'id', readOnly: true, className: 'htCenter htMiddle' },
                     { data: 'nombre', type: 'text', className: 'htCenter htMiddle' },
                     { data: 'email', type: 'text', className: 'htCenter htMiddle' },
-                     { 
-                         data: 'cargo', 
+                     {
+                         data: 'cargo',
                          type: 'dropdown',
                          className: 'htCenter htMiddle',
                          source: professionalCargos
                      },
                     { data: 'activo', type: 'checkbox', className: 'htCenter htMiddle' },
-                    { 
-                       data: 'accion', 
-                       renderer: 'html', 
-                       readOnly: true, 
+                    {
+                       data: 'accion',
+                       renderer: 'html',
+                       readOnly: true,
                        className: 'htCenter htMiddle'
                     }
                 ],
@@ -567,7 +568,7 @@
                 wordWrap: true,
                 width: '100%',
                 height: '100%',
-                
+
                 cells: function(row, col) {
                     const cellProperties = {};
                     const physicalRow = hot ? hot.toPhysicalRow(row) : row;
@@ -595,7 +596,7 @@
                               Handsontable.renderers.HtmlRenderer.apply(this, arguments);
                               const physicalRow = instance.toPhysicalRow(row);
                               const rowData = instance.getSourceDataAtRow(physicalRow);
-                              
+
                               if (rowData && rowData.id && !rowData.can_delete) {
                                   const reason = rowData.delete_reason || 'Registro bloqueado';
                                   td.innerHTML = `<button class="btn btn-secondary btn-xs" disabled title="${reason}"><i class="fas fa-lock"></i></button>`;
@@ -607,7 +608,7 @@
                     }
                     return cellProperties;
                 },
-                
+
                 afterChange: function(changes, source) {
                     if (source === 'loadData' || source === 'revert' || !changes) return;
 
@@ -697,7 +698,7 @@
                         // Use toPhysicalRow to ensure we get correct source data index even if sorted/filtered
                         const physicalRow = hot.toPhysicalRow(coords.row);
                         const rowData = hot.getSourceDataAtRow(physicalRow);
-                        
+
                         if(rowData.id) {
                             if (window.AIA && window.AIA.Notice) {
                                 window.AIA.Notice.confirm('¿Seguro que desea eliminar a ' + rowData.nombre + '?', 'Eliminar Profesional').then((confirmed) => {
@@ -801,9 +802,9 @@
                 },
                 success: function(res) {
                     if (res.status === 'success') {
-                        rowData.id = res.id; 
+                        rowData.id = res.id;
                         showFeedback('success');
-                        loadData(); 
+                        loadData();
                     } else {
                         rowData.__creating = false;
                         showValidationMessage(res.errors || [res.message || 'No se pudo crear el profesional.'], 'warning');
@@ -852,7 +853,7 @@
         function renderMobileCards(data) {
             const container = document.getElementById('mobile-card-view');
             container.innerHTML = '';
-            
+
             // Generate Card Form for New Entry
             let html = `
                 <div class="mobile-card" style="border: 2px dashed #007aff; background: #f9faff;">
@@ -894,21 +895,21 @@
                 <div class="mobile-card">
                     <div class="mobile-card-row">
                         <span class="mobile-label">Nombre</span>
-                        <input type="text" class="form-control" style="flex:1; margin-left:20px; text-align:right;" 
-                               value="${row.nombre || ''}" 
+                        <input type="text" class="form-control" style="flex:1; margin-left:20px; text-align:right;"
+                               value="${row.nombre || ''}"
                                ${disableIdentityEdition}
                                onchange="updateMobileRow(${row.id}, 'nombre', this.value)">
                     </div>
                     <div class="mobile-card-row">
                         <span class="mobile-label">Correo</span>
-                        <input type="email" class="form-control" style="flex:1; margin-left:20px; text-align:right;" 
-                               value="${row.email || ''}" 
+                        <input type="email" class="form-control" style="flex:1; margin-left:20px; text-align:right;"
+                               value="${row.email || ''}"
                                ${disableIdentityEdition}
                                onchange="updateMobileRow(${row.id}, 'email', this.value)">
                     </div>
                     <div class="mobile-card-row">
                         <span class="mobile-label">Cargo</span>
-                        <select class="form-control" style="flex:1; margin-left:20px; text-align-last:right;" 
+                        <select class="form-control" style="flex:1; margin-left:20px; text-align-last:right;"
                                 ${disableIdentityEdition}
                                 onchange="updateMobileRow(${row.id}, 'cargo', this.value)">
                             ${cargoOptions}
@@ -923,18 +924,18 @@
                             <label class="custom-control-label" for="switch-${row.id}"></label>
                         </div>
                     </div>
-                    
+
                     <div class="mobile-actions">
                          ${deleteActionHtml}
                     </div>
                     ${blockReasonHtml}
                 </div>
-               `; 
+               `;
             });
-            
+
             container.innerHTML = html;
         }
-        
+
         function updateMobileRow(id, prop, value) {
             // Map 'activo' boolean to what backend expects if needed, or just send boolean
             // Handsontable sends boolean for checkbox, backend auto-save handles it.

@@ -28,14 +28,12 @@ class LpsApiController
         }
 
         // Consultar ID de usuario
-        $userStmt = $this->db->prepare("SELECT Id FROM general_usuarios WHERE usuario = ? LIMIT 1");
-        $userStmt->execute([$_SESSION['usuario'] ?? '']);
+        $userStmt = $this->db->queryWithProject("SELECT Id FROM general_usuarios WHERE usuario = ? LIMIT 1", [$_SESSION['usuario'] ?? '']);
         $user = $userStmt->fetch(PDO::FETCH_ASSOC);
         $usuarioId = $user ? (int) $user['Id'] : 0;
 
         // Consultar ID de proyecto
-        $projStmt = $this->db->prepare("SELECT ID FROM general_proyectos_procesos WHERE Proyecto_Proceso = ? AND Area = 'Construccion' LIMIT 1");
-        $projStmt->execute([$proyecto]);
+        $projStmt = $this->db->queryWithProject("SELECT ID FROM general_proyectos_procesos WHERE Proyecto_Proceso = ? AND Area = 'Construccion' LIMIT 1", [$proyecto]);
         $proj = $projStmt->fetch(PDO::FETCH_ASSOC);
         $proyectoId = $proj ? (int) $proj['ID'] : 0;
 

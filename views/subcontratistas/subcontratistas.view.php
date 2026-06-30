@@ -9,7 +9,7 @@
 
     <!-- Handsontable CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable@14.6.1/dist/handsontable.full.min.css" />
-    
+
     <style>
         /* Mobile First & Full Height */
         html, body {
@@ -18,7 +18,7 @@
             padding: 0;
             overflow: hidden; /* Handsontable handles scrolls on Desktop */
         }
-        
+
         /* Allow scroll on Mobile */
         @media (max-width: 768px) {
             html, body {
@@ -26,7 +26,7 @@
                 height: auto !important;
             }
         }
-        
+
         /* Flex layout to handle dynamic header height */
         body {
             display: flex;
@@ -58,7 +58,7 @@
         /* Custom Renderers */
         .status-active { color: green; font-weight: bold; }
         .status-inactive { color: red; }
-        
+
         /* Loading overlay */
         #loading {
             position: fixed; top:0; left:0; width:100%; height:100%;
@@ -79,16 +79,16 @@
         }
 
         /* Neutralize Mobile-First "Card View" overrides from styles.css */
-        
+
         /* 1. Hide the injected labels from mobile-table-fix.js */
-        #hot-container td::before, 
+        #hot-container td::before,
         #hot-container th::before {
             content: none !important;
             display: none !important;
         }
 
         /* 2. Restore standard table display properties for Handsontable components */
-        #hot-container td, 
+        #hot-container td,
         #hot-container th {
             display: table-cell !important; /* Force back from 'flex' used in mobile-fix */
             padding: 0 !important; /* HOT handles padding internally */
@@ -97,7 +97,7 @@
         }
 
         /* Enforce HOT alignment classes */
-        #hot-container td.htCenter, 
+        #hot-container td.htCenter,
         #hot-container th.htCenter { text-align: center !important; }
         #hot-container td.htLeft,
         #hot-container th.htLeft { text-align: left !important; }
@@ -129,48 +129,48 @@
             box-shadow: 0 2px 4px rgba(220, 53, 69, 0.2);
             transition: all 0.2s ease;
         }
-        
+
         .btn-delete:hover {
             transform: scale(1.1);
             background-color: #c82333 !important;
         }
-        
+
         #hot-container {
             box-sizing: border-box !important;
         }
         #hot-container * {
             box-sizing: content-box !important;
         }
-        
+
         .btn-delete i {
             font-size: 12px !important;
         }
-        
+
         /* 5. Fix row height and display */
         #hot-container {
             width: 100% !important;
             max-width: 100vw !important;
             overflow: hidden !important; /* Prevent ANY overflow */
         }
-        
+
         /* DYNAMIC FONT SIZE - Scales with viewport */
         #hot-container td,
         #hot-container th {
             font-size: clamp(10px, 1.1vw, 14px) !important; /* Min 10px, scales with viewport, max 14px */
         }
-        
+
         /* Force table to ALWAYS fit container width */
         #hot-container .wtHider,
         #hot-container .wtHolder {
             width: 100% !important;
             max-width: 100% !important;
         }
-        
+
         #hot-container table.htCore {
             width: 100% !important;
             table-layout: fixed !important; /* Forces columns to respect widths */
         }
-        
+
         .force-wrap {
             white-space: pre-wrap !important;
             word-wrap: break-word !important;
@@ -197,8 +197,8 @@
             max-width: 100% !important;
         }
 
-        /* 
-           CRITICAL MOBILE OVERRIDES - VERTICAL CARD VIEW 
+        /*
+           CRITICAL MOBILE OVERRIDES - VERTICAL CARD VIEW
         */
         @media (max-width: 768px) {
             #hot-container {
@@ -263,7 +263,7 @@
             padding-top: 10px;
             border-top: 1px dashed #eee;
         }
-        
+
         /* NAVBAR FIXES FROM REFERENCE */
          @media (max-width: 1199px) {
              #navbarSupportedContent {
@@ -301,6 +301,7 @@
     <link rel="stylesheet" href="/css/handsontable-header-global.css?v=20260223a" />
 </head>
 <body>
+<?php $isPreConstruccion = (($area ?? $_SESSION['area'] ?? 'Construccion') === 'Pre-Construccion'); ?>
 
     <div id="loading"><div class="spinner-border text-primary" role="status"><span class="sr-only">Cargando...</span></div></div>
 
@@ -317,9 +318,11 @@
     <input type="hidden" id="baseDatos" value="<?php echo $_SESSION['db'] ?? 'Prueba'; ?>">
     <input type="hidden" id="permiso_canonico" value="<?php echo $_SESSION['permiso'] ?? 'V'; ?>">
 
-    <?php $isPreConstruction = ($area ?? 'Construccion') === 'Pre-Construccion'; ?>
-    <div class="header-actions action-bar">
-        <h4><?php echo $isPreConstruction ? 'Interesados Externos' : 'Subcontratistas'; ?> (Live Edición)</h4>
+<div class="header-actions action-bar">
+        <h4><?php echo $isPreConstruccion ? 'Interesados Externos (Live Edición)' : 'Subcontratistas (Live Edición)'; ?></h4>
+        <?php if ($isPreConstruccion): ?>
+            <small class="text-muted d-block mt-1">Gestión de interesados externos del proyecto: Socios, Ventas, Gerencia, Diseñadores, Entidades.</small>
+        <?php endif; ?>
         <div>
             <span id="save-status" class="badge badge-success" style="display:none;">Guardado</span>
             <span id="save-error" class="badge badge-danger" style="display:none;">Error al guardar</span>
@@ -329,7 +332,7 @@
 
     <!-- Handsontable Container (Desktop) -->
     <div id="hot-container"></div>
-    
+
     <!-- Custom Mobile Card View (Hidden on Desktop) -->
     <div id="mobile-card-view" style="display:none;">
         <!-- JS will populate cards here -->
@@ -340,12 +343,13 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 
     <!-- Common Scripts for Navigation (Depends on jQuery) -->
-    <script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js" charset="utf-8"></script>
+    <script>window.__PROJECT_AREA__ = <?php echo json_encode($_SESSION['area'] ?? 'Construccion'); ?>;</script>
+	<script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js" charset="utf-8"></script>
 
     <!-- Handsontable Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/handsontable@14.6.1/dist/handsontable.full.min.js"></script>
     <!-- Languages -->
-    <script src="/public/vendor/handsontable/es-MX.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/handsontable@14.6.1/dist/languages/es-MX.js"></script>
 
     <script>
         const container = document.getElementById('hot-container');
@@ -356,7 +360,32 @@
         $(document).ready(function() {
             // Load Navigation
             cargarDatosGeneralesPagina(document.getElementById('seccion').value);
-            
+
+            // Pre-Construccion: Rebrand sidebar & breadcrumb labels
+            <?php if ($isPreConstruccion): ?>
+            setTimeout(function() {
+                // Override sidebar active label
+                var sidebarLinks = document.querySelectorAll('.nav-link.active, .sidebar .active a, #navbarSupportedContent .active a');
+                sidebarLinks.forEach(function(el) {
+                    if (el.textContent.trim() === 'Subcontratistas') {
+                        el.textContent = 'Interesados Externos';
+                    }
+                });
+                // Override breadcrumb
+                var breadcrumbItems = document.querySelectorAll('.breadcrumb-item, .breadcrumb li');
+                breadcrumbItems.forEach(function(el) {
+                    if (el.textContent.trim() === 'Sub-Contratistas' || el.textContent.trim() === 'Subcontratistas') {
+                        el.textContent = 'Interesados Externos';
+                    }
+                });
+                // Override page section title if injected by nav
+                var dirSeccion = document.getElementById('textoDireccionSeccion');
+                if (dirSeccion && dirSeccion.textContent.trim() === 'Sub-Contratistas') {
+                    dirSeccion.textContent = 'Interesados Externos';
+                }
+            }, 500);
+            <?php endif; ?>
+
             // Recalcular columnas cuando cambia el tamaño de la ventana
             let resizeTimeout;
             window.addEventListener('resize', function() {
@@ -392,8 +421,8 @@
                     $('#loading').fadeOut(300, function() {
                         // Response format might be { data: [...] } or just [...] dependong on old endpoint.
                         // Checking subcontratistas list endpoint usually returns {data: [...]}
-                        var data = response.data || response; 
-                        
+                        var data = response.data || response;
+
                         if(Array.isArray(data)) {
                             persistedSubcontratistas = data
                                 .filter((row) => row && (row.Id || row.id))
@@ -433,7 +462,9 @@
             });
         }
 
-        const providerTypes = ['Mano de Obra', 'Suministro e Instalación', 'Suministro de Materiales, Herramientas o Equipos'];
+        const providerTypes = <?php echo json_encode($isPreConstruccion
+            ? ['Socio', 'Ventas', 'Gerencia', 'Diseñador', 'Consultor', 'Entidad', 'Interventoría', 'Cliente', 'Inversionista', 'Promotor']
+            : ['Mano de Obra', 'Suministro e Instalación', 'Suministro de Materiales, Herramientas o Equipos']); ?>;
 
         function normalizeTextValue(value) {
             return (value || '').toString().trim().replace(/\s+/g, ' ');
@@ -475,7 +506,7 @@
             const currentId = validationOptions.currentId || null;
             const excludeRowData = validationOptions.excludeRowData || null;
             const errors = [];
-            if (!payload.subcontratista) errors.push('El nombre del subcontratista es obligatorio.');
+            if (!payload.subcontratista) errors.push('<?php echo $isPreConstruccion ? 'El nombre del interesado es obligatorio.' : 'El nombre del subcontratista es obligatorio.'; ?>');
             if (!payload.correo_contacto) {
                 errors.push('El correo de contacto es obligatorio.');
             } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.correo_contacto)) {
@@ -498,13 +529,13 @@
                 const candidate = buildSubcontratistaPayload(row);
 
                 if (payload.subcontratista && candidate.subcontratista && payload.subcontratista.toLowerCase() === candidate.subcontratista.toLowerCase()) {
-                    errors.push('Ya existe un subcontratista con ese nombre.');
+                    errors.push('<?php echo $isPreConstruccion ? 'Ya existe un interesado con ese nombre.' : 'Ya existe un subcontratista con ese nombre.'; ?>');
                 }
                 if (payload.correo_contacto && candidate.correo_contacto && payload.correo_contacto === candidate.correo_contacto) {
-                    errors.push('Ya existe un subcontratista con ese correo.');
+                    errors.push('<?php echo $isPreConstruccion ? 'Ya existe un interesado con ese correo.' : 'Ya existe un subcontratista con ese correo.'; ?>');
                 }
                 if (payload.NIT && candidate.NIT && normalizeNitForCompare(payload.NIT) === normalizeNitForCompare(candidate.NIT)) {
-                    errors.push('Ya existe un subcontratista con ese NIT.');
+                    errors.push('<?php echo $isPreConstruccion ? 'Ya existe un interesado con esa identificación.' : 'Ya existe un subcontratista con ese NIT.'; ?>');
                 }
             });
 
@@ -531,35 +562,33 @@
                 hot.loadData(data);
                 return;
             }
-            
+
             hot = new Handsontable(container, {
                 data: data,
                 rowHeaders: true,
                 rowHeaderWidth: 50,
-                colHeaders: <?php echo $isPreConstruction
-                    ? "['ID', 'Interesado', 'Correo Contacto', 'Identificación', 'Rol/Interés', 'Tipo de Interesado', 'Activo', 'Acciones']"
-                    : "['ID', 'Subcontratista', 'Correo Contacto', 'NIT', 'Alcance', 'Tipo Proveedor', 'Activo', 'Acciones']"; ?>,
+                colHeaders: [<?php echo $isPreConstruccion ? "'ID', 'Interesado', 'Correo Contacto', 'Identificación', 'Rol/Interés', 'Tipo de Interesado', 'Activo', 'Acciones'" : "'ID', 'Subcontratista', 'Correo Contacto', 'NIT', 'Alcance', 'Tipo Proveedor', 'Activo', 'Acciones'"; ?>],
                 columns: [
                     { data: 'Id', readOnly: true, className: 'htCenter htMiddle' },
                     { data: 'subcontratista', type: 'text', className: 'htCenter htMiddle force-wrap' },
                     { data: 'correo_contacto', type: 'text', className: 'htCenter htMiddle force-wrap' },
                     { data: 'NIT', type: 'text', className: 'htCenter htMiddle' },
                     { data: 'alcance', type: 'text', className: 'htCenter htMiddle force-wrap' },
-                     { 
-                         data: 'tipo_proveedor', 
+                     {
+                         data: 'tipo_proveedor',
                          type: 'dropdown',
                          className: 'htCenter htMiddle force-wrap',
                          source: providerTypes
                      },
-                    { 
-                        data: 'activo', 
-                        type: 'checkbox', 
+                    {
+                        data: 'activo',
+                        type: 'checkbox',
                         className: 'htCenter htMiddle'
                     },
-                    { 
-                       data: 'accion', 
-                       renderer: 'html', 
-                       readOnly: true, 
+                    {
+                       data: 'accion',
+                       renderer: 'html',
+                       readOnly: true,
                        className: 'htCenter htMiddle'
                     }
                 ],
@@ -584,7 +613,7 @@
                 autoRowSize: true,
                 width: '100%',
                 height: '100%',
-                
+
                 cells: function(row, col) {
                     const cellProperties = {};
                     if (col === 7) { // Acciones column
@@ -592,10 +621,10 @@
                              Handsontable.renderers.HtmlRenderer.apply(this, arguments);
                              const physicalRow = instance.toPhysicalRow(row);
                              const rowData = instance.getSourceDataAtRow(physicalRow);
-                             
+
                              // Matching logic from profesionales for Delete button
                              // In subcontratistas, the ID key is 'Id'
-                             if (rowData && rowData.Id && rowData.has_dependencies) { 
+                             if (rowData && rowData.Id && rowData.has_dependencies) {
                                  td.innerHTML = '<button class="btn btn-secondary btn-xs" disabled title="No se puede eliminar: tiene registros asociados en otros módulos del proyecto."><i class="fas fa-lock"></i></button>';
                              } else {
                                  // Perfect circular button via .btn-delete CSS class
@@ -663,12 +692,12 @@
                         // Use toPhysicalRow to ensure we get correct source data index even if sorted/filtered
                         const physicalRow = hot.toPhysicalRow(coords.row);
                         const rowData = hot.getSourceDataAtRow(physicalRow);
-                        
+
                         // Note: Profesionales uses 'id' (lowercase), subcontratistas uses 'Id' (uppercase) from DB.
                         // We must check case sensitivity of data source.
                         // Based on previous JSON, it is 'Id'.
                         const recordId = rowData.Id || rowData.id;
-                        
+
                         if(recordId) {
                             // Check if locked
                             if (rowData.has_dependencies) {
@@ -676,7 +705,7 @@
                                 return;
                             }
                             if (window.AIA && window.AIA.Notice) {
-                                window.AIA.Notice.confirm('¿Seguro que desea eliminar a ' + (rowData.subcontratista || 'este registro') + '?', 'Eliminar Subcontratista').then((confirmed) => {
+                                window.AIA.Notice.confirm('¿Seguro que desea eliminar a ' + (rowData.subcontratista || 'este registro') + '?', '<?php echo $isPreConstruccion ? 'Eliminar Interesado' : 'Eliminar Subcontratista'; ?>').then((confirmed) => {
                                     if (confirmed) deleteRow(recordId);
                                 });
                             }
@@ -724,7 +753,7 @@
                 },
                 error: function(err) {
                     console.error(err);
-                    if (window.AIA && window.AIA.Notice) window.AIA.Notice.error('Error de red al guardar subcontratista.');
+                    if (window.AIA && window.AIA.Notice) window.AIA.Notice.error('<?php echo $isPreConstruccion ? 'Error de red al guardar interesado.' : 'Error de red al guardar subcontratista.'; ?>');
                     showFeedback('error');
                     loadData();
                 }
@@ -775,13 +804,13 @@
                         loadData(); // Recargar para obtener el nuevo Id
                     } else {
                         rowData.__creating = false;
-                        showValidationMessage(res.errors || [res.message || 'No se pudo crear el subcontratista.'], 'warning');
+                        showValidationMessage(res.errors || [res.message || '<?php echo $isPreConstruccion ? 'No se pudo crear el interesado.' : 'No se pudo crear el subcontratista.'; ?>'], 'warning');
                     }
                 },
                 error: function(err) {
                     console.error(err);
                     rowData.__creating = false;
-                    if (window.AIA && window.AIA.Notice) window.AIA.Notice.error("Error de red al crear subcontratista");
+                    if (window.AIA && window.AIA.Notice) window.AIA.Notice.error("<?php echo $isPreConstruccion ? 'Error de red al crear interesado' : 'Error de red al crear subcontratista'; ?>");
                 }
             });
         }
@@ -792,9 +821,9 @@
                 url: '/api/subcontratistas/save?db=' + db,
                 type: 'POST',
                 dataType: 'json',
-                data: { 
-                    opcion: 'eliminar', 
-                    id: id 
+                data: {
+                    opcion: 'eliminar',
+                    id: id
                 },
                 success: function(res) {
                     if (res.status === 'success') {
@@ -818,7 +847,7 @@
                 $('#save-error').fadeIn();
             }
         }
-        
+
 
         function exportCSV() {
              if(hot) {
@@ -830,7 +859,7 @@
                   });
              }
         }
-        
+
         // ==========================================
         // MOBILE CARD VIEW RENDERER
         // ==========================================
@@ -844,10 +873,10 @@
                     <h5 style="color:#007aff; text-align:center; margin-bottom:15px; font-weight:bold;">
                         <i class="fas fa-plus-circle"></i> Agregar Nuevo
                     </h5>
-                     <div class="form-group"><input type="text" class="form-control" id="new-mobile-subcontratista" placeholder="Nombre Subcontratista"></div>
+                     <div class="form-group"><input type="text" class="form-control" id="new-mobile-subcontratista" placeholder="<?php echo $isPreConstruccion ? 'Nombre Interesado' : 'Nombre Subcontratista'; ?>"></div>
                      <div class="form-group"><input type="email" class="form-control" id="new-mobile-correo" placeholder="Correo electrónico"></div>
-                     <div class="form-group"><input type="text" class="form-control" id="new-mobile-nit" placeholder="NIT"></div>
-                     <div class="form-group"><textarea class="form-control" id="new-mobile-alcance" placeholder="Alcance"></textarea></div>
+                     <div class="form-group"><input type="text" class="form-control" id="new-mobile-nit" placeholder="<?php echo $isPreConstruccion ? 'Identificación' : 'NIT'; ?>"></div>
+                     <div class="form-group"><textarea class="form-control" id="new-mobile-alcance" placeholder="<?php echo $isPreConstruccion ? 'Rol/Interés' : 'Alcance'; ?>"></textarea></div>
                      <div class="form-group">
                         <select class="form-control" id="new-mobile-tipo">
                             <option value="">Seleccione Tipo...</option>
@@ -870,31 +899,31 @@
                 html += `
                 <div class="mobile-card">
                     <div class="mobile-card-row">
-                        <span class="mobile-label">Nombre</span>
+                        <span class="mobile-label"><?php echo $isPreConstruccion ? 'Interesado' : 'Nombre'; ?></span>
                         <input type="text" class="form-control" style="flex:1; margin-left:20px; text-align:right;"
                                value="${row.subcontratista || ''}"
                                onchange="updateMobileRow(${id}, 'subcontratista', this.value)">
                     </div>
                     <div class="mobile-card-row">
                         <span class="mobile-label">Correo</span>
-                        <input type="email" class="form-control" style="flex:1; margin-left:20px; text-align:right;" 
-                               value="${row.correo_contacto || ''}" 
+                        <input type="email" class="form-control" style="flex:1; margin-left:20px; text-align:right;"
+                               value="${row.correo_contacto || ''}"
                                onchange="updateMobileRow(${id}, 'correo_contacto', this.value)">
                     </div>
                     <div class="mobile-card-row">
-                        <span class="mobile-label">NIT</span>
-                        <input type="text" class="form-control" style="flex:1; margin-left:20px; text-align:right;" 
-                               value="${row.NIT || ''}" 
+                        <span class="mobile-label"><?php echo $isPreConstruccion ? 'Identificación' : 'NIT'; ?></span>
+                        <input type="text" class="form-control" style="flex:1; margin-left:20px; text-align:right;"
+                               value="${row.NIT || ''}"
                                onchange="updateMobileRow(${id}, 'NIT', this.value)">
                     </div>
                     <div class="mobile-card-row" style="flex-direction:column; align-items:flex-start;">
-                        <span class="mobile-label" style="margin-bottom:5px;">Alcance</span>
-                        <textarea class="form-control" style="width:100%;" 
+                        <span class="mobile-label" style="margin-bottom:5px;"><?php echo $isPreConstruccion ? 'Rol/Interés' : 'Alcance'; ?></span>
+                        <textarea class="form-control" style="width:100%;"
                                   onchange="updateMobileRow(${id}, 'alcance', this.value)">${row.alcance || ''}</textarea>
                     </div>
                     <div class="mobile-card-row">
-                        <span class="mobile-label">Tipo</span>
-                        <select class="form-control" style="flex:1; margin-left:20px;" 
+                        <span class="mobile-label"><?php echo $isPreConstruccion ? 'Tipo de Interesado' : 'Tipo'; ?></span>
+                        <select class="form-control" style="flex:1; margin-left:20px;"
                                 onchange="updateMobileRow(${id}, 'tipo_proveedor', this.value)">
                             ${providerTypes.map(t => `<option value="${t}" ${row.tipo_proveedor == t ? 'selected' : ''}>${t}</option>`).join('')}
                         </select>
@@ -907,17 +936,17 @@
                             <label class="custom-control-label" for="switch-${id}"></label>
                         </div>
                     </div>
-                    
+
                     <div class="mobile-actions">
                         <button class="btn btn-outline-danger btn-sm" onclick="deleteMobileRow(${id}, '${row.subcontratista}')"><i class="fas fa-trash"></i> Eliminar</button>
                     </div>
                 </div>
-               `; 
+               `;
             });
-            
+
             container.innerHTML = html;
         }
-        
+
         function addMobileSubcontratista() {
             const nombre = $('#new-mobile-subcontratista').val();
             const correo = $('#new-mobile-correo').val();
@@ -957,18 +986,18 @@
                 success: function(res) {
                     if (res.status === 'success') {
                         loadData();
-                        if (window.AIA && window.AIA.Notice) window.AIA.Notice.badge('success', "Subcontratista registrado correctamente");
+                        if (window.AIA && window.AIA.Notice) window.AIA.Notice.badge('success', "<?php echo $isPreConstruccion ? 'Interesado registrado correctamente' : 'Subcontratista registrado correctamente'; ?>");
                         $('#new-mobile-subcontratista').val('');
                         $('#new-mobile-correo').val('');
                         $('#new-mobile-nit').val('');
                         $('#new-mobile-alcance').val('');
                         $('#new-mobile-tipo').val('');
                     } else {
-                        showValidationMessage(res.errors || [res.message || res.respuesta || 'No se pudo crear el subcontratista.'], 'warning');
+                        showValidationMessage(res.errors || [res.message || res.respuesta || '<?php echo $isPreConstruccion ? 'No se pudo crear el interesado.' : 'No se pudo crear el subcontratista.'; ?>'], 'warning');
                     }
                 },
                 error: function() {
-                    if (window.AIA && window.AIA.Notice) window.AIA.Notice.error('Error de red al crear subcontratista.');
+                    if (window.AIA && window.AIA.Notice) window.AIA.Notice.error('<?php echo $isPreConstruccion ? 'Error de red al crear interesado.' : 'Error de red al crear subcontratista.'; ?>');
                 }
             });
         }
@@ -979,7 +1008,7 @@
 
         function deleteMobileRow(id, nombre) {
             if (window.AIA && window.AIA.Notice) {
-                window.AIA.Notice.confirm('¿Seguro que desea eliminar a ' + (nombre || 'este registro') + '?', 'Eliminar Subcontratista').then((confirmed) => {
+                window.AIA.Notice.confirm('¿Seguro que desea eliminar a ' + (nombre || 'este registro') + '?', '<?php echo $isPreConstruccion ? 'Eliminar Interesado' : 'Eliminar Subcontratista'; ?>').then((confirmed) => {
                     if (confirmed) deleteRow(id);
                 });
             }

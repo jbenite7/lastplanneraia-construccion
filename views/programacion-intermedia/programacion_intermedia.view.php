@@ -1358,6 +1358,9 @@
         <div class="collapse d-md-block" id="pdcFiltersMobile">
             <div class="pdc-legend pi-legend pdc-legend-autoscaling" id="piLegend">
                 <span class="pi-legend-window-label <?= $viewAll ? 'is-active' : '' ?>" title="Los conteos del semaforo se calculan sobre la ventana de 6 semanas, no sobre la vista actual.">(Ventana 6 sem.)</span>
+                <?php if ($area === 'Pre-Construccion'): ?>
+                <span class="pi-legend-window-label is-active" title="Pre-Construccion: 4 restricciones activas" style="background:#dbeafe;color:#1e40af;border-color:#93c5fd;">Pre-Cons. 4R</span>
+                <?php endif; ?>
                 <span class="pdc-legend-item blocked-overdue-critical" data-filter="blocked-overdue-critical" role="button" tabindex="0"><span class="indicator"></span> RC inicio vencido <span id="count-blocked-overdue-critical" class="count-badge">(...)</span></span>
 
                 <span class="pdc-legend-item blocked-overdue" data-filter="blocked-overdue" role="button" tabindex="0"><span class="indicator"></span> Inicio Vencido <span id="count-blocked-overdue" class="count-badge">(...)</span></span>
@@ -1423,6 +1426,8 @@
                                 </div>
                             </div>
                             <div id="piSharedRestrictionsPanel" class="pi-shared-restrictions-panel">
+                                <?php if ($area !== 'Pre-Construccion'): ?>
+                                <!-- CONSTRUCCION: 7 restricciones estándar -->
                                 <div class="pi-shared-restriction-row" data-restriction-row="D_y_E">
                                     <div class="custom-control custom-checkbox">
                                         <input type="checkbox" class="custom-control-input pi-shared-restriction-check" id="piSharedRestriction_D_y_E" data-restriction-type="D_y_E" checked>
@@ -1472,6 +1477,43 @@
                                     </div>
                                     <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="Modelo"></select>
                                 </div>
+                                <?php else: ?>
+                                <!-- PRE-CONSTRUCCION: Predecesora + personalizadas nombradas -->
+                                <div class="pi-shared-restriction-row" data-restriction-row="restriccion_pc_1">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" class="custom-control-input pi-shared-restriction-check" id="piSharedRestriction_restriccion_pc_1" data-restriction-type="restriccion_pc_1" checked>
+                                        <label class="custom-control-label" for="piSharedRestriction_restriccion_pc_1">Predecesora</label>
+                                    </div>
+                                    <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="restriccion_pc_1"></select>
+                                </div>
+                                <?php if (!empty($pcRestrictionNames[2])): ?>
+                                <div class="pi-shared-restriction-row" data-restriction-row="restriccion_pc_2">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" class="custom-control-input pi-shared-restriction-check" id="piSharedRestriction_restriccion_pc_2" data-restriction-type="restriccion_pc_2">
+                                        <label class="custom-control-label" for="piSharedRestriction_restriccion_pc_2"><?= htmlspecialchars($pcRestrictionNames[2], ENT_QUOTES, 'UTF-8') ?></label>
+                                    </div>
+                                    <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="restriccion_pc_2"></select>
+                                </div>
+                                <?php endif; ?>
+                                <?php if (!empty($pcRestrictionNames[3])): ?>
+                                <div class="pi-shared-restriction-row" data-restriction-row="restriccion_pc_3">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" class="custom-control-input pi-shared-restriction-check" id="piSharedRestriction_restriccion_pc_3" data-restriction-type="restriccion_pc_3">
+                                        <label class="custom-control-label" for="piSharedRestriction_restriccion_pc_3"><?= htmlspecialchars($pcRestrictionNames[3], ENT_QUOTES, 'UTF-8') ?></label>
+                                    </div>
+                                    <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="restriccion_pc_3"></select>
+                                </div>
+                                <?php endif; ?>
+                                <?php if (!empty($pcRestrictionNames[4])): ?>
+                                <div class="pi-shared-restriction-row" data-restriction-row="restriccion_pc_4">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" class="custom-control-input pi-shared-restriction-check" id="piSharedRestriction_restriccion_pc_4" data-restriction-type="restriccion_pc_4">
+                                        <label class="custom-control-label" for="piSharedRestriction_restriccion_pc_4"><?= htmlspecialchars($pcRestrictionNames[4], ENT_QUOTES, 'UTF-8') ?></label>
+                                    </div>
+                                    <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="restriccion_pc_4"></select>
+                                </div>
+                                <?php endif; ?>
+                                <?php endif; ?>
                             </div>
                             <small class="pi-shared-hint">Marque una, varias o todas las restricciones que desea actualizar en este lote.</small>
                         </div>
@@ -1538,7 +1580,8 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js?v=gen02" charset="utf-8"></script>
+    <script>window.__PROJECT_AREA__ = <?php echo json_encode($_SESSION['area'] ?? 'Construccion'); ?>;</script>
+	<script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js?v=gen02" charset="utf-8"></script>
     <script type="text/javascript" src="/js/funcionesGenerales6.js" charset="utf-8"></script>
 
     <script src="/public/vendor/handsontable/handsontable.full.min.js"></script>
@@ -1570,8 +1613,9 @@
         $piProfesionales = array_values(array_unique(array_filter($piProfesionales)));
         echo json_encode($piProfesionales, JSON_UNESCAPED_UNICODE);
         ?>
-        };
+    };
     </script>
+
     <script type="text/javascript" src="/js/HandsontableTomSelectEditor.js?v=tomselect30"></script>
     <script src="/js/modules/lps_drawer.js?v=20260522d"></script>
     <?php $piHotVersion = @filemtime(dirname(__DIR__, 2) . '/public/js/modules/programacion_intermedia/hot.js') ?: 'hot38'; ?>

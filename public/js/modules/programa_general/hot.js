@@ -95,6 +95,130 @@
 
   var unitOptions = ['', 'ml', 'm2', 'm3', 'un', 'gl', 'kg', '%', 'Niveles'];
 
+  // ── Restriction config (dynamic from API, with construction defaults) ──
+  var _DEFAULT_RESTRICTION_CONFIG = {
+    hardRestrictions: [
+      { key: 'D_y_E', threshold: 1.0 },
+      { key: 'Materiales', threshold: 1.0 },
+      { key: 'MdeO', threshold: 1.0 },
+      { key: 'Equipos', threshold: 1.0 },
+      { key: 'Predecesora', threshold: 0.5 },
+    ],
+    softAlerts: [
+      { weeksBefore: 0, label: 'R0' },
+      { weeksBefore: 1, label: 'R1' },
+      { weeksBefore: 2, maxWeeks: 3, label: 'R2-3' },
+      { weeksBefore: 4, maxWeeks: 6, label: 'R4-6' },
+    ],
+  };
+
+  function getRestrictionConfig() {
+    return window.__RESTRICTION_CONFIG__ || _DEFAULT_RESTRICTION_CONFIG;
+  }
+
+  function getRestrictionKeys() {
+    var cfg = getRestrictionConfig();
+    if (Array.isArray(cfg.hardRestrictions)) {
+      return cfg.hardRestrictions.map(function (r) { return r.key; });
+    }
+    // Legacy fallback: array of strings
+    if (Array.isArray(cfg.restrictionKeys)) {
+      return cfg.restrictionKeys;
+    }
+    return _DEFAULT_RESTRICTION_CONFIG.hardRestrictions.map(function (r) { return r.key; });
+  }
+
+  function fetchRestrictionConfig() {
+    var db = getDb();
+    if (!db) {
+      window.__RESTRICTION_CONFIG__ = _DEFAULT_RESTRICTION_CONFIG;
+      return $.Deferred().resolve().promise();
+    }
+
+    return $.getJSON('/api/general/restriction-config', { db: db })
+      .done(function (response) {
+        if (response && response.success && response.data) {
+          window.__RESTRICTION_CONFIG__ = normalizeApiConfig(response.data);
+        } else {
+          window.__RESTRICTION_CONFIG__ = _DEFAULT_RESTRICTION_CONFIG;
+        }
+      })
+      .fail(function () {
+        window.__RESTRICTION_CONFIG__ = _DEFAULT_RESTRICTION_CONFIG;
+      });
+  }
+
+  function normalizeApiConfig(raw) {
+    if (!raw || typeof raw !== 'object') {
+      return _DEFAULT_RESTRICTION_CONFIG;
+    }
+
+    var restrictions = Array.isArray(raw.restrictions) ? raw.restrictions : [];
+    var hardKeys = Array.isArray(raw.hardRestrictions) ? raw.hardRestrictions : [];
+    var softKeys = Array.isArray(raw.softRestrictions) ? raw.softRestrictions : [];
+
+    var lookup = {};
+    for (var i = 0; i < restrictions.length; i++) {
+      if (restrictions[i] && restrictions[i].key) {
+        lookup[restrictions[i].key] = restrictions[i];
+      }
+    }
+
+    // Normalize hardRestrictions: if API returns key strings, build [{key, threshold}] from lookup
+    var hardGates;
+    if (hardKeys.length > 0 && typeof hardKeys[0] === 'string') {
+      hardGates = [];
+      for (var j = 0; j < hardKeys.length; j++) {
+        var key = hardKeys[j];
+        var entry = lookup[key];
+        hardGates.push({
+          key: key,
+          threshold: (entry && entry.threshold !== undefined) ? entry.threshold : 1.0,
+        });
+      }
+    } else if (hardKeys.length > 0 && typeof hardKeys[0] === 'object') {
+      // Already in [{key, threshold}] format (e.g. internal/default)
+      hardGates = hardKeys;
+    } else {
+      hardGates = _DEFAULT_RESTRICTION_CONFIG.hardRestrictions;
+    }
+
+    var softEntries = [];
+    if (softKeys.length > 0 && typeof softKeys[0] === 'string') {
+      for (var k = 0; k < softKeys.length; k++) {
+        var sEntry = lookup[softKeys[k]];
+        softEntries.push({
+          key: softKeys[k],
+          label: (sEntry && sEntry.label) ? sEntry.label : softKeys[k],
+          type: 'soft',
+        });
+      }
+    }
+
+    return {
+      hardRestrictions: hardGates,
+      softAlerts: Array.isArray(raw.softAlerts)
+        ? raw.softAlerts
+        : _DEFAULT_RESTRICTION_CONFIG.softAlerts,
+      restrictions: restrictions,
+      hardRestrictionKeys: hardKeys,
+      softRestrictions: softKeys,
+      softEntries: softEntries,
+    };
+  }
+
+  function getRestrictionLabel(key) {
+    var cfg = getRestrictionConfig();
+    if (Array.isArray(cfg.restrictions)) {
+      for (var i = 0; i < cfg.restrictions.length; i++) {
+        if (cfg.restrictions[i].key === key && cfg.restrictions[i].label) {
+          return cfg.restrictions[i].label;
+        }
+      }
+    }
+    return key;
+  }
+
   var columnMinWidths = [34, 52, 120, 44, 72, 72, 42, 42, 54, 64, 64, 78, 70];
   var columnFloorWidths = [28, 44, 90, 36, 60, 60, 34, 34, 44, 52, 52, 60, 56];
   var columnMaxWidths = [84, 156, 420, 110, 132, 132, 86, 86, 128, 138, 138, 260, 190];
@@ -206,7 +330,7 @@
       return '';
     }
 
-    // El valor interno es un ratio (0.0 a 1.0). 
+    // El valor interno es un ratio (0.0 a 1.0).
     // Para mostrarlo como porcentaje multiplicamos por 100.
     var displayPct = numeric * 100;
 
@@ -263,7 +387,7 @@
       return null;
     }
 
-    // AIA 2026: El motor trabaja en ratios (0-1). 
+    // AIA 2026: El motor trabaja en ratios (0-1).
     // No intentamos deducir si es porcentaje o ratio basándonos en el magnitud (numeric > 1),
     // ya que eso rompe cuando se usan unidades físicas.
     if (numeric < 0) {
@@ -508,18 +632,54 @@
     return 'actividad-futura';
   }
 
+  function getRestrictionThresholds() {
+    var cfg = getRestrictionConfig();
+    var thresholds = {};
+
+    var lookup = {};
+    if (Array.isArray(cfg.restrictions)) {
+      for (var i = 0; i < cfg.restrictions.length; i++) {
+        var r = cfg.restrictions[i];
+        if (r && r.key) {
+          lookup[r.key] = r.threshold;
+        }
+      }
+    }
+
+    var hardEntries = Array.isArray(cfg.hardRestrictions) ? cfg.hardRestrictions : [];
+    for (var j = 0; j < hardEntries.length; j++) {
+      var entry = hardEntries[j];
+      var key = typeof entry === 'string' ? entry : (entry && entry.key);
+      if (!key) { continue; }
+      var rawThreshold;
+      if (typeof entry === 'object' && entry.threshold !== undefined) {
+        rawThreshold = entry.threshold;
+      } else if (lookup[key] !== undefined) {
+        rawThreshold = lookup[key];
+      } else {
+        rawThreshold = 1.0;
+      }
+      // API threshold is 0-100; convert to ratio 0-1
+      thresholds[key] = (rawThreshold > 1) ? rawThreshold / 100 : rawThreshold;
+    }
+
+    if (Object.keys(thresholds).length === 0) {
+      var defaults = _DEFAULT_RESTRICTION_CONFIG.hardRestrictions;
+      for (var k = 0; k < defaults.length; k++) {
+        thresholds[defaults[k].key] = defaults[k].threshold;
+      }
+    }
+
+    return thresholds;
+  }
+
   function areHardRestrictionsMet(data) {
-    var hardGates = [
-      { key: 'D_y_E', threshold: 1.0 },
-      { key: 'Materiales', threshold: 1.0 },
-      { key: 'MdeO', threshold: 1.0 },
-      { key: 'Equipos', threshold: 1.0 },
-      { key: 'Predecesora', threshold: 0.5 },
-    ];
-    for (var i = 0; i < hardGates.length; i++) {
-      var gate = hardGates[i];
-      var val = normalizeRatio(data[gate.key]);
-      if (val !== null && val < gate.threshold) {
+    var thresholds = getRestrictionThresholds();
+    var keys = Object.keys(thresholds);
+    for (var i = 0; i < keys.length; i++) {
+      var key = keys[i];
+      var val = normalizeRatio(data[key]);
+      if (val !== null && val < thresholds[key]) {
         return false;
       }
     }
@@ -679,6 +839,22 @@
     $('#modal_leyenda_colores_Label').text(
       'Guia Operativa - Programa General'
     );
+
+    var _cfg = getRestrictionConfig();
+    var _hardKeys = getRestrictionKeys();
+    var _hardLabels = [];
+    for (var _ri = 0; _ri < _hardKeys.length; _ri++) {
+      _hardLabels.push(getRestrictionLabel(_hardKeys[_ri]));
+    }
+    var _restrictionInfoHtml = _hardLabels.length > 0
+      ? "<section class='pg-legend-quick-group'>" +
+        "<h6 class='pg-legend-quick-group-title'>Restricciones Obligatorias (" + _hardLabels.length + ")</h6>" +
+        "<div class='pg-legend-quick-row'>" +
+        "<div class='pg-legend-quick-state'><small>" + escapeHtml(_hardLabels.join(' | ')) + "</small></div>" +
+        '</div>' +
+        '</section>'
+      : '';
+
     $('#modal_leyenda_colores_body').html(
       "<div class='pg-legend-quick'>" +
         "<div class='pg-legend-quick-header'>" +
@@ -734,6 +910,7 @@
         "<span class='pg-legend-quick-priority is-p3'>P3</span>" +
         '</div>' +
         '</section>' +
+        _restrictionInfoHtml +
         "<section class='pg-legend-quick-alerts'>" +
         "<h6 class='pg-legend-quick-group-title'>Alertas secundarias de restricciones</h6>" +
         "<p class='pg-legend-quick-alert-intro'>R0-R1-R2/3-R4/6 no cambian el estado principal. Solo anticipan desbloqueos.</p>" +
@@ -929,9 +1106,9 @@
 
     if (ratioVal > 1.0001) { // Pequeño margen para precisión decimal
       var maxVal = (isPercentLikeUnit(unidad) || cantidadPpto <= 0) ? "100%" : (cantidadPpto + " " + unidad);
-      return { 
-        valid: false, 
-        error: "El valor resultante (" + (ratioVal * 100).toFixed(1) + "%) excede el rango permitido (0-100%). Máximo: " + maxVal 
+      return {
+        valid: false,
+        error: "El valor resultante (" + (ratioVal * 100).toFixed(1) + "%) excede el rango permitido (0-100%). Máximo: " + maxVal
       };
     }
 
@@ -988,8 +1165,8 @@
       'Consecutivo_en_Programa', 'Consecutivo', 'Id', 'Titulo', 'Estado', 'Semanas_Inicio',
       'Fecha_Inicio', 'Fecha_Fin', 'Ruta_Critica', 'Ejecutado', 'EjecutadoDisplay',
       'unidad', 'cantidad_ppto', 'codigo_actividad', 'Estado_Restricciones',
-      'D_y_E', 'Materiales', 'MdeO', 'Equipos', 'Predecesora', 'alerta_crisis'
-    ];
+      'alerta_crisis'
+    ].concat(getRestrictionKeys());
     var rowData = {};
     var hasValue = false;
 
@@ -1188,7 +1365,7 @@
               if (response.cantidad_ppto !== undefined) {
                 hot.setDataAtRowProp(visualRow, 'cantidad_ppto', response.cantidad_ppto, 'internal-update');
               }
-              
+
               var physicalRow = hot.toPhysicalRow(visualRow);
               if (physicalRow !== null && physicalRow >= 0) {
                 if (typeof hot.getSourceDataAtRow === 'function') {
@@ -1201,7 +1378,7 @@
                   }
                 }
               }
-              
+
               updatedRowData = getSourceRowDataByVisualRow(hot, visualRow) || updatedRowData;
               hot.setDataAtRowProp(
                 visualRow,
@@ -1213,7 +1390,7 @@
 
             var physicalRow = hot.toPhysicalRow(visualRow);
             var rd = getSourceRowDataByVisualRow(hot, visualRow);
-            
+
             // 1. Destruir rastros de caché y pre-actualizar objeto crudo para evitar recálculos obsoletos en ciclos de HT
             if (rd) {
               if (response.estado) rd.Estado = response.estado;
@@ -1228,7 +1405,7 @@
                 }
               }
             }
-            
+
             if (physicalRow !== null && physicalRow >= 0) {
               _rowClassCache[physicalRow] = undefined;
               if (typeof _rowMetaCache !== 'undefined') _rowMetaCache[physicalRow] = undefined;
@@ -1256,7 +1433,7 @@
               if (parseInt(rd.alerta_crisis, 10) === 1 && !hdr) {
                 composed += ' pg-row-crisis';
               }
-              
+
               var colCount = hot.countCols();
               var colsSettings = hot.getSettings().columns || [];
               for (var c = 0; c < colCount; c++) {
@@ -1271,7 +1448,7 @@
                 // Ejecutado Real siempre editable, incluso cuando la semana
                 // está confirmada o el rol no es director.
                 if (p === 'EjecutadoDisplay' && !hdr) canEdit = true;
-                
+
                 var finalClass = ('htMiddle ' + baseClass + ' ' + composed + ' ' + (canEdit ? 'pg-cell-editable' : 'pg-cell-readonly') + (hdr ? ' pdc-header' : '')).trim();
                 hot.setCellMeta(visualRow, c, 'className', finalClass);
               }
@@ -1437,13 +1614,13 @@
         var cantidadPpto = toNumber(rowData.cantidad_ppto, null);
         var physicalVal = toNumber(value, null);
         var ratio = getEjecutadoRatio(rowData);
-        
+
         if (physicalVal === null) { td.textContent = ''; return; }
-        
+
         var unidad = String(rowData.unidad || '').trim();
-        
+
         var physicalDisplay = formatDecimalComma(physicalVal, 1);
-        
+
         if (isPercentLikeUnit(unidad) || cantidadPpto === null || cantidadPpto <= 0) {
             td.textContent = physicalDisplay + '%';
         } else {
@@ -2284,9 +2461,9 @@
         var cw = baseWidth - 60;
         // Suma exacta = 1.0 (100%)
         // [Id, Cod, Actividad, SemIni, F.Ini, F.Fin, Crit, Unidad, PPTO, Ej.Teo, Ej.Real, Estado, Lib.Restr]
-        var p = [0.04, 0.05, 0.25, 0.05, 0.08, 0.08, 0.04, 0.04, 0.06, 0.07, 0.07, 0.10, 0.07]; 
+        var p = [0.04, 0.05, 0.25, 0.05, 0.08, 0.08, 0.04, 0.04, 0.06, 0.07, 0.07, 0.10, 0.07];
         var w = Math.floor(cw * p[index]);
-        return Math.max(w, 20); 
+        return Math.max(w, 20);
       },
       autoRowSize: false,
       rowHeights: 45,
@@ -2385,7 +2562,7 @@
             previousContext: previousContext,
           });
         }
-        
+
         this.render();
       },
     });
@@ -2668,7 +2845,9 @@
     }
 
     syncLegendVisualState();
-    loadData();
+    fetchRestrictionConfig().always(function () {
+      loadData();
+    });
   }
 
   window.PGHotModule = {

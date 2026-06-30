@@ -36,6 +36,14 @@ window.HOTActualizarModule = (function() {
         'codigo_actividad': true
     };
 
+    function getSilentFields() {
+        var config = window.__RESTRICTION_CONFIG__;
+        if (config && config.restrictions) {
+            return config.restrictions.map(function(r) { return r.key; });
+        }
+        return ['D_y_E', 'Materiales', 'MdeO', 'Equipos', 'Predecesora', 'Pdto_Cons', 'Modelo'];
+    }
+
     // Obtenemos el JSON de opciones pre-cargado desde PHP
     var sourceDataHistorica = [];
     try {
@@ -176,7 +184,7 @@ window.HOTActualizarModule = (function() {
      */
     function ActivityMappingRenderer(instance, td, row, col, prop, value, cellProperties) {
         Handsontable.renderers.HtmlRenderer.apply(this, arguments);
-        
+
         var displayValue = (value || '').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
         var chipHtml = displayValue;
 
@@ -189,9 +197,9 @@ window.HOTActualizarModule = (function() {
         td.className = "htMiddle htCenter force-wrap pg-cell-editable";
 
         if (value === null || value === '' || value === '*No Asociada*') {
-            td.style.backgroundColor = 'rgba(235, 64, 52, 0.05)'; 
+            td.style.backgroundColor = 'rgba(235, 64, 52, 0.05)';
         } else {
-            td.style.backgroundColor = 'rgba(26, 86, 51, 0.05)'; 
+            td.style.backgroundColor = 'rgba(26, 86, 51, 0.05)';
         }
     }
 
@@ -201,11 +209,11 @@ window.HOTActualizarModule = (function() {
     function ReadOnlyRenderer(instance, td, row, col, prop, value, cellProperties) {
         Handsontable.renderers.HtmlRenderer.apply(this, arguments);
         td.className = "htMiddle force-wrap pg-cell-readonly";
-        
+
         // Colorear toda la fila sutilmente si la actividad no está asociada
         var isMapped = instance.getDataAtRowProp(row, 'programaAnteriorAsociar');
         if (isMapped === null || isMapped === '' || isMapped === '*No Asociada*') {
-            td.style.backgroundColor = 'rgba(255,83,51,0.05)'; 
+            td.style.backgroundColor = 'rgba(255,83,51,0.05)';
         } else {
             td.style.backgroundColor = '#f8fafc'; // Color por defecto readonly
         }
@@ -298,13 +306,13 @@ window.HOTActualizarModule = (function() {
         $('#loading').show();
         var db = document.getElementById('baseDatos').value;
         var semanaVal = getBaseSemanaActualizacion();
-        
+
         console.log("🔥 [MapeoManual] Valor detectado en input #semana: ", semanaVal);
-        
+
         // Fetch desde el API: consultamos la semana objetivo calculada por backend.
         var targetSemana = getTargetSemanaActualizacion();
         var fullUrl = "/api/general/list?db=" + db + "&semana_objetivo=" + targetSemana + "&exclude_chapters=1";
-        
+
         console.log("🔥 [MapeoManual] targetSemana calculado: ", targetSemana);
         console.log("🔥 [MapeoManual] Iniciando fetch GET: ", fullUrl);
         fetch(fullUrl)
@@ -331,7 +339,7 @@ window.HOTActualizarModule = (function() {
                         row.Ejecutado = physicalValue;
                     });
                 } else {
-                    rawData = []; 
+                    rawData = [];
                 }
                 applyFilterAndRender();
 
@@ -359,7 +367,7 @@ window.HOTActualizarModule = (function() {
 
     function applyFilterAndRender() {
         var filteredData = rawData;
-        
+
         if (showingUnmappedOnly) {
             filteredData = rawData.filter(function(row) {
                 return row.programaAnteriorAsociar === '*No Asociada*' || row.programaAnteriorAsociar === null || row.programaAnteriorAsociar === '';
@@ -426,7 +434,7 @@ window.HOTActualizarModule = (function() {
         // Detectamos si cambió la unidad o el presupuesto sin que haya cambiado el Ejecutado explícitamente.
         if ((changesObj['unidad'] !== undefined || changesObj['cantidad_ppto'] !== undefined) && changesObj['Ejecutado'] === undefined) {
             var currentPhysical = parseFloat(rowData.Ejecutado || 0);
-            var oldUnit = (changesObj['unidad'] !== undefined) ? hot.getDataAtRowProp(visualRowIndex, 'unidad') : rowData.unidad; 
+            var oldUnit = (changesObj['unidad'] !== undefined) ? hot.getDataAtRowProp(visualRowIndex, 'unidad') : rowData.unidad;
             // Nota: en hot_actualizar el rowData ya tiene el Valor Nuevo si afterChange disparó esto.
             // Pero autoSaveRow es llamado DESPUÉS de que el modelo ya se actualizó si se usa hooks normales.
             // Para simplicidad, calculamos el ratio anterior asumiendo que el cambio está en changesObj.
@@ -439,7 +447,7 @@ window.HOTActualizarModule = (function() {
             .addClass('badge-warning')
             .text('Guardando...')
             .fadeIn(120);
-        
+
         var formData = new URLSearchParams();
         formData.append('Id', rowId);
 
@@ -450,14 +458,14 @@ window.HOTActualizarModule = (function() {
         if ((changesObj['unidad'] !== undefined || changesObj['cantidad_ppto'] !== undefined) && changesObj['Ejecutado'] === undefined) {
             // Obtenemos el valor físico "viejo" (que ya está en rowData)
             var physicalBefore = parseFloat(rowData.Ejecutado || 0);
-            
+
             // Reconstruimos el contexto "viejo"
             var unidadCol = getColumnIndexByProp('unidad');
             var oldUnidad = (changesObj['unidad'] !== undefined && unidadCol >= 0) ? hot.getCellMeta(visualRowIndex, unidadCol)._oldValue || currentUnidad : currentUnidad;
             // Handsontable meta no siempre guarda _oldValue de forma fiable así que usamos una lógica más simple:
             // Si el usuario cambió de % a ml, el valor '80' significaba 80%.
             // Si cambió de ml a %, el valor '160' significaba (160/oldPpto).
-            
+
             // Intentaremos inferir el ratio basado en el valor actual y el contexto cambiado.
             // Dado que no tenemos el oldValue fácil en este scope, usaremos la lógica de buildUpdatePayload de hot.js si fuera posible.
             // Pero aquí el rowData YA TIENE el nuevo valor.
@@ -478,7 +486,7 @@ window.HOTActualizarModule = (function() {
         formData.append('Id', cleanId);
         formData.append('opcion', 'editar');
         formData.append('editarActividadAsociar', '1');
-        
+
         // Mapear campos HOT a keys de backend:
         // Hot Prop -> Backend Param
         // Actividad -> No se envía (es de lectura)
@@ -494,12 +502,12 @@ window.HOTActualizarModule = (function() {
 
         if(changesObj['cantidad_ppto'] !== undefined) formData.append('cantidad_ppto', changesObj['cantidad_ppto']);
         else formData.append('cantidad_ppto', rowData.cantidad_ppto !== undefined ? rowData.cantidad_ppto : '');
-        
+
         // AIA 2026: El Data Model tiene ahora la cantidad FÍSICA.
         // El Backend de actualización espera exactamente eso: La cantidad física (o de 0-100 para %).
         var physicalToSubmit = parseFloat((changesObj['Ejecutado'] !== undefined) ? changesObj['Ejecutado'] : rowData.Ejecutado);
-        if (isNaN(physicalToSubmit)) physicalToSubmit = 0; 
-        
+        if (isNaN(physicalToSubmit)) physicalToSubmit = 0;
+
         formData.append('Ejecutado', physicalToSubmit.toFixed(2));
 
         if(changesObj['actividadAsociar'] !== undefined) formData.append('actividadAsociar', changesObj['actividadAsociar']);
@@ -570,9 +578,9 @@ window.HOTActualizarModule = (function() {
                 }
                 if (res.Estado_Restricciones !== undefined) hot.setDataAtRowProp(visualRowIndex, 'Estado_Restricciones', res.Estado_Restricciones, 'internal');
                 if (res.estado !== undefined) hot.setDataAtRowProp(visualRowIndex, 'Estado', res.estado, 'internal');
-                
+
                 // Herencia de las 7 restricciones individuales (persistidas pero no visibles)
-                const silentFields = ['D_y_E', 'Materiales', 'MdeO', 'Equipos', 'Predecesora', 'Pdto_Cons', 'Modelo'];
+                const silentFields = getSilentFields();
                 silentFields.forEach(field => {
                     if (res[field] !== undefined) hot.setDataAtRowProp(visualRowIndex, field, res[field], 'internal');
                 });
@@ -631,8 +639,8 @@ window.HOTActualizarModule = (function() {
                 { data: 'Consecutivo_en_Programa', type: 'numeric', readOnly: true },
                 { data: 'Id', type: 'text', readOnly: true },
                 { data: 'Actividad', type: 'text', readOnly: true, renderer: ReadOnlyRenderer },
-                { 
-                    data: 'programaAnteriorAsociar', 
+                {
+                    data: 'programaAnteriorAsociar',
                     type: 'text',
                     className: "htCenter htMiddle",
                     editor: 'tomSelectSingle',
@@ -641,31 +649,31 @@ window.HOTActualizarModule = (function() {
                 },
                 { data: 'Fecha_Inicio', type: 'date', dateFormat: 'YYYY-MM-DD', className: "htCenter htMiddle" },
                 { data: 'Fecha_Fin', type: 'date', dateFormat: 'YYYY-MM-DD', className: "htCenter htMiddle" },
-                { 
-                    data: 'unidad', 
-                    type: 'dropdown', 
-                    source: unitOptions, 
-                    className: "htCenter htMiddle" 
+                {
+                    data: 'unidad',
+                    type: 'dropdown',
+                    source: unitOptions,
+                    className: "htCenter htMiddle"
                 },
-                { 
-                    data: 'cantidad_ppto', 
-                    type: 'numeric', 
-                    numericFormat: { pattern: '0.0' }, 
-                    className: "htCenter htMiddle" 
+                {
+                    data: 'cantidad_ppto',
+                    type: 'numeric',
+                    numericFormat: { pattern: '0.0' },
+                    className: "htCenter htMiddle"
                 },
-                { 
-                    data: 'Estado_Restricciones', 
-                    type: 'numeric', 
+                {
+                    data: 'Estado_Restricciones',
+                    type: 'numeric',
                     readOnly: true,
                     className: "htCenter htMiddle",
                     renderer: pgPercentRenderer
                 },
-                { 
-                    data: 'Ejecutado', 
-                    type: 'numeric', 
-                    numericFormat: { pattern: '0.0' }, 
+                {
+                    data: 'Ejecutado',
+                    type: 'numeric',
+                    numericFormat: { pattern: '0.0' },
                     className: "htCenter htMiddle",
-                    renderer: pgEjecutadoRealRenderer 
+                    renderer: pgEjecutadoRealRenderer
                 }
             ],
             cells: function(row, col, prop) {
@@ -696,7 +704,7 @@ window.HOTActualizarModule = (function() {
                     className: (columnMeta.className || '') + (canEdit ? ' pg-cell-editable' : ' pg-cell-readonly'),
                 };
             },
-            
+
             // Características UX AIA 2026
             stretchH: 'none',
             autoWrapRow: false,

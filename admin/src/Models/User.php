@@ -509,7 +509,7 @@ class User
         $userEmail = $this->normalizeEmail($user['email'] ?? '');
 
         return $this->checkUserActivityInProject(
-            $dbPrefix,
+            $projectId,
             $userName,
             $userEmail,
         );
@@ -519,15 +519,16 @@ class User
      * Check if a user has activity in a project's tables.
      */
     private function checkUserActivityInProject(
-        string $dbPrefix,
+        int $projectId,
         string $userName,
         string $userEmail,
     ): ?string {
-        // A) Check {prefix}_profesionales (activo = 1)
-        $profTable = "{$dbPrefix}_profesionales";
+        // A) Check profesionales (activo = 1)
+        $profTable = 'profesionales';
         if ($this->tableExists($profTable)) {
             $found = $this->findProfessionalMatch(
                 $profTable,
+                $projectId,
                 $userName,
                 $userEmail,
             );
@@ -536,11 +537,12 @@ class User
             }
         }
 
-        // B) Check {prefix}_programa_consolidado
-        $consTable = "{$dbPrefix}_programa_consolidado";
+        // B) Check programa_consolidado
+        $consTable = 'programa_consolidado';
         if ($this->tableExists($consTable)) {
             $found = $this->findResponsableMatch(
                 $consTable,
+                $projectId,
                 $userName,
                 $userEmail,
             );
@@ -549,11 +551,12 @@ class User
             }
         }
 
-        // C) Check {prefix}_programacion_semanal
-        $semTable = "{$dbPrefix}_programacion_semanal";
+        // C) Check programacion_semanal
+        $semTable = 'programacion_semanal';
         if ($this->tableExists($semTable)) {
             $found = $this->findResponsableMatch(
                 $semTable,
+                $projectId,
                 $userName,
                 $userEmail,
             );
@@ -578,6 +581,7 @@ class User
      */
     private function findProfessionalMatch(
         string $table,
+        int $projectId,
         string $name,
         string $email,
     ): ?string {
@@ -586,8 +590,8 @@ class User
         }
 
         $rows = $this->db->query(
-            "SELECT nombre, email FROM {$table} WHERE activo = 1 AND TRIM(nombre) = ?",
-            [$name],
+            "SELECT nombre, email FROM {$table} WHERE project_id = ? AND activo = 1 AND TRIM(nombre) = ?",
+            [$projectId, $name],
         )->fetchAll();
 
         if (count($rows) === 1) {
@@ -611,6 +615,7 @@ class User
      */
     private function findResponsableMatch(
         string $table,
+        int $projectId,
         string $name,
         string $email,
     ): bool {
@@ -620,8 +625,8 @@ class User
 
         // 1. Search by Name
         $count = (int) $this->db->query(
-            "SELECT COUNT(*) FROM {$table} WHERE TRIM(Responsable_AIA) = ?",
-            [$name],
+            "SELECT COUNT(*) FROM {$table} WHERE project_id = ? AND TRIM(Responsable_AIA) = ?",
+            [$projectId, $name],
         )->fetchColumn();
 
         if ($count > 0) {
@@ -631,8 +636,8 @@ class User
         // 2. Fallback to Email
         if (!empty($email)) {
             $count = (int) $this->db->query(
-                "SELECT COUNT(*) FROM {$table} WHERE TRIM(Responsable_AIA) = ?",
-                [$email],
+                "SELECT COUNT(*) FROM {$table} WHERE project_id = ? AND TRIM(Responsable_AIA) = ?",
+                [$projectId, $email],
             )->fetchColumn();
         }
 

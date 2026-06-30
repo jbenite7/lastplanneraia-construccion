@@ -16,17 +16,17 @@
             gap: 6px;
         }
         /* Nuclear specificity to force rectangular tools for DataTable Header */
-        body #dt_cliente_wrapper .filaBotones .btn, 
-        body #dt_cliente_wrapper .filaBotones button, 
-        body #dt_cliente_wrapper .filaMensajes .btn, 
-        body #dt_cliente_wrapper .filaMensajes button, 
-        body #dt_cliente_wrapper .filaMensajes .form-control, 
+        body #dt_cliente_wrapper .filaBotones .btn,
+        body #dt_cliente_wrapper .filaBotones button,
+        body #dt_cliente_wrapper .filaMensajes .btn,
+        body #dt_cliente_wrapper .filaMensajes button,
+        body #dt_cliente_wrapper .filaMensajes .form-control,
         body #dt_cliente_wrapper .dataTables_filter input {
             border-radius: 4px !important;
             -webkit-appearance: none !important;
             appearance: none !important;
         }
-        
+
         /* Dropdown de Navegación por Hover - Visibility Fix */
         .ps-dropdown-nav {
             position: relative;
@@ -223,6 +223,7 @@
 	<!-- Lista desplegable con buscador -->
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
 	<!--Script con la funcion que carga los datos generales del archivo-->
+	<script>window.__PROJECT_AREA__ = <?php echo json_encode($_SESSION['area'] ?? 'Construccion'); ?>;</script>
 	<script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js" charset="utf-8"></script>
 	<!--Script con las funciones NUEVA SEMANA y ELIMINAR SEMANA-->
 	<script type="text/javascript" src="/js/funcionesGenerales6.js" charset="utf-8"></script>
@@ -264,7 +265,7 @@
 		var listar = function() {
 			var db = document.getElementById('baseDatos') ? document.getElementById('baseDatos').value : document.getElementById('db_PHP').value;
 			var semana = document.getElementById('semana') ? document.getElementById('semana').value : document.getElementById('semana_PHP').value;
-			
+
 			var inputSemanalConfirmada = document.getElementById('Semanal_Confirmada');
 			var Semanal_Confirmada = inputSemanalConfirmada ? inputSemanalConfirmada.value : 0;
 
@@ -278,7 +279,7 @@
 			}else{
 					var botones_disponibles="<button type= 'button' class='editar btn btn-primary btn-sm ps-btn-tight'><i class='fa fa-edit fa-xs'></i></button><button type= 'button' class='reprogramar btn btn-success btn-sm ps-btn-tight'><i class='fa fa-undo-alt fa-xs'></i></button>";
 			}
-			
+
 			var table = $("#dt_cliente").DataTable({
 				"dom": "<'row filaBotones'<'col-md-12 mr-auto p-0'<'ps-actions-row'>>><'row filaMensajes'<'col-md-6 mr-auto p-0'<'toolbarFilaMensajes'>><'col-md-2 ml-auto p-0'<'toolbarResetFiltro'>><'col-md-2 ml-auto p-0'<'toolbarFiltro'>>>t<'row'<'col-md-6'i>><'clear'>",
 				"destroy": true,
@@ -439,10 +440,10 @@
 			$("div.toolbarFilaMensajes").html('<p id="mensajeActualizacion"></p>');
 
 			$("div.toolbarFiltro").html('<div class="ps-toolbar-filter"><button id="btn_limpiar_buscador" type="button" class="btn-pdc-modern ps-filter-clear" aria-label="Limpiar búsqueda"><i class="fas fa-times-circle" aria-hidden="true"></i> Limpiar</button></div>');
-			
+
 			var permisoElem = document.getElementById('permiso_canonico');
 			var permiso = permisoElem ? permisoElem.value : '';
-			
+
 			if (typeof maestroPermisos === "function") {
 				maestroPermisos(permiso);
 			}
@@ -472,9 +473,11 @@
 					var Responsable_AIA = <?php
                             $dbInstance = Database::getInstance();
     $db = $_SESSION["db"];
-    $query = "SELECT * FROM {$db}_profesionales WHERE Activo=1";
+    $tableName = TableResolver::resolveByPrefix($db, 'profesionales');
+    $projectId = TableResolver::getProjectIdByPrefix($db);
+    $query = "SELECT * FROM {$tableName} WHERE Activo=1";
     try {
-        $stmt = $dbInstance->query($query);
+        $stmt = $dbInstance->queryWithProject($query, [], $projectId);
         $Responsable_AIA = "";
         while ($valores = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $valor = $valores["nombre"];
@@ -487,8 +490,9 @@
     ?> ;
 					var codigo_html_Responsable_AIA = "<select id='select_Responsable_AIA' name='Responsable_AIA' class='form-control form-control-sm' ><option value=''></option>" + Responsable_AIA + "</select>";
 					$(this).parent().find('.input_Responsable_AIA').html(codigo_html_Responsable_AIA);
-					var codigo_html_Categoria_CNC = "<select id='select_Categoria_CNC' name='Categoria_CNC' class='form-control form-control-sm'><option value='' selected></option><option value='Rendimiento'>Rendimiento</option><option value='Programación'>Programación</option><option value='Mano de Obra'>Mano de Obra</option><option value='Materiales'>Materiales</option><option value='Equipos'>Equipos</option><option value='Diseños'>Diseños</option><option value='Administrativas'>Administrativas</option><option value='Causas Exógenas'>Causas Exógenas</option></select>";
+					var codigo_html_Categoria_CNC = "<select id='select_Categoria_CNC' name='Categoria_CNC' class='form-control form-control-sm'><option value='' selected></option></select>";
 					$(this).parent().find('.input_Categoria_CNC').html(codigo_html_Categoria_CNC);
+					cargarCategoriasCNC();
 					var codigo_html_CNC = "<select id='select_CNC' name='CNC' class='form-control form-control-sm'><option value='' selected></option></select>";
 					$(this).parent().find('.input_CNC').html(codigo_html_CNC);
 					var codigo_html_Observaciones_CNC = "<textarea id='select_Observaciones_CNC' name='Observaciones_CNC' class='form-control form-control-sm'>'" + data.Observaciones_CNC + "'</textarea>";
@@ -539,7 +543,7 @@
 		    $.ajax({
 		      method: "POST",
 		      url: "/api/cnc/reasons",
-		      data: { "categoria": categoria },
+		      data: { "categoria": categoria, "area": window.__PROJECT_AREA__ || 'Construccion' },
 		      success: function(data) {
 		        var optionsHtml = "<option value=''></option>";
 		        if (Array.isArray(data)) {
@@ -568,7 +572,7 @@
 		    $.ajax({
 		      method: "POST",
 		      url: "/api/cnc/reasons",
-		      data: { "categoria": categoria },
+		      data: { "categoria": categoria, "area": window.__PROJECT_AREA__ || 'Construccion' },
 		      success: function(data) {
 		        var optionsHtml = "<option value=''></option>";
 		        if (Array.isArray(data)) {
@@ -584,6 +588,21 @@
 		    });
 		    }
 		  });
+		}
+
+		var cargarCategoriasCNC = function() {
+		  var area = window.__PROJECT_AREA__ || 'Construccion';
+		  var categorias = [];
+		  if (area === 'Pre-Construccion') {
+		    categorias = ['Diseños', 'Modelación', 'Presupuesto', 'Contratación', 'Trámites'];
+		  } else {
+		    categorias = ['Rendimiento', 'Programación', 'Mano de Obra', 'Materiales', 'Equipos', 'Diseños', 'Administrativas', 'Causas Exógenas'];
+		  }
+		  var html = "<option value='' selected></option>";
+		  categorias.forEach(function(cat) {
+		    html += "<option value='" + cat + "'>" + cat + "</option>";
+		  });
+		  $('#select_Categoria_CNC').html(html);
 		}
 
 

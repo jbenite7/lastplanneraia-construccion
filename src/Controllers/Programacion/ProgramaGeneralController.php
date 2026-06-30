@@ -5,6 +5,7 @@ namespace App\Controllers\Programacion;
 use App\Controllers\BaseController;
 use App\Services\ProjectLandingService;
 
+use TableResolver;
 class ProgramaGeneralController extends BaseController
 {
     public function index()
@@ -18,7 +19,7 @@ class ProgramaGeneralController extends BaseController
         $proyecto = $vars['proyecto'] ?? '';
         $permiso = $vars['permiso'] ?? '';
         $pdcActivo = $vars['pdcActivo'] ?? '';
-        $projectId = (int) ($vars['projectId'] ?? 0);
+        $area = $vars['area'] ?? 'Construccion';
 
         $maxSemana = 0;
         $fechaInicioSem = '';
@@ -30,16 +31,15 @@ class ProgramaGeneralController extends BaseController
         $fechaCierreCompromisos = '';
         $fechaCreacionSemana = '';
         $versionCronograma = '';
+        $restrictionConfig = null;
 
         try {
             if (!empty($dbName) && preg_match('/^[a-zA-Z0-9_]+$/', $dbName)) {
-                $sqlUltima = "SELECT Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem
-                              FROM {$dbName}_semanas_activas
-                              WHERE project_id = ? AND Semana = (
-                                  SELECT MAX(Semana) FROM {$dbName}_semanas_activas WHERE project_id = ?
-                              )";
-                $stmtUltima = $this->db->prepare($sqlUltima);
-                $stmtUltima->execute([$projectId, $projectId]);
+                $projectId = TableResolver::getProjectIdByPrefix($dbName);
+                $tSa = TableResolver::resolveByPrefix($dbName, 'semanas_activas');
+
+                $sqlUltima = "SELECT Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem FROM {$tSa} ORDER BY Semana DESC LIMIT 1";
+                $stmtUltima = $this->db->queryWithProject($sqlUltima);
                 $dataUltima = $stmtUltima->fetch();
 
                 if ($dataUltima) {
@@ -53,10 +53,9 @@ class ProgramaGeneralController extends BaseController
                 }
 
                 $sqlDetalles = "SELECT Semanal_Confirmada, fechaCierreCompromisos, fechaCreacionSemana,
-                               (SELECT SUM(reprogramacion) FROM {$dbName}_semanas_activas WHERE project_id = ? AND Semana <= ?) AS versionCronograma
-                               FROM {$dbName}_semanas_activas WHERE project_id = ? AND Semana = ?";
-                $stmtDetalles = $this->db->prepare($sqlDetalles);
-                $stmtDetalles->execute([$projectId, $semana, $projectId, $semana]);
+                               (SELECT SUM(reprogramacion) FROM {$tSa} WHERE Semana <= ? AND project_id = ?) AS versionCronograma
+                               FROM {$tSa} WHERE Semana = ? AND project_id = ?";
+                $stmtDetalles = $this->db->queryWithProject($sqlDetalles, [$semana, $projectId, $semana, $projectId]);
                 $dataDetalles = $stmtDetalles->fetch();
 
                 if ($dataDetalles) {
@@ -68,6 +67,84 @@ class ProgramaGeneralController extends BaseController
             }
         } catch (\PDOException $e) {
             error_log("Error cargando variables ProgramaGeneral: " . $e->getMessage());
+        }
+
+        // Pre-construction: build restriction config for server-side injection
+        if ($area === 'Pre-Construccion') {
+            $pcLabel2 = null;
+            $pcLabel3 = null;
+            $pcLabel4 = null;
+
+            try {
+                if (!empty($dbName) && preg_match('/^[a-zA-Z0-9_]+$/', $dbName)) {
+                    $stmtPc = $this->db->queryWithProject(
+                        "SELECT pc_restr_2_nombre, pc_restr_3_nombre, pc_restr_4_nombre
+                         FROM general_proyectos_procesos
+                         WHERE Base_de_Datos = ?
+                         LIMIT 1",
+                        [$dbName]
+                    );
+                    $proyectoPc = $stmtPc->fetch(\PDO::FETCH_ASSOC);
+
+                    if ($proyectoPc) {
+                        $pcLabel2 = !empty($proyectoPc['pc_restr_2_nombre']) ? $proyectoPc['pc_restr_2_nombre'] : null;
+                        $pcLabel3 = !empty($proyectoPc['pc_restr_3_nombre']) ? $proyectoPc['pc_restr_3_nombre'] : null;
+                        $pcLabel4 = !empty($proyectoPc['pc_restr_4_nombre']) ? $proyectoPc['pc_restr_4_nombre'] : null;
+                    }
+                }
+            } catch (\PDOException $e) {
+                error_log("Error cargando restricciones PC: " . $e->getMessage());
+            }
+
+            $restrictions = [
+                [
+                    'key'       => 'restriccion_pc_1',
+                    'label'     => 'Predecesora',
+                    'type'      => 'hard',
+                    'threshold' => 50,
+                    'options'   => ['0%', '33%', '66%', '100%', 'N/A'],
+                ],
+            ];
+
+            $softRestrictions = [];
+
+            if ($pcLabel2 !== null) {
+                $restrictions[] = [
+                    'key'       => 'restriccion_pc_2',
+                    'label'     => $pcLabel2,
+                    'type'      => 'soft',
+                    'threshold' => 100,
+                    'options'   => ['0%', '50%', '100%', 'N/A'],
+                ];
+                $softRestrictions[] = 'restriccion_pc_2';
+            }
+            if ($pcLabel3 !== null) {
+                $restrictions[] = [
+                    'key'       => 'restriccion_pc_3',
+                    'label'     => $pcLabel3,
+                    'type'      => 'soft',
+                    'threshold' => 100,
+                    'options'   => ['0%', '50%', '100%', 'N/A'],
+                ];
+                $softRestrictions[] = 'restriccion_pc_3';
+            }
+            if ($pcLabel4 !== null) {
+                $restrictions[] = [
+                    'key'       => 'restriccion_pc_4',
+                    'label'     => $pcLabel4,
+                    'type'      => 'soft',
+                    'threshold' => 100,
+                    'options'   => ['0%', '50%', '100%', 'N/A'],
+                ];
+                $softRestrictions[] = 'restriccion_pc_4';
+            }
+
+            $restrictionConfig = [
+                'area' => 'Pre-Construccion',
+                'restrictions' => $restrictions,
+                'hardRestrictions' => ['restriccion_pc_1'],
+                'softRestrictions' => $softRestrictions,
+            ];
         }
 
         require PROJECT_ROOT . '/views/programa-general/programa_general.view.php';
@@ -115,7 +192,6 @@ class ProgramaGeneralController extends BaseController
 
         $dbPrefix = $_POST['db'] ?? '';
         $semana = filter_var($_POST['semana'] ?? 0, FILTER_VALIDATE_INT);
-        $projectId = (int) ($_SESSION['project_id'] ?? 0);
 
         // Validación del prefijo (seguridad básica)
         if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
@@ -141,19 +217,18 @@ class ProgramaGeneralController extends BaseController
         }
 
         // Consultas para contar registros por estado persistido (fuente única)
-        $query = "SELECT 
+        $query = "SELECT
             COALESCE(SUM(CASE WHEN (Estado = 'Actividad Futura' OR Estado = 'En Liberación de Restricciones' OR Estado = 'No Requerida') THEN 1 ELSE 0 END), 0) AS lookahead,
             COALESCE(SUM(CASE WHEN Estado = 'Debe Iniciar' THEN 1 ELSE 0 END), 0) AS no_iniciadas,
             COALESCE(SUM(CASE WHEN (Estado = 'En Curso' OR Estado = 'A Tiempo') THEN 1 ELSE 0 END), 0) AS a_tiempo,
             COALESCE(SUM(CASE WHEN (Estado = 'Atrasada' OR Estado = 'Ya Debió Iniciar y Restricciones Pendientes') THEN 1 ELSE 0 END), 0) AS atrasadas,
             COALESCE(SUM(CASE WHEN (Estado = 'Terminada' OR Estado = 'Terminada Antes') THEN 1 ELSE 0 END), 0) AS terminadas,
             COUNT(*) AS total
-            FROM {$dbPrefix}_programa_consolidado 
-            WHERE project_id = ? AND Semana = ? AND Titulo = 0";
+            FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . "
+            WHERE Semana = ? AND Titulo = 0";
 
         try {
-            $stmt = $this->db->prepare($query);
-            $stmt->execute([$projectId, $semana]);
+            $stmt = $this->db->queryWithProject($query, [$semana]);
             $data = $stmt->fetch();
 
             if ($data) {

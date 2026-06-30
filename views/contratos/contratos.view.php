@@ -465,6 +465,7 @@
 	<!-- Lista desplegable con buscador -->
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
 	<!--Script con la funcion que carga los datos generales del archivo-->
+	<script>window.__PROJECT_AREA__ = <?php echo json_encode($_SESSION['area'] ?? 'Construccion'); ?>;</script>
 	<script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js" charset="utf-8"></script>
 	<!--Script con las funciones NUEVA SEMANA y ELIMINAR SEMANA-->
 	<script type="text/javascript" src="/js/funcionesGenerales6.js" charset="utf-8"></script>
@@ -546,7 +547,7 @@
 			var semana = document.getElementById('semana').value;
 			var Max_Semana = document.getElementById('Max_Semana').value;
 			var Max_Semana = document.getElementById('Max_Semana').value;
-		  
+
 			// Initial Height Calculation
 			var alturatabla = calcDataTableHeight();
 			document.getElementById('cuadroTabla').style.height = "auto";

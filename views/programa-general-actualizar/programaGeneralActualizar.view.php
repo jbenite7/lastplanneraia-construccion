@@ -16,7 +16,7 @@
 	<!-- TomSelect CSS -->
 	<link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap4.min.css" rel="stylesheet">
 	<link rel="stylesheet" href="/css/tom-select-premium-aia.css?v=20260314" />
-	
+
 	<!-- Custom CSS for 2026 Guidelines -->
 	<style>
 		/* Estilos Core 2026 para Handsontable Full Bleed */
@@ -34,7 +34,7 @@
 		.pg-page #hot-container .handsontable thead th .changeType { float: none !important; position: static !important; transform: none; width: 13px; height: 13px; border: 1px solid #cfd8e3; border-radius: 4px; background: #f4f7fb; color: #5c6b7a; display: inline-flex; align-items: center; justify-content: center; z-index: 2; font-size: 9px; }
 		.pg-page #hot-container .handsontable .changeType:before { content: "\f0b0"; font-family: "Font Awesome 5 Free"; font-weight: 900; }
 		.pg-page #hot-container .handsontable thead th .changeType:hover { border-color: #7ea7d8; background: #eaf3ff; color: #1e5ea8; cursor: pointer; }
-		
+
 		/* Overrides de Z-index */
 		.pg-page .htDropdownMenu:not(.htGhostTable), .pg-page .htFiltersConditionsMenu:not(.htGhostTable) { z-index: 1085; }
 
@@ -75,7 +75,7 @@
 
 		/* Botones Filtro UI */
 		.pg-actions-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
-		
+
 		@media (max-width: 991px) { .hot-full-bleed { height: calc(100vh - 250px); } }
 
 		/* Matching confidence tiers for Cronograma Actualizar */
@@ -435,8 +435,10 @@
 
 	// Buscar actividades del cronograma activo actual para mapearlas contra el borrador actualizado.
 	$semanaDropdown = max(1, $semanaBaseActualizacion);
-	$query = "SELECT Id, Actividad, Fecha_Inicio FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Titulo = 0 AND Fecha_Inicio IS NOT NULL AND Fecha_Fin IS NOT NULL ORDER BY Consecutivo ASC";
-	$stmt = $dbInstance->query($query, [$semanaDropdown]);
+	$tableName = TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado');
+	$projectId = TableResolver::getProjectIdByPrefix($dbPrefix);
+	$query = "SELECT Id, Actividad, Fecha_Inicio FROM {$tableName} WHERE Semana = ? AND Titulo = 0 AND Fecha_Inicio IS NOT NULL AND Fecha_Fin IS NOT NULL ORDER BY Consecutivo ASC";
+	$stmt = $dbInstance->queryWithProject($query, [$semanaDropdown], $projectId);
 	$actividadesPrevias = [];
 	while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 	    // Formato TomSelect requerido: id, title, label
@@ -487,7 +489,7 @@
 		<!-- Contenedor Handsontable -->
 		<div id="hot-container"></div>
 		<div id="mobile-card-view" style="display:none;"></div>
-		
+
 		<!-- Data para Dropdowns (Hidden context) -->
 		<script id="historicoData" type="application/json"><?php echo $opcionesDropdownJSON; ?></script>
 	</div>
@@ -768,10 +770,11 @@
 	<script type="text/javascript" charset="utf8" src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
 	<!-- Iniciar Bootstrap-->
 	<script type="text/javascript" charset="utf8" src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-	
+
 	<!--Selector de fechas -->
 
 	<!--Global AJAX Loaders-->
+	<script>window.__PROJECT_AREA__ = <?php echo json_encode($_SESSION['area'] ?? 'Construccion'); ?>;</script>
 	<script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js" charset="utf-8"></script>
 	<script type="text/javascript" src="/js/funcionesGenerales6.js" charset="utf-8"></script>
 
@@ -781,14 +784,14 @@
 	<!-- Handsontable Core -->
 	<script src="/public/vendor/handsontable/handsontable.full.min.js"></script>
 	<script src="/public/vendor/handsontable/es-MX.js"></script>
-	
+
 	<!-- Handsontable Plugin para TomSelect (Requiere Hot y TomSelect cargados) -->
 	<script src="/js/HandsontableTomSelectEditor.js?v=tomselect30"></script>
-	
+
 	<!-- Reglas Progresivas ML-Ready -->
 	<script src="/public/js/modules/programa_actualizar/rule_engine.js?v=20260622"></script>
 	<script src="/public/js/modules/programa_actualizar/decision_logger.js?v=20260622"></script>
-	
+
 	<!-- Módulos de Handsontable -->
 	<script src="/public/js/modules/programa_actualizar/hot_actualizar.js?v=20260618b"></script>
 
@@ -798,7 +801,7 @@
 		var cargaParametros = function() {
 			if (typeof guardarCargarExcel === 'function') { guardarCargarExcel(); }
 			if (typeof guardarEliminarActualizacion === 'function') { guardarEliminarActualizacion(); }
-			
+
 			// Init global Hot Module si existe en el entorno
 			if (window.HOTActualizarModule) {
 				window.HOTActualizarModule.init();
@@ -815,7 +818,7 @@
 		    var variables = new FormData($("#formCargarExcel")[0]);
 				var inputFecha = document.getElementById('f_inicio_importar');
 				var f_inicio_sem = inputFecha ? (inputFecha.value) : '';
-		    
+
 		    $.ajax({
 		      type: "POST",
 		      url: "/api/general/import?db="+db+"&semana="+semana+"&f_inicio_sem="+f_inicio_sem,
@@ -828,7 +831,7 @@
 
 		      if (json_info.respuesta == "BIEN") {
 		        $("#modalCargarExcel").modal("hide");
-		        
+
 		        if (semana_json == 1 && Number(semana) == 0) {
 		          // Carga inicial
 		          $("#modalImportacionExitosa").modal("show");
@@ -920,7 +923,7 @@
 				var semana = semanaBaseInput ? semanaBaseInput.value : document.getElementById('semana').value;
 				var semanaObjetivo = semanaObjetivoInput ? semanaObjetivoInput.value : (Number(semana) + 1);
 		    var variables = new FormData($("#formEliminarActualizacion")[0]);
-		    
+
 		    $.ajax({
 		      type: "POST",
 		      url: "/api/general/delete-update?db="+db+"&semana_objetivo="+semanaObjetivo,

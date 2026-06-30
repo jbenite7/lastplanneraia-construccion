@@ -159,7 +159,7 @@
 						</div>
 						<div class="modal-body">
 							<form class="formOrdenCambio form-horizontal" action="" method="POST">
-								
+
 
 								<!-- Se crean los inputs del formulario de contratos de suministro -->
 								<div class="col-sm-12 p-0 mb-4 border-2 border-top-0 rounded border-dark">
@@ -227,7 +227,7 @@
 											</div>
 										</div>
 									</div>
-									<div class="row m-0">									
+									<div class="row m-0">
 										<div class="form-group col-sm-5 border-right mt-0 mb-0 pt-3 pb-3">
 											<div class="form-group mb-0">
 												<label for="checkboxTipoCambio"><b>Tipo de Cambio</b></label>
@@ -240,26 +240,26 @@
 												<div class="form-check form-check-inline" data-field-group="checkboxTipoCambio">
 													<input type="checkbox" class="form-check-input" name="inputTipoCambioCronograma" id="inputTipoCambioCronograma" value="1">
 													<label class="form-check-label" for="inputTipoCambioCronograma">Cronograma</label>
-												</div>	
+												</div>
 												<div class="form-check form-check-inline" data-field-group="checkboxTipoCambio">
 													<input type="checkbox" class="form-check-input" name="inputTipoCambioCosto" id="inputTipoCambioCosto" value="1">
 													<label class="form-check-label" for="inputTipoCambioCosto">Costo</label>
-												</div>	
+												</div>
 											</div>
 											<div class="row mt-1">
 												<div class="form-check form-check-inline" data-field-group="checkboxTipoCambio">
 													<input type="checkbox" class="form-check-input" name="inputTipoCambioCalidad" id="inputTipoCambioCalidad" value="1">
 													<label class="form-check-label" for="inputTipoCambioCalidad">Calidad</label>
-												</div>	
+												</div>
 												<div class="form-check form-check-inline" data-field-group="checkboxTipoCambio">
 													<input type="checkbox" class="form-check-input" name="inputTipoCambioRiesgo" id="inputTipoCambioRiesgo" value="1">
 													<label class="form-check-label" for="inputTipoCambioRiesgo">Riesgo</label>
-												</div>	
+												</div>
 												<div class="form-check form-check-inline" data-field-group="checkboxTipoCambio">
 													<input type="checkbox" class="form-check-input" name="inputTipoCambioRecurso" id="inputTipoCambioRecurso" value="1">
 													<label class="form-check-label" for="inputTipoCambioRecurso">Recurso</label>
-												</div>	
-											</div>								
+												</div>
+											</div>
 										</div>
 										<div class="form-group col-sm-7 mt-0 mb-0 pt-3 pb-3">
 											<div class="form-group mb-0">
@@ -537,7 +537,7 @@
 											<div class="input-group col-sm-12">
 												<button type="button" class="btn btn-primary btn-sm" onclick="agregarSoporte()">Agregar <i class="fas fa-plus"></i></button>
 											</div>
-										</div>	
+										</div>
 									</div>
 								</div>
 							</form>
@@ -620,6 +620,7 @@
 	<!-- Tabulator -->
 	<script type="text/javascript" src="https://unpkg.com/tabulator-tables@5.3.4/dist/js/tabulator.min.js"></script>
 	<!--Script con la funcion que carga los datos generales del archivo-->
+	<script>window.__PROJECT_AREA__ = <?php echo json_encode($_SESSION['area'] ?? 'Construccion'); ?>;</script>
 	<script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js" charset="utf-8"></script>
 	<!--Script con las funciones NUEVA SEMANA y ELIMINAR SEMANA-->
 	<script type="text/javascript" src="/js/funcionesGenerales6.js" charset="utf-8"></script>

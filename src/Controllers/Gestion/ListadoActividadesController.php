@@ -5,6 +5,7 @@ namespace App\Controllers\Gestion;
 use App\Controllers\BaseController;
 use Throwable;
 
+use TableResolver;
 class ListadoActividadesController extends BaseController
 {
     public function index()
@@ -31,8 +32,8 @@ class ListadoActividadesController extends BaseController
         }
 
         try {
-            $query = "SELECT MAX(Semana) FROM {$dbName}_semanas_activas";
-            $maxSemana = (int) $this->db->query($query)->fetchColumn();
+            $query = "SELECT MAX(Semana) FROM " . TableResolver::resolveByPrefix($dbName, 'semanas_activas') . "";
+            $maxSemana = (int) $this->db->queryWithProject($query)->fetchColumn();
 
             $_SESSION['Max_Semana'] = $maxSemana;
             $_SESSION['semana'] = $maxSemana;

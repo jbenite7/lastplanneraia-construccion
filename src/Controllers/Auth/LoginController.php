@@ -198,8 +198,7 @@ class LoginController
 
     private function verifyCredentials(string $usuario, string $password): ?array
     {
-        $stmt = $this->db->prepare("SELECT * FROM general_usuarios WHERE usuario = ? LIMIT 1");
-        $stmt->execute([$usuario]);
+        $stmt = $this->db->queryWithProject("SELECT * FROM general_usuarios WHERE usuario = ? LIMIT 1", [$usuario]);
         $data = $stmt->fetch();
 
         if (!$data) {
@@ -213,8 +212,7 @@ class LoginController
         if (hash_equals($data['password'], hash('sha512', $password))) {
             $newHash = password_hash($password, PASSWORD_DEFAULT);
             $updateQ = "UPDATE general_usuarios SET password = ? WHERE usuario = ?";
-            $stmtUpd = $this->db->prepare($updateQ);
-            $stmtUpd->execute([$newHash, $usuario]);
+        $stmtUpd = $this->db->queryWithProject($updateQ, [$newHash, $usuario]);
             return $data;
         }
 
@@ -223,7 +221,7 @@ class LoginController
 
     private function userHasGlobalAdminRole(string $usuario): bool
     {
-        $stmt = $this->db->prepare(
+        $stmt = $this->db->queryWithProject(
             "SELECT COUNT(*) FROM project_members pm
              INNER JOIN general_usuarios u ON u.id = pm.user_id
              INNER JOIN general_proyectos_procesos p ON p.ID = pm.project_id
@@ -231,8 +229,8 @@ class LoginController
                AND pm.role = 'A'
                AND p.Area = 'Construccion'
                AND p.Activo = 1",
+            [$usuario]
         );
-        $stmt->execute([$usuario]);
         return (int) $stmt->fetchColumn() > 0;
     }
 
