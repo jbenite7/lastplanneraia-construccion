@@ -75,8 +75,11 @@ final class ModuleRequestContext
             throw new RuntimeException('Semana inválida o sesión expirada.');
         }
 
+        $projectId = self::resolveProjectId($dbPrefix);
+
         return [
             'dbPrefix' => $dbPrefix,
+            'projectId' => $projectId,
             'semana' => (int) ($semana ?? 0),
             'sessionDb' => $sessionDb,
             'sessionWeek' => $sessionWeek,
@@ -104,6 +107,28 @@ final class ModuleRequestContext
     private static function isValidDbPrefix(string $value): bool
     {
         return $value !== '' && preg_match('/^[a-zA-Z0-9_]+$/', $value) === 1;
+    }
+
+    private static function resolveProjectId(string $dbPrefix): int
+    {
+        $sessionProjectId = (int) ($_SESSION['project_id'] ?? 0);
+        if ($sessionProjectId > 0) {
+            return $sessionProjectId;
+        }
+
+        $db = \Database::getInstance();
+        $stmt = $db->query(
+            "SELECT Id FROM general_proyectos_procesos WHERE Base_de_Datos = ? LIMIT 1",
+            [$dbPrefix],
+        );
+        $projectId = (int) ($stmt->fetchColumn() ?: 0);
+        if ($projectId <= 0) {
+            throw new RuntimeException('Proyecto inválido o sesión expirada.');
+        }
+
+        $_SESSION['project_id'] = $projectId;
+
+        return $projectId;
     }
 
     private static function logWarning(string $message, array $context = []): void

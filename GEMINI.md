@@ -57,29 +57,31 @@ Los comandos de operación del agente ahora están definidos como workflows form
 
 1. **Mobile First**: Todo desarrollo debe pensarse y probarse primero para dispositivos móviles.
 2. **Ediciones Atómicas**: **Nunca** generar bloques de código de más de 20 líneas en una sola edición. Dividir en pasos lógicos.
-3. **Conexiones DB**: Siempre utilizar la clase `Database.php` (Singleton) ubicada en `construccion/src/Database.php` (o su alias en `src/Core/`).
+3. **Conexiones DB**: Siempre utilizar la clase `Database.php` (Singleton) expuesta por `src/Core/Database.php`.
 4. **Normalización de Cargos**: Toda lógica relacionada con cargos debe pasar por `Admin\Core\RoleManager::cleanCargo()`.
 5. **Scripts Críticos**: Antes de ejecutar scripts masivos, mostrar resumen y pedir confirmación explícita.
-6. **Control de Versiones**: NO hacer git push sin aprobación explícita.
-7. **Prohibición de Herramientas**: **NO USES EL BROWSER AGENT** bajo ninguna circunstancia. Las pruebas deben ser manuales o mediante scripts de servidor.
-8. **Terminología**: Consultar siempre el [GLOSARIO.md](file:///Users/juanfelipebenitezramos/last-planner-aia-legacy-permisos/GLOSARIO.md) para asegurar el uso correcto de términos técnicos y de negocio (LPS/Lean).
+6. **Control de Versiones**: NO hacer git push sin aprobación explícita. Antes de publicar validar repo original, rama `main`, worktree principal y remoto `origin`.
+7. **Validación Browser/E2E**: Se permite Playwright para pruebas locales en `localhost:8081`; no reemplaza pruebas PHP ni revisión de BD.
+8. **Terminología**: Consultar siempre `GLOSARIO.md` para asegurar el uso correcto de términos técnicos y de negocio (LPS/Lean).
 9. **Protocolo Sniper**: Durante la ejecución, se prohíben refactorizaciones "de cortesía". El agente se limitará estrictamente a los cambios aprobados en el plan.
 10. **Kill Switch**: El agente tiene un límite de 5 intentos consecutivos para corregir errores de validación antes de abortar la tarea.
 11. **Validación Unificada**: Las pruebas y validaciones de sintaxis se deben realizar en un bloque unificado al final de todos los cambios de archivos.
 12. **Auto* Functions Branding**: Toda función "Auto*..." (auto-generate, auto-assign, auto-associate, auto-program, etc.) DEBE incluir:
     - **Ícono**: `<i class="fas fa-magic"></i>` (wizard) consistente en todos los botones/acciones Auto*.
     - **Color**: Validado contra el manual de marca AIA (`brand-manual` skill). Usar variables CSS del sistema de tokens (`--aia-*`) según la línea temática del módulo. No usar clases Bootstrap genéricas (`btn-info`, `btn-warning`) sin sobreescribir con colores de marca.
+13. **Arquitectura DB Global Only**: La BD aprobada usa tablas globales con `project_id`. No crear ni depender en runtime de tablas `{prefix}_*`.
+14. **Automatización Semi-auto Guiada**: Listado, Contratos y PDC usan preview obligatorio, trazabilidad global y una UI no técnica con detalle técnico solo para Admin.
 
 ## 📄 Documentación de Referencia
 
-- [GLOSARIO.md](file:///Users/juanfelipebenitezramos/last-planner-aia-legacy-permisos/GLOSARIO.md): Diccionario de 100 términos esenciales del proyecto.
-- [ROADMAP.md](file:///Users/juanfelipebenitezramos/last-planner-aia-legacy-permisos/ROADMAP.md): Seguimiento de hitos técnicos y tareas.
-- [docs/ROUTES.md](file:///Users/juanfelipebenitezramos/last-planner-aia-legacy-permisos/docs/ROUTES.md): Direccionamiento del MVC, APIs e instrucciones del Front Controller.
+- `GLOSARIO.md`: Diccionario de términos esenciales del proyecto.
+- `ROADMAP.md`: Seguimiento de hitos técnicos y tareas.
+- `docs/ROUTES.md`: Direccionamiento del MVC, APIs e instrucciones del Front Controller.
 
 ## 🚀 Comandos Rápidos de Verificación
 
 - **Versión PHP**: `docker-compose exec app php -v`
-- **Conexión DB**: `docker-compose exec app php -r "require 'construccion/src/Database.php'; echo Database::getInstance() ? 'OK' : 'Error';"`
+- **Conexión DB**: `docker-compose exec app php -r "require 'src/Core/Database.php'; echo Database::getInstance() ? 'OK' : 'Error';"`
 
 ## 🌐 URLs del Entorno Docker
 
@@ -96,7 +98,7 @@ Cuando se ejecuten pruebas con el browser subagent en el entorno de desarrollo:
 1. **URL de entrada:** `http://localhost:8081`
 2. **Proyecto:** Siempre seleccionar **"Prueba"**
 3. **Credenciales de Login:**
-   - **Administrador Sistema:** `jbenitez` / `kkdCPM15`
+   - **Administrador Sistema:** `jbenitez` / `Jbe#1106z`
    - **Usuarios de Prueba (RBAC):** (Clave para todos: `aia2026`)
      - Administrador (`A`): `test.A`
      - Director (`D`): `test.D`

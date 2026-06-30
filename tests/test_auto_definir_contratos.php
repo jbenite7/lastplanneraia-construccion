@@ -45,7 +45,8 @@ function skip(string $reason): void
 echo "=== Smoke Test: Auto-Definir Contratos ===\n\n";
 
 $db = Database::getInstance();
-$dbPrefix = 'prueba';
+$actividadesTable = 'actividades';
+$logTable = 'auto_contrato_log';
 
 // ─────────────────────────────────────────────
 // Test 1: ActivityMatcher confidence as float
@@ -126,7 +127,7 @@ if (class_exists($controllerClass)) {
 echo "--- Test 3: Nuevas columnas en actividades ---\n";
 
 try {
-    $stmt = $db->query("DESCRIBE {$dbPrefix}_actividades");
+    $stmt = $db->query("DESCRIBE {$actividadesTable}");
     $columns = [];
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $columns[$row['Field']] = $row;
@@ -149,7 +150,6 @@ try {
 // ─────────────────────────────────────────────
 echo "--- Test 4: Auto contrato log table ---\n";
 
-$logTable = "{$dbPrefix}_auto_contrato_log";
 $stmt = $db->query("SHOW TABLES LIKE '$logTable'");
 $logTableExists = $stmt->fetch() !== false;
 

@@ -468,6 +468,7 @@
 	<script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js" charset="utf-8"></script>
 	<!--Script con las funciones NUEVA SEMANA y ELIMINAR SEMANA-->
 	<script type="text/javascript" src="/js/funcionesGenerales6.js" charset="utf-8"></script>
+	<script type="text/javascript" src="/js/modules/semi_auto_review.js?v=20260702" charset="utf-8"></script>
 	<!-- Bloquear el click derecho-->
 	<!--    <script type='text/javascript'>document.oncontextmenu = function(){return false}</script>-->
 
@@ -713,8 +714,15 @@
 			$("div.toolbarFiltro").html('<div class="d-flex ml-auto"><label class="sr-only">Buscar en contratos</label><button id="btn_limpiar_buscador" type="button" class="btn-pdc-modern mr-1 ml-0 d-none max-w-40"><i class="fas fa-times-circle"></i> Limpiar</button></div>');
 
 			var permiso = document.getElementById('permiso_canonico').value;
-			if (permiso === 'A' || permiso === 'D' || permiso === 'OT') {
+			if (permiso === 'A' || permiso === 'D' || permiso === 'OT' || permiso === 'R') {
 				$("div.toolbarFilaBotones").prepend('<button id="btn_auto_asignar_contratos" class="btn-pdc-modern ml-2" title="Auto-definir tipo de contrato y paquetes para actividades sin asignar"><i class="fas fa-magic"></i> Auto-Definir Contratos<span class="badge badge-pill badge-danger ml-1" id="badgePendientesContratos" style="display:none;font-size:0.65rem;vertical-align:middle;line-height:1;min-width:1.4em;">0</span></button>');
+			}
+			if (window.SemiAutoReview) {
+				window.SemiAutoReview.init({
+					module: 'contratos',
+					anchorSelector: 'div.toolbarFilaMensajes',
+					refresh: function() { recargarTabla('listar'); }
+				});
 			}
 
 			maestroPermisos(document.getElementById('permiso_canonico').value);
@@ -1436,6 +1444,10 @@
 			$(document).off('click.autoDefinir', '#btn_auto_asignar_contratos')
 				.on('click.autoDefinir', '#btn_auto_asignar_contratos', function(e) {
 					e.preventDefault();
+					if (window.SemiAutoReview) {
+						window.SemiAutoReview.open('contratos');
+						return;
+					}
 					$('#modalAutoAsignarContratos').modal('show');
 				});
 

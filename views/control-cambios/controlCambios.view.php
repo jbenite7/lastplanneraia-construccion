@@ -626,6 +626,5 @@
 	<!-- Bloquear el click derecho-->
 	<!--    <script type='text/javascript'>document.oncontextmenu = function(){return false}</script>-->
 
-	<script type="text/javascript" src="/js/controlCambios.js?v=<?= time() ?>" charset="utf-8"></script>
 </body>
 </html>

@@ -58,6 +58,7 @@ class ProgramacionIntermediaController extends BaseController
         $vars = $this->getSessionVars();
         $dbPrefix = $vars['dbName'] ?? '';
         $semana = $vars['semana'] ?? 0;
+        $projectId = (int) ($vars['projectId'] ?? 0);
 
         if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
             echo json_encode(["data" => []]);
@@ -93,6 +94,7 @@ class ProgramacionIntermediaController extends BaseController
             $viewAll = isset($_SESSION['pi_view_all']) && (int) $_SESSION['pi_view_all'] === 1;
 
             $where = "Semana = ?
+                      AND project_id = ?
                       AND Fecha_Inicio IS NOT NULL
                       AND Fecha_Fin IS NOT NULL
                       AND Ejecutado < 1
@@ -107,7 +109,7 @@ class ProgramacionIntermediaController extends BaseController
                       ORDER BY Semanas_Inicio ASC";
 
             $stmt = $this->db->prepare($query);
-            $stmt->execute([$semana]);
+            $stmt->execute([$semana, $projectId]);
             $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
             $filteredRows = [];
@@ -1014,6 +1016,10 @@ class ProgramacionIntermediaController extends BaseController
     private function ensureSharedConstraintTables(string $dbPrefix): bool
     {
         try {
+            if ($this->db->isUsingGlobalTables()) {
+                return true;
+            }
+
             $sqlShared = "CREATE TABLE IF NOT EXISTS {$dbPrefix}_pi_shared_constraints (
                 Id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
                 Semana INT NOT NULL,

@@ -9,6 +9,7 @@ class ActivityMatcher
     private const AUTO_CONFIDENCE_THRESHOLD = 70;
 
     private $db;
+    private static ?array $chapterCategoryMapCache = null;
 
     public function __construct(?PDO $db = null)
     {
@@ -180,17 +181,31 @@ class ActivityMatcher
      */
     private function loadChapterCategoryMap(): array
     {
+        if (self::$chapterCategoryMapCache !== null) {
+            return self::$chapterCategoryMapCache;
+        }
+
         try {
+            $exists = (int) $this->db->query(
+                "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ?",
+                ['general_pdc_chapter_category_map'],
+            )->fetchColumn();
+            if ($exists === 0) {
+                self::$chapterCategoryMapCache = [];
+                return self::$chapterCategoryMapCache;
+            }
+
             $stmt = $this->db->query(
                 "SELECT chapter_keyword, categoria
                  FROM general_pdc_chapter_category_map
                  WHERE activa = 1
                  ORDER BY prioridad DESC, chapter_keyword ASC"
             );
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            self::$chapterCategoryMapCache = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return self::$chapterCategoryMapCache;
         } catch (\Throwable $e) {
-            // Table might not exist yet — degrade gracefully to no filter
-            return [];
+            self::$chapterCategoryMapCache = [];
+            return self::$chapterCategoryMapCache;
         }
     }
 

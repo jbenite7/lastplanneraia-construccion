@@ -93,6 +93,7 @@ $router->get('/api/pi/list', [\App\Controllers\Programacion\ProgramacionIntermed
 $router->post('/api/pi/save', [\App\Controllers\Programacion\ProgramacionIntermediaController::class, 'save']);
 $router->get('/api/general/list', [\App\Controllers\Api\GeneralApiController::class, 'list']);
 $router->post('/api/general/list', [\App\Controllers\Api\GeneralApiController::class, 'list']);
+$router->get('/api/general/restriction-config', [\App\Controllers\Api\GeneralApiController::class, 'restrictionConfig']);
 $router->post('/api/general/update', [\App\Controllers\Api\GeneralApiController::class, 'update']);
 $router->post('/api/general/update-batch', [\App\Controllers\Api\GeneralApiController::class, 'updateBatch']);
 $router->post('/api/general/import', [\App\Controllers\Api\GeneralApiController::class, 'importExcel']);
@@ -128,11 +129,23 @@ $router->post('/api/contratos/auto-define', [\App\Controllers\Api\ContratosApiCo
 $router->post('/api/contratos/auto-define/apply', [\App\Controllers\Api\ContratosApiController::class, 'autoDefineApply']);
 $router->post('/api/contratos/auto-define/undo', [\App\Controllers\Api\ContratosApiController::class, 'autoDefineUndo']);
 $router->post('/api/contratos/auto-define/reanalyze', [\App\Controllers\Api\ContratosApiController::class, 'autoDefineReanalyze']);
+$router->post('/api/contratos/auto/preview', [\App\Controllers\Api\SemiAutoController::class, 'previewContratos']);
+$router->post('/api/contratos/auto/status', [\App\Controllers\Api\SemiAutoController::class, 'statusContratos']);
+$router->post('/api/contratos/auto/apply', [\App\Controllers\Api\SemiAutoController::class, 'applyContratos']);
+$router->post('/api/contratos/auto/undo', [\App\Controllers\Api\SemiAutoController::class, 'undoContratos']);
+$router->post('/api/contratos/auto/feedback', [\App\Controllers\Api\SemiAutoController::class, 'feedbackContratos']);
+$router->post('/api/contratos/auto/metrics', [\App\Controllers\Api\SemiAutoController::class, 'metricsContratos']);
 // Api/ListadoActividades
 $router->get('/api/listado-actividades/template', [\App\Controllers\Api\ListadoActividadesApiController::class, 'downloadTemplate']);
 $router->post('/api/listado-actividades/list', [\App\Controllers\Api\ListadoActividadesApiController::class, 'list']);
 $router->post('/api/listado-actividades/save', [\App\Controllers\Api\ListadoActividadesApiController::class, 'save']);
 $router->post('/api/listado-actividades/auto-generate', [\App\Controllers\Api\ListadoActividadesApiController::class, 'autoGenerate']);
+$router->post('/api/listado-actividades/auto/preview', [\App\Controllers\Api\SemiAutoController::class, 'previewListado']);
+$router->post('/api/listado-actividades/auto/status', [\App\Controllers\Api\SemiAutoController::class, 'statusListado']);
+$router->post('/api/listado-actividades/auto/apply', [\App\Controllers\Api\SemiAutoController::class, 'applyListado']);
+$router->post('/api/listado-actividades/auto/undo', [\App\Controllers\Api\SemiAutoController::class, 'undoListado']);
+$router->post('/api/listado-actividades/auto/feedback', [\App\Controllers\Api\SemiAutoController::class, 'feedbackListado']);
+$router->post('/api/listado-actividades/auto/metrics', [\App\Controllers\Api\SemiAutoController::class, 'metricsListado']);
 // Api/PDC
 $router->post('/api/pdc/list', [\App\Controllers\Api\PdcApiController::class, 'list']);
 $router->post('/api/pdc/save', [\App\Controllers\Api\PdcApiController::class, 'save']);
@@ -143,6 +156,12 @@ $router->get('/api/pdc/plantillas/{id}', [\App\Controllers\Api\PdcPlantillaContr
 $router->get('/api/pdc/plantillas/{id}/items', [\App\Controllers\Api\PdcPlantillaController::class, 'items']);
 $router->get('/api/pdc/categorias-recurso', [\App\Controllers\Api\PdcPlantillaController::class, 'categorias']);
 $router->post('/api/pdc/auto/apply-from-actividades', [\App\Controllers\Api\PdcAutoGenerateController::class, 'applyFromActividades']);
+$router->post('/api/pdc/auto/preview', [\App\Controllers\Api\SemiAutoController::class, 'previewPdc']);
+$router->post('/api/pdc/auto/status', [\App\Controllers\Api\SemiAutoController::class, 'statusPdc']);
+$router->post('/api/pdc/auto/apply', [\App\Controllers\Api\SemiAutoController::class, 'applyPdc']);
+$router->post('/api/pdc/auto/undo', [\App\Controllers\Api\SemiAutoController::class, 'undoPdc']);
+$router->post('/api/pdc/auto/feedback', [\App\Controllers\Api\SemiAutoController::class, 'feedbackPdc']);
+$router->post('/api/pdc/auto/metrics', [\App\Controllers\Api\SemiAutoController::class, 'metricsPdc']);
 // Api/PG Breadcrumb
 $router->post('/api/pg/breadcrumb-estandarizar', [\App\Controllers\Api\PgBreadcrumbController::class, 'standardize']);
 $router->post('/api/pg/breadcrumb-preview', [\App\Controllers\Api\PgBreadcrumbController::class, 'preview']);

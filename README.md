@@ -53,6 +53,8 @@ plataforma, estructurada en el arco de tres actos que rige nuestra visión opera
   Stitch para generar el design system y las pantallas de la app.
 - **[Rutina de despliegue SiteGround](docs/siteground-deploy-routine.md)**: Checklist operativo para
   desplegar desde `main`, validar el sitio y tener rollback rápido.
+- **[Arquitectura de tablas globales](docs/global-tables-architecture.md)**: Regla vigente de BD
+  global con `project_id`, sin dependencias runtime a tablas por proyecto.
 
 ---
 
@@ -100,6 +102,14 @@ robusto validado por **RBAC** (Control de Acceso Basado en Roles). El software i
 petición e inyecta la seguridad y rutas hacia la lógica de negocio moderna, delegando lo antiguo en
 aislamiento controlado:
 
+La persistencia aprobada es **global-only**: cada módulo debe leer y escribir tablas compartidas con
+`project_id`. Los prefijos de proyecto se conservan solo como metadato histórico o fuente de migración;
+no se deben agregar nuevas consultas runtime a tablas `{prefix}_*`.
+
+Listado de Actividades, Contratos y PDC comparten un asistente semi-automático: analiza, agrupa
+propuestas por seguridad y aplica solo lo seleccionado. Cada corrida queda trazada en tablas globales
+y la UI normal oculta detalles técnicos salvo para Admin.
+
 <details>
 <summary><b>🗺️ Ver Diagrama de Arquitectura Híbrida</b></summary>
 
@@ -120,7 +130,7 @@ graph TD
     subgraph "⚠️ SISTEMA LEGACY (Procedural)"
         LegacyScripts["Scripts Planos PHP (/construccion/index.php)"]
         LegacyViews["Vistas Acopladas (HTML + BD)"]
-        DB_Legacy["Database Singleton (/construccion/src/Database.php)"]
+        DB_Legacy["Database Singleton compartido (src/Core/Database.php)"]
         Router -- "Ruta No Registrada (Fallback)" --> LegacyScripts
         LegacyScripts --> LegacyViews
         LegacyScripts --> DB_Legacy

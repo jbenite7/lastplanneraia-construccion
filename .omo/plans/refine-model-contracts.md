@@ -1,5 +1,14 @@
 # refine-model-contracts - Work Plan
 
+## Estado Para El Corte De Tablas Globales
+
+Estado: pendiente, fuera del corte DB actual.
+
+Este plan no se ejecuto en la migracion a tablas globales. Requiere aprobacion
+explicita antes de modificar familias/modelos de contrato, regex, migraciones de
+`tipoContrato` o UI de contratos. No bloquea el contrato actual de 20 tablas
+globales por `project_id`.
+
 ## TL;DR (For humans)
 
 **What you'll get:** 18 familias nuevas de procesos constructivos (Aseo, Equipos de Cocina, Lavaplatos, Lavadero, Accesorios Sanitarios, Aparatos Sanitarios renombrado, Demoliciones, Pasamanos, Muebles, Equipos Especiales, Apuntalamiento, Señaletica, Infraestructura-Drenes, Resanes, CCTV-Seguridad, Sonido-Video, Sistema-Datos, Automatización-BMS) + 6 expansiones de regex en familias existentes (Estructura, Vías, Cielos, Fachada, Red Eléctrica, Carpintería Metálica). Adicionalmente, el tipo de contrato se gestionará desde /contratos/ con un sistema de checkboxes multi-selección: SI (exclusivo), MO, S y OC (combinables). En /listado-actividades/ la columna será read-only con badges. Los valores existentes migran: "1"→"MO,S", "2"→"SI".

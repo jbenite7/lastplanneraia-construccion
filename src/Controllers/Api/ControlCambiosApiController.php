@@ -117,7 +117,8 @@ class ControlCambiosApiController
         $id = array_shift($params);
         $params[] = $id;
 
-        $query = "UPDATE {$dbPrefix}_cambios SET solicitanteCambio=?, detalleSolicitanteOtro=?, fechaSolicitud=?, prioridad=?, tipoCambio=?, responsableSolucion=?, detalleResponsableSolucion=?, justificacion=?, descripcion=?, incidenciaAlcance=?, tiempoCronograma=?, tiempoCronogramaAfectado=?, incidenciaCronograma=?, valorPresupuesto=?, costoDirecto=?, costoDirectoAIU=?, costoDirectoAIUIVA=?, valorAprobado=?, incidenciaPresupuesto=?, incidenciaCalidad=?, incidenciaRiesgo=?, incidenciaRecurso=?, fechaTentativaDefinicion=?, fechaEntregaInterventoria=?, Observaciones=NULL, fechaDefinicion=?, aprobacion=?, soportes=? WHERE id=?";
+        $query = "UPDATE {$dbPrefix}_cambios SET solicitanteCambio=?, detalleSolicitanteOtro=?, fechaSolicitud=?, prioridad=?, tipoCambio=?, responsableSolucion=?, detalleResponsableSolucion=?, justificacion=?, descripcion=?, incidenciaAlcance=?, tiempoCronograma=?, tiempoCronogramaAfectado=?, incidenciaCronograma=?, valorPresupuesto=?, costoDirecto=?, costoDirectoAIU=?, costoDirectoAIUIVA=?, valorAprobado=?, incidenciaPresupuesto=?, incidenciaCalidad=?, incidenciaRiesgo=?, incidenciaRecurso=?, fechaTentativaDefinicion=?, fechaEntregaInterventoria=?, Observaciones=NULL, fechaDefinicion=?, aprobacion=?, soportes=? WHERE project_id=? AND id=?";
+        array_splice($params, count($params) - 1, 0, [(int) ($_SESSION['project_id'] ?? 0)]);
 
         $res = $this->db->query($query, $params);
         if ($res) {
@@ -178,7 +179,7 @@ class ControlCambiosApiController
     private function eliminar(string $dbPrefix): void
     {
         $id = $_POST["Id"] ?? 0;
-        $res = $this->db->query("DELETE FROM {$dbPrefix}_cambios WHERE id = ?", [$id]);
+        $res = $this->db->query("DELETE FROM {$dbPrefix}_cambios WHERE project_id = ? AND id = ?", [(int) ($_SESSION['project_id'] ?? 0), $id]);
         if ($res) {
             $this->db->logActivity('ControlCambios', 'ELIMINAR', "Eliminó solicitud cambio ID $id", $dbPrefix);
         }

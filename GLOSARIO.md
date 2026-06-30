@@ -24,7 +24,7 @@ Este documento constituye la fuente oficial de términos técnicos y de negocio 
 16. **Dual View**: Capacidad de las interfaces para alternar entre una tabla completa (Desktop) y una vista de tarjetas táctiles (Móvil).
 17. **SQL Filter**: Capa de protección y saneamiento de entradas aplicada para prevenir vulnerabilidades de Inyección SQL.
 18. **Composer**: Herramienta de gestión de dependencias para PHP que administra las librerías externas del proyecto.
-19. **DB Prefix**: Prefijo dinámico utilizado en las consultas para identificar y conectar con la base de datos específica de cada proyecto.
+19. **DB Prefix**: Metadato histórico del proyecto (`Base_de_Datos`). Ya no autoriza tablas por proyecto; el runtime debe usar tablas globales con `project_id`.
 20. **Singleton Pattern**: Patrón de diseño que restringe la instanciación de una clase a un solo objeto (común en la conexión a DB).
 21. **Ajax Interface**: Tecnología que permite la comunicación asíncrona entre el navegador y el servidor para actualizar contenidos parcialmente.
 22. **View Logic**: Separación estricta entre la presentación de datos y la lógica de procesamiento para facilitar cambios visuales.
@@ -126,3 +126,11 @@ Este documento constituye la fuente oficial de términos técnicos y de negocio 
 98. **Indicador de Restricciones**: Métrica que evalúa el éxito del equipo en resolver trabas antes de que lleguen a la ventana semanal.
 99. **Dashboard Metodológico**: Visualización dinámica de los indicadores LPS para facilitar la toma de decisiones gerenciales.
 100. **ROADMAP**: Documento vivo que proyecta el desarrollo técnico y las nuevas funcionalidades planificadas para el software.
+101. **Tabla Global**: Tabla compartida por todos los proyectos que separa datos mediante `project_id`.
+102. **Global-only**: Regla de arquitectura que prohíbe nuevas dependencias runtime a tablas `{prefix}_*`.
+103. **Preview Obligatorio**: Paso previo a cualquier escritura semi-automática para revisar impacto, cambios y conflictos.
+104. **Run Semi-auto**: Corrida trazable de automatización con usuario, proyecto, módulo, semana y resultado.
+105. **Detalle Técnico**: Panel visible solo para Admin con datos internos de soporte.
+106. **Alta Seguridad**: Propuesta con confianza `80-100`, preseleccionada salvo decisión contraria del usuario.
+107. **Requiere Revisión**: Propuesta con confianza `50-79`; se muestra sin preselección automática.
+108. **No Recomendado**: Propuesta menor a `50` o en conflicto; requiere decisión manual.

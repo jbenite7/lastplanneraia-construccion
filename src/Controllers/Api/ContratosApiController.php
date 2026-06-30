@@ -20,14 +20,15 @@ class ContratosApiController extends BaseController
         try {
             $context = ModuleRequestContext::resolve();
             $dbPrefix = $context['dbPrefix'];
+            $projectId = (int) $context['projectId'];
             $semana = $context['semana'];
             $arreglo = ["data" => []];
 
             $this->requirePermission('lps.contratos.ver', 'No autorizado para consultar contratos.');
 
             $db = Database::getInstance();
-            $queryCount = "SELECT COUNT(*) as total FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND tipoContrato IS NOT NULL AND fechaInicio IS NOT NULL";
-            $stmtCount = $db->query($queryCount, [$semana]);
+            $queryCount = "SELECT COUNT(*) as total FROM actividades WHERE project_id = ? AND semanaActualizacion = ? AND tipoContrato IS NOT NULL AND fechaInicio IS NOT NULL";
+            $stmtCount = $db->query($queryCount, [$projectId, $semana]);
             $conteo = $stmtCount->fetch(PDO::FETCH_ASSOC)['total'] ?? 0;
 
             if ($conteo == 0) {
@@ -43,72 +44,79 @@ class ContratosApiController extends BaseController
                     "contratosAsociados" => "",
                 ];
             } else {
-                $queryData = "SELECT 
-                        act.`Id`, act.`codigo`, act.`actividad`, act.`descripcionActividad`, act.`actividadInicio`, 
-                        CONCAT(prog.`Actividad`, ' - (Inicia en: ', prog.`Fecha_Inicio`, ')') AS nombreActividadInicio, 
-                        act.`fechaInicio`, act.`tipoContrato`, act.`semanaActualizacion`, 
-                        act.`SI1`, act.`paqueteSI1`, act.`SI2`, act.`paqueteSI2`, act.`SI3`, act.`paqueteSI3`, act.`SI4`, act.`paqueteSI4`, act.`SI5`, act.`paqueteSI5`, 
-                        act.`S1`, act.`paqueteS1`, act.`S2`, act.`paqueteS2`, act.`S3`, act.`paqueteS3`, act.`S4`, act.`paqueteS4`, act.`S5`, act.`paqueteS5`, 
-                        act.`MO1`, act.`paqueteMO1`, act.`MO2`, act.`paqueteMO2`, act.`MO3`, act.`paqueteMO3`, act.`MO4`, act.`paqueteMO4`, act.`MO5`, act.`paqueteMO5`, 
-                        act.`OC1`, act.`paqueteOC1`, act.`OC2`, act.`paqueteOC2`, act.`OC3`, act.`paqueteOC3`, act.`OC4`, act.`paqueteOC4`, act.`OC5`, act.`paqueteOC5` 
-                    FROM {$dbPrefix}_actividades act 
-                    LEFT JOIN {$dbPrefix}_programa_consolidado prog ON prog.`Consecutivo_en_Programa` = act.`actividadInicio` AND prog.`Semana` = act.`semanaActualizacion` 
-                    WHERE act.semanaActualizacion = ? AND act.tipoContrato IS NOT NULL AND act.fechaInicio IS NOT NULL 
+                $queryData = "SELECT
+                        act.`Id`, act.`codigo`, act.`actividad`, act.`descripcionActividad`, act.`actividadInicio`,
+                        CONCAT(prog.`Actividad`, ' - (Inicia en: ', prog.`Fecha_Inicio`, ')') AS nombreActividadInicio,
+                        act.`fechaInicio`, act.`tipoContrato`, act.`semanaActualizacion`,
+                        act.`SI1`, act.`paqueteSI1`, act.`SI2`, act.`paqueteSI2`, act.`SI3`, act.`paqueteSI3`, act.`SI4`, act.`paqueteSI4`, act.`SI5`, act.`paqueteSI5`,
+                        act.`S1`, act.`paqueteS1`, act.`S2`, act.`paqueteS2`, act.`S3`, act.`paqueteS3`, act.`S4`, act.`paqueteS4`, act.`S5`, act.`paqueteS5`,
+                        act.`MO1`, act.`paqueteMO1`, act.`MO2`, act.`paqueteMO2`, act.`MO3`, act.`paqueteMO3`, act.`MO4`, act.`paqueteMO4`, act.`MO5`, act.`paqueteMO5`,
+                        act.`OC1`, act.`paqueteOC1`, act.`OC2`, act.`paqueteOC2`, act.`OC3`, act.`paqueteOC3`, act.`OC4`, act.`paqueteOC4`, act.`OC5`, act.`paqueteOC5`
+                    FROM actividades act
+                    LEFT JOIN programa_consolidado prog
+                      ON prog.`project_id` = act.`project_id`
+                     AND prog.`Consecutivo_en_Programa` = act.`actividadInicio`
+                     AND prog.`Semana` = act.`semanaActualizacion`
+                    WHERE act.`project_id` = ? AND act.semanaActualizacion = ? AND act.tipoContrato IS NOT NULL AND act.fechaInicio IS NOT NULL
                     ORDER BY act.`Id`";
 
-                $stmtData = $db->query($queryData, [$semana]);
+                $stmtData = $db->query($queryData, [$projectId, $semana]);
 
                 while ($data = $stmtData->fetch(PDO::FETCH_ASSOC)) {
-                    $contratosAsociadosSI = "";
+                    $contratosAsociadosSI = [];
                     for ($i = 1; $i <= 5; $i++) {
                         if (!empty($data["paqueteSI$i"])) {
-                            $contratosAsociadosSI .= $data["paqueteSI$i"] . ", ";
+                            $contratosAsociadosSI[] = $data["paqueteSI$i"];
                         }
                     }
-                    if ($contratosAsociadosSI != "") {
-                        $contratosAsociadosSI = substr($contratosAsociadosSI, 0, -2);
-                        $contratosAsociadosSI = str_replace(';', ", ", $contratosAsociadosSI);
+                    if ($contratosAsociadosSI != []) {
+                        $contratosAsociadosSI = $this->formatUniquePackageNames($contratosAsociadosSI);
                         $contratosAsociadosSI = $this->escapeHtml($contratosAsociadosSI);
                         $contratosAsociadosSI = "<b class='ct-text-danger'>- Suministro e Instalación: </b>" . $contratosAsociadosSI . ".<br>";
+                    } else {
+                        $contratosAsociadosSI = "";
                     }
 
-                    $contratosAsociadosS = "";
+                    $contratosAsociadosS = [];
                     for ($i = 1; $i <= 5; $i++) {
                         if (!empty($data["paqueteS$i"])) {
-                            $contratosAsociadosS .= $data["paqueteS$i"] . ", ";
+                            $contratosAsociadosS[] = $data["paqueteS$i"];
                         }
                     }
-                    if ($contratosAsociadosS != "") {
-                        $contratosAsociadosS = substr($contratosAsociadosS, 0, -2);
-                        $contratosAsociadosS = str_replace(';', ", ", $contratosAsociadosS);
+                    if ($contratosAsociadosS != []) {
+                        $contratosAsociadosS = $this->formatUniquePackageNames($contratosAsociadosS);
                         $contratosAsociadosS = $this->escapeHtml($contratosAsociadosS);
                         $contratosAsociadosS = "<b class='ct-text-info'>- Suministro: </b>" . $contratosAsociadosS . ".<br> ";
+                    } else {
+                        $contratosAsociadosS = "";
                     }
 
-                    $contratosAsociadosMO = "";
+                    $contratosAsociadosMO = [];
                     for ($i = 1; $i <= 5; $i++) {
                         if (!empty($data["paqueteMO$i"])) {
-                            $contratosAsociadosMO .= $data["paqueteMO$i"] . ", ";
+                            $contratosAsociadosMO[] = $data["paqueteMO$i"];
                         }
                     }
-                    if ($contratosAsociadosMO != "") {
-                        $contratosAsociadosMO = substr($contratosAsociadosMO, 0, -2);
-                        $contratosAsociadosMO = str_replace(';', ", ", $contratosAsociadosMO);
+                    if ($contratosAsociadosMO != []) {
+                        $contratosAsociadosMO = $this->formatUniquePackageNames($contratosAsociadosMO);
                         $contratosAsociadosMO = $this->escapeHtml($contratosAsociadosMO);
                         $contratosAsociadosMO = "<b class='ct-text-success'>- Mano de Obra: </b>" . $contratosAsociadosMO . ".<br>";
+                    } else {
+                        $contratosAsociadosMO = "";
                     }
 
-                    $contratosAsociadosOC = "";
+                    $contratosAsociadosOC = [];
                     for ($i = 1; $i <= 5; $i++) {
                         if (!empty($data["paqueteOC$i"])) {
-                            $contratosAsociadosOC .= $data["paqueteOC$i"] . ", ";
+                            $contratosAsociadosOC[] = $data["paqueteOC$i"];
                         }
                     }
-                    if ($contratosAsociadosOC != "") {
-                        $contratosAsociadosOC = substr($contratosAsociadosOC, 0, -2);
-                        $contratosAsociadosOC = str_replace(';', ", ", $contratosAsociadosOC);
+                    if ($contratosAsociadosOC != []) {
+                        $contratosAsociadosOC = $this->formatUniquePackageNames($contratosAsociadosOC);
                         $contratosAsociadosOC = $this->escapeHtml($contratosAsociadosOC);
                         $contratosAsociadosOC = "<b class='ct-text-dark'>- Orden de Compra: </b>" . $contratosAsociadosOC . ".<br> ";
+                    } else {
+                        $contratosAsociadosOC = "";
                     }
 
                     $data["contratosAsociados"] = $contratosAsociadosSI . $contratosAsociadosMO . $contratosAsociadosS . $contratosAsociadosOC;
@@ -129,6 +137,7 @@ class ContratosApiController extends BaseController
         try {
             $context = ModuleRequestContext::resolve();
             $dbPrefix = $context['dbPrefix'];
+            $projectId = (int) $context['projectId'];
             $semanaActualizacion = $context['semana'];
 
             $this->requirePermission('lps.contratos.ver', 'No autorizado para consultar contratos.');
@@ -177,20 +186,20 @@ class ContratosApiController extends BaseController
                 if (!empty($errores)) {
                     $stmt = false;
                 } else {
-                    $queryUpdate = "UPDATE {$dbPrefix}_actividades SET 
-                        SI1=?, paqueteSI1=?, SI2=?, paqueteSI2=?, SI3=?, paqueteSI3=?, SI4=?, paqueteSI4=?, SI5=?, paqueteSI5=?, 
-                        S1=?, paqueteS1=?, S2=?, paqueteS2=?, S3=?, paqueteS3=?, S4=?, paqueteS4=?, S5=?, paqueteS5=?, 
-                        MO1=?, paqueteMO1=?, MO2=?, paqueteMO2=?, MO3=?, paqueteMO3=?, MO4=?, paqueteMO4=?, MO5=?, paqueteMO5=?, 
-                        OC1=?, paqueteOC1=?, OC2=?, paqueteOC2=?, OC3=?, paqueteOC3=?, OC4=?, paqueteOC4=?, OC5=?, paqueteOC5=?, 
-                        semanaActualizacion=? 
-                        WHERE Id=? AND semanaActualizacion=?";
+                    $queryUpdate = "UPDATE actividades SET
+                        SI1=?, paqueteSI1=?, SI2=?, paqueteSI2=?, SI3=?, paqueteSI3=?, SI4=?, paqueteSI4=?, SI5=?, paqueteSI5=?,
+                        S1=?, paqueteS1=?, S2=?, paqueteS2=?, S3=?, paqueteS3=?, S4=?, paqueteS4=?, S5=?, paqueteS5=?,
+                        MO1=?, paqueteMO1=?, MO2=?, paqueteMO2=?, MO3=?, paqueteMO3=?, MO4=?, paqueteMO4=?, MO5=?, paqueteMO5=?,
+                        OC1=?, paqueteOC1=?, OC2=?, paqueteOC2=?, OC3=?, paqueteOC3=?, OC4=?, paqueteOC4=?, OC5=?, paqueteOC5=?,
+                        semanaActualizacion=?
+                        WHERE project_id=? AND Id=? AND semanaActualizacion=?";
 
                     $paramsUpdate = [
                         $paquetes['SI1'], $paquetes['paqueteSI1'], $paquetes['SI2'], $paquetes['paqueteSI2'], $paquetes['SI3'], $paquetes['paqueteSI3'], $paquetes['SI4'], $paquetes['paqueteSI4'], $paquetes['SI5'], $paquetes['paqueteSI5'],
                         $paquetes['S1'], $paquetes['paqueteS1'], $paquetes['S2'], $paquetes['paqueteS2'], $paquetes['S3'], $paquetes['paqueteS3'], $paquetes['S4'], $paquetes['paqueteS4'], $paquetes['S5'], $paquetes['paqueteS5'],
                         $paquetes['MO1'], $paquetes['paqueteMO1'], $paquetes['MO2'], $paquetes['paqueteMO2'], $paquetes['MO3'], $paquetes['paqueteMO3'], $paquetes['MO4'], $paquetes['paqueteMO4'], $paquetes['MO5'], $paquetes['paqueteMO5'],
                         $paquetes['OC1'], $paquetes['paqueteOC1'], $paquetes['OC2'], $paquetes['paqueteOC2'], $paquetes['OC3'], $paquetes['paqueteOC3'], $paquetes['OC4'], $paquetes['paqueteOC4'], $paquetes['OC5'], $paquetes['paqueteOC5'],
-                        $semanaActualizacion, $Id, $semanaActualizacion,
+                        $semanaActualizacion, $projectId, $Id, $semanaActualizacion,
                     ];
 
                     $stmt = $db->query($queryUpdate, $paramsUpdate);
@@ -227,11 +236,11 @@ class ContratosApiController extends BaseController
                 $this->verificar_resultado($stmt, $errores);
 
             } elseif ($opcion == "actualizarFechaInicio") {
-                $this->actualizarFechaInicio($_POST["idActividad"] ?? '', $semanaActualizacion, $dbPrefix, $db);
+                $this->actualizarFechaInicio($_POST["idActividad"] ?? '', $semanaActualizacion, $projectId, $db);
             } elseif ($opcion == "actualizarListadoPaquetesContratacion") {
                 $this->actualizarListadoPaquetesContratacion($_POST["tipoContrato"] ?? '', $dbPrefix, $db);
             } elseif ($opcion == "actualizarInsumosRecursos") {
-                $this->actualizarInsumosRecursos($_POST["tipoContrato"] ?? '', $dbPrefix, $db, $semanaActualizacion);
+                $this->actualizarInsumosRecursos($_POST["tipoContrato"] ?? '', $projectId, $db, $semanaActualizacion);
             } else {
                 $this->jsonError('Opción no válida.');
             }
@@ -247,6 +256,7 @@ class ContratosApiController extends BaseController
         try {
             $context = ModuleRequestContext::resolve();
             $dbPrefix = $context['dbPrefix'];
+            $projectId = (int) $context['projectId'];
             $semana = $context['semana'];
 
             $this->requirePermission('lps.contratos.editar', 'No autorizado para auto-asignar contratos.');
@@ -255,10 +265,10 @@ class ContratosApiController extends BaseController
 
             $stmt = $db->query(
                 "SELECT Id, codigo, actividad, descripcionActividad, actividadInicio, fechaInicio, tipoContrato
-                 FROM {$dbPrefix}_actividades
-                 WHERE semanaActualizacion = ? AND (tipoContrato IS NULL OR tipoContrato = '')
+                 FROM actividades
+                 WHERE project_id = ? AND semanaActualizacion = ? AND (tipoContrato IS NULL OR tipoContrato = '')
                  ORDER BY Id ASC",
-                [$semana]
+                [$projectId, $semana]
             );
             $activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -285,7 +295,7 @@ class ContratosApiController extends BaseController
             foreach ($activities as $activity) {
                 $actId = (int) $activity['Id'];
 
-                $pgActivity = $this->loadPgActivityForContratos($db, $dbPrefix, $semana, $activity['actividadInicio'] ?? '');
+                $pgActivity = $this->loadPgActivityForContratos($db, $projectId, $semana, $activity['actividadInicio'] ?? '');
                 if ($pgActivity === null) {
                     $sinMatch++;
                     $sugerencias[] = [
@@ -343,7 +353,7 @@ class ContratosApiController extends BaseController
                 $tipoContratoInt = (int) $bestOption['tipo_contrato'];
                 $tipoContrato = $this->intToModalityCode($tipoContratoInt);
 
-                $result = $this->assignContratoToActivity($db, $dbPrefix, $actId, $tipoContrato, $bestOption['items'], $semana);
+                $result = $this->assignContratoToActivity($db, $projectId, $actId, $tipoContrato, $bestOption['items'], $semana);
                 if ($result) {
                     $asignadas++;
                     $sugerencias[] = [
@@ -391,6 +401,7 @@ class ContratosApiController extends BaseController
         try {
             $context = ModuleRequestContext::resolve();
             $dbPrefix = $context['dbPrefix'];
+            $projectId = (int) $context['projectId'];
             $semana = $context['semana'];
 
             $this->requirePermission('lps.contratos.auto_definir', 'No autorizado para auto-definir contratos.');
@@ -400,10 +411,10 @@ class ContratosApiController extends BaseController
             // 1. Activities without tipoContrato — need matching
             $stmt1 = $db->query(
                 "SELECT Id, codigo, actividad, descripcionActividad, actividadInicio, fechaInicio, tipoContrato, ultimo_auto_definir
-                 FROM {$dbPrefix}_actividades
-                 WHERE semanaActualizacion = ? AND (tipoContrato IS NULL OR tipoContrato = '')
+                 FROM actividades
+                 WHERE project_id = ? AND semanaActualizacion = ? AND (tipoContrato IS NULL OR tipoContrato = '')
                  ORDER BY Id ASC",
-                [$semana]
+                [$projectId, $semana]
             );
             $activitiesSinContrato = $stmt1->fetchAll(PDO::FETCH_ASSOC);
 
@@ -415,10 +426,10 @@ class ContratosApiController extends BaseController
                         paqueteS1, paqueteS2, paqueteS3, paqueteS4, paqueteS5,
                         paqueteMO1, paqueteMO2, paqueteMO3, paqueteMO4, paqueteMO5,
                         paqueteOC1, paqueteOC2, paqueteOC3, paqueteOC4, paqueteOC5
-                 FROM {$dbPrefix}_actividades
-                 WHERE semanaActualizacion = ? AND tipoContrato IS NOT NULL AND tipoContrato != '' AND ultimo_auto_definir IS NULL
+                 FROM actividades
+                 WHERE project_id = ? AND semanaActualizacion = ? AND tipoContrato IS NOT NULL AND tipoContrato != '' AND ultimo_auto_definir IS NULL
                  ORDER BY Id ASC",
-                [$semana]
+                [$projectId, $semana]
             );
             $manualOverrides = $stmt2->fetchAll(PDO::FETCH_ASSOC);
 
@@ -447,7 +458,7 @@ class ContratosApiController extends BaseController
             foreach ($activitiesSinContrato as $activity) {
                 $actId = (int) $activity['Id'];
 
-                $pgActivity = $this->loadPgActivityForContratos($db, $dbPrefix, $semana, $activity['actividadInicio'] ?? '');
+                $pgActivity = $this->loadPgActivityForContratos($db, $projectId, $semana, $activity['actividadInicio'] ?? '');
                 if ($pgActivity === null) {
                     $sinMatch++;
                     $sugerencias[] = [
@@ -605,6 +616,7 @@ class ContratosApiController extends BaseController
         try {
             $context = ModuleRequestContext::resolve();
             $dbPrefix = $context['dbPrefix'];
+            $projectId = (int) $context['projectId'];
             $semana = $context['semana'];
 
             $this->requirePermission('lps.contratos.auto_definir', 'No autorizado para aplicar auto-definición.');
@@ -639,7 +651,7 @@ class ContratosApiController extends BaseController
                 try {
                     $this->applyContratoDefinitionToActivity(
                         $db,
-                        $dbPrefix,
+                        $projectId,
                         $actId,
                         $semana,
                         $tipoContrato,
@@ -651,8 +663,9 @@ class ContratosApiController extends BaseController
                     $aplicadas++;
 
                     $db->query(
-                        "INSERT INTO {$dbPrefix}_auto_contrato_log (semana, Id_actividad, accion, tipo_contrato, paquetes, confianza, fecha_inicio_proyectada, num_proveedores, usuario, batch_id) VALUES (?, ?, 'asignar', ?, ?, ?, ?, ?, ?, ?)",
+                        "INSERT INTO auto_contrato_log (project_id, semana, Id_actividad, accion, tipo_contrato, paquetes, confianza, fecha_inicio_proyectada, num_proveedores, usuario, batch_id) VALUES (?, ?, ?, 'asignar', ?, ?, ?, ?, ?, ?, ?)",
                         [
+                            $projectId,
                             $semana,
                             $actId,
                             $sugerencia['tipoContrato'] ?? '',
@@ -689,6 +702,7 @@ class ContratosApiController extends BaseController
         try {
             $context = ModuleRequestContext::resolve();
             $dbPrefix = $context['dbPrefix'];
+            $projectId = (int) $context['projectId'];
             $semana = $context['semana'];
 
             $this->requirePermission('lps.contratos.auto_definir', 'No autorizado para re-analizar contratos.');
@@ -705,8 +719,8 @@ class ContratosApiController extends BaseController
 
             $stmt = $db->query(
                 "SELECT Id, codigo, actividad, descripcionActividad, actividadInicio, fechaInicio, tipoContrato
-                 FROM {$dbPrefix}_actividades WHERE Id = ? AND semanaActualizacion = ? LIMIT 1",
-                [$actId, $semana]
+                 FROM actividades WHERE project_id = ? AND Id = ? AND semanaActualizacion = ? LIMIT 1",
+                [$projectId, $actId, $semana]
             );
             $activity = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -715,7 +729,7 @@ class ContratosApiController extends BaseController
                 return;
             }
 
-            $pgActivity = $this->loadPgActivityForContratos($db, $dbPrefix, $semana, $activity['actividadInicio'] ?? '');
+            $pgActivity = $this->loadPgActivityForContratos($db, $projectId, $semana, $activity['actividadInicio'] ?? '');
             if ($pgActivity === null) {
                 $this->jsonError('Actividad no vinculada al programa general.', 400);
                 return;
@@ -797,10 +811,10 @@ class ContratosApiController extends BaseController
         }
     }
 
-    private function actualizarFechaInicio($Id, $semana, $dbPrefix, $db)
+    private function actualizarFechaInicio($Id, $semana, int $projectId, $db)
     {
-        $query = "SELECT Fecha_Inicio FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND (Consecutivo_en_Programa = ? OR Actividad = ?) ORDER BY Fecha_Inicio ASC LIMIT 1";
-        $stmt = $db->query($query, [$semana, $Id, $Id]);
+        $query = "SELECT Fecha_Inicio FROM programa_consolidado WHERE project_id = ? AND Semana = ? AND (Consecutivo_en_Programa = ? OR Actividad = ?) ORDER BY Fecha_Inicio ASC LIMIT 1";
+        $stmt = $db->query($query, [$projectId, $semana, $Id, $Id]);
         $data = $stmt->fetch(PDO::FETCH_ASSOC);
         $this->jsonResponse(["data" => $data ?: ["Fecha_Inicio" => ""]]);
     }
@@ -811,14 +825,14 @@ class ContratosApiController extends BaseController
         $modalidades = array_map('trim', explode(',', $tipoContrato));
 
         if (in_array('MO', $modalidades) || in_array('S', $modalidades)) {
-            $stmtMO = $db->query("SELECT paqueteContratacion FROM general_dias_procesos_contratacion WHERE tipoPaquete = 'Mano de Obra'");
+            $stmtMO = $db->query("SELECT DISTINCT TRIM(paqueteContratacion) AS paqueteContratacion FROM general_dias_procesos_contratacion WHERE tipoPaquete = 'Mano de Obra' AND paqueteContratacion IS NOT NULL AND TRIM(paqueteContratacion) != '' ORDER BY paqueteContratacion");
             $scriptMO = "<option value=''></option>";
             while ($row = $stmtMO->fetch()) {
                 $scriptMO .= "<option value='" . htmlspecialchars($row["paqueteContratacion"], ENT_QUOTES) . "'>" . htmlspecialchars($row["paqueteContratacion"], ENT_QUOTES) . "</option>";
             }
             $res["listadoMO"] = $scriptMO;
 
-            $stmtS = $db->query("SELECT paqueteContratacion FROM general_dias_procesos_contratacion WHERE tipoPaquete = 'Suministro'");
+            $stmtS = $db->query("SELECT DISTINCT TRIM(paqueteContratacion) AS paqueteContratacion FROM general_dias_procesos_contratacion WHERE tipoPaquete = 'Suministro' AND paqueteContratacion IS NOT NULL AND TRIM(paqueteContratacion) != '' ORDER BY paqueteContratacion");
             $scriptS = "<option value=''></option>";
             while ($row = $stmtS->fetch()) {
                 $scriptS .= "<option value='" . htmlspecialchars($row["paqueteContratacion"], ENT_QUOTES) . "'>" . htmlspecialchars($row["paqueteContratacion"], ENT_QUOTES) . "</option>";
@@ -827,7 +841,7 @@ class ContratosApiController extends BaseController
         }
 
         if (in_array('SI', $modalidades)) {
-            $stmtSI = $db->query("SELECT paqueteContratacion FROM general_dias_procesos_contratacion WHERE tipoPaquete = 'Suministro e Instalación'");
+            $stmtSI = $db->query("SELECT DISTINCT TRIM(paqueteContratacion) AS paqueteContratacion FROM general_dias_procesos_contratacion WHERE tipoPaquete = 'Suministro e Instalación' AND paqueteContratacion IS NOT NULL AND TRIM(paqueteContratacion) != '' ORDER BY paqueteContratacion");
             $scriptSI = "<option value=''></option>";
             while ($row = $stmtSI->fetch()) {
                 $scriptSI .= "<option value='" . htmlspecialchars($row["paqueteContratacion"], ENT_QUOTES) . "'>" . htmlspecialchars($row["paqueteContratacion"], ENT_QUOTES) . "</option>";
@@ -836,7 +850,7 @@ class ContratosApiController extends BaseController
         }
 
         if (in_array('OC', $modalidades)) {
-            $stmtOC = $db->query("SELECT paqueteContratacion FROM general_dias_procesos_contratacion WHERE tipoPaquete = 'Orden de Compra'");
+            $stmtOC = $db->query("SELECT DISTINCT TRIM(paqueteContratacion) AS paqueteContratacion FROM general_dias_procesos_contratacion WHERE tipoPaquete = 'Orden de Compra' AND paqueteContratacion IS NOT NULL AND TRIM(paqueteContratacion) != '' ORDER BY paqueteContratacion");
             $scriptOC = "<option value=''></option>";
             while ($row = $stmtOC->fetch()) {
                 $scriptOC .= "<option value='" . htmlspecialchars($row["paqueteContratacion"], ENT_QUOTES) . "'>" . htmlspecialchars($row["paqueteContratacion"], ENT_QUOTES) . "</option>";
@@ -846,30 +860,46 @@ class ContratosApiController extends BaseController
         $this->jsonResponse($res);
     }
 
-    private function actualizarInsumosRecursos($tipoContrato, $dbPrefix, $db, $semana)
+    private function actualizarInsumosRecursos($tipoContrato, int $projectId, $db, $semana)
     {
         $res = ["listadoMO" => "", "listadoS" => "", "listadoSI" => "", "listadoOC" => ""];
         $modalidades = array_map('trim', explode(',', $tipoContrato));
 
         if (in_array('MO', $modalidades) || in_array('S', $modalidades)) {
-            $queryMO = "SELECT MO1 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND MO1 IS NOT NULL AND MO1 != '' UNION SELECT MO2 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND MO2 IS NOT NULL AND MO2 != '' UNION SELECT MO3 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND MO3 IS NOT NULL AND MO3 != '' UNION SELECT MO4 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND MO4 IS NOT NULL AND MO4 != '' UNION SELECT MO5 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND MO5 IS NOT NULL AND MO5 != ''";
-            $insumosMO = $this->obtenerInsumosUnicos($db->query($queryMO, [$semana, $semana, $semana, $semana, $semana]));
+            $queryMO = "SELECT MO1 FROM actividades WHERE project_id = ? AND semanaActualizacion = ? AND MO1 IS NOT NULL AND MO1 != ''
+                UNION SELECT MO2 FROM actividades WHERE project_id = ? AND semanaActualizacion = ? AND MO2 IS NOT NULL AND MO2 != ''
+                UNION SELECT MO3 FROM actividades WHERE project_id = ? AND semanaActualizacion = ? AND MO3 IS NOT NULL AND MO3 != ''
+                UNION SELECT MO4 FROM actividades WHERE project_id = ? AND semanaActualizacion = ? AND MO4 IS NOT NULL AND MO4 != ''
+                UNION SELECT MO5 FROM actividades WHERE project_id = ? AND semanaActualizacion = ? AND MO5 IS NOT NULL AND MO5 != ''";
+            $insumosMO = $this->obtenerInsumosUnicos($db->query($queryMO, [$projectId, $semana, $projectId, $semana, $projectId, $semana, $projectId, $semana, $projectId, $semana]));
             $res["listadoMO"] = $this->generarOpcionesInsumos($insumosMO);
 
-            $queryS = "SELECT S1 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND S1 IS NOT NULL AND S1 != '' UNION SELECT S2 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND S2 IS NOT NULL AND S2 != '' UNION SELECT S3 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND S3 IS NOT NULL AND S3 != '' UNION SELECT S4 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND S4 IS NOT NULL AND S4 != '' UNION SELECT S5 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND S5 IS NOT NULL AND S5 != ''";
-            $insumosS = $this->obtenerInsumosUnicos($db->query($queryS, [$semana, $semana, $semana, $semana, $semana]));
+            $queryS = "SELECT S1 FROM actividades WHERE project_id = ? AND semanaActualizacion = ? AND S1 IS NOT NULL AND S1 != ''
+                UNION SELECT S2 FROM actividades WHERE project_id = ? AND semanaActualizacion = ? AND S2 IS NOT NULL AND S2 != ''
+                UNION SELECT S3 FROM actividades WHERE project_id = ? AND semanaActualizacion = ? AND S3 IS NOT NULL AND S3 != ''
+                UNION SELECT S4 FROM actividades WHERE project_id = ? AND semanaActualizacion = ? AND S4 IS NOT NULL AND S4 != ''
+                UNION SELECT S5 FROM actividades WHERE project_id = ? AND semanaActualizacion = ? AND S5 IS NOT NULL AND S5 != ''";
+            $insumosS = $this->obtenerInsumosUnicos($db->query($queryS, [$projectId, $semana, $projectId, $semana, $projectId, $semana, $projectId, $semana, $projectId, $semana]));
             $res["listadoS"] = $this->generarOpcionesInsumos($insumosS);
         }
 
         if (in_array('SI', $modalidades)) {
-            $querySI = "SELECT SI1 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND SI1 IS NOT NULL AND SI1 != '' UNION SELECT SI2 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND SI2 IS NOT NULL AND SI2 != '' UNION SELECT SI3 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND SI3 IS NOT NULL AND SI3 != '' UNION SELECT SI4 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND SI4 IS NOT NULL AND SI4 != '' UNION SELECT SI5 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND SI5 IS NOT NULL AND SI5 != ''";
-            $insumosSI = $this->obtenerInsumosUnicos($db->query($querySI, [$semana, $semana, $semana, $semana, $semana]));
+            $querySI = "SELECT SI1 FROM actividades WHERE project_id = ? AND semanaActualizacion = ? AND SI1 IS NOT NULL AND SI1 != ''
+                UNION SELECT SI2 FROM actividades WHERE project_id = ? AND semanaActualizacion = ? AND SI2 IS NOT NULL AND SI2 != ''
+                UNION SELECT SI3 FROM actividades WHERE project_id = ? AND semanaActualizacion = ? AND SI3 IS NOT NULL AND SI3 != ''
+                UNION SELECT SI4 FROM actividades WHERE project_id = ? AND semanaActualizacion = ? AND SI4 IS NOT NULL AND SI4 != ''
+                UNION SELECT SI5 FROM actividades WHERE project_id = ? AND semanaActualizacion = ? AND SI5 IS NOT NULL AND SI5 != ''";
+            $insumosSI = $this->obtenerInsumosUnicos($db->query($querySI, [$projectId, $semana, $projectId, $semana, $projectId, $semana, $projectId, $semana, $projectId, $semana]));
             $res["listadoSI"] = $this->generarOpcionesInsumos($insumosSI);
         }
 
         if (in_array('OC', $modalidades)) {
-            $queryOC = "SELECT OC1 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND OC1 IS NOT NULL AND OC1 != '' UNION SELECT OC2 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND OC2 IS NOT NULL AND OC2 != '' UNION SELECT OC3 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND OC3 IS NOT NULL AND OC3 != '' UNION SELECT OC4 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND OC4 IS NOT NULL AND OC4 != '' UNION SELECT OC5 FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ? AND OC5 IS NOT NULL AND OC5 != ''";
-            $insumosOC = $this->obtenerInsumosUnicos($db->query($queryOC, [$semana, $semana, $semana, $semana, $semana]));
+            $queryOC = "SELECT OC1 FROM actividades WHERE project_id = ? AND semanaActualizacion = ? AND OC1 IS NOT NULL AND OC1 != ''
+                UNION SELECT OC2 FROM actividades WHERE project_id = ? AND semanaActualizacion = ? AND OC2 IS NOT NULL AND OC2 != ''
+                UNION SELECT OC3 FROM actividades WHERE project_id = ? AND semanaActualizacion = ? AND OC3 IS NOT NULL AND OC3 != ''
+                UNION SELECT OC4 FROM actividades WHERE project_id = ? AND semanaActualizacion = ? AND OC4 IS NOT NULL AND OC4 != ''
+                UNION SELECT OC5 FROM actividades WHERE project_id = ? AND semanaActualizacion = ? AND OC5 IS NOT NULL AND OC5 != ''";
+            $insumosOC = $this->obtenerInsumosUnicos($db->query($queryOC, [$projectId, $semana, $projectId, $semana, $projectId, $semana, $projectId, $semana, $projectId, $semana]));
             $res["listadoOC"] = $this->generarOpcionesInsumos($insumosOC);
         }
         $this->jsonResponse($res);
@@ -954,6 +984,29 @@ class ContratosApiController extends BaseController
         return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
     }
 
+    private function formatUniquePackageNames(array|string $values): string
+    {
+        $seen = [];
+        $packages = [];
+        foreach ((array) $values as $value) {
+            foreach (explode(';', (string) $value) as $package) {
+                $package = trim($package);
+                if ($package === '') {
+                    continue;
+                }
+
+                $key = strtolower(preg_replace('/\s+/', ' ', $package));
+                if (isset($seen[$key])) {
+                    continue;
+                }
+                $seen[$key] = true;
+                $packages[] = $package;
+            }
+        }
+
+        return implode(', ', $packages);
+    }
+
     private function loadFamilyContractOptions($db): array
     {
         $stmt = $db->query(
@@ -1008,7 +1061,7 @@ class ContratosApiController extends BaseController
         return $families;
     }
 
-    private function loadPgActivityForContratos($db, string $dbPrefix, int $semana, string $actividadInicio): ?array
+    private function loadPgActivityForContratos($db, int $projectId, int $semana, string $actividadInicio): ?array
     {
         if (empty($actividadInicio)) {
             return null;
@@ -1016,9 +1069,9 @@ class ContratosApiController extends BaseController
 
         $stmt = $db->query(
             "SELECT Consecutivo, Consecutivo_en_Programa, Id, Actividad, Fecha_Inicio, COALESCE(Titulo, 0) AS Titulo
-             FROM {$dbPrefix}_programa_consolidado
-             WHERE Semana = ? AND Consecutivo_en_Programa = ? LIMIT 1",
-            [$semana, $actividadInicio]
+             FROM programa_consolidado
+             WHERE project_id = ? AND Semana = ? AND Consecutivo_en_Programa = ? LIMIT 1",
+            [$projectId, $semana, $actividadInicio]
         );
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -1049,7 +1102,7 @@ class ContratosApiController extends BaseController
         return null;
     }
 
-    private function assignContratoToActivity($db, string $dbPrefix, int $actId, string $tipoContrato, array $items, int $semana): bool
+    private function assignContratoToActivity($db, int $projectId, int $actId, string $tipoContrato, array $items, int $semana): bool
     {
         try {
             $prefixMap = [
@@ -1093,10 +1146,11 @@ class ContratosApiController extends BaseController
                 $packageCounts[$prefix] = $slotIndex;
             }
 
+            $params[] = $projectId;
             $params[] = $actId;
             $params[] = $semana;
 
-            $sql = "UPDATE {$dbPrefix}_actividades SET " . implode(', ', $updates) . " WHERE Id = ? AND semanaActualizacion = ?";
+            $sql = "UPDATE actividades SET " . implode(', ', $updates) . " WHERE project_id = ? AND Id = ? AND semanaActualizacion = ?";
             $db->query($sql, $params);
 
             return true;
@@ -1241,7 +1295,7 @@ class ContratosApiController extends BaseController
      * Similar to assignContratoToActivity() but also sets fechaInicioProyectada,
      * confianza_deteccion, numeroSubcontratos, ultimo_auto_definir.
      */
-    private function applyContratoDefinitionToActivity($db, string $dbPrefix, int $actId, int $semana, string $tipoContrato, array $paquetes, ?string $fechaInicioProyectada, $confidence, int $numeroSubcontratos): bool
+    private function applyContratoDefinitionToActivity($db, int $projectId, int $actId, int $semana, string $tipoContrato, array $paquetes, ?string $fechaInicioProyectada, $confidence, int $numeroSubcontratos): bool
     {
         $prefixMap = [
             'Suministro e Instalación' => 'SI',
@@ -1298,10 +1352,11 @@ class ContratosApiController extends BaseController
 
         $updates[] = "ultimo_auto_definir = NOW()";
 
+        $params[] = $projectId;
         $params[] = $actId;
         $params[] = $semana;
 
-        $sql = "UPDATE {$dbPrefix}_actividades SET " . implode(', ', $updates) . " WHERE Id = ? AND semanaActualizacion = ?";
+        $sql = "UPDATE actividades SET " . implode(', ', $updates) . " WHERE project_id = ? AND Id = ? AND semanaActualizacion = ?";
         $db->query($sql, $params);
 
         return true;
@@ -1343,6 +1398,7 @@ class ContratosApiController extends BaseController
         try {
             $context = ModuleRequestContext::resolve();
             $dbPrefix = $context['dbPrefix'];
+            $projectId = (int) $context['projectId'];
             $semana = $context['semana'];
 
             $this->requirePermission('lps.contratos.auto_definir', 'No autorizado para deshacer auto-definición.');
@@ -1352,7 +1408,8 @@ class ContratosApiController extends BaseController
 
             // Find the most recent batch_id
             $stmtBatch = $db->query(
-                "SELECT DISTINCT batch_id FROM {$dbPrefix}_auto_contrato_log ORDER BY creado_en DESC LIMIT 1"
+                "SELECT DISTINCT batch_id FROM auto_contrato_log WHERE project_id = ? ORDER BY creado_en DESC LIMIT 1",
+                [$projectId]
             );
             $batchRow = $stmtBatch->fetch(PDO::FETCH_ASSOC);
 
@@ -1365,8 +1422,8 @@ class ContratosApiController extends BaseController
 
             // Fetch all 'asignar' records for this batch
             $stmtLog = $db->query(
-                "SELECT * FROM {$dbPrefix}_auto_contrato_log WHERE batch_id = ? AND accion = 'asignar' ORDER BY id ASC",
-                [$batchId]
+                "SELECT * FROM auto_contrato_log WHERE project_id = ? AND batch_id = ? AND accion = 'asignar' ORDER BY id ASC",
+                [$projectId, $batchId]
             );
             $records = $stmtLog->fetchAll(PDO::FETCH_ASSOC);
 
@@ -1387,7 +1444,7 @@ class ContratosApiController extends BaseController
 
                 try {
                     $db->query(
-                        "UPDATE {$dbPrefix}_actividades SET
+                        "UPDATE actividades SET
                             tipoContrato = NULL,
                             paqueteSI1 = NULL, SI1 = NULL, paqueteSI2 = NULL, SI2 = NULL,
                             paqueteSI3 = NULL, SI3 = NULL, paqueteSI4 = NULL, SI4 = NULL,
@@ -1405,15 +1462,16 @@ class ContratosApiController extends BaseController
                             confianza_deteccion = NULL,
                             numeroSubcontratos = 1,
                             ultimo_auto_definir = NULL
-                         WHERE Id = ?",
-                        [$actId]
+                         WHERE project_id = ? AND Id = ?",
+                        [$projectId, $actId]
                     );
                     $revertidas++;
 
                     // Insert 'deshacer' log entry
                     $db->query(
-                        "INSERT INTO {$dbPrefix}_auto_contrato_log (semana, Id_actividad, accion, tipo_contrato, paquetes, confianza, fecha_inicio_proyectada, num_proveedores, usuario, batch_id) VALUES (?, ?, 'deshacer', ?, ?, ?, ?, ?, ?, ?)",
+                        "INSERT INTO auto_contrato_log (project_id, semana, Id_actividad, accion, tipo_contrato, paquetes, confianza, fecha_inicio_proyectada, num_proveedores, usuario, batch_id) VALUES (?, ?, ?, 'deshacer', ?, ?, ?, ?, ?, ?, ?)",
                         [
+                            $projectId,
                             $semana,
                             $actId,
                             $record['tipo_contrato'] ?? '',
@@ -1445,33 +1503,8 @@ class ContratosApiController extends BaseController
         }
     }
 
-    /**
-     * Ensure the audit log table exists for the given project database.
-     * Uses CREATE TABLE IF NOT EXISTS for idempotency.
-     */
     private function ensureAutoContratoLogTable(string $dbPrefix): void
     {
-        $db = Database::getInstance();
-        $db->query("
-            CREATE TABLE IF NOT EXISTS `{$dbPrefix}_auto_contrato_log` (
-                `id` INT NOT NULL AUTO_INCREMENT,
-                `semana` INT NOT NULL,
-                `Id_actividad` INT NOT NULL,
-                `accion` ENUM('asignar','deshacer') NOT NULL,
-                `tipo_contrato` VARCHAR(10) DEFAULT NULL,
-                `paquetes` JSON DEFAULT NULL,
-                `confianza` DECIMAL(5,2) DEFAULT NULL,
-                `fecha_inicio_proyectada` DATE DEFAULT NULL,
-                `num_proveedores` TINYINT DEFAULT NULL,
-                `usuario` VARCHAR(100) DEFAULT NULL,
-                `batch_id` VARCHAR(36) NOT NULL,
-                `creado_en` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                PRIMARY KEY (`id`),
-                KEY `idx_batch_id` (`batch_id`),
-                KEY `idx_semana` (`semana`),
-                KEY `idx_Id_actividad` (`Id_actividad`),
-                KEY `idx_creado_en` (`creado_en`)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-        ");
+        unset($dbPrefix);
     }
 }

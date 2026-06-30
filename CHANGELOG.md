@@ -29,6 +29,18 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [Sin publicar]
 
+### Añadido
+
+- **Arquitectura global-only documentada:** La BD activa queda formalizada como tablas globales con `project_id`; `{prefix}_*` queda limitado a respaldos, fuentes de migración o deuda aislada sin dependencia runtime.
+- **Asistente semi-automático compartido:** Listado de Actividades, Contratos y PDC comparten `preview/apply/undo/feedback/metrics`, trazabilidad global y bandeja guiada por seguridad.
+- **Trazabilidad semi-auto:** Nuevas tablas globales para corridas, sugerencias, decisiones, feedback y configuración por proyecto.
+
+### Cambiado
+
+- **UX de automatización no técnica:** La UI oculta IDs, fuentes internas, payloads y nombres técnicos para usuarios normales; Admin conserva “Detalle técnico”.
+- **PDC sin aplicación automática legacy:** El endpoint antiguo de aplicar PDC desde actividades deja de ejecutar cambios directos; el camino soportado es el asistente guiado con preview, selección y confirmación.
+- **Confianza normalizada:** La escala visible y backend queda en `0-100`: `80-100` listo, `50-79` revisión y `<50` no recomendado.
+
 ### Corregido
 
 - **Fix Color PG con Filtro + Scroll:** Se agregó hook `beforeRenderer` en `hot.js` de Programa General que intercepta cada celda ANTES del render del DOM y sobrescribe `cellProperties.className` con el valor correcto del estado. Esto reemplaza el enfoque anterior (`afterRender` + `applyPGCellDomClass`) que fallaba en virtual scrolling por race conditions con el ciclo interno de renderizado de Handsontable 14.6.1. El hook `beforeRenderer` modifica las propiedades de la celda ANTES de que HT las aplique al DOM, eliminando race conditions. También se agregó `afterLoadData` hook para invalidar el cache de clasificación al recargar datos. Test E2E `test-pg-color-fix.mjs` valida que filas filtradas mantienen clases de estado correctas tras scroll a 8000px.

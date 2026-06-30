@@ -10,16 +10,17 @@
 <body>
 	<?php
         $dbPrefixListadoActividades = $_SESSION['db'] ?? '';
+	$projectIdListadoActividades = (int) ($_SESSION['project_id'] ?? ($projectId ?? 0));
 	$maxSemanaListadoActividades = (int) ($_SESSION['Max_Semana'] ?? ($_SESSION['semana'] ?? 0));
 	$actividadInicioOptionsHtml = '';
 
-	if (empty($dbPrefixListadoActividades) || !preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefixListadoActividades)) {
+	if (empty($dbPrefixListadoActividades) || !preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefixListadoActividades) || $projectIdListadoActividades <= 0) {
 	    $actividadInicioOptionsHtml = '<option value="">Error: Database prefix not set</option>';
 	} else {
 	    try {
 	        $dbInstance = Database::getInstance();
-	        $queryActividadInicio = "SELECT Consecutivo_en_Programa, Id, Actividad, Fecha_Inicio FROM {$dbPrefixListadoActividades}_programa_consolidado WHERE Semana=? AND Titulo=0 AND Fecha_Inicio IS NOT NULL AND Fecha_Fin IS NOT NULL ORDER BY Fecha_Inicio ASC";
-	        $stmtActividadInicio = $dbInstance->query($queryActividadInicio, [$maxSemanaListadoActividades]);
+	        $queryActividadInicio = "SELECT Consecutivo_en_Programa, Id, Actividad, Fecha_Inicio FROM {$dbPrefixListadoActividades}_programa_consolidado WHERE project_id = ? AND Semana=? AND Titulo=0 AND Fecha_Inicio IS NOT NULL AND Fecha_Fin IS NOT NULL ORDER BY Fecha_Inicio ASC";
+	        $stmtActividadInicio = $dbInstance->query($queryActividadInicio, [$projectIdListadoActividades, $maxSemanaListadoActividades]);
 	        $actividadInicioOptions = [];
 
 	        while ($valores = $stmtActividadInicio->fetch(PDO::FETCH_ASSOC)) {
@@ -313,6 +314,7 @@
 	<script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js" charset="utf-8"></script>
 	<!--Script con las funciones NUEVA SEMANA y ELIMINAR SEMANA-->
 	<script type="text/javascript" src="/js/funcionesGenerales6.js" charset="utf-8"></script>
+	<script type="text/javascript" src="/js/modules/semi_auto_review.js?v=20260702" charset="utf-8"></script>
 	<!-- Bloquear el click derecho-->
 	<!--    <script type='text/javascript'>document.oncontextmenu = function(){return false}</script>-->
 
@@ -416,6 +418,10 @@
 		var inicializarAutoGenerarListado = function() {
 			$(document).off('click.autoGenListado', '#btn_auto_generar_listado').on('click.autoGenListado', '#btn_auto_generar_listado', function(e) {
 				e.preventDefault();
+				if (window.SemiAutoReview) {
+					window.SemiAutoReview.open('listado-actividades');
+					return;
+				}
 				$('#modalAutoGenerarListado').modal('show');
 			});
 
@@ -794,6 +800,13 @@
 			$("div.toolbarFilaBotones .grupo_botones1 .btn").addClass("ps-btn-gap");
 			if (puedeEditarListadoActividades()) {
 				$("div.toolbarFilaBotones .grupo_botones1").append('<button id="btn_auto_generar_listado" class="btn-pdc-modern ps-btn-gap" title="Auto-generar listado de actividades desde el Programa General"><i class="fas fa-magic"></i> Auto-generar Listado</button>');
+			}
+			if (window.SemiAutoReview) {
+				window.SemiAutoReview.init({
+					module: 'listado-actividades',
+					anchorSelector: 'div.toolbarFilaMensajes',
+					refresh: function() { recargarTabla('listar'); }
+				});
 			}
 			$("div.toolbarFilaBotones #btn_nueva_actividad").removeAttr("style");
 			$("div.toolbarFilaBotones .grupo_botones_semanal_madre")

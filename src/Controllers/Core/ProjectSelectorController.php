@@ -36,7 +36,7 @@ class ProjectSelectorController
                 INNER JOIN general_usuarios u ON u.id = pm.user_id
                 INNER JOIN general_proyectos_procesos p ON p.ID = pm.project_id
                 WHERE u.usuario = ?
-                  AND p.Area = 'Construccion'
+                  AND p.Area IN ('Construccion', 'Pre-Construccion')
                   AND p.Activo = 1
                   AND (p.Acceso = 1 OR pm.role IN ('A', 'D'))
                 ORDER BY p.Proyecto_Proceso ASC";
@@ -79,6 +79,7 @@ class ProjectSelectorController
         $sql = "SELECT p.ID,
                        p.Proyecto_Proceso,
                        p.Base_de_Datos,
+                       p.Area,
                        p.Acceso,
                        p.pdcActivo,
                        pm.role
@@ -87,7 +88,7 @@ class ProjectSelectorController
                 INNER JOIN general_proyectos_procesos p ON p.ID = pm.project_id
                 WHERE u.usuario = ?
                   AND p.Proyecto_Proceso = ?
-                  AND p.Area = 'Construccion'
+                  AND p.Area IN ('Construccion', 'Pre-Construccion')
                   AND p.Activo = 1
                 LIMIT 1";
 
@@ -111,6 +112,8 @@ class ProjectSelectorController
         }
 
         $_SESSION['proyecto'] = $proyectoSeleccionado;
+        $_SESSION['project_id'] = (int) ($accessData['ID'] ?? 0);
+        $_SESSION['area'] = (string) ($accessData['Area'] ?? 'Construccion');
         $_SESSION['db'] = $dbName;
         $_SESSION['permiso'] = $permiso;
         $_SESSION['permiso_canonico'] = $permiso;

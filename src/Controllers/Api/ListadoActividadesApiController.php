@@ -41,12 +41,13 @@ class ListadoActividadesApiController
         try {
             $context = ModuleRequestContext::resolve();
             $dbPrefix = $context['dbPrefix'];
-            $semana = $this->resolveMaxSemana($dbPrefix);
+            $projectId = (int) $context['projectId'];
+            $semana = $this->resolveMaxSemana($dbPrefix, $projectId);
 
             $this->requirePermission('lps.listado_actividades.ver', 'No autorizado para consultar el listado de actividades.');
 
-            $query = "SELECT COUNT(*) FROM {$dbPrefix}_actividades WHERE semanaActualizacion = ?";
-            $stmt = $this->db->query($query, [$semana]);
+            $query = "SELECT COUNT(*) FROM actividades WHERE project_id = ? AND semanaActualizacion = ?";
+            $stmt = $this->db->query($query, [$projectId, $semana]);
             $conteo = $stmt->fetchColumn();
 
             $response = ["data" => []];
@@ -65,16 +66,17 @@ class ListadoActividadesApiController
                     "semanaActualizacion" => "",
                 ];
             } else {
-                $query1 = "SELECT 
-                            a.Id, 
-                            a.codigo, 
-                            a.actividad, 
-                            a.descripcionActividad, 
+                $query1 = "SELECT
+                            a.Id,
+                            a.codigo,
+                            a.actividad,
+                            a.descripcionActividad,
                             COALESCE(
                                 (
                                     SELECT pc.Consecutivo_en_Programa
-                                    FROM {$dbPrefix}_programa_consolidado pc
-                                    WHERE pc.Semana = a.semanaActualizacion
+                                    FROM programa_consolidado pc
+                                    WHERE pc.project_id = a.project_id
+                                      AND pc.Semana = a.semanaActualizacion
                                       AND (pc.Consecutivo_en_Programa = a.actividadInicio OR pc.Actividad = a.actividadInicio)
                                     ORDER BY pc.Fecha_Inicio ASC
                                     LIMIT 1
@@ -84,22 +86,23 @@ class ListadoActividadesApiController
                             COALESCE(
                                 (
                                     SELECT CONCAT(pc.Id, '. ', pc.Actividad, ' (Inicia en: ', pc.Fecha_Inicio, ')')
-                                    FROM {$dbPrefix}_programa_consolidado pc
-                                    WHERE pc.Semana = a.semanaActualizacion
+                                    FROM programa_consolidado pc
+                                    WHERE pc.project_id = a.project_id
+                                      AND pc.Semana = a.semanaActualizacion
                                       AND (pc.Consecutivo_en_Programa = a.actividadInicio OR pc.Actividad = a.actividadInicio)
                                     ORDER BY pc.Fecha_Inicio ASC
                                     LIMIT 1
                                 ),
                                 a.nombreActividadInicio
                             ) AS nombreActividadInicio,
-                            a.fechaInicio, 
-                            a.tipoContrato, 
-                            a.semanaActualizacion 
-                           FROM {$dbPrefix}_actividades AS a
-                           WHERE a.semanaActualizacion = ? 
+                            a.fechaInicio,
+                            a.tipoContrato,
+                            a.semanaActualizacion
+                           FROM actividades AS a
+                           WHERE a.project_id = ? AND a.semanaActualizacion = ?
                            ORDER BY a.Id";
 
-                $stmt1 = $this->db->query($query1, [$semana]);
+                $stmt1 = $this->db->query($query1, [$projectId, $semana]);
                 $response["data"] = $stmt1->fetchAll(PDO::FETCH_ASSOC);
             }
 
@@ -118,7 +121,8 @@ class ListadoActividadesApiController
         try {
             $context = ModuleRequestContext::resolve();
             $dbPrefix = $context['dbPrefix'];
-            $semana = $this->resolveMaxSemana($dbPrefix);
+            $projectId = (int) $context['projectId'];
+            $semana = $this->resolveMaxSemana($dbPrefix, $projectId);
 
             $this->requirePermission('lps.listado_actividades.ver', 'No autorizado para consultar el listado de actividades.');
 
@@ -127,15 +131,15 @@ class ListadoActividadesApiController
             }
 
             if ($opcion == "registrar") {
-                $this->registrar($dbPrefix, $semana);
+                $this->registrar($dbPrefix, $projectId, $semana);
             } elseif ($opcion == "modificar") {
-                $this->modificar($dbPrefix, $semana);
+                $this->modificar($dbPrefix, $projectId, $semana);
             } elseif ($opcion == "eliminar") {
-                $this->eliminar($dbPrefix, $semana);
+                $this->eliminar($dbPrefix, $projectId, $semana);
             } elseif ($opcion == "actualizarFechaInicio") {
-                $this->actualizarFechaInicio($dbPrefix, $semana);
+                $this->actualizarFechaInicio($dbPrefix, $projectId, $semana);
             } elseif ($opcion == "cargarExcel") {
-                $this->cargarExcel($dbPrefix, $semana);
+                $this->cargarExcel($dbPrefix, $projectId, $semana);
             } else {
                 $this->jsonError('Opción no válida.');
             }
@@ -150,19 +154,20 @@ class ListadoActividadesApiController
         try {
             $context = ModuleRequestContext::resolve();
             $dbPrefix = $context['dbPrefix'];
-            $semana = $this->resolveMaxSemana($dbPrefix);
+            $projectId = (int) $context['projectId'];
+            $semana = $this->resolveMaxSemana($dbPrefix, $projectId);
 
             $this->requirePermission('lps.listado_actividades.editar', 'No autorizado para auto-generar el listado de actividades.');
 
             $preview = (isset($_GET['preview']) && $_GET['preview'] === '1')
                     || (isset($_POST['preview']) && $_POST['preview'] === '1');
 
-            $activities = $this->loadProjectActivities($dbPrefix, $semana);
+            $activities = $this->loadProjectActivities($dbPrefix, $projectId, $semana);
             $matcher = new \App\Support\ActivityMatcher();
             $rules = $matcher->loadRules();
 
             // Cargar estrategia de agrupación del proyecto
-            $estrategia = $this->loadProjectAgrupacionStrategy($dbPrefix, $semana);
+            $estrategia = $this->loadProjectAgrupacionStrategy($projectId, $dbPrefix, $semana);
 
             $grupos = [];
             $sinMatch = 0;
@@ -239,7 +244,7 @@ class ListadoActividadesApiController
                 $anchorFecha = $this->normalizeDate($anchor['Fecha_Inicio'] ?? null);
 
                 // Verificar si ya existe una actividad para este grupo
-                if ($this->activityExists($dbPrefix, $semana, $anchorConsecutivo)) {
+                if ($this->activityExists($dbPrefix, $projectId, $semana, $anchorConsecutivo)) {
                     $existentes++;
                     $sugerencias[] = [
                         'grupoKey' => $groupKey,
@@ -298,6 +303,7 @@ class ListadoActividadesApiController
 
                 $created = $this->createGroupedActivityFromPg(
                     $dbPrefix,
+                    $projectId,
                     $semana,
                     $grupo['familiaNombre'],
                     $descripcionConsolidada,
@@ -365,8 +371,25 @@ class ListadoActividadesApiController
         }
     }
 
-    private function loadProjectAgrupacionStrategy(string $dbPrefix, int $semana): string
+    private function loadProjectAgrupacionStrategy(int $projectId, string $dbPrefix, int $semana): string
     {
+        try {
+            $stmt = $this->db->query(
+                "SELECT estrategia_agrupacion
+                 FROM general_pdc_project_family_strategy
+                 WHERE project_id = ? AND semana = ? AND estrategia_agrupacion IS NOT NULL
+                 ORDER BY id ASC
+                 LIMIT 1",
+                [$projectId, $semana]
+            );
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($row && !empty($row['estrategia_agrupacion'])) {
+                return $row['estrategia_agrupacion'];
+            }
+        } catch (Throwable $e) {
+            error_log("Error cargando estrategia: " . $e->getMessage());
+        }
+
         try {
             $stmt = $this->db->query(
                 "SELECT estrategia_agrupacion
@@ -381,13 +404,15 @@ class ListadoActividadesApiController
                 return $row['estrategia_agrupacion'];
             }
         } catch (Throwable $e) {
-            error_log("Error cargando estrategia: " . $e->getMessage());
+            error_log("Error cargando estrategia legacy: " . $e->getMessage());
         }
+
         return 'familia';
     }
 
     private function createGroupedActivityFromPg(
         string $dbPrefix,
+        int $projectId,
         int $semana,
         string $actividadNombre,
         string $descripcion,
@@ -401,12 +426,13 @@ class ListadoActividadesApiController
                 return false;
             }
 
-            $maxCode = $this->getNextCodigo($dbPrefix);
+            $maxCode = $this->getNextCodigo($dbPrefix, $projectId);
+            $nombreActividadInicio = $this->programDisplayName($dbPrefix, $projectId, $semana, $actividadInicio);
 
-            $queryInsert = "INSERT INTO {$dbPrefix}_actividades
-                            (codigo, actividad, descripcionActividad, actividadInicio, nombreActividadInicio, fechaInicio, tipoContrato, semanaActualizacion)
-                            VALUES (?, ?, ?, ?, (SELECT CONCAT(Id, '. ', Actividad, ' (Inicia en: ', Fecha_Inicio, ')') FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Consecutivo_en_Programa = ? LIMIT 1), ?, ?, ?)";
-            $params = [$maxCode, $actividadNombre, $descripcion, $actividadInicio, $semana, $actividadInicio, $fechaInicio, $tipoContrato, $semana];
+            $queryInsert = "INSERT INTO actividades
+                            (project_id, codigo, actividad, descripcionActividad, actividadInicio, nombreActividadInicio, fechaInicio, tipoContrato, semanaActualizacion)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            $params = [$projectId, $maxCode, $actividadNombre, $descripcion, $actividadInicio, $nombreActividadInicio, $fechaInicio, $tipoContrato, $semana];
             $this->db->query($queryInsert, $params);
 
             $familiaNombre = $grupo['familiaNombre'] ?? 'N/A';
@@ -467,10 +493,10 @@ class ListadoActividadesApiController
         }
     }
 
-    private function resolveMaxSemana(string $dbPrefix): int
+    private function resolveMaxSemana(string $dbPrefix, int $projectId): int
     {
-        $query = "SELECT MAX(Semana) FROM {$dbPrefix}_semanas_activas";
-        $maxSemana = (int) $this->db->query($query)->fetchColumn();
+        $query = "SELECT MAX(Semana) FROM semanas_activas WHERE project_id = ?";
+        $maxSemana = (int) $this->db->query($query, [$projectId])->fetchColumn();
 
         if (session_status() === PHP_SESSION_ACTIVE) {
             $_SESSION['Max_Semana'] = $maxSemana;
@@ -480,7 +506,7 @@ class ListadoActividadesApiController
         return $maxSemana;
     }
 
-    private function registrar(string $dbPrefix, int $semana): void
+    private function registrar(string $dbPrefix, int $projectId, int $semana): void
     {
         $Actividad = !empty($_POST['actividad']) ? trim($_POST['actividad']) : '';
         $descripcionActividad = !empty($_POST['descripcionActividad']) ? trim($_POST['descripcionActividad']) : '';
@@ -492,21 +518,19 @@ class ListadoActividadesApiController
         if (empty($Actividad) || empty($descripcionActividad) || empty($fechaInicio) || empty($tipoContrato) || empty($semana)) {
             $errores = 'Debe rellenar todos los campos';
         } else {
-            $queryCheck = "SELECT COUNT(*) FROM {$dbPrefix}_actividades WHERE actividad = ? LIMIT 1";
-            $stmtCheck = $this->db->query($queryCheck, [$Actividad]);
+            $queryCheck = "SELECT COUNT(*) FROM actividades WHERE project_id = ? AND actividad = ? LIMIT 1";
+            $stmtCheck = $this->db->query($queryCheck, [$projectId, $Actividad]);
             if ($stmtCheck->fetchColumn() > 0) {
                 $errores = 'La actividad que estás intentando registrar ya existe';
             }
 
             if (empty($errores)) {
-                $queryMax = "SELECT MAX(codigo) FROM {$dbPrefix}_actividades";
-                $stmtMax = $this->db->query($queryMax);
-                $maxCode = $stmtMax->fetchColumn();
-                $codigo = empty($maxCode) ? 1 : $maxCode + 1;
+                $codigo = $this->getNextCodigo($dbPrefix, $projectId);
+                $nombreActividadInicio = $this->programDisplayName($dbPrefix, $projectId, $semana, (int) $actividadInicio);
 
-                $queryInsert = "INSERT INTO {$dbPrefix}_actividades (codigo, actividad, descripcionActividad, actividadInicio, nombreActividadInicio, fechaInicio, tipoContrato, semanaActualizacion) 
-                                VALUES (?, ?, ?, ?, (SELECT CONCAT(Id, '. ', Actividad, ' (Inicia en: ', Fecha_Inicio, ')') FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Consecutivo_en_Programa = ? LIMIT 1), ?, ?, ?)";
-                $params = [$codigo, $Actividad, $descripcionActividad, $actividadInicio, $semana, $actividadInicio, $fechaInicio, $tipoContrato, $semana];
+                $queryInsert = "INSERT INTO actividades (project_id, codigo, actividad, descripcionActividad, actividadInicio, nombreActividadInicio, fechaInicio, tipoContrato, semanaActualizacion)
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                $params = [$projectId, $codigo, $Actividad, $descripcionActividad, $actividadInicio, $nombreActividadInicio, $fechaInicio, $tipoContrato, $semana];
 
                 $stmtInsert = $this->db->query($queryInsert, $params);
                 $this->db->logActivity('ListadoActividades', 'CREAR', "Creó actividad: $Actividad", $dbPrefix);
@@ -518,7 +542,7 @@ class ListadoActividadesApiController
         $this->verificar_resultado(false, $errores);
     }
 
-    private function modificar(string $dbPrefix, int $semana): void
+    private function modificar(string $dbPrefix, int $projectId, int $semana): void
     {
         $Id = $_POST['Id'] ?? 0;
         $Actividad = !empty($_POST['Actividad']) ? trim($_POST['Actividad']) : (!empty($_POST['select_Actividad']) ? trim($_POST['select_Actividad']) : '');
@@ -531,10 +555,11 @@ class ListadoActividadesApiController
         if (empty($Actividad) || empty($descripcionActividad) || empty($fechaInicio) || empty($semana)) {
             $errores = 'Debe rellenar todos los campos';
         } else {
-            $queryUpdate = "UPDATE {$dbPrefix}_actividades SET actividad=?, descripcionActividad=?, actividadInicio=?, 
-                             nombreActividadInicio=(SELECT CONCAT(Id, '. ', Actividad, ' (Inicia en: ', Fecha_Inicio, ')') FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Consecutivo_en_Programa = ? LIMIT 1), 
-                             fechaInicio=?, tipoContrato=COALESCE(NULLIF(?, ''), tipoContrato), semanaActualizacion=? WHERE Id=? AND semanaActualizacion=?";
-            $params = [$Actividad, $descripcionActividad, $actividadInicio, $semana, $actividadInicio, $fechaInicio, $tipoContrato, $semana, $Id, $semana];
+            $nombreActividadInicio = $this->programDisplayName($dbPrefix, $projectId, $semana, (int) $actividadInicio);
+            $queryUpdate = "UPDATE actividades SET actividad=?, descripcionActividad=?, actividadInicio=?,
+                             nombreActividadInicio=?,
+                             fechaInicio=?, tipoContrato=COALESCE(NULLIF(?, ''), tipoContrato), semanaActualizacion=? WHERE project_id=? AND Id=? AND semanaActualizacion=?";
+            $params = [$Actividad, $descripcionActividad, $actividadInicio, $nombreActividadInicio, $fechaInicio, $tipoContrato, $semana, $projectId, $Id, $semana];
             $stmtUpdate = $this->db->query($queryUpdate, $params);
             $this->db->logActivity('ListadoActividades', 'MODIFICAR', "Modificó actividad ID $Id", $dbPrefix);
 
@@ -544,22 +569,22 @@ class ListadoActividadesApiController
         $this->verificar_resultado(false, $errores);
     }
 
-    private function eliminar(string $dbPrefix, int $semana): void
+    private function eliminar(string $dbPrefix, int $projectId, int $semana): void
     {
         $Id = $_POST["Id"] ?? 0;
-        $query = "DELETE FROM {$dbPrefix}_actividades WHERE Id = ? AND semanaActualizacion = ?";
-        $stmt = $this->db->query($query, [$Id, $semana]);
+        $query = "DELETE FROM actividades WHERE project_id = ? AND Id = ? AND semanaActualizacion = ?";
+        $stmt = $this->db->query($query, [$projectId, $Id, $semana]);
         $this->db->logActivity('ListadoActividades', 'ELIMINAR', "Eliminó actividad ID $Id", $dbPrefix);
         $this->verificar_resultado(true, '');
     }
 
-    private function actualizarFechaInicio(string $dbPrefix, int $semana): void
+    private function actualizarFechaInicio(string $dbPrefix, int $projectId, int $semana): void
     {
         $Id = $_POST["idActividad"] ?? '';
 
         try {
-            $query = "SELECT Fecha_Inicio FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Consecutivo_en_Programa = ? LIMIT 1";
-            $stmt = $this->db->query($query, [$semana, $Id]);
+            $query = "SELECT Fecha_Inicio FROM programa_consolidado WHERE project_id = ? AND Semana = ? AND Consecutivo_en_Programa = ? LIMIT 1";
+            $stmt = $this->db->query($query, [$projectId, $semana, $Id]);
             $data = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if ($data) {
@@ -573,7 +598,7 @@ class ListadoActividadesApiController
         }
     }
 
-    private function cargarExcel(string $dbPrefix, int $semanaActualizacion): void
+    private function cargarExcel(string $dbPrefix, int $projectId, int $semanaActualizacion): void
     {
         $archivoExcel = $_FILES["archivoExcel"] ?? null;
         if (!$archivoExcel) {
@@ -591,17 +616,20 @@ class ListadoActividadesApiController
                 try {
                     $this->db->beginTransaction();
 
-                    $this->db->query("TRUNCATE TABLE {$dbPrefix}_actividades");
-
-                    $sql = "INSERT INTO {$dbPrefix}_actividades (codigo, actividad, descripcionActividad, semanaActualizacion) VALUES (?, ?, ?, ?)";
-                    $stmt = $this->db->prepare($sql);
+                    $this->db->query(
+                        "DELETE FROM actividades WHERE project_id = ? AND semanaActualizacion = ?",
+                        [$projectId, $semanaActualizacion]
+                    );
 
                     $numeroFila = 0;
                     while (($data = fgetcsv($handle, 10000, ";")) !== false) {
                         if ($numeroFila != 0) {
                             $actividad = $data[0] ?? '';
                             $descripcion = $data[1] ?? '';
-                            $stmt->execute([$numeroFila, $actividad, $descripcion, $semanaActualizacion]);
+                            $this->db->query(
+                                "INSERT INTO actividades (project_id, codigo, actividad, descripcionActividad, semanaActualizacion) VALUES (?, ?, ?, ?, ?)",
+                                [$projectId, $numeroFila, $actividad, $descripcion, $semanaActualizacion]
+                            );
                         }
                         $numeroFila++;
                     }
@@ -628,16 +656,16 @@ class ListadoActividadesApiController
         }
     }
 
-    private function activityExists(string $dbPrefix, int $semana, int $consecutivoPrograma): bool
+    private function activityExists(string $dbPrefix, int $projectId, int $semana, int $consecutivoPrograma): bool
     {
         $stmt = $this->db->query(
-            "SELECT Id FROM {$dbPrefix}_actividades WHERE actividadInicio = ? AND semanaActualizacion = ? LIMIT 1",
-            [$consecutivoPrograma, $semana]
+            "SELECT Id FROM actividades WHERE project_id = ? AND actividadInicio = ? AND semanaActualizacion = ? LIMIT 1",
+            [$projectId, $consecutivoPrograma, $semana]
         );
         return $stmt->fetchColumn() !== false;
     }
 
-    private function createActivityFromPg(string $dbPrefix, int $semana, array $pgActivity, array $match): bool
+    private function createActivityFromPg(string $dbPrefix, int $projectId, int $semana, array $pgActivity, array $match): bool
     {
         $consecutivoPrograma = (int) ($pgActivity['Consecutivo_en_Programa'] ?? 0);
         $actividad = trim((string) ($pgActivity['Actividad'] ?? ''));
@@ -648,12 +676,13 @@ class ListadoActividadesApiController
         }
 
         try {
-            $maxCode = $this->getNextCodigo($dbPrefix);
+            $maxCode = $this->getNextCodigo($dbPrefix, $projectId);
+            $nombreActividadInicio = $this->programDisplayName($dbPrefix, $projectId, $semana, $consecutivoPrograma);
 
-            $queryInsert = "INSERT INTO {$dbPrefix}_actividades 
-                            (codigo, actividad, descripcionActividad, actividadInicio, nombreActividadInicio, fechaInicio, tipoContrato, semanaActualizacion) 
-                            VALUES (?, ?, '', ?, (SELECT CONCAT(Id, '. ', Actividad, ' (Inicia en: ', Fecha_Inicio, ')') FROM {$dbPrefix}_programa_consolidado WHERE Semana = ? AND Consecutivo_en_Programa = ? LIMIT 1), ?, NULL, ?)";
-            $params = [$maxCode, $actividad, $consecutivoPrograma, $semana, $consecutivoPrograma, $fechaInicio, $semana];
+            $queryInsert = "INSERT INTO actividades
+                            (project_id, codigo, actividad, descripcionActividad, actividadInicio, nombreActividadInicio, fechaInicio, tipoContrato, semanaActualizacion)
+                            VALUES (?, ?, ?, '', ?, ?, ?, NULL, ?)";
+            $params = [$projectId, $maxCode, $actividad, $consecutivoPrograma, $nombreActividadInicio, $fechaInicio, $semana];
             $this->db->query($queryInsert, $params);
 
             $familiaNombre = $match['familia_nombre'] ?? 'N/A';
@@ -665,14 +694,14 @@ class ListadoActividadesApiController
         }
     }
 
-    private function loadProjectActivities(string $dbPrefix, int $semana): array
+    private function loadProjectActivities(string $dbPrefix, int $projectId, int $semana): array
     {
         $stmt = $this->db->query(
             "SELECT Consecutivo, Consecutivo_en_Programa, Id, Actividad, Fecha_Inicio, COALESCE(Titulo, 0) AS Titulo
-             FROM {$dbPrefix}_programa_consolidado
-             WHERE Semana = ? AND COALESCE(TRIM(REGEXP_REPLACE(REGEXP_REPLACE(Actividad, '<[^>]+>', ''), '&nbsp;', ' ')), '') <> ''
+             FROM programa_consolidado
+             WHERE project_id = ? AND Semana = ? AND COALESCE(TRIM(REGEXP_REPLACE(REGEXP_REPLACE(Actividad, '<[^>]+>', ''), '&nbsp;', ' ')), '') <> ''
              ORDER BY Consecutivo_en_Programa ASC, Consecutivo ASC",
-            [$semana]
+            [$projectId, $semana]
         );
 
         $leaves = [];
@@ -691,10 +720,31 @@ class ListadoActividadesApiController
         return $leaves;
     }
 
-    private function getNextCodigo(string $dbPrefix): int
+    private function getNextCodigo(string $dbPrefix, int $projectId): int
     {
-        $stmt = $this->db->query("SELECT COALESCE(MAX(codigo), 0) + 1 FROM {$dbPrefix}_actividades");
+        $stmt = $this->db->query(
+            "SELECT COALESCE(MAX(codigo), 0) + 1 FROM actividades WHERE project_id = ?",
+            [$projectId]
+        );
         return (int) $stmt->fetchColumn();
+    }
+
+    private function programDisplayName(string $dbPrefix, int $projectId, int $semana, int $actividadInicio): ?string
+    {
+        if ($actividadInicio <= 0) {
+            return null;
+        }
+
+        $stmt = $this->db->query(
+            "SELECT CONCAT(Id, '. ', Actividad, ' (Inicia en: ', Fecha_Inicio, ')')
+             FROM programa_consolidado
+             WHERE project_id = ? AND Semana = ? AND Consecutivo_en_Programa = ?
+             LIMIT 1",
+            [$projectId, $semana, $actividadInicio]
+        );
+
+        $value = $stmt->fetchColumn();
+        return $value === false ? null : (string) $value;
     }
 
     private function normalizeDate($value): ?string

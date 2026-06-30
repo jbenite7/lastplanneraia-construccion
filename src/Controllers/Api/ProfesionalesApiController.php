@@ -187,8 +187,8 @@ class ProfesionalesApiController
 
                 $activo = $this->normalizarBooleano($rowChanges['activo'] ?? $actual['activo']);
                 $resultado = $this->db->query(
-                    "UPDATE {$dbPrefix}_profesionales SET activo = ? WHERE id = ?",
-                    [$activo, $id],
+                    "UPDATE {$dbPrefix}_profesionales SET activo = ? WHERE project_id = ? AND id = ?",
+                    [$activo, (int) ($_SESSION['project_id'] ?? 0), $id],
                 );
 
                 if ($resultado) {
@@ -212,8 +212,8 @@ class ProfesionalesApiController
             }
 
             $resultado = $this->db->query(
-                "UPDATE {$dbPrefix}_profesionales SET nombre = ?, email = ?, cargo = ?, activo = ? WHERE id = ?",
-                [$actualizado['nombre'], $actualizado['email'], $actualizado['cargo'], $actualizado['activo'], $id],
+                "UPDATE {$dbPrefix}_profesionales SET nombre = ?, email = ?, cargo = ?, activo = ? WHERE project_id = ? AND id = ?",
+                [$actualizado['nombre'], $actualizado['email'], $actualizado['cargo'], $actualizado['activo'], (int) ($_SESSION['project_id'] ?? 0), $id],
             );
 
             if ($resultado) {
@@ -245,7 +245,10 @@ class ProfesionalesApiController
 
         foreach ($tablesToUpdate as $tbl => $col) {
             if ($this->db->query("SHOW TABLES LIKE '$tbl'")->fetch()) {
-                $this->db->query("UPDATE $tbl SET $col = ? WHERE $col = ?", [$newName, $oldName]);
+                $this->db->query(
+                    "UPDATE $tbl SET $col = ? WHERE project_id = ? AND $col = ?",
+                    [$newName, (int) ($_SESSION['project_id'] ?? 0), $oldName],
+                );
             }
         }
     }
@@ -271,7 +274,11 @@ class ProfesionalesApiController
         ]);
 
         if ($res) {
-            $this->json(["status" => "success", "id" => $this->db->lastInsertId(), "message" => "Profesional creado."]);
+            $id = $this->db->query(
+                "SELECT id FROM {$dbPrefix}_profesionales WHERE email = ? ORDER BY id DESC LIMIT 1",
+                [$data['email']],
+            )->fetchColumn();
+            $this->json(["status" => "success", "id" => (int) $id, "message" => "Profesional creado."]);
         } else {
             $this->json(["status" => "error", "message" => "Error al crear profesional."]);
         }
@@ -313,7 +320,7 @@ class ProfesionalesApiController
             }
         }
 
-        if ($this->db->query("DELETE FROM {$dbPrefix}_profesionales WHERE id = ?", [$id])) {
+        if ($this->db->query("DELETE FROM {$dbPrefix}_profesionales WHERE project_id = ? AND id = ?", [(int) ($_SESSION['project_id'] ?? 0), $id])) {
             $this->db->logActivity('Profesionales', 'ELIMINAR', "Eliminó profesional: $nombre", $dbPrefix);
             $this->json(["status" => "success", "message" => "Profesional eliminado."]);
         } else {
@@ -330,7 +337,7 @@ class ProfesionalesApiController
 
     private function obtenerProfesional(string $dbPrefix, int $id): ?array
     {
-        $stmt = $this->db->query("SELECT id, nombre, email, cargo, activo FROM {$dbPrefix}_profesionales WHERE id = ?", [$id]);
+        $stmt = $this->db->query("SELECT id, nombre, email, cargo, activo FROM {$dbPrefix}_profesionales WHERE project_id = ? AND id = ?", [(int) ($_SESSION['project_id'] ?? 0), $id]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         return $row ?: null;
     }

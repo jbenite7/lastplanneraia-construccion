@@ -19,6 +19,56 @@ class GeneralApiController extends BaseController
         parent::__construct();
         $this->lpsService = new LpsService();
     }
+
+    public function restrictionConfig()
+    {
+        $this->requireAuth();
+        header('Content-Type: application/json; charset=utf-8');
+
+        $area = (string) ($_SESSION['area'] ?? 'Construccion');
+
+        if ($area === 'Pre-Construccion') {
+            echo json_encode([
+                'area' => $area,
+                'hardRestrictions' => ['restriccion_pc_1'],
+                'softRestrictions' => ['restriccion_pc_2', 'restriccion_pc_3', 'restriccion_pc_4'],
+                'restrictions' => [
+                    $this->restrictionDefinition('restriccion_pc_1', 'Predecesora', 'hard', 1.0),
+                    $this->restrictionDefinition('restriccion_pc_2', 'Diseños', 'soft', 1.0),
+                    $this->restrictionDefinition('restriccion_pc_3', 'Permisos', 'soft', 1.0),
+                    $this->restrictionDefinition('restriccion_pc_4', 'Interesados', 'soft', 1.0),
+                ],
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        echo json_encode([
+            'area' => 'Construccion',
+            'hardRestrictions' => ['D_y_E', 'Materiales', 'MdeO', 'Equipos', 'Predecesora'],
+            'softRestrictions' => ['Pdto_Cons', 'Modelo'],
+            'restrictions' => [
+                $this->restrictionDefinition('D_y_E', 'Diseños y Especificaciones', 'hard', 1.0),
+                $this->restrictionDefinition('Materiales', 'Materiales', 'hard', 1.0),
+                $this->restrictionDefinition('MdeO', 'Mano de Obra', 'hard', 1.0),
+                $this->restrictionDefinition('Equipos', 'Equipos', 'hard', 1.0),
+                $this->restrictionDefinition('Predecesora', 'Predecesora', 'hard', 0.5),
+                $this->restrictionDefinition('Pdto_Cons', 'Procedimiento Constructivo', 'soft', 0.5),
+                $this->restrictionDefinition('Modelo', 'Modelo BIM', 'soft', 0.5),
+            ],
+        ], JSON_UNESCAPED_UNICODE);
+    }
+
+    private function restrictionDefinition(string $key, string $label, string $type, float $threshold): array
+    {
+        return [
+            'key' => $key,
+            'label' => $label,
+            'type' => $type,
+            'threshold' => $threshold,
+            'options' => $threshold >= 1.0 ? ['0%', '33%', '66%', '100%', 'N/A'] : ['0%', '50%', '100%', 'N/A'],
+        ];
+    }
+
     /**
      * API: Lista actividades del Programa General con filtros de estado.
      */
@@ -31,6 +81,7 @@ class GeneralApiController extends BaseController
         try {
             $vars = $this->getSessionVars();
             $dbPrefix = $_GET['db'] ?? ($vars['dbName'] ?? '');
+            $projectId = (int) ($vars['projectId'] ?? 0);
             $semanaParam = $_GET['semana_objetivo'] ?? $_GET['semana'] ?? null;
             $semana = $semanaParam !== null ? filter_var($semanaParam, FILTER_VALIDATE_INT) : ($vars['semana'] ?? 0);
 
@@ -71,8 +122,8 @@ class GeneralApiController extends BaseController
             }
 
             // 3. Obtener Fechas de la Semana
-            $stmtFechas = $this->db->prepare("SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem FROM {$dbPrefix}_semanas_activas WHERE Semana = ? LIMIT 1");
-            $stmtFechas->execute([$semana]);
+            $stmtFechas = $this->db->prepare("SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem FROM {$dbPrefix}_semanas_activas WHERE project_id = ? AND Semana = ? LIMIT 1");
+            $stmtFechas->execute([$projectId, $semana]);
             $fechasSemana = $stmtFechas->fetch(PDO::FETCH_ASSOC);
 
             $fechaInicioSemana = $fechasSemana['Fecha_Inicio_Sem'] ?? date('Y-m-d');
@@ -81,12 +132,12 @@ class GeneralApiController extends BaseController
             // 4. Consulta Principal
             $sql = "SELECT * 
                     FROM {$dbPrefix}_programa_consolidado 
-                    WHERE Semana = ? 
+                    WHERE project_id = ? AND Semana = ?
                     $sqlFilter 
                     ORDER BY Consecutivo ASC, Consecutivo_en_Programa ASC, Id ASC";
 
             $stmt = $this->db->prepare($sql);
-            $stmt->execute([$semana]);
+            $stmt->execute([$projectId, $semana]);
             $data = [];
 
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -1225,10 +1276,12 @@ class GeneralApiController extends BaseController
                     'updated' => $updated,
                 ],
             ], JSON_UNESCAPED_UNICODE);
+            return;
 
         } catch (Exception $e) {
             http_response_code(400);
             echo json_encode(['success' => false, 'error' => $e->getMessage()], JSON_UNESCAPED_UNICODE);
+            return;
         }
     }
 
@@ -1305,6 +1358,7 @@ class GeneralApiController extends BaseController
                 'success' => true,
                 'id' => $insertedId,
             ], JSON_UNESCAPED_UNICODE);
+            return;
 
         } catch (Exception $e) {
             http_response_code(400);
@@ -1312,6 +1366,7 @@ class GeneralApiController extends BaseController
                 'success' => false,
                 'error' => $e->getMessage(),
             ], JSON_UNESCAPED_UNICODE);
+            return;
         }
     }
 }

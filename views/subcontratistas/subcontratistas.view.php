@@ -317,8 +317,9 @@
     <input type="hidden" id="baseDatos" value="<?php echo $_SESSION['db'] ?? 'Prueba'; ?>">
     <input type="hidden" id="permiso_canonico" value="<?php echo $_SESSION['permiso'] ?? 'V'; ?>">
 
+    <?php $isPreConstruction = ($area ?? 'Construccion') === 'Pre-Construccion'; ?>
     <div class="header-actions action-bar">
-        <h4>Subcontratistas (Live Edición)</h4>
+        <h4><?php echo $isPreConstruction ? 'Interesados Externos' : 'Subcontratistas'; ?> (Live Edición)</h4>
         <div>
             <span id="save-status" class="badge badge-success" style="display:none;">Guardado</span>
             <span id="save-error" class="badge badge-danger" style="display:none;">Error al guardar</span>
@@ -344,7 +345,7 @@
     <!-- Handsontable Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/handsontable@14.6.1/dist/handsontable.full.min.js"></script>
     <!-- Languages -->
-    <script src="https://cdn.jsdelivr.net/npm/handsontable@14.6.1/dist/languages/es-MX.js"></script>
+    <script src="/public/vendor/handsontable/es-MX.js"></script>
 
     <script>
         const container = document.getElementById('hot-container');
@@ -535,7 +536,9 @@
                 data: data,
                 rowHeaders: true,
                 rowHeaderWidth: 50,
-                colHeaders: ['ID', 'Subcontratista', 'Correo Contacto', 'NIT', 'Alcance', 'Tipo Proveedor', 'Activo', 'Acciones'],
+                colHeaders: <?php echo $isPreConstruction
+                    ? "['ID', 'Interesado', 'Correo Contacto', 'Identificación', 'Rol/Interés', 'Tipo de Interesado', 'Activo', 'Acciones']"
+                    : "['ID', 'Subcontratista', 'Correo Contacto', 'NIT', 'Alcance', 'Tipo Proveedor', 'Activo', 'Acciones']"; ?>,
                 columns: [
                     { data: 'Id', readOnly: true, className: 'htCenter htMiddle' },
                     { data: 'subcontratista', type: 'text', className: 'htCenter htMiddle force-wrap' },

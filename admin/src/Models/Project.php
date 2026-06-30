@@ -34,6 +34,22 @@ class Project
      */
     public function getIntegrityReport()
     {
+        if ($this->db->isUsingGlobalTables()) {
+            $missing = [];
+            foreach (Database::globalTableNames() as $table) {
+                $stmt = $this->db->query("SHOW TABLES LIKE '{$table}'");
+                if (!$stmt->fetch()) {
+                    $missing[] = $table;
+                }
+            }
+
+            return empty($missing) ? [] : [[
+                'id' => 0,
+                'nombre' => 'Tablas globales',
+                'missing' => $missing,
+            ]];
+        }
+
         $projects = $this->getAll();
         $suffixes = [
             '_actividades', '_cambios', '_cic', '_pdc', '_profesionales',
@@ -93,6 +109,10 @@ class Project
         foreach ($allTables as $table) {
             // SEGURIDAD: Ignorar tablas globales del sistema
             if (str_starts_with($table, 'general_')) {
+                continue;
+            }
+
+            if ($this->db->isUsingGlobalTables() && in_array($table, Database::globalTableNames(), true)) {
                 continue;
             }
 
@@ -310,6 +330,10 @@ class Project
      */
     private function renameProjectTables($oldPrefix, $newPrefix)
     {
+        if ($this->db->isUsingGlobalTables()) {
+            return;
+        }
+
         $suffixes = [
             '_actividades', '_cambios', '_cic', '_pdc', '_profesionales',
             '_programa', '_programacion_semanal', '_programa_consolidado',
@@ -412,6 +436,10 @@ class Project
      */
     private function createProjectTables($prefix)
     {
+        if ($this->db->isUsingGlobalTables()) {
+            return;
+        }
+
         $queries = [
             // milanCampestre_actividades
             "CREATE TABLE IF NOT EXISTS `{$prefix}_actividades` (
@@ -879,6 +907,18 @@ class Project
         }
 
         $prefix = $project['Base_de_Datos'] ?? '';
+
+        if ($this->db->isUsingGlobalTables()) {
+            foreach (Database::globalTableNames() as $tableName) {
+                try {
+                    $this->db->query("DELETE FROM `{$tableName}` WHERE project_id = ?", [(int) $id]);
+                } catch (\Exception $e) {
+                    error_log("Error al limpiar tabla global {$tableName} para proyecto {$id}: " . $e->getMessage());
+                }
+            }
+
+            return $this->db->query("DELETE FROM {$this->table} WHERE Id = ?", [$id]);
+        }
 
         // Si tiene prefijo, eliminar sus tablas asociadas
         if (!empty($prefix)) {

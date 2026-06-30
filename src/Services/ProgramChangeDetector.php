@@ -428,6 +428,10 @@ class ProgramChangeDetector
 
     private function ensureLogTable(string $dbPrefix): void
     {
+        if ($this->db->isUsingGlobalTables()) {
+            return;
+        }
+
         $this->db->query("
             CREATE TABLE IF NOT EXISTS `{$dbPrefix}_auto_program_log` (
                 `id` INT NOT NULL AUTO_INCREMENT,
@@ -449,12 +453,16 @@ class ProgramChangeDetector
     {
         if ($creadoEn) {
             $this->db->query(
-                "INSERT INTO {$dbPrefix}_auto_program_log (semana, consecutivo, accion, detalle, categoria_cnp, cnp, creado_en) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                "INSERT INTO {$dbPrefix}_auto_program_log (semana, consecutivo, accion, detalle, categoria_cnp, cnp, creado_en)
+                 VALUES (?, ?, ?, ?, ?, ?, ?)
+                 ON DUPLICATE KEY UPDATE detalle = VALUES(detalle), categoria_cnp = VALUES(categoria_cnp), cnp = VALUES(cnp), creado_en = VALUES(creado_en)",
                 [$semana, $consecutivo, $accion, $detalle, $catCnp, $cnp, $creadoEn],
             );
         } else {
             $this->db->query(
-                "INSERT INTO {$dbPrefix}_auto_program_log (semana, consecutivo, accion, detalle, categoria_cnp, cnp) VALUES (?, ?, ?, ?, ?, ?)",
+                "INSERT INTO {$dbPrefix}_auto_program_log (semana, consecutivo, accion, detalle, categoria_cnp, cnp)
+                 VALUES (?, ?, ?, ?, ?, ?)
+                 ON DUPLICATE KEY UPDATE detalle = VALUES(detalle), categoria_cnp = VALUES(categoria_cnp), cnp = VALUES(cnp)",
                 [$semana, $consecutivo, $accion, $detalle, $catCnp, $cnp],
             );
         }
@@ -689,7 +697,8 @@ class ProgramChangeDetector
     {
         $text = "TRIM(COALESCE({$column}, ''))";
         $compact = "REPLACE({$text}, ' ', '')";
-        $numeric = "CAST(REPLACE(REPLACE({$compact}, '%', ''), ',', '.') AS DECIMAL(10,5))";
+        $numberSource = "REPLACE(REPLACE({$compact}, '%', ''), ',', '.')";
+        $numeric = "(CASE WHEN {$numberSource} REGEXP '^[0-9]+(\\\\.[0-9]+)?$' THEN CAST({$numberSource} AS DECIMAL(10,5)) ELSE NULL END)";
         $normalized = "(CASE WHEN LOCATE('%', {$compact}) > 0 THEN {$numeric} / 100 WHEN {$numeric} > 1 AND {$numeric} <= 10000 THEN {$numeric} / 100 ELSE {$numeric} END)";
         $threshold = number_format($minimumRatio, 5, '.', '');
 

@@ -11,6 +11,7 @@ class SubcontratistasApiController
         'Mano de Obra',
         'Suministro e Instalación',
         'Suministro de Materiales, Herramientas o Equipos',
+        'Consultor',
     ];
 
     private $db;
@@ -145,7 +146,7 @@ class SubcontratistasApiController
             }
 
             $resultado = $this->db->query(
-                "UPDATE {$dbPrefix}_subcontratistas SET subcontratista = ?, correo_contacto = ?, NIT = ?, alcance = ?, tipo_proveedor = ?, activo = ? WHERE Id = ?",
+                "UPDATE {$dbPrefix}_subcontratistas SET subcontratista = ?, correo_contacto = ?, NIT = ?, alcance = ?, tipo_proveedor = ?, activo = ? WHERE project_id = ? AND Id = ?",
                 [
                     $actualizado['subcontratista'],
                     $actualizado['correo_contacto'],
@@ -153,6 +154,7 @@ class SubcontratistasApiController
                     $actualizado['alcance'],
                     $actualizado['tipo_proveedor'],
                     $actualizado['activo'],
+                    (int) ($_SESSION['project_id'] ?? 0),
                     $id,
                 ],
             );
@@ -180,7 +182,10 @@ class SubcontratistasApiController
         foreach ($tables as $tbl => $col) {
             if ($this->db->query("SHOW TABLES LIKE '$tbl'")->fetch()) {
                 if ($this->db->query("SHOW COLUMNS FROM $tbl LIKE '$col'")->fetch()) {
-                    $this->db->query("UPDATE $tbl SET $col = ? WHERE $col = ?", [$newName, $oldName]);
+                    $this->db->query(
+                        "UPDATE $tbl SET $col = ? WHERE project_id = ? AND $col = ?",
+                        [$newName, (int) ($_SESSION['project_id'] ?? 0), $oldName],
+                    );
                 }
             }
         }
@@ -212,7 +217,11 @@ class SubcontratistasApiController
         ]);
 
         if ($res) {
-            $this->json(["status" => "success", "id" => $this->db->lastInsertId(), "respuesta" => "BIEN", "message" => "Subcontratista creado."]);
+            $id = $this->db->query(
+                "SELECT Id FROM {$dbPrefix}_subcontratistas WHERE correo_contacto = ? ORDER BY Id DESC LIMIT 1",
+                [$data['correo_contacto']],
+            )->fetchColumn();
+            $this->json(["status" => "success", "id" => (int) $id, "respuesta" => "BIEN", "message" => "Subcontratista creado."]);
         } else {
             $this->json(["status" => "error", "message" => "Error al crear subcontratista."]);
         }
@@ -221,7 +230,7 @@ class SubcontratistasApiController
     private function eliminar(string $dbPrefix): void
     {
         $id = $_POST['Id'] ?? $_POST['id'] ?? '';
-        $nombre = $this->db->query("SELECT subcontratista FROM {$dbPrefix}_subcontratistas WHERE Id = ?", [$id])->fetchColumn();
+        $nombre = $this->db->query("SELECT subcontratista FROM {$dbPrefix}_subcontratistas WHERE project_id = ? AND Id = ?", [(int) ($_SESSION['project_id'] ?? 0), $id])->fetchColumn();
 
         if (!$nombre) {
             $this->json(['status' => 'error', 'message' => 'Subcontratista no encontrado']);
@@ -233,7 +242,7 @@ class SubcontratistasApiController
             return;
         }
 
-        if ($this->db->query("DELETE FROM {$dbPrefix}_subcontratistas WHERE Id = ?", [$id])) {
+        if ($this->db->query("DELETE FROM {$dbPrefix}_subcontratistas WHERE project_id = ? AND Id = ?", [(int) ($_SESSION['project_id'] ?? 0), $id])) {
             $this->json(["status" => "success", "respuesta" => "BIEN", "message" => "Subcontratista eliminado."]);
         } else {
             $this->json(["status" => "error", "message" => "Error al eliminar."]);
@@ -263,7 +272,7 @@ class SubcontratistasApiController
 
     private function obtenerSubcontratista(string $dbPrefix, int $id): ?array
     {
-        $stmt = $this->db->query("SELECT Id, subcontratista, correo_contacto, NIT, alcance, tipo_proveedor, activo FROM {$dbPrefix}_subcontratistas WHERE Id = ?", [$id]);
+        $stmt = $this->db->query("SELECT Id, subcontratista, correo_contacto, NIT, alcance, tipo_proveedor, activo FROM {$dbPrefix}_subcontratistas WHERE project_id = ? AND Id = ?", [(int) ($_SESSION['project_id'] ?? 0), $id]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         return $row ?: null;
     }

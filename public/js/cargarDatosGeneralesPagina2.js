@@ -16,6 +16,26 @@ if (!document.querySelector('link[href*="font-awesome"]')) {
 var inputosOcultos =
   "<input type='hidden' name='Fecha_Fin_Sem' id='Fecha_Fin_Sem' value=''><input type='hidden' name='Fecha_Fin_SemYMD' id='Fecha_Fin_SemYMD' value=''><input type='hidden' name='Fecha_Inicio_Sem' id='Fecha_Inicio_Sem' value=''><input type='hidden' name='Fecha_Inicio_SemYMD' id='Fecha_Inicio_SemYMD' value=''><input type='hidden' name='Fecha_datepicker' id='Fecha_datepicker' value=''><input type='hidden' name='Max_Semana' id='Max_Semana' value=''><input type='hidden' name='baseDatos' id='baseDatos' value=''><input type='hidden' name='permiso_canonico' id='permiso_canonico' value=''><input type='hidden' name='proyecto' id='proyecto' value=''><input type='hidden' name='semana' id='semana' value=''><input type='hidden' name='pdcActivo' id='pdcActivo' value=''><input type='hidden' name='tituloSuperior' id='tituloSuperior' value=''><input type='hidden' name='Semanal_Confirmada' id='Semanal_Confirmada' value=''><input type='hidden' name='fechaCierreCompromisos' id='fechaCierreCompromisos' value=''><input type='hidden' name='fechaCreacionSemana' id='fechaCreacionSemana' value=''><input type='hidden' name='versionCronograma' id='versionCronograma' value=''>";
 
+function applyProjectTypeVisibility(datosGenerales) {
+  var area = datosGenerales.area || datosGenerales.Area || 'Construccion';
+  window.__PROJECT_AREA__ = area;
+
+  if (area !== 'Pre-Construccion') return;
+
+  ['tituloActividadesProyecto', 'info_listadoActividades', 'info_contratos', 'planCompras'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    var container = el.closest('li') || el;
+    container.style.display = 'none';
+  });
+
+  var interesados = document.getElementById('tituloInteresados');
+  if (interesados) interesados.textContent = 'Interesados Externos';
+
+  var subcontratistas = document.getElementById('info_subcontratistas');
+  if (subcontratistas) subcontratistas.textContent = 'Interesados Externos';
+}
+
 // Drawer Overlay HTML
 var drawerOverlay = '<div class="drawer-overlay" id="drawerOverlay"></div>';
 
@@ -262,6 +282,7 @@ var cargarDatosGeneralesPagina = function (seccion) {
       //console.log(json_info_global["data"]);
       datosGenerales = json_info_global['data'];
       listadoSemanas = json_info_global['data']['listadoSemanas'];
+      applyProjectTypeVisibility(datosGenerales);
 
       // Update User Name + Role (stacked)
       if (document.getElementById('labelNombreUsuario')) {

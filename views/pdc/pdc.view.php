@@ -1268,6 +1268,7 @@
 	<script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js" charset="utf-8"></script>
 	<!--Script con las funciones NUEVA SEMANA y ELIMINAR SEMANA-->
 	<script type="text/javascript" src="/js/funcionesGenerales6.js" charset="utf-8"></script>
+	<script type="text/javascript" src="/js/modules/semi_auto_review.js?v=20260702" charset="utf-8"></script>
 	<!-- Bloquear el click derecho-->
 	<!--    <script type='text/javascript'>document.oncontextmenu = function(){return false}</script>-->
 
@@ -1872,6 +1873,13 @@
 
 			// 1. Action Buttons (Left)
 			$("div.toolbarAcciones").html(`<div class="grupo_botones1 ps-toolbar-actions" role="group" aria-label="Actions"><button id="btn_actualizarPDC" class="btn-pdc-modern ps-btn-gap" title="Actualizar items" onclick="actualizarPDC()">Actualizar <i class="fas fa-sync fa-lg"></i></button><button id="btn_definirContratosPDC" class="btn-pdc-modern ps-btn-gap" title="Desglosar Subcontratos" onclick="obtener_data_definirContratos()">Desglosar <i class="fa fa-list-ol fa-lg" aria-hidden="true"></i></button><button id="btn_auto_generar_desde_actividades" class="btn-pdc-modern ps-btn-gap" title="Auto-generar Plan de Compras desde actividades con contratos asignados"><i class="fas fa-magic"></i> Auto-Generar desde Actividades</button><button id="btn_soloAlertas" class="btn-pdc-modern ps-btn-gap pdc-btn-alertas" title="Mostrar solo paquetes que necesitan atención" onclick="toggleSoloAlertas()"><i class="fas fa-bell fa-lg"></i> Solo Alertas <span id="count-alertas" class="badge badge-light"></span></button></div>`);
+			if (window.SemiAutoReview) {
+				window.SemiAutoReview.init({
+					module: 'pdc',
+					anchorSelector: 'div.toolbarFilaMensajes',
+					refresh: function() { recargarTabla('listar'); }
+				});
+			}
 			
 			// 2. Navigation Bar (Center/Middle)
 			$("div.toolbarNavegacion").html('<div class="grupo_botones_semanal_madre ps-toolbar-nav-wrap"><div class="ps-module-switcher" role="tablist" aria-label="Navegacion general"><button id="btn_Actividades" type="button" class="ps-module-tab" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_listadoActividades&semana='+semana+'\'" aria-label="Ir a Actividades"><i class="fas fa-table" aria-hidden="true"></i><span>Actividades</span></button><button id="btn_contratos" type="button" class="ps-module-tab" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_contratos&semana='+semana+'\'" aria-label="Ir a Contratos"><i class="fas fa-file-alt" aria-hidden="true"></i><span>Contratos</span></button><button id="btn_planCompras" type="button" class="ps-module-tab is-active" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=planCompras&semana='+semana+'&origen=planCompras\'" aria-label="Ir a Plan de Compras" aria-current="page"><i class="fas fa-shopping-cart" aria-hidden="true"></i><span>Plan de Compras</span></button></div></div>');
@@ -3094,6 +3102,10 @@
 		/* Auto-Generar desde Actividades (Fase 3) */
 		$(document).off('click.autoGenFromAct', '#btn_auto_generar_desde_actividades').on('click.autoGenFromAct', '#btn_auto_generar_desde_actividades', function(e) {
 			e.preventDefault();
+			if (window.SemiAutoReview) {
+				window.SemiAutoReview.open('pdc');
+				return;
+			}
 			var btn = $(this);
 			var db = document.getElementById('baseDatos').value;
 			var semana = document.getElementById('semana').value;

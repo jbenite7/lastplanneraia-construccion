@@ -25,7 +25,7 @@ class RbacManager
         $canEditGeneralProgram = in_array($role, ['A', 'D', 'R', 'DCV']);
         $canEditWeeklyProgram = in_array($role, ['A', 'D', 'R', 'S', 'G', 'SG']);
         $canEditMediumTerm = in_array($role, ['A', 'D', 'R', 'DCV']);
-        $canManageContracts = in_array($role, ['A', 'D', 'OT']);
+        $canManageContracts = in_array($role, ['A', 'D', 'OT', 'R']);
 
         return [
             'isSystemAdmin' => $isSystemAdmin,

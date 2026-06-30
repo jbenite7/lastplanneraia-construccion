@@ -18,6 +18,7 @@ class ProgramaGeneralController extends BaseController
         $proyecto = $vars['proyecto'] ?? '';
         $permiso = $vars['permiso'] ?? '';
         $pdcActivo = $vars['pdcActivo'] ?? '';
+        $projectId = (int) ($vars['projectId'] ?? 0);
 
         $maxSemana = 0;
         $fechaInicioSem = '';
@@ -32,8 +33,13 @@ class ProgramaGeneralController extends BaseController
 
         try {
             if (!empty($dbName) && preg_match('/^[a-zA-Z0-9_]+$/', $dbName)) {
-                $sqlUltima = "SELECT Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem FROM {$dbName}_semanas_activas WHERE Semana = (SELECT MAX(Semana) FROM {$dbName}_semanas_activas)";
-                $stmtUltima = $this->db->query($sqlUltima);
+                $sqlUltima = "SELECT Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem
+                              FROM {$dbName}_semanas_activas
+                              WHERE project_id = ? AND Semana = (
+                                  SELECT MAX(Semana) FROM {$dbName}_semanas_activas WHERE project_id = ?
+                              )";
+                $stmtUltima = $this->db->prepare($sqlUltima);
+                $stmtUltima->execute([$projectId, $projectId]);
                 $dataUltima = $stmtUltima->fetch();
 
                 if ($dataUltima) {
@@ -46,11 +52,11 @@ class ProgramaGeneralController extends BaseController
                     $fechaDatepicker = date("Y, n - 1, d, H, i, s", strtotime($dataUltima["Fecha_Fin_Sem"]));
                 }
 
-                $sqlDetalles = "SELECT Semanal_Confirmada, fechaCierreCompromisos, fechaCreacionSemana, 
-                               (SELECT SUM(reprogramacion) FROM {$dbName}_semanas_activas WHERE Semana <= ?) AS versionCronograma 
-                               FROM {$dbName}_semanas_activas WHERE Semana = ?";
+                $sqlDetalles = "SELECT Semanal_Confirmada, fechaCierreCompromisos, fechaCreacionSemana,
+                               (SELECT SUM(reprogramacion) FROM {$dbName}_semanas_activas WHERE project_id = ? AND Semana <= ?) AS versionCronograma
+                               FROM {$dbName}_semanas_activas WHERE project_id = ? AND Semana = ?";
                 $stmtDetalles = $this->db->prepare($sqlDetalles);
-                $stmtDetalles->execute([$semana, $semana]);
+                $stmtDetalles->execute([$projectId, $semana, $projectId, $semana]);
                 $dataDetalles = $stmtDetalles->fetch();
 
                 if ($dataDetalles) {
@@ -109,6 +115,7 @@ class ProgramaGeneralController extends BaseController
 
         $dbPrefix = $_POST['db'] ?? '';
         $semana = filter_var($_POST['semana'] ?? 0, FILTER_VALIDATE_INT);
+        $projectId = (int) ($_SESSION['project_id'] ?? 0);
 
         // Validación del prefijo (seguridad básica)
         if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
@@ -142,11 +149,11 @@ class ProgramaGeneralController extends BaseController
             COALESCE(SUM(CASE WHEN (Estado = 'Terminada' OR Estado = 'Terminada Antes') THEN 1 ELSE 0 END), 0) AS terminadas,
             COUNT(*) AS total
             FROM {$dbPrefix}_programa_consolidado 
-            WHERE Semana = ? AND Titulo = 0";
+            WHERE project_id = ? AND Semana = ? AND Titulo = 0";
 
         try {
             $stmt = $this->db->prepare($query);
-            $stmt->execute([$semana]);
+            $stmt->execute([$projectId, $semana]);
             $data = $stmt->fetch();
 
             if ($data) {

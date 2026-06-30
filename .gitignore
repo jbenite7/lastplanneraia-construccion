@@ -62,7 +62,11 @@ docs/pdc/
 .opencode/
 .claude/
 .gemini/
-.omo/
+.omo/*
+!.omo/plans/
+.omo/plans/*
+!.omo/plans/refine-model-contracts.md
+!.omo/plans/validar-migracion-project-schema.md
 
 # Node.js / Playwright testing
 node_modules/
@@ -71,7 +75,16 @@ package.json
 test-output/
 test-output-*/
 test-results/
-tests/browser/
+tests/browser/*
+!tests/browser/full-app-flow.spec.mjs
+!tests/browser/semi-auto-review.mjs
+!tests/browser/fixtures/
+!tests/browser/fixtures/*.mjs
+!tests/browser/support/
+!tests/browser/support/*.mjs
+!tests/browser/auto-definir-contratos.mjs
+!tests/browser/preconstruccion-full-cycle.mjs
+!tests/browser/test-pdc.mjs
 .playwright-mcp/
 .tmp-e2e/
 
