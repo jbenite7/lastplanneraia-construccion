@@ -1,0 +1,27 @@
+{
+  "schema_version": 2,
+  "active_work_id": "activate-global-tables",
+  "works": {
+    "activate-global-tables": {
+      "work_id": "activate-global-tables",
+      "active_plan": ".omo/plans/007-activate-global-tables.md",
+      "plan_name": "007-activate-global-tables",
+      "session_ids": ["opencode:ses_0fb92b35bffeykYEQhfAqs2oG1"],
+      "status": "active",
+      "worktree_path": null,
+      "session_origins": {},
+      "ended_at": null,
+      "updated_at": "2026-06-26T00:00:00.000Z",
+      "task_sessions": {}
+    }
+  },
+  "session_ids": ["opencode:ses_0fb92b35bffeykYEQhfAqs2oG1"],
+  "session_origins": {},
+  "task_sessions": {},
+  "active_plan": ".omo/plans/007-activate-global-tables.md",
+  "plan_name": "007-activate-global-tables",
+  "status": "active",
+  "ended_at": null,
+  "updated_at": "2026-06-26T00:00:00.000Z",
+  "worktree_path": null
+}
