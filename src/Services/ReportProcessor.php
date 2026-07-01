@@ -67,7 +67,7 @@ class ReportProcessor
 
     private function getConstructionProjects($pdcOnly = false)
     {
-        $sql = "SELECT Proyecto_Proceso, Base_de_Datos FROM general_proyectos_procesos WHERE Area='Construccion' AND Activo=1";
+        $sql = "SELECT Id AS project_id, Proyecto_Proceso, Base_de_Datos FROM general_proyectos_procesos WHERE Area='Construccion' AND Activo=1";
         if ($pdcOnly) {
             $sql .= " AND pdcActivo=1";
         }
@@ -108,12 +108,71 @@ class ReportProcessor
             return false;
         }
 
-        $stmt = $this->db->queryWithProject(
+        $stmt = $this->db->query(
             "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ?",
             [$tableName],
         );
 
+        if ((int) $stmt->fetchColumn() > 0) {
+            return true;
+        }
+
+        foreach (TableResolver::getValidTables() as $globalTable) {
+            if (str_ends_with($tableName, '_' . $globalTable)) {
+                $stmt = $this->db->query(
+                    "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ?",
+                    [$globalTable],
+                );
+
+                return (int) $stmt->fetchColumn() > 0;
+            }
+        }
+
+        return false;
+    }
+
+    private function reportTableHasProjectId(string $table): bool
+    {
+        $stmt = $this->db->query(
+            "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = ? AND column_name = 'project_id'",
+            [$table],
+        );
+
         return (int) $stmt->fetchColumn() > 0;
+    }
+
+    private function clearReportTable(string $table, bool $pdcOnly = false): void
+    {
+        $activeClause = $pdcOnly ? "" : " AND Activo=1";
+
+        if ($this->reportTableHasProjectId($table)) {
+            $this->db->query(
+                "DELETE FROM {$table}
+                 WHERE project_id IN (
+                    SELECT Id FROM general_proyectos_procesos
+                    WHERE Area='Construccion'{$activeClause}
+                 )",
+            );
+
+            return;
+        }
+
+        $this->db->query(
+            "DELETE FROM {$table}
+             WHERE Proyecto IN (
+                SELECT Proyecto_Proceso FROM general_proyectos_procesos
+                WHERE Area='Construccion'{$activeClause}
+             )",
+        );
+    }
+
+    private function projectIdFromProjectRow(array $project): ?int
+    {
+        if (isset($project['project_id']) && $project['project_id'] !== null) {
+            return (int) $project['project_id'];
+        }
+
+        return $this->pid($project['Base_de_Datos']);
     }
 
     private function hasReportablePdc(string $dbPrefix, bool $requiresDates = false): bool
@@ -147,8 +206,8 @@ class ReportProcessor
         $results = [];
 
         try {
-            $this->db->query("TRUNCATE TABLE general_curvas");
-            $this->db->query("TRUNCATE TABLE general_curvas_pdc_apr");
+            $this->clearReportTable('general_curvas');
+            $this->clearReportTable('general_curvas_pdc', true);
 
             $proyectos = $this->getConstructionProjects();
             $totalProyectos = count($proyectos);
@@ -168,7 +227,7 @@ class ReportProcessor
 
                     // Verify table exists
                     $tProgCons = TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado');
-                    $projectId = TableResolver::getProjectIdByPrefix($dbPrefix);
+                    $projectId = $this->projectIdFromProjectRow($data1);
                     $this->db->queryWithProject("SELECT 1 FROM {$tProgCons} LIMIT 1", [], $projectId);
                     $this->reportSubprocess('Curva S', $proyecto, 'Validando programa consolidado', 'ok');
 
@@ -195,14 +254,14 @@ class ReportProcessor
                         $ultimaFechaFinSem = $fechaFinSem;
 
                         $sqlInsertReal = "INSERT INTO general_curvas (
-                            Proyecto, fInicioProyecto, fFinProyecto, Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem,
+                            project_id, Proyecto, fInicioProyecto, fFinProyecto, Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem,
                             diasCompletadosReal, diasCompletadosTeorico, diasCompletadosLineaBase,
                             diasTotales, diasTotalesLineaBase,
                             porcentajeCompletadoReal, porcentajeCompletadoTeorico, porcentajeCompletadoLineaBase,
                             diferenciaPorcentajeCompletadoTeorico, diferenciaPorcentajeCompletadoLineaBase
                         )
                         SELECT
-                            ? AS Proyecto, MIN(Fecha_Inicio) AS fInicioProyecto, MAX(Fecha_Fin) AS fFinProyecto,
+                            ? AS project_id, ? AS Proyecto, MIN(Fecha_Inicio) AS fInicioProyecto, MAX(Fecha_Fin) AS fFinProyecto,
                             ? AS Semana, ? AS Fecha_Inicio_Sem, ? AS Fecha_Fin_Sem,
                             SUM(diasCompletadosReal) AS diasCompletadosReal,
                             SUM(diasCompletadosTeorico) AS diasCompletadosTeorico,
@@ -225,15 +284,15 @@ class ReportProcessor
                                 END) AS diasCompletadosTeorico,
                                 (DATEDIFF({$tProgCons}.Fecha_Fin, {$tProgCons}.Fecha_Inicio)+1) * {$tProgCons}.Ejecutado AS diasCompletadosReal,
                                 (SELECT SUM(DATEDIFF({$tProgCons}.Fecha_Fin, {$tProgCons}.Fecha_Inicio)+1)
-                                 FROM {$tProgCons} WHERE Semana = ? AND Titulo = 0) AS diasTotales
+                                 FROM {$tProgCons} WHERE project_id = ? AND Semana = ? AND Titulo = 0) AS diasTotales
                             FROM {$tProgCons}
-                            WHERE Titulo = 0 AND Fecha_Inicio IS NOT NULL AND Fecha_Fin IS NOT NULL AND Semana = ?
+                            WHERE project_id = ? AND Titulo = 0 AND Fecha_Inicio IS NOT NULL AND Fecha_Fin IS NOT NULL AND Semana = ?
                         ) AS tabla";
 
                         $this->db->queryWithProject($sqlInsertReal, [
-                            $proyecto, $semana, $fechaInicioSem, $fechaFinSem,
+                            $projectId, $proyecto, $semana, $fechaInicioSem, $fechaFinSem,
                             $fechaInicioSem, $fechaInicioSem, $fechaInicioSem,
-                            $semana, $semana,
+                            $projectId, $semana, $projectId, $semana,
                         ], $projectId);
                     }
 
@@ -246,14 +305,14 @@ class ReportProcessor
                         $ultimaFechaFinSem = $fechaFinSem;
 
                         $sqlInsertProyectada = "INSERT INTO general_curvas (
-                            Proyecto, fInicioProyecto, fFinProyecto, Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem,
+                            project_id, Proyecto, fInicioProyecto, fFinProyecto, Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem,
                             diasCompletadosReal, diasCompletadosTeorico, diasCompletadosLineaBase,
                             diasTotales, diasTotalesLineaBase,
                             porcentajeCompletadoReal, porcentajeCompletadoTeorico, porcentajeCompletadoLineaBase,
                             diferenciaPorcentajeCompletadoTeorico, diferenciaPorcentajeCompletadoLineaBase
                         )
                         SELECT
-                            ? AS Proyecto, MIN(Fecha_Inicio) AS fInicioProyecto, MAX(Fecha_Fin) AS fFinProyecto,
+                            ? AS project_id, ? AS Proyecto, MIN(Fecha_Inicio) AS fInicioProyecto, MAX(Fecha_Fin) AS fFinProyecto,
                             ? AS Semana, ? AS Fecha_Inicio_Sem, ? AS Fecha_Fin_Sem,
                             SUM(diasCompletadosReal) AS diasCompletadosReal,
                             SUM(diasCompletadosTeorico) AS diasCompletadosTeorico,
@@ -276,16 +335,16 @@ class ReportProcessor
                                 END) AS diasCompletadosTeorico,
                                 0 AS diasCompletadosReal,
                                 (SELECT SUM(DATEDIFF({$this->t($dbPrefix, 'programa_consolidado')}.Fecha_Fin, {$this->t($dbPrefix, 'programa_consolidado')}.Fecha_Inicio)+1)
-                                 FROM {$this->t($dbPrefix, 'programa_consolidado')} WHERE Semana = ? AND Titulo = 0) AS diasTotales
+                                 FROM {$this->t($dbPrefix, 'programa_consolidado')} WHERE project_id = ? AND Semana = ? AND Titulo = 0) AS diasTotales
                             FROM {$this->t($dbPrefix, 'programa_consolidado')}
-                            WHERE Titulo = 0 AND Fecha_Inicio IS NOT NULL AND Fecha_Fin IS NOT NULL AND Semana = ?
+                            WHERE project_id = ? AND Titulo = 0 AND Fecha_Inicio IS NOT NULL AND Fecha_Fin IS NOT NULL AND Semana = ?
                         ) AS tabla";
 
                         $this->db->queryWithProject($sqlInsertProyectada, [
-                            $proyecto, $i, $fechaInicioSem, $fechaFinSem,
+                            $projectId, $proyecto, $i, $fechaInicioSem, $fechaFinSem,
                             $fechaInicioSem, $fechaInicioSem, $fechaInicioSem,
-                            $ultimaSemanaActiva, $ultimaSemanaActiva,
-                        ]);
+                            $projectId, $ultimaSemanaActiva, $projectId, $ultimaSemanaActiva,
+                        ], $projectId);
                     }
 
                     $proyectadas = max(0, $semanasProyecto - $ultimaSemanaActiva);
@@ -299,13 +358,13 @@ class ReportProcessor
             }
 
             // Calculate differences
-            $stmtCurvas = $this->db->query("SELECT * FROM general_curvas ORDER BY Proyecto, Semana");
+            $stmtCurvas = $this->db->query("SELECT * FROM general_curvas WHERE project_id IS NOT NULL ORDER BY project_id, Semana");
             $porcentajeAnterior = 0;
             $proyectoAnterior = null;
             while ($row = $stmtCurvas->fetch()) {
-                if ($proyectoAnterior !== $row['Proyecto']) {
+                if ($proyectoAnterior !== $row['project_id']) {
                     $porcentajeAnterior = 0;
-                    $proyectoAnterior = $row['Proyecto'];
+                    $proyectoAnterior = $row['project_id'];
                 }
 
                 $porcentajeActual = (float) $row['porcentajeCompletadoTeorico'];
@@ -319,31 +378,31 @@ class ReportProcessor
             $this->reportSubprocess('Curva S', '', 'Calculando diferencias', 'ok');
             $results[] = "Curva S - OK";
 
-            // --- Curva S PDC APR ---
+            // --- Curva S PDC ---
             $proyectosPDC = $this->getConstructionProjects(true);
 
             if (count($proyectosPDC) === 0) {
-                $results[] = "Curva S PDC APR - No hay proyectos";
+                $results[] = "Curva S PDC - No hay proyectos";
             } else {
                 $totalPDC = count($proyectosPDC);
                 $pdcIdx = 0;
                 foreach ($proyectosPDC as $data1) {
                     $pdcProyecto = $data1["Proyecto_Proceso"];
                     $pdcIdx++;
-                    $this->reportSubprocess('Curva S PDC APR', $pdcProyecto, 'Procesando PDC APR', 'running');
+                    $this->reportSubprocess('Curva S PDC', $pdcProyecto, 'Procesando PDC', 'running');
                     try {
-                        $pdcProcessed = $this->processProjectPDC_APR($data1);
+                        $pdcProcessed = $this->processProjectPDC($data1);
                         $status = $pdcProcessed === false ? 'skip' : 'ok';
-                        $this->reportSubprocess('Curva S PDC APR', $pdcProyecto, 'Procesando PDC APR', $status, $pdcProcessed === false ? 'sin PDC con fechas' : null);
-                        $this->reportProgress('Curva S PDC APR', $pdcProyecto, $pdcIdx, $totalPDC, $status);
+                        $this->reportSubprocess('Curva S PDC', $pdcProyecto, 'Procesando PDC', $status, $pdcProcessed === false ? 'sin PDC con fechas' : null);
+                        $this->reportProgress('Curva S PDC', $pdcProyecto, $pdcIdx, $totalPDC, $status);
                     } catch (\Exception $e) {
-                        $this->reportSubprocess('Curva S PDC APR', $pdcProyecto, 'Procesando PDC APR', 'error', $e->getMessage());
+                        $this->reportSubprocess('Curva S PDC', $pdcProyecto, 'Procesando PDC', 'error', $e->getMessage());
                         $results[] = $pdcProyecto . " - Error PDC: " . $e->getMessage();
-                        $this->reportProgress('Curva S PDC APR', $pdcProyecto, $pdcIdx, $totalPDC, 'error', $e->getMessage());
+                        $this->reportProgress('Curva S PDC', $pdcProyecto, $pdcIdx, $totalPDC, 'error', $e->getMessage());
                     }
                 }
 
-                $results[] = "Curva S PDC APR - OK";
+                $results[] = "Curva S PDC - OK";
             }
 
             $this->db->logActivity('Sistema', 'GENERAR_CURVA_S', "Proceso de Curvas S completado con éxito");
@@ -356,7 +415,7 @@ class ReportProcessor
         }
     }
 
-    private function processProjectPDC_APR($data1)
+    private function processProjectPDC($data1)
     {
         $proyecto = $data1["Proyecto_Proceso"];
         $dbPrefix = $data1["Base_de_Datos"];
@@ -370,15 +429,15 @@ class ReportProcessor
         }
 
         // Weeks calculation for PDC
-        $projectId = $this->pid($dbPrefix);
+        $projectId = $this->projectIdFromProjectRow($data1);
         $tProgCons374 = $this->t($dbPrefix, 'programa_consolidado');
         $tSA374 = $this->t($dbPrefix, 'semanas_activas');
         $sqlSemanas = "SELECT CEIL(((DATEDIFF((SELECT MAX(Fecha_Fin) FROM {$tProgCons374} WHERE Semana = (SELECT MAX(Semana) FROM {$tSA374} WHERE project_id = ?) AND project_id = ?), MIN(Fecha_Inicio))+1)/7)) AS semanasProyecto FROM {$tProgCons374} WHERE project_id = ?";
         $dataSemanasProyecto = $this->db->queryWithProject($sqlSemanas, [$projectId, $projectId, $projectId], $projectId)->fetch();
         $semanasProyecto = (int) ($dataSemanasProyecto["semanasProyecto"] ?? 0);
-        $this->reportSubprocess('Curva S PDC APR', $proyecto, 'Calculando semanas PDC APR', 'ok', "{$semanasProyecto} semanas");
+        $this->reportSubprocess('Curva S PDC', $proyecto, 'Calculando semanas PDC', 'ok', "{$semanasProyecto} semanas");
 
-                    $stmtSemanasActivas = $this->db->queryWithProject("SELECT Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem FROM {$this->t($dbPrefix, 'semanas_activas')}", [], $projectId);
+        $stmtSemanasActivas = $this->db->queryWithProject("SELECT Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem FROM {$this->t($dbPrefix, 'semanas_activas')}", [], $projectId);
         $semanasActivas = $stmtSemanasActivas->fetchAll();
 
         // (Reusing logic structure from legacy script)
@@ -392,15 +451,15 @@ class ReportProcessor
             $ultimaSemanaActiva = $semana;
             $ultimaFechaFinSem = $fechaFinSem;
 
-            $sqlInsertPDCReal = "INSERT INTO general_curvas_pdc_apr (
-                Proyecto, semana, maxSemana, Fecha_Inicio_Sem, Fecha_Fin_Sem,
+            $sqlInsertPDCReal = "INSERT INTO general_curvas_pdc (
+                project_id, Proyecto, semana, maxSemana, Fecha_Inicio_Sem, Fecha_Fin_Sem,
                 diasCompletadosReal, diasCompletadosTeorico, diasTotales,
                 porcentajeCompletadoReal, porcentajeCompletadoTeorico,
                 porcentajeCompletadoTeoricoGeneral, porcentajeCompletadoRealGeneral,
                 diferenciaPorcentajeCompletadoTeorico, diferenciaPorcentajeCompletadoTeoricoGeneral
             )
             SELECT
-                ? AS Proyecto, ? AS Semana, (SELECT MAX(semana) FROM {$this->t($dbPrefix, 'pdc')}) AS maxSemana,
+                ? AS project_id, ? AS Proyecto, ? AS Semana, (SELECT MAX(semana) FROM {$this->t($dbPrefix, 'pdc')} WHERE project_id = ?) AS maxSemana,
                 ? AS Fecha_Inicio_Sem, ? AS Fecha_Fin_Sem,
                 COALESCE(SUM(diasCompletadosReal), 0) AS diasCompletadosReal,
                 COALESCE(SUM(diasCompletadosTeorico), 0) AS diasCompletadosTeorico,
@@ -439,20 +498,20 @@ class ReportProcessor
                         END)/7
                     ) AS diasCompletadosReal,
                     COALESCE((SELECT SUM(DATEDIFF({$this->t($dbPrefix, 'pdc')}.fechaFabricacion, {$this->t($dbPrefix, 'pdc')}.fechaElaboracionPliegos)+1)
-                     FROM {$this->t($dbPrefix, 'pdc')} WHERE semana = ? AND titulo = 0), 0) AS diasTotales
+                     FROM {$this->t($dbPrefix, 'pdc')} WHERE project_id = ? AND semana = ? AND titulo = 0), 0) AS diasTotales
                 FROM {$this->t($dbPrefix, 'pdc')}
-                WHERE titulo = 0 AND fechaElaboracionPliegos IS NOT NULL AND fechaFabricacion IS NOT NULL AND semana = ?
+                WHERE project_id = ? AND titulo = 0 AND fechaElaboracionPliegos IS NOT NULL AND fechaFabricacion IS NOT NULL AND semana = ?
             ) AS tabla";
 
             $this->db->queryWithProject($sqlInsertPDCReal, [
-                $proyecto, $semana, $fechaInicioSem, $fechaFinSem,
+                $projectId, $proyecto, $semana, $projectId, $fechaInicioSem, $fechaFinSem,
                 $fechaInicioSem, $fechaInicioSem, $fechaInicioSem, $fechaInicioSem,
-                $fechaInicioSem, $fechaInicioSem, $fechaInicioSem, $fechaInicioSem,
-                $semana, $semana,
-            ]);
+                $fechaInicioSem, $fechaInicioSem, $fechaInicioSem,
+                $projectId, $semana, $projectId, $semana,
+            ], $projectId);
         }
 
-        $this->reportSubprocess('Curva S PDC APR', $proyecto, 'Insertando semanas reales PDC APR', 'ok', count($semanasActivas) . ' semanas');
+        $this->reportSubprocess('Curva S PDC', $proyecto, 'Insertando semanas reales PDC', 'ok', count($semanasActivas) . ' semanas');
 
         // Projected
         for ($i = ($ultimaSemanaActiva + 1); $i <= $semanasProyecto; $i++) {
@@ -460,15 +519,15 @@ class ReportProcessor
             $fechaFinSem = date("Y-m-d", strtotime($fechaInicioSem . "+ 6 days"));
             $ultimaFechaFinSem = $fechaFinSem;
 
-            $sqlInsertPDCProyectado = "INSERT INTO general_curvas_pdc_apr (
-                Proyecto, semana, maxSemana, Fecha_Inicio_Sem, Fecha_Fin_Sem,
+            $sqlInsertPDCProyectado = "INSERT INTO general_curvas_pdc (
+                project_id, Proyecto, semana, maxSemana, Fecha_Inicio_Sem, Fecha_Fin_Sem,
                 diasCompletadosReal, diasCompletadosTeorico, diasTotales,
                 porcentajeCompletadoReal, porcentajeCompletadoTeorico,
                 porcentajeCompletadoTeoricoGeneral, porcentajeCompletadoRealGeneral,
                 diferenciaPorcentajeCompletadoTeorico, diferenciaPorcentajeCompletadoTeoricoGeneral
             )
             SELECT
-                ? AS Proyecto, ? AS Semana, (SELECT MAX(semana) FROM {$this->t($dbPrefix, 'pdc')}) AS maxSemana,
+                ? AS project_id, ? AS Proyecto, ? AS Semana, (SELECT MAX(semana) FROM {$this->t($dbPrefix, 'pdc')} WHERE project_id = ?) AS maxSemana,
                 ? AS Fecha_Inicio_Sem, ? AS Fecha_Fin_Sem,
                 COALESCE(SUM(diasCompletadosReal), 0) AS diasCompletadosReal,
                 COALESCE(SUM(diasCompletadosTeorico), 0) AS diasCompletadosTeorico,
@@ -495,42 +554,43 @@ class ReportProcessor
                     ) AS diasCompletadosTeorico,
                     0 AS diasCompletadosReal,
                     COALESCE((SELECT SUM(DATEDIFF({$this->t($dbPrefix, 'pdc')}.fechaFabricacion, {$this->t($dbPrefix, 'pdc')}.fechaElaboracionPliegos)+1)
-                     FROM {$this->t($dbPrefix, 'pdc')} WHERE semana = ? AND titulo = 0), 0) AS diasTotales
+                     FROM {$this->t($dbPrefix, 'pdc')} WHERE project_id = ? AND semana = ? AND titulo = 0), 0) AS diasTotales
                 FROM {$this->t($dbPrefix, 'pdc')}
-                WHERE titulo = 0 AND fechaElaboracionPliegos IS NOT NULL AND fechaFabricacion IS NOT NULL AND semana = ?
+                WHERE project_id = ? AND titulo = 0 AND fechaElaboracionPliegos IS NOT NULL AND fechaFabricacion IS NOT NULL AND semana = ?
             ) AS tabla";
 
             $this->db->queryWithProject($sqlInsertPDCProyectado, [
-                $proyecto, $i, $fechaInicioSem, $fechaFinSem,
+                $projectId, $proyecto, $i, $projectId, $fechaInicioSem, $fechaFinSem,
                 $fechaInicioSem, $fechaInicioSem, $fechaInicioSem, $fechaInicioSem,
-                $fechaInicioSem, $fechaInicioSem, $fechaInicioSem, $fechaInicioSem,
-                $ultimaSemanaActiva, $ultimaSemanaActiva,
-            ]);
+                $fechaInicioSem, $fechaInicioSem, $fechaInicioSem,
+                $projectId, $ultimaSemanaActiva, $projectId, $ultimaSemanaActiva,
+            ], $projectId);
         }
 
         $proyectadas = max(0, $semanasProyecto - $ultimaSemanaActiva);
-        $this->reportSubprocess('Curva S PDC APR', $proyecto, 'Insertando semanas proyectadas PDC APR', 'ok', $proyectadas . ' semanas');
+        $this->reportSubprocess('Curva S PDC', $proyecto, 'Insertando semanas proyectadas PDC', 'ok', $proyectadas . ' semanas');
 
         // Integration with General Curve
-        $sqlJoin = "SELECT tablaPDC.id, tablaPDC.Proyecto, tablaPDC.semana,
+        $sqlJoin = "SELECT tablaPDC.id, tablaPDC.project_id, tablaPDC.Proyecto, tablaPDC.semana,
                            tablaPDC.porcentajeCompletadoTeorico,
                            tablaGeneral.porcentajeCompletadoTeorico AS porcentajeCompletadoTeoricoGeneral,
                            tablaGeneral.porcentajeCompletadoReal AS porcentajeCompletadoRealGeneral
-                    FROM general_curvas_pdc_apr AS tablaPDC
+                    FROM general_curvas_pdc AS tablaPDC
                     LEFT JOIN general_curvas AS tablaGeneral
-                    ON tablaPDC.Proyecto = tablaGeneral.Proyecto AND tablaPDC.semana = tablaGeneral.semana
-                    ORDER BY tablaPDC.Proyecto, tablaPDC.semana";
+                    ON tablaPDC.project_id = tablaGeneral.project_id AND tablaPDC.semana = tablaGeneral.semana
+                    WHERE tablaPDC.project_id = ?
+                    ORDER BY tablaPDC.project_id, tablaPDC.semana";
 
-        $stmtJoin = $this->db->query($sqlJoin);
+        $stmtJoin = $this->db->query($sqlJoin, [$projectId]);
         $porcentajeTeoricoAnt = 0;
         $porcentajeTeoricoGenAnt = 0;
         $proyectoAnt = null;
 
         while ($row = $stmtJoin->fetch()) {
-            if ($proyectoAnt !== $row['Proyecto']) {
+            if ($proyectoAnt !== $row['project_id']) {
                 $porcentajeTeoricoAnt = 0;
                 $porcentajeTeoricoGenAnt = 0;
-                $proyectoAnt = $row['Proyecto'];
+                $proyectoAnt = $row['project_id'];
             }
 
             $pActual = (float) $row['porcentajeCompletadoTeorico'];
@@ -541,7 +601,7 @@ class ReportProcessor
             $difTeoricoGen = round($pActualGen - $porcentajeTeoricoGenAnt, 4);
 
             $this->db->query(
-                "UPDATE general_curvas_pdc_apr SET
+                "UPDATE general_curvas_pdc SET
                 porcentajeCompletadoTeoricoGeneral = ?,
                 porcentajeCompletadoRealGeneral = ?,
                 diferenciaPorcentajeCompletadoTeorico = ?,
@@ -554,14 +614,14 @@ class ReportProcessor
             $porcentajeTeoricoGenAnt = $pActualGen;
         }
 
-        $this->reportSubprocess('Curva S PDC APR', $proyecto, 'Integrando con curva general', 'ok');
+        $this->reportSubprocess('Curva S PDC', $proyecto, 'Integrando con curva general', 'ok');
         return true;
     }
 
     public function generateReporteGeneral()
     {
         $this->db->logActivity('Sistema', 'GENERAR_REPORTE_GRAL', "Iniciando generación de reporte consolidado general");
-        $this->db->query("TRUNCATE TABLE general_informe_consolidado");
+        $this->clearReportTable('general_informe_consolidado');
 
         $result = $this->getConstructionProjects();
         $messages = [];
@@ -579,11 +639,11 @@ class ReportProcessor
                     continue;
                 }
 
-                $projectId = $this->pid($dbPrefix);
+                $projectId = $this->projectIdFromProjectRow($data1);
                 $tPS = $this->t($dbPrefix, 'programacion_semanal');
                 $tSA595 = $this->t($dbPrefix, 'semanas_activas');
                 $sqlInsert = "INSERT INTO general_informe_consolidado (
-                Proyecto, Semana, maxSemana, Proyecto_maxSemana, Actividad,
+                project_id, Proyecto, Semana, maxSemana, Proyecto_maxSemana, Actividad,
                 Fecha_Inicio, Fecha_Fin, Fecha_Inicio_Sem, Fecha_Fin_Sem,
                 Critica, Atrasada, Activa, Ejecutado, cantidad_ppto,
                 Cantidad_Sugerida, Compromiso, Unidad, Ejecutado_Real,
@@ -591,6 +651,7 @@ class ReportProcessor
                 Categoria_CNC, CNC, Observaciones_CNC, Responsable_AIA, Sub_Contratista
             )
             SELECT
+                ? AS project_id,
                 ? AS Proyecto,
                 prog.Semana,
                 (SELECT MAX(Semana) FROM {$tPS} WHERE project_id = ?) AS maxSemana,
@@ -620,13 +681,13 @@ class ReportProcessor
                 prog.Responsable_AIA,
                 prog.Sub_Contratista
             FROM {$tPS} AS prog
-            LEFT JOIN {$tSA595} AS sem ON sem.Semana = prog.Semana
+            LEFT JOIN {$tSA595} AS sem ON sem.Semana = prog.Semana AND sem.project_id = prog.project_id
             WHERE prog.Semana >= ((SELECT MAX(Semana) FROM {$tPS} WHERE project_id = ?) - 1)
               AND prog.project_id = ?";
 
-                $this->db->queryWithProject($sqlInsert, [$proyecto, $projectId, $proyecto, $projectId, $projectId, $projectId, $projectId], $projectId);
+                $this->db->queryWithProject($sqlInsert, [$projectId, $proyecto, $projectId, $proyecto, $projectId, $projectId, $projectId, $projectId], $projectId);
                 $this->reportSubprocess('General', $proyecto, 'Insertando informe consolidado', 'ok');
-                $this->db->query("DELETE FROM general_informe_consolidado WHERE Fecha_Inicio_Sem IS NULL OR Fecha_Fin_Sem IS NULL");
+                $this->db->query("DELETE FROM general_informe_consolidado WHERE project_id = ? AND (Fecha_Inicio_Sem IS NULL OR Fecha_Fin_Sem IS NULL)", [$projectId]);
                 $this->reportSubprocess('General', $proyecto, 'Limpiando registros inválidos', 'ok');
                 $messages[] = "$proyecto - OK";
                 $this->reportProgress('General', $proyecto, $genIdx, $totalGeneral, 'ok');
@@ -644,7 +705,7 @@ class ReportProcessor
     public function generateRestriccionesGeneral()
     {
         $this->db->logActivity('Sistema', 'GENERAR_RESTRICCIONES_GRAL', "Iniciando consolidación de listado de restricciones general");
-        $this->db->query("TRUNCATE TABLE general_informe_restricciones_consolidado");
+        $this->clearReportTable('general_informe_restricciones_consolidado');
         $proyectos = $this->getConstructionProjects();
         $messages = ["Liberación de Restricciones - OK"];
         $totalRest = count($proyectos);
@@ -662,7 +723,7 @@ class ReportProcessor
                 }
 
                 // Resolve restriction config per project
-                $projectId = $this->pid($dbPrefix);
+                $projectId = $this->projectIdFromProjectRow($data1);
                 try {
                     $restrConfig = RestrictionConfigResolver::resolve($dbPrefix);
                     $area = $restrConfig['area'];
@@ -721,10 +782,11 @@ class ReportProcessor
                 $restriccionesCount = 0;
                 foreach ($restricciones as $nombreLabel => $columna) {
                     $sqlInsert = "INSERT INTO general_informe_restricciones_consolidado (
-                    Proyecto, Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem, Actividad,
+                    project_id, Proyecto, Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem, Actividad,
                     Fecha_Inicio, Fecha_Fin, Semanas_Inicio, Restriccion, valorRestriccion, estadoActividad
                 )
                 SELECT
+                    ? AS project_id,
                     ? AS Proyecto,
                     prog.Semana,
                     sem.Fecha_Inicio_Sem,
@@ -741,15 +803,17 @@ class ReportProcessor
                     END) AS valorRestriccion,
                     prog.Ejecutado
                 FROM {$this->t($dbPrefix, 'programa_consolidado')} AS prog
-                LEFT JOIN {$this->t($dbPrefix, 'semanas_activas')} AS sem ON sem.Semana = prog.Semana
-                WHERE prog.{$columna} != 'N/A'
+                LEFT JOIN {$this->t($dbPrefix, 'semanas_activas')} AS sem ON sem.Semana = prog.Semana AND sem.project_id = prog.project_id
+                WHERE prog.project_id = ?
+                  AND prog.{$columna} != 'N/A'
                   AND prog.Titulo = 0
+                  AND prog.Actividad IS NOT NULL
                   AND prog.Semanas_Inicio < 7
                   AND prog.Ejecutado < 1
-                  AND prog.Semana >= ((SELECT MAX(Semana) FROM {$this->t($dbPrefix, 'programa_consolidado')}) - 3)
+                  AND prog.Semana >= ((SELECT MAX(Semana) FROM {$this->t($dbPrefix, 'programa_consolidado')} WHERE project_id = ?) - 3)
                   AND sem.Fecha_Inicio_Sem IS NOT NULL";
 
-                    $this->db->queryWithProject($sqlInsert, [$proyecto, $nombreLabel], $projectId);
+                    $this->db->queryWithProject($sqlInsert, [$projectId, $proyecto, $nombreLabel, $projectId, $projectId], $projectId);
                     $restriccionesCount++;
                 }
                 $messages[] = "$proyecto - OK";
@@ -768,7 +832,7 @@ class ReportProcessor
     public function generateReportePDC()
     {
         $this->db->logActivity('Sistema', 'GENERAR_REPORTE_PDC', "Iniciando generación de reporte consolidado de Plan de Compras (PDC)");
-        $this->db->query("TRUNCATE TABLE general_informe_pdc");
+        $this->clearReportTable('general_informe_pdc', true);
 
         $proyectos = $this->getConstructionProjects(true);
         $messages = [];
@@ -795,11 +859,11 @@ class ReportProcessor
                         continue;
                     }
 
-                    $projectId = $this->pid($dbPrefix);
+                    $projectId = $this->projectIdFromProjectRow($data1);
                     $tPDC = $this->t($dbPrefix, 'pdc');
                     $tSA818 = $this->t($dbPrefix, 'semanas_activas');
                     $sqlInsert = "INSERT INTO general_informe_pdc (
-                    Proyecto, semana, Fecha_Inicio_Sem, Fecha_Fin_Sem, fechaHoy, maxSemana, Proyecto_maxSemana,
+                    project_id, Proyecto, semana, Fecha_Inicio_Sem, Fecha_Fin_Sem, fechaHoy, maxSemana, Proyecto_maxSemana,
                     tipoPaquete, paqueteContratacion, contratos, numeroSubcontratos, subcontratoPaquete, estado,
                     fechaElaboracionPliegos, diasElaboracionPliegos, fechaRealElaboracionPliegos,
                     fechaEntregaPliegos, diasEntregaPliegos, fechaRealEntregaPliegos,
@@ -814,6 +878,7 @@ class ReportProcessor
                     valorAdjudicado, valorAnticipo, valorReclamado, valorDevoluciones, observacionesContrato
                 )
                 SELECT
+                    ? AS project_id,
                     ? AS Proyecto,
                     pdc.semana,
                     sem.Fecha_Inicio_Sem,
@@ -864,12 +929,12 @@ class ReportProcessor
                     pdc.valorDevoluciones,
                     pdc.observacionesContrato
                 FROM {$tPDC} AS pdc
-                LEFT JOIN {$tSA818} AS sem ON sem.Semana = pdc.semana
-                LEFT JOIN {$this->t($dbPrefix, 'subcontratistas')} AS sub ON sub.Id = pdc.idProveedorAdjudicado
+                LEFT JOIN {$tSA818} AS sem ON sem.Semana = pdc.semana AND sem.project_id = pdc.project_id
+                LEFT JOIN {$this->t($dbPrefix, 'subcontratistas')} AS sub ON sub.Id = pdc.idProveedorAdjudicado AND sub.project_id = pdc.project_id
                 WHERE pdc.titulo = 0 AND pdc.semana <= (SELECT MAX(semana) FROM {$tPDC} WHERE project_id = ?)
                   AND pdc.project_id = ?";
 
-                    $this->db->queryWithProject($sqlInsert, [$proyecto, $projectId, $proyecto, $projectId, $projectId, $projectId, $projectId], $projectId);
+                    $this->db->queryWithProject($sqlInsert, [$projectId, $proyecto, $projectId, $proyecto, $projectId, $projectId, $projectId, $projectId], $projectId);
 
                     $messages[] = "$proyecto - OK";
                     $this->reportSubprocess('PDC', $proyecto, 'Insertando informe PDC', 'ok');
@@ -888,7 +953,7 @@ class ReportProcessor
 
     public function generateReporteSubcontratistas()
     {
-        $this->db->query("TRUNCATE TABLE general_informe_subcontratistas");
+        $this->clearReportTable('general_informe_subcontratistas');
         $proyectos = $this->getConstructionProjects();
         $messages = [];
         $totalSub = count($proyectos);
@@ -898,6 +963,7 @@ class ReportProcessor
             try {
                 $proyecto = $proyectoData["Proyecto_Proceso"];
                 $base_de_datos = $proyectoData["Base_de_Datos"];
+                $projectId = $this->projectIdFromProjectRow($proyectoData);
                 $subIdx++;
 
                 if (!$this->isValidDbPrefix($base_de_datos)) {
@@ -908,7 +974,7 @@ class ReportProcessor
                 }
 
                 $sql = "INSERT INTO general_informe_subcontratistas (
-                `Proyecto`, `Semana`, `maxSemana`, `Proyecto_maxSemana`, `Fecha_Inicio_Sem`, `Fecha_Fin_Sem`,
+                `project_id`, `Proyecto`, `Semana`, `maxSemana`, `Proyecto_maxSemana`, `Fecha_Inicio_Sem`, `Fecha_Fin_Sem`,
                 `subcontratista`, `correo_contacto`, `NIT`, `alcance`, `tipo_proveedor`, `PAC`, `PAC_Acum`,
                 `P_Completado`, `P_Completado_Acum`, `Calidad`, `Calidad_Acum`, `GSA`, `GSA_Acum`, `SST`, `SST_Acum`,
                 `ADM`, `ADM_Acum`, `Cal_Integral`, `Cal_Integral_Acum`, `Observaciones`, `mdo_cal_1`, `mdo_cal_2`,
@@ -923,9 +989,10 @@ class ReportProcessor
             )
             SELECT
                 ?,
+                ?,
                 cic.Semana,
-                (SELECT MAX(cic_inner.Semana) FROM {$base_de_datos}_cic cic_inner),
-                CONCAT(?, ' (', (SELECT sa_inner.Fecha_Fin_Sem FROM {$base_de_datos}_semanas_activas sa_inner WHERE sa_inner.Semana = (SELECT MAX(cic_inner.Semana) FROM {$base_de_datos}_cic cic_inner)), ')'),
+                (SELECT MAX(cic_inner.Semana) FROM {$this->t($base_de_datos, 'cic')} cic_inner WHERE cic_inner.project_id = ?),
+                CONCAT(?, ' (', (SELECT sa_inner.Fecha_Fin_Sem FROM {$this->t($base_de_datos, 'semanas_activas')} sa_inner WHERE sa_inner.project_id = ? AND sa_inner.Semana = (SELECT MAX(cic_inner.Semana) FROM {$this->t($base_de_datos, 'cic')} cic_inner WHERE cic_inner.project_id = ?)), ')'),
                 sa.Fecha_Inicio_Sem,
                 sa.Fecha_Fin_Sem,
                 cic.subcontratista, cic.correo_contacto, cic.NIT, cic.alcance, cic.tipo_proveedor, cic.PAC, cic.PAC_Acum,
@@ -940,9 +1007,10 @@ class ReportProcessor
                 cic.si_gsa_12, cic.si_gsa_13, cic.si_gsa_14, cic.si_sst_1, cic.si_sst_2, cic.si_sst_3, cic.si_sst_4, cic.si_sst_5,
                 cic.si_sst_6, cic.si_sst_7, cic.si_sst_8, cic.si_sst_9, cic.si_sst_10
             FROM {$this->t($base_de_datos, 'cic')} cic
-            LEFT JOIN {$this->t($base_de_datos, 'semanas_activas')} sa ON sa.Semana = cic.Semana";
+            LEFT JOIN {$this->t($base_de_datos, 'semanas_activas')} sa ON sa.Semana = cic.Semana AND sa.project_id = cic.project_id
+            WHERE cic.project_id = ?";
 
-                $this->db->queryWithProject($sql, [$proyecto, $proyecto], $this->pid($base_de_datos));
+                $this->db->queryWithProject($sql, [$projectId, $proyecto, $projectId, $proyecto, $projectId, $projectId, $projectId], $projectId);
 
                 $messages[] = "$proyecto - OK";
                 $this->reportSubprocess('Subcontratistas', $proyecto, 'Insertando informe subcontratistas', 'ok');
