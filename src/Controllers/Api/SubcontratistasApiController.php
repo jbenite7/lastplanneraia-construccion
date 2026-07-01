@@ -207,7 +207,11 @@ class SubcontratistasApiController
         ]);
 
         if ($res) {
-            $this->json(["status" => "success", "id" => $this->db->lastInsertId(), "respuesta" => "BIEN", "message" => "Subcontratista creado."]);
+            $id = $this->db->queryWithProject(
+                "SELECT Id FROM " . TableResolver::resolveByPrefix($dbPrefix, 'subcontratistas') . " WHERE correo_contacto = ? ORDER BY Id DESC LIMIT 1",
+                [$data['correo_contacto']],
+            )->fetchColumn();
+            $this->json(["status" => "success", "id" => $id ?: $this->db->lastInsertId(), "respuesta" => "BIEN", "message" => "Subcontratista creado."]);
         } else {
             $this->json(["status" => "error", "message" => "Error al crear subcontratista."]);
         }

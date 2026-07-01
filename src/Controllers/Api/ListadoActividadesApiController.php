@@ -73,11 +73,11 @@ class ListadoActividadesApiController
                             a.descripcionActividad,
                             COALESCE(
                                 (
-                                    SELECT pc.Consecutivo_en_Programa
+                                    SELECT pc.unique_id
                                     FROM programa_consolidado pc
                                     WHERE pc.project_id = a.project_id
                                       AND pc.Semana = a.semanaActualizacion
-                                      AND (pc.Consecutivo_en_Programa = a.actividadInicio OR pc.Actividad = a.actividadInicio)
+                                      AND (pc.unique_id = a.actividadInicio OR pc.Actividad = a.actividadInicio)
                                     ORDER BY pc.Fecha_Inicio ASC
                                     LIMIT 1
                                 ),
@@ -89,7 +89,7 @@ class ListadoActividadesApiController
                                     FROM programa_consolidado pc
                                     WHERE pc.project_id = a.project_id
                                       AND pc.Semana = a.semanaActualizacion
-                                      AND (pc.Consecutivo_en_Programa = a.actividadInicio OR pc.Actividad = a.actividadInicio)
+                                      AND (pc.unique_id = a.actividadInicio OR pc.Actividad = a.actividadInicio)
                                     ORDER BY pc.Fecha_Inicio ASC
                                     LIMIT 1
                                 ),
@@ -177,7 +177,7 @@ class ListadoActividadesApiController
             // PASO 1-3: Match each PG activity y agrupar por familia
             foreach ($activities as $activity) {
                 $totalProcesadas++;
-                $consecutivoPrograma = (int) ($activity['Consecutivo_en_Programa'] ?? 0);
+                $consecutivoPrograma = (int) ($activity['unique_id'] ?? $activity['Consecutivo_en_Programa'] ?? 0);
                 if ($consecutivoPrograma <= 0) {
                     $sinMatch++;
                     continue;
@@ -240,7 +240,7 @@ class ListadoActividadesApiController
                 });
 
                 $anchor = $grupo['actividades'][0]['pg'];
-                $anchorConsecutivo = (int) ($anchor['Consecutivo_en_Programa'] ?? 0);
+                $anchorConsecutivo = (int) ($anchor['unique_id'] ?? $anchor['Consecutivo_en_Programa'] ?? 0);
                 $anchorFecha = $this->normalizeDate($anchor['Fecha_Inicio'] ?? null);
 
                 // Verificar si ya existe una actividad para este grupo
@@ -583,7 +583,7 @@ class ListadoActividadesApiController
         $Id = $_POST["idActividad"] ?? '';
 
         try {
-            $query = "SELECT Fecha_Inicio FROM programa_consolidado WHERE project_id = ? AND Semana = ? AND Consecutivo_en_Programa = ? LIMIT 1";
+            $query = "SELECT Fecha_Inicio FROM programa_consolidado WHERE project_id = ? AND Semana = ? AND unique_id = ? LIMIT 1";
             $stmt = $this->db->query($query, [$projectId, $semana, $Id]);
             $data = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -667,7 +667,7 @@ class ListadoActividadesApiController
 
     private function createActivityFromPg(string $dbPrefix, int $projectId, int $semana, array $pgActivity, array $match): bool
     {
-        $consecutivoPrograma = (int) ($pgActivity['Consecutivo_en_Programa'] ?? 0);
+        $consecutivoPrograma = (int) ($pgActivity['unique_id'] ?? $pgActivity['Consecutivo_en_Programa'] ?? 0);
         $actividad = trim((string) ($pgActivity['Actividad'] ?? ''));
         $fechaInicio = $this->normalizeDate($pgActivity['Fecha_Inicio'] ?? null);
 
@@ -697,10 +697,13 @@ class ListadoActividadesApiController
     private function loadProjectActivities(string $dbPrefix, int $projectId, int $semana): array
     {
         $stmt = $this->db->query(
-            "SELECT Consecutivo, Consecutivo_en_Programa, Id, Actividad, Fecha_Inicio, COALESCE(Titulo, 0) AS Titulo
+            "SELECT row_id AS Consecutivo,
+                    unique_id AS Consecutivo_en_Programa,
+                    unique_id,
+                    Id, Actividad, Fecha_Inicio, COALESCE(Titulo, 0) AS Titulo
              FROM programa_consolidado
              WHERE project_id = ? AND Semana = ? AND COALESCE(TRIM(REGEXP_REPLACE(REGEXP_REPLACE(Actividad, '<[^>]+>', ''), '&nbsp;', ' ')), '') <> ''
-             ORDER BY Consecutivo_en_Programa ASC, Consecutivo ASC",
+             ORDER BY unique_id ASC, row_id ASC",
             [$projectId, $semana]
         );
 
@@ -738,7 +741,7 @@ class ListadoActividadesApiController
         $stmt = $this->db->query(
             "SELECT CONCAT(Id, '. ', Actividad, ' (Inicia en: ', Fecha_Inicio, ')')
              FROM programa_consolidado
-             WHERE project_id = ? AND Semana = ? AND Consecutivo_en_Programa = ?
+             WHERE project_id = ? AND Semana = ? AND unique_id = ?
              LIMIT 1",
             [$projectId, $semana, $actividadInicio]
         );

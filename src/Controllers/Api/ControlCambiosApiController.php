@@ -202,7 +202,7 @@ class ControlCambiosApiController
     {
         $id = $_POST["idActividad"] ?? 0;
         $semana = $_POST["semana"] ?? 0;
-        $fecha = $this->db->queryWithProject("SELECT Fecha_Inicio FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " WHERE Consecutivo_en_Programa = ? AND Semana = ?", [$id, $semana])->fetchColumn();
+        $fecha = $this->db->queryWithProject("SELECT Fecha_Inicio FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " WHERE unique_id = ? AND Semana = ?", [$id, $semana])->fetchColumn();
         $this->json(["data" => ["Fecha_Inicio" => $fecha]]);
     }
 

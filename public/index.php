@@ -185,9 +185,11 @@ $router->post('/api/pdc/auto/learning/reject', [\App\Controllers\Api\SemiAutoCon
 $router->post('/api/pg/breadcrumb-estandarizar', [\App\Controllers\Api\PgBreadcrumbController::class, 'standardize']);
 $router->post('/api/pg/breadcrumb-preview', [\App\Controllers\Api\PgBreadcrumbController::class, 'preview']);
 // Api/Profesionales
+$router->get('/api/profesionales/list', [\App\Controllers\Api\ProfesionalesApiController::class, 'list']);
 $router->post('/api/profesionales/list', [\App\Controllers\Api\ProfesionalesApiController::class, 'list']);
 $router->post('/api/profesionales/save', [\App\Controllers\Api\ProfesionalesApiController::class, 'save']);
 // Api/Subcontratistas
+$router->get('/api/subcontratistas/list', [\App\Controllers\Api\SubcontratistasApiController::class, 'list']);
 $router->post('/api/subcontratistas/list', [\App\Controllers\Api\SubcontratistasApiController::class, 'list']);
 $router->post('/api/subcontratistas/save', [\App\Controllers\Api\SubcontratistasApiController::class, 'save']);
 // Api/ControlCambios

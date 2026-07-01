@@ -17,7 +17,7 @@ var inputosOcultos =
   "<input type='hidden' name='Fecha_Fin_Sem' id='Fecha_Fin_Sem' value=''><input type='hidden' name='Fecha_Fin_SemYMD' id='Fecha_Fin_SemYMD' value=''><input type='hidden' name='Fecha_Inicio_Sem' id='Fecha_Inicio_Sem' value=''><input type='hidden' name='Fecha_Inicio_SemYMD' id='Fecha_Inicio_SemYMD' value=''><input type='hidden' name='Fecha_datepicker' id='Fecha_datepicker' value=''><input type='hidden' name='Max_Semana' id='Max_Semana' value=''><input type='hidden' name='baseDatos' id='baseDatos' value=''><input type='hidden' name='permiso_canonico' id='permiso_canonico' value=''><input type='hidden' name='proyecto' id='proyecto' value=''><input type='hidden' name='semana' id='semana' value=''><input type='hidden' name='pdcActivo' id='pdcActivo' value=''><input type='hidden' name='tituloSuperior' id='tituloSuperior' value=''><input type='hidden' name='Semanal_Confirmada' id='Semanal_Confirmada' value=''><input type='hidden' name='fechaCierreCompromisos' id='fechaCierreCompromisos' value=''><input type='hidden' name='fechaCreacionSemana' id='fechaCreacionSemana' value=''><input type='hidden' name='versionCronograma' id='versionCronograma' value=''>";
 
 function applyProjectTypeVisibility(datosGenerales) {
-  var area = datosGenerales.area || datosGenerales.Area || 'Construccion';
+  var area = datosGenerales.area || datosGenerales.Area || window.__PROJECT_AREA__ || 'Construccion';
   window.__PROJECT_AREA__ = area;
 
   if (area !== 'Pre-Construccion') return;

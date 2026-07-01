@@ -85,7 +85,7 @@ class LpsService
             // 1. Validar si ya existe una alerta activa para esta actividad en esta semana
             $exists = $this->db->queryWithProject(
                 "SELECT id FROM `{$tEscalamientos}`
-                 WHERE proyecto_id = ? AND semana = ? AND consecutivo_en_programa = ? AND estado = 'Activo' LIMIT 1",
+                 WHERE proyecto_id = ? AND semana = ? AND unique_id = ? AND estado = 'Activo' LIMIT 1",
                 [$proyectoId, $semana, $consecutivo],
                 $proyectoId,
             )->fetch();
@@ -93,9 +93,9 @@ class LpsService
             if (!$exists) {
                 // Insertar nueva alerta
                 $sql = "INSERT INTO `{$tEscalamientos}`
-                         (proyecto_id, semana, consecutivo_en_programa, modulo, trigger_origen, nivel_actual, estado)
-                         VALUES (?, ?, ?, ?, ?, 1, 'Activo')";
-                [$sql, $params] = $this->db->insertProjectId($sql, $proyectoId, [$proyectoId, $semana, $consecutivo, $modulo, $trigger]);
+                         (proyecto_id, semana, unique_id, consecutivo_en_programa, modulo, trigger_origen, nivel_actual, estado)
+                         VALUES (?, ?, ?, ?, ?, ?, 1, 'Activo')";
+                [$sql, $params] = $this->db->insertProjectId($sql, $proyectoId, [$proyectoId, $semana, $consecutivo, $consecutivo, $modulo, $trigger]);
                 $this->db->query($sql, $params);
             }
 
@@ -103,7 +103,7 @@ class LpsService
             $this->db->queryWithProject(
                 "UPDATE `{$tProgCons}`
                  SET alerta_crisis = 1
-                 WHERE Consecutivo_en_Programa = ? AND Semana = ?",
+                 WHERE unique_id = ? AND Semana = ?",
                 [$consecutivo, $semana],
                 $proyectoId,
             );
@@ -112,7 +112,7 @@ class LpsService
             $this->db->queryWithProject(
                 "UPDATE `{$tProgSemanal}`
                  SET alerta_crisis = 1
-                 WHERE Consecutivo_En_Programa = ? AND Semana = ?",
+                 WHERE unique_id = ? AND Semana = ?",
                 [$consecutivo, $semana],
                 $proyectoId,
             );
@@ -205,10 +205,11 @@ class LpsService
             $mencionesJson = $menciones ? json_encode($menciones) : null;
 
             $sql = "INSERT INTO `{$t}`
-                      (proyecto_id, consecutivo_en_programa, semana, usuario_id, comentario, parent_id, escalamiento_id, menciones)
-                      VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                      (proyecto_id, unique_id, consecutivo_en_programa, semana, usuario_id, comentario, parent_id, escalamiento_id, menciones)
+                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $params = [
                 $proyectoId,
+                $consecutivo,
                 $consecutivo,
                 $semana,
                 $usuarioId,
@@ -245,7 +246,7 @@ class LpsService
             $query = "SELECT c.*, u.nombre as autor_nombre, u.cargo as autor_cargo
                       FROM `{$t}` c
                       LEFT JOIN `general_usuarios` u ON c.usuario_id = u.Id
-                      WHERE c.consecutivo_en_programa = ? AND c.semana = ?";
+                      WHERE c.unique_id = ? AND c.semana = ?";
 
             if ($escalamientoId !== null) {
                 $query .= " AND (c.escalamiento_id = ? OR c.escalamiento_id IS NULL)";
@@ -306,15 +307,17 @@ class LpsService
         $tEscalamientos = TableResolver::resolveByPrefix($dbPrefix, 'lps_escalamientos');
         $tProgCons = TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado');
         $tProgSemanal = TableResolver::resolveByPrefix($dbPrefix, 'programacion_semanal');
+        $projectId = TableResolver::getProjectIdByPrefix($dbPrefix);
 
         try {
             $this->db->beginTransaction();
 
             // 1. Obtener detalles de la alerta
-            $alerta = $this->db->query(
-                "SELECT consecutivo_en_programa, semana, proyecto_id FROM `{$tEscalamientos}`
+            $alerta = $this->db->queryWithProject(
+                "SELECT unique_id, consecutivo_en_programa, semana, proyecto_id FROM `{$tEscalamientos}`
                  WHERE id = ? AND estado = 'Activo'",
                 [$alertaId],
+                $projectId,
             )->fetch(PDO::FETCH_ASSOC);
 
             if (!$alerta) {
@@ -322,24 +325,25 @@ class LpsService
                 return false;
             }
 
-            $consecutivo = $alerta['consecutivo_en_programa'];
+            $consecutivo = $alerta['unique_id'] ?? $alerta['consecutivo_en_programa'];
             $semana = $alerta['semana'];
             $proyectoId = (int) $alerta['proyecto_id'];
 
             // 2. Cerrar alerta en tabla de escalamientos
-            $this->db->query(
+            $this->db->queryWithProject(
                 "UPDATE `{$tEscalamientos}`
                  SET estado = 'Cerrado', fecha_cierre = CURRENT_TIMESTAMP,
                      usuario_cierre_id = ?, justificacion_cierre = ?
                  WHERE id = ?",
                 [$usuarioCierreId, trim($justificacion), $alertaId],
+                $projectId,
             );
 
             // 3. Remover bandera alerta_crisis en consolidado
             $this->db->queryWithProject(
                 "UPDATE `{$tProgCons}`
                  SET alerta_crisis = 0
-                 WHERE Consecutivo_en_Programa = ? AND Semana = ?",
+                 WHERE unique_id = ? AND Semana = ?",
                 [$consecutivo, $semana],
                 $proyectoId,
             );
@@ -348,7 +352,7 @@ class LpsService
             $this->db->queryWithProject(
                 "UPDATE `{$tProgSemanal}`
                  SET alerta_crisis = 0
-                 WHERE Consecutivo_En_Programa = ? AND Semana = ?",
+                 WHERE unique_id = ? AND Semana = ?",
                 [$consecutivo, $semana],
                 $proyectoId,
             );
@@ -378,7 +382,7 @@ class LpsService
                          c.Observaciones as restriccion_desc
                   FROM `{$tEscalamientos}` e
                   LEFT JOIN `{$tProgCons}` c
-                    ON e.consecutivo_en_programa = c.Consecutivo_en_Programa AND e.semana = c.Semana
+                    ON e.unique_id = c.unique_id AND e.semana = c.Semana
                   WHERE e.proyecto_id = ? AND e.estado = 'Activo'
                   ORDER BY e.nivel_actual DESC, e.fecha_detonacion ASC";
             $stmt = $this->db->queryWithProject($q, [$proyectoId], $proyectoId);

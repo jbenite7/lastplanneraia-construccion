@@ -272,7 +272,11 @@ class ProfesionalesApiController
         ]);
 
         if ($res) {
-            $this->json(["status" => "success", "id" => $this->db->lastInsertId(), "message" => "Profesional creado."]);
+            $id = $this->db->queryWithProject(
+                "SELECT id FROM " . TableResolver::resolveByPrefix($dbPrefix, 'profesionales') . " WHERE email = ? ORDER BY id DESC LIMIT 1",
+                [$data['email']],
+            )->fetchColumn();
+            $this->json(["status" => "success", "id" => $id ?: $this->db->lastInsertId(), "message" => "Profesional creado."]);
         } else {
             $this->json(["status" => "error", "message" => "Error al crear profesional."]);
         }

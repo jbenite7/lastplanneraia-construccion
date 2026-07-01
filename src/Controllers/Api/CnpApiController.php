@@ -51,7 +51,7 @@ class CnpApiController
         }
 
         try {
-            $query = "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'programacion_semanal') . " SET Categoria_CNP = ?, CNP = ?, Observaciones_CNP = ? WHERE Consecutivo = ?";
+            $query = "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'programacion_semanal') . " SET Categoria_CNP = ?, CNP = ?, Observaciones_CNP = ? WHERE row_id = ?";
             $res = $this->db->queryWithProject($query, [$_POST["Categoria_CNP"], $_POST["CNP"], $_POST["Observaciones_CNP"] ?? '', $id]);
             $this->jsonResponse($res ? "BIEN" : "ERROR");
         } catch (Throwable $t) {
@@ -72,7 +72,7 @@ class CnpApiController
         }
 
         try {
-            $query = "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'programacion_semanal') . " SET Activa='1', Categoria_CNP=NULL, CNP=NULL, Observaciones_CNP=NULL, Reprogramada_Por_Usuario=1 WHERE Consecutivo=?";
+            $query = "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'programacion_semanal') . " SET Activa='1', Categoria_CNP=NULL, CNP=NULL, Observaciones_CNP=NULL, Reprogramada_Por_Usuario=1 WHERE row_id=?";
             $res = $this->db->queryWithProject($query, [$id]);
             $this->jsonResponse($res ? "BIEN" : "ERROR");
         } catch (Throwable $t) {

@@ -51,7 +51,7 @@ class CncApiController
         }
 
         try {
-            $query = "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'programacion_semanal') . " SET Categoria_CNC = ?, CNC = ?, Observaciones_CNC = ? WHERE Consecutivo = ?";
+            $query = "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'programacion_semanal') . " SET Categoria_CNC = ?, CNC = ?, Observaciones_CNC = ? WHERE row_id = ?";
             $res = $this->db->queryWithProject($query, [$_POST["Categoria_CNC"], $_POST["CNC"], $_POST["Observaciones_CNC"] ?? '', $id]);
             $this->jsonResponse($res ? "BIEN" : "ERROR");
         } catch (Throwable $t) {
@@ -64,9 +64,8 @@ class CncApiController
         require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
         rbac_guard_require_permission('lps.cnc.ver');
         $categoria = $_POST["categoria"] ?? '';
-        $area = $_POST["area"] ?? 'Construccion';
-        $query = "SELECT CNC FROM general_cnc WHERE Categoria_CNC = ? AND Area = ?";
-        $data = $this->db->queryWithProject($query, [$categoria, $area])->fetchAll(PDO::FETCH_ASSOC);
+        $query = "SELECT CNC FROM general_cnc WHERE Categoria_CNC = ? ORDER BY CNC ASC";
+        $data = $this->db->query($query, [$categoria])->fetchAll(PDO::FETCH_ASSOC);
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode($data, JSON_UNESCAPED_UNICODE);
     }

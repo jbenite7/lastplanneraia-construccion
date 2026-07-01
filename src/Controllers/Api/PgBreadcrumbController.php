@@ -39,10 +39,13 @@ class PgBreadcrumbController
             }
 
             $stmt = $this->db->queryWithProject(
-                "SELECT Consecutivo, Consecutivo_en_Programa, Id, Actividad, Titulo
+                "SELECT row_id AS Consecutivo,
+                        unique_id AS Consecutivo_en_Programa,
+                        unique_id,
+                        Id, Actividad, Titulo
                  FROM `{$tabla}`
                  WHERE Semana = :semana
-                 ORDER BY Consecutivo_en_Programa",
+                 ORDER BY unique_id",
                 [':semana' => $semana]
             );
             $rows = $stmt->fetchAll();
@@ -93,7 +96,7 @@ class PgBreadcrumbController
 
                 try {
                     $this->db->queryWithProject(
-                        "UPDATE `{$tabla}` SET Actividad = :actividad WHERE Consecutivo = :id",
+                        "UPDATE `{$tabla}` SET Actividad = :actividad WHERE row_id = :id",
                         [':actividad' => $newActividad, ':id' => $row['Consecutivo']]
                     );
                     $actualizados++;
@@ -141,10 +144,13 @@ class PgBreadcrumbController
             }
 
             $stmt = $this->db->queryWithProject(
-                "SELECT Consecutivo, Consecutivo_en_Programa, Id, Actividad, Titulo
+                "SELECT row_id AS Consecutivo,
+                        unique_id AS Consecutivo_en_Programa,
+                        unique_id,
+                        Id, Actividad, Titulo
                  FROM `{$tabla}`
                  WHERE Semana = :semana
-                 ORDER BY Consecutivo_en_Programa",
+                 ORDER BY unique_id",
                 [':semana' => $semana]
             );
             $rows = $stmt->fetchAll();
@@ -184,7 +190,8 @@ class PgBreadcrumbController
 
                 $cambios[] = [
                     'consecutivo' => $row['Consecutivo'],
-                    'consecutivoEnPrograma' => (int) $row['Consecutivo_en_Programa'],
+                    'uniqueId' => (int) ($row['unique_id'] ?? $row['Consecutivo_en_Programa']),
+                    'consecutivoEnPrograma' => (int) ($row['unique_id'] ?? $row['Consecutivo_en_Programa']),
                     'nombreActual' => $cleanName,
                     'breadcrumbActual' => $this->extractExistingBreadcrumb($actividadRaw),
                     'breadcrumbCompleto' => $fullBreadcrumb,
