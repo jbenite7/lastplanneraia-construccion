@@ -33,9 +33,7 @@ test.describe('Auto-definir contratos', () => {
     await expect(panel.locator('.sar-analysis-progress')).toContainText('100%');
     await expect(panel.locator('.sar-summary')).toContainText('Encontramos', { timeout: 10000 });
     await expect(panel.locator('.sar-group-title')).toContainText([
-      'Listo para aplicar',
-      'Requiere revisión',
-      'Conflictos',
+      'Aplicar automático',
     ]);
 
     const visibleText = await panel.evaluate((el) => el.innerText);
