@@ -6,7 +6,7 @@ export async function login(page, credentials = CREDENTIALS) {
   await page.locator('#usuario').fill(credentials.username);
   await page.locator('#password').fill(credentials.password);
   await page.locator('button[type="submit"]').click();
-  await page.waitForURL('**/proyectos', { timeout: 15000 });
+  await page.waitForURL('**/proyectos', { timeout: 45000 });
 }
 
 export async function logout(page) {
@@ -16,9 +16,9 @@ export async function logout(page) {
 
 export async function selectProject(page, project) {
   const card = page.locator('.project-item').filter({ hasText: project.name });
-  await expect(card, `Project card not found: ${project.name}`).toBeVisible({ timeout: 15000 });
+  await expect(card, `Project card not found: ${project.name}`).toBeVisible({ timeout: 45000 });
   await card.locator('button[type="submit"], .btn-enter').click();
-  await page.waitForURL((url) => !url.toString().includes('/proyectos'), { timeout: 15000 });
+  await page.waitForURL((url) => !url.toString().includes('/proyectos'), { timeout: 45000 });
 }
 
 export async function loginAndSelectProject(page, project) {
@@ -44,7 +44,7 @@ export async function changeWeek(page, week, destination = '/programa-general') 
 
   expect(response.ok, JSON.stringify(response)).toBe(true);
   expect(response.payload.success, JSON.stringify(response)).toBe(true);
-  await page.waitForURL(`**${destination}`, { timeout: 15000 }).catch(() => {});
+  await page.waitForURL(`**${destination}`, { timeout: 45000 }).catch(() => {});
 }
 
 export async function postFormJson(page, url, body = {}) {

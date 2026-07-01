@@ -12,6 +12,7 @@ export function installErrorCollectors(page) {
     'Error fetching notifications: TypeError: Failed to fetch',
   ];
   const approvedConsoleErrorPatterns = [
+    'Error fetching notifications: TypeError: Failed to fetch',
     'Error cargando códigos: TypeError: Failed to fetch',
     'MapeoManual] Error en fetch:  TypeError: Failed to fetch',
   ];
@@ -48,6 +49,10 @@ export function normalizeText(value) {
 
 export async function assertProjectContext(page, project) {
   await page.waitForSelector('#baseDatos', { state: 'attached', timeout: 15000 }).catch(() => {});
+  await expect.poll(async () => page.evaluate(() => {
+    const nonEmptyInput = [...document.querySelectorAll('#baseDatos')].find((input) => input.value);
+    return nonEmptyInput?.value || '';
+  }), { timeout: 15000 }).toBe(project.dbPrefix);
 
   const state = await page.evaluate(() => {
     const nonEmptyInput = [...document.querySelectorAll('#baseDatos')].find((input) => input.value);

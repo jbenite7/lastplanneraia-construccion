@@ -26,6 +26,10 @@ function mysql(sql) {
   ]);
 }
 
+export function runSql(sql) {
+  return mysql(sql);
+}
+
 function tableExists(table) {
   const escaped = table.replace(/'/g, "''");
   return mysql(`SHOW TABLES LIKE '${escaped}';`).trim() === table;
