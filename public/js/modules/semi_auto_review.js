@@ -679,6 +679,19 @@
   }
 
   function sendAssistantFeedback(instance, rating, itemId) {
+    var normalizedRating = normalizeAssistantRating(rating);
+    if (!normalizedRating) {
+      renderError(instance, 'Calificación inválida para el feedback.');
+      return;
+    }
+    if (!instance.runId) {
+      renderError(instance, 'No hay una corrida activa para asociar este feedback.');
+      return;
+    }
+    var $actions = instance.panel.find('.sar-assistant-actions button');
+    $actions.prop('disabled', true);
+    setStatus(instance, 'Enviando retroalimentación...', '');
+
     $.ajax({
       method: 'POST',
       url: endpoint(instance.module, 'assistant/feedback'),
@@ -688,11 +701,24 @@
         run_id: instance.runId,
         item_id: itemId,
         feedback_type: 'usefulness',
-        rating: rating || 'helpful'
+        rating: normalizedRating
       })
-    }).done(function () {
+    }).done(function (response) {
+      if (!response || response.respuesta !== 'BIEN') {
+        renderError(instance, (response && response.mensaje) || 'No se pudo registrar la retroalimentación.');
+        $actions.prop('disabled', false);
+        return;
+      }
+      $actions.prop('disabled', false).filter('.sar-assistant-feedback[data-rating="' + normalizedRating + '"]').prop('disabled', true);
       setStatus(instance, 'Retroalimentación registrada para el asistente.', 'sar-ok');
+    }).fail(function (xhr) {
+      renderError(instance, (xhr.responseJSON && xhr.responseJSON.mensaje) || 'No se pudo registrar la retroalimentación.');
+      $actions.prop('disabled', false);
     });
+  }
+
+  function normalizeAssistantRating(rating) {
+    return (String(rating || '').toLowerCase() === 'not_helpful') ? 'not_helpful' : 'helpful';
   }
 
   function reviewLearningCandidate(instance, candidateId, action) {

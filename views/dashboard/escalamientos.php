@@ -293,7 +293,7 @@ foreach ($crisis as $c) {
                                 
                                 <div class="card-meta">
                                     <span>Semana <?= htmlspecialchars($item['semana']) ?></span>
-                                    <span>#<?= htmlspecialchars($item['consecutivo_en_programa']) ?></span>
+                                    <span>#<?= htmlspecialchars($item['unique_id'] ?? $item['consecutivo_en_programa']) ?></span>
                                 </div>
                                 
                                 <h3 class="card-title">🔥 <?= htmlspecialchars($item['actividad_nombre'] ?? 'Actividad sin nombre') ?></h3>
@@ -353,7 +353,8 @@ foreach ($crisis as $c) {
         function openLpsDrawer(itemData) {
             // Adaptar los nombres de los atributos de la base de datos al formato esperado por el Drawer
             currentSelectedCardData = {
-                Consecutivo: itemData.consecutivo_en_programa,
+                unique_id: itemData.unique_id || itemData.consecutivo_en_programa,
+                Consecutivo: itemData.unique_id || itemData.consecutivo_en_programa,
                 id: itemData.id,
                 Actividad: itemData.actividad_nombre,
                 Subcontratista: itemData.subcontratista || 'AIA',

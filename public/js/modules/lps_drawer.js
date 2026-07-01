@@ -417,6 +417,7 @@ window.LPSContextualDrawer = (function() {
 
   function getCanonicalConsecutivo(rowData) {
     return firstValue(rowData, [
+      'unique_id',
       'Consecutivo_en_Programa',
       'Consecutivo_En_Programa',
       'consecutivo_en_programa',
