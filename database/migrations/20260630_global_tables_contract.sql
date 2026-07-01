@@ -97,6 +97,7 @@ CREATE TABLE IF NOT EXISTS `auto_program_log` (
   `project_id` int DEFAULT NULL,
   `semana` int NOT NULL,
   `consecutivo` int NOT NULL,
+  `unique_id` int DEFAULT NULL,
   `accion` enum('comprometer','descomprometer','insert_cnp') COLLATE utf8mb4_unicode_ci NOT NULL,
   `detalle` text COLLATE utf8mb4_unicode_ci,
   `categoria_cnp` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -105,7 +106,9 @@ CREATE TABLE IF NOT EXISTS `auto_program_log` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_project_semana_consecutivo_accion` (`project_id`,`semana`,`consecutivo`,`accion`),
   KEY `idx_semana` (`semana`),
-  KEY `idx_consecutivo` (`consecutivo`)
+  KEY `idx_consecutivo` (`consecutivo`),
+  KEY `idx_apl_project_unique_week` (`project_id`,`unique_id`,`semana`),
+  CONSTRAINT `fk_apl__programa__unique_id` FOREIGN KEY (`project_id`, `unique_id`) REFERENCES `programa` (`project_id`, `unique_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=1852 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -290,6 +293,7 @@ CREATE TABLE IF NOT EXISTS `lps_drawer_comentarios` (
   `proyecto_id` int NOT NULL,
   `consecutivo_en_programa` int NOT NULL,
   `semana` int NOT NULL,
+  `unique_id` int DEFAULT NULL,
   `usuario_id` int NOT NULL COMMENT 'Autor del comentario (general_usuarios)',
   `comentario` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `escalamiento_id` int DEFAULT NULL COMMENT 'Nulo si es comentario general de bitacora, ID si vincula a hilo de crisis',
@@ -303,6 +307,7 @@ CREATE TABLE IF NOT EXISTS `lps_drawer_comentarios` (
   KEY `idx_project_drawer` (`project_id`,`id`),
   KEY `fk_ldc__lps_escalamientos__escalamiento_id` (`project_id`,`escalamiento_id`),
   KEY `fk_ldc__programa__consecutivo` (`project_id`,`consecutivo_en_programa`),
+  KEY `idx_ldc_project_unique_week` (`project_id`,`unique_id`,`semana`),
   KEY `fk_ldc__semanas_activas__semana` (`project_id`,`semana`),
   KEY `fk_ldc__profesionales__usuario_id` (`project_id`,`usuario_id`),
   KEY `fk_ldc__parent__self` (`project_id`,`parent_id`),
@@ -310,6 +315,7 @@ CREATE TABLE IF NOT EXISTS `lps_drawer_comentarios` (
   CONSTRAINT `fk_ldc__parent__self` FOREIGN KEY (`project_id`, `parent_id`) REFERENCES `lps_drawer_comentarios` (`project_id`, `id`) ON DELETE CASCADE,
   CONSTRAINT `fk_ldc__profesionales__usuario_id` FOREIGN KEY (`project_id`, `usuario_id`) REFERENCES `profesionales` (`project_id`, `id`) ON DELETE CASCADE,
   CONSTRAINT `fk_ldc__programa__consecutivo` FOREIGN KEY (`project_id`, `consecutivo_en_programa`) REFERENCES `programa` (`project_id`, `Consecutivo`) ON DELETE CASCADE,
+  CONSTRAINT `fk_ldc__programa__unique_id` FOREIGN KEY (`project_id`, `unique_id`) REFERENCES `programa` (`project_id`, `unique_id`) ON DELETE CASCADE,
   CONSTRAINT `fk_ldc__semanas_activas__semana` FOREIGN KEY (`project_id`, `semana`) REFERENCES `semanas_activas` (`project_id`, `Semana`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -321,6 +327,7 @@ CREATE TABLE IF NOT EXISTS `lps_escalamientos` (
   `proyecto_id` int NOT NULL COMMENT 'ID de la obra actual',
   `semana` int NOT NULL COMMENT 'Semana en la que se detono o esta activa',
   `consecutivo_en_programa` int NOT NULL COMMENT 'ID de la actividad en consolidado',
+  `unique_id` int DEFAULT NULL,
   `modulo` enum('PG','PI','PS') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Nivel de planificacion donde se detecta',
   `trigger_origen` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Codigo del disparador: PG-1, PG-2, PI-1, PI-2, PS-1, PS-2, PS-3',
   `nivel_actual` tinyint NOT NULL DEFAULT '1' COMMENT '1: Residente, 2: Director, 3: Coordinador Integracion, 4: G. Construccion, 5: G. General',
@@ -336,10 +343,12 @@ CREATE TABLE IF NOT EXISTS `lps_escalamientos` (
   KEY `idx_proyecto` (`proyecto_id`),
   KEY `idx_project_escalamientos` (`project_id`,`id`),
   KEY `fk_le__programa__consecutivo` (`project_id`,`consecutivo_en_programa`),
+  KEY `idx_le_project_unique_week` (`project_id`,`unique_id`,`semana`),
   KEY `fk_le__semanas_activas__semana` (`project_id`,`semana`),
   KEY `fk_le__profesionales__usuario_cierre` (`project_id`,`usuario_cierre_id`),
   CONSTRAINT `fk_le__profesionales__usuario_cierre` FOREIGN KEY (`project_id`, `usuario_cierre_id`) REFERENCES `profesionales` (`project_id`, `id`) ON DELETE RESTRICT,
   CONSTRAINT `fk_le__programa__consecutivo` FOREIGN KEY (`project_id`, `consecutivo_en_programa`) REFERENCES `programa` (`project_id`, `Consecutivo`) ON DELETE CASCADE,
+  CONSTRAINT `fk_le__programa__unique_id` FOREIGN KEY (`project_id`, `unique_id`) REFERENCES `programa` (`project_id`, `unique_id`) ON DELETE CASCADE,
   CONSTRAINT `fk_le__semanas_activas__semana` FOREIGN KEY (`project_id`, `semana`) REFERENCES `semanas_activas` (`project_id`, `Semana`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -347,6 +356,7 @@ CREATE TABLE IF NOT EXISTS `lps_escalamientos` (
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE IF NOT EXISTS `papelera_pdc` (
   `project_id` int NOT NULL,
+  `pdc_row_id` int DEFAULT NULL,
   `consecutivo` int NOT NULL,
   `semana` int NOT NULL,
   `titulo` int NOT NULL,
@@ -394,6 +404,7 @@ CREATE TABLE IF NOT EXISTS `papelera_pdc` (
   `justificacionEliminacion` mediumtext,
   PRIMARY KEY (`project_id`,`consecutivo`),
   KEY `idx_project_pdc` (`project_id`,`consecutivo`),
+  KEY `idx_papelera_project_row_id` (`project_id`,`pdc_row_id`),
   KEY `fk_pdc__semanas_activas__semana` (`project_id`,`semana`),
   KEY `fk_pdc__profesionales__idproveedor` (`project_id`,`idProveedorAdjudicado`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
@@ -402,6 +413,7 @@ CREATE TABLE IF NOT EXISTS `papelera_pdc` (
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE IF NOT EXISTS `pdc` (
   `project_id` int NOT NULL,
+  `pdc_row_id` int DEFAULT NULL,
   `consecutivo` int NOT NULL,
   `semana` int NOT NULL,
   `titulo` int NOT NULL,
@@ -448,6 +460,7 @@ CREATE TABLE IF NOT EXISTS `pdc` (
   `observacionesContrato` mediumtext,
   PRIMARY KEY (`project_id`,`consecutivo`),
   KEY `idx_project_pdc` (`project_id`,`consecutivo`),
+  KEY `idx_pdc_project_row_id` (`project_id`,`pdc_row_id`),
   KEY `fk_pdc__semanas_activas__semana` (`project_id`,`semana`),
   KEY `fk_pdc__profesionales__idproveedor` (`project_id`,`idProveedorAdjudicado`),
   CONSTRAINT `fk_pdc__profesionales__idproveedor` FOREIGN KEY (`project_id`, `idProveedorAdjudicado`) REFERENCES `profesionales` (`project_id`, `id`) ON DELETE RESTRICT,
@@ -458,6 +471,7 @@ CREATE TABLE IF NOT EXISTS `pdc` (
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE IF NOT EXISTS `pg_tracking` (
   `project_id` int NOT NULL,
+  `unique_id` int DEFAULT NULL,
   `consecutivo_en_programa` int NOT NULL,
   `semana` int NOT NULL,
   `fecha_inicio` date DEFAULT NULL,
@@ -471,8 +485,10 @@ CREATE TABLE IF NOT EXISTS `pg_tracking` (
   PRIMARY KEY (`project_id`,`consecutivo_en_programa`,`semana`),
   KEY `idx_semana` (`semana`),
   KEY `idx_project_pg_tracking` (`project_id`,`consecutivo_en_programa`,`semana`),
+  KEY `idx_pgt_project_unique_week` (`project_id`,`unique_id`,`semana`),
   KEY `fk_pgt__semanas_activas__semana` (`project_id`,`semana`),
   CONSTRAINT `fk_pgt__programa__consecutivo` FOREIGN KEY (`project_id`, `consecutivo_en_programa`) REFERENCES `programa` (`project_id`, `Consecutivo`) ON DELETE CASCADE,
+  CONSTRAINT `fk_pgt__programa__unique_id` FOREIGN KEY (`project_id`, `unique_id`) REFERENCES `programa` (`project_id`, `unique_id`) ON DELETE CASCADE,
   CONSTRAINT `fk_pgt__semanas_activas__semana` FOREIGN KEY (`project_id`, `semana`) REFERENCES `semanas_activas` (`project_id`, `Semana`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -483,6 +499,7 @@ CREATE TABLE IF NOT EXISTS `pi_shared_constraint_links` (
   `Id` bigint unsigned NOT NULL,
   `SharedConstraintId` bigint unsigned NOT NULL,
   `Semana` int NOT NULL,
+  `unique_id` int DEFAULT NULL,
   `ConsecutivoEnPrograma` int NOT NULL,
   `ValorAplicado` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `OverrideLocal` tinyint(1) NOT NULL DEFAULT '0',
@@ -493,9 +510,11 @@ CREATE TABLE IF NOT EXISTS `pi_shared_constraint_links` (
   KEY `idx_project_shared_links` (`project_id`,`Id`),
   KEY `fk_pscl__pi_shared_constraints` (`project_id`,`SharedConstraintId`),
   KEY `fk_pscl__programa__consecutivo` (`project_id`,`ConsecutivoEnPrograma`),
+  KEY `idx_pscl_project_unique_week` (`project_id`,`unique_id`,`Semana`),
   KEY `fk_pscl__semanas_activas__semana` (`project_id`,`Semana`),
   CONSTRAINT `fk_pscl__pi_shared_constraints` FOREIGN KEY (`project_id`, `SharedConstraintId`) REFERENCES `pi_shared_constraints` (`project_id`, `Id`) ON DELETE CASCADE,
   CONSTRAINT `fk_pscl__programa__consecutivo` FOREIGN KEY (`project_id`, `ConsecutivoEnPrograma`) REFERENCES `programa` (`project_id`, `Consecutivo`) ON DELETE CASCADE,
+  CONSTRAINT `fk_pscl__programa__unique_id` FOREIGN KEY (`project_id`, `unique_id`) REFERENCES `programa` (`project_id`, `unique_id`) ON DELETE CASCADE,
   CONSTRAINT `fk_pscl__semanas_activas__semana` FOREIGN KEY (`project_id`, `Semana`) REFERENCES `semanas_activas` (`project_id`, `Semana`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -534,8 +553,17 @@ CREATE TABLE IF NOT EXISTS `profesionales` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE IF NOT EXISTS `program_unique_id_sequences` (
+  `project_id` int NOT NULL,
+  `next_unique_id` int NOT NULL,
+  PRIMARY KEY (`project_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE IF NOT EXISTS `programa` (
   `project_id` int NOT NULL,
+  `unique_id` int DEFAULT NULL,
   `Consecutivo` int NOT NULL,
   `Id` varchar(500) DEFAULT NULL,
   `Actividad` varchar(500) DEFAULT NULL,
@@ -563,15 +591,18 @@ CREATE TABLE IF NOT EXISTS `programa` (
   `restriccion_pc_3` varchar(10) DEFAULT '0%',
   `restriccion_pc_4` varchar(10) DEFAULT '0%',
   PRIMARY KEY (`project_id`,`Consecutivo`),
-  KEY `idx_project_programa` (`project_id`,`Consecutivo`)
+  KEY `idx_project_programa` (`project_id`,`Consecutivo`),
+  UNIQUE KEY `uq_programa_project_unique_id` (`project_id`,`unique_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE IF NOT EXISTS `programa_consolidado` (
   `project_id` int NOT NULL,
+  `row_id` int DEFAULT NULL,
   `Consecutivo` int NOT NULL,
   `Semana` int NOT NULL,
+  `unique_id` int DEFAULT NULL,
   `Consecutivo_en_Programa` int NOT NULL,
   `Id` varchar(500) DEFAULT NULL,
   `Actividad` varchar(500) DEFAULT NULL,
@@ -613,8 +644,11 @@ CREATE TABLE IF NOT EXISTS `programa_consolidado` (
   KEY `idx_crisis_hot` (`Semana`,`alerta_crisis`),
   KEY `idx_consecutivo_consolidado` (`Consecutivo_en_Programa`,`Semana`),
   KEY `idx_project_consolidado` (`project_id`,`Semana`,`Consecutivo_en_Programa`),
+  KEY `idx_pc_project_semana_unique_id` (`project_id`,`Semana`,`unique_id`),
+  KEY `idx_pc_project_row_id` (`project_id`,`row_id`),
   KEY `fk_pc__programa__consecutivo` (`project_id`,`Consecutivo_en_Programa`),
   CONSTRAINT `fk_pc__programa__consecutivo` FOREIGN KEY (`project_id`, `Consecutivo_en_Programa`) REFERENCES `programa` (`project_id`, `Consecutivo`) ON DELETE CASCADE,
+  CONSTRAINT `fk_pc__programa__unique_id` FOREIGN KEY (`project_id`, `unique_id`) REFERENCES `programa` (`project_id`, `unique_id`) ON DELETE CASCADE,
   CONSTRAINT `fk_pc__semanas_activas__semana` FOREIGN KEY (`project_id`, `Semana`) REFERENCES `semanas_activas` (`project_id`, `Semana`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -622,8 +656,10 @@ CREATE TABLE IF NOT EXISTS `programa_consolidado` (
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE IF NOT EXISTS `programacion_semanal` (
   `project_id` int NOT NULL,
+  `row_id` int DEFAULT NULL,
   `Consecutivo` int NOT NULL,
   `Semana` int DEFAULT NULL,
+  `unique_id` int DEFAULT NULL,
   `Consecutivo_En_Programa` int NOT NULL,
   `Id` varchar(500) DEFAULT NULL,
   `Actividad` varchar(500) DEFAULT NULL,
@@ -666,8 +702,11 @@ CREATE TABLE IF NOT EXISTS `programacion_semanal` (
   KEY `idx_crisis_semanal` (`Semana`,`alerta_crisis`),
   KEY `idx_consecutivo_semanal` (`Consecutivo_En_Programa`,`Semana`),
   KEY `idx_project_semanal` (`project_id`,`Semana`,`Consecutivo_En_Programa`),
+  KEY `idx_ps_project_semana_unique_id` (`project_id`,`Semana`,`unique_id`),
+  KEY `idx_ps_project_row_id` (`project_id`,`row_id`),
   KEY `fk_ps__programa__consecutivo` (`project_id`,`Consecutivo_En_Programa`),
   CONSTRAINT `fk_ps__programa__consecutivo` FOREIGN KEY (`project_id`, `Consecutivo_En_Programa`) REFERENCES `programa` (`project_id`, `Consecutivo`) ON DELETE CASCADE,
+  CONSTRAINT `fk_ps__programa__unique_id` FOREIGN KEY (`project_id`, `unique_id`) REFERENCES `programa` (`project_id`, `unique_id`) ON DELETE CASCADE,
   CONSTRAINT `fk_ps__semanas_activas__semana` FOREIGN KEY (`project_id`, `Semana`) REFERENCES `semanas_activas` (`project_id`, `Semana`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;

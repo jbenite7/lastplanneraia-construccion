@@ -6,6 +6,7 @@
  */
 
 require __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/../src/Core/TableResolver.php';
 
 // Cargar .env si vlucas/phpdotenv está disponible
 if (file_exists(__DIR__ . '/../.env')) {
@@ -115,11 +116,11 @@ assert_eq(
     'getProjectIdByPrefix("no_existe")'
 );
 
-// --- Test adicional: getValidTables() devuelve 16 tipos ---
-echo "\nTest 7: getValidTables() → 16 tipos\n";
+// --- Test adicional: getValidTables() devuelve todas las tablas globales conocidas ---
+echo "\nTest 7: getValidTables() → tablas globales conocidas\n";
 assert_eq(
     count(TableResolver::getValidTables()),
-    20,
+    29,
     'getValidTables() count'
 );
 

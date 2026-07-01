@@ -234,7 +234,7 @@
       <div class="card-header">
         <h3 class="card-title text-warning">
           <i class="fas fa-tools"></i> Integridad
-          <i class="fas fa-info-circle info-icon" data-toggle="tooltip" title="Verifica que cada proyecto tenga sus tablas estructurales."></i>
+          <i class="fas fa-info-circle info-icon" data-toggle="tooltip" title="Verifica que el esquema global compartido tenga tablas y project_id."></i>
         </h3>
       </div>
       <div class="card-body p-0 dashboard-widget__body">
@@ -245,7 +245,7 @@
                 data-project="<?php echo htmlspecialchars($issue['nombre']); ?>" 
                 data-missing="<?php echo htmlspecialchars(implode(', ', $issue['missing'])); ?>">
               <small><strong><?php echo $issue['nombre']; ?></strong></small><br>
-              <small class="text-danger">Tablas faltantes: <?php echo count($issue['missing']); ?></small>
+              <small class="text-danger">Elementos pendientes: <?php echo count($issue['missing']); ?></small>
             </li>
             <?php endforeach; ?>
           </ul>
@@ -262,7 +262,7 @@
     <div class="card card-outline card-secondary">
       <div class="card-header">
         <h3 class="card-title">
-          <i class="fas fa-trash-alt"></i> Tablas Huérfanas (<?php echo count($stats['orphan_tables']); ?>)
+          <i class="fas fa-trash-alt"></i> Tablas Legacy Huérfanas (<?php echo count($stats['orphan_tables']); ?>)
         </h3>
       </div>
       <div class="card-body p-0 dashboard-widget__body">

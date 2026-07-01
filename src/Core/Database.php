@@ -29,9 +29,13 @@ class Database
         'programa_consolidado',
         'programacion_semanal',
         'semanas_activas',
+        'semi_auto_assistant_feedback',
         'semi_auto_decisions',
         'semi_auto_feedback',
+        'semi_auto_learning_candidates',
+        'semi_auto_learning_rules',
         'semi_auto_project_config',
+        'semi_auto_proactive_queue',
         'semi_auto_runs',
         'semi_auto_suggestions',
         'subcontratistas',
@@ -43,16 +47,24 @@ class Database
         'cic' => 'Id',
         'lps_drawer_comentarios' => 'id',
         'lps_escalamientos' => 'id',
-        'papelera_pdc' => 'consecutivo',
-        'pdc' => 'consecutivo',
+        'papelera_pdc' => 'pdc_row_id',
+        'pdc' => 'pdc_row_id',
         'pi_shared_constraint_links' => 'id',
         'pi_shared_constraints' => 'id',
         'profesionales' => 'id',
-        'programa' => 'Consecutivo',
-        'programa_consolidado' => 'Consecutivo',
-        'programacion_semanal' => 'Consecutivo',
+        'programa' => 'unique_id',
+        'programa_consolidado' => 'row_id',
+        'programacion_semanal' => 'row_id',
         'semanas_activas' => 'Id',
         'subcontratistas' => 'Id',
+    ];
+
+    private const LEGACY_ID_COMPANIONS = [
+        'papelera_pdc' => ['pdc_row_id' => 'consecutivo'],
+        'pdc' => ['pdc_row_id' => 'consecutivo'],
+        'programa' => ['unique_id' => 'Consecutivo'],
+        'programa_consolidado' => ['row_id' => 'Consecutivo'],
+        'programacion_semanal' => ['row_id' => 'Consecutivo'],
     ];
 
     /**
@@ -646,10 +658,18 @@ class Database
             $prependValues[] = $projectId;
         }
 
-        $idColumn = self::PROJECT_SCOPED_IDS[$table] ?? null;
+        $idColumn = $this->projectScopedIdColumn($table);
         if ($idColumn !== null && !in_array($idColumn, $columns, true)) {
-            $prependColumns[] = $idColumn;
-            $prependValues[] = $this->nextProjectScopedId($table, $idColumn, $projectId);
+            $legacyColumn = $this->legacyIdCompanion($table, $idColumn);
+            if ($legacyColumn === null || !in_array($legacyColumn, $columns, true)) {
+                $nextId = $this->nextProjectScopedId($table, $idColumn, $projectId);
+                $prependColumns[] = $idColumn;
+                $prependValues[] = $nextId;
+            }
+            if ($legacyColumn !== null && !in_array($legacyColumn, $columns, true)) {
+                $prependColumns[] = $legacyColumn;
+                $prependValues[] = $nextId;
+            }
         }
 
         if (empty($prependColumns)) {
@@ -699,18 +719,28 @@ class Database
             $prependParams[] = $projectId;
         }
 
-        $idColumn = self::PROJECT_SCOPED_IDS[$table] ?? null;
+        $idColumn = $this->projectScopedIdColumn($table);
         if ($idColumn !== null) {
             $idIndex = array_search($idColumn, $columns, true);
+            $legacyColumn = $this->legacyIdCompanion($table, $idColumn);
             if ($idIndex === false) {
-                $prependColumns[] = $idColumn;
-                $prependValues[] = $this->projectScopedIdSelectExpression($table, $idColumn);
-                $prependParams[] = $projectId;
+                if ($legacyColumn === null || !in_array($legacyColumn, $columns, true)) {
+                    $idExpression = $this->projectScopedIdSelectExpression($table, $idColumn);
+                    $prependColumns[] = $idColumn;
+                    $prependValues[] = $idExpression;
+                    $prependParams[] = $projectId;
+                }
+                if ($legacyColumn !== null && !in_array($legacyColumn, $columns, true)) {
+                    $prependColumns[] = $legacyColumn;
+                    $prependValues[] = $idExpression;
+                    $prependParams[] = $projectId;
+                }
             } elseif (isset($selectValues[$idIndex]) && strtoupper(trim($selectValues[$idIndex])) === 'NULL') {
                 array_splice($columns, $idIndex, 1);
                 array_splice($selectValues, $idIndex, 1);
+                $idExpression = $this->projectScopedIdSelectExpression($table, $idColumn);
                 $prependColumns[] = $idColumn;
-                $prependValues[] = $this->projectScopedIdSelectExpression($table, $idColumn);
+                $prependValues[] = $idExpression;
                 $prependParams[] = $projectId;
             }
         }
@@ -855,11 +885,85 @@ class Database
         return $items;
     }
 
+    private function projectScopedIdColumn(string $table): ?string
+    {
+        $column = self::PROJECT_SCOPED_IDS[$table] ?? null;
+        if ($column === null) {
+            return null;
+        }
+
+        if ($this->rawColumnExists($table, $column)) {
+            return $column;
+        }
+
+        foreach (self::LEGACY_ID_COMPANIONS[$table] ?? [] as $newColumn => $legacyColumn) {
+            if ($newColumn === $column && $this->rawColumnExists($table, $legacyColumn)) {
+                return $legacyColumn;
+            }
+        }
+
+        return $column;
+    }
+
+    private function legacyIdCompanion(string $table, string $column): ?string
+    {
+        $legacyColumn = self::LEGACY_ID_COMPANIONS[$table][$column] ?? null;
+        if ($legacyColumn === null) {
+            return null;
+        }
+
+        return $this->rawColumnExists($table, $legacyColumn) ? $legacyColumn : null;
+    }
+
     private function nextProjectScopedId(string $table, string $column, int $projectId): int
     {
+        if ($table === 'programa' && $column === 'unique_id') {
+            return $this->reserveProgramUniqueId($projectId);
+        }
+
         $stmt = $this->pdo->prepare("SELECT COALESCE(MAX(`$column`), 0) + 1 FROM `$table` WHERE project_id = ?");
         $stmt->execute([$projectId]);
         return (int) $stmt->fetchColumn();
+    }
+
+    private function reserveProgramUniqueId(int $projectId): int
+    {
+        if (!$this->rawTableExists('program_unique_id_sequences') || !$this->rawColumnExists('programa', 'unique_id')) {
+            $stmt = $this->pdo->prepare('SELECT COALESCE(MAX(`Consecutivo`), 0) + 1 FROM `programa` WHERE project_id = ?');
+            $stmt->execute([$projectId]);
+            return (int) $stmt->fetchColumn();
+        }
+
+        $ownsTransaction = !$this->pdo->inTransaction();
+        if ($ownsTransaction) {
+            $this->pdo->beginTransaction();
+        }
+
+        try {
+            $this->pdo->prepare(
+                'INSERT INTO `program_unique_id_sequences` (`project_id`, `next_unique_id`)
+                 SELECT ?, COALESCE(MAX(`unique_id`), 0) + 1 FROM `programa` WHERE project_id = ?
+                 ON DUPLICATE KEY UPDATE `next_unique_id` = GREATEST(`next_unique_id`, VALUES(`next_unique_id`))'
+            )->execute([$projectId, $projectId]);
+
+            $stmt = $this->pdo->prepare('SELECT `next_unique_id` FROM `program_unique_id_sequences` WHERE `project_id` = ? FOR UPDATE');
+            $stmt->execute([$projectId]);
+            $next = (int) $stmt->fetchColumn();
+
+            $this->pdo->prepare('UPDATE `program_unique_id_sequences` SET `next_unique_id` = ? WHERE `project_id` = ?')
+                ->execute([$next + 1, $projectId]);
+
+            if ($ownsTransaction) {
+                $this->pdo->commit();
+            }
+
+            return $next;
+        } catch (Throwable $e) {
+            if ($ownsTransaction && $this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
+            throw $e;
+        }
     }
 
     private function isSequentialArray(array $params): bool
@@ -888,6 +992,26 @@ class Database
         $this->tableExistsCache[$tableName] = ((int) $stmt->fetchColumn()) > 0;
 
         return $this->tableExistsCache[$tableName];
+    }
+
+    private function rawColumnExists(string $tableName, string $columnName): bool
+    {
+        if (preg_match('/^[A-Za-z0-9_]+$/', $tableName) !== 1 || preg_match('/^[A-Za-z0-9_]+$/', $columnName) !== 1) {
+            return false;
+        }
+
+        $cacheKey = $tableName . '.' . $columnName;
+        if (array_key_exists($cacheKey, $this->tableExistsCache)) {
+            return $this->tableExistsCache[$cacheKey];
+        }
+
+        $stmt = $this->pdo->prepare(
+            'SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ?'
+        );
+        $stmt->execute([$tableName, $columnName]);
+        $this->tableExistsCache[$cacheKey] = ((int) $stmt->fetchColumn()) > 0;
+
+        return $this->tableExistsCache[$cacheKey];
     }
 
     /**

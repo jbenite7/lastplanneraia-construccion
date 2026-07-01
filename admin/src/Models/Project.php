@@ -34,39 +34,27 @@ class Project
      */
     public function getIntegrityReport()
     {
-        $projects = $this->getAll();
-        $suffixes = [
-            '_actividades', '_cambios', '_cic', '_pdc', '_profesionales',
-            '_programa', '_programacion_semanal', '_programa_consolidado',
-            '_semanas_activas', '_subcontratistas',
-        ];
-
-        $report = [];
-        foreach ($projects as $project) {
-            $prefix = $project['Base_de_Datos'];
-            if (empty($prefix)) {
+        $missing = [];
+        foreach (Database::globalTableNames() as $table) {
+            if (!$this->tableExists($table)) {
+                $missing[] = "{$table} (tabla global)";
                 continue;
             }
 
-            $missing = [];
-            foreach ($suffixes as $suffix) {
-                $table = "{$prefix}{$suffix}";
-                $stmt = $this->db->query("SHOW TABLES LIKE '{$table}'");
-                if (!$stmt->fetch()) {
-                    $missing[] = $table;
-                }
-            }
-
-            if (!empty($missing)) {
-                $report[] = [
-                    'id' => $project['Id'],
-                    'nombre' => $project['Proyecto_Proceso'],
-                    'missing' => $missing,
-                ];
+            if (!$this->tableHasColumn($table, 'project_id')) {
+                $missing[] = "{$table}.project_id";
             }
         }
 
-        return $report;
+        if (empty($missing)) {
+            return [];
+        }
+
+        return [[
+            'id' => 0,
+            'nombre' => 'Esquema global',
+            'missing' => $missing,
+        ]];
     }
 
     /**
@@ -130,6 +118,10 @@ class Project
         foreach ($tables as $table) {
             // Basic SQL injection protection for table names
             $table = preg_replace('/[^a-zA-Z0-9_]/', '', $table);
+            if ($table === '' || str_starts_with($table, 'general_') || in_array($table, Database::globalTableNames(), true)) {
+                continue;
+            }
+
             try {
                 $this->db->query("DROP TABLE IF EXISTS `{$table}`");
             } catch (\Exception $e) {
@@ -256,51 +248,18 @@ class Project
             return false;
         }
 
-        $oldPrefix = $oldProject['Base_de_Datos'] ?? '';
         $newPrefix = $data['base_datos'] ?? '';
 
-        $sql = "UPDATE {$this->table} SET
-                Proyecto_Proceso = ?,
-                Base_de_Datos = ?,
-                Area = ?,
-                Activo = ?,
-                Acceso = ?,
-                pdcActivo = ?,
-                fechaInicioLineaBase = ?,
-                fechaFinLineaBase = ?,
-                costoDiaRetraso = ?,
-                urlCambios = ?,
-                pc_restr_2_nombre = ?,
-                pc_restr_3_nombre = ?,
-                pc_restr_4_nombre = ?
-                WHERE Id = ?";
+        $fields = $this->projectPayloadFields($data, $newPrefix);
+        $assignments = array_map(fn ($column) => "{$column} = ?", array_keys($fields));
+        $params = array_values($fields);
+        $params[] = $id;
 
-        $result = $this->db->query($sql, [
-            $data['nombre'],
-            $newPrefix,
-            $data['area'],
-            $data['activo'],
-            $data['acceso'],
-            $data['pdc_activo'],
-            $data['fecha_inicio_lb'] ?: null,
-            $data['fecha_fin_lb'] ?: null,
-            $data['costo_retraso'],
-            $data['url_cambios'],
-            $data['pc_restr_2_nombre'] ?? null,
-            $data['pc_restr_3_nombre'] ?? null,
-            $data['pc_restr_4_nombre'] ?? null,
-            $id,
-        ]);
+        $sql = "UPDATE {$this->table} SET " . implode(', ', $assignments) . " WHERE Id = ?";
+        $result = $this->db->query($sql, $params);
 
-        if ($result) {
-            // Si el prefijo cambió, renombrar tablas existentes
-            if (!empty($oldPrefix) && !empty($newPrefix) && $oldPrefix !== $newPrefix) {
-                $this->renameProjectTables($oldPrefix, $newPrefix, $data['area']);
-            }
-            // Si antes no tenía prefijo pero ahora sí, o simplemente para asegurar integridad
-            elseif (!empty($newPrefix)) {
-                $this->createProjectTables($newPrefix, $data['area']);
-            }
+        if ($result && class_exists('\TableResolver')) {
+            \TableResolver::clearCache();
         }
 
         return $result;
@@ -389,40 +348,25 @@ class Project
             return false;
         }
 
-        $sql = "INSERT INTO {$this->table} (
-                    Proyecto_Proceso,
-                    Base_de_Datos,
-                    Area,
-                    Activo,
-                    Acceso,
-                    pdcActivo,
-                    fechaInicioLineaBase,
-                    fechaFinLineaBase,
-                    costoDiaRetraso,
-                    urlCambios,
-                    pc_restr_2_nombre,
-                    pc_restr_3_nombre,
-                    pc_restr_4_nombre
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $fields = $this->projectPayloadFields($data, $base_datos);
+        $columns = array_keys($fields);
+        $placeholders = array_fill(0, count($columns), '?');
+        $sql = "INSERT INTO {$this->table} (" . implode(', ', $columns) . ") VALUES (" . implode(', ', $placeholders) . ")";
 
-        $result = $this->db->query($sql, [
-            $data['nombre'],
-            $base_datos,
-            $data['area'],
-            $data['activo'] ?? 1,
-            $data['acceso'] ?? 1,
-            $data['pdc_activo'] ?? 0,
-            $data['fecha_inicio_lb'] ?: null,
-            $data['fecha_fin_lb'] ?: null,
-            $data['costo_retraso'] ?? 5000000,
-            $data['url_cambios'] ?? null,
-            $data['pc_restr_2_nombre'] ?? null,
-            $data['pc_restr_3_nombre'] ?? null,
-            $data['pc_restr_4_nombre'] ?? null,
-        ]);
+        $result = $this->db->query($sql, array_values($fields));
 
         if ($result && $base_datos) {
-            $this->createProjectTables($base_datos, $data['area']);
+            $projectId = (int) $this->db->lastInsertId();
+            if ($projectId <= 0) {
+                $projectId = (int) $this->db->query(
+                    "SELECT Id FROM {$this->table} WHERE Base_de_Datos = ? LIMIT 1",
+                    [$base_datos]
+                )->fetchColumn();
+            }
+
+            if ($projectId > 0) {
+                $this->initializeProjectDefaults($projectId, $data);
+            }
         }
 
         return $result;
@@ -1180,35 +1124,15 @@ class Project
             return false;
         }
 
-        $prefix = $project['Base_de_Datos'] ?? '';
-
-        // Si tiene prefijo, eliminar sus tablas asociadas por-proyecto
-        if (!empty($prefix)) {
-            $suffixes = $this->getTableSuffixes();
-
-            foreach ($suffixes as $suffix) {
-                $tableName = "{$prefix}{$suffix}";
-                try {
-                    $this->db->query("DROP TABLE IF EXISTS `{$tableName}`");
-                } catch (\Exception $e) {
-                    error_log("Error al eliminar tabla {$tableName}: " . $e->getMessage());
-                }
+        foreach ($this->orderedGlobalProjectTables() as $tableName) {
+            try {
+                $this->db->query("DELETE FROM `{$tableName}` WHERE project_id = ?", [$id]);
+            } catch (\Exception $e) {
+                error_log("Error al limpiar tabla global {$tableName}: " . $e->getMessage());
             }
         }
 
-        // Si USE_GLOBAL_TABLES=ON, también limpiar filas de tablas globales para este proyecto
-        if (\TableResolver::useGlobalTables()) {
-            $suffixes = $this->getTableSuffixes();
-            foreach ($suffixes as $suffix) {
-                $tableType = ltrim($suffix, '_');
-                try {
-                    $tableName = \TableResolver::resolveByPrefix($prefix, $tableType);
-                    $this->db->query("DELETE FROM `{$tableName}` WHERE project_id = ?", [$id]);
-                } catch (\Exception $e) {
-                    error_log("Error al limpiar tabla global {$tableType}: " . $e->getMessage());
-                }
-            }
-        }
+        $this->db->query("DELETE FROM project_members WHERE project_id = ?", [$id]);
 
         // Eliminar el registro del proyecto
         return $this->db->query("DELETE FROM {$this->table} WHERE Id = ?", [$id]);
@@ -1226,133 +1150,162 @@ class Project
 
     public function exportToSql($projectId)
     {
-
         $project = $this->find($projectId);
-
         if (!$project) {
             return false;
         }
 
+        $output = "-- Backup SQL para el Proyecto: {$project['Proyecto_Proceso']}\n";
+        $output .= "-- project_id: {$projectId}\n";
+        $output .= "-- Prefijo compatibilidad: {$project['Base_de_Datos']}\n";
+        $output .= "-- Fecha de generación: " . date('Y-m-d H:i:s') . "\n\n";
+        $output .= "SET FOREIGN_KEY_CHECKS=0;\n\n";
 
+        $output .= $this->buildInsertDump(
+            $this->table,
+            $this->db->query("SELECT * FROM {$this->table} WHERE Id = ?", [$projectId])->fetchAll(\PDO::FETCH_ASSOC)
+        );
 
-        $prefix = $project['Base_de_Datos'];
+        $output .= $this->buildInsertDump(
+            'project_members',
+            $this->db->query("SELECT * FROM project_members WHERE project_id = ?", [$projectId])->fetchAll(\PDO::FETCH_ASSOC)
+        );
 
-        if (empty($prefix)) {
+        foreach ($this->orderedGlobalProjectTables() as $table) {
+            $rows = $this->db->query(
+                "SELECT * FROM `{$table}` WHERE project_id = ?",
+                [$projectId]
+            )->fetchAll(\PDO::FETCH_ASSOC);
+            $output .= $this->buildInsertDump($table, $rows);
+        }
+
+        $output .= "SET FOREIGN_KEY_CHECKS=1;\n";
+        return $output;
+    }
+
+    private function tableExists(string $table): bool
+    {
+        if (preg_match('/^[A-Za-z0-9_]+$/', $table) !== 1) {
             return false;
         }
 
+        return (int) $this->db->query(
+            "SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?",
+            [$table]
+        )->fetchColumn() > 0;
+    }
 
-
-        $suffixes = [
-
-            '_actividades', '_cambios', '_cic', '_pdc', '_profesionales',
-
-            '_programa', '_programacion_semanal', '_programa_consolidado',
-
-            '_semanas_activas', '_subcontratistas',
-
-        ];
-
-
-
-        $output = "-- Backup SQL para el Proyecto: {$project['Proyecto_Proceso']}\n";
-
-        $output .= "-- Prefijo Base de Datos: {$prefix}\n";
-
-        $output .= "-- Fecha de generación: " . date('Y-m-d H:i:s') . "\n\n";
-
-        $output .= "SET FOREIGN_KEY_CHECKS=0;\n\n";
-
-
-
-        foreach ($suffixes as $suffix) {
-
-            $table = "{$prefix}{$suffix}";
-
-
-
-            // 1. Verificar si la tabla existe
-
-            $check = $this->db->query("SHOW TABLES LIKE '{$table}'");
-
-            if (!$check->fetch()) {
-                continue;
-            }
-
-
-
-            $output .= "-- --------------------------------------------------------\n";
-
-            $output .= "-- Estructura de tabla para `{$table}`\n";
-
-            $output .= "-- --------------------------------------------------------\n\n";
-
-
-
-            $output .= "DROP TABLE IF EXISTS `{$table}`;\n";
-
-
-
-            // 2. Obtener CREATE TABLE
-
-            $res = $this->db->query("SHOW CREATE TABLE `{$table}`");
-
-            $createRow = $res->fetch();
-
-            $output .= $createRow['Create Table'] . ";\n\n";
-
-
-
-            // 3. Obtener Datos
-
-            $output .= "-- Volcado de datos para la tabla `{$table}`\n\n";
-
-            $res = $this->db->query("SELECT * FROM `{$table}`");
-
-            $rows = $res->fetchAll();
-
-
-
-            if (!empty($rows)) {
-
-                foreach ($rows as $row) {
-
-                    $output .= "INSERT INTO `{$table}` VALUES (";
-
-                    $values = [];
-
-                    foreach ($row as $val) {
-
-                        if (is_null($val)) {
-
-                            $values[] = "NULL";
-
-                        } else {
-
-                            $values[] = "'" . addslashes($val) . "'";
-
-                        }
-
-                    }
-
-                    $output .= implode(', ', $values) . ");\n";
-
-                }
-
-                $output .= "\n";
-
-            }
-
+    private function tableHasColumn(string $table, string $column): bool
+    {
+        if (!$this->tableExists($table) || preg_match('/^[A-Za-z0-9_]+$/', $column) !== 1) {
+            return false;
         }
 
+        return (int) $this->db->query(
+            "SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?",
+            [$table, $column]
+        )->fetchColumn() > 0;
+    }
 
+    private function orderedGlobalProjectTables(): array
+    {
+        $tables = array_values(array_filter(
+            Database::globalTableNames(),
+            fn ($table) => $this->tableHasColumn($table, 'project_id')
+        ));
 
-        $output .= "SET FOREIGN_KEY_CHECKS=1;\n";
+        $preferred = [
+            'semi_auto_assistant_feedback', 'semi_auto_decisions', 'semi_auto_feedback',
+            'semi_auto_learning_candidates', 'semi_auto_learning_rules', 'semi_auto_project_config',
+            'semi_auto_proactive_queue', 'semi_auto_suggestions', 'semi_auto_runs',
+            'auto_contrato_log', 'auto_program_log', 'lps_drawer_comentarios',
+            'lps_escalamientos', 'pi_shared_constraint_links', 'pi_shared_constraints',
+            'pg_tracking', 'papelera_pdc', 'pdc', 'cic', 'cip',
+            'indicadores_generales', 'programacion_semanal', 'programa_consolidado',
+            'actividades', 'cambios', 'subcontratistas', 'profesionales',
+            'programa', 'semanas_activas',
+        ];
 
+        usort($tables, function ($a, $b) use ($preferred) {
+            $posA = array_search($a, $preferred, true);
+            $posB = array_search($b, $preferred, true);
+            return ($posA === false ? PHP_INT_MAX : $posA) <=> ($posB === false ? PHP_INT_MAX : $posB);
+        });
+        return $tables;
+    }
 
+    private function initializeProjectDefaults(int $projectId, array $data): void
+    {
+        if (!$this->tableExists('semanas_activas')) {
+            return;
+        }
 
-        return $output;
+        $exists = (int) $this->db->query(
+            "SELECT COUNT(*) FROM semanas_activas WHERE project_id = ?",
+            [$projectId]
+        )->fetchColumn();
 
+        if ($exists > 0) {
+            return;
+        }
+
+        $start = new \DateTimeImmutable((string) ($data['fecha_inicio_lb'] ?: date('Y-m-d')));
+        $end = $start->modify('+6 days');
+        $nextId = (int) $this->db->query(
+            "SELECT COALESCE(MAX(Id), 0) + 1 FROM semanas_activas WHERE project_id = ?",
+            [$projectId]
+        )->fetchColumn();
+        $this->db->query(
+            "INSERT INTO semanas_activas (project_id, Id, Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem, Semanal_Confirmada, fechaCreacionSemana, reprogramacion, diferenciaEstructuraCron) VALUES (?, ?, 1, ?, ?, 0, CURDATE(), 0, 0)",
+            [$projectId, $nextId, $start->format('Y-m-d'), $end->format('Y-m-d')]
+        );
+    }
+
+    private function projectPayloadFields(array $data, string $baseDatos): array
+    {
+        $fields = [
+            'Proyecto_Proceso' => $data['nombre'],
+            'Base_de_Datos' => $baseDatos,
+            'Area' => $data['area'],
+            'Activo' => $data['activo'] ?? 1,
+            'Acceso' => $data['acceso'] ?? 1,
+            'pdcActivo' => $data['pdc_activo'] ?? 0,
+            'fechaInicioLineaBase' => $data['fecha_inicio_lb'] ?: null,
+            'fechaFinLineaBase' => $data['fecha_fin_lb'] ?: null,
+            'costoDiaRetraso' => $data['costo_retraso'] ?? 5000000,
+            'urlCambios' => $data['url_cambios'] ?? null,
+        ];
+
+        foreach (['pc_restr_2_nombre', 'pc_restr_3_nombre', 'pc_restr_4_nombre'] as $column) {
+            if ($this->tableHasColumn($this->table, $column)) {
+                $fields[$column] = $data[$column] ?? null;
+            }
+        }
+
+        return $fields;
+    }
+
+    private function buildInsertDump(string $table, array $rows): string
+    {
+        if (empty($rows)) {
+            return "-- {$table}: sin filas para este proyecto.\n\n";
+        }
+
+        $columns = array_keys($rows[0]);
+        $quotedColumns = array_map(fn ($column) => "`{$column}`", $columns);
+        $output = "-- Datos de `{$table}`\n";
+
+        foreach ($rows as $row) {
+            $values = array_map(fn ($column) => $this->sqlValue($row[$column] ?? null), $columns);
+            $output .= "INSERT INTO `{$table}` (" . implode(', ', $quotedColumns) . ") VALUES (" . implode(', ', $values) . ");\n";
+        }
+
+        return $output . "\n";
+    }
+
+    private function sqlValue($value): string
+    {
+        return $value === null ? 'NULL' : $this->db->quote((string) $value);
     }
 
 

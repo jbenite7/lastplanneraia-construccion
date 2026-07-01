@@ -11,7 +11,7 @@
 class TableResolver
 {
     /**
-     * Los 20 tipos de tabla válidos del sistema LPS.
+     * Tipos de tabla válidos del sistema LPS.
      */
     private static array $validTables = [
         'actividades',
@@ -33,6 +33,15 @@ class TableResolver
         'programa_consolidado',
         'programacion_semanal',
         'semanas_activas',
+        'semi_auto_assistant_feedback',
+        'semi_auto_decisions',
+        'semi_auto_feedback',
+        'semi_auto_learning_candidates',
+        'semi_auto_learning_rules',
+        'semi_auto_project_config',
+        'semi_auto_proactive_queue',
+        'semi_auto_runs',
+        'semi_auto_suggestions',
         'subcontratistas',
     ];
 

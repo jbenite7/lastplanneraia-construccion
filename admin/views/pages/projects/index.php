@@ -26,7 +26,7 @@
                                         <td class="text-center"><?php echo $project['Id']; ?></td>
                                         <td class="text-break">
                                             <strong><?php echo htmlspecialchars($project['Proyecto_Proceso']); ?></strong><br>
-                                            <small class="text-muted">BD: <code><?php echo htmlspecialchars($project['Base_de_Datos'] ?? 'N/A'); ?></code></small>
+                                            <small class="text-muted">Prefijo compatibilidad: <code><?php echo htmlspecialchars($project['Base_de_Datos'] ?? 'N/A'); ?></code></small>
                                         </td>
                                         <td><?php echo htmlspecialchars($project['Area'] ?? 'N/A'); ?></td>
                                         <td class="text-center" id="status-badge-<?php echo $project['Id']; ?>">
