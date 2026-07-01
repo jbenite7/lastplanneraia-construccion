@@ -25,6 +25,10 @@ $requiredTables = [
     'semi_auto_suggestions',
     'semi_auto_decisions',
     'semi_auto_feedback',
+    'semi_auto_learning_candidates',
+    'semi_auto_learning_rules',
+    'semi_auto_proactive_queue',
+    'semi_auto_assistant_feedback',
     'semi_auto_project_config',
     'general_pdc_chapter_category_map',
 ];
@@ -37,7 +41,7 @@ foreach ($requiredTables as $table) {
     $exists === 1 ? ok("{$table} exists") : bad("{$table} is missing");
 }
 
-foreach (array_slice($requiredTables, 0, 5) as $table) {
+foreach (array_slice($requiredTables, 0, 9) as $table) {
     $hasProjectId = (int) $db->query(
         "SELECT COUNT(*) FROM information_schema.columns
          WHERE table_schema = DATABASE() AND table_name = ? AND column_name = 'project_id'",

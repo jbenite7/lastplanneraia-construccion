@@ -4,14 +4,17 @@ require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Database.php';
 
 use App\Services\SemiAutoService;
+use App\Services\SemiAutoAssistantService;
 use App\Support\ModuleRequestContext;
 
 $db = Database::getInstance();
 $service = new SemiAutoService($db);
+$assistant = new SemiAutoAssistantService($db);
 $failed = 0;
 $skipped = 0;
 $runId = null;
 $runIds = [];
+$cleanupProjectId = null;
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -63,6 +66,7 @@ try {
     }
 
     $projectId = (int) $context['projectId'];
+    $cleanupProjectId = $projectId;
     $week = (int) $context['semana'];
     $activitiesBeforePreview = tableCount($db, 'actividades', $projectId, $week);
 
@@ -76,10 +80,19 @@ try {
         ? passSemi('preview returns analysis steps')
         : failSemi('preview did not return completed analysis');
 
+    !empty($preview['assistant_summary']) && isset($preview['assistant_recommendations'])
+        ? passSemi('preview returns assistant summary and recommendations')
+        : failSemi('preview missing assistant summary or recommendations');
+
     $status = $service->status(SemiAutoService::MODULE_LISTADO, $context, $runId);
     ($status['respuesta'] ?? '') === 'BIEN' && (int) ($status['progress'] ?? 0) === 100
         ? passSemi('status returns completed analysis')
         : failSemi('status did not return completed analysis');
+
+    $pendingStatus = $service->status(SemiAutoService::MODULE_LISTADO, $context, 'run_pending_poll_test');
+    ($pendingStatus['respuesta'] ?? '') === 'BIEN' && ($pendingStatus['status'] ?? '') === 'pending'
+        ? passSemi('status tolerates early polling before run exists')
+        : failSemi('status returned an error for early polling');
 
     $activitiesAfterPreview = tableCount($db, 'actividades', $projectId, $week);
     $activitiesAfterPreview === $activitiesBeforePreview
@@ -98,10 +111,14 @@ try {
         : failSemi('confidence outside 0-100: ' . implode(', ', $badConfidence));
 
     $missingUserAnalysis = [];
+    $missingAssistantReasoning = [];
     $unexpectedTechnical = [];
     foreach (($preview['suggestions'] ?? []) as $suggestion) {
         if (empty($suggestion['analysis']['user'])) {
             $missingUserAnalysis[] = $suggestion['suggestion_id'] ?? '(unknown)';
+        }
+        if (empty($suggestion['assistant_reasoning']['next_step'])) {
+            $missingAssistantReasoning[] = $suggestion['suggestion_id'] ?? '(unknown)';
         }
         if (isset($suggestion['analysis']['technical'])) {
             $unexpectedTechnical[] = $suggestion['suggestion_id'] ?? '(unknown)';
@@ -113,6 +130,9 @@ try {
     $unexpectedTechnical === []
         ? passSemi('non-admin preview hides technical analysis')
         : failSemi('non-admin preview exposed technical analysis');
+    $missingAssistantReasoning === []
+        ? passSemi('suggestions include assistant reasoning')
+        : failSemi('suggestions missing assistant reasoning: ' . implode(', ', $missingAssistantReasoning));
 
     $rowCount = (int) $db->query(
         "SELECT COUNT(*) FROM semi_auto_suggestions WHERE run_id = ? AND project_id = ?",
@@ -121,6 +141,20 @@ try {
     $rowCount === (int) ($preview['total'] ?? 0)
         ? passSemi('preview persists stored suggestions only')
         : failSemi("stored suggestion count {$rowCount} differs from response");
+
+    $inbox = $assistant->inbox(SemiAutoService::MODULE_LISTADO, $context);
+    ($inbox['respuesta'] ?? '') === 'BIEN' && isset($inbox['diagnostics'])
+        ? passSemi('assistant inbox returns diagnostics')
+        : failSemi('assistant inbox did not return diagnostics');
+
+    $assistantFeedback = $assistant->assistantFeedback(SemiAutoService::MODULE_LISTADO, $context, [
+        'run_id' => $runId,
+        'feedback_type' => 'usefulness',
+        'rating' => 'helpful',
+    ]);
+    ($assistantFeedback['respuesta'] ?? '') === 'BIEN'
+        ? passSemi('assistant feedback is recorded')
+        : failSemi('assistant feedback failed');
 
     $_SESSION['permiso'] = 'A';
     $_SESSION['permiso_canonico'] = 'A';
@@ -162,6 +196,25 @@ try {
             ? passSemi('feedback updates stored suggestion')
             : failSemi('feedback did not update stored suggestion');
 
+        $candidates = $assistant->learningCandidates(SemiAutoService::MODULE_LISTADO, $context);
+        $candidate = $candidates['candidates'][0] ?? null;
+        $candidate !== null
+            ? passSemi('feedback creates learning candidate')
+            : failSemi('feedback did not create learning candidate');
+
+        if ($candidate !== null) {
+            $_SESSION['permiso'] = 'A';
+            $_SESSION['permiso_canonico'] = 'A';
+            $approved = $assistant->approveLearning(SemiAutoService::MODULE_LISTADO, $context, [
+                'candidate_id' => $candidate['candidate_id'],
+            ]);
+            ($approved['respuesta'] ?? '') === 'BIEN' && !empty($approved['rule_id'])
+                ? passSemi('admin approves learning candidate')
+                : failSemi('admin could not approve learning candidate');
+            $_SESSION['permiso'] = 'D';
+            $_SESSION['permiso_canonico'] = 'D';
+        }
+
         $apply = $service->apply(SemiAutoService::MODULE_LISTADO, $context, $runId, [$applyCandidate]);
         ((int) ($apply['aplicadas'] ?? 0) === 1 && (int) ($apply['errores'] ?? 0) === 0)
             ? passSemi('apply accepts only stored suggestion_id')
@@ -199,6 +252,12 @@ try {
         $db->query("DELETE FROM semi_auto_decisions WHERE run_id = ?", [$cleanupRunId]);
         $db->query("DELETE FROM semi_auto_suggestions WHERE run_id = ?", [$cleanupRunId]);
         $db->query("DELETE FROM semi_auto_runs WHERE run_id = ?", [$cleanupRunId]);
+    }
+    if ($cleanupProjectId !== null) {
+        $db->query("DELETE FROM semi_auto_assistant_feedback WHERE project_id = ?", [$cleanupProjectId]);
+        $db->query("DELETE FROM semi_auto_learning_rules WHERE project_id = ?", [$cleanupProjectId]);
+        $db->query("DELETE FROM semi_auto_learning_candidates WHERE project_id = ?", [$cleanupProjectId]);
+        $db->query("DELETE FROM semi_auto_proactive_queue WHERE project_id = ?", [$cleanupProjectId]);
     }
 }
 

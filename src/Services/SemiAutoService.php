@@ -17,12 +17,22 @@ class SemiAutoService
     private const MEDIUM_CONFIDENCE = 50.0;
 
     private \Database $db;
+    private ?SemiAutoAssistantService $assistantService = null;
     private ?array $traceContext = null;
     private array $traceAnalysis = [];
 
     public function __construct(?\Database $db = null)
     {
         $this->db = $db ?? \Database::getInstance();
+    }
+
+    private function assistant(): SemiAutoAssistantService
+    {
+        if ($this->assistantService === null) {
+            $this->assistantService = new SemiAutoAssistantService($this->db);
+        }
+
+        return $this->assistantService;
     }
 
     public function preview(string $module, array $context, ?string $requestedRunId = null): array
@@ -64,6 +74,7 @@ class SemiAutoService
             $preselected = count(array_filter($suggestions, static fn(array $item): bool => !empty($item['preselected'])));
             $this->finishTrace($suggestions, $preselected);
             $this->updateRunCompletion($runId, $projectId, count($suggestions), $preselected);
+            $this->assistant()->recordPreview($module, $projectId, $semana, $runId, $suggestions);
 
             return $this->formatRunResponse($runId, $projectId, $module);
         } catch (Throwable $e) {
@@ -254,6 +265,7 @@ class SemiAutoService
                 $this->currentUser(),
             ],
         );
+        $this->assistant()->recordLearningSignal($module, $projectId, $payload, $this->currentUser());
 
         return ['respuesta' => 'BIEN', 'updated_suggestion' => $updatedSuggestion];
     }
@@ -294,7 +306,25 @@ class SemiAutoService
     {
         $module = $this->normalizeModule($module);
         $projectId = (int) ($context['projectId'] ?? 0);
-        $run = $this->loadRun($runId, $projectId, $module);
+        try {
+            $run = $this->loadRun($runId, $projectId, $module);
+        } catch (RuntimeException $e) {
+            if ($e->getMessage() !== 'Corrida de automatización no encontrada.') {
+                throw $e;
+            }
+
+            $analysis = $this->analysisSkeleton($module, (int) ($context['semana'] ?? 0));
+            return [
+                'respuesta' => 'BIEN',
+                'run_id' => $runId,
+                'module' => $module,
+                'status' => 'pending',
+                'progress' => (int) ($analysis['progress'] ?? 0),
+                'active_step' => $analysis['active_step'] ?? '',
+                'steps' => $analysis['steps'] ?? [],
+                'summary' => $analysis['summary'] ?? [],
+            ];
+        }
         $analysis = $this->analysisFromRun($run);
 
         return [
@@ -522,6 +552,28 @@ class SemiAutoService
         ];
     }
 
+    private function assistantReasoning(array $row, array $proposed, array $applyPayload): array
+    {
+        $user = $this->suggestionAnalysis($row, $proposed, $applyPayload)['user'] ?? [];
+        $band = (string) ($row['confidence_band'] ?? 'low');
+        $action = (string) ($row['action'] ?? '');
+        $isPreselected = (int) ($row['preselected'] ?? 0) === 1;
+        $forcedReview = str_contains((string) ($row['match_source'] ?? ''), ':revision');
+        $nextStep = 'Revisar antes de aplicar.';
+        if ($band === 'high' && $isPreselected && !$forcedReview && !str_starts_with($action, 'review_no_match')) {
+            $nextStep = 'Puede aplicarse después de una revisión rápida.';
+        } elseif ($band === 'low' || !$isPreselected || $forcedReview || str_starts_with($action, 'review_no_match')) {
+            $nextStep = 'No se aplicará automáticamente; requiere decisión manual.';
+        }
+
+        return [
+            'headline' => (string) ($user['rule'] ?? $row['title'] ?? 'Propuesta detectada'),
+            'why' => (string) ($user['decision'] ?? $row['reason'] ?? 'El sistema encontró una posible mejora.'),
+            'risk' => $band === 'high' ? 'bajo' : ($band === 'medium' ? 'medio' : 'alto'),
+            'next_step' => $nextStep,
+        ];
+    }
+
     private function matchAnalysis(string $origin, ?array $match, string $decision, array $extra = []): array
     {
         $family = is_array($match) ? (string) ($match['familia_nombre'] ?? '') : '';
@@ -561,10 +613,13 @@ class SemiAutoService
     {
         $this->traceStep('data', 'running', 'Leyendo actividades del Programa General.', [], 18);
         $activities = $this->db->query(
-            "SELECT Consecutivo, Consecutivo_en_Programa, Id, Actividad, Fecha_Inicio, COALESCE(Titulo, 0) AS Titulo
+            "SELECT row_id AS Consecutivo,
+                    unique_id AS Consecutivo_en_Programa,
+                    unique_id,
+                    Id, Actividad, Fecha_Inicio, COALESCE(Titulo, 0) AS Titulo
              FROM programa_consolidado
              WHERE project_id = ? AND Semana = ? AND COALESCE(Titulo, 0) = 0
-             ORDER BY Fecha_Inicio ASC, Consecutivo_en_Programa ASC",
+             ORDER BY Fecha_Inicio ASC, unique_id ASC",
             [$projectId, $semana],
         )->fetchAll(PDO::FETCH_ASSOC);
 
@@ -590,7 +645,7 @@ class SemiAutoService
         $suggestions = [];
 
         foreach ($activities as $activity) {
-            $consecutivo = (string) ($activity['Consecutivo_en_Programa'] ?? '');
+            $consecutivo = (string) ($activity['unique_id'] ?? $activity['Consecutivo_en_Programa'] ?? '');
             if ($consecutivo === '' || isset($existingKeys[$consecutivo])) {
                 continue;
             }
@@ -616,10 +671,13 @@ class SemiAutoService
 
             $groupKey = 'family:' . (int) $match['familia_id'];
             if (!isset($groups[$groupKey])) {
+                $requiresReview = $this->matchRequiresReview($match);
                 $groups[$groupKey] = [
                     'match' => $match,
                     'items' => [],
                     'confidence' => $this->normalizeConfidence($match['confidence'] ?? $match['confianza'] ?? 0),
+                    'review_required' => $requiresReview,
+                    'review_reason' => $requiresReview ? (string) ($match['reviewReason'] ?? 'Requiere revisión manual.') : '',
                 ];
             }
             $groups[$groupKey]['items'][] = $activity;
@@ -627,6 +685,10 @@ class SemiAutoService
                 $groups[$groupKey]['confidence'],
                 $this->normalizeConfidence($match['confidence'] ?? $match['confianza'] ?? 0),
             );
+            if ($this->matchRequiresReview($match)) {
+                $groups[$groupKey]['review_required'] = true;
+                $groups[$groupKey]['review_reason'] = (string) ($match['reviewReason'] ?? 'Requiere revisión manual.');
+            }
         }
 
         $this->traceStep('matches', 'done', 'Coincidencias revisadas y agrupadas.', [
@@ -641,6 +703,10 @@ class SemiAutoService
             });
             $anchor = $group['items'][0];
             $match = $group['match'];
+            if (!empty($group['review_required'])) {
+                $match['reviewRequired'] = true;
+                $match['reviewReason'] = $group['review_reason'] ?: 'Requiere revisión manual.';
+            }
             $descriptions = [];
             foreach ($group['items'] as $item) {
                 $name = $this->plainText($item['Actividad'] ?? '');
@@ -653,7 +719,7 @@ class SemiAutoService
             $proposed = [
                 'actividad' => (string) ($match['familia_nombre'] ?? 'Actividad detectada'),
                 'descripcionActividad' => implode(', ', $descriptions),
-                'actividadInicio' => (int) ($anchor['Consecutivo_en_Programa'] ?? 0),
+                'actividadInicio' => (int) ($anchor['unique_id'] ?? $anchor['Consecutivo_en_Programa'] ?? 0),
                 'fechaInicio' => $this->normalizeDate($anchor['Fecha_Inicio'] ?? null),
                 'tipoContrato' => $tipoContrato,
                 'semanaActualizacion' => $semana,
@@ -675,7 +741,7 @@ class SemiAutoService
                     'fields' => $proposed,
                     'familia_id' => (int) $match['familia_id'],
                 ],
-                $this->isPreselected($group['confidence'], $config),
+                $this->shouldPreselect($group['confidence'], $config, $match),
                 $this->matchSource($match),
                 $this->matchAnalysis(
                     'Programa General',
@@ -819,7 +885,7 @@ class SemiAutoService
                     'fields' => $proposed,
                     'paquetes' => $packages,
                 ],
-                $this->isPreselected($confidence, $config),
+                $this->shouldPreselect($confidence, $config, $match),
                 $this->matchSource($match),
                 $this->matchAnalysis(
                     'Actividad vinculada al Programa General',
@@ -872,6 +938,8 @@ class SemiAutoService
                 $key = $this->pdcPackageKey($package['tipoPaquete'], $package['paqueteNombre']);
                 $confidence = $this->normalizeConfidence($activity['confianza_deteccion'] ?? 80);
                 $dates = $this->calculateProcessDates($this->normalizeDate($activity['fechaInicio'] ?? null), $this->defaultDurations());
+                $requiresReview = $this->pdcPackageRequiresReview($package, $activity);
+                $observations = $this->pdcObservationForPackage($package, $activity);
                 $baseFields = array_merge($dates, [
                     'semana' => $semana,
                     'titulo' => 0,
@@ -879,7 +947,8 @@ class SemiAutoService
                     'paqueteContratacion' => $package['paqueteNombre'],
                     'contratos' => $activity['actividad'] ?? '',
                     'numeroSubcontratos' => (int) ($activity['numeroSubcontratos'] ?? 1),
-                    'estado' => 'En Curso; Proceso de contratación no iniciado',
+                    'estado' => $this->pdcStatusForPackage($package, $activity),
+                    'observacionesContrato' => $observations,
                     'fechaInicio' => $this->normalizeDate($activity['fechaInicio'] ?? null),
                     'fechaInicioProyectada' => $this->normalizeDate($activity['fechaInicioProyectada'] ?? ($activity['fechaInicio'] ?? null)),
                 ]);
@@ -900,13 +969,13 @@ class SemiAutoService
                             'action' => 'create_pdc_package',
                             'fields' => $baseFields,
                         ],
-                        $this->isPreselected($confidence, $config),
-                        'contratos',
+                        $this->isPreselected($confidence, $config) && !$requiresReview,
+                        $requiresReview ? 'contratos:revision' : 'contratos',
                         $this->matchAnalysis(
                             'Contratos',
                             null,
                             'El paquete está asignado en Contratos y no existe en PDC.',
-                            ['user' => ['rule' => 'Paquete ausente en PDC', 'confidence' => $confidence]],
+                            ['user' => ['rule' => $requiresReview ? 'Paquete por confirmar' : 'Paquete ausente en PDC', 'confidence' => $confidence]],
                         ),
                     );
                     continue;
@@ -922,7 +991,7 @@ class SemiAutoService
 
                 $suggestions[] = $this->baseSuggestion(
                     'pdc',
-                    (string) $pdcRow['consecutivo'],
+                    (string) ($pdcRow['pdc_row_id'] ?? $pdcRow['consecutivo']),
                     'update_pdc_package',
                     $confidence,
                     'Actualizar paquete PDC',
@@ -933,16 +1002,17 @@ class SemiAutoService
                     $diff,
                     [
                         'action' => 'update_pdc_package',
+                        'pdc_row_id' => (int) ($pdcRow['pdc_row_id'] ?? $pdcRow['consecutivo']),
                         'consecutivo' => (int) $pdcRow['consecutivo'],
                         'fields' => $proposed,
                     ],
-                    $this->isPreselected($confidence, $config),
-                    'pdc_diff',
+                    $this->isPreselected($confidence, $config) && !$requiresReview,
+                    $requiresReview ? 'pdc_diff:revision' : 'pdc_diff',
                     $this->matchAnalysis(
                         'Contratos contra PDC',
                         null,
                         'El paquete ya existe y se encontraron diferencias actualizables.',
-                        ['user' => ['rule' => 'Diferencia contra PDC existente', 'confidence' => $confidence]],
+                        ['user' => ['rule' => $requiresReview ? 'Diferencia por confirmar' : 'Diferencia contra PDC existente', 'confidence' => $confidence]],
                     ),
                 );
             }
@@ -1060,12 +1130,12 @@ class SemiAutoService
         }
 
         $this->ensurePdcTitleRow($projectId, $semana, $tipoPaquete);
-        $consecutivo = $this->nextProjectId($projectId, 'pdc', 'consecutivo');
+        $rowId = $this->nextProjectId($projectId, 'pdc', 'pdc_row_id');
         $subcontractIndex = $this->nextPdcSubcontractIndex($projectId, $semana, $tipoPaquete);
 
         $this->db->query(
             "INSERT INTO pdc (
-                project_id, consecutivo, semana, titulo, tipoPaquete, paqueteContratacion, contratos,
+                project_id, pdc_row_id, consecutivo, semana, titulo, tipoPaquete, paqueteContratacion, contratos,
                 numeroSubcontratos, subcontratoPaquete, estado,
                 fechaElaboracionPliegos, diasElaboracionPliegos,
                 fechaEntregaPliegos, diasEntregaPliegos,
@@ -1074,11 +1144,12 @@ class SemiAutoService
                 fechaLegalizacionContrato, diasLegalizacionContrato,
                 fechaFabricacion, diasFabricacion,
                 fechaInsumosObra, diasInsumosObra,
-                fechaInicio, fechaInicioProyectada
-             ) VALUES (?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                fechaInicio, fechaInicioProyectada, observacionesContrato
+             ) VALUES (?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             [
                 $projectId,
-                $consecutivo,
+                $rowId,
+                $rowId,
                 $semana,
                 $tipoPaquete,
                 $fields['paqueteContratacion'] ?? '',
@@ -1102,24 +1173,25 @@ class SemiAutoService
                 $fields['diasInsumosObra'] ?? 0,
                 $fields['fechaInicio'] ?? null,
                 $fields['fechaInicioProyectada'] ?? null,
+                $fields['observacionesContrato'] ?? null,
             ],
         );
 
         return [
             'before' => null,
-            'after' => $this->loadPdcRow($projectId, $consecutivo),
-            'result' => ['table' => 'pdc', 'consecutivo' => $consecutivo],
+            'after' => $this->loadPdcRow($projectId, $rowId),
+            'result' => ['table' => 'pdc', 'pdc_row_id' => $rowId, 'consecutivo' => $rowId],
         ];
     }
 
     private function applyUpdatePdcPackage(int $projectId, int $semana, array $payload): array
     {
-        $consecutivo = (int) ($payload['consecutivo'] ?? 0);
-        if ($consecutivo <= 0) {
+        $rowId = (int) ($payload['pdc_row_id'] ?? ($payload['consecutivo'] ?? 0));
+        if ($rowId <= 0) {
             throw new RuntimeException('Paquete PDC inválido.');
         }
 
-        $before = $this->loadPdcRow($projectId, $consecutivo);
+        $before = $this->loadPdcRow($projectId, $rowId);
         if (!$before) {
             throw new RuntimeException('Paquete PDC no encontrado.');
         }
@@ -1139,18 +1211,18 @@ class SemiAutoService
             throw new RuntimeException('No hay cambios aplicables para PDC.');
         }
         $params[] = $projectId;
-        $params[] = $consecutivo;
+        $params[] = $rowId;
         $params[] = $semana;
         $this->db->query(
             "UPDATE pdc SET " . implode(', ', $updates) . "
-             WHERE project_id = ? AND consecutivo = ? AND semana = ?",
+             WHERE project_id = ? AND pdc_row_id = ? AND semana = ?",
             $params,
         );
 
         return [
             'before' => $before,
-            'after' => $this->loadPdcRow($projectId, $consecutivo),
-            'result' => ['table' => 'pdc', 'consecutivo' => $consecutivo],
+            'after' => $this->loadPdcRow($projectId, $rowId),
+            'result' => ['table' => 'pdc', 'pdc_row_id' => $rowId, 'consecutivo' => (int) ($before['consecutivo'] ?? $rowId)],
         ];
     }
 
@@ -1173,16 +1245,16 @@ class SemiAutoService
             return;
         }
 
-        if ($table === 'pdc' && ($result['consecutivo'] ?? 0) > 0) {
-            $consecutivo = (int) $result['consecutivo'];
+        if ($table === 'pdc' && (($result['pdc_row_id'] ?? 0) > 0 || ($result['consecutivo'] ?? 0) > 0)) {
+            $rowId = (int) ($result['pdc_row_id'] ?? $result['consecutivo']);
             if ($before === null) {
                 $this->db->query(
-                    "DELETE FROM pdc WHERE project_id = ? AND consecutivo = ? AND semana = ?",
-                    [$projectId, $consecutivo, $semana],
+                    "DELETE FROM pdc WHERE project_id = ? AND pdc_row_id = ? AND semana = ?",
+                    [$projectId, $rowId, $semana],
                 );
                 return;
             }
-            $this->restoreRow('pdc', 'consecutivo', $consecutivo, $projectId, $before);
+            $this->restoreRow('pdc', 'pdc_row_id', $rowId, $projectId, $before);
             return;
         }
 
@@ -1334,11 +1406,13 @@ class SemiAutoService
                 'proposed' => $proposed['fields'] ?? $proposed,
                 'diff' => $this->decodeJson($row['diff_payload']),
                 'analysis' => $this->suggestionAnalysis($row, $proposed, $applyPayload),
+                'assistant_reasoning' => $this->assistantReasoning($row, $proposed, $applyPayload),
             ];
         }
         $analysis = $this->analysisFromRun($run);
+        $assistant = $this->assistant()->previewContext($module, $projectId, (int) $run['semana'], $runId, $suggestions);
 
-        return [
+        return array_merge([
             'respuesta' => 'BIEN',
             'run_id' => $runId,
             'module' => $module,
@@ -1348,7 +1422,7 @@ class SemiAutoService
             'preselected' => count(array_filter($suggestions, static fn(array $item): bool => $item['preselected'])),
             'analysis' => $analysis,
             'suggestions' => $suggestions,
-        ];
+        ], $assistant);
     }
 
     private function loadRun(string $runId, int $projectId, string $module): array
@@ -1632,10 +1706,34 @@ class SemiAutoService
         }, $items);
     }
 
+    private function modalityCodeFromPackages(string $fallback, array $packages): string
+    {
+        $codes = [];
+        foreach ($packages as $package) {
+            $prefix = $this->packageModalityCode((string) ($package['tipoPaquete'] ?? ''));
+            if ($prefix !== null) {
+                $codes[$prefix] = true;
+            }
+        }
+
+        if (empty($codes)) {
+            return $fallback;
+        }
+
+        $ordered = [];
+        foreach (['SI', 'S', 'MO', 'OC', 'E'] as $code) {
+            if (isset($codes[$code])) {
+                $ordered[] = $code;
+            }
+        }
+
+        return implode(',', $ordered);
+    }
+
     private function contractProposedFields(array $activity, string $tipoContrato, array $packages, float $confidence): array
     {
         $fields = array_fill_keys($this->contractFieldNames(), null);
-        $fields['tipoContrato'] = $tipoContrato;
+        $fields['tipoContrato'] = $this->modalityCodeFromPackages($tipoContrato, $packages);
         $fields['fechaInicioProyectada'] = $this->normalizeDate($activity['fechaInicioProyectada'] ?? ($activity['fechaInicio'] ?? null));
         $fields['confianza_deteccion'] = $confidence;
         $fields['numeroSubcontratos'] = (int) ($activity['numeroSubcontratos'] ?? 1);
@@ -1686,7 +1784,11 @@ class SemiAutoService
     private function packagesFromActivity(array $activity): array
     {
         $packages = [];
-        foreach (['SI' => 'Suministro e Instalación', 'S' => 'Suministro', 'MO' => 'Mano de Obra', 'OC' => 'Orden de Compra'] as $prefix => $label) {
+        $labels = ['SI' => 'Suministro e Instalación', 'S' => 'Suministro', 'MO' => 'Mano de Obra', 'OC' => 'Orden de Compra'];
+        if (str_contains((string) ($activity['tipoContrato'] ?? ''), 'E')) {
+            $labels['SI'] = 'Equipos';
+        }
+        foreach ($labels as $prefix => $label) {
             for ($i = 1; $i <= 5; $i++) {
                 $name = trim((string) ($activity["paquete{$prefix}{$i}"] ?? ''));
                 if ($name === '') {
@@ -1728,7 +1830,8 @@ class SemiAutoService
     private function pdcEditableFields(): array
     {
         return [
-            'contratos', 'numeroSubcontratos', 'fechaElaboracionPliegos', 'fechaEntregaPliegos',
+            'contratos', 'numeroSubcontratos', 'estado', 'observacionesContrato',
+            'fechaElaboracionPliegos', 'fechaEntregaPliegos',
             'fechaReciboPropuestas', 'fechaCuadrosComparativos', 'fechaLegalizacionContrato',
             'fechaFabricacion', 'fechaInsumosObra', 'fechaInicio', 'fechaInicioProyectada',
         ];
@@ -1755,9 +1858,12 @@ class SemiAutoService
             return null;
         }
         $stmt = $this->db->query(
-            "SELECT Consecutivo, Consecutivo_en_Programa, Id, Actividad, Fecha_Inicio, COALESCE(Titulo, 0) AS Titulo
+            "SELECT row_id AS Consecutivo,
+                    unique_id AS Consecutivo_en_Programa,
+                    unique_id,
+                    Id, Actividad, Fecha_Inicio, COALESCE(Titulo, 0) AS Titulo
              FROM programa_consolidado
-             WHERE project_id = ? AND Semana = ? AND Consecutivo_en_Programa = ?
+             WHERE project_id = ? AND Semana = ? AND unique_id = ?
              LIMIT 1",
             [$projectId, $semana, $actividadInicio],
         );
@@ -1777,11 +1883,11 @@ class SemiAutoService
         return $row ?: null;
     }
 
-    private function loadPdcRow(int $projectId, int $consecutivo): ?array
+    private function loadPdcRow(int $projectId, int $rowId): ?array
     {
         $stmt = $this->db->query(
-            "SELECT * FROM pdc WHERE project_id = ? AND consecutivo = ? LIMIT 1",
-            [$projectId, $consecutivo],
+            "SELECT * FROM pdc WHERE project_id = ? AND pdc_row_id = ? LIMIT 1",
+            [$projectId, $rowId],
         );
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -1793,7 +1899,7 @@ class SemiAutoService
         $stmt = $this->db->query(
             "SELECT CONCAT(Id, '. ', Actividad, ' (Inicia en: ', Fecha_Inicio, ')')
              FROM programa_consolidado
-             WHERE project_id = ? AND Semana = ? AND Consecutivo_en_Programa = ?
+             WHERE project_id = ? AND Semana = ? AND unique_id = ?
              LIMIT 1",
             [$projectId, $semana, $consecutivoPrograma],
         );
@@ -1813,11 +1919,11 @@ class SemiAutoService
             return;
         }
 
-        $consecutivo = $this->nextProjectId($projectId, 'pdc', 'consecutivo');
+        $rowId = $this->nextProjectId($projectId, 'pdc', 'pdc_row_id');
         $this->db->query(
-            "INSERT INTO pdc (project_id, consecutivo, semana, titulo, tipoPaquete, paqueteContratacion, subcontratoPaquete)
-             VALUES (?, ?, ?, 1, ?, ?, 0)",
-            [$projectId, $consecutivo, $semana, $tipoPaquete, $tipoPaquete],
+            "INSERT INTO pdc (project_id, pdc_row_id, consecutivo, semana, titulo, tipoPaquete, paqueteContratacion, subcontratoPaquete)
+             VALUES (?, ?, ?, ?, 1, ?, ?, 0)",
+            [$projectId, $rowId, $rowId, $semana, $tipoPaquete, $tipoPaquete],
         );
     }
 
@@ -1871,6 +1977,7 @@ class SemiAutoService
             3 => 'S',
             4 => 'MO',
             5 => 'OC',
+            6 => 'E',
             default => '',
         };
     }
@@ -1878,11 +1985,20 @@ class SemiAutoService
     private function packagePrefix(string $tipoPaquete): ?string
     {
         return match ($tipoPaquete) {
-            'Suministro e Instalación' => 'SI',
+            'Suministro e Instalación', 'Todo costo', 'Alquiler con operación', 'Alquiler con operacion', 'Equipos', 'Equipo' => 'SI',
             'Suministro', 'Suministro de Materiales, Herramientas o Equipos' => 'S',
             'Mano de Obra' => 'MO',
-            'Orden de Compra' => 'OC',
+            'Orden de Compra', 'Pedido a proveedor', 'Pedido / orden a proveedor' => 'OC',
+            'Administración', 'Administracion' => 'MO',
             default => null,
+        };
+    }
+
+    private function packageModalityCode(string $tipoPaquete): ?string
+    {
+        return match ($tipoPaquete) {
+            'Equipos', 'Equipo', 'Alquiler con operación', 'Alquiler con operacion' => 'E',
+            default => $this->packagePrefix($tipoPaquete),
         };
     }
 
@@ -1988,6 +2104,20 @@ class SemiAutoService
         return $confidence >= (float) $config['high_threshold'];
     }
 
+    private function shouldPreselect(float $confidence, array $config, ?array $match = null): bool
+    {
+        return $this->isPreselected($confidence, $config) && !$this->matchRequiresReview($match);
+    }
+
+    private function matchRequiresReview(?array $match): bool
+    {
+        if ($match === null) {
+            return false;
+        }
+
+        return !empty($match['reviewRequired']) || (int) ($match['siempre_revision'] ?? 0) === 1;
+    }
+
     private function matchSource(array $match): string
     {
         $source = (string) ($match['matchedBy'] ?? 'regex');
@@ -1996,6 +2126,70 @@ class SemiAutoService
         }
 
         return $source;
+    }
+
+    private function pdcPackageRequiresReview(array $package, array $activity): bool
+    {
+        return $this->pdcReviewReasonForPackage($package, $activity) !== null;
+    }
+
+    private function pdcStatusForPackage(array $package, array $activity): string
+    {
+        $text = $this->packageSignalText($package, $activity);
+        if (str_contains($text, 'CAMPAMENTO') || str_contains($text, 'PROVISIONAL')) {
+            return 'Por confirmar';
+        }
+        if (str_contains($text, 'BOTADA') || str_contains($text, 'ESCOMBRO')) {
+            return 'A necesidad';
+        }
+        if (str_contains($text, 'ASEO')) {
+            return 'Por decidir - subcontrato o personal directo';
+        }
+        if (str_contains($text, 'AMENIDAD') || str_contains($text, 'JACUZZI') || str_contains($text, 'CUBIERTA')) {
+            return 'Por confirmar';
+        }
+
+        return 'En Curso; Proceso de contratación no iniciado';
+    }
+
+    private function pdcObservationForPackage(array $package, array $activity): ?string
+    {
+        return null;
+    }
+
+    private function pdcReviewReasonForPackage(array $package, array $activity): ?string
+    {
+        $text = $this->packageSignalText($package, $activity);
+        if (str_contains($text, 'TELECOM')) {
+            return 'Revisar alcance antes de aplicar.';
+        }
+        if (str_contains($text, 'CAMPAMENTO') || str_contains($text, 'PROVISIONAL')) {
+            return 'Confirmar alcance antes de aplicar.';
+        }
+        if (str_contains($text, 'BOTADA') || str_contains($text, 'ESCOMBRO')) {
+            return 'Aplicar solo si corresponde a escombros, no a tierra.';
+        }
+        if (str_contains($text, 'ASEO')) {
+            return 'Decidir si se subcontrata o se maneja con personal directo.';
+        }
+        if (str_contains($text, 'AMENIDAD') || str_contains($text, 'JACUZZI') || str_contains($text, 'CUBIERTA')) {
+            return 'Confirmar alcance antes de aplicar.';
+        }
+
+        return null;
+    }
+
+    private function packageSignalText(array $package, array $activity): string
+    {
+        $text = implode(' ', [
+            $package['tipoPaquete'] ?? '',
+            $package['paqueteNombre'] ?? '',
+            $activity['actividad'] ?? '',
+        ]);
+        $text = $this->plainText($text);
+        $ascii = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $text);
+
+        return mb_strtoupper($ascii !== false ? $ascii : $text);
     }
 
     private function pdcPackageKey(string $tipoPaquete, string $paquete): string

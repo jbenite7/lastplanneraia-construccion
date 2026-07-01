@@ -2,7 +2,9 @@
 
 namespace App\Controllers\Api;
 
+use Admin\Core\RoleManager;
 use App\Controllers\BaseController;
+use App\Services\SemiAutoAssistantService;
 use App\Services\SemiAutoService;
 use App\Support\ModuleRequestContext;
 use Throwable;
@@ -10,11 +12,13 @@ use Throwable;
 class SemiAutoController extends BaseController
 {
     private SemiAutoService $service;
+    private SemiAutoAssistantService $assistant;
 
     public function __construct()
     {
         parent::__construct();
         $this->service = new SemiAutoService($this->db);
+        $this->assistant = new SemiAutoAssistantService($this->db);
     }
 
     public function previewListado(): void
@@ -47,6 +51,36 @@ class SemiAutoController extends BaseController
         $this->metrics(SemiAutoService::MODULE_LISTADO);
     }
 
+    public function assistantInboxListado(): void
+    {
+        $this->assistantInbox(SemiAutoService::MODULE_LISTADO);
+    }
+
+    public function assistantAckListado(): void
+    {
+        $this->assistantAck(SemiAutoService::MODULE_LISTADO);
+    }
+
+    public function assistantFeedbackListado(): void
+    {
+        $this->assistantFeedback(SemiAutoService::MODULE_LISTADO);
+    }
+
+    public function learningCandidatesListado(): void
+    {
+        $this->learningCandidates(SemiAutoService::MODULE_LISTADO);
+    }
+
+    public function learningApproveListado(): void
+    {
+        $this->learningApprove(SemiAutoService::MODULE_LISTADO);
+    }
+
+    public function learningRejectListado(): void
+    {
+        $this->learningReject(SemiAutoService::MODULE_LISTADO);
+    }
+
     public function previewContratos(): void
     {
         $this->preview(SemiAutoService::MODULE_CONTRATOS);
@@ -77,6 +111,36 @@ class SemiAutoController extends BaseController
         $this->metrics(SemiAutoService::MODULE_CONTRATOS);
     }
 
+    public function assistantInboxContratos(): void
+    {
+        $this->assistantInbox(SemiAutoService::MODULE_CONTRATOS);
+    }
+
+    public function assistantAckContratos(): void
+    {
+        $this->assistantAck(SemiAutoService::MODULE_CONTRATOS);
+    }
+
+    public function assistantFeedbackContratos(): void
+    {
+        $this->assistantFeedback(SemiAutoService::MODULE_CONTRATOS);
+    }
+
+    public function learningCandidatesContratos(): void
+    {
+        $this->learningCandidates(SemiAutoService::MODULE_CONTRATOS);
+    }
+
+    public function learningApproveContratos(): void
+    {
+        $this->learningApprove(SemiAutoService::MODULE_CONTRATOS);
+    }
+
+    public function learningRejectContratos(): void
+    {
+        $this->learningReject(SemiAutoService::MODULE_CONTRATOS);
+    }
+
     public function previewPdc(): void
     {
         $this->preview(SemiAutoService::MODULE_PDC);
@@ -105,6 +169,36 @@ class SemiAutoController extends BaseController
     public function metricsPdc(): void
     {
         $this->metrics(SemiAutoService::MODULE_PDC);
+    }
+
+    public function assistantInboxPdc(): void
+    {
+        $this->assistantInbox(SemiAutoService::MODULE_PDC);
+    }
+
+    public function assistantAckPdc(): void
+    {
+        $this->assistantAck(SemiAutoService::MODULE_PDC);
+    }
+
+    public function assistantFeedbackPdc(): void
+    {
+        $this->assistantFeedback(SemiAutoService::MODULE_PDC);
+    }
+
+    public function learningCandidatesPdc(): void
+    {
+        $this->learningCandidates(SemiAutoService::MODULE_PDC);
+    }
+
+    public function learningApprovePdc(): void
+    {
+        $this->learningApprove(SemiAutoService::MODULE_PDC);
+    }
+
+    public function learningRejectPdc(): void
+    {
+        $this->learningReject(SemiAutoService::MODULE_PDC);
     }
 
     private function preview(string $module): void
@@ -192,6 +286,66 @@ class SemiAutoController extends BaseController
         }
     }
 
+    private function assistantInbox(string $module): void
+    {
+        try {
+            $this->authorizeModule($module, 'metrics');
+            $this->json($this->assistant->inbox($module, ModuleRequestContext::resolve()));
+        } catch (Throwable $e) {
+            $this->jsonError('No se pudo consultar el asistente AIA.', 500, $e);
+        }
+    }
+
+    private function assistantAck(string $module): void
+    {
+        try {
+            $this->authorizeModule($module, 'feedback');
+            $this->json($this->assistant->ack($module, ModuleRequestContext::resolve(), $this->jsonPayload()));
+        } catch (Throwable $e) {
+            $this->jsonError('No se pudo actualizar la alerta del asistente.', 500, $e);
+        }
+    }
+
+    private function assistantFeedback(string $module): void
+    {
+        try {
+            $this->authorizeModule($module, 'feedback');
+            $this->json($this->assistant->assistantFeedback($module, ModuleRequestContext::resolve(), $this->jsonPayload()));
+        } catch (Throwable $e) {
+            $this->jsonError('No se pudo registrar la retroalimentación del asistente.', 500, $e);
+        }
+    }
+
+    private function learningCandidates(string $module): void
+    {
+        try {
+            $this->authorizeModule($module, 'metrics');
+            $this->json($this->assistant->learningCandidates($module, ModuleRequestContext::resolve()));
+        } catch (Throwable $e) {
+            $this->jsonError('No se pudieron consultar aprendizajes.', 500, $e);
+        }
+    }
+
+    private function learningApprove(string $module): void
+    {
+        try {
+            $this->authorizeAdminLearning($module);
+            $this->json($this->assistant->approveLearning($module, ModuleRequestContext::resolve(), $this->jsonPayload()));
+        } catch (Throwable $e) {
+            $this->jsonError('No se pudo aprobar el aprendizaje.', 500, $e);
+        }
+    }
+
+    private function learningReject(string $module): void
+    {
+        try {
+            $this->authorizeAdminLearning($module);
+            $this->json($this->assistant->rejectLearning($module, ModuleRequestContext::resolve(), $this->jsonPayload()));
+        } catch (Throwable $e) {
+            $this->jsonError('No se pudo rechazar el aprendizaje.', 500, $e);
+        }
+    }
+
     private function authorizeModule(string $module, string $action): void
     {
         $permission = match ($module) {
@@ -209,6 +363,19 @@ class SemiAutoController extends BaseController
         }
 
         $this->authorizePermission($permission, 'No autorizado para operar automatización.');
+    }
+
+    private function authorizeAdminLearning(string $module): void
+    {
+        $this->authorizeModule($module, 'feedback');
+        $role = $_SESSION['permiso_canonico'] ?? ($_SESSION['permiso'] ?? '');
+        if (class_exists(RoleManager::class)) {
+            $role = RoleManager::cleanCargo($role);
+        }
+        if (strtoupper((string) $role) !== 'A') {
+            $this->jsonError('Solo un administrador puede gestionar aprendizajes.', 403);
+            exit;
+        }
     }
 
     private function jsonPayload(): array

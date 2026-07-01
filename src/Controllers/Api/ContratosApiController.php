@@ -55,7 +55,7 @@ class ContratosApiController extends BaseController
                     FROM actividades act
                     LEFT JOIN programa_consolidado prog
                       ON prog.`project_id` = act.`project_id`
-                     AND prog.`Consecutivo_en_Programa` = act.`actividadInicio`
+                     AND prog.`unique_id` = act.`actividadInicio`
                      AND prog.`Semana` = act.`semanaActualizacion`
                     WHERE act.`project_id` = ? AND act.semanaActualizacion = ? AND act.tipoContrato IS NOT NULL AND act.fechaInicio IS NOT NULL
                     ORDER BY act.`Id`";
@@ -754,6 +754,7 @@ class ContratosApiController extends BaseController
                 'MO' => 'Mano de Obra',
                 'S' => 'Suministro',
                 'OC' => 'Orden de Compra',
+                'E' => 'Equipos',
             ];
             $tipoPaqueteLabel = $modalidadToPaquete[$modalidad] ?? '';
 
@@ -813,7 +814,7 @@ class ContratosApiController extends BaseController
 
     private function actualizarFechaInicio($Id, $semana, int $projectId, $db)
     {
-        $query = "SELECT Fecha_Inicio FROM programa_consolidado WHERE project_id = ? AND Semana = ? AND (Consecutivo_en_Programa = ? OR Actividad = ?) ORDER BY Fecha_Inicio ASC LIMIT 1";
+        $query = "SELECT Fecha_Inicio FROM programa_consolidado WHERE project_id = ? AND Semana = ? AND (unique_id = ? OR Actividad = ?) ORDER BY Fecha_Inicio ASC LIMIT 1";
         $stmt = $db->query($query, [$projectId, $semana, $Id, $Id]);
         $data = $stmt->fetch(PDO::FETCH_ASSOC);
         $this->jsonResponse(["data" => $data ?: ["Fecha_Inicio" => ""]]);
@@ -1068,9 +1069,12 @@ class ContratosApiController extends BaseController
         }
 
         $stmt = $db->query(
-            "SELECT Consecutivo, Consecutivo_en_Programa, Id, Actividad, Fecha_Inicio, COALESCE(Titulo, 0) AS Titulo
+            "SELECT row_id AS Consecutivo,
+                    unique_id AS Consecutivo_en_Programa,
+                    unique_id,
+                    Id, Actividad, Fecha_Inicio, COALESCE(Titulo, 0) AS Titulo
              FROM programa_consolidado
-             WHERE project_id = ? AND Semana = ? AND Consecutivo_en_Programa = ? LIMIT 1",
+             WHERE project_id = ? AND Semana = ? AND unique_id = ? LIMIT 1",
             [$projectId, $semana, $actividadInicio]
         );
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -1110,6 +1114,8 @@ class ContratosApiController extends BaseController
                 'Suministro' => 'S',
                 'Mano de Obra' => 'MO',
                 'Orden de Compra' => 'OC',
+                'Equipos' => 'SI',
+                'Equipo' => 'SI',
             ];
 
             $updates = ['tipoContrato = ?'];
@@ -1184,6 +1190,7 @@ class ContratosApiController extends BaseController
             3 => 'S',
             4 => 'MO',
             5 => 'OC',
+            6 => 'E',
             default => '',
         };
     }
@@ -1202,6 +1209,7 @@ class ContratosApiController extends BaseController
                 'MO' => 'Mano de Obra',
                 'S'  => 'Suministro',
                 'OC' => 'Orden de Compra',
+                'E' => 'Equipos',
                 default => $code,
             };
         }
@@ -1226,6 +1234,7 @@ class ContratosApiController extends BaseController
             'MO' => 'Mano de Obra',
             'S' => 'Suministro',
             'OC' => 'Orden de Compra',
+            'E' => 'Equipos',
         ];
 
         $totalDias = null;
@@ -1302,6 +1311,8 @@ class ContratosApiController extends BaseController
             'Suministro' => 'S',
             'Mano de Obra' => 'MO',
             'Orden de Compra' => 'OC',
+            'Equipos' => 'SI',
+            'Equipo' => 'SI',
         ];
 
         $updates = ['tipoContrato = ?'];
@@ -1374,6 +1385,9 @@ class ContratosApiController extends BaseController
             'paqueteMO' => 'Mano de Obra',
             'paqueteOC' => 'Orden de Compra',
         ];
+        if (str_contains((string) ($activity['tipoContrato'] ?? ''), 'E')) {
+            $prefixMap['paqueteSI'] = 'Equipos';
+        }
         foreach ($prefixMap as $colPrefix => $tipoPaquete) {
             for ($i = 1; $i <= 5; $i++) {
                 $col = $colPrefix . $i;
