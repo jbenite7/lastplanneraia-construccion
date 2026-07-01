@@ -216,20 +216,20 @@ function modificar($D_y_E, $Materiales, $MdeO, $Equipos, $Predecesora, $Pdto_Con
     try {
         $dbInstance->beginTransaction();
 
-        $stmtSi = $dbInstance->queryWithProject("SELECT Semanas_Inicio FROM {$tProgConsolidado} WHERE Consecutivo_en_Programa = ? AND Semana = ?", [$Id, $semana]);
+        $stmtSi = $dbInstance->queryWithProject("SELECT Semanas_Inicio FROM {$tProgConsolidado} WHERE unique_id = ? AND Semana = ?", [$Id, $semana]);
         $rowSi = $stmtSi->fetch(PDO::FETCH_ASSOC);
         $si = is_numeric($rowSi['Semanas_Inicio'] ?? null) ? (int) $rowSi['Semanas_Inicio'] : 999;
 
         if ($si <= 6) {
-            $sql = "UPDATE {$tProgConsolidado} SET Activa = 1 WHERE Consecutivo_en_Programa = ? AND Semana = ?";
+            $sql = "UPDATE {$tProgConsolidado} SET Activa = 1 WHERE unique_id = ? AND Semana = ?";
             $dbInstance->queryWithProject($sql, [$Id, $semana]);
         }
 
         if ($isPreConstruccion) {
-            $sql1 = "UPDATE {$tProgConsolidado} SET restriccion_pc_1 = ?, restriccion_pc_2 = ?, restriccion_pc_3 = ?, restriccion_pc_4 = ?, Sub_Contratista = ?, Responsable_AIA = ?, Observaciones = ? WHERE Consecutivo_en_Programa = ? AND Semana = ?";
+            $sql1 = "UPDATE {$tProgConsolidado} SET restriccion_pc_1 = ?, restriccion_pc_2 = ?, restriccion_pc_3 = ?, restriccion_pc_4 = ?, Sub_Contratista = ?, Responsable_AIA = ?, Observaciones = ? WHERE unique_id = ? AND Semana = ?";
             $dbInstance->queryWithProject($sql1, [$D_y_E, $Materiales, $MdeO, $Equipos, $Sub_Contratista, $Responsable_AIA, $Observaciones, $Id, $semana]);
         } else {
-            $sql1 = "UPDATE {$tProgConsolidado} SET D_y_E = ?, Materiales = ?, MdeO = ?, Equipos = ?, Predecesora = ?, Pdto_Cons = ?, Modelo = ?, Sub_Contratista = ?, Responsable_AIA = ?, Observaciones = ? WHERE Consecutivo_en_Programa = ? AND Semana = ?";
+            $sql1 = "UPDATE {$tProgConsolidado} SET D_y_E = ?, Materiales = ?, MdeO = ?, Equipos = ?, Predecesora = ?, Pdto_Cons = ?, Modelo = ?, Sub_Contratista = ?, Responsable_AIA = ?, Observaciones = ? WHERE unique_id = ? AND Semana = ?";
             $dbInstance->queryWithProject($sql1, [$D_y_E, $Materiales, $MdeO, $Equipos, $Predecesora, $Pdto_Cons, $Modelo, $Sub_Contratista, $Responsable_AIA, $Observaciones, $Id, $semana]);
         }
 
@@ -260,7 +260,7 @@ function modificar($D_y_E, $Materiales, $MdeO, $Equipos, $Predecesora, $Pdto_Con
             $Estado_Restricciones = round(($suma / $conteo), 5);
         }
 
-        $sql3 = "UPDATE {$tProgConsolidado} SET Estado_Restricciones = ? WHERE Consecutivo_en_Programa = ? AND Titulo = 0 AND Semana = ?";
+        $sql3 = "UPDATE {$tProgConsolidado} SET Estado_Restricciones = ? WHERE unique_id = ? AND Titulo = 0 AND Semana = ?";
         $dbInstance->queryWithProject($sql3, [$Estado_Restricciones, $Id, $semana]);
 
         $dbInstance->commit();
@@ -296,9 +296,9 @@ function modificar_estado_act($Id, $semana, $inicio_semana, $tProgConsolidado, $
     $fechaFinSemana = $dataSemana['Fecha_Fin_Sem'] ?? null;
 
     $stmtActividad = $dbInstance->queryWithProject(
-        "SELECT Consecutivo_en_Programa, Titulo, Ejecutado, Fecha_Inicio, Fecha_Fin
+        "SELECT unique_id, unique_id AS Consecutivo_en_Programa, Titulo, Ejecutado, Fecha_Inicio, Fecha_Fin
          FROM {$tProgConsolidado}
-         WHERE Consecutivo_en_Programa = ? AND Semana = ?",
+         WHERE unique_id = ? AND Semana = ?",
         [$Id, $semana],
     );
     $dataAct = $stmtActividad->fetch(PDO::FETCH_ASSOC);
@@ -320,7 +320,7 @@ function modificar_estado_act($Id, $semana, $inicio_semana, $tProgConsolidado, $
     $dbInstance->queryWithProject(
         "UPDATE {$tProgConsolidado}
          SET Semanas_Inicio = ?, Estado = ?
-         WHERE Consecutivo_en_Programa = ? AND Semana = ?",
+         WHERE unique_id = ? AND Semana = ?",
         [$semanasInicio, $estado, $Id, $semana],
     );
 

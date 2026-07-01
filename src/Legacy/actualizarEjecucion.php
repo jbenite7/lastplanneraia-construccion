@@ -27,7 +27,7 @@ if ($projectId) {
 }
 
 try {
-    $sqlSelect = "SELECT Actividad, Consecutivo_En_Programa, Id, Ejecutado, Unidad, cantidad_ppto, Compromiso, Ejecutado_Real, Responsable_AIA, Sub_Contratista
+    $sqlSelect = "SELECT Actividad, unique_id, unique_id AS Consecutivo_En_Programa, Id, Ejecutado, Unidad, cantidad_ppto, Compromiso, Ejecutado_Real, Responsable_AIA, Sub_Contratista
                   FROM {$tProgSemanal}
                   WHERE Semana = ? AND (Activa = '1' OR Activa = 'NA')";
 

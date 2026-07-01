@@ -144,18 +144,18 @@ qp("UPDATE {$tPC}
             WHERE Id = '2.4' AND Semana = 2");
 
 // 4. Simular la limpieza física del botón "Autoprogramar" en SemanalApiController (con la nueva consulta corregida)
-$eligibleSubSql = "SELECT Consecutivo_en_Programa FROM {$tPC}
-    WHERE Semana = 2 AND Titulo = 0
+$eligibleSubSql = "SELECT unique_id FROM {$tPC}
+    WHERE project_id = ? AND Semana = 2 AND Titulo = 0
       AND (Estado='En Curso' OR Estado='Atrasada' OR Estado='Debe Iniciar'
         OR Estado='A Tiempo' OR Estado='Ya Debió Iniciar y Restricciones Pendientes')";
 
 qp("
     DELETE FROM {$tPS}
-    WHERE Semana = 2 AND Activa = '1'
+    WHERE project_id = ? AND Semana = 2 AND Activa = '1'
       AND (Ejecutado_Real IS NULL OR Ejecutado_Real <= 0)
       AND (Compromiso IS NULL OR Compromiso <= 0)
-      AND Consecutivo_En_Programa NOT IN ({$eligibleSubSql})
-");
+      AND unique_id NOT IN ({$eligibleSubSql})
+", [$pid, $pid]);
 // 5. Validar que la actividad NO haya sido borrada físicamente
 $existeFisico = (int) qp("SELECT COUNT(*) FROM {$tPS} WHERE Consecutivo_En_Programa = 5 AND Semana = 2")->fetchColumn();
 if ($existeFisico > 0) {
@@ -212,17 +212,17 @@ qp("UPDATE {$tPC}
             WHERE Id = '2.4' AND Semana = 2");
 
 // 4. Simular la limpieza física de Autoprogramar con la nueva consulta (Estado NOT IN ('Terminada', 'Terminada Antes', 'Sin Datos'))
-$eligibleSubSql = "SELECT Consecutivo_en_Programa FROM {$tPC}
-    WHERE Semana = 2 AND Titulo = 0
+$eligibleSubSql = "SELECT unique_id FROM {$tPC}
+    WHERE project_id = ? AND Semana = 2 AND Titulo = 0
       AND Estado NOT IN ('Terminada', 'Terminada Antes', 'Sin Datos')";
 
-$db->query("
+qp("
     DELETE FROM {$tPS}
-    WHERE Semana = 2 AND Activa = '1'
+    WHERE project_id = ? AND Semana = 2 AND Activa = '1'
       AND (Ejecutado_Real IS NULL OR Ejecutado_Real <= 0)
       AND (Compromiso IS NULL OR Compromiso <= 0)
-      AND Consecutivo_En_Programa NOT IN ({$eligibleSubSql})
-");
+      AND unique_id NOT IN ({$eligibleSubSql})
+", [$pid, $pid]);
 
 // 5. Validar que la actividad futura reprogramada NO haya sido borrada físicamente
 $existeFisico4 = (int) qp("SELECT COUNT(*) FROM {$tPS} WHERE Consecutivo_En_Programa = 5 AND Semana = 2")->fetchColumn();

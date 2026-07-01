@@ -20,7 +20,7 @@
   var _rowMetaCache = [];
   var _canEditGlobal = false;
 
-  // Persistent classification cache keyed by Consecutivo_en_Programa.
+  // Persistent classification cache keyed by the stable program unique_id.
   // The previous in-row `_classification` cache was unreliable because
   // Handsontable 14.x hands `getSourceDataAtRow` a proxy/copy of the row
   // object, so writes to the cache never landed on the canonical row and
@@ -33,11 +33,24 @@
     _pgClassificationCache.clear();
   }
 
+  function getProgramUniqueId(data) {
+    if (!data) {
+      return null;
+    }
+    if (data.unique_id !== undefined && data.unique_id !== null && data.unique_id !== '') {
+      return data.unique_id;
+    }
+    if (data.Consecutivo_en_Programa !== undefined && data.Consecutivo_en_Programa !== null && data.Consecutivo_en_Programa !== '') {
+      return data.Consecutivo_en_Programa;
+    }
+    return null;
+  }
+
   function getCachedPGClassification(data) {
     if (!data) {
       return null;
     }
-    var key = data.Consecutivo_en_Programa;
+    var key = getProgramUniqueId(data);
     if (key === undefined || key === null) {
       return null;
     }
@@ -61,7 +74,7 @@
     if (!data) {
       return;
     }
-    var key = data.Consecutivo_en_Programa;
+    var key = getProgramUniqueId(data);
     if (key === undefined || key === null) {
       return;
     }
@@ -721,7 +734,7 @@
   }
 
   function classifyPGRow(data) {
-    if (!data || (data.Consecutivo_en_Programa === undefined && data.Consecutivo === undefined && data.Id === undefined)) {
+    if (!data || (getProgramUniqueId(data) === null && data.Consecutivo === undefined && data.Id === undefined)) {
       return {
         key: 'sin-datos',
         baseKey: 'sin-datos',
@@ -1058,9 +1071,7 @@
 
   function buildUpdatePayload(rowData, prop, overrides) {
     var payloadRow = $.extend({}, rowData || {}, overrides || {});
-    var id = payloadRow.Consecutivo_en_Programa != null && payloadRow.Consecutivo_en_Programa !== ''
-        ? payloadRow.Consecutivo_en_Programa
-        : payloadRow.Id;
+    var id = getProgramUniqueId(payloadRow);
     var fechaInicio = String(payloadRow.Fecha_Inicio || '').trim();
     var fechaFin = String(payloadRow.Fecha_Fin || '').trim();
     var physicalVal = toNumber(payloadRow.EjecutadoDisplay, null);
@@ -1115,6 +1126,7 @@
     return {
       valid: true,
       data: {
+        unique_id: id,
         Consecutivo_en_Programa: id,
         Id: payloadRow.Id,
         Ejecutado: physicalToSubmit.toFixed(2),
@@ -1162,7 +1174,7 @@
     }
 
     var props = [
-      'Consecutivo_en_Programa', 'Consecutivo', 'Id', 'Titulo', 'Estado', 'Semanas_Inicio',
+      'unique_id', 'Consecutivo_en_Programa', 'Consecutivo', 'Id', 'Titulo', 'Estado', 'Semanas_Inicio',
       'Fecha_Inicio', 'Fecha_Fin', 'Ruta_Critica', 'Ejecutado', 'EjecutadoDisplay',
       'unidad', 'cantidad_ppto', 'codigo_actividad', 'Estado_Restricciones',
       'alerta_crisis'

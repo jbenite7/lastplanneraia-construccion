@@ -33,7 +33,7 @@ class ProgramacionSemanalController extends BaseController
                 $stmtProf = $this->db->queryWithProject("SELECT nombre FROM " . TableResolver::resolveByPrefix($dbName, 'profesionales') . " WHERE Activo = 1 ORDER BY nombre ASC");
                 $profesionales = $stmtProf->fetchAll();
 
-                $stmtCnc = $this->db->queryWithProject("SELECT DISTINCT Categoria_CNC FROM general_cnc WHERE Area = ? ORDER BY Categoria_CNC ASC", [$area]);
+                $stmtCnc = $this->db->query("SELECT DISTINCT Categoria_CNC FROM general_cnc ORDER BY Categoria_CNC ASC");
                 $categoriasCnc = $stmtCnc->fetchAll();
             } catch (\Throwable $e) {
                 error_log('Error cargando listas de programación semanal: ' . $e->getMessage());

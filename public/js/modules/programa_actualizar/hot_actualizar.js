@@ -426,7 +426,7 @@ window.HOTActualizarModule = (function() {
         var physicalRow = typeof hot.toPhysicalRow === 'function' ? hot.toPhysicalRow(visualRowIndex) : visualRowIndex;
         var sourceData = typeof hot.getSourceData === 'function' ? hot.getSourceData() : null;
         var rowData = (Array.isArray(sourceData) && physicalRow !== null && physicalRow >= 0 && physicalRow < sourceData.length) ? (sourceData[physicalRow] || {}) : {};
-        var rowId = rowData.Consecutivo_en_Programa || rowData.Id;
+        var rowId = rowData.unique_id || rowData.Consecutivo_en_Programa;
         var targetSemana = getTargetSemanaActualizacion();
         var db = document.getElementById('baseDatos').value;
 
@@ -474,15 +474,16 @@ window.HOTActualizarModule = (function() {
         if(changesObj['unidad'] !== undefined) formData.append('unidad', changesObj['unidad']);
         else formData.append('unidad', rowData.unidad || '');
 
-        // Forzar ID numérico (Consecutivo_en_Programa) para evitar errores SQL con IDs jerárquicos (puntos)
+        // Usar el identificador estable del programa; el WBS/Id puede tener puntos.
         var cleanId = (typeof rowId === 'string' && rowId.includes('.')) ? null : rowId;
         // The previous line `var rowData = hot.getSourceDataAtRow(visualRowIndex);` was duplicated.
         // It's already defined at the beginning of the function.
         if (!cleanId && rowData) {
-            cleanId = rowData.Consecutivo_en_Programa;
+            cleanId = rowData.unique_id || rowData.Consecutivo_en_Programa;
         }
 
         var formData = new URLSearchParams();
+        formData.append('unique_id', cleanId);
         formData.append('Id', cleanId);
         formData.append('opcion', 'editar');
         formData.append('editarActividadAsociar', '1');
@@ -636,7 +637,7 @@ window.HOTActualizarModule = (function() {
                 "Ejec. Real"
             ],
             columns: [
-                { data: 'Consecutivo_en_Programa', type: 'numeric', readOnly: true },
+                { data: 'unique_id', type: 'numeric', readOnly: true },
                 { data: 'Id', type: 'text', readOnly: true },
                 { data: 'Actividad', type: 'text', readOnly: true, renderer: ReadOnlyRenderer },
                 {
@@ -1511,7 +1512,7 @@ window.HOTActualizarModule = (function() {
             var sourceData = hot.getSourceData();
             var visualRow = null;
             for (var i = 0; i < sourceData.length; i++) {
-                if (String(sourceData[i].Consecutivo_en_Programa) === consecutivo) {
+                if (String(sourceData[i].unique_id || sourceData[i].Consecutivo_en_Programa) === consecutivo) {
                     visualRow = i;
                     break;
                 }
@@ -1642,7 +1643,7 @@ window.HOTActualizarModule = (function() {
         for (var i = 0; i < sourceData.length; i++) {
             var row = sourceData[i];
             var val = row.programaAnteriorAsociar;
-            var consecutivo = String(row.Consecutivo_en_Programa);
+            var consecutivo = String(row.unique_id || row.Consecutivo_en_Programa);
             var className;
 
             if (mediumRows[consecutivo]) {

@@ -30,7 +30,7 @@ try {
         $projectArea = $restrictionConfig['area'] ?? 'Construccion';
 
         foreach ($actividades as $data) {
-            $Id = $data["Consecutivo_en_Programa"];
+            $Id = $data["unique_id"] ?? $data["Consecutivo_en_Programa"];
             $Titulo = (int) ($data["Titulo"] ?? 0);
             $Estado_Restricciones = '0';
 
@@ -42,7 +42,7 @@ try {
 
             $sqlUpdateActividad = "UPDATE {$tProgConsolidado}
                                    SET Semanas_Inicio = ?, Estado_Restricciones = ?
-                                   WHERE Consecutivo_en_Programa = ? AND Semana = ?";
+                                   WHERE unique_id = ? AND Semana = ?";
 
             $valEstadoRestricciones = ($Titulo === 1) ? 0 : $Estado_Restricciones;
             $valSemanasInicio = $semanas_val;
@@ -71,7 +71,7 @@ try {
         $fechaFinSemana = $dataSemana['Fecha_Fin_Sem'] ?? null;
     }
 
-    $sqlEstadoRows = "SELECT Consecutivo_en_Programa, Titulo, Ejecutado, Fecha_Inicio, Fecha_Fin
+    $sqlEstadoRows = "SELECT unique_id, unique_id AS Consecutivo_en_Programa, Titulo, Ejecutado, Fecha_Inicio, Fecha_Fin
                       FROM {$tProgConsolidado}
                       WHERE Semana = ?";
     $stmtEstadoRows = $dbInstance->queryWithProject($sqlEstadoRows, [$semana]);
@@ -88,8 +88,8 @@ try {
         );
 
         $dbInstance->queryWithProject(
-            "UPDATE {$tProgConsolidado} SET Estado = ? WHERE Consecutivo_en_Programa = ? AND Semana = ?",
-            [$estado, $rowEstado['Consecutivo_en_Programa'], $semana],
+            "UPDATE {$tProgConsolidado} SET Estado = ? WHERE unique_id = ? AND Semana = ?",
+            [$estado, $rowEstado['unique_id'], $semana],
         );
     }
 

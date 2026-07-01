@@ -4053,7 +4053,7 @@
       }
 
       $('#tnp_id_actividad').val(act.Id);
-      $('#tnp_consecutivo').val(act.Consecutivo_en_Programa || '');
+      $('#tnp_consecutivo').val(act.unique_id || act.Consecutivo_en_Programa || '');
       $('#tnp_info_subcontratista').text(act.Sub_Contratista || '-');
       $('#tnp_info_residente').text(act.Responsable_AIA || '-');
       var unidadCol = act.unidad || act.Unidad || '-';

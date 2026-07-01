@@ -809,7 +809,7 @@ var listar = function() {
     "columns":[
         {"defaultContent":"", "visible":false},
         {"data":"boton"},
-        {"data":"Consecutivo_en_Programa", "visible":false},
+        {"data":"unique_id", "visible":false},
         {"data":"Id"},
         {"data":"codigo_actividad"},
         {"data":"Actividad"},
@@ -1235,7 +1235,7 @@ var obtener_data_editar = function(tbody, table) {
                         obtener_data_editar("#dt_cliente tbody", table);
                         return;
                     }
-                    var Id=$("#Id").val(data.Consecutivo_en_Programa),
+                    var Id=$("#Id").val(data.unique_id || data.Consecutivo_en_Programa),
                     //medir_productividad=$("#medir_productividad").val(data.medir_productividad),
                     opcion = $("#opcion").val("modificar");
                     var codigo_html_unidad = "<select id='select_unidad' name='unidad' class='form-control form-control-sm'><option value=''></option><option value='ml'>ml</option><option value='m2'>m2</option><option value='m3'>m3</option><option value='un'>Un</option><option value='gl'>Gl</option><option value='kg'>kg</option><option value='%'>%</option><option value='Niveles'>Niveles</option></select>";

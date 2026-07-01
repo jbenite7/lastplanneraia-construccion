@@ -78,7 +78,7 @@ class WeeklyRealProgressCarryoverService
                  SET Ejecutado = ?,
                      Ejecutado_Siguiente_Semana = ?,
                      Responsable_AIA = ?, Sub_Contratista = ?, unidad = ?, cantidad_ppto = ?
-                 WHERE Semana = ? AND Consecutivo = ?",
+                 WHERE Semana = ? AND row_id = ?",
                 [
                     $finalRatio,
                     $finalRatio,
@@ -87,13 +87,13 @@ class WeeklyRealProgressCarryoverService
                     $unidad,
                     $cantidadPpto,
                     $targetWeek,
-                    $targetRow['Consecutivo'],
+                    $targetRow['row_id'] ?? $targetRow['Consecutivo'],
                 ],
                 $projectId,
             );
 
             $updatedRows++;
-            $updatedProgramIds[(int) $targetRow['Consecutivo_en_Programa']] = true;
+            $updatedProgramIds[(int) ($targetRow['unique_id'] ?? $targetRow['Consecutivo_en_Programa'])] = true;
         }
 
         $this->normalizationService->normalizeChapters($dbPrefix, $targetWeek);
@@ -108,7 +108,9 @@ class WeeklyRealProgressCarryoverService
     {
         $t = TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado');
         $rows = $this->db->queryWithProject(
-            "SELECT Consecutivo_en_Programa, Actividad, Ejecutado, Ejecutado_Siguiente_Semana, unidad, cantidad_ppto, Responsable_AIA, Sub_Contratista
+            "SELECT unique_id AS Consecutivo_en_Programa,
+                    unique_id,
+                    Actividad, Ejecutado, Ejecutado_Siguiente_Semana, unidad, cantidad_ppto, Responsable_AIA, Sub_Contratista
              FROM {$t}
              WHERE Semana = ? AND Titulo = 0",
             [$sourceWeek],
@@ -119,7 +121,7 @@ class WeeklyRealProgressCarryoverService
         $byActivity = [];
 
         foreach ($rows as $row) {
-            $programId = (int) ($row['Consecutivo_en_Programa'] ?? 0);
+            $programId = (int) ($row['unique_id'] ?? $row['Consecutivo_en_Programa'] ?? 0);
             if ($programId <= 0) {
                 continue;
             }
@@ -140,7 +142,11 @@ class WeeklyRealProgressCarryoverService
     {
         $t = TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado');
         return $this->db->queryWithProject(
-            "SELECT Consecutivo, Consecutivo_en_Programa, Actividad, programaAnteriorAsociar, Ejecutado, Ejecutado_Siguiente_Semana
+            "SELECT row_id AS Consecutivo,
+                    row_id,
+                    unique_id AS Consecutivo_en_Programa,
+                    unique_id,
+                    Actividad, programaAnteriorAsociar, Ejecutado, Ejecutado_Siguiente_Semana
              FROM {$t}
              WHERE Semana = ? AND Titulo = 0",
             [$targetWeek],
@@ -152,12 +158,14 @@ class WeeklyRealProgressCarryoverService
     {
         $t = TableResolver::resolveByPrefix($dbPrefix, 'programacion_semanal');
         $params = [$sourceWeek];
-        $sql = "SELECT Consecutivo_En_Programa, Actividad, Unidad, cantidad_ppto, Ejecutado_Real, Responsable_AIA, Sub_Contratista
+        $sql = "SELECT unique_id AS Consecutivo_En_Programa,
+                       unique_id,
+                       Actividad, Unidad, cantidad_ppto, Ejecutado_Real, Responsable_AIA, Sub_Contratista
                 FROM {$t}
                 WHERE Semana = ? AND (Activa = '1' OR Activa = 'NA')";
 
         if ($sourceProgramId !== null) {
-            $sql .= " AND Consecutivo_En_Programa = ?";
+            $sql .= " AND unique_id = ?";
             $params[] = $sourceProgramId;
         }
 
@@ -167,7 +175,7 @@ class WeeklyRealProgressCarryoverService
         $byActivity = [];
 
         foreach ($rows as $row) {
-            $programId = (int) ($row['Consecutivo_En_Programa'] ?? 0);
+            $programId = (int) ($row['unique_id'] ?? $row['Consecutivo_En_Programa'] ?? 0);
             if ($programId <= 0) {
                 continue;
             }
@@ -284,7 +292,7 @@ class WeeklyRealProgressCarryoverService
     ): ?array {
         $mappingKey = $this->normalizeActivityKey($targetRow['programaAnteriorAsociar'] ?? null);
         $targetActivityKey = $this->normalizeActivityKey($targetRow['Actividad'] ?? null);
-        $targetProgramId = (int) ($targetRow['Consecutivo_en_Programa'] ?? 0);
+        $targetProgramId = (int) ($targetRow['unique_id'] ?? $targetRow['Consecutivo_en_Programa'] ?? 0);
 
         $baseProgram = null;
         $overlayGroup = null;

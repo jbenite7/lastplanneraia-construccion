@@ -56,14 +56,17 @@ class ProgramChangeDetector
         $this->db->queryWithProject("
             DELETE p1 FROM {$tProgSemanal} p1
             INNER JOIN {$tProgSemanal} p2
-               ON p1.Semana = p2.Semana
-              AND p1.Consecutivo_En_Programa = p2.Consecutivo_En_Programa
+               ON p1.project_id = p2.project_id
+              AND p1.Semana = p2.Semana
+              AND p1.unique_id = p2.unique_id
               AND COALESCE(p1.Sub_Contratista, '') = COALESCE(p2.Sub_Contratista, '')
               AND p1.Activa = '0'
               AND p2.Activa = '0'
-              AND p1.Consecutivo > p2.Consecutivo
-            WHERE p1.Semana = ?
-        ", [$semana], $projectId);
+              AND p1.row_id > p2.row_id
+            WHERE p1.project_id = ?
+              AND p2.project_id = ?
+              AND p1.Semana = ?
+        ", [$projectId, $projectId, $semana], $projectId);
 
         $pgRows = $this->loadProgramaConsolidado($dbPrefix, $semana);
         $psConsecutivos = $this->loadPsConsecutivos($dbPrefix, $semana);
@@ -71,7 +74,7 @@ class ProgramChangeDetector
         $pgIndex = [];
 
         foreach ($pgRows as $pg) {
-            $pgIndex[(int) $pg['Consecutivo_en_Programa']] = $pg;
+            $pgIndex[(int) $pg['unique_id']] = $pg;
         }
 
         $this->ensureLogTable($dbPrefix);
@@ -104,7 +107,7 @@ class ProgramChangeDetector
 
         // --- PASO 2: PG nuevas (en PG, no en PS de ninguna forma, activa o inactiva) ---
         foreach ($pgRows as $pg) {
-            $consecutivo = (int) $pg['Consecutivo_en_Programa'];
+            $consecutivo = (int) $pg['unique_id'];
             if (in_array($consecutivo, $allPsConsecutivos)) {
                 continue;
             }
@@ -323,7 +326,7 @@ class ProgramChangeDetector
     {
         $t = TableResolver::resolveByPrefix($dbPrefix, 'programacion_semanal');
         return $this->db->queryWithProject(
-            "SELECT Activa, Categoria_CNP, CNP, Compromiso, Reprogramada_Por_Usuario FROM {$t} WHERE Semana = ? AND Consecutivo_En_Programa = ? LIMIT 1",
+            "SELECT Activa, Categoria_CNP, CNP, Compromiso, Reprogramada_Por_Usuario FROM {$t} WHERE Semana = ? AND unique_id = ? LIMIT 1",
             [$semana, $consecutivo],
             $this->currentProjectId,
         )->fetch(PDO::FETCH_ASSOC) ?: null;
@@ -425,10 +428,16 @@ class ProgramChangeDetector
             "SELECT l.*, pc.Id AS actividad_id, pc.Actividad AS actividad_nombre
              FROM {$tAutoLog} l
              LEFT JOIN {$tProgCons} pc
-               ON l.consecutivo = pc.Consecutivo_en_Programa AND l.semana = pc.Semana
-             WHERE l.semana = ? AND l.creado_en = ? AND l.consecutivo > 0
+               ON l.project_id = pc.project_id
+              AND l.unique_id = pc.unique_id
+              AND l.semana = pc.Semana
+             WHERE l.project_id = ?
+               AND pc.project_id = ?
+               AND l.semana = ?
+               AND l.creado_en = ?
+               AND l.consecutivo > 0
              ORDER BY l.id DESC",
-            [$semana, $lastBatchTime],
+            [$projectId, $projectId, $semana, $lastBatchTime],
             $projectId,
         )->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -437,7 +446,7 @@ class ProgramChangeDetector
     {
         $t = TableResolver::resolveByPrefix($dbPrefix, 'programacion_semanal');
         $rows = $this->db->queryWithProject(
-            "SELECT DISTINCT Consecutivo_En_Programa FROM {$t} WHERE Semana = ?",
+            "SELECT DISTINCT unique_id FROM {$t} WHERE Semana = ?",
             [$semana],
             $this->currentProjectId,
         )->fetchAll(PDO::FETCH_COLUMN);
@@ -463,27 +472,38 @@ class ProgramChangeDetector
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
         ");
         // Ensure project_id column exists for global table support
-        try {
+        $hasProjectId = (int) $this->db->query(
+            'SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?',
+            [$t, 'project_id'],
+        )->fetchColumn();
+        if ($hasProjectId === 0) {
             $this->db->query("ALTER TABLE `{$t}` ADD COLUMN `project_id` INT DEFAULT NULL AFTER `id`");
-        } catch (\PDOException $e) {
-            // Ignore "Duplicate column" — column already exists, table is up to date
-            if (stripos($e->getMessage(), 'Duplicate column') === false) {
-                throw $e;
-            }
         }
     }
 
     private function logAction(string $dbPrefix, int $semana, int $consecutivo, string $accion, string $detalle, ?string $catCnp = null, ?string $cnp = null, ?string $creadoEn = null): void
     {
         $t = TableResolver::resolveByPrefix($dbPrefix, 'auto_program_log');
+        $projectId = $this->currentProjectId ?? TableResolver::getProjectIdByPrefix($dbPrefix) ?? 0;
         if ($creadoEn) {
-            $sql = "INSERT INTO {$t} (semana, consecutivo, accion, detalle, categoria_cnp, cnp, creado_en) VALUES (?, ?, ?, ?, ?, ?, ?)";
-            [$sql, $params] = $this->db->insertProjectId($sql, $this->currentProjectId ?? 0, [$semana, $consecutivo, $accion, $detalle, $catCnp, $cnp, $creadoEn]);
-            $this->db->query($sql, $params);
+            $sql = "INSERT INTO {$t} (project_id, semana, unique_id, consecutivo, accion, detalle, categoria_cnp, cnp, creado_en)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ON DUPLICATE KEY UPDATE
+                        unique_id = VALUES(unique_id),
+                        detalle = VALUES(detalle),
+                        categoria_cnp = VALUES(categoria_cnp),
+                        cnp = VALUES(cnp),
+                        creado_en = VALUES(creado_en)";
+            $this->db->query($sql, [$projectId, $semana, $consecutivo, $consecutivo, $accion, $detalle, $catCnp, $cnp, $creadoEn]);
         } else {
-            $sql = "INSERT INTO {$t} (semana, consecutivo, accion, detalle, categoria_cnp, cnp) VALUES (?, ?, ?, ?, ?, ?)";
-            [$sql, $params] = $this->db->insertProjectId($sql, $this->currentProjectId ?? 0, [$semana, $consecutivo, $accion, $detalle, $catCnp, $cnp]);
-            $this->db->query($sql, $params);
+            $sql = "INSERT INTO {$t} (project_id, semana, unique_id, consecutivo, accion, detalle, categoria_cnp, cnp)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    ON DUPLICATE KEY UPDATE
+                        unique_id = VALUES(unique_id),
+                        detalle = VALUES(detalle),
+                        categoria_cnp = VALUES(categoria_cnp),
+                        cnp = VALUES(cnp)";
+            $this->db->query($sql, [$projectId, $semana, $consecutivo, $consecutivo, $accion, $detalle, $catCnp, $cnp]);
         }
     }
 
@@ -491,7 +511,7 @@ class ProgramChangeDetector
     {
         $t = TableResolver::resolveByPrefix($dbPrefix, 'programacion_semanal');
         $exists = $this->db->queryWithProject(
-            "SELECT COUNT(*) FROM {$t} WHERE Semana = ? AND Consecutivo_En_Programa = ?",
+            "SELECT COUNT(*) FROM {$t} WHERE Semana = ? AND unique_id = ?",
             [$semana, $consecutivo],
             $this->currentProjectId,
         )->fetchColumn();
@@ -500,7 +520,7 @@ class ProgramChangeDetector
             $this->db->queryWithProject(
                 "UPDATE {$t}
                  SET Activa = '1', Categoria_CNP = NULL, CNP = NULL, Observaciones_CNP = NULL, Reprogramada_Por_Usuario = 0
-                 WHERE Semana = ? AND Consecutivo_En_Programa = ? AND Activa != '1'",
+                 WHERE Semana = ? AND unique_id = ? AND Activa != '1'",
                 [$semana, $consecutivo],
                 $this->currentProjectId,
             );
@@ -515,12 +535,13 @@ class ProgramChangeDetector
 
         foreach ($subs as $sub) {
             $sql = "INSERT INTO {$t} (
-                    Semana, Consecutivo_En_Programa, Id, Actividad, Fecha_Inicio, Fecha_Fin,
+                    Semana, unique_id, Consecutivo_En_Programa, Id, Actividad, Fecha_Inicio, Fecha_Fin,
                     Sub_Contratista, Responsable_AIA, Empresa, Ejecutado, medir_productividad,
                     Critica, Atrasada, Activa, Unidad, cantidad_ppto, codigo_actividad
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '1', ?, ?, ?)";
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '1', ?, ?, ?)";
             $params = [
                     $semana,
+                    $consecutivo,
                     $consecutivo,
                     $pg['Id'],
                     $pg['Actividad'],
@@ -556,7 +577,7 @@ class ProgramChangeDetector
         $this->db->queryWithProject(
             "UPDATE {$t}
              SET Activa = '0', Categoria_CNP = ?, CNP = ?, Observaciones_CNP = NULL, Reprogramada_Por_Usuario = 0
-             WHERE Semana = ? AND Consecutivo_En_Programa = ?",
+             WHERE Semana = ? AND unique_id = ?",
             ['Programación', 'Restricciones habilitantes no cumplidas', $semana, $consecutivo],
             $this->currentProjectId,
         );
@@ -574,13 +595,14 @@ class ProgramChangeDetector
         $t = TableResolver::resolveByPrefix($dbPrefix, 'programacion_semanal');
         foreach ($subs as $sub) {
             $sql = "INSERT INTO {$t} (
-                    Semana, Consecutivo_En_Programa, Id, Actividad, Fecha_Inicio, Fecha_Fin,
+                    Semana, unique_id, Consecutivo_En_Programa, Id, Actividad, Fecha_Inicio, Fecha_Fin,
                     Sub_Contratista, Responsable_AIA, Empresa, Ejecutado, medir_productividad,
                     Critica, Atrasada, Activa, Unidad, cantidad_ppto, codigo_actividad,
                     Categoria_CNP, CNP
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '0', ?, ?, ?, ?, ?)";
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '0', ?, ?, ?, ?, ?)";
             $params = [
                     $semana,
+                    $consecutivo,
                     $consecutivo,
                     $pg['Id'],
                     $pg['Actividad'],
@@ -608,7 +630,7 @@ class ProgramChangeDetector
     {
         $t = TableResolver::resolveByPrefix($dbPrefix, 'programacion_semanal');
         $this->db->queryWithProject(
-            "DELETE FROM {$t} WHERE Semana = ? AND Consecutivo_En_Programa = ?",
+            "DELETE FROM {$t} WHERE Semana = ? AND unique_id = ?",
             [$semana, $consecutivo],
             $this->currentProjectId,
         );
@@ -618,7 +640,11 @@ class ProgramChangeDetector
     {
         $t = TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado');
         return $this->db->queryWithProject(
-            "SELECT * FROM {$t} WHERE Semana = ? ORDER BY Consecutivo_en_Programa ASC",
+            "SELECT *,
+                    row_id AS Consecutivo,
+                    unique_id AS Consecutivo_en_Programa,
+                    unique_id
+             FROM {$t} WHERE Semana = ? ORDER BY unique_id ASC",
             [$semana],
             $this->currentProjectId,
         )->fetchAll(PDO::FETCH_ASSOC);
@@ -628,7 +654,7 @@ class ProgramChangeDetector
     {
         $t = TableResolver::resolveByPrefix($dbPrefix, 'programacion_semanal');
         $rows = $this->db->queryWithProject(
-            "SELECT DISTINCT Consecutivo_En_Programa FROM {$t} WHERE Semana = ? AND (Activa = '1' OR Activa = 'NA')",
+            "SELECT DISTINCT unique_id FROM {$t} WHERE Semana = ? AND (Activa = '1' OR Activa = 'NA')",
             [$semana],
             $this->currentProjectId,
         )->fetchAll(PDO::FETCH_COLUMN);
@@ -708,10 +734,14 @@ class ProgramChangeDetector
         $sql = $this->buildEligibilitySql('pc');
         $this->db->queryWithProject("UPDATE {$tProgSemanal} ps
             JOIN {$tProgCons} pc
-              ON ps.Consecutivo_En_Programa = pc.Consecutivo_en_Programa
+              ON ps.project_id = pc.project_id
+             AND ps.unique_id = pc.unique_id
              AND ps.Semana = pc.Semana
             SET ps.Prog_Sin_Restricciones_100 = (CASE WHEN {$sql} THEN 0 ELSE 1 END)
-            WHERE ps.Semana = ? AND ps.Activa != 'NA'", [$semana], $this->currentProjectId);
+            WHERE ps.project_id = ?
+              AND pc.project_id = ?
+              AND ps.Semana = ?
+              AND ps.Activa != 'NA'", [$this->currentProjectId, $this->currentProjectId, $semana], $this->currentProjectId);
 
         $this->db->queryWithProject("UPDATE {$tProgSemanal} SET Prog_Sin_Restricciones_100 = 0 WHERE Semana = ? AND Activa = 'NA'", [$semana], $this->currentProjectId);
     }

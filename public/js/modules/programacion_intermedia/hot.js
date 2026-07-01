@@ -1182,7 +1182,7 @@
       return '';
     }
 
-    var candidate = row.Consecutivo_en_Programa;
+    var candidate = row.unique_id || row.Consecutivo_en_Programa;
     if (candidate === null || candidate === undefined || candidate === '') {
       candidate = row.Id;
     }
@@ -2688,7 +2688,7 @@
   }
 
   function buildPayload(row) {
-    var id = row.Consecutivo_en_Programa;
+    var id = row.unique_id || row.Consecutivo_en_Programa;
     if (!id) {
       return { valid: false, error: 'Id de actividad inválido' };
     }

@@ -67,9 +67,12 @@ try {
         $semana_crear = $conteo + 1;
         $f_fin_sem = date("Y-m-d", strtotime($f_inicio_sem . "+ 6 days"));
         $fCreacionSemana = date("Y-m-d");
+        $nextSemanaId = (int) $dbInstance
+            ->queryWithProject("SELECT COALESCE(MAX(Id), 0) + 1 FROM {$tSemanasActivas}")
+            ->fetchColumn();
 
-        $sqlInsertSemana = "INSERT INTO {$tSemanasActivas} (Id, Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem, fechaCreacionSemana) VALUES (NULL, ?, ?, ?, ?)";
-        $dbInstance->queryWithProject($sqlInsertSemana, [$semana_crear, $f_inicio_sem, $f_fin_sem, $fCreacionSemana]);
+        $sqlInsertSemana = "INSERT INTO {$tSemanasActivas} (Id, Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem, fechaCreacionSemana) VALUES (?, ?, ?, ?, ?)";
+        $dbInstance->queryWithProject($sqlInsertSemana, [$nextSemanaId, $semana_crear, $f_inicio_sem, $f_fin_sem, $fCreacionSemana]);
 
         if ($conteo == 0) {
             // Validar que el Programa Maestro tenga actividades antes de copiar
@@ -81,14 +84,17 @@ try {
                 return;
             }
 
+            $baseConsolidadoId = (int) $dbInstance
+                ->queryWithProject("SELECT COALESCE(MAX(row_id), MAX(Consecutivo), 0) FROM {$tProgConsolidado}")
+                ->fetchColumn();
             if ($isPreConstruccion) {
-                $sqlCopy = "INSERT INTO {$tProgConsolidado}(Consecutivo, Semana, Consecutivo_en_Programa, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin, Ruta_Critica, medir_productividad, Ejecutado, Estado, Semanas_Inicio, Estado_Restricciones, restriccion_pc_1, restriccion_pc_2, restriccion_pc_3, restriccion_pc_4, Responsable_AIA, Observaciones, Ult_Act_Est, Ult_Act_Restr, Ejecutado_Siguiente_Semana)
-                            SELECT NULL, ?, Consecutivo, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin, Ruta_Critica, 0, IFNULL(Ejecutado, 0), Estado, IFNULL(Semanas_Inicio, 0), IFNULL(Estado_Restricciones, '0'), IFNULL(restriccion_pc_1, '0%'), IFNULL(restriccion_pc_2, '0%'), IFNULL(restriccion_pc_3, '0%'), IFNULL(restriccion_pc_4, '0%'), Responsable_AIA, Observaciones, Ult_Act_Est, Ult_Act_Restr, IFNULL(Ejecutado, 0) FROM {$tPrograma}";
+                $sqlCopy = "INSERT INTO {$tProgConsolidado}(project_id, row_id, Consecutivo, Semana, unique_id, Consecutivo_en_Programa, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin, Ruta_Critica, medir_productividad, Ejecutado, Estado, Semanas_Inicio, Estado_Restricciones, restriccion_pc_1, restriccion_pc_2, restriccion_pc_3, restriccion_pc_4, Responsable_AIA, Observaciones, Ult_Act_Est, Ult_Act_Restr, Ejecutado_Siguiente_Semana)
+                            SELECT ?, ? + ROW_NUMBER() OVER (ORDER BY unique_id, Id), ? + ROW_NUMBER() OVER (ORDER BY unique_id, Id), ?, unique_id, unique_id, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin, Ruta_Critica, 0, IFNULL(Ejecutado, 0), Estado, IFNULL(Semanas_Inicio, 0), IFNULL(Estado_Restricciones, '0'), IFNULL(restriccion_pc_1, '0%'), IFNULL(restriccion_pc_2, '0%'), IFNULL(restriccion_pc_3, '0%'), IFNULL(restriccion_pc_4, '0%'), Responsable_AIA, Observaciones, Ult_Act_Est, Ult_Act_Restr, IFNULL(Ejecutado, 0) FROM {$tPrograma} WHERE project_id = ?";
             } else {
-                $sqlCopy = "INSERT INTO {$tProgConsolidado}(Consecutivo, Semana, Consecutivo_en_Programa, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin, Ruta_Critica, medir_productividad, Ejecutado, Estado, Semanas_Inicio, Estado_Restricciones, D_y_E, Materiales, MdeO, Equipos, Predecesora, Pdto_Cons, Modelo, Responsable_AIA, Observaciones, Ult_Act_Est, Ult_Act_Restr, Ejecutado_Siguiente_Semana)
-                            SELECT NULL, ?, Consecutivo, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin, Ruta_Critica, 0, IFNULL(Ejecutado, 0), Estado, IFNULL(Semanas_Inicio, 0), IFNULL(Estado_Restricciones, '0'), IFNULL(D_y_E, '0'), IFNULL(Materiales, '0'), IFNULL(MdeO, '0'), IFNULL(Equipos, '0'), IFNULL(Predecesora, '0'), IFNULL(Pdto_Cons, '0'), IFNULL(Modelo, '0'), Responsable_AIA, Observaciones, Ult_Act_Est, Ult_Act_Restr, IFNULL(Ejecutado, 0) FROM {$tPrograma}";
+                $sqlCopy = "INSERT INTO {$tProgConsolidado}(project_id, row_id, Consecutivo, Semana, unique_id, Consecutivo_en_Programa, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin, Ruta_Critica, medir_productividad, Ejecutado, Estado, Semanas_Inicio, Estado_Restricciones, D_y_E, Materiales, MdeO, Equipos, Predecesora, Pdto_Cons, Modelo, Responsable_AIA, Observaciones, Ult_Act_Est, Ult_Act_Restr, Ejecutado_Siguiente_Semana)
+                            SELECT ?, ? + ROW_NUMBER() OVER (ORDER BY unique_id, Id), ? + ROW_NUMBER() OVER (ORDER BY unique_id, Id), ?, unique_id, unique_id, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin, Ruta_Critica, 0, IFNULL(Ejecutado, 0), Estado, IFNULL(Semanas_Inicio, 0), IFNULL(Estado_Restricciones, '0'), IFNULL(D_y_E, '0'), IFNULL(Materiales, '0'), IFNULL(MdeO, '0'), IFNULL(Equipos, '0'), IFNULL(Predecesora, '0'), IFNULL(Pdto_Cons, '0'), IFNULL(Modelo, '0'), Responsable_AIA, Observaciones, Ult_Act_Est, Ult_Act_Restr, IFNULL(Ejecutado, 0) FROM {$tPrograma} WHERE project_id = ?";
             }
-            $dbInstance->queryWithProject($sqlCopy, [$semana_crear]);
+            $dbInstance->query($sqlCopy, [$projectId, $baseConsolidadoId, $baseConsolidadoId, $semana_crear, $projectId]);
             $normalizationService = new \App\Services\ProgramaConsolidadoNormalizationService($dbInstance);
             $normalizationService->normalizeChapters($db, $semana_crear);
             if ($isPreConstruccion) {
@@ -141,9 +147,9 @@ try {
 
             } else {
                 if ($isPreConstruccion) {
-                    $cols = "Consecutivo_en_Programa, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin, Ruta_Critica, unidad, cantidad_ppto, codigo_actividad, medir_productividad, Ejecutado, Estado, Semanas_Inicio, Estado_Restricciones, restriccion_pc_1, restriccion_pc_2, restriccion_pc_3, restriccion_pc_4, Sub_Contratista, Responsable_AIA, Observaciones, Ult_Act_Est, Ult_Act_Restr, Ejecutado_Siguiente_Semana, programaAnteriorAsociar";
+                    $cols = "unique_id, Consecutivo_en_Programa, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin, Ruta_Critica, unidad, cantidad_ppto, codigo_actividad, medir_productividad, Ejecutado, Estado, Semanas_Inicio, Estado_Restricciones, restriccion_pc_1, restriccion_pc_2, restriccion_pc_3, restriccion_pc_4, Sub_Contratista, Responsable_AIA, Observaciones, Ult_Act_Est, Ult_Act_Restr, Ejecutado_Siguiente_Semana, programaAnteriorAsociar";
                 } else {
-                    $cols = "Consecutivo_en_Programa, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin, Ruta_Critica, unidad, cantidad_ppto, codigo_actividad, medir_productividad, Ejecutado, Estado, Semanas_Inicio, Estado_Restricciones, D_y_E, Materiales, MdeO, Equipos, Predecesora, Pdto_Cons, Modelo, Sub_Contratista, Responsable_AIA, Observaciones, Ult_Act_Est, Ult_Act_Restr, Ejecutado_Siguiente_Semana, programaAnteriorAsociar";
+                    $cols = "unique_id, Consecutivo_en_Programa, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin, Ruta_Critica, unidad, cantidad_ppto, codigo_actividad, medir_productividad, Ejecutado, Estado, Semanas_Inicio, Estado_Restricciones, D_y_E, Materiales, MdeO, Equipos, Predecesora, Pdto_Cons, Modelo, Sub_Contratista, Responsable_AIA, Observaciones, Ult_Act_Est, Ult_Act_Restr, Ejecutado_Siguiente_Semana, programaAnteriorAsociar";
                 }
 
                 // Generate safe select columns dealing with potential NULLs for NOT NULL columns
@@ -162,9 +168,12 @@ try {
                 }
                 $selectCols = implode(', ', $arrSelect);
 
-                $sqlInsertCopy = "INSERT INTO {$tProgConsolidado}(Consecutivo, Semana, $cols)
-                                   SELECT NULL, ?, $selectCols FROM {$tProgConsolidado} WHERE Semana = ?";
-                $dbInstance->queryWithProject($sqlInsertCopy, [$semana_crear, $conteo]);
+                $baseConsolidadoId = (int) $dbInstance
+                    ->queryWithProject("SELECT COALESCE(MAX(row_id), MAX(Consecutivo), 0) FROM {$tProgConsolidado}")
+                    ->fetchColumn();
+                $sqlInsertCopy = "INSERT INTO {$tProgConsolidado}(project_id, row_id, Consecutivo, Semana, $cols)
+                                   SELECT ?, ? + ROW_NUMBER() OVER (ORDER BY COALESCE(row_id, Consecutivo), unique_id, Id), ? + ROW_NUMBER() OVER (ORDER BY COALESCE(row_id, Consecutivo), unique_id, Id), ?, $selectCols FROM {$tProgConsolidado} WHERE project_id = ? AND Semana = ?";
+                $dbInstance->query($sqlInsertCopy, [$projectId, $baseConsolidadoId, $baseConsolidadoId, $semana_crear, $projectId, $conteo]);
             }
 
             $normalizationService = new \App\Services\ProgramaConsolidadoNormalizationService($dbInstance);
@@ -183,10 +192,13 @@ try {
             $carryoverService->syncWeek($db, $conteo, $semana_crear);
 
             if ($pdcActivo == 1) {
-                $sqlCopyPDC = "INSERT INTO `{$tPdc}` (semana, titulo, tipoPaquete, paqueteContratacion, contratos, numeroSubcontratos, subcontratoPaquete, estado, fechaElaboracionPliegos, diasElaboracionPliegos, fechaRealElaboracionPliegos, fechaEntregaPliegos, diasEntregaPliegos, fechaRealEntregaPliegos, fechaReciboPropuestas, diasReciboPropuestas, fechaRealReciboPropuestas, fechaCuadrosComparativos, diasCuadrosComparativos, fechaRealCuadrosComparativos, fechaLegalizacionContrato, diasLegalizacionContrato, fechaRealLegalizacionContrato, fechaFabricacion, diasFabricacion, fechaRealFabricacion, fechaInsumosObra, diasInsumosObra, fechaRealInsumosObra, fechaInicio, fechaInicioProyectada, fechaRealInicio, idProveedorAdjudicado, numeroContrato, fechaVencimientoPolizas, valorPresupuesto, valorPrimeraNegociacion, valorAdjudicado, valorAnticipo, valorReclamado, valorDevoluciones, observacionesContrato)
-                                SELECT ?, titulo, tipoPaquete, paqueteContratacion, contratos, numeroSubcontratos, subcontratoPaquete, estado, fechaElaboracionPliegos, diasElaboracionPliegos, fechaRealElaboracionPliegos, fechaEntregaPliegos, diasEntregaPliegos, fechaRealEntregaPliegos, fechaReciboPropuestas, diasReciboPropuestas, fechaRealReciboPropuestas, fechaCuadrosComparativos, diasCuadrosComparativos, fechaRealCuadrosComparativos, fechaLegalizacionContrato, diasLegalizacionContrato, fechaRealLegalizacionContrato, fechaFabricacion, diasFabricacion, fechaRealFabricacion, fechaInsumosObra, diasInsumosObra, fechaRealInsumosObra, fechaInicio, fechaInicioProyectada, fechaRealInicio, idProveedorAdjudicado, numeroContrato, fechaVencimientoPolizas, valorPresupuesto, valorPrimeraNegociacion, valorAdjudicado, valorAnticipo, valorReclamado, valorDevoluciones, observacionesContrato
-                                FROM `{$tPdc}` WHERE `semana` = ?";
-                $dbInstance->queryWithProject($sqlCopyPDC, [$semana_crear, $conteo]);
+                $basePdcId = (int) $dbInstance
+                    ->queryWithProject("SELECT COALESCE(MAX(pdc_row_id), MAX(consecutivo), 0) FROM {$tPdc}")
+                    ->fetchColumn();
+                $sqlCopyPDC = "INSERT INTO {$tPdc} (project_id, pdc_row_id, consecutivo, semana, titulo, tipoPaquete, paqueteContratacion, contratos, numeroSubcontratos, subcontratoPaquete, estado, fechaElaboracionPliegos, diasElaboracionPliegos, fechaRealElaboracionPliegos, fechaEntregaPliegos, diasEntregaPliegos, fechaRealEntregaPliegos, fechaReciboPropuestas, diasReciboPropuestas, fechaRealReciboPropuestas, fechaCuadrosComparativos, diasCuadrosComparativos, fechaRealCuadrosComparativos, fechaLegalizacionContrato, diasLegalizacionContrato, fechaRealLegalizacionContrato, fechaFabricacion, diasFabricacion, fechaRealFabricacion, fechaInsumosObra, diasInsumosObra, fechaRealInsumosObra, fechaInicio, fechaInicioProyectada, fechaRealInicio, idProveedorAdjudicado, numeroContrato, fechaVencimientoPolizas, valorPresupuesto, valorPrimeraNegociacion, valorAdjudicado, valorAnticipo, valorReclamado, valorDevoluciones, observacionesContrato)
+                                SELECT ?, ? + ROW_NUMBER() OVER (ORDER BY COALESCE(pdc_row_id, consecutivo)), ? + ROW_NUMBER() OVER (ORDER BY COALESCE(pdc_row_id, consecutivo)), ?, titulo, tipoPaquete, paqueteContratacion, contratos, numeroSubcontratos, subcontratoPaquete, estado, fechaElaboracionPliegos, diasElaboracionPliegos, fechaRealElaboracionPliegos, fechaEntregaPliegos, diasEntregaPliegos, fechaRealEntregaPliegos, fechaReciboPropuestas, diasReciboPropuestas, fechaRealReciboPropuestas, fechaCuadrosComparativos, diasCuadrosComparativos, fechaRealCuadrosComparativos, fechaLegalizacionContrato, diasLegalizacionContrato, fechaRealLegalizacionContrato, fechaFabricacion, diasFabricacion, fechaRealFabricacion, fechaInsumosObra, diasInsumosObra, fechaRealInsumosObra, fechaInicio, fechaInicioProyectada, fechaRealInicio, idProveedorAdjudicado, numeroContrato, fechaVencimientoPolizas, valorPresupuesto, valorPrimeraNegociacion, valorAdjudicado, valorAnticipo, valorReclamado, valorDevoluciones, observacionesContrato
+                                FROM {$tPdc} WHERE project_id = ? AND semana = ?";
+                $dbInstance->query($sqlCopyPDC, [$projectId, $basePdcId, $basePdcId, $semana_crear, $projectId, $conteo]);
 
                 pdc_insertarPaquetes($dbInstance, $db, $semana_crear, '', '', '');
                 pdc_crearSubcontratosDuplicados($dbInstance, $db, $semana_crear);

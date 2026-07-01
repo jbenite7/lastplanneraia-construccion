@@ -159,7 +159,7 @@
   }
 
   function getState(data) {
-    if (!data || data.Consecutivo_en_Programa === undefined) {
+    if (!data || (data.unique_id === undefined && data.Consecutivo_en_Programa === undefined)) {
       return 'neutral';
     }
     if (Number(data.Titulo) !== 0) {

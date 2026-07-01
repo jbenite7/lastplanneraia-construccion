@@ -50,7 +50,7 @@ try {
         $fechaFinSemana = $dataSemana['Fecha_Fin_Sem'] ?? null;
 
         $stmtProg = $dbInstance->queryWithProject(
-            "SELECT Consecutivo_en_Programa, Titulo, Ejecutado, Fecha_Inicio, Fecha_Fin,
+            "SELECT unique_id, unique_id AS Consecutivo_en_Programa, Titulo, Ejecutado, Fecha_Inicio, Fecha_Fin,
                     {$restrictionColumnsSql}
              FROM {$tProgConsolidado}
              WHERE Semana = ?",
@@ -59,7 +59,7 @@ try {
         $rowsProg = $stmtProg->fetchAll();
 
         foreach ($rowsProg as $data) {
-            $id = (int) $data['Consecutivo_en_Programa'];
+            $id = (int) $data['unique_id'];
             $titulo = (int) ($data['Titulo'] ?? 0);
 
             $estadoRestricciones = 0;
@@ -81,7 +81,7 @@ try {
             $dbInstance->queryWithProject(
                 "UPDATE {$tProgConsolidado}
                  SET Semanas_Inicio = ?, Estado_Restricciones = ?, Estado = ?
-                 WHERE Consecutivo_en_Programa = ? AND Semana = ?",
+                 WHERE unique_id = ? AND Semana = ?",
                 [$semanasInicio, $estadoRestricciones, $estado, $id, $semana],
             );
         }

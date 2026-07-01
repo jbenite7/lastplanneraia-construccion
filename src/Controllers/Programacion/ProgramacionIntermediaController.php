@@ -361,7 +361,7 @@ class ProgramacionIntermediaController extends BaseController
             $preview = [];
 
             foreach ($rows as $row) {
-                $id = (string) ($row['Consecutivo_en_Programa'] ?? '');
+                $id = (string) ($row['unique_id'] ?? $row['Consecutivo_en_Programa'] ?? '');
                 if ($id !== '') {
                     $foundIds[] = $id;
                 }
@@ -513,7 +513,7 @@ class ProgramacionIntermediaController extends BaseController
                         }
                     }
 
-                    $insertLinkSql = "INSERT INTO " . TableResolver::resolveByPrefix($dbPrefix, 'pi_shared_constraint_links') . " (SharedConstraintId, Semana, ConsecutivoEnPrograma, ValorAplicado) VALUES (?, ?, ?, ?)";
+                    $insertLinkSql = "INSERT INTO " . TableResolver::resolveByPrefix($dbPrefix, 'pi_shared_constraint_links') . " (SharedConstraintId, Semana, unique_id, ConsecutivoEnPrograma, ValorAplicado) VALUES (?, ?, ?, ?, ?)";
                     $insertLinkStmt = $this->db->prepareWithProject($insertLinkSql);
                     $trackSharedLinks = (!empty($sharedIdsByType) && $insertLinkStmt !== false);
                 } catch (\Throwable $trackingError) {
@@ -524,14 +524,14 @@ class ProgramacionIntermediaController extends BaseController
                 }
             }
 
-            $updateSql = "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " SET " . implode(', ', $setClauses) . " WHERE Consecutivo_en_Programa = ? AND Semana = ? AND Titulo = 0";
+            $updateSql = "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " SET " . implode(', ', $setClauses) . " WHERE unique_id = ? AND Semana = ? AND Titulo = 0";
             $updateStmt = $this->db->prepareWithProject($updateSql);
 
             $updated = 0;
             $updatedIds = [];
 
             foreach ($rows as $row) {
-                $rowId = (string) ($row['Consecutivo_en_Programa'] ?? '');
+                $rowId = (string) ($row['unique_id'] ?? $row['Consecutivo_en_Programa'] ?? '');
                 if ($rowId === '') {
                     continue;
                 }
@@ -566,6 +566,7 @@ class ProgramacionIntermediaController extends BaseController
                             $insertLinkStmt->execute([
                                 $sharedId,
                                 $semana,
+                                $rowId,
                                 $rowId,
                                 (string) $restriction['value'],
                             ]);
@@ -878,11 +879,13 @@ class ProgramacionIntermediaController extends BaseController
         }
 
         $placeholders = implode(',', array_fill(0, count($activityIds), '?'));
-        $sql = "SELECT Consecutivo_en_Programa, Id, Actividad, D_y_E, Materiales, MdeO, Equipos, Predecesora, Pdto_Cons, Modelo, Sub_Contratista, Responsable_AIA
+        $sql = "SELECT unique_id AS Consecutivo_en_Programa,
+                       unique_id,
+                       Id, Actividad, D_y_E, Materiales, MdeO, Equipos, Predecesora, Pdto_Cons, Modelo, Sub_Contratista, Responsable_AIA
                 FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . "
                 WHERE Semana = ?
                   AND Titulo = 0
-                  AND Consecutivo_en_Programa IN ({$placeholders})";
+                  AND unique_id IN ({$placeholders})";
 
         $params = array_merge([$semana], $activityIds);
         $stmt = $this->db->queryWithProject($sql, $params);
