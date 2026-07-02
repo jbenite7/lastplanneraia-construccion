@@ -10,10 +10,12 @@ class ActivityMatcher
 
     private $db;
     private static ?array $chapterCategoryMapCache = null;
+    private OperationalFamilyPolicy $familyPolicy;
 
     public function __construct(?PDO $db = null)
     {
         $this->db = $db ?? \Database::getInstance();
+        $this->familyPolicy = new OperationalFamilyPolicy($this->db);
     }
 
     public function loadRules(): array
@@ -23,7 +25,7 @@ class ActivityMatcher
                     f.codigo AS familia_codigo, f.nombre AS familia_nombre, f.categoria, f.siempre_revision
              FROM general_pdc_activity_rules r
              INNER JOIN general_pdc_familias f ON f.id = r.familia_id
-             WHERE r.activa = 1
+             WHERE r.activa = 1 AND COALESCE(f.activa, 1) = 1
              ORDER BY r.prioridad DESC, r.confianza DESC, r.id ASC"
         );
 
@@ -41,6 +43,19 @@ class ActivityMatcher
         if ($this->isJmcCode($leafName)) {
             return null;
         }
+        if ($leafName !== '' && !empty($this->familyPolicy->contractualPackageHintsForText($leafName))) {
+            return null;
+        }
+
+        if ($leafName !== '' && !$this->isContextOnlyLeaf($leafName)) {
+            $leafMatch = $this->matchAgainstText($leafName, $rules);
+            if ($leafMatch !== null) {
+                $leafMatch['matchedBy'] = 'nombre';
+                $leafMatch['breadcrumbLevel'] = null;
+                $leafMatch['chapterFiltered'] = false;
+                return $this->applyOperationalPolicy($leafMatch);
+            }
+        }
 
         // Stage 0: Filter rules by chapter context
         $filteredRules = $this->filterRulesByChapter($activity, $rules);
@@ -49,7 +64,7 @@ class ActivityMatcher
         $match = $this->tryMatchCascade($normalized, $leafName, $activity, $filteredRules);
         if ($match !== null) {
             $match['chapterFiltered'] = ($filteredRules !== $rules);
-            return $match;
+            return $this->applyOperationalPolicy($match);
         }
 
         // Fallback: if filtering happened but no match found, try ALL rules
@@ -59,11 +74,29 @@ class ActivityMatcher
                 $fallbackMatch['chapterFiltered'] = false;
                 $fallbackMatch['reviewRequired'] = true;
                 $fallbackMatch['reviewReason'] = 'Match encontrado via fallback sin filtro de capítulo — verificar asignación de familia.';
-                return $fallbackMatch;
+                return $this->applyOperationalPolicy($fallbackMatch);
             }
         }
 
         return null;
+    }
+
+    private function applyOperationalPolicy(array $match): array
+    {
+        $familyName = (string) ($match['familia_nombre'] ?? '');
+        $canonical = $this->familyPolicy->normalizeOperationalFamily($familyName);
+        $match['original_familia_nombre'] = $familyName;
+        $match['familia_nombre'] = $canonical !== '' ? $canonical : $familyName;
+        $match['operational_family_name'] = $match['familia_nombre'];
+        $match['family_classification'] = $this->familyPolicy->familyClassification($familyName);
+        $match['contractual_only'] = $this->familyPolicy->isContractualOnlyFamily($familyName);
+        $match['contractual_package_hints'] = $this->familyPolicy->contractualPackageHints($familyName);
+        if (!empty($match['contractual_only'])) {
+            $match['reviewRequired'] = true;
+            $match['reviewReason'] = 'Es un elemento contractual; debe gestionarse en Contratos, no como familia de actividades.';
+        }
+
+        return $match;
     }
 
     /**
@@ -77,7 +110,8 @@ class ActivityMatcher
      */
     private function tryMatchCascade(string $normalized, string $leafName, array $activity, array $rules): ?array
     {
-        if ($leafName !== '') {
+        $leafIsContextOnly = $this->isContextOnlyLeaf($leafName);
+        if ($leafName !== '' && !$leafIsContextOnly) {
             $match = $this->matchAgainstText($leafName, $rules);
             if ($match !== null) {
                 $match['matchedBy'] = 'nombre';
@@ -97,10 +131,30 @@ class ActivityMatcher
 
         $parentChapter = (string) ($activity['__capitulo'] ?? '');
         if ($parentChapter !== '') {
-            $match = $this->matchAgainstText($parentChapter, $rules);
+            foreach ($this->splitHierarchy($this->normalizeActivityText($parentChapter)) as $index => $chapterLevel) {
+                $match = $this->matchAgainstText($chapterLevel, $rules);
+                if ($match !== null) {
+                    $match['matchedBy'] = 'capitulo';
+                    $match['breadcrumbLevel'] = $index + 1;
+                    return $match;
+                }
+            }
+
+            $match = $this->matchAgainstText($this->normalizeActivityText($parentChapter), $rules);
             if ($match !== null) {
                 $match['matchedBy'] = 'capitulo';
                 $match['breadcrumbLevel'] = null;
+                return $match;
+            }
+        }
+
+        if ($leafName !== '' && $leafIsContextOnly) {
+            $match = $this->matchAgainstText($leafName, $rules);
+            if ($match !== null) {
+                $match['matchedBy'] = 'nombre_contextual';
+                $match['breadcrumbLevel'] = null;
+                $match['reviewRequired'] = true;
+                $match['reviewReason'] = 'El nombre parece ubicación, etapa o contexto; validar familia antes de aplicar.';
                 return $match;
             }
         }
@@ -130,6 +184,9 @@ class ActivityMatcher
 
         $parentChapter = (string) ($activity['__capitulo'] ?? '');
         if ($parentChapter !== '') {
+            foreach ($this->splitHierarchy($this->normalizeActivityText($parentChapter)) as $chapterLevel) {
+                $chapterSources[] = $chapterLevel;
+            }
             $chapterSources[] = $this->normalizeActivityText($parentChapter);
         }
 
@@ -301,9 +358,45 @@ class ActivityMatcher
             return [];
         }
 
-        $levels = array_map('trim', explode(',', $matches[1]));
+        return $this->splitHierarchy($matches[1]);
+    }
 
+    private function splitHierarchy(string $text): array
+    {
+        $levels = array_map('trim', explode(',', $text));
         return array_values(array_filter($levels, static fn($level) => $level !== ''));
+    }
+
+    private function isContextOnlyLeaf(string $name): bool
+    {
+        $name = trim(rtrim($name, ','));
+        if ($name === '') {
+            return true;
+        }
+        if (preg_match('/^(LOCALIZACION|REPLANTEO)\b/u', $name) === 1) {
+            return false;
+        }
+
+        $patterns = [
+            '/^PISO\s*\d+[A-Z]?$/u',
+            '/^SOTANO\s*\d+[A-Z]?$/u',
+            '/^EJE(?:S)?\s*[A-Z0-9,\sY-]+$/u',
+            '/^ZONA\s+[A-Z0-9,\s-]+$/u',
+            '/^TORRE\s+[A-Z0-9]+$/u',
+            '/^STAFF$/u',
+            '/^RETIRO(?:S)?$/u',
+            '/^SUMINISTRO(?:S)?$/u',
+            '/^INSTALACION(?:ES)?$/u',
+            '/^MONTAJE(?:S)?$/u',
+            '/^LOCAL(?:ES)?\s*[A-Z0-9,\s-]*$/u',
+        ];
+        foreach ($patterns as $pattern) {
+            if (preg_match($pattern, $name) === 1) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function isJmcCode(string $name): bool
