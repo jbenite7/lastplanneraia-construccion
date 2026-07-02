@@ -477,7 +477,7 @@
 				<div class="d-flex flex-wrap align-items-center" style="gap:6px;">
 					<button id="btn_cargarCronogramaExcel" type="button" class="btn-pdc-modern" title="Cargar actualización del cronograma desde Excel" data-toggle="modal" data-target="#modalCargarExcel" aria-label="Cargar cronograma desde Excel">Cargar desde Excel <i class="fas fa-upload fa-lg" aria-hidden="true"></i></button>
 					<button id="btn_eliminarActualizacion" type="button" class="btn-pdc-modern" title="Eliminar actualización del cronograma" data-toggle="modal" data-target="#modalEliminarActualizacion" aria-label="Eliminar actualización">Eliminar Actualización <i class="far fa-trash-alt fa-lg" aria-hidden="true"></i></button>
-					<button id="btn_toggleFiltroMapeo" type="button" class="btn-pdc-modern" title="Alternar visualización de actividades" aria-label="Alternar visualización">Mostrando Pendientes <i class="fas fa-filter fa-lg"></i></button>
+					<button id="btn_toggleFiltroMapeo" type="button" class="btn-pdc-modern" title="Alternar visualización de actividades" aria-label="Alternar visualización">Ver Programa Completo <i class="fas fa-filter fa-lg"></i></button>
 					<button id="btn_autoAsociar" type="button" class="btn-pdc-modern" title="Asociar automáticamente"><i class="fas fa-magic" aria-hidden="true"></i> Auto-Asociar</button>
 				</div>
 				<div class="pg-status-badges">

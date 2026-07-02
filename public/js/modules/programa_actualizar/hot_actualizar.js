@@ -372,10 +372,10 @@ window.HOTActualizarModule = (function() {
             filteredData = rawData.filter(function(row) {
                 return row.programaAnteriorAsociar === '*No Asociada*' || row.programaAnteriorAsociar === null || row.programaAnteriorAsociar === '';
             });
-            $("#btn_toggleFiltroMapeo").html('Mostrando Pendientes <i class="fas fa-filter fa-lg"></i>');
+            $("#btn_toggleFiltroMapeo").html('Ver Programa Completo <i class="fas fa-filter fa-lg"></i>');
             $("#btn_toggleFiltroMapeo").removeClass('btn-primary btn-outline-primary active');
         } else {
-            $("#btn_toggleFiltroMapeo").html('Mostrando Todas <i class="fas fa-list fa-lg"></i>');
+            $("#btn_toggleFiltroMapeo").html('Ver solo Pendientes <i class="fas fa-list fa-lg"></i>');
             $("#btn_toggleFiltroMapeo").removeClass('btn-primary btn-outline-primary active');
         }
 

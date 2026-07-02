@@ -625,7 +625,7 @@
 			}
 
 			#modalContrato .pasoProcesoContratacion .inputFormularioContratos:nth-child(2)::before {
-				content: 'Duracion';
+				content: 'Duración (Días Calendario)';
 			}
 
 			#modalContrato .pasoProcesoContratacion .inputFormularioContratos:nth-child(3)::before {
@@ -802,7 +802,7 @@
 													<span class="h6 font-weight-bold"></span>
 												</div>
 												<div class="labelFilaEncabezado">
-													<span class="h6 font-weight-bold">Duración (días)</span>
+													<span class="h6 font-weight-bold">Duración (Días Calendario)</span>
 												</div>
 												<div class="labelFilaEncabezado">
 													<span class="h6 font-weight-bold">Fecha Inicio Teórica</span>
@@ -823,11 +823,11 @@
 												</div>
 												<div class="inputFormularioContratos">
 													<i id="iconFechaElaboracionPliegosTeorica" class='fas fa-lg'></i>
-													<input id='fechaElaboracionPliegosTeorica' name='fechaElaboracionPliegosTeorica' class='form-control' type='text' value='' placeholder='Fecha Inicio Teórica' autocomplete="off">
+													<input id='fechaElaboracionPliegosTeorica' name='fechaElaboracionPliegosTeorica' class='form-control' type='text' value='' placeholder='Fecha Inicio Teórica' autocomplete="off" readonly>
 												</div>
 												<div class="inputFormularioContratos">
 													<i id="iconFechaElaboracionPliegos" class='fas fa-lg'></i>
-													<input id='fechaElaboracionPliegos' name='fechaElaboracionPliegos' class='form-control' type='text' value='' placeholder='Fecha Inicio Proyectada' autocomplete="off">
+													<input id='fechaElaboracionPliegos' name='fechaElaboracionPliegos' class='form-control' type='text' value='' placeholder='Fecha Inicio Proyectada' autocomplete="off" readonly>
 												</div>
 												<div class="inputFormularioContratos">
 													<i id="iconFechaRealElaboracionPliegos" class='fas fa-lg'></i>
@@ -843,11 +843,11 @@
 												</div>
 												<div class="inputFormularioContratos">
 													<i id="iconFechaEntregaPliegosTeorica" class='fas fa-lg'></i>
-													<input id='fechaEntregaPliegosTeorica' name='fechaEntregaPliegosTeorica' class='form-control' type='text' value='' placeholder='Fecha Inicio Teórica' autocomplete="off">
+													<input id='fechaEntregaPliegosTeorica' name='fechaEntregaPliegosTeorica' class='form-control' type='text' value='' placeholder='Fecha Inicio Teórica' autocomplete="off" readonly>
 												</div>
 												<div class="inputFormularioContratos">
 													<i id="iconFechaEntregaPliegos" class='fas fa-lg'></i>
-													<input id='fechaEntregaPliegos' name='fechaEntregaPliegos' class='form-control' type='text' value='' placeholder='Fecha Inicio Proyectada' autocomplete="off">
+													<input id='fechaEntregaPliegos' name='fechaEntregaPliegos' class='form-control' type='text' value='' placeholder='Fecha Inicio Proyectada' autocomplete="off" readonly>
 												</div>
 												<div class="inputFormularioContratos">
 													<i id="iconFechaRealEntregaPliegos" class='fas fa-lg'></i>
@@ -863,11 +863,11 @@
 												</div>
 												<div class="inputFormularioContratos">
 													<i id="iconFechaReciboPropuestasTeorica" class='fas fa-lg'></i>
-													<input id='fechaReciboPropuestasTeorica' name='fechaReciboPropuestasTeorica' class='form-control' type='text' value='' placeholder='Fecha Inicio Teórica' autocomplete="off">
+													<input id='fechaReciboPropuestasTeorica' name='fechaReciboPropuestasTeorica' class='form-control' type='text' value='' placeholder='Fecha Inicio Teórica' autocomplete="off" readonly>
 												</div>
 												<div class="inputFormularioContratos">
 													<i id="iconFechaReciboPropuestas" class='fas fa-lg'></i>
-													<input id='fechaReciboPropuestas' name='fechaReciboPropuestas' class='form-control' type='text' value='' placeholder='Fecha Inicio Proyectada' autocomplete="off">
+													<input id='fechaReciboPropuestas' name='fechaReciboPropuestas' class='form-control' type='text' value='' placeholder='Fecha Inicio Proyectada' autocomplete="off" readonly>
 												</div>
 												<div class="inputFormularioContratos">
 													<i id="iconFechaRealReciboPropuestas" class='fas fa-lg'></i>
@@ -883,11 +883,11 @@
 												</div>
 												<div class="inputFormularioContratos">
 													<i id="iconFechaCuadrosComparativosTeorica" class='fas fa-lg'></i>
-													<input id='fechaCuadrosComparativosTeorica' name='fechaCuadrosComparativosTeorica' class='form-control' type='text' value='' placeholder='Fecha Inicio Teórica' autocomplete="off">
+													<input id='fechaCuadrosComparativosTeorica' name='fechaCuadrosComparativosTeorica' class='form-control' type='text' value='' placeholder='Fecha Inicio Teórica' autocomplete="off" readonly>
 												</div>
 												<div class="inputFormularioContratos">
 													<i id="iconFechaCuadrosComparativos" class='fas fa-lg'></i>
-													<input id='fechaCuadrosComparativos' name='fechaCuadrosComparativos' class='form-control' type='text' value='' placeholder='Fecha Inicio Proyectada' autocomplete="off">
+													<input id='fechaCuadrosComparativos' name='fechaCuadrosComparativos' class='form-control' type='text' value='' placeholder='Fecha Inicio Proyectada' autocomplete="off" readonly>
 												</div>
 												<div class="inputFormularioContratos">
 													<i id="iconFechaRealCuadrosComparativos" class='fas fa-lg'></i>
@@ -903,11 +903,11 @@
 												</div>
 												<div class="inputFormularioContratos">
 													<i id="iconFechaLegalizacionContratoTeorica" class='fas fa-lg'></i>
-													<input id='fechaLegalizacionContratoTeorica' name='fechaLegalizacionContratoTeorica' class='form-control' type='text' value='' placeholder='Fecha Inicio Teórica' autocomplete="off">
+													<input id='fechaLegalizacionContratoTeorica' name='fechaLegalizacionContratoTeorica' class='form-control' type='text' value='' placeholder='Fecha Inicio Teórica' autocomplete="off" readonly>
 												</div>
 												<div class="inputFormularioContratos">
 													<i id="iconFechaLegalizacionContrato" class='fas fa-lg'></i>
-													<input id='fechaLegalizacionContrato' name='fechaLegalizacionContrato' class='form-control' type='text' value='' placeholder='Fecha Inicio Proyectada' autocomplete="off">
+													<input id='fechaLegalizacionContrato' name='fechaLegalizacionContrato' class='form-control' type='text' value='' placeholder='Fecha Inicio Proyectada' autocomplete="off" readonly>
 												</div>
 												<div class="inputFormularioContratos">
 													<i id="iconFechaRealLegalizacionContrato" class='fas fa-lg'></i>
@@ -956,11 +956,11 @@
 												</div>
 												<div class="inputFormularioContratos">
 													<i id="iconFechaFabricacionTeorica" class='fas fa-lg'></i>
-													<input id='fechaFabricacionTeorica' name='fechaFabricacionTeorica' class='form-control' type='text' value='' placeholder='Fecha Inicio Teórica' autocomplete="off">
+													<input id='fechaFabricacionTeorica' name='fechaFabricacionTeorica' class='form-control' type='text' value='' placeholder='Fecha Inicio Teórica' autocomplete="off" readonly>
 												</div>
 												<div class="inputFormularioContratos">
 													<i id="iconFechaFabricacion" class='fas fa-lg'></i>
-													<input id='fechaFabricacion' name='fechaFabricacion' class='form-control' type='text' value='' placeholder='Fecha Inicio Proyectada' autocomplete="off">
+													<input id='fechaFabricacion' name='fechaFabricacion' class='form-control' type='text' value='' placeholder='Fecha Inicio Proyectada' autocomplete="off" readonly>
 												</div>
 												<div class="inputFormularioContratos">
 													<i id="iconFechaRealFabricacion" class='fas fa-lg'></i>
@@ -976,11 +976,11 @@
 												</div>
 												<div class="inputFormularioContratos">
 													<i id="iconFechaInsumosObraTeorica" class='fas fa-lg'></i>
-													<input id='fechaInsumosObraTeorica' name='fechaInsumosObraTeorica' class='form-control' type='text' value='' placeholder='Fecha Inicio Teórica' autocomplete="off">
+													<input id='fechaInsumosObraTeorica' name='fechaInsumosObraTeorica' class='form-control' type='text' value='' placeholder='Fecha Inicio Teórica' autocomplete="off" readonly>
 												</div>
 												<div class="inputFormularioContratos">
 													<i id="iconFechaInsumosObra" class='fas fa-lg'></i>
-													<input id='fechaInsumosObra' name='fechaInsumosObra' class='form-control' type='text' value='' placeholder='Fecha Inicio Proyectada' autocomplete="off">
+													<input id='fechaInsumosObra' name='fechaInsumosObra' class='form-control' type='text' value='' placeholder='Fecha Inicio Proyectada' autocomplete="off" readonly>
 												</div>
 												<div class="inputFormularioContratos">
 													<i id="iconFechaRealInsumosObra" class='fas fa-lg'></i>
@@ -996,11 +996,11 @@
 												</div>
 												<div class="inputFormularioContratos">
 													<i id="iconFechaInicioProyectadaContratoTeorica" class='fas fa-lg'></i>
-													<input id='fechaInicioProyectadaContratoTeorica' name='fechaInicioProyectadaContratoTeorica' class='form-control' type='text' value='' placeholder='Fecha Inicio Teórica' autocomplete="off">
+													<input id='fechaInicioProyectadaContratoTeorica' name='fechaInicioProyectadaContratoTeorica' class='form-control' type='text' value='' placeholder='Fecha Inicio Teórica' autocomplete="off" readonly>
 												</div>
 												<div class="inputFormularioContratos">
 													<i id="iconFechaInicioProyectadaContrato" class='fas fa-lg'></i>
-													<input id='fechaInicioProyectadaContrato' name='fechaInicioProyectadaContrato' class='form-control' type='text' value='' placeholder='Fecha Inicio Proyectada' autocomplete="off">
+													<input id='fechaInicioProyectadaContrato' name='fechaInicioProyectadaContrato' class='form-control' type='text' value='' placeholder='Fecha Inicio Proyectada' autocomplete="off" readonly>
 												</div>
 												<div class="inputFormularioContratos">
 													<i id="iconFechaRealInicioProyectadaContrato" class='fas fa-lg'></i>
@@ -1873,7 +1873,7 @@
 			});
 
 			// 1. Action Buttons (Left)
-			$("div.toolbarAcciones").html(`<div class="grupo_botones1 ps-toolbar-actions" role="group" aria-label="Actions"><button id="btn_actualizarPDC" class="btn-pdc-modern ps-btn-gap" title="Actualizar items" onclick="actualizarPDC()">Actualizar <i class="fas fa-sync fa-lg"></i></button><button id="btn_definirContratosPDC" class="btn-pdc-modern ps-btn-gap" title="Desglosar Subcontratos" onclick="obtener_data_definirContratos()">Desglosar <i class="fa fa-list-ol fa-lg" aria-hidden="true"></i></button><button id="btn_auto_generar_desde_actividades" class="btn-pdc-modern ps-btn-gap" title="Auto-generar Plan de Compras desde actividades con contratos asignados"><i class="fas fa-magic"></i> Auto-Generar desde Actividades</button><button id="btn_soloAlertas" class="btn-pdc-modern ps-btn-gap pdc-btn-alertas" title="Mostrar solo paquetes que necesitan atención" onclick="toggleSoloAlertas()"><i class="fas fa-bell fa-lg"></i> Solo Alertas <span id="count-alertas" class="badge badge-light"></span></button></div>`);
+			$("div.toolbarAcciones").html(`<div class="grupo_botones1 ps-toolbar-actions" role="group" aria-label="Actions"><button id="btn_actualizarPDC" class="btn-pdc-modern ps-btn-gap" title="Actualizar items" onclick="actualizarPDC()">Actualizar <i class="fas fa-sync fa-lg"></i></button><button id="btn_definirContratosPDC" class="btn-pdc-modern ps-btn-gap" title="Desglosar Subcontratos" onclick="obtener_data_definirContratos()">Desglosar <i class="fa fa-list-ol fa-lg" aria-hidden="true"></i></button><button id="btn_auto_generar_desde_contratos" class="btn-pdc-modern ps-btn-gap" title="Auto-generar Plan de Compras desde Contratos"><i class="fas fa-magic"></i> Auto-Generar desde Contratos</button><button id="btn_soloAlertas" class="btn-pdc-modern ps-btn-gap pdc-btn-alertas" title="Mostrar solo paquetes que necesitan atención" onclick="toggleSoloAlertas()"><i class="fas fa-bell fa-lg"></i> Solo Alertas <span id="count-alertas" class="badge badge-light"></span></button></div>`);
 			if (window.SemiAutoReview) {
 				window.SemiAutoReview.init({
 					module: 'pdc',
@@ -1883,7 +1883,7 @@
 			}
 
 			// 2. Navigation Bar (Center/Middle)
-			$("div.toolbarNavegacion").html('<div class="grupo_botones_semanal_madre ps-toolbar-nav-wrap"><div class="ps-module-switcher" role="tablist" aria-label="Navegacion general"><button id="btn_Actividades" type="button" class="ps-module-tab" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_listadoActividades&semana='+semana+'\'" aria-label="Ir a Actividades"><i class="fas fa-table" aria-hidden="true"></i><span>Actividades</span></button><button id="btn_contratos" type="button" class="ps-module-tab" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=info_contratos&semana='+semana+'\'" aria-label="Ir a Contratos"><i class="fas fa-file-alt" aria-hidden="true"></i><span>Contratos</span></button><button id="btn_planCompras" type="button" class="ps-module-tab is-active" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=planCompras&semana='+semana+'&origen=planCompras\'" aria-label="Ir a Plan de Compras" aria-current="page"><i class="fas fa-shopping-cart" aria-hidden="true"></i><span>Plan de Compras</span></button></div></div>');
+			$("div.toolbarNavegacion").html('<div class="grupo_botones_semanal_madre ps-toolbar-nav-wrap"><div class="ps-module-switcher" role="tablist" aria-label="Navegacion general"><button id="btn_Actividades" type="button" class="ps-module-tab" onclick="window.location.href=\'/listado-actividades?semana='+semana+'\'" aria-label="Ir a Actividades"><i class="fas fa-table" aria-hidden="true"></i><span>Actividades</span></button><button id="btn_contratos" type="button" class="ps-module-tab" onclick="window.location.href=\'/contratos?semana='+semana+'\'" aria-label="Ir a Contratos"><i class="fas fa-file-alt" aria-hidden="true"></i><span>Contratos</span></button><button id="btn_planCompras" type="button" class="ps-module-tab is-active" onclick="window.location.href=\'/pdc?semana='+semana+'&origen=planCompras\'" aria-label="Ir a Plan de Compras" aria-current="page"><i class="fas fa-shopping-cart" aria-hidden="true"></i><span>Plan de Compras</span></button></div></div>');
 
 			$("div.toolbarFilaMensajes").html(`
 				<div class="pdc-legend">
@@ -2441,7 +2441,7 @@
 			  finSemanaActual = anio + "-" + mesConCero + "-" + diaConCero;
 
 				//console.log(fechaActual, finSemanaActual);
-		  if (finSemanaActual >= fechaRealInicioProyectadaContrato && finSemanaActual >= fechaRealInsumosObra && finSemanaActual >= fechaRealFabricacion && finSemanaActual >= fechaRealLegalizacionContrato && finSemanaActual >= fechaRealCuadrosComparativos && finSemanaActual >= fechaRealReciboPropuestas && finSemanaActual >= fechaRealEntregaPliegos && finSemanaActual >= fechaRealElaboracionPliegos) {
+		  if (true) {
 		    if (isNaN(diasInsumosObra) || diasInsumosObra < 0) {
 		      diasInsumosObra = 0;
 		      document.getElementById('diasInsumosObra').value = "";
@@ -2756,9 +2756,8 @@
 			var semana = obtenerSemanaPdc();
 			$.ajax({
 				method:"POST",
-				url: "/legacy/pdc/actualizar_pdc.php?db="+db,
-				contenttype:"charset=utf-8",
-				data: {"db": db, "semana": semana}
+				url: '/api/pdc/auto/apply-from-contratos?db=' + encodeURIComponent(db) + '&semana=' + encodeURIComponent(semana),
+				dataType: 'json'
 			}).done( function( info ){
 				var json_info = (typeof info === 'string' ? JSON.parse( info ) : info);
 				// console.log(json_info);
@@ -2886,7 +2885,7 @@
 					// mostrar_mensaje( json_info );
 					if(json_info == "OK"){
 						$("#modalContrato #cuadro4").scrollTop(0);
-						$("#modalContrato").modal("hide");
+						cerrarModalContrato();
 						recargarTabla('');
 
 						document.getElementById('mensajeActualizacion').style.color = "#333"; // Use dark text for card
@@ -2908,6 +2907,13 @@
 					}
 				});
 			});
+		}
+
+		function cerrarModalContrato() {
+			$("#modalContrato").modal("hide");
+			$("#modalContrato").removeClass("show").hide().attr("aria-hidden", "true").removeAttr("aria-modal");
+			$(".modal-backdrop").remove();
+			$("body").removeClass("modal-open").css("padding-right", "");
 		}
 
 		/*Toma los datos de la fila en la que se presionó el botón eliminar*/
@@ -3100,8 +3106,8 @@
 
 
 
-		/* Auto-Generar desde Actividades (Fase 3) */
-		$(document).off('click.autoGenFromAct', '#btn_auto_generar_desde_actividades').on('click.autoGenFromAct', '#btn_auto_generar_desde_actividades', function(e) {
+		/* Auto-Generar desde Contratos */
+		$(document).off('click.autoGenFromContracts', '#btn_auto_generar_desde_contratos').on('click.autoGenFromContracts', '#btn_auto_generar_desde_contratos', function(e) {
 			e.preventDefault();
 			if (window.SemiAutoReview) {
 				window.SemiAutoReview.open('pdc');
@@ -3113,24 +3119,24 @@
 
 			if (typeof AIA !== 'undefined' && AIA.Notice && AIA.Notice.confirm) {
 				AIA.Notice.confirm(
-					'Esto generará/actualizará el Plan de Compras desde las actividades con contratos asignados. ¿Continuar?',
+					'Esto generará/actualizará el Plan de Compras desde Contratos. ¿Continuar?',
 					'Auto-Generar PDC'
 				).then(function(confirmed) {
 					if (!confirmed) return;
-					ejecutarAutoGenerarDesdeActividades(btn, db, semana);
+					ejecutarAutoGenerarDesdeContratos(btn, db, semana);
 				});
 			} else {
-				if (!confirm('¿Generar/actualizar el Plan de Compras desde las actividades con contratos asignados?')) return;
-				ejecutarAutoGenerarDesdeActividades(btn, db, semana);
+				if (!confirm('¿Generar/actualizar el Plan de Compras desde Contratos?')) return;
+				ejecutarAutoGenerarDesdeContratos(btn, db, semana);
 			}
 		});
 
-		function ejecutarAutoGenerarDesdeActividades(btn, db, semana) {
+		function ejecutarAutoGenerarDesdeContratos(btn, db, semana) {
 			btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Generando...');
 
 			$.ajax({
 				method: 'POST',
-				url: '/api/pdc/auto/apply-from-actividades?db=' + encodeURIComponent(db) + '&semana=' + encodeURIComponent(semana),
+				url: '/api/pdc/auto/apply-from-contratos?db=' + encodeURIComponent(db) + '&semana=' + encodeURIComponent(semana),
 				dataType: 'json'
 			}).done(function(response) {
 				if (!response || response.respuesta !== 'BIEN') {
@@ -3139,7 +3145,7 @@
 					} else {
 						alert((response && response.mensaje) || 'No se pudo generar el Plan de Compras.');
 					}
-					btn.prop('disabled', false).html('<i class="fas fa-magic"></i> Auto-Generar desde Actividades');
+					btn.prop('disabled', false).html('<i class="fas fa-magic"></i> Auto-Generar desde Contratos');
 					return;
 				}
 
@@ -3150,7 +3156,7 @@
 					alert(msg.replace(/<[^>]+>/g, ''));
 				}
 
-				btn.prop('disabled', false).html('<i class="fas fa-magic"></i> Auto-Generar desde Actividades');
+				btn.prop('disabled', false).html('<i class="fas fa-magic"></i> Auto-Generar desde Contratos');
 
 				if (typeof recargarTabla === 'function') {
 					recargarTabla();
@@ -3165,7 +3171,7 @@
 				} else {
 					alert(mensaje);
 				}
-				btn.prop('disabled', false).html('<i class="fas fa-magic"></i> Auto-Generar desde Actividades');
+				btn.prop('disabled', false).html('<i class="fas fa-magic"></i> Auto-Generar desde Contratos');
 			});
 		}
 
