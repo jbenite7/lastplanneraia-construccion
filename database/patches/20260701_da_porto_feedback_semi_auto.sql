@@ -14,7 +14,7 @@ INSERT INTO `general_pdc_familias` (`codigo`, `nombre`, `categoria`, `orden`, `s
 ('MALACATE', 'Malacate', 'EQUIPOS', 1045, 0),
 ('GRIFERIAS_INCRUSTACIONES', 'Griferias e Incrustaciones', 'ACABADOS', 606, 0),
 ('GEODREN', 'Geodren', 'CIMENTACION', 185, 0),
-('ASEO', 'Aseo de Apartamentos y Obra', 'ACABADOS', 620, 1),
+('ASEO', 'Aseo', 'ACABADOS', 620, 1),
 ('BOTADA_ESCOMBROS', 'Botada de Escombros', 'URBANISMO', 845, 1),
 ('AMENIDADES_CUBIERTA', 'Amenidades Especiales de Cubierta', 'ACABADOS', 621, 1)
 ON DUPLICATE KEY UPDATE
