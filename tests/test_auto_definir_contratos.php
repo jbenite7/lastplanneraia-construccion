@@ -1,14 +1,7 @@
 <?php
 
 /**
- * Smoke test: Auto-Definir Contratos
- *
- * Verifies:
- *   1. ActivityMatcher returns confidence as float in matchActivity()
- *   2. ContratosApiController auto-define methods exist (structural)
- *   3. New columns exist in actividades table
- *   4. Auto contrato log table structure
- *   5. RBAC permission exists
+ * Smoke test: retiro del auto-definir legacy de Contratos.
  *
  * Usage: docker compose exec app php tests/test_auto_definir_contratos.php
  */
@@ -20,183 +13,97 @@ $passed = 0;
 $failed = 0;
 $skipped = 0;
 
-function pass(string $test_name): void
+function pass(string $testName): void
 {
     global $passed;
-    echo "  \u{2705} PASS: $test_name\n";
+    echo "  PASS: $testName\n";
     $passed++;
 }
 
-function fail(string $test_name, string $detail = ''): void
+function fail(string $testName, string $detail = ''): void
 {
     global $failed;
-    $msg = $detail ? " \u{2014} $detail" : '';
-    echo "  \u{274C} FAIL: $test_name$msg\n";
+    $message = $detail !== '' ? " - $detail" : '';
+    echo "  FAIL: $testName$message\n";
     $failed++;
 }
 
 function skip(string $reason): void
 {
     global $skipped;
-    echo "  \u{23ED}\u{FE0F}  SKIP: $reason\n";
+    echo "  SKIP: $reason\n";
     $skipped++;
 }
 
-echo "=== Smoke Test: Auto-Definir Contratos ===\n\n";
+echo "=== Smoke Test: Contratos moderno reemplaza auto-definir legacy ===\n\n";
 
+$root = dirname(__DIR__);
 $db = Database::getInstance();
-$actividadesTable = 'actividades';
-$logTable = 'auto_contrato_log';
 
-// ─────────────────────────────────────────────
-// Test 1: ActivityMatcher confidence as float
-// ─────────────────────────────────────────────
-echo "--- Test 1: ActivityMatcher confidence ---\n";
-
-require_once __DIR__ . '/../src/Support/ActivityMatcher.php';
-
+echo "--- Matcher y permisos base ---\n";
 $matcher = new \App\Support\ActivityMatcher();
 $rules = $matcher->loadRules();
-
 if (empty($rules)) {
-    skip('No matching rules found in general_pdc_activity_rules');
+    skip('No hay reglas en general_pdc_activity_rules para validar match.');
 } else {
-    echo "  (Found " . count($rules) . " rules)\n";
-
-    // Try a sample PG activity
-    $testActivity = ['Actividad' => 'PRELIMINARES - CAMPAMENTO'];
-    $result = $matcher->matchActivity($testActivity, $rules);
-
+    $result = $matcher->matchActivity(['Actividad' => 'PRELIMINARES - CAMPAMENTO'], $rules);
     if ($result === null) {
-        skip('Sample activity did not match any rule (data-dependent)');
+        skip('La actividad de muestra no hizo match; depende de datos locales.');
     } else {
-        pass('matchActivity() returned a match result');
-
-        // Check confidence key exists
-        if (isset($result['confidence'])) {
-            pass('matchActivity() result contains confidence key');
-
-            $confidence = $result['confidence'];
-
-            if (is_float($confidence)) {
-                pass('confidence is type float');
-            } elseif (is_int($confidence)) {
-                fail('confidence is int, expected float', 'Value: ' . $confidence);
-            } elseif (is_numeric($confidence)) {
-                fail('confidence is numeric but not float', 'Type: ' . gettype($confidence) . ' Value: ' . $confidence);
-            } else {
-                fail('confidence is not numeric', 'Type: ' . gettype($confidence));
-            }
-
-            if ($confidence >= 0 && $confidence <= 100) {
-                pass('confidence is in range [0, 100]');
-            } else {
-                fail('confidence out of range', 'Value: ' . $confidence);
-            }
-        } else {
-            fail('matchActivity() result missing confidence key', 'Keys: ' . implode(', ', array_keys($result)));
-        }
+        is_float($result['confidence'] ?? null)
+            ? pass('ActivityMatcher entrega confianza como decimal')
+            : fail('ActivityMatcher no entrega confianza decimal', gettype($result['confidence'] ?? null));
     }
 }
-
-// ─────────────────────────────────────────────
-// Test 2: Method existence (structural)
-// ─────────────────────────────────────────────
-echo "--- Test 2: ContratosApiController method structure ---\n";
-
-$controllerClass = 'App\\Controllers\\Api\\ContratosApiController';
-
-if (class_exists($controllerClass)) {
-    pass('ContratosApiController class exists');
-
-    $expectedMethods = ['autoDefine', 'autoDefineApply', 'autoDefineReanalyze', 'autoDefineUndo'];
-    foreach ($expectedMethods as $method) {
-        if (method_exists($controllerClass, $method)) {
-            pass("Method $method() exists");
-        } else {
-            fail("Method $method() does not exist");
-        }
-    }
-} else {
-    fail('ContratosApiController class not found', 'Autoloader may be misconfigured');
-}
-
-// ─────────────────────────────────────────────
-// Test 3: New columns in actividades table
-// ─────────────────────────────────────────────
-echo "--- Test 3: Nuevas columnas en actividades ---\n";
-
-try {
-    $stmt = $db->query("DESCRIBE {$actividadesTable}");
-    $columns = [];
-    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        $columns[$row['Field']] = $row;
-    }
-
-    $newColumns = ['numeroSubcontratos', 'confianza_deteccion', 'ultimo_auto_definir', 'fechaInicioProyectada'];
-    foreach ($newColumns as $col) {
-        if (isset($columns[$col])) {
-            pass("Column '$col' exists");
-        } else {
-            fail("Column '$col' does not exist", 'Table is missing this column');
-        }
-    }
-} catch (\Throwable $e) {
-    fail('Could not describe actividades table', $e->getMessage());
-}
-
-// ─────────────────────────────────────────────
-// Test 4: Auto contrato log table
-// ─────────────────────────────────────────────
-echo "--- Test 4: Auto contrato log table ---\n";
-
-$stmt = $db->query("SHOW TABLES LIKE '$logTable'");
-$logTableExists = $stmt->fetch() !== false;
-
-if (!$logTableExists) {
-    skip("$logTable table does not exist (created at runtime by ensureAutoContratoLogTable())");
-} else {
-    pass("$logTable table exists");
-
-    $stmt = $db->query("DESCRIBE $logTable");
-    $logCols = [];
-    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        $logCols[$row['Field']] = $row;
-    }
-
-    $expectedLogCols = ['id', 'semana', 'Id_actividad', 'accion', 'batch_id', 'creado_en'];
-    foreach ($expectedLogCols as $col) {
-        if (isset($logCols[$col])) {
-            pass("Log column '$col' exists");
-        } else {
-            fail("Log column '$col' does not exist");
-        }
-    }
-}
-
-// ─────────────────────────────────────────────
-// Test 5: RBAC permission
-// ─────────────────────────────────────────────
-echo "--- Test 5: RBAC permission ---\n";
 
 try {
     $stmt = $db->query(
-        "SELECT COUNT(*) as cnt FROM rbac_permissions WHERE permission_key = 'lps.contratos.auto_definir'"
+        "SELECT COUNT(*) AS total FROM rbac_permissions WHERE permission_key = 'lps.contratos.auto_definir'"
     );
-    $result = $stmt->fetch(PDO::FETCH_ASSOC);
-    $cnt = (int) ($result['cnt'] ?? 0);
-
-    if ($cnt > 0) {
-        pass("lps.contratos.auto_definir permission exists in DB ($cnt row(s))");
-    } else {
-        fail('lps.contratos.auto_definir permission not found in rbac_permissions');
-    }
-} catch (\Throwable $e) {
-    fail('Could not query rbac_permissions table', $e->getMessage());
+    $total = (int) (($stmt->fetch(PDO::FETCH_ASSOC)['total'] ?? 0));
+    $total > 0
+        ? pass('El permiso de asistente de Contratos existe')
+        : fail('Falta el permiso lps.contratos.auto_definir');
+} catch (Throwable $e) {
+    fail('No se pudo consultar permisos', $e->getMessage());
 }
 
-// ─────────────────────────────────────────────
-// Summary
-// ─────────────────────────────────────────────
+echo "--- Controlador y rutas ---\n";
+$controllerClass = 'App\\Controllers\\Api\\ContratosApiController';
+if (!class_exists($controllerClass)) {
+    fail('ContratosApiController no existe');
+} else {
+    pass('ContratosApiController existe');
+    foreach (['list', 'save', 'autoAssign'] as $method) {
+        method_exists($controllerClass, $method)
+            ? pass("Metodo moderno/base $method() disponible")
+            : fail("Falta metodo $method()");
+    }
+    foreach (['autoDefine', 'autoDefineApply', 'autoDefineReanalyze', 'autoDefineUndo'] as $method) {
+        !method_exists($controllerClass, $method)
+            ? pass("Metodo legacy $method() retirado del controlador")
+            : fail("Metodo legacy $method() sigue en el controlador");
+    }
+}
+
+$routes = file_get_contents($root . '/public/index.php') ?: '';
+!str_contains($routes, "/api/contratos/auto-define")
+    ? pass('Las rutas legacy auto-define fueron retiradas del router')
+    : fail('Alguna ruta legacy auto-define sigue declarada');
+
+!str_contains($routes, "[\\App\\Controllers\\Api\\ContratosApiController::class, 'autoDefine")
+    ? pass('Las rutas auto-define ya no apuntan al controlador')
+    : fail('Alguna ruta auto-define sigue conectada al controlador');
+
+echo "--- Vista de Contratos ---\n";
+$view = file_get_contents($root . '/views/contratos/contratos.view.php') ?: '';
+str_contains($view, "SemiAutoReview.open('contratos')")
+    ? pass('El boton abre el asistente moderno de Contratos')
+    : fail('El boton no abre el asistente moderno');
+
+!str_contains($view, 'modalAutoAsignarContratos') && !str_contains($view, '/api/contratos/auto-define')
+    ? pass('La vista no conserva modal ni llamadas legacy auto-define')
+    : fail('La vista conserva residuos legacy auto-define');
+
 echo "\n=== Results: $passed passed, $failed failed, $skipped skipped ===\n";
 exit($failed > 0 ? 1 : 0);

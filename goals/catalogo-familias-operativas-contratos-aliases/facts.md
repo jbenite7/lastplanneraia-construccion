@@ -1,0 +1,36 @@
+# Facts
+
+- `general_pdc_familias` queda como catálogo exclusivo de familias operativas para `/listado-actividades/`.
+- Los aliases de familia viven en una tabla separada y cada alias apunta a una familia operativa canónica.
+- Los elementos contractuales viven fuera de `general_pdc_familias` y alimentan `/contratos/`, no `/listado-actividades/`.
+- Los registros que hoy no son familias operativas se eliminan definitivamente de `general_pdc_familias` después de migrar aliases, contratos y reglas relacionadas.
+- Las reglas de aliases se reasignan a la familia canónica correspondiente.
+- Las reglas contractuales dejan de alimentar `/listado-actividades/` y pasan a reglas o asociaciones usadas por `/contratos/` cuando aplique.
+- Las reglas que no puedan reasignarse con confianza quedan inactivas o por revisar, no listas para uso automático.
+- La matriz de validación humana muestra únicamente familias operativas canónicas en el desplegable de familia correcta.
+- En `/listado-actividades/`, Da Porto y Optimización Aeropuerto JMC no pueden tener más familias identificadas que el total de familias operativas predefinidas.
+- En `/listado-actividades/`, ninguna propuesta lista puede crear una actividad con alias o elemento contractual como nombre de familia.
+- `/contratos/` conserva visibilidad de paquetes contractuales derivados de los elementos retirados de `general_pdc_familias`.
+- Existe una forma de administración para mantener familias operativas, aliases y asociaciones contractuales sin volver a mezclar conceptos.
+- La evidencia final incluye conteos auditables de familias operativas, aliases y elementos contractuales, más pruebas E2E en JMC y Da Porto.
+- `/listado-actividades/`, `/contratos/` y `/pdc/` quedan cubiertos en CRUD manual, ciclo semi-auto, navegación por proyecto/semana, guardar/recargar y reportes derivados.
+- El retiro de legacy se limita a Listado, Contratos, PDC y sus dependencias directas; otros legacy globales quedan fuera de alcance salvo que bloqueen estos flujos.
+- El flujo moderno de PDC reemplaza `src/Legacy/actualizar_pdc.php` y la ruta `/legacy/pdc/actualizar_pdc.php` cuando la paridad esté probada.
+- Los endpoints legacy `/api/contratos/auto-define*` se retiran si el semi-auto moderno cubre la función.
+- Los modales, botones y JS legacy de auto-asignación/auto-definición se eliminan cuando el asistente semi-auto moderno los reemplaza.
+- Las dependencias runtime a tablas `{prefix}_actividades`, `{prefix}_pdc` y equivalentes de estos módulos se eliminan después de verificar tablas globales.
+- Antes de cualquier `DROP` o borrado destructivo se crea un backup externo verificable; primero se ejecuta localmente y producción requiere rutina explícita aparte.
+- Las tablas legacy migradas por prefijo y archives huérfanos de estos módulos se eliminan definitivamente cuando estén respaldados y sin uso runtime.
+- Los backups externos, reportes de limpieza, migraciones y patches históricos se conservan aunque mencionen legacy.
+- La administración completa incluye CRUD con auditoría, activar/desactivar, importar/exportar, reasignar reglas, vista de impacto y permisos admin.
+- Los reportes derivados de PDC prueban informe PDC y curva PDC comparando conteos, fechas y campos clave sin SQL por prefijo.
+- La implementación se ejecuta por fases: catálogo/reglas, contratos, PDC, UI/admin, eliminación legacy y evidencia final.
+- El motor frena y pide revisión humana ante familia desconocida, más familias detectadas que el catálogo, regla dudosa o falta de trazabilidad.
+- La evidencia final incluye tests PHP de migración/reglas, auditoría de ausencia de legacy runtime, smoke CRUD manual y E2E con recording/capturas para JMC y Da Porto.
+- La validación de `/listado-actividades/` exige familia canónica, trazabilidad completa, ausencia de contexto usado como familia y una muestra humana obligatoria.
+- Los datos históricos se migran cuando exista equivalencia segura, conservan el texto original en auditoría y quedan por revisar cuando no haya equivalencia confiable.
+- Las rutas y endpoints legacy se deprecan con redirección o mensaje claro antes de retirarse definitivamente.
+- La administración completa incluye flujo de aprobación además de CRUD con auditoría, importar/exportar, vista de impacto y permisos admin.
+- La evidencia obligatoria cubre Optimización Aeropuerto JMC, Da Porto, un proyecto Metrolinea y Milan Campestre Torre 19.
+- Antes de cualquier borrado destructivo se prueba backup externo, restauración local y comparación de datos.
+- Actividad representa trabajo operativo; contrato representa paquete/proveedor/modalidad; PDC se genera desde Contratos y hace seguimiento a pasos y fechas del proceso de contratación sin crear nuevas familias. (Ya está desarrollado asi, pero se puede revisar y mejorar)

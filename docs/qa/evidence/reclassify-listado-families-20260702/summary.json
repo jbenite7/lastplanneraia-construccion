@@ -1,0 +1,27 @@
+{
+    "created_at": "2026-07-02T07:58:31-05:00",
+    "projects": [
+        {
+            "project_id": 68,
+            "week": 7,
+            "label": "jmc",
+            "program_leaves": 1475,
+            "families_created_or_kept": 36,
+            "activities_before": 36,
+            "activities_after": 36,
+            "deleted_old_rows": 1,
+            "inserted_new_rows": 1
+        },
+        {
+            "project_id": 73,
+            "week": 8,
+            "label": "da-porto",
+            "program_leaves": 242,
+            "families_created_or_kept": 21,
+            "activities_before": 21,
+            "activities_after": 21,
+            "deleted_old_rows": 0,
+            "inserted_new_rows": 0
+        }
+    ]
+}

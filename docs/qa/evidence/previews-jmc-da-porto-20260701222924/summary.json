@@ -1,0 +1,848 @@
+{
+  "generatedAt": "2026-07-01T22:29:36.133Z",
+  "summaries": [
+    {
+      "project": "Optimizacion Aeropuerto JMC",
+      "projectId": 68,
+      "week": 5,
+      "module": "listado-actividades",
+      "runId": "run_15870290a099080a318116ec73ede7da",
+      "total": 823,
+      "preselected": 327,
+      "ready": 327,
+      "review": 64,
+      "conflict": 432,
+      "actions": {
+        "create_activity": 401,
+        "review_no_match": 422
+      },
+      "samples": [
+        {
+          "action": "create_activity",
+          "title": "Crear actividad consolidada",
+          "subtitle": "Deteccion de Incendio",
+          "gate": "ready",
+          "reason": "Familia detectada: Deteccion de Incendio",
+          "blockers": [],
+          "reviewReasons": [],
+          "startActivity": "Detector multisensor óptico/térmico, [Capítulo: Seguridad y control, Suministros, Redes, (5) SALA DE EMBARQUE REMOTA NACIONAL] | 2027-01-29",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "Deteccion de Incendio",
+              "chapter": "seguridad y control, suministros, redes, (5) sala de embarque remota nacional",
+              "context": "seguridad y control, suministros, redes, (5) sala de embarque remota nacional",
+              "rule_id": 114,
+              "activity": "Detector multisensor óptico/térmico, [Capítulo: Seguridad y control, Suministros, Redes, (5) SALA DE EMBARQUE REMOTA NACIONAL]",
+              "family_id": 51,
+              "unique_id": 1328,
+              "confidence": 95,
+              "matched_by": "nombre",
+              "risk_flags": [
+                "redes_o_tuberias"
+              ],
+              "start_date": "2027-01-29",
+              "matched_rule": "nombre",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "",
+              "clean_activity": "Detector multisensor óptico/térmico,",
+              "intervention_hint": "",
+              "original_activity": "Detector multisensor óptico/térmico, [Capítulo: Seguridad y control, Suministros, Redes, (5) SALA DE EMBARQUE REMOTA NACIONAL]"
+            }
+          ]
+        },
+        {
+          "action": "create_activity",
+          "title": "Crear actividad consolidada",
+          "subtitle": "Equipos de Extincion - Red Hidrosanitaria",
+          "gate": "ready",
+          "reason": "Familia detectada: Equipos de Extincion",
+          "blockers": [],
+          "reviewReasons": [],
+          "startActivity": "Instalación tubería y accesorios FBO/Staff, [Capítulo: Extinción, Redes, (5) SALA DE EMBARQUE REMOTA NACIONAL] | 2026-09-02",
+          "sourceCount": 3,
+          "sources": [
+            {
+              "family": "Equipos de Extincion",
+              "chapter": "extinción, redes, (5) sala de embarque remota nacional",
+              "context": "extinción, redes, (5) sala de embarque remota nacional",
+              "rule_id": 115,
+              "activity": "Instalación tubería y accesorios FBO/Staff, [Capítulo: Extinción, Redes, (5) SALA DE EMBARQUE REMOTA NACIONAL]",
+              "family_id": 52,
+              "unique_id": 1350,
+              "confidence": 94,
+              "matched_by": "breadcrumb",
+              "risk_flags": [
+                "extincion_incendio",
+                "redes_o_tuberias"
+              ],
+              "start_date": "2026-09-02",
+              "matched_rule": "breadcrumb",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "",
+              "clean_activity": "Instalación tubería y accesorios FBO/Staff,",
+              "intervention_hint": "",
+              "original_activity": "Instalación tubería y accesorios FBO/Staff, [Capítulo: Extinción, Redes, (5) SALA DE EMBARQUE REMOTA NACIONAL]"
+            },
+            {
+              "family": "Equipos de Extincion",
+              "chapter": "extinción, redes, (5) sala de embarque remota nacional",
+              "context": "extinción, redes, (5) sala de embarque remota nacional",
+              "rule_id": 115,
+              "activity": "Instalación tubería y accesorios zona pasillo, [Capítulo: Extinción, Redes, (5) SALA DE EMBARQUE REMOTA NACIONAL]",
+              "family_id": 52,
+              "unique_id": 1351,
+              "confidence": 94,
+              "matched_by": "breadcrumb",
+              "risk_flags": [
+                "extincion_incendio",
+                "redes_o_tuberias"
+              ],
+              "start_date": "2026-12-02",
+              "matched_rule": "breadcrumb",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "zona pasillo",
+              "clean_activity": "Instalación tubería y accesorios zona pasillo,",
+              "intervention_hint": "",
+              "original_activity": "Instalación tubería y accesorios zona pasillo, [Capítulo: Extinción, Redes, (5) SALA DE EMBARQUE REMOTA NACIONAL]"
+            },
+            {
+              "family": "Equipos de Extincion",
+              "chapter": "extinción, redes, (5) sala de embarque remota nacional",
+              "context": "extinción, redes, (5) sala de embarque remota nacional",
+              "rule_id": 115,
+              "activity": "Instalación tubería y accesorios zona bandas, [Capítulo: Extinción, Redes, (5) SALA DE EMBARQUE REMOTA NACIONAL]",
+              "family_id": 52,
+              "unique_id": 1352,
+              "confidence": 94,
+              "matched_by": "breadcrumb",
+              "risk_flags": [
+                "extincion_incendio",
+                "redes_o_tuberias"
+              ],
+              "start_date": "2027-03-03",
+              "matched_rule": "breadcrumb",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "zona bandas",
+              "clean_activity": "Instalación tubería y accesorios zona bandas,",
+              "intervention_hint": "",
+              "original_activity": "Instalación tubería y accesorios zona bandas, [Capítulo: Extinción, Redes, (5) SALA DE EMBARQUE REMOTA NACIONAL]"
+            }
+          ]
+        },
+        {
+          "action": "create_activity",
+          "title": "Crear actividad consolidada",
+          "subtitle": "Equipos de Extincion - Suministro - Extinción Contra Incendio",
+          "gate": "ready",
+          "reason": "Familia detectada: Equipos de Extincion",
+          "blockers": [],
+          "reviewReasons": [],
+          "startActivity": "Equipos y gabinetes, [Capítulo: Suministros, Seguridad y control, Redes, (5A) EQUIPAJE LLEGANDO (edificación nueva)] | 2026-11-03",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "Equipos de Extincion",
+              "chapter": "suministros, seguridad y control, redes, (5a) equipaje llegando (edificación nueva)",
+              "context": "suministros, seguridad y control, redes, (5a) equipaje llegando (edificación nueva)",
+              "rule_id": 115,
+              "activity": "Equipos y gabinetes, [Capítulo: Suministros, Seguridad y control, Redes, (5A) EQUIPAJE LLEGANDO (edificación nueva)]",
+              "family_id": 52,
+              "unique_id": 756,
+              "confidence": 94,
+              "matched_by": "nombre",
+              "risk_flags": [
+                "extincion_incendio",
+                "redes_o_tuberias"
+              ],
+              "start_date": "2026-11-03",
+              "matched_rule": "nombre",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "",
+              "clean_activity": "Equipos y gabinetes,",
+              "intervention_hint": "5A",
+              "original_activity": "Equipos y gabinetes, [Capítulo: Suministros, Seguridad y control, Redes, (5A) EQUIPAJE LLEGANDO (edificación nueva)]"
+            }
+          ]
+        },
+        {
+          "action": "create_activity",
+          "title": "Crear actividad consolidada",
+          "subtitle": "Estructura en Concreto - Alquiler Equipo - Concreto",
+          "gate": "ready",
+          "reason": "Familia detectada: Estructura en Concreto",
+          "blockers": [],
+          "reviewReasons": [],
+          "startActivity": "Excavaciones, [Capítulo: Estructura Concreto, Ampliación zona filtro nacional (Nuevo equipo RX), (4) FILTRO DE SEGURIDAD DOMESTICO] | 2026-06-13",
+          "sourceCount": 2,
+          "sources": [
+            {
+              "family": "Estructura en Concreto",
+              "chapter": "estructura concreto, ampliación zona filtro nacional (nuevo equipo rx), (4) filtro de seguridad domestico",
+              "context": "estructura concreto, ampliación zona filtro nacional (nuevo equipo rx), (4) filtro de seguridad domestico",
+              "rule_id": 19,
+              "activity": "Excavaciones, [Capítulo: Estructura Concreto, Ampliación zona filtro nacional (Nuevo equipo RX), (4) FILTRO DE SEGURIDAD DOMESTICO]",
+              "family_id": 18,
+              "unique_id": 1371,
+              "confidence": 93,
+              "matched_by": "breadcrumb",
+              "risk_flags": [],
+              "start_date": "2026-06-13",
+              "matched_rule": "breadcrumb",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "",
+              "clean_activity": "Excavaciones,",
+              "intervention_hint": "",
+              "original_activity": "Excavaciones, [Capítulo: Estructura Concreto, Ampliación zona filtro nacional (Nuevo equipo RX), (4) FILTRO DE SEGURIDAD DOMESTICO]"
+            },
+            {
+              "family": "Estructura en Concreto",
+              "chapter": "estructura concreto, ampliación zona filtro nacional (nuevo equipo rx), (4) filtro de seguridad domestico",
+              "context": "estructura concreto, ampliación zona filtro nacional (nuevo equipo rx), (4) filtro de seguridad domestico",
+              "rule_id": 19,
+              "activity": "Cimentaciones y cárcamo, [Capítulo: Estructura Concreto, Ampliación zona filtro nacional (Nuevo equipo RX), (4) FILTRO DE SEGURIDAD DOMESTICO]",
+              "family_id": 18,
+              "unique_id": 1372,
+              "confidence": 93,
+              "matched_by": "breadcrumb",
+              "risk_flags": [],
+              "start_date": "2026-06-22",
+              "matched_rule": "breadcrumb",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "",
+              "clean_activity": "Cimentaciones y cárcamo,",
+              "intervention_hint": "",
+              "original_activity": "Cimentaciones y cárcamo, [Capítulo: Estructura Concreto, Ampliación zona filtro nacional (Nuevo equipo RX), (4) FILTRO DE SEGURIDAD DOMESTICO]"
+            }
+          ]
+        },
+        {
+          "action": "create_activity",
+          "title": "Crear actividad consolidada",
+          "subtitle": "Estructura en Concreto - Columnas Y Elementos De Cubierta,",
+          "gate": "ready",
+          "reason": "Familia detectada: Estructura en Concreto",
+          "blockers": [],
+          "reviewReasons": [],
+          "startActivity": "Columnas y elementos de cubierta, [Capítulo: Estructura metálica, Pasarela 1, Pasarelas y marco salida, (5A) EQUIPAJE LLEGANDO (edificación nueva)] | 2026-12-09",
+          "sourceCount": 2,
+          "sources": [
+            {
+              "family": "Estructura en Concreto",
+              "chapter": "estructura metálica, pasarela 1, pasarelas y marco salida, (5a) equipaje llegando (edificación nueva)",
+              "context": "estructura metálica, pasarela 1, pasarelas y marco salida, (5a) equipaje llegando (edificación nueva)",
+              "rule_id": 19,
+              "activity": "Columnas y elementos de cubierta, [Capítulo: Estructura metálica, Pasarela 1, Pasarelas y marco salida, (5A) EQUIPAJE LLEGANDO (edificación nueva)]",
+              "family_id": 18,
+              "unique_id": 875,
+              "confidence": 93,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2026-12-09",
+              "matched_rule": "nombre",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "",
+              "clean_activity": "Columnas y elementos de cubierta,",
+              "intervention_hint": "5A",
+              "original_activity": "Columnas y elementos de cubierta, [Capítulo: Estructura metálica, Pasarela 1, Pasarelas y marco salida, (5A) EQUIPAJE LLEGANDO (edificación nueva)]"
+            },
+            {
+              "family": "Estructura en Concreto",
+              "chapter": "estructura metálica, pasarela 2, pasarelas y marco salida, (5a) equipaje llegando (edificación nueva)",
+              "context": "estructura metálica, pasarela 2, pasarelas y marco salida, (5a) equipaje llegando (edificación nueva)",
+              "rule_id": 19,
+              "activity": "Columnas y elementos de cubierta, [Capítulo: Estructura metálica, Pasarela 2, Pasarelas y marco salida, (5A) EQUIPAJE LLEGANDO (edificación nueva)]",
+              "family_id": 18,
+              "unique_id": 888,
+              "confidence": 93,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2027-01-13",
+              "matched_rule": "nombre",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "",
+              "clean_activity": "Columnas y elementos de cubierta,",
+              "intervention_hint": "5A",
+              "original_activity": "Columnas y elementos de cubierta, [Capítulo: Estructura metálica, Pasarela 2, Pasarelas y marco salida, (5A) EQUIPAJE LLEGANDO (edificación nueva)]"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "project": "Optimizacion Aeropuerto JMC",
+      "projectId": 68,
+      "week": 5,
+      "module": "contratos",
+      "runId": "run_506107d203cc4639e10481a5319c1f6e",
+      "total": 0,
+      "preselected": 0,
+      "ready": 0,
+      "review": 0,
+      "conflict": 0,
+      "actions": {},
+      "samples": []
+    },
+    {
+      "project": "Optimizacion Aeropuerto JMC",
+      "projectId": 68,
+      "week": 5,
+      "module": "pdc",
+      "runId": "run_4b83b09dcd4658e57a1369fd56f9c828",
+      "total": 0,
+      "preselected": 0,
+      "ready": 0,
+      "review": 0,
+      "conflict": 0,
+      "actions": {},
+      "samples": []
+    },
+    {
+      "project": "Da Porto",
+      "projectId": 73,
+      "week": 1,
+      "module": "listado-actividades",
+      "runId": "run_04a8fd852b98591d3b7a4877a2f41021",
+      "total": 121,
+      "preselected": 92,
+      "ready": 92,
+      "review": 17,
+      "conflict": 12,
+      "actions": {
+        "create_activity": 109,
+        "review_no_match": 12
+      },
+      "samples": [
+        {
+          "action": "create_activity",
+          "title": "Crear actividad consolidada",
+          "subtitle": "Ascensores - Sotano 3,",
+          "gate": "ready",
+          "reason": "Familia detectada: Ascensores",
+          "blockers": [],
+          "reviewReasons": [],
+          "startActivity": "SÓTANO 3, [Capítulo: MAMPOSTERIA FOSO ASCENSOR, ASCENSORES, ACABADOS, DAPORTO TORRE 3] | 2027-02-11",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "Ascensores",
+              "chapter": "mamposteria foso ascensor, ascensores, acabados, daporto torre 3",
+              "context": "mamposteria foso ascensor, ascensores, acabados, daporto torre 3",
+              "rule_id": 46,
+              "activity": "SÓTANO 3, [Capítulo: MAMPOSTERIA FOSO ASCENSOR, ASCENSORES, ACABADOS, DAPORTO TORRE 3]",
+              "family_id": 45,
+              "unique_id": 78,
+              "confidence": 98,
+              "matched_by": "breadcrumb",
+              "risk_flags": [],
+              "start_date": "2027-02-11",
+              "matched_rule": "breadcrumb",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "SÓTANO 3",
+              "clean_activity": "SÓTANO 3,",
+              "intervention_hint": "",
+              "original_activity": "SÓTANO 3, [Capítulo: MAMPOSTERIA FOSO ASCENSOR, ASCENSORES, ACABADOS, DAPORTO TORRE 3]"
+            }
+          ]
+        },
+        {
+          "action": "create_activity",
+          "title": "Crear actividad consolidada",
+          "subtitle": "Ascensores - Sotano 2,",
+          "gate": "ready",
+          "reason": "Familia detectada: Ascensores",
+          "blockers": [],
+          "reviewReasons": [],
+          "startActivity": "SÓTANO 2, [Capítulo: MAMPOSTERIA FOSO ASCENSOR, ASCENSORES, ACABADOS, DAPORTO TORRE 3] | 2027-02-18",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "Ascensores",
+              "chapter": "mamposteria foso ascensor, ascensores, acabados, daporto torre 3",
+              "context": "mamposteria foso ascensor, ascensores, acabados, daporto torre 3",
+              "rule_id": 46,
+              "activity": "SÓTANO 2, [Capítulo: MAMPOSTERIA FOSO ASCENSOR, ASCENSORES, ACABADOS, DAPORTO TORRE 3]",
+              "family_id": 45,
+              "unique_id": 79,
+              "confidence": 98,
+              "matched_by": "breadcrumb",
+              "risk_flags": [],
+              "start_date": "2027-02-18",
+              "matched_rule": "breadcrumb",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "SÓTANO 2",
+              "clean_activity": "SÓTANO 2,",
+              "intervention_hint": "",
+              "original_activity": "SÓTANO 2, [Capítulo: MAMPOSTERIA FOSO ASCENSOR, ASCENSORES, ACABADOS, DAPORTO TORRE 3]"
+            }
+          ]
+        },
+        {
+          "action": "create_activity",
+          "title": "Crear actividad consolidada",
+          "subtitle": "Ascensores - Sotano 1,",
+          "gate": "ready",
+          "reason": "Familia detectada: Ascensores",
+          "blockers": [],
+          "reviewReasons": [],
+          "startActivity": "SÓTANO 1, [Capítulo: MAMPOSTERIA FOSO ASCENSOR, ASCENSORES, ACABADOS, DAPORTO TORRE 3] | 2027-02-25",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "Ascensores",
+              "chapter": "mamposteria foso ascensor, ascensores, acabados, daporto torre 3",
+              "context": "mamposteria foso ascensor, ascensores, acabados, daporto torre 3",
+              "rule_id": 46,
+              "activity": "SÓTANO 1, [Capítulo: MAMPOSTERIA FOSO ASCENSOR, ASCENSORES, ACABADOS, DAPORTO TORRE 3]",
+              "family_id": 45,
+              "unique_id": 80,
+              "confidence": 98,
+              "matched_by": "breadcrumb",
+              "risk_flags": [],
+              "start_date": "2027-02-25",
+              "matched_rule": "breadcrumb",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "SÓTANO 1",
+              "clean_activity": "SÓTANO 1,",
+              "intervention_hint": "",
+              "original_activity": "SÓTANO 1, [Capítulo: MAMPOSTERIA FOSO ASCENSOR, ASCENSORES, ACABADOS, DAPORTO TORRE 3]"
+            }
+          ]
+        },
+        {
+          "action": "create_activity",
+          "title": "Crear actividad consolidada",
+          "subtitle": "Ascensores - Piso 1,",
+          "gate": "ready",
+          "reason": "Familia detectada: Ascensores",
+          "blockers": [],
+          "reviewReasons": [],
+          "startActivity": "PISO 1, [Capítulo: MAMPOSTERIA FOSO ASCENSOR, ASCENSORES, ACABADOS, DAPORTO TORRE 3] | 2027-03-11",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "Ascensores",
+              "chapter": "mamposteria foso ascensor, ascensores, acabados, daporto torre 3",
+              "context": "mamposteria foso ascensor, ascensores, acabados, daporto torre 3",
+              "rule_id": 46,
+              "activity": "PISO 1, [Capítulo: MAMPOSTERIA FOSO ASCENSOR, ASCENSORES, ACABADOS, DAPORTO TORRE 3]",
+              "family_id": 45,
+              "unique_id": 81,
+              "confidence": 98,
+              "matched_by": "breadcrumb",
+              "risk_flags": [],
+              "start_date": "2027-03-11",
+              "matched_rule": "breadcrumb",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "PISO 1",
+              "clean_activity": "PISO 1,",
+              "intervention_hint": "",
+              "original_activity": "PISO 1, [Capítulo: MAMPOSTERIA FOSO ASCENSOR, ASCENSORES, ACABADOS, DAPORTO TORRE 3]"
+            }
+          ]
+        },
+        {
+          "action": "create_activity",
+          "title": "Crear actividad consolidada",
+          "subtitle": "Ascensores - Piso 2,",
+          "gate": "ready",
+          "reason": "Familia detectada: Ascensores",
+          "blockers": [],
+          "reviewReasons": [],
+          "startActivity": "PISO 2, [Capítulo: MAMPOSTERIA FOSO ASCENSOR, ASCENSORES, ACABADOS, DAPORTO TORRE 3] | 2027-04-01",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "Ascensores",
+              "chapter": "mamposteria foso ascensor, ascensores, acabados, daporto torre 3",
+              "context": "mamposteria foso ascensor, ascensores, acabados, daporto torre 3",
+              "rule_id": 46,
+              "activity": "PISO 2, [Capítulo: MAMPOSTERIA FOSO ASCENSOR, ASCENSORES, ACABADOS, DAPORTO TORRE 3]",
+              "family_id": 45,
+              "unique_id": 82,
+              "confidence": 98,
+              "matched_by": "breadcrumb",
+              "risk_flags": [],
+              "start_date": "2027-04-01",
+              "matched_rule": "breadcrumb",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "PISO 2",
+              "clean_activity": "PISO 2,",
+              "intervention_hint": "",
+              "original_activity": "PISO 2, [Capítulo: MAMPOSTERIA FOSO ASCENSOR, ASCENSORES, ACABADOS, DAPORTO TORRE 3]"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "project": "Da Porto",
+      "projectId": 73,
+      "week": 1,
+      "module": "contratos",
+      "runId": "run_797bd69108c81664eaf6ee5ddd8c18bf",
+      "total": 30,
+      "preselected": 21,
+      "ready": 21,
+      "review": 8,
+      "conflict": 1,
+      "actions": {
+        "update_contracts": 29,
+        "review_no_match": 1
+      },
+      "samples": [
+        {
+          "action": "update_contracts",
+          "title": "Definir contratos",
+          "subtitle": "ASCENSORES",
+          "gate": "ready",
+          "reason": "Familia detectada: Ascensores",
+          "blockers": [],
+          "reviewReasons": [],
+          "startActivity": "INSTALACIÓN DE ASCESORES, [Capítulo: INSTALACIÓN DE ASCENSORES, ASCENSORES, ACABADOS, DAPORTO TORRE 3] | 2027-09-03",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "Ascensores",
+              "chapter": "instalación de ascensores, ascensores, acabados, daporto torre 3",
+              "context": "instalación de ascensores, ascensores, acabados, daporto torre 3",
+              "rule_id": 46,
+              "activity": "INSTALACIÓN DE ASCESORES, [Capítulo: INSTALACIÓN DE ASCENSORES, ASCENSORES, ACABADOS, DAPORTO TORRE 3]",
+              "family_id": 45,
+              "unique_id": 96,
+              "confidence": 98,
+              "matched_by": "breadcrumb",
+              "risk_flags": [],
+              "start_date": "2027-09-03",
+              "matched_rule": "breadcrumb",
+              "why_included": "Actividad vinculada al Programa General y familia contractual detectada.",
+              "location_hint": "",
+              "clean_activity": "INSTALACIÓN DE ASCESORES,",
+              "intervention_hint": "",
+              "original_activity": "INSTALACIÓN DE ASCESORES, [Capítulo: INSTALACIÓN DE ASCENSORES, ASCENSORES, ACABADOS, DAPORTO TORRE 3]"
+            }
+          ]
+        },
+        {
+          "action": "update_contracts",
+          "title": "Definir contratos",
+          "subtitle": "MESONES Y APARATOS SANITARIOS",
+          "gate": "ready",
+          "reason": "Familia detectada: Mesones de Cocina",
+          "blockers": [],
+          "reviewReasons": [],
+          "startActivity": "PISO 1, [Capítulo: MESONES DE COCINA, ACABADOS, DAPORTO TORRE 3] | 2027-06-08",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "Mesones de Cocina",
+              "chapter": "mesones de cocina, acabados, daporto torre 3",
+              "context": "mesones de cocina, acabados, daporto torre 3",
+              "rule_id": 35,
+              "activity": "PISO 1, [Capítulo: MESONES DE COCINA, ACABADOS, DAPORTO TORRE 3]",
+              "family_id": 34,
+              "unique_id": 221,
+              "confidence": 95,
+              "matched_by": "breadcrumb",
+              "risk_flags": [],
+              "start_date": "2027-06-08",
+              "matched_rule": "breadcrumb",
+              "why_included": "Actividad vinculada al Programa General y familia contractual detectada.",
+              "location_hint": "PISO 1",
+              "clean_activity": "PISO 1,",
+              "intervention_hint": "",
+              "original_activity": "PISO 1, [Capítulo: MESONES DE COCINA, ACABADOS, DAPORTO TORRE 3]"
+            }
+          ]
+        },
+        {
+          "action": "update_contracts",
+          "title": "Definir contratos",
+          "subtitle": "REVOQUES",
+          "gate": "ready",
+          "reason": "Familia detectada: Revoques y Panetes",
+          "blockers": [],
+          "reviewReasons": [],
+          "startActivity": "SOTANO 3, [Capítulo: REVOQUE TRADICIONAL, REVOQUES, ESTUCO Y PINTURA, ACABADOS, DAPORTO TORRE 3] | 2027-03-12",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "Revoques y Panetes",
+              "chapter": "revoque tradicional, revoques, estuco y pintura, acabados, daporto torre 3",
+              "context": "revoque tradicional, revoques, estuco y pintura, acabados, daporto torre 3",
+              "rule_id": 26,
+              "activity": "SOTANO 3, [Capítulo: REVOQUE TRADICIONAL, REVOQUES, ESTUCO Y PINTURA, ACABADOS, DAPORTO TORRE 3]",
+              "family_id": 25,
+              "unique_id": 126,
+              "confidence": 92,
+              "matched_by": "breadcrumb",
+              "risk_flags": [
+                "revoque_humedo"
+              ],
+              "start_date": "2027-03-12",
+              "matched_rule": "breadcrumb",
+              "why_included": "Actividad vinculada al Programa General y familia contractual detectada.",
+              "location_hint": "SOTANO 3",
+              "clean_activity": "SOTANO 3,",
+              "intervention_hint": "",
+              "original_activity": "SOTANO 3, [Capítulo: REVOQUE TRADICIONAL, REVOQUES, ESTUCO Y PINTURA, ACABADOS, DAPORTO TORRE 3]"
+            }
+          ]
+        },
+        {
+          "action": "update_contracts",
+          "title": "Definir contratos",
+          "subtitle": "PISOS Y ENCHAPES",
+          "gate": "ready",
+          "reason": "Familia detectada: Morteros de Nivelacion de Losas",
+          "blockers": [],
+          "reviewReasons": [],
+          "startActivity": "PISO 1, [Capítulo: MORTEROS DE PISOS, PISOS Y ENCHAPES, ACABADOS, DAPORTO TORRE 3] | 2027-05-12",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "Morteros de Nivelacion de Losas",
+              "chapter": "morteros de pisos, pisos y enchapes, acabados, daporto torre 3",
+              "context": "morteros de pisos, pisos y enchapes, acabados, daporto torre 3",
+              "rule_id": 25,
+              "activity": "PISO 1, [Capítulo: MORTEROS DE PISOS, PISOS Y ENCHAPES, ACABADOS, DAPORTO TORRE 3]",
+              "family_id": 24,
+              "unique_id": 169,
+              "confidence": 92,
+              "matched_by": "breadcrumb",
+              "risk_flags": [],
+              "start_date": "2027-05-12",
+              "matched_rule": "breadcrumb",
+              "why_included": "Actividad vinculada al Programa General y familia contractual detectada.",
+              "location_hint": "PISO 1",
+              "clean_activity": "PISO 1,",
+              "intervention_hint": "",
+              "original_activity": "PISO 1, [Capítulo: MORTEROS DE PISOS, PISOS Y ENCHAPES, ACABADOS, DAPORTO TORRE 3]"
+            }
+          ]
+        },
+        {
+          "action": "update_contracts",
+          "title": "Definir contratos",
+          "subtitle": "CIELOS",
+          "gate": "ready",
+          "reason": "Familia detectada: Revoques y Panetes",
+          "blockers": [],
+          "reviewReasons": [],
+          "startActivity": "SOTANO 1, [Capítulo: REVOQUE TRADICIONAL, REVOQUES, ESTUCO Y PINTURA, ACABADOS, DAPORTO TORRE 3] | 2027-04-12",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "Revoques y Panetes",
+              "chapter": "revoque tradicional, revoques, estuco y pintura, acabados, daporto torre 3",
+              "context": "revoque tradicional, revoques, estuco y pintura, acabados, daporto torre 3",
+              "rule_id": 26,
+              "activity": "SOTANO 1, [Capítulo: REVOQUE TRADICIONAL, REVOQUES, ESTUCO Y PINTURA, ACABADOS, DAPORTO TORRE 3]",
+              "family_id": 25,
+              "unique_id": 128,
+              "confidence": 92,
+              "matched_by": "breadcrumb",
+              "risk_flags": [
+                "revoque_humedo"
+              ],
+              "start_date": "2027-04-12",
+              "matched_rule": "breadcrumb",
+              "why_included": "Actividad vinculada al Programa General y familia contractual detectada.",
+              "location_hint": "SOTANO 1",
+              "clean_activity": "SOTANO 1,",
+              "intervention_hint": "",
+              "original_activity": "SOTANO 1, [Capítulo: REVOQUE TRADICIONAL, REVOQUES, ESTUCO Y PINTURA, ACABADOS, DAPORTO TORRE 3]"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "project": "Da Porto",
+      "projectId": 73,
+      "week": 1,
+      "module": "pdc",
+      "runId": "run_01dea7d8cd31a4661bb133273fe46f6e",
+      "total": 67,
+      "preselected": 45,
+      "ready": 45,
+      "review": 22,
+      "conflict": 0,
+      "actions": {
+        "create_pdc_package": 51,
+        "update_pdc_package": 16
+      },
+      "samples": [
+        {
+          "action": "create_pdc_package",
+          "title": "Crear paquete PDC",
+          "subtitle": "RED DE GAS",
+          "gate": "ready",
+          "reason": "Paquete asignado en Contratos y ausente en PDC.",
+          "blockers": [],
+          "reviewReasons": [],
+          "startActivity": "RED DE GAS | 2027-03-16",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "pdc",
+              "chapter": "pdc",
+              "context": "pdc",
+              "rule_id": null,
+              "activity": "RED DE GAS",
+              "family_id": 0,
+              "unique_id": 99,
+              "confidence": 80,
+              "matched_by": "contratos",
+              "risk_flags": [
+                "redes_o_tuberias"
+              ],
+              "start_date": "2027-03-16",
+              "matched_rule": "contratos",
+              "why_included": "Paquete derivado de la definición de contratos.",
+              "location_hint": "",
+              "clean_activity": "RED DE GAS",
+              "intervention_hint": "",
+              "original_activity": "RED DE GAS"
+            }
+          ]
+        },
+        {
+          "action": "create_pdc_package",
+          "title": "Crear paquete PDC",
+          "subtitle": "RED ELÉCTRICA",
+          "gate": "ready",
+          "reason": "Paquete asignado en Contratos y ausente en PDC.",
+          "blockers": [],
+          "reviewReasons": [],
+          "startActivity": "RED ELÉCTRICA | 2027-03-16",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "pdc",
+              "chapter": "pdc",
+              "context": "pdc",
+              "rule_id": null,
+              "activity": "RED ELÉCTRICA",
+              "family_id": 0,
+              "unique_id": 112,
+              "confidence": 80,
+              "matched_by": "contratos",
+              "risk_flags": [
+                "redes_o_tuberias"
+              ],
+              "start_date": "2027-03-16",
+              "matched_rule": "contratos",
+              "why_included": "Paquete derivado de la definición de contratos.",
+              "location_hint": "",
+              "clean_activity": "RED ELÉCTRICA",
+              "intervention_hint": "",
+              "original_activity": "RED ELÉCTRICA"
+            }
+          ]
+        },
+        {
+          "action": "create_pdc_package",
+          "title": "Crear paquete PDC",
+          "subtitle": "MATERIALES ELECTRICOS",
+          "gate": "ready",
+          "reason": "Paquete asignado en Contratos y ausente en PDC.",
+          "blockers": [],
+          "reviewReasons": [],
+          "startActivity": "RED ELÉCTRICA | 2027-03-16",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "pdc",
+              "chapter": "pdc",
+              "context": "pdc",
+              "rule_id": null,
+              "activity": "RED ELÉCTRICA",
+              "family_id": 0,
+              "unique_id": 112,
+              "confidence": 80,
+              "matched_by": "contratos",
+              "risk_flags": [
+                "redes_o_tuberias"
+              ],
+              "start_date": "2027-03-16",
+              "matched_rule": "contratos",
+              "why_included": "Paquete derivado de la definición de contratos.",
+              "location_hint": "",
+              "clean_activity": "RED ELÉCTRICA",
+              "intervention_hint": "",
+              "original_activity": "RED ELÉCTRICA"
+            }
+          ]
+        },
+        {
+          "action": "create_pdc_package",
+          "title": "Crear paquete PDC",
+          "subtitle": "INSTALACIÓN RED ELÉCTRICA",
+          "gate": "ready",
+          "reason": "Paquete asignado en Contratos y ausente en PDC.",
+          "blockers": [],
+          "reviewReasons": [],
+          "startActivity": "RED ELÉCTRICA | 2027-03-16",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "pdc",
+              "chapter": "pdc",
+              "context": "pdc",
+              "rule_id": null,
+              "activity": "RED ELÉCTRICA",
+              "family_id": 0,
+              "unique_id": 112,
+              "confidence": 80,
+              "matched_by": "contratos",
+              "risk_flags": [
+                "redes_o_tuberias"
+              ],
+              "start_date": "2027-03-16",
+              "matched_rule": "contratos",
+              "why_included": "Paquete derivado de la definición de contratos.",
+              "location_hint": "",
+              "clean_activity": "RED ELÉCTRICA",
+              "intervention_hint": "",
+              "original_activity": "RED ELÉCTRICA"
+            }
+          ]
+        },
+        {
+          "action": "create_pdc_package",
+          "title": "Crear paquete PDC",
+          "subtitle": "IMPLEMENTACIÓN PMT",
+          "gate": "ready",
+          "reason": "Paquete asignado en Contratos y ausente en PDC.",
+          "blockers": [],
+          "reviewReasons": [],
+          "startActivity": "IMPLEMENTACIÓN PMT | 2026-05-25",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "pdc",
+              "chapter": "pdc",
+              "context": "pdc",
+              "rule_id": null,
+              "activity": "IMPLEMENTACIÓN PMT",
+              "family_id": 0,
+              "unique_id": 5,
+              "confidence": 80,
+              "matched_by": "contratos",
+              "risk_flags": [],
+              "start_date": "2026-05-25",
+              "matched_rule": "contratos",
+              "why_included": "Paquete derivado de la definición de contratos.",
+              "location_hint": "",
+              "clean_activity": "IMPLEMENTACIÓN PMT",
+              "intervention_hint": "",
+              "original_activity": "IMPLEMENTACIÓN PMT"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "verificationText": "68\tlistado-actividades\t5\trun_15870290a099080a318116ec73ede7da\t823\t327\t823\t327\t64\t432\n68\tcontratos\t5\trun_506107d203cc4639e10481a5319c1f6e\t0\t0\t0\t0\t0\t0\n68\tpdc\t5\trun_4b83b09dcd4658e57a1369fd56f9c828\t0\t0\t0\t0\t0\t0\n73\tlistado-actividades\t1\trun_04a8fd852b98591d3b7a4877a2f41021\t121\t92\t121\t92\t17\t12\n73\tcontratos\t1\trun_797bd69108c81664eaf6ee5ddd8c18bf\t30\t21\t30\t21\t8\t1\n73\tpdc\t1\trun_01dea7d8cd31a4661bb133273fe46f6e\t67\t45\t67\t45\t22\t0"
+}

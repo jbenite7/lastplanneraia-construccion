@@ -1,0 +1,27 @@
+{
+  "target_date": "2026-07-02",
+  "generated_at": "2026-07-02T13:26:55.823Z",
+  "evidence": [
+    {
+      "project": "Optimización Aeropuerto JMC",
+      "week": 7,
+      "screenshot": "docs/qa/evidence/pdc-perfect-20260702/screenshots/optimizacionjmc-pdc-week-7.png",
+      "trace": "docs/qa/evidence/pdc-perfect-20260702/traces/optimizacionjmc-trace.zip",
+      "video": "/Users/juanfelipebenitezramos/Developer/lps-aia/docs/qa/evidence/pdc-perfect-20260702/videos/page@d4b3a6173c0dd02b09de910efc8e47de.webm"
+    },
+    {
+      "project": "Da Porto",
+      "week": 8,
+      "screenshot": "docs/qa/evidence/pdc-perfect-20260702/screenshots/da-porto-pdc-week-8.png",
+      "trace": "docs/qa/evidence/pdc-perfect-20260702/traces/da-porto-trace.zip",
+      "video": "/Users/juanfelipebenitezramos/Developer/lps-aia/docs/qa/evidence/pdc-perfect-20260702/videos/page@3cfea54a6585c67e81153af5ba93c646.webm"
+    },
+    {
+      "project": "Milán Campestre Torre 19",
+      "week": 6,
+      "screenshot": "docs/qa/evidence/pdc-perfect-20260702/screenshots/milan-campestre-torre-pdc-week-6.png",
+      "trace": "docs/qa/evidence/pdc-perfect-20260702/traces/milan-campestre-torre-trace.zip",
+      "video": "/Users/juanfelipebenitezramos/Developer/lps-aia/docs/qa/evidence/pdc-perfect-20260702/videos/page@c9e787057c7998bb1ddfb891f2864c40.webm"
+    }
+  ]
+}

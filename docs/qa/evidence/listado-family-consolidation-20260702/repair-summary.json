@@ -1,0 +1,23 @@
+{
+    "created_at": "2026-07-02T06:55:32-05:00",
+    "projects": [
+        {
+            "project_id": 68,
+            "week": 7,
+            "families_repaired": 31,
+            "pdc_extras_deleted": 0,
+            "pdc_suggestions": 37,
+            "pdc_applied": 35,
+            "pdc_errors": 0
+        },
+        {
+            "project_id": 73,
+            "week": 8,
+            "families_repaired": 14,
+            "pdc_extras_deleted": 0,
+            "pdc_suggestions": 15,
+            "pdc_applied": 15,
+            "pdc_errors": 0
+        }
+    ]
+}

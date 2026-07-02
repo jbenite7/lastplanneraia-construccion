@@ -1,0 +1,286 @@
+{
+  "generatedAt": "2026-07-01T21:55:06.828Z",
+  "summaries": [
+    {
+      "project": "Optimizacion Aeropuerto JMC",
+      "projectId": 68,
+      "week": 5,
+      "module": "listado-actividades",
+      "runId": "run_7f2c53eec9dbdfe33cc6d5d2679330dc",
+      "total": 1325,
+      "preselected": 229,
+      "ready": 229,
+      "review": 664,
+      "conflict": 432,
+      "actions": {
+        "create_activity": 903,
+        "review_no_match": 422
+      },
+      "samples": [
+        {
+          "action": "create_activity",
+          "title": "Crear actividad consolidada",
+          "subtitle": "Deteccion de Incendio - Detector Multisensor Óptico/Térmico",
+          "gate": "ready",
+          "reason": "Familia detectada: Deteccion de Incendio",
+          "blockers": [],
+          "reviewReasons": []
+        },
+        {
+          "action": "create_activity",
+          "title": "Crear actividad consolidada",
+          "subtitle": "Equipos de Extincion - Equipos Y Gabinetes",
+          "gate": "ready",
+          "reason": "Familia detectada: Equipos de Extincion",
+          "blockers": [],
+          "reviewReasons": []
+        },
+        {
+          "action": "create_activity",
+          "title": "Crear actividad consolidada",
+          "subtitle": "Estructura en Concreto - Ejes 45 Y 47",
+          "gate": "ready",
+          "reason": "Familia detectada: Estructura en Concreto",
+          "blockers": [],
+          "reviewReasons": []
+        },
+        {
+          "action": "create_activity",
+          "title": "Crear actividad consolidada",
+          "subtitle": "Estructura en Concreto - Eje 48",
+          "gate": "ready",
+          "reason": "Familia detectada: Estructura en Concreto",
+          "blockers": [],
+          "reviewReasons": []
+        },
+        {
+          "action": "create_activity",
+          "title": "Crear actividad consolidada",
+          "subtitle": "Estructura en Concreto - Eje 49",
+          "gate": "ready",
+          "reason": "Familia detectada: Estructura en Concreto",
+          "blockers": [],
+          "reviewReasons": []
+        }
+      ]
+    },
+    {
+      "project": "Optimizacion Aeropuerto JMC",
+      "projectId": 68,
+      "week": 5,
+      "module": "contratos",
+      "runId": "run_e87826d7a8097725849a5569a8b8dc7c",
+      "total": 0,
+      "preselected": 0,
+      "ready": 0,
+      "review": 0,
+      "conflict": 0,
+      "actions": {},
+      "samples": []
+    },
+    {
+      "project": "Optimizacion Aeropuerto JMC",
+      "projectId": 68,
+      "week": 5,
+      "module": "pdc",
+      "runId": "run_0cfeecbe35cfd06589599879078d5d21",
+      "total": 0,
+      "preselected": 0,
+      "ready": 0,
+      "review": 0,
+      "conflict": 0,
+      "actions": {},
+      "samples": []
+    },
+    {
+      "project": "Da Porto",
+      "projectId": 73,
+      "week": 1,
+      "module": "listado-actividades",
+      "runId": "run_1e4c37843d315b26327ce7db0518caee",
+      "total": 136,
+      "preselected": 72,
+      "ready": 72,
+      "review": 52,
+      "conflict": 12,
+      "actions": {
+        "create_activity": 124,
+        "review_no_match": 12
+      },
+      "samples": [
+        {
+          "action": "create_activity",
+          "title": "Crear actividad consolidada",
+          "subtitle": "Ascensores - Sótano 3",
+          "gate": "ready",
+          "reason": "Familia detectada: Ascensores",
+          "blockers": [],
+          "reviewReasons": []
+        },
+        {
+          "action": "create_activity",
+          "title": "Crear actividad consolidada",
+          "subtitle": "Ascensores - Sótano 2",
+          "gate": "ready",
+          "reason": "Familia detectada: Ascensores",
+          "blockers": [],
+          "reviewReasons": []
+        },
+        {
+          "action": "create_activity",
+          "title": "Crear actividad consolidada",
+          "subtitle": "Ascensores - Sótano 1",
+          "gate": "ready",
+          "reason": "Familia detectada: Ascensores",
+          "blockers": [],
+          "reviewReasons": []
+        },
+        {
+          "action": "create_activity",
+          "title": "Crear actividad consolidada",
+          "subtitle": "Ascensores - Piso 1",
+          "gate": "ready",
+          "reason": "Familia detectada: Ascensores",
+          "blockers": [],
+          "reviewReasons": []
+        },
+        {
+          "action": "create_activity",
+          "title": "Crear actividad consolidada",
+          "subtitle": "Ascensores - Piso 2",
+          "gate": "ready",
+          "reason": "Familia detectada: Ascensores",
+          "blockers": [],
+          "reviewReasons": []
+        }
+      ]
+    },
+    {
+      "project": "Da Porto",
+      "projectId": 73,
+      "week": 1,
+      "module": "contratos",
+      "runId": "run_c622e6dab3645eeaffa95766866eae29",
+      "total": 30,
+      "preselected": 21,
+      "ready": 21,
+      "review": 8,
+      "conflict": 1,
+      "actions": {
+        "update_contracts": 29,
+        "review_no_match": 1
+      },
+      "samples": [
+        {
+          "action": "update_contracts",
+          "title": "Definir contratos",
+          "subtitle": "ASCENSORES",
+          "gate": "ready",
+          "reason": "Familia detectada: Ascensores",
+          "blockers": [],
+          "reviewReasons": []
+        },
+        {
+          "action": "update_contracts",
+          "title": "Definir contratos",
+          "subtitle": "MESONES Y APARATOS SANITARIOS",
+          "gate": "ready",
+          "reason": "Familia detectada: Mesones de Cocina",
+          "blockers": [],
+          "reviewReasons": []
+        },
+        {
+          "action": "update_contracts",
+          "title": "Definir contratos",
+          "subtitle": "REVOQUES",
+          "gate": "ready",
+          "reason": "Familia detectada: Revoques y Panetes",
+          "blockers": [],
+          "reviewReasons": []
+        },
+        {
+          "action": "update_contracts",
+          "title": "Definir contratos",
+          "subtitle": "PISOS Y ENCHAPES",
+          "gate": "ready",
+          "reason": "Familia detectada: Morteros de Nivelacion de Losas",
+          "blockers": [],
+          "reviewReasons": []
+        },
+        {
+          "action": "update_contracts",
+          "title": "Definir contratos",
+          "subtitle": "CIELOS",
+          "gate": "ready",
+          "reason": "Familia detectada: Revoques y Panetes",
+          "blockers": [],
+          "reviewReasons": []
+        }
+      ]
+    },
+    {
+      "project": "Da Porto",
+      "projectId": 73,
+      "week": 1,
+      "module": "pdc",
+      "runId": "run_a019033ebb1ee78cb01185bcb4b15cd6",
+      "total": 67,
+      "preselected": 45,
+      "ready": 45,
+      "review": 22,
+      "conflict": 0,
+      "actions": {
+        "create_pdc_package": 51,
+        "update_pdc_package": 16
+      },
+      "samples": [
+        {
+          "action": "create_pdc_package",
+          "title": "Crear paquete PDC",
+          "subtitle": "RED DE GAS",
+          "gate": "ready",
+          "reason": "Paquete asignado en Contratos y ausente en PDC.",
+          "blockers": [],
+          "reviewReasons": []
+        },
+        {
+          "action": "create_pdc_package",
+          "title": "Crear paquete PDC",
+          "subtitle": "RED ELÉCTRICA",
+          "gate": "ready",
+          "reason": "Paquete asignado en Contratos y ausente en PDC.",
+          "blockers": [],
+          "reviewReasons": []
+        },
+        {
+          "action": "create_pdc_package",
+          "title": "Crear paquete PDC",
+          "subtitle": "MATERIALES ELECTRICOS",
+          "gate": "ready",
+          "reason": "Paquete asignado en Contratos y ausente en PDC.",
+          "blockers": [],
+          "reviewReasons": []
+        },
+        {
+          "action": "create_pdc_package",
+          "title": "Crear paquete PDC",
+          "subtitle": "INSTALACIÓN RED ELÉCTRICA",
+          "gate": "ready",
+          "reason": "Paquete asignado en Contratos y ausente en PDC.",
+          "blockers": [],
+          "reviewReasons": []
+        },
+        {
+          "action": "create_pdc_package",
+          "title": "Crear paquete PDC",
+          "subtitle": "IMPLEMENTACIÓN PMT",
+          "gate": "ready",
+          "reason": "Paquete asignado en Contratos y ausente en PDC.",
+          "blockers": [],
+          "reviewReasons": []
+        }
+      ]
+    }
+  ],
+  "verificationText": "68\tlistado-actividades\t5\trun_7f2c53eec9dbdfe33cc6d5d2679330dc\t1325\t229\t1325\t229\t664\t432\n68\tcontratos\t5\trun_e87826d7a8097725849a5569a8b8dc7c\t0\t0\t0\t0\t0\t0\n68\tpdc\t5\trun_0cfeecbe35cfd06589599879078d5d21\t0\t0\t0\t0\t0\t0\n73\tlistado-actividades\t1\trun_1e4c37843d315b26327ce7db0518caee\t136\t72\t136\t72\t52\t12\n73\tcontratos\t1\trun_c622e6dab3645eeaffa95766866eae29\t30\t21\t30\t21\t8\t1\n73\tpdc\t1\trun_a019033ebb1ee78cb01185bcb4b15cd6\t67\t45\t67\t45\t22\t0"
+}

@@ -55,12 +55,22 @@ function cleanupDaPorto(Database $db, int $projectId, string $prefix): void
 
 function applyDaPortoPatch(Database $db): void
 {
-    $patch = __DIR__ . '/../database/patches/20260701_da_porto_feedback_semi_auto.sql';
+    foreach ([
+        __DIR__ . '/../database/patches/20260701_da_porto_feedback_semi_auto.sql',
+        __DIR__ . '/../database/migrations/20260708_contract_defaults_feedback.sql',
+        __DIR__ . '/../database/migrations/20260709_inactivate_alias_contractual_families.sql',
+        __DIR__ . '/../database/migrations/20260710_equipment_families_require_review.sql',
+    ] as $patch) {
+        applyDaPortoSqlFile($db, $patch);
+    }
+}
+
+function applyDaPortoSqlFile(Database $db, string $patch): void
+{
     $sql = file_get_contents($patch);
     if ($sql === false) {
-        throw new RuntimeException('No se pudo leer el patch Da Porto.');
+        throw new RuntimeException('No se pudo leer ' . basename($patch) . '.');
     }
-
     $statements = preg_split('/;\s*(?:\r?\n|$)/', $sql);
     foreach ($statements ?: [] as $statement) {
         $statement = trim($statement);
@@ -87,6 +97,28 @@ function expectFamilyExists(Database $db, string $code): void
         [$code],
     )->fetchColumn();
     $exists === 1 ? passDaPorto("family {$code} exists") : failDaPorto("family {$code} is missing");
+}
+
+function expectFamilyInactive(Database $db, string $code): void
+{
+    $active = (int) $db->query(
+        "SELECT COALESCE(activa, 1) FROM general_pdc_familias WHERE codigo = ? LIMIT 1",
+        [$code],
+    )->fetchColumn();
+    $active === 0
+        ? passDaPorto("family {$code} inactive for Listado")
+        : failDaPorto("family {$code} should be inactive for Listado");
+}
+
+function expectContractualElement(Database $db, string $name, string $package): void
+{
+    $exists = (int) $db->query(
+        "SELECT COUNT(*) FROM general_pdc_contractual_elements WHERE nombre = ? AND paquete_nombre = ? AND activa = 1",
+        [$name, $package],
+    )->fetchColumn();
+    $exists > 0
+        ? passDaPorto("contractual {$name} -> {$package}")
+        : failDaPorto("contractual {$name} -> {$package} is missing");
 }
 
 function familyItems(Database $db, string $code): array
@@ -150,31 +182,33 @@ try {
     foreach ([
         'REVOQUE_HUMEDO',
         'REVOQUE_SECO',
-        'ESPEJOS',
         'CABINAS_BANO',
-        'BARANDAS_BALCON',
-        'PASAMANOS_CERRAJERIA',
+        'CARPINTERIA_METALICA',
         'PLANTA_ELECTRICA',
         'MALACATE',
         'GRIFERIAS_INCRUSTACIONES',
-        'GEODREN',
         'ASEO',
         'BOTADA_ESCOMBROS',
         'AMENIDADES_CUBIERTA',
     ] as $code) {
         expectFamilyExists($db, $code);
     }
+    expectFamilyInactive($db, 'GEODREN');
+    expectContractualElement($db, 'Geodren', 'GEODREN');
 
     expectMatchCode($matcher, $rules, 'REVOQUE HUMEDO MUROS APARTAMENTOS', 'REVOQUE_HUMEDO');
     expectMatchCode($matcher, $rules, 'REVOQUE SECO EN DRYWALL', 'REVOQUE_SECO');
     expectMatchCode($matcher, $rules, 'PLANTA ELECTRICA DE EMERGENCIA', 'PLANTA_ELECTRICA');
     expectMatchCode($matcher, $rules, 'CABINAS DE BANO EN VIDRIO', 'CABINAS_BANO');
-    expectMatchCode($matcher, $rules, 'ESPEJOS BANO APARTAMENTOS', 'ESPEJOS');
-    expectMatchCode($matcher, $rules, 'BARANDAS DE BALCON EN VIDRIO', 'BARANDAS_BALCON');
-    expectMatchCode($matcher, $rules, 'PASAMANOS TUBULAR ESCALERAS', 'PASAMANOS_CERRAJERIA');
+    expectMatchCode($matcher, $rules, 'ESPEJOS BANO APARTAMENTOS', 'CARPINTERIA_METALICA');
+    expectMatchCode($matcher, $rules, 'BARANDAS DE BALCON EN VIDRIO', 'CARPINTERIA_METALICA');
+    expectMatchCode($matcher, $rules, 'PASAMANOS TUBULAR ESCALERAS', 'CARPINTERIA_METALICA');
     expectMatchCode($matcher, $rules, 'MALACATE DE OBRA', 'MALACATE');
     expectMatchCode($matcher, $rules, 'GRIFERIAS E INCRUSTACIONES APARTAMENTOS', 'GRIFERIAS_INCRUSTACIONES');
-    expectMatchCode($matcher, $rules, 'GEODREN MUROS DE CONTENCION', 'GEODREN');
+    $geodren = $matcher->matchActivity(['Actividad' => 'GEODREN MUROS DE CONTENCION'], $rules);
+    $geodren === null
+        ? passDaPorto('GEODREN routes to Contratos, not Listado')
+        : failDaPorto('GEODREN should not create Listado family, got ' . ($geodren['familia_codigo'] ?? 'unknown'));
     expectMatchCode($matcher, $rules, 'ASEO FINAL DE APARTAMENTOS', 'ASEO');
     expectMatchCode($matcher, $rules, 'BOTADA DE ESCOMBROS ACABADOS', 'BOTADA_ESCOMBROS');
 
@@ -190,7 +224,7 @@ try {
     expectItem($db, 'GRIFERIAS_INCRUSTACIONES', 'Orden de Compra', 'GRIFERIAS E INCRUSTACIONES');
     expectOption($db, 'PINTURAS', 2, 'Suministro e Instalación');
     expectOption($db, 'PLANTA_ELECTRICA', 2, 'Suministro e Instalación');
-    expectOption($db, 'PASAMANOS_CERRAJERIA', 1, 'Mano de Obra y Suministro por separado');
+    expectOption($db, 'CARPINTERIA_METALICA', 2, 'Suministro e Instalación');
     expectItem($db, 'CARPINTERIA_MADERA', 'Suministro', 'CARPINTERIA MADERA - FABRICACION Y SUMINISTRO');
     expectItem($db, 'CARPINTERIA_MADERA', 'Mano de Obra', 'CARPINTERIA MADERA - INSTALACION');
     expectOption($db, 'MALACATE', 6, 'Equipos');

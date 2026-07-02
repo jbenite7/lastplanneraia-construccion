@@ -17,10 +17,8 @@ const runtimeErrorsByPage = new WeakMap();
 const feedbackFamilies = [
   'REVOQUE_HUMEDO',
   'REVOQUE_SECO',
-  'ESPEJOS',
   'CABINAS_BANO',
-  'BARANDAS_BALCON',
-  'PASAMANOS_CERRAJERIA',
+  'CARPINTERIA_METALICA',
   'PLANTA_ELECTRICA',
   'MALACATE',
   'GRIFERIAS_INCRUSTACIONES',
@@ -95,8 +93,7 @@ function expectDaPortoContractOptions() {
     ['GRIFERIAS_INCRUSTACIONES', 'Orden de Compra', 'GRIFERIAS E INCRUSTACIONES'],
     ['PINTURAS', '', 'PINTURAS'],
     ['PLANTA_ELECTRICA', '', 'PLANTA ELECTRICA'],
-    ['PASAMANOS_CERRAJERIA', 'Suministro', 'PASAMANOS ESCALERAS'],
-    ['PASAMANOS_CERRAJERIA', 'Mano de Obra', 'INSTALACION PASAMANOS ESCALERAS'],
+    ['CARPINTERIA_METALICA', 'Suministro e Instalación', 'CARPINTERIA METALICA'],
     ['CARPINTERIA_MADERA', 'Suministro', 'CARPINTERIA MADERA - FABRICACION Y SUMINISTRO'],
     ['CARPINTERIA_MADERA', 'Mano de Obra', 'CARPINTERIA MADERA - INSTALACION'],
   ];
@@ -151,7 +148,7 @@ async function openReviewPanel(page, moduleKey) {
   ]);
   await expect(panel.locator('.sar-filter-text')).toBeVisible();
   await expect(panel.locator('.sar-status')).toContainText('Análisis listo', { timeout: 90000 });
-  await expect(panel.locator('.sar-analysis')).toContainText('Proceso de análisis');
+  await expect(panel.locator('.sar-analysis')).toContainText('Estamos revisando tus propuestas');
   await expect(panel.locator('.sar-analysis-progress')).toContainText('100%');
   await expect(panel.locator('.sar-assistant')).toContainText('Asistente AIA');
   await expect(panel.locator('.sar-assistant')).toContainText('Recomendaciones');

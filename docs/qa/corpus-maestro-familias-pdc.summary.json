@@ -1,0 +1,1166 @@
+{
+    "generated_at": "2026-07-02T00:04:12-05:00",
+    "source_counts": {
+        "program_projects": 14,
+        "activity_rows": 55,
+        "pdc_rows": 30,
+        "general_informe_pdc_rows": 30,
+        "excel_files": 8,
+        "families": 60,
+        "contractual_elements": 16,
+        "packages": 551,
+        "confusions": 2210
+    },
+    "excel_files": [
+        {
+            "file": "1. PLAN DE COMPRAS JMC T1 V2 20250703 - VERSION 29 MAYO 2026.xlsx",
+            "candidate_sheets": [
+                "POR ACTIVIDAD",
+                "POR FECHAS",
+                "Programa LBV",
+                "Copia de CONTRATACION",
+                "POR ORDEN CRONOLOGICO"
+            ],
+            "rows_extracted": 1757
+        },
+        {
+            "file": "1. PLAN DE COMPRAS V2- SR.xlsx",
+            "candidate_sheets": [
+                "POR ACTIVIDAD",
+                "POR FECHAS",
+                "Programa LBV",
+                "Copia de CONTRATACION",
+                "POR ORDEN CRONOLOGICO"
+            ],
+            "rows_extracted": 1514
+        },
+        {
+            "file": "20210208 PLAN DE COMPRAS (2).xlsx",
+            "candidate_sheets": [
+                "fechas contratación",
+                "Copia de CONTRATACION",
+                "En orden cronológico"
+            ],
+            "rows_extracted": 177
+        },
+        {
+            "file": "20211228 PLAN DE COMPRAS CLÍNICA VETEZCO.xlsx",
+            "candidate_sheets": [
+                "POR ACTIVIDAD",
+                "Copia de CONTRATACION",
+                "POR ORDEN CRONOLOGICO"
+            ],
+            "rows_extracted": 131
+        },
+        {
+            "file": "20220816 PLAN DE COMPRAS CRYSTA2.xlsx",
+            "candidate_sheets": [
+                "POR ACTIVIDAD",
+                "Copia de CONTRATACION",
+                "POR ORDEN CRONOLOGICO"
+            ],
+            "rows_extracted": 252
+        },
+        {
+            "file": "20221205 PLAN DE COMPRAS MILAN CAMPESTRE.xlsx",
+            "candidate_sheets": [
+                "Compras cronología (2)",
+                "PLAN DE COMPRAS",
+                "Copia de CONTRATACION",
+                "Compras cronología"
+            ],
+            "rows_extracted": 83
+        },
+        {
+            "file": "20240401 PLAN DE COMPRAS.xlsx",
+            "candidate_sheets": [
+                "fechas contratación",
+                "Copia de CONTRATACION",
+                "En orden cronológico"
+            ],
+            "rows_extracted": 184
+        },
+        {
+            "file": "PLAN DE COMPRAS.xlsx",
+            "candidate_sheets": [
+                "POR ACTIVIDAD",
+                "Copia de CONTRATACION",
+                "POR ORDEN CRONOLOGICO"
+            ],
+            "rows_extracted": 157
+        }
+    ],
+    "classification_counts": {
+        "familia_operativa": 4865,
+        "elemento_contractual": 1524
+    },
+    "top_families": [
+        {
+            "family": "Estructura en Concreto",
+            "evidence": 9511,
+            "sources": {
+                "programa_consolidado": 9424,
+                "actividades": 2,
+                "pdc": 8,
+                "general_informe_pdc": 8,
+                "excel_pdc": 69
+            },
+            "modalities": [
+                "Por definir",
+                "Suministro",
+                "1",
+                "Mano de Obra",
+                "Mano de obra"
+            ],
+            "aliases": [
+                "Dados para columnas,",
+                "Columnas sótano a P1,",
+                "Armado y vaciado,",
+                "Fraguado,",
+                "Verificación acabado de losa,",
+                "Columnas P1 a P2,",
+                "Columnas P2 a P3 (concreto acelerado),",
+                "Armado y vaciado (concreto acelerado),"
+            ]
+        },
+        {
+            "family": "Excavaciones y Movimiento de Tierra",
+            "evidence": 2040,
+            "sources": {
+                "programa_consolidado": 1973,
+                "actividades": 1,
+                "excel_pdc": 66
+            },
+            "modalities": [
+                "Por definir",
+                "1"
+            ],
+            "aliases": [
+                "Excavación general para plataforma de equipos,",
+                "Relleno en recebo cmoún para plataforma de soporte para maquinaria,",
+                "Excavación y relleno con mortero fluido para reemplazo de material contaminado,",
+                "Excavación etapa 1,",
+                "Apuntalamiento nivel -2,50 m,",
+                "Excavación etapa 2,",
+                "Excavación,",
+                "Excavacion,"
+            ]
+        },
+        {
+            "family": "Preliminares de Obra",
+            "evidence": 1449,
+            "sources": {
+                "programa_consolidado": 1189,
+                "actividades": 1,
+                "pdc": 1,
+                "general_informe_pdc": 1,
+                "excel_pdc": 257
+            },
+            "modalities": [
+                "Por definir",
+                "Equipos",
+                "1",
+                "Mano de Obra",
+                "Suministro"
+            ],
+            "aliases": [
+                "Mantenimiento a cerramiento durante obra,",
+                "Cerramientos,",
+                "Demoliciones,",
+                "Cerramiento Tipo Persiana,",
+                "Recepción área de proyecto (con cerramiento),",
+                "Localización y replanteo,",
+                "Demolicion viga guia,",
+                "Demoliciones Plataforma,"
+            ]
+        },
+        {
+            "family": "Filtros, Tapas y Rejillas",
+            "evidence": 1344,
+            "sources": {
+                "programa_consolidado": 1272,
+                "pdc": 1,
+                "general_informe_pdc": 1,
+                "excel_pdc": 70
+            },
+            "modalities": [
+                "Por definir",
+                "Suministro",
+                "Mano de Obra"
+            ],
+            "aliases": [
+                "Rejillas ventilación Mezanine trastienda,",
+                "Filtros,",
+                "Suministro de rejillas,",
+                "Tramo 1 (inc. Instal. De rejillas) L=12.00 m,",
+                "Tramo 2 (inc. Instal. De rejillas) L=12.00 m,",
+                "Tramo 3 (inc. Instal. De rejillas) L=12.00 m,",
+                "Tramo 4 (inc. Instal. De rejillas) L=12.00 m,",
+                "Tramo 5 (inc. Instal. De rejillas) L=12.00 m,"
+            ]
+        },
+        {
+            "family": "Carpinteria Metalica",
+            "evidence": 1167,
+            "sources": {
+                "programa_consolidado": 991,
+                "actividades": 1,
+                "excel_pdc": 175
+            },
+            "modalities": [
+                "Suministro",
+                "Por definir",
+                "2"
+            ],
+            "aliases": [
+                "Suministro,",
+                "Instalación,",
+                "Puertas rejas Trastienda - Zona 1,",
+                "Estructura metálica,",
+                "Concreto,",
+                "Estructura metálica Ecceso-N+7.05,",
+                "Suministro de muebles,",
+                "Instalación Muebles Counters,"
+            ]
+        },
+        {
+            "family": "Pisos Ceramicos, Porcelanatos, Gres y Concreto Pulido",
+            "evidence": 960,
+            "sources": {
+                "programa_consolidado": 816,
+                "actividades": 3,
+                "pdc": 6,
+                "general_informe_pdc": 6,
+                "excel_pdc": 129
+            },
+            "modalities": [
+                "Por definir",
+                "1",
+                "Suministro"
+            ],
+            "aliases": [
+                "Zona 1,",
+                "Juntas Z1,",
+                "Zona 2,",
+                "Juntas Z2,",
+                "Zona 3,",
+                "Juntas Z3,",
+                "Elementos suplementarios para losas de entrepisos ,",
+                "Plataforma Mantenimiento Mezanine Trastienda - Zona 1,"
+            ]
+        },
+        {
+            "family": "Red de Telecomunicaciones",
+            "evidence": 743,
+            "sources": {
+                "programa_consolidado": 638,
+                "actividades": 2,
+                "excel_pdc": 103
+            },
+            "modalities": [
+                "Por definir",
+                "Suministro e instalación",
+                "Suministro",
+                "2"
+            ],
+            "aliases": [
+                "Elementos suplementarios,",
+                "Zona 1,",
+                "Zona 2,",
+                "Zona 3,",
+                "Control de Acceso,",
+                "Intrusión,",
+                "Suministro e Instalación,",
+                "Puesta en Marcha,"
+            ]
+        },
+        {
+            "family": "Mamposteria en Ladrillo/Bloque Interior",
+            "evidence": 725,
+            "sources": {
+                "programa_consolidado": 623,
+                "actividades": 2,
+                "excel_pdc": 100
+            },
+            "modalities": [
+                "Por definir",
+                "Suministro",
+                "1"
+            ],
+            "aliases": [
+                "Construcción muros exteriores,",
+                "Acabado interior muros exteriores,",
+                "Dinteles y Muros Tienda - M0,",
+                "Dinteles y Muros Mezanine - MZ,",
+                "Poceta Sala de Ventas,",
+                "Poceta Servicio Tecnico,",
+                "Poceta patio de maniobras,",
+                "Poceta Patio Constructor,"
+            ]
+        },
+        {
+            "family": "Muros de Contencion",
+            "evidence": 501,
+            "sources": {
+                "programa_consolidado": 452,
+                "actividades": 2,
+                "excel_pdc": 47
+            },
+            "modalities": [
+                "Por definir",
+                "Suministro",
+                "1"
+            ],
+            "aliases": [
+                "Alistamiento equipos,",
+                "Transporte equipos,",
+                "Puesta a punto equipos,",
+                "Pedido y figuración,",
+                "Instalacion,",
+                "Concreto (concreto acelerado),",
+                "Excavación, acero y concreto pantallas (concreto acelerado últimos módulos),",
+                "Acero modificación diseño pantalla,"
+            ]
+        },
+        {
+            "family": "Red Electrica",
+            "evidence": 455,
+            "sources": {
+                "programa_consolidado": 334,
+                "actividades": 1,
+                "excel_pdc": 120
+            },
+            "modalities": [
+                "Por definir",
+                "Suministro",
+                "1"
+            ],
+            "aliases": [
+                "Rejillas Subestación,",
+                "Subestación,",
+                "Acometida,",
+                "Redes de distribución,",
+                "Sistema de apantallamiento y puesta a tierra ,",
+                "Componentes complementarios acometida subestación y sistema de apantallamiento ,",
+                "Aparatos y tablero,",
+                "Tableros Eléctricos Provisionales,"
+            ]
+        },
+        {
+            "family": "Piloteaje y Micropilotes",
+            "evidence": 425,
+            "sources": {
+                "programa_consolidado": 420,
+                "excel_pdc": 5
+            },
+            "modalities": [
+                "Por definir",
+                "Equipos"
+            ],
+            "aliases": [
+                "Construcción de pilotes y otras obras (por terceros),",
+                "Recalce pilotes,",
+                "Corte y retiro de pilotes (POR ML1),",
+                "Pilotes ,",
+                "Descabece de pilotes,",
+                "Pilotes,",
+                "Pilotes (ML1),",
+                "Afectación Pilotes Dado 9D,"
+            ]
+        },
+        {
+            "family": "Vigas de Cimentacion",
+            "evidence": 371,
+            "sources": {
+                "programa_consolidado": 371
+            },
+            "modalities": [
+                "Por definir"
+            ],
+            "aliases": [
+                "Solado,",
+                "Concreto Vigas,",
+                "Reemplazo grava tipo afirmado,",
+                "Vigas de cimentación,",
+                "Excavación de Vigas de Cimentacion,",
+                "Solado Vigas de Cimentación,",
+                "Concreto Vigas de Cimentacion,",
+                "Desencofre Vigas de Cimentacion,"
+            ]
+        },
+        {
+            "family": "Cielos Rasos",
+            "evidence": 360,
+            "sources": {
+                "programa_consolidado": 268,
+                "actividades": 1,
+                "excel_pdc": 91
+            },
+            "modalities": [
+                "Por definir",
+                "Suministro",
+                "2"
+            ],
+            "aliases": [
+                "Cielos Local,",
+                "Sala de Ventas - Mesanine Zona 1,",
+                "Enfermeria Mezanine Zona 1,",
+                "Centro Corte,",
+                "Utb,",
+                "Patio Constructor Zona 1,",
+                "Cargador de Baterias - Trastienda,",
+                "Sotano,"
+            ]
+        },
+        {
+            "family": "Puertas y Accesorios",
+            "evidence": 357,
+            "sources": {
+                "programa_consolidado": 271,
+                "actividades": 1,
+                "excel_pdc": 85
+            },
+            "modalities": [
+                "Por definir",
+                "Suministro",
+                "Suministro e instalación"
+            ],
+            "aliases": [
+                "Elementos suplementarios de fachada (Avisos y puertas Lam Galv),",
+                "Mezanine Trastienda y Trastienda (Puertas Fijas, deslizantes, cortinas) - Zona 1,",
+                "Puerta P5 y ajustes en zona de operador,",
+                "Instalación puerta PM-01 en nueva bodega,",
+                "Puertas metalicas,",
+                "Futuras bodegas de AMERICA Y AEROMEXICO,",
+                "B-119,",
+                "Baño hombre plataforma,"
+            ]
+        },
+        {
+            "family": "Pinturas Interiores y Exteriores",
+            "evidence": 351,
+            "sources": {
+                "programa_consolidado": 229,
+                "actividades": 2,
+                "excel_pdc": 120
+            },
+            "modalities": [
+                "Por definir",
+                "1"
+            ],
+            "aliases": [
+                "Area mezanine y trastienda Zona 1,",
+                "General Tienda y area de Ventas Zona 2 y 3,",
+                "Area trastienda y Mezaninen Zona 1,",
+                "Pintura Demarcación,",
+                "Pintura muros,",
+                "Pintura muros y cielos,",
+                "Pintura,",
+                "Pintura fachada,"
+            ]
+        },
+        {
+            "family": "Morteros de Nivelacion de Losas",
+            "evidence": 338,
+            "sources": {
+                "programa_consolidado": 288,
+                "actividades": 1,
+                "excel_pdc": 49
+            },
+            "modalities": [
+                "Por definir",
+                "Mano de obra"
+            ],
+            "aliases": [
+                "Placa de contrapiso,",
+                "Concreto,",
+                "Corte diltaciones,",
+                "Fundida concreto,",
+                "Morteros,",
+                "Placa contrapiso,",
+                "Losa de contrapiso,",
+                "Mortero de piso,"
+            ]
+        },
+        {
+            "family": "Ascensores",
+            "evidence": 331,
+            "sources": {
+                "programa_consolidado": 312,
+                "actividades": 1,
+                "excel_pdc": 18
+            },
+            "modalities": [
+                "Por definir",
+                "2"
+            ],
+            "aliases": [
+                "Montaje estructura metálica ascensor externo N.O Madera (finalizada),",
+                "Acabados ascensor externo 2 N.OR Madera,",
+                "Instalación de ascensor externo 2 N.OR Madera,",
+                "Instalació de redes ascensor externo 2 N.OR Madera,",
+                "Recibo de detalles estructura metálica ascensor interno Madera,",
+                "Acabados ascensor interno Madera,",
+                "Instalación de ascensor ascensor interno Madera,",
+                "Instalació de redes ascensor interno Madera,"
+            ]
+        },
+        {
+            "family": "Red Hidrosanitaria",
+            "evidence": 310,
+            "sources": {
+                "programa_consolidado": 231,
+                "actividades": 2,
+                "pdc": 1,
+                "general_informe_pdc": 1,
+                "excel_pdc": 75
+            },
+            "modalities": [
+                "Por definir",
+                "1",
+                "Mano de Obra",
+                "Mano de obra"
+            ],
+            "aliases": [
+                "Equipo Presion Agua (2 Bombas),",
+                "Sistema de Agua Potable (Tuberias y Accesorios),",
+                "Instalació de redes ascensor interno 1 ORI Aguacatala,",
+                "Instalació de redes ascensor interno 2 OCC Aguacatala,",
+                "Instalación de redes puente interno Aguacatala,",
+                "Instalació de redes ascensor externo N.ORI Aguacatala,",
+                "Red de desagües,",
+                "Redes hidrosanitaria y electricas,"
+            ]
+        },
+        {
+            "family": "Revoques y Panetes",
+            "evidence": 286,
+            "sources": {
+                "programa_consolidado": 222,
+                "actividades": 2,
+                "excel_pdc": 62
+            },
+            "modalities": [
+                "Por definir",
+                "1",
+                "Mano de obra"
+            ],
+            "aliases": [
+                "Pobre y Pañete,",
+                "Revoques,",
+                "Revoque fachada exterior,",
+                "Revoques y llenos,",
+                "Revoque,",
+                "Obra gris y blanca: ajustes de piso y revoque,",
+                "Revoque y Estuco,",
+                "Revoque de muros en baños y buitrones y buitrones Nivel 5"
+            ]
+        },
+        {
+            "family": "Pisos y Enchapes",
+            "evidence": 281,
+            "sources": {
+                "programa_consolidado": 190,
+                "actividades": 2,
+                "excel_pdc": 89
+            },
+            "modalities": [
+                "Por definir",
+                "1",
+                "Suministro"
+            ],
+            "aliases": [
+                "Desmonte revestimiento muros, cielos y redes existentes,",
+                "Enchapes Ceramicos en Muros",
+                "Recubrimiento muros (estructura),",
+                "Recubrimiento muros (estructura y acabado),",
+                "Enchapes en muros y pisos,",
+                "Enchapes en muros,",
+                "Enchape paredes,",
+                "Enchapes y recubrimientos,"
+            ]
+        },
+        {
+            "family": "Zapatas de Cimentacion",
+            "evidence": 269,
+            "sources": {
+                "programa_consolidado": 269
+            },
+            "modalities": [
+                "Por definir"
+            ],
+            "aliases": [
+                "Excavación general y zapatas,",
+                "Fundida de nucleos y perimetral dado norte,",
+                "Concreto dado norte,",
+                "Concreto dado sur,",
+                "Liberación geotécnica (torta inferior y dados),",
+                "Solado,",
+                "Fundida de Nucleos,",
+                "Concreto Dados y Vigas,"
+            ]
+        },
+        {
+            "family": "Aseo de Apartamentos y Obra",
+            "evidence": 268,
+            "sources": {
+                "programa_consolidado": 174,
+                "excel_pdc": 94
+            },
+            "modalities": [
+                "Por definir"
+            ],
+            "aliases": [
+                "Aseo Final,",
+                "Consumo Agua y Energia,",
+                "Período 1,",
+                "Período 2,",
+                "Período 3,",
+                "Período 4,",
+                "Período 5,",
+                "Período 6,"
+            ]
+        },
+        {
+            "family": "Aparatos Sanitarios",
+            "evidence": 267,
+            "sources": {
+                "programa_consolidado": 237,
+                "actividades": 2,
+                "excel_pdc": 28
+            },
+            "modalities": [
+                "Por definir",
+                "Suministro",
+                "1"
+            ],
+            "aliases": [
+                "Aparatos Sanitarios Trastienda Mezanine Zona 1,",
+                "Sistema de Drenaje (Equipos, Tuberias y Drenajes),",
+                "Integración y automatización de control de sistema hidrosanitario ,",
+                "Cama,",
+                "Tubería/Accesorios,",
+                "Conformación de caja,",
+                "Acabado gris,",
+                "Tubería/accesorios hidrosanitarios,"
+            ]
+        },
+        {
+            "family": "Red de Extinción",
+            "evidence": 256,
+            "sources": {
+                "programa_consolidado": 212,
+                "actividades": 2,
+                "excel_pdc": 42
+            },
+            "modalities": [
+                "Por definir",
+                "Suministro",
+                "2"
+            ],
+            "aliases": [
+                "Local Comercial,",
+                "Red RCI",
+                "BHS NORTE,",
+                "L-1010,",
+                "HALL DE LLEGADAS INTERNACIONALES - ZONA ADUANERA,",
+                "CHECK IN ACTUALES,",
+                "CORREDOR ZONA SALIDA INTERNACIONAL,",
+                "BHS SUR,"
+            ]
+        },
+        {
+            "family": "Vias y Pavimentos",
+            "evidence": 234,
+            "sources": {
+                "programa_consolidado": 143,
+                "actividades": 2,
+                "excel_pdc": 89
+            },
+            "modalities": [
+                "Por definir",
+                "1",
+                "Suministro"
+            ],
+            "aliases": [
+                "Concreto,",
+                "Llegada de Acero (#6) dado viga viaducto Eje 3,",
+                "Llegada de Acero (#8) dado viga viaducto Eje 3,",
+                "Base granular,",
+                "Llenos sub-base granular,",
+                "Andén en concreto,",
+                "NIVELACIÓN Y PERFILACIÓN,",
+                "INSTALACIÓN DE CORDONES,"
+            ]
+        },
+        {
+            "family": "Pasamanos Tubulares y Cerrajeria",
+            "evidence": 233,
+            "sources": {
+                "programa_consolidado": 194,
+                "excel_pdc": 39
+            },
+            "modalities": [
+                "Por definir"
+            ],
+            "aliases": [
+                "Instalación de pisos en vinilo acabados y pasamanos puente interno Madera,",
+                "Instalación de pisos en vinilo acabados y pasamanos ,",
+                "Pasamanos,",
+                "Pasamanos escaleras,",
+                "Pasamanos en rampa acceso a buses plataforma,",
+                "Murete y pasamanos,",
+                "Talón pasamanos Nivel 5",
+                "Talón pasamanos Nivel 4"
+            ]
+        },
+        {
+            "family": "Torregrua",
+            "evidence": 218,
+            "sources": {
+                "programa_consolidado": 200,
+                "actividades": 1,
+                "excel_pdc": 17
+            },
+            "modalities": [
+                "Suministro",
+                "Por definir",
+                "Equipos",
+                "1"
+            ],
+            "aliases": [
+                "Prealistamiento de torregrúas (diseño cimentación, adquisición de suministros, construcción cimentación y resistencia de",
+                "Montaje torregrúas,",
+                "Afectacion puesta en marcha torre grua,",
+                "Adjudicacion alquiler torre grua,",
+                "Recoleccion y radicacion docs (32 Items) contratista a AIA (Residente MEV),",
+                "Validacion y radicacion docs AIA a ML1,",
+                "Validacion y radicacion docs ML1 a Interventoria,",
+                "Validacion y Aprobacion docs de Interventoria,"
+            ]
+        },
+        {
+            "family": "Ventaneria PVC y Aluminio",
+            "evidence": 166,
+            "sources": {
+                "programa_consolidado": 119,
+                "actividades": 1,
+                "excel_pdc": 46
+            },
+            "modalities": [
+                "Por definir",
+                "Suministro"
+            ],
+            "aliases": [
+                "Ventaneria Local,",
+                "Puerta Ventana Local,",
+                "Ventaneria Linea Cajas - Zona 3,",
+                "Ventaneria Mezanine - Zona 1,",
+                "Ventanas y Puertas vidrieras,",
+                "Ventanería, puertas y divisiones,",
+                "Instalación nueva división en vidrio,",
+                "Ventana fachada lado aire,"
+            ]
+        },
+        {
+            "family": "Vidrieria",
+            "evidence": 120,
+            "sources": {
+                "programa_consolidado": 75,
+                "excel_pdc": 45
+            },
+            "modalities": [
+                "Por definir",
+                "Suministro"
+            ],
+            "aliases": [
+                "Fachadas arquitectonicas,",
+                "Fachada ampliación Madera,",
+                "Instalación de fachada puente interno Madera,",
+                "Fachada ampliación Industriales,",
+                "Instalación de fachada puente interno Ayurá,",
+                "Instalación de fachada puente interno Itagüí,",
+                "Instalación de fachada puente interno Envigado,",
+                "Instalación de fachada puente interno Aguacatala,"
+            ]
+        },
+        {
+            "family": "Paisajismo",
+            "evidence": 120,
+            "sources": {
+                "programa_consolidado": 101,
+                "actividades": 2,
+                "excel_pdc": 17
+            },
+            "modalities": [
+                "Por definir",
+                "Suministro",
+                "2"
+            ],
+            "aliases": [
+                "Roca hincada,",
+                "Colchón drenante + geotextil,",
+                "Subrasante mejorada,",
+                "Base asfáltica,",
+                "Adecuación zona de implantación,",
+                "Cielo tipo bafle,",
+                "Carramientos internos y en plataforma,",
+                "Fabricación,"
+            ]
+        }
+    ],
+    "top_contractual_elements": [
+        {
+            "element": "Encofrado y Obra Falsa",
+            "evidence": 5661,
+            "sources": {
+                "programa_consolidado": 5649,
+                "excel_pdc": 12
+            },
+            "packages": [
+                "FORMALETERÍA",
+                "OBRA FALSA LOSAS AEREAS"
+            ],
+            "aliases": [
+                "Desencofrado,",
+                "Encofrado nudos,",
+                "Obra falsa,",
+                "Encofrado,",
+                "Formaleta,",
+                "Formaleta Muros,",
+                "Armado de acero y formaleta,",
+                "Formaleta arranques tanque,"
+            ]
+        },
+        {
+            "element": "Acero de Refuerzo y Estructural",
+            "evidence": 3651,
+            "sources": {
+                "programa_consolidado": 3554,
+                "pdc": 4,
+                "general_informe_pdc": 4,
+                "excel_pdc": 89
+            },
+            "packages": [
+                "ACERO DE REFUERZO",
+                "SUMINISTRO DE ACERO",
+                "CERRAMIENTO EN MALLA ESLABONADA",
+                "SUMINISTRO METALDECK",
+                "Losas de entrepiso (steel deck+f'c)",
+                "Montaje perfiles metálicos",
+                "Losa en steel deck",
+                "MALLA DE REFUERZO"
+            ],
+            "aliases": [
+                "Instalación malla a tierra,",
+                "Acero vigas y nervios,",
+                "Malla ,",
+                "Acero,",
+                "Acero de refuerzo,",
+                "Llegada acero de refuerzo para armado completo dado,",
+                "Armado e instalación acero,",
+                "Armado de acero,"
+            ]
+        },
+        {
+            "element": "Aligerantes Perdidos y Recuperables",
+            "evidence": 1655,
+            "sources": {
+                "programa_consolidado": 1655
+            },
+            "packages": [],
+            "aliases": [
+                "Aligerante,",
+                "Aligerante Losa Aerea,",
+                "Aligerante (A-B),",
+                "Aligerante (B-C),",
+                "Aligerante (C-D),",
+                "Aligerante (D-E),",
+                "Aligerante (E-F),",
+                "Aligerante (F-G),"
+            ]
+        },
+        {
+            "element": "Mano de Obra - Cimentacion",
+            "evidence": 1214,
+            "sources": {
+                "programa_consolidado": 1206,
+                "excel_pdc": 8
+            },
+            "packages": [
+                "MANO DE OBRA CIMENTACION"
+            ],
+            "aliases": [
+                "Solado,",
+                "Concreto,",
+                "Fundida de Nucleos,",
+                "Concreto Dados,",
+                "Concreto Dados y Vigas de Ciment.,",
+                "Pases,",
+                "Construcción plataforma (ML1),",
+                "Logistica Movilización (Botero),"
+            ]
+        },
+        {
+            "element": "Losas de Cimentacion",
+            "evidence": 772,
+            "sources": {
+                "programa_consolidado": 738,
+                "excel_pdc": 34
+            },
+            "packages": [
+                "Carcamos Zona Aire",
+                "Negociación Carcamos Zona Aire",
+                "Suministro Carcamos Zona Aire",
+                "Cárcamo",
+                "Dados de fundación",
+                "Fundaciones edificio",
+                "Cimentaciones y cárcamo",
+                "Carcamos"
+            ],
+            "aliases": [
+                "Capa de rajón,",
+                "Solado,",
+                "Aligeramiento,",
+                "Concreto,",
+                "Talones de apoyo,",
+                "Fundida concreto,",
+                "fundida concreto,",
+                "Concreto pobre,"
+            ]
+        },
+        {
+            "element": "Mano de Obra - Estructura",
+            "evidence": 519,
+            "sources": {
+                "programa_consolidado": 509,
+                "excel_pdc": 10
+            },
+            "packages": [
+                "Desmonte estructuras en zona nacional",
+                "MANO DE OBRA ESTRUCTURA"
+            ],
+            "aliases": [
+                "Solado,",
+                "Concreto,",
+                "Fundida,",
+                "Pases,",
+                "Concreto dados y Vigas,",
+                "Montaje infraestructura (bandeja/tuberías/etc),",
+                "Desmonte de estructuras existentes,",
+                "Montaje de infraestructura,"
+            ]
+        },
+        {
+            "element": "Luminarias y Artefactos Electricos",
+            "evidence": 399,
+            "sources": {
+                "programa_consolidado": 292,
+                "excel_pdc": 107
+            },
+            "packages": [
+                "ILUMINACIÓN",
+                "Iluminación",
+                "Instalación luminarias",
+                "Instalación de luminarias",
+                "Eléctrica e iluminación",
+                "ILUMINACION Y CONTROL",
+                "ILUMINACION"
+            ],
+            "aliases": [
+                "Alambrado,",
+                "Aparateado,",
+                "Iluminación Emergencia,",
+                "Integración y automatización de control de sistema de iluminación ,",
+                "Instalación de redes e iluminación puente interno Madera,",
+                "Luminarias Tango Led Philips 340,",
+                "Canalizaciones para iluminación,",
+                "Instalación luminarias,"
+            ]
+        },
+        {
+            "element": "Fachada HPL, Vidrio y Aluminio",
+            "evidence": 396,
+            "sources": {
+                "programa_consolidado": 350,
+                "excel_pdc": 46
+            },
+            "packages": [
+                "CUBIERTA EN PANEL TIPO METSOUND A-42 P/1000 G4 E=50MM DE METECNO",
+                "Estructura Cubierta",
+                "Cubierta",
+                "Instalación teja cubierta edificio",
+                "Instalación teja pasarela",
+                "Cubierta escaleras",
+                "Teja + canal",
+                "FACHADA EN VIDRIO"
+            ],
+            "aliases": [
+                "Estructura y cubierta ampliación Madera,",
+                "Instalación de cubierta puente intero Madera,",
+                "Estructura y cubierta ampliación Industriales,",
+                "Instalación de cubierta puente intero Ayurá,",
+                "Instalación de cubierta puente intero Itagüí,",
+                "Instalación de cubierta puente intero Envigado,",
+                "Instalación de cubierta puente intero Aguacatala,",
+                "Cama,"
+            ]
+        },
+        {
+            "element": "Estuco",
+            "evidence": 107,
+            "sources": {
+                "programa_consolidado": 55,
+                "excel_pdc": 52
+            },
+            "packages": [
+                "Estucos",
+                "Estuco",
+                "ESTUCO"
+            ],
+            "aliases": [
+                "Estucos,",
+                "Estuco,",
+                "Estucos",
+                "Estuco",
+                "ESTUCO"
+            ]
+        },
+        {
+            "element": "Equipos de Extincion",
+            "evidence": 79,
+            "sources": {
+                "programa_consolidado": 67,
+                "excel_pdc": 12
+            },
+            "packages": [
+                "RED DE EXTINCIÓN",
+                "EXTINCION INCENDIO",
+                "RED DE EXTINCION INCENDIO",
+                "GABINETES ELECTRICOS"
+            ],
+            "aliases": [
+                "Zona 1,",
+                "Zona 2,",
+                "Zona 3,",
+                "Gabinete para 12 Modulos c/Bastidor (Norma CE),",
+                "Equipos y gabinetes,",
+                "Instalación tubería y accesorios FBO/Staff,",
+                "Instalación tubería y accesorios zona pasillo,",
+                "Instalación tubería y accesorios zona bandas,"
+            ]
+        },
+        {
+            "element": "Mano de Obra - Acabados",
+            "evidence": 53,
+            "sources": {
+                "excel_pdc": 53
+            },
+            "packages": [
+                "MANO DE OBRA REVOQUE",
+                "MANO DE OBRA ENCHAPES",
+                "MANO DE OBRA PISOS",
+                "MANO DE OBRA REVOQUE FACHADA",
+                "MANO DE OBRA ENCHAPES Y REVESTIMIENTOS",
+                "MANO DE OBRA REVOQUES"
+            ],
+            "aliases": [
+                "MANO DE OBRA REVOQUE",
+                "MANO DE OBRA ENCHAPES",
+                "MANO DE OBRA PISOS",
+                "MANO DE OBRA REVOQUE FACHADA",
+                "MANO DE OBRA ENCHAPES Y REVESTIMIENTOS",
+                "MANO DE OBRA REVOQUES"
+            ]
+        },
+        {
+            "element": "Mano de Obra - Mamposteria",
+            "evidence": 45,
+            "sources": {
+                "programa_consolidado": 5,
+                "excel_pdc": 40
+            },
+            "packages": [
+                "RETIROS Y DEMOLICIONES (Puertas, Barandas, Cielos, Mampostería, pisos, estanterías, vidrieras)",
+                "MANO DE OBRA MAMPOSTERÍA",
+                "Demolición de mampostería, baños y vidirera interna",
+                "MANO DE OBRA MAMPOSTERIA"
+            ],
+            "aliases": [
+                "Demolición de mampostería, baños y desmonte vidirera interna,",
+                "RETIROS Y DEMOLICIONES (Puertas, Barandas, Cielos, Mampostería, pisos, estanterías, vidrieras)",
+                "MANO DE OBRA MAMPOSTERÍA",
+                "Demolición de mampostería, baños y vidirera interna",
+                "MANO DE OBRA MAMPOSTERIA"
+            ]
+        },
+        {
+            "element": "Contenedores",
+            "evidence": 9,
+            "sources": {
+                "actividades": 1,
+                "excel_pdc": 8
+            },
+            "packages": [
+                "CONTENEDORES",
+                "CONTENEDORES OFICINA Y ALMACEN"
+            ],
+            "aliases": [
+                "CONTENEDORES OFICINA Y ALMACEN",
+                "CONTENEDORES"
+            ]
+        },
+        {
+            "element": "Geodren",
+            "evidence": 3,
+            "sources": {
+                "actividades": 1,
+                "excel_pdc": 2
+            },
+            "packages": [
+                "GEODREN"
+            ],
+            "aliases": [
+                "GEODREN PLANAR",
+                "GEODREN"
+            ]
+        },
+        {
+            "element": "Mano de Obra - Excavaciones",
+            "evidence": 2,
+            "sources": {
+                "pdc": 1,
+                "general_informe_pdc": 1
+            },
+            "packages": [
+                "MOVIMIENTO DE TIERRA"
+            ],
+            "aliases": [
+                "MOVIMIENTO DE TIERRA EXCAVACIONES Y LLENOS"
+            ]
+        },
+        {
+            "element": "Mano de Obra - Urbanismo",
+            "evidence": 1,
+            "sources": {
+                "excel_pdc": 1
+            },
+            "packages": [
+                "MANO DE OBRA URBANISMO"
+            ],
+            "aliases": [
+                "MANO DE OBRA URBANISMO"
+            ]
+        }
+    ],
+    "confusion_patterns": {
+        "Carpintería/revestimiento expresado como eje": 4,
+        "Excavación bajo capítulo de estructura": 50,
+        "Extinción con redes/tubería debe revisarse como RCI": 3,
+        "Familia inferida solo por contexto/capítulo": 1558,
+        "Mezcla red con equipo/accesorio": 32,
+        "Revisar separación excavación vs cimentación/cárcamo": 126,
+        "Seguridad/control confundible con incendio": 6,
+        "Ubicación usada como actividad": 431
+    }
+}

@@ -1,0 +1,1377 @@
+{
+  "generatedAt": "2026-07-02T11:59:23.466Z",
+  "summaries": [
+    {
+      "project": "Optimizacion Aeropuerto JMC",
+      "projectId": 68,
+      "week": 7,
+      "module": "listado-actividades",
+      "runId": "run_b17b3c1c10c34f69b67707da54c3e8ed",
+      "total": 537,
+      "preselected": 0,
+      "ready": 0,
+      "review": 13,
+      "conflict": 524,
+      "actions": {
+        "review_contractual_item": 101,
+        "create_activity": 14,
+        "review_no_match": 422
+      },
+      "samples": [
+        {
+          "action": "review_contractual_item",
+          "title": "Va en contratos",
+          "subtitle": "Gabinete para 12 Modulos c/Bastidor (Norma CE),",
+          "gate": "conflict",
+          "reason": "El cronograma contiene un elemento contractual, no una familia operativa de actividades.",
+          "blockers": [
+            "Mezcla detección y extinción contra incendio.",
+            "Un elemento contractual no puede quedar listo como familia de actividades."
+          ],
+          "reviewReasons": [
+            "Debe pasar a Contratos porque es compra, insumo, suministro, equipo o subpaquete.",
+            "Es un contrato, compra, insumo, material, equipo, suministro o subpaquete; debe gestionarse en Contratos."
+          ],
+          "startActivity": "Gabinete para 12 Modulos c/Bastidor (Norma CE), [Capítulo: Suministro equipos redes: telecomunicación, seguridad y control, detección, Redes, (3) CHECK IN] | 2026-07-15",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "Equipos de Extincion",
+              "chapter": "suministro equipos redes: telecomunicación, seguridad y control, detección, redes, (3) check in",
+              "context": "suministro equipos redes: telecomunicación, seguridad y control, detección, redes, (3) check in",
+              "rule_id": 115,
+              "activity": "Gabinete para 12 Modulos c/Bastidor (Norma CE), [Capítulo: Suministro equipos redes: telecomunicación, seguridad y control, detección, Redes, (3) CHECK IN]",
+              "family_id": 52,
+              "unique_id": 535,
+              "confidence": 94,
+              "matched_by": "nombre",
+              "risk_flags": [
+                "deteccion_incendio",
+                "extincion_incendio",
+                "redes_o_tuberias"
+              ],
+              "start_date": "2026-07-15",
+              "matched_rule": "nombre",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "",
+              "clean_activity": "Gabinete para 12 Modulos c/Bastidor (Norma CE),",
+              "intervention_hint": "",
+              "original_activity": "Gabinete para 12 Modulos c/Bastidor (Norma CE), [Capítulo: Suministro equipos redes: telecomunicación, seguridad y control, detección, Redes, (3) CHECK IN]"
+            }
+          ]
+        },
+        {
+          "action": "review_contractual_item",
+          "title": "Va en contratos",
+          "subtitle": "Instalación tubería y accesorios FBO/Staff,",
+          "gate": "conflict",
+          "reason": "El cronograma contiene un elemento contractual, no una familia operativa de actividades.",
+          "blockers": [
+            "Un elemento contractual no puede quedar listo como familia de actividades."
+          ],
+          "reviewReasons": [
+            "Debe pasar a Contratos porque es compra, insumo, suministro, equipo o subpaquete.",
+            "Es un contrato, compra, insumo, material, equipo, suministro o subpaquete; debe gestionarse en Contratos."
+          ],
+          "startActivity": "Instalación tubería y accesorios FBO/Staff, [Capítulo: Extinción, Redes, (5) SALA DE EMBARQUE REMOTA NACIONAL] | 2026-09-02",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "Equipos de Extincion",
+              "chapter": "extinción, redes, (5) sala de embarque remota nacional",
+              "context": "extinción, redes, (5) sala de embarque remota nacional",
+              "rule_id": 115,
+              "activity": "Instalación tubería y accesorios FBO/Staff, [Capítulo: Extinción, Redes, (5) SALA DE EMBARQUE REMOTA NACIONAL]",
+              "family_id": 52,
+              "unique_id": 1350,
+              "confidence": 94,
+              "matched_by": "breadcrumb",
+              "risk_flags": [
+                "extincion_incendio",
+                "redes_o_tuberias"
+              ],
+              "start_date": "2026-09-02",
+              "matched_rule": "breadcrumb",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "",
+              "clean_activity": "Instalación tubería y accesorios FBO/Staff,",
+              "intervention_hint": "",
+              "original_activity": "Instalación tubería y accesorios FBO/Staff, [Capítulo: Extinción, Redes, (5) SALA DE EMBARQUE REMOTA NACIONAL]"
+            }
+          ]
+        },
+        {
+          "action": "review_contractual_item",
+          "title": "Va en contratos",
+          "subtitle": "Equipos y gabinetes,",
+          "gate": "conflict",
+          "reason": "El cronograma contiene un elemento contractual, no una familia operativa de actividades.",
+          "blockers": [
+            "Un elemento contractual no puede quedar listo como familia de actividades."
+          ],
+          "reviewReasons": [
+            "Debe pasar a Contratos porque es compra, insumo, suministro, equipo o subpaquete.",
+            "Es un contrato, compra, insumo, material, equipo, suministro o subpaquete; debe gestionarse en Contratos."
+          ],
+          "startActivity": "Equipos y gabinetes, [Capítulo: Suministros, Seguridad y control, Redes, (5A) EQUIPAJE LLEGANDO (edificación nueva)] | 2026-11-03",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "Equipos de Extincion",
+              "chapter": "suministros, seguridad y control, redes, (5a) equipaje llegando (edificación nueva)",
+              "context": "suministros, seguridad y control, redes, (5a) equipaje llegando (edificación nueva)",
+              "rule_id": 115,
+              "activity": "Equipos y gabinetes, [Capítulo: Suministros, Seguridad y control, Redes, (5A) EQUIPAJE LLEGANDO (edificación nueva)]",
+              "family_id": 52,
+              "unique_id": 756,
+              "confidence": 94,
+              "matched_by": "nombre",
+              "risk_flags": [
+                "extincion_incendio",
+                "redes_o_tuberias"
+              ],
+              "start_date": "2026-11-03",
+              "matched_rule": "nombre",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "",
+              "clean_activity": "Equipos y gabinetes,",
+              "intervention_hint": "5A",
+              "original_activity": "Equipos y gabinetes, [Capítulo: Suministros, Seguridad y control, Redes, (5A) EQUIPAJE LLEGANDO (edificación nueva)]"
+            }
+          ]
+        },
+        {
+          "action": "review_contractual_item",
+          "title": "Va en contratos",
+          "subtitle": "Instalación tubería y accesorios zona pasillo,",
+          "gate": "conflict",
+          "reason": "El cronograma contiene un elemento contractual, no una familia operativa de actividades.",
+          "blockers": [
+            "Un elemento contractual no puede quedar listo como familia de actividades."
+          ],
+          "reviewReasons": [
+            "Debe pasar a Contratos porque es compra, insumo, suministro, equipo o subpaquete.",
+            "Es un contrato, compra, insumo, material, equipo, suministro o subpaquete; debe gestionarse en Contratos."
+          ],
+          "startActivity": "Instalación tubería y accesorios zona pasillo, [Capítulo: Extinción, Redes, (5) SALA DE EMBARQUE REMOTA NACIONAL] | 2026-12-02",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "Equipos de Extincion",
+              "chapter": "extinción, redes, (5) sala de embarque remota nacional",
+              "context": "extinción, redes, (5) sala de embarque remota nacional",
+              "rule_id": 115,
+              "activity": "Instalación tubería y accesorios zona pasillo, [Capítulo: Extinción, Redes, (5) SALA DE EMBARQUE REMOTA NACIONAL]",
+              "family_id": 52,
+              "unique_id": 1351,
+              "confidence": 94,
+              "matched_by": "breadcrumb",
+              "risk_flags": [
+                "extincion_incendio",
+                "redes_o_tuberias"
+              ],
+              "start_date": "2026-12-02",
+              "matched_rule": "breadcrumb",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "zona pasillo",
+              "clean_activity": "Instalación tubería y accesorios zona pasillo,",
+              "intervention_hint": "",
+              "original_activity": "Instalación tubería y accesorios zona pasillo, [Capítulo: Extinción, Redes, (5) SALA DE EMBARQUE REMOTA NACIONAL]"
+            }
+          ]
+        },
+        {
+          "action": "review_contractual_item",
+          "title": "Va en contratos",
+          "subtitle": "Instalación tubería y accesorios zona bandas,",
+          "gate": "conflict",
+          "reason": "El cronograma contiene un elemento contractual, no una familia operativa de actividades.",
+          "blockers": [
+            "Un elemento contractual no puede quedar listo como familia de actividades."
+          ],
+          "reviewReasons": [
+            "Debe pasar a Contratos porque es compra, insumo, suministro, equipo o subpaquete.",
+            "Es un contrato, compra, insumo, material, equipo, suministro o subpaquete; debe gestionarse en Contratos."
+          ],
+          "startActivity": "Instalación tubería y accesorios zona bandas, [Capítulo: Extinción, Redes, (5) SALA DE EMBARQUE REMOTA NACIONAL] | 2027-03-03",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "Equipos de Extincion",
+              "chapter": "extinción, redes, (5) sala de embarque remota nacional",
+              "context": "extinción, redes, (5) sala de embarque remota nacional",
+              "rule_id": 115,
+              "activity": "Instalación tubería y accesorios zona bandas, [Capítulo: Extinción, Redes, (5) SALA DE EMBARQUE REMOTA NACIONAL]",
+              "family_id": 52,
+              "unique_id": 1352,
+              "confidence": 94,
+              "matched_by": "breadcrumb",
+              "risk_flags": [
+                "extincion_incendio",
+                "redes_o_tuberias"
+              ],
+              "start_date": "2027-03-03",
+              "matched_rule": "breadcrumb",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "zona bandas",
+              "clean_activity": "Instalación tubería y accesorios zona bandas,",
+              "intervention_hint": "",
+              "original_activity": "Instalación tubería y accesorios zona bandas, [Capítulo: Extinción, Redes, (5) SALA DE EMBARQUE REMOTA NACIONAL]"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "project": "Optimizacion Aeropuerto JMC",
+      "projectId": 68,
+      "week": 7,
+      "module": "contratos",
+      "runId": "run_2e47b0b9f8570a312690d89dbb199a2d",
+      "total": 2,
+      "preselected": 0,
+      "ready": 0,
+      "review": 2,
+      "conflict": 0,
+      "actions": {
+        "review_no_match": 2
+      },
+      "samples": [
+        {
+          "action": "review_no_match",
+          "title": "Familia sin opción de contrato",
+          "subtitle": "Pisos y Enchapes",
+          "gate": "review",
+          "reason": "La familia detectada no tiene paquetes configurados.",
+          "blockers": [],
+          "reviewReasons": [
+            "La familia detectada no tiene paquetes configurados.",
+            "La familia no tiene paquetes contractuales configurados."
+          ],
+          "startActivity": "Enchapes en muros, [Capítulo: Obra blanca, Internacional Sala 9, Baños Salas de espera, (5B) ADECUACION SALA DE ESPERA ACTUAL] | 2026-07-21",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "Pisos y Enchapes",
+              "chapter": "obra blanca, internacional sala 9, baños salas de espera, (5b) adecuacion sala de espera actual",
+              "context": "obra blanca, internacional sala 9, baños salas de espera, (5b) adecuacion sala de espera actual",
+              "rule_id": 32,
+              "activity": "Enchapes en muros, [Capítulo: Obra blanca, Internacional Sala 9, Baños Salas de espera, (5B) ADECUACION SALA DE ESPERA ACTUAL]",
+              "family_id": 199,
+              "unique_id": 946,
+              "confidence": 92,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2026-07-21",
+              "matched_rule": "nombre",
+              "why_included": "Actividad vinculada al Programa General y familia contractual detectada.",
+              "location_hint": "",
+              "clean_activity": "Enchapes en muros,",
+              "intervention_hint": "5B",
+              "original_activity": "Enchapes en muros, [Capítulo: Obra blanca, Internacional Sala 9, Baños Salas de espera, (5B) ADECUACION SALA DE ESPERA ACTUAL]"
+            }
+          ]
+        },
+        {
+          "action": "review_no_match",
+          "title": "Familia sin opción de contrato",
+          "subtitle": "Red de Extinción",
+          "gate": "review",
+          "reason": "La familia detectada no tiene paquetes configurados.",
+          "blockers": [],
+          "reviewReasons": [
+            "La familia detectada no tiene paquetes configurados.",
+            "La familia no tiene paquetes contractuales configurados."
+          ],
+          "startActivity": "STAFF, [Capítulo: Intervención de locales comerciales/zonas ocupadas por locatarios, (5) SALA DE EMBARQUE REMOTA NACIONAL] | 2026-05-22",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "Red de Extinción",
+              "chapter": "intervención de locales comerciales/zonas ocupadas por locatarios, (5) sala de embarque remota nacional",
+              "context": "intervención de locales comerciales/zonas ocupadas por locatarios, (5) sala de embarque remota nacional",
+              "rule_id": 55,
+              "activity": "STAFF, [Capítulo: Intervención de locales comerciales/zonas ocupadas por locatarios, (5) SALA DE EMBARQUE REMOTA NACIONAL]",
+              "family_id": 200,
+              "unique_id": 1169,
+              "confidence": 86,
+              "matched_by": "breadcrumb",
+              "risk_flags": [],
+              "start_date": "2026-05-22",
+              "matched_rule": "breadcrumb",
+              "why_included": "Actividad vinculada al Programa General y familia contractual detectada.",
+              "location_hint": "",
+              "clean_activity": "STAFF,",
+              "intervention_hint": "Intervención de",
+              "original_activity": "STAFF, [Capítulo: Intervención de locales comerciales/zonas ocupadas por locatarios, (5) SALA DE EMBARQUE REMOTA NACIONAL]"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "project": "Optimizacion Aeropuerto JMC",
+      "projectId": 68,
+      "week": 7,
+      "module": "pdc",
+      "runId": "run_a466e4e3099e8a5330af733bbc251ab0",
+      "total": 0,
+      "preselected": 0,
+      "ready": 0,
+      "review": 0,
+      "conflict": 0,
+      "actions": {},
+      "samples": []
+    },
+    {
+      "project": "Da Porto",
+      "projectId": 73,
+      "week": 8,
+      "module": "listado-actividades",
+      "runId": "run_251f3e5a1aa638b49134aa35dd854d65",
+      "total": 31,
+      "preselected": 0,
+      "ready": 0,
+      "review": 6,
+      "conflict": 25,
+      "actions": {
+        "create_activity": 6,
+        "review_contractual_item": 12,
+        "review_no_match": 13
+      },
+      "samples": [
+        {
+          "action": "create_activity",
+          "title": "Crear actividad consolidada",
+          "subtitle": "Red Electrica",
+          "gate": "review",
+          "reason": "Familia detectada: Red Electrica",
+          "blockers": [],
+          "reviewReasons": [
+            "Match encontrado via fallback sin filtro de capítulo — verificar asignación de familia."
+          ],
+          "startActivity": "PISO 1, [Capítulo: RED ELÉCTRICA, REDES, ACABADOS, DAPORTO TORRE 3] | 2027-03-16",
+          "sourceCount": 13,
+          "sources": [
+            {
+              "family": "Red Electrica",
+              "chapter": "red eléctrica, redes, acabados, daporto torre 3",
+              "context": "red eléctrica, redes, acabados, daporto torre 3",
+              "rule_id": 48,
+              "activity": "PISO 1, [Capítulo: RED ELÉCTRICA, REDES, ACABADOS, DAPORTO TORRE 3]",
+              "family_id": 46,
+              "unique_id": 112,
+              "confidence": 92,
+              "matched_by": "breadcrumb",
+              "risk_flags": [
+                "fallback",
+                "redes_o_tuberias"
+              ],
+              "start_date": "2027-03-16",
+              "matched_rule": "breadcrumb",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "PISO 1",
+              "clean_activity": "PISO 1,",
+              "intervention_hint": "",
+              "original_activity": "PISO 1, [Capítulo: RED ELÉCTRICA, REDES, ACABADOS, DAPORTO TORRE 3]"
+            },
+            {
+              "family": "Red Electrica",
+              "chapter": "red eléctrica, redes, acabados, daporto torre 3",
+              "context": "red eléctrica, redes, acabados, daporto torre 3",
+              "rule_id": 48,
+              "activity": "PISO 2, [Capítulo: RED ELÉCTRICA, REDES, ACABADOS, DAPORTO TORRE 3]",
+              "family_id": 46,
+              "unique_id": 113,
+              "confidence": 92,
+              "matched_by": "breadcrumb",
+              "risk_flags": [
+                "fallback",
+                "redes_o_tuberias"
+              ],
+              "start_date": "2027-04-06",
+              "matched_rule": "breadcrumb",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "PISO 2",
+              "clean_activity": "PISO 2,",
+              "intervention_hint": "",
+              "original_activity": "PISO 2, [Capítulo: RED ELÉCTRICA, REDES, ACABADOS, DAPORTO TORRE 3]"
+            },
+            {
+              "family": "Red Electrica",
+              "chapter": "red eléctrica, redes, acabados, daporto torre 3",
+              "context": "red eléctrica, redes, acabados, daporto torre 3",
+              "rule_id": 48,
+              "activity": "PISO 3, [Capítulo: RED ELÉCTRICA, REDES, ACABADOS, DAPORTO TORRE 3]",
+              "family_id": 46,
+              "unique_id": 114,
+              "confidence": 92,
+              "matched_by": "breadcrumb",
+              "risk_flags": [
+                "fallback",
+                "redes_o_tuberias"
+              ],
+              "start_date": "2027-04-20",
+              "matched_rule": "breadcrumb",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "PISO 3",
+              "clean_activity": "PISO 3,",
+              "intervention_hint": "",
+              "original_activity": "PISO 3, [Capítulo: RED ELÉCTRICA, REDES, ACABADOS, DAPORTO TORRE 3]"
+            }
+          ]
+        },
+        {
+          "action": "create_activity",
+          "title": "Crear actividad consolidada",
+          "subtitle": "Estructura en Concreto",
+          "gate": "review",
+          "reason": "Familia detectada: Estructura en Concreto",
+          "blockers": [],
+          "reviewReasons": [
+            "Match encontrado via fallback sin filtro de capítulo — verificar asignación de familia."
+          ],
+          "startActivity": "VACIADO EN CONCRETO, [Capítulo: SKATE PARK, URBANISMO, DAPORTO TORRE 3] | 2028-01-10",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "Estructura en Concreto",
+              "chapter": "skate park, urbanismo, daporto torre 3",
+              "context": "skate park, urbanismo, daporto torre 3",
+              "rule_id": 90,
+              "activity": "VACIADO EN CONCRETO, [Capítulo: SKATE PARK, URBANISMO, DAPORTO TORRE 3]",
+              "family_id": 18,
+              "unique_id": 271,
+              "confidence": 92,
+              "matched_by": "nombre",
+              "risk_flags": [
+                "fallback"
+              ],
+              "start_date": "2028-01-10",
+              "matched_rule": "nombre",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "",
+              "clean_activity": "VACIADO EN CONCRETO,",
+              "intervention_hint": "",
+              "original_activity": "VACIADO EN CONCRETO, [Capítulo: SKATE PARK, URBANISMO, DAPORTO TORRE 3]"
+            }
+          ]
+        },
+        {
+          "action": "review_contractual_item",
+          "title": "Va en contratos",
+          "subtitle": "PISO 1,",
+          "gate": "conflict",
+          "reason": "El cronograma contiene un elemento contractual, no una familia operativa de actividades.",
+          "blockers": [
+            "Un elemento contractual no puede quedar listo como familia de actividades."
+          ],
+          "reviewReasons": [
+            "Debe pasar a Contratos porque es compra, insumo, suministro, equipo o subpaquete.",
+            "Es un contrato, compra, insumo, material, equipo, suministro o subpaquete; debe gestionarse en Contratos."
+          ],
+          "startActivity": "PISO 1, [Capítulo: ESTUCO, REVOQUES, ESTUCO Y PINTURA, ACABADOS, DAPORTO TORRE 3] | 2027-05-25",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "Estuco",
+              "chapter": "estuco, revoques, estuco y pintura, acabados, daporto torre 3",
+              "context": "estuco, revoques, estuco y pintura, acabados, daporto torre 3",
+              "rule_id": 27,
+              "activity": "PISO 1, [Capítulo: ESTUCO, REVOQUES, ESTUCO Y PINTURA, ACABADOS, DAPORTO TORRE 3]",
+              "family_id": 26,
+              "unique_id": 142,
+              "confidence": 90,
+              "matched_by": "breadcrumb",
+              "risk_flags": [],
+              "start_date": "2027-05-25",
+              "matched_rule": "breadcrumb",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "PISO 1",
+              "clean_activity": "PISO 1,",
+              "intervention_hint": "",
+              "original_activity": "PISO 1, [Capítulo: ESTUCO, REVOQUES, ESTUCO Y PINTURA, ACABADOS, DAPORTO TORRE 3]"
+            }
+          ]
+        },
+        {
+          "action": "review_contractual_item",
+          "title": "Va en contratos",
+          "subtitle": "PISO 2,",
+          "gate": "conflict",
+          "reason": "El cronograma contiene un elemento contractual, no una familia operativa de actividades.",
+          "blockers": [
+            "Un elemento contractual no puede quedar listo como familia de actividades."
+          ],
+          "reviewReasons": [
+            "Debe pasar a Contratos porque es compra, insumo, suministro, equipo o subpaquete.",
+            "Es un contrato, compra, insumo, material, equipo, suministro o subpaquete; debe gestionarse en Contratos."
+          ],
+          "startActivity": "PISO 2, [Capítulo: ESTUCO, REVOQUES, ESTUCO Y PINTURA, ACABADOS, DAPORTO TORRE 3] | 2027-06-10",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "Estuco",
+              "chapter": "estuco, revoques, estuco y pintura, acabados, daporto torre 3",
+              "context": "estuco, revoques, estuco y pintura, acabados, daporto torre 3",
+              "rule_id": 27,
+              "activity": "PISO 2, [Capítulo: ESTUCO, REVOQUES, ESTUCO Y PINTURA, ACABADOS, DAPORTO TORRE 3]",
+              "family_id": 26,
+              "unique_id": 143,
+              "confidence": 90,
+              "matched_by": "breadcrumb",
+              "risk_flags": [],
+              "start_date": "2027-06-10",
+              "matched_rule": "breadcrumb",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "PISO 2",
+              "clean_activity": "PISO 2,",
+              "intervention_hint": "",
+              "original_activity": "PISO 2, [Capítulo: ESTUCO, REVOQUES, ESTUCO Y PINTURA, ACABADOS, DAPORTO TORRE 3]"
+            }
+          ]
+        },
+        {
+          "action": "review_contractual_item",
+          "title": "Va en contratos",
+          "subtitle": "PISO 3,",
+          "gate": "conflict",
+          "reason": "El cronograma contiene un elemento contractual, no una familia operativa de actividades.",
+          "blockers": [
+            "Un elemento contractual no puede quedar listo como familia de actividades."
+          ],
+          "reviewReasons": [
+            "Debe pasar a Contratos porque es compra, insumo, suministro, equipo o subpaquete.",
+            "Es un contrato, compra, insumo, material, equipo, suministro o subpaquete; debe gestionarse en Contratos."
+          ],
+          "startActivity": "PISO 3, [Capítulo: ESTUCO, REVOQUES, ESTUCO Y PINTURA, ACABADOS, DAPORTO TORRE 3] | 2027-06-24",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "Estuco",
+              "chapter": "estuco, revoques, estuco y pintura, acabados, daporto torre 3",
+              "context": "estuco, revoques, estuco y pintura, acabados, daporto torre 3",
+              "rule_id": 27,
+              "activity": "PISO 3, [Capítulo: ESTUCO, REVOQUES, ESTUCO Y PINTURA, ACABADOS, DAPORTO TORRE 3]",
+              "family_id": 26,
+              "unique_id": 144,
+              "confidence": 90,
+              "matched_by": "breadcrumb",
+              "risk_flags": [],
+              "start_date": "2027-06-24",
+              "matched_rule": "breadcrumb",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "PISO 3",
+              "clean_activity": "PISO 3,",
+              "intervention_hint": "",
+              "original_activity": "PISO 3, [Capítulo: ESTUCO, REVOQUES, ESTUCO Y PINTURA, ACABADOS, DAPORTO TORRE 3]"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "project": "Da Porto",
+      "projectId": 73,
+      "week": 8,
+      "module": "contratos",
+      "runId": "run_441c120cc97357201b269e180ff0d28b",
+      "total": 1,
+      "preselected": 0,
+      "ready": 0,
+      "review": 1,
+      "conflict": 0,
+      "actions": {
+        "review_no_match": 1
+      },
+      "samples": [
+        {
+          "action": "review_no_match",
+          "title": "Familia sin opción de contrato",
+          "subtitle": "Pisos y Enchapes",
+          "gate": "review",
+          "reason": "La familia detectada no tiene paquetes configurados.",
+          "blockers": [],
+          "reviewReasons": [
+            "La familia detectada no tiene paquetes configurados.",
+            "La familia no tiene paquetes contractuales configurados."
+          ],
+          "startActivity": "PISO 1, [Capítulo: PISOS Y ENCHAPES, PISOS Y ENCHAPES, ACABADOS, DAPORTO TORRE 3] | 2027-07-08",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "Pisos y Enchapes",
+              "chapter": "pisos y enchapes, pisos y enchapes, acabados, daporto torre 3",
+              "context": "pisos y enchapes, pisos y enchapes, acabados, daporto torre 3",
+              "rule_id": 32,
+              "activity": "PISO 1, [Capítulo: PISOS Y ENCHAPES, PISOS Y ENCHAPES, ACABADOS, DAPORTO TORRE 3]",
+              "family_id": 199,
+              "unique_id": 182,
+              "confidence": 92,
+              "matched_by": "breadcrumb",
+              "risk_flags": [],
+              "start_date": "2027-07-08",
+              "matched_rule": "breadcrumb",
+              "why_included": "Actividad vinculada al Programa General y familia contractual detectada.",
+              "location_hint": "PISO 1",
+              "clean_activity": "PISO 1,",
+              "intervention_hint": "",
+              "original_activity": "PISO 1, [Capítulo: PISOS Y ENCHAPES, PISOS Y ENCHAPES, ACABADOS, DAPORTO TORRE 3]"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "project": "Da Porto",
+      "projectId": 73,
+      "week": 8,
+      "module": "pdc",
+      "runId": "run_e17a23df410f9fb0ba9afa500570f247",
+      "total": 0,
+      "preselected": 0,
+      "ready": 0,
+      "review": 0,
+      "conflict": 0,
+      "actions": {},
+      "samples": []
+    },
+    {
+      "project": "Milán Campestre Torre 19",
+      "projectId": 74,
+      "week": 6,
+      "module": "listado-actividades",
+      "runId": "run_18ab56ab76ca4e3993be63d48faba5c4",
+      "total": 38,
+      "preselected": 0,
+      "ready": 0,
+      "review": 0,
+      "conflict": 38,
+      "actions": {
+        "create_activity": 16,
+        "review_no_match": 22
+      },
+      "samples": [
+        {
+          "action": "create_activity",
+          "title": "Crear actividad consolidada",
+          "subtitle": "Red de Telecomunicaciones",
+          "gate": "conflict",
+          "reason": "Familia detectada: Red de Telecomunicaciones",
+          "blockers": [
+            "La evidencia de fuentes está incompleta."
+          ],
+          "reviewReasons": [
+            "Familia configurada para revisión manual obligatoria.",
+            "La familia es amplia y contiene entregables distintos."
+          ],
+          "startActivity": "Energía y telecomunicaciones | 2026-05-18",
+          "sourceCount": 2,
+          "sources": [
+            {
+              "family": "Red de Telecomunicaciones",
+              "chapter": "sin_contexto",
+              "context": "sin_contexto",
+              "rule_id": 47,
+              "activity": "Energía y telecomunicaciones",
+              "family_id": 47,
+              "unique_id": 176,
+              "confidence": 95,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2026-05-18",
+              "matched_rule": "nombre",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "",
+              "clean_activity": "Energía y telecomunicaciones",
+              "intervention_hint": "",
+              "original_activity": "Energía y telecomunicaciones"
+            },
+            {
+              "family": "Red de Telecomunicaciones",
+              "chapter": "sin_contexto",
+              "context": "sin_contexto",
+              "rule_id": 47,
+              "activity": "Eléctricas y telecomunicaciones",
+              "family_id": 47,
+              "unique_id": 170,
+              "confidence": 95,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2026-05-20",
+              "matched_rule": "nombre",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "",
+              "clean_activity": "Eléctricas y telecomunicaciones",
+              "intervention_hint": "",
+              "original_activity": "Eléctricas y telecomunicaciones"
+            }
+          ]
+        },
+        {
+          "action": "create_activity",
+          "title": "Crear actividad consolidada",
+          "subtitle": "Mamposteria en Ladrillo/Bloque Interior",
+          "gate": "conflict",
+          "reason": "Familia detectada: Mamposteria en Ladrillo/Bloque Interior",
+          "blockers": [
+            "La evidencia de fuentes está incompleta."
+          ],
+          "reviewReasons": [
+            "La familia es amplia y contiene entregables distintos."
+          ],
+          "startActivity": "Mampostería nivel 5 | 2026-05-20",
+          "sourceCount": 11,
+          "sources": [
+            {
+              "family": "Mamposteria en Ladrillo/Bloque Interior",
+              "chapter": "sin_contexto",
+              "context": "sin_contexto",
+              "rule_id": 24,
+              "activity": "Mampostería nivel 5",
+              "family_id": 22,
+              "unique_id": 9,
+              "confidence": 92,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2026-05-20",
+              "matched_rule": "nombre",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "",
+              "clean_activity": "Mampostería nivel 5",
+              "intervention_hint": "",
+              "original_activity": "Mampostería nivel 5"
+            },
+            {
+              "family": "Mamposteria en Ladrillo/Bloque Interior",
+              "chapter": "sin_contexto",
+              "context": "sin_contexto",
+              "rule_id": 24,
+              "activity": "Mampostería nivel 4",
+              "family_id": 22,
+              "unique_id": 10,
+              "confidence": 92,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2026-05-26",
+              "matched_rule": "nombre",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "",
+              "clean_activity": "Mampostería nivel 4",
+              "intervention_hint": "",
+              "original_activity": "Mampostería nivel 4"
+            },
+            {
+              "family": "Mamposteria en Ladrillo/Bloque Interior",
+              "chapter": "sin_contexto",
+              "context": "sin_contexto",
+              "rule_id": 24,
+              "activity": "Mampostería nivel 3",
+              "family_id": 22,
+              "unique_id": 11,
+              "confidence": 92,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2026-05-31",
+              "matched_rule": "nombre",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "",
+              "clean_activity": "Mampostería nivel 3",
+              "intervention_hint": "",
+              "original_activity": "Mampostería nivel 3"
+            }
+          ]
+        },
+        {
+          "action": "create_activity",
+          "title": "Crear actividad consolidada",
+          "subtitle": "Revoques y Panetes",
+          "gate": "conflict",
+          "reason": "Familia detectada: Revoques y Panetes",
+          "blockers": [
+            "La evidencia de fuentes está incompleta."
+          ],
+          "reviewReasons": [
+            "La familia es amplia y contiene entregables distintos."
+          ],
+          "startActivity": "Revoque de muros en baños y buitrones y buitrones Nivel 5 | 2026-05-25",
+          "sourceCount": 11,
+          "sources": [
+            {
+              "family": "Revoques y Panetes",
+              "chapter": "sin_contexto",
+              "context": "sin_contexto",
+              "rule_id": 26,
+              "activity": "Revoque de muros en baños y buitrones y buitrones Nivel 5",
+              "family_id": 25,
+              "unique_id": 31,
+              "confidence": 92,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2026-05-25",
+              "matched_rule": "nombre",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "",
+              "clean_activity": "Revoque de muros en baños y buitrones y buitrones Nivel 5",
+              "intervention_hint": "",
+              "original_activity": "Revoque de muros en baños y buitrones y buitrones Nivel 5"
+            },
+            {
+              "family": "Revoques y Panetes",
+              "chapter": "sin_contexto",
+              "context": "sin_contexto",
+              "rule_id": 26,
+              "activity": "Revoque de muros en baños y buitrones Nivel 4",
+              "family_id": 25,
+              "unique_id": 32,
+              "confidence": 92,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2026-05-31",
+              "matched_rule": "nombre",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "",
+              "clean_activity": "Revoque de muros en baños y buitrones Nivel 4",
+              "intervention_hint": "",
+              "original_activity": "Revoque de muros en baños y buitrones Nivel 4"
+            },
+            {
+              "family": "Revoques y Panetes",
+              "chapter": "sin_contexto",
+              "context": "sin_contexto",
+              "rule_id": 26,
+              "activity": "Revoque de muros en baños y buitrones Nivel 3",
+              "family_id": 25,
+              "unique_id": 33,
+              "confidence": 92,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2026-06-05",
+              "matched_rule": "nombre",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "",
+              "clean_activity": "Revoque de muros en baños y buitrones Nivel 3",
+              "intervention_hint": "",
+              "original_activity": "Revoque de muros en baños y buitrones Nivel 3"
+            }
+          ]
+        },
+        {
+          "action": "create_activity",
+          "title": "Crear actividad consolidada",
+          "subtitle": "Carpinteria en Madera",
+          "gate": "conflict",
+          "reason": "Familia detectada: Carpinteria en Madera",
+          "blockers": [
+            "La evidencia de fuentes está incompleta."
+          ],
+          "reviewReasons": [
+            "La familia es amplia y contiene entregables distintos."
+          ],
+          "startActivity": "Instalación lavadero y mueble cocina Nivel 5 | 2026-06-01",
+          "sourceCount": 10,
+          "sources": [
+            {
+              "family": "Carpinteria en Madera",
+              "chapter": "sin_contexto",
+              "context": "sin_contexto",
+              "rule_id": 139,
+              "activity": "Instalación lavadero y mueble cocina Nivel 5",
+              "family_id": 39,
+              "unique_id": 64,
+              "confidence": 92,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2026-06-01",
+              "matched_rule": "nombre",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "",
+              "clean_activity": "Instalación lavadero y mueble cocina Nivel 5",
+              "intervention_hint": "",
+              "original_activity": "Instalación lavadero y mueble cocina Nivel 5"
+            },
+            {
+              "family": "Carpinteria en Madera",
+              "chapter": "sin_contexto",
+              "context": "sin_contexto",
+              "rule_id": 139,
+              "activity": "Instalación lavadero y mueble cocina Nivel 4",
+              "family_id": 39,
+              "unique_id": 65,
+              "confidence": 92,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2026-06-07",
+              "matched_rule": "nombre",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "",
+              "clean_activity": "Instalación lavadero y mueble cocina Nivel 4",
+              "intervention_hint": "",
+              "original_activity": "Instalación lavadero y mueble cocina Nivel 4"
+            },
+            {
+              "family": "Carpinteria en Madera",
+              "chapter": "sin_contexto",
+              "context": "sin_contexto",
+              "rule_id": 139,
+              "activity": "Instalación lavadero y mueble cocina Nivel 3",
+              "family_id": 39,
+              "unique_id": 66,
+              "confidence": 92,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2026-06-12",
+              "matched_rule": "nombre",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "",
+              "clean_activity": "Instalación lavadero y mueble cocina Nivel 3",
+              "intervention_hint": "",
+              "original_activity": "Instalación lavadero y mueble cocina Nivel 3"
+            }
+          ]
+        },
+        {
+          "action": "create_activity",
+          "title": "Crear actividad consolidada",
+          "subtitle": "Aparatos Sanitarios",
+          "gate": "conflict",
+          "reason": "Familia detectada: Aparatos Sanitarios",
+          "blockers": [
+            "La evidencia de fuentes está incompleta."
+          ],
+          "reviewReasons": [],
+          "startActivity": "Instalación aparatos sanitarios y accesorios Nivel 5 | 2026-06-02",
+          "sourceCount": 10,
+          "sources": [
+            {
+              "family": "Aparatos Sanitarios",
+              "chapter": "sin_contexto",
+              "context": "sin_contexto",
+              "rule_id": 138,
+              "activity": "Instalación aparatos sanitarios y accesorios Nivel 5",
+              "family_id": 36,
+              "unique_id": 53,
+              "confidence": 92,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2026-06-02",
+              "matched_rule": "nombre",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "",
+              "clean_activity": "Instalación aparatos sanitarios y accesorios Nivel 5",
+              "intervention_hint": "",
+              "original_activity": "Instalación aparatos sanitarios y accesorios Nivel 5"
+            },
+            {
+              "family": "Aparatos Sanitarios",
+              "chapter": "sin_contexto",
+              "context": "sin_contexto",
+              "rule_id": 138,
+              "activity": "Instalación aparatos sanitarios y accesorios Nivel 4",
+              "family_id": 36,
+              "unique_id": 54,
+              "confidence": 92,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2026-06-08",
+              "matched_rule": "nombre",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "",
+              "clean_activity": "Instalación aparatos sanitarios y accesorios Nivel 4",
+              "intervention_hint": "",
+              "original_activity": "Instalación aparatos sanitarios y accesorios Nivel 4"
+            },
+            {
+              "family": "Aparatos Sanitarios",
+              "chapter": "sin_contexto",
+              "context": "sin_contexto",
+              "rule_id": 138,
+              "activity": "Instalación aparatos sanitarios y accesorios Nivel 3",
+              "family_id": 36,
+              "unique_id": 55,
+              "confidence": 92,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2026-06-13",
+              "matched_rule": "nombre",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "",
+              "clean_activity": "Instalación aparatos sanitarios y accesorios Nivel 3",
+              "intervention_hint": "",
+              "original_activity": "Instalación aparatos sanitarios y accesorios Nivel 3"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "project": "Milán Campestre Torre 19",
+      "projectId": 74,
+      "week": 6,
+      "module": "contratos",
+      "runId": "run_951d9c2a394e454f1a1f9173db078cf6",
+      "total": 1,
+      "preselected": 0,
+      "ready": 0,
+      "review": 1,
+      "conflict": 0,
+      "actions": {
+        "review_no_match": 1
+      },
+      "samples": [
+        {
+          "action": "review_no_match",
+          "title": "Familia sin opción de contrato",
+          "subtitle": "Pisos y Enchapes",
+          "gate": "review",
+          "reason": "La familia detectada no tiene paquetes configurados.",
+          "blockers": [],
+          "reviewReasons": [
+            "La familia detectada no tiene paquetes configurados.",
+            "La familia no tiene paquetes contractuales configurados."
+          ],
+          "startActivity": "Enchape de baños, lavadero y cocina Nivel 5, [Capítulo: Revoque de muros en baños y buitrones y buitrones Nivel 5] | 2026-06-01",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "Pisos y Enchapes",
+              "chapter": "revoque de muros en baños y buitrones y buitrones nivel 5",
+              "context": "revoque de muros en baños y buitrones y buitrones nivel 5",
+              "rule_id": 102,
+              "activity": "Enchape de baños, lavadero y cocina Nivel 5, [Capítulo: Revoque de muros en baños y buitrones y buitrones Nivel 5]",
+              "family_id": 199,
+              "unique_id": 42,
+              "confidence": 92,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2026-06-01",
+              "matched_rule": "nombre",
+              "why_included": "Actividad vinculada al Programa General y familia contractual detectada.",
+              "location_hint": "",
+              "clean_activity": "Enchape de baños, lavadero y cocina Nivel 5,",
+              "intervention_hint": "",
+              "original_activity": "Enchape de baños, lavadero y cocina Nivel 5, [Capítulo: Revoque de muros en baños y buitrones y buitrones Nivel 5]"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "project": "Milán Campestre Torre 19",
+      "projectId": 74,
+      "week": 6,
+      "module": "pdc",
+      "runId": "run_c492568150e5ee3498781acd3f9507be",
+      "total": 0,
+      "preselected": 0,
+      "ready": 0,
+      "review": 0,
+      "conflict": 0,
+      "actions": {},
+      "samples": []
+    },
+    {
+      "project": "Metrolinea Estación 16 - Edificio Ascendente",
+      "projectId": 71,
+      "week": 1,
+      "module": "listado-actividades",
+      "runId": "run_fe00b9265ad9d3da611822e670476cd5",
+      "total": 158,
+      "preselected": 0,
+      "ready": 0,
+      "review": 3,
+      "conflict": 155,
+      "actions": {
+        "create_activity": 5,
+        "review_contractual_item": 137,
+        "review_no_match": 16
+      },
+      "samples": [
+        {
+          "action": "create_activity",
+          "title": "Crear actividad consolidada",
+          "subtitle": "Estructura en Concreto",
+          "gate": "review",
+          "reason": "Familia detectada: Estructura en Concreto",
+          "blockers": [],
+          "reviewReasons": [
+            "La familia es amplia y contiene entregables distintos."
+          ],
+          "startActivity": "Cama (Eje L-K), [Capítulo:Construccion Losa (Eje K-M) Area 765 m2, Módulo 2.2 Eje K-M, Losa P1 (ACCESO), ESTRUCTURA EN CONCRETO, EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION] | 2025-08-15",
+          "sourceCount": 199,
+          "sources": [
+            {
+              "family": "Estructura en Concreto",
+              "chapter": "construccion losa (eje k-m) area 765 m2, módulo 2.2 eje k-m, losa p1 (acceso), estructura en concreto, edificio ascendente, etapa de construccion",
+              "context": "construccion losa (eje k-m) area 765 m2, módulo 2.2 eje k-m, losa p1 (acceso), estructura en concreto, edificio ascendente, etapa de construccion",
+              "rule_id": 19,
+              "activity": "Cama (Eje L-K), [Capítulo:Construccion Losa (Eje K-M) Area 765 m2, Módulo 2.2 Eje K-M, Losa P1 (ACCESO), ESTRUCTURA EN CONCRETO, EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION]",
+              "family_id": 18,
+              "unique_id": 343,
+              "confidence": 93,
+              "matched_by": "breadcrumb",
+              "risk_flags": [],
+              "start_date": "2025-08-15",
+              "matched_rule": "breadcrumb",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "Eje L-K",
+              "clean_activity": "Cama (Eje L-K),",
+              "intervention_hint": "",
+              "original_activity": "Cama (Eje L-K), [Capítulo:Construccion Losa (Eje K-M) Area 765 m2, Módulo 2.2 Eje K-M, Losa P1 (ACCESO), ESTRUCTURA EN CONCRETO, EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION]"
+            },
+            {
+              "family": "Estructura en Concreto",
+              "chapter": "construccion losa (eje k-m) area 765 m2, módulo 2.2 eje k-m, losa p1 (acceso), estructura en concreto, edificio ascendente, etapa de construccion",
+              "context": "construccion losa (eje k-m) area 765 m2, módulo 2.2 eje k-m, losa p1 (acceso), estructura en concreto, edificio ascendente, etapa de construccion",
+              "rule_id": 19,
+              "activity": "Acero (Eje L-K), [Capítulo:Construccion Losa (Eje K-M) Area 765 m2, Módulo 2.2 Eje K-M, Losa P1 (ACCESO), ESTRUCTURA EN CONCRETO, EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION]",
+              "family_id": 18,
+              "unique_id": 345,
+              "confidence": 93,
+              "matched_by": "breadcrumb",
+              "risk_flags": [],
+              "start_date": "2025-08-15",
+              "matched_rule": "breadcrumb",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "Eje L-K",
+              "clean_activity": "Acero (Eje L-K),",
+              "intervention_hint": "",
+              "original_activity": "Acero (Eje L-K), [Capítulo:Construccion Losa (Eje K-M) Area 765 m2, Módulo 2.2 Eje K-M, Losa P1 (ACCESO), ESTRUCTURA EN CONCRETO, EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION]"
+            },
+            {
+              "family": "Estructura en Concreto",
+              "chapter": "piso 1 (eje b a d), escaleras con estructura metalica, modulo 1.1, escaleras y rampas, estructura en concreto, edificio ascendente, etapa de construccion",
+              "context": "piso 1 (eje b a d), escaleras con estructura metalica, modulo 1.1, escaleras y rampas, estructura en concreto, edificio ascendente, etapa de construccion",
+              "rule_id": 19,
+              "activity": "Estructura metálica, [Capítulo:Piso 1 (eje B a D), Escaleras con Estructura Metalica, Modulo 1.1, ESCALERAS Y RAMPAS, ESTRUCTURA EN CONCRETO, EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION]",
+              "family_id": 18,
+              "unique_id": 566,
+              "confidence": 93,
+              "matched_by": "breadcrumb",
+              "risk_flags": [],
+              "start_date": "2025-08-15",
+              "matched_rule": "breadcrumb",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "",
+              "clean_activity": "Estructura metálica,",
+              "intervention_hint": "",
+              "original_activity": "Estructura metálica, [Capítulo:Piso 1 (eje B a D), Escaleras con Estructura Metalica, Modulo 1.1, ESCALERAS Y RAMPAS, ESTRUCTURA EN CONCRETO, EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION]"
+            }
+          ]
+        },
+        {
+          "action": "create_activity",
+          "title": "Crear actividad consolidada",
+          "subtitle": "Piloteaje y Micropilotes",
+          "gate": "review",
+          "reason": "Familia detectada: Piloteaje y Micropilotes",
+          "blockers": [],
+          "reviewReasons": [
+            "La familia es amplia y contiene entregables distintos."
+          ],
+          "startActivity": "Liberación y Entrega por parte de ML1 de área de trabajo 1 (Eje A a F). Finalizacion hincado PILOTES S1 S2 Y S3 + 6 DIAS DE DISIPACION, [Capítulo:ACTA DE INICIO , EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION] | 2025-12-12",
+          "sourceCount": 12,
+          "sources": [
+            {
+              "family": "Piloteaje y Micropilotes",
+              "chapter": "acta de inicio , edificio ascendente, etapa de construccion",
+              "context": "acta de inicio , edificio ascendente, etapa de construccion",
+              "rule_id": 13,
+              "activity": "Liberación y Entrega por parte de ML1 de área de trabajo 1 (Eje A a F). Finalizacion hincado PILOTES S1 S2 Y S3 + 6 DIAS DE DISIPACION, [Capítulo:ACTA DE INICIO , EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION]",
+              "family_id": 11,
+              "unique_id": 82,
+              "confidence": 92,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2025-12-12",
+              "matched_rule": "nombre",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "Eje A a F",
+              "clean_activity": "Liberación y Entrega por parte de ML1 de área de trabajo 1 (Eje A a F). Finalizacion hincado PILOTES S1 S2 Y S3 + 6 DIAS DE DISIPACION,",
+              "intervention_hint": "",
+              "original_activity": "Liberación y Entrega por parte de ML1 de área de trabajo 1 (Eje A a F). Finalizacion hincado PILOTES S1 S2 Y S3 + 6 DIAS DE DISIPACION, [Capítulo:ACTA DE INICIO , EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION]"
+            },
+            {
+              "family": "Piloteaje y Micropilotes",
+              "chapter": "acta de inicio , edificio ascendente, etapa de construccion",
+              "context": "acta de inicio , edificio ascendente, etapa de construccion",
+              "rule_id": 13,
+              "activity": "Liberación y Entrega por parte de ML1 de área de trabajo 2 (Eje F a M) Finalización hincado PILOTES S4 S5 Y S6 + 6 DIAS DE DISIPACION, [Capítulo:ACTA DE INICIO , EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION]",
+              "family_id": 11,
+              "unique_id": 83,
+              "confidence": 92,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2026-01-13",
+              "matched_rule": "nombre",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "Eje F a M",
+              "clean_activity": "Liberación y Entrega por parte de ML1 de área de trabajo 2 (Eje F a M) Finalización hincado PILOTES S4 S5 Y S6 + 6 DIAS DE DISIPACION,",
+              "intervention_hint": "",
+              "original_activity": "Liberación y Entrega por parte de ML1 de área de trabajo 2 (Eje F a M) Finalización hincado PILOTES S4 S5 Y S6 + 6 DIAS DE DISIPACION, [Capítulo:ACTA DE INICIO , EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION]"
+            },
+            {
+              "family": "Piloteaje y Micropilotes",
+              "chapter": "zona 2 (b+1/3-c+1/3), vigas de cimentación y placa cimentación, placa de cimentación, sotano, edificio ascendente, etapa de construccion",
+              "context": "zona 2 (b+1/3-c+1/3), vigas de cimentación y placa cimentación, placa de cimentación, sotano, edificio ascendente, etapa de construccion",
+              "rule_id": 13,
+              "activity": "Corte de Pilotes PHC a cargo de ML1 (8UND), [Capítulo:Zona 2 (B+1/3-C+1/3), Vigas de cimentación y placa cimentación, Placa de cimentación, SOTANO, EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION]",
+              "family_id": 11,
+              "unique_id": 140,
+              "confidence": 92,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2026-02-28",
+              "matched_rule": "nombre",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "",
+              "clean_activity": "Corte de Pilotes PHC a cargo de ML1 (8UND),",
+              "intervention_hint": "",
+              "original_activity": "Corte de Pilotes PHC a cargo de ML1 (8UND), [Capítulo:Zona 2 (B+1/3-C+1/3), Vigas de cimentación y placa cimentación, Placa de cimentación, SOTANO, EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION]"
+            }
+          ]
+        },
+        {
+          "action": "review_contractual_item",
+          "title": "Va en contratos",
+          "subtitle": "Obra falsa (Eje L-K),",
+          "gate": "conflict",
+          "reason": "El cronograma contiene un elemento contractual, no una familia operativa de actividades.",
+          "blockers": [
+            "Un elemento contractual no puede quedar listo como familia de actividades."
+          ],
+          "reviewReasons": [
+            "Debe pasar a Contratos porque es compra, insumo, suministro, equipo o subpaquete.",
+            "Es un contrato, compra, insumo, material, equipo, suministro o subpaquete; debe gestionarse en Contratos."
+          ],
+          "startActivity": "Obra falsa (Eje L-K), [Capítulo:Construccion Losa (Eje K-M) Area 765 m2, Módulo 2.2 Eje K-M, Losa P1 (ACCESO), ESTRUCTURA EN CONCRETO, EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION] | 2025-08-15",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "Encofrado y Obra Falsa",
+              "chapter": "construccion losa (eje k-m) area 765 m2, módulo 2.2 eje k-m, losa p1 (acceso), estructura en concreto, edificio ascendente, etapa de construccion",
+              "context": "construccion losa (eje k-m) area 765 m2, módulo 2.2 eje k-m, losa p1 (acceso), estructura en concreto, edificio ascendente, etapa de construccion",
+              "rule_id": 21,
+              "activity": "Obra falsa (Eje L-K), [Capítulo:Construccion Losa (Eje K-M) Area 765 m2, Módulo 2.2 Eje K-M, Losa P1 (ACCESO), ESTRUCTURA EN CONCRETO, EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION]",
+              "family_id": 20,
+              "unique_id": 341,
+              "confidence": 90,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2025-08-15",
+              "matched_rule": "nombre",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "Eje L-K",
+              "clean_activity": "Obra falsa (Eje L-K),",
+              "intervention_hint": "",
+              "original_activity": "Obra falsa (Eje L-K), [Capítulo:Construccion Losa (Eje K-M) Area 765 m2, Módulo 2.2 Eje K-M, Losa P1 (ACCESO), ESTRUCTURA EN CONCRETO, EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION]"
+            }
+          ]
+        },
+        {
+          "action": "review_contractual_item",
+          "title": "Va en contratos",
+          "subtitle": "Aligerante (Eje L-K),",
+          "gate": "conflict",
+          "reason": "El cronograma contiene un elemento contractual, no una familia operativa de actividades.",
+          "blockers": [
+            "Un elemento contractual no puede quedar listo como familia de actividades."
+          ],
+          "reviewReasons": [
+            "Debe pasar a Contratos porque es compra, insumo, suministro, equipo o subpaquete.",
+            "Es un contrato, compra, insumo, material, equipo, suministro o subpaquete; debe gestionarse en Contratos."
+          ],
+          "startActivity": "Aligerante (Eje L-K), [Capítulo:Construccion Losa (Eje K-M) Area 765 m2, Módulo 2.2 Eje K-M, Losa P1 (ACCESO), ESTRUCTURA EN CONCRETO, EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION] | 2025-08-15",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "Aligerantes Perdidos y Recuperables",
+              "chapter": "construccion losa (eje k-m) area 765 m2, módulo 2.2 eje k-m, losa p1 (acceso), estructura en concreto, edificio ascendente, etapa de construccion",
+              "context": "construccion losa (eje k-m) area 765 m2, módulo 2.2 eje k-m, losa p1 (acceso), estructura en concreto, edificio ascendente, etapa de construccion",
+              "rule_id": 22,
+              "activity": "Aligerante (Eje L-K), [Capítulo:Construccion Losa (Eje K-M) Area 765 m2, Módulo 2.2 Eje K-M, Losa P1 (ACCESO), ESTRUCTURA EN CONCRETO, EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION]",
+              "family_id": 21,
+              "unique_id": 347,
+              "confidence": 90,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2025-08-15",
+              "matched_rule": "nombre",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "Eje L-K",
+              "clean_activity": "Aligerante (Eje L-K),",
+              "intervention_hint": "",
+              "original_activity": "Aligerante (Eje L-K), [Capítulo:Construccion Losa (Eje K-M) Area 765 m2, Módulo 2.2 Eje K-M, Losa P1 (ACCESO), ESTRUCTURA EN CONCRETO, EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION]"
+            }
+          ]
+        },
+        {
+          "action": "review_contractual_item",
+          "title": "Va en contratos",
+          "subtitle": "Instalacion malla puesta a tierra,",
+          "gate": "conflict",
+          "reason": "El cronograma contiene un elemento contractual, no una familia operativa de actividades.",
+          "blockers": [
+            "Un elemento contractual no puede quedar listo como familia de actividades."
+          ],
+          "reviewReasons": [
+            "Debe pasar a Contratos porque es compra, insumo, suministro, equipo o subpaquete.",
+            "Es un contrato, compra, insumo, material, equipo, suministro o subpaquete; debe gestionarse en Contratos."
+          ],
+          "startActivity": "Instalacion malla puesta a tierra, [Capítulo:Zona 1 (EJE A-B+ 1/3), Vigas de cimentación y placa cimentación, Placa de cimentación, SOTANO, EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION] | 2026-01-07",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "Losas de Cimentacion",
+              "chapter": "zona 1 (eje a-b+ 1/3), vigas de cimentación y placa cimentación, placa de cimentación, sotano, edificio ascendente, etapa de construccion",
+              "context": "zona 1 (eje a-b+ 1/3), vigas de cimentación y placa cimentación, placa de cimentación, sotano, edificio ascendente, etapa de construccion",
+              "rule_id": 15,
+              "activity": "Instalacion malla puesta a tierra, [Capítulo:Zona 1 (EJE A-B+ 1/3), Vigas de cimentación y placa cimentación, Placa de cimentación, SOTANO, EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION]",
+              "family_id": 15,
+              "unique_id": 131,
+              "confidence": 90,
+              "matched_by": "breadcrumb",
+              "risk_flags": [],
+              "start_date": "2026-01-07",
+              "matched_rule": "breadcrumb",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "",
+              "clean_activity": "Instalacion malla puesta a tierra,",
+              "intervention_hint": "",
+              "original_activity": "Instalacion malla puesta a tierra, [Capítulo:Zona 1 (EJE A-B+ 1/3), Vigas de cimentación y placa cimentación, Placa de cimentación, SOTANO, EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION]"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "project": "Metrolinea Estación 16 - Edificio Ascendente",
+      "projectId": 71,
+      "week": 1,
+      "module": "contratos",
+      "runId": "run_27678769f8db164fa365b3ef1d19bb62",
+      "total": 0,
+      "preselected": 0,
+      "ready": 0,
+      "review": 0,
+      "conflict": 0,
+      "actions": {},
+      "samples": []
+    },
+    {
+      "project": "Metrolinea Estación 16 - Edificio Ascendente",
+      "projectId": 71,
+      "week": 1,
+      "module": "pdc",
+      "runId": "run_80928507c4963cf5da318f1444b4ec1a",
+      "total": 0,
+      "preselected": 0,
+      "ready": 0,
+      "review": 0,
+      "conflict": 0,
+      "actions": {},
+      "samples": []
+    }
+  ],
+  "verificationText": "68\tlistado-actividades\t7\trun_b17b3c1c10c34f69b67707da54c3e8ed\t537\t0\t537\t0\t13\t524\n68\tcontratos\t7\trun_2e47b0b9f8570a312690d89dbb199a2d\t2\t0\t2\t0\t2\t0\n68\tpdc\t7\trun_a466e4e3099e8a5330af733bbc251ab0\t0\t0\t0\t0\t0\t0\n71\tlistado-actividades\t1\trun_fe00b9265ad9d3da611822e670476cd5\t158\t0\t158\t0\t3\t155\n71\tcontratos\t1\trun_27678769f8db164fa365b3ef1d19bb62\t0\t0\t0\t0\t0\t0\n71\tpdc\t1\trun_80928507c4963cf5da318f1444b4ec1a\t0\t0\t0\t0\t0\t0\n73\tlistado-actividades\t8\trun_251f3e5a1aa638b49134aa35dd854d65\t31\t0\t31\t0\t6\t25\n73\tcontratos\t8\trun_441c120cc97357201b269e180ff0d28b\t1\t0\t1\t0\t1\t0\n73\tpdc\t8\trun_e17a23df410f9fb0ba9afa500570f247\t0\t0\t0\t0\t0\t0\n74\tlistado-actividades\t6\trun_18ab56ab76ca4e3993be63d48faba5c4\t38\t0\t38\t0\t0\t38\n74\tcontratos\t6\trun_951d9c2a394e454f1a1f9173db078cf6\t1\t0\t1\t0\t1\t0\n74\tpdc\t6\trun_c492568150e5ee3498781acd3f9507be\t0\t0\t0\t0\t0\t0"
+}

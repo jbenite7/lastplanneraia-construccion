@@ -1,0 +1,256 @@
+{
+    "activities": [
+        {
+            "Id": 279,
+            "actividad": "Aire Acondicionado Central",
+            "fechaInicio": "2026-09-05",
+            "actividadInicio": "1470",
+            "tipoContrato": "SI"
+        },
+        {
+            "Id": 65,
+            "actividad": "Aparatos Sanitarios",
+            "fechaInicio": "2026-07-03",
+            "actividadInicio": "929",
+            "tipoContrato": "MO,S"
+        },
+        {
+            "Id": 267,
+            "actividad": "Aseo",
+            "fechaInicio": "2026-06-23",
+            "actividadInicio": "845",
+            "tipoContrato": "MO"
+        },
+        {
+            "Id": 77,
+            "actividad": "Cabinas de Bano",
+            "fechaInicio": "2026-07-21",
+            "actividadInicio": "1183",
+            "tipoContrato": "SI"
+        },
+        {
+            "Id": 280,
+            "actividad": "Campamento de Obra",
+            "fechaInicio": "2027-02-02",
+            "actividadInicio": "1444",
+            "tipoContrato": "MO,S"
+        },
+        {
+            "Id": 244,
+            "actividad": "Carpinteria en Madera",
+            "fechaInicio": "2026-12-19",
+            "actividadInicio": "1215",
+            "tipoContrato": "MO,S"
+        },
+        {
+            "Id": 24,
+            "actividad": "Carpinteria Metalica",
+            "fechaInicio": "2026-06-05",
+            "actividadInicio": "1374",
+            "tipoContrato": "SI"
+        },
+        {
+            "Id": 137,
+            "actividad": "Cielos Rasos",
+            "fechaInicio": "2026-08-25",
+            "actividadInicio": "1384",
+            "tipoContrato": "SI"
+        },
+        {
+            "Id": 224,
+            "actividad": "Cimentaciones",
+            "fechaInicio": "2026-06-22",
+            "actividadInicio": "1372",
+            "tipoContrato": "MO,S"
+        },
+        {
+            "Id": 277,
+            "actividad": "Estabilización del Suelo",
+            "fechaInicio": "2026-06-05",
+            "actividadInicio": "735",
+            "tipoContrato": "MO,S"
+        },
+        {
+            "Id": 278,
+            "actividad": "Estructura en Concreto",
+            "fechaInicio": "2026-06-05",
+            "actividadInicio": "1114",
+            "tipoContrato": "MO,S"
+        },
+        {
+            "Id": 36,
+            "actividad": "Excavaciones y Movimiento de Tierra",
+            "fechaInicio": "2026-06-13",
+            "actividadInicio": "1371",
+            "tipoContrato": "MO,S"
+        },
+        {
+            "Id": 33,
+            "actividad": "Filtros, Tapas y Rejillas",
+            "fechaInicio": "2026-06-13",
+            "actividadInicio": "455",
+            "tipoContrato": "SI"
+        },
+        {
+            "Id": 272,
+            "actividad": "Griferias e Incrustaciones",
+            "fechaInicio": "2026-09-30",
+            "actividadInicio": "950",
+            "tipoContrato": "OC"
+        },
+        {
+            "Id": 229,
+            "actividad": "Impermeabilizaciones",
+            "fechaInicio": "2026-11-20",
+            "actividadInicio": "829",
+            "tipoContrato": "SI"
+        },
+        {
+            "Id": 7,
+            "actividad": "Implementacion PMT",
+            "fechaInicio": "2026-05-25",
+            "actividadInicio": "1890",
+            "tipoContrato": "MO,S"
+        },
+        {
+            "Id": 56,
+            "actividad": "Mamposteria en Ladrillo\/Bloque Interior",
+            "fechaInicio": "2026-06-25",
+            "actividadInicio": "937",
+            "tipoContrato": "MO,S"
+        },
+        {
+            "Id": 12,
+            "actividad": "Mobiliario Urbano",
+            "fechaInicio": "2026-05-30",
+            "actividadInicio": "1180",
+            "tipoContrato": "SI"
+        },
+        {
+            "Id": 70,
+            "actividad": "Morteros de Nivelacion de Losas",
+            "fechaInicio": "2026-07-11",
+            "actividadInicio": "939",
+            "tipoContrato": "MO,S"
+        },
+        {
+            "Id": 173,
+            "actividad": "Muros de Contencion",
+            "fechaInicio": "2026-09-16",
+            "actividadInicio": "593",
+            "tipoContrato": "SI"
+        },
+        {
+            "Id": 164,
+            "actividad": "Paisajismo",
+            "fechaInicio": "2026-05-28",
+            "actividadInicio": "728",
+            "tipoContrato": "SI"
+        },
+        {
+            "Id": 109,
+            "actividad": "Pinturas Interiores y Exteriores",
+            "fechaInicio": "2026-08-08",
+            "actividadInicio": "497",
+            "tipoContrato": "SI"
+        },
+        {
+            "Id": 63,
+            "actividad": "Pisos Ceramicos, Porcelanatos, Gres y Concreto Pulido",
+            "fechaInicio": "2026-07-03",
+            "actividadInicio": "492",
+            "tipoContrato": "MO,S"
+        },
+        {
+            "Id": 75,
+            "actividad": "Pisos y Enchapes",
+            "fechaInicio": "2026-07-21",
+            "actividadInicio": "946",
+            "tipoContrato": "S,MO"
+        },
+        {
+            "Id": 1,
+            "actividad": "Preliminares de Obra",
+            "fechaInicio": "2026-05-22",
+            "actividadInicio": "448",
+            "tipoContrato": "MO,S"
+        },
+        {
+            "Id": 2,
+            "actividad": "Provisionales Electricos",
+            "fechaInicio": "2026-05-22",
+            "actividadInicio": "457",
+            "tipoContrato": "MO,S"
+        },
+        {
+            "Id": 34,
+            "actividad": "Puertas y Accesorios",
+            "fechaInicio": "2026-06-13",
+            "actividadInicio": "913",
+            "tipoContrato": "SI"
+        },
+        {
+            "Id": 264,
+            "actividad": "Red de Detección de Incendio",
+            "fechaInicio": "2027-01-29",
+            "actividadInicio": "1328",
+            "tipoContrato": "SI"
+        },
+        {
+            "Id": 4,
+            "actividad": "Red de Extinción de Incendios",
+            "fechaInicio": "2026-05-22",
+            "actividadInicio": "1169",
+            "tipoContrato": "SI"
+        },
+        {
+            "Id": 269,
+            "actividad": "Red de Telecomunicaciones",
+            "fechaInicio": "2026-07-15",
+            "actividadInicio": "531",
+            "tipoContrato": "SI"
+        },
+        {
+            "Id": 102,
+            "actividad": "Red Eléctrica",
+            "fechaInicio": "2026-05-30",
+            "actividadInicio": "1311",
+            "tipoContrato": "MO,S"
+        },
+        {
+            "Id": 281,
+            "actividad": "Red Hidrosanitaria",
+            "fechaInicio": "2026-06-24",
+            "actividadInicio": "244",
+            "tipoContrato": "MO,S"
+        },
+        {
+            "Id": 66,
+            "actividad": "Revoques y Panetes",
+            "fechaInicio": "2026-07-03",
+            "actividadInicio": "938",
+            "tipoContrato": "MO,S"
+        },
+        {
+            "Id": 47,
+            "actividad": "Topografía",
+            "fechaInicio": "2026-06-04",
+            "actividadInicio": "15",
+            "tipoContrato": "MO"
+        },
+        {
+            "Id": 94,
+            "actividad": "Vias y Pavimentos",
+            "fechaInicio": "2026-07-28",
+            "actividadInicio": "26",
+            "tipoContrato": "SI"
+        },
+        {
+            "Id": 260,
+            "actividad": "Vidrieria",
+            "fechaInicio": "2027-01-25",
+            "actividadInicio": "878",
+            "tipoContrato": "SI"
+        }
+    ]
+}

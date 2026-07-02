@@ -1,0 +1,242 @@
+{
+    "facts": [
+        {
+            "id": "fact-1",
+            "text": "`general_pdc_familias` queda como catálogo exclusivo de familias operativas para `\/listado-actividades\/`.",
+            "comment": "",
+            "recommendedAutomatedVerification": true,
+            "automatedVerification": true
+        },
+        {
+            "id": "fact-2",
+            "text": "Los aliases de familia viven en una tabla separada y cada alias apunta a una familia operativa canónica.",
+            "comment": "",
+            "recommendedAutomatedVerification": true,
+            "automatedVerification": true
+        },
+        {
+            "id": "fact-3",
+            "text": "Los elementos contractuales viven fuera de `general_pdc_familias` y alimentan `\/contratos\/`, no `\/listado-actividades\/`.",
+            "comment": "",
+            "recommendedAutomatedVerification": true,
+            "automatedVerification": true
+        },
+        {
+            "id": "fact-4",
+            "text": "Los registros que hoy no son familias operativas se eliminan definitivamente de `general_pdc_familias` después de migrar aliases, contratos y reglas relacionadas.",
+            "comment": "",
+            "recommendedAutomatedVerification": true,
+            "automatedVerification": true
+        },
+        {
+            "id": "fact-5",
+            "text": "Las reglas de aliases se reasignan a la familia canónica correspondiente.",
+            "comment": "",
+            "recommendedAutomatedVerification": true,
+            "automatedVerification": true
+        },
+        {
+            "id": "fact-6",
+            "text": "Las reglas contractuales dejan de alimentar `\/listado-actividades\/` y pasan a reglas o asociaciones usadas por `\/contratos\/` cuando aplique.",
+            "comment": "",
+            "recommendedAutomatedVerification": true,
+            "automatedVerification": true
+        },
+        {
+            "id": "fact-7",
+            "text": "Las reglas que no puedan reasignarse con confianza quedan inactivas o por revisar, no listas para uso automático.",
+            "comment": "",
+            "recommendedAutomatedVerification": true,
+            "automatedVerification": true
+        },
+        {
+            "id": "fact-8",
+            "text": "La matriz de validación humana muestra únicamente familias operativas canónicas en el desplegable de familia correcta.",
+            "comment": "",
+            "recommendedAutomatedVerification": true,
+            "automatedVerification": true
+        },
+        {
+            "id": "fact-9",
+            "text": "En `\/listado-actividades\/`, Da Porto y Optimización Aeropuerto JMC no pueden tener más familias identificadas que el total de familias operativas predefinidas.",
+            "comment": "",
+            "recommendedAutomatedVerification": true,
+            "automatedVerification": true
+        },
+        {
+            "id": "fact-10",
+            "text": "En `\/listado-actividades\/`, ninguna propuesta lista puede crear una actividad con alias o elemento contractual como nombre de familia.",
+            "comment": "",
+            "recommendedAutomatedVerification": true,
+            "automatedVerification": true
+        },
+        {
+            "id": "fact-11",
+            "text": "`\/contratos\/` conserva visibilidad de paquetes contractuales derivados de los elementos retirados de `general_pdc_familias`.",
+            "comment": "",
+            "recommendedAutomatedVerification": true,
+            "automatedVerification": true
+        },
+        {
+            "id": "fact-12",
+            "text": "Existe una forma de administración para mantener familias operativas, aliases y asociaciones contractuales sin volver a mezclar conceptos.",
+            "comment": "",
+            "recommendedAutomatedVerification": true,
+            "automatedVerification": true
+        },
+        {
+            "id": "fact-13",
+            "text": "La evidencia final incluye conteos auditables de familias operativas, aliases y elementos contractuales, más pruebas E2E en JMC y Da Porto.",
+            "comment": "",
+            "recommendedAutomatedVerification": true,
+            "automatedVerification": true
+        },
+        {
+            "id": "fact-14",
+            "text": "`\/listado-actividades\/`, `\/contratos\/` y `\/pdc\/` quedan cubiertos en CRUD manual, ciclo semi-auto, navegación por proyecto\/semana, guardar\/recargar y reportes derivados.",
+            "comment": "",
+            "recommendedAutomatedVerification": true,
+            "automatedVerification": true
+        },
+        {
+            "id": "fact-15",
+            "text": "El retiro de legacy se limita a Listado, Contratos, PDC y sus dependencias directas; otros legacy globales quedan fuera de alcance salvo que bloqueen estos flujos.",
+            "comment": "",
+            "recommendedAutomatedVerification": true,
+            "automatedVerification": true
+        },
+        {
+            "id": "fact-16",
+            "text": "El flujo moderno de PDC reemplaza `src\/Legacy\/actualizar_pdc.php` y la ruta `\/legacy\/pdc\/actualizar_pdc.php` cuando la paridad esté probada.",
+            "comment": "",
+            "recommendedAutomatedVerification": true,
+            "automatedVerification": true
+        },
+        {
+            "id": "fact-17",
+            "text": "Los endpoints legacy `\/api\/contratos\/auto-define*` se retiran si el semi-auto moderno cubre la función.",
+            "comment": "",
+            "recommendedAutomatedVerification": true,
+            "automatedVerification": true
+        },
+        {
+            "id": "fact-18",
+            "text": "Los modales, botones y JS legacy de auto-asignación\/auto-definición se eliminan cuando el asistente semi-auto moderno los reemplaza.",
+            "comment": "",
+            "recommendedAutomatedVerification": true,
+            "automatedVerification": true
+        },
+        {
+            "id": "fact-19",
+            "text": "Las dependencias runtime a tablas `{prefix}_actividades`, `{prefix}_pdc` y equivalentes de estos módulos se eliminan después de verificar tablas globales.",
+            "comment": "",
+            "recommendedAutomatedVerification": true,
+            "automatedVerification": true
+        },
+        {
+            "id": "fact-20",
+            "text": "Antes de cualquier `DROP` o borrado destructivo se crea un backup externo verificable; primero se ejecuta localmente y producción requiere rutina explícita aparte.",
+            "comment": "",
+            "recommendedAutomatedVerification": true,
+            "automatedVerification": true
+        },
+        {
+            "id": "fact-21",
+            "text": "Las tablas legacy migradas por prefijo y archives huérfanos de estos módulos se eliminan definitivamente cuando estén respaldados y sin uso runtime.",
+            "comment": "",
+            "recommendedAutomatedVerification": true,
+            "automatedVerification": true
+        },
+        {
+            "id": "fact-22",
+            "text": "Los backups externos, reportes de limpieza, migraciones y patches históricos se conservan aunque mencionen legacy.",
+            "comment": "",
+            "recommendedAutomatedVerification": true,
+            "automatedVerification": true
+        },
+        {
+            "id": "fact-23",
+            "text": "La administración completa incluye CRUD con auditoría, activar\/desactivar, importar\/exportar, reasignar reglas, vista de impacto y permisos admin.",
+            "comment": "",
+            "recommendedAutomatedVerification": true,
+            "automatedVerification": true
+        },
+        {
+            "id": "fact-24",
+            "text": "Los reportes derivados de PDC prueban informe PDC y curva PDC comparando conteos, fechas y campos clave sin SQL por prefijo.",
+            "comment": "",
+            "recommendedAutomatedVerification": true,
+            "automatedVerification": true
+        },
+        {
+            "id": "fact-25",
+            "text": "La implementación se ejecuta por fases: catálogo\/reglas, contratos, PDC, UI\/admin, eliminación legacy y evidencia final.",
+            "comment": "",
+            "recommendedAutomatedVerification": true,
+            "automatedVerification": true
+        },
+        {
+            "id": "fact-26",
+            "text": "El motor frena y pide revisión humana ante familia desconocida, más familias detectadas que el catálogo, regla dudosa o falta de trazabilidad.",
+            "comment": "",
+            "recommendedAutomatedVerification": true,
+            "automatedVerification": true
+        },
+        {
+            "id": "fact-27",
+            "text": "La evidencia final incluye tests PHP de migración\/reglas, auditoría de ausencia de legacy runtime, smoke CRUD manual y E2E con recording\/capturas para JMC y Da Porto.",
+            "comment": "",
+            "recommendedAutomatedVerification": true,
+            "automatedVerification": true
+        },
+        {
+            "id": "fact-28",
+            "text": "La validación de `\/listado-actividades\/` exige familia canónica, trazabilidad completa, ausencia de contexto usado como familia y una muestra humana obligatoria.",
+            "comment": "",
+            "recommendedAutomatedVerification": true,
+            "automatedVerification": true
+        },
+        {
+            "id": "fact-29",
+            "text": "Los datos históricos se migran cuando exista equivalencia segura, conservan el texto original en auditoría y quedan por revisar cuando no haya equivalencia confiable.",
+            "comment": "",
+            "recommendedAutomatedVerification": true,
+            "automatedVerification": true
+        },
+        {
+            "id": "fact-30",
+            "text": "Las rutas y endpoints legacy se deprecan con redirección o mensaje claro antes de retirarse definitivamente.",
+            "comment": "",
+            "recommendedAutomatedVerification": true,
+            "automatedVerification": true
+        },
+        {
+            "id": "fact-31",
+            "text": "La administración completa incluye flujo de aprobación además de CRUD con auditoría, importar\/exportar, vista de impacto y permisos admin.",
+            "comment": "",
+            "recommendedAutomatedVerification": true,
+            "automatedVerification": true
+        },
+        {
+            "id": "fact-32",
+            "text": "La evidencia obligatoria cubre Optimización Aeropuerto JMC, Da Porto, un proyecto Metrolinea y Milan Campestre Torre 19.",
+            "comment": "",
+            "recommendedAutomatedVerification": true,
+            "automatedVerification": true
+        },
+        {
+            "id": "fact-33",
+            "text": "Antes de cualquier borrado destructivo se prueba backup externo, restauración local y comparación de datos.",
+            "comment": "",
+            "recommendedAutomatedVerification": true,
+            "automatedVerification": true
+        },
+        {
+            "id": "fact-34",
+            "text": "Actividad representa trabajo operativo; contrato representa paquete\/proveedor\/modalidad; PDC hace seguimiento a pasos y fechas del proceso de contratación sin crear nuevas familias. (Ya está desarrollado asi, pero se puede revisar y mejorar)",
+            "comment": "",
+            "recommendedAutomatedVerification": true,
+            "automatedVerification": true
+        }
+    ]
+}

@@ -1,0 +1,111 @@
+{
+  "stage": "facts",
+  "title": "Refactor catálogo de familias, aliases y contratos",
+  "goalSlug": "catalogo-familias-operativas-contratos-aliases",
+  "facts": [
+    {
+      "id": "fact-1",
+      "text": "`general_pdc_familias` queda como catálogo exclusivo de familias operativas para `/listado-actividades/`.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-2",
+      "text": "Los aliases de familia viven en una tabla separada y cada alias apunta a una familia operativa canónica.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-3",
+      "text": "Los elementos contractuales viven fuera de `general_pdc_familias` y alimentan `/contratos/`, no `/listado-actividades/`.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-4",
+      "text": "Los registros que hoy no son familias operativas se eliminan definitivamente de `general_pdc_familias` después de migrar aliases, contratos y reglas relacionadas.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-5",
+      "text": "Las reglas de aliases se reasignan a la familia canónica correspondiente.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-6",
+      "text": "Las reglas contractuales dejan de alimentar `/listado-actividades/` y pasan a reglas o asociaciones usadas por `/contratos/` cuando aplique.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-7",
+      "text": "Las reglas que no puedan reasignarse con confianza quedan inactivas o por revisar, no listas para uso automático.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-8",
+      "text": "La matriz de validación humana muestra únicamente familias operativas canónicas en el desplegable de familia correcta.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-9",
+      "text": "En `/listado-actividades/`, Da Porto y Optimización Aeropuerto JMC no pueden tener más familias identificadas que el total de familias operativas predefinidas.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-10",
+      "text": "En `/listado-actividades/`, ninguna propuesta lista puede crear una actividad con alias o elemento contractual como nombre de familia.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-11",
+      "text": "`/contratos/` conserva visibilidad de paquetes contractuales derivados de los elementos retirados de `general_pdc_familias`.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-12",
+      "text": "Existe una forma de administración para mantener familias operativas, aliases y asociaciones contractuales sin volver a mezclar conceptos.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-13",
+      "text": "La evidencia final incluye conteos auditables de familias operativas, aliases y elementos contractuales, más pruebas E2E en JMC y Da Porto.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    }
+  ]
+}

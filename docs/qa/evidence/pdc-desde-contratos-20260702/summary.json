@@ -1,0 +1,64 @@
+{
+  "date": "2026-07-02",
+  "scope": "PDC desde Contratos",
+  "route": "/api/pdc/auto/apply-from-contratos",
+  "controller_method": "PdcAutoGenerateController::applyFromContratos",
+  "projects": [
+    {
+      "project_id": 68,
+      "name": "Optimizacion Aeropuerto JMC",
+      "week": 5,
+      "week_start": "2026-06-17",
+      "week_end": "2026-06-23",
+      "confirmed": false,
+      "activities_with_contract_packages": 0,
+      "pdc_titles": 9,
+      "pdc_items": 0,
+      "status": "blocked_until_listado_contratos_are_completed"
+    },
+    {
+      "project_id": 73,
+      "name": "Da Porto",
+      "week": 1,
+      "week_start": "2026-05-12",
+      "week_end": "2026-05-18",
+      "confirmed": false,
+      "activities_with_contract_packages": 30,
+      "pdc_titles": 3,
+      "pdc_items": 18,
+      "status": "has_contract_base_and_pdc_items"
+    },
+    {
+      "project_id": 74,
+      "name": "Milan Campestre Torre 19",
+      "week": 5,
+      "week_start": "2026-06-22",
+      "week_end": "2026-06-28",
+      "confirmed": true,
+      "activities_with_contract_packages": 0,
+      "pdc_titles": 6,
+      "pdc_items": 0,
+      "status": "blocked_until_listado_contratos_are_completed"
+    }
+  ],
+  "checks": {
+    "old_pdc_from_activities_terms_found": false,
+    "node_check_semi_auto_review": "passed",
+    "php_lint_semi_auto_service": "passed",
+    "php_lint_pdc_controller": "passed",
+    "php_tests": {
+      "test_pdc_duration_catalog": "passed",
+      "test_operational_family_policy": "passed",
+      "test_contractual_family_routing": "passed",
+      "test_semi_auto_quality_gate": "passed",
+      "test_activity_program_sources_traceability": "passed",
+      "test_semi_auto_service": "passed"
+    },
+    "playwright": {
+      "test": "tests/browser/test-pdc.mjs",
+      "passed": 5,
+      "failed": 0,
+      "recording_generated": false
+    }
+  }
+}

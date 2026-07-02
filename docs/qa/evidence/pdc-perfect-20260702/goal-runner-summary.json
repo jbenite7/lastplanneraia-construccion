@@ -1,0 +1,255 @@
+{
+    "target_date": "2026-07-02",
+    "started_at": "2026-07-02T08:25:36-05:00",
+    "finished_at": "2026-07-02T08:25:38-05:00",
+    "definition": "PDC se valida contra paquetes definidos en Contratos, no contra actividades directamente.",
+    "projects": [
+        {
+            "project_id": 68,
+            "name": "Optimización Aeropuerto JMC",
+            "db_prefix": "optimizacionJMC",
+            "latest_before": {
+                "Semana": 7,
+                "Fecha_Inicio_Sem": "2026-07-01",
+                "Fecha_Fin_Sem": "2026-07-07",
+                "Semanal_Confirmada": 0
+            },
+            "created_weeks": 0,
+            "target_week": {
+                "Semana": 7,
+                "Fecha_Inicio_Sem": "2026-07-01",
+                "Fecha_Fin_Sem": "2026-07-07",
+                "Semanal_Confirmada": 0
+            },
+            "modules": [
+                {
+                    "module": "listado-actividades",
+                    "run_id": "run_goal_jmc_6a4666d08f785134919030",
+                    "total": 466,
+                    "preselected": 0,
+                    "status_counts": {
+                        "conflict": 466
+                    },
+                    "selected_for_apply": 0,
+                    "applied": 0,
+                    "errors": 0
+                },
+                {
+                    "module": "contratos",
+                    "run_id": "run_goal_jmc_6a4666d2170fa978350057",
+                    "total": 7,
+                    "preselected": 6,
+                    "status_counts": {
+                        "ready": 6,
+                        "review": 1
+                    },
+                    "selected_for_apply": 6,
+                    "applied": 6,
+                    "errors": 0
+                },
+                {
+                    "module": "pdc",
+                    "run_id": "run_goal_jmc_6a4666d2291e0970919601",
+                    "total": 0,
+                    "preselected": 0,
+                    "status_counts": [],
+                    "selected_for_apply": 0,
+                    "applied": 0,
+                    "errors": 0
+                },
+                {
+                    "module": "pdc",
+                    "run_id": "run_goal_jmc_second_pass_6a4666d23207d677783420",
+                    "total": 0,
+                    "preselected": 0,
+                    "status_counts": [],
+                    "selected_for_apply": 0,
+                    "applied": 0,
+                    "errors": 0
+                }
+            ],
+            "counts_after": {
+                "programa_items": 1475,
+                "actividades": 36,
+                "actividades_con_paquetes": 36,
+                "pdc_titulos": 4,
+                "pdc_items": 50,
+                "pdc_incompletos": 0
+            },
+            "contract_vs_pdc_audit": {
+                "contract_package_count": 50,
+                "pdc_package_count": 50,
+                "missing_in_pdc": [],
+                "extra_in_pdc": [],
+                "duplicate_pdc_packages": []
+            },
+            "pdc_perfect_for_defined_contracts": true
+        },
+        {
+            "project_id": 73,
+            "name": "Da Porto",
+            "db_prefix": "da_porto",
+            "latest_before": {
+                "Semana": 8,
+                "Fecha_Inicio_Sem": "2026-06-30",
+                "Fecha_Fin_Sem": "2026-07-06",
+                "Semanal_Confirmada": 0
+            },
+            "created_weeks": 0,
+            "target_week": {
+                "Semana": 8,
+                "Fecha_Inicio_Sem": "2026-06-30",
+                "Fecha_Fin_Sem": "2026-07-06",
+                "Semanal_Confirmada": 0
+            },
+            "modules": [
+                {
+                    "module": "listado-actividades",
+                    "run_id": "run_goal_da_porto_6a4666d23aabb079169316",
+                    "total": 13,
+                    "preselected": 0,
+                    "status_counts": {
+                        "conflict": 13
+                    },
+                    "selected_for_apply": 0,
+                    "applied": 0,
+                    "errors": 0
+                },
+                {
+                    "module": "contratos",
+                    "run_id": "run_goal_da_porto_6a4666d24f7cc908761349",
+                    "total": 8,
+                    "preselected": 3,
+                    "status_counts": {
+                        "ready": 3,
+                        "review": 5
+                    },
+                    "selected_for_apply": 3,
+                    "applied": 3,
+                    "errors": 0
+                },
+                {
+                    "module": "pdc",
+                    "run_id": "run_goal_da_porto_6a4666d25b050992941746",
+                    "total": 0,
+                    "preselected": 0,
+                    "status_counts": [],
+                    "selected_for_apply": 0,
+                    "applied": 0,
+                    "errors": 0
+                },
+                {
+                    "module": "pdc",
+                    "run_id": "run_goal_da_porto_second_pass_6a4666d2646ec297824856",
+                    "total": 0,
+                    "preselected": 0,
+                    "status_counts": [],
+                    "selected_for_apply": 0,
+                    "applied": 0,
+                    "errors": 0
+                }
+            ],
+            "counts_after": {
+                "programa_items": 242,
+                "actividades": 21,
+                "actividades_con_paquetes": 20,
+                "pdc_titulos": 4,
+                "pdc_items": 25,
+                "pdc_incompletos": 0
+            },
+            "contract_vs_pdc_audit": {
+                "contract_package_count": 25,
+                "pdc_package_count": 25,
+                "missing_in_pdc": [],
+                "extra_in_pdc": [],
+                "duplicate_pdc_packages": []
+            },
+            "pdc_perfect_for_defined_contracts": true
+        },
+        {
+            "project_id": 74,
+            "name": "Milán Campestre Torre 19",
+            "db_prefix": "milan_campestre_torre",
+            "latest_before": {
+                "Semana": 6,
+                "Fecha_Inicio_Sem": "2026-06-29",
+                "Fecha_Fin_Sem": "2026-07-05",
+                "Semanal_Confirmada": 0
+            },
+            "created_weeks": 0,
+            "target_week": {
+                "Semana": 6,
+                "Fecha_Inicio_Sem": "2026-06-29",
+                "Fecha_Fin_Sem": "2026-07-05",
+                "Semanal_Confirmada": 0
+            },
+            "modules": [
+                {
+                    "module": "listado-actividades",
+                    "run_id": "run_goal_milan_t19_6a4666d26d40c827974774",
+                    "total": 19,
+                    "preselected": 7,
+                    "status_counts": {
+                        "ready": 7,
+                        "conflict": 12
+                    },
+                    "selected_for_apply": 7,
+                    "applied": 7,
+                    "errors": 0
+                },
+                {
+                    "module": "contratos",
+                    "run_id": "run_goal_milan_t19_6a4666d287ed3128071140",
+                    "total": 16,
+                    "preselected": 1,
+                    "status_counts": {
+                        "ready": 1,
+                        "conflict": 14,
+                        "review": 1
+                    },
+                    "selected_for_apply": 1,
+                    "applied": 1,
+                    "errors": 0
+                },
+                {
+                    "module": "pdc",
+                    "run_id": "run_goal_milan_t19_6a4666d29cd1e008419742",
+                    "total": 1,
+                    "preselected": 1,
+                    "status_counts": {
+                        "ready": 1
+                    },
+                    "selected_for_apply": 1,
+                    "applied": 1,
+                    "errors": 0
+                },
+                {
+                    "module": "pdc",
+                    "run_id": "run_goal_milan_t19_second_pass_6a4666d2a4b0c472749299",
+                    "total": 0,
+                    "preselected": 0,
+                    "status_counts": [],
+                    "selected_for_apply": 0,
+                    "applied": 0,
+                    "errors": 0
+                }
+            ],
+            "counts_after": {
+                "programa_items": 159,
+                "actividades": 18,
+                "actividades_con_paquetes": 17,
+                "pdc_titulos": 3,
+                "pdc_items": 4,
+                "pdc_incompletos": 0
+            },
+            "contract_vs_pdc_audit": {
+                "contract_package_count": 4,
+                "pdc_package_count": 4,
+                "missing_in_pdc": [],
+                "extra_in_pdc": [],
+                "duplicate_pdc_packages": []
+            },
+            "pdc_perfect_for_defined_contracts": true
+        }
+    ]
+}

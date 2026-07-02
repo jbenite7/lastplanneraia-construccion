@@ -1,0 +1,87 @@
+{
+  "stage": "interview",
+  "title": "Matriz de validación humana",
+  "goalSlug": "matriz-validacion-humana",
+  "questions": [
+    {
+      "id": "delivery_scope",
+      "prompt": "¿Qué debe entregar esta primera versión de la matriz?",
+      "description": "La recomendación evita tocar el motor y deja un artefacto revisable para convertir el corpus en un set de verdad.",
+      "answerMode": "multi-custom",
+      "recommendedAnswer": "Generar una matriz en CSV y Markdown desde el corpus actual, con casos representativos, estado de revisión, familia sugerida, familia correcta, motivo y fuente trazable. No cambiar reglas del motor todavía.",
+      "recommendedOptionIds": ["csv", "markdown", "json_summary", "no_engine_changes"],
+      "options": [
+        { "id": "csv", "label": "CSV editable" },
+        { "id": "markdown", "label": "Markdown revisable" },
+        { "id": "json_summary", "label": "Resumen JSON" },
+        { "id": "no_engine_changes", "label": "No tocar motor" }
+      ],
+      "required": true
+    },
+    {
+      "id": "sample_strategy",
+      "prompt": "¿Cómo seleccionamos los casos para revisión humana?",
+      "description": "El corpus tiene muchos casos dudosos; conviene revisar una muestra balanceada antes de convertirlo en reglas.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Muestra balanceada de 300 casos: priorizar JMC y Da Porto, incluir Milan y Metrolinea, cubrir todos los patrones de confusión y completar con familias frecuentes.",
+      "recommendedOptionIds": ["balanced_300"],
+      "options": [
+        { "id": "balanced_300", "label": "Balanceada 300" },
+        { "id": "all_conflicts", "label": "Todos los dudosos" },
+        { "id": "jmc_daporto_first", "label": "JMC/Da Porto primero" }
+      ],
+      "required": true
+    },
+    {
+      "id": "review_columns",
+      "prompt": "¿Qué columnas debe tener cada fila de validación?",
+      "description": "Estas columnas definen si después podremos medir precisión y afinar reglas.",
+      "answerMode": "multi-custom",
+      "recommendedAnswer": "Incluir: id_caso, proyecto, fuente, actividad_origen, contexto, paquete_pdc, patron_detectado, familia_sugerida, decision_humana, familia_correcta, nombre_actividad_correcto, motivo, accion_recomendada, prioridad, notas.",
+      "recommendedOptionIds": ["traceability", "human_decision", "corrected_family", "corrected_name", "reason", "recommended_action"],
+      "options": [
+        { "id": "traceability", "label": "Trazabilidad" },
+        { "id": "human_decision", "label": "Decisión humana" },
+        { "id": "corrected_family", "label": "Familia correcta" },
+        { "id": "corrected_name", "label": "Nombre correcto" },
+        { "id": "reason", "label": "Motivo" },
+        { "id": "recommended_action", "label": "Acción recomendada" }
+      ],
+      "required": true
+    },
+    {
+      "id": "decision_values",
+      "prompt": "¿Qué decisiones humanas deben estar permitidas?",
+      "description": "Un vocabulario cerrado evita retroalimentación ambigua.",
+      "answerMode": "multi-custom",
+      "recommendedAnswer": "Usar: correcto, familia incorrecta, nombre incorrecto, no es actividad, pertenece a contratos, requiere nueva familia, dudoso.",
+      "recommendedOptionIds": ["correct", "wrong_family", "wrong_name", "not_activity", "contracts", "new_family", "uncertain"],
+      "options": [
+        { "id": "correct", "label": "Correcto" },
+        { "id": "wrong_family", "label": "Familia incorrecta" },
+        { "id": "wrong_name", "label": "Nombre incorrecto" },
+        { "id": "not_activity", "label": "No es actividad" },
+        { "id": "contracts", "label": "Va en contratos" },
+        { "id": "new_family", "label": "Nueva familia" },
+        { "id": "uncertain", "label": "Dudoso" }
+      ],
+      "required": true
+    },
+    {
+      "id": "success_criteria",
+      "prompt": "¿Cuándo consideramos exitosa esta matriz?",
+      "description": "Define la condición para luego implementar sin ambigüedad.",
+      "answerMode": "multi-custom",
+      "recommendedAnswer": "Éxito significa que la matriz se puede regenerar, contiene casos trazables y balanceados, permite registrar retroalimentación humana sin tocar el motor, y produce un resumen de aprendizajes accionables para una fase posterior.",
+      "recommendedOptionIds": ["regenerable", "traceable", "balanced", "editable", "actionable_summary"],
+      "options": [
+        { "id": "regenerable", "label": "Regenerable" },
+        { "id": "traceable", "label": "Trazable" },
+        { "id": "balanced", "label": "Balanceada" },
+        { "id": "editable", "label": "Editable" },
+        { "id": "actionable_summary", "label": "Resumen accionable" }
+      ],
+      "required": true
+    }
+  ]
+}

@@ -1,0 +1,103 @@
+{
+  "stage": "facts",
+  "title": "Matriz de validación humana",
+  "goalSlug": "matriz-validacion-humana",
+  "facts": [
+    {
+      "id": "fact-1",
+      "text": "La primera versión entregará un archivo XLSX editable como artefacto principal de revisión humana.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-2",
+      "text": "El XLSX tendrá listas desplegables predefinidas para las columnas de decisión humana, familia correcta y acción recomendada cuando aplique.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-3",
+      "text": "La matriz incluirá una muestra balanceada de 300 casos tomados del corpus actual.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-4",
+      "text": "La muestra balanceada cubrirá proyectos prioritarios como JMC y Da Porto, e incluirá representación de Milan Campestre y proyectos Metrolinea.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-5",
+      "text": "Cada fila tendrá trazabilidad suficiente para revisar el caso: proyecto, fuente, actividad de origen, contexto, paquete o contrato cuando exista, patrón detectado y familia sugerida.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-6",
+      "text": "Cada fila tendrá columnas de revisión humana: decisión humana, familia correcta, nombre de actividad correcto, motivo, acción recomendada y notas.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-7",
+      "text": "Las columnas de revisión vendrán prellenadas por el sistema con una propuesta inicial, para que el usuario pueda editarlas en Excel.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-8",
+      "text": "La columna decisión humana permitirá estos valores: Correcto, Familia incorrecta, Nombre incorrecto, No es actividad, Va en contratos, Nueva familia y Dudoso.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-9",
+      "text": "La matriz será regenerable desde los datos actuales sin modificar archivos fuente, cronogramas, PDC ni reglas del motor.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-10",
+      "text": "La implementación no cambiará el comportamiento de /listado-actividades/ ni aplicará reglas nuevas al motor.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-11",
+      "text": "Además del XLSX, se generará un resumen accionable que muestre distribución por proyecto, familia sugerida, patrón detectado y decisión propuesta.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-12",
+      "text": "La matriz deberá poder verificarse automáticamente: existencia del XLSX, 300 filas de casos, encabezados esperados, listas desplegables y resumen generado.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    }
+  ]
+}

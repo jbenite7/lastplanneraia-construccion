@@ -29,7 +29,7 @@ test.describe('Auto-definir contratos', () => {
 
     const panel = page.locator('#semiAutoReview-contratos');
     await expect(panel).toBeVisible({ timeout: 10000 });
-    await expect(panel.locator('.sar-analysis')).toContainText('Proceso de análisis');
+    await expect(panel.locator('.sar-analysis')).toContainText('Estamos revisando tus propuestas');
     await expect(panel.locator('.sar-analysis-progress')).toContainText('100%');
     await expect(panel.locator('.sar-summary')).toContainText('Encontramos', { timeout: 10000 });
     await expect(panel.locator('.sar-group-title')).toContainText([
@@ -49,5 +49,12 @@ test.describe('Auto-definir contratos', () => {
     expect(visibleText).not.toContain('Diff');
     expect(visibleText).not.toContain('breadcrumb');
     expect(visibleText).not.toContain('confianza_deteccion');
+  });
+
+  test('endpoint auto-define legacy queda retirado', async ({ page }) => {
+    const response = await page.request.post('/api/contratos/auto-define', {
+      form: { db: project.dbName, semana: String(project.maxWeek) },
+    });
+    expect(response.status()).toBe(404);
   });
 });

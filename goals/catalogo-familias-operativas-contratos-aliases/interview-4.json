@@ -1,0 +1,213 @@
+{
+  "stage": "interview",
+  "title": "Ronda final: riesgos y decisiones de cierre",
+  "goalSlug": "catalogo-familias-operativas-contratos-aliases",
+  "questions": [
+    {
+      "id": "success_gate",
+      "prompt": "Cual debe ser la prueba real de que /listado-actividades/ ya agrupa bien?",
+      "description": "Punto ciego: que un proyecto tenga menos familias que el catalogo no garantiza que cada propuesta este bien mapeada.",
+      "answerMode": "multi-custom",
+      "recommendedAnswer": "La prueba debe exigir tres cosas: cada propuesta lista usa una familia canonica, cada fuente conserva trazabilidad, y ninguna propuesta lista nace solo de ubicacion/capitulo/intervencion/contrato.",
+      "recommendedOptionIds": [
+        "canonical_family",
+        "traceability",
+        "no_context_family"
+      ],
+      "options": [
+        {
+          "id": "canonical_family",
+          "label": "Familia canonica"
+        },
+        {
+          "id": "traceability",
+          "label": "Trazabilidad completa"
+        },
+        {
+          "id": "no_context_family",
+          "label": "Sin contexto como familia"
+        },
+        {
+          "id": "human_sample",
+          "label": "Muestra humana obligatoria"
+        }
+      ],
+      "required": true
+    },
+    {
+      "id": "historical_data_policy",
+      "prompt": "Que hacemos con datos historicos ya creados con nombres o familias antiguas?",
+      "description": "Cambiar catalogos puede afectar actividades, PDC, contratos, informes y auditoria ya guardada.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Migrar referencias internas cuando haya equivalencia segura, conservar texto historico visible en auditoria, y dejar por revisar lo que no tenga equivalencia confiable.",
+      "recommendedOptionIds": [
+        "migrate_safe_keep_audit"
+      ],
+      "options": [
+        {
+          "id": "migrate_safe_keep_audit",
+          "label": "Migrar seguro y auditar"
+        },
+        {
+          "id": "freeze_history",
+          "label": "No tocar historico"
+        },
+        {
+          "id": "manual_case_by_case",
+          "label": "Manual caso a caso"
+        }
+      ],
+      "required": true
+    },
+    {
+      "id": "legacy_removal_mode",
+      "prompt": "Como debe retirarse el legacy sin romper usuarios, bookmarks o pruebas existentes?",
+      "description": "Desafio de premisa: eliminar todo de golpe puede ser correcto tecnicamente pero riesgoso operativamente.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Primero reemplazar y probar paridad; luego dejar rutas antiguas con redireccion o mensaje claro de reemplazo por una version; finalmente eliminarlas cuando no haya uso runtime.",
+      "recommendedOptionIds": [
+        "deprecate_then_remove"
+      ],
+      "options": [
+        {
+          "id": "deprecate_then_remove",
+          "label": "Deprecar y retirar"
+        },
+        {
+          "id": "hard_remove",
+          "label": "Eliminar directo"
+        },
+        {
+          "id": "keep_compat_routes",
+          "label": "Mantener compatibilidad"
+        }
+      ],
+      "required": true
+    },
+    {
+      "id": "admin_scope_guardrail",
+      "prompt": "Que significa administracion completa para esta primera entrega?",
+      "description": "Punto ciego: admin completo puede crecer mucho si incluye aprobaciones, versionado avanzado o flujos de gobierno.",
+      "answerMode": "multi-custom",
+      "recommendedAnswer": "Incluir CRUD, auditoria, activar/desactivar, importar/exportar, reasignar reglas, vista de impacto y permisos admin; excluir aprobaciones formales/versionado avanzado salvo que los pidamos despues.",
+      "recommendedOptionIds": [
+        "crud_audit",
+        "import_export",
+        "impact_preview",
+        "permissions"
+      ],
+      "options": [
+        {
+          "id": "crud_audit",
+          "label": "CRUD y auditoria"
+        },
+        {
+          "id": "import_export",
+          "label": "Importar/exportar"
+        },
+        {
+          "id": "impact_preview",
+          "label": "Vista de impacto"
+        },
+        {
+          "id": "permissions",
+          "label": "Permisos admin"
+        },
+        {
+          "id": "approval_workflow",
+          "label": "Flujo de aprobacion"
+        }
+      ],
+      "required": true
+    },
+    {
+      "id": "project_evidence_scope",
+      "prompt": "Que proyectos deben probar que el flujo quedo bien, ademas de JMC y Da Porto?",
+      "description": "JMC y Da Porto son buenos extremos, pero pueden no cubrir todos los reportes, legacy y patrones de contrato.",
+      "answerMode": "multi-custom",
+      "recommendedAnswer": "Mantener JMC y Da Porto como evidencia obligatoria, y agregar Milan Campestre y un proyecto Metrolinea como muestra ampliada para reportes, contratos y limpieza legacy.",
+      "recommendedOptionIds": [
+        "jmc",
+        "da_porto",
+        "milan",
+        "metrolinea"
+      ],
+      "options": [
+        {
+          "id": "jmc",
+          "label": "JMC obligatorio"
+        },
+        {
+          "id": "da_porto",
+          "label": "Da Porto obligatorio"
+        },
+        {
+          "id": "milan",
+          "label": "Milan Campestre"
+        },
+        {
+          "id": "metrolinea",
+          "label": "Proyecto Metrolinea"
+        }
+      ],
+      "required": true
+    },
+    {
+      "id": "rollback_and_cutover",
+      "prompt": "Que nivel de reversibilidad exigimos antes de borrar tablas o rutas legacy?",
+      "description": "Punto ciego: backup externo sirve para seguridad, pero no siempre equivale a rollback rapido.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Exigir backup externo verificado, script o rutina de restauracion local probada, feature flag o switch de lectura para comparar nuevo vs anterior antes del borrado definitivo.",
+      "recommendedOptionIds": [
+        "backup_restore_compare"
+      ],
+      "options": [
+        {
+          "id": "backup_restore_compare",
+          "label": "Backup, restore y comparacion"
+        },
+        {
+          "id": "backup_only",
+          "label": "Solo backup externo"
+        },
+        {
+          "id": "no_destructive_first",
+          "label": "Sin borrado en primera fase"
+        }
+      ],
+      "required": true
+    },
+    {
+      "id": "pdc_contract_boundary",
+      "prompt": "Donde trazamos la frontera entre actividad, contrato y PDC?",
+      "description": "Desafio de premisa: si esta frontera queda ambigua, el mismo error de familias se replica en contratos o PDC.",
+      "answerMode": "multi-custom",
+      "recommendedAnswer": "Actividad resume el trabajo operativo; contrato decide proveedor/paquete/modalidad por fuentes; PDC agenda compras/contratacion desde contratos y fechas, sin crear nuevas familias.",
+      "recommendedOptionIds": [
+        "activity_operational",
+        "contract_package",
+        "pdc_dates",
+        "no_pdc_families"
+      ],
+      "options": [
+        {
+          "id": "activity_operational",
+          "label": "Actividad = trabajo"
+        },
+        {
+          "id": "contract_package",
+          "label": "Contrato = paquete"
+        },
+        {
+          "id": "pdc_dates",
+          "label": "PDC = fechas"
+        },
+        {
+          "id": "no_pdc_families",
+          "label": "PDC no crea familias"
+        }
+      ],
+      "required": true
+    }
+  ]
+}

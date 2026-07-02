@@ -112,10 +112,19 @@ try {
 
     $missingUserAnalysis = [];
     $missingAssistantReasoning = [];
+    $missingQualityGate = [];
+    $preselectedWithoutReadyGate = [];
     $unexpectedTechnical = [];
     foreach (($preview['suggestions'] ?? []) as $suggestion) {
         if (empty($suggestion['analysis']['user'])) {
             $missingUserAnalysis[] = $suggestion['suggestion_id'] ?? '(unknown)';
+        }
+        $gate = $suggestion['analysis']['quality_gate'] ?? null;
+        if (empty($gate) || empty($gate['status'])) {
+            $missingQualityGate[] = $suggestion['suggestion_id'] ?? '(unknown)';
+        }
+        if (!empty($suggestion['preselected']) && (($gate['status'] ?? '') !== 'ready')) {
+            $preselectedWithoutReadyGate[] = $suggestion['suggestion_id'] ?? '(unknown)';
         }
         if (empty($suggestion['assistant_reasoning']['next_step'])) {
             $missingAssistantReasoning[] = $suggestion['suggestion_id'] ?? '(unknown)';
@@ -127,6 +136,12 @@ try {
     $missingUserAnalysis === []
         ? passSemi('suggestions include user analysis')
         : failSemi('suggestions missing user analysis: ' . implode(', ', $missingUserAnalysis));
+    $missingQualityGate === []
+        ? passSemi('suggestions include quality gate')
+        : failSemi('suggestions missing quality gate: ' . implode(', ', $missingQualityGate));
+    $preselectedWithoutReadyGate === []
+        ? passSemi('preselected suggestions passed quality gate')
+        : failSemi('preselected suggestion without ready quality gate: ' . implode(', ', $preselectedWithoutReadyGate));
     $unexpectedTechnical === []
         ? passSemi('non-admin preview hides technical analysis')
         : failSemi('non-admin preview exposed technical analysis');
@@ -176,7 +191,7 @@ try {
 
     $applyCandidate = null;
     foreach (($preview['suggestions'] ?? []) as $suggestion) {
-        if (($suggestion['action'] ?? '') === 'create_activity') {
+        if (($suggestion['action'] ?? '') === 'create_activity' && !empty($suggestion['preselected'])) {
             $applyCandidate = $suggestion['suggestion_id'];
             break;
         }
@@ -225,15 +240,25 @@ try {
             ? passSemi('apply writes one actividad transactionally')
             : failSemi('apply did not create exactly one actividad');
 
-        $createdName = (string) $db->query(
-            "SELECT actividad FROM actividades
+        $created = $db->query(
+            "SELECT Id, actividad FROM actividades
              WHERE project_id = ? AND semanaActualizacion = ?
              ORDER BY Id DESC LIMIT 1",
             [$projectId, $week],
-        )->fetchColumn();
+        )->fetch(PDO::FETCH_ASSOC) ?: [];
+        $createdName = (string) ($created['actividad'] ?? '');
+        $createdId = (int) ($created['Id'] ?? 0);
         $createdName === $correctedName
             ? passSemi('apply uses corrected stored suggestion')
             : failSemi('apply did not use corrected stored suggestion');
+
+        $sourceRows = (int) $db->query(
+            "SELECT COUNT(*) FROM actividad_programa_fuentes WHERE project_id = ? AND actividad_id = ? AND semana = ?",
+            [$projectId, $createdId, $week],
+        )->fetchColumn();
+        $sourceRows > 0
+            ? passSemi('apply stores multi-source traceability for contracts')
+            : failSemi('apply did not store activity program sources');
 
         $undo = $service->undo(SemiAutoService::MODULE_LISTADO, $context, $runId);
         ((int) ($undo['revertidas'] ?? 0) === 1 && (int) ($undo['errores'] ?? 0) === 0)
@@ -254,6 +279,7 @@ try {
         $db->query("DELETE FROM semi_auto_runs WHERE run_id = ?", [$cleanupRunId]);
     }
     if ($cleanupProjectId !== null) {
+        $db->query("DELETE FROM actividad_programa_fuentes WHERE project_id = ?", [$cleanupProjectId]);
         $db->query("DELETE FROM semi_auto_assistant_feedback WHERE project_id = ?", [$cleanupProjectId]);
         $db->query("DELETE FROM semi_auto_learning_rules WHERE project_id = ?", [$cleanupProjectId]);
         $db->query("DELETE FROM semi_auto_learning_candidates WHERE project_id = ?", [$cleanupProjectId]);

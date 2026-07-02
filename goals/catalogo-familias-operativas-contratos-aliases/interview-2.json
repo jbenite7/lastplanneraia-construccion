@@ -1,0 +1,178 @@
+{
+  "stage": "interview",
+  "title": "Ronda 2: flujo completo y retiro de legacy",
+  "goalSlug": "catalogo-familias-operativas-contratos-aliases",
+  "questions": [
+    {
+      "id": "functional_surface",
+      "prompt": "Cuando dices dejar `/listado-actividades/`, `/contratos/` y `/pdc/` 100% funcionales, ¿qué superficie debe quedar cubierta?",
+      "description": "Esto separa lo indispensable del alcance opcional.",
+      "answerMode": "multi-custom",
+      "recommendedAnswer": "Cubrir CRUD manual, preview/apply/undo/feedback semi-auto, navegación entre los tres módulos, cambio de semana/proyecto, y persistencia con recarga.",
+      "recommendedOptionIds": ["manual_crud", "semi_auto_cycle", "navigation_week_project", "save_reload"],
+      "options": [
+        {
+          "id": "manual_crud",
+          "label": "CRUD manual",
+          "description": "Crear, editar, listar y guardar datos manualmente en los tres módulos."
+        },
+        {
+          "id": "semi_auto_cycle",
+          "label": "Semi-auto completo",
+          "description": "Preview, aplicar, deshacer y feedback en listado, contratos y PDC."
+        },
+        {
+          "id": "navigation_week_project",
+          "label": "Navegación/contexto",
+          "description": "Cambio de proyecto, semana y navegación Listado ⇄ Contratos ⇄ PDC."
+        },
+        {
+          "id": "save_reload",
+          "label": "Guardar y recargar",
+          "description": "Todo cambio relevante sobrevive al reload."
+        },
+        {
+          "id": "reports",
+          "label": "Reportes derivados",
+          "description": "También validar reportes/curvas que consumen PDC."
+        }
+      ],
+      "required": true
+    },
+    {
+      "id": "legacy_scope",
+      "prompt": "¿Qué legacy debe eliminarse en este goal?",
+      "description": "Hay legacy de BD, PHP y JS. Esta decisión evita borrar más de lo aprobado.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Eliminar el legacy obsoleto que afecta directamente Listado, Contratos y PDC; dejar otros legacy globales fuera de alcance salvo que bloqueen estos flujos.",
+      "recommendedOptionIds": ["module_legacy_only"],
+      "options": [
+        {
+          "id": "module_legacy_only",
+          "label": "Solo estos módulos",
+          "description": "Retira legacy de Listado/Contratos/PDC y sus tablas/scripts asociados."
+        },
+        {
+          "id": "all_legacy",
+          "label": "Todo legacy global",
+          "description": "Incluye cualquier ruta, helper o tabla legacy aunque no sea de estos módulos."
+        },
+        {
+          "id": "runtime_only",
+          "label": "Solo runtime obsoleto",
+          "description": "Elimina código/rutas activas obsoletas, pero conserva backups, migraciones y archivos históricos."
+        }
+      ],
+      "required": true
+    },
+    {
+      "id": "pdc_generation_policy",
+      "prompt": "Después del refactor, ¿cuál debe ser la fuente principal para crear/actualizar PDC?",
+      "description": "Hoy hay flujo semi-auto moderno y también `src/Legacy/actualizar_pdc.php`.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "El flujo moderno `/api/pdc/auto/*` y `/api/pdc/auto/apply-from-contratos` debe reemplazar el actualizador legacy; el legacy queda eliminado si la cobertura lo prueba.",
+      "recommendedOptionIds": ["modern_replaces_legacy"],
+      "options": [
+        {
+          "id": "modern_replaces_legacy",
+          "label": "Moderno reemplaza legacy",
+          "description": "PDC se genera/actualiza por APIs modernas y pruebas E2E."
+        },
+        {
+          "id": "legacy_until_parity",
+          "label": "Legacy hasta paridad",
+          "description": "Se mantiene temporalmente hasta probar paridad exacta caso por caso."
+        }
+      ],
+      "required": true
+    },
+    {
+      "id": "data_deletion_policy",
+      "prompt": "Para eliminar legacy de BD, ¿qué regla de seguridad debe aplicarse?",
+      "description": "Antes ya elegiste eliminar definitivamente del catálogo; aquí aplica a tablas/columnas legacy del flujo.",
+      "answerMode": "multi-custom",
+      "recommendedAnswer": "Hacer backup externo verificable antes de cualquier DROP, ejecutar primero local, y no tocar producción sin una rutina explícita.",
+      "recommendedOptionIds": ["external_backup", "local_first", "production_requires_routine"],
+      "options": [
+        {
+          "id": "external_backup",
+          "label": "Backup externo",
+          "description": "Dump fuera de MySQL con checksum antes de DROP/DELETE destructivo."
+        },
+        {
+          "id": "local_first",
+          "label": "Primero local",
+          "description": "Validar en Docker local antes de cualquier despliegue."
+        },
+        {
+          "id": "production_requires_routine",
+          "label": "Producción aparte",
+          "description": "Producción requiere checklist explícito y no se toca por accidente."
+        },
+        {
+          "id": "drop_immediately",
+          "label": "DROP directo",
+          "description": "Borrar sin conservar dump local; más rápido, mayor riesgo."
+        }
+      ],
+      "required": true
+    },
+    {
+      "id": "admin_expectation",
+      "prompt": "¿Qué tan completa debe ser la administración de familias, aliases y contratos en este refactor?",
+      "description": "El goal anterior aceptó que exista una forma de administración, pero no definió profundidad.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Crear una administración mínima funcional: listar, crear/editar/desactivar familias operativas, aliases y asociaciones contractuales, con validaciones para no mezclar conceptos.",
+      "recommendedOptionIds": ["minimal_admin"],
+      "options": [
+        {
+          "id": "minimal_admin",
+          "label": "Admin mínima",
+          "description": "CRUD básico y validaciones suficientes para mantener el catálogo."
+        },
+        {
+          "id": "full_admin",
+          "label": "Admin completa",
+          "description": "Incluye auditoría, importación/exportación, revisiones y aprobación por roles."
+        },
+        {
+          "id": "seed_only",
+          "label": "Solo seeds/tests",
+          "description": "No UI admin por ahora; se mantiene por migraciones y pruebas."
+        }
+      ],
+      "required": true
+    },
+    {
+      "id": "proof_level",
+      "prompt": "¿Qué nivel de evidencia debe cerrar este goal ampliado?",
+      "description": "El alcance es grande; conviene definir una barra clara.",
+      "answerMode": "multi-custom",
+      "recommendedAnswer": "Pruebas PHP de migración y reglas, E2E con recording/capturas para JMC y Da Porto, DB audit de ausencia de legacy runtime, y smoke de CRUD manual.",
+      "recommendedOptionIds": ["php_migration_tests", "e2e_recordings", "legacy_absence_audit", "manual_crud_smoke"],
+      "options": [
+        {
+          "id": "php_migration_tests",
+          "label": "Tests PHP migración",
+          "description": "Prueban datos, reglas y catálogos."
+        },
+        {
+          "id": "e2e_recordings",
+          "label": "E2E con evidencia",
+          "description": "JMC y Da Porto con capturas, video y trace."
+        },
+        {
+          "id": "legacy_absence_audit",
+          "label": "Auditoría legacy",
+          "description": "Prueba que rutas/código/tablas legacy obsoletas ya no están en runtime."
+        },
+        {
+          "id": "manual_crud_smoke",
+          "label": "Smoke CRUD manual",
+          "description": "Valida guardar/recargar cambios manuales en los tres módulos."
+        }
+      ],
+      "required": true
+    }
+  ]
+}

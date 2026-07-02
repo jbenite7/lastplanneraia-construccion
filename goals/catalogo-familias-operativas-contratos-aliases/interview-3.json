@@ -1,0 +1,198 @@
+{
+  "stage": "interview",
+  "title": "Ronda 3: decisiones finas de eliminación y administración",
+  "goalSlug": "catalogo-familias-operativas-contratos-aliases",
+  "questions": [
+    {
+      "id": "legacy_runtime_targets",
+      "prompt": "Dentro de Listado/Contratos/PDC, ¿qué legacy runtime debe desaparecer cuando exista reemplazo moderno probado?",
+      "description": "La ruta principal ya está en MVC, pero quedan endpoints y UI legacy alrededor de PDC y contratos.",
+      "answerMode": "multi-custom",
+      "recommendedAnswer": "Eliminar rutas PHP legacy de PDC, auto-definir contratos legacy, modales/botones JS legacy, y dependencias runtime a tablas por prefijo para estos módulos.",
+      "recommendedOptionIds": ["legacy_pdc_endpoint", "legacy_contract_auto_define", "legacy_js_modals", "prefix_runtime_tables"],
+      "options": [
+        {
+          "id": "legacy_pdc_endpoint",
+          "label": "PDC legacy PHP",
+          "description": "Retirar `/legacy/pdc/actualizar_pdc.php` y `src/Legacy/actualizar_pdc.php` cuando el flujo moderno cubra la función."
+        },
+        {
+          "id": "legacy_contract_auto_define",
+          "label": "Auto-definir legacy",
+          "description": "Retirar endpoints `/api/contratos/auto-define*` si el semi-auto moderno los reemplaza."
+        },
+        {
+          "id": "legacy_js_modals",
+          "label": "Modales JS legacy",
+          "description": "Eliminar UI antigua como modal auto-asignar si queda reemplazada por el asistente semi-auto."
+        },
+        {
+          "id": "prefix_runtime_tables",
+          "label": "Tablas por prefijo runtime",
+          "description": "Eliminar dependencias runtime a `{prefix}_actividades`, `{prefix}_pdc`, etc. para estos módulos."
+        },
+        {
+          "id": "legacy_helpers_if_unused",
+          "label": "Helpers no usados",
+          "description": "Borrar helpers legacy solo si ninguna ruta viva los usa."
+        }
+      ],
+      "required": true
+    },
+    {
+      "id": "admin_full_scope",
+      "prompt": "Para la admin completa de familias/aliases/contratos, ¿qué capacidades exactas deben existir?",
+      "description": "Esto define pantallas, permisos y APIs admin.",
+      "answerMode": "multi-custom",
+      "recommendedAnswer": "CRUD con auditoría, activar/desactivar, importar/exportar, reasignar reglas, ver impactos antes de guardar, y control por permisos admin.",
+      "recommendedOptionIds": ["crud_audit", "activate_deactivate", "import_export", "rule_reassignment", "impact_preview", "admin_permissions"],
+      "options": [
+        {
+          "id": "crud_audit",
+          "label": "CRUD + auditoría",
+          "description": "Crear/editar/eliminar con rastro de quién cambió qué."
+        },
+        {
+          "id": "activate_deactivate",
+          "label": "Activar/desactivar",
+          "description": "Permite pausar sin borrar cuando no sea limpieza destructiva aprobada."
+        },
+        {
+          "id": "import_export",
+          "label": "Importar/exportar",
+          "description": "Carga o descarga catálogo para revisión externa."
+        },
+        {
+          "id": "rule_reassignment",
+          "label": "Reasignar reglas",
+          "description": "Mover reglas de aliases/contractuales a su destino correcto."
+        },
+        {
+          "id": "impact_preview",
+          "label": "Vista de impacto",
+          "description": "Antes de guardar, muestra cuántas reglas/propuestas/proyectos se afectarían."
+        },
+        {
+          "id": "admin_permissions",
+          "label": "Permisos admin",
+          "description": "Solo roles autorizados pueden modificar el catálogo."
+        }
+      ],
+      "required": true
+    },
+    {
+      "id": "destructive_cleanup_scope",
+      "prompt": "Cuando limpiemos BD legacy de estos módulos, ¿qué se considera eliminable?",
+      "description": "Esto separa runtime obsoleto de migraciones/backups históricos que conviene conservar.",
+      "answerMode": "multi-custom",
+      "recommendedAnswer": "Eliminar tablas por prefijo/archive que ya estén migradas y sin uso runtime; conservar backups externos, migraciones y reportes de limpieza.",
+      "recommendedOptionIds": ["drop_migrated_prefix_tables", "drop_orphan_archives", "keep_backups", "keep_migrations"],
+      "options": [
+        {
+          "id": "drop_migrated_prefix_tables",
+          "label": "DROP tablas migradas",
+          "description": "Borrar `{prefix}_actividades`, `{prefix}_pdc`, etc. si la global equivalente está verificada."
+        },
+        {
+          "id": "drop_orphan_archives",
+          "label": "DROP archives huérfanos",
+          "description": "Borrar tablas `zleg_*` o similares si ya están respaldadas y sin uso."
+        },
+        {
+          "id": "keep_backups",
+          "label": "Conservar backups",
+          "description": "No borrar dumps/reportes externos de auditoría."
+        },
+        {
+          "id": "keep_migrations",
+          "label": "Conservar migraciones",
+          "description": "No borrar archivos de migración/patch históricos aunque mencionen legacy."
+        }
+      ],
+      "required": true
+    },
+    {
+      "id": "report_parity",
+      "prompt": "Para reportes derivados, ¿qué debe probarse antes de retirar legacy?",
+      "description": "Los reportes consumen PDC y pueden usar rutas distintas a la UI.",
+      "answerMode": "multi-custom",
+      "recommendedAnswer": "Recalcular reportes PDC/curva desde tablas globales y comparar conteos/fechas/campos clave antes y después.",
+      "recommendedOptionIds": ["pdc_report", "curva_pdc", "counts_dates", "no_prefix_sql"],
+      "options": [
+        {
+          "id": "pdc_report",
+          "label": "Informe PDC",
+          "description": "Validar `general_informe_pdc` o su flujo equivalente."
+        },
+        {
+          "id": "curva_pdc",
+          "label": "Curva PDC",
+          "description": "Validar reportes de curva que consumen `pdc`."
+        },
+        {
+          "id": "counts_dates",
+          "label": "Conteos y fechas",
+          "description": "Comparar filas, semanas, fechas e hitos de contratación."
+        },
+        {
+          "id": "no_prefix_sql",
+          "label": "Sin SQL por prefijo",
+          "description": "Confirmar que el cálculo no depende de tablas `{prefix}_pdc`."
+        }
+      ],
+      "required": true
+    },
+    {
+      "id": "rollout_shape",
+      "prompt": "¿Cómo debe ordenarse la implementación para reducir riesgo?",
+      "description": "El alcance toca base, backend, frontend, admin y E2E.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Migrar y probar en fases: catálogo/reglas, contratos, PDC, UI/admin, eliminación legacy, evidencia final.",
+      "recommendedOptionIds": ["phased"],
+      "options": [
+        {
+          "id": "phased",
+          "label": "Por fases",
+          "description": "Cada fase deja tests verdes antes de borrar legacy."
+        },
+        {
+          "id": "big_bang",
+          "label": "Todo de una vez",
+          "description": "Menos pasos, más riesgo de mezclar causas si algo falla."
+        }
+      ],
+      "required": true
+    },
+    {
+      "id": "manual_review_boundary",
+      "prompt": "Después del refactor, ¿cuándo debe el motor frenar y pedir revisión humana?",
+      "description": "Esto evita que el sistema vuelva a parecer seguro cuando la evidencia no alcanza.",
+      "answerMode": "multi-custom",
+      "recommendedAnswer": "Frenar si la familia supera el catálogo, si hay más familias detectadas que familias predefinidas, si hay reglas dudosas, o si contratos/PDC no conservan trazabilidad.",
+      "recommendedOptionIds": ["unknown_family", "too_many_families", "unsafe_rule", "missing_traceability"],
+      "options": [
+        {
+          "id": "unknown_family",
+          "label": "Familia desconocida",
+          "description": "No crear automáticamente fuera del catálogo operativo."
+        },
+        {
+          "id": "too_many_families",
+          "label": "Más que catálogo",
+          "description": "JMC/Da Porto no pueden superar el número de familias operativas predefinidas."
+        },
+        {
+          "id": "unsafe_rule",
+          "label": "Regla dudosa",
+          "description": "Regla sin destino claro queda por revisar."
+        },
+        {
+          "id": "missing_traceability",
+          "label": "Sin trazabilidad",
+          "description": "Contratos/PDC no se autogeneran si falta fuente auditable."
+        }
+      ],
+      "required": true
+    }
+  ]
+}

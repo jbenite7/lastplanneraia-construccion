@@ -1,0 +1,60 @@
+{
+  "generated_at": "2026-07-02",
+  "goal": "goals/catalogo-familias-operativas-contratos-aliases/goal.md",
+  "status": "ready_to_close",
+  "accepted_exclusions": [
+    {
+      "id": "metrolinea_apply_crud_gap",
+      "decision": "omit_full_apply_crud",
+      "reason": "El usuario aprobo omitir Metrolinea para aplicacion/CRUD completo; se conserva evidencia de preview.",
+      "evidence": [
+        "tests/test_metrolinea_evidence_scope.php",
+        "docs/qa/evidence/previews-lacp-four-projects-20260702130343/EVIDENCE.md"
+      ]
+    }
+  ],
+  "operational_target": {
+    "description": "Tres proyectos obligatorios con PDC perfecto al corte 2026-07-02",
+    "status": "verified",
+    "projects": [
+      {
+        "name": "Optimizacion Aeropuerto JMC",
+        "active_week": 7,
+        "contracts": 50,
+        "pdc": 50,
+        "missing": 0,
+        "duplicates": 0
+      },
+      {
+        "name": "Da Porto",
+        "active_week": 8,
+        "contracts": 25,
+        "pdc": 25,
+        "missing": 0,
+        "duplicates": 0
+      },
+      {
+        "name": "Milan Campestre Torre 19",
+        "active_week": 6,
+        "contracts": 4,
+        "pdc": 4,
+        "missing": 0,
+        "duplicates": 0
+      }
+    ],
+    "evidence": [
+      "tests/test_pdc_three_projects_perfect_20260702.php",
+      "docs/qa/evidence/pdc-perfect-20260702/EVIDENCE.md"
+    ]
+  },
+  "blockers": [],
+  "minimum_close_checks": [
+    "docker compose exec app php tests/test_pdc_three_projects_perfect_20260702.php",
+    "docker compose exec app php tests/test_family_catalog_operational_only.php",
+    "docker compose exec app php tests/test_learning_persistence_catalog_db.php",
+    "docker compose exec app php tests/test_human_decision_approval_checklist.php",
+    "docker compose exec app php tests/test_completion_audit_goal_coverage.php",
+    "docker compose exec app php tests/test_goal_close_blockers_manifest.php",
+    "git diff --check"
+  ]
+}

@@ -36,10 +36,10 @@ test.describe('PDC module tests', () => {
     await expect(desglosarBtn).toBeVisible({ timeout: 5000 });
     await expect(desglosarBtn).toContainText('Desglosar');
 
-    // Auto-Generar desde Actividades button
-    const autoGenBtn = page.locator('#btn_auto_generar_desde_actividades');
+    // Auto-Generar desde Contratos button
+    const autoGenBtn = page.locator('#btn_auto_generar_desde_contratos');
     await expect(autoGenBtn).toBeVisible({ timeout: 5000 });
-    await expect(autoGenBtn).toContainText('Auto-Generar desde Actividades');
+    await expect(autoGenBtn).toContainText('Auto-Generar desde Contratos');
 
     // Solo Alertas button
     const soloAlertasBtn = page.locator('#btn_soloAlertas');
@@ -75,8 +75,8 @@ test.describe('PDC module tests', () => {
     expect(titleMatch || bodyMatch).toBeTruthy();
   });
 
-  test('Test 2: Auto-Generar desde Actividades abre preview embebido', async ({ page }) => {
-    const autoGenBtn = page.locator('#btn_auto_generar_desde_actividades');
+  test('Test 2: Auto-Generar desde Contratos abre preview embebido', async ({ page }) => {
+    const autoGenBtn = page.locator('#btn_auto_generar_desde_contratos');
     await expect(autoGenBtn).toBeVisible({ timeout: 10000 });
 
     const responsePromise = page.waitForResponse(
@@ -98,7 +98,7 @@ test.describe('PDC module tests', () => {
 
     const panel = page.locator('#semiAutoReview-pdc');
     await expect(panel).toBeVisible({ timeout: 10000 });
-    await expect(panel.locator('.sar-analysis')).toContainText('Proceso de análisis');
+    await expect(panel.locator('.sar-analysis')).toContainText('Estamos revisando tus propuestas');
     await expect(panel.locator('.sar-analysis-progress')).toContainText('100%');
     await expect(panel.locator('.sar-summary')).toContainText('Encontramos', { timeout: 10000 });
     await expect(panel.locator('.sar-group-title')).toContainText([
@@ -167,7 +167,7 @@ test.describe('PDC module tests', () => {
     console.log('[Test 4] Clicking Actualizar button');
 
     const responsePromise = page.waitForResponse(
-      (response) => response.url().includes('/legacy/pdc/actualizar_pdc.php'),
+      (response) => response.url().includes('/api/pdc/auto/apply-from-contratos'),
       { timeout: 15000 },
     ).catch(() => null);
 
@@ -178,13 +178,12 @@ test.describe('PDC module tests', () => {
       const capturedResponse = await response.json().catch(() => null);
       console.log(`[Test 4] Actualizar response: ${JSON.stringify(capturedResponse)}`);
       if (capturedResponse) {
-        // Accept BIEN or ERROR (legacy sync may fail with fresh auto-generated data)
-        expect(['BIEN', 'ERROR']).toContain(capturedResponse.respuesta);
+        expect(capturedResponse.respuesta).toBe('BIEN');
         console.log(`[Test 4] Actualizar response verified: ${capturedResponse.respuesta}`);
       } else {
         expect(response.status()).toBeGreaterThanOrEqual(200);
         expect(response.status()).toBeLessThan(500);
-        console.log(`[Test 4] Non-JSON legacy response accepted with status ${response.status()}`);
+        console.log(`[Test 4] Non-JSON modern response accepted with status ${response.status()}`);
       }
     } else {
       console.log('[Test 4] No network response captured');
@@ -213,5 +212,25 @@ test.describe('PDC module tests', () => {
     } else {
       expect(tableText).toContain('TIPO DE CONTRATO');
     }
+  });
+
+  test('Test 6: Navigation uses modern module routes', async ({ page }) => {
+    const contratosBtn = page.locator('.ps-module-switcher #btn_contratos');
+    await expect(contratosBtn).toBeVisible({ timeout: 10000 });
+    await contratosBtn.click();
+    await expect(page).toHaveURL(/\/contratos(?:\?|$)/, { timeout: 15000 });
+    expect(page.url()).not.toContain('/legacy/cambiar_pagina.php');
+
+    const actividadesBtn = page.locator('.ps-module-switcher #btn_Actividades');
+    await expect(actividadesBtn).toBeVisible({ timeout: 10000 });
+    await actividadesBtn.click();
+    await expect(page).toHaveURL(/\/listado-actividades(?:\?|$)/, { timeout: 15000 });
+    expect(page.url()).not.toContain('/legacy/cambiar_pagina.php');
+
+    const pdcBtn = page.locator('.ps-module-switcher #btn_planCompras');
+    await expect(pdcBtn).toBeVisible({ timeout: 10000 });
+    await pdcBtn.click();
+    await expect(page).toHaveURL(/\/pdc(?:\?|$)/, { timeout: 15000 });
+    expect(page.url()).not.toContain('/legacy/cambiar_pagina.php');
   });
 });

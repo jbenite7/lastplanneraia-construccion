@@ -1,0 +1,68 @@
+{
+  "goalSlug": "depurar-matriz-validacion-familias",
+  "facts": [
+    {
+      "id": "fact-1",
+      "text": "La matriz no debe incluir filas cuya decisión humana sea No es actividad.",
+      "comment": "",
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-2",
+      "text": "El desplegable de familia correcta no debe incluir familias de Mano de Obra como Mano de Obra - Acabados, Mano de Obra - Cimentacion, Mano de Obra - Estructura, Mano de Obra - Excavaciones, Mano de Obra - Instalaciones, Mano de Obra - Mamposteria ni Mano de Obra - Urbanismo.",
+      "comment": "",
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-3",
+      "text": "Red RCI y Red Contra Incendio - Piping deben unificarse bajo una sola familia visible llamada Red de Extinción.",
+      "comment": "",
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-4",
+      "text": "El desplegable de familia correcta no debe mostrar Red RCI como opción separada.",
+      "comment": "",
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-5",
+      "text": "La implementación no debe eliminar ni cambiar otras familias fuera de las familias de Mano de Obra y la unificación de RCI indicada por el usuario.",
+      "comment": "",
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-6",
+      "text": "La matriz seguirá entregándose como XLSX con hojas Validacion, Listas y Resumen.",
+      "comment": "",
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-7",
+      "text": "La matriz seguirá teniendo 300 casos revisables después de excluir filas No es actividad.",
+      "comment": "",
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-8",
+      "text": "Los resúmenes JSON y Markdown deben regenerarse con la matriz depurada.",
+      "comment": "",
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-9",
+      "text": "La prueba automática debe comprobar que ya no aparecen No es actividad, familias de Mano de Obra ni Red RCI como opción separada.",
+      "comment": "",
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    }
+  ]
+}

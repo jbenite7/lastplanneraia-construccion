@@ -1,0 +1,87 @@
+{
+  "stage": "facts",
+  "title": "Familias operativas y contratos desde cronograma",
+  "goalSlug": "familias-operativas-y-contratos-desde-cronograma",
+  "facts": [
+    {
+      "id": "fact-1",
+      "text": "/listado-actividades/ debe proponer familias operativas reales tomadas del cronograma.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-2",
+      "text": "Una familia operativa describe trabajo ejecutable y medible del cronograma.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-3",
+      "text": "Un contrato, compra, insumo, material, equipo, suministro o subpaquete describe cómo se compra o contrata el trabajo y no debe aparecer como familia de /listado-actividades/.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-4",
+      "text": "Los elementos contractuales detectados desde cronograma, matriz o corpus deben alimentar /contratos/ para autogenerar propuestas contractuales cuando apliquen.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-5",
+      "text": "Acero de Refuerzo y Estructural, Aligerantes Perdidos y Recuperables, Contenedores, Encofrado y Obra Falsa, Equipos de Extincion, Estuco, Fachada HPL, Vidrio y Aluminio, Geodren, Losas de Cimentacion y Luminarias y Artefactos Electricos deben tratarse como ejemplos contractuales iniciales, no como familias de /listado-actividades/.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-6",
+      "text": "Enchapes Ceramicos en Muros debe absorberse en la familia operativa Pisos y Enchapes.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-7",
+      "text": "Red RCI y Red Contra Incendio - Piping deben seguir unificadas como Red de Extinción.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-8",
+      "text": "La matriz/corpus debe separar familias operativas de elementos contractuales y regenerar XLSX, JSON y Markdown con esa separación.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-9",
+      "text": "Las pruebas deben cubrir JMC y Da Porto para comprobar que /listado-actividades/ no propone elementos contractuales como actividades.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-10",
+      "text": "Las pruebas deben comprobar que /contratos/ conserva o genera visibilidad de los elementos contractuales excluidos de /listado-actividades/.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    }
+  ]
+}

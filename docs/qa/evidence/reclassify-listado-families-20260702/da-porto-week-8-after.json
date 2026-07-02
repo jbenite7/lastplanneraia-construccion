@@ -1,0 +1,151 @@
+{
+    "activities": [
+        {
+            "Id": 77,
+            "actividad": "Ascensores",
+            "fechaInicio": "2027-02-11",
+            "actividadInicio": "78",
+            "tipoContrato": "SI"
+        },
+        {
+            "Id": 170,
+            "actividad": "Aseo",
+            "fechaInicio": "2027-08-26",
+            "actividadInicio": "234",
+            "tipoContrato": "MO"
+        },
+        {
+            "Id": 166,
+            "actividad": "Campamento de Obra",
+            "fechaInicio": "2026-05-26",
+            "actividadInicio": "3",
+            "tipoContrato": "MO,S"
+        },
+        {
+            "Id": 110,
+            "actividad": "Carpinteria en Madera",
+            "fechaInicio": "2027-05-21",
+            "actividadInicio": "208",
+            "tipoContrato": "MO,S"
+        },
+        {
+            "Id": 103,
+            "actividad": "Carpinteria Metalica",
+            "fechaInicio": "2027-05-06",
+            "actividadInicio": "195",
+            "tipoContrato": "SI"
+        },
+        {
+            "Id": 172,
+            "actividad": "Cimentaciones",
+            "fechaInicio": "2026-10-28",
+            "actividadInicio": "9",
+            "tipoContrato": "MO,S"
+        },
+        {
+            "Id": 65,
+            "actividad": "Estabilización del Suelo",
+            "fechaInicio": "2026-08-18",
+            "actividadInicio": "7",
+            "tipoContrato": "MO,S"
+        },
+        {
+            "Id": 171,
+            "actividad": "Estructura en Concreto",
+            "fechaInicio": "2026-10-21",
+            "actividadInicio": "8",
+            "tipoContrato": "MO,S"
+        },
+        {
+            "Id": 64,
+            "actividad": "Excavaciones y Movimiento de Tierra",
+            "fechaInicio": "2026-05-25",
+            "actividadInicio": "5",
+            "tipoContrato": "MO,S"
+        },
+        {
+            "Id": 76,
+            "actividad": "Mamposteria en Ladrillo\/Bloque Interior",
+            "fechaInicio": "2027-02-09",
+            "actividadInicio": "44",
+            "tipoContrato": "MO,S"
+        },
+        {
+            "Id": 116,
+            "actividad": "Mesones de Cocina y Baños",
+            "fechaInicio": "2027-06-08",
+            "actividadInicio": "221",
+            "tipoContrato": "SI"
+        },
+        {
+            "Id": 106,
+            "actividad": "Morteros de Nivelacion de Losas",
+            "fechaInicio": "2027-05-12",
+            "actividadInicio": "169",
+            "tipoContrato": "MO,S"
+        },
+        {
+            "Id": 165,
+            "actividad": "Paisajismo",
+            "fechaInicio": "2028-01-24",
+            "actividadInicio": "272",
+            "tipoContrato": "SI"
+        },
+        {
+            "Id": 134,
+            "actividad": "Pinturas Interiores y Exteriores",
+            "fechaInicio": "2027-07-22",
+            "actividadInicio": "155",
+            "tipoContrato": "SI"
+        },
+        {
+            "Id": 129,
+            "actividad": "Pisos y Enchapes",
+            "fechaInicio": "2027-07-08",
+            "actividadInicio": "182",
+            "tipoContrato": ""
+        },
+        {
+            "Id": 168,
+            "actividad": "Red de Gas",
+            "fechaInicio": "2027-03-16",
+            "actividadInicio": "99",
+            "tipoContrato": "SI"
+        },
+        {
+            "Id": 167,
+            "actividad": "Red Eléctrica",
+            "fechaInicio": "2027-03-16",
+            "actividadInicio": "112",
+            "tipoContrato": "MO,S"
+        },
+        {
+            "Id": 169,
+            "actividad": "Red Hidrosanitaria",
+            "fechaInicio": "2027-08-10",
+            "actividadInicio": "263",
+            "tipoContrato": "MO,S"
+        },
+        {
+            "Id": 88,
+            "actividad": "Revoques y Panetes",
+            "fechaInicio": "2027-03-12",
+            "actividadInicio": "126",
+            "tipoContrato": "MO,S"
+        },
+        {
+            "Id": 63,
+            "actividad": "Topografía",
+            "fechaInicio": "2026-05-25",
+            "actividadInicio": "2",
+            "tipoContrato": "MO"
+        },
+        {
+            "Id": 156,
+            "actividad": "Vias y Pavimentos",
+            "fechaInicio": "2027-10-13",
+            "actividadInicio": "265",
+            "tipoContrato": "SI"
+        }
+    ]
+}
