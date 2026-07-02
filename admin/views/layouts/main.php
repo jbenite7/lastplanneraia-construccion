@@ -111,6 +111,12 @@
               <p>Matching Config</p>
             </a>
           </li>
+          <li class="nav-item">
+            <a href="/admin/matching/family-catalog" class="nav-link">
+              <i class="nav-icon fas fa-layer-group"></i>
+              <p>Catálogo Familias</p>
+            </a>
+          </li>
         </ul>
       </nav>
       <!-- /.sidebar-menu -->
