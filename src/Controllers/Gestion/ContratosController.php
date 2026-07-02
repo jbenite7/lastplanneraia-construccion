@@ -11,6 +11,8 @@ class ContratosController extends BaseController
         // Validar autenticación
         $this->requireAuth();
 
+        $this->syncRequestedWeekContext();
+
         // Obtener variables de sesión
         $vars = $this->getSessionVars();
         extract($vars); // $dbName, $semana, $proyecto, $permiso, etc.

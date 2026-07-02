@@ -12,6 +12,8 @@ class PdcController extends BaseController
         // Validar autenticación
         $this->requireAuth();
 
+        $this->syncRequestedWeekContext();
+
         $dbName = (string) ($_SESSION['db'] ?? '');
         $semana = (int) ($_SESSION['semana'] ?? 0);
 

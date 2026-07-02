@@ -13,7 +13,9 @@ class ListadoActividadesController extends BaseController
         // Validar autenticación
         $this->requireAuth();
 
-        $this->syncMaxSemanaContext();
+        if (!$this->syncRequestedWeekContext()) {
+            $this->syncMaxSemanaContext();
+        }
 
         // Obtener variables de sesión
         $vars = $this->getSessionVars();

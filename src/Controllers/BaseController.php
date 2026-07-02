@@ -85,6 +85,41 @@ abstract class BaseController
     }
 
     /**
+     * Sincroniza la semana desde rutas modernas como /pdc?semana=5.
+     */
+    protected function syncRequestedWeekContext(): bool
+    {
+        $rawWeek = $_GET['semana'] ?? null;
+        if ($rawWeek === null || $rawWeek === '') {
+            return false;
+        }
+
+        $week = filter_var($rawWeek, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        if ($week === false) {
+            error_log('Semana solicitada inválida en ruta moderna: ' . (string) $rawWeek);
+            return false;
+        }
+
+        $projectId = (int) ($_SESSION['project_id'] ?? 0);
+        if ($projectId <= 0) {
+            $_SESSION['semana'] = (int) $week;
+            return true;
+        }
+
+        $exists = (int) $this->db->query(
+            'SELECT COUNT(*) FROM semanas_activas WHERE project_id = ? AND Semana = ?',
+            [$projectId, (int) $week],
+        )->fetchColumn();
+        if ($exists <= 0) {
+            error_log("Semana {$week} no existe para el proyecto activo {$projectId}.");
+            return false;
+        }
+
+        $_SESSION['semana'] = (int) $week;
+        return true;
+    }
+
+    /**
      * Renderiza una vista con datos opcionales.
      *
      * @param string $viewPath Ruta relativa a PROJECT_ROOT (ej: '/views/modulo/...')

@@ -11,6 +11,7 @@ class Database
 
     private const GLOBAL_TABLES = [
         'actividades',
+        'actividad_programa_fuentes',
         'auto_contrato_log',
         'auto_program_log',
         'cambios',
@@ -43,6 +44,7 @@ class Database
 
     private const PROJECT_SCOPED_IDS = [
         'actividades' => 'Id',
+        'actividad_programa_fuentes' => 'id',
         'cambios' => 'id',
         'cic' => 'Id',
         'lps_drawer_comentarios' => 'id',
