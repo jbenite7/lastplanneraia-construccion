@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Support\ActivityMatcher;
+use App\Support\OperationalFamilyPolicy;
+use App\Support\SemiAutoQualityGate;
 use PDO;
 use RuntimeException;
 use Throwable;
@@ -18,6 +20,10 @@ class SemiAutoService
 
     private \Database $db;
     private ?SemiAutoAssistantService $assistantService = null;
+    private ?SemiAutoQualityGate $qualityGate = null;
+    private ?OperationalFamilyPolicy $familyPolicy = null;
+    private array $contractPackageCache = [];
+    private bool $activityProgramSourcesTableEnsured = false;
     private ?array $traceContext = null;
     private array $traceAnalysis = [];
 
@@ -33,6 +39,24 @@ class SemiAutoService
         }
 
         return $this->assistantService;
+    }
+
+    private function qualityGate(): SemiAutoQualityGate
+    {
+        if ($this->qualityGate === null) {
+            $this->qualityGate = new SemiAutoQualityGate();
+        }
+
+        return $this->qualityGate;
+    }
+
+    private function familyPolicy(): OperationalFamilyPolicy
+    {
+        if ($this->familyPolicy === null) {
+            $this->familyPolicy = new OperationalFamilyPolicy($this->db);
+        }
+
+        return $this->familyPolicy;
     }
 
     public function preview(string $module, array $context, ?string $requestedRunId = null): array
@@ -100,6 +124,7 @@ class SemiAutoService
         $applied = 0;
         $errors = 0;
 
+        $this->ensureActivityProgramSourcesTable();
         $this->db->beginTransaction();
         try {
             foreach ($suggestions as $suggestion) {
@@ -525,6 +550,12 @@ class SemiAutoService
         $analysis = [
             'user' => $stored['user'] ?? $this->defaultSuggestionUserAnalysis($row),
         ];
+        if (isset($stored['quality_gate']) && is_array($stored['quality_gate'])) {
+            $analysis['quality_gate'] = $stored['quality_gate'];
+        }
+        if (isset($stored['sources']) && is_array($stored['sources'])) {
+            $analysis['sources'] = $stored['sources'];
+        }
 
         if ($this->isAdminUser()) {
             $analysis['technical'] = array_merge(
@@ -554,22 +585,25 @@ class SemiAutoService
 
     private function assistantReasoning(array $row, array $proposed, array $applyPayload): array
     {
-        $user = $this->suggestionAnalysis($row, $proposed, $applyPayload)['user'] ?? [];
+        $analysis = $this->suggestionAnalysis($row, $proposed, $applyPayload);
+        $user = $analysis['user'] ?? [];
+        $quality = $analysis['quality_gate'] ?? [];
         $band = (string) ($row['confidence_band'] ?? 'low');
         $action = (string) ($row['action'] ?? '');
         $isPreselected = (int) ($row['preselected'] ?? 0) === 1;
         $forcedReview = str_contains((string) ($row['match_source'] ?? ''), ':revision');
+        $qualityStatus = (string) ($quality['status'] ?? '');
         $nextStep = 'Revisar antes de aplicar.';
-        if ($band === 'high' && $isPreselected && !$forcedReview && !str_starts_with($action, 'review_no_match')) {
+        if ($qualityStatus === 'ready' && $band === 'high' && $isPreselected && !$forcedReview && !str_starts_with($action, 'review_no_match')) {
             $nextStep = 'Puede aplicarse después de una revisión rápida.';
-        } elseif ($band === 'low' || !$isPreselected || $forcedReview || str_starts_with($action, 'review_no_match')) {
+        } elseif ($qualityStatus === 'conflict' || $band === 'low' || !$isPreselected || $forcedReview || str_starts_with($action, 'review_no_match')) {
             $nextStep = 'No se aplicará automáticamente; requiere decisión manual.';
         }
 
         return [
             'headline' => (string) ($user['rule'] ?? $row['title'] ?? 'Propuesta detectada'),
             'why' => (string) ($user['decision'] ?? $row['reason'] ?? 'El sistema encontró una posible mejora.'),
-            'risk' => $band === 'high' ? 'bajo' : ($band === 'medium' ? 'medio' : 'alto'),
+            'risk' => $qualityStatus === 'conflict' ? 'alto' : ($qualityStatus === 'review' ? 'medio' : ($band === 'high' ? 'bajo' : ($band === 'medium' ? 'medio' : 'alto'))),
             'next_step' => $nextStep,
         ];
     }
@@ -588,6 +622,14 @@ class SemiAutoService
             'user' => array_merge($user, $extra['user'] ?? []),
             'technical' => array_merge($this->matchTechnical($match), $extra['technical'] ?? []),
         ];
+    }
+
+    private function analysisWithQuality(array $analysis, array $quality): array
+    {
+        $analysis['quality_gate'] = $quality['quality_gate'] ?? [];
+        $analysis['sources'] = $quality['sources'] ?? [];
+
+        return $analysis;
     }
 
     private function matchTechnical(?array $match): array
@@ -612,22 +654,28 @@ class SemiAutoService
     private function buildListadoSuggestions(int $projectId, int $semana, array $config): array
     {
         $this->traceStep('data', 'running', 'Leyendo actividades del Programa General.', [], 18);
-        $activities = $this->db->query(
+        $programRows = $this->db->query(
             "SELECT row_id AS Consecutivo,
                     unique_id AS Consecutivo_en_Programa,
                     unique_id,
                     Id, Actividad, Fecha_Inicio, COALESCE(Titulo, 0) AS Titulo
              FROM programa_consolidado
-             WHERE project_id = ? AND Semana = ? AND COALESCE(Titulo, 0) = 0
+             WHERE project_id = ? AND Semana = ?
              ORDER BY Fecha_Inicio ASC, unique_id ASC",
             [$projectId, $semana],
         )->fetchAll(PDO::FETCH_ASSOC);
+        $activities = $this->leafProgramActivitiesWithBreadcrumb($programRows);
 
+        $this->ensureActivityProgramSourcesTable();
         $existing = $this->db->query(
             "SELECT actividadInicio FROM actividades WHERE project_id = ? AND semanaActualizacion = ?",
             [$projectId, $semana],
         )->fetchAll(PDO::FETCH_COLUMN);
-        $existingKeys = array_flip(array_map('strval', $existing));
+        $linkedSources = $this->db->query(
+            "SELECT programa_unique_id FROM actividad_programa_fuentes WHERE project_id = ? AND semana = ?",
+            [$projectId, $semana],
+        )->fetchAll(PDO::FETCH_COLUMN);
+        $existingKeys = array_flip(array_map('strval', array_merge($existing, $linkedSources)));
         $this->traceStep('data', 'done', 'Datos de origen cargados.', [
             'programa_general' => count($activities),
             'actividades_existentes' => count($existing),
@@ -636,13 +684,15 @@ class SemiAutoService
         $this->traceStep('rules', 'running', 'Cargando familias y reglas de detección.', [], 38);
         $matcher = new ActivityMatcher();
         $rules = $matcher->loadRules();
+        $existingFamilyIds = $this->existingListadoFamilyIds($projectId, $semana, $matcher, $rules);
         $this->traceStep('rules', 'done', 'Reglas de detección disponibles.', [
             'reglas' => count($rules),
         ], 48);
 
-        $this->traceStep('matches', 'running', 'Agrupando actividades por familia detectada.', [], 55);
+        $this->traceStep('matches', 'running', 'Agrupando actividades por alcance, familia y modalidad.', [], 55);
         $groups = [];
         $suggestions = [];
+        $qualityGate = $this->qualityGate();
 
         foreach ($activities as $activity) {
             $consecutivo = (string) ($activity['unique_id'] ?? $activity['Consecutivo_en_Programa'] ?? '');
@@ -652,6 +702,7 @@ class SemiAutoService
 
             $match = $matcher->matchActivity($activity, $rules);
             if ($match === null) {
+                $quality = $qualityGate->noMatch($activity, 'El programa general no coincide con una familia configurada.');
                 $suggestions[] = $this->baseSuggestion(
                     'programa_consolidado',
                     $consecutivo,
@@ -663,13 +714,72 @@ class SemiAutoService
                     ['programa' => $activity],
                     [],
                     [],
-                    ['source' => 'programa_general'],
+                    ['source' => 'programa_general', '_analysis' => $quality],
                     false,
+                    null,
+                    $this->analysisWithQuality(
+                        $this->matchAnalysis(
+                            'Programa General',
+                            null,
+                            'No hay evidencia suficiente para crear una actividad automática.',
+                        ),
+                        $quality,
+                    ),
                 );
                 continue;
             }
 
-            $groupKey = 'family:' . (int) $match['familia_id'];
+            $dimensions = $qualityGate->groupingDimensions($activity, $match);
+            if (!empty($match['contractual_only'])) {
+                $quality = $qualityGate->listado(
+                    [$activity],
+                    $match,
+                    $this->normalizeConfidence($match['confidence'] ?? $match['confianza'] ?? 0),
+                    'Debe pasar a Contratos porque es compra, insumo, suministro, equipo o subpaquete.',
+                );
+                $suggestions[] = $this->baseSuggestion(
+                    'programa_consolidado',
+                    $consecutivo,
+                    'review_contractual_item',
+                    $this->normalizeConfidence($match['confidence'] ?? $match['confianza'] ?? 0),
+                    'Va en contratos',
+                    $this->plainText($activity['Actividad'] ?? ''),
+                    'El cronograma contiene un elemento contractual, no una familia operativa de actividades.',
+                    ['programa' => $activity],
+                    [
+                        'familia_operativa' => (string) ($match['familia_nombre'] ?? ''),
+                        'paquetes_sugeridos' => $match['contractual_package_hints'] ?? [],
+                    ],
+                    [],
+                    [
+                        'action' => 'review_contractual_item',
+                        'programa' => $activity,
+                        'familia_id' => (int) ($match['familia_id'] ?? 0),
+                        'paquetes_sugeridos' => $match['contractual_package_hints'] ?? [],
+                        '_analysis' => $quality,
+                    ],
+                    false,
+                    $this->matchSource($match),
+                    $this->analysisWithQuality(
+                        $this->matchAnalysis(
+                            'Programa General',
+                            $match,
+                            'Se detectó un elemento contractual para revisar en Contratos, no para crear actividad.',
+                            ['technical' => [
+                                'family_classification' => $match['family_classification'] ?? '',
+                                'contractual_package_hints' => $match['contractual_package_hints'] ?? [],
+                            ]],
+                        ),
+                        $quality,
+                    ),
+                );
+                continue;
+            }
+            $familyId = (int) ($match['familia_id'] ?? 0);
+            if ($familyId > 0 && isset($existingFamilyIds[$familyId])) {
+                continue;
+            }
+            $groupKey = $qualityGate->operationalGroupingKey($activity, $match);
             if (!isset($groups[$groupKey])) {
                 $requiresReview = $this->matchRequiresReview($match);
                 $groups[$groupKey] = [
@@ -696,6 +806,11 @@ class SemiAutoService
             'sin_match' => count($suggestions),
         ], 68);
         $this->traceStep('suggestions', 'running', 'Construyendo propuestas de actividades.', [], 74);
+        $familyGroupCounts = [];
+        foreach ($groups as $group) {
+            $familyId = (int) ($group['match']['familia_id'] ?? 0);
+            $familyGroupCounts[$familyId] = ($familyGroupCounts[$familyId] ?? 0) + 1;
+        }
 
         foreach ($groups as $group) {
             usort($group['items'], static function (array $a, array $b): int {
@@ -715,15 +830,35 @@ class SemiAutoService
                 }
             }
 
+            $quality = $qualityGate->listado(
+                $group['items'],
+                $match,
+                $group['confidence'],
+                $group['review_reason'] ?: null,
+            );
             $tipoContrato = $this->resolveTipoContratoForFamily((int) $match['familia_id']);
+            $activityName = $qualityGate->activityName($group['items'], $match, $quality, false);
+            $isRepeatedFamily = ($familyGroupCounts[(int) ($match['familia_id'] ?? 0)] ?? 0) > 1;
+            if ($isRepeatedFamily) {
+                $activityName = $qualityGate->activityName($group['items'], $match, $quality, true);
+            }
+            if ($isRepeatedFamily && !$qualityGate->isSpecificName($activityName, $match)) {
+                $quality = $qualityGate->withReviewReason(
+                    $quality,
+                    'La familia aparece en varias propuestas por diferencias operativas; validar que no sean solo frentes, zonas o intervenciones contractuales.',
+                );
+            }
             $proposed = [
-                'actividad' => (string) ($match['familia_nombre'] ?? 'Actividad detectada'),
-                'descripcionActividad' => implode(', ', $descriptions),
+                'actividad' => $activityName,
+                'descripcionActividad' => $qualityGate->description($group['items'], $match, $quality),
                 'actividadInicio' => (int) ($anchor['unique_id'] ?? $anchor['Consecutivo_en_Programa'] ?? 0),
                 'fechaInicio' => $this->normalizeDate($anchor['Fecha_Inicio'] ?? null),
                 'tipoContrato' => $tipoContrato,
                 'semanaActualizacion' => $semana,
             ];
+            $applyFields = $proposed;
+            $preselected = $this->shouldPreselect($group['confidence'], $config, $match)
+                && ($quality['quality_gate']['status'] ?? 'conflict') === 'ready';
 
             $suggestions[] = $this->baseSuggestion(
                 'actividades',
@@ -738,16 +873,27 @@ class SemiAutoService
                 $this->buildDiff([], $proposed),
                 [
                     'action' => 'create_activity',
-                    'fields' => $proposed,
+                    'fields' => $applyFields,
                     'familia_id' => (int) $match['familia_id'],
+                    '_analysis' => $quality,
                 ],
-                $this->shouldPreselect($group['confidence'], $config, $match),
+                $preselected,
                 $this->matchSource($match),
-                $this->matchAnalysis(
-                    'Programa General',
-                    $match,
-                    'Se agruparon ' . count($group['items']) . ' actividades bajo esta familia.',
-                    ['technical' => ['items_agrupados' => count($group['items'])]],
+                $this->analysisWithQuality(
+                    $this->matchAnalysis(
+                        'Programa General',
+                        $match,
+                        'Se agruparon ' . count($group['items']) . ' actividades bajo un alcance auditado.',
+                        ['technical' => [
+                            'items_agrupados' => count($group['items']),
+                            'descripciones_fuente' => $descriptions,
+                            'familia_repetida' => $isRepeatedFamily,
+                            'nombre_especifico' => $qualityGate->isSpecificName($activityName, $match),
+                            'grouping_key_version' => 'listado_operativo_v2',
+                            'grouping_dimensions' => $quality['quality_gate']['dimensions'] ?? [],
+                        ]],
+                    ),
+                    $quality,
                 ),
             );
         }
@@ -756,17 +902,102 @@ class SemiAutoService
             'propuestas' => count($suggestions),
         ], 84);
 
-        return $suggestions;
+        $suggestions = $this->reviewCoPresentListadoFamilies($suggestions);
+
+        return $this->reviewRepeatedActivityNames($suggestions);
+    }
+
+    private function leafProgramActivitiesWithBreadcrumb(array $programRows): array
+    {
+        $chapterMap = [];
+        foreach ($programRows as $row) {
+            if ((int) ($row['Titulo'] ?? 0) !== 0) {
+                $id = trim((string) ($row['Id'] ?? ''));
+                $chapterName = $this->programLeafName((string) ($row['Actividad'] ?? ''));
+                if ($id !== '' && $chapterName !== '') {
+                    $chapterMap[$id] = $chapterName;
+                }
+            }
+        }
+
+        $leaves = [];
+        $currentChapter = '';
+        foreach ($programRows as $row) {
+            if ((int) ($row['Titulo'] ?? 0) !== 0) {
+                $currentChapter = $this->programLeafName((string) ($row['Actividad'] ?? '')) ?: $currentChapter;
+                continue;
+            }
+
+            $existingBreadcrumb = $this->programExistingBreadcrumb((string) ($row['Actividad'] ?? ''));
+            $breadcrumb = $existingBreadcrumb !== ''
+                ? $existingBreadcrumb
+                : $this->programBreadcrumb((string) ($row['Id'] ?? ''), $chapterMap);
+            if ($breadcrumb === '') {
+                $breadcrumb = $currentChapter;
+            }
+
+            $row['__capitulo'] = $breadcrumb;
+            $leaves[] = $row;
+        }
+
+        return $leaves;
+    }
+
+    private function programBreadcrumb(string $id, array $chapterMap): string
+    {
+        $id = trim($id);
+        if ($id === '' || !str_contains($id, '.')) {
+            return '';
+        }
+
+        $parts = explode('.', $id);
+        $levels = [];
+        $current = '';
+        for ($i = 0; $i < count($parts) - 1; $i++) {
+            $current = $current === '' ? $parts[$i] : $current . '.' . $parts[$i];
+            if (isset($chapterMap[$current])) {
+                $levels[] = $chapterMap[$current];
+            }
+        }
+
+        return implode(', ', array_reverse($levels));
+    }
+
+    private function programLeafName(string $html): string
+    {
+        $text = $this->plainText($html);
+        $pos = mb_stripos($text, '[Capítulo');
+        if ($pos === false) {
+            $pos = mb_stripos($text, '[Capitulo');
+        }
+        if ($pos !== false) {
+            $text = mb_substr($text, 0, $pos);
+        }
+
+        return trim(rtrim(trim($text), ','));
+    }
+
+    private function programExistingBreadcrumb(string $html): string
+    {
+        if (preg_match('/\[Cap[ií]tulo[:\s]*([^\]]+)\]/ui', $html, $matches) === 1) {
+            return trim($this->plainText($matches[1]));
+        }
+
+        return '';
     }
 
     private function buildContratosSuggestions(int $projectId, int $semana, array $config): array
     {
         $this->traceStep('data', 'running', 'Leyendo actividades pendientes de contrato.', [], 18);
+        $packageFilter = $this->contractPackagePresenceSql();
         $activities = $this->db->query(
             "SELECT *
              FROM actividades
              WHERE project_id = ? AND semanaActualizacion = ?
-               AND ((tipoContrato IS NULL OR tipoContrato = '') OR ultimo_auto_definir IS NULL)
+               AND (
+                 ((tipoContrato IS NULL OR tipoContrato = '') AND NOT ($packageFilter))
+                 OR (tipoContrato IS NOT NULL AND tipoContrato != '' AND ultimo_auto_definir IS NULL)
+               )
              ORDER BY Id ASC",
             [$projectId, $semana],
         )->fetchAll(PDO::FETCH_ASSOC);
@@ -786,6 +1017,7 @@ class SemiAutoService
         $this->traceStep('matches', 'running', 'Cruzando actividades con Programa General y familias.', [], 55);
         $suggestions = [];
         $matchedActivities = 0;
+        $qualityGate = $this->qualityGate();
 
         foreach ($activities as $activity) {
             $activityId = (int) $activity['Id'];
@@ -794,7 +1026,17 @@ class SemiAutoService
             }
 
             $pgActivity = $this->loadLinkedProgramActivity($projectId, $semana, (string) ($activity['actividadInicio'] ?? ''));
+            $programSources = $this->loadActivityProgramSources($projectId, $activityId, $semana);
+            $sourceProgramActivities = $this->sourcesToProgramActivities($programSources);
+            $contractSourceCount = $this->contractSourceGroupCount($programSources);
+            if ($pgActivity === null && !empty($sourceProgramActivities)) {
+                $pgActivity = $sourceProgramActivities[0];
+            }
             if ($pgActivity === null) {
+                $quality = $qualityGate->noMatch(
+                    ['Actividad' => $activity['actividad'] ?? '', 'unique_id' => $activity['actividadInicio'] ?? 0, 'Fecha_Inicio' => $activity['fechaInicio'] ?? null],
+                    'La actividad no tiene vínculo válido al Programa General.',
+                );
                 $suggestions[] = $this->baseSuggestion(
                     'actividades',
                     (string) $activityId,
@@ -806,14 +1048,20 @@ class SemiAutoService
                     $activity,
                     [],
                     [],
-                    ['activity_id' => $activityId],
+                    ['activity_id' => $activityId, '_analysis' => $quality],
                     false,
+                    null,
+                    $this->analysisWithQuality(
+                        $this->matchAnalysis('Contratos', null, 'No hay vínculo auditable al Programa General.'),
+                        $quality,
+                    ),
                 );
                 continue;
             }
 
             $match = $matcher->matchActivity($pgActivity, $rules);
             if ($match === null) {
+                $quality = $qualityGate->noMatch($pgActivity, 'No se encontró familia para sugerir contratos.');
                 $suggestions[] = $this->baseSuggestion(
                     'actividades',
                     (string) $activityId,
@@ -825,15 +1073,31 @@ class SemiAutoService
                     $activity,
                     [],
                     [],
-                    ['activity_id' => $activityId],
+                    ['activity_id' => $activityId, '_analysis' => $quality],
                     false,
+                    null,
+                    $this->analysisWithQuality(
+                        $this->matchAnalysis('Actividad vinculada al Programa General', null, 'No hay familia contractual confiable.'),
+                        $quality,
+                    ),
                 );
                 continue;
             }
 
             $family = $optionsByFamily[(int) $match['familia_id']] ?? null;
             $bestOption = $family ? $this->selectBestContratoOption($family['opciones'], $match) : null;
-            if ($bestOption === null) {
+            $policyPackages = $this->policyContractPackagesForActivity($activity, $pgActivity, $programSources);
+            $configuredPackages = $bestOption !== null ? $this->formatAssignedPackages($bestOption['items']) : [];
+            $packages = $this->mergeContractPackages($configuredPackages, $policyPackages);
+            if ($bestOption === null && empty($packages)) {
+                $quality = $qualityGate->contratos(
+                    $activity,
+                    $pgActivity,
+                    $match,
+                    [],
+                    $this->normalizeConfidence($match['confidence'] ?? $match['confianza'] ?? 0),
+                    'La familia detectada no tiene paquetes configurados.',
+                );
                 $suggestions[] = $this->baseSuggestion(
                     'actividades',
                     (string) $activityId,
@@ -845,13 +1109,16 @@ class SemiAutoService
                     $activity,
                     [],
                     [],
-                    ['activity_id' => $activityId],
+                    ['activity_id' => $activityId, '_analysis' => $quality],
                     false,
                     $this->matchSource($match),
-                    $this->matchAnalysis(
-                        'Actividad vinculada al Programa General',
-                        $match,
-                        'La familia existe, pero no tiene una opción de contrato aplicable.',
+                    $this->analysisWithQuality(
+                        $this->matchAnalysis(
+                            'Actividad vinculada al Programa General',
+                            $match,
+                            'La familia existe, pero no tiene una opción de contrato aplicable.',
+                        ),
+                        $quality,
                     ),
                 );
                 continue;
@@ -859,14 +1126,20 @@ class SemiAutoService
 
             $matchedActivities++;
             $confidence = $this->normalizeConfidence($match['confidence'] ?? $match['confianza'] ?? 0);
-            $tipoContrato = $this->intToModalityCode((int) $bestOption['tipo_contrato']);
-            $packages = $this->formatAssignedPackages($bestOption['items']);
-            $proposed = $this->contractProposedFields($activity, $tipoContrato, $packages, $confidence);
+            $tipoContrato = $bestOption !== null ? $this->intToModalityCode((int) $bestOption['tipo_contrato']) : '';
+            $proposed = $this->contractProposedFields($activity, $tipoContrato, $packages, $confidence, $contractSourceCount);
             $current = $this->contractCurrentFields($activity);
             $diff = $this->buildDiff($current, $proposed);
             if (empty($diff)) {
                 continue;
             }
+            $quality = $qualityGate->contratos($activity, $pgActivity, $match, $packages, $confidence);
+            if (!empty($programSources)) {
+                $quality['sources'] = $programSources;
+                $quality['quality_gate']['source_count'] = count($programSources);
+            }
+            $preselected = $this->shouldPreselect($confidence, $config, $match)
+                && ($quality['quality_gate']['status'] ?? 'conflict') === 'ready';
 
             $suggestions[] = $this->baseSuggestion(
                 'actividades',
@@ -884,14 +1157,24 @@ class SemiAutoService
                     'activity_id' => $activityId,
                     'fields' => $proposed,
                     'paquetes' => $packages,
+                    '_analysis' => $quality,
                 ],
-                $this->shouldPreselect($confidence, $config, $match),
+                $preselected,
                 $this->matchSource($match),
-                $this->matchAnalysis(
-                    'Actividad vinculada al Programa General',
-                    $match,
-                    'Se seleccionó la mejor opción de contrato configurada para la familia.',
-                    ['technical' => ['option_id' => $bestOption['optionId'] ?? null]],
+                $this->analysisWithQuality(
+                    $this->matchAnalysis(
+                        'Actividad vinculada al Programa General',
+                        $match,
+                        'Se seleccionó la mejor opción de contrato configurada para la familia.',
+                        ['technical' => [
+                            'option_id' => $bestOption['optionId'] ?? null,
+                            'paquetes' => $packages,
+                            'paquetes_desde_politica' => $policyPackages,
+                            'fuentes_programa' => count($programSources),
+                            'grupos_contractuales_detectados' => $contractSourceCount,
+                        ]],
+                    ),
+                    $quality,
                 ),
             );
         }
@@ -910,18 +1193,19 @@ class SemiAutoService
     private function buildPdcSuggestions(int $projectId, int $semana, array $config): array
     {
         $this->traceStep('data', 'running', 'Leyendo contratos y paquetes existentes en PDC.', [], 18);
+        $packageFilter = $this->contractPackagePresenceSql();
         $activities = $this->db->query(
             "SELECT *
              FROM actividades
              WHERE project_id = ? AND semanaActualizacion = ?
-               AND tipoContrato IS NOT NULL AND tipoContrato != ''
-             ORDER BY Id ASC",
+               AND ((tipoContrato IS NOT NULL AND tipoContrato != '') OR $packageFilter)
+             ORDER BY fechaInicio ASC, Id ASC",
             [$projectId, $semana],
         )->fetchAll(PDO::FETCH_ASSOC);
 
         $existing = $this->loadExistingPdcPackages($projectId, $semana);
         $this->traceStep('data', 'done', 'Datos de Contratos y PDC cargados.', [
-            'actividades_con_contrato' => count($activities),
+            'contratos_disponibles' => count($activities),
             'paquetes_pdc_existentes' => count($existing),
         ], 34);
         $this->traceStep('rules', 'done', 'Reglas de fechas y paquetes listas.', [
@@ -930,14 +1214,21 @@ class SemiAutoService
         $this->traceStep('matches', 'running', 'Comparando paquetes de Contratos contra PDC.', [], 58);
         $suggestions = [];
         $packagesSeen = 0;
+        $queuedPackageKeys = [];
+        $qualityGate = $this->qualityGate();
 
         foreach ($activities as $activity) {
             $packages = $this->packagesFromActivity($activity);
             foreach ($packages as $package) {
                 $packagesSeen++;
                 $key = $this->pdcPackageKey($package['tipoPaquete'], $package['paqueteNombre']);
+                if (isset($queuedPackageKeys[$key])) {
+                    continue;
+                }
+                $queuedPackageKeys[$key] = true;
                 $confidence = $this->normalizeConfidence($activity['confianza_deteccion'] ?? 80);
-                $dates = $this->calculateProcessDates($this->normalizeDate($activity['fechaInicio'] ?? null), $this->defaultDurations());
+                $durations = $this->pdcDurationsForPackage($package);
+                $dates = $this->calculateProcessDates($this->normalizeDate($activity['fechaInicio'] ?? null), $durations);
                 $requiresReview = $this->pdcPackageRequiresReview($package, $activity);
                 $observations = $this->pdcObservationForPackage($package, $activity);
                 $baseFields = array_merge($dates, [
@@ -945,7 +1236,7 @@ class SemiAutoService
                     'titulo' => 0,
                     'tipoPaquete' => $package['tipoPaquete'],
                     'paqueteContratacion' => $package['paqueteNombre'],
-                    'contratos' => $activity['actividad'] ?? '',
+                    'contratos' => $this->limitDbText((string) ($activity['actividad'] ?? ''), 200),
                     'numeroSubcontratos' => (int) ($activity['numeroSubcontratos'] ?? 1),
                     'estado' => $this->pdcStatusForPackage($package, $activity),
                     'observacionesContrato' => $observations,
@@ -954,6 +1245,14 @@ class SemiAutoService
                 ]);
 
                 if (!isset($existing[$key])) {
+                    $quality = $qualityGate->pdc(
+                        $activity,
+                        $package,
+                        null,
+                        $this->buildDiff([], $baseFields),
+                        $confidence,
+                        $requiresReview ? $this->pdcReviewReasonForPackage($package, $activity) : null,
+                    );
                     $suggestions[] = $this->baseSuggestion(
                         'pdc',
                         null,
@@ -968,14 +1267,19 @@ class SemiAutoService
                         [
                             'action' => 'create_pdc_package',
                             'fields' => $baseFields,
+                            '_analysis' => $quality,
                         ],
-                        $this->isPreselected($confidence, $config) && !$requiresReview,
+                        $this->isPreselected($confidence, $config)
+                            && ($quality['quality_gate']['status'] ?? 'conflict') === 'ready',
                         $requiresReview ? 'contratos:revision' : 'contratos',
-                        $this->matchAnalysis(
-                            'Contratos',
-                            null,
-                            'El paquete está asignado en Contratos y no existe en PDC.',
-                            ['user' => ['rule' => $requiresReview ? 'Paquete por confirmar' : 'Paquete ausente en PDC', 'confidence' => $confidence]],
+                        $this->analysisWithQuality(
+                            $this->matchAnalysis(
+                                'Contratos',
+                                null,
+                                'El paquete está asignado en Contratos y no existe en PDC.',
+                                ['user' => ['rule' => $requiresReview ? 'Paquete por confirmar' : 'Paquete ausente en PDC', 'confidence' => $confidence]],
+                            ),
+                            $quality,
                         ),
                     );
                     continue;
@@ -988,6 +1292,14 @@ class SemiAutoService
                 if (empty($diff)) {
                     continue;
                 }
+                $quality = $qualityGate->pdc(
+                    $activity,
+                    $package,
+                    $pdcRow,
+                    $diff,
+                    $confidence,
+                    $requiresReview ? $this->pdcReviewReasonForPackage($package, $activity) : null,
+                );
 
                 $suggestions[] = $this->baseSuggestion(
                     'pdc',
@@ -1005,14 +1317,19 @@ class SemiAutoService
                         'pdc_row_id' => (int) ($pdcRow['pdc_row_id'] ?? $pdcRow['consecutivo']),
                         'consecutivo' => (int) $pdcRow['consecutivo'],
                         'fields' => $proposed,
+                        '_analysis' => $quality,
                     ],
-                    $this->isPreselected($confidence, $config) && !$requiresReview,
+                    $this->isPreselected($confidence, $config)
+                        && ($quality['quality_gate']['status'] ?? 'conflict') === 'ready',
                     $requiresReview ? 'pdc_diff:revision' : 'pdc_diff',
-                    $this->matchAnalysis(
-                        'Contratos contra PDC',
-                        null,
-                        'El paquete ya existe y se encontraron diferencias actualizables.',
-                        ['user' => ['rule' => $requiresReview ? 'Diferencia por confirmar' : 'Diferencia contra PDC existente', 'confidence' => $confidence]],
+                    $this->analysisWithQuality(
+                        $this->matchAnalysis(
+                            'Contratos contra PDC',
+                            null,
+                            'El paquete ya existe y se encontraron diferencias actualizables.',
+                            ['user' => ['rule' => $requiresReview ? 'Diferencia por confirmar' : 'Diferencia contra PDC existente', 'confidence' => $confidence]],
+                        ),
+                        $quality,
                     ),
                 );
             }
@@ -1032,6 +1349,10 @@ class SemiAutoService
     private function applySuggestion(string $module, int $projectId, int $semana, array $suggestion): array
     {
         $payload = $this->decodeJson($suggestion['apply_payload']);
+        $qualityStatus = (string) ($payload['_analysis']['quality_gate']['status'] ?? '');
+        if ($qualityStatus === 'conflict') {
+            throw new RuntimeException('La sugerencia tiene conflictos de calidad y requiere revisión manual.');
+        }
         $action = $payload['action'] ?? $suggestion['action'];
 
         return match ($action) {
@@ -1043,9 +1364,127 @@ class SemiAutoService
         };
     }
 
+    private function reviewRepeatedActivityNames(array $suggestions): array
+    {
+        $nameCounts = [];
+        foreach ($suggestions as $suggestion) {
+            if (($suggestion['action'] ?? '') !== 'create_activity') {
+                continue;
+            }
+            $name = trim((string) ($suggestion['proposed_payload']['actividad'] ?? ''));
+            if ($name === '') {
+                continue;
+            }
+            $key = mb_strtolower($name, 'UTF-8');
+            $nameCounts[$key] = ($nameCounts[$key] ?? 0) + 1;
+        }
+
+        foreach ($suggestions as &$suggestion) {
+            if (($suggestion['action'] ?? '') !== 'create_activity') {
+                continue;
+            }
+            $name = trim((string) ($suggestion['proposed_payload']['actividad'] ?? ''));
+            $key = mb_strtolower($name, 'UTF-8');
+            if ($name === '' || ($nameCounts[$key] ?? 0) <= 1) {
+                continue;
+            }
+            $suggestion['preselected'] = false;
+            $analysis = $suggestion['analysis_payload'] ?? [];
+            $currentStatus = (string) ($analysis['quality_gate']['status'] ?? '');
+            $analysis['quality_gate']['status'] = $currentStatus === 'conflict' ? 'conflict' : 'review';
+            $analysis['quality_gate']['definition_status'] = 'por_confirmar';
+            $analysis['quality_gate']['score'] = min((int) ($analysis['quality_gate']['score'] ?? 79), 79);
+            $analysis['quality_gate']['review_reasons'][] = 'El nombre propuesto se repite en este preview; validar si debe agruparse con otra propuesta o afinar el alcance.';
+            $analysis['quality_gate']['review_reasons'] = array_values(array_unique($analysis['quality_gate']['review_reasons']));
+            $analysis['technical']['nombre_repetido_preview'] = true;
+            $analysis['technical']['repeticiones_nombre'] = $nameCounts[$key];
+            $suggestion['analysis_payload'] = $analysis;
+            if (is_array($suggestion['apply_payload'] ?? null)) {
+                $suggestion['apply_payload']['_analysis'] = $analysis;
+            }
+        }
+        unset($suggestion);
+
+        return $suggestions;
+    }
+
+    private function reviewCoPresentListadoFamilies(array $suggestions): array
+    {
+        $familiesToReviewTogether = ['RED_TELECOMUNICACIONES', 'SEGURIDAD_CONTROL'];
+        $present = [];
+        foreach ($suggestions as $suggestion) {
+            if (($suggestion['action'] ?? '') !== 'create_activity') {
+                continue;
+            }
+            $familyCode = (string) ($suggestion['analysis_payload']['technical']['familia_codigo'] ?? '');
+            if (in_array($familyCode, $familiesToReviewTogether, true)) {
+                $present[$familyCode] = true;
+            }
+        }
+
+        foreach ($familiesToReviewTogether as $familyCode) {
+            if (empty($present[$familyCode])) {
+                return $suggestions;
+            }
+        }
+
+        $reason = 'El programa contiene Telecomunicaciones y Seguridad y Control; confirmar separación de alcance antes de aplicar.';
+        foreach ($suggestions as &$suggestion) {
+            if (($suggestion['action'] ?? '') !== 'create_activity') {
+                continue;
+            }
+            $familyCode = (string) ($suggestion['analysis_payload']['technical']['familia_codigo'] ?? '');
+            if (!in_array($familyCode, $familiesToReviewTogether, true)) {
+                continue;
+            }
+            $suggestion['preselected'] = false;
+            $analysis = $suggestion['analysis_payload'] ?? [];
+            $currentStatus = (string) ($analysis['quality_gate']['status'] ?? '');
+            $analysis['quality_gate']['status'] = $currentStatus === 'conflict' ? 'conflict' : 'review';
+            $analysis['quality_gate']['definition_status'] = 'por_confirmar';
+            $analysis['quality_gate']['score'] = min((int) ($analysis['quality_gate']['score'] ?? 79), 79);
+            $analysis['quality_gate']['review_reasons'][] = $reason;
+            $analysis['quality_gate']['review_reasons'] = array_values(array_unique($analysis['quality_gate']['review_reasons']));
+            $analysis['technical']['familias_copresentes_revision'] = $familiesToReviewTogether;
+            $suggestion['analysis_payload'] = $analysis;
+            if (is_array($suggestion['apply_payload'] ?? null)) {
+                $suggestion['apply_payload']['_analysis'] = $analysis;
+            }
+        }
+        unset($suggestion);
+
+        return $suggestions;
+    }
+
+    private function existingListadoFamilyIds(int $projectId, int $semana, ActivityMatcher $matcher, array $rules): array
+    {
+        $rows = $this->db->query(
+            "SELECT actividad
+             FROM actividades
+             WHERE project_id = ? AND semanaActualizacion = ?",
+            [$projectId, $semana],
+        )->fetchAll(PDO::FETCH_ASSOC);
+
+        $familyIds = [];
+        foreach ($rows as $row) {
+            $activity = trim((string) ($row['actividad'] ?? ''));
+            if ($activity === '') {
+                continue;
+            }
+            $match = $matcher->matchActivity(['Actividad' => $activity], $rules);
+            $familyId = (int) ($match['familia_id'] ?? 0);
+            if ($familyId > 0 && empty($match['contractual_only'])) {
+                $familyIds[$familyId] = true;
+            }
+        }
+
+        return $familyIds;
+    }
+
     private function applyCreateActivity(int $projectId, int $semana, array $payload): array
     {
         $fields = $payload['fields'] ?? [];
+        $sources = $payload['_analysis']['sources'] ?? [];
         $nextId = $this->nextProjectId($projectId, 'actividades', 'Id');
         $nextCodigo = (int) $this->db->query(
             "SELECT COALESCE(MAX(codigo), 0) + 1 FROM actividades WHERE project_id = ?",
@@ -1071,6 +1510,10 @@ class SemiAutoService
                 $semana,
             ],
         );
+
+        if (is_array($sources) && !empty($sources)) {
+            $this->replaceActivityProgramSources($projectId, $nextId, $semana, $sources);
+        }
 
         $after = $this->loadActivity($projectId, $nextId, $semana);
 
@@ -1235,6 +1678,11 @@ class SemiAutoService
         if ($table === 'actividades' && ($result['Id'] ?? 0) > 0) {
             $activityId = (int) $result['Id'];
             if ($before === null) {
+                $this->ensureActivityProgramSourcesTable();
+                $this->db->query(
+                    "DELETE FROM actividad_programa_fuentes WHERE project_id = ? AND actividad_id = ? AND semana = ?",
+                    [$projectId, $activityId, $semana],
+                );
                 $this->db->query(
                     "DELETE FROM actividades WHERE project_id = ? AND Id = ? AND semanaActualizacion = ?",
                     [$projectId, $activityId, $semana],
@@ -1380,13 +1828,18 @@ class SemiAutoService
         $stmt = $this->db->query(
             "SELECT *
              FROM semi_auto_suggestions
-             WHERE run_id = ? AND project_id = ?
-             ORDER BY preselected DESC, confidence DESC, id ASC",
+             WHERE run_id = ? AND project_id = ?",
             [$runId, $projectId],
         );
 
         $suggestions = [];
-        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        usort($rows, static function (array $a, array $b): int {
+            return ((int) $b['preselected'] <=> (int) $a['preselected'])
+                ?: ((float) $b['confidence'] <=> (float) $a['confidence'])
+                ?: ((int) $a['id'] <=> (int) $b['id']);
+        });
+        foreach ($rows as $row) {
             $proposed = $this->decodeJson($row['proposed_payload']) ?: [];
             $applyPayload = $this->decodeJson($row['apply_payload']) ?: [];
             $suggestions[] = [
@@ -1594,9 +2047,13 @@ class SemiAutoService
                 "SELECT COUNT(*) FROM actividades WHERE project_id = ? AND semanaActualizacion = ?",
                 [$projectId, $semana],
             )->fetchColumn();
+            $packageFilter = $this->contractPackagePresenceSql();
             $missing = (int) $this->db->query(
                 "SELECT COUNT(*) FROM actividades
-                 WHERE project_id = ? AND semanaActualizacion = ? AND (tipoContrato IS NULL OR tipoContrato = '')",
+                 WHERE project_id = ?
+                   AND semanaActualizacion = ?
+                   AND (tipoContrato IS NULL OR tipoContrato = '')
+                   AND NOT ($packageFilter)",
                 [$projectId, $semana],
             )->fetchColumn();
             return ['actividades_total' => $total, 'sin_contrato' => $missing];
@@ -1706,6 +2163,79 @@ class SemiAutoService
         }, $items);
     }
 
+    private function policyContractPackagesForActivity(array $activity, ?array $programActivity, array $programSources): array
+    {
+        $texts = [
+            (string) ($activity['actividad'] ?? ''),
+            (string) ($programActivity['Actividad'] ?? ''),
+        ];
+        foreach ($programSources as $source) {
+            $texts[] = (string) ($source['activity'] ?? '');
+            $texts[] = (string) ($source['family'] ?? '');
+        }
+
+        $packages = [];
+        foreach ($texts as $text) {
+            foreach ($this->familyPolicy()->contractualPackageHintsForText($text) as $hint) {
+                $package = $this->contractPackageFromDias($hint);
+                $packages[$this->contractPackageKey($package)] = $package;
+            }
+        }
+
+        return array_values($packages);
+    }
+
+    private function contractPackageFromDias(array $hint): array
+    {
+        $tipo = trim((string) ($hint['tipoPaquete'] ?? ''));
+        $name = trim((string) ($hint['paqueteNombre'] ?? ''));
+        $key = mb_strtolower($tipo . '|' . $name, 'UTF-8');
+        if (isset($this->contractPackageCache[$key])) {
+            return $this->contractPackageCache[$key];
+        }
+
+        $like = '%' . str_replace(' ', '%', $name) . '%';
+        $row = $this->db->query(
+            "SELECT tipoPaquete, paqueteContratacion
+             FROM general_dias_procesos_contratacion
+             WHERE (? = '' OR tipoPaquete = ?)
+               AND UPPER(paqueteContratacion) LIKE UPPER(?)
+             ORDER BY CASE WHEN UPPER(paqueteContratacion) = UPPER(?) THEN 0 ELSE 1 END,
+                      LENGTH(paqueteContratacion) ASC
+             LIMIT 1",
+            [$tipo, $tipo, $like, $name],
+        )->fetch(PDO::FETCH_ASSOC);
+
+        $package = $row
+            ? ['tipoPaquete' => (string) $row['tipoPaquete'], 'paqueteNombre' => (string) $row['paqueteContratacion']]
+            : ['tipoPaquete' => $tipo, 'paqueteNombre' => $name];
+
+        $this->contractPackageCache[$key] = $package;
+
+        return $package;
+    }
+
+    private function mergeContractPackages(array $configured, array $detected): array
+    {
+        $merged = [];
+        foreach (array_merge($configured, $detected) as $package) {
+            $tipo = trim((string) ($package['tipoPaquete'] ?? ''));
+            $name = trim((string) ($package['paqueteNombre'] ?? ''));
+            if ($tipo === '' || $name === '') {
+                continue;
+            }
+            $normalized = $this->contractPackageKey(['tipoPaquete' => $tipo, 'paqueteNombre' => $name]);
+            $merged[$normalized] = ['tipoPaquete' => $tipo, 'paqueteNombre' => $name];
+        }
+
+        return array_values($merged);
+    }
+
+    private function contractPackageKey(array $package): string
+    {
+        return mb_strtolower(trim((string) ($package['tipoPaquete'] ?? '')) . '|' . trim((string) ($package['paqueteNombre'] ?? '')), 'UTF-8');
+    }
+
     private function modalityCodeFromPackages(string $fallback, array $packages): string
     {
         $codes = [];
@@ -1730,13 +2260,14 @@ class SemiAutoService
         return implode(',', $ordered);
     }
 
-    private function contractProposedFields(array $activity, string $tipoContrato, array $packages, float $confidence): array
+    private function contractProposedFields(array $activity, string $tipoContrato, array $packages, float $confidence, int $sourceGroupCount = 1): array
     {
         $fields = array_fill_keys($this->contractFieldNames(), null);
         $fields['tipoContrato'] = $this->modalityCodeFromPackages($tipoContrato, $packages);
         $fields['fechaInicioProyectada'] = $this->normalizeDate($activity['fechaInicioProyectada'] ?? ($activity['fechaInicio'] ?? null));
         $fields['confianza_deteccion'] = $confidence;
-        $fields['numeroSubcontratos'] = (int) ($activity['numeroSubcontratos'] ?? 1);
+        $currentSubcontracts = (int) ($activity['numeroSubcontratos'] ?? 0);
+        $fields['numeroSubcontratos'] = max(1, $currentSubcontracts, $sourceGroupCount);
 
         $counts = ['SI' => 0, 'S' => 0, 'MO' => 0, 'OC' => 0];
         foreach ($packages as $package) {
@@ -1779,6 +2310,151 @@ class SemiAutoService
         }
 
         return $fields;
+    }
+
+    private function contractPackagePresenceSql(): string
+    {
+        $checks = [];
+        foreach (['SI', 'S', 'MO', 'OC'] as $prefix) {
+            for ($i = 1; $i <= 5; $i++) {
+                $field = "paquete$prefix$i";
+                $checks[] = "NULLIF(TRIM(COALESCE(`$field`, '')), '') IS NOT NULL";
+            }
+        }
+
+        return implode(' OR ', $checks);
+    }
+
+    private function ensureActivityProgramSourcesTable(): void
+    {
+        if ($this->activityProgramSourcesTableEnsured) {
+            return;
+        }
+        $this->db->query(
+            "CREATE TABLE IF NOT EXISTS actividad_programa_fuentes (
+                id bigint NOT NULL AUTO_INCREMENT,
+                project_id int NOT NULL,
+                actividad_id int NOT NULL,
+                semana int NOT NULL,
+                programa_unique_id int NOT NULL,
+                source_activity varchar(500) NOT NULL,
+                source_start_date date DEFAULT NULL,
+                context varchar(255) DEFAULT NULL,
+                location_hint varchar(255) DEFAULT NULL,
+                intervention_hint varchar(255) DEFAULT NULL,
+                family_id int DEFAULT NULL,
+                family_name varchar(255) DEFAULT NULL,
+                match_rule varchar(120) DEFAULT NULL,
+                confidence decimal(5,2) DEFAULT NULL,
+                risk_flags json DEFAULT NULL,
+                created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (id),
+                UNIQUE KEY uq_apf_activity_source (project_id, actividad_id, semana, programa_unique_id),
+                KEY idx_apf_activity (project_id, semana, actividad_id),
+                KEY idx_apf_programa (project_id, semana, programa_unique_id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+        );
+        $this->activityProgramSourcesTableEnsured = true;
+    }
+
+    private function replaceActivityProgramSources(int $projectId, int $activityId, int $semana, array $sources): void
+    {
+        $this->ensureActivityProgramSourcesTable();
+        $this->db->query(
+            "DELETE FROM actividad_programa_fuentes WHERE project_id = ? AND actividad_id = ? AND semana = ?",
+            [$projectId, $activityId, $semana],
+        );
+
+        foreach ($sources as $source) {
+            $programUniqueId = (int) ($source['unique_id'] ?? 0);
+            $activity = trim((string) ($source['activity'] ?? $source['original_activity'] ?? ''));
+            if ($programUniqueId <= 0 || $activity === '') {
+                continue;
+            }
+            $this->db->query(
+                "INSERT INTO actividad_programa_fuentes
+                 (project_id, actividad_id, semana, programa_unique_id, source_activity,
+                  source_start_date, context, location_hint, intervention_hint, family_id,
+                  family_name, match_rule, confidence, risk_flags)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                [
+                    $projectId,
+                    $activityId,
+                    $semana,
+                    $programUniqueId,
+                    $activity,
+                    $this->normalizeDate($source['start_date'] ?? null),
+                    $source['context'] ?? $source['chapter'] ?? null,
+                    $source['location_hint'] ?? null,
+                    $source['intervention_hint'] ?? null,
+                    isset($source['family_id']) ? (int) $source['family_id'] : null,
+                    $source['family'] ?? null,
+                    $source['matched_rule'] ?? $source['matched_by'] ?? null,
+                    isset($source['confidence']) ? (float) $source['confidence'] : null,
+                    $this->jsonEncode($source['risk_flags'] ?? []),
+                ],
+            );
+        }
+    }
+
+    private function loadActivityProgramSources(int $projectId, int $activityId, int $semana): array
+    {
+        $this->ensureActivityProgramSourcesTable();
+        $rows = $this->db->query(
+            "SELECT *
+             FROM actividad_programa_fuentes
+             WHERE project_id = ? AND actividad_id = ? AND semana = ?
+             ORDER BY source_start_date ASC, programa_unique_id ASC",
+            [$projectId, $activityId, $semana],
+        )->fetchAll(PDO::FETCH_ASSOC);
+
+        return array_map(function (array $row): array {
+            return [
+                'unique_id' => (int) ($row['programa_unique_id'] ?? 0),
+                'activity' => (string) ($row['source_activity'] ?? ''),
+                'original_activity' => (string) ($row['source_activity'] ?? ''),
+                'clean_activity' => (string) ($row['source_activity'] ?? ''),
+                'start_date' => $this->normalizeDate($row['source_start_date'] ?? null),
+                'context' => (string) ($row['context'] ?? ''),
+                'chapter' => (string) ($row['context'] ?? ''),
+                'location_hint' => (string) ($row['location_hint'] ?? ''),
+                'intervention_hint' => (string) ($row['intervention_hint'] ?? ''),
+                'family_id' => (int) ($row['family_id'] ?? 0),
+                'family' => (string) ($row['family_name'] ?? ''),
+                'matched_rule' => (string) ($row['match_rule'] ?? ''),
+                'matched_by' => (string) ($row['match_rule'] ?? ''),
+                'confidence' => (float) ($row['confidence'] ?? 0),
+                'why_included' => 'Fuente conservada desde Listado de Actividades para decisiones de contratos.',
+                'risk_flags' => $this->decodeJson($row['risk_flags'] ?? null) ?: [],
+            ];
+        }, $rows);
+    }
+
+    private function sourcesToProgramActivities(array $sources): array
+    {
+        return array_map(static function (array $source): array {
+            return [
+                'Consecutivo' => $source['unique_id'] ?? 0,
+                'Consecutivo_en_Programa' => $source['unique_id'] ?? 0,
+                'unique_id' => $source['unique_id'] ?? 0,
+                'Actividad' => $source['activity'] ?? '',
+                'Fecha_Inicio' => $source['start_date'] ?? null,
+                'Titulo' => 0,
+            ];
+        }, $sources);
+    }
+
+    private function contractSourceGroupCount(array $sources): int
+    {
+        $groups = [];
+        foreach ($sources as $source) {
+            $key = trim((string) ($source['intervention_hint'] ?? '')) ?: trim((string) ($source['location_hint'] ?? ''));
+            if ($key !== '') {
+                $groups[mb_strtolower($key, 'UTF-8')] = true;
+            }
+        }
+
+        return max(1, count($groups));
     }
 
     private function packagesFromActivity(array $activity): array
@@ -1831,9 +2507,14 @@ class SemiAutoService
     {
         return [
             'contratos', 'numeroSubcontratos', 'estado', 'observacionesContrato',
-            'fechaElaboracionPliegos', 'fechaEntregaPliegos',
-            'fechaReciboPropuestas', 'fechaCuadrosComparativos', 'fechaLegalizacionContrato',
-            'fechaFabricacion', 'fechaInsumosObra', 'fechaInicio', 'fechaInicioProyectada',
+            'fechaElaboracionPliegos', 'diasElaboracionPliegos',
+            'fechaEntregaPliegos', 'diasEntregaPliegos',
+            'fechaReciboPropuestas', 'diasReciboPropuestas',
+            'fechaCuadrosComparativos', 'diasCuadrosComparativos',
+            'fechaLegalizacionContrato', 'diasLegalizacionContrato',
+            'fechaFabricacion', 'diasFabricacion',
+            'fechaInsumosObra', 'diasInsumosObra',
+            'fechaInicio', 'fechaInicioProyectada',
         ];
     }
 
@@ -2013,6 +2694,74 @@ class SemiAutoService
             'dias_fabricacion' => 0,
             'dias_insumos' => 0,
         ];
+    }
+
+    private function pdcDurationsForPackage(array $package): array
+    {
+        $tipo = trim((string) ($package['tipoPaquete'] ?? ''));
+        $name = trim((string) ($package['paqueteNombre'] ?? ''));
+        if ($name === '') {
+            return $this->defaultDurations();
+        }
+
+        $row = $this->loadPdcDurationRow($tipo, $name);
+        if ($row === null) {
+            return $this->defaultDurations();
+        }
+
+        return [
+            'dias_elaboracion' => max(0, (int) ($row['diasElaboracionPliegos'] ?? 0)),
+            'dias_entrega' => max(0, (int) ($row['diasEntregaPliegos'] ?? 0)),
+            'dias_recibo' => max(0, (int) ($row['diasReciboPropuestas'] ?? 0)),
+            'dias_cuadros' => max(0, (int) ($row['diasCuadrosComparativos'] ?? 0)),
+            'dias_legalizacion' => max(0, (int) ($row['diasLegalizacionContrato'] ?? 0)),
+            'dias_fabricacion' => max(0, (int) ($row['diasFabricacion'] ?? 0)),
+            'dias_insumos' => max(0, (int) ($row['diasInsumosObra'] ?? 0)),
+        ];
+    }
+
+    private function loadPdcDurationRow(string $tipoPaquete, string $paqueteNombre): ?array
+    {
+        $params = [$paqueteNombre];
+        $typeClause = '';
+        if ($tipoPaquete !== '') {
+            $typeClause = ' AND tipoPaquete = ?';
+            $params[] = $tipoPaquete;
+        }
+
+        $row = $this->db->query(
+            "SELECT diasElaboracionPliegos, diasEntregaPliegos, diasReciboPropuestas,
+                    diasCuadrosComparativos, diasLegalizacionContrato, diasFabricacion, diasInsumosObra
+             FROM general_dias_procesos_contratacion
+             WHERE UPPER(paqueteContratacion) = UPPER(?) {$typeClause}
+             LIMIT 1",
+            $params,
+        )->fetch(PDO::FETCH_ASSOC);
+        if ($row) {
+            return $row;
+        }
+
+        $like = '%' . str_replace(' ', '%', $paqueteNombre) . '%';
+        $params = [$like];
+        $typeClause = '';
+        if ($tipoPaquete !== '') {
+            $typeClause = ' AND tipoPaquete = ?';
+            $params[] = $tipoPaquete;
+        }
+        $params[] = $paqueteNombre;
+
+        $row = $this->db->query(
+            "SELECT diasElaboracionPliegos, diasEntregaPliegos, diasReciboPropuestas,
+                    diasCuadrosComparativos, diasLegalizacionContrato, diasFabricacion, diasInsumosObra
+             FROM general_dias_procesos_contratacion
+             WHERE UPPER(paqueteContratacion) LIKE UPPER(?) {$typeClause}
+             ORDER BY CASE WHEN UPPER(paqueteContratacion) = UPPER(?) THEN 0 ELSE 1 END,
+                      LENGTH(paqueteContratacion) ASC
+             LIMIT 1",
+            $params,
+        )->fetch(PDO::FETCH_ASSOC);
+
+        return $row ?: null;
     }
 
     private function calculateProcessDates(?string $fechaInicio, array $durations): array
@@ -2217,6 +2966,15 @@ class SemiAutoService
         $text = preg_replace('/\s+/u', ' ', $text) ?? $text;
 
         return trim($text);
+    }
+
+    private function limitDbText(string $value, int $maxLength): string
+    {
+        if ($maxLength <= 0 || mb_strlen($value, 'UTF-8') <= $maxLength) {
+            return $value;
+        }
+
+        return mb_substr($value, 0, $maxLength, 'UTF-8');
     }
 
     private function newId(string $prefix): string

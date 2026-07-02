@@ -345,6 +345,15 @@ class SemiAutoAssistantService
         $review = 0;
         $conflicts = 0;
         foreach ($suggestions as $suggestion) {
+            $qualityStatus = $this->qualityStatus($suggestion);
+            if ($qualityStatus === 'conflict') {
+                $conflicts++;
+                continue;
+            }
+            if ($qualityStatus === 'review') {
+                $review++;
+                continue;
+            }
             $band = (string) ($suggestion['confidence_band'] ?? '');
             $action = (string) ($suggestion['action'] ?? '');
             $diff = $suggestion['diff'] ?? $suggestion['diff_payload'] ?? [];
@@ -373,6 +382,24 @@ class SemiAutoAssistantService
                 ? "Encontramos {$total} propuestas: {$ready} listas, {$review} por revisar y {$conflicts} conflictos."
                 : 'No encontramos cambios nuevos con los datos actuales.',
         ];
+    }
+
+    private function qualityStatus(array $suggestion): ?string
+    {
+        $analysis = $suggestion['analysis_payload'] ?? $suggestion['analysis'] ?? null;
+        if (is_string($analysis)) {
+            $analysis = $this->decodeJson($analysis) ?: null;
+        }
+        if (!is_array($analysis)) {
+            $apply = $suggestion['apply_payload'] ?? null;
+            if (is_string($apply)) {
+                $apply = $this->decodeJson($apply) ?: null;
+            }
+            $analysis = is_array($apply) ? ($apply['_analysis'] ?? null) : null;
+        }
+        $status = is_array($analysis) ? ($analysis['quality_gate']['status'] ?? null) : null;
+
+        return is_string($status) && $status !== '' ? $status : null;
     }
 
     private function buildRecommendations(array $summary, array $learning): array
