@@ -57,6 +57,17 @@ use App\Core\Router;
 // 5. Configurar Rutas
 $router = new Router();
 
+function deprecatedJson(string $replacement): void
+{
+    http_response_code(410);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode([
+        'respuesta' => 'DEPRECATED',
+        'mensaje' => "Esta ruta fue reemplazada. Use {$replacement}.",
+        'replacement' => $replacement,
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+}
+
 // --- ZONA DE RUTAS ---
 // Root / Entry Points
 $router->get('/', [\App\Controllers\Auth\LoginController::class, 'index']);
@@ -126,10 +137,6 @@ $router->get('/control-cambios', [\App\Controllers\Integracion\ControlCambiosCon
 $router->post('/api/contratos/list', [\App\Controllers\Api\ContratosApiController::class, 'list']);
 $router->post('/api/contratos/save', [\App\Controllers\Api\ContratosApiController::class, 'save']);
 $router->post('/api/contratos/auto-assign', [\App\Controllers\Api\ContratosApiController::class, 'autoAssign']);
-$router->post('/api/contratos/auto-define', [\App\Controllers\Api\ContratosApiController::class, 'autoDefine']);
-$router->post('/api/contratos/auto-define/apply', [\App\Controllers\Api\ContratosApiController::class, 'autoDefineApply']);
-$router->post('/api/contratos/auto-define/undo', [\App\Controllers\Api\ContratosApiController::class, 'autoDefineUndo']);
-$router->post('/api/contratos/auto-define/reanalyze', [\App\Controllers\Api\ContratosApiController::class, 'autoDefineReanalyze']);
 $router->post('/api/contratos/auto/preview', [\App\Controllers\Api\SemiAutoController::class, 'previewContratos']);
 $router->post('/api/contratos/auto/status', [\App\Controllers\Api\SemiAutoController::class, 'statusContratos']);
 $router->post('/api/contratos/auto/apply', [\App\Controllers\Api\SemiAutoController::class, 'applyContratos']);
@@ -168,7 +175,7 @@ $router->get('/api/pdc/plantillas', [\App\Controllers\Api\PdcPlantillaController
 $router->get('/api/pdc/plantillas/{id}', [\App\Controllers\Api\PdcPlantillaController::class, 'show']);
 $router->get('/api/pdc/plantillas/{id}/items', [\App\Controllers\Api\PdcPlantillaController::class, 'items']);
 $router->get('/api/pdc/categorias-recurso', [\App\Controllers\Api\PdcPlantillaController::class, 'categorias']);
-$router->post('/api/pdc/auto/apply-from-actividades', [\App\Controllers\Api\PdcAutoGenerateController::class, 'applyFromActividades']);
+$router->post('/api/pdc/auto/apply-from-contratos', [\App\Controllers\Api\PdcAutoGenerateController::class, 'applyFromContratos']);
 $router->post('/api/pdc/auto/preview', [\App\Controllers\Api\SemiAutoController::class, 'previewPdc']);
 $router->post('/api/pdc/auto/status', [\App\Controllers\Api\SemiAutoController::class, 'statusPdc']);
 $router->post('/api/pdc/auto/apply', [\App\Controllers\Api\SemiAutoController::class, 'applyPdc']);
@@ -256,10 +263,6 @@ $router->post('/legacy/funciones_generales/php/eliminar_semana.php', function ()
 $router->post('/legacy/funciones_generales/php/buscadorTabla.php', function () {
     require_once PROJECT_ROOT . '/src/Legacy/buscadorTabla.php';
 });
-$router->post('/legacy/pdc/actualizar_pdc.php', function () {
-    require_once PROJECT_ROOT . '/src/Legacy/actualizar_pdc.php';
-});
-
 $router->post('/context/clear-week', [\App\Controllers\Core\ContextController::class, 'clearWeek']);
 
 // Maintenance Secret Access (ruta oculta para admins durante mantenimiento)

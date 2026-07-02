@@ -350,7 +350,6 @@ class PdcApiController
 
         $cn = fn($k) => $this->checkNull($_POST[$k] ?? '');
         $dEl = $cn('diasElaboracionPliegos');
-        $dIL = $cn('diasEntregaPliegos');
         $dEP = $cn('diasEntregaPliegos');
         $dRP = $cn('diasReciboPropuestas');
         $dCC = $cn('diasCuadrosComparativos');
@@ -358,8 +357,16 @@ class PdcApiController
         $dF = $cn('diasFabricacion');
         $dIO = $cn('diasInsumosObra');
 
+        $fEl = $cn('fechaElaboracionPliegos');
+        $fEP = $cn('fechaEntregaPliegos');
+        $fRP = $cn('fechaReciboPropuestas');
+        $fCC = $cn('fechaCuadrosComparativos');
+        $fLC = $cn('fechaLegalizacionContrato');
+        $fF = $cn('fechaFabricacion');
+        $fIO = $cn('fechaInsumosObra');
+        $fIn = $cn('fechaInicioProyectadaContrato');
+
         $fREl = $cn('fechaRealElaboracionPliegos');
-        $fRIL = $cn('fechaRealEntregaPliegos');
         $fREP = $cn('fechaRealEntregaPliegos');
         $fRRP = $cn('fechaRealReciboPropuestas');
         $fRCC = $cn('fechaRealCuadrosComparativos');
@@ -377,6 +384,9 @@ class PdcApiController
             valorReclamado=?, valorDevoluciones=?,
             diasElaboracionPliegos=?, diasEntregaPliegos=?, diasReciboPropuestas=?,
             diasCuadrosComparativos=?, diasLegalizacionContrato=?, diasFabricacion=?, diasInsumosObra=?,
+            fechaElaboracionPliegos=?, fechaEntregaPliegos=?, fechaReciboPropuestas=?,
+            fechaCuadrosComparativos=?, fechaLegalizacionContrato=?, fechaFabricacion=?,
+            fechaInsumosObra=?, fechaInicioProyectada=?,
             fechaRealElaboracionPliegos=?, fechaRealEntregaPliegos=?,
             fechaRealReciboPropuestas=?, fechaRealCuadrosComparativos=?, fechaRealLegalizacionContrato=?,
             fechaRealFabricacion=?, fechaRealInsumosObra=?, fechaRealInicio=?,
@@ -386,8 +396,9 @@ class PdcApiController
         $this->db->query($sql, [
             $idProv, $numContrato, $aplicaPolizas, $fVencPolizas,
             $vPres, $vInit, $vAdj, $vAnt, $vRec, $vDev,
-            $dEl, $dIL, $dEP, $dRP, $dCC, $dLC, $dF, $dIO,
-            $fREl, $fRIL, $fREP, $fRRP, $fRCC, $fRLC, $fRF, $fRIO, $fRIn,
+            $dEl, $dEP, $dRP, $dCC, $dLC, $dF, $dIO,
+            $fEl, $fEP, $fRP, $fCC, $fLC, $fF, $fIO, $fIn,
+            $fREl, $fREP, $fRRP, $fRCC, $fRLC, $fRF, $fRIO, $fRIn,
             $obs, $est, $projectId, $id, $semana,
         ]);
         $this->db->logActivity('PDC', 'MODIFICAR_ACTIVIDAD', "Modificó paquete PDC consecutivo $id", $p);
@@ -500,21 +511,100 @@ class PdcApiController
         $dEP = (int) ($_POST['diasEntregaPliegos'] ?? 0);
         $dEl = (int) ($_POST['diasElaboracionPliegos'] ?? 0);
 
-        $fIO = date('Y-m-d', strtotime("$fechaInicio - $dIO days"));
-        $fF  = date('Y-m-d', strtotime("$fIO - $dF days"));
-        $fLC = date('Y-m-d', strtotime("$fF - $dLC days"));
-        $fCC = date('Y-m-d', strtotime("$fLC - $dCC days"));
-        $fRP = date('Y-m-d', strtotime("$fCC - $dRP days"));
-        $fEP = date('Y-m-d', strtotime("$fRP - $dEP days"));
-        $fEl = date('Y-m-d', strtotime("$fEP - $dEl days"));
+        $dates = $this->calcularFechasProcesoContratacion($fechaInicio, [
+            'ElaboracionPliegos' => $dEl,
+            'EntregaPliegos' => $dEP,
+            'ReciboPropuestas' => $dRP,
+            'CuadrosComparativos' => $dCC,
+            'LegalizacionContrato' => $dLC,
+            'Fabricacion' => $dF,
+            'InsumosObra' => $dIO,
+        ], [
+            'ElaboracionPliegos' => $_POST['fechaRealElaboracionPliegos'] ?? null,
+            'EntregaPliegos' => $_POST['fechaRealEntregaPliegos'] ?? null,
+            'ReciboPropuestas' => $_POST['fechaRealReciboPropuestas'] ?? null,
+            'CuadrosComparativos' => $_POST['fechaRealCuadrosComparativos'] ?? null,
+            'LegalizacionContrato' => $_POST['fechaRealLegalizacionContrato'] ?? null,
+            'Fabricacion' => $_POST['fechaRealFabricacion'] ?? null,
+            'InsumosObra' => $_POST['fechaRealInsumosObra'] ?? null,
+            'InicioProyectadaContrato' => $_POST['fechaRealInicioProyectadaContrato'] ?? null,
+        ]);
 
         $this->json(["data" => [[
-            "fechaInsumosObra" => $fIO, "fechaFabricacion" => $fF,
-            "fechaLegalizacionContrato" => $fLC, "fechaCuadrosComparativos" => $fCC,
-            "fechaReciboPropuestas" => $fRP, "fechaEntregaPliegos" => $fEP,
-            "fechaElaboracionPliegos" => $fEl,
-            "fechaInicioProyectada" => $fechaInicio,
+            "fechaInsumosObra" => $dates['InsumosObra'], "fechaFabricacion" => $dates['Fabricacion'],
+            "fechaLegalizacionContrato" => $dates['LegalizacionContrato'], "fechaCuadrosComparativos" => $dates['CuadrosComparativos'],
+            "fechaReciboPropuestas" => $dates['ReciboPropuestas'], "fechaEntregaPliegos" => $dates['EntregaPliegos'],
+            "fechaElaboracionPliegos" => $dates['ElaboracionPliegos'],
+            "fechaInicioProyectada" => $dates['InicioProyectadaContrato'],
         ]]]);
+    }
+
+    private function calcularFechasProcesoContratacion(string $fechaInicioContrato, array $duraciones, array $fechasReales): array
+    {
+        $steps = [
+            'ElaboracionPliegos',
+            'EntregaPliegos',
+            'ReciboPropuestas',
+            'CuadrosComparativos',
+            'LegalizacionContrato',
+            'Fabricacion',
+            'InsumosObra',
+            'InicioProyectadaContrato',
+        ];
+
+        $theoretical = [];
+        $cursor = $fechaInicioContrato;
+        for ($i = count($steps) - 2; $i >= 0; $i--) {
+            $step = $steps[$i];
+            $duration = max(0, (int) ($duraciones[$step] ?? 0));
+            $cursor = $this->shiftDate($cursor, -$duration);
+            $theoretical[$step] = $cursor;
+        }
+        $theoretical['InicioProyectadaContrato'] = $fechaInicioContrato;
+
+        $projected = [];
+        $previousDate = null;
+        $previousDuration = 0;
+        foreach ($steps as $step) {
+            $realDate = $this->validDateOrNull($fechasReales[$step] ?? null);
+            $projectedDate = $theoretical[$step] ?? $fechaInicioContrato;
+
+            if ($previousDate !== null) {
+                $fromPrevious = $this->shiftDate($previousDate, $previousDuration);
+                if ($fromPrevious > $projectedDate) {
+                    $projectedDate = $fromPrevious;
+                }
+            }
+            if ($realDate !== null && $realDate > $projectedDate) {
+                $projectedDate = $realDate;
+            }
+
+            $projected[$step] = $projectedDate;
+            $previousDate = $projectedDate;
+            $previousDuration = max(0, (int) ($duraciones[$step] ?? 0));
+        }
+
+        return $projected;
+    }
+
+    private function validDateOrNull($value): ?string
+    {
+        $value = trim((string) $value);
+        if ($value === '' || $value === 'No Aplica') {
+            return null;
+        }
+        $timestamp = strtotime($value);
+        if ($timestamp === false) {
+            return null;
+        }
+
+        return date('Y-m-d', $timestamp);
+    }
+
+    private function shiftDate(string $date, int $days): string
+    {
+        $modifier = $days >= 0 ? "+{$days} days" : "{$days} days";
+        return date('Y-m-d', strtotime("{$date} {$modifier}"));
     }
 
     private function handleCeldaDinamica(string $p, int $projectId, int $semana): void

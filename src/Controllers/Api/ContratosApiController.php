@@ -27,7 +27,15 @@ class ContratosApiController extends BaseController
             $this->requirePermission('lps.contratos.ver', 'No autorizado para consultar contratos.');
 
             $db = Database::getInstance();
-            $queryCount = "SELECT COUNT(*) as total FROM actividades WHERE project_id = ? AND semanaActualizacion = ? AND tipoContrato IS NOT NULL AND fechaInicio IS NOT NULL";
+            $packageColumns = $this->packageFieldNames();
+            $packageFilter = $this->packagePresenceSql($packageColumns);
+            $packageFilterWithAlias = $this->packagePresenceSql($packageColumns, 'act');
+            $queryCount = "SELECT COUNT(*) as total
+                FROM actividades
+                WHERE project_id = ?
+                  AND semanaActualizacion = ?
+                  AND fechaInicio IS NOT NULL
+                  AND (NULLIF(TRIM(COALESCE(tipoContrato, '')), '') IS NOT NULL OR $packageFilter)";
             $stmtCount = $db->query($queryCount, [$projectId, $semana]);
             $conteo = $stmtCount->fetch(PDO::FETCH_ASSOC)['total'] ?? 0;
 
@@ -57,12 +65,16 @@ class ContratosApiController extends BaseController
                       ON prog.`project_id` = act.`project_id`
                      AND prog.`unique_id` = act.`actividadInicio`
                      AND prog.`Semana` = act.`semanaActualizacion`
-                    WHERE act.`project_id` = ? AND act.semanaActualizacion = ? AND act.tipoContrato IS NOT NULL AND act.fechaInicio IS NOT NULL
+                    WHERE act.`project_id` = ?
+                      AND act.semanaActualizacion = ?
+                      AND act.fechaInicio IS NOT NULL
+                      AND (NULLIF(TRIM(COALESCE(act.tipoContrato, '')), '') IS NOT NULL OR $packageFilterWithAlias)
                     ORDER BY act.`Id`";
 
                 $stmtData = $db->query($queryData, [$projectId, $semana]);
 
                 while ($data = $stmtData->fetch(PDO::FETCH_ASSOC)) {
+                    $data["tipoContrato"] = $this->inferTipoContratoFromPackages((string) ($data["tipoContrato"] ?? ''), $data);
                     $contratosAsociadosSI = [];
                     for ($i = 1; $i <= 5; $i++) {
                         if (!empty($data["paqueteSI$i"])) {
@@ -167,6 +179,7 @@ class ContratosApiController extends BaseController
                     }
                 }
 
+                $tipoContrato = $this->inferTipoContratoFromPackages((string) $tipoContrato, $paquetes);
                 $modalidades = array_map('trim', explode(',', $tipoContrato));
 
                 if (in_array('SI', $modalidades) && empty($paquetes['paqueteSI1']) && empty($paquetes['paqueteSI2']) && empty($paquetes['paqueteSI3']) && empty($paquetes['paqueteSI4']) && empty($paquetes['paqueteSI5'])) {
@@ -191,7 +204,7 @@ class ContratosApiController extends BaseController
                         S1=?, paqueteS1=?, S2=?, paqueteS2=?, S3=?, paqueteS3=?, S4=?, paqueteS4=?, S5=?, paqueteS5=?,
                         MO1=?, paqueteMO1=?, MO2=?, paqueteMO2=?, MO3=?, paqueteMO3=?, MO4=?, paqueteMO4=?, MO5=?, paqueteMO5=?,
                         OC1=?, paqueteOC1=?, OC2=?, paqueteOC2=?, OC3=?, paqueteOC3=?, OC4=?, paqueteOC4=?, OC5=?, paqueteOC5=?,
-                        semanaActualizacion=?
+                        tipoContrato=?, semanaActualizacion=?
                         WHERE project_id=? AND Id=? AND semanaActualizacion=?";
 
                     $paramsUpdate = [
@@ -199,7 +212,7 @@ class ContratosApiController extends BaseController
                         $paquetes['S1'], $paquetes['paqueteS1'], $paquetes['S2'], $paquetes['paqueteS2'], $paquetes['S3'], $paquetes['paqueteS3'], $paquetes['S4'], $paquetes['paqueteS4'], $paquetes['S5'], $paquetes['paqueteS5'],
                         $paquetes['MO1'], $paquetes['paqueteMO1'], $paquetes['MO2'], $paquetes['paqueteMO2'], $paquetes['MO3'], $paquetes['paqueteMO3'], $paquetes['MO4'], $paquetes['paqueteMO4'], $paquetes['MO5'], $paquetes['paqueteMO5'],
                         $paquetes['OC1'], $paquetes['paqueteOC1'], $paquetes['OC2'], $paquetes['paqueteOC2'], $paquetes['OC3'], $paquetes['paqueteOC3'], $paquetes['OC4'], $paquetes['paqueteOC4'], $paquetes['OC5'], $paquetes['paqueteOC5'],
-                        $semanaActualizacion, $projectId, $Id, $semanaActualizacion,
+                        $tipoContrato, $semanaActualizacion, $projectId, $Id, $semanaActualizacion,
                     ];
 
                     $stmt = $db->query($queryUpdate, $paramsUpdate);
@@ -262,11 +275,15 @@ class ContratosApiController extends BaseController
             $this->requirePermission('lps.contratos.editar', 'No autorizado para auto-asignar contratos.');
 
             $db = Database::getInstance();
+            $packageFilter = $this->packagePresenceSql($this->packageFieldNames());
 
             $stmt = $db->query(
                 "SELECT Id, codigo, actividad, descripcionActividad, actividadInicio, fechaInicio, tipoContrato
                  FROM actividades
-                 WHERE project_id = ? AND semanaActualizacion = ? AND (tipoContrato IS NULL OR tipoContrato = '')
+                 WHERE project_id = ?
+                   AND semanaActualizacion = ?
+                   AND (tipoContrato IS NULL OR tipoContrato = '')
+                   AND NOT ($packageFilter)
                  ORDER BY Id ASC",
                 [$projectId, $semana]
             );
@@ -393,422 +410,6 @@ class ContratosApiController extends BaseController
         } catch (Throwable $e) {
             error_log("Error en ContratosApiController@autoAssign: " . $e->getMessage());
             $this->jsonError('No se pudo auto-asignar contratos.', 500);
-        }
-    }
-
-    public function autoDefine(): void
-    {
-        try {
-            $context = ModuleRequestContext::resolve();
-            $dbPrefix = $context['dbPrefix'];
-            $projectId = (int) $context['projectId'];
-            $semana = $context['semana'];
-
-            $this->requirePermission('lps.contratos.auto_definir', 'No autorizado para auto-definir contratos.');
-
-            $db = Database::getInstance();
-
-            // 1. Activities without tipoContrato — need matching
-            $stmt1 = $db->query(
-                "SELECT Id, codigo, actividad, descripcionActividad, actividadInicio, fechaInicio, tipoContrato, ultimo_auto_definir
-                 FROM actividades
-                 WHERE project_id = ? AND semanaActualizacion = ? AND (tipoContrato IS NULL OR tipoContrato = '')
-                 ORDER BY Id ASC",
-                [$projectId, $semana]
-            );
-            $activitiesSinContrato = $stmt1->fetchAll(PDO::FETCH_ASSOC);
-
-            // 2. Activities WITH tipoContrato but WITHOUT ultimo_auto_definir (manual override candidates)
-            $stmt2 = $db->query(
-                "SELECT Id, codigo, actividad, descripcionActividad, actividadInicio, fechaInicio, tipoContrato, ultimo_auto_definir,
-                        confianza_deteccion, numeroSubcontratos, fechaInicioProyectada,
-                        paqueteSI1, paqueteSI2, paqueteSI3, paqueteSI4, paqueteSI5,
-                        paqueteS1, paqueteS2, paqueteS3, paqueteS4, paqueteS5,
-                        paqueteMO1, paqueteMO2, paqueteMO3, paqueteMO4, paqueteMO5,
-                        paqueteOC1, paqueteOC2, paqueteOC3, paqueteOC4, paqueteOC5
-                 FROM actividades
-                 WHERE project_id = ? AND semanaActualizacion = ? AND tipoContrato IS NOT NULL AND tipoContrato != '' AND ultimo_auto_definir IS NULL
-                 ORDER BY Id ASC",
-                [$projectId, $semana]
-            );
-            $manualOverrides = $stmt2->fetchAll(PDO::FETCH_ASSOC);
-
-            if (empty($activitiesSinContrato) && empty($manualOverrides)) {
-                $this->jsonResponse([
-                    'respuesta' => 'BIEN',
-                    'mensaje' => 'No hay actividades pendientes por analizar.',
-                    'total' => 0,
-                    'conMatch' => 0,
-                    'sinMatch' => 0,
-                    'manualOverrides' => 0,
-                    'sugerencias' => [],
-                ]);
-                return;
-            }
-
-            $matcher = new \App\Support\ActivityMatcher();
-            $rules = $matcher->loadRules();
-            $optionsByFamily = $this->loadFamilyContractOptions($db);
-
-            $sugerencias = [];
-            $conMatch = 0;
-            $sinMatch = 0;
-
-            // Process activities without tipoContrato
-            foreach ($activitiesSinContrato as $activity) {
-                $actId = (int) $activity['Id'];
-
-                $pgActivity = $this->loadPgActivityForContratos($db, $projectId, $semana, $activity['actividadInicio'] ?? '');
-                if ($pgActivity === null) {
-                    $sinMatch++;
-                    $sugerencias[] = [
-                        'Id' => $actId,
-                        'codigo' => $activity['codigo'] ?? '',
-                        'actividad' => $activity['actividad'] ?? '',
-                        'familia' => '',
-                        'familiaCodigo' => '',
-                        'confidence' => 0.0,
-                        'tipoContrato' => '',
-                        'tipoContratoLabel' => '',
-                        'paquetes' => [],
-                        'fechaInicioProyectada' => '',
-                        'numeroSubcontratos' => 1,
-                        'isManualOverride' => false,
-                        'match' => false,
-                        'motivo' => 'Sin actividad vinculada en PG',
-                    ];
-                    continue;
-                }
-
-                $match = $matcher->matchActivity($pgActivity, $rules);
-                if ($match === null) {
-                    $sinMatch++;
-                    $sugerencias[] = [
-                        'Id' => $actId,
-                        'codigo' => $activity['codigo'] ?? '',
-                        'actividad' => $activity['actividad'] ?? '',
-                        'familia' => '',
-                        'familiaCodigo' => '',
-                        'confidence' => 0.0,
-                        'tipoContrato' => '',
-                        'tipoContratoLabel' => '',
-                        'paquetes' => [],
-                        'fechaInicioProyectada' => '',
-                        'numeroSubcontratos' => 1,
-                        'isManualOverride' => false,
-                        'match' => false,
-                        'motivo' => 'Sin familia detectada',
-                    ];
-                    continue;
-                }
-
-                $familyId = (int) $match['familia_id'];
-                $family = $optionsByFamily[$familyId] ?? null;
-                $options = $family['opciones'] ?? [];
-
-                if (empty($options)) {
-                    $sinMatch++;
-                    $sugerencias[] = [
-                        'Id' => $actId,
-                        'codigo' => $activity['codigo'] ?? '',
-                        'actividad' => $activity['actividad'] ?? '',
-                        'familia' => $match['familia_nombre'] ?? '',
-                        'familiaCodigo' => $match['familia_codigo'] ?? '',
-                        'confidence' => (float) ($match['confidence'] ?? 0),
-                        'tipoContrato' => '',
-                        'tipoContratoLabel' => '',
-                        'paquetes' => [],
-                        'fechaInicioProyectada' => '',
-                        'numeroSubcontratos' => 1,
-                        'isManualOverride' => false,
-                        'match' => true,
-                        'motivo' => 'Familia sin opciones de contrato configuradas',
-                    ];
-                    continue;
-                }
-
-                $bestOption = $this->selectBestContratoOption($options, $match);
-                if ($bestOption === null) {
-                    $sinMatch++;
-                    $sugerencias[] = [
-                        'Id' => $actId,
-                        'codigo' => $activity['codigo'] ?? '',
-                        'actividad' => $activity['actividad'] ?? '',
-                        'familia' => $match['familia_nombre'] ?? '',
-                        'familiaCodigo' => $match['familia_codigo'] ?? '',
-                        'confidence' => (float) ($match['confidence'] ?? 0),
-                        'tipoContrato' => '',
-                        'tipoContratoLabel' => '',
-                        'paquetes' => [],
-                        'fechaInicioProyectada' => '',
-                        'numeroSubcontratos' => 1,
-                        'isManualOverride' => false,
-                        'match' => true,
-                        'motivo' => 'No se pudo seleccionar opción de contrato',
-                    ];
-                    continue;
-                }
-
-                $tipoContratoInt = (int) $bestOption['tipo_contrato'];
-                $tipoContrato = $this->intToModalityCode($tipoContratoInt);
-
-                $fechaInicioProyectada = $this->calcularFechaInicioProyectada(
-                    $db,
-                    $tipoContrato,
-                    $activity['fechaInicio'] ?? '',
-                    $match['familia_codigo'] ?? null
-                );
-
-                $conMatch++;
-                $sugerencias[] = [
-                    'Id' => $actId,
-                    'codigo' => $activity['codigo'] ?? '',
-                    'actividad' => $activity['actividad'] ?? '',
-                    'familia' => $match['familia_nombre'] ?? '',
-                    'familiaCodigo' => $match['familia_codigo'] ?? '',
-                    'confidence' => (float) ($match['confidence'] ?? 0),
-                    'tipoContrato' => $tipoContrato,
-                    'tipoContratoLabel' => $this->modalityCodeToLabel($tipoContrato),
-                    'paquetes' => $this->formatAssignedPackages($bestOption['items']),
-                    'fechaInicioProyectada' => $fechaInicioProyectada,
-                    'numeroSubcontratos' => 1,
-                    'isManualOverride' => false,
-                ];
-            }
-
-            // Process manual overrides (activities WITH tipoContrato, WITHOUT ultimo_auto_definir)
-            foreach ($manualOverrides as $activity) {
-                $paquetes = $this->readExistingPaquetes($activity);
-
-                $sugerencias[] = [
-                    'Id' => (int) $activity['Id'],
-                    'codigo' => $activity['codigo'] ?? '',
-                    'actividad' => $activity['actividad'] ?? '',
-                    'familia' => '',
-                    'familiaCodigo' => '',
-                    'confidence' => (float) ($activity['confianza_deteccion'] ?? 0),
-                    'tipoContrato' => $activity['tipoContrato'] ?? '',
-                    'tipoContratoLabel' => $this->modalityCodeToLabel($activity['tipoContrato'] ?? ''),
-                    'paquetes' => $paquetes,
-                    'fechaInicioProyectada' => $activity['fechaInicioProyectada'] ?? '',
-                    'numeroSubcontratos' => (int) ($activity['numeroSubcontratos'] ?? 1),
-                    'isManualOverride' => true,
-                ];
-            }
-
-            $this->jsonResponse([
-                'respuesta' => 'BIEN',
-                'sugerencias' => $sugerencias,
-                'total' => count($activitiesSinContrato) + count($manualOverrides),
-                'conMatch' => $conMatch,
-                'sinMatch' => $sinMatch,
-                'manualOverrides' => count($manualOverrides),
-            ]);
-
-        } catch (Throwable $e) {
-            error_log("Error en ContratosApiController@autoDefine: " . $e->getMessage());
-            $this->jsonError('No se pudo auto-definir contratos.', 500);
-        }
-    }
-
-    public function autoDefineApply(): void
-    {
-        try {
-            $context = ModuleRequestContext::resolve();
-            $dbPrefix = $context['dbPrefix'];
-            $projectId = (int) $context['projectId'];
-            $semana = $context['semana'];
-
-            $this->requirePermission('lps.contratos.auto_definir', 'No autorizado para aplicar auto-definición.');
-
-            $data = json_decode(file_get_contents('php://input'), true);
-            if (!$data || !isset($data['sugerencias']) || !is_array($data['sugerencias'])) {
-                $this->jsonError('El cuerpo de la solicitud debe contener un arreglo "sugerencias".', 400);
-                return;
-            }
-
-            $db = Database::getInstance();
-
-            $this->ensureAutoContratoLogTable($dbPrefix);
-            $batchId = uniqid('batch_', true);
-
-            $aplicadas = 0;
-            $errores = 0;
-
-            foreach ($data['sugerencias'] as $sugerencia) {
-                $actId = (int) ($sugerencia['Id'] ?? 0);
-                if ($actId <= 0) {
-                    $errores++;
-                    continue;
-                }
-
-                $tipoContrato = $sugerencia['tipoContrato'] ?? '';
-                if (empty($tipoContrato)) {
-                    $errores++;
-                    continue;
-                }
-
-                try {
-                    $this->applyContratoDefinitionToActivity(
-                        $db,
-                        $projectId,
-                        $actId,
-                        $semana,
-                        $tipoContrato,
-                        $sugerencia['paquetes'] ?? [],
-                        $sugerencia['fechaInicioProyectada'] ?? null,
-                        $sugerencia['confidence'] ?? null,
-                        $sugerencia['numeroSubcontratos'] ?? 1
-                    );
-                    $aplicadas++;
-
-                    $db->query(
-                        "INSERT INTO auto_contrato_log (project_id, semana, Id_actividad, accion, tipo_contrato, paquetes, confianza, fecha_inicio_proyectada, num_proveedores, usuario, batch_id) VALUES (?, ?, ?, 'asignar', ?, ?, ?, ?, ?, ?, ?)",
-                        [
-                            $projectId,
-                            $semana,
-                            $actId,
-                            $sugerencia['tipoContrato'] ?? '',
-                            json_encode($sugerencia['paquetes'] ?? [], JSON_UNESCAPED_UNICODE),
-                            isset($sugerencia['confidence']) ? round((float) $sugerencia['confidence'], 2) : null,
-                            $sugerencia['fechaInicioProyectada'] ?? null,
-                            $sugerencia['numeroSubcontratos'] ?? 1,
-                            $_SESSION['usuario'] ?? 'sistema',
-                            $batchId,
-                        ]
-                    );
-                } catch (Throwable $e) {
-                    error_log("Error en autoDefineApply para Id={$actId}: " . $e->getMessage());
-                    $errores++;
-                }
-            }
-
-            $db->logActivity('Contratos', 'AUTO_DEFINIR', "Auto-definió contratos: {$aplicadas} aplicadas, {$errores} errores", $dbPrefix);
-
-            $this->jsonResponse([
-                'respuesta' => 'BIEN',
-                'aplicadas' => $aplicadas,
-                'errores' => $errores,
-            ]);
-
-        } catch (Throwable $e) {
-            error_log("Error en ContratosApiController@autoDefineApply: " . $e->getMessage());
-            $this->jsonError('No se pudo aplicar la definición de contratos.', 500);
-        }
-    }
-
-    public function autoDefineReanalyze(): void
-    {
-        try {
-            $context = ModuleRequestContext::resolve();
-            $dbPrefix = $context['dbPrefix'];
-            $projectId = (int) $context['projectId'];
-            $semana = $context['semana'];
-
-            $this->requirePermission('lps.contratos.auto_definir', 'No autorizado para re-analizar contratos.');
-
-            $actId = (int) ($_GET['Id'] ?? 0);
-            $modalidad = strtoupper(trim((string) ($_GET['modalidad'] ?? '')));
-
-            if ($actId <= 0 || !in_array($modalidad, ['SI', 'MO', 'S', 'OC'], true)) {
-                $this->jsonError('Parámetros inválidos. Se requieren Id y modalidad (SI/MO/S/OC).', 400);
-                return;
-            }
-
-            $db = Database::getInstance();
-
-            $stmt = $db->query(
-                "SELECT Id, codigo, actividad, descripcionActividad, actividadInicio, fechaInicio, tipoContrato
-                 FROM actividades WHERE project_id = ? AND Id = ? AND semanaActualizacion = ? LIMIT 1",
-                [$projectId, $actId, $semana]
-            );
-            $activity = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            if (!$activity) {
-                $this->jsonError('Actividad no encontrada.', 404);
-                return;
-            }
-
-            $pgActivity = $this->loadPgActivityForContratos($db, $projectId, $semana, $activity['actividadInicio'] ?? '');
-            if ($pgActivity === null) {
-                $this->jsonError('Actividad no vinculada al programa general.', 400);
-                return;
-            }
-
-            $matcher = new \App\Support\ActivityMatcher();
-            $rules = $matcher->loadRules();
-            $match = $matcher->matchActivity($pgActivity, $rules);
-
-            if ($match === null) {
-                $this->jsonError('No se pudo detectar familia para esta actividad.', 400);
-                return;
-            }
-
-            $optionsByFamily = $this->loadFamilyContractOptions($db);
-            $familyId = (int) $match['familia_id'];
-            $family = $optionsByFamily[$familyId] ?? null;
-            $options = $family['opciones'] ?? [];
-
-            $modalidadToPaquete = [
-                'SI' => 'Suministro e Instalación',
-                'MO' => 'Mano de Obra',
-                'S' => 'Suministro',
-                'OC' => 'Orden de Compra',
-                'E' => 'Equipos',
-            ];
-            $tipoPaqueteLabel = $modalidadToPaquete[$modalidad] ?? '';
-
-            // Find option matching the requested modality
-            $selectedOption = null;
-            foreach ($options as $option) {
-                if ($option['tipo_paquete'] === $tipoPaqueteLabel && !empty($option['items'])) {
-                    $selectedOption = $option;
-                    break;
-                }
-            }
-
-            // Fallback: any option with items
-            if ($selectedOption === null) {
-                foreach ($options as $option) {
-                    if (!empty($option['items'])) {
-                        $selectedOption = $option;
-                        break;
-                    }
-                }
-            }
-
-            if ($selectedOption === null) {
-                $this->jsonError('No se encontraron opciones de paquetes para la modalidad solicitada.', 400);
-                return;
-            }
-
-            $tipoContrato = $this->intToModalityCode((int) $selectedOption['tipo_contrato']);
-
-            $fechaInicioProyectada = $this->calcularFechaInicioProyectada(
-                $db,
-                $tipoContrato,
-                $activity['fechaInicio'] ?? '',
-                $match['familia_codigo'] ?? null
-            );
-
-            $this->jsonResponse([
-                'respuesta' => 'BIEN',
-                'Id' => $actId,
-                'codigo' => $activity['codigo'] ?? '',
-                'actividad' => $activity['actividad'] ?? '',
-                'familia' => $match['familia_nombre'] ?? '',
-                'familiaCodigo' => $match['familia_codigo'] ?? '',
-                'confidence' => (float) ($match['confidence'] ?? 0),
-                'tipoContrato' => $tipoContrato,
-                'tipoContratoLabel' => $this->modalityCodeToLabel($tipoContrato),
-                'paquetes' => $this->formatAssignedPackages($selectedOption['items']),
-                'fechaInicioProyectada' => $fechaInicioProyectada,
-                'numeroSubcontratos' => 1,
-            ]);
-
-        } catch (Throwable $e) {
-            error_log("Error en ContratosApiController@autoDefineReanalyze: " . $e->getMessage());
-            $this->jsonError('No se pudo re-analizar el contrato.', 500);
         }
     }
 
@@ -946,6 +547,69 @@ class ContratosApiController extends BaseController
         }
 
         return [$paquete, implode(";", $insumos)];
+    }
+
+    private function packageFieldNames(): array
+    {
+        $fields = [];
+        foreach (['SI', 'S', 'MO', 'OC'] as $prefix) {
+            for ($i = 1; $i <= 5; $i++) {
+                $fields[] = "paquete$prefix$i";
+            }
+        }
+
+        return $fields;
+    }
+
+    private function packagePresenceSql(array $fields, string $alias = ''): string
+    {
+        $checks = [];
+        foreach ($fields as $field) {
+            $qualifiedField = $alias === '' ? "`$field`" : "$alias.`$field`";
+            $checks[] = "NULLIF(TRIM(COALESCE($qualifiedField, '')), '') IS NOT NULL";
+        }
+
+        return implode(' OR ', $checks);
+    }
+
+    private function inferTipoContratoFromPackages(string $tipoContrato, array $source): string
+    {
+        $order = ['SI', 'MO', 'S', 'OC'];
+        $selected = [];
+
+        foreach (explode(',', $tipoContrato) as $code) {
+            $code = strtoupper(trim($code));
+            if (in_array($code, $order, true)) {
+                $selected[$code] = true;
+            }
+        }
+
+        foreach ($order as $prefix) {
+            if ($this->hasPackageForPrefix($source, $prefix)) {
+                $selected[$prefix] = true;
+            }
+        }
+
+        $result = [];
+        foreach ($order as $code) {
+            if (!empty($selected[$code])) {
+                $result[] = $code;
+            }
+        }
+
+        return implode(',', $result);
+    }
+
+    private function hasPackageForPrefix(array $source, string $prefix): bool
+    {
+        for ($i = 1; $i <= 5; $i++) {
+            $value = $source["paquete$prefix$i"] ?? '';
+            if (trim((string) $value) !== '') {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function verificar_resultado($stmt, $errores)
@@ -1216,309 +880,4 @@ class ContratosApiController extends BaseController
         return implode(' + ', $labels);
     }
 
-    /**
-     * Calculate projected start date based on contract modality.
-     * Fallback chain:
-     *   1. general_dias_procesos_contratacion (tipoPaquete)
-     *   2. general_dias_defaults_categoria (familiaCodigo)
-     *   3. Hardcoded defaults: SI=90, MO=45, S=60, OC=15
-     */
-    private function calcularFechaInicioProyectada($db, string $tipoContrato, ?string $fechaInicio, ?string $familiaCodigo = null): string
-    {
-        if (empty($fechaInicio) || empty($tipoContrato)) {
-            return '';
-        }
-
-        $modalityLabels = [
-            'SI' => 'Suministro e Instalación',
-            'MO' => 'Mano de Obra',
-            'S' => 'Suministro',
-            'OC' => 'Orden de Compra',
-            'E' => 'Equipos',
-        ];
-
-        $totalDias = null;
-        $modalities = explode(',', $tipoContrato);
-
-        // 1. Try general_dias_procesos_contratacion
-        foreach ($modalities as $mod) {
-            $mod = trim($mod);
-            $label = $modalityLabels[$mod] ?? '';
-            if ($label === '') {
-                continue;
-            }
-            $stmt = $db->query(
-                "SELECT diasElaboracionPliegos+diasEntregaPliegos+diasReciboPropuestas+
-                        diasCuadrosComparativos+diasLegalizacionContrato+
-                        diasFabricacion+diasInsumosObra AS total_dias
-                 FROM general_dias_procesos_contratacion
-                 WHERE tipoPaquete = ? LIMIT 1",
-                [$label]
-            );
-            $row = $stmt->fetch(PDO::FETCH_ASSOC);
-            if ($row && $row['total_dias'] !== null) {
-                $totalDias = max($totalDias ?? 0, (int) $row['total_dias']);
-            }
-        }
-
-        // 2. Try general_dias_defaults_categoria
-        if ($totalDias === null && $familiaCodigo !== null) {
-            try {
-                $stmt2 = $db->query(
-                    "SELECT dias_default FROM general_dias_defaults_categoria WHERE categoria = ? LIMIT 1",
-                    [$familiaCodigo]
-                );
-                $row2 = $stmt2->fetch(PDO::FETCH_ASSOC);
-                if ($row2 && $row2['dias_default'] !== null) {
-                    $totalDias = (int) $row2['dias_default'];
-                }
-            } catch (Throwable $ignored) {
-                // Table may not exist; fall through to defaults
-            }
-        }
-
-        // 3. Hardcoded fallback
-        if ($totalDias === null) {
-            $diasMap = ['SI' => 90, 'MO' => 45, 'S' => 60, 'OC' => 15];
-            $totalDias = 0;
-            foreach ($modalities as $mod) {
-                $mod = trim($mod);
-                $totalDias = max($totalDias, $diasMap[$mod] ?? 0);
-            }
-            if ($totalDias <= 0) {
-                $totalDias = 60;
-            }
-        }
-
-        try {
-            $date = new \DateTime($fechaInicio);
-            $date->modify("+{$totalDias} days");
-            return $date->format('Y-m-d');
-        } catch (\Exception $e) {
-            return '';
-        }
-    }
-
-    /**
-     * Apply contract definition to an activity (writes paquete columns + new columns).
-     * Similar to assignContratoToActivity() but also sets fechaInicioProyectada,
-     * confianza_deteccion, numeroSubcontratos, ultimo_auto_definir.
-     */
-    private function applyContratoDefinitionToActivity($db, int $projectId, int $actId, int $semana, string $tipoContrato, array $paquetes, ?string $fechaInicioProyectada, $confidence, int $numeroSubcontratos): bool
-    {
-        $prefixMap = [
-            'Suministro e Instalación' => 'SI',
-            'Suministro' => 'S',
-            'Mano de Obra' => 'MO',
-            'Orden de Compra' => 'OC',
-            'Equipos' => 'SI',
-            'Equipo' => 'SI',
-        ];
-
-        $updates = ['tipoContrato = ?'];
-        $params = [$tipoContrato];
-
-        // Clear all existing paquete columns
-        $tipos = ['SI', 'S', 'MO', 'OC'];
-        foreach ($tipos as $t) {
-            for ($i = 1; $i <= 5; $i++) {
-                $updates[] = "paquete{$t}{$i} = NULL";
-                $updates[] = "{$t}{$i} = NULL";
-            }
-        }
-
-        // Map paquetes to columns
-        $packageCounts = ['SI' => 0, 'S' => 0, 'MO' => 0, 'OC' => 0];
-        foreach ($paquetes as $paquete) {
-            $tipoPaquete = $paquete['tipoPaquete'] ?? $paquete['tipo_paquete'] ?? '';
-            $prefix = $prefixMap[$tipoPaquete] ?? null;
-            if ($prefix === null) {
-                continue;
-            }
-
-            $paqueteNombre = trim((string) ($paquete['paqueteNombre'] ?? $paquete['paquete_nombre'] ?? ''));
-            if ($paqueteNombre === '') {
-                continue;
-            }
-
-            $slotIndex = $packageCounts[$prefix] + 1;
-            if ($slotIndex > 5) {
-                continue;
-            }
-
-            $updates[] = "paquete{$prefix}{$slotIndex} = ?";
-            $params[] = $paqueteNombre;
-            $packageCounts[$prefix] = $slotIndex;
-        }
-
-        // New columns
-        $updates[] = "fechaInicioProyectada = ?";
-        $params[] = (!empty($fechaInicioProyectada)) ? $fechaInicioProyectada : null;
-
-        $updates[] = "confianza_deteccion = ?";
-        $params[] = $confidence !== null ? round((float) $confidence, 2) : null;
-
-        $updates[] = "numeroSubcontratos = ?";
-        $params[] = $numeroSubcontratos;
-
-        $updates[] = "ultimo_auto_definir = NOW()";
-
-        $params[] = $projectId;
-        $params[] = $actId;
-        $params[] = $semana;
-
-        $sql = "UPDATE actividades SET " . implode(', ', $updates) . " WHERE project_id = ? AND Id = ? AND semanaActualizacion = ?";
-        $db->query($sql, $params);
-
-        return true;
-    }
-
-    /**
-     * Read existing paquete columns from an activity row into structured array.
-     */
-    private function readExistingPaquetes(array $activity): array
-    {
-        $paquetes = [];
-        $prefixMap = [
-            'paqueteSI' => 'Suministro e Instalación',
-            'paqueteS' => 'Suministro',
-            'paqueteMO' => 'Mano de Obra',
-            'paqueteOC' => 'Orden de Compra',
-        ];
-        if (str_contains((string) ($activity['tipoContrato'] ?? ''), 'E')) {
-            $prefixMap['paqueteSI'] = 'Equipos';
-        }
-        foreach ($prefixMap as $colPrefix => $tipoPaquete) {
-            for ($i = 1; $i <= 5; $i++) {
-                $col = $colPrefix . $i;
-                if (!empty($activity[$col])) {
-                    $paquetes[] = [
-                        'tipoPaquete' => $tipoPaquete,
-                        'paqueteNombre' => $activity[$col],
-                    ];
-                }
-            }
-        }
-        return $paquetes;
-    }
-
-    /**
-     * Undo the most recent batch of auto-defined contracts.
-     * Reverts all activities that were modified in the latest batch
-     * and records 'deshacer' entries in the audit log.
-     */
-    public function autoDefineUndo(): void
-    {
-        try {
-            $context = ModuleRequestContext::resolve();
-            $dbPrefix = $context['dbPrefix'];
-            $projectId = (int) $context['projectId'];
-            $semana = $context['semana'];
-
-            $this->requirePermission('lps.contratos.auto_definir', 'No autorizado para deshacer auto-definición.');
-
-            $db = Database::getInstance();
-            $this->ensureAutoContratoLogTable($dbPrefix);
-
-            // Find the most recent batch_id
-            $stmtBatch = $db->query(
-                "SELECT DISTINCT batch_id FROM auto_contrato_log WHERE project_id = ? ORDER BY creado_en DESC LIMIT 1",
-                [$projectId]
-            );
-            $batchRow = $stmtBatch->fetch(PDO::FETCH_ASSOC);
-
-            if (!$batchRow || empty($batchRow['batch_id'])) {
-                $this->jsonError('No hay batches para deshacer.', 404);
-                return;
-            }
-
-            $batchId = $batchRow['batch_id'];
-
-            // Fetch all 'asignar' records for this batch
-            $stmtLog = $db->query(
-                "SELECT * FROM auto_contrato_log WHERE project_id = ? AND batch_id = ? AND accion = 'asignar' ORDER BY id ASC",
-                [$projectId, $batchId]
-            );
-            $records = $stmtLog->fetchAll(PDO::FETCH_ASSOC);
-
-            if (empty($records)) {
-                $this->jsonError('No se encontraron registros para deshacer en este batch.', 404);
-                return;
-            }
-
-            $revertidas = 0;
-            $errores = 0;
-
-            foreach ($records as $record) {
-                $actId = (int) ($record['Id_actividad'] ?? 0);
-                if ($actId <= 0) {
-                    $errores++;
-                    continue;
-                }
-
-                try {
-                    $db->query(
-                        "UPDATE actividades SET
-                            tipoContrato = NULL,
-                            paqueteSI1 = NULL, SI1 = NULL, paqueteSI2 = NULL, SI2 = NULL,
-                            paqueteSI3 = NULL, SI3 = NULL, paqueteSI4 = NULL, SI4 = NULL,
-                            paqueteSI5 = NULL, SI5 = NULL,
-                            paqueteS1 = NULL, S1 = NULL, paqueteS2 = NULL, S2 = NULL,
-                            paqueteS3 = NULL, S3 = NULL, paqueteS4 = NULL, S4 = NULL,
-                            paqueteS5 = NULL, S5 = NULL,
-                            paqueteMO1 = NULL, MO1 = NULL, paqueteMO2 = NULL, MO2 = NULL,
-                            paqueteMO3 = NULL, MO3 = NULL, paqueteMO4 = NULL, MO4 = NULL,
-                            paqueteMO5 = NULL, MO5 = NULL,
-                            paqueteOC1 = NULL, OC1 = NULL, paqueteOC2 = NULL, OC2 = NULL,
-                            paqueteOC3 = NULL, OC3 = NULL, paqueteOC4 = NULL, OC4 = NULL,
-                            paqueteOC5 = NULL, OC5 = NULL,
-                            fechaInicioProyectada = NULL,
-                            confianza_deteccion = NULL,
-                            numeroSubcontratos = 1,
-                            ultimo_auto_definir = NULL
-                         WHERE project_id = ? AND Id = ?",
-                        [$projectId, $actId]
-                    );
-                    $revertidas++;
-
-                    // Insert 'deshacer' log entry
-                    $db->query(
-                        "INSERT INTO auto_contrato_log (project_id, semana, Id_actividad, accion, tipo_contrato, paquetes, confianza, fecha_inicio_proyectada, num_proveedores, usuario, batch_id) VALUES (?, ?, ?, 'deshacer', ?, ?, ?, ?, ?, ?, ?)",
-                        [
-                            $projectId,
-                            $semana,
-                            $actId,
-                            $record['tipo_contrato'] ?? '',
-                            $record['paquetes'] ?? '[]',
-                            $record['confianza'] ?? null,
-                            $record['fecha_inicio_proyectada'] ?? null,
-                            $record['num_proveedores'] ?? 1,
-                            $_SESSION['usuario'] ?? 'sistema',
-                            $batchId,
-                        ]
-                    );
-                } catch (Throwable $e) {
-                    error_log("Error en autoDefineUndo para Id={$actId}: " . $e->getMessage());
-                    $errores++;
-                }
-            }
-
-            $this->jsonResponse([
-                'respuesta' => 'BIEN',
-                'batch_id' => $batchId,
-                'revertidas' => $revertidas,
-                'errores' => $errores,
-                'total' => count($records),
-            ]);
-
-        } catch (Throwable $e) {
-            error_log("Error en ContratosApiController@autoDefineUndo: " . $e->getMessage());
-            $this->jsonError('No se pudo deshacer la auto-definición de contratos.', 500);
-        }
-    }
-
-    private function ensureAutoContratoLogTable(string $dbPrefix): void
-    {
-        unset($dbPrefix);
-    }
 }
