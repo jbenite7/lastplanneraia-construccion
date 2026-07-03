@@ -289,6 +289,15 @@ class Database
 
     private function injectProjectId(string $sql, int $projectId): ?string
     {
+        // Skip INSERT queries — rewriteGlobalTableQuery handles INSERT...SELECT via
+        // rewriteInsertSelect (injects project_id into both INSERT columns and SELECT's
+        // WHERE) and plain INSERT...VALUES via rewriteInsert. Injecting project_id as a
+        // WHERE append in INSERT...SELECT with JOIN causes MySQL "Unknown column
+        // 'project_id' in 'on clause'" when the JOIN involves a non-global table.
+        if (preg_match('/^\s*INSERT\s+/i', $sql)) {
+            return null;
+        }
+
         $sqlLower = strtolower($sql);
 
         // 1. Verificar si ya tiene project_id en el WHERE
