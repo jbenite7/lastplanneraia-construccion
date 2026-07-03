@@ -598,7 +598,6 @@ Toolbar:
 |---|---|---|
 | Actualizar | `#btn_actualizarPDC` | `actualizarPDC()` |
 | Desglosar | `#btn_definirContratosPDC` | `obtener_data_definirContratos()` |
-| Auto-Generar desde Contratos | `#btn_auto_generar_desde_contratos` | `SemiAutoReview.open('pdc')` o auto desde contratos |
 | Solo Alertas | `#btn_soloAlertas` | `toggleSoloAlertas()` |
 | Switcher | `#btn_Actividades`, `#btn_contratos`, `#btn_planCompras` | Navegacion entre modulos |
 

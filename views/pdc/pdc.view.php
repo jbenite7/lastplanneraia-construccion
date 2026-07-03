@@ -1873,7 +1873,7 @@
 			});
 
 			// 1. Action Buttons (Left)
-			$("div.toolbarAcciones").html(`<div class="grupo_botones1 ps-toolbar-actions" role="group" aria-label="Actions"><button id="btn_actualizarPDC" class="btn-pdc-modern ps-btn-gap" title="Actualizar items" onclick="actualizarPDC()">Actualizar <i class="fas fa-sync fa-lg"></i></button><button id="btn_definirContratosPDC" class="btn-pdc-modern ps-btn-gap" title="Desglosar Subcontratos" onclick="obtener_data_definirContratos()">Desglosar <i class="fa fa-list-ol fa-lg" aria-hidden="true"></i></button><button id="btn_auto_generar_desde_contratos" class="btn-pdc-modern ps-btn-gap" title="Auto-generar Plan de Compras desde Contratos"><i class="fas fa-magic"></i> Auto-Generar desde Contratos</button><button id="btn_soloAlertas" class="btn-pdc-modern ps-btn-gap pdc-btn-alertas" title="Mostrar solo paquetes que necesitan atención" onclick="toggleSoloAlertas()"><i class="fas fa-bell fa-lg"></i> Solo Alertas <span id="count-alertas" class="badge badge-light"></span></button></div>`);
+			$("div.toolbarAcciones").html(`<div class="grupo_botones1 ps-toolbar-actions" role="group" aria-label="Actions"><button id="btn_actualizarPDC" class="btn-pdc-modern ps-btn-gap" title="Actualizar items" onclick="actualizarPDC()">Actualizar <i class="fas fa-sync fa-lg"></i></button><button id="btn_definirContratosPDC" class="btn-pdc-modern ps-btn-gap" title="Desglosar Subcontratos" onclick="obtener_data_definirContratos()">Desglosar <i class="fa fa-list-ol fa-lg" aria-hidden="true"></i></button><button id="btn_soloAlertas" class="btn-pdc-modern ps-btn-gap pdc-btn-alertas" title="Mostrar solo paquetes que necesitan atención" onclick="toggleSoloAlertas()"><i class="fas fa-bell fa-lg"></i> Solo Alertas <span id="count-alertas" class="badge badge-light"></span></button></div>`);
 			if (window.SemiAutoReview) {
 				window.SemiAutoReview.init({
 					module: 'pdc',
@@ -3105,75 +3105,6 @@
 		}
 
 
-
-		/* Auto-Generar desde Contratos */
-		$(document).off('click.autoGenFromContracts', '#btn_auto_generar_desde_contratos').on('click.autoGenFromContracts', '#btn_auto_generar_desde_contratos', function(e) {
-			e.preventDefault();
-			if (window.SemiAutoReview) {
-				window.SemiAutoReview.open('pdc');
-				return;
-			}
-			var btn = $(this);
-			var db = document.getElementById('baseDatos').value;
-			var semana = document.getElementById('semana').value;
-
-			if (typeof AIA !== 'undefined' && AIA.Notice && AIA.Notice.confirm) {
-				AIA.Notice.confirm(
-					'Esto generará/actualizará el Plan de Compras desde Contratos. ¿Continuar?',
-					'Auto-Generar PDC'
-				).then(function(confirmed) {
-					if (!confirmed) return;
-					ejecutarAutoGenerarDesdeContratos(btn, db, semana);
-				});
-			} else {
-				if (!confirm('¿Generar/actualizar el Plan de Compras desde Contratos?')) return;
-				ejecutarAutoGenerarDesdeContratos(btn, db, semana);
-			}
-		});
-
-		function ejecutarAutoGenerarDesdeContratos(btn, db, semana) {
-			btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Generando...');
-
-			$.ajax({
-				method: 'POST',
-				url: '/api/pdc/auto/apply-from-contratos?db=' + encodeURIComponent(db) + '&semana=' + encodeURIComponent(semana),
-				dataType: 'json'
-			}).done(function(response) {
-				if (!response || response.respuesta !== 'BIEN') {
-					if (typeof AIA !== 'undefined' && AIA.Notice) {
-						AIA.Notice.error((response && response.mensaje) || 'No se pudo generar el Plan de Compras.');
-					} else {
-						alert((response && response.mensaje) || 'No se pudo generar el Plan de Compras.');
-					}
-					btn.prop('disabled', false).html('<i class="fas fa-magic"></i> Auto-Generar desde Contratos');
-					return;
-				}
-
-				var msg = 'Paquetes creados: <strong>' + (response.paquetesCreados || 0) + '</strong> · Actualizados: <strong>' + (response.paquetesActualizados || 0) + '</strong>';
-				if (typeof AIA !== 'undefined' && AIA.Notice) {
-					AIA.Notice.success(msg);
-				} else {
-					alert(msg.replace(/<[^>]+>/g, ''));
-				}
-
-				btn.prop('disabled', false).html('<i class="fas fa-magic"></i> Auto-Generar desde Contratos');
-
-				if (typeof recargarTabla === 'function') {
-					recargarTabla();
-				}
-			}).fail(function(xhr) {
-				var mensaje = 'Error de conexión al generar el Plan de Compras.';
-				if (xhr.responseJSON && xhr.responseJSON.mensaje) {
-					mensaje = xhr.responseJSON.mensaje;
-				}
-				if (typeof AIA !== 'undefined' && AIA.Notice) {
-					AIA.Notice.error(mensaje);
-				} else {
-					alert(mensaje);
-				}
-				btn.prop('disabled', false).html('<i class="fas fa-magic"></i> Auto-Generar desde Contratos');
-			});
-		}
 
 	</script>
 </body>

@@ -36,10 +36,7 @@ test.describe('PDC module tests', () => {
     await expect(desglosarBtn).toBeVisible({ timeout: 5000 });
     await expect(desglosarBtn).toContainText('Desglosar');
 
-    // Auto-Generar desde Contratos button
-    const autoGenBtn = page.locator('#btn_auto_generar_desde_contratos');
-    await expect(autoGenBtn).toBeVisible({ timeout: 5000 });
-    await expect(autoGenBtn).toContainText('Auto-Generar desde Contratos');
+    await expect(page.locator('#btn_auto_generar_desde_contratos')).toHaveCount(0);
 
     // Solo Alertas button
     const soloAlertasBtn = page.locator('#btn_soloAlertas');
@@ -75,16 +72,15 @@ test.describe('PDC module tests', () => {
     expect(titleMatch || bodyMatch).toBeTruthy();
   });
 
-  test('Test 2: Auto-Generar desde Contratos abre preview embebido', async ({ page }) => {
-    const autoGenBtn = page.locator('#btn_auto_generar_desde_contratos');
-    await expect(autoGenBtn).toBeVisible({ timeout: 10000 });
+  test('Test 2: Semi-auto PDC abre preview embebido', async ({ page }) => {
+    await page.waitForFunction(() => window.jQuery && window.SemiAutoReview, null, { timeout: 20000 });
 
     const responsePromise = page.waitForResponse(
       (resp) => resp.url().includes('/api/pdc/auto/preview'),
       { timeout: 60000 }
     );
 
-    await autoGenBtn.click();
+    await page.evaluate(() => window.SemiAutoReview.open('pdc'));
 
     const response = await responsePromise;
     const data = await response.json();
