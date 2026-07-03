@@ -1237,7 +1237,7 @@ class SemiAutoService
                     'tipoPaquete' => $package['tipoPaquete'],
                     'paqueteContratacion' => $package['paqueteNombre'],
                     'contratos' => $this->limitDbText((string) ($activity['actividad'] ?? ''), 200),
-                    'numeroSubcontratos' => (int) ($activity['numeroSubcontratos'] ?? 1),
+                    'numeroSubcontratos' => max(1, (int) ($package['cantidadContratos'] ?? ($activity['numeroSubcontratos'] ?? 1))),
                     'estado' => $this->pdcStatusForPackage($package, $activity),
                     'observacionesContrato' => $observations,
                     'fechaInicio' => $this->normalizeDate($activity['fechaInicio'] ?? null),
@@ -2280,6 +2280,7 @@ class SemiAutoService
                 continue;
             }
             $fields["paquete{$prefix}{$slot}"] = $package['paqueteNombre'] ?? '';
+            $fields["cantidad{$prefix}{$slot}"] = 1;
             $counts[$prefix] = $slot;
         }
 
@@ -2306,6 +2307,7 @@ class SemiAutoService
             for ($i = 1; $i <= 5; $i++) {
                 $fields[] = "{$prefix}{$i}";
                 $fields[] = "paquete{$prefix}{$i}";
+                $fields[] = "cantidad{$prefix}{$i}";
             }
         }
 
@@ -2470,7 +2472,11 @@ class SemiAutoService
                 if ($name === '') {
                     continue;
                 }
-                $packages[] = ['tipoPaquete' => $label, 'paqueteNombre' => $name];
+                $packages[] = [
+                    'tipoPaquete' => $label,
+                    'paqueteNombre' => $name,
+                    'cantidadContratos' => max(1, (int) ($activity["cantidad{$prefix}{$i}"] ?? 1)),
+                ];
             }
         }
 

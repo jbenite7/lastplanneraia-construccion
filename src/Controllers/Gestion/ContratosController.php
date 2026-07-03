@@ -15,6 +15,11 @@ class ContratosController extends BaseController
 
         // Obtener variables de sesión
         $vars = $this->getSessionVars();
+        if (($vars['area'] ?? 'Construccion') === 'Pre-Construccion') {
+            http_response_code(404);
+            echo '<h1>Modulo no disponible</h1><p>Contratos no esta disponible para proyectos de preconstruccion.</p>';
+            return;
+        }
         extract($vars); // $dbName, $semana, $proyecto, $permiso, etc.
 
         // Cargar vista Contratos

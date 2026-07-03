@@ -50,6 +50,7 @@ function lcpCleanup(Database $db, int $projectId, string $prefix): void
         'semi_auto_decisions',
         'semi_auto_suggestions',
         'semi_auto_runs',
+        'contratos_trazabilidad',
     ] as $table) {
         $db->query("DELETE FROM {$table} WHERE project_id = ?", [$projectId]);
     }
@@ -168,16 +169,54 @@ try {
     $listedActivity ? lcpPass('Listado recarga la actividad editada') : lcpFail('Listado no recargó la actividad editada');
 
     $contratos = new ContratosApiController();
-    $contractSave = lcpCall($contratos, 'save', $prefix, $projectId, $week, [
+    $contractPayload = [
         'opcion' => 'modificar',
         'Id' => $activityId,
         'actividadModificar' => 'E2E Manual Actividad Editada',
         'tipoContrato' => 'SI,MO',
         'paqueteSI1' => 'E2E MANUAL SI',
         'SI1' => '',
+        'cantidadSI1' => '1',
         'paqueteMO1' => 'E2E MANUAL MO',
         'MO1' => '',
+        'cantidadMO1' => '2',
+    ];
+    $contractMissingDurations = lcpCall($contratos, 'save', $prefix, $projectId, $week, $contractPayload);
+    (is_array($contractMissingDurations) && ($contractMissingDurations['respuesta'] ?? '') === 'DURACIONES_REQUERIDAS')
+        ? lcpPass('Contratos bloquea paquetes sin duraciones explicitas')
+        : lcpFail('Contratos no bloqueo paquetes sin duraciones: ' . json_encode($contractMissingDurations, JSON_UNESCAPED_UNICODE));
+
+    $durationPayload = [
+        [
+            'tipoPaquete' => 'Suministro e Instalación',
+            'paqueteContratacion' => 'E2E MANUAL SI',
+            'diasElaboracionPliegos' => 1,
+            'diasEntregaPliegos' => 1,
+            'diasReciboPropuestas' => 1,
+            'diasCuadrosComparativos' => 1,
+            'diasLegalizacionContrato' => 1,
+            'diasFabricacion' => 1,
+            'diasInsumosObra' => 1,
+        ],
+        [
+            'tipoPaquete' => 'Mano de Obra',
+            'paqueteContratacion' => 'E2E MANUAL MO',
+            'diasElaboracionPliegos' => 2,
+            'diasEntregaPliegos' => 2,
+            'diasReciboPropuestas' => 2,
+            'diasCuadrosComparativos' => 2,
+            'diasLegalizacionContrato' => 2,
+            'diasFabricacion' => 2,
+            'diasInsumosObra' => 2,
+        ],
+    ];
+    $durationSave = lcpCall($contratos, 'save', $prefix, $projectId, $week, [
+        'opcion' => 'guardarDuracionesContratacion',
+        'duraciones' => json_encode($durationPayload, JSON_UNESCAPED_UNICODE),
     ]);
+    lcpAssertResponseOk($durationSave, 'Contratos guarda duraciones faltantes');
+
+    $contractSave = lcpCall($contratos, 'save', $prefix, $projectId, $week, $contractPayload);
     lcpAssertResponseOk($contractSave, 'Contratos permite guardar paquetes manuales');
 
     $contractList = lcpCall($contratos, 'list', $prefix, $projectId, $week);
@@ -185,12 +224,42 @@ try {
     foreach (($contractList['data'] ?? []) as $row) {
         if ((int) ($row['Id'] ?? 0) === $activityId
             && ($row['paqueteSI1'] ?? '') === 'E2E MANUAL SI'
-            && ($row['paqueteMO1'] ?? '') === 'E2E MANUAL MO') {
+            && ($row['paqueteMO1'] ?? '') === 'E2E MANUAL MO'
+            && (int) ($row['cantidadMO1'] ?? 0) === 2) {
             $listedContract = true;
             break;
         }
     }
-    $listedContract ? lcpPass('Contratos recarga paquetes manuales') : lcpFail('Contratos no recargó paquetes manuales');
+    $listedContract ? lcpPass('Contratos recarga paquetes manuales con cantidades') : lcpFail('Contratos no recargó paquetes manuales con cantidades');
+
+    $traceRow = $db->query(
+        "SELECT campos_cambiados FROM contratos_trazabilidad WHERE project_id = ? AND actividad_id = ? AND semana = ? ORDER BY id DESC LIMIT 1",
+        [$projectId, $activityId, $week],
+    )->fetch(PDO::FETCH_ASSOC);
+    $traceFields = json_decode((string) ($traceRow['campos_cambiados'] ?? '[]'), true);
+    (is_array($traceFields) && in_array('cantidadMO1', $traceFields, true))
+        ? lcpPass('Contratos registra trazabilidad semanal de cantidades')
+        : lcpFail('Contratos no registro trazabilidad de cantidades');
+
+    $editActivityWithContract = lcpCall($listado, 'save', $prefix, $projectId, $week, [
+        'opcion' => 'modificar',
+        'Id' => $activityId,
+        'Actividad' => 'E2E Manual Actividad Editada',
+        'descripcionActividad' => 'Actividad editada manualmente para prueba.',
+        'fechaInicio' => '2030-02-12',
+        'tipoContrato' => 'SI,MO',
+        'actividadInicio' => '1001',
+    ]);
+    lcpAssertResponseOk($editActivityWithContract, 'Listado permite cambiar fecha de actividad con contratos');
+
+    $dateTraceRow = $db->query(
+        "SELECT campos_cambiados FROM contratos_trazabilidad WHERE project_id = ? AND actividad_id = ? AND semana = ? ORDER BY id DESC LIMIT 1",
+        [$projectId, $activityId, $week],
+    )->fetch(PDO::FETCH_ASSOC);
+    $dateTraceFields = json_decode((string) ($dateTraceRow['campos_cambiados'] ?? '[]'), true);
+    (is_array($dateTraceFields) && in_array('fechaInicio', $dateTraceFields, true))
+        ? lcpPass('Contratos registra trazabilidad semanal de fecha de inicio')
+        : lcpFail('Contratos no registro trazabilidad de fecha de inicio');
 
     $pdc = new PdcApiController();
     $pdcCreate = lcpCall($pdc, 'save', $prefix, $projectId, $week, [

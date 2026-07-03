@@ -555,6 +555,7 @@ class ListadoActividadesApiController
         if (empty($Actividad) || empty($descripcionActividad) || empty($fechaInicio) || empty($semana)) {
             $errores = 'Debe rellenar todos los campos';
         } else {
+            $beforeTrace = $this->loadContratosTraceAnchor($projectId, (int) $Id, $semana);
             $nombreActividadInicio = $this->programDisplayName($dbPrefix, $projectId, $semana, (int) $actividadInicio);
             $queryUpdate = "UPDATE actividades SET actividad=?, descripcionActividad=?, actividadInicio=?,
                              nombreActividadInicio=?,
@@ -562,6 +563,8 @@ class ListadoActividadesApiController
             $params = [$Actividad, $descripcionActividad, $actividadInicio, $nombreActividadInicio, $fechaInicio, $tipoContrato, $semana, $projectId, $Id, $semana];
             $stmtUpdate = $this->db->query($queryUpdate, $params);
             $this->db->logActivity('ListadoActividades', 'MODIFICAR', "Modificó actividad ID $Id", $dbPrefix);
+            $afterTrace = $this->loadContratosTraceAnchor($projectId, (int) $Id, $semana);
+            $this->recordListadoContratosTrace($projectId, (int) $Id, $semana, $beforeTrace, $afterTrace);
 
             $this->verificar_resultado(true, '');
             return;
@@ -796,6 +799,65 @@ class ListadoActividadesApiController
         $leaf = $pos === false ? $normalized : mb_substr($normalized, 0, $pos);
         return trim(rtrim(trim($leaf), ','));
     }
+
+    private function loadContratosTraceAnchor(int $projectId, int $activityId, int $week): array
+    {
+        try {
+            $row = $this->db->query(
+                "SELECT actividadInicio, fechaInicio, tipoContrato
+                 FROM actividades
+                 WHERE project_id = ? AND Id = ? AND semanaActualizacion = ?
+                 LIMIT 1",
+                [$projectId, $activityId, $week]
+            )->fetch(PDO::FETCH_ASSOC);
+
+            return $row ?: [];
+        } catch (Throwable $e) {
+            error_log('No se pudo cargar trazabilidad de Contratos desde Listado: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    private function recordListadoContratosTrace(int $projectId, int $activityId, int $week, array $before, array $after): void
+    {
+        if ($before === [] || $after === []) {
+            return;
+        }
+        if (trim((string) ($before['tipoContrato'] ?? $after['tipoContrato'] ?? '')) === '') {
+            return;
+        }
+
+        $changed = [];
+        foreach (['actividadInicio', 'fechaInicio', 'tipoContrato'] as $field) {
+            if ((string) ($before[$field] ?? '') !== (string) ($after[$field] ?? '')) {
+                $changed[] = $field;
+            }
+        }
+        if ($changed === []) {
+            return;
+        }
+
+        try {
+            $user = $_SESSION['usuario'] ?? $_SESSION['nombreUsuario'] ?? $_SESSION['user'] ?? null;
+            $this->db->query(
+                "INSERT INTO contratos_trazabilidad
+                    (project_id, actividad_id, semana, usuario, origen, campos_cambiados, antes, despues)
+                 VALUES (?, ?, ?, ?, 'listado', ?, ?, ?)",
+                [
+                    $projectId,
+                    $activityId,
+                    $week,
+                    $user,
+                    json_encode($changed, JSON_UNESCAPED_UNICODE),
+                    json_encode($before, JSON_UNESCAPED_UNICODE),
+                    json_encode($after, JSON_UNESCAPED_UNICODE),
+                ]
+            );
+        } catch (Throwable $e) {
+            error_log('No se pudo registrar trazabilidad de Contratos desde Listado: ' . $e->getMessage());
+        }
+    }
+
     private function verificar_resultado(bool $success, string $errores): void
     {
         $informacion = [];

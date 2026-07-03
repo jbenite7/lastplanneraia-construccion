@@ -43,44 +43,64 @@
 						<th>Semana de Actualizacion</th>
 						<th>SI1</th>
 						<th>paqueteSI1</th>
+						<th>cantidadSI1</th>
 						<th>SI2</th>
 						<th>paqueteSI2</th>
+						<th>cantidadSI2</th>
 						<th>SI3</th>
 						<th>paqueteSI3</th>
+						<th>cantidadSI3</th>
 						<th>SI4</th>
 						<th>paqueteSI4</th>
+						<th>cantidadSI4</th>
 						<th>SI5</th>
 						<th>paqueteSI5</th>
+						<th>cantidadSI5</th>
 						<th>S1</th>
 						<th>paqueteS1</th>
+						<th>cantidadS1</th>
 						<th>S2</th>
 						<th>paqueteS2</th>
+						<th>cantidadS2</th>
 						<th>S3</th>
 						<th>paqueteS3</th>
+						<th>cantidadS3</th>
 						<th>S4</th>
 						<th>paqueteS4</th>
+						<th>cantidadS4</th>
 						<th>S5</th>
 						<th>paqueteS5</th>
+						<th>cantidadS5</th>
 						<th>MO1</th>
 						<th>paqueteMO1</th>
+						<th>cantidadMO1</th>
 						<th>MO2</th>
 						<th>paqueteMO2</th>
+						<th>cantidadMO2</th>
 						<th>MO3</th>
 						<th>paqueteMO3</th>
+						<th>cantidadMO3</th>
 						<th>MO4</th>
 						<th>paqueteMO4</th>
+						<th>cantidadMO4</th>
 						<th>MO5</th>
 						<th>paqueteMO5</th>
+						<th>cantidadMO5</th>
 						<th>OC1</th>
 						<th>paqueteOC1</th>
+						<th>cantidadOC1</th>
 						<th>OC2</th>
 						<th>paqueteOC2</th>
+						<th>cantidadOC2</th>
 						<th>OC3</th>
 						<th>paqueteOC3</th>
+						<th>cantidadOC3</th>
 						<th>OC4</th>
 						<th>paqueteOC4</th>
+						<th>cantidadOC4</th>
 						<th>OC5</th>
 						<th>paqueteOC5</th>
+						<th>cantidadOC5</th>
 						<th>Paquetes de Contratación Asociados</th>
 					</tr>
 				</thead>
@@ -164,6 +184,7 @@
 										<div class="ct-contract-header" aria-hidden="true">
 											<div class="ct-contract-header__spacer"></div>
 											<div class="ct-contract-header__cell">Paquete de Contratación</div>
+											<div class="ct-contract-header__cell">Contratos</div>
 											<div class="ct-contract-header__cell">Insumo / Recurso</div>
 										</div>
 										<div class="ct-contract-list">
@@ -171,13 +192,17 @@
 												<?php
 								                $packageId = $section['packagePrefix'] . $i;
 											    $resourceId = $section['resourcePrefix'] . $i;
+											    $quantityId = 'cantidad' . $section['resourcePrefix'] . $i;
 											    ?>
 												<div class="ct-contract-row">
 													<label for="<?php echo $packageId; ?>" class="control-label ct-contract-index"><?php echo $i; ?>.</label>
 													<div class="ct-contract-field">
-														<select id="<?php echo $packageId; ?>" name="<?php echo $packageId; ?>" class="form-control ct-contract-control" aria-label="<?php echo $section['packageLabel'] . ' ' . $i; ?>">
+														<select id="<?php echo $packageId; ?>" name="<?php echo $packageId; ?>" class="form-control ct-contract-control ct-package-select" data-prefix="<?php echo $section['resourcePrefix']; ?>" aria-label="<?php echo $section['packageLabel'] . ' ' . $i; ?>">
 															<option value=""></option>
 														</select>
+													</div>
+													<div class="ct-contract-field ct-contract-field--quantity">
+														<input id="<?php echo $quantityId; ?>" name="<?php echo $quantityId; ?>" type="number" class="form-control ct-contract-control ct-contract-quantity" min="1" max="99" step="1" value="1" aria-label="Cantidad de contratos <?php echo $section['resourceLabel'] . ' ' . $i; ?>">
 													</div>
 													<div class="ct-contract-field">
 														<select id="<?php echo $resourceId; ?>" name="<?php echo $resourceId; ?>[]" class="form-control ct-contract-control ct-contract-control--multiple" multiple="multiple" aria-label="<?php echo $section['resourceLabel'] . ' ' . $i; ?>">
@@ -187,6 +212,7 @@
 												</div>
 											<?php endfor; ?>
 										</div>
+										<p class="ct-overplanning-alert" data-prefix="<?php echo $section['resourcePrefix']; ?>" style="display:none;">Se usaron los 5 paquetes disponibles. Revisa si la actividad esta sobreplaneada.</p>
 									</section>
 								<?php endforeach; ?>
 
@@ -203,6 +229,47 @@
 								</form>
 							</div>
 						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="modal fade aia-modal" id="modalDuracionesContratos" tabindex="-1" role="dialog" aria-labelledby="modalDuracionesContratosLabel" aria-hidden="true">
+			<div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" role="document">
+				<div class="modal-content ct-modal-content">
+					<div class="modal-header ct-modal-header">
+						<div class="modal-title ct-modal-title" id="modalDuracionesContratosLabel">
+							<div class="aia-modal__eyebrow">Contratos</div>
+							<h2 class="aia-modal__headline">Duraciones pendientes</h2>
+							<p class="aia-modal__subtitle">Define los dias de contratacion para continuar con el guardado.</p>
+						</div>
+						<button type="button" class="close ct-modal-close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body ct-modal-body">
+						<div class="table-responsive">
+							<table class="table table-sm table-bordered" id="tablaDuracionesContratos">
+								<thead>
+									<tr>
+										<th>Tipo</th>
+										<th>Paquete</th>
+										<th>Pliegos</th>
+										<th>Entrega</th>
+										<th>Propuestas</th>
+										<th>Cuadros</th>
+										<th>Legalizacion</th>
+										<th>Fabricacion</th>
+										<th>Insumos obra</th>
+									</tr>
+								</thead>
+								<tbody></tbody>
+							</table>
+						</div>
+						<p class="mensaje-duraciones text-danger"></p>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+						<button type="button" class="btn btn-primary" id="btn_guardar_duraciones_contratos">Guardar duraciones</button>
 					</div>
 				</div>
 			</div>
@@ -272,6 +339,88 @@
 			inicializarAutoAsignarContratos();
 			actualizarBadgePendientesContratos();
       listar();
+		}
+
+		function selectContractPackage(selector, value) {
+			var contractValue = (value || '').trim();
+			var $select = $(selector);
+			if (contractValue === '') {
+				$select.val('').change();
+				return;
+			}
+			if ($select.find('option').filter(function() { return $(this).val() === contractValue; }).length === 0) {
+				$select.append(new Option(contractValue, contractValue, true, true));
+			}
+			$select.val(contractValue).change();
+		}
+
+		function setPackageQuantities(data) {
+			['SI', 'S', 'MO', 'OC'].forEach(function(prefix) {
+				for (var i = 1; i <= 5; i++) {
+					var packageValue = (data['paquete' + prefix + i] || '').trim();
+					var quantity = parseInt(data['cantidad' + prefix + i] || '1', 10);
+					if (!packageValue || isNaN(quantity) || quantity < 1) {
+						quantity = 1;
+					}
+					$('#cantidad' + prefix + i).val(quantity);
+				}
+				updateOverplanningAlert(prefix);
+			});
+		}
+
+		function updateOverplanningAlert(prefix) {
+			var filled = 0;
+			for (var i = 1; i <= 5; i++) {
+				if (($('#paquete' + prefix + i).val() || '').trim() !== '') {
+					filled++;
+				}
+			}
+			$('.ct-overplanning-alert[data-prefix="' + prefix + '"]').toggle(filled >= 5);
+		}
+
+		$(document).on('change', '.ct-package-select', function() {
+			updateOverplanningAlert($(this).data('prefix'));
+		});
+
+		var pendingContractSavePayload = null;
+		var durationFields = [
+			'diasElaboracionPliegos',
+			'diasEntregaPliegos',
+			'diasReciboPropuestas',
+			'diasCuadrosComparativos',
+			'diasLegalizacionContrato',
+			'diasFabricacion',
+			'diasInsumosObra'
+		];
+
+		function openDurationsModal(packages, retryPayload) {
+			pendingContractSavePayload = retryPayload;
+			var $tbody = $('#tablaDuracionesContratos tbody');
+			$tbody.empty();
+			(packages || []).forEach(function(item, index) {
+				var row = '<tr data-index="' + index + '">' +
+					'<td class="duration-type"></td>' +
+					'<td class="duration-package"></td>';
+				durationFields.forEach(function(field) {
+					row += '<td><input type="number" class="form-control form-control-sm duration-input" data-field="' + field + '" min="0" step="1" value="1"></td>';
+				});
+				row += '</tr>';
+				var $row = $(row);
+				$row.data('item', item);
+				$row.find('.duration-type').text(item.tipoPaquete || '');
+				$row.find('.duration-package').text(item.paqueteContratacion || '');
+				$tbody.append($row);
+			});
+			$('.mensaje-duraciones').text('');
+			$('#modalDuracionesContratos').modal('show');
+		}
+
+		function retryPendingContractSave() {
+			if (!pendingContractSavePayload) {
+				return;
+			}
+			submitContractSave(pendingContractSavePayload);
+			pendingContractSavePayload = null;
 		}
 
 		/* Ejecuta la funcione listar, solo cuando se presiona el botón Listar */
@@ -387,11 +536,11 @@
 							'width':'10%',
 					},
 					{
-							'targets': [50],
+							'targets': [70],
 							'width':'22%',
 					},
 					{
-							'targets': [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50],
+							'targets': [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70],
 							'render': function ( data, type, full, meta ) {
 							 return data;
 							},
@@ -410,44 +559,64 @@
 						{"data":"semanaActualizacion", "visible":false},
 						{"data":"SI1", "visible":false},
 						{"data":"paqueteSI1", "visible":false},
+						{"data":"cantidadSI1", "visible":false},
 						{"data":"SI2", "visible":false},
 						{"data":"paqueteSI2", "visible":false},
+						{"data":"cantidadSI2", "visible":false},
 						{"data":"SI3", "visible":false},
 						{"data":"paqueteSI3", "visible":false},
+						{"data":"cantidadSI3", "visible":false},
 						{"data":"SI4", "visible":false},
 						{"data":"paqueteSI4", "visible":false},
+						{"data":"cantidadSI4", "visible":false},
 						{"data":"SI5", "visible":false},
 						{"data":"paqueteSI5", "visible":false},
+						{"data":"cantidadSI5", "visible":false},
 						{"data":"S1", "visible":false},
 						{"data":"paqueteS1", "visible":false},
+						{"data":"cantidadS1", "visible":false},
 						{"data":"S2", "visible":false},
 						{"data":"paqueteS2", "visible":false},
+						{"data":"cantidadS2", "visible":false},
 						{"data":"S3", "visible":false},
 						{"data":"paqueteS3", "visible":false},
+						{"data":"cantidadS3", "visible":false},
 						{"data":"S4", "visible":false},
 						{"data":"paqueteS4", "visible":false},
+						{"data":"cantidadS4", "visible":false},
 						{"data":"S5", "visible":false},
 						{"data":"paqueteS5", "visible":false},
+						{"data":"cantidadS5", "visible":false},
 						{"data":"MO1", "visible":false},
 						{"data":"paqueteMO1", "visible":false},
+						{"data":"cantidadMO1", "visible":false},
 						{"data":"MO2", "visible":false},
 						{"data":"paqueteMO2", "visible":false},
+						{"data":"cantidadMO2", "visible":false},
 						{"data":"MO3", "visible":false},
 						{"data":"paqueteMO3", "visible":false},
+						{"data":"cantidadMO3", "visible":false},
 						{"data":"MO4", "visible":false},
 						{"data":"paqueteMO4", "visible":false},
+						{"data":"cantidadMO4", "visible":false},
 						{"data":"MO5", "visible":false},
 						{"data":"paqueteMO5", "visible":false},
+						{"data":"cantidadMO5", "visible":false},
 						{"data":"OC1", "visible":false},
 						{"data":"paqueteOC1", "visible":false},
+						{"data":"cantidadOC1", "visible":false},
 						{"data":"OC2", "visible":false},
 						{"data":"paqueteOC2", "visible":false},
+						{"data":"cantidadOC2", "visible":false},
 						{"data":"OC3", "visible":false},
 						{"data":"paqueteOC3", "visible":false},
+						{"data":"cantidadOC3", "visible":false},
 						{"data":"OC4", "visible":false},
 						{"data":"paqueteOC4", "visible":false},
+						{"data":"cantidadOC4", "visible":false},
 						{"data":"OC5", "visible":false},
 						{"data":"paqueteOC5", "visible":false},
+						{"data":"cantidadOC5", "visible":false},
 						{"data":"contratosAsociados"}
 				],
 		    "language": idioma_espanol
@@ -558,11 +727,11 @@
 								var SI3 = (data.SI3 && data.SI3 != '') ? $("#SI3").val(data.SI3.split(';')).change() : '';
 								var SI4 = (data.SI4 && data.SI4 != '') ? $("#SI4").val(data.SI4.split(';')).change() : '';
 								var SI5 = (data.SI5 && data.SI5 != '') ? $("#SI5").val(data.SI5.split(';')).change() : '';
-								$("#paqueteSI1").val(data.paqueteSI1).change();
-								$("#paqueteSI2").val(data.paqueteSI2).change();
-								$("#paqueteSI3").val(data.paqueteSI3).change();
-								$("#paqueteSI4").val(data.paqueteSI4).change();
-								$("#paqueteSI5").val(data.paqueteSI5).change();
+								selectContractPackage("#paqueteSI1", data.paqueteSI1);
+								selectContractPackage("#paqueteSI2", data.paqueteSI2);
+								selectContractPackage("#paqueteSI3", data.paqueteSI3);
+								selectContractPackage("#paqueteSI4", data.paqueteSI4);
+								selectContractPackage("#paqueteSI5", data.paqueteSI5);
 							} else {
 								$("#SI1, #SI2, #SI3, #SI4, #SI5").html('<option value=""></option>').change();
 								$("#paqueteSI1, #paqueteSI2, #paqueteSI3, #paqueteSI4, #paqueteSI5").html('<option value=""></option>').change();
@@ -579,11 +748,11 @@
 								var MO3 = (data.MO3 && data.MO3 != '') ? $("#MO3").val(data.MO3.split(';')).change() : '';
 								var MO4 = (data.MO4 && data.MO4 != '') ? $("#MO4").val(data.MO4.split(';')).change() : '';
 								var MO5 = (data.MO5 && data.MO5 != '') ? $("#MO5").val(data.MO5.split(';')).change() : '';
-								$("#paqueteMO1").val(data.paqueteMO1).change();
-								$("#paqueteMO2").val(data.paqueteMO2).change();
-								$("#paqueteMO3").val(data.paqueteMO3).change();
-								$("#paqueteMO4").val(data.paqueteMO4).change();
-								$("#paqueteMO5").val(data.paqueteMO5).change();
+								selectContractPackage("#paqueteMO1", data.paqueteMO1);
+								selectContractPackage("#paqueteMO2", data.paqueteMO2);
+								selectContractPackage("#paqueteMO3", data.paqueteMO3);
+								selectContractPackage("#paqueteMO4", data.paqueteMO4);
+								selectContractPackage("#paqueteMO5", data.paqueteMO5);
 							} else {
 								$("#MO1, #MO2, #MO3, #MO4, #MO5").html('<option value=""></option>').change();
 								$("#paqueteMO1, #paqueteMO2, #paqueteMO3, #paqueteMO4, #paqueteMO5").html('<option value=""></option>').change();
@@ -600,11 +769,11 @@
 								var S3 = (data.S3 && data.S3 != '') ? $("#S3").val(data.S3.split(';')).change() : '';
 								var S4 = (data.S4 && data.S4 != '') ? $("#S4").val(data.S4.split(';')).change() : '';
 								var S5 = (data.S5 && data.S5 != '') ? $("#S5").val(data.S5.split(';')).change() : '';
-								$("#paqueteS1").val(data.paqueteS1).change();
-								$("#paqueteS2").val(data.paqueteS2).change();
-								$("#paqueteS3").val(data.paqueteS3).change();
-								$("#paqueteS4").val(data.paqueteS4).change();
-								$("#paqueteS5").val(data.paqueteS5).change();
+								selectContractPackage("#paqueteS1", data.paqueteS1);
+								selectContractPackage("#paqueteS2", data.paqueteS2);
+								selectContractPackage("#paqueteS3", data.paqueteS3);
+								selectContractPackage("#paqueteS4", data.paqueteS4);
+								selectContractPackage("#paqueteS5", data.paqueteS5);
 							} else {
 								$("#S1, #S2, #S3, #S4, #S5").html('<option value=""></option>').change();
 								$("#paqueteS1, #paqueteS2, #paqueteS3, #paqueteS4, #paqueteS5").html('<option value=""></option>').change();
@@ -621,17 +790,19 @@
 								var OC3 = (data.OC3 && data.OC3 != '') ? $("#OC3").val(data.OC3.split(';')).change() : '';
 								var OC4 = (data.OC4 && data.OC4 != '') ? $("#OC4").val(data.OC4.split(';')).change() : '';
 								var OC5 = (data.OC5 && data.OC5 != '') ? $("#OC5").val(data.OC5.split(';')).change() : '';
-								$("#paqueteOC1").val(data.paqueteOC1).change();
-								$("#paqueteOC2").val(data.paqueteOC2).change();
-								$("#paqueteOC3").val(data.paqueteOC3).change();
-								$("#paqueteOC4").val(data.paqueteOC4).change();
-								$("#paqueteOC5").val(data.paqueteOC5).change();
+								selectContractPackage("#paqueteOC1", data.paqueteOC1);
+								selectContractPackage("#paqueteOC2", data.paqueteOC2);
+								selectContractPackage("#paqueteOC3", data.paqueteOC3);
+								selectContractPackage("#paqueteOC4", data.paqueteOC4);
+								selectContractPackage("#paqueteOC5", data.paqueteOC5);
 							} else {
 								$("#OC1, #OC2, #OC3, #OC4, #OC5").html('<option value=""></option>').change();
 								$("#paqueteOC1, #paqueteOC2, #paqueteOC3, #paqueteOC4, #paqueteOC5").html('<option value=""></option>').change();
 								$("#OC1,#OC2,#OC3,#OC4,#OC5").val('').change();
 								$("#paqueteOC1,#paqueteOC2,#paqueteOC3,#paqueteOC4,#paqueteOC5").val('').change();
 							}
+
+							setPackageQuantities(data);
 
 							// Update section visibility
 							updateSections();
@@ -646,8 +817,12 @@
 					$("#modalEditarContratos").modal("show");
 					$("#modal-body-texto-EditarContratos").html("Formulario de Registro de Contratos; Actividad: <b>" + data.actividad + "</b>");
 
-					$("#btn_cancelar_editar").on("click", function(){
+					$("#btn_cancelar_contratos").off("click.contratosRearmar").on("click.contratosRearmar", function(){
 							only_once = true;
+					});
+
+					$("#modalEditarContratos").off("hidden.bs.modal.contratosRearmar").on("hidden.bs.modal.contratosRearmar", function() {
+						only_once = true;
 					});
 		    }
 		    cancelarEdicionFila();
@@ -738,7 +913,12 @@
 				frm.push({ name: 'tipoContrato', value: tipoContrato });
 
 				var frmStr = $.param(frm);
+				submitContractSave(frmStr);
+		  });
+		}
 
+		function submitContractSave(frmStr) {
+		    var db = document.getElementById('baseDatos').value;
 		    $.ajax({
 		      method: "POST",
 		      url: "/api/contratos/save?db="+db,
@@ -749,6 +929,8 @@
 		      if (json_info.respuesta == "BIEN") {
 		        $("#modalEditarContratos").modal("hide");
 						recargarTabla();
+		      } else if (json_info.respuesta == "DURACIONES_REQUERIDAS") {
+						openDurationsModal(json_info.paquetes || [], frmStr);
 		      } else {
 						$(".mensaje").html(json_info["respuesta"]).css({
 							"color": "#C9302C"
@@ -759,8 +941,51 @@
 						});
 					}
 		    });
-		  });
 		}
+
+		$("#btn_guardar_duraciones_contratos").on("click", function(e) {
+			e.preventDefault();
+			var db = document.getElementById('baseDatos').value;
+			var duraciones = [];
+			var valid = true;
+			$('#tablaDuracionesContratos tbody tr').each(function() {
+				var item = $(this).data('item') || {};
+				var row = {
+					tipoPaquete: item.tipoPaquete || '',
+					paqueteContratacion: item.paqueteContratacion || ''
+				};
+				$(this).find('.duration-input').each(function() {
+					var value = parseInt($(this).val(), 10);
+					if (isNaN(value) || value < 0) {
+						valid = false;
+					}
+					row[$(this).data('field')] = value;
+				});
+				duraciones.push(row);
+			});
+
+			if (!valid) {
+				$('.mensaje-duraciones').text('Todas las duraciones deben ser numeros enteros iguales o mayores a cero.');
+				return;
+			}
+
+			$.ajax({
+				method: "POST",
+				url: "/api/contratos/save?db="+db,
+				data: {
+					opcion: 'guardarDuracionesContratacion',
+					duraciones: JSON.stringify(duraciones)
+				}
+			}).done(function(info) {
+				var json_info = (typeof info === 'string' ? JSON.parse(info) : info);
+				if (json_info.respuesta === 'BIEN') {
+					$('#modalDuracionesContratos').modal('hide');
+					retryPendingContractSave();
+					return;
+				}
+				$('.mensaje-duraciones').text(json_info.mensaje || 'No se pudieron guardar las duraciones.');
+			});
+		});
 
 		/*Sirve para mostrar el mensaje emergente dependiendo de las condiciones que se presenten */
 		var mostrar_mensaje = function(informacion) {

@@ -542,6 +542,8 @@ Funciones:
 
 Entrada: `/contratos`.
 
+Matriz funcional detallada: `docs/qa/contratos-escenarios.md`.
+
 Tabla visible:
 
 | Campo | Uso |
@@ -552,6 +554,7 @@ Tabla visible:
 | `tipoContrato` | Modalidades asociadas |
 | `SI1..SI5`, `S1..S5`, `MO1..MO5`, `OC1..OC5` | Insumos/recursos ocultos |
 | `paqueteSI1..5`, `paqueteS1..5`, `paqueteMO1..5`, `paqueteOC1..5` | Paquetes ocultos |
+| Cantidad por paquete | Numero de contratos requerido para cada paquete |
 | `contratosAsociados` | Resumen visible |
 
 Modal `#modalEditarContratos`:
@@ -567,9 +570,18 @@ Modal `#modalEditarContratos`:
 - Por cada modalidad hay 5 filas:
   - Paquete: `paqueteSI1..5`, `paqueteMO1..5`, `paqueteS1..5`, `paqueteOC1..5`.
   - Recursos multiples: `SI1..5`, `MO1..5`, `S1..5`, `OC1..5`.
+  - Cantidad de contratos por paquete: entero controlado por stepper.
 - Botones:
   - `#btn_guardar_contratos`.
   - `#btn_cancelar_contratos`.
+
+Reglas funcionales:
+
+- `SI` es exclusivo; `MO`, `S` y `OC` pueden combinarse.
+- El usuario decide la cantidad de contratos por paquete; no se infiere automaticamente.
+- El sistema registra en que semana cambia `actividadInicio`, `fechaInicio`, modalidad, paquetes, recursos o cantidades.
+- Si falta duracion contractual, se debe solicitar definicion explicita de las 7 duraciones antes de dejar el contrato completo.
+- `/pdc/` recibe los datos ya definidos por `/contratos/` y usa su flujo existente de recalculo.
 
 Auto-definir:
 

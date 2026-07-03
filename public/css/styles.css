@@ -5453,7 +5453,7 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
 #modalEditarContratos .ct-contract-header,
 #modalEditarContratos .ct-contract-row {
   display: grid;
-  grid-template-columns: 4rem minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: 4rem minmax(0, 1fr) 7rem minmax(0, 1fr);
   gap: 0.85rem 1rem;
   align-items: center;
 }
@@ -5488,6 +5488,17 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
 
 #modalEditarContratos .ct-contract-field {
   min-inline-size: 0;
+}
+
+#modalEditarContratos .ct-contract-field--quantity .form-control {
+  text-align: center;
+}
+
+#modalEditarContratos .ct-overplanning-alert {
+  margin: 0.7rem 0.75rem 0;
+  color: #8a5a00;
+  font-size: 0.84rem;
+  font-weight: 600;
 }
 
 #modalEditarContratos .ct-contract-field__label {
