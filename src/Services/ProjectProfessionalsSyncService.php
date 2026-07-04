@@ -128,9 +128,10 @@ class ProjectProfessionalsSyncService
                         }
 
                         if (!empty($blockedFields)) {
+                            $blockedParams[] = $projectId;
                             $blockedParams[] = $existingByEmail[$email]['id'];
                             $this->db->queryWithProject(
-                                "UPDATE {$tProf} SET " . implode(', ', $blockedFields) . ' WHERE id = ?',
+                                "UPDATE {$tProf} SET " . implode(', ', $blockedFields) . ' WHERE project_id = ? AND id = ?',
                                 $blockedParams,
                                 $projectId,
                             );
@@ -183,9 +184,10 @@ class ProjectProfessionalsSyncService
                 }
 
                 if (!empty($fields)) {
+                    $params[] = $projectId;
                     $params[] = $existing['id'];
                     $this->db->queryWithProject(
-                        "UPDATE {$tProf} SET " . implode(', ', $fields) . ' WHERE id = ?',
+                        "UPDATE {$tProf} SET " . implode(', ', $fields) . ' WHERE project_id = ? AND id = ?',
                         $params,
                         $projectId,
                     );
@@ -220,9 +222,10 @@ class ProjectProfessionalsSyncService
                     }
 
                     if (!empty($duplicateFields)) {
+                        $duplicateParams[] = $projectId;
                         $duplicateParams[] = $existing['id'];
                         $this->db->queryWithProject(
-                            "UPDATE {$tProf} SET " . implode(', ', $duplicateFields) . ' WHERE id = ?',
+                            "UPDATE {$tProf} SET " . implode(', ', $duplicateFields) . ' WHERE project_id = ? AND id = ?',
                             $duplicateParams,
                             $projectId,
                         );
@@ -252,9 +255,10 @@ class ProjectProfessionalsSyncService
                 }
 
                 if (!empty($fields)) {
+                    $params[] = $projectId;
                     $params[] = $existing['id'];
                     $this->db->queryWithProject(
-                        "UPDATE {$tProf} SET " . implode(', ', $fields) . ' WHERE id = ?',
+                        "UPDATE {$tProf} SET " . implode(', ', $fields) . ' WHERE project_id = ? AND id = ?',
                         $params,
                         $projectId,
                     );
@@ -335,8 +339,8 @@ class ProjectProfessionalsSyncService
         }
 
         $count = (int) $this->db->queryWithProject(
-            "SELECT COUNT(*) FROM {$tProf} WHERE LOWER(TRIM(email)) = ?",
-            [$normalizedEmail],
+            "SELECT COUNT(*) FROM {$tProf} WHERE project_id = ? AND LOWER(TRIM(email)) = ?",
+            [$projectId, $normalizedEmail],
             $projectId,
         )->fetchColumn();
 
@@ -345,8 +349,8 @@ class ProjectProfessionalsSyncService
         }
 
         $this->db->queryWithProject(
-            "UPDATE {$tProf} SET activo = 0 WHERE LOWER(TRIM(email)) = ?",
-            [$normalizedEmail],
+            "UPDATE {$tProf} SET activo = 0 WHERE project_id = ? AND LOWER(TRIM(email)) = ?",
+            [$projectId, $normalizedEmail],
             $projectId,
         );
 
@@ -469,8 +473,8 @@ class ProjectProfessionalsSyncService
         $projectId = TableResolver::getProjectIdByPrefix($dbPrefix);
 
         $rows = $this->db->queryWithProject(
-            "SELECT id, nombre, email, cargo, activo FROM {$tProf} ORDER BY id ASC",
-            [],
+            "SELECT id, nombre, email, cargo, activo FROM {$tProf} WHERE project_id = ? ORDER BY id ASC",
+            [$projectId],
             $projectId,
         )->fetchAll(PDO::FETCH_ASSOC);
 
@@ -500,8 +504,8 @@ class ProjectProfessionalsSyncService
         $projectId = TableResolver::getProjectIdByPrefix($dbPrefix);
 
         $rows = $this->db->queryWithProject(
-            "SELECT id, nombre, email, cargo, activo FROM {$tProf} ORDER BY id ASC",
-            [],
+            "SELECT id, nombre, email, cargo, activo FROM {$tProf} WHERE project_id = ? ORDER BY id ASC",
+            [$projectId],
             $projectId,
         )->fetchAll(PDO::FETCH_ASSOC);
 
@@ -533,15 +537,15 @@ class ProjectProfessionalsSyncService
                 $candidateName = $this->limpiarTexto($candidate['nombre'] ?? '');
                 if ($survivorName === '' && $candidateName !== '') {
                     $this->db->queryWithProject(
-                        "UPDATE {$tProf} SET nombre = ? WHERE id = ?",
-                        [$candidateName, $survivor['id']],
+                        "UPDATE {$tProf} SET nombre = ? WHERE project_id = ? AND id = ?",
+                        [$candidateName, $projectId, $survivor['id']],
                         $projectId,
                     );
                     $survivorName = $candidateName;
                 }
 
                 $this->replaceProfessionalDependencies($dbPrefix, $candidateName, $survivorName);
-                $this->db->queryWithProject("DELETE FROM {$tProf} WHERE id = ?", [$candidate['id']], $projectId);
+                $this->db->queryWithProject("DELETE FROM {$tProf} WHERE project_id = ? AND id = ?", [$projectId, $candidate['id']], $projectId);
                 $summary['deduplicated']++;
             }
 
@@ -579,8 +583,8 @@ class ProjectProfessionalsSyncService
         $total = 0;
         foreach ($this->getProfessionalDependencyTables($dbPrefix) as $table => $column) {
             $total += (int) $this->db->queryWithProject(
-                "SELECT COUNT(*) FROM {$table} WHERE {$column} = ?",
-                [$nombre],
+                "SELECT COUNT(*) FROM {$table} WHERE project_id = ? AND {$column} = ?",
+                [$projectId, $nombre],
                 $projectId,
             )->fetchColumn();
         }
@@ -600,8 +604,8 @@ class ProjectProfessionalsSyncService
         $projectId = TableResolver::getProjectIdByPrefix($dbPrefix);
         foreach ($this->getProfessionalDependencyTables($dbPrefix) as $table => $column) {
             $this->db->queryWithProject(
-                "UPDATE {$table} SET {$column} = ? WHERE {$column} = ?",
-                [$newName, $oldName],
+                "UPDATE {$table} SET {$column} = ? WHERE project_id = ? AND {$column} = ?",
+                [$newName, $projectId, $oldName],
                 $projectId,
             );
         }

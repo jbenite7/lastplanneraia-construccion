@@ -27,8 +27,9 @@ class ControlCambiosApiController
         }
 
         try {
-            $queryCount = "SELECT COUNT(*) as total FROM " . TableResolver::resolveByPrefix($dbPrefix, 'cambios') . "";
-            $conteo = $this->db->queryWithProject($queryCount)->fetchColumn() ?? 0;
+            $projectId = $this->projectId($dbPrefix);
+            $queryCount = "SELECT COUNT(*) as total FROM " . TableResolver::resolveByPrefix($dbPrefix, 'cambios') . " WHERE project_id = ?";
+            $conteo = $this->db->queryWithProject($queryCount, [$projectId], $projectId)->fetchColumn() ?? 0;
 
             if ($conteo == 0) {
                 $arreglo["data"][] = [
@@ -42,8 +43,8 @@ class ControlCambiosApiController
                     "soportes" => "{\"soportes\": [{\"consecutivo\":1,\"descripcion\":\"\",\"link\":\"\"}]}",
                 ];
             } else {
-                $queryData = "SELECT id, solicitanteCambio, detalleSolicitanteOtro, fechaSolicitud, prioridad, tipoCambio, responsableSolucion, detalleResponsableSolucion, justificacion, descripcion, incidenciaAlcance, tiempoCronograma, tiempoCronogramaAfectado, incidenciaCronograma, valorPresupuesto, costoDirecto, costoDirectoAIU, costoDirectoAIUIVA, valorAprobado, incidenciaPresupuesto, incidenciaCalidad, incidenciaRiesgo, incidenciaRecurso, fechaTentativaDefinicion, fechaEntregaInterventoria, Observaciones, fechaDefinicion, aprobacion, soportes FROM " . TableResolver::resolveByPrefix($dbPrefix, 'cambios') . "";
-                $arreglo["data"] = $this->db->queryWithProject($queryData)->fetchAll(PDO::FETCH_ASSOC);
+                $queryData = "SELECT id, solicitanteCambio, detalleSolicitanteOtro, fechaSolicitud, prioridad, tipoCambio, responsableSolucion, detalleResponsableSolucion, justificacion, descripcion, incidenciaAlcance, tiempoCronograma, tiempoCronogramaAfectado, incidenciaCronograma, valorPresupuesto, costoDirecto, costoDirectoAIU, costoDirectoAIUIVA, valorAprobado, incidenciaPresupuesto, incidenciaCalidad, incidenciaRiesgo, incidenciaRecurso, fechaTentativaDefinicion, fechaEntregaInterventoria, Observaciones, fechaDefinicion, aprobacion, soportes FROM " . TableResolver::resolveByPrefix($dbPrefix, 'cambios') . " WHERE project_id = ?";
+                $arreglo["data"] = $this->db->queryWithProject($queryData, [$projectId], $projectId)->fetchAll(PDO::FETCH_ASSOC);
             }
 
             $this->json($arreglo);
@@ -101,26 +102,35 @@ class ControlCambiosApiController
 
     private function nuevo(string $dbPrefix): void
     {
+        $projectId = $this->projectId($dbPrefix);
         $params = $this->getPostParams();
-        $query = "INSERT INTO " . TableResolver::resolveByPrefix($dbPrefix, 'cambios') . " (id, solicitanteCambio, detalleSolicitanteOtro, fechaSolicitud, prioridad, tipoCambio, responsableSolucion, detalleResponsableSolucion, justificacion, descripcion, incidenciaAlcance, tiempoCronograma, tiempoCronogramaAfectado, incidenciaCronograma, valorPresupuesto, costoDirecto, costoDirectoAIU, costoDirectoAIUIVA, valorAprobado, incidenciaPresupuesto, incidenciaCalidad, incidenciaRiesgo, incidenciaRecurso, fechaTentativaDefinicion, fechaEntregaInterventoria, fechaDefinicion, aprobacion, soportes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $changeId = filter_var($params[0] ?? null, FILTER_VALIDATE_INT);
+        if (!$changeId) {
+            $changeId = $this->nextChangeId($dbPrefix, $projectId);
+            $params[0] = $changeId;
+        }
+        array_unshift($params, $projectId);
+        $query = "INSERT INTO " . TableResolver::resolveByPrefix($dbPrefix, 'cambios') . " (project_id, id, solicitanteCambio, detalleSolicitanteOtro, fechaSolicitud, prioridad, tipoCambio, responsableSolucion, detalleResponsableSolucion, justificacion, descripcion, incidenciaAlcance, tiempoCronograma, tiempoCronogramaAfectado, incidenciaCronograma, valorPresupuesto, costoDirecto, costoDirectoAIU, costoDirectoAIUIVA, valorAprobado, incidenciaPresupuesto, incidenciaCalidad, incidenciaRiesgo, incidenciaRecurso, fechaTentativaDefinicion, fechaEntregaInterventoria, fechaDefinicion, aprobacion, soportes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-        $res = $this->db->queryWithProject($query, $params);
+        $res = $this->db->queryWithProject($query, $params, $projectId);
         if ($res) {
-            $this->db->logActivity('ControlCambios', 'CREAR', "Creó solicitud de cambio ID {$params[0]}", $dbPrefix);
+            $this->db->logActivity('ControlCambios', 'CREAR', "Creó solicitud de cambio ID {$changeId}", $dbPrefix);
         }
         $this->json(["respuesta" => $res ? "BIEN" : "ERROR"]);
     }
 
     private function modificar(string $dbPrefix): void
     {
+        $projectId = $this->projectId($dbPrefix);
         $params = $this->getPostParams();
         // Shift consecutivo to the end for WHERE id=?
         $id = array_shift($params);
+        $params[] = $projectId;
         $params[] = $id;
 
-        $query = "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'cambios') . " SET solicitanteCambio=?, detalleSolicitanteOtro=?, fechaSolicitud=?, prioridad=?, tipoCambio=?, responsableSolucion=?, detalleResponsableSolucion=?, justificacion=?, descripcion=?, incidenciaAlcance=?, tiempoCronograma=?, tiempoCronogramaAfectado=?, incidenciaCronograma=?, valorPresupuesto=?, costoDirecto=?, costoDirectoAIU=?, costoDirectoAIUIVA=?, valorAprobado=?, incidenciaPresupuesto=?, incidenciaCalidad=?, incidenciaRiesgo=?, incidenciaRecurso=?, fechaTentativaDefinicion=?, fechaEntregaInterventoria=?, Observaciones=NULL, fechaDefinicion=?, aprobacion=?, soportes=? WHERE id=?";
+        $query = "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'cambios') . " SET solicitanteCambio=?, detalleSolicitanteOtro=?, fechaSolicitud=?, prioridad=?, tipoCambio=?, responsableSolucion=?, detalleResponsableSolucion=?, justificacion=?, descripcion=?, incidenciaAlcance=?, tiempoCronograma=?, tiempoCronogramaAfectado=?, incidenciaCronograma=?, valorPresupuesto=?, costoDirecto=?, costoDirectoAIU=?, costoDirectoAIUIVA=?, valorAprobado=?, incidenciaPresupuesto=?, incidenciaCalidad=?, incidenciaRiesgo=?, incidenciaRecurso=?, fechaTentativaDefinicion=?, fechaEntregaInterventoria=?, Observaciones=NULL, fechaDefinicion=?, aprobacion=?, soportes=? WHERE project_id = ? AND id=?";
 
-        $res = $this->db->queryWithProject($query, $params);
+        $res = $this->db->queryWithProject($query, $params, $projectId);
         if ($res) {
             $this->db->logActivity('ControlCambios', 'MODIFICAR', "Modificó solicitud de cambio ID $id", $dbPrefix);
         }
@@ -178,8 +188,9 @@ class ControlCambiosApiController
 
     private function eliminar(string $dbPrefix): void
     {
+        $projectId = $this->projectId($dbPrefix);
         $id = $_POST["Id"] ?? 0;
-        $res = $this->db->queryWithProject("DELETE FROM " . TableResolver::resolveByPrefix($dbPrefix, 'cambios') . " WHERE id = ?", [$id]);
+        $res = $this->db->queryWithProject("DELETE FROM " . TableResolver::resolveByPrefix($dbPrefix, 'cambios') . " WHERE project_id = ? AND id = ?", [$projectId, $id], $projectId);
         if ($res) {
             $this->db->logActivity('ControlCambios', 'ELIMINAR', "Eliminó solicitud cambio ID $id", $dbPrefix);
         }
@@ -188,7 +199,12 @@ class ControlCambiosApiController
 
     private function obtenerNombreDirector(string $dbPrefix): void
     {
-        $nombre = $this->db->queryWithProject("SELECT nombre FROM " . TableResolver::resolveByPrefix($dbPrefix, 'profesionales') . " WHERE cargo = 'Director de Obra' LIMIT 1")->fetchColumn();
+        $projectId = $this->projectId($dbPrefix);
+        $nombre = $this->db->queryWithProject(
+            "SELECT nombre FROM " . TableResolver::resolveByPrefix($dbPrefix, 'profesionales') . " WHERE project_id = ? AND cargo = 'Director de Obra' LIMIT 1",
+            [$projectId],
+            $projectId,
+        )->fetchColumn();
         echo json_encode($nombre ?: '', JSON_UNESCAPED_UNICODE);
     }
 
@@ -200,9 +216,14 @@ class ControlCambiosApiController
 
     private function actualizarFechaInicio(string $dbPrefix): void
     {
+        $projectId = $this->projectId($dbPrefix);
         $id = $_POST["idActividad"] ?? 0;
         $semana = $_POST["semana"] ?? 0;
-        $fecha = $this->db->queryWithProject("SELECT Fecha_Inicio FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " WHERE unique_id = ? AND Semana = ?", [$id, $semana])->fetchColumn();
+        $fecha = $this->db->queryWithProject(
+            "SELECT Fecha_Inicio FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " WHERE project_id = ? AND unique_id = ? AND Semana = ?",
+            [$projectId, $id, $semana],
+            $projectId,
+        )->fetchColumn();
         $this->json(["data" => ["Fecha_Inicio" => $fecha]]);
     }
 
@@ -230,5 +251,24 @@ class ControlCambiosApiController
     {
         header('Content-Type: application/json');
         echo json_encode($data, JSON_UNESCAPED_UNICODE);
+    }
+
+    private function projectId(string $dbPrefix): int
+    {
+        $projectId = TableResolver::getProjectIdByPrefix($dbPrefix);
+        if (!$projectId) {
+            throw new \RuntimeException('Proyecto no encontrado.');
+        }
+
+        return $projectId;
+    }
+
+    private function nextChangeId(string $dbPrefix, int $projectId): int
+    {
+        return (int) $this->db->queryWithProject(
+            "SELECT COALESCE(MAX(id), 0) + 1 FROM " . TableResolver::resolveByPrefix($dbPrefix, 'cambios') . " WHERE project_id = ?",
+            [$projectId],
+            $projectId,
+        )->fetchColumn();
     }
 }

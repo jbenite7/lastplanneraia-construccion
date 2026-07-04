@@ -31,7 +31,7 @@ if ($projectId) {
 
 try {
     // 1. Verificar si es la última semana
-    $stmtMax = $dbInstance->queryWithProject("SELECT MAX(Semana) AS maxSemana FROM {$tSemanasActivas}");
+    $stmtMax = $dbInstance->queryWithProject("SELECT MAX(Semana) AS maxSemana FROM {$tSemanasActivas} WHERE project_id = ?", [$projectId], $projectId);
     $dataMax = $stmtMax->fetch();
     $maxSemana = (int) ($dataMax["maxSemana"] ?? 0);
 
@@ -54,7 +54,7 @@ try {
         ];
 
         foreach ($tablas as $tabla => $columna) {
-            $dbInstance->queryWithProject("DELETE FROM $tabla WHERE $columna >= ?", [$semana]);
+            $dbInstance->queryWithProject("DELETE FROM $tabla WHERE project_id = ? AND $columna >= ?", [$projectId, $semana], $projectId);
         }
 
         $dbInstance->logActivity('Sistema', 'ELIMINAR_SEMANA', "Eliminación de semana $semana y superiores en proyecto $dbName");

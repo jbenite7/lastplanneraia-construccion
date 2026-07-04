@@ -52,6 +52,7 @@ class ProfesionalesApiController
 
         try {
             $syncSummary = $this->syncService->syncProjectProfessionals($dbPrefix);
+            $projectId = $this->projectId($dbPrefix);
 
             $tables = [
                 "" . TableResolver::resolveByPrefix($dbPrefix, 'programa') . "" => "Responsable_AIA",
@@ -62,16 +63,17 @@ class ProfesionalesApiController
 
             $dependencyChecks = [];
             foreach ($tables as $tbl => $col) {
-                $check = $this->db->queryWithProject("SHOW TABLES LIKE '$tbl'")->fetch();
-                if ($check) {
-                    $dependencyChecks[] = "(SELECT COUNT(*) FROM $tbl WHERE $tbl.$col = p.nombre) > 0";
+                if ($this->tableHasColumn($tbl, $col)) {
+                    $dependencyChecks[] = "(SELECT COUNT(*) FROM $tbl WHERE $tbl.project_id = ? AND $tbl.$col = p.nombre) > 0";
                 }
             }
 
             $depSql = !empty($dependencyChecks) ? ", ( " . implode(" OR ", $dependencyChecks) . " ) as has_dependencies" : ", 0 as has_dependencies";
 
-            $query = "SELECT p.id, p.nombre, p.email, p.cargo, p.activo $depSql FROM " . TableResolver::resolveByPrefix($dbPrefix, 'profesionales') . " p WHERE p.nombre IS NOT NULL AND TRIM(p.nombre) != '' ORDER BY p.id ASC";
-            $data = $this->db->queryWithProject($query)->fetchAll(PDO::FETCH_ASSOC);
+            $query = "SELECT p.id, p.nombre, p.email, p.cargo, p.activo $depSql FROM " . TableResolver::resolveByPrefix($dbPrefix, 'profesionales') . " p WHERE p.project_id = ? AND p.nombre IS NOT NULL AND TRIM(p.nombre) != '' ORDER BY p.id ASC";
+            $params = array_fill(0, count($dependencyChecks), $projectId);
+            $params[] = $projectId;
+            $data = $this->db->query($query, $params)->fetchAll(PDO::FETCH_ASSOC);
             $data = $this->syncService->decorateProjectProfessionals($dbPrefix, $data);
 
             foreach ($data as &$row) {
@@ -136,6 +138,7 @@ class ProfesionalesApiController
 
     private function guardar_cambios(string $dbPrefix): void
     {
+        $projectId = $this->projectId($dbPrefix);
         $changes = $_POST['cambios'] ?? [];
         if (empty($changes)) {
             $this->json(["status" => "success", "message" => "No hubo cambios."]);
@@ -188,8 +191,9 @@ class ProfesionalesApiController
 
                 $activo = $this->normalizarBooleano($rowChanges['activo'] ?? $actual['activo']);
                 $resultado = $this->db->queryWithProject(
-                    "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'profesionales') . " SET activo = ? WHERE id = ?",
-                    [$activo, $id],
+                    "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'profesionales') . " SET activo = ? WHERE project_id = ? AND id = ?",
+                    [$activo, $projectId, $id],
+                    $projectId,
                 );
 
                 if ($resultado) {
@@ -213,8 +217,9 @@ class ProfesionalesApiController
             }
 
             $resultado = $this->db->queryWithProject(
-                "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'profesionales') . " SET nombre = ?, email = ?, cargo = ?, activo = ? WHERE id = ?",
-                [$actualizado['nombre'], $actualizado['email'], $actualizado['cargo'], $actualizado['activo'], $id],
+                "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'profesionales') . " SET nombre = ?, email = ?, cargo = ?, activo = ? WHERE project_id = ? AND id = ?",
+                [$actualizado['nombre'], $actualizado['email'], $actualizado['cargo'], $actualizado['activo'], $projectId, $id],
+                $projectId,
             );
 
             if ($resultado) {
@@ -236,6 +241,7 @@ class ProfesionalesApiController
 
     private function actualizar_dependencias_nombre(string $dbPrefix, string $oldName, string $newName): void
     {
+        $projectId = $this->projectId($dbPrefix);
         $tablesToUpdate = [
             "" . TableResolver::resolveByPrefix($dbPrefix, 'programa') . "" => "Responsable_AIA",
             "" . TableResolver::resolveByPrefix($dbPrefix, 'programacion_semanal') . "" => "Responsable_AIA",
@@ -245,14 +251,15 @@ class ProfesionalesApiController
         ];
 
         foreach ($tablesToUpdate as $tbl => $col) {
-            if ($this->db->queryWithProject("SHOW TABLES LIKE '$tbl'")->fetch()) {
-                $this->db->queryWithProject("UPDATE $tbl SET $col = ? WHERE $col = ?", [$newName, $oldName]);
+            if ($this->tableHasColumn($tbl, $col)) {
+                $this->db->queryWithProject("UPDATE $tbl SET $col = ? WHERE project_id = ? AND $col = ?", [$newName, $projectId, $oldName], $projectId);
             }
         }
     }
 
     private function crear(string $dbPrefix): void
     {
+        $projectId = $this->projectId($dbPrefix);
         $data = $this->sanitizarProfesional([
             'nombre' => $_POST['nombre'] ?? '',
             'email' => $_POST['email'] ?? '',
@@ -267,14 +274,17 @@ class ProfesionalesApiController
             return;
         }
 
-        $res = $this->db->queryWithProject("INSERT INTO " . TableResolver::resolveByPrefix($dbPrefix, 'profesionales') . " (nombre, email, cargo, activo) VALUES (?, ?, ?, 1)", [
-            $data['nombre'], $data['email'], $data['cargo'],
-        ]);
+        $res = $this->db->queryWithProject(
+            "INSERT INTO " . TableResolver::resolveByPrefix($dbPrefix, 'profesionales') . " (project_id, nombre, email, cargo, activo) VALUES (?, ?, ?, ?, 1)",
+            [$projectId, $data['nombre'], $data['email'], $data['cargo']],
+            $projectId,
+        );
 
         if ($res) {
             $id = $this->db->queryWithProject(
-                "SELECT id FROM " . TableResolver::resolveByPrefix($dbPrefix, 'profesionales') . " WHERE email = ? ORDER BY id DESC LIMIT 1",
-                [$data['email']],
+                "SELECT id FROM " . TableResolver::resolveByPrefix($dbPrefix, 'profesionales') . " WHERE project_id = ? AND email = ? ORDER BY id DESC LIMIT 1",
+                [$projectId, $data['email']],
+                $projectId,
             )->fetchColumn();
             $this->json(["status" => "success", "id" => $id ?: $this->db->lastInsertId(), "message" => "Profesional creado."]);
         } else {
@@ -284,6 +294,7 @@ class ProfesionalesApiController
 
     private function eliminar(string $dbPrefix): void
     {
+        $projectId = $this->projectId($dbPrefix);
         $id = $_POST['id'] ?? 0;
         $profesional = $this->obtenerProfesional($dbPrefix, (int) $id);
         $nombre = $profesional['nombre'] ?? null;
@@ -310,15 +321,15 @@ class ProfesionalesApiController
         ];
 
         foreach ($tables as $tbl => $col) {
-            if ($this->db->queryWithProject("SHOW TABLES LIKE '$tbl'")->fetch()) {
-                if ($this->db->queryWithProject("SELECT COUNT(*) FROM $tbl WHERE $col = ?", [$nombre])->fetchColumn() > 0) {
+            if ($this->tableHasColumn($tbl, $col)) {
+                if ($this->db->queryWithProject("SELECT COUNT(*) FROM $tbl WHERE project_id = ? AND $col = ?", [$projectId, $nombre], $projectId)->fetchColumn() > 0) {
                     $this->json(["status" => "error", "message" => "No se puede eliminar: Tiene registros asociados."]);
                     return;
                 }
             }
         }
 
-        if ($this->db->queryWithProject("DELETE FROM " . TableResolver::resolveByPrefix($dbPrefix, 'profesionales') . " WHERE id = ?", [$id])) {
+        if ($this->db->queryWithProject("DELETE FROM " . TableResolver::resolveByPrefix($dbPrefix, 'profesionales') . " WHERE project_id = ? AND id = ?", [$projectId, $id], $projectId)) {
             $this->db->logActivity('Profesionales', 'ELIMINAR', "Eliminó profesional: $nombre", $dbPrefix);
             $this->json(["status" => "success", "message" => "Profesional eliminado."]);
         } else {
@@ -335,7 +346,12 @@ class ProfesionalesApiController
 
     private function obtenerProfesional(string $dbPrefix, int $id): ?array
     {
-        $stmt = $this->db->queryWithProject("SELECT id, nombre, email, cargo, activo FROM " . TableResolver::resolveByPrefix($dbPrefix, 'profesionales') . " WHERE id = ?", [$id]);
+        $projectId = $this->projectId($dbPrefix);
+        $stmt = $this->db->queryWithProject(
+            "SELECT id, nombre, email, cargo, activo FROM " . TableResolver::resolveByPrefix($dbPrefix, 'profesionales') . " WHERE project_id = ? AND id = ?",
+            [$projectId, $id],
+            $projectId,
+        );
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         return $row ?: null;
     }
@@ -399,15 +415,16 @@ class ProfesionalesApiController
     private function buscarDuplicadosProfesional(string $dbPrefix, array $data, ?int $excludeId = null): array
     {
         $errores = [];
-        $params = [];
-        $sql = "SELECT id, email FROM " . TableResolver::resolveByPrefix($dbPrefix, 'profesionales') . "";
+        $projectId = $this->projectId($dbPrefix);
+        $params = [$projectId];
+        $sql = "SELECT id, email FROM " . TableResolver::resolveByPrefix($dbPrefix, 'profesionales') . " WHERE project_id = ?";
 
         if ($excludeId !== null) {
-            $sql .= ' WHERE id != ?';
+            $sql .= ' AND id != ?';
             $params[] = $excludeId;
         }
 
-        $rows = $this->db->queryWithProject($sql, $params)->fetchAll(PDO::FETCH_ASSOC);
+        $rows = $this->db->queryWithProject($sql, $params, $projectId)->fetchAll(PDO::FETCH_ASSOC);
         $emailNormalizado = $this->normalizarEmail($data['email']);
 
         foreach ($rows as $row) {
@@ -479,5 +496,27 @@ class ProfesionalesApiController
         }
 
         return null;
+    }
+
+    private function projectId(string $dbPrefix): int
+    {
+        $projectId = TableResolver::getProjectIdByPrefix($dbPrefix);
+        if (!$projectId) {
+            throw new \RuntimeException('Proyecto no encontrado.');
+        }
+
+        return $projectId;
+    }
+
+    private function tableHasColumn(string $table, string $column): bool
+    {
+        if (preg_match('/^[A-Za-z0-9_]+$/', $table) !== 1 || preg_match('/^[A-Za-z0-9_]+$/', $column) !== 1) {
+            return false;
+        }
+
+        return (int) $this->db->query(
+            'SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?',
+            [$table, $column],
+        )->fetchColumn() > 0;
     }
 }

@@ -29,9 +29,9 @@ if ($projectId) {
 try {
     $sqlSelect = "SELECT Actividad, unique_id, unique_id AS Consecutivo_En_Programa, Id, Ejecutado, Unidad, cantidad_ppto, Compromiso, Ejecutado_Real, Responsable_AIA, Sub_Contratista
                   FROM {$tProgSemanal}
-                  WHERE Semana = ? AND (Activa = '1' OR Activa = 'NA')";
+                  WHERE project_id = ? AND Semana = ? AND (Activa = '1' OR Activa = 'NA')";
 
-    $stmt = $db->queryWithProject($sqlSelect, [$semanaAnterior]);
+    $stmt = $db->queryWithProject($sqlSelect, [$projectId, $semanaAnterior], $projectId);
     $actividades = $stmt->fetchAll();
 
     $conteo_actividades = count($actividades);
@@ -63,16 +63,17 @@ try {
 
             $sqlUpdate = "UPDATE {$tProgConsolidado}
                           SET Ejecutado = ?, Responsable_AIA = ?, Sub_Contratista = ?
-                          WHERE Semana = ? AND (Actividad = ? OR programaAnteriorAsociar = ?)";
+                          WHERE project_id = ? AND Semana = ? AND (Actividad = ? OR programaAnteriorAsociar = ?)";
 
             $db->queryWithProject($sqlUpdate, [
                 $Ejecutado_fin_semana,
                 $Responsable_AIA,
                 $Sub_Contratista,
+                $projectId,
                 $semana,
                 $Actividad,
                 $Actividad,
-            ]);
+            ], $projectId);
         }
 
         $ejecucionActualizada = 1;

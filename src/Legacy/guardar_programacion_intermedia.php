@@ -57,12 +57,11 @@ if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
 
 if ($dbSession === '') {
     $_SESSION['db'] = $dbPrefix;
+}
 
-    // Centralizar contexto de proyecto en Database
-    $projectId = TableResolver::getProjectIdByPrefix($dbPrefix);
-    if ($projectId) {
-        $dbInstance->setProjectContext($projectId);
-    }
+$projectId = TableResolver::getProjectIdByPrefix($dbPrefix);
+if ($projectId) {
+    $dbInstance->setProjectContext($projectId);
 }
 
 // Resolve table names via TableResolver
@@ -204,33 +203,33 @@ switch ($opcion) {
         $Responsable_AIA = $_POST['Responsable_AIA'] ?? '';
         $Observaciones = $_POST['Observaciones'] ?? '';
 
-        modificar($D_y_E, $Materiales, $MdeO, $Equipos, $Predecesora, $Pdto_Cons, $Modelo, $Sub_Contratista, $Responsable_AIA, $Observaciones, $Id, $semana, fecha_inicio_sem($semana, $tSemanasActivas, $dbInstance), $dbPrefix, $dbInstance, $isPreConstruccion, $tProgConsolidado, $tSemanasActivas);
+        modificar($D_y_E, $Materiales, $MdeO, $Equipos, $Predecesora, $Pdto_Cons, $Modelo, $Sub_Contratista, $Responsable_AIA, $Observaciones, $Id, $semana, fecha_inicio_sem($semana, $tSemanasActivas, $dbInstance, $projectId), $dbPrefix, $dbInstance, $isPreConstruccion, $tProgConsolidado, $tSemanasActivas, $projectId);
         break;
     default:
         pi_json_error('Opcion no valida para programacion intermedia.', 400);
         break;
 }
 
-function modificar($D_y_E, $Materiales, $MdeO, $Equipos, $Predecesora, $Pdto_Cons, $Modelo, $Sub_Contratista, $Responsable_AIA, $Observaciones, $Id, $semana, $inicio_semana, $dbPrefix, $dbInstance, $isPreConstruccion, $tProgConsolidado, $tSemanasActivas)
+function modificar($D_y_E, $Materiales, $MdeO, $Equipos, $Predecesora, $Pdto_Cons, $Modelo, $Sub_Contratista, $Responsable_AIA, $Observaciones, $Id, $semana, $inicio_semana, $dbPrefix, $dbInstance, $isPreConstruccion, $tProgConsolidado, $tSemanasActivas, $projectId)
 {
     try {
         $dbInstance->beginTransaction();
 
-        $stmtSi = $dbInstance->queryWithProject("SELECT Semanas_Inicio FROM {$tProgConsolidado} WHERE unique_id = ? AND Semana = ?", [$Id, $semana]);
+        $stmtSi = $dbInstance->queryWithProject("SELECT Semanas_Inicio FROM {$tProgConsolidado} WHERE project_id = ? AND unique_id = ? AND Semana = ?", [$projectId, $Id, $semana], $projectId);
         $rowSi = $stmtSi->fetch(PDO::FETCH_ASSOC);
         $si = is_numeric($rowSi['Semanas_Inicio'] ?? null) ? (int) $rowSi['Semanas_Inicio'] : 999;
 
         if ($si <= 6) {
-            $sql = "UPDATE {$tProgConsolidado} SET Activa = 1 WHERE unique_id = ? AND Semana = ?";
-            $dbInstance->queryWithProject($sql, [$Id, $semana]);
+            $sql = "UPDATE {$tProgConsolidado} SET Activa = 1 WHERE project_id = ? AND unique_id = ? AND Semana = ?";
+            $dbInstance->queryWithProject($sql, [$projectId, $Id, $semana], $projectId);
         }
 
         if ($isPreConstruccion) {
-            $sql1 = "UPDATE {$tProgConsolidado} SET restriccion_pc_1 = ?, restriccion_pc_2 = ?, restriccion_pc_3 = ?, restriccion_pc_4 = ?, Sub_Contratista = ?, Responsable_AIA = ?, Observaciones = ? WHERE unique_id = ? AND Semana = ?";
-            $dbInstance->queryWithProject($sql1, [$D_y_E, $Materiales, $MdeO, $Equipos, $Sub_Contratista, $Responsable_AIA, $Observaciones, $Id, $semana]);
+            $sql1 = "UPDATE {$tProgConsolidado} SET restriccion_pc_1 = ?, restriccion_pc_2 = ?, restriccion_pc_3 = ?, restriccion_pc_4 = ?, Sub_Contratista = ?, Responsable_AIA = ?, Observaciones = ? WHERE project_id = ? AND unique_id = ? AND Semana = ?";
+            $dbInstance->queryWithProject($sql1, [$D_y_E, $Materiales, $MdeO, $Equipos, $Sub_Contratista, $Responsable_AIA, $Observaciones, $projectId, $Id, $semana], $projectId);
         } else {
-            $sql1 = "UPDATE {$tProgConsolidado} SET D_y_E = ?, Materiales = ?, MdeO = ?, Equipos = ?, Predecesora = ?, Pdto_Cons = ?, Modelo = ?, Sub_Contratista = ?, Responsable_AIA = ?, Observaciones = ? WHERE unique_id = ? AND Semana = ?";
-            $dbInstance->queryWithProject($sql1, [$D_y_E, $Materiales, $MdeO, $Equipos, $Predecesora, $Pdto_Cons, $Modelo, $Sub_Contratista, $Responsable_AIA, $Observaciones, $Id, $semana]);
+            $sql1 = "UPDATE {$tProgConsolidado} SET D_y_E = ?, Materiales = ?, MdeO = ?, Equipos = ?, Predecesora = ?, Pdto_Cons = ?, Modelo = ?, Sub_Contratista = ?, Responsable_AIA = ?, Observaciones = ? WHERE project_id = ? AND unique_id = ? AND Semana = ?";
+            $dbInstance->queryWithProject($sql1, [$D_y_E, $Materiales, $MdeO, $Equipos, $Predecesora, $Pdto_Cons, $Modelo, $Sub_Contratista, $Responsable_AIA, $Observaciones, $projectId, $Id, $semana], $projectId);
         }
 
         // Logic from modificar_rest, simplified for the single updated row
@@ -260,15 +259,15 @@ function modificar($D_y_E, $Materiales, $MdeO, $Equipos, $Predecesora, $Pdto_Con
             $Estado_Restricciones = round(($suma / $conteo), 5);
         }
 
-        $sql3 = "UPDATE {$tProgConsolidado} SET Estado_Restricciones = ? WHERE unique_id = ? AND Titulo = 0 AND Semana = ?";
-        $dbInstance->queryWithProject($sql3, [$Estado_Restricciones, $Id, $semana]);
+        $sql3 = "UPDATE {$tProgConsolidado} SET Estado_Restricciones = ? WHERE project_id = ? AND unique_id = ? AND Titulo = 0 AND Semana = ?";
+        $dbInstance->queryWithProject($sql3, [$Estado_Restricciones, $projectId, $Id, $semana], $projectId);
 
         $dbInstance->commit();
 
         $dbInstance->logActivity('ProgramacionIntermedia', 'MODIFICAR', "Actualizó restricciones actividad ID $Id semana $semana", $dbPrefix);
 
         // Call modificar_estado_act after the transaction commits
-        $estadoActividad = modificar_estado_act($Id, $semana, $inicio_semana, $tProgConsolidado, $tSemanasActivas, $dbInstance);
+        $estadoActividad = modificar_estado_act($Id, $semana, $inicio_semana, $tProgConsolidado, $tSemanasActivas, $dbInstance, $projectId);
 
         echo json_encode([
             "respuesta" => "BIEN",
@@ -283,9 +282,9 @@ function modificar($D_y_E, $Materiales, $MdeO, $Equipos, $Predecesora, $Pdto_Con
     }
 }
 
-function modificar_estado_act($Id, $semana, $inicio_semana, $tProgConsolidado, $tSemanasActivas, $dbInstance)
+function modificar_estado_act($Id, $semana, $inicio_semana, $tProgConsolidado, $tSemanasActivas, $dbInstance, $projectId)
 {
-    $stmtSemana = $dbInstance->queryWithProject("SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem FROM {$tSemanasActivas} WHERE Semana = ?", [$semana]);
+    $stmtSemana = $dbInstance->queryWithProject("SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem FROM {$tSemanasActivas} WHERE project_id = ? AND Semana = ?", [$projectId, $semana], $projectId);
     $dataSemana = $stmtSemana->fetch(PDO::FETCH_ASSOC);
 
     if (!$dataSemana || empty($dataSemana['Fecha_Inicio_Sem'])) {
@@ -298,8 +297,9 @@ function modificar_estado_act($Id, $semana, $inicio_semana, $tProgConsolidado, $
     $stmtActividad = $dbInstance->queryWithProject(
         "SELECT unique_id, unique_id AS Consecutivo_en_Programa, Titulo, Ejecutado, Fecha_Inicio, Fecha_Fin
          FROM {$tProgConsolidado}
-         WHERE unique_id = ? AND Semana = ?",
-        [$Id, $semana],
+         WHERE project_id = ? AND unique_id = ? AND Semana = ?",
+        [$projectId, $Id, $semana],
+        $projectId,
     );
     $dataAct = $stmtActividad->fetch(PDO::FETCH_ASSOC);
 
@@ -320,8 +320,9 @@ function modificar_estado_act($Id, $semana, $inicio_semana, $tProgConsolidado, $
     $dbInstance->queryWithProject(
         "UPDATE {$tProgConsolidado}
          SET Semanas_Inicio = ?, Estado = ?
-         WHERE unique_id = ? AND Semana = ?",
-        [$semanasInicio, $estado, $Id, $semana],
+         WHERE project_id = ? AND unique_id = ? AND Semana = ?",
+        [$semanasInicio, $estado, $projectId, $Id, $semana],
+        $projectId,
     );
 
     return [
@@ -330,15 +331,15 @@ function modificar_estado_act($Id, $semana, $inicio_semana, $tProgConsolidado, $
     ];
 }
 
-function fecha_inicio_sem($semana, $tSemanasActivas, $dbInstance)
+function fecha_inicio_sem($semana, $tSemanasActivas, $dbInstance, $projectId)
 {
-    $stmt = $dbInstance->queryWithProject("SELECT COUNT(*) FROM {$tSemanasActivas}");
+    $stmt = $dbInstance->queryWithProject("SELECT COUNT(*) FROM {$tSemanasActivas} WHERE project_id = ?", [$projectId], $projectId);
     $conteo = $stmt->fetchColumn();
 
     if ($conteo == 0) {
         $inicio_semana = null;
     } else {
-        $stmt = $dbInstance->queryWithProject("SELECT Fecha_Inicio_Sem FROM {$tSemanasActivas} WHERE Semana = ?", [$semana]);
+        $stmt = $dbInstance->queryWithProject("SELECT Fecha_Inicio_Sem FROM {$tSemanasActivas} WHERE project_id = ? AND Semana = ?", [$projectId, $semana], $projectId);
         $data = $stmt->fetch(PDO::FETCH_ASSOC);
         $inicio_semana = $data["Fecha_Inicio_Sem"] ?? null;
     }

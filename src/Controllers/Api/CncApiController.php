@@ -28,8 +28,9 @@ class CncApiController
         }
 
         try {
-            $query = "SELECT * FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programacion_semanal') . " WHERE Semana = ? AND Activa = 1 AND Categoria_CNC IS NOT NULL";
-            $data = $this->db->queryWithProject($query, [$semana])->fetchAll(PDO::FETCH_ASSOC);
+            $projectId = $this->projectId($dbPrefix);
+            $query = "SELECT * FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programacion_semanal') . " WHERE project_id = ? AND Semana = ? AND Activa = 1 AND Categoria_CNC IS NOT NULL";
+            $data = $this->db->queryWithProject($query, [$projectId, $semana], $projectId)->fetchAll(PDO::FETCH_ASSOC);
 
             header('Content-Type: application/json; charset=utf-8');
             echo json_encode(["data" => $data], JSON_UNESCAPED_UNICODE);
@@ -51,8 +52,9 @@ class CncApiController
         }
 
         try {
-            $query = "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'programacion_semanal') . " SET Categoria_CNC = ?, CNC = ?, Observaciones_CNC = ? WHERE row_id = ?";
-            $res = $this->db->queryWithProject($query, [$_POST["Categoria_CNC"], $_POST["CNC"], $_POST["Observaciones_CNC"] ?? '', $id]);
+            $projectId = $this->projectId($dbPrefix);
+            $query = "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'programacion_semanal') . " SET Categoria_CNC = ?, CNC = ?, Observaciones_CNC = ? WHERE project_id = ? AND row_id = ?";
+            $res = $this->db->queryWithProject($query, [$_POST["Categoria_CNC"], $_POST["CNC"], $_POST["Observaciones_CNC"] ?? '', $projectId, $id], $projectId);
             $this->jsonResponse($res ? "BIEN" : "ERROR");
         } catch (Throwable $t) {
             $this->jsonError("Error CNC Save: " . $t->getMessage());
@@ -78,5 +80,15 @@ class CncApiController
     private function jsonError(string $msg): void
     {
         echo json_encode(["respuesta" => "ERROR", "mensaje" => $msg], JSON_UNESCAPED_UNICODE);
+    }
+
+    private function projectId(string $dbPrefix): int
+    {
+        $projectId = TableResolver::getProjectIdByPrefix($dbPrefix);
+        if (!$projectId) {
+            throw new \RuntimeException('Proyecto no encontrado.');
+        }
+
+        return $projectId;
     }
 }

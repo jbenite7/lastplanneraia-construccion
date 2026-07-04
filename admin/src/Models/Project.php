@@ -174,7 +174,7 @@ class Project
             fwrite($handle, "DROP TABLE IF EXISTS `{$table}`;\n");
             fwrite($handle, $createRow['Create Table'] . ";\n\n");
 
-            // 2. Datos (Procesados por lotes si fuera necesario, pero por ahora tabla a tabla)
+            // Full database backup: keep unfiltered. Project exports use exportToSql(), scoped by project_id.
             $res = $this->db->query("SELECT * FROM `{$table}`");
             while ($row = $res->fetch(\PDO::FETCH_ASSOC)) {
                 $values = array_map(function ($val) {

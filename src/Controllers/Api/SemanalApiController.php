@@ -191,6 +191,8 @@ class SemanalApiController
 
     private function modificar(string $dbPrefix, int $semana): void
     {
+        $projectId = $this->projectId($dbPrefix);
+        $this->db->setProjectContext($projectId);
         $id = (int) ($_POST["Id"] ?? 0);
         $sourceProgramId = $this->getWeeklyProgramId($dbPrefix, $id);
         if ($sourceProgramId === null) {
@@ -220,7 +222,7 @@ class SemanalApiController
             Empresa = ?, Compromiso = ?, Cantidad_Sugerida = ?, Ejecutado_Real = ?,
             P_Completado = ?, PAC = ?, Rendimientos = ?,
             Categoria_CNC = ?, CNC = ?, Observaciones_CNC = ?
-            WHERE row_id = ?";
+            WHERE project_id = ? AND row_id = ?";
 
         $catCnc = ($pac == 1) ? null : ($_POST["Categoria_CNC"] ?: null);
         $cnc = ($pac == 1) ? null : ($_POST["CNC"] ?: null);
@@ -231,11 +233,11 @@ class SemanalApiController
             $_POST["Responsable_AIA"], $_POST["Empresa"], $compromiso,
             $this->parseLocalizedFloat($_POST["Cantidad_Sugerida"] ?? null),
             $real, $pCompletado, $pac, $_POST["Rendimientos"] ?: null,
-            $catCnc, $cnc, $obs, $id,
+            $catCnc, $cnc, $obs, $projectId, $id,
         ];
 
         $this->db->beginTransaction();
-        $res = $this->db->queryWithProject($query, $params);
+        $res = $this->db->queryWithProject($query, $params, $projectId);
         $this->syncNextWeekCarryover($dbPrefix, $semana, $sourceProgramId);
         $this->db->commit();
 
@@ -245,15 +247,17 @@ class SemanalApiController
     private function autoprogramar(string $dbPrefix, int $semana): void
     {
         try {
+            $projectId = $this->projectId($dbPrefix);
+            $this->db->setProjectContext($projectId);
             $area = $_SESSION['area'] ?? 'Construccion';
             $restrictionEligibilitySql = $this->getAutoprogramRestrictionEligibilitySql('', $area);
 
             // 1. Identificar actividades ya programadas
-            $stmtExistentes = $this->db->queryWithProject("SELECT DISTINCT(unique_id) FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . " WHERE Semana = ?", [$semana]);
+            $stmtExistentes = $this->db->queryWithProject("SELECT DISTINCT(unique_id) FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . " WHERE project_id = ? AND Semana = ?", [$projectId, $semana], $projectId);
             $existentes = $stmtExistentes->fetchAll(PDO::FETCH_COLUMN);
 
             $whereExistentes = "";
-            $paramsInsert = [$semana, $semana];
+            $paramsInsert = [$projectId, $semana];
             if (!empty($existentes)) {
                 $placeholders = implode(',', array_fill(0, count($existentes), '?'));
                 $whereExistentes = "AND unique_id NOT IN ($placeholders)";
@@ -268,7 +272,7 @@ class SemanalApiController
                 CASE WHEN (Estado='Atrasada' OR Estado='Ya Debió Iniciar y Restricciones Pendientes') THEN 1 ELSE 0 END,
                 '1', COALESCE(NULLIF(TRIM(unidad), ''), '%'), cantidad_ppto, codigo_actividad
             FROM " . $this->tbl($dbPrefix, 'programa_consolidado') . "
-            WHERE Semana = ? AND Titulo = 0
+            WHERE project_id = ? AND Semana = ? AND Titulo = 0
               AND (COALESCE(Ejecutado, 0) > 0.001 OR {$restrictionEligibilitySql})
               AND (
                 Estado='En Curso' OR Estado='Atrasada' OR Estado='Debe Iniciar'
@@ -276,16 +280,15 @@ class SemanalApiController
               )
               $whereExistentes";
 
-            array_shift($paramsInsert);
-            $stmtNuevas = $this->db->queryWithProject($sqlSelectNuevas, $paramsInsert);
+            $stmtNuevas = $this->db->queryWithProject($sqlSelectNuevas, $paramsInsert, $projectId);
             $nuevasFilas = $stmtNuevas->fetchAll(PDO::FETCH_NUM);
 
             if (!empty($nuevasFilas)) {
                 $queryInsertSingle = "INSERT INTO " . $this->tbl($dbPrefix, 'programacion_semanal') . " (
-                    Semana, unique_id, Consecutivo_En_Programa, Id, Actividad, Fecha_Inicio, Fecha_Fin,
+                    project_id, Semana, unique_id, Consecutivo_En_Programa, Id, Actividad, Fecha_Inicio, Fecha_Fin,
                     Sub_Contratista, Responsable_AIA, Empresa, Ejecutado, medir_productividad,
                     Critica, Atrasada, Activa, Unidad, cantidad_ppto, codigo_actividad
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                 foreach ($nuevasFilas as $f) {
                     $subsRaw = $f[7] ?? '';
@@ -295,13 +298,13 @@ class SemanalApiController
                     }
                     foreach ($subs as $sub) {
                         $f[7] = $sub;
-                        $this->db->queryWithProject($queryInsertSingle, $f);
+                        $this->db->queryWithProject($queryInsertSingle, array_merge([$projectId], $f), $projectId);
                     }
                 }
             }
 
             // 3. Actualizar detalles y compromisos (Preservando Subcontratista Split, sin tocar actividades con compromiso)
-            $stmtSemanal = $this->db->queryWithProject("SELECT row_id AS Consecutivo, unique_id AS Consecutivo_En_Programa, Sub_Contratista FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . " WHERE Semana = ? AND Activa != 'NA' AND (Compromiso IS NULL OR Compromiso <= 0)", [$semana]);
+            $stmtSemanal = $this->db->queryWithProject("SELECT row_id AS Consecutivo, unique_id AS Consecutivo_En_Programa, Sub_Contratista FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . " WHERE project_id = ? AND Semana = ? AND Activa != 'NA' AND (Compromiso IS NULL OR Compromiso <= 0)", [$projectId, $semana], $projectId);
             $actividadesSemanales = $stmtSemanal->fetchAll();
 
             foreach ($actividadesSemanales as $item) {
@@ -309,14 +312,14 @@ class SemanalApiController
                 $con_pg = $item["unique_id"] ?? $item["Consecutivo_En_Programa"];
                 $sub_split = $item["Sub_Contratista"];
 
-                $dataCons = $this->db->queryWithProject("SELECT *, row_id AS Consecutivo, unique_id AS Consecutivo_en_Programa FROM " . $this->tbl($dbPrefix, 'programa_consolidado') . " WHERE Semana = ? AND unique_id = ?", [$semana, $con_pg])->fetch();
+                $dataCons = $this->db->queryWithProject("SELECT *, row_id AS Consecutivo, unique_id AS Consecutivo_en_Programa FROM " . $this->tbl($dbPrefix, 'programa_consolidado') . " WHERE project_id = ? AND Semana = ? AND unique_id = ?", [$projectId, $semana, $con_pg], $projectId)->fetch();
                 if (!$dataCons) {
                     continue;
                 }
 
-                $dataAnt = $this->db->queryWithProject("SELECT Responsable_AIA, Empresa, Descripcion, Ubicacion FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . " WHERE Semana = ? AND unique_id = ? AND Sub_Contratista = ?", [$semana - 1, $con_pg, $sub_split])->fetch();
+                $dataAnt = $this->db->queryWithProject("SELECT Responsable_AIA, Empresa, Descripcion, Ubicacion FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . " WHERE project_id = ? AND Semana = ? AND unique_id = ? AND Sub_Contratista = ?", [$projectId, $semana - 1, $con_pg, $sub_split], $projectId)->fetch();
                 if (!$dataAnt) {
-                    $dataAnt = $this->db->queryWithProject("SELECT Responsable_AIA, Empresa, Descripcion, Ubicacion FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . " WHERE Semana = ? AND unique_id = ?", [$semana - 1, $con_pg])->fetch();
+                    $dataAnt = $this->db->queryWithProject("SELECT Responsable_AIA, Empresa, Descripcion, Ubicacion FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . " WHERE project_id = ? AND Semana = ? AND unique_id = ?", [$projectId, $semana - 1, $con_pg], $projectId)->fetch();
                 }
 
                 $sub = $sub_split ?: ($dataCons["Sub_Contratista"] ?? null);
@@ -328,7 +331,7 @@ class SemanalApiController
                     Atrasada = (CASE WHEN ? IN ('Atrasada', 'Ya Debió Iniciar y Restricciones Pendientes') THEN 1 ELSE 0 END),
                     Descripcion = ?, Ubicacion = ?, Empresa = ?, Unidad = COALESCE(NULLIF(TRIM(?), ''), '%'),
                     cantidad_ppto = ?, codigo_actividad = ?
-                    WHERE Semana = ? AND row_id = ?";
+                    WHERE project_id = ? AND Semana = ? AND row_id = ?";
 
                 $this->db->queryWithProject($sqlActSemana, [
                     $dataCons['Fecha_Inicio'], $dataCons['Fecha_Fin'], $sub, $resp,
@@ -336,23 +339,23 @@ class SemanalApiController
                     $dataCons["Estado"], $dataAnt["Descripcion"] ?? null, $dataAnt["Ubicacion"] ?? null,
                     $dataAnt["Empresa"] ?? 'AIA', $dataCons["unidad"],
                     ((float) ($dataCons["cantidad_ppto"] ?? 0) > 0 ? (float) $dataCons["cantidad_ppto"] : null),
-                    $dataCons["codigo_actividad"], $semana, $con_pk,
-                ]);
+                    $dataCons["codigo_actividad"], $projectId, $semana, $con_pk,
+                ], $projectId);
             }
 
             // 4. Limpieza: actividades que ya no califican (sin compromiso ni avance real)
             $eligibleSubSql = "SELECT unique_id FROM " . $this->tbl($dbPrefix, 'programa_consolidado') . "
-                WHERE Semana = ? AND Titulo = 0
+                WHERE project_id = ? AND Semana = ? AND Titulo = 0
                   AND (COALESCE(Ejecutado, 0) > 0.001 OR {$restrictionEligibilitySql})
                   AND (Estado='En Curso' OR Estado='Atrasada' OR Estado='Debe Iniciar'
                     OR Estado='A Tiempo' OR Estado='Ya Debió Iniciar y Restricciones Pendientes')";
             $this->db->queryWithProject("
                 DELETE FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . "
-                WHERE Semana = ? AND Activa = '1'
+                WHERE project_id = ? AND Semana = ? AND Activa = '1'
                   AND (Ejecutado_Real IS NULL OR Ejecutado_Real <= 0)
                   AND (Compromiso IS NULL OR Compromiso <= 0)
                   AND unique_id NOT IN ({$eligibleSubSql})
-            ", [$semana, $semana]);
+            ", [$projectId, $semana, $projectId, $semana], $projectId);
 
             $this->syncRestrictionFlags($dbPrefix, $semana, $area);
 
@@ -365,7 +368,7 @@ class SemanalApiController
             $sqlRestricciones = "SELECT
                 Id, Actividad, {$alertColumns}
             FROM " . $this->tbl($dbPrefix, 'programa_consolidado') . "
-            WHERE Semana = ? AND Titulo = 0
+            WHERE project_id = ? AND Semana = ? AND Titulo = 0
               AND COALESCE(Ejecutado, 0) <= 0.001
               AND NOT {$restrictionEligibilitySql}
               AND (
@@ -374,7 +377,7 @@ class SemanalApiController
               )
               $whereExistentes";
 
-            $stmtRest = $this->db->queryWithProject($sqlRestricciones, $paramsInsert);
+            $stmtRest = $this->db->queryWithProject($sqlRestricciones, $paramsInsert, $projectId);
             $fallidas = $stmtRest->fetchAll(PDO::FETCH_ASSOC);
 
             $alertasRestricciones = [];
@@ -417,8 +420,9 @@ class SemanalApiController
             }
 
             $this->db->queryWithProject(
-                "UPDATE " . $this->tbl($dbPrefix, 'semanas_activas') . " SET fecha_ultimo_saneo = NOW() WHERE Semana = ?",
-                [$semana],
+                "UPDATE " . $this->tbl($dbPrefix, 'semanas_activas') . " SET fecha_ultimo_saneo = NOW() WHERE project_id = ? AND Semana = ?",
+                [$projectId, $semana],
+                $projectId,
             );
             echo json_encode(["respuesta" => "OK", "alertasRestricciones" => $alertasRestricciones], JSON_UNESCAPED_UNICODE);
         } catch (Throwable $t) {
@@ -428,17 +432,19 @@ class SemanalApiController
 
     private function syncRestrictionFlags(string $dbPrefix, int $semana, string $area = 'Construccion'): void
     {
+        $projectId = $this->projectId($dbPrefix);
         $alias = $area === 'Pre-Construccion' ? '' : 'pc';
         $restrictionEligibilitySql = $this->getAutoprogramRestrictionEligibilitySql($alias, $area);
 
         $this->db->queryWithProject("UPDATE " . $this->tbl($dbPrefix, 'programacion_semanal') . " ps
             JOIN " . $this->tbl($dbPrefix, 'programa_consolidado') . " pc
-              ON ps.unique_id = pc.unique_id
+              ON pc.project_id = ps.project_id
+             AND ps.unique_id = pc.unique_id
              AND ps.Semana = pc.Semana
             SET ps.Prog_Sin_Restricciones_100 = (CASE WHEN {$restrictionEligibilitySql} THEN 0 ELSE 1 END)
-            WHERE ps.Semana = ? AND ps.Activa != 'NA'", [$semana]);
+            WHERE ps.project_id = ? AND ps.Semana = ? AND ps.Activa != 'NA'", [$projectId, $semana], $projectId);
 
-        $this->db->queryWithProject("UPDATE " . $this->tbl($dbPrefix, 'programacion_semanal') . " SET Prog_Sin_Restricciones_100 = 0 WHERE Semana = ? AND Activa = 'NA'", [$semana]);
+        $this->db->queryWithProject("UPDATE " . $this->tbl($dbPrefix, 'programacion_semanal') . " SET Prog_Sin_Restricciones_100 = 0 WHERE project_id = ? AND Semana = ? AND Activa = 'NA'", [$projectId, $semana], $projectId);
     }
 
     private function getAutoprogramRestrictionEligibilitySql(string $alias = '', string $area = 'Construccion'): string
@@ -569,10 +575,12 @@ class SemanalApiController
         if ($weeklyRowId <= 0) {
             return null;
         }
+        $projectId = $this->projectId($dbPrefix);
 
         $programId = $this->db->queryWithProject(
-            "SELECT unique_id AS Consecutivo_En_Programa FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . " WHERE row_id = ? LIMIT 1",
-            [$weeklyRowId],
+            "SELECT unique_id AS Consecutivo_En_Programa FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . " WHERE project_id = ? AND row_id = ? LIMIT 1",
+            [$projectId, $weeklyRowId],
+            $projectId,
         )->fetchColumn();
 
         if ($programId === false || $programId === null) {
@@ -589,9 +597,11 @@ class SemanalApiController
         }
 
         $targetWeek = $sourceWeek + 1;
+        $projectId = $this->projectId($dbPrefix);
         $exists = (int) $this->db->queryWithProject(
-            "SELECT COUNT(*) FROM " . $this->tbl($dbPrefix, 'semanas_activas') . " WHERE Semana = ?",
-            [$targetWeek],
+            "SELECT COUNT(*) FROM " . $this->tbl($dbPrefix, 'semanas_activas') . " WHERE project_id = ? AND Semana = ?",
+            [$projectId, $targetWeek],
+            $projectId,
         )->fetchColumn();
 
         if ($exists === 0) {
@@ -613,9 +623,11 @@ class SemanalApiController
             return;
         }
 
+        $projectId = $this->projectId($dbPrefix);
         $semanaData = $this->db->queryWithProject(
-            "SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem FROM " . $this->tbl($dbPrefix, 'semanas_activas') . " WHERE Semana = ? LIMIT 1",
-            [$semana],
+            "SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem FROM " . $this->tbl($dbPrefix, 'semanas_activas') . " WHERE project_id = ? AND Semana = ? LIMIT 1",
+            [$projectId, $semana],
+            $projectId,
         )->fetch(PDO::FETCH_ASSOC);
 
         if (!$semanaData) {
@@ -623,12 +635,13 @@ class SemanalApiController
         }
 
         $placeholders = implode(',', array_fill(0, count($programIds), '?'));
-        $params = array_merge([$semana], $programIds);
+        $params = array_merge([$projectId, $semana], $programIds);
         $rows = $this->db->queryWithProject(
             "SELECT unique_id AS Consecutivo_en_Programa, Titulo, Ejecutado, Fecha_Inicio, Fecha_Fin
              FROM " . $this->tbl($dbPrefix, 'programa_consolidado') . "
-             WHERE Semana = ? AND unique_id IN ({$placeholders})",
+             WHERE project_id = ? AND Semana = ? AND unique_id IN ({$placeholders})",
             $params,
+            $projectId,
         )->fetchAll(PDO::FETCH_ASSOC);
 
         foreach ($rows as $row) {
@@ -642,8 +655,9 @@ class SemanalApiController
             );
 
             $this->db->queryWithProject(
-                "UPDATE " . $this->tbl($dbPrefix, 'programa_consolidado') . " SET Estado = ? WHERE Semana = ? AND unique_id = ?",
-                [$estado, $semana, $row['unique_id'] ?? $row['Consecutivo_en_Programa']],
+                "UPDATE " . $this->tbl($dbPrefix, 'programa_consolidado') . " SET Estado = ? WHERE project_id = ? AND Semana = ? AND unique_id = ?",
+                [$estado, $projectId, $semana, $row['unique_id'] ?? $row['Consecutivo_en_Programa']],
+                $projectId,
             );
         }
     }
@@ -651,12 +665,13 @@ class SemanalApiController
     // Stub methods for the rest of the logic to be completed in subsequent edits if necessary
     private function estadoEjecucion(string $dbPrefix, int $semana): void
     {
+        $projectId = $this->projectId($dbPrefix);
         $id = $_POST["Id"];
         $ejecutado = $_POST["Ejecutado"];
-        $query1 = "UPDATE " . $this->tbl($dbPrefix, 'programa_consolidado') . " SET Activa = 1 WHERE unique_id = ? AND Semana = ?";
-        $query2 = "UPDATE " . $this->tbl($dbPrefix, 'programa_consolidado') . " SET Ejecutado_Siguiente_Semana = ? WHERE unique_id = ? AND Semana = ?";
-        $this->db->queryWithProject($query1, [$id, $semana]);
-        $res = $this->db->queryWithProject($query2, [$ejecutado, $id, $semana]);
+        $query1 = "UPDATE " . $this->tbl($dbPrefix, 'programa_consolidado') . " SET Activa = 1 WHERE project_id = ? AND unique_id = ? AND Semana = ?";
+        $query2 = "UPDATE " . $this->tbl($dbPrefix, 'programa_consolidado') . " SET Ejecutado_Siguiente_Semana = ? WHERE project_id = ? AND unique_id = ? AND Semana = ?";
+        $this->db->queryWithProject($query1, [$projectId, $id, $semana], $projectId);
+        $res = $this->db->queryWithProject($query2, [$ejecutado, $projectId, $id, $semana], $projectId);
 
         $normalizationService = new ProgramaConsolidadoNormalizationService($this->db);
         $normalizationService->normalizeChapters($dbPrefix, $semana);
@@ -674,14 +689,15 @@ class SemanalApiController
         }
 
         $this->db->beginTransaction();
-        $querySelect = "SELECT Activa FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . " WHERE row_id = ?";
-        $data = $this->db->queryWithProject($querySelect, [$id])->fetch(PDO::FETCH_ASSOC);
+        $projectId = $this->projectId($dbPrefix);
+        $querySelect = "SELECT Activa FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . " WHERE project_id = ? AND row_id = ?";
+        $data = $this->db->queryWithProject($querySelect, [$projectId, $id], $projectId)->fetch(PDO::FETCH_ASSOC);
 
         if ($data && $data["Activa"] === "NA") {
-            $res = $this->db->queryWithProject("DELETE FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . " WHERE row_id = ?", [$id]);
+            $res = $this->db->queryWithProject("DELETE FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . " WHERE project_id = ? AND row_id = ?", [$projectId, $id], $projectId);
         } else {
-            $queryUpdate = "UPDATE " . $this->tbl($dbPrefix, 'programacion_semanal') . " SET Activa = '0', Responsable_AIA = ?, Categoria_CNP = ?, CNP = ?, Observaciones_CNP = ?, Reprogramada_Por_Usuario = 0 WHERE row_id = ?";
-            $res = $this->db->queryWithProject($queryUpdate, [$_POST["Responsable_AIA"], $_POST["Categoria_CNP"], $_POST["CNP"], $_POST["Observaciones_CNP"], $id]);
+            $queryUpdate = "UPDATE " . $this->tbl($dbPrefix, 'programacion_semanal') . " SET Activa = '0', Responsable_AIA = ?, Categoria_CNP = ?, CNP = ?, Observaciones_CNP = ?, Reprogramada_Por_Usuario = 0 WHERE project_id = ? AND row_id = ?";
+            $res = $this->db->queryWithProject($queryUpdate, [$_POST["Responsable_AIA"], $_POST["Categoria_CNP"], $_POST["CNP"], $_POST["Observaciones_CNP"], $projectId, $id], $projectId);
         }
 
         $this->syncNextWeekCarryover($dbPrefix, $semana, $sourceProgramId);
@@ -699,27 +715,29 @@ class SemanalApiController
         }
 
         $this->db->beginTransaction();
-        $queryInsert = "INSERT INTO " . $this->tbl($dbPrefix, 'programacion_semanal') . " (Semana, unique_id, Consecutivo_En_Programa, Id, Actividad, Critica, Atrasada, Activa, Prog_Sin_Restricciones_100, Fecha_Inicio, Fecha_Fin, Sub_Contratista, Responsable_AIA, Empresa, Ejecutado, medir_productividad) SELECT ?, unique_id, unique_id, Id, Actividad, 0, 0, 'NA', Prog_Sin_Restricciones_100, Fecha_Inicio, Fecha_Fin, Sub_Contratista, Responsable_AIA, Empresa, Ejecutado, 0 FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . " WHERE Semana = ? AND row_id = ?";
-        $res = $this->db->queryWithProject($queryInsert, [$semana, $semana, $id]);
+        $projectId = $this->projectId($dbPrefix);
+        $queryInsert = "INSERT INTO " . $this->tbl($dbPrefix, 'programacion_semanal') . " (project_id, Semana, unique_id, Consecutivo_En_Programa, Id, Actividad, Critica, Atrasada, Activa, Prog_Sin_Restricciones_100, Fecha_Inicio, Fecha_Fin, Sub_Contratista, Responsable_AIA, Empresa, Ejecutado, medir_productividad) SELECT ?, ?, unique_id, unique_id, Id, Actividad, 0, 0, 'NA', Prog_Sin_Restricciones_100, Fecha_Inicio, Fecha_Fin, Sub_Contratista, Responsable_AIA, Empresa, Ejecutado, 0 FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . " WHERE project_id = ? AND Semana = ? AND row_id = ?";
+        $res = $this->db->queryWithProject($queryInsert, [$projectId, $semana, $projectId, $semana, $id], $projectId);
         $this->syncNextWeekCarryover($dbPrefix, $semana, $sourceProgramId);
         $this->db->commit();
         $this->jsonResponse($res ? "BIEN" : "ERROR");
     }
     private function nuevo(string $dbPrefix, int $semana): void
     {
+        $projectId = $this->projectId($dbPrefix);
         $idBase = trim((string) ($_POST["idNuevo"] ?? ''));
-        $query0 = "SELECT *, unique_id AS Consecutivo_en_Programa, row_id AS Consecutivo FROM " . $this->tbl($dbPrefix, 'programa_consolidado') . " WHERE Semana = ? AND Id = ? AND Titulo = 0 AND Semanas_Inicio <= 12 AND Semanas_Inicio >= 1 AND Ejecutado = 0 LIMIT 1";
-        $data0 = $this->db->queryWithProject($query0, [$semana, $idBase])->fetch(PDO::FETCH_ASSOC);
+        $query0 = "SELECT *, unique_id AS Consecutivo_en_Programa, row_id AS Consecutivo FROM " . $this->tbl($dbPrefix, 'programa_consolidado') . " WHERE project_id = ? AND Semana = ? AND Id = ? AND Titulo = 0 AND Semanas_Inicio <= 12 AND Semanas_Inicio >= 1 AND Ejecutado = 0 LIMIT 1";
+        $data0 = $this->db->queryWithProject($query0, [$projectId, $semana, $idBase], $projectId)->fetch(PDO::FETCH_ASSOC);
         if (!$data0) {
             $this->jsonError("Actividad base no válida.");
             return;
         }
-        $queryInsert = "INSERT INTO " . $this->tbl($dbPrefix, 'programacion_semanal') . " (Semana, unique_id, Consecutivo_En_Programa, Id, Actividad, Descripcion, Ubicacion, Fecha_Inicio, Fecha_Fin, Sub_Contratista, Responsable_AIA, Empresa, Ejecutado, medir_productividad, Unidad, cantidad_ppto, Compromiso, Critica, Atrasada, Activa, Prog_Sin_Restricciones_100, codigo_actividad) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 'NA', 0, ?)";
+        $queryInsert = "INSERT INTO " . $this->tbl($dbPrefix, 'programacion_semanal') . " (project_id, Semana, unique_id, Consecutivo_En_Programa, Id, Actividad, Descripcion, Ubicacion, Fecha_Inicio, Fecha_Fin, Sub_Contratista, Responsable_AIA, Empresa, Ejecutado, medir_productividad, Unidad, cantidad_ppto, Compromiso, Critica, Atrasada, Activa, Prog_Sin_Restricciones_100, codigo_actividad) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 'NA', 0, ?)";
         $subs = array_filter(array_map('trim', explode(',', $_POST["Sub_Contratista"])));
         $isFirst = true;
         $this->db->beginTransaction();
         foreach ($subs as $sub) {
-            $this->db->queryWithProject($queryInsert, [$semana, $data0["unique_id"], $data0["unique_id"], $idBase, $_POST["Actividad"], $_POST["Descripcion"], $_POST["Ubicacion"], $data0["Fecha_Inicio"], $data0["Fecha_Fin"], $sub, $_POST["Responsable_AIA"], $_POST["Empresa"], $data0["Ejecutado"], $data0["medir_productividad"], $_POST["Unidad"] ?: '%', $data0["cantidad_ppto"], $isFirst ? $this->parseLocalizedFloat($_POST["Compromiso"]) : null, $data0["codigo_actividad"]]);
+            $this->db->queryWithProject($queryInsert, [$projectId, $semana, $data0["unique_id"], $data0["unique_id"], $idBase, $_POST["Actividad"], $_POST["Descripcion"], $_POST["Ubicacion"], $data0["Fecha_Inicio"], $data0["Fecha_Fin"], $sub, $_POST["Responsable_AIA"], $_POST["Empresa"], $data0["Ejecutado"], $data0["medir_productividad"], $_POST["Unidad"] ?: '%', $data0["cantidad_ppto"], $isFirst ? $this->parseLocalizedFloat($_POST["Compromiso"]) : null, $data0["codigo_actividad"]], $projectId);
             $isFirst = false;
         }
         $this->syncNextWeekCarryover($dbPrefix, $semana, (int) ($data0["unique_id"] ?? $data0["Consecutivo_en_Programa"]));
@@ -729,12 +747,13 @@ class SemanalApiController
 
     private function bloquearCompromisos(string $dbPrefix, int $semana): void
     {
-        $queryCount = "SELECT COUNT(*) FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . " WHERE Semana = ? AND Activa = 1 AND (Compromiso IS NULL OR Compromiso <= 0 OR TRIM(COALESCE(Sub_Contratista, '')) = '' OR LOWER(TRIM(COALESCE(Sub_Contratista, ''))) = 'null' OR TRIM(COALESCE(Responsable_AIA, '')) = '' OR LOWER(TRIM(COALESCE(Responsable_AIA, ''))) = 'null')";
-        if ($this->db->queryWithProject($queryCount, [$semana])->fetchColumn() > 0) {
+        $projectId = $this->projectId($dbPrefix);
+        $queryCount = "SELECT COUNT(*) FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . " WHERE project_id = ? AND Semana = ? AND Activa = 1 AND (Compromiso IS NULL OR Compromiso <= 0 OR TRIM(COALESCE(Sub_Contratista, '')) = '' OR LOWER(TRIM(COALESCE(Sub_Contratista, ''))) = 'null' OR TRIM(COALESCE(Responsable_AIA, '')) = '' OR LOWER(TRIM(COALESCE(Responsable_AIA, ''))) = 'null')";
+        if ($this->db->queryWithProject($queryCount, [$projectId, $semana], $projectId)->fetchColumn() > 0) {
             echo json_encode(["respuesta" => "No_Bloqueado", "mensaje" => "Hay actividades sin compromiso o sin asignaciones obligatorias."]);
             return;
         }
-        $res = $this->db->queryWithProject("UPDATE " . $this->tbl($dbPrefix, 'semanas_activas') . " SET Semanal_Confirmada = 1, fechaCierreCompromisos = ? WHERE Semana = ?", [$_POST["fechaCierreCompromisos"] ?: null, $semana]);
+        $res = $this->db->queryWithProject("UPDATE " . $this->tbl($dbPrefix, 'semanas_activas') . " SET Semanal_Confirmada = 1, fechaCierreCompromisos = ? WHERE project_id = ? AND Semana = ?", [$_POST["fechaCierreCompromisos"] ?: null, $projectId, $semana], $projectId);
         if ($res) {
             $this->generarCIC($dbPrefix, $semana);
             echo json_encode(["respuesta" => "Bloqueado", "mensaje" => "Semana bloqueada y CIC generado."]);
@@ -744,13 +763,14 @@ class SemanalApiController
     }
     private function generarCIC(string $dbPrefix, int $semana): void
     {
+        $projectId = $this->projectId($dbPrefix);
         for ($s = 1; $s <= $semana; $s++) {
             $this->actualizarPacSubcontratistas($dbPrefix, $s);
-            $subsSemana = $this->db->queryWithProject("SELECT DISTINCT Sub_Contratista FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . " WHERE Semana = ? AND Sub_Contratista !='' AND (Activa='1' OR Activa='NA')", [$s])->fetchAll(PDO::FETCH_COLUMN);
+            $subsSemana = $this->db->queryWithProject("SELECT DISTINCT Sub_Contratista FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . " WHERE project_id = ? AND Semana = ? AND Sub_Contratista !='' AND (Activa='1' OR Activa='NA')", [$projectId, $s], $projectId)->fetchAll(PDO::FETCH_COLUMN);
             foreach ($subsSemana as $sub) {
-                $exists = $this->db->queryWithProject("SELECT 1 FROM " . $this->tbl($dbPrefix, 'cic') . " WHERE Semana = ? AND subcontratista = ?", [$s, $sub])->fetchColumn();
+                $exists = $this->db->queryWithProject("SELECT 1 FROM " . $this->tbl($dbPrefix, 'cic') . " WHERE project_id = ? AND Semana = ? AND subcontratista = ?", [$projectId, $s, $sub], $projectId)->fetchColumn();
                 if (!$exists) {
-                    $this->db->queryWithProject("INSERT INTO " . $this->tbl($dbPrefix, 'cic') . " (Semana, subcontratista) VALUES (?, ?)", [$s, $sub]);
+                    $this->db->queryWithProject("INSERT INTO " . $this->tbl($dbPrefix, 'cic') . " (project_id, Semana, subcontratista) VALUES (?, ?, ?)", [$projectId, $s, $sub], $projectId);
                 }
             }
             $this->actualizarPacSubcontratistas($dbPrefix, $s);
@@ -759,26 +779,28 @@ class SemanalApiController
 
     private function actualizarPacSubcontratistas(string $dbPrefix, int $s): void
     {
-        $subs = $this->db->queryWithProject("SELECT DISTINCT Sub_Contratista FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . " WHERE Semana = ? AND Sub_Contratista !='' AND (Activa='1' OR Activa='NA')", [$s])->fetchAll(PDO::FETCH_COLUMN);
+        $projectId = $this->projectId($dbPrefix);
+        $subs = $this->db->queryWithProject("SELECT DISTINCT Sub_Contratista FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . " WHERE project_id = ? AND Semana = ? AND Sub_Contratista !='' AND (Activa='1' OR Activa='NA')", [$projectId, $s], $projectId)->fetchAll(PDO::FETCH_COLUMN);
         foreach ($subs as $sub) {
-            $stats = $this->db->queryWithProject("SELECT ROUND(AVG(P_Completado),3) as P_Com, ROUND(AVG(PAC),3) as PAC FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . " WHERE Semana=? AND Sub_Contratista =? AND (Activa=1 OR Activa='NA')", [$s, $sub])->fetch(PDO::FETCH_ASSOC);
-            $this->db->queryWithProject("UPDATE " . $this->tbl($dbPrefix, 'cic') . " SET P_Completado = ?, PAC = ? WHERE subcontratista = ? AND Semana = ?", [$stats['P_Com'] ?? 0, $stats['PAC'] ?? 0, $sub, $s]);
+            $stats = $this->db->queryWithProject("SELECT ROUND(AVG(P_Completado),3) as P_Com, ROUND(AVG(PAC),3) as PAC FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . " WHERE project_id = ? AND Semana = ? AND Sub_Contratista = ? AND (Activa=1 OR Activa='NA')", [$projectId, $s, $sub], $projectId)->fetch(PDO::FETCH_ASSOC);
+            $this->db->queryWithProject("UPDATE " . $this->tbl($dbPrefix, 'cic') . " SET P_Completado = ?, PAC = ? WHERE project_id = ? AND subcontratista = ? AND Semana = ?", [$stats['P_Com'] ?? 0, $stats['PAC'] ?? 0, $projectId, $sub, $s], $projectId);
         }
     }
 
     private function listarExcepciones(string $dbPrefix, int $semana): void
     {
+        $projectId = $this->projectId($dbPrefix);
         $area = $_SESSION['area'] ?? 'Construccion';
         $restrictionEligibilitySql = $this->getAutoprogramRestrictionEligibilitySql('', $area);
         $query = "SELECT Id, Actividad, Estado FROM " . $this->tbl($dbPrefix, 'programa_consolidado') . "
-            WHERE Semana = ? AND Titulo = 0
+            WHERE project_id = ? AND Semana = ? AND Titulo = 0
               AND COALESCE(Ejecutado, 0) <= 0.001
               AND NOT {$restrictionEligibilitySql}
               AND (
                 Estado='En Curso' OR Estado='Atrasada' OR Estado='Debe Iniciar'
                 OR Estado='A Tiempo' OR Estado='Ya Debió Iniciar y Restricciones Pendientes'
               )";
-        $data = $this->db->queryWithProject($query, [$semana])->fetchAll(PDO::FETCH_ASSOC);
+        $data = $this->db->queryWithProject($query, [$projectId, $semana], $projectId)->fetchAll(PDO::FETCH_ASSOC);
         echo json_encode(["respuesta" => "BIEN", "data" => $data], JSON_UNESCAPED_UNICODE);
     }
 
@@ -786,10 +808,13 @@ class SemanalApiController
     private function sanear(string $dbPrefix, int $semana): void
     {
         try {
+            $projectId = $this->projectId($dbPrefix);
+            $this->db->setProjectContext($projectId);
             $area = $_SESSION['area'] ?? 'Construccion';
             $confirmada = $this->db->queryWithProject(
-                "SELECT Semanal_Confirmada FROM " . $this->tbl($dbPrefix, 'semanas_activas') . " WHERE Semana = ?",
-                [$semana],
+                "SELECT Semanal_Confirmada FROM " . $this->tbl($dbPrefix, 'semanas_activas') . " WHERE project_id = ? AND Semana = ?",
+                [$projectId, $semana],
+                $projectId,
             )->fetchColumn();
 
             if ($confirmada == 1) {
@@ -798,8 +823,9 @@ class SemanalApiController
             }
 
             $fechaUltimoSaneo = $this->db->queryWithProject(
-                "SELECT fecha_ultimo_saneo FROM " . $this->tbl($dbPrefix, 'semanas_activas') . " WHERE Semana = ?",
-                [$semana],
+                "SELECT fecha_ultimo_saneo FROM " . $this->tbl($dbPrefix, 'semanas_activas') . " WHERE project_id = ? AND Semana = ?",
+                [$projectId, $semana],
+                $projectId,
             )->fetchColumn();
 
             if ($fechaUltimoSaneo !== null && $fechaUltimoSaneo !== false) {
@@ -807,8 +833,9 @@ class SemanalApiController
                     "SELECT GREATEST(
                         COALESCE(MAX(Ult_Act_Est), '1970-01-01'),
                         COALESCE(MAX(Ult_Act_Restr), '1970-01-01')
-                    ) FROM " . $this->tbl($dbPrefix, 'programa_consolidado') . " WHERE Semana = ?",
-                    [$semana],
+                    ) FROM " . $this->tbl($dbPrefix, 'programa_consolidado') . " WHERE project_id = ? AND Semana = ?",
+                    [$projectId, $semana],
+                    $projectId,
                 )->fetchColumn();
 
                 if ($lastChange !== null && $lastChange !== false && $lastChange <= $fechaUltimoSaneo) {
@@ -819,27 +846,28 @@ class SemanalApiController
 
             $restrictionEligibilitySql = $this->getAutoprogramRestrictionEligibilitySql('', $area);
             $eligibleSubSql = "SELECT unique_id FROM " . $this->tbl($dbPrefix, 'programa_consolidado') . "
-                WHERE Semana = ? AND Titulo = 0
+                WHERE project_id = ? AND Semana = ? AND Titulo = 0
                   AND (COALESCE(Ejecutado, 0) > 0.001 OR {$restrictionEligibilitySql})
                   AND (Estado='En Curso' OR Estado='Atrasada' OR Estado='Debe Iniciar'
                     OR Estado='A Tiempo' OR Estado='Ya Debió Iniciar y Restricciones Pendientes')";
 
             $this->db->queryWithProject("
                 DELETE FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . "
-                WHERE Semana = ? AND Activa = '1'
+                WHERE project_id = ? AND Semana = ? AND Activa = '1'
                   AND (Ejecutado_Real IS NULL OR Ejecutado_Real <= 0)
                   AND (Compromiso IS NULL OR Compromiso <= 0)
                   AND unique_id NOT IN ({$eligibleSubSql})
-            ", [$semana, $semana]);
+            ", [$projectId, $semana, $projectId, $semana], $projectId);
 
             $stmtExistentes = $this->db->queryWithProject(
-                "SELECT DISTINCT(unique_id) FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . " WHERE Semana = ?",
-                [$semana],
+                "SELECT DISTINCT(unique_id) FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . " WHERE project_id = ? AND Semana = ?",
+                [$projectId, $semana],
+                $projectId,
             );
             $existentes = $stmtExistentes->fetchAll(PDO::FETCH_COLUMN);
 
             $whereExistentes = "";
-            $paramsInsert = [$semana, $semana];
+            $paramsInsert = [$projectId, $semana];
             if (!empty($existentes)) {
                 $placeholders = implode(',', array_fill(0, count($existentes), '?'));
                 $whereExistentes = "AND unique_id NOT IN ($placeholders)";
@@ -853,22 +881,21 @@ class SemanalApiController
                 CASE WHEN (Estado='Atrasada' OR Estado='Ya Debió Iniciar y Restricciones Pendientes') THEN 1 ELSE 0 END,
                 '1', COALESCE(NULLIF(TRIM(unidad), ''), '%'), cantidad_ppto, codigo_actividad
             FROM " . $this->tbl($dbPrefix, 'programa_consolidado') . "
-            WHERE Semana = ? AND Titulo = 0
+            WHERE project_id = ? AND Semana = ? AND Titulo = 0
               AND (COALESCE(Ejecutado, 0) > 0.001 OR {$restrictionEligibilitySql})
               AND (Estado='En Curso' OR Estado='Atrasada' OR Estado='Debe Iniciar'
                 OR Estado='A Tiempo' OR Estado='Ya Debió Iniciar y Restricciones Pendientes')
               {$whereExistentes}";
 
-            array_shift($paramsInsert);
-            $stmtNuevas = $this->db->queryWithProject($sqlSelectNuevas, $paramsInsert);
+            $stmtNuevas = $this->db->queryWithProject($sqlSelectNuevas, $paramsInsert, $projectId);
             $nuevasFilas = $stmtNuevas->fetchAll(PDO::FETCH_NUM);
 
             if (!empty($nuevasFilas)) {
                 $queryInsertSingle = "INSERT INTO " . $this->tbl($dbPrefix, 'programacion_semanal') . " (
-                    Semana, unique_id, Consecutivo_En_Programa, Id, Actividad, Fecha_Inicio, Fecha_Fin,
+                    project_id, Semana, unique_id, Consecutivo_En_Programa, Id, Actividad, Fecha_Inicio, Fecha_Fin,
                     Sub_Contratista, Responsable_AIA, Empresa, Ejecutado, medir_productividad,
                     Critica, Atrasada, Activa, Unidad, cantidad_ppto, codigo_actividad
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                 foreach ($nuevasFilas as $f) {
                     $subsRaw = $f[7] ?? '';
@@ -878,14 +905,15 @@ class SemanalApiController
                     }
                     foreach ($subs as $sub) {
                         $f[7] = $sub;
-                        $this->db->queryWithProject($queryInsertSingle, $f);
+                        $this->db->queryWithProject($queryInsertSingle, array_merge([$projectId], $f), $projectId);
                     }
                 }
             }
 
             $stmtSemanal = $this->db->queryWithProject(
-                "SELECT row_id AS Consecutivo, unique_id AS Consecutivo_En_Programa, Sub_Contratista FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . " WHERE Semana = ? AND Activa != 'NA' AND (Compromiso IS NULL OR Compromiso <= 0)",
-                [$semana],
+                "SELECT row_id AS Consecutivo, unique_id AS Consecutivo_En_Programa, Sub_Contratista FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . " WHERE project_id = ? AND Semana = ? AND Activa != 'NA' AND (Compromiso IS NULL OR Compromiso <= 0)",
+                [$projectId, $semana],
+                $projectId,
             );
             foreach ($stmtSemanal->fetchAll() as $item) {
                 $con_pk = $item["Consecutivo"];
@@ -893,21 +921,24 @@ class SemanalApiController
                 $sub_split = $item["Sub_Contratista"];
 
                 $dataCons = $this->db->queryWithProject(
-                    "SELECT *, row_id AS Consecutivo, unique_id AS Consecutivo_en_Programa FROM " . $this->tbl($dbPrefix, 'programa_consolidado') . " WHERE Semana = ? AND unique_id = ?",
-                    [$semana, $con_pg],
+                    "SELECT *, row_id AS Consecutivo, unique_id AS Consecutivo_en_Programa FROM " . $this->tbl($dbPrefix, 'programa_consolidado') . " WHERE project_id = ? AND Semana = ? AND unique_id = ?",
+                    [$projectId, $semana, $con_pg],
+                    $projectId,
                 )->fetch();
                 if (!$dataCons) {
                     continue;
                 }
 
                 $dataAnt = $this->db->queryWithProject(
-                    "SELECT Responsable_AIA, Empresa, Descripcion, Ubicacion FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . " WHERE Semana = ? AND unique_id = ? AND Sub_Contratista = ?",
-                    [$semana - 1, $con_pg, $sub_split],
+                    "SELECT Responsable_AIA, Empresa, Descripcion, Ubicacion FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . " WHERE project_id = ? AND Semana = ? AND unique_id = ? AND Sub_Contratista = ?",
+                    [$projectId, $semana - 1, $con_pg, $sub_split],
+                    $projectId,
                 )->fetch();
                 if (!$dataAnt) {
                     $dataAnt = $this->db->queryWithProject(
-                        "SELECT Responsable_AIA, Empresa, Descripcion, Ubicacion FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . " WHERE Semana = ? AND unique_id = ?",
-                        [$semana - 1, $con_pg],
+                        "SELECT Responsable_AIA, Empresa, Descripcion, Ubicacion FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . " WHERE project_id = ? AND Semana = ? AND unique_id = ?",
+                        [$projectId, $semana - 1, $con_pg],
+                        $projectId,
                     )->fetch();
                 }
 
@@ -920,20 +951,21 @@ class SemanalApiController
                     Atrasada = (CASE WHEN ? IN ('Atrasada','Ya Debió Iniciar y Restricciones Pendientes') THEN 1 ELSE 0 END),
                     Descripcion = ?, Ubicacion = ?, Empresa = ?, Unidad = COALESCE(NULLIF(TRIM(?), ''), '%'),
                     cantidad_ppto = ?, codigo_actividad = ?
-                    WHERE Semana = ? AND row_id = ?", [
+                    WHERE project_id = ? AND Semana = ? AND row_id = ?", [
                     $dataCons['Fecha_Inicio'], $dataCons['Fecha_Fin'], $sub, $resp,
                     (float) $dataCons['Ejecutado'], 0, (int) ($dataCons["Ruta_Critica"] ?? 0),
                     $dataCons["Estado"], $dataAnt["Descripcion"] ?? null, $dataAnt["Ubicacion"] ?? null,
                     $dataAnt["Empresa"] ?? 'AIA', $dataCons["unidad"],
                     ((float) ($dataCons["cantidad_ppto"] ?? 0) > 0 ? (float) $dataCons["cantidad_ppto"] : null),
-                    $dataCons["codigo_actividad"], $semana, $con_pk,
-                ]);
+                    $dataCons["codigo_actividad"], $projectId, $semana, $con_pk,
+                ], $projectId);
             }
 
             $this->syncRestrictionFlags($dbPrefix, $semana, $area);
             $this->db->queryWithProject(
-                "UPDATE " . $this->tbl($dbPrefix, 'semanas_activas') . " SET fecha_ultimo_saneo = NOW() WHERE Semana = ?",
-                [$semana],
+                "UPDATE " . $this->tbl($dbPrefix, 'semanas_activas') . " SET fecha_ultimo_saneo = NOW() WHERE project_id = ? AND Semana = ?",
+                [$projectId, $semana],
+                $projectId,
             );
             $this->jsonResponse("OK");
         } catch (Throwable $t) {
@@ -944,6 +976,7 @@ class SemanalApiController
 
     private function tnp(string $dbPrefix, int $semana): void
     {
+        $projectId = $this->projectId($dbPrefix);
         $consecutivo = filter_input(INPUT_POST, 'Consecutivo', FILTER_VALIDATE_INT);
         $id = trim($_POST['Id'] ?? '');
         $ejecutadoReal = filter_input(INPUT_POST, 'Ejecutado_Real', FILTER_VALIDATE_FLOAT);
@@ -965,8 +998,9 @@ class SemanalApiController
             if ($consecutivo) {
                 // Try UPDATE first — if matching row exists in programacion_semanal
                 $stmt = $this->db->queryWithProject(
-                    "SELECT COUNT(*) FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . " WHERE unique_id = ? AND Semana = ?",
-                    [$consecutivo, $semana],
+                    "SELECT COUNT(*) FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . " WHERE project_id = ? AND unique_id = ? AND Semana = ?",
+                    [$projectId, $consecutivo, $semana],
+                    $projectId,
                 );
                 $exists = (int) $stmt->fetchColumn();
 
@@ -975,9 +1009,10 @@ class SemanalApiController
                         "UPDATE " . $this->tbl($dbPrefix, 'programacion_semanal') . " SET
                          Ejecutado_Real = ?, Es_TNP = 1, Categoria_CP = ?, CP = ?,
                          Observaciones_CP = ?, PAC = NULL
-                         WHERE unique_id = ? AND Semana = ?",
+                         WHERE project_id = ? AND unique_id = ? AND Semana = ?",
                         [$ejecutadoReal, $categoriaCp, $cp, $observacionesCp,
-                         $consecutivo, $semana],
+                         $projectId, $consecutivo, $semana],
+                        $projectId,
                     );
                     $this->jsonResponse("BIEN");
                     return;
@@ -986,8 +1021,9 @@ class SemanalApiController
 
             // INSERT — activity not in programacion_semanal
             $pgData = $this->db->queryWithProject(
-                "SELECT * FROM " . $this->tbl($dbPrefix, 'programa_consolidado') . " WHERE Id = ? AND Semana = ?",
-                [$id, $semana],
+                "SELECT * FROM " . $this->tbl($dbPrefix, 'programa_consolidado') . " WHERE project_id = ? AND Id = ? AND Semana = ?",
+                [$projectId, $id, $semana],
+                $projectId,
             )->fetch(PDO::FETCH_ASSOC);
 
             if (!$pgData) {
@@ -996,25 +1032,28 @@ class SemanalApiController
             }
 
             $maxCon = $this->db->queryWithProject(
-                "SELECT MAX(row_id) as maxCon FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . " WHERE Semana = ?",
-                [$semana],
+                "SELECT MAX(row_id) as maxCon FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . " WHERE project_id = ? AND Semana = ?",
+                [$projectId, $semana],
+                $projectId,
             )->fetch(PDO::FETCH_ASSOC);
             $nextConsecutivo = ($maxCon['maxCon'] ?? 0) + 1;
 
             $this->db->queryWithProject(
                 "INSERT INTO " . $this->tbl($dbPrefix, 'programacion_semanal') . "
-                 (row_id, Consecutivo, Semana, unique_id, Consecutivo_En_Programa, Id, Actividad, Unidad, cantidad_ppto,
+                 (project_id, row_id, Consecutivo, Semana, unique_id, Consecutivo_En_Programa, Id, Actividad, Unidad, cantidad_ppto,
                   Compromiso, Ejecutado_Real, Activa, Es_TNP, Categoria_CP, CP, Observaciones_CP,
                   PAC, Sub_Contratista, Responsable_AIA)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, '1', 1, ?, ?, ?, NULL, ?, ?)",
-                [$nextConsecutivo, $nextConsecutivo, $semana,
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, '1', 1, ?, ?, ?, NULL, ?, ?)",
+                [$projectId, $nextConsecutivo, $nextConsecutivo, $semana,
                  $consecutivo ?: ($pgData['unique_id'] ?? $pgData['Consecutivo_en_Programa'] ?? null),
                  $consecutivo ?: ($pgData['unique_id'] ?? $pgData['Consecutivo_en_Programa'] ?? null),
                  $pgData['Id'] ?? null, $pgData['Actividad'] ?? '', $pgData['Unidad'] ?? '',
                  $pgData['Cuantia'] ?? $pgData['cantidad_ppto'] ?? 0, $ejecutadoReal,
                  $categoriaCp, $cp, $observacionesCp,
                  $pgData['Sub_Contratista'] ?? null, $pgData['Responsable_AIA'] ?? null,
-            ]);
+                ],
+                $projectId,
+            );
 
             $this->jsonResponse("BIEN");
         } catch (Throwable $t) {
@@ -1024,8 +1063,9 @@ class SemanalApiController
 
     private function importarActividadNoRequerida(string $dbPrefix, int $semana): void
     {
+        $projectId = $this->projectId($dbPrefix);
         $id = $_POST["Consecutivo"];
-        $data = $this->db->queryWithProject("SELECT Actividad, Responsable_AIA, Sub_Contratista, unidad, cantidad_ppto FROM " . $this->tbl($dbPrefix, 'programa_consolidado') . " WHERE Semana = ? AND Id = ?", [$semana, $id])->fetch(PDO::FETCH_ASSOC);
+        $data = $this->db->queryWithProject("SELECT Actividad, Responsable_AIA, Sub_Contratista, unidad, cantidad_ppto FROM " . $this->tbl($dbPrefix, 'programa_consolidado') . " WHERE project_id = ? AND Semana = ? AND Id = ?", [$projectId, $semana, $id], $projectId)->fetch(PDO::FETCH_ASSOC);
         echo json_encode(["respuesta" => "BIEN", "data" => $data], JSON_UNESCAPED_UNICODE);
     }
 
@@ -1048,19 +1088,22 @@ class SemanalApiController
         }
 
         try {
+            $projectId = $this->projectId($dbPrefix);
             $query = "SELECT pc.Id, pc.unique_id AS Consecutivo_en_Programa, pc.unique_id, pc.Actividad, pc.Sub_Contratista, pc.Responsable_AIA, pc.codigo_actividad,
                            CASE WHEN ps.unique_id IS NOT NULL THEN 1 ELSE 0 END AS previamente_programada
                     FROM " . $this->tbl($dbPrefix, 'programa_consolidado') . " pc
                     LEFT JOIN " . $this->tbl($dbPrefix, 'programacion_semanal') . " ps
-                      ON pc.unique_id = ps.unique_id AND ps.Semana = ?
-                    WHERE pc.Semana = ? AND pc.Titulo = 0
+                      ON ps.project_id = pc.project_id
+                     AND pc.unique_id = ps.unique_id
+                     AND ps.Semana = ?
+                    WHERE pc.project_id = ? AND pc.Semana = ? AND pc.Titulo = 0
                       AND pc.Semanas_Inicio <= 12
                       AND pc.Semanas_Inicio >= 1
                       AND pc.Ejecutado = 0
                       AND (pc.Activa = 0 OR ps.unique_id IS NULL)
                     ORDER BY previamente_programada DESC, pc.codigo_actividad ASC";
 
-            $stmt = $this->db->queryWithProject($query, [$semana, $semana]);
+            $stmt = $this->db->queryWithProject($query, [$semana, $projectId, $semana], $projectId);
             $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             header('Content-Type: application/json; charset=utf-8');
@@ -1088,6 +1131,8 @@ class SemanalApiController
         }
 
         try {
+            $projectId = $this->projectId($dbPrefix);
+            $this->db->setProjectContext($projectId);
             $area = $_SESSION['area'] ?? 'Construccion';
             $detector = new ProgramChangeDetector();
             $log = $detector->run($dbPrefix, $semana);
@@ -1123,6 +1168,8 @@ class SemanalApiController
         }
 
         try {
+            $projectId = $this->projectId($dbPrefix);
+            $this->db->setProjectContext($projectId);
             $detector = new ProgramChangeDetector();
             $log = $detector->getLog($dbPrefix, $semana);
 
@@ -1135,5 +1182,15 @@ class SemanalApiController
         } catch (Throwable $t) {
             $this->jsonError('Error al obtener log: ' . $t->getMessage());
         }
+    }
+
+    private function projectId(string $dbPrefix): int
+    {
+        $projectId = TableResolver::getProjectIdByPrefix($dbPrefix);
+        if (!$projectId) {
+            throw new \RuntimeException('Proyecto no encontrado.');
+        }
+
+        return $projectId;
     }
 }

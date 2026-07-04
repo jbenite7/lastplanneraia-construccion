@@ -38,6 +38,8 @@ class GeneralApiController extends BaseController
             if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
                 throw new Exception("Base de datos inválida.");
             }
+            $projectId = $this->projectId($dbPrefix);
+            $this->db->setProjectContext($projectId);
 
             // 2. Construir Filtros
             $conditions = [];
@@ -72,7 +74,7 @@ class GeneralApiController extends BaseController
             }
 
             // 3. Obtener Fechas de la Semana
-            $stmtFechas = $this->db->queryWithProject("SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem FROM " . TableResolver::resolveByPrefix($dbPrefix, 'semanas_activas') . " WHERE Semana = ? LIMIT 1", [$semana]);
+            $stmtFechas = $this->db->queryWithProject("SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem FROM " . TableResolver::resolveByPrefix($dbPrefix, 'semanas_activas') . " WHERE project_id = ? AND Semana = ? LIMIT 1", [$projectId, $semana], $projectId);
             $fechasSemana = $stmtFechas->fetch(PDO::FETCH_ASSOC);
 
             $fechaInicioSemana = $fechasSemana['Fecha_Inicio_Sem'] ?? date('Y-m-d');
@@ -84,11 +86,11 @@ class GeneralApiController extends BaseController
                            unique_id AS Consecutivo_en_Programa,
                            unique_id
                     FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . "
-                    WHERE Semana = ?
+                    WHERE project_id = ? AND Semana = ?
                     $sqlFilter
                     ORDER BY row_id ASC, unique_id ASC, Id ASC";
 
-            $stmt = $this->db->queryWithProject($sql, [$semana]);
+            $stmt = $this->db->queryWithProject($sql, [$projectId, $semana], $projectId);
             $data = [];
 
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -143,6 +145,8 @@ class GeneralApiController extends BaseController
             if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
                 throw new Exception("Base de datos inválida.");
             }
+            $projectId = $this->projectId($dbPrefix);
+            $this->db->setProjectContext($projectId);
 
             $semanaParam = $_GET['semana_objetivo'] ?? $_GET['semana'] ?? null;
             $semana = $semanaParam !== null ? filter_var($semanaParam, FILTER_VALIDATE_INT) : ($vars['semana'] ?? 0);
@@ -153,7 +157,7 @@ class GeneralApiController extends BaseController
                 throw new Exception("Faltan parámetros requeridos (unique_id, Semana).");
             }
 
-            $checkStmt = $this->db->queryWithProject("SELECT Titulo FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " WHERE unique_id = ? AND Semana = ?", [$id, $semana]);
+            $checkStmt = $this->db->queryWithProject("SELECT Titulo FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " WHERE project_id = ? AND unique_id = ? AND Semana = ?", [$projectId, $id, $semana], $projectId);
             $existingRow = $checkStmt->fetch(PDO::FETCH_ASSOC);
 
             if (!$existingRow) {
@@ -213,7 +217,7 @@ class GeneralApiController extends BaseController
 
             $actividadAsociar = $_POST['actividadAsociar'] ?? null;
 
-            $auditStmt = $this->db->queryWithProject("SELECT Ejecutado, Ejecutado_Siguiente_Semana, Estado, Titulo, unidad, cantidad_ppto FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " WHERE unique_id = ? AND Semana = ? LIMIT 1", [$id, $semana]);
+            $auditStmt = $this->db->queryWithProject("SELECT Ejecutado, Ejecutado_Siguiente_Semana, Estado, Titulo, unidad, cantidad_ppto FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " WHERE project_id = ? AND unique_id = ? AND Semana = ? LIMIT 1", [$projectId, $id, $semana], $projectId);
             $auditBefore = $auditStmt->fetch(PDO::FETCH_ASSOC);
             $auditStartTime = microtime(true);
             error_log("[PGAudit] INICIO | usuario={$vars['user']} | db={$dbPrefix} | semana={$semana} | id={$id} | Titulo={$auditBefore['Titulo']} | Ejecutado_antes={$auditBefore['Ejecutado']} | EjecSigSem_antes={$auditBefore['Ejecutado_Siguiente_Semana']} | Estado_antes={$auditBefore['Estado']} | unidad={$auditBefore['unidad']} | cantidad_ppto={$auditBefore['cantidad_ppto']} | POST_Ejecutado={$rawInput} | POST_EjecutadoRatio=" . ($_POST["EjecutadoRatio"] ?? 'null') . " | POST_unidad={$unidadRaw} | POST_cantidad_ppto=" . ($_POST["cantidad_ppto"] ?? 'null') . " | ejecutado_calculado={$ejecutado}");
@@ -230,11 +234,11 @@ class GeneralApiController extends BaseController
                     Fecha_Inicio = ?,
                     Fecha_Fin = ?,
                     programaAnteriorAsociar = ?
-                    WHERE unique_id = ? AND Semana = ?";
+                    WHERE project_id = ? AND unique_id = ? AND Semana = ?";
 
-            $updateStmt = $this->db->queryWithProject($sql, [ $ejecutado, $medirProductividad, $unidad, $cantidadPpto, $codigoActividad, $ejecutado, $fechaInicio, $fechaFin, $actividadAsociar, $id, $semana, ]);
+            $updateStmt = $this->db->queryWithProject($sql, [ $ejecutado, $medirProductividad, $unidad, $cantidadPpto, $codigoActividad, $ejecutado, $fechaInicio, $fechaFin, $actividadAsociar, $projectId, $id, $semana, ], $projectId);
 
-            $verifyStmt = $this->db->queryWithProject("SELECT unidad, cantidad_ppto, Ejecutado FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " WHERE unique_id = ? AND Semana = ? LIMIT 1", [$id, $semana]);
+            $verifyStmt = $this->db->queryWithProject("SELECT unidad, cantidad_ppto, Ejecutado FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " WHERE project_id = ? AND unique_id = ? AND Semana = ? LIMIT 1", [$projectId, $id, $semana], $projectId);
             $updatedRow = $verifyStmt->fetch(PDO::FETCH_ASSOC);
 
             if (!$updatedRow) {
@@ -292,13 +296,13 @@ class GeneralApiController extends BaseController
                                     medir_productividad = ?, cantidad_ppto = ?, unidad = ?,
                                     Estado_Restricciones = ?, D_y_E = ?, Materiales = ?, MdeO = ?, Equipos = ?,
                                     Predecesora = ?, Pdto_Cons = ?, Modelo = ?, Ejecutado = ?
-                                 WHERE unique_id = ? AND Semana = ?";
+                                 WHERE project_id = ? AND unique_id = ? AND Semana = ?";
                     $this->db->queryWithProject($sqlApply, [
                         $dataHerencia['Responsable_AIA'], $dataHerencia['Sub_Contratista'], $dataHerencia['Observaciones'], $dataHerencia['codigo_actividad'],
                         $dataHerencia['medir_productividad'], $dataHerencia['cantidad_ppto'], $dataHerencia['unidad'],
                         $dataHerencia['Estado_Restricciones'], $dataHerencia['D_y_E'], $dataHerencia['Materiales'], $dataHerencia['MdeO'], $dataHerencia['Equipos'],
-                        $dataHerencia['Predecesora'], $dataHerencia['Pdto_Cons'], $dataHerencia['Modelo'], $dataHerencia['Ejecutado'], $id, $semana,
-                    ]);
+                        $dataHerencia['Predecesora'], $dataHerencia['Pdto_Cons'], $dataHerencia['Modelo'], $dataHerencia['Ejecutado'], $projectId, $id, $semana,
+                    ], $projectId);
 
                     $ejecutado = $dataHerencia['Ejecutado'];
                     $unidad = $dataHerencia['unidad'];
@@ -306,14 +310,14 @@ class GeneralApiController extends BaseController
             }
 
             // 6. Recalcular Estado
-            $ctxStmt = $this->db->queryWithProject("SELECT Titulo FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " WHERE unique_id = ? AND Semana = ?", [$id, $semana]);
+            $ctxStmt = $this->db->queryWithProject("SELECT Titulo FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " WHERE project_id = ? AND unique_id = ? AND Semana = ?", [$projectId, $id, $semana], $projectId);
             $row = $ctxStmt->fetch(PDO::FETCH_ASSOC);
 
             if (!$row) {
                 throw new Exception("Error post-update: Registro no encontrado.");
             }
 
-            $stmtFechas = $this->db->queryWithProject("SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem FROM " . TableResolver::resolveByPrefix($dbPrefix, 'semanas_activas') . " WHERE Semana = ?", [$semana]);
+            $stmtFechas = $this->db->queryWithProject("SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem FROM " . TableResolver::resolveByPrefix($dbPrefix, 'semanas_activas') . " WHERE project_id = ? AND Semana = ?", [$projectId, $semana], $projectId);
             $inicioSemanaRow = $stmtFechas->fetch(PDO::FETCH_ASSOC);
 
             $fechaCorte = $inicioSemanaRow['Fecha_Inicio_Sem'] ?? date('Y-m-d');
@@ -322,11 +326,11 @@ class GeneralApiController extends BaseController
             $nuevoEstado = $this->lpsService->calculateGeneralStatus($row['Titulo'], $ejecutado, $fechaInicio, $fechaFin, $fechaCorte, $fechaFinSemana);
             $semanasInicio = $this->lpsService->toTimestamp($fechaInicio) !== null ? round(($this->lpsService->toTimestamp($fechaInicio) - $this->lpsService->toTimestamp($fechaCorte)) / (7 * 86400)) : null;
 
-            $this->db->queryWithProject("UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " SET Estado = ?, Semanas_Inicio = ? WHERE unique_id = ? AND Semana = ?", [$nuevoEstado, $semanasInicio, $id, $semana]);
+            $this->db->queryWithProject("UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " SET Estado = ?, Semanas_Inicio = ? WHERE project_id = ? AND unique_id = ? AND Semana = ?", [$nuevoEstado, $semanasInicio, $projectId, $id, $semana], $projectId);
 
             $auditEndTime = microtime(true);
             $auditDuration = round(($auditEndTime - $auditStartTime) * 1000, 2);
-            $auditStmt2 = $this->db->queryWithProject("SELECT Ejecutado, Ejecutado_Siguiente_Semana, Estado FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " WHERE unique_id = ? AND Semana = ? LIMIT 1", [$id, $semana]);
+            $auditStmt2 = $this->db->queryWithProject("SELECT Ejecutado, Ejecutado_Siguiente_Semana, Estado FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " WHERE project_id = ? AND unique_id = ? AND Semana = ? LIMIT 1", [$projectId, $id, $semana], $projectId);
             $auditAfter = $auditStmt2->fetch(PDO::FETCH_ASSOC);
             error_log("[PGAudit] FINAL | usuario={$vars['user']} | semana={$semana} | id={$id} | Ejecutado_despues={$auditAfter['Ejecutado']} | EjecSigSem_despues={$auditAfter['Ejecutado_Siguiente_Semana']} | Estado_despues={$auditAfter['Estado']} | duracion_ms={$auditDuration}");
 
@@ -345,7 +349,7 @@ class GeneralApiController extends BaseController
             // Si hubo herencia, devolvemos los campos actualizados (prioridad sobre el input manual)
             if (!empty($_POST['editarActividadAsociar']) && !empty($actividadAsociar) && $actividadAsociar !== '*No Asociada*') {
                 $inheritanceFields = "unidad, cantidad_ppto, Ejecutado, Estado_Restricciones, D_y_E, Materiales, MdeO, Equipos, Predecesora, Pdto_Cons, Modelo";
-                $inheritanceStmt = $this->db->queryWithProject("SELECT $inheritanceFields FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " WHERE unique_id = ? AND Semana = ?", [$id, $semana]);
+                $inheritanceStmt = $this->db->queryWithProject("SELECT $inheritanceFields FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " WHERE project_id = ? AND unique_id = ? AND Semana = ?", [$projectId, $id, $semana], $projectId);
                 $inheritedData = $inheritanceStmt->fetch(PDO::FETCH_ASSOC);
                 if ($inheritedData) {
                     foreach ($inheritedData as $k => $v) {
@@ -381,8 +385,10 @@ class GeneralApiController extends BaseController
             if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix) || $semana <= 0) {
                 throw new Exception('Parámetros inválidos.');
             }
+            $projectId = $this->projectId($dbPrefix);
+            $this->db->setProjectContext($projectId);
 
-            $stmtFecha = $this->db->queryWithProject("SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem FROM " . TableResolver::resolveByPrefix($dbPrefix, 'semanas_activas') . " WHERE Semana = ? LIMIT 1", [$semana]);
+            $stmtFecha = $this->db->queryWithProject("SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem FROM " . TableResolver::resolveByPrefix($dbPrefix, 'semanas_activas') . " WHERE project_id = ? AND Semana = ? LIMIT 1", [$projectId, $semana], $projectId);
             $dataSemana = $stmtFecha->fetch(PDO::FETCH_ASSOC);
 
             if (!$dataSemana || empty($dataSemana['Fecha_Inicio_Sem'])) {
@@ -407,20 +413,19 @@ class GeneralApiController extends BaseController
                 }
             }
 
-            $this->db->queryWithProject("UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " SET Activa = 1 WHERE Semana = ?", [$semana]);
-            $this->db->queryWithProject("UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " SET Estado = 'Capítulo' WHERE Semana = ? AND Titulo = 1", [$semana]);
+            $this->db->queryWithProject("UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " SET Activa = 1 WHERE project_id = ? AND Semana = ?", [$projectId, $semana], $projectId);
+            $this->db->queryWithProject("UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " SET Estado = 'Capítulo' WHERE project_id = ? AND Semana = ? AND Titulo = 1", [$projectId, $semana], $projectId);
 
-            $rows = $this->db->queryWithProject("SELECT unique_id, unique_id AS Consecutivo_en_Programa, Titulo, Ejecutado, Fecha_Inicio, Fecha_Fin FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " WHERE Semana = ? AND Titulo = 0", [$semana]);
+            $rows = $this->db->queryWithProject("SELECT unique_id, unique_id AS Consecutivo_en_Programa, Titulo, Ejecutado, Fecha_Inicio, Fecha_Fin FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " WHERE project_id = ? AND Semana = ? AND Titulo = 0", [$projectId, $semana], $projectId);
             $activities = $rows->fetchAll(PDO::FETCH_ASSOC);
 
             $actualizadas = 0;
-            $updateStmt = $this->db->prepareWithProject("UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " SET Estado = ?, Semanas_Inicio = ? WHERE unique_id = ? AND Semana = ?");
-            $pid = $this->db->getCurrentProjectId() ?? TableResolver::getProjectIdByPrefix($dbPrefix);
+            $updateStmt = $this->db->prepareWithProject("UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " SET Estado = ?, Semanas_Inicio = ? WHERE project_id = ? AND unique_id = ? AND Semana = ?", $projectId);
 
             foreach ($activities as $row) {
                 $estadoNuevo = $this->lpsService->calculateGeneralStatus($row['Titulo'], $row['Ejecutado'] ?? 0, $row['Fecha_Inicio'], $row['Fecha_Fin'], $inicioSemana, $finSemana);
                 $semanasInicio = $this->lpsService->toTimestamp($row['Fecha_Inicio']) !== null ? round(($this->lpsService->toTimestamp($row['Fecha_Inicio']) - $this->lpsService->toTimestamp($inicioSemana)) / (7 * 86400)) : null;
-                $updateStmt->execute([$estadoNuevo, $semanasInicio, $row['unique_id'], $semana, $pid]);
+                $updateStmt->execute([$estadoNuevo, $semanasInicio, $projectId, $row['unique_id'], $semana]);
                 $actualizadas++;
             }
 
@@ -446,25 +451,29 @@ class GeneralApiController extends BaseController
             return;
         }
 
-        $semanaData = $this->db->queryWithProject("SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem FROM " . TableResolver::resolveByPrefix($dbPrefix, 'semanas_activas') . " WHERE Semana = ? LIMIT 1", [$semana]);
+        $projectId = $this->projectId($dbPrefix);
+        $this->db->setProjectContext($projectId);
+
+        $semanaData = $this->db->queryWithProject("SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem FROM " . TableResolver::resolveByPrefix($dbPrefix, 'semanas_activas') . " WHERE project_id = ? AND Semana = ? LIMIT 1", [$projectId, $semana], $projectId);
         $semanaRow = $semanaData->fetch(PDO::FETCH_ASSOC);
         if (!$semanaRow) {
             return;
         }
 
         $placeholders = implode(',', array_fill(0, count($programIds), '?'));
-        $params = array_merge([$semana], $programIds);
+        $params = array_merge([$projectId, $semana], $programIds);
         $stmt = $this->db->prepareWithProject(
             "SELECT unique_id, unique_id AS Consecutivo_en_Programa, Titulo, Ejecutado, Fecha_Inicio, Fecha_Fin
              FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . "
-             WHERE Semana = ? AND unique_id IN ({$placeholders})"
+             WHERE project_id = ? AND Semana = ? AND unique_id IN ({$placeholders})",
+            $projectId,
         );
-        $pid = $this->db->getCurrentProjectId() ?? TableResolver::getProjectIdByPrefix($dbPrefix);
-        $stmt->execute(array_merge($params, [$pid]));
+        $stmt->execute($params);
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $updateEstado = $this->db->prepareWithProject(
-            "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " SET Estado = ? WHERE Semana = ? AND unique_id = ?"
+            "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " SET Estado = ? WHERE project_id = ? AND Semana = ? AND unique_id = ?",
+            $projectId,
         );
 
         foreach ($rows as $row) {
@@ -476,7 +485,7 @@ class GeneralApiController extends BaseController
                 $semanaRow['Fecha_Inicio_Sem'] ?? null,
                 $semanaRow['Fecha_Fin_Sem'] ?? null,
             );
-            $updateEstado->execute([$estado, $semana, $row['unique_id'], $pid]);
+            $updateEstado->execute([$estado, $projectId, $semana, $row['unique_id']]);
         }
     }
 
@@ -543,10 +552,10 @@ class GeneralApiController extends BaseController
             array_shift($excelData);
 
             // 1. Detección inteligente de
-            $stmtMaxCons = $this->db->queryWithProject("SELECT MAX(Semana) as max_sem FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . "");
+            $stmtMaxCons = $this->db->queryWithProject("SELECT MAX(Semana) as max_sem FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " WHERE project_id = ?", [$projectId], $projectId);
             $maxSemCons = (int) ($stmtMaxCons->fetch(PDO::FETCH_ASSOC)['max_sem'] ?? 0);
 
-            $stmtMaxAct = $this->db->queryWithProject("SELECT MAX(Semana) as max_sem FROM " . TableResolver::resolveByPrefix($dbPrefix, 'semanas_activas') . "");
+            $stmtMaxAct = $this->db->queryWithProject("SELECT MAX(Semana) as max_sem FROM " . TableResolver::resolveByPrefix($dbPrefix, 'semanas_activas') . " WHERE project_id = ?", [$projectId], $projectId);
             $maxSemAct = (int) ($stmtMaxAct->fetch(PDO::FETCH_ASSOC)['max_sem'] ?? 0);
 
             // Lógica de Autodetección de Semana Destino:
@@ -721,7 +730,7 @@ class GeneralApiController extends BaseController
             $debug("DEBUG IMPORT: programa actualizado con " . count($itemsParaInsertar) . " registros.");
 
             // 1B. Borrar borrador anterior en consolidado
-            $this->db->queryWithProject("DELETE FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " WHERE Semana = ?", [$semanaNueva]);
+            $this->db->queryWithProject("DELETE FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " WHERE project_id = ? AND Semana = ?", [$projectId, $semanaNueva], $projectId);
 
             // 2. Insertar nuevos registros
             $baseColumns = 'Semana, unique_id, Consecutivo_en_Programa, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin, Ruta_Critica, Ejecutado, Responsable_AIA, Sub_Contratista, Observaciones, codigo_actividad, medir_productividad, cantidad_ppto, unidad, Estado_Restricciones';
@@ -734,22 +743,22 @@ class GeneralApiController extends BaseController
             $allColumns = "{$baseColumns}, {$dynamicColumns}, {$tailColumns}";
             $placeholderCount = substr_count($allColumns, ',') + 1;
             $placeholders = implode(', ', array_fill(0, $placeholderCount, '?'));
-            $queryInsert = "INSERT INTO " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " ({$allColumns}) VALUES ({$placeholders})";
-            $stmtInsert = $this->db->prepareWithProject($queryInsert);
+            $queryInsert = "INSERT INTO " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " (project_id, {$allColumns}) VALUES (?, {$placeholders})";
+            $stmtInsert = $this->db->prepareWithProject($queryInsert, $projectId);
 
             foreach ($itemsParaInsertar as $item) {
-                $stmtInsert->execute(array_values($item));
+                $stmtInsert->execute(array_merge([$projectId], array_values($item)));
             }
 
             // 3. Activar semana (Solo automáticamente para S1; S2+ queda como borrador)
-            $stmtCheckSem = $this->db->queryWithProject("SELECT COUNT(*) FROM " . TableResolver::resolveByPrefix($dbPrefix, 'semanas_activas') . " WHERE Semana = ?", [$semanaNueva]);
+            $stmtCheckSem = $this->db->queryWithProject("SELECT COUNT(*) FROM " . TableResolver::resolveByPrefix($dbPrefix, 'semanas_activas') . " WHERE project_id = ? AND Semana = ?", [$projectId, $semanaNueva], $projectId);
             $existeSemana = (int) $stmtCheckSem->fetchColumn();
 
             if ($existeSemana == 0 && $semanaNueva === 1) {
                 $f_final_sem = date('Y-m-d', strtotime($f_inicio_sem . ' + 6 days'));
                 $semanasTable = TableResolver::resolveByPrefix($dbPrefix, 'semanas_activas');
-                $nextSemanaId = (int) $this->db->queryWithProject("SELECT COALESCE(MAX(Id), 0) + 1 FROM {$semanasTable}")->fetchColumn();
-                $stmtInsertSem = $this->db->queryWithProject("INSERT INTO {$semanasTable} (Id, Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem, fechaCreacionSemana) VALUES (?, ?, ?, ?, ?)", [$nextSemanaId, $semanaNueva, $f_inicio_sem, $f_final_sem, date('Y-m-d')]);
+                $nextSemanaId = (int) $this->db->queryWithProject("SELECT COALESCE(MAX(Id), 0) + 1 FROM {$semanasTable} WHERE project_id = ?", [$projectId], $projectId)->fetchColumn();
+                $stmtInsertSem = $this->db->queryWithProject("INSERT INTO {$semanasTable} (project_id, Id, Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem, fechaCreacionSemana) VALUES (?, ?, ?, ?, ?, ?)", [$projectId, $nextSemanaId, $semanaNueva, $f_inicio_sem, $f_final_sem, date('Y-m-d')], $projectId);
                 $debug("DEBUG IMPORT: Creada semana activa 1 automáticamente.");
             } elseif ($existeSemana == 0) {
                 $debug("DEBUG IMPORT: Semana $semanaNueva guardada como BORRADOR. Use 'Nueva Semana' para activarla.");
@@ -1158,23 +1167,25 @@ class GeneralApiController extends BaseController
             if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
                 throw new Exception("Base de datos inválida.");
             }
+            $projectId = $this->projectId($dbPrefix);
+            $this->db->setProjectContext($projectId);
 
             // 1. Determinar la última semana activa oficialmente
-            $stmtMax = $this->db->queryWithProject("SELECT MAX(Semana) FROM " . TableResolver::resolveByPrefix($dbPrefix, 'semanas_activas') . "");
+            $stmtMax = $this->db->queryWithProject("SELECT MAX(Semana) FROM " . TableResolver::resolveByPrefix($dbPrefix, 'semanas_activas') . " WHERE project_id = ?", [$projectId], $projectId);
             $maxSemanaActiva = (int) $stmtMax->fetchColumn();
 
             // 2. Si la semana que se quiere eliminar es superior a la activa, es un borrador (Draft)
             // Procedemos con el borrado físico para que el usuario pueda re-importar/mapear de cero
             if ($semana > $maxSemanaActiva) {
-                $sqlDelete = "DELETE FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " WHERE Semana = ?";
-                $this->db->queryWithProject($sqlDelete, [$semana]);
+                $sqlDelete = "DELETE FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " WHERE project_id = ? AND Semana = ?";
+                $this->db->queryWithProject($sqlDelete, [$projectId, $semana], $projectId);
             } else {
                 // Si es una semana activa, solo reseteamos los campos de actualización (Soft Reset)
                 $sqlReset = "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " SET
                         Ejecutado = 0, Responsable_AIA = NULL, Sub_Contratista = NULL, Observaciones = NULL,
                         programaAnteriorAsociar = '*No Asociada*'
-                        WHERE Semana = ?";
-                $this->db->queryWithProject($sqlReset, [$semana]);
+                        WHERE project_id = ? AND Semana = ?";
+                $this->db->queryWithProject($sqlReset, [$projectId, $semana], $projectId);
             }
 
             echo json_encode([
@@ -1231,8 +1242,9 @@ class GeneralApiController extends BaseController
      */
     private function getPreviousWeekData(string $dbPrefix, int $semanaAnterior): array
     {
-        $sql = "SELECT * FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " WHERE Semana = ?";
-        $stmt = $this->db->queryWithProject($sql, [$semanaAnterior]);
+        $projectId = $this->projectId($dbPrefix);
+        $sql = "SELECT * FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " WHERE project_id = ? AND Semana = ?";
+        $stmt = $this->db->queryWithProject($sql, [$projectId, $semanaAnterior], $projectId);
         $results = $stmt->fetchAll();
         $mapped = [];
         foreach ($results as $row) {
@@ -1279,6 +1291,8 @@ class GeneralApiController extends BaseController
             if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
                 throw new Exception("Base de datos inválida.");
             }
+            $projectId = $this->projectId($dbPrefix);
+            $this->db->setProjectContext($projectId);
 
             if ($semanaObjetivo === false || $semanaObjetivo === null || $semanaObjetivo <= 0) {
                 throw new Exception("semana_objetivo inválida o no especificada.");
@@ -1289,15 +1303,15 @@ class GeneralApiController extends BaseController
 
             // ── 1. Query SOURCE activities (previous week, activities only) ──
             $sqlSource = "SELECT Id, Actividad, Fecha_Inicio FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . "
-                          WHERE Semana = ? AND Titulo = 0";
-            $stmtSource = $this->db->queryWithProject($sqlSource, [$semanaSource]);
+                          WHERE project_id = ? AND Semana = ? AND Titulo = 0";
+            $stmtSource = $this->db->queryWithProject($sqlSource, [$projectId, $semanaSource], $projectId);
             $sourceRows = $stmtSource->fetchAll(PDO::FETCH_ASSOC);
 
             // ── 2. Query TARGET activities (current week, activities only) ──
             // Include ALL non-title activities so the modal always appears for verification/editing
             $sqlTarget = "SELECT unique_id, unique_id AS Consecutivo_en_Programa, Id, Actividad, programaAnteriorAsociar FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . "
-                          WHERE Semana = ? AND Titulo = 0";
-            $stmtTarget = $this->db->queryWithProject($sqlTarget, [$semanaObjetivo]);
+                          WHERE project_id = ? AND Semana = ? AND Titulo = 0";
+            $stmtTarget = $this->db->queryWithProject($sqlTarget, [$projectId, $semanaObjetivo], $projectId);
             $targetRows = $stmtTarget->fetchAll(PDO::FETCH_ASSOC);
 
             // Edge case: no activities found in either week
@@ -1356,21 +1370,20 @@ class GeneralApiController extends BaseController
             // Clean up previously stored numeric IDs (legacy bug: stored consecutive numbers instead of activity names)
             $sqlCleanup = "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . "
                            SET programaAnteriorAsociar = '*No Asociada*'
-                           WHERE Semana = ? AND Titulo = 0
+                           WHERE project_id = ? AND Semana = ? AND Titulo = 0
                            AND programaAnteriorAsociar IS NOT NULL AND programaAnteriorAsociar != ''
                            AND programaAnteriorAsociar != '*No Asociada*'
                            AND programaAnteriorAsociar REGEXP '^[0-9]+(\\.[0-9]+)*$'";
-            $stmtCleanup = $this->db->queryWithProject($sqlCleanup, [$semanaObjetivo]);
+            $stmtCleanup = $this->db->queryWithProject($sqlCleanup, [$projectId, $semanaObjetivo], $projectId);
 
             if (!empty($autoItems)) {
                 $this->db->beginTransaction();
                 try {
                     $sqlUpdate = "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . "
                                   SET programaAnteriorAsociar = ?
-                                  WHERE unique_id = ? AND Semana = ?
+                                  WHERE project_id = ? AND unique_id = ? AND Semana = ?
                                   AND (programaAnteriorAsociar IS NULL OR programaAnteriorAsociar = '' OR programaAnteriorAsociar = '*No Asociada*')";
-                    $stmtUpdate = $this->db->prepareWithProject($sqlUpdate);
-                    $pidAuto = $this->db->getCurrentProjectId() ?? TableResolver::getProjectIdByPrefix($dbPrefix);
+                    $stmtUpdate = $this->db->prepareWithProject($sqlUpdate, $projectId);
 
                     foreach ($autoItems as $item) {
                         // Pre-existing matchAll: 'target' is the full input item, 'matched' is the best source
@@ -1380,7 +1393,7 @@ class GeneralApiController extends BaseController
                         $targetConsecutivo = $targetRow['unique_id'] ?? $targetRow['Consecutivo_en_Programa'] ?? null;
 
                         if ($sourceName !== null && $targetConsecutivo !== null) {
-                            $stmtUpdate->execute([$sourceName, $targetConsecutivo, $semanaObjetivo, $pidAuto]);
+                            $stmtUpdate->execute([$sourceName, $projectId, $targetConsecutivo, $semanaObjetivo]);
                             $updated++;
                         }
                     }
@@ -1666,5 +1679,15 @@ class GeneralApiController extends BaseController
             http_response_code(500);
             echo json_encode(['error' => $e->getMessage()], JSON_UNESCAPED_UNICODE);
         }
+    }
+
+    private function projectId(string $dbPrefix): int
+    {
+        $projectId = TableResolver::getProjectIdByPrefix($dbPrefix);
+        if (!$projectId) {
+            throw new Exception('Proyecto no encontrado.');
+        }
+
+        return $projectId;
     }
 }

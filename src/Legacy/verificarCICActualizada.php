@@ -39,59 +39,54 @@ echo json_encode($faltaCalificar);
 
 function listar($db, $semana, $dbInstance, $tCic)
 {
-    $stmt = $dbInstance->queryWithProject("SELECT COUNT(*) AS conteo FROM {$tCic} WHERE (Semana <= ?) AND tipo_proveedor != 'Suministro de Materiales, Herramientas o Equipos'", [$semana]);
+    $projectId = TableResolver::getProjectIdByPrefix($db);
+    $stmt = $dbInstance->queryWithProject(
+        "SELECT COUNT(*) AS conteo FROM {$tCic} WHERE project_id = ? AND (Semana <= ?) AND tipo_proveedor != 'Suministro de Materiales, Herramientas o Equipos'",
+        [$projectId, $semana],
+        $projectId,
+    );
     $data = $stmt->fetch();
     $conteo = $data["conteo"] ?? 0;
 
     if ($conteo == 0) {
         return 0;
     } else {
-        $stmt1 = $dbInstance->queryWithProject("SELECT DISTINCT(subcontratista) FROM {$tCic} WHERE (Semana <= ?) AND tipo_proveedor != 'Suministro de Materiales, Herramientas o Equipos' ORDER BY `subcontratista` ASC", [$semana]);
-        $rows1 = $stmt1->fetchAll();
+        $query2 = "SELECT COUNT(*) AS conteo, GROUP_CONCAT(tabla.subcontratista SEPARATOR ', ') AS faltaCalificar
+            FROM (
+                SELECT c.Id, c.Semana, stats.semanasEnProyecto, c.subcontratista,
+                       c.Calidad, c.GSA, c.SST, c.ADM
+                FROM {$tCic} c
+                INNER JOIN (
+                    SELECT subcontratista, COUNT(*) AS semanasEnProyecto, MAX(Semana) AS maxSemana
+                    FROM {$tCic}
+                    WHERE project_id = ?
+                      AND Semana <= ?
+                      AND tipo_proveedor != 'Suministro de Materiales, Herramientas o Equipos'
+                    GROUP BY subcontratista
+                ) stats
+                  ON stats.subcontratista = c.subcontratista
+                 AND stats.maxSemana = c.Semana
+                WHERE c.project_id = ?
+                  AND c.tipo_proveedor != 'Suministro de Materiales, Herramientas o Equipos'
+            ) AS tabla
+            WHERE MOD(tabla.semanasEnProyecto, 8) = 0
+              AND (tabla.Calidad = 'NR' OR tabla.GSA = 'NR' OR tabla.SST = 'NR' OR tabla.ADM = 'NR')";
 
-        if (count($rows1) > 0) {
-            $query2 = "SELECT COUNT(*) AS conteo, GROUP_CONCAT(subcontratista SEPARATOR ', ') AS faltaCalificar FROM (";
-            $unionParts = [];
+        try {
+            $stmt2 = $dbInstance->queryWithProject($query2, [$projectId, $semana, $projectId], $projectId);
+            $dataFaltaCalificar = $stmt2->fetch();
+            $conteoFaltaCalificar = $dataFaltaCalificar["conteo"] ?? 0;
 
-            foreach ($rows1 as $data1) {
-                // Safety: Escape subcontratista manually if putting in string, but better to parameterize.
-                // Since this is a massive UNION, parameterization is tricky with unknown number of unions.
-                // However, we can build the string safely if we trust the DB data or escape it.
-                // Since subcontratista comes from DB, we 'trust' it relative to the app logic,
-                // but let's escape single quotes just in case.
-                $subcontratista = $data1["subcontratista"];
-                $subSafe = $dbInstance->quote($subcontratista);
-
-                // Note: The original query logic involves a subquery to get 'semanasEnProyecto' and filtered by MAX week.
-                $part = "SELECT `Id`, `Semana`, (SELECT COUNT(*) FROM {$tCic} WHERE `subcontratista` = $subSafe AND Semana <= $semana AND tipo_proveedor != 'Suministro de Materiales, Herramientas o Equipos') AS `semanasEnProyecto`, `subcontratista`, `correo_contacto`, `alcance`, `tipo_proveedor`, `PAC`, `PAC_Acum`, `P_Completado`, `P_Completado_Acum`, `Calidad`, `Calidad_Acum`, `GSA`, `GSA_Acum`, `SST`, `SST_Acum`, `ADM`, `ADM_Acum`, `Cal_Integral`, `Cal_Integral_Acum`, `Observaciones` FROM {$tCic} WHERE `subcontratista` = $subSafe AND Semana = (SELECT MAX(`Semana`) FROM {$tCic} WHERE `subcontratista` = $subSafe AND Semana <= $semana AND tipo_proveedor != 'Suministro de Materiales, Herramientas o Equipos') AND tipo_proveedor != 'Suministro de Materiales, Herramientas o Equipos'";
-                $unionParts[] = $part;
-            }
-
-            if (empty($unionParts)) {
+            if ($conteoFaltaCalificar > 1) {
+                return " de los Subcontratistas " . ($dataFaltaCalificar["faltaCalificar"] ?? '');
+            } elseif ($conteoFaltaCalificar == 1) {
+                return " del Subcontratista " . ($dataFaltaCalificar["faltaCalificar"] ?? '');
+            } else {
                 return 0;
             }
+        } catch (Throwable $e) {
+            error_log("Error CIC: " . $e->getMessage() . "\n" . $e->getTraceAsString());
 
-            $query2 .= implode(" UNION ", $unionParts);
-            $query2 .= ") AS tabla WHERE MOD(tabla.`semanasEnProyecto`, 8) = 0 AND (tabla.`Calidad`='NR' OR tabla.`GSA`='NR' OR tabla.`SST`='NR' OR tabla.`ADM`='NR')";
-
-            try {
-                $stmt2 = $dbInstance->queryWithProject($query2);
-                $dataFaltaCalificar = $stmt2->fetch();
-                $conteoFaltaCalificar = $dataFaltaCalificar["conteo"] ?? 0;
-
-                if ($conteoFaltaCalificar > 1) {
-                    return " de los Subcontratistas " . ($dataFaltaCalificar["faltaCalificar"] ?? '');
-                } elseif ($conteoFaltaCalificar == 1) {
-                    return " del Subcontratista " . ($dataFaltaCalificar["faltaCalificar"] ?? '');
-                } else {
-                    return 0;
-                }
-            } catch (Throwable $e) {
-                error_log("Error CIC: " . $e->getMessage() . "\n" . $e->getTraceAsString());
-
-                return 0; // Or return useful error for debug: return $e->getMessage();
-            }
-        } else {
             return 0;
         }
     }

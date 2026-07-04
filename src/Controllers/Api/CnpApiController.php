@@ -28,8 +28,9 @@ class CnpApiController
         }
 
         try {
-            $query = "SELECT * FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programacion_semanal') . " WHERE Semana = ? AND Activa = 0";
-            $data = $this->db->queryWithProject($query, [$semana])->fetchAll(PDO::FETCH_ASSOC);
+            $projectId = $this->projectId($dbPrefix);
+            $query = "SELECT * FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programacion_semanal') . " WHERE project_id = ? AND Semana = ? AND Activa = 0";
+            $data = $this->db->queryWithProject($query, [$projectId, $semana], $projectId)->fetchAll(PDO::FETCH_ASSOC);
 
             header('Content-Type: application/json; charset=utf-8');
             echo json_encode(["data" => $data], JSON_UNESCAPED_UNICODE);
@@ -51,8 +52,9 @@ class CnpApiController
         }
 
         try {
-            $query = "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'programacion_semanal') . " SET Categoria_CNP = ?, CNP = ?, Observaciones_CNP = ? WHERE row_id = ?";
-            $res = $this->db->queryWithProject($query, [$_POST["Categoria_CNP"], $_POST["CNP"], $_POST["Observaciones_CNP"] ?? '', $id]);
+            $projectId = $this->projectId($dbPrefix);
+            $query = "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'programacion_semanal') . " SET Categoria_CNP = ?, CNP = ?, Observaciones_CNP = ? WHERE project_id = ? AND row_id = ?";
+            $res = $this->db->queryWithProject($query, [$_POST["Categoria_CNP"], $_POST["CNP"], $_POST["Observaciones_CNP"] ?? '', $projectId, $id], $projectId);
             $this->jsonResponse($res ? "BIEN" : "ERROR");
         } catch (Throwable $t) {
             $this->jsonError("Error CNP Save: " . $t->getMessage());
@@ -72,8 +74,9 @@ class CnpApiController
         }
 
         try {
-            $query = "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'programacion_semanal') . " SET Activa='1', Categoria_CNP=NULL, CNP=NULL, Observaciones_CNP=NULL, Reprogramada_Por_Usuario=1 WHERE row_id=?";
-            $res = $this->db->queryWithProject($query, [$id]);
+            $projectId = $this->projectId($dbPrefix);
+            $query = "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'programacion_semanal') . " SET Activa='1', Categoria_CNP=NULL, CNP=NULL, Observaciones_CNP=NULL, Reprogramada_Por_Usuario=1 WHERE project_id = ? AND row_id=?";
+            $res = $this->db->queryWithProject($query, [$projectId, $id], $projectId);
             $this->jsonResponse($res ? "BIEN" : "ERROR");
         } catch (Throwable $t) {
             $this->jsonError("Error CNP Reprogramar: " . $t->getMessage());
@@ -88,5 +91,15 @@ class CnpApiController
     private function jsonError(string $msg): void
     {
         echo json_encode(["respuesta" => "ERROR", "mensaje" => $msg], JSON_UNESCAPED_UNICODE);
+    }
+
+    private function projectId(string $dbPrefix): int
+    {
+        $projectId = TableResolver::getProjectIdByPrefix($dbPrefix);
+        if (!$projectId) {
+            throw new \RuntimeException('Proyecto no encontrado.');
+        }
+
+        return $projectId;
     }
 }

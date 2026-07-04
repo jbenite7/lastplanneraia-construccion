@@ -475,9 +475,9 @@
     $db = $_SESSION["db"];
     $tableName = TableResolver::resolveByPrefix($db, 'profesionales');
     $projectId = TableResolver::getProjectIdByPrefix($db);
-    $query = "SELECT * FROM {$tableName} WHERE Activo=1";
+    $query = "SELECT * FROM {$tableName} WHERE project_id = ? AND Activo=1";
     try {
-        $stmt = $dbInstance->queryWithProject($query, [], $projectId);
+        $stmt = $dbInstance->queryWithProject($query, [$projectId], $projectId);
         $Responsable_AIA = "";
         while ($valores = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $valor = $valores["nombre"];

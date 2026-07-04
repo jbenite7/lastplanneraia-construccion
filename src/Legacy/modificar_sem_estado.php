@@ -19,10 +19,14 @@ use App\Services\RestrictionConfigResolver;
 // Resolve table names via TableResolver
 $tProgConsolidado = TableResolver::resolveByPrefix($dbName, 'programa_consolidado');
 $tSemanasActivas = TableResolver::resolveByPrefix($dbName, 'semanas_activas');
+$projectId = TableResolver::getProjectIdByPrefix($dbName);
+if ($projectId) {
+    $dbInstance->setProjectContext($projectId);
+}
 
 try {
-    $sqlSelect = "SELECT * FROM {$tProgConsolidado} WHERE Semana = ?";
-    $stmt = $dbInstance->queryWithProject($sqlSelect, [$semana]);
+    $sqlSelect = "SELECT * FROM {$tProgConsolidado} WHERE project_id = ? AND Semana = ?";
+    $stmt = $dbInstance->queryWithProject($sqlSelect, [$projectId, $semana], $projectId);
     $actividades = $stmt->fetchAll();
 
     if (count($actividades) > 0) {
@@ -42,7 +46,7 @@ try {
 
             $sqlUpdateActividad = "UPDATE {$tProgConsolidado}
                                    SET Semanas_Inicio = ?, Estado_Restricciones = ?
-                                   WHERE unique_id = ? AND Semana = ?";
+                                   WHERE project_id = ? AND unique_id = ? AND Semana = ?";
 
             $valEstadoRestricciones = ($Titulo === 1) ? 0 : $Estado_Restricciones;
             $valSemanasInicio = $semanas_val;
@@ -50,31 +54,32 @@ try {
             $dbInstance->queryWithProject($sqlUpdateActividad, [
                 $valSemanasInicio,
                 $valEstadoRestricciones,
+                $projectId,
                 $Id,
                 $semana,
-            ]);
+            ], $projectId);
         }
     }
 
     usleep(500000); // Reemplaza sleep(0.5) que causaba advertencia de depreciación
 
-    $dbInstance->queryWithProject("UPDATE {$tProgConsolidado} SET Ruta_Critica = 0 WHERE Titulo = 1 AND Semana = ?", [$semana]);
+    $dbInstance->queryWithProject("UPDATE {$tProgConsolidado} SET Ruta_Critica = 0 WHERE project_id = ? AND Titulo = 1 AND Semana = ?", [$projectId, $semana], $projectId);
 
     $normalizationService = $normalizationService ?? new \App\Services\ProgramaConsolidadoNormalizationService($dbInstance);
     $normalizationService->normalizeChapters($dbName, $semana);
-    $dbInstance->queryWithProject("UPDATE {$tProgConsolidado} SET Semanas_Inicio = 0 WHERE Fecha_Inicio IS NULL AND Fecha_Fin IS NULL AND Titulo = 1 AND Semana = ?", [$semana]);
+    $dbInstance->queryWithProject("UPDATE {$tProgConsolidado} SET Semanas_Inicio = 0 WHERE project_id = ? AND Fecha_Inicio IS NULL AND Fecha_Fin IS NULL AND Titulo = 1 AND Semana = ?", [$projectId, $semana], $projectId);
 
     $fechaFinSemana = $f_fin_sem ?? null;
     if (empty($fechaFinSemana)) {
-        $stmtSemana = $dbInstance->queryWithProject("SELECT Fecha_Fin_Sem FROM {$tSemanasActivas} WHERE Semana = ?", [$semana]);
+        $stmtSemana = $dbInstance->queryWithProject("SELECT Fecha_Fin_Sem FROM {$tSemanasActivas} WHERE project_id = ? AND Semana = ?", [$projectId, $semana], $projectId);
         $dataSemana = $stmtSemana->fetch();
         $fechaFinSemana = $dataSemana['Fecha_Fin_Sem'] ?? null;
     }
 
     $sqlEstadoRows = "SELECT unique_id, unique_id AS Consecutivo_en_Programa, Titulo, Ejecutado, Fecha_Inicio, Fecha_Fin
                       FROM {$tProgConsolidado}
-                      WHERE Semana = ?";
-    $stmtEstadoRows = $dbInstance->queryWithProject($sqlEstadoRows, [$semana]);
+                      WHERE project_id = ? AND Semana = ?";
+    $stmtEstadoRows = $dbInstance->queryWithProject($sqlEstadoRows, [$projectId, $semana], $projectId);
     $rowsEstado = $stmtEstadoRows->fetchAll();
 
     foreach ($rowsEstado as $rowEstado) {
@@ -88,8 +93,9 @@ try {
         );
 
         $dbInstance->queryWithProject(
-            "UPDATE {$tProgConsolidado} SET Estado = ? WHERE unique_id = ? AND Semana = ?",
-            [$estado, $rowEstado['unique_id'], $semana],
+            "UPDATE {$tProgConsolidado} SET Estado = ? WHERE project_id = ? AND unique_id = ? AND Semana = ?",
+            [$estado, $projectId, $rowEstado['unique_id'], $semana],
+            $projectId,
         );
     }
 

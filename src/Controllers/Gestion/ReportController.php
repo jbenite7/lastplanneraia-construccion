@@ -192,6 +192,12 @@ class ReportController extends BaseController
             exit;
         }
 
+        $projectId = TableResolver::getProjectIdByPrefix($dbName);
+        if ($projectId === null) {
+            echo json_encode(['error' => 'Proyecto no encontrado para la base de datos seleccionada.']);
+            exit;
+        }
+
         if ($proyecto === '') {
             $stmtProyecto = $db->query(
                 "SELECT Proyecto_Proceso FROM general_proyectos_procesos WHERE Base_de_Datos = :db LIMIT 1",
@@ -206,9 +212,9 @@ class ReportController extends BaseController
                              Ejecutado AS EjecutadoRaw, ROUND(Ejecutado*100,1) AS Ejecutado,
                              Semanas_Inicio, Estado_Restricciones, cantidad_ppto, unidad
                       FROM " . TableResolver::resolveByPrefix($dbName, 'programa_consolidado') . "
-                      WHERE Semana = :semana";
+                      WHERE project_id = :project_id AND Semana = :semana";
 
-            $stmt = $db->query($query, [':semana' => $semana]);
+            $stmt = $db->query($query, [':project_id' => $projectId, ':semana' => $semana]);
             $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
         } catch (Exception $e) {
@@ -458,10 +464,11 @@ class ReportController extends BaseController
 
     private function downloadRestricciones()
     {
-        $dbName = $_POST['db'] ?? $_SESSION['db'] ?? '';
-        $semana = $_POST['semana'] ?? $_SESSION['semana'] ?? '';
+        $dbName = $_POST['db'] ?? $_GET['db'] ?? $_SESSION['db'] ?? '';
+        $semanaInput = $_POST['semana'] ?? $_GET['semana'] ?? $_SESSION['semana'] ?? '';
+        $semana = filter_var($semanaInput, FILTER_VALIDATE_INT);
 
-        if (!$dbName || !$semana) {
+        if (!$dbName || $semana === false || $semana <= 0) {
             echo json_encode(['error' => 'Base de datos o semana no especificados.']);
             exit;
         }
@@ -472,6 +479,11 @@ class ReportController extends BaseController
         }
 
         $db = $this->db;
+        $projectId = TableResolver::getProjectIdByPrefix($dbName);
+        if ($projectId === null) {
+            echo json_encode(['error' => 'Proyecto no encontrado para la base de datos seleccionada.']);
+            exit;
+        }
 
         // 1. Fetch Data
         // Project Name
@@ -479,21 +491,22 @@ class ReportController extends BaseController
         $proyecto = $stmt->fetchColumn() ?: '';
 
         // Dates
-        $stmt = $db->query("SELECT * FROM " . TableResolver::resolveByPrefix($dbName, 'semanas_activas') . " WHERE Semana = :semana", [':semana' => $semana]);
+        $stmt = $db->query("SELECT * FROM " . TableResolver::resolveByPrefix($dbName, 'semanas_activas') . " WHERE project_id = :project_id AND Semana = :semana", [':project_id' => $projectId, ':semana' => $semana]);
         $fechas = $stmt->fetch(\PDO::FETCH_ASSOC);
         $fechaInicio = isset($fechas["Fecha_Inicio_Sem"]) ? date("Y-m-d", strtotime($fechas["Fecha_Inicio_Sem"])) : '';
         $fechaFin = isset($fechas["Fecha_Fin_Sem"]) ? date("Y-m-d", strtotime($fechas["Fecha_Fin_Sem"])) : '';
 
         // Program Data
         $query = "SELECT * FROM " . TableResolver::resolveByPrefix($dbName, 'programa_consolidado') . "
-                  WHERE Semana = :semana
+                  WHERE project_id = :project_id
+                  AND Semana = :semana
                   AND Fecha_Inicio IS NOT NULL
                   AND Fecha_Fin IS NOT NULL
                   AND Semanas_Inicio <= 6
                   AND Ejecutado < 1
                   AND Titulo = 0
                   ORDER BY Semanas_Inicio ASC, Estado_Restricciones DESC";
-        $stmt = $db->query($query, [':semana' => $semana]);
+        $stmt = $db->query($query, [':project_id' => $projectId, ':semana' => $semana]);
 
         require_once PROJECT_ROOT . '/src/Legacy/estado_programacion_intermedia.php';
 
@@ -618,14 +631,20 @@ class ReportController extends BaseController
         }
 
         // Professionals
-        $stmt = $db->query("SELECT nombre FROM " . TableResolver::resolveByPrefix($dbName, 'profesionales') . " WHERE activo = 1");
+        $stmt = $db->query(
+            "SELECT nombre FROM " . TableResolver::resolveByPrefix($dbName, 'profesionales') . " WHERE project_id = :project_id AND activo = 1",
+            [':project_id' => $projectId]
+        );
         $tablaProfesionales = [["nombre"]];
         while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
             $tablaProfesionales[] = [$row["nombre"]];
         }
 
         // Subcontractors
-        $stmt = $db->query("SELECT subcontratista FROM " . TableResolver::resolveByPrefix($dbName, 'subcontratistas') . " WHERE activo = 1");
+        $stmt = $db->query(
+            "SELECT subcontratista FROM " . TableResolver::resolveByPrefix($dbName, 'subcontratistas') . " WHERE project_id = :project_id AND activo = 1",
+            [':project_id' => $projectId]
+        );
         $tablaSubcontratistas = [["subcontratista"]];
         while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
             $tablaSubcontratistas[] = [$row["subcontratista"]];
@@ -946,11 +965,11 @@ class ReportController extends BaseController
 
     private function downloadCompromisos()
     {
-        $dbName = $_POST['db'] ?? $_SESSION['db'] ?? '';
-        $semanaInput = $_POST['semana'] ?? $_SESSION['semana'] ?? '';
+        $dbName = $_POST['db'] ?? $_GET['db'] ?? $_SESSION['db'] ?? '';
+        $semanaInput = $_POST['semana'] ?? $_GET['semana'] ?? $_SESSION['semana'] ?? '';
         $semana = filter_var($semanaInput, FILTER_VALIDATE_INT);
 
-        if (!$dbName || $semana === false) {
+        if (!$dbName || $semana === false || $semana <= 0) {
             echo json_encode(['error' => 'Base de datos o semana no especificados.']);
             exit;
         }
@@ -961,6 +980,11 @@ class ReportController extends BaseController
         }
 
         $db = $this->db;
+        $projectId = TableResolver::getProjectIdByPrefix($dbName);
+        if ($projectId === null) {
+            echo json_encode(['error' => 'Proyecto no encontrado para la base de datos seleccionada.']);
+            exit;
+        }
 
         try {
             $stmtProyecto = $db->query(
@@ -975,8 +999,8 @@ class ReportController extends BaseController
             }
 
             $stmtFechas = $db->query(
-                "SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem, Semanal_Confirmada FROM " . TableResolver::resolveByPrefix($dbName, 'semanas_activas') . " WHERE Semana = :semana",
-                [':semana' => $semana],
+                "SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem, Semanal_Confirmada FROM " . TableResolver::resolveByPrefix($dbName, 'semanas_activas') . " WHERE project_id = :project_id AND Semana = :semana",
+                [':project_id' => $projectId, ':semana' => $semana],
             );
             $fechas = $stmtFechas->fetch(\PDO::FETCH_ASSOC);
 
@@ -991,8 +1015,8 @@ class ReportController extends BaseController
             $phaseKey = \ps_weekly_phase_key($fechas['Semanal_Confirmada'] ?? 0);
 
             $stmtData = $db->query(
-                "SELECT * FROM " . TableResolver::resolveByPrefix($dbName, 'programacion_semanal') . " WHERE Semana = :semana AND (Activa = '1' OR Activa = 'NA')",
-                [':semana' => $semana],
+                "SELECT * FROM " . TableResolver::resolveByPrefix($dbName, 'programacion_semanal') . " WHERE project_id = :project_id AND Semana = :semana AND (Activa = '1' OR Activa = 'NA')",
+                [':project_id' => $projectId, ':semana' => $semana],
             );
 
             $tabla = [[
@@ -1164,7 +1188,7 @@ class ReportController extends BaseController
 
     private function downloadConsolidadoODC()
     {
-        $dbName = $_POST['db'] ?? $_SESSION['db'] ?? '';
+        $dbName = $_POST['db'] ?? $_GET['db'] ?? $_SESSION['db'] ?? '';
 
         if (!$dbName) {
             echo json_encode(['error' => 'Base de datos no especificada.']);
@@ -1177,11 +1201,16 @@ class ReportController extends BaseController
         }
 
         $db = $this->db;
+        $projectId = TableResolver::getProjectIdByPrefix($dbName);
+        if ($projectId === null) {
+            echo json_encode(['error' => 'Proyecto no encontrado para la base de datos seleccionada.']);
+            exit;
+        }
 
         // 1. Fetch Data
         try {
-            $query = "SELECT * FROM " . TableResolver::resolveByPrefix($dbName, 'cambios') . "";
-            $stmt = $db->query($query);
+            $query = "SELECT * FROM " . TableResolver::resolveByPrefix($dbName, 'cambios') . " WHERE project_id = :project_id ORDER BY id ASC";
+            $stmt = $db->query($query, [':project_id' => $projectId]);
             $results = $stmt->fetchAll(\PDO::FETCH_ASSOC);
         } catch (Exception $e) {
             echo json_encode(['error' => 'Error SQL: ' . $e->getMessage()]);
