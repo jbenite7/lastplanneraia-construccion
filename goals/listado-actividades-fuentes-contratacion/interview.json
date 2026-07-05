@@ -1,0 +1,114 @@
+{
+  "stage": "interview",
+  "title": "Listado: fuentes y contratacion claras",
+  "goalSlug": "listado-actividades-fuentes-contratacion",
+  "questions": [
+    {
+      "id": "scope",
+      "prompt": "Que debe quedar dentro de este goal?",
+      "description": "El comentario ya define el comportamiento principal. Esta pregunta solo cierra si se toca solo la interfaz o tambien el contrato de datos para que aplicar/guardar respete las mismas reglas.",
+      "answerMode": "multi-custom",
+      "recommendedAnswer": "Actualizar UI, payload de sugerencias, guardado/aplicacion, edicion inline y pruebas. No hacer refactors amplios ni cambiar la arquitectura semi-auto global.",
+      "recommendedOptionIds": ["review_ui", "apply_save", "inline_edit", "tests"],
+      "options": [
+        {
+          "id": "review_ui",
+          "label": "Revision UI"
+        },
+        {
+          "id": "apply_save",
+          "label": "Aplicar y guardar"
+        },
+        {
+          "id": "inline_edit",
+          "label": "Edicion inline"
+        },
+        {
+          "id": "tests",
+          "label": "Pruebas"
+        }
+      ],
+      "required": true
+    },
+    {
+      "id": "source_order",
+      "prompt": "Como debe ordenarse el selector de Actividad cuando hay varias fuentes?",
+      "description": "Tu regla dice mayor confianza y fecha mas cercana a mas lejana. Falta definir el desempate y si el valor inicial debe ser la fuente mas confiable.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Ordenar por confianza descendente, luego por fecha de inicio ascendente, y dejar preseleccionada la primera opcion. En empates, ordenar por nombre de actividad para que sea estable.",
+      "recommendedOptionIds": ["confidence_then_date"],
+      "options": [
+        {
+          "id": "confidence_then_date",
+          "label": "Confianza, fecha, nombre"
+        },
+        {
+          "id": "date_then_confidence",
+          "label": "Fecha, confianza, nombre"
+        }
+      ],
+      "required": true
+    },
+    {
+      "id": "start_fields_visibility",
+      "prompt": "Que hacemos con Actividad de inicio y Fecha de inicio en la revision?",
+      "description": "Ambas se derivan de la Actividad seleccionada. La opcion recomendada evita ruido, pero mantiene contexto visible para revisar.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "No mostrar campos editables. Mostrar la fuente seleccionada como texto de contexto con nombre de actividad y fecha de inicio; actualizar ese texto al cambiar el selector.",
+      "recommendedOptionIds": ["readable_context"],
+      "options": [
+        {
+          "id": "readable_context",
+          "label": "Solo contexto legible"
+        },
+        {
+          "id": "hide_completely",
+          "label": "Ocultarlos totalmente"
+        }
+      ],
+      "required": true
+    },
+    {
+      "id": "user_language",
+      "prompt": "Que lenguaje debe ver el usuario final en esta revision?",
+      "description": "La captura muestra textos tecnicos como riesgo, agrupacion, fuentes y actividad de inicio. Esta decision define el tono de la correccion.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Usar lenguaje operativo: 'Propuesta para crear actividad', 'Basado en el programa general', 'Necesita revision porque mezcla trabajos distintos'. Ocultar IDs, run IDs, payloads, reglas y terminos tecnicos para usuarios no admin.",
+      "recommendedOptionIds": ["non_technical"],
+      "options": [
+        {
+          "id": "non_technical",
+          "label": "Lenguaje operativo"
+        },
+        {
+          "id": "minimal_change",
+          "label": "Cambio minimo"
+        }
+      ],
+      "required": true
+    },
+    {
+      "id": "verification",
+      "prompt": "Cual es la evidencia minima para aceptar el goal?",
+      "description": "El repositorio ya tiene pruebas PHP y Playwright para semi-auto. Esta opcion mantiene el estandar de verificar comportamiento real.",
+      "answerMode": "multi-custom",
+      "recommendedAnswer": "Pruebas PHP enfocadas del servicio/payload, prueba Playwright del flujo en Da Porto semana 1 y captura donde se vea el selector de actividad, modalidad multiseleccion y ausencia de Semana.",
+      "recommendedOptionIds": ["php", "playwright", "screenshot"],
+      "options": [
+        {
+          "id": "php",
+          "label": "PHP enfocado"
+        },
+        {
+          "id": "playwright",
+          "label": "Playwright"
+        },
+        {
+          "id": "screenshot",
+          "label": "Captura UI"
+        }
+      ],
+      "required": true
+    }
+  ]
+}

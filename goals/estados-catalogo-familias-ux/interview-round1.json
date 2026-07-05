@@ -1,0 +1,100 @@
+{
+  "stage": "interview",
+  "title": "Estados claros para familias y contratos",
+  "goalSlug": "estados-catalogo-familias-ux",
+  "questions": [
+    {
+      "id": "scope_surfaces",
+      "prompt": "¿Dónde debe quedar clara la diferencia entre familia operativa, alias, elemento contractual e inactiva real?",
+      "description": "La confusión apareció en Contratos, pero el origen está en el catálogo admin y también se ve en el asistente semi-automático.",
+      "answerMode": "multi-custom",
+      "recommendedAnswer": "Cubrir las tres superficies: asistente semi-automático, tabla/modal de Contratos y catálogo admin. Así el usuario final entiende el motivo donde lo ve, y el admin entiende de dónde viene.",
+      "recommendedOptionIds": ["assistant", "contracts", "admin"],
+      "options": [
+        { "id": "assistant", "label": "Asistente semi-auto" },
+        { "id": "contracts", "label": "Contratos" },
+        { "id": "admin", "label": "Catálogo admin" },
+        { "id": "pdc", "label": "Plan de Compras" }
+      ],
+      "required": true
+    },
+    {
+      "id": "state_model",
+      "prompt": "¿Qué tan profundo debe ser el cambio del estado?",
+      "description": "Hoy `activa=0` mezcla varios significados. Podemos corregir la UX interpretando datos existentes, o agregar una columna explícita para que el estado sea auditable.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Primera fase quirúrgica: no cambiar el esquema profundo todavía. Derivar estados visibles desde tablas existentes (`familias`, `aliases`, `contractual_elements`, reglas) y dejar recomendado un refactor futuro si hace falta.",
+      "recommendedOptionIds": ["derived"],
+      "options": [
+        { "id": "derived", "label": "Derivar estado visible" },
+        { "id": "schema", "label": "Agregar columnas estado" },
+        { "id": "hybrid", "label": "Derivar ahora + migración mínima" }
+      ],
+      "required": true
+    },
+    {
+      "id": "labels",
+      "prompt": "¿Qué etiquetas debe ver un usuario no técnico?",
+      "description": "La meta es evitar palabras ambiguas como `Inactivo` cuando el sistema sí sabe que algo va por Contratos o es alias.",
+      "answerMode": "multi-custom",
+      "recommendedAnswer": "Usar: Operativa, Va por Contratos, Alias de otra familia, En revisión, Fuera de uso. Evitar `Inactivo` salvo que realmente no deba usarse en ningún flujo.",
+      "recommendedOptionIds": ["operational", "contractual", "alias", "review", "retired"],
+      "options": [
+        { "id": "operational", "label": "Operativa" },
+        { "id": "contractual", "label": "Va por Contratos" },
+        { "id": "alias", "label": "Alias" },
+        { "id": "review", "label": "En revisión" },
+        { "id": "retired", "label": "Fuera de uso" }
+      ],
+      "required": true
+    },
+    {
+      "id": "assistant_behavior",
+      "prompt": "Cuando una actividad no se puede aplicar automáticamente, ¿qué debe mostrar el asistente?",
+      "description": "Ejemplo: Campamento no debería decir simplemente `Sin familia detectada` si está clasificado como elemento contractual.",
+      "answerMode": "multi-custom",
+      "recommendedAnswer": "Mostrar el motivo humano, el estado del catálogo y la siguiente acción concreta. Ejemplo: `Campamento de Obra va por Contratos. Siguiente paso: asignar paquete CAMPAMENTO DE OBRA o revisar la regla contractual`.",
+      "recommendedOptionIds": ["reason", "status", "next_action", "package_hint"],
+      "options": [
+        { "id": "reason", "label": "Motivo claro" },
+        { "id": "status", "label": "Estado visible" },
+        { "id": "next_action", "label": "Siguiente acción" },
+        { "id": "package_hint", "label": "Paquete sugerido" },
+        { "id": "technical_detail_admin", "label": "Detalle técnico admin" }
+      ],
+      "required": true
+    },
+    {
+      "id": "actions",
+      "prompt": "¿Qué acciones deben quedar disponibles para resolver una confusión desde la UI?",
+      "description": "Esto define si la entrega solo informa o también permite corregir.",
+      "answerMode": "multi-custom",
+      "recommendedAnswer": "Permitir acciones guiadas solo donde ya existen capacidades: asignar paquetes en Contratos, aprobar/mantener en Listado o pasar a Contratos en Admin. No crear un editor nuevo de catálogo de paquetes en esta fase.",
+      "recommendedOptionIds": ["assign_packages", "admin_keep", "admin_contracts"],
+      "options": [
+        { "id": "assign_packages", "label": "Asignar paquetes" },
+        { "id": "admin_keep", "label": "Mantener en Listado" },
+        { "id": "admin_contracts", "label": "Pasar a Contratos" },
+        { "id": "create_contract_option", "label": "Crear opción contractual" },
+        { "id": "create_rule", "label": "Crear regla" }
+      ],
+      "required": true
+    },
+    {
+      "id": "verification",
+      "prompt": "¿Qué casos reales deben quedar cubiertos para dar esto por bueno?",
+      "description": "Propongo cubrir los dos ejemplos que causaron la confusión y un caso activo normal.",
+      "answerMode": "multi-custom",
+      "recommendedAnswer": "Cubrir: Pisos y Enchapes sin paquetes configurados, Campamento de Obra como elemento contractual, y una familia operativa activa con paquetes. Validar con pruebas PHP y navegador en Da Porto semana 8.",
+      "recommendedOptionIds": ["pisos", "campamento", "active_family", "browser"],
+      "options": [
+        { "id": "pisos", "label": "Pisos y Enchapes" },
+        { "id": "campamento", "label": "Campamento de Obra" },
+        { "id": "active_family", "label": "Familia operativa normal" },
+        { "id": "browser", "label": "Navegador Da Porto S8" },
+        { "id": "admin_catalog", "label": "Catálogo admin" }
+      ],
+      "required": true
+    }
+  ]
+}

@@ -1,0 +1,96 @@
+{
+  "stage": "interview",
+  "title": "Plan de Compras Da Porto — 2 semanas de control end-to-end con Playwright MCP",
+  "goalSlug": "da-porto-pdc-2s",
+  "questions": [
+    {
+      "id": "side_effects",
+      "prompt": "Después de correr el ciclo completo (crear PDC desde cero + 2 semanas de control), ¿qué hacés con las filas generadas en la DB de Da Porto?",
+      "description": "El patch de familias ya siembra datos. 'Desde cero absoluto' implica borrar actividades/pdc y regenerar. Necesito saber si restaurás el snapshot al final o dejás el resultado como dato válido.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Restaurar el snapshot al final de cada corrida (mysqldump previo → restore), pero reportar el estado final logrado antes de restaurar. Así la suite queda reproducible sin contaminar a otros tests.",
+      "recommendedOptionIds": ["snapshot_restore_report"],
+      "options": [
+        { "id": "snapshot_restore_report", "label": "Snapshot + restore + reportar estado final" },
+        { "id": "persist_all", "label": "Dejar todas las filas persistidas en Da Porto" },
+        { "id": "reset_to_seed_patch", "label": "Restaurar solo al patch semilla (re-aplicar 20260701_da_porto_feedback_semi_auto.sql)" },
+        { "id": "persist_as_new_seed", "label": "Dejar resultados como nuevo seed para futuras corridas" }
+      ],
+      "required": true
+    },
+    {
+      "id": "seed_patch_applied",
+      "prompt": "¿El patch de familias Da Porto (database/patches/20260701_da_porto_feedback_semi_auto.sql) ya está aplicado en la DB Docker actual?",
+      "description": "Si no lo está, 'desde cero' parte sin familias para Da Porto y la semi-auto fallaría. Lo necesito saber antes de decidir si el primer paso es aplicar el patch.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Asumir que ya está aplicado pero verificarlo con un SQL COUNT antes de empezar; si no, aplicarlo como paso 0.",
+      "recommendedOptionIds": ["assume_verify_apply_if_missing"],
+      "options": [
+        { "id": "assume_verify_apply_if_missing", "label": "Asumir aplicado → verificar y aplicar si falta (recomendado)" },
+        { "id": "apply_anyway_first", "label": "Re-aplicar el patch siempre como paso 0 (idempotente)" },
+        { "id": "do_not_apply", "label": "No tocar el patch bajo ningún motivo" }
+      ],
+      "required": true
+    },
+    {
+      "id": "week_timeline",
+      "prompt": "¿Qué cadencia de semanas querés para el control de 2 ciclos?",
+      "description": "El fixture indica Da Porto maxWeek=1. La automatización va a crear nuevas semanas vía /legacy/funciones_generales/php/nueva_semana.php. Necesito saber cuántas semanas crear y en qué número partimos.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Partir de la semana actual de Da Porto (la detecto vía SQL a semanas_activas), crear la siguiente y luego la siguiente — totalizando 2 control-cycles sobre semanas nuevas.",
+      "recommendedOptionIds": ["auto_detect_create_two"],
+      "options": [
+        { "id": "auto_detect_create_two", "label": "Auto-detectar semana actual + crear 2 nuevas (recomendado)" },
+        { "id": "week1_to_3", "label": "Asumir semana 1 + crear semana 2 y semana 3" },
+        { "id": "clean_weeks_restart", "label": "Borrar semanas Activas >1, luego crear semanas 2 y 3" }
+      ],
+      "required": true
+    },
+    {
+      "id": "pdc_auto_update_expectation",
+      "prompt": "Cuando se crea una nueva semana, ¿qué debe validar mi automatización del 'PDC auto-update'?",
+      "description": "src/Legacy/nueva_semana.php copia el PDC anterior, luego pdc_insertarPaquetes() recalcula desde actividades, pdc_crearSubcontratosDuplicados() duplica subcontratos, pdc_generarEstadoProceso() recalc estados. Podés pedir validar 1, varios o todos.",
+      "answerMode": "multi-custom",
+      "recommendedAnswer": "Validar los tres: copia de filas de la semana anterior, recalculo de paquetes desde actividades, y recalculo de estados. Más una verificación extra de que al tocar una actividad la semana nueva refleja el cambio.",
+      "recommendedOptionIds": ["copy_prev_week", "recompute_packages", "recompute_states", "propagate_change"],
+      "options": [
+        { "id": "copy_prev_week", "label": "Filas de la semana anterior se copian a la nueva" },
+        { "id": "recompute_packages", "label": "Paquetes se recalculan desde actividades (pdc_insertarPaquetes)" },
+        { "id": "recompute_states", "label": "Estados de proceso se recalculan (pdc_generarEstadoProceso)" },
+        { "id": "duplicate_subcontracts", "label": "Subcontratos duplicados por numeroSubcontratos>1" },
+        { "id": "propagate_change", "label": "Cambios en actividades de la semana nueva se reflejan en PDC" }
+      ],
+      "required": true
+    },
+    {
+      "id": "validation_evidence",
+      "prompt": "¿Qué evidencia querés que genere el ciclo de control?",
+      "description": "Playwright MCP puede tomar capturas, asertar DOM y correr SQL vía docker compose exec. Decidí qué combina mejor con '100% elaborado con Playwright'.",
+      "answerMode": "multi-custom",
+      "recommendedAnswer": "Captura de pantalla + aserción SQL en cada hito + log de run_id de semi_auto_runs + un mini-reporte final con las métricas (confidence por familia, decisiones aceptadas, bulk decisions).",
+      "recommendedOptionIds": ["screenshots", "sql_asserts", "semi_auto_run_log", "metrics_report"],
+      "options": [
+        { "id": "screenshots", "label": "Captura de pantalla en cada hito" },
+        { "id": "dom_asserts", "label": "Aserciones de texto/DOM en la página" },
+        { "id": "sql_asserts", "label": "Aserciones SQL vía docker compose exec (count, fechas, estados)" },
+        { "id": "semi_auto_run_log", "label": "Log del run_id de semi_auto_runs y de las decisiones" },
+        { "id": "metrics_report", "label": "Mini-reporte final con métricas de la corrida" }
+      ],
+      "required": true
+    },
+    {
+      "id": "regression_artifact",
+      "prompt": "Al final, ¿dejo constancia reproducible del ciclo?",
+      "description": "Por defecto esto corre en vivo solo por Playwright MCP. Si querés, escribo un .mjs reusable en tests/browser/ para replicar el mismo flujo en CI/futuro.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "No escribir .mjs — la automatización es efímera por MCP. Si a futuro querés reproducirla, genero un script aparte sin tocar el goal actual.",
+      "recommendedOptionIds": ["dont_write_mjs"],
+      "options": [
+        { "id": "dont_write_mjs", "label": "No dejar .mjs — solo automation viva via MCP" },
+        { "id": "write_mjs_reusable", "label": "Escribir tests/browser/da-porto-pdc-full-cycle.mjs reutilizable" },
+        { "id": "write_mjs_snapshot", "label": "Escribir .mjs además de correr la versión viva" }
+      ],
+      "required": true
+    }
+  ]
+}

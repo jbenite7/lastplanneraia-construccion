@@ -1,0 +1,175 @@
+{
+  "stage": "interview",
+  "title": "Terminologia de modulos de gestion - ronda 2",
+  "goalSlug": "terminologia-modulos-gestion",
+  "questions": [
+    {
+      "id": "r2_familias_modulo",
+      "prompt": "Nombre final para el modulo que hoy se llama \"Actividades\".",
+      "description": "Contexto acordado: una familia es una actividad consolidada que proviene del programa general del proyecto.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Usar \"Familias de obra\" para que el usuario entienda que no son familias genéricas, sino agrupaciones operativas del programa.",
+      "recommendedOptionIds": ["familias_obra"],
+      "options": [
+        { "id": "familias_obra", "label": "Familias de obra" },
+        { "id": "familias", "label": "Familias" },
+        { "id": "actividades_consolidadas", "label": "Actividades consolidadas" }
+      ],
+      "required": true
+    },
+    {
+      "id": "r2_recursos_requeridos",
+      "prompt": "Nombre final para el campo que captura el array de insumos, materiales, equipos y recursos necesarios.",
+      "description": "Debe explicar que son elementos requeridos para ejecutar el paquete de contratacion en obra.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Usar \"Recursos requeridos\" porque cubre insumos, materiales, equipos y recursos sin hacer el encabezado largo.",
+      "recommendedOptionIds": ["recursos_requeridos"],
+      "options": [
+        { "id": "recursos_requeridos", "label": "Recursos requeridos" },
+        { "id": "insumos_recursos_requeridos", "label": "Insumos y recursos requeridos" },
+        { "id": "recursos_para_ejecucion", "label": "Recursos para ejecucion" }
+      ],
+      "required": true
+    },
+    {
+      "id": "r2_datos_incompletos",
+      "prompt": "Nombre final para el estado que hoy indica que faltan datos para evaluar el paquete.",
+      "description": "Debe responder la duda del usuario final: cuales datos faltan o que accion debe completar.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Usar \"Datos por completar\" y complementar en UI con detalle de los campos faltantes.",
+      "recommendedOptionIds": ["datos_por_completar"],
+      "options": [
+        { "id": "datos_por_completar", "label": "Datos por completar" },
+        { "id": "informacion_pendiente", "label": "Informacion pendiente" },
+        { "id": "completar_datos_para_evaluar", "label": "Completar datos para evaluar" }
+      ],
+      "required": true
+    },
+    {
+      "id": "r2_vencido_sin_iniciar",
+      "prompt": "Nombre final para el estado critico donde la contratacion debio iniciar y no ha iniciado.",
+      "description": "Debe dejar claro que lo no iniciado es la gestion de contratacion, no la familia en obra.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Usar \"Contratacion vencida sin iniciar\" porque explica que vencio el inicio del proceso de contratacion.",
+      "recommendedOptionIds": ["contratacion_vencida_sin_iniciar"],
+      "options": [
+        { "id": "contratacion_vencida_sin_iniciar", "label": "Contratacion vencida sin iniciar" },
+        { "id": "gestion_vencida_sin_iniciar", "label": "Gestion vencida sin iniciar" },
+        { "id": "inicio_de_contratacion_vencido", "label": "Inicio de contratacion vencido" }
+      ],
+      "required": true
+    },
+    {
+      "id": "r2_gestion_atrasada",
+      "prompt": "Nombre final para el estado donde el proceso esta atrasado frente a la fecha objetivo.",
+      "description": "Debe responder: que esta atrasado y sobre que referencia se compara.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Usar \"Contratacion atrasada\" porque el atraso corresponde al proceso de contratacion del paquete.",
+      "recommendedOptionIds": ["contratacion_atrasada"],
+      "options": [
+        { "id": "contratacion_atrasada", "label": "Contratacion atrasada" },
+        { "id": "gestion_atrasada", "label": "Gestion atrasada" },
+        { "id": "proceso_fuera_de_fecha", "label": "Proceso fuera de fecha" }
+      ],
+      "required": true
+    },
+    {
+      "id": "r2_cerrado_retraso",
+      "prompt": "Nombre final para el estado donde el proceso ya termino, pero termino tarde.",
+      "description": "La UI podria mostrar aparte dias de atraso y cuellos de botella; aqui decidimos solo la etiqueta del estado.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Usar \"Cerrado con retraso\" porque indica que ya no esta abierto, pero tuvo atraso.",
+      "recommendedOptionIds": ["cerrado_con_retraso"],
+      "options": [
+        { "id": "cerrado_con_retraso", "label": "Cerrado con retraso" },
+        { "id": "contratacion_cerrada_tarde", "label": "Contratacion cerrada tarde" },
+        { "id": "finalizado_con_retraso", "label": "Finalizado con retraso" }
+      ],
+      "required": true
+    },
+    {
+      "id": "r2_cerrado_tiempo",
+      "prompt": "Nombre final para el estado donde el proceso termino dentro del plazo esperado.",
+      "description": "La metrica de desempeno se puede mostrar aparte; aqui decidimos solo la etiqueta del estado.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Usar \"Cerrado a tiempo\" para mantener consistencia con \"Cerrado con retraso\".",
+      "recommendedOptionIds": ["cerrado_a_tiempo"],
+      "options": [
+        { "id": "cerrado_a_tiempo", "label": "Cerrado a tiempo" },
+        { "id": "contratacion_cerrada_a_tiempo", "label": "Contratacion cerrada a tiempo" },
+        { "id": "finalizado_a_tiempo", "label": "Finalizado a tiempo" }
+      ],
+      "required": true
+    },
+    {
+      "id": "r2_gestion_en_curso",
+      "prompt": "Nombre final para el estado donde el proceso esta activo y todavia no ha cerrado.",
+      "description": "Debe aclarar que esta en curso la gestion del paquete, no la ejecucion fisica de la familia en obra.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Usar \"Contratacion en curso\" si el proceso activo es la contratacion.",
+      "recommendedOptionIds": ["contratacion_en_curso"],
+      "options": [
+        { "id": "contratacion_en_curso", "label": "Contratacion en curso" },
+        { "id": "gestion_en_curso", "label": "Gestion en curso" },
+        { "id": "proceso_en_curso", "label": "Proceso en curso" }
+      ],
+      "required": true
+    },
+    {
+      "id": "r2_pendiente_inicio",
+      "prompt": "Nombre final para el estado donde el proceso todavia no inicia y puede o no tener holgura.",
+      "description": "Debe distinguirse del estado vencido sin iniciar.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Usar \"Contratacion pendiente de inicio\" y mostrar aparte si aun tiene holgura o si ya vencio.",
+      "recommendedOptionIds": ["contratacion_pendiente_inicio"],
+      "options": [
+        { "id": "contratacion_pendiente_inicio", "label": "Contratacion pendiente de inicio" },
+        { "id": "gestion_pendiente_inicio", "label": "Gestion pendiente de inicio" },
+        { "id": "por_iniciar", "label": "Por iniciar" }
+      ],
+      "required": true
+    },
+    {
+      "id": "r2_inicio_cronograma_familia",
+      "prompt": "Nombre final para la fecha de inicio de la familia segun el cronograma base.",
+      "description": "Debe dejar claro que no es el inicio del proceso de contratacion.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Usar \"Inicio de familia segun cronograma\" para separar obra de contratacion.",
+      "recommendedOptionIds": ["inicio_familia_segun_cronograma"],
+      "options": [
+        { "id": "inicio_familia_segun_cronograma", "label": "Inicio de familia segun cronograma" },
+        { "id": "inicio_en_obra_segun_cronograma", "label": "Inicio en obra segun cronograma" },
+        { "id": "fecha_base_de_inicio_en_obra", "label": "Fecha base de inicio en obra" }
+      ],
+      "required": true
+    },
+    {
+      "id": "r2_inicio_proyectado_familia",
+      "prompt": "Nombre final para la fecha proyectada de inicio de la familia en obra.",
+      "description": "Debe reflejar que la fecha puede moverse por atrasos en la contratacion.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Usar \"Inicio proyectado de familia en obra\" porque explica que es una proyeccion operativa, no una fecha del proceso de contratacion.",
+      "recommendedOptionIds": ["inicio_proyectado_familia_obra"],
+      "options": [
+        { "id": "inicio_proyectado_familia_obra", "label": "Inicio proyectado de familia en obra" },
+        { "id": "inicio_en_obra_proyectado", "label": "Inicio en obra proyectado" },
+        { "id": "fecha_proyectada_de_inicio_en_obra", "label": "Fecha proyectada de inicio en obra" }
+      ],
+      "required": true
+    },
+    {
+      "id": "r2_inicio_real_familia",
+      "prompt": "Nombre final para la fecha real de inicio de la primera actividad de esa familia en obra.",
+      "description": "Debe dejar claro que es el inicio real en obra, no el cierre ni arranque de contratacion.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Usar \"Inicio real de familia en obra\" para mantener consistencia con la fecha proyectada.",
+      "recommendedOptionIds": ["inicio_real_familia_obra"],
+      "options": [
+        { "id": "inicio_real_familia_obra", "label": "Inicio real de familia en obra" },
+        { "id": "inicio_en_obra_real", "label": "Inicio en obra real" },
+        { "id": "fecha_real_de_inicio_en_obra", "label": "Fecha real de inicio en obra" }
+      ],
+      "required": true
+    }
+  ]
+}

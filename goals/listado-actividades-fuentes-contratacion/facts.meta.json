@@ -1,0 +1,79 @@
+[
+  {
+    "id": "fact-1",
+    "text": "En la revision semi-auto de /listado-actividades, el campo Actividad debe ser un selector poblado con todas las fuentes posibles de la propuesta.",
+    "comment": "",
+    "recommendedAutomatedVerification": true,
+    "automatedVerification": true
+  },
+  {
+    "id": "fact-2",
+    "text": "Las opciones del selector Actividad deben ordenarse por mayor confianza, luego por fecha de inicio mas cercana a mas lejana, y luego por nombre para mantener un orden estable.",
+    "comment": "",
+    "recommendedAutomatedVerification": true,
+    "automatedVerification": true
+  },
+  {
+    "id": "fact-3",
+    "text": "El valor inicial del selector Actividad debe ser la fuente mas confiable con la fecha de inicio mas cercana.",
+    "comment": "",
+    "recommendedAutomatedVerification": true,
+    "automatedVerification": true
+  },
+  {
+    "id": "fact-4",
+    "text": "Actividad de inicio y Fecha de inicio no deben mostrarse como campos editables en la revision; deben mostrarse solo como contexto legible derivado de la Actividad seleccionada.",
+    "comment": "",
+    "recommendedAutomatedVerification": true,
+    "automatedVerification": true
+  },
+  {
+    "id": "fact-5",
+    "text": "Al cambiar la Actividad seleccionada, el contexto visible de actividad fuente y fecha de inicio debe actualizarse automaticamente.",
+    "comment": "",
+    "recommendedAutomatedVerification": true,
+    "automatedVerification": true
+  },
+  {
+    "id": "fact-6",
+    "text": "La Semana no debe aparecer como campo editable ni como decision de usuario en la revision de crear actividad.",
+    "comment": "",
+    "recommendedAutomatedVerification": true,
+    "automatedVerification": true
+  },
+  {
+    "id": "fact-7",
+    "text": "Modalidad de contratacion debe permitir seleccionar una o varias modalidades usando el mismo criterio de /contratos/: SI es excluyente, y MO, S y OC pueden combinarse.",
+    "comment": "",
+    "recommendedAutomatedVerification": true,
+    "automatedVerification": true
+  },
+  {
+    "id": "fact-8",
+    "text": "La edicion inline de Modalidad de contratacion en la tabla debe permitir las mismas selecciones multiples que la revision/modal de /contratos/.",
+    "comment": "",
+    "recommendedAutomatedVerification": true,
+    "automatedVerification": true
+  },
+  {
+    "id": "fact-9",
+    "text": "Al aplicar o guardar una propuesta, el backend debe recibir y persistir la Actividad seleccionada, su actividad de inicio, su fecha de inicio y todas las modalidades seleccionadas.",
+    "comment": "",
+    "recommendedAutomatedVerification": true,
+    "automatedVerification": true
+  },
+  {
+    "id": "fact-10",
+    "text": "La revision debe usar lenguaje operativo para usuarios finales y ocultar conceptos tecnicos como run IDs, payloads, reglas internas, IDs crudos o nombres tecnicos salvo en detalle de administrador.",
+    "comment": "",
+    "recommendedAutomatedVerification": true,
+    "automatedVerification": true
+  },
+  {
+    "id": "fact-11",
+    "text": "La verificacion final debe incluir pruebas PHP enfocadas, una prueba Playwright del flujo en Da Porto semana 1 y una captura donde se vea el selector de Actividad, la modalidad multiple y la ausencia de Semana.",
+    "comment": "",
+    "recommendedAutomatedVerification": false,
+    "automatedVerification": false
+  }
+]

@@ -1,0 +1,114 @@
+{
+  "stage": "interview",
+  "title": "Estados claros para familias y contratos - ronda 2",
+  "goalSlug": "estados-catalogo-familias-ux",
+  "questions": [
+    {
+      "id": "final_labels",
+      "prompt": "¿Qué etiquetas finales debe ver un usuario no técnico para cada estado?",
+      "description": "La ronda anterior descartó etiquetas internas. Estas opciones están escritas como acción/resultado visible, no como estado técnico.",
+      "answerMode": "multi-custom",
+      "recommendedAnswer": "Usar estas cinco: Crea actividades, Se gestiona en Contratos, Es otro nombre de..., Necesita decisión, No usar.",
+      "recommendedOptionIds": ["creates_activities", "managed_in_contracts", "alias_of", "needs_decision", "do_not_use"],
+      "options": [
+        { "id": "creates_activities", "label": "Crea actividades" },
+        { "id": "managed_in_contracts", "label": "Se gestiona en Contratos" },
+        { "id": "alias_of", "label": "Es otro nombre de..." },
+        { "id": "needs_decision", "label": "Necesita decisión" },
+        { "id": "do_not_use", "label": "No usar" }
+      ],
+      "required": true
+    },
+    {
+      "id": "action_permissions",
+      "prompt": "¿Qué acciones debe poder ejecutar cada tipo de usuario?",
+      "description": "Esto evita que un usuario final vea herramientas de catálogo que pueden cambiar reglas globales.",
+      "answerMode": "multi-custom",
+      "recommendedAnswer": "Usuario final: asignar paquetes y ver explicación. Admin: mantener en Listado, pasar a Contratos, crear opción contractual y crear regla. Detalle técnico solo Admin.",
+      "recommendedOptionIds": ["end_user_assign", "end_user_explain", "admin_catalog_decisions", "admin_create_option", "admin_create_rule", "admin_technical"],
+      "options": [
+        { "id": "end_user_assign", "label": "Usuario asigna paquetes" },
+        { "id": "end_user_explain", "label": "Usuario ve explicación" },
+        { "id": "admin_catalog_decisions", "label": "Admin decide catálogo" },
+        { "id": "admin_create_option", "label": "Admin crea opción" },
+        { "id": "admin_create_rule", "label": "Admin crea regla" },
+        { "id": "admin_technical", "label": "Detalle técnico Admin" }
+      ],
+      "required": true
+    },
+    {
+      "id": "catalog_option_editor",
+      "prompt": "Cuando una familia existe pero no tiene paquetes, ¿la solución debe incluir una UI para crear opciones contractuales?",
+      "description": "Este fue el caso de Pisos y Enchapes. Sin esta capacidad, el usuario puede asignar paquetes manuales, pero el sistema seguirá sin aprender la opción global.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Sí, pero solo para Admin y como flujo guiado desde el catálogo/asistente: modalidad, paquetes, cantidades por defecto y duraciones si faltan.",
+      "recommendedOptionIds": ["admin_guided"],
+      "options": [
+        { "id": "admin_guided", "label": "Sí, guiado Admin" },
+        { "id": "manual_only", "label": "No, solo manual" },
+        { "id": "later", "label": "Dejar para fase 2" }
+      ],
+      "required": true
+    },
+    {
+      "id": "all_families_scope",
+      "prompt": "Cuando dices “todas las familias”, ¿qué nivel de cobertura esperas?",
+      "description": "Podemos revisar todo el catálogo y mostrar estado/motivo para todas, o además exigir que cada familia tenga regla, opción contractual y ruta PDC si aplica.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Cobertura de clasificación para todas: cada familia/alias/elemento contractual debe tener estado visible y motivo. Exigir paquetes solo a las que se gestionan en Contratos o crean PDC.",
+      "recommendedOptionIds": ["classification_all"],
+      "options": [
+        { "id": "classification_all", "label": "Estado para todas" },
+        { "id": "full_config_all", "label": "Config completa todas" },
+        { "id": "only_detected", "label": "Solo detectadas" }
+      ],
+      "required": true
+    },
+    {
+      "id": "pdc_from_zero",
+      "prompt": "¿Qué significa “empezar el flujo de Plan de Compras desde cero” para esta meta?",
+      "description": "Esto define la validación end-to-end: desde Programa/Listado, pasando por Contratos, hasta PDC sin datos previos que oculten fallas.",
+      "answerMode": "multi-custom",
+      "recommendedAnswer": "Crear o usar una semana/proyecto de prueba limpio, generar/confirmar actividades, asignar contratos, generar PDC, y verificar que los mensajes de estado guíen todo el flujo sin depender de datos ya corregidos.",
+      "recommendedOptionIds": ["clean_week", "listado", "contratos", "pdc", "messages"],
+      "options": [
+        { "id": "clean_week", "label": "Semana limpia" },
+        { "id": "listado", "label": "Desde Listado" },
+        { "id": "contratos", "label": "Pasar por Contratos" },
+        { "id": "pdc", "label": "Generar PDC" },
+        { "id": "messages", "label": "Validar mensajes" }
+      ],
+      "required": true
+    },
+    {
+      "id": "rollout_shape",
+      "prompt": "¿Cómo prefieres dividir la implementación?",
+      "description": "El alcance puede crecer. Una división clara evita mezclar UX, catálogo, automatización y pruebas masivas en un solo cambio riesgoso.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Fase 1: estados/mensajes/acciones visibles y opción contractual guiada para Admin. Fase 2: auditoría completa de todas las familias y flujo PDC desde cero.",
+      "recommendedOptionIds": ["two_phases"],
+      "options": [
+        { "id": "two_phases", "label": "Dos fases" },
+        { "id": "single_goal", "label": "Todo en un objetivo" },
+        { "id": "ux_first", "label": "Solo UX primero" }
+      ],
+      "required": true
+    },
+    {
+      "id": "done_condition",
+      "prompt": "¿Qué condición concreta debe cumplirse para considerar este objetivo terminado?",
+      "description": "Esto se convertirá en la condición de cierre del goal.",
+      "answerMode": "multi-custom",
+      "recommendedAnswer": "Un usuario puede ver por qué una familia no se aplicó, qué hacer después, y un admin puede corregir el catálogo sin tocar SQL. Además, el flujo Listado -> Contratos -> PDC queda verificado con evidencias.",
+      "recommendedOptionIds": ["clear_reason", "next_action", "admin_no_sql", "e2e_evidence"],
+      "options": [
+        { "id": "clear_reason", "label": "Motivo claro" },
+        { "id": "next_action", "label": "Siguiente acción" },
+        { "id": "admin_no_sql", "label": "Admin sin SQL" },
+        { "id": "e2e_evidence", "label": "Evidencia E2E" },
+        { "id": "all_catalog_report", "label": "Reporte catálogo total" }
+      ],
+      "required": true
+    }
+  ]
+}

@@ -1,0 +1,1672 @@
+{
+  "generatedAt": "2026-07-04T17:40:13.198Z",
+  "summaries": [
+    {
+      "project": "Optimizacion Aeropuerto JMC",
+      "projectId": 68,
+      "week": 7,
+      "module": "listado-actividades",
+      "runId": "run_e78b862d346abd44459c858a0acfeb12",
+      "total": 434,
+      "preselected": 0,
+      "ready": 0,
+      "review": 0,
+      "conflict": 434,
+      "actions": {
+        "review_no_match": 434
+      },
+      "samples": [
+        {
+          "action": "review_no_match",
+          "title": "Sin familia detectada",
+          "subtitle": "INICIO DEL PROYECTO (ESTIMADO)",
+          "gate": "conflict",
+          "reason": "El programa general no coincide con una familia configurada.",
+          "blockers": [
+            "No hay familia confiable para aplicar automáticamente.",
+            "La evidencia de fuentes está incompleta."
+          ],
+          "reviewReasons": [
+            "El programa general no coincide con una familia configurada."
+          ],
+          "startActivity": "INICIO DEL PROYECTO (ESTIMADO) | 2026-04-24",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "",
+              "rule_id": null,
+              "activity": "INICIO DEL PROYECTO (ESTIMADO)",
+              "unique_id": 1,
+              "matched_by": "",
+              "risk_flags": [
+                "sin_familia"
+              ],
+              "start_date": "2026-04-24",
+              "why_included": "No hay familia confiable."
+            }
+          ]
+        },
+        {
+          "action": "review_no_match",
+          "title": "Sin familia detectada",
+          "subtitle": "Socialización a locatarios y disponilidad de areas (por Airplan) para poder iniciar actividades de construcción,",
+          "gate": "conflict",
+          "reason": "El programa general no coincide con una familia configurada.",
+          "blockers": [
+            "No hay familia confiable para aplicar automáticamente.",
+            "La evidencia de fuentes está incompleta."
+          ],
+          "reviewReasons": [
+            "El programa general no coincide con una familia configurada."
+          ],
+          "startActivity": "Socialización a locatarios y disponilidad de areas (por Airplan) para poder iniciar actividades de construcción, [Capítulo: PREOPERATIVOS] | 2026-04-24",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "",
+              "rule_id": null,
+              "activity": "Socialización a locatarios y disponilidad de areas (por Airplan) para poder iniciar actividades de construcción, [Capítulo: PREOPERATIVOS]",
+              "unique_id": 3,
+              "matched_by": "",
+              "risk_flags": [
+                "sin_familia"
+              ],
+              "start_date": "2026-04-24",
+              "why_included": "No hay familia confiable."
+            }
+          ]
+        },
+        {
+          "action": "review_no_match",
+          "title": "Sin familia detectada",
+          "subtitle": "Preoperativos administrativos de obra,",
+          "gate": "conflict",
+          "reason": "El programa general no coincide con una familia configurada.",
+          "blockers": [
+            "No hay familia confiable para aplicar automáticamente.",
+            "La evidencia de fuentes está incompleta."
+          ],
+          "reviewReasons": [
+            "El programa general no coincide con una familia configurada."
+          ],
+          "startActivity": "Preoperativos administrativos de obra, [Capítulo: PREOPERATIVOS] | 2026-04-24",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "",
+              "rule_id": null,
+              "activity": "Preoperativos administrativos de obra, [Capítulo: PREOPERATIVOS]",
+              "unique_id": 4,
+              "matched_by": "",
+              "risk_flags": [
+                "sin_familia"
+              ],
+              "start_date": "2026-04-24",
+              "why_included": "No hay familia confiable."
+            }
+          ]
+        },
+        {
+          "action": "review_no_match",
+          "title": "Sin familia detectada",
+          "subtitle": "Actas de vecindad frentes de obra iniciales,",
+          "gate": "conflict",
+          "reason": "El programa general no coincide con una familia configurada.",
+          "blockers": [
+            "No hay familia confiable para aplicar automáticamente.",
+            "La evidencia de fuentes está incompleta."
+          ],
+          "reviewReasons": [
+            "El programa general no coincide con una familia configurada."
+          ],
+          "startActivity": "Actas de vecindad frentes de obra iniciales, [Capítulo: PREOPERATIVOS] | 2026-04-24",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "",
+              "rule_id": null,
+              "activity": "Actas de vecindad frentes de obra iniciales, [Capítulo: PREOPERATIVOS]",
+              "unique_id": 6,
+              "matched_by": "",
+              "risk_flags": [
+                "sin_familia"
+              ],
+              "start_date": "2026-04-24",
+              "why_included": "No hay familia confiable."
+            }
+          ]
+        },
+        {
+          "action": "review_no_match",
+          "title": "Sin familia detectada",
+          "subtitle": "Insumos y equipos,",
+          "gate": "conflict",
+          "reason": "El programa general no coincide con una familia configurada.",
+          "blockers": [
+            "No hay familia confiable para aplicar automáticamente.",
+            "La evidencia de fuentes está incompleta."
+          ],
+          "reviewReasons": [
+            "El programa general no coincide con una familia configurada."
+          ],
+          "startActivity": "Insumos y equipos, [Capítulo: Actividad social, (14) GUIA SOCIOAMBIENTAL] | 2026-04-24",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "",
+              "rule_id": null,
+              "activity": "Insumos y equipos, [Capítulo: Actividad social, (14) GUIA SOCIOAMBIENTAL]",
+              "unique_id": 1849,
+              "matched_by": "",
+              "risk_flags": [
+                "sin_familia"
+              ],
+              "start_date": "2026-04-24",
+              "why_included": "No hay familia confiable."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "project": "Optimizacion Aeropuerto JMC",
+      "projectId": 68,
+      "week": 7,
+      "module": "contratos",
+      "runId": "run_e0ea997e5ed6e033253f9ef92d7cc169",
+      "total": 2,
+      "preselected": 1,
+      "ready": 1,
+      "review": 1,
+      "conflict": 0,
+      "actions": {
+        "update_contracts": 1,
+        "review_no_match": 1
+      },
+      "samples": [
+        {
+          "action": "update_contracts",
+          "title": "Definir contratos",
+          "subtitle": "Seguridad y Control",
+          "gate": "ready",
+          "reason": "Familia detectada: Seguridad y Control",
+          "blockers": [],
+          "reviewReasons": [],
+          "startActivity": "Movimiento sistema de intrusión aeropuerto, [Capítulo: Seguridad y control, Redes, (5A) EQUIPAJE LLEGANDO (edificación nueva)] | 2026-06-03",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "Seguridad y Control",
+              "chapter": "seguridad y control, redes, (5a) equipaje llegando (edificación nueva)",
+              "context": "seguridad y control, redes, (5a) equipaje llegando (edificación nueva)",
+              "rule_id": 207,
+              "activity": "Movimiento sistema de intrusión aeropuerto, [Capítulo: Seguridad y control, Redes, (5A) EQUIPAJE LLEGANDO (edificación nueva)]",
+              "family_id": 336,
+              "unique_id": 761,
+              "confidence": 92,
+              "matched_by": "breadcrumb",
+              "risk_flags": [
+                "redes_o_tuberias"
+              ],
+              "start_date": "2026-06-03",
+              "matched_rule": "breadcrumb",
+              "why_included": "Actividad vinculada al Programa General y familia contractual detectada.",
+              "location_hint": "",
+              "clean_activity": "Movimiento sistema de intrusión aeropuerto,",
+              "intervention_hint": "5A",
+              "original_activity": "Movimiento sistema de intrusión aeropuerto, [Capítulo: Seguridad y control, Redes, (5A) EQUIPAJE LLEGANDO (edificación nueva)]"
+            }
+          ]
+        },
+        {
+          "action": "review_no_match",
+          "title": "Familia sin opción de contrato",
+          "subtitle": "Pisos y Enchapes",
+          "gate": "review",
+          "reason": "La familia detectada no tiene paquetes configurados.",
+          "blockers": [],
+          "reviewReasons": [
+            "La familia detectada no tiene paquetes configurados.",
+            "La familia no tiene paquetes contractuales configurados."
+          ],
+          "startActivity": "Enchapes en muros, [Capítulo: Obra blanca, Internacional Sala 9, Baños Salas de espera, (5B) ADECUACION SALA DE ESPERA ACTUAL] | 2026-07-21",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "Pisos y Enchapes",
+              "chapter": "obra blanca, internacional sala 9, baños salas de espera, (5b) adecuacion sala de espera actual",
+              "context": "obra blanca, internacional sala 9, baños salas de espera, (5b) adecuacion sala de espera actual",
+              "rule_id": 32,
+              "activity": "Enchapes en muros, [Capítulo: Obra blanca, Internacional Sala 9, Baños Salas de espera, (5B) ADECUACION SALA DE ESPERA ACTUAL]",
+              "family_id": 199,
+              "unique_id": 946,
+              "confidence": 92,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2026-07-21",
+              "matched_rule": "nombre",
+              "why_included": "Actividad vinculada al Programa General y familia contractual detectada.",
+              "location_hint": "",
+              "clean_activity": "Enchapes en muros,",
+              "intervention_hint": "5B",
+              "original_activity": "Enchapes en muros, [Capítulo: Obra blanca, Internacional Sala 9, Baños Salas de espera, (5B) ADECUACION SALA DE ESPERA ACTUAL]"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "project": "Optimizacion Aeropuerto JMC",
+      "projectId": 68,
+      "week": 7,
+      "module": "pdc",
+      "runId": "run_a390753f86bf73f0b6e0e7339e842a8f",
+      "total": 29,
+      "preselected": 0,
+      "ready": 0,
+      "review": 29,
+      "conflict": 0,
+      "actions": {
+        "update_pdc_package": 29
+      },
+      "samples": [
+        {
+          "action": "update_pdc_package",
+          "title": "Actualizar paquete PDC",
+          "subtitle": "DETECCION DE INCENDIO",
+          "gate": "review",
+          "reason": "El paquete ya existe; revisar diferencias antes de actualizar.",
+          "blockers": [],
+          "reviewReasons": [
+            "El paquete ya existe y se modificarían campos con información previa."
+          ],
+          "startActivity": "Red de Detección de Incendio | 2027-01-29",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "pdc",
+              "chapter": "pdc",
+              "context": "pdc",
+              "rule_id": null,
+              "activity": "Red de Detección de Incendio",
+              "family_id": 0,
+              "unique_id": 1328,
+              "confidence": 95,
+              "matched_by": "contratos",
+              "risk_flags": [
+                "deteccion_incendio",
+                "redes_o_tuberias"
+              ],
+              "start_date": "2027-01-29",
+              "matched_rule": "contratos",
+              "why_included": "Paquete derivado de la definición de contratos.",
+              "location_hint": "",
+              "clean_activity": "Red de Detección de Incendio",
+              "intervention_hint": "",
+              "original_activity": "Red de Detección de Incendio"
+            }
+          ]
+        },
+        {
+          "action": "update_pdc_package",
+          "title": "Actualizar paquete PDC",
+          "subtitle": "MATERIALES RED ELECTRICA",
+          "gate": "review",
+          "reason": "El paquete ya existe; revisar diferencias antes de actualizar.",
+          "blockers": [],
+          "reviewReasons": [
+            "El paquete ya existe y se modificarían campos con información previa."
+          ],
+          "startActivity": "Red Eléctrica | 2026-05-30",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "pdc",
+              "chapter": "pdc",
+              "context": "pdc",
+              "rule_id": null,
+              "activity": "Red Eléctrica",
+              "family_id": 0,
+              "unique_id": 1311,
+              "confidence": 92,
+              "matched_by": "contratos",
+              "risk_flags": [
+                "redes_o_tuberias"
+              ],
+              "start_date": "2026-05-30",
+              "matched_rule": "contratos",
+              "why_included": "Paquete derivado de la definición de contratos.",
+              "location_hint": "",
+              "clean_activity": "Red Eléctrica",
+              "intervention_hint": "",
+              "original_activity": "Red Eléctrica"
+            }
+          ]
+        },
+        {
+          "action": "update_pdc_package",
+          "title": "Actualizar paquete PDC",
+          "subtitle": "MANO DE OBRA RED ELECTRICA",
+          "gate": "review",
+          "reason": "El paquete ya existe; revisar diferencias antes de actualizar.",
+          "blockers": [],
+          "reviewReasons": [
+            "El paquete ya existe y se modificarían campos con información previa."
+          ],
+          "startActivity": "Red Eléctrica | 2026-05-30",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "pdc",
+              "chapter": "pdc",
+              "context": "pdc",
+              "rule_id": null,
+              "activity": "Red Eléctrica",
+              "family_id": 0,
+              "unique_id": 1311,
+              "confidence": 92,
+              "matched_by": "contratos",
+              "risk_flags": [
+                "redes_o_tuberias"
+              ],
+              "start_date": "2026-05-30",
+              "matched_rule": "contratos",
+              "why_included": "Paquete derivado de la definición de contratos.",
+              "location_hint": "",
+              "clean_activity": "Red Eléctrica",
+              "intervention_hint": "",
+              "original_activity": "Red Eléctrica"
+            }
+          ]
+        },
+        {
+          "action": "update_pdc_package",
+          "title": "Actualizar paquete PDC",
+          "subtitle": "APARATOS SANITARIOS",
+          "gate": "review",
+          "reason": "El paquete ya existe; revisar diferencias antes de actualizar.",
+          "blockers": [],
+          "reviewReasons": [
+            "El paquete ya existe y se modificarían campos con información previa."
+          ],
+          "startActivity": "Aparatos Sanitarios | 2026-07-03",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "pdc",
+              "chapter": "pdc",
+              "context": "pdc",
+              "rule_id": null,
+              "activity": "Aparatos Sanitarios",
+              "family_id": 0,
+              "unique_id": 929,
+              "confidence": 92,
+              "matched_by": "contratos",
+              "risk_flags": [],
+              "start_date": "2026-07-03",
+              "matched_rule": "contratos",
+              "why_included": "Paquete derivado de la definición de contratos.",
+              "location_hint": "",
+              "clean_activity": "Aparatos Sanitarios",
+              "intervention_hint": "",
+              "original_activity": "Aparatos Sanitarios"
+            }
+          ]
+        },
+        {
+          "action": "update_pdc_package",
+          "title": "Actualizar paquete PDC",
+          "subtitle": "INSTALACION APARATOS SANITARIOS",
+          "gate": "review",
+          "reason": "El paquete ya existe; revisar diferencias antes de actualizar.",
+          "blockers": [],
+          "reviewReasons": [
+            "El paquete ya existe y se modificarían campos con información previa."
+          ],
+          "startActivity": "Aparatos Sanitarios | 2026-07-03",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "pdc",
+              "chapter": "pdc",
+              "context": "pdc",
+              "rule_id": null,
+              "activity": "Aparatos Sanitarios",
+              "family_id": 0,
+              "unique_id": 929,
+              "confidence": 92,
+              "matched_by": "contratos",
+              "risk_flags": [],
+              "start_date": "2026-07-03",
+              "matched_rule": "contratos",
+              "why_included": "Paquete derivado de la definición de contratos.",
+              "location_hint": "",
+              "clean_activity": "Aparatos Sanitarios",
+              "intervention_hint": "",
+              "original_activity": "Aparatos Sanitarios"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "project": "Da Porto",
+      "projectId": 73,
+      "week": 8,
+      "module": "listado-actividades",
+      "runId": "run_ea731a525b1f9afc0ae0cb8ba246be61",
+      "total": 34,
+      "preselected": 10,
+      "ready": 10,
+      "review": 10,
+      "conflict": 14,
+      "actions": {
+        "create_activity": 20,
+        "review_no_match": 14
+      },
+      "samples": [
+        {
+          "action": "create_activity",
+          "title": "Crear actividad consolidada",
+          "subtitle": "Topografía",
+          "gate": "ready",
+          "reason": "Familia detectada: Topografía",
+          "blockers": [],
+          "reviewReasons": [],
+          "startActivity": "LOCALIZACIÓN Y REPLANTEO, [Capítulo: PRELIMINARES, DAPORTO TORRE 3] | 2026-05-25",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "Topografía",
+              "chapter": "preliminares, daporto torre 3",
+              "context": "preliminares, daporto torre 3",
+              "rule_id": 174,
+              "activity": "LOCALIZACIÓN Y REPLANTEO, [Capítulo: PRELIMINARES, DAPORTO TORRE 3]",
+              "family_id": 205,
+              "unique_id": 2,
+              "confidence": 92,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2026-05-25",
+              "matched_rule": "nombre",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "TORRE 3",
+              "clean_activity": "LOCALIZACIÓN Y REPLANTEO,",
+              "intervention_hint": "",
+              "original_activity": "LOCALIZACIÓN Y REPLANTEO, [Capítulo: PRELIMINARES, DAPORTO TORRE 3]"
+            }
+          ]
+        },
+        {
+          "action": "create_activity",
+          "title": "Crear actividad consolidada",
+          "subtitle": "Estabilización del Suelo",
+          "gate": "ready",
+          "reason": "Familia detectada: Estabilización del Suelo",
+          "blockers": [],
+          "reviewReasons": [],
+          "startActivity": "MICROPILOTES INSERTOS, [Capítulo: ESTRUCTURA, DAPORTO TORRE 3] | 2026-08-18",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "Estabilización del Suelo",
+              "chapter": "estructura, daporto torre 3",
+              "context": "estructura, daporto torre 3",
+              "rule_id": 175,
+              "activity": "MICROPILOTES INSERTOS, [Capítulo: ESTRUCTURA, DAPORTO TORRE 3]",
+              "family_id": 204,
+              "unique_id": 7,
+              "confidence": 92,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2026-08-18",
+              "matched_rule": "nombre",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "TORRE 3",
+              "clean_activity": "MICROPILOTES INSERTOS,",
+              "intervention_hint": "",
+              "original_activity": "MICROPILOTES INSERTOS, [Capítulo: ESTRUCTURA, DAPORTO TORRE 3]"
+            }
+          ]
+        },
+        {
+          "action": "create_activity",
+          "title": "Crear actividad consolidada",
+          "subtitle": "Morteros de Nivelacion de Losas",
+          "gate": "ready",
+          "reason": "Familia detectada: Morteros de Nivelacion de Losas",
+          "blockers": [],
+          "reviewReasons": [],
+          "startActivity": "PISO 1, [Capítulo: MORTEROS DE PISOS, PISOS Y ENCHAPES, ACABADOS, DAPORTO TORRE 3] | 2027-05-12",
+          "sourceCount": 12,
+          "sources": [
+            {
+              "family": "Morteros de Nivelacion de Losas",
+              "chapter": "morteros de pisos, pisos y enchapes, acabados, daporto torre 3",
+              "context": "morteros de pisos, pisos y enchapes, acabados, daporto torre 3",
+              "rule_id": 25,
+              "activity": "PISO 1, [Capítulo: MORTEROS DE PISOS, PISOS Y ENCHAPES, ACABADOS, DAPORTO TORRE 3]",
+              "family_id": 24,
+              "unique_id": 169,
+              "confidence": 92,
+              "matched_by": "breadcrumb",
+              "risk_flags": [],
+              "start_date": "2027-05-12",
+              "matched_rule": "breadcrumb",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "PISO 1",
+              "clean_activity": "PISO 1,",
+              "intervention_hint": "",
+              "original_activity": "PISO 1, [Capítulo: MORTEROS DE PISOS, PISOS Y ENCHAPES, ACABADOS, DAPORTO TORRE 3]"
+            },
+            {
+              "family": "Morteros de Nivelacion de Losas",
+              "chapter": "morteros de pisos, pisos y enchapes, acabados, daporto torre 3",
+              "context": "morteros de pisos, pisos y enchapes, acabados, daporto torre 3",
+              "rule_id": 25,
+              "activity": "PISO 2, [Capítulo: MORTEROS DE PISOS, PISOS Y ENCHAPES, ACABADOS, DAPORTO TORRE 3]",
+              "family_id": 24,
+              "unique_id": 170,
+              "confidence": 92,
+              "matched_by": "breadcrumb",
+              "risk_flags": [],
+              "start_date": "2027-05-26",
+              "matched_rule": "breadcrumb",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "PISO 2",
+              "clean_activity": "PISO 2,",
+              "intervention_hint": "",
+              "original_activity": "PISO 2, [Capítulo: MORTEROS DE PISOS, PISOS Y ENCHAPES, ACABADOS, DAPORTO TORRE 3]"
+            },
+            {
+              "family": "Morteros de Nivelacion de Losas",
+              "chapter": "morteros de pisos, pisos y enchapes, acabados, daporto torre 3",
+              "context": "morteros de pisos, pisos y enchapes, acabados, daporto torre 3",
+              "rule_id": 25,
+              "activity": "PISO 3, [Capítulo: MORTEROS DE PISOS, PISOS Y ENCHAPES, ACABADOS, DAPORTO TORRE 3]",
+              "family_id": 24,
+              "unique_id": 171,
+              "confidence": 92,
+              "matched_by": "breadcrumb",
+              "risk_flags": [],
+              "start_date": "2027-06-11",
+              "matched_rule": "breadcrumb",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "PISO 3",
+              "clean_activity": "PISO 3,",
+              "intervention_hint": "",
+              "original_activity": "PISO 3, [Capítulo: MORTEROS DE PISOS, PISOS Y ENCHAPES, ACABADOS, DAPORTO TORRE 3]"
+            }
+          ]
+        },
+        {
+          "action": "create_activity",
+          "title": "Crear actividad consolidada",
+          "subtitle": "Pisos y Enchapes",
+          "gate": "ready",
+          "reason": "Familia detectada: Pisos y Enchapes",
+          "blockers": [],
+          "reviewReasons": [],
+          "startActivity": "PISO 1, [Capítulo: PISOS Y ENCHAPES, PISOS Y ENCHAPES, ACABADOS, DAPORTO TORRE 3] | 2027-07-08",
+          "sourceCount": 12,
+          "sources": [
+            {
+              "family": "Pisos y Enchapes",
+              "chapter": "pisos y enchapes, pisos y enchapes, acabados, daporto torre 3",
+              "context": "pisos y enchapes, pisos y enchapes, acabados, daporto torre 3",
+              "rule_id": 32,
+              "activity": "PISO 1, [Capítulo: PISOS Y ENCHAPES, PISOS Y ENCHAPES, ACABADOS, DAPORTO TORRE 3]",
+              "family_id": 199,
+              "unique_id": 182,
+              "confidence": 92,
+              "matched_by": "breadcrumb",
+              "risk_flags": [],
+              "start_date": "2027-07-08",
+              "matched_rule": "breadcrumb",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "PISO 1",
+              "clean_activity": "PISO 1,",
+              "intervention_hint": "",
+              "original_activity": "PISO 1, [Capítulo: PISOS Y ENCHAPES, PISOS Y ENCHAPES, ACABADOS, DAPORTO TORRE 3]"
+            },
+            {
+              "family": "Pisos y Enchapes",
+              "chapter": "pisos y enchapes, pisos y enchapes, acabados, daporto torre 3",
+              "context": "pisos y enchapes, pisos y enchapes, acabados, daporto torre 3",
+              "rule_id": 32,
+              "activity": "PISO 2, [Capítulo: PISOS Y ENCHAPES, PISOS Y ENCHAPES, ACABADOS, DAPORTO TORRE 3]",
+              "family_id": 199,
+              "unique_id": 183,
+              "confidence": 92,
+              "matched_by": "breadcrumb",
+              "risk_flags": [],
+              "start_date": "2027-07-23",
+              "matched_rule": "breadcrumb",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "PISO 2",
+              "clean_activity": "PISO 2,",
+              "intervention_hint": "",
+              "original_activity": "PISO 2, [Capítulo: PISOS Y ENCHAPES, PISOS Y ENCHAPES, ACABADOS, DAPORTO TORRE 3]"
+            },
+            {
+              "family": "Pisos y Enchapes",
+              "chapter": "pisos y enchapes, pisos y enchapes, acabados, daporto torre 3",
+              "context": "pisos y enchapes, pisos y enchapes, acabados, daporto torre 3",
+              "rule_id": 32,
+              "activity": "PISO 3, [Capítulo: PISOS Y ENCHAPES, PISOS Y ENCHAPES, ACABADOS, DAPORTO TORRE 3]",
+              "family_id": 199,
+              "unique_id": 184,
+              "confidence": 92,
+              "matched_by": "breadcrumb",
+              "risk_flags": [],
+              "start_date": "2027-08-06",
+              "matched_rule": "breadcrumb",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "PISO 3",
+              "clean_activity": "PISO 3,",
+              "intervention_hint": "",
+              "original_activity": "PISO 3, [Capítulo: PISOS Y ENCHAPES, PISOS Y ENCHAPES, ACABADOS, DAPORTO TORRE 3]"
+            }
+          ]
+        },
+        {
+          "action": "create_activity",
+          "title": "Crear actividad consolidada",
+          "subtitle": "Pinturas Interiores y Exteriores",
+          "gate": "ready",
+          "reason": "Familia detectada: Pinturas Interiores y Exteriores",
+          "blockers": [],
+          "reviewReasons": [],
+          "startActivity": "PISO 1, [Capítulo: PINTURA, REVOQUES, ESTUCO Y PINTURA, ACABADOS, DAPORTO TORRE 3] | 2027-07-22",
+          "sourceCount": 12,
+          "sources": [
+            {
+              "family": "Pinturas Interiores y Exteriores",
+              "chapter": "pintura, revoques, estuco y pintura, acabados, daporto torre 3",
+              "context": "pintura, revoques, estuco y pintura, acabados, daporto torre 3",
+              "rule_id": 28,
+              "activity": "PISO 1, [Capítulo: PINTURA, REVOQUES, ESTUCO Y PINTURA, ACABADOS, DAPORTO TORRE 3]",
+              "family_id": 27,
+              "unique_id": 155,
+              "confidence": 92,
+              "matched_by": "breadcrumb",
+              "risk_flags": [],
+              "start_date": "2027-07-22",
+              "matched_rule": "breadcrumb",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "PISO 1",
+              "clean_activity": "PISO 1,",
+              "intervention_hint": "",
+              "original_activity": "PISO 1, [Capítulo: PINTURA, REVOQUES, ESTUCO Y PINTURA, ACABADOS, DAPORTO TORRE 3]"
+            },
+            {
+              "family": "Pinturas Interiores y Exteriores",
+              "chapter": "pintura, revoques, estuco y pintura, acabados, daporto torre 3",
+              "context": "pintura, revoques, estuco y pintura, acabados, daporto torre 3",
+              "rule_id": 28,
+              "activity": "PISO 2, [Capítulo: PINTURA, REVOQUES, ESTUCO Y PINTURA, ACABADOS, DAPORTO TORRE 3]",
+              "family_id": 27,
+              "unique_id": 156,
+              "confidence": 92,
+              "matched_by": "breadcrumb",
+              "risk_flags": [],
+              "start_date": "2027-08-05",
+              "matched_rule": "breadcrumb",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "PISO 2",
+              "clean_activity": "PISO 2,",
+              "intervention_hint": "",
+              "original_activity": "PISO 2, [Capítulo: PINTURA, REVOQUES, ESTUCO Y PINTURA, ACABADOS, DAPORTO TORRE 3]"
+            },
+            {
+              "family": "Pinturas Interiores y Exteriores",
+              "chapter": "pintura, revoques, estuco y pintura, acabados, daporto torre 3",
+              "context": "pintura, revoques, estuco y pintura, acabados, daporto torre 3",
+              "rule_id": 28,
+              "activity": "PISO 3, [Capítulo: PINTURA, REVOQUES, ESTUCO Y PINTURA, ACABADOS, DAPORTO TORRE 3]",
+              "family_id": 27,
+              "unique_id": 157,
+              "confidence": 92,
+              "matched_by": "breadcrumb",
+              "risk_flags": [],
+              "start_date": "2027-08-20",
+              "matched_rule": "breadcrumb",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "PISO 3",
+              "clean_activity": "PISO 3,",
+              "intervention_hint": "",
+              "original_activity": "PISO 3, [Capítulo: PINTURA, REVOQUES, ESTUCO Y PINTURA, ACABADOS, DAPORTO TORRE 3]"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "project": "Da Porto",
+      "projectId": 73,
+      "week": 8,
+      "module": "contratos",
+      "runId": "run_3e84fbab17c59c5ee57e1fdaeb5d693b",
+      "total": 0,
+      "preselected": 0,
+      "ready": 0,
+      "review": 0,
+      "conflict": 0,
+      "actions": {},
+      "samples": []
+    },
+    {
+      "project": "Da Porto",
+      "projectId": 73,
+      "week": 8,
+      "module": "pdc",
+      "runId": "run_6c184b8f337038ee9fcee2b1464457e1",
+      "total": 0,
+      "preselected": 0,
+      "ready": 0,
+      "review": 0,
+      "conflict": 0,
+      "actions": {},
+      "samples": []
+    },
+    {
+      "project": "Milán Campestre Torre 19",
+      "projectId": 74,
+      "week": 6,
+      "module": "listado-actividades",
+      "runId": "run_e58546ad0abae25faffd86319f1bac12",
+      "total": 12,
+      "preselected": 0,
+      "ready": 0,
+      "review": 0,
+      "conflict": 12,
+      "actions": {
+        "review_no_match": 12
+      },
+      "samples": [
+        {
+          "action": "review_no_match",
+          "title": "Sin familia detectada",
+          "subtitle": "Inicio",
+          "gate": "conflict",
+          "reason": "El programa general no coincide con una familia configurada.",
+          "blockers": [
+            "No hay familia confiable para aplicar automáticamente.",
+            "La evidencia de fuentes está incompleta."
+          ],
+          "reviewReasons": [
+            "El programa general no coincide con una familia configurada."
+          ],
+          "startActivity": "Inicio | 2026-04-27",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "",
+              "rule_id": null,
+              "activity": "Inicio",
+              "unique_id": 1,
+              "matched_by": "",
+              "risk_flags": [
+                "sin_familia"
+              ],
+              "start_date": "2026-04-27",
+              "why_included": "No hay familia confiable."
+            }
+          ]
+        },
+        {
+          "action": "review_no_match",
+          "title": "Sin familia detectada",
+          "subtitle": "Resane, sotofondo, resane de corbatas",
+          "gate": "conflict",
+          "reason": "El programa general no coincide con una familia configurada.",
+          "blockers": [
+            "No hay familia confiable para aplicar automáticamente.",
+            "La evidencia de fuentes está incompleta."
+          ],
+          "reviewReasons": [
+            "El programa general no coincide con una familia configurada."
+          ],
+          "startActivity": "Resane, sotofondo, resane de corbatas | 2026-05-18",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "",
+              "rule_id": null,
+              "activity": "Resane, sotofondo, resane de corbatas",
+              "unique_id": 141,
+              "matched_by": "",
+              "risk_flags": [
+                "sin_familia"
+              ],
+              "start_date": "2026-05-18",
+              "why_included": "No hay familia confiable."
+            }
+          ]
+        },
+        {
+          "action": "review_no_match",
+          "title": "Sin familia detectada",
+          "subtitle": "A.LL. y A.R.",
+          "gate": "conflict",
+          "reason": "El programa general no coincide con una familia configurada.",
+          "blockers": [
+            "No hay familia confiable para aplicar automáticamente.",
+            "La evidencia de fuentes está incompleta."
+          ],
+          "reviewReasons": [
+            "El programa general no coincide con una familia configurada."
+          ],
+          "startActivity": "A.LL. y A.R. | 2026-05-18",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "",
+              "rule_id": null,
+              "activity": "A.LL. y A.R.",
+              "unique_id": 175,
+              "matched_by": "",
+              "risk_flags": [
+                "sin_familia"
+              ],
+              "start_date": "2026-05-18",
+              "why_included": "No hay familia confiable."
+            }
+          ]
+        },
+        {
+          "action": "review_no_match",
+          "title": "Sin familia detectada",
+          "subtitle": "Gas",
+          "gate": "conflict",
+          "reason": "El programa general no coincide con una familia configurada.",
+          "blockers": [
+            "No hay familia confiable para aplicar automáticamente.",
+            "La evidencia de fuentes está incompleta."
+          ],
+          "reviewReasons": [
+            "El programa general no coincide con una familia configurada."
+          ],
+          "startActivity": "Gas | 2026-05-20",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "",
+              "rule_id": null,
+              "activity": "Gas",
+              "unique_id": 171,
+              "matched_by": "",
+              "risk_flags": [
+                "sin_familia"
+              ],
+              "start_date": "2026-05-20",
+              "why_included": "No hay familia confiable."
+            }
+          ]
+        },
+        {
+          "action": "review_no_match",
+          "title": "Sin familia detectada",
+          "subtitle": "Resanes Punto Fijo Nivel 5",
+          "gate": "conflict",
+          "reason": "El programa general no coincide con una familia configurada.",
+          "blockers": [
+            "No hay familia confiable para aplicar automáticamente.",
+            "La evidencia de fuentes está incompleta."
+          ],
+          "reviewReasons": [
+            "El programa general no coincide con una familia configurada."
+          ],
+          "startActivity": "Resanes Punto Fijo Nivel 5 | 2026-06-25",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "",
+              "rule_id": null,
+              "activity": "Resanes Punto Fijo Nivel 5",
+              "unique_id": 98,
+              "matched_by": "",
+              "risk_flags": [
+                "sin_familia"
+              ],
+              "start_date": "2026-06-25",
+              "why_included": "No hay familia confiable."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "project": "Milán Campestre Torre 19",
+      "projectId": 74,
+      "week": 6,
+      "module": "contratos",
+      "runId": "run_518d6674d07d28c3606520d1fbe6ae1b",
+      "total": 15,
+      "preselected": 0,
+      "ready": 0,
+      "review": 1,
+      "conflict": 14,
+      "actions": {
+        "update_contracts": 12,
+        "review_no_match": 3
+      },
+      "samples": [
+        {
+          "action": "update_contracts",
+          "title": "Definir contratos",
+          "subtitle": "Red de Telecomunicaciones",
+          "gate": "conflict",
+          "reason": "Familia detectada: Red de Telecomunicaciones",
+          "blockers": [
+            "La evidencia de fuentes está incompleta."
+          ],
+          "reviewReasons": [
+            "Familia configurada para revisión manual obligatoria."
+          ],
+          "startActivity": "Energía y telecomunicaciones | 2026-05-18",
+          "sourceCount": 2,
+          "sources": [
+            {
+              "family": "Red de Telecomunicaciones",
+              "chapter": "redes exteriores",
+              "context": "redes exteriores",
+              "activity": "Energía y telecomunicaciones",
+              "family_id": 47,
+              "unique_id": 176,
+              "confidence": 95,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2026-05-18",
+              "matched_rule": "nombre",
+              "why_included": "Fuente conservada desde Listado de Actividades para decisiones de contratos.",
+              "location_hint": "",
+              "clean_activity": "Energía y telecomunicaciones",
+              "intervention_hint": "",
+              "original_activity": "Energía y telecomunicaciones"
+            },
+            {
+              "family": "Red de Telecomunicaciones",
+              "chapter": "redes internas",
+              "context": "redes internas",
+              "activity": "Eléctricas y telecomunicaciones",
+              "family_id": 47,
+              "unique_id": 170,
+              "confidence": 95,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2026-05-20",
+              "matched_rule": "nombre",
+              "why_included": "Fuente conservada desde Listado de Actividades para decisiones de contratos.",
+              "location_hint": "",
+              "clean_activity": "Eléctricas y telecomunicaciones",
+              "intervention_hint": "",
+              "original_activity": "Eléctricas y telecomunicaciones"
+            }
+          ]
+        },
+        {
+          "action": "review_no_match",
+          "title": "Familia sin opción de contrato",
+          "subtitle": "Pisos y Enchapes",
+          "gate": "review",
+          "reason": "La familia detectada no tiene paquetes configurados.",
+          "blockers": [],
+          "reviewReasons": [
+            "La familia detectada no tiene paquetes configurados.",
+            "La familia no tiene paquetes contractuales configurados."
+          ],
+          "startActivity": "Enchape de baños, lavadero y cocina Nivel 5, [Capítulo: Revoque de muros en baños y buitrones y buitrones Nivel 5] | 2026-06-01",
+          "sourceCount": 1,
+          "sources": [
+            {
+              "family": "Pisos y Enchapes",
+              "chapter": "revoque de muros en baños y buitrones y buitrones nivel 5",
+              "context": "revoque de muros en baños y buitrones y buitrones nivel 5",
+              "rule_id": 102,
+              "activity": "Enchape de baños, lavadero y cocina Nivel 5, [Capítulo: Revoque de muros en baños y buitrones y buitrones Nivel 5]",
+              "family_id": 199,
+              "unique_id": 42,
+              "confidence": 92,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2026-06-01",
+              "matched_rule": "nombre",
+              "why_included": "Actividad vinculada al Programa General y familia contractual detectada.",
+              "location_hint": "Nivel 5",
+              "clean_activity": "Enchape de baños, lavadero y cocina Nivel 5,",
+              "intervention_hint": "",
+              "original_activity": "Enchape de baños, lavadero y cocina Nivel 5, [Capítulo: Revoque de muros en baños y buitrones y buitrones Nivel 5]"
+            }
+          ]
+        },
+        {
+          "action": "update_contracts",
+          "title": "Definir contratos",
+          "subtitle": "Mamposteria en Ladrillo/Bloque Interior",
+          "gate": "conflict",
+          "reason": "Familia detectada: Mamposteria en Ladrillo/Bloque Interior",
+          "blockers": [
+            "La evidencia de fuentes está incompleta."
+          ],
+          "reviewReasons": [],
+          "startActivity": "Mampostería nivel 5 | 2026-05-20",
+          "sourceCount": 11,
+          "sources": [
+            {
+              "family": "Mamposteria en Ladrillo/Bloque Interior",
+              "chapter": "Programa General",
+              "context": "Programa General",
+              "activity": "Mampostería nivel 5",
+              "family_id": 22,
+              "unique_id": 9,
+              "confidence": 92,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2026-05-20",
+              "matched_rule": "nombre",
+              "why_included": "Fuente conservada desde Listado de Actividades para decisiones de contratos.",
+              "location_hint": "nivel 5",
+              "clean_activity": "Mampostería nivel 5",
+              "intervention_hint": "",
+              "original_activity": "Mampostería nivel 5"
+            },
+            {
+              "family": "Mamposteria en Ladrillo/Bloque Interior",
+              "chapter": "Programa General",
+              "context": "Programa General",
+              "activity": "Mampostería nivel 4",
+              "family_id": 22,
+              "unique_id": 10,
+              "confidence": 92,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2026-05-26",
+              "matched_rule": "nombre",
+              "why_included": "Fuente conservada desde Listado de Actividades para decisiones de contratos.",
+              "location_hint": "nivel 4",
+              "clean_activity": "Mampostería nivel 4",
+              "intervention_hint": "",
+              "original_activity": "Mampostería nivel 4"
+            },
+            {
+              "family": "Mamposteria en Ladrillo/Bloque Interior",
+              "chapter": "Programa General",
+              "context": "Programa General",
+              "activity": "Mampostería nivel 3",
+              "family_id": 22,
+              "unique_id": 11,
+              "confidence": 92,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2026-05-31",
+              "matched_rule": "nombre",
+              "why_included": "Fuente conservada desde Listado de Actividades para decisiones de contratos.",
+              "location_hint": "nivel 3",
+              "clean_activity": "Mampostería nivel 3",
+              "intervention_hint": "",
+              "original_activity": "Mampostería nivel 3"
+            }
+          ]
+        },
+        {
+          "action": "update_contracts",
+          "title": "Definir contratos",
+          "subtitle": "Revoques y Panetes",
+          "gate": "conflict",
+          "reason": "Familia detectada: Revoques y Panetes",
+          "blockers": [
+            "La evidencia de fuentes está incompleta."
+          ],
+          "reviewReasons": [],
+          "startActivity": "Revoque de muros en baños y buitrones y buitrones Nivel 5 | 2026-05-25",
+          "sourceCount": 11,
+          "sources": [
+            {
+              "family": "Revoques y Panetes",
+              "chapter": "Programa General",
+              "context": "Programa General",
+              "activity": "Revoque de muros en baños y buitrones y buitrones Nivel 5",
+              "family_id": 25,
+              "unique_id": 31,
+              "confidence": 92,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2026-05-25",
+              "matched_rule": "nombre",
+              "why_included": "Fuente conservada desde Listado de Actividades para decisiones de contratos.",
+              "location_hint": "Nivel 5",
+              "clean_activity": "Revoque de muros en baños y buitrones y buitrones Nivel 5",
+              "intervention_hint": "",
+              "original_activity": "Revoque de muros en baños y buitrones y buitrones Nivel 5"
+            },
+            {
+              "family": "Revoques y Panetes",
+              "chapter": "Programa General",
+              "context": "Programa General",
+              "activity": "Revoque de muros en baños y buitrones Nivel 4",
+              "family_id": 25,
+              "unique_id": 32,
+              "confidence": 92,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2026-05-31",
+              "matched_rule": "nombre",
+              "why_included": "Fuente conservada desde Listado de Actividades para decisiones de contratos.",
+              "location_hint": "Nivel 4",
+              "clean_activity": "Revoque de muros en baños y buitrones Nivel 4",
+              "intervention_hint": "",
+              "original_activity": "Revoque de muros en baños y buitrones Nivel 4"
+            },
+            {
+              "family": "Revoques y Panetes",
+              "chapter": "Programa General",
+              "context": "Programa General",
+              "activity": "Revoque de muros en baños y buitrones Nivel 3",
+              "family_id": 25,
+              "unique_id": 33,
+              "confidence": 92,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2026-06-05",
+              "matched_rule": "nombre",
+              "why_included": "Fuente conservada desde Listado de Actividades para decisiones de contratos.",
+              "location_hint": "Nivel 3",
+              "clean_activity": "Revoque de muros en baños y buitrones Nivel 3",
+              "intervention_hint": "",
+              "original_activity": "Revoque de muros en baños y buitrones Nivel 3"
+            }
+          ]
+        },
+        {
+          "action": "update_contracts",
+          "title": "Definir contratos",
+          "subtitle": "Carpinteria en Madera",
+          "gate": "conflict",
+          "reason": "Familia detectada: Carpinteria en Madera",
+          "blockers": [
+            "La evidencia de fuentes está incompleta."
+          ],
+          "reviewReasons": [],
+          "startActivity": "Instalación lavadero y mueble cocina Nivel 5 | 2026-06-01",
+          "sourceCount": 10,
+          "sources": [
+            {
+              "family": "Carpinteria en Madera",
+              "chapter": "Programa General",
+              "context": "Programa General",
+              "activity": "Instalación lavadero y mueble cocina Nivel 5",
+              "family_id": 39,
+              "unique_id": 64,
+              "confidence": 92,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2026-06-01",
+              "matched_rule": "nombre",
+              "why_included": "Fuente conservada desde Listado de Actividades para decisiones de contratos.",
+              "location_hint": "Nivel 5",
+              "clean_activity": "Instalación lavadero y mueble cocina Nivel 5",
+              "intervention_hint": "",
+              "original_activity": "Instalación lavadero y mueble cocina Nivel 5"
+            },
+            {
+              "family": "Carpinteria en Madera",
+              "chapter": "Programa General",
+              "context": "Programa General",
+              "activity": "Instalación lavadero y mueble cocina Nivel 4",
+              "family_id": 39,
+              "unique_id": 65,
+              "confidence": 92,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2026-06-07",
+              "matched_rule": "nombre",
+              "why_included": "Fuente conservada desde Listado de Actividades para decisiones de contratos.",
+              "location_hint": "Nivel 4",
+              "clean_activity": "Instalación lavadero y mueble cocina Nivel 4",
+              "intervention_hint": "",
+              "original_activity": "Instalación lavadero y mueble cocina Nivel 4"
+            },
+            {
+              "family": "Carpinteria en Madera",
+              "chapter": "Programa General",
+              "context": "Programa General",
+              "activity": "Instalación lavadero y mueble cocina Nivel 3",
+              "family_id": 39,
+              "unique_id": 66,
+              "confidence": 92,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2026-06-12",
+              "matched_rule": "nombre",
+              "why_included": "Fuente conservada desde Listado de Actividades para decisiones de contratos.",
+              "location_hint": "Nivel 3",
+              "clean_activity": "Instalación lavadero y mueble cocina Nivel 3",
+              "intervention_hint": "",
+              "original_activity": "Instalación lavadero y mueble cocina Nivel 3"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "project": "Milán Campestre Torre 19",
+      "projectId": 74,
+      "week": 6,
+      "module": "pdc",
+      "runId": "run_d7f89696245dbc3f792596fb0a9099a1",
+      "total": 0,
+      "preselected": 0,
+      "ready": 0,
+      "review": 0,
+      "conflict": 0,
+      "actions": {},
+      "samples": []
+    },
+    {
+      "project": "Metrolinea Estación 16 - Edificio Ascendente",
+      "projectId": 71,
+      "week": 1,
+      "module": "listado-actividades",
+      "runId": "run_d8b0a27e7c9016dccae1878d572d34a0",
+      "total": 30,
+      "preselected": 3,
+      "ready": 3,
+      "review": 4,
+      "conflict": 23,
+      "actions": {
+        "create_activity": 8,
+        "review_no_match": 22
+      },
+      "samples": [
+        {
+          "action": "create_activity",
+          "title": "Crear actividad consolidada",
+          "subtitle": "Red Eléctrica",
+          "gate": "ready",
+          "reason": "Familia detectada: Red Eléctrica",
+          "blockers": [],
+          "reviewReasons": [],
+          "startActivity": "Instalacion malla puesta a tierra, [Capítulo:Zona 1 (EJE A-B+ 1/3), Vigas de cimentación y placa cimentación, Placa de cimentación, SOTANO, EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION] | 2026-01-07",
+          "sourceCount": 5,
+          "sources": [
+            {
+              "family": "Red Eléctrica",
+              "chapter": "zona 1 (eje a-b+ 1/3), vigas de cimentación y placa cimentación, placa de cimentación, sotano, edificio ascendente, etapa de construccion",
+              "context": "zona 1 (eje a-b+ 1/3), vigas de cimentación y placa cimentación, placa de cimentación, sotano, edificio ascendente, etapa de construccion",
+              "rule_id": 109,
+              "activity": "Instalacion malla puesta a tierra, [Capítulo:Zona 1 (EJE A-B+ 1/3), Vigas de cimentación y placa cimentación, Placa de cimentación, SOTANO, EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION]",
+              "family_id": 46,
+              "unique_id": 131,
+              "confidence": 92,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2026-01-07",
+              "matched_rule": "nombre",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "Zona 1 (EJE A-B+ 1/3",
+              "clean_activity": "Instalacion malla puesta a tierra,",
+              "intervention_hint": "",
+              "original_activity": "Instalacion malla puesta a tierra, [Capítulo:Zona 1 (EJE A-B+ 1/3), Vigas de cimentación y placa cimentación, Placa de cimentación, SOTANO, EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION]"
+            },
+            {
+              "family": "Red Eléctrica",
+              "chapter": "zona 2 (b+1/3-c+1/3), vigas de cimentación y placa cimentación, placa de cimentación, sotano, edificio ascendente, etapa de construccion",
+              "context": "zona 2 (b+1/3-c+1/3), vigas de cimentación y placa cimentación, placa de cimentación, sotano, edificio ascendente, etapa de construccion",
+              "rule_id": 109,
+              "activity": "Instalacion malla puesta a tierra, [Capítulo:Zona 2 (B+1/3-C+1/3), Vigas de cimentación y placa cimentación, Placa de cimentación, SOTANO, EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION]",
+              "family_id": 46,
+              "unique_id": 138,
+              "confidence": 92,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2026-02-17",
+              "matched_rule": "nombre",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "Zona 2 (B+1/3-C+1/3",
+              "clean_activity": "Instalacion malla puesta a tierra,",
+              "intervention_hint": "",
+              "original_activity": "Instalacion malla puesta a tierra, [Capítulo:Zona 2 (B+1/3-C+1/3), Vigas de cimentación y placa cimentación, Placa de cimentación, SOTANO, EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION]"
+            },
+            {
+              "family": "Red Eléctrica",
+              "chapter": "zona 3 (c+1/3-d+1/3), vigas de cimentación y placa cimentación, placa de cimentación, sotano, edificio ascendente, etapa de construccion",
+              "context": "zona 3 (c+1/3-d+1/3), vigas de cimentación y placa cimentación, placa de cimentación, sotano, edificio ascendente, etapa de construccion",
+              "rule_id": 109,
+              "activity": "Instalacion malla puesta a tierra, [Capítulo:Zona 3 (C+1/3-D+1/3), Vigas de cimentación y placa cimentación, Placa de cimentación, SOTANO, EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION]",
+              "family_id": 46,
+              "unique_id": 146,
+              "confidence": 92,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2026-03-25",
+              "matched_rule": "nombre",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "Zona 3 (C+1/3-D+1/3",
+              "clean_activity": "Instalacion malla puesta a tierra,",
+              "intervention_hint": "",
+              "original_activity": "Instalacion malla puesta a tierra, [Capítulo:Zona 3 (C+1/3-D+1/3), Vigas de cimentación y placa cimentación, Placa de cimentación, SOTANO, EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION]"
+            }
+          ]
+        },
+        {
+          "action": "create_activity",
+          "title": "Crear actividad consolidada",
+          "subtitle": "Carpinteria Metalica",
+          "gate": "ready",
+          "reason": "Familia detectada: Carpinteria Metalica",
+          "blockers": [],
+          "reviewReasons": [],
+          "startActivity": "Estructura metálica, [Capítulo:Piso 1 (eje B a D), Escaleras con Estructura Metalica, Modulo 1.1, ESCALERAS Y RAMPAS, ESTRUCTURA EN CONCRETO, EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION] | 2025-08-15",
+          "sourceCount": 5,
+          "sources": [
+            {
+              "family": "Carpinteria Metalica",
+              "chapter": "piso 1 (eje b a d), escaleras con estructura metalica, modulo 1.1, escaleras y rampas, estructura en concreto, edificio ascendente, etapa de construccion",
+              "context": "piso 1 (eje b a d), escaleras con estructura metalica, modulo 1.1, escaleras y rampas, estructura en concreto, edificio ascendente, etapa de construccion",
+              "rule_id": 41,
+              "activity": "Estructura metálica, [Capítulo:Piso 1 (eje B a D), Escaleras con Estructura Metalica, Modulo 1.1, ESCALERAS Y RAMPAS, ESTRUCTURA EN CONCRETO, EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION]",
+              "family_id": 40,
+              "unique_id": 566,
+              "confidence": 90,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2025-08-15",
+              "matched_rule": "nombre",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "Piso 1",
+              "clean_activity": "Estructura metálica,",
+              "intervention_hint": "",
+              "original_activity": "Estructura metálica, [Capítulo:Piso 1 (eje B a D), Escaleras con Estructura Metalica, Modulo 1.1, ESCALERAS Y RAMPAS, ESTRUCTURA EN CONCRETO, EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION]"
+            },
+            {
+              "family": "Carpinteria Metalica",
+              "chapter": "piso 2 (eje b a d), escaleras con estructura metalica, modulo 1.1, escaleras y rampas, estructura en concreto, edificio ascendente, etapa de construccion",
+              "context": "piso 2 (eje b a d), escaleras con estructura metalica, modulo 1.1, escaleras y rampas, estructura en concreto, edificio ascendente, etapa de construccion",
+              "rule_id": 41,
+              "activity": "Estructura metálica, [Capítulo:Piso 2 (eje B a D), Escaleras con Estructura Metalica, Modulo 1.1, ESCALERAS Y RAMPAS, ESTRUCTURA EN CONCRETO, EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION]",
+              "family_id": 40,
+              "unique_id": 569,
+              "confidence": 90,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2025-09-17",
+              "matched_rule": "nombre",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "Piso 2",
+              "clean_activity": "Estructura metálica,",
+              "intervention_hint": "",
+              "original_activity": "Estructura metálica, [Capítulo:Piso 2 (eje B a D), Escaleras con Estructura Metalica, Modulo 1.1, ESCALERAS Y RAMPAS, ESTRUCTURA EN CONCRETO, EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION]"
+            },
+            {
+              "family": "Carpinteria Metalica",
+              "chapter": "piso 1 (eje j a l), escaleras con estructura metalica, modulo 2.1, escaleras y rampas, estructura en concreto, edificio ascendente, etapa de construccion",
+              "context": "piso 1 (eje j a l), escaleras con estructura metalica, modulo 2.1, escaleras y rampas, estructura en concreto, edificio ascendente, etapa de construccion",
+              "rule_id": 41,
+              "activity": "Estructura metálica, [Capítulo:Piso 1 (eje J a L), Escaleras con Estructura Metalica, Modulo 2.1, ESCALERAS Y RAMPAS, ESTRUCTURA EN CONCRETO, EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION]",
+              "family_id": 40,
+              "unique_id": 591,
+              "confidence": 90,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2026-07-16",
+              "matched_rule": "nombre",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "Piso 1",
+              "clean_activity": "Estructura metálica,",
+              "intervention_hint": "",
+              "original_activity": "Estructura metálica, [Capítulo:Piso 1 (eje J a L), Escaleras con Estructura Metalica, Modulo 2.1, ESCALERAS Y RAMPAS, ESTRUCTURA EN CONCRETO, EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION]"
+            }
+          ]
+        },
+        {
+          "action": "create_activity",
+          "title": "Crear actividad consolidada",
+          "subtitle": "Muros de Contencion",
+          "gate": "ready",
+          "reason": "Familia detectada: Muros de Contencion",
+          "blockers": [],
+          "reviewReasons": [],
+          "startActivity": "Descabece de pantallas, [Capítulo:Eje 1 (A-C) (24m), PANTALLA COSTADO OCCIDENTAL - VIGA CABEZAL, PRELIMINARES ED. ASCENDENTE] | 2025-09-01",
+          "sourceCount": 8,
+          "sources": [
+            {
+              "family": "Muros de Contencion",
+              "chapter": "eje 1 (a-c) (24m), pantalla costado occidental - viga cabezal, preliminares ed. ascendente",
+              "context": "eje 1 (a-c) (24m), pantalla costado occidental - viga cabezal, preliminares ed. ascendente",
+              "rule_id": 86,
+              "activity": "Descabece de pantallas, [Capítulo:Eje 1 (A-C) (24m), PANTALLA COSTADO OCCIDENTAL - VIGA CABEZAL, PRELIMINARES ED. ASCENDENTE]",
+              "family_id": 17,
+              "unique_id": 28,
+              "confidence": 88,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2025-09-01",
+              "matched_rule": "nombre",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "Eje 1",
+              "clean_activity": "Descabece de pantallas,",
+              "intervention_hint": "24m",
+              "original_activity": "Descabece de pantallas, [Capítulo:Eje 1 (A-C) (24m), PANTALLA COSTADO OCCIDENTAL - VIGA CABEZAL, PRELIMINARES ED. ASCENDENTE]"
+            },
+            {
+              "family": "Muros de Contencion",
+              "chapter": "eje a (1-3) (29m), pantalla costado sur - viga cabezal, preliminares ed. ascendente",
+              "context": "eje a (1-3) (29m), pantalla costado sur - viga cabezal, preliminares ed. ascendente",
+              "rule_id": 86,
+              "activity": "Descabece de pantallas, [Capítulo:Eje A (1-3) (29m), PANTALLA COSTADO SUR - VIGA CABEZAL, PRELIMINARES ED. ASCENDENTE]",
+              "family_id": 17,
+              "unique_id": 19,
+              "confidence": 88,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2025-09-01",
+              "matched_rule": "nombre",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "Eje A",
+              "clean_activity": "Descabece de pantallas,",
+              "intervention_hint": "29m",
+              "original_activity": "Descabece de pantallas, [Capítulo:Eje A (1-3) (29m), PANTALLA COSTADO SUR - VIGA CABEZAL, PRELIMINARES ED. ASCENDENTE]"
+            },
+            {
+              "family": "Muros de Contencion",
+              "chapter": "eje 1 (c-h) (52m), pantalla costado occidental - viga cabezal, preliminares ed. ascendente",
+              "context": "eje 1 (c-h) (52m), pantalla costado occidental - viga cabezal, preliminares ed. ascendente",
+              "rule_id": 86,
+              "activity": "Descabece de pantallas, [Capítulo:Eje 1 (C-H) (52m), PANTALLA COSTADO OCCIDENTAL - VIGA CABEZAL, PRELIMINARES ED. ASCENDENTE]",
+              "family_id": 17,
+              "unique_id": 35,
+              "confidence": 88,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2025-09-09",
+              "matched_rule": "nombre",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "Eje 1",
+              "clean_activity": "Descabece de pantallas,",
+              "intervention_hint": "52m",
+              "original_activity": "Descabece de pantallas, [Capítulo:Eje 1 (C-H) (52m), PANTALLA COSTADO OCCIDENTAL - VIGA CABEZAL, PRELIMINARES ED. ASCENDENTE]"
+            }
+          ]
+        },
+        {
+          "action": "create_activity",
+          "title": "Crear actividad consolidada",
+          "subtitle": "Estructura en Concreto",
+          "gate": "conflict",
+          "reason": "Familia detectada: Estructura en Concreto",
+          "blockers": [
+            "Incluye actividades con diseño pendiente."
+          ],
+          "reviewReasons": [
+            "La familia es amplia y contiene entregables distintos."
+          ],
+          "startActivity": "Acero (Eje L-K), [Capítulo:Construccion Losa (Eje K-M) Area 765 m2, Módulo 2.2 Eje K-M, Losa P1 (ACCESO), ESTRUCTURA EN CONCRETO, EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION] | 2025-08-15",
+          "sourceCount": 248,
+          "sources": [
+            {
+              "family": "Estructura en Concreto",
+              "chapter": "construccion losa (eje k-m) area 765 m2, módulo 2.2 eje k-m, losa p1 (acceso), estructura en concreto, edificio ascendente, etapa de construccion",
+              "context": "construccion losa (eje k-m) area 765 m2, módulo 2.2 eje k-m, losa p1 (acceso), estructura en concreto, edificio ascendente, etapa de construccion",
+              "rule_id": 19,
+              "activity": "Acero (Eje L-K), [Capítulo:Construccion Losa (Eje K-M) Area 765 m2, Módulo 2.2 Eje K-M, Losa P1 (ACCESO), ESTRUCTURA EN CONCRETO, EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION]",
+              "family_id": 18,
+              "unique_id": 345,
+              "confidence": 93,
+              "matched_by": "breadcrumb",
+              "risk_flags": [],
+              "start_date": "2025-08-15",
+              "matched_rule": "breadcrumb",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "ETAPA DE CONSTRUCCION",
+              "clean_activity": "Acero (Eje L-K),",
+              "intervention_hint": "",
+              "original_activity": "Acero (Eje L-K), [Capítulo:Construccion Losa (Eje K-M) Area 765 m2, Módulo 2.2 Eje K-M, Losa P1 (ACCESO), ESTRUCTURA EN CONCRETO, EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION]"
+            },
+            {
+              "family": "Estructura en Concreto",
+              "chapter": "construccion losa (eje k-m) area 765 m2, módulo 2.2 eje k-m, losa p1 (acceso), estructura en concreto, edificio ascendente, etapa de construccion",
+              "context": "construccion losa (eje k-m) area 765 m2, módulo 2.2 eje k-m, losa p1 (acceso), estructura en concreto, edificio ascendente, etapa de construccion",
+              "rule_id": 19,
+              "activity": "Aligerante (Eje L-K), [Capítulo:Construccion Losa (Eje K-M) Area 765 m2, Módulo 2.2 Eje K-M, Losa P1 (ACCESO), ESTRUCTURA EN CONCRETO, EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION]",
+              "family_id": 18,
+              "unique_id": 347,
+              "confidence": 93,
+              "matched_by": "breadcrumb",
+              "risk_flags": [],
+              "start_date": "2025-08-15",
+              "matched_rule": "breadcrumb",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "ETAPA DE CONSTRUCCION",
+              "clean_activity": "Aligerante (Eje L-K),",
+              "intervention_hint": "",
+              "original_activity": "Aligerante (Eje L-K), [Capítulo:Construccion Losa (Eje K-M) Area 765 m2, Módulo 2.2 Eje K-M, Losa P1 (ACCESO), ESTRUCTURA EN CONCRETO, EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION]"
+            },
+            {
+              "family": "Estructura en Concreto",
+              "chapter": "construccion losa (eje k-m) area 765 m2, módulo 2.2 eje k-m, losa p1 (acceso), estructura en concreto, edificio ascendente, etapa de construccion",
+              "context": "construccion losa (eje k-m) area 765 m2, módulo 2.2 eje k-m, losa p1 (acceso), estructura en concreto, edificio ascendente, etapa de construccion",
+              "rule_id": 19,
+              "activity": "Cama (Eje L-K), [Capítulo:Construccion Losa (Eje K-M) Area 765 m2, Módulo 2.2 Eje K-M, Losa P1 (ACCESO), ESTRUCTURA EN CONCRETO, EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION]",
+              "family_id": 18,
+              "unique_id": 343,
+              "confidence": 93,
+              "matched_by": "breadcrumb",
+              "risk_flags": [],
+              "start_date": "2025-08-15",
+              "matched_rule": "breadcrumb",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "ETAPA DE CONSTRUCCION",
+              "clean_activity": "Cama (Eje L-K),",
+              "intervention_hint": "",
+              "original_activity": "Cama (Eje L-K), [Capítulo:Construccion Losa (Eje K-M) Area 765 m2, Módulo 2.2 Eje K-M, Losa P1 (ACCESO), ESTRUCTURA EN CONCRETO, EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION]"
+            }
+          ]
+        },
+        {
+          "action": "create_activity",
+          "title": "Crear actividad consolidada",
+          "subtitle": "Estabilización del Suelo",
+          "gate": "review",
+          "reason": "Familia detectada: Estabilización del Suelo",
+          "blockers": [],
+          "reviewReasons": [
+            "La agrupación mezcla naturalezas de trabajo.",
+            "La familia es amplia y contiene entregables distintos.",
+            "La agrupación mezcla modalidades operativas o contractuales."
+          ],
+          "startActivity": "Liberación y Entrega por parte de ML1 de área de trabajo 1 (Eje A a F). Finalizacion hincado PILOTES S1 S2 Y S3 + 6 DIAS DE DISIPACION, [Capítulo:ACTA DE INICIO , EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION] | 2025-12-12",
+          "sourceCount": 13,
+          "sources": [
+            {
+              "family": "Estabilización del Suelo",
+              "chapter": "acta de inicio , edificio ascendente, etapa de construccion",
+              "context": "acta de inicio , edificio ascendente, etapa de construccion",
+              "rule_id": 175,
+              "activity": "Liberación y Entrega por parte de ML1 de área de trabajo 1 (Eje A a F). Finalizacion hincado PILOTES S1 S2 Y S3 + 6 DIAS DE DISIPACION, [Capítulo:ACTA DE INICIO , EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION]",
+              "family_id": 204,
+              "unique_id": 82,
+              "confidence": 92,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2025-12-12",
+              "matched_rule": "nombre",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "ETAPA DE CONSTRUCCION",
+              "clean_activity": "Liberación y Entrega por parte de ML1 de área de trabajo 1 (Eje A a F). Finalizacion hincado PILOTES S1 S2 Y S3 + 6 DIAS DE DISIPACION,",
+              "intervention_hint": "",
+              "original_activity": "Liberación y Entrega por parte de ML1 de área de trabajo 1 (Eje A a F). Finalizacion hincado PILOTES S1 S2 Y S3 + 6 DIAS DE DISIPACION, [Capítulo:ACTA DE INICIO , EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION]"
+            },
+            {
+              "family": "Estabilización del Suelo",
+              "chapter": "campamentos y torre gruas, preliminares ed. ascendente",
+              "context": "campamentos y torre gruas, preliminares ed. ascendente",
+              "rule_id": 175,
+              "activity": "Descabece de pilotes, [Capítulo:CAMPAMENTOS Y TORRE GRUAS, PRELIMINARES ED. ASCENDENTE]",
+              "family_id": 204,
+              "unique_id": 13,
+              "confidence": 92,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2025-12-29",
+              "matched_rule": "nombre",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "TORRE GRUAS",
+              "clean_activity": "Descabece de pilotes,",
+              "intervention_hint": "",
+              "original_activity": "Descabece de pilotes, [Capítulo:CAMPAMENTOS Y TORRE GRUAS, PRELIMINARES ED. ASCENDENTE]"
+            },
+            {
+              "family": "Estabilización del Suelo",
+              "chapter": "acta de inicio , edificio ascendente, etapa de construccion",
+              "context": "acta de inicio , edificio ascendente, etapa de construccion",
+              "rule_id": 175,
+              "activity": "Liberación y Entrega por parte de ML1 de área de trabajo 2 (Eje F a M) Finalización hincado PILOTES S4 S5 Y S6 + 6 DIAS DE DISIPACION, [Capítulo:ACTA DE INICIO , EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION]",
+              "family_id": 204,
+              "unique_id": 83,
+              "confidence": 92,
+              "matched_by": "nombre",
+              "risk_flags": [],
+              "start_date": "2026-01-13",
+              "matched_rule": "nombre",
+              "why_included": "Coincide con la familia detectada y la llave operativa de agrupación.",
+              "location_hint": "ETAPA DE CONSTRUCCION",
+              "clean_activity": "Liberación y Entrega por parte de ML1 de área de trabajo 2 (Eje F a M) Finalización hincado PILOTES S4 S5 Y S6 + 6 DIAS DE DISIPACION,",
+              "intervention_hint": "",
+              "original_activity": "Liberación y Entrega por parte de ML1 de área de trabajo 2 (Eje F a M) Finalización hincado PILOTES S4 S5 Y S6 + 6 DIAS DE DISIPACION, [Capítulo:ACTA DE INICIO , EDIFICIO ASCENDENTE, ETAPA DE CONSTRUCCION]"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "project": "Metrolinea Estación 16 - Edificio Ascendente",
+      "projectId": 71,
+      "week": 1,
+      "module": "contratos",
+      "runId": "run_052bb2d3f2fb965a9d773436e3c6a2e8",
+      "total": 0,
+      "preselected": 0,
+      "ready": 0,
+      "review": 0,
+      "conflict": 0,
+      "actions": {},
+      "samples": []
+    },
+    {
+      "project": "Metrolinea Estación 16 - Edificio Ascendente",
+      "projectId": 71,
+      "week": 1,
+      "module": "pdc",
+      "runId": "run_3873f2f49f15bbd679963e9ec994ff5e",
+      "total": 0,
+      "preselected": 0,
+      "ready": 0,
+      "review": 0,
+      "conflict": 0,
+      "actions": {},
+      "samples": []
+    }
+  ],
+  "verificationText": "68\tlistado-actividades\t7\trun_e78b862d346abd44459c858a0acfeb12\t434\t0\t434\t0\t0\t434\n68\tcontratos\t7\trun_e0ea997e5ed6e033253f9ef92d7cc169\t2\t1\t2\t1\t1\t0\n68\tpdc\t7\trun_a390753f86bf73f0b6e0e7339e842a8f\t29\t0\t29\t0\t29\t0\n71\tlistado-actividades\t1\trun_d8b0a27e7c9016dccae1878d572d34a0\t30\t3\t30\t3\t4\t23\n71\tcontratos\t1\trun_052bb2d3f2fb965a9d773436e3c6a2e8\t0\t0\t0\t0\t0\t0\n71\tpdc\t1\trun_3873f2f49f15bbd679963e9ec994ff5e\t0\t0\t0\t0\t0\t0\n73\tlistado-actividades\t1\trun_ea731a525b1f9afc0ae0cb8ba246be61\t34\t10\t34\t10\t10\t14\n73\tcontratos\t1\trun_3e84fbab17c59c5ee57e1fdaeb5d693b\t0\t0\t0\t0\t0\t0\n73\tpdc\t1\trun_6c184b8f337038ee9fcee2b1464457e1\t0\t0\t0\t0\t0\t0\n74\tlistado-actividades\t6\trun_e58546ad0abae25faffd86319f1bac12\t12\t0\t12\t0\t0\t12\n74\tcontratos\t6\trun_518d6674d07d28c3606520d1fbe6ae1b\t15\t0\t15\t0\t1\t14\n74\tpdc\t6\trun_d7f89696245dbc3f792596fb0a9099a1\t0\t0\t0\t0\t0\t0"
+}

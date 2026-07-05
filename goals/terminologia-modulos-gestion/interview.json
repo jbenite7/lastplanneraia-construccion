@@ -1,0 +1,399 @@
+{
+  "stage": "interview",
+  "title": "Terminologia de modulos de gestion",
+  "goalSlug": "terminologia-modulos-gestion",
+  "questions": [
+    {
+      "id": "term_actividades",
+      "prompt": "Termino actual: \"Actividades\". Nombre final para el modulo/pestana principal.",
+      "description": "Aparece en breadcrumb, pestanas y acceso al listado base.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Mantener \"Actividades\" porque es conocido y directo para obra.",
+      "recommendedOptionIds": ["mantener_actividades"],
+      "options": [
+        { "id": "mantener_actividades", "label": "Actividades" },
+        { "id": "actividades_proyecto", "label": "Actividades del proyecto" },
+        { "id": "frentes_trabajo", "label": "Frentes de trabajo" }
+      ],
+      "required": true
+    },
+    {
+      "id": "term_actividad",
+      "prompt": "Termino actual: \"Actividad\". Nombre final cuando se habla de una fila o registro individual.",
+      "description": "Aparece en Nueva Actividad, columna Actividad y titulo de formulario.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Usar \"Actividad del proyecto\" cuando haga falta contexto; mantener \"Actividad\" en espacios cortos.",
+      "recommendedOptionIds": ["actividad_contextual"],
+      "options": [
+        { "id": "actividad_contextual", "label": "Actividad del proyecto" },
+        { "id": "mantener_actividad", "label": "Actividad" },
+        { "id": "frente_trabajo", "label": "Frente de trabajo" }
+      ],
+      "required": true
+    },
+    {
+      "id": "term_listado",
+      "prompt": "Termino actual: \"Listado\". Nombre final para la accion de auto-generar.",
+      "description": "Aparece en Auto-generar Listado.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Cambiar a \"actividades\" para evitar una palabra interna y hacer clara la accion.",
+      "recommendedOptionIds": ["auto_generar_actividades"],
+      "options": [
+        { "id": "auto_generar_actividades", "label": "Auto-generar actividades" },
+        { "id": "auto_generar_listado", "label": "Auto-generar listado" },
+        { "id": "generar_base", "label": "Generar base de actividades" }
+      ],
+      "required": true
+    },
+    {
+      "id": "term_contratos",
+      "prompt": "Termino actual: \"Contratos\". Nombre final para el modulo/pestana y flujo.",
+      "description": "Aparece como pestana, breadcrumb, boton Auto-Definir y titulo de modal.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Usar \"Contratacion\" para el flujo completo; reservar \"contrato\" para documentos o acuerdos reales.",
+      "recommendedOptionIds": ["contratacion"],
+      "options": [
+        { "id": "contratacion", "label": "Contratacion" },
+        { "id": "mantener_contratos", "label": "Contratos" },
+        { "id": "paquetes_contratacion", "label": "Paquetes de contratacion" }
+      ],
+      "required": true
+    },
+    {
+      "id": "term_plan_compras",
+      "prompt": "Termino actual: \"Plan de Compras\". Nombre final para el modulo PDC.",
+      "description": "Aparece como pestana y titulo del modulo /pdc/.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Usar \"Plan de Contratacion y Compras\" si el modulo controla compras y contratacion.",
+      "recommendedOptionIds": ["plan_contratacion_compras"],
+      "options": [
+        { "id": "plan_contratacion_compras", "label": "Plan de Contratacion y Compras" },
+        { "id": "mantener_plan_compras", "label": "Plan de Compras" },
+        { "id": "plan_abastecimiento", "label": "Plan de Abastecimiento" }
+      ],
+      "required": true
+    },
+    {
+      "id": "term_actividad_inicio_programa",
+      "prompt": "Termino actual: \"Actividad de Inicio En Programa\". Nombre final para esa columna.",
+      "description": "Relaciona la actividad con el punto de inicio en el programa general.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Usar \"Inicio segun programa\" por claridad y menor longitud.",
+      "recommendedOptionIds": ["inicio_segun_programa"],
+      "options": [
+        { "id": "inicio_segun_programa", "label": "Inicio segun programa" },
+        { "id": "actividad_inicio_programa", "label": "Actividad de inicio en programa" },
+        { "id": "referencia_programa", "label": "Referencia del programa" }
+      ],
+      "required": true
+    },
+    {
+      "id": "term_tipo_contrato",
+      "prompt": "Termino actual: \"Tipo de Contrato\". Nombre final para clasificar mano de obra, suministro, orden de compra, etc.",
+      "description": "Aparece en tablas de actividades, contratacion y PDC.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Usar \"Modalidad de contratacion\" porque describe la forma de ejecutar/comprar sin prometer un contrato legal.",
+      "recommendedOptionIds": ["modalidad_contratacion"],
+      "options": [
+        { "id": "modalidad_contratacion", "label": "Modalidad de contratacion" },
+        { "id": "tipo_contrato", "label": "Tipo de contrato" },
+        { "id": "tipo_gestion", "label": "Tipo de gestion" }
+      ],
+      "required": true
+    },
+    {
+      "id": "term_paquetes_asociados",
+      "prompt": "Termino actual: \"Paquetes de Contratacion Asociados\". Nombre final para esa columna.",
+      "description": "Lista los paquetes vinculados a una actividad.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Usar \"Paquetes asociados\" para reducir ruido sin perder significado.",
+      "recommendedOptionIds": ["paquetes_asociados"],
+      "options": [
+        { "id": "paquetes_asociados", "label": "Paquetes asociados" },
+        { "id": "paquetes_contratacion_asociados", "label": "Paquetes de contratacion asociados" },
+        { "id": "alcance_contratado", "label": "Alcance contratado" }
+      ],
+      "required": true
+    },
+    {
+      "id": "term_orden_compra",
+      "prompt": "Termino actual: \"Orden de Compra\". Nombre final para esta modalidad.",
+      "description": "Aparece como opcion y etiqueta junto a mano de obra y suministro.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Mantener \"Orden de Compra\" si corresponde al documento real usado por la empresa.",
+      "recommendedOptionIds": ["mantener_orden_compra"],
+      "options": [
+        { "id": "mantener_orden_compra", "label": "Orden de Compra" },
+        { "id": "compra_directa", "label": "Compra directa" },
+        { "id": "orden_servicio_compra", "label": "Orden de servicio/compra" }
+      ],
+      "required": true
+    },
+    {
+      "id": "term_contratos_mano_obra",
+      "prompt": "Termino actual: \"Contratos de Mano de Obra\". Nombre final para el bloque dentro del modal.",
+      "description": "Encabeza la seccion donde se asignan paquetes de mano de obra.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Usar \"Paquetes de mano de obra\" si no se estan creando contratos legales.",
+      "recommendedOptionIds": ["paquetes_mano_obra"],
+      "options": [
+        { "id": "paquetes_mano_obra", "label": "Paquetes de mano de obra" },
+        { "id": "contratos_mano_obra", "label": "Contratos de mano de obra" },
+        { "id": "alcances_mano_obra", "label": "Alcances de mano de obra" }
+      ],
+      "required": true
+    },
+    {
+      "id": "term_paquete_contratacion",
+      "prompt": "Termino actual: \"Paquete de Contratacion\". Nombre final para el selector de paquete.",
+      "description": "Aparece como columna/campo donde se escoge el paquete especifico.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Mantener \"Paquete de contratacion\" porque identifica bien la unidad agrupadora.",
+      "recommendedOptionIds": ["mantener_paquete_contratacion"],
+      "options": [
+        { "id": "mantener_paquete_contratacion", "label": "Paquete de contratacion" },
+        { "id": "paquete", "label": "Paquete" },
+        { "id": "alcance", "label": "Alcance" }
+      ],
+      "required": true
+    },
+    {
+      "id": "term_contratos_cantidad",
+      "prompt": "Termino actual: \"Contratos\" como campo numerico. Nombre final para esa cantidad.",
+      "description": "En el modal parece representar cantidad, no el modulo ni un contrato legal.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Cambiar a \"Cantidad\" para eliminar la ambiguedad.",
+      "recommendedOptionIds": ["cantidad"],
+      "options": [
+        { "id": "cantidad", "label": "Cantidad" },
+        { "id": "numero_paquetes", "label": "N. paquetes" },
+        { "id": "cantidad_contratos", "label": "Cantidad de contratos" }
+      ],
+      "required": true
+    },
+    {
+      "id": "term_insumo_recurso",
+      "prompt": "Termino actual: \"Insumo / Recurso\". Nombre final para ese campo.",
+      "description": "Campo libre asociado al paquete o modalidad.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Mantener \"Insumo / Recurso\" porque es comprensible y amplio.",
+      "recommendedOptionIds": ["mantener_insumo_recurso"],
+      "options": [
+        { "id": "mantener_insumo_recurso", "label": "Insumo / Recurso" },
+        { "id": "recurso", "label": "Recurso" },
+        { "id": "insumo", "label": "Insumo" }
+      ],
+      "required": true
+    },
+    {
+      "id": "term_solo_alertas",
+      "prompt": "Termino actual: \"Solo Alertas\". Nombre final para el filtro.",
+      "description": "Boton que reduce la vista del PDC a registros con alerta.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Mantener \"Solo alertas\" por ser accion clara y corta.",
+      "recommendedOptionIds": ["mantener_solo_alertas"],
+      "options": [
+        { "id": "mantener_solo_alertas", "label": "Solo alertas" },
+        { "id": "ver_alertas", "label": "Ver alertas" },
+        { "id": "filtrar_alertas", "label": "Filtrar alertas" }
+      ],
+      "required": true
+    },
+    {
+      "id": "term_datos_faltantes",
+      "prompt": "Termino actual: \"Datos Faltantes\". Nombre final para ese estado.",
+      "description": "Chip de estado/resumen en PDC.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Mantener \"Datos faltantes\" porque indica accion requerida sin tecnicismo.",
+      "recommendedOptionIds": ["mantener_datos_faltantes"],
+      "options": [
+        { "id": "mantener_datos_faltantes", "label": "Datos faltantes" },
+        { "id": "informacion_pendiente", "label": "Informacion pendiente" },
+        { "id": "por_completar", "label": "Por completar" }
+      ],
+      "required": true
+    },
+    {
+      "id": "term_critico_no_iniciado",
+      "prompt": "Termino actual: \"Critico (No Iniciado)\". Nombre final para ese estado.",
+      "description": "Chip de alerta para procesos que ya deberian haber iniciado.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Usar \"Critico sin iniciar\" para que sea mas directo y menos parentetico.",
+      "recommendedOptionIds": ["critico_sin_iniciar"],
+      "options": [
+        { "id": "critico_sin_iniciar", "label": "Critico sin iniciar" },
+        { "id": "critico_no_iniciado", "label": "Critico (No iniciado)" },
+        { "id": "vencido_sin_iniciar", "label": "Vencido sin iniciar" }
+      ],
+      "required": true
+    },
+    {
+      "id": "term_atrasado",
+      "prompt": "Termino actual: \"Atrasado\". Nombre final para ese estado.",
+      "description": "Chip de resumen y etiqueta de estado.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Mantener \"Atrasado\" porque es claro para obra.",
+      "recommendedOptionIds": ["mantener_atrasado"],
+      "options": [
+        { "id": "mantener_atrasado", "label": "Atrasado" },
+        { "id": "en_retraso", "label": "En retraso" },
+        { "id": "fuera_fecha", "label": "Fuera de fecha" }
+      ],
+      "required": true
+    },
+    {
+      "id": "term_terminado_retraso",
+      "prompt": "Termino actual: \"Terminado con Retraso\". Nombre final para ese estado.",
+      "description": "Chip de resumen del PDC.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Mantener \"Terminado con retraso\" porque diferencia cierre tardio de atraso abierto.",
+      "recommendedOptionIds": ["mantener_terminado_retraso"],
+      "options": [
+        { "id": "mantener_terminado_retraso", "label": "Terminado con retraso" },
+        { "id": "cerrado_con_retraso", "label": "Cerrado con retraso" },
+        { "id": "finalizado_tarde", "label": "Finalizado tarde" }
+      ],
+      "required": true
+    },
+    {
+      "id": "term_terminado_tiempo",
+      "prompt": "Termino actual: \"Terminado a Tiempo\". Nombre final para ese estado.",
+      "description": "Chip de resumen del PDC.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Mantener \"Terminado a tiempo\" porque es claro.",
+      "recommendedOptionIds": ["mantener_terminado_tiempo"],
+      "options": [
+        { "id": "mantener_terminado_tiempo", "label": "Terminado a tiempo" },
+        { "id": "cerrado_a_tiempo", "label": "Cerrado a tiempo" },
+        { "id": "finalizado_a_tiempo", "label": "Finalizado a tiempo" }
+      ],
+      "required": true
+    },
+    {
+      "id": "term_en_curso",
+      "prompt": "Termino actual: \"En Curso\". Nombre final para ese estado.",
+      "description": "Chip de resumen y texto de estado en filas.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Mantener \"En curso\" porque es breve y familiar.",
+      "recommendedOptionIds": ["mantener_en_curso"],
+      "options": [
+        { "id": "mantener_en_curso", "label": "En curso" },
+        { "id": "en_proceso", "label": "En proceso" },
+        { "id": "activo", "label": "Activo" }
+      ],
+      "required": true
+    },
+    {
+      "id": "term_no_iniciado",
+      "prompt": "Termino actual: \"No Iniciado\". Nombre final para ese estado.",
+      "description": "Chip de resumen del PDC.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Mantener \"No iniciado\" por claridad.",
+      "recommendedOptionIds": ["mantener_no_iniciado"],
+      "options": [
+        { "id": "mantener_no_iniciado", "label": "No iniciado" },
+        { "id": "pendiente_inicio", "label": "Pendiente de inicio" },
+        { "id": "sin_iniciar", "label": "Sin iniciar" }
+      ],
+      "required": true
+    },
+    {
+      "id": "term_actividades_proyecto_columna",
+      "prompt": "Termino actual: \"Actividades del Proyecto\". Nombre final para la columna en PDC.",
+      "description": "Columna que muestra la actividad asociada al paquete de contratacion.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Usar \"Actividad asociada\" para evitar repetir el nombre del modulo.",
+      "recommendedOptionIds": ["actividad_asociada"],
+      "options": [
+        { "id": "actividad_asociada", "label": "Actividad asociada" },
+        { "id": "actividades_proyecto", "label": "Actividades del proyecto" },
+        { "id": "actividad_del_proyecto", "label": "Actividad del proyecto" }
+      ],
+      "required": true
+    },
+    {
+      "id": "term_a_tiempo_atrasado",
+      "prompt": "Termino actual: \"A Tiempo / Atrasado\". Nombre final para la columna de evaluacion.",
+      "description": "Columna que muestra si el proceso va bien, atrasado o con datos faltantes.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Usar \"Estado del proceso\" porque no todos los valores son solo a tiempo o atrasado.",
+      "recommendedOptionIds": ["estado_proceso"],
+      "options": [
+        { "id": "estado_proceso", "label": "Estado del proceso" },
+        { "id": "a_tiempo_atrasado", "label": "A tiempo / atrasado" },
+        { "id": "cumplimiento_fecha", "label": "Cumplimiento de fecha" }
+      ],
+      "required": true
+    },
+    {
+      "id": "term_inicio_cronograma",
+      "prompt": "Termino actual: \"Inicio Actividades Cronograma\". Nombre final para esa columna.",
+      "description": "Fecha tomada desde el cronograma base.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Usar \"Inicio segun cronograma\" para sonar natural.",
+      "recommendedOptionIds": ["inicio_segun_cronograma"],
+      "options": [
+        { "id": "inicio_segun_cronograma", "label": "Inicio segun cronograma" },
+        { "id": "inicio_actividades_cronograma", "label": "Inicio actividades cronograma" },
+        { "id": "fecha_cronograma", "label": "Fecha de cronograma" }
+      ],
+      "required": true
+    },
+    {
+      "id": "term_inicio_proyectado",
+      "prompt": "Termino actual: \"Inicio Actividades Proyectado\". Nombre final para esa columna.",
+      "description": "Fecha proyectada de inicio para la actividad o proceso asociado.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Usar \"Inicio proyectado\" por brevedad.",
+      "recommendedOptionIds": ["inicio_proyectado"],
+      "options": [
+        { "id": "inicio_proyectado", "label": "Inicio proyectado" },
+        { "id": "inicio_actividades_proyectado", "label": "Inicio actividades proyectado" },
+        { "id": "fecha_proyectada", "label": "Fecha proyectada" }
+      ],
+      "required": true
+    },
+    {
+      "id": "term_inicio_real",
+      "prompt": "Termino actual: \"Inicio Actividades Real\". Nombre final para esa columna.",
+      "description": "Fecha real de inicio capturada por el usuario o el sistema.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Usar \"Inicio real\" por brevedad y consistencia con Inicio proyectado.",
+      "recommendedOptionIds": ["inicio_real"],
+      "options": [
+        { "id": "inicio_real", "label": "Inicio real" },
+        { "id": "inicio_actividades_real", "label": "Inicio actividades real" },
+        { "id": "fecha_real", "label": "Fecha real" }
+      ],
+      "required": true
+    },
+    {
+      "id": "term_mensaje_atrasado_no_iniciado",
+      "prompt": "Termino actual: \"Atrasado!!; proceso de contratacion no iniciado\". Nombre final para ese mensaje de fila.",
+      "description": "Mensaje dentro de la columna de estado cuando el proceso ya esta vencido.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Usar \"Atrasado: contratacion sin iniciar\" para quitar signos y hacerlo accionable.",
+      "recommendedOptionIds": ["atrasado_contratacion_sin_iniciar"],
+      "options": [
+        { "id": "atrasado_contratacion_sin_iniciar", "label": "Atrasado: contratacion sin iniciar" },
+        { "id": "proceso_vencido_sin_iniciar", "label": "Proceso vencido sin iniciar" },
+        { "id": "mantener_mensaje_atrasado", "label": "Atrasado: proceso no iniciado" }
+      ],
+      "required": true
+    },
+    {
+      "id": "term_mensaje_en_curso_no_iniciado",
+      "prompt": "Termino actual: \"En Curso; Proceso de contratacion no iniciado\". Nombre final para ese mensaje de fila.",
+      "description": "Mensaje dentro de la columna de estado cuando todavia hay margen pero la contratacion no arranca.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Usar \"En curso: contratacion sin iniciar\" para mantener consistencia con el caso atrasado.",
+      "recommendedOptionIds": ["en_curso_contratacion_sin_iniciar"],
+      "options": [
+        { "id": "en_curso_contratacion_sin_iniciar", "label": "En curso: contratacion sin iniciar" },
+        { "id": "proceso_pendiente_inicio", "label": "Proceso pendiente de inicio" },
+        { "id": "mantener_mensaje_en_curso", "label": "En curso: proceso no iniciado" }
+      ],
+      "required": true
+    }
+  ]
+}

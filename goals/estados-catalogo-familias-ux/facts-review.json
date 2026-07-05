@@ -1,0 +1,87 @@
+{
+  "stage": "facts",
+  "title": "Estados claros para familias y contratos",
+  "goalSlug": "estados-catalogo-familias-ux",
+  "facts": [
+    {
+      "id": "fact-1",
+      "text": "Cada familia, alias y elemento contractual del catálogo muestra un estado entendible para usuario: Crea actividades, Se gestiona en Contratos, Es otro nombre de..., Necesita decisión o No usar.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-2",
+      "text": "La UI no usa Inactivo como explicación final cuando el sistema puede derivar un motivo más claro desde aliases, elementos contractuales, reglas o revisión pendiente.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-3",
+      "text": "El asistente semi-automático muestra motivo claro, estado visible, siguiente acción y paquete sugerido cuando una propuesta no se puede aplicar automáticamente.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-4",
+      "text": "Los usuarios finales pueden ver la explicación y asignar paquetes en Contratos, pero no ven acciones de catálogo global ni detalle técnico.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-5",
+      "text": "Los usuarios Admin pueden mantener una familia en Listado, pasarla a Contratos, crear una opción contractual guiada y crear o reasignar reglas sin tocar SQL.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-6",
+      "text": "Cuando una familia existe pero no tiene paquetes configurados, Admin tiene un flujo guiado para crear la opción contractual con modalidad, paquetes, cantidades por defecto y duraciones requeridas si faltan.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-7",
+      "text": "El catálogo admin incluye un reporte completo de familias, aliases y elementos contractuales con estado derivado, motivo y siguiente acción recomendada.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-8",
+      "text": "El flujo Listado -> Contratos -> PDC se verifica desde cero usando el contexto propio de esos módulos, sin asumir dependencia de semanas activas de Last Planner.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-9",
+      "text": "La verificación E2E cubre al menos Pisos y Enchapes, Campamento de Obra, una familia operativa normal y el flujo hasta generación de Plan de Compras.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-10",
+      "text": "El objetivo se implementa como un solo goal, con alcance completo de UX, acciones Admin, reporte de catálogo total y evidencia E2E.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": false,
+      "automatedVerification": false
+    }
+  ]
+}
