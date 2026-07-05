@@ -48,6 +48,9 @@ phpstan_errors.json
 # Debug scripts
 debug_*.php
 
+# Goal tracking artifacts (local planning only)
+goals/
+
 # Archivos de configuración de IDEs y prompts de IA
 AGENTS.md
 CLAUDE.md
