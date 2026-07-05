@@ -244,6 +244,7 @@ class SemiAutoQualityGate
 
     private function result(float $confidence, array $sources, array $dimensions, array $conflicts, array $reviewReasons): array
     {
+        $sources = $this->sortSources($sources);
         $readyBlockers = [];
         if (empty($sources)) {
             $readyBlockers[] = 'No hay fuentes auditables.';
@@ -293,6 +294,30 @@ class SemiAutoQualityGate
             ],
             'sources' => $sources,
         ];
+    }
+
+    private function sortSources(array $sources): array
+    {
+        usort($sources, static function (array $a, array $b): int {
+            $confidence = ((float) ($b['confidence'] ?? 0)) <=> ((float) ($a['confidence'] ?? 0));
+            if ($confidence !== 0) {
+                return $confidence;
+            }
+
+            $date = strcmp((string) ($a['start_date'] ?? ''), (string) ($b['start_date'] ?? ''));
+            if ($date !== 0) {
+                return $date;
+            }
+
+            $activity = strcasecmp((string) ($a['activity'] ?? ''), (string) ($b['activity'] ?? ''));
+            if ($activity !== 0) {
+                return $activity;
+            }
+
+            return ((int) ($a['unique_id'] ?? 0)) <=> ((int) ($b['unique_id'] ?? 0));
+        });
+
+        return $sources;
     }
 
     private function firstDimensions(array $items, array $match): array

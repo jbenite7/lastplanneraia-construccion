@@ -81,7 +81,7 @@ class PdcAutoGenerateController extends BaseController
             http_response_code(500);
             echo json_encode([
                 'respuesta' => 'ERROR',
-                'mensaje' => 'No se pudo actualizar el Plan de Compras desde Contratos.',
+                'mensaje' => 'No se pudo actualizar el Plan de Compras y Contrataciones desde Paquetes de contratacion.',
             ], JSON_UNESCAPED_UNICODE);
         }
     }

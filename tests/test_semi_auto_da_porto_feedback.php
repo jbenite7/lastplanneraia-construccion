@@ -189,12 +189,21 @@ try {
         'GRIFERIAS_INCRUSTACIONES',
         'ASEO',
         'BOTADA_ESCOMBROS',
+        'CAMPAMENTO',
         'AMENIDADES_CUBIERTA',
     ] as $code) {
         expectFamilyExists($db, $code);
     }
     expectFamilyInactive($db, 'GEODREN');
+    expectFamilyInactive($db, 'MALACATE');
+    expectFamilyInactive($db, 'BOTADA_ESCOMBROS');
+    expectFamilyInactive($db, 'CAMPAMENTO');
+    expectFamilyInactive($db, 'AMENIDADES_CUBIERTA');
     expectContractualElement($db, 'Geodren', 'GEODREN');
+    expectContractualElement($db, 'Malacate', 'MALACATE');
+    expectContractualElement($db, 'Botada de Escombros', 'RETIRO Y DISPOSICION DE ESCOMBROS');
+    expectContractualElement($db, 'Campamento de Obra', 'CAMPAMENTO DE OBRA');
+    expectContractualElement($db, 'Amenidades Especiales de Cubierta', 'AMENIDADES ESPECIALES DE CUBIERTA');
 
     expectMatchCode($matcher, $rules, 'REVOQUE HUMEDO MUROS APARTAMENTOS', 'REVOQUE_HUMEDO');
     expectMatchCode($matcher, $rules, 'REVOQUE SECO EN DRYWALL', 'REVOQUE_SECO');
@@ -203,14 +212,20 @@ try {
     expectMatchCode($matcher, $rules, 'ESPEJOS BANO APARTAMENTOS', 'CARPINTERIA_METALICA');
     expectMatchCode($matcher, $rules, 'BARANDAS DE BALCON EN VIDRIO', 'CARPINTERIA_METALICA');
     expectMatchCode($matcher, $rules, 'PASAMANOS TUBULAR ESCALERAS', 'CARPINTERIA_METALICA');
-    expectMatchCode($matcher, $rules, 'MALACATE DE OBRA', 'MALACATE');
+    $malacate = $matcher->matchActivity(['Actividad' => 'MALACATE DE OBRA'], $rules);
+    $malacate === null
+        ? passDaPorto('MALACATE routes to Contratos, not Listado')
+        : failDaPorto('MALACATE should not create Listado family, got ' . ($malacate['familia_codigo'] ?? 'unknown'));
     expectMatchCode($matcher, $rules, 'GRIFERIAS E INCRUSTACIONES APARTAMENTOS', 'GRIFERIAS_INCRUSTACIONES');
     $geodren = $matcher->matchActivity(['Actividad' => 'GEODREN MUROS DE CONTENCION'], $rules);
     $geodren === null
         ? passDaPorto('GEODREN routes to Contratos, not Listado')
         : failDaPorto('GEODREN should not create Listado family, got ' . ($geodren['familia_codigo'] ?? 'unknown'));
     expectMatchCode($matcher, $rules, 'ASEO FINAL DE APARTAMENTOS', 'ASEO');
-    expectMatchCode($matcher, $rules, 'BOTADA DE ESCOMBROS ACABADOS', 'BOTADA_ESCOMBROS');
+    $botadaEscombros = $matcher->matchActivity(['Actividad' => 'BOTADA DE ESCOMBROS ACABADOS'], $rules);
+    $botadaEscombros === null
+        ? passDaPorto('BOTADA DE ESCOMBROS routes to Contratos, not Listado')
+        : failDaPorto('BOTADA DE ESCOMBROS should not create Listado family, got ' . ($botadaEscombros['familia_codigo'] ?? 'unknown'));
 
     $botadaTierra = $matcher->matchActivity(['Actividad' => 'BOTADA DE TIERRA EXCAVACION'], $rules);
     (($botadaTierra['familia_codigo'] ?? '') !== 'BOTADA_ESCOMBROS')
@@ -277,20 +292,9 @@ try {
         }
     }
 
-    if ($campamento === null) {
-        failDaPorto('Campamento preview suggestion was not generated');
-    } elseif (!empty($campamento['preselected'])) {
-        failDaPorto('Campamento requires review but was preselected');
-    } else {
-        passDaPorto('review-required Campamento is not preselected');
-    }
-
-    if ($campamento !== null) {
-        $actividadInicio = (int) ($campamento['proposed']['actividadInicio'] ?? 0);
-        $actividadInicio === 1001
-            ? passDaPorto('preview uses programa_consolidado.unique_id as actividadInicio')
-            : failDaPorto("preview expected actividadInicio unique_id 1001, got {$actividadInicio}");
-    }
+    $campamento === null
+        ? passDaPorto('Campamento routes to Contratos and does not create Listado suggestion')
+        : failDaPorto('Campamento should not generate Listado suggestion');
 
     $pdcPreview = $service->preview(SemiAutoService::MODULE_PDC, [
         'projectId' => $projectId,

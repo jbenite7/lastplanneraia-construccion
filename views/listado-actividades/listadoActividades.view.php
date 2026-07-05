@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head id="head">
+	<meta charset="UTF-8">
 	<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 	<!--Script cque va al archivo linksComunesHead2.js-->
 	<script type="text/javascript" src="/js/linksComunesHead2.js?v=piStateColors3" charset="utf-8"></script>
@@ -65,12 +66,12 @@
 						<th></th>
 						<th>Id</th>
 						<th>Id</th>
-						<th>Actividad</th>
+						<th>Familia</th>
 						<th>Descripción</th>
-						<th>Actividad de Inicio En Programa</th>
-						<th>Actividad de Inicio En Programa</th>
+						<th>Inicio en obra segun cronograma</th>
+						<th>Inicio en obra segun cronograma</th>
 						<th>Fecha de Inicio</th>
-						<th>Tipo de Contrato</th>
+						<th>Modalidad de contratacion</th>
 						<th>Semana de Actualizacion</th>
 						<!-- <th>Id Paquete de Contratación</th>
 						<th>Paquete de Contratación</th> -->
@@ -92,8 +93,8 @@
 		      <div class="modal-header">
 		        <div class="modal-title" id="modalNuevaActividadLabel">
 		          <div class="aia-modal__eyebrow">AIA Corporativo</div>
-		          <h2 class="aia-modal__headline">Registrar Nueva Actividad</h2>
-		          <p class="aia-modal__subtitle modal-body-texto-nuevaActividad" id="modal-body-texto-nuevaActividad">Completa la informacion base de la actividad y su relacion con el cronograma.</p>
+		          <h2 class="aia-modal__headline">Registrar Nueva Familia</h2>
+		          <p class="aia-modal__subtitle modal-body-texto-nuevaActividad" id="modal-body-texto-nuevaActividad">Completa la informacion base de la familia y su relacion con el cronograma.</p>
 		        </div>
 		        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 		      </div>
@@ -103,8 +104,8 @@
 		            <form class="form form-horizontal aia-modal__form" action="" method="POST">
 		              <section class="form-group parametro_nuevaActividad aia-modal__section">
 		                <div class="aia-modal__section-header">
-		                  <h3 class="aia-modal__section-title">Formulario de Registro de Actividades</h3>
-		                  <p class="aia-modal__hint">Define la actividad, su descripcion y la actividad de referencia del cronograma.</p>
+		                  <h3 class="aia-modal__section-title">Formulario de Registro de Familias</h3>
+		                  <p class="aia-modal__hint">Define la familia, su descripcion y la referencia de inicio en obra segun cronograma.</p>
 		                </div>
 		                <div class="aia-modal__field-grid">
 		                <!--Se crean 2 inputs que contienen el id del registro que se va a modificar, y el switch que dice si la acción es modificar-->
@@ -112,13 +113,13 @@
 					      <input type="hidden" id="opcion" name="opcion" value="registrar">
 		                <!-- Se crean los inputs del formulario de registro de usuario (Nombre, Apellidos y DNI) -->
 		                <div class="col-sm-12 aia-modal__field">
-		                  <label for="actividad" class="control-label aia-modal__label">Actividad</label><input id="actividad" name="actividad" type="text" class="form-control">
+		                  <label for="actividad" class="control-label aia-modal__label">Familia</label><input id="actividad" name="actividad" type="text" class="form-control">
 		                </div>
 		                <div class="col-sm-12 aia-modal__field">
 		                  <label for="descripcionActividad" class="control-label aia-modal__label">Descripcion</label><input id="descripcionActividad" name="descripcionActividad" type="text" class="form-control">
 		                </div>
 		                <div class="col-sm-12 aia-modal__field">
-			                  <label for="actividadInicio" class="control-label aia-modal__label">Tarea del Cronograma de Inicio de la Actividad</label>
+			                  <label for="actividadInicio" class="control-label aia-modal__label">Inicio en obra segun cronograma</label>
 			                  <select id="actividadInicio" name="actividadInicio" class="form-control" onchange="actualizarFechaInicio('nuevo')" style="width:100%">
 		                    <option value=""></option><?php echo $actividadInicioOptionsHtml; ?>
 		                  </select>
@@ -151,8 +152,8 @@
 		      <div class="modal-header">
 		        <div class="modal-title" id="modalCargarExcelLabel">
 		          <div class="aia-modal__eyebrow">AIA Corporativo</div>
-		          <h2 class="aia-modal__headline">Cargar Actividades desde Excel</h2>
-		          <p class="aia-modal__subtitle modal-body-texto-cargarExcel" id="modal-body-texto-cargarExcel">Descarga la plantilla base y carga el archivo CSV completo del listado de actividades.</p>
+		          <h2 class="aia-modal__headline">Cargar Familias de obra desde Excel</h2>
+		          <p class="aia-modal__subtitle modal-body-texto-cargarExcel" id="modal-body-texto-cargarExcel">Descarga la plantilla base y carga el archivo CSV completo de familias de obra.</p>
 		        </div>
 		        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 		      </div>
@@ -170,13 +171,13 @@
 		                  <h3 class="aia-modal__section-title">Descargar Archivo Base</h3>
 		                  <p class="aia-modal__hint">Usa la plantilla oficial para asegurar la estructura correcta del cargue masivo.</p>
 		                </div>
-		                <label for="descargarArchivoBase" class="control-label aia-modal__label">En el siguiente enlace puede descargar el archivo base para crear el listado de actividades desde Excel:</label>
+		                <label for="descargarArchivoBase" class="control-label aia-modal__label">En el siguiente enlace puede descargar el archivo base para crear familias de obra desde Excel:</label>
 		                <a id="descargarArchivoBase" class="descargarArchivoBase btn btn-primary" download="listadoActividades.csv" href="/api/listado-actividades/template">Descargar Archivo Base</a>
 		              </section>
 		              <section class="form-group parametro_cargarExcel aia-modal__section">
 		                <div class="aia-modal__section-header">
-		                  <h3 class="aia-modal__section-title">Cargar Listado en Excel</h3>
-		                  <p class="aia-modal__hint">Solo se permiten archivos en formato CSV y se procesara el contenido completo del listado.</p>
+		                  <h3 class="aia-modal__section-title">Cargar Familias en Excel</h3>
+		                  <p class="aia-modal__hint">Solo se permiten archivos en formato CSV y se procesara el contenido completo de familias de obra.</p>
 		                </div>
 		                <!--Se crean 2 inputs que contienen el id del registro que se va a modificar, y el switch que dice si la acción es cargarExcel-->
 		                <input type="hidden" id="Id" name="Id" value="">
@@ -184,7 +185,7 @@
 		                <input type="hidden" id="codigo" name="codigo" value="">
 		                <!-- Se crea el input para cargar el archivo CSV que cargarà el listado de actividades del proyecto -->
 		                <div class="col-sm-12 aia-modal__field">
-		                  <label for="archivoExcel" class="control-label aia-modal__label">Seleccione el archivo con el listado de actividades completo desde el equipo (solo se permiten archivos en formato CSV):</label>
+		                  <label for="archivoExcel" class="control-label aia-modal__label">Seleccione el archivo con las familias de obra completas desde el equipo (solo se permiten archivos en formato CSV):</label>
 		                  <input type="file" name="archivoExcel" id="archivoExcel" class="form-control form-control-lg" accept=".csv">
 		                  <!-- <input type="submit" value="Enviar" name="archivoExcel"> -->
 		                </div>
@@ -205,15 +206,15 @@
 	</div>
 	<!-- Modal -->
 
-	<!-- Modal Auto-Generar Listado de Actividades desde Programa General -->
+	<!-- Modal Auto-Generar Familias desde Programa General -->
 	<div class="modal_autoGenerarListado modal fade aia-modal" id="modalAutoGenerarListado" role="dialog" aria-labelledby="modalAutoGenerarListadoLabel">
 	  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
 	    <div class="modal-content">
 	      <div class="modal-header">
 	        <div class="modal-title" id="modalAutoGenerarListadoLabel">
 	          <div class="aia-modal__eyebrow">AIA Corporativo</div>
-	          <h2 class="aia-modal__headline">Auto-Generar Listado de Actividades</h2>
-	          <p class="aia-modal__subtitle" id="modalAutoGenerarListadoSubtitle">Analiza el Programa General y crea actividades vinculadas automáticamente.</p>
+	          <h2 class="aia-modal__headline">Auto-generar Familias</h2>
+	          <p class="aia-modal__subtitle" id="modalAutoGenerarListadoSubtitle">Analiza el Programa General y crea familias de obra vinculadas automaticamente.</p>
 	        </div>
 	        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 	      </div>
@@ -225,7 +226,7 @@
 	                <h3 class="aia-modal__section-title">Resumen de Detección</h3>
 	              </div>
 	              <div class="alert alert-info" id="autoGenListadoResumen">
-	                Presiona "Analizar" para detectar actividades en el Programa General.
+	                Presiona "Analizar" para detectar familias en el Programa General.
 	              </div>
 	            </div>
 	            <div class="table-responsive" style="max-height: 40vh; overflow-y: auto;">
@@ -233,7 +234,7 @@
 	                <thead class="thead-light">
 	                  <tr>
 	                    <th style="width: 50px;">#</th>
-	                    <th>Actividad (PG)</th>
+	                    <th>Familia (PG)</th>
 	                    <th>Fecha Inicio</th>
 	                    <th>Familia Detectada</th>
 	                    <th>Confianza</th>
@@ -263,7 +264,7 @@
 		      <div class="modal-header">
 		        <div class="modal-title" id="modalEliminarLabel">
 		          <div class="aia-modal__eyebrow">Accion sensible</div>
-		          <h2 class="aia-modal__title">Eliminar Actividad</h2>
+		          <h2 class="aia-modal__title">Eliminar Familia</h2>
 		          <p class="aia-modal__subtitle">Confirma esta accion antes de continuar.</p>
 		        </div>
 		        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
@@ -415,6 +416,19 @@
 				.replace(/'/g, '&#039;');
 		};
 
+		var etiquetaModalidadContratacion = function(value) {
+			var etiquetas = {
+				SI: 'Suministro e Instalación',
+				MO: 'Mano de Obra',
+				S: 'Suministro',
+				OC: 'Orden de servicio/compra'
+			};
+			return String(value || '').split(',').map(function(item) {
+				var key = item.trim();
+				return etiquetas[key] || key;
+			}).filter(Boolean).join(', ');
+		};
+
 		var inicializarAutoGenerarListado = function() {
 			$(document).off('click.autoGenListado', '#btn_auto_generar_listado').on('click.autoGenListado', '#btn_auto_generar_listado', function(e) {
 				e.preventDefault();
@@ -426,7 +440,7 @@
 			});
 
 			$('#modalAutoGenerarListado').off('show.bs.modal.autoGenListado').on('show.bs.modal.autoGenListado', function() {
-				$('#autoGenListadoResumen').removeClass('alert-danger alert-success').addClass('alert-info').html('Presiona "Analizar" para detectar actividades en el Programa General.');
+				$('#autoGenListadoResumen').removeClass('alert-danger alert-success').addClass('alert-info').html('Presiona "Analizar" para detectar familias en el Programa General.');
 				$('#autoGenListadoBody').html('');
 				$('#btnAutoGenListadoAplicar').prop('disabled', true);
 				$('#btnAutoGenListadoAnalizar').prop('disabled', false);
@@ -439,7 +453,7 @@
 				var semana = document.getElementById('Max_Semana').value;
 
 				btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Analizando...');
-				$('#autoGenListadoResumen').removeClass('alert-danger alert-success').addClass('alert-info').html('Analizando actividades del Programa General...');
+				$('#autoGenListadoResumen').removeClass('alert-danger alert-success').addClass('alert-info').html('Analizando familias del Programa General...');
 				$('#autoGenListadoBody').html('');
 
 				$.ajax({
@@ -466,7 +480,7 @@
 					if (response.preview) {
 						msg += 'Se crearán: <strong>' + response.creadas + '</strong> · ';
 					} else {
-						msg += 'Actividades consolidadas: <strong>' + response.creadas + '</strong> · ';
+						msg += 'Familias consolidadas: <strong>' + response.creadas + '</strong> · ';
 					}
 					msg += 'Ratio: <strong>' + ratio + '</strong> · ';
 					msg += 'Estrategia: <strong>' + estrategia + '</strong> · ';
@@ -557,7 +571,7 @@
 
 				btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Creando...');
 				$('#btnAutoGenListadoAnalizar').prop('disabled', true);
-				$('#autoGenListadoResumen').removeClass('alert-info alert-danger alert-success').addClass('alert-info').html('Creando actividades en el listado...');
+				$('#autoGenListadoResumen').removeClass('alert-info alert-danger alert-success').addClass('alert-info').html('Creando familias de obra...');
 
 				$.ajax({
 					method: 'POST',
@@ -565,13 +579,13 @@
 					dataType: 'json'
 				}).done(function(response) {
 					if (!response || response.respuesta !== 'BIEN') {
-						$('#autoGenListadoResumen').removeClass('alert-info alert-success').addClass('alert-danger').html(escaparHtml((response && response.mensaje) || 'No se pudieron crear las actividades.'));
+						$('#autoGenListadoResumen').removeClass('alert-info alert-success').addClass('alert-danger').html(escaparHtml((response && response.mensaje) || 'No se pudieron crear las familias.'));
 						btn.prop('disabled', false).html('<i class="fas fa-magic"></i> Aplicar');
 						$('#btnAutoGenListadoAnalizar').prop('disabled', false).html('<i class="fas fa-search"></i> Analizar');
 						return;
 					}
 
-					var msg = 'Actividades creadas: <strong>' + response.creadas + '</strong>';
+					var msg = 'Familias creadas: <strong>' + response.creadas + '</strong>';
 					if (response.existentes > 0) {
 						msg += ' · Ya existentes: <strong>' + response.existentes + '</strong>';
 					}
@@ -602,7 +616,7 @@
 			// Cleanup on modal dismiss
 			$('#modalAutoGenerarListado').off('hidden.bs.modal.autoGenListado').on('hidden.bs.modal.autoGenListado', function() {
 				$('#autoGenListadoBody').html('');
-				$('#autoGenListadoResumen').removeClass('alert-danger alert-success alert-warning').addClass('alert-info').html('Presiona "Analizar" para detectar actividades en el Programa General.');
+				$('#autoGenListadoResumen').removeClass('alert-danger alert-success alert-warning').addClass('alert-info').html('Presiona "Analizar" para detectar familias en el Programa General.');
 				$('#btnAutoGenListadoAplicar').prop('disabled', true);
 				$('#btnAutoGenListadoAnalizar').prop('disabled', false).html('<i class="fas fa-search"></i> Analizar');
 				recargarTabla('');
@@ -688,7 +702,7 @@
 					{
 						'targets': '_all',
 						'createdCell': function (td, cellData, rowData, row, col) {
-							var headers = ['', 'Id', 'Id', 'Actividad', 'Descripción', 'Actividad de Inicio', 'Actividad de Inicio', 'Fecha de Inicio', 'Tipo de Contrato', 'Semana de Actualización'];
+							var headers = ['', 'Id', 'Id', 'Familia', 'Descripción', 'Inicio en obra segun cronograma', 'Inicio en obra segun cronograma', 'Fecha de Inicio', 'Modalidad de contratacion', 'Semana de Actualización'];
 							if (headers[col]) {
 								$(td).attr('data-label', headers[col]);
 							}
@@ -705,7 +719,7 @@
 							'SI': '<span class="badge badge-primary">Suministro e Instalación</span>',
 							'MO': '<span class="badge badge-info">Mano de Obra</span>',
 							'S':  '<span class="badge badge-secondary">Suministro</span>',
-							'OC': '<span class="badge badge-dark">Orden de Compra</span>'
+							'OC': '<span class="badge badge-dark">Orden de servicio/compra</span>'
 						};
 						var result = [];
 						for (var i = 0; i < modalidades.length; i++) {
@@ -792,14 +806,14 @@
 				table.columns.adjust();
 			});
 
-			$("div.toolbarFilaBotones").html('<div class="grupo_botones1" role="group" aria-label="Basic example" style="padding:5; max-width:50%;display:inline-block; "><button id="btn_cargarActividadesExcel" class="btn-pdc-modern" title="Cargar listado de actividades desde Excel" data-toggle="modal" data-target="#modalCargarExcel">Cargar desde Excel <i class="fas fa-upload fa-lg"></i></button><button id="btn_nueva_actividad" class="btn-pdc-modern" title="Registrar nueva actividad del proyecto" data-toggle="modal" data-target="#modalNuevaActividad" style="margin: auto 5px">Nueva Actividad <i class="fas fa-plus fa-lg"></i></button></div><div class="grupo_botones_semanal_madre"  style="padding:5; max-width:69%"><div class="grupo_botones_semanal btn-group" role="group" aria-label="Basic example"><button id="btn_Actividades" type="button" class="btn-pdc-modern active" onclick="window.location.href=\'/listado-actividades?semana='+semana+'\'">Actividades <i class="fas fa-arrow-right fa-m"></i></button><button id="btn_contratos" type="button" class="btn-pdc-modern" onclick="window.location.href=\'/contratos?semana='+semana+'\'">Contratos <i class="fas fa-arrow-right fa-m"></i></button><button id="btn_planCompras" type="button" class="btn-pdc-modern" onclick="window.location.href=\'/pdc?semana='+semana+'&origen=info_listadoActividades\'">Plan de Compras</button></div></div>');
+			$("div.toolbarFilaBotones").html('<div class="grupo_botones1" role="group" aria-label="Basic example" style="padding:5; max-width:50%;display:inline-block; "><button id="btn_cargarActividadesExcel" class="btn-pdc-modern" title="Cargar familias de obra desde Excel" data-toggle="modal" data-target="#modalCargarExcel">Cargar desde Excel <i class="fas fa-upload fa-lg"></i></button><button id="btn_nueva_actividad" class="btn-pdc-modern" title="Registrar nueva familia" data-toggle="modal" data-target="#modalNuevaActividad" style="margin: auto 5px">Nueva Familia <i class="fas fa-plus fa-lg"></i></button></div><div class="grupo_botones_semanal_madre"  style="padding:5; max-width:69%"><div class="grupo_botones_semanal btn-group" role="group" aria-label="Basic example"><button id="btn_Actividades" type="button" class="btn-pdc-modern active" onclick="window.location.href=\'/listado-actividades?semana='+semana+'\'">Familias de obra <i class="fas fa-arrow-right fa-m"></i></button><button id="btn_contratos" type="button" class="btn-pdc-modern" onclick="window.location.href=\'/contratos?semana='+semana+'\'">Paquetes de contratacion <i class="fas fa-arrow-right fa-m"></i></button><button id="btn_planCompras" type="button" class="btn-pdc-modern" onclick="window.location.href=\'/pdc?semana='+semana+'&origen=info_listadoActividades\'">Plan de Compras y Contrataciones</button></div></div>');
 
 			$("div.toolbarFilaBotones .grupo_botones1")
 				.addClass("ps-toolbar-actions")
 				.removeAttr("style");
 			$("div.toolbarFilaBotones .grupo_botones1 .btn").addClass("ps-btn-gap");
 			if (puedeEditarListadoActividades()) {
-				$("div.toolbarFilaBotones .grupo_botones1").append('<button id="btn_auto_generar_listado" class="btn-pdc-modern ps-btn-gap" title="Auto-generar listado de actividades desde el Programa General"><i class="fas fa-magic"></i> Auto-generar Listado</button>');
+				$("div.toolbarFilaBotones .grupo_botones1").append('<button id="btn_auto_generar_listado" class="btn-pdc-modern ps-btn-gap" title="Auto-generar familias desde el Programa General"><i class="fas fa-magic"></i> Auto-generar Familias</button>');
 			}
 			if (window.SemiAutoReview) {
 				window.SemiAutoReview.init({
@@ -812,7 +826,7 @@
 			$("div.toolbarFilaBotones .grupo_botones_semanal_madre")
 				.addClass("ps-toolbar-nav-wrap")
 				.removeAttr("style")
-				.html('<div class="ps-module-switcher" role="tablist" aria-label="Navegacion general"><button id="btn_Actividades" type="button" class="ps-module-tab is-active" onclick="window.location.href=\'/listado-actividades?semana='+semana+'\'" aria-label="Ir a Actividades" aria-current="page"><i class="fas fa-table" aria-hidden="true"></i><span>Actividades</span></button><button id="btn_contratos" type="button" class="ps-module-tab" onclick="window.location.href=\'/contratos?semana='+semana+'\'" aria-label="Ir a Contratos"><i class="fas fa-file-alt" aria-hidden="true"></i><span>Contratos</span></button><button id="btn_planCompras" type="button" class="ps-module-tab" onclick="window.location.href=\'/pdc?semana='+semana+'&origen=info_listadoActividades\'" aria-label="Ir a Plan de Compras"><i class="fas fa-shopping-cart" aria-hidden="true"></i><span>Plan de Compras</span></button></div>');
+				.html('<div class="ps-module-switcher" role="tablist" aria-label="Navegacion general"><button id="btn_Actividades" type="button" class="ps-module-tab is-active" onclick="window.location.href=\'/listado-actividades?semana='+semana+'\'" aria-label="Ir a Familias de obra" aria-current="page"><i class="fas fa-table" aria-hidden="true"></i><span>Familias de obra</span></button><button id="btn_contratos" type="button" class="ps-module-tab" onclick="window.location.href=\'/contratos?semana='+semana+'\'" aria-label="Ir a Paquetes de contratacion"><i class="fas fa-file-alt" aria-hidden="true"></i><span>Paquetes de contratacion</span></button><button id="btn_planCompras" type="button" class="ps-module-tab" onclick="window.location.href=\'/pdc?semana='+semana+'&origen=info_listadoActividades\'" aria-label="Ir a Plan de Compras y Contrataciones"><i class="fas fa-shopping-cart" aria-hidden="true"></i><span>Plan de Compras y Contrataciones</span></button></div>');
 
 			$("div.toolbarFilaMensajes").html('<p id="mensajeActualizacion"></p>');
 
@@ -876,7 +890,7 @@
 
 
 
-				var codigo_html_tipoContrato =  "<span class='text-muted'>" + escaparHtml(data.tipoContrato || 'Sin asignar') + "</span>";
+				var codigo_html_tipoContrato =  "<span class='text-muted'>" + escaparHtml(etiquetaModalidadContratacion(data.tipoContrato) || 'Sin asignar') + "</span>";
 				$row.find('td:eq(6)').html(codigo_html_tipoContrato);
 
 					var codigo_html_botones = "<button type= 'button' id='btn_guardar_editar' class='guardar btn btn-success btn-sm btn-action-gap' title='Guardar la edición'><i class='fa fa-save fa-xs' aria-hidden='true' ></i></button><button type= 'button' id='btn_cancelar_editar' class='cancelar btn btn-danger btn-sm btn-action-gap' title='Cancelar la edición'><i class='fa fa-undo fa-xs' aria-hidden='true' ></i></button>";

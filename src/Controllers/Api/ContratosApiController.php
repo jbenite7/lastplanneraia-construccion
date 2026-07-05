@@ -28,16 +28,12 @@ class ContratosApiController extends BaseController
             $this->requirePermission('lps.contratos.ver', 'No autorizado para consultar contratos.');
 
             $db = Database::getInstance();
-            $packageColumns = $this->packageFieldNames();
             $contractColumns = $this->contractSlotFieldNames();
-            $packageFilter = $this->packagePresenceSql($packageColumns);
-            $packageFilterWithAlias = $this->packagePresenceSql($packageColumns, 'act');
             $queryCount = "SELECT COUNT(*) as total
                 FROM actividades
                 WHERE project_id = ?
                   AND semanaActualizacion = ?
-                  AND fechaInicio IS NOT NULL
-                  AND (NULLIF(TRIM(COALESCE(tipoContrato, '')), '') IS NOT NULL OR $packageFilter)";
+                  AND fechaInicio IS NOT NULL";
             $stmtCount = $db->query($queryCount, [$projectId, $semana]);
             $conteo = $stmtCount->fetch(PDO::FETCH_ASSOC)['total'] ?? 0;
 
@@ -66,7 +62,6 @@ class ContratosApiController extends BaseController
                     WHERE act.`project_id` = ?
                       AND act.semanaActualizacion = ?
                       AND act.fechaInicio IS NOT NULL
-                      AND (NULLIF(TRIM(COALESCE(act.tipoContrato, '')), '') IS NOT NULL OR $packageFilterWithAlias)
                     ORDER BY act.`Id`";
 
                 $stmtData = $db->query($queryData, [$projectId, $semana]);

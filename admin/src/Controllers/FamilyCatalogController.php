@@ -3,6 +3,7 @@
 namespace Admin\Controllers;
 
 use Admin\Core\Security;
+use App\Support\FamilyCatalogStatusResolver;
 use Database;
 use Throwable;
 
@@ -12,6 +13,10 @@ class FamilyCatalogController extends AdminController
     {
         $this->requireAdminRole();
         $db = Database::getInstance();
+        $resolver = new FamilyCatalogStatusResolver($db);
+        $families = $this->families($db);
+        $aliases = $this->aliases($db);
+        $contractualElements = $this->contractualElements($db);
 
         $this->render('matching/family_catalog', [
             'title' => 'Catálogo de Familias',
@@ -20,13 +25,14 @@ class FamilyCatalogController extends AdminController
             'csrf_token' => Security::generateCsrfToken(),
             'flash_success' => $this->pullFlash('flash_success'),
             'flash_error' => $this->pullFlash('flash_error'),
-            'families' => $this->families($db),
-            'aliases' => $this->aliases($db),
-            'contractualElements' => $this->contractualElements($db),
+            'families' => $this->familiesWithStatus($resolver, $families),
+            'aliases' => $this->aliasesWithStatus($resolver, $aliases),
+            'contractualElements' => $this->contractualElementsWithStatus($resolver, $contractualElements),
             'rules' => $this->rules($db),
             'impact' => $this->impact($db),
             'audit' => $this->audit($db),
             'pendingDecisions' => $this->pendingDecisions($db),
+            'catalogReport' => $this->catalogReport($resolver, $families, $aliases, $contractualElements),
         ]);
     }
 
@@ -221,6 +227,105 @@ class FamilyCatalogController extends AdminController
         }
     }
 
+    public function saveContractOption(): void
+    {
+        $this->requireAdminRole();
+        $this->validatePost();
+
+        $familyId = (int) ($_POST['familia_id'] ?? 0);
+        $tipoContrato = (int) ($_POST['tipo_contrato'] ?? 0);
+        $tipoPaquete = trim((string) ($_POST['tipo_paquete'] ?? ''));
+        $packagesText = trim((string) ($_POST['paquetes'] ?? ''));
+        $quantity = max(1, (int) ($_POST['cantidad_default'] ?? 1));
+        $durations = [
+            'dias_elaboracion' => max(0, (int) ($_POST['dias_elaboracion'] ?? 8)),
+            'dias_entrega' => max(0, (int) ($_POST['dias_entrega'] ?? 10)),
+            'dias_recibo' => max(0, (int) ($_POST['dias_recibo'] ?? 1)),
+            'dias_cuadros' => max(0, (int) ($_POST['dias_cuadros'] ?? 10)),
+            'dias_legalizacion' => max(0, (int) ($_POST['dias_legalizacion'] ?? 10)),
+            'dias_fabricacion' => max(0, (int) ($_POST['dias_fabricacion'] ?? 0)),
+            'dias_insumos' => max(0, (int) ($_POST['dias_insumos'] ?? 0)),
+        ];
+
+        $allowedTypes = [1, 2, 3, 4, 5, 6];
+        if ($familyId <= 0 || !in_array($tipoContrato, $allowedTypes, true) || $tipoPaquete === '' || $packagesText === '') {
+            $this->redirectWith('flash_error', 'Familia, modalidad y paquetes son obligatorios.');
+        }
+
+        $packages = array_values(array_filter(array_map(
+            static fn(string $line): string => trim($line),
+            preg_split('/\r\n|\r|\n|,/', $packagesText) ?: [],
+        ), static fn(string $line): bool => $line !== ''));
+        if (empty($packages)) {
+            $this->redirectWith('flash_error', 'Debes indicar al menos un paquete.');
+        }
+
+        $db = Database::getInstance();
+        try {
+            $family = $this->findFamily($db, $familyId);
+            if ($family === null) {
+                $this->redirectWith('flash_error', 'La familia seleccionada no existe.');
+            }
+            $this->ensureContractOptionItemQuantityColumn($db);
+
+            $db->query(
+                'INSERT INTO general_pdc_family_contract_options
+                 (familia_id, tipo_contrato, tipo_paquete, dias_elaboracion, dias_entrega, dias_recibo,
+                  dias_cuadros, dias_legalizacion, dias_fabricacion, dias_insumos, notas, activa)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+                 ON DUPLICATE KEY UPDATE
+                   dias_elaboracion = VALUES(dias_elaboracion),
+                   dias_entrega = VALUES(dias_entrega),
+                   dias_recibo = VALUES(dias_recibo),
+                   dias_cuadros = VALUES(dias_cuadros),
+                   dias_legalizacion = VALUES(dias_legalizacion),
+                   dias_fabricacion = VALUES(dias_fabricacion),
+                   dias_insumos = VALUES(dias_insumos),
+                   notas = VALUES(notas),
+                   activa = 1',
+                [
+                    $familyId,
+                    $tipoContrato,
+                    $tipoPaquete,
+                    $durations['dias_elaboracion'],
+                    $durations['dias_entrega'],
+                    $durations['dias_recibo'],
+                    $durations['dias_cuadros'],
+                    $durations['dias_legalizacion'],
+                    $durations['dias_fabricacion'],
+                    $durations['dias_insumos'],
+                    'Creada desde flujo guiado Admin.',
+                ],
+            );
+            $optionId = (int) $db->query(
+                'SELECT id
+                 FROM general_pdc_family_contract_options
+                 WHERE familia_id = ? AND tipo_contrato = ? AND tipo_paquete = ?
+                 LIMIT 1',
+                [$familyId, $tipoContrato, $tipoPaquete],
+            )->fetchColumn();
+
+            foreach ($packages as $index => $packageName) {
+                $db->query(
+                    'INSERT INTO general_pdc_family_contract_option_items
+                     (option_id, tipo_contrato, tipo_paquete, paquete_nombre, cantidad_default, orden)
+                     VALUES (?, ?, ?, ?, ?, ?)
+                     ON DUPLICATE KEY UPDATE
+                       tipo_contrato = VALUES(tipo_contrato),
+                       cantidad_default = VALUES(cantidad_default),
+                       orden = VALUES(orden)',
+                    [$optionId, $tipoContrato, $tipoPaquete, mb_strtoupper($packageName, 'UTF-8'), $quantity, $index + 1],
+                );
+            }
+
+            $db->logActivity('CatalogoFamilias', 'CREAR_OPCION_CONTRACTUAL', "Opción contractual: {$family['nombre']} -> {$tipoPaquete}.");
+            $this->redirectWith('flash_success', 'Opción contractual creada.');
+        } catch (Throwable $e) {
+            error_log('[FamilyCatalogController] saveContractOption: ' . $e->getMessage());
+            $this->redirectWith('flash_error', 'No se pudo crear la opción contractual.');
+        }
+    }
+
     public function approveCatalogItem(): void
     {
         $this->requireAdminRole();
@@ -390,6 +495,70 @@ class FamilyCatalogController extends AdminController
         )->fetchAll(\PDO::FETCH_ASSOC);
     }
 
+    private function familiesWithStatus(FamilyCatalogStatusResolver $resolver, array $families): array
+    {
+        return array_map(static function (array $family) use ($resolver): array {
+            $family['catalog_status'] = $resolver->statusForFamily($family);
+            return $family;
+        }, $families);
+    }
+
+    private function aliasesWithStatus(FamilyCatalogStatusResolver $resolver, array $aliases): array
+    {
+        return array_map(static function (array $alias) use ($resolver): array {
+            $alias['catalog_status'] = $resolver->statusForAlias($alias);
+            return $alias;
+        }, $aliases);
+    }
+
+    private function contractualElementsWithStatus(FamilyCatalogStatusResolver $resolver, array $elements): array
+    {
+        return array_map(static function (array $element) use ($resolver): array {
+            $element['catalog_status'] = $resolver->statusForContractualElement($element);
+            return $element;
+        }, $elements);
+    }
+
+    private function catalogReport(
+        FamilyCatalogStatusResolver $resolver,
+        array $families,
+        array $aliases,
+        array $contractualElements,
+    ): array {
+        $rows = [];
+        foreach ($families as $family) {
+            $status = $resolver->statusForFamily($family);
+            $rows[] = [
+                'item' => (string) ($family['nombre'] ?? ''),
+                'code' => (string) ($family['codigo'] ?? ''),
+                'type' => 'Familia',
+                'status' => $status,
+            ];
+        }
+        foreach ($aliases as $alias) {
+            $status = $resolver->statusForAlias($alias);
+            $rows[] = [
+                'item' => (string) ($alias['alias_nombre'] ?? ''),
+                'code' => '',
+                'type' => 'Alias',
+                'status' => $status,
+            ];
+        }
+        foreach ($contractualElements as $element) {
+            $status = $resolver->statusForContractualElement($element);
+            $rows[] = [
+                'item' => (string) ($element['nombre'] ?? ''),
+                'code' => '',
+                'type' => 'Contrato',
+                'status' => $status,
+            ];
+        }
+
+        usort($rows, static fn(array $a, array $b): int => strcmp($a['type'] . $a['item'], $b['type'] . $b['item']));
+
+        return $rows;
+    }
+
     private function rules(Database $db): array
     {
         return $db->query(
@@ -400,6 +569,25 @@ class FamilyCatalogController extends AdminController
              ORDER BY r.activa DESC, r.prioridad DESC, r.confianza DESC, r.id ASC
              LIMIT 80'
         )->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    private function ensureContractOptionItemQuantityColumn(Database $db): void
+    {
+        $exists = (int) $db->query(
+            "SELECT COUNT(*)
+             FROM information_schema.COLUMNS
+             WHERE TABLE_SCHEMA = DATABASE()
+               AND TABLE_NAME = 'general_pdc_family_contract_option_items'
+               AND COLUMN_NAME = 'cantidad_default'"
+        )->fetchColumn();
+        if ($exists > 0) {
+            return;
+        }
+
+        $db->query(
+            'ALTER TABLE general_pdc_family_contract_option_items
+             ADD COLUMN cantidad_default INT NOT NULL DEFAULT 1 AFTER paquete_nombre'
+        );
     }
 
     private function exportRows(Database $db, string $type): ?array

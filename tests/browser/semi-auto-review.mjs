@@ -28,6 +28,23 @@ const feedbackFamilies = [
   'AMENIDADES_CUBIERTA',
 ];
 
+const activeListadoFamilies = [
+  'REVOQUE_HUMEDO',
+  'REVOQUE_SECO',
+  'CABINAS_BANO',
+  'CARPINTERIA_METALICA',
+  'PLANTA_ELECTRICA',
+  'GRIFERIAS_INCRUSTACIONES',
+  'ASEO',
+];
+
+const contractualOnlyFamilies = [
+  'GEODREN',
+  'MALACATE',
+  'BOTADA_ESCOMBROS',
+  'AMENIDADES_CUBIERTA',
+];
+
 const reviewFamilies = [
   'CAMPAMENTO',
   'RED_TELECOMUNICACIONES',
@@ -82,8 +99,14 @@ function expectDaPortoFeedbackModel() {
     SELECT COUNT(DISTINCT f.codigo)
     FROM general_pdc_activity_rules r
     JOIN general_pdc_familias f ON f.id = r.familia_id
-    WHERE r.activa = 1 AND f.codigo IN (${sqlList(feedbackFamilies)})
-  `), 'Da Porto feedback activity rules').toBe(feedbackFamilies.length);
+    WHERE r.activa = 1 AND f.codigo IN (${sqlList(activeListadoFamilies)})
+  `), 'Da Porto active Listado activity rules').toBe(activeListadoFamilies.length);
+
+  expect(sqlNumber(`
+    SELECT COUNT(DISTINCT codigo)
+    FROM general_pdc_familias
+    WHERE COALESCE(activa, 1) = 0 AND codigo IN (${sqlList(contractualOnlyFamilies)})
+  `), 'Da Porto contractual-only families inactive for Listado').toBe(contractualOnlyFamilies.length);
 }
 
 function expectDaPortoContractOptions() {
@@ -93,7 +116,7 @@ function expectDaPortoContractOptions() {
     ['GRIFERIAS_INCRUSTACIONES', 'Orden de Compra', 'GRIFERIAS E INCRUSTACIONES'],
     ['PINTURAS', '', 'PINTURAS'],
     ['PLANTA_ELECTRICA', '', 'PLANTA ELECTRICA'],
-    ['CARPINTERIA_METALICA', 'Suministro e Instalación', 'CARPINTERIA METALICA'],
+    ['CARPINTERIA_METALICA', '', 'CARPINTERIA METALICA'],
     ['CARPINTERIA_MADERA', 'Suministro', 'CARPINTERIA MADERA - FABRICACION Y SUMINISTRO'],
     ['CARPINTERIA_MADERA', 'Mano de Obra', 'CARPINTERIA MADERA - INSTALACION'],
   ];
@@ -151,6 +174,9 @@ async function openReviewPanel(page, moduleKey) {
   await expect(panel.locator('.sar-analysis')).toContainText('Estamos revisando tus propuestas');
   await expect(panel.locator('.sar-analysis-progress')).toContainText('100%');
   await expect(panel.locator('.sar-assistant')).toContainText('Asistente AIA');
+  await expect(panel.locator('.sar-assistant-grid')).not.toBeVisible();
+  await panel.locator('.sar-assistant-toggle').click();
+  await expect(panel.locator('.sar-assistant-grid')).toBeVisible();
   await expect(panel.locator('.sar-assistant')).toContainText('Recomendaciones');
   await expect(panel.locator('.sar-assistant')).toContainText('Alertas');
   await expect(panel.locator('.sar-summary')).toContainText('Encontramos', { timeout: 10000 });
@@ -210,6 +236,65 @@ test.describe('Semi-auto review panel', () => {
       await page.goto(module.url, { waitUntil: 'networkidle', timeout: 30000 });
       await openReviewPanel(page, module.key);
     }
+  });
+
+  test('listado create activity review uses source selector and multiple modalities', async ({ page }) => {
+    await page.goto('/listado-actividades?semana=1', { waitUntil: 'networkidle', timeout: 30000 });
+    await openReviewPanel(page, 'listado-actividades');
+
+    const panel = page.locator('#semiAutoReview-listado-actividades');
+    let card = panel.locator('.sar-card', { hasText: 'Propuesta para crear actividad' }).first();
+    if (await card.count() === 0) {
+      await panel.locator('.sar-tab', { hasText: 'Revisar' }).click();
+      card = panel.locator('.sar-card', { hasText: 'Propuesta para crear actividad' }).first();
+    }
+    await expect(card, 'Da Porto semana 1 debe tener propuesta de crear actividad').toBeVisible();
+
+    const sourceSelect = card.locator('select.sar-source-select');
+    if (!(await sourceSelect.isVisible())) {
+      await card.locator('.sar-review-btn').click();
+    }
+    await expect(sourceSelect).toBeVisible();
+    await expect(sourceSelect.locator('option').first()).toContainText(/Fecha|20\d{2}-\d{2}-\d{2}|confianza/i);
+    await expect(card.locator('.sar-source-context')).toContainText('Basado en el programa general:');
+    await expect(card.locator('.sar-source-context')).toContainText('Inicio:');
+
+    const optionValues = await sourceSelect.locator('option').evaluateAll((options) => options.map((option) => option.value));
+    if (optionValues.length > 1) {
+      const previousContext = await card.locator('.sar-source-context').innerText();
+      await sourceSelect.selectOption(optionValues.at(-1));
+      await expect(card.locator('.sar-source-context')).not.toHaveText(previousContext);
+    }
+
+    const detailText = await card.locator('.sar-detail').innerText();
+    expect(detailText).not.toContain('Semana');
+    expect(detailText).not.toContain('Actividad de inicio');
+    expect(detailText).not.toContain('Fecha de inicio');
+
+    const si = card.locator('.sar-modality-check[value="SI"]');
+    const mo = card.locator('.sar-modality-check[value="MO"]');
+    const suministro = card.locator('.sar-modality-check[value="S"]');
+    const oc = card.locator('.sar-modality-check[value="OC"]');
+    await expect(si).toBeVisible();
+    await expect(mo).toBeVisible();
+    await expect(suministro).toBeVisible();
+    await expect(oc).toBeVisible();
+
+    if (await si.isChecked()) {
+      await si.uncheck();
+    }
+    await mo.check();
+    await suministro.check();
+    await expect(si).toBeDisabled();
+    await expect(card.locator('.sar-modality-value')).toHaveValue('MO,S');
+    await card.screenshot({
+      path: 'docs/qa/evidence/listado-fuentes-contratacion-20260702/listado-selector-modalidad.png',
+    });
+
+    const visibleText = await panel.evaluate((el) => el.innerText);
+    expect(visibleText).toContain('Basado en el programa general');
+    expect(visibleText).not.toContain('selectedSourceId');
+    expect(visibleText).not.toContain('semanaActualizacion');
   });
 
   test('admin can open technical detail without showing it by default', async ({ page }) => {

@@ -294,7 +294,7 @@ class Database
         // WHERE) and plain INSERT...VALUES via rewriteInsert. Injecting project_id as a
         // WHERE append in INSERT...SELECT with JOIN causes MySQL "Unknown column
         // 'project_id' in 'on clause'" when the JOIN involves a non-global table.
-        if (preg_match('/^\s*INSERT\s+/i', $sql)) {
+        if (preg_match('/^\s*INSERT\s+(?:IGNORE\s+)?/i', $sql)) {
             return null;
         }
 
@@ -655,7 +655,7 @@ class Database
 
     private function rewriteInsert(string $sql, array $params, string $table, int $projectId): array
     {
-        if (!preg_match('/INSERT\s+INTO\s+`?' . preg_quote($table, '/') . '`?\s*\(([^)]*)\)\s*VALUES\s*\(([^)]*)\)/i', $sql, $match)) {
+        if (!preg_match('/INSERT\s+(?:IGNORE\s+)?INTO\s+`?' . preg_quote($table, '/') . '`?\s*\(([^)]*)\)\s*VALUES\s*\(([^)]*)\)/i', $sql, $match)) {
             return [$sql, $params];
         }
 
@@ -689,8 +689,10 @@ class Database
 
         $newColumns = array_merge($prependColumns, $columns);
         $newValues = array_merge(array_fill(0, count($prependColumns), '?'), $values);
-        $replacement = 'INSERT INTO ' . $table . ' (' . implode(', ', $newColumns) . ') VALUES (' . implode(', ', $newValues) . ')';
-        $rewritten = preg_replace('/INSERT\s+INTO\s+`?' . preg_quote($table, '/') . '`?\s*\([^)]+\)\s*VALUES\s*\([^)]+\)/i', $replacement, $sql, 1);
+        $isIgnore = (bool) preg_match('/^\s*INSERT\s+IGNORE\s+/i', $sql);
+        $prefix = $isIgnore ? 'INSERT IGNORE INTO ' : 'INSERT INTO ';
+        $replacement = $prefix . $table . ' (' . implode(', ', $newColumns) . ') VALUES (' . implode(', ', $newValues) . ')';
+        $rewritten = preg_replace('/INSERT\s+(?:IGNORE\s+)?INTO\s+`?' . preg_quote($table, '/') . '`?\s*\([^)]+\)\s*VALUES\s*\([^)]+\)/i', $replacement, $sql, 1);
 
         if ($this->isSequentialArray($params)) {
             $params = array_merge($prependValues, $params);

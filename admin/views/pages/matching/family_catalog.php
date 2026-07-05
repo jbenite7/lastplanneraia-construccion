@@ -1,8 +1,27 @@
 <?php
 $h = static fn($value): string => htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
-$activeBadge = static fn($value): string => ((int) $value === 1)
-    ? '<span class="badge badge-success">Activo</span>'
-    : '<span class="badge badge-secondary">Inactivo</span>';
+$statusBadge = static function (array $status) use ($h): string {
+    $key = (string) ($status['status_key'] ?? 'needs_decision');
+    $class = match ($key) {
+        'creates_activities' => 'badge-success',
+        'managed_in_contracts' => 'badge-warning',
+        'alias_of' => 'badge-info',
+        'do_not_use' => 'badge-secondary',
+        default => 'badge-danger',
+    };
+
+    return '<span class="badge ' . $class . '">' . $h($status['label'] ?? 'Necesita decisión') . '</span>';
+};
+$statusDetail = static function (array $status) use ($h): string {
+    $parts = array_filter([
+        (string) ($status['reason'] ?? ''),
+        (string) ($status['next_action'] ?? ''),
+        (string) ($status['package_hint'] ?? ''),
+        (string) ($status['canonical_family'] ?? ''),
+    ]);
+
+    return $parts === [] ? '' : '<small class="text-muted d-block">' . $h(implode(' · ', $parts)) . '</small>';
+};
 ?>
 
 <?php if (!empty($flash_success)): ?>
@@ -157,6 +176,61 @@ $activeBadge = static fn($value): string => ((int) $value === 1)
   </div>
 </div>
 
+<div class="card card-outline card-primary">
+  <div class="card-header"><h3 class="card-title"><i class="fas fa-box-open mr-2"></i>Crear opción contractual guiada</h3></div>
+  <form method="POST" action="/admin/matching/family-catalog/contract-option">
+    <input type="hidden" name="csrf_token" value="<?php echo $h($csrf_token); ?>">
+    <div class="card-body">
+      <div class="form-row">
+        <div class="form-group col-lg-4">
+          <label>Familia</label>
+          <select class="form-control" name="familia_id" required>
+            <?php foreach ($families as $family): ?>
+              <option value="<?php echo (int) $family['id']; ?>"><?php echo $h($family['nombre']); ?> · <?php echo $h($family['catalog_status']['label'] ?? ''); ?></option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+        <div class="form-group col-lg-3">
+          <label>Modalidad</label>
+          <select class="form-control" name="tipo_contrato" required>
+            <option value="2">Suministro e Instalación</option>
+            <option value="3">Suministro</option>
+            <option value="4">Mano de Obra</option>
+            <option value="5">Orden de Compra</option>
+            <option value="1">MO/S separados</option>
+            <option value="6">Equipos</option>
+          </select>
+        </div>
+        <div class="form-group col-lg-3">
+          <label>Tipo visible</label>
+          <input class="form-control" name="tipo_paquete" value="Suministro e Instalación" required>
+        </div>
+        <div class="form-group col-lg-2">
+          <label>Cantidad por defecto</label>
+          <input class="form-control" type="number" min="1" name="cantidad_default" value="1" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Paquetes</label>
+        <textarea class="form-control" name="paquetes" rows="3" placeholder="PISOS Y ENCHAPES&#10;MORTERO DE NIVELACION" required></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group col-md-2"><label>Elaboración</label><input class="form-control" type="number" min="0" name="dias_elaboracion" value="8"></div>
+        <div class="form-group col-md-2"><label>Entrega</label><input class="form-control" type="number" min="0" name="dias_entrega" value="10"></div>
+        <div class="form-group col-md-2"><label>Recibo</label><input class="form-control" type="number" min="0" name="dias_recibo" value="1"></div>
+        <div class="form-group col-md-2"><label>Cuadros</label><input class="form-control" type="number" min="0" name="dias_cuadros" value="10"></div>
+        <div class="form-group col-md-2"><label>Legalización</label><input class="form-control" type="number" min="0" name="dias_legalizacion" value="10"></div>
+        <div class="form-group col-md-1"><label>Fabric.</label><input class="form-control" type="number" min="0" name="dias_fabricacion" value="0"></div>
+        <div class="form-group col-md-1"><label>Insumos</label><input class="form-control" type="number" min="0" name="dias_insumos" value="0"></div>
+      </div>
+      <p class="text-muted mb-0">Usa esto cuando una familia ya existe, pero el asistente indica que faltan paquetes de Contratos.</p>
+    </div>
+    <div class="card-footer">
+      <button class="btn btn-primary" type="submit"><i class="fas fa-save mr-1"></i>Crear opción contractual</button>
+    </div>
+  </form>
+</div>
+
 <div class="row">
   <div class="col-lg-7">
     <div class="card">
@@ -167,13 +241,14 @@ $activeBadge = static fn($value): string => ((int) $value === 1)
           <tbody>
             <?php foreach ($families as $family): ?>
               <?php $rowImpact = array_values(array_filter($impact, static fn($item) => (int) $item['id'] === (int) $family['id']))[0] ?? []; ?>
+              <?php $status = $family['catalog_status'] ?? []; ?>
               <tr>
                 <td><strong><?php echo $h($family['nombre']); ?></strong><br><small class="text-muted"><?php echo $h($family['codigo']); ?></small></td>
                 <td><?php echo $h($family['categoria']); ?></td>
                 <td><?php echo (int) ($rowImpact['reglas'] ?? 0); ?></td>
                 <td><?php echo (int) ($rowImpact['aliases'] ?? 0); ?></td>
                 <td><?php echo (int) ($rowImpact['elementos_contractuales'] ?? 0); ?></td>
-                <td><?php echo $activeBadge($family['activa'] ?? 1); ?></td>
+                <td><?php echo $statusBadge($status); ?><?php echo $statusDetail($status); ?></td>
                 <td>
                   <?php if ((int) ($family['activa'] ?? 1) !== 1): ?>
                     <form method="POST" action="/admin/matching/family-catalog/approve">
@@ -184,6 +259,34 @@ $activeBadge = static fn($value): string => ((int) $value === 1)
                     </form>
                   <?php endif; ?>
                 </td>
+              </tr>
+            <?php endforeach; ?>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h3 class="card-title">Reporte completo del catálogo</h3></div>
+      <div class="card-body border-bottom">
+        <span class="mr-2"><?php echo $statusBadge(['status_key' => 'creates_activities', 'label' => 'Crea actividades']); ?></span>
+        <span class="mr-2"><?php echo $statusBadge(['status_key' => 'managed_in_contracts', 'label' => 'Se gestiona en Contratos']); ?></span>
+        <span class="mr-2"><?php echo $statusBadge(['status_key' => 'alias_of', 'label' => 'Es otro nombre de...']); ?></span>
+        <span class="mr-2"><?php echo $statusBadge(['status_key' => 'needs_decision', 'label' => 'Necesita decisión']); ?></span>
+        <span><?php echo $statusBadge(['status_key' => 'do_not_use', 'label' => 'No usar']); ?></span>
+      </div>
+      <div class="card-body table-responsive p-0" style="max-height: 480px;">
+        <table class="table table-sm table-hover mb-0">
+          <thead><tr><th>Elemento</th><th>Tipo</th><th>Estado</th><th>Motivo</th><th>Siguiente acción</th></tr></thead>
+          <tbody>
+            <?php foreach (($catalogReport ?? []) as $reportRow): ?>
+              <?php $status = $reportRow['status'] ?? []; ?>
+              <tr>
+                <td><strong><?php echo $h($reportRow['item'] ?? ''); ?></strong><br><small class="text-muted"><?php echo $h($reportRow['code'] ?? ''); ?></small></td>
+                <td><?php echo $h($reportRow['type'] ?? ''); ?></td>
+                <td><?php echo $statusBadge($status); ?></td>
+                <td><?php echo $h($status['reason'] ?? ''); ?><?php if (!empty($status['package_hint'])): ?><small class="text-muted d-block"><?php echo $h($status['package_hint']); ?></small><?php endif; ?><?php if (!empty($status['canonical_family'])): ?><small class="text-muted d-block"><?php echo $h($status['canonical_family']); ?></small><?php endif; ?></td>
+                <td><?php echo $h($status['next_action'] ?? ''); ?></td>
               </tr>
             <?php endforeach; ?>
           </tbody>
@@ -273,14 +376,16 @@ $activeBadge = static fn($value): string => ((int) $value === 1)
         <h6>Aliases activos</h6>
         <ul class="list-unstyled">
           <?php foreach (array_slice($aliases, 0, 8) as $alias): ?>
-            <li><?php echo $activeBadge($alias['activa'] ?? 1); ?> <?php echo $h($alias['alias_nombre']); ?> → <strong><?php echo $h($alias['familia_nombre']); ?></strong></li>
+            <?php $status = $alias['catalog_status'] ?? []; ?>
+            <li><?php echo $statusBadge($status); ?> <?php echo $h($alias['alias_nombre']); ?> → <strong><?php echo $h($alias['familia_nombre']); ?></strong><?php echo $statusDetail($status); ?></li>
           <?php endforeach; ?>
         </ul>
 
         <h6 class="mt-3">Elementos contractuales</h6>
         <ul class="list-unstyled">
           <?php foreach (array_slice($contractualElements, 0, 8) as $element): ?>
-            <li><?php echo $activeBadge($element['activa'] ?? 1); ?> <?php echo $h($element['nombre']); ?> → <?php echo $h($element['tipo_paquete']); ?></li>
+            <?php $status = $element['catalog_status'] ?? []; ?>
+            <li><?php echo $statusBadge($status); ?> <?php echo $h($element['nombre']); ?> → <?php echo $h($element['tipo_paquete']); ?><?php echo $statusDetail($status); ?></li>
           <?php endforeach; ?>
         </ul>
 

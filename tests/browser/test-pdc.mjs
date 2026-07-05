@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { BASE_URL, PROJECTS } from './fixtures/projects.mjs';
-import { loginAndSelectProject } from './support/session.mjs';
+import { changeWeek, loginAndSelectProject } from './support/session.mjs';
 import { ProjectDbSnapshot } from './support/dbSnapshot.mjs';
 
 const CONSTRUCTION_PROJECT = PROJECTS.find((project) => project.key === 'construction');
@@ -12,8 +12,8 @@ test.describe('PDC module tests', () => {
     snapshot = new ProjectDbSnapshot(CONSTRUCTION_PROJECT).capture();
     await loginAndSelectProject(page, CONSTRUCTION_PROJECT);
 
-    // Navigate to PDC page
-    await page.goto(`${BASE_URL}/pdc`, { waitUntil: 'networkidle', timeout: 30000 });
+    // Navigate to PDC page with a valid construction week.
+    await changeWeek(page, 8, '/pdc');
     // Wait for DataTable initComplete to render toolbar and legend chips
     await page.waitForTimeout(3000);
   });
@@ -38,10 +38,10 @@ test.describe('PDC module tests', () => {
 
     await expect(page.locator('#btn_auto_generar_desde_contratos')).toHaveCount(0);
 
-    // Solo Alertas button
+    // Ver alertas button
     const soloAlertasBtn = page.locator('#btn_soloAlertas');
     await expect(soloAlertasBtn).toBeVisible({ timeout: 5000 });
-    await expect(soloAlertasBtn).toContainText('Solo Alertas');
+    await expect(soloAlertasBtn).toContainText('Ver alertas');
 
     // Verify Wizard button does NOT exist - search by text content
     const wizardCount = await page.evaluate(() => {
@@ -58,17 +58,16 @@ test.describe('PDC module tests', () => {
     console.log(`[Test 1] Wizard button occurrences found: ${wizardCount}`);
     expect(wizardCount).toBe(0);
 
-    // Verify page title mentions PDC or Plan de Compras
+    // Verify page title or body mentions the current module name
     const pageTitle = await page.locator('title').textContent();
     console.log(`[Test 1] Page title: "${pageTitle}"`);
     const titleMatch = pageTitle && (
       pageTitle.includes('PDC') ||
-      pageTitle.includes('Plan de Compras') ||
-      pageTitle.includes('Plan de compras')
+      pageTitle.includes('Plan de Compras y Contrataciones')
     );
     // Also check body content as fallback
     const bodyText = await page.locator('body').textContent();
-    const bodyMatch = bodyText.includes('PDC') || bodyText.includes('Plan de Compras');
+    const bodyMatch = bodyText.includes('PDC') || bodyText.includes('Plan de Compras y Contrataciones');
     expect(titleMatch || bodyMatch).toBeTruthy();
   });
 
@@ -116,41 +115,66 @@ test.describe('PDC module tests', () => {
     // Verify all 7 legend chips exist
     // Use class-based selectors for chips with unique classes
     const chipSelectors = [
-      { text: 'Datos Faltantes', selector: '.pdc-legend-item.missing' },
-      { text: 'Crítico (No Iniciado)', selector: '.pdc-legend-item.critical' },
-      { text: 'Atrasado', selector: '.pdc-legend-item.delayed' },
-      { text: 'Terminado con Retraso', selector: '.pdc-legend-item.completed-late' },
-      { text: 'Terminado a Tiempo', selector: '.pdc-legend-item.completed-ontime' },
-      { text: 'En Curso', selector: '.pdc-legend-item.active' },
-      { text: 'No Iniciado', selector: '.pdc-legend-item.not-started' },
+      { text: 'Informacion pendiente', selector: '.pdc-legend-item.missing', cssVar: '--pdc-missing-bg' },
+      { text: 'Inicio de contratacion vencido', selector: '.pdc-legend-item.critical', cssVar: '--pdc-critical-bg' },
+      { text: 'Contratacion atrasada', selector: '.pdc-legend-item.delayed', cssVar: '--pdc-delayed-bg' },
+      { text: 'Contratacion cerrada tarde', selector: '.pdc-legend-item.completed-late', cssVar: '--pdc-completed-late-bg' },
+      { text: 'Contratacion cerrada a tiempo', selector: '.pdc-legend-item.completed-ontime', cssVar: '--pdc-completed-ontime-bg' },
+      { text: 'Contratacion en curso', selector: '.pdc-legend-item.active', cssVar: '--pdc-active-bg' },
+      { text: 'Contratacion pendiente de inicio', selector: '.pdc-legend-item.not-started', cssVar: '--pdc-not-started-bg' },
     ];
 
-    for (const { text, selector } of chipSelectors) {
+    for (const { text, selector, cssVar } of chipSelectors) {
       const chip = page.locator(selector);
       await expect(chip).toBeVisible({ timeout: 10000 });
       const chipText = await chip.textContent();
       console.log(`[Test 3] Chip visible: "${text}" (actual text: "${chipText?.trim()}")`);
+      await expect(chip).toContainText(text);
+
+      const colors = await chip.evaluate((el, varName) => {
+        const root = getComputedStyle(document.documentElement);
+        const probe = document.createElement('span');
+        probe.style.backgroundColor = root.getPropertyValue(varName).trim();
+        document.body.appendChild(probe);
+        const expected = getComputedStyle(probe).backgroundColor;
+        probe.remove();
+
+        return {
+          actual: getComputedStyle(el).backgroundColor,
+          expected,
+        };
+      }, cssVar);
+      expect(colors.actual).toBe(colors.expected);
     }
 
-    // Click "En Curso" chip
+    const legendOverflow = await page.locator('#dt_cliente_wrapper .pdc-legend-wrap').evaluate((el) => ({
+      clientWidth: el.clientWidth,
+      scrollWidth: el.scrollWidth,
+      legendClientWidth: el.querySelector('.pdc-legend')?.clientWidth || 0,
+      legendScrollWidth: el.querySelector('.pdc-legend')?.scrollWidth || 0,
+    }));
+    expect(legendOverflow.scrollWidth).toBeLessThanOrEqual(legendOverflow.clientWidth + 1);
+    expect(legendOverflow.legendScrollWidth).toBeLessThanOrEqual(legendOverflow.legendClientWidth + 1);
+
+    // Click "Contratacion en curso" chip
     const enCursoChip = page.locator('.pdc-legend-item.active');
     await expect(enCursoChip).toBeVisible({ timeout: 5000 });
-    console.log('[Test 3] Clicking "En Curso" chip');
+    console.log('[Test 3] Clicking "Contratacion en curso" chip');
     await enCursoChip.click();
     await page.waitForTimeout(500);
 
     // Verify the chip toggles - chip should get inactive-filter class on other chips
     const allChips = page.locator('.pdc-legend-item');
-    // The "En Curso" chip should NOT have inactive-filter (it's active)
+    // The active chip should NOT have inactive-filter
     const enCursoClasses = await enCursoChip.getAttribute('class');
-    console.log(`[Test 3] "En Curso" chip classes after click: "${enCursoClasses}"`);
+    console.log(`[Test 3] "Contratacion en curso" chip classes after click: "${enCursoClasses}"`);
     expect(enCursoClasses).not.toContain('inactive-filter');
 
     // Other chips should have inactive-filter
     const otherChips = await allChips.all();
     for (const chip of otherChips) {
       const text = await chip.textContent();
-      if (text && text.includes('En Curso')) continue;
+      if (text && text.includes('Contratacion en curso')) continue;
       const classes = await chip.getAttribute('class') || '';
       console.log(`[Test 3] Chip "${text?.trim()}" classes: "${classes}"`);
     }
@@ -193,20 +217,20 @@ test.describe('PDC module tests', () => {
     // Wait for the table to load
     const table = page.locator('#dt_cliente');
     await expect(table).toBeVisible({ timeout: 15000 });
-    await expect(table).toContainText('TIPO DE CONTRATO');
-    await expect(table).toContainText('PAQUETE DE CONTRATACIÓN');
+    await expect(table).toContainText('MODALIDAD DE CONTRATACION');
+    await expect(table).toContainText('PAQUETE DE CONTRATACION');
 
     // Contract type visibility depends on current project data. Some fixtures
     // intentionally start with no PDC packages, so keep this as a render guard.
     const bodyText = await table.textContent();
-    console.log(`[Test 5] Table contains "Orden de Compra": ${bodyText?.includes('Orden de Compra')}`);
+    console.log(`[Test 5] Table contains "Orden de servicio/compra": ${bodyText?.includes('Orden de servicio/compra')}`);
 
     const tableText = bodyText || '';
-    const supportedTypes = ['Orden de Compra', 'Mano de Obra', 'Suministro', 'Suministro e Instalación'];
+    const supportedTypes = ['Orden de servicio/compra', 'Mano de Obra', 'Suministro', 'Suministro e Instalación'];
     if (supportedTypes.some((type) => tableText.includes(type))) {
       expect(supportedTypes.some((type) => tableText.includes(type))).toBe(true);
     } else {
-      expect(tableText).toContain('TIPO DE CONTRATO');
+      expect(tableText).toContain('MODALIDAD DE CONTRATACION');
     }
   });
 

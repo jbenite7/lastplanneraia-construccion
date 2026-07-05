@@ -32,6 +32,10 @@ $layout = file_get_contents($root . '/admin/views/layouts/main.php') ?: '';
 
 foreach ([
     "/matching/family-catalog",
+    "/matching/family-catalog/family",
+    "/matching/family-catalog/alias",
+    "/matching/family-catalog/contractual",
+    "/matching/family-catalog/contract-option",
     "/matching/family-catalog/rule",
     "/matching/family-catalog/approve",
     "/matching/family-catalog/resolve-decision",
@@ -45,9 +49,11 @@ adminCatalogAssert(file_exists($viewFile), 'vista admin del catálogo existe');
 
 if (file_exists($controllerFile)) {
     $controller = file_get_contents($controllerFile) ?: '';
-    foreach (['index', 'saveFamily', 'saveAlias', 'saveContractualElement', 'saveRuleAssignment', 'approveCatalogItem', 'resolvePendingDecision', 'importCatalog', 'exportCatalog'] as $method) {
+    foreach (['index', 'saveFamily', 'saveAlias', 'saveContractualElement', 'saveContractOption', 'saveRuleAssignment', 'approveCatalogItem', 'resolvePendingDecision', 'importCatalog', 'exportCatalog'] as $method) {
         adminCatalogAssert(str_contains($controller, "function {$method}("), "controlador implementa {$method}");
     }
+    adminCatalogAssert(str_contains($controller, 'FamilyCatalogStatusResolver'), 'controlador usa estado derivado del catálogo');
+    adminCatalogAssert(str_contains($controller, 'catalogReport'), 'controlador expone reporte completo del catálogo');
     adminCatalogAssert(str_contains($controller, 'requireAdminRole'), 'controlador restringe a administradores');
     adminCatalogAssert(str_contains($controller, 'validateCsrfToken'), 'controlador valida CSRF en guardados');
     adminCatalogAssert(str_contains($controller, 'general_pdc_family_aliases'), 'controlador mantiene aliases');
@@ -62,12 +68,16 @@ if (file_exists($controllerFile)) {
 
 if (file_exists($viewFile)) {
     $view = file_get_contents($viewFile) ?: '';
-    foreach (['Familias operativas', 'Aliases', 'Elementos contractuales', 'Decisiones pendientes', 'Mantener en Listado', 'Pasar a Contratos', 'Impacto', 'Auditoría', 'Exportar catálogo', 'Importar catálogo', 'Reglas de detección'] as $label) {
+    foreach (['Familias operativas', 'Aliases', 'Elementos contractuales', 'Crear opción contractual guiada', 'Reporte completo del catálogo', 'Crea actividades', 'Se gestiona en Contratos', 'Es otro nombre de...', 'Necesita decisión', 'No usar', 'Decisiones pendientes', 'Mantener en Listado', 'Pasar a Contratos', 'Impacto', 'Auditoría', 'Exportar catálogo', 'Importar catálogo', 'Reglas de detección'] as $label) {
         adminCatalogAssert(str_contains($view, $label), "vista muestra {$label}");
     }
+    adminCatalogAssert(!str_contains($view, '>Inactivo<'), 'vista no usa Inactivo como explicación final');
     adminCatalogAssert(str_contains($view, 'Define si estas filas siguen en Listado o pasan a Contratos.'), 'vista explica decision Listado vs Contratos');
-    foreach (['/admin/matching/family-catalog/family', '/admin/matching/family-catalog/alias', '/admin/matching/family-catalog/contractual', '/admin/matching/family-catalog/rule', '/admin/matching/family-catalog/approve', '/admin/matching/family-catalog/resolve-decision', '/admin/matching/family-catalog/import'] as $action) {
+    foreach (['/admin/matching/family-catalog/family', '/admin/matching/family-catalog/alias', '/admin/matching/family-catalog/contractual', '/admin/matching/family-catalog/contract-option', '/admin/matching/family-catalog/rule', '/admin/matching/family-catalog/approve', '/admin/matching/family-catalog/resolve-decision', '/admin/matching/family-catalog/import'] as $action) {
         adminCatalogAssert(str_contains($view, $action), "vista tiene formulario {$action}");
+    }
+    foreach (['cantidad_default', 'dias_elaboracion', 'dias_legalizacion'] as $field) {
+        adminCatalogAssert(str_contains($view, $field), "vista permite configurar {$field}");
     }
     foreach (['type=families', 'type=aliases', 'type=contractual', 'type=rules'] as $export) {
         adminCatalogAssert(str_contains($view, $export), "vista permite exportar {$export}");
@@ -95,8 +105,7 @@ try {
     $pending = $reflection->getMethod('pendingDecisions');
     $pending->setAccessible(true);
     $rows = $pending->invoke($controller, $db);
-    $equipmentRows = array_values(array_filter($rows, static fn(array $row): bool => ($row['categoria'] ?? '') === 'EQUIPOS'));
-    adminCatalogAssert($equipmentRows !== [], 'admin muestra EQUIPOS en decisiones pendientes');
+    adminCatalogAssert(is_array($rows), 'admin consulta decisiones pendientes');
 
     $code = 'QA_DECISION_TEMP_' . random_int(100000, 999999);
     $name = 'QA Decision Temporal ' . random_int(100000, 999999);

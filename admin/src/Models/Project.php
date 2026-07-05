@@ -387,14 +387,14 @@ class Project
             return;
         }
 
-        // 1. Siempre crear tablas por-proyecto (compatibilidad hacia atrás)
-        foreach ($this->getProjectTableQueries($prefix) as $sql) {
-            $this->db->query($sql);
-        }
-
-        // 2. Si USE_GLOBAL_TABLES=ON, también crear las tablas globales (sin prefijo, con project_id)
         if (\TableResolver::useGlobalTables()) {
+            // Modo global: crear solo tablas globales (sin prefijo, con project_id)
             $this->createGlobalTables();
+        } else {
+            // Legacy: crear tablas por-proyecto (compatibilidad hacia atrás)
+            foreach ($this->getProjectTableQueries($prefix) as $sql) {
+                $this->db->query($sql);
+            }
         }
     }
 
@@ -826,14 +826,14 @@ class Project
      */
     private function createPreConstructionTables($prefix)
     {
-        // Paso 1: 10 tablas estándar (mismas que Construccion)
-        foreach ($this->getProjectTableQueries($prefix) as $sql) {
-            $this->db->query($sql);
-        }
-
-        // 1b. Si USE_GLOBAL_TABLES=ON, también crear las tablas globales
+        // Paso 1: 10 tablas estándar
         if (\TableResolver::useGlobalTables()) {
             $this->createGlobalTables();
+        } else {
+            // Legacy: crear tablas por-proyecto
+            foreach ($this->getProjectTableQueries($prefix) as $sql) {
+                $this->db->query($sql);
+            }
         }
 
         // Paso 2: 6 tablas adicionales estándar (creadas por patches en Construccion)

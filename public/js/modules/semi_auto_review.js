@@ -43,11 +43,12 @@
   };
 
   var TECHNICAL_FIELDS = {
-    confianza_deteccion: true
+    confianza_deteccion: true,
+    selectedSourceId: true
   };
 
   var ACTION_LABELS = {
-    create_activity: 'Crear actividad',
+    create_activity: 'Propuesta para crear actividad',
     update_contracts: 'Definir contratos',
     create_pdc_package: 'Crear paquete',
     update_pdc_package: 'Actualizar paquete',
@@ -55,7 +56,7 @@
   };
 
   var ACTION_MESSAGES = {
-    create_activity: 'El sistema agrupó actividades del programa y propone crear una actividad de seguimiento.',
+    create_activity: 'Basado en el programa general, el sistema propone crear una actividad de seguimiento.',
     update_contracts: 'El sistema encontró una familia de actividad y propone los paquetes de contratación.',
     create_pdc_package: 'Este paquete aparece en Contratos y todavía no está en el Plan de Compras.',
     update_pdc_package: 'El paquete ya existe. Revisa los cambios propuestos antes de actualizarlo.',
@@ -232,7 +233,8 @@
       + '.sar-groups{display:flex;flex-direction:column;gap:12px}.sar-group{border:1px solid #e2e8f0;border-radius:8px;background:#fff;overflow:hidden}.sar-group-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;background:#f8fafc;border-bottom:1px solid #e2e8f0}.sar-group-title{font-weight:800;color:#24313a}.sar-group-desc{font-size:.82rem;color:#64748b}.sar-group-count{font-weight:800;border-radius:999px;background:#e2e8f0;color:#334155;padding:4px 9px}.sar-card-list{display:flex;flex-direction:column;gap:10px;padding:10px}.sar-card{border:1px solid #e2e8f0;border-radius:8px;background:#fff;display:flex;flex-direction:column;min-height:0}.sar-card.is-ready{border-color:#bbf7d0}.sar-card.is-review{border-color:#fed7aa}.sar-card.is-conflict{border-color:#fecaca;opacity:.9}.sar-card-top{display:flex;gap:10px;padding:11px 12px;border-bottom:1px solid #edf2f7}.sar-card-check{margin-top:4px}.sar-card-main{min-width:0;flex:1}.sar-card-title-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.sar-card-title{font-weight:800;color:#24313a}.sar-card-subtitle{color:#64748b;margin-top:2px;word-break:break-word}.sar-card-message{font-size:.86rem;color:#475569;margin-top:7px;line-height:1.35}.sar-badge{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 8px;font-size:.78rem;font-weight:800}.sar-badge.ready{background:#dcfce7;color:#166534}.sar-badge.review{background:#ffedd5;color:#9a3412}.sar-badge.conflict{background:#fee2e2;color:#991b1b}.sar-change-summary{padding:10px 12px;color:#334155;font-size:.86rem}.sar-change-line{display:flex;gap:7px;align-items:flex-start;margin-bottom:6px}.sar-change-label{font-weight:800;min-width:132px}.sar-change-flow{color:#475569}.sar-old{color:#64748b}.sar-new{color:#166534;font-weight:700}.sar-card-actions{display:flex;gap:8px;justify-content:flex-end;padding:0 12px 12px;margin-top:auto}.sar-review-btn,.sar-tech-btn{border:1px solid #cbd5e1;border-radius:6px;background:#fff;color:#334155;padding:5px 9px;font-weight:700}.sar-detail{display:none;border-top:1px solid #edf2f7;padding:10px 12px;background:#fcfcfd}.sar-card.is-open .sar-detail{display:block}.sar-edit-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:9px}.sar-edit-field label{display:block;font-weight:700;font-size:.8rem;color:#475569;margin-bottom:3px}.sar-inline-edit{width:100%;border:1px solid #cbd5e1;border-radius:5px;padding:6px 8px;font-size:.86rem;background:#fff}.sar-empty{padding:22px;text-align:center;color:#64748b;border:1px dashed #cbd5e1;border-radius:8px;background:#f8fafc}.sar-tech-wrap{display:none;margin-top:12px;border:1px dashed #94a3b8;border-radius:8px;background:#f8fafc;padding:10px}.sar-tech-wrap.is-open{display:block}.sar-tech-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px}.sar-tech-card{background:#fff;border:1px solid #e2e8f0;border-radius:6px;padding:8px;font-size:.78rem;color:#334155}.sar-tech-card code{white-space:normal;word-break:break-word;color:#be185d}.sar-hidden{display:none!important}'
       + '.sar-analysis{border:1px solid #dbe7ef;border-radius:8px;background:#fff;margin:0 0 14px;padding:10px 12px}.sar-analysis-head{display:flex;justify-content:space-between;gap:10px}.sar-analysis-title{font-weight:800;color:#24313a}.sar-analysis-copy{display:block;color:#64748b;font-size:.82rem}.sar-analysis-progress{font-weight:800;color:#2f7d4d}.sar-analysis-bar{height:7px;background:#e2e8f0;border-radius:999px;overflow:hidden;margin:9px 0}.sar-analysis-bar span{display:block;height:100%;background:#2f7d4d;width:0;transition:width .55s ease}.sar-analysis-steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:7px}.sar-analysis-step{border:1px solid #e2e8f0;border-radius:6px;padding:7px;background:#f8fafc;transition:background .25s ease,border-color .25s ease}.sar-analysis-step strong{display:block;color:#334155}.sar-analysis-step small{display:block;color:#64748b}.sar-analysis-step.is-running{border-color:#7dd3fc;background:#f0f9ff}.sar-analysis-step.is-done{border-color:#bbf7d0;background:#f0fdf4}.sar-analysis-step.is-error{border-color:#fecaca;background:#fef2f2}.sar-analysis-summary{margin-top:9px;color:#334155;font-size:.84rem}.sar-suggestion-analysis{border-top:1px solid #edf2f7;margin-top:10px;padding-top:10px;color:#334155}'
       + '.sar-quality{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 0}.sar-quality-chip{border-radius:999px;background:#f1f5f9;color:#334155;border:1px solid #e2e8f0;padding:3px 8px;font-size:.78rem;font-weight:800}.sar-quality-chip.conflict{background:#fee2e2;color:#991b1b;border-color:#fecaca}.sar-quality-chip.review{background:#ffedd5;color:#9a3412;border-color:#fed7aa}.sar-quality-chip.ready{background:#dcfce7;color:#166534;border-color:#bbf7d0}.sar-quality-list{margin:7px 0 0;padding-left:18px;color:#475569}.sar-source-list{display:grid;gap:6px;margin-top:8px}.sar-source-item{border:1px solid #e2e8f0;border-radius:6px;background:#fff;padding:6px 7px;font-size:.82rem}.sar-source-meta{display:block;color:#64748b;margin-top:2px}'
-      + '.sar-assistant{border:1px solid #cfe3d8;border-radius:8px;background:#f8fcfa;margin:0 0 14px;padding:11px 12px}.sar-assistant-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.sar-assistant-title{font-weight:800;color:#1f5134}.sar-assistant-copy{display:block;color:#64748b;font-size:.82rem}.sar-assistant-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;margin-top:9px}.sar-assistant-card{border:1px solid #dbe7ef;border-radius:7px;background:#fff;padding:8px;color:#334155}.sar-assistant-card strong{display:block;color:#24313a;margin-bottom:3px}.sar-assistant-card small{display:block;color:#64748b}.sar-assistant-card.warning{border-color:#fed7aa;background:#fff7ed}.sar-assistant-card.critical{border-color:#fecaca;background:#fef2f2}.sar-assistant-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}.sar-assistant-actions button{border:1px solid #cbd5e1;background:#fff;border-radius:6px;padding:4px 8px;font-weight:700;color:#334155}.sar-learning-pill{display:inline-flex;margin:3px 5px 0 0;border-radius:999px;background:#e0f2fe;color:#075985;padding:3px 8px;font-size:.78rem;font-weight:800}'
+      + '.sar-assistant{border:1px solid #cfe3d8;border-radius:8px;background:#f8fcfa;margin:0 0 14px;padding:11px 12px}.sar-assistant-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.sar-assistant-title{font-weight:800;color:#1f5134}.sar-assistant-copy{display:block;color:#64748b;font-size:.82rem}.sar-assistant:not(.is-open) .sar-assistant-copy,.sar-assistant:not(.is-open) .sar-assistant-grid,.sar-assistant:not(.is-open) .sar-assistant-feedback-actions{display:none}.sar-assistant-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;margin-top:9px}.sar-assistant-card{border:1px solid #dbe7ef;border-radius:7px;background:#fff;padding:8px;color:#334155}.sar-assistant-card strong{display:block;color:#24313a;margin-bottom:3px}.sar-assistant-card small{display:block;color:#64748b}.sar-assistant-card.warning{border-color:#fed7aa;background:#fff7ed}.sar-assistant-card.critical{border-color:#fecaca;background:#fef2f2}.sar-assistant-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}.sar-assistant-actions button{border:1px solid #cbd5e1;background:#fff;border-radius:6px;padding:4px 8px;font-weight:700;color:#334155}.sar-learning-pill{display:inline-flex;margin:3px 5px 0 0;border-radius:999px;background:#e0f2fe;color:#075985;padding:3px 8px;font-size:.78rem;font-weight:800}'
+      + '.sar-edit-field-wide{grid-column:1/-1}.sar-source-context{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;color:#475569;font-size:.82rem}.sar-source-context span{border:1px solid #e2e8f0;background:#f8fafc;border-radius:6px;padding:4px 7px}.sar-modality-group{display:grid;gap:6px}.sar-modality-option{display:flex;align-items:center;gap:7px;margin:0;color:#334155;font-weight:600}.sar-modality-option input{width:16px;height:16px}'
       + '.semi-auto-review{border-color:#c9ded4;border-top:4px solid #2f7d4d}.sar-head{background:linear-gradient(180deg,#fbfdfc 0%,#f5f8fa 100%)}.sar-title{font-size:1.12rem;letter-spacing:0}.sar-actions .sar-btn-apply:not(:disabled){background:#2f7d4d;color:#fff;border-color:#2f7d4d}.sar-actions .sar-btn-preview{border-color:#86a3b8}.sar-steps{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px}.sar-step{box-shadow:0 1px 2px rgba(15,23,42,.04)}.sar-step.is-active{box-shadow:0 0 0 2px rgba(47,125,77,.12)}.sar-summary-pill{box-shadow:0 1px 2px rgba(15,23,42,.04)}.sar-group{box-shadow:0 4px 14px rgba(15,23,42,.05)}.sar-group-ready .sar-group-head{background:#f0fdf4}.sar-group-review .sar-group-head{background:#fff7ed}.sar-group-conflict .sar-group-head{background:#fef2f2}.sar-card{box-shadow:0 3px 10px rgba(15,23,42,.04);transition:box-shadow .15s ease,transform .15s ease}.sar-card:hover{box-shadow:0 8px 20px rgba(15,23,42,.08);transform:translateY(-1px)}.sar-card.is-ready{border-left:4px solid #2f7d4d}.sar-card.is-review{border-left:4px solid #d97706}.sar-card.is-conflict{border-left:4px solid #b91c1c}.sar-card-check{width:18px;height:18px}.sar-change-heading{font-weight:800;color:#24313a;margin-bottom:7px}.sar-change-line{background:#f8fafc;border:1px solid #edf2f7;border-radius:6px;padding:6px 7px}.sar-review-btn:hover,.sar-tech-btn:hover{background:#eef6f2;border-color:#9bc7b1}.sar-foot{border-bottom-left-radius:8px;border-bottom-right-radius:8px}'
       + '@media(max-width:768px){.sar-head{display:block}.sar-actions{justify-content:flex-start;margin-top:10px}.sar-steps{grid-template-columns:1fr}.sar-card-list{grid-template-columns:1fr}.sar-foot{display:block}.sar-foot label{display:block;margin-top:8px}.sar-change-line{display:block}.sar-change-label{min-width:0}.semi-auto-review{margin-left:0;margin-right:0}}';
     $('<style id="semi-auto-review-style"></style>').text(css).appendTo('head');
@@ -286,6 +288,7 @@
       analysisRevealTimer: null,
       analysisRevealDone: false,
       assistantInbox: null,
+      assistantExpanded: false,
       learningCandidates: []
     };
     bind(instances[module]);
@@ -326,11 +329,21 @@
     $panel.on('change.semiAuto', '.sar-inline-edit', function () {
       saveInlineFeedback(instance, this);
     });
+    $panel.on('change.semiAuto', '.sar-source-select', function () {
+      updateSourceContext($(this));
+    });
+    $panel.on('change.semiAuto', '.sar-modality-check', function () {
+      updateModalityChecks($(this));
+    });
     $panel.on('click.semiAuto', '.sar-alert-ack', function () {
       ackAssistantItem(instance, $(this).data('item-id'));
     });
     $panel.on('click.semiAuto', '.sar-assistant-feedback', function () {
       sendAssistantFeedback(instance, $(this).data('rating'), $(this).data('item-id') || null);
+    });
+    $panel.on('click.semiAuto', '.sar-assistant-toggle', function () {
+      instance.assistantExpanded = !instance.assistantExpanded;
+      renderAssistant(instance, instance.lastResponse || instance.assistantInbox || {});
     });
     $panel.on('click.semiAuto', '.sar-learning-approve', function () {
       reviewLearningCandidate(instance, $(this).data('candidate-id'), 'approve');
@@ -343,6 +356,7 @@
   function open(module) {
     var instance = instances[module] || init({ module: module });
     if (!instance) return;
+    instance.assistantExpanded = false;
     instance.panel.removeAttr('hidden');
     loadAssistantInbox(instance);
     loadPreview(instance);
@@ -354,6 +368,7 @@
     clearAnalysisReveal(instance);
     instance.runId = newRunId();
     instance.selectedIds = {};
+    instance.assistantExpanded = false;
     instance.analysisRevealDone = false;
     setStatus(instance, 'Revisando propuestas paso a paso...', '');
     instance.panel.removeAttr('hidden').find('.sar-btn-preview').prop('disabled', true);
@@ -646,10 +661,12 @@
     var recommendations = response.assistant_recommendations || inbox.recommendations || [];
     var alerts = response.assistant_alerts || inbox.items || [];
     var learning = response.learning_used || [];
-    var html = '<section class="sar-assistant"><div class="sar-assistant-head"><div>'
+    var expanded = !!instance.assistantExpanded;
+    var html = '<section class="sar-assistant' + (expanded ? ' is-open' : '') + '"><div class="sar-assistant-head"><div>'
       + '<span class="sar-assistant-title"><i class="fas fa-magic"></i> Asistente AIA</span>'
       + '<span class="sar-assistant-copy">' + escapeHtml(summary.message || (inbox.diagnostics && inbox.diagnostics.message) || 'Listo para diagnosticar y recomendar próximos pasos.') + '</span>'
-      + '</div><div class="sar-assistant-actions"><button type="button" class="sar-assistant-feedback" data-rating="helpful">Útil</button><button type="button" class="sar-assistant-feedback" data-rating="not_helpful">No ayudó</button></div></div>'
+      + '</div><div class="sar-assistant-actions"><button type="button" class="sar-assistant-toggle" aria-expanded="' + (expanded ? 'true' : 'false') + '">' + (expanded ? 'Ocultar asistente AIA' : 'Ver asistente AIA') + '</button></div></div>'
+      + '<div class="sar-assistant-actions sar-assistant-feedback-actions"><button type="button" class="sar-assistant-feedback" data-rating="helpful">Útil</button><button type="button" class="sar-assistant-feedback" data-rating="not_helpful">No ayudó</button></div>'
       + '<div class="sar-assistant-grid">'
       + assistantCardsHtml('Recomendaciones', recommendations, false)
       + assistantCardsHtml('Alertas', alerts, true)
@@ -716,9 +733,14 @@
     var copy = $.extend(true, {}, suggestion);
     copy.group = classifySuggestion(copy);
     copy.visibleDiff = (copy.diff || []).filter(function (d) {
-      return d && d.field && !TECHNICAL_FIELDS[d.field];
+      return d && d.field && !TECHNICAL_FIELDS[d.field] && !isDerivedCreateActivityField(copy, d.field);
     });
     return copy;
+  }
+
+  function isDerivedCreateActivityField(suggestion, field) {
+    return suggestion.action === 'create_activity'
+      && ['actividadInicio', 'fechaInicio', 'semanaActualizacion'].indexOf(String(field || '')) >= 0;
   }
 
   function classifySuggestion(suggestion) {
@@ -784,6 +806,7 @@
       + '<div class="sar-card-title-row"><span class="sar-card-title">' + escapeHtml(actionLabel(suggestion)) + '</span>' + badgeHtml(suggestion.group) + '</div>'
       + '<div class="sar-card-subtitle">' + escapeHtml(suggestion.subtitle || suggestion.title || 'Sin nombre') + '</div>'
       + '<div class="sar-card-message">' + escapeHtml(humanReason(suggestion)) + '</div>'
+      + catalogStatusHtml(suggestion)
       + qualitySummaryHtml(suggestion)
       + '</div></div>'
       + '<div class="sar-change-summary"><div class="sar-change-heading">Cambios propuestos</div>' + changeSummaryHtml(changes) + '</div>'
@@ -806,10 +829,28 @@
   }
 
   function humanReason(suggestion) {
+    var status = catalogStatus(suggestion);
+    if (status && status.reason) return status.reason;
     var gate = qualityGate(suggestion);
     var reasons = gate ? [].concat(gate.ready_blockers || [], gate.review_reasons || [], gate.conflicts || []) : [];
     if (reasons.length) return reasons[0];
     return ACTION_MESSAGES[suggestion.action] || suggestion.reason || 'Revisa esta propuesta antes de aplicarla.';
+  }
+
+  function catalogStatus(suggestion) {
+    if (suggestion && suggestion.analysis && suggestion.analysis.catalog_status) return suggestion.analysis.catalog_status;
+    if (suggestion && suggestion.applyPayload && suggestion.applyPayload.catalog_status) return suggestion.applyPayload.catalog_status;
+    return null;
+  }
+
+  function catalogStatusHtml(suggestion) {
+    var status = catalogStatus(suggestion);
+    if (!status) return '';
+    var hint = [status.next_action || '', status.package_hint || '', status.canonical_family || ''].filter(Boolean).join(' · ');
+    return '<div class="sar-quality sar-catalog-status">'
+      + '<span class="sar-quality-chip review">' + escapeHtml(status.label || 'Necesita decisión') + '</span>'
+      + (hint ? '<span class="sar-quality-chip">' + escapeHtml(hint) + '</span>' : '')
+      + '</div>';
   }
 
   function qualityGate(suggestion) {
@@ -857,18 +898,22 @@
     var assistant = suggestion.assistant_reasoning || null;
     var gate = qualityGate(suggestion);
     var sources = qualitySources(suggestion);
-    if (!user && !assistant && !gate && !sources.length) return '';
+    var status = catalogStatus(suggestion);
+    if (!user && !assistant && !gate && !sources.length && !status) return '';
     var issues = gate ? [].concat(gate.ready_blockers || [], gate.review_reasons || [], gate.conflicts || []) : [];
     return '<div class="sar-suggestion-analysis"><strong>Cómo llegó a esta propuesta</strong>'
+      + (status ? '<div>Estado: ' + escapeHtml(status.label || 'Necesita decisión') + '</div>' : '')
+      + (status ? '<div>Motivo: ' + escapeHtml(status.reason || humanReason(suggestion)) + '</div>' : '')
+      + (status && status.package_hint ? '<div>Paquete sugerido: ' + escapeHtml(status.package_hint) + '</div>' : '')
       + (user ? '<div>Origen: ' + escapeHtml(user.origin || 'Automatización') + '</div>' : '')
       + (user ? '<div>Regla: ' + escapeHtml(user.rule || 'Sin regla registrada') + '</div>' : '')
       + (user ? '<div>Decisión: ' + escapeHtml(user.decision || humanReason(suggestion)) + '</div>' : '')
       + (user ? '<div>Confianza: ' + escapeHtml(String(user.confidence == null ? suggestion.confidence : user.confidence)) + '%</div>' : '')
-      + (gate ? '<div>Actividad de inicio: ' + escapeHtml(gate.start_activity_label || 'Por confirmar') + '</div>' : '')
+      + (gate && suggestion.action !== 'create_activity' ? '<div>Actividad de inicio: ' + escapeHtml(gate.start_activity_label || 'Por confirmar') + '</div>' : '')
       + (issues.length ? '<ul class="sar-quality-list">' + issues.slice(0, 5).map(function (item) { return '<li>' + escapeHtml(item) + '</li>'; }).join('') + '</ul>' : '')
       + sourceListHtml(sources)
-      + (assistant ? '<div>Recomendación: ' + escapeHtml(assistant.next_step || '') + '</div>' : '')
-      + (assistant ? '<div>Riesgo: ' + escapeHtml(assistant.risk || '') + '</div>' : '')
+      + (assistant ? '<div>Siguiente paso: ' + escapeHtml(assistant.next_step || '') + '</div>' : '')
+      + (assistant ? '<div>Atención: ' + escapeHtml(assistant.risk || '') + '</div>' : '')
       + '</div>';
   }
 
@@ -878,12 +923,15 @@
       var hints = [source.location_hint || '', source.intervention_hint || '', source.context || source.chapter || ''].filter(Boolean).join(' · ');
       return '<div class="sar-source-item">'
         + '<strong>' + escapeHtml(source.activity || 'Fuente sin nombre') + '</strong>'
-        + '<span class="sar-source-meta">' + escapeHtml([source.unique_id ? ('ID ' + source.unique_id) : '', source.start_date || '', hints, source.why_included || ''].filter(Boolean).join(' · ')) + '</span>'
+        + '<span class="sar-source-meta">' + escapeHtml([source.start_date || '', hints, source.why_included || ''].filter(Boolean).join(' · ')) + '</span>'
         + '</div>';
     }).join('') + (sources.length > 6 ? '<div class="text-muted">+' + (sources.length - 6) + ' fuentes adicionales</div>' : '') + '</div>';
   }
 
   function editFieldsHtml(suggestion, changes) {
+    if (suggestion.action === 'create_activity') {
+      return createActivityEditHtml(suggestion);
+    }
     if (!changes.length) {
       return '<div class="text-muted">Esta propuesta no tiene campos editables desde el asistente.</div>';
     }
@@ -911,6 +959,123 @@
       }).join('') + '</select>';
     }
     return '<input' + attrs + ' value="' + escapeHtml(value) + '">';
+  }
+
+  function createActivityEditHtml(suggestion) {
+    var proposed = suggestion.proposed || {};
+    var sources = sortedSources(qualitySources(suggestion));
+    if (!sources.length) {
+      return '<div class="text-muted">Esta propuesta no tiene fuentes suficientes para aplicar automáticamente.</div>';
+    }
+    var selected = selectedSourceId(suggestion, sources);
+    var selectedSource = sourceById(sources, selected) || sources[0];
+    var modalidad = normalizeModality(proposed.tipoContrato || '');
+    return '<div class="sar-edit-grid sar-listado-edit">'
+      + '<div class="sar-edit-field sar-edit-field-wide"><label>Actividad</label>'
+      + '<select class="sar-inline-edit sar-source-select" data-suggestion-id="' + escapeHtml(suggestion.suggestion_id) + '" data-field="selectedSourceId">'
+      + sources.map(function (source) {
+        var value = String(source.unique_id || '');
+        return '<option value="' + escapeHtml(value) + '"' + (String(selected) === value ? ' selected' : '') + ' data-activity="' + escapeHtml(source.activity || '') + '" data-date="' + escapeHtml(source.start_date || '') + '">'
+          + escapeHtml(sourceOptionLabel(source)) + '</option>';
+      }).join('')
+      + '</select>'
+      + '<div class="sar-source-context" data-source-context="' + escapeHtml(suggestion.suggestion_id) + '">'
+      + sourceContextHtml(selectedSource)
+      + '</div></div>'
+      + '<div class="sar-edit-field"><label>Modalidad de contratación</label>'
+      + modalityCheckboxesHtml(suggestion, modalidad)
+      + '</div></div>';
+  }
+
+  function sortedSources(sources) {
+    return (sources || []).slice().sort(function (a, b) {
+      var confidence = Number(b.confidence || 0) - Number(a.confidence || 0);
+      if (confidence !== 0) return confidence;
+      var date = String(a.start_date || '').localeCompare(String(b.start_date || ''));
+      if (date !== 0) return date;
+      var activity = String(a.activity || '').localeCompare(String(b.activity || ''));
+      if (activity !== 0) return activity;
+      return Number(a.unique_id || 0) - Number(b.unique_id || 0);
+    });
+  }
+
+  function selectedSourceId(suggestion, sources) {
+    var selected = suggestion.analysis && suggestion.analysis.selected_source_id;
+    if (selected) return String(selected);
+    var proposed = suggestion.proposed || {};
+    if (proposed.actividadInicio) return String(proposed.actividadInicio);
+    return String((sources[0] && sources[0].unique_id) || '');
+  }
+
+  function sourceById(sources, id) {
+    var sid = String(id || '');
+    for (var i = 0; i < sources.length; i++) {
+      if (String(sources[i].unique_id || '') === sid) return sources[i];
+    }
+    return null;
+  }
+
+  function sourceOptionLabel(source) {
+    var parts = [source.activity || 'Fuente sin nombre', source.start_date || 'Fecha por confirmar'];
+    if (source.confidence) parts.push('confianza ' + Math.round(Number(source.confidence)) + '%');
+    return parts.join(' · ');
+  }
+
+  function sourceContextHtml(source) {
+    return '<span>Basado en el programa general: <strong>' + escapeHtml(source && source.activity ? source.activity : 'Fuente por confirmar') + '</strong></span>'
+      + '<span>Inicio: <strong>' + escapeHtml(source && source.start_date ? source.start_date : 'Fecha por confirmar') + '</strong></span>';
+  }
+
+  function updateSourceContext($select) {
+    var selected = $select.find('option:selected');
+    var source = {
+      activity: selected.data('activity') || selected.text(),
+      start_date: selected.data('date') || ''
+    };
+    $select.closest('.sar-edit-field').find('.sar-source-context').html(sourceContextHtml(source));
+  }
+
+  function modalityCheckboxesHtml(suggestion, value) {
+    var selected = modalityParts(value);
+    var suggestionId = escapeHtml(suggestion.suggestion_id);
+    var hasSI = selected.indexOf('SI') >= 0;
+    var hasOther = selected.some(function (part) { return ['MO', 'S', 'OC'].indexOf(part) >= 0; });
+    var options = [
+      ['SI', 'Suministro e instalación'],
+      ['MO', 'Mano de obra'],
+      ['S', 'Suministro'],
+      ['OC', 'Orden de compra']
+    ];
+    return '<div class="sar-modality-group" data-suggestion-id="' + suggestionId + '">'
+      + '<input type="hidden" class="sar-modality-value" data-suggestion-id="' + suggestionId + '" data-field="tipoContrato" value="' + escapeHtml(selected.join(',')) + '">'
+      + options.map(function (option) {
+        var code = option[0];
+        var disabled = (code === 'SI' && hasOther) || (code !== 'SI' && hasSI);
+        return '<label class="sar-modality-option"><input type="checkbox" class="sar-modality-check" value="' + code + '"' + (selected.indexOf(code) >= 0 ? ' checked' : '') + (disabled ? ' disabled' : '') + '> ' + escapeHtml(option[1]) + '</label>';
+      }).join('')
+      + '</div>';
+  }
+
+  function modalityParts(value) {
+    var normalized = normalizeModality(value);
+    return normalized ? normalized.split(',').filter(Boolean) : [];
+  }
+
+  function updateModalityChecks($changed) {
+    var $group = $changed.closest('.sar-modality-group');
+    var siChecked = $group.find('.sar-modality-check[value="SI"]').is(':checked');
+    var anyOther = $group.find('.sar-modality-check').filter(function () {
+      return this.value !== 'SI' && this.checked;
+    }).length > 0;
+    if (siChecked) {
+      $group.find('.sar-modality-check').filter('[value!="SI"]').prop('checked', false).prop('disabled', true);
+    } else {
+      $group.find('.sar-modality-check').filter('[value!="SI"]').prop('disabled', false);
+    }
+    $group.find('.sar-modality-check[value="SI"]').prop('disabled', anyOther);
+    var value = $group.find('.sar-modality-check:checked').map(function () { return this.value; }).get().join(',');
+    var input = $group.find('.sar-modality-value').val(value)[0];
+    saveInlineFeedback(instances[$group.closest('.semi-auto-review').attr('id').replace('semiAutoReview-', '')], input);
   }
 
   function renderTech(instance, suggestions) {
@@ -1046,6 +1211,22 @@
     var suggestions = (instance.lastResponse && instance.lastResponse.suggestions) || [];
     suggestions.forEach(function (s) {
       if (s.suggestion_id !== suggestionId) return;
+      if (field === 'selectedSourceId') {
+        var source = sourceById(qualitySources(s), value);
+        if (source) {
+          s.analysis = s.analysis || {};
+          s.analysis.selected_source_id = Number(value);
+          s.analysis.selected_source = source;
+          s.proposed = s.proposed || {};
+          s.proposed.actividadInicio = Number(value);
+          s.proposed.fechaInicio = source.start_date || '';
+          (s.diff || []).forEach(function (d) {
+            if (d.field === 'actividadInicio') d.to = Number(value);
+            if (d.field === 'fechaInicio') d.to = source.start_date || '';
+          });
+        }
+        return;
+      }
       (s.diff || []).forEach(function (d) {
         if (d.field === field) d.to = value;
       });
@@ -1176,6 +1357,9 @@
         OC: 'Orden de compra',
         E: 'Equipos',
         'MO,S': 'Mano de obra + suministro',
+        'MO,OC': 'Mano de obra + orden de compra',
+        'S,OC': 'Suministro + orden de compra',
+        'MO,S,OC': 'Mano de obra + suministro + orden de compra',
         'M_O,S': 'Mano de obra + suministro'
       };
       return escapeHtml(labels[modality] || modality || '');

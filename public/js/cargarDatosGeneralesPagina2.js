@@ -49,7 +49,7 @@ navInformacionGeneral +=
   "<li id='tituloInteresados' class='dropdown-header'><b>Interesados</b></li><li><a class='dropdown-item' id='info_profesionales' href='#'>Profesionales AIA</a></li><li><a class='dropdown-item' id='info_subcontratistas' href='#'>Sub-Contratistas</a></li>";
 
 navInformacionGeneral +=
-  "<li id='tituloActividadesProyecto' class='dropdown-header mt-2'><b>Actividades del Proyecto</b></li><li><a class='dropdown-item' id='info_listadoActividades' href='#'>Listado de Actividades</a></li><li><a class='dropdown-item' id='info_contratos' href='#'>Contratos</a></li><li><a class='dropdown-item' id='planCompras' href='#'>Plan de Compras</a></li>";
+  "<li id='tituloActividadesProyecto' class='dropdown-header mt-2'><b>Familias y contratacion</b></li><li><a class='dropdown-item' id='info_listadoActividades' href='#'>Familias de obra</a></li><li><a class='dropdown-item' id='info_contratos' href='#'>Paquetes de contratacion</a></li><li><a class='dropdown-item' id='planCompras' href='#'>Plan de Compras y Contrataciones</a></li>";
 
 navInformacionGeneral +=
   " <li id='tituloIndicadores' class='dropdown-header mt-2'><b>Indicadores</b></li><li><a class='dropdown-item' id='informe_lps' href='#'>Indicadores de Last Planner</a></li><!-- <li><a class='dropdown-item' id='informe_productividad' href='#'>Indicadores de Tasas de Producción</a></li> -->";
@@ -365,9 +365,9 @@ var cargarDatosGeneralesPagina = function (seccion) {
           controlCambios: 'Control de Cambios',
           info_profesionales: 'Profesionales',
           info_subcontratistas: 'Subcontratistas',
-          info_listadoActividades: 'Actividades',
-          info_contratos: 'Contratos',
-          planCompras: 'Plan de Compras (PDC)',
+          info_listadoActividades: 'Familias de obra',
+          info_contratos: 'Paquetes de contratacion',
+          planCompras: 'Plan de Compras y Contrataciones',
           actualizarCronograma: 'Actualizar Cronograma',
           indicadores: 'Indicadores',
           programacion_intermedia: 'Liberación de Restricciones',

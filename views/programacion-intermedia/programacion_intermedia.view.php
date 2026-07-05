@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head id="head">
+    <meta charset="UTF-8">
     <script src="/public/vendor/jquery.min.js"></script>
     <script src="/public/vendor/jquery-ui.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap4.min.css" rel="stylesheet">

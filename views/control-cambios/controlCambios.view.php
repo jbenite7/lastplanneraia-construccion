@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head id="head">
+	<meta charset="UTF-8">
 	<!--Script cque va al archivo linksComunesHead2.js-->
 	<script type="text/javascript" src="/js/linksComunesHead2.js?v=piStateColors3" charset="utf-8"></script>
 </head>

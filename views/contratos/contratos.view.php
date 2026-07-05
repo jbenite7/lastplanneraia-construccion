@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head id="head">
+	<meta charset="UTF-8">
 	<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 	<!--Script cque va al archivo linksComunesHead2.js-->
 	<script type="text/javascript" src="/js/linksComunesHead2.js?v=piStateColorsSuperFresh3" charset="utf-8"></script>
@@ -34,12 +35,12 @@
 						<th></th>
 						<th>Id</th>
 						<th>Id</th>
-						<th>Actividad</th>
+						<th>Familia</th>
 						<th>Descripción</th>
-						<th>Actividad de Inicio En Programa</th>
-						<th>Actividad de Inicio En Programa</th>
+						<th>Inicio en obra segun cronograma</th>
+						<th>Inicio en obra segun cronograma</th>
 						<th>Fecha de Inicio</th>
-						<th>Tipo de Contrato</th>
+						<th>Modalidad de contratacion</th>
 						<th>Semana de Actualizacion</th>
 						<th>SI1</th>
 						<th>paqueteSI1</th>
@@ -101,7 +102,7 @@
 						<th>OC5</th>
 						<th>paqueteOC5</th>
 						<th>cantidadOC5</th>
-						<th>Paquetes de Contratación Asociados</th>
+						<th>Paquetes de contratacion asociados</th>
 					</tr>
 				</thead>
 			</table>
@@ -119,7 +120,7 @@
 						<div class="modal-title ct-modal-title" id="modalEditarContratosLabel">
 							<div class="aia-modal__eyebrow">AIA Corporativo</div>
 							<h2 class="aia-modal__headline"><span class="modal-body-texto-EditarContratos" id="modal-body-texto-EditarContratos"></span></h2>
-							<p class="aia-modal__subtitle">Configura los paquetes e insumos asociados a la actividad seleccionada.</p>
+							<p class="aia-modal__subtitle">Configura los paquetes e insumos asociados a la familia seleccionada.</p>
 						</div>
 						<button type="button" class="close ct-modal-close" data-dismiss="modal" aria-label="Close">
 							<span aria-hidden="true" onclick="recargarTabla('listar')">&times;</span>
@@ -135,7 +136,7 @@
 											<label class="ct-checkbox-item"><input type="checkbox" id="modalidadSI" name="modalidades[]" value="SI"> Suministro e Instalación</label>
 											<label class="ct-checkbox-item"><input type="checkbox" id="modalidadMO" name="modalidades[]" value="MO"> Mano de Obra</label>
 											<label class="ct-checkbox-item"><input type="checkbox" id="modalidadS" name="modalidades[]" value="S"> Suministro</label>
-											<label class="ct-checkbox-item"><input type="checkbox" id="modalidadOC" name="modalidades[]" value="OC"> Orden de Compra</label>
+											<label class="ct-checkbox-item"><input type="checkbox" id="modalidadOC" name="modalidades[]" value="OC"> Orden de servicio/compra</label>
 										</div>
 									</div>
 									<input type="hidden" id="tipoContrato" name="tipoContrato" value="">
@@ -144,7 +145,7 @@
                                     $contractSections = [
                                         [
                                             'id' => 'parametro_EditarContratosS',
-                                            'title' => 'Contratos de Suministro',
+                                            'title' => 'Paquetes de suministro',
                                             'packagePrefix' => 'paqueteS',
                                             'resourcePrefix' => 'S',
                                             'packageLabel' => 'Paquete Suministro',
@@ -152,7 +153,7 @@
                                         ],
                                         [
                                             'id' => 'parametro_EditarContratosMO',
-                                            'title' => 'Contratos de Mano de Obra',
+                                            'title' => 'Paquetes de mano de obra',
                                             'packagePrefix' => 'paqueteMO',
                                             'resourcePrefix' => 'MO',
                                             'packageLabel' => 'Paquete Mano de Obra',
@@ -160,7 +161,7 @@
                                         ],
                                         [
                                             'id' => 'parametro_EditarContratosSI',
-                                            'title' => 'Contratos de Suministro e Instalación',
+                                            'title' => 'Paquetes de suministro e instalación',
                                             'packagePrefix' => 'paqueteSI',
                                             'resourcePrefix' => 'SI',
                                             'packageLabel' => 'Paquete Suministro e Instalación',
@@ -168,11 +169,11 @@
                                         ],
                                         [
                                             'id' => 'parametro_EditarContratosOC',
-                                            'title' => 'Orden de Compra',
+                                            'title' => 'Orden de servicio/compra',
                                             'packagePrefix' => 'paqueteOC',
                                             'resourcePrefix' => 'OC',
-                                            'packageLabel' => 'Paquete Orden de Compra',
-                                            'resourceLabel' => 'Insumos Orden de Compra',
+                                            'packageLabel' => 'Paquete orden de servicio/compra',
+                                            'resourceLabel' => 'Insumos orden de servicio/compra',
                                         ],
                                     ];
 									?>
@@ -183,9 +184,9 @@
 										</div>
 										<div class="ct-contract-header" aria-hidden="true">
 											<div class="ct-contract-header__spacer"></div>
-											<div class="ct-contract-header__cell">Paquete de Contratación</div>
-											<div class="ct-contract-header__cell">Contratos</div>
-											<div class="ct-contract-header__cell">Insumo / Recurso</div>
+											<div class="ct-contract-header__cell">Paquete de contratacion</div>
+											<div class="ct-contract-header__cell">Cantidad de contratos</div>
+											<div class="ct-contract-header__cell">Insumos y recursos requeridos</div>
 										</div>
 										<div class="ct-contract-list">
 											<?php for ($i = 1; $i <= 5; $i++): ?>
@@ -238,7 +239,7 @@
 				<div class="modal-content ct-modal-content">
 					<div class="modal-header ct-modal-header">
 						<div class="modal-title ct-modal-title" id="modalDuracionesContratosLabel">
-							<div class="aia-modal__eyebrow">Contratos</div>
+							<div class="aia-modal__eyebrow">Paquetes de contratacion</div>
 							<h2 class="aia-modal__headline">Duraciones pendientes</h2>
 							<p class="aia-modal__subtitle">Define los dias de contratacion para continuar con el guardado.</p>
 						</div>
@@ -251,8 +252,8 @@
 							<table class="table table-sm table-bordered" id="tablaDuracionesContratos">
 								<thead>
 									<tr>
-										<th>Tipo</th>
-										<th>Paquete</th>
+										<th>Modalidad</th>
+										<th>Paquete de contratacion</th>
 										<th>Pliegos</th>
 										<th>Entrega</th>
 										<th>Propuestas</th>
@@ -365,6 +366,39 @@
 					$('#cantidad' + prefix + i).val(quantity);
 				}
 				updateOverplanningAlert(prefix);
+			});
+		}
+
+		function reloadContractOptionsForModal() {
+			var tipoContrato = $('#tipoContrato').val() || '';
+			var db = document.getElementById('baseDatos').value;
+			$.post('/api/contratos/save?db=' + db, {
+				opcion: 'actualizarListadoPaquetesContratacion',
+				tipoContrato: tipoContrato
+			}).done(function(info) {
+				var data = (typeof info === 'string' ? JSON.parse(info) : info);
+				[['SI', 'listadoSI'], ['MO', 'listadoMO'], ['S', 'listadoS'], ['OC', 'listadoOC']].forEach(function(item) {
+					var prefix = item[0], options = data[item[1]] || '<option value=""></option>';
+					for (var i = 1; i <= 5; i++) {
+						var $select = $('#paquete' + prefix + i);
+						var current = $select.val();
+						$select.html(options).val(current).change();
+					}
+				});
+			});
+			$.post('/api/contratos/save?db=' + db, {
+				opcion: 'actualizarInsumosRecursos',
+				tipoContrato: tipoContrato
+			}).done(function(info) {
+				var data = (typeof info === 'string' ? JSON.parse(info) : info);
+				[['SI', 'listadoSI'], ['MO', 'listadoMO'], ['S', 'listadoS'], ['OC', 'listadoOC']].forEach(function(item) {
+					var prefix = item[0], options = data[item[1]] || '<option value=""></option>';
+					for (var i = 1; i <= 5; i++) {
+						var $select = $('#' + prefix + i);
+						var current = $select.val();
+						$select.html(options).val(current).change();
+					}
+				});
 			});
 		}
 
@@ -501,7 +535,7 @@
 						'SI': '<span class="badge badge-primary">Suministro e Instalación</span>',
 						'MO': '<span class="badge badge-info">Mano de Obra</span>',
 						'S':  '<span class="badge badge-secondary">Suministro</span>',
-						'OC': '<span class="badge badge-dark">Orden de Compra</span>'
+						'OC': '<span class="badge badge-dark">Orden de servicio/compra</span>'
 					};
 					var result = [];
 					for (var i = 0; i < modalidades.length; i++) {
@@ -643,11 +677,11 @@
 				table.columns.adjust();
 			});
 
-			$("div.toolbarFilaBotones").html('<div class="grupo_botones_semanal_madre ps-toolbar-nav-wrap"><div class="grupo_botones_semanal btn-group" role="group" aria-label="Basic example"><button id="btn_Actividades" type="button" class="btn-pdc-modern" onclick="window.location.href=\'/listado-actividades?semana='+semana+'\'">Actividades <i class="fas fa-arrow-right fa-m"></i></button><button id="btn_contratos" type="button" class="btn-pdc-modern active" onclick="window.location.href=\'/contratos?semana='+semana+'\'">Contratos <i class="fas fa-arrow-right fa-m"></i></button><button id="btn_planCompras" type="button" class="btn-pdc-modern" onclick="window.location.href=\'/pdc?semana='+semana+'&origen=info_contratos\'">Plan de Compras</button></div></div>');
+			$("div.toolbarFilaBotones").html('<div class="grupo_botones_semanal_madre ps-toolbar-nav-wrap"><div class="grupo_botones_semanal btn-group" role="group" aria-label="Basic example"><button id="btn_Actividades" type="button" class="btn-pdc-modern" onclick="window.location.href=\'/listado-actividades?semana='+semana+'\'">Familias de obra <i class="fas fa-arrow-right fa-m"></i></button><button id="btn_contratos" type="button" class="btn-pdc-modern active" onclick="window.location.href=\'/contratos?semana='+semana+'\'">Paquetes de contratacion <i class="fas fa-arrow-right fa-m"></i></button><button id="btn_planCompras" type="button" class="btn-pdc-modern" onclick="window.location.href=\'/pdc?semana='+semana+'&origen=info_contratos\'">Plan de Compras y Contrataciones</button></div></div>');
 
 			$("div.toolbarFilaBotones .grupo_botones_semanal_madre")
 				.addClass("ps-toolbar-nav-wrap")
-				.html('<div class="ps-module-switcher" role="tablist" aria-label="Navegacion general"><button id="btn_Actividades" type="button" class="ps-module-tab" onclick="window.location.href=\'/listado-actividades?semana='+semana+'\'" aria-label="Ir a Actividades"><i class="fas fa-table" aria-hidden="true"></i><span>Actividades</span></button><button id="btn_contratos" type="button" class="ps-module-tab is-active" onclick="window.location.href=\'/contratos?semana='+semana+'\'" aria-label="Ir a Contratos" aria-current="page"><i class="fas fa-file-alt" aria-hidden="true"></i><span>Contratos</span></button><button id="btn_planCompras" type="button" class="ps-module-tab" onclick="window.location.href=\'/pdc?semana='+semana+'&origen=info_contratos\'" aria-label="Ir a Plan de Compras"><i class="fas fa-shopping-cart" aria-hidden="true"></i><span>Plan de Compras</span></button></div>');
+				.html('<div class="ps-module-switcher" role="tablist" aria-label="Navegacion general"><button id="btn_Actividades" type="button" class="ps-module-tab" onclick="window.location.href=\'/listado-actividades?semana='+semana+'\'" aria-label="Ir a Familias de obra"><i class="fas fa-table" aria-hidden="true"></i><span>Familias de obra</span></button><button id="btn_contratos" type="button" class="ps-module-tab is-active" onclick="window.location.href=\'/contratos?semana='+semana+'\'" aria-label="Ir a Paquetes de contratacion" aria-current="page"><i class="fas fa-file-alt" aria-hidden="true"></i><span>Paquetes de contratacion</span></button><button id="btn_planCompras" type="button" class="ps-module-tab" onclick="window.location.href=\'/pdc?semana='+semana+'&origen=info_contratos\'" aria-label="Ir a Plan de Compras y Contrataciones"><i class="fas fa-shopping-cart" aria-hidden="true"></i><span>Plan de Compras y Contrataciones</span></button></div>');
 
 			$("div.toolbarFilaMensajes").html('<p id="mensajeActualizacion"></p>');
 
@@ -655,7 +689,7 @@
 
 			var permiso = document.getElementById('permiso_canonico').value;
 			if (permiso === 'A' || permiso === 'D' || permiso === 'OT' || permiso === 'R') {
-				$("div.toolbarFilaBotones").prepend('<button id="btn_auto_asignar_contratos" class="btn-pdc-modern ml-2" title="Auto-definir tipo de contrato y paquetes para actividades sin asignar"><i class="fas fa-magic"></i> Auto-Definir Contratos<span class="badge badge-pill badge-danger ml-1" id="badgePendientesContratos" style="display:none;font-size:0.65rem;vertical-align:middle;line-height:1;min-width:1.4em;">0</span></button>');
+				$("div.toolbarFilaBotones").prepend('<button id="btn_auto_asignar_contratos" class="btn-pdc-modern ml-2" title="Auto-definir modalidad y paquetes para familias sin asignar"><i class="fas fa-magic"></i> Auto-definir paquetes<span class="badge badge-pill badge-danger ml-1" id="badgePendientesContratos" style="display:none;font-size:0.65rem;vertical-align:middle;line-height:1;min-width:1.4em;">0</span></button>');
 			}
 			if (window.SemiAutoReview) {
 				window.SemiAutoReview.init({
@@ -815,7 +849,7 @@
 		      only_once = false;
 
 					$("#modalEditarContratos").modal("show");
-					$("#modal-body-texto-EditarContratos").html("Formulario de Registro de Contratos; Actividad: <b>" + data.actividad + "</b>");
+					$("#modal-body-texto-EditarContratos").html("Formulario de Registro de Paquetes; Familia: <b>" + data.actividad + "</b>");
 
 					$("#btn_cancelar_contratos").off("click.contratosRearmar").on("click.contratosRearmar", function(){
 							only_once = true;
@@ -876,6 +910,7 @@
 			}
 			syncHiddenTipoContrato();
 			updateSections();
+			reloadContractOptionsForModal();
 		});
 
 		// MO/S/OC checkboxes: if any checked → uncheck + disable SI
@@ -888,6 +923,7 @@
 			}
 			syncHiddenTipoContrato();
 			updateSections();
+			reloadContractOptionsForModal();
 		});
 
 		/* Ejecuta la funcion guardar, solo cuando se presiona el botón guardar. La función guardar busca la informacion registrada en el formulario de registro de usuarios y lo envia por medio de AJAX para que se ejecute la funcion modificar en guardar.php */

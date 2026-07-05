@@ -44,42 +44,58 @@ export class ProjectDbSnapshot {
       os.tmpdir(),
       `lps-aia-e2e-${project.projectId}-${Date.now()}-${Math.random().toString(16).slice(2)}.sql`,
     );
+    this.captured = false;
   }
 
   capture() {
     this.existingTables = this.tables.filter(tableExists);
     if (this.existingTables.length === 0) {
       fs.writeFileSync(this.filePath, '', 'utf8');
+      this.captured = true;
       return this;
     }
 
-    const dump = spawnSync('docker', [
-      'compose',
-      'exec',
-      '-T',
-      'db',
-      'sh',
-      '-lc',
-      'where="project_id=$1"; shift; mysqldump -uroot -p"$MYSQL_ROOT_PASSWORD" --no-create-info --skip-triggers --single-transaction --where="$where" "$MYSQL_DATABASE" "$@"',
-      'dump-e2e',
-      String(this.project.projectId),
-      ...this.existingTables,
-    ], {
-      cwd: process.cwd(),
-      encoding: 'utf8',
-      maxBuffer: 50 * 1024 * 1024,
-    });
+    let dump;
+    for (let attempt = 1; attempt <= 3; attempt += 1) {
+      dump = spawnSync('docker', [
+        'compose',
+        'exec',
+        '-T',
+        'db',
+        'sh',
+        '-lc',
+        'where="project_id=$1"; shift; mysqldump -uroot -p"$MYSQL_ROOT_PASSWORD" --no-create-info --skip-triggers --single-transaction --where="$where" "$MYSQL_DATABASE" "$@"',
+        'dump-e2e',
+        String(this.project.projectId),
+        ...this.existingTables,
+      ], {
+        cwd: process.cwd(),
+        encoding: 'utf8',
+        maxBuffer: 200 * 1024 * 1024,
+      });
+
+      if (dump.status === 0) break;
+
+      const message = `${dump.error?.message || ''}\n${dump.stderr || ''}\n${dump.stdout || ''}`;
+      if (!message.includes('Deadlock found') || attempt === 3) break;
+
+      spawnSync('docker', ['compose', 'exec', '-T', 'db', 'sh', '-lc', 'sleep 1'], {
+        cwd: process.cwd(),
+        encoding: 'utf8',
+      });
+    }
 
     if (dump.status !== 0) {
-      throw new Error(`mysqldump failed: ${dump.stderr || dump.stdout}`);
+      throw new Error(`mysqldump failed: ${dump.error?.message || dump.stderr || dump.stdout}`);
     }
 
     fs.writeFileSync(this.filePath, dump.stdout, 'utf8');
+    this.captured = true;
     return this;
   }
 
   restore() {
-    if (this.existingTables.length === 0) return;
+    if (!this.captured || this.existingTables.length === 0) return;
 
     const deletes = this.existingTables
       .map((table) => `DELETE FROM \`${table}\` WHERE project_id = ${this.project.projectId};`)
@@ -100,11 +116,11 @@ export class ProjectDbSnapshot {
         cwd: process.cwd(),
         input: sql,
         encoding: 'utf8',
-        maxBuffer: 50 * 1024 * 1024,
+        maxBuffer: 200 * 1024 * 1024,
       });
 
       if (restore.status !== 0) {
-        throw new Error(`mysql restore failed: ${restore.stderr || restore.stdout}`);
+        throw new Error(`mysql restore failed: ${restore.error?.message || restore.stderr || restore.stdout}`);
       }
     }
   }

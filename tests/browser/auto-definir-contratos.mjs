@@ -40,6 +40,7 @@ test.describe('Auto-definir contratos', () => {
     const hasCards = await panel.locator('.sar-card').count();
     if (hasCards > 0) {
       expect(visibleText).toMatch(/Alta seguridad|Revisar|No recomendado/);
+      expect(visibleText).toMatch(/Crea actividades|Se gestiona en Contratos|Necesita decisión|No usar/);
       expect(visibleText).toContain('Cambios propuestos');
       await panel.locator('.sar-review-btn').first().click();
       await expect(panel.locator('.sar-suggestion-analysis').first()).toContainText('Cómo llegó');

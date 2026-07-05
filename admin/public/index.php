@@ -125,6 +125,7 @@ $router->add('GET', '/matching/family-catalog', 'FamilyCatalogController@index')
 $router->add('POST', '/matching/family-catalog/family', 'FamilyCatalogController@saveFamily');
 $router->add('POST', '/matching/family-catalog/alias', 'FamilyCatalogController@saveAlias');
 $router->add('POST', '/matching/family-catalog/contractual', 'FamilyCatalogController@saveContractualElement');
+$router->add('POST', '/matching/family-catalog/contract-option', 'FamilyCatalogController@saveContractOption');
 $router->add('POST', '/matching/family-catalog/rule', 'FamilyCatalogController@saveRuleAssignment');
 $router->add('POST', '/matching/family-catalog/approve', 'FamilyCatalogController@approveCatalogItem');
 $router->add('POST', '/matching/family-catalog/resolve-decision', 'FamilyCatalogController@resolvePendingDecision');

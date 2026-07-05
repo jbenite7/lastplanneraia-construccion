@@ -28,6 +28,7 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
 <!DOCTYPE html>
 <html lang="es">
 <head id="head">
+    <meta charset="UTF-8">
     <script src="/public/vendor/jquery.min.js"></script>
     <script src="/public/vendor/jquery-ui.min.js"></script>
     <script type="text/javascript" src="/js/linksComunesHead2.js?v=headLoaderV20260530" charset="utf-8"></script>

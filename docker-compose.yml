@@ -14,6 +14,7 @@ services:
       DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
       DB_PASS: ${DB_PASS}
+      USE_GLOBAL_TABLES: "true"
     restart: unless-stopped
 
   db:

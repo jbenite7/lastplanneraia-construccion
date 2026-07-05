@@ -97,6 +97,8 @@ $routes = file_get_contents($root . '/public/index.php') ?: '';
 
 echo "--- Vista de Contratos ---\n";
 $view = file_get_contents($root . '/views/contratos/contratos.view.php') ?: '';
+$semiAutoService = file_get_contents($root . '/src/Services/SemiAutoService.php') ?: '';
+$semiAutoUi = file_get_contents($root . '/public/js/modules/semi_auto_review.js') ?: '';
 str_contains($view, "SemiAutoReview.open('contratos')")
     ? pass('El boton abre el asistente moderno de Contratos')
     : fail('El boton no abre el asistente moderno');
@@ -104,6 +106,18 @@ str_contains($view, "SemiAutoReview.open('contratos')")
 !str_contains($view, 'modalAutoAsignarContratos') && !str_contains($view, '/api/contratos/auto-define')
     ? pass('La vista no conserva modal ni llamadas legacy auto-define')
     : fail('La vista conserva residuos legacy auto-define');
+
+str_contains($semiAutoService, 'catalog_status') && str_contains($semiAutoService, 'FamilyCatalogStatusResolver')
+    ? pass('El asistente de Contratos incluye estado derivado del catálogo')
+    : fail('El asistente de Contratos no expone catalog_status');
+
+str_contains($semiAutoUi, 'catalogStatusHtml') && str_contains($semiAutoUi, 'Paquete sugerido')
+    ? pass('La UI del asistente muestra estado, motivo y paquete sugerido')
+    : fail('La UI del asistente no renderiza el estado del catálogo');
+
+str_contains($semiAutoService, 'cantidadDefault') && str_contains($semiAutoService, 'cantidad_default')
+    ? pass('Contratos usa cantidad por defecto de paquetes guiados')
+    : fail('Contratos no usa cantidad por defecto de paquetes guiados');
 
 echo "\n=== Results: $passed passed, $failed failed, $skipped skipped ===\n";
 exit($failed > 0 ? 1 : 0);

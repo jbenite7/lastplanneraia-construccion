@@ -191,19 +191,67 @@ try {
 
     $applyCandidate = null;
     foreach (($preview['suggestions'] ?? []) as $suggestion) {
-        if (($suggestion['action'] ?? '') === 'create_activity' && !empty($suggestion['preselected'])) {
-            $applyCandidate = $suggestion['suggestion_id'];
+        if (($suggestion['action'] ?? '') === 'create_activity' && !empty($suggestion['preselected']) && count($suggestion['analysis']['sources'] ?? []) > 1) {
+            $applyCandidate = $suggestion;
             break;
+        }
+    }
+    if ($applyCandidate === null) {
+        foreach (($preview['suggestions'] ?? []) as $suggestion) {
+            if (($suggestion['action'] ?? '') === 'create_activity' && !empty($suggestion['preselected'])) {
+                $applyCandidate = $suggestion;
+                break;
+            }
         }
     }
 
     if ($applyCandidate === null) {
         skipSemi('No create_activity suggestion available for apply/undo');
     } else {
+        $applyCandidateId = (string) ($applyCandidate['suggestion_id'] ?? '');
+        $sources = $applyCandidate['analysis']['sources'] ?? [];
+        $selectedSource = null;
+        if (count($sources) > 1) {
+            $selectedSource = $sources[count($sources) - 1];
+            $sourceFeedback = $service->feedback(SemiAutoService::MODULE_LISTADO, $context, [
+                'run_id' => $runId,
+                'suggestion_id' => $applyCandidateId,
+                'feedback_type' => 'inline_correction',
+                'corrected' => ['selectedSourceId' => (string) ($selectedSource['unique_id'] ?? '')],
+            ]);
+            !empty($sourceFeedback['updated_suggestion'])
+                ? passSemi('feedback updates selected activity source')
+                : failSemi('feedback did not update selected activity source');
+        }
+
+        $modalityFeedback = $service->feedback(SemiAutoService::MODULE_LISTADO, $context, [
+            'run_id' => $runId,
+            'suggestion_id' => $applyCandidateId,
+            'feedback_type' => 'inline_correction',
+            'corrected' => ['tipoContrato' => 'MO,S'],
+        ]);
+        !empty($modalityFeedback['updated_suggestion'])
+            ? passSemi('feedback accepts multiple contract modalities')
+            : failSemi('feedback did not accept multiple contract modalities');
+
+        $invalidModalityFailed = false;
+        try {
+            $service->feedback(SemiAutoService::MODULE_LISTADO, $context, [
+                'run_id' => $runId,
+                'suggestion_id' => $applyCandidateId,
+                'feedback_type' => 'inline_correction',
+                'corrected' => ['tipoContrato' => 'SI,MO'],
+            ]);
+        } catch (Throwable $e) {
+            $invalidModalityFailed = true;
+        }
+        $invalidModalityFailed
+            ? passSemi('feedback rejects SI mixed with other modalities')
+            : failSemi('feedback accepted invalid SI modality mix');
         $correctedName = 'E2E semi-auto corrected ' . date('His');
         $feedback = $service->feedback(SemiAutoService::MODULE_LISTADO, $context, [
             'run_id' => $runId,
-            'suggestion_id' => $applyCandidate,
+            'suggestion_id' => $applyCandidateId,
             'feedback_type' => 'inline_correction',
             'corrected' => ['actividad' => $correctedName],
         ]);
@@ -230,7 +278,7 @@ try {
             $_SESSION['permiso_canonico'] = 'D';
         }
 
-        $apply = $service->apply(SemiAutoService::MODULE_LISTADO, $context, $runId, [$applyCandidate]);
+        $apply = $service->apply(SemiAutoService::MODULE_LISTADO, $context, $runId, [$applyCandidateId]);
         ((int) ($apply['aplicadas'] ?? 0) === 1 && (int) ($apply['errores'] ?? 0) === 0)
             ? passSemi('apply accepts only stored suggestion_id')
             : failSemi('apply did not apply exactly one stored suggestion');
@@ -241,7 +289,7 @@ try {
             : failSemi('apply did not create exactly one actividad');
 
         $created = $db->query(
-            "SELECT Id, actividad FROM actividades
+            "SELECT Id, actividad, actividadInicio, fechaInicio, tipoContrato FROM actividades
              WHERE project_id = ? AND semanaActualizacion = ?
              ORDER BY Id DESC LIMIT 1",
             [$projectId, $week],
@@ -251,6 +299,15 @@ try {
         $createdName === $correctedName
             ? passSemi('apply uses corrected stored suggestion')
             : failSemi('apply did not use corrected stored suggestion');
+        (string) ($created['tipoContrato'] ?? '') === 'MO,S'
+            ? passSemi('apply persists multiple contract modalities')
+            : failSemi('apply did not persist multiple contract modalities');
+        if ($selectedSource !== null) {
+            ((int) ($created['actividadInicio'] ?? 0) === (int) ($selectedSource['unique_id'] ?? 0)
+                && (string) ($created['fechaInicio'] ?? '') === (string) ($selectedSource['start_date'] ?? ''))
+                ? passSemi('apply persists selected source and derived start date')
+                : failSemi('apply did not persist selected source and derived start date');
+        }
 
         $sourceRows = (int) $db->query(
             "SELECT COUNT(*) FROM actividad_programa_fuentes WHERE project_id = ? AND actividad_id = ? AND semana = ?",

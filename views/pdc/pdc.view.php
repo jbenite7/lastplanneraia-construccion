@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head id="head">
+	<meta charset="UTF-8">
 	<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 	<!--Script cque va al archivo linksComunesHead2.js-->
 	<script type="text/javascript" src="/js/linksComunesHead2.js?v=piStateColorsV4" charset="utf-8"></script>
@@ -15,7 +16,7 @@
 			font-size: 0.85rem;
 			color: #64748b; /* Slate-500 */
 			vertical-align: middle;
-			margin-left: 10px;
+			margin-left: 0;
 		}
 		.pdc-legend-item {
 			display: flex;
@@ -26,12 +27,14 @@
 		/* Legend Container */
 		.pdc-legend {
 			display: flex;
-			flex-wrap: nowrap; /* Force single line */
-			gap: 8px;
+			flex-wrap: wrap;
+			gap: 6px;
 			align-items: center;
-			padding: 0; /* Removed padding for better vertical align */
-			overflow-x: auto; /* Allow horizontal scroll */
-			white-space: nowrap;
+			width: 100%;
+			max-width: 100%;
+			padding: 0.12rem 0 0.18rem;
+			overflow: visible;
+			white-space: normal;
 			-webkit-overflow-scrolling: touch;
 			scrollbar-width: thin; /* Firefox */
 		}
@@ -57,6 +60,12 @@
 			transition: all 0.2s ease;
 			user-select: none;
 			box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+			flex: 1 1 clamp(130px, 13vw, 220px);
+			min-width: 0;
+			max-width: 100%;
+			justify-content: center;
+			line-height: 1.15;
+			white-space: normal;
 		}
 
 		/* Active/Hover Interactions */
@@ -79,11 +88,12 @@
 		/* Chip Badge (Counter) */
 		.count-badge {
 			font-size: 0.75rem;
-			margin-left: 8px;
+			margin-left: 6px;
 			background-color: rgba(255,255,255,0.5);
 			padding: 2px 8px;
 			border-radius: 12px;
 			font-weight: 700;
+			white-space: nowrap;
 		}
 
 		/* Hide old indicator span since color is now on the chip */
@@ -104,6 +114,65 @@
 		#dt_cliente thead tr.pdc-filter-row th.pdc-filter-empty {
 			padding: 0;
 			min-width: 0;
+		}
+		#dt_cliente .celdaBotones {
+			width: 56px;
+			min-width: 56px;
+			padding: 0.45rem 0.3rem;
+			text-align: center;
+			vertical-align: middle;
+		}
+		.pdc-row-actions {
+			display: inline-flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 0.38rem;
+		}
+		.pdc-row-actions .pdc-ready-icon {
+			margin: 0 0 0.08rem;
+			font-size: 0.95rem;
+		}
+		.pdc-row-action {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: 2.35rem;
+			height: 2.35rem;
+			padding: 0;
+			border: 1px solid rgba(255, 255, 255, 0.36);
+			border-radius: 0.65rem;
+			box-shadow: 0 8px 16px rgba(36, 49, 58, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+			transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease;
+		}
+		.pdc-row-action i {
+			font-size: 0.92rem;
+			line-height: 1;
+			color: #ffffff !important;
+		}
+		#dt_cliente .celdaBotones button.editar i,
+		#dt_cliente .celdaBotones button.eliminar i,
+		#dt_cliente .celdaBotones .pdc-row-action i {
+			color: #ffffff !important;
+			fill: #ffffff !important;
+		}
+		.pdc-row-action--edit {
+			background: #14532d;
+			color: #ffffff;
+		}
+		.pdc-row-action--delete {
+			background: #dc2626;
+			color: #ffffff;
+		}
+		.pdc-row-action:hover,
+		.pdc-row-action:focus {
+			color: #ffffff;
+			transform: translateY(-1px);
+			box-shadow: 0 10px 18px rgba(36, 49, 58, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+			filter: brightness(1.04);
+		}
+		.pdc-row-action:focus-visible {
+			outline: 3px solid rgba(37, 99, 235, 0.28);
+			outline-offset: 2px;
 		}
 		.pdc-toast {
 			position: fixed;
@@ -413,6 +482,31 @@
 			font-family: 'Inter', sans-serif;
 		}
 
+		#modalContrato .pdc-modal-value .form-control[readonly],
+		#modalContrato .inputFormularioContratos input[readonly],
+		#modalContrato textarea.form-control[readonly] {
+			border-color: rgba(26, 86, 51, 0.22) !important;
+			border-style: dashed !important;
+			background-color: #e8eee9 !important;
+			background-image: linear-gradient(180deg, #f1f5f2 0%, #e4ebe6 100%) !important;
+			color: #5d6a64;
+			cursor: not-allowed;
+			box-shadow: inset 0 0 0 1px rgba(26, 86, 51, 0.05);
+		}
+
+		#modalContrato .pdc-modal-value .form-control[readonly]:focus,
+		#modalContrato .inputFormularioContratos input[readonly]:focus,
+		#modalContrato textarea.form-control[readonly]:focus {
+			border-color: rgba(26, 86, 51, 0.22);
+			box-shadow: inset 0 0 0 1px rgba(26, 86, 51, 0.05);
+		}
+
+		#modalContrato .inputFormularioContratos:has(input[readonly]) {
+			border-color: rgba(26, 86, 51, 0.22);
+			border-style: dashed;
+			background: linear-gradient(180deg, #eef5f1 0%, #e1e9e3 100%);
+		}
+
 		#modalContrato .inputFormularioContratos i {
 			max-width: none;
 			margin: 0;
@@ -696,10 +790,10 @@
 						<th></th>
 						<th>consecutivo</th>
 						<th>ID</th>
-						<th>TIPO DE CONTRATO</th>
-						<th>PAQUETE DE CONTRATACIÓN</th>
-						<th>ACTIVIDADES DEL PROYECTO</th>
-						<th>A TIEMPO / ATRASADO</th>
+						<th>MODALIDAD DE CONTRATACION</th>
+						<th>PAQUETE DE CONTRATACION</th>
+						<th>FAMILIAS ASOCIADAS</th>
+						<th>ESTADO DEL PROCESO</th>
 						<th>INICIO DEL PROCESO DE CONTRATACIÓN</th>
 						<th></th>
 						<th></th>
@@ -721,9 +815,9 @@
 						<th>INICIO ANTICIPO INSUMOS EN OBRA</th>
 						<th></th>
 						<th></th>
-						<th>INICIO ACTIVIDADES CRONOGRAMA</th>
-						<th>INICIO ACTIVIDADES PROYECTADO</th>
-						<th>INICIO ACTIVIDADES REAL</th>
+						<th>INICIO EN OBRA SEGUN CRONOGRAMA</th>
+						<th>INICIO EN OBRA PROYECTADO</th>
+						<th>INICIO EN OBRA REAL</th>
 						<th>OBSERVACIONES</th>
 						<th>ORDEN VISUAL</th>
 					</tr>
@@ -761,7 +855,7 @@
 										<div class="pdc-contract-section__body">
 											<div class="col-sm-12 pdc-modal-row">
 												<label for="actividadesDelContrato" class="control-label pdc-modal-label">
-													<span class="h6 font-weight-bold">Actividades del programa de obra en este paquete de contratación:</span>
+													<span class="h6 font-weight-bold">Familias asociadas a este paquete de contratacion:</span>
 												</label>
 												<div id='divActividadesDelContrato' name='divActividadesDelContrato' class='pdc-modal-value'><textarea id="actividadesDelContrato" name="actividadesDelContrato" class="form-control" readonly></textarea>
 												</div>
@@ -775,14 +869,14 @@
 											</div>
 											<div class="col-sm-12 pdc-modal-row">
 												<label for="fechaInicioContrato" class="control-label pdc-modal-label">
-													<span class="h6 font-weight-bold">Fecha de inicio del contrato según el cronograma:</span>
+													<span class="h6 font-weight-bold">Inicio en obra segun cronograma:</span>
 												</label>
 												<div id='divFechaInicioContrato' name='divFechaInicioContrato' class='pdc-modal-value pdc-modal-value--narrow'><input id='fechaInicioContrato' name='fechaInicioContrato' class='form-control text-center' type='text' value='' placeholder='Fecha de Inicio' autocomplete="off" readonly>
 												</div>
 											</div>
 											<div class="col-sm-12 pdc-modal-row">
 												<label for="valorPresupuesto" class="control-label pdc-modal-label">
-													<span class="h6 font-weight-bold">Valor en presupuesto de la actividad:</span>
+													<span class="h6 font-weight-bold">Valor en presupuesto de la familia:</span>
 												</label>
 												<div id='divValorPresupuesto' name='divValorPresupuesto' class='pdc-modal-value pdc-modal-value--narrow'><input id='valorPresupuesto' name='valorPresupuesto' class='form-control bg-white text-center' type='text' value='' placeholder='Valor en Pesos Colombianos' autocomplete="off" data-type="currency">
 												</div>
@@ -989,7 +1083,7 @@
 											</div>
 											<div class="pasoProcesoContratacion">
 												<div class="labelFormularioContratos">
-													<span class="h6 font-weight-bold">8. Comienzo de las actividades en la obra:</span>
+													<span class="h6 font-weight-bold">8. Inicio en obra:</span>
 												</div>
 												<div class="inputFormularioContratos pdc-bg-muted">
 													<input id='diasInicioProyectadaContrato' name='diasInicioProyectadaContrato' class='form-control' type='text' value='' placeholder='' autocomplete="off" readonly>
@@ -1137,7 +1231,7 @@
 									</section>
 									<div class="pdc-contract-actions">
 										<div class="pdc-contract-actions__buttons">
-											<input id="btn_guardar_pdc" type="button" class="btn btn-primary" value="Guardar" aria-label="Guardar Plan de Compras">
+											<input id="btn_guardar_pdc" type="button" class="btn btn-primary" value="Guardar" aria-label="Guardar Plan de Compras y Contrataciones">
 											<input id="btn_cancelar_editar" type="button" data-dismiss="modal" class="btn btn-danger" value="Cancelar" aria-label="Cancelar edición">
 										</div>
 										<div>
@@ -1164,8 +1258,8 @@
 					<div class="modal-header">
 						<div class="modal-title" id="modalDefinirContratosLabel">
 							<div class="aia-modal__eyebrow">AIA Corporativo</div>
-							<h2 class="aia-modal__headline modal-body-texto-DefinirContrato" id="modal-body-texto-DefinirContrato">Definir Contratos</h2>
-							<p class="aia-modal__subtitle">Configura el numero de contratos asociados a cada paquete antes de guardar.</p>
+							<h2 class="aia-modal__headline modal-body-texto-DefinirContrato" id="modal-body-texto-DefinirContrato">Definir cantidades</h2>
+							<p class="aia-modal__subtitle">Configura la cantidad de contratos asociados a cada paquete antes de guardar.</p>
 						</div>
 						<button type="button" class="close" data-dismiss="modal" aria-label="Close" onClick="location.reload()"><span aria-hidden="true">&times;</span></button>
 					</div>
@@ -1175,17 +1269,17 @@
 								<form id="formularioDefinirContrato" class="form form-horizontal aia-modal__form" action="" method="POST">
 									<section class="form-group parametro_Contrato aia-modal__section">
 										<div class="aia-modal__section-header">
-											<h3 class="aia-modal__section-title">Distribucion de Contratos</h3>
-											<p class="aia-modal__hint">Ajusta la estructura por tipo de contrato y conserva el orden visual del paquete.</p>
+											<h3 class="aia-modal__section-title">Distribucion de cantidades</h3>
+											<p class="aia-modal__hint">Ajusta la estructura por modalidad de contratacion y conserva el orden visual del paquete.</p>
 										</div>
 											<div class="table-responsive">
 												<table id="dt_definirContratos" class="table table-bordered w-100">
 													<thead class="thead-dark">
 													<tr>
 														<th>Consecutivo</th>
-														<th>Tipo de Contrato</th>
-														<th>Paquete de Contratación</th>
-														<th>Número de Contratos Asociados</th>
+														<th>Modalidad de contratacion</th>
+														<th>Paquete de contratacion</th>
+														<th>Cantidad de contratos</th>
 														<th>subcontratoPaquete</th>
 														<th>ordenVisual</th>
 													</tr>
@@ -1196,8 +1290,8 @@
 									<!--Se crean los botones Guardar y Listar-->
 									<div class="form-group aia-modal__actions">
 										<div class="col-sm-offset-2 col-sm-12 aia-modal__buttons">
-											<input id="btn_guardar_definirContratos" type="button" class="btn btn-primary" value="Guardar" onclick="guardar_DefinirContratos()" aria-label="Guardar definición de contratos">
-											<input id="btn_cancelar_definirContratos" type="button" data-dismiss="modal" class="btn btn-danger" value="Cancelar" onClick="location.reload()" aria-label="Cancelar definición">
+											<input id="btn_guardar_definirContratos" type="button" class="btn btn-primary" value="Guardar" onclick="guardar_DefinirContratos()" aria-label="Guardar cantidades">
+											<input id="btn_cancelar_definirContratos" type="button" data-dismiss="modal" class="btn btn-danger" value="Cancelar" onClick="location.reload()" aria-label="Cancelar cantidades">
 										</div>
 										<p class="mensajeModalDefinirContrato pdc-inline-msg aia-modal__message" id="mensajeModalDefinirContrato"></p>
 									</div>
@@ -1217,7 +1311,7 @@
 		      <div class="modal-header">
 		        <div class="modal-title" id="modalEliminarLabel">
 		          <div class="aia-modal__eyebrow">Accion sensible</div>
-		          <h2 class="aia-modal__title">Eliminar Actividad</h2>
+		          <h2 class="aia-modal__title">Eliminar paquete</h2>
 		          <p class="aia-modal__subtitle">Confirma esta accion antes de continuar.</p>
 		        </div>
 		        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
@@ -1349,19 +1443,75 @@
 			active: 'pdc-active'
 		};
 		var pdcColumnFilterConfig = {
-			3: { type: 'select', dataKey: 'tipoPaquete', ariaLabel: 'Filtrar tipo de contrato' },
+			3: { type: 'select', dataKey: 'tipoPaquete', ariaLabel: 'Filtrar modalidad de contratacion' },
 			4: { type: 'text', ariaLabel: 'Filtrar paquete de contratacion', placeholder: 'Filtrar' },
-			5: { type: 'text', ariaLabel: 'Filtrar actividades del proyecto', placeholder: 'Filtrar' },
-			6: { type: 'select', dataKey: 'estado', ariaLabel: 'Filtrar estado' },
+			5: { type: 'text', ariaLabel: 'Filtrar familias asociadas', placeholder: 'Filtrar' },
+			6: { type: 'select', dataKey: 'estado', ariaLabel: 'Filtrar estado del proceso' },
 			7: { type: 'date', ariaLabel: 'Filtrar inicio del proceso de contratacion' },
-			31: { type: 'date', ariaLabel: 'Filtrar inicio actividades cronograma' },
-			32: { type: 'date', ariaLabel: 'Filtrar inicio actividades proyectado' },
-			33: { type: 'date', ariaLabel: 'Filtrar inicio actividades real' },
+			31: { type: 'date', ariaLabel: 'Filtrar inicio en obra segun cronograma' },
+			32: { type: 'date', ariaLabel: 'Filtrar inicio en obra proyectado' },
+			33: { type: 'date', ariaLabel: 'Filtrar inicio en obra real' },
 			34: { type: 'text', ariaLabel: 'Filtrar observaciones', placeholder: 'Filtrar' }
 		};
 
-		function normalizePDCStatusDisplay(value) {
-			return String(value || '').replace(/^A tiempo(?=;|$)/, 'En Curso');
+		function normalizePDCText(value) {
+			return String(value || '')
+				.normalize('NFD')
+				.replace(/[\u0300-\u036f]/g, '')
+				.toLowerCase();
+		}
+
+		function displayPdcModality(value) {
+			var labels = {
+				'OC': 'Orden de servicio/compra',
+				'Orden de Compra': 'Orden de servicio/compra'
+			};
+
+			return String(value || '').split(',').map(function(item) {
+				var key = $.trim(item);
+				return labels[key] || key;
+			}).filter(Boolean).join(', ');
+		}
+
+		function displayPDCStatus(value) {
+			var original = String(value || '');
+			var normalized = normalizePDCText(original);
+
+			if (normalized === '') return '';
+			if (normalized.includes('atrasado: contratacion sin iniciar')) return 'Atrasado: contratacion sin iniciar';
+			if (normalized.includes('en curso: contratacion sin iniciar')) return 'En curso: contratacion sin iniciar';
+			if (normalized.includes('atrasado') && normalized.includes('proceso de contratacion no iniciado')) return 'Atrasado: contratacion sin iniciar';
+			if ((normalized.includes('en curso') || normalized.startsWith('a tiempo')) && normalized.includes('proceso de contratacion no iniciado')) return 'En curso: contratacion sin iniciar';
+			if (normalized.includes('inicio de contratacion vencido')) return 'Inicio de contratacion vencido';
+			if (normalized.includes('contratacion atrasada')) return 'Contratacion atrasada';
+			if (normalized.includes('contratacion cerrada tarde')) return 'Contratacion cerrada tarde';
+			if (normalized.includes('contratacion cerrada a tiempo')) return 'Contratacion cerrada a tiempo';
+			if (normalized.includes('contratacion pendiente de inicio')) return 'Contratacion pendiente de inicio';
+			if (normalized.includes('contratacion en curso')) return 'Contratacion en curso';
+			if (normalized.includes('terminado con retras')) return 'Contratacion cerrada tarde';
+			if (normalized.includes('terminado a tiempo')) return 'Contratacion cerrada a tiempo';
+			if (normalized.includes('atrasado')) return 'Contratacion atrasada';
+			if (normalized.includes('proceso de contratacion no iniciado')) return 'Contratacion pendiente de inicio';
+			if (normalized.includes('en curso') || normalized.startsWith('a tiempo')) return 'Contratacion en curso';
+
+			return original;
+		}
+
+		function getPDCStatusState(value) {
+			var normalized = normalizePDCText(value);
+
+			if (normalized.includes('inicio de contratacion vencido')) return 'critical';
+			if (normalized.includes('atrasado') && normalized.includes('proceso de contratacion no iniciado')) return 'critical';
+			if (normalized.includes('atrasado: contratacion sin iniciar')) return 'critical';
+			if (normalized.includes('contratacion atrasada') || normalized.includes('atrasado')) return 'delayed';
+			if (normalized.includes('contratacion cerrada tarde') || normalized.includes('terminado con retras')) return 'completed-late';
+			if (normalized.includes('contratacion cerrada a tiempo') || normalized.includes('terminado a tiempo')) return 'completed-ontime';
+			if (normalized.includes('en curso: contratacion sin iniciar')) return 'active';
+			if ((normalized.includes('en curso') || normalized.startsWith('a tiempo')) && normalized.includes('proceso de contratacion no iniciado')) return 'active';
+			if (normalized.includes('contratacion en curso') || normalized.includes('en curso') || normalized.startsWith('a tiempo')) return 'active';
+			if (normalized.includes('contratacion pendiente de inicio') || normalized.includes('proceso de contratacion no iniciado')) return 'not-started';
+
+			return '';
 		}
 
 		function isPDCMissingData(data) {
@@ -1374,17 +1524,20 @@
 		/* Centralized Status Logic */
 		function getPDCState(data) {
 			if (Number(data.titulo) !== 0) return 'header';
+
+			var statusState = getPDCStatusState(data.estado || '');
+			if (statusState !== '') return statusState;
 			if (isPDCMissingData(data)) return 'missing';
 
-			let estado = normalizePDCStatusDisplay(data.estado || '');
-			if(estado.includes("Atrasado") && (estado.includes("no iniciado") || estado.includes("No iniciado"))) return 'critical';
-			if(estado.includes("Atrasado")) return 'delayed';
-			if(estado.includes("Terminado con retrasos")) return 'completed-late';
-			if(estado.includes("Terminado a tiempo")) return 'completed-ontime';
-			if(estado.includes("no iniciado") || estado.includes("No iniciado")) return 'not-started';
-			if(estado.includes("En Curso")) return 'active';
-
 			return 'standard';
+		}
+
+		function matchesPDCFilter(data, state) {
+			if (state === 'missing') {
+				return Number(data.titulo) === 0 && isPDCMissingData(data);
+			}
+
+			return getPDCState(data) === state;
 		}
 
 		function applyPDCRowState(row, data) {
@@ -1498,7 +1651,11 @@
 					var value = $.trim(String(rowData[config.dataKey] || ''));
 
 					if (config.dataKey === 'estado') {
-						value = normalizePDCStatusDisplay(value);
+						value = displayPDCStatus(value);
+					}
+
+					if (config.dataKey === 'tipoPaquete') {
+						value = displayPdcModality(value);
 					}
 
 					if (Number(rowData.titulo) !== 0 || value === '' || seen[value]) {
@@ -1554,8 +1711,9 @@
 				if (activePDCFilters.length === 0) {
 					return true;
 				}
-				var state = getPDCState(rowData);
-				return activePDCFilters.includes(state);
+				return activePDCFilters.some(function(state) {
+					return matchesPDCFilter(rowData, state);
+				});
 			}
 		);
 
@@ -1606,7 +1764,7 @@
 						'targets': [3],
 						'width':'8%',
 						'render': function ( data, type, full, meta ) {
-							return data;
+							return displayPdcModality(data);
 						 },
 					},
 
@@ -1648,7 +1806,8 @@
 					'targets': [6],
 					'width':'11%',
 					'render': function ( data, type, row, meta ) {
-						var texto = normalizePDCStatusDisplay(row["estado"] || '');
+						var texto = displayPDCStatus(row["estado"] || '');
+						var statusState = getPDCState(row);
 						var diasDelta = row["diasDelta"] || 0;
 
 						if (type !== 'display') {
@@ -1671,15 +1830,18 @@
 							}
 							if (id != ""){
 								if(titulo==0){
-									if(texto.includes("Terminado a tiempo")){
+									if(statusState === 'missing'){
+										return "Informacion pendiente";
+									}
+									if(statusState === 'completed-ontime'){
 										return "<i class='fas fa-grin-stars fa-lg pdc-icon-state pdc-icon-ok'></i>  " + texto + deltaHtml;
-										}else if(texto.includes("Terminado con retrasos")){
+										}else if(statusState === 'completed-late'){
 											return "<i class='fas fa-sad-cry fa-lg pdc-icon-state pdc-icon-amber'></i>  " + texto + deltaHtml;
-										}else if(texto.includes("En Curso") && texto.includes("Proceso de contratación no iniciado")){
+										}else if(texto === "En curso: contratacion sin iniciar"){
 											return texto;
-										}else if(texto.includes("En Curso")){
+										}else if(statusState === 'active'){
 											return "<i class='fas fa-glasses fa-lg pdc-icon-state pdc-icon-info'></i>  " + texto + deltaHtml;
-										}else if(texto.includes("Atrasado!!")){
+										}else if(statusState === 'critical' || statusState === 'delayed'){
 											return "<i class='fas fa-skull-crossbones fa-lg pdc-icon-state pdc-icon-danger'></i>  " + texto + deltaHtml;
 										}else{
 											return "<b>No Registrado</b>";
@@ -1749,9 +1911,9 @@
 												readyIcon = '<i class="fas fa-exclamation-triangle pdc-ready-icon pdc-ready-icon--risk" title="En riesgo de retraso"></i>';
 											}
 											if(subcontratoPaquete > 1){
-												boton=readyIcon + "<button type= 'button' class='editar btn btn-primary btn-sm'  title='Editar Actividad' class='ps-btn-tight'><i class='fa fa-edit fa-xs'></i></button><button type='button' class='eliminar btn btn-danger btn-sm' title='Eliminar' class='ps-btn-tight'><i class='fa fa-trash-alt fa-xs'></i></button>"
+												boton = "<div class='pdc-row-actions'>" + readyIcon + "<button type='button' class='editar pdc-row-action pdc-row-action--edit' title='Editar actividad' aria-label='Editar actividad'><i class='fas fa-pen' aria-hidden='true'></i></button><button type='button' class='eliminar pdc-row-action pdc-row-action--delete' title='Eliminar' aria-label='Eliminar'><i class='fas fa-trash-alt' aria-hidden='true'></i></button></div>";
 											}else{
-												boton=readyIcon + "<button type= 'button' class='editar btn btn-primary btn-sm'  title='Editar Actividad' class='ps-btn-tight'><i class='fa fa-edit fa-xs'></i></button>"
+												boton = "<div class='pdc-row-actions'>" + readyIcon + "<button type='button' class='editar pdc-row-action pdc-row-action--edit' title='Editar actividad' aria-label='Editar actividad'><i class='fas fa-pen' aria-hidden='true'></i></button></div>";
 											}
 										}else{
 												boton="";
@@ -1827,8 +1989,11 @@
 					var allData = api.rows({search:'applied'}).data();
 
 					allData.each(function(rowData) {
+						if (Number(rowData.titulo) === 0 && isPDCMissingData(rowData)) {
+							counts.missing++;
+						}
 						var s = getPDCState(rowData);
-						if(counts[s] !== undefined) counts[s]++;
+						if(s !== 'missing' && counts[s] !== undefined) counts[s]++;
 					});
 
 					// Update Badges
@@ -1873,7 +2038,7 @@
 			});
 
 			// 1. Action Buttons (Left)
-			$("div.toolbarAcciones").html(`<div class="grupo_botones1 ps-toolbar-actions" role="group" aria-label="Actions"><button id="btn_actualizarPDC" class="btn-pdc-modern ps-btn-gap" title="Actualizar items" onclick="actualizarPDC()">Actualizar <i class="fas fa-sync fa-lg"></i></button><button id="btn_definirContratosPDC" class="btn-pdc-modern ps-btn-gap" title="Desglosar Subcontratos" onclick="obtener_data_definirContratos()">Desglosar <i class="fa fa-list-ol fa-lg" aria-hidden="true"></i></button><button id="btn_soloAlertas" class="btn-pdc-modern ps-btn-gap pdc-btn-alertas" title="Mostrar solo paquetes que necesitan atención" onclick="toggleSoloAlertas()"><i class="fas fa-bell fa-lg"></i> Solo Alertas <span id="count-alertas" class="badge badge-light"></span></button></div>`);
+			$("div.toolbarAcciones").html(`<div class="grupo_botones1 ps-toolbar-actions" role="group" aria-label="Actions"><button id="btn_actualizarPDC" class="btn-pdc-modern ps-btn-gap" title="Actualizar items" onclick="actualizarPDC()">Actualizar <i class="fas fa-sync fa-lg"></i></button><button id="btn_definirContratosPDC" class="btn-pdc-modern ps-btn-gap" title="Desglosar paquetes" onclick="obtener_data_definirContratos()">Desglosar <i class="fa fa-list-ol fa-lg" aria-hidden="true"></i></button><button id="btn_soloAlertas" class="btn-pdc-modern ps-btn-gap pdc-btn-alertas" title="Mostrar solo paquetes que necesitan atención" onclick="toggleSoloAlertas()"><i class="fas fa-bell fa-lg"></i> Ver alertas <span id="count-alertas" class="badge badge-light"></span></button></div>`);
 			if (window.SemiAutoReview) {
 				window.SemiAutoReview.init({
 					module: 'pdc',
@@ -1883,17 +2048,18 @@
 			}
 
 			// 2. Navigation Bar (Center/Middle)
-			$("div.toolbarNavegacion").html('<div class="grupo_botones_semanal_madre ps-toolbar-nav-wrap"><div class="ps-module-switcher" role="tablist" aria-label="Navegacion general"><button id="btn_Actividades" type="button" class="ps-module-tab" onclick="window.location.href=\'/listado-actividades?semana='+semana+'\'" aria-label="Ir a Actividades"><i class="fas fa-table" aria-hidden="true"></i><span>Actividades</span></button><button id="btn_contratos" type="button" class="ps-module-tab" onclick="window.location.href=\'/contratos?semana='+semana+'\'" aria-label="Ir a Contratos"><i class="fas fa-file-alt" aria-hidden="true"></i><span>Contratos</span></button><button id="btn_planCompras" type="button" class="ps-module-tab is-active" onclick="window.location.href=\'/pdc?semana='+semana+'&origen=planCompras\'" aria-label="Ir a Plan de Compras" aria-current="page"><i class="fas fa-shopping-cart" aria-hidden="true"></i><span>Plan de Compras</span></button></div></div>');
+			$("div.toolbarNavegacion").html('<div class="grupo_botones_semanal_madre ps-toolbar-nav-wrap"><div class="ps-module-switcher" role="tablist" aria-label="Navegacion general"><button id="btn_Actividades" type="button" class="ps-module-tab" onclick="window.location.href=\'/listado-actividades?semana='+semana+'\'" aria-label="Ir a Familias de obra"><i class="fas fa-table" aria-hidden="true"></i><span>Familias de obra</span></button><button id="btn_contratos" type="button" class="ps-module-tab" onclick="window.location.href=\'/contratos?semana='+semana+'\'" aria-label="Ir a Paquetes de contratacion"><i class="fas fa-file-alt" aria-hidden="true"></i><span>Paquetes de contratacion</span></button><button id="btn_planCompras" type="button" class="ps-module-tab is-active" onclick="window.location.href=\'/pdc?semana='+semana+'&origen=planCompras\'" aria-label="Ir a Plan de Compras y Contrataciones" aria-current="page"><i class="fas fa-shopping-cart" aria-hidden="true"></i><span>Plan de Compras y Contrataciones</span></button></div></div>');
 
 			$("div.toolbarFilaMensajes").html(`
+				<div class="pdc-legend-wrap">
 				<div class="pdc-legend">
-					<span class="pdc-legend-item missing" onclick="filterPDC('missing', event)"><span class="indicator"></span> Datos Faltantes <span id="count-missing" class="count-badge">(...)</span></span>
-					<span class="pdc-legend-item critical" onclick="filterPDC('critical', event)"><span class="indicator"></span> Crítico (No Iniciado) <span id="count-critical" class="count-badge">(...)</span></span>
-					<span class="pdc-legend-item delayed" onclick="filterPDC('delayed', event)"><span class="indicator"></span> Atrasado <span id="count-delayed" class="count-badge">(...)</span></span>
-					<span class="pdc-legend-item completed-late" onclick="filterPDC('completed-late', event)"><span class="indicator"></span> Terminado con Retraso <span id="count-completed-late" class="count-badge">(...)</span></span>
-					<span class="pdc-legend-item completed-ontime" onclick="filterPDC('completed-ontime', event)"><span class="indicator"></span> Terminado a Tiempo <span id="count-completed-ontime" class="count-badge">(...)</span></span>
-					<span class="pdc-legend-item active" onclick="filterPDC('active', event)"><span class="indicator"></span> En Curso <span id="count-active" class="count-badge">(...)</span></span>
-					<span class="pdc-legend-item not-started" onclick="filterPDC('not-started', event)"><span class="indicator"></span> No Iniciado <span id="count-not-started" class="count-badge">(...)</span></span>
+					<span class="pdc-legend-item missing" onclick="filterPDC('missing', event)"><span class="indicator"></span> Informacion pendiente <span id="count-missing" class="count-badge">(...)</span></span>
+					<span class="pdc-legend-item critical" onclick="filterPDC('critical', event)"><span class="indicator"></span> Inicio de contratacion vencido <span id="count-critical" class="count-badge">(...)</span></span>
+					<span class="pdc-legend-item delayed" onclick="filterPDC('delayed', event)"><span class="indicator"></span> Contratacion atrasada <span id="count-delayed" class="count-badge">(...)</span></span>
+					<span class="pdc-legend-item completed-late" onclick="filterPDC('completed-late', event)"><span class="indicator"></span> Contratacion cerrada tarde <span id="count-completed-late" class="count-badge">(...)</span></span>
+					<span class="pdc-legend-item completed-ontime" onclick="filterPDC('completed-ontime', event)"><span class="indicator"></span> Contratacion cerrada a tiempo <span id="count-completed-ontime" class="count-badge">(...)</span></span>
+					<span class="pdc-legend-item active" onclick="filterPDC('active', event)"><span class="indicator"></span> Contratacion en curso <span id="count-active" class="count-badge">(...)</span></span>
+					<span class="pdc-legend-item not-started" onclick="filterPDC('not-started', event)"><span class="indicator"></span> Contratacion pendiente de inicio <span id="count-not-started" class="count-badge">(...)</span></span>
 				</div>
 				</div>
 				<!-- Removed inline message -->
@@ -1950,7 +2116,7 @@
 
 				if (soloAlertasActive) {
 					$btn.addClass('active');
-					activePDCFilters = ['delayed', 'critical', 'needs-config'];
+					activePDCFilters = [];
 				} else {
 					$btn.removeClass('active');
 					activePDCFilters = [];
@@ -2071,7 +2237,7 @@
 
 						guardar_modificar();
 
-						$("#modal-body-texto-Contrato").html("Estado del Proceso de Contratación: <b>" + data.paqueteContratacion + "</b><br>Tipo de Contrato: <b>" + data.tipoPaquete + "</b>");
+						$("#modal-body-texto-Contrato").html("Estado del proceso: <b>" + data.paqueteContratacion + "</b><br>Modalidad de contratacion: <b>" + displayPdcModality(data.tipoPaquete) + "</b>");
 
 						only_once = false;
 
@@ -2146,7 +2312,11 @@
 
 					"columns":[
 						{"data":"consecutivo", "visible":false},
-						{"data":"tipoPaquete"},
+						{"data":"tipoPaquete",
+							'render': function(data, type, row, meta) {
+								return displayPdcModality(data);
+							}
+						},
 						{"data":"paqueteContratacion"},
 						{"data":"numeroSubcontratos",
 							'render': function(data, type, row, meta) {
@@ -2553,7 +2723,7 @@
 		    ["LegalizacionContrato", "En proceso de legalización del contrato"],
 		    ["Fabricacion", "En periodo de fabricación, producción, importaciones, transportes, movilización, etc"],
 		    ["InsumosObra", "En proceso de llegada de recursos, insumos y personal a la obra"],
-		    ["InicioProyectadaContrato", "Proceso de contratación finalizado y actividades del contrato iniciadas"]
+		    ["InicioProyectadaContrato", "Proceso de contratación finalizado e inicio en obra registrado"]
 		  ];
 		  var posicion = -1;
 		  var deberiaHoy = -1;
@@ -2586,8 +2756,10 @@
 		    }
 		  }
 			//console.log(posicion >= deberiaHoy);
+		  var diagnosticoInterno = "";
 		  if (posicion >= deberiaHoy) {
-		    divDiagnostico.innerHTML = "En Curso";
+		    diagnosticoInterno = "En Curso";
+		    divDiagnostico.innerHTML = displayPDCStatus(diagnosticoInterno);
 				//console.log((new Date(document.getElementById("fechaReal" + pasos[posicion][0]).value) -  new Date(document.getElementById("fecha" + pasos[posicion][0] + "Teorica").value))/(1000 * 3600 * 24));
 		    // if ((posicion == -1 && deberiaHoy == -1)) {
 		    //   divDiagnostico.innerHTML = "En Curso";
@@ -2597,18 +2769,19 @@
 		    //   divDiagnostico.innerHTML = "Atrasado!!";
 		    // }
 		  } else {
-		    divDiagnostico.innerHTML = "Atrasado!!";
+		    diagnosticoInterno = "Atrasado!!";
+		    divDiagnostico.innerHTML = displayPDCStatus(diagnosticoInterno);
 		  }
 		  if (divEstadoProceso.innerHTML == pasos[7][1]) {
 		    if (document.getElementById("fechaReal" + pasos[7][0]).value > document.getElementById("fecha" + pasos[7][0] + "Teorica").value) {
-		      divDiagnostico.innerHTML = "Terminado con retrasos";
+		      divDiagnostico.innerHTML = displayPDCStatus("Terminado con retrasos");
 		      document.getElementById("estadoProceso").value = "Terminado con retrasos";
 		    } else {
-		      divDiagnostico.innerHTML = "Terminado a tiempo";
+		      divDiagnostico.innerHTML = displayPDCStatus("Terminado a tiempo");
 		      document.getElementById("estadoProceso").value = "Terminado a tiempo";
 		    }
 		  } else {
-		    document.getElementById("estadoProceso").value = divDiagnostico.innerHTML + "; " + divEstadoProceso.innerHTML;
+		    document.getElementById("estadoProceso").value = diagnosticoInterno + "; " + divEstadoProceso.innerHTML;
 		  }
 		  generarIconoReal(pasos, posicion);
 		  for (i = posicion; i < 8; i++) {
@@ -2787,7 +2960,7 @@
 			}).fail(function(xhr, status, error) {
 				$("#modal_spinner").modal("hide");
 				if (window.AIA && window.AIA.Notice && typeof window.AIA.Notice.error === 'function') {
-					window.AIA.Notice.error('No se pudo actualizar el Plan de Compras' + (pdcSyncOrigin ? ' desde ' + pdcSyncOrigin : '') + '.');
+					window.AIA.Notice.error('No se pudo actualizar el Plan de Compras y Contrataciones' + (pdcSyncOrigin ? ' desde ' + pdcSyncOrigin : '') + '.');
 				}
 				if (typeof options.onError === 'function') {
 					options.onError({"respuesta": "ERROR", "detalle": error || status || xhr.statusText || ''});
@@ -3106,6 +3279,6 @@
 
 
 
-	</script>
+		</script>
 </body>
 </html>

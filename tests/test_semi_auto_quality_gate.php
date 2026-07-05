@@ -54,6 +54,26 @@ $single = $gate->listado([
 ], $match, 95);
 qgAssert(qgStatus($single) === 'ready', 'fuente homogenea con evidencia queda lista');
 qgAssert(($single['quality_gate']['start_activity_label'] ?? '') === '[Capitulo: Banos] Instalacion de cabinas de bano nuevas | 2030-01-03', 'actividad de inicio usa Actividad | Fecha Inicio');
+
+$sortSources = new ReflectionMethod(SemiAutoQualityGate::class, 'sortSources');
+$sortSources->setAccessible(true);
+$orderedSourceRows = $sortSources->invoke($gate, [
+    ['unique_id' => 205, 'activity' => 'Fuente menor confianza', 'start_date' => '2030-01-01', 'confidence' => 80],
+    ['unique_id' => 204, 'activity' => 'Fuente fecha tardia', 'start_date' => '2030-01-04', 'confidence' => 95],
+    ['unique_id' => 203, 'activity' => 'Fuente fecha cercana', 'start_date' => '2030-01-02', 'confidence' => 95],
+]);
+qgAssert(
+    array_column($orderedSourceRows, 'unique_id') === [203, 204, 205],
+    'fuentes se ordenan por confianza, fecha cercana y nombre'
+);
+$orderedSources = $gate->listado([
+    ['unique_id' => 205, 'Actividad' => '[Capitulo: Banos] Fuente menor confianza', 'Fecha_Inicio' => '2030-01-05'],
+    ['unique_id' => 203, 'Actividad' => '[Capitulo: Banos] Fuente fecha cercana', 'Fecha_Inicio' => '2030-01-02'],
+], $match, 95);
+qgAssert(
+    ($orderedSources['quality_gate']['start_activity_label'] ?? '') === '[Capitulo: Banos] Fuente fecha cercana | 2030-01-02',
+    'actividad inicial usa la primera fuente ordenada'
+);
 $specificName = $gate->activityName([
     ['unique_id' => 103, 'Actividad' => '[Capitulo: Banos] Instalacion de cabinas de bano nuevas', 'Fecha_Inicio' => '2030-01-03'],
 ], $match, $single);
