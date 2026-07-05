@@ -1209,7 +1209,7 @@ class ReportController extends BaseController
 
         // 1. Fetch Data
         try {
-            $query = "SELECT * FROM " . TableResolver::resolveByPrefix($dbName, 'cambios') . " WHERE project_id = :project_id ORDER BY id ASC";
+            $query = "SELECT * FROM cambios WHERE project_id = :project_id ORDER BY id ASC";
             $stmt = $db->query($query, [':project_id' => $projectId]);
             $results = $stmt->fetchAll(\PDO::FETCH_ASSOC);
         } catch (Exception $e) {

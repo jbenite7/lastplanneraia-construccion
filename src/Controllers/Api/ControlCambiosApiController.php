@@ -28,7 +28,7 @@ class ControlCambiosApiController
 
         try {
             $projectId = $this->projectId($dbPrefix);
-            $queryCount = "SELECT COUNT(*) as total FROM " . TableResolver::resolveByPrefix($dbPrefix, 'cambios') . " WHERE project_id = ?";
+            $queryCount = "SELECT COUNT(*) as total FROM cambios WHERE project_id = ?";
             $conteo = $this->db->queryWithProject($queryCount, [$projectId], $projectId)->fetchColumn() ?? 0;
 
             if ($conteo == 0) {
@@ -43,7 +43,7 @@ class ControlCambiosApiController
                     "soportes" => "{\"soportes\": [{\"consecutivo\":1,\"descripcion\":\"\",\"link\":\"\"}]}",
                 ];
             } else {
-                $queryData = "SELECT id, solicitanteCambio, detalleSolicitanteOtro, fechaSolicitud, prioridad, tipoCambio, responsableSolucion, detalleResponsableSolucion, justificacion, descripcion, incidenciaAlcance, tiempoCronograma, tiempoCronogramaAfectado, incidenciaCronograma, valorPresupuesto, costoDirecto, costoDirectoAIU, costoDirectoAIUIVA, valorAprobado, incidenciaPresupuesto, incidenciaCalidad, incidenciaRiesgo, incidenciaRecurso, fechaTentativaDefinicion, fechaEntregaInterventoria, Observaciones, fechaDefinicion, aprobacion, soportes FROM " . TableResolver::resolveByPrefix($dbPrefix, 'cambios') . " WHERE project_id = ?";
+                $queryData = "SELECT id, solicitanteCambio, detalleSolicitanteOtro, fechaSolicitud, prioridad, tipoCambio, responsableSolucion, detalleResponsableSolucion, justificacion, descripcion, incidenciaAlcance, tiempoCronograma, tiempoCronogramaAfectado, incidenciaCronograma, valorPresupuesto, costoDirecto, costoDirectoAIU, costoDirectoAIUIVA, valorAprobado, incidenciaPresupuesto, incidenciaCalidad, incidenciaRiesgo, incidenciaRecurso, fechaTentativaDefinicion, fechaEntregaInterventoria, Observaciones, fechaDefinicion, aprobacion, soportes FROM cambios WHERE project_id = ?";
                 $arreglo["data"] = $this->db->queryWithProject($queryData, [$projectId], $projectId)->fetchAll(PDO::FETCH_ASSOC);
             }
 
@@ -110,7 +110,7 @@ class ControlCambiosApiController
             $params[0] = $changeId;
         }
         array_unshift($params, $projectId);
-        $query = "INSERT INTO " . TableResolver::resolveByPrefix($dbPrefix, 'cambios') . " (project_id, id, solicitanteCambio, detalleSolicitanteOtro, fechaSolicitud, prioridad, tipoCambio, responsableSolucion, detalleResponsableSolucion, justificacion, descripcion, incidenciaAlcance, tiempoCronograma, tiempoCronogramaAfectado, incidenciaCronograma, valorPresupuesto, costoDirecto, costoDirectoAIU, costoDirectoAIUIVA, valorAprobado, incidenciaPresupuesto, incidenciaCalidad, incidenciaRiesgo, incidenciaRecurso, fechaTentativaDefinicion, fechaEntregaInterventoria, fechaDefinicion, aprobacion, soportes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $query = "INSERT INTO cambios (project_id, id, solicitanteCambio, detalleSolicitanteOtro, fechaSolicitud, prioridad, tipoCambio, responsableSolucion, detalleResponsableSolucion, justificacion, descripcion, incidenciaAlcance, tiempoCronograma, tiempoCronogramaAfectado, incidenciaCronograma, valorPresupuesto, costoDirecto, costoDirectoAIU, costoDirectoAIUIVA, valorAprobado, incidenciaPresupuesto, incidenciaCalidad, incidenciaRiesgo, incidenciaRecurso, fechaTentativaDefinicion, fechaEntregaInterventoria, fechaDefinicion, aprobacion, soportes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         $res = $this->db->queryWithProject($query, $params, $projectId);
         if ($res) {
@@ -128,7 +128,7 @@ class ControlCambiosApiController
         $params[] = $projectId;
         $params[] = $id;
 
-        $query = "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'cambios') . " SET solicitanteCambio=?, detalleSolicitanteOtro=?, fechaSolicitud=?, prioridad=?, tipoCambio=?, responsableSolucion=?, detalleResponsableSolucion=?, justificacion=?, descripcion=?, incidenciaAlcance=?, tiempoCronograma=?, tiempoCronogramaAfectado=?, incidenciaCronograma=?, valorPresupuesto=?, costoDirecto=?, costoDirectoAIU=?, costoDirectoAIUIVA=?, valorAprobado=?, incidenciaPresupuesto=?, incidenciaCalidad=?, incidenciaRiesgo=?, incidenciaRecurso=?, fechaTentativaDefinicion=?, fechaEntregaInterventoria=?, Observaciones=NULL, fechaDefinicion=?, aprobacion=?, soportes=? WHERE project_id = ? AND id=?";
+        $query = "UPDATE cambios SET solicitanteCambio=?, detalleSolicitanteOtro=?, fechaSolicitud=?, prioridad=?, tipoCambio=?, responsableSolucion=?, detalleResponsableSolucion=?, justificacion=?, descripcion=?, incidenciaAlcance=?, tiempoCronograma=?, tiempoCronogramaAfectado=?, incidenciaCronograma=?, valorPresupuesto=?, costoDirecto=?, costoDirectoAIU=?, costoDirectoAIUIVA=?, valorAprobado=?, incidenciaPresupuesto=?, incidenciaCalidad=?, incidenciaRiesgo=?, incidenciaRecurso=?, fechaTentativaDefinicion=?, fechaEntregaInterventoria=?, Observaciones=NULL, fechaDefinicion=?, aprobacion=?, soportes=? WHERE project_id = ? AND id=?";
 
         $res = $this->db->queryWithProject($query, $params, $projectId);
         if ($res) {
@@ -190,7 +190,7 @@ class ControlCambiosApiController
     {
         $projectId = $this->projectId($dbPrefix);
         $id = $_POST["Id"] ?? 0;
-        $res = $this->db->queryWithProject("DELETE FROM " . TableResolver::resolveByPrefix($dbPrefix, 'cambios') . " WHERE project_id = ? AND id = ?", [$projectId, $id], $projectId);
+        $res = $this->db->queryWithProject("DELETE FROM cambios WHERE project_id = ? AND id = ?", [$projectId, $id], $projectId);
         if ($res) {
             $this->db->logActivity('ControlCambios', 'ELIMINAR', "Eliminó solicitud cambio ID $id", $dbPrefix);
         }
@@ -266,7 +266,7 @@ class ControlCambiosApiController
     private function nextChangeId(string $dbPrefix, int $projectId): int
     {
         return (int) $this->db->queryWithProject(
-            "SELECT COALESCE(MAX(id), 0) + 1 FROM " . TableResolver::resolveByPrefix($dbPrefix, 'cambios') . " WHERE project_id = ?",
+            "SELECT COALESCE(MAX(id), 0) + 1 FROM cambios WHERE project_id = ?",
             [$projectId],
             $projectId,
         )->fetchColumn();
