@@ -17,14 +17,24 @@
  */
 
 require_once __DIR__ . '/../../vendor/autoload.php';
-require_once __DIR__ . '/../../src/Core/Database.php';
 
-$db = Database::getInstance();
-$ref = new ReflectionClass($db);
-$prop = $ref->getProperty('pdo');
-$prop->setAccessible(true);
-$pdo = $prop->getValue($db);
-$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+$dbHost = $_ENV['DB_HOST'] ?? 'localhost';
+$dbPort = $_ENV['DB_PORT'] ?? '3306';
+$dbName = $_ENV['DB_NAME'] ?? '';
+$dbUser = $_ENV['DB_USER'] ?? '';
+$dbPass = $_ENV['DB_PASS'] ?? '';
+
+$pdo = new PDO(
+    "mysql:host={$dbHost};port={$dbPort};dbname={$dbName};charset=utf8mb4",
+    $dbUser,
+    $dbPass,
+    [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES => false,
+    ]
+);
+$pdo->exec("SET time_zone = '-05:00'");
 
 $apply = in_array('--apply', $argv ?? [], true);
 
