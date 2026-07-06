@@ -91,6 +91,12 @@ tests/browser/*
 .playwright-mcp/
 .tmp-e2e/
 
+# E2E suite artifacts (local only)
+e2e/.env.e2e
+e2e/node_modules/
+e2e/test-results/
+e2e/test-output/
+
 # Scratch y debugging
 scratch/
 scripts/
