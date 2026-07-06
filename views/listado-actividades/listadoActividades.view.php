@@ -141,11 +141,15 @@
 		                  <label for="fechaInicio" class="control-label aia-modal__label">Fecha de Inicio</label><input id="fechaInicio" name="fechaInicio" type="text" class="form-control">
 		                </div>
 		                <div class="col-sm-12 aia-modal__field">
-		                  <label for="tipoContrato" class="control-label aia-modal__label">Modalidad de contratacion <span class="text-danger" aria-hidden="true">*</span></label>
-		                  <select id="tipoContrato" name="tipoContrato" class="form-control" required style="width:100%">
-		                    <option value="">Seleccione una modalidad...</option>
-		                    <?php echo $tipoContratoOptionsHtml; ?>
-		                  </select>
+		                  <label class="control-label aia-modal__label">Modalidad de contratacion <span class="text-danger" aria-hidden="true">*</span></label>
+		                  <div class="aia-modal__check-group" role="group" aria-label="Modalidad de contratacion">
+		                    <label class="aia-modal__check"><input type="checkbox" name="tipoContratoCheck" value="S" data-tipo-check="S"> <span>Suministro</span></label>
+		                    <label class="aia-modal__check"><input type="checkbox" name="tipoContratoCheck" value="MO" data-tipo-check="MO"> <span>Mano de Obra</span></label>
+		                    <label class="aia-modal__check"><input type="checkbox" name="tipoContratoCheck" value="SI" data-tipo-check="SI" id="chkTipoSI"> <span>Suministro e Instalación</span></label>
+		                    <label class="aia-modal__check"><input type="checkbox" name="tipoContratoCheck" value="OC" data-tipo-check="OC"> <span>Orden de servicio/compra</span></label>
+		                  </div>
+		                  <input type="hidden" id="tipoContrato" name="tipoContrato" value="">
+		                  <small class="form-text text-muted aia-modal__check-hint" id="tipoContratoHint">Puedes combinar varias modalidades. Si eliges <strong>Suministro e Instalación</strong>, las demás se bloquean porque ya las incluye.</small>
 		                </div>
 		                </div>
 		              </section>
@@ -1026,11 +1030,16 @@
 				var db = document.getElementById('baseDatos').value;
 				var semana = document.getElementById('Max_Semana').value;
 		    var $form = $("#modalNuevaActividad form");
-		    var tipoContrato = $.trim($form.find('[name="tipoContrato"]').val() || '');
+		    var checks = $form.find('input[name="tipoContratoCheck"]:checked').map(function() {
+		      return $(this).val();
+		    }).get();
+		    var tipoContrato = checks.join(',');
+
+		    $form.find('input[name="tipoContrato"]').val(tipoContrato);
 
 		    if (!tipoContrato) {
 		      mostrar_mensaje({ respuesta: 'VACIO' });
-		      $form.find('[name="tipoContrato"]').focus();
+		      $form.find('input[name="tipoContratoCheck"]').first().focus();
 		      return;
 		    }
 
@@ -1053,6 +1062,21 @@
 		      mostrar_mensaje({ respuesta: 'ERROR' });
 		    });
 		  });
+
+		  var sincronizarBloqueoSi = function() {
+		    var $form = $("#modalNuevaActividad form");
+		    var $si = $form.find('#chkTipoSI');
+		    var $otros = $form.find('input[name="tipoContratoCheck"]').not($si);
+		    if ($si.is(':checked')) {
+		      $otros.prop('checked', false).prop('disabled', true).closest('label').addClass('aia-modal__check--disabled');
+		      $form.find('#tipoContratoHint').html('Suministro e Instalación ya incluye las demas modalidades, asi que quedan bloqueadas.');
+		    } else {
+		      $otros.prop('disabled', false).closest('label').removeClass('aia-modal__check--disabled');
+		      $form.find('#tipoContratoHint').html('Puedes combinar varias modalidades. Si eliges <strong>Suministro e Instalación</strong>, las demás se bloquean porque ya las incluye.');
+		    }
+		  };
+		  $("#modalNuevaActividad").on('change', 'input[name="tipoContratoCheck"]', sincronizarBloqueoSi);
+		  sincronizarBloqueoSi();
 		}
 
 		var guardar_modificar = function() {
@@ -1233,6 +1257,7 @@
 
 			$("#modalNuevaActividad #fechaInicio").val("");
 			$("#modalNuevaActividad #tipoContrato").val("");
+			$("#modalNuevaActividad input[name='tipoContratoCheck']").prop('checked', false).prop('disabled', false).closest('label').removeClass('aia-modal__check--disabled');
 			$("#modalNuevaActividad .mensaje").html("");
 			$("#modalNuevaActividad #actividad").focus();
 		}

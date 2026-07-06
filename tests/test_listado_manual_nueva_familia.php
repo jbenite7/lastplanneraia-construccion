@@ -133,6 +133,38 @@ try {
     ($decoded3['respuesta'] ?? '') === 'VACIO'
         ? pass('Sin tipoContrato devuelve VACIO')
         : fail('Sin tipoContrato no devolvio VACIO: ' . $payload3);
+
+    // Verificar multi-valor (MO,S) - combinacion de modalidades
+    $multiNombre = $familiaNombre . '_MO_S';
+    $_POST['actividad'] = $multiNombre;
+    $_POST['tipoContrato'] = 'MO,S';
+    ob_start();
+    (new ListadoActividadesApiController())->save();
+    $payload4 = ob_get_clean();
+    $decoded4 = json_decode($payload4, true);
+    ($decoded4['respuesta'] ?? '') === 'BIEN'
+        ? pass('Multi-valor MO,S devuelve BIEN')
+        : fail('Multi-valor MO,S no devolvio BIEN: ' . $payload4);
+
+    $row4 = $db->query(
+        'SELECT tipoContrato FROM actividades WHERE project_id = ? AND semanaActualizacion = ? AND actividad = ?',
+        [$projectId, $week, $multiNombre],
+    )->fetch(PDO::FETCH_ASSOC);
+    $row4 && $row4['tipoContrato'] === 'MO,S'
+        ? pass('Multi-valor MO,S persistido tal cual: ' . $row4['tipoContrato'])
+        : fail('Multi-valor no persistido: ' . var_export($row4, true));
+
+    // Verificar que SI solo se acepta (controller no fuerza exclusion - la UI lo hace)
+    $siNombre = $familiaNombre . '_SI';
+    $_POST['actividad'] = $siNombre;
+    $_POST['tipoContrato'] = 'SI';
+    ob_start();
+    (new ListadoActividadesApiController())->save();
+    $payload5 = ob_get_clean();
+    $decoded5 = json_decode($payload5, true);
+    ($decoded5['respuesta'] ?? '') === 'BIEN'
+        ? pass('SI solo devuelve BIEN')
+        : fail('SI solo no devolvio BIEN: ' . $payload5);
 } catch (Throwable $e) {
     fail('Excepcion: ' . $e->getMessage());
 } finally {
