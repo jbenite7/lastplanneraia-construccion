@@ -2545,7 +2545,7 @@
           }
 
           if (prop === 'unidad') {
-            var rd = (Array.isArray(sourceData) && physicalRow !== null && physicalRow >= 0 && physicalRow < sourceData.length) ? (sourceData[physicalRow] || {}) : {};
+            var rd = currentRowData || {};
             var isPercent = isPercentLikeUnit(normalized.value);
             var hasCantidad = rd.cantidad_ppto !== null && rd.cantidad_ppto !== '' && rd.cantidad_ppto !== undefined;
 
