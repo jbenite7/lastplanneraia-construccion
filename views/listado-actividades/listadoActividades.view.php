@@ -39,6 +39,19 @@
 	        $actividadInicioOptionsHtml = '<option value="">Error loading data: ' . htmlspecialchars($t->getMessage(), ENT_QUOTES, 'UTF-8') . '</option>';
 	    }
 	}
+
+	$tipoContratoOpciones = [
+	    ['value' => 'S',  'label' => 'Suministro'],
+	    ['value' => 'MO', 'label' => 'Mano de Obra'],
+	    ['value' => 'SI', 'label' => 'Suministro e Instalación'],
+	    ['value' => 'OC', 'label' => 'Orden de servicio/compra'],
+	];
+	$tipoContratoOptionsHtml = '';
+	foreach ($tipoContratoOpciones as $opcionTipo) {
+	    $tipoContratoOptionsHtml .= '<option value="' . htmlspecialchars($opcionTipo['value'], ENT_QUOTES, 'UTF-8') . '">'
+	        . htmlspecialchars($opcionTipo['label'], ENT_QUOTES, 'UTF-8')
+	        . '</option>';
+	}
 	?>
 
 	<div class="encabezado" id="encabezado">
@@ -126,6 +139,13 @@
 		                </div>
 		                <div class="col-sm-12 aia-modal__field">
 		                  <label for="fechaInicio" class="control-label aia-modal__label">Fecha de Inicio</label><input id="fechaInicio" name="fechaInicio" type="text" class="form-control">
+		                </div>
+		                <div class="col-sm-12 aia-modal__field">
+		                  <label for="tipoContrato" class="control-label aia-modal__label">Modalidad de contratacion <span class="text-danger" aria-hidden="true">*</span></label>
+		                  <select id="tipoContrato" name="tipoContrato" class="form-control" required style="width:100%">
+		                    <option value="">Seleccione una modalidad...</option>
+		                    <?php echo $tipoContratoOptionsHtml; ?>
+		                  </select>
 		                </div>
 		                </div>
 		              </section>
@@ -998,6 +1018,39 @@
 		      }
 		      mostrar_mensaje(json_info);
 		      recargarTabla('');
+		    });
+		  });
+
+		  $("#modalNuevaActividad form").on("submit", function(e) {
+		    e.preventDefault();
+				var db = document.getElementById('baseDatos').value;
+				var semana = document.getElementById('Max_Semana').value;
+		    var $form = $("#modalNuevaActividad form");
+		    var tipoContrato = $.trim($form.find('[name="tipoContrato"]').val() || '');
+
+		    if (!tipoContrato) {
+		      mostrar_mensaje({ respuesta: 'VACIO' });
+		      $form.find('[name="tipoContrato"]').focus();
+		      return;
+		    }
+
+		    var variables = new FormData($form[0]);
+		    $.ajax({
+		      type: "POST",
+		      url: "/api/listado-actividades/save?db="+db+"&semana="+encodeURIComponent(semana),
+		      contentType: false,
+		      processData: false,
+		      data: variables,
+		    }).done(function(info) {
+		      var json_info = (typeof info === 'string' ? JSON.parse(info) : info);
+		      if (json_info && json_info.respuesta == "BIEN") {
+		        limpiar_datos();
+		        json_info.respuesta = json_info.respuesta + "NuevaActividad";
+		      }
+		      mostrar_mensaje(json_info || { respuesta: 'ERROR' });
+		      recargarTabla('');
+		    }).fail(function() {
+		      mostrar_mensaje({ respuesta: 'ERROR' });
 		    });
 		  });
 		}
