@@ -1,0 +1,24 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - img "AIA Logo" [ref=e5]
+    - heading "Bienvenido a Last Planner AIA" [level=1] [ref=e6]
+    - paragraph [ref=e7]: Ingresa tus credenciales para continuar
+  - generic [ref=e8]:
+    - generic [ref=e9]:
+      - generic [ref=e10]:
+        - generic [ref=e11]: Usuario
+        - textbox "Usuario" [ref=e12]: jbenitez
+        - generic [ref=e15]: 
+      - generic [ref=e16]:
+        - generic [ref=e17]: Contraseña
+        - textbox "Contraseña" [ref=e18]: Jbe#1106z
+        - generic [ref=e21]: 
+      - button "INICIAR SESIÓN" [ref=e24] [cursor=pointer]:
+        - text: INICIAR SESIÓN
+        - generic [ref=e25]: 
+    - link "¿Olvidaste tu contraseña?" [ref=e27] [cursor=pointer]:
+      - /url: /password/forgot
+    - generic [ref=e28]:
+      - text: © 2026 Arquitectos e Ingenieros Asociados
+      - text: Construyendo con
+      - strong [ref=e29]: +CERTEZA
