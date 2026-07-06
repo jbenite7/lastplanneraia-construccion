@@ -53,6 +53,7 @@ When migrating from per-project tables (`{prefix}_programa`, `{prefix}_actividad
 | 41 | `20260624_pc_config_columns.sql` | — | No change needed (only `general_proyectos_procesos`) |
 | 42 | `20260624_pc_reponer_tablas_faltantes.sql` | `20260624_pc_reponer_tablas_faltantes_global.sql` | All 16 global tables verified from `001_create_global_tables.sql` |
 | 43 | `20260624_preconstruccion_schema.sql` | — | No change needed (only `general_proyectos_procesos`) |
+| 44 | **Nuevo** | `20260706_add_project_id_to_programacion_semanal.sql` | **Agrega `project_id` a `programacion_semanal` en producción** |
 
 ## Pattern Summary
 
