@@ -2849,6 +2849,7 @@
       bindResize();
       fetchCodigosActividad();
       renderLegendModal();
+      bindAutoUpdateOnNavigation();
       initialized = true;
     }
 
@@ -2857,9 +2858,34 @@
     }
 
     syncLegendVisualState();
+    var shouldAutoUpdate = shouldAutoUpdateOnEntry();
     fetchRestrictionConfig().always(function () {
       loadData();
+      if (shouldAutoUpdate) {
+        actualizarEjecucion();
+      }
     });
+  }
+
+  var PG_AUTO_UPDATE_FLAG = 'pgAutoUpdateOnNextLoad';
+
+  function bindAutoUpdateOnNavigation() {
+    try {
+      window.addEventListener('pagehide', function () {
+        try { sessionStorage.setItem(PG_AUTO_UPDATE_FLAG, '1'); } catch (e) { /* noop */ }
+      });
+    } catch (e) { /* noop */ }
+  }
+
+  function shouldAutoUpdateOnEntry() {
+    try {
+      var flag = sessionStorage.getItem(PG_AUTO_UPDATE_FLAG);
+      if (flag === '1') {
+        sessionStorage.removeItem(PG_AUTO_UPDATE_FLAG);
+        return true;
+      }
+    } catch (e) { /* noop */ }
+    return true;
   }
 
   window.PGHotModule = {
