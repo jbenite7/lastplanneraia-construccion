@@ -49,8 +49,21 @@ CREATE TABLE IF NOT EXISTS `general_pdc_family_rule_audit` (
   KEY `idx_pdc_rule_audit_action` (`accion`, `created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-ALTER TABLE `general_pdc_familias`
-  ADD COLUMN IF NOT EXISTS `activa` tinyint(1) NOT NULL DEFAULT 1 AFTER `siempre_revision`;
+SET @family_activa_exists := (
+  SELECT COUNT(*)
+  FROM information_schema.columns
+  WHERE table_schema = DATABASE()
+    AND table_name = 'general_pdc_familias'
+    AND column_name = 'activa'
+);
+SET @family_activa_sql := IF(
+  @family_activa_exists = 0,
+  'ALTER TABLE `general_pdc_familias` ADD COLUMN `activa` tinyint(1) NOT NULL DEFAULT 1 AFTER `siempre_revision`',
+  'SELECT 1'
+);
+PREPARE family_activa_stmt FROM @family_activa_sql;
+EXECUTE family_activa_stmt;
+DEALLOCATE PREPARE family_activa_stmt;
 
 INSERT IGNORE INTO `general_pdc_familias` (`codigo`, `nombre`, `categoria`, `orden`, `siempre_revision`)
 VALUES
@@ -125,3 +138,24 @@ WHERE prev.id IS NULL;
 UPDATE `general_pdc_activity_rules` r
 JOIN `general_pdc_family_aliases` a ON a.alias_family_id = r.familia_id AND a.activa = 1
 SET r.familia_id = a.familia_id;
+
+CREATE OR REPLACE SQL SECURITY INVOKER VIEW `v_pdc_inventory` AS
+SELECT
+  f.id AS familia_id, f.codigo AS familia_codigo, f.nombre AS familia_nombre,
+  f.categoria, f.orden AS familia_orden, f.siempre_revision,
+  fco.id AS option_id, fco.tipo_contrato AS option_tipo_contrato,
+  fco.tipo_paquete AS option_tipo_paquete, fco.dias_elaboracion, fco.dias_entrega,
+  fco.dias_recibo, fco.dias_cuadros, fco.dias_legalizacion,
+  fco.dias_fabricacion, fco.dias_insumos,
+  COALESCE(fcoi.tipo_contrato, fco.tipo_contrato) AS item_tipo_contrato,
+  COALESCE(fcoi.tipo_paquete, fco.tipo_paquete) AS item_tipo_paquete,
+  fcoi.paquete_nombre, fcoi.orden AS item_orden,
+  dpc.id AS dias_proceso_id, dpc.paqueteContratacion AS dias_proceso_nombre,
+  dpc.diasElaboracionPliegos AS real_elaboracion, dpc.diasEntregaPliegos AS real_entrega,
+  dpc.diasReciboPropuestas AS real_recibo, dpc.diasCuadrosComparativos AS real_cuadros,
+  dpc.diasLegalizacionContrato AS real_legalizacion, dpc.diasFabricacion AS real_fabricacion,
+  dpc.diasInsumosObra AS real_insumos
+FROM `general_pdc_familias` f
+LEFT JOIN `general_pdc_family_contract_options` fco ON fco.familia_id = f.id AND fco.activa = 1
+LEFT JOIN `general_pdc_family_contract_option_items` fcoi ON fcoi.option_id = fco.id
+LEFT JOIN `general_dias_procesos_contratacion` dpc ON dpc.id = fcoi.dias_proceso_id;

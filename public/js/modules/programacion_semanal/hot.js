@@ -35,7 +35,9 @@
     Observaciones_CNC: true,
   };
 
-  var LEGACY_HIDDEN_COLUMN_INDEXES = [0, 2, 4, 5, 8, 18, 19, 20];
+  // 16 = Es_TNP (columna técnica de flag binario, no debe ser visible para usuarios)
+  // 19, 20, 21 = Categoria_CNC, CNC, Observaciones_CNC (siempre internas, el detalle se ve al expandir)
+  var LEGACY_HIDDEN_COLUMN_INDEXES = [0, 2, 4, 5, 8, 16, 19, 20, 21];
 
   var PHASE_HIDDEN_PROPS = {
     programacion: ['Ejecutado_Real', 'PAC', 'P_Completado'],
@@ -2408,6 +2410,7 @@
         'Cant. Sugerida',
         'Compromiso',
         'Real',
+        '',
         'PAC',
         '% Completado',
         'Categoría CNC',

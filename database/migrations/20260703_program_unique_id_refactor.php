@@ -101,6 +101,17 @@ function syncTrigger(PDO $pdo, string $table, string $name, string $timing, arra
     execSql($pdo, "CREATE TRIGGER `{$trigger}` BEFORE {$timing} ON `{$table}` FOR EACH ROW BEGIN " . implode('; ', $body) . '; END', $apply);
 }
 
+function syncAutoProgramLogTrigger(PDO $pdo, string $timing, bool $apply): void
+{
+    $trigger = "trg_auto_program_log_unique_id_{$timing}";
+    execSql($pdo, "DROP TRIGGER IF EXISTS `{$trigger}`", $apply);
+    execSql(
+        $pdo,
+        "CREATE TRIGGER `{$trigger}` BEFORE {$timing} ON `auto_program_log` FOR EACH ROW BEGIN IF NEW.`consecutivo` > 0 AND EXISTS (SELECT 1 FROM `programa` p WHERE p.`project_id` <=> NEW.`project_id` AND p.`unique_id` = NEW.`consecutivo`) THEN SET NEW.`unique_id` = NEW.`consecutivo`; ELSEIF NEW.`unique_id` IS NOT NULL AND NOT EXISTS (SELECT 1 FROM `programa` p WHERE p.`project_id` <=> NEW.`project_id` AND p.`unique_id` = NEW.`unique_id`) THEN SET NEW.`unique_id` = NULL; ELSEIF NEW.`consecutivo` <= 0 THEN SET NEW.`unique_id` = NULL; END IF; END",
+        $apply
+    );
+}
+
 if ($rollback) {
     foreach ([
         ['programa_consolidado', 'fk_pc__programa__unique_id'],
@@ -187,7 +198,7 @@ foreach ([
     'UPDATE `lps_escalamientos` SET `unique_id` = `consecutivo_en_programa` WHERE `unique_id` IS NULL OR `unique_id` <> `consecutivo_en_programa`',
     'UPDATE `pg_tracking` SET `unique_id` = `consecutivo_en_programa` WHERE `unique_id` IS NULL OR `unique_id` <> `consecutivo_en_programa`',
     'UPDATE `pi_shared_constraint_links` SET `unique_id` = `ConsecutivoEnPrograma` WHERE `unique_id` IS NULL OR `unique_id` <> `ConsecutivoEnPrograma`',
-    'UPDATE `auto_program_log` SET `unique_id` = `consecutivo` WHERE `unique_id` IS NULL OR `unique_id` <> `consecutivo`',
+    'UPDATE `auto_program_log` l SET `unique_id` = CASE WHEN l.`consecutivo` > 0 AND EXISTS (SELECT 1 FROM `programa` p WHERE p.`project_id` <=> l.`project_id` AND p.`unique_id` = l.`consecutivo`) THEN l.`consecutivo` ELSE NULL END WHERE (l.`unique_id` IS NOT NULL AND NOT EXISTS (SELECT 1 FROM `programa` p WHERE p.`project_id` <=> l.`project_id` AND p.`unique_id` = l.`unique_id`)) OR (l.`consecutivo` > 0 AND EXISTS (SELECT 1 FROM `programa` p WHERE p.`project_id` <=> l.`project_id` AND p.`unique_id` = l.`consecutivo`) AND (l.`unique_id` IS NULL OR l.`unique_id` <> l.`consecutivo`)) OR (l.`consecutivo` <= 0 AND l.`unique_id` IS NOT NULL)',
     'UPDATE `pdc` SET `pdc_row_id` = `consecutivo` WHERE `pdc_row_id` IS NULL OR `pdc_row_id` <> `consecutivo`',
     'UPDATE `papelera_pdc` SET `pdc_row_id` = `consecutivo` WHERE `pdc_row_id` IS NULL OR `pdc_row_id` <> `consecutivo`',
 ] as $sql) {
@@ -231,8 +242,8 @@ syncTrigger($pdo, 'pg_tracking', 'pgt', 'INSERT', [['unique_id', 'consecutivo_en
 syncTrigger($pdo, 'pg_tracking', 'pgt', 'UPDATE', [['unique_id', 'consecutivo_en_programa']], $apply);
 syncTrigger($pdo, 'pi_shared_constraint_links', 'pscl', 'INSERT', [['unique_id', 'ConsecutivoEnPrograma']], $apply);
 syncTrigger($pdo, 'pi_shared_constraint_links', 'pscl', 'UPDATE', [['unique_id', 'ConsecutivoEnPrograma']], $apply);
-syncTrigger($pdo, 'auto_program_log', 'apl', 'INSERT', [['unique_id', 'consecutivo']], $apply);
-syncTrigger($pdo, 'auto_program_log', 'apl', 'UPDATE', [['unique_id', 'consecutivo']], $apply);
+syncAutoProgramLogTrigger($pdo, 'INSERT', $apply);
+syncAutoProgramLogTrigger($pdo, 'UPDATE', $apply);
 syncTrigger($pdo, 'pdc', 'pdc', 'INSERT', [['pdc_row_id', 'consecutivo']], $apply);
 syncTrigger($pdo, 'pdc', 'pdc', 'UPDATE', [['pdc_row_id', 'consecutivo']], $apply);
 syncTrigger($pdo, 'papelera_pdc', 'papelera', 'INSERT', [['pdc_row_id', 'consecutivo']], $apply);

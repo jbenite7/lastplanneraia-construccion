@@ -314,13 +314,24 @@ class LpsService
             'rows' => 0,
         ];
 
-        $queryTables = "SELECT c.TABLE_NAME
-                        FROM information_schema.COLUMNS c
-                        WHERE c.TABLE_SCHEMA = DATABASE()
-                          AND c.COLUMN_NAME = 'medir_productividad'
-                          AND (c.TABLE_NAME LIKE ? ESCAPE '\\\\' OR c.TABLE_NAME LIKE ? ESCAPE '\\\\')";
+        if (method_exists($db, 'isUsingGlobalTables') && $db->isUsingGlobalTables()) {
+            $candidateTables = ['programacion_semanal', 'programa_consolidado'];
+            $placeholders = implode(',', array_fill(0, count($candidateTables), '?'));
+            $queryTables = "SELECT c.TABLE_NAME
+                            FROM information_schema.COLUMNS c
+                            WHERE c.TABLE_SCHEMA = DATABASE()
+                              AND c.COLUMN_NAME = 'medir_productividad'
+                              AND c.TABLE_NAME IN ({$placeholders})";
+            $stmtTables = $db->query($queryTables, $candidateTables);
+        } else {
+            $queryTables = "SELECT c.TABLE_NAME
+                            FROM information_schema.COLUMNS c
+                            WHERE c.TABLE_SCHEMA = DATABASE()
+                              AND c.COLUMN_NAME = 'medir_productividad'
+                              AND (c.TABLE_NAME LIKE ? ESCAPE '\\\\' OR c.TABLE_NAME LIKE ? ESCAPE '\\\\')";
+            $stmtTables = $db->query($queryTables, ['%\\_programacion\\_semanal', '%\\_programa\\_consolidado']);
+        }
 
-        $stmtTables = $db->query($queryTables, ['%\\_programacion\\_semanal', '%\\_programa\\_consolidado']);
         $tables = $stmtTables->fetchAll(\PDO::FETCH_COLUMN);
 
         foreach ($tables as $tableName) {

@@ -6,11 +6,116 @@
 - **Rama:** main
 - **Entorno:** Docker local (php 8.3.32, MySQL 8.0.40)
 - **Suite:** smoke (12 tests) + deep workflows (2 tests)
-- **Resultado:** 14/14 tests pasan — 19 hallazgos documentados
+- **Resultado:** 14/14 tests pasan — 17 hallazgos documentados
+- **Estado Fase 0:** 4 helpers creados (`handsontable.mjs`, `admin.mjs`, `moduleSelectors.mjs`, `apiPayloads.mjs`)
+
+### Resolution Status (2026-07-05)
+
+| Finding | Status | Action |
+|---|---|---|
+| F-001 | ✅ Documentado | PG update usa `unique_id`/`Semana` — tests aplican params correctos |
+| F-002 | ✅ Documentado | PI `liberar_todas` no soportado — tests de PI omitidos (404) |
+| F-003 | ✅ Documentado | CNP S2 vacío esperable — documentado como vacuum |
+| F-004 | ⚠️ Blocker | Listado `auto/apply` rechaza payload — tests marcan expected failure |
+| F-005 | ⚠️ Blocker | `familia/save` 404 — CRUD UI tests omiten creación vía API |
+| F-006 | ⚠️ Blocker | Contratos `auto/apply` rechaza payload — tests marcan expected failure |
+| F-007 | ⚠️ Blocker | PDC `auto/apply` rechaza payload — tests marcan expected failure |
+| F-008 | ✅ Documentado | PDC operativo con datos reales |
+| F-009 | ✅ Documentado | Handsontable vs HTML table documentado |
+| F-010 | ✅ Documentado | Sidebar limitado — navegación por URL directa |
+| F-011 | ✅ Documentado | CIC y PI omitidos (404) |
+| F-012 | ✅ Documentado | Chips varían por tipo proyecto — fixtures por tipo |
+| F-013 | ✅ Documentado | LPS Drawer universal — test incluido en Fase 1 |
+| F-014 | ✅ Documentado | Admin login independiente — helper `admin.mjs` creado |
+| F-015 | ✅ Documentado | Leyenda modal consistente — selector genérico |
+| F-016 | ✅ Documentado | Admin Proyectos DataTable documentado |
+| F-017 | ✅ Documentado | Admin Usuarios filtros documentados |
 
 ---
 
 ## Hallazgos
+
+### F-009 — PG y PS usan Handsontable (treegrid); PDC, Contratos y Listado usan HTML tables nativas
+
+- **Severidad:** Media (arquitectura de tests)
+- **Módulo:** Multi-módulo
+- **Evidencia:** PG/PS: DOM con `role=treegrid`, `role=row`, `role=gridcell`, `role=columnheader` (Handsontable). PDC/Contratos/Listado: `<table>` nativa con `<thead>`, `<tbody>`, `<tr>`, `<td>`.
+- **Implicación:** Handsontable requiere helpers especiales (dblclick celdas, scroll horizontal, esperar render). HTML tables permiten selectores CSS estándar.
+- **Acción:** Crear `e2e/support/handsontable.mjs` con `editCell()`, `getCellValue()`, `selectDropdown()`, `getTableData()`. Para HTML tables usar selectores CSS directos.
+- **Estado:** Documentado
+
+### F-010 — Sidebar solo muestra 6 módulos; PDC/Contratos/Listado accesibles solo por URL directa
+
+- **Severidad:** Media (arquitectura de tests)
+- **Módulo:** Navegación
+- **Evidencia:** Sidebar items visibles para cualquier proyecto: Información General, Integración, Semanas del Proyecto, Programa General, Liberación de Restricciones, Programación Semanal. PDC, Contratos y Listado-Actividades no aparecen en sidebar pero son accesibles vía URL directa (`/pdc`, `/contratos`, `/listado-actividades`).
+- **Implicación:** Tests deben navegar por URL directa para estos módulos, no por click en sidebar.
+- **Acción:** Documentar ruta de acceso correcta para cada módulo en fixtures.
+- **Estado:** Documentado
+
+### F-011 — CIC y Plan Intermedio no existen (404) en ambiente actual
+
+- **Severidad:** Alta (bloquea tests planificados)
+- **Módulo:** CIC, PI
+- **Evidencia:** `/cic` y `/plan-intermedio` devuelven 404 para ambos proyectos (Da Porto y Aeropuerto PC). Las rutas no existen en `public/index.php`.
+- **Implicación:** No se pueden escribir tests E2E para estos módulos hasta que se implementen.
+- **Acción:** Saltar tests de CIC y PI. Marcar como "no implementado" en plan.
+- **Estado:** Confirmado
+
+### F-012 — PG chips de estado varían por tipo de proyecto (PC vs Construcción)
+
+- **Severidad:** Baja
+- **Módulo:** Programa General
+- **Evidencia:** Aeropuerto PC (Pre-Construcción): "Con Restricción Pendiente", "Por Iniciar", "Actividad Futura", "En Ejecución", "Atrasada", "Completada", "Sin Datos". Da Porto (Construcción): "Con Alerta Restricciones", "Debe Iniciar", "Actividad Futura", "En Curso", "Atrasada", "Terminada", "Sin Datos".
+- **Implicación:** Tests de PG no deben hardcodear textos de chips para ambos proyectos.
+- **Acción:** Usar arrays de chips esperados por tipo de proyecto en fixtures.
+- **Estado:** Documentado
+
+### F-013 — LPS Drawer universal con "Compilar Digest de Obra" y modo simulación
+
+- **Severidad:** Baja
+- **Módulo:** Multi-módulo (PG, PS, etc.)
+- **Evidencia:** Todas las páginas tienen botón flotante "Abrir Cajón Contextual LPS" que abre dialog con:
+  - Sección "Prioridad": muestra "Selecciona una fila" cuando no hay fila activa
+  - Sección "Weekly Digest (Consolidado)": botón "Compilar Digest de Obra"
+  - Checkbox "Modo Simulación (Inactivo)" — cuando activo, los CTAs copian al portapapeles en lugar de enviar notificaciones reales
+  - Texto: "Las notificaciones reales están bloqueadas. Los CTAs copiarán el reporte al portapapeles."
+- **Acción:** Incluir test básico de LPS Drawer en Fase 1 (abrir, verificar secciones, cerrar).
+- **Estado:** Documentado
+
+### F-014 — Admin panel tiene login independiente y sesión separada
+
+- **Severidad:** Media
+- **Módulo:** Admin Panel
+- **Evidencia:** `/admin/` redirige a `/admin/login` si no hay sesión. Login en `/admin/login` con campos: textbox "Usuario", textbox "Contraseña", checkbox "Recuérdame", button "Ingresar". Dashboard en `/admin/` con menú: Dashboard, Proyectos (`/admin/proyectos`), Usuarios (`/admin/usuarios`), Matching Config (`/admin/matching/config`), Catálogo Familias (`/admin/matching/family-catalog`). Sidebar items: Inicio, Salir también.
+- **Implicación:** Admin tests requieren login separado y posiblemente manejo de cookies distinto.
+- **Acción:** Implementar `adminLogin()` en `e2e/support/admin.mjs` que hace login en `/admin/login`.
+- **Estado:** Documentado
+
+### F-015 — Leyenda modal consistente en todos los módulos con "Guia Operativa"
+
+- **Severidad:** Baja
+- **Módulo:** Multi-módulo
+- **Evidencia:** En PG, el botón "Leyenda" abre un dialog con heading "Guia Operativa - Programa General" con secciones: P1 - Resolver hoy, P2 - Gestion semanal, P3 - Seguimiento, Restricciones Obligatorias (5), Alertas secundarias de restricciones.
+- **Implicación:** Selector `dialog[role="dialog"]:has(h4:text("Guia Operativa"))` funciona para todos los módulos con variación en el nombre del módulo.
+- **Acción:** Usar selector genérico `page.locator('dialog:has(h4:text("Guia Operativa"))')`.
+- **Estado:** Documentado
+
+### F-016 — Proyectos Admin usa DataTable con export buttons
+
+- **Severidad:** Baja
+- **Módulo:** Admin Proyectos
+- **Evidencia:** `/admin/proyectos` usa DataTable con columnas: ID, Proyecto/Proceso, Área, Estado, Activo, Acceso, Plan de Compras, Acciones. Botones: Nuevo Proyecto, Copiar, CSV, Excel, PDF, Print, Visibilidad, Buscar.
+- **Acción:** Tests de admin proyectos pueden verificar render de DataTable.
+- **Estado:** Documentado
+
+### F-017 — Usuarios Admin tiene filtros Mostrar inactivos / Mostrar sin proyectos
+
+- **Severidad:** Baja
+- **Módulo:** Admin Usuarios
+- **Evidencia:** `/admin/usuarios` tiene checkboxes "Mostrar inactivos" y "Mostrar sin proyectos", botones "Nuevo Usuario" y "Excel". Columnas: ID, Nombre, Usuario, Email, Cargo, Rol Principal, Estado, Proyectos, Acciones.
+- **Acción:** Tests de admin usuarios pueden verificar toggle de filtros.
+- **Estado:** Documentado
 
 ### F-001 — PG API update requiere parámetros `unique_id` y `Semana` (no `uniq_id`/`semana`)
 

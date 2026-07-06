@@ -104,7 +104,6 @@ CREATE TABLE IF NOT EXISTS `auto_program_log` (
   `cnp` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `creado_en` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uq_project_semana_consecutivo_accion` (`project_id`,`semana`,`consecutivo`,`accion`),
   KEY `idx_semana` (`semana`),
   KEY `idx_consecutivo` (`consecutivo`),
   KEY `idx_apl_project_unique_week` (`project_id`,`unique_id`,`semana`),

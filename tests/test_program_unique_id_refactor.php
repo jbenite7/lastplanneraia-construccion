@@ -62,7 +62,7 @@ $checks = [
     'lps_escalamientos' => 'SELECT COUNT(*) FROM lps_escalamientos WHERE unique_id IS NULL OR unique_id <> consecutivo_en_programa',
     'pg_tracking' => 'SELECT COUNT(*) FROM pg_tracking WHERE unique_id IS NULL OR unique_id <> consecutivo_en_programa',
     'pi_shared_constraint_links' => 'SELECT COUNT(*) FROM pi_shared_constraint_links WHERE unique_id IS NULL OR unique_id <> ConsecutivoEnPrograma',
-    'auto_program_log' => 'SELECT COUNT(*) FROM auto_program_log WHERE unique_id IS NULL OR unique_id <> consecutivo',
+    'auto_program_log' => 'SELECT COUNT(*) FROM auto_program_log l WHERE (l.unique_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM programa p WHERE p.project_id <=> l.project_id AND p.unique_id = l.unique_id)) OR (l.consecutivo > 0 AND EXISTS (SELECT 1 FROM programa p WHERE p.project_id <=> l.project_id AND p.unique_id = l.consecutivo) AND (l.unique_id IS NULL OR l.unique_id <> l.consecutivo)) OR (l.consecutivo <= 0 AND l.unique_id IS NOT NULL)',
     'pdc' => 'SELECT COUNT(*) FROM pdc WHERE pdc_row_id IS NULL OR pdc_row_id <> consecutivo',
     'papelera_pdc' => 'SELECT COUNT(*) FROM papelera_pdc WHERE pdc_row_id IS NULL OR pdc_row_id <> consecutivo',
 ];
@@ -81,7 +81,7 @@ $orphanSql = [
     'lps_escalamientos' => 'SELECT COUNT(*) FROM lps_escalamientos e LEFT JOIN programa p ON p.project_id = e.project_id AND p.unique_id = e.unique_id WHERE p.unique_id IS NULL',
     'pg_tracking' => 'SELECT COUNT(*) FROM pg_tracking t LEFT JOIN programa p ON p.project_id = t.project_id AND p.unique_id = t.unique_id WHERE p.unique_id IS NULL',
     'pi_shared_constraint_links' => 'SELECT COUNT(*) FROM pi_shared_constraint_links l LEFT JOIN programa p ON p.project_id = l.project_id AND p.unique_id = l.unique_id WHERE p.unique_id IS NULL',
-    'auto_program_log' => 'SELECT COUNT(*) FROM auto_program_log l LEFT JOIN programa p ON p.project_id = l.project_id AND p.unique_id = l.unique_id WHERE p.unique_id IS NULL',
+    'auto_program_log' => 'SELECT COUNT(*) FROM auto_program_log l LEFT JOIN programa p ON p.project_id = l.project_id AND p.unique_id = l.unique_id WHERE l.unique_id IS NOT NULL AND p.unique_id IS NULL',
 ];
 
 foreach ($orphanSql as $table => $sql) {
