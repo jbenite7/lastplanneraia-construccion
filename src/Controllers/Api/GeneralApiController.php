@@ -416,7 +416,7 @@ class GeneralApiController extends BaseController
             $this->db->queryWithProject("UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " SET Activa = 1 WHERE project_id = ? AND Semana = ?", [$projectId, $semana], $projectId);
             $this->db->queryWithProject("UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " SET Estado = 'Capítulo' WHERE project_id = ? AND Semana = ? AND Titulo = 1", [$projectId, $semana], $projectId);
 
-            $rows = $this->db->queryWithProject("SELECT unique_id, unique_id AS Consecutivo_en_Programa, Titulo, Ejecutado, Fecha_Inicio, Fecha_Fin FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " WHERE project_id = ? AND Semana = ? AND Titulo = 0", [$projectId, $semana], $projectId);
+            $rows = $this->db->queryWithProject("SELECT unique_id, unique_id AS Consecutivo_en_Programa, Titulo, Ejecutado, Fecha_Inicio, Fecha_Fin FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " WHERE project_id = ? AND Semana = ?", [$projectId, $semana], $projectId);
             $activities = $rows->fetchAll(PDO::FETCH_ASSOC);
 
             $actualizadas = 0;
