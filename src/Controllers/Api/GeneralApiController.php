@@ -1570,7 +1570,7 @@ class GeneralApiController extends BaseController
                         'label'     => 'Predecesora',
                         'type'      => 'hard',
                         'threshold' => 50,
-                        'options'   => ['0%', '33%', '66%', '100%', 'N/A'],
+                        'options'   => ['0%', '50%', '100%', 'N/A'],
                     ],
                 ];
 
@@ -1651,7 +1651,7 @@ class GeneralApiController extends BaseController
                             'label'     => 'Actividad Predecesora',
                             'type'      => 'hard',
                             'threshold' => 50,
-                            'options'   => ['0%', '33%', '66%', '100%', 'N/A'],
+                            'options'   => ['0%', '50%', '100%', 'N/A'],
                         ],
                         [
                             'key'       => 'Pdto_Cons',

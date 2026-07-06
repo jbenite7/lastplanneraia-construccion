@@ -44,7 +44,7 @@
       { key: 'Materiales', label: 'Materiales', type: 'hard', threshold: 100, options: ['0%', '33%', '66%', '100%', 'N/A'] },
       { key: 'MdeO', label: 'Mano de Obra', type: 'hard', threshold: 100, options: ['0%', '33%', '66%', '100%', 'N/A'] },
       { key: 'Equipos', label: 'Equipos', type: 'hard', threshold: 100, options: ['0%', '33%', '66%', '100%', 'N/A'] },
-      { key: 'Predecesora', label: 'Predecesora', type: 'hard', threshold: 50, options: ['0%', '33%', '66%', '100%', 'N/A'] },
+      { key: 'Predecesora', label: 'Predecesora', type: 'hard', threshold: 50, options: ['0%', '50%', '100%', 'N/A'] },
       { key: 'Pdto_Cons', label: 'Pdto. Constructivo (blanda)', type: 'soft', threshold: 100, options: ['0%', '50%', '100%', 'N/A'] },
       { key: 'Modelo', label: 'Modelo BIM (blanda)', type: 'soft', threshold: 100, options: ['0%', '50%', '100%', 'N/A'] },
     ],
