@@ -58,7 +58,7 @@ class PdcApiController
                     "diasInsumosObra" => "", "fechaRealInsumosObra" => "", "fechaInicio" => "",
                     "fechaInicioProyectada" => "", "fechaRealInicio" => "", "idProveedorAdjudicado" => "",
                     "fechaVencimientoPolizas" => "", "observacionesContrato" => "", "ordenVisual" => "",
-                    "diasDelta" => 0, "necesitaConfiguracion" => 0, "listoParaIniciar" => 0,
+                    "diasDelta" => 0, "deberiaHoyDate" => "", "necesitaConfiguracion" => 0, "listoParaIniciar" => 0,
                 ];
                 $this->json($arreglo);
                 return;
@@ -126,6 +126,46 @@ class PdcApiController
 
                     $deltaInfo = $this->calcularDiasDelta($data, $semanaSem);
                     $data["diasDelta"] = $deltaInfo['diasDelta'];
+                    $data["deberiaHoyDate"] = $deltaInfo['deberiaHoyDate'];
+
+                    // Compute estado dynamically using current date (real-time)
+                    // instead of reading stale value from DB
+                    $posicion = $deltaInfo['posicion'];
+                    $deberiaHoy = $deltaInfo['deberiaHoy'];
+                    $fechaInicio = $data['fechaInicio'] ?? '';
+
+                    $pasosDescriptions = [
+                        "Elaborando pliegos del contrato",
+                        "Entregando pliegos a los proveedores invitados",
+                        "Recibiendo propuestas de los proveedores invitados",
+                        "Elaborando cuadros comparativos, análisis y adjudicación del contrato",
+                        "En proceso de legalización del contrato",
+                        "En periodo de fabricación, producción, importaciones, transportes, movilización, etc",
+                        "En proceso de llegada de recursos, insumos y personal a la obra",
+                        "Proceso de contratación finalizado y actividades del contrato iniciadas",
+                    ];
+
+                    $diagnostico = ($posicion >= $deberiaHoy) ? "En Curso" : "Atrasado!!";
+
+                    if ($posicion === 7) {
+                        $realFieldNames = [
+                            'fechaRealElaboracionPliegos', 'fechaRealEntregaPliegos',
+                            'fechaRealReciboPropuestas', 'fechaRealCuadrosComparativos',
+                            'fechaRealLegalizacionContrato', 'fechaRealFabricacion',
+                            'fechaRealInsumosObra', 'fechaRealInicio',
+                        ];
+                        $estadoFinal = (
+                            !empty($data[$realFieldNames[7]]) && !empty($fechaInicio)
+                            && $data[$realFieldNames[7]] > $fechaInicio
+                        ) ? "Terminado con retrasos" : "Terminado a tiempo";
+                    } else {
+                        $pasoTexto = ($posicion === -1)
+                            ? "Proceso de contratación no iniciado"
+                            : $pasosDescriptions[$posicion];
+                        $estadoFinal = "$diagnostico; $pasoTexto";
+                    }
+                    $data['estado'] = $estadoFinal;
+                    $data['fechaCalculo'] = date('Y-m-d');
                 }
 
                 $tipoPaquete = $data["tipoPaquete"];
@@ -812,18 +852,17 @@ class PdcApiController
         }
 
         $diasDelta = 0;
-        if ($posicion === -1 && $deberiaHoy >= 0) {
-            for ($i = 0; $i <= $deberiaHoy && $i <= 8; $i++) {
-                $diasDelta += ($i < 8) ? $duraciones[$i] : 0;
-            }
-            $diasDelta = -$diasDelta;
-        } elseif ($posicion >= 0 && $deberiaHoy >= 0) {
-            if ($posicion < $deberiaHoy) {
-                for ($i = $posicion + 1; $i <= $deberiaHoy && $i <= 8; $i++) {
-                    $diasDelta += ($i < 8) ? $duraciones[$i] : 0;
-                }
-                $diasDelta = -$diasDelta;
+        $deberiaHoyDate = '';
+        if ($deberiaHoy >= 0 && isset($fechasTeoricas[$deberiaHoy])) {
+            $deberiaHoyDate = $fechasTeoricas[$deberiaHoy];
+            $diff = (strtotime($fechaActual) - strtotime($deberiaHoyDate)) / 86400;
+            $calendarDays = ($diff > 0) ? (int) floor($diff) : 0;
+
+            if ($posicion === -1 || $posicion < $deberiaHoy) {
+                // Behind: calendar days elapsed since deberiaHoyDate (the last step that should be done by today)
+                $diasDelta = -$calendarDays;
             } elseif ($posicion > $deberiaHoy) {
+                // Ahead: sum durations of extra steps completed early
                 for ($i = $deberiaHoy + 1; $i <= $posicion && $i <= 8; $i++) {
                     $diasDelta += ($i < 8) ? $duraciones[$i] : 0;
                 }
@@ -834,6 +873,7 @@ class PdcApiController
             'posicion' => $posicion,
             'deberiaHoy' => $deberiaHoy,
             'diasDelta' => $diasDelta,
+            'deberiaHoyDate' => $deberiaHoyDate,
         ];
     }
 

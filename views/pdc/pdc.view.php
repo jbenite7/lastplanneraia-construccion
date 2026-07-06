@@ -1809,6 +1809,7 @@
 						var texto = displayPDCStatus(row["estado"] || '');
 						var statusState = getPDCState(row);
 						var diasDelta = row["diasDelta"] || 0;
+						var deberiaHoyDate = row["deberiaHoyDate"] || '';
 
 						if (type !== 'display') {
 							return texto || '';
@@ -1822,10 +1823,13 @@
 							var dias = (fechaInicioProceso - fechaInicioSemana)/(1000 * 3600 * 24);
 							var deltaHtml = '';
 							if (id != "" && titulo == 0 && diasDelta !== 0) {
+								var titleDelta = deberiaHoyDate
+									? 'Días desde la fecha teórica del último paso vencido (' + deberiaHoyDate + ')'
+									: 'Días de diferencia respecto al cronograma';
 								if (diasDelta > 0) {
-									deltaHtml = ' <span class="pdc-delta pdc-delta--ahead">' + diasDelta + ' días de adelanto</span>';
+									deltaHtml = ' <span class="pdc-delta pdc-delta--ahead" title="' + titleDelta + '">' + diasDelta + ' días de adelanto</span>';
 								} else {
-									deltaHtml = ' <span class="pdc-delta pdc-delta--delay">' + Math.abs(diasDelta) + ' días de retraso</span>';
+									deltaHtml = ' <span class="pdc-delta pdc-delta--delay" title="' + titleDelta + '">' + Math.abs(diasDelta) + ' días de retraso</span>';
 								}
 							}
 							if (id != ""){
@@ -1838,7 +1842,7 @@
 										}else if(statusState === 'completed-late'){
 											return "<i class='fas fa-sad-cry fa-lg pdc-icon-state pdc-icon-amber'></i>  " + texto + deltaHtml;
 										}else if(texto === "En curso: contratacion sin iniciar"){
-											return texto;
+											return texto + deltaHtml;
 										}else if(statusState === 'active'){
 											return "<i class='fas fa-glasses fa-lg pdc-icon-state pdc-icon-info'></i>  " + texto + deltaHtml;
 										}else if(statusState === 'critical' || statusState === 'delayed'){
@@ -2000,11 +2004,22 @@
 					for(var k in counts) {
 						$('#count-'+k).text('('+counts[k]+')');
 					}
+
+					// Update real-time calculation badge
+					var firstCalcRow = api.rows().data().toArray().find(function(r) { return r && r.fechaCalculo; });
+					if (firstCalcRow) {
+						$('.pdc-calc-date').text(firstCalcRow.fechaCalculo);
+					}
 				},
 				"initComplete": function() {
 					var api = this.api();
 					populatePdcSelectFilterOptions(api);
 					bindPdcColumnFilters(api);
+					// Update real-time calculation badge from first row with fechaCalculo
+					var firstCalcRow = api.rows().data().toArray().find(function(r) { return r && r.fechaCalculo; });
+					if (firstCalcRow) {
+						$('.pdc-calc-date').text(firstCalcRow.fechaCalculo);
+					}
 				},
 
 		    "language": idioma_espanol
@@ -2062,8 +2077,25 @@
 					<span class="pdc-legend-item not-started" onclick="filterPDC('not-started', event)"><span class="indicator"></span> Contratacion pendiente de inicio <span id="count-not-started" class="count-badge">(...)</span></span>
 				</div>
 				</div>
-				<!-- Removed inline message -->
 			`);
+
+			// Move "Estado calculado al YYYY-MM-DD" badge to the context bar,
+			// grouped to the LEFT of .context-week-info. Idempotent.
+			(function injectPdcDateBadgeIntoContextBar() {
+				var weekInfo = document.querySelector('.context-week-info');
+				if (!weekInfo || document.getElementById('ctxPdcCalcDate')) return;
+				var parent = weekInfo.parentNode;
+				if (!parent) return;
+				var wrapper = document.createElement('div');
+				wrapper.className = 'context-right-group';
+				var badge = document.createElement('span');
+				badge.id = 'ctxPdcCalcDate';
+				badge.className = 'badge p-2 mr-2';
+				badge.innerHTML = '<i class="fas fa-calendar-alt mr-1"></i> Estado calculado al <strong class="pdc-calc-date">--/--/----</strong>';
+				parent.insertBefore(wrapper, weekInfo);
+				wrapper.appendChild(badge);
+				wrapper.appendChild(weekInfo);
+			})();
 
 			// Inject Toast Container if not exists
 			if ($("#mensajeActualizacion").length === 0) {

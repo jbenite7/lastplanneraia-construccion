@@ -1032,6 +1032,16 @@ table.dataTable tbody tr:not(.pdc-header):not(.pdc-missing-data):not(.pdc-critic
 .pdc-legend-item.active { background-color: var(--pdc-active-bg); color: var(--pdc-active-text); border-color: var(--pdc-active-border); }
 .pdc-legend-item.not-started { background-color: var(--pdc-not-started-bg); color: var(--pdc-not-started-text); border-color: var(--pdc-not-started-border); }
 
+/* Real-time calculation badge */
+.pdc-status-info {
+	display: inline-flex; align-items: center; gap: 6px;
+	margin-left: 10px; font-size: 0.82rem; color: #64748b;
+	white-space: nowrap; padding: 3px 10px;
+	background: #f8fafc; border-radius: 6px;
+	border: 1px solid #e2e8f0;
+}
+.pdc-status-info i { color: #1a5633; }
+
 /* Row Colors (must match chips) */
 .pdc-missing-data td,
 table.dataTable tbody tr.pdc-missing-data td {
@@ -6182,22 +6192,54 @@ html body .pdc-legend-item .count-badge {
 
 html body #dt_cliente_wrapper .pdc-legend {
   justify-content: flex-start !important;
-  flex-wrap: wrap !important;
-  gap: clamp(0.25rem, 0.42vw, 0.5rem) !important;
-  overflow: visible !important;
+  flex-wrap: nowrap !important;
+  gap: clamp(0.2rem, 0.35vw, 0.4rem) !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
 }
 
 html body #dt_cliente_wrapper .pdc-legend .pdc-legend-item {
   width: auto !important;
   max-width: 100% !important;
   min-width: 0 !important;
-  flex: 1 1 clamp(130px, 13vw, 220px) !important;
+  flex: 0 0 auto !important;
   margin: 0 !important;
   padding: 4px clamp(0.35rem, 0.5vw, 0.62rem) !important;
   font-size: clamp(0.62rem, 0.68vw, 0.74rem) !important;
   line-height: 1.12 !important;
-  white-space: normal !important;
-  overflow-wrap: anywhere !important;
+  white-space: nowrap !important;
+  overflow-wrap: normal !important;
+}
+
+/* PDC: Date badge grouped in context bar to the left of .context-week-info */
+.context-right-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+#ctxPdcCalcDate {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  background-color: #e2e8f0;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border-radius: 0.5rem;
+}
+
+#ctxPdcCalcDate .pdc-calc-date {
+  margin-left: 4px;
+  font-weight: 700;
+}
+
+@media (max-width: 576px) {
+  #ctxPdcCalcDate {
+    font-size: 0.72rem;
+    padding: 0.25rem 0.5rem !important;
+  }
 }
 
 /* ==========================================================================
