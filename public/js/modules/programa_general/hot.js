@@ -2751,7 +2751,7 @@
     var semana = getSemana();
     var fechaInicioSem = $('#Fecha_Inicio_SemYMD').val() || '';
 
-    $('#actualizarEjecucion').prop('disabled', true).text('Actualizando...');
+    $('#actualizarEjecucion').prop('disabled', true).html('Actualizando... <i class="fas fa-spinner fa-spin ml-1"></i>');
 
     $.ajax({
       method: 'POST',
