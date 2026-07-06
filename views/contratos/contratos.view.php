@@ -977,7 +977,8 @@
 		      } else if (json_info.respuesta == "DURACIONES_REQUERIDAS") {
 						openDurationsModal(json_info.paquetes || [], frmStr);
 		      } else {
-						$(".mensaje").html(json_info["respuesta"]).css({
+		        var msg = json_info.mensaje || json_info.respuesta || 'Error inesperado';
+		        $(".mensaje").html(msg).css({
 							"color": "#C9302C"
 						});
 						$(".mensaje").fadeOut(5000, function() {
@@ -985,6 +986,14 @@
 							$(this).fadeIn(3000);
 						});
 					}
+		    }).fail(function(jqXHR) {
+		    	var msg = 'Error del servidor (500)';
+		    	try {
+		    		var json = JSON.parse(jqXHR.responseText || '{}');
+		    		msg = json.mensaje || msg;
+		    	} catch(e) {}
+		    	$(".mensaje").html(msg).css({"color": "#C9302C", "font-weight": "bold"});
+		    	console.error('submitContractSave error:', msg, jqXHR.responseText);
 		    });
 		}
 
