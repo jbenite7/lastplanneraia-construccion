@@ -764,13 +764,47 @@ class SemanalApiController
     private function generarCIC(string $dbPrefix, int $semana): void
     {
         $projectId = $this->projectId($dbPrefix);
+        $tblSub = $this->tbl($dbPrefix, 'subcontratistas');
+        $tblPS = $this->tbl($dbPrefix, 'programacion_semanal');
+        $tblCic = $this->tbl($dbPrefix, 'cic');
+
+        // Self-heal: ensure every Sub_Contratista referenced in programacion_semanal exists
+        // in the subcontratistas master table. The cic FK (fk_cic__subcontratistas__subcontratista)
+        // would otherwise reject the insert below. Mirrors migration 003/2b pattern.
+        $this->db->queryWithProject(
+            "INSERT IGNORE INTO {$tblSub}
+                (project_id, Id, subcontratista, correo_contacto, NIT, alcance, tipo_proveedor)
+             SELECT DISTINCT
+                src.project_id,
+                COALESCE((SELECT MAX(Id) FROM {$tblSub} WHERE project_id = src.project_id), 0)
+                    + ROW_NUMBER() OVER (PARTITION BY src.project_id ORDER BY src.Sub_Contratista) AS Id,
+                src.Sub_Contratista,
+                'placeholder@example.com',
+                0,
+                'Internal',
+                'Internal'
+             FROM (
+                SELECT DISTINCT project_id, Semana, Sub_Contratista
+                FROM {$tblPS}
+                WHERE project_id = ?
+                  AND Sub_Contratista IS NOT NULL AND TRIM(Sub_Contratista) != ''
+                  AND (Activa = 1 OR Activa = 'NA')
+                  AND Semana <= ?
+             ) src
+             LEFT JOIN {$tblSub} sub
+                ON sub.subcontratista = src.Sub_Contratista AND sub.project_id = src.project_id
+             WHERE sub.subcontratista IS NULL",
+            [$projectId, $semana],
+            $projectId
+        );
+
         for ($s = 1; $s <= $semana; $s++) {
             $this->actualizarPacSubcontratistas($dbPrefix, $s);
-            $subsSemana = $this->db->queryWithProject("SELECT DISTINCT Sub_Contratista FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . " WHERE project_id = ? AND Semana = ? AND Sub_Contratista !='' AND (Activa='1' OR Activa='NA')", [$projectId, $s], $projectId)->fetchAll(PDO::FETCH_COLUMN);
+            $subsSemana = $this->db->queryWithProject("SELECT DISTINCT Sub_Contratista FROM {$tblPS} WHERE project_id = ? AND Semana = ? AND Sub_Contratista !='' AND (Activa='1' OR Activa='NA')", [$projectId, $s], $projectId)->fetchAll(PDO::FETCH_COLUMN);
             foreach ($subsSemana as $sub) {
-                $exists = $this->db->queryWithProject("SELECT 1 FROM " . $this->tbl($dbPrefix, 'cic') . " WHERE project_id = ? AND Semana = ? AND subcontratista = ?", [$projectId, $s, $sub], $projectId)->fetchColumn();
+                $exists = $this->db->queryWithProject("SELECT 1 FROM {$tblCic} WHERE project_id = ? AND Semana = ? AND subcontratista = ?", [$projectId, $s, $sub], $projectId)->fetchColumn();
                 if (!$exists) {
-                    $this->db->queryWithProject("INSERT INTO " . $this->tbl($dbPrefix, 'cic') . " (project_id, Semana, subcontratista) VALUES (?, ?, ?)", [$projectId, $s, $sub], $projectId);
+                    $this->db->queryWithProject("INSERT INTO {$tblCic} (project_id, Semana, subcontratista) VALUES (?, ?, ?)", [$projectId, $s, $sub], $projectId);
                 }
             }
             $this->actualizarPacSubcontratistas($dbPrefix, $s);
