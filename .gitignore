@@ -11,8 +11,9 @@ php_errorlog
 cortesProgramacion/
 cortesRestricciones/
 !public/storage/cortesRestricciones/
-!public/storage/cortesRestricciones/plantillaLiberacionRestricciones.xlsx
 !public/storage/cortesRestricciones/.gitkeep
+public/storage/cortesRestricciones/*.xlsx
+!public/storage/cortesRestricciones/plantillaLiberacionRestricciones.xlsx
 compromisosSemana/
 ordenes/
 
@@ -26,6 +27,7 @@ Thumbs.db
 
 # Bases de datos
 *.sql
+*.sql.gz
 !database/migrations/*.sql
 !database/patches/*.sql
 backups/
