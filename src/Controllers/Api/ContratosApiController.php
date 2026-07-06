@@ -199,7 +199,7 @@ class ContratosApiController extends BaseController
             }
 
         } catch (Throwable $e) {
-            error_log("Error in ContratosApiController::save: " . $e->getMessage());
+            error_log("Error in ContratosApiController::save: " . $e->getMessage() . ' | File: ' . $e->getFile() . ':' . $e->getLine() . ' | Trace: ' . $e->getTraceAsString());
             $this->jsonError('No se pudo procesar la solicitud de contratos.', 500);
         }
     }
