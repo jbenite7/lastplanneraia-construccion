@@ -914,8 +914,31 @@
 
 
 
-				var codigo_html_tipoContrato =  "<span class='text-muted'>" + escaparHtml(etiquetaModalidadContratacion(data.tipoContrato) || 'Sin asignar') + "</span>";
-				$row.find('td:eq(6)').html(codigo_html_tipoContrato);
+			var codigo_html_tipoContrato = function(valorActual) {
+				var vals = (valorActual || '').split(',').map(function(v) { return v.trim(); }).filter(Boolean);
+				var siChecked = vals.indexOf('SI') !== -1;
+				var checks = [
+					{ v: 'S',  l: 'Sum.' },
+					{ v: 'MO', l: 'M.O.' },
+					{ v: 'SI', l: 'S+Inst.' },
+					{ v: 'OC', l: 'O.Serv.' },
+				];
+				var h = '<div class="aia-inline__checks" style="display:inline-flex;gap:4px;flex-wrap:wrap;align-items:center">';
+				for (var i = 0; i < checks.length; i++) {
+					var c = checks[i];
+					var checked = vals.indexOf(c.v) !== -1;
+					var disabled = siChecked && c.v !== 'SI' ? ' disabled' : '';
+					h += '<label style="font-weight:400;font-size:12px;margin:0;white-space:nowrap;cursor:default">'
+						+ '<input type="checkbox" class="select_tipoContratoCheck" value="' + c.v + '"'
+						+ (checked ? ' checked' : '') + disabled + '> ' + c.l
+						+ '</label>';
+				}
+				h += '</div>';
+				h += '<input type="hidden" id="select_tipoContrato" name="tipoContrato" value="' + escaparHtml(valorActual || '') + '">';
+				return h;
+			};
+			var codigo_html_tipoContrato_render = codigo_html_tipoContrato(data.tipoContrato);
+			$row.find('td:eq(6)').html(codigo_html_tipoContrato_render);
 
 					var codigo_html_botones = "<button type= 'button' id='btn_guardar_editar' class='guardar btn btn-success btn-sm btn-action-gap' title='Guardar la edición'><i class='fa fa-save fa-xs' aria-hidden='true' ></i></button><button type= 'button' id='btn_cancelar_editar' class='cancelar btn btn-danger btn-sm btn-action-gap' title='Cancelar la edición'><i class='fa fa-undo fa-xs' aria-hidden='true' ></i></button>";
 					$row.find('td:eq(0)').html(codigo_html_botones);
@@ -1077,6 +1100,17 @@
 		  };
 		  $("#modalNuevaActividad").on('change', 'input[name="tipoContratoCheck"]', sincronizarBloqueoSi);
 		  sincronizarBloqueoSi();
+
+		  /* Inline edit: SI bloquea demas checkboxes (event delegation) */
+		  $(document).on('change', 'input.select_tipoContratoCheck[value="SI"]', function() {
+		    var $td = $(this).closest('td');
+		    var $otros = $td.find('input.select_tipoContratoCheck').not(this);
+		    if ($(this).is(':checked')) {
+		      $otros.prop('checked', false).prop('disabled', true);
+		    } else {
+		      $otros.prop('disabled', false);
+		    }
+		  });
 		}
 
 		var guardar_modificar = function() {
@@ -1092,7 +1126,10 @@
 				var actividadInicio = $("#select_actividadInicio").serialize();
 				var fechaInicio = $("#select_fechaInicio").serialize();
 
-				frm = Id + "&" + opcion + "&" + codigo + "&" + Actividad + "&" + descripcionActividad + "&" + actividadInicio + "&" + fechaInicio + "&semana=" + semana;
+				var tipoContratoVals = $("input.select_tipoContratoCheck:checked").map(function() { return $(this).val(); }).get().join(',');
+				$("#select_tipoContrato").val(tipoContratoVals);
+
+				frm = Id + "&" + opcion + "&" + codigo + "&" + Actividad + "&" + descripcionActividad + "&" + actividadInicio + "&" + fechaInicio + "&tipoContrato=" + encodeURIComponent(tipoContratoVals) + "&semana=" + semana;
 				// console.log(frm);
 				$.ajax({
 					method: "POST",
