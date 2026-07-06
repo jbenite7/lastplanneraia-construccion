@@ -16,6 +16,7 @@
  * Dry-run por defecto. --apply para ejecutar.
  */
 
+require_once __DIR__ . '/../../vendor/autoload.php';
 require_once __DIR__ . '/../../src/Core/Database.php';
 
 $db = Database::getInstance();
