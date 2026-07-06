@@ -39,19 +39,6 @@
 	        $actividadInicioOptionsHtml = '<option value="">Error loading data: ' . htmlspecialchars($t->getMessage(), ENT_QUOTES, 'UTF-8') . '</option>';
 	    }
 	}
-
-	$tipoContratoOpciones = [
-	    ['value' => 'S',  'label' => 'Suministro'],
-	    ['value' => 'MO', 'label' => 'Mano de Obra'],
-	    ['value' => 'SI', 'label' => 'Suministro e Instalación'],
-	    ['value' => 'OC', 'label' => 'Orden de servicio/compra'],
-	];
-	$tipoContratoOptionsHtml = '';
-	foreach ($tipoContratoOpciones as $opcionTipo) {
-	    $tipoContratoOptionsHtml .= '<option value="' . htmlspecialchars($opcionTipo['value'], ENT_QUOTES, 'UTF-8') . '">'
-	        . htmlspecialchars($opcionTipo['label'], ENT_QUOTES, 'UTF-8')
-	        . '</option>';
-	}
 	?>
 
 	<div class="encabezado" id="encabezado">
@@ -142,14 +129,18 @@
 		                </div>
 		                <div class="col-sm-12 aia-modal__field">
 		                  <label class="control-label aia-modal__label">Modalidad de contratacion <span class="text-danger" aria-hidden="true">*</span></label>
-		                  <div class="aia-modal__check-group" role="group" aria-label="Modalidad de contratacion">
-		                    <label class="aia-modal__check"><input type="checkbox" name="tipoContratoCheck" value="S" data-tipo-check="S"> <span>Suministro</span></label>
-		                    <label class="aia-modal__check"><input type="checkbox" name="tipoContratoCheck" value="MO" data-tipo-check="MO"> <span>Mano de Obra</span></label>
-		                    <label class="aia-modal__check"><input type="checkbox" name="tipoContratoCheck" value="SI" data-tipo-check="SI" id="chkTipoSI"> <span>Suministro e Instalación</span></label>
-		                    <label class="aia-modal__check"><input type="checkbox" name="tipoContratoCheck" value="OC" data-tipo-check="OC"> <span>Orden de servicio/compra</span></label>
+		                  <div id="tipoContratoPillsContainer">
+		                    <?php
+		                    $tipoContratoOpciones = [
+		                        ['value' => 'S',  'label' => 'Suministro'],
+		                        ['value' => 'MO', 'label' => 'Mano de Obra'],
+		                        ['value' => 'SI', 'label' => 'Suministro e Instalación'],
+		                        ['value' => 'OC', 'label' => 'Orden de servicio/compra'],
+		                    ];
+		                    ?>
 		                  </div>
 		                  <input type="hidden" id="tipoContrato" name="tipoContrato" value="">
-		                  <small class="form-text text-muted aia-modal__check-hint" id="tipoContratoHint">Puedes combinar varias modalidades. Si eliges <strong>Suministro e Instalación</strong>, las demás se bloquean porque ya las incluye.</small>
+		                  <small class="aia-tipo-hint" id="tipoContratoHint">Puedes combinar varias modalidades. Si eliges <strong>Suministro e Instalación</strong>, las demás se bloquean porque ya las incluye.</small>
 		                </div>
 		                </div>
 		              </section>
@@ -451,6 +442,40 @@
 				var key = item.trim();
 				return etiquetas[key] || key;
 			}).filter(Boolean).join(', ');
+		};
+
+		/* Construye el HTML del toggle de modalidad (compartido por modal e inline).
+		 * - variant: 'modal' (vertical full) o 'inline' (grid 2x2 compacto)
+		 * - selectedCodes: array con los codigos pre-seleccionados (ej: ['S','MO'])
+		 * - disabled: bool - si true, todas las pills se renderizan deshabilitadas
+		 */
+		var buildTipoContratoPills = function(variant, selectedCodes, disabled) {
+			var layoutClass = variant === 'inline' ? 'aia-tipo-toggle aia-tipo-toggle--inline' : 'aia-tipo-toggle';
+			var opcs = [
+				{ code: 'S',  cls: 'aia-tipo-pill--s',  label: 'Suministro' },
+				{ code: 'MO', cls: 'aia-tipo-pill--mo', label: 'Mano de Obra' },
+				{ code: 'SI', cls: 'aia-tipo-pill--si', label: 'Suministro e Instalación' },
+				{ code: 'OC', cls: 'aia-tipo-pill--oc', label: 'Orden de servicio/compra' },
+			];
+			var sel = Array.isArray(selectedCodes) ? selectedCodes : [];
+			var siSelected = sel.indexOf('SI') !== -1;
+			var h = '<div class="' + layoutClass + '" role="group" aria-label="Modalidad de contratacion">';
+			for (var i = 0; i < opcs.length; i++) {
+				var o = opcs[i];
+				var checked = sel.indexOf(o.code) !== -1;
+				var dis = (disabled || (siSelected && o.code !== 'SI')) ? ' disabled' : '';
+				var stateCls = checked ? ' is-checked' : '';
+				var disCls = (disabled || (siSelected && o.code !== 'SI')) ? ' is-disabled' : '';
+				h += '<label class="aia-tipo-pill ' + o.cls + stateCls + disCls + '"'
+					+ ' data-tipo-code="' + o.code + '">'
+					+ '<input type="checkbox" name="tipoContratoCheck" value="' + o.code + '"'
+					+ (checked ? ' checked' : '') + dis + ' aria-label="' + escaparHtml(o.label) + '">'
+					+ '<span class="aia-tipo-pill__label">' + escaparHtml(o.label) + '</span>'
+					+ '<span class="aia-tipo-pill__code">' + o.code + '</span>'
+					+ '</label>';
+			}
+			h += '</div>';
+			return h;
 		};
 
 		var inicializarAutoGenerarListado = function() {
@@ -914,30 +939,8 @@
 
 
 
-			var codigo_html_tipoContrato = function(valorActual) {
-				var vals = (valorActual || '').split(',').map(function(v) { return v.trim(); }).filter(Boolean);
-				var siChecked = vals.indexOf('SI') !== -1;
-				var checks = [
-					{ v: 'S',  l: 'Sum.' },
-					{ v: 'MO', l: 'M.O.' },
-					{ v: 'SI', l: 'S+Inst.' },
-					{ v: 'OC', l: 'O.Serv.' },
-				];
-				var h = '<div class="aia-inline__checks" style="display:inline-flex;gap:4px;flex-wrap:wrap;align-items:center">';
-				for (var i = 0; i < checks.length; i++) {
-					var c = checks[i];
-					var checked = vals.indexOf(c.v) !== -1;
-					var disabled = siChecked && c.v !== 'SI' ? ' disabled' : '';
-					h += '<label style="font-weight:400;font-size:12px;margin:0;white-space:nowrap;cursor:default">'
-						+ '<input type="checkbox" class="select_tipoContratoCheck" value="' + c.v + '"'
-						+ (checked ? ' checked' : '') + disabled + '> ' + c.l
-						+ '</label>';
-				}
-				h += '</div>';
-				h += '<input type="hidden" id="select_tipoContrato" name="tipoContrato" value="' + escaparHtml(valorActual || '') + '">';
-				return h;
-			};
-			var codigo_html_tipoContrato_render = codigo_html_tipoContrato(data.tipoContrato);
+			var codigo_html_tipoContrato_render = buildTipoContratoPills('inline', (data.tipoContrato || '').split(',').map(function(v) { return v.trim(); }).filter(Boolean), false)
+				+ '<input type="hidden" id="select_tipoContrato" name="tipoContrato" value="' + escaparHtml(data.tipoContrato || '') + '">';
 			$row.find('td:eq(6)').html(codigo_html_tipoContrato_render);
 
 					var codigo_html_botones = "<button type= 'button' id='btn_guardar_editar' class='guardar btn btn-success btn-sm btn-action-gap' title='Guardar la edición'><i class='fa fa-save fa-xs' aria-hidden='true' ></i></button><button type= 'button' id='btn_cancelar_editar' class='cancelar btn btn-danger btn-sm btn-action-gap' title='Cancelar la edición'><i class='fa fa-undo fa-xs' aria-hidden='true' ></i></button>";
@@ -1086,30 +1089,60 @@
 		    });
 		  });
 
-		  var sincronizarBloqueoSi = function() {
-		    var $form = $("#modalNuevaActividad form");
-		    var $si = $form.find('#chkTipoSI');
-		    var $otros = $form.find('input[name="tipoContratoCheck"]').not($si);
-		    if ($si.is(':checked')) {
-		      $otros.prop('checked', false).prop('disabled', true).closest('label').addClass('aia-modal__check--disabled');
-		      $form.find('#tipoContratoHint').html('Suministro e Instalación ya incluye las demas modalidades, asi que quedan bloqueadas.');
+		  var sincronizarBloqueoSi = function($container) {
+		    var $ctx = $container ? $container : $("#modalNuevaActividad");
+		    var $siPill = $ctx.find('.aia-tipo-pill[data-tipo-code="SI"]');
+		    var $siCheckbox = $siPill.find('input[type="checkbox"]');
+		    var $otherPills = $ctx.find('.aia-tipo-pill').not($siPill);
+		    if ($siCheckbox.is(':checked')) {
+		      $otherPills
+		        .removeClass('is-checked')
+		        .addClass('is-disabled')
+		        .find('input[type="checkbox"]').prop('checked', false).prop('disabled', true);
+		      $siPill.addClass('is-checked');
+		      var $hint = $ctx.find('#tipoContratoHint');
+		      if ($hint.length) {
+		        $hint.html('Suministro e Instalación ya incluye las demas modalidades, asi que quedan bloqueadas.');
+		      }
 		    } else {
-		      $otros.prop('disabled', false).closest('label').removeClass('aia-modal__check--disabled');
-		      $form.find('#tipoContratoHint').html('Puedes combinar varias modalidades. Si eliges <strong>Suministro e Instalación</strong>, las demás se bloquean porque ya las incluye.');
+		      $otherPills
+		        .removeClass('is-disabled')
+		        .find('input[type="checkbox"]').prop('disabled', false);
+		      var $hint2 = $ctx.find('#tipoContratoHint');
+		      if ($hint2.length) {
+		        $hint2.html('Puedes combinar varias modalidades. Si eliges <strong>Suministro e Instalación</strong>, las demás se bloquean porque ya las incluye.');
+		      }
 		    }
 		  };
-		  $("#modalNuevaActividad").on('change', 'input[name="tipoContratoCheck"]', sincronizarBloqueoSi);
-		  sincronizarBloqueoSi();
+		  /* Sincronizar visual is-checked al cambiar cualquier checkbox */
+		  var sincronizarVisualChecks = function($container) {
+		    var $ctx = $container ? $container : $(document);
+		    $ctx.find('input[name="tipoContratoCheck"]').each(function() {
+		      var $cb = $(this);
+		      var $pill = $cb.closest('.aia-tipo-pill');
+		      if ($cb.is(':checked')) {
+		        $pill.addClass('is-checked');
+		      } else {
+		        $pill.removeClass('is-checked');
+		      }
+		    });
+		  };
+		  var onCheckChange = function() {
+		    sincronizarBloqueoSi($(this).closest('.aia-tipo-toggle').length ? $(this).closest('.aia-tipo-toggle') : $("#modalNuevaActividad"));
+		    sincronizarVisualChecks();
+		  };
+		  $("#modalNuevaActividad").on('change', 'input[name="tipoContratoCheck"]', onCheckChange);
+		  sincronizarBloqueoSi($("#modalNuevaActividad"));
+		  sincronizarVisualChecks();
 
 		  /* Inline edit: SI bloquea demas checkboxes (event delegation) */
-		  $(document).on('change', 'input.select_tipoContratoCheck[value="SI"]', function() {
-		    var $td = $(this).closest('td');
-		    var $otros = $td.find('input.select_tipoContratoCheck').not(this);
-		    if ($(this).is(':checked')) {
-		      $otros.prop('checked', false).prop('disabled', true);
-		    } else {
-		      $otros.prop('disabled', false);
-		    }
+		  $(document).on('change', '.aia-tipo-pill[data-tipo-code="SI"] input[type="checkbox"]', function() {
+		    var $toggle = $(this).closest('.aia-tipo-toggle');
+		    sincronizarBloqueoSi($toggle);
+		    sincronizarVisualChecks($toggle);
+		  });
+		  $(document).on('change', '.aia-tipo-pill input[name="tipoContratoCheck"]', function() {
+		    sincronizarVisualChecks($(this).closest('.aia-tipo-toggle'));
 		  });
 		}
 
@@ -1126,7 +1159,7 @@
 				var actividadInicio = $("#select_actividadInicio").serialize();
 				var fechaInicio = $("#select_fechaInicio").serialize();
 
-				var tipoContratoVals = $("input.select_tipoContratoCheck:checked").map(function() { return $(this).val(); }).get().join(',');
+				var tipoContratoVals = $("input[name='tipoContratoCheck']:checked").map(function() { return $(this).val(); }).get().join(',');
 				$("#select_tipoContrato").val(tipoContratoVals);
 
 				frm = Id + "&" + opcion + "&" + codigo + "&" + Actividad + "&" + descripcionActividad + "&" + actividadInicio + "&" + fechaInicio + "&tipoContrato=" + encodeURIComponent(tipoContratoVals) + "&semana=" + semana;
@@ -1294,7 +1327,8 @@
 
 			$("#modalNuevaActividad #fechaInicio").val("");
 			$("#modalNuevaActividad #tipoContrato").val("");
-			$("#modalNuevaActividad input[name='tipoContratoCheck']").prop('checked', false).prop('disabled', false).closest('label').removeClass('aia-modal__check--disabled');
+			$("#modalNuevaActividad #tipoContratoPillsContainer").html(buildTipoContratoPills('modal', [], false));
+			$("#modalNuevaActividad #tipoContratoHint").html('Puedes combinar varias modalidades. Si eliges <strong>Suministro e Instalación</strong>, las demás se bloquean porque ya las incluye.');
 			$("#modalNuevaActividad .mensaje").html("");
 			$("#modalNuevaActividad #actividad").focus();
 		}
