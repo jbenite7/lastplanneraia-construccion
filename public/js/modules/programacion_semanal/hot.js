@@ -493,8 +493,21 @@
 
   function getConfigRestrictions() {
     var cached = window.__RESTRICTION_CONFIG__;
-    return (cached && Array.isArray(cached.restrictions) && cached.restrictions.length > 0)
-      ? cached.restrictions : CONSTRUCTION_DEFAULTS.restrictions;
+    if (cached && Array.isArray(cached.restrictions) && cached.restrictions.length > 0) {
+      var normalized = [];
+      for (var i = 0; i < cached.restrictions.length; i++) {
+        var entry = cached.restrictions[i];
+        if (typeof entry === 'string') {
+          normalized.push(entry);
+        } else if (entry && typeof entry === 'object' && typeof entry.key === 'string') {
+          normalized.push(entry.key);
+        }
+      }
+      if (normalized.length > 0) {
+        return normalized;
+      }
+    }
+    return CONSTRUCTION_DEFAULTS.restrictions;
   }
 
   function getConfigLabels() {
