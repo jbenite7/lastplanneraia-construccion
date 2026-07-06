@@ -431,12 +431,15 @@
 			pendingContractSavePayload = retryPayload;
 			var $tbody = $('#tablaDuracionesContratos tbody');
 			$tbody.empty();
+			var anyDefault = false;
 			(packages || []).forEach(function(item, index) {
 				var row = '<tr data-index="' + index + '">' +
 					'<td class="duration-type"></td>' +
 					'<td class="duration-package"></td>';
 				durationFields.forEach(function(field) {
-					row += '<td><input type="number" class="form-control form-control-sm duration-input" data-field="' + field + '" min="0" step="1" value="1"></td>';
+					var prefill = (typeof item[field] === 'number') ? item[field] : 1;
+					if (prefill !== 1) anyDefault = true;
+					row += '<td><input type="number" class="form-control form-control-sm duration-input" data-field="' + field + '" min="0" step="1" value="' + prefill + '"></td>';
 				});
 				row += '</tr>';
 				var $row = $(row);
@@ -446,6 +449,12 @@
 				$tbody.append($row);
 			});
 			$('.mensaje-duraciones').text('');
+			if (anyDefault) {
+				$('.mensaje-duraciones').removeClass('text-danger').addClass('text-muted')
+					.text('Sugerencia: precargamos los valores estandar de tu modalidad. Ajustalos si lo necesitas antes de guardar.');
+			} else {
+				$('.mensaje-duraciones').removeClass('text-muted').addClass('text-danger');
+			}
 			$('#modalDuracionesContratos').modal('show');
 		}
 

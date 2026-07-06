@@ -145,10 +145,12 @@ class ContratosApiController extends BaseController
                 } else {
                     $missingDurations = $this->missingDurationRows($db, $paquetes);
                     if ($missingDurations !== []) {
+                        $defaultsByType = $this->standardDurationsByType($db);
+                        $missingWithDefaults = $this->attachDefaultDurations($missingDurations, $defaultsByType);
                         $this->jsonResponse([
                             'respuesta' => 'DURACIONES_REQUERIDAS',
-                            'mensaje' => 'Define las duraciones de contratacion antes de guardar.',
-                            'paquetes' => $missingDurations,
+                            'mensaje' => 'Define los dias de contratacion para continuar con el guardado. Se sugieren los valores estandar de cada modalidad; puedes ajustarlos antes de guardar.',
+                            'paquetes' => $missingWithDefaults,
                         ]);
                         return;
                     }
@@ -540,6 +542,47 @@ class ContratosApiController extends BaseController
             'diasFabricacion',
             'diasInsumosObra',
         ];
+    }
+
+    /**
+     * Lee las duraciones ESTÁNDAR de cada tipo de paquete y devuelve
+     * un mapa tipoPaquete => [campo => valor]. Si falta una fila ESTÁNDAR,
+     * el tipo no aparece en el mapa (la UI usará default 1, 1, 1, 1, 1, 1, 1).
+     */
+    private function standardDurationsByType(Database $db): array
+    {
+        $fieldNames = implode(', ', $this->durationFields());
+        $rows = $db->query(
+            "SELECT tipoPaquete, {$fieldNames}
+             FROM general_dias_procesos_contratacion
+             WHERE paqueteContratacion LIKE 'ESTÁNDAR%'"
+        )->fetchAll(PDO::FETCH_ASSOC);
+
+        $map = [];
+        foreach ($rows as $r) {
+            $map[$r['tipoPaquete']] = $r;
+        }
+        return $map;
+    }
+
+    /**
+     * Adjunta a cada paquete faltante los valores ESTÁNDAR sugeridos
+     * (diasElaboracionPliegos, etc.) según su tipoPaquete. Si no hay
+     * ESTÁNDAR para ese tipo, usa el fallback neutro 1,1,1,1,1,1,1.
+     */
+    private function attachDefaultDurations(array $missing, array $defaultsByType): array
+    {
+        $fields = $this->durationFields();
+        $neutral = array_fill_keys($fields, 1);
+
+        $out = [];
+        foreach ($missing as $item) {
+            $type = $item['tipoPaquete'] ?? '';
+            $defaults = $defaultsByType[$type] ?? $neutral;
+            $row = array_merge($item, $defaults);
+            $out[] = $row;
+        }
+        return $out;
     }
 
     private function missingDurationRows(Database $db, array $paquetes): array
