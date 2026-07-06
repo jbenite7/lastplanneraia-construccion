@@ -18,6 +18,19 @@
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
+// Bootstrap env (parity with legacy-to-global migration)
+$dotenv = __DIR__ . '/../../.env';
+if (file_exists($dotenv)) {
+    foreach (file($dotenv, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
+        if (strpos(trim($line), '#') === 0) continue;
+        if (!strpos($line, '=')) continue;
+        [$k, $v] = explode('=', $line, 2);
+        $v = trim($v, " \t\n\r\0\x0B\"'");
+        putenv("$k=$v");
+        $_ENV[$k] = $v;
+    }
+}
+
 $dbHost = $_ENV['DB_HOST'] ?? 'localhost';
 $dbPort = $_ENV['DB_PORT'] ?? '3306';
 $dbName = $_ENV['DB_NAME'] ?? '';
