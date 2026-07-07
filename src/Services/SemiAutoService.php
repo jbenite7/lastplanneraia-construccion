@@ -2590,6 +2590,44 @@ class SemiAutoService
             [$projectId, $activityId, $semana],
         )->fetchAll(PDO::FETCH_ASSOC);
 
+        // Fallback: if actividad_programa_fuentes is empty (e.g. test data without
+        // a prior Listado preview), derive sources from programa_consolidado via
+        // actividades.actividadInicio => programa_consolidado.unique_id.
+        if (empty($rows)) {
+            $activityRow = $this->db->query(
+                "SELECT actividadInicio FROM actividades WHERE project_id = ? AND Id = ? LIMIT 1",
+                [$projectId, $activityId],
+            )->fetch(PDO::FETCH_ASSOC);
+            $actividadInicio = (string) ($activityRow['actividadInicio'] ?? '');
+            if ($actividadInicio !== '' && ctype_digit($actividadInicio)) {
+                $pgRows = $this->db->query(
+                    "SELECT unique_id, Consecutivo_en_Programa, Actividad, Fecha_Inicio, Titulo
+                     FROM programa_consolidado
+                     WHERE project_id = ? AND unique_id = ?
+                     LIMIT 5",
+                    [$projectId, (int) $actividadInicio],
+                )->fetchAll(PDO::FETCH_ASSOC);
+                $rows = array_map(static function (array $pg) use ($activityId, $semana): array {
+                    return [
+                        'programa_unique_id' => (int) ($pg['unique_id'] ?? 0),
+                        'source_activity' => (string) ($pg['Actividad'] ?? ''),
+                        'source_start_date' => $pg['Fecha_Inicio'] ?? null,
+                        'context' => '',
+                        'location_hint' => '',
+                        'intervention_hint' => '',
+                        'family_id' => 0,
+                        'family_name' => '',
+                        'match_rule' => 'programa_fallback',
+                        'confidence' => 90.0,
+                        'risk_flags' => null,
+                        'project_id' => 0,
+                        'actividad_id' => $activityId,
+                        'semana' => $semana,
+                    ];
+                }, $pgRows);
+            }
+        }
+
         return array_map(function (array $row): array {
             return [
                 'unique_id' => (int) ($row['programa_unique_id'] ?? 0),

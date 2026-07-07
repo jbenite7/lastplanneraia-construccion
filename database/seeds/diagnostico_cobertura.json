@@ -1,0 +1,316 @@
+{
+  "total_activities": 200,
+  "matched_activities": 196,
+  "unmatched_activities": 4,
+  "coverage_pct": 98.0,
+  "unique_families_detected": 32,
+  "total_families_in_catalog": 118,
+  "top_families": [
+    {
+      "code": "MAMPOSTERIA_BLOQUE",
+      "name": "Mampostería en bloque",
+      "hits": 19
+    },
+    {
+      "code": "INSTALACIONES_ELECTRICAS",
+      "name": "Instalaciones eléctricas",
+      "hits": 14
+    },
+    {
+      "code": "ESTRUCTURA_CONCRETO",
+      "name": "Estructura en concreto",
+      "hits": 13
+    },
+    {
+      "code": "ILUMINACION_GENERAL",
+      "name": "Iluminación general",
+      "hits": 12
+    },
+    {
+      "code": "SEGURIDAD_CONTROL_ACCESO_INTRUSION",
+      "name": "Seguridad y control / control de acceso / intrusión",
+      "hits": 11
+    },
+    {
+      "code": "VIGILANCIA_OBRA",
+      "name": "Vigilancia de obra",
+      "hits": 11
+    },
+    {
+      "code": "VENTANERIA_PUERTAS_VIDRIERAS",
+      "name": "Ventanería y puertas vidrieras",
+      "hits": 10
+    },
+    {
+      "code": "HVAC_EXTRACCION_VENTILACION",
+      "name": "HVAC, extracción y ventilación",
+      "hits": 10
+    },
+    {
+      "code": "CAMPAMENTO_OBRA",
+      "name": "Campamento de obra",
+      "hits": 9
+    },
+    {
+      "code": "HIDROSANITARIAS",
+      "name": "Instalaciones hidrosanitarias",
+      "hits": 9
+    },
+    {
+      "code": "MORTEROS_AFINADOS_PISO",
+      "name": "Morteros y afinados de piso",
+      "hits": 8
+    },
+    {
+      "code": "MUROS_LIVIANOS_CIELOS",
+      "name": "Muros livianos y cielos",
+      "hits": 8
+    },
+    {
+      "code": "SONIDO_VIDEO_AYUDAS_VISUALES",
+      "name": "Sonido, video y ayudas visuales",
+      "hits": 8
+    },
+    {
+      "code": "JUNTAS_DILATACIONES_PISO",
+      "name": "Juntas, cortes y sellos en piso",
+      "hits": 7
+    },
+    {
+      "code": "DETECCION_ALARMA_INCENDIO",
+      "name": "Detección y alarma de incendio",
+      "hits": 6
+    },
+    {
+      "code": "ESCALERAS_CONCRETO",
+      "name": "Escaleras en concreto",
+      "hits": 4
+    },
+    {
+      "code": "EQUIPO_PRESION_BOMBAS_TANQUES",
+      "name": "Equipo de presión, bombas y tanques",
+      "hits": 4
+    },
+    {
+      "code": "GABINETES_TECNICOS_CONTADORES",
+      "name": "Gabinetes técnicos y de contadores",
+      "hits": 4
+    },
+    {
+      "code": "REJILLAS_VENTILACION",
+      "name": "Rejillas y elementos de ventilación",
+      "hits": 3
+    },
+    {
+      "code": "BARANDAS_PASAMANOS_METALICOS",
+      "name": "Barandas y pasamanos metálicos",
+      "hits": 3
+    },
+    {
+      "code": "BANOS_PORTATILES",
+      "name": "Baños portátiles",
+      "hits": 3
+    },
+    {
+      "code": "PISO_LAMINADO_VINILO",
+      "name": "Piso laminado / vinilo",
+      "hits": 3
+    },
+    {
+      "code": "TABLEROS_APARATOS_ELECTRICOS",
+      "name": "Tableros y aparatos eléctricos",
+      "hits": 3
+    },
+    {
+      "code": "FACHADA_PERSIANA_LUVERS",
+      "name": "Fachada tipo persiana / luvers",
+      "hits": 2
+    },
+    {
+      "code": "CERRAMIENTOS_PROVISIONALES_SUPERBOARD",
+      "name": "Cerramientos provisionales en superboard",
+      "hits": 2
+    },
+    {
+      "code": "SUMINISTRO_CONCRETO",
+      "name": "Suministro de concreto",
+      "hits": 2
+    },
+    {
+      "code": "PISO_BALDOSA_PORCELANATO",
+      "name": "Piso en baldosa / porcelanato",
+      "hits": 2
+    },
+    {
+      "code": "DATOS_RITEL_TELECOM",
+      "name": "Sistema de datos, RITEL y telecomunicaciones",
+      "hits": 2
+    },
+    {
+      "code": "ACTAS_VECINDAD",
+      "name": "Actas de vecindad",
+      "hits": 1
+    },
+    {
+      "code": "ESTRUCTURA_METALICA",
+      "name": "Estructura metálica",
+      "hits": 1
+    }
+  ],
+  "project_stats": {
+    "27": {
+      "total": 200,
+      "matched": 196,
+      "coverage_pct": 98.0,
+      "families_detected": 32
+    }
+  },
+  "unmatched_by_theme": [
+    {
+      "theme": "ACTIVIDADES",
+      "count": 1,
+      "sample_texts": [
+        "Actividades Adicionales, [Capítulo:HOMECENTER CALI - PLAZA DE TOROS]"
+      ],
+      "sample_chapters": [
+        "HOMECENTER CALI - PLAZA DE TOROS"
+      ],
+      "suggested_families": [],
+      "project_ids": [
+        27
+      ]
+    },
+    {
+      "theme": "ELEMENTOS",
+      "count": 1,
+      "sample_texts": [
+        "Elementos Especiales, [Capítulo:HOMECENTER CALI - PLAZA DE TOROS]"
+      ],
+      "sample_chapters": [
+        "HOMECENTER CALI - PLAZA DE TOROS"
+      ],
+      "suggested_families": [
+        "REJILLAS_VENTILACION"
+      ],
+      "project_ids": [
+        27
+      ]
+    },
+    {
+      "theme": "SISTEMAS",
+      "count": 1,
+      "sample_texts": [
+        "Sistemas Agente Limpio, [Capítulo:Elementos Especiales, HOMECENTER CALI - PLAZA "
+      ],
+      "sample_chapters": [
+        "Elementos Especiales,  HOMECENTER CALI - PLAZA DE TOROS"
+      ],
+      "suggested_families": [],
+      "project_ids": [
+        27
+      ]
+    },
+    {
+      "theme": "DISPOSITIVOS",
+      "count": 1,
+      "sample_texts": [
+        "Dispositivos Especiales, [Capítulo:Elementos Especiales, HOMECENTER CALI - PLAZA"
+      ],
+      "sample_chapters": [
+        "Elementos Especiales,  HOMECENTER CALI - PLAZA DE TOROS"
+      ],
+      "suggested_families": [],
+      "project_ids": [
+        27
+      ]
+    }
+  ],
+  "families_without_hits": [
+    "PROV_ELECTRICAS_CAMPAMENTO",
+    "PROV_HIDROSANITARIAS",
+    "TRANSPORTE_PERSONAL_CAMIONETA",
+    "PMT_DISENO_IMPLEMENTACION",
+    "PLAN_CALIDAD",
+    "TOPOGRAFIA",
+    "CERRAMIENTO_LAMINA_METALICO",
+    "CERRAMIENTO_LONA_MALLA",
+    "ASEO_FINAL_ENTREGA",
+    "DESCAPOTE",
+    "RETIROS_DEMOLICIONES",
+    "DEMOLICIONES_ESPECIALES",
+    "EXCAVACIONES_LLENOS",
+    "BOTADA_RETIRO_ESCOMBROS",
+    "RELLENOS_SUBBASE",
+    "PILOTES",
+    "DESCABEZADA_PREHUECO_PILOTES",
+    "FOSO_ASCENSOR",
+    "MUROS_CONTENCION_CONCRETO",
+    "CONCRETO_POBRE",
+    "CONCRETO_PILOTES",
+    "ACERO_REFUERZO",
+    "MALLA_GRAFIL_REFUERZO",
+    "ANCLAJES_EPOXICOS",
+    "GROUTING",
+    "PLACA_CIMENTACION",
+    "PLACAS_ENTREPISO",
+    "COLUMNAS_CONCRETO",
+    "RAMPAS_CONCRETO",
+    "BOMBEO_CONCRETO",
+    "METALDECK",
+    "CARPINTERIA_METALICA",
+    "CUBIERTAS_MARQUESINAS",
+    "PERGOLA_POLICARBONATO",
+    "PUERTAS_METALICAS_CORTAFUEGO",
+    "BLOQUE_CONCRETO_ARCILLA",
+    "BLOQUE_FACHADA_CATALAN",
+    "MURO_FIBROCEMENTO",
+    "DINTEL_VIGA_CINTA_BORDILLOS",
+    "REVOQUE_PANETE",
+    "REVOQUE_FACHADA",
+    "PINTURA_MUROS_CIELOS",
+    "ESTUCO_PINTURA_INTERIORES",
+    "CIELO_DRYWALL_SUPERBOARD",
+    "CIELO_MODULAR_TILE_OWA",
+    "CIELO_HUNTER_DOUGLAS",
+    "TRATAMIENTO_ACUSTICO_BLACK_THEATER",
+    "PISO_GRANO_ROCA",
+    "PISO_CONCRETO_PULIDO",
+    "PISO_GRES",
+    "IMPERMEABILIZACION_CUBIERTAS",
+    "IMPERMEABILIZACION_BANOS_BALCONES",
+    "IMPERMEABILIZACION_FOSO_MUROS",
+    "ENCHAPES",
+    "EMBOQUILLE_SILICONA_ZOCALOS",
+    "PUERTAS_MADERA_CORREDIZAS",
+    "CERRADURAS_HERRAJES",
+    "MUEBLES_CHECKIN_COUNTERS",
+    "CARPINTERIA_MADERA_CLOSETS",
+    "MUEBLES_COCINA_BANO",
+    "MESONES_COCINA_BANO",
+    "GRIFERIAS_ACCESORIOS_BANO",
+    "DIVISIONES_CABINAS_BANO",
+    "ESPEJOS",
+    "LAVADEROS_POZUELOS",
+    "ELECTRODOMESTICOS_APTOS",
+    "SENALIZACION_NOMENCLATURA",
+    "DEMARCACION_PARQUEADEROS",
+    "URBANISMO_ANDENES_PAVIMENTOS",
+    "JARDINERIA_PAISAJISMO",
+    "ILUMINACION_EMERGENCIA",
+    "ACOMETIDA_SUBESTACION",
+    "APANTALLAMIENTO_PUESTA_TIERRA",
+    "PLANTA_EMERGENCIA_BATERIAS",
+    "TUBERIAS_ACCESORIOS_HIDROSANITARIOS",
+    "RED_GAS",
+    "MONITOREO_CAMARAS_VIGILANCIA",
+    "MONITOREO_INSTRUMENTACION_ALARMA",
+    "ASCENSORES",
+    "SHUT_BASURAS",
+    "MALACATE_EQUIPOS_OBRA",
+    "ENSAYOS_CALIDAD_LAB",
+    "SEGURIDAD_INDUSTRIAL_PMA",
+    "FUNDICION_DOVELAS",
+    "RECUBRIMIENTOS_ESPECIALES",
+    "PUENTES_PASILLOS_PEATONALES"
+  ]
+}

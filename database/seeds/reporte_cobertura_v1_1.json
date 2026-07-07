@@ -1,0 +1,178 @@
+{
+  "version": "v1.1",
+  "generated_at": "2026-07-06",
+  "goal": "Subir cobertura de 50% a 80%+",
+  "baseline": {
+    "coverage_pct": 55.1,
+    "matched_activities": 1313,
+    "total_activities": 2382,
+    "unique_families_detected": 41
+  },
+  "result": {
+    "coverage_pct": 99.1,
+    "matched_activities": 2361,
+    "total_activities": 2382,
+    "unique_families_detected": 46
+  },
+  "coverage_by_project": {
+    "27": {
+      "total": 200,
+      "matched": 196,
+      "coverage_pct": 98.0,
+      "families_detected": 32
+    },
+    "60": {
+      "total": 80,
+      "matched": 77,
+      "coverage_pct": 96.2,
+      "families_detected": 6
+    },
+    "61": {
+      "total": 200,
+      "matched": 200,
+      "coverage_pct": 100.0,
+      "families_detected": 5
+    },
+    "62": {
+      "total": 200,
+      "matched": 200,
+      "coverage_pct": 100.0,
+      "families_detected": 10
+    },
+    "63": {
+      "total": 200,
+      "matched": 200,
+      "coverage_pct": 100.0,
+      "families_detected": 10
+    },
+    "65": {
+      "total": 200,
+      "matched": 200,
+      "coverage_pct": 100.0,
+      "families_detected": 7
+    },
+    "68": {
+      "total": 200,
+      "matched": 199,
+      "coverage_pct": 99.5,
+      "families_detected": 5
+    },
+    "69": {
+      "total": 102,
+      "matched": 101,
+      "coverage_pct": 99.0,
+      "families_detected": 3
+    },
+    "70": {
+      "total": 200,
+      "matched": 199,
+      "coverage_pct": 99.5,
+      "families_detected": 3
+    },
+    "71": {
+      "total": 200,
+      "matched": 199,
+      "coverage_pct": 99.5,
+      "families_detected": 8
+    },
+    "72": {
+      "total": 200,
+      "matched": 200,
+      "coverage_pct": 100.0,
+      "families_detected": 3
+    },
+    "73": {
+      "total": 200,
+      "matched": 198,
+      "coverage_pct": 99.0,
+      "families_detected": 8
+    },
+    "74": {
+      "total": 200,
+      "matched": 192,
+      "coverage_pct": 96.0,
+      "families_detected": 9
+    }
+  },
+  "improvement": {
+    "coverage_increase": 44.0,
+    "families_modified": 83,
+    "new_families_created": 3,
+    "new_families": [
+      {
+        "family_code": "FUNDICION_DOVELAS",
+        "canonical_name": "Fundición de dovelas",
+        "source": "pg_observed"
+      },
+      {
+        "family_code": "RECUBRIMIENTOS_ESPECIALES",
+        "canonical_name": "Recubrimientos especiales y pintura industrial",
+        "source": "pg_observed"
+      },
+      {
+        "family_code": "PUENTES_PASILLOS_PEATONALES",
+        "canonical_name": "Puentes y pasillos peatonales",
+        "source": "pg_observed"
+      }
+    ],
+    "top_patterns_expanded": [
+      {
+        "family": "ESTRUCTURA_CONCRETO",
+        "patterns": 25
+      },
+      {
+        "family": "COLUMNAS_CONCRETO",
+        "patterns": 7
+      },
+      {
+        "family": "MAMPOSTERIA_BLOQUE",
+        "patterns": 9
+      },
+      {
+        "family": "HIDROSANITARIAS",
+        "patterns": 7
+      },
+      {
+        "family": "RELLENOS_SUBBASE",
+        "patterns": 5
+      },
+      {
+        "family": "EXCAVACIONES_LLENOS",
+        "patterns": 4
+      },
+      {
+        "family": "IMPERMEABILIZACION_CUBIERTAS",
+        "patterns": 3
+      },
+      {
+        "family": "CAMPAMENTO_OBRA",
+        "patterns": 4
+      }
+    ]
+  },
+  "remaining_gap": {
+    "unmatched_activities": 21,
+    "unmatched_pct": 0.9,
+    "unmatched_themes": [
+      "SISTEMA (5)",
+      "ACTIVIDADES (2)",
+      "INICIO (2)",
+      "ELEMENTOS (1)",
+      "DISPOSITIVOS (1)",
+      "CONTRATO (1)",
+      "ZONA (1)",
+      "FIN DE OBRA (1)",
+      "PREALISTAMIENTO (1)",
+      "MOVIMIENTO DE TIERRA (1)",
+      "ANTEPECHOS (1)"
+    ],
+    "note": "Las 21 actividades restantes son principalmente referencias administrativas, de contexto/ubicación, o de proyectos específicos no cubiertos por el catálogo actual."
+  },
+  "validation_gate": {
+    "VAL_TARGET_FAMILY_COUNT": "PASS (118 >= 95)",
+    "VAL_GOLDEN_DATASET": "PASS (2382 actividades)",
+    "VAL_COVERAGE_BASELINE": "PASS (99.1% >= 30%)",
+    "VAL_OPERATIONAL_FAMILIES": "PASS (12 operativas >= 5)",
+    "VAL_CONTRACTUAL_ONLY": "PASS (todas requieren review)"
+  }
+}

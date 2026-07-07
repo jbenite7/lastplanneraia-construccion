@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lastplanneraia.com/schemas/biblioteca-maestra-pdc-v1.0",
+  "title": "Biblioteca Maestra PDC — Source of Truth",
+  "description": "Esquema de validación para la Biblioteca Maestra PDC v1.0. Define familias operativas, paquetes de contratación, relaciones, recursos, duraciones, evidencia, validaciones, golden dataset y reporte de cobertura.",
+  "type": "object",
+  "required": ["summary", "families", "packages", "family_package_relations", "package_inputs_resources", "duration_seed", "evidence", "validations", "golden_dataset", "coverage_report"],
+  "properties": {
+    "summary": {
+      "type": "object",
+      "required": ["version", "created_at", "families_count", "packages_count", "relations_count"],
+      "properties": {
+        "version": { "type": "string", "pattern": "^v1\\.0$" },
+        "created_at": { "type": "string", "format": "date" },
+        "families_count": { "type": "integer", "minimum": 95 },
+        "packages_count": { "type": "integer", "minimum": 115 },
+        "relations_count": { "type": "integer", "minimum": 115 },
+        "basis": { "type": "string" },
+        "source_files": { "type": "array", "items": { "type": "string" } },
+        "golden_dataset_rows": { "type": "integer" },
+        "coverage_pct": { "type": "number", "minimum": 0, "maximum": 100 }
+      }
+    },
+    "families": {
+      "type": "array",
+      "minItems": 95,
+      "items": {
+        "type": "object",
+        "required": ["family_code", "canonical_name", "category", "classification"],
+        "properties": {
+          "family_code": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]+$" },
+          "canonical_name": { "type": "string", "minLength": 3 },
+          "category": { "type": "string", "minLength": 2 },
+          "classification": { "type": "string", "enum": ["operativa", "mixta", "contractual_only"] },
+          "default_grouping_strategy": { "type": "string", "enum": ["familia", "familia_contexto", "familia_frente", "familia_sistema", "familia_equipo"] },
+          "default_modality": { "type": "string" },
+          "aliases": { "type": "string" },
+          "text_patterns": { "type": "string" },
+          "review_required": { "type": "string", "enum": ["SI", "NO"] },
+          "review_reason": { "type": "string" },
+          "confidence_baseline": { "type": "integer", "minimum": 0, "maximum": 100 },
+          "source_projects": { "type": "string" },
+          "source_status": { "type": "string", "enum": ["observed_project_files", "review_no_direct_match", "inferred"] },
+          "evidence": { "type": "string" },
+          "notes": { "type": "string" }
+        }
+      }
+    },
+    "packages": {
+      "type": "array",
+      "minItems": 115,
+      "items": {
+        "type": "object",
+        "required": ["package_code", "canonical_package_name", "tipo_paquete", "modalidad_codigo"],
+        "properties": {
+          "package_code": { "type": "string", "pattern": "^PKG_[A-Z]+_[A-Z0-9_]+$" },
+          "canonical_package_name": { "type": "string" },
+          "tipo_paquete": { "type": "string", "enum": ["MO", "S", "SI", "OC", "E"] },
+          "modalidad_codigo": { "type": "string" },
+          "resource_category": { "type": "string" },
+          "requires_duration": { "type": "string", "enum": ["SI", "NO"] },
+          "source_status": { "type": "string" },
+          "source_projects": { "type": "string" },
+          "evidence": { "type": "string" }
+        }
+      }
+    },
+    "family_package_relations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["family_code", "package_code", "relation_type"],
+        "properties": {
+          "family_code": { "type": "string" },
+          "package_code": { "type": "string" },
+          "relation_type": { "type": "string", "enum": ["primary", "secondary"] },
+          "default_confidence": { "type": "integer", "minimum": 0, "maximum": 100 },
+          "review_rule": { "type": "string" },
+          "evidence_note": { "type": "string" }
+        }
+      }
+    },
+    "validations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["validation_code", "module", "severity", "condition", "message"],
+        "properties": {
+          "validation_code": { "type": "string", "pattern": "^VAL_[A-Z_]+$" },
+          "module": { "type": "string" },
+          "severity": { "type": "string", "enum": ["error", "warning"] },
+          "condition": { "type": "string" },
+          "outcome": { "type": "string" },
+          "message": { "type": "string" }
+        }
+      }
+    },
+    "golden_dataset": {
+      "type": "object",
+      "required": ["description", "total_leaf_activities", "sampled_activities", "projects_count", "activities"],
+      "properties": {
+        "description": { "type": "string" },
+        "source": { "type": "string" },
+        "total_leaf_activities": { "type": "integer" },
+        "sampled_activities": { "type": "integer" },
+        "projects_count": { "type": "integer" },
+        "activities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["project_id", "actividad"],
+            "properties": {
+              "project_id": { "type": "integer" },
+              "unique_id": { "type": ["integer", "null"] },
+              "id_code": { "type": ["string", "null"] },
+              "actividad": { "type": "string" },
+              "chapter": { "type": "string" },
+              "fecha_inicio": { "type": ["string", "null"] }
+            }
+          }
+        }
+      }
+    },
+    "coverage_report": {
+      "type": "object",
+      "required": ["families_total", "packages_total", "estimated_pattern_coverage_pct"],
+      "properties": {
+        "families_total": { "type": "integer" },
+        "packages_total": { "type": "integer" },
+        "families_by_classification": { "type": "object" },
+        "estimated_pattern_coverage_pct": { "type": "number" },
+        "validation_gate": { "type": "object" }
+      }
+    }
+  }
+}
