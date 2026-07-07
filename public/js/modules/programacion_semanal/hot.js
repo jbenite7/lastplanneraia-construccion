@@ -333,6 +333,14 @@
   }
 
   function showFeedback(type, message) {
+    // Wire screen-reader announcement to the <p class="mensaje" aria-live="polite">
+    var $sr = $('#formulario_nuevo .mensaje');
+    if ($sr.length) {
+      $sr.text(message || '').attr('role', 'alert');
+      clearTimeout($sr.data('_srTimer'));
+      $sr.data('_srTimer', setTimeout(function () { $sr.text('').attr('role', 'status'); }, 4000));
+    }
+
     if (type === 'success') {
       if (window.AIA && window.AIA.Notice && window.AIA.Notice.badge) {
         window.AIA.Notice.badge('success', message);
@@ -344,6 +352,17 @@
           setTimeout(function () {
             $el.fadeOut(250, function() { $(this).addClass('badge-badge-hidden'); });
           }, 1800);
+        }
+      }
+    } else if (type === 'info') {
+      if (window.AIA && window.AIA.Notice && window.AIA.Notice.badge) {
+        window.AIA.Notice.badge('info', message);
+      } else {
+        // Fallback: show inline in the mensaje element (no alert popup)
+        if ($sr.length) {
+          $sr.text(message || '').attr('role', 'status').css('color', 'var(--aia-text-secondary, #666)').fadeIn(120);
+          clearTimeout($sr.data('_srTimer'));
+          $sr.data('_srTimer', setTimeout(function () { $sr.text('').fadeOut(250); }, 3000));
         }
       }
     } else if (type === 'warning') {
@@ -1939,7 +1958,7 @@
         method: 'POST',
         url: '/api/semanal/save?db=' + encodeURIComponent(db),
         dataType: 'json',
-        data: { opcion: 'sanear', semana: semana },
+        data: { opcion: 'sanear', semana: semana, _csrf_token: $('meta[name="csrf-token"]').attr('content') || '' },
       }).always(function () {
         requestList();
       });
@@ -2059,6 +2078,7 @@
       valid: true,
       data: {
         opcion: 'modificar',
+        _csrf_token: $('meta[name="csrf-token"]').attr('content') || '',
         Id: rawData.Consecutivo,
         semana: getSemana(),
         Descripcion: rawData.Descripcion || '',
@@ -2899,6 +2919,12 @@
       } else {
         $('#textoFechaCierreCompromisos').text('Compromisos cerrados. Semana en evaluación.');
       }
+      // Admin can reopen a closed week
+      if (getPermiso() === 'A') {
+        $('#btn_reabrir_semana').show();
+      } else {
+        $('#btn_reabrir_semana').hide();
+      }
     } else {
       $('#phase-badge').text('Programación').removeClass('badge-warning').addClass('badge-info');
       $('#weeklyPhaseMobileLabel').text(phaseInfo.mobileLabel);
@@ -2907,6 +2933,7 @@
       $('#btn_cerrar_compromisos_semana').show();
       $('#btn_informe_compromisos').hide();
       $('#btn_tnp').hide();
+      $('#btn_reabrir_semana').hide();
       $('#textoFechaCierreCompromisos').text('');
     }
 
@@ -3091,12 +3118,27 @@
     var resp = String($('#Responsable_AIA').val() || '').trim();
     var compromiso = normalizePositive($('#Compromiso').val());
 
-    if (!idNuevo || !actividad || !sub || !resp) {
-      showFeedback('error', 'Complete todos los campos obligatorios');
+    // Field-level validation with visual highlighting
+    var missing = [];
+    var $idNuevo = $('#idNuevo'), $Actividad = $('#Actividad');
+    var $Sub = $('#Sub_Contratista'), $Resp = $('#Responsable_AIA');
+    var $Comp = $('#Compromiso');
+
+    // Clear previous error highlights
+    $idNuevo.add($Actividad).add($Sub).add($Resp).add($Comp).removeClass('ps-field-error');
+
+    if (!idNuevo) { missing.push('Id'); $idNuevo.addClass('ps-field-error'); }
+    if (!actividad) { missing.push('Actividad'); $Actividad.addClass('ps-field-error'); }
+    if (!sub) { missing.push('Sub-Contratista'); $Sub.addClass('ps-field-error'); }
+    if (!resp) { missing.push('Profesional AIA'); $Resp.addClass('ps-field-error'); }
+
+    if (missing.length > 0) {
+      showFeedback('error', 'Complete los campos: ' + missing.join(', '));
       return;
     }
 
     if (compromiso === null) {
+      $Comp.addClass('ps-field-error');
       showFeedback('error', 'Compromiso inválido (debe ser > 0)');
       return;
     }
@@ -3119,6 +3161,7 @@
         Empresa: $('#Empresa').val() || '',
         Unidad: $('#Unidad').val() || '%',
         Compromiso: numberPayload(compromiso),
+        _csrf_token: $('meta[name="csrf-token"]').attr('content') || '',
       },
     }).done(function (raw) {
       var response = parseResponse(raw);
@@ -3149,6 +3192,7 @@
         dataType: 'json',
         data: {
           opcion: 'duplicar',
+          _csrf_token: $('meta[name="csrf-token"]').attr('content') || '',
           Id: row.Consecutivo,
           semana: semana,
         },
@@ -3256,6 +3300,7 @@
       dataType: 'json',
       data: {
         opcion: 'eliminar',
+        _csrf_token: $('meta[name="csrf-token"]').attr('content') || '',
         Id: row.Consecutivo,
         semana: semana,
         Responsable_AIA: responsableAIA,
@@ -3397,7 +3442,7 @@
       method: 'POST',
       url: '/api/semanal/save?db=' + encodeURIComponent(db),
       dataType: 'json',
-      data: { opcion: 'autoprogramar', semana: semana },
+      data: { opcion: 'autoprogramar', _csrf_token: $('meta[name="csrf-token"]').attr('content') || '', semana: semana },
     }).done(function (raw) {
       var response = parseResponse(raw);
       var answer = (response && typeof response === 'object') ? String(response.respuesta || '') : String(response || '');
@@ -3511,6 +3556,7 @@
       dataType: 'json',
       data: {
         opcion: 'bloquear_compromisos',
+        _csrf_token: $('meta[name="csrf-token"]').attr('content') || '',
         semana: semana,
         fechaCierreCompromisos: dateText,
       },
@@ -3598,9 +3644,13 @@
       var data = (response && Array.isArray(response.data)) ? response.data : [];
 
       if (data.length === 0) {
-        $tbody.html('<tr><td colspan="4" class="text-center text-muted">No se encontraron actividades pendientes.</td></tr>');
+        $tbody.html('<tr><td colspan="4" class="text-center text-muted py-3"><i class="fas fa-inbox fa-2x d-block mb-2" style="opacity:0.35;"></i>No hay actividades pendientes de autoprogramaci&oacute;n.<br><small>Puedes agregar una manualmente con el formulario.</small></td></tr>');
+        // Collapse bandeja panel when empty to give form full space
+        $('#formulario_nuevo .ps-nueva-actividad-col--bandeja').addClass('ps-bandeja-empty');
         return;
       }
+      // Restore bandeja panel when data is present
+      $('#formulario_nuevo .ps-nueva-actividad-col--bandeja').removeClass('ps-bandeja-empty');
 
       var html = '';
       data.forEach(function (row) {
@@ -3611,8 +3661,8 @@
                 'data-unidad="' + escapeHtml(row.Unidad || '%') + '">';
         html += '<td class="ps-excepcion-id">' + escapeHtml(row.Id) + '</td>';
         html += '<td class="ps-excepcion-actividad">' + escapeHtml(row.Actividad) + '</td>';
-        html += '<td><span class="ps-motivo-chip">' + escapeHtml(row.Motivo) + '</span></td>';
-        html += '<td class="text-right"><button type="button" class="btn btn-sm btn-outline-primary btn_usar_excepcion">Usar</button></td>';
+        html += '<td><span class="ps-motivo-chip">' + escapeHtml(row.Motivo || row.Estado || 'No autoprogramada') + '</span></td>';
+        html += '<td class="text-right"><button type="button" class="btn btn-sm btn-outline-secondary btn_usar_excepcion"><i class="fas fa-arrow-right"></i> Usar</button></td>';
         html += '</tr>';
       });
       $tbody.html(html);
@@ -3624,7 +3674,32 @@
   function useExceptionActivity(item) {
     if (!item) return;
 
-    $('#idNuevo').val(String(item.Id)).change();
+    // Strip any legacy HTML markup from source data
+    item.Actividad = (item.Actividad || '').replace(/<[^>]+>/g, '').trim();
+    item.Sub_Contratista = (item.Sub_Contratista || '').replace(/<[^>]+>/g, '').trim();
+    item.Responsable_AIA = (item.Responsable_AIA || '').replace(/<[^>]+>/g, '').trim();
+
+    // Ensure #idNuevo has an <option> for this Id. The Bandeja (listarExcepciones)
+    // and the dropdown (programa_consolidado) use different filters, so an activity
+    // visible in the Bandeja may not be in the dropdown. Inject the option on demand.
+    var $idNuevo = $('#idNuevo');
+    if (item.Id && $idNuevo.length) {
+      var idStr = String(item.Id);
+      var hasOpt = $idNuevo.find('option').filter(function () {
+        return this.value === idStr;
+      }).length > 0;
+      if (!hasOpt) {
+        var labelActividad = (item.Actividad || '').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+        $idNuevo.append(
+          $('<option>', { value: idStr, selected: true, 'data-injected': '1' })
+            .text('(' + idStr + ') - ' + labelActividad)
+        );
+      } else {
+        $idNuevo.val(idStr);
+      }
+      $idNuevo.trigger('change.select2').trigger('change');
+    }
+
     $('#Actividad').val(String(item.Actividad || ''));
     $('#Sub_Contratista').val(String(item.Sub_Contratista || '')).change();
     $('#Responsable_AIA').val(String(item.Responsable_AIA || '')).change();
@@ -3632,9 +3707,22 @@
 
     // Feedback visual de selección
     $('#tbody_excepciones_no_autoprogramadas tr').removeClass('ps-row-selected');
-    $('#tbody_excepciones_no_autoprogramadas tr[data-id="' + escapeHtml(item.Id) + '"]').addClass('ps-row-selected');
+    var $selectedRow = $('#tbody_excepciones_no_autoprogramadas tr[data-id="' + escapeHtml(item.Id) + '"]');
+    $selectedRow.addClass('ps-row-selected');
 
     showFeedback('info', 'Actividad cargada en el formulario');
+
+    // Auto-scroll to Guardar button and highlight it briefly
+    var $guardar = $('#btn_guardar_nueva_actividad');
+    if ($guardar.length) {
+      $guardar.addClass('ps-btn-pulse');
+      setTimeout(function () { $guardar.removeClass('ps-btn-pulse'); }, 1400);
+      // Scroll the modal body so Guardar is in view
+      var modalBody = document.querySelector('#formulario_nuevo .modal-body');
+      if (modalBody) {
+        modalBody.scrollTo({ top: modalBody.scrollHeight, behavior: 'smooth' });
+      }
+    }
   }
 
   function bindToolbarActions() {
@@ -3649,8 +3737,23 @@
         return;
       }
       normalizeNewActivityForm();
-      $('#formulario_nuevo').modal('show');
+      var $modal = $('#formulario_nuevo');
+      $modal.attr('aria-modal', 'true');
+      $modal.modal('show');
       cargarBandejaNoAutoprogramadas();
+
+      // Focus trap: keep focus within the modal
+      setTimeout(function () {
+        var focusable = $modal.find('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])').filter(':visible');
+        if (focusable.length > 0) { focusable.first().focus(); }
+      }, 300);
+    });
+
+    // Close modal on Escape and restore aria-modal
+    $('#formulario_nuevo').on('hidden.bs.modal', function () {
+      $(this).attr('aria-modal', 'false');
+      // Return focus to trigger button
+      $('#btn_agregar_actividad').focus();
     });
 
     $('#btn_recargar_bandeja_no_autoprogramadas').off('click.psBandeja').on('click.psBandeja', cargarBandejaNoAutoprogramadas);
@@ -3674,8 +3777,12 @@
         Unidad: $tr.data('unidad')
       };
       if (item.Id) {
-        useExceptionActivity(item);
-      }
+    // Strip any legacy HTML markup from source data
+    item.Actividad = (item.Actividad || '').replace(/<[^>]+>/g, '').trim();
+    item.Sub_Contratista = (item.Sub_Contratista || '').replace(/<[^>]+>/g, '').trim();
+    item.Responsable_AIA = (item.Responsable_AIA || '').replace(/<[^>]+>/g, '').trim();
+    useExceptionActivity(item);
+  }
     });
 
     $('#btn_guardar_nueva_actividad').off('click.psSaveNew').on('click.psSaveNew', submitNewActivity);
@@ -3683,6 +3790,10 @@
     $('#btn_cerrar_compromisos_semana').off('click.psClose').on('click.psClose', function () {
       renderCloseSummary();
       $('#modal_cerrar_compromisos').modal('show');
+    });
+
+    $('#btn_reabrir_semana').off('click.psReopen').on('click.psReopen', function () {
+      $('#modal_reabrir_semana').modal('show');
     });
 
     $('#btn_confirmar_compromisos_semana').off('click.psConfirm').on('click.psConfirm', confirmCommitments);
@@ -4014,6 +4125,7 @@
 
       var payload = {
         opcion: 'tnp',
+        _csrf_token: $('meta[name="csrf-token"]').attr('content') || '',
         db: getDb(),
         semana: getSemana(),
         Consecutivo: consecutivo || null,

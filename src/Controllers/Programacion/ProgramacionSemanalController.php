@@ -3,6 +3,7 @@
 namespace App\Controllers\Programacion;
 
 use App\Controllers\BaseController;
+use App\Security\CsrfTokenManager;
 use App\Services\ProjectLandingService;
 
 use TableResolver;
@@ -20,6 +21,7 @@ class ProgramacionSemanalController extends BaseController
         $permiso = $_SESSION['permiso'] ?? ''; // Requerido para lógica de permisos en vistas
         $pdcActivo = $_SESSION['pdcActivo'] ?? '';
         $area = $_SESSION['area'] ?? 'Construccion';
+        $csrfToken = CsrfTokenManager::generate('semanal_save');
 
         $subcontratistas = [];
         $profesionales = [];

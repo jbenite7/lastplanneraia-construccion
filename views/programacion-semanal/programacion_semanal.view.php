@@ -29,7 +29,7 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
 <html lang="es">
 <head id="head">
     <meta charset="UTF-8">
-    <script src="/public/vendor/jquery.min.js"></script>
+    <meta name="csrf-token" content="<?php echo htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8'); ?>">        <script src="/public/vendor/jquery.min.js"></script>
     <script src="/public/vendor/jquery-ui.min.js"></script>
     <script type="text/javascript" src="/js/linksComunesHead2.js?v=headLoaderV20260530" charset="utf-8"></script>
     <link rel="stylesheet" href="/public/vendor/handsontable/handsontable.full.min.css" />
@@ -843,6 +843,66 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
         @media (max-width: 1100px) {
             .ps-hot-header-actions { --ps-hot-scale: 0.70; }
         }
+
+        /* Agregar Actividad — modal 2-column at all viewports > 768px */
+        #formulario_nuevo .ps-nueva-actividad-grid {
+            display: grid !important;
+            grid-template-columns: minmax(22rem, 1.08fr) minmax(19rem, 0.92fr);
+        }
+        #formulario_nuevo .ps-nueva-actividad-col {
+            max-width: none !important;
+            flex: 0 0 auto !important;
+        }
+        @media (max-width: 991.98px) {
+            #formulario_nuevo .ps-modal-nueva-actividad {
+                max-width: min(96vw, 58rem) !important;
+            }
+        }
+        @media (max-width: 767.98px) {
+            #formulario_nuevo .ps-nueva-actividad-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        /* Bandeja table: full width with proper column proportions */
+        #tabla_excepciones_no_autoprogramadas {
+            width: 100% !important;
+        }
+        #tabla_excepciones_no_autoprogramadas thead th:nth-child(1) { width: 18%; }
+        #tabla_excepciones_no_autoprogramadas thead th:nth-child(2) { width: 47%; }
+        #tabla_excepciones_no_autoprogramadas thead th:nth-child(3) { width: 20%; }
+        #tabla_excepciones_no_autoprogramadas thead th:nth-child(4) { width: 15%; }
+        #tabla_excepciones_no_autoprogramadas tbody td:nth-child(1) { word-break: break-all; }
+        #tabla_excepciones_no_autoprogramadas tbody td:nth-child(2),
+        #tabla_excepciones_no_autoprogramadas tbody td:nth-child(3) {
+            word-break: break-word;
+            overflow-wrap: anywhere;
+        }
+        /* Uniform inputs: every input/select fills its form-group cell, same height/border */
+        #formulario_nuevo .ps-modal-form .form-control {
+            width: 100% !important;
+            min-height: 2.4rem;
+        }
+        #formulario_nuevo .ps-modal-form .control-label {
+            font-size: 0.82rem;
+            font-weight: 600;
+            margin-bottom: 0.2rem;
+            color: oklch(31% 0.025 255);
+        }
+        #formulario_nuevo .ps-modal-form .form-group {
+            margin-bottom: 0.75rem;
+        }
+        /* Action buttons: inline, full width, not floating in a card */
+        #formulario_nuevo .ps-form-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid oklch(91% 0.01 250);
+            grid-column: 1 / -1;
+        }
+        #formulario_nuevo .ps-form-actions .btn {
+            flex: 1 1 0;
+        }
     </style>
     <link rel="stylesheet" href="/css/handsontable-header-global.css?v=20260223a" />
     <link rel="stylesheet" href="/css/change-monitor.css?v=20260602a" />
@@ -872,6 +932,7 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
                     <button id="btn_autoprogramar" class="btn-pdc-modern" aria-label="Autoprogramar Actividades"><i class="fas fa-magic"></i> <span>Autoprogramar Actividades</span></button>
                     <button id="btn_agregar_actividad" type="button" class="btn-pdc-modern" aria-label="Agregar Actividad Manual"><i class="fas fa-plus"></i> <span>Agregar Actividad</span></button>
                     <button id="btn_cerrar_compromisos_semana" type="button" class="btn-pdc-modern" data-toggle="modal" data-target="#modal_cerrar_compromisos" aria-label="Confirmar Compromisos de la Semana"><i class="fas fa-lock"></i> <span>Confirmar Compromisos</span></button>
+                    <button type="button" id="btn_reabrir_semana" class="btn-pdc-modern" style="display:none;" aria-label="Reabrir semana para edición"><i class="fas fa-unlock"></i> <span>Reabrir Semana</span></button>
                     <button id="btn_tnp" type="button" class="btn-pdc-modern" style="display: none;" aria-label="Registrar Trabajo No Planificado"><i class="fas fa-bolt"></i> <span>Registrar TNP</span></button>
                     <button id="btn_informe_compromisos" type="button" class="btn-pdc-modern" aria-label="Imprimir Informe de Compromisos"><i class="fas fa-print"></i> <span>Imprimir</span></button>
                     <button id="btn-export" class="btn-pdc-modern" aria-label="Exportar datos a CSV"><i class="fas fa-file-csv"></i> <span>Exportar CSV</span></button>
@@ -958,7 +1019,7 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
         </div>
     </div>
 
-    <div class="modal fade aia-modal" id="formulario_nuevo" tabindex="-1" role="dialog" aria-labelledby="formularioNuevoLabel" aria-hidden="true">
+    <div class="modal fade aia-modal" id="formulario_nuevo" tabindex="-1" role="dialog" aria-labelledby="formularioNuevoLabel" aria-hidden="true" aria-modal="true">
         <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable ps-modal-nueva-actividad" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -996,9 +1057,9 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
                         <div class="col-lg-7 ps-nueva-actividad-col ps-nueva-actividad-col--formulario">
                             <form class="form_nueva_actividad form form-horizontal ps-form-layout ps-modal-form" autocomplete="off">
                                 <div class="form-group ps-form-col">
-                                    <label for="idNuevo" class="col-sm-8 control-label">Id *</label>
-                                    <div class="col-sm-8">
-                                        <select id="idNuevo" name="idNuevo" class="form-control w-100" data-placeholder="Seleccione una actividad">
+                                    <label for="idNuevo" class="control-label">Id *</label>
+                                    <div>
+                                        <select id="idNuevo" name="idNuevo" class="form-control" data-placeholder="Seleccione una actividad" aria-required="true" required>
                                             <option value=""></option>
                                             <?php
                                             $dbInstance = Database::getInstance();
@@ -1022,18 +1083,18 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
                                     </div>
                                 </div>
                                 <div class="form-group ps-form-col">
-                                    <label for="Actividad" class="col-sm-8 control-label">Actividad *</label>
-                                    <div class="col-sm-8"><input id="Actividad" name="Actividad" class="form-control" value="" type="text"></div>
+                                    <label for="Actividad" class="control-label">Actividad *</label>
+                                    <div><input id="Actividad" name="Actividad" class="form-control" value="" type="text" aria-required="true" required></div>
                                 </div>
                                 <div class="form-group ps-form-col">
-                                    <label for="Descripcion" class="col-sm-8 control-label">Descripción</label>
-                                    <div class="col-sm-8"><input id="Descripcion" name="Descripcion" class="form-control" value="" type="text"></div>
+                                    <label for="Descripcion" class="control-label">Descripción</label>
+                                    <div><input id="Descripcion" name="Descripcion" class="form-control" value="" type="text"></div>
                                 </div>
                                 <input id="Ubicacion" name="Ubicacion" class="form-control" value="" type="hidden">
                                 <div class="form-group ps-form-col-6">
-                                    <label for="Sub_Contratista" class="col-sm-8 control-label">Sub-Contratista *</label>
-                                    <div class="col-sm-8">
-                                        <select id="Sub_Contratista" name="Sub_Contratista" class="form-control">
+                                    <label for="Sub_Contratista" class="control-label">Sub-Contratista *</label>
+                                    <div>
+                                        <select id="Sub_Contratista" name="Sub_Contratista" class="form-control" aria-required="true" required>
                                             <option value=""></option>
                                             <?php
         if (!empty($subcontratistas) && is_array($subcontratistas)) {
@@ -1049,9 +1110,9 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
                                     </div>
                                 </div>
                                 <div class="form-group ps-form-col-6">
-                                    <label for="Responsable_AIA" class="col-sm-8 control-label">Profesional AIA *</label>
-                                    <div class="col-sm-8">
-                                        <select id="Responsable_AIA" name="Responsable_AIA" class="form-control">
+                                    <label for="Responsable_AIA" class="control-label">Profesional AIA *</label>
+                                    <div>
+                                        <select id="Responsable_AIA" name="Responsable_AIA" class="form-control" aria-required="true" required>
                                             <option value=""></option>
                                             <?php
         if (!empty($profesionales) && is_array($profesionales)) {
@@ -1068,29 +1129,25 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
                                 </div>
                                 <input id="Empresa" name="Empresa" class="form-control" value="" type="hidden">
                                 <div class="form-group ps-form-col-4">
-                                    <label for="Unidad" class="col-sm-8 control-label">Unidad de Medida</label>
-                                    <div class="col-sm-4"><input id="Unidad" name="Unidad" class="form-control" value="" type="text" readonly aria-readonly="true" placeholder="Automático"></div>
+                                    <label for="Unidad" class="control-label">Unidad de Medida</label>
+                                    <div><input id="Unidad" name="Unidad" class="form-control" value="" type="text" readonly aria-readonly="true" placeholder="Automático" tabindex="-1"></div>
                                 </div>
                                 <div class="form-group ps-form-col-4">
-                                    <label for="CantidadPPTO" class="col-sm-8 control-label">Cant. PPTO</label>
-                                    <div class="col-sm-4"><input id="CantidadPPTO" name="CantidadPPTO" class="form-control" value="" type="text" readonly aria-readonly="true" placeholder="Sin cantidad"></div>
+                                    <label for="CantidadPPTO" class="control-label">Cant. PPTO</label>
+                                    <div><input id="CantidadPPTO" name="CantidadPPTO" class="form-control" value="" type="text" readonly aria-readonly="true" placeholder="Sin cantidad" tabindex="-1"></div>
                                 </div>
                                 <div class="form-group ps-form-col-4">
-                                    <label for="Compromiso" class="col-sm-8 control-label">Cantidad *</label>
-                                    <div class="col-sm-4"><input id="Compromiso" name="Compromiso" class="form-control" value="" type="text"></div>
+                                    <label for="Compromiso" class="control-label">Cantidad *</label>
+                                    <div><input id="Compromiso" name="Compromiso" class="form-control" value="" type="text" aria-required="true" required></div>
                                 </div>
                                 <input id="Real" name="Real" class="form-control" value="" type="hidden">
                                 <input type="hidden" id="opcion" name="opcion" value="nuevo">
-                                <div class="form-group mt-3">
-                                    <div class="col-sm-offset-2 col-sm-8">
-                                        <input id="btn_guardar_nueva_actividad" type="button" class="btn btn-primary" value="Guardar" aria-label="Guardar nueva actividad">
-                                        <input id="btn_listar" type="button" class="btn btn-danger" value="Cancelar" aria-label="Cancelar nueva actividad" data-dismiss="modal">
-                                    </div>
+                                <div class="ps-form-actions">
+                                    <button type="button" id="btn_guardar_nueva_actividad" class="btn btn-primary" aria-label="Guardar nueva actividad">Guardar</button>
+                                    <button type="button" id="btn_listar" class="btn btn-danger" aria-label="Cancelar nueva actividad" data-dismiss="modal">Cancelar</button>
                                 </div>
                             </form>
-                            <div class="col-sm-offset-2 col-sm-8">
-                                <p class="mensaje" role="status" aria-live="polite"></p>
-                            </div>
+                            <p class="mensaje" role="status" aria-live="polite"></p>
                         </div>
                     </div>
                 </div>
@@ -1292,6 +1349,7 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
 </div>
 
 <?php include __DIR__ . '/partials/_changeMonitorModal.php'; ?>
+<?php include __DIR__ . '/partials/modal_reabrir.php'; ?>
     <?php include __DIR__ . '/../partials/drawer_unificado.php'; ?>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
