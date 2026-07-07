@@ -867,15 +867,21 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
         #tabla_excepciones_no_autoprogramadas {
             width: 100% !important;
         }
-        #tabla_excepciones_no_autoprogramadas thead th:nth-child(1) { width: 18%; }
-        #tabla_excepciones_no_autoprogramadas thead th:nth-child(2) { width: 47%; }
-        #tabla_excepciones_no_autoprogramadas thead th:nth-child(3) { width: 20%; }
+        #tabla_excepciones_no_autoprogramadas thead th:nth-child(1) { width: 14%; }
+        #tabla_excepciones_no_autoprogramadas thead th:nth-child(2) { width: 35%; }
+        #tabla_excepciones_no_autoprogramadas thead th:nth-child(3) { width: 36%; }
         #tabla_excepciones_no_autoprogramadas thead th:nth-child(4) { width: 15%; }
         #tabla_excepciones_no_autoprogramadas tbody td:nth-child(1) { word-break: break-all; }
         #tabla_excepciones_no_autoprogramadas tbody td:nth-child(2),
         #tabla_excepciones_no_autoprogramadas tbody td:nth-child(3) {
             word-break: break-word;
             overflow-wrap: anywhere;
+        }
+        /* Motivo chip in Bandeja: line-wrap so multiple restrictions stack on small screens */
+        #tabla_excepciones_no_autoprogramadas tbody td .ps-motivo-chip {
+            white-space: normal;
+            text-align: left;
+            justify-content: flex-start;
         }
         /* Uniform inputs: every input/select fills its form-group cell, same height/border */
         #formulario_nuevo .ps-modal-form .form-control {
@@ -1057,30 +1063,10 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
                         <div class="col-lg-7 ps-nueva-actividad-col ps-nueva-actividad-col--formulario">
                             <form class="form_nueva_actividad form form-horizontal ps-form-layout ps-modal-form" autocomplete="off">
                                 <div class="form-group ps-form-col">
-                                    <label for="idNuevo" class="control-label">Id *</label>
-                                    <div>
-                                        <select id="idNuevo" name="idNuevo" class="form-control" data-placeholder="Seleccione una actividad" aria-required="true" required>
-                                            <option value=""></option>
-                                            <?php
-                                            $dbInstance = Database::getInstance();
-        $db = $_SESSION['db'];
-        $semana = $_SESSION['semana'];
-        $tableName = TableResolver::resolveByPrefix($db, 'programa_consolidado');
-        $projectId = TableResolver::getProjectIdByPrefix($db);
-        $query = "SELECT * FROM {$tableName} WHERE project_id = ? AND Semana=? AND Titulo=0 AND Semanas_Inicio<=12 AND Semanas_Inicio>=1 AND Ejecutado=0";
-        try {
-            $stmt = $dbInstance->queryWithProject($query, [$projectId, $semana], $projectId);
-            while ($valores = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                $Actividad = strip_tags((string) ($valores["Actividad"] ?? ""));
-                $Actividad = str_replace('"', '\"', $Actividad);
-                $Actividad = str_replace("'", "\'", $Actividad);
-                echo '<option value="' . $valores["Id"] . '">(' . $valores["Id"] . ') - ' . $Actividad . '</option>';
-            }
-        } catch (PDOException $e) {
-        }
-        ?>
-                                        </select>
-                                    </div>
+                                    <label for="idNuevoDisplay" class="control-label">Id *</label>
+                                    <input type="hidden" id="idNuevo" name="idNuevo" value="" aria-required="true" required>
+                                    <input type="text" id="idNuevoDisplay" class="form-control" value="" placeholder="Selecciona una actividad de la Bandeja" readonly aria-readonly="true" tabindex="-1">
+                                    <small class="form-text ps-id-source-hint">Selecciona una actividad de la <strong>Bandeja de No Autoprogramadas</strong> a la izquierda.</small>
                                 </div>
                                 <div class="form-group ps-form-col">
                                     <label for="Actividad" class="control-label">Actividad *</label>

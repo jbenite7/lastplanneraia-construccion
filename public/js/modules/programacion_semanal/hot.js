@@ -2273,6 +2273,15 @@
       td.classList.add('htLeft', 'htMiddle', 'force-wrap');
     });
 
+    Handsontable.renderers.registerRenderer('psIdRenderer', function (instance, td, row, col, prop, value) {
+      Handsontable.renderers.TextRenderer.apply(this, arguments);
+      var rowData = instance && typeof instance.getSourceDataAtRow === 'function' ? (getSourceRowDataByVisualRow(instance, row) || {}) : {};
+      var badgeLabel = isManualActivity(rowData) ? 'Manual' : 'Auto';
+      var badgeColor = isManualActivity(rowData) ? '#e67e22' : '#17a2b8';
+      td.innerHTML = '<div style="display: flex; flex-direction: column; align-items: center; gap: 2px;"><span class="badge" style="background-color: ' + badgeColor + '; color: #fff; font-size: 0.65em; padding: 1px 4px; border-radius: 3px; line-height: 1.2;">' + badgeLabel + '</span><span style="font-size: 0.9em;">' + escapeHtml(value != null ? value : '') + '</span></div>';
+      td.classList.add('htCenter', 'htMiddle');
+    });
+
     Handsontable.renderers.registerRenderer('psRatioRenderer', function (instance, td, row, col, prop, value) {
       Handsontable.renderers.TextRenderer.apply(this, arguments);
       var rowData = instance && typeof instance.getSourceDataAtRow === 'function' ? (getSourceRowDataByVisualRow(instance, row) || {}) : {};
@@ -2385,7 +2394,7 @@
 
     var columnDefs = [
       { data: 'Consecutivo', readOnly: true, className: 'htCenter htMiddle' },
-      { data: 'Id', readOnly: true, className: 'htCenter htMiddle' },
+      { data: 'Id', readOnly: true, renderer: 'psIdRenderer', className: 'htCenter htMiddle' },
       { data: 'codigo_actividad', readOnly: true, className: 'htCenter htMiddle' },
       { data: 'Actividad', readOnly: true, renderer: 'psActividadRenderer', className: 'htLeft htMiddle force-wrap' },
       { data: 'Ubicacion', type: 'text', className: 'htLeft htMiddle force-wrap' },
@@ -3099,6 +3108,7 @@
 
   function normalizeNewActivityForm() {
     $('#idNuevo').val('');
+    $('#idNuevoDisplay').val('');
     $('#Actividad').val('');
     $('#Descripcion').val('');
     $('#Ubicacion').val('');
@@ -3120,14 +3130,15 @@
 
     // Field-level validation with visual highlighting
     var missing = [];
-    var $idNuevo = $('#idNuevo'), $Actividad = $('#Actividad');
+    var $idNuevo = $('#idNuevo'), $idNuevoDisplay = $('#idNuevoDisplay');
+    var $Actividad = $('#Actividad');
     var $Sub = $('#Sub_Contratista'), $Resp = $('#Responsable_AIA');
     var $Comp = $('#Compromiso');
 
     // Clear previous error highlights
-    $idNuevo.add($Actividad).add($Sub).add($Resp).add($Comp).removeClass('ps-field-error');
+    $idNuevo.add($idNuevoDisplay).add($Actividad).add($Sub).add($Resp).add($Comp).removeClass('ps-field-error');
 
-    if (!idNuevo) { missing.push('Id'); $idNuevo.addClass('ps-field-error'); }
+    if (!idNuevo) { missing.push('Id'); $idNuevoDisplay.addClass('ps-field-error'); }
     if (!actividad) { missing.push('Actividad'); $Actividad.addClass('ps-field-error'); }
     if (!sub) { missing.push('Sub-Contratista'); $Sub.addClass('ps-field-error'); }
     if (!resp) { missing.push('Profesional AIA'); $Resp.addClass('ps-field-error'); }
@@ -3624,6 +3635,28 @@
     });
   }
 
+  // Render the "Motivo" cell for the Bandeja de No Autoprogramadas.
+  // Splits a comma-separated list of pending restrictions into individual chips.
+  // For activities without restriction blocks, shows a neutral "Lista para..." chip.
+  function renderMotivoHtml(motivo, estado, semanasInicio) {
+    var text = (motivo || estado || '').toString().trim();
+    if (!text) {
+      return '<span class="ps-motivo-chip is-empty" title="Sin motivo registrado">No autoprogramada</span>';
+    }
+    var isClean = (text === 'Lista para autoprogramar');
+    var parts = isClean ? [text] : text.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+    var chipClass = isClean ? ' ps-motivo-chip--clean' : '';
+    var inner = parts.map(function (p) {
+      return '<span class="ps-motivo-restriction">' + escapeHtml(p) + '</span>';
+    }).join(' ');
+    var tooltipParts = ['Motivo: ' + text];
+    if (estado) { tooltipParts.push('Estado: ' + estado); }
+    if (semanasInicio !== null && semanasInicio !== undefined && semanasInicio !== '') {
+      tooltipParts.push('Inicia en: ' + semanasInicio + ' semana(s)');
+    }
+    return '<span class="ps-motivo-chip' + chipClass + '" title="' + escapeHtml(tooltipParts.join(' \u2022 ')) + '">' + inner + '</span>';
+  }
+
   function cargarBandejaNoAutoprogramadas() {
     var db = getDb();
     var semana = getSemana();
@@ -3644,7 +3677,7 @@
       var data = (response && Array.isArray(response.data)) ? response.data : [];
 
       if (data.length === 0) {
-        $tbody.html('<tr><td colspan="4" class="text-center text-muted py-3"><i class="fas fa-inbox fa-2x d-block mb-2" style="opacity:0.35;"></i>No hay actividades pendientes de autoprogramaci&oacute;n.<br><small>Puedes agregar una manualmente con el formulario.</small></td></tr>');
+        $tbody.html('<tr><td colspan="4" class="text-center text-muted py-3"><i class="fas fa-inbox fa-2x d-block mb-2" style="opacity:0.35;"></i>No hay actividades sin autoprogramar en la ventana de PI (6 semanas).<br><small>Puedes agregar una manualmente con el formulario.</small></td></tr>');
         // Collapse bandeja panel when empty to give form full space
         $('#formulario_nuevo .ps-nueva-actividad-col--bandeja').addClass('ps-bandeja-empty');
         return;
@@ -3654,6 +3687,7 @@
 
       var html = '';
       data.forEach(function (row) {
+        var motivoHtml = renderMotivoHtml(row.Motivo, row.Estado, row.Semanas_Inicio);
         html += '<tr class="ps-row-excepcion" data-id="' + escapeHtml(row.Id) + '" ' +
                 'data-actividad="' + escapeHtml(row.Actividad) + '" ' +
                 'data-sub="' + escapeHtml(row.Sub_Contratista || '') + '" ' +
@@ -3661,7 +3695,7 @@
                 'data-unidad="' + escapeHtml(row.Unidad || '%') + '">';
         html += '<td class="ps-excepcion-id">' + escapeHtml(row.Id) + '</td>';
         html += '<td class="ps-excepcion-actividad">' + escapeHtml(row.Actividad) + '</td>';
-        html += '<td><span class="ps-motivo-chip">' + escapeHtml(row.Motivo || row.Estado || 'No autoprogramada') + '</span></td>';
+        html += '<td>' + motivoHtml + '</td>';
         html += '<td class="text-right"><button type="button" class="btn btn-sm btn-outline-secondary btn_usar_excepcion"><i class="fas fa-arrow-right"></i> Usar</button></td>';
         html += '</tr>';
       });
@@ -3679,25 +3713,14 @@
     item.Sub_Contratista = (item.Sub_Contratista || '').replace(/<[^>]+>/g, '').trim();
     item.Responsable_AIA = (item.Responsable_AIA || '').replace(/<[^>]+>/g, '').trim();
 
-    // Ensure #idNuevo has an <option> for this Id. The Bandeja (listarExcepciones)
-    // and the dropdown (programa_consolidado) use different filters, so an activity
-    // visible in the Bandeja may not be in the dropdown. Inject the option on demand.
+    // El Id se toma de la Bandeja (no de un <select>): setear hidden input + display readonly
     var $idNuevo = $('#idNuevo');
+    var $idNuevoDisplay = $('#idNuevoDisplay');
     if (item.Id && $idNuevo.length) {
       var idStr = String(item.Id);
-      var hasOpt = $idNuevo.find('option').filter(function () {
-        return this.value === idStr;
-      }).length > 0;
-      if (!hasOpt) {
-        var labelActividad = (item.Actividad || '').replace(/"/g, '&quot;').replace(/</g, '&lt;');
-        $idNuevo.append(
-          $('<option>', { value: idStr, selected: true, 'data-injected': '1' })
-            .text('(' + idStr + ') - ' + labelActividad)
-        );
-      } else {
-        $idNuevo.val(idStr);
-      }
-      $idNuevo.trigger('change.select2').trigger('change');
+      $idNuevo.val(idStr);
+      var labelActividad = (item.Actividad || '').toString();
+      $idNuevoDisplay.val('(' + idStr + ') - ' + labelActividad);
     }
 
     $('#Actividad').val(String(item.Actividad || ''));

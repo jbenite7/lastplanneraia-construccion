@@ -937,22 +937,62 @@ private function autoprogramar(string $dbPrefix, int $semana): void
     {
         $projectId = $this->projectId($dbPrefix);
         $area = $_SESSION['area'] ?? 'Construccion';
-        $restrictionEligibilitySql = $this->getAutoprogramRestrictionEligibilitySql('', $area);
-        $query = "SELECT Id, Actividad, Estado FROM " . $this->tbl($dbPrefix, 'programa_consolidado') . "
+
+        // Bandeja de No Autoprogramadas = ventana de Programación Intermedia (PI = 6 semanas).
+        // Muestra las mismas actividades que PI con Semanas_Inicio 1-6, sin filtrar
+        // por estado ni elegibilidad de restricciones. Orden: inicio más cercano a más lejano.
+        $piWindowWeeks = 6;
+        $restrictionColumns = ($area === 'Pre-Construccion')
+            ? 'restriccion_pc_1, restriccion_pc_2, restriccion_pc_3, restriccion_pc_4'
+            : 'D_y_E, Materiales, MdeO, Equipos, Predecesora, Pdto_Cons, Modelo';
+
+        $query = "SELECT
+                Id, Actividad, Estado,
+                Semanas_Inicio, Fecha_Inicio,
+                Sub_Contratista, Responsable_AIA, unidad AS Unidad,
+                {$restrictionColumns}
+            FROM " . $this->tbl($dbPrefix, 'programa_consolidado') . "
             WHERE project_id = ? AND Semana = ? AND Titulo = 0
-              AND Semanas_Inicio <= 12 AND Semanas_Inicio >= 1
+              AND Semanas_Inicio <= {$piWindowWeeks} AND Semanas_Inicio >= 1
               AND COALESCE(Ejecutado, 0) <= 0.001
-              AND NOT {$restrictionEligibilitySql}
-              AND (
-                Estado='En Curso' OR Estado='Atrasada' OR Estado='Debe Iniciar'
-                OR Estado='A Tiempo' OR Estado='Ya Debió Iniciar y Restricciones Pendientes'
-              )";
+            ORDER BY Semanas_Inicio ASC, Fecha_Inicio ASC, Id ASC";
+
         $data = $this->db->queryWithProject($query, [$projectId, $semana], $projectId)->fetchAll(PDO::FETCH_ASSOC);
-        // Strip HTML markup from data fields (some source data has legacy HTML)
-        foreach ($data as &$row) {
-            $row['Actividad'] = strip_tags($row['Actividad'] ?? '');
-            $row['Estado'] = strip_tags($row['Estado'] ?? '');
+
+        // Etiquetas de restricciones duras (mismas que usa autoprogramar() para alertasRestricciones)
+        if ($area === 'Pre-Construccion') {
+            $hardRestrictionLabels = [
+                'restriccion_pc_1' => ['label' => 'Predecesora', 'threshold' => 0.5],
+            ];
+        } else {
+            $hardRestrictionLabels = [
+                'D_y_E' => ['label' => 'D. y Especificaciones', 'threshold' => 1.0],
+                'Materiales' => ['label' => 'Materiales', 'threshold' => 1.0],
+                'MdeO' => ['label' => 'Mano de Obra', 'threshold' => 1.0],
+                'Equipos' => ['label' => 'Equipos', 'threshold' => 1.0],
+                'Predecesora' => ['label' => 'Predecesora', 'threshold' => 0.5],
+            ];
         }
+
+        foreach ($data as &$row) {
+            // Strip HTML markup from data fields (some source data has legacy HTML)
+            $row['Actividad'] = strip_tags((string) ($row['Actividad'] ?? ''));
+            $row['Estado'] = strip_tags((string) ($row['Estado'] ?? ''));
+            $row['Sub_Contratista'] = strip_tags((string) ($row['Sub_Contratista'] ?? ''));
+            $row['Responsable_AIA'] = strip_tags((string) ($row['Responsable_AIA'] ?? ''));
+            $row['Unidad'] = trim((string) ($row['Unidad'] ?? '')) ?: '%';
+            $row['Semanas_Inicio'] = isset($row['Semanas_Inicio']) && $row['Semanas_Inicio'] !== null
+                ? (int) $row['Semanas_Inicio']
+                : null;
+
+            // Motivo = restricciones pendientes si las hay; si no, "Lista para autoprogramar"
+            $pendientes = $this->buildRestrictionAlertParts($row, $hardRestrictionLabels);
+            $row['Motivo'] = !empty($pendientes)
+                ? implode(', ', $pendientes)
+                : 'Lista para autoprogramar';
+        }
+        unset($row);
+
         echo json_encode(["respuesta" => "BIEN", "data" => $data], JSON_UNESCAPED_UNICODE);
     }
 

@@ -3030,6 +3030,40 @@ table.dataTable td.dt-min-width-300,
   line-height: 1.3;
 }
 
+/* Bandeja de No Autoprogramadas — chip de motivo: permite múltiples restricciones
+   y se acomoda al ancho de celda. El color de fondo indica nivel de bloqueo. */
+#tabla_excepciones_no_autoprogramadas .ps-motivo-chip {
+  display: inline-block;
+  max-width: 100%;
+  white-space: normal;
+  text-align: left;
+  border-radius: 6px;
+  padding: 0.22rem 0.5rem;
+  background: oklch(94% 0.04 65 / 0.65);
+  color: oklch(36% 0.1 55);
+  font-size: 0.72rem;
+  line-height: 1.35;
+  cursor: help;
+}
+/* Actividad sin restricciones duras pendientes — lista para autoprogramar */
+#tabla_excepciones_no_autoprogramadas .ps-motivo-chip--clean {
+  background: oklch(94% 0.04 145 / 0.55);
+  color: oklch(33% 0.08 145);
+}
+#tabla_excepciones_no_autoprogramadas .ps-motivo-chip.is-empty {
+  background: oklch(96% 0.01 250 / 0.7);
+  color: oklch(45% 0.02 250);
+  font-style: italic;
+}
+#tabla_excepciones_no_autoprogramadas .ps-motivo-chip .ps-motivo-restriction {
+  display: inline-block;
+  margin: 1px 4px 1px 0;
+  padding: 0 5px;
+  border-radius: 4px;
+  background: oklch(90% 0.06 55 / 0.7);
+  font-weight: 700;
+}
+
 #formulario_nuevo .ps-modal-form {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
@@ -3214,6 +3248,26 @@ table.dataTable td.dt-min-width-300,
 #formulario_nuevo .ps-field-error {
   border-color: #dc3545 !important;
   box-shadow: 0 0 0 0.18rem rgba(220, 53, 69, 0.25);
+}
+
+/* Id display readonly — se llena desde la Bandeja de No Autoprogramadas */
+#formulario_nuevo #idNuevoDisplay[readonly] {
+  background-color: oklch(97% 0.005 250);
+  color: oklch(31% 0.025 255);
+  cursor: not-allowed;
+  font-weight: 600;
+}
+#formulario_nuevo #idNuevoDisplay[readonly]::placeholder {
+  color: oklch(60% 0.02 250);
+  font-style: italic;
+  font-weight: 400;
+}
+#formulario_nuevo .ps-id-source-hint {
+  display: block;
+  margin-top: 0.3rem;
+  color: oklch(45% 0.02 250);
+  font-size: 0.75rem;
+  line-height: 1.35;
 }
 
 /* Pulse animation for Guardar button after "Usar" click */
