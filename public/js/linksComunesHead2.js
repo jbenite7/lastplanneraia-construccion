@@ -75,7 +75,7 @@
 
   // Estilos Personalizados Locales
   injectStylesheet('/css/tokens.css?v=1.0');
-  injectStylesheet('/css/styles.css?v=pdcLegendSpacing1');
+  injectStylesheet('/css/styles.css?v=pdcLegendSpacing2');
   injectStylesheet('/css/buttons.css?v=1.0');
   injectStylesheet('/css/access.css?v=1.0');
 

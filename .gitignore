@@ -59,6 +59,9 @@ CLAUDE.md
 MEMORY.md
 .php-cs-fixer.dist.php
 
+# Evidencia QA local (capturas de pantalla)
+docs/qa/
+
 # Documentación interna (no desplegar a producción)
 docs/ROUTES.md
 docs/pdc/
