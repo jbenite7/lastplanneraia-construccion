@@ -27,6 +27,24 @@ if ($projectId) {
 $permisoCodigo = $_SESSION['permiso'] ?? '';
 $rolHumano = RbacCatalog::getRoleName($permisoCodigo);
 
+// Re-leer el cargo de general_usuarios en cada request para que los cambios
+// hechos desde el Admin se reflejen sin necesidad de re-login.
+$cargoUsuario = '';
+$usuarioSesion = trim((string) ($_SESSION['usuario'] ?? ''));
+if ($usuarioSesion !== '') {
+    $stmtCargo = $dbInstance->query(
+        'SELECT cargo FROM general_usuarios WHERE usuario = ? LIMIT 1',
+        [$usuarioSesion]
+    );
+    $rowCargo = $stmtCargo->fetch();
+    if ($rowCargo) {
+        $cargoUsuario = trim(preg_replace('/\s+/u', ' ', (string) ($rowCargo['cargo'] ?? '')) ?? '');
+    }
+}
+if ($cargoUsuario !== '') {
+    $rolHumano = $cargoUsuario;
+}
+
 $arreglo = [
     "proyecto" => $_SESSION['proyecto'] ?? '',
     "db" => $dbName,

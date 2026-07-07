@@ -65,7 +65,10 @@ class ProjectProfessionalsSyncService
                 $email = $this->normalizarEmail($member['email'] ?? '');
                 $nombre = $adminCanonicalNames[$email] ?? $this->limpiarTexto($member['nombre'] ?? '');
                 $usuario = trim((string) ($member['usuario'] ?? ''));
-                $cargo = self::ROLE_TO_CARGO[$role];
+                $cargo = $this->limpiarTexto($member['cargo'] ?? '');
+                if ($cargo === '') {
+                    $cargo = self::ROLE_TO_CARGO[$role];
+                }
 
                 if ($nombre === '') {
                     $summary['warnings'][] = $this->buildMemberWarning($usuario, $role, 'no tiene nombre válido y no se sincronizó.');
@@ -371,7 +374,7 @@ class ProjectProfessionalsSyncService
         $placeholders = implode(', ', array_fill(0, count($roles), '?'));
         $params = array_merge([$dbPrefix], $roles);
 
-        $sql = "SELECT pm.user_id, pm.role, u.nombre, u.email, u.usuario
+        $sql = "SELECT pm.user_id, pm.role, u.nombre, u.email, u.usuario, u.cargo
                 FROM project_members pm
                 INNER JOIN general_usuarios u ON u.id = pm.user_id
                 INNER JOIN general_proyectos_procesos p ON p.ID = pm.project_id
