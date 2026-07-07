@@ -3,6 +3,7 @@
 namespace App\Controllers\Api;
 
 use App\Core\Lps\LpsService;
+use App\Security\CsrfTokenManager;
 use App\Services\ProgramChangeDetector;
 use App\Services\ProgramaConsolidadoNormalizationService;
 use App\Services\RestrictionConfigResolver;
@@ -10,6 +11,13 @@ use App\Services\WeeklyRealProgressCarryoverService;
 use PDO;
 use Throwable;
 use TableResolver;
+
+// CommitmentLockGuard lives in global namespace (no `namespace` declaration),
+// so PSR-4 autoloader cannot find it. Explicit require_once ensures it's
+// available before any guard call in this controller.
+if (!class_exists('\\CommitmentLockGuard', false)) {
+    require_once PROJECT_ROOT . '/src/Core/CommitmentLockGuard.php';
+}
 
 class SemanalApiController
 {
@@ -115,9 +123,21 @@ class SemanalApiController
     {
         require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
         rbac_guard_require_permission('lps.programacion_semanal.editar');
+
         $dbPrefix = $_GET['db'] ?? $_POST['db'] ?? '';
         $opcion = $_POST["opcion"] ?? '';
         $semana = filter_var($_POST['semana'] ?? $_GET['semana'] ?? 0, FILTER_VALIDATE_INT);
+
+        // CSRF protection for mutating operations (not for read-only / listar endpoints)
+        if (in_array($opcion, ['nuevo', 'modificar', 'eliminar', 'duplicar', 'autoprogramar', 'bloquear_compromisos', 'importar_actividad_no_requerida', 'EstadoEjecucion', 'tnp'], true)) {
+            $csrfToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? $_POST['_csrf_token'] ?? '';
+            if (!CsrfTokenManager::validate($csrfToken, 'semanal_save')) {
+                http_response_code(403);
+                header('Content-Type: application/json; charset=utf-8');
+                echo json_encode(["respuesta" => "ERROR", "mensaje" => "Token CSRF inválido o expirado."], JSON_UNESCAPED_UNICODE);
+                return;
+            }
+        }
 
         if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
             $this->jsonError("Parámetro de base de datos inválido.");
@@ -193,7 +213,21 @@ class SemanalApiController
     {
         $projectId = $this->projectId($dbPrefix);
         $this->db->setProjectContext($projectId);
+
+        // Guard: solo permitir modificar Real (ejecutado) si la semana está cerrada
         $id = (int) ($_POST["Id"] ?? 0);
+        $compromisoEntrante = $this->lpsService->toFloat($_POST["Compromiso"] ?? null);
+        $compromisoActual = null;
+        if ($compromisoEntrante !== null) {
+            $rowActual = $this->db->queryWithProject(
+                "SELECT Compromiso FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . " WHERE project_id = ? AND row_id = ?",
+                [$projectId, $id], $projectId
+            )->fetch(PDO::FETCH_ASSOC);
+            $compromisoActual = $rowActual ? $this->lpsService->toFloat($rowActual['Compromiso'] ?? null) : null;
+        }
+        $editandoCompromiso = $compromisoEntrante !== null && abs(($compromisoEntrante ?: 0) - ($compromisoActual ?: 0)) > 0.0001;
+        \CommitmentLockGuard::guard($dbPrefix, $semana, 'modificar', !$editandoCompromiso);
+
         $sourceProgramId = $this->getWeeklyProgramId($dbPrefix, $id);
         if ($sourceProgramId === null) {
             $this->jsonError("No se encontró la actividad semanal a actualizar.");
@@ -244,11 +278,13 @@ class SemanalApiController
         $this->jsonResponse($res ? "BIEN" : "ERROR");
     }
 
-    private function autoprogramar(string $dbPrefix, int $semana): void
+private function autoprogramar(string $dbPrefix, int $semana): void
     {
         try {
             $projectId = $this->projectId($dbPrefix);
             $this->db->setProjectContext($projectId);
+            \CommitmentLockGuard::guard($dbPrefix, $semana, 'autoprogramar');
+
             $area = $_SESSION['area'] ?? 'Construccion';
             $restrictionEligibilitySql = $this->getAutoprogramRestrictionEligibilitySql('', $area);
 
@@ -557,6 +593,7 @@ class SemanalApiController
 
     private function jsonError(string $msg): void
     {
+        http_response_code(422);
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode(["respuesta" => "ERROR", "mensaje" => $msg], JSON_UNESCAPED_UNICODE);
     }
@@ -666,6 +703,7 @@ class SemanalApiController
     private function estadoEjecucion(string $dbPrefix, int $semana): void
     {
         $projectId = $this->projectId($dbPrefix);
+        \CommitmentLockGuard::guard($dbPrefix, $semana, 'estado_ejecucion');
         $id = $_POST["Id"];
         $ejecutado = $_POST["Ejecutado"];
         $query1 = "UPDATE " . $this->tbl($dbPrefix, 'programa_consolidado') . " SET Activa = 1 WHERE project_id = ? AND unique_id = ? AND Semana = ?";
@@ -681,6 +719,7 @@ class SemanalApiController
 
     private function eliminar(string $dbPrefix, int $semana): void
     {
+        \CommitmentLockGuard::guard($dbPrefix, $semana, 'eliminar');
         $id = (int) ($_POST["Id"] ?? 0);
         $sourceProgramId = $this->getWeeklyProgramId($dbPrefix, $id);
         if ($sourceProgramId === null) {
@@ -707,6 +746,7 @@ class SemanalApiController
 
     private function duplicar(string $dbPrefix, int $semana): void
     {
+        \CommitmentLockGuard::guard($dbPrefix, $semana, 'duplicar');
         $id = (int) ($_POST["Id"] ?? 0);
         $sourceProgramId = $this->getWeeklyProgramId($dbPrefix, $id);
         if ($sourceProgramId === null) {
@@ -725,21 +765,51 @@ class SemanalApiController
     private function nuevo(string $dbPrefix, int $semana): void
     {
         $projectId = $this->projectId($dbPrefix);
+        \CommitmentLockGuard::guard($dbPrefix, $semana, 'nuevo');
         $idBase = trim((string) ($_POST["idNuevo"] ?? ''));
+        $subs = array_filter(array_map('trim', explode(',', $_POST["Sub_Contratista"])));
+        $actividadNombre = trim((string) ($_POST["Actividad"] ?? ''));
+
+        // Validate base activity exists in programa_consolidado
         $query0 = "SELECT *, unique_id AS Consecutivo_en_Programa, row_id AS Consecutivo FROM " . $this->tbl($dbPrefix, 'programa_consolidado') . " WHERE project_id = ? AND Semana = ? AND Id = ? AND Titulo = 0 AND Semanas_Inicio <= 12 AND Semanas_Inicio >= 1 AND Ejecutado = 0 LIMIT 1";
         $data0 = $this->db->queryWithProject($query0, [$projectId, $semana, $idBase], $projectId)->fetch(PDO::FETCH_ASSOC);
         if (!$data0) {
             $this->jsonError("Actividad base no válida.");
             return;
         }
-        $queryInsert = "INSERT INTO " . $this->tbl($dbPrefix, 'programacion_semanal') . " (project_id, Semana, unique_id, Consecutivo_En_Programa, Id, Actividad, Descripcion, Ubicacion, Fecha_Inicio, Fecha_Fin, Sub_Contratista, Responsable_AIA, Empresa, Ejecutado, medir_productividad, Unidad, cantidad_ppto, Compromiso, Critica, Atrasada, Activa, Prog_Sin_Restricciones_100, codigo_actividad) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 'NA', 0, ?)";
-        $subs = array_filter(array_map('trim', explode(',', $_POST["Sub_Contratista"])));
+
+        // Dedup check: prevent inserting activity already in the same week for same sub
+        $tblPS = $this->tbl($dbPrefix, 'programacion_semanal');
+        $dupChecks = [];
+        foreach ($subs as $sub) {
+            $dupQuery = "SELECT COUNT(*) FROM {$tblPS} WHERE project_id = ? AND Semana = ? AND unique_id = ? AND Sub_Contratista = ?";
+            $exists = $this->db->queryWithProject($dupQuery, [$projectId, $semana, $data0["unique_id"], $sub], $projectId)->fetchColumn();
+            if ($exists > 0) {
+                $dupChecks[] = $sub;
+            }
+        }
+        if (count($dupChecks) > 0) {
+            $this->jsonError("La actividad ya existe en esta semana para: " . implode(', ', $dupChecks));
+            return;
+        }
+
+        $queryInsert = "INSERT INTO {$tblPS} (project_id, Semana, unique_id, Consecutivo_En_Programa, Id, Actividad, Descripcion, Ubicacion, Fecha_Inicio, Fecha_Fin, Sub_Contratista, Responsable_AIA, Empresa, Ejecutado, medir_productividad, Unidad, cantidad_ppto, Compromiso, Critica, Atrasada, Activa, Prog_Sin_Restricciones_100, codigo_actividad) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 'NA', 0, ?)";
         $isFirst = true;
         $this->db->beginTransaction();
+        $compromisoValue = $this->parseLocalizedFloat($_POST["Compromiso"]);
         foreach ($subs as $sub) {
-            $this->db->queryWithProject($queryInsert, [$projectId, $semana, $data0["unique_id"], $data0["unique_id"], $idBase, $_POST["Actividad"], $_POST["Descripcion"], $_POST["Ubicacion"], $data0["Fecha_Inicio"], $data0["Fecha_Fin"], $sub, $_POST["Responsable_AIA"], $_POST["Empresa"], $data0["Ejecutado"], $data0["medir_productividad"], $_POST["Unidad"] ?: '%', $data0["cantidad_ppto"], $isFirst ? $this->parseLocalizedFloat($_POST["Compromiso"]) : null, $data0["codigo_actividad"]], $projectId);
+            $this->db->queryWithProject($queryInsert, [$projectId, $semana, $data0["unique_id"], $data0["unique_id"], $idBase, $actividadNombre, $_POST["Descripcion"], $_POST["Ubicacion"], $data0["Fecha_Inicio"], $data0["Fecha_Fin"], $sub, $_POST["Responsable_AIA"], $_POST["Empresa"], $data0["Ejecutado"], $data0["medir_productividad"], $_POST["Unidad"] ?: '%', $data0["cantidad_ppto"], $isFirst ? $compromisoValue : null, $data0["codigo_actividad"]], $projectId);
             $isFirst = false;
         }
+
+        // Audit log before commit
+        $this->db->logActivity(
+            'ProgramacionSemanal',
+            'AGREGAR_ACTIVIDAD',
+            "Agregada actividad '{$actividadNombre}' (Id: {$idBase}, unique_id: {$data0["unique_id"]}) en semana {$semana} para proyecto {$dbPrefix}",
+            $projectId
+        );
+
         $this->syncNextWeekCarryover($dbPrefix, $semana, (int) ($data0["unique_id"] ?? $data0["Consecutivo_en_Programa"]));
         $this->db->commit();
         $this->jsonResponse("BIEN");
@@ -761,6 +831,48 @@ class SemanalApiController
             $this->jsonError("No se pudo bloquear.");
         }
     }
+
+    public function reabrir(): void
+    {
+        require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
+        rbac_guard_require_permission('lps.programacion_semanal.editar');
+
+        $dbPrefix = $_GET['db'] ?? $_POST['db'] ?? '';
+        $semana = filter_var($_POST['semana'] ?? 0, FILTER_VALIDATE_INT);
+        $motivo = trim($_POST['motivo'] ?? '');
+
+        if ($semana <= 0) {
+            $this->jsonError("Semana inválida.");
+            return;
+        }
+        if (strlen($motivo) < 20) {
+            $this->jsonError("El motivo debe tener al menos 20 caracteres.");
+            return;
+        }
+
+        try {
+            $projectId = $this->projectId($dbPrefix);
+            $this->db->setProjectContext($projectId);
+            $this->db->beginTransaction();
+
+            $this->db->queryWithProject(
+                "UPDATE " . $this->tbl($dbPrefix, 'semanas_activas') . " SET Semanal_Confirmada = 0, fechaCierreCompromisos = NULL WHERE project_id = ? AND Semana = ?",
+                [$projectId, $semana],
+                $projectId
+            );
+
+            $this->db->logActivity('ProgramacionSemanal', 'REABRIR', "Semana {$semana} reabierta por Admin. Motivo: {$motivo}", $projectId);
+
+            $this->db->commit();
+            $this->jsonResponse("OK");
+        } catch (Throwable $t) {
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+            $this->jsonError("Error al reabrir: " . $t->getMessage());
+        }
+    }
+
     private function generarCIC(string $dbPrefix, int $semana): void
     {
         $projectId = $this->projectId($dbPrefix);
@@ -828,6 +940,7 @@ class SemanalApiController
         $restrictionEligibilitySql = $this->getAutoprogramRestrictionEligibilitySql('', $area);
         $query = "SELECT Id, Actividad, Estado FROM " . $this->tbl($dbPrefix, 'programa_consolidado') . "
             WHERE project_id = ? AND Semana = ? AND Titulo = 0
+              AND Semanas_Inicio <= 12 AND Semanas_Inicio >= 1
               AND COALESCE(Ejecutado, 0) <= 0.001
               AND NOT {$restrictionEligibilitySql}
               AND (
@@ -835,6 +948,11 @@ class SemanalApiController
                 OR Estado='A Tiempo' OR Estado='Ya Debió Iniciar y Restricciones Pendientes'
               )";
         $data = $this->db->queryWithProject($query, [$projectId, $semana], $projectId)->fetchAll(PDO::FETCH_ASSOC);
+        // Strip HTML markup from data fields (some source data has legacy HTML)
+        foreach ($data as &$row) {
+            $row['Actividad'] = strip_tags($row['Actividad'] ?? '');
+            $row['Estado'] = strip_tags($row['Estado'] ?? '');
+        }
         echo json_encode(["respuesta" => "BIEN", "data" => $data], JSON_UNESCAPED_UNICODE);
     }
 
@@ -1011,6 +1129,7 @@ class SemanalApiController
     private function tnp(string $dbPrefix, int $semana): void
     {
         $projectId = $this->projectId($dbPrefix);
+        \CommitmentLockGuard::guard($dbPrefix, $semana, 'tnp');
         $consecutivo = filter_input(INPUT_POST, 'Consecutivo', FILTER_VALIDATE_INT);
         $id = trim($_POST['Id'] ?? '');
         $ejecutadoReal = filter_input(INPUT_POST, 'Ejecutado_Real', FILTER_VALIDATE_FLOAT);
@@ -1139,6 +1258,10 @@ class SemanalApiController
 
             $stmt = $this->db->queryWithProject($query, [$semana, $projectId, $semana], $projectId);
             $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            // Strip HTML markup from data fields
+            foreach ($rows as &$row) {
+                $row['Actividad'] = strip_tags($row['Actividad'] ?? '');
+            }
 
             header('Content-Type: application/json; charset=utf-8');
             echo json_encode(['success' => true, 'data' => $rows], JSON_UNESCAPED_UNICODE);

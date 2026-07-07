@@ -61,12 +61,30 @@ class ProgramacionIntermediaController extends BaseController
             }
         }
 
+        // Semanal_Confirmada for current week (UI lock)
+        $semanalConfirmada = 0;
+        if ($dbName) {
+            try {
+                $tSa = TableResolver::resolveByPrefix($dbName, 'semanas_activas');
+                $projectId = TableResolver::getProjectIdByPrefix($dbName);
+                $stmtSc = $this->db->queryWithProject(
+                    "SELECT Semanal_Confirmada FROM {$tSa} WHERE project_id = ? AND Semana = ? LIMIT 1",
+                    [$projectId, $vars['semana'] ?? 0]
+                );
+                $rowSc = $stmtSc->fetch();
+                $semanalConfirmada = (int) ($rowSc['Semanal_Confirmada'] ?? 0);
+            } catch (\Throwable $e) {
+                error_log("Error cargando Semanal_Confirmada para PI: " . $e->getMessage());
+            }
+        }
+
         $data = array_merge($vars, [
             'subcontratistas' => $subcontratistas,
             'profesionales' => $profesionales,
             'viewAll' => $viewAll,
             'area' => $_SESSION['area'] ?? 'Construccion',
             'pcRestrictionNames' => $pcRestrictionNames,
+            'semanalConfirmada' => $semanalConfirmada,
         ]);
 
         $this->render('/views/programacion-intermedia/programacion_intermedia.view.php', $data);
@@ -183,6 +201,10 @@ class ProgramacionIntermediaController extends BaseController
         if ($dbPrefix !== '' && (!isset($_SESSION['db']) || $_SESSION['db'] === '')) {
             $_SESSION['db'] = $dbPrefix;
         }
+
+        // Block mutations when week is confirmed
+        $semana = (int) ($_SESSION['semana'] ?? 0);
+        \CommitmentLockGuard::guard($dbPrefix, $semana, 'modificar_pi');
 
         // Delegate to legacy script (contains modificar, alerts, notifications)
         require PROJECT_ROOT . '/src/Legacy/guardar_programacion_intermedia.php';
@@ -433,6 +455,9 @@ class ProgramacionIntermediaController extends BaseController
 
             return;
         }
+
+        // Block mutations when week is confirmed
+        \CommitmentLockGuard::guard($payload['dbPrefix'], $payload['semana'], 'aplicar_restricciones_compartidas_pi');
 
         try {
             $rows = $this->fetchSharedConstraintRows($payload['dbPrefix'], $payload['semana'], $payload['activityIds']);
