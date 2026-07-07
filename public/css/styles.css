@@ -2875,7 +2875,7 @@ table.dataTable td.dt-min-width-300,
 #formulario_nuevo .modal-header {
   padding-block: 1rem;
   padding-inline: 1.25rem;
-  background: linear-gradient(135deg, #1a3c2a 0%, #1a5633 100%);
+  background: linear-gradient(135deg, var(--aia-green-dark, #1a3c2a) 0%, var(--aia-green-primary, #1a5633) 100%);
 }
 
 #formulario_nuevo .modal-title {
@@ -2896,7 +2896,7 @@ table.dataTable td.dt-min-width-300,
   margin: 0;
   gap: 0.9rem;
   display: grid;
-  grid-template-columns: minmax(26rem, 1.08fr) minmax(24rem, 0.92fr);
+  grid-template-columns: minmax(22rem, 1.08fr) minmax(19rem, 0.92fr);
   align-items: start;
 }
 
@@ -3153,7 +3153,9 @@ table.dataTable td.dt-min-width-300,
     margin: 0.5rem auto;
     max-height: calc(100dvh - 0.65rem);
   }
+}
 
+@media (max-width: 767.98px) {
   #formulario_nuevo .ps-nueva-actividad-grid {
     grid-template-columns: 1fr;
   }
@@ -3191,6 +3193,37 @@ table.dataTable td.dt-min-width-300,
   #formulario_nuevo #btn_listar {
     inline-size: 100%;
   }
+}
+
+/* ===== Fixes for "Agregar Actividad" audit ===== */
+
+/* Collapse bandeja panel when empty — give form full space */
+#formulario_nuevo .ps-bandeja-empty {
+  display: none;
+}
+@media (max-width: 767.98px) {
+  #formulario_nuevo .ps-bandeja-empty {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.3s ease, opacity 0.25s ease;
+  }
+}
+
+/* Field-level validation error highlight */
+#formulario_nuevo .ps-field-error {
+  border-color: #dc3545 !important;
+  box-shadow: 0 0 0 0.18rem rgba(220, 53, 69, 0.25);
+}
+
+/* Pulse animation for Guardar button after "Usar" click */
+@keyframes ps-btn-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(26, 86, 51, 0.45); }
+  70%  { box-shadow: 0 0 0 0.65rem transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+#formulario_nuevo .ps-btn-pulse {
+  animation: ps-btn-pulse 1.2s ease-out;
 }
 
 .ps-rend-col-32 {
