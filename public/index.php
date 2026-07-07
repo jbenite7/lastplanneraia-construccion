@@ -205,8 +205,9 @@ $router->post('/api/control-cambios/save', [\App\Controllers\Api\ControlCambiosA
 // Api/Semanal (Fase 4)
 $router->get('/api/semanal/list', [\App\Controllers\Api\SemanalApiController::class, 'list']);
 $router->post('/api/semanal/list', [\App\Controllers\Api\SemanalApiController::class, 'list']);
-$router->post('/api/semanal/save', [\App\Controllers\Api\SemanalApiController::class, 'save']);
-$router->post('/api/semanal/auto-program', [\App\Controllers\Api\SemanalApiController::class, 'autoProgram']);
+    $router->post('/api/semanal/save', [\App\Controllers\Api\SemanalApiController::class, 'save']);
+    $router->post('/api/semanal/reabrir', [\App\Controllers\Api\SemanalApiController::class, 'reabrir']);
+    $router->post('/api/semanal/auto-program', [\App\Controllers\Api\SemanalApiController::class, 'autoProgram']);
 $router->get('/api/semanal/auto-program-log', [\App\Controllers\Api\SemanalApiController::class, 'getAutoProgramLog']);
 $router->get('/api/semanal/tnp-actividades', [\App\Controllers\Api\SemanalApiController::class, 'getTnpActivities']);
 $router->post('/api/semanal/tnp-actividades', [\App\Controllers\Api\SemanalApiController::class, 'getTnpActivities']);
