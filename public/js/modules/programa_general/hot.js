@@ -275,7 +275,7 @@
     var semana = parseInt(getSemana(), 10);
     var maxSemana = getMaxSemana();
 
-    if (getSemanalConfirmada() === 1 && !isDirectorRole(permiso)) {
+    if (getSemanalConfirmada() === 1) {
       return false;
     }
 

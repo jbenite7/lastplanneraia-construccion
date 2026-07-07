@@ -438,8 +438,18 @@
     return Number.isFinite(value) ? value : 0;
   }
 
+  function getSemanalConfirmada() {
+    var value = parseInt($('#Semanal_Confirmada').val(), 10);
+    return Number.isFinite(value) ? value : 0;
+  }
+
   function isUserAllowedToEdit() {
     var permiso = getPermiso();
+
+    if (getSemanalConfirmada() === 1) {
+      return false;
+    }
+
     var semana = parseInt(getSemana(), 10);
     var maxSemana = getMaxSemana();
 

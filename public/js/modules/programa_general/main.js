@@ -1218,7 +1218,7 @@ var obtener_data_editar = function(tbody, table) {
     var Semanal_Confirmada = document.getElementById('Semanal_Confirmada').value;
 
   $(tbody).one("click", "td", function() {
-        if(Semanal_Confirmada == 1 && !window.rbacCapabilities.canEditPastGeneralProgram){
+        if(Semanal_Confirmada == 1){
             if (only_once == true) {
                 $(".texto_semanal_confirmada").html("<p>En esta Semana los compromisos de la <b>Programación Semanal</b> ya fueron confirmados. Por esto, el programa general ya no puede ser modificado hasta que se cree la <b>Semana "+(Number(semana)+1)+"</b>.</p><p> Recuerde que el procedimiento de Last Planner debe seguirse con la siguiente metodología: </p><p><b>1.</b> Calificar la semana que se termina (En este caso la Semana "+(Number(semana))+").<br><b>2.</b> Abrir la pestaña <b>\"Semanas del Proyecto\"</b> y crear la nueva Semana (En este caso se debe crear la Semana "+(Number(semana)+1)+").<br><b>3.</b> Actualizar el estado de ejecución de las actividades en el <b>\"Programa General\"</b>, en la semana creada (Semana "+(Number(semana)+1)+").<br><b>4.</b> Actualizar la <b>\"Liberación de Restricciones\"</b> de la semana creada (Semana "+(Number(semana)+1)+").<br><b>5.</b> Generar los compromisos de la <b>\"Programación Semanal\"</b> de la semana creada (Semana "+(Number(semana)+1)+").</p>");
                 $("#modal_semanal_confirmada_Label").html("<b>Programa General Bloqueado!!</b>");

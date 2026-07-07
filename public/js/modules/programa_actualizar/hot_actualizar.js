@@ -65,8 +65,8 @@ window.HOTActualizarModule = (function() {
         var maxSemana = parseInt($('#Max_Semana').val() || 0);
         var directorRoles = ['A', 'D'];
 
-        // La actualización edita un borrador (semana actual + 1); A/D pueden mapear aunque la semana activa esté cerrada.
-        if (semanalConfirmada === 1 && directorRoles.indexOf(permiso) === -1) return false;
+        // Semana confirmada → readOnly total: ningún rol puede editar.
+        if (semanalConfirmada === 1) return false;
 
         // Roles permitidos: Administrador(A), Director(D), Residente(R), DCV
         var allowedRoles = ['A', 'D', 'R', 'DCV'];
