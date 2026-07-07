@@ -73,6 +73,56 @@ class WeeklyRealProgressCarryoverService
                 );
             }
 
+            // ── Preserve user-edited fields ──────────────────────────────────
+            // If the target row's current value differs from what the carryover
+            // would set, the user manually edited it — preserve their change.
+            // This prevents the auto- updateBatch on page entry from silently
+            // reverting user edits (the reported bug).
+
+            // Ejecutado: compare against baseRatio (source week), not finalRatio
+            // (which includes overlay from PS). If target matches baseRatio, the
+            // carryover should still add PS overlay on top. Only preserve when
+            // the target diverges from the source week's value (manual edit).
+            $targetCurrentRatio = $this->lpsService->toFloat($targetRow['Ejecutado'] ?? null, null);
+            $preserveRatio = (
+                $targetCurrentRatio !== null
+                && $targetCurrentRatio > 0
+                && abs($targetCurrentRatio - $baseRatio) > 0.001
+            );
+            $effectiveRatio = $preserveRatio ? $targetCurrentRatio : $finalRatio;
+
+            // Unidad: normalize both sides for comparison
+            $targetUnit = trim((string) ($targetRow['unidad'] ?? ''));
+            $carryoverUnit = trim((string) ($unidad ?? ''));
+            $preserveUnit = $targetUnit !== ''
+                && strtolower($targetUnit) !== strtolower($carryoverUnit);
+            $effectiveUnit = $preserveUnit ? $targetUnit : $carryoverUnit;
+
+            // Cantidad PPTO
+            $targetQty = $this->lpsService->toFloat($targetRow['cantidad_ppto'] ?? null, null);
+            $preserveQty = $targetQty !== null
+                && ($cantidadPpto === null || abs($targetQty - $cantidadPpto) > 0.001);
+            // Only preserve if target has a genuine quantity (not the default null)
+            if ($preserveQty && $targetQty > 0) {
+                $effectiveQty = $targetQty;
+            } else {
+                $effectiveQty = $cantidadPpto;
+            }
+
+            // Responsable_AIA
+            $targetResp = $this->normalizeNullableText($targetRow['Responsable_AIA'] ?? null);
+            $carryoverResp = $this->normalizeNullableText($responsable);
+            $preserveResp = $targetResp !== null
+                && strcasecmp((string) $targetResp, (string) $carryoverResp) !== 0;
+            $effectiveResp = $preserveResp ? $targetResp : $responsable;
+
+            // Sub_Contratista
+            $targetSub = $this->normalizeNullableText($targetRow['Sub_Contratista'] ?? null);
+            $carryoverSub = $this->normalizeNullableText($subcontratista);
+            $preserveSub = $targetSub !== null
+                && strcasecmp((string) $targetSub, (string) $carryoverSub) !== 0;
+            $effectiveSub = $preserveSub ? $targetSub : $subcontratista;
+
             $this->db->queryWithProject(
                 "UPDATE {$tProgConsolidado}
                  SET Ejecutado = ?,
@@ -80,12 +130,12 @@ class WeeklyRealProgressCarryoverService
                      Responsable_AIA = ?, Sub_Contratista = ?, unidad = ?, cantidad_ppto = ?
                  WHERE Semana = ? AND row_id = ?",
                 [
-                    $finalRatio,
-                    $finalRatio,
-                    $responsable,
-                    $subcontratista,
-                    $unidad,
-                    $cantidadPpto,
+                    $effectiveRatio,
+                    $effectiveRatio,
+                    $effectiveResp,
+                    $effectiveSub,
+                    $effectiveUnit,
+                    $effectiveQty,
                     $targetWeek,
                     $targetRow['row_id'] ?? $targetRow['Consecutivo'],
                 ],
@@ -146,7 +196,9 @@ class WeeklyRealProgressCarryoverService
                     row_id,
                     unique_id AS Consecutivo_en_Programa,
                     unique_id,
-                    Actividad, programaAnteriorAsociar, Ejecutado, Ejecutado_Siguiente_Semana
+                    Actividad, programaAnteriorAsociar,
+                    Ejecutado, Ejecutado_Siguiente_Semana,
+                    unidad, cantidad_ppto, Responsable_AIA, Sub_Contratista
              FROM {$t}
              WHERE Semana = ? AND Titulo = 0",
             [$targetWeek],
