@@ -1,0 +1,84 @@
+-- ==============================================================================
+-- Migración: Archivar tablas legacy {prefix}_* → zleg_{prefix}_*
+-- Fecha:     2026-07-07
+-- DB local:  lastplanneraia_dev ✅ ejecutado (111 tablas archivadas)
+-- DB prod:   PENDIENTE
+-- ==============================================================================
+-- 
+-- PRERREQUISITOS (obligatorio antes de ejecutar):
+--   1. USE_GLOBAL_TABLES=true ya debe estar activo en el .env de producción.
+--   2. Las tablas globales (sin prefijo) deben contener todos los datos migrados.
+--   3. Verificar que las queries runtime NO dependen de {prefix}_* (todas pasan por
+--      TableResolver::resolveByPrefix() o $this->tbl()).
+--
+-- SEGURIDAD:
+--   - RENAME TABLE es atómico en MySQL.
+--   - Las tablas zleg_* no son consultadas por la app en runtime.
+--   - Si zleg_* ya existe, el RENAME fallará → ejecutar solo UNA vez.
+--   - Para rollback: invertir manualmente cada RENAME.
+--
+-- EJECUCIÓN EN PRODUCCIÓN:
+--   mysql -u <user> -p -h <host> <db_name> < database/migrations/20260707_archive_remaining_legacy_tables.sql
+--
+-- VERIFICACIÓN POST-EJECUCIÓN:
+--   SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES t
+--   JOIN general_proyectos_procesos p ON t.TABLE_NAME LIKE CONCAT(p.Base_de_Datos, '\_%')
+--   WHERE t.TABLE_SCHEMA = '<db_name>' AND t.TABLE_NAME NOT LIKE 'zleg\_%';
+--   -- Debe devolver 0.
+-- ==============================================================================
+
+-- ⚠️  NO ejecutes este archivo directamente sin leer los prerrequisitos.
+-- ⚠️  Cada RENAME se muestra como comentario para revisión previa.
+-- ⚠️  Para generar los RENAME reales, ejecuta en producción primero:
+--     SELECT CONCAT('RENAME TABLE `', t.TABLE_NAME, '` TO `zleg_', t.TABLE_NAME, '`;')
+--     FROM INFORMATION_SCHEMA.TABLES t
+--     JOIN general_proyectos_procesos p ON t.TABLE_NAME LIKE CONCAT(p.Base_de_Datos, '\_%')
+--     WHERE t.TABLE_SCHEMA = DATABASE()
+--       AND t.TABLE_NAME NOT LIKE 'zleg\_%'
+--       AND NOT EXISTS (
+--         SELECT 1 FROM INFORMATION_SCHEMA.TABLES t2
+--         WHERE t2.TABLE_SCHEMA = DATABASE()
+--         AND t2.TABLE_NAME = CONCAT('zleg_', t.TABLE_NAME)
+--       )
+--     ORDER BY t.TABLE_NAME;
+-- ==============================================================================
+
+-- Solo se genera dinámicamente. No contiene RENAME TABLE hardcodeados.
+-- Para local, estas fueron las tablas archivadas el 2026-07-07:
+-- (121 tablas de 9 proyectos: accesibilidadMetroA, accesibilidadMetroB,
+--  metrolineaDos, metrolineaMampSeis, metrolineaMampUno, metrolineaMurosDos,
+--  metrolineaSeis, metrolineaUno, milanCampestre)
+-- El resto de proyectos ya estaban archivados desde migraciones anteriores.
+
+-- ==============================================================================
+-- COMANDO RÁPIDO (un solo paso — para cuando estés seguro):
+-- ==============================================================================
+--
+--   mysql -u <user> -p -h <host> <db_name> -N -e "
+--   SELECT CONCAT('RENAME TABLE \`', t.TABLE_NAME, '\` TO \`zleg_', t.TABLE_NAME, '\`;')
+--   FROM INFORMATION_SCHEMA.TABLES t
+--   JOIN general_proyectos_procesos p ON t.TABLE_NAME LIKE CONCAT(p.Base_de_Datos, '\_%')
+--   WHERE t.TABLE_SCHEMA = DATABASE()
+--     AND t.TABLE_NAME NOT LIKE 'zleg\_%'
+--     AND NOT EXISTS (
+--       SELECT 1 FROM INFORMATION_SCHEMA.TABLES t2
+--       WHERE t2.TABLE_SCHEMA = DATABASE()
+--       AND t2.TABLE_NAME = CONCAT('zleg_', t.TABLE_NAME)
+--     )
+--   ORDER BY t.TABLE_NAME;" | mysql -u <user> -p -h <host> <db_name>
+--
+-- ==============================================================================
+-- ROLLBACK (si fuera necesario):
+-- ==============================================================================
+--
+--   mysql -u <user> -p -h <host> <db_name> -N -e "
+--   SELECT CONCAT('RENAME TABLE \`zleg_\', SUBSTRING(TABLE_NAME, 6), '\` TO \`', SUBSTRING(TABLE_NAME, 6), '\`;')
+--   FROM INFORMATION_SCHEMA.TABLES
+--   WHERE TABLE_SCHEMA = DATABASE()
+--     AND TABLE_NAME LIKE 'zleg\_%'
+--     AND EXISTS (
+--       SELECT 1 FROM information_schema.TABLES t2
+--       WHERE t2.TABLE_SCHEMA = DATABASE()
+--       AND t2.TABLE_NAME = SUBSTRING(TABLES.TABLE_NAME, 6)
+--     ) = 0
+--   ORDER BY TABLE_NAME;" | mysql -u <user> -p -h <host> <db_name>
