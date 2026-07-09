@@ -5,6 +5,11 @@ namespace App\Controllers\Programacion;
 use App\Controllers\BaseController;
 
 use TableResolver;
+
+if (!class_exists('\\CommitmentLockGuard', false)) {
+    require_once PROJECT_ROOT . '/src/Core/CommitmentLockGuard.php';
+}
+
 class ProgramacionIntermediaController extends BaseController
 {
     public function index()
