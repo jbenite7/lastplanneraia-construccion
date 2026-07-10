@@ -744,7 +744,7 @@ class GeneralApiController extends BaseController
             $placeholderCount = substr_count($allColumns, ',') + 1;
             $placeholders = implode(', ', array_fill(0, $placeholderCount, '?'));
             $queryInsert = "INSERT INTO " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " (project_id, {$allColumns}) VALUES (?, {$placeholders})";
-            $stmtInsert = $this->db->prepareWithProject($queryInsert, $projectId);
+            $stmtInsert = $this->db->prepare($queryInsert);
 
             foreach ($itemsParaInsertar as $item) {
                 $stmtInsert->execute(array_merge([$projectId], array_values($item)));
