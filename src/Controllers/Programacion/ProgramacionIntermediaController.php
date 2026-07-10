@@ -473,6 +473,11 @@ class ProgramacionIntermediaController extends BaseController
             }
 
             $dbPrefix = $payload['dbPrefix'];
+            $projectId = $this->db->getCurrentProjectId()
+                ?? TableResolver::getProjectIdByPrefix($dbPrefix);
+            if ($projectId === null || $projectId <= 0) {
+                throw new \RuntimeException('No se pudo resolver el proyecto activo.');
+            }
             $semana = $payload['semana'];
             $restrictionColumn = $payload['restrictionType'];
             $note = $payload['note'];
@@ -525,11 +530,15 @@ class ProgramacionIntermediaController extends BaseController
             if ($sharedTablesReady) {
                 try {
                     $createdBy = (string) ($_SESSION['nombre'] ?? $_SESSION['usuario'] ?? $_SESSION['nombre_usuario'] ?? 'system');
-                    $insertSharedSql = "INSERT INTO " . TableResolver::resolveByPrefix($dbPrefix, 'pi_shared_constraints') . " (Semana, Restriccion, ValorObjetivo, Nota, CreadoPor) VALUES (?, ?, ?, ?, ?)";
+                    $sharedTable = TableResolver::resolveByPrefix($dbPrefix, 'pi_shared_constraints');
+                    $nextSharedId = (int) $this->db->queryWithProject("SELECT COALESCE(MAX(Id), 0) + 1 FROM {$sharedTable} WHERE project_id = ?", [$projectId], $projectId)->fetchColumn();
+                    $insertSharedSql = "INSERT INTO {$sharedTable} (project_id, Id, Semana, Restriccion, ValorObjetivo, Nota, CreadoPor) VALUES (?, ?, ?, ?, ?, ?, ?)";
                     $insertSharedStmt = $this->db->prepareWithProject($insertSharedSql);
 
                     foreach ($normalizedRestrictions as $restriction) {
                         $insertSharedStmt->execute([
+                            $projectId,
+                            $nextSharedId,
                             $semana,
                             $restriction['type'],
                             (string) $restriction['value'],
@@ -537,13 +546,15 @@ class ProgramacionIntermediaController extends BaseController
                             $createdBy,
                         ]);
 
-                        $sharedId = (int) $this->db->lastInsertId();
+                        $sharedId = $nextSharedId++;
                         if ($sharedId > 0) {
                             $sharedIdsByType[$restriction['type']] = $sharedId;
                         }
                     }
 
-                    $insertLinkSql = "INSERT INTO " . TableResolver::resolveByPrefix($dbPrefix, 'pi_shared_constraint_links') . " (SharedConstraintId, Semana, unique_id, ConsecutivoEnPrograma, ValorAplicado) VALUES (?, ?, ?, ?, ?)";
+                    $linkTable = TableResolver::resolveByPrefix($dbPrefix, 'pi_shared_constraint_links');
+                    $nextLinkId = (int) $this->db->queryWithProject("SELECT COALESCE(MAX(Id), 0) + 1 FROM {$linkTable} WHERE project_id = ?", [$projectId], $projectId)->fetchColumn();
+                    $insertLinkSql = "INSERT INTO {$linkTable} (project_id, Id, SharedConstraintId, Semana, unique_id, ConsecutivoEnPrograma, ValorAplicado) VALUES (?, ?, ?, ?, ?, ?, ?)";
                     $insertLinkStmt = $this->db->prepareWithProject($insertLinkSql);
                     $trackSharedLinks = (!empty($sharedIdsByType) && $insertLinkStmt !== false);
                 } catch (\Throwable $trackingError) {
@@ -554,7 +565,7 @@ class ProgramacionIntermediaController extends BaseController
                 }
             }
 
-            $updateSql = "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " SET " . implode(', ', $setClauses) . " WHERE unique_id = ? AND Semana = ? AND Titulo = 0";
+            $updateSql = "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " SET " . implode(', ', $setClauses) . " WHERE project_id = ? AND unique_id = ? AND Semana = ? AND Titulo = 0";
             $updateStmt = $this->db->prepareWithProject($updateSql);
 
             $updated = 0;
@@ -580,6 +591,7 @@ class ProgramacionIntermediaController extends BaseController
                 if ($applyAssignments && $responsableAia !== '') {
                     $updateParams[] = $responsableAia;
                 }
+                $updateParams[] = $projectId;
                 $updateParams[] = $rowId;
                 $updateParams[] = $semana;
 
@@ -594,6 +606,8 @@ class ProgramacionIntermediaController extends BaseController
 
                         try {
                             $insertLinkStmt->execute([
+                                $projectId,
+                                $nextLinkId++,
                                 $sharedId,
                                 $semana,
                                 $rowId,
