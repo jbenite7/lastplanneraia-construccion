@@ -1,0 +1,68 @@
+{
+  "decision": "submitted",
+  "stage": "facts",
+  "result": {
+    "stage": "facts",
+    "title": "Sprint 00 AIA — gobernanza de capacidades (delta)",
+    "goalSlug": "design-system-nucleo-gobernanza",
+    "facts": [
+      {
+        "id": "ds-orch-001",
+        "text": "Antes de cada fase, el agente principal consulta el catálogo efectivo del runtime y elige la combinación mínima de skills, plugins, MCPs, conectores, hooks y subagentes que aporte evidencia, calidad, velocidad o seguridad material; una capacidad instalada no se usa por defecto.",
+        "accepted": true,
+        "removed": false,
+        "automatedVerification": false,
+        "recommendedAutomatedVerification": false
+      },
+      {
+        "id": "ds-orch-002",
+        "text": "Cada fase registra la capacidad seleccionada, su motivo, acción, evidencia esperada y permiso o riesgo añadido; la mera invocación de una capacidad no cuenta como cumplimiento.",
+        "accepted": true,
+        "removed": false,
+        "automatedVerification": true,
+        "recommendedAutomatedVerification": true
+      },
+      {
+        "id": "ds-orch-003",
+        "text": "Skills, plugins, MCPs, conectores, hooks y subagentes no amplían alcance, permisos, autorización para publicar o desplegar, acceso a secretos ni autorización para enviar diffs o datos privados a servicios externos.",
+        "accepted": true,
+        "removed": false,
+        "automatedVerification": false,
+        "recommendedAutomatedVerification": false
+      },
+      {
+        "id": "ds-orch-004",
+        "text": "Los hooks son controles acumulativos que se atienden en la fuente y cliente exactos; no se simulan, deshabilitan ni usan para eludir gates o aprobaciones.",
+        "accepted": true,
+        "removed": false,
+        "automatedVerification": true,
+        "recommendedAutomatedVerification": true
+      },
+      {
+        "id": "ds-orch-005",
+        "text": "Solo se delegan subtareas independientes que reduzcan materialmente el tiempo total; cada subagente recibe alcance, rutas permitidas, criterio de salida, pruebas y prohibiciones, y el agente principal integra y verifica el resultado.",
+        "accepted": true,
+        "removed": false,
+        "automatedVerification": false,
+        "recommendedAutomatedVerification": false
+      },
+      {
+        "id": "ds-orch-006",
+        "text": "Cuando una capacidad requerida no esté disponible, falle o exija una autorización no concedida, el agente conserva el diagnóstico, usa el fallback más seguro, declara la cobertura perdida y no afirma que la capacidad fue usada.",
+        "accepted": true,
+        "removed": false,
+        "automatedVerification": true,
+        "recommendedAutomatedVerification": true
+      },
+      {
+        "id": "ds-orch-007",
+        "text": "El contrato activo de goal.md, facts.md y plan.md prevalece sobre entrevistas y resultados históricos; en particular, ninguna respuesta anterior autoriza forzar commits, usar worktrees, ramas, stash, reset o movimientos Git para aislar trabajo preexistente sin una maniobra posterior aprobada.",
+        "accepted": true,
+        "removed": false,
+        "automatedVerification": true,
+        "recommendedAutomatedVerification": true
+      }
+    ],
+    "factsMarkdown": "# Facts\n\n- Antes de cada fase, el agente principal consulta el catálogo efectivo del runtime y elige la combinación mínima de skills, plugins, MCPs, conectores, hooks y subagentes que aporte evidencia, calidad, velocidad o seguridad material; una capacidad instalada no se usa por defecto.\n- Cada fase registra la capacidad seleccionada, su motivo, acción, evidencia esperada y permiso o riesgo añadido; la mera invocación de una capacidad no cuenta como cumplimiento.\n- Skills, plugins, MCPs, conectores, hooks y subagentes no amplían alcance, permisos, autorización para publicar o desplegar, acceso a secretos ni autorización para enviar diffs o datos privados a servicios externos.\n- Los hooks son controles acumulativos que se atienden en la fuente y cliente exactos; no se simulan, deshabilitan ni usan para eludir gates o aprobaciones.\n- Solo se delegan subtareas independientes que reduzcan materialmente el tiempo total; cada subagente recibe alcance, rutas permitidas, criterio de salida, pruebas y prohibiciones, y el agente principal integra y verifica el resultado.\n- Cuando una capacidad requerida no esté disponible, falle o exija una autorización no concedida, el agente conserva el diagnóstico, usa el fallback más seguro, declara la cobertura perdida y no afirma que la capacidad fue usada.\n- El contrato activo de goal.md, facts.md y plan.md prevalece sobre entrevistas y resultados históricos; en particular, ninguna respuesta anterior autoriza forzar commits, usar worktrees, ramas, stash, reset o movimientos Git para aislar trabajo preexistente sin una maniobra posterior aprobada."
+  }
+}

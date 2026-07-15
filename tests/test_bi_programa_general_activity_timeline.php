@@ -1,0 +1,400 @@
+<?php
+
+declare(strict_types=1);
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+use App\Services\ControlTowerService;
+
+/**
+ * Regression contract for the Programa General activity timeline.
+ *
+ * The SQL oracle deliberately does not use ControlTowerService internals: it
+ * selects the current weekly snapshot directly from programa_consolidado and
+ * semanas_activas, then calculates the published duration-weighted metrics.
+ */
+
+function timelineAssert(array &$failures, bool $condition, string $message): void
+{
+    if (!$condition) {
+        $failures[] = $message;
+    }
+}
+
+function timelineAssertClose(array &$failures, string $label, mixed $actual, float $expected, float $tolerance = 0.05): void
+{
+    if (!is_numeric($actual) || abs((float) $actual - $expected) > $tolerance) {
+        $failures[] = sprintf('%s: expected %.4f, got %s', $label, $expected, json_encode($actual));
+    }
+}
+
+function timelineDate(string $value): DateTimeImmutable
+{
+    return new DateTimeImmutable($value);
+}
+
+function timelineInclusiveDays(string $start, string $finish): int
+{
+    return (int) timelineDate($start)->diff(timelineDate($finish))->format('%a') + 1;
+}
+
+function timelinePlannedPct(string $start, string $finish, string $cutoff): float
+{
+    $startDate = timelineDate($start);
+    $finishDate = timelineDate($finish);
+    $cutoffDate = timelineDate($cutoff);
+    if ($cutoffDate < $startDate) {
+        return 0.0;
+    }
+    if ($cutoffDate >= $finishDate) {
+        return 100.0;
+    }
+
+    return (timelineInclusiveDays($start, $cutoff) / timelineInclusiveDays($start, $finish)) * 100.0;
+}
+
+function timelineDisplayText(string $value): string
+{
+    $value = trim($value);
+    for ($pass = 0; $pass < 3 && $value !== ''; $pass++) {
+        $decoded = preg_replace_callback('/(?:Ã.|Â.|â..)+/u', static function (array $match): string {
+            $candidate = mb_convert_encoding($match[0], 'Windows-1252', 'UTF-8');
+            if (!mb_check_encoding($candidate, 'UTF-8')) {
+                return $match[0];
+            }
+
+            return str_contains($candidate, '?') && !str_contains($match[0], '?')
+                ? $match[0]
+                : $candidate;
+        }, $value);
+        if (!is_string($decoded) || $decoded === $value) {
+            break;
+        }
+        $value = trim($decoded);
+    }
+
+    return $value;
+}
+
+function timelineHasMojibake(string $value): bool
+{
+    return preg_match('/(?:Ã.|Â.|â..)+/u', $value) === 1;
+}
+
+/**
+ * Independent source oracle. A date range selects weekly snapshots that
+ * overlap it; otherwise the requested week is the maximum eligible snapshot.
+ */
+function timelineOracle(Database $db, array $projectIds, string $semana, array $filters = []): array
+{
+    $projectIds = array_values(array_filter(array_map('intval', $projectIds), static fn(int $id): bool => $id > 0));
+    $placeholders = implode(',', array_fill(0, count($projectIds), '?'));
+    $where = ["pc.project_id IN ({$placeholders})", 'COALESCE(pc.Titulo, 0) = 0', 'pc.Fecha_Inicio IS NOT NULL', 'pc.Fecha_Fin IS NOT NULL', 'pc.Fecha_Fin >= pc.Fecha_Inicio'];
+    $params = $projectIds;
+    $desde = trim((string) ($filters['desde'] ?? ''));
+    $hasta = trim((string) ($filters['hasta'] ?? ''));
+    if ($desde !== '' || $hasta !== '') {
+        $where[] = "EXISTS (
+            SELECT 1 FROM semanas_activas sa_filter
+            WHERE sa_filter.project_id = pc.project_id
+              AND sa_filter.Semana = pc.Semana
+              AND sa_filter.Fecha_Inicio_Sem <= ?
+              AND sa_filter.Fecha_Fin_Sem >= ?
+        )";
+        $params[] = $hasta !== '' ? $hasta : '9999-12-31';
+        $params[] = $desde !== '' ? $desde : '1000-01-01';
+    } elseif ($semana !== '') {
+        $where[] = 'pc.Semana <= ?';
+        $params[] = $semana;
+    }
+    foreach (['sub' => 'Sub_Contratista', 'resp' => 'Responsable_AIA'] as $filter => $column) {
+        $value = trim((string) ($filters[$filter] ?? ''));
+        if ($value !== '') {
+            $where[] = "LOWER(COALESCE(pc.{$column}, '')) LIKE ?";
+            $params[] = '%' . strtolower($value) . '%';
+        }
+    }
+
+    $statement = $db->prepare(
+        'SELECT pc.project_id, pc.Semana, pc.unique_id, pc.Actividad, pc.Fecha_Inicio, pc.Fecha_Fin,
+                pc.Ruta_Critica, pc.Ejecutado, pc.Estado, pc.Sub_Contratista, pc.Responsable_AIA,
+                COALESCE(sa.Fecha_Fin_Sem, sa.Fecha_Inicio_Sem) AS cutoff
+         FROM programa_consolidado pc
+         LEFT JOIN semanas_activas sa ON sa.project_id = pc.project_id AND sa.Semana = pc.Semana
+         WHERE ' . implode(' AND ', $where) . '
+         ORDER BY pc.project_id, pc.Semana, pc.unique_id',
+    );
+    $statement->execute($params);
+    $rows = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+    $snapshots = [];
+    foreach ($rows as $row) {
+        $projectId = (int) $row['project_id'];
+        $uniqueId = (int) $row['unique_id'];
+        $cutoff = (string) ($row['cutoff'] ?? '');
+        if ($projectId <= 0 || $uniqueId <= 0 || $cutoff === '') {
+            continue;
+        }
+        $snapshots[$projectId][$cutoff][$projectId . ':' . $uniqueId] = $row;
+    }
+
+    $baseline = [];
+    foreach ($snapshots as $projectId => $byCutoff) {
+        ksort($byCutoff, SORT_STRING);
+        $latestCutoff = array_key_last($byCutoff);
+        foreach ($byCutoff[$latestCutoff] as $key => $row) {
+            $baseline[$key] = $row;
+        }
+    }
+
+    $totalDuration = array_sum(array_map(
+        static fn(array $row): int => timelineInclusiveDays((string) $row['Fecha_Inicio'], (string) $row['Fecha_Fin']),
+        $baseline,
+    ));
+    $activities = [];
+    foreach ($baseline as $key => $row) {
+        $duration = timelineInclusiveDays((string) $row['Fecha_Inicio'], (string) $row['Fecha_Fin']);
+        $realPct = min(100.0, max(0.0, (float) ($row['Ejecutado'] ?? 0) * 100.0));
+        $plannedPct = timelinePlannedPct((string) $row['Fecha_Inicio'], (string) $row['Fecha_Fin'], (string) $row['cutoff']);
+        $weightPct = $totalDuration > 0 ? ($duration / $totalDuration) * 100.0 : 0.0;
+        $late = (string) $row['Fecha_Fin'] < (string) $row['cutoff'] && $realPct < 100.0;
+        $activities[$key] = [
+            'activity_key' => $key,
+            'project_id' => (int) $row['project_id'],
+            'unique_id' => (int) $row['unique_id'],
+            'planned_start' => (string) $row['Fecha_Inicio'],
+            'planned_finish' => (string) $row['Fecha_Fin'],
+            'cutoff' => (string) $row['cutoff'],
+            'duration_days' => $duration,
+            'real_pct' => $realPct,
+            'planned_pct' => $plannedPct,
+            'gap_pp' => $realPct - $plannedPct,
+            'weight_pct' => $weightPct,
+            'real_contribution_pp' => ($realPct * $weightPct) / 100.0,
+            'planned_contribution_pp' => ($plannedPct * $weightPct) / 100.0,
+            'recoverable_pp' => (max(0.0, $plannedPct - $realPct) * $weightPct) / 100.0,
+            'critical' => (int) ($row['Ruta_Critica'] ?? 0) === 1,
+            'late' => $late,
+            'observed_delay_days' => $late ? timelineInclusiveDays((string) $row['Fecha_Fin'], (string) $row['cutoff']) - 1 : 0,
+            'responsible' => timelineDisplayText((string) ($row['Responsable_AIA'] ?? '')) ?: 'Sin asignar',
+            'subcontractor' => timelineDisplayText((string) ($row['Sub_Contratista'] ?? '')) ?: 'Sin asignar',
+        ];
+    }
+
+    $summary = ['total' => count($activities), 'total_duration' => $totalDuration];
+    foreach (['real_contribution_pp' => 'real_pct', 'planned_contribution_pp' => 'theoretical_pct'] as $contribution => $field) {
+        $summary[$field] = round(array_sum(array_column($activities, $contribution)), 1);
+    }
+    $summary['gap_pp'] = round($summary['real_pct'] - $summary['theoretical_pct'], 1);
+
+    return compact('activities', 'summary');
+}
+
+function timelineAssertDetail(array &$failures, array $detail, array $oracle, string $label, bool $assertAllPages = false): void
+{
+    $requiredTopLevel = ['summary', 'activities', 'pagination'];
+    foreach ($requiredTopLevel as $field) {
+        timelineAssert($failures, array_key_exists($field, $detail), "{$label}: missing top-level {$field}");
+    }
+    timelineAssert($failures, ($detail['source_relations'] ?? null) === ['programa_consolidado', 'semanas_activas'], "{$label}: source relations changed");
+    timelineAssert($failures, ($detail['grain'] ?? null) === 'project_id + Semana + unique_id', "{$label}: grain changed");
+    timelineAssert($failures, (int) ($detail['pagination']['total'] ?? -1) === $oracle['summary']['total'], "{$label}: pagination total differs from independent SQL universe");
+    foreach (['real_pct', 'theoretical_pct', 'gap_pp'] as $field) {
+        timelineAssertClose($failures, "{$label}: summary {$field}", $detail['summary'][$field] ?? null, $oracle['summary'][$field]);
+    }
+
+    $requiredActivityFields = ['activity_key', 'project_id', 'project', 'unique_id', 'activity', 'planned_start', 'planned_finish', 'cutoff', 'duration_days', 'real_pct', 'planned_pct', 'gap_pp', 'weight_pct', 'real_contribution_pp', 'planned_contribution_pp', 'recoverable_pp', 'state', 'critical', 'late', 'observed_delay_days', 'responsible', 'subcontractor'];
+    $actualTotals = ['weight_pct' => 0.0, 'real_contribution_pp' => 0.0, 'planned_contribution_pp' => 0.0];
+    foreach ($detail['activities'] ?? [] as $activity) {
+        foreach ($requiredActivityFields as $field) {
+            timelineAssert($failures, array_key_exists($field, $activity), "{$label}: activity missing {$field}");
+        }
+        foreach (['project', 'activity', 'stage', 'responsible', 'subcontractor'] as $field) {
+            timelineAssert(
+                $failures,
+                !timelineHasMojibake((string) ($activity[$field] ?? '')),
+                "{$label}: activity {$field} still contains mojibake",
+            );
+        }
+        $key = (string) ($activity['activity_key'] ?? '');
+        $expected = $oracle['activities'][$key] ?? null;
+        timelineAssert($failures, $expected !== null, "{$label}: activity {$key} escaped the SQL universe");
+        if ($expected === null) {
+            continue;
+        }
+        foreach (['project_id', 'unique_id', 'planned_start', 'planned_finish', 'cutoff', 'duration_days', 'critical', 'late', 'observed_delay_days', 'responsible', 'subcontractor'] as $field) {
+            timelineAssert($failures, ($activity[$field] ?? null) === $expected[$field], "{$label}: {$key} {$field} differs from SQL oracle");
+        }
+        foreach (['real_pct', 'planned_pct', 'gap_pp', 'weight_pct', 'real_contribution_pp', 'planned_contribution_pp', 'recoverable_pp'] as $field) {
+            timelineAssertClose($failures, "{$label}: {$key} {$field}", $activity[$field] ?? null, round($expected[$field], $field === 'weight_pct' || str_contains($field, 'contribution') || $field === 'recoverable_pp' ? 2 : 1));
+            $actualTotals[$field] = ($actualTotals[$field] ?? 0.0) + (float) ($activity[$field] ?? 0);
+        }
+    }
+
+    if ($assertAllPages) {
+        $roundingTolerance = (count($detail['activities'] ?? []) * 0.005) + 0.05;
+        timelineAssertClose($failures, "{$label}: weight sum", $actualTotals['weight_pct'], 100.0, $roundingTolerance);
+        timelineAssertClose($failures, "{$label}: real contribution sum", $actualTotals['real_contribution_pp'], (float) ($detail['summary']['real_pct'] ?? 0), $roundingTolerance);
+        timelineAssertClose($failures, "{$label}: planned contribution sum", $actualTotals['planned_contribution_pp'], (float) ($detail['summary']['theoretical_pct'] ?? 0), $roundingTolerance);
+    }
+}
+
+$db = Database::getInstance();
+$bi = new ControlTowerService();
+$failures = [];
+$jmcProjectId = 68;
+$jmcWeek = '6';
+$jmcOracle = timelineOracle($db, [$jmcProjectId], $jmcWeek);
+
+timelineAssert($failures, timelineDisplayText('Optimización Aeropuerto JMC') === 'Optimización Aeropuerto JMC', 'valid UTF-8 display text must remain unchanged');
+timelineAssert($failures, timelineDisplayText('FabricaciÃ³n') === 'Fabricación', 'known mojibake must be repaired for display');
+timelineAssert($failures, timelineDisplayText('CapÃƒÂ­tulo') === 'Capítulo', 'double-encoded mojibake must be repaired for display');
+timelineAssert($failures, timelineDisplayText('FabricaciÃ³n 🚧') === 'Fabricación 🚧', 'mixed mojibake and valid UTF-8 must preserve the valid fragment');
+timelineAssert($failures, timelineDisplayText('Comilla â€™') === 'Comilla ’', 'Windows-1252 punctuation mojibake must be repaired');
+
+timelineAssert($failures, $jmcOracle['summary']['total'] > 2, 'JMC week 6 must retain a non-title activity universe for pagination');
+timelineAssert($failures, $jmcOracle['summary']['total_duration'] > 0, 'JMC week 6 must retain valid inclusive durations');
+timelineAssert($failures, count($jmcOracle['activities']) === $jmcOracle['summary']['total'], 'JMC week 6 SQL grain must be unique by project_id + unique_id at the weekly cutoff');
+
+$limit = 100;
+$offset = 0;
+$seen = [];
+$allActivities = [];
+$firstDetail = null;
+do {
+    $page = $bi->getProgramaProgressDetail([$jmcProjectId], $jmcWeek, [], $limit, $offset);
+    timelineAssertDetail($failures, $page, $jmcOracle, "JMC week 6 offset {$offset}");
+    if ($firstDetail === null) {
+        $firstDetail = $page;
+    }
+    foreach ($page['activities'] ?? [] as $activity) {
+        $key = (string) ($activity['activity_key'] ?? '');
+        timelineAssert($failures, $key !== '' && !isset($seen[$key]), "JMC week 6 pagination repeated {$key}");
+        $seen[$key] = true;
+        $allActivities[] = $activity;
+    }
+    $nextOffset = (int) ($page['pagination']['next_offset'] ?? -1);
+    $hasMore = (bool) ($page['pagination']['has_more'] ?? false);
+    timelineAssert($failures, !$hasMore || $nextOffset > $offset, "JMC week 6 pagination did not advance from {$offset}");
+    $offset = $nextOffset;
+} while ($hasMore && $offset <= $jmcOracle['summary']['total']);
+
+timelineAssert($failures, count($seen) === $jmcOracle['summary']['total'], 'JMC week 6 pagination lost activities from the SQL universe');
+if ($firstDetail !== null) {
+    $sumDetail = $firstDetail;
+    $sumDetail['activities'] = $allActivities;
+    timelineAssertDetail($failures, $sumDetail, $jmcOracle, 'JMC week 6 full activity contributions', true);
+}
+
+$asymmetricProjects = [$jmcProjectId, 74];
+$asymmetricOracle = timelineOracle($db, $asymmetricProjects, $jmcWeek);
+timelineAssert(
+    $failures,
+    $asymmetricOracle['summary']['total'] > $jmcOracle['summary']['total'],
+    'JMC plus project 74 week 6 must include the latest eligible snapshot from both projects',
+);
+$asymmetricBrief = $bi->getBrief('programa-general', $asymmetricProjects, $jmcWeek);
+$asymmetricSnapshot = is_array($asymmetricBrief['activity_snapshot'] ?? null) ? $asymmetricBrief['activity_snapshot'] : [];
+$asymmetricDetail = $bi->getProgramaProgressDetail($asymmetricProjects, $jmcWeek, [], 25, 0);
+timelineAssertDetail($failures, $asymmetricSnapshot, $asymmetricOracle, 'asymmetric multi-project initial snapshot');
+timelineAssertDetail($failures, $asymmetricDetail, $asymmetricOracle, 'asymmetric multi-project first detail page');
+timelineAssert(
+    $failures,
+    array_column($asymmetricSnapshot['activities'] ?? [], 'activity_key') === array_column($asymmetricDetail['activities'] ?? [], 'activity_key'),
+    'initial snapshot and first detail page must publish the same ordered activity keys',
+);
+timelineAssert(
+    $failures,
+    ($asymmetricSnapshot['summary'] ?? []) === ($asymmetricDetail['summary'] ?? []),
+    'initial snapshot and detail endpoint must use the same multiproject denominator',
+);
+
+$filterContext = $db->query(
+    "SELECT Sub_Contratista AS sub, Responsable_AIA AS resp
+     FROM programa_consolidado
+     WHERE project_id = 68 AND Semana = 6 AND COALESCE(Titulo, 0) = 0
+       AND TRIM(COALESCE(Sub_Contratista, '')) <> '' AND TRIM(COALESCE(Responsable_AIA, '')) <> ''
+     GROUP BY Sub_Contratista, Responsable_AIA
+     ORDER BY COUNT(*) DESC, Sub_Contratista, Responsable_AIA LIMIT 1",
+)->fetch(PDO::FETCH_ASSOC);
+timelineAssert($failures, is_array($filterContext), 'JMC week 6 needs a subcontractor/responsible filter context');
+if (is_array($filterContext)) {
+    $filters = ['sub' => (string) $filterContext['sub'], 'resp' => (string) $filterContext['resp']];
+    $filteredOracle = timelineOracle($db, [$jmcProjectId], $jmcWeek, $filters);
+    timelineAssert($failures, $filteredOracle['summary']['total'] > 0, 'JMC sub/responsible oracle must not be empty');
+    $filteredDetail = $bi->getProgramaProgressDetail([$jmcProjectId], $jmcWeek, $filters, 100, 0);
+    timelineAssertDetail($failures, $filteredDetail, $filteredOracle, 'JMC sub/responsible filters');
+}
+
+$priorOnlyResponsible = $db->query(
+    "SELECT TRIM(prior.Responsable_AIA) AS resp
+     FROM programa_consolidado prior
+     WHERE prior.project_id = 68 AND prior.Semana < 6 AND COALESCE(prior.Titulo, 0) = 0
+       AND TRIM(COALESCE(prior.Responsable_AIA, '')) <> ''
+       AND NOT EXISTS (
+           SELECT 1 FROM programa_consolidado current_cut
+           WHERE current_cut.project_id = prior.project_id AND current_cut.Semana = 6
+             AND COALESCE(current_cut.Titulo, 0) = 0
+             AND TRIM(COALESCE(current_cut.Responsable_AIA, '')) = TRIM(prior.Responsable_AIA)
+       )
+     GROUP BY TRIM(prior.Responsable_AIA)
+     ORDER BY MAX(prior.Semana) DESC, resp
+     LIMIT 1",
+)->fetchColumn();
+if (is_string($priorOnlyResponsible) && $priorOnlyResponsible !== '') {
+    $noFallbackDetail = $bi->getProgramaProgressDetail([$jmcProjectId], $jmcWeek, ['resp' => $priorOnlyResponsible], 100, 0);
+    timelineAssert($failures, (int) ($noFallbackDetail['pagination']['total'] ?? -1) === 0, 'a week 6 responsible filter must not fall back to an older weekly snapshot');
+    timelineAssert($failures, ($noFallbackDetail['activities'] ?? null) === [], 'a missing week 6 responsible must return an empty activity universe');
+}
+
+$earnedDetail = $bi->getProgramaProgressDetail([$jmcProjectId], $jmcWeek, [], 50, 0, 'earned');
+$earnedActivities = $earnedDetail['activities'] ?? [];
+$expectedTopEarned = max(array_column($allActivities, 'real_contribution_pp'));
+timelineAssert($failures, $earnedActivities !== [], 'earned mode must return activities that contribute real progress');
+timelineAssertClose($failures, 'earned mode first row', $earnedActivities[0]['real_contribution_pp'] ?? null, (float) $expectedTopEarned, 0.001);
+timelineAssert($failures, array_reduce(
+    $earnedActivities,
+    static fn(bool $valid, array $activity): bool => $valid && (float) ($activity['real_contribution_pp'] ?? 0) > 0,
+    true,
+), 'earned mode must paginate only real contributors');
+
+$criticalMissing = $bi->getProgramaProgressDetail([$jmcProjectId], $jmcWeek, [], 50, 0, 'missing', true);
+timelineAssert($failures, array_reduce(
+    $criticalMissing['activities'] ?? [],
+    static fn(bool $valid, array $activity): bool => $valid && !empty($activity['critical']) && (float) ($activity['recoverable_pp'] ?? 0) > 0,
+    true,
+), 'critical-only missing mode must filter the complete universe before pagination');
+
+$secondProjectId = (int) $db->query(
+    "SELECT project_id FROM programa_consolidado
+     WHERE project_id <> 68 AND Semana = 6 AND COALESCE(Titulo, 0) = 0
+       AND Fecha_Inicio IS NOT NULL AND Fecha_Fin IS NOT NULL AND Fecha_Fin >= Fecha_Inicio
+     GROUP BY project_id ORDER BY project_id LIMIT 1",
+)->fetchColumn();
+if ($secondProjectId > 0) {
+    $multiOracle = timelineOracle($db, [$jmcProjectId, $secondProjectId], $jmcWeek);
+    $multiDetail = $bi->getProgramaProgressDetail([$jmcProjectId, $secondProjectId], $jmcWeek, [], 100, 0);
+    timelineAssertDetail($failures, $multiDetail, $multiOracle, 'JMC plus second project');
+    timelineAssert($failures, $multiOracle['summary']['total'] > $jmcOracle['summary']['total'], 'multi-project SQL universe must include the second project');
+}
+
+$rangeContext = $db->prepare('SELECT Fecha_Inicio_Sem AS desde, Fecha_Fin_Sem AS hasta FROM semanas_activas WHERE project_id = ? AND Semana = ?');
+$rangeContext->execute([$jmcProjectId, $jmcWeek]);
+$range = $rangeContext->fetch(PDO::FETCH_ASSOC) ?: [];
+timelineAssert($failures, !empty($range['desde']) && !empty($range['hasta']), 'JMC week 6 needs explicit weekly cutoff dates');
+if (!empty($range['desde']) && !empty($range['hasta'])) {
+    $rangeFilters = ['desde' => (string) $range['desde'], 'hasta' => (string) $range['hasta']];
+    $rangeOracle = timelineOracle($db, [$jmcProjectId], $jmcWeek, $rangeFilters);
+    $rangeDetail = $bi->getProgramaProgressDetail([$jmcProjectId], $jmcWeek, $rangeFilters, 100, 0);
+    timelineAssertDetail($failures, $rangeDetail, $rangeOracle, 'JMC date range');
+    timelineAssert($failures, ($rangeDetail['filters']['semana'] ?? null) === '', 'date range must override the week filter in the published detail');
+}
+
+if ($failures !== []) {
+    foreach ($failures as $failure) {
+        echo "FAIL: {$failure}\n";
+    }
+    exit(1);
+}
+
+echo "PASS: BI Programa General activity timeline matches the independent JMC weekly-cutoff SQL oracle\n";

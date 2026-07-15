@@ -2974,6 +2974,38 @@
     return resolved;
   }
 
+  function syncRenderedTableWidth(instance) {
+    var hotInstance = instance || hot;
+    var container = document.getElementById('hot-container');
+    if (!hotInstance || !container || typeof hotInstance.countCols !== 'function' || typeof hotInstance.getColWidth !== 'function') {
+      return;
+    }
+
+    var totalWidth = 0;
+    var columnCount = hotInstance.countCols();
+    for (var col = 0; col < columnCount; col++) {
+      totalWidth += Number(hotInstance.getColWidth(col)) || 0;
+    }
+
+    totalWidth = Math.max(Math.ceil(totalWidth), getContainerAvailableWidth());
+    if (!Number.isFinite(totalWidth) || totalWidth <= 0) {
+      return;
+    }
+
+    var width = totalWidth + 'px';
+    container.classList.add('hot-fixed-columns');
+    container.style.setProperty('--hot-table-width', width);
+
+    var nodes = container.querySelectorAll('.handsontable table.htCore, .handsontable .wtHider, .handsontable .wtSpreader');
+    Array.prototype.forEach.call(nodes, function (node) {
+      node.style.setProperty('width', width, 'important');
+      node.style.setProperty('min-width', width, 'important');
+      if (node.matches && node.matches('table.htCore')) {
+        node.style.setProperty('table-layout', 'fixed', 'important');
+      }
+    });
+  }
+
   function getContainerAvailableHeight() {
     var container = document.getElementById('hot-container');
     if (!container) {
@@ -3383,8 +3415,9 @@
         hot.refreshDimensions();
       }
 
-      // PI usa colWidths porcentual por columna; recalcular aqui sobrescribe esa funcion.
+      applyResponsiveColumnWidths(Boolean(force));
       hot.render();
+      syncRenderedTableWidth(hot);
 
       if (viewportState) {
         setTimeout(function () {
@@ -3626,6 +3659,7 @@
       },
       afterRender: function () {
         applyRowClassesToDOM(this);
+        syncRenderedTableWidth(this);
       },
       afterGetColHeader: function (col, TH) {
         if (!TH || !TH.querySelector) {

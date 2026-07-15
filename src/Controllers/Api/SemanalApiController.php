@@ -4,6 +4,7 @@ namespace App\Controllers\Api;
 
 use App\Core\Lps\LpsService;
 use App\Security\CsrfTokenManager;
+use App\Security\LpsWeekEditPolicy;
 use App\Services\ProgramChangeDetector;
 use App\Services\ProgramaConsolidadoNormalizationService;
 use App\Services\RestrictionConfigResolver;
@@ -47,6 +48,9 @@ class SemanalApiController
         $dbPrefix = $_GET['db'] ?? '';
         $semana = filter_var($_GET['semana'] ?? 0, FILTER_VALIDATE_INT);
 
+        if (!$this->requireSessionDbPrefix($dbPrefix)) {
+            return;
+        }
         if (!$this->validateContext($dbPrefix, $semana)) {
             return;
         }
@@ -61,15 +65,7 @@ class SemanalApiController
             $conteo = $this->db->query($queryCount, [$projectId, $semana])->fetchColumn() ?? 0;
 
             if ($conteo == 0) {
-                $arreglo["data"][] = [
-                    "Consecutivo" => "", "Id" => "", "Actividad" => "", "Fecha_Inicio" => "", "Fecha_Fin" => "",
-                    "Prog_Sin_Restricciones_100" => "", "Descripcion" => "", "Ubicacion" => "", "Ejecutado" => "",
-                    "Ejecutado_Fin_Semana" => "", "Sub_Contratista" => "", "Responsable_AIA" => "", "Empresa" => "",
-                    "medir_productividad" => "", "Unidad" => "", "cantidad_ppto" => "", "Compromiso" => "",
-                    "Ejecutado_Real" => "", "P_Completado" => "", "PAC" => "", "Activa" => "", "Categoria_CNC" => "",
-                    "CNC" => "", "Observaciones_CNC" => "", "Rendimientos" => "", "codigo_actividad" => "",
-                    "proyeccionSemana" => "", "diasSemanaInicial" => "", "diasLleva" => "", "diasSemana" => "", "diasTotales" => "",
-                ];
+                $arreglo = ["data" => []];
             } else {
                 $querySemanas = "SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem FROM " . $this->tbl($dbPrefix, 'semanas_activas') . " WHERE project_id = ? AND Semana = ? LIMIT 1";
                 $dataSemanas = $this->db->query($querySemanas, [$projectId, $semana])->fetch(PDO::FETCH_ASSOC);
@@ -143,6 +139,22 @@ class SemanalApiController
             $this->jsonError("Parámetro de base de datos inválido.");
             return;
         }
+        if (!$this->requireSessionDbPrefix($dbPrefix)) {
+            return;
+        }
+        $mutatingOptions = [
+            'nuevo', 'modificar', 'eliminar', 'duplicar', 'autoprogramar',
+            'bloquear_compromisos', 'importar_actividad_no_requerida',
+            'EstadoEjecucion', 'tnp', 'sanear',
+        ];
+        if (in_array($opcion, $mutatingOptions, true) && (int) $semana <= 0) {
+            $this->jsonError('Semana inválida.');
+            return;
+        }
+        if (in_array($opcion, $mutatingOptions, true)
+            && !$this->requireWeekEditPolicy($dbPrefix, (int) $semana, $opcion === 'modificar')) {
+            return;
+        }
 
         try {
             switch ($opcion) {
@@ -204,6 +216,24 @@ class SemanalApiController
         return true;
     }
 
+    private function requireSessionDbPrefix(string $dbPrefix): bool
+    {
+        if ($dbPrefix !== '' && $dbPrefix === (string) ($_SESSION['db'] ?? '')) {
+            return true;
+        }
+        $this->jsonError('El proyecto solicitado no coincide con la sesión activa.', 403);
+        return false;
+    }
+
+    private function requireWeekEditPolicy(string $dbPrefix, int $week, bool $qualification = false): bool
+    {
+        if ((new LpsWeekEditPolicy($this->db))->allows($dbPrefix, $week, $qualification)) {
+            return true;
+        }
+        $this->jsonError('La semana histórica no permite esta operación para su rol.', 403);
+        return false;
+    }
+
     private function calculateProjections(array &$data, string $fInicioSem, string $fFinSem): void
     {
         $data = $this->lpsService->calculateWeeklyProjections($data, $fInicioSem, $fFinSem);
@@ -214,19 +244,34 @@ class SemanalApiController
         $projectId = $this->projectId($dbPrefix);
         $this->db->setProjectContext($projectId);
 
-        // Guard: solo permitir modificar Real (ejecutado) si la semana está cerrada
         $id = (int) ($_POST["Id"] ?? 0);
-        $compromisoEntrante = $this->lpsService->toFloat($_POST["Compromiso"] ?? null);
-        $compromisoActual = null;
-        if ($compromisoEntrante !== null) {
-            $rowActual = $this->db->queryWithProject(
-                "SELECT Compromiso FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . " WHERE project_id = ? AND row_id = ?",
-                [$projectId, $id], $projectId
-            )->fetch(PDO::FETCH_ASSOC);
-            $compromisoActual = $rowActual ? $this->lpsService->toFloat($rowActual['Compromiso'] ?? null) : null;
+        if ($id <= 0 || $semana <= 0) {
+            $this->jsonError('Actividad o semana inválida.');
+            return;
         }
-        $editandoCompromiso = $compromisoEntrante !== null && abs(($compromisoEntrante ?: 0) - ($compromisoActual ?: 0)) > 0.0001;
-        \CommitmentLockGuard::guard($dbPrefix, $semana, 'modificar', !$editandoCompromiso);
+
+        $weeklyTable = $this->tbl($dbPrefix, 'programacion_semanal');
+        $rowActual = $this->db->queryWithProject(
+            "SELECT Semana, Es_TNP, Descripcion, Ubicacion, Empresa, Cantidad_Sugerida, Rendimientos,
+                    Compromiso, Ejecutado_Real, Sub_Contratista, Responsable_AIA
+             FROM {$weeklyTable} WHERE project_id = ? AND row_id = ?",
+            [$projectId, $id],
+            $projectId
+        )->fetch(PDO::FETCH_ASSOC);
+        if (!$rowActual || (int) $rowActual['Semana'] !== $semana) {
+            $this->jsonError('La actividad no pertenece a la semana seleccionada.');
+            return;
+        }
+
+        $weekState = $this->db->queryWithProject(
+            "SELECT Semanal_Confirmada FROM " . $this->tbl($dbPrefix, 'semanas_activas') . " WHERE project_id = ? AND Semana = ?",
+            [$projectId, $semana],
+            $projectId
+        )->fetch(PDO::FETCH_ASSOC);
+        if (!$weekState) {
+            $this->jsonError('La semana seleccionada no existe.');
+            return;
+        }
 
         $sourceProgramId = $this->getWeeklyProgramId($dbPrefix, $id);
         if ($sourceProgramId === null) {
@@ -236,10 +281,55 @@ class SemanalApiController
 
         $compromiso = $this->lpsService->toFloat($_POST["Compromiso"] ?? null);
         $real = $this->lpsService->toFloat($_POST["Real"] ?? null);
+        $compromisoActual = $this->lpsService->toFloat($rowActual['Compromiso'] ?? null);
+        $realActual = $this->lpsService->toFloat($rowActual['Ejecutado_Real'] ?? null);
+        $subcontractor = trim(explode(',', (string) ($_POST['Sub_Contratista'] ?? ''))[0]);
+        $responsible = trim((string) ($_POST['Responsable_AIA'] ?? ''));
+        $commitmentChanged = $this->nullableFloatChanged($compromiso, $compromisoActual);
+        $realChanged = $this->nullableFloatChanged($real, $realActual);
+        $assigneesChanged = $subcontractor !== trim((string) ($rowActual['Sub_Contratista'] ?? ''))
+            || $responsible !== trim((string) ($rowActual['Responsable_AIA'] ?? ''));
+        $description = trim((string) ($_POST['Descripcion'] ?? ''));
+        $location = trim((string) ($_POST['Ubicacion'] ?? ''));
+        $company = trim((string) ($_POST['Empresa'] ?? ''));
+        $performance = trim((string) ($_POST['Rendimientos'] ?? ''));
+        $suggested = $this->parseLocalizedFloat($_POST['Cantidad_Sugerida'] ?? null);
+        $planningFieldsChanged = $description !== trim((string) ($rowActual['Descripcion'] ?? ''))
+            || $location !== trim((string) ($rowActual['Ubicacion'] ?? ''))
+            || $company !== trim((string) ($rowActual['Empresa'] ?? ''))
+            || $performance !== trim((string) ($rowActual['Rendimientos'] ?? ''))
+            || $this->nullableFloatChanged(
+                $suggested,
+                $this->lpsService->toFloat($rowActual['Cantidad_Sugerida'] ?? null),
+            );
+        $confirmed = (int) ($weekState['Semanal_Confirmada'] ?? 0) === 1;
 
-        $esTnp = isset($_POST['Es_TNP']) && ($_POST['Es_TNP'] == 1 || $_POST['Es_TNP'] === '1');
+        if ($realChanged && !$confirmed) {
+            $this->jsonError('El avance real solo se registra en la fase de calificación.', 409);
+            return;
+        }
+        if ($confirmed && ($commitmentChanged || $assigneesChanged || $planningFieldsChanged)) {
+            $this->jsonError('Los datos de planificación solo se editan en programación.', 409);
+            return;
+        }
+        if ($realChanged && ($subcontractor === '' || $responsible === '')) {
+            $this->jsonError('Falta Sub-Contratista o Responsable AIA para registrar avance.');
+            return;
+        }
+
+        $esTnp = (int) ($rowActual['Es_TNP'] ?? 0) === 1;
         if (!$esTnp && $compromiso !== null && $compromiso <= 0) {
             $this->jsonError("El compromiso no puede ser 0. Use CNP para desprogramar.");
+            return;
+        }
+        $categoryCnc = trim((string) ($_POST['Categoria_CNC'] ?? ''));
+        $causeCnc = trim((string) ($_POST['CNC'] ?? ''));
+        $observationCnc = trim((string) ($_POST['Observaciones_CNC'] ?? ''));
+        $otherCause = in_array($causeCnc, ['Otra', 'Otra...', 'Otros', 'Otros...'], true);
+        $hasCauseDetail = ($causeCnc !== '' && !$otherCause) || $observationCnc !== '';
+        if (!$esTnp && $real !== null && $compromiso !== null && $real < $compromiso
+            && ($categoryCnc === '' || !$hasCauseDetail)) {
+            $this->jsonError('El avance incumplido requiere categoría y causa CNC u observación.');
             return;
         }
 
@@ -256,26 +346,32 @@ class SemanalApiController
             Empresa = ?, Compromiso = ?, Cantidad_Sugerida = ?, Ejecutado_Real = ?,
             P_Completado = ?, PAC = ?, Rendimientos = ?,
             Categoria_CNC = ?, CNC = ?, Observaciones_CNC = ?
-            WHERE project_id = ? AND row_id = ?";
+            WHERE project_id = ? AND row_id = ? AND Semana = ?";
 
-        $catCnc = ($pac == 1) ? null : ($_POST["Categoria_CNC"] ?: null);
-        $cnc = ($pac == 1) ? null : ($_POST["CNC"] ?: null);
-        $obs = ($pac == 1) ? null : ($_POST["Observaciones_CNC"] ?: null);
+        $catCnc = ($pac == 1) ? null : ($categoryCnc ?: null);
+        $cnc = ($pac == 1) ? null : ($causeCnc ?: null);
+        $obs = ($pac == 1) ? null : ($observationCnc ?: null);
 
         $params = [
-            $_POST["Descripcion"], $_POST["Ubicacion"], explode(',', $_POST["Sub_Contratista"])[0],
-            $_POST["Responsable_AIA"], $_POST["Empresa"], $compromiso,
-            $this->parseLocalizedFloat($_POST["Cantidad_Sugerida"] ?? null),
-            $real, $pCompletado, $pac, $_POST["Rendimientos"] ?: null,
-            $catCnc, $cnc, $obs, $projectId, $id,
+            $description, $location, $subcontractor,
+            $responsible, $company, $compromiso,
+            $suggested, $real, $pCompletado, $pac, $performance ?: null,
+            $catCnc, $cnc, $obs, $projectId, $id, $semana,
         ];
 
         $this->db->beginTransaction();
         $res = $this->db->queryWithProject($query, $params, $projectId);
-        $this->syncNextWeekCarryover($dbPrefix, $semana, $sourceProgramId);
+        if (!$res || $res->rowCount() > 1) {
+            $this->db->rollBack();
+            $this->jsonError('No se actualizó la actividad semanal.');
+            return;
+        }
+        if ($res->rowCount() === 1) {
+            $this->syncNextWeekCarryover($dbPrefix, $semana, $sourceProgramId);
+        }
         $this->db->commit();
 
-        $this->jsonResponse($res ? "BIEN" : "ERROR");
+        $this->jsonResponse("BIEN");
     }
 
 private function autoprogramar(string $dbPrefix, int $semana): void
@@ -591,9 +687,9 @@ private function autoprogramar(string $dbPrefix, int $semana): void
         echo json_encode(["respuesta" => $res], JSON_UNESCAPED_UNICODE);
     }
 
-    private function jsonError(string $msg): void
+    private function jsonError(string $msg, int $status = 422): void
     {
-        http_response_code(422);
+        http_response_code($status);
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode(["respuesta" => "ERROR", "mensaje" => $msg], JSON_UNESCAPED_UNICODE);
     }
@@ -605,6 +701,15 @@ private function autoprogramar(string $dbPrefix, int $semana): void
         }
         $normalized = str_replace(['$', ' ', ','], ['', '', '.'], $value);
         return is_numeric($normalized) ? (float) $normalized : null;
+    }
+
+    private function nullableFloatChanged(?float $incoming, ?float $current): bool
+    {
+        if ($incoming === null || $current === null) {
+            return $incoming !== $current;
+        }
+
+        return abs($incoming - $current) > 0.0001;
     }
 
     private function getWeeklyProgramId(string $dbPrefix, int $weeklyRowId): ?int
@@ -841,8 +946,14 @@ private function autoprogramar(string $dbPrefix, int $semana): void
         $semana = filter_var($_POST['semana'] ?? 0, FILTER_VALIDATE_INT);
         $motivo = trim($_POST['motivo'] ?? '');
 
+        if (!$this->requireSessionDbPrefix($dbPrefix)) {
+            return;
+        }
         if ($semana <= 0) {
             $this->jsonError("Semana inválida.");
+            return;
+        }
+        if (!$this->requireWeekEditPolicy($dbPrefix, (int) $semana)) {
             return;
         }
         if (strlen($motivo) < 20) {
@@ -1276,6 +1387,9 @@ private function autoprogramar(string $dbPrefix, int $semana): void
         $dbPrefix = $_GET['db'] ?? '';
         $semana = filter_var($_GET['semana'] ?? 0, FILTER_VALIDATE_INT);
 
+        if (!$this->requireSessionDbPrefix($dbPrefix)) {
+            return;
+        }
         if (!$this->validateContext($dbPrefix, $semana)) {
             return;
         }
@@ -1318,12 +1432,18 @@ private function autoprogramar(string $dbPrefix, int $semana): void
         $dbPrefix = $_POST['db'] ?? $_GET['db'] ?? '';
         $semana = filter_var($_POST['semana'] ?? $_GET['semana'] ?? 0, FILTER_VALIDATE_INT);
 
+        if (!$this->requireSessionDbPrefix($dbPrefix)) {
+            return;
+        }
         if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
             $this->jsonError('Parámetro de base de datos inválido.');
             return;
         }
         if ($semana <= 0) {
             $this->jsonError('Semana inválida.');
+            return;
+        }
+        if (!$this->requireWeekEditPolicy($dbPrefix, (int) $semana)) {
             return;
         }
 
@@ -1355,6 +1475,9 @@ private function autoprogramar(string $dbPrefix, int $semana): void
         $dbPrefix = $_GET['db'] ?? '';
         $semana = filter_var($_GET['semana'] ?? 0, FILTER_VALIDATE_INT);
 
+        if (!$this->requireSessionDbPrefix($dbPrefix)) {
+            return;
+        }
         if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
             $this->jsonError('Parámetro de base de datos inválido.');
             return;

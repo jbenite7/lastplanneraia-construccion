@@ -1,0 +1,34 @@
+@layer components {
+  .aia-action-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--ds-space-3);
+  }
+
+  .aia-action-group .aia-btn[aria-busy='true'] {
+    cursor: wait;
+  }
+
+  .aia-btn--critical {
+    border-color: var(--ds-color-state-critical-text);
+    background: var(--ds-color-state-critical-bg);
+    color: var(--ds-color-state-critical-text);
+  }
+
+  .aia-btn--icon,
+  .aia-btn--floating {
+    width: var(--ds-target-min);
+    padding: var(--ds-space-2);
+    aspect-ratio: 1;
+  }
+
+  .aia-btn--icon {
+    font-size: var(--ds-type-size-xl);
+  }
+
+  .aia-btn--floating {
+    border-radius: var(--ds-radius-pill);
+    box-shadow: var(--ds-shadow-md);
+  }
+}

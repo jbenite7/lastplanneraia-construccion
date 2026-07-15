@@ -10,6 +10,7 @@ $users = [
     ['test.D', 'Test Director', 'test.d@aia.local', 'Director de Proyecto', 'D'],
     ['test.R', 'Test Residente', 'test.r@aia.local', 'Residente de Obra', 'R'],
     ['test.C', 'Test Subcontratista', 'test.c@aia.local', 'Subcontratista', 'C'],
+    ['test.V', 'Test Visualizador', 'test.v@aia.local', 'Visualizador', 'V'],
 ];
 
 foreach ($users as [$username, $name, $email, $cargo, $role]) {

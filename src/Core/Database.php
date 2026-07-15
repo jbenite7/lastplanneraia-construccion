@@ -44,7 +44,6 @@ class Database
 
     private const PROJECT_SCOPED_IDS = [
         'actividades' => 'Id',
-        'actividad_programa_fuentes' => 'id',
         'cambios' => 'id',
         'cic' => 'Id',
         'lps_drawer_comentarios' => 'id',

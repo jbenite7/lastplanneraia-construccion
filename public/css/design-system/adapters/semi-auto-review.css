@@ -1,0 +1,100 @@
+@layer components {
+.semi-auto-review {
+  --sar-surface: var(--ds-active-surface);
+  --sar-muted: var(--ds-active-surface-raised);
+  --sar-border: var(--ds-active-border);
+  --sar-text: var(--ds-active-text-primary);
+  --sar-subtle: var(--ds-active-text-secondary);
+  --sar-brand: var(--ds-color-brand-primary);
+  margin-block: var(--ds-space-4);
+  max-width: 100%;
+  overflow-x: clip;
+  border: var(--ds-border-width) solid var(--sar-border);
+  border-top: var(--ds-space-1) solid var(--sar-brand);
+  border-radius: var(--ds-radius-panel);
+  background: var(--sar-surface);
+  color: var(--sar-text);
+  font-family: var(--ds-font-body);
+}
+
+.semi-auto-review[hidden],
+.sar-hidden {
+  display: none;
+}
+
+.sar-head,
+.sar-foot,
+.sar-actions,
+.sar-filters,
+.sar-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-2);
+}
+
+.sar-head,
+.sar-body,
+.sar-foot {
+  padding: var(--ds-space-4);
+}
+
+.sar-head,
+.sar-foot {
+  justify-content: space-between;
+  border-color: var(--sar-border);
+  background: var(--sar-surface);
+}
+
+:where(.sar-steps, .sar-groups, .sar-card-list, .sar-edit-grid, .sar-analysis-steps) {
+  display: grid;
+  gap: var(--ds-space-2);
+}
+
+:where(.sar-control, .sar-group, .sar-card, .sar-step, .sar-analysis, .sar-assistant) {
+  border: var(--ds-border-width) solid var(--sar-border);
+  border-radius: var(--ds-radius-panel);
+  background: var(--sar-surface);
+}
+
+:where(.sar-tab, .sar-review-btn, .sar-tech-btn, .sar-sources-btn) {
+  min-height: var(--ds-density-touch-control);
+  border: var(--ds-border-width) solid var(--sar-border);
+  border-radius: var(--ds-radius-control);
+  background: var(--sar-surface);
+  color: var(--sar-text);
+  padding: var(--ds-density-touch-padding-block) var(--ds-density-touch-padding-inline);
+  font-weight: var(--ds-type-weight-bold);
+}
+
+:where(.sar-title, .sar-card-title, .sar-group-title) {
+  color: var(--sar-text);
+  font-weight: var(--ds-type-weight-bold);
+}
+
+:where(.sar-meta, .sar-card-subtitle, .sar-group-desc) {
+  color: var(--sar-subtle);
+}
+
+:where(.sar-card-title, .sar-card-subtitle, .sar-card-message, .sar-change-flow) {
+  white-space: normal;
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: none;
+}
+
+@media (max-width: 48rem) {
+  .sar-head,
+  .sar-foot {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .sar-steps,
+  .sar-card-top,
+  .sar-change-line,
+  .sar-contract-row {
+    grid-template-columns: 1fr;
+  }
+}
+}

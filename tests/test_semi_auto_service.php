@@ -278,6 +278,21 @@ try {
             $_SESSION['permiso_canonico'] = 'D';
         }
 
+        $atomicFailureDecisionId = 'dec_atomic_failure_' . bin2hex(random_bytes(6));
+        $db->query(
+            "INSERT INTO semi_auto_decisions
+                (decision_id, run_id, suggestion_id, project_id, module, decision,
+                 before_payload, after_payload, result_payload, decided_by)
+             VALUES (?, ?, NULL, ?, ?, 'apply', NULL, '{}', ?, 'test_semi_auto_service')",
+            [
+                $atomicFailureDecisionId,
+                $runId,
+                $projectId,
+                SemiAutoService::MODULE_LISTADO,
+                json_encode(['table' => 'unsupported_atomic_test'], JSON_UNESCAPED_UNICODE),
+            ],
+        );
+
         $apply = $service->apply(SemiAutoService::MODULE_LISTADO, $context, $runId, [$applyCandidateId]);
         ((int) ($apply['aplicadas'] ?? 0) === 1 && (int) ($apply['errores'] ?? 0) === 0)
             ? passSemi('apply accepts only stored suggestion_id')
@@ -317,15 +332,47 @@ try {
             ? passSemi('apply stores multi-source traceability for contracts')
             : failSemi('apply did not store activity program sources');
 
-        $undo = $service->undo(SemiAutoService::MODULE_LISTADO, $context, $runId);
+        $atomicUndoRejected = false;
+        try {
+            $service->undo(SemiAutoService::MODULE_LISTADO, $context, $runId);
+        } catch (Throwable $e) {
+            $atomicUndoRejected = true;
+        }
+        $activitiesAfterFailedUndo = tableCount($db, 'actividades', $projectId, $week);
+        $atomicUndoRejected && $activitiesAfterFailedUndo === $activitiesBeforePreview + 1
+            ? passSemi('undo rolls back every decision when one reversal fails')
+            : failSemi('undo left a partial restoration after a decision failed');
+        $db->query("DELETE FROM semi_auto_decisions WHERE decision_id = ?", [$atomicFailureDecisionId]);
+
+        $db->query(
+            "UPDATE semi_auto_runs SET status = 'applied_with_errors' WHERE run_id = ? AND project_id = ?",
+            [$runId, $projectId],
+        );
+        $fallbackPreview = $service->preview(SemiAutoService::MODULE_LISTADO, $context);
+        $fallbackPreviewRunId = (string) ($fallbackPreview['run_id'] ?? '');
+        if ($fallbackPreviewRunId !== '') {
+            $runIds[] = $fallbackPreviewRunId;
+        }
+        $undo = $service->undo(SemiAutoService::MODULE_LISTADO, $context, $fallbackPreviewRunId);
         ((int) ($undo['revertidas'] ?? 0) === 1 && (int) ($undo['errores'] ?? 0) === 0)
-            ? passSemi('undo reverts applied suggestion')
-            : failSemi('undo did not revert exactly one suggestion');
+            && (string) ($undo['run_id'] ?? '') === $runId
+            ? passSemi('undo resolves and reverts an applied_with_errors run from a newer preview')
+            : failSemi('undo did not resolve the applied_with_errors run');
 
         $activitiesAfterUndo = tableCount($db, 'actividades', $projectId, $week);
         $activitiesAfterUndo === $activitiesBeforePreview
             ? passSemi('undo restores actividades count')
             : failSemi('undo left actividades changed');
+
+        $doubleUndoRejected = false;
+        try {
+            $service->undo(SemiAutoService::MODULE_LISTADO, $context, $runId);
+        } catch (DomainException $e) {
+            $doubleUndoRejected = true;
+        }
+        $doubleUndoRejected
+            ? passSemi('undo rejects a run that was already restored')
+            : failSemi('undo accepted the same applied run twice');
     }
 } catch (Throwable $e) {
     failSemi($e->getMessage());

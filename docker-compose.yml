@@ -9,6 +9,7 @@ services:
       - "8081:80"
     environment:
       TZ: America/Bogota
+      APP_ENV: ${APP_ENV:-development}
       DB_HOST: ${DOCKER_APP_DB_HOST:-db}
       DB_PORT: ${DOCKER_APP_DB_PORT:-3306}
       DB_NAME: ${DB_NAME}

@@ -19,18 +19,6 @@
     head.appendChild(titleTag);
   }
 
-  // Helper to inject link stylesheet if not already present
-  function injectStylesheet(href, id) {
-    var query = id ? '#' + id : 'link[href*="' + href.split('?')[0] + '"]';
-    if (!document.querySelector(query)) {
-      var link = document.createElement('link');
-      link.rel = 'stylesheet';
-      if (id) link.id = id;
-      link.href = href;
-      head.appendChild(link);
-    }
-  }
-
   // Inject meta viewport
   if (!document.querySelector('meta[name="viewport"]')) {
     var metaView = document.createElement('meta');
@@ -46,43 +34,6 @@
     favicon.href = '/img/florAIA.png';
     head.appendChild(favicon);
   }
-
-  // Fuentes de Google (Mantenido CDN por ahora ya que es tipográfico, pero cargado de forma no bloqueante)
-  injectStylesheet('https://fonts.googleapis.com/css?family=Roboto&display=swap');
-
-  // VENDORS LOCALIZADOS (Carga local instantánea 0ms)
-  injectStylesheet('/public/vendor/font-awesome/css/all.css');
-  injectStylesheet('/public/vendor/bootstrap/bootstrap.min.css');
-  
-  // DataTables local
-  injectStylesheet('/public/vendor/datatables/jquery.dataTables.css');
-  injectStylesheet('/public/vendor/datatables/dataTables.bootstrap4.min.css');
-  injectStylesheet('/public/vendor/datatables/buttons.bootstrap4.min.css');
-  injectStylesheet('/public/vendor/datatables/dataTables.checkboxes.css');
-
-  // jQuery UI local
-  injectStylesheet('/public/vendor/jquery-ui.css');
-
-  // AnyChart local
-  injectStylesheet('/public/vendor/anychart/anychart-ui.min.css');
-  injectStylesheet('/public/vendor/anychart/anychart-font.min.css');
-
-  // Select2 local
-  injectStylesheet('/public/vendor/select2/select2.min.css');
-
-  // SweetAlert2 local
-  injectStylesheet('/public/vendor/sweetalert2.min.css');
-
-  // Estilos Personalizados Locales
-  injectStylesheet('/css/tokens.css?v=1.0');
-  injectStylesheet('/css/styles.css?v=pdcLegendSpacing2');
-  injectStylesheet('/css/buttons.css?v=1.0');
-  injectStylesheet('/css/access.css?v=1.0');
-
-  // Inyectar escudo de bordes unificados de altísima especificidad contra la caché agresiva del navegador
-  var dynamicStyle = document.createElement('style');
-  dynamicStyle.innerHTML = "html body .table th, html body .table td, html body table.dataTable tbody tr td, html body .table-bordered tbody tr td, html body table.dataTable thead tr th, html body .table-bordered thead tr th { border-color: #cbd5e1 !important; border-right: 1px solid #cbd5e1 !important; border-bottom: 1px solid #cbd5e1 !important; border-left-color: #cbd5e1 !important; border-top-color: #cbd5e1 !important; } html body #hot-container .handsontable tbody tr td { border-right: 1px solid #cbd5e1 !important; border-bottom: 1px solid #cbd5e1 !important; }";
-  head.appendChild(dynamicStyle);
 
   // Helper to load script
   function loadScript(src) {
@@ -102,11 +53,16 @@
   loadScript('https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.4.24/sweetalert2.all.min.js');
   loadScript('/public/js/core/AiaAlertInterceptor.js?v=20260324a');
   loadScript('/public/js/core/SessionTimeoutManager.js?v=20260328a');
+  loadScript('/public/js/modules/aia_ui/theme.js?v=20260711foundation5');
+  loadScript('/public/js/modules/aia_ui/nav_drawer.js?v=20260711foundation5');
+  loadScript('/public/js/modules/aia_ui/components.js?v=20260713sprint00');
 
   loadScript('/js/tablet-viewport-scale.js?v=1.2');
-  loadScript('/js/datatable-height-manager.js?v=1.1');
-  loadScript('/js/mobile-table-fix.js?v=mobileFix2');
-  loadScript('/js/global-table-align.js?v=1.0');
+  if (!window.__AIA_HANDSONTABLE_ONLY__) {
+    loadScript('/js/datatable-height-manager.js?v=1.2');
+    loadScript('/js/global-table-align.js?v=1.0');
+    loadScript('/js/mobile-table-fix.js?v=mobileFix2');
+  }
   
   // Script de Capacidades RBAC Moderno
   loadScript('/js/rbac_capabilities.js?v=1.0');

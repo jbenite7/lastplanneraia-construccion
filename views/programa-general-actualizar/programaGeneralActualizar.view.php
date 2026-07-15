@@ -5,11 +5,12 @@
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 	<script src="https://code.jquery.com/ui/1.10.1/jquery-ui.js"></script>
 	<!--Script cque va al archivo linksComunesHead2.js-->
-	<script type="text/javascript" src="/js/linksComunesHead2.js?v=piStateColorsFresh" charset="utf-8"></script>
+	<?= \App\View\Components\DesignSystemHeadComponent::render() ?>
+	<script type="text/javascript" src="/js/linksComunesHead2.js?v=20260711foundation5" charset="utf-8"></script>
 
 	<!-- Estilos Core Hot -->
 	<link rel="stylesheet" href="/public/vendor/handsontable/handsontable.full.min.css" />
-	<link rel="stylesheet" href="/css/handsontable-module.css?v=20260529a" />
+	<link rel="stylesheet" href="/css/handsontable-module.css?v=20260711foundation5" />
 
 	<!-- Google Fonts: Montserrat & Inter -->
 	<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">

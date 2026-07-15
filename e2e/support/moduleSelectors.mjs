@@ -94,8 +94,9 @@ export const PDC_SELECTORS = {
     verAlertas: 'button:has-text("Ver alertas")',
   },
   rowActions: {
-    editar: 'button[aria-label=""]',
-    eliminar: 'button[aria-label=""]',
+    editar: 'button[aria-label="Editar actividad"]',
+    ver: 'button[aria-label="Ver actividad"]',
+    eliminar: 'button[aria-label="Eliminar"]',
   },
   chips: [
     'Informacion pendiente',
@@ -116,33 +117,41 @@ export const PDC_SELECTORS = {
 
 // ─── Contratos ────────────────────────────────────────────────────────────────
 export const CONTRATOS_SELECTORS = {
+  handsontable: '#hot-container',
+  handsontableMaster: '#hot-container .ht_master.handsontable',
+  mobileCards: '#ct-mobile-card-list .ct-mobile-card',
+  tableStatus: '#ct-table-status',
+  editModal: '#modalEditarContratos',
   buttons: {
     autoDefinir: 'button:has-text("Auto-definir paquetes")',
+    cancelar: '#btn_cancelar_contratos',
+    guardar: '#btn_guardar_contratos',
   },
   columns: [
-    'Id', 'Familia', 'Descripción', 'Fecha de Inicio',
-    'Modalidad de contratacion', 'Paquetes de contratacion asociados',
+    '', 'Código', 'Familia', 'Descripción', 'Fecha de Inicio',
+    'Modalidad de contratación', 'Paquetes de contratación asociados',
   ],
   rowActions: {
-    editar: 'button[aria-label=""]',
-    eliminar: 'button[aria-label=""]',
+    editar: 'button[aria-label="Editar paquetes"]',
   },
 };
 
 // ─── Listado de Actividades ───────────────────────────────────────────────────
 export const LISTADO_SELECTORS = {
+  table: '#hot-container .ht_master.handsontable',
+  cards: '#la-mobile-card-list .la-mobile-card',
+  state: '#la-table-state',
   buttons: {
-    cargarExcel: 'button:has-text("Cargar desde Excel")',
-    nuevaFamilia: 'button:has-text("Nueva Familia")',
-    autoGenerar: 'button:has-text("Auto-generar Familias")',
+    cargarExcel: '#btn_cargarActividadesExcel',
+    nuevaFamilia: '#btn_nueva_actividad',
+    autoGenerar: '#btn_auto_generar_listado',
   },
   columns: [
-    'Id', 'Familia', 'Descripción', 'Inicio en obra segun cronograma',
-    'Fecha de Inicio', 'Modalidad de contratacion',
+    'Código', 'Familia', 'Descripción', 'Inicio en obra (cronograma)',
+    'Fecha de Inicio', 'Modalidad de contratación',
   ],
   rowActions: {
-    editar: 'button[aria-label=""]',
-    eliminar: 'button[aria-label=""]',
+    eliminar: 'button.eliminar[title="Eliminar"]',
   },
 };
 

@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lastplanneraia.com/design-system/state-semantics.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["designSystemVersion", "purpose", "dimensions", "levels", "translationRules", "moduleMappings"],
+  "properties": {
+    "designSystemVersion": { "type": "string" },
+    "purpose": { "type": "string" },
+    "dimensions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["severity", "urgency"],
+      "properties": { "severity": { "type": "array" }, "urgency": { "type": "array" } }
+    },
+    "levels": {
+      "type": "array",
+      "minItems": 4,
+      "items": { "type": "object", "additionalProperties": false, "required": ["id", "label", "token", "severity", "urgency", "action", "examples"], "properties": { "id": { "type": "string" }, "label": { "type": "string" }, "token": { "type": "string" }, "severity": { "type": "string" }, "urgency": { "type": "string" }, "action": { "type": "string" }, "examples": { "type": "array" } } }
+    },
+    "translationRules": { "type": "array", "items": { "type": "string" } },
+    "moduleMappings": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["module", "states"],
+        "properties": {
+          "module": { "type": "string" },
+          "states": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["label", "level"],
+              "properties": { "label": { "type": "string" }, "level": { "type": "string" } }
+            }
+          }
+        }
+      }
+    }
+  }
+}

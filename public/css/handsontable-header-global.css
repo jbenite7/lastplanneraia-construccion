@@ -71,10 +71,10 @@ body #hot-container .handsontable thead th .changeType {
   height: 13px !important;
   margin: 1px 0 0 0 !important;
   padding: 0 !important;
-  border: 1px solid #cfd8e3 !important;
+  border: 1px solid var(--ds-active-border) !important;
   border-radius: 4px !important;
-  background: #f4f7fb !important;
-  color: #5c6b7a !important;
+  background: var(--ds-active-surface-raised) !important;
+  color: var(--ds-active-text-secondary) !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -101,8 +101,8 @@ body.pg-page #hot-container .handsontable thead th .changeType:hover,
 body.pg-page #hot-container .handsontable thead th .changeType:focus,
 body #hot-container .handsontable thead th .changeType:hover,
 body #hot-container .handsontable thead th .changeType:focus {
-  border-color: #7ea7d8 !important;
-  background: #eaf3ff !important;
-  color: #1e5ea8 !important;
+  border-color: var(--ds-color-brand-primary) !important;
+  background: var(--ds-active-surface) !important;
+  color: var(--ds-active-text-primary) !important;
   cursor: pointer !important;
 }

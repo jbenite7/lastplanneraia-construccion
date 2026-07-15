@@ -1,0 +1,52 @@
+@layer components {
+.aia-glass-popup {
+  border: var(--ds-border-width) solid var(--ds-color-border-strong);
+  border-radius: var(--ds-radius-modal);
+  background: var(--ds-active-surface-raised);
+  color: var(--ds-active-text-primary);
+  box-shadow: var(--ds-shadow-xl);
+  font-family: var(--ds-font-body);
+  backdrop-filter: blur(var(--ds-blur-glass));
+}
+
+.aia-glass-popup .swal2-title {
+  color: var(--ds-active-text-primary);
+  font-family: var(--ds-font-display);
+  font-size: var(--ds-type-size-2xl);
+  font-weight: var(--ds-type-weight-bold);
+}
+
+.aia-glass-popup :where(.swal2-html-container, .swal2-content) {
+  color: var(--ds-active-text-secondary);
+  font-size: var(--ds-type-size-md);
+  line-height: var(--ds-type-line-body);
+}
+
+:where(.aia-glass-confirm-btn, .aia-glass-deny-btn, .aia-glass-cancel-btn) {
+  min-height: var(--ds-density-touch-control);
+  border-radius: var(--ds-radius-control);
+  padding: var(--ds-density-touch-padding-block) var(--ds-density-touch-padding-inline);
+  font-family: var(--ds-font-body);
+  font-weight: var(--ds-type-weight-bold);
+  transition: background var(--ds-motion-fast), box-shadow var(--ds-motion-fast);
+}
+
+.aia-glass-confirm-btn {
+  border: var(--ds-border-width) solid var(--ds-active-action-primary);
+  background: var(--ds-active-action-primary);
+  color: var(--ds-active-action-text);
+}
+
+.aia-glass-deny-btn,
+.aia-glass-cancel-btn {
+  border: var(--ds-border-width) solid var(--ds-active-border);
+  background: var(--ds-active-surface);
+  color: var(--ds-active-text-primary);
+}
+
+:where(.aia-glass-confirm-btn, .aia-glass-deny-btn, .aia-glass-cancel-btn):focus-visible {
+  outline: 2px solid var(--ds-color-brand-primary);
+  outline-offset: 2px;
+  box-shadow: var(--ds-shadow-focus);
+}
+}

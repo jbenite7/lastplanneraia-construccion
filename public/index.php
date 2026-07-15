@@ -69,6 +69,13 @@ function deprecatedJson(string $replacement): void
 }
 
 // --- ZONA DE RUTAS ---
+if (\App\Core\AppEnvironment::allowsInternalTools()) {
+    $router->get('/internal/design-system', [
+        \App\Controllers\Internal\DesignSystemLabController::class,
+        'index',
+    ]);
+}
+
 // Root / Entry Points
 $router->get('/', [\App\Controllers\Auth\LoginController::class, 'index']);
 
@@ -153,6 +160,8 @@ $router->post('/api/contratos/auto/learning/reject', [\App\Controllers\Api\SemiA
 $router->get('/api/listado-actividades/template', [\App\Controllers\Api\ListadoActividadesApiController::class, 'downloadTemplate']);
 $router->post('/api/listado-actividades/list', [\App\Controllers\Api\ListadoActividadesApiController::class, 'list']);
 $router->post('/api/listado-actividades/save', [\App\Controllers\Api\ListadoActividadesApiController::class, 'save']);
+$router->post('/api/listado-actividades/update-cell', [\App\Controllers\Api\ListadoActividadesApiController::class, 'updateCell']);
+$router->post('/api/listado-actividades/update-card', [\App\Controllers\Api\ListadoActividadesApiController::class, 'updateCard']);
 $router->post('/api/listado-actividades/auto-generate', [\App\Controllers\Api\ListadoActividadesApiController::class, 'autoGenerate']);
 $router->post('/api/listado-actividades/auto/preview', [\App\Controllers\Api\SemiAutoController::class, 'previewListado']);
 $router->post('/api/listado-actividades/auto/status', [\App\Controllers\Api\SemiAutoController::class, 'statusListado']);
@@ -169,6 +178,7 @@ $router->post('/api/listado-actividades/auto/learning/reject', [\App\Controllers
 // Api/PDC
 $router->post('/api/pdc/list', [\App\Controllers\Api\PdcApiController::class, 'list']);
 $router->post('/api/pdc/save', [\App\Controllers\Api\PdcApiController::class, 'save']);
+$router->post('/api/pdc/update-cell', [\App\Controllers\Api\PdcApiController::class, 'updateCell']);
 $router->get('/api/pdc/duracion-sugerida', [\App\Controllers\Api\PdcApiController::class, 'duracionSugerida']);
 // Api/PDC Plantillas
 $router->get('/api/pdc/plantillas', [\App\Controllers\Api\PdcPlantillaController::class, 'list']);
@@ -269,6 +279,36 @@ $router->post('/context/clear-week', [\App\Controllers\Core\ContextController::c
 // Maintenance Secret Access (ruta oculta para admins durante mantenimiento)
 $router->get(MaintenanceMode::SECRET_PATH, [\App\Controllers\Auth\LoginController::class, 'index']);
 $router->post(MaintenanceMode::SECRET_PATH, [\App\Controllers\Auth\LoginController::class, 'maintenanceLogin']);
+
+// --- BI Control Tower API ---
+$router->get('/api/bi/control-tower', [\App\Controllers\Api\BiControlTowerApiController::class, 'controlTower']);
+$router->get('/api/bi/projects', [\App\Controllers\Api\BiControlTowerApiController::class, 'projects']);
+$router->get('/api/bi/weeks', [\App\Controllers\Api\BiControlTowerApiController::class, 'weeks']);
+$router->get('/api/bi/filter-options', [\App\Controllers\Api\BiControlTowerApiController::class, 'filterOptions']);
+$router->get('/api/bi/report/programa-general', [\App\Controllers\Api\BiControlTowerApiController::class, 'programaGeneral']);
+$router->get('/api/bi/report/programa-general/compliance-detail', [\App\Controllers\Api\BiControlTowerApiController::class, 'programaComplianceDetail']);
+$router->get('/api/bi/report/programa-general/progress-detail', [\App\Controllers\Api\BiControlTowerApiController::class, 'programaProgressDetail']);
+$router->get('/api/bi/report/programa-general/delay-detail', [\App\Controllers\Api\BiControlTowerApiController::class, 'programaDelayDetail']);
+$router->get('/api/bi/report/programa-general/radar-detail', [\App\Controllers\Api\BiControlTowerApiController::class, 'programaRadarDetail']);
+$router->get('/api/bi/report/programa-general/cnp-detail', [\App\Controllers\Api\BiControlTowerApiController::class, 'programaCnpDetail']);
+$router->get('/api/bi/report/programa-general/cnc-detail', [\App\Controllers\Api\BiControlTowerApiController::class, 'programaCncDetail']);
+$router->get('/api/bi/report/intermedia', [\App\Controllers\Api\BiControlTowerApiController::class, 'intermedia']);
+$router->get('/api/bi/report/semanal', [\App\Controllers\Api\BiControlTowerApiController::class, 'semanal']);
+$router->get('/api/bi/report/pdc', [\App\Controllers\Api\BiControlTowerApiController::class, 'pdc']);
+$router->get('/api/bi/report/cic', [\App\Controllers\Api\BiControlTowerApiController::class, 'cic']);
+$router->get('/api/bi/report/cip', [\App\Controllers\Api\BiControlTowerApiController::class, 'cip']);
+$router->get('/api/bi/report/curva-s', [\App\Controllers\Api\BiControlTowerApiController::class, 'curvaS']);
+$router->get('/api/bi/lineage', [\App\Controllers\Api\BiControlTowerApiController::class, 'lineage']);
+
+// --- BI Control Tower Dashboard Views ---
+$router->get('/bi/control-tower', [\App\Controllers\Bi\BiViewController::class, 'controlTower']);
+$router->get('/bi/programa-general', [\App\Controllers\Bi\BiViewController::class, 'programaGeneral']);
+$router->get('/bi/intermedia', [\App\Controllers\Bi\BiViewController::class, 'intermedia']);
+$router->get('/bi/semanal', [\App\Controllers\Bi\BiViewController::class, 'semanal']);
+$router->get('/bi/pdc', [\App\Controllers\Bi\BiViewController::class, 'pdc']);
+$router->get('/bi/contratistas', [\App\Controllers\Bi\BiViewController::class, 'contratistas']);
+$router->get('/bi/responsables', [\App\Controllers\Bi\BiViewController::class, 'responsables']);
+$router->get('/bi/curva-s', [\App\Controllers\Bi\BiViewController::class, 'curvaS']);
 
 // --- FIN ZONA DE RUTAS ---
 

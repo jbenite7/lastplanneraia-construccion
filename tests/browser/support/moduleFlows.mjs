@@ -249,7 +249,17 @@ export const moduleFlows = {
 
   listadoActividades: {
     async smoke(page, project) {
-      await expectUsablePage(page, '/listado-actividades', ['#dt_cliente', 'body']);
+      await expectUsablePage(page, '/listado-actividades', [
+        '#hot-container .ht_master.handsontable',
+      ]);
+      const runtime = await page.evaluate(() => ({
+        sourceRows: window.ListadoActividadesHotModule?.getHotInstance?.()?.countSourceRows(),
+        masters: document.querySelectorAll('#hot-container .ht_master.handsontable').length,
+        legacy: document.querySelectorAll('.dataTables_wrapper, table.dataTable').length,
+      }));
+      expect(runtime.masters).toBe(1);
+      expect(runtime.legacy).toBe(0);
+      expect(runtime.sourceRows).toBeGreaterThanOrEqual(0);
       const response = await postFormJson(page, '/api/listado-actividades/list', {});
       assertJsonOk(response, 'Listado actividades list');
     },

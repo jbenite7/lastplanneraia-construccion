@@ -1,6 +1,7 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+import { createHash } from 'crypto';
 import { execFileSync, spawnSync } from 'child_process';
 import { GLOBAL_TABLES } from '../fixtures/projects.mjs';
 
@@ -14,16 +15,22 @@ function dockerCompose(args, options = {}) {
 }
 
 function mysql(sql) {
-  return dockerCompose([
-    'exec',
-    '-T',
-    'db',
-    'sh',
-    '-lc',
-    'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" "$MYSQL_DATABASE" -N -e "$1"',
-    'mysql-e2e',
-    sql,
-  ]);
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      return dockerCompose([
+        'exec', '-T', 'db', 'sh', '-lc',
+        'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" "$MYSQL_DATABASE" -N -e "$1"',
+        'mysql-e2e', sql,
+      ]);
+    } catch (error) {
+      const detail = `${error?.message || ''}\n${error?.stderr || ''}`;
+      if (!/Can.t connect|socket|connection reset/i.test(detail) || attempt === 3) throw error;
+      spawnSync('docker', ['compose', 'exec', '-T', 'db', 'sh', '-lc', 'sleep 1'], {
+        cwd: process.cwd(), encoding: 'utf8',
+      });
+    }
+  }
+  return '';
 }
 
 export function runSql(sql) {
@@ -36,9 +43,17 @@ function tableExists(table) {
 }
 
 export class ProjectDbSnapshot {
-  constructor(project, tables = GLOBAL_TABLES) {
+  constructor(project, tables = GLOBAL_TABLES, options = {}) {
     this.project = project;
     this.tables = tables;
+    this.mysqlCommand = options.mysql || mysql;
+    this.spawnCommand = options.spawnSync || spawnSync;
+    this.sleep = options.sleep || ((seconds) => spawnSync(
+      'docker',
+      ['compose', 'exec', '-T', 'db', 'sh', '-lc', `sleep ${seconds}`],
+      { cwd: process.cwd(), encoding: 'utf8' },
+    ));
+    this.restoreAttempts = options.restoreAttempts || 3;
     this.existingTables = [];
     this.filePath = path.join(
       os.tmpdir(),
@@ -64,7 +79,7 @@ export class ProjectDbSnapshot {
         'db',
         'sh',
         '-lc',
-        'where="project_id=$1"; shift; mysqldump -uroot -p"$MYSQL_ROOT_PASSWORD" --no-create-info --skip-triggers --single-transaction --where="$where" "$MYSQL_DATABASE" "$@"',
+        'where="project_id=$1"; shift; mysqldump -uroot -p"$MYSQL_ROOT_PASSWORD" --no-create-info --skip-triggers --skip-add-locks --single-transaction --where="$where" "$MYSQL_DATABASE" "$@"',
         'dump-e2e',
         String(this.project.projectId),
         ...this.existingTables,
@@ -100,29 +115,76 @@ export class ProjectDbSnapshot {
     const deletes = this.existingTables
       .map((table) => `DELETE FROM \`${table}\` WHERE project_id = ${this.project.projectId};`)
       .join('\n');
-    mysql(`SET FOREIGN_KEY_CHECKS=0;\n${deletes}\nSET FOREIGN_KEY_CHECKS=1;`);
-
     const sql = fs.readFileSync(this.filePath, 'utf8');
-    if (sql.trim()) {
-      const restore = spawnSync('docker', [
-        'compose',
-        'exec',
-        '-T',
-        'db',
-        'sh',
-        '-lc',
-        'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" "$MYSQL_DATABASE"',
-      ], {
-        cwd: process.cwd(),
-        input: sql,
-        encoding: 'utf8',
-        maxBuffer: 200 * 1024 * 1024,
-      });
+    const restoreSql = [
+      'SET SESSION sql_log_bin=0;',
+      'SET FOREIGN_KEY_CHECKS=0;',
+      'START TRANSACTION;',
+      deletes,
+      sql,
+      'COMMIT;',
+      'SET FOREIGN_KEY_CHECKS=1;',
+    ].join('\n');
+    for (let attempt = 1; attempt <= this.restoreAttempts; attempt += 1) {
+      try {
+        const restore = this.spawnCommand('docker', [
+          'compose',
+          'exec',
+          '-T',
+          'db',
+          'sh',
+          '-lc',
+          'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" "$MYSQL_DATABASE"',
+        ], {
+          cwd: process.cwd(),
+          input: restoreSql,
+          encoding: 'utf8',
+          maxBuffer: 200 * 1024 * 1024,
+        });
+        if (restore.status === 0) return;
 
-      if (restore.status !== 0) {
-        throw new Error(`mysql restore failed: ${restore.error?.message || restore.stderr || restore.stdout}`);
+        const detail = this.restoreFailureDetail(restore);
+        if (!this.isTransientRestoreFailure(detail) || attempt === this.restoreAttempts) {
+          throw new Error(`mysql restore failed: ${detail}`);
+        }
+      } catch (error) {
+        const detail = error instanceof Error ? error.message : String(error);
+        if (!this.isTransientRestoreFailure(detail) || attempt === this.restoreAttempts) throw error;
       }
+      this.sleep(attempt);
     }
+  }
+
+  fingerprint() {
+    if (!this.captured || this.existingTables.length === 0) return 'empty';
+    const dump = this.spawnCommand('docker', [
+      'compose', 'exec', '-T', 'db', 'sh', '-lc',
+      'where="project_id=$1"; shift; mysqldump -uroot -p"$MYSQL_ROOT_PASSWORD" --no-create-info --skip-triggers --skip-comments --compact --skip-extended-insert --single-transaction --where="$where" "$MYSQL_DATABASE" "$@"',
+      'dump-fingerprint', String(this.project.projectId), ...this.existingTables,
+    ], { cwd: process.cwd(), encoding: 'utf8', maxBuffer: 200 * 1024 * 1024 });
+    if (dump.status !== 0) {
+      throw new Error(`mysqldump fingerprint failed: ${this.restoreFailureDetail(dump)}`);
+    }
+    const rows = dump.stdout.split('\n')
+      .filter((line) => line.startsWith('INSERT INTO '))
+      .sort()
+      .join('\n');
+    return createHash('sha256').update(rows).digest('hex');
+  }
+
+  restoreFailureDetail(result) {
+    return [
+      `status=${result.status ?? 'null'}`,
+      `signal=${result.signal || 'none'}`,
+      `code=${result.error?.code || 'none'}`,
+      result.error?.message || '',
+      result.stderr || '',
+      result.stdout || '',
+    ].filter(Boolean).join(' | ');
+  }
+
+  isTransientRestoreFailure(detail) {
+    return /EPIPE|ECONNRESET|Deadlock found|Lock wait timeout exceeded|Cannot connect to the Docker daemon/i.test(detail);
   }
 
   dispose() {

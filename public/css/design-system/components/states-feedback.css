@@ -1,0 +1,81 @@
+@layer components {
+  .aia-spinner {
+    display: inline-block;
+    width: var(--ds-space-5);
+    height: var(--ds-space-5);
+    border: var(--ds-space-1) solid var(--ds-active-border);
+    border-block-start-color: var(--ds-active-action-primary);
+    border-radius: var(--ds-radius-pill);
+    animation: aia-spin var(--ds-motion-slow) linear infinite;
+  }
+
+  @keyframes aia-spin {
+    to { transform: rotate(1turn); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .aia-spinner { animation: none; }
+  }
+
+  .aia-feedback {
+    display: inline-flex;
+    align-items: center;
+    box-sizing: border-box;
+    min-height: var(--ds-target-min);
+    padding: var(--ds-space-3) var(--ds-space-4);
+    border: var(--ds-border-width) solid currentColor;
+    border-radius: var(--ds-radius-control);
+    font-weight: var(--ds-type-weight-semibold);
+    overflow-wrap: normal;
+    word-break: normal;
+    hyphens: none;
+  }
+
+  .aia-feedback--info {
+    background: var(--ds-color-state-info-bg);
+    color: var(--ds-color-state-info-text);
+  }
+
+  .aia-feedback--success {
+    background: var(--ds-color-state-success-bg);
+    color: var(--ds-color-state-success-text);
+  }
+
+  .aia-feedback--warning {
+    background: var(--ds-color-state-warning-bg);
+    color: var(--ds-color-state-warning-text);
+  }
+
+  .aia-feedback--critical {
+    background: var(--ds-color-state-critical-bg);
+    color: var(--ds-color-state-critical-text);
+  }
+}
+
+@layer components {
+  .aia-feedback {
+    display: inline-flex;
+    min-height: var(--ds-target-min);
+    padding: var(--ds-space-3) var(--ds-space-4);
+  }
+
+  [data-aia-severity="none"][data-aia-urgency="none"] {
+    background: var(--ds-color-state-info-bg);
+    color: var(--ds-color-state-info-text);
+  }
+
+  [data-aia-severity="low"][data-aia-urgency="none"] {
+    background: var(--ds-color-state-success-bg);
+    color: var(--ds-color-state-success-text);
+  }
+
+  [data-aia-severity="medium"][data-aia-urgency="soon"] {
+    background: var(--ds-color-state-warning-bg);
+    color: var(--ds-color-state-warning-text);
+  }
+
+  [data-aia-severity="high"][data-aia-urgency="now"] {
+    background: var(--ds-color-state-critical-bg);
+    color: var(--ds-color-state-critical-text);
+  }
+}

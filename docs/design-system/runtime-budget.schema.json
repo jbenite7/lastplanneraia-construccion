@@ -1,0 +1,165 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lastplanneraia.com/schemas/design-system-runtime-budget-v1.json",
+  "title": "AIA Design System runtime budget artifact",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "kind",
+    "measurementKind",
+    "status",
+    "designSystemVersion",
+    "route",
+    "viewport",
+    "theme",
+    "fixture",
+    "sourceRef",
+    "sourceTreeHash",
+    "recordedAt",
+    "metrics"
+  ],
+  "properties": {
+    "$schema": { "type": "string" },
+    "schemaVersion": { "const": 1 },
+    "kind": { "enum": ["baseline", "measurement"] },
+    "measurementKind": { "enum": ["original", "retrospective", "current"] },
+    "status": { "enum": ["approved", "measured", "missing-approved-measurement"] },
+    "designSystemVersion": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "route": { "const": "/programa-general" },
+    "viewport": { "enum": ["390x844", "1180x820", "1440x900"] },
+    "theme": { "enum": ["dark", "linen"] },
+    "fixture": { "const": "sanitized-pilot-v1" },
+    "sourceRef": { "type": ["string", "null"], "pattern": "^[a-f0-9]{40}$" },
+    "sourceTreeHash": { "type": ["string", "null"], "pattern": "^[a-f0-9]{64}$" },
+    "recordedAt": { "type": ["string", "null"], "format": "date-time" },
+    "reason": { "type": "string", "minLength": 24 },
+    "approval": {
+      "type": "object",
+      "required": ["status", "approvedBy", "approvalRef"],
+      "properties": {
+        "status": { "enum": ["approved", "missing"] },
+        "approvedBy": { "type": ["string", "null"] },
+        "approvalRef": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "recovery": {
+      "type": "object",
+      "required": [
+        "checkpointRef",
+        "sourceTree",
+        "capturedAt",
+        "measurementPath",
+        "measurementSha256"
+      ],
+      "properties": {
+        "checkpointRef": { "type": "string", "pattern": "^refs/codex/turn-diffs/checkpoints/" },
+        "sourceTree": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+        "capturedAt": { "type": "string", "format": "date-time" },
+        "versionEvidence": { "type": "string" },
+        "measurementPath": {
+          "const": "docs/design-system/runtime-measurements/0.3.3-retrospective.json"
+        },
+        "measurementSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      },
+      "additionalProperties": false
+    },
+    "metrics": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "required": [
+            "cssGzipBytes",
+            "jsGzipBytes",
+            "adapterAssets",
+            "duplicateRequestCount",
+            "themeFlashCount",
+            "initializationMs",
+            "handsontableInteractionMs",
+            "laboratoryAssets"
+          ],
+          "properties": {
+            "cssGzipBytes": { "type": "number", "minimum": 0 },
+            "jsGzipBytes": { "type": "number", "minimum": 0 },
+            "adapterAssets": { "$ref": "#/$defs/applicationPaths" },
+            "duplicateRequestCount": { "type": "number", "minimum": 0 },
+            "themeFlashCount": { "type": "number", "minimum": 0 },
+            "initializationMs": { "type": "number", "minimum": 0 },
+            "handsontableInteractionMs": { "type": "number", "minimum": 0 },
+            "laboratoryAssets": { "$ref": "#/$defs/applicationPaths" }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "tolerances": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "required": [
+            "cssGzipBytes",
+            "jsGzipBytes",
+            "addedAdapterAssets",
+            "duplicateRequestCount",
+            "themeFlashCount",
+            "initializationMs",
+            "handsontableInteractionMs"
+          ],
+          "additionalProperties": { "type": "number", "minimum": 0 }
+        }
+      ]
+    },
+    "provenance": { "type": "object" }
+  },
+  "$defs": {
+    "applicationPaths": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^/[^?#]*$" }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "missing-approved-measurement" } } },
+      "then": {
+        "required": ["reason", "approval", "recovery", "tolerances"],
+        "properties": {
+          "kind": { "const": "baseline" },
+          "measurementKind": { "const": "retrospective" },
+          "designSystemVersion": { "const": "0.3.3" },
+          "sourceRef": { "type": "null" },
+          "sourceTreeHash": { "type": "null" },
+          "recordedAt": { "type": "null" },
+          "metrics": { "type": "null" },
+          "tolerances": { "type": "null" }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "kind": { "const": "measurement" } } },
+      "then": {
+        "properties": {
+          "status": { "const": "measured" },
+          "measurementKind": { "enum": ["current", "retrospective"] }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": { "const": "measurement" },
+          "measurementKind": { "const": "retrospective" }
+        },
+        "required": ["kind", "measurementKind"]
+      },
+      "then": {
+        "properties": {
+          "designSystemVersion": { "const": "0.3.3" }
+        }
+      }
+    }
+  ],
+  "additionalProperties": false
+}

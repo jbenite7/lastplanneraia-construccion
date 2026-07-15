@@ -16,6 +16,7 @@ class ContextController extends BaseController
 
         if ($semana && is_numeric($semana)) {
             $_SESSION['semana'] = (int) $semana;
+            session_write_close();
 
             echo json_encode(['success' => true, 'message' => 'Semana actualizada a ' . $semana]);
         } else {
@@ -29,6 +30,7 @@ class ContextController extends BaseController
     {
         $this->requireAuth();
         $_SESSION['semana'] = 0;
+        session_write_close();
         echo json_encode(['success' => true, 'message' => 'Semana reiniciada']);
         exit;
     }

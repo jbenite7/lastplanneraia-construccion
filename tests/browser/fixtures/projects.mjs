@@ -1,6 +1,15 @@
+const appUsername = process.env.E2E_APP_USERNAME;
+const appPassword = process.env.E2E_APP_PASSWORD;
+
+if ((appUsername && !appPassword) || (!appUsername && appPassword)) {
+  throw new Error(
+    'App E2E credential override is incomplete: set both E2E_APP_USERNAME and E2E_APP_PASSWORD.',
+  );
+}
+
 export const CREDENTIALS = {
-  username: 'jbenitez',
-  password: 'Jbe#1106z',
+  username: appUsername || 'test.A',
+  password: appPassword || 'aia2026',
 };
 
 export const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:8081';

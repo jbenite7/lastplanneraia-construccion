@@ -63,20 +63,14 @@ export const CNC_API = {
 // ─── Listado de Actividades ───────────────────────────────────────────────────
 export const LISTADO_API = {
   list: { method: 'POST', url: '/api/listado-actividades/list', payload: {} },
-  /** Semi-auto: generates suggestions, returns run_id + analysis.steps */
+  updateCell: { method: 'POST', url: '/api/listado-actividades/update-cell', payload: { id: '%ID%', prop: '%PROP%', value: '%VALUE%' } },
+  save: { method: 'POST', url: '/api/listado-actividades/save', payload: { opcion: '%OPCION%' } },
   autoPreview: { method: 'POST', url: '/api/listado-actividades/auto/preview', payload: {} },
-  /**
-   * Semi-auto apply. NOTE (F-004): currently returns "Solicitud inválida".
-   * Payload may need `selected` or `suggestions` array.
-   */
-  autoApply: { method: 'POST', url: '/api/listado-actividades/auto/apply', payload: { run_id: '%RUN_ID%' } },
-  /**
-   * NOTE (F-005): POST /api/listado-actividades/familia/save returns 404.
-   * Endpoint not registered in public/index.php.
-   */
+  autoApply: { method: 'POST', url: '/api/listado-actividades/auto/apply', payload: { run_id: '%RUN_ID%', suggestion_ids: ['%SUGGESTION_ID%'] } },
+  autoUndo: { method: 'POST', url: '/api/listado-actividades/auto/undo', payload: { run_id: '%RUN_ID%' } },
 };
 export const LISTADO_DB = {
-  list: 'SELECT * FROM listado_actividades WHERE project_id = %PID% ORDER BY id',
+  list: 'SELECT * FROM actividades WHERE project_id = %PID% ORDER BY Id',
 };
 
 // ─── Contratos ────────────────────────────────────────────────────────────────

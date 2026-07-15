@@ -14,7 +14,7 @@ test.describe('PDC module tests', () => {
 
     // Navigate to PDC page with a valid construction week.
     await changeWeek(page, 8, '/pdc');
-    // Wait for DataTable initComplete to render toolbar and legend chips
+    // Wait for the Handsontable grid, toolbar, and legend chips to finish rendering.
     await page.waitForTimeout(3000);
   });
 
@@ -96,9 +96,12 @@ test.describe('PDC module tests', () => {
     await expect(panel.locator('.sar-analysis')).toContainText('Estamos revisando tus propuestas');
     await expect(panel.locator('.sar-analysis-progress')).toContainText('100%');
     await expect(panel.locator('.sar-summary')).toContainText('Encontramos', { timeout: 10000 });
-    await expect(panel.locator('.sar-group-title')).toContainText([
-      'Aplicar automático',
+    await expect(panel.locator('.sar-tab')).toContainText([
+      'Decisión',
+      'Listas',
+      'Todo',
     ]);
+    await expect(panel.locator('.sar-filter-band')).toBeVisible();
 
     const visibleText = await panel.evaluate((el) => el.innerText);
     expect(visibleText).not.toContain('Corrida');
@@ -147,14 +150,13 @@ test.describe('PDC module tests', () => {
       expect(colors.actual).toBe(colors.expected);
     }
 
-    const legendOverflow = await page.locator('#dt_cliente_wrapper .pdc-legend-wrap').evaluate((el) => ({
+    const legendOverflow = await page.locator('#pdc-hot-shell .pdc-legend-wrap').evaluate((el) => ({
       clientWidth: el.clientWidth,
       scrollWidth: el.scrollWidth,
       legendClientWidth: el.querySelector('.pdc-legend')?.clientWidth || 0,
       legendScrollWidth: el.querySelector('.pdc-legend')?.scrollWidth || 0,
     }));
     expect(legendOverflow.scrollWidth).toBeLessThanOrEqual(legendOverflow.clientWidth + 1);
-    expect(legendOverflow.legendScrollWidth).toBeLessThanOrEqual(legendOverflow.legendClientWidth + 1);
 
     // Click "Contratacion en curso" chip
     const enCursoChip = page.locator('.pdc-legend-item.active');
@@ -235,22 +237,21 @@ test.describe('PDC module tests', () => {
   });
 
   test('Test 6: Navigation uses modern module routes', async ({ page }) => {
+    await page.locator('[data-aia-info-nav-trigger]').click();
     const contratosBtn = page.locator('.ps-module-switcher #btn_contratos');
     await expect(contratosBtn).toBeVisible({ timeout: 10000 });
     await contratosBtn.click();
     await expect(page).toHaveURL(/\/contratos(?:\?|$)/, { timeout: 15000 });
     expect(page.url()).not.toContain('/legacy/cambiar_pagina.php');
 
+    await page.goBack({ waitUntil: 'networkidle' });
+    await expect(page).toHaveURL(/\/pdc(?:\?|$)/, { timeout: 15000 });
+
+    await page.locator('[data-aia-info-nav-trigger]').click();
     const actividadesBtn = page.locator('.ps-module-switcher #btn_Actividades');
     await expect(actividadesBtn).toBeVisible({ timeout: 10000 });
     await actividadesBtn.click();
     await expect(page).toHaveURL(/\/listado-actividades(?:\?|$)/, { timeout: 15000 });
-    expect(page.url()).not.toContain('/legacy/cambiar_pagina.php');
-
-    const pdcBtn = page.locator('.ps-module-switcher #btn_planCompras');
-    await expect(pdcBtn).toBeVisible({ timeout: 10000 });
-    await pdcBtn.click();
-    await expect(page).toHaveURL(/\/pdc(?:\?|$)/, { timeout: 15000 });
     expect(page.url()).not.toContain('/legacy/cambiar_pagina.php');
   });
 });

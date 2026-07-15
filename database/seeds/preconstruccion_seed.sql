@@ -10,13 +10,13 @@
 -- - Crea tablas IF NOT EXISTS.
 --
 -- Uso:
---   docker exec last-planner-aia-db-1 mysql -uroot -p'Jbe#1106z' \
---     lastplanneraia_dev < database/seeds/preconstruccion_seed.sql
+--   docker compose exec -T db sh -lc 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" "$MYSQL_DATABASE"' \
+--     < database/seeds/preconstruccion_seed.sql
 --
 -- Verificacion post-ejecucion:
---   docker exec last-planner-aia-db-1 mysql -uroot -p'Jbe#1106z' \
---     lastplanneraia_dev -e "SELECT Id, Proyecto_Proceso, Base_de_Datos, Area \
---     FROM general_proyectos_procesos WHERE Area='Pre-Construccion'"
+--   docker compose exec -T db sh -lc \
+--     'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" "$MYSQL_DATABASE" -e "$1"' _ \
+--     "SELECT Id, Proyecto_Proceso, Base_de_Datos, Area FROM general_proyectos_procesos WHERE Area='Pre-Construccion'"
 -- =====================================================================
 
 SET NAMES utf8mb4;

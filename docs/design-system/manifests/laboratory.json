@@ -1,0 +1,1044 @@
+{
+  "$schema": "../module-manifest.schema.json",
+  "schemaVersion": 2,
+  "designSystemVersion": "0.3.6",
+  "moduleId": "design-system-laboratory",
+  "routes": [
+    "/internal/design-system"
+  ],
+  "sources": [
+    "views/design-system/lab.view.php",
+    "views/design-system/families/",
+    "public/css/aia-design-system.css",
+    "public/js/modules/aia_ui/design_system_lab.js"
+  ],
+  "components": [
+    "shell",
+    "page-header",
+    "toolbar",
+    "button",
+    "field",
+    "state",
+    "card",
+    "table-shell",
+    "overlay",
+    "bi-shell",
+    "navigation",
+    "section",
+    "icon",
+    "search",
+    "filter",
+    "pagination",
+    "feedback",
+    "progress",
+    "live-region",
+    "menu",
+    "popover",
+    "toast-confirm",
+    "handsontable-adapter",
+    "select-adapter",
+    "bi-chart",
+    "bi-legend",
+    "bi-tooltip"
+  ],
+  "vendors": [
+    "bootstrap",
+    "handsontable",
+    "select2",
+    "sweetalert2",
+    "font-awesome"
+  ],
+  "layouts": [
+    "mobile",
+    "tablet",
+    "desktop",
+    "wide"
+  ],
+  "states": [
+    "normal",
+    "hover",
+    "focus",
+    "disabled",
+    "loading",
+    "empty",
+    "error"
+  ],
+  "roles": [
+    "A"
+  ],
+  "persistence": {
+    "fixture": "deterministic",
+    "testDataRestored": true
+  },
+  "exceptions": [],
+  "tests": [
+    "tests/browser/design-system-lab.mjs",
+    "tests/browser/design-system-lab.a11y.mjs",
+    "tests/browser/design-system-lab.visual.mjs"
+  ],
+  "evidence": [
+    "tests/browser/__screenshots__/design-system-lab.visual.mjs/"
+  ],
+  "scenarios": [
+    {
+      "id": "actions-dark-1180x820",
+      "family": "actions",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "dark",
+      "viewport": {
+        "width": 1180,
+        "height": 820
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/actions-dark-1180x820.png",
+      "sha256": "7e042e021e2f2878d7fd0f31bc1cc278d3aedcfe9683f37df5986d6421e215da"
+    },
+    {
+      "id": "actions-dark-1440x900",
+      "family": "actions",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "dark",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "density": "compact",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/actions-dark-1440x900.png",
+      "sha256": "4613aa4ec1bc31f11ce04f0ff80336ee20cf6fe416f7e7840c723187e4011c38"
+    },
+    {
+      "id": "actions-dark-390x844",
+      "family": "actions",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "dark",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/actions-dark-390x844.png",
+      "sha256": "1018f794822746be6a1e47de152393acf946aa98a5a03ff0a9ffd346a07d1a61"
+    },
+    {
+      "id": "actions-linen-1180x820",
+      "family": "actions",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "linen",
+      "viewport": {
+        "width": 1180,
+        "height": 820
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/actions-linen-1180x820.png",
+      "sha256": "cf19b5aae6943e413f55616547f32d71564bc37d5fe80f63944a67b79d41fe72"
+    },
+    {
+      "id": "actions-linen-1440x900",
+      "family": "actions",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "linen",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "density": "compact",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/actions-linen-1440x900.png",
+      "sha256": "6f0754cb3cfbafb6069dce5f6fdbd7eb77d2f290de1220db46d5492637aa3aa9"
+    },
+    {
+      "id": "actions-linen-390x844",
+      "family": "actions",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "linen",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/actions-linen-390x844.png",
+      "sha256": "1f843424ef5a4e6179ba48da7d8c76a665da85f5de97a7ca82697bf1a97f04b4"
+    },
+    {
+      "id": "bi-primitives-dark-1180x820",
+      "family": "bi-primitives",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "dark",
+      "viewport": {
+        "width": 1180,
+        "height": 820
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/bi-primitives-dark-1180x820.png",
+      "sha256": "01341acdb577a450dad701c4371456fd120361b9ed0d8b2fc895e6a90fe51e67"
+    },
+    {
+      "id": "bi-primitives-dark-1440x900",
+      "family": "bi-primitives",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "dark",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "density": "compact",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/bi-primitives-dark-1440x900.png",
+      "sha256": "b370be80ff678d75bc5017b21d92b33fb2b4c088f0ef017622eab1296e26ab11"
+    },
+    {
+      "id": "bi-primitives-dark-390x844",
+      "family": "bi-primitives",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "dark",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/bi-primitives-dark-390x844.png",
+      "sha256": "14ea1ff2bbdd045d89dc1aecd6500451070ac970c0966b802e8b0a6824c9b58f"
+    },
+    {
+      "id": "bi-primitives-linen-1180x820",
+      "family": "bi-primitives",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "linen",
+      "viewport": {
+        "width": 1180,
+        "height": 820
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/bi-primitives-linen-1180x820.png",
+      "sha256": "b6ae00eb809d84f581d1af6d92c05eec33cf0342ee25a8ad8e9dc092d23ab96b"
+    },
+    {
+      "id": "bi-primitives-linen-1440x900",
+      "family": "bi-primitives",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "linen",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "density": "compact",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/bi-primitives-linen-1440x900.png",
+      "sha256": "07daacc6885e144aee596def963f182e1938adb0c7f0151e07e6238c83d47327"
+    },
+    {
+      "id": "bi-primitives-linen-390x844",
+      "family": "bi-primitives",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "linen",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/bi-primitives-linen-390x844.png",
+      "sha256": "454a4e3e8c42ce4170094bd51633e99cfd44f524a60663efd96523164518ca2a"
+    },
+    {
+      "id": "data-display-dark-1180x820",
+      "family": "data-display",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "dark",
+      "viewport": {
+        "width": 1180,
+        "height": 820
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/data-display-dark-1180x820.png",
+      "sha256": "4c35177e331897584a150dc94c92d7364a67ce4d36ec071c7e01efb974085d1b"
+    },
+    {
+      "id": "data-display-dark-1440x900",
+      "family": "data-display",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "dark",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "density": "compact",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/data-display-dark-1440x900.png",
+      "sha256": "a663362b727f5c16ef7127c8127501f8b94d19fca739318e6e0b999c15c88d18"
+    },
+    {
+      "id": "data-display-dark-390x844",
+      "family": "data-display",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "dark",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/data-display-dark-390x844.png",
+      "sha256": "1a0c2f0c3924697e834ef2705493fdaa7e17367ef6e425d09fcfe9e9f984f4f4"
+    },
+    {
+      "id": "data-display-linen-1180x820",
+      "family": "data-display",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "linen",
+      "viewport": {
+        "width": 1180,
+        "height": 820
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/data-display-linen-1180x820.png",
+      "sha256": "76e9ce9f7698b29187637b3e2d3d41caa15a1f0bd0d9a6d55482354e4666acd6"
+    },
+    {
+      "id": "data-display-linen-1440x900",
+      "family": "data-display",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "linen",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "density": "compact",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/data-display-linen-1440x900.png",
+      "sha256": "5b89f0bf183290d9c8b5ef6ae9d7fd57bdef6bae8b87441b55090102def6eb4b"
+    },
+    {
+      "id": "data-display-linen-390x844",
+      "family": "data-display",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "linen",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/data-display-linen-390x844.png",
+      "sha256": "fb11e145b4c21fa57745bac2d9f69e296e73c8d5fcc10edeff6f9b1eaf0090ed"
+    },
+    {
+      "id": "forms-filters-dark-1180x820",
+      "family": "forms-filters",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "dark",
+      "viewport": {
+        "width": 1180,
+        "height": 820
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/forms-filters-dark-1180x820.png",
+      "sha256": "c6b2032998553bbc29341ff384e1eaa0ad83998f2a744db53fab19ef875b6cd8"
+    },
+    {
+      "id": "forms-filters-dark-1440x900",
+      "family": "forms-filters",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "dark",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "density": "compact",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/forms-filters-dark-1440x900.png",
+      "sha256": "5ab31a51b372cc541feecad8fada375c35fae8c99ac42b9c90b4f1c2fb3edab1"
+    },
+    {
+      "id": "forms-filters-dark-390x844",
+      "family": "forms-filters",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "dark",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/forms-filters-dark-390x844.png",
+      "sha256": "fd17cf7ad476af71b8dbb55e85089fffc9362f9519ae19d298ccee9607570f41"
+    },
+    {
+      "id": "forms-filters-linen-1180x820",
+      "family": "forms-filters",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "linen",
+      "viewport": {
+        "width": 1180,
+        "height": 820
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/forms-filters-linen-1180x820.png",
+      "sha256": "3a605fddd8de725ed83d349bd690241422927577afa21985813fde0da44d5c50"
+    },
+    {
+      "id": "forms-filters-linen-1440x900",
+      "family": "forms-filters",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "linen",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "density": "compact",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/forms-filters-linen-1440x900.png",
+      "sha256": "c6bd458e641a040ed532e3524f7be89c6a12833d9d6d4e045b6667caf3cd5a0b"
+    },
+    {
+      "id": "forms-filters-linen-390x844",
+      "family": "forms-filters",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "linen",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/forms-filters-linen-390x844.png",
+      "sha256": "8a2cd0e2ac28153b483eb7bdc7b8b1196d789db4813d5ceb1a1e313f696b97ef"
+    },
+    {
+      "id": "foundations-dark-1180x820",
+      "family": "foundations",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "dark",
+      "viewport": {
+        "width": 1180,
+        "height": 820
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/foundations-dark-1180x820.png",
+      "sha256": "520a147ca60eb54c4e30c20efcfe7b379853daf9d48dd865d5ff73bd3b76d1b4"
+    },
+    {
+      "id": "foundations-dark-1440x900",
+      "family": "foundations",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "dark",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "density": "compact",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/foundations-dark-1440x900.png",
+      "sha256": "f54aa565c554a9fcc087682c890bd16b4ec549dc68531f6c4d42085c93ea000d"
+    },
+    {
+      "id": "foundations-dark-390x844",
+      "family": "foundations",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "dark",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/foundations-dark-390x844.png",
+      "sha256": "197310f8e75bbea1de1d40603831a962a3015d8e5dab5844911d5f99d52d6e7d"
+    },
+    {
+      "id": "foundations-linen-1180x820",
+      "family": "foundations",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "linen",
+      "viewport": {
+        "width": 1180,
+        "height": 820
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/foundations-linen-1180x820.png",
+      "sha256": "02d42f15456ae36424eee0045ff6e4714fc41f08e7076472e32cd29050868c15"
+    },
+    {
+      "id": "foundations-linen-1440x900",
+      "family": "foundations",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "linen",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "density": "compact",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/foundations-linen-1440x900.png",
+      "sha256": "1f4b5b64c8bdd1a2d204ea5faa6deccb9b233987b903aafc93148c2b6d249b5d"
+    },
+    {
+      "id": "foundations-linen-390x844",
+      "family": "foundations",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "linen",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/foundations-linen-390x844.png",
+      "sha256": "7efaa36760b33bc48bd88e3bc6363655c4b77f2d0a39356de27829d6d16bfaa7"
+    },
+    {
+      "id": "overlays-dark-1180x820",
+      "family": "overlays",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "dark",
+      "viewport": {
+        "width": 1180,
+        "height": 820
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/overlays-dark-1180x820.png",
+      "sha256": "65182280c1ba6128c2a3873c539bfe8371f250959292754f5b68c2255db3caf7"
+    },
+    {
+      "id": "overlays-dark-1440x900",
+      "family": "overlays",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "dark",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "density": "compact",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/overlays-dark-1440x900.png",
+      "sha256": "d24d09b7a42bca3cb32640e866dd9ab5b979458ff4f3cf7d429226c248b95544"
+    },
+    {
+      "id": "overlays-dark-390x844",
+      "family": "overlays",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "dark",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/overlays-dark-390x844.png",
+      "sha256": "90fffa792807ede25afd9483cf16fa12930053b10ddc1eefc645127f6f7cec49"
+    },
+    {
+      "id": "overlays-linen-1180x820",
+      "family": "overlays",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "linen",
+      "viewport": {
+        "width": 1180,
+        "height": 820
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/overlays-linen-1180x820.png",
+      "sha256": "8c6f183f7bedc50fdf2cea2a59122e16dff2944f407a6195e99ab008260035f7"
+    },
+    {
+      "id": "overlays-linen-1440x900",
+      "family": "overlays",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "linen",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "density": "compact",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/overlays-linen-1440x900.png",
+      "sha256": "732dc158dddce61789d7f67076287ce22b747593f37b173e0889dc04c377926d"
+    },
+    {
+      "id": "overlays-linen-390x844",
+      "family": "overlays",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "linen",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/overlays-linen-390x844.png",
+      "sha256": "a5ed5591ab9e89f224938a1d879258ed0967ff3483a432cbb3a68ad6fb4198cc"
+    },
+    {
+      "id": "page-structure-dark-1180x820",
+      "family": "page-structure",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "dark",
+      "viewport": {
+        "width": 1180,
+        "height": 820
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/page-structure-dark-1180x820.png",
+      "sha256": "df6b273da5fa13a82f9581cc8f07931ad0b07c15d19c4513958bd4aa7c246426"
+    },
+    {
+      "id": "page-structure-dark-1440x900",
+      "family": "page-structure",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "dark",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "density": "compact",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/page-structure-dark-1440x900.png",
+      "sha256": "d8f8e0f3c26bf20cc50c8206c45cdb7dcd13db7a977760e178df463b02027743"
+    },
+    {
+      "id": "page-structure-dark-390x844",
+      "family": "page-structure",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "dark",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/page-structure-dark-390x844.png",
+      "sha256": "8f27f3df16c8394165696eb94a56b5673985e23029d0a83f2f5b94bd65513584"
+    },
+    {
+      "id": "page-structure-linen-1180x820",
+      "family": "page-structure",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "linen",
+      "viewport": {
+        "width": 1180,
+        "height": 820
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/page-structure-linen-1180x820.png",
+      "sha256": "772284c7d453d5864c272c9a1c7a3bb26dfcdbc0290bd15c76835012997adcfa"
+    },
+    {
+      "id": "page-structure-linen-1440x900",
+      "family": "page-structure",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "linen",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "density": "compact",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/page-structure-linen-1440x900.png",
+      "sha256": "29bc4a0c91164e59ad741c8ed034256994ae2f4ac2d783bf9ef3a0ba01bd54b3"
+    },
+    {
+      "id": "page-structure-linen-390x844",
+      "family": "page-structure",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "linen",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/page-structure-linen-390x844.png",
+      "sha256": "0eab67f3d2f1f83b5fe8887922962be12c6756744d54bf4e6328096f33dddcba"
+    },
+    {
+      "id": "shell-navigation-dark-1180x820",
+      "family": "shell-navigation",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "dark",
+      "viewport": {
+        "width": 1180,
+        "height": 820
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/shell-navigation-dark-1180x820.png",
+      "sha256": "7543eb83a33eea2bf92a17b65cf5fdc44e082367b2b45277b18b860898417b67"
+    },
+    {
+      "id": "shell-navigation-dark-1440x900",
+      "family": "shell-navigation",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "dark",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "density": "compact",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/shell-navigation-dark-1440x900.png",
+      "sha256": "e386c997f2674cfc15264888df229c258a6a8fc37defe9203edd8f76d01b8038"
+    },
+    {
+      "id": "shell-navigation-dark-390x844",
+      "family": "shell-navigation",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "dark",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/shell-navigation-dark-390x844.png",
+      "sha256": "a8e849212f1ea63e4fc32a6edbd721016587359d0ea2b02c1e792c1109fc58a5"
+    },
+    {
+      "id": "shell-navigation-linen-1180x820",
+      "family": "shell-navigation",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "linen",
+      "viewport": {
+        "width": 1180,
+        "height": 820
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/shell-navigation-linen-1180x820.png",
+      "sha256": "207322aed2f7402445d4dfe8fb8ed7bc11e2010a4a6731188284a9bb4ccbe147"
+    },
+    {
+      "id": "shell-navigation-linen-1440x900",
+      "family": "shell-navigation",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "linen",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "density": "compact",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/shell-navigation-linen-1440x900.png",
+      "sha256": "649469b9a512e6f09692a6f5b5a859bfc6be0ad26073b9e09fbeff8ae1c1631d"
+    },
+    {
+      "id": "shell-navigation-linen-390x844",
+      "family": "shell-navigation",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "linen",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/shell-navigation-linen-390x844.png",
+      "sha256": "930d6d4d9df19691ac9323969f1fb6a4934c341b22a8e33b477f3b2807382875"
+    },
+    {
+      "id": "states-feedback-dark-1180x820",
+      "family": "states-feedback",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "dark",
+      "viewport": {
+        "width": 1180,
+        "height": 820
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/states-feedback-dark-1180x820.png",
+      "sha256": "277f7921d5e6acdce89b8c2f3c7732a7009e231d3b0e6ddbd8d9db13a4db6483"
+    },
+    {
+      "id": "states-feedback-dark-1440x900",
+      "family": "states-feedback",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "dark",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "density": "compact",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/states-feedback-dark-1440x900.png",
+      "sha256": "c26420f0fd75c8ec64ac2cfd104805d52a62a43d301ddc5264ab651b440a8ef7"
+    },
+    {
+      "id": "states-feedback-dark-390x844",
+      "family": "states-feedback",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "dark",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/states-feedback-dark-390x844.png",
+      "sha256": "41fcb6f27209b88493af1e6d4419ca4cbe31b1da4144f542bc1276467f52c13e"
+    },
+    {
+      "id": "states-feedback-linen-1180x820",
+      "family": "states-feedback",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "linen",
+      "viewport": {
+        "width": 1180,
+        "height": 820
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/states-feedback-linen-1180x820.png",
+      "sha256": "d78f535d77cb3a4c7da63ebaa27481493671e7b4ebb068282b9febbabc03179d"
+    },
+    {
+      "id": "states-feedback-linen-1440x900",
+      "family": "states-feedback",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "linen",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "density": "compact",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/states-feedback-linen-1440x900.png",
+      "sha256": "29ec21ac5cd84ad6029d8962708e8c9b7c3cbe0a5b03564d550631a197b82785"
+    },
+    {
+      "id": "states-feedback-linen-390x844",
+      "family": "states-feedback",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "linen",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/states-feedback-linen-390x844.png",
+      "sha256": "746f12cee157d148fecfe00a5f2f213ab8c8fd818dffcf19235352aee1653fd5"
+    },
+    {
+      "id": "vendor-adapters-dark-1180x820",
+      "family": "vendor-adapters",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "dark",
+      "viewport": {
+        "width": 1180,
+        "height": 820
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/vendor-adapters-dark-1180x820.png",
+      "sha256": "7ccfafd1275d81ce73dd2658c5d514e3743adc0480493dcfa3a0a3d9c465c6ec"
+    },
+    {
+      "id": "vendor-adapters-dark-1440x900",
+      "family": "vendor-adapters",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "dark",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "density": "compact",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/vendor-adapters-dark-1440x900.png",
+      "sha256": "74db056a56b101f1b4b68a6b341195a61613893510cb8d120c468f151b892172"
+    },
+    {
+      "id": "vendor-adapters-dark-390x844",
+      "family": "vendor-adapters",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "dark",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/vendor-adapters-dark-390x844.png",
+      "sha256": "b177126893e38d5f1f94a2399b62711fa668de2d1ada97bf25fcc4cbc288a74e"
+    },
+    {
+      "id": "vendor-adapters-linen-1180x820",
+      "family": "vendor-adapters",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "linen",
+      "viewport": {
+        "width": 1180,
+        "height": 820
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/vendor-adapters-linen-1180x820.png",
+      "sha256": "832aa788696a03ffb4660d44cbfc3a27a9d08fa72e2c48b594a7b2c4a20de2ea"
+    },
+    {
+      "id": "vendor-adapters-linen-1440x900",
+      "family": "vendor-adapters",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "linen",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "density": "compact",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/vendor-adapters-linen-1440x900.png",
+      "sha256": "8e26cbcf68def1f0d6ea0a1d90d4b744a66eb179a4c2db3aa947eafffb6552d0"
+    },
+    {
+      "id": "vendor-adapters-linen-390x844",
+      "family": "vendor-adapters",
+      "route": "/internal/design-system",
+      "fixture": "approved-family-v1",
+      "theme": "linen",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/vendor-adapters-linen-390x844.png",
+      "sha256": "4f00b56062047c117c11b93b0de589c29e798af940f691e5ced35ac85fb68d40"
+    }
+  ]
+}

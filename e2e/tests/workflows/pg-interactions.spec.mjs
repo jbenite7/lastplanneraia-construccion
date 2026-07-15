@@ -4,14 +4,33 @@ import { ProjectDbSnapshot, runSql } from '../../../tests/browser/support/dbSnap
 import { installErrorCollectors } from '../../../tests/browser/support/assertions.mjs';
 import { changeWeek, loginAndSelectProject, logout, postFormJson, getJson } from '../../../tests/browser/support/session.mjs';
 import { generateFindings, attachAssertionCollector } from '../../support/findings.mjs';
-import { getCellValue, getRowCount, waitForRender } from '../../support/handsontable.mjs';
+import { editCell, getCellValue, getRowCount, waitForRender } from '../../support/handsontable.mjs';
 import { PG_SELECTORS, COMMON_SELECTORS } from '../../support/moduleSelectors.mjs';
 
 const PROJECT_DA_PORTO = PROJECTS.find((p) => p.key === 'construction');
 const PROJECT_PC = PROJECTS.find((p) => p.key === 'pc');
+const PASSWORD = 'aia2026';
+const ADMIN = { username: 'test.A', password: PASSWORD };
+const RESIDENT = { username: 'test.R', password: PASSWORD };
+const SUBCONTRACTOR = { username: 'test.C', password: PASSWORD };
+const VIEWER = { username: 'test.V', password: PASSWORD };
+const REQUIRE_ISOLATED_DB = process.env.E2E_REQUIRE_ISOLATED_DB === '1';
+
+if (REQUIRE_ISOLATED_DB) {
+  if (process.env.E2E_ALLOW_DB_MUTATION !== 'design-system-ci') {
+    throw new Error('E2E_ALLOW_DB_MUTATION=design-system-ci is required for isolated persistence tests');
+  }
+  if (!PROJECT_DA_PORTO) {
+    throw new Error('Da Porto construction project is required for the isolated Programa General gate');
+  }
+}
 
 function scalar(sql) {
   try { return Number(runSql(sql).trim().split(/\s+/).pop() || 0); } catch { return 0; }
+}
+
+function postedUnit(response) {
+  return new URLSearchParams(response.request().postData() || '').get('unidad');
 }
 
 async function apiPost(page, url, body) {
@@ -24,6 +43,24 @@ async function apiGet(page, url) {
   return { ok: r.ok && !r.payload.parseError, payload: r.payload };
 }
 
+async function editableUnitRow(page) {
+  return page.evaluate(() => {
+    const hot = window.PGHotModule?.getHotInstance?.();
+    if (!hot) return null;
+    const physicalRow = hot.getSourceData().findIndex((row) => (
+      row && Number(row.Titulo) !== 1 && Number(row.unique_id) > 0
+    ));
+    if (physicalRow < 0) return null;
+    const row = hot.getSourceDataAtRow(physicalRow);
+    return {
+      visualRow: hot.toVisualRow(physicalRow),
+      uniqueId: Number(row.unique_id),
+      originalValue: String(row.unidad ?? row.Unidad ?? ''),
+      testValue: String(row.unidad ?? row.Unidad ?? '') === 'ml' ? 'm2' : 'ml',
+    };
+  });
+}
+
 /* ──────────────────────────────────────────────────────────────────────────────
    Da Porto Admin — full PG workflow
    ────────────────────────────────────────────────────────────────────────────── */
@@ -34,10 +71,12 @@ test.describe('PG interactions', () => {
     attachAssertionCollector(errors);
     const findings = [];
     let snapshot;
+    let beforeFingerprint;
 
     try {
       snapshot = new ProjectDbSnapshot(PROJECT_DA_PORTO).capture();
-      await loginAndSelectProject(page, PROJECT_DA_PORTO);
+      beforeFingerprint = snapshot.fingerprint();
+      await loginAndSelectProject(page, PROJECT_DA_PORTO, ADMIN);
 
       /* ── navigate + render ── */
       await changeWeek(page, 1, '/programa-general');
@@ -55,68 +94,43 @@ test.describe('PG interactions', () => {
       }
       expect(actualRowCount, 'PG must have rows').toBeGreaterThan(0);
 
-      /* ── save original Unidad value ── */
-      const originalValue = await getCellValue(page, 0, 7);
-      findings.push(`Original Unidad: "${originalValue}"`);
-
-      /* ── edit cell directly via Handsontable API (bypass dblclick UI) ── */
-      await page.evaluate(({ row, col, val }) => {
-        if (window.hot && typeof window.hot.setDataAtCell === 'function') {
-          window.hot.setDataAtCell(row, col, val);
-          window.hot.render();
-          return;
-        }
-        for (var k in window) {
-          try {
-            var m = window[k];
-            if (m && typeof m === 'object' && typeof m.getHotInstance === 'function') {
-              var hot = m.getHotInstance();
-              if (hot && typeof hot.setDataAtCell === 'function') {
-                hot.setDataAtCell(row, col, val);
-                hot.render();
-                return;
-              }
-            }
-          } catch (_) {}
-        }
-      }, { row: 0, col: 7, val: 'E2E_TEST' });
-      await page.waitForTimeout(500);
-
-      const uiValue = await getCellValue(page, 0, 7);
-      findings.push(`UI after setDataAtCell: "${uiValue}"`);
+      const target = await editableUnitRow(page);
+      expect(target, 'PG needs an editable activity row').toBeTruthy();
+      findings.push(`Target unique_id: ${target.uniqueId}`);
+      const saveResponse = page.waitForResponse((response) => (
+        response.url().includes('/api/general/update?') &&
+        response.request().method() === 'POST' && postedUnit(response) === target.testValue
+      ));
+      await editCell(page, target.visualRow, 7, target.testValue);
+      const savePayload = await (await saveResponse).json();
+      expect(savePayload.respuesta).toBe('BIEN');
+      expect(savePayload.unidad).toBe(target.testValue);
 
       // API verify
       const apiRes = await apiGet(page, `/api/general/list?db=${PROJECT_DA_PORTO.dbPrefix}&semana=1`);
-      if (apiRes.ok && apiRes.payload.data?.length > 0) {
-        findings.push('API verify: data received');
-      } else {
-        findings.push(`API verify: no data (${JSON.stringify(apiRes.payload).slice(0, 200)})`);
-      }
+      const apiRow = apiRes.payload.data?.find((row) => Number(row.unique_id) === target.uniqueId);
+      expect(apiRow?.unidad, 'API must return the edited unit').toBe(target.testValue);
+      findings.push(`API verify ${target.testValue}: OK`);
 
       // DB verify
       const dbCount = scalar(
-        `SELECT COUNT(*) FROM programa_consolidado WHERE project_id=${PROJECT_DA_PORTO.projectId}`,
+        `SELECT COUNT(*) FROM programa_consolidado WHERE project_id=${PROJECT_DA_PORTO.projectId} ` +
+        `AND unique_id=${target.uniqueId} AND unidad='${target.testValue}'`,
       );
-      findings.push(`DB rows in programa_consolidado: ${dbCount}`);
+      expect(dbCount, 'DB must persist the edited unit').toBe(1);
+      findings.push(`DB verify ${target.testValue}: OK`);
+
+      const uiValue = await getCellValue(page, target.visualRow, 7);
+      expect(uiValue, 'UI must show the edited unit').toBe(target.testValue);
 
       /* ── restore original value ── */
-      await page.evaluate(({ row, col, val }) => {
-        // same hot lookup
-        for (var k in window) {
-          try {
-            var m = window[k];
-            if (m && typeof m === 'object' && typeof m.getHotInstance === 'function') {
-              var hot = m.getHotInstance();
-              if (hot && typeof hot.setDataAtCell === 'function') {
-                hot.setDataAtCell(row, col, val);
-                hot.render();
-                return;
-              }
-            }
-          } catch (_) {}
-        }
-      }, { row: 0, col: 7, val: originalValue || '' });
-      await page.waitForTimeout(500);
+      const restoreResponse = page.waitForResponse((response) => (
+        response.url().includes('/api/general/update?') &&
+        response.request().method() === 'POST' && postedUnit(response) === target.originalValue
+      ));
+      await editCell(page, target.visualRow, 7, target.originalValue);
+      expect((await (await restoreResponse).json()).respuesta).toBe('BIEN');
+      expect(await getCellValue(page, target.visualRow, 7)).toBe(target.originalValue);
 
       /* ── leyenda modal ── */
       await page.click(PG_SELECTORS.buttons.leyenda);
@@ -153,7 +167,12 @@ test.describe('PG interactions', () => {
       errors.findings = findings;
     } finally {
       await logout(page).catch(() => {});
-      if (snapshot) { snapshot.restore(); snapshot.dispose(); }
+      if (snapshot) {
+        snapshot.restore();
+        const afterFingerprint = snapshot.fingerprint();
+        expect(afterFingerprint).toBe(beforeFingerprint);
+        snapshot.dispose();
+      }
     }
     testInfo._e2eErrors = errors;
   });
@@ -170,8 +189,7 @@ test.describe('PG interactions', () => {
 
     try {
       snapshot = new ProjectDbSnapshot(PROJECT_DA_PORTO).capture();
-      // Use jbenitez credentials (known working) and test RBAC via API
-      await loginAndSelectProject(page, PROJECT_DA_PORTO);
+      await loginAndSelectProject(page, PROJECT_DA_PORTO, RESIDENT);
 
       await changeWeek(page, 1, '/programa-general');
       await waitForRender(page);
@@ -227,6 +245,32 @@ test.describe('PG interactions', () => {
     testInfo._e2eErrors = errors;
   });
 
+  test('Da Porto read-only roles: visibility and manipulated writes', async ({ page }) => {
+    const roles = [
+      { credentials: SUBCONTRACTOR, canView: false },
+      { credentials: VIEWER, canView: true },
+    ];
+    for (const role of roles) {
+      await loginAndSelectProject(page, PROJECT_DA_PORTO, role.credentials);
+      const viewResponse = await page.goto('/programa-general');
+      expect(viewResponse.status()).toBe(200);
+      const listResponse = await getJson(
+        page,
+        `/api/general/list?db=${PROJECT_DA_PORTO.dbPrefix}&semana=1`,
+      );
+      expect(listResponse.status).toBe(role.canView ? 200 : 403);
+      if (role.canView) await waitForRender(page);
+      else await expect(page.locator('.handsontable .htCore')).toHaveCount(0);
+      const forbiddenWrite = await postFormJson(
+        page,
+        `/api/general/update?db=${PROJECT_DA_PORTO.dbPrefix}&semana=1`,
+        { opcion: 'modificar', Id: '0', unidad: 'E2E_FORBIDDEN' },
+      );
+      expect(forbiddenWrite.status).toBe(403);
+      await logout(page);
+    }
+  });
+
   /* ──────────────────────────────────────────────────────────────────────────────
      Aeropuerto PC Admin — pre-construccion chips, edit, leyenda, export
      ────────────────────────────────────────────────────────────────────────────── */
@@ -236,10 +280,12 @@ test.describe('PG interactions', () => {
     attachAssertionCollector(errors);
     const findings = [];
     let snapshot;
+    let beforeFingerprint;
 
     try {
       snapshot = new ProjectDbSnapshot(PROJECT_PC).capture();
-      await loginAndSelectProject(page, PROJECT_PC);
+      beforeFingerprint = snapshot.fingerprint();
+      await loginAndSelectProject(page, PROJECT_PC, ADMIN);
 
       await changeWeek(page, 1, '/programa-general');
       await waitForRender(page);
@@ -255,36 +301,45 @@ test.describe('PG interactions', () => {
         findings.push(`Chip "${chipText}": ${visible ? 'visible' : 'not found'}`);
       }
 
-      /* ── edit cell ── */
-      const origVal = await getCellValue(page, 0, 7);
-      await editCell(page, 0, 7, 'E2E_PC_TEST');
-      await page.waitForTimeout(500);
+      /* ── edit valid unit and verify the persistence boundary ── */
+      const target = await editableUnitRow(page);
+      expect(target, 'PC PG needs an editable activity row').toBeTruthy();
+      const saveResponse = page.waitForResponse((response) => (
+        response.url().includes('/api/general/update?') &&
+        response.request().method() === 'POST' && postedUnit(response) === target.testValue
+      ));
+      await editCell(page, target.visualRow, 7, target.testValue);
+      const savePayload = await (await saveResponse).json();
+      expect(savePayload.respuesta).toBe('BIEN');
+      expect(savePayload.unidad).toBe(target.testValue);
 
-      const uiVal = await getCellValue(page, 0, 7);
-      expect(uiVal, 'PC UI should show E2E_PC_TEST').toBe('E2E_PC_TEST');
+      const uiVal = await getCellValue(page, target.visualRow, 7);
+      expect(uiVal, 'PC UI should show the valid edited unit').toBe(target.testValue);
       findings.push(`PC UI verify: "${uiVal}"`);
 
       // API
       const apiRes = await apiGet(page, `/api/general/list?db=${PROJECT_PC.dbPrefix}&semana=1`);
-      if (apiRes.ok && apiRes.payload.data?.length > 0) {
-        const apiRow = apiRes.payload.data[0];
-        expect(String(apiRow.Unidad || ''), 'PC API Unidad should be E2E_PC_TEST').toBe('E2E_PC_TEST');
-        findings.push('PC API verify: OK');
-      } else {
-        findings.push(`PC API verify: no data (${JSON.stringify(apiRes.payload).slice(0, 200)})`);
-      }
+      const apiRow = apiRes.payload.data?.find((row) => Number(row.unique_id) === target.uniqueId);
+      expect(String(apiRow?.unidad ?? apiRow?.Unidad ?? ''), 'PC API must return the edited unit')
+        .toBe(target.testValue);
+      findings.push(`PC API verify ${target.testValue}: OK`);
 
       // DB
       const dbCount = scalar(
-        `SELECT COUNT(*) FROM programa_consolidado WHERE project_id=${PROJECT_PC.projectId} AND Unidad='E2E_PC_TEST'`,
+        `SELECT COUNT(*) FROM programa_consolidado WHERE project_id=${PROJECT_PC.projectId} ` +
+        `AND unique_id=${target.uniqueId} AND unidad='${target.testValue}'`,
       );
-      expect(dbCount, 'PC DB should have E2E_PC_TEST row').toBeGreaterThan(0);
-      findings.push(`PC DB verify: ${dbCount} rows`);
+      expect(dbCount, 'PC DB must persist the edited unit').toBe(1);
+      findings.push(`PC DB verify ${target.testValue}: OK`);
 
       /* ── restore ── */
-      await editCell(page, 0, 7, origVal || '');
-      await page.waitForTimeout(500);
-      expect(await getCellValue(page, 0, 7), 'PC value restored').toBe(origVal || '');
+      const restoreResponse = page.waitForResponse((response) => (
+        response.url().includes('/api/general/update?') &&
+        response.request().method() === 'POST' && postedUnit(response) === target.originalValue
+      ));
+      await editCell(page, target.visualRow, 7, target.originalValue);
+      expect((await (await restoreResponse).json()).respuesta).toBe('BIEN');
+      expect(await getCellValue(page, target.visualRow, 7), 'PC value restored').toBe(target.originalValue);
       findings.push('PC value restored');
 
       /* ── leyenda ── */
@@ -306,7 +361,12 @@ test.describe('PG interactions', () => {
       errors.findings = findings;
     } finally {
       await logout(page).catch(() => {});
-      if (snapshot) { snapshot.restore(); snapshot.dispose(); }
+      if (snapshot) {
+        snapshot.restore();
+        const afterFingerprint = snapshot.fingerprint();
+        expect(afterFingerprint).toBe(beforeFingerprint);
+        snapshot.dispose();
+      }
     }
     testInfo._e2eErrors = errors;
   });

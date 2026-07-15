@@ -6,6 +6,7 @@ class RbacCatalog
 {
     public const DEFAULT_ROLE = 'C';
     public const PERM_AUTO_DEFINIR_CONTRATOS = 'lps.contratos.auto_definir';
+    public const PERM_INTERNAL_DESIGN_SYSTEM_VIEW = 'internal.design-system.view';
 
     public static function roleAliases(): array
     {
@@ -46,6 +47,40 @@ class RbacCatalog
         return ['A', 'D', 'R', 'DCV', 'OT', 'G', 'S', 'SG', 'C', 'V'];
     }
 
+    public static function cicDisciplinesForRole(string $role): array
+    {
+        $role = strtoupper(trim($role));
+        $role = self::roleAliases()[$role] ?? $role;
+
+        return match ($role) {
+            'A', 'D' => ['cal', 'adm', 'gsa', 'sst'],
+            'R' => ['cal'],
+            'G' => ['gsa'],
+            'SG' => ['gsa', 'sst'],
+            'S' => ['sst'],
+            'OT' => ['adm'],
+            default => [],
+        };
+    }
+
+    public static function canEditLpsWeek(string $role, int $week, int $maxWeek): bool
+    {
+        $role = strtoupper(trim($role));
+        if ($week <= 0 || $maxWeek <= 0) {
+            return false;
+        }
+        if (in_array($role, ['A', 'D'], true)) {
+            return true;
+        }
+
+        return in_array($role, ['R', 'DCV'], true) && $week > ($maxWeek - 2);
+    }
+
+    public static function canQualifyWeeklyCommitment(string $role): bool
+    {
+        return in_array(strtoupper(trim($role)), ['A', 'D', 'R', 'DCV'], true);
+    }
+
     public static function permissionDefinitions(): array
     {
         return [
@@ -56,6 +91,7 @@ class RbacCatalog
             ['key' => 'admin.permisos.gestionar', 'module' => 'admin', 'action' => 'gestionar_permisos', 'description' => 'Gestion de permisos'],
             ['key' => 'admin.auditoria.ver', 'module' => 'admin', 'action' => 'ver_auditoria', 'description' => 'Ver auditoria'],
             ['key' => 'admin.matching.config.editar', 'module' => 'admin', 'action' => 'editar_config_matching', 'description' => 'Editar configuracion de matching semantico'],
+            ['key' => self::PERM_INTERNAL_DESIGN_SYSTEM_VIEW, 'module' => 'internal', 'action' => 'ver_design_system', 'description' => 'Ver laboratorio interno del design system'],
 
             ['key' => 'lps.programa_general.ver', 'module' => 'lps', 'action' => 'programa_general_ver', 'description' => 'Ver programa general'],
             ['key' => 'lps.programa_general.editar', 'module' => 'lps', 'action' => 'programa_general_editar', 'description' => 'Editar programa general'],
@@ -117,14 +153,9 @@ class RbacCatalog
             'lps.cic.ver',
             'lps.cnc.ver',
             'lps.cnp.ver',
-                'lps.listado_actividades.ver',
-                'lps.listado_actividades.editar',
-                'lps.contratos.ver',
-                'lps.contratos.editar',
-                'lps.contratos.auto_definir',
-                'lps.pdc.ver',
-                'lps.pdc.editar',
-                'lps.pdc.auto_generar',
+				'lps.listado_actividades.ver',
+				'lps.contratos.ver',
+				'lps.pdc.ver',
             'lps.control_cambios.ver',
             'lps.paquetes_contratacion.ver',
             'lps.profesionales.ver',
@@ -253,6 +284,7 @@ class RbacCatalog
                 'lps.programacion_intermedia.ver',
                 'lps.programacion_semanal.ver',
                 'lps.cic.ver',
+                'lps.cic.editar',
                 'lps.cnc.ver',
                 'lps.cnp.ver',
                 'lps.control_cambios.ver',

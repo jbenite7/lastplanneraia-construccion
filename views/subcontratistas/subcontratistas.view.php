@@ -6,7 +6,8 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <!-- Common Head Resources (Nav, CSS, etc) -->
-    <script type="text/javascript" src="/js/linksComunesHead2.js?v=piStateColorsFresh" charset="utf-8"></script>
+    <?= \App\View\Components\DesignSystemHeadComponent::render() ?>
+    <script type="text/javascript" src="/js/linksComunesHead2.js?v=20260711foundation5" charset="utf-8"></script>
 
     <!-- Handsontable CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable@14.6.1/dist/handsontable.full.min.css" />
@@ -328,6 +329,7 @@
             <span id="save-status" class="badge badge-success" style="display:none;">Guardado</span>
             <span id="save-error" class="badge badge-danger" style="display:none;">Error al guardar</span>
             <button id="btn-export" class="btn-pdc-modern" onclick="exportCSV()"><i class="fas fa-file-excel"></i> Exportar</button>
+            <?= \App\View\Components\BiAccessComponent::renderLink('subcontratistas', $isPreConstruccion ? 'BI Interesados' : 'BI Contratistas') ?>
         </div>
     </div>
 
@@ -345,7 +347,9 @@
 
     <!-- Common Scripts for Navigation (Depends on jQuery) -->
     <script>window.__PROJECT_AREA__ = <?php echo json_encode($_SESSION['area'] ?? 'Construccion'); ?>;</script>
+    <?= \App\View\Components\BiAccessComponent::renderBootConfig('subcontratistas') ?>
 	<script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/js/modules/bi-access.js" charset="utf-8"></script>
 
     <!-- Handsontable Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/handsontable@14.6.1/dist/handsontable.full.min.js"></script>

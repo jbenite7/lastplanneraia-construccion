@@ -1,0 +1,114 @@
+@layer components {
+  .aia-navigation {
+    overflow: hidden;
+    border: var(--ds-border-width) solid var(--ds-active-border);
+    border-radius: var(--ds-radius-panel);
+  }
+
+  .aia-navigation__global {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'brand toggle'
+      'context context';
+    min-height: var(--ds-target-min);
+    align-items: center;
+    gap: var(--ds-space-2) var(--ds-space-3);
+    padding: var(--ds-space-4);
+    background: var(--ds-active-nav-bg);
+    color: var(--ds-active-nav-text);
+  }
+
+  .aia-navigation__brand {
+    grid-area: brand;
+    min-width: 0;
+  }
+
+  .aia-navigation__context {
+    grid-area: context;
+    min-width: 0;
+    color: var(--ds-active-nav-text-muted);
+    font-size: var(--ds-type-size-sm);
+    overflow: hidden;
+    text-align: start;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .aia-brand-lockup {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--ds-space-2);
+    color: var(--ds-active-nav-text);
+    font-size: var(--ds-type-size-lg);
+  }
+
+  .aia-brand-lockup img {
+    width: var(--ds-target-min);
+    height: var(--ds-target-min);
+    object-fit: contain;
+    filter: var(--ds-active-nav-mark-filter);
+  }
+
+  .aia-navigation__global .aia-btn {
+    grid-area: toggle;
+    justify-self: end;
+    min-width: var(--ds-target-min);
+  }
+
+  .aia-navigation__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ds-space-2);
+    padding: var(--ds-space-3);
+    background: var(--ds-active-surface-raised);
+  }
+
+  .aia-navigation__links[hidden] {
+    display: none;
+  }
+
+  .aia-navigation__links a {
+    padding: var(--ds-space-2) var(--ds-space-3);
+    border-radius: var(--ds-radius-control-sm);
+    color: var(--ds-active-text-primary);
+    font-weight: var(--ds-type-weight-semibold);
+    overflow-wrap: normal;
+    text-decoration: none;
+    word-break: normal;
+  }
+
+  [data-shell-destination] {
+    min-height: var(--ds-target-min);
+  }
+
+  .aia-navigation__links a[aria-current='page'] {
+    background: var(--ds-color-state-info-bg);
+    color: var(--ds-color-state-info-text);
+  }
+
+  @media (min-width: 75rem) {
+    .aia-navigation__global {
+      grid-template-columns: max-content minmax(0, 1fr);
+      grid-template-areas: 'brand context';
+    }
+
+    .aia-navigation__context {
+      text-align: end;
+    }
+
+    .aia-navigation__global [data-shell-drawer-toggle] {
+      display: none;
+    }
+
+    .aia-navigation__links {
+      border-top: var(--ds-border-width) solid var(--ds-active-border);
+    }
+  }
+}
+
+@layer components {
+  .aia-navigation__global {
+    padding: var(--ds-space-4);
+  }
+}

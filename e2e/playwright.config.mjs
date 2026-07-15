@@ -7,6 +7,7 @@ export default defineConfig({
   timeout: 120_000,
   expect: { timeout: 45_000 },
   fullyParallel: false,
+  forbidOnly: Boolean(process.env.CI),
   workers: parseInt(process.env.E2E_WORKERS || '1', 10),
   retries: 0,
   outputDir: './test-output',

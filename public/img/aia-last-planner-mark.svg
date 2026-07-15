@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">AIA Last Planner mark</title>
+  <desc id="desc">A monogram built from an A-frame, planning nodes, a collaborative pull-plan line and a completion check.</desc>
+  <path fill="#000" fill-rule="evenodd" d="M32 6.5c2.25 0 4.2 1.5 4.8 3.58l13.35 37.5h3.35a4.5 4.5 0 1 1 0 9h-12.2a4.5 4.5 0 1 1 0-9h2.24l-2.57-7.24H23.03l-2.57 7.24h2.24a4.5 4.5 0 1 1 0 9H10.5a4.5 4.5 0 1 1 0-9h3.35l13.35-37.5A4.99 4.99 0 0 1 32 6.5Zm0 14.28-4.68 13.18h9.36L32 20.78Z" clip-rule="evenodd"/>
+  <path fill="#000" d="M11.9 37.75a3.25 3.25 0 0 1 .14-4.6l8.22-7.76a3.25 3.25 0 0 1 4.38-.07l5.88 5.14a3.25 3.25 0 0 1-4.28 4.9l-3.66-3.2-6.08 5.73a3.25 3.25 0 0 1-4.6-.14Zm40.95-12.1a3.25 3.25 0 0 1-.02 4.6L43.3 39.7a3.25 3.25 0 0 1-4.5.07l-4.94-4.55a3.25 3.25 0 0 1 4.4-4.78l2.66 2.45 7.33-7.26a3.25 3.25 0 0 1 4.6.02Z"/>
+</svg>

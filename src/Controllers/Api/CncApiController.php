@@ -2,6 +2,7 @@
 
 namespace App\Controllers\Api;
 
+use App\Security\LpsWeekEditPolicy;
 use PDO;
 use Throwable;
 
@@ -44,18 +45,41 @@ class CncApiController
         require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
         rbac_guard_require_permission('lps.cnc.editar');
         $dbPrefix = $_SESSION['db'] ?? '';
-        $id = $_POST["Consecutivo"] ?? null;
+        $id = filter_var($_POST['Consecutivo'] ?? $_POST['Id'] ?? null, FILTER_VALIDATE_INT);
+        $week = filter_var($_POST['semana'] ?? null, FILTER_VALIDATE_INT);
+        $category = trim((string) ($_POST['Categoria_CNC'] ?? ''));
+        $cause = trim((string) ($_POST['CNC'] ?? ''));
+        $observation = trim((string) ($_POST['Observaciones_CNC'] ?? ''));
 
-        if (!$dbPrefix || !$id) {
+        if (!$dbPrefix || !$id || !$week || $category === '' || $cause === '') {
             $this->jsonError("Datos insuficientes para guardar CNC.");
+            return;
+        }
+        if (in_array($cause, ['Otra', 'Otra...', 'Otros', 'Otros...'], true) && $observation === '') {
+            $this->jsonError('Debe explicar la causa cuando selecciona Otra.', 422);
+            return;
+        }
+        if (!(new LpsWeekEditPolicy($this->db))->allows($dbPrefix, (int) $week)) {
+            $this->jsonError('La semana histórica no permite esta operación para su rol.', 403);
             return;
         }
 
         try {
             $projectId = $this->projectId($dbPrefix);
-            $query = "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'programacion_semanal') . " SET Categoria_CNC = ?, CNC = ?, Observaciones_CNC = ? WHERE project_id = ? AND row_id = ?";
-            $res = $this->db->queryWithProject($query, [$_POST["Categoria_CNC"], $_POST["CNC"], $_POST["Observaciones_CNC"] ?? '', $projectId, $id], $projectId);
-            $this->jsonResponse($res ? "BIEN" : "ERROR");
+            $table = TableResolver::resolveByPrefix($dbPrefix, 'programacion_semanal');
+            $exists = $this->db->queryWithProject(
+                "SELECT 1 FROM {$table} WHERE project_id = ? AND row_id = ? AND Semana = ? AND Activa = 1 AND Categoria_CNC IS NOT NULL",
+                [$projectId, $id, $week],
+                $projectId
+            )->fetchColumn();
+            if (!$exists) {
+                $this->jsonError('La causa ya no está disponible para edición.');
+                return;
+            }
+
+            $query = "UPDATE {$table} SET Categoria_CNC = ?, CNC = ?, Observaciones_CNC = ? WHERE project_id = ? AND row_id = ? AND Semana = ? AND Activa = 1";
+            $res = $this->db->queryWithProject($query, [$category, $cause, $observation, $projectId, $id, $week], $projectId);
+            $this->jsonResponse($res ? 'BIEN' : 'ERROR');
         } catch (Throwable $t) {
             $this->jsonError("Error CNC Save: " . $t->getMessage());
         }
@@ -74,11 +98,14 @@ class CncApiController
 
     private function jsonResponse(string $res): void
     {
+        header('Content-Type: application/json; charset=utf-8');
         echo json_encode(["respuesta" => $res], JSON_UNESCAPED_UNICODE);
     }
 
-    private function jsonError(string $msg): void
+    private function jsonError(string $msg, int $status = 422): void
     {
+        http_response_code($status);
+        header('Content-Type: application/json; charset=utf-8');
         echo json_encode(["respuesta" => "ERROR", "mensaje" => $msg], JSON_UNESCAPED_UNICODE);
     }
 

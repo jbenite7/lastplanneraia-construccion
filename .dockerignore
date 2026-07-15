@@ -13,4 +13,6 @@ backups
 cortesProgramacion
 construccion/programacion_semanal/compromisosSemana
 admin/logs
-docs
+docs/*
+!docs/design-system/
+!docs/design-system/**

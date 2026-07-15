@@ -1,0 +1,215 @@
+{
+  "schemaVersion": 2,
+  "designSystemVersion": "0.3.6",
+  "vendors": [
+    {
+      "id": "bootstrap",
+      "versions": [
+        "4.3.1",
+        "4.6.1"
+      ],
+      "delivery": [
+        "local",
+        "cdn"
+      ],
+      "classification": "adapter",
+      "assets": [
+        "public/vendor/bootstrap/bootstrap.min.css",
+        "public/vendor/bootstrap/bootstrap.min.js"
+      ],
+      "adapterMaturity": "compatibility-skin"
+    },
+    {
+      "id": "handsontable",
+      "versions": [
+        "14.6.1"
+      ],
+      "delivery": [
+        "local",
+        "cdn"
+      ],
+      "classification": "adapter",
+      "assets": [
+        "public/vendor/handsontable/handsontable.full.min.css",
+        "public/vendor/handsontable/handsontable.full.min.js"
+      ],
+      "adapterMaturity": "stable-adapter"
+    },
+    {
+      "id": "datatables",
+      "versions": [
+        "1.11.4",
+        "1.10.21"
+      ],
+      "delivery": [
+        "local-css",
+        "cdn-js"
+      ],
+      "classification": "legacy",
+      "assets": [
+        "public/vendor/datatables/"
+      ],
+      "adapterMaturity": "compatibility-skin"
+    },
+    {
+      "id": "select2",
+      "versions": [
+        "4.0.6-rc.0",
+        "4.0.13"
+      ],
+      "delivery": [
+        "local-css",
+        "cdn-js"
+      ],
+      "classification": "adapter",
+      "assets": [
+        "public/vendor/select2/select2.min.css"
+      ],
+      "adapterMaturity": "candidate-adapter"
+    },
+    {
+      "id": "tom-select",
+      "versions": [
+        "2.3.1"
+      ],
+      "delivery": [
+        "cdn"
+      ],
+      "classification": "adapter",
+      "assets": [
+        "public/css/tom-select-premium-aia.css"
+      ],
+      "adapterMaturity": "candidate-adapter"
+    },
+    {
+      "id": "sweetalert2",
+      "versions": [
+        "11.4.24"
+      ],
+      "delivery": [
+        "local-css",
+        "cdn-js"
+      ],
+      "classification": "adapter",
+      "assets": [
+        "public/vendor/sweetalert2.min.css"
+      ],
+      "adapterMaturity": "candidate-adapter"
+    },
+    {
+      "id": "toastr",
+      "versions": [
+        "2.1.3",
+        "latest-admin"
+      ],
+      "delivery": [
+        "local",
+        "cdn-floating"
+      ],
+      "classification": "legacy",
+      "assets": [
+        "public/vendor/toastr.min.css",
+        "public/vendor/toastr.min.js"
+      ],
+      "adapterMaturity": "compatibility-skin"
+    },
+    {
+      "id": "anychart",
+      "versions": [
+        "v8",
+        "2026-01-19-css"
+      ],
+      "delivery": [
+        "local-css",
+        "cdn-js"
+      ],
+      "classification": "adapter",
+      "assets": [
+        "public/vendor/anychart/"
+      ],
+      "adapterMaturity": "candidate-adapter"
+    },
+    {
+      "id": "chartjs",
+      "versions": [
+        "4.4.1"
+      ],
+      "delivery": [
+        "local"
+      ],
+      "classification": "inventory",
+      "assets": [
+        "public/vendor/chart.js/chart.umd.min.js"
+      ],
+      "adapterMaturity": null
+    },
+    {
+      "id": "font-awesome",
+      "versions": [
+        "5.11.2",
+        "5.15.4"
+      ],
+      "delivery": [
+        "local",
+        "cdn"
+      ],
+      "classification": "adapter",
+      "assets": [
+        "public/vendor/font-awesome/css/all.css"
+      ],
+      "adapterMaturity": "compatibility-skin"
+    },
+    {
+      "id": "adminlte",
+      "versions": [
+        "3.2"
+      ],
+      "delivery": [
+        "cdn"
+      ],
+      "classification": "inventory",
+      "assets": [],
+      "adapterMaturity": null
+    },
+    {
+      "id": "jquery-ui",
+      "versions": [
+        "1.10.1"
+      ],
+      "delivery": [
+        "local",
+        "cdn"
+      ],
+      "classification": "legacy",
+      "assets": [
+        "public/vendor/jquery-ui.css",
+        "public/vendor/jquery-ui.min.js"
+      ],
+      "adapterMaturity": "compatibility-skin"
+    },
+    {
+      "id": "aia-fonts",
+      "versions": [
+        "Inter v20",
+        "Montserrat v31"
+      ],
+      "delivery": [
+        "local"
+      ],
+      "classification": "foundation",
+      "origin": "Google Fonts official CSS API and fonts.gstatic.com",
+      "license": "SIL OFL 1.1",
+      "assets": [
+        "public/vendor/fonts/aia/inter-latin-v20.woff2",
+        "public/vendor/fonts/aia/montserrat-latin-v31.woff2",
+        "public/vendor/fonts/aia/INTER-OFL.txt",
+        "public/vendor/fonts/aia/MONTSERRAT-OFL.txt"
+      ],
+      "sha256": {
+        "inter-latin-v20.woff2": "c940764593d0fe5d596be327ca7558855e018039fb78509aa21921fd3644c3e4",
+        "montserrat-latin-v31.woff2": "6438d7b8ea9c7c3992d5e2fd2afdb1ff948570a3ef0bedae76247b51632960ba"
+      },
+      "adapterMaturity": null
+    }
+  ]
+}

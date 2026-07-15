@@ -1,0 +1,834 @@
+@layer module {
+.ds-lab {
+  min-width: 20rem;
+}
+
+.ds-lab__header {
+  position: sticky;
+  top: 0;
+  z-index: var(--ds-z-sticky);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-4);
+  padding: var(--ds-space-4);
+  border-bottom: var(--ds-border-width) solid var(--ds-active-border);
+  background: var(--ds-active-bg-page);
+}
+
+.ds-lab__header h1,
+.ds-lab__family h2,
+.ds-lab__family h3 {
+  margin: 0;
+  color: var(--ds-active-text-primary);
+  font-family: var(--ds-font-display);
+}
+
+.ds-lab__family h2 {
+  font-size: var(--ds-type-size-2xl);
+}
+
+.ds-specimen-nav a {
+  color: var(--ds-color-brand-aqua);
+  font-weight: var(--ds-type-weight-semibold);
+}
+
+.ds-lab__eyebrow {
+  margin: 0 0 var(--ds-space-1);
+  color: var(--ds-active-text-secondary);
+  font-size: var(--ds-type-size-xs);
+  font-weight: var(--ds-type-weight-bold);
+  text-transform: uppercase;
+}
+
+.ds-lab__controls {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+}
+
+.ds-lab__controls .aia-select {
+  width: auto;
+}
+
+.ds-lab__families {
+  display: grid;
+  gap: var(--ds-space-4);
+  padding: var(--ds-space-4);
+}
+
+.ds-lab__family {
+  display: grid;
+  gap: var(--ds-space-4);
+  padding: var(--ds-space-4);
+}
+
+.ds-ui-index {
+  padding: var(--ds-space-3);
+  border: var(--ds-border-width) solid var(--ds-active-border);
+  border-radius: var(--ds-radius-control);
+  background: var(--ds-active-surface-raised);
+}
+
+.ds-ui-index summary {
+  min-height: var(--ds-target-min);
+  color: var(--ds-active-text-primary);
+  font-weight: var(--ds-type-weight-semibold);
+}
+
+.ds-ui-index ul {
+  display: grid;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-0);
+  list-style: none;
+}
+
+.ds-ui-index li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border-radius: var(--ds-radius-control-sm);
+  background: var(--ds-active-surface);
+  color: var(--ds-active-text-primary);
+}
+
+.ds-ui-index li span {
+  color: var(--ds-active-text-secondary);
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-type-size-xs);
+}
+
+.ds-control-gallery {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ds-space-4);
+  padding: var(--ds-space-4);
+  border: var(--ds-border-width) solid var(--ds-active-border);
+  border-radius: var(--ds-radius-panel);
+}
+
+.ds-bi-gallery {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ds-space-4);
+}
+
+.ds-bi-gallery > * {
+  min-width: 0;
+}
+
+.ds-control-gallery h3 {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 47.99rem) {
+  .ds-control-gallery { grid-template-columns: minmax(0, 1fr); }
+  .ds-bi-gallery { grid-template-columns: minmax(0, 1fr); }
+}
+
+.ds-lab__family-head,
+.ds-specimen-nav,
+.ds-form,
+.ds-state-set,
+.ds-actions-surface {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-3);
+}
+
+.ds-primitive-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--ds-space-3);
+  margin-block-start: var(--ds-space-4);
+}
+
+.ds-lab__family-head,
+.ds-specimen-nav {
+  justify-content: space-between;
+}
+
+.ds-candidate-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ds-space-4);
+}
+
+.ds-shell-comparison {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ds-space-4);
+}
+
+.ds-shell-candidate {
+  display: grid;
+  align-content: start;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4);
+  border: var(--ds-border-width) solid var(--ds-active-border);
+  border-radius: var(--ds-radius-panel);
+}
+
+.ds-shell-candidate__head,
+.ds-shell-global {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+}
+
+.ds-shell-utilities {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-3);
+}
+
+.ds-shell-candidate :where(.aia-helper, .ds-lab__eyebrow) {
+  margin: 0;
+}
+
+.ds-shell-frame {
+  overflow: hidden;
+  border: var(--ds-border-width) solid var(--ds-active-border);
+  border-radius: var(--ds-radius-panel);
+}
+
+.ds-shell-global {
+  min-height: var(--ds-target-min);
+  padding: var(--ds-space-3);
+  background: var(--ds-active-nav-bg);
+  color: var(--ds-color-text-inverse);
+}
+
+.ds-shell-global > span {
+  color: color-mix(in srgb, var(--ds-color-text-inverse) 76%, transparent);
+  font-size: var(--ds-type-size-sm);
+}
+
+.ds-shell-global .aia-btn {
+  min-width: var(--ds-target-min);
+}
+
+.ds-shell-navigation {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-3);
+  background: var(--ds-active-surface-raised);
+}
+
+.ds-shell-navigation[hidden] {
+  display: none;
+}
+
+.ds-shell-navigation a {
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border-radius: var(--ds-radius-control-sm);
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+.ds-shell-navigation a {
+  color: var(--ds-active-text-primary);
+  font-weight: var(--ds-type-weight-semibold);
+  text-decoration: none;
+}
+
+.ds-shell-navigation a[aria-current='page'] {
+  background: var(--ds-color-state-info-bg);
+  color: var(--ds-color-state-info-text);
+}
+
+.ds-page-candidate,
+.ds-page-specimen,
+.ds-page-header {
+  display: grid;
+  align-content: start;
+  gap: var(--ds-space-3);
+}
+
+.ds-page-candidate__head :where(p, h3),
+.ds-page-header :where(p, h4) {
+  margin: 0;
+}
+
+.ds-page-header h4 {
+  color: var(--ds-active-text-primary);
+}
+
+.ds-page-specimen {
+  padding: var(--ds-space-4);
+  border: var(--ds-border-width) solid var(--ds-active-border);
+  border-radius: var(--ds-radius-panel);
+}
+
+.ds-page-specimen--contained-header .ds-page-header {
+  padding: var(--ds-space-4);
+  border: var(--ds-border-width) solid var(--ds-active-border);
+  border-radius: var(--ds-radius-panel);
+  background: var(--ds-active-surface-raised);
+}
+
+.ds-page-specimen--inline-header .ds-page-header {
+  padding-block-end: var(--ds-space-4);
+  border-block-end: var(--ds-border-width) solid var(--ds-active-border);
+}
+
+.ds-page-actions,
+.ds-page-content {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-3);
+}
+
+.ds-page-content > * {
+  flex: 1 1 12rem;
+}
+
+.ds-page-breadcrumb {
+  color: var(--ds-active-text-secondary);
+  font-size: var(--ds-type-size-sm);
+}
+
+.ds-action-candidate {
+  display: grid;
+  align-content: start;
+  gap: var(--ds-space-4);
+}
+
+.ds-action-candidate header :where(p, h3) {
+  margin: 0;
+}
+
+.ds-action-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-3);
+}
+
+.ds-action-group--surface-actions {
+  padding: var(--ds-space-4);
+  border: var(--ds-border-width) solid var(--ds-active-border);
+  border-radius: var(--ds-radius-panel);
+  background: var(--ds-active-surface-raised);
+  box-shadow: var(--ds-shadow-sm);
+}
+
+.ds-action-group .aia-btn[aria-busy='true'] {
+  cursor: wait;
+}
+
+.ds-filter-candidate,
+.ds-filter-form {
+  display: grid;
+  align-content: start;
+  gap: var(--ds-space-4);
+}
+
+.ds-filter-candidate header :where(p, h3) {
+  margin: 0;
+}
+
+.ds-filter-form {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ds-filter-form .aia-label:first-child,
+.ds-filter-actions {
+  grid-column: 1 / -1;
+}
+
+.ds-filter-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-3);
+}
+
+.ds-filter-disclosure {
+  padding: var(--ds-space-4);
+  border: var(--ds-border-width) solid var(--ds-active-border);
+  border-radius: var(--ds-radius-panel);
+  background: var(--ds-active-surface-raised);
+}
+
+.ds-filter-disclosure summary {
+  margin-block-end: var(--ds-space-4);
+  color: var(--ds-active-text-primary);
+  font-weight: var(--ds-type-weight-semibold);
+}
+
+.ds-state-candidate {
+  display: grid;
+  align-content: start;
+  gap: var(--ds-space-4);
+}
+
+.ds-state-candidate header :where(p, h3) {
+  margin: 0;
+}
+
+.ds-inline-header,
+.ds-form,
+.ds-state-set,
+.ds-vendor-mock {
+  padding: var(--ds-space-4);
+  border: var(--ds-border-width) solid var(--ds-active-border);
+  border-radius: var(--ds-radius-panel);
+}
+
+.ds-form .aia-label {
+  flex: 1 1 14rem;
+}
+
+.ds-lab__swatches {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--ds-space-2);
+}
+
+.ds-density-section,
+.ds-density-sample {
+  display: grid;
+  gap: var(--ds-space-3);
+}
+
+.ds-density-section :where(.aia-copy, .aia-helper) {
+  margin: 0;
+}
+
+.ds-density-comparison {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ds-space-3);
+}
+
+.ds-swatch {
+  display: flex;
+  min-height: var(--ds-density-touch-control);
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-3);
+  border-radius: var(--ds-radius-control);
+  color: var(--ds-color-text-inverse);
+  font-weight: var(--ds-type-weight-bold);
+}
+
+.ds-swatch small {
+  font-size: var(--ds-type-size-xs);
+  font-weight: var(--ds-type-weight-semibold);
+}
+
+.ds-swatch__dark { display: none; }
+[data-aia-theme='dark'] .ds-swatch__light { display: none; }
+[data-aia-theme='dark'] .ds-swatch__dark { display: inline; }
+
+.ds-swatch--brand { background: var(--ds-color-domain-corporate); }
+.ds-swatch--construction { background: var(--ds-color-domain-construction); }
+.ds-swatch--real-estate { background: var(--ds-color-domain-real-estate); }
+.ds-swatch--real-estate { color: var(--ds-color-text-on-domain-dark); }
+.ds-swatch--architecture { background: var(--ds-color-domain-architecture); }
+
+[data-aia-theme='dark'] .ds-swatch {
+  color: var(--ds-color-text-on-domain-dark);
+}
+
+[data-aia-theme='dark'] .ds-swatch--brand { background: var(--ds-color-domain-corporate-on-dark); }
+[data-aia-theme='dark'] .ds-swatch--construction { background: var(--ds-color-domain-construction-on-dark); }
+[data-aia-theme='dark'] .ds-swatch--real-estate { background: var(--ds-color-domain-real-estate-on-dark); }
+[data-aia-theme='dark'] .ds-swatch--architecture { background: var(--ds-color-domain-architecture-on-dark); }
+
+.ds-density-sample {
+  padding: var(--density-padding);
+  border: var(--ds-border-width) solid var(--ds-active-border);
+  border-radius: var(--ds-radius-panel);
+  gap: var(--density-gap);
+}
+
+.ds-density-sample header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+}
+
+.ds-density-sample--touch {
+  --density-gap: var(--ds-density-touch-gap);
+  --density-padding: var(--ds-density-touch-padding-inline);
+  --density-control: var(--ds-density-touch-control);
+}
+
+.ds-density-sample--compact {
+  --density-gap: var(--ds-density-compact-gap);
+  --density-padding: var(--ds-density-compact-padding-inline);
+  --density-control: var(--ds-density-compact-control);
+}
+
+.ds-density-sample .aia-btn {
+  min-height: var(--density-control);
+}
+
+.ds-density-sample[aria-current='true'] {
+  border-color: var(--ds-color-brand-primary);
+  box-shadow: var(--ds-shadow-focus);
+}
+
+.ds-state-set--solid .aia-chip--success {
+  background: var(--ds-color-state-success-text);
+  color: var(--ds-color-text-inverse);
+}
+
+.ds-state-set--solid .aia-chip--warning {
+  background: var(--ds-color-state-warning-text);
+  color: var(--ds-color-text-inverse);
+}
+
+.ds-state-set--solid .aia-chip--critical {
+  background: var(--ds-color-state-critical-text);
+  color: var(--ds-color-text-inverse);
+}
+
+.ds-state-set .aia-chip {
+  max-inline-size: 12rem;
+}
+
+.ds-state-semantics {
+  display: grid;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4);
+  border: var(--ds-border-width) solid var(--ds-active-border);
+  border-radius: var(--ds-radius-panel);
+}
+
+.ds-state-semantics__level {
+  display: grid;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-3);
+  border-inline-start: var(--ds-space-1) solid currentColor;
+  border-radius: var(--ds-radius-control-sm);
+  background: var(--ds-active-surface);
+}
+
+.ds-state-semantics__level header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+}
+
+.ds-state-module {
+  display: grid;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4);
+  border: var(--ds-border-width) solid var(--ds-active-border);
+  border-radius: var(--ds-radius-panel);
+}
+
+.ds-state-module__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ds-space-2);
+}
+
+.ds-state-module__state {
+  display: grid;
+  gap: var(--ds-space-2);
+  min-width: 0;
+  padding: var(--ds-space-3);
+  border-inline-start: var(--ds-space-1) solid currentColor;
+  border-radius: var(--ds-radius-control-sm);
+  background: var(--ds-active-surface);
+}
+
+.ds-state-module__state .aia-chip {
+  justify-self: start;
+  max-inline-size: 100%;
+  white-space: normal;
+}
+
+@media (max-width: 47.99rem) {
+  .ds-state-module__grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+.ds-feedback {
+  flex: 1 1 12rem;
+  padding: var(--ds-space-3);
+  border: var(--ds-border-width) solid currentColor;
+  border-radius: var(--ds-radius-control);
+  font-weight: var(--ds-type-weight-semibold);
+}
+
+.ds-feedback--success {
+  background: var(--ds-color-state-success-bg);
+  color: var(--ds-color-state-success-text);
+}
+
+.ds-feedback--critical {
+  background: var(--ds-color-state-critical-bg);
+  color: var(--ds-color-state-critical-text);
+}
+
+.ds-state-set--solid .ds-feedback--success {
+  background: var(--ds-color-state-success-text);
+  color: var(--ds-color-text-inverse);
+}
+
+.ds-state-set--solid .ds-feedback--critical {
+  background: var(--ds-color-state-critical-text);
+  color: var(--ds-color-text-inverse);
+}
+
+.ds-table-shell {
+  display: none;
+  overflow-x: auto;
+}
+
+.ds-data-cards {
+  display: grid;
+  gap: var(--ds-space-4);
+}
+
+.ds-data-card header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+}
+
+.ds-data-card :where(h3, p) {
+  margin: 0;
+}
+
+.ds-table-shell table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ds-table-shell :where(th, td),
+.ds-vendor-row {
+  padding: var(--ds-space-3);
+  border-bottom: var(--ds-border-width) solid var(--ds-active-border);
+  text-align: left;
+}
+
+.ds-vendor-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  margin-top: var(--ds-space-2);
+}
+
+.ds-vendor-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  gap: var(--ds-space-4);
+}
+
+.ds-vendor-fixture {
+  display: grid;
+  align-content: start;
+  gap: var(--ds-space-4);
+  padding: var(--ds-space-4);
+  border: var(--ds-border-width) solid var(--ds-active-border);
+  border-radius: var(--ds-radius-panel);
+}
+
+.ds-vendor-fixture header :where(p, h3) {
+  margin: 0;
+}
+
+.ds-vendor-fixture .handsontable {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.ds-vendor-fixture .htCore {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ds-vendor-fixture .select2-container {
+  width: 100%;
+}
+
+.ds-vendor-fixture .swal2-popup {
+  display: grid;
+  width: auto;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4);
+}
+
+.ds-overlay-specimen dialog {
+  width: min(32rem, calc(100% - var(--ds-space-8)));
+  max-width: min(32rem, calc(100% - var(--ds-space-8)));
+  padding: var(--ds-space-6);
+  border: var(--ds-border-width) solid var(--ds-active-border);
+  border-radius: var(--ds-radius-panel);
+  background: var(--ds-active-surface-raised);
+  color: var(--ds-active-text-primary);
+}
+
+.ds-overlay-specimen dialog::backdrop {
+  background: color-mix(in srgb, var(--ds-color-text-primary) 60%, transparent);
+}
+
+.ds-bi__plot {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--ds-space-4);
+  height: 12rem;
+  margin-block: var(--ds-space-4);
+  border-bottom: var(--ds-border-width) solid var(--ds-active-border);
+}
+
+.ds-bi__group {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  min-width: 0;
+  text-align: center;
+}
+
+.ds-bi__bars {
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  gap: var(--ds-space-2);
+}
+
+.ds-bi__bar {
+  width: var(--ds-space-6);
+  border-radius: var(--ds-radius-sm) var(--ds-radius-sm) 0 0;
+}
+
+.ds-bi__bar--45 { height: 45%; }
+.ds-bi__bar--50 { height: 50%; }
+.ds-bi__bar--60 { height: 60%; }
+.ds-bi__bar--70 { height: 70%; }
+.ds-bi__bar--75 { height: 75%; }
+.ds-bi__bar--90 { height: 90%; }
+
+.ds-bi__bar--plan,
+.ds-bi__legend-mark--plan {
+  background: var(--ds-color-brand-aqua);
+}
+
+.ds-bi__bar--executed,
+.ds-bi__legend-mark--executed {
+  background: var(--ds-color-brand-primary);
+}
+
+.ds-bi__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-6);
+  padding: 0;
+  list-style: none;
+}
+
+.ds-bi__legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+}
+
+.ds-bi__legend-mark {
+  width: var(--ds-space-3);
+  height: var(--ds-space-3);
+  border-radius: var(--ds-radius-sm);
+}
+
+.ds-bi :where(figcaption h3, figcaption p) {
+  margin: 0;
+}
+
+.ds-bi__data table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ds-bi__data :where(th, td) {
+  padding: var(--ds-space-2);
+  border-bottom: var(--ds-border-width) solid var(--ds-active-border);
+  text-align: start;
+}
+
+.ds-bi__data summary {
+  min-height: var(--ds-target-min);
+  padding-block: var(--ds-space-3);
+  color: var(--ds-active-text-primary);
+  font-weight: var(--ds-type-weight-semibold);
+}
+
+.ds-lab[data-density='compact'] .ds-lab__family {
+  gap: var(--ds-density-compact-gap);
+}
+
+.ds-lab[data-density='compact'] .ds-swatch {
+  min-height: var(--ds-density-compact-visual);
+  padding: var(--ds-density-compact-padding-block) var(--ds-density-compact-padding-inline);
+}
+
+@media (min-width: 75rem) {
+  .ds-shell-global [data-shell-drawer-toggle] {
+    display: none;
+  }
+
+  .ds-table-shell {
+    display: block;
+  }
+
+  .ds-data-cards {
+    display: none;
+  }
+
+  .ds-shell-navigation {
+    border-top: var(--ds-border-width) solid var(--ds-active-border);
+  }
+}
+
+@media (min-width: 48.01rem) {
+  .ds-lab__family {
+    padding: var(--ds-space-6);
+  }
+}
+
+@media (max-width: 74.99rem) {
+  .ds-overlay-specimen dialog {
+    inset-block: auto 0;
+    width: 100%;
+    max-width: 100%;
+    max-height: 80dvh;
+    margin: auto 0 0;
+    border-radius: var(--ds-radius-panel) var(--ds-radius-panel) 0 0;
+    overflow: auto;
+  }
+}
+
+@media (max-width: 48rem) {
+  .ds-lab__header {
+    position: static;
+    align-items: stretch;
+  }
+
+  .ds-lab__controls,
+  .ds-candidate-grid,
+  .ds-shell-comparison,
+  .ds-filter-form,
+  .ds-density-comparison,
+  .ds-lab__swatches {
+    grid-template-columns: 1fr;
+  }
+
+  .ds-lab__controls {
+    display: grid;
+  }
+}
+}

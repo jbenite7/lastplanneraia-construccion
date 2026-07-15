@@ -165,10 +165,13 @@ async function openReviewPanel(page, moduleKey) {
 
   const panel = page.locator(`#semiAutoReview-${moduleKey}`);
   await expect(panel).toBeVisible({ timeout: 10000 });
+  await expect(panel.locator('.sar-title')).toContainText('Bandeja de decisiones');
   await expect(panel.locator('.sar-tab')).toContainText([
-    'Aplicar automático',
-    'Revisar',
+    'Decisión',
+    'Listas',
+    'Todo',
   ]);
+  await expect(panel.locator('.sar-filter-band')).toBeVisible();
   await expect(panel.locator('.sar-filter-text')).toBeVisible();
   await expect(panel.locator('.sar-status')).toContainText('Análisis listo', { timeout: 90000 });
   await expect(panel.locator('.sar-analysis')).toContainText('Estamos revisando tus propuestas');
@@ -180,11 +183,19 @@ async function openReviewPanel(page, moduleKey) {
   await expect(panel.locator('.sar-assistant')).toContainText('Recomendaciones');
   await expect(panel.locator('.sar-assistant')).toContainText('Alertas');
   await expect(panel.locator('.sar-summary')).toContainText('Encontramos', { timeout: 10000 });
-  await expect(panel.locator('.sar-group-title')).toContainText([
-    'Aplicar automático',
-  ]);
-  await panel.locator('.sar-tab', { hasText: 'Revisar' }).click();
-  await expect(panel.locator('.sar-group-title').filter({ hasText: /Revisar|Revisar manualmente/ }).first()).toBeVisible();
+  await panel.locator('.sar-tab', { hasText: 'Todo' }).click();
+  await expect(panel.locator('.sar-filter-band')).toHaveValue('all');
+  await panel.locator('.sar-tab', { hasText: 'Listas' }).click();
+  await expect(panel.locator('.sar-filter-band')).toHaveValue('ready');
+  await panel.locator('.sar-tab', { hasText: 'Decisión' }).click();
+  await expect(panel.locator('.sar-filter-band')).toHaveValue('decision');
+
+  const cardCount = await panel.locator('.sar-card').count();
+  if (cardCount > 0) {
+    await expect(panel.locator('.sar-card').first().locator('.sar-row-check')).toBeVisible();
+    await expect(panel.locator('.sar-card').first().locator('.sar-badge')).toBeVisible();
+    await expect(panel.locator('.sar-card').first().locator('.sar-review-btn')).toContainText(/Detalle|Ver detalle/);
+  }
 
   const visibleText = await panel.evaluate((el) => el.innerText);
   if (await panel.locator('.sar-review-btn').count() > 0) {
@@ -281,7 +292,13 @@ test.describe('Semi-auto review panel', () => {
     await expect(oc).toBeVisible();
 
     if (await si.isChecked()) {
+      await expect(mo).toBeDisabled();
+      await expect(suministro).toBeDisabled();
+      await expect(oc).toBeDisabled();
       await si.uncheck();
+      await expect(mo).toBeEnabled();
+      await expect(suministro).toBeEnabled();
+      await expect(oc).toBeEnabled();
     }
     await mo.check();
     await suministro.check();

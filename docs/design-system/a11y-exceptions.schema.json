@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lastplanneraia.com/schemas/design-system/a11y-exceptions.schema.json",
+  "title": "Design System AIA accessibility exceptions",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["designSystemVersion", "exceptions"],
+  "properties": {
+    "designSystemVersion": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "exceptions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "fingerprint", "surface", "rule", "impact", "selector",
+          "owner", "reason", "milestone", "expiresAt"
+        ],
+        "properties": {
+          "fingerprint": { "type": "string", "pattern": "^[^*|]+[|][^*|]+[|][^*|]+[|][^*]+$" },
+          "surface": { "type": "string", "minLength": 1 },
+          "rule": { "type": "string", "minLength": 1 },
+          "impact": { "enum": ["critical", "serious", "moderate", "minor"] },
+          "selector": { "type": "string", "minLength": 1, "pattern": "^[^*]+$" },
+          "owner": { "type": "string", "minLength": 1 },
+          "reason": { "type": "string", "minLength": 1 },
+          "milestone": { "type": "string", "minLength": 1 },
+          "expiresAt": { "type": "string", "format": "date" }
+        }
+      }
+    }
+  }
+}

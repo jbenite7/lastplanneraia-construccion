@@ -1,0 +1,55 @@
+@layer reset {
+.handsontable table { display: table !important; width: 100% !important; }
+.handsontable thead { display: table-header-group !important; }
+.handsontable tbody { display: table-row-group !important; }
+.handsontable tbody tr { display: table-row !important; width: auto !important; margin: 0 !important; padding: 0 !important; border: 0 !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; }
+.handsontable :where(th, td) { display: table-cell !important; width: auto !important; padding: var(--ds-space-2) var(--ds-space-3) !important; }
+}
+
+@layer components {
+:where(.handsontable, .handsontable .htCore) {
+  background: var(--ds-active-surface);
+  color: var(--ds-active-text-primary);
+  font-family: var(--ds-font-body);
+}
+
+:where(.handsontable th, .handsontable td) {
+  border-color: var(--ds-active-border);
+  background: var(--ds-active-surface);
+  color: var(--ds-active-text-primary);
+}
+
+:where(.handsontable th) {
+  background: var(--ds-active-surface-raised);
+  font-weight: var(--ds-type-weight-semibold);
+}
+
+.handsontable table {
+  display: table !important;
+  width: 100% !important;
+}
+
+.handsontable thead { display: table-header-group !important; }
+.handsontable tbody { display: table-row-group !important; }
+
+.handsontable tbody tr {
+  display: table-row !important;
+  width: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.handsontable :where(th, td) {
+  display: table-cell !important;
+  width: auto !important;
+  padding: var(--ds-space-2) var(--ds-space-3) !important;
+}
+
+:where(.handsontable .current, .handsontable .area) {
+  box-shadow: inset 0 0 0 var(--ds-border-width) var(--ds-color-brand-primary);
+}
+}

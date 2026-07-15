@@ -19,15 +19,13 @@ Regla: no agregar ni cambiar tests hasta revisar este documento.
 
 ### Credenciales dev
 
-Credenciales locales documentadas para pruebas:
+Las pruebas resuelven las credenciales en tiempo de ejecucion; no se deben duplicar valores privilegiados en documentacion ni tests.
 
-| Usuario | Clave | Rol |
-|---|---|---|
-| `jbenitez` | `Jbe#1106z` | System Admin |
-| `test.A` | `aia2026` | Admin |
-| `test.D` | `aia2026` | Director |
-| `test.R` | `aia2026` | Residente |
-| `test.C` | `aia2026` | Subcontratista |
+| Superficie | Fuente autorizada |
+|---|---|
+| App principal | Fixture compartido `CREDENTIALS` de `tests/browser/fixtures/projects.mjs`; override opcional y pareado mediante `E2E_APP_USERNAME` y `E2E_APP_PASSWORD` cuando el spec requiera otra visibilidad de proyectos |
+| Panel Admin | Variables de entorno `E2E_ADMIN_USERNAME` y `E2E_ADMIN_PASSWORD` |
+| Base de datos | `.env` o variables del contenedor; dentro de `db`, usar `MYSQL_ROOT_PASSWORD` y `MYSQL_DATABASE` |
 
 ### Proyectos fixture usados por E2E
 
@@ -495,12 +493,12 @@ Tabla visible:
 
 | Columna | Uso |
 |---|---|
-| Acciones | Editar/eliminar |
+| Acciones | Eliminar en tabla; Editar/Eliminar en tarjeta mobile |
 | `codigo` | Codigo de familia |
 | `actividad` | Nombre actividad |
 | `descripcionActividad` | Descripcion |
 | `actividadInicio`/`nombreActividadInicio` | Actividad PG vinculada |
-| `fechaInicio` | Fecha derivada o manual |
+| `fechaInicio` | Fecha derivada de la actividad PG seleccionada |
 | `tipoContrato` | Tipo asociado |
 | `semanaActualizacion` | Semana interna |
 
@@ -510,8 +508,9 @@ Botones y modales:
 - `#btn_nueva_actividad`: abre `#modalNuevaActividad`.
 - `#btn_auto_generar_listado`: abre `SemiAutoReview.open('listado-actividades')` si esta disponible.
 - `#btn_Actividades`, `#btn_contratos`, `#btn_planCompras`: switcher Listado/Contratos/PDC.
-- Fila `Editar`: convierte la fila en campos inline.
-- Fila `Eliminar`: abre `#modalEliminar`.
+- En tablet/desktop, las celdas autorizadas se editan directamente en Handsontable; la columna de acciones conserva solo Eliminar.
+- En mobile, cada registro es una tarjeta; `Editar` habilita actividad de inicio y modalidad, `Guardar` persiste y `Cancelar` descarta el estado local.
+- `Eliminar` abre `#modalEliminar` y exige confirmacion.
 
 Campos de nueva actividad:
 
@@ -529,14 +528,15 @@ Campos de Excel:
 
 Funciones:
 
-- `listar()`: inicializa DataTable con `/api/listado-actividades/list`.
-- `guardarNuevaActividad()`: envia `opcion=registrar`.
-- `guardarCargarExcel()`: envia CSV.
-- `obtener_data_editar()`: arma edicion inline.
-- `guardar_modificar()`: envia `opcion=modificar`.
+- `listar()`: prepara toolbar, permisos y `ListadoActividadesHotModule.init()`.
+- `ListadoActividadesHotModule.loadData()`: carga `/api/listado-actividades/list` y sincroniza HOT/tarjetas.
+- `afterChange`: guarda celdas por `/api/listado-actividades/update-cell` y revierte errores.
+- El submit de `#modalNuevaActividad form` envia `opcion=registrar`.
+- El submit de `#formCargarExcel` valida y envia el CSV completo.
+- La edicion desktop/tablet usa editores nativos HOT; la edicion mobile se limita a la tarjeta activa.
 - `obtener_id_eliminar()` y `eliminar()`: confirman y eliminan.
 - `actualizarFechaInicio(funcion)`: sincroniza fecha desde actividad PG.
-- `recargarTabla(opcion)`: destruye/relista DataTable.
+- `recargarTabla(opcion)`: solicita datos de nuevo sin destruir ni duplicar la instancia HOT.
 
 #### Contratos
 
@@ -935,9 +935,9 @@ Tipo: frontend/backend/semi-auto.
 Pasos:
 
 1. Entrar a `/listado-actividades`.
-2. Cargar DataTable.
-3. Listar con `/api/listado-actividades/list`.
-4. Crear/editar/eliminar con `/api/listado-actividades/save`.
+2. Cargar una unica instancia Handsontable o tarjetas mobile desde la misma fuente.
+3. Validar paridad con `/api/listado-actividades/list`.
+4. Crear/eliminar con `/save`, editar celdas con `/update-cell` y tarjetas con `/update-card`.
 5. Descargar plantilla si aplica.
 6. Generar actividades desde PG con `/api/listado-actividades/auto-generate`.
 7. Usar semi-auto con preview/apply/undo/feedback.
@@ -947,10 +947,10 @@ Auditoria tecnica:
 | Campo | Detalle |
 |---|---|
 | UI | `/listado-actividades` |
-| API | `/api/listado-actividades/template`, `/list`, `/save`, `/auto-generate`, `/auto/*`, `/auto/assistant/*`, `/auto/learning/*` |
+| API | `/api/listado-actividades/template`, `/list`, `/save`, `/update-cell`, `/update-card`, `/auto-generate`, `/auto/*` |
 | Controladores/servicios | `ListadoActividadesApiController`, `SemiAutoController`, `SemiAutoService` |
 | Tablas | `actividades`, `programa`, semi-auto tables |
-| Tests actuales | `full-app-flow.spec.mjs`, `listado-actividades-scope.mjs`, `semi-auto-review.mjs`, `test_listado_actividades_project_scope.php` |
+| Tests actuales | `tests/browser/listado-actividades-handsontable.mjs`, `e2e/tests/workflows/listado-full.spec.mjs`, `test_listado_actividades_project_scope.php` |
 | Riesgo | Muta actividades |
 
 ### 4.9 Contratos
@@ -960,12 +960,13 @@ Tipo: frontend/backend/semi-auto.
 Pasos:
 
 1. Entrar a `/contratos`.
-2. Listar con `/api/contratos/list`.
+2. Listar con `/api/contratos/list`; abrir filtros desde los encabezados, combinarlos y limpiar ambos desde el menú visible.
 3. Guardar cambios con `/api/contratos/save`.
-4. Ejecutar auto-asignacion o auto-definicion legacy si aplica.
-5. Ejecutar semi-auto preview.
-6. Revisar propuestas y confianza.
-7. Aplicar, deshacer o enviar feedback.
+4. Abrir el modal del registro correcto, editar modalidades, paquetes progresivos hasta cinco, cantidades, recursos y siete duraciones.
+5. Cancelar sin escrituras y guardar con una sola petición; recargar y comprobar persistencia.
+6. Ejecutar semi-auto `preview`, revisar/editar, seleccionar, aplicar, recargar y deshacer de forma atómica.
+7. Verificar sesiones reales editor/readOnly, restauración y paridad semántica HOT/tarjetas/API.
+8. Repetir Mobile, Tablet horizontal y Desktop en Dark/Linen sin DataTables, overflow, recorte, HTML crudo ni fallos inesperados.
 
 Auditoria tecnica:
 
@@ -974,8 +975,8 @@ Auditoria tecnica:
 | UI | `/contratos` |
 | API | `/api/contratos/list`, `/save`, `/auto-assign`, `/auto/*`, `/auto/assistant/*`, `/auto/learning/*`; `/auto-define*` solo deprecacion |
 | Controladores/servicios | `ContratosApiController`, `SemiAutoController`, `SemiAutoService`, `ActivityMatcher` |
-| Tablas | `actividades`, `auto_contrato_log`, semi-auto tables |
-| Tests actuales | `full-app-flow.spec.mjs`, `auto-definir-contratos.mjs`, `semi-auto-review.mjs`, `test_auto_definir_contratos.php`, `test_legacy_absence_for_lacp_runtime.php`, `test_contratos_paquetes_dedup.php` |
+| Tablas | `actividades`, `contratos_trazabilidad`, `general_dias_procesos_contratacion`, `general_auditoria_acciones` y tablas `semi_auto_*` |
+| Tests actuales | `tests/browser/contratos-handsontable.mjs`, `tests/browser/auto-definir-contratos.mjs`, `tests/browser/contratos-slot-quantities.mjs`, `e2e/tests/workflows/contratos-full.spec.mjs` y contratos PHP de RBAC, cantidades, duraciones, vacío y semi-auto |
 | Riesgo | Muta contratos/actividades |
 
 ### 4.10 PDC
@@ -1730,8 +1731,8 @@ Auditoria tecnica:
 | CNP | Frontend/backend | `full-app-flow.spec.mjs`, weekly tests | Reprogramacion necesita caso aislado | Muta datos | Ampliar con snapshot |
 | CNC | Frontend/backend | `full-app-flow.spec.mjs`, weekly tests | Falta guardado negativo | Muta datos | Ampliar |
 | CIC | Frontend/backend | `full-app-flow.spec.mjs`, weekly tests | Falta validacion de metricas | Muta datos | Ampliar |
-| Listado Actividades | Frontend/backend/semi-auto | `full-app-flow.spec.mjs`, `listado-actividades-scope.mjs`, `semi-auto-review.mjs`, PHP scope | Falta save manual dedicado | Muta datos | Mantener y ampliar |
-| Contratos | Frontend/backend/semi-auto | `full-app-flow.spec.mjs`, `auto-definir-contratos.mjs`, `semi-auto-review.mjs`, PHP auto/dedup/legacy guard | Falta CRUD manual aislado y evidencia por proyecto | Muta datos | Separar suites |
+| Listado Actividades | Frontend/backend/semi-auto | `listado-actividades-handsontable.mjs`, `e2e/tests/workflows/listado-full.spec.mjs`, contratos PHP de backend/alcance/loader | CRUD, CSV y semi-auto aislados con snapshot y huella | Muta datos | Mantener suite dedicada y restauración estricta |
+| Contratos | Frontend/backend/semi-auto | `contratos-handsontable.mjs`, `auto-definir-contratos.mjs`, `contratos-slot-quantities.mjs`, `e2e/tests/workflows/contratos-full.spec.mjs`, contratos PHP enfocados | HOT, tarjetas, modal, persistencia, RBAC y semi-auto aislados con snapshot; evidencia visual nativa en el goal | Muta datos | Mantener suites dedicadas y restauración atómica |
 | PDC | Frontend/backend/semi-auto | `full-app-flow.spec.mjs`, `test-pdc.mjs`, `semi-auto-review.mjs` | Falta duracion/plantillas dedicado | Muta datos | Ampliar |
 | Profesionales | Frontend/backend | `full-app-flow.spec.mjs` | Cobertura basica CRUD temporal | Muta catalogo | Mantener |
 | Subcontratistas | Frontend/backend | `full-app-flow.spec.mjs` | Falta roles con permisos limitados | Muta catalogo | Ampliar |
@@ -1743,7 +1744,7 @@ Auditoria tecnica:
 | PC Interesados Externos | Frontend/backend | `preconstruccion-full-cycle.mjs`, opcional full flow | Falta CRUD aislado | Muta catalogo | Ampliar |
 | PC Indicadores/Control Cambios | Frontend/backend | `preconstruccion-full-cycle.mjs`, opcional full flow | Falta calculo/CRUD profundo | Muta datos | Ampliar |
 | Semi-auto Listado | Semi-auto/backend | `semi-auto-review.mjs`, `test_semi_auto_service.php` | Falta learning approve/reject visible | Muta sugerencias | Separar assistant/learning |
-| Semi-auto Contratos | Semi-auto/backend | `semi-auto-review.mjs`, `auto-definir-contratos.mjs`, PHP semi-auto | Falta undo profundo por datos | Muta sugerencias/destino | Ampliar con snapshot |
+| Semi-auto Contratos | Semi-auto/backend | `auto-definir-contratos.mjs`, `contratos-full.spec.mjs`, PHP semi-auto | Apply/recarga/undo con huella y restauración exacta | Muta sugerencias/destino | Mantener snapshot y rechazo explícito de undo vacío |
 | Semi-auto PDC | Semi-auto/backend | `semi-auto-review.mjs`, `test-pdc.mjs` | Falta feedback por familia completo | Muta sugerencias/destino | Ampliar |
 | Admin login/dashboard | Admin | `admin-global-panel.mjs` | Falta login invalido | Seguro | Mantener y ampliar |
 | Admin usuarios | Admin | Sin E2E dedicado | CRUD/permisos sin cobertura | Admin critico | Agregar con fixture aislado |

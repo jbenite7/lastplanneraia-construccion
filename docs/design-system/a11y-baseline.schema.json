@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lastplanneraia.com/schemas/design-system/a11y-baseline.schema.json",
+  "title": "Design System AIA accessibility baseline",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["designSystemVersion", "fingerprints"],
+  "properties": {
+    "designSystemVersion": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "fingerprints": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 7, "pattern": "^[^*|]+[|][^*|]+[|][^*|]+[|][^*]+$" }
+    }
+  }
+}

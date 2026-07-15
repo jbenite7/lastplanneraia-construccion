@@ -23,8 +23,8 @@
 
 | Paradigma | Vistas | Motor | Características |
 |-----------|--------|-------|-----------------|
-| **DataTable** (legacy) | PDC, Contratos, Listado Actividades, CNP, CNC, CIC, Indicadores, Control Cambios | DataTables 1.11.4 | Tablas con paginación, filtros por columna, modales de edición |
-| **Handsontable** (moderno) | Programa General, Programa Actualizar, Programación Semanal, Programación Intermedia, Profesionales, Subcontratistas | Handsontable (full) | Grillas tipo spreadsheet, edición inline, auto-save, vista móvil tipo tarjetas |
+| **DataTable** (legacy) | Contratos, CNP, CNC, CIC, Indicadores, Control Cambios | DataTables 1.11.4 | Tablas con paginación, filtros por columna, modales de edición |
+| **Handsontable** (moderno) | PDC, Listado Actividades, Programa General, Programa Actualizar, Programación Semanal, Programación Intermedia, Profesionales, Subcontratistas | Handsontable (full) | Grillas tipo spreadsheet, edición inline, auto-save, vista móvil tipo tarjetas |
 
 ### Patrón de Carga
 
@@ -157,7 +157,7 @@ Validación recomendada: `node tests/browser/modal-brand.mjs`.
 - Favicon: `/img/florAIA.png`
 
 **CSS cargados:**
-- `/css/stylesLogin.css` — estilos legacy del formulario oscuro
+- Ninguno propio. El registro frontend legacy ya no consume la hoja retirada `stylesLogin.css`; login y recuperación usan `/css/login-brand-unified.css` y los tokens actuales.
 
 **Variables que recibe:**
 - `$errores` — errores de validación
@@ -166,17 +166,11 @@ Validación recomendada: `node tests/browser/modal-brand.mjs`.
 **Elementos interactivos:**
 - Formulario de registro con: nombre, email, cargo, proyecto (select poblado por DB), permisos (select de 10 roles: A, V, OT, R, S, G, SG, DCV, C), usuario, contraseña, confirmar contraseña
 
-**Colores:**
-- Fondo formulario: `rgba(55,68,81,1)` (dark slate)
-- Botón submit: `#769766` (verde apagado)
-- Borde superior: `rgb(191,215,48)` (lima verde)
-- Enlaces: `#1a5633` (verde AIA)
+**Colores:** Sin paleta propia; los valores dark/lima del registro anterior pertenecían a la hoja legacy retirada.
 
-**Estilo de diseño:**
-- Formulario oscuro legacy con inputs pre-iconizados
-- Contenedor centrado con borde superior lima
+**Estilo de diseño:** Vista legacy sin hoja propia; la experiencia vigente de autenticación se mantiene en los flujos tokenizados.
 
-**CSS inyectado:** No — todo viene de `stylesLogin.css`
+**CSS inyectado:** No
 
 ---
 
@@ -282,7 +276,7 @@ Validación recomendada: `node tests/browser/modal-brand.mjs`.
 **Dependencias externas:**
 - Google Fonts: Montserrat, Inter
 - jQuery 1.12.4, Popper, Bootstrap 4.3.1
-- DataTables 1.11.4 + Buttons + Checkboxes
+- Handsontable 14.6.1 vendored para la tabla principal y `dt_definirContratos`
 - jQuery UI 1.10.1
 - Google Charts, AnyChart
 - Select2 4.0.6
@@ -302,11 +296,11 @@ Validación recomendada: `node tests/browser/modal-brand.mjs`.
 - `$categoriasCnc`
 
 **Elementos interactivos:**
-- DataTable (`#dt_cliente`) con 33+ columnas de seguimiento de etapas de contratación
+- Handsontable (`#dt_cliente`) para el seguimiento de etapas de contratación
 - Modal `#modalContrato` — formulario masivo de edición con 9 etapas de proceso de contratación, cada una con duración, fechas teóricas/proyectadas/reales
 - Modal `#modalDefinirContratos` — definir número de contratos por paquete
-- Edición inline en filas de tabla
-- Fila de filtro por columna en header de tabla
+- Acciones por registro y modal de edición sobre la fuente Handsontable
+- Filtros por columna desde los encabezados Handsontable
 - Chips de leyenda PDC (filtrables)
 
 **Colores:**
@@ -316,12 +310,12 @@ Validación recomendada: `node tests/browser/modal-brand.mjs`.
 - Fondo gradiente: `linear-gradient(180deg, #fafafa 0%, #f4f1ea 100%)`
 
 **Estilo de diseño:**
-- DataTable con edición inline
+- Dos grids Handsontable sin runtime DataTables
 - Modal multi-sección con layout grid
 - Chips de filtro/leyenda
 - Notificaciones toast
 
-**CSS inyectado:** Sí — **666 líneas de CSS inline** con estilos extensivos para modales PDC, chips de leyenda, toasts, breakpoints responsive (1199px, 767px)
+**CSS del módulo:** `/css/pdc.css`, capas canónicas del design system y estilos acotados del modal PDC.
 
 ---
 
@@ -330,7 +324,7 @@ Validación recomendada: `node tests/browser/modal-brand.mjs`.
 **Propósito:** Gestión de contratos — vincula actividades con paquetes de contratación (Suministro, Mano de Obra, Suministro e Instalación).
 
 **Dependencias externas:**
-- Mismo stack que PDC: jQuery, Bootstrap, DataTables, Select2, Google Charts, AnyChart
+- Stack legacy del módulo: jQuery, Bootstrap, DataTables, Select2, Google Charts, AnyChart
 
 **CSS cargados:**
 - Mismos que PDC (vía linksComunesHead2.js)
@@ -1154,7 +1148,6 @@ Validación recomendada: `node tests/browser/modal-brand.mjs`.
 | `login-brand-unified.css` | ~227 | Estilos modernos de login/registro. Tokens OKLCH, gradientes radiales, tarjeta con border-radius grande, botón marca con gradiente y text-shadow, focus states, reduced-motion, responsive con container queries |
 | `handsontable-module.css` | ~393 | Layout y protección de Handsontable. Layout flex full-height, sizing de `#hot-container`, vista tarjetas móvil, botón eliminar circular, loading overlay, estilos Select2 multiple para HOT, overrides drawer móvil |
 | `handsontable-header-global.css` | ~108 | Overrides de layout de header Handsontable (unlayered). Texto centrado, layout flex column para header (colHeader sobre icono changeType), estilos de icono changeType (13px square) |
-| `stylesLogin.css` | ~210 | Estilos legacy de login/registro. Fondo oscuro `rgba(55,68,81,1)`, inputs pre-iconizados, borde superior lima `rgb(191,215,48)`, botón submit `#769766` |
 | `tom-select-premium-aia.css` | ~143 | Estilos TomSelect para Handsontable. Paleta naranja AIA para control, chips, dropdown, opciones. Botón clear al fondo. Estilo de opción "create action" |
 | `access.css` | ~58 | Utilidades de accesibilidad. `.sr-only`, spacing utilities (`.btn-action-gap`, `.nav-link-custom`, `.p-xs`, `.px-sm`, `.py-sm`, `.m-0`), utilidad de tabla responsive |
 
@@ -1185,7 +1178,6 @@ Validación recomendada: `node tests/browser/modal-brand.mjs`.
 | Archivo | Propósito |
 |---------|-----------|
 | `modules/programa_general/hot.js` | Módulo PG Handsontable: columnas, carga datos, auto-save, renderers |
-| `modules/programa_general/main.js` | Entry point del módulo PG |
 | `modules/programa_actualizar/hot_actualizar.js` | Módulo Handsontable de actualización de programa |
 | `modules/programacion_semanal/hot.js` | Módulo PS Handsontable: columnas, datos, lógica commit, modal CNC |
 | `modules/programacion_semanal/stateMachine.js` | State machine de fases semanales PS |
@@ -1197,7 +1189,6 @@ Validación recomendada: `node tests/browser/modal-brand.mjs`.
 | Archivo | Propósito |
 |---------|-----------|
 | `HandsontableTomSelectEditor.js` | Editor custom de celda HOT usando TomSelect |
-| `HandsontableSelect2Editor.js` | Editor custom de celda HOT usando Select2 |
 
 ### Utilidades
 
@@ -1263,7 +1254,7 @@ Las vistas Handsontable implementan vista dual:
 | Vista | Razón | Reemplazo |
 |-------|-------|-----------|
 | `auth/registrate.view.php` | Creación de usuarios centralizada en admin | `admin/views/pages/users/create.php` |
-| `stylesLogin.css` | Estilos legacy duplicados | `login-brand-unified.css` (moderno, OKLCH) |
+| `stylesLogin.css` (retirada el 14 de julio de 2026) | Estilos legacy duplicados, ya sin consumidores frontend | `login-brand-unified.css` y tokens actuales |
 
 ### Vistas con CSS Inline Excesivo
 

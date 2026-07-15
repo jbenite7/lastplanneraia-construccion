@@ -4,128 +4,14 @@
 	<meta charset="UTF-8">
 	<!--Script cque va al archivo linksComunesHead2.js-->
 	<!--Script cque va al archivo linksComunesHead2.js-->
-	<script type="text/javascript" src="/js/linksComunesHead2.js?v=piStateColors3" charset="utf-8"></script>
-    <style>
-        .filaBotones, .ps-actions-row {
-            overflow: visible !important;
-        }
-        .ps-actions-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            gap: 6px;
-        }
-        /* Nuclear specificity to force rectangular tools for DataTable Header */
-        body #dt_cliente_wrapper .filaBotones .btn,
-        body #dt_cliente_wrapper .filaBotones button,
-        body #dt_cliente_wrapper .filaMensajes .btn,
-        body #dt_cliente_wrapper .filaMensajes button,
-        body #dt_cliente_wrapper .filaMensajes .form-control,
-        body #dt_cliente_wrapper .dataTables_filter input {
-            border-radius: 4px !important;
-            -webkit-appearance: none !important;
-            appearance: none !important;
-        }
-
-        /* Dropdown de Navegación por Hover - Visibility Fix */
-        .ps-dropdown-nav {
-            position: relative;
-            display: inline-block;
-            z-index: 1000;
-        }
-
-        /* Puente invisible para evitar que el dropdown se cierre en el espacio en blanco */
-        .ps-dropdown-nav::after {
-            content: '';
-            position: absolute;
-            left: 0;
-            right: 0;
-            bottom: -15px;
-            height: 15px;
-        }
-
-        .ps-dropdown-content {
-            display: none;
-            position: absolute;
-            right: 0;
-            top: 100%;
-            background-color: #ffffff;
-            min-width: 240px;
-            box-shadow: 0px 10px 25px rgba(0,0,0,0.2);
-            z-index: 1001;
-            border-radius: 4px;
-            border: 1px solid #cbd5e1;
-            overflow: visible !important;
-            margin-top: 4px;
-        }
-
-        .ps-dropdown-nav:hover .ps-dropdown-content,
-        .ps-dropdown-nav.is-open .ps-dropdown-content {
-            display: block !important;
-        }
-
-        .ps-dropdown-item {
-            color: #334155;
-            padding: 12px 16px;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            border-bottom: 1px solid #f1f5f9;
-            transition: all 0.2s;
-            background: none;
-            border-left: none;
-            border-right: none;
-            border-top: none;
-            width: 100%;
-            text-align: left;
-            cursor: pointer;
-        }
-
-        .ps-dropdown-item:last-child {
-            border-bottom: none;
-        }
-
-        .ps-dropdown-item:hover {
-            background-color: #f1f5f9;
-            color: #1e5ea8;
-        }
-
-        .ps-dropdown-item.is-active {
-            background-color: #eff6ff !important;
-            color: #1e5ea8 !important;
-            font-weight: 700 !important;
-            border-left: 3px solid #1e5ea8 !important;
-        }
-
-        .ps-dropdown-item i {
-            width: 18px;
-            text-align: center;
-            color: #64748b;
-        }
-
-        .btn-dropdown-trigger {
-            background: #ffffff !important;
-            border: 1px solid #cbd5e1 !important;
-            color: #1e5ea8 !important;
-            font-weight: 700 !important;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
-            padding: 0.35rem 0.75rem;
-            border-radius: 4px !important;
-        }
-
-        .btn-dropdown-trigger:hover {
-            background: #f8fafc !important;
-            border-color: #1e5ea8 !important;
-        }
-    </style>
+	<?= \App\View\Components\DesignSystemHeadComponent::render() ?>
+	<script type="text/javascript" src="/js/linksComunesHead2.js?v=20260711foundation5" charset="utf-8"></script>
+    <?php $psCssVersion = @filemtime(dirname(__DIR__, 2) . '/public/css/programacion-semanal.css') ?: 'ps1'; ?>
+    <link rel="stylesheet" href="/css/programacion-semanal.css?v=<?= urlencode((string) $psCssVersion) ?>">
 </head>
 
 <!--Etiqueta superior-->
-<body>
+<body class="ps-page">
     <input type="hidden" id="semana_PHP" value="<?php echo $semana; ?>">
     <input type="hidden" id="db_PHP" value="<?php echo $dbName; ?>">
     <input type="hidden" id="proyecto_PHP" value="<?php echo $proyecto; ?>">
@@ -190,7 +76,7 @@
 		        <p class="modal-body-texto-reprogramar" id="modal-body-texto-reprogramar"></p>
 		      </div>
  		      <div class="modal-footer">
- 		        <button type="button" id="reprogramar-usuario" class="btn btn-primary" data-dismiss="modal" aria-label="Aceptar">Aceptar</button>
+				<button type="button" id="reprogramar-usuario" class="btn btn-primary" aria-label="Aceptar">Aceptar</button>
  		        <button type="button" class="btn btn-default" data-dismiss="modal" aria-label="Cancelar">Cancelar</button>
  		      </div>
 		    </div>
@@ -207,6 +93,21 @@
 	<script type="text/javascript" charset="utf8" src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 	<!--Iniciar DataTables-->
 	<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.4/js/jquery.dataTables.js"></script>
+	<?php
+	$psCnpProfessionals = [];
+	try {
+		$psCnpProjectId = TableResolver::getProjectIdByPrefix($_SESSION['db'] ?? '');
+		$psCnpTable = TableResolver::resolveByPrefix($_SESSION['db'] ?? '', 'profesionales');
+		$psCnpRows = Database::getInstance()->queryWithProject(
+			"SELECT nombre FROM {$psCnpTable} WHERE project_id = ? AND Activo = 1 ORDER BY nombre",
+			[$psCnpProjectId], $psCnpProjectId
+		)->fetchAll(PDO::FETCH_COLUMN);
+		$psCnpProfessionals = array_values(array_filter(array_map('trim', $psCnpRows)));
+	} catch (Throwable $ignored) {
+	}
+	?>
+	<script>window.PS_CNP_PROFESSIONALS = <?= json_encode($psCnpProfessionals, JSON_UNESCAPED_UNICODE) ?>;</script>
+	<script src="/js/modules/programacion_semanal/legacyCards.js?v=<?= urlencode((string) (@filemtime(dirname(__DIR__, 2) . '/public/js/modules/programacion_semanal/legacyCards.js') ?: 'ps1')) ?>"></script>
 	<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.4/js/dataTables.bootstrap4.min.js"></script>
 	<!--Botones de Datatables-->
 	<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/1.6.1/js/dataTables.buttons.min.js"></script>
@@ -238,6 +139,22 @@
 			cargarDatosGeneralesPagina(document.getElementById('seccion').value);
 		});
 
+		$(document).off("show.bs.modal.cnpLegend", "#modal_leyenda_colores").on("show.bs.modal.cnpLegend", "#modal_leyenda_colores", function() {
+			var $modal = $(this);
+			$modal.find("#modal_leyenda_colores_Label").text("Guía Operativa - Causas de No Programación");
+			$modal.find(".modal-body").html(
+				'<div class="ps-legend-quick ps-cnp-legend"><div class="ps-legend-quick-header">' +
+				'<p class="ps-legend-quick-intro"><strong>Lectura rápida:</strong> Identifique por qué cada actividad quedó sin programar y atienda primero las atrasadas y críticas.</p></div>' +
+				'<section class="ps-legend-quick-group" role="list"><h6 class="ps-legend-quick-group-title">Prioridad para programar</h6>' +
+				'<div class="ps-legend-quick-row ps-cnp-legend-item is-critical" role="listitem"><span class="ps-legend-modal-swatch ps-legend-quick-swatch ps-cnp-legend-swatch is-critical" aria-hidden="true"></span><div class="ps-legend-quick-state"><strong>Crítica por programar</strong><small>Actividad de ruta crítica que aún no entra en el compromiso semanal.</small></div><div class="ps-legend-quick-action"><strong>Acción:</strong> Revise la causa, asigne responsable y prográmela esta semana.</div></div>' +
+				'<div class="ps-legend-quick-row ps-cnp-legend-item is-non-critical" role="listitem"><span class="ps-legend-modal-swatch ps-legend-quick-swatch ps-cnp-legend-swatch is-non-critical" aria-hidden="true"></span><div class="ps-legend-quick-state"><strong>No crítica por programar</strong><small>Actividad fuera de ruta crítica que todavía no fue programada.</small></div><div class="ps-legend-quick-action"><strong>Acción:</strong> Cierre la causa y prográmela antes de que afecte el plan.</div></div>' +
+				'<div class="ps-legend-quick-row ps-cnp-legend-item is-overdue-critical" role="listitem"><span class="ps-legend-modal-swatch ps-legend-quick-swatch ps-cnp-legend-swatch is-overdue-critical" aria-hidden="true"></span><div class="ps-legend-quick-state"><strong>Atrasada crítica por programar</strong><small>Actividad de ruta crítica cuya fecha prevista ya venció.</small></div><div class="ps-legend-quick-action"><strong>Acción:</strong> Escálela hoy, resuelva la causa y acuerde una nueva fecha.</div></div>' +
+				'<div class="ps-legend-quick-row ps-cnp-legend-item is-overdue-non-critical" role="listitem"><span class="ps-legend-modal-swatch ps-legend-quick-swatch ps-cnp-legend-swatch is-overdue-non-critical" aria-hidden="true"></span><div class="ps-legend-quick-state"><strong>Atrasada no crítica por programar</strong><small>Actividad fuera de ruta crítica cuya fecha prevista ya venció.</small></div><div class="ps-legend-quick-action"><strong>Acción:</strong> Defina responsable y fecha de recuperación durante esta semana.</div></div></section>' +
+				'</div>'
+			);
+			$modal.find(".modal-footer [data-dismiss='modal']").text("Cerrar");
+		});
+
 		var cargaParametros = function() {
 			//ocultos();
 			listar();
@@ -265,7 +182,7 @@
 		/*Acá se inicia la datatable y se crean sus valores por defecto como el ordenamiento, las celdas que se muestran, los datos, las opciones de longitud de los registros, y el color de las filas dependiendo del estado de las actividades*/
 		var listar = function() {
 			var db = document.getElementById('baseDatos') ? document.getElementById('baseDatos').value : document.getElementById('db_PHP').value;
-			var semana = document.getElementById('semana') ? document.getElementById('semana').value : document.getElementById('semana_PHP').value;
+			var semana = document.getElementById('semana_PHP').value;
 
 			var inputSemanalConfirmada = document.getElementById('Semanal_Confirmada');
 			var Semanal_Confirmada = inputSemanalConfirmada ? inputSemanalConfirmada.value : 0;
@@ -276,9 +193,9 @@
 
 
 			if(Semanal_Confirmada==1){
-					var botones_disponibles="<button type= 'button' class='editar btn btn-primary btn-sm ps-btn-tight'><i class='fa fa-edit fa-xs'></i></button>";
+					var botones_disponibles="<div class='ps-cnp-row-actions d-inline-flex flex-column align-items-center' role='group' aria-label='Acciones de la actividad'><button type='button' class='editar btn btn-primary btn-sm ps-btn-tight ps-cnp-row-action' aria-label='Editar actividad' title='Editar actividad'><i class='fa fa-edit fa-xs' aria-hidden='true'></i></button></div>";
 			}else{
-					var botones_disponibles="<button type= 'button' class='editar btn btn-primary btn-sm ps-btn-tight'><i class='fa fa-edit fa-xs'></i></button><button type= 'button' class='reprogramar btn btn-success btn-sm ps-btn-tight'><i class='fa fa-undo-alt fa-xs'></i></button>";
+					var botones_disponibles="<div class='ps-cnp-row-actions d-inline-flex flex-column align-items-center' role='group' aria-label='Acciones de la actividad'><button type='button' class='editar btn btn-primary btn-sm ps-btn-tight ps-cnp-row-action' aria-label='Editar actividad' title='Editar actividad'><i class='fa fa-edit fa-xs' aria-hidden='true'></i></button><button type='button' class='reprogramar btn btn-success btn-sm ps-btn-tight ps-cnp-row-action' aria-label='Reprogramar actividad' title='Reprogramar actividad'><i class='fa fa-undo-alt fa-xs' aria-hidden='true'></i></button></div>";
 			}
 
 			var table = $("#dt_cliente").DataTable({
@@ -302,7 +219,7 @@
 				'columnDefs': [
 						{
 							'targets': [0],
-							'width':'4%',
+							'width':'8%',
 						},
 						{
 							'targets': [2],
@@ -330,7 +247,7 @@
 						},
 						{
 							'targets': [10],
-							'width':'24%',
+							'width':'20%',
 						},
 
 						{
@@ -358,7 +275,7 @@
 
 						{
 								'targets': [0],
-								'className': 'Botones'
+								'className': 'Botones text-center'
 						},
 						{
 								'targets': [7],
@@ -400,16 +317,13 @@
 				],
 
 			"createdRow": function( row, data, index ) {
-				// Standardized Coloring Logic for CNP
-				if(data.Atrasada==1 && data.Critica==1){
-					$(row).addClass('row-critical-delay');
-				} else if(data.Atrasada==1 && data.Critica==0){
-					$(row).addClass('row-delayed');
-				} else if(data.Critica==1){
-					$(row).addClass('row-warning');
-				} else if(data.Critica==0){
-					// Default - could be row-active or just plain
-				}
+				var isOverdue = Number(data.Atrasada) === 1;
+				var isCritical = Number(data.Critica) === 1;
+				var stateClass = isOverdue
+					? (isCritical ? 'row-cnp-overdue-critical' : 'row-cnp-overdue-non-critical')
+					: (isCritical ? 'row-cnp-critical' : 'row-cnp-non-critical');
+
+				$(row).addClass(stateClass);
 			},
 
 				"language": idioma_espanol
@@ -441,6 +355,7 @@
 			$("div.toolbarFilaMensajes").html('<p id="mensajeActualizacion"></p>');
 
 			$("div.toolbarFiltro").html('<div class="ps-toolbar-filter"><button id="btn_limpiar_buscador" type="button" class="btn-pdc-modern ps-filter-clear" aria-label="Limpiar búsqueda"><i class="fas fa-times-circle" aria-hidden="true"></i> Limpiar</button></div>');
+			$("div.toolbarFiltro").first().insertBefore($("div.ps-actions-row .ps-toolbar-nav-wrap").first());
 
 			var permisoElem = document.getElementById('permiso_canonico');
 			var permiso = permisoElem ? permisoElem.value : '';
@@ -450,25 +365,29 @@
 			}
 			obtener_data_editar("#dt_cliente tbody", table);
 			obtener_id_reprogramar("#dt_cliente tbody", table);
+			if (window.PSLegacyCards) window.PSLegacyCards.attach(table, 'cnp');
 		}
 
 		/*Toma los datos de la fila en la que se presionó el botón editar*/
 		var obtener_data_editar = function(tbody, table) {
 			var max_semana = document.getElementById('Max_Semana') ? document.getElementById('Max_Semana').value : 100;
-			var semana = document.getElementById('semana') ? document.getElementById('semana').value : document.getElementById('semana_PHP').value;
+			var semana = document.getElementById('semana_PHP').value;
 			var permisoElem = document.getElementById('permiso_canonico');
 			var permiso = permisoElem ? permisoElem.value : '';
 
 			var canEdit = window.RbacCapabilities ? RbacCapabilities.canEditLps(permiso, parseInt(semana), parseInt(max_semana)) : false;
-			var only_once = !canEdit;
+			var only_once = canEdit;
 
 			var inputSemanalConfirmada = document.getElementById('Semanal_Confirmada');
 			var Semanal_Confirmada = inputSemanalConfirmada ? inputSemanalConfirmada.value : 0;
 
-		  $(tbody).one("click", "td", function() {
+		  $(tbody).off("click.cnpEdit", "button.editar").on("click.cnpEdit", "button.editar", function(e) {
+		    e.preventDefault();
+		    e.stopPropagation();
 		    if (only_once == true) {
-					var data= table.row($(this).parents("tr")).data();
-					var Id=$("#Id").val(data.Consecutivo);
+					var $row = $(this).closest("tr");
+					var data = table.row($row).data();
+					var Id=$("#Id").val(data.row_id || data.Consecutivo);
 					var opcion = $("#opcion").val("modificar");
 
 					var Responsable_AIA = <?php
@@ -490,16 +409,16 @@
     }
     ?> ;
 					var codigo_html_Responsable_AIA = "<select id='select_Responsable_AIA' name='Responsable_AIA' class='form-control form-control-sm' ><option value=''></option>" + Responsable_AIA + "</select>";
-					$(this).parent().find('.input_Responsable_AIA').html(codigo_html_Responsable_AIA);
+					$row.find('.input_Responsable_AIA').html(codigo_html_Responsable_AIA);
 					var codigo_html_Categoria_CNC = "<select id='select_Categoria_CNC' name='Categoria_CNC' class='form-control form-control-sm'><option value='' selected></option></select>";
-					$(this).parent().find('.input_Categoria_CNC').html(codigo_html_Categoria_CNC);
-					cargarCategoriasCNC();
+					$row.find('.input_Categoria_CNC').html(codigo_html_Categoria_CNC);
+					cargarCategoriasCNC(data.Categoria_CNP);
 					var codigo_html_CNC = "<select id='select_CNC' name='CNC' class='form-control form-control-sm'><option value='' selected></option></select>";
-					$(this).parent().find('.input_CNC').html(codigo_html_CNC);
+					$row.find('.input_CNC').html(codigo_html_CNC);
 					var codigo_html_Observaciones_CNC = "<textarea id='select_Observaciones_CNC' name='Observaciones_CNC' class='form-control form-control-sm'>'" + data.Observaciones_CNC + "'</textarea>";
-					$(this).parent().find('.input_Observaciones_CNC').html(codigo_html_Observaciones_CNC);
-					var codigo_html_botones = "<button type= 'button' id='btn_guardar_editar' class='guardar btn btn-success btn-sm ps-btn-edit' title='Guardar Causa de No Programación'><i class='fa fa-save fa-xs' aria-hidden='true' ></i></button><button type= 'button' id='btn_cancelar_editar' class='cancelar btn btn-danger btn-sm ps-btn-edit' title='Cancelar la edición'><i class='fa fa-undo fa-xs' aria-hidden='true' ></i></button>";
-					$(this).parent().find('.Botones').html(codigo_html_botones);
+					$row.find('.input_Observaciones_CNC').html(codigo_html_Observaciones_CNC);
+					var codigo_html_botones = "<div class='ps-cnp-row-actions d-inline-flex flex-column align-items-center' role='group' aria-label='Acciones de edición'><button type='button' id='btn_guardar_editar' class='guardar btn btn-success btn-sm ps-btn-edit ps-cnp-row-action' aria-label='Guardar causa de no programación' title='Guardar Causa de No Programación'><i class='fa fa-save fa-xs' aria-hidden='true'></i></button><button type='button' id='btn_cancelar_editar' class='cancelar btn btn-danger btn-sm ps-btn-edit ps-cnp-row-action' aria-label='Cancelar edición' title='Cancelar la edición'><i class='fa fa-undo fa-xs' aria-hidden='true'></i></button></div>";
+					$row.find('.Botones').html(codigo_html_botones);
 					$("#select_Responsable_AIA").val(data.Responsable_AIA).change();
 					$("#select_Responsable_AIA").focus();
 					//$("#select_CNC").val(data.CNP).change();
@@ -544,16 +463,20 @@
 		    $.ajax({
 		      method: "POST",
 		      url: "/api/cnc/reasons",
-		      data: { "categoria": categoria, "area": window.__PROJECT_AREA__ || 'Construccion' },
-		      success: function(data) {
-		        var optionsHtml = "<option value=''></option>";
-		        if (Array.isArray(data)) {
-		          data.forEach(function(item) {
-		            optionsHtml += "<option value='" + item.CNC + "'>" + item.CNC + "</option>";
-		          });
-		        }
-		        $('#select_CNC').html(optionsHtml);
-		        $("#select_CNC").val(CNC);
+			      data: { "categoria": categoria, "area": window.__PROJECT_AREA__ || 'Construccion' },
+			      success: function(data) {
+			        var $select = $('#select_CNC').empty().append($('<option>', { value: '', text: '' }));
+			        var values = [];
+			        if (Array.isArray(data)) {
+			          data.forEach(function(item) {
+			            values.push(item.CNC);
+			            $select.append($('<option>', { value: item.CNC, text: item.CNC }));
+			          });
+			        }
+			        if (CNC && values.indexOf(CNC) === -1) {
+			          $select.append($('<option>', { value: CNC, text: CNC }));
+			        }
+			        $select.val(CNC);
 		      }
 		    });
 		  }
@@ -591,19 +514,15 @@
 		  });
 		}
 
-		var cargarCategoriasCNC = function() {
-		  var area = window.__PROJECT_AREA__ || 'Construccion';
-		  var categorias = [];
-		  if (area === 'Pre-Construccion') {
-		    categorias = ['Diseños', 'Modelación', 'Presupuesto', 'Contratación', 'Trámites'];
-		  } else {
-		    categorias = ['Rendimiento', 'Programación', 'Mano de Obra', 'Materiales', 'Equipos', 'Diseños', 'Administrativas', 'Causas Exógenas'];
-		  }
+		var cargarCategoriasCNC = function(selectedValue) {
+		  var categorias = ['Rendimiento', 'Programación', 'Mano de Obra', 'Materiales', 'Equipos', 'Diseños', 'Administrativas', 'Causas Exógenas'];
+		  if (selectedValue && categorias.indexOf(selectedValue) === -1) categorias.unshift(selectedValue);
 		  var html = "<option value='' selected></option>";
 		  categorias.forEach(function(cat) {
 		    html += "<option value='" + cat + "'>" + cat + "</option>";
 		  });
 		  $('#select_Categoria_CNC').html(html);
+		  if (selectedValue) $('#select_Categoria_CNC').val(selectedValue);
 		}
 
 
@@ -622,7 +541,7 @@
 		/*Toma los datos de la fila en la que se presionó el botón duplicar*/
 		var obtener_id_reprogramar=function(tbody, table){
 			var max_semana = document.getElementById('Max_Semana') ? document.getElementById('Max_Semana').value : 100;
-			var semana = document.getElementById('semana') ? document.getElementById('semana').value : document.getElementById('semana_PHP').value;
+			var semana = document.getElementById('semana_PHP').value;
 			var elementoPermiso = document.getElementById('permiso_canonico');
 			var permiso = elementoPermiso ? elementoPermiso.value : '';
 			var canEdit = window.RbacCapabilities ? RbacCapabilities.canEditLps(permiso, parseInt(semana), parseInt(max_semana)) : false;
@@ -631,10 +550,13 @@
 				$(tbody).off("click", "button.reprogramar").on("click", "button.reprogramar", function(){
 					$("#modalReprogramar").modal("show");
 					var data= table.row($(this).parents("tr")).data();
-					var idusuario=$("#Id").val(data.Consecutivo);
+					var idusuario=$("#Id").val(data.row_id || data.Consecutivo);
 					var semana=$("#semana").val(data.Semana);
 					var opcion=$("#opcion_Reprogramar").val("reprogramar");
-					var texto=$("#modal-body-texto-reprogramar").html("¿Desea reprogramar la actividad: "+data.Actividad+"?");
+					var actividadTexto = window.PSLegacyCards
+						? window.PSLegacyCards.plainText(data.Actividad)
+						: String(data.Actividad || '');
+					$("#modal-body-texto-reprogramar").text("¿Desea reprogramar la actividad: " + actividadTexto + "?");
 
 					reprogramar();
 				});
@@ -642,22 +564,27 @@
 
 		}
 
-		var reprogramar = function() {
-			$("#reprogramar-usuario").on("click", function() {
-				var db = document.getElementById('baseDatos').value;
-		    var Id = $("#Id").val(),
-		      opcion = $("#opcion_Reprogramar").val(),
-		      semana = $("#semana").val();
-		    $.ajax({
-		      method: "POST",
-		      url: "/api/cnp/reprogramar",
+			var reprogramar = function() {
+				$("#reprogramar-usuario").off("click.cnpReprogramar").one("click.cnpReprogramar", function() {
+			    var Id = $("#Id").val(),
+			      semana = $("#semana_PHP").val() || $("#semana").val();
+			    $.ajax({
+			      method: "POST",
+			      url: "/api/cnp/reprogramar",
+			      dataType: "json",
 		      data: {
 		        "Id": Id,
 		        "semana": semana
-		      }
-		    }).done(function(info) {
-		      recargarTabla('');
-		    });
+			      }
+			    }).done(function(info) {
+			      mostrar_mensaje(info);
+			      if (info && info.respuesta === "BIEN") {
+			        $("#modalReprogramar").modal("hide");
+			        recargarTabla('');
+			      }
+			    }).fail(function() {
+			      mostrar_mensaje({ respuesta: "ERROR" });
+			    });
 		  });
 		}
 
@@ -665,25 +592,26 @@
 		var guardar = function() {
 			$("#btn_guardar_editar").one("click", function(e){
 				e.preventDefault();
-				var db = document.getElementById('baseDatos').value;
+					var payload = {
+						Consecutivo: $("#Id").val(),
+						semana: $("#semana_PHP").val() || $("#semana").val(),
+						Responsable_AIA: $("#select_Responsable_AIA").val() || '',
+						Categoria_CNP: $("#select_Categoria_CNC").val() || '',
+						CNP: $("#select_CNC").val() || '',
+						Observaciones_CNP: $("#select_Observaciones_CNC").val() || ''
+					};
 
-				var Id = $("#Id").serialize();
-        var semana = $("#semana").serialize();
-        var opcion = $("#opcion").serialize();
-
-				var Responsable_AIA=$("#select_Responsable_AIA").serialize();
-				var Categoria_CNC=$("#select_Categoria_CNC").serialize();
-				var CNC=$("#select_CNC").serialize();
-				var Observaciones_CNC=$("#select_Observaciones_CNC").serialize();
-				frm=Id+"&"+semana+"&"+opcion+"&"+Responsable_AIA+"&"+Categoria_CNC+"&"+CNC+"&"+Observaciones_CNC;
-
-					$.ajax({
-						method: "POST",
-						url: "/api/cnp/save",
-						data: frm,
-					}).done( function( info ){
-						recargarTabla("");
-					});
+						$.ajax({
+							method: "POST",
+							url: "/api/cnp/save",
+							data: payload,
+							dataType: "json"
+						}).done( function( info ){
+							mostrar_mensaje(info);
+							if (info && info.respuesta === "BIEN") recargarTabla("");
+						}).fail(function() {
+							mostrar_mensaje({ respuesta: "ERROR" });
+						});
 			});
 		}
 
@@ -742,7 +670,7 @@
 				// actualizarBarraFiltros(document.getElementById('baseDatos').value, document.getElementById('semana').value, "noListar");
 		    obtener_data_editar("#dt_cliente tbody", table);
 		  }
-		  $('#dt_cliente').on('draw.dt', function() {
+		  $('#dt_cliente').off('draw.dt.cnpRestoreScroll').one('draw.dt.cnpRestoreScroll', function() {
 		    $('.dataTables_scrollBody').scrollTop(posicion);
 		  });
 		}

@@ -1,0 +1,44 @@
+@layer components {
+  .aia-data-display__table {
+    display: none;
+    overflow-x: auto;
+  }
+
+  .aia-data-display__cards {
+    display: grid;
+    gap: var(--ds-space-4);
+  }
+
+  .aia-data-card header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ds-space-3);
+  }
+
+  .aia-data-card :where(h3, p) {
+    margin: var(--ds-space-0);
+  }
+
+  .aia-data-display__table table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .aia-data-display__table :where(th, td) {
+    padding: var(--ds-space-3);
+    border-bottom: var(--ds-border-width) solid var(--ds-active-border);
+    text-align: start;
+  }
+
+  @media (min-width: 75rem) {
+    .aia-data-display__table {
+      display: block;
+    }
+
+    .aia-data-display__cards {
+      display: none;
+    }
+  }
+}

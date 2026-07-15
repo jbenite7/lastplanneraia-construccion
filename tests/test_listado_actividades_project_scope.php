@@ -61,10 +61,14 @@ try {
         'INSERT INTO semanas_activas (project_id, Id, Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem) VALUES (?, ?, ?, ?, ?)',
         [$projectB, $week, $week, '2030-01-01', '2030-01-07'],
     );
+    $db->query(
+        'INSERT INTO semanas_activas (project_id, Id, Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem) VALUES (?, ?, ?, ?, ?)',
+        [$projectA, $week + 1, $week + 1, '2030-01-08', '2030-01-14'],
+    );
 
     $db->query(
         'INSERT INTO programa (project_id, Consecutivo, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin) VALUES (?, ?, ?, ?, ?, ?, ?)',
-        [$projectA, $consecutivo, 'A.1', 'PROYECTO A AISLADO', 0, '2030-01-03', '2030-01-04'],
+        [$projectA, $consecutivo, 'A.1', '<b>PROYECTO A AISLADO</b><br>', 0, '2030-01-03', '2030-01-04'],
     );
     $db->query(
         'INSERT INTO programa (project_id, Consecutivo, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin) VALUES (?, ?, ?, ?, ?, ?, ?)',
@@ -73,7 +77,7 @@ try {
 
     $db->query(
         'INSERT INTO programa_consolidado (project_id, Consecutivo, Semana, Consecutivo_en_Programa, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-        [$projectA, $consecutivo, $week, $consecutivo, 'A.1', 'PROYECTO A AISLADO', 0, '2030-01-03', '2030-01-04'],
+        [$projectA, $consecutivo, $week, $consecutivo, 'A.1', '<b>PROYECTO A AISLADO</b><br>', 0, '2030-01-03', '2030-01-04'],
     );
     $db->query(
         'INSERT INTO programa_consolidado (project_id, Consecutivo, Semana, Consecutivo_en_Programa, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
@@ -112,6 +116,10 @@ try {
         !str_contains($visibleName, 'PROYECTO B NO DEBE APARECER')
             ? listadoScopePass('El listado no cruza textos del otro proyecto.')
             : listadoScopeFail('El listado mezcló el programa de otro proyecto.');
+
+        !preg_match('/<[^>]+>/', $visibleName)
+            ? listadoScopePass('La API entrega el inicio en obra como texto seguro.')
+            : listadoScopeFail('La API expuso HTML crudo en el inicio en obra.');
     }
 } catch (Throwable $e) {
     listadoScopeFail($e->getMessage());

@@ -1,0 +1,50 @@
+@layer components {
+  .aia-page-header {
+    display: grid;
+    align-content: start;
+    gap: var(--ds-space-3);
+    color: var(--ds-active-text-primary);
+  }
+
+  .aia-page-header :where(h1, h2, h3, h4, h5, h6, p) {
+    margin: var(--ds-space-0);
+  }
+
+  .aia-page-header :where(h1, h2, h3, h4, h5, h6) {
+    color: var(--ds-active-text-primary);
+    font-family: var(--ds-font-display);
+  }
+
+  .aia-page-header__breadcrumb ol {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ds-space-2);
+    margin: var(--ds-space-0);
+    padding: var(--ds-space-0);
+    color: var(--ds-active-text-secondary);
+    list-style: none;
+  }
+
+  .aia-page-header__breadcrumb li + li::before {
+    margin-inline-end: var(--ds-space-2);
+    content: '/';
+  }
+
+  .aia-page-header__breadcrumb a,
+  .aia-page-header__context {
+    color: var(--ds-active-text-secondary);
+  }
+}
+
+@layer components {
+  .aia-page-header :where(h1, h2, h3, h4, h5, h6) {
+    color: var(--ds-active-text-primary);
+  }
+}
+
+@layer legacy-overrides {
+  /* Conserva el contrato tematico frente a la tipografia global del modulo legacy. */
+  .aia-page-header :where(h1, h2, h3, h4, h5, h6) {
+    color: var(--ds-active-text-primary);
+  }
+}

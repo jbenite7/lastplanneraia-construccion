@@ -3,6 +3,7 @@
 namespace App\Controllers\Gestion;
 
 use App\Controllers\BaseController;
+use App\Security\CsrfTokenManager;
 
 use TableResolver;
 class PdcController extends BaseController
@@ -39,6 +40,7 @@ class PdcController extends BaseController
         $vars = $this->getSessionVars();
         $vars['autoSyncPdcOnLoad'] = $autoSyncPdcOnLoad;
         $vars['pdcSyncOrigin'] = $pdcSyncOrigin;
+        $vars['csrfToken'] = CsrfTokenManager::generate('pdc_save');
         extract($vars); // $dbName, $semana, $proyecto, $permiso, etc.
 
         // Cargar vista PDC (refactorizada con estilos 2026)

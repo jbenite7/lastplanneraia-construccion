@@ -1,0 +1,40 @@
+services:
+  app:
+    build:
+      args:
+        COMPOSER_INSTALL_FLAGS: ""
+    ports: !override
+      - "18081:80"
+    environment:
+      APP_ENV: testing
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: lastplanneraia_ci
+      DB_USER: root
+      DB_PASS: ci-only-password
+      USE_GLOBAL_TABLES: "true"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  db:
+    ports: !override
+      - "13307:3306"
+    environment:
+      MYSQL_DATABASE: lastplanneraia_ci
+      MYSQL_ROOT_PASSWORD: ci-only-password
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./database/migrations/20260630_global_tables_contract.sql:/docker-entrypoint-initdb.d/001-global-schema.sql:ro
+      - ./database/fixtures/design-system-ci.sql:/docker-entrypoint-initdb.d/002-design-system-ci.sql:ro
+    restart: "no"
+
+  adminer:
+    profiles: ["manual"]
+    restart: "no"
+
+volumes:
+  db_data:
+    external: false
+    name: lps_aia_design_system_ci_db

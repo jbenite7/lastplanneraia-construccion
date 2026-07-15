@@ -201,7 +201,7 @@
     var $toolbar = $('#modal_change_monitor .cm-toolbar').first();
     if ($toolbar.length === 0) return;
     if ($('#cm-filter-indicator').length === 0) {
-      $toolbar.append('<div id="cm-filter-indicator" style="display:none"></div>');
+      $toolbar.append('<div id="cm-filter-indicator" class="d-none"></div>');
     }
   }
 
@@ -246,9 +246,9 @@
     var $indicator = $('#cm-filter-indicator');
     if ($indicator.length) {
       if (cmCurrentFilter === 'restricciones' && showing < total) {
-        $indicator.html('<i class="fas fa-filter"></i> Mostrando ' + showing + ' de ' + total + ' (filtrado por restricciones pendientes)').show();
+        $indicator.html('<i class="fas fa-filter"></i> Mostrando ' + showing + ' de ' + total + ' (filtrado por restricciones pendientes)').removeClass('d-none');
       } else {
-        $indicator.empty().hide();
+        $indicator.empty().addClass('d-none');
       }
     }
 

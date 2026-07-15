@@ -218,35 +218,45 @@
     return MODULES[module].base + '/' + action + ctxQuery();
   }
 
-  function isAdmin() {
-    return String($('#permiso_canonico').val() || '').toUpperCase() === 'A';
+  function undoStorageKey(module) {
+    var db = ($('#baseDatos').val() || '').trim();
+    var semana = ($('#semana').val() || $('#Max_Semana').val() || '').trim();
+    return 'aia.semiAuto.undo.' + module + '.' + db + '.' + semana;
   }
 
-  function ensureStyles() {
-    if (document.getElementById('semi-auto-review-style')) return;
-    var css = ''
-      + '.semi-auto-review{margin:12px 0 14px;border:1px solid #d5e5db;border-radius:8px;background:#fff;box-shadow:0 4px 14px rgba(36,49,58,.08);font-family:Inter,Arial,sans-serif;}'
-      + '.semi-auto-review[hidden]{display:none!important}.sar-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:14px 16px;background:#f8fafc;border-bottom:1px solid #e5e7eb;}'
-      + '.sar-title{font-weight:800;color:#24313a;font-size:1.05rem}.sar-meta{font-size:.9rem;color:#64748b;margin-top:3px;max-width:680px}.sar-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.sar-actions .btn-pdc-modern,.sar-actions .btn{white-space:nowrap}.sar-body{padding:14px 16px}.sar-foot{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:12px 16px;border-top:1px solid #e5e7eb;background:#fafafa}.sar-status{font-weight:600}.sar-error{color:#991b1b}.sar-ok{color:#166534}'
-      + '.sar-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 14px}.sar-step{display:flex;gap:8px;align-items:center;border:1px solid #dbe7ef;border-radius:8px;padding:9px 10px;color:#475569;background:#fff}.sar-step.is-active{border-color:#2c7a4b;background:#f0f9f3;color:#14532d}.sar-step-num{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#e2e8f0;font-weight:800}.sar-step.is-active .sar-step-num{background:#2c7a4b;color:#fff}.sar-step-title{font-weight:700}.sar-step-copy{display:block;font-size:.78rem;color:#64748b;line-height:1.25}'
-      + '.sar-tabs{display:flex;gap:6px;margin:0 0 10px;border-bottom:1px solid #e2e8f0}.sar-tab{border:0;border-bottom:3px solid transparent;background:transparent;color:#475569;padding:8px 10px;font-weight:800}.sar-tab.is-active{color:#166534;border-color:#2f7d4d}.sar-filters{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}.sar-filters select{display:none}.sar-filters input{height:34px;border:1px solid #cbd5e1;border-radius:6px;padding:4px 8px;font-size:.86rem;background:#fff}.sar-summary{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px;color:#334155}.sar-summary-pill{border:1px solid #dbe7ef;background:#f8fafc;border-radius:999px;padding:5px 10px;font-weight:700}.sar-summary-pill.ready{border-color:#bbf7d0;background:#f0fdf4;color:#166534}.sar-summary-pill.review{border-color:#fed7aa;background:#fff7ed;color:#9a3412}.sar-summary-pill.conflict{border-color:#fecaca;background:#fef2f2;color:#991b1b}'
-      + '.sar-groups{display:flex;flex-direction:column;gap:12px}.sar-group{border:1px solid #e2e8f0;border-radius:8px;background:#fff;overflow:hidden}.sar-group-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;background:#f8fafc;border-bottom:1px solid #e2e8f0}.sar-group-title{font-weight:800;color:#24313a}.sar-group-desc{font-size:.82rem;color:#64748b}.sar-group-count{font-weight:800;border-radius:999px;background:#e2e8f0;color:#334155;padding:4px 9px}.sar-card-list{display:flex;flex-direction:column;gap:10px;padding:10px}.sar-card{border:1px solid #e2e8f0;border-radius:8px;background:#fff;display:flex;flex-direction:column;min-height:0}.sar-card.is-ready{border-color:#bbf7d0}.sar-card.is-review{border-color:#fed7aa}.sar-card.is-conflict{border-color:#fecaca;opacity:.9}.sar-card-top{display:flex;gap:10px;padding:11px 12px;border-bottom:1px solid #edf2f7}.sar-card-check{margin-top:4px}.sar-card-main{min-width:0;flex:1}.sar-card-title-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.sar-card-title{font-weight:800;color:#24313a}.sar-card-subtitle{color:#64748b;margin-top:2px;word-break:break-word}.sar-card-message{font-size:.86rem;color:#475569;margin-top:7px;line-height:1.35}.sar-badge{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 8px;font-size:.78rem;font-weight:800}.sar-badge.ready{background:#dcfce7;color:#166534}.sar-badge.review{background:#ffedd5;color:#9a3412}.sar-badge.conflict{background:#fee2e2;color:#991b1b}.sar-change-summary{padding:10px 12px;color:#334155;font-size:.86rem}.sar-change-line{display:flex;gap:7px;align-items:flex-start;margin-bottom:6px}.sar-change-label{font-weight:800;min-width:132px}.sar-change-flow{color:#475569}.sar-old{color:#64748b}.sar-new{color:#166534;font-weight:700}.sar-card-actions{display:flex;gap:8px;justify-content:flex-end;padding:0 12px 12px;margin-top:auto}.sar-review-btn,.sar-tech-btn{border:1px solid #cbd5e1;border-radius:6px;background:#fff;color:#334155;padding:5px 9px;font-weight:700}.sar-detail{display:none;border-top:1px solid #edf2f7;padding:10px 12px;background:#fcfcfd}.sar-card.is-open .sar-detail{display:block}.sar-edit-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:9px}.sar-edit-field label{display:block;font-weight:700;font-size:.8rem;color:#475569;margin-bottom:3px}.sar-inline-edit{width:100%;border:1px solid #cbd5e1;border-radius:5px;padding:6px 8px;font-size:.86rem;background:#fff}.sar-empty{padding:22px;text-align:center;color:#64748b;border:1px dashed #cbd5e1;border-radius:8px;background:#f8fafc}.sar-tech-wrap{display:none;margin-top:12px;border:1px dashed #94a3b8;border-radius:8px;background:#f8fafc;padding:10px}.sar-tech-wrap.is-open{display:block}.sar-tech-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px}.sar-tech-card{background:#fff;border:1px solid #e2e8f0;border-radius:6px;padding:8px;font-size:.78rem;color:#334155}.sar-tech-card code{white-space:normal;word-break:break-word;color:#be185d}.sar-hidden{display:none!important}'
-      + '.sar-analysis{border:1px solid #dbe7ef;border-radius:8px;background:#fff;margin:0 0 14px;padding:10px 12px}.sar-analysis-head{display:flex;justify-content:space-between;gap:10px}.sar-analysis-title{font-weight:800;color:#24313a}.sar-analysis-copy{display:block;color:#64748b;font-size:.82rem}.sar-analysis-progress{font-weight:800;color:#2f7d4d}.sar-analysis-bar{height:7px;background:#e2e8f0;border-radius:999px;overflow:hidden;margin:9px 0}.sar-analysis-bar span{display:block;height:100%;background:#2f7d4d;width:0;transition:width .55s ease}.sar-analysis-steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:7px}.sar-analysis-step{border:1px solid #e2e8f0;border-radius:6px;padding:7px;background:#f8fafc;transition:background .25s ease,border-color .25s ease}.sar-analysis-step strong{display:block;color:#334155}.sar-analysis-step small{display:block;color:#64748b}.sar-analysis-step.is-running{border-color:#7dd3fc;background:#f0f9ff}.sar-analysis-step.is-done{border-color:#bbf7d0;background:#f0fdf4}.sar-analysis-step.is-error{border-color:#fecaca;background:#fef2f2}.sar-analysis-summary{margin-top:9px;color:#334155;font-size:.84rem}.sar-suggestion-analysis{border-top:1px solid #edf2f7;margin-top:10px;padding-top:10px;color:#334155}'
-      + '.sar-quality{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 0}.sar-quality-chip{border-radius:999px;background:#f1f5f9;color:#334155;border:1px solid #e2e8f0;padding:3px 8px;font-size:.78rem;font-weight:800}.sar-quality-chip.conflict{background:#fee2e2;color:#991b1b;border-color:#fecaca}.sar-quality-chip.review{background:#ffedd5;color:#9a3412;border-color:#fed7aa}.sar-quality-chip.ready{background:#dcfce7;color:#166534;border-color:#bbf7d0}.sar-quality-list{margin:7px 0 0;padding-left:18px;color:#475569}.sar-source-list{display:grid;gap:6px;margin-top:8px}.sar-source-item{border:1px solid #e2e8f0;border-radius:6px;background:#fff;padding:6px 7px;font-size:.82rem}.sar-source-meta{display:block;color:#64748b;margin-top:2px}'
-      + '.sar-assistant{border:1px solid #cfe3d8;border-radius:8px;background:#f8fcfa;margin:0 0 14px;padding:11px 12px}.sar-assistant-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.sar-assistant-title{font-weight:800;color:#1f5134}.sar-assistant-copy{display:block;color:#64748b;font-size:.82rem}.sar-assistant:not(.is-open) .sar-assistant-copy,.sar-assistant:not(.is-open) .sar-assistant-grid,.sar-assistant:not(.is-open) .sar-assistant-feedback-actions{display:none}.sar-assistant-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;margin-top:9px}.sar-assistant-card{border:1px solid #dbe7ef;border-radius:7px;background:#fff;padding:8px;color:#334155}.sar-assistant-card strong{display:block;color:#24313a;margin-bottom:3px}.sar-assistant-card small{display:block;color:#64748b}.sar-assistant-card.warning{border-color:#fed7aa;background:#fff7ed}.sar-assistant-card.critical{border-color:#fecaca;background:#fef2f2}.sar-assistant-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}.sar-assistant-actions button{border:1px solid #cbd5e1;background:#fff;border-radius:6px;padding:4px 8px;font-weight:700;color:#334155}.sar-learning-pill{display:inline-flex;margin:3px 5px 0 0;border-radius:999px;background:#e0f2fe;color:#075985;padding:3px 8px;font-size:.78rem;font-weight:800}'
-      + '.sar-edit-field-wide{grid-column:1/-1}.sar-source-context{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;color:#475569;font-size:.82rem}.sar-source-context span{border:1px solid #e2e8f0;background:#f8fafc;border-radius:6px;padding:4px 7px}.sar-modality-group{display:grid;gap:6px}.sar-modality-option{display:flex;align-items:center;gap:7px;margin:0;color:#334155;font-weight:600}.sar-modality-option input{width:16px;height:16px}'
-      + '.semi-auto-review{border-color:#c9ded4;border-top:4px solid #2f7d4d}.sar-head{background:linear-gradient(180deg,#fbfdfc 0%,#f5f8fa 100%)}.sar-title{font-size:1.12rem;letter-spacing:0}.sar-actions .sar-btn-apply:not(:disabled){background:#2f7d4d;color:#fff;border-color:#2f7d4d}.sar-actions .sar-btn-preview{border-color:#86a3b8}.sar-steps{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px}.sar-step{box-shadow:0 1px 2px rgba(15,23,42,.04)}.sar-step.is-active{box-shadow:0 0 0 2px rgba(47,125,77,.12)}.sar-summary-pill{box-shadow:0 1px 2px rgba(15,23,42,.04)}.sar-group{box-shadow:0 4px 14px rgba(15,23,42,.05)}.sar-group-ready .sar-group-head{background:#f0fdf4}.sar-group-review .sar-group-head{background:#fff7ed}.sar-group-conflict .sar-group-head{background:#fef2f2}.sar-card{box-shadow:0 3px 10px rgba(15,23,42,.04);transition:box-shadow .15s ease,transform .15s ease}.sar-card:hover{box-shadow:0 8px 20px rgba(15,23,42,.08);transform:translateY(-1px)}.sar-card.is-ready{border-left:4px solid #2f7d4d}.sar-card.is-review{border-left:4px solid #d97706}.sar-card.is-conflict{border-left:4px solid #b91c1c}.sar-card-check{width:18px;height:18px}.sar-change-heading{font-weight:800;color:#24313a;margin-bottom:7px}.sar-change-line{background:#f8fafc;border:1px solid #edf2f7;border-radius:6px;padding:6px 7px}.sar-review-btn:hover,.sar-tech-btn:hover{background:#eef6f2;border-color:#9bc7b1}.sar-foot{border-bottom-left-radius:8px;border-bottom-right-radius:8px}'
-      + '@media(max-width:768px){.sar-head{display:block}.sar-actions{justify-content:flex-start;margin-top:10px}.sar-steps{grid-template-columns:1fr}.sar-card-list{grid-template-columns:1fr}.sar-foot{display:block}.sar-foot label{display:block;margin-top:8px}.sar-change-line{display:block}.sar-change-label{min-width:0}.semi-auto-review{margin-left:0;margin-right:0}}';
-    $('<style id="semi-auto-review-style"></style>').text(css).appendTo('head');
+  function readUndoRun(module) {
+    if (module !== 'pdc' && module !== 'contratos') return null;
+    try {
+      var exact = window.sessionStorage.getItem(undoStorageKey(module));
+      if (exact) return exact;
+      return null;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function writeUndoRun(module, runId) {
+    if (module !== 'pdc' && module !== 'contratos') return;
+    try {
+      var key = undoStorageKey(module);
+      if (runId) window.sessionStorage.setItem(key, runId);
+      else window.sessionStorage.removeItem(key);
+    } catch (error) {
+      // The workflow still works in-memory when browser storage is unavailable.
+    }
+  }
+
+  function isAdmin() {
+    return String($('#permiso_canonico').val() || '').toUpperCase() === 'A';
   }
 
   function panelHtml(module) {
     var label = MODULES[module].label;
     return ''
       + '<section class="semi-auto-review" id="semiAutoReview-' + module + '" hidden>'
-      + '<div class="sar-head"><div><div class="sar-title">Asistente de propuestas - ' + escapeHtml(label) + '</div><div class="sar-meta">Revisa lo que el sistema encontró, confirma lo que está listo y aplica solo los cambios seleccionados.</div></div>'
-      + '<div class="sar-actions"><button type="button" class="btn-pdc-modern sar-btn-preview"><i class="fas fa-search"></i> Analizar propuestas</button><button type="button" class="btn-pdc-modern sar-btn-apply" disabled><i class="fas fa-magic"></i> Aplicar 0 cambios seleccionados</button><button type="button" class="btn-pdc-modern sar-btn-undo" disabled><i class="fas fa-undo"></i> Deshacer última aplicación</button><button type="button" class="btn btn-sm btn-light sar-btn-close">Cerrar</button></div></div>'
-      + '<div class="sar-body">' + stepHtml('analyze') + '<div class="sar-analysis-wrap"></div><div class="sar-assistant-wrap"></div><div class="sar-tabs"><button type="button" class="sar-tab is-active" data-filter="ready">Aplicar automático</button><button type="button" class="sar-tab" data-filter="review">Revisar</button></div><div class="sar-filters"><select class="sar-filter-band"><option value="ready">Aplicar automático</option><option value="review">Revisar</option></select><input class="sar-filter-text" type="search" placeholder="Buscar por paquete o actividad"></div><div class="sar-summary"><span class="sar-summary-pill">Aún no se ha analizado</span></div><div class="sar-groups"><div class="sar-empty">Presiona “Analizar propuestas” para empezar.</div></div><div class="sar-tech-wrap"></div></div>'
+      + '<div class="sar-head"><div><div class="sar-title">Bandeja de decisiones - ' + escapeHtml(label) + '</div><div class="sar-meta">Decide qué aplicar, qué revisar y qué corregir antes de guardar cambios.</div></div>'
+      + '<div class="sar-actions"><button type="button" class="btn-pdc-modern sar-btn-preview"><i class="fas fa-search"></i> Analizar</button><button type="button" class="btn-pdc-modern sar-btn-apply" disabled><i class="fas fa-magic"></i> Aplicar 0</button><button type="button" class="btn-pdc-modern sar-btn-undo" disabled><i class="fas fa-undo"></i> Deshacer</button><button type="button" class="btn btn-sm btn-light sar-btn-close">Cerrar</button></div></div>'
+      + '<div class="sar-body">' + stepHtml('analyze') + '<div class="sar-analysis-wrap"></div><div class="sar-assistant-wrap"></div><div class="sar-control"><div class="sar-summary"><span class="sar-summary-pill">Aún no se ha analizado</span></div><div class="sar-tabs"><button type="button" class="sar-tab is-active" data-filter="decision">Decisión</button><button type="button" class="sar-tab" data-filter="ready">Listas</button><button type="button" class="sar-tab" data-filter="all">Todo</button></div><div class="sar-filters"><select class="sar-filter-band" aria-label="Filtrar propuestas"><option value="decision">Requieren decisión</option><option value="ready">Listas para aplicar</option><option value="review">Solo revisar</option><option value="conflict">Solo conflictos</option><option value="all">Todas</option></select><input class="sar-filter-text" type="search" placeholder="Buscar propuesta"></div></div><div class="sar-groups"><div class="sar-empty">Presiona “Analizar” para empezar.</div></div><div class="sar-tech-wrap"></div></div>'
       + '<div class="sar-foot"><span class="sar-status">Pendiente de análisis.</span><label class="mb-0"><input type="checkbox" class="sar-check-all"> Seleccionar propuestas visibles</label></div>'
       + '</section>';
   }
@@ -263,7 +273,6 @@
   }
 
   function init(options) {
-    ensureStyles();
     var module = options.module;
     if (!MODULES[module]) return null;
     var id = 'semiAutoReview-' + module;
@@ -282,11 +291,13 @@
       module: module,
       panel: $panel,
       runId: null,
+      undoRunId: readUndoRun(module),
       refresh: options.refresh || function () {},
       selectedIds: {},
       pollTimer: null,
       analysisRevealTimer: null,
       analysisRevealDone: false,
+      defaultFilterApplied: false,
       assistantInbox: null,
       assistantExpanded: false,
       learningCandidates: []
@@ -298,7 +309,7 @@
   function bind(instance) {
     var $panel = instance.panel;
     $panel.off('.semiAuto');
-    $panel.on('click.semiAuto', '.sar-btn-close', function () { stopStatusPolling(instance); clearAnalysisReveal(instance); $panel.attr('hidden', true); });
+    $panel.on('click.semiAuto', '.sar-btn-close', function () { closePanel(instance); });
     $panel.on('click.semiAuto', '.sar-btn-preview', function () { loadPreview(instance); });
     $panel.on('click.semiAuto', '.sar-btn-apply', function () { applySelected(instance); });
     $panel.on('click.semiAuto', '.sar-btn-undo', function () { undoRun(instance); });
@@ -319,12 +330,11 @@
       syncApplyState(instance);
     });
     $panel.on('change.semiAuto keyup.semiAuto', '.sar-filter-band,.sar-filter-text', function () {
+      if ($(this).hasClass('sar-filter-band')) syncActiveTab(instance);
       renderSuggestions(instance, instance.lastResponse || { suggestions: [] });
     });
     $panel.on('click.semiAuto', '.sar-tab', function () {
-      $panel.find('.sar-tab').removeClass('is-active');
-      $(this).addClass('is-active');
-      $panel.find('.sar-filter-band').val($(this).data('filter')).trigger('change');
+      setFilter(instance, $(this).data('filter'));
     });
     $panel.on('change.semiAuto', '.sar-inline-edit', function () {
       saveInlineFeedback(instance, this);
@@ -334,6 +344,12 @@
     });
     $panel.on('change.semiAuto', '.sar-modality-check', function () {
       updateModalityChecks($(this));
+    });
+    $panel.on('click.semiAuto', '.sar-contract-add', function () {
+      revealContractRow(instance, $(this).data('prefix'));
+    });
+    $panel.on('click.semiAuto', '.sar-contract-remove', function () {
+      clearContractRow(instance, $(this).closest('.sar-contract-row'));
     });
     $panel.on('click.semiAuto', '.sar-alert-ack', function () {
       ackAssistantItem(instance, $(this).data('item-id'));
@@ -353,11 +369,42 @@
     });
   }
 
+  function setReviewScrollUnlocked(enabled) {
+    var className = 'sar-review-scroll-unlocked';
+    var anyOpen = enabled || $('.semi-auto-review:not([hidden])').length > 0;
+    document.documentElement.classList.toggle(className, anyOpen);
+    document.body.classList.toggle(className, anyOpen);
+  }
+
+  function closePanel(instance) {
+    stopStatusPolling(instance);
+    clearAnalysisReveal(instance);
+    instance.panel.attr('hidden', true);
+    setReviewScrollUnlocked(false);
+  }
+
+  function setFilter(instance, filter) {
+    instance.panel.find('.sar-filter-band').val(filter || 'decision');
+    syncActiveTab(instance);
+    renderSuggestions(instance, instance.lastResponse || { suggestions: [] });
+  }
+
+  function syncActiveTab(instance) {
+    var filter = instance.panel.find('.sar-filter-band').val() || 'decision';
+    var tabFilter = filter === 'review' || filter === 'conflict' ? 'decision' : filter;
+    instance.panel.find('.sar-tab').removeClass('is-active')
+      .filter('[data-filter="' + tabFilter + '"]').addClass('is-active');
+  }
+
   function open(module) {
     var instance = instances[module] || init({ module: module });
     if (!instance) return;
+    // Relee el puntero cuando el usuario abre la bandeja: para entonces el
+    // contexto legacy de proyecto/semana ya terminó de poblarse.
+    instance.undoRunId = readUndoRun(module) || instance.undoRunId;
     instance.assistantExpanded = false;
     instance.panel.removeAttr('hidden');
+    setReviewScrollUnlocked(true);
     loadAssistantInbox(instance);
     loadPreview(instance);
     $('html, body').animate({ scrollTop: instance.panel.offset().top - 80 }, 200);
@@ -370,9 +417,11 @@
     instance.selectedIds = {};
     instance.assistantExpanded = false;
     instance.analysisRevealDone = false;
+    instance.defaultFilterApplied = false;
     setStatus(instance, 'Revisando propuestas paso a paso...', '');
     instance.panel.removeAttr('hidden').find('.sar-btn-preview').prop('disabled', true);
-    instance.panel.find('.sar-btn-apply').prop('disabled', true).html('<i class="fas fa-magic"></i> Aplicar 0 cambios seleccionados');
+    setReviewScrollUnlocked(true);
+    instance.panel.find('.sar-btn-apply').prop('disabled', true).html('<i class="fas fa-magic"></i> Aplicar 0');
     instance.panel.find('.sar-summary').html('<span class="sar-summary-pill">Preparando propuestas para revisar</span>');
     instance.panel.find('.sar-groups').html('<div class="sar-empty">Estamos ordenando los resultados. En unos segundos podrás revisarlos.</div>');
     instance.panel.find('.sar-body .sar-steps').replaceWith(stepHtml('analyze'));
@@ -662,10 +711,16 @@
     var alerts = response.assistant_alerts || inbox.items || [];
     var learning = response.learning_used || [];
     var expanded = !!instance.assistantExpanded;
+    var chipParts = [];
+    if (recommendations.length) chipParts.push(recommendations.length + ' recomendaciones');
+    if (alerts.length) chipParts.push(alerts.length + ' alertas');
+    if (learning.length) chipParts.push(learning.length + ' aprendizajes');
+    var chipText = chipParts.length ? chipParts.join(' · ') : 'Sin alertas';
     var html = '<section class="sar-assistant' + (expanded ? ' is-open' : '') + '"><div class="sar-assistant-head"><div>'
       + '<span class="sar-assistant-title"><i class="fas fa-magic"></i> Asistente AIA</span>'
+      + '<span class="sar-assistant-chip">' + escapeHtml(chipText) + '</span>'
       + '<span class="sar-assistant-copy">' + escapeHtml(summary.message || (inbox.diagnostics && inbox.diagnostics.message) || 'Listo para diagnosticar y recomendar próximos pasos.') + '</span>'
-      + '</div><div class="sar-assistant-actions"><button type="button" class="sar-assistant-toggle" aria-expanded="' + (expanded ? 'true' : 'false') + '">' + (expanded ? 'Ocultar asistente AIA' : 'Ver asistente AIA') + '</button></div></div>'
+      + '</div><div class="sar-assistant-actions"><button type="button" class="sar-assistant-toggle" aria-expanded="' + (expanded ? 'true' : 'false') + '">' + (expanded ? 'Ocultar detalle' : 'Ver detalle') + '</button></div></div>'
       + '<div class="sar-assistant-actions sar-assistant-feedback-actions"><button type="button" class="sar-assistant-feedback" data-rating="helpful">Útil</button><button type="button" class="sar-assistant-feedback" data-rating="not_helpful">No ayudó</button></div>'
       + '<div class="sar-assistant-grid">'
       + assistantCardsHtml('Recomendaciones', recommendations, false)
@@ -712,19 +767,26 @@
 
   function renderSuggestions(instance, response) {
     instance.lastResponse = response;
+    instance.undoRunId = readUndoRun(instance.module) || instance.undoRunId;
     var suggestions = (response.suggestions || []).map(enrichSuggestion);
-    var visible = filterSuggestions(instance, suggestions);
     var counts = countGroups(suggestions);
+    if (!instance.defaultFilterApplied) {
+      instance.defaultFilterApplied = true;
+      instance.panel.find('.sar-filter-band').val(counts.review + counts.conflict > 0 ? 'decision' : 'ready');
+      syncActiveTab(instance);
+    }
+    var visible = filterSuggestions(instance, suggestions);
     instance.panel.find('.sar-body .sar-steps').replaceWith(stepHtml(suggestions.length ? 'review' : 'analyze'));
-    instance.panel.find('.sar-summary').html(summaryHtml(suggestions.length, visible.length, counts));
-    instance.panel.find('.sar-btn-undo').prop('disabled', !response.run_id);
+    instance.panel.find('.sar-summary').html(summaryHtml(instance, suggestions.length, visible.length, counts));
+    instance.panel.find('.sar-btn-undo').prop('disabled', !instance.undoRunId);
 
-    var html = ['ready', 'review', 'conflict'].map(function (group) {
+    var html = groupOrder(counts).map(function (group) {
       var items = visible.filter(function (s) { return s.group === group; });
       return groupHtml(instance, group, items);
     }).join('');
 
     instance.panel.find('.sar-groups').html(html || '<div class="sar-empty">' + escapeHtml(MODULES[instance.module].empty) + '</div>');
+    initializeResourceTags(instance);
     renderTech(instance, suggestions);
     syncApplyState(instance);
   }
@@ -733,7 +795,9 @@
     var copy = $.extend(true, {}, suggestion);
     copy.group = classifySuggestion(copy);
     copy.visibleDiff = (copy.diff || []).filter(function (d) {
-      return d && d.field && !TECHNICAL_FIELDS[d.field] && !isDerivedCreateActivityField(copy, d.field);
+      return d && d.field && !TECHNICAL_FIELDS[d.field]
+        && !isDerivedCreateActivityField(copy, d.field)
+        && !isContractEditorField(copy, d.field);
     });
     return copy;
   }
@@ -741,6 +805,11 @@
   function isDerivedCreateActivityField(suggestion, field) {
     return suggestion.action === 'create_activity'
       && ['actividadInicio', 'fechaInicio', 'semanaActualizacion'].indexOf(String(field || '')) >= 0;
+  }
+
+  function isContractEditorField(suggestion, field) {
+    return suggestion.action === 'update_contracts'
+      && /^(?:paquete|cantidad)?(?:SI|S|MO|OC)[1-5]$/.test(String(field || ''));
   }
 
   function classifySuggestion(suggestion) {
@@ -762,11 +831,20 @@
     var group = instance.panel.find('.sar-filter-band').val();
     var text = normalizeText(instance.panel.find('.sar-filter-text').val());
     return suggestions.filter(function (s) {
+      if (group === 'decision' && s.group === 'ready') return false;
       if (group === 'ready' && s.group !== 'ready') return false;
-      if (group === 'review' && s.group === 'ready') return false;
+      if (group === 'review' && s.group !== 'review') return false;
+      if (group === 'conflict' && s.group !== 'conflict') return false;
       if (!text) return true;
       return normalizeText([s.title, s.subtitle, humanReason(s), readableChangesText(s)].join(' ')).indexOf(text) !== -1;
     });
+  }
+
+  function groupOrder(counts) {
+    if ((counts.review || 0) + (counts.conflict || 0) > 0) {
+      return ['review', 'conflict', 'ready'];
+    }
+    return ['ready', 'review', 'conflict'];
   }
 
   function countGroups(suggestions) {
@@ -776,13 +854,15 @@
     }, { ready: 0, review: 0, conflict: 0 });
   }
 
-  function summaryHtml(total, visible, counts) {
+  function summaryHtml(instance, total, visible, counts) {
+    var selected = instance.panel.find('.sar-row-check:checked').length;
     return ''
       + '<span class="sar-summary-pill">Encontramos ' + total + ' propuestas</span>'
       + '<span class="sar-summary-pill ready">' + counts.ready + ' listas</span>'
       + '<span class="sar-summary-pill review">' + counts.review + ' por revisar</span>'
       + '<span class="sar-summary-pill conflict">' + counts.conflict + ' conflictos</span>'
-      + '<span class="sar-summary-pill">' + visible + ' visibles</span>';
+      + '<span class="sar-summary-pill">' + visible + ' visibles</span>'
+      + '<span class="sar-summary-pill sar-selected-count">' + selected + ' seleccionadas</span>';
   }
 
   function groupHtml(instance, group, items) {
@@ -810,9 +890,25 @@
       + qualitySummaryHtml(suggestion)
       + '</div></div>'
       + '<div class="sar-change-summary"><div class="sar-change-heading">Cambios propuestos</div>' + changeSummaryHtml(changes) + '</div>'
-      + '<div class="sar-detail">' + suggestionAnalysisHtml(suggestion) + editFieldsHtml(suggestion, changes) + '</div>'
-      + '<div class="sar-card-actions"><button type="button" class="sar-review-btn">' + (changes.length ? 'Revisar' : 'Ver detalle') + '</button></div>'
+      + conflictResolutionHtml(suggestion)
+      + keyControlsHtml(suggestion, changes)
+      + '<div class="sar-detail">' + suggestionAnalysisHtml(suggestion) + detailEditHtml(suggestion, changes) + '</div>'
+      + '<div class="sar-card-actions"><button type="button" class="sar-review-btn">' + (changes.length ? 'Detalle' : 'Ver detalle') + '</button></div>'
       + '</article>';
+  }
+
+  function keyControlsHtml(suggestion, changes) {
+    if (suggestion.action === 'create_activity' || suggestion.action === 'update_contracts') {
+      return '<div class="sar-key-controls">' + editFieldsHtml(suggestion, changes) + '</div>';
+    }
+    return '';
+  }
+
+  function detailEditHtml(suggestion, changes) {
+    if (suggestion.action === 'create_activity' || suggestion.action === 'update_contracts') {
+      return '';
+    }
+    return editFieldsHtml(suggestion, changes);
   }
 
   function badgeHtml(group) {
@@ -835,6 +931,17 @@
     var reasons = gate ? [].concat(gate.ready_blockers || [], gate.review_reasons || [], gate.conflicts || []) : [];
     if (reasons.length) return reasons[0];
     return ACTION_MESSAGES[suggestion.action] || suggestion.reason || 'Revisa esta propuesta antes de aplicarla.';
+  }
+
+  function conflictResolutionHtml(suggestion) {
+    if (suggestion.group !== 'conflict') return '';
+    var gate = qualityGate(suggestion);
+    var blockers = gate ? [].concat(gate.conflicts || [], gate.ready_blockers || [], gate.review_reasons || []) : [];
+    var assistant = suggestion.assistant_reasoning || {};
+    var what = blockers[0] || humanReason(suggestion);
+    var next = assistant.next_step || assistant.risk || 'Revisa la propuesta, ajusta los datos origen y vuelve a analizar antes de aplicar.';
+    return '<div class="sar-conflict-guide"><strong>Qué pasa:</strong> ' + escapeHtml(what)
+      + '<br><strong>Qué hacer:</strong> ' + escapeHtml(next) + '</div>';
   }
 
   function catalogStatus(suggestion) {
@@ -932,6 +1039,9 @@
     if (suggestion.action === 'create_activity') {
       return createActivityEditHtml(suggestion);
     }
+    if (suggestion.action === 'update_contracts') {
+      return contractEditHtml(suggestion);
+    }
     if (!changes.length) {
       return '<div class="text-muted">Esta propuesta no tiene campos editables desde el asistente.</div>';
     }
@@ -987,6 +1097,128 @@
       + '</div></div>';
   }
 
+  function contractEditHtml(suggestion) {
+    var proposed = suggestion.proposed || {};
+    var current = suggestion.current || {};
+    var modalidad = normalizeModality(proposed.tipoContrato || current.tipoContrato || '');
+    var sections = ['SI', 'S', 'MO', 'OC'];
+    return '<div class="sar-contract-editor">'
+      + '<div class="sar-edit-field"><label>Modalidades</label>' + modalityCheckboxesHtml(suggestion, modalidad) + '</div>'
+      + sections.map(function (prefix) { return contractSectionHtml(suggestion, prefix, modalidad); }).join('')
+      + '</div>';
+  }
+
+  function contractSectionHtml(suggestion, prefix, modalidad) {
+    var selected = modalityParts(modalidad);
+    var isSelected = selected.indexOf(prefix) >= 0;
+    var rows = [];
+    for (var i = 1; i <= 5; i++) {
+      var rowVisible = isSelected && i === 1;
+      if (contractRowHasData(suggestion, prefix, i)) rowVisible = true;
+      rows.push(contractRowHtml(suggestion, prefix, i, rowVisible));
+    }
+    return '<section class="sar-contract-section" data-contract-prefix="' + prefix + '">'
+      + '<div class="sar-contract-section-head"><div><div class="sar-contract-section-title">' + escapeHtml(contractModalityLabel(prefix)) + '</div><small>' + escapeHtml(contractModalityHelp(prefix)) + '</small></div><button type="button" class="sar-contract-add" data-prefix="' + prefix + '"><i class="fas fa-plus"></i> Agregar paquete</button></div>'
+      + '<div class="sar-contract-list">' + rows.join('') + '</div>'
+      + '<div class="sar-contract-empty' + (rows.some(function (row) { return row.indexOf('sar-hidden') < 0; }) ? ' sar-hidden' : '') + '">Sin paquetes activos en esta modalidad.</div>'
+      + '</section>';
+  }
+
+  function contractRowHtml(suggestion, prefix, index, visible) {
+    var packageField = 'paquete' + prefix + index;
+    var quantityField = 'cantidad' + prefix + index;
+    var resourceField = prefix + index;
+    var suggestionId = escapeHtml(suggestion.suggestion_id);
+    var resources = contractResourceValues(suggestion, resourceField);
+    return '<div class="sar-contract-row' + (visible ? '' : ' sar-hidden') + '" data-prefix="' + prefix + '" data-index="' + index + '">'
+      + '<div class="sar-edit-field"><label>' + escapeHtml(fieldLabel(packageField)) + '</label><input class="sar-inline-edit" data-suggestion-id="' + suggestionId + '" data-field="' + packageField + '" value="' + escapeHtml(contractFieldValue(suggestion, packageField)) + '"></div>'
+      + '<div class="sar-edit-field"><label># Contratos</label><input type="number" min="1" step="1" class="sar-inline-edit" data-suggestion-id="' + suggestionId + '" data-field="' + quantityField + '" value="' + escapeHtml(contractQuantityValue(suggestion, quantityField)) + '"></div>'
+      + '<div class="sar-edit-field"><label>Recursos/Insumos</label><select multiple="multiple" class="sar-inline-edit sar-resource-tags" data-suggestion-id="' + suggestionId + '" data-field="' + resourceField + '">'
+      + resources.map(function (resource) { return '<option selected value="' + escapeHtml(resource) + '">' + escapeHtml(resource) + '</option>'; }).join('') + '</select></div>'
+      + '<button type="button" class="sar-contract-remove" aria-label="Quitar paquete ' + index + '">Quitar</button>'
+      + '</div>';
+  }
+
+  function contractFieldValue(suggestion, field) {
+    var proposed = suggestion.proposed || {};
+    var current = suggestion.current || {};
+    var value = Object.prototype.hasOwnProperty.call(proposed, field) ? proposed[field] : current[field];
+    if (Array.isArray(value)) return value.join('; ');
+    return value == null ? '' : String(value);
+  }
+
+  function contractQuantityValue(suggestion, field) {
+    var value = parseInt(contractFieldValue(suggestion, field), 10);
+    return value > 0 ? String(value) : '1';
+  }
+
+  function contractResourceValues(suggestion, field) {
+    return contractFieldValue(suggestion, field).split(';').map(function (value) {
+      return value.trim();
+    }).filter(Boolean);
+  }
+
+  function initializeResourceTags(instance) {
+    if (!$.fn.select2) return;
+    instance.panel.find('.sar-resource-tags').each(function () {
+      $(this).select2({
+        tags: true,
+        tokenSeparators: [',', ';'],
+        placeholder: 'Agregar recursos o insumos',
+        width: '100%',
+        dropdownParent: instance.panel
+      });
+    });
+  }
+
+  function contractRowHasData(suggestion, prefix, index) {
+    return !!(
+      contractFieldValue(suggestion, 'paquete' + prefix + index).trim()
+      || contractFieldValue(suggestion, prefix + index).trim()
+      || parseInt(contractFieldValue(suggestion, 'cantidad' + prefix + index), 10) > 1
+    );
+  }
+
+  function contractModalityLabel(prefix) {
+    var labels = {
+      SI: 'Suministro e instalación',
+      S: 'Suministro',
+      MO: 'Mano de obra',
+      OC: 'Orden de servicio/compra'
+    };
+    return labels[prefix] || prefix;
+  }
+
+  function contractModalityHelp(prefix) {
+    if (prefix === 'SI') return 'Modalidad exclusiva. Maximo 5 paquetes.';
+    return 'Puede combinarse con otras modalidades. Maximo 5 paquetes.';
+  }
+
+  function revealContractRow(instance, prefix) {
+    var $section = instance.panel.find('.sar-contract-section[data-contract-prefix="' + prefix + '"]').first();
+    var $row = $section.find('.sar-contract-row.sar-hidden').first();
+    if (!$row.length) {
+      setStatus(instance, 'Ya usaste el límite de 5 paquetes para ' + contractModalityLabel(prefix) + '.', 'sar-error');
+      return;
+    }
+    $row.removeClass('sar-hidden');
+    $section.find('.sar-contract-empty').addClass('sar-hidden');
+    setStatus(instance, 'Paquete agregado para completar antes de aplicar.', 'sar-ok');
+  }
+
+  function clearContractRow(instance, $row) {
+    if (!$row || !$row.length) return;
+    $row.find('.sar-inline-edit').each(function () {
+      $(this).val('');
+      saveInlineFeedback(instance, this);
+    });
+    var $section = $row.closest('.sar-contract-section');
+    $row.addClass('sar-hidden');
+    if (!$section.find('.sar-contract-row:not(.sar-hidden)').length) {
+      $section.find('.sar-contract-empty').removeClass('sar-hidden');
+    }
+  }
+
   function sortedSources(sources) {
     return (sources || []).slice().sort(function (a, b) {
       var confidence = Number(b.confidence || 0) - Number(a.confidence || 0);
@@ -1040,6 +1272,7 @@
     var suggestionId = escapeHtml(suggestion.suggestion_id);
     var hasSI = selected.indexOf('SI') >= 0;
     var hasOther = selected.some(function (part) { return ['MO', 'S', 'OC'].indexOf(part) >= 0; });
+    if (hasSI && hasOther) selected = ['SI'];
     var options = [
       ['SI', 'Suministro e instalación'],
       ['MO', 'Mano de obra'],
@@ -1050,10 +1283,18 @@
       + '<input type="hidden" class="sar-modality-value" data-suggestion-id="' + suggestionId + '" data-field="tipoContrato" value="' + escapeHtml(selected.join(',')) + '">'
       + options.map(function (option) {
         var code = option[0];
-        var disabled = (code === 'SI' && hasOther) || (code !== 'SI' && hasSI);
-        return '<label class="sar-modality-option"><input type="checkbox" class="sar-modality-check" value="' + code + '"' + (selected.indexOf(code) >= 0 ? ' checked' : '') + (disabled ? ' disabled' : '') + '> ' + escapeHtml(option[1]) + '</label>';
+        var checked = selected.indexOf(code) >= 0;
+        var disabled = isBlockedModality(code, selected);
+        var labelClass = 'sar-modality-option' + (checked ? ' is-selected' : '') + (disabled ? ' is-disabled' : '');
+        return '<label class="' + labelClass + '" aria-disabled="' + (disabled ? 'true' : 'false') + '"><input type="checkbox" class="sar-modality-check" value="' + code + '"' + (checked ? ' checked' : '') + (disabled ? ' disabled' : '') + '> ' + escapeHtml(option[1]) + '</label>';
       }).join('')
       + '</div>';
+  }
+
+  function isBlockedModality(code, selected) {
+    var hasSI = selected.indexOf('SI') >= 0;
+    var hasOther = selected.some(function (part) { return ['MO', 'S', 'OC'].indexOf(part) >= 0; });
+    return (code === 'SI' && hasOther) || (code !== 'SI' && hasSI);
   }
 
   function modalityParts(value) {
@@ -1063,6 +1304,13 @@
 
   function updateModalityChecks($changed) {
     var $group = $changed.closest('.sar-modality-group');
+    syncModalityGroup($group);
+    var value = $group.find('.sar-modality-check:checked').map(function () { return this.value; }).get().join(',');
+    var input = $group.find('.sar-modality-value').val(value)[0];
+    saveInlineFeedback(instances[$group.closest('.semi-auto-review').attr('id').replace('semiAutoReview-', '')], input);
+  }
+
+  function syncModalityGroup($group) {
     var siChecked = $group.find('.sar-modality-check[value="SI"]').is(':checked');
     var anyOther = $group.find('.sar-modality-check').filter(function () {
       return this.value !== 'SI' && this.checked;
@@ -1073,9 +1321,15 @@
       $group.find('.sar-modality-check').filter('[value!="SI"]').prop('disabled', false);
     }
     $group.find('.sar-modality-check[value="SI"]').prop('disabled', anyOther);
-    var value = $group.find('.sar-modality-check:checked').map(function () { return this.value; }).get().join(',');
-    var input = $group.find('.sar-modality-value').val(value)[0];
-    saveInlineFeedback(instances[$group.closest('.semi-auto-review').attr('id').replace('semiAutoReview-', '')], input);
+    $group.find('.sar-modality-check').each(function () {
+      var $input = $(this);
+      var disabled = $input.prop('disabled');
+      var checked = $input.prop('checked');
+      $input.closest('.sar-modality-option')
+        .toggleClass('is-disabled', disabled)
+        .toggleClass('is-selected', checked)
+        .attr('aria-disabled', disabled ? 'true' : 'false');
+    });
   }
 
   function renderTech(instance, suggestions) {
@@ -1110,8 +1364,12 @@
     if (!instance.runId) return;
     var suggestionId = $(input).data('suggestion-id');
     var field = $(input).data('field');
+    var value = $(input).val();
+    if ($(input).hasClass('sar-resource-tags') && Array.isArray(value)) {
+      value = value.join(';');
+    }
     var corrected = {};
-    corrected[field] = $(input).val();
+    corrected[field] = value;
     setStatus(instance, 'Guardando ajuste...', '');
     $.ajax({
       method: 'POST',
@@ -1251,6 +1509,20 @@
         renderError(instance, (response && response.mensaje) || 'No se pudo aplicar la selección.');
         return;
       }
+      if (Number(response.aplicadas || 0) > 0) {
+        instance.undoRunId = response.run_id || instance.runId;
+        writeUndoRun(instance.module, instance.undoRunId);
+      }
+      if (Number(response.errores || 0) > 0 || Number(response.aplicadas || 0) <= 0) {
+        if (Number(response.aplicadas || 0) > 0) {
+          instance.panel.find('.sar-btn-undo').prop('disabled', false);
+        }
+        renderError(instance, Number(response.aplicadas || 0) > 0
+          ? 'La aplicación terminó parcialmente. Revisa los errores y usa Deshacer si necesitas revertir los cambios aplicados.'
+          : 'No se aplicó ningún cambio. Revisa las propuestas e inténtalo de nuevo.');
+        instance.refresh();
+        return;
+      }
       setStatus('' + (response.aplicadas || 0) + ' cambios aplicados. Puedes deshacer la última aplicación si lo necesitas.', 'sar-ok', instance);
       instance.refresh();
       loadPreview(instance);
@@ -1260,19 +1532,26 @@
   }
 
   function undoRun(instance) {
-    if (!instance.runId) return;
+    if (!instance.undoRunId) return;
+    var undoRunId = instance.undoRunId;
     setStatus(instance, 'Deshaciendo la última aplicación...', '');
     $.ajax({
       method: 'POST',
       url: endpoint(instance.module, 'undo'),
       contentType: 'application/json',
       dataType: 'json',
-      data: JSON.stringify({ run_id: instance.runId })
+      data: JSON.stringify({ run_id: undoRunId })
     }).done(function (response) {
       if (!response || response.respuesta !== 'BIEN') {
         renderError(instance, (response && response.mensaje) || 'No se pudo deshacer.');
         return;
       }
+      if (Number(response.revertidas || 0) <= 0 || Number(response.errores || 0) > 0) {
+        renderError(instance, 'No se pudo completar la restauración. El intento de Deshacer sigue disponible.');
+        return;
+      }
+      instance.undoRunId = null;
+      writeUndoRun(instance.module, null);
       setStatus(instance, '' + (response.revertidas || 0) + ' cambios revertidos.', 'sar-ok');
       instance.refresh();
       loadPreview(instance);
@@ -1285,7 +1564,8 @@
     var count = instance.panel.find('.sar-row-check:checked').length;
     instance.panel.find('.sar-btn-apply')
       .prop('disabled', count === 0)
-      .html('<i class="fas fa-magic"></i> Aplicar ' + count + ' cambios seleccionados');
+      .html('<i class="fas fa-magic"></i> Aplicar ' + count);
+    instance.panel.find('.sar-selected-count').text(count + ' seleccionadas');
     var visibleChecked = instance.panel.find('.sar-row-check:not(:disabled)').length > 0
       && instance.panel.find('.sar-row-check:not(:disabled)').length === instance.panel.find('.sar-row-check:not(:disabled):checked').length;
     instance.panel.find('.sar-check-all').prop('checked', visibleChecked);

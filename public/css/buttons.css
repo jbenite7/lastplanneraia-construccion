@@ -11,16 +11,68 @@
      Yellow = Warning, Caution
    
    Border Radius (Apple iOS 16+ rounded rect):
-     Standard:  14px
-     Small:     10px
-     Large:     18px
-     Pill:      999px (chips/badges only)
+     Standard:  --ds-radius-control
+     Small:     --ds-radius-control-sm
+     Large:     --ds-radius-control
+     Pill:      --ds-radius-pill (chips/badges only)
    ================================================================ */
 
 
 /* ================================================================
    1. BASE BUTTON — Foundation
    ================================================================ */
+
+:where(button, .btn, .btn-pdc-modern, .btn-filter-toggle, .pdc-legend-item, .badge, [role="button"], .context-weekly-phase) {
+  box-sizing: border-box;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+:where(
+  button:not(.navbar-toggler):not(.lps-drawer-close):not(.close),
+  .btn,
+  .btn-pdc-modern,
+  .btn-filter-toggle,
+  [role="button"]:not(.badge):not(.count-badge):not(.badge-status),
+  .context-weekly-phase
+) {
+  padding-block: var(--spacing-xs) !important;
+  padding-inline: var(--spacing-sm) !important;
+}
+
+:where(
+  .badge,
+  .count-badge,
+  .badge-status,
+  .pdc-legend-item,
+  .aia-chip,
+  .ops-state-chip,
+  .ops-state-count,
+  .ps-tnp-badge,
+  [class*="pill"],
+  [class*="flag"]
+) {
+  box-sizing: border-box;
+  padding-block: var(--spacing-xs) !important;
+  padding-inline: var(--spacing-sm) !important;
+  line-height: 1.15 !important;
+}
+
+@media (max-width: 768px) {
+  :where(button, .btn, .btn-pdc-modern, .btn-filter-toggle, .pdc-legend-item, .badge, [role="button"], .context-weekly-phase) {
+    white-space: normal !important;
+    text-wrap: balance;
+  }
+}
+
+:where(button, .btn, .btn-pdc-modern, .btn-filter-toggle, .pdc-legend-item, .badge, [role="button"], .context-weekly-phase) :where(span, strong, small) {
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  overflow-wrap: normal;
+  word-break: normal;
+}
 
 .btn {
   /* Typography */
@@ -31,7 +83,7 @@
   line-height: 1.5;
 
   /* Apple-style border radius */
-  border-radius: 14px !important;
+  border-radius: var(--ds-radius-control) !important;
 
   /* Layout */
   display: inline-flex;
@@ -101,20 +153,20 @@
 .btn-xs {
   font-size: 0.75rem;
   padding: 0.12rem 0.4rem;
-  border-radius: 10px !important;
+  border-radius: var(--ds-radius-control-sm) !important;
   gap: 3px;
 }
 
 .btn-sm {
   font-size: 0.78rem;
   padding: 0.25rem 0.65em;
-  border-radius: 10px !important;
+  border-radius: var(--ds-radius-control-sm) !important;
 }
 
 .btn-lg {
   font-size: 0.95rem;
   padding: 0.6em 1.25em;
-  border-radius: 18px !important;
+  border-radius: var(--ds-radius-control) !important;
   gap: 6px;
   font-weight: 500;
 }
@@ -390,13 +442,13 @@
    ================================================================ */
 
 .btn-group {
-  border-radius: 14px;
+  border-radius: var(--ds-radius-control);
   overflow: hidden;
   box-shadow: 0 1px 2px oklch(0% 0 0 / 0.06);
 }
 
 .btn-group > .btn {
-  border-radius: 0 !important;
+  border-radius: var(--ds-radius-none) !important;
   margin: 0;
   border: none;
   box-shadow: none;
@@ -404,25 +456,25 @@
 
 /* Connected corners — first item */
 .btn-group > .btn:first-child {
-  border-radius: 14px 0 0 14px !important;
+  border-radius: var(--ds-radius-control) var(--ds-radius-none) var(--ds-radius-none) var(--ds-radius-control) !important;
 }
 
 /* Connected corners — last item */
 .btn-group > .btn:last-child {
-  border-radius: 0 14px 14px 0 !important;
+  border-radius: var(--ds-radius-none) var(--ds-radius-control) var(--ds-radius-control) var(--ds-radius-none) !important;
 }
 
 /* Only two items — first AND last */
 .btn-group > .btn:nth-child(1):nth-last-child(2) {
-  border-radius: 14px 0 0 14px !important;
+  border-radius: var(--ds-radius-control) var(--ds-radius-none) var(--ds-radius-none) var(--ds-radius-control) !important;
 }
 .btn-group > .btn:nth-child(2):nth-last-child(1) {
-  border-radius: 0 14px 14px 0 !important;
+  border-radius: var(--ds-radius-none) var(--ds-radius-control) var(--ds-radius-control) var(--ds-radius-none) !important;
 }
 
 /* Three+ items — middle items have no radius */
 .btn-group > .btn:not(:first-child):not(:last-child) {
-  border-radius: 0 !important;
+  border-radius: var(--ds-radius-none) !important;
 }
 
 /* Divider lines between group items */
@@ -432,26 +484,26 @@
 
 /* Size-aware group radius */
 .btn-group-sm {
-  border-radius: 10px;
+  border-radius: var(--ds-radius-control-sm);
 }
 .btn-group-sm > .btn:first-child {
-  border-radius: 10px 0 0 10px !important;
+  border-radius: var(--ds-radius-control-sm) var(--ds-radius-none) var(--ds-radius-none) var(--ds-radius-control-sm) !important;
 }
 .btn-group-sm > .btn:last-child {
-  border-radius: 0 10px 10px 0 !important;
+  border-radius: var(--ds-radius-none) var(--ds-radius-control-sm) var(--ds-radius-control-sm) var(--ds-radius-none) !important;
 }
 .btn-group-sm > .btn {
   font-size: 0.8rem;
 }
 
 .btn-group-lg {
-  border-radius: 18px;
+  border-radius: var(--ds-radius-control);
 }
 .btn-group-lg > .btn:first-child {
-  border-radius: 18px 0 0 18px !important;
+  border-radius: var(--ds-radius-control) var(--ds-radius-none) var(--ds-radius-none) var(--ds-radius-control) !important;
 }
 .btn-group-lg > .btn:last-child {
-  border-radius: 0 18px 18px 0 !important;
+  border-radius: var(--ds-radius-none) var(--ds-radius-control) var(--ds-radius-control) var(--ds-radius-none) !important;
 }
 
 
@@ -485,17 +537,17 @@
   padding: 0.5em;
   min-width: 2.5em;
   min-height: 2.5em;
-  border-radius: 12px !important;
+  border-radius: var(--ds-radius-control-sm) !important;
 }
 .btn-icon.btn-sm {
   min-width: 2em;
   min-height: 2em;
-  border-radius: 10px !important;
+  border-radius: var(--ds-radius-control-sm) !important;
 }
 .btn-icon.btn-lg {
   min-width: 3em;
   min-height: 3em;
-  border-radius: 14px !important;
+  border-radius: var(--ds-radius-control) !important;
 }
 
 /* Close button (X) */
@@ -505,7 +557,7 @@
   justify-content: center;
   width: 2em;
   height: 2em;
-  border-radius: 999px !important;
+  border-radius: var(--ds-radius-pill) !important;
   background-color: var(--aia-bg-secondary, oklch(94% 0 0));
   color: var(--aia-text-secondary, oklch(35% 0.002 260));
   border: none;
@@ -533,7 +585,7 @@
   font-weight: 600;
   font-size: 0.85rem;
   padding: 0.3rem 0.8rem;
-  border-radius: 14px !important;
+  border-radius: var(--ds-radius-control) !important;
   border: 1px solid transparent;
   cursor: pointer;
   line-height: 1.5;
@@ -611,7 +663,7 @@
   padding: 0.2rem 0.6rem;
   font-size: 0.8rem;
   gap: 4px;
-  border-radius: 10px !important;
+  border-radius: var(--ds-radius-control-sm) !important;
 }
 
 
@@ -627,7 +679,7 @@
   background-color: #ffffff;
   color: var(--aia-text-secondary, oklch(35% 0.002 260));
   border: 1px solid var(--aia-separators, oklch(86% 0 0));
-  border-radius: 14px !important;
+  border-radius: var(--ds-radius-control) !important;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-weight: 500;
   font-size: 0.85rem;
@@ -696,7 +748,7 @@
   font-weight: 600;
   font-size: 0.85rem;
   padding: 10px;
-  border-radius: 14px !important;
+  border-radius: var(--ds-radius-control) !important;
   box-shadow: 0 1px 2px oklch(0% 0 0 / 0.05);
   cursor: pointer;
 
@@ -717,7 +769,7 @@
 .btn-filter-toggle .badge {
   background-color: var(--aia-blue-primary, oklch(56% 0.12 247.1));
   color: #ffffff;
-  border-radius: 999px;
+  border-radius: var(--ds-radius-pill);
   padding: 3px 7px;
   font-size: 0.75rem;
   vertical-align: middle;
@@ -879,10 +931,11 @@
 
 .pdc-legend {
   display: flex !important;
-  flex-wrap: nowrap !important;
+  flex-wrap: wrap !important;
   align-items: center !important;
   gap: 2px !important;
-  overflow-x: auto !important;
+  overflow-x: visible !important;
+  max-inline-size: 100% !important;
   overflow-y: hidden !important;
   width: 100% !important;
   padding: 1px 0 !important;
@@ -898,31 +951,33 @@
 }
 .pdc-legend::-webkit-scrollbar-thumb {
   background: oklch(0% 0 0 / 0.2) !important;
-  border-radius: 2px !important;
+  border-radius: var(--ds-radius-xs) !important;
 }
 
 /* Individual legend chips — pill shape */
 .pdc-legend-item {
   display: inline-flex !important;
   align-items: center !important;
-  white-space: nowrap !important;
+  white-space: normal !important;
   flex-shrink: 0 !important;
 
   /* Compact chip sizing */
   height: auto !important;
-  min-height: 18px !important;
-  max-height: 20px !important;
-  font-size: 0.5rem !important;
-  padding: 1px 4px !important;
-  line-height: 1 !important;
+  min-height: var(--ds-target-min) !important;
+  max-height: none !important;
+  font-size: var(--ds-type-size-xs) !important;
+  padding: var(--ds-space-1) var(--ds-space-2) !important;
+  line-height: normal !important;
+  overflow-wrap: normal !important;
+  word-break: normal !important;
 
   cursor: pointer !important;
   user-select: none !important;
 
   /* Pill style — different from buttons */
-  border-radius: 999px !important;
+  border-radius: var(--ds-radius-pill) !important;
 
-  transition: background-color 0.15s ease !important;
+  transition: transform var(--ds-motion-fast), box-shadow var(--ds-motion-fast) !important;
   border: 1px solid oklch(0% 0 0 / 0.1) !important;
 }
 
@@ -932,18 +987,32 @@
   margin-right: 2px !important;
   width: 5px !important;
   height: 5px !important;
-  border-radius: 50% !important;
+  border-radius: var(--ds-radius-pill) !important;
 }
 
 .pdc-legend-item .count-badge {
   display: inline-block !important;
   flex-shrink: 0 !important;
-  margin-left: 2px !important;
-  font-size: 0.45rem !important;
+  margin-left: var(--ds-space-1) !important;
+  font-size: var(--ds-type-size-xs) !important;
   font-weight: 700 !important;
-  background-color: oklch(255 0 0 / 0.3) !important;
-  padding: 0 3px !important;
-  border-radius: 4px !important;
+  background-color: var(--ds-active-surface-raised) !important;
+  color: var(--ds-active-text-primary) !important;
+  padding: var(--ds-space-1) var(--ds-space-2) !important;
+  border: var(--ds-border-width) solid var(--ds-active-border) !important;
+  border-radius: var(--ds-radius-pill) !important;
+}
+
+.pg-page #pgLegend .pdc-legend-item.sin-datos {
+  background: var(--ds-active-surface-raised) !important;
+  border-color: var(--ds-active-border) !important;
+  color: var(--ds-active-text-primary) !important;
+}
+
+.pg-page #pgLegend .pdc-legend-item.en-curso {
+  background: var(--ds-color-state-info-bg) !important;
+  border-color: var(--ds-color-state-info-text) !important;
+  color: var(--ds-color-state-info-text) !important;
 }
 
 /* --- Legend state colors --- */
@@ -970,7 +1039,7 @@
 
 /* Dropdown toggle — Apple-style caret */
 .btn.dropdown-toggle {
-  border-radius: 14px !important;
+  border-radius: var(--ds-radius-control) !important;
 }
 
 .btn.dropdown-toggle::after {
@@ -983,7 +1052,7 @@
 
 /* Split button groups */
 .btn-group .btn + .dropdown-toggle {
-  border-radius: 0 14px 14px 0 !important;
+  border-radius: var(--ds-radius-none) var(--ds-radius-control) var(--ds-radius-control) var(--ds-radius-none) !important;
   padding-left: 0.5em;
 }
 
@@ -1012,7 +1081,7 @@
   padding: 0.25em 0.25em;
   color: var(--aia-text-secondary, oklch(35% 0.002 260));
   border: none;
-  border-radius: 999px !important;
+  border-radius: var(--ds-radius-pill) !important;
   opacity: 0.5;
   transition: opacity 0.2s ease;
 }
@@ -1042,9 +1111,9 @@
   }
 
   .pdc-legend-item {
-    font-size: 0.5rem !important;
-    padding: 1px 3px !important;
-    min-height: 18px !important;
+    font-size: var(--ds-type-size-xs) !important;
+    padding: var(--ds-space-1) var(--ds-space-2) !important;
+    min-height: var(--ds-target-min) !important;
   }
 }
 

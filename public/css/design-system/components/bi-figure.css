@@ -1,0 +1,211 @@
+@layer components {
+  .aia-bi :where(figcaption h3, figcaption p) {
+    margin: var(--ds-space-0);
+  }
+
+  .aia-bi__plot {
+    display: block;
+    width: 100%;
+    height: 12rem;
+    margin-block: var(--ds-space-4);
+    border-bottom: var(--ds-border-width) solid var(--ds-active-border);
+  }
+
+  .aia-bi__grid {
+    stroke: var(--ds-active-border);
+    stroke-width: 0.2;
+    opacity: 0.3;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .aia-bi__bar--plan,
+  .aia-bi__legend-mark--plan {
+    fill: var(--ds-active-data-plan);
+    background: var(--ds-active-data-plan);
+  }
+
+  .aia-bi__bar--executed,
+  .aia-bi__legend-mark--executed {
+    fill: var(--ds-active-data-executed);
+    background: var(--ds-active-data-executed);
+  }
+
+  .aia-bi__line {
+    fill: none;
+    stroke-width: 1.25;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .aia-bi__point {
+    stroke-width: 0.75;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .aia-bi__line--plan {
+    stroke: var(--ds-active-data-plan);
+    stroke-dasharray: var(--ds-space-2);
+  }
+
+  .aia-bi__line--executed {
+    stroke: var(--ds-active-data-executed);
+  }
+
+  .aia-bi__point--plan {
+    fill: var(--ds-active-data-plan);
+    stroke: var(--ds-active-surface);
+  }
+
+  .aia-bi__point--executed {
+    fill: var(--ds-active-data-executed);
+    stroke: var(--ds-active-surface);
+  }
+
+  .aia-bi-radar {
+    display: block;
+    width: min(100%, 22rem);
+    height: auto;
+    margin-inline: auto;
+  }
+
+  .aia-bi-radar__grid,
+  .aia-bi-radar__axis {
+    fill: none;
+    stroke: var(--ds-active-border);
+    stroke-width: 0.35;
+  }
+
+  .aia-bi-radar__shape {
+    fill: color-mix(in srgb, var(--ds-active-action-primary) 24%, transparent);
+    stroke: var(--ds-active-action-primary);
+    stroke-width: 0.8;
+  }
+
+  .aia-bi-radar__point {
+    fill: var(--ds-active-surface);
+    stroke: var(--ds-active-action-primary);
+    stroke-width: 0.6;
+  }
+
+  .aia-bi-radar__label {
+    fill: var(--ds-active-text-secondary);
+    font-family: var(--ds-font-body);
+    /* SVG coordinates scale with the figure; use the chart scale, not page type. */
+    font-size: 3.5px;
+    font-weight: var(--ds-type-weight-semibold);
+  }
+
+  .aia-bi-gauge {
+    display: grid;
+    justify-items: center;
+    gap: var(--ds-space-3);
+    text-align: center;
+  }
+
+  .aia-bi-gauge__meter {
+    display: grid;
+    position: relative;
+    width: min(72vw, 15rem);
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    overflow: visible;
+    place-items: center;
+    color: var(--ds-active-text-primary);
+  }
+
+  .aia-bi-gauge__meter::before {
+    position: absolute;
+    inset: var(--ds-space-0);
+    border-radius: 50%;
+    background: conic-gradient(var(--ds-active-action-primary) 0 64%, var(--ds-active-border) 64% 100%);
+    -webkit-mask: radial-gradient(circle, transparent 0 58%, var(--ds-active-text-primary) 59%);
+    mask: radial-gradient(circle, transparent 0 58%, var(--ds-active-text-primary) 59%);
+    content: "";
+  }
+
+  .aia-bi-gauge__meter span {
+    position: relative;
+    font-family: var(--ds-font-display);
+    font-size: var(--ds-type-size-2xl);
+    font-weight: var(--ds-type-weight-bold);
+  }
+
+  .aia-bi__legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ds-space-6);
+    padding: var(--ds-space-0);
+    list-style: none;
+  }
+
+  .aia-bi__legend li {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--ds-space-2);
+  }
+
+  .aia-bi__legend-mark {
+    width: var(--ds-space-3);
+    height: var(--ds-space-3);
+    border-radius: var(--ds-radius-sm);
+  }
+
+  .aia-bi__data table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .aia-bi__data :where(th, td) {
+    padding: var(--ds-space-2);
+    border-bottom: var(--ds-border-width) solid var(--ds-active-border);
+    text-align: start;
+    color: var(--ds-active-text-primary);
+  }
+
+  .aia-bi__data summary {
+    min-height: var(--ds-target-min);
+    padding-block: var(--ds-space-3);
+    color: var(--ds-active-text-primary);
+    font-weight: var(--ds-type-weight-semibold);
+  }
+}
+
+@layer components {
+  .aia-bi--radar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .aia-bi--radar > .aia-bi-radar {
+    justify-self: center;
+    margin-inline: 0;
+  }
+
+  .aia-bi__guidance {
+    padding: var(--ds-space-3) var(--ds-space-4);
+  }
+
+  .aia-bi__data tr {
+    background: transparent;
+  }
+
+  .aia-bi__data :where(th, td) {
+    color: var(--ds-active-text-primary);
+  }
+}
+
+@layer legacy-overrides {
+  /* Recupera el inset canónico frente al reset universal del modulo legacy. */
+  .aia-bi__guidance {
+    padding: var(--ds-space-3) var(--ds-space-4);
+  }
+
+  @media (max-width: 48rem) {
+    /* Neutraliza la tarjeta blanca del selector movil legacy sin afectar tablas consumidoras. */
+    .aia-bi__data tbody tr {
+      background-color: var(--ds-active-surface-raised);
+      color: var(--ds-active-text-primary);
+    }
+  }
+}

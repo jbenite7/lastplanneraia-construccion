@@ -30,7 +30,7 @@ test.describe('Smoke: all routes render without fatal errors', () => {
     { path: '/programacion-semanal/cnp', selectors: ['#dt_cliente', 'body'] },
     { path: '/programacion-semanal/cnc', selectors: ['#dt_cliente', 'body'] },
     { path: '/programacion-semanal/cic', selectors: ['#dt_cliente', 'body'] },
-    { path: '/listado-actividades', selectors: ['#dt_cliente', 'body'] },
+    { path: '/listado-actividades', selectors: ['#hot-container .ht_master.handsontable'] },
     { path: '/contratos', selectors: ['#dt_cliente', 'body'] },
     { path: '/pdc', selectors: ['#dt_cliente', 'body'] },
     { path: '/indicadores', selectors: ['body'] },

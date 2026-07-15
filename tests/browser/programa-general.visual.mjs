@@ -1,0 +1,62 @@
+import { expect, test } from '@playwright/test';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+import { PROJECTS } from './fixtures/projects.mjs';
+import { loginAndSelectProject } from './support/session.mjs';
+
+const MANIFEST = JSON.parse(readFileSync(
+  new URL('../../docs/design-system/manifests/programa-general.json', import.meta.url),
+  'utf8',
+));
+const ADMIN = { username: 'test.A', password: 'aia2026' };
+
+async function mockDeterministicData(page) {
+  await page.route('**/api/general/restriction-config**', (route) => route.fulfill({
+    contentType: 'application/json', body: JSON.stringify({ success: false }),
+  }));
+  await page.route('**/api/general/codigos**', (route) => route.fulfill({
+    contentType: 'application/json', body: JSON.stringify({ success: true, data: [] }),
+  }));
+  await page.route('**/programa-general/filtros', (route) => route.fulfill({
+    contentType: 'application/json', body: JSON.stringify({ success: true, data: {} }),
+  }));
+  await page.route('**/api/general/list**', (route) => route.fulfill({
+    contentType: 'application/json', body: JSON.stringify({ success: true, data: [] }),
+  }));
+  await page.route('**/api/general/update-batch**', (route) => route.fulfill({
+    contentType: 'application/json', body: JSON.stringify({ respuesta: 'BIEN' }),
+  }));
+}
+
+async function storeTheme(page, theme) {
+  await page.evaluate((value) => localStorage.setItem('aia-theme', value), theme);
+}
+
+async function expectLegendContained(page) {
+  await expect.poll(() => page.locator('#pgLegend').evaluate((legend) => {
+    const boundary = legend.getBoundingClientRect();
+    return [...legend.querySelectorAll('.pdc-legend-item')].every((item) => {
+      const box = item.getBoundingClientRect();
+      return box.left >= boundary.left - 1 && box.right <= boundary.right + 1;
+    });
+  })).toBe(true);
+}
+
+for (const scenario of MANIFEST.scenarios) {
+    test(`${scenario.id} remains stable`, async ({ page }) => {
+      await mockDeterministicData(page);
+      await loginAndSelectProject(page, PROJECTS[0], ADMIN);
+      await page.goto('/programa-general', { waitUntil: 'domcontentloaded' });
+      await page.setViewportSize(scenario.viewport);
+      await storeTheme(page, scenario.theme);
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      await page.waitForFunction(() => Boolean(document.querySelector('#hot-container .handsontable')));
+      await expect(page.locator('html')).toHaveAttribute('data-aia-theme', scenario.theme);
+      await expectLegendContained(page);
+      await page.evaluate(() => document.fonts.ready);
+      await expect(page).toHaveScreenshot(
+        path.basename(scenario.golden),
+        { fullPage: false },
+      );
+    });
+}

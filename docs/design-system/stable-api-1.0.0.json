@@ -1,0 +1,71 @@
+{
+  "$schema": "./stable-api.schema.json",
+  "schemaVersion": 1,
+  "designSystemVersion": "0.3.6",
+  "targetVersion": "1.0.0",
+  "releaseStatus": "pending-gates",
+  "guaranteeScope": "stable-only",
+  "activationGate": "all-closeout-gates-passed",
+  "components": [
+    {
+      "id": "shell",
+      "family": "shell-navigation",
+      "api": [".aia-shell"],
+      "evidenceSurfaces": ["laboratory", "programa-general"]
+    },
+    {
+      "id": "page-header",
+      "family": "page-structure",
+      "api": [".aia-page-header", "DesignSystemComponent::pageHeader"],
+      "evidenceSurfaces": ["laboratory", "programa-general"]
+    },
+    {
+      "id": "toolbar",
+      "family": "actions",
+      "api": [".aia-toolbar", ".aia-action-group", "DesignSystemComponent::actionGroup"],
+      "evidenceSurfaces": ["laboratory", "programa-general"]
+    },
+    {
+      "id": "button",
+      "family": "actions",
+      "api": [".aia-btn"],
+      "evidenceSurfaces": ["laboratory", "programa-general"]
+    },
+    {
+      "id": "field",
+      "family": "forms-filters",
+      "api": [".aia-input", ".aia-select", ".aia-textarea", ".aia-choice", ".aia-switch"],
+      "evidenceSurfaces": ["laboratory", "programa-general"]
+    },
+    {
+      "id": "state",
+      "family": "states-feedback",
+      "api": [".aia-chip", "DesignSystemComponent::status"],
+      "evidenceSurfaces": ["laboratory", "programa-general"]
+    },
+    {
+      "id": "card",
+      "family": "data-display",
+      "api": [".aia-card", ".aia-data-card"],
+      "evidenceSurfaces": ["laboratory", "programa-general"]
+    },
+    {
+      "id": "table-shell",
+      "family": "data-display",
+      "api": [".aia-table-shell", ".aia-data-display", "DesignSystemComponent::dataDisplay"],
+      "evidenceSurfaces": ["laboratory", "programa-general"]
+    },
+    {
+      "id": "overlay",
+      "family": "overlays",
+      "api": [".aia-modal-surface", "DesignSystemComponent::dialog", "window.AiaComponents.init"],
+      "evidenceSurfaces": ["laboratory", "programa-general"]
+    },
+    {
+      "id": "handsontable-adapter",
+      "family": "vendor-adapters",
+      "api": [".handsontable"],
+      "evidenceSurfaces": ["laboratory", "programa-general"]
+    }
+  ]
+}

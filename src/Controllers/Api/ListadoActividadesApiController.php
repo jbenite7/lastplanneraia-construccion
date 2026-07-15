@@ -42,7 +42,7 @@ class ListadoActividadesApiController
             $context = ModuleRequestContext::resolve();
             $dbPrefix = $context['dbPrefix'];
             $projectId = (int) $context['projectId'];
-            $semana = $this->resolveMaxSemana($dbPrefix, $projectId);
+            $semana = (int) $context['semana'];
 
             $this->requirePermission('lps.listado_actividades.ver', 'No autorizado para consultar el listado de actividades.');
 
@@ -52,20 +52,7 @@ class ListadoActividadesApiController
 
             $response = ["data" => []];
 
-            if ($conteo == 0) {
-                // Return default empty structure
-                $response["data"][] = [
-                    "Id" => "",
-                    "codigo" => "",
-                    "actividad" => "",
-                    "descripcionActividad" => "",
-                    "actividadInicio" => "",
-                    "nombreActividadInicio" => "",
-                    "fechaInicio" => "",
-                    "tipoContrato" => "",
-                    "semanaActualizacion" => "",
-                ];
-            } else {
+            if ($conteo > 0) {
                 $query1 = "SELECT
                             a.Id,
                             a.codigo,
@@ -85,7 +72,7 @@ class ListadoActividadesApiController
                             ) AS actividadInicio,
                             COALESCE(
                                 (
-                                    SELECT CONCAT(pc.Id, '. ', pc.Actividad, ' (Inicia en: ', pc.Fecha_Inicio, ')')
+                                    SELECT CONCAT(pc.Id, '. ', pc.Actividad, ' (Inicia el: ', pc.Fecha_Inicio, ')')
                                     FROM programa_consolidado pc
                                     WHERE pc.project_id = a.project_id
                                       AND pc.Semana = a.semanaActualizacion
@@ -104,6 +91,10 @@ class ListadoActividadesApiController
 
                 $stmt1 = $this->db->query($query1, [$projectId, $semana]);
                 $response["data"] = $stmt1->fetchAll(PDO::FETCH_ASSOC);
+                foreach ($response["data"] as &$row) {
+                    $row['nombreActividadInicio'] = $this->safePlainText($row['nombreActividadInicio'] ?? '');
+                }
+                unset($row);
             }
 
             $this->jsonResponse($response);
@@ -122,7 +113,7 @@ class ListadoActividadesApiController
             $context = ModuleRequestContext::resolve();
             $dbPrefix = $context['dbPrefix'];
             $projectId = (int) $context['projectId'];
-            $semana = $this->resolveMaxSemana($dbPrefix, $projectId);
+            $semana = (int) $context['semana'];
 
             $this->requirePermission('lps.listado_actividades.ver', 'No autorizado para consultar el listado de actividades.');
 
@@ -149,13 +140,109 @@ class ListadoActividadesApiController
         }
     }
 
+    public function updateCell(): void
+    {
+        try {
+            $context = ModuleRequestContext::resolve();
+            $dbPrefix = $context['dbPrefix'];
+            $projectId = (int) $context['projectId'];
+            $semana = (int) $context['semana'];
+
+            $this->requirePermission('lps.listado_actividades.editar', 'No autorizado para modificar el listado de actividades.');
+
+            $id = (int) ($_POST['id'] ?? 0);
+            $prop = trim($_POST['prop'] ?? '');
+            $value = $_POST['value'] ?? '';
+
+            if ($id <= 0 || $prop === '') {
+                $this->jsonError('Parámetros inválidos: id y prop son requeridos.');
+                return;
+            }
+
+            // Whitelist de columnas editables
+            $editableProps = ['codigo', 'descripcionActividad', 'actividadInicio', 'fechaInicio', 'tipoContrato'];
+            if (!in_array($prop, $editableProps, true)) {
+                $this->jsonError("La columna '{$prop}' no es editable.");
+                return;
+            }
+
+            // Sanitizar según tipo de columna
+            if ($prop === 'fechaInicio') {
+                $value = !empty($value) ? date('Y-m-d', strtotime((string) $value)) : null;
+            } elseif ($prop === 'codigo') {
+                $value = filter_var(trim((string) $value), FILTER_VALIDATE_INT, [
+                    'options' => ['min_range' => 1],
+                ]);
+                if ($value === false) {
+                    $this->jsonError('El código debe ser un número entero positivo.', 422);
+                    return;
+                }
+            } elseif ($prop === 'descripcionActividad') {
+                $value = trim((string) $value);
+            } elseif ($prop === 'tipoContrato') {
+                $value = $this->normalizeTipoContrato((string) $value);
+                if ($value === '') {
+                    $this->jsonError('Debe seleccionar una modalidad de contratación válida.');
+                    return;
+                }
+            } elseif ($prop === 'actividadInicio') {
+                $value = (int) $value;
+                if ($value <= 0) {
+                    $this->jsonError('Debe seleccionar una actividad válida del cronograma.');
+                    return;
+                }
+            }
+
+            $beforeTrace = $this->loadContratosTraceAnchor($projectId, $id, $semana);
+
+            if ($prop === 'actividadInicio') {
+                $fechaInicio = $this->loadProgramStartDate($projectId, $semana, (int) $value);
+                $nombreActividadInicio = $this->programDisplayName($dbPrefix, $projectId, $semana, (int) $value);
+                if ($fechaInicio === null || $nombreActividadInicio === null) {
+                    $this->jsonError('No se encontró la actividad seleccionada en el cronograma.');
+                    return;
+                }
+
+                $query = "UPDATE actividades
+                          SET actividadInicio = ?, nombreActividadInicio = ?, fechaInicio = ?, semanaActualizacion = ?
+                          WHERE project_id = ? AND Id = ? AND semanaActualizacion = ?";
+                $stmt = $this->db->query($query, [$value, $nombreActividadInicio, $fechaInicio, $semana, $projectId, $id, $semana]);
+            } else {
+                $query = "UPDATE actividades SET {$prop} = ?, semanaActualizacion = ? WHERE project_id = ? AND Id = ? AND semanaActualizacion = ?";
+                $stmt = $this->db->query($query, [$value, $semana, $projectId, $id, $semana]);
+            }
+
+            if ($stmt->rowCount() === 0 && !$this->listedActivityExists($projectId, $id, $semana)) {
+                $this->jsonError('El registro cambió o ya no existe. Recarga la tabla e intenta nuevamente.', 409);
+                return;
+            }
+
+            $this->db->logActivity('ListadoActividades', 'MODIFICAR_CELDA', "Modificó celda {$prop} de actividad ID {$id}", $dbPrefix);
+
+            // Trazabilidad hacia contratos si aplica
+            $afterTrace = $this->loadContratosTraceAnchor($projectId, $id, $semana);
+            $this->recordListadoContratosTrace($projectId, $id, $semana, $beforeTrace, $afterTrace);
+
+            $response = ['respuesta' => 'BIEN', 'campo' => $prop, 'valor' => $value];
+            if ($prop === 'actividadInicio') {
+                $response['nombreActividadInicio'] = $nombreActividadInicio ?? '';
+                $response['fechaInicio'] = $fechaInicio ?? '';
+            }
+            $this->jsonResponse($response);
+
+        } catch (Throwable $e) {
+            error_log("Error en ListadoActividadesApiController@updateCell: " . $e->getMessage());
+            $this->jsonError('No se pudo actualizar la celda.', 500);
+        }
+    }
+
     public function autoGenerate(): void
     {
         try {
             $context = ModuleRequestContext::resolve();
             $dbPrefix = $context['dbPrefix'];
             $projectId = (int) $context['projectId'];
-            $semana = $this->resolveMaxSemana($dbPrefix, $projectId);
+            $semana = (int) $context['semana'];
 
             $this->requirePermission('lps.listado_actividades.editar', 'No autorizado para auto-generar el listado de actividades.');
 
@@ -358,6 +445,73 @@ class ListadoActividadesApiController
         }
     }
 
+    public function updateCard(): void
+    {
+        $ownsTransaction = false;
+        try {
+            $context = ModuleRequestContext::resolve();
+            $dbPrefix = $context['dbPrefix'];
+            $projectId = (int) $context['projectId'];
+            $semana = (int) $context['semana'];
+            $this->requirePermission('lps.listado_actividades.editar', 'No autorizado para modificar el listado de actividades.');
+
+            $id = (int) ($_POST['id'] ?? 0);
+            $actividadInicio = (int) ($_POST['actividadInicio'] ?? 0);
+            $tipoContrato = $this->normalizeTipoContrato((string) ($_POST['tipoContrato'] ?? ''));
+
+            if ($id <= 0 || $actividadInicio <= 0 || $tipoContrato === '') {
+                $this->jsonError('Debe seleccionar una actividad y una modalidad válidas.');
+                return;
+            }
+
+            $fechaInicio = $this->loadProgramStartDate($projectId, $semana, $actividadInicio);
+            $nombreActividadInicio = $this->programDisplayName($dbPrefix, $projectId, $semana, $actividadInicio);
+            if ($fechaInicio === null || $nombreActividadInicio === null) {
+                $this->jsonError('No se encontró la actividad seleccionada en el cronograma.');
+                return;
+            }
+
+            $beforeTrace = $this->loadContratosTraceAnchor($projectId, $id, $semana);
+            $ownsTransaction = !$this->db->inTransaction();
+            if ($ownsTransaction) {
+                $this->db->beginTransaction();
+            }
+            $stmt = $this->db->query(
+                "UPDATE actividades
+                 SET actividadInicio = ?, nombreActividadInicio = ?, fechaInicio = ?, tipoContrato = ?
+                 WHERE project_id = ? AND Id = ? AND semanaActualizacion = ?",
+                [$actividadInicio, $nombreActividadInicio, $fechaInicio, $tipoContrato, $projectId, $id, $semana]
+            );
+            if ($stmt->rowCount() === 0 && !$this->listedActivityExists($projectId, $id, $semana)) {
+                if ($ownsTransaction) {
+                    $this->db->rollBack();
+                }
+                $this->jsonError('El registro cambió o ya no existe. Recarga la tabla e intenta nuevamente.', 409);
+                return;
+            }
+
+            $afterTrace = $this->loadContratosTraceAnchor($projectId, $id, $semana);
+            $this->recordListadoContratosTrace($projectId, $id, $semana, $beforeTrace, $afterTrace);
+            $this->db->logActivity('ListadoActividades', 'MODIFICAR_TARJETA', "Modificó tarjeta de actividad ID {$id}", $dbPrefix);
+            if ($ownsTransaction) {
+                $this->db->commit();
+            }
+            $this->jsonResponse([
+                'respuesta' => 'BIEN',
+                'actividadInicio' => $actividadInicio,
+                'nombreActividadInicio' => $nombreActividadInicio,
+                'fechaInicio' => $fechaInicio,
+                'tipoContrato' => $tipoContrato,
+            ]);
+        } catch (Throwable $e) {
+            if ($ownsTransaction && $this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+            error_log("Error en ListadoActividadesApiController@updateCard: " . $e->getMessage());
+            $this->jsonError('No se pudo guardar la tarjeta.', 500);
+        }
+    }
+
     private function getAgrupacionKey(array $activity, array $match, string $estrategia): string
     {
         switch ($estrategia) {
@@ -493,26 +647,15 @@ class ListadoActividadesApiController
         }
     }
 
-    private function resolveMaxSemana(string $dbPrefix, int $projectId): int
-    {
-        $query = "SELECT MAX(Semana) FROM semanas_activas WHERE project_id = ?";
-        $maxSemana = (int) $this->db->query($query, [$projectId])->fetchColumn();
-
-        if (session_status() === PHP_SESSION_ACTIVE) {
-            $_SESSION['Max_Semana'] = $maxSemana;
-            $_SESSION['semana'] = $maxSemana;
-        }
-
-        return $maxSemana;
-    }
-
     private function registrar(string $dbPrefix, int $projectId, int $semana): void
     {
         $Actividad = !empty($_POST['actividad']) ? trim($_POST['actividad']) : '';
         $descripcionActividad = !empty($_POST['descripcionActividad']) ? trim($_POST['descripcionActividad']) : '';
-        $fechaInicio = !empty($_POST['fechaInicio']) ? date("Y-m-d", strtotime($_POST["fechaInicio"])) : null;
-        $tipoContrato = $_POST['tipoContrato'] ?? '';
-        $actividadInicio = !empty($_POST['actividadInicio']) ? $_POST['actividadInicio'] : null;
+        $tipoContrato = $this->normalizeTipoContrato((string) ($_POST['tipoContrato'] ?? ''));
+        $actividadInicio = !empty($_POST['actividadInicio']) ? (int) $_POST['actividadInicio'] : null;
+        $fechaInicio = $actividadInicio === null
+            ? null
+            : $this->loadProgramStartDate($projectId, $semana, $actividadInicio);
 
         $errores = '';
         if (empty($Actividad) || empty($descripcionActividad) || empty($fechaInicio) || empty($tipoContrato) || empty($semana)) {
@@ -547,16 +690,20 @@ class ListadoActividadesApiController
         $Id = $_POST['Id'] ?? 0;
         $Actividad = !empty($_POST['Actividad']) ? trim($_POST['Actividad']) : (!empty($_POST['select_Actividad']) ? trim($_POST['select_Actividad']) : '');
         $descripcionActividad = !empty($_POST['descripcionActividad']) ? trim($_POST['descripcionActividad']) : (!empty($_POST['select_descripcionActividad']) ? trim($_POST['select_descripcionActividad']) : '');
-        $fechaInicio = !empty($_POST['fechaInicio']) ? date("Y-m-d", strtotime($_POST["fechaInicio"])) : null;
-        $tipoContrato = $_POST['tipoContrato'] ?? '';
-        $actividadInicio = !empty($_POST['actividadInicio']) ? $_POST['actividadInicio'] : null;
+        $actividadInicio = !empty($_POST['actividadInicio']) ? (int) $_POST['actividadInicio'] : 0;
+        $fechaInicio = $this->loadProgramStartDate($projectId, $semana, $actividadInicio);
+        $tipoContrato = $this->normalizeTipoContrato((string) ($_POST['tipoContrato'] ?? ''));
 
         $errores = '';
-        if (empty($Actividad) || empty($descripcionActividad) || empty($fechaInicio) || empty($semana)) {
+        if (empty($Actividad) || empty($descripcionActividad) || empty($fechaInicio) || empty($tipoContrato) || empty($semana)) {
             $errores = 'Debe rellenar todos los campos';
         } else {
             $beforeTrace = $this->loadContratosTraceAnchor($projectId, (int) $Id, $semana);
             $nombreActividadInicio = $this->programDisplayName($dbPrefix, $projectId, $semana, (int) $actividadInicio);
+            if ($nombreActividadInicio === null) {
+                $this->verificar_resultado(false, 'No se encontró la actividad seleccionada en el cronograma.');
+                return;
+            }
             $queryUpdate = "UPDATE actividades SET actividad=?, descripcionActividad=?, actividadInicio=?,
                              nombreActividadInicio=?,
                              fechaInicio=?, tipoContrato=COALESCE(NULLIF(?, ''), tipoContrato), semanaActualizacion=? WHERE project_id=? AND Id=? AND semanaActualizacion=?";
@@ -577,6 +724,10 @@ class ListadoActividadesApiController
         $Id = $_POST["Id"] ?? 0;
         $query = "DELETE FROM actividades WHERE project_id = ? AND Id = ? AND semanaActualizacion = ?";
         $stmt = $this->db->query($query, [$projectId, $Id, $semana]);
+        if ($stmt->rowCount() === 0) {
+            $this->verificar_resultado(false, 'El registro cambió o ya no existe. Recarga la tabla e intenta nuevamente.');
+            return;
+        }
         $this->db->logActivity('ListadoActividades', 'ELIMINAR', "Eliminó actividad ID $Id", $dbPrefix);
         $this->verificar_resultado(true, '');
     }
@@ -601,62 +752,82 @@ class ListadoActividadesApiController
         }
     }
 
+    private function loadProgramStartDate(int $projectId, int $semana, int $actividadInicio): ?string
+    {
+        if ($actividadInicio <= 0) {
+            return null;
+        }
+
+        $stmt = $this->db->query(
+            "SELECT Fecha_Inicio
+             FROM programa_consolidado
+             WHERE project_id = ? AND Semana = ? AND unique_id = ?
+             LIMIT 1",
+            [$projectId, $semana, $actividadInicio]
+        );
+
+        $value = $stmt->fetchColumn();
+        return $value === false ? null : $this->normalizeDate($value);
+    }
+
     private function cargarExcel(string $dbPrefix, int $projectId, int $semanaActualizacion): void
     {
         $archivoExcel = $_FILES["archivoExcel"] ?? null;
-        if (!$archivoExcel) {
-            $this->verificar_resultado(false, "No se recibió archivo");
-            return;
-        }
-
-        $info = new SplFileInfo($archivoExcel["name"]);
-        $extension = $info->getExtension();
-
-        if (strtolower($extension) == "csv") {
-            $filename = $archivoExcel['tmp_name'];
-            if (($handle = fopen($filename, "r")) !== false) {
-                $error = false;
-                try {
-                    $this->db->beginTransaction();
-
-                    $this->db->query(
-                        "DELETE FROM actividades WHERE project_id = ? AND semanaActualizacion = ?",
-                        [$projectId, $semanaActualizacion]
-                    );
-
-                    $numeroFila = 0;
-                    while (($data = fgetcsv($handle, 10000, ";")) !== false) {
-                        if ($numeroFila != 0) {
-                            $actividad = $data[0] ?? '';
-                            $descripcion = $data[1] ?? '';
-                            $this->db->query(
-                                "INSERT INTO actividades (project_id, codigo, actividad, descripcionActividad, semanaActualizacion) VALUES (?, ?, ?, ?, ?)",
-                                [$projectId, $numeroFila, $actividad, $descripcion, $semanaActualizacion]
-                            );
-                        }
-                        $numeroFila++;
-                    }
-                    $this->db->commit();
-                    $this->db->logActivity('ListadoActividades', 'IMPORTAR', "Importó actividades desde Excel", $dbPrefix);
-                    fclose($handle);
-                } catch (Exception $e) {
-                    $this->db->rollBack();
-                    $error = true;
-                    error_log("Excel Import Error: " . $e->getMessage());
-                }
-
-                if ($error) {
-                    $this->verificar_resultado(false, "No carga desde excel");
-                } else {
-                    $this->verificar_resultado(true, "");
-                }
-
-            } else {
-                $this->verificar_resultado(false, "Error al abrir archivo");
+        try {
+            $rows = $this->readValidatedCsvRows($archivoExcel);
+            $this->db->beginTransaction();
+            $this->db->query(
+                "DELETE FROM actividades WHERE project_id = ? AND semanaActualizacion = ?",
+                [$projectId, $semanaActualizacion]
+            );
+            foreach ($rows as $index => $row) {
+                $this->db->query(
+                    "INSERT INTO actividades (project_id, codigo, actividad, descripcionActividad, semanaActualizacion) VALUES (?, ?, ?, ?, ?)",
+                    [$projectId, $index + 1, $row[0], $row[1], $semanaActualizacion]
+                );
             }
-        } else {
-            $this->verificar_resultado(false, "Formato invalido (debe ser .csv)");
+            $this->db->commit();
+            $this->db->logActivity('ListadoActividades', 'IMPORTAR', "Importó actividades desde Excel", $dbPrefix);
+            $this->verificar_resultado(true, "");
+        } catch (Throwable $e) {
+            if ($this->db->inTransaction()) $this->db->rollBack();
+            $this->verificar_resultado(false, $e->getMessage());
         }
+    }
+
+    private function readValidatedCsvRows(?array $file): array
+    {
+        if (!$file || ($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+            throw new Exception('No se recibió un archivo válido.');
+        }
+        $extension = strtolower((new SplFileInfo((string) ($file['name'] ?? '')))->getExtension());
+        $size = (int) ($file['size'] ?? 0);
+        if ($extension !== 'csv' || $size <= 0 || $size > 5 * 1024 * 1024) {
+            throw new Exception('El archivo debe ser CSV, contener datos y no superar 5 MB.');
+        }
+        $handle = fopen((string) ($file['tmp_name'] ?? ''), 'r');
+        if ($handle === false) throw new Exception('No fue posible abrir el archivo CSV.');
+
+        $header = fgetcsv($handle, 10000, ';');
+        $header = array_map(static fn($value) => trim((string) $value, "\xEF\xBB\xBF \t\r\n"), $header ?: []);
+        if ($header !== ['actividad', 'descripcionActividad']) {
+            fclose($handle);
+            throw new Exception('El CSV debe usar las columnas actividad y descripcionActividad.');
+        }
+        $rows = [];
+        while (($data = fgetcsv($handle, 10000, ';')) !== false) {
+            $activity = trim((string) ($data[0] ?? ''));
+            $description = trim((string) ($data[1] ?? ''));
+            if ($activity === '' && $description === '') continue;
+            if (count($data) !== 2 || $activity === '' || $description === '') {
+                fclose($handle);
+                throw new Exception('Cada fila debe tener actividad y descripción.');
+            }
+            $rows[] = [$activity, $description];
+        }
+        fclose($handle);
+        if ($rows === []) throw new Exception('El CSV no contiene familias para importar.');
+        return $rows;
     }
 
     private function activityExists(string $dbPrefix, int $projectId, int $semana, int $consecutivoPrograma): bool
@@ -766,6 +937,28 @@ class ListadoActividadesApiController
         return date('Y-m-d', $timestamp);
     }
 
+    private function normalizeTipoContrato(string $value): string
+    {
+        $selected = [];
+        foreach (explode(',', strtoupper($value)) as $code) {
+            $code = trim($code);
+            if ($code === '') {
+                continue;
+            }
+            if (!in_array($code, ['MO', 'S', 'SI', 'OC'], true)) {
+                return '';
+            }
+            $selected[$code] = true;
+        }
+        if (isset($selected['SI'])) {
+            return 'SI';
+        }
+        return implode(',', array_values(array_filter(
+            ['MO', 'S', 'OC'],
+            static fn(string $code): bool => isset($selected[$code]),
+        )));
+    }
+
     private function normalizeActivityText(string $raw): string
     {
         $text = strip_tags($raw);
@@ -816,6 +1009,21 @@ class ListadoActividadesApiController
             error_log('No se pudo cargar trazabilidad de Contratos desde Listado: ' . $e->getMessage());
             return [];
         }
+    }
+
+    private function listedActivityExists(int $projectId, int $activityId, int $week): bool
+    {
+        return (bool) $this->db->query(
+            'SELECT 1 FROM actividades WHERE project_id = ? AND Id = ? AND semanaActualizacion = ? LIMIT 1',
+            [$projectId, $activityId, $week]
+        )->fetchColumn();
+    }
+
+    private function safePlainText($value): string
+    {
+        $decoded = html_entity_decode((string) $value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $plain = strip_tags($decoded);
+        return trim((string) preg_replace('/\s+/u', ' ', $plain));
     }
 
     private function recordListadoContratosTrace(int $projectId, int $activityId, int $week, array $before, array $after): void
@@ -892,6 +1100,7 @@ class ListadoActividadesApiController
     private function requirePermission(string $permissionKey, string $message): void
     {
         require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
+        // @phpstan-ignore function.notFound (definida por el guard legacy cargado arriba)
         rbac_guard_require_permission($permissionKey, ['message' => $message]);
     }
 }

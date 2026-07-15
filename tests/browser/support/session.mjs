@@ -5,8 +5,11 @@ export async function login(page, credentials = CREDENTIALS) {
   await page.goto(`${BASE_URL}/login`);
   await page.locator('#usuario').fill(credentials.username);
   await page.locator('#password').fill(credentials.password);
-  await page.locator('button[type="submit"]').click();
-  await page.waitForURL('**/proyectos', { timeout: 45000 });
+  await Promise.all([
+    page.waitForURL((url) => url.pathname === '/proyectos', { timeout: 45000 }),
+    page.locator('button[type="submit"]').click(),
+  ]);
+  await expect(page.locator('.project-item').first()).toBeVisible({ timeout: 45000 });
 }
 
 export async function logout(page) {
@@ -15,14 +18,16 @@ export async function logout(page) {
 }
 
 export async function selectProject(page, project) {
-  const card = page.locator('.project-item').filter({ hasText: project.name });
+  const card = page.locator('.project-item').filter({
+    has: page.getByRole('heading', { name: project.name, exact: true }),
+  });
   await expect(card, `Project card not found: ${project.name}`).toBeVisible({ timeout: 45000 });
   await card.locator('button[type="submit"], .btn-enter').click();
   await page.waitForURL((url) => !url.toString().includes('/proyectos'), { timeout: 45000 });
 }
 
-export async function loginAndSelectProject(page, project) {
-  await login(page);
+export async function loginAndSelectProject(page, project, credentials = CREDENTIALS) {
+  await login(page, credentials);
   await selectProject(page, project);
 }
 
@@ -44,7 +49,8 @@ export async function changeWeek(page, week, destination = '/programa-general') 
 
   expect(response.ok, JSON.stringify(response)).toBe(true);
   expect(response.payload.success, JSON.stringify(response)).toBe(true);
-  await page.waitForURL(`**${destination}`, { timeout: 45000 }).catch(() => {});
+  await page.waitForURL(`**${destination}`, { timeout: 45000 });
+  await expect(page.locator('#semana, #semana_PHP').first()).toHaveValue(String(week), { timeout: 45000 });
 }
 
 export async function postFormJson(page, url, body = {}) {

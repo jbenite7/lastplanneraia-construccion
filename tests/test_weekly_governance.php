@@ -11,7 +11,9 @@ $detector = new App\Services\ProgramChangeDetector();
 // Resolve table names via TableResolver so tests work in BOTH flag modes
 $tPS  = TableResolver::resolveByPrefix('optimizacionJMC', 'programacion_semanal');
 $tPC  = TableResolver::resolveByPrefix('optimizacionJMC', 'programa_consolidado');
+$tP   = TableResolver::resolveByPrefix('optimizacionJMC', 'programa');
 $tLog = TableResolver::resolveByPrefix('optimizacionJMC', 'auto_program_log');
+$tWeeks = TableResolver::resolveByPrefix('optimizacionJMC', 'semanas_activas');
 $pid  = 68; // optimizacionJMC project ID
 
 /**
@@ -22,23 +24,58 @@ function qp(string $sql, array $params = []): \PDOStatement {
     return $db->queryWithProject($sql, $params, $pid);
 }
 
+function cleanupWeeklyGovernanceFixture(): void
+{
+    global $db, $pid, $tPS, $tPC, $tP, $tLog, $tWeeks;
+    $db->queryWithProject("DELETE FROM {$tLog} WHERE semana = ?", [9992], $pid);
+    $db->queryWithProject("DELETE FROM {$tPS} WHERE Consecutivo_En_Programa = ? AND Semana = ?", [9900005, 9992], $pid);
+    $db->queryWithProject("DELETE FROM {$tPC} WHERE Id = ? AND Semana = ?", ['2.4', 9992], $pid);
+    $db->queryWithProject("DELETE FROM {$tP} WHERE Consecutivo = ?", [9900005], $pid);
+    $db->queryWithProject("DELETE FROM {$tWeeks} WHERE Semana = ?", [9992], $pid);
+}
+
+function assertWeeklyGovernanceReservationVacant(): void
+{
+    global $db, $pid, $tPS, $tPC, $tP, $tLog, $tWeeks;
+    $checks = [
+        ["SELECT COUNT(*) FROM {$tLog} WHERE project_id = ? AND semana = ?", [$pid, 9992]],
+        ["SELECT COUNT(*) FROM {$tPS} WHERE project_id = ? AND Semana = ?", [$pid, 9992]],
+        ["SELECT COUNT(*) FROM {$tPC} WHERE project_id = ? AND Semana = ?", [$pid, 9992]],
+        ["SELECT COUNT(*) FROM {$tP} WHERE project_id = ? AND Consecutivo = ?", [$pid, 9900005]],
+        ["SELECT COUNT(*) FROM {$tWeeks} WHERE project_id = ? AND Semana = ?", [$pid, 9992]],
+    ];
+    foreach ($checks as [$sql, $params]) {
+        if ((int) $db->query($sql, $params)->fetchColumn() !== 0) {
+            throw new RuntimeException('La reserva sintetica de gobernanza no esta vacia.');
+        }
+    }
+}
+
 echo "=== INICIANDO PRUEBAS DE INTEGRACIÓN: CASOS DE GOBERNANZA ===\n\n";
 
 // --- PREPARACIÓN INICIAL ---
 // Set project context so all $db->query() calls auto-scope via queryWithProject
 $db->setProjectContext($pid);
-// Limpiar la base de datos de pruebas anteriores
-$db->queryWithProject("DELETE FROM {$tPS} WHERE Consecutivo_En_Programa = ? AND Semana = ?", [5, 2], $pid);
-$db->queryWithProject("DELETE FROM {$tPS} WHERE Consecutivo = ?", [5], $pid);
-$db->queryWithProject("DELETE FROM {$tPC} WHERE Id = ? AND Semana = ?", ['2.4', 2], $pid);
-$db->queryWithProject("DELETE FROM {$tLog} WHERE semana = ?", [2], $pid);
+assertWeeklyGovernanceReservationVacant();
+register_shutdown_function('cleanupWeeklyGovernanceFixture');
 
-// Insertar la actividad base en la programación semanal de la Semana 2
+$sql = "INSERT INTO {$tWeeks} (Id, Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem) VALUES (?, ?, ?, ?)";
+$params = [9992, 9992, '2099-01-05', '2099-01-11'];
+[$sql, $params] = $db->insertProjectId($sql, $pid, $params);
+$db->query($sql, $params);
+
+// La fila semanal y el consolidado comparten la llave tecnica del programa padre.
+$sql = "INSERT INTO {$tP} (Consecutivo, unique_id, Id, Actividad, Titulo) VALUES (?, ?, ?, ?, ?)";
+$params = [9900005, 9900005, '2.4', 'Actas de vecindad frentes de obra iniciales', 0];
+[$sql, $params] = $db->insertProjectId($sql, $pid, $params);
+$db->query($sql, $params);
+
+// Insertar la actividad base en la programación semanal de la Semana sintetica 9992
 $pid = 68; // optimizacionJMC project ID
 $sql = "INSERT INTO {$tPS} (
     Consecutivo, Semana, Consecutivo_En_Programa, Id, Actividad, Activa, Empresa, Ejecutado
 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-$params = [5, 2, 5, '2.4', 'Actas de vecindad frentes de obra iniciales', '0', 'AIA', 0.5];
+$params = [9900005, 9992, 9900005, '2.4', 'Actas de vecindad frentes de obra iniciales', '0', 'AIA', 0.5];
 [$sql, $params] = $db->insertProjectId($sql, $pid, $params);
 $db->query($sql, $params);
 
@@ -46,7 +83,7 @@ $db->query($sql, $params);
 $sql = "INSERT INTO {$tPC} (
     Consecutivo, Consecutivo_en_Programa, Id, Semana, Titulo, Estado, D_y_E, Materiales, MdeO, Equipos, Predecesora, Ejecutado, Activa
 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-$params = [5, 5, '2.4', 2, 0, 'Atrasada', '1', '1', '1', '1', '0', 0.0, 1];
+$params = [9900005, 9900005, '2.4', 9992, 0, 'Atrasada', '1', '1', '1', '1', '0', 0.0, 1];
 [$sql, $params] = $db->insertProjectId($sql, $pid, $params);
 $db->query($sql, $params);
 
@@ -59,20 +96,20 @@ echo "--- CASO 1: Probando Reactivación Automática ---\n";
 // 1. Configurar CNP genérica de restricciones en la programación semanal
 qp("UPDATE {$tPS}
             SET Activa = '0', Categoria_CNP = 'Programación', CNP = 'Restricciones habilitantes no cumplidas', Ejecutado = 0.0, Reprogramada_Por_Usuario = 0
-            WHERE Consecutivo_En_Programa = 5 AND Semana = 2");
+            WHERE Consecutivo_En_Programa = 9900005 AND Semana = 9992");
 
 // 2. Liberar todas las restricciones duras (al 100%) en el Programa Consolidado
 qp("UPDATE {$tPC}
             SET D_y_E = '1', Materiales = '1', MdeO = '1', Equipos = '1', Predecesora = '1', Ejecutado = 0.0
-            WHERE Id = '2.4' AND Semana = 2");
+            WHERE Id = '2.4' AND Semana = 9992");
 
 // 3. Correr el detector de cambios
-$log1 = $detector->run('optimizacionJMC', 2);
+$log1 = $detector->run('optimizacionJMC', 9992);
 echo "Log del detector (Caso 1):\n";
 print_r($log1);
 
 // 4. Validar el estado resultante en la base de datos
-$record1 = qp("SELECT Activa, Categoria_CNP, CNP, Reprogramada_Por_Usuario FROM {$tPS} WHERE Consecutivo_En_Programa = 5 AND Semana = 2")->fetch();
+$record1 = qp("SELECT Activa, Categoria_CNP, CNP, Reprogramada_Por_Usuario FROM {$tPS} WHERE Consecutivo_En_Programa = 9900005 AND Semana = 9992")->fetch();
 
 $c1_activa_ok = ($record1['Activa'] === '1');
 $c1_cnp_ok = ($record1['CNP'] === null || $record1['CNP'] === '');
@@ -97,15 +134,15 @@ echo "--- CASO 2: Probando Soberanía de Desprogramación ---\n";
 // 1. Configurar una CNP manual propia en la programación semanal
 qp("UPDATE {$tPS}
             SET Activa = '0', Categoria_CNP = 'Mano de Obra', CNP = 'Causa Manual del Usuario', Ejecutado = 0.0, Reprogramada_Por_Usuario = 0
-            WHERE Consecutivo_En_Programa = 5 AND Semana = 2");
+            WHERE Consecutivo_En_Programa = 9900005 AND Semana = 9992");
 
 // 2. Correr el detector de cambios
-$log2 = $detector->run('optimizacionJMC', 2);
+$log2 = $detector->run('optimizacionJMC', 9992);
 echo "Log del detector (Caso 2):\n";
 print_r($log2);
 
 // 3. Validar el estado resultante en la base de datos
-$record2 = qp("SELECT Activa, Categoria_CNP, CNP FROM {$tPS} WHERE Consecutivo_En_Programa = 5 AND Semana = 2")->fetch();
+$record2 = qp("SELECT Activa, Categoria_CNP, CNP FROM {$tPS} WHERE Consecutivo_En_Programa = 9900005 AND Semana = 9992")->fetch();
 
 $c2_activa_ok = ($record2['Activa'] === '0');
 $c2_cnp_ok = ($record2['CNP'] === 'Causa Manual del Usuario');
@@ -131,33 +168,33 @@ echo "--- CASO 3: Probando Reprogramación Manual e Inmunidad ante Saneamiento -
 // 1. Configurar inicialmente como inactiva por restricciones genéricas
 qp("UPDATE {$tPS}
             SET Activa = '0', Categoria_CNP = 'Programación', CNP = 'Restricciones habilitantes no cumplidas', Ejecutado = 0.0, Reprogramada_Por_Usuario = 0
-            WHERE Consecutivo_En_Programa = 5 AND Semana = 2");
+            WHERE Consecutivo_En_Programa = 9900005 AND Semana = 9992");
 
 // 2. Simular reprogramación manual del usuario desde el módulo de CNP (Activa = 1, flag = 1)
 qp("UPDATE {$tPS}
             SET Activa = '1', Categoria_CNP = NULL, CNP = NULL, Observaciones_CNP = NULL, Reprogramada_Por_Usuario = 1
-            WHERE Consecutivo_En_Programa = 5 AND Semana = 2");
+            WHERE Consecutivo_En_Programa = 9900005 AND Semana = 9992");
 
 // 3. Romper las restricciones duras en el Programa Consolidado (Predecesora = 0 y Ejecutado = 0)
 qp("UPDATE {$tPC}
             SET D_y_E = '1', Materiales = '1', MdeO = '1', Equipos = '1', Predecesora = '0', Ejecutado = 0.0, Estado = 'Atrasada'
-            WHERE Id = '2.4' AND Semana = 2");
+            WHERE Id = '2.4' AND Semana = 9992");
 
 // 4. Simular la limpieza física del botón "Autoprogramar" en SemanalApiController (con la nueva consulta corregida)
 $eligibleSubSql = "SELECT unique_id FROM {$tPC}
-    WHERE project_id = ? AND Semana = 2 AND Titulo = 0
+    WHERE project_id = ? AND Semana = 9992 AND Titulo = 0
       AND (Estado='En Curso' OR Estado='Atrasada' OR Estado='Debe Iniciar'
         OR Estado='A Tiempo' OR Estado='Ya Debió Iniciar y Restricciones Pendientes')";
 
 qp("
     DELETE FROM {$tPS}
-    WHERE project_id = ? AND Semana = 2 AND Activa = '1'
+    WHERE project_id = ? AND Semana = 9992 AND Activa = '1'
       AND (Ejecutado_Real IS NULL OR Ejecutado_Real <= 0)
       AND (Compromiso IS NULL OR Compromiso <= 0)
       AND unique_id NOT IN ({$eligibleSubSql})
 ", [$pid, $pid]);
 // 5. Validar que la actividad NO haya sido borrada físicamente
-$existeFisico = (int) qp("SELECT COUNT(*) FROM {$tPS} WHERE Consecutivo_En_Programa = 5 AND Semana = 2")->fetchColumn();
+$existeFisico = (int) qp("SELECT COUNT(*) FROM {$tPS} WHERE Consecutivo_En_Programa = 9900005 AND Semana = 9992")->fetchColumn();
 if ($existeFisico > 0) {
     echo "✅ Sub-verificación: La actividad reprogramada sobrevivió a la limpieza física del botón Autoprogramar.\n";
 } else {
@@ -166,12 +203,12 @@ if ($existeFisico > 0) {
 }
 
 // 6. Correr el detector de cambios
-$log3 = $detector->run('optimizacionJMC', 2);
+$log3 = $detector->run('optimizacionJMC', 9992);
 echo "Log del detector (Caso 3):\n";
 print_r($log3);
 
 // 7. Validar el estado resultante en la base de datos
-$record3 = qp("SELECT Activa, Categoria_CNP, CNP, Reprogramada_Por_Usuario FROM {$tPS} WHERE Consecutivo_En_Programa = 5 AND Semana = 2")->fetch();
+$record3 = qp("SELECT Activa, Categoria_CNP, CNP, Reprogramada_Por_Usuario FROM {$tPS} WHERE Consecutivo_En_Programa = 9900005 AND Semana = 9992")->fetch();
 
 $c3_activa_ok = ($record3['Activa'] === '1');
 $c3_cnp_ok = ($record3['CNP'] === null || $record3['CNP'] === '');
@@ -199,33 +236,33 @@ echo "--- CASO 4: Probando Inmunidad de Actividades Futuras Reprogramadas ---\n"
 // 1. Configurar inicialmente como inactiva por restricciones genéricas
 qp("UPDATE {$tPS}
             SET Activa = '0', Categoria_CNP = 'Programación', CNP = 'Restricciones habilitantes no cumplidas', Ejecutado = 0.0, Reprogramada_Por_Usuario = 0
-            WHERE Consecutivo_En_Programa = 5 AND Semana = 2");
+            WHERE Consecutivo_En_Programa = 9900005 AND Semana = 9992");
 
 // 2. Simular reprogramación manual del usuario desde el módulo de CNP (Activa = 1, flag = 1)
 qp("UPDATE {$tPS}
             SET Activa = '1', Categoria_CNP = NULL, CNP = NULL, Observaciones_CNP = NULL, Reprogramada_Por_Usuario = 1
-            WHERE Consecutivo_En_Programa = 5 AND Semana = 2");
+            WHERE Consecutivo_En_Programa = 9900005 AND Semana = 9992");
 
 // 3. Establecer estado en consolidado como 'En Liberación de Restricciones' y restricciones pendientes (Predecesora = 0, Ejecutado = 0.0)
 qp("UPDATE {$tPC}
             SET D_y_E = '1', Materiales = '1', MdeO = '1', Equipos = '1', Predecesora = '0', Ejecutado = 0.0, Estado = 'En Liberación de Restricciones'
-            WHERE Id = '2.4' AND Semana = 2");
+            WHERE Id = '2.4' AND Semana = 9992");
 
 // 4. Simular la limpieza física de Autoprogramar con la nueva consulta (Estado NOT IN ('Terminada', 'Terminada Antes', 'Sin Datos'))
 $eligibleSubSql = "SELECT unique_id FROM {$tPC}
-    WHERE project_id = ? AND Semana = 2 AND Titulo = 0
+    WHERE project_id = ? AND Semana = 9992 AND Titulo = 0
       AND Estado NOT IN ('Terminada', 'Terminada Antes', 'Sin Datos')";
 
 qp("
     DELETE FROM {$tPS}
-    WHERE project_id = ? AND Semana = 2 AND Activa = '1'
+    WHERE project_id = ? AND Semana = 9992 AND Activa = '1'
       AND (Ejecutado_Real IS NULL OR Ejecutado_Real <= 0)
       AND (Compromiso IS NULL OR Compromiso <= 0)
       AND unique_id NOT IN ({$eligibleSubSql})
 ", [$pid, $pid]);
 
 // 5. Validar que la actividad futura reprogramada NO haya sido borrada físicamente
-$existeFisico4 = (int) qp("SELECT COUNT(*) FROM {$tPS} WHERE Consecutivo_En_Programa = 5 AND Semana = 2")->fetchColumn();
+$existeFisico4 = (int) qp("SELECT COUNT(*) FROM {$tPS} WHERE Consecutivo_En_Programa = 9900005 AND Semana = 9992")->fetchColumn();
 if ($existeFisico4 > 0) {
     echo "✅ Sub-verificación: La actividad futura reprogramada sobrevivió a la limpieza física.\n";
 } else {
@@ -234,12 +271,12 @@ if ($existeFisico4 > 0) {
 }
 
 // 6. Correr el detector de cambios
-$log4 = $detector->run('optimizacionJMC', 2);
+$log4 = $detector->run('optimizacionJMC', 9992);
 echo "Log del detector (Caso 4):\n";
 print_r($log4);
 
 // 7. Validar el estado resultante en la base de datos (debe seguir Activa = 1, flag=1, limpia)
-$record4 = qp("SELECT Activa, Categoria_CNP, CNP, Reprogramada_Por_Usuario FROM {$tPS} WHERE Consecutivo_En_Programa = 5 AND Semana = 2")->fetch();
+$record4 = qp("SELECT Activa, Categoria_CNP, CNP, Reprogramada_Por_Usuario FROM {$tPS} WHERE Consecutivo_En_Programa = 9900005 AND Semana = 9992")->fetch();
 
 $c4_activa_ok = ($record4['Activa'] === '1');
 $c4_cnp_ok = ($record4['CNP'] === null || $record4['CNP'] === '');
@@ -264,21 +301,21 @@ if ($c4_activa_ok && $c4_cnp_ok && $c4_flag_ok) {
 echo "--- CASO 5: Probando Aislamiento de Logs por Corrida Única ---\n";
 
 // 1. Limpiar logs anteriores
-qp("DELETE FROM {$tLog} WHERE semana = 2");
+qp("DELETE FROM {$tLog} WHERE semana = 9992");
 
 // 2. Configurar inicialmente como inactiva por restricciones genéricas
 qp("UPDATE {$tPS}
             SET Activa = '0', Categoria_CNP = 'Programación', CNP = 'Restricciones habilitantes no cumplidas', Ejecutado = 0.0, Reprogramada_Por_Usuario = 0
-            WHERE Consecutivo_En_Programa = 5 AND Semana = 2");
+            WHERE Consecutivo_En_Programa = 9900005 AND Semana = 9992");
 
 // 3. Liberar todas las restricciones duras (al 100%) en el consolidado para forzar reactivación
 qp("UPDATE {$tPC}
             SET D_y_E = '1', Materiales = '1', MdeO = '1', Equipos = '1', Predecesora = '1', Ejecutado = 0.0, Estado = 'Debe Iniciar'
-            WHERE Id = '2.4' AND Semana = 2");
+            WHERE Id = '2.4' AND Semana = 9992");
 
 // 4. Correr la primera ejecución (que realiza cambios)
-$log5_1 = $detector->run('optimizacionJMC', 2);
-$logs_consultados_1 = $detector->getLog('optimizacionJMC', 2);
+$log5_1 = $detector->run('optimizacionJMC', 9992);
+$logs_consultados_1 = $detector->getLog('optimizacionJMC', 9992);
 
 echo "Corrida 1 - Cambios devueltos por run():\n";
 print_r($log5_1);
@@ -286,20 +323,20 @@ echo "Corrida 1 - Cambios obtenidos de getLog():\n";
 print_r($logs_consultados_1);
 
 // Filtrar por consecutivo 5 (la actividad controlada del test) para evitar ruido de datos residuales
-$logs_filtrados_1 = array_values(array_filter($logs_consultados_1, fn($e) => (int) ($e['consecutivo'] ?? 0) === 5));
+$logs_filtrados_1 = array_values(array_filter($logs_consultados_1, fn($e) => (int) ($e['consecutivo'] ?? 0) === 9900005));
 $has_changes_1 = count($logs_filtrados_1) > 0;
 
 // 5. Correr una segunda ejecución de inmediato (sin cambios nuevos en la actividad 5)
 sleep(1); // Forzar cambio de segundo en el timestamp del lote
-$log5_2 = $detector->run('optimizacionJMC', 2);
-$logs_consultados_2 = $detector->getLog('optimizacionJMC', 2);
+$log5_2 = $detector->run('optimizacionJMC', 9992);
+$logs_consultados_2 = $detector->getLog('optimizacionJMC', 9992);
 
 echo "Corrida 2 - Cambios devueltos por run():\n";
 print_r($log5_2);
 echo "Corrida 2 - Cambios obtenidos de getLog():\n";
 print_r($logs_consultados_2);
 
-$logs_filtrados_2 = array_values(array_filter($logs_consultados_2, fn($e) => (int) ($e['consecutivo'] ?? 0) === 5));
+$logs_filtrados_2 = array_values(array_filter($logs_consultados_2, fn($e) => (int) ($e['consecutivo'] ?? 0) === 9900005));
 $has_changes_2 = count($logs_filtrados_2) > 0;
 
 if ($has_changes_1 && !$has_changes_2) {
@@ -316,24 +353,24 @@ if ($has_changes_1 && !$has_changes_2) {
 echo "--- CASO 6: Probando Autodescompromiso por Restricciones Rotas ---\n";
 
 // 1. Limpiar logs anteriores
-qp("DELETE FROM {$tLog} WHERE semana = 2");
+qp("DELETE FROM {$tLog} WHERE semana = 9992");
 
 // 2. Estado: actividad autoprogramada (Activa=1, flag=0) con restricciones rotas en consolidado
 qp("UPDATE {$tPS}
             SET Activa = '1', Categoria_CNP = NULL, CNP = NULL, Observaciones_CNP = NULL, Reprogramada_Por_Usuario = 0, Ejecutado = 0.0
-            WHERE Consecutivo_En_Programa = 5 AND Semana = 2");
+            WHERE Consecutivo_En_Programa = 9900005 AND Semana = 9992");
 
 qp("UPDATE {$tPC}
             SET D_y_E = '1', Materiales = '1', MdeO = '1', Equipos = '1', Predecesora = '0', Ejecutado = 0.0, Estado = 'Atrasada'
-            WHERE Id = '2.4' AND Semana = 2");
+            WHERE Id = '2.4' AND Semana = 9992");
 
 // 3. Correr el detector
-$log6 = $detector->run('optimizacionJMC', 2);
+$log6 = $detector->run('optimizacionJMC', 9992);
 echo "Log del detector (Caso 6):\n";
 print_r($log6);
 
 // 4. Validar el estado resultante
-$record6 = qp("SELECT Activa, Categoria_CNP, CNP, Reprogramada_Por_Usuario FROM {$tPS} WHERE Consecutivo_En_Programa = 5 AND Semana = 2")->fetch();
+$record6 = qp("SELECT Activa, Categoria_CNP, CNP, Reprogramada_Por_Usuario FROM {$tPS} WHERE Consecutivo_En_Programa = 9900005 AND Semana = 9992")->fetch();
 
 $c6_activa_ok = ($record6['Activa'] === '0');
 $c6_categoria_ok = ($record6['Categoria_CNP'] === 'Programación');
@@ -370,19 +407,19 @@ echo "--- CASO 7: Probando Inmunidad por Reprogramación Manual del Usuario ---\
 // 1. Estado: actividad autodescomprometida con CNP genérica, luego usuario la reprogra desde CNP
 qp("UPDATE {$tPS}
             SET Activa = '1', Categoria_CNP = NULL, CNP = NULL, Observaciones_CNP = NULL, Reprogramada_Por_Usuario = 1, Ejecutado = 0.0
-            WHERE Consecutivo_En_Programa = 5 AND Semana = 2");
+            WHERE Consecutivo_En_Programa = 9900005 AND Semana = 9992");
 
 qp("UPDATE {$tPC}
             SET D_y_E = '1', Materiales = '1', MdeO = '1', Equipos = '1', Predecesora = '0', Ejecutado = 0.0, Estado = 'Atrasada'
-            WHERE Id = '2.4' AND Semana = 2");
+            WHERE Id = '2.4' AND Semana = 9992");
 
 // 2. Correr el detector
-$log7 = $detector->run('optimizacionJMC', 2);
+$log7 = $detector->run('optimizacionJMC', 9992);
 echo "Log del detector (Caso 7):\n";
 print_r($log7);
 
 // 3. Validar el estado resultante
-$record7 = qp("SELECT Activa, Categoria_CNP, CNP, Reprogramada_Por_Usuario FROM {$tPS} WHERE Consecutivo_En_Programa = 5 AND Semana = 2")->fetch();
+$record7 = qp("SELECT Activa, Categoria_CNP, CNP, Reprogramada_Por_Usuario FROM {$tPS} WHERE Consecutivo_En_Programa = 9900005 AND Semana = 9992")->fetch();
 
 $c7_activa_ok = ($record7['Activa'] === '1');
 $c7_cnp_ok = ($record7['CNP'] === null || $record7['CNP'] === '');
@@ -391,7 +428,7 @@ $c7_flag_ok = ((int) $record7['Reprogramada_Por_Usuario'] === 1);
 // 4. Validar que el log NO incluya descomprometer para el consecutivo 5 (porque tiene flag=1)
 $log7_sin_descompromiso = true;
 foreach ($log7 as $entry) {
-    if ((int) ($entry['consecutivo'] ?? 0) === 5 && $entry['accion'] === 'descomprometer') {
+    if ((int) ($entry['consecutivo'] ?? 0) === 9900005 && $entry['accion'] === 'descomprometer') {
         $log7_sin_descompromiso = false;
         break;
     }
@@ -416,19 +453,19 @@ echo "--- CASO 8: Probando Reset del Flag al Reactivar ---\n";
 // 1. Estado: actividad desprogramada con CNP genérica, flag = 1 (estado anómalo de prueba), restricciones OK
 qp("UPDATE {$tPS}
             SET Activa = '0', Categoria_CNP = 'Programación', CNP = 'Restricciones habilitantes no cumplidas', Ejecutado = 0.0, Reprogramada_Por_Usuario = 1
-            WHERE Consecutivo_En_Programa = 5 AND Semana = 2");
+            WHERE Consecutivo_En_Programa = 9900005 AND Semana = 9992");
 
 qp("UPDATE {$tPC}
             SET D_y_E = '1', Materiales = '1', MdeO = '1', Equipos = '1', Predecesora = '1', Ejecutado = 0.0, Estado = 'Debe Iniciar'
-            WHERE Id = '2.4' AND Semana = 2");
+            WHERE Id = '2.4' AND Semana = 9992");
 
 // 2. Correr el detector
-$log8 = $detector->run('optimizacionJMC', 2);
+$log8 = $detector->run('optimizacionJMC', 9992);
 echo "Log del detector (Caso 8):\n";
 print_r($log8);
 
 // 3. Validar el estado resultante: Activa=1, CNP NULL, flag=0
-$record8 = qp("SELECT Activa, Categoria_CNP, CNP, Reprogramada_Por_Usuario FROM {$tPS} WHERE Consecutivo_En_Programa = 5 AND Semana = 2")->fetch();
+$record8 = qp("SELECT Activa, Categoria_CNP, CNP, Reprogramada_Por_Usuario FROM {$tPS} WHERE Consecutivo_En_Programa = 9900005 AND Semana = 9992")->fetch();
 
 $c8_activa_ok = ($record8['Activa'] === '1');
 $c8_cnp_ok = ($record8['CNP'] === null || $record8['CNP'] === '');
@@ -454,33 +491,33 @@ if ($c8_activa_ok && $c8_cnp_ok && $c8_flag_ok) {
 echo "--- CASO 9: Probando Idempotencia del Cascade ---\n";
 
 // 1. Limpiar logs anteriores
-qp("DELETE FROM {$tLog} WHERE semana = 2");
+qp("DELETE FROM {$tLog} WHERE semana = 9992");
 
 // 2. Estado: actividad autodescomprometida con CNP genérica, flag=0, restricciones rotas
 qp("UPDATE {$tPS}
             SET Activa = '0', Categoria_CNP = 'Programación', CNP = 'Restricciones habilitantes no cumplidas', Ejecutado = 0.0, Reprogramada_Por_Usuario = 0
-            WHERE Consecutivo_En_Programa = 5 AND Semana = 2");
+            WHERE Consecutivo_En_Programa = 9900005 AND Semana = 9992");
 
 qp("UPDATE {$tPC}
             SET D_y_E = '1', Materiales = '1', MdeO = '1', Equipos = '1', Predecesora = '0', Ejecutado = 0.0, Estado = 'Atrasada'
-            WHERE Id = '2.4' AND Semana = 2");
+            WHERE Id = '2.4' AND Semana = 9992");
 
 // 3. Primera corrida: dado que la actividad YA está desprogramada con la CNP genérica,
 // el cascade debe saltarla (idempotencia). El log no debe tener entrada para esta actividad.
-$log9_1 = $detector->run('optimizacionJMC', 2);
+$log9_1 = $detector->run('optimizacionJMC', 9992);
 
 $log9_tiene_actividad_5 = false;
 foreach ($log9_1 as $entry) {
-    if ((int) ($entry['consecutivo'] ?? 0) === 5) {
+    if ((int) ($entry['consecutivo'] ?? 0) === 9900005) {
         $log9_tiene_actividad_5 = true;
         break;
     }
 }
 
-$log9_global = $detector->getLog('optimizacionJMC', 2);
+$log9_global = $detector->getLog('optimizacionJMC', 9992);
 $log9_global_tiene_actividad_5 = false;
 foreach ($log9_global as $entry) {
-    if ((int) ($entry['consecutivo'] ?? 0) === 5) {
+    if ((int) ($entry['consecutivo'] ?? 0) === 9900005) {
         $log9_global_tiene_actividad_5 = true;
         break;
     }
@@ -490,7 +527,7 @@ echo "Corrida 1 - log retornado por run() para actividad 5: " . ($log9_tiene_act
 echo "Corrida 1 - log persistido para actividad 5: " . ($log9_global_tiene_actividad_5 ? 'SÍ (FALLO)' : 'NO (OK)') . "\n";
 
 // 4. Validar estado: la actividad sigue Activa=0, CNP genérica intacta
-$record9 = qp("SELECT Activa, Categoria_CNP, CNP, Reprogramada_Por_Usuario FROM {$tPS} WHERE Consecutivo_En_Programa = 5 AND Semana = 2")->fetch();
+$record9 = qp("SELECT Activa, Categoria_CNP, CNP, Reprogramada_Por_Usuario FROM {$tPS} WHERE Consecutivo_En_Programa = 9900005 AND Semana = 9992")->fetch();
 
 $c9_activa_ok = ($record9['Activa'] === '0');
 $c9_categoria_ok = ($record9['Categoria_CNP'] === 'Programación');
@@ -509,11 +546,11 @@ if (!$log9_tiene_actividad_5 && !$log9_global_tiene_actividad_5 && $c9_activa_ok
 // Dejar el registro en su estado original correcto (Activa = 1, Ejecutado = 0.5 y restricciones al 100%)
 qp("UPDATE {$tPS}
             SET Activa = '1', Categoria_CNP = NULL, CNP = NULL, Observaciones_CNP = NULL, Ejecutado = 0.5, Reprogramada_Por_Usuario = 0
-            WHERE Consecutivo_En_Programa = 5 AND Semana = 2");
+            WHERE Consecutivo_En_Programa = 9900005 AND Semana = 9992");
 
 qp("UPDATE {$tPC}
             SET D_y_E = '1', Materiales = '1', MdeO = '1', Equipos = '1', Predecesora = '0', Ejecutado = 0.5
-            WHERE Id = '2.4' AND Semana = 2");
+            WHERE Id = '2.4' AND Semana = 9992");
 
 echo "=== PRUEBAS FINALIZADAS CON ÉXITO ABSOLUTO ===\n";
 exit(0);
