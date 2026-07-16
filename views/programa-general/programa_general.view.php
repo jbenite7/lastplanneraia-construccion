@@ -114,5 +114,10 @@
     <?php endif; ?>
     <?php $pgHotVersion = @filemtime(dirname(__DIR__, 2) . '/public/js/modules/programa_general/hot.js') ?: 'hot14'; ?>
     <script src="/js/modules/programa_general/hot.js?v=<?php echo urlencode((string) $pgHotVersion); ?>"></script>
+    <script>
+        if (window.PGHotModule && typeof window.PGHotModule.init === 'function') {
+            window.PGHotModule.init();
+        }
+    </script>
 </body>
 </html>
