@@ -1040,6 +1040,9 @@
     }
 
     showLoading(true);
+    if (!hot) {
+      updateOrInitHot([]);
+    }
     var initialFlags = String($('#scriptBarraFiltros').val() || '').trim();
     requestList(initialFlags);
     fetchFilterFlags();
