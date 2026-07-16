@@ -20,6 +20,7 @@ class ProgramaGeneralController extends BaseController
         $permiso = $vars['permiso'] ?? '';
         $pdcActivo = $vars['pdcActivo'] ?? '';
         $area = $vars['area'] ?? 'Construccion';
+        $initialFilterQuery = $this->buildProgramaGeneralFilterQuery();
 
         $maxSemana = 0;
         $fechaInicioSem = '';
@@ -148,6 +149,18 @@ class ProgramaGeneralController extends BaseController
         }
 
         require PROJECT_ROOT . '/views/programa-general/programa_general.view.php';
+    }
+
+    private function buildProgramaGeneralFilterQuery(): string
+    {
+        $query = '';
+        foreach (['lookahead', 'no_iniciadas', 'a_tiempo', 'atrasadas', 'terminadas'] as $key) {
+            if (!empty($_SESSION[$key]) && (int) $_SESSION[$key] === 1) {
+                $query .= '&activa_' . $key . '=1';
+            }
+        }
+
+        return $query;
     }
 
     private function healWeeklyContext(): void

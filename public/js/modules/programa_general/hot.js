@@ -153,6 +153,9 @@
       .done(function (response) {
         if (response && response.success && response.data) {
           window.__RESTRICTION_CONFIG__ = normalizeApiConfig(response.data);
+          if (masterData.length > 0) {
+            applyFiltersAndRender();
+          }
         } else {
           window.__RESTRICTION_CONFIG__ = _DEFAULT_RESTRICTION_CONFIG;
         }
@@ -1037,9 +1040,9 @@
     }
 
     showLoading(true);
-    fetchFilterFlags().done(function (flags) {
-      requestList(flags || '');
-    });
+    var initialFlags = String($('#scriptBarraFiltros').val() || '').trim();
+    requestList(initialFlags);
+    fetchFilterFlags();
   }
 
   function normalizeCellValue(prop, value) {
@@ -2872,11 +2875,14 @@
       width: '100%',
       height: getContainerAvailableHeight() || '100%',
       afterRender: function () {
-        refreshVisiblePGCellMeta(this);
-        syncRenderedTableWidth(this);
-        if (window.AiaComponents && window.AiaComponents.ensureScrollableRegions) {
-          window.AiaComponents.ensureScrollableRegions(container);
-        }
+        var hotInstance = this;
+        window.requestAnimationFrame(function () {
+          refreshVisiblePGCellMeta(hotInstance);
+          syncRenderedTableWidth(hotInstance);
+          if (window.AiaComponents && window.AiaComponents.ensureScrollableRegions) {
+            window.AiaComponents.ensureScrollableRegions(container);
+          }
+        });
       },
       className: 'htMiddle',
       cells: function (row, col, prop) {
@@ -3283,7 +3289,6 @@
       bindFilters();
       bindResize();
       fetchCodigosActividad();
-      renderLegendModal();
       bindAutoUpdateOnNavigation();
       initialized = true;
     }
@@ -3294,13 +3299,14 @@
 
     syncLegendVisualState();
     var shouldAutoUpdate = shouldAutoUpdateOnEntry();
-    fetchRestrictionConfig().always(function () {
-      if (shouldAutoUpdate) {
+    if (shouldAutoUpdate) {
+      fetchRestrictionConfig().always(function () {
         actualizarEjecucion();
-      } else {
-        loadData();
-      }
-    });
+      });
+    } else {
+      loadData();
+      fetchRestrictionConfig();
+    }
   }
 
   var PG_AUTO_UPDATE_FLAG = 'pgAutoUpdateOnNextLoad';
