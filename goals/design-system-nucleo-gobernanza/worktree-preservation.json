@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "capturedAt": "2026-07-16T01:48:45.007Z",
+  "capturedAt": "2026-07-16T17:38:16.061Z",
   "purpose": "Read-only preservation fingerprint before any approved isolation or selective staging. This artifact does not authorize Git mutation.",
   "authority": {
     "goal": "goals/design-system-nucleo-gobernanza/goal.md",
@@ -9,17 +9,17 @@
   },
   "repository": {
     "branch": "codex/consolidated-safe-20260714",
-    "head": "cc637dd0f55b87008e43017ca9422f30ea4b67cd",
-    "headTree": "ebcf3a1a341abb41b70d63ad3be2e1e382532eea",
+    "head": "5d6e360cc7b093a457102cfa7ddf55182a5de618",
+    "headTree": "c0e1a10f8192f96fab313e7bdaf0b10ee1b79f7d",
     "originMain": "db30ab2f28ecf3d85a0961eda1fee493f5823d24",
     "divergence": {
       "behind": 0,
-      "ahead": 9
+      "ahead": 20
     }
   },
   "committedWork": {
-    "count": 9,
-    "sha256": "a3958d3c93fc3aea2809f8d2c2a511cfca57cf26c59a8c606ebe96d34741c929",
+    "count": 20,
+    "sha256": "e76358656ba082be1d6fe195ce749aaf27d5c7e47bd6527e2a049f557572a7d3",
     "commits": [
       "3a139499d848b488beb0caa271adf92608437340",
       "b1c89bd9c9bff03d30fb9102ee13e827beb81ad7",
@@ -29,7 +29,18 @@
       "8985e7bd7307c5ee7d0a59258db360621def33be",
       "9dbb9af27a9097066dc1badbc31bd79bfac14bc9",
       "128b11abf683b3ddf22b724a88710d7ba84c4a02",
-      "cc637dd0f55b87008e43017ca9422f30ea4b67cd"
+      "cc637dd0f55b87008e43017ca9422f30ea4b67cd",
+      "149de5a9c7c4943673b49ed1b17b991154b44bf5",
+      "eab98b5accd79f3129e88e3891e298256cab4eed",
+      "64ab079d89fc843f1c4059c7f59421538d32b2ca",
+      "aeb4d7bcc7f001a20dc759dc56b8d8c630003594",
+      "8d71d22cff2b4e458882835407ad05e78b752b62",
+      "322377a8bfe24d525d3489641d82ca12e8f8e388",
+      "c9fc48eed05f5976c0d272a14beb2c437ada8ec1",
+      "6516b0ca4754cd9ece749226d1f2ee6f4ef85e1e",
+      "bc2b1b9af97ed343fc5441fb646a767ee28259ad",
+      "145fadb855aff250a32357b908be2ddd3b1ae981",
+      "5d6e360cc7b093a457102cfa7ddf55182a5de618"
     ]
   },
   "staged": {
@@ -38,8 +49,8 @@
     "entries": []
   },
   "unstaged": {
-    "trackedCount": 0,
-    "binaryDiffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    "trackedCount": 3,
+    "binaryDiffSha256": "e5e7e4a6cec49cc9531212c76c3623307e8358abe26016451a310583cc46a0ab"
   },
   "untracked": {
     "count": 0,
@@ -47,8 +58,8 @@
     "entries": []
   },
   "status": {
-    "entryCount": 0,
-    "porcelainV1ZUntrackedAllSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    "entryCount": 3,
+    "porcelainV1ZUntrackedAllSha256": "153fea749799742cfbbc04ce048135593f5d5074ae44f242f7d39503cd995ee9"
   },
   "ignoredControlSurfaces": [
     {
@@ -80,9 +91,22 @@
       "entries": []
     },
     "sprint-core": {
-      "count": 0,
-      "pathSetSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "entries": []
+      "count": 3,
+      "pathSetSha256": "572b517ae0140a7a64687e38a3316e6831b110c02f0964514cb61258e531fd6b",
+      "entries": [
+        {
+          "code": " M",
+          "path": "docs/design-system/closeout-evidence.json"
+        },
+        {
+          "code": " M",
+          "path": "docs/design-system/stable-api-1.0.0.json"
+        },
+        {
+          "code": " M",
+          "path": "docs/design-system/version.json"
+        }
+      ]
     },
     "sprint-pilot-programa-general": {
       "count": 0,

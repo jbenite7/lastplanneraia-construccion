@@ -83,12 +83,14 @@ test('passed gates require fresh timestamps and non-historical evidence', async 
   assert.doesNotMatch(JSON.stringify(evidence.gates), /\bPASS\b/);
 });
 
-test('dirty worktree evidence stays blocked to the exact approved release scope', async () => {
+test('git-preservation is passed in the activated closeout', async () => {
   const evidence = await readJson('docs/design-system/closeout-evidence.json');
   const gate = evidence.gates.find(({ id }) => id === 'git-preservation');
-  assert.equal(gate.status, 'blocked');
-  assert.match(gate.evidence.join(' '), /dirty_worktree/);
-  assert.match(gate.evidence.join(' '), /exact approved release scope/i);
+  assert.equal(gate.status, 'passed');
+  assert.equal(gate.evidence.length, 1);
+  assert.equal(gate.evidence[0].commandId, 'ds.git-preservation.v1');
+  assert.equal(gate.evidence[0].artifact, 'docs/design-system/evidence/git-preservation.json');
+  assert.match(gate.evidence[0].summary, /Objective receipt/i);
 });
 
 test('closeout surfaces defer transient numeric success claims to the final closer', async () => {
