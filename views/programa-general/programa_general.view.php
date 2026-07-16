@@ -26,6 +26,23 @@
         <input type="hidden" id="scriptBarraFiltros" value="<?php echo htmlspecialchars($initialFilterQuery ?? '', ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true">
     </div>
 
+    <?= \App\View\Components\NavbarComponent::render('programa_general') ?>
+    <div class="context-bar">
+        <div class="container-fluid d-flex align-items-center justify-content-between">
+            <div class="context-breadcrumb">
+                <i class="fas fa-building text-muted mr-1"></i>
+                <span class="font-weight-bold" id="ctxProyecto"><?php echo htmlspecialchars($proyecto ?? 'Proyecto', ENT_QUOTES, 'UTF-8'); ?></span>
+                <span class="text-muted mx-2">/</span>
+                <span id="ctxModulo" class="text-primary">Programa General</span>
+            </div>
+            <div class="context-week-info">
+                <span class="badge badge-info p-2" id="ctxSemanaBadge">
+                    <i class="far fa-calendar-alt mr-1"></i> <span id="ctxSemanaTexto">Semana <?php echo (int) ($semana ?? 0); ?></span>
+                </span>
+            </div>
+        </div>
+    </div>
+
     <main class="aia-page hot-full-bleed" id="contenido">
     <div class="row direccionSeccion pg-direction-row">
         <?php if ($area === 'Pre-Construccion'): ?>
@@ -114,77 +131,5 @@
     <?php endif; ?>
     <?php $pgHotVersion = @filemtime(dirname(__DIR__, 2) . '/public/js/modules/programa_general/hot.js') ?: 'hot14'; ?>
     <script src="/js/modules/programa_general/hot.js?v=<?php echo urlencode((string) $pgHotVersion); ?>"></script>
-
-    <script>
-        var pgParametrosBootstrapped = false;
-        var pgLegacyScriptsLoaded = false;
-
-        function loadPgLegacyScript(src) {
-            return new Promise(function (resolve, reject) {
-                var existing = document.querySelector('script[data-pg-legacy-src="' + src + '"]');
-                if (existing) {
-                    if (existing.dataset.loaded === 'true') {
-                        resolve();
-                        return;
-                    }
-                    existing.addEventListener('load', function () { resolve(); }, { once: true });
-                    existing.addEventListener('error', function () {
-                        reject(new Error('No se pudo cargar ' + src));
-                    }, { once: true });
-                    return;
-                }
-
-                var script = document.createElement('script');
-                script.src = src;
-                script.async = true;
-                script.dataset.pgLegacySrc = src;
-                script.addEventListener('load', function () {
-                    script.dataset.loaded = 'true';
-                    resolve();
-                }, { once: true });
-                script.addEventListener('error', function () {
-                    reject(new Error('No se pudo cargar ' + src));
-                }, { once: true });
-                document.head.appendChild(script);
-            });
-        }
-
-        function cargaParametros() {
-            if (pgParametrosBootstrapped) {
-                return;
-            }
-
-            pgParametrosBootstrapped = true;
-            if (window.PGHotModule && typeof window.PGHotModule.init === 'function') {
-                window.PGHotModule.init();
-            }
-        }
-
-        cargaParametros();
-    </script>
-
-    <script>
-        if (!pgLegacyScriptsLoaded) {
-            pgLegacyScriptsLoaded = true;
-            window.setTimeout(function () {
-                loadPgLegacyScript('/js/cargarDatosGeneralesPagina2.js?v=20260708theme')
-                    .then(function () {
-                        if (typeof maestroPermisos === 'function') {
-                            maestroPermisos(document.getElementById('permiso_canonico').value || '');
-                        }
-
-                        if (typeof cargarDatosGeneralesPagina === 'function') {
-                            cargarDatosGeneralesPagina(document.getElementById('seccion').value);
-                        }
-
-                        <?php $pgGeneralJsVersion = @filemtime(dirname(__DIR__, 2) . '/public/js/funcionesGenerales6.js') ?: 'pgGeneralJs'; ?>
-                        return loadPgLegacyScript('/js/funcionesGenerales6.js?v=<?php echo urlencode((string) $pgGeneralJsVersion); ?>');
-                    })
-                    .catch(function (error) {
-                        console.error(error);
-                    });
-            }, 0);
-        }
-    </script>
 </body>
 </html>
