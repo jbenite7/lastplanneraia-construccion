@@ -9,7 +9,7 @@
 </head>
 <body class="aia-shell ds-lab" data-density="touch">
     <header class="ds-lab__header">
-        <div><p class="ds-lab__eyebrow">Sprint 00 · 0.3.6</p><h1>Laboratorio del Design System AIA</h1></div>
+        <div><p class="ds-lab__eyebrow">Sprint 00 · 1.0.0</p><h1>Laboratorio del Design System AIA</h1></div>
         <div class="ds-lab__controls" aria-label="Controles del laboratorio">
             <button type="button" class="aia-btn aia-btn--secondary" data-lab-theme>Usar tema dark</button>
             <label class="aia-label" for="lab-family">Familia</label>

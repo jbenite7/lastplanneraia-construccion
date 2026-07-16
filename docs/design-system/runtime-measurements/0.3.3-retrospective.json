@@ -4,7 +4,7 @@
   "kind": "measurement",
   "measurementKind": "retrospective",
   "status": "measured",
-  "designSystemVersion": "1.0.0",
+  "designSystemVersion": "0.3.3",
   "route": "/programa-general",
   "viewport": "1440x900",
   "theme": "dark",

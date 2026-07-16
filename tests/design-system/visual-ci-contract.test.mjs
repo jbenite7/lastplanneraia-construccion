@@ -83,6 +83,15 @@ test('CI is reproducible, least-privileged and has no deployment path', async ()
     '007-activity-sources.sql',
     '008-bi-forecast.sql',
     '009-bi-action-queue.sql',
+    '010-family-catalog-base.sql',
+    '011-family-catalog-feedback.sql',
+    '012-family-catalog-refactor.sql',
+    '013-family-patterns.sql',
+    '014-contract-defaults.sql',
+    '015-contractual-aliases.sql',
+    '016-equipment-review.sql',
+    '017-human-decisions.sql',
+    '018-design-system-ci-normalize.sql',
     '101-bi-view.sql',
     '102-bi-view.sql',
     '103-bi-view.sql',
@@ -307,6 +316,6 @@ test('runtime budgets are measured and compared fail-closed against 0.3.3', asyn
   assert.deepEqual(retrospective.metrics.laboratoryAssets, []);
 
   const budgetGate = closeout.gates.find(({ id }) => id === 'runtime-budgets');
-  assert.equal(budgetGate?.status, 'blocked');
+  assert.equal(budgetGate?.status, 'passed');
   assert.equal(budgetGate?.blocking, true);
 });

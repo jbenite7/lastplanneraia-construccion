@@ -119,9 +119,9 @@ test('axe baseline and exceptions are separate versioned contracts', async () =>
   }
   const baseline = await readJson('a11y-baseline.json');
   const exceptions = await readJson('a11y-exceptions.json');
-  assert.equal(baseline.designSystemVersion, '0.3.6');
+  assert.equal(baseline.designSystemVersion, '1.0.0');
   assert.deepEqual(baseline.fingerprints, []);
-  assert.equal(exceptions.designSystemVersion, '0.3.6');
+  assert.equal(exceptions.designSystemVersion, '1.0.0');
   assert.deepEqual(exceptions.exceptions, []);
 });
 
@@ -129,7 +129,7 @@ test('the shared helper loads the versioned baseline and exceptions', async () =
   const helper = await import(helperPath);
   assert.equal(typeof helper.loadAccessibilityGovernance, 'function');
   const governance = await helper.loadAccessibilityGovernance();
-  assert.equal(governance.designSystemVersion, '0.3.6');
+  assert.equal(governance.designSystemVersion, '1.0.0');
   assert.deepEqual(governance.baseline, []);
   assert.deepEqual(governance.exceptions, []);
 });
