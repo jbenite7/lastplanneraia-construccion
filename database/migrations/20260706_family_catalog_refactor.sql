@@ -70,32 +70,50 @@ VALUES
   ('PISOS_ENCHAPES', 'Pisos y Enchapes', 'ACABADOS', 28, 0),
   ('RED_EXTINCION', 'Red de Extinción', 'INSTALACIONES', 50, 0);
 
-INSERT IGNORE INTO `general_pdc_family_aliases`
+INSERT INTO `general_pdc_family_aliases`
   (`alias_nombre`, `alias_normalizado`, `familia_id`, `alias_family_id`, `fuente`, `notas`)
 SELECT 'Enchapes Ceramicos en Muros', 'ENCHAPES CERAMICOS EN MUROS', canon.id, legacy.id,
        'matriz_validacion_humana', 'El usuario indicó que va dentro de Pisos y Enchapes.'
 FROM `general_pdc_familias` canon
 LEFT JOIN `general_pdc_familias` legacy ON legacy.`nombre` = 'Enchapes Ceramicos en Muros'
 WHERE canon.`nombre` = 'Pisos y Enchapes'
-LIMIT 1;
+LIMIT 1
+ON DUPLICATE KEY UPDATE
+  `familia_id` = VALUES(`familia_id`),
+  `alias_family_id` = VALUES(`alias_family_id`),
+  `fuente` = VALUES(`fuente`),
+  `notas` = VALUES(`notas`),
+  `activa` = 1;
 
-INSERT IGNORE INTO `general_pdc_family_aliases`
+INSERT INTO `general_pdc_family_aliases`
   (`alias_nombre`, `alias_normalizado`, `familia_id`, `alias_family_id`, `fuente`, `notas`)
 SELECT 'Red RCI', 'RED RCI', canon.id, legacy.id,
        'matriz_validacion_humana', 'Red RCI y Red Contra Incendio - Piping son una sola familia.'
 FROM `general_pdc_familias` canon
 LEFT JOIN `general_pdc_familias` legacy ON legacy.`nombre` = 'Red RCI'
 WHERE canon.`nombre` = 'Red de Extinción'
-LIMIT 1;
+LIMIT 1
+ON DUPLICATE KEY UPDATE
+  `familia_id` = VALUES(`familia_id`),
+  `alias_family_id` = VALUES(`alias_family_id`),
+  `fuente` = VALUES(`fuente`),
+  `notas` = VALUES(`notas`),
+  `activa` = 1;
 
-INSERT IGNORE INTO `general_pdc_family_aliases`
+INSERT INTO `general_pdc_family_aliases`
   (`alias_nombre`, `alias_normalizado`, `familia_id`, `alias_family_id`, `fuente`, `notas`)
 SELECT 'Red Contra Incendio - Piping', 'RED CONTRA INCENDIO PIPING', canon.id, legacy.id,
        'matriz_validacion_humana', 'Red RCI y Red Contra Incendio - Piping son una sola familia.'
 FROM `general_pdc_familias` canon
 LEFT JOIN `general_pdc_familias` legacy ON legacy.`nombre` = 'Red Contra Incendio - Piping'
 WHERE canon.`nombre` = 'Red de Extinción'
-LIMIT 1;
+LIMIT 1
+ON DUPLICATE KEY UPDATE
+  `familia_id` = VALUES(`familia_id`),
+  `alias_family_id` = VALUES(`alias_family_id`),
+  `fuente` = VALUES(`fuente`),
+  `notas` = VALUES(`notas`),
+  `activa` = 1;
 
 INSERT IGNORE INTO `general_pdc_contractual_elements`
   (`nombre`, `nombre_normalizado`, `tipo_paquete`, `paquete_nombre`, `familia_id`, `fuente`, `notas`)
@@ -125,7 +143,9 @@ SELECT r.id, r.familia_id, a.familia_id, 'reasignar_alias_a_canonica',
        JSON_OBJECT('alias', a.alias_nombre, 'legacy_family_name', lf.nombre, 'canonical_family_name', cf.nombre),
        'migration_20260706_family_catalog_refactor'
 FROM `general_pdc_activity_rules` r
-JOIN `general_pdc_family_aliases` a ON a.alias_family_id = r.familia_id AND a.activa = 1
+JOIN `general_pdc_family_aliases` a ON a.alias_family_id = r.familia_id
+  AND a.activa = 1
+  AND a.fuente = 'matriz_validacion_humana'
 JOIN `general_pdc_familias` lf ON lf.id = a.alias_family_id
 JOIN `general_pdc_familias` cf ON cf.id = a.familia_id
 LEFT JOIN `general_pdc_family_rule_audit` prev
@@ -136,7 +156,9 @@ LEFT JOIN `general_pdc_family_rule_audit` prev
 WHERE prev.id IS NULL;
 
 UPDATE `general_pdc_activity_rules` r
-JOIN `general_pdc_family_aliases` a ON a.alias_family_id = r.familia_id AND a.activa = 1
+JOIN `general_pdc_family_aliases` a ON a.alias_family_id = r.familia_id
+  AND a.activa = 1
+  AND a.fuente = 'matriz_validacion_humana'
 SET r.familia_id = a.familia_id;
 
 CREATE OR REPLACE SQL SECURITY INVOKER VIEW `v_pdc_inventory` AS

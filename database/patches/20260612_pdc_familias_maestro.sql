@@ -1,3 +1,5 @@
+SET NAMES utf8mb4;
+
 -- Patch: Catalogo maestro PDC por familias constructivas
 -- Fecha: 2026-06-12
 -- Fase 2 del plan de automatizacion del Plan de Compras

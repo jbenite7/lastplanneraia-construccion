@@ -1,3 +1,5 @@
+SET NAMES utf8mb4;
+
 -- Aplica decisiones humanas del checklist de familias.
 -- Objetivo: /listado-actividades/ solo crea familias operativas; contratos/PDC
 -- reciben compras, equipos, insumos y paquetes especializados.

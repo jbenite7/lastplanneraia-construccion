@@ -8,6 +8,15 @@ COPY database/migrations/20260703_contratos_slot_quantities_traceability.sql /do
 COPY database/migrations/20260705_actividad_programa_fuentes.sql /docker-entrypoint-initdb.d/007-activity-sources.sql
 COPY database/migrations/002_bi_forecast_tables.sql /docker-entrypoint-initdb.d/008-bi-forecast.sql
 COPY database/migrations/003_bi_action_queue.sql /docker-entrypoint-initdb.d/009-bi-action-queue.sql
+COPY database/patches/20260612_pdc_familias_maestro.sql /docker-entrypoint-initdb.d/010-family-catalog-base.sql
+COPY database/patches/20260701_da_porto_feedback_semi_auto.sql /docker-entrypoint-initdb.d/011-family-catalog-feedback.sql
+COPY database/migrations/20260706_family_catalog_refactor.sql /docker-entrypoint-initdb.d/012-family-catalog-refactor.sql
+COPY database/migrations/20260707_da_porto_jmc_family_patterns.sql /docker-entrypoint-initdb.d/013-family-patterns.sql
+COPY database/migrations/20260708_contract_defaults_feedback.sql /docker-entrypoint-initdb.d/014-contract-defaults.sql
+COPY database/migrations/20260709_inactivate_alias_contractual_families.sql /docker-entrypoint-initdb.d/015-contractual-aliases.sql
+COPY database/migrations/20260710_equipment_families_require_review.sql /docker-entrypoint-initdb.d/016-equipment-review.sql
+COPY database/migrations/20260711_apply_human_family_decisions.sql /docker-entrypoint-initdb.d/017-human-decisions.sql
+COPY database/fixtures/design-system-ci-normalize.sql /docker-entrypoint-initdb.d/018-design-system-ci-normalize.sql
 COPY database/bi/001_bi_pg_semana.sql /docker-entrypoint-initdb.d/101-bi-view.sql
 COPY database/bi/002_bi_pi_restricciones.sql /docker-entrypoint-initdb.d/102-bi-view.sql
 COPY database/bi/003_bi_ps_compromisos.sql /docker-entrypoint-initdb.d/103-bi-view.sql

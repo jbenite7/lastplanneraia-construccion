@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS `general_cnc` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `general_dias_procesos_contratacion` (
-  `id` int NOT NULL,
+  `id` int NOT NULL AUTO_INCREMENT,
   `tipoPaquete` varchar(100) NOT NULL,
   `paqueteContratacion` varchar(200) NOT NULL,
   `diasElaboracionPliegos` int NOT NULL,
@@ -76,21 +76,21 @@ CREATE TABLE IF NOT EXISTS `general_dias_procesos_contratacion` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `general_pdc_familias` (
-  `id` int NOT NULL,
+  `id` int NOT NULL AUTO_INCREMENT,
   `codigo` varchar(50) NOT NULL,
   `nombre` varchar(200) NOT NULL,
   `categoria` varchar(100) DEFAULT NULL,
   `orden` int NOT NULL DEFAULT 0,
   `siempre_revision` tinyint(1) NOT NULL DEFAULT 0,
   `activa` tinyint(1) NOT NULL DEFAULT 1,
-  `created_at` timestamp NOT NULL,
-  `updated_at` timestamp NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_ci_family_code` (`codigo`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `general_pdc_activity_rules` (
-  `id` int NOT NULL,
+  `id` int NOT NULL AUTO_INCREMENT,
   `familia_id` int NOT NULL,
   `patron_regex` varchar(500) NOT NULL,
   `modalidad_sugerida` varchar(100) DEFAULT NULL,
@@ -98,7 +98,7 @@ CREATE TABLE IF NOT EXISTS `general_pdc_activity_rules` (
   `prioridad` int NOT NULL DEFAULT 100,
   `descripcion` varchar(500) DEFAULT NULL,
   `activa` tinyint(1) NOT NULL DEFAULT 1,
-  `created_at` timestamp NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_ci_rule` (`familia_id`, `patron_regex`),
   CONSTRAINT `fk_ci_rule_family` FOREIGN KEY (`familia_id`) REFERENCES `general_pdc_familias` (`id`)
@@ -116,7 +116,7 @@ CREATE TABLE IF NOT EXISTS `general_pdc_chapter_category_map` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `general_pdc_family_contract_options` (
-  `id` int NOT NULL,
+  `id` int NOT NULL AUTO_INCREMENT,
   `familia_id` int NOT NULL,
   `tipo_contrato` int NOT NULL,
   `tipo_paquete` varchar(100) NOT NULL,
@@ -129,14 +129,15 @@ CREATE TABLE IF NOT EXISTS `general_pdc_family_contract_options` (
   `dias_insumos` int NOT NULL,
   `notas` text DEFAULT NULL,
   `activa` tinyint(1) NOT NULL DEFAULT 1,
-  `created_at` timestamp NOT NULL,
-  `updated_at` timestamp NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_ci_family_contract_option` (`familia_id`, `tipo_contrato`, `tipo_paquete`),
   CONSTRAINT `fk_ci_option_family` FOREIGN KEY (`familia_id`) REFERENCES `general_pdc_familias` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `general_pdc_family_contract_option_items` (
-  `id` int NOT NULL,
+  `id` int NOT NULL AUTO_INCREMENT,
   `option_id` int NOT NULL,
   `tipo_contrato` int DEFAULT NULL,
   `tipo_paquete` varchar(100) DEFAULT NULL,
@@ -144,28 +145,29 @@ CREATE TABLE IF NOT EXISTS `general_pdc_family_contract_option_items` (
   `cantidad_default` int NOT NULL DEFAULT 1,
   `dias_proceso_id` int DEFAULT NULL,
   `orden` int NOT NULL DEFAULT 0,
-  `created_at` timestamp NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_ci_family_contract_option_item` (`option_id`, `tipo_paquete`, `paquete_nombre`),
   CONSTRAINT `fk_ci_item_option` FOREIGN KEY (`option_id`) REFERENCES `general_pdc_family_contract_options` (`id`),
   CONSTRAINT `fk_ci_item_duration` FOREIGN KEY (`dias_proceso_id`) REFERENCES `general_dias_procesos_contratacion` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `general_pdc_project_family_strategy` (
-  `id` int NOT NULL,
+  `id` int NOT NULL AUTO_INCREMENT,
   `project_id` int DEFAULT NULL,
   `db_prefix` varchar(50) NOT NULL,
   `semana` int NOT NULL,
   `familia_id` int NOT NULL,
   `option_id` int NOT NULL,
   `aplicada` tinyint(1) NOT NULL DEFAULT 0,
-  `created_at` timestamp NOT NULL,
-  `updated_at` timestamp NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_ci_strategy` (`db_prefix`, `semana`, `familia_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `general_pdc_family_aliases` (
-  `id` int NOT NULL,
+  `id` int NOT NULL AUTO_INCREMENT,
   `alias_nombre` varchar(200) NOT NULL,
   `alias_normalizado` varchar(220) NOT NULL,
   `familia_id` int NOT NULL,
@@ -173,14 +175,14 @@ CREATE TABLE IF NOT EXISTS `general_pdc_family_aliases` (
   `fuente` varchar(120) DEFAULT NULL,
   `notas` text DEFAULT NULL,
   `activa` tinyint(1) NOT NULL DEFAULT 1,
-  `created_at` timestamp NOT NULL,
-  `updated_at` timestamp NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_ci_alias` (`alias_normalizado`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `general_pdc_contractual_elements` (
-  `id` int NOT NULL,
+  `id` int NOT NULL AUTO_INCREMENT,
   `nombre` varchar(200) NOT NULL,
   `nombre_normalizado` varchar(220) NOT NULL,
   `tipo_paquete` varchar(100) NOT NULL,
@@ -189,8 +191,8 @@ CREATE TABLE IF NOT EXISTS `general_pdc_contractual_elements` (
   `fuente` varchar(120) DEFAULT NULL,
   `notas` text DEFAULT NULL,
   `activa` tinyint(1) NOT NULL DEFAULT 1,
-  `created_at` timestamp NOT NULL,
-  `updated_at` timestamp NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_ci_contractual_element` (`nombre_normalizado`, `tipo_paquete`, `paquete_nombre`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -537,6 +539,7 @@ INSERT INTO `programa`
 VALUES
   (73, 101, 1, '1.1', 'Pintura sintetica nivel uno', 0, '2026-07-06', '2026-07-19', 1, 0.25, 'En Curso', 0, 0.80, 1, 1, 1, 1, 0.5, 1, '1', 'Profesional CI Construccion', '0%', '0%', '0%', '0%'),
   (73, 102, 2, '1.2', 'Red electrica sintetica', 0, '2026-07-13', '2026-08-02', 0, 0.10, 'Actividad Futura', 1, 0.60, 1, 0.5, 0.5, 1, 0.5, 1, '1', 'Profesional CI Construccion', '0%', '0%', '0%', '0%'),
+  (73, 103, 101, 'CI.FK.101', 'Ancla sintetica de identidad semanal', 0, '2026-07-06', '2026-07-06', 0, 0.00, 'No Requerida', 0, 1.00, 1, 1, 1, 1, 0, 0, '0', 'Profesional CI Construccion', '0%', '0%', '0%', '0%'),
   (75, 201, 1, 'PC.1', 'Diseno sintetico de especialidad', 0, '2026-07-20', '2026-08-09', 1, 0.20, 'En Ejecucion', 0, 0.50, 0, 0, 0, 0, 0, 0, '0', 'Profesional CI Preconstruccion', '100%', '50%', '50%', '0%'),
   (75, 202, 2, 'PC.2', 'Presupuesto sintetico coordinado', 0, '2026-07-27', '2026-08-16', 0, 0.00, 'Actividad Futura', 1, 0.25, 0, 0, 0, 0, 0, 0, '0', 'Profesional CI Preconstruccion', '100%', '0%', '0%', '0%');
 

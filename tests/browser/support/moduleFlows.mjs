@@ -355,6 +355,13 @@ export const moduleFlows = {
       }
     },
     async edit(page, project) {
+      const autoProgram = await postFormJson(page, '/api/semanal/auto-program', {
+        db: project.dbPrefix,
+        semana: String(project.maxWeek),
+      });
+      assertJsonOk(autoProgram, 'Auto-programación semanal');
+      expect(autoProgram.payload.success).toBe(true);
+
       for (const report of REPORTS.constructionDownloads) {
         const response = await getJson(page, `/reportes/${report.type}?db=${project.dbPrefix}&semana=${project.maxWeek}`);
         assertJsonOk(response, `Reporte descarga ${report.type}`);

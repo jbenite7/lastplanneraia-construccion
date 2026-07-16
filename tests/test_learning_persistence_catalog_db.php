@@ -3,8 +3,15 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Database.php';
 
+use App\Services\SemiAutoService;
+
 $db = Database::getInstance();
 $failed = 0;
+$feedbackNote = 'ci-learning-persistence-project-73';
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 function lpcPass(string $message): void
 {
@@ -31,6 +38,25 @@ function lpcScalar(Database $db, string $sql, array $params = []): mixed
 echo "=== Learning persistence in catalog DB ===\n";
 
 try {
+    $_SESSION['usuario'] = 'test.A';
+    $_SESSION['permiso'] = 'A';
+    $_SESSION['permiso_canonico'] = 'A';
+    $_SESSION['project_id'] = 73;
+    $_SESSION['db'] = 'da_porto';
+    $_SESSION['semana'] = 1;
+
+    $db->query('DELETE FROM semi_auto_feedback WHERE notes = ?', [$feedbackNote]);
+    $feedback = (new SemiAutoService($db))->feedback(
+        SemiAutoService::MODULE_LISTADO,
+        ['projectId' => 73, 'semana' => 1],
+        [
+            'feedback_type' => 'catalog_validation',
+            'original' => ['source' => 'ci-learning-persistence'],
+            'notes' => $feedbackNote,
+        ],
+    );
+    lpcAssert(($feedback['respuesta'] ?? '') === 'BIEN', 'feedback semi-auto se escribe por el servicio');
+
     foreach ([
         'general_pdc_familias',
         'general_pdc_family_aliases',
@@ -54,12 +80,23 @@ try {
         'aliases activos' => ['SELECT COUNT(*) FROM general_pdc_family_aliases WHERE activa = 1', 1],
         'elementos contractuales activos' => ['SELECT COUNT(*) FROM general_pdc_contractual_elements WHERE activa = 1', 1],
         'reglas activas' => ['SELECT COUNT(*) FROM general_pdc_activity_rules WHERE activa = 1', 1],
-        'feedback semi-auto registrado' => ['SELECT COUNT(*) FROM semi_auto_feedback', 1],
     ];
     foreach ($catalogCounts as $label => [$sql, $minimum]) {
         $count = (int) lpcScalar($db, $sql);
         lpcAssert($count >= $minimum, "{$label}: {$count}");
     }
+    $projectFeedback = (int) lpcScalar(
+        $db,
+        'SELECT COUNT(*) FROM semi_auto_feedback WHERE project_id = 73 AND notes = ?',
+        [$feedbackNote],
+    );
+    lpcAssert($projectFeedback === 1, 'feedback semi-auto registrado para proyecto 73');
+    $otherProjectFeedback = (int) lpcScalar(
+        $db,
+        'SELECT COUNT(*) FROM semi_auto_feedback WHERE project_id = 75 AND notes = ?',
+        [$feedbackNote],
+    );
+    lpcAssert($otherProjectFeedback === 0, 'feedback de proyecto 73 no aparece en proyecto 75');
 
     foreach ([
         'Enchapes Ceramicos en Muros' => 'PISOS_ENCHAPES',
@@ -190,6 +227,8 @@ try {
     }
 } catch (Throwable $e) {
     lpcFail($e->getMessage());
+} finally {
+    $db->query('DELETE FROM semi_auto_feedback WHERE notes = ?', [$feedbackNote]);
 }
 
 echo "=== Learning persistence in catalog DB: {$failed} failed ===\n";
