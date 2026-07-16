@@ -2720,7 +2720,6 @@
   function updateOrInitHot(data) {
     setupRenderers();
     syncContainerHeight();
-    buildRowClassCache(data);
 
     if (hot) {
       var filterConditions = captureHotFilterConditions();
