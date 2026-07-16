@@ -16,6 +16,7 @@ export const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:8081';
 
 export const GLOBAL_TABLES = [
   'actividades',
+  'actividad_programa_fuentes',
   'auto_contrato_log',
   'auto_program_log',
   'cambios',
@@ -54,6 +55,10 @@ const ALL_PROJECTS = [
     dbPrefix: 'da_porto',
     area: 'Construccion',
     maxWeek: 1,
+    operationalWeek: 1,
+    purchasingWeek: 1,
+    assistantProgramUniqueId: 1471,
+    purchasingCapabilities: ['listadoActividades', 'contratos', 'pdc'],
     enabledModules: [
       'programaGeneral',
       'programacionIntermedia',
@@ -86,12 +91,80 @@ const ALL_PROJECTS = [
     constructionOnly: true,
   },
   {
+    key: 'jmc',
+    name: 'Optimización Aeropuerto JMC',
+    projectId: 68,
+    dbPrefix: 'optimizacionJMC',
+    area: 'Construccion',
+    maxWeek: 6,
+    operationalWeek: 5,
+    purchasingWeek: 6,
+    assistantProgramUniqueId: 11058,
+    purchasingCapabilities: ['listadoActividades', 'contratos', 'pdc'],
+    enabledModules: [
+      'programaGeneral',
+      'programacionIntermedia',
+      'programacionSemanal',
+      'listadoActividades',
+      'contratos',
+      'pdc',
+      'cnp',
+      'cnc',
+      'cic',
+    ],
+    expectedVisibleNav: [
+      'info_listadoActividades',
+      'info_contratos',
+      'planCompras',
+      'programacion_semanal',
+    ],
+    expectedHiddenNav: [],
+    expectedSubcontractorTitle: 'Subcontratistas',
+    subcontractorHeaders: ['Subcontratista', 'NIT', 'Alcance', 'Tipo Proveedor'],
+    providerType: 'Mano de Obra',
+    professionalCargo: 'Residente Oficina Técnica',
+    hardRestrictions: ['D_y_E', 'Materiales', 'MdeO', 'Equipos', 'Predecesora'],
+    softRestrictions: ['Pdto_Cons', 'Modelo'],
+    constructionOnly: true,
+  },
+  {
+    key: 'preconstruction-da-porto',
+    name: 'Preconstrucción Da Porto',
+    projectId: 76,
+    dbPrefix: 'preconstruccion_da_porto_pc',
+    area: 'Pre-Construccion',
+    maxWeek: 1,
+    operationalWeek: 1,
+    purchasingWeek: null,
+    assistantProgramUniqueId: null,
+    purchasingCapabilities: [],
+    enabledModules: [
+      'programaGeneral',
+      'programacionIntermedia',
+      'programacionSemanal',
+      'cnp',
+      'cnc',
+    ],
+    expectedVisibleNav: ['programa_general', 'programacion_intermedia', 'programacion_semanal'],
+    expectedHiddenNav: ['info_listadoActividades', 'info_contratos', 'planCompras'],
+    expectedSubcontractorTitle: 'Interesados Externos',
+    subcontractorHeaders: ['Interesado', 'Identificación', 'Rol/Interés', 'Tipo de Interesado'],
+    providerType: 'Consultor',
+    professionalCargo: 'Gerente de Proyecto',
+    hardRestrictions: ['restriccion_pc_1'],
+    softRestrictions: [],
+    constructionOnly: false,
+  },
+  {
     key: 'pc',
     name: 'Aeropuerto Regional PC',
     projectId: 75,
     dbPrefix: 'da_aeropuerto_pc',
     area: 'Pre-Construccion',
     maxWeek: 3,
+    operationalWeek: 3,
+    purchasingWeek: null,
+    purchasingCapabilities: [],
     enabledModules: [
       'programaGeneral',
       'programacionIntermedia',
@@ -120,7 +193,14 @@ const requestedProjectKeys = (process.env.E2E_PROJECT_KEYS || '')
 
 export const PROJECTS = requestedProjectKeys.length > 0
   ? ALL_PROJECTS.filter((project) => requestedProjectKeys.includes(project.key))
-  : ALL_PROJECTS.filter((project) => project.key !== 'pc' || process.env.E2E_INCLUDE_PRECONSTRUCTION === '1');
+  : ALL_PROJECTS.filter((project) => (
+    project.key === 'construction'
+    || (project.key === 'pc' && process.env.E2E_INCLUDE_PRECONSTRUCTION === '1')
+  ));
+
+export const OPERATIONAL_PROJECTS = ALL_PROJECTS.filter((project) => (
+  ['construction', 'jmc', 'preconstruction-da-porto'].includes(project.key)
+));
 
 export const REPORTS = {
   constructionDownloads: [
