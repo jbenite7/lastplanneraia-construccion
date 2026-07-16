@@ -380,6 +380,18 @@ var cargarDatosGeneralesPagina = function (seccion) {
         document.getElementById('versionCronograma').value = datosGenerales.versionCronograma;
       }
 
+      console.log("🕵️ [DeepAnalysis] A punto de llamar a cargaParametros() en cargarDatosGeneralesPagina2.js");
+      try {
+        if (typeof cargaParametros === 'function') {
+          console.log("🕵️ [DeepAnalysis] cargaParametros es una función. Ejecutando...");
+          cargaParametros();
+        } else {
+          console.error("🕵️ [DeepAnalysis] CRÍTICO: cargaParametros NO es una función o es undefined en este contexto global. Tipo actual:", typeof cargaParametros);
+        }
+      } catch (error) {
+        console.error("🕵️ [DeepAnalysis] Excepción ahogada (swallowed) capturada al ejecutar cargaParametros():", error);
+      }
+
       // --- Context Bar Population ---
       if (document.getElementById('ctxProyecto')) {
         document.getElementById('ctxProyecto').textContent = datosGenerales.proyecto || 'Proyecto';
@@ -679,17 +691,6 @@ var cargarDatosGeneralesPagina = function (seccion) {
         if (menuElem) menuElem.classList.add('active');
       }
 
-      console.log("🕵️ [DeepAnalysis] A punto de llamar a cargaParametros() en cargarDatosGeneralesPagina2.js");
-      try {
-        if (typeof cargaParametros === 'function') {
-          console.log("🕵️ [DeepAnalysis] cargaParametros es una función. Ejecutando...");
-          cargaParametros();
-        } else {
-          console.error("🕵️ [DeepAnalysis] CRÍTICO: cargaParametros NO es una función o es undefined en este contexto global. Tipo actual:", typeof cargaParametros);
-        }
-      } catch (error) {
-        console.error("🕵️ [DeepAnalysis] Excepción ahogada (swallowed) capturada al ejecutar cargaParametros():", error);
-      }
     },
     error: function(xhr, status, error) {
       console.error("🕵️ [DeepAnalysis] Error AJAX en cargarDatosGeneralesPagina2.js:", status, error);
