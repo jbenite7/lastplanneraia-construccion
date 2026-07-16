@@ -1258,7 +1258,9 @@ class ReportProcessor
             $pCompletado = $stats['P_Completado'];
 
             $updateQuery = "UPDATE {$this->t($dbName, 'cic')} cic
-                            INNER JOIN {$this->t($dbName, 'subcontratistas')} sub ON cic.subcontratista = sub.subcontratista
+                            INNER JOIN {$this->t($dbName, 'subcontratistas')} sub
+                                ON cic.subcontratista = sub.subcontratista
+                               AND sub.project_id = cic.project_id
                             SET cic.P_Completado = ?,
                                 cic.PAC = ?,
                                 cic.Semana = ?,
@@ -1287,7 +1289,9 @@ class ReportProcessor
             $pCompletado = $stats['P_Completado'];
 
             $updateQuery = "UPDATE {$this->t($dbName, 'cip')} cip
-                            INNER JOIN {$this->t($dbName, 'profesionales')} prof ON cip.profesional = prof.nombre
+                            INNER JOIN {$this->t($dbName, 'profesionales')} prof
+                                ON cip.profesional = prof.nombre
+                               AND prof.project_id = cip.project_id
                             SET cip.P_Completado = ?,
                                 cip.PAC = ?,
                                 cip.Semana = ?,
@@ -1302,7 +1306,8 @@ class ReportProcessor
 
     private function updateIntegralSubcontratistas($semana, $dbName)
     {
-        $stmtCic = $this->db->queryWithProject("SELECT Id, subcontratista, PAC, Calidad, ADM, GSA, SST FROM {$this->t($dbName, 'cic')} WHERE Semana = ?", [$semana], $this->pid($dbName));
+        $projectId = $this->pid($dbName);
+        $stmtCic = $this->db->queryWithProject("SELECT Id, subcontratista, PAC, Calidad, ADM, GSA, SST FROM {$this->t($dbName, 'cic')} WHERE Semana = ?", [$semana], $projectId);
         $cicRows = $stmtCic->fetchAll();
 
         foreach ($cicRows as $cic) {
@@ -1310,26 +1315,26 @@ class ReportProcessor
             $subcontratista = $cic['subcontratista'];
 
             $queryAcum = "SELECT
-                (SELECT ROUND(AVG(PAC), 3) FROM {$this->t($dbName, 'cic')} WHERE Semana <= ? AND subcontratista = ? AND PAC != 'NA') AS PAC_Acum,
-                (SELECT ROUND(AVG(P_Completado), 3) FROM {$this->t($dbName, 'cic')} WHERE Semana <= ? AND subcontratista = ? AND P_Completado != 'NA') AS P_Completado_Acum,
-                (SELECT CASE WHEN COUNT(*) = 0 THEN 'NA' ELSE ROUND(AVG(Calidad), 3) END FROM {$this->t($dbName, 'cic')} WHERE Semana <= ? AND subcontratista = ? AND Calidad NOT IN ('NA', 'NR')) AS Calidad_Acum,
-                (SELECT CASE WHEN COUNT(*) = 0 THEN 'NA' ELSE ROUND(AVG(GSA), 3) END FROM {$this->t($dbName, 'cic')} WHERE Semana <= ? AND subcontratista = ? AND GSA NOT IN ('NA', 'NR')) AS GSA_Acum,
-                (SELECT CASE WHEN COUNT(*) = 0 THEN 'NA' ELSE ROUND(AVG(SST), 3) END FROM {$this->t($dbName, 'cic')} WHERE Semana <= ? AND subcontratista = ? AND SST NOT IN ('NA', 'NR')) AS SST_Acum,
-                (SELECT CASE WHEN COUNT(*) = 0 THEN 'NA' ELSE ROUND(AVG(ADM), 3) END FROM {$this->t($dbName, 'cic')} WHERE Semana <= ? AND subcontratista = ? AND ADM NOT IN ('NA', 'NR')) AS ADM_Acum
+                (SELECT ROUND(AVG(PAC), 3) FROM {$this->t($dbName, 'cic')} WHERE Semana <= ? AND subcontratista = ? AND project_id = ? AND PAC != 'NA') AS PAC_Acum,
+                (SELECT ROUND(AVG(P_Completado), 3) FROM {$this->t($dbName, 'cic')} WHERE Semana <= ? AND subcontratista = ? AND project_id = ? AND P_Completado != 'NA') AS P_Completado_Acum,
+                (SELECT CASE WHEN COUNT(*) = 0 THEN 'NA' ELSE ROUND(AVG(Calidad), 3) END FROM {$this->t($dbName, 'cic')} WHERE Semana <= ? AND subcontratista = ? AND project_id = ? AND Calidad NOT IN ('NA', 'NR')) AS Calidad_Acum,
+                (SELECT CASE WHEN COUNT(*) = 0 THEN 'NA' ELSE ROUND(AVG(GSA), 3) END FROM {$this->t($dbName, 'cic')} WHERE Semana <= ? AND subcontratista = ? AND project_id = ? AND GSA NOT IN ('NA', 'NR')) AS GSA_Acum,
+                (SELECT CASE WHEN COUNT(*) = 0 THEN 'NA' ELSE ROUND(AVG(SST), 3) END FROM {$this->t($dbName, 'cic')} WHERE Semana <= ? AND subcontratista = ? AND project_id = ? AND SST NOT IN ('NA', 'NR')) AS SST_Acum,
+                (SELECT CASE WHEN COUNT(*) = 0 THEN 'NA' ELSE ROUND(AVG(ADM), 3) END FROM {$this->t($dbName, 'cic')} WHERE Semana <= ? AND subcontratista = ? AND project_id = ? AND ADM NOT IN ('NA', 'NR')) AS ADM_Acum
                 FROM DUAL";
 
             // Params duplicated due to named placeholders limitation in raw copy-paste or simple positional mapping
             // Using positional params strictly
             $paramsAcum = [
-                $semana, $subcontratista,
-                $semana, $subcontratista,
-                $semana, $subcontratista,
-                $semana, $subcontratista,
-                $semana, $subcontratista,
-                $semana, $subcontratista,
+                $semana, $subcontratista, $projectId,
+                $semana, $subcontratista, $projectId,
+                $semana, $subcontratista, $projectId,
+                $semana, $subcontratista, $projectId,
+                $semana, $subcontratista, $projectId,
+                $semana, $subcontratista, $projectId,
             ];
 
-            $stmtAcum = $this->db->queryWithProject($queryAcum, $paramsAcum, $this->pid($dbName));
+            $stmtAcum = $this->db->queryWithProject($queryAcum, $paramsAcum, $projectId);
             $acum = $stmtAcum->fetch();
 
             $this->db->queryWithProject("UPDATE {$this->t($dbName, 'cic')} SET
@@ -1338,7 +1343,7 @@ class ReportProcessor
                           WHERE Id = ?", [
                 $acum['PAC_Acum'], $acum['P_Completado_Acum'], $acum['Calidad_Acum'],
                 $acum['GSA_Acum'], $acum['SST_Acum'], $acum['ADM_Acum'], $id,
-            ]);
+            ], $projectId);
 
             $cal_integral = $this->calculateLogicaIntegral($cic['PAC'] ?? 'NA', $cic['Calidad'] ?? 'NA', $cic['SST'] ?? 'NA', $cic['GSA'] ?? 'NA', $cic['ADM'] ?? 'NA');
             $cal_integral_val = is_numeric($cal_integral) ? (float) $cal_integral : 0.0;
@@ -1351,13 +1356,14 @@ class ReportProcessor
 
             $this->db->queryWithProject("UPDATE {$this->t($dbName, 'cic')} SET Cal_Integral = ?, Cal_Integral_Acum = ? WHERE Id = ?", [
                 $cal_integral_str, $cal_integral_acum_str, $id,
-            ]);
+            ], $projectId);
         }
     }
 
     private function updateIntegralProfesionales($semana, $dbName)
     {
-        $stmtCip = $this->db->queryWithProject("SELECT profesional, PAC FROM {$this->t($dbName, 'cip')} WHERE Semana = ?", [$semana], $this->pid($dbName));
+        $projectId = $this->pid($dbName);
+        $stmtCip = $this->db->queryWithProject("SELECT profesional, PAC FROM {$this->t($dbName, 'cip')} WHERE Semana = ?", [$semana], $projectId);
         $cipRows = $stmtCip->fetchAll();
 
         foreach ($cipRows as $cip) {
@@ -1365,14 +1371,18 @@ class ReportProcessor
 
             $queryStats = "SELECT
                 (SELECT CASE WHEN COUNT(Critica) > 0 THEN ROUND(SUM(CASE WHEN PAC=1 THEN 1 ELSE 0 END)/COUNT(Critica), 3) ELSE 'NA' END
-                 FROM {$this->t($dbName, 'programacion_semanal')} WHERE Semana = ? AND Responsable_AIA = ? AND Activa = 1 AND Critica = 1 AND Atrasada = 0) AS Act_Criticas_Cumplidas,
+                 FROM {$this->t($dbName, 'programacion_semanal')} WHERE Semana = ? AND Responsable_AIA = ? AND project_id = ? AND Activa = 1 AND Critica = 1 AND Atrasada = 0) AS Act_Criticas_Cumplidas,
                 (SELECT CASE WHEN COUNT(Critica) > 0 THEN ROUND(SUM(CASE WHEN PAC=1 THEN 1 ELSE 0 END)/COUNT(Critica), 3) ELSE 'NA' END
-                 FROM {$this->t($dbName, 'programacion_semanal')} WHERE Semana = ? AND Responsable_AIA = ? AND (Activa = 1 OR Activa = 'NA') AND Critica = 0 AND Atrasada = 0) AS Act_No_Criticas_Cumplidas,
+                 FROM {$this->t($dbName, 'programacion_semanal')} WHERE Semana = ? AND Responsable_AIA = ? AND project_id = ? AND (Activa = 1 OR Activa = 'NA') AND Critica = 0 AND Atrasada = 0) AS Act_No_Criticas_Cumplidas,
                 (SELECT CASE WHEN COUNT(Atrasada) > 0 THEN ROUND(SUM(CASE WHEN PAC=1 THEN 1 ELSE 0 END)/COUNT(Atrasada), 3) ELSE 'NA' END
-                 FROM {$this->t($dbName, 'programacion_semanal')} WHERE Semana = ? AND Responsable_AIA = ? AND Activa = 1 AND Atrasada = 1) AS Act_Atrasadas_Cumplidas
+                 FROM {$this->t($dbName, 'programacion_semanal')} WHERE Semana = ? AND Responsable_AIA = ? AND project_id = ? AND Activa = 1 AND Atrasada = 1) AS Act_Atrasadas_Cumplidas
                 FROM DUAL";
 
-            $stmtStats = $this->db->queryWithProject($queryStats, [$semana, $profesional, $semana, $profesional, $semana, $profesional], $this->pid($dbName));
+            $stmtStats = $this->db->queryWithProject($queryStats, [
+                $semana, $profesional, $projectId,
+                $semana, $profesional, $projectId,
+                $semana, $profesional, $projectId,
+            ], $projectId);
             $stats = $stmtStats->fetch();
 
             $this->db->queryWithProject("UPDATE {$this->t($dbName, 'cip')} SET
@@ -1380,24 +1390,24 @@ class ReportProcessor
                           WHERE profesional = ? AND Semana = ?", [
                 $stats['Act_Criticas_Cumplidas'], $stats['Act_No_Criticas_Cumplidas'],
                 $stats['Act_Atrasadas_Cumplidas'], $profesional, $semana,
-            ]);
+            ], $projectId);
 
             $queryAcum = "SELECT
-                (SELECT ROUND(AVG(PAC), 3) FROM {$this->t($dbName, 'cip')} WHERE Semana <= ? AND profesional = ? AND PAC != 'NA') AS PAC_Acum,
-                (SELECT ROUND(AVG(P_Completado), 3) FROM {$this->t($dbName, 'cip')} WHERE Semana <= ? AND profesional = ? AND P_Completado != 'NA') AS P_Completado_Acum,
-                (SELECT CASE WHEN COUNT(*) = 0 THEN 'NA' ELSE ROUND(AVG(Act_Criticas_Cumplidas), 3) END FROM {$this->t($dbName, 'cip')} WHERE Semana <= ? AND profesional = ? AND Act_Criticas_Cumplidas != 'NA') AS Act_Criticas_Acum,
-                (SELECT CASE WHEN COUNT(*) = 0 THEN 'NA' ELSE ROUND(AVG(Act_No_Criticas_Cumplidas), 3) END FROM {$this->t($dbName, 'cip')} WHERE Semana <= ? AND profesional = ? AND Act_No_Criticas_Cumplidas != 'NA') AS Act_No_Criticas_Acum,
-                (SELECT CASE WHEN COUNT(*) = 0 THEN 'NA' ELSE ROUND(AVG(Act_Atrasadas_Cumplidas), 3) END FROM {$this->t($dbName, 'cip')} WHERE Semana <= ? AND profesional = ? AND Act_Atrasadas_Cumplidas != 'NA') AS Act_Atrasadas_Acum
+                (SELECT ROUND(AVG(PAC), 3) FROM {$this->t($dbName, 'cip')} WHERE Semana <= ? AND profesional = ? AND project_id = ? AND PAC != 'NA') AS PAC_Acum,
+                (SELECT ROUND(AVG(P_Completado), 3) FROM {$this->t($dbName, 'cip')} WHERE Semana <= ? AND profesional = ? AND project_id = ? AND P_Completado != 'NA') AS P_Completado_Acum,
+                (SELECT CASE WHEN COUNT(*) = 0 THEN 'NA' ELSE ROUND(AVG(Act_Criticas_Cumplidas), 3) END FROM {$this->t($dbName, 'cip')} WHERE Semana <= ? AND profesional = ? AND project_id = ? AND Act_Criticas_Cumplidas != 'NA') AS Act_Criticas_Acum,
+                (SELECT CASE WHEN COUNT(*) = 0 THEN 'NA' ELSE ROUND(AVG(Act_No_Criticas_Cumplidas), 3) END FROM {$this->t($dbName, 'cip')} WHERE Semana <= ? AND profesional = ? AND project_id = ? AND Act_No_Criticas_Cumplidas != 'NA') AS Act_No_Criticas_Acum,
+                (SELECT CASE WHEN COUNT(*) = 0 THEN 'NA' ELSE ROUND(AVG(Act_Atrasadas_Cumplidas), 3) END FROM {$this->t($dbName, 'cip')} WHERE Semana <= ? AND profesional = ? AND project_id = ? AND Act_Atrasadas_Cumplidas != 'NA') AS Act_Atrasadas_Acum
                 FROM DUAL";
 
             $paramsAcum = [
-                $semana, $profesional,
-                $semana, $profesional,
-                $semana, $profesional,
-                $semana, $profesional,
-                $semana, $profesional,
+                $semana, $profesional, $projectId,
+                $semana, $profesional, $projectId,
+                $semana, $profesional, $projectId,
+                $semana, $profesional, $projectId,
+                $semana, $profesional, $projectId,
             ];
-            $stmtAcum = $this->db->queryWithProject($queryAcum, $paramsAcum, $this->pid($dbName));
+            $stmtAcum = $this->db->queryWithProject($queryAcum, $paramsAcum, $projectId);
             $acum = $stmtAcum->fetch();
 
             $this->db->queryWithProject("UPDATE {$this->t($dbName, 'cip')} SET
@@ -1406,7 +1416,7 @@ class ReportProcessor
                           WHERE profesional = ? AND Semana = ?", [
                 $acum['PAC_Acum'], $acum['P_Completado_Acum'], $acum['Act_Criticas_Acum'],
                 $acum['Act_No_Criticas_Acum'], $acum['Act_Atrasadas_Acum'], $profesional, $semana,
-            ]);
+            ], $projectId);
 
             $pac_cons = $this->calculatePACConsolidado(
                 $cip['PAC'] ?? 'NA',
@@ -1430,7 +1440,7 @@ class ReportProcessor
             $this->db->queryWithProject("UPDATE {$this->t($dbName, 'cip')} SET PAC_Consolidado = ?, PAC_Consolidado_Acum = ?
                           WHERE profesional = ? AND Semana = ?", [
                 $pac_cons_str, $pac_cons_acum_str, $profesional, $semana,
-            ]);
+            ], $projectId);
         }
     }
 
