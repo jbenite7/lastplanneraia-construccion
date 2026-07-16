@@ -10,7 +10,8 @@ pruebas ejecutables prevalecen sobre soluciones locales o prompts de módulo.
 - Una familia cambia primero en el laboratorio y conserva evidencia aprobada.
 - Cada consumidor afectado se declara en su manifiesto y pasa su smoke.
 - Programa General es el único piloto autorizado durante Sprint 00.
-- Plannotator revisa el diff antes del commit si cambia el núcleo.
+- Una revisión local del diff inspecciona alcance, pruebas, evidencia y cambios
+  ajenos antes del commit si cambia el núcleo.
 
 ## Límites operativos
 

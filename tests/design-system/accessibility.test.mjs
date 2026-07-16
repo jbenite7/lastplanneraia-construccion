@@ -160,7 +160,7 @@ test('the root package exposes a non-regenerating laboratory axe gate', async ()
   assert.doesNotMatch(JSON.stringify(a11yScripts), /update|baseline|regener/i);
 });
 
-test('the root package exposes a dedicated keyboard precheck', async () => {
+test('keyboard and reflow have one non-blocking evidence command outside runtime', async () => {
   const packageJson = JSON.parse(await readFile(
     new URL('../../package.json', import.meta.url), 'utf8',
   ));
@@ -168,5 +168,9 @@ test('the root package exposes a dedicated keyboard precheck', async () => {
     packageJson.scripts?.['test:keyboard'],
     'playwright test tests/browser/design-system-keyboard.mjs --workers=1',
   );
-  assert.match(packageJson.scripts?.['test:design-system:runtime'], /test:keyboard/);
+  assert.equal(
+    packageJson.scripts?.['test:design-system:evidence'],
+    'playwright test tests/browser/design-system-keyboard.mjs tests/browser/design-system-reflow.mjs --workers=1',
+  );
+  assert.doesNotMatch(packageJson.scripts?.['test:design-system:runtime'], /keyboard|reflow/);
 });

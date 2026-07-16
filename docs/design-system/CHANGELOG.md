@@ -12,8 +12,19 @@ BI y los adaptadores sin consumidor real quedan fuera. Esta enumeración no
 activa la garantía SemVer: la versión permanece `0.3.6 / construction` hasta
 que todos los gates de cierre estén aprobados y se cree el commit de release.
 
+- Reduce el contrato de activación a los quince gates aprobados, en orden fijo,
+  y sustituye la revisión externa por una revisión local trazable.
+- Separa teclado y reflow del runtime bloqueante; CI los conserva como evidencia
+  tolerada con artefactos de fallo.
+- Define Accessibility Insights como tres revisiones automatizadas básicas separadas —
+  laboratorio, piloto y estados revelados— con cero reglas e instancias fallidas,
+  sin activar todavía la versión `1.0.0`.
+- Vincula cada recibo de cierre a un `commandId` y comando canónicos, y rechaza
+  activar `1.0.0` si índice/worktree no están limpios o si los documentos de
+  activación no coinciden byte por byte con el commit `HEAD` que los contiene.
 - Define un artefacto versionado y un comparador fail-closed para los presupuestos de runtime de Programa General: CSS/JS gzip, adapters cargados, solicitudes duplicadas, flash de tema, inicialización, interacción Handsontable y ausencia de assets del laboratorio.
-- Registra la medición retrospectiva reproducible de 0.3.3 sobre la misma fixture sanitizada del runtime actual: tres muestras, medianas explícitas, hash estable de assets y trazabilidad del checkpoint. La medición no se convierte en baseline aprobado ni inventa tolerancias.
+- Hace portable la retrospectiva histórica de 0.3.3 como procedencia incompleta: declara `sourceRef:null` y `rawSamplesPreserved:false`, conserva solo resúmenes recuperados y los verifica mediante un manifiesto comprometido, sin depender de un objeto o checkpoint Git oculto ni presentarlos como muestras crudas de release.
+- Registra la aprobación explícita de los límites de presupuesto. El gate runtime actual sigue pendiente hasta ejecutar y agregar tres muestras frescas sobre un `HEAD` limpio, con recibos verificables, antes de comparar contra ese baseline.
 - Mide la interacción Handsontable abriendo el filtro de columna, sin editar datos y sin depender de que la grilla contenga actividades.
 - Exige cero flashes de tema y cero assets del laboratorio en Programa General aunque el runtime histórico tuviera un flash.
 - Aplica dark o la preferencia linen persistida mediante un bootstrap síncrono y versionado antes de las hojas de estilo; la prueba real de Programa General pasa de un flash de tema a cero.

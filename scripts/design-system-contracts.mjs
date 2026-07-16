@@ -4,6 +4,8 @@ import { createHash } from 'node:crypto';
 import { join } from 'node:path';
 import process from 'node:process';
 
+import { closeoutContractFailures } from './design-system-closeout-contract.mjs';
+
 const root = process.cwd();
 const required = [
   'docs/design-system/version.json',
@@ -32,6 +34,7 @@ const required = [
   'docs/design-system/manifests/programa-general.json',
   'docs/design-system/manifests/inventory.json',
   'docs/design-system/closeout-evidence.json',
+  'goals/design-system-nucleo-gobernanza/validation-log.md',
 ];
 const failures = [];
 
@@ -76,6 +79,7 @@ for (const component of catalog?.components || []) {
 
 const stableApi = documents.get('docs/design-system/stable-api-1.0.0.json');
 const closeout = documents.get('docs/design-system/closeout-evidence.json');
+const versionDocument = documents.get('docs/design-system/version.json');
 if (stableApi?.targetVersion !== '1.0.0') failures.push('stable API: targetVersion must be 1.0.0');
 if (stableApi?.guaranteeScope !== 'stable-only') failures.push('stable API: guaranteeScope must be stable-only');
 if (stableApi?.activationGate !== 'all-closeout-gates-passed') {
@@ -117,16 +121,9 @@ for (const releaseComponent of stableApi?.components || []) {
     failures.push(`stable API ${releaseComponent.id}: catalog maturity must be stable`);
   }
 }
-const closeoutPassed = (closeout?.gates || []).length > 0
-  && closeout.gates.every(({ status }) => status === 'passed');
-if (stableApi?.releaseStatus === 'guaranteed') {
-  if (version !== '1.0.0' || documents.get('docs/design-system/version.json')?.status !== 'stable') {
-    failures.push('stable API: guaranteed requires version 1.0.0 stable');
-  }
-  if (!closeoutPassed) failures.push('stable API: guaranteed requires every closeout gate passed');
-} else if (stableApi?.releaseStatus !== 'pending-gates') {
-  failures.push(`stable API: invalid releaseStatus ${stableApi?.releaseStatus}`);
-}
+failures.push(...closeoutContractFailures({
+  root, closeout, stableApi, versionDocument,
+}));
 
 const homologation = documents.get('docs/design-system/homologation.json');
 const approvals = documents.get('docs/design-system/family-approvals.json');

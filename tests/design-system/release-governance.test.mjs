@@ -15,7 +15,7 @@ test('the 1.0.0 release candidate enumerates exactly the stable API', async () =
   assert.equal(release.schemaVersion, 1);
   assert.equal(release.designSystemVersion, version.version);
   assert.equal(release.targetVersion, '1.0.0');
-  assert.equal(release.releaseStatus, 'pending-gates');
+  assert.match(release.releaseStatus, /^(pending-gates|guaranteed)$/);
   assert.equal(release.guaranteeScope, 'stable-only');
   assert.equal(release.activationGate, 'all-closeout-gates-passed');
 
@@ -57,23 +57,25 @@ test('the stable API artifact has no fields outside its fail-closed schema', asy
   }
 });
 
-test('construction cannot activate the 1.0.0 guarantee', async () => {
+test('1.0.0 activation is equivalent to all exact closeout gates being passed', async () => {
   const [version, closeout, release] = await Promise.all([
     readJson('docs/design-system/version.json'),
     readJson('docs/design-system/closeout-evidence.json'),
     readJson('docs/design-system/stable-api-1.0.0.json'),
   ]);
-  const allPassed = closeout.gates.every(({ status }) => status === 'passed');
+  const allPassed = closeout.gates.length === 15
+    && closeout.gates.every(({ blocking, evidence, status, verifiedAt }) => (
+      blocking === true
+      && status === 'passed'
+      && typeof verifiedAt === 'string'
+      && evidence.length > 0
+    ));
+  const releaseActivated = release.releaseStatus === 'guaranteed';
+  const versionActivated = version.version === '1.0.0' && version.status === 'stable';
 
-  if (release.releaseStatus === 'guaranteed') {
-    assert.equal(version.version, '1.0.0');
-    assert.equal(version.status, 'stable');
-    assert.equal(allPassed, true);
-  } else {
-    assert.equal(release.releaseStatus, 'pending-gates');
-    assert.notEqual(version.status, 'stable');
-    assert.equal(allPassed, false);
-  }
+  assert.equal(releaseActivated, allPassed);
+  assert.equal(versionActivated, allPassed);
+  assert.equal(releaseActivated, versionActivated);
 });
 
 test('the changelog names every component in the stable guarantee candidate', async () => {

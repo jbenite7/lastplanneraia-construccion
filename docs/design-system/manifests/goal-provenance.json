@@ -6,15 +6,15 @@
   "canonicalSources": [
     {
       "path": "goals/design-system-nucleo-gobernanza/goal.md",
-      "sha256": "2f1b618bac299156b8a18aec2596a06d077988d4c0219612d53f19ee84be532c"
+      "sha256": "ddc9e21bad67c250f7a3f3dcd95c0c02487da4a0e41305b3d85cdb7f552d47f4"
     },
     {
       "path": "goals/design-system-nucleo-gobernanza/facts.md",
-      "sha256": "ec05e3c2f3f83907c9d1db028eb472760397e4e573b315d6cb4088b6a20ff898"
+      "sha256": "55ca6e6194eabd2e21416aa66453aadc1ff6406a1a67659bf16edea1ccb1c19c"
     },
     {
       "path": "goals/design-system-nucleo-gobernanza/plan.md",
-      "sha256": "0b8e89a776e05d5c904d295a1e0a13d782a4574cff6b57fc0aa948851b04aa72"
+      "sha256": "5944599099bfb7cf02f36788fc0249346aaf650c8de41e30944034a97181b380"
     }
   ],
   "historicalSources": [

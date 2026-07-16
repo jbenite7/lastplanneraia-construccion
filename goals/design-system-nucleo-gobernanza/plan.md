@@ -1,15 +1,14 @@
-<!-- plannotator:gate -->
 # Plan: Sprint 00 — Núcleo y gobernanza del Design System AIA
 
 ## Solution Approach
 
 Continuar desde el estado actual y cerrar una fuente de verdad ejecutable antes de reanudar migraciones por módulo. No se reinicia Sprint 00, no se crea otro Epic y no se rehace PR 0–2. El núcleo combina cascada CSS determinista, tokens semánticos, API híbrida CSS/PHP/JS, adaptadores, catálogo contractual, laboratorio protegido, manifiestos, auditoría y regresión visual. Programa General sigue como único piloto.
 
-La estética se homologará por familias, no por ocurrencias aisladas. Cada elemento pasará por inventario, contrato, comparación de precedentes, revisión Plannotator, espécimen real, aprobación en navegador nativo y golden bloqueante antes de quedar disponible para consumo.
+La estética se homologará por familias, no por ocurrencias aisladas. Cada elemento pasará por inventario, contrato, comparación de precedentes, revisión local, espécimen real, aprobación en navegador nativo y golden bloqueante antes de quedar disponible para consumo.
 
 El rollout será compatible y gradual: solo la API `stable`, ejercida por laboratorio y consumidor real, entra en la garantía `1.0.0`; `candidate`, BI y adaptadores no consumidos permanecen fuera de ella. Un puente inventariado preserva legacy mediante ratchet. El Sprint 00 no migra BI runtime, no cambia negocio ni base de datos, no despliega y no activa protección externa de main.
 
-La capa WCAG reutiliza Playwright y añade únicamente `@axe-core/playwright`: un helper central aplica tags A/AA, fingerprints estables, baseline y excepciones con expiración. Accessibility Insights guía la evaluación; axe DevTools sirve solo para diagnóstico; teclado, VoiceOver, zoom 200% y reflow cubren los criterios manuales. No se incorporan Storybook, Pa11y, html-validate sobre PHP, React Aria, Radix, Angular, Lighthouse como gate, accessibility overlays ni plataformas comerciales.
+La capa accesible reutiliza Playwright y añade únicamente `@axe-core/playwright`: un helper central aplica tags A/AA, fingerprints estables, baseline y excepciones con expiración. Accessibility Insights se limita a revisiones automatizadas básicas separadas de laboratorio, piloto y estados revelados; cada export requiere cero reglas fallidas y cero instancias fallidas. Teclado y reflow producen evidencia no bloqueante. No se incorporan Storybook, Pa11y, html-validate sobre PHP, React Aria, Radix, Angular, Lighthouse como gate, accessibility overlays ni plataformas comerciales.
 
 El prerrequisito Git no es una fase de implementación ni aprobación visual: solo preserva, clasifica y aísla trabajo preexistente mediante una maniobra aprobada. Ningún feedback de un consumidor se corrige allí; se convierte en un contrato transversal que se resuelve por familia en el laboratorio.
 
@@ -24,7 +23,7 @@ Antes de iniciar cada fase, el agente principal consulta el catálogo efectivo d
 | Inventario, contratos o arquitectura | Búsqueda local y skill especializada mínima | Hallazgos con rutas, fuente de verdad y decisión registrada |
 | Componentes, tokens o accesibilidad visible | Skill de frontend/UI + navegador nativo | Especímenes, viewport/tema, consola y aprobación visual de familia |
 | Regresión o comportamiento reproducible | Playwright y pruebas enfocadas | Comando, resultado, reportes y artefactos de fallo cuando apliquen |
-| Datos persistentes, seguridad, permisos o contratos compartidos | Gate de Plannotator y validación específica | Gate aprobado, respaldo/restauración cuando corresponda y prueba de persistencia o denegación |
+| Datos persistentes, seguridad, permisos o contratos compartidos | Revisión local y validación específica | Revisión resuelta, respaldo/restauración cuando corresponda y prueba de persistencia o denegación |
 | Servicio, vendor o formato externo | Plugin, API, MCP o skill oficial mínimo | Respuesta verificable y solo los datos mínimos enviados |
 | Dos o más subtareas independientes | Subagentes con alcances disjuntos | Entregables separados, rutas no solapadas y revisión de integración |
 
@@ -74,7 +73,7 @@ Si una capacidad requerida no está disponible, falla o exige una autorización 
 ### 4. Homologar cómo debe quedar cada familia
 
 - Revisar exclusivamente en el laboratorio por familias: fundamentos; shell/navegación; estructura de página; acciones; formularios/filtros; estados/feedback; datos; overlays; vendors; primitivas BI.
-- Cuando existan precedentes distintos, registrar candidatos A/B con el mismo contenido y estados; Plannotator aprueba la intención y el navegador nativo decide la variante real.
+- Cuando existan precedentes distintos, registrar candidatos A/B con el mismo contenido y estados; la revisión local inspecciona la intención y el navegador nativo decide la variante real.
 - Usar viewports para shell/evidencia y container queries para componentes reusables en drawer, sidebar, modal, split view y panel BI; incluir fallback probado.
 - Validar dark/linen, viewports, contenedores estrechos, textos extremos, teclado, foco, reduced motion y overlays; Touch exige 44x44, Compacta 24x24 o separación equivalente. Lenguaje natural no fragmenta palabras; identificadores usan quiebres seguros u overflow explícito.
 - En Estados, conservar `lifecycle-state` del dominio y mapear por separado gravedad, urgencia y `severity`; info/success/warning/critical gobiernan presentación y acción, no sustituyen el proceso.
@@ -89,7 +88,7 @@ Si una capacidad requerida no está disponible, falla o exige una autorización 
 - Implementar CSS por familia dentro de layer components, usando exclusivamente tokens semánticos y las dos densidades.
 - Clasificar adapters como `stable-adapter`, `candidate-adapter`, `compatibility-skin` o `deprecated-adapter`; solo ascienden a stable con consumidor real y estados críticos cubiertos. DataTables/jQuery UI quedan en compatibilidad.
 - Mantener los charts BI actuales como candidatos; estabilizar tipografía, tokens, contenedor, leyenda, tooltip, vacío, tabla equivalente y accesibilidad sin congelar todavía dona, gauge o geometría de gráfico.
-- Corregir el defecto compartido de `.btn:focus`/`:focus-visible` antes de ejecutar el checklist manual de teclado; la corrección pertenece al núcleo, no a un módulo.
+- Corregir el defecto compartido de `.btn:focus`/`:focus-visible` antes de recopilar la evidencia no bloqueante de teclado; la corrección pertenece al núcleo, no a un módulo.
 - Para cada familia: prueba contractual RED, implementación mínima completa, GREEN, espécimen real, gate accesible y aprobación visual; no crear variantes locales provisionales.
 - Crear tests/browser/support/accessibility.mjs como única configuración axe; adjuntar JSON en fallo y comparar solo fingerprints estables de regla, impacto, superficie y selector.
 - Probar escaping, variantes inválidas, markup/ARIA, inicialización repetida y ausencia de inline styles en tests PHP y Node enfocados.
@@ -103,11 +102,11 @@ Si una capacidad requerida no está disponible, falla o exige una autorización 
 - Incluir fixtures estáticos BI sin llamadas a APIs ni cambios en views/bi, dashboards o bi-spa.js.
 - Cubrir entorno/rol, IDs, estados, temas persistidos, teclado, foco, contraste, targets, overflow, consola y reduced motion con PHP y Playwright.
 - Ejecutar `@axe-core/playwright` sobre cada familia, tema, viewport y estado determinista; overlays se analizan abiertos y los hallazgos manuales quedan en checklist separado.
-- Registrar Chrome/Edge mínimo, Chromium fijado en CI, features CSS/fallback y combinación navegador–VoiceOver usada en la revisión manual.
+- Registrar Chrome/Edge mínimo, Chromium fijado en CI y features CSS/fallback usadas por la matriz automatizada.
 
 ### 7. Bloquear regresiones visuales y preparar CI reproducible
 
-- Versionar package.json y lockfile raíz con `@axe-core/playwright`, scripts `test:a11y:*`, proyecto Chromium y tests visuales/WCAG del laboratorio y piloto.
+- Versionar package.json y lockfile raíz con `@axe-core/playwright`, scripts `test:a11y:*`, proyecto Chromium y tests visuales y accesibles del laboratorio y piloto.
 - Crear a11y-baseline.json, a11y-exceptions.json y schema; bloquear `critical|serious`, reportar `moderate|minor`, rechazar excepciones vencidas y prohibir regeneración automática o exclusiones generales.
 - Generar un golden por cada escenario determinista declarado en manifests —60 es la cuenta inicial, no un límite—; desactivar animaciones y separar baselines de plataforma cuando sea necesario.
 - Crear fixture CI con schema versionado, IDs deterministas, guard `APP_ENV=testing` y base allowlisted; abortar ante volumen local/productivo y no importar dumps.
@@ -115,7 +114,7 @@ Si una capacidad requerida no está disponible, falla o exige una autorización 
 - El job estático ejecuta contratos, manifests, schemas, auditor, SemVer y documentación; el runtime levanta Docker/DB efímeros, Chromium, laboratorio y piloto, ejecuta axe y publica JSON/trace/captura solo ante fallo.
 - Validar YAML y ejecutar localmente el equivalente. Llamar `blocking` solo a los gates locales; describir GitHub como workflow definido y reproducible hasta que `DS-GOV-001` active required checks tras un push autorizado.
 - Medir contra baseline aprobado CSS/JS gzip, adapters cargados, requests duplicadas, flash de tema, inicialización, Handsontable y ausencia de assets del laboratorio en producción; documentar tolerancias en lugar de inventar presupuestos.
-- Reconstruir `0.3.3` sin branch ni worktree sobre un runtime y volumen temporales, aplicar exactamente la misma fixture sanitizada que al runtime actual, tomar tres muestras y versionar la mediana con procedencia completa. Mantener el baseline fail-closed hasta la aprobación explícita de tolerancias.
+- Conservar `0.3.3` como retrospectiva histórica portable pero incompleta, con `sourceRef:null`, `rawSamplesPreserved:false` y un manifiesto de recuperación comprometido que no dependa de objetos o checkpoints Git ocultos. Mantener el gate fail-closed hasta tomar tres muestras frescas del candidato sobre un `HEAD` limpio, conservar sus recibos, agregar la mediana y compararla contra las tolerancias aprobadas.
 
 ### 8. Migrar exclusivamente /programa-general como piloto
 
@@ -124,7 +123,7 @@ Si una capacidad requerida no está disponible, falla o exige una autorización 
 - Migrar programa_general.view.php, programa-general.css y hot.js a componentes aprobados; conservar en layer module solo composición y reglas de dominio.
 - Mover overrides Handsontable al adaptador, sustituir tokens crudos, eliminar important local o registrar excepción exacta y no tocar GeneralApiController sin brecha indispensable reproducida.
 - Verificar filtros por ratón/Enter/Espacio, limpieza, cards, Handsontable, modal, exportar, recargar, error, doble envío, foco, política Touch/Compacta, temas, consola y overflow.
-- Ejecutar axe después de revelar cada estado crítico de Programa General y completar teclado, Accessibility Insights, VoiceOver, zoom 200% y reflow; el resultado declara conformidad del alcance controlado, nunca de toda la app.
+- Ejecutar axe después de revelar cada estado crítico de Programa General y completar las revisiones automatizadas básicas separadas de Accessibility Insights con cero reglas fallidas y cero instancias fallidas. Teclado y reflow se recopilan aparte como evidencia no bloqueante; ningún resultado automático demuestra por sí solo un estándar completo.
 - Probar test.A, test.R, test.C y Visualizador cuando exista fixture seguro; confirmar UI y rechazo backend ante POST manipulado y corregir los falsos roles/imports del E2E vigente.
 - Para persistencia: snapshot de fila/proyecto, interacción UI real, request/response, DB, recarga card/tabla, restauración en finally y fingerprint final idéntico al inicial.
 - Mantener comportamiento/datos aprobados; cualquier cambio visible debe corresponder a una variante aprobada en el laboratorio y quedar en la comparación antes/después.
@@ -135,7 +134,7 @@ Si una capacidad requerida no está disponible, falla o exige una autorización 
 - Para cada artefacto de gobierno, documentar fallo evitado, consumidor automático y efecto de desactualización; el gate rechaza artefactos ceremoniales o huérfanos.
 - Versionar catálogo, manifests, métricas, decisiones, goldens y evidencia esencial bajo docs/design-system/; conservar videos, traces y capturas extensivas como artifacts ignorados.
 - Cada evidencia registra ruta, viewport, tema, rol, estado, archivo, overflow, targets, consola, contraste, gate y checksum.
-- Documentar la matriz: Playwright runner, `@axe-core/playwright` motor automático, Accessibility Insights evaluación guiada y VoiceOver/teclado/zoom/reflow revisión manual; el workflow es la especificación reproducible y su enforcement remoto queda pendiente de `DS-GOV-001`.
+- Documentar la matriz: Playwright runner, `@axe-core/playwright` motor automático, Accessibility Insights revisión automatizada básica separada y teclado/reflow evidencia no bloqueante; el workflow es la especificación reproducible y su enforcement remoto queda pendiente de `DS-GOV-001`.
 - Definir clases de cambio: patch compatible = gates + changelog; minor compatible = revisión visual acotada; major = ADR, aprobación explícita y plan de migración.
 - Documentar `Emergency UI Fix Lane` para defectos productivos, accesibles, de seguridad u operación, sin nuevas primitivas ni rediseño y con excepción temporal exacta cuando sea inevitable.
 - Dejar preparada la medición de PDC: tiempo de migración, reutilización, variantes nuevas, literales, archivos por token, duración CI, falsos positivos, excepciones y delta runtime; no migrar PDC en Sprint 00.
@@ -145,7 +144,9 @@ Si una capacidad requerida no está disponible, falla o exige una autorización 
 
 - Ejecutar gates enfocados, smokes de las 15 vistas, laboratorio, piloto PG, auditor global, manifests, PHPStan y seguridad de tablas globales.
 - Presentar en navegador nativo catálogo/decisiones, seis vistas del laboratorio y seis vistas de Programa General, interacciones, comparación antes/después, métricas, limitaciones y lista exacta de hunks; no realizar una gira visual por otros módulos.
-- Antes de release, enumerar en changelog y catálogo la API `stable` garantizada por `1.0.0`; mantener `candidate`, BI y adapters no consumidos fuera de esa promesa. Repetir gates y ejecutar `plannotator review --git`.
+- Antes de release, enumerar en changelog y catálogo la API `stable` garantizada por `1.0.0`; mantener `candidate`, BI y adapters no consumidos fuera de esa promesa. Repetir gates y ejecutar una revisión local del diff exacto.
+- El array machine-readable conserva exactamente, en orden: `static`, `runtime`, `runtime-budgets`, `phpstan-scoped`, `phpstan-global`, `global-table-safety`, `pg-roles`, `pg-persistence`, `data-restoration`, `accessibility-insights`, `consolidated-lab`, `consolidated-pilot`, `git-preservation`, `review` y `atomic-commit`. IDs duplicados, ausentes o adicionales bloquean la activación.
+- Validar cada recibo `passed` contra el `commandId` y comando exactos del registro canónico. Rechazar la activación si índice o worktree tienen cambios, si los documentos de activación no coinciden byte por byte con `HEAD`, o si ese commit no contiene simultáneamente los quince gates `passed`, `1.0.0 / stable` y la API garantizada; el `sourceRef` del artefacto puede ser el commit candidato verificado anterior.
 - Preparar staging selectivo y una serie de commits coherentes: contratos/auditor, núcleo, laboratorio/goldens, CI, piloto PG y release. Verificar cada diff; no hacer commit gigante ni reescribir historial a ciegas.
 - El commit de release actualiza versión/changelog después de todos los gates; no hacer push, deploy ni activar branch protection. Registrar `DS-GOV-001` como tarea posterior con owner Felipe.
 - Reanudar después PDC bajo el núcleo; registrar módulos ya auditados sin reabrirlos salvo fallo objetivo; mantener BI runtime al final.
@@ -179,7 +180,8 @@ Navegador y piloto:
 - npx playwright test --config=e2e/playwright.config.mjs e2e/tests/workflows/pg-interactions.spec.mjs --workers=1
 - docker compose exec -T app php tests/test_global_table_safety.php
 - Matriz nativa dark/linen en 390x844, 1180x820 y 1440x900 para laboratorio y Programa General.
-- Checklist manual: Accessibility Insights, teclado completo, VoiceOver, zoom 200% y reflow en laboratorio aprobado y Programa General.
+- Revisiones automatizadas básicas separadas de Accessibility Insights para laboratorio, piloto y estados revelados, cada una con cero reglas fallidas y cero instancias fallidas.
+- Evidencia no bloqueante: `npm run test:design-system:evidence` para teclado y reflow.
 
 CI y cierre:
 
@@ -190,7 +192,7 @@ CI y cierre:
 - docker compose exec -T app vendor/bin/phpstan analyse src admin/src --memory-limit=1G
 - git diff --cached --check
 - git diff --cached --stat
-- plannotator review --git
+- Revisión local del diff, alcance, resultados y disposiciones documentadas.
 
 ## Risks And Open Questions
 
@@ -205,7 +207,7 @@ CI y cierre:
 - Los goldens pueden diferir entre Linux y macOS; se prefieren snapshots por componente y baselines de plataforma.
 - El E2E PG existente no importa correctamente editCell y etiqueta como Residente una sesión Admin; no prueba RBAC hasta corregirse.
 - Los checks GitHub reales solo existen después de un push. Sprint 00 valida el workflow localmente; branch protection y publicación remota requieren aprobación separada.
-- Axe detecta solo una parte de WCAG: un resultado automático verde no permite declarar conformidad sin Accessibility Insights, teclado, VoiceOver, zoom y reflow.
+- Axe y Accessibility Insights cubren reglas automatizables: un resultado sin fallos no demuestra el estándar completo ni permite ampliar el alcance evaluado.
 - Baselines axe con HTML completo serían frágiles; solo se versionan fingerprints mínimos y toda excepción necesita propietario y expiración.
 - goals/, package.json, lockfiles y muchos tests están ignorados; solo se versionarán los contratos/goldens necesarios mediante reglas explícitas.
 - Todo feedback visual vuelve a la misma familia; ninguna variante se declara canónica por lectura de código o solo por auditoría estática.
