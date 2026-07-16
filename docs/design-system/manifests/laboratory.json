@@ -94,7 +94,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/actions-dark-1180x820.png",
-      "sha256": "7e042e021e2f2878d7fd0f31bc1cc278d3aedcfe9683f37df5986d6421e215da"
+      "sha256": "12a52b1e37fcad8c830d73239e945e515c56f9112f02e428c49c791d7917bb97"
     },
     {
       "id": "actions-dark-1440x900",
@@ -110,7 +110,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/actions-dark-1440x900.png",
-      "sha256": "4613aa4ec1bc31f11ce04f0ff80336ee20cf6fe416f7e7840c723187e4011c38"
+      "sha256": "dd448065b684bf058f9862d71f0085fd16a0272a89e8ba96be49c86f142095a6"
     },
     {
       "id": "actions-dark-390x844",
@@ -126,7 +126,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/actions-dark-390x844.png",
-      "sha256": "1018f794822746be6a1e47de152393acf946aa98a5a03ff0a9ffd346a07d1a61"
+      "sha256": "e35f8e0d15504749f7c8e4fb4d23147c1fadb301da57d1d22920000decc6a187"
     },
     {
       "id": "actions-linen-1180x820",
@@ -142,7 +142,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/actions-linen-1180x820.png",
-      "sha256": "cf19b5aae6943e413f55616547f32d71564bc37d5fe80f63944a67b79d41fe72"
+      "sha256": "912133ed8249e26834b9f7d935e7dd4dea3b8ed09968c6237277cc144a453411"
     },
     {
       "id": "actions-linen-1440x900",
@@ -158,7 +158,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/actions-linen-1440x900.png",
-      "sha256": "6f0754cb3cfbafb6069dce5f6fdbd7eb77d2f290de1220db46d5492637aa3aa9"
+      "sha256": "c40d29db1c3e908b774407d243445e9768c2975ee100348e8df8991866790227"
     },
     {
       "id": "actions-linen-390x844",
@@ -174,7 +174,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/actions-linen-390x844.png",
-      "sha256": "1f843424ef5a4e6179ba48da7d8c76a665da85f5de97a7ca82697bf1a97f04b4"
+      "sha256": "52c3530f3f8ddb1763cb96215c53f271d779cd84830af3bbd5ef0feecbb7ee67"
     },
     {
       "id": "bi-primitives-dark-1180x820",
@@ -190,7 +190,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/bi-primitives-dark-1180x820.png",
-      "sha256": "01341acdb577a450dad701c4371456fd120361b9ed0d8b2fc895e6a90fe51e67"
+      "sha256": "340656affd40c532173d4452c54e3f6c62fafe0852b14a96953c8c2a7a1767cb"
     },
     {
       "id": "bi-primitives-dark-1440x900",
@@ -206,7 +206,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/bi-primitives-dark-1440x900.png",
-      "sha256": "b370be80ff678d75bc5017b21d92b33fb2b4c088f0ef017622eab1296e26ab11"
+      "sha256": "233175586c2d5a7a0e612ac2f0156c329dde427029c761ccc9d48ffc01ff3013"
     },
     {
       "id": "bi-primitives-dark-390x844",
@@ -222,7 +222,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/bi-primitives-dark-390x844.png",
-      "sha256": "14ea1ff2bbdd045d89dc1aecd6500451070ac970c0966b802e8b0a6824c9b58f"
+      "sha256": "06726fbd1e85f7276f60a1347293fb40aa36321e848d9ac629bdfd81dcdbc60b"
     },
     {
       "id": "bi-primitives-linen-1180x820",
@@ -238,7 +238,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/bi-primitives-linen-1180x820.png",
-      "sha256": "b6ae00eb809d84f581d1af6d92c05eec33cf0342ee25a8ad8e9dc092d23ab96b"
+      "sha256": "3eac601c4f33accd6f51884ba6985c4abf2b7a2c284582edc0f6eaf744304309"
     },
     {
       "id": "bi-primitives-linen-1440x900",
@@ -254,7 +254,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/bi-primitives-linen-1440x900.png",
-      "sha256": "07daacc6885e144aee596def963f182e1938adb0c7f0151e07e6238c83d47327"
+      "sha256": "e8b55c9b0186eccb2c5e5aaf0d6e1135778a79727f2fed84f8cdf11a45011338"
     },
     {
       "id": "bi-primitives-linen-390x844",
@@ -270,7 +270,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/bi-primitives-linen-390x844.png",
-      "sha256": "454a4e3e8c42ce4170094bd51633e99cfd44f524a60663efd96523164518ca2a"
+      "sha256": "11b2edfaff9893a11cb28b9d80a79b847807974cc949a98163a778b6211811d8"
     },
     {
       "id": "data-display-dark-1180x820",
@@ -286,7 +286,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/data-display-dark-1180x820.png",
-      "sha256": "4c35177e331897584a150dc94c92d7364a67ce4d36ec071c7e01efb974085d1b"
+      "sha256": "747bb8442234232a18db7540a534dc97fd7699a5c0e0ecba7163b8cbd568c0ff"
     },
     {
       "id": "data-display-dark-1440x900",
@@ -302,7 +302,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/data-display-dark-1440x900.png",
-      "sha256": "a663362b727f5c16ef7127c8127501f8b94d19fca739318e6e0b999c15c88d18"
+      "sha256": "d9aad5f4ac014d2ce842b45447d81b73b3329ef40de507d60c3575e5a2a42fde"
     },
     {
       "id": "data-display-dark-390x844",
@@ -318,7 +318,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/data-display-dark-390x844.png",
-      "sha256": "1a0c2f0c3924697e834ef2705493fdaa7e17367ef6e425d09fcfe9e9f984f4f4"
+      "sha256": "f7ff6ec8ddb6aaff82cb995090570b35c0016f36497abf0888a589bae86daa87"
     },
     {
       "id": "data-display-linen-1180x820",
@@ -334,7 +334,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/data-display-linen-1180x820.png",
-      "sha256": "76e9ce9f7698b29187637b3e2d3d41caa15a1f0bd0d9a6d55482354e4666acd6"
+      "sha256": "f472570b31e94004a15ccbf0f1133ef9252bc58dfcf5ef017d231c20cfbe6ca1"
     },
     {
       "id": "data-display-linen-1440x900",
@@ -350,7 +350,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/data-display-linen-1440x900.png",
-      "sha256": "5b89f0bf183290d9c8b5ef6ae9d7fd57bdef6bae8b87441b55090102def6eb4b"
+      "sha256": "265fcfd1294e3f8c57178e29e6bbaa52e48d7deae55dd20b4828f237a1a38d4e"
     },
     {
       "id": "data-display-linen-390x844",
@@ -366,7 +366,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/data-display-linen-390x844.png",
-      "sha256": "fb11e145b4c21fa57745bac2d9f69e296e73c8d5fcc10edeff6f9b1eaf0090ed"
+      "sha256": "34a95b2c47a18f11ad2c750d8d8803185180bf66b50d921c6716e427993e3e7e"
     },
     {
       "id": "forms-filters-dark-1180x820",
@@ -382,7 +382,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/forms-filters-dark-1180x820.png",
-      "sha256": "c6b2032998553bbc29341ff384e1eaa0ad83998f2a744db53fab19ef875b6cd8"
+      "sha256": "5641d5e858c5a1153e17e3fecbcb2f7de5eea292f14b9d38c54da925ff12cf4e"
     },
     {
       "id": "forms-filters-dark-1440x900",
@@ -398,7 +398,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/forms-filters-dark-1440x900.png",
-      "sha256": "5ab31a51b372cc541feecad8fada375c35fae8c99ac42b9c90b4f1c2fb3edab1"
+      "sha256": "708c7a22b03fc29a0e577b7e25bb54bc47d93b6f49e22323af80c734ea4c7f9d"
     },
     {
       "id": "forms-filters-dark-390x844",
@@ -414,7 +414,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/forms-filters-dark-390x844.png",
-      "sha256": "fd17cf7ad476af71b8dbb55e85089fffc9362f9519ae19d298ccee9607570f41"
+      "sha256": "403e485fc0c98fe543d5c96cf83b3d817cecdcec0b9b75e8db664c56ee01605c"
     },
     {
       "id": "forms-filters-linen-1180x820",
@@ -430,7 +430,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/forms-filters-linen-1180x820.png",
-      "sha256": "3a605fddd8de725ed83d349bd690241422927577afa21985813fde0da44d5c50"
+      "sha256": "2f45cb14ff338ea9e2c8f481b24686864f97fa2a4f5bdf3336262b8ec74a4d7d"
     },
     {
       "id": "forms-filters-linen-1440x900",
@@ -446,7 +446,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/forms-filters-linen-1440x900.png",
-      "sha256": "c6bd458e641a040ed532e3524f7be89c6a12833d9d6d4e045b6667caf3cd5a0b"
+      "sha256": "42d3667e1f9e0605011869a4d609fd40ce69843af844d2ed8fcbff2a2beb93d6"
     },
     {
       "id": "forms-filters-linen-390x844",
@@ -462,7 +462,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/forms-filters-linen-390x844.png",
-      "sha256": "8a2cd0e2ac28153b483eb7bdc7b8b1196d789db4813d5ceb1a1e313f696b97ef"
+      "sha256": "469ef953c4adb78216cf12d284fbf9a75160db91c7f2d5b0faa21b3c842e4cdd"
     },
     {
       "id": "foundations-dark-1180x820",
@@ -478,7 +478,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/foundations-dark-1180x820.png",
-      "sha256": "520a147ca60eb54c4e30c20efcfe7b379853daf9d48dd865d5ff73bd3b76d1b4"
+      "sha256": "358f30191e000e26f71ea1c34dc08d7e4d4c50d5e89a46bda6340777e20d23aa"
     },
     {
       "id": "foundations-dark-1440x900",
@@ -494,7 +494,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/foundations-dark-1440x900.png",
-      "sha256": "f54aa565c554a9fcc087682c890bd16b4ec549dc68531f6c4d42085c93ea000d"
+      "sha256": "f8aed1515b6ec6a52e48d52996b55d4bb4b5b64407390f25ecbf3cf57a008c98"
     },
     {
       "id": "foundations-dark-390x844",
@@ -510,7 +510,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/foundations-dark-390x844.png",
-      "sha256": "197310f8e75bbea1de1d40603831a962a3015d8e5dab5844911d5f99d52d6e7d"
+      "sha256": "28bdb351ef0566fba018fd73f39443160080d1adc128d5a31a00b75068248865"
     },
     {
       "id": "foundations-linen-1180x820",
@@ -526,7 +526,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/foundations-linen-1180x820.png",
-      "sha256": "02d42f15456ae36424eee0045ff6e4714fc41f08e7076472e32cd29050868c15"
+      "sha256": "9975bbab16c993c69adf2698d7cffd85c5736841f839de565418e73cdeda2c73"
     },
     {
       "id": "foundations-linen-1440x900",
@@ -542,7 +542,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/foundations-linen-1440x900.png",
-      "sha256": "1f4b5b64c8bdd1a2d204ea5faa6deccb9b233987b903aafc93148c2b6d249b5d"
+      "sha256": "5ebbada1f2108b5bf3a01aac0c7b83520f53b61b889bf63e0629d32e7eca1ad3"
     },
     {
       "id": "foundations-linen-390x844",
@@ -558,7 +558,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/foundations-linen-390x844.png",
-      "sha256": "7efaa36760b33bc48bd88e3bc6363655c4b77f2d0a39356de27829d6d16bfaa7"
+      "sha256": "a2cc4ace3dc3f7a7ea48590dcf00863c30342a9f22b2fb56ad586871ffa31b60"
     },
     {
       "id": "overlays-dark-1180x820",
@@ -574,7 +574,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/overlays-dark-1180x820.png",
-      "sha256": "65182280c1ba6128c2a3873c539bfe8371f250959292754f5b68c2255db3caf7"
+      "sha256": "5215892acd86b074d7bcfe85ce59c87c6facbf1e6ec3334a4402c836ceed0ef4"
     },
     {
       "id": "overlays-dark-1440x900",
@@ -590,7 +590,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/overlays-dark-1440x900.png",
-      "sha256": "d24d09b7a42bca3cb32640e866dd9ab5b979458ff4f3cf7d429226c248b95544"
+      "sha256": "4bf7259b3d06603c262ceb97248b1ffe3c3d6509d53d8d6e9ff31fd88b299435"
     },
     {
       "id": "overlays-dark-390x844",
@@ -606,7 +606,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/overlays-dark-390x844.png",
-      "sha256": "90fffa792807ede25afd9483cf16fa12930053b10ddc1eefc645127f6f7cec49"
+      "sha256": "59a3b335381956f049c8f762af65d431f9006bcb03c8c256d485e5548010938b"
     },
     {
       "id": "overlays-linen-1180x820",
@@ -622,7 +622,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/overlays-linen-1180x820.png",
-      "sha256": "8c6f183f7bedc50fdf2cea2a59122e16dff2944f407a6195e99ab008260035f7"
+      "sha256": "9598035cadfe8b8c8a31146348d047eb5193d2a6003ce15a9918b7ca38ae0ed1"
     },
     {
       "id": "overlays-linen-1440x900",
@@ -638,7 +638,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/overlays-linen-1440x900.png",
-      "sha256": "732dc158dddce61789d7f67076287ce22b747593f37b173e0889dc04c377926d"
+      "sha256": "787284cb0989dd69dc2879c25115e5c9d5f83f9feda3294a6f0a5f63f197bc0d"
     },
     {
       "id": "overlays-linen-390x844",
@@ -654,7 +654,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/overlays-linen-390x844.png",
-      "sha256": "a5ed5591ab9e89f224938a1d879258ed0967ff3483a432cbb3a68ad6fb4198cc"
+      "sha256": "4e0f5700e134ac95e8bc828bc3fbcf4e38f2ba51780dfd093865b4f3db926043"
     },
     {
       "id": "page-structure-dark-1180x820",
@@ -670,7 +670,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/page-structure-dark-1180x820.png",
-      "sha256": "df6b273da5fa13a82f9581cc8f07931ad0b07c15d19c4513958bd4aa7c246426"
+      "sha256": "50d692acbc40f6027ba4116fdeeb7e9e092ae37d335ba7a36421ae0cb9486f71"
     },
     {
       "id": "page-structure-dark-1440x900",
@@ -686,7 +686,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/page-structure-dark-1440x900.png",
-      "sha256": "d8f8e0f3c26bf20cc50c8206c45cdb7dcd13db7a977760e178df463b02027743"
+      "sha256": "437131fd346efa728d40732cb22c976c2060e07ef18e453817296da3b160dac1"
     },
     {
       "id": "page-structure-dark-390x844",
@@ -702,7 +702,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/page-structure-dark-390x844.png",
-      "sha256": "8f27f3df16c8394165696eb94a56b5673985e23029d0a83f2f5b94bd65513584"
+      "sha256": "3693d878d9108b7648feb06bd395badf859aa5477e4af5a307b480e6a615eb03"
     },
     {
       "id": "page-structure-linen-1180x820",
@@ -718,7 +718,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/page-structure-linen-1180x820.png",
-      "sha256": "772284c7d453d5864c272c9a1c7a3bb26dfcdbc0290bd15c76835012997adcfa"
+      "sha256": "43fca5a21ea3e444a5755b170a970798d846499bdf257c1ead942238f7eb5591"
     },
     {
       "id": "page-structure-linen-1440x900",
@@ -734,7 +734,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/page-structure-linen-1440x900.png",
-      "sha256": "29bc4a0c91164e59ad741c8ed034256994ae2f4ac2d783bf9ef3a0ba01bd54b3"
+      "sha256": "6c7d358fdfbcdf956f880150c47cf860a58d71811b9d75b9f673ffa41980e92e"
     },
     {
       "id": "page-structure-linen-390x844",
@@ -750,7 +750,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/page-structure-linen-390x844.png",
-      "sha256": "0eab67f3d2f1f83b5fe8887922962be12c6756744d54bf4e6328096f33dddcba"
+      "sha256": "4e4277093e03935ddfcb3441663c6c446d398aab68c6cec764c1317ead44c3f0"
     },
     {
       "id": "shell-navigation-dark-1180x820",
@@ -766,7 +766,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/shell-navigation-dark-1180x820.png",
-      "sha256": "7543eb83a33eea2bf92a17b65cf5fdc44e082367b2b45277b18b860898417b67"
+      "sha256": "97af369a6f42e2bbd9a91b9b86308cebb3fd7cb421de0c7835d5e5b80d26991d"
     },
     {
       "id": "shell-navigation-dark-1440x900",
@@ -782,7 +782,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/shell-navigation-dark-1440x900.png",
-      "sha256": "e386c997f2674cfc15264888df229c258a6a8fc37defe9203edd8f76d01b8038"
+      "sha256": "db4cd1afbb8b62486163f61175ec2ffef3bdbdf638d3de573fe5b3bd35023981"
     },
     {
       "id": "shell-navigation-dark-390x844",
@@ -798,7 +798,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/shell-navigation-dark-390x844.png",
-      "sha256": "a8e849212f1ea63e4fc32a6edbd721016587359d0ea2b02c1e792c1109fc58a5"
+      "sha256": "e1147a4931865ed0b8a7c79351b257a7dac939fab3ee800ce057b4527003d817"
     },
     {
       "id": "shell-navigation-linen-1180x820",
@@ -814,7 +814,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/shell-navigation-linen-1180x820.png",
-      "sha256": "207322aed2f7402445d4dfe8fb8ed7bc11e2010a4a6731188284a9bb4ccbe147"
+      "sha256": "b8ae4e2b25a0f0bd9b507882a384e5bc83f93e1bfb33a9c381d6a933c94dcce5"
     },
     {
       "id": "shell-navigation-linen-1440x900",
@@ -830,7 +830,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/shell-navigation-linen-1440x900.png",
-      "sha256": "649469b9a512e6f09692a6f5b5a859bfc6be0ad26073b9e09fbeff8ae1c1631d"
+      "sha256": "bf3ba971735ecf01f3dcabfa32f62ad1e1b9f1115c9882bf74326cac0f466ad5"
     },
     {
       "id": "shell-navigation-linen-390x844",
@@ -846,7 +846,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/shell-navigation-linen-390x844.png",
-      "sha256": "930d6d4d9df19691ac9323969f1fb6a4934c341b22a8e33b477f3b2807382875"
+      "sha256": "5e60f2d768f6c4ecaf48e334d246d62b62e645cfd781c3b053b7e71e1243a6fb"
     },
     {
       "id": "states-feedback-dark-1180x820",
@@ -958,7 +958,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/vendor-adapters-dark-1180x820.png",
-      "sha256": "7ccfafd1275d81ce73dd2658c5d514e3743adc0480493dcfa3a0a3d9c465c6ec"
+      "sha256": "680e2a921e33ad40eceb255d4a3c8cd6900e3583292e313969e1727efbd17e4a"
     },
     {
       "id": "vendor-adapters-dark-1440x900",
@@ -974,7 +974,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/vendor-adapters-dark-1440x900.png",
-      "sha256": "74db056a56b101f1b4b68a6b341195a61613893510cb8d120c468f151b892172"
+      "sha256": "274e55d9524b3defdb4779feb77b0aa80b1d40448f60ec0895bb24374bb01587"
     },
     {
       "id": "vendor-adapters-dark-390x844",
@@ -990,7 +990,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/vendor-adapters-dark-390x844.png",
-      "sha256": "b177126893e38d5f1f94a2399b62711fa668de2d1ada97bf25fcc4cbc288a74e"
+      "sha256": "2aecc1227bb3432da405e29ecf7e884d01180e50af48a202c5a4496d0486591e"
     },
     {
       "id": "vendor-adapters-linen-1180x820",
@@ -1006,7 +1006,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/vendor-adapters-linen-1180x820.png",
-      "sha256": "832aa788696a03ffb4660d44cbfc3a27a9d08fa72e2c48b594a7b2c4a20de2ea"
+      "sha256": "fd2e9a5607ebc8dbb5f3936dd7b6a53398713589704db8b142582b0021fd2cf0"
     },
     {
       "id": "vendor-adapters-linen-1440x900",
@@ -1022,7 +1022,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/vendor-adapters-linen-1440x900.png",
-      "sha256": "8e26cbcf68def1f0d6ea0a1d90d4b744a66eb179a4c2db3aa947eafffb6552d0"
+      "sha256": "04aba81a7b4ffeab583842dfdf81511c4beda7361a849df1536a278cf07ac972"
     },
     {
       "id": "vendor-adapters-linen-390x844",
@@ -1038,7 +1038,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/vendor-adapters-linen-390x844.png",
-      "sha256": "4f00b56062047c117c11b93b0de589c29e798af940f691e5ced35ac85fb68d40"
+      "sha256": "37c93668afc6738f4e096bf12ca1b3bcf98fec633076232d3cb007caade61ba0"
     }
   ]
 }
