@@ -12,11 +12,10 @@ test('first entry does not schedule the navigation-return refresh', () => {
   assert.match(decision, /return false;\s*\n\s*\}$/);
 });
 
-test('the parser-visible BI access script precedes the shared loader', () => {
+test('the first paint does not expose the removed legacy page loader', () => {
   const biAccess = view.indexOf('/js/modules/bi-access.js');
   const sharedLoader = view.indexOf('/js/cargarDatosGeneralesPagina2.js');
 
   assert.notEqual(biAccess, -1);
-  assert.notEqual(sharedLoader, -1);
-  assert.ok(biAccess < sharedLoader);
+  assert.equal(sharedLoader, -1);
 });
