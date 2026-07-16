@@ -2,14 +2,83 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://lastplanneraia.com/schemas/design-system/ui-groups-inventory.schema.json",
   "type": "object",
-  "required": ["schemaVersion", "designSystemVersion", "groups"],
+  "required": [
+    "schemaVersion",
+    "designSystemVersion",
+    "groups"
+  ],
   "additionalProperties": false,
   "properties": {
-    "schemaVersion": { "const": 1 },
-    "designSystemVersion": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
-    "groups": { "type": "array", "minItems": 40, "items": { "$ref": "#/$defs/group" } }
+    "schemaVersion": {
+      "const": 1
+    },
+    "designSystemVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "groups": {
+      "type": "array",
+      "minItems": 40,
+      "items": {
+        "$ref": "#/$defs/group"
+      }
+    }
   },
   "$defs": {
-    "group": { "type": "object", "required": ["id", "family", "label", "sources", "catalogIds", "styleApi", "themes", "labSelector"], "additionalProperties": false, "properties": { "id": { "type": "string" }, "family": { "type": "string" }, "label": { "type": "string" }, "sources": { "type": "array", "minItems": 1, "items": { "type": "string" } }, "catalogIds": { "type": "array", "minItems": 1, "items": { "type": "string" } }, "styleApi": { "type": "array", "minItems": 1, "items": { "type": "string" } }, "themes": { "const": ["dark", "linen"] }, "labSelector": { "type": "string" } } }
+    "group": {
+      "type": "object",
+      "required": [
+        "id",
+        "family",
+        "label",
+        "sources",
+        "catalogIds",
+        "styleApi",
+        "themes",
+        "labSelector"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "family": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "sources": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "catalogIds": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "styleApi": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "themes": {
+          "const": [
+            "dark",
+            "linen"
+          ]
+        },
+        "labSelector": {
+          "type": "string"
+        }
+      }
+    }
   }
 }

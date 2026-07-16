@@ -1,8 +1,11 @@
 {
   "schemaVersion": 1,
-  "designSystemVersion": "0.3.6",
+  "designSystemVersion": "1.0.0",
   "provenanceManifest": "goal-provenance.json",
-  "manifests": ["laboratory.json", "programa-general.json"],
+  "manifests": [
+    "laboratory.json",
+    "programa-general.json"
+  ],
   "sharedHeadConsumers": [
     "views/contratos/contratos.view.php",
     "views/control-cambios/controlCambios.view.php",
@@ -21,14 +24,50 @@
     "views/subcontratistas/subcontratistas.view.php"
   ],
   "modules": [
-    { "moduleId": "programa-general", "status": "pilot", "manifest": "programa-general.json" },
-    { "moduleId": "auth", "status": "inventory-only", "manifest": null },
-    { "moduleId": "projects", "status": "inventory-only", "manifest": null },
-    { "moduleId": "programacion-intermedia", "status": "inventory-only", "manifest": null },
-    { "moduleId": "programacion-semanal", "status": "inventory-only", "manifest": null },
-    { "moduleId": "listado-actividades", "status": "inventory-only", "manifest": null },
-    { "moduleId": "contratos", "status": "inventory-only", "manifest": null },
-    { "moduleId": "pdc", "status": "inventory-only", "manifest": null },
-    { "moduleId": "bi-runtime", "status": "deferred-last", "manifest": null }
+    {
+      "moduleId": "programa-general",
+      "status": "pilot",
+      "manifest": "programa-general.json"
+    },
+    {
+      "moduleId": "auth",
+      "status": "inventory-only",
+      "manifest": null
+    },
+    {
+      "moduleId": "projects",
+      "status": "inventory-only",
+      "manifest": null
+    },
+    {
+      "moduleId": "programacion-intermedia",
+      "status": "inventory-only",
+      "manifest": null
+    },
+    {
+      "moduleId": "programacion-semanal",
+      "status": "inventory-only",
+      "manifest": null
+    },
+    {
+      "moduleId": "listado-actividades",
+      "status": "inventory-only",
+      "manifest": null
+    },
+    {
+      "moduleId": "contratos",
+      "status": "inventory-only",
+      "manifest": null
+    },
+    {
+      "moduleId": "pdc",
+      "status": "inventory-only",
+      "manifest": null
+    },
+    {
+      "moduleId": "bi-runtime",
+      "status": "deferred-last",
+      "manifest": null
+    }
   ]
 }

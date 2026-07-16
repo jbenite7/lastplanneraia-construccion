@@ -3,24 +3,186 @@
   "$id": "https://lastplanneraia.com/schemas/design-system/component-catalog.schema.json",
   "title": "AIA design-system component catalog",
   "type": "object",
-  "required": ["schemaVersion", "designSystemVersion", "components"],
+  "required": [
+    "schemaVersion",
+    "designSystemVersion",
+    "components"
+  ],
   "additionalProperties": false,
   "properties": {
-    "schemaVersion": { "const": 2 },
-    "designSystemVersion": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
-    "components": { "type": "array", "items": { "$ref": "#/$defs/component" } }
+    "schemaVersion": {
+      "const": 2
+    },
+    "designSystemVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "components": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/component"
+      }
+    }
   },
   "$defs": {
     "visualApproval": {
       "type": "object",
-      "required": ["status", "familyId", "candidateId"],
+      "required": [
+        "status",
+        "familyId",
+        "candidateId"
+      ],
       "additionalProperties": false,
       "properties": {
-        "status": { "enum": ["approved", "pending", "not-required"] },
-        "familyId": { "type": "string" },
-        "candidateId": { "type": ["string", "null"] }
+        "status": {
+          "enum": [
+            "approved",
+            "pending",
+            "not-required"
+          ]
+        },
+        "familyId": {
+          "type": "string"
+        },
+        "candidateId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
       }
     },
-    "component": { "type": "object", "required": ["id", "family", "kind", "maturity", "visualApproval", "purpose", "doNotUseFor", "api", "markup", "variants", "states", "densities", "tokens", "responsive", "accessibility", "testSelector", "consumers", "replacement", "golden"], "additionalProperties": false, "properties": { "id": { "type": "string" }, "family": { "type": "string" }, "kind": { "enum": ["canonical", "adapter", "legacy", "missing"] }, "maturity": { "enum": ["stable", "candidate", "compatibility", "deprecated"] }, "visualApproval": { "$ref": "#/$defs/visualApproval" }, "purpose": { "type": "string" }, "doNotUseFor": { "type": "string" }, "api": { "type": "array", "items": { "type": "string" } }, "markup": { "type": "string" }, "variants": { "type": "array", "items": { "type": "string" } }, "states": { "type": "array", "items": { "type": "string" } }, "densities": { "type": "array", "items": { "enum": ["compact", "touch"] } }, "tokens": { "type": "array", "items": { "type": "string" } }, "responsive": { "type": "array", "items": { "enum": ["mobile", "tablet", "desktop", "wide"] } }, "accessibility": { "type": "array", "items": { "type": "string" } }, "testSelector": { "type": "string" }, "consumers": { "type": "array", "items": { "type": "string" } }, "replacement": { "type": ["string", "null"] }, "golden": { "type": ["string", "null"] } } }
+    "component": {
+      "type": "object",
+      "required": [
+        "id",
+        "family",
+        "kind",
+        "maturity",
+        "visualApproval",
+        "purpose",
+        "doNotUseFor",
+        "api",
+        "markup",
+        "variants",
+        "states",
+        "densities",
+        "tokens",
+        "responsive",
+        "accessibility",
+        "testSelector",
+        "consumers",
+        "replacement",
+        "golden"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "family": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "canonical",
+            "adapter",
+            "legacy",
+            "missing"
+          ]
+        },
+        "maturity": {
+          "enum": [
+            "stable",
+            "candidate",
+            "compatibility",
+            "deprecated"
+          ]
+        },
+        "visualApproval": {
+          "$ref": "#/$defs/visualApproval"
+        },
+        "purpose": {
+          "type": "string"
+        },
+        "doNotUseFor": {
+          "type": "string"
+        },
+        "api": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "markup": {
+          "type": "string"
+        },
+        "variants": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "states": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "densities": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "compact",
+              "touch"
+            ]
+          }
+        },
+        "tokens": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "responsive": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "mobile",
+              "tablet",
+              "desktop",
+              "wide"
+            ]
+          }
+        },
+        "accessibility": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "testSelector": {
+          "type": "string"
+        },
+        "consumers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "replacement": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "golden": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    }
   }
 }

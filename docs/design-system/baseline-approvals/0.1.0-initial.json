@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "designSystemVersion": "0.1.0",
+  "designSystemVersion": "1.0.0",
   "baseline": "docs/design-system/audit-baseline.json",
   "beforeHash": "c16faad945552476358510d18239ab656accb2c638575676419273093c5df701",
   "afterHash": "c16faad945552476358510d18239ab656accb2c638575676419273093c5df701",

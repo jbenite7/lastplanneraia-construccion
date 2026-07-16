@@ -1,96 +1,1751 @@
 {
   "$schema": "./ui-groups-inventory.schema.json",
   "schemaVersion": 1,
-  "designSystemVersion": "0.3.6",
+  "designSystemVersion": "1.0.0",
   "groups": [
-    { "id": "brand-palette", "family": "foundations", "label": "Paleta de marca y submarcas", "sources": ["public/css/tokens.css"], "catalogIds": ["shell"], "styleApi": ["--ds-color-domain-*"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"brand-palette\"]" },
-    { "id": "semantic-colors", "family": "foundations", "label": "Colores semánticos", "sources": ["public/css/tokens.css"], "catalogIds": ["state"], "styleApi": ["--ds-color-state-*"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"semantic-colors\"]" },
-    { "id": "typography", "family": "foundations", "label": "Tipografía y jerarquías", "sources": ["public/css/tokens.css"], "catalogIds": ["shell"], "styleApi": ["--ds-font-*", "--ds-type-*"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"typography\"]" },
-    { "id": "spacing-density", "family": "foundations", "label": "Espaciado y densidad", "sources": ["public/css/tokens.css"], "catalogIds": ["shell"], "styleApi": ["--ds-space-*", "--ds-density-*"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"spacing-density\"]" },
-    { "id": "iconography", "family": "foundations", "label": "Iconografía", "sources": ["public/css/styles.css"], "catalogIds": ["icon"], "styleApi": [".aia-icon"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"iconography\"]" },
-    { "id": "application-shell", "family": "shell-navigation", "label": "Shell de aplicación", "sources": ["views/partials/drawer_unificado.php"], "catalogIds": ["shell"], "styleApi": [".aia-shell"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"application-shell\"]" },
-    { "id": "brand-lockup", "family": "shell-navigation", "label": "Marca AIA completa", "sources": ["src/View/Components/NavbarComponent.php"], "catalogIds": ["navigation", "icon"], "styleApi": [".aia-navigation"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"brand-lockup\"]" },
-    { "id": "top-navbar", "family": "shell-navigation", "label": "Navbar superior", "sources": ["src/View/Components/NavbarComponent.php"], "catalogIds": ["navigation"], "styleApi": [".aia-navigation__global"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"top-navbar\"]" },
-    { "id": "menu-toggle", "family": "shell-navigation", "label": "Hamburguesa", "sources": ["views/partials/drawer_unificado.php"], "catalogIds": ["navigation", "button"], "styleApi": [".aia-btn"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"menu-toggle\"]" },
-    { "id": "context-bar", "family": "shell-navigation", "label": "Barra de contexto", "sources": ["public/js/cargarDatosGeneralesPagina2.js"], "catalogIds": ["navigation", "page-header"], "styleApi": [".aia-page-header__context"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"context-bar\"]" },
-    { "id": "project-breadcrumb", "family": "shell-navigation", "label": "Miga de proyecto y módulo", "sources": ["public/js/cargarDatosGeneralesPagina2.js"], "catalogIds": ["page-header"], "styleApi": [".aia-page-header__breadcrumb"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"project-breadcrumb\"]" },
-    { "id": "navigation-drawer", "family": "shell-navigation", "label": "Drawer lateral", "sources": ["views/partials/drawer_unificado.php"], "catalogIds": ["navigation", "overlay"], "styleApi": [".aia-navigation__links"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"navigation-drawer\"]" },
-    { "id": "sidebar-item", "family": "shell-navigation", "label": "Ítem de sidebar", "sources": ["views/partials/drawer_unificado.php"], "catalogIds": ["navigation"], "styleApi": ["[data-shell-destination]"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"sidebar-item\"]" },
-    { "id": "user-menu", "family": "shell-navigation", "label": "Menú de usuario", "sources": ["public/js/cargarDatosGeneralesPagina2.js"], "catalogIds": ["menu", "navigation"], "styleApi": [".aia-menu"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"user-menu\"]" },
-    { "id": "notification-menu", "family": "shell-navigation", "label": "Avisos y notificaciones", "sources": ["public/js/components/notifications.js"], "catalogIds": ["menu", "state"], "styleApi": [".aia-menu", ".aia-chip"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"notification-menu\"]" },
-    { "id": "project-switcher", "family": "shell-navigation", "label": "Cambio de proyecto", "sources": ["views/core/project_selector.view.php"], "catalogIds": ["menu", "field"], "styleApi": [".aia-menu", ".aia-select"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"project-switcher\"]" },
-    { "id": "theme-switcher", "family": "shell-navigation", "label": "Cambio de tema", "sources": ["views/auth/partials/auth-theme-switch.php"], "catalogIds": ["button"], "styleApi": [".aia-btn"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"theme-switcher\"]" },
-    { "id": "week-badge", "family": "shell-navigation", "label": "Semana activa", "sources": ["public/js/cargarDatosGeneralesPagina2.js"], "catalogIds": ["state"], "styleApi": [".aia-chip"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"week-badge\"]" },
-    { "id": "logout-action", "family": "shell-navigation", "label": "Cierre de sesión", "sources": ["views/partials/drawer_unificado.php"], "catalogIds": ["button"], "styleApi": [".aia-btn"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"logout-action\"]" },
-    { "id": "page-header", "family": "page-structure", "label": "Encabezado de página", "sources": ["views/programa-general/programa_general.view.php"], "catalogIds": ["page-header"], "styleApi": [".aia-page-header"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"page-header\"]" },
-    { "id": "content-section", "family": "page-structure", "label": "Sección de contenido", "sources": ["views/dashboard/escalamientos.php"], "catalogIds": ["section"], "styleApi": [".aia-section"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"content-section\"]" },
-    { "id": "panel-surface", "family": "page-structure", "label": "Panel o superficie", "sources": ["views/indicadores/indicadores.view.php"], "catalogIds": ["section", "card"], "styleApi": [".aia-panel"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"panel-surface\"]" },
-    { "id": "responsive-layout", "family": "page-structure", "label": "Composición responsive", "sources": ["public/css/styles.css"], "catalogIds": ["shell", "section"], "styleApi": [".aia-page"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"responsive-layout\"]" },
-    { "id": "primary-button", "family": "actions", "label": "Botón primario", "sources": ["views/programa-general/programa_general.view.php"], "catalogIds": ["button"], "styleApi": [".aia-btn"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"primary-button\"]" },
-    { "id": "secondary-button", "family": "actions", "label": "Botón secundario", "sources": ["views/programa-general/programa_general.view.php"], "catalogIds": ["button"], "styleApi": [".aia-btn--secondary"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"secondary-button\"]" },
-    { "id": "destructive-button", "family": "actions", "label": "Acción destructiva", "sources": ["views/programacion-semanal/partials/modal_reabrir.php"], "catalogIds": ["button", "state"], "styleApi": [".aia-btn", "--ds-color-state-critical-*"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"destructive-button\"]" },
-    { "id": "icon-button", "family": "actions", "label": "Botón con icono", "sources": ["views/listado-actividades/listadoActividades.view.php"], "catalogIds": ["button", "icon"], "styleApi": [".aia-btn", ".aia-icon"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"icon-button\"]" },
-    { "id": "floating-action", "family": "actions", "label": "Acción flotante", "sources": ["public/js/cargarDatosGeneralesPagina2.js"], "catalogIds": ["button", "icon"], "styleApi": [".aia-btn"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"floating-action\"]" },
-    { "id": "action-group", "family": "actions", "label": "Grupo de acciones", "sources": ["views/programacion-semanal/programacion_semanal.view.php"], "catalogIds": ["toolbar"], "styleApi": [".aia-action-group"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"action-group\"]" },
-    { "id": "action-dropdown", "family": "actions", "label": "Menú de acciones", "sources": ["views/programacion-semanal/programacion_semanal.view.php"], "catalogIds": ["menu", "button"], "styleApi": [".aia-menu", ".aia-btn"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"action-dropdown\"]" },
-    { "id": "text-input", "family": "forms-filters", "label": "Campo de texto", "sources": ["views/auth/login.view.php"], "catalogIds": ["field"], "styleApi": [".aia-input"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"text-input\"]" },
-    { "id": "textarea", "family": "forms-filters", "label": "Área de texto", "sources": ["views/control-cambios/controlCambios.view.php"], "catalogIds": ["field"], "styleApi": [".aia-textarea"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"textarea\"]" },
-    { "id": "native-select", "family": "forms-filters", "label": "Select nativo", "sources": ["views/bi/_filters.php"], "catalogIds": ["field"], "styleApi": [".aia-select"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"native-select\"]" },
-    { "id": "enhanced-select", "family": "forms-filters", "label": "Select enriquecido", "sources": ["views/listado-actividades/listadoActividades.view.php"], "catalogIds": ["select-adapter"], "styleApi": [".select2-selection", ".ts-control"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"enhanced-select\"]" },
-    { "id": "checkbox", "family": "forms-filters", "label": "Casilla de selección", "sources": ["views/contratos/contratos.view.php"], "catalogIds": ["field"], "styleApi": [".aia-choice"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"checkbox\"]" },
-    { "id": "radio", "family": "forms-filters", "label": "Selección exclusiva", "sources": ["views/pdc/pdc.view.php"], "catalogIds": ["field"], "styleApi": [".aia-choice"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"radio\"]" },
-    { "id": "switch", "family": "forms-filters", "label": "Interruptor", "sources": ["views/bi/_filters.php"], "catalogIds": ["field"], "styleApi": [".aia-switch"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"switch\"]" },
-    { "id": "date-field", "family": "forms-filters", "label": "Fecha y calendario", "sources": ["views/programa-general/programa_general.view.php"], "catalogIds": ["field", "icon"], "styleApi": [".aia-input"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"date-field\"]" },
-    { "id": "file-upload", "family": "forms-filters", "label": "Carga de archivo", "sources": ["views/listado-actividades/listadoActividades.view.php"], "catalogIds": ["field", "button"], "styleApi": [".aia-input", ".aia-btn"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"file-upload\"]" },
-    { "id": "input-group", "family": "forms-filters", "label": "Campo compuesto", "sources": ["views/programacion-semanal/programacion_semanal.view.php"], "catalogIds": ["field", "button"], "styleApi": [".aia-field", ".aia-btn"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"input-group\"]" },
-    { "id": "search-field", "family": "forms-filters", "label": "Búsqueda", "sources": ["views/programa-general/programa_general.view.php"], "catalogIds": ["search"], "styleApi": [".aia-search"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"search-field\"]" },
-    { "id": "filter-panel", "family": "forms-filters", "label": "Panel de filtros", "sources": ["views/bi/_filters.php"], "catalogIds": ["filter"], "styleApi": [".aia-filter-form"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"filter-panel\"]" },
-    { "id": "filter-chip", "family": "forms-filters", "label": "Filtro por estado", "sources": ["views/programa-general/programa_general.view.php"], "catalogIds": ["state", "filter"], "styleApi": [".aia-chip"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"filter-chip\"]" },
-    { "id": "field-help", "family": "forms-filters", "label": "Ayuda de campo", "sources": ["views/auth/password-reset.view.php"], "catalogIds": ["field", "feedback"], "styleApi": [".aia-helper"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"field-help\"]" },
-    { "id": "field-validation", "family": "forms-filters", "label": "Validación de campo", "sources": ["views/auth/login.view.php"], "catalogIds": ["field", "feedback"], "styleApi": [".aia-feedback"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"field-validation\"]" },
-    { "id": "pagination", "family": "forms-filters", "label": "Paginación", "sources": ["views/profesionales/profesionales.view.php"], "catalogIds": ["pagination"], "styleApi": [".aia-pagination"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"pagination\"]" },
-    { "id": "status-chip", "family": "states-feedback", "label": "Chip de estado", "sources": ["views/programacion-semanal/programacion_semanal.view.php"], "catalogIds": ["state"], "styleApi": [".aia-chip"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"status-chip\"]" },
-    { "id": "feedback-banner", "family": "states-feedback", "label": "Mensaje de resultado", "sources": ["views/auth/login.view.php"], "catalogIds": ["feedback"], "styleApi": [".aia-feedback"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"feedback-banner\"]" },
-    { "id": "progress-indicator", "family": "states-feedback", "label": "Progreso determinado", "sources": ["views/programacion-semanal/programacion_semanal.view.php"], "catalogIds": ["progress"], "styleApi": [".aia-progress"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"progress-indicator\"]" },
-    { "id": "loading-spinner", "family": "states-feedback", "label": "Carga indeterminada", "sources": ["public/js/funcionesGenerales6.js"], "catalogIds": ["feedback", "icon"], "styleApi": [".aia-spinner"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"loading-spinner\"]" },
-    { "id": "empty-state", "family": "states-feedback", "label": "Estado vacío", "sources": ["public/js/components/notifications.js"], "catalogIds": ["feedback"], "styleApi": [".aia-feedback"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"empty-state\"]" },
-    { "id": "error-state", "family": "states-feedback", "label": "Error recuperable", "sources": ["public/js/core/AiaAlertInterceptor.js"], "catalogIds": ["feedback"], "styleApi": [".aia-feedback--critical"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"error-state\"]" },
-    { "id": "count-badge", "family": "states-feedback", "label": "Contador", "sources": ["public/js/components/notifications.js"], "catalogIds": ["state"], "styleApi": [".aia-chip"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"count-badge\"]" },
-    { "id": "live-region", "family": "states-feedback", "label": "Anuncio asíncrono", "sources": ["public/js/modules/semi_auto_review.js"], "catalogIds": ["live-region"], "styleApi": [".aia-live-region"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"live-region\"]" },
-    { "id": "data-card", "family": "data-display", "label": "Tarjeta de registro", "sources": ["views/programacion-semanal/programacion_semanal.view.php"], "catalogIds": ["card"], "styleApi": [".aia-card"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"data-card\"]" },
-    { "id": "metric-card", "family": "data-display", "label": "Tarjeta métrica", "sources": ["views/bi/control-tower.php"], "catalogIds": ["card", "state"], "styleApi": [".aia-card"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"metric-card\"]" },
-    { "id": "responsive-table", "family": "data-display", "label": "Tabla responsive", "sources": ["views/profesionales/profesionales.view.php"], "catalogIds": ["table-shell"], "styleApi": [".aia-table-shell"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"responsive-table\"]" },
-    { "id": "data-grid", "family": "data-display", "label": "Grilla editable", "sources": ["views/programa-general/programa_general.view.php"], "catalogIds": ["table-shell", "handsontable-adapter"], "styleApi": [".aia-table-shell", ".handsontable"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"data-grid\"]" },
-    { "id": "tabs", "family": "data-display", "label": "Pestañas", "sources": ["views/indicadores/indicadores.view.php"], "catalogIds": ["navigation", "section"], "styleApi": [".aia-navigation__links"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"tabs\"]" },
-    { "id": "accordion", "family": "data-display", "label": "Acordeón", "sources": ["views/partials/drawer_unificado.php"], "catalogIds": ["navigation", "section"], "styleApi": [".aia-navigation__links"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"accordion\"]" },
-    { "id": "modal-dialog", "family": "overlays", "label": "Modal", "sources": ["views/programacion-semanal/partials/modal_reabrir.php"], "catalogIds": ["overlay"], "styleApi": [".aia-modal-surface"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"modal-dialog\"]" },
-    { "id": "responsive-drawer", "family": "overlays", "label": "Drawer modal responsive", "sources": ["views/partials/drawer_unificado.php"], "catalogIds": ["overlay", "navigation"], "styleApi": [".aia-modal-surface"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"responsive-drawer\"]" },
-    { "id": "popover", "family": "overlays", "label": "Popover", "sources": ["public/js/modules/aia_ui/components.js"], "catalogIds": ["popover"], "styleApi": [".aia-popover"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"popover\"]" },
-    { "id": "tooltip", "family": "overlays", "label": "Tooltip", "sources": ["public/js/modules/programa_general/hot.js"], "catalogIds": ["popover"], "styleApi": [".aia-popover"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"tooltip\"]" },
-    { "id": "toast", "family": "overlays", "label": "Toast", "sources": ["public/js/core/AiaAlertInterceptor.js"], "catalogIds": ["toast-confirm"], "styleApi": [".swal2-popup"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"toast\"]" },
-    { "id": "confirmation", "family": "overlays", "label": "Confirmación", "sources": ["public/js/core/AiaAlertInterceptor.js"], "catalogIds": ["toast-confirm", "overlay"], "styleApi": [".swal2-popup", ".aia-modal-surface"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"confirmation\"]" },
-    { "id": "loading-overlay", "family": "overlays", "label": "Bloqueo por proceso", "sources": ["public/js/funcionesGenerales6.js"], "catalogIds": ["overlay", "feedback"], "styleApi": [".aia-modal-surface", ".aia-spinner"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"loading-overlay\"]" },
-    { "id": "handsontable", "family": "vendor-adapters", "label": "Handsontable", "sources": ["public/js/modules/programa_general/hot.js"], "catalogIds": ["handsontable-adapter"], "styleApi": [".handsontable"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"handsontable\"]" },
-    { "id": "datatables", "family": "vendor-adapters", "label": "DataTables", "sources": ["views/profesionales/profesionales.view.php"], "catalogIds": ["datatables-adapter"], "styleApi": [".dataTables_wrapper"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"datatables\"]" },
-    { "id": "select2", "family": "vendor-adapters", "label": "Select2", "sources": ["views/pdc/pdc.view.php"], "catalogIds": ["select-adapter"], "styleApi": [".select2-selection"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"select2\"]" },
-    { "id": "tom-select", "family": "vendor-adapters", "label": "Tom Select", "sources": ["public/js/HandsontableTomSelectEditor.js"], "catalogIds": ["select-adapter"], "styleApi": [".ts-control"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"tom-select\"]" },
-    { "id": "sweetalert2", "family": "vendor-adapters", "label": "SweetAlert2", "sources": ["public/js/core/AiaAlertInterceptor.js"], "catalogIds": ["toast-confirm"], "styleApi": [".swal2-popup"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"sweetalert2\"]" },
-    { "id": "toastr", "family": "vendor-adapters", "label": "Toastr", "sources": ["public/js/linksComunesHead2.js"], "catalogIds": ["toast-confirm"], "styleApi": [".toast"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"toastr\"]" },
-    { "id": "font-awesome", "family": "vendor-adapters", "label": "Font Awesome", "sources": ["src/View/Components/NavbarComponent.php"], "catalogIds": ["icon"], "styleApi": [".aia-icon"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"font-awesome\"]" },
-    { "id": "bootstrap", "family": "vendor-adapters", "label": "Bootstrap", "sources": ["public/css/aia-design-system.css"], "catalogIds": ["shell", "field", "button"], "styleApi": [".aia-shell"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"bootstrap\"]" },
-    { "id": "jquery-ui", "family": "vendor-adapters", "label": "jQuery UI", "sources": ["public/js/funcionesGenerales6.js"], "catalogIds": ["field", "overlay"], "styleApi": [".aia-input", ".aia-modal-surface"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"jquery-ui\"]" },
-    { "id": "adminlte", "family": "vendor-adapters", "label": "AdminLTE", "sources": ["public/css/styles.css"], "catalogIds": ["navigation", "shell"], "styleApi": [".aia-navigation"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"adminlte\"]" },
-    { "id": "bi-card", "family": "bi-primitives", "label": "Tarjeta analítica", "sources": ["views/bi/control-tower.php"], "catalogIds": ["bi-shell", "card"], "styleApi": [".aia-bi"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"bi-card\"]" },
-    { "id": "line-chart", "family": "bi-primitives", "label": "Curva S y series temporales", "sources": ["public/js/modules/bi-spa.js"], "catalogIds": ["bi-chart"], "styleApi": [".aia-bi__plot"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"line-chart\"]" },
-    { "id": "bar-chart", "family": "bi-primitives", "label": "Barras categóricas PPC", "sources": ["public/js/modules/bi-spa.js"], "catalogIds": ["bi-chart"], "styleApi": [".aia-bi__plot"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"bar-chart\"]" },
-    { "id": "comparison-chart", "family": "bi-primitives", "label": "PAC vs Programado", "sources": ["public/js/modules/bi-spa.js"], "catalogIds": ["bi-chart"], "styleApi": [".aia-bi__plot"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"comparison-chart\"]" },
-    { "id": "gauge", "family": "bi-primitives", "label": "Dona de avance", "sources": ["public/js/modules/bi-spa.js"], "catalogIds": ["bi-chart", "state"], "styleApi": [".aia-bi-gauge__meter", ".aia-chip"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"gauge\"]" },
-    { "id": "radar-chart", "family": "bi-primitives", "label": "Radar multidimensional", "sources": ["public/js/modules/bi-spa.js"], "catalogIds": ["bi-chart"], "styleApi": [".aia-bi-radar"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"radar-chart\"]" },
-    { "id": "chart-legend", "family": "bi-primitives", "label": "Leyenda de series", "sources": ["public/js/modules/bi-spa.js"], "catalogIds": ["bi-legend"], "styleApi": [".aia-bi__legend"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"chart-legend\"]" },
-    { "id": "projection-toggle", "family": "bi-primitives", "label": "Activación de proyecciones", "sources": ["views/bi/control-tower.php"], "catalogIds": ["field", "bi-chart"], "styleApi": [".aia-switch"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"projection-toggle\"]" },
-    { "id": "chart-guidance", "family": "bi-primitives", "label": "Estado sin datos suficientes", "sources": ["public/js/modules/bi-spa.js"], "catalogIds": ["feedback", "bi-shell"], "styleApi": [".aia-feedback"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"chart-guidance\"]" },
-    { "id": "chart-data-table", "family": "bi-primitives", "label": "Tabla equivalente", "sources": ["src/View/Components/DesignSystemComponent.php"], "catalogIds": ["bi-shell", "table-shell"], "styleApi": [".aia-bi__data"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"chart-data-table\"]" },
-    { "id": "chart-tooltip", "family": "bi-primitives", "label": "Detalle de punto", "sources": ["public/js/modules/bi-spa.js"], "catalogIds": ["bi-tooltip"], "styleApi": [".aia-popover"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"chart-tooltip\"]" },
-    { "id": "kpi-summary", "family": "bi-primitives", "label": "Resumen KPI y umbral", "sources": ["public/js/modules/bi-spa.js"], "catalogIds": ["bi-shell", "state"], "styleApi": [".aia-bi", ".aia-chip"], "themes": ["dark", "linen"], "labSelector": "[data-ui-group=\"kpi-summary\"]" }
+    {
+      "id": "brand-palette",
+      "family": "foundations",
+      "label": "Paleta de marca y submarcas",
+      "sources": [
+        "public/css/tokens.css"
+      ],
+      "catalogIds": [
+        "shell"
+      ],
+      "styleApi": [
+        "--ds-color-domain-*"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"brand-palette\"]"
+    },
+    {
+      "id": "semantic-colors",
+      "family": "foundations",
+      "label": "Colores semánticos",
+      "sources": [
+        "public/css/tokens.css"
+      ],
+      "catalogIds": [
+        "state"
+      ],
+      "styleApi": [
+        "--ds-color-state-*"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"semantic-colors\"]"
+    },
+    {
+      "id": "typography",
+      "family": "foundations",
+      "label": "Tipografía y jerarquías",
+      "sources": [
+        "public/css/tokens.css"
+      ],
+      "catalogIds": [
+        "shell"
+      ],
+      "styleApi": [
+        "--ds-font-*",
+        "--ds-type-*"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"typography\"]"
+    },
+    {
+      "id": "spacing-density",
+      "family": "foundations",
+      "label": "Espaciado y densidad",
+      "sources": [
+        "public/css/tokens.css"
+      ],
+      "catalogIds": [
+        "shell"
+      ],
+      "styleApi": [
+        "--ds-space-*",
+        "--ds-density-*"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"spacing-density\"]"
+    },
+    {
+      "id": "iconography",
+      "family": "foundations",
+      "label": "Iconografía",
+      "sources": [
+        "public/css/styles.css"
+      ],
+      "catalogIds": [
+        "icon"
+      ],
+      "styleApi": [
+        ".aia-icon"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"iconography\"]"
+    },
+    {
+      "id": "application-shell",
+      "family": "shell-navigation",
+      "label": "Shell de aplicación",
+      "sources": [
+        "views/partials/drawer_unificado.php"
+      ],
+      "catalogIds": [
+        "shell"
+      ],
+      "styleApi": [
+        ".aia-shell"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"application-shell\"]"
+    },
+    {
+      "id": "brand-lockup",
+      "family": "shell-navigation",
+      "label": "Marca AIA completa",
+      "sources": [
+        "src/View/Components/NavbarComponent.php"
+      ],
+      "catalogIds": [
+        "navigation",
+        "icon"
+      ],
+      "styleApi": [
+        ".aia-navigation"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"brand-lockup\"]"
+    },
+    {
+      "id": "top-navbar",
+      "family": "shell-navigation",
+      "label": "Navbar superior",
+      "sources": [
+        "src/View/Components/NavbarComponent.php"
+      ],
+      "catalogIds": [
+        "navigation"
+      ],
+      "styleApi": [
+        ".aia-navigation__global"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"top-navbar\"]"
+    },
+    {
+      "id": "menu-toggle",
+      "family": "shell-navigation",
+      "label": "Hamburguesa",
+      "sources": [
+        "views/partials/drawer_unificado.php"
+      ],
+      "catalogIds": [
+        "navigation",
+        "button"
+      ],
+      "styleApi": [
+        ".aia-btn"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"menu-toggle\"]"
+    },
+    {
+      "id": "context-bar",
+      "family": "shell-navigation",
+      "label": "Barra de contexto",
+      "sources": [
+        "public/js/cargarDatosGeneralesPagina2.js"
+      ],
+      "catalogIds": [
+        "navigation",
+        "page-header"
+      ],
+      "styleApi": [
+        ".aia-page-header__context"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"context-bar\"]"
+    },
+    {
+      "id": "project-breadcrumb",
+      "family": "shell-navigation",
+      "label": "Miga de proyecto y módulo",
+      "sources": [
+        "public/js/cargarDatosGeneralesPagina2.js"
+      ],
+      "catalogIds": [
+        "page-header"
+      ],
+      "styleApi": [
+        ".aia-page-header__breadcrumb"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"project-breadcrumb\"]"
+    },
+    {
+      "id": "navigation-drawer",
+      "family": "shell-navigation",
+      "label": "Drawer lateral",
+      "sources": [
+        "views/partials/drawer_unificado.php"
+      ],
+      "catalogIds": [
+        "navigation",
+        "overlay"
+      ],
+      "styleApi": [
+        ".aia-navigation__links"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"navigation-drawer\"]"
+    },
+    {
+      "id": "sidebar-item",
+      "family": "shell-navigation",
+      "label": "Ítem de sidebar",
+      "sources": [
+        "views/partials/drawer_unificado.php"
+      ],
+      "catalogIds": [
+        "navigation"
+      ],
+      "styleApi": [
+        "[data-shell-destination]"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"sidebar-item\"]"
+    },
+    {
+      "id": "user-menu",
+      "family": "shell-navigation",
+      "label": "Menú de usuario",
+      "sources": [
+        "public/js/cargarDatosGeneralesPagina2.js"
+      ],
+      "catalogIds": [
+        "menu",
+        "navigation"
+      ],
+      "styleApi": [
+        ".aia-menu"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"user-menu\"]"
+    },
+    {
+      "id": "notification-menu",
+      "family": "shell-navigation",
+      "label": "Avisos y notificaciones",
+      "sources": [
+        "public/js/components/notifications.js"
+      ],
+      "catalogIds": [
+        "menu",
+        "state"
+      ],
+      "styleApi": [
+        ".aia-menu",
+        ".aia-chip"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"notification-menu\"]"
+    },
+    {
+      "id": "project-switcher",
+      "family": "shell-navigation",
+      "label": "Cambio de proyecto",
+      "sources": [
+        "views/core/project_selector.view.php"
+      ],
+      "catalogIds": [
+        "menu",
+        "field"
+      ],
+      "styleApi": [
+        ".aia-menu",
+        ".aia-select"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"project-switcher\"]"
+    },
+    {
+      "id": "theme-switcher",
+      "family": "shell-navigation",
+      "label": "Cambio de tema",
+      "sources": [
+        "views/auth/partials/auth-theme-switch.php"
+      ],
+      "catalogIds": [
+        "button"
+      ],
+      "styleApi": [
+        ".aia-btn"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"theme-switcher\"]"
+    },
+    {
+      "id": "week-badge",
+      "family": "shell-navigation",
+      "label": "Semana activa",
+      "sources": [
+        "public/js/cargarDatosGeneralesPagina2.js"
+      ],
+      "catalogIds": [
+        "state"
+      ],
+      "styleApi": [
+        ".aia-chip"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"week-badge\"]"
+    },
+    {
+      "id": "logout-action",
+      "family": "shell-navigation",
+      "label": "Cierre de sesión",
+      "sources": [
+        "views/partials/drawer_unificado.php"
+      ],
+      "catalogIds": [
+        "button"
+      ],
+      "styleApi": [
+        ".aia-btn"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"logout-action\"]"
+    },
+    {
+      "id": "page-header",
+      "family": "page-structure",
+      "label": "Encabezado de página",
+      "sources": [
+        "views/programa-general/programa_general.view.php"
+      ],
+      "catalogIds": [
+        "page-header"
+      ],
+      "styleApi": [
+        ".aia-page-header"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"page-header\"]"
+    },
+    {
+      "id": "content-section",
+      "family": "page-structure",
+      "label": "Sección de contenido",
+      "sources": [
+        "views/dashboard/escalamientos.php"
+      ],
+      "catalogIds": [
+        "section"
+      ],
+      "styleApi": [
+        ".aia-section"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"content-section\"]"
+    },
+    {
+      "id": "panel-surface",
+      "family": "page-structure",
+      "label": "Panel o superficie",
+      "sources": [
+        "views/indicadores/indicadores.view.php"
+      ],
+      "catalogIds": [
+        "section",
+        "card"
+      ],
+      "styleApi": [
+        ".aia-panel"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"panel-surface\"]"
+    },
+    {
+      "id": "responsive-layout",
+      "family": "page-structure",
+      "label": "Composición responsive",
+      "sources": [
+        "public/css/styles.css"
+      ],
+      "catalogIds": [
+        "shell",
+        "section"
+      ],
+      "styleApi": [
+        ".aia-page"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"responsive-layout\"]"
+    },
+    {
+      "id": "primary-button",
+      "family": "actions",
+      "label": "Botón primario",
+      "sources": [
+        "views/programa-general/programa_general.view.php"
+      ],
+      "catalogIds": [
+        "button"
+      ],
+      "styleApi": [
+        ".aia-btn"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"primary-button\"]"
+    },
+    {
+      "id": "secondary-button",
+      "family": "actions",
+      "label": "Botón secundario",
+      "sources": [
+        "views/programa-general/programa_general.view.php"
+      ],
+      "catalogIds": [
+        "button"
+      ],
+      "styleApi": [
+        ".aia-btn--secondary"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"secondary-button\"]"
+    },
+    {
+      "id": "destructive-button",
+      "family": "actions",
+      "label": "Acción destructiva",
+      "sources": [
+        "views/programacion-semanal/partials/modal_reabrir.php"
+      ],
+      "catalogIds": [
+        "button",
+        "state"
+      ],
+      "styleApi": [
+        ".aia-btn",
+        "--ds-color-state-critical-*"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"destructive-button\"]"
+    },
+    {
+      "id": "icon-button",
+      "family": "actions",
+      "label": "Botón con icono",
+      "sources": [
+        "views/listado-actividades/listadoActividades.view.php"
+      ],
+      "catalogIds": [
+        "button",
+        "icon"
+      ],
+      "styleApi": [
+        ".aia-btn",
+        ".aia-icon"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"icon-button\"]"
+    },
+    {
+      "id": "floating-action",
+      "family": "actions",
+      "label": "Acción flotante",
+      "sources": [
+        "public/js/cargarDatosGeneralesPagina2.js"
+      ],
+      "catalogIds": [
+        "button",
+        "icon"
+      ],
+      "styleApi": [
+        ".aia-btn"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"floating-action\"]"
+    },
+    {
+      "id": "action-group",
+      "family": "actions",
+      "label": "Grupo de acciones",
+      "sources": [
+        "views/programacion-semanal/programacion_semanal.view.php"
+      ],
+      "catalogIds": [
+        "toolbar"
+      ],
+      "styleApi": [
+        ".aia-action-group"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"action-group\"]"
+    },
+    {
+      "id": "action-dropdown",
+      "family": "actions",
+      "label": "Menú de acciones",
+      "sources": [
+        "views/programacion-semanal/programacion_semanal.view.php"
+      ],
+      "catalogIds": [
+        "menu",
+        "button"
+      ],
+      "styleApi": [
+        ".aia-menu",
+        ".aia-btn"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"action-dropdown\"]"
+    },
+    {
+      "id": "text-input",
+      "family": "forms-filters",
+      "label": "Campo de texto",
+      "sources": [
+        "views/auth/login.view.php"
+      ],
+      "catalogIds": [
+        "field"
+      ],
+      "styleApi": [
+        ".aia-input"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"text-input\"]"
+    },
+    {
+      "id": "textarea",
+      "family": "forms-filters",
+      "label": "Área de texto",
+      "sources": [
+        "views/control-cambios/controlCambios.view.php"
+      ],
+      "catalogIds": [
+        "field"
+      ],
+      "styleApi": [
+        ".aia-textarea"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"textarea\"]"
+    },
+    {
+      "id": "native-select",
+      "family": "forms-filters",
+      "label": "Select nativo",
+      "sources": [
+        "views/bi/_filters.php"
+      ],
+      "catalogIds": [
+        "field"
+      ],
+      "styleApi": [
+        ".aia-select"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"native-select\"]"
+    },
+    {
+      "id": "enhanced-select",
+      "family": "forms-filters",
+      "label": "Select enriquecido",
+      "sources": [
+        "views/listado-actividades/listadoActividades.view.php"
+      ],
+      "catalogIds": [
+        "select-adapter"
+      ],
+      "styleApi": [
+        ".select2-selection",
+        ".ts-control"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"enhanced-select\"]"
+    },
+    {
+      "id": "checkbox",
+      "family": "forms-filters",
+      "label": "Casilla de selección",
+      "sources": [
+        "views/contratos/contratos.view.php"
+      ],
+      "catalogIds": [
+        "field"
+      ],
+      "styleApi": [
+        ".aia-choice"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"checkbox\"]"
+    },
+    {
+      "id": "radio",
+      "family": "forms-filters",
+      "label": "Selección exclusiva",
+      "sources": [
+        "views/pdc/pdc.view.php"
+      ],
+      "catalogIds": [
+        "field"
+      ],
+      "styleApi": [
+        ".aia-choice"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"radio\"]"
+    },
+    {
+      "id": "switch",
+      "family": "forms-filters",
+      "label": "Interruptor",
+      "sources": [
+        "views/bi/_filters.php"
+      ],
+      "catalogIds": [
+        "field"
+      ],
+      "styleApi": [
+        ".aia-switch"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"switch\"]"
+    },
+    {
+      "id": "date-field",
+      "family": "forms-filters",
+      "label": "Fecha y calendario",
+      "sources": [
+        "views/programa-general/programa_general.view.php"
+      ],
+      "catalogIds": [
+        "field",
+        "icon"
+      ],
+      "styleApi": [
+        ".aia-input"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"date-field\"]"
+    },
+    {
+      "id": "file-upload",
+      "family": "forms-filters",
+      "label": "Carga de archivo",
+      "sources": [
+        "views/listado-actividades/listadoActividades.view.php"
+      ],
+      "catalogIds": [
+        "field",
+        "button"
+      ],
+      "styleApi": [
+        ".aia-input",
+        ".aia-btn"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"file-upload\"]"
+    },
+    {
+      "id": "input-group",
+      "family": "forms-filters",
+      "label": "Campo compuesto",
+      "sources": [
+        "views/programacion-semanal/programacion_semanal.view.php"
+      ],
+      "catalogIds": [
+        "field",
+        "button"
+      ],
+      "styleApi": [
+        ".aia-field",
+        ".aia-btn"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"input-group\"]"
+    },
+    {
+      "id": "search-field",
+      "family": "forms-filters",
+      "label": "Búsqueda",
+      "sources": [
+        "views/programa-general/programa_general.view.php"
+      ],
+      "catalogIds": [
+        "search"
+      ],
+      "styleApi": [
+        ".aia-search"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"search-field\"]"
+    },
+    {
+      "id": "filter-panel",
+      "family": "forms-filters",
+      "label": "Panel de filtros",
+      "sources": [
+        "views/bi/_filters.php"
+      ],
+      "catalogIds": [
+        "filter"
+      ],
+      "styleApi": [
+        ".aia-filter-form"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"filter-panel\"]"
+    },
+    {
+      "id": "filter-chip",
+      "family": "forms-filters",
+      "label": "Filtro por estado",
+      "sources": [
+        "views/programa-general/programa_general.view.php"
+      ],
+      "catalogIds": [
+        "state",
+        "filter"
+      ],
+      "styleApi": [
+        ".aia-chip"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"filter-chip\"]"
+    },
+    {
+      "id": "field-help",
+      "family": "forms-filters",
+      "label": "Ayuda de campo",
+      "sources": [
+        "views/auth/password-reset.view.php"
+      ],
+      "catalogIds": [
+        "field",
+        "feedback"
+      ],
+      "styleApi": [
+        ".aia-helper"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"field-help\"]"
+    },
+    {
+      "id": "field-validation",
+      "family": "forms-filters",
+      "label": "Validación de campo",
+      "sources": [
+        "views/auth/login.view.php"
+      ],
+      "catalogIds": [
+        "field",
+        "feedback"
+      ],
+      "styleApi": [
+        ".aia-feedback"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"field-validation\"]"
+    },
+    {
+      "id": "pagination",
+      "family": "forms-filters",
+      "label": "Paginación",
+      "sources": [
+        "views/profesionales/profesionales.view.php"
+      ],
+      "catalogIds": [
+        "pagination"
+      ],
+      "styleApi": [
+        ".aia-pagination"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"pagination\"]"
+    },
+    {
+      "id": "status-chip",
+      "family": "states-feedback",
+      "label": "Chip de estado",
+      "sources": [
+        "views/programacion-semanal/programacion_semanal.view.php"
+      ],
+      "catalogIds": [
+        "state"
+      ],
+      "styleApi": [
+        ".aia-chip"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"status-chip\"]"
+    },
+    {
+      "id": "feedback-banner",
+      "family": "states-feedback",
+      "label": "Mensaje de resultado",
+      "sources": [
+        "views/auth/login.view.php"
+      ],
+      "catalogIds": [
+        "feedback"
+      ],
+      "styleApi": [
+        ".aia-feedback"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"feedback-banner\"]"
+    },
+    {
+      "id": "progress-indicator",
+      "family": "states-feedback",
+      "label": "Progreso determinado",
+      "sources": [
+        "views/programacion-semanal/programacion_semanal.view.php"
+      ],
+      "catalogIds": [
+        "progress"
+      ],
+      "styleApi": [
+        ".aia-progress"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"progress-indicator\"]"
+    },
+    {
+      "id": "loading-spinner",
+      "family": "states-feedback",
+      "label": "Carga indeterminada",
+      "sources": [
+        "public/js/funcionesGenerales6.js"
+      ],
+      "catalogIds": [
+        "feedback",
+        "icon"
+      ],
+      "styleApi": [
+        ".aia-spinner"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"loading-spinner\"]"
+    },
+    {
+      "id": "empty-state",
+      "family": "states-feedback",
+      "label": "Estado vacío",
+      "sources": [
+        "public/js/components/notifications.js"
+      ],
+      "catalogIds": [
+        "feedback"
+      ],
+      "styleApi": [
+        ".aia-feedback"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"empty-state\"]"
+    },
+    {
+      "id": "error-state",
+      "family": "states-feedback",
+      "label": "Error recuperable",
+      "sources": [
+        "public/js/core/AiaAlertInterceptor.js"
+      ],
+      "catalogIds": [
+        "feedback"
+      ],
+      "styleApi": [
+        ".aia-feedback--critical"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"error-state\"]"
+    },
+    {
+      "id": "count-badge",
+      "family": "states-feedback",
+      "label": "Contador",
+      "sources": [
+        "public/js/components/notifications.js"
+      ],
+      "catalogIds": [
+        "state"
+      ],
+      "styleApi": [
+        ".aia-chip"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"count-badge\"]"
+    },
+    {
+      "id": "live-region",
+      "family": "states-feedback",
+      "label": "Anuncio asíncrono",
+      "sources": [
+        "public/js/modules/semi_auto_review.js"
+      ],
+      "catalogIds": [
+        "live-region"
+      ],
+      "styleApi": [
+        ".aia-live-region"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"live-region\"]"
+    },
+    {
+      "id": "data-card",
+      "family": "data-display",
+      "label": "Tarjeta de registro",
+      "sources": [
+        "views/programacion-semanal/programacion_semanal.view.php"
+      ],
+      "catalogIds": [
+        "card"
+      ],
+      "styleApi": [
+        ".aia-card"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"data-card\"]"
+    },
+    {
+      "id": "metric-card",
+      "family": "data-display",
+      "label": "Tarjeta métrica",
+      "sources": [
+        "views/bi/control-tower.php"
+      ],
+      "catalogIds": [
+        "card",
+        "state"
+      ],
+      "styleApi": [
+        ".aia-card"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"metric-card\"]"
+    },
+    {
+      "id": "responsive-table",
+      "family": "data-display",
+      "label": "Tabla responsive",
+      "sources": [
+        "views/profesionales/profesionales.view.php"
+      ],
+      "catalogIds": [
+        "table-shell"
+      ],
+      "styleApi": [
+        ".aia-table-shell"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"responsive-table\"]"
+    },
+    {
+      "id": "data-grid",
+      "family": "data-display",
+      "label": "Grilla editable",
+      "sources": [
+        "views/programa-general/programa_general.view.php"
+      ],
+      "catalogIds": [
+        "table-shell",
+        "handsontable-adapter"
+      ],
+      "styleApi": [
+        ".aia-table-shell",
+        ".handsontable"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"data-grid\"]"
+    },
+    {
+      "id": "tabs",
+      "family": "data-display",
+      "label": "Pestañas",
+      "sources": [
+        "views/indicadores/indicadores.view.php"
+      ],
+      "catalogIds": [
+        "navigation",
+        "section"
+      ],
+      "styleApi": [
+        ".aia-navigation__links"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"tabs\"]"
+    },
+    {
+      "id": "accordion",
+      "family": "data-display",
+      "label": "Acordeón",
+      "sources": [
+        "views/partials/drawer_unificado.php"
+      ],
+      "catalogIds": [
+        "navigation",
+        "section"
+      ],
+      "styleApi": [
+        ".aia-navigation__links"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"accordion\"]"
+    },
+    {
+      "id": "modal-dialog",
+      "family": "overlays",
+      "label": "Modal",
+      "sources": [
+        "views/programacion-semanal/partials/modal_reabrir.php"
+      ],
+      "catalogIds": [
+        "overlay"
+      ],
+      "styleApi": [
+        ".aia-modal-surface"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"modal-dialog\"]"
+    },
+    {
+      "id": "responsive-drawer",
+      "family": "overlays",
+      "label": "Drawer modal responsive",
+      "sources": [
+        "views/partials/drawer_unificado.php"
+      ],
+      "catalogIds": [
+        "overlay",
+        "navigation"
+      ],
+      "styleApi": [
+        ".aia-modal-surface"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"responsive-drawer\"]"
+    },
+    {
+      "id": "popover",
+      "family": "overlays",
+      "label": "Popover",
+      "sources": [
+        "public/js/modules/aia_ui/components.js"
+      ],
+      "catalogIds": [
+        "popover"
+      ],
+      "styleApi": [
+        ".aia-popover"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"popover\"]"
+    },
+    {
+      "id": "tooltip",
+      "family": "overlays",
+      "label": "Tooltip",
+      "sources": [
+        "public/js/modules/programa_general/hot.js"
+      ],
+      "catalogIds": [
+        "popover"
+      ],
+      "styleApi": [
+        ".aia-popover"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"tooltip\"]"
+    },
+    {
+      "id": "toast",
+      "family": "overlays",
+      "label": "Toast",
+      "sources": [
+        "public/js/core/AiaAlertInterceptor.js"
+      ],
+      "catalogIds": [
+        "toast-confirm"
+      ],
+      "styleApi": [
+        ".swal2-popup"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"toast\"]"
+    },
+    {
+      "id": "confirmation",
+      "family": "overlays",
+      "label": "Confirmación",
+      "sources": [
+        "public/js/core/AiaAlertInterceptor.js"
+      ],
+      "catalogIds": [
+        "toast-confirm",
+        "overlay"
+      ],
+      "styleApi": [
+        ".swal2-popup",
+        ".aia-modal-surface"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"confirmation\"]"
+    },
+    {
+      "id": "loading-overlay",
+      "family": "overlays",
+      "label": "Bloqueo por proceso",
+      "sources": [
+        "public/js/funcionesGenerales6.js"
+      ],
+      "catalogIds": [
+        "overlay",
+        "feedback"
+      ],
+      "styleApi": [
+        ".aia-modal-surface",
+        ".aia-spinner"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"loading-overlay\"]"
+    },
+    {
+      "id": "handsontable",
+      "family": "vendor-adapters",
+      "label": "Handsontable",
+      "sources": [
+        "public/js/modules/programa_general/hot.js"
+      ],
+      "catalogIds": [
+        "handsontable-adapter"
+      ],
+      "styleApi": [
+        ".handsontable"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"handsontable\"]"
+    },
+    {
+      "id": "datatables",
+      "family": "vendor-adapters",
+      "label": "DataTables",
+      "sources": [
+        "views/profesionales/profesionales.view.php"
+      ],
+      "catalogIds": [
+        "datatables-adapter"
+      ],
+      "styleApi": [
+        ".dataTables_wrapper"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"datatables\"]"
+    },
+    {
+      "id": "select2",
+      "family": "vendor-adapters",
+      "label": "Select2",
+      "sources": [
+        "views/pdc/pdc.view.php"
+      ],
+      "catalogIds": [
+        "select-adapter"
+      ],
+      "styleApi": [
+        ".select2-selection"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"select2\"]"
+    },
+    {
+      "id": "tom-select",
+      "family": "vendor-adapters",
+      "label": "Tom Select",
+      "sources": [
+        "public/js/HandsontableTomSelectEditor.js"
+      ],
+      "catalogIds": [
+        "select-adapter"
+      ],
+      "styleApi": [
+        ".ts-control"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"tom-select\"]"
+    },
+    {
+      "id": "sweetalert2",
+      "family": "vendor-adapters",
+      "label": "SweetAlert2",
+      "sources": [
+        "public/js/core/AiaAlertInterceptor.js"
+      ],
+      "catalogIds": [
+        "toast-confirm"
+      ],
+      "styleApi": [
+        ".swal2-popup"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"sweetalert2\"]"
+    },
+    {
+      "id": "toastr",
+      "family": "vendor-adapters",
+      "label": "Toastr",
+      "sources": [
+        "public/js/linksComunesHead2.js"
+      ],
+      "catalogIds": [
+        "toast-confirm"
+      ],
+      "styleApi": [
+        ".toast"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"toastr\"]"
+    },
+    {
+      "id": "font-awesome",
+      "family": "vendor-adapters",
+      "label": "Font Awesome",
+      "sources": [
+        "src/View/Components/NavbarComponent.php"
+      ],
+      "catalogIds": [
+        "icon"
+      ],
+      "styleApi": [
+        ".aia-icon"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"font-awesome\"]"
+    },
+    {
+      "id": "bootstrap",
+      "family": "vendor-adapters",
+      "label": "Bootstrap",
+      "sources": [
+        "public/css/aia-design-system.css"
+      ],
+      "catalogIds": [
+        "shell",
+        "field",
+        "button"
+      ],
+      "styleApi": [
+        ".aia-shell"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"bootstrap\"]"
+    },
+    {
+      "id": "jquery-ui",
+      "family": "vendor-adapters",
+      "label": "jQuery UI",
+      "sources": [
+        "public/js/funcionesGenerales6.js"
+      ],
+      "catalogIds": [
+        "field",
+        "overlay"
+      ],
+      "styleApi": [
+        ".aia-input",
+        ".aia-modal-surface"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"jquery-ui\"]"
+    },
+    {
+      "id": "adminlte",
+      "family": "vendor-adapters",
+      "label": "AdminLTE",
+      "sources": [
+        "public/css/styles.css"
+      ],
+      "catalogIds": [
+        "navigation",
+        "shell"
+      ],
+      "styleApi": [
+        ".aia-navigation"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"adminlte\"]"
+    },
+    {
+      "id": "bi-card",
+      "family": "bi-primitives",
+      "label": "Tarjeta analítica",
+      "sources": [
+        "views/bi/control-tower.php"
+      ],
+      "catalogIds": [
+        "bi-shell",
+        "card"
+      ],
+      "styleApi": [
+        ".aia-bi"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"bi-card\"]"
+    },
+    {
+      "id": "line-chart",
+      "family": "bi-primitives",
+      "label": "Curva S y series temporales",
+      "sources": [
+        "public/js/modules/bi-spa.js"
+      ],
+      "catalogIds": [
+        "bi-chart"
+      ],
+      "styleApi": [
+        ".aia-bi__plot"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"line-chart\"]"
+    },
+    {
+      "id": "bar-chart",
+      "family": "bi-primitives",
+      "label": "Barras categóricas PPC",
+      "sources": [
+        "public/js/modules/bi-spa.js"
+      ],
+      "catalogIds": [
+        "bi-chart"
+      ],
+      "styleApi": [
+        ".aia-bi__plot"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"bar-chart\"]"
+    },
+    {
+      "id": "comparison-chart",
+      "family": "bi-primitives",
+      "label": "PAC vs Programado",
+      "sources": [
+        "public/js/modules/bi-spa.js"
+      ],
+      "catalogIds": [
+        "bi-chart"
+      ],
+      "styleApi": [
+        ".aia-bi__plot"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"comparison-chart\"]"
+    },
+    {
+      "id": "gauge",
+      "family": "bi-primitives",
+      "label": "Dona de avance",
+      "sources": [
+        "public/js/modules/bi-spa.js"
+      ],
+      "catalogIds": [
+        "bi-chart",
+        "state"
+      ],
+      "styleApi": [
+        ".aia-bi-gauge__meter",
+        ".aia-chip"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"gauge\"]"
+    },
+    {
+      "id": "radar-chart",
+      "family": "bi-primitives",
+      "label": "Radar multidimensional",
+      "sources": [
+        "public/js/modules/bi-spa.js"
+      ],
+      "catalogIds": [
+        "bi-chart"
+      ],
+      "styleApi": [
+        ".aia-bi-radar"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"radar-chart\"]"
+    },
+    {
+      "id": "chart-legend",
+      "family": "bi-primitives",
+      "label": "Leyenda de series",
+      "sources": [
+        "public/js/modules/bi-spa.js"
+      ],
+      "catalogIds": [
+        "bi-legend"
+      ],
+      "styleApi": [
+        ".aia-bi__legend"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"chart-legend\"]"
+    },
+    {
+      "id": "projection-toggle",
+      "family": "bi-primitives",
+      "label": "Activación de proyecciones",
+      "sources": [
+        "views/bi/control-tower.php"
+      ],
+      "catalogIds": [
+        "field",
+        "bi-chart"
+      ],
+      "styleApi": [
+        ".aia-switch"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"projection-toggle\"]"
+    },
+    {
+      "id": "chart-guidance",
+      "family": "bi-primitives",
+      "label": "Estado sin datos suficientes",
+      "sources": [
+        "public/js/modules/bi-spa.js"
+      ],
+      "catalogIds": [
+        "feedback",
+        "bi-shell"
+      ],
+      "styleApi": [
+        ".aia-feedback"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"chart-guidance\"]"
+    },
+    {
+      "id": "chart-data-table",
+      "family": "bi-primitives",
+      "label": "Tabla equivalente",
+      "sources": [
+        "src/View/Components/DesignSystemComponent.php"
+      ],
+      "catalogIds": [
+        "bi-shell",
+        "table-shell"
+      ],
+      "styleApi": [
+        ".aia-bi__data"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"chart-data-table\"]"
+    },
+    {
+      "id": "chart-tooltip",
+      "family": "bi-primitives",
+      "label": "Detalle de punto",
+      "sources": [
+        "public/js/modules/bi-spa.js"
+      ],
+      "catalogIds": [
+        "bi-tooltip"
+      ],
+      "styleApi": [
+        ".aia-popover"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"chart-tooltip\"]"
+    },
+    {
+      "id": "kpi-summary",
+      "family": "bi-primitives",
+      "label": "Resumen KPI y umbral",
+      "sources": [
+        "public/js/modules/bi-spa.js"
+      ],
+      "catalogIds": [
+        "bi-shell",
+        "state"
+      ],
+      "styleApi": [
+        ".aia-bi",
+        ".aia-chip"
+      ],
+      "themes": [
+        "dark",
+        "linen"
+      ],
+      "labSelector": "[data-ui-group=\"kpi-summary\"]"
+    }
   ]
 }

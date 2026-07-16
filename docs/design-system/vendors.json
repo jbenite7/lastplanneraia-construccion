@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "designSystemVersion": "0.3.6",
+  "designSystemVersion": "1.0.0",
   "vendors": [
     {
       "id": "bootstrap",

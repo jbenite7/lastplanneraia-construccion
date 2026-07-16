@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "kind": "retrospective-recovery-receipt",
-  "designSystemVersion": "0.3.3",
+  "designSystemVersion": "1.0.0",
   "status": "retrospective-incomplete",
   "recordedAt": "2026-07-14T10:31:43.756Z",
   "measurementPath": "docs/design-system/runtime-measurements/0.3.3-retrospective.json",

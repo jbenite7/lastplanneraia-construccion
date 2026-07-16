@@ -4,7 +4,7 @@
   "kind": "measurement",
   "measurementKind": "current",
   "status": "measured",
-  "designSystemVersion": "0.3.6",
+  "designSystemVersion": "1.0.0",
   "route": "/programa-general",
   "viewport": "1440x900",
   "theme": "dark",

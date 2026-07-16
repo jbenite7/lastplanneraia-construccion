@@ -4,7 +4,7 @@
   "kind": "baseline",
   "measurementKind": "retrospective",
   "status": "approved",
-  "designSystemVersion": "0.3.3",
+  "designSystemVersion": "1.0.0",
   "route": "/programa-general",
   "viewport": "1440x900",
   "theme": "dark",

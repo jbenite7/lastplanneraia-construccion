@@ -1,18 +1,102 @@
 {
   "schemaVersion": 1,
-  "designSystemVersion": "0.3.6",
+  "designSystemVersion": "1.0.0",
   "aliases": [
-    { "legacySelector": "body.dark-mode", "catalogId": "shell", "adapter": "theme-bridge", "status": "deprecated", "owner": "design-system", "sunsetPolicy": "remove-at-zero-consumers" },
-    { "legacySelector": ".card", "catalogId": "card", "adapter": "bootstrap", "status": "deprecated", "owner": "design-system", "sunsetPolicy": "remove-at-zero-consumers" },
-    { "legacySelector": ".project-card", "catalogId": "card", "adapter": "bootstrap", "status": "deprecated", "owner": "projects", "sunsetPolicy": "remove-at-zero-consumers" },
-    { "legacySelector": ".btn", "catalogId": "button", "adapter": "bootstrap", "status": "deprecated", "owner": "design-system", "sunsetPolicy": "remove-at-zero-consumers" },
-    { "legacySelector": ".btn-pdc-modern", "catalogId": "button", "adapter": "module-legacy", "status": "deprecated", "owner": "pdc", "sunsetPolicy": "future-module-migration" },
-    { "legacySelector": ".form-control", "catalogId": "field", "adapter": "bootstrap", "status": "deprecated", "owner": "design-system", "sunsetPolicy": "remove-at-zero-consumers" },
-    { "legacySelector": ".custom-select", "catalogId": "field", "adapter": "bootstrap", "status": "deprecated", "owner": "design-system", "sunsetPolicy": "remove-at-zero-consumers" },
-    { "legacySelector": ".badge", "catalogId": "state", "adapter": "bootstrap", "status": "deprecated", "owner": "design-system", "sunsetPolicy": "remove-at-zero-consumers" },
-    { "legacySelector": ".progress", "catalogId": "state", "adapter": "bootstrap", "status": "deprecated", "owner": "design-system", "sunsetPolicy": "remove-at-zero-consumers" },
-    { "legacySelector": ".modal-content", "catalogId": "overlay", "adapter": "bootstrap", "status": "deprecated", "owner": "design-system", "sunsetPolicy": "remove-at-zero-consumers" },
-    { "legacySelector": ".swal2-popup", "catalogId": "overlay", "adapter": "sweetalert2", "status": "deprecated", "owner": "design-system", "sunsetPolicy": "remove-at-zero-consumers" },
-    { "legacySelector": ".lps-drawer", "catalogId": "overlay", "adapter": "lps-legacy", "status": "deprecated", "owner": "lps", "sunsetPolicy": "future-module-migration" }
+    {
+      "legacySelector": "body.dark-mode",
+      "catalogId": "shell",
+      "adapter": "theme-bridge",
+      "status": "deprecated",
+      "owner": "design-system",
+      "sunsetPolicy": "remove-at-zero-consumers"
+    },
+    {
+      "legacySelector": ".card",
+      "catalogId": "card",
+      "adapter": "bootstrap",
+      "status": "deprecated",
+      "owner": "design-system",
+      "sunsetPolicy": "remove-at-zero-consumers"
+    },
+    {
+      "legacySelector": ".project-card",
+      "catalogId": "card",
+      "adapter": "bootstrap",
+      "status": "deprecated",
+      "owner": "projects",
+      "sunsetPolicy": "remove-at-zero-consumers"
+    },
+    {
+      "legacySelector": ".btn",
+      "catalogId": "button",
+      "adapter": "bootstrap",
+      "status": "deprecated",
+      "owner": "design-system",
+      "sunsetPolicy": "remove-at-zero-consumers"
+    },
+    {
+      "legacySelector": ".btn-pdc-modern",
+      "catalogId": "button",
+      "adapter": "module-legacy",
+      "status": "deprecated",
+      "owner": "pdc",
+      "sunsetPolicy": "future-module-migration"
+    },
+    {
+      "legacySelector": ".form-control",
+      "catalogId": "field",
+      "adapter": "bootstrap",
+      "status": "deprecated",
+      "owner": "design-system",
+      "sunsetPolicy": "remove-at-zero-consumers"
+    },
+    {
+      "legacySelector": ".custom-select",
+      "catalogId": "field",
+      "adapter": "bootstrap",
+      "status": "deprecated",
+      "owner": "design-system",
+      "sunsetPolicy": "remove-at-zero-consumers"
+    },
+    {
+      "legacySelector": ".badge",
+      "catalogId": "state",
+      "adapter": "bootstrap",
+      "status": "deprecated",
+      "owner": "design-system",
+      "sunsetPolicy": "remove-at-zero-consumers"
+    },
+    {
+      "legacySelector": ".progress",
+      "catalogId": "state",
+      "adapter": "bootstrap",
+      "status": "deprecated",
+      "owner": "design-system",
+      "sunsetPolicy": "remove-at-zero-consumers"
+    },
+    {
+      "legacySelector": ".modal-content",
+      "catalogId": "overlay",
+      "adapter": "bootstrap",
+      "status": "deprecated",
+      "owner": "design-system",
+      "sunsetPolicy": "remove-at-zero-consumers"
+    },
+    {
+      "legacySelector": ".swal2-popup",
+      "catalogId": "overlay",
+      "adapter": "sweetalert2",
+      "status": "deprecated",
+      "owner": "design-system",
+      "sunsetPolicy": "remove-at-zero-consumers"
+    },
+    {
+      "legacySelector": ".lps-drawer",
+      "catalogId": "overlay",
+      "adapter": "lps-legacy",
+      "status": "deprecated",
+      "owner": "lps",
+      "sunsetPolicy": "future-module-migration"
+    }
   ]
 }
