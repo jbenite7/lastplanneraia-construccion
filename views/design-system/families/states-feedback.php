@@ -14,6 +14,10 @@
             <?= \App\View\Components\DesignSystemComponent::liveRegion([
                 'message' => 'Cambios guardados', 'priority' => 'polite',
             ]) ?>
+            <div class="aia-feedback aia-feedback--info" data-ui-group="loading-spinner" role="status" aria-live="polite">
+                <span class="aia-spinner" aria-hidden="true"></span>
+                <span>Carga indeterminada</span>
+            </div>
         </div>
     </article>
 </div>

@@ -200,6 +200,46 @@ test('severity and urgency blocks keep distinct semantic backgrounds', async ({ 
   expect(new Set(mappedColors.map(({ background }) => background)).size).toBeGreaterThanOrEqual(3);
 });
 
+test('state headings and canonical spinner remain legible across themes and viewports', async ({ page }) => {
+  await page.setViewportSize(VIEWPORTS[0]);
+  await openAs(page, ADMIN);
+  await page.goto(
+    '/internal/design-system?fixture=approved-family-v1&family=states-feedback',
+    { waitUntil: 'domcontentloaded' },
+  );
+  const family = page.locator('[data-family="states-feedback"]');
+  const heading = family.locator('#state-semantics-title');
+  const loading = family.locator('[data-ui-group="loading-spinner"][role="status"]');
+
+  for (const viewport of VIEWPORTS) {
+    await page.setViewportSize(viewport);
+    for (const theme of ['dark', 'linen']) {
+      await page.evaluate((value) => window.AiaDesignSystem.setTheme(value), theme);
+      await expect(page.locator('html')).toHaveAttribute('data-aia-theme', theme);
+      const colors = await heading.evaluate((element) => {
+        let background = element.parentElement;
+        while (background && getComputedStyle(background).backgroundColor === 'rgba(0, 0, 0, 0)') {
+          background = background.parentElement;
+        }
+        return {
+          foreground: getComputedStyle(element).color,
+          background: getComputedStyle(background ?? document.body).backgroundColor,
+        };
+      });
+      const spinner = await loading.locator('.aia-spinner').evaluate((element) => {
+        const rect = element.getBoundingClientRect();
+        return { width: rect.width, height: rect.height };
+      });
+
+      expect(contrastRatio(colors.foreground, colors.background)).toBeGreaterThanOrEqual(4.5);
+      expect(spinner).toEqual({ width: 24, height: 24 });
+      await expect(loading).toHaveAttribute('role', 'status');
+      await expect(loading).toHaveAttribute('aria-live', 'polite');
+      await expect(loading).toContainText('Carga indeterminada');
+    }
+  }
+});
+
 test('density selector shows and applies the touch and compact contracts', async ({ page }) => {
   await page.setViewportSize(VIEWPORTS[0]);
   await openAs(page, ADMIN);
@@ -390,6 +430,68 @@ test('form controls, Select2 multi and active pagination preserve readable inset
     background: getComputedStyle(element).backgroundColor,
   }));
   expect(contrastRatio(paginationColors.foreground, paginationColors.background)).toBeGreaterThanOrEqual(4.5);
+});
+
+test('laboratory scroll and file alignment hold across themes and viewports', async ({ page }) => {
+  await page.setViewportSize(VIEWPORTS[0]);
+  await openAs(page, ADMIN);
+  await page.goto(
+    '/internal/design-system?fixture=approved-family-v1&family=forms-filters',
+    { waitUntil: 'domcontentloaded' },
+  );
+  await selectFamily(page, 'forms-filters');
+  const family = page.locator('[data-family="forms-filters"]');
+
+  for (const viewport of VIEWPORTS) {
+    await page.setViewportSize(viewport);
+    for (const theme of ['dark', 'linen']) {
+      await page.evaluate((value) => window.AiaDesignSystem.setTheme(value), theme);
+      await expect(page.locator('html')).toHaveAttribute('data-aia-theme', theme);
+      const geometry = await family.evaluate((element) => {
+        const file = element.querySelector('.aia-input[type="file"]');
+        const code = element.querySelector('.aia-input[aria-describedby="code-help"]');
+        const helper = element.querySelector('#code-help');
+        const fileField = file.closest('.aia-field');
+        const codeField = code.closest('.aia-field');
+        const fileRect = file.getBoundingClientRect();
+        const codeRect = code.getBoundingClientRect();
+        const helperRect = helper.getBoundingClientRect();
+        const fileFieldRect = fileField.getBoundingClientRect();
+        const codeFieldRect = codeField.getBoundingClientRect();
+        const fileCenter = (fileRect.top + fileRect.bottom) / 2;
+        const codeCenter = (codeRect.top + codeRect.bottom) / 2;
+        const fieldsShareRow = Math.abs(fileFieldRect.top - codeFieldRect.top) <= 1;
+        const peerCenter = fieldsShareRow
+          ? (codeRect.top + helperRect.bottom) / 2
+          : codeCenter + fileFieldRect.top - codeFieldRect.top;
+        const families = document.querySelector('.ds-lab__families');
+        const previousMinBlockSize = families.style.minBlockSize;
+        families.style.minBlockSize = `${innerHeight + 400}px`;
+        families.getBoundingClientRect();
+        const scrollTargets = [document.body, document.documentElement];
+        scrollTargets.forEach((target) => { target.scrollTop = 0; });
+        const scrollTopBefore = Math.max(...scrollTargets.map((target) => target.scrollTop));
+        scrollTargets.forEach((target) => { target.scrollTop = 240; });
+        const scrollTopAfter = Math.max(...scrollTargets.map((target) => target.scrollTop));
+        families.style.minBlockSize = previousMinBlockSize;
+        scrollTargets.forEach((target) => { target.scrollTop = 0; });
+
+        return {
+          centerDelta: Math.abs(fileCenter - peerCenter),
+          fileHeight: fileRect.height,
+          codeHeight: codeRect.height,
+          overflowY: getComputedStyle(document.body).overflowY,
+          scrollTopBefore,
+          scrollTopAfter,
+        };
+      });
+
+      expect(geometry.centerDelta).toBeLessThanOrEqual(1);
+      expect(Math.abs(geometry.fileHeight - geometry.codeHeight)).toBeLessThanOrEqual(1);
+      expect(geometry.overflowY).toBe('auto');
+      expect(geometry.scrollTopAfter).toBeGreaterThan(geometry.scrollTopBefore);
+    }
+  }
 });
 
 test('data display switches one record set between cards and table', async ({ page }) => {

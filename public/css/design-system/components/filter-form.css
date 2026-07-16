@@ -18,6 +18,10 @@
     color: var(--ds-active-text-primary);
   }
 
+  .aia-field:has(> .aia-input[type='file']) {
+    align-content: center;
+  }
+
   .aia-input,
   .aia-select,
   .aia-textarea {
@@ -73,7 +77,7 @@
 
   .aia-switch input {
     width: calc(var(--ds-space-6) + var(--ds-space-2));
-    height: var(--ds-space-5);
+    height: var(--ds-space-6);
     accent-color: var(--ds-active-action-primary);
   }
 

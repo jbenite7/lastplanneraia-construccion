@@ -1,8 +1,8 @@
 @layer components {
   .aia-spinner {
     display: inline-block;
-    width: var(--ds-space-5);
-    height: var(--ds-space-5);
+    width: var(--ds-space-6);
+    height: var(--ds-space-6);
     border: var(--ds-space-1) solid var(--ds-active-border);
     border-block-start-color: var(--ds-active-action-primary);
     border-radius: var(--ds-radius-pill);

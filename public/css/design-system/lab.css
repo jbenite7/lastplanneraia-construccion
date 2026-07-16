@@ -1,6 +1,7 @@
 @layer module {
 .ds-lab {
   min-width: 20rem;
+  overflow-y: auto;
 }
 
 .ds-lab__header {
@@ -19,7 +20,8 @@
 
 .ds-lab__header h1,
 .ds-lab__family h2,
-.ds-lab__family h3 {
+.ds-lab__family h3,
+.ds-lab__family h4 {
   margin: 0;
   color: var(--ds-active-text-primary);
   font-family: var(--ds-font-display);

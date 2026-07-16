@@ -175,6 +175,11 @@ test('the laboratory stylesheet has its own cache version', async () => {
   assert.match(view, /DesignSystemHeadComponent::renderStylesheet\('\/css\/design-system\/lab\.css'\)/);
 });
 
+test('the laboratory document explicitly enables vertical scrolling', async () => {
+  const css = await read('public/css/design-system/lab.css');
+  assert.match(css, /\.ds-lab\s*{[^}]*overflow-y:\s*auto/s);
+});
+
 test('legacy common-head views render the static head component', async () => {
   const inventory = JSON.parse(await read('docs/design-system/manifests/inventory.json'));
   const views = inventory.sharedHeadConsumers;

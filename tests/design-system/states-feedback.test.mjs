@@ -35,6 +35,18 @@ test('feedback messages preserve explicit lateral padding', async () => {
   assert.match(css, /@layer components\s*\{[\s\S]*\.aia-feedback\s*\{[\s\S]*padding:\s*var\(--ds-space-3\) var\(--ds-space-4\)/);
 });
 
+test('laboratory state section headings inherit canonical theme text', async () => {
+  const css = await readFile('public/css/design-system/lab.css', 'utf8');
+  assert.match(css, /\.ds-lab__header h1,\s*\.ds-lab__family h2,\s*\.ds-lab__family h3,\s*\.ds-lab__family h4\s*\{[^}]*color:\s*var\(--ds-active-text-primary\)/s);
+});
+
+test('loading spinner is rendered by the canonical states laboratory specimen', async () => {
+  const view = await readFile('views/design-system/families/states-feedback.php', 'utf8');
+  assert.match(view, /data-ui-group="loading-spinner"[^>]*role="status"[^>]*aria-live="polite"/);
+  assert.match(view, /data-ui-group="loading-spinner"[\s\S]*class="aia-spinner"[^>]*aria-hidden="true"/);
+  assert.match(view, /Carga indeterminada/);
+});
+
 test('state semantics map module labels to shared urgency colors', async () => {
   const semantics = await readJson('state-semantics.json');
   const css = await readFile('public/css/design-system/components/states-feedback.css', 'utf8');
