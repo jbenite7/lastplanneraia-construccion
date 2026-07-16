@@ -53,6 +53,43 @@ export async function changeWeek(page, week, destination = '/programa-general') 
   await expect(page.locator('#semana, #semana_PHP').first()).toHaveValue(String(week), { timeout: 45000 });
 }
 
+export async function captureReloadingJsonRequest(page, path, destination, action, timeout = 45_000) {
+  const captureKey = `e2e:ajax:${Date.now()}:${Math.random()}`;
+  await page.evaluate(({ key, targetPath }) => {
+    if (!window.jQuery) throw new Error('jQuery is required to capture the reloading request');
+    sessionStorage.removeItem(key);
+    const handler = (_event, _xhr, settings, data) => {
+      if (new URL(settings.url, window.location.href).pathname !== targetPath) return;
+      sessionStorage.setItem(key, JSON.stringify(data));
+      window.jQuery(document).off('ajaxSuccess.e2eReloadJson', handler);
+    };
+    window.jQuery(document).on('ajaxSuccess.e2eReloadJson', handler);
+  }, { key: captureKey, targetPath: path });
+
+  const responsePromise = page.waitForResponse((response) => (
+    new URL(response.url()).pathname === path && response.request().method() === 'POST'
+  ), { timeout });
+  const navigationPromise = page.waitForEvent('framenavigated', {
+    predicate: (frame) => frame === page.mainFrame()
+      && new URL(frame.url()).pathname === destination,
+    timeout,
+  });
+
+  await action();
+  const response = await responsePromise;
+  expect(response.ok(), `${path} HTTP ${response.status()}`).toBe(true);
+  expect(response.headers()['content-type'] || '').toMatch(/^application\/json\b/i);
+  await page.waitForFunction((key) => sessionStorage.getItem(key) !== null, captureKey, { timeout });
+  const serialized = await page.evaluate((key) => {
+    const value = sessionStorage.getItem(key);
+    sessionStorage.removeItem(key);
+    return value;
+  }, captureKey);
+  const payload = JSON.parse(serialized);
+  await navigationPromise;
+  return { response, payload };
+}
+
 export async function postFormJson(page, url, body = {}, options = {}) {
   return page.evaluate(
     async ({ apiUrl, apiBody, includePdcCsrf }) => {
