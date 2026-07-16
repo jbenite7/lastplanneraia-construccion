@@ -1,0 +1,2261 @@
+{
+  "$schema": "https://lastplanneraia.com/schemas/design-system-runtime-budget-v1.json",
+  "schemaVersion": 1,
+  "kind": "measurement",
+  "measurementKind": "current",
+  "status": "measured",
+  "designSystemVersion": "0.3.6",
+  "route": "/programa-general",
+  "viewport": "1440x900",
+  "theme": "dark",
+  "density": "compact",
+  "fixture": "sanitized-pilot-v1",
+  "ciRunId": "run-local-149de5a-20260716015226",
+  "sourceRef": "149de5a9c7c4943673b49ed1b17b991154b44bf5",
+  "sourceTreeHash": "e5c332481cf67496aa18ce74a7da8c1c5ba7cf92a1295a210949d30aa3ee49ee",
+  "fixtureSha256": "74f21c391cd768a5dd7223dbf42a9c3cb73c280d3183f9edd45580b90bf02f4e",
+  "recordedAt": "2026-07-16T01:57:47.032Z",
+  "metrics": {
+    "adapterAssets": [
+      "/css/design-system/adapters/handsontable.css",
+      "/css/design-system/adapters/legacy-bridge.css",
+      "/css/design-system/adapters/lps-drawer.css",
+      "/css/design-system/adapters/programa-general-handsontable.css",
+      "/css/design-system/adapters/select2.css",
+      "/css/design-system/adapters/semi-auto-review.css",
+      "/css/design-system/adapters/sweetalert2.css"
+    ],
+    "laboratoryAssets": [],
+    "cssGzipBytes": 138444,
+    "jsGzipBytes": 649957,
+    "duplicateRequestCount": 3,
+    "themeFlashCount": 0,
+    "initializationMs": 268.2,
+    "handsontableInteractionMs": 180.4
+  },
+  "provenance": {
+    "assets": [
+      {
+        "path": "/css/access.css",
+        "type": "css",
+        "rawBytes": 1100,
+        "gzipBytes": 537,
+        "sha256": "7e2d6640e35b9d80d85601c9fe6b9110f11680134ee8d705e1d6e8ea37e29645"
+      },
+      {
+        "path": "/css/aia-design-system.css",
+        "type": "css",
+        "rawBytes": 11250,
+        "gzipBytes": 2452,
+        "sha256": "dc244415336447c42c981d699cac80eea2295c5a53bfcb021ceb1e2cfabc0be1"
+      },
+      {
+        "path": "/css/buttons.css",
+        "type": "css",
+        "rawBytes": 35796,
+        "gzipBytes": 5999,
+        "sha256": "de073936ccbaf1c4517682ea129f4228814344736b9e8b6f97c2c81e503bc42b"
+      },
+      {
+        "path": "/css/design-system/adapters/handsontable.css",
+        "type": "css",
+        "rawBytes": 1843,
+        "gzipBytes": 469,
+        "sha256": "9b8c577f1c25430b66a22ba2f0329bcf424e759325261329234c60c07abfd68c"
+      },
+      {
+        "path": "/css/design-system/adapters/legacy-bridge.css",
+        "type": "css",
+        "rawBytes": 2834,
+        "gzipBytes": 836,
+        "sha256": "7400694ea4e08abd666e732e338d998cb611de63d9b13a0638da5a01aac79b1e"
+      },
+      {
+        "path": "/css/design-system/adapters/lps-drawer.css",
+        "type": "css",
+        "rawBytes": 409,
+        "gzipBytes": 229,
+        "sha256": "6bf426ccc3939928bd576abbcdb032858cbe30f95db605e2f7bdf444e11c9c52"
+      },
+      {
+        "path": "/css/design-system/adapters/programa-general-handsontable.css",
+        "type": "css",
+        "rawBytes": 3407,
+        "gzipBytes": 721,
+        "sha256": "faa7184c64eed0ab1784ce06fde5ae5314ec72bd03039b47a38068adac43d4e2"
+      },
+      {
+        "path": "/css/design-system/adapters/select2.css",
+        "type": "css",
+        "rawBytes": 2264,
+        "gzipBytes": 564,
+        "sha256": "54aa6c7c68f1eef4bf4cb88d1b4d1a9c8b3166721dfb70d1ba392f93eedb9d44"
+      },
+      {
+        "path": "/css/design-system/adapters/semi-auto-review.css",
+        "type": "css",
+        "rawBytes": 2698,
+        "gzipBytes": 810,
+        "sha256": "615f15f7cc6c4d9861c8be29f65fa785c22e870c3a4f11faf1b4db0e6c160945"
+      },
+      {
+        "path": "/css/design-system/adapters/sweetalert2.css",
+        "type": "css",
+        "rawBytes": 1747,
+        "gzipBytes": 501,
+        "sha256": "a055fad1d76aa38d74144bbd426627640f8b6b6cba4e73615b9d8f2047482791"
+      },
+      {
+        "path": "/css/design-system/components/action-group.css",
+        "type": "css",
+        "rawBytes": 697,
+        "gzipBytes": 309,
+        "sha256": "acd50b6cd4ed06725c2ac070ab71b974261dcd590264e186cd368ebd48d57a13"
+      },
+      {
+        "path": "/css/design-system/components/bi-figure.css",
+        "type": "css",
+        "rawBytes": 4906,
+        "gzipBytes": 1311,
+        "sha256": "cfebdf4b62be418f646d8b8008831408648e9146f7177a2d39aaf45481c88321"
+      },
+      {
+        "path": "/css/design-system/components/data-display.css",
+        "type": "css",
+        "rawBytes": 824,
+        "gzipBytes": 342,
+        "sha256": "49bade4a755734e9489b5bf6bb2ba0c5440c4420a9530cf151efbe3b36140c83"
+      },
+      {
+        "path": "/css/design-system/components/dialog.css",
+        "type": "css",
+        "rawBytes": 873,
+        "gzipBytes": 345,
+        "sha256": "c9655d068087dff40d5ad499b3d59236c3c56e12eb09465c478685e44ebaec16"
+      },
+      {
+        "path": "/css/design-system/components/filter-form.css",
+        "type": "css",
+        "rawBytes": 2374,
+        "gzipBytes": 658,
+        "sha256": "8d720dc8d44f7c06b55d9a87de7c1e992c51e62b24c0acebcaa093c50d955278"
+      },
+      {
+        "path": "/css/design-system/components/navigation.css",
+        "type": "css",
+        "rawBytes": 2647,
+        "gzipBytes": 754,
+        "sha256": "8f80bc45dcf6fbd21fecccbe1929b20248bc92e7c4662e52768368dedf89aa1b"
+      },
+      {
+        "path": "/css/design-system/components/page-header.css",
+        "type": "css",
+        "rawBytes": 1193,
+        "gzipBytes": 386,
+        "sha256": "9804bacd246d61da3ecd2a760013c2aa40b90258269c8e25bbe66fb008fcae61"
+      },
+      {
+        "path": "/css/design-system/components/primitives.css",
+        "type": "css",
+        "rawBytes": 2448,
+        "gzipBytes": 714,
+        "sha256": "f59a5e01e1ddd6f630e9fb0cbc2d4b7b544f9372807c1945f9ddbb399efe757b"
+      },
+      {
+        "path": "/css/design-system/components/states-feedback.css",
+        "type": "css",
+        "rawBytes": 2219,
+        "gzipBytes": 581,
+        "sha256": "9073dd4646e9be0e2d51fcfed7ff93b0cc1555032f949444f32fe4a4a2f7b9f4"
+      },
+      {
+        "path": "/css/design-system/fonts.css",
+        "type": "css",
+        "rawBytes": 397,
+        "gzipBytes": 196,
+        "sha256": "b1662f7e844ec57168614c78d3bd2f00713eec9541d7a622fd2cb0a7445403aa"
+      },
+      {
+        "path": "/css/design-system/foundation.css",
+        "type": "css",
+        "rawBytes": 410,
+        "gzipBytes": 243,
+        "sha256": "cf7c33e54dd48e0776525f50a8d5532c017a88ca401785b1e31fbf28eea7a7c4"
+      },
+      {
+        "path": "/css/design-system/vendor-datatables-legacy.css",
+        "type": "css",
+        "rawBytes": 520,
+        "gzipBytes": 241,
+        "sha256": "cd3b36fdf1b5e035acbc7709687586fc8c733f85ec71a15d6061912d49493b0e"
+      },
+      {
+        "path": "/css/handsontable-header-global.css",
+        "type": "css",
+        "rawBytes": 4325,
+        "gzipBytes": 927,
+        "sha256": "65a615e8e38e60e2c74bf4b4f797b98cf15a495033f7181c0bfdede83fa84848"
+      },
+      {
+        "path": "/css/handsontable-module.css",
+        "type": "css",
+        "rawBytes": 25000,
+        "gzipBytes": 5967,
+        "sha256": "5d0600bd4777d4784a214ad60b414163142ff4a1482e1d05b1b860c164cd31c6"
+      },
+      {
+        "path": "/css/programa-general.css",
+        "type": "css",
+        "rawBytes": 13184,
+        "gzipBytes": 2129,
+        "sha256": "9ee9202a544a124562be6e923e91eb70b59f997cb479ec2fd5933ad261f376e9"
+      },
+      {
+        "path": "/css/styles.css",
+        "type": "css",
+        "rawBytes": 167387,
+        "gzipBytes": 29987,
+        "sha256": "ee9ff69172d4d7231703bbc4b565f74b039e8a9c6e4067815cad6215a87f9b88"
+      },
+      {
+        "path": "/css/tokens.css",
+        "type": "css",
+        "rawBytes": 11945,
+        "gzipBytes": 2948,
+        "sha256": "ed01a33a703cd3f156cab496ef57682831dc35a9f5213da906035d95417e0582"
+      },
+      {
+        "path": "/js/cargarDatosGeneralesPagina2.js",
+        "type": "js",
+        "rawBytes": 46186,
+        "gzipBytes": 9295,
+        "sha256": "b058b73bccfb9154f619e902df23643902b66341c3c22060628b4f50f6037378"
+      },
+      {
+        "path": "/js/datatable-height-manager.js",
+        "type": "js",
+        "rawBytes": 6390,
+        "gzipBytes": 1603,
+        "sha256": "9c3c7f801de8f18590075aaf2850af331c99e00067bada54339a71d4d2f60e5d"
+      },
+      {
+        "path": "/js/funcionesGenerales6.js",
+        "type": "js",
+        "rawBytes": 10958,
+        "gzipBytes": 3106,
+        "sha256": "3d669ea2f32923554cb88b0c56017fbe083f3ffdac892d2882a1a641bc9be9f2"
+      },
+      {
+        "path": "/js/global-table-align.js",
+        "type": "js",
+        "rawBytes": 3010,
+        "gzipBytes": 1088,
+        "sha256": "5834aaf592204a1c9fcefc850fe664ffff83b6292313f6b344c5dbbd39f57ab6"
+      },
+      {
+        "path": "/js/linksComunesHead2.js",
+        "type": "js",
+        "rawBytes": 2653,
+        "gzipBytes": 1120,
+        "sha256": "7d6fc8d8271f8cead4039f40002ff9459ddca0aacf2136949cd77522b04b0509"
+      },
+      {
+        "path": "/js/mobile-table-fix.js",
+        "type": "js",
+        "rawBytes": 1036,
+        "gzipBytes": 515,
+        "sha256": "2ea7b43ba1e632386cc78367af53383d112a9628bc58c0627bb2c3e93fddf0cb"
+      },
+      {
+        "path": "/js/modules/aia_ui/theme-bootstrap.js",
+        "type": "js",
+        "rawBytes": 566,
+        "gzipBytes": 298,
+        "sha256": "ac2902b386691a109009df48722351ff8b765f0bdb6a10f833e7a9eef79b1f5a"
+      },
+      {
+        "path": "/js/modules/bi-access.js",
+        "type": "js",
+        "rawBytes": 1737,
+        "gzipBytes": 677,
+        "sha256": "b22e88b802a52c3faaea2e09805cb44bd85086ccb07068910fe1ec7b528f70a3"
+      },
+      {
+        "path": "/js/modules/lps_drawer.js",
+        "type": "js",
+        "rawBytes": 61885,
+        "gzipBytes": 15348,
+        "sha256": "da7ef4b356f115e9f2010c0e6a9764857126b6f73e1e1468df5243377d6d495f"
+      },
+      {
+        "path": "/js/modules/programa_general/hot.js",
+        "type": "js",
+        "rawBytes": 107873,
+        "gzipBytes": 23633,
+        "sha256": "c39aed13ba164a12777b066a90007f08811acdc3565d4bb6208e65190c96ee54"
+      },
+      {
+        "path": "/js/rbac_capabilities.js",
+        "type": "js",
+        "rawBytes": 4961,
+        "gzipBytes": 1519,
+        "sha256": "8516d71bfdec6f8d4365a6c1b9303bdcbec12a3a1a0426d9c674f0b98aee3b17"
+      },
+      {
+        "path": "/js/tablet-viewport-scale.js",
+        "type": "js",
+        "rawBytes": 5233,
+        "gzipBytes": 1517,
+        "sha256": "8447a698dc45895344a926dbb8a03a6d641efddda016b755da43fc8fa8a14af0"
+      },
+      {
+        "path": "/public/css/navbar.css",
+        "type": "css",
+        "rawBytes": 22828,
+        "gzipBytes": 5191,
+        "sha256": "1377bf3a93c2b96473e31b2fc5dea7698ee77f4fee4a6e6d79904d9e122e0a66"
+      },
+      {
+        "path": "/public/js/components/notifications.js",
+        "type": "js",
+        "rawBytes": 6856,
+        "gzipBytes": 2084,
+        "sha256": "86bf29cd53036ed020e5c1096438944de064732d2e6381bb73847d8c2eb8ad06"
+      },
+      {
+        "path": "/public/js/core/AiaAlertInterceptor.js",
+        "type": "js",
+        "rawBytes": 7157,
+        "gzipBytes": 1446,
+        "sha256": "723468a37496ff8a62cab48ce18d4d7f3db6e54e77a4bb18c6e725e392d02849"
+      },
+      {
+        "path": "/public/js/core/ContextManager.js",
+        "type": "js",
+        "rawBytes": 2715,
+        "gzipBytes": 926,
+        "sha256": "880d7195a4a926a016afe71108dd974fcba0a1516a02290644501027de759171"
+      },
+      {
+        "path": "/public/js/core/SessionTimeoutManager.js",
+        "type": "js",
+        "rawBytes": 5835,
+        "gzipBytes": 1673,
+        "sha256": "6a1b6afadd2db1894e5aa33e279b2f8462d5eec37f723d7006130d0abdf09fa5"
+      },
+      {
+        "path": "/public/js/modules/aia_ui/components.js",
+        "type": "js",
+        "rawBytes": 3762,
+        "gzipBytes": 1149,
+        "sha256": "8d2d054632d05434ea6596596ce22a597b9348db30fb981e1f86948e2610372f"
+      },
+      {
+        "path": "/public/js/modules/aia_ui/nav_drawer.js",
+        "type": "js",
+        "rawBytes": 3595,
+        "gzipBytes": 1139,
+        "sha256": "bd496993b41efe24dbbc3f5da4bee3ab95399359486acb6f7358a704f34f094b"
+      },
+      {
+        "path": "/public/js/modules/aia_ui/theme.js",
+        "type": "js",
+        "rawBytes": 3832,
+        "gzipBytes": 1100,
+        "sha256": "a806b160ff4b7173584c01d8b4243f0008657127f52838dd8688e3e14dcc814d"
+      },
+      {
+        "path": "/public/vendor/anychart/anychart-font.min.css",
+        "type": "css",
+        "rawBytes": 12619,
+        "gzipBytes": 2542,
+        "sha256": "c5d3ee187ae9304bfdd79a81ee9a2e7cb94570d5cf849dd35a0819c1563ee589"
+      },
+      {
+        "path": "/public/vendor/anychart/anychart-ui.min.css",
+        "type": "css",
+        "rawBytes": 34834,
+        "gzipBytes": 5067,
+        "sha256": "524503b446de44af3da748284aaac6412891a473f586288bf6cf2c6273ca5417"
+      },
+      {
+        "path": "/public/vendor/bootstrap/bootstrap.min.css",
+        "type": "css",
+        "rawBytes": 155758,
+        "gzipBytes": 23154,
+        "sha256": "60b19e5da6a9234ff9220668a5ec1125c157a268513256188ee80f2d2c8d8d36"
+      },
+      {
+        "path": "/public/vendor/bootstrap/bootstrap.min.js",
+        "type": "js",
+        "rawBytes": 58072,
+        "gzipBytes": 15371,
+        "sha256": "0a34a87842c539c1f4feec56bba982fd596b73500046a6e6fe38a22260c6577b"
+      },
+      {
+        "path": "/public/vendor/datatables/buttons.bootstrap4.min.css",
+        "type": "css",
+        "rawBytes": 3495,
+        "gzipBytes": 907,
+        "sha256": "d4efa25e845d49480d4e3ecdce65be0b776945ac621a7d5a7d25fea9f4425784"
+      },
+      {
+        "path": "/public/vendor/datatables/dataTables.bootstrap4.min.css",
+        "type": "css",
+        "rawBytes": 7496,
+        "gzipBytes": 1381,
+        "sha256": "94358b1b5d296aaf3837417fefcd7c9848f7616e5de8b092066223d8b8ab918a"
+      },
+      {
+        "path": "/public/vendor/datatables/dataTables.checkboxes.css",
+        "type": "css",
+        "rawBytes": 568,
+        "gzipBytes": 228,
+        "sha256": "32dc3fae79f13a6145c5e098326fa24007c48f3ecba5d0fbf2b57ec42e163fce"
+      },
+      {
+        "path": "/public/vendor/datatables/jquery.dataTables.css",
+        "type": "css",
+        "rawBytes": 17317,
+        "gzipBytes": 2537,
+        "sha256": "c1b90bc7f9cbb761d755a2b6afe74b4336dd7e1871165e5cac7515e9048f676a"
+      },
+      {
+        "path": "/public/vendor/font-awesome/css/all.css",
+        "type": "css",
+        "rawBytes": 70523,
+        "gzipBytes": 12677,
+        "sha256": "e3aab29c60242d216955b101a20e3782f3617eb3a3f819b05ddc458152bf2af7"
+      },
+      {
+        "path": "/public/vendor/handsontable/es-MX.js",
+        "type": "js",
+        "rawBytes": 7108,
+        "gzipBytes": 2067,
+        "sha256": "42a16abd46f046d6e5a2705bb4169f55150b60030e894c23b908573785e0ba13"
+      },
+      {
+        "path": "/public/vendor/handsontable/handsontable.full.min.css",
+        "type": "css",
+        "rawBytes": 40208,
+        "gzipBytes": 8235,
+        "sha256": "8e047426f090553e17044e57a2a51d6c3574b12d373f15bbe9dba6d6ef8c638a"
+      },
+      {
+        "path": "/public/vendor/handsontable/handsontable.full.min.js",
+        "type": "js",
+        "rawBytes": 1737190,
+        "gzipBytes": 415892,
+        "sha256": "68ba7a03d5cd0cc1996b16f231e48bdaf3a34f517badad8522b367794297e25a"
+      },
+      {
+        "path": "/public/vendor/jquery-ui.css",
+        "type": "css",
+        "rawBytes": 32266,
+        "gzipBytes": 5903,
+        "sha256": "5b45be553a356de9d5e5a1e2dac99438958f4612c6072341ade38bd9f3c44e08"
+      },
+      {
+        "path": "/public/vendor/jquery-ui.min.js",
+        "type": "js",
+        "rawBytes": 434373,
+        "gzipBytes": 106489,
+        "sha256": "76bbcc0a2f087f63a426cd3047494a9636d23d8b8880131f8fb477df150ca457"
+      },
+      {
+        "path": "/public/vendor/jquery.min.js",
+        "type": "js",
+        "rawBytes": 89501,
+        "gzipBytes": 30875,
+        "sha256": "ff1523fb7389539c84c65aba19260648793bb4f5e29329d2ee8804bc37a3fe6e"
+      },
+      {
+        "path": "/public/vendor/popper.min.js",
+        "type": "js",
+        "rawBytes": 21004,
+        "gzipBytes": 7450,
+        "sha256": "66f3a07e1fa9b64a686b66381e4458dbc8abf3dbbff954720c4eec07b84411c2"
+      },
+      {
+        "path": "/public/vendor/select2/select2.min.css",
+        "type": "css",
+        "rawBytes": 15275,
+        "gzipBytes": 1991,
+        "sha256": "1100388fbf996eb7b0090bf027336657188a330191b295cc1a0b7b23a0008aab"
+      },
+      {
+        "path": "/public/vendor/sweetalert2.min.css",
+        "type": "css",
+        "rawBytes": 25217,
+        "gzipBytes": 4443,
+        "sha256": "1764c65d6fa673c7b9ead5d804561eb9c1bf4a00faa90b7848d1719a95577549"
+      },
+      {
+        "path": "/public/vendor/toastr.min.css",
+        "type": "css",
+        "rawBytes": 6741,
+        "gzipBytes": 3032,
+        "sha256": "10d159adb573ca535b8275f1d27dc8d60fffd9678ee3b5f1a0f7b4be4a77342f"
+      },
+      {
+        "path": "/public/vendor/toastr.min.js",
+        "type": "js",
+        "rawBytes": 5537,
+        "gzipBytes": 2188,
+        "sha256": "ddb96c25de07962ffbc0243e6e68177ce74aee9fd950cb4f5d8d3c8e6c524a09"
+      },
+      {
+        "path": "/runtime/frontend-config.js",
+        "type": "js",
+        "rawBytes": 1237,
+        "gzipBytes": 389,
+        "sha256": "e0b3143249af3f547ee51cdf6484900ec0a792acd15c1f00f5353d69a11cec89"
+      }
+    ],
+    "assetInventorySha256": "85408fa218524e7e50537f12f8ddffe680bd6c97707b389b4a4a6d49ff932283",
+    "sampling": {
+      "rawSamplesPreserved": true,
+      "sampleCount": 3,
+      "aggregation": "median-of-three",
+      "rawReceipts": [
+        {
+          "index": 1,
+          "sha256": "7737a14b69579f12181a0c8e93305baeeefa6852e8a8001073c7f926b593511d"
+        },
+        {
+          "index": 2,
+          "sha256": "51854630ba71cd2afb27908eb2d64dee041bd40a2e23a79fabfc6d996f30adef"
+        },
+        {
+          "index": 3,
+          "sha256": "618b6c2e1bfc787e37c9fc82bdf68f80f73c7de157f9f53c4bc7d735a1ffe479"
+        }
+      ],
+      "aggregateReceiptSha256": "418156c1d82bc7be8fae27a59c6f063694b42a34a99927ade1b39f6599b827ac",
+      "samples": [
+        {
+          "$schema": "https://lastplanneraia.com/schemas/design-system-runtime-budget-v1.json",
+          "schemaVersion": 1,
+          "kind": "sample",
+          "measurementKind": "current",
+          "status": "sampled",
+          "designSystemVersion": "0.3.6",
+          "route": "/programa-general",
+          "viewport": "1440x900",
+          "theme": "dark",
+          "density": "compact",
+          "fixture": "sanitized-pilot-v1",
+          "ciRunId": "run-local-149de5a-20260716015226",
+          "sourceRef": "149de5a9c7c4943673b49ed1b17b991154b44bf5",
+          "sourceTreeHash": "e5c332481cf67496aa18ce74a7da8c1c5ba7cf92a1295a210949d30aa3ee49ee",
+          "fixtureSha256": "74f21c391cd768a5dd7223dbf42a9c3cb73c280d3183f9edd45580b90bf02f4e",
+          "recordedAt": "2026-07-16T01:57:40.751Z",
+          "metrics": {
+            "cssGzipBytes": 138444,
+            "jsGzipBytes": 649957,
+            "adapterAssets": [
+              "/css/design-system/adapters/handsontable.css",
+              "/css/design-system/adapters/legacy-bridge.css",
+              "/css/design-system/adapters/lps-drawer.css",
+              "/css/design-system/adapters/programa-general-handsontable.css",
+              "/css/design-system/adapters/select2.css",
+              "/css/design-system/adapters/semi-auto-review.css",
+              "/css/design-system/adapters/sweetalert2.css"
+            ],
+            "duplicateRequestCount": 3,
+            "themeFlashCount": 0,
+            "initializationMs": 267.1,
+            "handsontableInteractionMs": 198.6,
+            "laboratoryAssets": []
+          },
+          "provenance": {
+            "cacheMode": "navigation-resource-timing-plus-normalized-fetch",
+            "htmlSha256": "80b17e261182d9956fd5a3b50ac85b5610ca1974a47b2f80525f3139e4662606",
+            "assets": [
+              {
+                "path": "/css/access.css",
+                "type": "css",
+                "rawBytes": 1100,
+                "gzipBytes": 537,
+                "sha256": "7e2d6640e35b9d80d85601c9fe6b9110f11680134ee8d705e1d6e8ea37e29645"
+              },
+              {
+                "path": "/css/aia-design-system.css",
+                "type": "css",
+                "rawBytes": 11250,
+                "gzipBytes": 2452,
+                "sha256": "dc244415336447c42c981d699cac80eea2295c5a53bfcb021ceb1e2cfabc0be1"
+              },
+              {
+                "path": "/css/buttons.css",
+                "type": "css",
+                "rawBytes": 35796,
+                "gzipBytes": 5999,
+                "sha256": "de073936ccbaf1c4517682ea129f4228814344736b9e8b6f97c2c81e503bc42b"
+              },
+              {
+                "path": "/css/design-system/adapters/handsontable.css",
+                "type": "css",
+                "rawBytes": 1843,
+                "gzipBytes": 469,
+                "sha256": "9b8c577f1c25430b66a22ba2f0329bcf424e759325261329234c60c07abfd68c"
+              },
+              {
+                "path": "/css/design-system/adapters/legacy-bridge.css",
+                "type": "css",
+                "rawBytes": 2834,
+                "gzipBytes": 836,
+                "sha256": "7400694ea4e08abd666e732e338d998cb611de63d9b13a0638da5a01aac79b1e"
+              },
+              {
+                "path": "/css/design-system/adapters/lps-drawer.css",
+                "type": "css",
+                "rawBytes": 409,
+                "gzipBytes": 229,
+                "sha256": "6bf426ccc3939928bd576abbcdb032858cbe30f95db605e2f7bdf444e11c9c52"
+              },
+              {
+                "path": "/css/design-system/adapters/programa-general-handsontable.css",
+                "type": "css",
+                "rawBytes": 3407,
+                "gzipBytes": 721,
+                "sha256": "faa7184c64eed0ab1784ce06fde5ae5314ec72bd03039b47a38068adac43d4e2"
+              },
+              {
+                "path": "/css/design-system/adapters/select2.css",
+                "type": "css",
+                "rawBytes": 2264,
+                "gzipBytes": 564,
+                "sha256": "54aa6c7c68f1eef4bf4cb88d1b4d1a9c8b3166721dfb70d1ba392f93eedb9d44"
+              },
+              {
+                "path": "/css/design-system/adapters/semi-auto-review.css",
+                "type": "css",
+                "rawBytes": 2698,
+                "gzipBytes": 810,
+                "sha256": "615f15f7cc6c4d9861c8be29f65fa785c22e870c3a4f11faf1b4db0e6c160945"
+              },
+              {
+                "path": "/css/design-system/adapters/sweetalert2.css",
+                "type": "css",
+                "rawBytes": 1747,
+                "gzipBytes": 501,
+                "sha256": "a055fad1d76aa38d74144bbd426627640f8b6b6cba4e73615b9d8f2047482791"
+              },
+              {
+                "path": "/css/design-system/components/action-group.css",
+                "type": "css",
+                "rawBytes": 697,
+                "gzipBytes": 309,
+                "sha256": "acd50b6cd4ed06725c2ac070ab71b974261dcd590264e186cd368ebd48d57a13"
+              },
+              {
+                "path": "/css/design-system/components/bi-figure.css",
+                "type": "css",
+                "rawBytes": 4906,
+                "gzipBytes": 1311,
+                "sha256": "cfebdf4b62be418f646d8b8008831408648e9146f7177a2d39aaf45481c88321"
+              },
+              {
+                "path": "/css/design-system/components/data-display.css",
+                "type": "css",
+                "rawBytes": 824,
+                "gzipBytes": 342,
+                "sha256": "49bade4a755734e9489b5bf6bb2ba0c5440c4420a9530cf151efbe3b36140c83"
+              },
+              {
+                "path": "/css/design-system/components/dialog.css",
+                "type": "css",
+                "rawBytes": 873,
+                "gzipBytes": 345,
+                "sha256": "c9655d068087dff40d5ad499b3d59236c3c56e12eb09465c478685e44ebaec16"
+              },
+              {
+                "path": "/css/design-system/components/filter-form.css",
+                "type": "css",
+                "rawBytes": 2374,
+                "gzipBytes": 658,
+                "sha256": "8d720dc8d44f7c06b55d9a87de7c1e992c51e62b24c0acebcaa093c50d955278"
+              },
+              {
+                "path": "/css/design-system/components/navigation.css",
+                "type": "css",
+                "rawBytes": 2647,
+                "gzipBytes": 754,
+                "sha256": "8f80bc45dcf6fbd21fecccbe1929b20248bc92e7c4662e52768368dedf89aa1b"
+              },
+              {
+                "path": "/css/design-system/components/page-header.css",
+                "type": "css",
+                "rawBytes": 1193,
+                "gzipBytes": 386,
+                "sha256": "9804bacd246d61da3ecd2a760013c2aa40b90258269c8e25bbe66fb008fcae61"
+              },
+              {
+                "path": "/css/design-system/components/primitives.css",
+                "type": "css",
+                "rawBytes": 2448,
+                "gzipBytes": 714,
+                "sha256": "f59a5e01e1ddd6f630e9fb0cbc2d4b7b544f9372807c1945f9ddbb399efe757b"
+              },
+              {
+                "path": "/css/design-system/components/states-feedback.css",
+                "type": "css",
+                "rawBytes": 2219,
+                "gzipBytes": 581,
+                "sha256": "9073dd4646e9be0e2d51fcfed7ff93b0cc1555032f949444f32fe4a4a2f7b9f4"
+              },
+              {
+                "path": "/css/design-system/fonts.css",
+                "type": "css",
+                "rawBytes": 397,
+                "gzipBytes": 196,
+                "sha256": "b1662f7e844ec57168614c78d3bd2f00713eec9541d7a622fd2cb0a7445403aa"
+              },
+              {
+                "path": "/css/design-system/foundation.css",
+                "type": "css",
+                "rawBytes": 410,
+                "gzipBytes": 243,
+                "sha256": "cf7c33e54dd48e0776525f50a8d5532c017a88ca401785b1e31fbf28eea7a7c4"
+              },
+              {
+                "path": "/css/design-system/vendor-datatables-legacy.css",
+                "type": "css",
+                "rawBytes": 520,
+                "gzipBytes": 241,
+                "sha256": "cd3b36fdf1b5e035acbc7709687586fc8c733f85ec71a15d6061912d49493b0e"
+              },
+              {
+                "path": "/css/handsontable-header-global.css",
+                "type": "css",
+                "rawBytes": 4325,
+                "gzipBytes": 927,
+                "sha256": "65a615e8e38e60e2c74bf4b4f797b98cf15a495033f7181c0bfdede83fa84848"
+              },
+              {
+                "path": "/css/handsontable-module.css",
+                "type": "css",
+                "rawBytes": 25000,
+                "gzipBytes": 5967,
+                "sha256": "5d0600bd4777d4784a214ad60b414163142ff4a1482e1d05b1b860c164cd31c6"
+              },
+              {
+                "path": "/css/programa-general.css",
+                "type": "css",
+                "rawBytes": 13184,
+                "gzipBytes": 2129,
+                "sha256": "9ee9202a544a124562be6e923e91eb70b59f997cb479ec2fd5933ad261f376e9"
+              },
+              {
+                "path": "/css/styles.css",
+                "type": "css",
+                "rawBytes": 167387,
+                "gzipBytes": 29987,
+                "sha256": "ee9ff69172d4d7231703bbc4b565f74b039e8a9c6e4067815cad6215a87f9b88"
+              },
+              {
+                "path": "/css/tokens.css",
+                "type": "css",
+                "rawBytes": 11945,
+                "gzipBytes": 2948,
+                "sha256": "ed01a33a703cd3f156cab496ef57682831dc35a9f5213da906035d95417e0582"
+              },
+              {
+                "path": "/js/cargarDatosGeneralesPagina2.js",
+                "type": "js",
+                "rawBytes": 46186,
+                "gzipBytes": 9295,
+                "sha256": "b058b73bccfb9154f619e902df23643902b66341c3c22060628b4f50f6037378"
+              },
+              {
+                "path": "/js/datatable-height-manager.js",
+                "type": "js",
+                "rawBytes": 6390,
+                "gzipBytes": 1603,
+                "sha256": "9c3c7f801de8f18590075aaf2850af331c99e00067bada54339a71d4d2f60e5d"
+              },
+              {
+                "path": "/js/funcionesGenerales6.js",
+                "type": "js",
+                "rawBytes": 10958,
+                "gzipBytes": 3106,
+                "sha256": "3d669ea2f32923554cb88b0c56017fbe083f3ffdac892d2882a1a641bc9be9f2"
+              },
+              {
+                "path": "/js/global-table-align.js",
+                "type": "js",
+                "rawBytes": 3010,
+                "gzipBytes": 1088,
+                "sha256": "5834aaf592204a1c9fcefc850fe664ffff83b6292313f6b344c5dbbd39f57ab6"
+              },
+              {
+                "path": "/js/linksComunesHead2.js",
+                "type": "js",
+                "rawBytes": 2653,
+                "gzipBytes": 1120,
+                "sha256": "7d6fc8d8271f8cead4039f40002ff9459ddca0aacf2136949cd77522b04b0509"
+              },
+              {
+                "path": "/js/mobile-table-fix.js",
+                "type": "js",
+                "rawBytes": 1036,
+                "gzipBytes": 515,
+                "sha256": "2ea7b43ba1e632386cc78367af53383d112a9628bc58c0627bb2c3e93fddf0cb"
+              },
+              {
+                "path": "/js/modules/aia_ui/theme-bootstrap.js",
+                "type": "js",
+                "rawBytes": 566,
+                "gzipBytes": 298,
+                "sha256": "ac2902b386691a109009df48722351ff8b765f0bdb6a10f833e7a9eef79b1f5a"
+              },
+              {
+                "path": "/js/modules/bi-access.js",
+                "type": "js",
+                "rawBytes": 1737,
+                "gzipBytes": 677,
+                "sha256": "b22e88b802a52c3faaea2e09805cb44bd85086ccb07068910fe1ec7b528f70a3"
+              },
+              {
+                "path": "/js/modules/lps_drawer.js",
+                "type": "js",
+                "rawBytes": 61885,
+                "gzipBytes": 15348,
+                "sha256": "da7ef4b356f115e9f2010c0e6a9764857126b6f73e1e1468df5243377d6d495f"
+              },
+              {
+                "path": "/js/modules/programa_general/hot.js",
+                "type": "js",
+                "rawBytes": 107873,
+                "gzipBytes": 23633,
+                "sha256": "c39aed13ba164a12777b066a90007f08811acdc3565d4bb6208e65190c96ee54"
+              },
+              {
+                "path": "/js/rbac_capabilities.js",
+                "type": "js",
+                "rawBytes": 4961,
+                "gzipBytes": 1519,
+                "sha256": "8516d71bfdec6f8d4365a6c1b9303bdcbec12a3a1a0426d9c674f0b98aee3b17"
+              },
+              {
+                "path": "/js/tablet-viewport-scale.js",
+                "type": "js",
+                "rawBytes": 5233,
+                "gzipBytes": 1517,
+                "sha256": "8447a698dc45895344a926dbb8a03a6d641efddda016b755da43fc8fa8a14af0"
+              },
+              {
+                "path": "/public/css/navbar.css",
+                "type": "css",
+                "rawBytes": 22828,
+                "gzipBytes": 5191,
+                "sha256": "1377bf3a93c2b96473e31b2fc5dea7698ee77f4fee4a6e6d79904d9e122e0a66"
+              },
+              {
+                "path": "/public/js/components/notifications.js",
+                "type": "js",
+                "rawBytes": 6856,
+                "gzipBytes": 2084,
+                "sha256": "86bf29cd53036ed020e5c1096438944de064732d2e6381bb73847d8c2eb8ad06"
+              },
+              {
+                "path": "/public/js/core/AiaAlertInterceptor.js",
+                "type": "js",
+                "rawBytes": 7157,
+                "gzipBytes": 1446,
+                "sha256": "723468a37496ff8a62cab48ce18d4d7f3db6e54e77a4bb18c6e725e392d02849"
+              },
+              {
+                "path": "/public/js/core/ContextManager.js",
+                "type": "js",
+                "rawBytes": 2715,
+                "gzipBytes": 926,
+                "sha256": "880d7195a4a926a016afe71108dd974fcba0a1516a02290644501027de759171"
+              },
+              {
+                "path": "/public/js/core/SessionTimeoutManager.js",
+                "type": "js",
+                "rawBytes": 5835,
+                "gzipBytes": 1673,
+                "sha256": "6a1b6afadd2db1894e5aa33e279b2f8462d5eec37f723d7006130d0abdf09fa5"
+              },
+              {
+                "path": "/public/js/modules/aia_ui/components.js",
+                "type": "js",
+                "rawBytes": 3762,
+                "gzipBytes": 1149,
+                "sha256": "8d2d054632d05434ea6596596ce22a597b9348db30fb981e1f86948e2610372f"
+              },
+              {
+                "path": "/public/js/modules/aia_ui/nav_drawer.js",
+                "type": "js",
+                "rawBytes": 3595,
+                "gzipBytes": 1139,
+                "sha256": "bd496993b41efe24dbbc3f5da4bee3ab95399359486acb6f7358a704f34f094b"
+              },
+              {
+                "path": "/public/js/modules/aia_ui/theme.js",
+                "type": "js",
+                "rawBytes": 3832,
+                "gzipBytes": 1100,
+                "sha256": "a806b160ff4b7173584c01d8b4243f0008657127f52838dd8688e3e14dcc814d"
+              },
+              {
+                "path": "/public/vendor/anychart/anychart-font.min.css",
+                "type": "css",
+                "rawBytes": 12619,
+                "gzipBytes": 2542,
+                "sha256": "c5d3ee187ae9304bfdd79a81ee9a2e7cb94570d5cf849dd35a0819c1563ee589"
+              },
+              {
+                "path": "/public/vendor/anychart/anychart-ui.min.css",
+                "type": "css",
+                "rawBytes": 34834,
+                "gzipBytes": 5067,
+                "sha256": "524503b446de44af3da748284aaac6412891a473f586288bf6cf2c6273ca5417"
+              },
+              {
+                "path": "/public/vendor/bootstrap/bootstrap.min.css",
+                "type": "css",
+                "rawBytes": 155758,
+                "gzipBytes": 23154,
+                "sha256": "60b19e5da6a9234ff9220668a5ec1125c157a268513256188ee80f2d2c8d8d36"
+              },
+              {
+                "path": "/public/vendor/bootstrap/bootstrap.min.js",
+                "type": "js",
+                "rawBytes": 58072,
+                "gzipBytes": 15371,
+                "sha256": "0a34a87842c539c1f4feec56bba982fd596b73500046a6e6fe38a22260c6577b"
+              },
+              {
+                "path": "/public/vendor/datatables/buttons.bootstrap4.min.css",
+                "type": "css",
+                "rawBytes": 3495,
+                "gzipBytes": 907,
+                "sha256": "d4efa25e845d49480d4e3ecdce65be0b776945ac621a7d5a7d25fea9f4425784"
+              },
+              {
+                "path": "/public/vendor/datatables/dataTables.bootstrap4.min.css",
+                "type": "css",
+                "rawBytes": 7496,
+                "gzipBytes": 1381,
+                "sha256": "94358b1b5d296aaf3837417fefcd7c9848f7616e5de8b092066223d8b8ab918a"
+              },
+              {
+                "path": "/public/vendor/datatables/dataTables.checkboxes.css",
+                "type": "css",
+                "rawBytes": 568,
+                "gzipBytes": 228,
+                "sha256": "32dc3fae79f13a6145c5e098326fa24007c48f3ecba5d0fbf2b57ec42e163fce"
+              },
+              {
+                "path": "/public/vendor/datatables/jquery.dataTables.css",
+                "type": "css",
+                "rawBytes": 17317,
+                "gzipBytes": 2537,
+                "sha256": "c1b90bc7f9cbb761d755a2b6afe74b4336dd7e1871165e5cac7515e9048f676a"
+              },
+              {
+                "path": "/public/vendor/font-awesome/css/all.css",
+                "type": "css",
+                "rawBytes": 70523,
+                "gzipBytes": 12677,
+                "sha256": "e3aab29c60242d216955b101a20e3782f3617eb3a3f819b05ddc458152bf2af7"
+              },
+              {
+                "path": "/public/vendor/handsontable/es-MX.js",
+                "type": "js",
+                "rawBytes": 7108,
+                "gzipBytes": 2067,
+                "sha256": "42a16abd46f046d6e5a2705bb4169f55150b60030e894c23b908573785e0ba13"
+              },
+              {
+                "path": "/public/vendor/handsontable/handsontable.full.min.css",
+                "type": "css",
+                "rawBytes": 40208,
+                "gzipBytes": 8235,
+                "sha256": "8e047426f090553e17044e57a2a51d6c3574b12d373f15bbe9dba6d6ef8c638a"
+              },
+              {
+                "path": "/public/vendor/handsontable/handsontable.full.min.js",
+                "type": "js",
+                "rawBytes": 1737190,
+                "gzipBytes": 415892,
+                "sha256": "68ba7a03d5cd0cc1996b16f231e48bdaf3a34f517badad8522b367794297e25a"
+              },
+              {
+                "path": "/public/vendor/jquery-ui.css",
+                "type": "css",
+                "rawBytes": 32266,
+                "gzipBytes": 5903,
+                "sha256": "5b45be553a356de9d5e5a1e2dac99438958f4612c6072341ade38bd9f3c44e08"
+              },
+              {
+                "path": "/public/vendor/jquery-ui.min.js",
+                "type": "js",
+                "rawBytes": 434373,
+                "gzipBytes": 106489,
+                "sha256": "76bbcc0a2f087f63a426cd3047494a9636d23d8b8880131f8fb477df150ca457"
+              },
+              {
+                "path": "/public/vendor/jquery.min.js",
+                "type": "js",
+                "rawBytes": 89501,
+                "gzipBytes": 30875,
+                "sha256": "ff1523fb7389539c84c65aba19260648793bb4f5e29329d2ee8804bc37a3fe6e"
+              },
+              {
+                "path": "/public/vendor/popper.min.js",
+                "type": "js",
+                "rawBytes": 21004,
+                "gzipBytes": 7450,
+                "sha256": "66f3a07e1fa9b64a686b66381e4458dbc8abf3dbbff954720c4eec07b84411c2"
+              },
+              {
+                "path": "/public/vendor/select2/select2.min.css",
+                "type": "css",
+                "rawBytes": 15275,
+                "gzipBytes": 1991,
+                "sha256": "1100388fbf996eb7b0090bf027336657188a330191b295cc1a0b7b23a0008aab"
+              },
+              {
+                "path": "/public/vendor/sweetalert2.min.css",
+                "type": "css",
+                "rawBytes": 25217,
+                "gzipBytes": 4443,
+                "sha256": "1764c65d6fa673c7b9ead5d804561eb9c1bf4a00faa90b7848d1719a95577549"
+              },
+              {
+                "path": "/public/vendor/toastr.min.css",
+                "type": "css",
+                "rawBytes": 6741,
+                "gzipBytes": 3032,
+                "sha256": "10d159adb573ca535b8275f1d27dc8d60fffd9678ee3b5f1a0f7b4be4a77342f"
+              },
+              {
+                "path": "/public/vendor/toastr.min.js",
+                "type": "js",
+                "rawBytes": 5537,
+                "gzipBytes": 2188,
+                "sha256": "ddb96c25de07962ffbc0243e6e68177ce74aee9fd950cb4f5d8d3c8e6c524a09"
+              },
+              {
+                "path": "/runtime/frontend-config.js",
+                "type": "js",
+                "rawBytes": 1237,
+                "gzipBytes": 389,
+                "sha256": "e0b3143249af3f547ee51cdf6484900ec0a792acd15c1f00f5353d69a11cec89"
+              }
+            ],
+            "assetInventorySha256": "85408fa218524e7e50537f12f8ddffe680bd6c97707b389b4a4a6d49ff932283",
+            "duplicateRequests": [
+              {
+                "request": "http://127.0.0.1:18081/api/general/list?activa_a_tiempo=0&activa_atrasadas=0&activa_lookahead=0&activa_no_iniciadas=0&activa_terminadas=0&db=da_porto&semana=1",
+                "count": 2
+              },
+              {
+                "request": "http://127.0.0.1:18081/js/modules/bi-access.js",
+                "count": 2
+              },
+              {
+                "request": "http://127.0.0.1:18081/programa-general/filtros",
+                "count": 2
+              }
+            ],
+            "themeProbe": {
+              "firstPaintTheme": "dark",
+              "observations": [
+                {
+                  "phase": "initial",
+                  "theme": null,
+                  "at": 20.799999997019768
+                },
+                {
+                  "phase": "theme-mutation",
+                  "theme": "dark",
+                  "at": 27.799999997019768
+                },
+                {
+                  "phase": "first-paint",
+                  "theme": "dark",
+                  "at": 126.79999999701977
+                },
+                {
+                  "phase": "dom-content-loaded",
+                  "theme": "dark",
+                  "at": 136.79999999701977
+                },
+                {
+                  "phase": "theme-mutation",
+                  "theme": "dark",
+                  "at": 145.79999999701977
+                }
+              ],
+              "attached": true
+            },
+            "interactionKind": "column-filter-menu",
+            "node": "v26.5.0",
+            "playwrightProject": "",
+            "runtime": {
+              "ciRunId": "run-local-149de5a-20260716015226",
+              "gitHead": "149de5a9c7c4943673b49ed1b17b991154b44bf5",
+              "worktreeClean": true,
+              "sourceTreeSha256": "e5c332481cf67496aa18ce74a7da8c1c5ba7cf92a1295a210949d30aa3ee49ee",
+              "fixtureSha256": "74f21c391cd768a5dd7223dbf42a9c3cb73c280d3183f9edd45580b90bf02f4e"
+            }
+          }
+        },
+        {
+          "$schema": "https://lastplanneraia.com/schemas/design-system-runtime-budget-v1.json",
+          "schemaVersion": 1,
+          "kind": "sample",
+          "measurementKind": "current",
+          "status": "sampled",
+          "designSystemVersion": "0.3.6",
+          "route": "/programa-general",
+          "viewport": "1440x900",
+          "theme": "dark",
+          "density": "compact",
+          "fixture": "sanitized-pilot-v1",
+          "ciRunId": "run-local-149de5a-20260716015226",
+          "sourceRef": "149de5a9c7c4943673b49ed1b17b991154b44bf5",
+          "sourceTreeHash": "e5c332481cf67496aa18ce74a7da8c1c5ba7cf92a1295a210949d30aa3ee49ee",
+          "fixtureSha256": "74f21c391cd768a5dd7223dbf42a9c3cb73c280d3183f9edd45580b90bf02f4e",
+          "recordedAt": "2026-07-16T01:57:44.123Z",
+          "metrics": {
+            "cssGzipBytes": 138444,
+            "jsGzipBytes": 649957,
+            "adapterAssets": [
+              "/css/design-system/adapters/handsontable.css",
+              "/css/design-system/adapters/legacy-bridge.css",
+              "/css/design-system/adapters/lps-drawer.css",
+              "/css/design-system/adapters/programa-general-handsontable.css",
+              "/css/design-system/adapters/select2.css",
+              "/css/design-system/adapters/semi-auto-review.css",
+              "/css/design-system/adapters/sweetalert2.css"
+            ],
+            "duplicateRequestCount": 3,
+            "themeFlashCount": 0,
+            "initializationMs": 339.7,
+            "handsontableInteractionMs": 180.4,
+            "laboratoryAssets": []
+          },
+          "provenance": {
+            "cacheMode": "navigation-resource-timing-plus-normalized-fetch",
+            "htmlSha256": "5de2623be6ec8eefac5b1bdef291ca0ccbfd6b457accde7d426a105496d86802",
+            "assets": [
+              {
+                "path": "/css/access.css",
+                "type": "css",
+                "rawBytes": 1100,
+                "gzipBytes": 537,
+                "sha256": "7e2d6640e35b9d80d85601c9fe6b9110f11680134ee8d705e1d6e8ea37e29645"
+              },
+              {
+                "path": "/css/aia-design-system.css",
+                "type": "css",
+                "rawBytes": 11250,
+                "gzipBytes": 2452,
+                "sha256": "dc244415336447c42c981d699cac80eea2295c5a53bfcb021ceb1e2cfabc0be1"
+              },
+              {
+                "path": "/css/buttons.css",
+                "type": "css",
+                "rawBytes": 35796,
+                "gzipBytes": 5999,
+                "sha256": "de073936ccbaf1c4517682ea129f4228814344736b9e8b6f97c2c81e503bc42b"
+              },
+              {
+                "path": "/css/design-system/adapters/handsontable.css",
+                "type": "css",
+                "rawBytes": 1843,
+                "gzipBytes": 469,
+                "sha256": "9b8c577f1c25430b66a22ba2f0329bcf424e759325261329234c60c07abfd68c"
+              },
+              {
+                "path": "/css/design-system/adapters/legacy-bridge.css",
+                "type": "css",
+                "rawBytes": 2834,
+                "gzipBytes": 836,
+                "sha256": "7400694ea4e08abd666e732e338d998cb611de63d9b13a0638da5a01aac79b1e"
+              },
+              {
+                "path": "/css/design-system/adapters/lps-drawer.css",
+                "type": "css",
+                "rawBytes": 409,
+                "gzipBytes": 229,
+                "sha256": "6bf426ccc3939928bd576abbcdb032858cbe30f95db605e2f7bdf444e11c9c52"
+              },
+              {
+                "path": "/css/design-system/adapters/programa-general-handsontable.css",
+                "type": "css",
+                "rawBytes": 3407,
+                "gzipBytes": 721,
+                "sha256": "faa7184c64eed0ab1784ce06fde5ae5314ec72bd03039b47a38068adac43d4e2"
+              },
+              {
+                "path": "/css/design-system/adapters/select2.css",
+                "type": "css",
+                "rawBytes": 2264,
+                "gzipBytes": 564,
+                "sha256": "54aa6c7c68f1eef4bf4cb88d1b4d1a9c8b3166721dfb70d1ba392f93eedb9d44"
+              },
+              {
+                "path": "/css/design-system/adapters/semi-auto-review.css",
+                "type": "css",
+                "rawBytes": 2698,
+                "gzipBytes": 810,
+                "sha256": "615f15f7cc6c4d9861c8be29f65fa785c22e870c3a4f11faf1b4db0e6c160945"
+              },
+              {
+                "path": "/css/design-system/adapters/sweetalert2.css",
+                "type": "css",
+                "rawBytes": 1747,
+                "gzipBytes": 501,
+                "sha256": "a055fad1d76aa38d74144bbd426627640f8b6b6cba4e73615b9d8f2047482791"
+              },
+              {
+                "path": "/css/design-system/components/action-group.css",
+                "type": "css",
+                "rawBytes": 697,
+                "gzipBytes": 309,
+                "sha256": "acd50b6cd4ed06725c2ac070ab71b974261dcd590264e186cd368ebd48d57a13"
+              },
+              {
+                "path": "/css/design-system/components/bi-figure.css",
+                "type": "css",
+                "rawBytes": 4906,
+                "gzipBytes": 1311,
+                "sha256": "cfebdf4b62be418f646d8b8008831408648e9146f7177a2d39aaf45481c88321"
+              },
+              {
+                "path": "/css/design-system/components/data-display.css",
+                "type": "css",
+                "rawBytes": 824,
+                "gzipBytes": 342,
+                "sha256": "49bade4a755734e9489b5bf6bb2ba0c5440c4420a9530cf151efbe3b36140c83"
+              },
+              {
+                "path": "/css/design-system/components/dialog.css",
+                "type": "css",
+                "rawBytes": 873,
+                "gzipBytes": 345,
+                "sha256": "c9655d068087dff40d5ad499b3d59236c3c56e12eb09465c478685e44ebaec16"
+              },
+              {
+                "path": "/css/design-system/components/filter-form.css",
+                "type": "css",
+                "rawBytes": 2374,
+                "gzipBytes": 658,
+                "sha256": "8d720dc8d44f7c06b55d9a87de7c1e992c51e62b24c0acebcaa093c50d955278"
+              },
+              {
+                "path": "/css/design-system/components/navigation.css",
+                "type": "css",
+                "rawBytes": 2647,
+                "gzipBytes": 754,
+                "sha256": "8f80bc45dcf6fbd21fecccbe1929b20248bc92e7c4662e52768368dedf89aa1b"
+              },
+              {
+                "path": "/css/design-system/components/page-header.css",
+                "type": "css",
+                "rawBytes": 1193,
+                "gzipBytes": 386,
+                "sha256": "9804bacd246d61da3ecd2a760013c2aa40b90258269c8e25bbe66fb008fcae61"
+              },
+              {
+                "path": "/css/design-system/components/primitives.css",
+                "type": "css",
+                "rawBytes": 2448,
+                "gzipBytes": 714,
+                "sha256": "f59a5e01e1ddd6f630e9fb0cbc2d4b7b544f9372807c1945f9ddbb399efe757b"
+              },
+              {
+                "path": "/css/design-system/components/states-feedback.css",
+                "type": "css",
+                "rawBytes": 2219,
+                "gzipBytes": 581,
+                "sha256": "9073dd4646e9be0e2d51fcfed7ff93b0cc1555032f949444f32fe4a4a2f7b9f4"
+              },
+              {
+                "path": "/css/design-system/fonts.css",
+                "type": "css",
+                "rawBytes": 397,
+                "gzipBytes": 196,
+                "sha256": "b1662f7e844ec57168614c78d3bd2f00713eec9541d7a622fd2cb0a7445403aa"
+              },
+              {
+                "path": "/css/design-system/foundation.css",
+                "type": "css",
+                "rawBytes": 410,
+                "gzipBytes": 243,
+                "sha256": "cf7c33e54dd48e0776525f50a8d5532c017a88ca401785b1e31fbf28eea7a7c4"
+              },
+              {
+                "path": "/css/design-system/vendor-datatables-legacy.css",
+                "type": "css",
+                "rawBytes": 520,
+                "gzipBytes": 241,
+                "sha256": "cd3b36fdf1b5e035acbc7709687586fc8c733f85ec71a15d6061912d49493b0e"
+              },
+              {
+                "path": "/css/handsontable-header-global.css",
+                "type": "css",
+                "rawBytes": 4325,
+                "gzipBytes": 927,
+                "sha256": "65a615e8e38e60e2c74bf4b4f797b98cf15a495033f7181c0bfdede83fa84848"
+              },
+              {
+                "path": "/css/handsontable-module.css",
+                "type": "css",
+                "rawBytes": 25000,
+                "gzipBytes": 5967,
+                "sha256": "5d0600bd4777d4784a214ad60b414163142ff4a1482e1d05b1b860c164cd31c6"
+              },
+              {
+                "path": "/css/programa-general.css",
+                "type": "css",
+                "rawBytes": 13184,
+                "gzipBytes": 2129,
+                "sha256": "9ee9202a544a124562be6e923e91eb70b59f997cb479ec2fd5933ad261f376e9"
+              },
+              {
+                "path": "/css/styles.css",
+                "type": "css",
+                "rawBytes": 167387,
+                "gzipBytes": 29987,
+                "sha256": "ee9ff69172d4d7231703bbc4b565f74b039e8a9c6e4067815cad6215a87f9b88"
+              },
+              {
+                "path": "/css/tokens.css",
+                "type": "css",
+                "rawBytes": 11945,
+                "gzipBytes": 2948,
+                "sha256": "ed01a33a703cd3f156cab496ef57682831dc35a9f5213da906035d95417e0582"
+              },
+              {
+                "path": "/js/cargarDatosGeneralesPagina2.js",
+                "type": "js",
+                "rawBytes": 46186,
+                "gzipBytes": 9295,
+                "sha256": "b058b73bccfb9154f619e902df23643902b66341c3c22060628b4f50f6037378"
+              },
+              {
+                "path": "/js/datatable-height-manager.js",
+                "type": "js",
+                "rawBytes": 6390,
+                "gzipBytes": 1603,
+                "sha256": "9c3c7f801de8f18590075aaf2850af331c99e00067bada54339a71d4d2f60e5d"
+              },
+              {
+                "path": "/js/funcionesGenerales6.js",
+                "type": "js",
+                "rawBytes": 10958,
+                "gzipBytes": 3106,
+                "sha256": "3d669ea2f32923554cb88b0c56017fbe083f3ffdac892d2882a1a641bc9be9f2"
+              },
+              {
+                "path": "/js/global-table-align.js",
+                "type": "js",
+                "rawBytes": 3010,
+                "gzipBytes": 1088,
+                "sha256": "5834aaf592204a1c9fcefc850fe664ffff83b6292313f6b344c5dbbd39f57ab6"
+              },
+              {
+                "path": "/js/linksComunesHead2.js",
+                "type": "js",
+                "rawBytes": 2653,
+                "gzipBytes": 1120,
+                "sha256": "7d6fc8d8271f8cead4039f40002ff9459ddca0aacf2136949cd77522b04b0509"
+              },
+              {
+                "path": "/js/mobile-table-fix.js",
+                "type": "js",
+                "rawBytes": 1036,
+                "gzipBytes": 515,
+                "sha256": "2ea7b43ba1e632386cc78367af53383d112a9628bc58c0627bb2c3e93fddf0cb"
+              },
+              {
+                "path": "/js/modules/aia_ui/theme-bootstrap.js",
+                "type": "js",
+                "rawBytes": 566,
+                "gzipBytes": 298,
+                "sha256": "ac2902b386691a109009df48722351ff8b765f0bdb6a10f833e7a9eef79b1f5a"
+              },
+              {
+                "path": "/js/modules/bi-access.js",
+                "type": "js",
+                "rawBytes": 1737,
+                "gzipBytes": 677,
+                "sha256": "b22e88b802a52c3faaea2e09805cb44bd85086ccb07068910fe1ec7b528f70a3"
+              },
+              {
+                "path": "/js/modules/lps_drawer.js",
+                "type": "js",
+                "rawBytes": 61885,
+                "gzipBytes": 15348,
+                "sha256": "da7ef4b356f115e9f2010c0e6a9764857126b6f73e1e1468df5243377d6d495f"
+              },
+              {
+                "path": "/js/modules/programa_general/hot.js",
+                "type": "js",
+                "rawBytes": 107873,
+                "gzipBytes": 23633,
+                "sha256": "c39aed13ba164a12777b066a90007f08811acdc3565d4bb6208e65190c96ee54"
+              },
+              {
+                "path": "/js/rbac_capabilities.js",
+                "type": "js",
+                "rawBytes": 4961,
+                "gzipBytes": 1519,
+                "sha256": "8516d71bfdec6f8d4365a6c1b9303bdcbec12a3a1a0426d9c674f0b98aee3b17"
+              },
+              {
+                "path": "/js/tablet-viewport-scale.js",
+                "type": "js",
+                "rawBytes": 5233,
+                "gzipBytes": 1517,
+                "sha256": "8447a698dc45895344a926dbb8a03a6d641efddda016b755da43fc8fa8a14af0"
+              },
+              {
+                "path": "/public/css/navbar.css",
+                "type": "css",
+                "rawBytes": 22828,
+                "gzipBytes": 5191,
+                "sha256": "1377bf3a93c2b96473e31b2fc5dea7698ee77f4fee4a6e6d79904d9e122e0a66"
+              },
+              {
+                "path": "/public/js/components/notifications.js",
+                "type": "js",
+                "rawBytes": 6856,
+                "gzipBytes": 2084,
+                "sha256": "86bf29cd53036ed020e5c1096438944de064732d2e6381bb73847d8c2eb8ad06"
+              },
+              {
+                "path": "/public/js/core/AiaAlertInterceptor.js",
+                "type": "js",
+                "rawBytes": 7157,
+                "gzipBytes": 1446,
+                "sha256": "723468a37496ff8a62cab48ce18d4d7f3db6e54e77a4bb18c6e725e392d02849"
+              },
+              {
+                "path": "/public/js/core/ContextManager.js",
+                "type": "js",
+                "rawBytes": 2715,
+                "gzipBytes": 926,
+                "sha256": "880d7195a4a926a016afe71108dd974fcba0a1516a02290644501027de759171"
+              },
+              {
+                "path": "/public/js/core/SessionTimeoutManager.js",
+                "type": "js",
+                "rawBytes": 5835,
+                "gzipBytes": 1673,
+                "sha256": "6a1b6afadd2db1894e5aa33e279b2f8462d5eec37f723d7006130d0abdf09fa5"
+              },
+              {
+                "path": "/public/js/modules/aia_ui/components.js",
+                "type": "js",
+                "rawBytes": 3762,
+                "gzipBytes": 1149,
+                "sha256": "8d2d054632d05434ea6596596ce22a597b9348db30fb981e1f86948e2610372f"
+              },
+              {
+                "path": "/public/js/modules/aia_ui/nav_drawer.js",
+                "type": "js",
+                "rawBytes": 3595,
+                "gzipBytes": 1139,
+                "sha256": "bd496993b41efe24dbbc3f5da4bee3ab95399359486acb6f7358a704f34f094b"
+              },
+              {
+                "path": "/public/js/modules/aia_ui/theme.js",
+                "type": "js",
+                "rawBytes": 3832,
+                "gzipBytes": 1100,
+                "sha256": "a806b160ff4b7173584c01d8b4243f0008657127f52838dd8688e3e14dcc814d"
+              },
+              {
+                "path": "/public/vendor/anychart/anychart-font.min.css",
+                "type": "css",
+                "rawBytes": 12619,
+                "gzipBytes": 2542,
+                "sha256": "c5d3ee187ae9304bfdd79a81ee9a2e7cb94570d5cf849dd35a0819c1563ee589"
+              },
+              {
+                "path": "/public/vendor/anychart/anychart-ui.min.css",
+                "type": "css",
+                "rawBytes": 34834,
+                "gzipBytes": 5067,
+                "sha256": "524503b446de44af3da748284aaac6412891a473f586288bf6cf2c6273ca5417"
+              },
+              {
+                "path": "/public/vendor/bootstrap/bootstrap.min.css",
+                "type": "css",
+                "rawBytes": 155758,
+                "gzipBytes": 23154,
+                "sha256": "60b19e5da6a9234ff9220668a5ec1125c157a268513256188ee80f2d2c8d8d36"
+              },
+              {
+                "path": "/public/vendor/bootstrap/bootstrap.min.js",
+                "type": "js",
+                "rawBytes": 58072,
+                "gzipBytes": 15371,
+                "sha256": "0a34a87842c539c1f4feec56bba982fd596b73500046a6e6fe38a22260c6577b"
+              },
+              {
+                "path": "/public/vendor/datatables/buttons.bootstrap4.min.css",
+                "type": "css",
+                "rawBytes": 3495,
+                "gzipBytes": 907,
+                "sha256": "d4efa25e845d49480d4e3ecdce65be0b776945ac621a7d5a7d25fea9f4425784"
+              },
+              {
+                "path": "/public/vendor/datatables/dataTables.bootstrap4.min.css",
+                "type": "css",
+                "rawBytes": 7496,
+                "gzipBytes": 1381,
+                "sha256": "94358b1b5d296aaf3837417fefcd7c9848f7616e5de8b092066223d8b8ab918a"
+              },
+              {
+                "path": "/public/vendor/datatables/dataTables.checkboxes.css",
+                "type": "css",
+                "rawBytes": 568,
+                "gzipBytes": 228,
+                "sha256": "32dc3fae79f13a6145c5e098326fa24007c48f3ecba5d0fbf2b57ec42e163fce"
+              },
+              {
+                "path": "/public/vendor/datatables/jquery.dataTables.css",
+                "type": "css",
+                "rawBytes": 17317,
+                "gzipBytes": 2537,
+                "sha256": "c1b90bc7f9cbb761d755a2b6afe74b4336dd7e1871165e5cac7515e9048f676a"
+              },
+              {
+                "path": "/public/vendor/font-awesome/css/all.css",
+                "type": "css",
+                "rawBytes": 70523,
+                "gzipBytes": 12677,
+                "sha256": "e3aab29c60242d216955b101a20e3782f3617eb3a3f819b05ddc458152bf2af7"
+              },
+              {
+                "path": "/public/vendor/handsontable/es-MX.js",
+                "type": "js",
+                "rawBytes": 7108,
+                "gzipBytes": 2067,
+                "sha256": "42a16abd46f046d6e5a2705bb4169f55150b60030e894c23b908573785e0ba13"
+              },
+              {
+                "path": "/public/vendor/handsontable/handsontable.full.min.css",
+                "type": "css",
+                "rawBytes": 40208,
+                "gzipBytes": 8235,
+                "sha256": "8e047426f090553e17044e57a2a51d6c3574b12d373f15bbe9dba6d6ef8c638a"
+              },
+              {
+                "path": "/public/vendor/handsontable/handsontable.full.min.js",
+                "type": "js",
+                "rawBytes": 1737190,
+                "gzipBytes": 415892,
+                "sha256": "68ba7a03d5cd0cc1996b16f231e48bdaf3a34f517badad8522b367794297e25a"
+              },
+              {
+                "path": "/public/vendor/jquery-ui.css",
+                "type": "css",
+                "rawBytes": 32266,
+                "gzipBytes": 5903,
+                "sha256": "5b45be553a356de9d5e5a1e2dac99438958f4612c6072341ade38bd9f3c44e08"
+              },
+              {
+                "path": "/public/vendor/jquery-ui.min.js",
+                "type": "js",
+                "rawBytes": 434373,
+                "gzipBytes": 106489,
+                "sha256": "76bbcc0a2f087f63a426cd3047494a9636d23d8b8880131f8fb477df150ca457"
+              },
+              {
+                "path": "/public/vendor/jquery.min.js",
+                "type": "js",
+                "rawBytes": 89501,
+                "gzipBytes": 30875,
+                "sha256": "ff1523fb7389539c84c65aba19260648793bb4f5e29329d2ee8804bc37a3fe6e"
+              },
+              {
+                "path": "/public/vendor/popper.min.js",
+                "type": "js",
+                "rawBytes": 21004,
+                "gzipBytes": 7450,
+                "sha256": "66f3a07e1fa9b64a686b66381e4458dbc8abf3dbbff954720c4eec07b84411c2"
+              },
+              {
+                "path": "/public/vendor/select2/select2.min.css",
+                "type": "css",
+                "rawBytes": 15275,
+                "gzipBytes": 1991,
+                "sha256": "1100388fbf996eb7b0090bf027336657188a330191b295cc1a0b7b23a0008aab"
+              },
+              {
+                "path": "/public/vendor/sweetalert2.min.css",
+                "type": "css",
+                "rawBytes": 25217,
+                "gzipBytes": 4443,
+                "sha256": "1764c65d6fa673c7b9ead5d804561eb9c1bf4a00faa90b7848d1719a95577549"
+              },
+              {
+                "path": "/public/vendor/toastr.min.css",
+                "type": "css",
+                "rawBytes": 6741,
+                "gzipBytes": 3032,
+                "sha256": "10d159adb573ca535b8275f1d27dc8d60fffd9678ee3b5f1a0f7b4be4a77342f"
+              },
+              {
+                "path": "/public/vendor/toastr.min.js",
+                "type": "js",
+                "rawBytes": 5537,
+                "gzipBytes": 2188,
+                "sha256": "ddb96c25de07962ffbc0243e6e68177ce74aee9fd950cb4f5d8d3c8e6c524a09"
+              },
+              {
+                "path": "/runtime/frontend-config.js",
+                "type": "js",
+                "rawBytes": 1237,
+                "gzipBytes": 389,
+                "sha256": "e0b3143249af3f547ee51cdf6484900ec0a792acd15c1f00f5353d69a11cec89"
+              }
+            ],
+            "assetInventorySha256": "85408fa218524e7e50537f12f8ddffe680bd6c97707b389b4a4a6d49ff932283",
+            "duplicateRequests": [
+              {
+                "request": "http://127.0.0.1:18081/api/general/list?activa_a_tiempo=0&activa_atrasadas=0&activa_lookahead=0&activa_no_iniciadas=0&activa_terminadas=0&db=da_porto&semana=1",
+                "count": 2
+              },
+              {
+                "request": "http://127.0.0.1:18081/js/modules/bi-access.js",
+                "count": 2
+              },
+              {
+                "request": "http://127.0.0.1:18081/programa-general/filtros",
+                "count": 2
+              }
+            ],
+            "themeProbe": {
+              "firstPaintTheme": "dark",
+              "observations": [
+                {
+                  "phase": "initial",
+                  "theme": null,
+                  "at": 22
+                },
+                {
+                  "phase": "theme-mutation",
+                  "theme": "dark",
+                  "at": 29.5
+                },
+                {
+                  "phase": "first-paint",
+                  "theme": "dark",
+                  "at": 132.69999998807907
+                },
+                {
+                  "phase": "dom-content-loaded",
+                  "theme": "dark",
+                  "at": 149.09999999403954
+                },
+                {
+                  "phase": "theme-mutation",
+                  "theme": "dark",
+                  "at": 160.79999999701977
+                }
+              ],
+              "attached": true
+            },
+            "interactionKind": "column-filter-menu",
+            "node": "v26.5.0",
+            "playwrightProject": "",
+            "runtime": {
+              "ciRunId": "run-local-149de5a-20260716015226",
+              "gitHead": "149de5a9c7c4943673b49ed1b17b991154b44bf5",
+              "worktreeClean": true,
+              "sourceTreeSha256": "e5c332481cf67496aa18ce74a7da8c1c5ba7cf92a1295a210949d30aa3ee49ee",
+              "fixtureSha256": "74f21c391cd768a5dd7223dbf42a9c3cb73c280d3183f9edd45580b90bf02f4e"
+            }
+          }
+        },
+        {
+          "$schema": "https://lastplanneraia.com/schemas/design-system-runtime-budget-v1.json",
+          "schemaVersion": 1,
+          "kind": "sample",
+          "measurementKind": "current",
+          "status": "sampled",
+          "designSystemVersion": "0.3.6",
+          "route": "/programa-general",
+          "viewport": "1440x900",
+          "theme": "dark",
+          "density": "compact",
+          "fixture": "sanitized-pilot-v1",
+          "ciRunId": "run-local-149de5a-20260716015226",
+          "sourceRef": "149de5a9c7c4943673b49ed1b17b991154b44bf5",
+          "sourceTreeHash": "e5c332481cf67496aa18ce74a7da8c1c5ba7cf92a1295a210949d30aa3ee49ee",
+          "fixtureSha256": "74f21c391cd768a5dd7223dbf42a9c3cb73c280d3183f9edd45580b90bf02f4e",
+          "recordedAt": "2026-07-16T01:57:47.032Z",
+          "metrics": {
+            "cssGzipBytes": 138444,
+            "jsGzipBytes": 649957,
+            "adapterAssets": [
+              "/css/design-system/adapters/handsontable.css",
+              "/css/design-system/adapters/legacy-bridge.css",
+              "/css/design-system/adapters/lps-drawer.css",
+              "/css/design-system/adapters/programa-general-handsontable.css",
+              "/css/design-system/adapters/select2.css",
+              "/css/design-system/adapters/semi-auto-review.css",
+              "/css/design-system/adapters/sweetalert2.css"
+            ],
+            "duplicateRequestCount": 3,
+            "themeFlashCount": 0,
+            "initializationMs": 268.2,
+            "handsontableInteractionMs": 177,
+            "laboratoryAssets": []
+          },
+          "provenance": {
+            "cacheMode": "navigation-resource-timing-plus-normalized-fetch",
+            "htmlSha256": "47e6c588d4382581402dd0a678eb777cf4c6d1ccb781482b2cf623aa622b79af",
+            "assets": [
+              {
+                "path": "/css/access.css",
+                "type": "css",
+                "rawBytes": 1100,
+                "gzipBytes": 537,
+                "sha256": "7e2d6640e35b9d80d85601c9fe6b9110f11680134ee8d705e1d6e8ea37e29645"
+              },
+              {
+                "path": "/css/aia-design-system.css",
+                "type": "css",
+                "rawBytes": 11250,
+                "gzipBytes": 2452,
+                "sha256": "dc244415336447c42c981d699cac80eea2295c5a53bfcb021ceb1e2cfabc0be1"
+              },
+              {
+                "path": "/css/buttons.css",
+                "type": "css",
+                "rawBytes": 35796,
+                "gzipBytes": 5999,
+                "sha256": "de073936ccbaf1c4517682ea129f4228814344736b9e8b6f97c2c81e503bc42b"
+              },
+              {
+                "path": "/css/design-system/adapters/handsontable.css",
+                "type": "css",
+                "rawBytes": 1843,
+                "gzipBytes": 469,
+                "sha256": "9b8c577f1c25430b66a22ba2f0329bcf424e759325261329234c60c07abfd68c"
+              },
+              {
+                "path": "/css/design-system/adapters/legacy-bridge.css",
+                "type": "css",
+                "rawBytes": 2834,
+                "gzipBytes": 836,
+                "sha256": "7400694ea4e08abd666e732e338d998cb611de63d9b13a0638da5a01aac79b1e"
+              },
+              {
+                "path": "/css/design-system/adapters/lps-drawer.css",
+                "type": "css",
+                "rawBytes": 409,
+                "gzipBytes": 229,
+                "sha256": "6bf426ccc3939928bd576abbcdb032858cbe30f95db605e2f7bdf444e11c9c52"
+              },
+              {
+                "path": "/css/design-system/adapters/programa-general-handsontable.css",
+                "type": "css",
+                "rawBytes": 3407,
+                "gzipBytes": 721,
+                "sha256": "faa7184c64eed0ab1784ce06fde5ae5314ec72bd03039b47a38068adac43d4e2"
+              },
+              {
+                "path": "/css/design-system/adapters/select2.css",
+                "type": "css",
+                "rawBytes": 2264,
+                "gzipBytes": 564,
+                "sha256": "54aa6c7c68f1eef4bf4cb88d1b4d1a9c8b3166721dfb70d1ba392f93eedb9d44"
+              },
+              {
+                "path": "/css/design-system/adapters/semi-auto-review.css",
+                "type": "css",
+                "rawBytes": 2698,
+                "gzipBytes": 810,
+                "sha256": "615f15f7cc6c4d9861c8be29f65fa785c22e870c3a4f11faf1b4db0e6c160945"
+              },
+              {
+                "path": "/css/design-system/adapters/sweetalert2.css",
+                "type": "css",
+                "rawBytes": 1747,
+                "gzipBytes": 501,
+                "sha256": "a055fad1d76aa38d74144bbd426627640f8b6b6cba4e73615b9d8f2047482791"
+              },
+              {
+                "path": "/css/design-system/components/action-group.css",
+                "type": "css",
+                "rawBytes": 697,
+                "gzipBytes": 309,
+                "sha256": "acd50b6cd4ed06725c2ac070ab71b974261dcd590264e186cd368ebd48d57a13"
+              },
+              {
+                "path": "/css/design-system/components/bi-figure.css",
+                "type": "css",
+                "rawBytes": 4906,
+                "gzipBytes": 1311,
+                "sha256": "cfebdf4b62be418f646d8b8008831408648e9146f7177a2d39aaf45481c88321"
+              },
+              {
+                "path": "/css/design-system/components/data-display.css",
+                "type": "css",
+                "rawBytes": 824,
+                "gzipBytes": 342,
+                "sha256": "49bade4a755734e9489b5bf6bb2ba0c5440c4420a9530cf151efbe3b36140c83"
+              },
+              {
+                "path": "/css/design-system/components/dialog.css",
+                "type": "css",
+                "rawBytes": 873,
+                "gzipBytes": 345,
+                "sha256": "c9655d068087dff40d5ad499b3d59236c3c56e12eb09465c478685e44ebaec16"
+              },
+              {
+                "path": "/css/design-system/components/filter-form.css",
+                "type": "css",
+                "rawBytes": 2374,
+                "gzipBytes": 658,
+                "sha256": "8d720dc8d44f7c06b55d9a87de7c1e992c51e62b24c0acebcaa093c50d955278"
+              },
+              {
+                "path": "/css/design-system/components/navigation.css",
+                "type": "css",
+                "rawBytes": 2647,
+                "gzipBytes": 754,
+                "sha256": "8f80bc45dcf6fbd21fecccbe1929b20248bc92e7c4662e52768368dedf89aa1b"
+              },
+              {
+                "path": "/css/design-system/components/page-header.css",
+                "type": "css",
+                "rawBytes": 1193,
+                "gzipBytes": 386,
+                "sha256": "9804bacd246d61da3ecd2a760013c2aa40b90258269c8e25bbe66fb008fcae61"
+              },
+              {
+                "path": "/css/design-system/components/primitives.css",
+                "type": "css",
+                "rawBytes": 2448,
+                "gzipBytes": 714,
+                "sha256": "f59a5e01e1ddd6f630e9fb0cbc2d4b7b544f9372807c1945f9ddbb399efe757b"
+              },
+              {
+                "path": "/css/design-system/components/states-feedback.css",
+                "type": "css",
+                "rawBytes": 2219,
+                "gzipBytes": 581,
+                "sha256": "9073dd4646e9be0e2d51fcfed7ff93b0cc1555032f949444f32fe4a4a2f7b9f4"
+              },
+              {
+                "path": "/css/design-system/fonts.css",
+                "type": "css",
+                "rawBytes": 397,
+                "gzipBytes": 196,
+                "sha256": "b1662f7e844ec57168614c78d3bd2f00713eec9541d7a622fd2cb0a7445403aa"
+              },
+              {
+                "path": "/css/design-system/foundation.css",
+                "type": "css",
+                "rawBytes": 410,
+                "gzipBytes": 243,
+                "sha256": "cf7c33e54dd48e0776525f50a8d5532c017a88ca401785b1e31fbf28eea7a7c4"
+              },
+              {
+                "path": "/css/design-system/vendor-datatables-legacy.css",
+                "type": "css",
+                "rawBytes": 520,
+                "gzipBytes": 241,
+                "sha256": "cd3b36fdf1b5e035acbc7709687586fc8c733f85ec71a15d6061912d49493b0e"
+              },
+              {
+                "path": "/css/handsontable-header-global.css",
+                "type": "css",
+                "rawBytes": 4325,
+                "gzipBytes": 927,
+                "sha256": "65a615e8e38e60e2c74bf4b4f797b98cf15a495033f7181c0bfdede83fa84848"
+              },
+              {
+                "path": "/css/handsontable-module.css",
+                "type": "css",
+                "rawBytes": 25000,
+                "gzipBytes": 5967,
+                "sha256": "5d0600bd4777d4784a214ad60b414163142ff4a1482e1d05b1b860c164cd31c6"
+              },
+              {
+                "path": "/css/programa-general.css",
+                "type": "css",
+                "rawBytes": 13184,
+                "gzipBytes": 2129,
+                "sha256": "9ee9202a544a124562be6e923e91eb70b59f997cb479ec2fd5933ad261f376e9"
+              },
+              {
+                "path": "/css/styles.css",
+                "type": "css",
+                "rawBytes": 167387,
+                "gzipBytes": 29987,
+                "sha256": "ee9ff69172d4d7231703bbc4b565f74b039e8a9c6e4067815cad6215a87f9b88"
+              },
+              {
+                "path": "/css/tokens.css",
+                "type": "css",
+                "rawBytes": 11945,
+                "gzipBytes": 2948,
+                "sha256": "ed01a33a703cd3f156cab496ef57682831dc35a9f5213da906035d95417e0582"
+              },
+              {
+                "path": "/js/cargarDatosGeneralesPagina2.js",
+                "type": "js",
+                "rawBytes": 46186,
+                "gzipBytes": 9295,
+                "sha256": "b058b73bccfb9154f619e902df23643902b66341c3c22060628b4f50f6037378"
+              },
+              {
+                "path": "/js/datatable-height-manager.js",
+                "type": "js",
+                "rawBytes": 6390,
+                "gzipBytes": 1603,
+                "sha256": "9c3c7f801de8f18590075aaf2850af331c99e00067bada54339a71d4d2f60e5d"
+              },
+              {
+                "path": "/js/funcionesGenerales6.js",
+                "type": "js",
+                "rawBytes": 10958,
+                "gzipBytes": 3106,
+                "sha256": "3d669ea2f32923554cb88b0c56017fbe083f3ffdac892d2882a1a641bc9be9f2"
+              },
+              {
+                "path": "/js/global-table-align.js",
+                "type": "js",
+                "rawBytes": 3010,
+                "gzipBytes": 1088,
+                "sha256": "5834aaf592204a1c9fcefc850fe664ffff83b6292313f6b344c5dbbd39f57ab6"
+              },
+              {
+                "path": "/js/linksComunesHead2.js",
+                "type": "js",
+                "rawBytes": 2653,
+                "gzipBytes": 1120,
+                "sha256": "7d6fc8d8271f8cead4039f40002ff9459ddca0aacf2136949cd77522b04b0509"
+              },
+              {
+                "path": "/js/mobile-table-fix.js",
+                "type": "js",
+                "rawBytes": 1036,
+                "gzipBytes": 515,
+                "sha256": "2ea7b43ba1e632386cc78367af53383d112a9628bc58c0627bb2c3e93fddf0cb"
+              },
+              {
+                "path": "/js/modules/aia_ui/theme-bootstrap.js",
+                "type": "js",
+                "rawBytes": 566,
+                "gzipBytes": 298,
+                "sha256": "ac2902b386691a109009df48722351ff8b765f0bdb6a10f833e7a9eef79b1f5a"
+              },
+              {
+                "path": "/js/modules/bi-access.js",
+                "type": "js",
+                "rawBytes": 1737,
+                "gzipBytes": 677,
+                "sha256": "b22e88b802a52c3faaea2e09805cb44bd85086ccb07068910fe1ec7b528f70a3"
+              },
+              {
+                "path": "/js/modules/lps_drawer.js",
+                "type": "js",
+                "rawBytes": 61885,
+                "gzipBytes": 15348,
+                "sha256": "da7ef4b356f115e9f2010c0e6a9764857126b6f73e1e1468df5243377d6d495f"
+              },
+              {
+                "path": "/js/modules/programa_general/hot.js",
+                "type": "js",
+                "rawBytes": 107873,
+                "gzipBytes": 23633,
+                "sha256": "c39aed13ba164a12777b066a90007f08811acdc3565d4bb6208e65190c96ee54"
+              },
+              {
+                "path": "/js/rbac_capabilities.js",
+                "type": "js",
+                "rawBytes": 4961,
+                "gzipBytes": 1519,
+                "sha256": "8516d71bfdec6f8d4365a6c1b9303bdcbec12a3a1a0426d9c674f0b98aee3b17"
+              },
+              {
+                "path": "/js/tablet-viewport-scale.js",
+                "type": "js",
+                "rawBytes": 5233,
+                "gzipBytes": 1517,
+                "sha256": "8447a698dc45895344a926dbb8a03a6d641efddda016b755da43fc8fa8a14af0"
+              },
+              {
+                "path": "/public/css/navbar.css",
+                "type": "css",
+                "rawBytes": 22828,
+                "gzipBytes": 5191,
+                "sha256": "1377bf3a93c2b96473e31b2fc5dea7698ee77f4fee4a6e6d79904d9e122e0a66"
+              },
+              {
+                "path": "/public/js/components/notifications.js",
+                "type": "js",
+                "rawBytes": 6856,
+                "gzipBytes": 2084,
+                "sha256": "86bf29cd53036ed020e5c1096438944de064732d2e6381bb73847d8c2eb8ad06"
+              },
+              {
+                "path": "/public/js/core/AiaAlertInterceptor.js",
+                "type": "js",
+                "rawBytes": 7157,
+                "gzipBytes": 1446,
+                "sha256": "723468a37496ff8a62cab48ce18d4d7f3db6e54e77a4bb18c6e725e392d02849"
+              },
+              {
+                "path": "/public/js/core/ContextManager.js",
+                "type": "js",
+                "rawBytes": 2715,
+                "gzipBytes": 926,
+                "sha256": "880d7195a4a926a016afe71108dd974fcba0a1516a02290644501027de759171"
+              },
+              {
+                "path": "/public/js/core/SessionTimeoutManager.js",
+                "type": "js",
+                "rawBytes": 5835,
+                "gzipBytes": 1673,
+                "sha256": "6a1b6afadd2db1894e5aa33e279b2f8462d5eec37f723d7006130d0abdf09fa5"
+              },
+              {
+                "path": "/public/js/modules/aia_ui/components.js",
+                "type": "js",
+                "rawBytes": 3762,
+                "gzipBytes": 1149,
+                "sha256": "8d2d054632d05434ea6596596ce22a597b9348db30fb981e1f86948e2610372f"
+              },
+              {
+                "path": "/public/js/modules/aia_ui/nav_drawer.js",
+                "type": "js",
+                "rawBytes": 3595,
+                "gzipBytes": 1139,
+                "sha256": "bd496993b41efe24dbbc3f5da4bee3ab95399359486acb6f7358a704f34f094b"
+              },
+              {
+                "path": "/public/js/modules/aia_ui/theme.js",
+                "type": "js",
+                "rawBytes": 3832,
+                "gzipBytes": 1100,
+                "sha256": "a806b160ff4b7173584c01d8b4243f0008657127f52838dd8688e3e14dcc814d"
+              },
+              {
+                "path": "/public/vendor/anychart/anychart-font.min.css",
+                "type": "css",
+                "rawBytes": 12619,
+                "gzipBytes": 2542,
+                "sha256": "c5d3ee187ae9304bfdd79a81ee9a2e7cb94570d5cf849dd35a0819c1563ee589"
+              },
+              {
+                "path": "/public/vendor/anychart/anychart-ui.min.css",
+                "type": "css",
+                "rawBytes": 34834,
+                "gzipBytes": 5067,
+                "sha256": "524503b446de44af3da748284aaac6412891a473f586288bf6cf2c6273ca5417"
+              },
+              {
+                "path": "/public/vendor/bootstrap/bootstrap.min.css",
+                "type": "css",
+                "rawBytes": 155758,
+                "gzipBytes": 23154,
+                "sha256": "60b19e5da6a9234ff9220668a5ec1125c157a268513256188ee80f2d2c8d8d36"
+              },
+              {
+                "path": "/public/vendor/bootstrap/bootstrap.min.js",
+                "type": "js",
+                "rawBytes": 58072,
+                "gzipBytes": 15371,
+                "sha256": "0a34a87842c539c1f4feec56bba982fd596b73500046a6e6fe38a22260c6577b"
+              },
+              {
+                "path": "/public/vendor/datatables/buttons.bootstrap4.min.css",
+                "type": "css",
+                "rawBytes": 3495,
+                "gzipBytes": 907,
+                "sha256": "d4efa25e845d49480d4e3ecdce65be0b776945ac621a7d5a7d25fea9f4425784"
+              },
+              {
+                "path": "/public/vendor/datatables/dataTables.bootstrap4.min.css",
+                "type": "css",
+                "rawBytes": 7496,
+                "gzipBytes": 1381,
+                "sha256": "94358b1b5d296aaf3837417fefcd7c9848f7616e5de8b092066223d8b8ab918a"
+              },
+              {
+                "path": "/public/vendor/datatables/dataTables.checkboxes.css",
+                "type": "css",
+                "rawBytes": 568,
+                "gzipBytes": 228,
+                "sha256": "32dc3fae79f13a6145c5e098326fa24007c48f3ecba5d0fbf2b57ec42e163fce"
+              },
+              {
+                "path": "/public/vendor/datatables/jquery.dataTables.css",
+                "type": "css",
+                "rawBytes": 17317,
+                "gzipBytes": 2537,
+                "sha256": "c1b90bc7f9cbb761d755a2b6afe74b4336dd7e1871165e5cac7515e9048f676a"
+              },
+              {
+                "path": "/public/vendor/font-awesome/css/all.css",
+                "type": "css",
+                "rawBytes": 70523,
+                "gzipBytes": 12677,
+                "sha256": "e3aab29c60242d216955b101a20e3782f3617eb3a3f819b05ddc458152bf2af7"
+              },
+              {
+                "path": "/public/vendor/handsontable/es-MX.js",
+                "type": "js",
+                "rawBytes": 7108,
+                "gzipBytes": 2067,
+                "sha256": "42a16abd46f046d6e5a2705bb4169f55150b60030e894c23b908573785e0ba13"
+              },
+              {
+                "path": "/public/vendor/handsontable/handsontable.full.min.css",
+                "type": "css",
+                "rawBytes": 40208,
+                "gzipBytes": 8235,
+                "sha256": "8e047426f090553e17044e57a2a51d6c3574b12d373f15bbe9dba6d6ef8c638a"
+              },
+              {
+                "path": "/public/vendor/handsontable/handsontable.full.min.js",
+                "type": "js",
+                "rawBytes": 1737190,
+                "gzipBytes": 415892,
+                "sha256": "68ba7a03d5cd0cc1996b16f231e48bdaf3a34f517badad8522b367794297e25a"
+              },
+              {
+                "path": "/public/vendor/jquery-ui.css",
+                "type": "css",
+                "rawBytes": 32266,
+                "gzipBytes": 5903,
+                "sha256": "5b45be553a356de9d5e5a1e2dac99438958f4612c6072341ade38bd9f3c44e08"
+              },
+              {
+                "path": "/public/vendor/jquery-ui.min.js",
+                "type": "js",
+                "rawBytes": 434373,
+                "gzipBytes": 106489,
+                "sha256": "76bbcc0a2f087f63a426cd3047494a9636d23d8b8880131f8fb477df150ca457"
+              },
+              {
+                "path": "/public/vendor/jquery.min.js",
+                "type": "js",
+                "rawBytes": 89501,
+                "gzipBytes": 30875,
+                "sha256": "ff1523fb7389539c84c65aba19260648793bb4f5e29329d2ee8804bc37a3fe6e"
+              },
+              {
+                "path": "/public/vendor/popper.min.js",
+                "type": "js",
+                "rawBytes": 21004,
+                "gzipBytes": 7450,
+                "sha256": "66f3a07e1fa9b64a686b66381e4458dbc8abf3dbbff954720c4eec07b84411c2"
+              },
+              {
+                "path": "/public/vendor/select2/select2.min.css",
+                "type": "css",
+                "rawBytes": 15275,
+                "gzipBytes": 1991,
+                "sha256": "1100388fbf996eb7b0090bf027336657188a330191b295cc1a0b7b23a0008aab"
+              },
+              {
+                "path": "/public/vendor/sweetalert2.min.css",
+                "type": "css",
+                "rawBytes": 25217,
+                "gzipBytes": 4443,
+                "sha256": "1764c65d6fa673c7b9ead5d804561eb9c1bf4a00faa90b7848d1719a95577549"
+              },
+              {
+                "path": "/public/vendor/toastr.min.css",
+                "type": "css",
+                "rawBytes": 6741,
+                "gzipBytes": 3032,
+                "sha256": "10d159adb573ca535b8275f1d27dc8d60fffd9678ee3b5f1a0f7b4be4a77342f"
+              },
+              {
+                "path": "/public/vendor/toastr.min.js",
+                "type": "js",
+                "rawBytes": 5537,
+                "gzipBytes": 2188,
+                "sha256": "ddb96c25de07962ffbc0243e6e68177ce74aee9fd950cb4f5d8d3c8e6c524a09"
+              },
+              {
+                "path": "/runtime/frontend-config.js",
+                "type": "js",
+                "rawBytes": 1237,
+                "gzipBytes": 389,
+                "sha256": "e0b3143249af3f547ee51cdf6484900ec0a792acd15c1f00f5353d69a11cec89"
+              }
+            ],
+            "assetInventorySha256": "85408fa218524e7e50537f12f8ddffe680bd6c97707b389b4a4a6d49ff932283",
+            "duplicateRequests": [
+              {
+                "request": "http://127.0.0.1:18081/api/general/list?activa_a_tiempo=0&activa_atrasadas=0&activa_lookahead=0&activa_no_iniciadas=0&activa_terminadas=0&db=da_porto&semana=1",
+                "count": 2
+              },
+              {
+                "request": "http://127.0.0.1:18081/js/modules/bi-access.js",
+                "count": 2
+              },
+              {
+                "request": "http://127.0.0.1:18081/programa-general/filtros",
+                "count": 2
+              }
+            ],
+            "themeProbe": {
+              "firstPaintTheme": "dark",
+              "observations": [
+                {
+                  "phase": "initial",
+                  "theme": null,
+                  "at": 22.900000005960464
+                },
+                {
+                  "phase": "theme-mutation",
+                  "theme": "dark",
+                  "at": 29.600000008940697
+                },
+                {
+                  "phase": "first-paint",
+                  "theme": "dark",
+                  "at": 125.6000000089407
+                },
+                {
+                  "phase": "dom-content-loaded",
+                  "theme": "dark",
+                  "at": 139.20000000298023
+                },
+                {
+                  "phase": "theme-mutation",
+                  "theme": "dark",
+                  "at": 147.80000001192093
+                }
+              ],
+              "attached": true
+            },
+            "interactionKind": "column-filter-menu",
+            "node": "v26.5.0",
+            "playwrightProject": "",
+            "runtime": {
+              "ciRunId": "run-local-149de5a-20260716015226",
+              "gitHead": "149de5a9c7c4943673b49ed1b17b991154b44bf5",
+              "worktreeClean": true,
+              "sourceTreeSha256": "e5c332481cf67496aa18ce74a7da8c1c5ba7cf92a1295a210949d30aa3ee49ee",
+              "fixtureSha256": "74f21c391cd768a5dd7223dbf42a9c3cb73c280d3183f9edd45580b90bf02f4e"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
