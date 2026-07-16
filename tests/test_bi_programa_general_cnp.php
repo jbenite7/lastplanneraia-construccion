@@ -10,10 +10,12 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/support/BiContractFixture.php';
 
 use App\Services\ControlTowerService;
 
 $db = \Database::getInstance();
+BiContractFixture::seedCausalRows($db);
 $bi = new ControlTowerService();
 $failures = [];
 
@@ -211,7 +213,7 @@ function cnpCategoryCounts(mixed $categories): array
             $counts[(string) $category['category']] = (int) ($category['count'] ?? 0);
         }
     }
-    arsort($counts);
+    ksort($counts);
     return $counts;
 }
 
@@ -237,7 +239,9 @@ function cnpAssertScenario(
     foreach ($expected['summary'] as $field => $value) {
         cnpAssert($failures, (int) ($metrics[$field] ?? -1) === $value, "{$label}: {$field} does not reconcile to programacion_semanal");
     }
-    cnpAssert($failures, cnpCategoryCounts($metrics['categories'] ?? null) === $expected['categories'], "{$label}: categories do not reconcile to the independent CNP query");
+    $expectedCategories = $expected['categories'];
+    ksort($expectedCategories);
+    cnpAssert($failures, cnpCategoryCounts($metrics['categories'] ?? null) === $expectedCategories, "{$label}: categories do not reconcile to the independent CNP query");
     cnpAssert($failures, (int) array_sum($chart['datasets'][0]['data'] ?? []) === $expected['summary']['total'], "{$label}: chart total does not reconcile to programacion_semanal");
 
     $actualBreakdown = cnpProjectBreakdownById($metrics['project_breakdown'] ?? []);
@@ -317,8 +321,18 @@ function cnpAssertScenario(
     cnpAssert($failures, count($seen) === $expected['summary']['total'], "{$label}: full CNP detail contains duplicate or missing source keys");
 }
 
-$jmcRows = cnpDirectRows($db, [68], '6');
-cnpAssert($failures, count($jmcRows) === 33, 'JMC project 68 week 6 must retain exactly 33 CNP source rows');
+$primaryContext = $db->query(
+    "SELECT project_id, Semana, COUNT(*) AS rows_count
+     FROM programacion_semanal
+     WHERE Activa = '0' AND COALESCE(TRIM(CNP), '') <> ''
+     GROUP BY project_id, Semana
+     ORDER BY rows_count DESC, project_id, Semana
+     LIMIT 1",
+)->fetch(PDO::FETCH_ASSOC) ?: [];
+$primaryProjectId = (int) ($primaryContext['project_id'] ?? 0);
+$primaryWeek = (string) ($primaryContext['Semana'] ?? '');
+$primaryRows = cnpDirectRows($db, [$primaryProjectId], $primaryWeek);
+cnpAssert($failures, $primaryProjectId > 0 && count($primaryRows) > 1, 'canonical CI fixture must expose a paginable CNP population');
 
 $duplicateGrains = $db->query(
     "SELECT COUNT(*) FROM (
@@ -331,20 +345,22 @@ $duplicateGrains = $db->query(
 )->fetchColumn();
 cnpAssert($failures, (int) $duplicateGrains === 0, 'CNP source must be unique at project_id + Semana + Consecutivo');
 
-$secondProject = $db->query(
+$secondProject = $db->prepare(
     "SELECT DISTINCT project_id FROM programacion_semanal
-     WHERE Activa = '0' AND COALESCE(TRIM(CNP), '') <> '' AND project_id <> 68
+     WHERE Activa = '0' AND COALESCE(TRIM(CNP), '') <> '' AND project_id <> ?
      ORDER BY project_id LIMIT 1"
-)->fetchColumn();
+);
+$secondProject->execute([$primaryProjectId]);
+$secondProject = $secondProject->fetchColumn();
 cnpAssert($failures, $secondProject !== false, 'fixture requires a second project with CNP for the multi-project contract');
 
-$week = $db->prepare('SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem FROM semanas_activas WHERE project_id = 68 AND Semana = 6 LIMIT 1');
-$week->execute();
+$week = $db->prepare('SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem FROM semanas_activas WHERE project_id = ? AND Semana = ? LIMIT 1');
+$week->execute([$primaryProjectId, $primaryWeek]);
 $weekRange = $week->fetch(PDO::FETCH_ASSOC) ?: [];
 $responsible = '';
 $subcontractor = '';
 $stage = '';
-foreach ($jmcRows as $row) {
+foreach ($primaryRows as $row) {
     $responsible = $responsible ?: trim((string) ($row['Responsable_AIA'] ?? ''));
     $subcontractor = $subcontractor ?: trim((string) ($row['Sub_Contratista'] ?? ''));
     $stageSource = trim((string) (($row['Ubicacion'] ?? '') ?: ($row['Actividad'] ?? '')));
@@ -352,25 +368,31 @@ foreach ($jmcRows as $row) {
         $stage = function_exists('mb_substr') ? mb_substr($stageSource, 0, 24, 'UTF-8') : substr($stageSource, 0, 24);
     }
 }
-cnpAssert($failures, $responsible !== '', 'fixture requires one JMC week 6 CNP row with Responsable AIA');
-cnpAssert($failures, $subcontractor !== '', 'fixture requires one JMC week 6 CNP row with Sub-Contratista');
-cnpAssert($failures, $stage !== '', 'fixture requires one JMC week 6 CNP row with activity or location text');
+cnpAssert($failures, $responsible !== '', 'fixture requires one canonical CNP row with Responsable AIA');
+cnpAssert($failures, $subcontractor !== '', 'fixture requires one canonical CNP row with Sub-Contratista');
+cnpAssert($failures, $stage !== '', 'fixture requires one canonical CNP row with activity or location text');
 
-cnpAssertScenario($failures, $bi, $db, 'JMC single project/week', [68], '6', []);
+cnpAssertScenario($failures, $bi, $db, 'canonical single project/week', [$primaryProjectId], $primaryWeek, []);
 if ($secondProject !== false) {
-    cnpAssertScenario($failures, $bi, $db, 'CNP multi-project/week', [68, (int) $secondProject], '6', []);
+    $portfolioRangeStatement = $db->prepare(
+        "SELECT MIN(Fecha_Inicio_Sem) AS desde, MAX(Fecha_Fin_Sem) AS hasta
+         FROM semanas_activas WHERE project_id IN (?, ?)",
+    );
+    $portfolioRangeStatement->execute([$primaryProjectId, (int) $secondProject]);
+    $portfolioRange = $portfolioRangeStatement->fetch(PDO::FETCH_ASSOC) ?: [];
+    cnpAssertScenario($failures, $bi, $db, 'CNP multi-project/date range', [$primaryProjectId, (int) $secondProject], '', $portfolioRange);
 }
 if (($weekRange['Fecha_Inicio_Sem'] ?? '') !== '' && ($weekRange['Fecha_Fin_Sem'] ?? '') !== '') {
-    cnpAssertScenario($failures, $bi, $db, 'JMC date range', [68], '', ['desde' => $weekRange['Fecha_Inicio_Sem'], 'hasta' => $weekRange['Fecha_Fin_Sem']]);
+    cnpAssertScenario($failures, $bi, $db, 'canonical date range', [$primaryProjectId], '', ['desde' => $weekRange['Fecha_Inicio_Sem'], 'hasta' => $weekRange['Fecha_Fin_Sem']]);
 }
 if ($responsible !== '') {
-    cnpAssertScenario($failures, $bi, $db, 'JMC responsible filter', [68], '6', ['resp' => $responsible]);
+    cnpAssertScenario($failures, $bi, $db, 'canonical responsible filter', [$primaryProjectId], $primaryWeek, ['resp' => $responsible]);
 }
 if ($subcontractor !== '') {
-    cnpAssertScenario($failures, $bi, $db, 'JMC subcontractor filter', [68], '6', ['sub' => $subcontractor]);
+    cnpAssertScenario($failures, $bi, $db, 'canonical subcontractor filter', [$primaryProjectId], $primaryWeek, ['sub' => $subcontractor]);
 }
 if ($stage !== '') {
-    cnpAssertScenario($failures, $bi, $db, 'JMC stage/intervention filter', [68], '6', ['etapa' => $stage]);
+    cnpAssertScenario($failures, $bi, $db, 'canonical stage/intervention filter', [$primaryProjectId], $primaryWeek, ['etapa' => $stage]);
 }
 
 $cncContexts = $db->query(

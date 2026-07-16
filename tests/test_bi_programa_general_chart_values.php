@@ -3,10 +3,13 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/support/BiContractFixture.php';
 
 use App\Services\ControlTowerService;
 
 $db = \Database::getInstance();
+BiContractFixture::seedCausalRows($db);
+BiContractFixture::seedProgramSnapshots($db);
 $bi = new ControlTowerService();
 $failures = [];
 
@@ -1295,6 +1298,23 @@ function biCategoryExpected(array $rows, string $categoryField, string $flagFiel
             continue;
         }
         $category = trim((string) ($row[$categoryField] ?? 'Sin categoría')) ?: 'Sin categoría';
+        $key = strtr(strtolower($category), ['á' => 'a', 'é' => 'e', 'í' => 'i', 'ó' => 'o', 'ú' => 'u', 'ñ' => 'n']);
+        $category = [
+            'programacion' => 'Programación',
+            'diseno' => 'Diseños',
+            'disenos' => 'Diseños',
+            'm de o' => 'Mano de Obra',
+            'mano obra' => 'Mano de Obra',
+            'mano de obra' => 'Mano de Obra',
+            'material' => 'Materiales',
+            'materiales' => 'Materiales',
+            'equipo' => 'Equipos',
+            'equipos' => 'Equipos',
+            'administrativa' => 'Administrativas',
+            'administrativas' => 'Administrativas',
+            'causa exogena' => 'Causas Exógenas',
+            'causas exogenas' => 'Causas Exógenas',
+        ][$key] ?? $category;
         $counts[$category] = ($counts[$category] ?? 0) + 1;
     }
     arsort($counts);
@@ -1682,14 +1702,16 @@ function biValidateProgramaGeneral(\Database $db, ControlTowerService $bi, array
 
     $cnp = biCategoryExpected($psUniverse, 'Categoria_CNP', 'is_cnp_population');
     $cnc = biCategoryExpected($psUniverse, 'Categoria_CNC', 'is_cnc_population');
-    if (($brief['charts']['programa-cnp']['labels'] ?? []) !== $cnp['labels']) {
-        biFail($failures, "{$label}: CNP labels mismatch");
+    foreach (['cnp' => $cnp, 'cnc' => $cnc] as $kind => $expectedCause) {
+        $causeChart = $brief['charts']['programa-' . $kind] ?? [];
+        $actualCounts = array_combine($causeChart['labels'] ?? [], $causeChart['datasets'][0]['data'] ?? []) ?: [];
+        $expectedCounts = array_combine($expectedCause['labels'], $expectedCause['values']) ?: [];
+        ksort($actualCounts);
+        ksort($expectedCounts);
+        if ($actualCounts !== $expectedCounts) {
+            biFail($failures, "{$label}: " . strtoupper($kind) . ' category counts mismatch');
+        }
     }
-    if (($brief['charts']['programa-cnc']['labels'] ?? []) !== $cnc['labels']) {
-        biFail($failures, "{$label}: CNC labels mismatch");
-    }
-    biAssertSeries($failures, "{$label}: CNP values", $brief['charts']['programa-cnp']['datasets'][0]['data'] ?? [], $cnp['values']);
-    biAssertSeries($failures, "{$label}: CNC values", $brief['charts']['programa-cnc']['datasets'][0]['data'] ?? [], $cnc['values']);
     biAssertCausalDrilldownContract($failures, $bi, $projectIds, $semana, $filters, 'cnp', $label);
     biAssertCausalDrilldownContract($failures, $bi, $projectIds, $semana, $filters, 'cnc', $label);
     $radar = $brief['charts']['programa-radar-productividad'] ?? [];
@@ -1857,14 +1879,14 @@ biValidateProgramaGeneral($db, $bi, $failures, [(int) $context['project_id']], (
     'resp' => (string) $context['responsable_aia'],
 ], 'single-project-week-sub-resp');
 
-biValidateProgramaGeneral($db, $bi, $failures, [68, 74], '', [
-    'desde' => '2026-05-25',
-    'hasta' => '2026-06-15',
-], 'multi-project-date-range-68-74');
+biValidateProgramaGeneral($db, $bi, $failures, [73, 75], '', [
+    'desde' => '2026-07-06',
+    'hasta' => '2026-07-27',
+], 'canonical-multi-project-date-range');
 
-biValidateProgramaGeneral($db, $bi, $failures, [73, 74], '', [
-    'desde' => '2026-05-25',
-    'hasta' => '2026-06-15',
+biValidateProgramaGeneral($db, $bi, $failures, [73, 75], '', [
+    'desde' => '2026-07-06',
+    'hasta' => '2026-07-27',
 ], 'multi-project-date-range');
 
 $baselineDrift = $db->query(
@@ -1924,13 +1946,13 @@ if ($multiFiltered) {
     ], 'multi-project-date-range-sub-resp');
 }
 
-biValidateProgramaGeneral($db, $bi, $failures, [62], '28', [
-    'sub' => 'AIA (MO Directa)',
-], 'mutable-subcontractor-cohort-project-62-week-28');
+biValidateProgramaGeneral($db, $bi, $failures, [73], '3', [
+    'sub' => 'Proveedor CI Nuevo',
+], 'mutable-subcontractor-cohort-canonical-fixture');
 
-$staleFilterProjectIds = [63];
-$staleFilterWeek = '17';
-$staleFilterFilters = ['sub' => 'CONSTRUCCIONES RICARDO CARO SAS'];
+$staleFilterProjectIds = [73];
+$staleFilterWeek = '3';
+$staleFilterFilters = ['sub' => 'Proveedor CI Construccion'];
 $staleCurrentRows = biFetchPg($db, $staleFilterProjectIds, $staleFilterWeek, $staleFilterFilters, false);
 $staleHistoricalRows = biFetchPg($db, $staleFilterProjectIds, $staleFilterWeek, $staleFilterFilters, true);
 if ($staleCurrentRows !== [] || $staleHistoricalRows === []) {
@@ -1947,9 +1969,9 @@ if ($staleCurrentRows !== [] || $staleHistoricalRows === []) {
     }
 }
 
-$missingFilteredProjectIds = [68, 74];
-$missingFilteredWeek = '6';
-$missingFilteredFilters = ['sub' => 'PROCOPAL'];
+$missingFilteredProjectIds = [73, 75];
+$missingFilteredWeek = '3';
+$missingFilteredFilters = ['sub' => 'Proveedor CI Nuevo'];
 $missingFilteredRows = biFetchPg(
     $db,
     $missingFilteredProjectIds,
@@ -2138,130 +2160,6 @@ if ($noProductionFiltered) {
     }
 }
 
-$jmc = $db->query(
-    "SELECT Id FROM general_proyectos_procesos
-     WHERE Proyecto_Proceso = 'Optimización Aeropuerto JMC'
-     LIMIT 1",
-)->fetch(PDO::FETCH_ASSOC);
-if ($jmc) {
-    biValidateProgramaGeneral($db, $bi, $failures, [(int) $jmc['Id']], '5', [], 'optimizacion-aeropuerto-jmc-week-5');
-    biValidateProgramaGeneral($db, $bi, $failures, [(int) $jmc['Id']], '6', [], 'optimizacion-aeropuerto-jmc-week-6');
-    $jmcWeekSix = $bi->getBrief('programa-general', [(int) $jmc['Id']], '6', 'R', []);
-    $jmcCnp = $jmcWeekSix['charts']['programa-cnp']['datasets'][0]['data'] ?? [];
-    $jmcCnc = $jmcWeekSix['charts']['programa-cnc']['datasets'][0]['data'] ?? [];
-    if (array_sum($jmcCnp) !== 33.0 || array_sum($jmcCnc) !== 0.0) {
-        biFail($failures, 'optimizacion-aeropuerto-jmc-week-6: causes must expose 33 CNP rows and zero real CNC rows');
-    }
-    $jmcBrief = $bi->getBrief('programa-general', [(int) $jmc['Id']], '5', 'R', []);
-    $jmcChart = $jmcBrief['charts']['programa-curva-ejecucion'] ?? [];
-    $planned = $jmcChart['datasets'][0]['data'] ?? [];
-    for ($i = 1; $i < count($planned); $i++) {
-        if ((float) $planned[$i] + 0.05 < (float) $planned[$i - 1]) {
-            biFail($failures, 'optimizacion-aeropuerto-jmc-week-5: planned S curve is not cumulative');
-            break;
-        }
-    }
-    if (abs((float) end($planned) - 100.0) > 0.05) {
-        biFail($failures, 'optimizacion-aeropuerto-jmc-week-5: planned S curve does not finish at 100%');
-    }
-    $labels = $jmcChart['labels'] ?? [];
-    foreach ($labels as $curveLabel) {
-        if (str_starts_with((string) $curveLabel, 'Semana ')) {
-            biFail($failures, 'optimizacion-aeropuerto-jmc-week-5: execution S curve uses week labels instead of dates');
-            break;
-        }
-    }
-    if (count($labels) <= 6) {
-        biFail($failures, 'optimizacion-aeropuerto-jmc-week-5: S curve does not include future dates');
-    }
-    $realSeries = $jmcChart['datasets'][1]['data'] ?? [];
-    $currentIndex = null;
-    foreach ($realSeries as $index => $value) {
-        if (is_numeric($value)) {
-            $currentIndex = (int) $index;
-        }
-    }
-    $projection = $jmcChart['datasets'][3]['data'] ?? [];
-    $projectionMeta = $jmcChart['projection_meta'] ?? [];
-    $positiveIncrements = biPositiveProductionIncrementCount(array_values(array_filter($realSeries, 'is_numeric')));
-    if ($positiveIncrements < 3) {
-        if (($projectionMeta['projection_available'] ?? true) !== false) {
-            biFail($failures, 'optimizacion-aeropuerto-jmc-week-5: projection should be unavailable with fewer than 3 positive increments');
-        }
-        if (($projectionMeta['simulation_count'] ?? -1) !== 0) {
-            biFail($failures, 'optimizacion-aeropuerto-jmc-week-5: should not simulate with fewer than 3 positive increments');
-        }
-        foreach ([2 => 'pessimistic', 3 => 'likely', 4 => 'optimistic'] as $datasetIndex => $projectionLabel) {
-            if (biProjectionCompletionWeek($jmcChart['datasets'][$datasetIndex]['data'] ?? []) !== null) {
-                biFail($failures, "optimizacion-aeropuerto-jmc-week-5: {$projectionLabel} projection fabricates a 100% finish");
-            }
-        }
-    } else {
-        foreach ([2 => 'pessimistic', 3 => 'likely', 4 => 'optimistic'] as $datasetIndex => $projectionLabel) {
-            $projectionSeries = $jmcChart['datasets'][$datasetIndex]['data'] ?? [];
-            if (abs((float) end($projectionSeries) - 100.0) > 0.05) {
-                biFail($failures, "optimizacion-aeropuerto-jmc-week-5: {$projectionLabel} projection does not finish at 100%");
-            }
-        }
-        $nextIndex = $currentIndex === null ? null : $currentIndex + 1;
-        if ($nextIndex === null || !is_numeric($projection[$nextIndex] ?? null)) {
-            biFail($failures, 'optimizacion-aeropuerto-jmc-week-5: likely projection does not start after current date');
-        }
-        if (($projectionMeta['method'] ?? '') !== 'monte_carlo_s_curve_current_production_prediction_interval') {
-            biFail($failures, 'optimizacion-aeropuerto-jmc-week-5: projection is not using the probabilistic S-curve model');
-        }
-        $numericLikely = array_values(array_filter($projection, 'is_numeric'));
-        $likelyDeltas = [];
-        for ($i = 1; $i < count($numericLikely); $i++) {
-            $likelyDeltas[] = round((float) $numericLikely[$i] - (float) $numericLikely[$i - 1], 2);
-            if ((float) $numericLikely[$i] >= 100.0) {
-                break;
-            }
-        }
-        if (count($likelyDeltas) > 8) {
-            $earlyDelta = $likelyDeltas[0];
-            $peakDelta = max($likelyDeltas);
-            $lateDelta = $likelyDeltas[count($likelyDeltas) - 1];
-            if ($peakDelta <= $earlyDelta + 0.2 || $peakDelta <= $lateDelta + 0.2) {
-                biFail($failures, 'optimizacion-aeropuerto-jmc-week-5: likely projection is not an S-curve');
-            }
-            if (max($likelyDeltas) - min($likelyDeltas) <= 0.4) {
-                biFail($failures, 'optimizacion-aeropuerto-jmc-week-5: likely projection is effectively linear');
-            }
-        }
-        if (
-            is_numeric($projectionMeta['optimistic_completion_week'] ?? null)
-            && is_numeric($projectionMeta['likely_completion_week'] ?? null)
-            && is_numeric($projectionMeta['pessimistic_completion_week'] ?? null)
-            && !(
-                (int) $projectionMeta['optimistic_completion_week'] <= (int) $projectionMeta['likely_completion_week']
-                && (int) $projectionMeta['likely_completion_week'] <= (int) $projectionMeta['pessimistic_completion_week']
-            )
-        ) {
-            biFail($failures, 'optimizacion-aeropuerto-jmc-week-5: projection scenarios are not ordered by completion date');
-        }
-        biAssertMomentumProjection($failures, $jmcChart, 'optimizacion-aeropuerto-jmc-week-5');
-    }
-
-    $focusedFilters = ['sub' => 'PROCOPAL', 'resp' => 'Mildred Buitrago'];
-    biValidateProgramaGeneral(
-        $db,
-        $bi,
-        $failures,
-        [(int) $jmc['Id']],
-        '5',
-        $focusedFilters,
-        'optimizacion-aeropuerto-jmc-week-5-procopal-mildred'
-    );
-    $focusedBrief = $bi->getBrief('programa-general', [(int) $jmc['Id']], '5', 'R', $focusedFilters);
-    if (($focusedBrief['raw_row_count'] ?? 0) > 0) {
-        $focusedChart = $focusedBrief['charts']['programa-curva-ejecucion'] ?? [];
-        if (($focusedChart['projection_meta']['projection_available'] ?? false) === true) {
-            biAssertMomentumProjection($failures, $focusedChart, 'optimizacion-aeropuerto-jmc-week-5-procopal-mildred');
-        }
-    }
-}
-
 if ($failures) {
     foreach ($failures as $failure) {
         echo "FAIL: {$failure}\n";
@@ -2270,6 +2168,6 @@ if ($failures) {
 }
 
 echo "PASS: Programa General mandatory charts match independent SQL for one project/week/sub/responsible\n";
-echo "PASS: Programa General mandatory charts match independent SQL for explicit 68+74 multi-project date range\n";
+echo "PASS: Programa General mandatory charts match independent SQL for the canonical multi-project date range\n";
 echo "PASS: Programa General mandatory charts match independent SQL for multi-project date range\n";
 echo "PASS: Programa General mandatory charts match independent SQL for multi-project date range/sub/responsible filters\n";

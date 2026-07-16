@@ -155,19 +155,22 @@ if ($weeklyPopulationContract) {
         'bi_ps_compromisos flags each real CNP, CNC and commitment population explicitly',
     );
 
-    $jmcCnp = (int) $db->query(
-        "SELECT COUNT(*) FROM bi_ps_compromisos
-         WHERE project_id = 68 AND Semana = 6 AND is_cnp_population = 1",
-    )->fetchColumn();
-    $jmcCnc = (int) $db->query(
-        "SELECT COUNT(*) FROM bi_ps_compromisos
-         WHERE project_id = 68 AND Semana = 6 AND is_cnc_population = 1",
-    )->fetchColumn();
-    if ($jmcCnp === 33 && $jmcCnc === 0) {
-        biReconciliationPass('JMC week 6 exposes 33 real CNP rows and no invented CNC rows');
-    } else {
-        biReconciliationFail("JMC week 6 population contract mismatch (CNP {$jmcCnp}, CNC {$jmcCnc})");
-    }
+    biAssertZero(
+        $db,
+        "SELECT COUNT(*) FROM (
+            SELECT project_id, Semana,
+                SUM(Activa = '0' AND COALESCE(TRIM(CNP), '') <> '') AS source_cnp,
+                SUM(Activa IN ('1', 'NA') AND COALESCE(TRIM(CNC), '') <> '') AS source_cnc
+            FROM programacion_semanal GROUP BY project_id, Semana
+        ) source
+        LEFT JOIN (
+            SELECT project_id, Semana, SUM(is_cnp_population) AS view_cnp, SUM(is_cnc_population) AS view_cnc
+            FROM bi_ps_compromisos GROUP BY project_id, Semana
+        ) view USING (project_id, Semana)
+        WHERE source.source_cnp <> COALESCE(view.view_cnp, 0)
+           OR source.source_cnc <> COALESCE(view.view_cnc, 0)",
+        'BI cause populations reconcile with every sanitized fixture project and week',
+    );
 }
 
 biAssertZero(

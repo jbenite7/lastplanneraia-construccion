@@ -3,10 +3,12 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/support/BiContractFixture.php';
 
 use App\Services\ControlTowerService;
 
 $db = \Database::getInstance();
+BiContractFixture::seedCausalRows($db);
 $bi = new ControlTowerService();
 
 function lastNumericPoint(array $values): float
@@ -134,10 +136,9 @@ foreach ($mandatoryCharts as $chartId) {
     }
 }
 
-$rangeBrief = $bi->getBrief('programa-general', [73, 74], '', 'R', [
-    'desde' => '2026-05-25',
-    'hasta' => '2026-06-15',
-]);
+$rangeProjects = [73, 75];
+$rangeFilters = ['desde' => '2026-07-06', 'hasta' => '2026-07-26'];
+$rangeBrief = $bi->getBrief('programa-general', $rangeProjects, '', 'R', $rangeFilters);
 if (($rangeBrief['filters']['date_range_overrides_semana'] ?? false) !== true) {
     $failures[] = 'date range did not override semana';
 }
@@ -180,8 +181,8 @@ if (!$causalContext) {
     }
 }
 
-$rangeCnp = $bi->getProgramaCnpDetail([73, 74], '', ['desde' => '2026-05-25', 'hasta' => '2026-06-15']);
-$rangeCnpChart = $bi->getBrief('programa-general', [73, 74], '', 'R', ['desde' => '2026-05-25', 'hasta' => '2026-06-15'])['charts']['programa-cnp']['datasets'][0]['data'] ?? [];
+$rangeCnp = $bi->getProgramaCnpDetail($rangeProjects, '', $rangeFilters);
+$rangeCnpChart = $bi->getBrief('programa-general', $rangeProjects, '', 'R', $rangeFilters)['charts']['programa-cnp']['datasets'][0]['data'] ?? [];
 if ((int) ($rangeCnp['summary']['total'] ?? -1) !== (int) array_sum($rangeCnpChart)) {
     $failures[] = 'CNP multi-project date-range detail total does not match chart';
 }
@@ -220,20 +221,22 @@ if (!$radarContext) {
     }
 }
 
-$rangeRadarExpected = $db->query(
+$rangeRadarExpectedStatement = $db->prepare(
     "SELECT COUNT(*)
      FROM programacion_semanal ps
-     WHERE ps.project_id IN (73, 74)
+     WHERE ps.project_id IN (?, ?)
        AND ps.Activa IN ('1', 'NA')
        AND EXISTS (
            SELECT 1 FROM semanas_activas sa
            WHERE sa.project_id = ps.project_id
              AND sa.Semana = ps.Semana
-             AND sa.Fecha_Inicio_Sem <= '2026-06-15'
-             AND sa.Fecha_Fin_Sem >= '2026-05-25'
+             AND sa.Fecha_Inicio_Sem <= ?
+             AND sa.Fecha_Fin_Sem >= ?
        )",
-)->fetchColumn();
-$rangeRadar = $bi->getProgramaRadarDetail([73, 74], '', ['desde' => '2026-05-25', 'hasta' => '2026-06-15'], 'productividad', 100, 0);
+);
+$rangeRadarExpectedStatement->execute([$rangeProjects[0], $rangeProjects[1], $rangeFilters['hasta'], $rangeFilters['desde']]);
+$rangeRadarExpected = $rangeRadarExpectedStatement->fetchColumn();
+$rangeRadar = $bi->getProgramaRadarDetail($rangeProjects, '', $rangeFilters, 'productividad', 100, 0);
 if ((int) ($rangeRadar['summary']['total_population'] ?? -1) !== (int) $rangeRadarExpected) {
     $failures[] = 'radar detail did not apply the multi-project date range to operational rows';
 }

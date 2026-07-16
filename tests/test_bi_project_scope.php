@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/support/BiContractFixture.php';
 
 use App\Security\RbacService;
 use App\Services\Bi\StorytellingService;
@@ -10,17 +11,26 @@ use App\Support\BiProjectScope;
 use App\View\Components\BiAccessComponent;
 
 $db = Database::getInstance();
+BiContractFixture::begin($db);
+$mixedRoleFixture = $db->prepare(
+    "UPDATE project_members pm
+     INNER JOIN general_usuarios u ON u.id = pm.user_id
+     SET pm.role = 'C'
+     WHERE u.usuario = 'test.R' AND pm.project_id = 75",
+);
+$mixedRoleFixture->execute();
 $scope = new BiProjectScope($db);
 $failures = [];
 
-$projects = $scope->authorizedProjects(['usuario' => 'jbenitez']);
+$fixtureIdentity = 'test.A';
+$projects = $scope->authorizedProjects(['usuario' => $fixtureIdentity]);
 if ($projects === []) {
-    $failures[] = 'jbenitez has no authorized BI projects';
+    $failures[] = 'canonical CI administrator has no authorized BI projects';
 }
 
 $authorizedIds = array_map('intval', array_column($projects, 'project_id'));
 $firstProjectId = $authorizedIds[0] ?? 0;
-$session = ['usuario' => 'jbenitez', 'project_id' => $firstProjectId];
+$session = ['usuario' => $fixtureIdentity, 'project_id' => $firstProjectId];
 
 if ($firstProjectId > 0 && $scope->resolve((string) $firstProjectId, $session) !== [$firstProjectId]) {
     $failures[] = 'authorized requested project was not preserved';

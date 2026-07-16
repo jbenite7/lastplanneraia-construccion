@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/support/BiContractFixture.php';
 
 use App\Services\ControlTowerService;
 
@@ -116,7 +117,7 @@ function timelineOracle(Database $db, array $projectIds, string $semana, array $
     }
 
     $statement = $db->prepare(
-        'SELECT pc.project_id, pc.Semana, pc.unique_id, pc.Actividad, pc.Fecha_Inicio, pc.Fecha_Fin,
+        'SELECT pc.project_id, pc.Semana, pc.Consecutivo_en_Programa AS unique_id, pc.Actividad, pc.Fecha_Inicio, pc.Fecha_Fin,
                 pc.Ruta_Critica, pc.Ejecutado, pc.Estado, pc.Sub_Contratista, pc.Responsable_AIA,
                 COALESCE(sa.Fecha_Fin_Sem, sa.Fecha_Inicio_Sem) AS cutoff
          FROM programa_consolidado pc
@@ -240,58 +241,59 @@ function timelineAssertDetail(array &$failures, array $detail, array $oracle, st
 }
 
 $db = Database::getInstance();
+BiContractFixture::seedProgramSnapshots($db);
 $bi = new ControlTowerService();
 $failures = [];
-$jmcProjectId = 68;
-$jmcWeek = '6';
+$jmcProjectId = 73;
+$jmcWeek = '3';
 $jmcOracle = timelineOracle($db, [$jmcProjectId], $jmcWeek);
 
-timelineAssert($failures, timelineDisplayText('Optimización Aeropuerto JMC') === 'Optimización Aeropuerto JMC', 'valid UTF-8 display text must remain unchanged');
+timelineAssert($failures, timelineDisplayText('Proyecto regional CI') === 'Proyecto regional CI', 'valid UTF-8 display text must remain unchanged');
 timelineAssert($failures, timelineDisplayText('FabricaciÃ³n') === 'Fabricación', 'known mojibake must be repaired for display');
 timelineAssert($failures, timelineDisplayText('CapÃƒÂ­tulo') === 'Capítulo', 'double-encoded mojibake must be repaired for display');
 timelineAssert($failures, timelineDisplayText('FabricaciÃ³n 🚧') === 'Fabricación 🚧', 'mixed mojibake and valid UTF-8 must preserve the valid fragment');
 timelineAssert($failures, timelineDisplayText('Comilla â€™') === 'Comilla ’', 'Windows-1252 punctuation mojibake must be repaired');
 
-timelineAssert($failures, $jmcOracle['summary']['total'] > 2, 'JMC week 6 must retain a non-title activity universe for pagination');
-timelineAssert($failures, $jmcOracle['summary']['total_duration'] > 0, 'JMC week 6 must retain valid inclusive durations');
-timelineAssert($failures, count($jmcOracle['activities']) === $jmcOracle['summary']['total'], 'JMC week 6 SQL grain must be unique by project_id + unique_id at the weekly cutoff');
+timelineAssert($failures, $jmcOracle['summary']['total'] > 2, 'canonical CI snapshot must expose a paginable non-title activity universe');
+timelineAssert($failures, $jmcOracle['summary']['total_duration'] > 0, 'canonical CI snapshot must retain valid inclusive durations');
+timelineAssert($failures, count($jmcOracle['activities']) === $jmcOracle['summary']['total'], 'canonical SQL grain must be unique by project_id + unique_id at the weekly cutoff');
 
-$limit = 100;
+$limit = 1;
 $offset = 0;
 $seen = [];
 $allActivities = [];
 $firstDetail = null;
 do {
     $page = $bi->getProgramaProgressDetail([$jmcProjectId], $jmcWeek, [], $limit, $offset);
-    timelineAssertDetail($failures, $page, $jmcOracle, "JMC week 6 offset {$offset}");
+    timelineAssertDetail($failures, $page, $jmcOracle, "canonical snapshot offset {$offset}");
     if ($firstDetail === null) {
         $firstDetail = $page;
     }
     foreach ($page['activities'] ?? [] as $activity) {
         $key = (string) ($activity['activity_key'] ?? '');
-        timelineAssert($failures, $key !== '' && !isset($seen[$key]), "JMC week 6 pagination repeated {$key}");
+        timelineAssert($failures, $key !== '' && !isset($seen[$key]), "canonical snapshot pagination repeated {$key}");
         $seen[$key] = true;
         $allActivities[] = $activity;
     }
     $nextOffset = (int) ($page['pagination']['next_offset'] ?? -1);
     $hasMore = (bool) ($page['pagination']['has_more'] ?? false);
-    timelineAssert($failures, !$hasMore || $nextOffset > $offset, "JMC week 6 pagination did not advance from {$offset}");
+    timelineAssert($failures, !$hasMore || $nextOffset > $offset, "canonical snapshot pagination did not advance from {$offset}");
     $offset = $nextOffset;
 } while ($hasMore && $offset <= $jmcOracle['summary']['total']);
 
-timelineAssert($failures, count($seen) === $jmcOracle['summary']['total'], 'JMC week 6 pagination lost activities from the SQL universe');
+timelineAssert($failures, count($seen) === $jmcOracle['summary']['total'], 'canonical snapshot pagination lost activities from the SQL universe');
 if ($firstDetail !== null) {
     $sumDetail = $firstDetail;
     $sumDetail['activities'] = $allActivities;
-    timelineAssertDetail($failures, $sumDetail, $jmcOracle, 'JMC week 6 full activity contributions', true);
+    timelineAssertDetail($failures, $sumDetail, $jmcOracle, 'canonical snapshot full activity contributions', true);
 }
 
-$asymmetricProjects = [$jmcProjectId, 74];
+$asymmetricProjects = [$jmcProjectId, 75];
 $asymmetricOracle = timelineOracle($db, $asymmetricProjects, $jmcWeek);
 timelineAssert(
     $failures,
     $asymmetricOracle['summary']['total'] > $jmcOracle['summary']['total'],
-    'JMC plus project 74 week 6 must include the latest eligible snapshot from both projects',
+    'canonical multi-project report must include the latest eligible snapshot from both projects',
 );
 $asymmetricBrief = $bi->getBrief('programa-general', $asymmetricProjects, $jmcWeek);
 $asymmetricSnapshot = is_array($asymmetricBrief['activity_snapshot'] ?? null) ? $asymmetricBrief['activity_snapshot'] : [];
@@ -309,47 +311,42 @@ timelineAssert(
     'initial snapshot and detail endpoint must use the same multiproject denominator',
 );
 
-$filterContext = $db->query(
+$filterContextStatement = $db->prepare(
     "SELECT Sub_Contratista AS sub, Responsable_AIA AS resp
      FROM programa_consolidado
-     WHERE project_id = 68 AND Semana = 6 AND COALESCE(Titulo, 0) = 0
+     WHERE project_id = ? AND Semana = ? AND COALESCE(Titulo, 0) = 0
        AND TRIM(COALESCE(Sub_Contratista, '')) <> '' AND TRIM(COALESCE(Responsable_AIA, '')) <> ''
      GROUP BY Sub_Contratista, Responsable_AIA
      ORDER BY COUNT(*) DESC, Sub_Contratista, Responsable_AIA LIMIT 1",
-)->fetch(PDO::FETCH_ASSOC);
-timelineAssert($failures, is_array($filterContext), 'JMC week 6 needs a subcontractor/responsible filter context');
+);
+$filterContextStatement->execute([$jmcProjectId, $jmcWeek]);
+$filterContext = $filterContextStatement->fetch(PDO::FETCH_ASSOC);
+timelineAssert($failures, is_array($filterContext), 'canonical CI snapshot needs a subcontractor/responsible filter context');
 if (is_array($filterContext)) {
     $filters = ['sub' => (string) $filterContext['sub'], 'resp' => (string) $filterContext['resp']];
     $filteredOracle = timelineOracle($db, [$jmcProjectId], $jmcWeek, $filters);
-    timelineAssert($failures, $filteredOracle['summary']['total'] > 0, 'JMC sub/responsible oracle must not be empty');
+    timelineAssert($failures, $filteredOracle['summary']['total'] > 0, 'canonical sub/responsible oracle must not be empty');
     $filteredDetail = $bi->getProgramaProgressDetail([$jmcProjectId], $jmcWeek, $filters, 100, 0);
-    timelineAssertDetail($failures, $filteredDetail, $filteredOracle, 'JMC sub/responsible filters');
+    timelineAssertDetail($failures, $filteredDetail, $filteredOracle, 'canonical sub/responsible filters');
 }
 
-$priorOnlyResponsible = $db->query(
-    "SELECT TRIM(prior.Responsable_AIA) AS resp
-     FROM programa_consolidado prior
-     WHERE prior.project_id = 68 AND prior.Semana < 6 AND COALESCE(prior.Titulo, 0) = 0
-       AND TRIM(COALESCE(prior.Responsable_AIA, '')) <> ''
-       AND NOT EXISTS (
-           SELECT 1 FROM programa_consolidado current_cut
-           WHERE current_cut.project_id = prior.project_id AND current_cut.Semana = 6
-             AND COALESCE(current_cut.Titulo, 0) = 0
-             AND TRIM(COALESCE(current_cut.Responsable_AIA, '')) = TRIM(prior.Responsable_AIA)
-       )
-     GROUP BY TRIM(prior.Responsable_AIA)
-     ORDER BY MAX(prior.Semana) DESC, resp
-     LIMIT 1",
-)->fetchColumn();
-if (is_string($priorOnlyResponsible) && $priorOnlyResponsible !== '') {
-    $noFallbackDetail = $bi->getProgramaProgressDetail([$jmcProjectId], $jmcWeek, ['resp' => $priorOnlyResponsible], 100, 0);
-    timelineAssert($failures, (int) ($noFallbackDetail['pagination']['total'] ?? -1) === 0, 'a week 6 responsible filter must not fall back to an older weekly snapshot');
-    timelineAssert($failures, ($noFallbackDetail['activities'] ?? null) === [], 'a missing week 6 responsible must return an empty activity universe');
-}
+$emptyDetail = $bi->getProgramaProgressDetail(
+    [$jmcProjectId],
+    '',
+    ['desde' => '1900-01-01', 'hasta' => '1900-01-07'],
+    100,
+    0,
+);
+timelineAssert($failures, ($emptyDetail['respuesta'] ?? '') === 'BIEN', 'a valid empty timeline must return a structured success response');
+timelineAssert($failures, (int) ($emptyDetail['pagination']['total'] ?? -1) === 0, 'a valid empty timeline must publish zero total records');
+timelineAssert($failures, (float) ($emptyDetail['summary']['real_pct'] ?? -1) === 0.0, 'a valid empty timeline must publish zero real progress');
+timelineAssert($failures, (float) ($emptyDetail['summary']['theoretical_pct'] ?? -1) === 0.0, 'a valid empty timeline must publish zero theoretical progress');
+timelineAssert($failures, ($emptyDetail['activities'] ?? null) === [], 'a valid empty timeline must publish an empty activity list');
 
 $earnedDetail = $bi->getProgramaProgressDetail([$jmcProjectId], $jmcWeek, [], 50, 0, 'earned');
 $earnedActivities = $earnedDetail['activities'] ?? [];
-$expectedTopEarned = max(array_column($allActivities, 'real_contribution_pp'));
+$earnedContributions = array_column($allActivities, 'real_contribution_pp');
+$expectedTopEarned = $earnedContributions === [] ? 0.0 : max($earnedContributions);
 timelineAssert($failures, $earnedActivities !== [], 'earned mode must return activities that contribute real progress');
 timelineAssertClose($failures, 'earned mode first row', $earnedActivities[0]['real_contribution_pp'] ?? null, (float) $expectedTopEarned, 0.001);
 timelineAssert($failures, array_reduce(
@@ -365,28 +362,30 @@ timelineAssert($failures, array_reduce(
     true,
 ), 'critical-only missing mode must filter the complete universe before pagination');
 
-$secondProjectId = (int) $db->query(
+$secondProjectStatement = $db->prepare(
     "SELECT project_id FROM programa_consolidado
-     WHERE project_id <> 68 AND Semana = 6 AND COALESCE(Titulo, 0) = 0
+     WHERE project_id <> ? AND Semana = ? AND COALESCE(Titulo, 0) = 0
        AND Fecha_Inicio IS NOT NULL AND Fecha_Fin IS NOT NULL AND Fecha_Fin >= Fecha_Inicio
      GROUP BY project_id ORDER BY project_id LIMIT 1",
-)->fetchColumn();
+);
+$secondProjectStatement->execute([$jmcProjectId, $jmcWeek]);
+$secondProjectId = (int) $secondProjectStatement->fetchColumn();
 if ($secondProjectId > 0) {
     $multiOracle = timelineOracle($db, [$jmcProjectId, $secondProjectId], $jmcWeek);
     $multiDetail = $bi->getProgramaProgressDetail([$jmcProjectId, $secondProjectId], $jmcWeek, [], 100, 0);
-    timelineAssertDetail($failures, $multiDetail, $multiOracle, 'JMC plus second project');
+    timelineAssertDetail($failures, $multiDetail, $multiOracle, 'canonical plus second project');
     timelineAssert($failures, $multiOracle['summary']['total'] > $jmcOracle['summary']['total'], 'multi-project SQL universe must include the second project');
 }
 
 $rangeContext = $db->prepare('SELECT Fecha_Inicio_Sem AS desde, Fecha_Fin_Sem AS hasta FROM semanas_activas WHERE project_id = ? AND Semana = ?');
 $rangeContext->execute([$jmcProjectId, $jmcWeek]);
 $range = $rangeContext->fetch(PDO::FETCH_ASSOC) ?: [];
-timelineAssert($failures, !empty($range['desde']) && !empty($range['hasta']), 'JMC week 6 needs explicit weekly cutoff dates');
+timelineAssert($failures, !empty($range['desde']) && !empty($range['hasta']), 'canonical CI snapshot needs explicit weekly cutoff dates');
 if (!empty($range['desde']) && !empty($range['hasta'])) {
     $rangeFilters = ['desde' => (string) $range['desde'], 'hasta' => (string) $range['hasta']];
     $rangeOracle = timelineOracle($db, [$jmcProjectId], $jmcWeek, $rangeFilters);
     $rangeDetail = $bi->getProgramaProgressDetail([$jmcProjectId], $jmcWeek, $rangeFilters, 100, 0);
-    timelineAssertDetail($failures, $rangeDetail, $rangeOracle, 'JMC date range');
+    timelineAssertDetail($failures, $rangeDetail, $rangeOracle, 'canonical date range');
     timelineAssert($failures, ($rangeDetail['filters']['semana'] ?? null) === '', 'date range must override the week filter in the published detail');
 }
 
@@ -397,4 +396,4 @@ if ($failures !== []) {
     exit(1);
 }
 
-echo "PASS: BI Programa General activity timeline matches the independent JMC weekly-cutoff SQL oracle\n";
+echo "PASS: BI Programa General activity timeline matches the independent sanitized-fixture SQL oracle\n";

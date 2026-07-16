@@ -9,10 +9,12 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/support/BiContractFixture.php';
 
 use App\Services\ControlTowerService;
 
 $db = \Database::getInstance();
+BiContractFixture::seedCausalRows($db);
 $bi = new ControlTowerService();
 $failures = [];
 
@@ -303,10 +305,11 @@ function cncAssertScenario(
     }
 }
 
-$jmcWeekSix = cncDirectRows($db, [68], '6');
-cncAssert($failures, $jmcWeekSix === [], 'JMC week 6 golden must remain zero CNC');
-$jmcWeekFour = cncDirectRows($db, [68], '4');
-cncAssert($failures, count($jmcWeekFour) === 8, 'JMC week 4 fixture must retain exactly 8 CNC rows');
+$context = $db->query("SELECT project_id, Semana FROM programacion_semanal WHERE Activa IN ('1','NA') AND COALESCE(TRIM(CNC), '') <> '' ORDER BY project_id, Semana, Consecutivo LIMIT 1")->fetch(PDO::FETCH_ASSOC) ?: [];
+$projectId = (int) ($context['project_id'] ?? 0);
+$week = (string) ($context['Semana'] ?? '');
+$canonicalRows = cncDirectRows($db, [$projectId], $week);
+cncAssert($failures, $projectId > 0 && $canonicalRows !== [], 'canonical CI fixture must expose a CNC population');
 
 $duplicateGroups = $db->query(
     "SELECT COUNT(*) FROM (
@@ -319,29 +322,29 @@ $duplicateGroups = $db->query(
 )->fetchColumn();
 cncAssert($failures, (int) $duplicateGroups === 0, 'CNC source grain contains duplicates');
 
-$weekRangeStatement = $db->prepare('SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem FROM semanas_activas WHERE project_id = 68 AND Semana = 4 LIMIT 1');
-$weekRangeStatement->execute();
+$weekRangeStatement = $db->prepare('SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem FROM semanas_activas WHERE project_id = ? AND Semana = ? LIMIT 1');
+$weekRangeStatement->execute([$projectId, $week]);
 $weekRange = $weekRangeStatement->fetch(PDO::FETCH_ASSOC) ?: [];
-$firstRow = $jmcWeekFour[0] ?? [];
+$firstRow = $canonicalRows[0] ?? [];
 $responsible = trim((string) ($firstRow['Responsable_AIA'] ?? ''));
 $subcontractor = trim((string) ($firstRow['Sub_Contratista'] ?? ''));
 $stage = trim((string) (($firstRow['Ubicacion'] ?? '') ?: ($firstRow['Actividad'] ?? '')));
 $stage = function_exists('mb_substr') ? mb_substr($stage, 0, 24, 'UTF-8') : substr($stage, 0, 24);
 
-cncAssertScenario($failures, $bi, $db, 'JMC empty week 6', [68], '6', []);
-cncAssertScenario($failures, $bi, $db, 'JMC week 4', [68], '4', []);
-cncAssertScenario($failures, $bi, $db, 'CNC multi-project week 6', [62, 63, 65, 68, 70], '6', []);
+cncAssertScenario($failures, $bi, $db, 'canonical empty week', [$projectId], (string) ((int) $week + 100), []);
+cncAssertScenario($failures, $bi, $db, 'canonical CNC context', [$projectId], $week, []);
+cncAssertScenario($failures, $bi, $db, 'CNC multi-project range', [73, 75], '', ['desde' => '2026-07-06', 'hasta' => '2026-07-26']);
 if (($weekRange['Fecha_Inicio_Sem'] ?? '') !== '' && ($weekRange['Fecha_Fin_Sem'] ?? '') !== '') {
-    cncAssertScenario($failures, $bi, $db, 'JMC week 4 date range', [68], '', ['desde' => $weekRange['Fecha_Inicio_Sem'], 'hasta' => $weekRange['Fecha_Fin_Sem']]);
+    cncAssertScenario($failures, $bi, $db, 'canonical CNC date range', [$projectId], '', ['desde' => $weekRange['Fecha_Inicio_Sem'], 'hasta' => $weekRange['Fecha_Fin_Sem']]);
 }
 if ($responsible !== '') {
-    cncAssertScenario($failures, $bi, $db, 'JMC responsible filter', [68], '4', ['resp' => $responsible]);
+    cncAssertScenario($failures, $bi, $db, 'canonical CNC responsible filter', [$projectId], $week, ['resp' => $responsible]);
 }
 if ($subcontractor !== '') {
-    cncAssertScenario($failures, $bi, $db, 'JMC subcontractor filter', [68], '4', ['sub' => $subcontractor]);
+    cncAssertScenario($failures, $bi, $db, 'canonical CNC subcontractor filter', [$projectId], $week, ['sub' => $subcontractor]);
 }
 if ($stage !== '') {
-    cncAssertScenario($failures, $bi, $db, 'JMC stage filter', [68], '4', ['etapa' => $stage]);
+    cncAssertScenario($failures, $bi, $db, 'canonical CNC stage filter', [$projectId], $week, ['etapa' => $stage]);
 }
 
 if ($failures !== []) {
