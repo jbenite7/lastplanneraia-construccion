@@ -1,0 +1,20 @@
+FROM mysql:8.0.40
+COPY database/migrations/20260630_global_tables_contract.sql /docker-entrypoint-initdb.d/001-global-schema.sql
+COPY database/patches/001_create_new_tables.sql /docker-entrypoint-initdb.d/002-rbac-schema.sql
+COPY database/fixtures/design-system-ci.sql /docker-entrypoint-initdb.d/003-design-system-ci.sql
+COPY database/migrations/20260702_semi_auto_global_tables.sql /docker-entrypoint-initdb.d/004-semi-auto-global.sql
+COPY database/migrations/20260704_semi_auto_assistant_tables.sql /docker-entrypoint-initdb.d/005-semi-auto-assistant.sql
+COPY database/migrations/20260703_contratos_slot_quantities_traceability.sql /docker-entrypoint-initdb.d/006-contract-quantities.sql
+COPY database/migrations/20260705_actividad_programa_fuentes.sql /docker-entrypoint-initdb.d/007-activity-sources.sql
+COPY database/migrations/002_bi_forecast_tables.sql /docker-entrypoint-initdb.d/008-bi-forecast.sql
+COPY database/migrations/003_bi_action_queue.sql /docker-entrypoint-initdb.d/009-bi-action-queue.sql
+COPY database/bi/001_bi_pg_semana.sql /docker-entrypoint-initdb.d/101-bi-view.sql
+COPY database/bi/002_bi_pi_restricciones.sql /docker-entrypoint-initdb.d/102-bi-view.sql
+COPY database/bi/003_bi_ps_compromisos.sql /docker-entrypoint-initdb.d/103-bi-view.sql
+COPY database/bi/004_bi_pdc_general.sql /docker-entrypoint-initdb.d/104-bi-view.sql
+COPY database/bi/005_bi_cic_contratistas.sql /docker-entrypoint-initdb.d/105-bi-view.sql
+COPY database/bi/006_bi_cip_responsables.sql /docker-entrypoint-initdb.d/106-bi-view.sql
+COPY database/bi/007_bi_curva_s_duracion.sql /docker-entrypoint-initdb.d/107-bi-view.sql
+COPY database/bi/008_bi_riesgos.sql /docker-entrypoint-initdb.d/108-bi-view.sql
+COPY database/bi/009_bi_control_tower_summary.sql /docker-entrypoint-initdb.d/109-bi-view.sql
+COPY database/bi/010_bi_lineage.sql /docker-entrypoint-initdb.d/110-bi-view.sql

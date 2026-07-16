@@ -1,11 +1,33 @@
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { assertSafeCiComposeConfig } from './design-system-ci-compose-contract.mjs';
 
-const EXPECTED_PROJECT = 'lps-aia-design-system-ci';
-const EXPECTED_COMPOSE_FILES = ['docker-compose.ci.yml', 'docker-compose.yml'];
-const EXPECTED_DATABASE = 'lastplanneraia_ci';
-const EXPECTED_VOLUME = 'lps_aia_design_system_ci_db';
+const FIXTURE_PATH = 'database/fixtures/design-system-ci.sql';
+const DB_DOCKERFILE_PATH = 'database/fixtures/design-system-ci.Dockerfile';
+const EXPECTED_INIT_COPIES = [
+  ['database/migrations/20260630_global_tables_contract.sql', '001-global-schema.sql'],
+  ['database/patches/001_create_new_tables.sql', '002-rbac-schema.sql'],
+  ['database/fixtures/design-system-ci.sql', '003-design-system-ci.sql'],
+  ['database/migrations/20260702_semi_auto_global_tables.sql', '004-semi-auto-global.sql'],
+  ['database/migrations/20260704_semi_auto_assistant_tables.sql', '005-semi-auto-assistant.sql'],
+  ['database/migrations/20260703_contratos_slot_quantities_traceability.sql', '006-contract-quantities.sql'],
+  ['database/migrations/20260705_actividad_programa_fuentes.sql', '007-activity-sources.sql'],
+  ['database/migrations/002_bi_forecast_tables.sql', '008-bi-forecast.sql'],
+  ['database/migrations/003_bi_action_queue.sql', '009-bi-action-queue.sql'],
+  ['database/bi/001_bi_pg_semana.sql', '101-bi-view.sql'],
+  ['database/bi/002_bi_pi_restricciones.sql', '102-bi-view.sql'],
+  ['database/bi/003_bi_ps_compromisos.sql', '103-bi-view.sql'],
+  ['database/bi/004_bi_pdc_general.sql', '104-bi-view.sql'],
+  ['database/bi/005_bi_cic_contratistas.sql', '105-bi-view.sql'],
+  ['database/bi/006_bi_cip_responsables.sql', '106-bi-view.sql'],
+  ['database/bi/007_bi_curva_s_duracion.sql', '107-bi-view.sql'],
+  ['database/bi/008_bi_riesgos.sql', '108-bi-view.sql'],
+  ['database/bi/009_bi_control_tower_summary.sql', '109-bi-view.sql'],
+  ['database/bi/010_bi_lineage.sql', '110-bi-view.sql'],
+];
 
 function reject(detail) {
   throw new Error(`Unsafe design-system CI target: ${detail}`);
@@ -17,87 +39,111 @@ function requireEqual(actual, expected, label) {
   }
 }
 
-function assertSinglePort(service, target, published, label) {
-  const ports = service?.ports ?? [];
-  if (ports.length !== 1) reject(`${label} must publish exactly one isolated port`);
-  requireEqual(ports[0]?.target, target, `${label} target port`);
-  requireEqual(ports[0]?.published, published, `${label} published port`);
-}
+export { assertSafeCiComposeConfig };
 
-function composeFileNames(rawComposeFile) {
-  return String(rawComposeFile ?? '')
-    .split(path.delimiter)
-    .filter(Boolean)
-    .map((entry) => path.basename(entry))
-    .sort();
-}
-
-export function assertSafeCiComposeConfig(config, env = process.env) {
-  requireEqual(env.COMPOSE_PROJECT_NAME, EXPECTED_PROJECT, 'COMPOSE_PROJECT_NAME');
-  requireEqual(env.APP_URL, 'http://127.0.0.1:18081', 'APP_URL');
-  requireEqual(env.E2E_BASE_URL, 'http://127.0.0.1:18081', 'E2E_BASE_URL');
-  requireEqual(env.E2E_PROJECT_KEYS, 'construction', 'E2E_PROJECT_KEYS');
-  requireEqual(env.E2E_REQUIRE_ISOLATED_DB, 1, 'E2E_REQUIRE_ISOLATED_DB');
-  requireEqual(env.E2E_ALLOW_DB_MUTATION, 'design-system-ci', 'E2E_ALLOW_DB_MUTATION');
-
-  const composeFiles = composeFileNames(env.COMPOSE_FILE);
-  if (JSON.stringify(composeFiles) !== JSON.stringify(EXPECTED_COMPOSE_FILES)) {
-    reject(`COMPOSE_FILE must contain only ${EXPECTED_COMPOSE_FILES.join(' and ')}`);
+export function assertDbInitDockerfile(source) {
+  const initDockerfile = String(source);
+  if (!/^FROM mysql:8\.0\.40$/m.test(initDockerfile)) {
+    reject('db init image must pin mysql:8.0.40');
   }
-
-  const app = config?.services?.app;
-  const db = config?.services?.db;
-  if (!app || !db) reject('app and db services are required');
-
-  requireEqual(app.environment?.APP_ENV, 'testing', 'APP_ENV');
-  requireEqual(app.environment?.DB_HOST, 'db', 'DB_HOST');
-  requireEqual(app.environment?.DB_PORT, 3306, 'DB_PORT');
-  requireEqual(app.environment?.DB_NAME, EXPECTED_DATABASE, 'DB_NAME');
-  requireEqual(db.environment?.MYSQL_DATABASE, EXPECTED_DATABASE, 'MYSQL_DATABASE');
-  requireEqual(db.environment?.MYSQL_ROOT_PASSWORD, 'ci-only-password', 'MYSQL_ROOT_PASSWORD');
-  assertSinglePort(app, 80, 18081, 'app');
-  assertSinglePort(db, 3306, 13307, 'db');
-
-  const volume = config?.volumes?.db_data;
-  if (!volume || volume.external === true || volume.name !== EXPECTED_VOLUME) {
-    reject(`database volume must be the non-external ${EXPECTED_VOLUME} volume`);
+  const copyLines = initDockerfile.match(/^COPY /gm) ?? [];
+  if (copyLines.length !== EXPECTED_INIT_COPIES.length) {
+    reject(`db init image must COPY exactly ${EXPECTED_INIT_COPIES.length} allowlisted SQL files`);
   }
-
-  const mounts = db.volumes ?? [];
-  if (mounts.length !== 3) reject('database mount allowlist must contain exactly three mounts');
-
-  const dataMount = mounts.find((mount) => mount.target === '/var/lib/mysql');
-  if (dataMount?.type !== 'volume' || dataMount.source !== 'db_data') {
-    reject('database data mount must use the isolated db_data volume');
-  }
-
-  const expectedBinds = new Map([
-    ['20260630_global_tables_contract.sql', '/docker-entrypoint-initdb.d/001-global-schema.sql'],
-    ['design-system-ci.sql', '/docker-entrypoint-initdb.d/002-design-system-ci.sql'],
-  ]);
-  const binds = mounts.filter((mount) => mount.type === 'bind');
-  if (binds.length !== expectedBinds.size) reject('database bind mount allowlist is incomplete');
-
-  for (const mount of binds) {
-    const sourceName = path.basename(String(mount.source ?? ''));
-    const expectedTarget = expectedBinds.get(sourceName);
-    if (!expectedTarget || mount.target !== expectedTarget) {
-      reject(`undeclared database mount: ${String(mount.source ?? '<missing>')}`);
+  for (const [copySource, target] of EXPECTED_INIT_COPIES) {
+    const instruction = `COPY ${copySource} /docker-entrypoint-initdb.d/${target}`;
+    if (!initDockerfile.split('\n').includes(instruction)) {
+      reject(`db init image is incomplete: missing ${copySource}`);
     }
-    if (mount.read_only !== true) reject(`${sourceName} must be mounted read-only`);
   }
+  return true;
+}
 
+export function assertWorktreeProvenance(actual, env = process.env) {
+  requireEqual(actual.gitSha, env.CI_GIT_SHA, 'CI_GIT_SHA');
+  requireEqual(
+    actual.worktreeFingerprint,
+    env.CI_WORKTREE_FINGERPRINT,
+    'CI_WORKTREE_FINGERPRINT',
+  );
+  requireEqual(actual.fixtureSha256, env.CI_FIXTURE_SHA256, 'CI_FIXTURE_SHA256');
+  return true;
+}
+
+function sha256(value) {
+  return createHash('sha256').update(value).digest('hex');
+}
+
+export function readWorktreeProvenance(root = process.cwd()) {
+  const gitSha = execFileSync('git', ['rev-parse', 'HEAD'], {
+    cwd: root,
+    encoding: 'utf8',
+  }).trim();
+  const listedFiles = execFileSync(
+    'git',
+    ['ls-files', '--cached', '--others', '--exclude-standard', '-z'],
+    { cwd: root, encoding: 'buffer' },
+  ).toString('utf8').split('\0').filter(Boolean).sort();
+  const worktreeHash = createHash('sha256');
+  for (const relativePath of listedFiles) {
+    worktreeHash.update(`${Buffer.byteLength(relativePath)}:${relativePath}:`);
+    worktreeHash.update(readFileSync(path.join(root, relativePath)));
+  }
+  const fixture = readFileSync(path.join(root, FIXTURE_PATH));
+  return {
+    gitSha,
+    worktreeFingerprint: worktreeHash.digest('hex'),
+    fixtureSha256: sha256(fixture),
+  };
+}
+
+export function assertFixtureContract(source) {
+  const requiredTokens = [
+    "(73, 'Da Porto'",
+    "(75, 'Aeropuerto Regional PC'",
+    'CREATE TABLE `zleg_da_porto_programa`',
+    'INSERT INTO `zleg_da_porto_programa`',
+    'INSERT INTO `programacion_semanal`',
+    'INSERT INTO `actividades`',
+    'INSERT INTO `pdc`',
+    'INSERT INTO `rbac_role_permissions`',
+  ];
+  for (const token of requiredTokens) {
+    if (!source.includes(token)) reject(`fixture is incomplete: missing ${token}`);
+  }
+  if (/\b(?:NOW|RAND|UUID)\s*\(/i.test(source)) reject('fixture must use deterministic literal values');
+  if (/mysqldump|production_dump|@aia\.com\.co/i.test(source)) reject('fixture must not contain real/production data');
   return true;
 }
 
 function runCli() {
-  const rawConfig = execFileSync('docker', ['compose', 'config', '--format', 'json'], {
-    cwd: process.cwd(),
+  const root = process.cwd();
+  const provenance = readWorktreeProvenance(root);
+  if (process.argv.includes('--print-provenance')) {
+    process.stdout.write(`CI_GIT_SHA=${provenance.gitSha}\n`);
+    process.stdout.write(`CI_WORKTREE_FINGERPRINT=${provenance.worktreeFingerprint}\n`);
+    process.stdout.write(`CI_FIXTURE_SHA256=${provenance.fixtureSha256}\n`);
+    return;
+  }
+  assertWorktreeProvenance(provenance);
+  assertFixtureContract(readFileSync(path.join(root, FIXTURE_PATH), 'utf8'));
+  assertDbInitDockerfile(readFileSync(path.join(root, DB_DOCKERFILE_PATH), 'utf8'));
+  const composeArgs = [
+    'compose',
+    '-p', process.env.COMPOSE_PROJECT_NAME,
+    '-f', path.join(root, 'docker-compose.yml'),
+    '-f', path.join(root, 'docker-compose.ci.yml'),
+    'config', '--format', 'json',
+  ];
+  const rawConfig = execFileSync('docker', composeArgs, {
+    cwd: root,
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   assertSafeCiComposeConfig(JSON.parse(rawConfig));
-  process.stdout.write('Design-system CI preflight: PASS (isolated testing target)\n');
+  process.stdout.write(
+    `Design-system CI preflight: PASS (${process.env.COMPOSE_PROJECT_NAME}, ${process.env.CI_WORKTREE_FINGERPRINT})\n`,
+  );
 }
 
 const currentFile = fileURLToPath(import.meta.url);

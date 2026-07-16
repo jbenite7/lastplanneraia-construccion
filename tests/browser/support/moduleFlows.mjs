@@ -73,7 +73,7 @@ export const moduleFlows = {
       await apiList(page, project, `/api/semanal/list?db=${project.dbPrefix}&semana=${project.maxWeek}`);
     },
     async edit(page, project) {
-      const tnp = await getJson(page, `/api/semanal/tnp-actividades?semana=${project.maxWeek}`);
+      const tnp = await getJson(page, `/api/semanal/tnp-actividades?db=${project.dbPrefix}&semana=${project.maxWeek}`);
       assertJsonOk(tnp, 'PS TNP activities');
     },
     async validateTypeSpecificBehavior(page, project) {
@@ -299,8 +299,8 @@ export const moduleFlows = {
       const response = await postFormJson(page, '/api/pdc/list', { semana: project.maxWeek });
       assertJsonOk(response, 'PDC list');
     },
-    async edit(page) {
-      const preview = await postFormJson(page, '/api/pdc/auto/preview', {});
+    async edit(page, project) {
+      const preview = await postFormJson(page, `/api/pdc/auto/preview?db=${project.dbPrefix}&semana=${project.maxWeek}`, {});
       assertJsonOk(preview, 'PDC semi-auto preview');
       expect(preview.payload.run_id, JSON.stringify(preview.payload)).toBeTruthy();
       expect(preview.payload.analysis?.steps?.length, JSON.stringify(preview.payload)).toBeGreaterThan(0);

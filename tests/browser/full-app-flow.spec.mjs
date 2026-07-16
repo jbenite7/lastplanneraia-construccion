@@ -1,26 +1,55 @@
 import { test, expect } from '@playwright/test';
 import { PROJECTS } from './fixtures/projects.mjs';
 import { assertNoRuntimeErrors, installErrorCollectors } from './support/assertions.mjs';
-import { ProjectDbSnapshot, countE2ERows } from './support/dbSnapshot.mjs';
+import { ContainerFileSnapshot } from './support/containerFileSnapshot.mjs';
+import { DatabaseSnapshot } from './support/dbSnapshot.mjs';
+import {
+  E2ERestorationScope,
+  assertE2EMutationConsent,
+  maybeInjectE2EFailure,
+} from './support/restoration.mjs';
 import { loginAndSelectProject, logout, changeWeek } from './support/session.mjs';
 import { runModuleFlow, validateProjectShell } from './support/moduleFlows.mjs';
 
+assertE2EMutationConsent();
+
 for (const project of PROJECTS) {
   test.describe(`Full reusable app flow — ${project.name}`, () => {
-    let snapshot;
+    let restoration;
 
     test.beforeEach(async ({ page }) => {
-      snapshot = new ProjectDbSnapshot(project).capture();
+      restoration = new E2ERestorationScope(
+        new DatabaseSnapshot(),
+        new ContainerFileSnapshot('/var/www/html/public/storage'),
+      );
+      restoration.capture();
       await loginAndSelectProject(page, project);
     });
 
     test.afterEach(async ({ page }) => {
-      await logout(page).catch(() => {});
-      if (snapshot) {
-        snapshot.restore();
-        snapshot.dispose();
+      const cleanupErrors = [];
+      try {
+        await logout(page);
+      } catch (error) {
+        cleanupErrors.push(error instanceof Error ? error : new Error(String(error)));
       }
-      expect(countE2ERows(), 'Temporary E2E rows must be cleaned up').toBe(0);
+      if (restoration) {
+        try {
+          const receipt = restoration.restore();
+          console.info(`E2E_RESTORATION_RECEIPT ${JSON.stringify(receipt)}`);
+        } catch (error) {
+          cleanupErrors.push(error instanceof Error ? error : new Error(String(error)));
+        }
+        try {
+          restoration.dispose();
+        } catch (error) {
+          cleanupErrors.push(error instanceof Error ? error : new Error(String(error)));
+        }
+        restoration = null;
+      }
+      if (cleanupErrors.length > 0) {
+        throw new AggregateError(cleanupErrors, 'Full app E2E cleanup failed.');
+      }
     });
 
     test('desktop shell, context and week switch', async ({ page }) => {
@@ -53,6 +82,7 @@ for (const project of PROJECTS) {
       test(`module flow: ${moduleName}`, async ({ page }) => {
         const errors = installErrorCollectors(page);
         await runModuleFlow(page, project, moduleName);
+        maybeInjectE2EFailure(`full-app-flow:module:${moduleName}`);
         assertNoRuntimeErrors(errors);
       });
     }

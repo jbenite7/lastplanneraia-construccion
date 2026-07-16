@@ -7,6 +7,8 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 
+import { parseJobSteps } from './workflow-contract-parser.mjs';
+
 const root = new URL('../../', import.meta.url);
 const read = async (path) => readFile(new URL(path, root), 'utf8');
 
@@ -19,14 +21,24 @@ test('PHPStan legacy debt is enforced by an executable baseline gate', async () 
   assert.ok(existsSync(new URL('scripts/design-system-phpstan-baseline.mjs', root)));
   assert.ok(existsSync(new URL('docs/design-system/phpstan-baseline.json', root)));
   const gate = closeout.gates.find(({ id }) => id === 'phpstan-global');
-  assert.equal(gate.status, 'passed');
-  assert.match(gate.evidence.join(' '), /5 known, 0 new/);
+  assert.equal(gate.blocking, true);
+  if (gate.status === 'passed') {
+    assert.match(gate.verifiedAt, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/);
+    assert.ok(gate.evidence.length > 0);
+  } else {
+    assert.equal(gate.verifiedAt, null);
+  }
 });
 
 test('CI PHPStan targets the isolated compose project', async () => {
   const workflow = await read('.github/workflows/design-system.yml');
-  assert.match(workflow, /name: Enforce PHPStan baseline[\s\S]*?COMPOSE_PROJECT_NAME: lps-aia-design-system-ci/);
-  assert.match(workflow, /name: Enforce PHPStan baseline[\s\S]*?COMPOSE_FILE: docker-compose\.yml:docker-compose\.ci\.yml/);
+  const steps = parseJobSteps(workflow, 'design-system-runtime');
+  const provenanceIndex = steps.findIndex(({ id }) => id === 'runtime-provenance');
+  const phpstanIndex = steps.findIndex(({ name }) => name === 'Enforce PHPStan baseline');
+  assert.ok(provenanceIndex >= 0 && provenanceIndex < phpstanIndex);
+  assert.match(steps[provenanceIndex].run, /COMPOSE_PROJECT_NAME=lps-aia-design-system-ci-\$\{CI_RUN_ID\}/);
+  assert.match(steps[provenanceIndex].run, /COMPOSE_FILE=docker-compose\.yml:docker-compose\.ci\.yml/);
+  assert.equal(steps[phpstanIndex].run, 'npm run test:design-system:phpstan');
 });
 
 test('PHPStan baseline comparison rejects a new fingerprint', async () => {

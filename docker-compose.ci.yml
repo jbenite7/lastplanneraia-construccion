@@ -1,8 +1,14 @@
 services:
   app:
+    image: lps-aia-design-system-ci:${CI_RUN_ID:?CI_RUN_ID is required}
     build:
       args:
         COMPOSER_INSTALL_FLAGS: ""
+    labels:
+      aia.ci.run-id: ${CI_RUN_ID:?CI_RUN_ID is required}
+      aia.ci.git-sha: ${CI_GIT_SHA:?CI_GIT_SHA is required}
+      aia.ci.worktree-fingerprint: ${CI_WORKTREE_FINGERPRINT:?CI_WORKTREE_FINGERPRINT is required}
+      aia.ci.fixture-sha256: ${CI_FIXTURE_SHA256:?CI_FIXTURE_SHA256 is required}
     ports: !override
       - "18081:80"
     environment:
@@ -19,15 +25,22 @@ services:
     restart: "no"
 
   db:
+    image: lps-aia-design-system-ci-db:${CI_RUN_ID:?CI_RUN_ID is required}
+    build:
+      context: .
+      dockerfile: database/fixtures/design-system-ci.Dockerfile
+    labels:
+      aia.ci.run-id: ${CI_RUN_ID:?CI_RUN_ID is required}
+      aia.ci.git-sha: ${CI_GIT_SHA:?CI_GIT_SHA is required}
+      aia.ci.worktree-fingerprint: ${CI_WORKTREE_FINGERPRINT:?CI_WORKTREE_FINGERPRINT is required}
+      aia.ci.fixture-sha256: ${CI_FIXTURE_SHA256:?CI_FIXTURE_SHA256 is required}
     ports: !override
       - "13307:3306"
     environment:
       MYSQL_DATABASE: lastplanneraia_ci
       MYSQL_ROOT_PASSWORD: ci-only-password
-    volumes:
+    volumes: !override
       - db_data:/var/lib/mysql
-      - ./database/migrations/20260630_global_tables_contract.sql:/docker-entrypoint-initdb.d/001-global-schema.sql:ro
-      - ./database/fixtures/design-system-ci.sql:/docker-entrypoint-initdb.d/002-design-system-ci.sql:ro
     restart: "no"
 
   adminer:
@@ -37,4 +50,4 @@ services:
 volumes:
   db_data:
     external: false
-    name: lps_aia_design_system_ci_db
+    name: ${COMPOSE_PROJECT_NAME:?COMPOSE_PROJECT_NAME is required}_db

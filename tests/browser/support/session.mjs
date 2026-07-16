@@ -68,10 +68,14 @@ export async function postFormJson(page, url, body = {}) {
       };
 
       Object.entries(apiBody).forEach(([key, value]) => append(key, value));
+      const headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
+      if (apiUrl.startsWith('/api/pdc/')) {
+        headers['X-CSRF-Token'] = document.querySelector('meta[name="csrf-token"]')?.content || '';
+      }
       const res = await fetch(apiUrl, {
         method: 'POST',
         credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        headers,
         body: formData.toString(),
       });
       const text = await res.text();

@@ -38,10 +38,33 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
+      - name: Capture runtime provenance
+        id: runtime-provenance
+        shell: bash
+        run: |
+          set -euo pipefail
+          CI_RUN_ID=run-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}
+          COMPOSE_PROJECT_NAME=lps-aia-design-system-ci-${CI_RUN_ID}
+          provenance="$(node scripts/design-system-ci-preflight.mjs --print-provenance)"
+          CI_GIT_SHA="$(awk -F= '$1 == "CI_GIT_SHA" { print $2 }' <<< "${provenance}")"
+          CI_WORKTREE_FINGERPRINT="$(awk -F= '$1 == "CI_WORKTREE_FINGERPRINT" { print $2 }' <<< "${provenance}")"
+          CI_FIXTURE_SHA256="$(awk -F= '$1 == "CI_FIXTURE_SHA256" { print $2 }' <<< "${provenance}")"
+          for required_value in "${CI_GIT_SHA}" "${CI_WORKTREE_FINGERPRINT}" "${CI_FIXTURE_SHA256}"; do
+            if ! grep -Eq '^[a-f0-9]+$' <<< "${required_value}"; then
+              echo "Incomplete runtime provenance" >&2
+              exit 1
+            fi
+          done
+          {
+            echo "CI_RUN_ID=${CI_RUN_ID}"
+            echo "COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME}"
+            echo "COMPOSE_FILE=docker-compose.yml:docker-compose.ci.yml"
+            echo "CI_GIT_SHA=${CI_GIT_SHA}"
+            echo "CI_WORKTREE_FINGERPRINT=${CI_WORKTREE_FINGERPRINT}"
+            echo "CI_FIXTURE_SHA256=${CI_FIXTURE_SHA256}"
+          } >> "${GITHUB_ENV}"
       - name: Verify isolated runtime target
         env:
-          COMPOSE_PROJECT_NAME: lps-aia-design-system-ci
-          COMPOSE_FILE: docker-compose.yml:docker-compose.ci.yml
           APP_URL: http://127.0.0.1:18081
           E2E_BASE_URL: http://127.0.0.1:18081
           E2E_PROJECT_KEYS: construction
@@ -49,7 +72,7 @@ jobs:
           E2E_ALLOW_DB_MUTATION: design-system-ci
         run: node scripts/design-system-ci-preflight.mjs
       - name: Start isolated runtime
-        run: docker compose -p lps-aia-design-system-ci -f docker-compose.yml -f docker-compose.ci.yml up -d --build db app
+        run: docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.ci.yml up -d --build db app
       - name: Wait for the application
         run: |
           for attempt in {1..60}; do
@@ -58,23 +81,35 @@ jobs:
             fi
             sleep 2
           done
-          docker compose -p lps-aia-design-system-ci -f docker-compose.yml -f docker-compose.ci.yml logs
+          docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.ci.yml logs
           exit 1
       - name: Enforce PHPStan baseline
-        env:
-          COMPOSE_PROJECT_NAME: lps-aia-design-system-ci
-          COMPOSE_FILE: docker-compose.yml:docker-compose.ci.yml
         run: npm run test:design-system:phpstan
       - name: Enforce global-table safety
-        run: docker compose -p lps-aia-design-system-ci -f docker-compose.yml -f docker-compose.ci.yml exec -T app php tests/test_global_table_safety.php
+        run: docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.ci.yml exec -T app php tests/test_global_table_safety.php
       - name: Run laboratory gates
+        id: blocking-runtime
         env:
           E2E_BASE_URL: http://127.0.0.1:18081
         run: npm run test:design-system:runtime
+      - name: Collect keyboard and reflow evidence
+        id: keyboard-reflow-evidence
+        continue-on-error: true
+        env:
+          E2E_BASE_URL: http://127.0.0.1:18081
+        run: npm run test:design-system:evidence
+      - name: Preserve non-blocking evidence failures
+        if: steps.keyboard-reflow-evidence.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: design-system-keyboard-reflow-evidence
+          path: |
+            test-results/
+            test-output/
+          if-no-files-found: warn
+          retention-days: 7
       - name: Run Programa General persistence and RBAC gate
         env:
-          COMPOSE_PROJECT_NAME: lps-aia-design-system-ci
-          COMPOSE_FILE: docker-compose.yml:docker-compose.ci.yml
           APP_URL: http://127.0.0.1:18081
           E2E_BASE_URL: http://127.0.0.1:18081
           E2E_PROJECT_KEYS: construction
@@ -87,7 +122,7 @@ jobs:
         if: failure()
         run: |
           mkdir -p test-output
-          docker compose -p lps-aia-design-system-ci -f docker-compose.yml -f docker-compose.ci.yml logs --no-color > test-output/docker-compose.log || true
+          docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.ci.yml logs --no-color > test-output/docker-compose.log || true
       - name: Preserve failure evidence
         if: failure()
         uses: actions/upload-artifact@v4
@@ -100,4 +135,4 @@ jobs:
           retention-days: 7
       - name: Stop isolated runtime
         if: always()
-        run: docker compose -p lps-aia-design-system-ci -f docker-compose.yml -f docker-compose.ci.yml down --volumes
+        run: docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.ci.yml down --volumes
