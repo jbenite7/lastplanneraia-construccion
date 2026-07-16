@@ -32,6 +32,8 @@ Las pruebas resuelven las credenciales en tiempo de ejecucion; no se deben dupli
 | Proyecto | Tipo | `project_id` | `dbPrefix` | Semana fixture | Modulos principales |
 |---|---|---:|---|---:|---|
 | Da Porto | Construccion | 73 | `da_porto` | 1 | PG, PI, PS, CNP, CNC, CIC, Listado, Contratos, PDC, Profesionales, Subcontratistas, Indicadores, Control Cambios, Reportes |
+| Optimización Aeropuerto JMC | Construccion | 68 | `optimizacionJMC` | 5 (LPS), 6 (Compras) | PG, PI, PS, CNP, CNC, CIC, Listado, Contratos, PDC |
+| Preconstrucción Da Porto | Pre-Construccion | 76 | `preconstruccion_da_porto_pc` | 1 | PG, PI, PS, Interesados Externos; sin Listado, Contratos ni PDC |
 | Aeropuerto Regional PC | Pre-Construccion | 75 | `da_aeropuerto_pc` | 3 | PG, PI, PS, Profesionales, Interesados Externos, Indicadores, Control Cambios |
 
 ### Roles y permisos relevantes
@@ -1767,6 +1769,26 @@ Auditoria tecnica:
 | `tests/browser/support/assertions.mjs` | Asserts de contexto, navbar, errores runtime y restricciones |
 | `tests/browser/support/dbSnapshot.mjs` | Snapshots/restores para E2E que mutan BD |
 | `tests/browser/support/moduleFlows.mjs` | Contrato operativo reutilizable por modulo |
+
+| `tests/browser/support/dbSnapshot.mjs` | Snapshots/restores para E2E que mutan BD |
+| `tests/browser/support/moduleFlows.mjs` | Contrato operativo reutilizable por modulo |
+
+### 10.1 Ciclo operacional completo Last Planner y Compras
+
+La suite canónica es `tests/browser/full-operational-cycle.spec.mjs` y se ejecuta en serie:
+
+```bash
+npx playwright test tests/browser/full-operational-cycle.spec.mjs --workers=1
+```
+
+El escenario usa `test.A`, concede administración temporal solo cuando hace falta y restaura la membresía original en `finally`. Antes de mutar captura las tablas globales, `actividad_programa_fuentes` y `contratos_trazabilidad`; al terminar exige la misma huella y ausencia de filas `E2E`.
+
+Alcance por proyecto:
+
+- Da Porto (`project_id=73`): PG, PI, PS, CNP, CNC y CIC en semana 1; Listado, Contratos, asistente preview/apply/reload/undo y PDC en semana 1.
+- Optimización Aeropuerto JMC (`project_id=68`): Last Planner en semana operativa 5; Compras usa la semana máxima 6 porque Listado, Contratos y PDC resuelven `Max_Semana` en el flujo visible.
+- Preconstrucción Da Porto (`project_id=76`): PG, PI y PS en semana 1, restricción PC `restriccion_pc_1` e Interesados Externos. Sus restricciones blandas no aparecen porque el proyecto no tiene nombres personalizados; Listado, Contratos y PDC deben permanecer ocultos.
+
 
 ## 11. Criterios antes de crear nuevos tests
 
