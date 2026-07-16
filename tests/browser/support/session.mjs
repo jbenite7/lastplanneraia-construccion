@@ -53,9 +53,9 @@ export async function changeWeek(page, week, destination = '/programa-general') 
   await expect(page.locator('#semana, #semana_PHP').first()).toHaveValue(String(week), { timeout: 45000 });
 }
 
-export async function postFormJson(page, url, body = {}) {
+export async function postFormJson(page, url, body = {}, options = {}) {
   return page.evaluate(
-    async ({ apiUrl, apiBody }) => {
+    async ({ apiUrl, apiBody, includePdcCsrf }) => {
       const formData = new URLSearchParams();
       const append = (prefix, value) => {
         if (Array.isArray(value)) {
@@ -69,7 +69,7 @@ export async function postFormJson(page, url, body = {}) {
 
       Object.entries(apiBody).forEach(([key, value]) => append(key, value));
       const headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
-      if (apiUrl.startsWith('/api/pdc/')) {
+      if (includePdcCsrf && apiUrl.startsWith('/api/pdc/')) {
         headers['X-CSRF-Token'] = document.querySelector('meta[name="csrf-token"]')?.content || '';
       }
       const res = await fetch(apiUrl, {
@@ -87,7 +87,7 @@ export async function postFormJson(page, url, body = {}) {
       }
       return { ok: res.ok, status: res.status, payload };
     },
-    { apiUrl: url, apiBody: body },
+    { apiUrl: url, apiBody: body, includePdcCsrf: options.includePdcCsrf !== false },
   );
 }
 

@@ -13,8 +13,25 @@ import {
 } from './support/session.mjs';
 
 const PROJECT = PROJECTS.find((project) => project.key === 'construction');
-const PDC_TABLES = ['pdc', 'papelera_pdc'];
+const PDC_TABLES = ['pdc', 'papelera_pdc', 'programacion_semanal', 'semanas_activas'];
 const VIEWER_USERNAME = `test.pdc.v.${process.pid}`;
+const AUXILIARY_TABLES = ['general_auditoria_acciones', 'general_usuarios'];
+
+function captureAuxiliaryState() {
+  return Object.fromEntries(AUXILIARY_TABLES.map((table) => {
+    const [maxId, nextId] = runSql(`SELECT COALESCE(MAX(id), 0), COALESCE(
+      (SELECT AUTO_INCREMENT FROM information_schema.tables
+       WHERE table_schema = DATABASE() AND table_name = '${table}'), 1)
+      FROM ${table};`).trim().split('\t').map(Number);
+    return [table, { maxId, nextId }];
+  }));
+}
+
+function restoreAuxiliaryState(state) {
+  for (const [table, { maxId, nextId }] of Object.entries(state)) {
+    runSql(`DELETE FROM ${table} WHERE id > ${maxId}; ALTER TABLE ${table} AUTO_INCREMENT = ${nextId};`);
+  }
+}
 
 function installPdcInvariantCollectors(page) {
   const issues = { warnings: [], clientErrors: [], requestFailures: [] };
@@ -108,15 +125,26 @@ function ensureViewerFixture() {
 }
 
 test.describe('PDC Handsontable', () => {
+  let suiteAuxiliaryState;
   let snapshot;
   let initialFingerprint;
+  let auxiliaryState;
   let runtimeErrors;
   let invariantErrors;
+
+  test.beforeAll(() => {
+    suiteAuxiliaryState = captureAuxiliaryState();
+  });
+
+  test.afterAll(() => {
+    restoreAuxiliaryState(suiteAuxiliaryState);
+  });
 
   test.beforeEach(async ({ page }) => {
     test.skip(!PROJECT, 'Da Porto construction fixture is required for PDC');
     runtimeErrors = installErrorCollectors(page);
     invariantErrors = installPdcInvariantCollectors(page);
+    auxiliaryState = captureAuxiliaryState();
     snapshot = new ProjectDbSnapshot(PROJECT, PDC_TABLES).capture();
     initialFingerprint = snapshot.fingerprint();
     await loginAndSelectProject(page, PROJECT);
@@ -127,13 +155,18 @@ test.describe('PDC Handsontable', () => {
   test.afterEach(async ({ page }) => {
     const collectedRuntimeErrors = runtimeErrors;
     const collectedInvariantErrors = invariantErrors;
-    if (!page.isClosed()) await page.close();
+    if (!page.isClosed()) {
+      await logout(page);
+      await page.close();
+    }
     if (snapshot) {
       snapshot.restore();
+      restoreAuxiliaryState(auxiliaryState);
       expect(snapshot.fingerprint()).toBe(initialFingerprint);
     }
     if (snapshot) snapshot.dispose();
     snapshot = null;
+    auxiliaryState = null;
     if (collectedRuntimeErrors) assertNoRuntimeErrors(collectedRuntimeErrors);
     if (collectedInvariantErrors) assertPdcInvariants(collectedInvariantErrors);
   });
@@ -353,8 +386,17 @@ test.describe('PDC Handsontable', () => {
     const missingCsrf = await postFormJson(page, '/api/pdc/save', {
       opcion: 'guardar_DefinirContratos', semana: PROJECT.maxWeek,
       numeroSubcontratos: JSON.stringify({ numeroSubcontratos: [] }),
-    });
+    }, { includePdcCsrf: false });
     expect(missingCsrf.status).toBe(403);
+    consumeExpectedClientError(invariantErrors, 403, '/api/pdc/save');
+    consumeExpectedConsoleResourceError(runtimeErrors);
+
+    const invalidCsrf = await postFormJson(page, '/api/pdc/save', {
+      opcion: 'guardar_DefinirContratos', semana: PROJECT.maxWeek,
+      numeroSubcontratos: JSON.stringify({ numeroSubcontratos: [] }),
+      _csrf_token: 'invalid',
+    }, { includePdcCsrf: false });
+    expect(invalidCsrf.status).toBe(403);
     consumeExpectedClientError(invariantErrors, 403, '/api/pdc/save');
     consumeExpectedConsoleResourceError(runtimeErrors);
 
