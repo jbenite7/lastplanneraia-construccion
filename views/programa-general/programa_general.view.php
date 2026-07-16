@@ -20,6 +20,8 @@
         <input type="hidden" id="baseDatos_PHP" value="<?php echo htmlspecialchars($dbName ?? '', ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true">
         <input type="hidden" id="semana_PHP" value="<?php echo (int) ($semana ?? 0); ?>" aria-hidden="true">
         <input type="hidden" id="permiso_canonico" value="<?php echo htmlspecialchars($permiso ?? '', ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true">
+        <input type="hidden" id="Max_Semana" value="<?php echo (int) ($maxSemana ?? 0); ?>" aria-hidden="true">
+        <input type="hidden" id="Semanal_Confirmada" value="<?php echo (int) ($semanalConfirmada ?? 0); ?>" aria-hidden="true">
         <input type="hidden" id="area_PHP" value="<?php echo htmlspecialchars($area ?? 'Construccion', ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true">
         <input type="hidden" id="scriptBarraFiltros" value="<?php echo htmlspecialchars($initialFilterQuery ?? '', ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true">
     </div>
@@ -101,9 +103,6 @@
     <script>window.__PROJECT_AREA__ = <?php echo json_encode($_SESSION['area'] ?? 'Construccion'); ?>;</script>
     <?= \App\View\Components\BiAccessComponent::renderBootConfig('programa-general') ?>
     <script type="text/javascript" src="/js/modules/bi-access.js" charset="utf-8"></script>
-    <script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js?v=20260708theme" charset="utf-8"></script>
-    <?php $pgGeneralJsVersion = @filemtime(dirname(__DIR__, 2) . '/public/js/funcionesGenerales6.js') ?: 'pgGeneralJs'; ?>
-    <script type="text/javascript" src="/js/funcionesGenerales6.js?v=<?php echo urlencode((string) $pgGeneralJsVersion); ?>" charset="utf-8"></script>
 
     <script src="/public/vendor/handsontable/handsontable.full.min.js"></script>
     <script src="/public/vendor/handsontable/es-MX.js"></script>
@@ -117,15 +116,75 @@
     <script src="/js/modules/programa_general/hot.js?v=<?php echo urlencode((string) $pgHotVersion); ?>"></script>
 
     <script>
+        var pgParametrosBootstrapped = false;
+        var pgLegacyScriptsLoaded = false;
+
+        function loadPgLegacyScript(src) {
+            return new Promise(function (resolve, reject) {
+                var existing = document.querySelector('script[data-pg-legacy-src="' + src + '"]');
+                if (existing) {
+                    if (existing.dataset.loaded === 'true') {
+                        resolve();
+                        return;
+                    }
+                    existing.addEventListener('load', function () { resolve(); }, { once: true });
+                    existing.addEventListener('error', function () {
+                        reject(new Error('No se pudo cargar ' + src));
+                    }, { once: true });
+                    return;
+                }
+
+                var script = document.createElement('script');
+                script.src = src;
+                script.async = true;
+                script.dataset.pgLegacySrc = src;
+                script.addEventListener('load', function () {
+                    script.dataset.loaded = 'true';
+                    resolve();
+                }, { once: true });
+                script.addEventListener('error', function () {
+                    reject(new Error('No se pudo cargar ' + src));
+                }, { once: true });
+                document.head.appendChild(script);
+            });
+        }
+
         function cargaParametros() {
+            if (pgParametrosBootstrapped) {
+                return;
+            }
+
+            pgParametrosBootstrapped = true;
             if (window.PGHotModule && typeof window.PGHotModule.init === 'function') {
                 window.PGHotModule.init();
             }
         }
 
-        $(document).ready(function() {
-            cargarDatosGeneralesPagina(document.getElementById('seccion').value);
-        });
+        cargaParametros();
+    </script>
+
+    <script>
+        if (!pgLegacyScriptsLoaded) {
+            pgLegacyScriptsLoaded = true;
+            window.setTimeout(function () {
+                loadPgLegacyScript('/js/cargarDatosGeneralesPagina2.js?v=20260708theme')
+                    .then(function () {
+                        if (typeof maestroPermisos === 'function') {
+                            maestroPermisos(document.getElementById('permiso_canonico').value || '');
+                        }
+
+                        if (typeof cargarDatosGeneralesPagina === 'function') {
+                            cargarDatosGeneralesPagina(document.getElementById('seccion').value);
+                        }
+
+                        <?php $pgGeneralJsVersion = @filemtime(dirname(__DIR__, 2) . '/public/js/funcionesGenerales6.js') ?: 'pgGeneralJs'; ?>
+                        return loadPgLegacyScript('/js/funcionesGenerales6.js?v=<?php echo urlencode((string) $pgGeneralJsVersion); ?>');
+                    })
+                    .catch(function (error) {
+                        console.error(error);
+                    });
+            }, 0);
+        }
     </script>
 </body>
 </html>
