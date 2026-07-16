@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use DomainException;
+use InvalidArgumentException;
 use App\Support\ActivityMatcher;
 use App\Support\FamilyCatalogStatusResolver;
 use App\Support\OperationalFamilyPolicy;

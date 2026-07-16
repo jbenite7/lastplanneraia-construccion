@@ -1100,7 +1100,6 @@ class ListadoActividadesApiController
     private function requirePermission(string $permissionKey, string $message): void
     {
         require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
-        // @phpstan-ignore function.notFound (definida por el guard legacy cargado arriba)
         rbac_guard_require_permission($permissionKey, ['message' => $message]);
     }
 }
