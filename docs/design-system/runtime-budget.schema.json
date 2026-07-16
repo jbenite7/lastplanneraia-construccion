@@ -2,37 +2,286 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://lastplanneraia.com/schemas/design-system-runtime-budget-v1.json",
   "title": "AIA Design System runtime budget artifact",
-  "type": "object",
-  "required": [
-    "schemaVersion",
-    "kind",
-    "measurementKind",
-    "status",
-    "designSystemVersion",
-    "route",
-    "viewport",
-    "theme",
-    "fixture",
-    "sourceRef",
-    "sourceTreeHash",
-    "recordedAt",
-    "metrics"
+  "oneOf": [
+    { "$ref": "#/$defs/sample" },
+    { "$ref": "#/$defs/currentMeasurement" },
+    { "$ref": "#/$defs/retrospectiveMeasurement" },
+    { "$ref": "#/$defs/baseline" }
   ],
-  "properties": {
-    "$schema": { "type": "string" },
-    "schemaVersion": { "const": 1 },
-    "kind": { "enum": ["baseline", "measurement"] },
-    "measurementKind": { "enum": ["original", "retrospective", "current"] },
-    "status": { "enum": ["approved", "measured", "missing-approved-measurement"] },
-    "designSystemVersion": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
-    "route": { "const": "/programa-general" },
-    "viewport": { "enum": ["390x844", "1180x820", "1440x900"] },
-    "theme": { "enum": ["dark", "linen"] },
-    "fixture": { "const": "sanitized-pilot-v1" },
-    "sourceRef": { "type": ["string", "null"], "pattern": "^[a-f0-9]{40}$" },
-    "sourceTreeHash": { "type": ["string", "null"], "pattern": "^[a-f0-9]{64}$" },
-    "recordedAt": { "type": ["string", "null"], "format": "date-time" },
-    "reason": { "type": "string", "minLength": 24 },
+  "$defs": {
+    "sha1": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\\.[0-9]{1,3})?Z$"
+    },
+    "applicationPaths": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^/[^?#]*$" }
+    },
+    "metrics": {
+      "type": "object",
+      "required": [
+        "cssGzipBytes", "jsGzipBytes", "adapterAssets", "duplicateRequestCount",
+        "themeFlashCount", "initializationMs", "handsontableInteractionMs", "laboratoryAssets"
+      ],
+      "properties": {
+        "cssGzipBytes": { "type": "number", "minimum": 0 },
+        "jsGzipBytes": { "type": "number", "minimum": 0 },
+        "adapterAssets": { "$ref": "#/$defs/applicationPaths" },
+        "duplicateRequestCount": { "type": "number", "minimum": 0 },
+        "themeFlashCount": { "type": "number", "minimum": 0 },
+        "initializationMs": { "type": "number", "minimum": 0 },
+        "handsontableInteractionMs": { "type": "number", "minimum": 0 },
+        "laboratoryAssets": { "$ref": "#/$defs/applicationPaths" }
+      },
+      "additionalProperties": false
+    },
+    "asset": {
+      "type": "object",
+      "required": ["path", "type", "rawBytes", "gzipBytes", "sha256"],
+      "properties": {
+        "path": { "type": "string", "pattern": "^/[^?#]*$" },
+        "type": { "enum": ["css", "js"] },
+        "rawBytes": { "type": "number", "minimum": 0 },
+        "gzipBytes": { "type": "number", "minimum": 0 },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      },
+      "additionalProperties": false
+    },
+    "assets": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/asset" }
+    },
+    "runtimeBinding": {
+      "type": "object",
+      "required": ["ciRunId", "gitHead", "worktreeClean", "sourceTreeSha256", "fixtureSha256"],
+      "properties": {
+        "ciRunId": { "type": "string", "pattern": "^run-[a-z0-9][a-z0-9-]{5,48}$" },
+        "gitHead": { "$ref": "#/$defs/sha1" },
+        "worktreeClean": { "const": true },
+        "sourceTreeSha256": { "$ref": "#/$defs/sha256" },
+        "fixtureSha256": { "$ref": "#/$defs/sha256" }
+      },
+      "additionalProperties": false
+    },
+    "duplicateRequest": {
+      "type": "object",
+      "required": ["request", "count"],
+      "properties": {
+        "request": { "type": "string", "minLength": 1 },
+        "count": { "type": "integer", "minimum": 2 }
+      },
+      "additionalProperties": false
+    },
+    "themeObservation": {
+      "type": "object",
+      "required": ["phase", "theme", "at"],
+      "properties": {
+        "phase": { "type": "string", "minLength": 1 },
+        "theme": { "type": ["string", "null"] },
+        "at": { "type": "number", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "themeProbe": {
+      "type": "object",
+      "required": ["firstPaintTheme", "observations"],
+      "properties": {
+        "firstPaintTheme": { "type": ["string", "null"] },
+        "observations": { "type": "array", "items": { "$ref": "#/$defs/themeObservation" } },
+        "attached": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "sampleProvenance": {
+      "type": "object",
+      "required": ["assets", "assetInventorySha256", "runtime"],
+      "properties": {
+        "assets": { "$ref": "#/$defs/assets" },
+        "assetInventorySha256": { "$ref": "#/$defs/sha256" },
+        "runtime": { "$ref": "#/$defs/runtimeBinding" },
+        "cacheMode": { "type": "string" },
+        "htmlSha256": { "$ref": "#/$defs/sha256" },
+        "duplicateRequests": { "type": "array", "items": { "$ref": "#/$defs/duplicateRequest" } },
+        "themeProbe": { "$ref": "#/$defs/themeProbe" },
+        "interactionKind": { "type": "string" },
+        "node": { "type": "string" },
+        "playwrightProject": { "type": "string" },
+        "sampleLabel": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "artifactBase": {
+      "type": "object",
+      "required": [
+        "schemaVersion", "kind", "measurementKind", "status", "designSystemVersion", "route",
+        "viewport", "theme", "density", "fixture", "sourceRef", "sourceTreeHash", "recordedAt", "metrics"
+      ],
+      "properties": {
+        "$schema": { "type": "string" },
+        "schemaVersion": { "const": 1 },
+        "kind": { "enum": ["sample", "measurement", "baseline"] },
+        "measurementKind": { "enum": ["current", "retrospective"] },
+        "status": { "enum": ["sampled", "measured", "approved", "missing-approved-measurement"] },
+        "designSystemVersion": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+        "route": { "const": "/programa-general" },
+        "viewport": { "enum": ["390x844", "1180x820", "1440x900"] },
+        "theme": { "enum": ["dark", "linen"] },
+        "density": { "enum": ["compact", "touch"] },
+        "fixture": { "const": "sanitized-pilot-v1" },
+        "sourceRef": { "oneOf": [{ "$ref": "#/$defs/sha1" }, { "type": "null" }] },
+        "sourceTreeHash": { "oneOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }] },
+        "recordedAt": { "oneOf": [{ "$ref": "#/$defs/timestamp" }, { "type": "null" }] },
+        "metrics": { "oneOf": [{ "$ref": "#/$defs/metrics" }, { "type": "null" }] }
+      }
+    },
+    "sample": {
+      "allOf": [
+        { "$ref": "#/$defs/artifactBase" },
+        {
+          "required": ["ciRunId", "fixtureSha256", "provenance"],
+          "properties": {
+            "kind": { "const": "sample" },
+            "measurementKind": { "const": "current" },
+            "status": { "const": "sampled" },
+            "sourceRef": { "$ref": "#/$defs/sha1" },
+            "sourceTreeHash": { "$ref": "#/$defs/sha256" },
+            "recordedAt": { "$ref": "#/$defs/timestamp" },
+            "metrics": { "$ref": "#/$defs/metrics" },
+            "ciRunId": { "type": "string", "pattern": "^run-[a-z0-9][a-z0-9-]{5,48}$" },
+            "fixtureSha256": { "$ref": "#/$defs/sha256" },
+            "provenance": { "$ref": "#/$defs/sampleProvenance" }
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "rawReceipt": {
+      "type": "object",
+      "required": ["index", "sha256"],
+      "properties": {
+        "index": { "type": "integer", "minimum": 1, "maximum": 3 },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      },
+      "additionalProperties": false
+    },
+    "currentSampling": {
+      "type": "object",
+      "required": [
+        "rawSamplesPreserved", "sampleCount", "aggregation", "rawReceipts",
+        "aggregateReceiptSha256", "samples"
+      ],
+      "properties": {
+        "rawSamplesPreserved": { "const": true },
+        "sampleCount": { "const": 3 },
+        "aggregation": { "const": "median-of-three" },
+        "rawReceipts": {
+          "description": "SHA-256 integrity receipts detect partial or accidental alteration when content and receipts are not all rewritten; they do not establish authenticity.",
+          "type": "array", "minItems": 3, "maxItems": 3,
+          "prefixItems": [
+            { "allOf": [{ "$ref": "#/$defs/rawReceipt" }, { "properties": { "index": { "const": 1 } } }] },
+            { "allOf": [{ "$ref": "#/$defs/rawReceipt" }, { "properties": { "index": { "const": 2 } } }] },
+            { "allOf": [{ "$ref": "#/$defs/rawReceipt" }, { "properties": { "index": { "const": 3 } } }] }
+          ],
+          "items": false
+        },
+        "aggregateReceiptSha256": {
+          "$ref": "#/$defs/sha256",
+          "description": "Authenticity requires external CI attestation; this digest only binds the ordered raw receipts inside this artifact."
+        },
+        "samples": { "type": "array", "minItems": 3, "maxItems": 3, "items": { "$ref": "#/$defs/sample" } }
+      },
+      "additionalProperties": false
+    },
+    "currentMeasurement": {
+      "allOf": [
+        { "$ref": "#/$defs/artifactBase" },
+        {
+          "required": ["ciRunId", "fixtureSha256", "provenance"],
+          "properties": {
+            "kind": { "const": "measurement" },
+            "measurementKind": { "const": "current" },
+            "status": { "const": "measured" },
+            "sourceRef": { "$ref": "#/$defs/sha1" },
+            "sourceTreeHash": { "$ref": "#/$defs/sha256" },
+            "recordedAt": { "$ref": "#/$defs/timestamp" },
+            "metrics": { "$ref": "#/$defs/metrics" },
+            "ciRunId": { "type": "string", "pattern": "^run-[a-z0-9][a-z0-9-]{5,48}$" },
+            "fixtureSha256": { "$ref": "#/$defs/sha256" },
+            "provenance": {
+              "type": "object",
+              "required": ["assets", "assetInventorySha256", "sampling"],
+              "properties": {
+                "assets": { "$ref": "#/$defs/assets" },
+                "assetInventorySha256": { "$ref": "#/$defs/sha256" },
+                "sampling": { "$ref": "#/$defs/currentSampling" }
+              },
+              "additionalProperties": false
+            }
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "incompleteSummary": {
+      "type": "object",
+      "required": ["recordedAt", "htmlSha256", "initializationMs", "handsontableInteractionMs"],
+      "properties": {
+        "recordedAt": { "$ref": "#/$defs/timestamp" },
+        "htmlSha256": { "$ref": "#/$defs/sha256" },
+        "initializationMs": { "type": "number", "minimum": 0 },
+        "handsontableInteractionMs": { "type": "number", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "retrospectiveSampling": {
+      "type": "object",
+      "required": ["rawSamplesPreserved", "historicalSummaryCount", "reportedAggregation", "incompleteSummaries"],
+      "properties": {
+        "rawSamplesPreserved": { "const": false },
+        "historicalSummaryCount": { "const": 3 },
+        "reportedAggregation": { "const": "median-of-three" },
+        "incompleteSummaries": {
+          "type": "array", "minItems": 3, "maxItems": 3,
+          "items": { "$ref": "#/$defs/incompleteSummary" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "retrospectiveMeasurement": {
+      "allOf": [
+        { "$ref": "#/$defs/artifactBase" },
+        {
+          "required": ["provenance"],
+          "properties": {
+            "kind": { "const": "measurement" },
+            "measurementKind": { "const": "retrospective" },
+            "status": { "const": "measured" },
+            "designSystemVersion": { "const": "0.3.3" },
+            "sourceRef": { "type": "null" },
+            "sourceTreeHash": { "$ref": "#/$defs/sha256" },
+            "recordedAt": { "$ref": "#/$defs/timestamp" },
+            "metrics": { "$ref": "#/$defs/metrics" },
+            "provenance": {
+              "type": "object",
+              "required": ["assets", "assetInventorySha256", "sampling"],
+              "properties": {
+                "assets": { "$ref": "#/$defs/assets" },
+                "assetInventorySha256": { "$ref": "#/$defs/sha256" },
+                "sampling": { "$ref": "#/$defs/retrospectiveSampling" }
+              },
+              "additionalProperties": true
+            }
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
     "approval": {
       "type": "object",
       "required": ["status", "approvedBy", "approvalRef"],
@@ -45,121 +294,75 @@
     },
     "recovery": {
       "type": "object",
-      "required": [
-        "checkpointRef",
-        "sourceTree",
-        "capturedAt",
-        "measurementPath",
-        "measurementSha256"
-      ],
+      "required": ["manifestPath", "manifestSha256", "measurementPath", "measurementSha256"],
       "properties": {
-        "checkpointRef": { "type": "string", "pattern": "^refs/codex/turn-diffs/checkpoints/" },
-        "sourceTree": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
-        "capturedAt": { "type": "string", "format": "date-time" },
-        "versionEvidence": { "type": "string" },
-        "measurementPath": {
-          "const": "docs/design-system/runtime-measurements/0.3.3-retrospective.json"
-        },
-        "measurementSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+        "manifestPath": { "const": "docs/design-system/runtime-measurements/0.3.3-recovery-manifest.json" },
+        "manifestSha256": { "$ref": "#/$defs/sha256" },
+        "measurementPath": { "const": "docs/design-system/runtime-measurements/0.3.3-retrospective.json" },
+        "measurementSha256": { "$ref": "#/$defs/sha256" }
       },
       "additionalProperties": false
     },
-    "metrics": {
-      "oneOf": [
-        { "type": "null" },
-        {
-          "type": "object",
-          "required": [
-            "cssGzipBytes",
-            "jsGzipBytes",
-            "adapterAssets",
-            "duplicateRequestCount",
-            "themeFlashCount",
-            "initializationMs",
-            "handsontableInteractionMs",
-            "laboratoryAssets"
-          ],
-          "properties": {
-            "cssGzipBytes": { "type": "number", "minimum": 0 },
-            "jsGzipBytes": { "type": "number", "minimum": 0 },
-            "adapterAssets": { "$ref": "#/$defs/applicationPaths" },
-            "duplicateRequestCount": { "type": "number", "minimum": 0 },
-            "themeFlashCount": { "type": "number", "minimum": 0 },
-            "initializationMs": { "type": "number", "minimum": 0 },
-            "handsontableInteractionMs": { "type": "number", "minimum": 0 },
-            "laboratoryAssets": { "$ref": "#/$defs/applicationPaths" }
-          },
-          "additionalProperties": false
-        }
-      ]
-    },
     "tolerances": {
-      "oneOf": [
-        { "type": "null" },
-        {
-          "type": "object",
-          "required": [
-            "cssGzipBytes",
-            "jsGzipBytes",
-            "addedAdapterAssets",
-            "duplicateRequestCount",
-            "themeFlashCount",
-            "initializationMs",
-            "handsontableInteractionMs"
-          ],
-          "additionalProperties": { "type": "number", "minimum": 0 }
-        }
-      ]
-    },
-    "provenance": { "type": "object" }
-  },
-  "$defs": {
-    "applicationPaths": {
-      "type": "array",
-      "uniqueItems": true,
-      "items": { "type": "string", "pattern": "^/[^?#]*$" }
-    }
-  },
-  "allOf": [
-    {
-      "if": { "properties": { "status": { "const": "missing-approved-measurement" } } },
-      "then": {
-        "required": ["reason", "approval", "recovery", "tolerances"],
-        "properties": {
-          "kind": { "const": "baseline" },
-          "measurementKind": { "const": "retrospective" },
-          "designSystemVersion": { "const": "0.3.3" },
-          "sourceRef": { "type": "null" },
-          "sourceTreeHash": { "type": "null" },
-          "recordedAt": { "type": "null" },
-          "metrics": { "type": "null" },
-          "tolerances": { "type": "null" }
-        }
-      }
-    },
-    {
-      "if": { "properties": { "kind": { "const": "measurement" } } },
-      "then": {
-        "properties": {
-          "status": { "const": "measured" },
-          "measurementKind": { "enum": ["current", "retrospective"] }
-        }
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "kind": { "const": "measurement" },
-          "measurementKind": { "const": "retrospective" }
-        },
-        "required": ["kind", "measurementKind"]
+      "type": "object",
+      "required": [
+        "cssGzipBytes", "jsGzipBytes", "addedAdapterAssets", "duplicateRequestCount",
+        "themeFlashCount", "initializationMs", "handsontableInteractionMs"
+      ],
+      "properties": {
+        "cssGzipBytes": { "type": "number", "minimum": 0 },
+        "jsGzipBytes": { "type": "number", "minimum": 0 },
+        "addedAdapterAssets": { "type": "number", "minimum": 0 },
+        "duplicateRequestCount": { "type": "number", "minimum": 0 },
+        "themeFlashCount": { "type": "number", "minimum": 0 },
+        "initializationMs": { "type": "number", "minimum": 0 },
+        "handsontableInteractionMs": { "type": "number", "minimum": 0 }
       },
-      "then": {
-        "properties": {
-          "designSystemVersion": { "const": "0.3.3" }
+      "additionalProperties": false
+    },
+    "baseline": {
+      "allOf": [
+        { "$ref": "#/$defs/artifactBase" },
+        {
+          "required": ["approval", "recovery", "tolerances"],
+          "properties": {
+            "kind": { "const": "baseline" },
+            "measurementKind": { "const": "retrospective" },
+            "designSystemVersion": { "const": "0.3.3" },
+            "approval": { "$ref": "#/$defs/approval" },
+            "recovery": { "$ref": "#/$defs/recovery" },
+            "tolerances": { "oneOf": [{ "$ref": "#/$defs/tolerances" }, { "type": "null" }] },
+            "reason": { "type": "string" }
+          },
+          "oneOf": [
+            {
+              "properties": {
+                "status": { "const": "approved" },
+                "sourceRef": { "type": "null" },
+                "sourceTreeHash": { "$ref": "#/$defs/sha256" },
+                "recordedAt": { "$ref": "#/$defs/timestamp" },
+                "metrics": { "$ref": "#/$defs/metrics" },
+                "tolerances": { "$ref": "#/$defs/tolerances" },
+                "approval": { "properties": { "status": { "const": "approved" }, "approvedBy": { "type": "string", "minLength": 1 }, "approvalRef": { "type": "string", "minLength": 1 } } }
+              }
+            },
+            {
+              "required": ["reason"],
+              "properties": {
+                "status": { "const": "missing-approved-measurement" },
+                "sourceRef": { "type": "null" },
+                "sourceTreeHash": { "type": "null" },
+                "recordedAt": { "type": "null" },
+                "metrics": { "type": "null" },
+                "tolerances": { "type": "null" },
+                "reason": { "type": "string", "minLength": 24 },
+                "approval": { "properties": { "status": { "const": "missing" }, "approvedBy": { "type": "null" }, "approvalRef": { "type": "null" } } }
+              }
+            }
+          ]
         }
-      }
+      ],
+      "unevaluatedProperties": false
     }
-  ],
-  "additionalProperties": false
+  }
 }

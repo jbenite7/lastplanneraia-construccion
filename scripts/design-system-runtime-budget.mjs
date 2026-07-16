@@ -2,6 +2,18 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import {
+  validateApprovedBaselineProvenance,
+  validateRuntimeBudgetMeasurementProvenance,
+} from './design-system-runtime-budget-aggregate.mjs';
+import {
+  validateArtifactSourceIdentity,
+  validateAssets,
+  validateCurrentSampleShape,
+  parseRfc3339Utc,
+  validateRetrospectiveSummary,
+} from './design-system-runtime-budget-provenance.mjs';
+
 const NUMERIC_METRICS = [
   'cssGzipBytes',
   'jsGzipBytes',
@@ -21,12 +33,16 @@ const NUMERIC_TOLERANCES = [
   'handsontableInteractionMs',
 ];
 
-const CONTEXT_KEYS = ['route', 'viewport', 'theme', 'fixture'];
+const CONTEXT_KEYS = ['route', 'viewport', 'theme', 'density', 'fixture'];
 const SUPPORTED_VIEWPORTS = ['390x844', '1180x820', '1440x900'];
 const SUPPORTED_THEMES = ['dark', 'linen'];
-const SHA1 = /^[a-f0-9]{40}$/;
-const SHA256 = /^[a-f0-9]{64}$/;
+const SUPPORTED_DENSITIES = ['compact', 'touch'];
 const SEMVER = /^\d+\.\d+\.\d+$/;
+const COMMON_ARTIFACT_KEYS = [
+  '$schema', 'schemaVersion', 'kind', 'measurementKind', 'status', 'designSystemVersion',
+  'route', 'viewport', 'theme', 'density', 'fixture', 'sourceRef', 'sourceTreeHash',
+  'recordedAt', 'metrics',
+];
 
 function fail(message) {
   throw new Error(`Runtime budget contract: ${message}`);
@@ -36,15 +52,14 @@ function requireEqual(actual, expected, label) {
   if (actual !== expected) fail(`${label} must be ${expected}`);
 }
 
+function requireOnlyKeys(value, allowed, label) {
+  const unexpected = Object.keys(value).filter((key) => !allowed.includes(key));
+  if (unexpected.length > 0) fail(`${label} contains unexpected properties: ${unexpected.join(', ')}`);
+}
+
 function requireFiniteNonNegative(value, label) {
   if (!Number.isFinite(value) || value < 0) {
     fail(`${label} must be a finite non-negative number`);
-  }
-}
-
-function requireIsoTimestamp(value, label) {
-  if (typeof value !== 'string' || Number.isNaN(Date.parse(value))) {
-    fail(`${label} must be an ISO timestamp`);
   }
 }
 
@@ -66,6 +81,7 @@ function validateMetrics(metrics) {
   if (!metrics || typeof metrics !== 'object' || Array.isArray(metrics)) {
     fail('metrics must be an object');
   }
+  requireOnlyKeys(metrics, [...NUMERIC_METRICS, 'adapterAssets', 'laboratoryAssets'], 'metrics');
   for (const metric of NUMERIC_METRICS) {
     requireFiniteNonNegative(metrics[metric], metric);
   }
@@ -77,19 +93,10 @@ function validateTolerances(tolerances) {
   if (!tolerances || typeof tolerances !== 'object' || Array.isArray(tolerances)) {
     fail('tolerances must be an object');
   }
+  requireOnlyKeys(tolerances, NUMERIC_TOLERANCES, 'tolerances');
   for (const tolerance of NUMERIC_TOLERANCES) {
     requireFiniteNonNegative(tolerances[tolerance], `tolerances.${tolerance}`);
   }
-}
-
-function validateSourceIdentity(artifact) {
-  if (!SHA1.test(String(artifact.sourceRef ?? ''))) {
-    fail('sourceRef must be a 40-character Git object id');
-  }
-  if (!SHA256.test(String(artifact.sourceTreeHash ?? ''))) {
-    fail('sourceTreeHash must be a 64-character SHA-256 checksum');
-  }
-  requireIsoTimestamp(artifact.recordedAt, 'recordedAt');
 }
 
 export function validateRuntimeBudgetArtifact(artifact) {
@@ -97,12 +104,18 @@ export function validateRuntimeBudgetArtifact(artifact) {
     fail('artifact must be an object');
   }
   requireEqual(artifact.schemaVersion, 1, 'schemaVersion');
-  if (!['baseline', 'measurement'].includes(artifact.kind)) {
-    fail('kind must be baseline or measurement');
+  if (!['baseline', 'measurement', 'sample'].includes(artifact.kind)) {
+    fail('kind must be baseline, measurement or sample');
   }
   if (!['original', 'retrospective', 'current'].includes(artifact.measurementKind)) {
     fail('measurementKind must be original, retrospective or current');
   }
+  const branchKeys = artifact.kind === 'baseline'
+    ? ['approval', 'recovery', 'tolerances', 'reason']
+    : artifact.measurementKind === 'current'
+      ? ['ciRunId', 'fixtureSha256', 'provenance']
+      : ['provenance'];
+  requireOnlyKeys(artifact, [...COMMON_ARTIFACT_KEYS, ...branchKeys], 'artifact');
   if (!SEMVER.test(String(artifact.designSystemVersion ?? ''))) {
     fail('designSystemVersion must be SemVer');
   }
@@ -113,12 +126,54 @@ export function validateRuntimeBudgetArtifact(artifact) {
   if (!SUPPORTED_THEMES.includes(artifact.theme)) {
     fail(`theme must be one of ${SUPPORTED_THEMES.join(', ')}`);
   }
+  if (!SUPPORTED_DENSITIES.includes(artifact.density)) {
+    fail(`density must be one of ${SUPPORTED_DENSITIES.join(', ')}`);
+  }
   requireEqual(artifact.fixture, 'sanitized-pilot-v1', 'fixture');
+
+  if (artifact.kind === 'sample') {
+    try {
+      validateCurrentSampleShape(artifact);
+    } catch (error) {
+      fail(error instanceof Error ? error.message.replace(/^Runtime budget aggregation: /, '') : String(error));
+    }
+    return true;
+  }
 
   if (artifact.kind === 'baseline') {
     requireEqual(artifact.designSystemVersion, '0.3.3', 'baseline designSystemVersion');
     requireEqual(artifact.viewport, '1440x900', 'baseline viewport');
     requireEqual(artifact.theme, 'dark', 'baseline theme');
+    requireEqual(artifact.measurementKind, 'retrospective', 'baseline measurementKind');
+    if (!artifact.approval || typeof artifact.approval !== 'object' || Array.isArray(artifact.approval)) {
+      fail('baseline approval must be an object');
+    }
+    requireOnlyKeys(artifact.approval, ['status', 'approvedBy', 'approvalRef'], 'baseline approval');
+    if (!artifact.recovery || typeof artifact.recovery !== 'object' || Array.isArray(artifact.recovery)) {
+      fail('baseline recovery must be an object');
+    }
+    requireOnlyKeys(artifact.recovery, [
+      'manifestPath', 'manifestSha256', 'measurementPath', 'measurementSha256',
+    ], 'baseline recovery');
+    if ('reason' in artifact && typeof artifact.reason !== 'string') {
+      fail('baseline reason must be a string');
+    }
+    requireEqual(
+      artifact.recovery.manifestPath,
+      'docs/design-system/runtime-measurements/0.3.3-recovery-manifest.json',
+      'recovery.manifestPath',
+    );
+    if (!/^[a-f0-9]{64}$/.test(String(artifact.recovery.manifestSha256 ?? ''))) {
+      fail('baseline recovery requires the portable manifest checksum');
+    }
+    requireEqual(
+      artifact.recovery.measurementPath,
+      'docs/design-system/runtime-measurements/0.3.3-retrospective.json',
+      'recovery.measurementPath',
+    );
+    if (!/^[a-f0-9]{64}$/.test(String(artifact.recovery.measurementSha256 ?? ''))) {
+      fail('baseline recovery requires the retrospective measurement checksum');
+    }
     if (artifact.status === 'missing-approved-measurement') {
       requireEqual(artifact.measurementKind, 'retrospective', 'pending baseline measurementKind');
       if (artifact.sourceRef !== null || artifact.sourceTreeHash !== null || artifact.recordedAt !== null) {
@@ -133,22 +188,6 @@ export function validateRuntimeBudgetArtifact(artifact) {
       if (typeof artifact.reason !== 'string' || artifact.reason.length < 24) {
         fail('pending baseline requires a reason');
       }
-      if (typeof artifact.recovery?.checkpointRef !== 'string'
-        || !artifact.recovery.checkpointRef.startsWith('refs/codex/turn-diffs/checkpoints/')) {
-        fail('pending baseline requires the recoverable checkpointRef');
-      }
-      if (!SHA1.test(String(artifact.recovery?.sourceTree ?? ''))) {
-        fail('pending baseline requires a recoverable sourceTree');
-      }
-      requireIsoTimestamp(artifact.recovery?.capturedAt, 'recovery.capturedAt');
-      requireEqual(
-        artifact.recovery?.measurementPath,
-        'docs/design-system/runtime-measurements/0.3.3-retrospective.json',
-        'recovery.measurementPath',
-      );
-      if (!SHA256.test(String(artifact.recovery?.measurementSha256 ?? ''))) {
-        fail('pending baseline requires the retrospective measurement checksum');
-      }
       return true;
     }
     requireEqual(artifact.status, 'approved', 'baseline status');
@@ -159,7 +198,13 @@ export function validateRuntimeBudgetArtifact(artifact) {
     if (typeof artifact.approval?.approvalRef !== 'string' || !artifact.approval.approvalRef) {
       fail('approved baseline requires approvalRef');
     }
-    validateSourceIdentity(artifact);
+    if (artifact.sourceRef !== null) fail('retrospective baseline cannot claim an origin Git commit');
+    if (!/^[a-f0-9]{64}$/.test(String(artifact.sourceTreeHash ?? ''))) fail('baseline sourceTreeHash must be a SHA-256 checksum');
+    try {
+      parseRfc3339Utc(artifact.recordedAt, 'recordedAt');
+    } catch (error) {
+      fail(error instanceof Error ? error.message.replace(/^Runtime budget aggregation: /, '') : String(error));
+    }
     validateMetrics(artifact.metrics);
     validateTolerances(artifact.tolerances);
     return true;
@@ -172,8 +217,65 @@ export function validateRuntimeBudgetArtifact(artifact) {
   if (artifact.measurementKind === 'retrospective') {
     requireEqual(artifact.designSystemVersion, '0.3.3', 'retrospective designSystemVersion');
   }
-  validateSourceIdentity(artifact);
   validateMetrics(artifact.metrics);
+  if (!artifact.provenance || typeof artifact.provenance !== 'object' || Array.isArray(artifact.provenance)) {
+    fail('measurement provenance must be an object');
+  }
+  try {
+    validateAssets(artifact.provenance.assets);
+  } catch (error) {
+    fail(error instanceof Error ? error.message.replace(/^Runtime budget aggregation: /, '') : String(error));
+  }
+  if (!/^[a-f0-9]{64}$/.test(String(artifact.provenance.assetInventorySha256 ?? ''))) {
+    fail('measurement assetInventorySha256 must be a SHA-256 checksum');
+  }
+  if (artifact.measurementKind === 'retrospective') {
+    if (artifact.sourceRef !== null) fail('retrospective measurement cannot claim an origin Git commit');
+    if (!/^[a-f0-9]{64}$/.test(String(artifact.sourceTreeHash ?? ''))) fail('retrospective sourceTreeHash must be a SHA-256 checksum');
+    try {
+      parseRfc3339Utc(artifact.recordedAt, 'recordedAt');
+    } catch (error) {
+      fail(error instanceof Error ? error.message.replace(/^Runtime budget aggregation: /, '') : String(error));
+    }
+    try {
+      validateRetrospectiveSummary(artifact);
+    } catch (error) {
+      fail(error instanceof Error ? error.message.replace(/^Runtime budget aggregation: /, '') : String(error));
+    }
+    return true;
+  }
+  validateArtifactSourceIdentity(artifact);
+  requireOnlyKeys(artifact.provenance, ['assets', 'assetInventorySha256', 'sampling'], 'current measurement provenance');
+  if (!/^run-[a-z0-9][a-z0-9-]{5,48}$/.test(String(artifact.ciRunId ?? ''))) {
+    fail('current measurement CI_RUN_ID provenance is required');
+  }
+  if (!/^[a-f0-9]{64}$/.test(String(artifact.fixtureSha256 ?? ''))) {
+    fail('current measurement fixtureSha256 is required');
+  }
+  const sampling = artifact.provenance.sampling;
+  if (sampling?.rawSamplesPreserved !== true || sampling.sampleCount !== 3
+    || sampling.aggregation !== 'median-of-three' || sampling.samples?.length !== 3
+    || sampling.rawReceipts?.length !== 3
+    || !/^[a-f0-9]{64}$/.test(String(sampling.aggregateReceiptSha256 ?? ''))) {
+    fail('current measurement complete three-sample provenance is required');
+  }
+  requireOnlyKeys(sampling, [
+    'rawSamplesPreserved', 'sampleCount', 'aggregation', 'rawReceipts',
+    'aggregateReceiptSha256', 'samples',
+  ], 'current measurement sampling');
+  sampling.rawReceipts.forEach((receipt, index) => {
+    if (!receipt || receipt.index !== index + 1 || !/^[a-f0-9]{64}$/.test(String(receipt.sha256 ?? ''))
+      || Object.keys(receipt).sort().join(',') !== 'index,sha256') {
+      fail(`current measurement raw receipt ${index + 1} has an invalid shape`);
+    }
+  });
+  sampling.samples.forEach((sample, index) => {
+    try {
+      validateCurrentSampleShape(sample, index);
+    } catch (error) {
+      fail(error instanceof Error ? error.message.replace(/^Runtime budget aggregation: /, '') : String(error));
+    }
+  });
   return true;
 }
 
@@ -183,13 +285,15 @@ function numericViolation(metric, baseline, measurement, tolerance) {
   return { metric, baseline, tolerance, maximum, actual: measurement };
 }
 
-export function compareRuntimeBudget(baseline, measurement) {
+function compareRuntimeBudgetWithValidator(baseline, measurement, validateMeasurement) {
   validateRuntimeBudgetArtifact(baseline);
   validateRuntimeBudgetArtifact(measurement);
   if (baseline.kind !== 'baseline' || baseline.status !== 'approved') {
     fail('an approved 0.3.3 runtime baseline is required');
   }
   if (measurement.kind !== 'measurement') fail('current artifact must be a measurement');
+  validateApprovedBaselineProvenance(baseline);
+  validateMeasurement(measurement);
 
   for (const key of CONTEXT_KEYS) {
     if (baseline[key] !== measurement[key]) {
@@ -246,6 +350,14 @@ export function compareRuntimeBudget(baseline, measurement) {
     measurementVersion: measurement.designSystemVersion,
     violations,
   };
+}
+
+export function compareRuntimeBudget(baseline, measurement) {
+  return compareRuntimeBudgetWithValidator(
+    baseline,
+    measurement,
+    validateRuntimeBudgetMeasurementProvenance,
+  );
 }
 
 function runCli() {

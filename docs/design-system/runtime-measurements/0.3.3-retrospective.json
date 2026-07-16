@@ -8,8 +8,9 @@
   "route": "/programa-general",
   "viewport": "1440x900",
   "theme": "dark",
+  "density": "compact",
   "fixture": "sanitized-pilot-v1",
-  "sourceRef": "25f2787332117ed93416ffc42e6fac8b037dce94",
+  "sourceRef": null,
   "sourceTreeHash": "7fb389c17369a4cf164bbd0af6ca6e9984d735a641edfac8554b928c8d262769",
   "recordedAt": "2026-07-14T10:31:43.756Z",
   "metrics": {
@@ -31,8 +32,15 @@
     "laboratoryAssets": []
   },
   "provenance": {
+    "sourceHistory": {
+      "originCommitAvailable": false,
+      "recoveryFromOriginGitHistory": false,
+      "recordedLocalCheckpointTree": "25f2787332117ed93416ffc42e6fac8b037dce94",
+      "note": "Recorded local checkpoint metadata only; this retrospective source is not recoverable from origin Git history."
+    },
     "cacheMode": "navigation-resource-timing-plus-normalized-fetch",
     "htmlSha256": "93c0b3f991d11aa568cc0fefd052515ac4daa814a892aac1dd93f046936326ae",
+    "assetInventorySha256": "7fb389c17369a4cf164bbd0af6ca6e9984d735a641edfac8554b928c8d262769",
     "assets": [
       {
         "path": "/css/access.css",
@@ -548,9 +556,10 @@
     "node": "v25.9.0",
     "playwrightProject": "",
     "sampling": {
-      "sampleCount": 3,
-      "aggregation": "median-of-three",
-      "samples": [
+      "rawSamplesPreserved": false,
+      "historicalSummaryCount": 3,
+      "reportedAggregation": "median-of-three",
+      "incompleteSummaries": [
         {
           "recordedAt": "2026-07-14T10:31:37.668Z",
           "htmlSha256": "93c0b3f991d11aa568cc0fefd052515ac4daa814a892aac1dd93f046936326ae",

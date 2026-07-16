@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
@@ -6,97 +7,36 @@ import {
   compareRuntimeBudget,
   validateRuntimeBudgetArtifact,
 } from '../../scripts/design-system-runtime-budget.mjs';
+import {
+  APPROVED_BASELINE,
+  currentMeasurement,
+  withRuntimeEnvironment,
+} from './runtime-budget-fixtures.mjs';
 
-const APPROVED_BASELINE = {
-  schemaVersion: 1,
-  kind: 'baseline',
-  measurementKind: 'original',
-  status: 'approved',
-  designSystemVersion: '0.3.3',
-  route: '/programa-general',
-  viewport: '1440x900',
-  theme: 'dark',
-  fixture: 'sanitized-pilot-v1',
-  sourceRef: '0123456789abcdef0123456789abcdef01234567',
-  sourceTreeHash: '0'.repeat(64),
-  recordedAt: '2026-07-13T12:00:00.000Z',
-  approval: {
-    status: 'approved',
-    approvedBy: 'user',
-    approvalRef: 'runtime-baseline-0.3.3',
-  },
-  metrics: {
-    cssGzipBytes: 1000,
-    jsGzipBytes: 2000,
-    adapterAssets: [
-      '/public/css/design-system/adapters/handsontable.css',
-      '/public/css/design-system/adapters/programa-general-handsontable.css',
-    ],
-    duplicateRequestCount: 0,
-    themeFlashCount: 0,
-    initializationMs: 500,
-    handsontableInteractionMs: 120,
-    laboratoryAssets: [],
-  },
-  tolerances: {
-    cssGzipBytes: 50,
-    jsGzipBytes: 100,
-    addedAdapterAssets: 0,
-    duplicateRequestCount: 0,
-    themeFlashCount: 0,
-    initializationMs: 50,
-    handsontableInteractionMs: 20,
-  },
-};
+const compare = (baseline, measurement) => withRuntimeEnvironment(
+  () => compareRuntimeBudget(baseline, measurement),
+);
 
-const CURRENT_MEASUREMENT = {
-  schemaVersion: 1,
-  kind: 'measurement',
-  measurementKind: 'current',
-  status: 'measured',
-  designSystemVersion: '0.3.6',
-  route: '/programa-general',
-  viewport: '1440x900',
-  theme: 'dark',
-  fixture: 'sanitized-pilot-v1',
-  sourceRef: 'fedcba9876543210fedcba9876543210fedcba98',
-  sourceTreeHash: 'f'.repeat(64),
-  recordedAt: '2026-07-14T12:00:00.000Z',
-  metrics: {
-    cssGzipBytes: 1050,
-    jsGzipBytes: 2100,
-    adapterAssets: [
-      '/public/css/design-system/adapters/handsontable.css',
-      '/public/css/design-system/adapters/programa-general-handsontable.css',
-    ],
-    duplicateRequestCount: 0,
-    themeFlashCount: 0,
-    initializationMs: 550,
-    handsontableInteractionMs: 140,
-    laboratoryAssets: [],
-  },
-};
+const CURRENT_MEASUREMENT = currentMeasurement();
 
 test('accepts a measured report inside every explicit 0.3.3 tolerance', () => {
   assert.equal(validateRuntimeBudgetArtifact(APPROVED_BASELINE), true);
   assert.equal(validateRuntimeBudgetArtifact(CURRENT_MEASUREMENT), true);
 
-  const result = compareRuntimeBudget(APPROVED_BASELINE, CURRENT_MEASUREMENT);
+  const result = compare(APPROVED_BASELINE, CURRENT_MEASUREMENT);
   assert.equal(result.pass, true, JSON.stringify(result.violations, null, 2));
   assert.deepEqual(result.violations, []);
 });
 
 test('accepts a measured retrospective 0.3.3 artifact without treating it as approved', () => {
-  const retrospective = {
-    ...CURRENT_MEASUREMENT,
-    measurementKind: 'retrospective',
-    designSystemVersion: '0.3.3',
-    sourceRef: '25f2787332117ed93416ffc42e6fac8b037dce94',
-  };
+  const retrospective = JSON.parse(readFileSync(
+    new URL('../../docs/design-system/runtime-measurements/0.3.3-retrospective.json', import.meta.url),
+    'utf8',
+  ));
 
   assert.equal(validateRuntimeBudgetArtifact(retrospective), true);
   assert.throws(
-    () => compareRuntimeBudget(retrospective, CURRENT_MEASUREMENT),
+    () => compare(retrospective, CURRENT_MEASUREMENT),
     /approved 0\.3\.3 runtime baseline is required/,
   );
 });
@@ -113,63 +53,58 @@ test('rejects a pending or unapproved baseline instead of inventing values', () 
     metrics: null,
     tolerances: null,
     reason: 'No approved runtime measurement was recorded for 0.3.3.',
-    recovery: {
-      checkpointRef: 'refs/codex/turn-diffs/checkpoints/example',
-      sourceTree: '25f2787332117ed93416ffc42e6fac8b037dce94',
-      capturedAt: '2026-07-13T15:17:35.000Z',
-      measurementPath: 'docs/design-system/runtime-measurements/0.3.3-retrospective.json',
-      measurementSha256: '0'.repeat(64),
-    },
+    recovery: { ...APPROVED_BASELINE.recovery },
   };
 
   assert.equal(validateRuntimeBudgetArtifact(pending), true);
   assert.throws(
-    () => compareRuntimeBudget(pending, CURRENT_MEASUREMENT),
+    () => compare(pending, CURRENT_MEASUREMENT),
     /approved 0\.3\.3 runtime baseline is required/,
   );
 });
 
-test('canonical 0.3.3 artifact is recoverable, machine-readable and fail-closed', async () => {
+test('canonical 0.3.3 artifact is approved only with the user-approved caps', async () => {
   const artifact = JSON.parse(await readFile(
     new URL('../../docs/design-system/runtime-baseline-0.3.3.json', import.meta.url),
     'utf8',
   ));
 
   assert.equal(validateRuntimeBudgetArtifact(artifact), true);
-  assert.equal(artifact.status, 'missing-approved-measurement');
-  assert.equal(artifact.recovery.sourceTree, '25f2787332117ed93416ffc42e6fac8b037dce94');
-  assert.equal(
-    artifact.recovery.measurementPath,
-    'docs/design-system/runtime-measurements/0.3.3-retrospective.json',
-  );
-  assert.equal(artifact.metrics, null);
-  assert.equal(artifact.tolerances, null);
-  assert.throws(
-    () => compareRuntimeBudget(artifact, CURRENT_MEASUREMENT),
-    /approved 0\.3\.3 runtime baseline is required/,
-  );
+  assert.equal(artifact.status, 'approved');
+  assert.equal(artifact.approval.status, 'approved');
+  assert.deepEqual(artifact.tolerances, {
+    cssGzipBytes: 2048,
+    jsGzipBytes: 4096,
+    addedAdapterAssets: 0,
+    duplicateRequestCount: 0,
+    themeFlashCount: 0,
+    initializationMs: 40,
+    handsontableInteractionMs: 45,
+  });
+  assert.equal(artifact.metrics.themeFlashCount, 1);
+  assert.deepEqual(artifact.metrics.laboratoryAssets, []);
 });
 
 test('fails closed for budget growth, undeclared adapters, duplicates, flash and lab assets', () => {
-  const regression = {
-    ...CURRENT_MEASUREMENT,
+  const regression = currentMeasurement({
     metrics: {
-      ...CURRENT_MEASUREMENT.metrics,
-      cssGzipBytes: 1051,
-      jsGzipBytes: 2101,
+      cssGzipBytes: APPROVED_BASELINE.metrics.cssGzipBytes + APPROVED_BASELINE.tolerances.cssGzipBytes + 1,
+      jsGzipBytes: APPROVED_BASELINE.metrics.jsGzipBytes + APPROVED_BASELINE.tolerances.jsGzipBytes + 1,
       adapterAssets: [
-        ...CURRENT_MEASUREMENT.metrics.adapterAssets,
+        ...APPROVED_BASELINE.metrics.adapterAssets,
         '/public/css/design-system/adapters/select2.css',
       ],
-      duplicateRequestCount: 1,
+      duplicateRequestCount: APPROVED_BASELINE.metrics.duplicateRequestCount + 1,
       themeFlashCount: 1,
-      initializationMs: 551,
-      handsontableInteractionMs: 141,
+      initializationMs: APPROVED_BASELINE.metrics.initializationMs
+        + APPROVED_BASELINE.tolerances.initializationMs + 1,
+      handsontableInteractionMs: APPROVED_BASELINE.metrics.handsontableInteractionMs
+        + APPROVED_BASELINE.tolerances.handsontableInteractionMs + 1,
       laboratoryAssets: ['/public/css/design-system/lab.css'],
     },
-  };
+  });
 
-  const result = compareRuntimeBudget(APPROVED_BASELINE, regression);
+  const result = compare(APPROVED_BASELINE, regression);
   assert.equal(result.pass, false);
   assert.deepEqual(
     result.violations.map(({ metric }) => metric).sort(),
@@ -187,22 +122,9 @@ test('fails closed for budget growth, undeclared adapters, duplicates, flash and
 });
 
 test('requires zero theme flash even when the historical measurement contained one', () => {
-  const historicalWithFlash = {
-    ...APPROVED_BASELINE,
-    metrics: {
-      ...APPROVED_BASELINE.metrics,
-      themeFlashCount: 1,
-    },
-  };
-  const currentWithFlash = {
-    ...CURRENT_MEASUREMENT,
-    metrics: {
-      ...CURRENT_MEASUREMENT.metrics,
-      themeFlashCount: 1,
-    },
-  };
+  const currentWithFlash = currentMeasurement({ metrics: { themeFlashCount: 1 } });
 
-  const result = compareRuntimeBudget(historicalWithFlash, currentWithFlash);
+  const result = compare(APPROVED_BASELINE, currentWithFlash);
   assert.equal(result.pass, false);
   assert.equal(
     result.violations.some(({ metric, maximum }) => metric === 'themeFlashCount' && maximum === 0),
@@ -233,10 +155,9 @@ test('rejects missing, negative, non-finite or context-mismatched measurements',
 
 test('compares only equivalent route, viewport, theme and fixture measurements', () => {
   assert.throws(
-    () => compareRuntimeBudget(APPROVED_BASELINE, {
-      ...CURRENT_MEASUREMENT,
-      viewport: '1180x820',
-    }),
+    () => compare(APPROVED_BASELINE, currentMeasurement({
+      context: { viewport: '1180x820' },
+    })),
     /runtime budget context mismatch: viewport/,
   );
 });
