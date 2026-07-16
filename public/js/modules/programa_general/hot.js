@@ -3169,7 +3169,6 @@
       .done(function (response) {
         if (response && response.respuesta === 'BIEN') {
           showFeedback('success', 'Ejecución actualizada');
-          loadData();
         } else {
           showFeedback('error', 'Error al actualizar ejecución');
         }
@@ -3178,6 +3177,7 @@
         showFeedback('error', 'Error de red al actualizar');
       })
       .always(function () {
+        loadData();
         $('#actualizarEjecucion')
           .prop('disabled', false)
           .html('Actualizar Ejecución <i class="fas fa-sync ml-1"></i>');
@@ -3295,9 +3295,10 @@
     syncLegendVisualState();
     var shouldAutoUpdate = shouldAutoUpdateOnEntry();
     fetchRestrictionConfig().always(function () {
-      loadData();
       if (shouldAutoUpdate) {
         actualizarEjecucion();
+      } else {
+        loadData();
       }
     });
   }
@@ -3320,7 +3321,7 @@
         return true;
       }
     } catch (e) { /* noop */ }
-    return true;
+    return false;
   }
 
   window.PGHotModule = {

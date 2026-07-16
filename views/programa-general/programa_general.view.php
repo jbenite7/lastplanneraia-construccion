@@ -100,8 +100,8 @@
     <script src="/public/vendor/bootstrap/bootstrap.min.js"></script>
     <script>window.__PROJECT_AREA__ = <?php echo json_encode($_SESSION['area'] ?? 'Construccion'); ?>;</script>
     <?= \App\View\Components\BiAccessComponent::renderBootConfig('programa-general') ?>
-    <script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js?v=20260708theme" charset="utf-8"></script>
     <script type="text/javascript" src="/js/modules/bi-access.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js?v=20260708theme" charset="utf-8"></script>
     <?php $pgGeneralJsVersion = @filemtime(dirname(__DIR__, 2) . '/public/js/funcionesGenerales6.js') ?: 'pgGeneralJs'; ?>
     <script type="text/javascript" src="/js/funcionesGenerales6.js?v=<?php echo urlencode((string) $pgGeneralJsVersion); ?>" charset="utf-8"></script>
 
