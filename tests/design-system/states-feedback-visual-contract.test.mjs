@@ -5,17 +5,27 @@ import test from 'node:test';
 const read = (path) => readFile(new URL(`../../${path}`, import.meta.url), 'utf8');
 
 test('states feedback keeps a canonical spinner contract without rewriting legacy goldens', async () => {
-  const [source, manifestSource] = await Promise.all([
+  const [source, manifestSource, specimen] = await Promise.all([
     read('tests/browser/design-system-lab.visual.mjs'),
     read('docs/design-system/manifests/laboratory.json'),
+    read('views/design-system/families/states-feedback.php'),
   ]);
   const manifest = JSON.parse(manifestSource);
   const feedbackScenarios = manifest.scenarios.filter(({ family }) => family === 'states-feedback');
+  const canonicalSpinner = specimen.match(
+    /data-ui-group="loading-spinner"[^>]*role="status"[^>]*aria-live="polite"/g,
+  );
 
   assert.equal(feedbackScenarios.length, 6);
   assert.equal(manifest.scenarios.length - feedbackScenarios.length, 54);
+  assert.equal(canonicalSpinner?.length, 1);
   assert.match(source, /async function assertStatesFeedbackVisualContract/);
   assert.match(source, /scenario\.family === STATES_FEEDBACK_FAMILY/);
+  assert.match(
+    source,
+    /panel\.locator\('\[data-ui-group="loading-spinner"\]\[role="status"\]'\)/,
+  );
+  assert.doesNotMatch(source, /panel\.locator\('\[data-ui-group="loading-spinner"\]'\)/);
   assert.match(source, /contrastRatio\(contract\.foreground, contract\.background\)/);
   assert.match(source, /contract\.pageOverflowX/);
   assert.match(source, /contract\.panelOverflowX/);

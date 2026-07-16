@@ -53,7 +53,7 @@ async function freezeTheme(page, theme) {
 }
 
 async function assertStatesFeedbackVisualContract(page, panel) {
-  const status = panel.locator('[data-ui-group="loading-spinner"]');
+  const status = panel.locator('[data-ui-group="loading-spinner"][role="status"]');
   const spinner = status.locator('.aia-spinner');
   const label = status.locator('span').last();
 
