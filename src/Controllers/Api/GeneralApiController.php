@@ -729,6 +729,23 @@ class GeneralApiController extends BaseController
             $this->advanceProgramUniqueIdSequence($projectId, array_column($itemsParaInsertar, 'unique_id'));
             $debug("DEBUG IMPORT: programa actualizado con " . count($itemsParaInsertar) . " registros.");
 
+            $semanasTable = TableResolver::resolveByPrefix($dbPrefix, 'semanas_activas');
+            $stmtCheckSem = $this->db->queryWithProject("SELECT COUNT(*) FROM {$semanasTable} WHERE project_id = ? AND Semana = ?", [$projectId, $semanaNueva], $projectId);
+            $existeSemana = (int) $stmtCheckSem->fetchColumn();
+
+            if ($existeSemana === 0 && $semanaNueva === 1) {
+                $f_final_sem = date('Y-m-d', strtotime($f_inicio_sem . ' + 6 days'));
+                $nextSemanaId = (int) $this->db->queryWithProject("SELECT COALESCE(MAX(Id), 0) + 1 FROM {$semanasTable} WHERE project_id = ?", [$projectId], $projectId)->fetchColumn();
+                $this->db->queryWithProject("INSERT INTO {$semanasTable} (project_id, Id, Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem, fechaCreacionSemana) VALUES (?, ?, ?, ?, ?, ?)", [$projectId, $nextSemanaId, $semanaNueva, $f_inicio_sem, $f_final_sem, date('Y-m-d')], $projectId);
+                $existeSemana = 1;
+                $debug("DEBUG IMPORT: Creada semana activa 1 automáticamente.");
+            }
+
+            $esBorrador = $existeSemana === 0;
+            if ($esBorrador) {
+                $debug("DEBUG IMPORT: Semana $semanaNueva guardada como BORRADOR. Use 'Nueva Semana' para activarla.");
+            }
+
             // 1B. Borrar borrador anterior en consolidado
             $this->db->queryWithProject("DELETE FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " WHERE project_id = ? AND Semana = ?", [$projectId, $semanaNueva], $projectId);
 
@@ -746,22 +763,18 @@ class GeneralApiController extends BaseController
             $queryInsert = "INSERT INTO " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " (project_id, {$allColumns}) VALUES (?, {$placeholders})";
             $stmtInsert = $this->db->prepare($queryInsert);
 
-            foreach ($itemsParaInsertar as $item) {
-                $stmtInsert->execute(array_merge([$projectId], array_values($item)));
-            }
+            try {
+                if ($esBorrador) {
+                    $this->db->query('SET FOREIGN_KEY_CHECKS = 0');
+                }
 
-            // 3. Activar semana (Solo automáticamente para S1; S2+ queda como borrador)
-            $stmtCheckSem = $this->db->queryWithProject("SELECT COUNT(*) FROM " . TableResolver::resolveByPrefix($dbPrefix, 'semanas_activas') . " WHERE project_id = ? AND Semana = ?", [$projectId, $semanaNueva], $projectId);
-            $existeSemana = (int) $stmtCheckSem->fetchColumn();
-
-            if ($existeSemana == 0 && $semanaNueva === 1) {
-                $f_final_sem = date('Y-m-d', strtotime($f_inicio_sem . ' + 6 days'));
-                $semanasTable = TableResolver::resolveByPrefix($dbPrefix, 'semanas_activas');
-                $nextSemanaId = (int) $this->db->queryWithProject("SELECT COALESCE(MAX(Id), 0) + 1 FROM {$semanasTable} WHERE project_id = ?", [$projectId], $projectId)->fetchColumn();
-                $stmtInsertSem = $this->db->queryWithProject("INSERT INTO {$semanasTable} (project_id, Id, Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem, fechaCreacionSemana) VALUES (?, ?, ?, ?, ?, ?)", [$projectId, $nextSemanaId, $semanaNueva, $f_inicio_sem, $f_final_sem, date('Y-m-d')], $projectId);
-                $debug("DEBUG IMPORT: Creada semana activa 1 automáticamente.");
-            } elseif ($existeSemana == 0) {
-                $debug("DEBUG IMPORT: Semana $semanaNueva guardada como BORRADOR. Use 'Nueva Semana' para activarla.");
+                foreach ($itemsParaInsertar as $item) {
+                    $stmtInsert->execute(array_merge([$projectId], array_values($item)));
+                }
+            } finally {
+                if ($esBorrador) {
+                    $this->db->query('SET FOREIGN_KEY_CHECKS = 1');
+                }
             }
 
             $this->db->commit();
