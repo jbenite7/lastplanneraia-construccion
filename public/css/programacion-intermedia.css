@@ -1005,11 +1005,116 @@
 @layer components {
     @media (max-width: 768px) {
         .pi-page #hot-container {
-            display: block !important;
+            display: none !important;
         }
 
         .pi-page #mobile-card-view {
-            display: none !important;
+            display: grid !important;
+            grid-template-columns: minmax(0, 1fr);
+            gap: var(--ds-space-4);
+            padding: var(--ds-space-4);
+            padding-block-end: var(--ds-space-12);
+        }
+
+        .pi-mobile-card-list {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            gap: var(--ds-space-4);
+        }
+
+        .pi-mobile-card {
+            --text-main: var(--ds-active-text-primary);
+            display: grid;
+            gap: var(--ds-space-4);
+            min-width: 0;
+            padding: var(--ds-space-4);
+            border: var(--ds-border-width) solid var(--ds-active-border);
+            border-radius: var(--ds-radius-panel);
+            background: var(--ds-active-surface);
+            color: var(--ds-active-text-primary);
+            box-shadow: var(--ds-shadow-sm);
+        }
+
+        .pi-mobile-card__header {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: flex-start;
+            gap: var(--ds-space-3);
+        }
+
+        .pi-mobile-card__identity {
+            display: grid;
+            gap: var(--ds-space-1);
+            min-width: 0;
+        }
+
+        .pi-mobile-card__id,
+        .pi-mobile-card__label {
+            color: var(--ds-active-text-secondary);
+            font-size: var(--ds-type-size-sm);
+            font-weight: var(--ds-type-weight-semibold);
+        }
+
+        .pi-mobile-card__title,
+        .pi-mobile-card__details,
+        .pi-mobile-card__value,
+        .pi-mobile-card__empty {
+            margin: var(--ds-space-0);
+        }
+
+        .pi-mobile-card__title {
+            overflow-wrap: anywhere;
+            font-family: var(--ds-font-display);
+            font-size: var(--ds-type-size-lg);
+            line-height: var(--ds-type-line-compact);
+            color: var(--ds-active-text-primary);
+        }
+
+        .pi-mobile-card__state {
+            max-width: 10rem;
+            min-width: 0;
+            padding: var(--ds-space-1) var(--ds-space-2);
+            border-radius: var(--ds-radius-pill);
+            background: var(--ds-color-state-info-bg);
+            color: var(--ds-color-state-info-text);
+            font-size: var(--ds-type-size-sm);
+            font-weight: var(--ds-type-weight-semibold);
+            line-height: var(--ds-type-line-compact);
+            text-align: center;
+            white-space: normal;
+            overflow-wrap: anywhere;
+        }
+
+        .pi-mobile-card__details {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: var(--ds-space-3) var(--ds-space-4);
+        }
+
+        .pi-mobile-card__field {
+            display: grid;
+            gap: var(--ds-space-1);
+            min-width: 0;
+        }
+
+        .pi-mobile-card__value {
+            overflow-wrap: anywhere;
+            color: var(--ds-active-text-primary);
+        }
+
+        .pi-mobile-card__empty {
+            padding: var(--ds-space-6);
+            border: var(--ds-border-width) dashed var(--ds-active-border);
+            border-radius: var(--ds-radius-panel);
+            color: var(--ds-active-text-secondary);
+            text-align: center;
+        }
+
+        }
+
+    @media (min-width: 600px) and (max-width: 768px) {
+        .pi-mobile-card-list {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
         }
     }
 }
