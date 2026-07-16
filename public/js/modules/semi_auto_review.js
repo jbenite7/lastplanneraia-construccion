@@ -299,7 +299,7 @@
       analysisRevealDone: false,
       defaultFilterApplied: false,
       assistantInbox: null,
-      assistantExpanded: false,
+      assistantExpanded: true,
       learningCandidates: []
     };
     bind(instances[module]);
@@ -402,7 +402,7 @@
     // Relee el puntero cuando el usuario abre la bandeja: para entonces el
     // contexto legacy de proyecto/semana ya terminó de poblarse.
     instance.undoRunId = readUndoRun(module) || instance.undoRunId;
-    instance.assistantExpanded = false;
+    instance.assistantExpanded = true;
     instance.panel.removeAttr('hidden');
     setReviewScrollUnlocked(true);
     loadAssistantInbox(instance);
@@ -415,7 +415,7 @@
     clearAnalysisReveal(instance);
     instance.runId = newRunId();
     instance.selectedIds = {};
-    instance.assistantExpanded = false;
+    instance.assistantExpanded = true;
     instance.analysisRevealDone = false;
     instance.defaultFilterApplied = false;
     setStatus(instance, 'Revisando propuestas paso a paso...', '');

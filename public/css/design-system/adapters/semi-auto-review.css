@@ -22,6 +22,20 @@
   display: none;
 }
 
+.sar-assistant:not(.is-open) .sar-assistant-copy,
+.sar-assistant:not(.is-open) .sar-assistant-grid,
+.sar-assistant:not(.is-open) .sar-assistant-feedback-actions {
+  display: none;
+}
+
+.sar-tech-wrap {
+  display: none;
+}
+
+.sar-tech-wrap.is-open {
+  display: block;
+}
+
 .sar-head,
 .sar-foot,
 .sar-actions,
