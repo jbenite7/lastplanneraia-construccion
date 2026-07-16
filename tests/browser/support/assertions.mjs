@@ -48,14 +48,14 @@ export function normalizeText(value) {
 }
 
 export async function assertProjectContext(page, project) {
-  await page.waitForSelector('#baseDatos', { state: 'attached', timeout: 15000 }).catch(() => {});
+  await page.waitForSelector('#baseDatos, #baseDatos_PHP', { state: 'attached', timeout: 15000 });
   await expect.poll(async () => page.evaluate(() => {
-    const nonEmptyInput = [...document.querySelectorAll('#baseDatos')].find((input) => input.value);
+    const nonEmptyInput = [...document.querySelectorAll('#baseDatos, #baseDatos_PHP')].find((input) => input.value);
     return nonEmptyInput?.value || '';
   }), { timeout: 15000 }).toBe(project.dbPrefix);
 
   const state = await page.evaluate(() => {
-    const nonEmptyInput = [...document.querySelectorAll('#baseDatos')].find((input) => input.value);
+    const nonEmptyInput = [...document.querySelectorAll('#baseDatos, #baseDatos_PHP')].find((input) => input.value);
     const projectInput = document.querySelector('#proyecto, #proyecto_PHP');
     return {
       area: window.__PROJECT_AREA__ || null,

@@ -379,7 +379,9 @@ INSERT INTO `general_proyectos_procesos`
   (`Id`, `Proyecto_Proceso`, `Base_de_Datos`, `Area`, `pc_restr_2_nombre`, `pc_restr_3_nombre`, `pc_restr_4_nombre`, `Activo`, `Acceso`, `pdcActivo`)
 VALUES
   (73, 'Da Porto', 'da_porto', 'Construccion', NULL, NULL, NULL, 1, 1, 1),
-  (75, 'Aeropuerto Regional PC', 'da_aeropuerto_pc', 'Pre-Construccion', 'Presupuesto', 'Contratacion', 'Tramites', 1, 1, 0);
+  (68, 'Optimización Aeropuerto JMC', 'optimizacionJMC', 'Construccion', NULL, NULL, NULL, 1, 1, 1),
+  (75, 'Aeropuerto Regional PC', 'da_aeropuerto_pc', 'Pre-Construccion', 'Presupuesto', 'Contratacion', 'Tramites', 1, 1, 0),
+  (76, 'Preconstrucción Da Porto', 'preconstruccion_da_porto_pc', 'Pre-Construccion', NULL, NULL, NULL, 1, 1, 0);
 
 INSERT INTO `rbac_roles`
   (`code`, `name`, `description`, `is_admin_area`, `is_system_admin`, `is_legacy`, `status`, `sort_order`, `created_at`, `updated_at`)
@@ -451,7 +453,9 @@ VALUES
   (5, 73, 5, 'OT', '2026-01-01 00:00:00'),
   (6, 75, 1, 'A', '2026-01-01 00:00:00'),
   (7, 75, 2, 'R', '2026-01-01 00:00:00'),
-  (8, 75, 4, 'V', '2026-01-01 00:00:00');
+  (8, 75, 4, 'V', '2026-01-01 00:00:00'),
+  (9, 68, 1, 'A', '2026-01-01 00:00:00'),
+  (10, 76, 1, 'A', '2026-01-01 00:00:00');
 
 INSERT INTO `general_codigos_actividades` (`codigo_actividad`, `actividad`, `unidad`)
 VALUES ('CI-001', 'Synthetic concrete activity', 'm3'), ('CI-002', 'Synthetic electrical activity', 'ml');
@@ -521,18 +525,24 @@ INSERT INTO `semanas_activas`
   (`project_id`, `Id`, `Semana`, `Fecha_Inicio_Sem`, `Fecha_Fin_Sem`, `Semanal_Confirmada`, `fechaCreacionSemana`)
 VALUES
   (73, 1, 1, '2026-07-06', '2026-07-12', 0, '2026-07-01'),
-  (75, 1, 3, '2026-07-20', '2026-07-26', 0, '2026-07-01');
+  (68, 1, 5, '2026-07-27', '2026-08-02', 0, '2026-07-01'),
+  (75, 1, 3, '2026-07-20', '2026-07-26', 0, '2026-07-01'),
+  (76, 1, 1, '2026-07-06', '2026-07-12', 0, '2026-07-01');
 
 INSERT INTO `profesionales` (`project_id`, `id`, `nombre`, `email`, `cargo`, `activo`)
 VALUES
   (73, 1, 'Profesional CI Construccion', 'professional73@ci.invalid', 'Residente Oficina Tecnica', 1),
-  (75, 1, 'Profesional CI Preconstruccion', 'professional75@ci.invalid', 'Gerente de Proyecto', 1);
+  (68, 1, 'Profesional CI JMC', 'professional68@ci.invalid', 'Residente Oficina Tecnica', 1),
+  (75, 1, 'Profesional CI Preconstruccion', 'professional75@ci.invalid', 'Gerente de Proyecto', 1),
+  (76, 1, 'Profesional CI Preconstruccion Da Porto', 'professional76@ci.invalid', 'Gerente de Proyecto', 1);
 
 INSERT INTO `subcontratistas`
   (`project_id`, `Id`, `subcontratista`, `correo_contacto`, `NIT`, `alcance`, `tipo_proveedor`, `activo`)
 VALUES
   (73, 1, 'Proveedor CI Construccion', 'supplier73@ci.invalid', 900000073, 'Instalaciones sinteticas', 'Mano de Obra', 1),
-  (75, 1, 'Consultor CI Preconstruccion', 'supplier75@ci.invalid', 900000075, 'Diseno sintetico', 'Consultor', 1);
+  (68, 1, 'Proveedor CI JMC', 'supplier68@ci.invalid', 900000068, 'Obras sinteticas', 'Mano de Obra', 1),
+  (75, 1, 'Consultor CI Preconstruccion', 'supplier75@ci.invalid', 900000075, 'Diseno sintetico', 'Consultor', 1),
+  (76, 1, 'Interesado CI Da Porto', 'supplier76@ci.invalid', 900000076, 'Gestion sintetica', 'Consultor', 1);
 
 INSERT INTO `programa`
   (`project_id`, `unique_id`, `Consecutivo`, `Id`, `Actividad`, `Titulo`, `Fecha_Inicio`, `Fecha_Fin`, `Ruta_Critica`, `Ejecutado`, `Estado`, `Semanas_Inicio`, `Estado_Restricciones`, `D_y_E`, `Materiales`, `MdeO`, `Equipos`, `Predecesora`, `Pdto_Cons`, `Modelo`, `Responsable_AIA`, `restriccion_pc_1`, `restriccion_pc_2`, `restriccion_pc_3`, `restriccion_pc_4`)
@@ -540,28 +550,39 @@ VALUES
   (73, 101, 1, '1.1', 'Pintura sintetica nivel uno', 0, '2026-07-06', '2026-07-19', 1, 0.25, 'En Curso', 0, 0.80, 1, 1, 1, 1, 0.5, 1, '1', 'Profesional CI Construccion', '0%', '0%', '0%', '0%'),
   (73, 102, 2, '1.2', 'Red electrica sintetica', 0, '2026-07-13', '2026-08-02', 0, 0.10, 'Actividad Futura', 1, 0.60, 1, 0.5, 0.5, 1, 0.5, 1, '1', 'Profesional CI Construccion', '0%', '0%', '0%', '0%'),
   (73, 103, 101, 'CI.FK.101', 'Ancla sintetica de identidad semanal', 0, '2026-07-06', '2026-07-06', 0, 0.00, 'No Requerida', 0, 1.00, 1, 1, 1, 1, 0, 0, '0', 'Profesional CI Construccion', '0%', '0%', '0%', '0%'),
+  (68, 11058, 1, 'JMC.1', 'Actividad sintetica JMC', 0, '2026-07-27', '2026-08-09', 1, 0.20, 'En Curso', 0, 0.80, 1, 1, 1, 1, 0, 0, '1', 'Profesional CI JMC', '0%', '0%', '0%', '0%'),
+  (68, 11059, 2, 'JMC.2', 'Actividad sintetica JMC dos', 0, '2026-07-27', '2026-08-16', 0, 0.00, 'Actividad Futura', 0, 0.50, 1, 1, 1, 1, 0, 0, '0', 'Profesional CI JMC', '0%', '0%', '0%', '0%'),
   (75, 201, 1, 'PC.1', 'Diseno sintetico de especialidad', 0, '2026-07-20', '2026-08-09', 1, 0.20, 'En Ejecucion', 0, 0.50, 0, 0, 0, 0, 0, 0, '0', 'Profesional CI Preconstruccion', '100%', '50%', '50%', '0%'),
-  (75, 202, 2, 'PC.2', 'Presupuesto sintetico coordinado', 0, '2026-07-27', '2026-08-16', 0, 0.00, 'Actividad Futura', 1, 0.25, 0, 0, 0, 0, 0, 0, '0', 'Profesional CI Preconstruccion', '100%', '0%', '0%', '0%');
+  (75, 202, 2, 'PC.2', 'Presupuesto sintetico coordinado', 0, '2026-07-27', '2026-08-16', 0, 0.00, 'Actividad Futura', 1, 0.25, 0, 0, 0, 0, 0, 0, '0', 'Profesional CI Preconstruccion', '100%', '0%', '0%', '0%'),
+  (76, 7601, 1, 'PC.DP.1', 'Actividad sintetica Preconstruccion Da Porto', 0, '2026-07-06', '2026-07-19', 1, 0.20, 'En Ejecucion', 0, 0.50, 0, 0, 0, 0, 0, 0, '0', 'Profesional CI Preconstruccion Da Porto', '100%', '0%', '0%', '0%'),
+  (76, 7602, 2, 'PC.DP.2', 'Actividad sintetica Preconstruccion dos', 0, '2026-07-06', '2026-07-26', 0, 0.00, 'Actividad Futura', 0, 0.25, 0, 0, 0, 0, 0, 0, '0', 'Profesional CI Preconstruccion Da Porto', '100%', '0%', '0%', '0%');
 
 INSERT INTO `programa_consolidado`
   (`project_id`, `row_id`, `Consecutivo`, `Semana`, `unique_id`, `Consecutivo_en_Programa`, `Id`, `Actividad`, `Titulo`, `Fecha_Inicio`, `Fecha_Fin`, `Ruta_Critica`, `Ejecutado`, `Estado`, `Semanas_Inicio`, `Estado_Restricciones`, `D_y_E`, `Materiales`, `MdeO`, `Equipos`, `Predecesora`, `Pdto_Cons`, `Modelo`, `Sub_Contratista`, `Responsable_AIA`, `Activa`, `codigo_actividad`, `medir_productividad`, `cantidad_ppto`, `unidad`, `restriccion_pc_1`, `restriccion_pc_2`, `restriccion_pc_3`, `restriccion_pc_4`)
 VALUES
   (73, 1001, 1, 1, 101, 1, '1.1', 'Pintura sintetica nivel uno', 0, '2026-07-06', '2026-07-19', 1, 0.25, 'En Curso', 0, 0.80, '1', '1', '1', '1', '0.5', '1', '1', 'Proveedor CI Construccion', 'Profesional CI Construccion', 1, 'CI-001', 1, 100, 'm2', '0%', '0%', '0%', '0%'),
   (73, 1002, 2, 1, 102, 2, '1.2', 'Red electrica sintetica', 0, '2026-07-13', '2026-08-02', 0, 0.10, 'Actividad Futura', 1, 0.60, '1', '0.5', '0.5', '1', '0.5', '1', '1', 'Proveedor CI Construccion', 'Profesional CI Construccion', 1, 'CI-002', 1, 200, 'ml', '0%', '0%', '0%', '0%'),
+  (68, 11001, 1, 5, 11058, 1, 'JMC.1', 'Actividad sintetica JMC', 0, '2026-07-27', '2026-08-09', 1, 0.20, 'En Curso', 0, 0.80, '1', '1', '1', '1', '0', '0', '0', 'Proveedor CI JMC', 'Profesional CI JMC', 1, 'CI-001', 1, 100, 'm2', '0%', '0%', '0%', '0%'),
+  (68, 11002, 2, 5, 11059, 2, 'JMC.2', 'Actividad sintetica JMC dos', 0, '2026-07-27', '2026-08-16', 0, 0.00, 'Actividad Futura', 0, 0.50, '1', '1', '1', '1', '0', '0', '0', 'Proveedor CI JMC', 'Profesional CI JMC', 1, 'CI-002', 1, 200, 'ml', '0%', '0%', '0%', '0%'),
   (75, 2001, 1, 3, 201, 1, 'PC.1', 'Diseno sintetico de especialidad', 0, '2026-07-20', '2026-08-09', 1, 0.20, 'En Ejecucion', 0, 0.50, '0', '0', '0', '0', '0', '0', '0', 'Consultor CI Preconstruccion', 'Profesional CI Preconstruccion', 1, 'CI-001', 1, 50, 'und', '100%', '50%', '50%', '0%'),
-  (75, 2002, 2, 3, 202, 2, 'PC.2', 'Presupuesto sintetico coordinado', 0, '2026-07-27', '2026-08-16', 0, 0.00, 'Actividad Futura', 1, 0.25, '0', '0', '0', '0', '0', '0', '0', 'Consultor CI Preconstruccion', 'Profesional CI Preconstruccion', 1, 'CI-002', 1, 60, 'und', '100%', '0%', '0%', '0%');
+  (75, 2002, 2, 3, 202, 2, 'PC.2', 'Presupuesto sintetico coordinado', 0, '2026-07-27', '2026-08-16', 0, 0.00, 'Actividad Futura', 1, 0.25, '0', '0', '0', '0', '0', '0', '0', 'Consultor CI Preconstruccion', 'Profesional CI Preconstruccion', 1, 'CI-002', 1, 60, 'und', '100%', '0%', '0%', '0%'),
+  (76, 76001, 1, 1, 7601, 1, 'PC.DP.1', 'Actividad sintetica Preconstruccion Da Porto', 0, '2026-07-06', '2026-07-19', 1, 0.20, 'En Ejecucion', 0, 0.50, '0', '0', '0', '0', '0', '0', '0', 'Interesado CI Da Porto', 'Profesional CI Preconstruccion Da Porto', 1, 'CI-001', 1, 50, 'und', '100%', '0%', '0%', '0%'),
+  (76, 76002, 2, 1, 7602, 2, 'PC.DP.2', 'Actividad sintetica Preconstruccion dos', 0, '2026-07-06', '2026-07-26', 0, 0.00, 'Actividad Futura', 0, 0.25, '0', '0', '0', '0', '0', '0', '0', 'Interesado CI Da Porto', 'Profesional CI Preconstruccion Da Porto', 1, 'CI-002', 1, 60, 'und', '100%', '0%', '0%', '0%');
 
 INSERT INTO `programacion_semanal`
   (`project_id`, `row_id`, `Consecutivo`, `Semana`, `unique_id`, `Consecutivo_En_Programa`, `Id`, `Actividad`, `Descripcion`, `Ubicacion`, `Fecha_Inicio`, `Fecha_Fin`, `Sub_Contratista`, `Responsable_AIA`, `Empresa`, `Ejecutado`, `Unidad`, `cantidad_ppto`, `Compromiso`, `Ejecutado_Real`, `P_Completado`, `PAC`, `Critica`, `Atrasada`, `Activa`, `Es_TNP`, `Prog_Sin_Restricciones_100`, `Categoria_CNC`, `CNC`, `Observaciones_CNC`)
 VALUES
   (73, 3001, 1, 1, 101, 1, '1.1', 'Pintura sintetica nivel uno', 'Compromiso CI', 'Nivel 1', '2026-07-06', '2026-07-12', 'Proveedor CI Construccion', 'Profesional CI Construccion', 'AIA', 0.25, 'm2', 100, 25, 20, 0.80, 0, 1, 0, '1', 0, 1, 'Programacion', 'Coordinacion pendiente', 'Registro sintetico'),
-  (75, 4001, 1, 3, 201, 1, 'PC.1', 'Diseno sintetico de especialidad', 'Compromiso PC CI', 'Mesa tecnica', '2026-07-20', '2026-07-26', 'Consultor CI Preconstruccion', 'Profesional CI Preconstruccion', 'AIA', 0.20, 'und', 50, 10, 8, 0.80, 1, 1, 0, '1', 0, 1, NULL, NULL, NULL);
+  (68, 3002, 1, 5, 11058, 1, 'JMC.1', 'Actividad semanal sintetica JMC', 'Compromiso JMC CI', 'Nivel 1', '2026-07-27', '2026-08-02', 'Proveedor CI JMC', 'Profesional CI JMC', 'AIA', 0.20, 'm2', 100, 25, 20, 0.80, 0, 1, 0, '1', 0, 1, 'Programacion', 'Coordinacion pendiente', 'Registro sintetico JMC'),
+  (75, 4001, 1, 3, 201, 1, 'PC.1', 'Diseno sintetico de especialidad', 'Compromiso PC CI', 'Mesa tecnica', '2026-07-20', '2026-07-26', 'Consultor CI Preconstruccion', 'Profesional CI Preconstruccion', 'AIA', 0.20, 'und', 50, 10, 8, 0.80, 1, 1, 0, '1', 0, 1, NULL, NULL, NULL),
+  (76, 6001, 1, 1, 7601, 1, 'PC.DP.1', 'Actividad semanal sintetica Preconstruccion', 'Compromiso PC Da Porto', 'Mesa tecnica', '2026-07-06', '2026-07-12', 'Interesado CI Da Porto', 'Profesional CI Preconstruccion Da Porto', 'AIA', 0.20, 'und', 50, 10, 8, 0.80, 1, 1, 0, '1', 0, 1, NULL, NULL, NULL);
 
 INSERT INTO `actividades`
   (`project_id`, `Id`, `codigo`, `actividad`, `descripcionActividad`, `actividadInicio`, `nombreActividadInicio`, `fechaInicio`, `tipoContrato`, `semanaActualizacion`, `SI1`, `paqueteSI1`, `S1`, `paqueteS1`, `MO1`, `paqueteMO1`, `numeroSubcontratos`, `confianza_deteccion`, `fechaInicioProyectada`)
 VALUES
   (73, 1, 1001, 'Pinturas', 'Actividad contractual sintetica', '101', 'Pintura sintetica nivel uno', '2026-07-06', 'SI', 1, 'Pintura', 'PINTURAS CI', NULL, NULL, NULL, NULL, 1, 95.00, '2026-07-06'),
-  (73, 2, 1002, 'Red Electrica', 'Actividad contractual sintetica', '102', 'Red electrica sintetica', '2026-07-13', 'S,MO', 1, NULL, NULL, 'Cableado', 'MATERIALES ELECTRICOS CI', 'Instalacion', 'MANO DE OBRA ELECTRICA CI', 2, 90.00, '2026-07-13');
+  (73, 2, 1002, 'Red Electrica', 'Actividad contractual sintetica', '102', 'Red electrica sintetica', '2026-07-13', 'S,MO', 1, NULL, NULL, 'Cableado', 'MATERIALES ELECTRICOS CI', 'Instalacion', 'MANO DE OBRA ELECTRICA CI', 2, 90.00, '2026-07-13'),
+  (68, 1, 11058, 'JMC Suministro', 'Actividad contractual sintetica JMC', '11058', 'Actividad sintetica JMC', '2026-07-27', 'S,MO', 5, 'JMC Material', 'JMC MATERIAL CI', NULL, NULL, 'JMC Instalacion', 'JMC MANO DE OBRA CI', 2, 95.00, '2026-07-27');
 
 INSERT INTO `pdc`
   (`project_id`, `pdc_row_id`, `consecutivo`, `semana`, `titulo`, `tipoPaquete`, `paqueteContratacion`, `contratos`, `numeroSubcontratos`, `subcontratoPaquete`, `estado`, `fechaElaboracionPliegos`, `diasElaboracionPliegos`, `fechaEntregaPliegos`, `diasEntregaPliegos`, `fechaReciboPropuestas`, `diasReciboPropuestas`, `fechaCuadrosComparativos`, `diasCuadrosComparativos`, `fechaLegalizacionContrato`, `diasLegalizacionContrato`, `fechaFabricacion`, `diasFabricacion`, `fechaInsumosObra`, `diasInsumosObra`, `fechaInicio`, `fechaInicioProyectada`, `fechaRealInsumosObra`, `idProveedorAdjudicado`, `valorPresupuesto`, `observacionesContrato`)
@@ -572,13 +593,17 @@ INSERT INTO `cic`
   (`project_id`, `Id`, `Semana`, `subcontratista`, `correo_contacto`, `NIT`, `alcance`, `tipo_proveedor`, `PAC`, `PAC_Acum`, `P_Completado`, `P_Completado_Acum`, `Calidad`, `Calidad_Acum`, `GSA`, `GSA_Acum`, `SST`, `SST_Acum`, `ADM`, `ADM_Acum`, `Cal_Integral`, `Cal_Integral_Acum`, `Observaciones`)
 VALUES
   (73, 1, 1, 'Proveedor CI Construccion', 'supplier73@ci.invalid', '900000073', 'Instalaciones sinteticas', 'Mano de Obra', '0.80', '0.75', '0.80', '0.75', '80', '75', '80', '75', '80', '75', '80', '75', 80, 75, 'Evaluacion sintetica'),
-  (75, 1, 3, 'Consultor CI Preconstruccion', 'supplier75@ci.invalid', '900000075', 'Diseno sintetico', 'Consultor', '0.90', '0.85', '0.90', '0.85', '90', '85', '90', '85', '90', '85', '90', '85', 90, 85, 'Evaluacion sintetica PC');
+  (68, 1, 5, 'Proveedor CI JMC', 'supplier68@ci.invalid', '900000068', 'Obras sinteticas', 'Mano de Obra', '0.85', '0.80', '0.85', '0.80', '85', '80', '85', '80', '85', '80', '85', '80', 85, 80, 'Evaluacion sintetica JMC'),
+  (75, 1, 3, 'Consultor CI Preconstruccion', 'supplier75@ci.invalid', '900000075', 'Diseno sintetico', 'Consultor', '0.90', '0.85', '0.90', '0.85', '90', '85', '90', '85', '90', '85', '90', '85', 90, 85, 'Evaluacion sintetica PC'),
+  (76, 1, 1, 'Interesado CI Da Porto', 'supplier76@ci.invalid', '900000076', 'Gestion sintetica', 'Consultor', '0.90', '0.85', '0.90', '0.85', '90', '85', '90', '85', '90', '85', '90', '85', 90, 85, 'Evaluacion sintetica Preconstruccion');
 
 INSERT INTO `cip`
   (`Id`, `project_id`, `Semana`, `profesional`, `correo_contacto`, `PAC`, `PAC_Acum`, `P_Completado`, `P_Completado_Acum`, `Act_Criticas_Cumplidas`, `Act_No_Criticas_Cumplidas`, `Act_Atrasadas_Cumplidas`, `Act_Criticas_Cumplidas_Acum`, `Act_No_Criticas_Cumplidas_Acum`, `Act_Atrasadas_Cumplidas_Acum`, `PAC_Consolidado`, `PAC_Consolidado_Acum`)
 VALUES
   (1, 73, 1, 'Profesional CI Construccion', 'professional73@ci.invalid', '0.80', '0.75', '0.80', '0.75', '1', '1', '0', '1', '1', '0', '0.80', '0.75'),
-  (2, 75, 3, 'Profesional CI Preconstruccion', 'professional75@ci.invalid', '0.90', '0.85', '0.90', '0.85', '1', '1', '0', '1', '1', '0', '0.90', '0.85');
+  (2, 68, 5, 'Profesional CI JMC', 'professional68@ci.invalid', '0.85', '0.80', '0.85', '0.80', '1', '1', '0', '1', '1', '0', '0.85', '0.80'),
+  (3, 75, 3, 'Profesional CI Preconstruccion', 'professional75@ci.invalid', '0.90', '0.85', '0.90', '0.85', '1', '1', '0', '1', '1', '0', '0.90', '0.85'),
+  (4, 76, 1, 'Profesional CI Preconstruccion Da Porto', 'professional76@ci.invalid', '0.90', '0.85', '0.90', '0.85', '1', '1', '0', '1', '1', '0', '0.90', '0.85');
 
 INSERT INTO `pi_shared_constraints`
   (`project_id`, `Id`, `Semana`, `Restriccion`, `ValorObjetivo`, `Nota`, `CreadoPor`, `CreadoEn`, `ActualizadoEn`)
