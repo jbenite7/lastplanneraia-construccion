@@ -2722,7 +2722,10 @@
 
   function updateOrInitHot(data) {
     setupRenderers();
-    syncContainerHeight();
+    var isEmptyInitialGrid = !hot && data.length === 0;
+    if (!isEmptyInitialGrid) {
+      syncContainerHeight();
+    }
 
     if (hot) {
       var filterConditions = captureHotFilterConditions();
@@ -2875,7 +2878,7 @@
       viewportColumnRenderingOffset: 10,
       colHeaderHeight: 48,
       width: '100%',
-      height: getContainerAvailableHeight() || '100%',
+      height: isEmptyInitialGrid ? '100%' : (getContainerAvailableHeight() || '100%'),
       afterRender: function () {
         var hotInstance = this;
         window.requestAnimationFrame(function () {
@@ -2976,7 +2979,6 @@
         this.render();
       },
     });
-
     // Fix: Asegurar que HOT mantenga el listening activo.
     // Bootstrap/jQuery roban el foco a nivel de document.
     hot.listen();
@@ -3286,6 +3288,10 @@
   }
 
   function init() {
+    if (!hot && getDb() && getSemana()) {
+      updateOrInitHot([]);
+    }
+
     if (!initialized) {
       bindActions();
       bindFilters();
