@@ -360,6 +360,19 @@ var cargarDatosGeneralesPagina = function (seccion) {
       document.getElementById('pdcActivo').value = datosGenerales.pdcActivo;
       document.getElementById('proyecto').value = datosGenerales.proyecto;
       document.getElementById('semana').value = datosGenerales.semana;
+
+      console.log("🕵️ [DeepAnalysis] A punto de llamar a cargaParametros() en cargarDatosGeneralesPagina2.js");
+      try {
+        if (typeof cargaParametros === 'function') {
+          console.log("🕵️ [DeepAnalysis] cargaParametros es una función. Ejecutando...");
+          cargaParametros();
+        } else {
+          console.error("🕵️ [DeepAnalysis] CRÍTICO: cargaParametros NO es una función o es undefined en este contexto global. Tipo actual:", typeof cargaParametros);
+        }
+      } catch (error) {
+        console.error("🕵️ [DeepAnalysis] Excepción ahogada (swallowed) capturada al ejecutar cargaParametros():", error);
+      }
+
       document.getElementById('Semanal_Confirmada').value = datosGenerales.Semanal_Confirmada;
       if (datosGenerales.fechaCierreCompromisos == null) {
         document.getElementById('fechaCierreCompromisos').value = '';
@@ -378,18 +391,6 @@ var cargarDatosGeneralesPagina = function (seccion) {
         document.getElementById('versionCronograma').value = '';
       } else {
         document.getElementById('versionCronograma').value = datosGenerales.versionCronograma;
-      }
-
-      console.log("🕵️ [DeepAnalysis] A punto de llamar a cargaParametros() en cargarDatosGeneralesPagina2.js");
-      try {
-        if (typeof cargaParametros === 'function') {
-          console.log("🕵️ [DeepAnalysis] cargaParametros es una función. Ejecutando...");
-          cargaParametros();
-        } else {
-          console.error("🕵️ [DeepAnalysis] CRÍTICO: cargaParametros NO es una función o es undefined en este contexto global. Tipo actual:", typeof cargaParametros);
-        }
-      } catch (error) {
-        console.error("🕵️ [DeepAnalysis] Excepción ahogada (swallowed) capturada al ejecutar cargaParametros():", error);
       }
 
       // --- Context Bar Population ---
