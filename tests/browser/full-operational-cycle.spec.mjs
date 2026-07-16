@@ -23,10 +23,10 @@ test('operational fixtures cover the requested projects and weeks', () => {
     constructionOnly: project.constructionOnly,
   }))).toEqual([
     {
-      key: 'construction', projectId: 73, operationalWeek: 1, purchasingWeek: 1, assistantProgramUniqueId: 1471, constructionOnly: true,
+      key: 'construction', projectId: 73, operationalWeek: 1, purchasingWeek: 1, assistantProgramUniqueId: 101, constructionOnly: true,
     },
     {
-      key: 'jmc', projectId: 68, operationalWeek: 5, purchasingWeek: 6, assistantProgramUniqueId: 11058, constructionOnly: true,
+      key: 'jmc', projectId: 68, operationalWeek: 5, purchasingWeek: 5, assistantProgramUniqueId: 11058, constructionOnly: true,
     },
     {
       key: 'preconstruction-da-porto',

@@ -478,12 +478,11 @@ async function runProgramacionSemanal(page, project, fixture) {
 }
 
 export async function runLastPlannerCycle(page, project, fixture) {
+  await assertNavbarForProject(page, project);
   await runProgramGeneral(page, project, fixture);
   await runProgramacionIntermedia(page, project, fixture);
   await runProgramacionSemanal(page, project, fixture);
 
-  await changeWeek(page, fixture.week, '/programa-general');
-  await assertNavbarForProject(page, project);
   if (!project.constructionOnly) {
     await page.goto('/subcontratistas', { waitUntil: 'domcontentloaded' });
     await expect(page.locator('.header-actions h4')).toContainText('Interesados Externos');

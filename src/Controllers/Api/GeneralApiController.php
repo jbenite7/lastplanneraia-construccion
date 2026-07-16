@@ -138,8 +138,6 @@ class GeneralApiController extends BaseController
         header('Content-Type: application/json; charset=utf-8');
 
         try {
-            $this->lpsService->disableProductivityMeasurementTemporarily($this->db);
-
             $vars = $this->getSessionVars();
             $dbPrefix = $_GET['db'] ?? ($vars['dbName'] ?? '');
             if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
@@ -147,6 +145,7 @@ class GeneralApiController extends BaseController
             }
             $projectId = $this->projectId($dbPrefix);
             $this->db->setProjectContext($projectId);
+            $this->lpsService->disableProductivityMeasurementTemporarily($this->db, $projectId);
 
             $semanaParam = $_GET['semana_objetivo'] ?? $_GET['semana'] ?? null;
             $semana = $semanaParam !== null ? filter_var($semanaParam, FILTER_VALIDATE_INT) : ($vars['semana'] ?? 0);

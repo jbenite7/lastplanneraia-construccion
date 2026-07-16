@@ -83,6 +83,8 @@ export async function assertRestrictionConfig(page, project) {
 }
 
 export async function assertNavbarForProject(page, project) {
+  await page.waitForFunction((ids) => ids.every((id) => document.getElementById(id)),
+    project.expectedVisibleNav, { timeout: 15000 });
   const navState = await page.evaluate((ids) => {
     const displayOf = (id) => {
       const el = document.getElementById(id);

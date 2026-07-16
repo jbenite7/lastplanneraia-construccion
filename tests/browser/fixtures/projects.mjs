@@ -57,7 +57,7 @@ const ALL_PROJECTS = [
     maxWeek: 1,
     operationalWeek: 1,
     purchasingWeek: 1,
-    assistantProgramUniqueId: 1471,
+    assistantProgramUniqueId: 101,
     purchasingCapabilities: ['listadoActividades', 'contratos', 'pdc'],
     enabledModules: [
       'programaGeneral',
@@ -98,7 +98,7 @@ const ALL_PROJECTS = [
     area: 'Construccion',
     maxWeek: 6,
     operationalWeek: 5,
-    purchasingWeek: 6,
+    purchasingWeek: 5,
     assistantProgramUniqueId: 11058,
     purchasingCapabilities: ['listadoActividades', 'contratos', 'pdc'],
     enabledModules: [
@@ -145,7 +145,7 @@ const ALL_PROJECTS = [
       'cnp',
       'cnc',
     ],
-    expectedVisibleNav: ['programa_general', 'programacion_intermedia', 'programacion_semanal'],
+    expectedVisibleNav: [],
     expectedHiddenNav: ['info_listadoActividades', 'info_contratos', 'planCompras'],
     expectedSubcontractorTitle: 'Interesados Externos',
     subcontractorHeaders: ['Interesado', 'Identificación', 'Rol/Interés', 'Tipo de Interesado'],

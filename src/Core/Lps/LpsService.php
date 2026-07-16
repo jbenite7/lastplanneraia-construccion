@@ -294,8 +294,11 @@ class LpsService
      * Desactiva la medición de productividad para TODOS los proyectos.
      * Migrada de funciones_generales/php/productividad_temporal.php
      */
-    public function disableProductivityMeasurementTemporarily($db): array
+    public function disableProductivityMeasurementTemporarily($db, ?int $projectId = null): array
     {
+        if ($projectId === null && method_exists($db, 'getCurrentProjectId')) {
+            $projectId = $db->getCurrentProjectId();
+        }
         static $alreadyRunInRequest = false;
 
         if ($alreadyRunInRequest) {
@@ -339,11 +342,20 @@ class LpsService
                 continue;
             }
 
+            $where = 'medir_productividad IS NULL OR medir_productividad <> 0';
+            $params = [];
+            if ($db->isUsingGlobalTables()) {
+                if ($projectId === null || $projectId <= 0) {
+                    continue;
+                }
+                $where = "project_id = ? AND ({$where})";
+                $params[] = $projectId;
+            }
             $sqlDisable = "UPDATE `{$tableName}`
                            SET medir_productividad = 0
-                           WHERE medir_productividad IS NULL OR medir_productividad <> 0";
+                           WHERE {$where}";
 
-            $stmtUpdate = $db->query($sqlDisable);
+            $stmtUpdate = $db->query($sqlDisable, $params);
             $summary['tables'] += 1;
             $summary['rows'] += (int) $stmtUpdate->rowCount();
         }
