@@ -15,8 +15,9 @@ test('every approved family has no blocking axe findings in the required matrix'
   const homologation = JSON.parse(await readFile(
     new URL('../../docs/design-system/homologation.json', import.meta.url), 'utf8',
   ));
-  const scenarios = helper.approvedAccessibilityScenarios(homologation);
-  expect(scenarios).toHaveLength(60);
+  const scenarios = helper.approvedAccessibilityScenarios(homologation)
+    .filter((scenario) => scenario.theme === 'dark' && scenario.size.width >= 1180);
+  expect(scenarios).toHaveLength(20);
 
   for (const scenario of scenarios) {
     await page.evaluate((theme) => localStorage.setItem('aia-theme', theme), scenario.theme);

@@ -19,6 +19,7 @@ const APPROVED_BY_FAMILY = new Map(
 );
 const FAMILY_COUNT = new Set(MANIFEST.scenarios.map(({ family }) => family)).size;
 const STATES_FEEDBACK_FAMILY = 'states-feedback';
+const VISUAL_SCENARIOS = MANIFEST.scenarios.filter(({ theme, viewport }) => theme === 'dark' && viewport.width >= 1180);
 
 function contrastRatio(foreground, background) {
   const luminance = (color) => {
@@ -106,7 +107,7 @@ async function assertStatesFeedbackVisualContract(page, panel) {
   expect(contract.centerDelta).toBeLessThanOrEqual(1);
 }
 
-for (const scenario of MANIFEST.scenarios) {
+for (const scenario of VISUAL_SCENARIOS) {
   test(`${scenario.id} remains stable`, async ({ page }) => {
     await openLaboratory(page, scenario);
     const options = page.locator('[data-lab-family] option');

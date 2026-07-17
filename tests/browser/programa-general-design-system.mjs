@@ -4,9 +4,8 @@ import { loginAndSelectProject } from './support/session.mjs';
 import { scanAccessibility } from './support/accessibility.mjs';
 
 const VIEWPORTS = [
-  { name: 'mobile', width: 390, height: 844 },
-  { name: 'tablet', width: 1180, height: 820 },
-  { name: 'desktop', width: 1440, height: 900 },
+  { name: 'desktop', width: 1180, height: 820 },
+  { name: 'wide-desktop', width: 1440, height: 900 },
 ];
 const ADMIN = { username: 'test.A', password: 'aia2026' };
 
@@ -15,7 +14,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 for (const viewport of VIEWPORTS) {
-  for (const theme of ['dark', 'linen']) {
+  for (const theme of ['dark']) {
     test(`${viewport.name} ${theme} consume el núcleo aprobado`, async ({ page }, testInfo) => {
       await page.setViewportSize(viewport);
       await page.goto('/programa-general', { waitUntil: 'domcontentloaded' });

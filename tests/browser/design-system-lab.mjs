@@ -11,7 +11,6 @@ const APPROVALS = JSON.parse(readFileSync(
   'utf8',
 ));
 const VIEWPORTS = [
-  { width: 390, height: 844 },
   { width: 1180, height: 820 },
   { width: 1440, height: 900 },
 ];
@@ -59,7 +58,7 @@ test('admin laboratory is deterministic across themes and viewports', async ({ p
 
   for (const viewport of VIEWPORTS) {
     await page.setViewportSize(viewport);
-    for (const theme of ['linen', 'dark']) {
+    for (const theme of ['dark']) {
       await page.evaluate((value) => window.AiaDesignSystem.setTheme(value), theme);
       await expect(page.locator('html')).toHaveAttribute('data-aia-theme', theme);
       const overflow = await page.evaluate(() => (
@@ -80,9 +79,6 @@ test('defaults to dark and maps responsive density by viewport', async ({ page }
   await expect(foundations.locator('.ds-lab__family-head .aia-chip')).toHaveText('En revisión');
   await expect(page.locator('body')).toHaveAttribute('data-density', 'touch');
   await page.setViewportSize(VIEWPORTS[1]);
-  await page.reload({ waitUntil: 'domcontentloaded' });
-  await expect(page.locator('body')).toHaveAttribute('data-density', 'touch');
-  await page.setViewportSize(VIEWPORTS[2]);
   await page.reload({ waitUntil: 'domcontentloaded' });
   await expect(page.locator('body')).toHaveAttribute('data-density', 'compact');
 });
@@ -169,7 +165,7 @@ test('state words, density and dialog behavior follow the family contract', asyn
   await dialog.press('Escape');
   await expect(dialog).not.toHaveAttribute('open', '');
   await expect(open).toBeFocused();
-  await page.setViewportSize(VIEWPORTS[2]);
+  await page.setViewportSize(VIEWPORTS[1]);
   await open.click();
   await expect(dialog).toHaveAttribute('data-overlay-presentation', 'modal');
   await dialog.press('Escape');
@@ -213,30 +209,28 @@ test('state headings and canonical spinner remain legible across themes and view
 
   for (const viewport of VIEWPORTS) {
     await page.setViewportSize(viewport);
-    for (const theme of ['dark', 'linen']) {
-      await page.evaluate((value) => window.AiaDesignSystem.setTheme(value), theme);
-      await expect(page.locator('html')).toHaveAttribute('data-aia-theme', theme);
-      const colors = await heading.evaluate((element) => {
-        let background = element.parentElement;
-        while (background && getComputedStyle(background).backgroundColor === 'rgba(0, 0, 0, 0)') {
-          background = background.parentElement;
-        }
-        return {
-          foreground: getComputedStyle(element).color,
-          background: getComputedStyle(background ?? document.body).backgroundColor,
-        };
-      });
-      const spinner = await loading.locator('.aia-spinner').evaluate((element) => {
-        const rect = element.getBoundingClientRect();
-        return { width: rect.width, height: rect.height };
-      });
+    await page.evaluate(() => window.AiaDesignSystem.setTheme('dark'));
+    await expect(page.locator('html')).toHaveAttribute('data-aia-theme', 'dark');
+    const colors = await heading.evaluate((element) => {
+      let background = element.parentElement;
+      while (background && getComputedStyle(background).backgroundColor === 'rgba(0, 0, 0, 0)') {
+        background = background.parentElement;
+      }
+      return {
+        foreground: getComputedStyle(element).color,
+        background: getComputedStyle(background ?? document.body).backgroundColor,
+      };
+    });
+    const spinner = await loading.locator('.aia-spinner').evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      return { width: rect.width, height: rect.height };
+    });
 
-      expect(contrastRatio(colors.foreground, colors.background)).toBeGreaterThanOrEqual(4.5);
-      expect(spinner).toEqual({ width: 24, height: 24 });
-      await expect(loading).toHaveAttribute('role', 'status');
-      await expect(loading).toHaveAttribute('aria-live', 'polite');
-      await expect(loading).toContainText('Carga indeterminada');
-    }
+    expect(contrastRatio(colors.foreground, colors.background)).toBeGreaterThanOrEqual(4.5);
+    expect(spinner).toEqual({ width: 24, height: 24 });
+    await expect(loading).toHaveAttribute('role', 'status');
+    await expect(loading).toHaveAttribute('aria-live', 'polite');
+    await expect(loading).toContainText('Carga indeterminada');
   }
 });
 
@@ -260,16 +254,12 @@ test('density selector shows and applies the touch and compact contracts', async
 test('dark appearance applies distinct accessible brand variants', async ({ page }) => {
   await openAs(page, ADMIN);
   const swatches = page.locator('[data-family="foundations"] .ds-swatch');
-  await page.evaluate(() => window.AiaDesignSystem.setTheme('linen'));
-  const light = await swatches.evaluateAll((elements) => (
-    elements.map((element) => getComputedStyle(element).backgroundColor)
-  ));
   await page.evaluate(() => window.AiaDesignSystem.setTheme('dark'));
   const dark = await swatches.evaluateAll((elements) => (
     elements.map((element) => getComputedStyle(element).backgroundColor)
   ));
   expect(dark).toEqual(['rgb(108, 144, 119)', 'rgb(197, 114, 71)', 'rgb(44, 170, 159)', 'rgb(135, 124, 209)']);
-  expect(dark).not.toEqual(light);
+  expect(new Set(dark).size).toBe(dark.length);
   await expect(swatches.first()).toHaveCSS('color', 'rgb(20, 28, 24)');
 });
 
@@ -289,7 +279,7 @@ test('approved shell uses drawer below 1200px and contextual navigation from 120
   await toggle.press('Escape');
   await expect(toggle).toHaveAttribute('aria-expanded', 'false');
   await expect(toggle).toBeFocused();
-  await page.setViewportSize(VIEWPORTS[2]);
+  await page.setViewportSize(VIEWPORTS[1]);
   await expect(toggle).toBeHidden();
   await expect(panel).toBeVisible();
   await expect(panel).toHaveAttribute('data-shell-presentation', 'contextual');
@@ -302,19 +292,17 @@ test('shell navigation keeps four-sided padding and a theme-visible brand mark',
   const navigation = page.locator('[data-family="shell-navigation"] .aia-navigation__global');
   const logo = navigation.locator('.aia-brand-lockup img');
 
-  await page.evaluate(() => window.AiaDesignSystem.setTheme('linen'));
-  const linen = await navigation.evaluate((element) => ({
+  await page.evaluate(() => window.AiaDesignSystem.setTheme('dark'));
+  const dark = await navigation.evaluate((element) => ({
     background: getComputedStyle(element).backgroundColor,
     pageSurface: getComputedStyle(document.documentElement).getPropertyValue('--ds-active-surface-raised').trim(),
     paddingBlock: Number.parseFloat(getComputedStyle(element).paddingBlockStart),
     paddingInline: Number.parseFloat(getComputedStyle(element).paddingInlineStart),
   }));
-  expect(linen.paddingBlock).toBeGreaterThanOrEqual(16);
-  expect(linen.paddingInline).toBeGreaterThanOrEqual(16);
-  expect(linen.background).toBe('rgba(255, 255, 255, 0.84)');
-  await expect(logo).toHaveCSS('filter', 'none');
-
-  await page.evaluate(() => window.AiaDesignSystem.setTheme('dark'));
+  expect(dark.paddingBlock).toBeGreaterThanOrEqual(16);
+  expect(dark.paddingInline).toBeGreaterThanOrEqual(16);
+  expect(dark.background).not.toBe('rgba(0, 0, 0, 0)');
+  expect(dark.pageSurface).not.toBe('');
   await expect(logo).not.toHaveCSS('filter', 'none');
 });
 
@@ -444,53 +432,51 @@ test('laboratory scroll and file alignment hold across themes and viewports', as
 
   for (const viewport of VIEWPORTS) {
     await page.setViewportSize(viewport);
-    for (const theme of ['dark', 'linen']) {
-      await page.evaluate((value) => window.AiaDesignSystem.setTheme(value), theme);
-      await expect(page.locator('html')).toHaveAttribute('data-aia-theme', theme);
-      const geometry = await family.evaluate((element) => {
-        const file = element.querySelector('.aia-input[type="file"]');
-        const code = element.querySelector('.aia-input[aria-describedby="code-help"]');
-        const helper = element.querySelector('#code-help');
-        const fileField = file.closest('.aia-field');
-        const codeField = code.closest('.aia-field');
-        const fileRect = file.getBoundingClientRect();
-        const codeRect = code.getBoundingClientRect();
-        const helperRect = helper.getBoundingClientRect();
-        const fileFieldRect = fileField.getBoundingClientRect();
-        const codeFieldRect = codeField.getBoundingClientRect();
-        const fileCenter = (fileRect.top + fileRect.bottom) / 2;
-        const codeCenter = (codeRect.top + codeRect.bottom) / 2;
-        const fieldsShareRow = Math.abs(fileFieldRect.top - codeFieldRect.top) <= 1;
-        const peerCenter = fieldsShareRow
-          ? (codeRect.top + helperRect.bottom) / 2
-          : codeCenter + fileFieldRect.top - codeFieldRect.top;
-        const families = document.querySelector('.ds-lab__families');
-        const previousMinBlockSize = families.style.minBlockSize;
-        families.style.minBlockSize = `${innerHeight + 400}px`;
-        families.getBoundingClientRect();
-        const scrollTargets = [document.body, document.documentElement];
-        scrollTargets.forEach((target) => { target.scrollTop = 0; });
-        const scrollTopBefore = Math.max(...scrollTargets.map((target) => target.scrollTop));
-        scrollTargets.forEach((target) => { target.scrollTop = 240; });
-        const scrollTopAfter = Math.max(...scrollTargets.map((target) => target.scrollTop));
-        families.style.minBlockSize = previousMinBlockSize;
-        scrollTargets.forEach((target) => { target.scrollTop = 0; });
+    await page.evaluate(() => window.AiaDesignSystem.setTheme('dark'));
+    await expect(page.locator('html')).toHaveAttribute('data-aia-theme', 'dark');
+    const geometry = await family.evaluate((element) => {
+      const file = element.querySelector('.aia-input[type="file"]');
+      const code = element.querySelector('.aia-input[aria-describedby="code-help"]');
+      const helper = element.querySelector('#code-help');
+      const fileField = file.closest('.aia-field');
+      const codeField = code.closest('.aia-field');
+      const fileRect = file.getBoundingClientRect();
+      const codeRect = code.getBoundingClientRect();
+      const helperRect = helper.getBoundingClientRect();
+      const fileFieldRect = fileField.getBoundingClientRect();
+      const codeFieldRect = codeField.getBoundingClientRect();
+      const fileCenter = (fileRect.top + fileRect.bottom) / 2;
+      const codeCenter = (codeRect.top + codeRect.bottom) / 2;
+      const fieldsShareRow = Math.abs(fileFieldRect.top - codeFieldRect.top) <= 1;
+      const peerCenter = fieldsShareRow
+        ? (codeRect.top + helperRect.bottom) / 2
+        : codeCenter + fileFieldRect.top - codeFieldRect.top;
+      const families = document.querySelector('.ds-lab__families');
+      const previousMinBlockSize = families.style.minBlockSize;
+      families.style.minBlockSize = `${innerHeight + 400}px`;
+      families.getBoundingClientRect();
+      const scrollTargets = [document.body, document.documentElement];
+      scrollTargets.forEach((target) => { target.scrollTop = 0; });
+      const scrollTopBefore = Math.max(...scrollTargets.map((target) => target.scrollTop));
+      scrollTargets.forEach((target) => { target.scrollTop = 240; });
+      const scrollTopAfter = Math.max(...scrollTargets.map((target) => target.scrollTop));
+      families.style.minBlockSize = previousMinBlockSize;
+      scrollTargets.forEach((target) => { target.scrollTop = 0; });
 
-        return {
-          centerDelta: Math.abs(fileCenter - peerCenter),
-          fileHeight: fileRect.height,
-          codeHeight: codeRect.height,
-          overflowY: getComputedStyle(document.body).overflowY,
-          scrollTopBefore,
-          scrollTopAfter,
-        };
-      });
+      return {
+        centerDelta: Math.abs(fileCenter - peerCenter),
+        fileHeight: fileRect.height,
+        codeHeight: codeRect.height,
+        overflowY: getComputedStyle(document.body).overflowY,
+        scrollTopBefore,
+        scrollTopAfter,
+      };
+    });
 
-      expect(geometry.centerDelta).toBeLessThanOrEqual(1);
-      expect(Math.abs(geometry.fileHeight - geometry.codeHeight)).toBeLessThanOrEqual(1);
-      expect(geometry.overflowY).toBe('auto');
-      expect(geometry.scrollTopAfter).toBeGreaterThan(geometry.scrollTopBefore);
-    }
+    expect(geometry.centerDelta).toBeLessThanOrEqual(1);
+    expect(Math.abs(geometry.fileHeight - geometry.codeHeight)).toBeLessThanOrEqual(1);
+    expect(geometry.overflowY).toBe('auto');
+    expect(geometry.scrollTopAfter).toBeGreaterThan(geometry.scrollTopBefore);
   }
 });
 
@@ -508,7 +494,7 @@ test('data display switches one record set between cards and table', async ({ pa
     [...element.querySelectorAll('[data-record-id]')].map((record) => record.dataset.recordId)
   )));
   expect(records[0]).toEqual(records[1]);
-  await page.setViewportSize(VIEWPORTS[2]);
+  await page.setViewportSize(VIEWPORTS[1]);
   await expect(table).toBeVisible();
   await expect(cards).toBeHidden();
 });

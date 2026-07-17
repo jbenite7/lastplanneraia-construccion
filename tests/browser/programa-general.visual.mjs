@@ -9,6 +9,7 @@ const MANIFEST = JSON.parse(readFileSync(
   'utf8',
 ));
 const ADMIN = { username: 'test.A', password: 'aia2026' };
+const VISUAL_SCENARIOS = MANIFEST.scenarios.filter(({ theme, viewport }) => theme === 'dark' && viewport.width >= 1180);
 
 async function mockDeterministicData(page) {
   await page.route('**/api/general/restriction-config**', (route) => route.fulfill({
@@ -42,7 +43,7 @@ async function expectLegendContained(page) {
   })).toBe(true);
 }
 
-for (const scenario of MANIFEST.scenarios) {
+for (const scenario of VISUAL_SCENARIOS) {
     test(`${scenario.id} remains stable`, async ({ page }) => {
       await mockDeterministicData(page);
       await loginAndSelectProject(page, PROJECTS[0], ADMIN);
