@@ -44,6 +44,14 @@ window.HOTActualizarModule = (function() {
         return ['D_y_E', 'Materiales', 'MdeO', 'Equipos', 'Predecesora', 'Pdto_Cons', 'Modelo'];
     }
 
+    function getCsrfToken() {
+        if (typeof window.getCsrfToken === 'function') {
+            return window.getCsrfToken();
+        }
+        var meta = document.querySelector('meta[name="csrf-token"]');
+        return meta && meta.content ? meta.content : '';
+    }
+
     // Obtenemos el JSON de opciones pre-cargado desde PHP
     var sourceDataHistorica = [];
     try {
@@ -538,7 +546,8 @@ window.HOTActualizarModule = (function() {
             method: 'POST',
             body: formData,
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRF-Token': getCsrfToken()
             }
         })
         .then(res => res.json())
@@ -902,7 +911,8 @@ window.HOTActualizarModule = (function() {
         fetch("/api/general/auto-associate", {
             method: "POST",
             headers: {
-                "Content-Type": "application/x-www-form-urlencoded"
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-CSRF-Token": getCsrfToken()
             },
             body: new URLSearchParams({
                 db: db,

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Controllers\Api\GeneralApiController;
+use App\Security\CsrfTokenManager;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
@@ -108,6 +109,7 @@ try {
     ];
     $_SERVER['HTTP_ACCEPT'] = 'application/json';
     $_SERVER['HTTP_X_AIA_EXPECT_JSON'] = '1';
+    $_SERVER['HTTP_X_CSRF_TOKEN'] = CsrfTokenManager::generate('programa_general_save');
     $payloadOmitsUser = !array_key_exists('user', $_POST);
     $sessionUser = (string) $_SESSION['usuario'];
 

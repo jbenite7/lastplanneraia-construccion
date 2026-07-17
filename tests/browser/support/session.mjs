@@ -92,7 +92,7 @@ export async function captureReloadingJsonRequest(page, path, destination, actio
 
 export async function postFormJson(page, url, body = {}, options = {}) {
   return page.evaluate(
-    async ({ apiUrl, apiBody, includePdcCsrf }) => {
+    async ({ apiUrl, apiBody, includePdcCsrf, includeCsrf }) => {
       const formData = new URLSearchParams();
       const append = (prefix, value) => {
         if (Array.isArray(value)) {
@@ -106,8 +106,14 @@ export async function postFormJson(page, url, body = {}, options = {}) {
 
       Object.entries(apiBody).forEach(([key, value]) => append(key, value));
       const headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
-      if (includePdcCsrf && apiUrl.startsWith('/api/pdc/')) {
-        headers['X-CSRF-Token'] = document.querySelector('meta[name="csrf-token"]')?.content || '';
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+      const isPdcUrl = apiUrl.startsWith('/api/pdc/');
+      const shouldAttachCsrf = includeCsrf && (apiUrl.startsWith('/api/general/')
+        || apiUrl.startsWith('/api/listado-actividades/')
+        || apiUrl.startsWith('/api/semanal/')
+        || (includePdcCsrf && isPdcUrl));
+      if (shouldAttachCsrf) {
+        headers['X-CSRF-Token'] = csrfToken;
       }
       const res = await fetch(apiUrl, {
         method: 'POST',
@@ -124,7 +130,7 @@ export async function postFormJson(page, url, body = {}, options = {}) {
       }
       return { ok: res.ok, status: res.status, payload };
     },
-    { apiUrl: url, apiBody: body, includePdcCsrf: options.includePdcCsrf !== false },
+    { apiUrl: url, apiBody: body, includePdcCsrf: options.includePdcCsrf !== false, includeCsrf: options.includeCsrf !== false },
   );
 }
 

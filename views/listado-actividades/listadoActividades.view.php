@@ -2,6 +2,7 @@
 <html lang="es">
 <head id="head">
 	<meta charset="UTF-8">
+	<meta name="csrf-token" content="<?php echo htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8'); ?>">
 	<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 	<script>window.__AIA_HANDSONTABLE_ONLY__ = true;</script>
 	<!--Script cque va al archivo linksComunesHead2.js-->
@@ -355,6 +356,24 @@
 	<!--    <script type='text/javascript'>document.oncontextmenu = function(){return false}</script>-->
 
 	<script>
+		window.getCsrfToken = window.getCsrfToken || function() {
+			var meta = document.querySelector('meta[name="csrf-token"]');
+			return meta && meta.content ? meta.content : '';
+		};
+
+		document.addEventListener('DOMContentLoaded', function() {
+			if (!window.jQuery) {
+				return;
+			}
+
+			window.jQuery(document).ajaxSend(function (_event, xhr, settings) {
+				var url = settings && settings.url ? String(settings.url) : '';
+				if (url.indexOf('/api/listado-actividades/') === 0) {
+					xhr.setRequestHeader('X-CSRF-Token', window.getCsrfToken());
+				}
+			});
+		});
+
 		/* Ejecuta las funciones listar, guardar y eliminar, solo cuando la página esta lista */
 		$(document).on("ready", function() {
 		  $("#formulario_nuevo").hide();

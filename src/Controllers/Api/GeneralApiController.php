@@ -4,6 +4,8 @@ namespace App\Controllers\Api;
 
 use App\Controllers\BaseController;
 use App\Core\Lps\LpsService;
+use App\Security\CsrfTokenManager;
+use App\Support\ModuleRequestContext;
 use App\Services\ProgramaConsolidadoNormalizationService;
 use App\Services\ActivityMatcherService;
 use App\Services\WeeklyRealProgressCarryoverService;
@@ -13,6 +15,8 @@ use TableResolver;
 
 class GeneralApiController extends BaseController
 {
+    private const CSRF_FORM_KEY = 'programa_general_save';
+
     private LpsService $lpsService;
 
     public function __construct()
@@ -134,8 +138,9 @@ class GeneralApiController extends BaseController
         $this->requireAuth();
         $this->authorizePermission('lps.programa_general.editar');
         header('Content-Type: application/json; charset=utf-8');
-
-        header('Content-Type: application/json; charset=utf-8');
+        if (!$this->requireProgramaGeneralCsrf()) {
+            return;
+        }
 
         try {
             $vars = $this->getSessionVars();
@@ -376,6 +381,9 @@ class GeneralApiController extends BaseController
         $this->requireAuth();
         $this->authorizePermission('lps.programa_general.editar');
         header('Content-Type: application/json; charset=utf-8');
+        if (!$this->requireProgramaGeneralCsrf()) {
+            return;
+        }
 
         try {
             $vars = $this->getSessionVars();
@@ -515,6 +523,9 @@ class GeneralApiController extends BaseController
         $this->requireAuth();
         $this->authorizePermission('lps.programa_general.editar');
         header('Content-Type: application/json; charset=utf-8');
+        if (!$this->requireProgramaGeneralCsrf()) {
+            return;
+        }
 
         try {
             $vars = $this->getSessionVars();
@@ -522,19 +533,11 @@ class GeneralApiController extends BaseController
             $dbPrefix = $_GET['db'] ?? ($vars['dbName'] ?? '');
             $semana = (int) ($_GET['semana'] ?? ($vars['semana'] ?? 0));
             $f_inicio_sem = $_GET['f_inicio_sem'] ?? date('Y-m-d');
-            $projectId = (int) ($vars['projectId'] ?? ($_SESSION['project_id'] ?? 0));
 
             if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
                 throw new Exception("Base de datos inválida.");
             }
-
-            if ($projectId <= 0) {
-                $projectId = (int) (TableResolver::getProjectIdByPrefix($dbPrefix) ?? 0);
-            }
-
-            if ($projectId <= 0) {
-                throw new Exception("No se pudo identificar el proyecto activo.");
-            }
+            $projectId = $this->projectId($dbPrefix);
 
             $this->db->setProjectContext($projectId);
 
@@ -1171,6 +1174,9 @@ class GeneralApiController extends BaseController
         $this->requireAuth();
         $this->authorizePermission('lps.programa_general.editar');
         header('Content-Type: application/json; charset=utf-8');
+        if (!$this->requireProgramaGeneralCsrf()) {
+            return;
+        }
 
         try {
             $vars = $this->getSessionVars();
@@ -1291,6 +1297,9 @@ class GeneralApiController extends BaseController
         $this->requireAuth();
         $this->authorizePermission('lps.programa_general_actualizar.editar');
         header('Content-Type: application/json; charset=utf-8');
+        if (!$this->requireProgramaGeneralCsrf()) {
+            return;
+        }
 
         try {
             $vars = $this->getSessionVars();
@@ -1468,6 +1477,9 @@ class GeneralApiController extends BaseController
         $this->requireAuth();
         $this->authorizePermission('lps.programa_general_actualizar.editar');
         header('Content-Type: application/json; charset=utf-8');
+        if (!$this->requireProgramaGeneralCsrf()) {
+            return;
+        }
 
         try {
             $proyectoId = $_POST['proyecto_id'] ?? '';
@@ -1696,11 +1708,34 @@ class GeneralApiController extends BaseController
 
     private function projectId(string $dbPrefix): int
     {
+        $context = ModuleRequestContext::resolve();
+        if (($context['dbPrefix'] ?? '') !== $dbPrefix) {
+            throw new Exception('Base de datos inválida o sesión expirada.');
+        }
+
         $projectId = TableResolver::getProjectIdByPrefix($dbPrefix);
         if (!$projectId) {
             throw new Exception('Proyecto no encontrado.');
         }
 
         return $projectId;
+    }
+
+    private function requireProgramaGeneralCsrf(): bool
+    {
+        $token = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? $_POST['_csrf_token'] ?? '';
+        if (CsrfTokenManager::validate(is_string($token) ? $token : '', self::CSRF_FORM_KEY)) {
+            return true;
+        }
+
+        http_response_code(403);
+        echo json_encode([
+            'success' => false,
+            'respuesta' => 'ERROR',
+            'error' => 'Token CSRF inválido o ausente.',
+            'mensaje' => 'Token CSRF inválido o ausente.',
+        ], JSON_UNESCAPED_UNICODE);
+
+        return false;
     }
 }

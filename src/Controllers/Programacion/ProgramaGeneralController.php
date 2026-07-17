@@ -3,6 +3,7 @@
 namespace App\Controllers\Programacion;
 
 use App\Controllers\BaseController;
+use App\Security\CsrfTokenManager;
 use App\Services\ProjectLandingService;
 
 use TableResolver;
@@ -21,6 +22,7 @@ class ProgramaGeneralController extends BaseController
         $pdcActivo = $vars['pdcActivo'] ?? '';
         $area = $vars['area'] ?? 'Construccion';
         $initialFilterQuery = $this->buildProgramaGeneralFilterQuery();
+        $csrfToken = CsrfTokenManager::generate('programa_general_save');
 
         $maxSemana = 0;
         $fechaInicioSem = '';

@@ -2,6 +2,7 @@
 <html lang="es">
 <head id="head">
     <meta charset="UTF-8">
+    <meta name="csrf-token" content="<?php echo htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8'); ?>">
     <script src="/public/vendor/jquery.min.js"></script>
     <script src="/public/vendor/jquery-ui.min.js"></script>
     <?= \App\View\Components\DesignSystemHeadComponent::render() ?>
@@ -11,6 +12,21 @@
     <!-- Toastr (Mensajes Emergentes) -->
     <link rel="stylesheet" href="/public/vendor/toastr.min.css" />
     <script src="/public/vendor/toastr.min.js"></script>
+    <script>
+        window.getCsrfToken = window.getCsrfToken || function() {
+            var meta = document.querySelector('meta[name="csrf-token"]');
+            return meta && meta.content ? meta.content : '';
+        };
+
+        if (window.jQuery) {
+            window.jQuery(document).ajaxSend(function (_event, xhr, settings) {
+                var url = settings && settings.url ? String(settings.url) : '';
+                if (url.indexOf('/api/general/') === 0) {
+                    xhr.setRequestHeader('X-CSRF-Token', window.getCsrfToken());
+                }
+            });
+        }
+    </script>
 </head>
 <body class="aia-shell pg-page">
     <div id="loading"><div class="spinner-border text-primary" role="status"><span class="sr-only">Cargando...</span></div></div>

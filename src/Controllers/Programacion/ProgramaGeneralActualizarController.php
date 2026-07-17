@@ -3,6 +3,7 @@
 namespace App\Controllers\Programacion;
 
 use App\Controllers\BaseController;
+use App\Security\CsrfTokenManager;
 
 use TableResolver;
 class ProgramaGeneralActualizarController extends BaseController
@@ -74,6 +75,7 @@ class ProgramaGeneralActualizarController extends BaseController
         $vars['semanalConfirmada'] = $semanalConfirmada;
         $vars['semanaBaseActualizacion'] = $semanaBaseActualizacion;
         $vars['semanaObjetivoActualizacion'] = $semanaObjetivoActualizacion;
+        $vars['csrfToken'] = CsrfTokenManager::generate('programa_general_save');
         extract($vars); // $dbName, $semana, $proyecto, $permiso, $maxSemana, $semanalConfirmada etc.
 
         // Cargar vista Programa General Actualizar
