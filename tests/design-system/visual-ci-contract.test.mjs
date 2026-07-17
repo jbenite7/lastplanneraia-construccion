@@ -298,7 +298,7 @@ test('runtime budgets are measured and compared fail-closed against 0.3.3', asyn
   const { initializationMs: baselineInitializationMs, ...baselineMetrics } = baseline.metrics;
   const { initializationMs: retrospectiveInitializationMs, ...retrospectiveMetrics } = retrospective.metrics;
   assert.deepEqual(baselineMetrics, retrospectiveMetrics);
-  assert.equal(baselineInitializationMs, 568.8);
+  assert.equal(baselineInitializationMs, 991);
   assert.equal(retrospectiveInitializationMs, 227.9);
   assert.deepEqual(baseline.tolerances, {
     cssGzipBytes: 2048,

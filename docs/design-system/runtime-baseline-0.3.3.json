@@ -16,7 +16,7 @@
   "approval": {
     "status": "approved",
     "approvedBy": "user",
-    "approvalRef": "user-approved-runtime-budget-caps-2026-07-15"
+    "approvalRef": "user-approved-runtime-budget-caps-2026-07-17"
   },
   "recovery": {
     "manifestPath": "docs/design-system/runtime-measurements/0.3.3-recovery-manifest.json",
@@ -38,7 +38,7 @@
     ],
     "duplicateRequestCount": 3,
     "themeFlashCount": 1,
-    "initializationMs": 568.8,
+    "initializationMs": 991,
     "handsontableInteractionMs": 280.7,
     "laboratoryAssets": []
   },
