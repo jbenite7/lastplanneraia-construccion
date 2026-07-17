@@ -14,6 +14,7 @@ window.LPSContextualDrawer = (function() {
   let activeConsecutivo = null;
   let activeParentId = null;
   let activeAlertaId = null;
+  let commentsRequestController = null;
 
   // Dynamic restriction config cache (fetched from API, falls back to construction defaults)
   let _restrictionConfig = null;
@@ -840,13 +841,44 @@ window.LPSContextualDrawer = (function() {
     container.replaceChildren(stateElement);
   }
 
+  function cancelPendingCommentsRequest() {
+    if (!commentsRequestController) return;
+    commentsRequestController.abort();
+    commentsRequestController = null;
+  }
+
+  window.addEventListener('pagehide', cancelPendingCommentsRequest);
+
   function loadCommentsAndCrisis() {
     const container = document.getElementById('lps_comments_container');
     renderDrawerState(container, 'loading', 'Cargando bitácora de hilos...');
 
-    fetch(`/api/lps/comments?consecutivo=${activeConsecutivo}`)
-      .then(res => res.json())
+    cancelPendingCommentsRequest();
+    const requestController = new AbortController();
+    const requestConsecutivo = activeConsecutivo;
+    commentsRequestController = requestController;
+
+    fetch(`/api/lps/comments?consecutivo=${requestConsecutivo}`, { signal: requestController.signal })
+      .then(async res => {
+        let response = null;
+        try {
+          response = await res.json();
+        } catch (_error) {
+          response = {};
+        }
+
+        if (!res.ok) {
+          const payload = response && typeof response === 'object' ? response : {};
+          const serverMessage = payload.mensaje || payload.error || res.statusText || 'Respuesta HTTP inválida';
+          const error = new Error(`HTTP ${res.status}: ${serverMessage}`);
+          error.drawerMessage = `Error ${res.status}: ${serverMessage}`;
+          throw error;
+        }
+
+        return response;
+      })
       .then(response => {
+        if (requestController.signal.aborted || activeConsecutivo !== requestConsecutivo) return;
         if (response.respuesta === 'OK') {
           renderCommentsTree(response.data);
           detectActiveCrisis(response.data);
@@ -855,8 +887,12 @@ window.LPSContextualDrawer = (function() {
         }
       })
       .catch(err => {
+        if (requestController.signal.aborted) return;
         console.error("Error al cargar comentarios:", err);
-        renderDrawerState(container, 'error', 'Error de conexión.');
+        renderDrawerState(container, 'error', err.drawerMessage || 'Error de conexión.');
+      })
+      .finally(() => {
+        if (commentsRequestController === requestController) commentsRequestController = null;
       });
   }
 
@@ -1396,6 +1432,8 @@ window.LPSContextualDrawer = (function() {
       const drawer = document.getElementById('lps_drawer');
       const overlay = document.getElementById('lps_drawer_overlay');
       if (!drawer) return;
+
+      cancelPendingCommentsRequest();
 
       const isDrawerOpen = drawer.classList.contains('open');
       if (isDrawerOpen) {
