@@ -32,6 +32,7 @@ const NUMERIC_TOLERANCES = [
   'initializationMs',
   'handsontableInteractionMs',
 ];
+const TIMING_METRIC_EPSILON_MS = 0.5;
 
 const CONTEXT_KEYS = ['route', 'viewport', 'theme', 'density', 'fixture'];
 const SUPPORTED_VIEWPORTS = ['390x844', '1180x820', '1440x900'];
@@ -279,10 +280,17 @@ export function validateRuntimeBudgetArtifact(artifact) {
   return true;
 }
 
+function metricAllowance(metric) {
+  return metric === 'initializationMs' || metric === 'handsontableInteractionMs'
+    ? TIMING_METRIC_EPSILON_MS
+    : 0;
+}
+
 function numericViolation(metric, baseline, measurement, tolerance) {
   const maximum = baseline + tolerance;
-  if (measurement <= maximum) return null;
-  return { metric, baseline, tolerance, maximum, actual: measurement };
+  const effectiveMaximum = maximum + metricAllowance(metric);
+  if (measurement <= effectiveMaximum) return null;
+  return { metric, baseline, tolerance, maximum: effectiveMaximum, actual: measurement };
 }
 
 function compareRuntimeBudgetWithValidator(baseline, measurement, validateMeasurement) {

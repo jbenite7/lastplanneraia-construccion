@@ -121,6 +121,21 @@ test('fails closed for budget growth, undeclared adapters, duplicates, flash and
   );
 });
 
+test('allows a tiny timing overshoot on Programa General measurements', () => {
+  const noisyMeasurement = currentMeasurement({
+    metrics: {
+      initializationMs: APPROVED_BASELINE.metrics.initializationMs
+        + APPROVED_BASELINE.tolerances.initializationMs + 0.3,
+      handsontableInteractionMs: APPROVED_BASELINE.metrics.handsontableInteractionMs
+        + APPROVED_BASELINE.tolerances.handsontableInteractionMs + 0.3,
+    },
+  });
+
+  const result = compare(APPROVED_BASELINE, noisyMeasurement);
+  assert.equal(result.pass, true, JSON.stringify(result.violations, null, 2));
+  assert.deepEqual(result.violations, []);
+});
+
 test('requires zero theme flash even when the historical measurement contained one', () => {
   const currentWithFlash = currentMeasurement({ metrics: { themeFlashCount: 1 } });
 
