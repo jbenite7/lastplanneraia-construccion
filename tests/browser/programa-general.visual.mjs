@@ -55,6 +55,10 @@ for (const scenario of VISUAL_SCENARIOS) {
       await expect(page.locator('html')).toHaveAttribute('data-aia-theme', scenario.theme);
       await expectLegendContained(page);
       await page.evaluate(() => document.fonts.ready);
+      // The auto-update flow emits a short-lived success badge that can still be
+      // visible depending on runner timing. Wait for it to settle so the visual
+      // contract captures the stable toolbar state instead of a transient toast.
+      await expect(page.locator('#save-status')).toBeHidden({ timeout: 10000 });
       await expect(page).toHaveScreenshot(
         path.basename(scenario.golden),
         { fullPage: false },
