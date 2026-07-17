@@ -82,7 +82,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/programa-general.visual.mjs/programa-general-dark-1180x820.png",
-      "sha256": "3c05e53bb894659039866bb1b05edf7ffe6674718e214b02b515fad8eb9ecec8"
+      "sha256": "6a3449750b888bda41bef69eeb0a5c5ccecca7f27657f8cd144fa495b609e032"
     },
     {
       "id": "programa-general-dark-1440x900",
@@ -98,7 +98,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/programa-general.visual.mjs/programa-general-dark-1440x900.png",
-      "sha256": "7ccc3a5923411ca579f2eea22b0c2b1f6ece94458543e58d760a7857369441bd"
+      "sha256": "568ad478a698c38686a9cb1af28e9995332e398da3225d6bdfdc042417b3e7d3"
     },
     {
       "id": "programa-general-dark-390x844",
@@ -114,7 +114,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/programa-general.visual.mjs/programa-general-dark-390x844.png",
-      "sha256": "50839ddc390d66effc4bfce1b8d6708d149d0266126855c97df408e10d2a6f1d"
+      "sha256": "0c0fbd544d507d9595dede5a7fb11ee76bb8b66938a239ada589e5d9cfc8373a"
     },
     {
       "id": "programa-general-linen-1180x820",
@@ -130,7 +130,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/programa-general.visual.mjs/programa-general-linen-1180x820.png",
-      "sha256": "815b5e733215103ba5f442eeb609d98503cd53ee1297e915f33d7c29c11edde6"
+      "sha256": "7b7a822dc22e1cd0d6178e3520a09ecb060e75f464167c0b05fdc57deee95ba8"
     },
     {
       "id": "programa-general-linen-1440x900",
@@ -146,7 +146,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/programa-general.visual.mjs/programa-general-linen-1440x900.png",
-      "sha256": "1a52cef347857b38ebaab44ab27189886f250872317dbc8cc67bcedd957d5c33"
+      "sha256": "84d96e69bc1dbf88c47574d8746d444bc30410be3f4c9424f9edb28e9c3da537"
     },
     {
       "id": "programa-general-linen-390x844",
@@ -162,7 +162,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/programa-general.visual.mjs/programa-general-linen-390x844.png",
-      "sha256": "b0133aed5200037bc99997e248004ddefa167a0f8c90b86d762cf10fc388725c"
+      "sha256": "74ea1a59668ecd5867b645797e089ead5d683d3040161e7d670d41cdfa23d57b"
     }
   ]
 }
