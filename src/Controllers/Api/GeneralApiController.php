@@ -148,6 +148,7 @@ class GeneralApiController extends BaseController
             $this->lpsService->disableProductivityMeasurementTemporarily($this->db, $projectId);
 
             $semanaParam = $_GET['semana_objetivo'] ?? $_GET['semana'] ?? null;
+            $auditUser = (string) ($_SESSION['usuario'] ?? $vars['nombreUsuario'] ?? 'desconocido');
             $semana = $semanaParam !== null ? filter_var($semanaParam, FILTER_VALIDATE_INT) : ($vars['semana'] ?? 0);
             $id = $_POST['unique_id'] ?? $_POST['Consecutivo_en_Programa'] ?? null;
 
@@ -219,7 +220,7 @@ class GeneralApiController extends BaseController
             $auditStmt = $this->db->queryWithProject("SELECT Ejecutado, Ejecutado_Siguiente_Semana, Estado, Titulo, unidad, cantidad_ppto FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " WHERE project_id = ? AND unique_id = ? AND Semana = ? LIMIT 1", [$projectId, $id, $semana], $projectId);
             $auditBefore = $auditStmt->fetch(PDO::FETCH_ASSOC);
             $auditStartTime = microtime(true);
-            error_log("[PGAudit] INICIO | usuario={$vars['user']} | db={$dbPrefix} | semana={$semana} | id={$id} | Titulo={$auditBefore['Titulo']} | Ejecutado_antes={$auditBefore['Ejecutado']} | EjecSigSem_antes={$auditBefore['Ejecutado_Siguiente_Semana']} | Estado_antes={$auditBefore['Estado']} | unidad={$auditBefore['unidad']} | cantidad_ppto={$auditBefore['cantidad_ppto']} | POST_Ejecutado={$rawInput} | POST_EjecutadoRatio=" . ($_POST["EjecutadoRatio"] ?? 'null') . " | POST_unidad={$unidadRaw} | POST_cantidad_ppto=" . ($_POST["cantidad_ppto"] ?? 'null') . " | ejecutado_calculado={$ejecutado}");
+            error_log("[PGAudit] INICIO | usuario={$auditUser} | db={$dbPrefix} | semana={$semana} | id={$id} | Titulo={$auditBefore['Titulo']} | Ejecutado_antes={$auditBefore['Ejecutado']} | EjecSigSem_antes={$auditBefore['Ejecutado_Siguiente_Semana']} | Estado_antes={$auditBefore['Estado']} | unidad={$auditBefore['unidad']} | cantidad_ppto={$auditBefore['cantidad_ppto']} | POST_Ejecutado={$rawInput} | POST_EjecutadoRatio=" . ($_POST["EjecutadoRatio"] ?? 'null') . " | POST_unidad={$unidadRaw} | POST_cantidad_ppto=" . ($_POST["cantidad_ppto"] ?? 'null') . " | ejecutado_calculado={$ejecutado}");
 
             // 4. Update Principal (Incluyendo Mapeo)
             $sql = "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " SET
@@ -331,7 +332,7 @@ class GeneralApiController extends BaseController
             $auditDuration = round(($auditEndTime - $auditStartTime) * 1000, 2);
             $auditStmt2 = $this->db->queryWithProject("SELECT Ejecutado, Ejecutado_Siguiente_Semana, Estado FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " WHERE project_id = ? AND unique_id = ? AND Semana = ? LIMIT 1", [$projectId, $id, $semana], $projectId);
             $auditAfter = $auditStmt2->fetch(PDO::FETCH_ASSOC);
-            error_log("[PGAudit] FINAL | usuario={$vars['user']} | semana={$semana} | id={$id} | Ejecutado_despues={$auditAfter['Ejecutado']} | EjecSigSem_despues={$auditAfter['Ejecutado_Siguiente_Semana']} | Estado_despues={$auditAfter['Estado']} | duracion_ms={$auditDuration}");
+            error_log("[PGAudit] FINAL | usuario={$auditUser} | semana={$semana} | id={$id} | Ejecutado_despues={$auditAfter['Ejecutado']} | EjecSigSem_despues={$auditAfter['Ejecutado_Siguiente_Semana']} | Estado_despues={$auditAfter['Estado']} | duracion_ms={$auditDuration}");
 
             $normalizationService = new ProgramaConsolidadoNormalizationService($this->db);
             $normalizationService->normalizeChapters($dbPrefix, $semana);
