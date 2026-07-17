@@ -9,6 +9,8 @@
   "sources": [
     "views/design-system/lab.view.php",
     "views/design-system/families/",
+    "views/design-system/operational-fixtures.php",
+    "docs/design-system/operational-fixtures.json",
     "public/css/aia-design-system.css",
     "public/js/modules/aia_ui/design_system_lab.js"
   ],
@@ -36,6 +38,7 @@
     "popover",
     "toast-confirm",
     "handsontable-adapter",
+    "datatables-adapter",
     "select-adapter",
     "bi-chart",
     "bi-legend",
@@ -44,7 +47,11 @@
   "vendors": [
     "bootstrap",
     "handsontable",
+    "datatables",
     "select2",
+    "tom-select",
+    "jquery-ui",
+    "adminlte",
     "sweetalert2",
     "font-awesome"
   ],
@@ -72,6 +79,8 @@
   },
   "exceptions": [],
   "tests": [
+    "tests/design-system/operational-fixtures.test.mjs",
+    "tests/browser/operational-fixtures.mjs",
     "tests/browser/design-system-lab.mjs",
     "tests/browser/design-system-lab.a11y.mjs",
     "tests/browser/design-system-lab.visual.mjs"

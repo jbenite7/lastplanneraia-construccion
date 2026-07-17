@@ -58,6 +58,9 @@ final class DesignSystemLabController
         $stateSemantics = json_decode((string) file_get_contents(
             PROJECT_ROOT . '/docs/design-system/state-semantics.json'
         ), true, 512, JSON_THROW_ON_ERROR);
+        $operationalFixtures = json_decode((string) file_get_contents(
+            PROJECT_ROOT . '/docs/design-system/operational-fixtures.json'
+        ), true, 512, JSON_THROW_ON_ERROR)['fixtures'];
         require PROJECT_ROOT . '/views/design-system/lab.view.php';
     }
 }

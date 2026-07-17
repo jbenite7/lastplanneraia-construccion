@@ -99,12 +99,13 @@
                 <?php endif; ?>
                 <?php require __DIR__ . '/ui-group-index.php'; ?>
                 <?php require __DIR__ . '/families/' . basename($family['id']) . '.php'; ?>
+                <?php require __DIR__ . '/operational-fixtures.php'; ?>
             </section>
             <?php endforeach; ?>
         </main>
     </div>
     <script src="/public/js/modules/aia_ui/theme.js"></script>
     <script src="/public/js/modules/aia_ui/components.js"></script>
-    <script src="/public/js/modules/aia_ui/design_system_lab.js"></script>
+    <?= \App\View\Components\DesignSystemHeadComponent::renderScript('/js/modules/aia_ui/design_system_lab.js') ?>
 </body>
 </html>

@@ -1,0 +1,128 @@
+{
+  "schemaVersion": 1,
+  "designSystemVersion": "1.0.0",
+  "scope": "desktop-dark",
+  "canonicalViewport": "1180x820",
+  "fixtures": [
+    {
+      "id": "project-selector",
+      "label": "Selector de proyectos",
+      "priority": "P1",
+      "family": "page-structure",
+      "topology": "control-room",
+      "summary": "Localiza un proyecto, confirma rol y dominio, y entra con contexto suficiente.",
+      "consumers": ["projects"],
+      "states": ["default", "searching", "empty", "error", "success"]
+    },
+    {
+      "id": "auth-credentials",
+      "label": "Autenticación y credenciales",
+      "priority": "P1",
+      "family": "forms-filters",
+      "topology": "contract-explorer",
+      "summary": "Cubre acceso, recuperación, cambio obligatorio y expiración de sesión.",
+      "consumers": ["auth", "admin-auth"],
+      "states": ["default", "loading", "invalid", "expired", "error", "success"]
+    },
+    {
+      "id": "context-week",
+      "label": "Contexto y selector de semana",
+      "priority": "P1",
+      "family": "shell-navigation",
+      "topology": "control-room",
+      "summary": "Mantiene proyecto, módulo y semana visibles durante cambios persistentes.",
+      "consumers": ["programa-general", "programacion-intermedia", "programacion-semanal"],
+      "states": ["default", "changing", "creating", "deleting", "error", "success"]
+    },
+    {
+      "id": "editable-grid",
+      "label": "Grilla operativa editable",
+      "priority": "P1",
+      "family": "vendor-adapters",
+      "topology": "object-workbench",
+      "summary": "Expone selección, edición, validación, guardado, reversión y acciones por fila.",
+      "consumers": ["programa-general", "programacion-intermedia", "programacion-semanal", "pdc", "contratos"],
+      "states": ["default", "editing", "validating", "saving", "error", "success", "reverted"]
+    },
+    {
+      "id": "datatables-legacy",
+      "label": "DataTables legacy",
+      "priority": "P1",
+      "family": "vendor-adapters",
+      "topology": "contract-explorer",
+      "summary": "Contiene orden, filtros, exportación, paginación y acciones de tablas heredadas.",
+      "consumers": ["programacion-semanal", "control-cambios", "admin"],
+      "states": ["default", "sorting", "loading", "empty", "error", "success"]
+    },
+    {
+      "id": "notifications-center",
+      "label": "Centro de notificaciones",
+      "priority": "P1",
+      "family": "shell-navigation",
+      "topology": "control-room",
+      "summary": "Hace visibles avisos asíncronos, lectura, vacío, fallo y expiración de sesión.",
+      "consumers": ["global-navbar"],
+      "states": ["default", "loading", "unread", "empty", "expired", "error", "success"]
+    },
+    {
+      "id": "lps-context-drawer",
+      "label": "Drawer contextual LPS",
+      "priority": "P1",
+      "family": "overlays",
+      "topology": "contract-explorer",
+      "summary": "Conserva hilos, crisis, SOS, simulación y cierre con justificación en contexto.",
+      "consumers": ["programacion-semanal", "drawer-lps"],
+      "states": ["default", "loading", "crisis", "simulation", "closing", "error", "success"]
+    },
+    {
+      "id": "semi-auto-review",
+      "label": "Revisión semiautomática",
+      "priority": "P1",
+      "family": "actions",
+      "topology": "object-workbench",
+      "summary": "Permite analizar, seleccionar, aplicar parcialmente, dar feedback y deshacer.",
+      "consumers": ["listado-actividades", "contratos", "pdc"],
+      "states": ["default", "analyzing", "reviewing", "applying", "partial", "error", "success", "undone"]
+    },
+    {
+      "id": "admin-operations",
+      "label": "Shell y operaciones Admin",
+      "priority": "P1",
+      "family": "shell-navigation",
+      "topology": "control-room",
+      "summary": "Ordena navegación, auditoría, CRUD, importación, respaldos y acciones destructivas.",
+      "consumers": ["admin"],
+      "states": ["default", "loading", "auditing", "confirming", "error", "success"]
+    },
+    {
+      "id": "bi-runtime-drilldown",
+      "label": "BI runtime y drilldown",
+      "priority": "P1",
+      "family": "bi-primitives",
+      "topology": "control-room",
+      "summary": "Sincroniza filtros, gráficos, tooltip y detalle tabular con carga incremental.",
+      "consumers": ["bi-runtime"],
+      "states": ["default", "filtering", "loading", "empty", "drilldown", "error", "success"]
+    },
+    {
+      "id": "tom-select-advanced",
+      "label": "Tom Select avanzado",
+      "priority": "P2",
+      "family": "vendor-adapters",
+      "topology": "object-workbench",
+      "summary": "Representa multi-selección, búsqueda, limpieza, async y edición dentro de grilla.",
+      "consumers": ["programacion-intermedia", "listado-actividades", "programa-general-actualizar"],
+      "states": ["default", "open", "searching", "loading", "empty", "error", "success"]
+    },
+    {
+      "id": "enriched-datepicker",
+      "label": "Calendario enriquecido",
+      "priority": "P2",
+      "family": "forms-filters",
+      "topology": "object-workbench",
+      "summary": "Cubre popup, teclado, locale, límites, solo lectura, limpieza e invalidez.",
+      "consumers": ["pdc", "programa-general-actualizar"],
+      "states": ["default", "open", "readonly", "invalid", "empty", "error", "success"]
+    }
+  ]
+}
