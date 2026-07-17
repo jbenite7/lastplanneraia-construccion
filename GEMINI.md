@@ -93,25 +93,11 @@ Los comandos de operación del agente ahora están definidos como workflows form
 
 ## 🧪 Credenciales de Prueba para Browser Testing
 
-Cuando se ejecuten pruebas con el browser subagent en el entorno de desarrollo:
+Cuando se ejecuten pruebas browser/E2E en el entorno de desarrollo:
 
 1. **URL de entrada:** `http://localhost:8081`
-2. **Proyecto:** Siempre seleccionar **"Prueba"**
-3. **Credenciales de Login:**
-   - **Administrador Sistema:** `jbenitez` / `Jbe#1106z`
-   - **Usuarios de Prueba (RBAC):** (Clave para todos: `aia2026`)
-     - Administrador (`A`): `test.A`
-     - Director (`D`): `test.D`
-     - Residente (`R`): `test.R`
-     - Seguridad SST (`S`): `test.S`
-     - Ambiental (`G`): `test.G`
-     - SST + Ambiental (`SG`): `test.SG`
-     - Oficina Técnica / Compras (`OT`): `test.OT`
-     - Profesional DCV (`DCV`): `test.DCV`
-     - Visualizador (`V`): `test.V`
-     - Subcontratista (`C`): `test.C`
-4. **Credenciales de Base de Datos:**
-   - **Host:** `127.0.0.1` | **Puerto:** `3307` (desde host) / `3306` (interno Docker)
-   - **Base de datos:** `lastplanneraia_dev`
-   - **Usuario:** `root` | **Contraseña:** `Jbe#1106z`
-5. **Nota:** El navegador puede tener las credenciales prefilled. Si están disponibles, usarlas directamente.
+2. **Proyecto:** usar el proyecto declarado por el spec o por `PROJECTS` en el fixture compartido; no asumir **"Prueba"** globalmente.
+3. **App principal:** reutilizar `CREDENTIALS` de `tests/browser/fixtures/projects.mjs`. Si un spec necesita una cuenta con acceso distinto, inyectar `E2E_APP_USERNAME` y `E2E_APP_PASSWORD` juntas desde el entorno; no duplicar valores en documentación ni tests.
+4. **Panel Admin:** definir `E2E_ADMIN_USERNAME` y `E2E_ADMIN_PASSWORD` en el entorno de ejecución; no agregar valores por defecto al código.
+5. **Base de datos:** obtener host, base, usuario y clave desde `.env` o las variables del contenedor. Los comandos dentro de `db` deben usar `MYSQL_ROOT_PASSWORD` y `MYSQL_DATABASE`.
+6. **Nota:** no copiar credenciales en prompts, logs, capturas ni archivos versionados.

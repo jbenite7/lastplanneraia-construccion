@@ -5,8 +5,11 @@ export async function login(page, credentials = CREDENTIALS) {
   await page.goto(`${BASE_URL}/login`);
   await page.locator('#usuario').fill(credentials.username);
   await page.locator('#password').fill(credentials.password);
-  await page.locator('button[type="submit"]').click();
-  await page.waitForURL('**/proyectos', { timeout: 45000 });
+  await Promise.all([
+    page.waitForURL((url) => url.pathname === '/proyectos', { timeout: 45000 }),
+    page.locator('button[type="submit"]').click(),
+  ]);
+  await expect(page.locator('.project-item').first()).toBeVisible({ timeout: 45000 });
 }
 
 export async function logout(page) {
@@ -15,14 +18,16 @@ export async function logout(page) {
 }
 
 export async function selectProject(page, project) {
-  const card = page.locator('.project-item').filter({ hasText: project.name });
+  const card = page.locator('.project-item').filter({
+    has: page.getByRole('heading', { name: project.name, exact: true }),
+  });
   await expect(card, `Project card not found: ${project.name}`).toBeVisible({ timeout: 45000 });
   await card.locator('button[type="submit"], .btn-enter').click();
   await page.waitForURL((url) => !url.toString().includes('/proyectos'), { timeout: 45000 });
 }
 
-export async function loginAndSelectProject(page, project) {
-  await login(page);
+export async function loginAndSelectProject(page, project, credentials = CREDENTIALS) {
+  await login(page, credentials);
   await selectProject(page, project);
 }
 
@@ -44,12 +49,50 @@ export async function changeWeek(page, week, destination = '/programa-general') 
 
   expect(response.ok, JSON.stringify(response)).toBe(true);
   expect(response.payload.success, JSON.stringify(response)).toBe(true);
-  await page.waitForURL(`**${destination}`, { timeout: 45000 }).catch(() => {});
+  await page.waitForURL(`**${destination}`, { timeout: 45000 });
+  await expect(page.locator('#semana, #semana_PHP').first()).toHaveValue(String(week), { timeout: 45000 });
 }
 
-export async function postFormJson(page, url, body = {}) {
+export async function captureReloadingJsonRequest(page, path, destination, action, timeout = 45_000) {
+  const captureKey = `e2e:ajax:${Date.now()}:${Math.random()}`;
+  await page.evaluate(({ key, targetPath }) => {
+    if (!window.jQuery) throw new Error('jQuery is required to capture the reloading request');
+    sessionStorage.removeItem(key);
+    const handler = (_event, _xhr, settings, data) => {
+      if (new URL(settings.url, window.location.href).pathname !== targetPath) return;
+      sessionStorage.setItem(key, JSON.stringify(data));
+      window.jQuery(document).off('ajaxSuccess.e2eReloadJson', handler);
+    };
+    window.jQuery(document).on('ajaxSuccess.e2eReloadJson', handler);
+  }, { key: captureKey, targetPath: path });
+
+  const responsePromise = page.waitForResponse((response) => (
+    new URL(response.url()).pathname === path && response.request().method() === 'POST'
+  ), { timeout });
+  const navigationPromise = page.waitForEvent('framenavigated', {
+    predicate: (frame) => frame === page.mainFrame()
+      && new URL(frame.url()).pathname === destination,
+    timeout,
+  });
+
+  await action();
+  const response = await responsePromise;
+  expect(response.ok(), `${path} HTTP ${response.status()}`).toBe(true);
+  expect(response.headers()['content-type'] || '').toMatch(/^application\/json\b/i);
+  await page.waitForFunction((key) => sessionStorage.getItem(key) !== null, captureKey, { timeout });
+  const serialized = await page.evaluate((key) => {
+    const value = sessionStorage.getItem(key);
+    sessionStorage.removeItem(key);
+    return value;
+  }, captureKey);
+  const payload = JSON.parse(serialized);
+  await navigationPromise;
+  return { response, payload };
+}
+
+export async function postFormJson(page, url, body = {}, options = {}) {
   return page.evaluate(
-    async ({ apiUrl, apiBody }) => {
+    async ({ apiUrl, apiBody, includePdcCsrf, includeCsrf }) => {
       const formData = new URLSearchParams();
       const append = (prefix, value) => {
         if (Array.isArray(value)) {
@@ -62,10 +105,20 @@ export async function postFormJson(page, url, body = {}) {
       };
 
       Object.entries(apiBody).forEach(([key, value]) => append(key, value));
+      const headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+      const isPdcUrl = apiUrl.startsWith('/api/pdc/');
+      const shouldAttachCsrf = includeCsrf && (apiUrl.startsWith('/api/general/')
+        || apiUrl.startsWith('/api/listado-actividades/')
+        || apiUrl.startsWith('/api/semanal/')
+        || (includePdcCsrf && isPdcUrl));
+      if (shouldAttachCsrf) {
+        headers['X-CSRF-Token'] = csrfToken;
+      }
       const res = await fetch(apiUrl, {
         method: 'POST',
         credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        headers,
         body: formData.toString(),
       });
       const text = await res.text();
@@ -77,7 +130,7 @@ export async function postFormJson(page, url, body = {}) {
       }
       return { ok: res.ok, status: res.status, payload };
     },
-    { apiUrl: url, apiBody: body },
+    { apiUrl: url, apiBody: body, includePdcCsrf: options.includePdcCsrf !== false, includeCsrf: options.includeCsrf !== false },
   );
 }
 

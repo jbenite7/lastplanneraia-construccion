@@ -3,6 +3,7 @@
 namespace App\Controllers\Gestion;
 
 use App\Controllers\BaseController;
+use App\Security\CsrfTokenManager;
 use Throwable;
 
 use TableResolver;
@@ -19,6 +20,7 @@ class ListadoActividadesController extends BaseController
 
         // Obtener variables de sesión
         $vars = $this->getSessionVars();
+        $vars['csrfToken'] = CsrfTokenManager::generate('listado_actividades_save');
         extract($vars); // $dbName, $semana, $proyecto, $permiso, etc.
 
         // Cargar vista Listado de Actividades

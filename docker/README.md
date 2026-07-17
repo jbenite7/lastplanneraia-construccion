@@ -63,16 +63,6 @@ Shortcut:
 docker compose up -d adminer
 ```
 
-## Optional MAMP fallback
-
-If you need temporary rollback to MAMP DB:
-
-```bash
-./docker/use_mamp_db.sh
-```
-
-This requires MAMP MySQL running on `127.0.0.1:8889`.
-
 ## Adminer quick access
 
 - URL: `http://localhost:8082`

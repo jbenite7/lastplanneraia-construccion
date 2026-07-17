@@ -1,0 +1,397 @@
+{
+  "designSystemVersion": "1.0.0",
+  "purpose": "Translate module-specific labels into shared action priority without relying on color alone.",
+  "dimensions": {
+    "severity": [
+      "none",
+      "low",
+      "medium",
+      "high"
+    ],
+    "urgency": [
+      "none",
+      "soon",
+      "now"
+    ]
+  },
+  "levels": [
+    {
+      "id": "neutral",
+      "label": "Contexto",
+      "token": "info",
+      "severity": "none",
+      "urgency": "none",
+      "action": "No requiere corrección; informar o esperar datos.",
+      "examples": [
+        "Sin datos",
+        "En revisión",
+        "Proyecciones no disponibles"
+      ]
+    },
+    {
+      "id": "healthy",
+      "label": "Controlado",
+      "token": "success",
+      "severity": "low",
+      "urgency": "none",
+      "action": "Continuar y verificar según el ciclo normal.",
+      "examples": [
+        "A tiempo",
+        "Actividad futura",
+        "Cambios guardados"
+      ]
+    },
+    {
+      "id": "attention",
+      "label": "Atención",
+      "token": "warning",
+      "severity": "medium",
+      "urgency": "soon",
+      "action": "Revisar y corregir antes del siguiente hito.",
+      "examples": [
+        "Por comprometer",
+        "Pendiente de aprobación",
+        "Con alerta de restricciones"
+      ]
+    },
+    {
+      "id": "urgent",
+      "label": "Acción inmediata",
+      "token": "critical",
+      "severity": "high",
+      "urgency": "now",
+      "action": "Actuar ahora; desbloquear, corregir o escalar.",
+      "examples": [
+        "Bloqueado",
+        "Atrasado",
+        "Ejecución con restricciones",
+        "No se pudo guardar"
+      ]
+    }
+  ],
+  "translationRules": [
+    "El texto del módulo conserva su nombre de dominio; el color se asigna por este nivel compartido.",
+    "Urgencia now siempre usa critical aunque el nombre del estado cambie.",
+    "Un estado informativo o sin datos nunca usa warning o critical por ausencia de información.",
+    "El significado nunca depende solo del color: cada estado muestra texto completo y, cuando aplica, icono o aria-label."
+  ],
+  "moduleMappings": [
+    {
+      "module": "programacion-semanal",
+      "states": [
+        {
+          "label": "A tiempo",
+          "level": "healthy"
+        },
+        {
+          "label": "Por Comprometer",
+          "level": "attention"
+        },
+        {
+          "label": "Pendiente de aprobación del responsable",
+          "level": "attention"
+        },
+        {
+          "label": "Ejecución con restricciones",
+          "level": "urgent"
+        },
+        {
+          "label": "Bloqueado",
+          "level": "urgent"
+        },
+        {
+          "label": "Sin datos",
+          "level": "neutral"
+        }
+      ]
+    },
+    {
+      "module": "programa-general",
+      "states": [
+        {
+          "label": "Actividad Futura",
+          "level": "healthy"
+        },
+        {
+          "label": "En Curso",
+          "level": "healthy"
+        },
+        {
+          "label": "Terminada",
+          "level": "healthy"
+        },
+        {
+          "label": "Con Alerta Restricciones",
+          "level": "attention"
+        },
+        {
+          "label": "Debe Iniciar",
+          "level": "attention"
+        },
+        {
+          "label": "Atrasada",
+          "level": "urgent"
+        },
+        {
+          "label": "Sin Datos",
+          "level": "neutral"
+        }
+      ]
+    },
+    {
+      "module": "programacion-intermedia",
+      "states": [
+        {
+          "label": "RC inicio vencido",
+          "level": "urgent"
+        },
+        {
+          "label": "Inicio vencido",
+          "level": "urgent"
+        },
+        {
+          "label": "Inicio por Habilitar",
+          "level": "attention"
+        },
+        {
+          "label": "Alistamiento Urgente",
+          "level": "urgent"
+        },
+        {
+          "label": "Alistamiento en Riesgo",
+          "level": "attention"
+        },
+        {
+          "label": "Alistamiento Pendiente",
+          "level": "attention"
+        },
+        {
+          "label": "En Ejecución Pendiente",
+          "level": "attention"
+        },
+        {
+          "label": "Listo para Comprometer",
+          "level": "healthy"
+        }
+      ]
+    },
+    {
+      "module": "auth",
+      "states": [
+        {
+          "label": "Credenciales inválidas",
+          "level": "urgent"
+        },
+        {
+          "label": "Sesión iniciada",
+          "level": "healthy"
+        }
+      ]
+    },
+    {
+      "module": "bi",
+      "states": [
+        {
+          "label": "Atrasado",
+          "level": "urgent"
+        },
+        {
+          "label": "Rendimiento bajo umbral",
+          "level": "attention"
+        },
+        {
+          "label": "Proyecciones no disponibles",
+          "level": "neutral"
+        },
+        {
+          "label": "Avance físico controlado",
+          "level": "healthy"
+        }
+      ]
+    },
+    {
+      "module": "pdc",
+      "states": [
+        {
+          "label": "Información pendiente",
+          "level": "attention"
+        },
+        {
+          "label": "Contratación atrasada",
+          "level": "urgent"
+        },
+        {
+          "label": "Contratación pendiente de inicio",
+          "level": "attention"
+        },
+        {
+          "label": "Contratación en curso",
+          "level": "healthy"
+        },
+        {
+          "label": "Contratación cerrada tarde",
+          "level": "attention"
+        },
+        {
+          "label": "Contratación cerrada a tiempo",
+          "level": "healthy"
+        }
+      ]
+    },
+    {
+      "module": "control-cambios",
+      "states": [
+        {
+          "label": "En Estudio",
+          "level": "attention"
+        },
+        {
+          "label": "Aprobado",
+          "level": "healthy"
+        },
+        {
+          "label": "Aprobado con Restricciones",
+          "level": "attention"
+        },
+        {
+          "label": "No Aprobado",
+          "level": "urgent"
+        },
+        {
+          "label": "Desistido",
+          "level": "neutral"
+        }
+      ]
+    },
+    {
+      "module": "contratos",
+      "states": [
+        {
+          "label": "Duraciones pendientes",
+          "level": "attention"
+        },
+        {
+          "label": "Guardado",
+          "level": "healthy"
+        },
+        {
+          "label": "Error al guardar",
+          "level": "urgent"
+        }
+      ]
+    },
+    {
+      "module": "listado-actividades",
+      "states": [
+        {
+          "label": "Cambios guardados",
+          "level": "healthy"
+        },
+        {
+          "label": "Información pendiente",
+          "level": "attention"
+        },
+        {
+          "label": "Error al guardar",
+          "level": "urgent"
+        },
+        {
+          "label": "Error de conexión",
+          "level": "urgent"
+        }
+      ]
+    },
+    {
+      "module": "programa-general-actualizar",
+      "states": [
+        {
+          "label": "Actividad Futura",
+          "level": "healthy"
+        },
+        {
+          "label": "En Curso",
+          "level": "healthy"
+        },
+        {
+          "label": "Terminada",
+          "level": "healthy"
+        },
+        {
+          "label": "Atrasada",
+          "level": "urgent"
+        },
+        {
+          "label": "Bloqueado",
+          "level": "urgent"
+        },
+        {
+          "label": "Sin Datos",
+          "level": "neutral"
+        }
+      ]
+    },
+    {
+      "module": "dashboard",
+      "states": [
+        {
+          "label": "Crisis bloqueada",
+          "level": "urgent"
+        },
+        {
+          "label": "Escalamiento pendiente",
+          "level": "attention"
+        },
+        {
+          "label": "Crisis cerrada",
+          "level": "healthy"
+        },
+        {
+          "label": "Sin datos",
+          "level": "neutral"
+        }
+      ]
+    },
+    {
+      "module": "profesionales",
+      "states": [
+        {
+          "label": "Activo",
+          "level": "healthy"
+        },
+        {
+          "label": "Inactivo",
+          "level": "neutral"
+        },
+        {
+          "label": "Registro bloqueado",
+          "level": "urgent"
+        },
+        {
+          "label": "Error al guardar",
+          "level": "urgent"
+        }
+      ]
+    },
+    {
+      "module": "subcontratistas",
+      "states": [
+        {
+          "label": "Activo",
+          "level": "healthy"
+        },
+        {
+          "label": "Inactivo",
+          "level": "neutral"
+        },
+        {
+          "label": "Registro bloqueado",
+          "level": "urgent"
+        },
+        {
+          "label": "Error al guardar",
+          "level": "urgent"
+        }
+      ]
+    }
+  ]
+}

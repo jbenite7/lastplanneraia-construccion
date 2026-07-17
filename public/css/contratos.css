@@ -1,0 +1,444 @@
+.ct-hot-container {
+  min-height: 200px;
+}
+
+/* El drawer vive fuera del contenedor del módulo; este alcance evita mezclar
+ * colores Linen dentro de Contratos cuando el tema activo es Dark. La capa
+ * reset precede a la capa del drawer y por eso también domina sus !important. */
+@layer reset {
+  body.contratos-page.dark-mode #aiaNavbar .nav-link,
+  body.contratos-page.dark-mode #aiaNavbar .nav-link .nav-text-full,
+  body.contratos-page.dark-mode #aiaNavbar .nav-link .nav-text-compact,
+  body.contratos-page.dark-mode #aiaNavbar .nav-link i,
+  body.contratos-page.dark-mode #aiaNavbar .nav-link::after {
+    color: var(--ds-active-text-primary) !important;
+  }
+
+  body.contratos-page.dark-mode #aiaNavbar .nav-link.active {
+    background: var(--ds-active-surface-raised) !important;
+    color: var(--ds-active-text-primary) !important;
+  }
+
+  body.contratos-page.dark-mode #aiaNavbar .dropdown-menu {
+    background: var(--ds-active-surface-raised);
+    border-color: var(--ds-active-border-default);
+  }
+
+  body.contratos-page.dark-mode #aiaNavbar .dropdown-item {
+    color: var(--ds-active-text-primary) !important;
+  }
+}
+
+.navbar-aia #notificationDropdown {
+  min-inline-size: calc(var(--ds-target-min) + var(--ds-space-2));
+}
+
+.ct-table-status {
+  margin: 0 0 var(--ds-space-1);
+  padding: var(--ds-space-1) var(--ds-space-2);
+  border: thin solid var(--ds-color-border-default);
+  border-radius: var(--ds-radius-sm);
+  background: var(--ds-color-bg-surface);
+  color: var(--ds-color-text-secondary);
+}
+
+.ct-table-status[data-state="error"] {
+  color: var(--ds-color-state-critical-text);
+}
+
+.ct-overplanning-alert,
+.ct-pending-badge {
+  display: none;
+}
+
+.ct-pending-badge {
+  font-size: 0.65rem;
+  vertical-align: middle;
+  line-height: 1;
+  min-width: 1.4em;
+}
+
+.ct-message-error {
+  color: var(--ds-color-state-critical-text);
+  font-weight: 700;
+}
+
+.ct-empty-contract-type {
+  color: var(--ds-color-text-tertiary);
+}
+
+.ct-contract-badges {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-1);
+  align-items: center;
+}
+
+.ct-contract-mobile-label,
+.ct-contract-mobile-help {
+  display: none;
+}
+
+.ct-contract-index__prefix {
+  display: none;
+}
+
+.ct-mobile-card-list {
+  display: none;
+}
+
+.ct-contract-row[hidden],
+.ct-contract-row.ct-contract-row--hidden {
+  display: none;
+}
+
+.ct-add-package {
+  align-items: center;
+  gap: var(--ds-space-1);
+  max-width: 100%;
+  white-space: normal;
+}
+
+.ct-modal-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  align-items: flex-start;
+  padding: var(--ds-space-2) var(--ds-space-4);
+}
+
+.ct-modal-title .aia-modal__headline {
+  margin: 0;
+  font-size: calc(var(--spacing-md) + var(--spacing-xs));
+  line-height: 1.15;
+}
+
+.ct-modal-title .aia-modal__eyebrow,
+.ct-modal-title .aia-modal__subtitle {
+  display: none;
+}
+
+.ct-modal-title-main,
+.ct-modal-title-family {
+  display: block;
+  min-width: 0;
+}
+
+.ct-modal-title-family {
+  max-width: calc(100vw - var(--ds-target-min) - var(--spacing-xl));
+  margin-top: calc(var(--spacing-xs) / 2);
+  color: var(--ds-color-text-inverse);
+  font-size: var(--ps-btn-font-size);
+  font-weight: 600;
+  display: -webkit-box;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  text-overflow: ellipsis;
+  white-space: normal;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  opacity: 0.9;
+}
+
+.ct-modal-close {
+  margin-top: 0;
+}
+
+#modalEditarContratos .ct-contract-field,
+#modalEditarContratos .ct-contract-field .select2-container,
+#modalEditarContratos .ct-contract-field .select2-selection,
+#modalEditarContratos .ct-contract-field .select2-selection__rendered {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+}
+
+#modalEditarContratos .ct-contract-field .select2-selection__choice {
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+#modalEditarContratos .ct-contract-field .select2-selection__choice__remove {
+  flex: 0 0 auto;
+}
+
+html.aia-theme-dark body.dark-mode {
+  background: var(--ds-active-bg-canvas) !important;
+  color: var(--ds-active-text-primary) !important;
+}
+
+html.aia-theme-dark body.dark-mode :is(
+  .filaBotones,
+  .filaMensajes,
+  .tabla,
+  .ct-table-status,
+  .ct-mobile-card,
+  .ct-modal-content,
+  .ct-contract-section
+) {
+  border-color: var(--ds-active-border) !important;
+  background: var(--ds-active-surface) !important;
+  color: var(--ds-active-text-primary) !important;
+}
+
+html.aia-theme-dark body.dark-mode :is(
+  .ct-contract-row,
+  .select2-selection,
+  .form-control
+) {
+  border-color: var(--ds-active-border) !important;
+  background: var(--ds-active-surface-raised) !important;
+  color: var(--ds-active-text-primary) !important;
+}
+
+html.aia-theme-dark body.dark-mode :is(
+  .ct-mobile-card__title,
+  .ct-mobile-card__value,
+  .ct-mobile-card__summary,
+  .ct-contract-section__title,
+  .ct-contract-mobile-label,
+  .ct-contract-index
+) {
+  color: var(--ds-active-text-primary) !important;
+}
+
+html.aia-theme-dark body.dark-mode :is(
+  .ct-mobile-card__code,
+  .ct-mobile-card__label,
+  .ct-contract-mobile-help,
+  .ct-table-status
+) {
+  color: var(--ds-active-text-secondary) !important;
+}
+
+html.aia-theme-dark body.dark-mode #hot-container,
+html.aia-theme-dark body.dark-mode #hot-container .handsontable,
+html.aia-theme-dark body.dark-mode #hot-container .ht_master,
+html.aia-theme-dark body.dark-mode #hot-container .wtHolder,
+html.aia-theme-dark body.dark-mode #hot-container .wtHider,
+html.aia-theme-dark body.dark-mode #hot-container .wtSpreader,
+html.aia-theme-dark body.dark-mode #hot-container table.htCore {
+  background: var(--ds-active-bg-page) !important;
+  color: var(--ds-active-text-primary) !important;
+}
+
+html.aia-theme-dark body.dark-mode #hot-container .handsontable :is(th, td, td.htDimmed, td.force-wrap),
+html.aia-theme-dark body.dark-mode #hot-container .handsontable td.force-wrap :is(b, small) {
+  border-color: var(--ds-active-border) !important;
+  background: var(--ds-active-surface) !important;
+  color: var(--ds-active-text-primary) !important;
+}
+
+html.aia-theme-dark body.dark-mode #hot-container .handsontable thead th,
+html.aia-theme-dark body.dark-mode #hot-container .handsontable thead th .changeType {
+  border-color: var(--ds-active-border) !important;
+  background-color: var(--ds-active-surface-raised) !important;
+  color: var(--ds-active-text-secondary) !important;
+}
+
+html.aia-theme-dark body.dark-mode #hot-container .ht_clone_top.handsontable table.htCore thead th {
+  background-color: var(--ds-active-surface-raised) !important;
+  color: var(--ds-active-text-primary) !important;
+}
+
+@layer reset {
+  html.aia-theme-dark body.dark-mode #hot-container .handsontable thead th,
+  html.aia-theme-dark body.dark-mode #hot-container .handsontable thead th .changeType {
+    border-color: var(--ds-active-border) !important;
+    background-color: var(--ds-active-surface-raised) !important;
+    color: var(--ds-active-text-primary) !important;
+  }
+}
+
+@media (max-width: 43.75rem) {
+  #cuadroTabla > #hot-container,
+  #cuadroTabla > #hot-container.ct-hot-container,
+  #cuadroTabla > #hot-container.handsontable {
+    display: none !important;
+  }
+
+  .ct-mobile-card-list:not([hidden]) {
+    display: grid;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-xs) var(--spacing-lg);
+  }
+
+  .ct-mobile-card {
+    display: grid;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm);
+    border: thin solid var(--ds-color-border-default);
+    border-radius: var(--ds-radius-md);
+    background: var(--aia-bg-alabaster);
+    color: var(--aia-text-primary);
+    box-shadow: var(--ds-shadow-xs);
+    overflow: hidden;
+  }
+
+  .ct-mobile-card__header,
+  .ct-mobile-card__actions {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-xs);
+  }
+
+  .ct-mobile-card__header {
+    justify-content: space-between;
+  }
+
+  .ct-mobile-card__actions {
+    justify-content: flex-end;
+  }
+
+  .ct-mobile-card__identity,
+  .ct-mobile-card__body {
+    min-width: 0;
+    display: grid;
+    gap: var(--spacing-xs);
+  }
+
+  .ct-mobile-card__code,
+  .ct-mobile-card__label {
+    color: var(--aia-text-secondary);
+    font-size: var(--ps-btn-font-size);
+    font-weight: 700;
+  }
+
+  .ct-mobile-card__title {
+    margin: 0;
+    color: var(--aia-text-primary);
+    font-size: calc(var(--spacing-sm) + var(--spacing-sm) + var(--spacing-xs));
+    line-height: 1.15;
+  }
+
+  .ct-mobile-card__field {
+    min-width: 0;
+    display: grid;
+    gap: calc(var(--spacing-xs) / 2);
+  }
+
+  .ct-mobile-card__value,
+  .ct-mobile-card__summary {
+    min-width: 0;
+    color: var(--aia-text-primary);
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+
+  .ct-mobile-card__summary {
+    display: grid;
+    gap: calc(var(--spacing-xs) / 2);
+  }
+
+  .ct-mobile-card__summary b {
+    color: var(--aia-green-dark);
+  }
+
+  .ct-mobile-card__header .ct-contract-badges {
+    justify-content: flex-end;
+    flex: 0 0 auto;
+  }
+
+  .ct-mobile-card__header .ct-contract-badges .badge {
+    max-width: calc(var(--ds-target-min) + var(--ds-target-min));
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .ct-mobile-card__action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--ds-space-1);
+    max-width: 100%;
+    min-width: var(--ds-target-min);
+    min-height: var(--ds-target-min);
+    border-radius: var(--ds-radius-sm);
+    white-space: normal;
+  }
+
+  .ct-mobile-card-list__empty {
+    margin: 0;
+    padding: var(--spacing-md);
+    color: var(--aia-text-secondary);
+  }
+
+  .ct-modal-dialog {
+    margin: var(--spacing-xs);
+  }
+
+  .ct-contract-section {
+    padding: var(--spacing-xs);
+  }
+
+  .ct-contract-header {
+    display: none;
+  }
+
+  .ct-contract-list {
+    display: grid;
+    gap: var(--spacing-md);
+  }
+
+  .ct-contract-row {
+    display: grid;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-sm);
+    border: thin solid var(--aia-green-light);
+    border-radius: var(--ds-radius-md);
+    background: var(--ds-color-bg-page);
+    box-shadow: var(--ds-shadow-xs);
+  }
+
+  .ct-contract-index {
+    width: max-content;
+    margin: 0 0 var(--spacing-xs);
+    padding: calc(var(--spacing-xs) / 2) var(--spacing-xs);
+    border: thin solid var(--aia-green-light);
+    border-radius: var(--ds-radius-sm);
+    background: var(--aia-green-very-light);
+    color: var(--aia-green-dark);
+    font-weight: 700;
+  }
+
+  .ct-contract-index__prefix {
+    display: inline;
+  }
+
+  .ct-contract-field {
+    min-width: 0;
+    display: grid;
+    gap: calc(var(--spacing-xs) / 2);
+  }
+
+  .ct-contract-field--quantity {
+    max-width: none;
+  }
+
+  .ct-contract-mobile-label {
+    display: block;
+    margin: 0;
+    color: var(--aia-text-primary);
+    font-weight: 700;
+    line-height: 1.15;
+  }
+
+  .ct-contract-mobile-help {
+    display: block;
+    color: var(--aia-text-secondary);
+    font-size: var(--ps-btn-font-size);
+    line-height: 1.25;
+  }
+
+  .ct-contract-control,
+  .ct-contract-field .select2-container .select2-selection {
+    min-height: var(--ds-target-min);
+    border-radius: var(--ds-radius-sm);
+  }
+
+  .ct-contract-field .select2-container {
+    width: 100% !important;
+  }
+}

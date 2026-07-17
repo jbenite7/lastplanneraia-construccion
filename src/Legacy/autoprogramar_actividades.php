@@ -13,8 +13,6 @@ $db = Database::getInstance();
 $dbName = $dbPrefix ?? $_POST['db'] ?? $_GET['db'] ?? '';
 $semana = (int) ($semana ?? $_POST['semana'] ?? $_GET['semana'] ?? 0);
 
-disable_productivity_measurement_temporarily($db);
-
 if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbName)) {
     die(json_encode(["respuesta" => "ERROR", "mensaje" => "Nombre de base de datos inválido."]));
 }
@@ -26,9 +24,13 @@ $tProgConsolidado = TableResolver::resolveByPrefix($dbName, 'programa_consolidad
 
 // Set project context for queryWithProject auto-injection
 $projectId = TableResolver::getProjectIdByPrefix($dbName);
+if (!$projectId) {
+    $projectId = (int) ($_SESSION['project_id'] ?? $_SESSION['proyecto_id'] ?? 0);
+}
 if ($projectId) {
     $db->setProjectContext($projectId);
 }
+disable_productivity_measurement_temporarily($db, $projectId ? (int) $projectId : null);
 
 try {
     // Resolve restriction config once based on project Area

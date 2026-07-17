@@ -1,0 +1,221 @@
+{
+  "$schema": "./family-approvals.schema.json",
+  "schemaVersion": 1,
+  "designSystemVersion": "1.0.0",
+  "approvals": [
+    {
+      "familyId": "foundations",
+      "candidateId": "semantic-scale",
+      "approvedBy": "user",
+      "approvalRef": "chat-2026-07-12-approved-with-dark-density-annotations",
+      "approvedAt": "2026-07-12",
+      "themes": [
+        "linen",
+        "dark"
+      ],
+      "viewports": [
+        "390x844",
+        "1180x820",
+        "1440x900"
+      ],
+      "evidence": [
+        "tests/browser/design-system-lab.mjs",
+        "tests/design-system/foundation.test.mjs",
+        "docs/design-system/dark-palette.md"
+      ]
+    },
+    {
+      "familyId": "shell-navigation",
+      "candidateId": "adaptive-shell",
+      "approvedBy": "user",
+      "approvalRef": "chat-2026-07-12-approved-hybrid-b-desktop-a-touch",
+      "approvedAt": "2026-07-12",
+      "themes": [
+        "linen",
+        "dark"
+      ],
+      "viewports": [
+        "390x844",
+        "1180x820",
+        "1440x900"
+      ],
+      "evidence": [
+        "tests/browser/design-system-lab.mjs",
+        "tests/design-system/shell-navigation.test.mjs"
+      ]
+    },
+    {
+      "familyId": "page-structure",
+      "candidateId": "inline-header",
+      "approvedBy": "user",
+      "approvalRef": "chat-2026-07-12-approved-integrated-header-after-padding-fix",
+      "approvedAt": "2026-07-12",
+      "themes": [
+        "linen",
+        "dark"
+      ],
+      "viewports": [
+        "390x844",
+        "1180x820",
+        "1440x900"
+      ],
+      "evidence": [
+        "tests/browser/design-system-lab.mjs",
+        "tests/browser/design-system-lab.a11y.mjs",
+        "tests/design-system/page-structure.test.mjs",
+        "tests/test_design_system_components.php"
+      ]
+    },
+    {
+      "familyId": "actions",
+      "candidateId": "solid-outline",
+      "approvedBy": "user",
+      "approvalRef": "chat-2026-07-13-approved-candidate-a",
+      "approvedAt": "2026-07-13",
+      "themes": [
+        "linen",
+        "dark"
+      ],
+      "viewports": [
+        "390x844",
+        "1180x820",
+        "1440x900"
+      ],
+      "evidence": [
+        "tests/browser/design-system-lab.mjs",
+        "tests/design-system/actions.test.mjs",
+        "tests/test_design_system_components.php"
+      ]
+    },
+    {
+      "familyId": "forms-filters",
+      "candidateId": "inline-fields",
+      "approvedBy": "user",
+      "approvalRef": "chat-2026-07-12-approved-candidate-a",
+      "approvedAt": "2026-07-12",
+      "themes": [
+        "linen",
+        "dark"
+      ],
+      "viewports": [
+        "390x844",
+        "1180x820",
+        "1440x900"
+      ],
+      "evidence": [
+        "tests/browser/design-system-lab.mjs",
+        "tests/design-system/forms-filters.test.mjs",
+        "tests/test_design_system_components.php"
+      ]
+    },
+    {
+      "familyId": "states-feedback",
+      "candidateId": "tinted-status",
+      "approvedBy": "design-system-standards",
+      "approvalRef": "decision-DS-015",
+      "approvedAt": "2026-07-12",
+      "themes": [
+        "linen",
+        "dark"
+      ],
+      "viewports": [
+        "390x844",
+        "1180x820",
+        "1440x900"
+      ],
+      "evidence": [
+        "tests/browser/design-system-lab.mjs",
+        "tests/browser/design-system-lab.a11y.mjs",
+        "tests/design-system/states-feedback.test.mjs",
+        "tests/test_design_system_components.php"
+      ]
+    },
+    {
+      "familyId": "data-display",
+      "candidateId": "responsive-shell",
+      "approvedBy": "design-system-standards",
+      "approvalRef": "decision-DS-016",
+      "approvedAt": "2026-07-12",
+      "themes": [
+        "linen",
+        "dark"
+      ],
+      "viewports": [
+        "390x844",
+        "1180x820",
+        "1440x900"
+      ],
+      "evidence": [
+        "tests/browser/design-system-lab.mjs",
+        "tests/browser/design-system-lab.a11y.mjs",
+        "tests/design-system/data-display.test.mjs",
+        "tests/test_design_system_components.php"
+      ]
+    },
+    {
+      "familyId": "overlays",
+      "candidateId": "modal-drawer",
+      "approvedBy": "design-system-standards",
+      "approvalRef": "decision-DS-017",
+      "approvedAt": "2026-07-12",
+      "themes": [
+        "linen",
+        "dark"
+      ],
+      "viewports": [
+        "390x844",
+        "1180x820",
+        "1440x900"
+      ],
+      "evidence": [
+        "tests/browser/design-system-lab.mjs",
+        "tests/browser/design-system-lab.a11y.mjs",
+        "tests/design-system/overlays.test.mjs",
+        "tests/test_design_system_components.php"
+      ]
+    },
+    {
+      "familyId": "vendor-adapters",
+      "candidateId": "canonical-skin",
+      "approvedBy": "design-system-standards",
+      "approvalRef": "decision-DS-018",
+      "approvedAt": "2026-07-12",
+      "themes": [
+        "linen",
+        "dark"
+      ],
+      "viewports": [
+        "390x844",
+        "1180x820",
+        "1440x900"
+      ],
+      "evidence": [
+        "tests/browser/design-system-lab.mjs",
+        "tests/browser/design-system-lab.a11y.mjs",
+        "tests/design-system/vendor-adapters.test.mjs"
+      ]
+    },
+    {
+      "familyId": "bi-primitives",
+      "candidateId": "accessible-figure",
+      "approvedBy": "user",
+      "approvalRef": "chat-2026-07-13-approved-bi-primitives-curve-series-and-radar-centering",
+      "approvedAt": "2026-07-13",
+      "themes": [
+        "linen",
+        "dark"
+      ],
+      "viewports": [
+        "390x844",
+        "1180x820",
+        "1440x900"
+      ],
+      "evidence": [
+        "tests/browser/design-system-lab.mjs",
+        "tests/browser/design-system-lab.a11y.mjs",
+        "tests/design-system/bi-primitives.test.mjs",
+        "tests/test_design_system_components.php"
+      ]
+    }
+  ]
+}

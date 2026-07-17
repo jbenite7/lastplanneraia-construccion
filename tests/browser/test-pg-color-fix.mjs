@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { CREDENTIALS } from './fixtures/projects.mjs';
 
 /**
  * Test: PG color persistence after filter + scroll.
@@ -7,7 +8,7 @@ import { test, expect } from '@playwright/test';
  * applying a filter and scrolling, without requiring a cell click.
  *
  * Flow:
- *  1. Login as jbenitez
+ *  1. Login with the shared app fixture
  *  2. Select project "Prueba" (Construccion, id=27)
  *  3. Navigate to PG page
  *  4. Scroll to 8000px to trigger virtual rendering
@@ -17,8 +18,8 @@ test.describe('PG color persistence after filter + scroll', () => {
   test('rows keep correct state class after filter and scroll', async ({ page }) => {
     // 1. Login
     await page.goto('http://localhost:8081/login');
-    await page.locator('#usuario').fill('jbenitez');
-    await page.locator('#password').fill('Jbe#1106z');
+    await page.locator('#usuario').fill(CREDENTIALS.username);
+    await page.locator('#password').fill(CREDENTIALS.password);
     await page.locator('button[type="submit"]').click();
     await page.waitForURL('**/proyectos', { timeout: 15000 });
 

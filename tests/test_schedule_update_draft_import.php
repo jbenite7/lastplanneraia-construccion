@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Admin\Models\Project;
 use App\Controllers\Api\GeneralApiController;
+use App\Security\CsrfTokenManager;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -58,6 +59,7 @@ function runScheduleImport(string $dbPrefix, string $xlsxPath, string $baselineS
             'size' => filesize($xlsxPath),
         ],
     ];
+    $_SERVER['HTTP_X_CSRF_TOKEN'] = CsrfTokenManager::generate('programa_general_save');
 
     http_response_code(200);
     ob_start();

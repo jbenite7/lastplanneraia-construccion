@@ -1,0 +1,142 @@
+name: Design System
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: design-system-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  design-system-static:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Fetch main history for design-system contracts
+        run: git fetch origin main:refs/remotes/origin/main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run test:design-system:static
+      - name: Enforce Programa General pilot contract
+        run: node tests/test_programa_general_sprint_contract.mjs
+
+  design-system-runtime:
+    runs-on: ubuntu-latest
+    needs: design-system-static
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Capture runtime provenance
+        id: runtime-provenance
+        shell: bash
+        run: |
+          set -euo pipefail
+          CI_RUN_ID=run-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}
+          COMPOSE_PROJECT_NAME=lps-aia-design-system-ci-${CI_RUN_ID}
+          provenance="$(node scripts/design-system-ci-preflight.mjs --print-provenance)"
+          CI_GIT_SHA="$(awk -F= '$1 == "CI_GIT_SHA" { print $2 }' <<< "${provenance}")"
+          CI_WORKTREE_FINGERPRINT="$(awk -F= '$1 == "CI_WORKTREE_FINGERPRINT" { print $2 }' <<< "${provenance}")"
+          CI_FIXTURE_SHA256="$(awk -F= '$1 == "CI_FIXTURE_SHA256" { print $2 }' <<< "${provenance}")"
+          for required_value in "${CI_GIT_SHA}" "${CI_WORKTREE_FINGERPRINT}" "${CI_FIXTURE_SHA256}"; do
+            if ! grep -Eq '^[a-f0-9]+$' <<< "${required_value}"; then
+              echo "Incomplete runtime provenance" >&2
+              exit 1
+            fi
+          done
+          {
+            echo "CI_RUN_ID=${CI_RUN_ID}"
+            echo "COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME}"
+            echo "COMPOSE_FILE=docker-compose.yml:docker-compose.ci.yml"
+            echo "CI_GIT_SHA=${CI_GIT_SHA}"
+            echo "CI_WORKTREE_FINGERPRINT=${CI_WORKTREE_FINGERPRINT}"
+            echo "CI_FIXTURE_SHA256=${CI_FIXTURE_SHA256}"
+          } >> "${GITHUB_ENV}"
+      - name: Verify isolated runtime target
+        env:
+          APP_URL: http://127.0.0.1:18081
+          E2E_BASE_URL: http://127.0.0.1:18081
+          E2E_PROJECT_KEYS: construction
+          E2E_REQUIRE_ISOLATED_DB: "1"
+          E2E_ALLOW_DB_MUTATION: design-system-ci
+        run: node scripts/design-system-ci-preflight.mjs
+      - name: Start isolated runtime
+        run: docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.ci.yml up -d --build db app
+      - name: Wait for the application
+        run: |
+          for attempt in {1..60}; do
+            if curl -fsS http://127.0.0.1:18081/login > /dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.ci.yml logs
+          exit 1
+      - name: Enforce PHPStan baseline
+        run: npm run test:design-system:phpstan
+      - name: Enforce global-table safety
+        run: docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.ci.yml exec -T app php tests/test_global_table_safety.php
+      - name: Run laboratory gates
+        id: blocking-runtime
+        env:
+          E2E_BASE_URL: http://127.0.0.1:18081
+        run: npm run test:design-system:runtime
+      - name: Collect keyboard and reflow evidence
+        id: keyboard-reflow-evidence
+        continue-on-error: true
+        env:
+          E2E_BASE_URL: http://127.0.0.1:18081
+        run: npm run test:design-system:evidence
+      - name: Preserve non-blocking evidence failures
+        if: steps.keyboard-reflow-evidence.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: design-system-keyboard-reflow-evidence
+          path: |
+            test-results/
+            test-output/
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Run Programa General persistence and RBAC gate
+        env:
+          APP_URL: http://127.0.0.1:18081
+          E2E_BASE_URL: http://127.0.0.1:18081
+          E2E_PROJECT_KEYS: construction
+          E2E_REQUIRE_ISOLATED_DB: "1"
+          E2E_ALLOW_DB_MUTATION: design-system-ci
+          E2E_WORKERS: "1"
+          E2E_HEADLESS: "true"
+        run: npx playwright test --config=e2e/playwright.config.mjs e2e/tests/workflows/pg-interactions.spec.mjs --workers=1
+      - name: Preserve runtime logs
+        if: failure()
+        run: |
+          mkdir -p test-output
+          docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.ci.yml logs --no-color > test-output/docker-compose.log || true
+      - name: Preserve failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: design-system-failure-evidence
+          path: |
+            test-results/
+            test-output/
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Stop isolated runtime
+        if: always()
+        run: docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.ci.yml down --volumes

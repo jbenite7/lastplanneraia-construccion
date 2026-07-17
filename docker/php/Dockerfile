@@ -33,7 +33,8 @@ WORKDIR /var/www/html
 
 COPY . /var/www/html
 
-RUN composer install --no-dev --no-interaction --optimize-autoloader \
+ARG COMPOSER_INSTALL_FLAGS=--no-dev
+RUN composer install ${COMPOSER_INSTALL_FLAGS} --no-interaction --optimize-autoloader \
     && rm -rf /root/.composer/cache
 
 RUN mkdir -p \

@@ -43,8 +43,9 @@ CONTRACT_OPTIONS = [
 def get_db_codes():
     """Get all current family codes from MySQL."""
     result = subprocess.run(
-        ['docker', 'compose', 'exec', '-T', 'db', 'mysql', '-uroot', '-pJbe#1106z',
-         'lastplanneraia_dev', '-N', '-e', 'SELECT codigo, activa, siempre_revision FROM general_pdc_familias;'],
+        ['docker', 'compose', 'exec', '-T', 'db', 'sh', '-lc',
+         'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" "$MYSQL_DATABASE" -N -e "$1"', '_',
+         'SELECT codigo, activa, siempre_revision FROM general_pdc_familias;'],
         capture_output=True, text=True
     )
     codes = {}
@@ -59,8 +60,8 @@ def get_db_codes():
 def get_db_rules():
     """Get family codes that have active rules."""
     result = subprocess.run(
-        ['docker', 'compose', 'exec', '-T', 'db', 'mysql', '-uroot', '-pJbe#1106z',
-         'lastplanneraia_dev', '-N', '-e',
+        ['docker', 'compose', 'exec', '-T', 'db', 'sh', '-lc',
+         'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" "$MYSQL_DATABASE" -N -e "$1"', '_',
          'SELECT DISTINCT f.codigo FROM general_pdc_familias f JOIN general_pdc_activity_rules r ON r.familia_id=f.id AND r.activa=1;'],
         capture_output=True, text=True
     )

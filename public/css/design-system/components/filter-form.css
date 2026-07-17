@@ -1,0 +1,106 @@
+@layer components {
+  .aia-filter-form {
+    display: grid;
+    align-content: start;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--ds-space-4);
+  }
+
+  .aia-filter-form .aia-label:first-child,
+  .aia-filter-form .aia-action-group {
+    grid-column: 1 / -1;
+  }
+
+  .aia-field,
+  .aia-choice {
+    display: grid;
+    gap: var(--ds-space-2);
+    color: var(--ds-active-text-primary);
+  }
+
+  .aia-field:has(> .aia-input[type='file']) {
+    align-content: center;
+  }
+
+  .aia-input,
+  .aia-select,
+  .aia-textarea {
+    box-sizing: border-box;
+    min-height: var(--ds-target-min);
+    padding-block: var(--ds-space-3);
+    padding-inline: var(--ds-space-4);
+  }
+
+  .aia-textarea {
+    min-block-size: calc(var(--ds-target-min) * 2);
+    resize: vertical;
+  }
+
+  .aia-input[type='file'] {
+    display: flex;
+    align-items: center;
+    padding: var(--ds-space-1);
+  }
+
+  .aia-input[type='file']::file-selector-button {
+    min-height: calc(var(--ds-target-min) - var(--ds-space-2));
+    margin-inline-end: var(--ds-space-3);
+    padding: var(--ds-space-2) var(--ds-space-3);
+    border: 0;
+    border-radius: var(--ds-radius-control-sm);
+    background: var(--ds-active-surface-raised);
+    color: var(--ds-active-text-primary);
+    font: inherit;
+    font-weight: var(--ds-type-weight-semibold);
+  }
+
+  .aia-choice {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    min-height: var(--ds-target-min);
+  }
+
+  .aia-choice input {
+    width: var(--ds-space-4);
+    height: var(--ds-space-4);
+    accent-color: var(--ds-active-action-primary);
+  }
+
+  .aia-switch {
+    display: inline-grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: var(--ds-space-2);
+    min-height: var(--ds-target-min);
+    color: var(--ds-active-text-primary);
+  }
+
+  .aia-switch input {
+    width: calc(var(--ds-space-6) + var(--ds-space-2));
+    height: var(--ds-space-6);
+    accent-color: var(--ds-active-action-primary);
+  }
+
+  .aia-input[type='date'] {
+    color-scheme: inherit;
+  }
+
+  @media (max-width: 47.99rem) {
+    .aia-filter-form {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+}
+
+@layer components {
+  .aia-input,
+  .aia-select,
+  .aia-textarea {
+    padding-block: var(--ds-space-3);
+    padding-inline: var(--ds-space-4);
+  }
+
+  .aia-input[type='file'] {
+    padding: var(--ds-space-1);
+  }
+}

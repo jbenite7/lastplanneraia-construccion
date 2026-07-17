@@ -1,5 +1,9 @@
 <?php
 
+if (!defined('PROJECT_ROOT')) {
+    define('PROJECT_ROOT', dirname(__DIR__));
+}
+
 require __DIR__ . '/../vendor/autoload.php';
 
 use App\Controllers\Programacion\ProgramacionIntermediaController;

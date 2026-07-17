@@ -1,0 +1,971 @@
+{
+  "meta": {
+    "name": "AIA Web Design System",
+    "version": "1.0.0",
+    "format": "design-system-json",
+    "generated_at": "2026-07-08T21:23:55.420971+00:00",
+    "source_manual": "manual_diseno_new.json",
+    "source_manual_version": "1.0",
+    "source_manual_generated": "2025-07-28T15:27:32.478098",
+    "description": "Sistema de diseño web para AIA, inspirado en claridad, profundidad y patrones de interacción tipo Apple, manteniendo la paleta, tipografía, espaciado, breakpoints, motion e iconografía del manual de marca.",
+    "design_direction": "content-first, mobile-first, calm depth, high legibility, restrained glass, semantic tokens",
+    "business_goal": "reducir retrabajo visual, acelerar maquetación, bajar riesgo de inconsistencias y mejorar claridad en interfaces de portafolio, obra, CRM, analítica y piezas comerciales."
+  },
+  "principles": [
+    {
+      "name": "Contenido primero",
+      "rule": "La interfaz debe ayudar a leer, decidir y actuar. Los fondos con gradiente, vidrio o sombra se usan solo para jerarquía o separación."
+    },
+    {
+      "name": "Marca sobria",
+      "rule": "El verde corporativo es la acción principal. Naranja, turquesa y morado son acentos por dominio; no compiten en la misma vista sin jerarquía."
+    },
+    {
+      "name": "Profundidad funcional",
+      "rule": "Sombras, blur y bordes separan capas: canvas, surface, elevated, overlay y modal. No se usan como ornamento."
+    },
+    {
+      "name": "Mobile-first real",
+      "rule": "Los estilos base nacen para xs/sm; md, lg y xl agregan columnas, densidad y navegación secundaria."
+    },
+    {
+      "name": "Accesibilidad medible",
+      "rule": "Texto normal cumple contraste 4.5:1; texto grande e iconos relevantes cumplen 3:1; target táctil mínimo 44px."
+    }
+  ],
+  "tokens": {
+    "color": {
+      "raw": {
+        "corporativo": {
+          "principal": "#1a5633",
+          "medio": "#2e7d57",
+          "claro": "#a7d5c1",
+          "muy_claro": "#ddefe6"
+        },
+        "construccion": {
+          "principal": "#b55211",
+          "medio": "#e87722",
+          "claro": "#f4ad77",
+          "muy_claro": "#fbe4d3"
+        },
+        "inmobiliario": {
+          "principal": "#00a499",
+          "medio": "#5ec9bd",
+          "claro": "#ace5e0",
+          "muy_claro": "#e3f9f7"
+        },
+        "arquitectura": {
+          "principal": "#6752bf",
+          "medio": "#9485d6",
+          "claro": "#c7beef",
+          "muy_claro": "#edeafb"
+        },
+        "alertas": {
+          "critico": "#c62828",
+          "alto": "#e53935",
+          "medio": "#ef9a9a",
+          "fondo": "#fdecec"
+        },
+        "advertencias": {
+          "critico": "#f9a825",
+          "alto": "#ffca28",
+          "medio": "#ffe082",
+          "fondo": "#fff8e1"
+        }
+      },
+      "neutral": {
+        "0": "#ffffff",
+        "25": "#fbfdfc",
+        "50": "#f7faf8",
+        "100": "#eef4f1",
+        "200": "#dde7e1",
+        "300": "#c7d4cc",
+        "400": "#9daea4",
+        "500": "#72857a",
+        "600": "#52645a",
+        "700": "#38483f",
+        "800": "#233029",
+        "900": "#141c18",
+        "950": "#0b100d"
+      },
+      "semantic": {
+        "bg": {
+          "canvas": "#f7faf8",
+          "page": "#fbfdfc",
+          "subtle": "#eef4f1",
+          "inverse": "#141c18"
+        },
+        "surface": {
+          "default": "#ffffff",
+          "raised": "rgba(255,255,255,0.82)",
+          "glass": "rgba(255,255,255,0.68)",
+          "tint": "rgba(221,239,230,0.72)",
+          "selected": "#ddefe6"
+        },
+        "text": {
+          "primary": "#141c18",
+          "secondary": "#52645a",
+          "tertiary": "#72857a",
+          "inverse": "#ffffff",
+          "link": "#6752bf",
+          "link_hover": "#4e3aa4"
+        },
+        "border": {
+          "subtle": "rgba(26,86,51,0.12)",
+          "default": "rgba(26,86,51,0.20)",
+          "strong": "rgba(26,86,51,0.36)",
+          "inverse": "rgba(255,255,255,0.24)"
+        },
+        "focus": {
+          "ring": "rgba(46,125,87,0.28)",
+          "outline": "#2e7d57"
+        },
+        "state": {
+          "success": {
+            "background": "#fbe4d3",
+            "border": "#f4ad77",
+            "text": "#b55211",
+            "on_solid": "#ffffff",
+            "note": "Se conserva la semántica del manual. En flujos de producto, usar texto claro: naranja también puede leerse como aviso."
+          },
+          "info": {
+            "background": "#e3f9f7",
+            "border": "#ace5e0",
+            "text": "#006d66",
+            "solid": "#00a499",
+            "on_solid": "#141c18"
+          },
+          "critical": {
+            "background": "#fdecec",
+            "border": "#ef9a9a",
+            "text": "#8f1d1d",
+            "solid": "#c62828",
+            "on_solid": "#ffffff"
+          },
+          "warning": {
+            "background": "#fff8e1",
+            "border": "#ffe082",
+            "text": "#5d4200",
+            "solid": "#f9a825",
+            "on_solid": "#141c18",
+            "note": "No usar texto blanco sobre amarillo; no alcanza contraste para texto normal."
+          }
+        },
+        "accent": {
+          "corporativo": {
+            "solid": "#1a5633",
+            "soft": "#ddefe6",
+            "tint": "rgba(26,86,51,0.10)",
+            "text": "#1a5633"
+          },
+          "construccion": {
+            "solid": "#b55211",
+            "soft": "#fbe4d3",
+            "tint": "rgba(181,82,17,0.12)",
+            "text": "#8b3c09"
+          },
+          "inmobiliario": {
+            "solid": "#00a499",
+            "soft": "#e3f9f7",
+            "tint": "rgba(0,164,153,0.12)",
+            "text": "#006d66"
+          },
+          "arquitectura": {
+            "solid": "#6752bf",
+            "soft": "#edeafb",
+            "tint": "rgba(103,82,191,0.12)",
+            "text": "#4e3aa4"
+          }
+        }
+      },
+      "gradients": {
+        "primary": "linear-gradient(135deg, #1a5633 0%, #2e7d57 52%, #00a499 100%)",
+        "surface": "linear-gradient(180deg, rgba(255,255,255,0.90) 0%, rgba(221,239,230,0.72) 100%)",
+        "hero": "radial-gradient(circle at 12% 8%, rgba(167,213,193,0.78) 0%, rgba(167,213,193,0) 38%), radial-gradient(circle at 82% 18%, rgba(0,164,153,0.30) 0%, rgba(0,164,153,0) 32%), linear-gradient(180deg, #fbfdfc 0%, #eef4f1 100%)",
+        "construccion": "linear-gradient(135deg, #b55211 0%, #e87722 100%)",
+        "inmobiliario": "linear-gradient(135deg, #00a499 0%, #5ec9bd 100%)",
+        "arquitectura": "linear-gradient(135deg, #6752bf 0%, #9485d6 100%)",
+        "glass_highlight": "linear-gradient(180deg, rgba(255,255,255,0.82) 0%, rgba(255,255,255,0.46) 100%)"
+      }
+    },
+    "typography": {
+      "font_family": {
+        "base": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+        "display": "'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+      },
+      "usage": {
+        "display": "Montserrat solo para h1-h4, cifras grandes, hero y llamados visuales. Pesos 600/700.",
+        "base": "Inter para cuerpo, tablas, formularios, navegación, dashboards e informes. Pesos 400/500.",
+        "limit": "Máximo dos familias por vista. Evitar mayúsculas prolongadas."
+      },
+      "scale": {
+        "h1": {
+          "mobile": "clamp(1.75rem, 5vw + 1rem, 2.5rem)"
+        },
+        "h2": {
+          "mobile": "clamp(1.5rem, 4.5vw + 1rem, 2rem)"
+        },
+        "h3": {
+          "mobile": "clamp(1.25rem, 4vw + 1rem, 1.75rem)"
+        },
+        "h4": {
+          "mobile": "clamp(1.125rem, 3.5vw + 1rem, 1.5rem)"
+        },
+        "h5": {
+          "mobile": "1rem"
+        },
+        "body": {
+          "mobile": "0.9375rem"
+        },
+        "caption": {
+          "mobile": "0.8125rem"
+        }
+      },
+      "line_height": {
+        "tight": 1.2,
+        "default": 1.4,
+        "spacious": 1.6
+      },
+      "font_weight": {
+        "regular": 400,
+        "medium": 500,
+        "semibold": 600,
+        "bold": 700
+      },
+      "letter_spacing": {
+        "body": "0em",
+        "caption": "0.01em",
+        "eyebrow": "0.08em"
+      }
+    },
+    "space": {
+      "base_unit_px": 4,
+      "scale_px": [
+        4,
+        8,
+        12,
+        16,
+        24,
+        32,
+        40,
+        48,
+        56,
+        64
+      ],
+      "named": {
+        "1": 4,
+        "2": 8,
+        "3": 12,
+        "4": 16,
+        "6": 24,
+        "8": 32,
+        "10": 40,
+        "12": 48,
+        "14": 56,
+        "16": 64
+      }
+    },
+    "breakpoints": {
+      "xs": {
+        "width": 0,
+        "columns": 4,
+        "gutter": 16
+      },
+      "sm": {
+        "width": 414,
+        "columns": 4,
+        "gutter": 16
+      },
+      "md": {
+        "width": 768,
+        "columns": 8,
+        "gutter": 24
+      },
+      "lg": {
+        "width": 1024,
+        "columns": 12,
+        "gutter": 24
+      },
+      "xl": {
+        "width": 1280,
+        "columns": 12,
+        "gutter": 24
+      }
+    },
+    "radius": {
+      "none": "0px",
+      "xs": "4px",
+      "sm": "8px",
+      "md": "12px",
+      "lg": "16px",
+      "xl": "20px",
+      "2xl": "24px",
+      "3xl": "32px",
+      "pill": "9999px",
+      "usage": {
+        "inputs": "12px",
+        "buttons": "12px",
+        "cards": "16px",
+        "hero_panels": "24px",
+        "floating_controls": "9999px",
+        "nested_rule": "El radio interno debe ser menor que el externo por el padding visual. Ejemplo: card 24px, media interna 16px."
+      }
+    },
+    "border": {
+      "width": {
+        "hairline": "1px",
+        "default": "1px",
+        "strong": "2px"
+      },
+      "style": {
+        "default": "solid"
+      },
+      "color": {
+        "subtle": "rgba(26,86,51,0.12)",
+        "default": "rgba(26,86,51,0.20)",
+        "strong": "rgba(26,86,51,0.36)",
+        "focus": "#2e7d57",
+        "danger": "#ef9a9a",
+        "warning": "#ffe082"
+      }
+    },
+    "shadow": {
+      "none": "none",
+      "xs": "0 1px 2px rgba(20,28,24,0.06)",
+      "sm": "0 2px 6px rgba(20,28,24,0.08)",
+      "md": "0 8px 24px rgba(20,28,24,0.10)",
+      "lg": "0 16px 48px rgba(20,28,24,0.14)",
+      "xl": "0 24px 72px rgba(20,28,24,0.18)",
+      "focus": "0 0 0 4px rgba(46,125,87,0.28)",
+      "accent_corporativo": "0 12px 32px rgba(26,86,51,0.18)",
+      "usage": {
+        "cards": "xs o sm",
+        "sticky_header": "sm",
+        "dropdowns": "md",
+        "modals": "lg/xl",
+        "hover": "subir un nivel como máximo"
+      }
+    },
+    "blur": {
+      "glass": "18px",
+      "overlay": "28px",
+      "usage": "Usar blur solo en headers, floating bars, sheets, popovers y hero overlays. Debe tener borde sutil y fallback sólido."
+    },
+    "motion": {
+      "duration_ms": {
+        "fast": 120,
+        "default": 200,
+        "slow": 400
+      },
+      "easing": {
+        "standard": "cubic-bezier(0.4, 0.0, 0.2, 1)",
+        "deceleration": "cubic-bezier(0.0, 0.0, 0.2, 1)",
+        "acceleration": "cubic-bezier(0.4, 0.0, 1, 1)"
+      },
+      "properties": [
+        "opacity",
+        "transform",
+        "background-color",
+        "border-color",
+        "box-shadow"
+      ],
+      "accessibility": "Respetar prefers-reduced-motion: reducir transformaciones y mantener cambios de opacidad simples."
+    },
+    "iconography": {
+      "style": "lineal, simple, 2px stroke, esquinas redondeadas (2px), sin rellenos sólidos excepto en marcas críticas.",
+      "grid_size": 24,
+      "consistent_keyline": true,
+      "usage": {
+        "corporativo": "--color-corporativo-principal",
+        "construccion": "--color-construccion-principal",
+        "inmobiliario": "--color-inmobiliario-principal",
+        "arquitectura": "--color-arquitectura-principal"
+      },
+      "accessibility": "Ofrecer un alt text conciso con el propósito del ícono."
+    },
+    "z_index": {
+      "base": 0,
+      "sticky": 100,
+      "dropdown": 300,
+      "overlay": 600,
+      "modal": 700,
+      "toast": 800
+    }
+  },
+  "components": {
+    "button": {
+      "base": {
+        "height": "44px",
+        "min_width": "44px",
+        "padding_inline": "16px",
+        "gap": "8px",
+        "radius": "12px",
+        "font_family": "Inter",
+        "font_weight": 600,
+        "font_size": "0.9375rem",
+        "transition": "background-color 200ms cubic-bezier(0.4, 0.0, 0.2, 1), border-color 200ms cubic-bezier(0.4, 0.0, 0.2, 1), box-shadow 200ms cubic-bezier(0.4, 0.0, 0.2, 1), transform 120ms cubic-bezier(0.0, 0.0, 0.2, 1)",
+        "active_transform": "translateY(1px)",
+        "focus": "0 0 0 4px rgba(46,125,87,0.28)",
+        "disabled": {
+          "opacity": 0.46,
+          "cursor": "not-allowed"
+        }
+      },
+      "sizes": {
+        "sm": {
+          "height": "36px",
+          "padding_inline": "12px",
+          "font_size": "0.875rem",
+          "radius": "10px"
+        },
+        "md": {
+          "height": "44px",
+          "padding_inline": "16px",
+          "font_size": "0.9375rem",
+          "radius": "12px"
+        },
+        "lg": {
+          "height": "52px",
+          "padding_inline": "20px",
+          "font_size": "1rem",
+          "radius": "14px"
+        },
+        "icon": {
+          "height": "44px",
+          "width": "44px",
+          "padding_inline": "0px",
+          "radius": "12px"
+        }
+      },
+      "variants": {
+        "primary": {
+          "background": "#1a5633",
+          "color": "#ffffff",
+          "border": "1px solid #1a5633",
+          "shadow": "0 2px 6px rgba(20,28,24,0.08)",
+          "hover": {
+            "background": "#2e7d57",
+            "border": "1px solid #2e7d57",
+            "shadow": "0 8px 24px rgba(20,28,24,0.10)"
+          }
+        },
+        "secondary": {
+          "background": "#ddefe6",
+          "color": "#1a5633",
+          "border": "1px solid rgba(26,86,51,0.20)",
+          "hover": {
+            "background": "#cfe8db",
+            "border": "1px solid rgba(26,86,51,0.36)"
+          }
+        },
+        "tonal_glass": {
+          "background": "rgba(255,255,255,0.68)",
+          "color": "#1a5633",
+          "border": "1px solid rgba(26,86,51,0.12)",
+          "backdrop_filter": "blur(18px)",
+          "hover": {
+            "background": "rgba(255,255,255,0.82)",
+            "shadow": "0 8px 24px rgba(20,28,24,0.10)"
+          }
+        },
+        "ghost": {
+          "background": "transparent",
+          "color": "#1a5633",
+          "border": "1px solid transparent",
+          "hover": {
+            "background": "rgba(26,86,51,0.08)"
+          }
+        },
+        "link": {
+          "background": "transparent",
+          "color": "#6752bf",
+          "border": "1px solid transparent",
+          "padding_inline": "0px",
+          "hover": {
+            "color": "#4e3aa4",
+            "text_decoration": "underline"
+          }
+        },
+        "danger": {
+          "background": "#c62828",
+          "color": "#ffffff",
+          "border": "1px solid #c62828",
+          "hover": {
+            "background": "#a91f1f",
+            "border": "1px solid #a91f1f"
+          }
+        },
+        "warning": {
+          "background": "#f9a825",
+          "color": "#141c18",
+          "border": "1px solid #f9a825",
+          "hover": {
+            "background": "#ffca28",
+            "border": "1px solid #ffca28"
+          }
+        },
+        "feature_gradient": {
+          "background": "linear-gradient(135deg, #1a5633 0%, #2e7d57 52%, #00a499 100%)",
+          "color": "#ffffff",
+          "border": "1px solid rgba(255,255,255,0.24)",
+          "shadow": "0 12px 32px rgba(26,86,51,0.18)",
+          "usage": "Solo una vez por vista: hero CTA, propuesta comercial o acción de mayor valor."
+        }
+      }
+    },
+    "card": {
+      "base": {
+        "background": "#ffffff",
+        "border": "1px solid rgba(26,86,51,0.12)",
+        "radius": "16px",
+        "padding": "24px",
+        "shadow": "0 1px 2px rgba(20,28,24,0.06)"
+      },
+      "variants": {
+        "subtle": {
+          "background": "#ddefe6",
+          "border": "1px solid rgba(26,86,51,0.12)",
+          "shadow": "none"
+        },
+        "elevated": {
+          "background": "#ffffff",
+          "border": "1px solid rgba(26,86,51,0.12)",
+          "shadow": "0 8px 24px rgba(20,28,24,0.10)"
+        },
+        "glass": {
+          "background": "rgba(255,255,255,0.68)",
+          "border": "1px solid rgba(26,86,51,0.12)",
+          "backdrop_filter": "blur(18px)",
+          "shadow": "0 16px 48px rgba(20,28,24,0.14)"
+        },
+        "metric": {
+          "background": "linear-gradient(180deg, rgba(255,255,255,0.90) 0%, rgba(221,239,230,0.72) 100%)",
+          "radius": "20px",
+          "padding": "24px",
+          "accent_bar": "4px solid #1a5633"
+        },
+        "domain_construccion": {
+          "accent_bar": "4px solid #b55211",
+          "background": "#fbe4d3"
+        },
+        "domain_inmobiliario": {
+          "accent_bar": "4px solid #00a499",
+          "background": "#e3f9f7"
+        },
+        "domain_arqui": {
+          "accent_bar": "4px solid #6752bf",
+          "background": "#edeafb"
+        }
+      }
+    },
+    "header": {
+      "height": {
+        "xs": "56px",
+        "lg": "72px"
+      },
+      "logo_max_width": {
+        "xs": "160px",
+        "lg": "240px"
+      },
+      "background": "rgba(251,253,252,0.74)",
+      "backdrop_filter": "blur(18px)",
+      "border_bottom": "1px solid rgba(26,86,51,0.12)",
+      "shadow_on_scroll": "0 2px 6px rgba(20,28,24,0.08)",
+      "padding_inline": {
+        "xs": "16px",
+        "md": "24px"
+      }
+    },
+    "input": {
+      "base": {
+        "height": "44px",
+        "padding_inline": "12px",
+        "radius": "12px",
+        "background": "#ffffff",
+        "border": "1px solid rgba(26,86,51,0.20)",
+        "color": "#141c18",
+        "placeholder_color": "#72857a",
+        "focus": {
+          "border": "1px solid #2e7d57",
+          "shadow": "0 0 0 4px rgba(46,125,87,0.28)"
+        },
+        "error": {
+          "border": "1px solid #c62828",
+          "shadow": "0 0 0 4px rgba(198,40,40,0.16)"
+        }
+      },
+      "textarea": {
+        "min_height": "96px",
+        "padding": "12px 14px",
+        "resize": "vertical"
+      }
+    },
+    "label_badge": {
+      "base": {
+        "height": "24px",
+        "padding_inline": "12px",
+        "radius": "9999px",
+        "font_size": "0.75rem",
+        "font_weight": 500,
+        "background": "#ddefe6",
+        "color": "#1a5633"
+      },
+      "variants": {
+        "corporativo": {
+          "background": "#ddefe6",
+          "color": "#1a5633"
+        },
+        "construccion": {
+          "background": "#fbe4d3",
+          "color": "#8b3c09"
+        },
+        "inmobiliario": {
+          "background": "#e3f9f7",
+          "color": "#006d66"
+        },
+        "arquitectura": {
+          "background": "#edeafb",
+          "color": "#4e3aa4"
+        },
+        "critical": {
+          "background": "#fdecec",
+          "color": "#8f1d1d"
+        },
+        "warning": {
+          "background": "#fff8e1",
+          "color": "#5d4200"
+        }
+      }
+    },
+    "table": {
+      "container": {
+        "radius": "16px",
+        "border": "1px solid rgba(26,86,51,0.12)",
+        "overflow": "hidden",
+        "background": "#ffffff"
+      },
+      "header": {
+        "background": "#2e7d57",
+        "color": "#ffffff",
+        "font_weight": 600,
+        "height": "44px"
+      },
+      "cell": {
+        "padding": "12px",
+        "border_bottom": "1px solid rgba(26,86,51,0.12)",
+        "font_size": "0.9375rem"
+      },
+      "row": {
+        "even_background": "#f7faf8",
+        "hover_background": "#ddefe6",
+        "selected_background": "#ddefe6"
+      }
+    },
+    "segmented_control": {
+      "container": {
+        "background": "rgba(26,86,51,0.08)",
+        "radius": "9999px",
+        "padding": "4px",
+        "border": "1px solid rgba(26,86,51,0.12)"
+      },
+      "item": {
+        "height": "36px",
+        "padding_inline": "14px",
+        "radius": "9999px",
+        "color": "#52645a"
+      },
+      "item_active": {
+        "background": "#ffffff",
+        "color": "#1a5633",
+        "shadow": "0 1px 2px rgba(20,28,24,0.06)"
+      }
+    },
+    "tabs": {
+      "bar": {
+        "gap": "4px",
+        "border_bottom": "1px solid rgba(26,86,51,0.12)"
+      },
+      "item": {
+        "height": "44px",
+        "padding_inline": "12px",
+        "color": "#52645a",
+        "border_bottom": "2px solid transparent"
+      },
+      "item_active": {
+        "color": "#1a5633",
+        "border_bottom": "2px solid #1a5633"
+      }
+    },
+    "alert": {
+      "base": {
+        "radius": "16px",
+        "padding": "16px",
+        "border_width": "1px",
+        "icon_size": "24px"
+      },
+      "variants": {
+        "critical": {
+          "background": "#fdecec",
+          "border": "#ef9a9a",
+          "title": "#8f1d1d",
+          "text": "#5c1717"
+        },
+        "warning": {
+          "background": "#fff8e1",
+          "border": "#ffe082",
+          "title": "#5d4200",
+          "text": "#3f2d00"
+        },
+        "info": {
+          "background": "#e3f9f7",
+          "border": "#ace5e0",
+          "title": "#006d66",
+          "text": "#173f3d"
+        },
+        "success": {
+          "background": "#fbe4d3",
+          "border": "#f4ad77",
+          "title": "#8b3c09",
+          "text": "#4e2408"
+        }
+      }
+    },
+    "modal_sheet": {
+      "overlay": {
+        "background": "rgba(11,16,13,0.38)",
+        "backdrop_filter": "blur(8px)"
+      },
+      "panel": {
+        "background": "#ffffff",
+        "radius": {
+          "xs": "24px 24px 0 0",
+          "md": "24px"
+        },
+        "shadow": "0 24px 72px rgba(20,28,24,0.18)",
+        "border": "1px solid rgba(26,86,51,0.12)",
+        "padding": "24px"
+      }
+    },
+    "toast": {
+      "container": {
+        "background": "rgba(20,28,24,0.92)",
+        "color": "#ffffff",
+        "radius": "16px",
+        "padding": "12px 16px",
+        "shadow": "0 16px 48px rgba(20,28,24,0.14)",
+        "backdrop_filter": "blur(18px)"
+      },
+      "action": {
+        "color": "#a7d5c1"
+      }
+    },
+    "tooltip": {
+      "background": "#141c18",
+      "color": "#ffffff",
+      "radius": "8px",
+      "padding": "8px 10px",
+      "font_size": "0.8125rem",
+      "shadow": "0 8px 24px rgba(20,28,24,0.10)"
+    },
+    "empty_state": {
+      "container": {
+        "padding": "48px 24px",
+        "radius": "24px",
+        "background": "linear-gradient(180deg, rgba(255,255,255,0.90) 0%, rgba(221,239,230,0.72) 100%)",
+        "border": "1px solid rgba(26,86,51,0.12)"
+      },
+      "icon": {
+        "size": "48px",
+        "color": "#2e7d57"
+      },
+      "title": {
+        "font_family": "Montserrat",
+        "font_weight": 600
+      },
+      "body": {
+        "color": "#52645a"
+      }
+    }
+  },
+  "layout": {
+    "grid": {
+      "xs": {
+        "columns": 4,
+        "gutter": "16px",
+        "margin": "16px"
+      },
+      "sm": {
+        "columns": 4,
+        "gutter": "16px",
+        "margin": "16px"
+      },
+      "md": {
+        "columns": 8,
+        "gutter": "24px",
+        "margin": "24px"
+      },
+      "lg": {
+        "columns": 12,
+        "gutter": "24px",
+        "margin": "32px"
+      },
+      "xl": {
+        "columns": 12,
+        "gutter": "24px",
+        "margin": "40px"
+      }
+    },
+    "container_max_width": {
+      "content": "1120px",
+      "wide": "1280px",
+      "dashboard": "1440px"
+    },
+    "density": {
+      "marketing": "espaciado amplio, cards 24px, hero gradient controlado",
+      "dashboard": "más densidad, tablas claras, acentos por estado o dominio",
+      "internal_tools": "priorizar legibilidad, filtros visibles y estados de error fuertes"
+    }
+  },
+  "patterns": {
+    "apple_inspired_without_copying": [
+      "Usar fondos claros, capas con borde sutil y sombra baja.",
+      "Usar header translúcido solo sobre fondos limpios; si hay foto o video, usar superficie sólida.",
+      "Usar radio concéntrico en cards, media interna y botones.",
+      "Usar motion corto, con cambio de opacidad y desplazamiento mínimo.",
+      "No usar glass en tablas densas ni en contenido de lectura prolongada."
+    ],
+    "accent_rules": {
+      "corporativo": "Navegación, botones primarios, foco, selección, KPIs generales.",
+      "construccion": "Obra, avance físico, costos de construcción, hitos de proyecto. Evitar usarlo como warning si la vista ya contiene advertencias.",
+      "inmobiliario": "Ventas, inmuebles, comercial, disponibilidad, pipeline.",
+      "arquitectura": "Diseño, planos, BIM, documentación, vínculos y recursos descargables.",
+      "critical_warning": "Reservar rojo y amarillo para estado, no para decoración."
+    }
+  },
+  "accessibility": {
+    "contrast": {
+      "normal_text": "4.5:1 mínimo",
+      "large_text_and_icons": "3:1 mínimo",
+      "warning_rule": "Texto oscuro sobre amarillo; no texto blanco."
+    },
+    "hit_area": "44px mínimo",
+    "focus_visible": "Siempre visible con ring corporativo de 4px",
+    "reduced_motion": "Eliminar translate/scale no necesarios y mantener fades cortos",
+    "icons": "Alt text conciso cuando el icono comunica información; aria-hidden cuando es decorativo."
+  },
+  "css_custom_properties": {
+    "--ds-color-corporativo-principal": "#1a5633",
+    "--ds-color-corporativo-medio": "#2e7d57",
+    "--ds-color-corporativo-claro": "#a7d5c1",
+    "--ds-color-corporativo-muy-claro": "#ddefe6",
+    "--ds-color-construccion-principal": "#b55211",
+    "--ds-color-construccion-medio": "#e87722",
+    "--ds-color-construccion-claro": "#f4ad77",
+    "--ds-color-construccion-muy-claro": "#fbe4d3",
+    "--ds-color-inmobiliario-principal": "#00a499",
+    "--ds-color-inmobiliario-medio": "#5ec9bd",
+    "--ds-color-inmobiliario-claro": "#ace5e0",
+    "--ds-color-inmobiliario-muy-claro": "#e3f9f7",
+    "--ds-color-arquitectura-principal": "#6752bf",
+    "--ds-color-arquitectura-medio": "#9485d6",
+    "--ds-color-arquitectura-claro": "#c7beef",
+    "--ds-color-arquitectura-muy-claro": "#edeafb",
+    "--ds-color-alerta-critico": "#c62828",
+    "--ds-color-alerta-alto": "#e53935",
+    "--ds-color-alerta-medio": "#ef9a9a",
+    "--ds-color-alerta-fondo": "#fdecec",
+    "--ds-color-advertencia-critico": "#f9a825",
+    "--ds-color-advertencia-alto": "#ffca28",
+    "--ds-color-advertencia-medio": "#ffe082",
+    "--ds-color-advertencia-fondo": "#fff8e1",
+    "--ds-color-neutral-0": "#ffffff",
+    "--ds-color-neutral-25": "#fbfdfc",
+    "--ds-color-neutral-50": "#f7faf8",
+    "--ds-color-neutral-100": "#eef4f1",
+    "--ds-color-neutral-200": "#dde7e1",
+    "--ds-color-neutral-300": "#c7d4cc",
+    "--ds-color-neutral-400": "#9daea4",
+    "--ds-color-neutral-500": "#72857a",
+    "--ds-color-neutral-600": "#52645a",
+    "--ds-color-neutral-700": "#38483f",
+    "--ds-color-neutral-800": "#233029",
+    "--ds-color-neutral-900": "#141c18",
+    "--ds-color-neutral-950": "#0b100d",
+    "--ds-color-bg-canvas": "#f7faf8",
+    "--ds-color-bg-page": "#fbfdfc",
+    "--ds-color-bg-subtle": "#eef4f1",
+    "--ds-color-surface": "#ffffff",
+    "--ds-color-surface-raised": "rgba(255,255,255,0.82)",
+    "--ds-color-surface-glass": "rgba(255,255,255,0.68)",
+    "--ds-color-surface-tint": "rgba(221,239,230,0.72)",
+    "--ds-color-text-primary": "#141c18",
+    "--ds-color-text-secondary": "#52645a",
+    "--ds-color-text-tertiary": "#72857a",
+    "--ds-color-text-inverse": "#ffffff",
+    "--ds-color-border-subtle": "rgba(26,86,51,0.12)",
+    "--ds-color-border-default": "rgba(26,86,51,0.20)",
+    "--ds-color-border-strong": "rgba(26,86,51,0.36)",
+    "--ds-color-focus-ring": "rgba(46,125,87,0.28)",
+    "--ds-color-link": "#6752bf",
+    "--ds-color-link-hover": "#4e3aa4",
+    "--ds-font-base": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+    "--ds-font-display": "'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+    "--ds-font-size-h1": "clamp(1.75rem, 5vw + 1rem, 2.5rem)",
+    "--ds-font-size-h2": "clamp(1.5rem, 4.5vw + 1rem, 2rem)",
+    "--ds-font-size-h3": "clamp(1.25rem, 4vw + 1rem, 1.75rem)",
+    "--ds-font-size-h4": "clamp(1.125rem, 3.5vw + 1rem, 1.5rem)",
+    "--ds-font-size-body": "0.9375rem",
+    "--ds-font-size-caption": "0.8125rem",
+    "--ds-line-height-tight": "1.2",
+    "--ds-line-height-default": "1.4",
+    "--ds-line-height-spacious": "1.6",
+    "--ds-space-1": "4px",
+    "--ds-space-2": "8px",
+    "--ds-space-3": "12px",
+    "--ds-space-4": "16px",
+    "--ds-space-6": "24px",
+    "--ds-space-8": "32px",
+    "--ds-space-10": "40px",
+    "--ds-space-12": "48px",
+    "--ds-space-14": "56px",
+    "--ds-space-16": "64px",
+    "--ds-radius-none": "0px",
+    "--ds-radius-xs": "4px",
+    "--ds-radius-sm": "8px",
+    "--ds-radius-md": "12px",
+    "--ds-radius-lg": "16px",
+    "--ds-radius-xl": "20px",
+    "--ds-radius-2xl": "24px",
+    "--ds-radius-3xl": "32px",
+    "--ds-radius-pill": "9999px",
+    "--ds-border-width-hairline": "1px",
+    "--ds-border-width-default": "1px",
+    "--ds-border-width-strong": "2px",
+    "--ds-shadow-xs": "0 1px 2px rgba(20,28,24,0.06)",
+    "--ds-shadow-sm": "0 2px 6px rgba(20,28,24,0.08)",
+    "--ds-shadow-md": "0 8px 24px rgba(20,28,24,0.10)",
+    "--ds-shadow-lg": "0 16px 48px rgba(20,28,24,0.14)",
+    "--ds-shadow-xl": "0 24px 72px rgba(20,28,24,0.18)",
+    "--ds-shadow-focus": "0 0 0 4px rgba(46,125,87,0.28)",
+    "--ds-shadow-accent-corporativo": "0 12px 32px rgba(26,86,51,0.18)",
+    "--ds-gradient-primary": "linear-gradient(135deg, #1a5633 0%, #2e7d57 52%, #00a499 100%)",
+    "--ds-gradient-surface": "linear-gradient(180deg, rgba(255,255,255,0.90) 0%, rgba(221,239,230,0.72) 100%)",
+    "--ds-gradient-hero": "radial-gradient(circle at 12% 8%, rgba(167,213,193,0.78) 0%, rgba(167,213,193,0) 38%), radial-gradient(circle at 82% 18%, rgba(0,164,153,0.30) 0%, rgba(0,164,153,0) 32%), linear-gradient(180deg, #fbfdfc 0%, #eef4f1 100%)",
+    "--ds-gradient-construccion": "linear-gradient(135deg, #b55211 0%, #e87722 100%)",
+    "--ds-gradient-inmobiliario": "linear-gradient(135deg, #00a499 0%, #5ec9bd 100%)",
+    "--ds-gradient-arquitectura": "linear-gradient(135deg, #6752bf 0%, #9485d6 100%)",
+    "--ds-blur-glass": "18px",
+    "--ds-blur-overlay": "28px",
+    "--ds-duration-fast": "120ms",
+    "--ds-duration-default": "200ms",
+    "--ds-duration-slow": "400ms",
+    "--ds-ease-standard": "cubic-bezier(0.4, 0.0, 0.2, 1)",
+    "--ds-ease-deceleration": "cubic-bezier(0.0, 0.0, 0.2, 1)",
+    "--ds-ease-acceleration": "cubic-bezier(0.4, 0.0, 1, 1)"
+  },
+  "implementation_notes": {
+    "naming": "Usar prefijo --ds-* para tokens nuevos y mantener aliases desde los tokens originales si hay CSS legado.",
+    "theming": "Light-first. Dark mode debe mapear semantic tokens, no reescribir componentes uno por uno.",
+    "qa": "Validar contraste, focus visible, responsive xs-md-lg, estados hover/active/disabled/loading/error y reduced-motion antes de publicar."
+  }
+}

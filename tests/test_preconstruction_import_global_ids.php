@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Admin\Models\Project;
 use App\Controllers\Api\GeneralApiController;
+use App\Security\CsrfTokenManager;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
@@ -119,6 +120,7 @@ try {
     ];
     $_SERVER['HTTP_ACCEPT'] = 'application/json';
     $_SERVER['HTTP_X_AIA_EXPECT_JSON'] = '1';
+    $_SERVER['HTTP_X_CSRF_TOKEN'] = CsrfTokenManager::generate('programa_general_save');
 
     http_response_code(200);
     ob_start();

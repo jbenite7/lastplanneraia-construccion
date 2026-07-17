@@ -3,6 +3,7 @@
 namespace App\Controllers\Api;
 
 use App\Controllers\BaseController;
+use App\Security\CsrfTokenManager;
 use App\Services\SemiAutoService;
 use App\Support\ModuleRequestContext;
 use Throwable;
@@ -22,6 +23,15 @@ class PdcAutoGenerateController extends BaseController
         header('Content-Type: application/json; charset=utf-8');
 
         try {
+            $csrfToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? $_POST['_csrf_token'] ?? '';
+            if (!CsrfTokenManager::validate($csrfToken, 'pdc_save')) {
+                http_response_code(403);
+                echo json_encode([
+                    'respuesta' => 'ERROR',
+                    'mensaje' => 'Token CSRF inválido o ausente.',
+                ], JSON_UNESCAPED_UNICODE);
+                return;
+            }
             $this->authorizePermission('lps.pdc.auto_generar', 'No autorizado para generar el Plan de Compras.');
             $context = ModuleRequestContext::resolve(['allow_zero_week' => false]);
             $preview = $this->service->preview(SemiAutoService::MODULE_PDC, $context);

@@ -1,3 +1,5 @@
+SET NAMES utf8mb4;
+
 -- Feedback 2026-07-02:
 -- - Red Electrica debe proponer Suministro + Mano de Obra por defecto.
 -- - Pinturas debe quedar por defecto como Suministro e Instalacion, sin combinar MO + SI.

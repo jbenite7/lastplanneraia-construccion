@@ -29,6 +29,7 @@ class RbacManager
 
         return [
             'isSystemAdmin' => $isSystemAdmin,
+            RbacCatalog::PERM_INTERNAL_DESIGN_SYSTEM_VIEW => $isSystemAdmin,
             'canManageWeeks' => $canManageWeeks,
             'canDeleteRows' => in_array($role, ['A', 'D']),
             'canEditGeneralProgram' => $canEditGeneralProgram,

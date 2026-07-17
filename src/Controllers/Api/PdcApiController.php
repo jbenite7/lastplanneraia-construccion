@@ -2,12 +2,26 @@
 
 namespace App\Controllers\Api;
 
+use App\Security\CsrfTokenManager;
 use App\Support\ModuleRequestContext;
 use PDO;
 use Throwable;
 
 class PdcApiController
 {
+    private const ARCHIVE_COLUMNS = 'project_id, pdc_row_id, consecutivo, semana, titulo, tipoPaquete, paqueteContratacion, contratos,
+        numeroSubcontratos, subcontratoPaquete, estado, fechaElaboracionPliegos,
+        diasElaboracionPliegos, fechaRealElaboracionPliegos, fechaEntregaPliegos,
+        diasEntregaPliegos, fechaRealEntregaPliegos, fechaReciboPropuestas,
+        diasReciboPropuestas, fechaRealReciboPropuestas, fechaCuadrosComparativos,
+        diasCuadrosComparativos, fechaRealCuadrosComparativos, fechaLegalizacionContrato,
+        diasLegalizacionContrato, fechaRealLegalizacionContrato, fechaFabricacion,
+        diasFabricacion, fechaRealFabricacion, fechaInsumosObra, diasInsumosObra,
+        fechaRealInsumosObra, fechaInicio, fechaInicioProyectada, fechaRealInicio,
+        idProveedorAdjudicado, numeroContrato, aplicaPolizas, fechaVencimientoPolizas,
+        valorPresupuesto, valorPrimeraNegociacion, valorAdjudicado, valorAnticipo,
+        valorReclamado, valorDevoluciones, observacionesContrato';
+
     private const ALLOWED_PROVIDER_TYPES = [
         'Mano de Obra',
         'Suministro e Instalación',
@@ -27,7 +41,7 @@ class PdcApiController
         $definirContratos = (int) ($_GET['definirContratos'] ?? 0);
 
         $condicionContratos = ($definirContratos == 1)
-            ? "AND numeroSubcontratos IS NOT NULL AND titulo = 0 "
+            ? "AND numeroSubcontratos IS NOT NULL AND titulo = 0 AND subcontratoPaquete = 1 "
             : "";
 
         try {
@@ -45,22 +59,7 @@ class PdcApiController
             $conteo = (int) ($stmt->fetch()["conteo"] ?? 0);
 
             if ($conteo == 0) {
-                $arreglo["data"][] = [
-                    "boton" => "", "consecutivo" => "", "id" => "", "titulo" => "", "semana" => "",
-                    "tipoPaquete" => "", "paqueteContratacion" => "", "contratos" => "", "numeroSubcontratos" => "",
-                    "subcontratoPaquete" => "", "estado" => "", "fechaElaboracionPliegos" => "",
-                    "diasElaboracionPliegos" => "", "fechaRealElaboracionPliegos" => "", "fechaEntregaPliegos" => "",
-                    "diasEntregaPliegos" => "", "fechaRealEntregaPliegos" => "", "fechaReciboPropuestas" => "",
-                    "diasReciboPropuestas" => "", "fechaRealReciboPropuestas" => "", "fechaCuadrosComparativos" => "",
-                    "diasCuadrosComparativos" => "", "fechaRealCuadrosComparativos" => "", "fechaLegalizacionContrato" => "",
-                    "diasLegalizacionContrato" => "", "fechaRealLegalizacionContrato" => "", "fechaFabricacion" => "",
-                    "diasFabricacion" => "", "fechaRealFabricacion" => "", "fechaInsumosObra" => "",
-                    "diasInsumosObra" => "", "fechaRealInsumosObra" => "", "fechaInicio" => "",
-                    "fechaInicioProyectada" => "", "fechaRealInicio" => "", "idProveedorAdjudicado" => "",
-                    "fechaVencimientoPolizas" => "", "observacionesContrato" => "", "ordenVisual" => "",
-                    "diasDelta" => 0, "deberiaHoyDate" => "", "necesitaConfiguracion" => 0, "listoParaIniciar" => 0,
-                ];
-                $this->json($arreglo);
+                $this->json(["data" => []]);
                 return;
             }
 
@@ -206,6 +205,7 @@ class PdcApiController
                 'nueva_sem',
                 'eliminar_sem',
                 'eliminar_actividad_pdc',
+                'restaurar_actividad_pdc',
                 'guardar_actividad_pdc',
                 'adjudicar_pdc',
                 'modificar',
@@ -214,23 +214,30 @@ class PdcApiController
             ], true) || isset($_POST['columna']);
 
             if ($isEditOperation) {
+                $this->requireValidCsrf();
                 $this->requirePermission('lps.pdc.editar', 'No autorizado para modificar el plan de compras.');
             }
 
             switch ($opcion) {
                 case "nueva_sem":
+                    $this->requirePermission('lps.semana.crear', 'No autorizado para crear semanas.');
                     $f_inicio_sem = $_POST['f_inicio_sem'] ?? '';
                     $db = $dbPrefix;
                     require(PROJECT_ROOT . "/src/Legacy/nueva_semana.php");
                     break;
 
                 case "eliminar_sem":
+                    $this->requirePermission('lps.semana.eliminar', 'No autorizado para eliminar semanas.');
                     $db = $dbPrefix;
                     require(PROJECT_ROOT . "/src/Legacy/eliminar_semana.php");
                     break;
 
                 case "eliminar_actividad_pdc":
                     $this->eliminarActividad($dbPrefix, $projectId, $semana);
+                    break;
+
+                case "restaurar_actividad_pdc":
+                    $this->restaurarActividad($dbPrefix, $projectId, $semana);
                     break;
 
                 case "guardar_actividad_pdc":
@@ -271,6 +278,76 @@ class PdcApiController
         }
     }
 
+    public function updateCell(): void
+    {
+        try {
+            $this->requireValidCsrf();
+            $context = ModuleRequestContext::resolve();
+            $projectId = (int) $context['projectId'];
+            $semana = (int) $context['semana'];
+
+            $this->requirePermission('lps.pdc.editar', 'No autorizado para modificar el plan de compras.');
+
+            $consecutivo = (int) ($_POST['id'] ?? 0);
+            $prop = trim((string) ($_POST['prop'] ?? ''));
+            $rawValue = $_POST['value'] ?? null;
+
+            if ($consecutivo <= 0 || $prop === '') {
+                $this->jsonError('Parámetros inválidos: id y prop son requeridos.');
+                return;
+            }
+
+            $editableProps = [
+                'fechaElaboracionPliegos',
+                'fechaRealElaboracionPliegos',
+                'fechaEntregaPliegos',
+                'fechaRealEntregaPliegos',
+                'fechaReciboPropuestas',
+                'fechaRealReciboPropuestas',
+                'fechaCuadrosComparativos',
+                'fechaRealCuadrosComparativos',
+                'fechaLegalizacionContrato',
+                'fechaRealLegalizacionContrato',
+                'fechaFabricacion',
+                'fechaRealFabricacion',
+                'fechaInsumosObra',
+                'fechaRealInsumosObra',
+                'fechaInicio',
+                'fechaInicioProyectada',
+                'fechaRealInicio',
+                'observacionesContrato',
+                'valorPresupuesto',
+                'valorPrimeraNegociacion',
+                'valorAdjudicado',
+                'valorAnticipo',
+                'valorReclamado',
+                'valorDevoluciones',
+            ];
+
+            if (!in_array($prop, $editableProps, true)) {
+                $this->jsonError("La columna '{$prop}' no es editable.");
+                return;
+            }
+
+            $value = $this->normalizePdcCellValue($prop, $rawValue);
+
+            $this->db->query(
+                'UPDATE pdc SET ' . $prop . ' = ? WHERE project_id = ? AND consecutivo = ? AND semana = ?',
+                [$value, $projectId, $consecutivo, $semana]
+            );
+
+            $this->db->logActivity('PDC', 'MODIFICAR_CELDA', "Actualizó {$prop} para contrato {$consecutivo}", null);
+            $this->json([
+                'respuesta' => 'BIEN',
+                'campo' => $prop,
+                'valor' => $value,
+            ]);
+        } catch (Throwable $e) {
+            error_log('Error en PdcApiController@updateCell: ' . $e->getMessage());
+            $this->jsonError('No se pudo actualizar la celda.', 500);
+        }
+    }
+
     // ─── OPERACIONES PRIVADAS ───────────────────────────────────────────
 
     private function eliminarActividad(string $p, int $projectId, int $semana): void
@@ -281,45 +358,31 @@ class PdcApiController
         $stmtInfo = $this->db->query("SELECT * FROM pdc WHERE project_id = ? AND consecutivo = ? AND semana = ?", [$projectId, $id, $semana]);
         $info = $stmtInfo->fetch();
 
-        if ($info) {
-            $this->db->query(
-                "INSERT INTO papelera_pdc (
-                    project_id, consecutivo, semana, titulo, tipoPaquete, paqueteContratacion, contratos,
-                    numeroSubcontratos, subcontratoPaquete, estado, fechaElaboracionPliegos,
-                    diasElaboracionPliegos, fechaRealElaboracionPliegos, fechaEntregaPliegos,
-                    diasEntregaPliegos, fechaRealEntregaPliegos, fechaReciboPropuestas,
-                    diasReciboPropuestas, fechaRealReciboPropuestas, fechaCuadrosComparativos,
-                    diasCuadrosComparativos, fechaRealCuadrosComparativos, fechaLegalizacionContrato,
-                    diasLegalizacionContrato, fechaRealLegalizacionContrato, fechaFabricacion,
-                    diasFabricacion, fechaRealFabricacion, fechaInsumosObra, diasInsumosObra,
-                    fechaRealInsumosObra, fechaInicio, fechaInicioProyectada, fechaRealInicio,
-                    idProveedorAdjudicado, numeroContrato, aplicaPolizas, fechaVencimientoPolizas,
-                    valorPresupuesto, valorPrimeraNegociacion, valorAdjudicado, valorAnticipo,
-                    valorReclamado, valorDevoluciones, observacionesContrato
-                )
-                SELECT
-                    project_id, consecutivo, semana, titulo, tipoPaquete, paqueteContratacion, contratos,
-                    numeroSubcontratos, subcontratoPaquete, estado, fechaElaboracionPliegos,
-                    diasElaboracionPliegos, fechaRealElaboracionPliegos, fechaEntregaPliegos,
-                    diasEntregaPliegos, fechaRealEntregaPliegos, fechaReciboPropuestas,
-                    diasReciboPropuestas, fechaRealReciboPropuestas, fechaCuadrosComparativos,
-                    diasCuadrosComparativos, fechaRealCuadrosComparativos, fechaLegalizacionContrato,
-                    diasLegalizacionContrato, fechaRealLegalizacionContrato, fechaFabricacion,
-                    diasFabricacion, fechaRealFabricacion, fechaInsumosObra, diasInsumosObra,
-                    fechaRealInsumosObra, fechaInicio, fechaInicioProyectada, fechaRealInicio,
-                    idProveedorAdjudicado, numeroContrato, aplicaPolizas, fechaVencimientoPolizas,
-                    valorPresupuesto, valorPrimeraNegociacion, valorAdjudicado, valorAnticipo,
-                    valorReclamado, valorDevoluciones, observacionesContrato
-                FROM pdc
-                WHERE project_id = ? AND consecutivo = ? AND semana = ?",
+        if (!$info) {
+            $this->jsonError('Registro no encontrado.', 404);
+            return;
+        }
+        if ((int) $info['titulo'] !== 0 || (int) $info['subcontratoPaquete'] <= 1) {
+            $this->jsonError('Solo se pueden eliminar subcontratos adicionales.', 422);
+            return;
+        }
+
+        $this->db->beginTransaction();
+        try {
+            $this->archivePdcRows(
+                'project_id = ? AND consecutivo = ? AND semana = ?',
                 [$projectId, $id, $semana]
             );
             $this->db->query("UPDATE papelera_pdc SET justificacionEliminacion = ? WHERE project_id = ? AND consecutivo = ? AND semana = ?", [$justificacion, $projectId, $id, $semana]);
             $this->db->query("DELETE FROM pdc WHERE project_id = ? AND consecutivo = ? AND semana = ?", [$projectId, $id, $semana]);
             $this->db->logActivity('PDC', 'ELIMINAR_ACTIVIDAD', "Eliminó actividad PDC con ID $id", $p);
+            $this->db->commit();
             $this->json(["respuesta" => "BIEN"]);
-        } else {
-            $this->json(["respuesta" => "ERROR", "mensaje" => "Registro no encontrado"]);
+        } catch (Throwable $e) {
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+            throw $e;
         }
     }
 
@@ -449,13 +512,162 @@ class PdcApiController
     {
         $json = $_POST['numeroSubcontratos'] ?? '';
         $data = json_decode($json, true);
-        if (isset($data['numeroSubcontratos'])) {
-            foreach ($data['numeroSubcontratos'] as $item) {
-                $this->db->query("UPDATE pdc SET numeroSubcontratos = ? WHERE project_id = ? AND consecutivo = ? AND semana = ?", [$item['numeroSubcontratos'], $projectId, $item['consecutivo'], $semana]);
-            }
-            echo json_encode("conModificaciones");
-        } else {
+        $items = $data['numeroSubcontratos'] ?? null;
+        if (!is_array($items) || $items === []) {
             echo json_encode("sinModificaciones");
+            return;
+        }
+
+        $validated = [];
+        foreach ($items as $item) {
+            $consecutivo = filter_var($item['consecutivo'] ?? null, FILTER_VALIDATE_INT);
+            $cantidad = filter_var($item['numeroSubcontratos'] ?? null, FILTER_VALIDATE_INT);
+            if ($consecutivo === false || $consecutivo <= 0 || $cantidad === false || $cantidad < 1) {
+                $this->jsonError('La cantidad de contratos debe ser un entero mayor o igual a 1.', 422);
+                return;
+            }
+            $stmt = $this->db->query(
+                'SELECT tipoPaquete, paqueteContratacion FROM pdc WHERE project_id = ? AND consecutivo = ? AND semana = ? AND titulo = 0 AND subcontratoPaquete = 1',
+                [$projectId, $consecutivo, $semana]
+            );
+            $base = $stmt->fetch();
+            if (!$base) {
+                $this->jsonError('El paquete base no existe o no es editable.', 422);
+                return;
+            }
+            $validated[] = $base + ['consecutivo' => $consecutivo, 'cantidad' => $cantidad];
+        }
+
+        $this->db->beginTransaction();
+        try {
+            foreach ($validated as $item) {
+                $this->syncPdcQuantity($projectId, $semana, $item);
+            }
+            require_once PROJECT_ROOT . '/src/Legacy/_pdc_functions.php';
+            pdc_crearSubcontratosDuplicados($this->db, $p, $semana);
+            $this->db->logActivity('PDC', 'DESGLOSAR_CONTRATOS', 'Actualizó cantidades de contratos', $p);
+            $this->db->commit();
+            echo json_encode("conModificaciones");
+        } catch (Throwable $e) {
+            if ($this->db->inTransaction()) $this->db->rollBack();
+            throw $e;
+        }
+    }
+
+    private function syncPdcQuantity(int $projectId, int $semana, array $item): void
+    {
+        $this->db->query(
+            'UPDATE pdc SET numeroSubcontratos = ? WHERE project_id = ? AND consecutivo = ? AND semana = ?',
+            [$item['cantidad'], $projectId, $item['consecutivo'], $semana]
+        );
+        $where = 'project_id = ? AND semana = ? AND titulo = 0 AND tipoPaquete = ? '
+            . 'AND paqueteContratacion = ? AND subcontratoPaquete > ?';
+        $params = [$projectId, $semana, $item['tipoPaquete'], $item['paqueteContratacion'], $item['cantidad']];
+        $this->archivePdcRows($where, $params);
+        $this->db->query('DELETE FROM pdc WHERE ' . $where, $params);
+    }
+
+    private function archivePdcRows(string $where, array $params): void
+    {
+        $rows = $this->db->query('SELECT consecutivo, semana FROM pdc WHERE ' . $where, $params)->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($rows as $row) {
+            $this->db->query(
+                'DELETE FROM papelera_pdc WHERE project_id = ? AND consecutivo = ? AND semana = ?',
+                [$params[0], (int) $row['consecutivo'], (int) $row['semana']]
+            );
+        }
+
+        if ($rows === []) {
+            return;
+        }
+
+        $this->db->query(
+            'INSERT INTO papelera_pdc (' . self::ARCHIVE_COLUMNS . ') '
+            . 'SELECT ' . self::ARCHIVE_COLUMNS . ' FROM pdc WHERE ' . $where,
+            $params
+        );
+    }
+
+    private function restaurarActividad(string $p, int $projectId, int $semana): void
+    {
+        $id = (int) ($_POST['id'] ?? $_POST['Id'] ?? 0);
+        if ($id <= 0) {
+            $this->jsonError('El registro a restaurar es inválido.', 422);
+            return;
+        }
+
+        $archived = $this->db->query(
+            'SELECT * FROM papelera_pdc WHERE project_id = ? AND consecutivo = ? AND semana = ?',
+            [$projectId, $id, $semana]
+        )->fetch(PDO::FETCH_ASSOC);
+        if (!$archived) {
+            $this->jsonError('El registro no existe en la papelera.', 404);
+            return;
+        }
+        if ((int) $archived['titulo'] !== 0 || (int) $archived['subcontratoPaquete'] <= 1) {
+            $this->jsonError('Solo se pueden restaurar subcontratos adicionales.', 422);
+            return;
+        }
+
+        $previousPositionCount = (int) $this->db->query(
+            'SELECT COUNT(DISTINCT subcontratoPaquete) FROM pdc '
+            . 'WHERE project_id = ? AND semana = ? AND titulo = 0 '
+            . 'AND tipoPaquete = ? AND paqueteContratacion = ? '
+            . 'AND subcontratoPaquete BETWEEN 1 AND ?',
+            [
+                $projectId,
+                $semana,
+                $archived['tipoPaquete'],
+                $archived['paqueteContratacion'],
+                (int) $archived['subcontratoPaquete'] - 1,
+            ]
+        )->fetchColumn();
+        if ($previousPositionCount !== (int) $archived['subcontratoPaquete'] - 1) {
+            $this->jsonError('No se puede restaurar un subcontrato mientras falten posiciones anteriores.', 422);
+            return;
+        }
+
+        $exists = (int) $this->db->query(
+            'SELECT COUNT(*) FROM pdc WHERE project_id = ? AND consecutivo = ?',
+            [$projectId, $id]
+        )->fetchColumn();
+        if ($exists > 0) {
+            $this->jsonError('Ya existe un registro activo con el mismo identificador.', 409);
+            return;
+        }
+
+        $this->db->beginTransaction();
+        try {
+            $this->db->query(
+                'INSERT INTO pdc (' . self::ARCHIVE_COLUMNS . ') '
+                . 'SELECT ' . self::ARCHIVE_COLUMNS . ' FROM papelera_pdc '
+                . 'WHERE project_id = ? AND consecutivo = ? AND semana = ?',
+                [$projectId, $id, $semana]
+            );
+            $this->db->query(
+                'UPDATE pdc SET numeroSubcontratos = GREATEST(COALESCE(numeroSubcontratos, 1), ?) '
+                . 'WHERE project_id = ? AND semana = ? AND titulo = 0 AND subcontratoPaquete = 1 '
+                . 'AND tipoPaquete = ? AND paqueteContratacion = ?',
+                [
+                    (int) $archived['subcontratoPaquete'],
+                    $projectId,
+                    $semana,
+                    $archived['tipoPaquete'],
+                    $archived['paqueteContratacion'],
+                ]
+            );
+            $this->db->query(
+                'DELETE FROM papelera_pdc WHERE project_id = ? AND consecutivo = ? AND semana = ?',
+                [$projectId, $id, $semana]
+            );
+            $this->db->logActivity('PDC', 'RESTAURAR_ACTIVIDAD', "Restauró actividad PDC con ID {$id}", $p);
+            $this->db->commit();
+            $this->json(['respuesta' => 'BIEN']);
+        } catch (Throwable $e) {
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+            throw $e;
         }
     }
 
@@ -641,6 +853,61 @@ class PdcApiController
         return date('Y-m-d', $timestamp);
     }
 
+    private function normalizePdcCellValue(string $prop, $value)
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        if (is_array($value)) {
+            return null;
+        }
+
+        $trimmed = trim((string) $value);
+        if ($trimmed === '') {
+            return null;
+        }
+
+        $dateFields = [
+            'fechaElaboracionPliegos',
+            'fechaRealElaboracionPliegos',
+            'fechaEntregaPliegos',
+            'fechaRealEntregaPliegos',
+            'fechaReciboPropuestas',
+            'fechaRealReciboPropuestas',
+            'fechaCuadrosComparativos',
+            'fechaRealCuadrosComparativos',
+            'fechaLegalizacionContrato',
+            'fechaRealLegalizacionContrato',
+            'fechaFabricacion',
+            'fechaRealFabricacion',
+            'fechaInsumosObra',
+            'fechaRealInsumosObra',
+            'fechaInicio',
+            'fechaInicioProyectada',
+            'fechaRealInicio',
+        ];
+
+        if (in_array($prop, $dateFields, true)) {
+            return $this->validDateOrNull($trimmed);
+        }
+
+        $numberFields = [
+            'valorPresupuesto',
+            'valorPrimeraNegociacion',
+            'valorAdjudicado',
+            'valorAnticipo',
+            'valorReclamado',
+            'valorDevoluciones',
+        ];
+
+        if (in_array($prop, $numberFields, true)) {
+            return is_numeric($trimmed) ? (float) str_replace([',', '$'], '', $trimmed) : null;
+        }
+
+        return $trimmed;
+    }
+
     private function shiftDate(string $date, int $days): string
     {
         $modifier = $days >= 0 ? "+{$days} days" : "{$days} days";
@@ -650,16 +917,7 @@ class PdcApiController
     private function handleCeldaDinamica(string $p, int $projectId, int $semana): void
     {
         if (isset($_POST['columna'])) {
-            $columna = $_POST['columna'];
-            $valor = $_POST['valor'];
-            $id = $_POST['id'];
-            if (preg_match('/^[a-zA-Z0-9_]+$/', $columna)) {
-                $this->db->query("UPDATE pdc SET $columna = ? WHERE project_id = ? AND consecutivo = ? AND semana = ?", [$this->checkNull($valor), $projectId, $id, $semana]);
-                $this->db->logActivity('PDC', 'MODIFICAR_CELDA', "Actualizó columna $columna de PDC $id", $p);
-                $this->json(["respuesta" => "BIEN"]);
-            } else {
-                $this->json(["respuesta" => "ERROR", "mensaje" => "Columna inválida"]);
-            }
+            $this->jsonError('La ruta de actualización dinámica ya no está disponible.', 410);
         } else {
             $this->json(["respuesta" => "ERROR", "mensaje" => "Opción no válida"]);
         }
@@ -805,6 +1063,17 @@ class PdcApiController
         rbac_guard_require_permission($permissionKey, ['message' => $message]);
     }
 
+    private function requireValidCsrf(): void
+    {
+        $token = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? $_POST['_csrf_token'] ?? '';
+        if (CsrfTokenManager::validate($token, 'pdc_save')) {
+            return;
+        }
+
+        $this->jsonError('Token CSRF inválido o ausente.', 403);
+        exit;
+    }
+
     private function calcularDiasDelta(array $data, string $fechaSemana): array
     {
         $fechaInicio = $data['fechaInicio'] ?? '';
@@ -812,7 +1081,6 @@ class PdcApiController
 
         $duraciones = [
             (int) ($data['diasElaboracionPliegos'] ?? 0),
-            (int) ($data['diasEntregaPliegos'] ?? 0),
             (int) ($data['diasEntregaPliegos'] ?? 0),
             (int) ($data['diasReciboPropuestas'] ?? 0),
             (int) ($data['diasCuadrosComparativos'] ?? 0),

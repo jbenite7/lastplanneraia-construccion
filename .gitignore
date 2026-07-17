@@ -30,6 +30,8 @@ Thumbs.db
 *.sql.gz
 !database/migrations/*.sql
 !database/patches/*.sql
+!database/fixtures/
+!database/fixtures/design-system-ci.sql
 backups/
 DB_server_produccion.sql
 
@@ -52,6 +54,29 @@ debug_*.php
 
 # Goal tracking artifacts (local planning only)
 goals/
+!goals/
+goals/*
+!goals/design-system-nucleo-gobernanza/
+goals/design-system-nucleo-gobernanza/*
+!goals/design-system-nucleo-gobernanza/goal.md
+!goals/design-system-nucleo-gobernanza/plan.md
+!goals/design-system-nucleo-gobernanza/facts.md
+!goals/design-system-nucleo-gobernanza/validation-log.md
+!goals/design-system-nucleo-gobernanza/*.json
+!goals/validar-migracion-handsontable/
+goals/validar-migracion-handsontable/*
+!goals/validar-migracion-handsontable/goal.md
+!goals/validar-migracion-handsontable/plan.md
+!goals/validar-migracion-handsontable/facts.md
+!goals/validar-migracion-handsontable/validation-log.md
+!goals/validar-migracion-handsontable/evidence/
+goals/validar-migracion-handsontable/evidence/*
+!goals/validar-migracion-handsontable/evidence/contratos-native/
+goals/validar-migracion-handsontable/evidence/contratos-native/*
+!goals/validar-migracion-handsontable/evidence/contratos-native/*.png
+!goals/validar-migracion-handsontable/evidence/pdc-native/
+goals/validar-migracion-handsontable/evidence/pdc-native/*
+!goals/validar-migracion-handsontable/evidence/pdc-native/*.png
 
 # Archivos de configuración de IDEs y prompts de IA
 AGENTS.md
@@ -61,6 +86,7 @@ MEMORY.md
 
 # Evidencia QA local (capturas de pantalla)
 docs/qa/
+docs/qa/evidence/**/*.webm
 
 # Documentación interna (no desplegar a producción)
 docs/ROUTES.md
@@ -70,29 +96,52 @@ docs/pdc/
 .opencode/
 .claude/
 .gemini/
-.omo/*
-!.omo/plans/
-.omo/plans/*
-!.omo/plans/refine-model-contracts.md
-!.omo/plans/validar-migracion-project-schema.md
+.omo/
 
 # Node.js / Playwright testing
 node_modules/
 **/package-lock.json
 package.json
+!/package.json
+!/package-lock.json
 test-output/
 test-output-*/
 test-results/
 tests/browser/*
 !tests/browser/full-app-flow.spec.mjs
 !tests/browser/semi-auto-review.mjs
+!tests/browser/design-system-compliance.mjs
+!tests/browser/design-system-lab.mjs
+!tests/browser/design-system-lab.a11y.mjs
+!tests/browser/design-system-lab.visual.mjs
+!tests/browser/design-system-runtime-budget.mjs
+!tests/browser/design-system-consumer-smoke.mjs
+!tests/browser/design-system-foundation-shell.mjs
+!tests/browser/design-system-keyboard.mjs
+!tests/browser/design-system-reflow.mjs
+!tests/browser/programa-general-design-system.mjs
+!tests/browser/programa-general-runtime-requests.mjs
+!tests/browser/programa-general.visual.mjs
+!tests/browser/__screenshots__/
+!tests/browser/__screenshots__/**
+!tests/browser/programacion-semanal-sprint.mjs
+!tests/browser/programacion-semanal-subviews.mjs
+!tests/browser/programacion-semanal-roles-phases.mjs
+!tests/browser/programacion-semanal-cnp-lifecycle.mjs
+!tests/browser/programacion-semanal-dark-density.mjs
+!tests/browser/programacion-intermedia-mobile-runtime.mjs
+!tests/browser/cic-role-disciplines.mjs
+!tests/browser/listado-actividades-handsontable.mjs
 !tests/browser/fixtures/
 !tests/browser/fixtures/*.mjs
 !tests/browser/support/
 !tests/browser/support/*.mjs
 !tests/browser/auto-definir-contratos.mjs
+!tests/browser/contratos-handsontable.mjs
+!tests/browser/contratos-slot-quantities.mjs
 !tests/browser/preconstruccion-full-cycle.mjs
 !tests/browser/test-pdc.mjs
+!tests/browser/pdc-handsontable.mjs
 .playwright-mcp/
 .tmp-e2e/
 
@@ -105,6 +154,12 @@ e2e/test-output/
 # Scratch y debugging
 scratch/
 scripts/
+!scripts/
+!scripts/design-system-audit.mjs
 /*.png
 analisis_actividades_por_disciplina.md
 pg_activities_complete.txt
+/e2e-report-input-buscador-removal.md
+/login-page
+/login-page-snapshot.md
+/proyectos-page

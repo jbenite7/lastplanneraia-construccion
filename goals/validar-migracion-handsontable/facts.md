@@ -1,0 +1,59 @@
+# Facts
+
+- El trabajo cubre exclusivamente Listado de Actividades, Contratos y PDC, incluyendo la tabla principal y dt_definirContratos de PDC.
+- BI queda fuera del alcance; PG, PI y PS solo se revisan al final para detectar regresiones en sus tablas Handsontable existentes.
+- El trabajo se ejecuta como un único sprint continuo que completa Listado de Actividades, Contratos y PDC antes de solicitar aprobación.
+- Durante el sprint, cada módulo valida carga, filtros, edición, persistencia, toolbar, modales, eliminación, automatización y todos los flujos conectados directamente con su tabla.
+- Antes de la revisión final, cada módulo se valida en Mobile Dark, Mobile Linen, Tablet horizontal Dark, Tablet horizontal Linen, Desktop Dark y Desktop Linen.
+- Al terminar toda la migración se presenta una única revisión guiada final en el navegador integrado de Codex, nunca en un navegador headless.
+- La revisión explica en lenguaje sencillo qué se corrigió, qué problema resolvía y qué evidencia demuestra el resultado.
+- Toda prueba que modifique, elimine o genere datos registra el estado inicial y restaura esos datos antes de cerrar la prueba.
+- Después de la aprobación final se crean commits locales atómicos por corrección coherente, sin commits vacíos, cambios ajenos, push ni despliegue.
+- El goal permanece activo hasta que el usuario declare explícitamente que está completo.
+- Las pruebas se ejecutan en el entorno local y no modifican ni despliegan producción sin autorización explícita.
+- Las tres rutas usan Handsontable 14.6.1 vendored y no incorporan una dependencia de grid nueva.
+- Cada módulo mantiene un módulo IIFE dedicado expuesto en window con init, recarga y acceso controlado a su instancia Handsontable.
+- Las tablas migradas no inicializan DataTables ni descargan sus plugins, estilos o scripts específicos; los recursos compartidos solo permanecen si otra pantalla activa todavía los necesita.
+- Ninguna de las tres rutas genera wrappers DataTables en runtime y cada grid objetivo genera una instancia Handsontable.
+- Cada tabla presenta estados claros de carga, datos vacíos y error sin quedar en blanco ni mostrar HTML crudo.
+- Los cambios de celdas editables usan el flujo Handsontable afterChange, guardan mediante API y restauran el valor anterior cuando el servidor rechaza el cambio.
+- Toda edición aprobada se mantiene después de recargar la página y se comprueba contra la respuesta del servidor o la base de datos.
+- Los permisos determinan qué celdas y acciones son editables; las celdas no autorizadas permanecen de solo lectura.
+- Ninguna vista validada presenta overflow horizontal ni scroll-x; el ancho excedente medido es cero.
+- En tablet y desktop cada encabezado conserva el mismo inicio y ancho que la columna de registros correspondiente.
+- En mobile los registros se presentan como tarjetas legibles en lugar de comprimir la tabla hasta volverla ilegible.
+- Los controles de edición de una tarjeta móvil solo aparecen después de pulsar Editar y existe una acción Cancelar que restaura el estado sin guardar.
+- Colores, espaciados, bordes, radios, estados y controles utilizan tokens y patrones del design system AIA, sin valores visuales hardcodeados ajenos al sistema.
+- Dark y Linen se aplican como temas completos y nunca aparecen mezclados dentro de la misma vista.
+- La toolbar es responsive, mantiene acciones y selector de módulo equilibrados y ningún texto sobrepasa el borde de su botón o control.
+- El selector compartido de módulo se ve y se posiciona de forma consistente en Listado de Actividades, Contratos y PDC.
+- Las modalidades pueden abreviarse en anchos reducidos, pero cada abreviatura conserva un nombre accesible completo.
+- Listado de Actividades carga en Handsontable todos los registros devueltos por su API y su adaptación móvil muestra el mismo conjunto de datos.
+- Los filtros por columna de Listado de Actividades reducen y restauran resultados sin desalinear encabezados ni perder datos.
+- La actividad de inicio se selecciona mediante un editor claro; al cambiarla se actualiza la fecha de inicio asociada y ambos valores persisten tras recargar.
+- La modalidad de contratación permite seleccionar las opciones válidas, guarda el código correcto y vuelve a mostrarse igual después de recargar.
+- En mobile el selector de actividad y los controles de modalidad están bloqueados en lectura y solo se activan al entrar en edición.
+- Las acciones Excel, Nueva Familia y Auto-generar Familias funcionan y conservan estados de éxito, error y cancelación comprensibles.
+- Eliminar una familia exige confirmación, actualiza la vista y se valida con un registro restaurable para no alterar el conjunto final.
+- El asistente semi-automático de Listado puede analizar, revisar, aplicar, deshacer y cerrar sin romper ni ocultar la tabla migrada.
+- Los datos enriquecidos de actividad se renderizan como contenido legible y seguro, nunca como etiquetas HTML impresas literalmente.
+- Contratos carga todos los registros de su API en Handsontable y permite filtrar cada columna sin perder acciones ni asociaciones.
+- La columna de paquetes asociados presenta grupos y modalidades con formato legible y seguro, sin mostrar HTML crudo.
+- La acción de una fila abre el formulario de paquetes para la familia correcta y el cierre o cancelación no altera datos.
+- En mobile el encabezado del formulario de paquetes ocupa una fracción compacta de la pantalla y deja visible el contenido operativo.
+- Cada tarjeta de paquete se distingue claramente de la siguiente e identifica Paquete de contratación, Cantidad de contratos e Insumos y recursos requeridos con ayudas comprensibles.
+- Guardar el formulario persiste paquetes, cantidades e insumos; al reabrir o recargar se observan los mismos valores.
+- Auto-definir paquetes conserva su flujo de vista previa, aplicación y restauración sin depender de DataTables.
+- La toolbar, el selector compartido y el asistente semi-automático de Contratos funcionan sin interferir con Handsontable.
+- PDC instancia Handsontable tanto en su tabla principal como en dt_definirContratos y ninguna de las dos conserva una inicialización DataTables.
+- Los filtros de la tabla principal de PDC funcionan sobre los registros completos y pueden limpiarse sin dejar filtros invisibles activos.
+- Las celdas editables, checkboxes y selectores de PDC muestran opciones legibles, respetan permisos y guardan el valor correcto.
+- Los cambios realizados en la tabla principal de PDC persisten después de recargar y se revierten visualmente cuando la API falla.
+- El flujo que abre dt_definirContratos carga las filas correctas, permite seleccionar o editar contratos y guarda el resultado antes de cerrar el modal.
+- Cerrar o cancelar el modal de definición de contratos no deja instancias duplicadas, listeners repetidos ni cambios parciales.
+- La toolbar, los modales y los flujos de generación automática, plantillas o escenarios conectados con PDC siguen funcionando con ambos grids Handsontable.
+- La tabla secundaria se ajusta al ancho del modal en las seis combinaciones visuales sin overflow horizontal ni controles cortados.
+- La comprobación final confirma que PG, PI y PS todavía cargan sus tablas Handsontable y conservan al menos carga, filtros y una edición persistente representativa.
+- El sprint ejecuta pruebas automatizadas enfocadas, comprobaciones estáticas aplicables y validación visual e interactiva en el navegador integrado.
+- Las correcciones existentes se conservan como punto de partida, pero todos los flujos y vistas deben revalidarse dentro del goal actualizado.
+- Si un fallo directo de Listado, Contratos o PDC nace en una API, persistencia o servicio compartido, se corrige la causa raíz y se ejecuta una regresión enfocada del componente afectado.

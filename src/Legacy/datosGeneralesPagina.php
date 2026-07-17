@@ -1,6 +1,7 @@
 <?php
 
 use App\Security\RbacCatalog;
+use App\Security\RbacService;
 
 session_start();
 require_once __DIR__ . "/conexion.php";
@@ -26,6 +27,7 @@ if ($projectId) {
 
 $permisoCodigo = $_SESSION['permiso'] ?? '';
 $rolHumano = RbacCatalog::getRoleName($permisoCodigo);
+$canAccessBi = (new RbacService($dbInstance))->can('lps.indicadores.ver');
 
 // Re-leer el cargo de general_usuarios en cada request para que los cambios
 // hechos desde el Admin se reflejen sin necesidad de re-login.
@@ -47,10 +49,12 @@ if ($cargoUsuario !== '') {
 
 $arreglo = [
     "proyecto" => $_SESSION['proyecto'] ?? '',
+    "project_id" => (int) ($_SESSION['project_id'] ?? 0),
     "db" => $dbName,
     "semana" => $semana,
     "permiso" => $permisoCodigo,
     "permiso_canonico" => $_SESSION['permiso_canonico'] ?? $permisoCodigo,
+    "canAccessBi" => $canAccessBi,
     "area" => $_SESSION['area'] ?? 'Construccion',
     "pdcActivo" => $_SESSION['pdcActivo'] ?? '',
     "nombreUsuario" => $_SESSION['nombreUsuario'] ?? '',

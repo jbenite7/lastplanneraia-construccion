@@ -1,0 +1,168 @@
+{
+  "$schema": "../module-manifest.schema.json",
+  "schemaVersion": 2,
+  "designSystemVersion": "1.0.0",
+  "moduleId": "programa-general",
+  "routes": [
+    "/programa-general",
+    "/programa-general/filtros",
+    "/programa-general/set-filtro"
+  ],
+  "sources": [
+    "views/programa-general/programa_general.view.php",
+    "public/css/programa-general.css",
+    "public/js/modules/programa_general/hot.js"
+  ],
+  "components": [
+    "shell",
+    "page-header",
+    "toolbar",
+    "button",
+    "field",
+    "state",
+    "card",
+    "table-shell",
+    "overlay",
+    "handsontable-adapter"
+  ],
+  "vendors": [
+    "bootstrap",
+    "handsontable",
+    "toastr",
+    "font-awesome",
+    "jquery-ui"
+  ],
+  "layouts": [
+    "mobile",
+    "tablet",
+    "desktop",
+    "wide"
+  ],
+  "states": [
+    "normal",
+    "loading",
+    "empty",
+    "error"
+  ],
+  "roles": [
+    "A",
+    "D",
+    "R",
+    "C",
+    "V"
+  ],
+  "persistence": {
+    "filters": "session",
+    "projectContext": "session",
+    "testDataRestored": true
+  },
+  "exceptions": [],
+  "tests": [
+    "tests/test_programa_general_sprint_contract.mjs",
+    "tests/browser/programa-general-design-system.mjs",
+    "tests/browser/programa-general.visual.mjs",
+    "tests/browser/design-system-compliance.mjs",
+    "e2e/tests/workflows/pg-interactions.spec.mjs"
+  ],
+  "evidence": [
+    "tests/browser/__screenshots__/programa-general.visual.mjs/"
+  ],
+  "scenarios": [
+    {
+      "id": "programa-general-dark-1180x820",
+      "family": null,
+      "route": "/programa-general",
+      "fixture": "sanitized-pilot-v1",
+      "theme": "dark",
+      "viewport": {
+        "width": 1180,
+        "height": 820
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/programa-general.visual.mjs/programa-general-dark-1180x820.png",
+      "sha256": "875d9748c1bbf72020a79e33a872ccf42a793a01efe06ad49dbfea03a0d499bd"
+    },
+    {
+      "id": "programa-general-dark-1440x900",
+      "family": null,
+      "route": "/programa-general",
+      "fixture": "sanitized-pilot-v1",
+      "theme": "dark",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "density": "compact",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/programa-general.visual.mjs/programa-general-dark-1440x900.png",
+      "sha256": "e7c38f9aea4a3d55d5bdd17a5009d57550d8525f9380b0ee57e3036a4318eb7a"
+    },
+    {
+      "id": "programa-general-dark-390x844",
+      "family": null,
+      "route": "/programa-general",
+      "fixture": "sanitized-pilot-v1",
+      "theme": "dark",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/programa-general.visual.mjs/programa-general-dark-390x844.png",
+      "sha256": "0c0fbd544d507d9595dede5a7fb11ee76bb8b66938a239ada589e5d9cfc8373a"
+    },
+    {
+      "id": "programa-general-linen-1180x820",
+      "family": null,
+      "route": "/programa-general",
+      "fixture": "sanitized-pilot-v1",
+      "theme": "linen",
+      "viewport": {
+        "width": 1180,
+        "height": 820
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/programa-general.visual.mjs/programa-general-linen-1180x820.png",
+      "sha256": "7b7a822dc22e1cd0d6178e3520a09ecb060e75f464167c0b05fdc57deee95ba8"
+    },
+    {
+      "id": "programa-general-linen-1440x900",
+      "family": null,
+      "route": "/programa-general",
+      "fixture": "sanitized-pilot-v1",
+      "theme": "linen",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "density": "compact",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/programa-general.visual.mjs/programa-general-linen-1440x900.png",
+      "sha256": "84d96e69bc1dbf88c47574d8746d444bc30410be3f4c9424f9edb28e9c3da537"
+    },
+    {
+      "id": "programa-general-linen-390x844",
+      "family": null,
+      "route": "/programa-general",
+      "fixture": "sanitized-pilot-v1",
+      "theme": "linen",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/programa-general.visual.mjs/programa-general-linen-390x844.png",
+      "sha256": "74ea1a59668ecd5867b645797e089ead5d683d3040161e7d670d41cdfa23d57b"
+    }
+  ]
+}

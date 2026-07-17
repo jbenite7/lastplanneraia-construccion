@@ -4,6 +4,8 @@
 **Principio rector**: cero big-bang, migración aditiva por capas, con compatibilidad temporal.  
 **Invariantes**: No mezclar refactor visual con cambios funcionales; no renombrar ids/clases sin alias temporal; JS solo toca geometría runtime (alto, ancho, overflow, posición, zoom).
 
+**Actualización 14 de julio de 2026**: el loader `public/js/cargarDatosGeneralesPaginaNoCC.js` y el entrypoint antiguo `public/js/modules/programa_general/main.js` fueron retirados al confirmar que no tenían consumidores runtime. Las cifras de baseline se conservan como registro histórico; ninguno de los dos queda como archivo foco pendiente.
+
 ---
 
 ## 1. Baseline Actual
@@ -16,7 +18,7 @@
 | Atributos `style=` en `views/` | 391 | Concentrados en vistas legacy y handsontable renderers |
 | Atributos `style=` en `admin/views/` | 22 | users/index.php, users/create.php, users/edit.php, projects/index.php |
 | Bloques `<style>` en `admin/views/` | 4 | users/create.php, users/edit.php, users/index.php, projects/index.php |
-| JS con hardcoded brand colors | 222 | `AiaAlertInterceptor.js`, `funcionesGenerales6.js`, `programa_general/main.js`, `hot_actualizar.js`, `programacion_semanal/hot.js` |
+| JS con hardcoded brand colors | 222 (baseline histórica) | `AiaAlertInterceptor.js`, `funcionesGenerales6.js`, el entrypoint PG retirado el 14 de julio de 2026, `hot_actualizar.js`, `programacion_semanal/hot.js` |
 | Inyección de `<style>` desde JS | Presente | `AiaAlertInterceptor.js:14` |
 
 ### 1.2 Patrones de Entrypoint
@@ -47,7 +49,7 @@
 |--------|---------|--------|
 | `src/View/Components/NavbarComponent.php:25` | Carga su propio CSS y JS, navbar PHP-side | Duplica carga con legacy loader |
 | `public/js/cargarDatosGeneralesPagina2.js:1` | Inyecta CSS, markup shell, hidrata contexto, permisos, callbacks | No solo layout; es orchestration |
-| `public/js/cargarDatosGeneralesPaginaNoCC.js` | Variante legacy más antigua | Probablemente huérfana |
+| `public/js/cargarDatosGeneralesPaginaNoCC.js` | Variante legacy más antigua, retirada el 14 de julio de 2026 | Se confirmó sin consumidores runtime |
 | `public/js/linksComunesHead2.js:17` | `head.innerHTML = staticContent` | Orden de assets sensible |
 
 ### 1.5 CSS Ya Existente
@@ -202,7 +204,8 @@ public/css/
 - **Propósito**: Cerrar la parte más difícil cuando todo lo demás ya esté estable.
 - **Archivos foco**:
   - Vistas: `programa_general.view.php`, `programacion_intermedia.view.php`, `programaGeneralActualizar.view.php`, `programacion_semanal.view.php`, `CNP.view.php`, `CNC.view.php`, `CIC.view.php`
-  - JS: `public/js/modules/programa_general/main.js`, `public/js/modules/programa_general/hot.js`, `public/js/modules/programacion_intermedia/hot.js`, `public/js/modules/programa_actualizar/hot_actualizar.js`, `public/js/modules/programacion_semanal/hot.js`
+  - JS: `public/js/modules/programa_general/hot.js`, `public/js/modules/programacion_intermedia/hot.js`, `public/js/modules/programa_actualizar/hot_actualizar.js`, `public/js/modules/programacion_semanal/hot.js`
+- **Actualización**: El entrypoint antiguo de Programa General fue retirado el 14 de julio de 2026 y ya no forma parte de este lote.
 - **CSS nuevos**: Módulos por vista
 - **Trabajo**: Sacar CSS embebido de vistas, reemplazar renderers con `style` inline por clases (`is-pending`, `is-mapped`, `is-readonly`, `is-critical`), dejar a JS solo composición de estado.
 - **Protección**: Empezar por `programa_general` y `programacion_intermedia`; dejar `CIC` y suite semanal para el final.
@@ -215,7 +218,7 @@ public/css/
 - **Archivos foco**:
   - `public/js/linksComunesHead2.js`
   - `public/js/cargarDatosGeneralesPagina2.js`
-  - `public/js/cargarDatosGeneralesPaginaNoCC.js`
+- **Actualización**: La variante NoCC fue retirada el 14 de julio de 2026; no queda como trabajo pendiente de este lote.
 - **Trabajo**: Adelgazar o deprecar loaders, dejar carga de estilos en layouts/partials, retirar compatibilidad solo cuando el último consumidor migre.
 - **Criterio de éxito**:
   - 0 branding inyectado por JS

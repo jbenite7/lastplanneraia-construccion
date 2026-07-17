@@ -2,9 +2,16 @@
 <html lang="es">
 <head id="head">
 	<meta charset="UTF-8">
+	<meta name="csrf-token" content="<?php echo htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8'); ?>">
 	<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+	<script>window.__AIA_HANDSONTABLE_ONLY__ = true;</script>
 	<!--Script cque va al archivo linksComunesHead2.js-->
-	<script type="text/javascript" src="/js/linksComunesHead2.js?v=piStateColors3" charset="utf-8"></script>
+	<?= \App\View\Components\DesignSystemHeadComponent::render(true) ?>
+	<script type="text/javascript" src="/js/linksComunesHead2.js?v=20260711listadoCssPurge3" charset="utf-8"></script>
+	<link rel="stylesheet" href="/vendor/handsontable/handsontable.full.min.css?v=14.6.1" />
+	<link rel="stylesheet" href="/css/handsontable-module.css?v=20260711foundation5" />
+	<link rel="stylesheet" href="/css/handsontable-header-global.css?v=20260313" />
+	<link rel="stylesheet" href="/css/listado-actividades.css?v=20260711listadoSprint2" />
 </head>
 
 <!--Etiqueta superior-->
@@ -12,7 +19,9 @@
 	<?php
         $dbPrefixListadoActividades = $_SESSION['db'] ?? '';
 	$projectIdListadoActividades = (int) ($_SESSION['project_id'] ?? ($projectId ?? 0));
-	$maxSemanaListadoActividades = (int) ($_SESSION['Max_Semana'] ?? ($_SESSION['semana'] ?? 0));
+	$requestSemanaListadoActividades = filter_input(INPUT_GET, 'semana', FILTER_VALIDATE_INT) ?: 0;
+	$maxSemanaListadoActividades = (int) ($_SESSION['Max_Semana'] ?? ($_SESSION['semana'] ?? $requestSemanaListadoActividades));
+	$semanaContextListadoActividades = $requestSemanaListadoActividades > 0 ? $requestSemanaListadoActividades : $maxSemanaListadoActividades;
 	$actividadInicioOptionsHtml = '';
 
 	if (empty($dbPrefixListadoActividades) || !preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefixListadoActividades) || $projectIdListadoActividades <= 0) {
@@ -21,7 +30,7 @@
 	    try {
 	        $dbInstance = Database::getInstance();
 	        $queryActividadInicio = "SELECT unique_id AS Consecutivo_en_Programa, unique_id, Id, Actividad, Fecha_Inicio FROM programa_consolidado WHERE project_id = ? AND Semana=? AND Titulo=0 AND Fecha_Inicio IS NOT NULL AND Fecha_Fin IS NOT NULL ORDER BY Fecha_Inicio ASC";
-	        $stmtActividadInicio = $dbInstance->query($queryActividadInicio, [$projectIdListadoActividades, $maxSemanaListadoActividades]);
+	        $stmtActividadInicio = $dbInstance->query($queryActividadInicio, [$projectIdListadoActividades, $semanaContextListadoActividades]);
 	        $actividadInicioOptions = [];
 
 	        while ($valores = $stmtActividadInicio->fetch(PDO::FETCH_ASSOC)) {
@@ -40,6 +49,32 @@
 	    }
 	}
 	?>
+	<script>
+		window.__LISTADO_ACTIVIDADES_CONTEXT__ = <?php echo json_encode([
+		    'db' => $dbPrefixListadoActividades,
+		    'semana' => (string) $semanaContextListadoActividades,
+		    'permiso' => (string) ($_SESSION['permiso_canonico'] ?? ($_SESSION['permiso'] ?? '')),
+		    'proyecto' => (string) ($_SESSION['proyecto'] ?? ''),
+		], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT); ?>;
+		window.applyListadoActividadesContextFallback = function() {
+			var ctx = window.__LISTADO_ACTIVIDADES_CONTEXT__ || {};
+			[['baseDatos', ctx.db], ['Max_Semana', ctx.semana], ['semana', ctx.semana], ['proyecto', ctx.proyecto], ['permiso_canonico', ctx.permiso]].forEach(function(item) {
+				var input = document.getElementById(item[0]);
+				if (input && !input.value && item[1]) {
+					input.value = item[1];
+				}
+			});
+			if (document.getElementById('ctxProyecto') && ctx.proyecto) {
+				document.getElementById('ctxProyecto').textContent = ctx.proyecto;
+			}
+			if (document.getElementById('ctxModulo')) {
+				document.getElementById('ctxModulo').textContent = 'Familias de obra';
+			}
+			if (document.getElementById('ctxSemanaTexto') && ctx.semana) {
+				document.getElementById('ctxSemanaTexto').textContent = 'Semana ' + ctx.semana;
+			}
+		};
+	</script>
 
 	<div class="encabezado" id="encabezado">
 		<input type="hidden" name="seccion" id="seccion" value="info_listadoActividades" aria-hidden="true">
@@ -54,31 +89,26 @@
 	</div>
 
   <!--Se crea un div con nombre de clase "row". Acá se agregara un nuevo div que contiene la clase "formulario_nuevo", que contiene el formulario de registro de profesionales, el cual permanecerá oculto hasta que se presione el botón "Registrar Profesional" -->
-	<div class="row formularioRegistro" style:"visibility: hidden">
+	<div class="row formularioRegistro la-hidden-registration">
 	</div>
 
   <!--Se crea la estructura de la tabla, y Se crea el mensaje emergente que dice si los comandos fueron ejecutados correctamente o no (se repite el mismo de la línea anterior) -->
+	<div class="row filaBotones mb-2 align-items-center">
+		<div class="col-12 p-0">
+			<div class="toolbarFilaBotones"></div>
+		</div>
+	</div>
+	<div class="row filaMensajes">
+		<div class="col-sm-8 mr-auto p-0">
+			<div class="toolbarFilaMensajes"></div>
+		</div>
+		<div class="col-sm-4 ml-auto p-0">
+			<div class="toolbarFiltro"></div>
+		</div>
+	</div>
 	<div class="row tabla table-responsive-custom">
 		<div id="cuadroTabla" class="col-sm-12 col-md-12 col-lg-12 p-0 w-100">
-			<table id="dt_cliente" class="dt_infoGeneral table table-bordered table-hover table-responsive-sm table-sm w-100" cellspacing="0" width="100%">
-				<thead>
-					<tr>
-						<th></th>
-						<th>Id</th>
-						<th>Id</th>
-						<th>Familia</th>
-						<th>Descripción</th>
-						<th>Inicio en obra segun cronograma</th>
-						<th>Inicio en obra segun cronograma</th>
-						<th>Fecha de Inicio</th>
-						<th>Modalidad de contratacion</th>
-						<th>Semana de Actualizacion</th>
-						<!-- <th>Id Paquete de Contratación</th>
-						<th>Paquete de Contratación</th> -->
-					</tr>
-					</tr>
-				</thead>
-			</table>
+			<div id="hot-container" class="w-100 hot-mobile-grid la-hot-container"></div>
 		</div>
 	</div>
 
@@ -109,8 +139,8 @@
 		                </div>
 		                <div class="aia-modal__field-grid">
 		                <!--Se crean 2 inputs que contienen el id del registro que se va a modificar, y el switch que dice si la acción es modificar-->
-										<input type="hidden" id="Id" name="Id" value="">
-					      <input type="hidden" id="opcion" name="opcion" value="registrar">
+										<input type="hidden" id="nuevaActividadId" name="Id" value="">
+					      <input type="hidden" id="nuevaActividadOpcion" name="opcion" value="registrar">
 		                <!-- Se crean los inputs del formulario de registro de usuario (Nombre, Apellidos y DNI) -->
 		                <div class="col-sm-12 aia-modal__field">
 		                  <label for="actividad" class="control-label aia-modal__label">Familia</label><input id="actividad" name="actividad" type="text" class="form-control">
@@ -120,7 +150,7 @@
 		                </div>
 		                <div class="col-sm-12 aia-modal__field">
 			                  <label for="actividadInicio" class="control-label aia-modal__label">Inicio en obra segun cronograma</label>
-			                  <select id="actividadInicio" name="actividadInicio" class="form-control" onchange="actualizarFechaInicio('nuevo')" style="width:100%">
+			                  <select id="actividadInicio" name="actividadInicio" class="form-control la-full-width" onchange="actualizarFechaInicio('nuevo')">
 		                    <option value=""></option><?php echo $actividadInicioOptionsHtml; ?>
 		                  </select>
 		                </div>
@@ -176,7 +206,7 @@
 		        <div class="row">
 		          <div id="cuadroCargarExcel" class="cuadro4 col-sm-12 col-md-12 col-lg-12">
 		            <form enctype="multipart/form-data" class="form form-horizontal aia-modal__form" id="formCargarExcel" name="formCargarExcel" action="" method="POST">
-		              <section class="form-group parametro_cargarExcel aia-modal__section aia-modal__section--plain" style="border:none; box-shadow:none;">
+		              <section class="form-group parametro_cargarExcel aia-modal__section aia-modal__section--plain">
 		                <!-- <div class="form_eval form-group">
 													<h3 id='form_general'>
 														Descargar Archivo Base
@@ -195,20 +225,20 @@
 		                  <p class="aia-modal__hint">Solo se permiten archivos en formato CSV y se procesara el contenido completo de familias de obra.</p>
 		                </div>
 		                <!--Se crean 2 inputs que contienen el id del registro que se va a modificar, y el switch que dice si la acción es cargarExcel-->
-		                <input type="hidden" id="Id" name="Id" value="">
-		                <input type="hidden" id="opcion" name="opcion" value="cargarExcel">
-		                <input type="hidden" id="codigo" name="codigo" value="">
+		                <input type="hidden" id="cargarExcelId" name="Id" value="">
+		                <input type="hidden" id="cargarExcelOpcion" name="opcion" value="cargarExcel">
+		                <input type="hidden" id="cargarExcelCodigo" name="codigo" value="">
 		                <!-- Se crea el input para cargar el archivo CSV que cargarà el listado de actividades del proyecto -->
 		                <div class="col-sm-12 aia-modal__field">
 		                  <label for="archivoExcel" class="control-label aia-modal__label">Seleccione el archivo con las familias de obra completas desde el equipo (solo se permiten archivos en formato CSV):</label>
-		                  <input type="file" name="archivoExcel" id="archivoExcel" class="form-control form-control-lg" accept=".csv">
+		                  <input type="file" name="archivoExcel" id="archivoExcel" class="form-control form-control-lg" accept=".csv,text/csv" required>
 		                  <!-- <input type="submit" value="Enviar" name="archivoExcel"> -->
 		                </div>
 		              </section>
 		              <div class="form-group aia-modal__actions">
 		                <div class="col-sm-12 aia-modal__buttons">
 		                  <input id="" type="submit" class="btn btn-success" value="Guardar">
-		                  <input id="btn_listar" type="button" class="btn btn-danger" value="Cancelar" data-dismiss="modal">
+		                  <input id="btn_cancelar_carga" type="button" class="btn btn-danger" value="Cancelar" data-dismiss="modal">
 		                </div>
 		                <p class="mensaje aia-modal__message"></p>
 		              </div>
@@ -244,11 +274,11 @@
 	                Presiona "Analizar" para detectar familias en el Programa General.
 	              </div>
 	            </div>
-	            <div class="table-responsive" style="max-height: 40vh; overflow-y: auto;">
+	            <div class="table-responsive la-preview-table-shell">
 	              <table class="table table-sm table-bordered table-hover mb-0" id="autoGenListadoTable">
 	                <thead class="thead-light">
 	                  <tr>
-	                    <th style="width: 50px;">#</th>
+	                    <th class="la-preview-index">#</th>
 	                    <th>Familia (PG)</th>
 	                    <th>Fecha Inicio</th>
 	                    <th>Familia Detectada</th>
@@ -299,24 +329,15 @@
 	</div>
 
 	<!-- Iniciar Jquery-->
-	<script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-1.12.4.js"></script>
+	<script type="text/javascript" charset="utf8" src="/vendor/jquery.min.js"></script>
 	<!-- Iniciar Popper-->
-	<script type="text/javascript" charset="utf8" src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+	<script type="text/javascript" charset="utf8" src="/vendor/popper.min.js"></script>
 	<!-- Iniciar Bootstrap-->
-	<script type="text/javascript" charset="utf8" src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-	<!--Iniciar DataTables-->
-	<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.4/js/jquery.dataTables.js"></script>
-	<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.4/js/dataTables.bootstrap4.min.js"></script>
-	<!--Botones de Datatables-->
-	<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/1.6.1/js/dataTables.buttons.min.js"></script>
-	<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.bootstrap4.min.js"></script>
-	<!--checkboxes DataTables-->
-	<script type="text/javascript" src="https://gyrocode.github.io/jquery-datatables-checkboxes/1.2.11/js/dataTables.checkboxes.min.js"></script>
+	<script type="text/javascript" charset="utf8" src="/vendor/bootstrap/bootstrap.min.js"></script>
 	<!--Selector de fechas -->
-	<script src="https://code.jquery.com/ui/1.10.1/jquery-ui.js"></script>
+	<script src="/vendor/jquery-ui.min.js"></script>
 	<!--Google Charts-->
 	<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-	<script src="https://code.jquery.com/ui/1.10.1/jquery-ui.js"></script>
 	<!--Any Chart-->
 	<script src="https://cdn.anychart.com/releases/v8/js/anychart-base.min.js?hcode=c11e6e3cfefb406e8ce8d99fa8368d33"></script>
 	<script src="https://cdn.anychart.com/releases/v8/js/anychart-circular-gauge.min.js?hcode=c11e6e3cfefb406e8ce8d99fa8368d33"></script>
@@ -327,14 +348,32 @@
 	<link href="/css/tom-select-premium-aia.css?v=20260611" rel="stylesheet">
 	<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 	<!--Script con la funcion que carga los datos generales del archivo-->
-	<script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js" charset="utf-8"></script>
+	<script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js?v=20260708theme" charset="utf-8"></script>
 	<!--Script con las funciones NUEVA SEMANA y ELIMINAR SEMANA-->
 	<script type="text/javascript" src="/js/funcionesGenerales6.js" charset="utf-8"></script>
-	<script type="text/javascript" src="/js/modules/semi_auto_review.js?v=20260702" charset="utf-8"></script>
+	<script type="text/javascript" src="/js/modules/semi_auto_review.js?v=20260711-undo-run1" charset="utf-8"></script>
 	<!-- Bloquear el click derecho-->
 	<!--    <script type='text/javascript'>document.oncontextmenu = function(){return false}</script>-->
 
 	<script>
+		window.getCsrfToken = window.getCsrfToken || function() {
+			var meta = document.querySelector('meta[name="csrf-token"]');
+			return meta && meta.content ? meta.content : '';
+		};
+
+		document.addEventListener('DOMContentLoaded', function() {
+			if (!window.jQuery) {
+				return;
+			}
+
+			window.jQuery(document).ajaxSend(function (_event, xhr, settings) {
+				var url = settings && settings.url ? String(settings.url) : '';
+				if (url.indexOf('/api/listado-actividades/') === 0) {
+					xhr.setRequestHeader('X-CSRF-Token', window.getCsrfToken());
+				}
+			});
+		});
+
 		/* Ejecuta las funciones listar, guardar y eliminar, solo cuando la página esta lista */
 		$(document).on("ready", function() {
 		  $("#formulario_nuevo").hide();
@@ -553,11 +592,11 @@
 					if (gruposToShow.length > 0) {
 						var sectionTitle = response.preview ? 'GRUPOS A CREAR' : 'GRUPOS CONSOLIDADOS CREADOS';
 						var sectionIcon = response.preview ? 'fa-calculator' : 'fa-layer-group';
-						html += '<tr style="background-color: #d4edda; font-weight: bold;"><td colspan="6"><i class="fas ' + sectionIcon + '"></i> ' + sectionTitle + ' (' + gruposToShow.length + ')</td></tr>';
+						html += '<tr class="la-preview-section la-preview-section-created"><td colspan="6"><i class="fas ' + sectionIcon + '"></i> ' + sectionTitle + ' (' + gruposToShow.length + ')</td></tr>';
 						for (var g = 0; g < gruposToShow.length; g++) {
 							var gr = gruposToShow[g];
 							var badgeGrupo = '<span class="badge badge-success">+' + gr.totalActividades + ' PG</span>';
-							html += '<tr style="background-color: #f0f8ff;">';
+							html += '<tr class="la-preview-row-created">';
 							html += '<td>' + (g + 1) + '</td>';
 							html += '<td><strong>' + escaparHtml(gr.familia) + '</strong><br><small class="text-muted">' + escaparHtml((gr.descripcion || '').substring(0, 120)) + ((gr.descripcion || '').length > 120 ? '...' : '') + '</small></td>';
 							html += '<td>' + escaparHtml(gr.fechaInicio || '-') + '</td>';
@@ -570,11 +609,11 @@
 
 					// Mostrar grupos ya existentes (no son sin match, ya estaban creados)
 					if (yaExistiaList.length > 0) {
-						html += '<tr style="background-color: #e3f2fd; font-weight: bold;"><td colspan="6"><i class="fas fa-check-circle"></i> GRUPOS YA EXISTENTES (' + yaExistiaList.length + ')</td></tr>';
+						html += '<tr class="la-preview-section la-preview-section-existing"><td colspan="6"><i class="fas fa-check-circle"></i> GRUPOS YA EXISTENTES (' + yaExistiaList.length + ')</td></tr>';
 						for (var e = 0; e < yaExistiaList.length; e++) {
 							var ex = yaExistiaList[e];
 							var badgeEx = '<span class="badge badge-info">' + ex.totalActividades + ' PG</span>';
-							html += '<tr style="background-color: #f5f5f5;">';
+							html += '<tr class="la-preview-row-existing">';
 							html += '<td>' + (e + 1) + '</td>';
 							html += '<td><strong>' + escaparHtml(ex.familia || 'N/A') + '</strong></td>';
 							html += '<td>-</td>';
@@ -587,7 +626,7 @@
 
 					// Mostrar sugerencias sin match (solo las reales)
 					if (sinMatchList.length > 0) {
-						html += '<tr style="background-color: #fff3cd; font-weight: bold;"><td colspan="6"><i class="fas fa-exclamation-triangle"></i> SIN MATCH DE FAMILIA (' + sinMatchList.length + ')</td></tr>';
+						html += '<tr class="la-preview-section la-preview-section-warning"><td colspan="6"><i class="fas fa-exclamation-triangle"></i> SIN MATCH DE FAMILIA (' + sinMatchList.length + ')</td></tr>';
 					}
 					for (var i = 0; i < sinMatchList.length; i++) {
 						var s = sinMatchList[i];
@@ -672,14 +711,22 @@
 			});
 		};
 
-		var cargaParametros = function() {
-			inicializarModalNuevaActividad();
-			inicializarAutoGenerarListado();
-      listar();
-			guardarNuevaActividad();
-			guardarCargarExcel();
+		var listadoParametrosInitialized = false;
+		var bootstrapListadoActividades = function() {
+			if (listadoParametrosInitialized) {
+				if (window.ListadoActividadesHotModule && !window.ListadoActividadesHotModule.getHotInstance()) {
+					window.ListadoActividadesHotModule.init();
+				}
+				return;
+			}
+			listadoParametrosInitialized = true;
+				inicializarModalNuevaActividad();
+				inicializarAutoGenerarListado();
+	      listar();
+				inicializarFormulariosListado();
       eliminar();
 		}
+		var cargaParametros = bootstrapListadoActividades;
 
 		/* Ejecuta la funcione listar, solo cuando se presiona el botón Listar */
 		$("#btn_listar").on("click", function() {
@@ -694,175 +741,31 @@
 		  location.reload();
 		});
 
-		var cancelarEdicionFila = function() {
-		  $("#btn_cancelar_editar").on("click", function(e) {
-		    e.preventDefault();
-		    recargarTabla("listar");
-		  });
-		}
-
-		/* Dynamic Table Height Calculation */
-		function calcDataTableHeight() {
-			if (window.DataTableHeightManager && typeof window.DataTableHeightManager.calcHeight === "function") {
-				return window.DataTableHeightManager.calcHeight({
-					container: "#cuadroTabla",
-					internalChrome: 170,
-					bottomMargin: 25,
-					minHeight: 200
-				});
-			}
-
-			var windowHeight = $(window).height();
-			var topOffset = $("#cuadroTabla").offset().top;
-			var internalChrome = 170;
-			var bottomMargin = 25;
-			var availableHeight = windowHeight - topOffset - internalChrome - bottomMargin;
-			return (availableHeight > 200 ? availableHeight : 200) + "px";
-		}
-
-		/*Acá se inicia la datatable y se crean sus valores por defecto como el ordenamiento, las celdas que se muestran, los datos, las opciones de longitud de los registros, y el color de las filas dependiendo del estado de las actividades*/
+		/*Inicializa la única tabla runtime del módulo: Handsontable.*/
 		var listar = function() {
-			var db = document.getElementById('baseDatos').value;
-			var semana = document.getElementById('Max_Semana').value;
-			var Max_Semana = document.getElementById('Max_Semana').value;
-		  
-			// Initial Height Calculation
-			var alturatabla = calcDataTableHeight();
-			document.getElementById('cuadroTabla').style.height = "auto";
-
-		  var table = $("#dt_cliente").DataTable({
-		    "dom": "<'row filaBotones'<'col-md-12 mr-auto p-0'<'toolbarFilaBotones'>>><'row filaMensajes'<'col-md-6 mr-auto p-0'<'toolbarFilaMensajes'>><'col-md-2 ml-auto p-0'<'toolbarResetFiltro'>><'col-md-2 ml-auto p-0'<'toolbarFiltro'>>>t<'row'<'col-md-6'i>><'clear'>",
-		    "destroy": true,
-		    "ordering": false,
-		    "autoWidth": false,
-		    "fixedHeader": false,
-		    "scrollX": false, /* PROHIBIDO SCROLL HORIZONTAL */
-		    //                console.log($(document).height());
-		    "scrollY": alturatabla,
-		    /*                "scrollCollapse": false,*/
-		    "responsive": true,
-		    "paging": false,
-		    "ajax": {
-		      "method": "POST",
-		      "url": "/api/listado-actividades/list?db="+db+"&semana="+Max_Semana
-		    },
-		    "lengthMenu": [100, 200, 500],
-				'columnDefs': [
-					{
-						'targets': '_all',
-						'createdCell': function (td, cellData, rowData, row, col) {
-							var headers = ['', 'Id', 'Id', 'Familia', 'Descripción', 'Inicio en obra segun cronograma', 'Inicio en obra segun cronograma', 'Fecha de Inicio', 'Modalidad de contratacion', 'Semana de Actualización'];
-							if (headers[col]) {
-								$(td).attr('data-label', headers[col]);
-							}
-						}
-					},
-				{
-				'targets': [8],
-				'render': function ( data, type, full, meta ) {
-						if (!data || data === '') {
-							return '<span class="text-muted">Sin asignar</span>';
-						}
-						var modalidades = data.split(',');
-						var badges = {
-							'SI': '<span class="badge badge-primary">Suministro e Instalación</span>',
-							'MO': '<span class="badge badge-info">Mano de Obra</span>',
-							'S':  '<span class="badge badge-secondary">Suministro</span>',
-							'OC': '<span class="badge badge-dark">Orden de servicio/compra</span>'
-						};
-						var result = [];
-						for (var i = 0; i < modalidades.length; i++) {
-							var m = modalidades[i].trim();
-							if (badges[m]) {
-								result.push(badges[m]);
-							} else if (m) {
-								result.push(m);
-							}
-						}
-						return result.length > 0 ? result.join(' ') : '<span class="text-muted">Sin asignar</span>';
-					},
-				},
-					{
-						'targets': [0],
-						'width':'4%',
-					},
-					{
-						'targets': [2],
-						'width':'10%',
-					},
-					{
-						'targets': [3],
-						'width':'16%',
-					},
-					{
-						'targets': [4],
-						'width':'24%',
-					},
-					{
-						'targets': [6],
-						'width':'20%',
-					},
-					{
-						'targets': [7],
-						'width':'10%',
-					},
-					{
-						'targets': [8],
-						'width':'16%',
-					},
-					{
-						'targets': [1,2,3,4,5,6,7,8,9],
-						'render': function ( data, type, full, meta ) {
-						 return data;
-						},
-					},
-				],
-				"columns":[
-						{"defaultContent":"<button type= 'button' class='editar btn btn-primary btn-sm btn-action-gap'  title='Editar'><i class='fa fa-edit fa-xs'></i></button><button type='button' class='eliminar btn btn-danger btn-sm btn-action-gap'  title='Eliminar'><i class='fa fa-trash-alt fa-xs'></i></button>"},
-						{"data":"Id", "visible":false},
-						{"data":"codigo"},
-						{"data":"actividad"},
-						{"data":"descripcionActividad"},
-						{"data":"actividadInicio", "visible":false},
-						{"data":"nombreActividadInicio"},
-						{"data":"fechaInicio"},
-						{"data":"tipoContrato"},
-						{"data":"semanaActualizacion", "visible":false},
-						// {"data":"idPaqueteContratacion", "visible":false},
-						// {"data":"paqueteContratacion"}
-				],
-		    "language": idioma_espanol
-		  });
-
-			// Dynamic Resize Listener
-			$(window).off('resize.dtListado orientationchange.dtListado aia:viewport-scale-change.dtListado').on('resize.dtListado orientationchange.dtListado aia:viewport-scale-change.dtListado', function() {
-				var opts = {
-					container: "#cuadroTabla",
-					internalChrome: 170,
-					bottomMargin: 25,
-					minHeight: 200
-				};
-
-				if (window.DataTableHeightManager && typeof window.DataTableHeightManager.applyToDataTable === "function") {
-					window.DataTableHeightManager.applyToDataTable(table, opts);
-					return;
-				}
-
-				var newHeight = calcDataTableHeight();
-				$('div.dataTables_scrollBody').css('height', newHeight);
-				$('div.dataTables_scrollBody').css('max-height', newHeight);
-				table.settings()[0].oScroll.sY = newHeight;
-				table.columns.adjust();
-			});
-
-			$("div.toolbarFilaBotones").html('<div class="grupo_botones1" role="group" aria-label="Basic example" style="padding:5; max-width:50%;display:inline-block; "><button id="btn_cargarActividadesExcel" class="btn-pdc-modern" title="Cargar familias de obra desde Excel" data-toggle="modal" data-target="#modalCargarExcel">Cargar desde Excel <i class="fas fa-upload fa-lg"></i></button><button id="btn_nueva_actividad" class="btn-pdc-modern" title="Registrar nueva familia" data-toggle="modal" data-target="#modalNuevaActividad" style="margin: auto 5px">Nueva Familia <i class="fas fa-plus fa-lg"></i></button></div><div class="grupo_botones_semanal_madre"  style="padding:5; max-width:69%"><div class="grupo_botones_semanal btn-group" role="group" aria-label="Basic example"><button id="btn_Actividades" type="button" class="btn-pdc-modern active" onclick="window.location.href=\'/listado-actividades?semana='+semana+'\'">Familias de obra <i class="fas fa-arrow-right fa-m"></i></button><button id="btn_contratos" type="button" class="btn-pdc-modern" onclick="window.location.href=\'/contratos?semana='+semana+'\'">Paquetes de contratacion <i class="fas fa-arrow-right fa-m"></i></button><button id="btn_planCompras" type="button" class="btn-pdc-modern" onclick="window.location.href=\'/pdc?semana='+semana+'&origen=info_listadoActividades\'">Plan de Compras y Contrataciones</button></div></div>');
+			var puedeEditar = typeof puedeEditarListadoActividades === 'function' && puedeEditarListadoActividades();
+			var botonesEdicion = puedeEditar
+				? '<button id="btn_cargarActividadesExcel" class="btn-pdc-modern" title="Cargar familias de obra desde Excel" data-toggle="modal" data-target="#modalCargarExcel"><span class="la-btn-full">Cargar desde Excel</span><span class="la-btn-short">Excel</span> <i class="fas fa-upload fa-lg"></i></button>' +
+				  '<button id="btn_nueva_actividad" class="btn-pdc-modern la-btn-gap" title="Registrar nueva familia" data-toggle="modal" data-target="#modalNuevaActividad"><span class="la-btn-full">Nueva Familia</span><span class="la-btn-short">Nueva</span> <i class="fas fa-plus fa-lg"></i></button>'
+				: '';
+			$("div.toolbarFilaBotones").html(
+				'<div class="grupo_botones1 la-toolbar-actions" role="group" aria-label="Basic example">' +
+				botonesEdicion +
+				'</div>' +
+				'<div class="grupo_botones_semanal_madre la-toolbar-switcher">' +
+				'<div class="grupo_botones_semanal btn-group" role="group" aria-label="Basic example">' +
+				'<button id="btn_Actividades" type="button" class="btn-pdc-modern active" onclick="window.location.href=\'/listado-actividades?semana=\' + document.getElementById(\'Max_Semana\').value + \'\'">Familias de obra <i class="fas fa-arrow-right fa-m"></i></button>' +
+				'<button id="btn_contratos" type="button" class="btn-pdc-modern" onclick="window.location.href=\'/contratos?semana=\' + document.getElementById(\'Max_Semana\').value + \'\'">Paquetes de contratacion <i class="fas fa-arrow-right fa-m"></i></button>' +
+				'<button id="btn_planCompras" type="button" class="btn-pdc-modern" onclick="window.location.href=\'/pdc?semana=\' + document.getElementById(\'Max_Semana\').value + \'&origen=info_listadoActividades\'">Plan de Compras y Contrataciones</button>' +
+				'</div></div>'
+			);
 
 			$("div.toolbarFilaBotones .grupo_botones1")
 				.addClass("ps-toolbar-actions")
 				.removeAttr("style");
 			$("div.toolbarFilaBotones .grupo_botones1 .btn").addClass("ps-btn-gap");
-			if (puedeEditarListadoActividades()) {
-				$("div.toolbarFilaBotones .grupo_botones1").append('<button id="btn_auto_generar_listado" class="btn-pdc-modern ps-btn-gap" title="Auto-generar familias desde el Programa General"><i class="fas fa-magic"></i> Auto-generar Familias</button>');
+			if (puedeEditar) {
+				$("div.toolbarFilaBotones .grupo_botones1").append('<button id="btn_auto_generar_listado" class="btn-pdc-modern ps-btn-gap" title="Auto-generar familias desde el Programa General"><i class="fas fa-magic"></i> <span class="la-btn-full">Auto-generar Familias</span><span class="la-btn-short">Auto</span></button>');
 			}
 			if (window.SemiAutoReview) {
 				window.SemiAutoReview.init({
@@ -875,168 +778,31 @@
 			$("div.toolbarFilaBotones .grupo_botones_semanal_madre")
 				.addClass("ps-toolbar-nav-wrap")
 				.removeAttr("style")
-				.html('<div class="ps-module-switcher" role="tablist" aria-label="Navegacion general"><button id="btn_Actividades" type="button" class="ps-module-tab is-active" onclick="window.location.href=\'/listado-actividades?semana='+semana+'\'" aria-label="Ir a Familias de obra" aria-current="page"><i class="fas fa-table" aria-hidden="true"></i><span>Familias de obra</span></button><button id="btn_contratos" type="button" class="ps-module-tab" onclick="window.location.href=\'/contratos?semana='+semana+'\'" aria-label="Ir a Paquetes de contratacion"><i class="fas fa-file-alt" aria-hidden="true"></i><span>Paquetes de contratacion</span></button><button id="btn_planCompras" type="button" class="ps-module-tab" onclick="window.location.href=\'/pdc?semana='+semana+'&origen=info_listadoActividades\'" aria-label="Ir a Plan de Compras y Contrataciones"><i class="fas fa-shopping-cart" aria-hidden="true"></i><span>Plan de Compras y Contrataciones</span></button></div>');
+				.html(window.AIAInfoGeneralNav.render('listado', document.getElementById('Max_Semana').value, 'info_listadoActividades'));
 
 			$("div.toolbarFilaMensajes").html('<p id="mensajeActualizacion"></p>');
 
 			$("div.toolbarFiltro").html('<div class="d-flex ml-auto"><label class="sr-only">Buscar en listado</label><button id="btn_limpiar_buscador" type="button" class="btn-pdc-modern mr-1 ml-0 d-none max-w-40"><i class="fas fa-times-circle"></i> Limpiar</button></div>');
 
 			maestroPermisos(document.getElementById('permiso_canonico').value);
-		  obtener_data_editar("#dt_cliente tbody", table);
-		  obtener_id_eliminar("#dt_cliente tbody", table);
+
+			// Inicializar Handsontable
+			if (window.ListadoActividadesHotModule) {
+				window.ListadoActividadesHotModule.init();
+			}
 		}
 
-		/*Toma los datos de la fila en la que se presionó el botón editar*/
-		var obtener_data_editar = function(tbody, table) {
-		  $(tbody)
-				.off("click.aiaEditarActividad", "td:not(:first-child), button.editar");
+		// Handsontable gestiona la edición inline y el botón de cada fila abre la confirmación de eliminación.
 
-		  if (!puedeEditarListadoActividades()) {
-				return;
-		  }
-
-		  var only_once = true;
-
-		  $(tbody).on("click.aiaEditarActividad", "td:not(:first-child), button.editar", function(e) {
-					e.preventDefault();
-					e.stopPropagation();
-
-					var $row = $(this).closest("tr");
-
-				var data= table.row($row).data();
-
-				if (!data) {
-					return;
-				}
-
-				var Id=$("#Id").val(data.Id),
-						opcion = $("#opcion").val("modificar"),
-						codigo = $("#codigo").val(data.codigo);
-		    if (only_once == true) {
-					var codigo_html_Actividad =  "<input id='select_Actividad' name='Actividad' class='form-control form-control-sm' type='text' value='"+data.actividad+"'></input>";
-					$row.find('td:eq(2)').html(codigo_html_Actividad);
-
-					var codigo_html_descripcionActividad =  "<input id='select_descripcionActividad' name='descripcionActividad' class='form-control form-control-sm' type='text' value='"+data.descripcionActividad+"'></input>";
-					$row.find('td:eq(3)').html(codigo_html_descripcionActividad);
-
-					var opciones_codigo_html_actividadInicio = <?php echo json_encode($actividadInicioOptionsHtml, JSON_UNESCAPED_UNICODE); ?>;
-
-					var codigo_html_actividadInicio =  "<select id='select_actividadInicio' name='actividadInicio' class='form-control form-control-sm' onchange=actualizarFechaInicio('actualizar')><option value=''></option>";
-					codigo_html_actividadInicio = codigo_html_actividadInicio + opciones_codigo_html_actividadInicio + "</select>";
-					$row.find('td:eq(4)').html(codigo_html_actividadInicio);
-					configurarSelectActividadInicio('#select_actividadInicio');
-
-					var codigo_html_fechaInicio =  "<input id='select_fechaInicio' name='fechaInicio' class='form-control form-control-sm' type='text' value='"+data.fechaInicio+"' autocomplete='off'></input>";
-					$row.find('td:eq(5)').html(codigo_html_fechaInicio);
-
-					$( "#select_fechaInicio" ).datepicker({dateFormat: 'yy-mm-dd',
-																							 changeMonth: true,
-																							 changeYear: true,
-																							 showOtherMonths: true,
-																							 selectOtherMonths: true,
-																							 defaultDate:data.fechaInicio,
-																							});
-
-
-
-			var codigo_html_tipoContrato_render = buildTipoContratoPills('inline', (data.tipoContrato || '').split(',').map(function(v) { return v.trim(); }).filter(Boolean), false)
-				+ '<input type="hidden" id="select_tipoContrato" name="tipoContrato" value="' + escaparHtml(data.tipoContrato || '') + '">';
-			$row.find('td:eq(6)').html(codigo_html_tipoContrato_render);
-
-					var codigo_html_botones = "<button type= 'button' id='btn_guardar_editar' class='guardar btn btn-success btn-sm btn-action-gap' title='Guardar la edición'><i class='fa fa-save fa-xs' aria-hidden='true' ></i></button><button type= 'button' id='btn_cancelar_editar' class='cancelar btn btn-danger btn-sm btn-action-gap' title='Cancelar la edición'><i class='fa fa-undo fa-xs' aria-hidden='true' ></i></button>";
-					$row.find('td:eq(0)').html(codigo_html_botones);
-
-					$("#select_actividadInicio").val(data.actividadInicio).change();
-
-					// var sel = document.getElementById("select_paqueteContratacion");
-					// var text= sel.options[sel.selectedIndex].text;
-					// console.log(text);
-
-					$("#select_Actividad").focus();
-
-		      only_once = false;
-					$("#dt_cliente td input, #dt_cliente td select, #dt_cliente td textarea").keydown(function(e){
-							if(e.keyCode==13){
-									$("#btn_guardar_editar").click();
-									only_once = true;
-							}
-					});
-					$("#dt_cliente td input, #dt_cliente td select, #dt_cliente td textarea").keydown(function(e){
-							if(e.keyCode==27){
-									$("#btn_cancelar_editar").click();
-									only_once = true;
-							}
-					});
-			    }
-			    cancelarEdicionFila();
-			    guardar_modificar();
-		  });
-		}
-
-		/*Toma los datos de la fila en la que se presionó el botón eliminar*/
-		var obtener_id_eliminar = function(tbody, table) {
-		  $(tbody).off("click.aiaEliminarActividad", "button.eliminar");
-
-		  var canEdit = puedeEditarListadoActividades();
-
-		  if (!canEdit) {
-			// No hace nada
-		  } else {
-				$(tbody).on("click.aiaEliminarActividad", "button.eliminar", function(e) {
-						e.preventDefault();
-						e.stopPropagation();
-
-					var data= table.row($(this).parents("tr")).data();
-
-					if (!data) {
-						return;
-					}
-
-					var idusuario=$("#Id").val(data.Id);
-					var opcion=$("#opcion").val("eliminar");
-					$("#modalEliminar").modal("show");
-					var texto=$("#modal-body-texto-eliminar").html("¿Desea eliminar la actividad <b>"+data.actividad+"</b> definitivamente del proyecto?");
-			  });
-		  }
-		}
-
-		/* Ejecuta la funcion guardar, solo cuando se presiona el botón guardar. La función guardar busca la informacion registrada en el formulario de registro de usuarios y lo envia por medio de AJAX para que se ejecute la funcion modificar en guardar.php */
-		var guardarNuevaActividad = function() {
-			$("#modalNuevaActividad form").on("submit", function(e) {
-				e.preventDefault();
-				var db = document.getElementById('baseDatos').value;
-				var semana = document.getElementById('Max_Semana').value;
-				var frm = $(this).serialize();
-				frm = frm + "&semana=" + semana;
-				$.ajax({
-					method: "POST",
-					url: "/api/listado-actividades/save?db="+db,
-					contenttype: "charset=utf-8",
-					data: frm,
-				}).done(function(info) {
-					var json_info = (typeof info === 'string' ? JSON.parse(info) : info);
-					if (json_info.respuesta == "BIEN") {
-						limpiar_datos();
-						json_info.respuesta = json_info.respuesta + "NuevaActividad";
-					}
-					mostrar_mensaje( json_info );
-					limpiar_datos();
-					recargarTabla("");
-				});
-			});
-		}
-
-		var guardarCargarExcel = function() {
-		  $("#modalCargarExcel form").on("submit", function(e) {
+			var inicializarFormulariosListado = function() {
+			  $("#modalCargarExcel form").off("submit.laListado").on("submit.laListado", function(e) {
 		    e.preventDefault();
 				var db = document.getElementById('baseDatos').value;
 				var semana = document.getElementById('Max_Semana').value;
 		    var variables = new FormData($("#formCargarExcel")[0]);
-		    //var frm = $(this).serialize();
-		    console.log(variables);
 		    $.ajax({
 		      type: "POST",
-		      url: "/api/listado-actividades/save?db="+db,
+		      url: "/api/listado-actividades/save?db="+db+"&semana="+encodeURIComponent(semana),
 		      contentType: false,
 		      processData: false,
 		      data: variables,
@@ -1047,11 +813,13 @@
 		        json_info.respuesta = json_info.respuesta + "CargarExcel";
 		      }
 		      mostrar_mensaje(json_info);
-		      recargarTabla('');
+		      if (json_info && json_info.respuesta == "BIEN") recargarTabla('');
+		    }).fail(function() {
+		      mostrar_mensaje({ respuesta: 'ERROR', mensaje: 'No fue posible cargar el archivo.' });
 		    });
 		  });
 
-		  $("#modalNuevaActividad form").on("submit", function(e) {
+			  $("#modalNuevaActividad form").off("submit.laListado").on("submit.laListado", function(e) {
 		    e.preventDefault();
 				var db = document.getElementById('baseDatos').value;
 				var semana = document.getElementById('Max_Semana').value;
@@ -1131,55 +899,27 @@
 		    sincronizarBloqueoSi($(this).closest('.aia-tipo-toggle').length ? $(this).closest('.aia-tipo-toggle') : $("#modalNuevaActividad"));
 		    sincronizarVisualChecks();
 		  };
-		  $("#modalNuevaActividad").on('change', 'input[name="tipoContratoCheck"]', onCheckChange);
+		  $("#modalNuevaActividad").off('change.laListado', 'input[name="tipoContratoCheck"]')
+		    .on('change.laListado', 'input[name="tipoContratoCheck"]', onCheckChange);
 		  sincronizarBloqueoSi($("#modalNuevaActividad"));
 		  sincronizarVisualChecks();
 
 		  /* Inline edit: SI bloquea demas checkboxes (event delegation) */
-		  $(document).on('change', '.aia-tipo-pill[data-tipo-code="SI"] input[type="checkbox"]', function() {
+		  $(document).off('change.laListadoSi', '.aia-tipo-pill[data-tipo-code="SI"] input[type="checkbox"]')
+		    .on('change.laListadoSi', '.aia-tipo-pill[data-tipo-code="SI"] input[type="checkbox"]', function() {
 		    var $toggle = $(this).closest('.aia-tipo-toggle');
 		    sincronizarBloqueoSi($toggle);
 		    sincronizarVisualChecks($toggle);
 		  });
-		  $(document).on('change', '.aia-tipo-pill input[name="tipoContratoCheck"]', function() {
+		  $(document).off('change.laListadoChecks', '.aia-tipo-pill input[name="tipoContratoCheck"]')
+		    .on('change.laListadoChecks', '.aia-tipo-pill input[name="tipoContratoCheck"]', function() {
 		    sincronizarVisualChecks($(this).closest('.aia-tipo-toggle'));
 		  });
 		}
 
-		var guardar_modificar = function() {
-			$("#btn_guardar_editar").one("click", function(e) {
-				e.preventDefault();
-				var db = document.getElementById('baseDatos').value;
-				var semana = document.getElementById('Max_Semana').value;
-				var Id = $("#Id").serialize();
-				var opcion = $("#opcion").serialize();
-				var codigo = $("#codigo").serialize();
-				var Actividad = $("#select_Actividad").serialize();
-				var descripcionActividad = $("#select_descripcionActividad").serialize();
-				var actividadInicio = $("#select_actividadInicio").serialize();
-				var fechaInicio = $("#select_fechaInicio").serialize();
-
-				var tipoContratoVals = $("input[name='tipoContratoCheck']:checked").map(function() { return $(this).val(); }).get().join(',');
-				$("#select_tipoContrato").val(tipoContratoVals);
-
-				frm = Id + "&" + opcion + "&" + codigo + "&" + Actividad + "&" + descripcionActividad + "&" + actividadInicio + "&" + fechaInicio + "&tipoContrato=" + encodeURIComponent(tipoContratoVals) + "&semana=" + semana;
-				// console.log(frm);
-				$.ajax({
-					method: "POST",
-					url: "/api/listado-actividades/save?db="+db,
-					contenttype: "charset=utf-8",
-					data: frm,
-				}).done(function(info) {
-					var json_info = (typeof info === 'string' ? JSON.parse(info) : info);
-					// console.log(json_info);
-					recargarTabla('');
-				});
-			});
-		}
-
 		/* Ejecuta la funcion eliminar, solo cuando se presiona el botón eliminar en cada uno de los registros. La función eliminar busca el id de el registro en el que se presinó el botón eliminar y lo envia por medio de AJAX para que se ejecute la funcion eliminar en guardar.php */
 		var eliminar = function() {
-		  $("#eliminar-usuario").on("click", function() {
+		  $("#eliminar-usuario").off("click.laListado").on("click.laListado", function() {
 				var db = document.getElementById('baseDatos').value;
 				var semana = document.getElementById('Max_Semana').value;
 		    	var Id = $("#Id").val(),
@@ -1242,69 +982,58 @@
 		}
 
 		/*Sirve para mostrar el mensaje emergente dependiendo de las condiciones que se presenten */
+		function showListadoMessage(selector, texto, messageClass, delayMs) {
+			var $target = $(selector);
+			$target
+				.removeClass('la-message-success la-message-error')
+				.addClass(messageClass)
+				.html(texto);
+			$target.fadeOut(delayMs, function() {
+				$(this).html("");
+				$(this).removeClass('la-message-success la-message-error');
+				$(this).fadeIn(3000);
+			});
+		}
+
 		var mostrar_mensaje = function(informacion) {
 			var texto = "",
-				color = "";
+				messageClass = "";
 			if (informacion.respuesta == "BIENNuevaActividad" || informacion.respuesta == "BIENCargarExcel") {
 				texto = "<strong>Bien!</strong> Se han guardado los cambios correctamente.";
-				color = "#379911";
+				messageClass = "la-message-success";
 			}
 			if (informacion.respuesta == "ERROR") {
 				texto = "<strong>Error</strong>, no se ejecutó la consulta.";
-				color = "#C9302C";
+				messageClass = "la-message-error";
 			}
 			if (informacion.respuesta == "EXISTE") {
 				texto = "<strong>Información!</strong> La actividad que estás intentando registrar ya existe.";
-				color = "#C9302C";
+				messageClass = "la-message-error";
 			}
 			if (informacion.respuesta == "VACIO") {
 				texto = "<strong>Advertencia!</strong> debe llenar todos los campos solicitados.";
-				color = "#C9302C";
+				messageClass = "la-message-error";
 			}
 			if (informacion.respuesta == "NO_ELIMINAR") {
 				texto = "<strong>Advertencia!</strong> No se puede eliminar esta actividad.";
-				color = "#C9302C";
+				messageClass = "la-message-error";
 			}
 			if (informacion.respuesta == "BIENNuevaActividad") {
 				//$("#cuadro2").slideUp("slow");
 				//$("#cuadro1").slideDown("slow");
 				//$("#cuadro3").slideDown("slow");
 				$("#modalNuevaActividad").modal("hide");
-				$("#mensajeActualizacion").html(texto).css({
-					"color": color
-				});
-				$("#mensajeActualizacion").fadeOut(10000, function() {
-					$(this).html("");
-					$(this).fadeIn(3000);
-				});
+				showListadoMessage("#mensajeActualizacion", texto, messageClass, 10000);
 			} else if (informacion.respuesta == "BIENCargarExcel") {
 				//$("#cuadro2").slideUp("slow");
 				//$("#cuadro1").slideDown("slow");
 				//$("#cuadro3").slideDown("slow");
 				$("#modalCargarExcel").modal("hide");
-				$("#mensajeActualizacion").html(texto).css({
-					"color": color
-				});
-				$("#mensajeActualizacion").fadeOut(10000, function() {
-					$(this).html("");
-					$(this).fadeIn(3000);
-				});
+				showListadoMessage("#mensajeActualizacion", texto, messageClass, 10000);
 			} else if (informacion.respuesta == "NO_ELIMINAR") {
-				$("#mensajeActualizacion").html(texto).css({
-					"color": color
-				});
-				$("#mensajeActualizacion").fadeOut(10000, function() {
-					$(this).html("");
-					$(this).fadeIn(3000);
-				});
+				showListadoMessage("#mensajeActualizacion", texto, messageClass, 10000);
 			} else {
-				$(".mensaje").html(texto).css({
-					"color": color
-				});
-				$(".mensaje").fadeOut(5000, function() {
-					$(this).html("");
-					$(this).fadeIn(3000);
-				});
+				showListadoMessage(".mensaje", texto, messageClass, 5000);
 			}
 		}
 
@@ -1339,51 +1068,31 @@
 		}
 
 		var recargarTabla = function(opcion) {
-		  var posicion = $('.dataTables_scrollBody').scrollTop();
-		  var table = $('#dt_cliente').DataTable();
-		  if (opcion == "listar") {
-		    $('#dt_cliente').empty();
+		  if (window.ListadoActividadesHotModule && typeof window.ListadoActividadesHotModule.loadData === 'function') {
+		    window.ListadoActividadesHotModule.loadData();
+		  } else if (opcion == "listar") {
 		    listar();
-		  } else {
-		    table.ajax.reload();
-		    obtener_data_editar("#dt_cliente tbody", table);
-				obtener_id_eliminar("#dt_cliente tbody", table);
-		  }
-		  $('#dt_cliente').on('draw.dt', function() {
-		    $('.dataTables_scrollBody').scrollTop(posicion);
-		  });
-		}
-
-		/*Configura la DataTable en idioma español*/
-		var idioma_espanol = {
-		  "sProcessing": "Procesando...",
-		  "sLengthMenu": "Mostrar _MENU_ registros",
-		  "sZeroRecords": "No se encontraron resultados",
-		  "sEmptyTable": "Ningún dato disponible en esta tabla =(",
-		  "sInfo": "Mostrando  _TOTAL_ registros",
-		  "sInfoEmpty": "Mostrando registros del 0 al 0 de un total de 0 registros",
-		  "sInfoFiltered": "(filtrado de un total de _MAX_ registros)",
-		  "sInfoPostFix": "",
-		  "sSearch": "Buscar:",
-		  "sUrl": "",
-		  "sInfoThousands": ",",
-		  "sLoadingRecords": "Cargando...",
-		  "oPaginate": {
-		    "sFirst": "Primero",
-		    "sLast": "Último",
-		    "sNext": "Siguiente",
-		    "sPrevious": "Anterior"
-		  },
-		  "oAria": {
-		    "sSortAscending": ": Activar para ordenar la columna de manera ascendente",
-		    "sSortDescending": ": Activar para ordenar la columna de manera descendente"
-		  },
-		  "buttons": {
-		    "copy": "Copiar",
-		    "colvis": "Visibilidad"
 		  }
 		}
 
+	</script>
+
+	<!-- Handsontable 14.6.1 (vendored) -->
+	<script type="text/javascript" src="/vendor/handsontable/handsontable.full.min.js" charset="utf-8"></script>
+	<script type="text/javascript" src="/vendor/handsontable/es-MX.js?v=14.6.1" charset="utf-8"></script>
+	<script type="text/javascript" src="/js/modules/info_general_nav.js?v=20260708b" charset="utf-8"></script>
+	<script type="text/javascript" src="/js/modules/listado_actividades/hot.js?v=20260712listadoAudit3" charset="utf-8"></script>
+	<script>
+		if (window.applyListadoActividadesContextFallback) {
+			window.applyListadoActividadesContextFallback();
+		}
+		if (typeof bootstrapListadoActividades === 'function') {
+			bootstrapListadoActividades();
+		} else if (typeof listar === 'function' && !document.querySelector('.toolbarFilaBotones .la-toolbar-actions')) {
+			listar();
+		} else if (window.ListadoActividadesHotModule) {
+			window.ListadoActividadesHotModule.init();
+		}
 	</script>
 </body>
 </html>

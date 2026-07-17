@@ -2,7 +2,7 @@
 <div class="modal fade" id="modal_reabrir_semana" tabindex="-1" role="dialog" aria-labelledby="modalReabrirTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
-            <div class="modal-header" style="background: var(--aia-warning, #ffc107); color: #212529;">
+            <div class="modal-header ps-reopen-header">
                 <h5 class="modal-title" id="modalReabrirTitle"><i class="fas fa-unlock"></i> Reabrir Semana</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
                     <span aria-hidden="true">&times;</span>

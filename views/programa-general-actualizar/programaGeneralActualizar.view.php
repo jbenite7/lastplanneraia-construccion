@@ -2,14 +2,16 @@
 <html lang="es">
 <head id="head">
 	<meta charset="UTF-8">
+	<meta name="csrf-token" content="<?php echo htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8'); ?>">
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 	<script src="https://code.jquery.com/ui/1.10.1/jquery-ui.js"></script>
 	<!--Script cque va al archivo linksComunesHead2.js-->
-	<script type="text/javascript" src="/js/linksComunesHead2.js?v=piStateColorsFresh" charset="utf-8"></script>
+	<?= \App\View\Components\DesignSystemHeadComponent::render() ?>
+	<script type="text/javascript" src="/js/linksComunesHead2.js?v=20260711foundation5" charset="utf-8"></script>
 
 	<!-- Estilos Core Hot -->
 	<link rel="stylesheet" href="/public/vendor/handsontable/handsontable.full.min.css" />
-	<link rel="stylesheet" href="/css/handsontable-module.css?v=20260529a" />
+	<link rel="stylesheet" href="/css/handsontable-module.css?v=20260711foundation5" />
 
 	<!-- Google Fonts: Montserrat & Inter -->
 	<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -420,6 +422,21 @@
 	</style>
 	<link rel="stylesheet" href="/css/handsontable-header-global.css?v=20260313" />
 	<link rel="stylesheet" href="/css/tom-select-premium-aia.css?v=20260314" />
+	<script>
+		window.getCsrfToken = window.getCsrfToken || function() {
+			var meta = document.querySelector('meta[name="csrf-token"]');
+			return meta && meta.content ? meta.content : '';
+		};
+
+		if (window.jQuery) {
+			window.jQuery(document).ajaxSend(function (_event, xhr, settings) {
+				var url = settings && settings.url ? String(settings.url) : '';
+				if (url.indexOf('/api/general/') === 0) {
+					xhr.setRequestHeader('X-CSRF-Token', window.getCsrfToken());
+				}
+			});
+		}
+	</script>
 </head>
 
 <body class="pg-page">

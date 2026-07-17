@@ -29,27 +29,8 @@ class ContratosApiController extends BaseController
 
             $db = Database::getInstance();
             $contractColumns = $this->contractSlotFieldNames();
-            $queryCount = "SELECT COUNT(*) as total
-                FROM actividades
-                WHERE project_id = ?
-                  AND semanaActualizacion = ?
-                  AND fechaInicio IS NOT NULL";
-            $stmtCount = $db->query($queryCount, [$projectId, $semana]);
-            $conteo = $stmtCount->fetch(PDO::FETCH_ASSOC)['total'] ?? 0;
-
-            if ($conteo == 0) {
-                $emptyRow = [
-                    "Id" => "", "codigo" => "", "actividad" => "", "descripcionActividad" => "", "actividadInicio" => "",
-                    "nombreActividadInicio" => "", "fechaInicio" => "", "tipoContrato" => "", "semanaActualizacion" => "",
-                    "contratosAsociados" => "",
-                ];
-                foreach ($contractColumns as $column) {
-                    $emptyRow[$column] = "";
-                }
-                $arreglo["data"][] = $emptyRow;
-            } else {
-                $contractSelect = $this->selectColumnsSql($contractColumns, 'act');
-                $queryData = "SELECT
+            $contractSelect = $this->selectColumnsSql($contractColumns, 'act');
+            $queryData = "SELECT
                         act.`Id`, act.`codigo`, act.`actividad`, act.`descripcionActividad`, act.`actividadInicio`,
                         CONCAT(prog.`Actividad`, ' - (Inicia en: ', prog.`Fecha_Inicio`, ')') AS nombreActividadInicio,
                         act.`fechaInicio`, act.`tipoContrato`, act.`semanaActualizacion`,
@@ -64,17 +45,16 @@ class ContratosApiController extends BaseController
                       AND act.fechaInicio IS NOT NULL
                     ORDER BY act.`Id`";
 
-                $stmtData = $db->query($queryData, [$projectId, $semana]);
+            $stmtData = $db->query($queryData, [$projectId, $semana]);
 
-                while ($data = $stmtData->fetch(PDO::FETCH_ASSOC)) {
-                    $data["tipoContrato"] = $this->inferTipoContratoFromPackages((string) ($data["tipoContrato"] ?? ''), $data);
-                    $data["contratosAsociados"] =
-                        $this->formatPackageSummary($data, 'SI', 'Suministro e Instalación', 'ct-text-danger')
-                        . $this->formatPackageSummary($data, 'MO', 'Mano de Obra', 'ct-text-success')
-                        . $this->formatPackageSummary($data, 'S', 'Suministro', 'ct-text-info')
-                        . $this->formatPackageSummary($data, 'OC', 'Orden de Compra', 'ct-text-dark');
-                    $arreglo["data"][] = $data;
-                }
+            while ($data = $stmtData->fetch(PDO::FETCH_ASSOC)) {
+                $data["tipoContrato"] = $this->inferTipoContratoFromPackages((string) ($data["tipoContrato"] ?? ''), $data);
+                $data["contratosAsociados"] =
+                    $this->formatPackageSummary($data, 'SI', 'Suministro e Instalación', 'ct-text-danger')
+                    . $this->formatPackageSummary($data, 'MO', 'Mano de Obra', 'ct-text-success')
+                    . $this->formatPackageSummary($data, 'S', 'Suministro', 'ct-text-info')
+                    . $this->formatPackageSummary($data, 'OC', 'Orden de Compra', 'ct-text-dark');
+                $arreglo["data"][] = $data;
             }
 
             $this->jsonResponse($arreglo);
@@ -119,7 +99,12 @@ class ContratosApiController extends BaseController
                         $res = $this->insumosPaquetes($pVal, $iVal);
                         $paquetes["paquete$t$i"] = $res[0];
                         $paquetes["$t$i"] = $res[1];
-                        $paquetes[$qKey] = $this->normalizePackageQuantity($_POST[$qKey] ?? 1, $res[0]);
+                        try {
+                            $paquetes[$qKey] = $this->normalizePackageQuantity($_POST[$qKey] ?? null, $res[0]);
+                        } catch (\InvalidArgumentException $exception) {
+                            $this->jsonError($exception->getMessage(), 422);
+                            return;
+                        }
                     }
                 }
 
@@ -515,9 +500,12 @@ class ContratosApiController extends BaseController
             return 1;
         }
 
-        $quantity = filter_var($rawValue, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        $raw = trim((string) ($rawValue ?? ''));
+        if (!preg_match('/^[1-9]\d*$/', $raw)) {
+            throw new \InvalidArgumentException('La cantidad de contratos de cada paquete debe ser un entero mayor o igual a 1.');
+        }
 
-        return $quantity === false ? 1 : min(99, (int) $quantity);
+        return (int) $raw;
     }
 
     private function packageTypeLabel(string $prefix): string
@@ -644,25 +632,18 @@ class ContratosApiController extends BaseController
             return;
         }
 
-        $fields = $this->durationFields();
-        foreach ($items as $item) {
-            $package = trim((string) ($item['paqueteContratacion'] ?? ''));
-            $type = trim((string) ($item['tipoPaquete'] ?? ''));
-            if ($package === '' || $type === '') {
-                $this->jsonError('Falta paquete o tipo de paquete.');
-                return;
-            }
+        try {
+            $normalizedItems = $this->normalizeDurationRows($items);
+        } catch (\InvalidArgumentException $exception) {
+            $this->jsonError($exception->getMessage(), 422);
+            return;
+        }
 
-            $values = [];
-            foreach ($fields as $field) {
-                $value = filter_var($item[$field] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]);
-                if ($value === false) {
-                    $this->jsonError('Todas las duraciones deben ser enteros iguales o mayores a cero.');
-                    return;
-                }
-                $values[$field] = (int) $value;
-            }
-
+        try {
+            $db->beginTransaction();
+            foreach ($normalizedItems as $item) {
+                $package = $item['paqueteContratacion'];
+                $type = $item['tipoPaquete'];
             $exists = $db->query(
                 "SELECT 1 FROM general_dias_procesos_contratacion
                  WHERE paqueteContratacion = ? AND tipoPaquete = ?
@@ -677,13 +658,13 @@ class ContratosApiController extends BaseController
                          diasCuadrosComparativos=?, diasLegalizacionContrato=?, diasFabricacion=?, diasInsumosObra=?
                      WHERE paqueteContratacion = ? AND tipoPaquete = ?",
                     [
-                        $values['diasElaboracionPliegos'],
-                        $values['diasEntregaPliegos'],
-                        $values['diasReciboPropuestas'],
-                        $values['diasCuadrosComparativos'],
-                        $values['diasLegalizacionContrato'],
-                        $values['diasFabricacion'],
-                        $values['diasInsumosObra'],
+                        $item['diasElaboracionPliegos'],
+                        $item['diasEntregaPliegos'],
+                        $item['diasReciboPropuestas'],
+                        $item['diasCuadrosComparativos'],
+                        $item['diasLegalizacionContrato'],
+                        $item['diasFabricacion'],
+                        $item['diasInsumosObra'],
                         $package,
                         $type,
                     ]
@@ -698,19 +679,54 @@ class ContratosApiController extends BaseController
                     [
                         $package,
                         $type,
-                        $values['diasElaboracionPliegos'],
-                        $values['diasEntregaPliegos'],
-                        $values['diasReciboPropuestas'],
-                        $values['diasCuadrosComparativos'],
-                        $values['diasLegalizacionContrato'],
-                        $values['diasFabricacion'],
-                        $values['diasInsumosObra'],
+                        $item['diasElaboracionPliegos'],
+                        $item['diasEntregaPliegos'],
+                        $item['diasReciboPropuestas'],
+                        $item['diasCuadrosComparativos'],
+                        $item['diasLegalizacionContrato'],
+                        $item['diasFabricacion'],
+                        $item['diasInsumosObra'],
                     ]
                 );
             }
+            }
+            $db->commit();
+        } catch (Throwable $exception) {
+            if ($db->inTransaction()) {
+                $db->rollBack();
+            }
+            throw $exception;
         }
 
         $this->jsonResponse(['respuesta' => 'BIEN']);
+    }
+
+    private function normalizeDurationRows(array $items): array
+    {
+        $fields = $this->durationFields();
+        $normalized = [];
+        foreach ($items as $item) {
+            $package = trim((string) ($item['paqueteContratacion'] ?? ''));
+            $type = trim((string) ($item['tipoPaquete'] ?? ''));
+            if ($package === '' || $type === '') {
+                throw new \InvalidArgumentException('Falta paquete o tipo de paquete.');
+            }
+
+            $row = [
+                'tipoPaquete' => $type,
+                'paqueteContratacion' => $package,
+            ];
+            foreach ($fields as $field) {
+                $raw = trim((string) ($item[$field] ?? ''));
+                if (!preg_match('/^\d+$/', $raw)) {
+                    throw new \InvalidArgumentException('Todas las duraciones deben ser enteros iguales o mayores a cero.');
+                }
+                $row[$field] = (int) $raw;
+            }
+            $normalized[] = $row;
+        }
+
+        return $normalized;
     }
 
     private function loadContractTraceSnapshot(Database $db, int $projectId, int $activityId, int $week): array

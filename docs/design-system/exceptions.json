@@ -1,0 +1,348 @@
+{
+  "version": 1,
+  "exceptions": [
+    {
+      "module": "design-system-core",
+      "rule": "unauthorized-important",
+      "file": "public/css/design-system/adapters/handsontable.css",
+      "selector": ".handsontable table",
+      "owner": "design-system",
+      "reason": "Aislar la grilla canónica del selector móvil global legacy que fuerza display block con important.",
+      "expiresAtVersion": "1.1.0"
+    },
+    {
+      "module": "design-system-core",
+      "rule": "unauthorized-important",
+      "file": "public/css/design-system/adapters/handsontable.css",
+      "selector": ".handsontable thead",
+      "owner": "design-system",
+      "reason": "Restaurar el grupo de cabecera vendor frente al layout móvil legacy.",
+      "expiresAtVersion": "1.1.0"
+    },
+    {
+      "module": "design-system-core",
+      "rule": "unauthorized-important",
+      "file": "public/css/design-system/adapters/handsontable.css",
+      "selector": ".handsontable tbody",
+      "owner": "design-system",
+      "reason": "Restaurar el grupo de filas vendor frente al layout móvil legacy.",
+      "expiresAtVersion": "1.1.0"
+    },
+    {
+      "module": "design-system-core",
+      "rule": "unauthorized-important",
+      "file": "public/css/design-system/adapters/handsontable.css",
+      "selector": ".handsontable tbody tr",
+      "owner": "design-system",
+      "reason": "Evitar tarjetas blancas y composición vertical heredadas en filas Handsontable.",
+      "expiresAtVersion": "1.1.0"
+    },
+    {
+      "module": "design-system-core",
+      "rule": "unauthorized-important",
+      "file": "public/css/design-system/adapters/handsontable.css",
+      "selector": ".handsontable :where(th, td)",
+      "owner": "design-system",
+      "reason": "Restaurar celdas tabulares y padding tokenizado frente al selector móvil legacy.",
+      "expiresAtVersion": "1.1.0"
+    },
+    {
+      "module": "programa-general-pilot",
+      "rule": "unauthorized-important",
+      "file": "public/css/design-system/adapters/legacy-bridge.css",
+      "selector": ":where(.pg-page #pgLegend.pdc-legend-autoscaling .pdc-legend-item)",
+      "owner": "design-system",
+      "reason": "Neutralizar dimensiones important del autoscaling legacy del piloto hasta retirar el puente de compatibilidad.",
+      "expiresAtVersion": "1.1.0"
+    },
+    {
+      "module": "programa-general-pilot",
+      "rule": "unauthorized-important",
+      "file": "public/css/design-system/adapters/programa-general-handsontable.css",
+      "selector": ":where(.pg-page #hot-container, .pg-page #hot-container .handsontable,\n    .pg-page #hot-container .ht_master, .pg-page #hot-container .wtHolder,\n    .pg-page #hot-container .wtHider, .pg-page #hot-container .wtSpreader,\n    .pg-page #hot-container table.htCore)",
+      "owner": "design-system",
+      "reason": "Aislar la superficie del piloto frente a reglas Handsontable legacy con important.",
+      "expiresAtVersion": "1.1.0"
+    },
+    {
+      "module": "programa-general-pilot",
+      "rule": "unauthorized-important",
+      "file": "public/css/design-system/adapters/programa-general-handsontable.css",
+      "selector": ":where(.pg-page .handsontable th, .pg-page .handsontable td)",
+      "owner": "design-system",
+      "reason": "Conservar bordes y texto semánticos del piloto frente a la piel Handsontable heredada.",
+      "expiresAtVersion": "1.1.0"
+    },
+    {
+      "module": "programa-general-pilot",
+      "rule": "unauthorized-important",
+      "file": "public/css/design-system/adapters/programa-general-handsontable.css",
+      "selector": ":where(.pg-page .handsontable thead th, .pg-page .handsontable .colHeader)",
+      "owner": "design-system",
+      "reason": "Conservar la cabecera tokenizada del piloto frente a la piel Handsontable heredada.",
+      "expiresAtVersion": "1.1.0"
+    },
+    {
+      "module": "programa-general-pilot",
+      "rule": "unauthorized-important",
+      "file": "public/css/design-system/adapters/programa-general-handsontable.css",
+      "selector": ":where(.pg-page .handsontable td.pg-state-actividad-futura)",
+      "owner": "design-system",
+      "reason": "Aplicar el estado semántico actividad futura sobre reglas de celda legacy del piloto.",
+      "expiresAtVersion": "1.1.0"
+    },
+    {
+      "module": "programa-general-pilot",
+      "rule": "unauthorized-important",
+      "file": "public/css/design-system/adapters/programa-general-handsontable.css",
+      "selector": ":where(.pg-page .handsontable td.pg-state-en-curso,\n    .pg-page .handsontable td.pg-state-a-tiempo-en-curso)",
+      "owner": "design-system",
+      "reason": "Aplicar el estado semántico en curso sobre reglas de celda legacy del piloto.",
+      "expiresAtVersion": "1.1.0"
+    },
+    {
+      "module": "programa-general-pilot",
+      "rule": "unauthorized-important",
+      "file": "public/css/design-system/adapters/programa-general-handsontable.css",
+      "selector": ":where(.pg-page .handsontable td.pg-state-debe-iniciar,\n    .pg-page .handsontable td.pg-state-restr-0)",
+      "owner": "design-system",
+      "reason": "Aplicar el estado semántico debe iniciar sobre reglas de celda legacy del piloto.",
+      "expiresAtVersion": "1.1.0"
+    },
+    {
+      "module": "programa-general-pilot",
+      "rule": "unauthorized-important",
+      "file": "public/css/design-system/adapters/programa-general-handsontable.css",
+      "selector": ":where(.pg-page .handsontable td.pg-state-r0, .pg-page .handsontable td.pg-state-r1,\n    .pg-page .handsontable td.pg-state-r2-3, .pg-page .handsontable td.pg-state-r4-6)",
+      "owner": "design-system",
+      "reason": "Aplicar la escala semántica de restricciones sobre reglas de celda legacy del piloto.",
+      "expiresAtVersion": "1.1.0"
+    },
+    {
+      "module": "programa-general-pilot",
+      "rule": "unauthorized-important",
+      "file": "public/css/design-system/adapters/programa-general-handsontable.css",
+      "selector": ":where(.pg-page .handsontable td.pg-state-atrasado,\n    .pg-page .handsontable td.pg-state-atrasada)",
+      "owner": "design-system",
+      "reason": "Aplicar el estado semántico atrasado sobre reglas de celda legacy del piloto.",
+      "expiresAtVersion": "1.1.0"
+    },
+    {
+      "module": "programa-general-pilot",
+      "rule": "unauthorized-important",
+      "file": "public/css/design-system/adapters/programa-general-handsontable.css",
+      "selector": ":where(.pg-page .handsontable td.pg-state-terminada,\n    .pg-page .handsontable td.pg-state-sin-datos)",
+      "owner": "design-system",
+      "reason": "Aplicar estados semánticos terminal y sin datos sobre reglas de celda legacy del piloto.",
+      "expiresAtVersion": "1.1.0"
+    },
+    {
+      "module": "programa-general-pilot",
+      "rule": "unauthorized-important",
+      "file": "public/css/design-system/adapters/programa-general-handsontable.css",
+      "selector": ":where(.pg-page #hot-container :is(td, th).force-wrap)",
+      "owner": "design-system",
+      "reason": "Garantizar envoltura entre palabras sin fragmentarlas frente al comportamiento legacy de celdas.",
+      "expiresAtVersion": "1.1.0"
+    },
+    {
+      "module": "programa-general-pilot",
+      "rule": "unauthorized-important",
+      "file": "public/css/design-system/adapters/programa-general-handsontable.css",
+      "selector": ":where(.pg-page #hot-container td.pg-date-cell)",
+      "owner": "design-system",
+      "reason": "Conservar fechas en una línea dentro del adaptador Handsontable del piloto.",
+      "expiresAtVersion": "1.1.0"
+    },
+    {
+      "module": "foundation-shell-legacy",
+      "rule": "unknown-css-layer",
+      "file": "public/css/navbar.css",
+      "selector": "@layer aia-premium-drawer",
+      "owner": "foundation-shell",
+      "reason": "Capa histórica del drawer previa al contrato Sprint 00; se conserva sin migrar consumidores y no autoriza nuevas capas.",
+      "expiresAtVersion": "1.1.0"
+    },
+    {
+      "module": "project-selector-legacy",
+      "rule": "unknown-css-layer",
+      "file": "public/css/project-selector.css",
+      "selector": "@layer states",
+      "owner": "project-selector",
+      "reason": "Capa histórica del selector de proyecto fuera del piloto autorizado; se aísla como deuda exacta.",
+      "expiresAtVersion": "1.1.0"
+    },
+    {
+      "module": "project-selector-legacy",
+      "rule": "unknown-css-layer",
+      "file": "public/css/project-selector.css",
+      "selector": "@layer responsive",
+      "owner": "project-selector",
+      "reason": "Capa histórica responsive fuera del piloto autorizado; se aísla como deuda exacta.",
+      "expiresAtVersion": "1.1.0"
+    }
+  ],
+  "migratedPaths": [],
+  "pathBudgets": [
+    {
+      "name": "login",
+      "paths": [
+        "views/auth/login.view.php",
+        "views/auth/password-forgot.view.php",
+        "views/auth/password-reset.view.php",
+        "views/auth/partials/auth-theme-switch.php",
+        "public/css/login-brand-unified.css",
+        "public/js/modules/aia_ui/auth_forms.js"
+      ],
+      "maxViolations": {
+        "hardcoded-hex": 0,
+        "hardcoded-color-function": 0,
+        "inline-style": 0,
+        "embedded-style-block": 0,
+        "forbidden-font-roboto": 0,
+        "hardcoded-radius": 0
+      }
+    },
+    {
+      "name": "project-selector",
+      "paths": [
+        "views/core/project_selector.view.php",
+        "public/css/project-selector.css"
+      ],
+      "maxViolations": {
+        "hardcoded-hex": 0,
+        "inline-style": 0,
+        "embedded-style-block": 0,
+        "forbidden-font-roboto": 0,
+        "hardcoded-radius": 0
+      }
+    },
+    {
+      "name": "aia-theme",
+      "paths": [
+        "public/js/modules/aia_ui/theme.js"
+      ],
+      "maxViolations": {
+        "hardcoded-hex": 0,
+        "inline-style": 0,
+        "embedded-style-block": 0,
+        "forbidden-font-roboto": 0,
+        "hardcoded-radius": 0
+      }
+    },
+    {
+      "name": "foundation-shell",
+      "paths": [
+        "public/css/navbar.css",
+        "public/css/handsontable-module.css",
+        "public/js/modules/aia_ui/nav_drawer.js",
+        "public/js/modules/aia_ui/theme.js",
+        "public/js/modules/lps_drawer.js",
+        "public/js/cargarDatosGeneralesPagina2.js",
+        "src/View/Components/NavbarComponent.php",
+        "views/partials/drawer_unificado.php"
+      ],
+      "maxViolations": {
+        "hardcoded-hex": 127,
+        "hardcoded-color-function": 113,
+        "inline-style": 72,
+        "embedded-style-block": 1,
+        "forbidden-font-roboto": 0,
+        "hardcoded-radius": 19
+      }
+    },
+    {
+      "name": "programa-general",
+      "paths": [
+        "views/programa-general/programa_general.view.php",
+        "public/css/programa-general.css",
+        "public/js/modules/programa_general/hot.js"
+      ],
+      "maxViolations": {
+        "hardcoded-hex": 0,
+        "inline-style": 0,
+        "embedded-style-block": 0,
+        "forbidden-font-roboto": 0,
+        "hardcoded-radius": 0
+      }
+    },
+    {
+      "name": "contratos",
+      "paths": [
+        "views/contratos/contratos.view.php",
+        "public/css/contratos.css",
+        "public/js/modules/contratos/hot.js"
+      ],
+      "maxViolations": {
+        "hardcoded-hex": 0,
+        "inline-style": 0,
+        "embedded-style-block": 0,
+        "forbidden-font-roboto": 0,
+        "hardcoded-radius": 0
+      }
+    },
+    {
+      "name": "listado-actividades",
+      "paths": [
+        "views/listado-actividades/listadoActividades.view.php",
+        "public/css/listado-actividades.css",
+        "public/js/modules/listado_actividades/hot.js"
+      ],
+      "maxViolations": {
+        "hardcoded-hex": 0,
+        "inline-style": 0,
+        "embedded-style-block": 0,
+        "forbidden-font-roboto": 0,
+        "hardcoded-radius": 0
+      }
+    },
+    {
+      "name": "programacion-semanal",
+      "paths": [
+        "views/programacion-semanal/",
+        "public/css/programacion-semanal.css",
+        "public/js/modules/programacion_semanal/"
+      ],
+      "maxViolations": {
+        "hardcoded-hex": 0,
+        "hardcoded-color-function": 0,
+        "inline-style": 0,
+        "embedded-style-block": 0,
+        "forbidden-font-roboto": 0,
+        "hardcoded-radius": 0
+      }
+    },
+    {
+      "name": "pdc",
+      "paths": [
+        "views/pdc/pdc.view.php",
+        "public/css/pdc.css",
+        "public/js/modules/pdc/hot.js"
+      ],
+      "maxViolations": {
+        "hardcoded-hex": 0,
+        "inline-style": 0,
+        "embedded-style-block": 0,
+        "forbidden-font-roboto": 0,
+        "hardcoded-radius": 0
+      }
+    }
+  ],
+  "legacyAllowedPaths": [
+    "views/",
+    "public/js/",
+    "public/css/",
+    "src/View/Components/"
+  ],
+  "allowedInlineStyleFragments": [
+    "display:none",
+    "display: none",
+    "width:100%",
+    "box-sizing:border-box"
+  ],
+  "notes": [
+    "Baseline inicial: el repo contiene deuda visual legacy. El gate debe endurecerse por modulo cuando se declare migrado.",
+    "Login, project-selector, aia-theme, programa-general, pdc, contratos y listado-actividades tienen presupuesto cero para deuda visual auditada.",
+    "Foundation/Shell conserva un presupuesto explícito y cerrado sobre deuda legacy; cada regla queda limitada al conteo auditado del Sprint 02 y no puede crecer."
+  ]
+}

@@ -6,6 +6,7 @@
  */
 
 window.LPSContextualDrawer = (function() {
+  const lpsFocusableSelector = 'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
   let activeHot = null;
   let activeModuleKey = null;
   let activeStateAdapter = null;
@@ -13,6 +14,7 @@ window.LPSContextualDrawer = (function() {
   let activeConsecutivo = null;
   let activeParentId = null;
   let activeAlertaId = null;
+  let commentsRequestController = null;
 
   // Dynamic restriction config cache (fetched from API, falls back to construction defaults)
   let _restrictionConfig = null;
@@ -237,6 +239,25 @@ window.LPSContextualDrawer = (function() {
         drawerClose();
       });
     }
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && drawer && drawer.classList.contains('open')) {
+        event.preventDefault();
+        drawerClose();
+      } else if (event.key === 'Tab' && drawer && drawer.classList.contains('open')) {
+        const items = Array.from(drawer.querySelectorAll(lpsFocusableSelector))
+          .filter((item) => item.getClientRects().length > 0 && !item.closest('[hidden], [aria-hidden="true"]'));
+        if (!items.length) return;
+        const first = items[0];
+        const last = items[items.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+    });
 
     // Sync toggle modo simulación
     if (toggle) {
@@ -812,25 +833,66 @@ window.LPSContextualDrawer = (function() {
     loadCommentsAndCrisis();
   }
 
+  function renderDrawerState(container, state, message) {
+    if (!container) return;
+    const stateElement = document.createElement('div');
+    stateElement.className = `lps-drawer-state lps-drawer-state--${state}`;
+    stateElement.textContent = message;
+    container.replaceChildren(stateElement);
+  }
+
+  function cancelPendingCommentsRequest() {
+    if (!commentsRequestController) return;
+    commentsRequestController.abort();
+    commentsRequestController = null;
+  }
+
+  window.addEventListener('pagehide', cancelPendingCommentsRequest);
+
   function loadCommentsAndCrisis() {
     const container = document.getElementById('lps_comments_container');
-    if (container) {
-      container.innerHTML = '<div style="font-size:0.8rem; color:#666;">Cargando bitácora de hilos...</div>';
-    }
+    renderDrawerState(container, 'loading', 'Cargando bitácora de hilos...');
 
-    fetch(`/api/lps/comments?consecutivo=${activeConsecutivo}`)
-      .then(res => res.json())
+    cancelPendingCommentsRequest();
+    const requestController = new AbortController();
+    const requestConsecutivo = activeConsecutivo;
+    commentsRequestController = requestController;
+
+    fetch(`/api/lps/comments?consecutivo=${requestConsecutivo}`, { signal: requestController.signal })
+      .then(async res => {
+        let response = null;
+        try {
+          response = await res.json();
+        } catch (_error) {
+          response = {};
+        }
+
+        if (!res.ok) {
+          const payload = response && typeof response === 'object' ? response : {};
+          const serverMessage = payload.mensaje || payload.error || res.statusText || 'Respuesta HTTP inválida';
+          const error = new Error(`HTTP ${res.status}: ${serverMessage}`);
+          error.drawerMessage = `Error ${res.status}: ${serverMessage}`;
+          throw error;
+        }
+
+        return response;
+      })
       .then(response => {
+        if (requestController.signal.aborted || activeConsecutivo !== requestConsecutivo) return;
         if (response.respuesta === 'OK') {
           renderCommentsTree(response.data);
           detectActiveCrisis(response.data);
         } else {
-          if (container) container.innerHTML = `<div style="color:#dc3545; font-size:0.8rem;">Error: ${response.mensaje}</div>`;
+          renderDrawerState(container, 'error', `Error: ${response.mensaje}`);
         }
       })
       .catch(err => {
+        if (requestController.signal.aborted) return;
         console.error("Error al cargar comentarios:", err);
-        if (container) container.innerHTML = '<div style="color:#dc3545; font-size:0.8rem;">Error de conexión.</div>';
+        renderDrawerState(container, 'error', err.drawerMessage || 'Error de conexión.');
+      })
+      .finally(() => {
+        if (commentsRequestController === requestController) commentsRequestController = null;
       });
   }
 
@@ -877,7 +939,7 @@ window.LPSContextualDrawer = (function() {
     container.innerHTML = '';
 
     if (!comments || comments.length === 0) {
-      container.innerHTML = '<div style="font-size:0.8rem; color:#888; text-align:center; padding:10px;">Sin comentarios registrados. Escribe uno para iniciar la bitácora.</div>';
+      renderDrawerState(container, 'empty', 'Sin comentarios registrados. Escribe uno para iniciar la bitácora.');
       return;
     }
 
@@ -1048,9 +1110,14 @@ window.LPSContextualDrawer = (function() {
   function drawerOpen() {
     const drawer = document.getElementById('lps_drawer');
     const overlay = document.getElementById('lps_drawer_overlay');
+    const closeBtn = document.getElementById('lps_drawer_close');
+    const sidebarTrigger = document.getElementById('lps_sidebar_trigger');
     if (!drawer) return;
 
     drawer.classList.add('open');
+    drawer.setAttribute('aria-hidden', 'false');
+    if (sidebarTrigger) sidebarTrigger.setAttribute('aria-expanded', 'true');
+    if (closeBtn) setTimeout(() => closeBtn.focus(), 320);
 
     // Desplazamiento adaptable en desktop
     if (window.innerWidth >= 992) {
@@ -1067,8 +1134,16 @@ window.LPSContextualDrawer = (function() {
   function drawerClose() {
     const drawer = document.getElementById('lps_drawer');
     const overlay = document.getElementById('lps_drawer_overlay');
-    if (drawer) drawer.classList.remove('open');
+    const sidebarTrigger = document.getElementById('lps_sidebar_trigger');
+    if (drawer) {
+      drawer.classList.remove('open');
+      drawer.setAttribute('aria-hidden', 'true');
+    }
     if (overlay) overlay.classList.remove('active');
+    if (sidebarTrigger) {
+      sidebarTrigger.setAttribute('aria-expanded', 'false');
+      sidebarTrigger.focus();
+    }
 
     // Quitar desplazamiento adaptable en desktop
     document.body.classList.remove('lps-drawer-open');
@@ -1357,6 +1432,8 @@ window.LPSContextualDrawer = (function() {
       const drawer = document.getElementById('lps_drawer');
       const overlay = document.getElementById('lps_drawer_overlay');
       if (!drawer) return;
+
+      cancelPendingCommentsRequest();
 
       const isDrawerOpen = drawer.classList.contains('open');
       if (isDrawerOpen) {

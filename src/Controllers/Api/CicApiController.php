@@ -2,6 +2,8 @@
 
 namespace App\Controllers\Api;
 
+use App\Security\RbacCatalog;
+use App\Security\RbacService;
 use PDO;
 use Throwable;
 
@@ -86,14 +88,40 @@ class CicApiController
     {
         require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
         rbac_guard_require_permission('lps.cic.editar');
+        $role = (new RbacService($this->db))->resolveCurrentRole();
+        $allowedDisciplines = RbacCatalog::cicDisciplinesForRole($role);
+        if ($allowedDisciplines === []) {
+            $this->jsonError('Su rol no puede calificar disciplinas CIC.', 403);
+            return;
+        }
         $dbPrefix = $_SESSION['db'] ?? '';
         $opcion = $_POST["opcion"] ?? '';
-        $id = $_POST["Id"] ?? null;
-        $semana = $_POST["semana"] ?? null;
+        $id = filter_var($_POST["Id"] ?? null, FILTER_VALIDATE_INT);
+        $semana = filter_var($_POST["semana"] ?? null, FILTER_VALIDATE_INT);
+
+        if (!$dbPrefix || !$id || !$semana) {
+            $this->jsonError('Datos insuficientes para guardar CIC.', 422);
+            return;
+        }
 
         try {
             if ($opcion === 'modificar_mdo' || $opcion === 'modificar_si') {
-                $this->updateMetrics($dbPrefix, $id, $semana, $opcion);
+                $projectId = TableResolver::getProjectIdByPrefix($dbPrefix);
+                $table = TableResolver::resolveByPrefix($dbPrefix, 'cic');
+                $row = $this->db->query(
+                    "SELECT Semana, tipo_proveedor FROM {$table} WHERE project_id = ? AND Id = ?",
+                    [$projectId, $id],
+                )->fetch(PDO::FETCH_ASSOC);
+                if (!$row || (int) $row['Semana'] !== $semana) {
+                    $this->jsonError('La calificación no pertenece a la semana seleccionada.', 409);
+                    return;
+                }
+                $expected = $row['tipo_proveedor'] === 'Mano de Obra' ? 'modificar_mdo' : 'modificar_si';
+                if ($opcion !== $expected) {
+                    $this->jsonError('El formulario no corresponde al tipo de proveedor.', 422);
+                    return;
+                }
+                $this->updateMetrics($dbPrefix, $id, $semana, $opcion, $allowedDisciplines);
             } else {
                 $this->jsonError("Opción no soportada.");
             }
@@ -170,21 +198,69 @@ class CicApiController
         }
     }
 
-    private function updateMetrics(string $db, $id, $semana, string $type): void
+    private function updateMetrics(
+        string $db,
+        $id,
+        $semana,
+        string $type,
+        array $allowedDisciplines,
+    ): void
     {
         $isMdo = ($type === 'modificar_mdo');
         $prefix = $isMdo ? 'mdo_' : 'si_';
         $obsKey = $isMdo ? 'mdo_Observaciones' : 'si_Observaciones';
+        $allowedPattern = $isMdo
+            ? '/^mdo_(?:cal_[1-3]|adm_[1-5]|gsa_[1-8]|sst_(?:[1-9]|10))$/'
+            : '/^si_(?:cal_[1-3]|adm_[1-6]|gsa_(?:[1-9]|1[0-4])|sst_(?:[1-9]|10))$/';
+        $disciplineConfig = $isMdo ? [
+            'cal' => ['cal_1','cal_2','cal_3'],
+            'adm' => ['adm_1','adm_2','adm_3','adm_4','adm_5'],
+            'gsa' => ['gsa_1','gsa_2','gsa_3','gsa_4','gsa_5','gsa_6','gsa_7','gsa_8'],
+            'sst' => ['sst_1','sst_2','sst_3','sst_4','sst_5','sst_6','sst_7','sst_8','sst_9','sst_10'],
+        ] : [
+            'cal' => ['cal_1','cal_2','cal_3'],
+            'adm' => ['adm_1','adm_2','adm_3','adm_4','adm_5','adm_6'],
+            'gsa' => ['gsa_1','gsa_2','gsa_3','gsa_4','gsa_5','gsa_6','gsa_7','gsa_8','gsa_9','gsa_10','gsa_11','gsa_12','gsa_13','gsa_14'],
+            'sst' => ['sst_1','sst_2','sst_3','sst_4','sst_5','sst_6','sst_7','sst_8','sst_9','sst_10'],
+        ];
 
         // 1. Collect individual checkbox fields
         $fields = [];
         $params = [];
         $values = []; // keyed store for calculation
+        $submittedDisciplines = [];
         foreach ($_POST as $key => $value) {
             if (strpos($key, $prefix) === 0 && $key !== $obsKey) {
+                if (!preg_match($allowedPattern, $key)) {
+                    $this->jsonError('El formulario contiene un campo no permitido.', 422);
+                    return;
+                }
+                preg_match('/^(?:mdo|si)_(cal|adm|gsa|sst)_/', $key, $disciplineMatch);
+                $discipline = $disciplineMatch[1] ?? '';
+                if (!in_array($discipline, $allowedDisciplines, true)) {
+                    $this->jsonError('No puede calificar una disciplina ajena a su rol.', 403);
+                    return;
+                }
+                $submittedDisciplines[$discipline] = true;
+                if (!in_array((string) $value, ['0', '0.5', '1', 'NA', 'NR'], true)) {
+                    $this->jsonError('El formulario contiene una calificación no permitida.', 422);
+                    return;
+                }
                 $fields[] = "$key = ?";
                 $params[] = ($value === '' ? null : $value);
                 $values[$key] = $value;
+            }
+        }
+
+        foreach (array_keys($submittedDisciplines) as $discipline) {
+            foreach ($disciplineConfig[$discipline] as $item) {
+                if (!array_key_exists($prefix . $item, $values)) {
+                    $this->jsonError(
+                        'Debe completar todas las preguntas de la disciplina antes de guardar.',
+                        422,
+                    );
+                    return;
+                }
             }
         }
 
@@ -198,28 +274,23 @@ class CicApiController
         $projectId = TableResolver::getProjectIdByPrefix($db);
         $params[] = $projectId;
         $params[] = $id;
+        $params[] = $semana;
 
         $tCic = TableResolver::resolveByPrefix($db, 'cic');
-        $sql = "UPDATE {$tCic} SET " . implode(', ', $fields) . ", Observaciones = ? WHERE project_id = ? AND Id = ?";
+        $sql = "UPDATE {$tCic} SET " . implode(', ', $fields)
+            . ", Observaciones = ? WHERE project_id = ? AND Id = ? AND Semana = ?";
+        $this->db->beginTransaction();
+        try {
         $this->db->query($sql, $params);
 
         // 2. Calculate discipline averages (Calidad, GSA, SST, ADM)
-        $disciplineConfig = $isMdo ? [
-            'cal' => ['cal_1','cal_2','cal_3'],
-            'adm' => ['adm_1','adm_2','adm_3','adm_4','adm_5'],
-            'gsa' => ['gsa_1','gsa_2','gsa_3','gsa_4','gsa_5','gsa_6','gsa_7','gsa_8'],
-            'sst' => ['sst_1','sst_2','sst_3','sst_4','sst_5','sst_6','sst_7','sst_8','sst_9','sst_10'],
-        ] : [
-            'cal' => ['cal_1','cal_2','cal_3'],
-            'adm' => ['adm_1','adm_2','adm_3','adm_4','adm_5','adm_6'],
-            'gsa' => ['gsa_1','gsa_2','gsa_3','gsa_4','gsa_5','gsa_6','gsa_7','gsa_8','gsa_9','gsa_10','gsa_11','gsa_12','gsa_13','gsa_14'],
-            'sst' => ['sst_1','sst_2','sst_3','sst_4','sst_5','sst_6','sst_7','sst_8','sst_9','sst_10'],
-        ];
-
         $map = ['cal' => 'Calidad', 'gsa' => 'GSA', 'sst' => 'SST', 'adm' => 'ADM'];
         $results = [];
 
         foreach ($disciplineConfig as $disc => $items) {
+            if (!isset($submittedDisciplines[$disc])) {
+                continue;
+            }
             $count = 0;
             $countNR = 0;
             $sum = 0;
@@ -242,14 +313,27 @@ class CicApiController
             }
         }
 
-        // 3. Write discipline scores
+        // 3. Write only the discipline scores present in this authorized payload.
+        $scoreAssignments = [];
+        $scoreParams = [];
+        foreach ($results as $column => $result) {
+            $scoreAssignments[] = "{$column}=?";
+            $scoreParams[] = $result;
+        }
+        array_push($scoreParams, $projectId, $semana, $id);
         $this->db->query(
-            "UPDATE {$tCic} SET Calidad=?, GSA=?, SST=?, ADM=? WHERE project_id = ? AND Semana=? AND Id=?",
-            [$results['Calidad'], $results['GSA'], $results['SST'], $results['ADM'], $projectId, $semana, $id],
+            "UPDATE {$tCic} SET " . implode(', ', $scoreAssignments)
+                . " WHERE project_id = ? AND Semana=? AND Id=?",
+            $scoreParams,
         );
 
         // 4. Recalculate PAC + Integral
         $this->recalculateAverages($db, $id, $semana);
+            $this->db->commit();
+        } catch (Throwable $t) {
+            $this->db->rollBack();
+            throw $t;
+        }
         $this->jsonResponse("BIEN");
     }
 
@@ -333,8 +417,9 @@ class CicApiController
         echo json_encode(["respuesta" => $res], JSON_UNESCAPED_UNICODE);
     }
 
-    private function jsonError(string $msg): void
+    private function jsonError(string $msg, int $status = 422): void
     {
+        http_response_code($status);
         echo json_encode(["respuesta" => "ERROR", "mensaje" => $msg], JSON_UNESCAPED_UNICODE);
     }
 }

@@ -76,9 +76,17 @@ foreach ($controllerFiles as $path) {
 }
 
 try {
+    $validWeek = (int) Database::getInstance()->query(
+        'SELECT MAX(Semana) FROM semanas_activas WHERE project_id = ?',
+        [68]
+    )->fetchColumn();
+    if ($validWeek <= 0) {
+        throw new RuntimeException('El proyecto de prueba no tiene semanas activas.');
+    }
+
     $_SESSION['project_id'] = 68;
     $_SESSION['semana'] = 1;
-    $_GET['semana'] = '7';
+    $_GET['semana'] = (string) $validWeek;
 
     $controller = new class extends BaseController {
         public function syncForTest(): bool
@@ -87,13 +95,13 @@ try {
         }
     };
 
-    $controller->syncForTest() && (int) $_SESSION['semana'] === 7
+    $controller->syncForTest() && (int) $_SESSION['semana'] === $validWeek
         ? lacpNavPass('La ruta moderna acepta una semana valida del proyecto activo')
         : lacpNavFail('La ruta moderna no sincronizo una semana valida');
 
-    $_SESSION['semana'] = 7;
+    $_SESSION['semana'] = $validWeek;
     $_GET['semana'] = '999999';
-    !$controller->syncForTest() && (int) $_SESSION['semana'] === 7
+    !$controller->syncForTest() && (int) $_SESSION['semana'] === $validWeek
         ? lacpNavPass('La ruta moderna rechaza semanas inexistentes del proyecto activo')
         : lacpNavFail('La ruta moderna acepto una semana inexistente');
 } catch (Throwable $e) {

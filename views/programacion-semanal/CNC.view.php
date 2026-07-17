@@ -4,128 +4,14 @@
 	<meta charset="UTF-8">
 	<!--Script cque va al archivo linksComunesHead2.js-->
 	<!--Script cque va al archivo linksComunesHead2.js-->
-	<script type="text/javascript" src="/js/linksComunesHead2.js?v=piStateColors3" charset="utf-8"></script>
-    <style>
-        .filaBotones, .ps-actions-row {
-            overflow: visible !important;
-        }
-        .ps-actions-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            gap: 6px;
-        }
-        /* Nuclear specificity to force rectangular tools for DataTable Header */
-        body #dt_cliente_wrapper .filaBotones .btn,
-        body #dt_cliente_wrapper .filaBotones button,
-        body #dt_cliente_wrapper .filaMensajes .btn,
-        body #dt_cliente_wrapper .filaMensajes button,
-        body #dt_cliente_wrapper .filaMensajes .form-control,
-        body #dt_cliente_wrapper .dataTables_filter input {
-            border-radius: 4px !important;
-            -webkit-appearance: none !important;
-            appearance: none !important;
-        }
-
-        /* Dropdown de Navegación por Hover - Visibility Fix */
-        .ps-dropdown-nav {
-            position: relative;
-            display: inline-block;
-            z-index: 1000;
-        }
-
-        /* Puente invisible para evitar que el dropdown se cierre en el espacio en blanco */
-        .ps-dropdown-nav::after {
-            content: '';
-            position: absolute;
-            left: 0;
-            right: 0;
-            bottom: -15px;
-            height: 15px;
-        }
-
-        .ps-dropdown-content {
-            display: none;
-            position: absolute;
-            right: 0;
-            top: 100%;
-            background-color: #ffffff;
-            min-width: 240px;
-            box-shadow: 0px 10px 25px rgba(0,0,0,0.2);
-            z-index: 1001;
-            border-radius: 4px;
-            border: 1px solid #cbd5e1;
-            overflow: visible !important;
-            margin-top: 4px;
-        }
-
-        .ps-dropdown-nav:hover .ps-dropdown-content,
-        .ps-dropdown-nav.is-open .ps-dropdown-content {
-            display: block !important;
-        }
-
-        .ps-dropdown-item {
-            color: #334155;
-            padding: 12px 16px;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            border-bottom: 1px solid #f1f5f9;
-            transition: all 0.2s;
-            background: none;
-            border-left: none;
-            border-right: none;
-            border-top: none;
-            width: 100%;
-            text-align: left;
-            cursor: pointer;
-        }
-
-        .ps-dropdown-item:last-child {
-            border-bottom: none;
-        }
-
-        .ps-dropdown-item:hover {
-            background-color: #f1f5f9;
-            color: #1e5ea8;
-        }
-
-        .ps-dropdown-item.is-active {
-            background-color: #eff6ff !important;
-            color: #1e5ea8 !important;
-            font-weight: 700 !important;
-            border-left: 3px solid #1e5ea8 !important;
-        }
-
-        .ps-dropdown-item i {
-            width: 18px;
-            text-align: center;
-            color: #64748b;
-        }
-
-        .btn-dropdown-trigger {
-            background: #ffffff !important;
-            border: 1px solid #cbd5e1 !important;
-            color: #1e5ea8 !important;
-            font-weight: 700 !important;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
-            padding: 0.35rem 0.75rem;
-            border-radius: 4px !important;
-        }
-
-        .btn-dropdown-trigger:hover {
-            background: #f8fafc !important;
-            border-color: #1e5ea8 !important;
-        }
-    </style>
+	<?= \App\View\Components\DesignSystemHeadComponent::render() ?>
+	<script type="text/javascript" src="/js/linksComunesHead2.js?v=20260711foundation5" charset="utf-8"></script>
+    <?php $psCssVersion = @filemtime(dirname(__DIR__, 2) . '/public/css/programacion-semanal.css') ?: 'ps1'; ?>
+    <link rel="stylesheet" href="/css/programacion-semanal.css?v=<?= urlencode((string) $psCssVersion) ?>">
 </head>
 
 <!--Etiqueta superior-->
-<body>
+<body class="ps-page">
     <input type="hidden" id="semana_PHP" value="<?php echo $semana; ?>">
     <input type="hidden" id="db_PHP" value="<?php echo $dbName; ?>">
     <input type="hidden" id="proyecto_PHP" value="<?php echo $proyecto; ?>">
@@ -185,6 +71,7 @@
 	<script type="text/javascript" charset="utf8" src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 	<!--Iniciar DataTables-->
 	<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.4/js/jquery.dataTables.js"></script>
+	<script src="/js/modules/programacion_semanal/legacyCards.js?v=<?= urlencode((string) (@filemtime(dirname(__DIR__, 2) . '/public/js/modules/programacion_semanal/legacyCards.js') ?: 'ps1')) ?>"></script>
 	<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.4/js/dataTables.bootstrap4.min.js"></script>
 	<!--Botones de Datatables-->
 	<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/1.6.1/js/dataTables.buttons.min.js"></script>
@@ -243,7 +130,7 @@
 		/*Acá se inicia la datatable y se crean sus valores por defecto como el ordenamiento, las celdas que se muestran, los datos, las opciones de longitud de los registros, y el color de las filas dependiendo del estado de las actividades*/
 		var listar = function() {
 			var db = document.getElementById('baseDatos').value;
-			var semana = document.getElementById('semana') ? document.getElementById('semana').value : document.getElementById('semana_PHP').value;
+			var semana = document.getElementById('semana_PHP').value;
 			var Semanal_Confirmada = document.getElementById('Semanal_Confirmada').value;
 
 
@@ -390,34 +277,38 @@
 			$("div.toolbarFiltro").html('<div class="ps-toolbar-filter"><button id="btn_limpiar_buscador" type="button" class="btn-pdc-modern ps-filter-clear" aria-label="Limpiar búsqueda"><i class="fas fa-times-circle" aria-hidden="true"></i> Limpiar</button></div>');
 			maestroPermisos(document.getElementById('permiso_canonico').value);
 			obtener_data_editar("#dt_cliente tbody", table);
+			if (window.PSLegacyCards) window.PSLegacyCards.attach(table, 'cnc');
 		}
 
 		/*Toma los datos de la fila en la que se presionó el botón editar*/
 		var obtener_data_editar = function(tbody, table) {
 			var max_semana = document.getElementById('Max_Semana').value;
-			var semana = document.getElementById('semana') ? document.getElementById('semana').value : document.getElementById('semana_PHP').value;
+			var semana = document.getElementById('semana_PHP').value;
 		  var permiso = document.getElementById('permiso_canonico').value;
 
 			var canEdit = RbacCapabilities.canEditLps(permiso, parseInt(semana), parseInt(max_semana));
-			var only_once = !canEdit;
+			var only_once = canEdit;
 
 			var Semanal_Confirmada = document.getElementById('Semanal_Confirmada').value;
 
-		  $(tbody).one("click", "td", function() {
+		  $(tbody).off("click.cncEdit", "button.editar").on("click.cncEdit", "button.editar", function(e) {
+		    e.preventDefault();
+		    e.stopPropagation();
 		    if (only_once == true) {
-					var data= table.row($(this).parents("tr")).data();
+					var $row = $(this).closest("tr");
+					var data = table.row($row).data();
 					var Id=$("#Id").val(data.Consecutivo);
 					var opcion = $("#opcion").val("modificar");
 
 				var codigo_html_Categoria_CNC = "<select id='select_Categoria_CNC' name='Categoria_CNC' class='form-control form-control-sm'><option value='' selected></option></select>";
-				$(this).parent().find('.input_Categoria_CNC').html(codigo_html_Categoria_CNC);
+				$row.find('.input_Categoria_CNC').html(codigo_html_Categoria_CNC);
 				cargarCategoriasCNC(data.Categoria_CNC);
 					var codigo_html_CNC = "<select id='select_CNC' name='CNC' class='form-control form-control-sm'><option value='' selected></option></select>";
-					$(this).parent().find('.input_CNC').html(codigo_html_CNC);
+					$row.find('.input_CNC').html(codigo_html_CNC);
 					var codigo_html_Observaciones_CNC = "<textarea id='select_Observaciones_CNC' name='Observaciones_CNC' class='form-control form-control-sm'>'" + data.Observaciones_CNC + "'</textarea>";
-					$(this).parent().find('.input_Observaciones_CNC').html(codigo_html_Observaciones_CNC);
+					$row.find('.input_Observaciones_CNC').html(codigo_html_Observaciones_CNC);
 					var codigo_html_botones = "<button type= 'button' id='btn_guardar_editar' class='guardar btn btn-success btn-sm ps-btn-edit' title='Guardar Causa de No Programación'><i class='fa fa-save fa-xs' aria-hidden='true' ></i></button><button type= 'button' id='btn_cancelar_editar' class='cancelar btn btn-danger btn-sm ps-btn-edit' title='Cancelar la edición'><i class='fa fa-undo fa-xs' aria-hidden='true' ></i></button>";
-					$(this).parent().find('.Botones').html(codigo_html_botones);
+					$row.find('.Botones').html(codigo_html_botones);
 					//$("#select_CNC").val(data.CNC).change();
 					$("#select_Categoria_CNC").val(data.Categoria_CNC).change();
 					$("#select_Categoria_CNC").focus();
@@ -459,16 +350,20 @@
 		    $.ajax({
 		      method: "POST",
 		      url: "/api/cnc/reasons",
-		      data: { "categoria": categoria, "area": window.__PROJECT_AREA__ || 'Construccion' },
-		      success: function(data) {
-		        var optionsHtml = "<option value=''></option>";
-		        if (Array.isArray(data)) {
-		          data.forEach(function(item) {
-		            optionsHtml += "<option value='" + item.CNC + "'>" + item.CNC + "</option>";
-		          });
-		        }
-		        $('#select_CNC').html(optionsHtml);
-		        $("#select_CNC").val(CNC);
+			      data: { "categoria": categoria, "area": window.__PROJECT_AREA__ || 'Construccion' },
+			      success: function(data) {
+			        var $select = $('#select_CNC').empty().append($('<option>', { value: '', text: '' }));
+			        var values = [];
+			        if (Array.isArray(data)) {
+			          data.forEach(function(item) {
+			            values.push(item.CNC);
+			            $select.append($('<option>', { value: item.CNC, text: item.CNC }));
+			          });
+			        }
+			        if (CNC && values.indexOf(CNC) === -1) {
+			          $select.append($('<option>', { value: CNC, text: CNC }));
+			        }
+			        $select.val(CNC);
 		      }
 		    });
 		  }
@@ -507,13 +402,8 @@
 		}
 
 		var cargarCategoriasCNC = function(selectedValue) {
-		  var area = window.__PROJECT_AREA__ || 'Construccion';
-		  var categorias = [];
-		  if (area === 'Pre-Construccion') {
-		    categorias = ['Diseños', 'Modelación', 'Presupuesto', 'Contratación', 'Trámites'];
-		  } else {
-		    categorias = ['Rendimiento', 'Programación', 'Mano de Obra', 'Materiales', 'Equipos', 'Diseños', 'Administrativas', 'Causas Exógenas'];
-		  }
+		  var categorias = ['Rendimiento', 'Programación', 'Mano de Obra', 'Materiales', 'Equipos', 'Diseños', 'Administrativas', 'Causas Exógenas'];
+		  if (selectedValue && categorias.indexOf(selectedValue) === -1) categorias.unshift(selectedValue);
 		  var optionsHtml = "<option value='' selected></option>";
 		  categorias.forEach(function(cat) {
 		    optionsHtml += "<option value='" + cat + "'>" + cat + "</option>";
@@ -572,22 +462,27 @@
                 $(this).html("");
             });
 		}
-				var Id = $("#Id").serialize();
-        var semana = document.getElementById('semana') ? $("#semana").serialize() : $("#semana_PHP").serialize();
-        var opcion = $("#opcion").serialize();
-
-				var Responsable_AIA=$("#select_Responsable_AIA").serialize();
-				var Categoria_CNC=$("#select_Categoria_CNC").serialize();
-				var CNC=$("#select_CNC").serialize();
-				var Observaciones_CNC=$("#select_Observaciones_CNC").serialize();
-				frm=Id+"&"+semana+"&"+opcion+"&"+Categoria_CNC+"&"+CNC+"&"+Observaciones_CNC;
+				var frm = {
+					Consecutivo: $("#Id").val(),
+					semana: $("#semana_PHP").val(),
+					Categoria_CNC: $("#select_Categoria_CNC").val(),
+					CNC: $("#select_CNC").val(),
+					Observaciones_CNC: $("#select_Observaciones_CNC").val()
+				};
 
 					$.ajax({
 						method: "POST",
 						url: "/api/cnc/save",
 						data: frm,
+						dataType: "json"
 					}).done( function( info ){
-						recargarTabla("");
+						mostrar_mensaje(info);
+						if (info.respuesta === "BIEN") recargarTabla("");
+					}).fail(function() {
+						mostrar_mensaje({
+							respuesta: "ERROR",
+							mensaje: "No fue posible guardar la causa."
+						});
 					});
 			});
 		}

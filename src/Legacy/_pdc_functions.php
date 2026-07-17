@@ -91,8 +91,9 @@ function pdc_crearSubcontratosDuplicados($db, $dbName, $semana)
         $consecutivo = $data["consecutivo"];
         $numeroSubcontratos = (int) $data["numeroSubcontratos"];
         $paqueteContratacion = $data["paqueteContratacion"];
+        $tipoPaquete = $data["tipoPaquete"];
 
-        $stmtInfo = $db->queryWithProject("SELECT COUNT(*) as conteo, MAX(subcontratoPaquete) as maxSub FROM {$tPdc} WHERE project_id = ? AND semana = ? AND titulo = 0 AND paqueteContratacion = ?", [$projectId, $semana, $paqueteContratacion], $projectId);
+        $stmtInfo = $db->queryWithProject("SELECT COUNT(*) as conteo, MAX(subcontratoPaquete) as maxSub FROM {$tPdc} WHERE project_id = ? AND semana = ? AND titulo = 0 AND tipoPaquete = ? AND paqueteContratacion = ?", [$projectId, $semana, $tipoPaquete, $paqueteContratacion], $projectId);
         $info = $stmtInfo->fetch();
         $conteoActual = (int) $info["conteo"];
         $maxSub = (int) $info["maxSub"];
@@ -102,11 +103,11 @@ function pdc_crearSubcontratosDuplicados($db, $dbName, $semana)
                 $maxSub++;
                 $newId = (int) $db->query("SELECT COALESCE(MAX(pdc_row_id), MAX(consecutivo), 0) + 1 FROM {$tPdc} WHERE project_id = ?", [$projectId])->fetchColumn();
                 $sqlDup = "INSERT INTO {$tPdc} (pdc_row_id, consecutivo, project_id, semana, titulo, tipoPaquete, paqueteContratacion, contratos, subcontratoPaquete, estado,
-                           fechaElaboracionPliegos, fechaEntregaPliegos, diasEntregaPliegos, fechaReciboPropuestas,
+                           fechaElaboracionPliegos, diasElaboracionPliegos, fechaEntregaPliegos, diasEntregaPliegos, fechaReciboPropuestas,
                            diasReciboPropuestas, fechaCuadrosComparativos, diasCuadrosComparativos, fechaLegalizacionContrato,
                            diasLegalizacionContrato, fechaFabricacion, diasFabricacion, fechaInsumosObra, diasInsumosObra, fechaInicio)
                            SELECT ?, ?, ?, semana, titulo, tipoPaquete, paqueteContratacion, contratos, ?, estado,
-                                  fechaElaboracionPliegos, fechaEntregaPliegos, diasEntregaPliegos, fechaReciboPropuestas,
+                                  fechaElaboracionPliegos, diasElaboracionPliegos, fechaEntregaPliegos, diasEntregaPliegos, fechaReciboPropuestas,
                                   diasReciboPropuestas, fechaCuadrosComparativos, diasCuadrosComparativos, fechaLegalizacionContrato,
                                   diasLegalizacionContrato, fechaFabricacion, diasFabricacion, fechaInsumosObra, diasInsumosObra, fechaInicio
                            FROM {$tPdc} WHERE project_id = ? AND semana = ? AND consecutivo = ?";

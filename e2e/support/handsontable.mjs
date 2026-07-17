@@ -71,18 +71,24 @@ export async function getCellValue(page, row, col) {
  */
 export async function editCell(page, row, col, value) {
   await page.waitForTimeout(500);
-  const cell = page.locator('.handsontable .htCore tbody tr, [role="treegrid"] [role="rowgroup"]:first-child [role="row"]').nth(row)
-    .locator('td, [role="gridcell"]').nth(col);
-
-  if (await cell.count() > 0) {
-    await cell.scrollIntoViewIfNeeded();
-    await cell.dblclick({ timeout: 10_000 }).catch(() => {});
-  }
-
-  await page.waitForTimeout(300);
-  const editor = page.locator('.handsontableInput, .htEditor textarea, textarea.handsontableInput');
-  await editor.waitFor({ state: 'visible', timeout: 5_000 }).catch(() => {});
-  await editor.fill(value);
+  await page.evaluate(({ r, c, code }) => {
+    var fn = new Function('return ' + code);
+    var hot = fn();
+    if (!hot) throw new Error('Handsontable instance not found');
+    hot.scrollViewportTo(r, c);
+    hot.selectCell(r, c);
+    var activeEditor = hot.getActiveEditor();
+    if (!activeEditor) throw new Error('Active editor not found');
+    activeEditor.beginEditing();
+    if (!activeEditor.TEXTAREA) throw new Error('Active editor textarea not found');
+    activeEditor.TEXTAREA.setAttribute('data-e2e-hot-editor', 'true');
+  }, { r: row, c: col, code: FIND_HOT });
+  const editor = page.locator('textarea[data-e2e-hot-editor="true"]');
+  await editor.waitFor({ state: 'visible', timeout: 5_000 });
+  await editor.click();
+  await page.keyboard.press('ControlOrMeta+A');
+  await editor.pressSequentially(String(value), { delay: 25 });
+  await page.waitForTimeout(250);
   await page.keyboard.press('Enter');
   await page.waitForTimeout(500);
 }

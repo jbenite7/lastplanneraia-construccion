@@ -1,0 +1,1421 @@
+{
+  "$schema": "./component-catalog.schema.json",
+  "schemaVersion": 2,
+  "designSystemVersion": "1.0.0",
+  "components": [
+    {
+      "id": "shell",
+      "family": "shell-navigation",
+      "kind": "canonical",
+      "purpose": "Application shell and theme boundary",
+      "doNotUseFor": "Module-local layout",
+      "api": [
+        ".aia-shell"
+      ],
+      "markup": "body.aia-shell",
+      "variants": [
+        "linen",
+        "dark"
+      ],
+      "states": [
+        "normal"
+      ],
+      "densities": [
+        "compact",
+        "touch"
+      ],
+      "tokens": [
+        "--ds-active-bg-page"
+      ],
+      "responsive": [
+        "mobile",
+        "tablet",
+        "desktop",
+        "wide"
+      ],
+      "accessibility": [
+        "landmarks",
+        "reduced-motion"
+      ],
+      "testSelector": ".aia-shell",
+      "consumers": [
+        "global"
+      ],
+      "replacement": null,
+      "golden": null,
+      "maturity": "stable",
+      "visualApproval": {
+        "status": "approved",
+        "familyId": "shell-navigation",
+        "candidateId": "adaptive-shell"
+      }
+    },
+    {
+      "id": "page-header",
+      "family": "page-structure",
+      "kind": "canonical",
+      "purpose": "Canonical page identity and context",
+      "doNotUseFor": "Navigation shell",
+      "api": [
+        ".aia-page-header",
+        "DesignSystemComponent::pageHeader"
+      ],
+      "markup": "header.aia-page-header",
+      "variants": [
+        "default"
+      ],
+      "states": [
+        "normal"
+      ],
+      "densities": [
+        "touch"
+      ],
+      "tokens": [
+        "--ds-active-text-primary"
+      ],
+      "responsive": [
+        "mobile",
+        "tablet",
+        "desktop",
+        "wide"
+      ],
+      "accessibility": [
+        "heading-order"
+      ],
+      "testSelector": ".aia-page-header",
+      "consumers": [
+        "programa-general"
+      ],
+      "replacement": null,
+      "golden": null,
+      "maturity": "stable",
+      "visualApproval": {
+        "status": "approved",
+        "familyId": "page-structure",
+        "candidateId": "inline-header"
+      }
+    },
+    {
+      "id": "toolbar",
+      "family": "actions",
+      "kind": "canonical",
+      "purpose": "Group related page actions",
+      "doNotUseFor": "Unrelated navigation",
+      "api": [
+        ".aia-toolbar",
+        ".aia-action-group",
+        "DesignSystemComponent::actionGroup"
+      ],
+      "markup": "div.aia-action-group with labelled buttons",
+      "variants": [
+        "integrated"
+      ],
+      "states": [
+        "normal",
+        "disabled",
+        "loading"
+      ],
+      "densities": [
+        "compact",
+        "touch"
+      ],
+      "tokens": [
+        "--ds-space-3"
+      ],
+      "responsive": [
+        "mobile",
+        "tablet",
+        "desktop",
+        "wide"
+      ],
+      "accessibility": [
+        "group-name"
+      ],
+      "testSelector": ".aia-action-group",
+      "consumers": [
+        "programa-general"
+      ],
+      "replacement": null,
+      "golden": null,
+      "maturity": "stable",
+      "visualApproval": {
+        "status": "approved",
+        "familyId": "actions",
+        "candidateId": "solid-outline"
+      }
+    },
+    {
+      "id": "button",
+      "family": "actions",
+      "kind": "canonical",
+      "purpose": "Trigger an explicit action",
+      "doNotUseFor": "Static status",
+      "api": [
+        ".aia-btn"
+      ],
+      "markup": "button.aia-btn",
+      "variants": [
+        "primary",
+        "secondary",
+        "critical",
+        "icon",
+        "floating"
+      ],
+      "states": [
+        "normal",
+        "hover",
+        "focus",
+        "disabled",
+        "loading"
+      ],
+      "densities": [
+        "compact",
+        "touch"
+      ],
+      "tokens": [
+        "--ds-target-min"
+      ],
+      "responsive": [
+        "mobile",
+        "tablet",
+        "desktop",
+        "wide"
+      ],
+      "accessibility": [
+        "accessible-name",
+        "focus-visible",
+        "44x44"
+      ],
+      "testSelector": ".aia-btn",
+      "consumers": [
+        "global"
+      ],
+      "replacement": null,
+      "golden": null,
+      "maturity": "stable",
+      "visualApproval": {
+        "status": "approved",
+        "familyId": "actions",
+        "candidateId": "solid-outline"
+      }
+    },
+    {
+      "id": "field",
+      "family": "forms-filters",
+      "kind": "canonical",
+      "purpose": "Collect or filter user input",
+      "doNotUseFor": "Read-only metrics",
+      "api": [
+        ".aia-input",
+        ".aia-select",
+        ".aia-textarea",
+        ".aia-choice",
+        ".aia-switch"
+      ],
+      "markup": "explicit label plus field",
+      "variants": [
+        "input",
+        "select",
+        "textarea",
+        "checkbox",
+        "radio",
+        "switch",
+        "date",
+        "file"
+      ],
+      "states": [
+        "normal",
+        "focus",
+        "disabled",
+        "error"
+      ],
+      "densities": [
+        "compact",
+        "touch"
+      ],
+      "tokens": [
+        "--ds-active-surface-raised"
+      ],
+      "responsive": [
+        "mobile",
+        "tablet",
+        "desktop",
+        "wide"
+      ],
+      "accessibility": [
+        "label",
+        "description",
+        "error-link"
+      ],
+      "testSelector": ".aia-input",
+      "consumers": [
+        "programa-general"
+      ],
+      "replacement": null,
+      "golden": null,
+      "maturity": "stable",
+      "visualApproval": {
+        "status": "approved",
+        "familyId": "forms-filters",
+        "candidateId": "inline-fields"
+      }
+    },
+    {
+      "id": "state",
+      "family": "states-feedback",
+      "kind": "canonical",
+      "purpose": "Communicate status and feedback",
+      "doNotUseFor": "Primary actions",
+      "api": [
+        ".aia-chip",
+        "DesignSystemComponent::status"
+      ],
+      "markup": "tinted semantic status with complete words",
+      "variants": [
+        "info",
+        "success",
+        "warning",
+        "critical"
+      ],
+      "states": [
+        "normal",
+        "loading",
+        "empty",
+        "error"
+      ],
+      "densities": [
+        "compact",
+        "touch"
+      ],
+      "tokens": [
+        "--ds-color-state-success-text"
+      ],
+      "responsive": [
+        "mobile",
+        "tablet",
+        "desktop",
+        "wide"
+      ],
+      "accessibility": [
+        "no-word-fragmentation",
+        "text-meaning"
+      ],
+      "testSelector": "[data-aia-component=status]",
+      "consumers": [
+        "global"
+      ],
+      "replacement": null,
+      "golden": null,
+      "maturity": "stable",
+      "visualApproval": {
+        "status": "approved",
+        "familyId": "states-feedback",
+        "candidateId": "tinted-status"
+      }
+    },
+    {
+      "id": "card",
+      "family": "data-display",
+      "kind": "canonical",
+      "purpose": "Present a bounded content record",
+      "doNotUseFor": "Dense desktop grid",
+      "api": [
+        ".aia-card",
+        ".aia-data-card"
+      ],
+      "markup": "article.aia-data-card from canonical records",
+      "variants": [
+        "default"
+      ],
+      "states": [
+        "normal",
+        "empty",
+        "error"
+      ],
+      "densities": [
+        "touch"
+      ],
+      "tokens": [
+        "--ds-active-surface"
+      ],
+      "responsive": [
+        "mobile",
+        "tablet"
+      ],
+      "accessibility": [
+        "semantic-container",
+        "same-record-identity"
+      ],
+      "testSelector": ".aia-data-card",
+      "consumers": [
+        "programa-general"
+      ],
+      "replacement": null,
+      "golden": null,
+      "maturity": "stable",
+      "visualApproval": {
+        "status": "approved",
+        "familyId": "data-display",
+        "candidateId": "responsive-shell"
+      }
+    },
+    {
+      "id": "table-shell",
+      "family": "data-display",
+      "kind": "canonical",
+      "purpose": "Contain tabular and grid vendors",
+      "doNotUseFor": "Standalone cards",
+      "api": [
+        ".aia-table-shell",
+        ".aia-data-display",
+        "DesignSystemComponent::dataDisplay"
+      ],
+      "markup": "labelled table and card views from one record set",
+      "variants": [
+        "responsive-table-cards"
+      ],
+      "states": [
+        "normal",
+        "loading",
+        "empty",
+        "error"
+      ],
+      "densities": [
+        "compact",
+        "touch"
+      ],
+      "tokens": [
+        "--ds-active-border"
+      ],
+      "responsive": [
+        "mobile",
+        "tablet",
+        "desktop",
+        "wide"
+      ],
+      "accessibility": [
+        "labelled-region",
+        "same-record-identity"
+      ],
+      "testSelector": "[data-aia-component=data-display]",
+      "consumers": [
+        "programa-general"
+      ],
+      "replacement": null,
+      "golden": null,
+      "maturity": "stable",
+      "visualApproval": {
+        "status": "approved",
+        "familyId": "data-display",
+        "candidateId": "responsive-shell"
+      }
+    },
+    {
+      "id": "overlay",
+      "family": "overlays",
+      "kind": "canonical",
+      "purpose": "Present modal or contextual content",
+      "doNotUseFor": "Persistent page content",
+      "api": [
+        ".aia-modal-surface",
+        "DesignSystemComponent::dialog",
+        "window.AiaComponents.init"
+      ],
+      "markup": "native labelled dialog with controlled trigger",
+      "variants": [
+        "modal",
+        "drawer"
+      ],
+      "states": [
+        "normal",
+        "open",
+        "focus",
+        "loading",
+        "error"
+      ],
+      "densities": [
+        "touch"
+      ],
+      "tokens": [
+        "--ds-active-surface-raised"
+      ],
+      "responsive": [
+        "mobile",
+        "tablet",
+        "desktop",
+        "wide"
+      ],
+      "accessibility": [
+        "native-focus-trap",
+        "escape",
+        "restore-focus"
+      ],
+      "testSelector": "[data-aia-component=dialog]",
+      "consumers": [
+        "programa-general"
+      ],
+      "replacement": null,
+      "golden": null,
+      "maturity": "stable",
+      "visualApproval": {
+        "status": "approved",
+        "familyId": "overlays",
+        "candidateId": "modal-drawer"
+      }
+    },
+    {
+      "id": "bi-shell",
+      "family": "bi-primitives",
+      "kind": "canonical",
+      "purpose": "Contain deterministic BI specimens",
+      "doNotUseFor": "BI runtime migration",
+      "api": [
+        ".aia-bi",
+        "DesignSystemComponent::biFigure"
+      ],
+      "markup": "figure with caption, summary, legend, plot and equivalent table",
+      "variants": [
+        "accessible-figure"
+      ],
+      "states": [
+        "normal",
+        "loading",
+        "empty",
+        "error"
+      ],
+      "densities": [
+        "compact",
+        "touch"
+      ],
+      "tokens": [
+        "--ds-active-surface"
+      ],
+      "responsive": [
+        "mobile",
+        "tablet",
+        "desktop",
+        "wide"
+      ],
+      "accessibility": [
+        "text-alternative",
+        "legend",
+        "equivalent-table"
+      ],
+      "testSelector": "[data-aia-component=bi-figure]",
+      "consumers": [
+        "design-system-lab"
+      ],
+      "replacement": null,
+      "golden": null,
+      "maturity": "candidate",
+      "visualApproval": {
+        "status": "approved",
+        "familyId": "bi-primitives",
+        "candidateId": "accessible-figure"
+      }
+    },
+    {
+      "id": "navigation",
+      "family": "shell-navigation",
+      "kind": "canonical",
+      "purpose": "Provide global and contextual navigation",
+      "doNotUseFor": "Module actions",
+      "api": [
+        ".aia-navigation",
+        "DesignSystemComponent::navigation",
+        "window.AiaNavDrawer"
+      ],
+      "markup": "responsive nav plus controlled drawer",
+      "variants": [
+        "brand-lockup",
+        "navbar",
+        "contextual",
+        "drawer",
+        "account"
+      ],
+      "states": [
+        "normal",
+        "open",
+        "focus"
+      ],
+      "densities": [
+        "compact",
+        "touch"
+      ],
+      "tokens": [
+        "--ds-navbar-height"
+      ],
+      "responsive": [
+        "mobile",
+        "tablet",
+        "desktop",
+        "wide"
+      ],
+      "accessibility": [
+        "keyboard",
+        "escape",
+        "restore-focus"
+      ],
+      "testSelector": "[data-aia-component=navigation]",
+      "consumers": [
+        "global"
+      ],
+      "replacement": null,
+      "golden": null,
+      "maturity": "candidate",
+      "visualApproval": {
+        "status": "approved",
+        "familyId": "shell-navigation",
+        "candidateId": "adaptive-shell"
+      }
+    },
+    {
+      "id": "section",
+      "family": "page-structure",
+      "kind": "canonical",
+      "purpose": "Group a labelled page region",
+      "doNotUseFor": "Unlabelled spacing wrappers",
+      "api": [
+        ".aia-section"
+      ],
+      "markup": "section.aia-section",
+      "variants": [
+        "default"
+      ],
+      "states": [
+        "normal"
+      ],
+      "densities": [
+        "compact",
+        "touch"
+      ],
+      "tokens": [
+        "--ds-active-surface"
+      ],
+      "responsive": [
+        "mobile",
+        "tablet",
+        "desktop",
+        "wide"
+      ],
+      "accessibility": [
+        "labelled-region",
+        "semantic-padding"
+      ],
+      "testSelector": ".aia-section",
+      "consumers": [
+        "global"
+      ],
+      "replacement": null,
+      "golden": null,
+      "maturity": "candidate",
+      "visualApproval": {
+        "status": "approved",
+        "familyId": "page-structure",
+        "candidateId": "inline-header"
+      }
+    },
+    {
+      "id": "icon",
+      "family": "actions",
+      "kind": "canonical",
+      "purpose": "Decorate or identify actions consistently",
+      "doNotUseFor": "Unlabelled icon-only actions",
+      "api": [
+        ".aia-icon",
+        "DesignSystemComponent::icon"
+      ],
+      "markup": "decorative or explicitly labelled icon",
+      "variants": [
+        "decorative",
+        "labelled"
+      ],
+      "states": [
+        "normal",
+        "disabled"
+      ],
+      "densities": [
+        "compact",
+        "touch"
+      ],
+      "tokens": [
+        "--ds-active-text-secondary"
+      ],
+      "responsive": [
+        "mobile",
+        "tablet",
+        "desktop",
+        "wide"
+      ],
+      "accessibility": [
+        "aria-hidden-or-label"
+      ],
+      "testSelector": "[data-aia-component=icon]",
+      "consumers": [
+        "design-system-lab"
+      ],
+      "replacement": "font-awesome adapter",
+      "golden": null,
+      "maturity": "candidate",
+      "visualApproval": {
+        "status": "approved",
+        "familyId": "actions",
+        "candidateId": "solid-outline"
+      }
+    },
+    {
+      "id": "search",
+      "family": "forms-filters",
+      "kind": "canonical",
+      "purpose": "Search a bounded data set",
+      "doNotUseFor": "General free-form input",
+      "api": [
+        ".aia-search",
+        "DesignSystemComponent::search"
+      ],
+      "markup": "search landmark plus labelled input and submit action",
+      "variants": [
+        "submit"
+      ],
+      "states": [
+        "normal",
+        "focus",
+        "loading",
+        "empty",
+        "error"
+      ],
+      "densities": [
+        "compact",
+        "touch"
+      ],
+      "tokens": [
+        "--ds-active-surface-raised"
+      ],
+      "responsive": [
+        "mobile",
+        "tablet",
+        "desktop",
+        "wide"
+      ],
+      "accessibility": [
+        "search-landmark",
+        "clear-name"
+      ],
+      "testSelector": "[data-aia-component=search]",
+      "consumers": [
+        "programa-general"
+      ],
+      "replacement": null,
+      "golden": null,
+      "maturity": "candidate",
+      "visualApproval": {
+        "status": "approved",
+        "familyId": "forms-filters",
+        "candidateId": "inline-fields"
+      }
+    },
+    {
+      "id": "filter",
+      "family": "forms-filters",
+      "kind": "canonical",
+      "purpose": "Apply reversible data constraints",
+      "doNotUseFor": "Destructive actions",
+      "api": [
+        ".aia-filter-form",
+        "DesignSystemComponent::filterForm"
+      ],
+      "markup": "always-visible labelled field group with canonical actions",
+      "variants": [
+        "visible"
+      ],
+      "states": [
+        "normal",
+        "loading",
+        "empty"
+      ],
+      "densities": [
+        "compact",
+        "touch"
+      ],
+      "tokens": [
+        "--ds-space-4"
+      ],
+      "responsive": [
+        "mobile",
+        "tablet",
+        "desktop",
+        "wide"
+      ],
+      "accessibility": [
+        "form-name",
+        "explicit-labels",
+        "keyboard"
+      ],
+      "testSelector": ".aia-filter-form",
+      "consumers": [
+        "programa-general"
+      ],
+      "replacement": null,
+      "golden": null,
+      "maturity": "candidate",
+      "visualApproval": {
+        "status": "approved",
+        "familyId": "forms-filters",
+        "candidateId": "inline-fields"
+      }
+    },
+    {
+      "id": "pagination",
+      "family": "forms-filters",
+      "kind": "canonical",
+      "purpose": "Navigate bounded result pages",
+      "doNotUseFor": "Infinite unannounced loading",
+      "api": [
+        ".aia-pagination",
+        "DesignSystemComponent::pagination"
+      ],
+      "markup": "named nav with one current page",
+      "variants": [
+        "pages"
+      ],
+      "states": [
+        "normal",
+        "disabled",
+        "loading"
+      ],
+      "densities": [
+        "compact",
+        "touch"
+      ],
+      "tokens": [
+        "--ds-target-min"
+      ],
+      "responsive": [
+        "mobile",
+        "tablet",
+        "desktop",
+        "wide"
+      ],
+      "accessibility": [
+        "current-page",
+        "accessible-name"
+      ],
+      "testSelector": "[data-aia-component=pagination]",
+      "consumers": [
+        "design-system-lab"
+      ],
+      "replacement": null,
+      "golden": null,
+      "maturity": "candidate",
+      "visualApproval": {
+        "status": "approved",
+        "familyId": "forms-filters",
+        "candidateId": "inline-fields"
+      }
+    },
+    {
+      "id": "feedback",
+      "family": "states-feedback",
+      "kind": "canonical",
+      "purpose": "Explain loading, empty and error outcomes",
+      "doNotUseFor": "Silent background state",
+      "api": [
+        ".aia-feedback",
+        "DesignSystemComponent::feedback"
+      ],
+      "markup": "tinted status or alert region",
+      "variants": [
+        "info",
+        "success",
+        "warning",
+        "critical"
+      ],
+      "states": [
+        "normal",
+        "loading",
+        "empty",
+        "error"
+      ],
+      "densities": [
+        "compact",
+        "touch"
+      ],
+      "tokens": [
+        "--ds-color-state-success-bg"
+      ],
+      "responsive": [
+        "mobile",
+        "tablet",
+        "desktop",
+        "wide"
+      ],
+      "accessibility": [
+        "role-status-or-alert",
+        "complete-words"
+      ],
+      "testSelector": "[data-aia-component=feedback]",
+      "consumers": [
+        "design-system-lab"
+      ],
+      "replacement": ".aia-alert and .aia-empty",
+      "golden": null,
+      "maturity": "candidate",
+      "visualApproval": {
+        "status": "approved",
+        "familyId": "states-feedback",
+        "candidateId": "tinted-status"
+      }
+    },
+    {
+      "id": "progress",
+      "family": "states-feedback",
+      "kind": "canonical",
+      "purpose": "Expose bounded task progress",
+      "doNotUseFor": "Unknown-duration loading",
+      "api": [
+        ".aia-progress",
+        "DesignSystemComponent::progress"
+      ],
+      "markup": "native progress element with visible value label",
+      "variants": [
+        "determinate"
+      ],
+      "states": [
+        "normal",
+        "complete",
+        "error"
+      ],
+      "densities": [
+        "compact",
+        "touch"
+      ],
+      "tokens": [
+        "--ds-color-brand-primary"
+      ],
+      "responsive": [
+        "mobile",
+        "tablet",
+        "desktop",
+        "wide"
+      ],
+      "accessibility": [
+        "native-progress",
+        "text-label"
+      ],
+      "testSelector": "[data-aia-component=progress]",
+      "consumers": [
+        "design-system-lab"
+      ],
+      "replacement": ".progress bridge",
+      "golden": null,
+      "maturity": "candidate",
+      "visualApproval": {
+        "status": "approved",
+        "familyId": "states-feedback",
+        "candidateId": "tinted-status"
+      }
+    },
+    {
+      "id": "live-region",
+      "family": "states-feedback",
+      "kind": "canonical",
+      "purpose": "Announce asynchronous results",
+      "doNotUseFor": "Static copy",
+      "api": [
+        ".aia-live-region",
+        "DesignSystemComponent::liveRegion"
+      ],
+      "markup": "atomic aria-live region",
+      "variants": [
+        "polite",
+        "assertive"
+      ],
+      "states": [
+        "normal",
+        "updated"
+      ],
+      "densities": [
+        "compact",
+        "touch"
+      ],
+      "tokens": [
+        "--ds-active-surface-raised"
+      ],
+      "responsive": [
+        "mobile",
+        "tablet",
+        "desktop",
+        "wide"
+      ],
+      "accessibility": [
+        "aria-live",
+        "atomicity"
+      ],
+      "testSelector": "[data-aia-component=live-region]",
+      "consumers": [
+        "design-system-lab"
+      ],
+      "replacement": null,
+      "golden": null,
+      "maturity": "candidate",
+      "visualApproval": {
+        "status": "approved",
+        "familyId": "states-feedback",
+        "candidateId": "tinted-status"
+      }
+    },
+    {
+      "id": "menu",
+      "family": "overlays",
+      "kind": "canonical",
+      "purpose": "Offer a compact action list",
+      "doNotUseFor": "Primary site navigation",
+      "api": [
+        ".aia-menu",
+        "DesignSystemComponent::menu",
+        "window.AiaComponents.init"
+      ],
+      "markup": "controlled action menu",
+      "variants": [
+        "actions"
+      ],
+      "states": [
+        "normal",
+        "open",
+        "focus",
+        "disabled"
+      ],
+      "densities": [
+        "compact",
+        "touch"
+      ],
+      "tokens": [
+        "--ds-active-surface-raised"
+      ],
+      "responsive": [
+        "mobile",
+        "tablet",
+        "desktop",
+        "wide"
+      ],
+      "accessibility": [
+        "keyboard",
+        "escape",
+        "restore-focus"
+      ],
+      "testSelector": "[data-aia-component=menu]",
+      "consumers": [
+        "design-system-lab"
+      ],
+      "replacement": ".dropdown-menu bridge",
+      "golden": null,
+      "maturity": "candidate",
+      "visualApproval": {
+        "status": "approved",
+        "familyId": "overlays",
+        "candidateId": "modal-drawer"
+      }
+    },
+    {
+      "id": "popover",
+      "family": "overlays",
+      "kind": "canonical",
+      "purpose": "Show contextual non-modal detail",
+      "doNotUseFor": "Critical confirmation",
+      "api": [
+        ".aia-popover",
+        "DesignSystemComponent::popover",
+        "window.AiaComponents.init"
+      ],
+      "markup": "controlled contextual region",
+      "variants": [
+        "popover"
+      ],
+      "states": [
+        "normal",
+        "open",
+        "focus"
+      ],
+      "densities": [
+        "compact",
+        "touch"
+      ],
+      "tokens": [
+        "--ds-active-surface-raised"
+      ],
+      "responsive": [
+        "mobile",
+        "tablet",
+        "desktop",
+        "wide"
+      ],
+      "accessibility": [
+        "controlled-region",
+        "escape",
+        "restore-focus"
+      ],
+      "testSelector": "[data-aia-component=popover]",
+      "consumers": [
+        "design-system-lab"
+      ],
+      "replacement": ".popover and .tooltip-inner bridges",
+      "golden": null,
+      "maturity": "candidate",
+      "visualApproval": {
+        "status": "approved",
+        "familyId": "overlays",
+        "candidateId": "modal-drawer"
+      }
+    },
+    {
+      "id": "toast-confirm",
+      "family": "states-feedback",
+      "kind": "adapter",
+      "purpose": "Notify or confirm transient outcomes",
+      "doNotUseFor": "Persistent error recovery",
+      "api": [
+        "window.AIA.Notice"
+      ],
+      "markup": "SweetAlert2 adapter",
+      "variants": [
+        "toast",
+        "confirm",
+        "dialog"
+      ],
+      "states": [
+        "normal",
+        "success",
+        "warning",
+        "error"
+      ],
+      "densities": [
+        "compact",
+        "touch"
+      ],
+      "tokens": [
+        "--ds-active-surface-raised"
+      ],
+      "responsive": [
+        "mobile",
+        "tablet",
+        "desktop",
+        "wide"
+      ],
+      "accessibility": [
+        "focus-management",
+        "live-announcement"
+      ],
+      "testSelector": ".swal2-popup",
+      "consumers": [
+        "global"
+      ],
+      "replacement": null,
+      "golden": null,
+      "maturity": "candidate",
+      "visualApproval": {
+        "status": "approved",
+        "familyId": "states-feedback",
+        "candidateId": "tinted-status"
+      }
+    },
+    {
+      "id": "handsontable-adapter",
+      "family": "vendor-adapters",
+      "kind": "adapter",
+      "purpose": "Normalize Handsontable visuals and interaction",
+      "doNotUseFor": "Domain column sizing",
+      "api": [
+        ".handsontable"
+      ],
+      "markup": "Handsontable root inside grid shell",
+      "variants": [
+        "compact",
+        "touch-fallback"
+      ],
+      "states": [
+        "normal",
+        "focus",
+        "loading",
+        "empty",
+        "error"
+      ],
+      "densities": [
+        "compact",
+        "touch"
+      ],
+      "tokens": [
+        "--ds-active-border"
+      ],
+      "responsive": [
+        "mobile",
+        "tablet",
+        "desktop",
+        "wide"
+      ],
+      "accessibility": [
+        "keyboard-grid",
+        "44x44-actions"
+      ],
+      "testSelector": ".handsontable",
+      "consumers": [
+        "programa-general"
+      ],
+      "replacement": null,
+      "golden": null,
+      "maturity": "stable",
+      "visualApproval": {
+        "status": "approved",
+        "familyId": "vendor-adapters",
+        "candidateId": "canonical-skin"
+      }
+    },
+    {
+      "id": "datatables-adapter",
+      "family": "vendor-adapters",
+      "kind": "legacy",
+      "purpose": "Contain legacy DataTables visuals",
+      "doNotUseFor": "New data grids",
+      "api": [
+        ".dataTables_wrapper"
+      ],
+      "markup": "DataTables root inside table shell",
+      "variants": [
+        "legacy"
+      ],
+      "states": [
+        "normal",
+        "loading",
+        "empty",
+        "error"
+      ],
+      "densities": [
+        "compact",
+        "touch"
+      ],
+      "tokens": [
+        "--ds-active-border"
+      ],
+      "responsive": [
+        "mobile",
+        "tablet",
+        "desktop",
+        "wide"
+      ],
+      "accessibility": [
+        "table-semantics"
+      ],
+      "testSelector": ".dataTables_wrapper",
+      "consumers": [
+        "legacy-modules"
+      ],
+      "replacement": "handsontable-adapter",
+      "golden": null,
+      "maturity": "compatibility",
+      "visualApproval": {
+        "status": "not-required",
+        "familyId": "vendor-adapters",
+        "candidateId": null
+      }
+    },
+    {
+      "id": "select-adapter",
+      "family": "vendor-adapters",
+      "kind": "adapter",
+      "purpose": "Normalize Select2 and Tom Select",
+      "doNotUseFor": "Native select without enhancement",
+      "api": [
+        ".select2-selection",
+        ".ts-control"
+      ],
+      "markup": "labelled enhanced select",
+      "variants": [
+        "select2",
+        "tom-select"
+      ],
+      "states": [
+        "normal",
+        "focus",
+        "disabled",
+        "error"
+      ],
+      "densities": [
+        "touch"
+      ],
+      "tokens": [
+        "--ds-active-surface-raised"
+      ],
+      "responsive": [
+        "mobile",
+        "tablet",
+        "desktop",
+        "wide"
+      ],
+      "accessibility": [
+        "label",
+        "keyboard",
+        "expanded-state"
+      ],
+      "testSelector": ".select2-selection",
+      "consumers": [
+        "legacy-modules"
+      ],
+      "replacement": null,
+      "golden": null,
+      "maturity": "candidate",
+      "visualApproval": {
+        "status": "approved",
+        "familyId": "vendor-adapters",
+        "candidateId": "canonical-skin"
+      }
+    },
+    {
+      "id": "bi-chart",
+      "family": "bi-primitives",
+      "kind": "canonical",
+      "purpose": "Render a deterministic quantitative figure",
+      "doNotUseFor": "Live BI runtime migration",
+      "api": [
+        ".aia-bi__plot",
+        "DesignSystemComponent::biFigure"
+      ],
+      "markup": "visual plot with persistent text and data alternative",
+      "variants": [
+        "line",
+        "bar",
+        "comparison",
+        "donut",
+        "radar"
+      ],
+      "states": [
+        "normal",
+        "loading",
+        "empty",
+        "error"
+      ],
+      "densities": [
+        "compact",
+        "touch"
+      ],
+      "tokens": [
+        "--ds-active-text-primary"
+      ],
+      "responsive": [
+        "mobile",
+        "tablet",
+        "desktop",
+        "wide"
+      ],
+      "accessibility": [
+        "caption",
+        "data-summary",
+        "equivalent-table"
+      ],
+      "testSelector": "[data-bi-plot]",
+      "consumers": [
+        "design-system-lab"
+      ],
+      "replacement": "AnyChart or Chart.js adapter",
+      "golden": null,
+      "maturity": "candidate",
+      "visualApproval": {
+        "status": "approved",
+        "familyId": "bi-primitives",
+        "candidateId": "accessible-figure"
+      }
+    },
+    {
+      "id": "bi-legend",
+      "family": "bi-primitives",
+      "kind": "canonical",
+      "purpose": "Map visual series to accessible labels",
+      "doNotUseFor": "Unexplained color-only meaning",
+      "api": [
+        ".aia-bi__legend"
+      ],
+      "markup": "labelled list",
+      "variants": [
+        "inline"
+      ],
+      "states": [
+        "normal"
+      ],
+      "densities": [
+        "compact",
+        "touch"
+      ],
+      "tokens": [
+        "--ds-active-text-secondary"
+      ],
+      "responsive": [
+        "mobile",
+        "tablet",
+        "desktop",
+        "wide"
+      ],
+      "accessibility": [
+        "text-labels",
+        "no-color-only"
+      ],
+      "testSelector": ".aia-bi__legend",
+      "consumers": [
+        "design-system-lab"
+      ],
+      "replacement": null,
+      "golden": null,
+      "maturity": "candidate",
+      "visualApproval": {
+        "status": "approved",
+        "familyId": "bi-primitives",
+        "candidateId": "accessible-figure"
+      }
+    },
+    {
+      "id": "bi-tooltip",
+      "family": "bi-primitives",
+      "kind": "canonical",
+      "purpose": "Expose focused chart detail",
+      "doNotUseFor": "Sole access to a value",
+      "api": [
+        "DesignSystemComponent::popover"
+      ],
+      "markup": "controlled detail backed by a persistent table",
+      "variants": [
+        "focus"
+      ],
+      "states": [
+        "normal",
+        "open",
+        "focus"
+      ],
+      "densities": [
+        "compact",
+        "touch"
+      ],
+      "tokens": [
+        "--ds-active-surface-raised"
+      ],
+      "responsive": [
+        "mobile",
+        "tablet",
+        "desktop",
+        "wide"
+      ],
+      "accessibility": [
+        "keyboard",
+        "persistent-alternative"
+      ],
+      "testSelector": "[data-bi-candidate] [data-aia-component=popover]",
+      "consumers": [
+        "design-system-lab"
+      ],
+      "replacement": null,
+      "golden": null,
+      "maturity": "candidate",
+      "visualApproval": {
+        "status": "approved",
+        "familyId": "bi-primitives",
+        "candidateId": "accessible-figure"
+      }
+    }
+  ]
+}

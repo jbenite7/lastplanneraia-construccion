@@ -3,7 +3,8 @@
 <head id="head">
 	<meta charset="UTF-8">
 	<!--Script cque va al archivo linksComunesHead2.js-->
-	<script type="text/javascript" src="/js/linksComunesHead2.js?v=piStateColors3" charset="utf-8"></script>
+	<?= \App\View\Components\DesignSystemHeadComponent::render() ?>
+	<script type="text/javascript" src="/js/linksComunesHead2.js?v=20260711foundation5" charset="utf-8"></script>
 </head>
 
 <!--Etiqueta superior-->

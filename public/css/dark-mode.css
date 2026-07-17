@@ -32,8 +32,10 @@ body.dark-mode {
 
     /* Navbar Variables (from navbar.css) */
     /* Brand: "Corporativo Oscuro" #1a3c2a for Navbar Background */
-    --aia-green: #1a3c2a; 
+    --aia-green: var(--ds-color-brand-primary-dark);
     --aia-white: #1C1C1E; /* Drawer BG */
+    --ds-active-nav-bg: var(--surface-card);
+    --ds-nav-bg-dark: var(--surface-card);
 
     /* Global Body Styles */
     color: var(--text-main);
@@ -48,8 +50,8 @@ body.dark-mode {
 
 /* Navbar & Drawer */
 body.dark-mode .navbar-aia {
-    background-color: var(--aia-green) !important;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
+    background-color: var(--ds-active-nav-bg) !important;
+    border-bottom: var(--ds-nav-border-width) solid var(--ds-active-nav-border);
 }
 
 body.dark-mode .navbar-collapse-drawer {

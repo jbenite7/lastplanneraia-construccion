@@ -1,8 +1,17 @@
 import { test, expect } from '@playwright/test';
 import { PROJECTS } from './fixtures/projects.mjs';
 import { assertNoRuntimeErrors, installErrorCollectors } from './support/assertions.mjs';
-import { runSql } from './support/dbSnapshot.mjs';
-import { changeWeek, loginAndSelectProject } from './support/session.mjs';
+import { DatabaseSnapshot, runSql } from './support/dbSnapshot.mjs';
+import {
+  E2ERestorationScope,
+  ScopedFileSnapshot,
+  assertE2EMutationConsent,
+  maybeInjectE2EFailure,
+} from './support/restoration.mjs';
+import { changeWeek, loginAndSelectProject, logout } from './support/session.mjs';
+
+// allow: SIZE_OK — this Playwright narrative owns one semi-auto review surface end to end.
+assertE2EMutationConsent();
 
 const project = PROJECTS.find((item) => item.key === 'construction') || PROJECTS[0];
 
@@ -165,26 +174,51 @@ async function openReviewPanel(page, moduleKey) {
 
   const panel = page.locator(`#semiAutoReview-${moduleKey}`);
   await expect(panel).toBeVisible({ timeout: 10000 });
+  await expect(panel.locator('.sar-title')).toContainText('Bandeja de decisiones');
   await expect(panel.locator('.sar-tab')).toContainText([
-    'Aplicar automático',
-    'Revisar',
+    'Decisión',
+    'Listas',
+    'Todo',
   ]);
+  await expect(panel.locator('.sar-filter-band')).toBeVisible();
   await expect(panel.locator('.sar-filter-text')).toBeVisible();
   await expect(panel.locator('.sar-status')).toContainText('Análisis listo', { timeout: 90000 });
+  maybeInjectE2EFailure(`semi-auto-review:preview:${moduleKey}`);
   await expect(panel.locator('.sar-analysis')).toContainText('Estamos revisando tus propuestas');
   await expect(panel.locator('.sar-analysis-progress')).toContainText('100%');
-  await expect(panel.locator('.sar-assistant')).toContainText('Asistente AIA');
-  await expect(panel.locator('.sar-assistant-grid')).not.toBeVisible();
-  await panel.locator('.sar-assistant-toggle').click();
-  await expect(panel.locator('.sar-assistant-grid')).toBeVisible();
-  await expect(panel.locator('.sar-assistant')).toContainText('Recomendaciones');
-  await expect(panel.locator('.sar-assistant')).toContainText('Alertas');
+  const assistant = panel.locator('.sar-assistant');
+  const assistantGrid = assistant.locator('.sar-assistant-grid');
+  const assistantToggle = assistant.locator('.sar-assistant-toggle');
+  await expect(assistant).toContainText('Asistente AIA');
+  await expect(assistantGrid).toBeVisible();
+  await expect(assistantToggle).toHaveAttribute('aria-expanded', 'true');
+  await expect(assistantToggle).toHaveText('Ocultar detalle');
+
+  await assistantToggle.click();
+  await expect(assistantGrid).not.toBeVisible();
+  await expect(assistantToggle).toHaveAttribute('aria-expanded', 'false');
+  await expect(assistantToggle).toHaveText('Ver detalle');
+
+  await assistantToggle.click();
+  await expect(assistantGrid).toBeVisible();
+  await expect(assistantToggle).toHaveAttribute('aria-expanded', 'true');
+  await expect(assistantToggle).toHaveText('Ocultar detalle');
+  await expect(assistant).toContainText('Recomendaciones');
+  await expect(assistant).toContainText('Alertas');
   await expect(panel.locator('.sar-summary')).toContainText('Encontramos', { timeout: 10000 });
-  await expect(panel.locator('.sar-group-title')).toContainText([
-    'Aplicar automático',
-  ]);
-  await panel.locator('.sar-tab', { hasText: 'Revisar' }).click();
-  await expect(panel.locator('.sar-group-title').filter({ hasText: /Revisar|Revisar manualmente/ }).first()).toBeVisible();
+  await panel.locator('.sar-tab', { hasText: 'Todo' }).click();
+  await expect(panel.locator('.sar-filter-band')).toHaveValue('all');
+  await panel.locator('.sar-tab', { hasText: 'Listas' }).click();
+  await expect(panel.locator('.sar-filter-band')).toHaveValue('ready');
+  await panel.locator('.sar-tab', { hasText: 'Decisión' }).click();
+  await expect(panel.locator('.sar-filter-band')).toHaveValue('decision');
+
+  const cardCount = await panel.locator('.sar-card').count();
+  if (cardCount > 0) {
+    await expect(panel.locator('.sar-card').first().locator('.sar-row-check')).toBeVisible();
+    await expect(panel.locator('.sar-card').first().locator('.sar-badge')).toBeVisible();
+    await expect(panel.locator('.sar-card').first().locator('.sar-review-btn')).toContainText(/Detalle|Ver detalle/);
+  }
 
   const visibleText = await panel.evaluate((el) => el.innerText);
   if (await panel.locator('.sar-review-btn').count() > 0) {
@@ -204,16 +238,49 @@ async function openReviewPanel(page, moduleKey) {
 
 test.describe('Semi-auto review panel', () => {
   test.describe.configure({ timeout: 240000 });
+  let restoration;
 
   test.beforeEach(async ({ page }) => {
+    restoration = new E2ERestorationScope(
+      new DatabaseSnapshot(),
+      new ScopedFileSnapshot([]),
+    );
+    restoration.capture();
     runtimeErrorsByPage.set(page, installErrorCollectors(page));
     await loginAndSelectProject(page, project);
     await changeWeek(page, project.maxWeek, '/programacion-semanal');
   });
 
   test.afterEach(async ({ page }) => {
+    const cleanupErrors = [];
     const errors = runtimeErrorsByPage.get(page);
-    if (errors) assertNoRuntimeErrors(errors);
+    try {
+      if (errors) assertNoRuntimeErrors(errors);
+    } catch (error) {
+      cleanupErrors.push(error instanceof Error ? error : new Error(String(error)));
+    }
+    try {
+      await logout(page);
+    } catch (error) {
+      cleanupErrors.push(error instanceof Error ? error : new Error(String(error)));
+    }
+    if (restoration) {
+      try {
+        const receipt = restoration.restore();
+        console.info(`E2E_RESTORATION_RECEIPT ${JSON.stringify(receipt)}`);
+      } catch (error) {
+        cleanupErrors.push(error instanceof Error ? error : new Error(String(error)));
+      }
+      try {
+        restoration.dispose();
+      } catch (error) {
+        cleanupErrors.push(error instanceof Error ? error : new Error(String(error)));
+      }
+      restoration = null;
+    }
+    if (cleanupErrors.length > 0) {
+      throw new AggregateError(cleanupErrors, 'Semi-auto review E2E cleanup failed.');
+    }
   });
 
   for (const module of modules) {
@@ -238,7 +305,7 @@ test.describe('Semi-auto review panel', () => {
     }
   });
 
-  test('listado create activity review uses source selector and multiple modalities', async ({ page }) => {
+  test('listado create activity review uses source selector and multiple modalities', async ({ page }, testInfo) => {
     await page.goto('/listado-actividades?semana=1', { waitUntil: 'networkidle', timeout: 30000 });
     await openReviewPanel(page, 'listado-actividades');
 
@@ -281,14 +348,20 @@ test.describe('Semi-auto review panel', () => {
     await expect(oc).toBeVisible();
 
     if (await si.isChecked()) {
+      await expect(mo).toBeDisabled();
+      await expect(suministro).toBeDisabled();
+      await expect(oc).toBeDisabled();
       await si.uncheck();
+      await expect(mo).toBeEnabled();
+      await expect(suministro).toBeEnabled();
+      await expect(oc).toBeEnabled();
     }
     await mo.check();
     await suministro.check();
     await expect(si).toBeDisabled();
     await expect(card.locator('.sar-modality-value')).toHaveValue('MO,S');
     await card.screenshot({
-      path: 'docs/qa/evidence/listado-fuentes-contratacion-20260702/listado-selector-modalidad.png',
+      path: testInfo.outputPath('listado-selector-modalidad.png'),
     });
 
     const visibleText = await panel.evaluate((el) => el.innerText);

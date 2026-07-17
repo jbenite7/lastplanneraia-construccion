@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "designSystemVersion": "1.0.0",
+  "provenanceManifest": "goal-provenance.json",
+  "manifests": [
+    "laboratory.json",
+    "programa-general.json"
+  ],
+  "sharedHeadConsumers": [
+    "views/contratos/contratos.view.php",
+    "views/control-cambios/controlCambios.view.php",
+    "views/dashboard/escalamientos.php",
+    "views/indicadores/indicadores.view.php",
+    "views/listado-actividades/listadoActividades.view.php",
+    "views/pdc/pdc.view.php",
+    "views/profesionales/profesionales.view.php",
+    "views/programa-general-actualizar/programaGeneralActualizar.view.php",
+    "views/programa-general/programa_general.view.php",
+    "views/programacion-intermedia/programacion_intermedia.view.php",
+    "views/programacion-semanal/CIC.view.php",
+    "views/programacion-semanal/CNC.view.php",
+    "views/programacion-semanal/CNP.view.php",
+    "views/programacion-semanal/programacion_semanal.view.php",
+    "views/subcontratistas/subcontratistas.view.php"
+  ],
+  "modules": [
+    {
+      "moduleId": "programa-general",
+      "status": "pilot",
+      "manifest": "programa-general.json"
+    },
+    {
+      "moduleId": "auth",
+      "status": "inventory-only",
+      "manifest": null
+    },
+    {
+      "moduleId": "projects",
+      "status": "inventory-only",
+      "manifest": null
+    },
+    {
+      "moduleId": "programacion-intermedia",
+      "status": "inventory-only",
+      "manifest": null
+    },
+    {
+      "moduleId": "programacion-semanal",
+      "status": "inventory-only",
+      "manifest": null
+    },
+    {
+      "moduleId": "listado-actividades",
+      "status": "inventory-only",
+      "manifest": null
+    },
+    {
+      "moduleId": "contratos",
+      "status": "inventory-only",
+      "manifest": null
+    },
+    {
+      "moduleId": "pdc",
+      "status": "inventory-only",
+      "manifest": null
+    },
+    {
+      "moduleId": "bi-runtime",
+      "status": "deferred-last",
+      "manifest": null
+    }
+  ]
+}

@@ -9,7 +9,8 @@
     <title>Dashboard de Escalamientos AIA</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.10.1/jquery-ui.js"></script>
-    <script type="text/javascript" src="/js/linksComunesHead2.js?v=20260521" charset="utf-8"></script>
+    <?= \App\View\Components\DesignSystemHeadComponent::render() ?>
+    <script type="text/javascript" src="/js/linksComunesHead2.js?v=20260711foundation5" charset="utf-8"></script>
     
     <!-- CSS 2026 Moderno e Interfaz Mobile-First -->
     <style>
@@ -237,7 +238,7 @@
     </style>
     
     <!-- CSS del drawer que ya creamos en el Ciclo 2 -->
-    <link rel="stylesheet" href="/css/handsontable-module.css?v=20260522d" />
+    <link rel="stylesheet" href="/css/handsontable-module.css?v=20260711foundation5" />
 </head>
 <body class="pi-page">
 

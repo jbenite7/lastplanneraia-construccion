@@ -3,6 +3,7 @@
 namespace App\Controllers\Programacion;
 
 use App\Controllers\BaseController;
+use App\Security\CsrfTokenManager;
 use App\Services\ProjectLandingService;
 
 use TableResolver;
@@ -20,6 +21,8 @@ class ProgramaGeneralController extends BaseController
         $permiso = $vars['permiso'] ?? '';
         $pdcActivo = $vars['pdcActivo'] ?? '';
         $area = $vars['area'] ?? 'Construccion';
+        $initialFilterQuery = $this->buildProgramaGeneralFilterQuery();
+        $csrfToken = CsrfTokenManager::generate('programa_general_save');
 
         $maxSemana = 0;
         $fechaInicioSem = '';
@@ -148,6 +151,18 @@ class ProgramaGeneralController extends BaseController
         }
 
         require PROJECT_ROOT . '/views/programa-general/programa_general.view.php';
+    }
+
+    private function buildProgramaGeneralFilterQuery(): string
+    {
+        $query = '';
+        foreach (['lookahead', 'no_iniciadas', 'a_tiempo', 'atrasadas', 'terminadas'] as $key) {
+            if (!empty($_SESSION[$key]) && (int) $_SESSION[$key] === 1) {
+                $query .= '&activa_' . $key . '=1';
+            }
+        }
+
+        return $query;
     }
 
     private function healWeeklyContext(): void

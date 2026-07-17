@@ -3,7 +3,8 @@
 <head id="head">
 	<meta charset="UTF-8">
 	<!--Script cque va al archivo linksComunesHead2.js-->
-	<script type="text/javascript" src="/js/linksComunesHead2.js?v=piStateColorsFresh" charset="utf-8"></script>
+	<?= \App\View\Components\DesignSystemHeadComponent::render() ?>
+	<script type="text/javascript" src="/js/linksComunesHead2.js?v=20260711foundation5" charset="utf-8"></script>
 </head>
 
 <!--Etiqueta superior-->
@@ -32,6 +33,7 @@
 				<button id="btn_informeProgramaGeneral" type="button" class="btn-pdc-modern" onclick="listar('informeProgramaGeneral')" disabled>Programa General</button>
 				<button id="btn_informeProgramacionIntermedia" type="button" class="btn-pdc-modern" onclick="listar('informeProgramacionIntermedia')">Liberación de Restricciones</button>
 				<button id="btn_informeProgramacionSemanal" type="button" class="btn-pdc-modern" onclick="listar('informeProgramacionSemanal')">Programación Semanal</button>
+				<?= \App\View\Components\BiAccessComponent::renderLink('indicadores', 'BI Curva S') ?>
 			</div>
 		</div>
 	</div>
@@ -72,7 +74,9 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
 	<!--Script con la funcion que carga los datos generales del archivo-->
 	<script>window.__PROJECT_AREA__ = <?php echo json_encode($_SESSION['area'] ?? 'Construccion'); ?>;</script>
+	<?= \App\View\Components\BiAccessComponent::renderBootConfig('indicadores') ?>
 	<script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js" charset="utf-8"></script>
+	<script type="text/javascript" src="/js/modules/bi-access.js" charset="utf-8"></script>
 	<!--Script con las funciones NUEVA SEMANA y ELIMINAR SEMANA-->
 	<script type="text/javascript" src="/js/funcionesGenerales6.js" charset="utf-8"></script>
 	<!-- Bloquear el click derecho-->
@@ -131,14 +135,21 @@
 
 			console.log(url);
 			var informe = '<iframe width="100%" height="100%" src=\''+ url +'\' frameborder="0" style="border:0" allowfullscreen></iframe>';
+			var biCurveSLink = <?php echo json_encode(
+                \App\View\Components\BiAccessComponent::renderLink('indicadores', 'BI Curva S'),
+                JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES,
+            ); ?>;
 
-			var filaBotones = '<button id="btn_informeFichaResumen" type="button" class="btn-pdc-modern" onclick="listar(\'informeFichaResumen\')">Resumen</button><button id="btn_informeProgramaGeneral" type="button" class="btn-pdc-modern" onclick="listar(\'informeProgramaGeneral\')">Programa General</button><button id="btn_informeProgramacionIntermedia" type="button" class="btn-pdc-modern" onclick="listar(\'informeProgramacionIntermedia\')">Liberación de Restricciones</button><button id="btn_informeProgramacionSemanal" type="button" class="btn-pdc-modern" onclick="listar(\'informeProgramacionSemanal\')">Programación Semanal</button><button id="btn_informePDC" type="button" class="btn-pdc-modern" onclick="listar(\'informePDC\')">Plan de Compras</button><button id="btn_informeProveedores" type="button" class="btn-pdc-modern" onclick="listar(\'informeProveedores\')">Calificación de Subcontratistas</button>';
+			var filaBotones = '<button id="btn_informeFichaResumen" type="button" class="btn-pdc-modern" onclick="listar(\'informeFichaResumen\')">Resumen</button><button id="btn_informeProgramaGeneral" type="button" class="btn-pdc-modern" onclick="listar(\'informeProgramaGeneral\')">Programa General</button><button id="btn_informeProgramacionIntermedia" type="button" class="btn-pdc-modern" onclick="listar(\'informeProgramacionIntermedia\')">Liberación de Restricciones</button><button id="btn_informeProgramacionSemanal" type="button" class="btn-pdc-modern" onclick="listar(\'informeProgramacionSemanal\')">Programación Semanal</button><button id="btn_informePDC" type="button" class="btn-pdc-modern" onclick="listar(\'informePDC\')">Plan de Compras</button><button id="btn_informeProveedores" type="button" class="btn-pdc-modern" onclick="listar(\'informeProveedores\')">Calificación de Subcontratistas</button>' + biCurveSLink;
 
 
 			document.getElementById('contenedorInformeDataStudio').innerHTML = informe;
 			document.getElementById('contenedorInformeDataStudio').style.height = (alturahoja - posicionInicioInforme - 50) + "px";
 
 			document.getElementById('grupo_botones_informes').innerHTML = filaBotones;
+			if (window.BiAccess) {
+				window.BiAccess.syncAccessLinks();
+			}
 			// document.getElementById('btn_programacionSemanal').classList.remove("active");
 			// document.getElementById('btn_programacionIntermedia').classList.remove("active");
 			// document.getElementById('btn_programaGeneral').classList.remove("active");

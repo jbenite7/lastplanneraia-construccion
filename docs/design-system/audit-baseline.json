@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "generatedAt": "2026-07-08T23:17:54.803Z",
+  "totals": {
+    "hardcoded-hex": 1444,
+    "hardcoded-color-function": 670,
+    "embedded-style-block": 14,
+    "hardcoded-radius": 226,
+    "inline-style": 491,
+    "forbidden-font-roboto": 6,
+    "css-outside-layer": 1076,
+    "unauthorized-important": 2263,
+    "raw-token-in-module": 737,
+    "global-module-selector": 93,
+    "local-vendor-override": 241,
+    "duplicate-canonical-primitive": 147,
+    "off-scale-spacing": 793,
+    "off-scale-typography": 435,
+    "off-scale-shadow": 122
+  },
+  "note": "Baseline de deuda visual legacy. Reducir por modulo migrado; no aumentarlo sin justificacion."
+}

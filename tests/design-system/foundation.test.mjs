@@ -1,0 +1,229 @@
+import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
+import { readFile } from 'node:fs/promises';
+import { statSync } from 'node:fs';
+import test from 'node:test';
+
+const read = (path) => readFile(new URL(`../../${path}`, import.meta.url), 'utf8');
+
+test('semantic tokens cover every governed foundation', async () => {
+  const css = await read('public/css/tokens.css');
+  for (const token of [
+    '--ds-space-', '--ds-type-', '--ds-z-', '--ds-breakpoint-',
+    '--ds-density-compact-', '--ds-density-touch-', '--ds-motion-',
+  ]) {
+    assert.match(css, new RegExp(token), `missing ${token}`);
+  }
+});
+
+test('responsive density defaults are encoded in the shared token API', async () => {
+  const css = await read('public/css/tokens.css');
+  assert.match(css, /--ds-density-active-visual:\s*var\(--ds-density-touch-control\)/);
+  assert.match(css, /@media\s*\(min-width:\s*75rem\)[\s\S]*--ds-density-active-visual:\s*var\(--ds-density-compact-visual\)/);
+  assert.match(css, /--ds-density-active-control:\s*var\(--ds-target-min\)/);
+  assert.match(css, /\[data-density='touch'\][\s\S]*--ds-density-active-gap:\s*var\(--ds-density-touch-gap\)/);
+  assert.match(css, /\[data-density='compact'\][\s\S]*--ds-density-active-gap:\s*var\(--ds-density-compact-gap\)/);
+});
+
+test('the foundations specimen explains its internal governance terms', async () => {
+  const contract = JSON.parse(await read('docs/design-system/homologation.json'));
+  const foundations = contract.families.find(({ id }) => id === 'foundations');
+  const view = await read('views/design-system/lab.view.php');
+  assert.equal(foundations.label, 'Fundamentos de marca');
+  assert.match(foundations.description, /color|tipograf/i);
+  assert.match(view, /En revisión/);
+  assert.doesNotMatch(view, />candidate</);
+});
+
+test('the rendered foundations specimen does not inherit approval from a different baseline', async () => {
+  const contract = JSON.parse(await read('docs/design-system/homologation.json'));
+  const foundations = contract.families.find(({ id }) => id === 'foundations');
+  const active = foundations.candidates.find(({ id }) => id === foundations.activeCandidate);
+  const view = await read('views/design-system/lab.view.php');
+
+  assert.equal(foundations.activeCandidate, 'foundation-inventory-action-color');
+  assert.equal(active?.status, 'candidate');
+  assert.match(view, /data-active-candidate/);
+  assert.match(view, /data-family-status/);
+});
+
+test('the foundations card follows the brand manual spacing', async () => {
+  const css = await read('public/css/design-system/lab.css');
+  assert.match(css, /\.ds-lab__family\s*{[^}]*padding:\s*var\(--ds-space-4\)/s);
+  assert.match(css, /min-width:\s*48\.01rem[\s\S]*\.ds-lab__family\s*{[^}]*padding:\s*var\(--ds-space-6\)/);
+});
+
+test('the foundations specimen separates AIA brand domains from operational states', async () => {
+  const tokens = await read('public/css/tokens.css');
+  const specimen = await read('views/design-system/families/foundations.php');
+  for (const token of [
+    '--ds-color-domain-corporate', '--ds-color-domain-construction',
+    '--ds-color-domain-real-estate', '--ds-color-domain-architecture',
+  ]) assert.match(tokens, new RegExp(token), `missing ${token}`);
+  assert.match(specimen, /Paleta de marca/);
+  assert.match(specimen, /Corporativo/);
+  assert.match(specimen, /Inmobiliario/);
+  assert.match(specimen, /Arquitectura/);
+  assert.doesNotMatch(specimen, />Éxito</);
+});
+
+test('every brand domain has an accessible dark-appearance variant', async () => {
+  const css = await read('public/css/tokens.css');
+  const variants = ['#6c9077', '#c57247', '#2caa9f', '#877cd1'];
+  const luminance = (hex) => {
+    const channels = hex.match(/[\da-f]{2}/gi).map((value) => parseInt(value, 16) / 255)
+      .map((value) => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4);
+    return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+  };
+  const label = luminance('#141c18');
+  for (const color of variants) {
+    assert.match(css, new RegExp(color, 'i'));
+    const ratio = (luminance(color) + 0.05) / (label + 0.05);
+    assert.ok(ratio >= 4.5, `${color} contrast is ${ratio.toFixed(2)}:1`);
+  }
+});
+
+test('primary actions remap to the canonical corporate color in each theme', async () => {
+  const css = await read('public/css/aia-design-system.css');
+  assert.match(css, /\[data-aia-theme='linen'\][\s\S]*--ds-active-action-primary:\s*var\(--ds-color-domain-corporate\)/);
+  assert.match(css, /\[data-aia-theme='dark'\][\s\S]*--ds-active-action-primary:\s*var\(--ds-color-domain-corporate-on-dark\)/);
+  assert.match(css, /\.aia-btn\s*\{[\s\S]*background:\s*var\(--ds-active-action-primary\)/);
+  assert.match(css, /\.aia-btn\s*\{[\s\S]*color:\s*var\(--ds-active-action-text\)/);
+});
+
+test('the entrypoint declares the deterministic cascade', async () => {
+  const css = await read('public/css/aia-design-system.css');
+  assert.match(css, /^@layer reset, vendor, theme, base, layout, components, utilities, module, legacy-overrides;/);
+  assert.match(css, /bootstrap\.min\.css'\) layer\(vendor\);/);
+  assert.match(css, /styles\.css\?v=\d+\.\d+\.\d+'\) layer\(module\);/);
+  assert.match(css, /@import url\('\.\/design-system\/foundation\.css\?v=\d+\.\d+\.\d+'\);/);
+  assert.match(css, /@import url\('\.\/design-system\/adapters\/legacy-bridge\.css\?v=\d+\.\d+\.\d+'\);/);
+});
+
+test('the common loader keeps JavaScript compatibility only', async () => {
+  const js = await read('public/js/linksComunesHead2.js');
+  assert.doesNotMatch(js, /injectStylesheet|createElement\(['"]style['"]\)/);
+  assert.match(js, /loadScript\('/);
+});
+
+test('the PHP head component owns static shared assets', async () => {
+  const php = await read('src/View/Components/DesignSystemHeadComponent.php');
+  assert.match(php, /final class DesignSystemHeadComponent/);
+  assert.match(php, /public static function render/);
+  assert.match(php, /\/css\/aia-design-system\.css/);
+  assert.match(php, /\/css\/tokens\.css/);
+  assert.match(php, /vendor-datatables-legacy\.css/);
+  assert.doesNotMatch(php, /\/public\/vendor\/bootstrap\/bootstrap\.min\.css/);
+  assert.doesNotMatch(php, /https?:\/\//);
+});
+
+test('the shared head applies the persisted theme before the first stylesheet can paint', async () => {
+  const [php, bootstrap] = await Promise.all([
+    read('src/View/Components/DesignSystemHeadComponent.php'),
+    read('public/js/modules/aia_ui/theme-bootstrap.js'),
+  ]);
+  assert.match(php, /theme-bootstrap\.js/);
+  assert.match(php, /renderScript/);
+  assert.ok(
+    php.indexOf('theme-bootstrap.js') < php.indexOf('/css/aia-design-system.css'),
+    'theme bootstrap must precede the design-system stylesheet',
+  );
+  assert.match(bootstrap, /localStorage\.getItem\(['"]aia-theme['"]\)/);
+  assert.match(bootstrap, /storedTheme === ['"]light['"] \? ['"]linen['"]/);
+  assert.match(bootstrap, /:\s*['"]dark['"]/);
+  assert.match(bootstrap, /setAttribute\(['"]data-aia-theme['"], theme\)/);
+  assert.match(bootstrap, /classList\.toggle\(['"]aia-theme-dark['"], theme === ['"]dark['"]\)/);
+  assert.doesNotMatch(bootstrap, /DOMContentLoaded|requestAnimationFrame|setTimeout/);
+
+  const render = 'require "src/View/Components/DesignSystemHeadComponent.php";'
+    + ' echo App\\View\\Components\\DesignSystemHeadComponent::render(true);';
+  const html = execFileSync('php', ['-r', render], { cwd: new URL('../..', import.meta.url) }).toString();
+  assert.match(html, /<script src="\/js\/modules\/aia_ui\/theme-bootstrap\.js\?v=\d+"><\/script>/);
+  assert.ok(
+    html.indexOf('theme-bootstrap.js') < html.indexOf('aia-design-system.css'),
+    'rendered bootstrap must precede the rendered design-system stylesheet',
+  );
+});
+
+test('versioned tokens are not hidden behind an unversioned CSS import', async () => {
+  const css = await read('public/css/aia-design-system.css');
+  assert.doesNotMatch(css, /@import url\('\.\/tokens\.css'\)/);
+});
+
+test('local entrypoint imports share the published design-system version', async () => {
+  const css = await read('public/css/aia-design-system.css');
+  const { version } = JSON.parse(await read('docs/design-system/version.json'));
+  const imports = [...css.matchAll(/@import url\('\.\/(?!\.\.\/)([^']+)'\)/g)]
+    .map(([, url]) => url);
+  assert.ok(imports.length > 0, 'expected local design-system imports');
+  for (const url of imports) {
+    assert.match(url, new RegExp(`\\?v=${version.replaceAll('.', '\\.')}$`), `unversioned import: ${url}`);
+  }
+});
+
+test('stylesheet versions follow nested CSS changes', () => {
+  const php = 'require "src/View/Components/DesignSystemHeadComponent.php";'
+    + ' echo App\\View\\Components\\DesignSystemHeadComponent::render(true);';
+  const html = execFileSync('php', ['-r', php], { cwd: new URL('../..', import.meta.url) }).toString();
+  const version = Number(html.match(/aia-design-system\.css\?v=(\d+)/)?.[1]);
+  const tokensMtime = Math.floor(statSync(new URL('../../public/css/tokens.css', import.meta.url)).mtimeMs / 1000);
+  assert.ok(version >= tokensMtime, `entrypoint ${version} is older than tokens ${tokensMtime}`);
+});
+
+test('the laboratory stylesheet has its own cache version', async () => {
+  const view = await read('views/design-system/lab.view.php');
+  assert.match(view, /DesignSystemHeadComponent::renderStylesheet\('\/css\/design-system\/lab\.css'\)/);
+});
+
+test('the laboratory document explicitly enables vertical scrolling', async () => {
+  const css = await read('public/css/design-system/lab.css');
+  assert.match(css, /\.ds-lab\s*{[^}]*overflow-y:\s*auto/s);
+});
+
+test('legacy common-head views render the static head component', async () => {
+  const inventory = JSON.parse(await read('docs/design-system/manifests/inventory.json'));
+  const views = inventory.sharedHeadConsumers;
+  assert.equal(views.length, 15);
+  for (const view of views) {
+    assert.match(await read(view), /DesignSystemHeadComponent::render/);
+  }
+});
+
+test('shared JavaScript does not generate visual CSS', async () => {
+  const notices = await read('public/js/core/AiaAlertInterceptor.js');
+  const reviews = await read('public/js/modules/semi_auto_review.js');
+  assert.doesNotMatch(notices, /injectStyles|createElement\(['"]style['"]\)/);
+  assert.doesNotMatch(reviews, /ensureStyles|<style\b|appendTo\(['"]head['"]\)/);
+  const drawer = await read('public/js/modules/lps_drawer.js');
+  assert.doesNotMatch(drawer, /innerHTML\s*=\s*[`'"][^\n]*style=/);
+});
+
+test('shared generated styles have governed adapter files', async () => {
+  const css = await read('public/css/aia-design-system.css');
+  for (const adapter of [
+    'sweetalert2', 'semi-auto-review', 'lps-drawer',
+  ]) {
+    assert.match(css, new RegExp(`adapters\\/${adapter}\\.css`));
+    await read(`public/css/design-system/adapters/${adapter}.css`);
+  }
+});
+
+test('canonical vendor adapters are loaded by the shared entrypoint', async () => {
+  const css = await read('public/css/aia-design-system.css');
+  for (const adapter of ['handsontable', 'select2']) {
+    assert.match(css, new RegExp(`adapters\\/${adapter}\\.css`));
+    const adapterCss = await read(`public/css/design-system/adapters/${adapter}.css`);
+    assert.match(adapterCss, /@layer components/);
+    assert.match(adapterCss, /--ds-active-/);
+  }
+});
+
+test('the approved page header loads a token-only canonical stylesheet', async () => {
+  const entrypoint = await read('public/css/aia-design-system.css');
+  assert.match(entrypoint, /components\/page-header\.css/);
+  const css = await read('public/css/design-system/components/page-header.css');
+  assert.match(css, /@layer components/);
+  assert.match(css, /\.aia-page-header/);
+  assert.match(css, /--ds-active-text-primary/);
+  assert.doesNotMatch(css, /#[\da-f]{3,8}\b|\b(?:px|rem)\b/i);
+});

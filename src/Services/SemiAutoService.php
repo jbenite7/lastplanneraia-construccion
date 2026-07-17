@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use DomainException;
+use InvalidArgumentException;
 use App\Support\ActivityMatcher;
 use App\Support\FamilyCatalogStatusResolver;
 use App\Support\OperationalFamilyPolicy;
@@ -203,55 +205,79 @@ class SemiAutoService
         $module = $this->normalizeModule($module);
         $projectId = (int) ($context['projectId'] ?? 0);
         $run = $this->loadRun($runId, $projectId, $module);
-        $stmt = $this->db->query(
+        $loadDecisions = function (string $decisionRunId) use ($projectId, $module): array {
+            $stmt = $this->db->query(
             "SELECT * FROM semi_auto_decisions
              WHERE project_id = ? AND module = ? AND run_id = ? AND decision = 'apply'
              ORDER BY id DESC",
-            [$projectId, $module, $runId],
-        );
-        $decisions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                [$projectId, $module, $decisionRunId],
+            );
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        };
+        $decisions = $loadDecisions($runId);
+
+        // Un preview generado después de recargar no debe convertirse en un
+        // "undo" exitoso de cero cambios. Si el cliente conserva ese run_id,
+        // resuelve la última aplicación real de la misma semana y proyecto.
+        if ($decisions === [] && ($run['status'] ?? '') === 'previewed') {
+            $fallback = $this->db->query(
+                "SELECT r.run_id
+                 FROM semi_auto_runs r
+                 WHERE r.project_id = ? AND r.module = ? AND r.semana = ?
+                   AND r.status IN ('applied', 'applied_with_errors')
+                   AND EXISTS (
+                     SELECT 1 FROM semi_auto_decisions d
+                     WHERE d.project_id = r.project_id AND d.module = r.module
+                       AND d.run_id = r.run_id AND d.decision = 'apply'
+                   )
+                 ORDER BY r.id DESC
+                 LIMIT 1",
+                [$projectId, $module, (int) ($run['semana'] ?? 0)],
+            )->fetch(PDO::FETCH_ASSOC);
+            if (!empty($fallback['run_id'])) {
+                $runId = (string) $fallback['run_id'];
+                $run = $this->loadRun($runId, $projectId, $module);
+                $decisions = $loadDecisions($runId);
+            }
+        }
+
+        if ($decisions === []) {
+            throw new DomainException('No existe una aplicación con cambios disponibles para deshacer.');
+        }
+
+        if (($run['status'] ?? '') === 'undone') {
+            throw new DomainException('La aplicación seleccionada ya fue deshecha.');
+        }
 
         $reverted = 0;
-        $errors = 0;
+        if ($module === self::MODULE_LISTADO) {
+            $this->ensureActivityProgramSourcesTable();
+        }
         $this->db->beginTransaction();
         try {
             foreach ($decisions as $decision) {
-                try {
-                    $this->undoDecision($module, $projectId, (int) $run['semana'], $decision);
-                    $this->recordDecision(
-                        $projectId,
-                        $module,
-                        $runId,
-                        $decision['suggestion_id'] ?? null,
-                        'undo',
-                        $this->decodeJson($decision['after_payload']),
-                        $this->decodeJson($decision['before_payload']),
-                        $this->decodeJson($decision['result_payload']),
-                    );
-                    if (!empty($decision['suggestion_id'])) {
-                        $this->db->query(
-                            "UPDATE semi_auto_suggestions SET status = 'undone' WHERE suggestion_id = ? AND project_id = ?",
-                            [$decision['suggestion_id'], $projectId],
-                        );
-                    }
-                    $reverted++;
-                } catch (Throwable $e) {
-                    $errors++;
-                    $this->recordDecision(
-                        $projectId,
-                        $module,
-                        $runId,
-                        $decision['suggestion_id'] ?? null,
-                        'undo_error',
-                        $this->decodeJson($decision['after_payload']),
-                        $this->decodeJson($decision['before_payload']),
-                        ['message' => $e->getMessage()],
+                $this->undoDecision($module, $projectId, (int) $run['semana'], $decision);
+                $this->recordDecision(
+                    $projectId,
+                    $module,
+                    $runId,
+                    $decision['suggestion_id'] ?? null,
+                    'undo',
+                    $this->decodeJson($decision['after_payload']),
+                    $this->decodeJson($decision['before_payload']),
+                    $this->decodeJson($decision['result_payload']),
+                );
+                if (!empty($decision['suggestion_id'])) {
+                    $this->db->query(
+                        "UPDATE semi_auto_suggestions SET status = 'undone' WHERE suggestion_id = ? AND project_id = ?",
+                        [$decision['suggestion_id'], $projectId],
                     );
                 }
+                $reverted++;
             }
             $this->db->query(
-                "UPDATE semi_auto_runs SET status = ? WHERE run_id = ? AND project_id = ?",
-                [$errors > 0 ? 'undo_with_errors' : 'undone', $runId, $projectId],
+                "UPDATE semi_auto_runs SET status = 'undone' WHERE run_id = ? AND project_id = ?",
+                [$runId, $projectId],
             );
             $this->db->commit();
         } catch (Throwable $e) {
@@ -265,7 +291,7 @@ class SemiAutoService
             'respuesta' => 'BIEN',
             'run_id' => $runId,
             'revertidas' => $reverted,
-            'errores' => $errors,
+            'errores' => 0,
         ];
     }
 
@@ -1636,7 +1662,10 @@ class SemiAutoService
                 continue;
             }
             $updates[] = "`{$field}` = ?";
-            $params[] = $fields[$field] === '' ? null : $fields[$field];
+            $value = $fields[$field];
+            $params[] = str_starts_with($field, 'cantidad') && ($value === null || $value === '')
+                ? 1
+                : ($value === '' ? null : $value);
         }
         $updates[] = "ultimo_auto_definir = NOW()";
         $params[] = $projectId;
@@ -2037,6 +2066,9 @@ class SemiAutoService
             }
             if ((string) $suggestion['action'] === 'create_activity' && $field === 'tipoContrato') {
                 $value = $this->normalizeListadoModalities($value);
+            }
+            if ((string) $suggestion['action'] === 'update_contracts' && $value !== '' && preg_match('/^cantidad(SI|S|MO|OC)\d$/', (string) $field)) {
+                $value = max(1, (int) $value);
             }
             $fields[$field] = $value === '' ? null : $value;
             if (isset($applyPayload['fields']) && is_array($applyPayload['fields'])) {
@@ -2443,6 +2475,11 @@ class SemiAutoService
     private function contractProposedFields(array $activity, string $tipoContrato, array $packages, float $confidence, int $sourceGroupCount = 1): array
     {
         $fields = array_fill_keys($this->contractFieldNames(), null);
+        foreach (array_keys($fields) as $field) {
+            if (str_starts_with($field, 'cantidad')) {
+                $fields[$field] = 1;
+            }
+        }
         $fields['tipoContrato'] = $this->modalityCodeFromPackages($tipoContrato, $packages);
         $fields['fechaInicioProyectada'] = $this->normalizeDate($activity['fechaInicioProyectada'] ?? ($activity['fechaInicio'] ?? null));
         $fields['confianza_deteccion'] = $confidence;

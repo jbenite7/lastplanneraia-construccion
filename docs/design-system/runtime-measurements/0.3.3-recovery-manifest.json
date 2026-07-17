@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "kind": "retrospective-recovery-receipt",
+  "designSystemVersion": "0.3.3",
+  "status": "retrospective-incomplete",
+  "recordedAt": "2026-07-14T10:31:43.756Z",
+  "measurementPath": "docs/design-system/runtime-measurements/0.3.3-retrospective.json",
+  "measurementSha256": "a4ded630b0a5de131aa8ef03a5722a1a23b0c7d0c4b8da2314bc373c2b0bd626",
+  "assetInventorySha256": "7fb389c17369a4cf164bbd0af6ca6e9984d735a641edfac8554b928c8d262769",
+  "metricsSha256": "244dcfea79596e016d3cc4c569e74afd2564fd6111bbfe0abe55351cbac8d1da",
+  "rawSamplesPreserved": false,
+  "versionEvidence": "docs/design-system/version.json recorded 0.3.3 in the local checkpoint metadata",
+  "sourceHistory": {
+    "originCommitAvailable": false,
+    "recoveryFromOriginGitHistory": false,
+    "recordedLocalCheckpointTree": "25f2787332117ed93416ffc42e6fac8b037dce94",
+    "note": "Recorded local checkpoint metadata only; this retrospective source is not recoverable from origin Git history."
+  }
+}

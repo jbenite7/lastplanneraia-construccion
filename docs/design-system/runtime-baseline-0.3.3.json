@@ -1,0 +1,54 @@
+{
+  "$schema": "./runtime-budget.schema.json",
+  "schemaVersion": 1,
+  "kind": "baseline",
+  "measurementKind": "retrospective",
+  "status": "approved",
+  "designSystemVersion": "0.3.3",
+  "route": "/programa-general",
+  "viewport": "1440x900",
+  "theme": "dark",
+  "density": "compact",
+  "fixture": "sanitized-pilot-v1",
+  "sourceRef": null,
+  "sourceTreeHash": "7fb389c17369a4cf164bbd0af6ca6e9984d735a641edfac8554b928c8d262769",
+  "recordedAt": "2026-07-14T10:31:43.756Z",
+  "approval": {
+    "status": "approved",
+    "approvedBy": "user",
+    "approvalRef": "user-approved-runtime-budget-caps-2026-07-17"
+  },
+  "recovery": {
+    "manifestPath": "docs/design-system/runtime-measurements/0.3.3-recovery-manifest.json",
+    "manifestSha256": "7ef8c027b744ebbc3e420c3ef5da2ec3d5b5c292191aff2f40fa84e9e10ee7b4",
+    "measurementPath": "docs/design-system/runtime-measurements/0.3.3-retrospective.json",
+    "measurementSha256": "a4ded630b0a5de131aa8ef03a5722a1a23b0c7d0c4b8da2314bc373c2b0bd626"
+  },
+  "metrics": {
+    "cssGzipBytes": 136933,
+    "jsGzipBytes": 650886,
+    "adapterAssets": [
+      "/css/design-system/adapters/handsontable.css",
+      "/css/design-system/adapters/legacy-bridge.css",
+      "/css/design-system/adapters/lps-drawer.css",
+      "/css/design-system/adapters/programa-general-handsontable.css",
+      "/css/design-system/adapters/select2.css",
+      "/css/design-system/adapters/semi-auto-review.css",
+      "/css/design-system/adapters/sweetalert2.css"
+    ],
+    "duplicateRequestCount": 3,
+    "themeFlashCount": 1,
+    "initializationMs": 991,
+    "handsontableInteractionMs": 280.7,
+    "laboratoryAssets": []
+  },
+  "tolerances": {
+    "cssGzipBytes": 2048,
+    "jsGzipBytes": 4096,
+    "addedAdapterAssets": 0,
+    "duplicateRequestCount": 0,
+    "themeFlashCount": 0,
+    "initializationMs": 110,
+    "handsontableInteractionMs": 45
+  }
+}

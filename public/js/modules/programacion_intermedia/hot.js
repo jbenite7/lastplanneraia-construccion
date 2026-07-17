@@ -14,6 +14,7 @@
   // Exponer flag para que el editor Select2 pueda señalar navegación pendiente
   window.__piPendingNav = false;
   var masterData = [];
+  var visibleRows = [];
   var activeFilters = [];
   var sharedSelectionIndex = {};
   var lastSharedPreviewKey = null;
@@ -816,7 +817,7 @@
   }
 
   function applyRowClassesToDOM(instance) {
-    if (!instance) return;
+    if (!instance || !instance.rootElement || instance.rootElement.getClientRects().length === 0) return;
     var data = instance.getSourceData();
     if (!data) return;
     for (var i = 0; i < data.length; i++) {
@@ -2974,6 +2975,38 @@
     return resolved;
   }
 
+  function syncRenderedTableWidth(instance) {
+    var hotInstance = instance || hot;
+    var container = document.getElementById('hot-container');
+    if (!hotInstance || !container || typeof hotInstance.countCols !== 'function' || typeof hotInstance.getColWidth !== 'function') {
+      return;
+    }
+
+    var totalWidth = 0;
+    var columnCount = hotInstance.countCols();
+    for (var col = 0; col < columnCount; col++) {
+      totalWidth += Number(hotInstance.getColWidth(col)) || 0;
+    }
+
+    totalWidth = Math.max(Math.ceil(totalWidth), getContainerAvailableWidth());
+    if (!Number.isFinite(totalWidth) || totalWidth <= 0) {
+      return;
+    }
+
+    var width = totalWidth + 'px';
+    container.classList.add('hot-fixed-columns');
+    container.style.setProperty('--hot-table-width', width);
+
+    var nodes = container.querySelectorAll('.handsontable table.htCore, .handsontable .wtHider, .handsontable .wtSpreader');
+    Array.prototype.forEach.call(nodes, function (node) {
+      node.style.setProperty('width', width, 'important');
+      node.style.setProperty('min-width', width, 'important');
+      if (node.matches && node.matches('table.htCore')) {
+        node.style.setProperty('table-layout', 'fixed', 'important');
+      }
+    });
+  }
+
   function getContainerAvailableHeight() {
     var container = document.getElementById('hot-container');
     if (!container) {
@@ -3383,8 +3416,9 @@
         hot.refreshDimensions();
       }
 
-      // PI usa colWidths porcentual por columna; recalcular aqui sobrescribe esa funcion.
+      applyResponsiveColumnWidths(Boolean(force));
       hot.render();
+      syncRenderedTableWidth(hot);
 
       if (viewportState) {
         setTimeout(function () {
@@ -3626,6 +3660,7 @@
       },
       afterRender: function () {
         applyRowClassesToDOM(this);
+        syncRenderedTableWidth(this);
       },
       afterGetColHeader: function (col, TH) {
         if (!TH || !TH.querySelector) {
@@ -3872,14 +3907,105 @@
     return filtered;
   }
 
+  function appendMobileField(container, label, value) {
+    var field = document.createElement('div');
+    field.className = 'pi-mobile-card__field';
+
+    var term = document.createElement('dt');
+    term.className = 'pi-mobile-card__label';
+    term.textContent = label;
+
+    var detail = document.createElement('dd');
+    detail.className = 'pi-mobile-card__value';
+    detail.textContent = String(value === null || value === undefined || value === '' ? '—' : value);
+
+    field.appendChild(term);
+    field.appendChild(detail);
+    container.appendChild(field);
+  }
+
+  function createMobileCard(row, index) {
+    var view = getStateView(row || {});
+    var card = document.createElement('article');
+    card.className = 'pi-mobile-card';
+    card.dataset.rowIndex = String(index);
+
+    var header = document.createElement('header');
+    header.className = 'pi-mobile-card__header';
+
+    var identity = document.createElement('div');
+    identity.className = 'pi-mobile-card__identity';
+
+    var id = document.createElement('span');
+    id.className = 'pi-mobile-card__id';
+    id.textContent = row && row.Id ? 'ID ' + row.Id : 'Actividad';
+
+    var title = document.createElement('h3');
+    title.className = 'pi-mobile-card__title';
+    title.textContent = view.activity || 'Actividad sin nombre';
+
+    var state = document.createElement('span');
+    state.className = 'pi-mobile-card__state';
+    state.textContent = view.label;
+
+    identity.appendChild(id);
+    identity.appendChild(title);
+    header.appendChild(identity);
+    header.appendChild(state);
+    card.appendChild(header);
+
+    var details = document.createElement('dl');
+    details.className = 'pi-mobile-card__details';
+    appendMobileField(details, 'Subcontratista', row && row.Sub_Contratista);
+    appendMobileField(details, 'Responsable AIA', row && row.Responsable_AIA);
+    appendMobileField(details, 'Inicio', row && row.Semanas_Inicio);
+    appendMobileField(details, 'Ejecutado', formatPercent(row && row.Ejecutado));
+    card.appendChild(details);
+
+    return card;
+  }
+
+  function renderMobileCards(rows) {
+    var container = document.getElementById('mobile-card-view');
+    if (!container) {
+      return;
+    }
+
+    var isMobile = window.matchMedia('(max-width: 768px)').matches;
+    container.replaceChildren();
+    if (!isMobile) {
+      return;
+    }
+
+    var items = Array.isArray(rows) ? rows : [];
+    if (items.length === 0) {
+      var empty = document.createElement('p');
+      empty.className = 'pi-mobile-card__empty';
+      empty.textContent = 'No hay actividades que coincidan con los filtros.';
+      container.appendChild(empty);
+      return;
+    }
+
+    var list = document.createElement('div');
+    list.className = 'pi-mobile-card-list';
+    var fragment = document.createDocumentFragment();
+    for (var i = 0; i < items.length; i++) {
+      fragment.appendChild(createMobileCard(items[i], i));
+    }
+    list.appendChild(fragment);
+    container.appendChild(list);
+  }
+
   function applyFiltersAndRender() {
     var filtered = getFilteredRows();
+    visibleRows = filtered;
     if (piViewAll) {
       updateLegendCountsFromServer();
     } else {
       updateLegendCounts(filtered);
     }
     updateOrInitHot(filtered);
+    renderMobileCards(filtered);
     updateSharedSelectionCountIndicator();
   }
 
@@ -4222,6 +4348,7 @@
     $(window)
       .off('resize.piHot orientationchange.piHot aia:viewport-scale-change.piHot')
       .on('resize.piHot orientationchange.piHot aia:viewport-scale-change.piHot', function () {
+        renderMobileCards(visibleRows);
         scheduleLayoutRefresh(80, true);
       });
   }

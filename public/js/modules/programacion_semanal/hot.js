@@ -18,6 +18,7 @@
   var weeklyPhaseKey = 'programacion';
   var pendingDeleteRow = null;
   var sanitizedOnLoad = false;
+  var mobileSaveState = {};
 
   var options = window.PS_HOT_OPTIONS || {};
   var subcontratistas = Array.isArray(options.subcontratistas) ? options.subcontratistas : [];
@@ -41,7 +42,7 @@
 
   var PHASE_HIDDEN_PROPS = {
     programacion: ['Ejecutado_Real', 'PAC', 'P_Completado'],
-    calificacion: ['Ejecutado_Fin_Semana', 'cantidad_sugerida_auto', null],
+    calificacion: ['cantidad_sugerida_auto', null],
   };
 
   function resolvePhaseHiddenIndexes(phaseKey, columnDefs) {
@@ -59,22 +60,22 @@
   var columnMinWidths = [
     34, 64, 34, 210, 36, 34, 120,
     120, 36, 50, 64, 72, 78, 72, 80,
-    74, 54, 62, 36, 36, 36, 160, 84,
+    74, 54, 62, 36, 36, 36, 160, 118, 64,
   ];
   var columnFloorWidths = [
     28, 54, 28, 160, 28, 28, 92,
     92, 28, 42, 54, 62, 68, 62, 70,
-    64, 46, 52, 28, 28, 28, 122, 72,
+    64, 46, 52, 28, 28, 28, 122, 104, 54,
   ];
   var columnMaxWidths = [
     90, 98, 120, 460, 120, 100, 238,
     238, 120, 86, 108, 122, 136, 122, 120,
-    110, 84, 96, 170, 220, 260, 250, 130,
+    110, 84, 96, 170, 220, 260, 250, 150, 84,
   ];
   var columnShrinkPriority = [
     21, 20, 19, 9, 6, 2, 0,
     13, 12, 14, 8, 7, 15, 16, 18,
-    17, 11, 10, 5, 3, 1, 4, 22,
+    17, 11, 10, 5, 3, 1, 4, 23, 22,
   ];
 
   var WEEKLY_ALERT_MODEL = {
@@ -309,15 +310,15 @@
       return true;
     }
 
+    if (prop === 'Ejecutado_Real') {
+      return getSemanalConfirmada() !== 1 || !isSemanalEditorRole(getPermiso());
+    }
+
     if (!isUserAllowedToEdit()) {
       return true;
     }
 
     if ((prop === 'Compromiso' || prop === 'Sub_Contratista' || prop === 'Responsable_AIA') && getSemanalConfirmada() === 1) {
-      return true;
-    }
-
-    if (prop === 'Ejecutado_Real' && getSemanalConfirmada() !== 1) {
       return true;
     }
 
@@ -360,7 +361,7 @@
       } else {
         // Fallback: show inline in the mensaje element (no alert popup)
         if ($sr.length) {
-          $sr.text(message || '').attr('role', 'status').css('color', 'var(--aia-text-secondary, #666)').fadeIn(120);
+          $sr.text(message || '').attr('role', 'status').addClass('ps-feedback-info').fadeIn(120);
           clearTimeout($sr.data('_srTimer'));
           $sr.data('_srTimer', setTimeout(function () { $sr.text('').fadeOut(250); }, 3000));
         }
@@ -838,15 +839,44 @@
   function getStateView(row) {
     var compactItems = getOperationalActionItems(row);
     var detailItems = getOperationalDetailItems(row);
+    var openItems = compactItems.filter(function (item) {
+      return isOpenActionStatus(item && item.status);
+    });
+
     return {
       label: getStateLabelByKey(getStateKey(row)),
       state: getStateKey(row),
       actionItems: detailItems,
       compactItems: compactItems,
+      openItems: openItems,
       actions: compactItems.map(function (item) { return item.text; }),
       activity: getPlainActivityLabel(row && row.Actividad),
       id: row && row.Id,
       phase: weeklyPhaseKey,
+    };
+  }
+
+  function getOperationalStateSummary(view) {
+    var openItems = Array.isArray(view && view.openItems) ? view.openItems : [];
+    var compactItems = Array.isArray(view && view.compactItems) ? view.compactItems : [];
+    var hasCritical = openItems.some(function (item) {
+      return item && (item.status === 'critical' || item.status === 'conflict');
+    });
+    var hasPartial = openItems.some(function (item) {
+      return item && item.status === 'partial';
+    });
+    var status = hasCritical ? 'critical' : (hasPartial ? 'partial' : (openItems.length ? 'pending' : 'ready'));
+    var countText = openItems.length ? (openItems.length + ' pend.') : 'Sin pend.';
+    var countAriaText = openItems.length
+      ? (openItems.length + ' ' + (openItems.length === 1 ? 'pendiente' : 'pendientes'))
+      : 'Sin pendientes';
+    var focus = openItems.length ? openItems[0].label : 'Listo';
+
+    return {
+      countAriaText: countAriaText,
+      countText: countText,
+      focus: focus,
+      status: status,
     };
   }
 
@@ -866,11 +896,20 @@
   }
 
   function renderOperationalStateCell(view) {
-    var pills = view.compactItems.length > 0 ? '<span class="ops-state-pills">' + renderStatePills(view.compactItems, 2) + '</span>' : '';
+    view = view || {};
+    view.actions = Array.isArray(view.actions) ? view.actions : [];
+    var summary = getOperationalStateSummary(view || {});
+    var stateLabel = view.label || 'Control';
+    var aria = view.actions.length ? (stateLabel + '. ' + summary.countAriaText + '. Primer foco: ' + summary.focus) : stateLabel;
 
-    return '<button type="button" class="ops-state-zoom" aria-label="Ver detalle operativo">'
-      + '<span class="ops-state-topline"><span class="ops-state-chip">' + escapeHtml(view.label) + '</span></span>'
-      + pills
+    return '<button type="button" class="ops-state-zoom is-' + escapeHtml(summary.status) + '" aria-label="' + escapeHtml(aria) + '. Ver detalle operativo">'
+      + '<span class="ops-state-topline">'
+      + '<span class="ops-state-dot" aria-hidden="true"></span>'
+      + '<span class="ops-state-chip">' + escapeHtml(stateLabel) + '</span>'
+      + '</span>'
+      + '<span class="ops-state-summary">'
+      + '<span class="ops-state-count is-' + escapeHtml(summary.status) + '">' + escapeHtml(summary.countText) + '</span>'
+      + '</span>'
       + '</button>';
   }
 
@@ -897,10 +936,9 @@
     var activity = view.activity || 'Actividad';
     var id = view.id ? ('<span class="ops-state-activity-id">' + escapeHtml(view.id) + '</span>') : '';
     var actionTitle = view.phase === 'calificacion' ? 'Acciones de calificación' : 'Acciones de habilitación';
+    var summary = getOperationalStateSummary(view || {});
     var html = '<div class="ops-state-drawer-state"><span class="ops-state-chip">' + escapeHtml(view.label) + '</span>';
-    if (view.compactItems.length) {
-      html += '<span class="ops-state-count">' + view.compactItems.length + ' acciones</span>';
-    }
+    html += '<span class="ops-state-count">' + escapeHtml(summary.countText) + '</span>';
     html += '</div>';
     html += '<div class="ops-state-activity">' + id + '<strong>' + escapeHtml(activity) + '</strong></div>';
 
@@ -1017,7 +1055,7 @@
 
       return {
         key: 'calificacion',
-        title: 'Fase: Calificación de Actividades',
+        title: 'Fase: Calificación de Compromisos',
         detail: detail,
         mobileLabel: 'Calificación',
       };
@@ -1089,6 +1127,31 @@
       } else {
         $fechaCierre.addClass('d-none');
       }
+    }
+
+    syncFixedContextSpacer();
+  }
+
+  function syncFixedContextSpacer() {
+    var context = document.querySelector('.context-bar.fixed-top');
+    if (!context) {
+      return;
+    }
+
+    var spacer = context.nextElementSibling;
+    if (!spacer) {
+      return;
+    }
+
+    var originalStyle = spacer.getAttribute('style') || '';
+    if (spacer.dataset.psContextSpacer !== 'true' && originalStyle.indexOf('height: 100px') === -1) {
+      return;
+    }
+
+    var contextBottom = Math.ceil(context.getBoundingClientRect().bottom || 0);
+    if (contextBottom > 0) {
+      spacer.dataset.psContextSpacer = 'true';
+      spacer.style.height = Math.max(100, contextBottom) + 'px';
     }
   }
 
@@ -1409,12 +1472,12 @@
     }
 
     var zoom = parseFloat(root.style.zoom || '');
-    if (Number.isFinite(zoom) && zoom > 0 && zoom < 1) {
+    if (Number.isFinite(zoom) && zoom > 0) {
       return zoom;
     }
 
-    if (root.classList.contains('tablet-scale-70') || root.classList.contains('desktop-tablet-scale-70')) {
-      return 0.7;
+    if (root.classList.contains('tablet-scale-70')) {
+      return 0.85;
     }
 
     return 1;
@@ -1444,6 +1507,38 @@
 
     container.style.height = resolved + 'px';
     return resolved;
+  }
+
+  function syncRenderedTableWidth(instance) {
+    var hotInstance = instance || hot;
+    var container = document.getElementById('hot-container');
+    if (!hotInstance || !container || typeof hotInstance.countCols !== 'function' || typeof hotInstance.getColWidth !== 'function') {
+      return;
+    }
+
+    var totalWidth = 0;
+    var columnCount = hotInstance.countCols();
+    for (var col = 0; col < columnCount; col++) {
+      totalWidth += Number(hotInstance.getColWidth(col)) || 0;
+    }
+
+    totalWidth = Math.max(Math.ceil(totalWidth), getContainerAvailableWidth());
+    if (!Number.isFinite(totalWidth) || totalWidth <= 0) {
+      return;
+    }
+
+    var width = totalWidth + 'px';
+    container.classList.add('hot-fixed-columns');
+    container.style.setProperty('--hot-table-width', width);
+
+    var nodes = container.querySelectorAll('.handsontable table.htCore, .handsontable .wtHider, .handsontable .wtSpreader');
+    Array.prototype.forEach.call(nodes, function (node) {
+      node.style.setProperty('width', width, 'important');
+      node.style.setProperty('min-width', width, 'important');
+      if (node.matches && node.matches('table.htCore')) {
+        node.style.setProperty('table-layout', 'fixed', 'important');
+      }
+    });
   }
 
   function getContainerAvailableHeight() {
@@ -1866,6 +1961,7 @@
       applyLegacyColumnVisibility();
       applyResponsiveColumnWidths(Boolean(force));
       hot.render();
+      syncRenderedTableWidth(hot);
 
       if (viewportState) {
         setTimeout(function () {
@@ -1919,6 +2015,10 @@
     var output = [];
     for (var i = 0; i < rows.length; i++) {
       var row = rows[i] || {};
+      if (isBlank(row.Consecutivo) && isBlank(row.row_id)
+          && isBlank(row.Id) && isBlank(row.Actividad)) {
+        continue;
+      }
       row.cantidad_sugerida_auto = calculateSuggested(row);
       row.estado_operativo = getStateDisplayText(row);
       output.push(row);
@@ -1999,6 +2099,50 @@
     }
 
     return { valid: true, value: value };
+  }
+
+  function requiresCnc(row, realValue) {
+    var compromiso = toNumber(row && row.Compromiso, null);
+    var real = toNumber(realValue, null);
+    return real !== null && compromiso !== null && real < compromiso;
+  }
+
+  function queueCncSave(visualRow, rowData, prop, oldValue, newValue, saveContext) {
+    window._pendingCncSave = {
+      rowIndex: visualRow,
+      consecutivo: rowData.Consecutivo,
+      sourceRowData: rowData,
+      oldValue: oldValue,
+      newValue: newValue,
+      prop: prop,
+      mobile: Boolean(saveContext && saveContext.mobile),
+    };
+    var categoria = rowData.Categoria_CNC || '';
+    $('#hot_cat_cnc').val(categoria);
+    $('#hot_cnc').empty().append(new Option('', '')).prop('disabled', isBlank(categoria));
+    $('#hot_obs_cnc').val(rowData.Observaciones_CNC || '');
+    if (!isBlank(categoria)) {
+      $('#hot_cat_cnc').trigger('change.psCnc', [rowData.CNC || '']);
+    }
+    var $cncModal = $('#modal_cnc_hot');
+    $cncModal.off('.psCncState').data('psCncShown', false)
+      .one('shown.bs.modal.psCncState', function () {
+        $cncModal.data('psCncShown', true);
+        $('#hot_cat_cnc').trigger('focus');
+      })
+      .one('hidden.bs.modal.psCncState', function () { $cncModal.data('psCncShown', false); })
+      .modal('show');
+  }
+
+  function closeCncModal() {
+    var $cncModal = $('#modal_cnc_hot');
+    if ($cncModal.data('psCncShown')) {
+      $cncModal.modal('hide');
+      return;
+    }
+    $cncModal.one('shown.bs.modal.psCncDeferredClose', function () {
+      $cncModal.modal('hide');
+    });
   }
 
   function buildPayload(row, editedProp, overrides) {
@@ -2106,22 +2250,44 @@
     }
   }
 
-  function saveRow(visualRow, prop, oldValue, overrides) {
+  function syncMasterDataRow(row, values) {
+    if (!row) { return row; }
+    var rowId = String(row.Consecutivo == null ? '' : row.Consecutivo);
+    for (var i = 0; i < masterData.length; i++) {
+      if (String(masterData[i].Consecutivo == null ? '' : masterData[i].Consecutivo) === rowId) {
+        $.extend(masterData[i], values || {});
+        return masterData[i];
+      }
+    }
+    return row;
+  }
+
+  function saveRow(visualRow, prop, oldValue, overrides, saveContext) {
     var db = getDb();
+    var isMobileSave = Boolean(saveContext && saveContext.mobile);
     var physicalRow = hot.toPhysicalRow(visualRow);
     var row = hot.getSourceDataAtRow(physicalRow);
+    var syncHotProp = function (targetProp, value) {
+      if (!isMobileSave) {
+        hot.setDataAtRowProp(visualRow, targetProp, value, 'internal-update');
+      }
+    };
 
     var payload = buildPayload(row || {}, prop, overrides || {});
     if (!payload.valid) {
-      revertCell(visualRow, prop, oldValue);
+      if (!isMobileSave) { revertCell(visualRow, prop, oldValue); }
       showFeedback('warning', payload.error); // Warning en lugar de Error para validaciones de negocio
+      setMobileSaveState(visualRow, prop, 'error', payload.error);
+      renderMobileCards(getFilteredRows());
 
-      var colIndex = hot.propToCol(prop);
-      var td = hot.getCell(visualRow, colIndex);
-      if (td) {
-        td.classList.remove('ps-cell-shake');
-        void td.offsetWidth; // Disparar reflow para reiniciar animación CSS
-        td.classList.add('ps-cell-shake');
+      if (!isMobileSave) {
+        var colIndex = hot.propToCol(prop);
+        var td = hot.getCell(visualRow, colIndex);
+        if (td) {
+          td.classList.remove('ps-cell-shake');
+          void td.offsetWidth;
+          td.classList.add('ps-cell-shake');
+        }
       }
       return;
     }
@@ -2138,12 +2304,13 @@
           // Sincronizar row con los overrides enviados al backend
           if (overrides) {
             $.extend(row, overrides);
+            row = syncMasterDataRow(row, overrides);
           }
           row.cantidad_sugerida_auto = calculateSuggested(row);
           row.estado_operativo = getStateDisplayText(row);
           // Forzar actualización visual de campos computados
-          hot.setDataAtRowProp(visualRow, 'estado_operativo', row.estado_operativo, 'internal-update');
-          hot.setDataAtRowProp(visualRow, 'cantidad_sugerida_auto', row.cantidad_sugerida_auto, 'internal-update');
+          syncHotProp('estado_operativo', row.estado_operativo);
+          syncHotProp('cantidad_sugerida_auto', row.cantidad_sugerida_auto);
 
           // Recalcular PAC y P_Completado localmente (skip TNP rows)
           var esTnpRow = row.Es_TNP === 1 || row.Es_TNP === '1';
@@ -2156,17 +2323,17 @@
             row.P_Completado = real / comp;
             row.PAC = (real < comp) ? 0 : 1;
             // Forzar actualización visual en celdas readOnly
-            hot.setDataAtRowProp(visualRow, 'PAC', row.PAC, 'internal-update');
-            hot.setDataAtRowProp(visualRow, 'P_Completado', row.P_Completado, 'internal-update');
+            syncHotProp('PAC', row.PAC);
+            syncHotProp('P_Completado', row.P_Completado);
 
             // Si cumplió (PAC=1), limpiar CNC visualmente
             if (row.PAC === 1) {
               row.Categoria_CNC = null;
               row.CNC = null;
               row.Observaciones_CNC = null;
-              hot.setDataAtRowProp(visualRow, 'Categoria_CNC', null, 'internal-update');
-              hot.setDataAtRowProp(visualRow, 'CNC', null, 'internal-update');
-              hot.setDataAtRowProp(visualRow, 'Observaciones_CNC', null, 'internal-update');
+              syncHotProp('Categoria_CNC', null);
+              syncHotProp('CNC', null);
+              syncHotProp('Observaciones_CNC', null);
             }
           }
         }
@@ -2179,8 +2346,10 @@
             return;
         }
 
-        hot.render();
+        setMobileSaveState(visualRow, prop, 'success', 'Guardado');
+        if (!isMobileSave) { hot.render(); }
         updateLegendCounts(getFilteredRows());
+        renderMobileCards(getFilteredRows());
 
         if (response.alerta_bolsa) {
             showFeedback('warning', response.alerta_bolsa);
@@ -2193,10 +2362,14 @@
       }
 
       var message = (response && (response.mensaje || response.message || response.respuesta || response.alerta_bolsa)) || 'Error al guardar';
-      revertCell(visualRow, prop, oldValue);
+      if (!isMobileSave) { revertCell(visualRow, prop, oldValue); }
+      setMobileSaveState(visualRow, prop, 'error', message);
+      renderMobileCards(getFilteredRows());
       showFeedback('error', message);
     }).fail(function () {
-      revertCell(visualRow, prop, oldValue);
+      if (!isMobileSave) { revertCell(visualRow, prop, oldValue); }
+      setMobileSaveState(visualRow, prop, 'error', 'Error de red');
+      renderMobileCards(getFilteredRows());
       showFeedback('error', 'Error de red');
     });
   }
@@ -2220,8 +2393,8 @@
       var permiso = getPermiso();
       var html = '';
       if (phase !== 1 && permiso !== 'C') {
-        html += "<button type='button' class='ps-action-btn duplicar btn btn-success btn-sm btn-action-gap' data-action='duplicate' title='Duplicar Actividad'><i class='fa fa-copy fa-xs'></i></button>";
-        html += "<button type='button' class='ps-action-btn eliminar btn btn-danger btn-sm btn-action-gap' data-action='delete' title='Eliminar Actividad'><i class='fa fa-trash-alt fa-xs'></i></button>";
+        html += "<button type='button' class='ps-action-btn duplicar btn btn-success btn-sm btn-action-gap' data-action='duplicate' title='Duplicar Actividad' aria-label='Duplicar Actividad'><span class='ps-action-icon' aria-hidden='true'><i class='fa fa-copy fa-xs'></i></span></button>";
+        html += "<button type='button' class='ps-action-btn eliminar btn btn-danger btn-sm btn-action-gap' data-action='delete' title='Eliminar Actividad' aria-label='Eliminar Actividad'><span class='ps-action-icon' aria-hidden='true'><i class='fa fa-trash-alt fa-xs'></i></span></button>";
       }
       td.innerHTML = html;
     });
@@ -2242,8 +2415,14 @@
       if (trigger) {
         trigger.setAttribute('data-row', String(row));
       }
-      td.title = view.actions.length ? (view.label + ' - ' + view.actions.join('; ')) : view.label;
-      td.classList.add('htLeft', 'htMiddle', 'force-wrap', 'ops-state-td');
+      var accessibleStateText = view.actions.length ? (view.label + ' - ' + view.actions.join('; ')) : view.label;
+      td.title = accessibleStateText;
+      if (trigger) {
+        trigger.setAttribute('title', accessibleStateText);
+        trigger.setAttribute('aria-label', accessibleStateText + '. Ver detalle operativo');
+      }
+      td.classList.remove('force-wrap');
+      td.classList.add('htLeft', 'htMiddle', 'ops-state-td');
     });
 
     Handsontable.renderers.registerRenderer('psPacRenderer', function (instance, td, row, col, prop, value) {
@@ -2256,7 +2435,7 @@
       }
       if (esTnp) {
         Handsontable.renderers.TextRenderer.apply(this, arguments);
-        td.innerHTML = '<span style="color: #6c757d; font-style: italic;">—</span>';
+        td.innerHTML = '<span class="ps-muted-dash">—</span>';
         td.classList.add('htCenter');
         return;
       }
@@ -2277,8 +2456,8 @@
       Handsontable.renderers.TextRenderer.apply(this, arguments);
       var rowData = instance && typeof instance.getSourceDataAtRow === 'function' ? (getSourceRowDataByVisualRow(instance, row) || {}) : {};
       var badgeLabel = isManualActivity(rowData) ? 'Manual' : 'Auto';
-      var badgeColor = isManualActivity(rowData) ? '#e67e22' : '#17a2b8';
-      td.innerHTML = '<div style="display: flex; flex-direction: column; align-items: center; gap: 2px;"><span class="badge" style="background-color: ' + badgeColor + '; color: #fff; font-size: 0.65em; padding: 1px 4px; border-radius: 3px; line-height: 1.2;">' + badgeLabel + '</span><span style="font-size: 0.9em;">' + escapeHtml(value != null ? value : '') + '</span></div>';
+      var badgeClass = isManualActivity(rowData) ? 'is-manual' : 'is-auto';
+      td.innerHTML = '<div class="ps-id-stack"><span class="badge ps-origin-badge ' + badgeClass + '">' + badgeLabel + '</span><span class="ps-id-value">' + escapeHtml(value != null ? value : '') + '</span></div>';
       td.classList.add('htCenter', 'htMiddle');
     });
 
@@ -2289,13 +2468,8 @@
       if (ratio === null) {
         td.textContent = '';
       } else {
-        var ppto = toNumber(rowData.cantidad_ppto, null);
-        var unit = String(rowData.Unidad || '%').trim() || '%';
-        if (ppto === null || ppto <= 0) {
-          td.textContent = formatPercent(ratio, 1);
-        } else {
-          td.textContent = formatDecimalComma(ratio * ppto, 1) + ' ' + unit + ' (' + formatPercent(ratio, 1) + ')';
-        }
+        var label = prop === 'Ejecutado_Fin_Semana' ? 'Ejecutado al fin de semana' : 'Ejecutado actual';
+        td.innerHTML = renderExecutionRatioProgress(rowData, ratio, label);
       }
       td.classList.add('htCenter');
     });
@@ -2324,8 +2498,10 @@
           td.innerHTML = "<span class='ps-commit-value'>" + escapeHtml(textValue) + "</span><span class='" + indicatorClass + "' title='" + escapeHtml(indicatorTitle) + "' aria-label='" + escapeHtml(indicatorTitle) + "'>" + indicatorIcon + '</span>';
         } else if (prop === 'Ejecutado_Real' && weeklyPhaseKey === 'calificacion') {
           var esTnp = rowData.Es_TNP === 1 || rowData.Es_TNP === '1';
+          var realProgress = getRealExecutionProgress(rowData, numeric);
           if (esTnp) {
-            td.innerHTML = "<span class='badge badge-info' style='background-color: #4a81bd; color: white; font-size: 0.75em; padding: 2px 6px; border-radius: 3px; margin-right: 4px;'>TNP</span><span class='ps-commit-value'>" + escapeHtml(textValue) + '</span>';
+            td.innerHTML = "<div class='ps-progress-cell ps-progress-cell--real' title='" + escapeHtml(realProgress.label) + "'><span><span class='ps-tnp-badge'>TNP</span><span class='ps-commit-value'>" + escapeHtml(textValue) + '</span></span>'
+              + renderMiniProgress(realProgress.ratio, realProgress.label, realProgress.caption) + '</div>';
           } else {
             var compromisoRow = toNumber(rowData.Compromiso, 0);
             var isRealLow = numeric < (compromisoRow - 0.0001);
@@ -2335,7 +2511,8 @@
               ? 'Ejecutado menor al compromiso (Requiere CNC)'
               : 'Compromiso cumplido';
 
-            td.innerHTML = "<span class='ps-commit-value'>" + escapeHtml(textValue) + "</span><span class='" + indicatorClassReal + "' title='" + escapeHtml(indicatorTitleReal) + "' aria-label='" + escapeHtml(indicatorTitleReal) + "'>" + indicatorIconReal + '</span>';
+            td.innerHTML = "<div class='ps-progress-cell ps-progress-cell--real' title='" + escapeHtml(realProgress.label) + "'><span><span class='ps-commit-value'>" + escapeHtml(textValue) + "</span><span class='" + indicatorClassReal + "' title='" + escapeHtml(indicatorTitleReal) + "' aria-label='" + escapeHtml(indicatorTitleReal) + "'>" + indicatorIconReal + '</span></span>'
+              + renderMiniProgress(realProgress.ratio, realProgress.label, realProgress.caption) + '</div>';
           }
         } else {
           td.textContent = textValue;
@@ -2361,7 +2538,7 @@
       var rowData = instance && typeof instance.getSourceDataAtRow === 'function' ? (getSourceRowDataByVisualRow(instance, row) || {}) : {};
       if (isBlank(value) && isActiveRowForCommitments(rowData)) {
         td.classList.add('ps-cell-empty-alert');
-        td.innerHTML = '<span style="color:#d32f2f;font-size:14px" title="Falta asignación (Bloquea confirmación)">⚠ Sin asignar</span>';
+        td.innerHTML = '<span class="ps-missing-assignment" title="Falta asignación (Bloquea confirmación)">⚠ Sin asignar</span>';
       } else {
         td.classList.remove('ps-cell-empty-alert');
         td.style.backgroundColor = '';
@@ -2415,7 +2592,7 @@
       { data: 'Categoria_CNC', type: 'text', className: 'htCenter htMiddle force-wrap' },
       { data: 'CNC', type: 'text', className: 'htLeft htMiddle force-wrap' },
       { data: 'Observaciones_CNC', type: 'text', className: 'htLeft htMiddle force-wrap' },
-      { data: 'estado_operativo', readOnly: true, renderer: 'psStateRenderer', className: 'htLeft htMiddle force-wrap' },
+      { data: 'estado_operativo', readOnly: true, renderer: 'psStateRenderer', className: 'htLeft htMiddle ops-state-td' },
       { data: null, renderer: 'psActionsRenderer', readOnly: true },
     ];
 
@@ -2470,9 +2647,12 @@
       exportFile: true,
       columnSorting: false,
       wordWrap: true,
-      colHeaderHeight: 48,
+      colHeaderHeight: 72,
       width: '100%',
       height: getContainerAvailableHeight() || '100%',
+      afterRender: function () {
+        syncRenderedTableWidth(this);
+      },
       afterGetColHeader: function (col, TH) {
         if (!TH || !TH.querySelector) {
           return;
@@ -2635,32 +2815,9 @@
               continue;
             }
 
-            var compromiso = toNumber(rowData.Compromiso, null);
-            var realVal = toNumber(newValue, null);
-
             // Si el avance real es menor al compromiso, SIEMPRE pedir CNC
-            if (realVal !== null && compromiso !== null && realVal < compromiso) {
-                // Prevenir guardado y abrir modal CNC (nuevo o actualización)
-                window._pendingCncSave = {
-                  rowIndex: rowIndex,
-                  consecutivo: rowData.Consecutivo,
-                  sourceRowData: rowData,
-                  oldValue: oldValue,
-                  newValue: newValue,
-                  prop: prop
-                };
-
-                // Pre-cargar datos CNC existentes si los hay
-                $('#hot_cat_cnc').val(rowData.Categoria_CNC || '');
-                $('#hot_cnc').val(rowData.CNC || '').prop('disabled', isBlank(rowData.Categoria_CNC));
-                $('#hot_obs_cnc').val(rowData.Observaciones_CNC || '');
-
-                // Cargar causas si ya hay categoría seleccionada
-                if (!isBlank(rowData.Categoria_CNC)) {
-                  $('#hot_cat_cnc').trigger('change.psCnc');
-                }
-
-                $('#modal_cnc_hot').modal('show');
+            if (requiresCnc(rowData, newValue)) {
+                queueCncSave(rowIndex, rowData, prop, oldValue, newValue, { mobile: false });
 
                 revertCell(rowIndex, prop, oldValue);
                 continue;
@@ -2793,6 +2950,7 @@
 
     updateLegendCounts(filtered);
     updateOrInitHot(filtered);
+    renderMobileCards(filtered);
   }
 
   function renderAlertLegend() {
@@ -2908,6 +3066,7 @@
 
   function syncPhaseUI() {
     weeklyPhaseKey = getPhaseKey();
+    $('#btn_tnp, #btn_reabrir_semana').removeClass('ps-runtime-hidden');
     var fechaCierre = String($('#fechaCierreCompromisos').val() || '').trim();
     var phaseInfo = getWeeklyPhaseInfo(weeklyPhaseKey, fechaCierre);
 
@@ -2968,6 +3127,232 @@
       return '0,0' + (unidad ? (' ' + unidad) : '');
     }
     return formatDecimalComma(number, 1) + (unidad ? (' ' + unidad) : '');
+  }
+
+  function clampProgressRatio(value) {
+    var number = toNumber(value, null);
+    if (number === null) {
+      return null;
+    }
+    if (number < 0) {
+      return 0;
+    }
+    if (number > 1) {
+      return 1;
+    }
+    return number;
+  }
+
+  function getProgressCssValue(ratio) {
+    var clamped = clampProgressRatio(ratio);
+    return clamped === null ? '0%' : (clamped * 100).toFixed(2) + '%';
+  }
+
+  function formatExecutionRatioValue(row, ratio) {
+    var clamped = clampProgressRatio(ratio);
+    if (clamped === null) {
+      return 'Sin dato';
+    }
+    var ppto = toNumber(row && row.cantidad_ppto, null);
+    var unit = String((row && row.Unidad) || '%').trim() || '%';
+    if (ppto === null || ppto <= 0) {
+      return formatPercent(clamped, 1);
+    }
+    return formatDecimalComma(clamped * ppto, 1) + ' ' + unit + ' (' + formatPercent(clamped, 1) + ')';
+  }
+
+  function getTotalExecutionRatioAfterReal(row, realValue) {
+    var base = clampProgressRatio(row && row.Ejecutado);
+    var real = toNumber(realValue, null);
+    if (real === null) {
+      return base;
+    }
+    var ppto = toNumber(row && row.cantidad_ppto, null);
+    var delta = ppto !== null && ppto > 0 ? (real / ppto) : (real / 100);
+    return clampProgressRatio((base || 0) + delta);
+  }
+
+  function renderMiniProgress(ratio, label, caption) {
+    var clamped = clampProgressRatio(ratio);
+    var aria = label || (clamped === null ? 'Avance sin dato' : 'Avance ' + formatPercent(clamped, 1));
+    var html = '<progress class="ps-progress-track" max="1" value="' + (clamped || 0) + '" aria-label="' + escapeHtml(aria) + '"></progress>';
+    if (caption) {
+      html += '<small class="ps-progress-caption">' + escapeHtml(caption) + '</small>';
+    }
+    return html;
+  }
+
+  function renderExecutionRatioProgress(row, ratio, label) {
+    var clamped = clampProgressRatio(ratio);
+    if (clamped === null) {
+      return '';
+    }
+    var text = formatExecutionRatioValue(row, clamped);
+    return '<div class="ps-progress-cell"><span class="ps-progress-value">' + escapeHtml(text) + '</span>'
+      + renderMiniProgress(clamped, label + ': ' + formatPercent(clamped, 1), '') + '</div>';
+  }
+
+  function getRealExecutionProgress(row, realValue) {
+    var unit = String((row && row.Unidad) || '%').trim() || '%';
+    var total = getTotalExecutionRatioAfterReal(row, realValue);
+    var realText = formatWeeklyQuantity(realValue, unit);
+    var totalText = total === null ? 'sin dato' : formatPercent(total, 1);
+    return {
+      caption: 'Ejecutamos ' + realText + ' · Total ' + totalText,
+      label: 'Ejecutamos ' + realText + ' y el avance total de la actividad quedó en ' + totalText,
+      ratio: total,
+    };
+  }
+
+  function renderMobileMetric(label, value, footerHtml) {
+    var display = isBlank(value) ? 'Sin dato' : value;
+    return '<div class="ps-mobile-metric"><span>' + escapeHtml(label) + '</span><strong>' + escapeHtml(display) + '</strong>' + (footerHtml || '') + '</div>';
+  }
+
+  function getMobileSaveKey(rowIndex, prop) {
+    return String(rowIndex) + ':' + String(prop || '');
+  }
+
+  function setMobileSaveState(rowIndex, prop, status, message) {
+    mobileSaveState[getMobileSaveKey(rowIndex, prop)] = { status: status, message: message };
+  }
+
+  function getMobileSaveState(rowIndex, prop) {
+    return mobileSaveState[getMobileSaveKey(rowIndex, prop)] || { status: 'idle', message: '' };
+  }
+
+  function renderMobileProgressMetric(label, row, prop) {
+    var ratio = clampProgressRatio(row && row[prop]);
+    var display = formatExecutionRatioValue(row, ratio);
+    return '<div class="ps-mobile-metric ps-mobile-metric--progress"><span>' + escapeHtml(label) + '</span><strong>' + escapeHtml(display) + '</strong>'
+      + renderMiniProgress(ratio, label + ': ' + (ratio === null ? 'sin dato' : formatPercent(ratio, 1)), '') + '</div>';
+  }
+
+  function renderMobileEditableMetric(label, prop, row, rowIndex, footerHtml) {
+    var value = row && row[prop] != null ? row[prop] : '';
+    if (!editableProps[prop] || isPropReadOnly(prop)) {
+      return renderMobileMetric(label, value, footerHtml);
+    }
+    var state = getMobileSaveState(rowIndex, prop);
+    var inputId = 'ps-mobile-' + prop + '-' + rowIndex;
+    var buttonLabel = prop === 'Ejecutado_Real' ? 'Guardar avance' : 'Guardar compromiso';
+    var disabled = state.status === 'saving' ? ' disabled' : '';
+    return '<div class="ps-mobile-metric ps-mobile-metric--editable"><label for="' + escapeHtml(inputId) + '">' + escapeHtml(label) + '</label>'
+      + '<div class="ps-mobile-edit-controls"><input id="' + escapeHtml(inputId) + '" type="number" inputmode="decimal" step="0.1" min="0" data-mobile-row="' + rowIndex + '" data-mobile-prop="' + escapeHtml(prop) + '" value="' + escapeHtml(value) + '">'
+      + '<button type="button" class="ps-mobile-save-button" data-mobile-save-row="' + rowIndex + '" data-mobile-save-prop="' + escapeHtml(prop) + '"' + disabled + '><i class="fas fa-save" aria-hidden="true"></i><span>' + escapeHtml(buttonLabel) + '</span></button></div>'
+      + '<small class="ps-mobile-save-status is-' + escapeHtml(state.status) + '" data-mobile-save-status aria-live="polite">' + escapeHtml(state.message) + '</small>'
+      + (footerHtml || '') + '</div>';
+  }
+
+  function renderMobileRealMetric(row, rowIndex) {
+    var value = row && row.Ejecutado_Real != null ? row.Ejecutado_Real : '';
+    var progress = getRealExecutionProgress(row, value);
+    var footer = renderMiniProgress(progress.ratio, progress.label, progress.caption);
+    return renderMobileEditableMetric('Ejecutado real', 'Ejecutado_Real', row, rowIndex, footer);
+  }
+
+  function renderMobileStateButton(row, rowIndex) {
+    var view = getStateView(row || {});
+    var summary = getOperationalStateSummary(view);
+    return '<button type="button" class="ps-mobile-state ops-state-zoom is-' + escapeHtml(summary.status) + '" data-mobile-ops-row="' + rowIndex + '">'
+      + '<span class="ops-state-topline"><span class="ops-state-dot" aria-hidden="true"></span><span class="ops-state-chip">' + escapeHtml(view.label) + '</span></span>'
+      + '<span class="ops-state-summary"><span class="ops-state-count is-' + escapeHtml(summary.status) + '">' + escapeHtml(summary.countText) + '</span></span></button>';
+  }
+
+  function renderMobileCard(row, rowIndex) {
+    var alertClass = getAlertClassForRow(row);
+    var unidad = isBlank(row.Unidad) ? '' : String(row.Unidad);
+    var title = getPlainActivityLabel(row.Actividad);
+    var html = '<article class="ps-mobile-card ps-row-state ' + escapeHtml(alertClass) + '" data-mobile-row="' + rowIndex + '">';
+    html += '<header><div><span class="ps-mobile-id">' + escapeHtml(row.Id || row.Consecutivo || '') + '</span><h3>' + escapeHtml(title) + '</h3></div>' + renderMobileStateButton(row, rowIndex) + '</header>';
+    html += '<div class="ps-mobile-metrics">';
+    html += renderMobileMetric('Subcontratista', row.Sub_Contratista);
+    html += renderMobileMetric('Resp. AIA', row.Responsable_AIA);
+    html += renderMobileMetric('Unidad', unidad || row.Unidad);
+    html += renderMobileProgressMetric('Ejecutado actual', row, 'Ejecutado');
+    html += renderMobileProgressMetric('Ej. fin semana', row, 'Ejecutado_Fin_Semana');
+    if (weeklyPhaseKey === 'calificacion') {
+      html += renderMobileEditableMetric('Compromiso', 'Compromiso', row, rowIndex);
+      html += renderMobileRealMetric(row, rowIndex);
+    } else {
+      html += renderMobileMetric('Sugerida', formatWeeklyQuantity(row.cantidad_sugerida_auto, unidad));
+      html += renderMobileEditableMetric('Compromiso', 'Compromiso', row, rowIndex);
+    }
+    html += '</div></article>';
+    return html;
+  }
+
+  function renderMobileCards(rows) {
+    var container = document.getElementById('mobile-card-view');
+    if (!container) {
+      return;
+    }
+    var list = Array.isArray(rows) ? rows : [];
+    if (!list.length) {
+      container.innerHTML = '<div class="ps-mobile-empty">No hay actividades con los filtros actuales.</div>';
+      return;
+    }
+    var html = '';
+    for (var i = 0; i < list.length; i++) {
+      html += renderMobileCard(list[i] || {}, i);
+    }
+    container.innerHTML = html;
+    bindMobileCardEvents();
+  }
+
+  function commitMobileCardValue(rowIndex, prop, value) {
+    if (!hot || !Number.isInteger(rowIndex) || !prop) { return; }
+    var row = getSourceRowDataByVisualRow(hot, rowIndex) || {};
+    if (prop === 'Ejecutado_Real'
+        && (isBlank(row.Sub_Contratista) || isBlank(row.Responsable_AIA))) {
+      var assigneeMessage = 'Falta Sub-Contratista o Responsable AIA para registrar avance';
+      setMobileSaveState(rowIndex, prop, 'error', assigneeMessage);
+      showFeedback('error', assigneeMessage);
+      renderMobileCards(getFilteredRows());
+      return;
+    }
+    var normalized = normalizeCellValue(prop, value);
+    if (!normalized.valid) {
+      setMobileSaveState(rowIndex, prop, 'error', normalized.error);
+      renderMobileCards(getFilteredRows());
+      return;
+    }
+    if (prop === 'Ejecutado_Real' && requiresCnc(row, normalized.value)) {
+      queueCncSave(rowIndex, row, prop, row[prop], normalized.value, { mobile: true });
+      return;
+    }
+    if (toNumber(row[prop], null) === toNumber(normalized.value, null)) {
+      setMobileSaveState(rowIndex, prop, 'success', 'Sin cambios');
+      renderMobileCards(getFilteredRows());
+      return;
+    }
+    setMobileSaveState(rowIndex, prop, 'saving', 'Guardando...');
+    renderMobileCards(getFilteredRows());
+    var overrides = {};
+    overrides[prop] = normalized.value;
+    saveRow(rowIndex, prop, row[prop], overrides, { mobile: true });
+  }
+
+  function bindMobileCardEvents() {
+    $('#mobile-card-view').off('click.psMobileSave').on('click.psMobileSave', '[data-mobile-save-prop]', function () {
+      var rowIndex = Number(this.getAttribute('data-mobile-save-row'));
+      var prop = this.getAttribute('data-mobile-save-prop');
+      var input = this.closest('.ps-mobile-metric').querySelector('input[data-mobile-prop]');
+      commitMobileCardValue(rowIndex, prop, input ? input.value : '');
+    });
+    $('#mobile-card-view').off('keydown.psMobileCards').on('keydown.psMobileCards', 'input[data-mobile-prop]', function (event) {
+      if (event.key !== 'Enter') { return; }
+      event.preventDefault();
+      var button = this.closest('.ps-mobile-metric').querySelector('[data-mobile-save-prop]');
+      if (button) { button.click(); }
+    });
+    $('#mobile-card-view').off('click.psMobileState').on('click.psMobileState', '[data-mobile-ops-row]', function () {
+      var rowIndex = Number(this.getAttribute('data-mobile-ops-row'));
+      var row = hot && Number.isInteger(rowIndex) ? getSourceRowDataByVisualRow(hot, rowIndex) : null;
+      if (row) {
+        showOperationalStateDrawer(getStateView(row));
+      }
+    });
   }
 
   function buildCloseSummary() {
@@ -3491,15 +3876,15 @@
       rows += '<td class="text-danger">' + escapeHtml(faltantes[i].CamposFaltantes || '') + '</td></tr>';
     }
 
-    var html = '<div class="modal fade" id="modalDatosFaltantes" tabindex="-1" role="dialog">'
+    var html = '<div class="modal fade aia-modal ps-autoprogram-modal" id="modalDatosFaltantes" tabindex="-1" role="dialog">'
       + '<div class="modal-dialog modal-lg" role="document"><div class="modal-content">'
-      + '<div class="modal-header bg-warning"><h5 class="modal-title"><i class="fas fa-exclamation-triangle"></i> Actividades con Datos Incompletos</h5>'
+      + '<div class="modal-header bg-warning ps-autoprogram-modal-header is-warning"><h5 class="modal-title"><i class="fas fa-exclamation-triangle"></i> Actividades con Datos Incompletos</h5>'
       + '<button type="button" class="close" data-dismiss="modal"><span>&times;</span></button></div>'
-      + '<div class="modal-body"><p>Las siguientes <strong>' + faltantes.length + '</strong> actividades candidatas tienen datos faltantes:</p>'
-      + '<div class="table-responsive"><table class="table table-sm table-bordered"><thead><tr><th>Id</th><th>Actividad</th><th>Campos Faltantes</th></tr></thead>'
+      + '<div class="modal-body ps-autoprogram-modal-body"><p>Las siguientes <strong>' + faltantes.length + '</strong> actividades candidatas tienen datos faltantes:</p>'
+      + '<div class="table-responsive ps-autoprogram-table-wrap"><table class="table table-sm table-bordered ps-autoprogram-table"><thead><tr><th>Id</th><th>Actividad</th><th>Campos Faltantes</th></tr></thead>'
       + '<tbody>' + rows + '</tbody></table></div>'
-      + '<p class="text-muted mt-2"><small>Estas actividades se autoprogramarán de todas formas, pero se recomienda completar los datos desde la Programación Intermedia.</small></p></div>'
-      + '<div class="modal-footer"><button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>'
+      + '<p class="text-muted mt-2 ps-autoprogram-note"><small>Estas actividades se autoprogramarán de todas formas, pero se recomienda completar los datos desde la Programación Intermedia.</small></p></div>'
+      + '<div class="modal-footer ps-autoprogram-modal-footer"><button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>'
       + '<button type="button" class="btn btn-warning" id="btnConfirmarAutoprogramar">Continuar de todas formas</button></div>'
       + '</div></div></div>';
 
@@ -3523,9 +3908,9 @@
     for (var i = 0; i < alertas.length; i++) {
       var hardText = alertas[i].RestriccionesPendientes || '';
       var softText = alertas[i].RestriccionesBlandas || '';
-      var conditions = '<div class="text-danger font-weight-bold">' + escapeHtml(hardText) + '</div>';
+      var conditions = '<div class="text-danger font-weight-bold ps-autoprogram-hard-condition">' + escapeHtml(hardText) + '</div>';
       if (softText) {
-        conditions += '<div class="mt-1 text-warning"><span class="badge badge-warning mr-1">Blandas</span>'
+        conditions += '<div class="mt-1 text-warning ps-autoprogram-soft-condition"><span class="badge badge-warning mr-1">Blandas</span>'
           + escapeHtml(softText)
           + '<small class="d-block text-muted">Pdto. Constructivo y Modelo BIM no bloquean autoprogramación.</small></div>';
       }
@@ -3534,16 +3919,16 @@
       rows += '<td>' + conditions + '</td></tr>';
     }
 
-    var html = '<div class="modal fade" id="modalRestriccionesFaltantes" tabindex="-1" role="dialog">'
+    var html = '<div class="modal fade aia-modal ps-autoprogram-modal" id="modalRestriccionesFaltantes" tabindex="-1" role="dialog">'
       + '<div class="modal-dialog modal-lg" role="document"><div class="modal-content">'
-      + '<div class="modal-header bg-danger text-white"><h5 class="modal-title"><i class="fas fa-clipboard-list"></i> Actividades pendientes por habilitantes</h5>'
+      + '<div class="modal-header bg-danger text-white ps-autoprogram-modal-header is-danger"><h5 class="modal-title"><i class="fas fa-clipboard-list"></i> Actividades pendientes por habilitantes</h5>'
       + '<button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button></div>'
-      + '<div class="modal-body"><p>Las siguientes <strong>' + alertas.length + '</strong> actividades se omitieron porque tienen condiciones <strong>habilitantes</strong> pendientes para comprometer:</p>'
-      + '<p class="text-muted"><small><span class="badge badge-warning">Blandas</span> Pdto. Constructivo y Modelo BIM son seguimiento operativo; aparecen en ámbar y no bloquean la autoprogramación.</small></p>'
-      + '<div class="table-responsive"><table class="table table-sm table-bordered"><thead><tr><th>Id</th><th>Actividad</th><th>Condiciones</th></tr></thead>'
+      + '<div class="modal-body ps-autoprogram-modal-body"><p>Las siguientes <strong>' + alertas.length + '</strong> actividades se omitieron porque tienen condiciones <strong>habilitantes</strong> pendientes para comprometer:</p>'
+      + '<p class="text-muted ps-autoprogram-note"><small><span class="badge badge-warning">Blandas</span> Pdto. Constructivo y Modelo BIM son seguimiento operativo; aparecen en ámbar y no bloquean la autoprogramación.</small></p>'
+      + '<div class="table-responsive ps-autoprogram-table-wrap"><table class="table table-sm table-bordered ps-autoprogram-table"><thead><tr><th>Id</th><th>Actividad</th><th>Condiciones</th></tr></thead>'
       + '<tbody>' + rows + '</tbody></table></div>'
-      + '<p class="text-muted mt-2"><small>Cierre las acciones de habilitación duras desde la Programación Intermedia para que puedan ser autoprogramadas o agregadas manualmente.</small></p></div>'
-      + '<div class="modal-footer"><button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button></div>'
+      + '<p class="text-muted mt-2 ps-autoprogram-note"><small>Cierre las acciones de habilitación duras desde la Programación Intermedia para que puedan ser autoprogramadas o agregadas manualmente.</small></p></div>'
+      + '<div class="modal-footer ps-autoprogram-modal-footer"><button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button></div>'
       + '</div></div></div>';
 
     $('body').append(html);
@@ -3677,7 +4062,7 @@
       var data = (response && Array.isArray(response.data)) ? response.data : [];
 
       if (data.length === 0) {
-        $tbody.html('<tr><td colspan="4" class="text-center text-muted py-3"><i class="fas fa-inbox fa-2x d-block mb-2" style="opacity:0.35;"></i>No hay actividades sin autoprogramar en la ventana de PI (6 semanas).<br><small>Puedes agregar una manualmente con el formulario.</small></td></tr>');
+        $tbody.html('<tr><td colspan="4" class="text-center text-muted py-3"><i class="fas fa-inbox fa-2x d-block mb-2 ps-empty-icon"></i>No hay actividades sin autoprogramar en la ventana de PI (6 semanas).<br><small>Puedes agregar una manualmente con el formulario.</small></td></tr>');
         // Collapse bandeja panel when empty to give form full space
         $('#formulario_nuevo .ps-nueva-actividad-col--bandeja').addClass('ps-bandeja-empty');
         return;
@@ -3937,14 +4322,14 @@
               }
             }
             if (!act) return option.text;
-            var $el = $('<div class="tnp-option" style="padding: 4px 0;">');
-            $el.append('<div style="font-weight: 600; font-size: 0.95rem; color: #1a3c2a;">' + act.Id + ' - ' + (act.Actividad || 'Actividad #' + act.Id) + '</div>');
+            var $el = $('<div class="tnp-option">');
+            $el.append('<div class="tnp-option-title">' + escapeHtml(act.Id) + ' - ' + escapeHtml(act.Actividad || 'Actividad #' + act.Id) + '</div>');
             var sub = '';
-            if (act.Sub_Contratista) sub += '<span style="color: #555;">Sub: ' + act.Sub_Contratista + '</span>';
-            if (act.Responsable_AIA) { if (sub) sub += ' &nbsp;|&nbsp; '; sub += '<span style="color: #555;">Resp: ' + act.Responsable_AIA + '</span>'; }
-            if (sub) $el.append('<div style="font-size: 0.8rem; margin-top: 2px;">' + sub + '</div>');
+            if (act.Sub_Contratista) sub += '<span>Sub: ' + escapeHtml(act.Sub_Contratista) + '</span>';
+            if (act.Responsable_AIA) { if (sub) sub += ' &nbsp;|&nbsp; '; sub += '<span>Resp: ' + escapeHtml(act.Responsable_AIA) + '</span>'; }
+            if (sub) $el.append('<div class="tnp-option-meta">' + sub + '</div>');
             if (act.previamente_programada) {
-              $el.append('<div style="margin-top: 4px;"><span style="background: #fff3cd; color: #856404; font-size: 0.7rem; padding: 1px 6px; border-radius: 3px; font-weight: 500;">Previamente eliminada</span></div>');
+              $el.append('<div class="tnp-option-flag-wrap"><span class="tnp-option-flag">Previamente eliminada</span></div>');
             }
             return $el;
           }
@@ -4009,6 +4394,7 @@
       .on('resize.psHot orientationchange.psHot aia:viewport-scale-change.psHot', function () {
         scheduleLayoutRefresh(80, true);
         scheduleActionsRowFit(80);
+        syncFixedContextSpacer();
         updateTableHeight();
       });
 
@@ -4030,7 +4416,7 @@
       });
     }
 
-    $('#hot_cat_cnc').off('change.psCnc').on('change.psCnc', function() {
+    $('#hot_cat_cnc').off('change.psCnc').on('change.psCnc', function(event, selectedCause) {
       var cat = $(this).val();
       var $cnc = $('#hot_cnc');
       $cnc.empty().append(new Option('', ''));
@@ -4055,6 +4441,9 @@
         }
         $cnc.html(optionsHtml);
         $cnc.append(new Option('Otra', 'Otra'));
+        if (selectedCause) {
+          $cnc.val(selectedCause);
+        }
       }).fail(function () {
         showFeedback('error', 'Error al cargar causas CNC.');
       });
@@ -4079,7 +4468,7 @@
         return;
       }
 
-      if (window._pendingCncSave && hot) {
+      if (window._pendingCncSave) {
         var pending = window._pendingCncSave;
         var currentVisualRow = -1;
         var sourceData = hot.getSourceData();
@@ -4093,17 +4482,20 @@
         if (currentVisualRow < 0) {
           showFeedback('error', 'No se pudo localizar la fila origen. Recargue la página.');
           window._pendingCncSave = null;
-          $('#modal_cnc_hot').modal('hide');
+          closeCncModal();
           return;
         }
 
-        // Inyectamos los datos de CNC en la fila de Handsontable de forma visual
-        hot.setDataAtRowProp(currentVisualRow, 'Categoria_CNC', cat, 'internal-update');
-        hot.setDataAtRowProp(currentVisualRow, 'CNC', cnc, 'internal-update');
-        hot.setDataAtRowProp(currentVisualRow, 'Observaciones_CNC', obs, 'internal-update');
+        if (!pending.mobile) {
+          hot.setDataAtRowProp(currentVisualRow, 'Categoria_CNC', cat, 'internal-update');
+          hot.setDataAtRowProp(currentVisualRow, 'CNC', cnc, 'internal-update');
+          hot.setDataAtRowProp(currentVisualRow, 'Observaciones_CNC', obs, 'internal-update');
+        }
 
         var normalized = normalizeCellValue(pending.prop, pending.newValue);
-        hot.setDataAtRowProp(currentVisualRow, pending.prop, normalized.value, 'internal-update');
+        if (!pending.mobile) {
+          hot.setDataAtRowProp(currentVisualRow, pending.prop, normalized.value, 'internal-update');
+        }
 
         // Inyectamos overrides al request AJAX para obviar el delay asíncrono del buffer visual de HOT
         var overrides = {
@@ -4113,10 +4505,12 @@
         };
         overrides[pending.prop] = normalized.value;
 
-        saveRow(currentVisualRow, pending.prop, pending.oldValue, overrides);
+        saveRow(currentVisualRow, pending.prop, pending.oldValue, overrides, {
+          mobile: pending.mobile
+        });
 
         window._pendingCncSave = null;
-        $('#modal_cnc_hot').modal('hide');
+        closeCncModal();
       }
     });
 
@@ -4213,7 +4607,7 @@
       $('#tnp_info_frente').text(frenteCol);
       $('#tnp_info_unidad').text(unidadCol);
       $('#tnp_info_cuantia').text(cuantiaCol);
-      $info.show();
+      $info.removeClass('ps-runtime-hidden').show();
     });
 
     $('#modal_tnp').off('hidden.bs.modal.psTnp').on('hidden.bs.modal.psTnp', function () {

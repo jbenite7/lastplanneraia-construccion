@@ -4,6 +4,8 @@ namespace App\Controllers\Api;
 
 use App\Controllers\BaseController;
 use App\Core\Lps\LpsService;
+use App\Security\CsrfTokenManager;
+use App\Support\ModuleRequestContext;
 use App\Services\ProgramaConsolidadoNormalizationService;
 use App\Services\ActivityMatcherService;
 use App\Services\WeeklyRealProgressCarryoverService;
@@ -13,6 +15,8 @@ use TableResolver;
 
 class GeneralApiController extends BaseController
 {
+    private const CSRF_FORM_KEY = 'programa_general_save';
+
     private LpsService $lpsService;
 
     public function __construct()
@@ -134,12 +138,11 @@ class GeneralApiController extends BaseController
         $this->requireAuth();
         $this->authorizePermission('lps.programa_general.editar');
         header('Content-Type: application/json; charset=utf-8');
-
-        header('Content-Type: application/json; charset=utf-8');
+        if (!$this->requireProgramaGeneralCsrf()) {
+            return;
+        }
 
         try {
-            $this->lpsService->disableProductivityMeasurementTemporarily($this->db);
-
             $vars = $this->getSessionVars();
             $dbPrefix = $_GET['db'] ?? ($vars['dbName'] ?? '');
             if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
@@ -147,8 +150,10 @@ class GeneralApiController extends BaseController
             }
             $projectId = $this->projectId($dbPrefix);
             $this->db->setProjectContext($projectId);
+            $this->lpsService->disableProductivityMeasurementTemporarily($this->db, $projectId);
 
             $semanaParam = $_GET['semana_objetivo'] ?? $_GET['semana'] ?? null;
+            $auditUser = (string) ($_SESSION['usuario'] ?? $vars['nombreUsuario'] ?? 'desconocido');
             $semana = $semanaParam !== null ? filter_var($semanaParam, FILTER_VALIDATE_INT) : ($vars['semana'] ?? 0);
             $id = $_POST['unique_id'] ?? $_POST['Consecutivo_en_Programa'] ?? null;
 
@@ -220,7 +225,7 @@ class GeneralApiController extends BaseController
             $auditStmt = $this->db->queryWithProject("SELECT Ejecutado, Ejecutado_Siguiente_Semana, Estado, Titulo, unidad, cantidad_ppto FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " WHERE project_id = ? AND unique_id = ? AND Semana = ? LIMIT 1", [$projectId, $id, $semana], $projectId);
             $auditBefore = $auditStmt->fetch(PDO::FETCH_ASSOC);
             $auditStartTime = microtime(true);
-            error_log("[PGAudit] INICIO | usuario={$vars['user']} | db={$dbPrefix} | semana={$semana} | id={$id} | Titulo={$auditBefore['Titulo']} | Ejecutado_antes={$auditBefore['Ejecutado']} | EjecSigSem_antes={$auditBefore['Ejecutado_Siguiente_Semana']} | Estado_antes={$auditBefore['Estado']} | unidad={$auditBefore['unidad']} | cantidad_ppto={$auditBefore['cantidad_ppto']} | POST_Ejecutado={$rawInput} | POST_EjecutadoRatio=" . ($_POST["EjecutadoRatio"] ?? 'null') . " | POST_unidad={$unidadRaw} | POST_cantidad_ppto=" . ($_POST["cantidad_ppto"] ?? 'null') . " | ejecutado_calculado={$ejecutado}");
+            error_log("[PGAudit] INICIO | usuario={$auditUser} | db={$dbPrefix} | semana={$semana} | id={$id} | Titulo={$auditBefore['Titulo']} | Ejecutado_antes={$auditBefore['Ejecutado']} | EjecSigSem_antes={$auditBefore['Ejecutado_Siguiente_Semana']} | Estado_antes={$auditBefore['Estado']} | unidad={$auditBefore['unidad']} | cantidad_ppto={$auditBefore['cantidad_ppto']} | POST_Ejecutado={$rawInput} | POST_EjecutadoRatio=" . ($_POST["EjecutadoRatio"] ?? 'null') . " | POST_unidad={$unidadRaw} | POST_cantidad_ppto=" . ($_POST["cantidad_ppto"] ?? 'null') . " | ejecutado_calculado={$ejecutado}");
 
             // 4. Update Principal (Incluyendo Mapeo)
             $sql = "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " SET
@@ -332,7 +337,7 @@ class GeneralApiController extends BaseController
             $auditDuration = round(($auditEndTime - $auditStartTime) * 1000, 2);
             $auditStmt2 = $this->db->queryWithProject("SELECT Ejecutado, Ejecutado_Siguiente_Semana, Estado FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " WHERE project_id = ? AND unique_id = ? AND Semana = ? LIMIT 1", [$projectId, $id, $semana], $projectId);
             $auditAfter = $auditStmt2->fetch(PDO::FETCH_ASSOC);
-            error_log("[PGAudit] FINAL | usuario={$vars['user']} | semana={$semana} | id={$id} | Ejecutado_despues={$auditAfter['Ejecutado']} | EjecSigSem_despues={$auditAfter['Ejecutado_Siguiente_Semana']} | Estado_despues={$auditAfter['Estado']} | duracion_ms={$auditDuration}");
+            error_log("[PGAudit] FINAL | usuario={$auditUser} | semana={$semana} | id={$id} | Ejecutado_despues={$auditAfter['Ejecutado']} | EjecSigSem_despues={$auditAfter['Ejecutado_Siguiente_Semana']} | Estado_despues={$auditAfter['Estado']} | duracion_ms={$auditDuration}");
 
             $normalizationService = new ProgramaConsolidadoNormalizationService($this->db);
             $normalizationService->normalizeChapters($dbPrefix, $semana);
@@ -376,6 +381,9 @@ class GeneralApiController extends BaseController
         $this->requireAuth();
         $this->authorizePermission('lps.programa_general.editar');
         header('Content-Type: application/json; charset=utf-8');
+        if (!$this->requireProgramaGeneralCsrf()) {
+            return;
+        }
 
         try {
             $vars = $this->getSessionVars();
@@ -515,6 +523,9 @@ class GeneralApiController extends BaseController
         $this->requireAuth();
         $this->authorizePermission('lps.programa_general.editar');
         header('Content-Type: application/json; charset=utf-8');
+        if (!$this->requireProgramaGeneralCsrf()) {
+            return;
+        }
 
         try {
             $vars = $this->getSessionVars();
@@ -522,19 +533,11 @@ class GeneralApiController extends BaseController
             $dbPrefix = $_GET['db'] ?? ($vars['dbName'] ?? '');
             $semana = (int) ($_GET['semana'] ?? ($vars['semana'] ?? 0));
             $f_inicio_sem = $_GET['f_inicio_sem'] ?? date('Y-m-d');
-            $projectId = (int) ($vars['projectId'] ?? ($_SESSION['project_id'] ?? 0));
 
             if (!preg_match('/^[a-zA-Z0-9_]+$/', $dbPrefix)) {
                 throw new Exception("Base de datos inválida.");
             }
-
-            if ($projectId <= 0) {
-                $projectId = (int) (TableResolver::getProjectIdByPrefix($dbPrefix) ?? 0);
-            }
-
-            if ($projectId <= 0) {
-                throw new Exception("No se pudo identificar el proyecto activo.");
-            }
+            $projectId = $this->projectId($dbPrefix);
 
             $this->db->setProjectContext($projectId);
 
@@ -1171,6 +1174,9 @@ class GeneralApiController extends BaseController
         $this->requireAuth();
         $this->authorizePermission('lps.programa_general.editar');
         header('Content-Type: application/json; charset=utf-8');
+        if (!$this->requireProgramaGeneralCsrf()) {
+            return;
+        }
 
         try {
             $vars = $this->getSessionVars();
@@ -1291,6 +1297,9 @@ class GeneralApiController extends BaseController
         $this->requireAuth();
         $this->authorizePermission('lps.programa_general_actualizar.editar');
         header('Content-Type: application/json; charset=utf-8');
+        if (!$this->requireProgramaGeneralCsrf()) {
+            return;
+        }
 
         try {
             $vars = $this->getSessionVars();
@@ -1468,6 +1477,9 @@ class GeneralApiController extends BaseController
         $this->requireAuth();
         $this->authorizePermission('lps.programa_general_actualizar.editar');
         header('Content-Type: application/json; charset=utf-8');
+        if (!$this->requireProgramaGeneralCsrf()) {
+            return;
+        }
 
         try {
             $proyectoId = $_POST['proyecto_id'] ?? '';
@@ -1696,11 +1708,34 @@ class GeneralApiController extends BaseController
 
     private function projectId(string $dbPrefix): int
     {
+        $context = ModuleRequestContext::resolve();
+        if (($context['dbPrefix'] ?? '') !== $dbPrefix) {
+            throw new Exception('Base de datos inválida o sesión expirada.');
+        }
+
         $projectId = TableResolver::getProjectIdByPrefix($dbPrefix);
         if (!$projectId) {
             throw new Exception('Proyecto no encontrado.');
         }
 
         return $projectId;
+    }
+
+    private function requireProgramaGeneralCsrf(): bool
+    {
+        $token = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? $_POST['_csrf_token'] ?? '';
+        if (CsrfTokenManager::validate(is_string($token) ? $token : '', self::CSRF_FORM_KEY)) {
+            return true;
+        }
+
+        http_response_code(403);
+        echo json_encode([
+            'success' => false,
+            'respuesta' => 'ERROR',
+            'error' => 'Token CSRF inválido o ausente.',
+            'mensaje' => 'Token CSRF inválido o ausente.',
+        ], JSON_UNESCAPED_UNICODE);
+
+        return false;
     }
 }

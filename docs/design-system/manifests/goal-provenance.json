@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "designSystemVersion": "1.0.0",
+  "goalId": "design-system-nucleo-gobernanza",
+  "sourceCommit": "054f395f8f842e7ca20900956761becbfaaba86c",
+  "canonicalSources": [
+    {
+      "path": "goals/design-system-nucleo-gobernanza/goal.md",
+      "sha256": "ddc9e21bad67c250f7a3f3dcd95c0c02487da4a0e41305b3d85cdb7f552d47f4"
+    },
+    {
+      "path": "goals/design-system-nucleo-gobernanza/facts.md",
+      "sha256": "55ca6e6194eabd2e21416aa66453aadc1ff6406a1a67659bf16edea1ccb1c19c"
+    },
+    {
+      "path": "goals/design-system-nucleo-gobernanza/plan.md",
+      "sha256": "5944599099bfb7cf02f36788fc0249346aaf650c8de41e30944034a97181b380"
+    }
+  ],
+  "historicalSources": [
+    {
+      "path": "goals/design-system-nucleo-gobernanza/interview.json",
+      "sha256": "c911b4ebde24c8447e42b2eecfe1cec4ab4c9bea25e01f31e32d9c4dedb32bea",
+      "status": "superseded",
+      "instructional": false
+    },
+    {
+      "path": "goals/design-system-nucleo-gobernanza/interview-result.json",
+      "sha256": "7cc2cc306f903425eff944940930a67eeaae335d52efb89e7bc4485d87c7a020",
+      "status": "superseded",
+      "instructional": false
+    },
+    {
+      "path": "goals/design-system-nucleo-gobernanza/interview-round-1.json",
+      "sha256": "53ba20f3e729e4a5be63bcd877a09b6eaa2a19b355722e236c43fb2a8e6cb59e",
+      "status": "superseded",
+      "instructional": false
+    },
+    {
+      "path": "goals/design-system-nucleo-gobernanza/interview-result-round-1.json",
+      "sha256": "a55cd433015791c73f3ee2960462263a5f62829b7e36e72b13f7b2cf45dba72c",
+      "status": "superseded",
+      "instructional": false
+    },
+    {
+      "path": "goals/design-system-nucleo-gobernanza/interview-round-2.json",
+      "sha256": "1a4938cd6683ef2d9caf0439e296def591b0cb692776a48f6d74e2bc757a3058",
+      "status": "superseded",
+      "instructional": false
+    },
+    {
+      "path": "goals/design-system-nucleo-gobernanza/interview-result-round-2.json",
+      "sha256": "13e384a86e9075afd9c5e027bca8283bb83f0f1644d318683be556fbe5db1bc4",
+      "status": "superseded",
+      "instructional": false
+    },
+    {
+      "path": "goals/design-system-nucleo-gobernanza/facts.meta.json",
+      "sha256": "5b8e043f4ed90f2364865bd8ce79935fd8e0a4fcd9f69a32a77f9540b3fd0d9a",
+      "status": "superseded",
+      "instructional": false
+    },
+    {
+      "path": "goals/design-system-nucleo-gobernanza/facts-result.json",
+      "sha256": "e230e5159ff004f81848f5f0a475bf41f95d3c6898d02abd5e1adab0fa2261c5",
+      "status": "superseded",
+      "instructional": false
+    },
+    {
+      "path": "goals/design-system-nucleo-gobernanza/facts-review.json",
+      "sha256": "5656c289103ebe4c4e2f60571690f76b20388c63730f346e4444b47d934cac10",
+      "status": "superseded",
+      "instructional": false
+    },
+    {
+      "path": "goals/design-system-nucleo-gobernanza/facts.meta-round-3.json",
+      "sha256": "de9bd72bad1ad4c23b53b3be16e908a5bb7d4f1309d3bab93b98f777ca5760a2",
+      "status": "superseded",
+      "instructional": false
+    },
+    {
+      "path": "goals/design-system-nucleo-gobernanza/facts-result-round-3.json",
+      "sha256": "4829a920bdcafa93d16377b4be2047fb67b14566e86d304f5be99f7a79d22d38",
+      "status": "superseded",
+      "instructional": false
+    },
+    {
+      "path": "goals/design-system-nucleo-gobernanza/facts-review-round-3.json",
+      "sha256": "0546b30936fd8164bc19895fa5b3789dc91f6747478f773bc590c47f514f8a4e",
+      "status": "superseded",
+      "instructional": false
+    }
+  ]
+}

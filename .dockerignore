@@ -13,4 +13,16 @@ backups
 cortesProgramacion
 construccion/programacion_semanal/compromisosSemana
 admin/logs
-docs
+docs/*
+!docs/design-system/
+!docs/design-system/**
+.omo
+.env*
+!.env.example
+!.env.example.*
+test-output
+playwright-report
+blob-report
+test-results
+.debug-journal*.md
+.compose.*.override.yml

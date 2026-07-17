@@ -58,18 +58,14 @@
       return 1;
     }
 
-    var hasScaleClass = root.classList.contains('tablet-scale-70') || root.classList.contains('desktop-tablet-scale-70');
     var zoom = toNumber(root.style.zoom, NaN);
 
-    if (hasScaleClass) {
-      if (Number.isFinite(zoom) && zoom > 0 && zoom < 1) {
-        return zoom;
-      }
-      return 0.7;
+    if (Number.isFinite(zoom) && zoom > 0) {
+      return zoom;
     }
 
-    if (Number.isFinite(zoom) && zoom > 0 && zoom < 1) {
-      return zoom;
+    if (root.classList.contains('tablet-scale-70')) {
+      return 0.85;
     }
 
     return 1;

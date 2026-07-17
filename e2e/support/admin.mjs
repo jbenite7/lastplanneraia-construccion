@@ -10,11 +10,20 @@
 
 import { expect } from '@playwright/test';
 
-/** Default admin credentials for testing. test.A is Admin role but may not have admin panel access. jbenitez is System Admin. */
+/** Admin panel credentials supplied explicitly by the E2E environment. */
 export const ADMIN_CREDENTIALS = {
-  username: 'jbenitez',
-  password: 'Jbe#1106z',
+  username: process.env.E2E_ADMIN_USERNAME,
+  password: process.env.E2E_ADMIN_PASSWORD,
 };
+
+function requireAdminCredentials(credentials) {
+  if (!credentials?.username || !credentials?.password) {
+    throw new Error(
+      'Admin E2E credentials are required: set E2E_ADMIN_USERNAME and E2E_ADMIN_PASSWORD.',
+    );
+  }
+  return credentials;
+}
 
 /**
  * Login to the admin panel via `/admin/login`.
@@ -29,10 +38,11 @@ export const ADMIN_CREDENTIALS = {
  * @param {object} [credentials] - { username, password }
  */
 export async function adminLogin(page, credentials = ADMIN_CREDENTIALS) {
+  const resolvedCredentials = requireAdminCredentials(credentials);
   await page.goto('/admin/login', { waitUntil: 'commit', timeout: 30_000 });
   await page.getByRole('textbox', { name: 'Usuario' }).waitFor({ state: 'visible', timeout: 15_000 });
-  await page.getByRole('textbox', { name: 'Usuario' }).fill(credentials.username);
-  await page.getByRole('textbox', { name: 'Contraseña' }).fill(credentials.password);
+  await page.getByRole('textbox', { name: 'Usuario' }).fill(resolvedCredentials.username);
+  await page.getByRole('textbox', { name: 'Contraseña' }).fill(resolvedCredentials.password);
   await page.getByRole('button', { name: 'Ingresar' }).click();
   await page.waitForURL('**/admin/', { timeout: 30_000 }).catch(() => {});
 }

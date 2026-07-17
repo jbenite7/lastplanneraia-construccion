@@ -58,6 +58,14 @@ window.DecisionLogger = (function() {
         return el.value || fallback;
     }
 
+    function getCsrfToken() {
+        if (typeof window.getCsrfToken === 'function') {
+            return window.getCsrfToken();
+        }
+        var meta = document.querySelector('meta[name="csrf-token"]');
+        return meta && meta.content ? meta.content : '';
+    }
+
     // ── Core payload builder ─────────────────────────────────────────
 
     function buildPayload(actividad, sugerencia, decisionUsuario) {
@@ -105,7 +113,10 @@ window.DecisionLogger = (function() {
 
         fetch('/api/general/decision-log', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRF-Token': getCsrfToken()
+            },
             body: params
         }).then(function(r) {
             if (!r.ok) console.error('[DecisionLogger] POST failed:', r.status);

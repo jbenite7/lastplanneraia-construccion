@@ -4,9 +4,11 @@ namespace App\Controllers\Api;
 
 use Admin\Core\RoleManager;
 use App\Controllers\BaseController;
+use App\Security\CsrfTokenManager;
 use App\Services\SemiAutoAssistantService;
 use App\Services\SemiAutoService;
 use App\Support\ModuleRequestContext;
+use DomainException;
 use Throwable;
 
 class SemiAutoController extends BaseController
@@ -143,6 +145,7 @@ class SemiAutoController extends BaseController
 
     public function previewPdc(): void
     {
+        $this->requirePdcCsrf();
         $this->preview(SemiAutoService::MODULE_PDC);
     }
 
@@ -153,16 +156,19 @@ class SemiAutoController extends BaseController
 
     public function applyPdc(): void
     {
+        $this->requirePdcCsrf();
         $this->apply(SemiAutoService::MODULE_PDC);
     }
 
     public function undoPdc(): void
     {
+        $this->requirePdcCsrf();
         $this->undo(SemiAutoService::MODULE_PDC);
     }
 
     public function feedbackPdc(): void
     {
+        $this->requirePdcCsrf();
         $this->feedback(SemiAutoService::MODULE_PDC);
     }
 
@@ -178,11 +184,13 @@ class SemiAutoController extends BaseController
 
     public function assistantAckPdc(): void
     {
+        $this->requirePdcCsrf();
         $this->assistantAck(SemiAutoService::MODULE_PDC);
     }
 
     public function assistantFeedbackPdc(): void
     {
+        $this->requirePdcCsrf();
         $this->assistantFeedback(SemiAutoService::MODULE_PDC);
     }
 
@@ -193,11 +201,13 @@ class SemiAutoController extends BaseController
 
     public function learningApprovePdc(): void
     {
+        $this->requirePdcCsrf();
         $this->learningApprove(SemiAutoService::MODULE_PDC);
     }
 
     public function learningRejectPdc(): void
     {
+        $this->requirePdcCsrf();
         $this->learningReject(SemiAutoService::MODULE_PDC);
     }
 
@@ -261,6 +271,8 @@ class SemiAutoController extends BaseController
                 return;
             }
             $this->json($this->service->undo($module, ModuleRequestContext::resolve(), $runId));
+        } catch (DomainException $e) {
+            $this->jsonError($e->getMessage(), 409);
         } catch (Throwable $e) {
             $this->jsonError('No se pudo deshacer la corrida automática.', 500, $e);
         }
@@ -394,6 +406,17 @@ class SemiAutoController extends BaseController
         if (session_status() === PHP_SESSION_ACTIVE) {
             session_write_close();
         }
+    }
+
+    private function requirePdcCsrf(): void
+    {
+        $token = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? $_POST['_csrf_token'] ?? '';
+        if (CsrfTokenManager::validate($token, 'pdc_save')) {
+            return;
+        }
+
+        $this->jsonError('Token CSRF inválido o ausente.', 403);
+        exit;
     }
 
     private function json(array $payload, int $status = 200): void

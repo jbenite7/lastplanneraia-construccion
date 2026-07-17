@@ -7,6 +7,13 @@ document.getElementById('ventanasModalesSemana').innerHTML =
     return;
   }
 
+  if (container.dataset.skipLegacyLegend === 'true') {
+    var legacyLegend = container.querySelector('#modal_leyenda_colores');
+    if (legacyLegend) {
+      legacyLegend.remove();
+    }
+  }
+
   Array.prototype.forEach.call(container.querySelectorAll('.modal'), function (modal) {
     modal.classList.add('aia-modal');
     var dialog = modal.querySelector('.modal-dialog');
@@ -184,5 +191,4 @@ var fechaNuevaSemana = function () {
   }
   $('#inicio_sem').datepicker(dpOptions);
 };
-
 

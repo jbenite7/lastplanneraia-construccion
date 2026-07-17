@@ -14,6 +14,7 @@
   var lastAppliedContainerHeight = 0;
   var currentColumnWidths = [];
   var pendingViewportState = null;
+  var currentFilteredRows = [];
 
   // Performance cache: pre-computed row classes to avoid per-cell classifyPGRow during render
   var _rowClassCache = [];
@@ -152,6 +153,9 @@
       .done(function (response) {
         if (response && response.success && response.data) {
           window.__RESTRICTION_CONFIG__ = normalizeApiConfig(response.data);
+          if (masterData.length > 0) {
+            applyFiltersAndRender();
+          }
         } else {
           window.__RESTRICTION_CONFIG__ = _DEFAULT_RESTRICTION_CONFIG;
         }
@@ -232,10 +236,13 @@
     return key;
   }
 
-  var columnMinWidths = [34, 52, 120, 44, 72, 72, 42, 42, 54, 64, 64, 78, 70];
-  var columnFloorWidths = [28, 44, 90, 36, 60, 60, 34, 34, 44, 52, 52, 60, 56];
-  var columnMaxWidths = [84, 156, 420, 110, 132, 132, 86, 86, 128, 138, 138, 260, 190];
-  var columnShrinkPriority = [2, 11, 1, 12, 8, 9, 10, 4, 5, 3, 0, 6, 7];
+  var columnMinWidths = [34, 52, 112, 48, 96, 96, 38, 38, 52, 58, 58, 70, 58];
+  var columnFloorWidths = [30, 44, 92, 42, 90, 90, 32, 32, 44, 50, 50, 58, 50];
+  var columnMaxWidths = [56, 120, 300, 64, 104, 104, 56, 56, 82, 90, 90, 112, 78];
+  var columnShrinkPriority = [2, 11, 8, 9, 10, 12, 3, 0, 6, 7, 4, 5, 1];
+  var baseHiddenColumns = [1];
+  var tabletHiddenColumns = [0, 3, 6, 9, 12];
+  var mobileHiddenColumns = [0, 1, 3, 4, 5, 6, 7, 8, 9, 12];
 
   function getDb() {
     return $('#baseDatos_PHP').val() || $('#baseDatos').val() || '';
@@ -584,6 +591,15 @@
     }
 
     return output;
+  }
+
+  function createTextNode(tagName, className, text) {
+    var node = document.createElement(tagName);
+    if (className) {
+      node.className = className;
+    }
+    node.textContent = text;
+    return node;
   }
 
   function normalizeEstadoToStateKey(estado) {
@@ -1024,9 +1040,12 @@
     }
 
     showLoading(true);
-    fetchFilterFlags().done(function (flags) {
-      requestList(flags || '');
-    });
+    if (!hot) {
+      updateOrInitHot([]);
+    }
+    var initialFlags = String($('#scriptBarraFiltros').val() || '').trim();
+    requestList(initialFlags);
+    fetchFilterFlags();
   }
 
   function normalizeCellValue(prop, value) {
@@ -1480,7 +1499,9 @@
             setTimeout(function () { restoreViewportState(savedViewport); }, 0);
           }
 
-          updateLegendCounts(getFilteredRows());
+          currentFilteredRows = getFilteredRows();
+          updateLegendCounts(currentFilteredRows);
+          renderMobileCards();
           showFeedback('success', 'Guardado');
           return;
         }
@@ -1681,6 +1702,315 @@
     return true;
   }
 
+  function mergeHiddenColumns() {
+    var seen = {};
+    var merged = [];
+
+    for (var a = 0; a < arguments.length; a++) {
+      var columns = arguments[a];
+      if (!Array.isArray(columns)) {
+        continue;
+      }
+
+      for (var i = 0; i < columns.length; i++) {
+        var value = Number(columns[i]);
+        if (Number.isInteger(value) && value >= 0 && !seen[value]) {
+          seen[value] = true;
+          merged.push(value);
+        }
+      }
+    }
+
+    return merged.sort(function (left, right) {
+      return left - right;
+    });
+  }
+
+  function getResponsiveHiddenColumns() {
+    var width = Math.max(
+      window.innerWidth || 0,
+      (document.documentElement && document.documentElement.clientWidth) || 0
+    );
+
+    if (width > 0 && width < 700) {
+      return mergeHiddenColumns(baseHiddenColumns, mobileHiddenColumns);
+    }
+
+    if (width > 0 && width <= 991) {
+      return mergeHiddenColumns(baseHiddenColumns, tabletHiddenColumns);
+    }
+
+    return baseHiddenColumns.slice();
+  }
+
+  function isMobileGridViewport() {
+    var width = Math.max(
+      window.innerWidth || 0,
+      (document.documentElement && document.documentElement.clientWidth) || 0
+    );
+
+    return width > 0 && width < 700;
+  }
+
+  function syncResponsiveModeClasses() {
+    var container = document.getElementById('hot-container');
+    if (!container) {
+      return;
+    }
+
+    container.classList.remove('hot-mobile-grid');
+    container.hidden = isMobileCardsLayout();
+
+    var cards = getMobileCardsContainer();
+    if (cards) {
+      cards.hidden = !isMobileCardsLayout();
+    }
+  }
+
+  function isMobileCardsLayout() {
+    return isMobileGridViewport();
+  }
+
+  function getMobileCardsContainer() {
+    return document.getElementById('mobile-card-view');
+  }
+
+  function createMobileCardField(label, value) {
+    var field = document.createElement('div');
+    field.className = 'pg-mobile-card__field';
+    field.appendChild(createTextNode('span', 'pg-mobile-card__label', label));
+    var content = document.createElement('div');
+    content.className = 'pg-mobile-card__value';
+    if (value instanceof Node) {
+      content.appendChild(value);
+    } else {
+      content.textContent = value || '—';
+    }
+    field.appendChild(content);
+    return field;
+  }
+
+  function createMobileStateBadge(rowData) {
+    var classification = classifyPGRow(rowData);
+    var displayState = classification && classification.restrictionAlertKey
+      ? 'Con Alerta Restricciones'
+      : (rowData.Estado || 'Sin datos');
+    var badge = createTextNode('span', 'pg-mobile-card__state', 'Estado: ' + displayState);
+    if (classification && classification.rowClass) {
+      badge.classList.add(classification.rowClass);
+    }
+    if (classification && classification.restrictionAlertKey) {
+      badge.classList.add('pg-state-' + classification.restrictionAlertKey);
+    }
+    return badge;
+  }
+
+  function getMobileActivityTitle(rowData) {
+    return getActividadPlainText(rowData.Actividad)
+      .replace(/\s*\[Cap[ií]tulo:[^\]]*\]\s*/gi, ' ')
+      .replace(/\s*,\s*$/g, '')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+  }
+
+  function updateMobileCell(rowIndex, prop, value) {
+    if (!hot || !Number.isInteger(rowIndex) || !prop) {
+      return;
+    }
+
+    hot.setDataAtRowProp(rowIndex, prop, value, 'mobile-card-edit');
+    window.setTimeout(renderMobileCards, 0);
+  }
+
+  function createMobileInput(rowIndex, rowData, prop, type, label) {
+    var input = document.createElement('input');
+    input.className = 'pg-mobile-card__input';
+    input.type = type || 'text';
+    input.setAttribute('aria-label', label + ': ' + (getMobileActivityTitle(rowData) || 'actividad'));
+    input.value = rowData[prop] === null || rowData[prop] === undefined ? '' : String(rowData[prop]);
+    input.disabled = Number(rowData.Titulo) === 1 || (prop !== 'EjecutadoDisplay' && !_canEditGlobal);
+    var lastCommittedValue = input.value;
+    function commitMobileInput() {
+      var nextValue = input.value;
+      if (nextValue === lastCommittedValue) {
+        return;
+      }
+      lastCommittedValue = nextValue;
+      updateMobileCell(rowIndex, prop, nextValue);
+    }
+    input.addEventListener('change', commitMobileInput);
+    input.addEventListener('blur', commitMobileInput);
+    return input;
+  }
+
+  function createMobileUnitSelect(rowIndex, rowData) {
+    var select = document.createElement('select');
+    select.className = 'pg-mobile-card__input';
+    select.setAttribute('aria-label', 'Unidad: ' + (getMobileActivityTitle(rowData) || 'actividad'));
+    unitOptions.forEach(function (unit) {
+      var option = document.createElement('option');
+      option.value = unit;
+      option.textContent = unit || 'Sin unidad';
+      option.selected = String(rowData.unidad || '') === String(unit);
+      select.appendChild(option);
+    });
+    select.disabled = Number(rowData.Titulo) === 1 || !_canEditGlobal;
+    select.addEventListener('change', function () {
+      updateMobileCell(rowIndex, 'unidad', select.value);
+    });
+    return select;
+  }
+
+  function createMobileCardHeader(rowData) {
+    var header = document.createElement('header');
+    header.className = 'pg-mobile-card__header';
+    var title = createTextNode('h3', 'pg-mobile-card__title', getMobileActivityTitle(rowData) || 'Sin actividad');
+    header.appendChild(title);
+    header.appendChild(createMobileStateBadge(rowData));
+    return header;
+  }
+
+  function createMobileCardMeta(rowData) {
+    var meta = document.createElement('div');
+    meta.className = 'pg-mobile-card__meta';
+    meta.appendChild(createMobileCardField('Id', rowData.Id));
+    meta.appendChild(createMobileCardField('Sem. inicio', rowData.Semanas_Inicio));
+    meta.appendChild(createMobileCardField('Crítica', toNumber(rowData.Ruta_Critica, 0) === 1 ? 'Sí' : 'No'));
+    meta.appendChild(createMobileCardField('Lib. restr.', formatPercent(rowData.Estado_Restricciones)));
+    return meta;
+  }
+
+  function createMobileCardOps(rowData, rowIndex) {
+    var ops = document.createElement('div');
+    ops.className = 'pg-mobile-card__ops';
+    var startInput = createMobileInput(rowIndex, rowData, 'Fecha_Inicio', 'date', 'Fecha inicio');
+    var endInput = createMobileInput(rowIndex, rowData, 'Fecha_Fin', 'date', 'Fecha fin');
+    var qtyInput = createMobileInput(rowIndex, rowData, 'cantidad_ppto', 'number', 'Cantidad PPTO');
+    var realInput = createMobileInput(rowIndex, rowData, 'EjecutadoDisplay', 'number', 'Ejecutado real');
+    qtyInput.step = '0.1';
+    realInput.step = '0.1';
+    qtyInput.disabled = qtyInput.disabled || isPercentLikeUnit(rowData.unidad);
+    ops.appendChild(createMobileCardField('Fecha inicio', startInput));
+    ops.appendChild(createMobileCardField('Fecha fin', endInput));
+    ops.appendChild(createMobileCardField('Unidad', createMobileUnitSelect(rowIndex, rowData)));
+    ops.appendChild(createMobileCardField('Cantidad PPTO', qtyInput));
+    ops.appendChild(createMobileCardField('Ejecutado real', realInput));
+    return ops;
+  }
+
+  function createMobileCard(rowData, rowIndex) {
+    var card = document.createElement('article');
+    card.className = 'pg-mobile-card';
+    var classification = classifyPGRow(rowData);
+    if (classification && classification.rowClass) {
+      card.classList.add(classification.rowClass);
+    }
+    if (classification && classification.restrictionAlertKey) {
+      card.classList.add('pg-state-' + classification.restrictionAlertKey);
+    }
+    if (Number(rowData.Titulo) === 1) {
+      card.classList.add('pg-mobile-card--chapter');
+    }
+    card.dataset.rowIndex = String(rowIndex);
+    card.appendChild(createMobileCardHeader(rowData));
+    card.appendChild(createMobileCardMeta(rowData));
+    if (Number(rowData.Titulo) !== 1) {
+      card.appendChild(createMobileCardOps(rowData, rowIndex));
+    }
+    return card;
+  }
+
+  function renderMobileCards() {
+    var cards = getMobileCardsContainer();
+    if (!cards) {
+      return;
+    }
+    cards.classList.add('pg-mobile-card-list');
+    cards.setAttribute('aria-label', 'Actividades del Programa General');
+    var useCards = isMobileCardsLayout();
+    cards.hidden = !useCards;
+    if (!useCards) {
+      cards.replaceChildren();
+      return;
+    }
+    var fragment = document.createDocumentFragment();
+    var rows = currentFilteredRows.length ? currentFilteredRows : [];
+    if (!rows.length) {
+      fragment.appendChild(createTextNode('p', 'pg-mobile-card-list__empty', 'No hay actividades para mostrar.'));
+    }
+    rows.forEach(function (rowData, rowIndex) {
+      if (Number(rowData.Titulo) === 1) {
+        return;
+      }
+      fragment.appendChild(createMobileCard(rowData, rowIndex));
+    });
+    cards.replaceChildren(fragment);
+  }
+
+  function getResponsiveHiddenColumnsConfig() {
+    return {
+      columns: getResponsiveHiddenColumns(),
+      indicators: false,
+      copyPasteEnabled: false,
+    };
+  }
+
+  function getVisibleColumnIndexes(columnCount) {
+    var hidden = getResponsiveHiddenColumns();
+    var hiddenMap = {};
+    var visible = [];
+
+    for (var h = 0; h < hidden.length; h++) {
+      hiddenMap[hidden[h]] = true;
+    }
+
+    for (var i = 0; i < columnCount; i++) {
+      if (!hiddenMap[i]) {
+        visible.push(i);
+      }
+    }
+
+    return visible;
+  }
+
+  function sumWidthsByIndexes(widths, indexes) {
+    if (!Array.isArray(indexes) || indexes.length === 0) {
+      return sumWidths(widths);
+    }
+
+    var total = 0;
+    for (var i = 0; i < indexes.length; i++) {
+      total += Number(widths[indexes[i]]) || 0;
+    }
+
+    return total;
+  }
+
+  function buildResizePriority(activeIndexes, reverse) {
+    var allowed = {};
+    var ordered = reverse ? columnShrinkPriority.slice().reverse() : columnShrinkPriority.slice();
+    var priority = [];
+
+    for (var i = 0; i < activeIndexes.length; i++) {
+      allowed[activeIndexes[i]] = true;
+    }
+
+    for (var p = 0; p < ordered.length; p++) {
+      if (allowed[ordered[p]]) {
+        priority.push(ordered[p]);
+        delete allowed[ordered[p]];
+      }
+    }
+
+    for (var a = 0; a < activeIndexes.length; a++) {
+      if (allowed[activeIndexes[a]]) {
+        priority.push(activeIndexes[a]);
+      }
+    }
+
+    return priority;
+  }
+
   function getContainerAvailableWidth() {
     var container = document.getElementById('hot-container');
     if (!container) {
@@ -1717,15 +2047,12 @@
     }
 
     var zoom = parseFloat(root.style.zoom || '');
-    if (Number.isFinite(zoom) && zoom > 0 && zoom < 1) {
+    if (Number.isFinite(zoom) && zoom > 0) {
       return zoom;
     }
 
-    if (
-      root.classList.contains('tablet-scale-70') ||
-      root.classList.contains('desktop-tablet-scale-70')
-    ) {
-      return 0.7;
+    if (root.classList.contains('tablet-scale-70')) {
+      return 0.85;
     }
 
     return 1;
@@ -1755,6 +2082,40 @@
 
     container.style.height = resolved + 'px';
     return resolved;
+  }
+
+  function syncRenderedTableWidth(instance) {
+    var hotInstance = instance || hot;
+    var container = document.getElementById('hot-container');
+    if (!hotInstance || !container || typeof hotInstance.countCols !== 'function' || typeof hotInstance.getColWidth !== 'function') {
+      return;
+    }
+
+    var columnCount = hotInstance.countCols();
+    var visibleIndexes = getVisibleColumnIndexes(columnCount);
+    var totalWidth = 0;
+    for (var i = 0; i < visibleIndexes.length; i++) {
+      var col = visibleIndexes[i];
+      totalWidth += Number(hotInstance.getColWidth(col)) || 0;
+    }
+
+    totalWidth = Math.max(Math.ceil(totalWidth), getContainerAvailableWidth());
+    if (!Number.isFinite(totalWidth) || totalWidth <= 0) {
+      return;
+    }
+
+    var width = totalWidth + 'px';
+    container.classList.add('hot-fixed-columns');
+    container.style.setProperty('--hot-table-width', width);
+
+    var nodes = container.querySelectorAll('.handsontable table.htCore, .handsontable .wtHider, .handsontable .wtSpreader');
+    Array.prototype.forEach.call(nodes, function (node) {
+      node.style.setProperty('width', width, 'important');
+      node.style.setProperty('min-width', width, 'important');
+      if (node.matches && node.matches('table.htCore')) {
+        node.style.setProperty('table-layout', 'fixed', 'important');
+      }
+    });
   }
 
   function getContainerAvailableHeight() {
@@ -1941,9 +2302,9 @@
     return widths;
   }
 
-  function reduceWidthsToTarget(widths, targetWidth, lowerBounds) {
+  function reduceWidthsToTarget(widths, targetWidth, lowerBounds, activeIndexes) {
     var reducedWidths = widths.slice();
-    var total = sumWidths(reducedWidths);
+    var total = sumWidthsByIndexes(reducedWidths, activeIndexes);
     if (total <= targetWidth) {
       return reducedWidths;
     }
@@ -1952,7 +2313,8 @@
     var capacities = [];
     var totalCapacity = 0;
 
-    for (var col = 0; col < reducedWidths.length; col++) {
+    for (var i = 0; i < activeIndexes.length; i++) {
+      var col = activeIndexes[i];
       var lowerBound = Number(lowerBounds[col]);
       if (!Number.isFinite(lowerBound) || lowerBound < 20) {
         lowerBound = 20;
@@ -1967,15 +2329,17 @@
     }
 
     if (totalCapacity <= excess) {
-      for (var c = 0; c < reducedWidths.length; c++) {
-        reducedWidths[c] = Number(lowerBounds[c]) || 20;
+      for (var c = 0; c < activeIndexes.length; c++) {
+        var activeIndex = activeIndexes[c];
+        reducedWidths[activeIndex] = Number(lowerBounds[activeIndex]) || 20;
       }
       return reducedWidths;
     }
 
     var reduced = 0;
-    for (var i = 0; i < reducedWidths.length; i++) {
-      var capacity = capacities[i];
+    for (var j = 0; j < activeIndexes.length; j++) {
+      var activeCol = activeIndexes[j];
+      var capacity = capacities[activeCol];
       if (capacity <= 0) {
         continue;
       }
@@ -1985,20 +2349,17 @@
         step = capacity;
       }
       if (step > 0) {
-        reducedWidths[i] -= step;
+        reducedWidths[activeCol] -= step;
         reduced += step;
       }
     }
 
     var remainder = excess - reduced;
     var guard = 0;
+    var priority = buildResizePriority(activeIndexes, false);
     while (remainder > 0 && guard < 4000) {
-      for (var p = 0; p < columnShrinkPriority.length && remainder > 0; p++) {
-        var index = columnShrinkPriority[p];
-        if (index < 0 || index >= reducedWidths.length) {
-          continue;
-        }
-
+      for (var p = 0; p < priority.length && remainder > 0; p++) {
+        var index = priority[p];
         var bound = Number(lowerBounds[index]) || 20;
         if (reducedWidths[index] > bound) {
           reducedWidths[index] -= 1;
@@ -2011,16 +2372,16 @@
     return reducedWidths;
   }
 
-  function expandWidthsToTarget(widths, targetWidth, upperBounds) {
+  function expandWidthsToTarget(widths, targetWidth, upperBounds, activeIndexes) {
     var expandedWidths = widths.slice();
-    var total = sumWidths(expandedWidths);
+    var total = sumWidthsByIndexes(expandedWidths, activeIndexes);
     if (total >= targetWidth) {
       return expandedWidths;
     }
 
     var remainder = targetWidth - total;
     var guard = 0;
-    var growPriority = columnShrinkPriority.slice().reverse();
+    var growPriority = buildResizePriority(activeIndexes, true);
 
     while (remainder > 0 && guard < 5000) {
       var grew = false;
@@ -2051,16 +2412,16 @@
     return expandedWidths;
   }
 
-  function forceFillWidthsToTarget(widths, targetWidth) {
+  function forceFillWidthsToTarget(widths, targetWidth, activeIndexes) {
     var filled = widths.slice();
-    var total = sumWidths(filled);
+    var total = sumWidthsByIndexes(filled, activeIndexes);
     if (total >= targetWidth) {
       return filled;
     }
 
     var remainder = targetWidth - total;
     var guard = 0;
-    var growPriority = columnShrinkPriority.slice().reverse();
+    var growPriority = buildResizePriority(activeIndexes, true);
 
     while (remainder > 0 && guard < 6000) {
       for (var i = 0; i < growPriority.length && remainder > 0; i++) {
@@ -2077,18 +2438,18 @@
     return filled;
   }
 
-  function constrainColumnWidthsToContainer(widths, targetWidth) {
-    var constrained = reduceWidthsToTarget(widths, targetWidth, columnMinWidths);
-    if (sumWidths(constrained) > targetWidth) {
-      constrained = reduceWidthsToTarget(constrained, targetWidth, columnFloorWidths);
+  function constrainColumnWidthsToContainer(widths, targetWidth, activeIndexes) {
+    var constrained = reduceWidthsToTarget(widths, targetWidth, columnMinWidths, activeIndexes);
+    if (sumWidthsByIndexes(constrained, activeIndexes) > targetWidth) {
+      constrained = reduceWidthsToTarget(constrained, targetWidth, columnFloorWidths, activeIndexes);
     }
 
-    if (sumWidths(constrained) < targetWidth) {
-      constrained = expandWidthsToTarget(constrained, targetWidth, columnMaxWidths);
+    if (sumWidthsByIndexes(constrained, activeIndexes) < targetWidth) {
+      constrained = expandWidthsToTarget(constrained, targetWidth, columnMaxWidths, activeIndexes);
     }
 
-    if (sumWidths(constrained) < targetWidth) {
-      constrained = forceFillWidthsToTarget(constrained, targetWidth);
+    if (sumWidthsByIndexes(constrained, activeIndexes) < targetWidth) {
+      constrained = forceFillWidthsToTarget(constrained, targetWidth, activeIndexes);
     }
 
     return constrained;
@@ -2106,6 +2467,11 @@
       return;
     }
 
+    var visibleIndexes = getVisibleColumnIndexes(columnCount);
+    if (visibleIndexes.length === 0) {
+      return;
+    }
+
     var containerWidth = getContainerAvailableWidth();
     if (!containerWidth) {
       return;
@@ -2120,7 +2486,7 @@
     }
 
     var baseWidths = getBaseColumnWidths(columnCount);
-    var constrained = constrainColumnWidthsToContainer(baseWidths, containerWidth);
+    var constrained = constrainColumnWidthsToContainer(baseWidths, containerWidth, visibleIndexes);
 
     if (!force && arraysEqualNumbers(currentColumnWidths, constrained)) {
       lastAppliedContainerWidth = containerWidth;
@@ -2130,6 +2496,26 @@
     hot.updateSettings({ colWidths: constrained });
     currentColumnWidths = constrained.slice();
     lastAppliedContainerWidth = containerWidth;
+  }
+
+  function applyResponsiveColumnVisibility() {
+    if (!hot) {
+      return;
+    }
+
+    var settings = hot.getSettings() || {};
+    var currentHidden = settings.hiddenColumns && Array.isArray(settings.hiddenColumns.columns)
+      ? settings.hiddenColumns.columns
+      : [];
+    var config = getResponsiveHiddenColumnsConfig();
+
+    if (arraysEqualNumbers(currentHidden, config.columns)) {
+      return;
+    }
+
+    hot.updateSettings({ hiddenColumns: config });
+    currentColumnWidths = [];
+    lastAppliedContainerWidth = 0;
   }
 
   function scheduleLayoutRefresh(delay, force) {
@@ -2143,6 +2529,7 @@
         var viewportState = pendingViewportState;
         pendingViewportState = null;
 
+        syncResponsiveModeClasses();
         syncContainerHeight();
         var containerHeight = getContainerAvailableHeight();
         if (containerHeight && (Boolean(force) || containerHeight !== lastAppliedContainerHeight)) {
@@ -2154,8 +2541,11 @@
           hot.refreshDimensions();
         }
 
-        // Prueba piloto porcentajes: applyResponsiveColumnWidths(Boolean(force));
+        applyResponsiveColumnVisibility();
+        applyResponsiveColumnWidths(Boolean(force));
         hot.render();
+        syncRenderedTableWidth(hot);
+        renderMobileCards();
 
         if (viewportState) {
           setTimeout(function () {
@@ -2332,8 +2722,10 @@
 
   function updateOrInitHot(data) {
     setupRenderers();
-    syncContainerHeight();
-    buildRowClassCache(data);
+    var isEmptyInitialGrid = !hot && data.length === 0;
+    if (!isEmptyInitialGrid) {
+      syncContainerHeight();
+    }
 
     if (hot) {
       var filterConditions = captureHotFilterConditions();
@@ -2349,6 +2741,7 @@
     if (!container) {
       return;
     }
+    syncResponsiveModeClasses();
 
     hot = new Handsontable(container, {
       data: data,
@@ -2357,16 +2750,16 @@
         'Id',
         'Código Actividad',
         'Actividad',
-        'Semanas Inicio',
+        'Sem. Inicio',
         'Fecha Inicio',
         'Fecha Fin',
         'Crítica',
         'Unidad',
-        'Cantidad PPTO',
-        'Ejecutado Teórico',
-        'Ejecutado Real',
+        'Cant. PPTO',
+        'Ej. Teórico',
+        'Ej. Real',
         'Estado',
-        'Liberación Restricciones',
+        'Lib. Restr.',
       ],
       columns: [
         { data: 'Id', readOnly: true, className: 'htCenter htMiddle' },
@@ -2393,7 +2786,7 @@
           dateFormat: 'YYYY-MM-DD',
           correctFormat: true,
           renderer: 'pgGenericDateRenderer',
-          className: 'htCenter htMiddle',
+          className: 'htCenter htMiddle pg-date-cell',
         },
         {
           data: 'Fecha_Fin',
@@ -2401,7 +2794,7 @@
           dateFormat: 'YYYY-MM-DD',
           correctFormat: true,
           renderer: 'pgGenericDateRenderer',
-          className: 'htCenter htMiddle',
+          className: 'htCenter htMiddle pg-date-cell',
         },
         {
           data: 'Ruta_Critica',
@@ -2446,6 +2839,7 @@
           className: 'htCenter htMiddle',
         },
       ],
+      hiddenColumns: getResponsiveHiddenColumnsConfig(),
       licenseKey: 'non-commercial-and-evaluation',
       language: 'es-MX',
       stretchH: 'none',
@@ -2484,9 +2878,16 @@
       viewportColumnRenderingOffset: 10,
       colHeaderHeight: 48,
       width: '100%',
-      height: getContainerAvailableHeight() || '100%',
+      height: isEmptyInitialGrid ? '100%' : (getContainerAvailableHeight() || '100%'),
       afterRender: function () {
-        refreshVisiblePGCellMeta(this);
+        var hotInstance = this;
+        window.requestAnimationFrame(function () {
+          refreshVisiblePGCellMeta(hotInstance);
+          syncRenderedTableWidth(hotInstance);
+          if (window.AiaComponents && window.AiaComponents.ensureScrollableRegions) {
+            window.AiaComponents.ensureScrollableRegions(container);
+          }
+        });
       },
       className: 'htMiddle',
       cells: function (row, col, prop) {
@@ -2578,7 +2979,6 @@
         this.render();
       },
     });
-
     // Fix: Asegurar que HOT mantenga el listening activo.
     // Bootstrap/jQuery roban el foco a nivel de document.
     hot.listen();
@@ -2647,11 +3047,17 @@
 
   function applyFiltersAndRender() {
     var filtered = getFilteredRows();
+    currentFilteredRows = filtered;
     updateLegendCounts(filtered);
     updateOrInitHot(filtered);
+    renderMobileCards();
   }
 
   function syncLegendVisualState() {
+    $('#pgLegend .pdc-legend-item').attr('aria-pressed', function () {
+      return activeFilters.indexOf(String($(this).data('filter'))) > -1 ? 'true' : 'false';
+    });
+
     if (activeFilters.length === 0) {
       $('#pgLegend .pdc-legend-item').removeClass('inactive-filter');
     } else {
@@ -2663,7 +3069,9 @@
       }
     }
 
-    $('#mobileFilterCount').text(activeFilters.length);
+    $('#mobileFilterCount')
+      .text(activeFilters.length > 0 ? activeFilters.length : '')
+      .prop('hidden', activeFilters.length === 0);
   }
 
   function toggleLegendFilter(filterState, event) {
@@ -2771,7 +3179,6 @@
       .done(function (response) {
         if (response && response.respuesta === 'BIEN') {
           showFeedback('success', 'Ejecución actualizada');
-          loadData();
         } else {
           showFeedback('error', 'Error al actualizar ejecución');
         }
@@ -2780,6 +3187,7 @@
         showFeedback('error', 'Error de red al actualizar');
       })
       .always(function () {
+        loadData();
         $('#actualizarEjecucion')
           .prop('disabled', false)
           .html('Actualizar Ejecución <i class="fas fa-sync ml-1"></i>');
@@ -2829,9 +3237,46 @@
         scheduleLayoutRefresh(0, true);
       });
 
+    $('.btn-filter-toggle[data-target="#pdcFiltersMobile"]')
+      .off('click.pgCollapseFallback')
+      .on('click.pgCollapseFallback', function (event) {
+        if ($.fn && typeof $.fn.collapse === 'function') {
+          return;
+        }
+
+        var panel = document.getElementById('pdcFiltersMobile');
+        if (!panel) {
+          return;
+        }
+
+        event.preventDefault();
+        var opened = !panel.classList.contains('show');
+        panel.classList.toggle('show', opened);
+        this.setAttribute('aria-expanded', opened ? 'true' : 'false');
+        scheduleLayoutRefresh(0, true);
+      });
+
     $(document)
-      .off('show.bs.modal.pgLegend', '#modal_leyenda_colores')
-      .on('show.bs.modal.pgLegend', '#modal_leyenda_colores', renderLegendModal);
+      .off('.pgLegend', '#modal_leyenda_colores')
+      .on('show.bs.modal.pgLegend', '#modal_leyenda_colores', function () {
+        this.__pgLegendTrigger = document.activeElement;
+        renderLegendModal();
+      })
+      .on('shown.bs.modal.pgLegend', '#modal_leyenda_colores', function () {
+        this.focus();
+      })
+      .on('keydown.pgLegend', '#modal_leyenda_colores', function (event) {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          $(this).modal('hide');
+        }
+      })
+      .on('hidden.bs.modal.pgLegend', '#modal_leyenda_colores', function () {
+        if (this.__pgLegendTrigger && document.contains(this.__pgLegendTrigger)) {
+          this.__pgLegendTrigger.focus();
+        }
+        this.__pgLegendTrigger = null;
+      });
   }
 
   function bindResize() {
@@ -2843,12 +3288,15 @@
   }
 
   function init() {
+    if (!hot && getDb() && getSemana()) {
+      updateOrInitHot([]);
+    }
+
     if (!initialized) {
       bindActions();
       bindFilters();
       bindResize();
       fetchCodigosActividad();
-      renderLegendModal();
       bindAutoUpdateOnNavigation();
       initialized = true;
     }
@@ -2859,12 +3307,14 @@
 
     syncLegendVisualState();
     var shouldAutoUpdate = shouldAutoUpdateOnEntry();
-    fetchRestrictionConfig().always(function () {
-      loadData();
-      if (shouldAutoUpdate) {
+    if (shouldAutoUpdate) {
+      fetchRestrictionConfig().always(function () {
         actualizarEjecucion();
-      }
-    });
+      });
+    } else {
+      loadData();
+      fetchRestrictionConfig();
+    }
   }
 
   var PG_AUTO_UPDATE_FLAG = 'pgAutoUpdateOnNextLoad';
@@ -2885,7 +3335,7 @@
         return true;
       }
     } catch (e) { /* noop */ }
-    return true;
+    return false;
   }
 
   window.PGHotModule = {

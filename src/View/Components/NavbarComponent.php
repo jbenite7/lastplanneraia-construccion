@@ -8,6 +8,12 @@ class NavbarComponent
     {
         // Detectar si el proyecto es Pre-Construcción
         $isPreConstruccion = ($_SESSION['area'] ?? 'Construccion') === 'Pre-Construccion';
+        $canAccessBi = $activeSection === 'proyectos'
+            ? BiAccessComponent::canAccessAny()
+            : BiAccessComponent::canAccess();
+        $biControlTowerUrl = $activeSection === 'proyectos'
+            ? BiAccessComponent::globalUrl()
+            : BiAccessComponent::url('control-tower');
 
         $usuarioRaw = trim($_SESSION['nombreUsuario'] ?? 'Usuario');
 
@@ -36,35 +42,42 @@ class NavbarComponent
             <div class="container-fluid"> <!-- Use container-fluid for full width single row -->
 
                 <!-- Brand / Logo -->
-                <a class="navbar-brand" href="/proyectos">
-                    <!-- Icon Placeholder (No Image loaded yet as per request) -->
-                    <i class="fas fa-drafting-compass mr-2"></i>
-                    Last Planner AIA
+                <a class="navbar-brand aia-brand" href="/proyectos" aria-label="Last Planner AIA">
+                    <span class="aia-brand-mark" aria-hidden="true"></span>
+                    <span class="aia-brand-name">Last Planner AIA</span>
                 </a>
 
                 <!-- Mobile Toggler -->
-                <button class="navbar-toggler" type="button" id="drawerToggle">
+                <button class="navbar-toggler" type="button" id="drawerToggle"
+                        aria-label="Abrir menú" aria-controls="aiaNavbar" aria-expanded="false">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
                 <!-- Navbar Content (Desktop: Row, Mobile: Drawer) -->
-                <div class="collapse navbar-collapse navbar-collapse-drawer" id="aiaNavbar">
+                <div class="collapse navbar-collapse navbar-collapse-drawer" id="aiaNavbar"
+                     role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
 
                     <!-- Mobile Drawer Header -->
                     <div class="drawer-header d-xl-none">
-                        <h5 class="m-0">Menú</h5>
-                        <button type="button" class="close-drawer" id="drawerClose">&times;</button>
+                        <h5 class="m-0" id="drawerTitle">Menú</h5>
+                        <button type="button" class="close-drawer" id="drawerClose"
+                                aria-label="Cerrar menú">&times;</button>
                     </div>
 
                     <!-- Main Navigation Links (Center/Left) - ONLY if not identifying as project selector -->
                     <?php if ($activeSection !== 'proyectos'): ?>
                     <ul class="navbar-nav mr-auto ml-lg-4 main-links">
-                        <li class="nav-item">
-                            <a id="informacionGeneral" class="nav-link <?php echo $activeSection == 'general' ? 'active' : ''; ?>" href="#">
+                        <li class="nav-item dropdown">
+                            <a id="informacionGeneral" class="nav-link dropdown-toggle <?php echo in_array($activeSection, ['general', 'listado_actividades', 'contratos', 'bi_control_tower'], true) ? 'active' : ''; ?>" href="#" role="button" data-toggle="dropdown" aria-expanded="false">
                                 <i class="fas fa-info-circle nav-icon"></i>
                                 <span class="nav-text-full">Información General</span>
                                 <span class="nav-text-compact">I. General</span>
                             </a>
+                            <ul class="dropdown-menu" id="informacionGeneralMenu" aria-labelledby="informacionGeneral">
+                                <?php if ($canAccessBi): ?>
+                                <li><a class="dropdown-item" href="<?php echo htmlspecialchars($biControlTowerUrl, ENT_QUOTES, 'UTF-8'); ?>" data-bi-access-link="control-tower"><i class="fas fa-chart-line mr-2"></i>Control Tower</a></li>
+                                <?php endif; ?>
+                            </ul>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link <?php echo $activeSection == 'integracion' ? 'active' : ''; ?>" href="#">
@@ -144,7 +157,7 @@ class NavbarComponent
                         <li class="nav-item dropdown mr-2">
                             <a class="nav-link dropdown-toggle" href="#" id="notificationDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="position: relative;">
                                 <i class="fas fa-bell"></i>
-                                <span class="badge badge-danger badge-pill" id="notificationBadge" style="position: absolute; top: 0px; right: -5px; display: none; font-size: 0.6rem;">0</span>
+                                <span class="badge badge-danger badge-pill" id="notificationBadge" style="position: absolute; top: 0px; right: 0; display: none; font-size: 0.6rem;">0</span>
                             </a>
                             <div class="dropdown-menu dropdown-menu-right shadow-sm border-0" aria-labelledby="notificationDropdown" style="width: 320px; max-height: 400px; overflow-y: auto; padding: 0;">
                                 <h6 class="dropdown-header bg-light border-bottom py-2 font-weight-bold">Centro de Notificaciones</h6>
@@ -171,6 +184,12 @@ class NavbarComponent
                                 </a>
                                 <div class="dropdown-divider"></div>
                                 <?php endif; ?>
+
+                                <button type="button" class="dropdown-item aia-theme-switch" aria-pressed="false">
+                                    <i class="fas fa-moon mr-2 text-muted" aria-hidden="true"></i>
+                                    <span class="aia-theme-switch-text">Modo oscuro</span>
+                                </button>
+                                <div class="dropdown-divider"></div>
 
                                 <a class="dropdown-item text-danger" href="/logout">
                                     <i class="fas fa-sign-out-alt mr-2"></i> Cerrar Sesión
@@ -205,6 +224,17 @@ class NavbarComponent
                             </a>
                             <?php endif; ?>
 
+                            <?php if ($canAccessBi): ?>
+                            <a href="<?php echo htmlspecialchars($biControlTowerUrl, ENT_QUOTES, 'UTF-8'); ?>" class="island-btn" data-bi-access-link="control-tower">
+                                <i class="fas fa-chart-line"></i> BI
+                            </a>
+                            <?php endif; ?>
+
+                            <button type="button" class="island-btn aia-theme-switch" aria-pressed="false">
+                                <i class="fas fa-moon" aria-hidden="true"></i>
+                                <span class="aia-theme-switch-text">Oscuro</span>
+                            </button>
+
                             <!-- Notificaciones Dropdown Mobile -->
                             <div class="dropdown" style="display: flex;">
                                 <a href="#" class="island-btn w-100 island-notification-btn" id="notificationDropdownMobile" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -229,77 +259,23 @@ class NavbarComponent
         </nav>
 
         <!-- Spacing for fixed navbar -->
-        <div style="height: 70px;"></div>
+        <div class="shell-nav-spacer" aria-hidden="true"></div>
 
+        <script src="/public/js/modules/aia_ui/nav_drawer.js?v=<?= filemtime(__DIR__ . '/../../../public/js/modules/aia_ui/nav_drawer.js') ?>"></script>
         <script>
             // Simple JS for Drawer Toggling (Vanilla JS for standard compatibility)
+            function bindThemeSwitchesWhenReady() {
+                if (window.AiaDesignSystem && typeof window.AiaDesignSystem.bindThemeSwitches === 'function') {
+                    window.AiaDesignSystem.bindThemeSwitches(document);
+                    return;
+                }
+                document.addEventListener('aia-theme-ready', function() {
+                    window.AiaDesignSystem.bindThemeSwitches(document);
+                }, { once: true });
+            }
             document.addEventListener('DOMContentLoaded', function() {
-                var toggle = document.getElementById('drawerToggle');
-                var drawer = document.getElementById('aiaNavbar');
-                var close = document.getElementById('drawerClose');
-                var overlay = document.getElementById('drawerOverlay');
-
-                function openDrawer() {
-                    drawer.classList.add('show');
-                    overlay.classList.add('show');
-                    document.body.style.overflow = 'hidden'; // Prevent background scrolling
-                }
-
-                function closeDrawer() {
-                    drawer.classList.remove('show');
-                    overlay.classList.remove('show');
-                    document.body.style.overflow = '';
-                }
-
-                if(toggle) toggle.addEventListener('click', openDrawer);
-                if(close) close.addEventListener('click', closeDrawer);
-                if(overlay) overlay.addEventListener('click', closeDrawer);
-
-                // --- Dark Mode Logic ---
-                const darkModeToggle = document.getElementById('darkModeToggle');
-                const body = document.body;
-                const icon = darkModeToggle ? darkModeToggle.querySelector('i') : null;
-                const text = document.getElementById('darkModeText');
-
-                function updateUI(isDark) {
-                    if(icon) {
-                        if (isDark) {
-                            icon.classList.remove('fa-moon');
-                            icon.classList.add('fa-sun');
-                            if(text) text.textContent = 'Modo Claro';
-                        } else {
-                            icon.classList.remove('fa-sun');
-                            icon.classList.add('fa-moon');
-                            if(text) text.textContent = 'Modo Oscuro';
-                        }
-                    }
-                }
-
-                // 1. Check LocalStorage
-                const currentTheme = localStorage.getItem('aia-theme');
-                if (currentTheme === 'dark') {
-                    body.classList.add('dark-mode');
-                    updateUI(true);
-                } else {
-                    updateUI(false);
-                }
-
-                // 2. Toggle Handler
-                if (darkModeToggle) {
-                    darkModeToggle.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        e.stopPropagation(); // Keep dropdown open to see effect
-
-                        body.classList.toggle('dark-mode');
-                        const isDark = body.classList.contains('dark-mode');
-
-                        // Save preference
-                        localStorage.setItem('aia-theme', isDark ? 'dark' : 'light');
-
-                        // Update UI
-                        updateUI(isDark);
-                    });
-                }
+                if (window.AiaNavDrawer) window.AiaNavDrawer.init();
+                bindThemeSwitchesWhenReady();
             });
         </script>
         <script src="/public/js/components/notifications.js?v=<?php echo time(); ?>"></script>

@@ -88,7 +88,10 @@ WHERE codigo IN (
 
 UPDATE `general_pdc_contractual_elements`
 SET activa = 0,
-    notas = CONCAT(COALESCE(notas, ''), ' | Reubicado por feedback Da Porto/JMC: pertenece a Cimentaciones.')
+    notas = CASE
+      WHEN COALESCE(notas, '') LIKE '%Reubicado por feedback Da Porto/JMC:%' THEN notas
+      ELSE CONCAT(COALESCE(notas, ''), ' | Reubicado por feedback Da Porto/JMC: pertenece a Cimentaciones.')
+    END
 WHERE nombre_normalizado = 'LOSAS DE CIMENTACION';
 
 INSERT INTO `general_pdc_activity_rules`

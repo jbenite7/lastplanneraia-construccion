@@ -14,14 +14,20 @@
     <!-- AdminLTE / Bootstrap -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.4.24/sweetalert2.min.css">
-    <link rel="stylesheet" href="/css/login-brand-unified.css?v=1.3">
+    <link rel="stylesheet" href="/css/tokens.css?v=<?= filemtime(__DIR__ . '/../../public/css/tokens.css') ?>">
+    <link rel="stylesheet" href="/css/aia-design-system.css?v=20260708radius1">
+    <link rel="stylesheet" href="/css/login-brand-unified.css?v=<?= filemtime(__DIR__ . '/../../public/css/login-brand-unified.css') ?>">
 </head>
-<body class="hold-transition login-page login-brand-page">
+<body class="hold-transition login-page login-brand-page aia-shell">
+    <?php require __DIR__ . '/partials/auth-theme-switch.php'; ?>
 
     <div class="login-box">
         <div class="card card-login">
             <div class="card-header">
-                <img src="/img/aiaConstruccionMasCerteza.png" alt="AIA Logo" class="brand-logo">
+                <div class="login-brand-lockup" aria-label="Last Planner AIA">
+                    <span class="login-brand-mark" aria-hidden="true"></span>
+                    <span class="login-brand-wordmark">Last Planner AIA</span>
+                </div>
                 <h1 class="login-title">Bienvenido a Last Planner AIA</h1>
                 <p class="login-subtitle">Ingresa tus credenciales para continuar</p>
             </div>
@@ -29,7 +35,7 @@
             <div class="card-body">
                 
                 <?php if (!empty($errores)): ?>
-                    <div class="alert alert-danger alert-custom mb-4">
+                    <div class="alert alert-danger alert-custom mb-4" role="alert" aria-live="assertive">
                         <ul class="mb-0 pl-3">
                             <?php echo $errores; ?>
                         </ul>
@@ -37,15 +43,15 @@
                 <?php endif ?>
 
                 <?php if (!empty($resetNotice)): ?>
-                    <div class="alert alert-success alert-custom mb-4">
+                    <div class="alert alert-success alert-custom mb-4" role="status" aria-live="polite">
                         Tu contraseña fue restablecida correctamente. Ya puedes iniciar sesión.
                     </div>
                 <?php endif; ?>
 
-                <form action="<?php echo htmlspecialchars($formAction ?? '/login', ENT_QUOTES, 'UTF-8'); ?>" method="post" id="loginForm">
+                <form action="<?php echo htmlspecialchars($formAction ?? '/login', ENT_QUOTES, 'UTF-8'); ?>" method="post" id="loginForm" data-auth-form>
                     <div class="input-group mb-3">
-                        <label for="usuario" class="sr-only">Usuario</label>
-                        <input type="text" id="usuario" name="usuario" class="form-control" placeholder="Usuario" autocomplete="username" required>
+                        <label for="usuario" class="auth-field-label">Usuario</label>
+                        <input type="text" id="usuario" name="usuario" class="form-control" placeholder="Ingresa tu usuario" autocomplete="username" autocapitalize="none" spellcheck="false" required>
                         <div class="input-group-append">
                             <div class="input-group-text">
                                 <span class="fas fa-user" aria-hidden="true"></span>
@@ -54,18 +60,18 @@
                     </div>
                     
                     <div class="input-group mb-4">
-                        <label for="password" class="sr-only">Contraseña</label>
+                        <label for="password" class="auth-field-label">Contraseña</label>
                         <input type="password" id="password" name="password" class="form-control" placeholder="Contraseña" autocomplete="current-password" required>
                         <div class="input-group-append">
-                            <div class="input-group-text">
-                                <span class="fas fa-lock" aria-hidden="true"></span>
-                            </div>
+                            <button type="button" class="input-group-text auth-password-toggle" data-password-toggle="password" aria-label="Mostrar contraseña" aria-pressed="false">
+                                <i class="fas fa-eye" aria-hidden="true"></i>
+                            </button>
                         </div>
                     </div>
                     
                     <div class="row">
                         <div class="col-12">
-                            <button type="submit" class="btn btn-aia btn-block">
+                            <button type="submit" class="btn btn-aia btn-block" data-loading-text="Ingresando…">
                                 INICIAR SESIÓN <i class="fas fa-arrow-right ml-2" aria-hidden="true"></i>
                             </button>
                         </div>
@@ -73,7 +79,7 @@
                 </form>
 
                 <div class="text-center mb-3">
-                    <a href="/password/forgot">¿Olvidaste tu contraseña?</a>
+                    <a class="auth-link" href="/password/forgot">¿Olvidaste tu contraseña?</a>
                 </div>
 
                 <div class="footer-text">
@@ -89,11 +95,10 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.4.24/sweetalert2.all.min.js"></script>
     <script src="/public/js/core/AiaAlertInterceptor.js?v=20260324a"></script>
+    <script src="/public/js/modules/aia_ui/theme.js?v=<?= filemtime(__DIR__ . '/../../public/js/modules/aia_ui/theme.js') ?>"></script>
+    <script src="/public/js/modules/aia_ui/auth_forms.js?v=<?= filemtime(__DIR__ . '/../../public/js/modules/aia_ui/auth_forms.js') ?>"></script>
     
     <script>
-        // Prevent context menu
-        document.oncontextmenu = function(){return false};
-
         <?php if (!empty($timeoutNotice)): ?>
             document.addEventListener('DOMContentLoaded', function() {
                 if (window.AIA && AIA.Notice) {
@@ -119,54 +124,14 @@
             });
         <?php endif; ?>
     </script>
-<script src="public/js/core/AiaAlertInterceptor.js"></script>
-
-<?php if (isset($_SESSION['must_change_password']) && $_SESSION['must_change_password']): ?>
-<style id="pwd-modal-style">
-    /* Forzar redimensionamiento y espaciado del modal de cambio de clave */
-    .aia-password-modal.aia-glass-popup {
-        padding: 1.5rem !important;
-        border-radius: 20px !important;
-        width: 25rem !important;
-    }
-    .aia-password-modal .swal2-icon {
-        margin: 0 auto 0.5rem auto !important;
-        transform: scale(0.7);
-    }
-    .aia-password-modal .swal2-title {
-        margin: 0 !important;
-        padding: 0 !important;
-        line-height: 1.2 !important;
-        font-size: 1.35rem !important;
-    }
-    .aia-password-modal .swal2-html-container {
-        margin: 0.5rem 0 0 0 !important;
-        padding: 0 !important;
-        overflow: hidden !important;
-        text-align: left !important;
-    }
-    .aia-password-modal .swal2-actions {
-        margin-top: 1.5rem !important;
-        padding: 0 !important;
-        min-height: auto !important;
-    }
-    
-    .brand-modal-content { display: flex; flex-direction: column; gap: 0.5rem; text-align: left; }
-    .brand-modal-content p { margin: 0 0 0.5rem 0 !important; font-size: 0.88rem; opacity: 0.9; line-height: 1.3; color: #ecedf1; }
-    .brand-modal-form-group { margin-bottom: 0 !important; }
-    .brand-modal-form-group label { color: #f8f9fa !important; font-size: 0.85rem !important; margin-bottom: 2px !important; display: block; font-weight: 600; }
-    .brand-modal-form-group label small { color: rgba(255,255,255,0.6); font-weight: 400; font-size: 0.75rem; display: inline-block; margin-left: 2px; }
-</style>
-<?php endif; ?>
-
 <script>
 $(document).ready(function() {
     <?php if (isset($_SESSION['must_change_password']) && $_SESSION['must_change_password']): ?>
     AIA.Notice.dialog({
         title: '🔑 Cambio de Contraseña Obligatorio',
-        html: '<div class="brand-modal-content"><p>Para fortalecer la seguridad de <b>Last Planner AIA</b>, es necesario que establezcas una nueva contraseña robusta y privada.</p><div class="brand-modal-form-group"><label for="new_password">Nueva Contraseña <small>(1 Mayús. y 1 Especial como #, $, @)</small></label><input type="password" id="new_password" class="form-control form-control-sm" placeholder="Mín. 6 caracteres"></div><div class="brand-modal-form-group"><label for="confirm_password">Confirmar Contraseña</label><input type="password" id="confirm_password" class="form-control form-control-sm" placeholder="Repite tu nueva contraseña"></div></div>',
+        html: '<div class="brand-modal-content"><p>Para fortalecer la seguridad de <b>Last Planner AIA</b>, establece una contraseña robusta y privada.</p><div class="brand-modal-form-group"><label for="new_password">Nueva contraseña <small>(1 mayúscula y 1 carácter especial)</small></label><div class="auth-modal-password-row"><input type="password" id="new_password" class="form-control" autocomplete="new-password" placeholder="Mín. 6 caracteres"><button type="button" class="auth-password-toggle" data-password-toggle="new_password" aria-label="Mostrar contraseña" aria-pressed="false"><i class="fas fa-eye" aria-hidden="true"></i></button></div></div><div class="brand-modal-form-group"><label for="confirm_password">Confirmar contraseña</label><div class="auth-modal-password-row"><input type="password" id="confirm_password" class="form-control" autocomplete="new-password" placeholder="Repite tu nueva contraseña"><button type="button" class="auth-password-toggle" data-password-toggle="confirm_password" aria-label="Mostrar contraseña" aria-pressed="false"><i class="fas fa-eye" aria-hidden="true"></i></button></div></div></div>',
         icon: 'warning',
-        iconColor: '#34c759',
+        iconColor: 'var(--ds-color-state-success-text)',
         customClass: {
             popup: 'aia-glass-popup aia-password-modal',
             title: 'swal2-title',

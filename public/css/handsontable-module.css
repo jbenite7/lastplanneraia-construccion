@@ -8,6 +8,13 @@
  */
 
 @layer base {
+:root {
+  --lps-rail-width: 42px;
+  --lps-rail-hover-width: 46px;
+  --lps-rail-safe-width: var(--lps-rail-hover-width);
+  --lps-context-drawer-width: 320px;
+}
+
 /* ========================================
    LAYOUT BASE - MOBILE FIRST & FLEX
    ======================================== */
@@ -108,6 +115,13 @@ body {
   width: 100% !important;
   border-collapse: separate !important;
   max-width: none !important;
+  table-layout: auto !important;
+}
+
+#hot-container.hot-fixed-columns .handsontable table.htCore {
+  width: var(--hot-table-width, 100%) !important;
+  min-width: var(--hot-table-width, 100%) !important;
+  table-layout: fixed !important;
 }
 
 /* 3. Reforzar clases de alineación de HOT */
@@ -136,8 +150,8 @@ body {
 
 /* 4. Headers premium */
 #hot-container th {
-  background-color: #f8f9fa !important;
-  color: #495057 !important;
+  background-color: var(--ds-active-surface-raised) !important;
+  color: var(--ds-active-text-primary) !important;
   font-weight: 600 !important;
   vertical-align: middle !important;
   text-align: center !important;
@@ -247,6 +261,14 @@ body {
 @media (max-width: 768px) {
   #hot-container {
     display: none !important;
+  }
+  #hot-container.hot-mobile-grid {
+    display: block !important;
+    overflow: hidden !important;
+  }
+  #hot-container.hot-mobile-grid .wtHolder {
+    overflow: auto !important;
+    -webkit-overflow-scrolling: touch;
   }
   #mobile-card-view {
     display: block !important;
@@ -399,13 +421,13 @@ body {
   position: fixed;
   top: 0;
   right: 0;
-  width: 320px;
+  width: var(--lps-context-drawer-width);
   height: 100vh;
-  background: rgba(250, 250, 250, 0.94);
+  background: var(--ds-active-bg-page);
   backdrop-filter: blur(16px) saturate(120%);
   -webkit-backdrop-filter: blur(16px) saturate(120%);
-  border-left: 1px solid rgba(26, 60, 42, 0.12);
-  box-shadow: -8px 0 24px rgba(0, 0, 0, 0.08);
+  border-left: 1px solid var(--ds-active-border);
+  box-shadow: var(--ds-shadow-lg);
   z-index: 2200;
   display: flex;
   flex-direction: column;
@@ -437,12 +459,12 @@ body {
 
 .lps-drawer-header {
   padding: 18px 20px;
-  background: var(--aia-green-dark, oklch(35.5% 0.09 143.5)); /* Verde Oscuro Oficial AIA */
-  color: #ffffff;
+  background: var(--ds-active-surface-raised);
+  color: var(--ds-active-text-primary);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--ds-active-border);
 }
 
 .lps-drawer-header h3 {
@@ -451,42 +473,64 @@ body {
   font-weight: 600;
   font-family: 'Montserrat', sans-serif;
   letter-spacing: 0.5px;
-  color: #ffffff !important;
+  color: var(--ds-active-text-primary) !important;
 }
 
 .lps-drawer-close {
+  display: inline-grid;
+  place-items: center;
+  inline-size: var(--ds-target-min);
+  block-size: var(--ds-target-min);
   background: transparent;
   border: none;
-  color: rgba(255, 255, 255, 0.85);
+  border-radius: var(--ds-radius-pill);
+  color: var(--ds-active-text-secondary);
   font-size: 1.5rem;
   cursor: pointer;
   padding: 0;
   line-height: 1;
+  overflow: hidden;
   transition: color 0.2s ease;
 }
 .lps-drawer-close:hover {
-  color: #ffffff;
+  color: var(--ds-active-text-primary);
 }
 
 .lps-drawer-body {
   flex: 1;
   overflow-y: auto;
   padding: 20px;
+  background: var(--ds-active-bg-page);
 }
 
 .lps-drawer-footer {
   padding: 15px 20px;
-  background: #f4f1ea;
-  border-top: 1px solid rgba(26, 60, 42, 0.08);
+  background: var(--ds-active-surface);
+  border-top: 1px solid var(--ds-active-border);
 }
 
 .lps-card-glass {
-  background: rgba(255, 255, 255, 0.7);
-  border: 1px solid rgba(26, 60, 42, 0.1);
+  background: var(--ds-active-surface-raised);
+  border: 1px solid var(--ds-active-border);
   border-radius: 12px;
   padding: 15px;
   margin-bottom: 15px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.lps-drawer :is(#lps_actividad_title, #lps_diagnostic_card p,
+  #lps_digest_section h4, #lps_digest_section p, .lps-bi-access-card__title) {
+  color: var(--ds-active-text-primary) !important;
+}
+
+.lps-drawer :is(#lps_consecutivo, .lps-bi-access-card__description,
+  .lps-drawer-footer p) {
+  color: var(--ds-active-text-secondary) !important;
+}
+
+.lps-drawer .lps-btn-outline {
+  border-color: var(--ds-active-border);
+  color: var(--ds-active-text-primary);
 }
 
 .lps-state-p1 {
@@ -551,7 +595,7 @@ body {
   justify-content: center;
   min-height: 48px;
   padding: 10px 20px;
-  border-radius: 10px;
+  border-radius: var(--ds-radius-control-sm);
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
@@ -584,21 +628,45 @@ body {
   background: rgba(26, 60, 42, 0.04);
 }
 
+.lps-bi-access-card__title {
+  margin: 0 0 var(--spacing-sm);
+  color: var(--ds-color-text-primary);
+  font-family: var(--ds-font-display);
+  font-weight: 700;
+}
+
+.lps-bi-access-card__description {
+  margin: 0 0 var(--spacing-md);
+  color: var(--ds-color-text-secondary);
+  line-height: 1.5;
+}
+
+.lps-bi-access-card__link {
+  min-height: var(--ds-target-min);
+  margin-bottom: 0;
+  text-decoration: none;
+}
+
+.lps-bi-access-card__link:focus-visible {
+  box-shadow: var(--ds-shadow-focus);
+  outline: none;
+}
+
 .lps-sim-toggle-container {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-top: 5px;
   padding: 8px 12px;
-  background: rgba(139, 64, 17, 0.05);
-  border: 1px solid rgba(139, 64, 17, 0.15);
+  background: var(--ds-active-surface-raised);
+  border: 1px solid var(--ds-active-border);
   border-radius: 8px;
 }
 
 .lps-sim-label {
   font-size: 0.85rem;
   font-weight: 600;
-  color: #8b4011; /* Naranja Construcción */
+  color: var(--ds-active-text-primary);
 }
 
 /* ========================================
@@ -771,7 +839,7 @@ body {
     bottom: auto;
     top: 0;
     right: 0;
-    width: 42px;
+    width: var(--lps-rail-width);
     height: 100vh;
     border-radius: 0;
     background: var(--aia-green-dark, oklch(35.5% 0.09 143.5));
@@ -792,7 +860,7 @@ body {
   .lps-sidebar-trigger:hover,
   .lps-sidebar-trigger:focus-visible {
     transform: none;
-    width: 46px; /* Sutil aumento interactivo de ancho */
+    width: var(--lps-rail-hover-width); /* Sutil aumento interactivo de ancho */
     background: var(--aia-green, oklch(43.86% 0.084 142.5));
     box-shadow: -4px 0 16px rgba(0, 0, 0, 0.08);
   }
@@ -877,35 +945,35 @@ body {
 
   /* Ajuste Dinámico de Layout para Evitar Solapamiento de Sidebar y Drawer */
   body {
-    padding-right: 42px !important;
+    padding-right: var(--lps-rail-safe-width) !important;
     transition: padding-right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   body.lps-drawer-open {
-    padding-right: 320px !important;
+    padding-right: var(--lps-context-drawer-width) !important;
   }
 
   .navbar-aia.fixed-top {
     left: 0 !important;
-    right: 42px !important;
+    right: var(--lps-rail-safe-width) !important;
     width: auto !important;
     transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
   }
 
   body.lps-drawer-open .navbar-aia.fixed-top {
-    right: 320px !important;
+    right: var(--lps-context-drawer-width) !important;
   }
 
   /* Ajuste Responsivo y Fluido para la Barra de Contexto Superior (Subheader) */
   .context-bar.fixed-top {
     left: 0 !important;
-    right: 42px !important;
+    right: var(--lps-rail-safe-width) !important;
     width: auto !important;
     transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
   }
 
   body.lps-drawer-open .context-bar.fixed-top {
-    right: 320px !important;
+    right: var(--lps-context-drawer-width) !important;
   }
 
   /* Compresión adaptativa del menú superior cuando el cajón LPS está abierto */

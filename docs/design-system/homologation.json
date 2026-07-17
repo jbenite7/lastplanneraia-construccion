@@ -1,0 +1,270 @@
+{
+  "schemaVersion": 1,
+  "designSystemVersion": "1.0.0",
+  "approvalSurface": "/internal/design-system",
+  "status": "candidate",
+  "tests": [
+    "tests/browser/design-system-lab.mjs",
+    "tests/test_design_system_lab_access.php"
+  ],
+  "sharedContent": {
+    "short": "A tiempo",
+    "long": "Pendiente de aprobación del responsable",
+    "extreme": "Electroencefalografista",
+    "wordRule": "wrap-between-words-only"
+  },
+  "requiredStates": [
+    "normal",
+    "hover",
+    "focus",
+    "disabled",
+    "loading",
+    "empty",
+    "error",
+    "open"
+  ],
+  "families": [
+    {
+      "id": "foundations",
+      "label": "Fundamentos de marca",
+      "description": "Colores, tipografías y escalas base que dan identidad y consistencia a AIA.",
+      "themes": [
+        "linen",
+        "dark"
+      ],
+      "viewports": [
+        "390x844",
+        "1180x820",
+        "1440x900"
+      ],
+      "activeCandidate": "foundation-inventory-action-color",
+      "candidates": [
+        {
+          "id": "semantic-scale",
+          "intent": "Escalas semánticas y densidades compact/touch",
+          "status": "approved"
+        },
+        {
+          "id": "foundation-inventory-action-color",
+          "intent": "Índice verificable de grupos y acción primaria corporativa sobre dark sin transición cromática",
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "id": "shell-navigation",
+      "label": "Navegación y estructura global",
+      "description": "Cabecera, navegación principal y acceso contextual entre áreas.",
+      "themes": [
+        "linen",
+        "dark"
+      ],
+      "viewports": [
+        "390x844",
+        "1180x820",
+        "1440x900"
+      ],
+      "candidates": [
+        {
+          "id": "adaptive-shell",
+          "intent": "Contexto visible desde 1200 px y drawer táctil en anchos menores",
+          "status": "approved"
+        }
+      ]
+    },
+    {
+      "id": "page-structure",
+      "label": "Estructura de página",
+      "description": "Jerarquía y distribución canónica del contenido de cada pantalla.",
+      "themes": [
+        "linen",
+        "dark"
+      ],
+      "viewports": [
+        "390x844",
+        "1180x820",
+        "1440x900"
+      ],
+      "candidates": [
+        {
+          "id": "contained-header",
+          "intent": "Encabezado contenido en superficie",
+          "status": "candidate"
+        },
+        {
+          "id": "inline-header",
+          "intent": "Encabezado integrado al canvas",
+          "status": "approved"
+        }
+      ]
+    },
+    {
+      "id": "actions",
+      "label": "Acciones",
+      "description": "Botones y controles que permiten ejecutar operaciones con claridad.",
+      "themes": [
+        "linen",
+        "dark"
+      ],
+      "viewports": [
+        "390x844",
+        "1180x820",
+        "1440x900"
+      ],
+      "activeCandidate": "theme-adaptive-primary",
+      "candidates": [
+        {
+          "id": "solid-outline",
+          "intent": "Grupo integrado al canvas con primaria sólida y secundaria delineada",
+          "status": "approved"
+        },
+        {
+          "id": "surface-actions",
+          "intent": "Acciones sobre superficie elevada",
+          "status": "candidate"
+        },
+        {
+          "id": "theme-adaptive-primary",
+          "intent": "Acción primaria corporativa por tema, aplicada sin interpolación cromática entre linen y dark",
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "id": "forms-filters",
+      "label": "Formularios y filtros",
+      "description": "Captura, validación y refinamiento de información operativa.",
+      "themes": [
+        "linen",
+        "dark"
+      ],
+      "viewports": [
+        "390x844",
+        "1180x820",
+        "1440x900"
+      ],
+      "candidates": [
+        {
+          "id": "inline-fields",
+          "intent": "Filtros siempre visibles con composición responsive",
+          "status": "approved"
+        },
+        {
+          "id": "disclosure-panel",
+          "intent": "Filtros dentro de panel desplegable",
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "id": "states-feedback",
+      "label": "Estados y retroalimentación",
+      "description": "Mensajes y estados que comunican resultados, alertas y progreso.",
+      "themes": [
+        "linen",
+        "dark"
+      ],
+      "viewports": [
+        "390x844",
+        "1180x820",
+        "1440x900"
+      ],
+      "candidates": [
+        {
+          "id": "tinted-status",
+          "intent": "Estado con fondo semántico tenue y texto explícito",
+          "status": "approved"
+        },
+        {
+          "id": "solid-status",
+          "intent": "Estado sólido de alto contraste",
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "id": "data-display",
+      "label": "Presentación de datos",
+      "description": "Tablas, tarjetas y resúmenes para consultar información con precisión.",
+      "themes": [
+        "linen",
+        "dark"
+      ],
+      "viewports": [
+        "390x844",
+        "1180x820",
+        "1440x900"
+      ],
+      "candidates": [
+        {
+          "id": "responsive-shell",
+          "intent": "Una fuente con tabla compacta y tarjetas Touch",
+          "status": "approved"
+        }
+      ]
+    },
+    {
+      "id": "overlays",
+      "label": "Capas y diálogos",
+      "description": "Modales y paneles temporales para tareas que requieren atención.",
+      "themes": [
+        "linen",
+        "dark"
+      ],
+      "viewports": [
+        "390x844",
+        "1180x820",
+        "1440x900"
+      ],
+      "candidates": [
+        {
+          "id": "modal-drawer",
+          "intent": "Modal desde 1200 px y drawer Touch en anchos menores",
+          "status": "approved"
+        }
+      ]
+    },
+    {
+      "id": "vendor-adapters",
+      "label": "Adaptadores de terceros",
+      "description": "Integraciones externas alineadas visualmente con el núcleo AIA.",
+      "themes": [
+        "linen",
+        "dark"
+      ],
+      "viewports": [
+        "390x844",
+        "1180x820",
+        "1440x900"
+      ],
+      "candidates": [
+        {
+          "id": "canonical-skin",
+          "intent": "Vendor congelado con skin central y sin variantes locales",
+          "status": "approved"
+        }
+      ]
+    },
+    {
+      "id": "bi-primitives",
+      "label": "Elementos de analítica",
+      "description": "Gráficos e indicadores accesibles para análisis y toma de decisiones.",
+      "themes": [
+        "linen",
+        "dark"
+      ],
+      "viewports": [
+        "390x844",
+        "1180x820",
+        "1440x900"
+      ],
+      "candidates": [
+        {
+          "id": "accessible-figure",
+          "intent": "Figura con resumen, leyenda textual y tabla equivalente",
+          "status": "approved"
+        }
+      ]
+    }
+  ]
+}

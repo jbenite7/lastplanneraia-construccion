@@ -73,7 +73,7 @@ export const moduleFlows = {
       await apiList(page, project, `/api/semanal/list?db=${project.dbPrefix}&semana=${project.maxWeek}`);
     },
     async edit(page, project) {
-      const tnp = await getJson(page, `/api/semanal/tnp-actividades?semana=${project.maxWeek}`);
+      const tnp = await getJson(page, `/api/semanal/tnp-actividades?db=${project.dbPrefix}&semana=${project.maxWeek}`);
       assertJsonOk(tnp, 'PS TNP activities');
     },
     async validateTypeSpecificBehavior(page, project) {
@@ -249,7 +249,17 @@ export const moduleFlows = {
 
   listadoActividades: {
     async smoke(page, project) {
-      await expectUsablePage(page, '/listado-actividades', ['#dt_cliente', 'body']);
+      await expectUsablePage(page, '/listado-actividades', [
+        '#hot-container .ht_master.handsontable',
+      ]);
+      const runtime = await page.evaluate(() => ({
+        sourceRows: window.ListadoActividadesHotModule?.getHotInstance?.()?.countSourceRows(),
+        masters: document.querySelectorAll('#hot-container .ht_master.handsontable').length,
+        legacy: document.querySelectorAll('.dataTables_wrapper, table.dataTable').length,
+      }));
+      expect(runtime.masters).toBe(1);
+      expect(runtime.legacy).toBe(0);
+      expect(runtime.sourceRows).toBeGreaterThanOrEqual(0);
       const response = await postFormJson(page, '/api/listado-actividades/list', {});
       assertJsonOk(response, 'Listado actividades list');
     },
@@ -289,8 +299,8 @@ export const moduleFlows = {
       const response = await postFormJson(page, '/api/pdc/list', { semana: project.maxWeek });
       assertJsonOk(response, 'PDC list');
     },
-    async edit(page) {
-      const preview = await postFormJson(page, '/api/pdc/auto/preview', {});
+    async edit(page, project) {
+      const preview = await postFormJson(page, `/api/pdc/auto/preview?db=${project.dbPrefix}&semana=${project.maxWeek}`, {});
       assertJsonOk(preview, 'PDC semi-auto preview');
       expect(preview.payload.run_id, JSON.stringify(preview.payload)).toBeTruthy();
       expect(preview.payload.analysis?.steps?.length, JSON.stringify(preview.payload)).toBeGreaterThan(0);
@@ -345,6 +355,13 @@ export const moduleFlows = {
       }
     },
     async edit(page, project) {
+      const autoProgram = await postFormJson(page, '/api/semanal/auto-program', {
+        db: project.dbPrefix,
+        semana: String(project.maxWeek),
+      });
+      assertJsonOk(autoProgram, 'Auto-programación semanal');
+      expect(autoProgram.payload.success).toBe(true);
+
       for (const report of REPORTS.constructionDownloads) {
         const response = await getJson(page, `/reportes/${report.type}?db=${project.dbPrefix}&semana=${project.maxWeek}`);
         assertJsonOk(response, `Reporte descarga ${report.type}`);

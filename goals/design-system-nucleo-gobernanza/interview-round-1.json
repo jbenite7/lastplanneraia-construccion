@@ -1,0 +1,157 @@
+{
+  "stage": "interview",
+  "title": "Núcleo y gobernanza del Design System AIA",
+  "goalSlug": "design-system-nucleo-gobernanza",
+  "questions": [
+    {
+      "id": "sprint_00_scope",
+      "prompt": "¿Qué debe entregar el Sprint 00 antes de volver a migrar módulos?",
+      "description": "La decisión define si el núcleo queda solo documentado o probado en el runtime real.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Construir la cascada global, tokens semánticos, componentes canónicos, adaptadores de terceros, laboratorio visual, manifiestos, gates y una integración piloto; no migrar todos los módulos dentro del Sprint 00.",
+      "recommendedOptionIds": [
+        "kernel_lab_gates_pilot"
+      ],
+      "options": [
+        {
+          "id": "kernel_lab_gates_pilot",
+          "label": "Núcleo completo, laboratorio, gates y un piloto"
+        },
+        {
+          "id": "kernel_without_pilot",
+          "label": "Núcleo, laboratorio y gates sin tocar módulos"
+        },
+        {
+          "id": "kernel_and_all_modules",
+          "label": "Núcleo y migración inmediata de todos los módulos"
+        }
+      ],
+      "required": true
+    },
+    {
+      "id": "rollout_sequence",
+      "prompt": "¿Cómo debe convivir este trabajo con los sprints de módulo actuales?",
+      "description": "PDC tiene trabajo pendiente de aprobación y el worktree contiene cambios mezclados.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "No iniciar nuevos sprints visuales por módulo hasta aprobar el Sprint 00; preservar PDC y los demás cambios actuales exactamente como están, sin incorporarlos ni reabrirlos durante la fundación.",
+      "recommendedOptionIds": [
+        "freeze_new_preserve_pending"
+      ],
+      "options": [
+        {
+          "id": "freeze_new_preserve_pending",
+          "label": "Pausar sprints nuevos y preservar pendientes"
+        },
+        {
+          "id": "parallel_tracks",
+          "label": "Continuar núcleo y módulos en paralelo"
+        },
+        {
+          "id": "finish_pending_then_kernel",
+          "label": "Cerrar primero los sprints pendientes"
+        }
+      ],
+      "required": true
+    },
+    {
+      "id": "visual_authority",
+      "prompt": "¿Qué debe ser la autoridad visual para definir los componentes canónicos?",
+      "description": "Esto determina si el Sprint 00 conserva la apariencia ya aprobada o inicia un rediseño.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Conservar los tokens y mejores precedentes ya aprobados en runtime; usar Stitch y la documentación de marca como insumos, no como mandato para rediseñar toda la aplicación.",
+      "recommendedOptionIds": [
+        "approved_runtime_precedents"
+      ],
+      "options": [
+        {
+          "id": "approved_runtime_precedents",
+          "label": "Precedentes aprobados y tokens actuales"
+        },
+        {
+          "id": "stitch_as_exact_source",
+          "label": "Stitch como referencia visual exacta"
+        },
+        {
+          "id": "fresh_redesign",
+          "label": "Rediseño visual nuevo"
+        }
+      ],
+      "required": true
+    },
+    {
+      "id": "enforcement_policy",
+      "prompt": "¿Qué política debe aplicar el nuevo gate sobre la deuda visual legacy?",
+      "description": "El repositorio tiene deuda acumulada; exigir cero global de inmediato ampliaría mucho el objetivo.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Bloquear desde el primer día toda deuda nueva; mantener la deuda existente inventariada por módulo y permitir excepciones únicamente con responsable, razón, alcance y vencimiento.",
+      "recommendedOptionIds": [
+        "freeze_and_expire"
+      ],
+      "options": [
+        {
+          "id": "freeze_and_expire",
+          "label": "Congelar deuda nueva y expirar excepciones"
+        },
+        {
+          "id": "zero_global_before_done",
+          "label": "Exigir deuda global cero en Sprint 00"
+        },
+        {
+          "id": "warnings_only",
+          "label": "Mantener gates solo informativos"
+        }
+      ],
+      "required": true
+    },
+    {
+      "id": "pilot_module",
+      "prompt": "¿Qué superficie debe demostrar primero que el núcleo funciona en un módulo real?",
+      "description": "El piloto valida cards móviles, tabla operativa, filtros, temas y persistencia sin convertir el Sprint 00 en una migración masiva.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Usar Programa General como consumidor piloto porque ya tiene sprint aprobado, combina Handsontable y cards y reduce el riesgo de mezclar el PDC pendiente de aprobación.",
+      "recommendedOptionIds": [
+        "programa_general"
+      ],
+      "options": [
+        {
+          "id": "programa_general",
+          "label": "Programa General"
+        },
+        {
+          "id": "pdc_after_approval",
+          "label": "PDC después de su aprobación"
+        },
+        {
+          "id": "component_lab_only",
+          "label": "Sin piloto; solo laboratorio"
+        }
+      ],
+      "required": true
+    },
+    {
+      "id": "future_sprint_contract",
+      "prompt": "¿Cómo debe quedar el prompt estándar para los futuros módulos?",
+      "description": "El prompt original mezcla gobierno visual, QA funcional, permisos, datos y cierre en un solo contrato.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Dividirlo en contrato global del design system, prompt acotado de migración por módulo y contrato de revisión/cierre; el módulo declara versión, manifiesto y componentes consumidos.",
+      "recommendedOptionIds": [
+        "split_three_contracts"
+      ],
+      "options": [
+        {
+          "id": "split_three_contracts",
+          "label": "Separarlo en tres contratos"
+        },
+        {
+          "id": "replace_with_one_short_prompt",
+          "label": "Reemplazarlo por un único prompt corto"
+        },
+        {
+          "id": "keep_original_append_rules",
+          "label": "Conservarlo y añadir reglas al final"
+        }
+      ],
+      "required": true
+    }
+  ]
+}

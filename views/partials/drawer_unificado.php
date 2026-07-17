@@ -1,14 +1,14 @@
 <!-- views/partials/drawer_unificado.php -->
-<div class="lps-sidebar-trigger" id="lps_sidebar_trigger" aria-label="Abrir Cajón Contextual LPS">
+<button type="button" class="lps-sidebar-trigger" id="lps_sidebar_trigger" aria-label="Abrir Cajón Contextual LPS" aria-controls="lps_drawer" aria-expanded="false">
   <div class="lps-sidebar-content">
     <span class="lps-sidebar-icon">💡</span>
     <span class="lps-sidebar-text">CONCURRENCIA LPS</span>
   </div>
   <div class="lps-sidebar-badge" id="lps_sidebar_badge" style="display: none;">🔥</div>
-</div>
+</button>
 
 <div class="lps-drawer-overlay" id="lps_drawer_overlay"></div>
-<div class="lps-drawer" id="lps_drawer" role="dialog" aria-modal="true" aria-labelledby="lps_drawer_title">
+<div class="lps-drawer" id="lps_drawer" role="dialog" aria-modal="true" aria-labelledby="lps_drawer_title" aria-hidden="true">
   <!-- Cabecera Premium -->
   <div class="lps-drawer-header">
     <div style="display: flex; flex-direction: column; gap: 2px;">
@@ -19,6 +19,19 @@
   </div>
 
   <div class="lps-drawer-body">
+    <?php if (\App\View\Components\BiAccessComponent::canAccess()): ?>
+    <div class="lps-card-glass lps-bi-access-card" id="lps_bi_control_tower_card">
+      <h4 class="lps-bi-access-card__title">Control Tower BI</h4>
+      <p class="lps-bi-access-card__description">
+        Revisa el panel ejecutivo y las vistas BI del proyecto.
+      </p>
+      <a class="lps-btn lps-btn-outline lps-bi-access-card__link" href="<?php echo htmlspecialchars(\App\View\Components\BiAccessComponent::url('control-tower'), ENT_QUOTES, 'UTF-8'); ?>" data-bi-access-link="control-tower">
+        <i class="fas fa-chart-line" aria-hidden="true"></i>
+        <span>Abrir Control Tower</span>
+      </a>
+    </div>
+    <?php endif; ?>
+
     <!-- 1. Tarjeta de Diagnóstico Principal -->
     <div class="lps-card-glass" id="lps_diagnostic_card">
       <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">

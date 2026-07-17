@@ -7,7 +7,7 @@ use App\Controllers\BaseController;
 use TableResolver;
 
 if (!class_exists('\\CommitmentLockGuard', false)) {
-    require_once PROJECT_ROOT . '/src/Core/CommitmentLockGuard.php';
+    require_once \PROJECT_ROOT . '/src/Core/CommitmentLockGuard.php';
 }
 
 class ProgramacionIntermediaController extends BaseController
@@ -104,7 +104,7 @@ class ProgramacionIntermediaController extends BaseController
         $this->authorizePermission('lps.programacion_intermedia.ver');
         header('Content-Type: application/json; charset=utf-8');
 
-        require_once PROJECT_ROOT . '/src/Legacy/estado_programacion_intermedia.php';
+        require_once \PROJECT_ROOT . '/src/Legacy/estado_programacion_intermedia.php';
 
         $vars = $this->getSessionVars();
         $dbPrefix = $vars['dbName'] ?? '';
@@ -192,8 +192,8 @@ class ProgramacionIntermediaController extends BaseController
         $this->authorizePermission('lps.programacion_intermedia.editar');
         header('Content-Type: application/json; charset=utf-8');
 
-        require_once PROJECT_ROOT . '/src/Legacy/estado_programa_general.php';
-        require_once PROJECT_ROOT . '/src/Legacy/estado_programacion_intermedia.php';
+        require_once \PROJECT_ROOT . '/src/Legacy/estado_programa_general.php';
+        require_once \PROJECT_ROOT . '/src/Legacy/estado_programacion_intermedia.php';
 
         $vars = $this->getSessionVars();
         $dbPrefix = $_POST['db'] ?? $_GET['db'] ?? ($vars['dbName'] ?? '');
@@ -212,7 +212,7 @@ class ProgramacionIntermediaController extends BaseController
         \CommitmentLockGuard::guard($dbPrefix, $semana, 'modificar_pi');
 
         // Delegate to legacy script (contains modificar, alerts, notifications)
-        require PROJECT_ROOT . '/src/Legacy/guardar_programacion_intermedia.php';
+        require \PROJECT_ROOT . '/src/Legacy/guardar_programacion_intermedia.php';
     }
 
     /**
@@ -240,7 +240,7 @@ class ProgramacionIntermediaController extends BaseController
             return;
         }
 
-        require_once PROJECT_ROOT . '/src/Legacy/estado_programacion_intermedia.php';
+        require_once \PROJECT_ROOT . '/src/Legacy/estado_programacion_intermedia.php';
 
         $viewAll = isset($_SESSION['pi_view_all']) && (int) $_SESSION['pi_view_all'] === 1;
 
@@ -300,7 +300,7 @@ class ProgramacionIntermediaController extends BaseController
     {
         $this->requireAuth();
 
-        require_once PROJECT_ROOT . '/src/Legacy/estado_programacion_intermedia.php';
+        require_once \PROJECT_ROOT . '/src/Legacy/estado_programacion_intermedia.php';
 
         $clase = $_GET['clase'] ?? '';
         $activa = isset($_GET['activa']) ? (int) $_GET['activa'] : 0;

@@ -55,7 +55,10 @@ navInformacionGeneral +=
   " <li id='tituloIndicadores' class='dropdown-header mt-2'><b>Indicadores</b></li><li><a class='dropdown-item' id='informe_lps' href='#'>Indicadores de Last Planner</a></li><!-- <li><a class='dropdown-item' id='informe_productividad' href='#'>Indicadores de Tasas de Producción</a></li> -->";
 
 navInformacionGeneral +=
-  "<li id='tituloActualizarCronograma' class='dropdown-header mt-2'><b>Cronograma</b></li><li><a class='dropdown-item' id='actualizarCronograma' href='#'>Actualizar Cronograma</a></li></ul></li>";
+  "<li id='tituloActualizarCronograma' class='dropdown-header mt-2'><b>Cronograma</b></li><li><a class='dropdown-item' id='actualizarCronograma' href='#'>Actualizar Cronograma</a></li>";
+
+navInformacionGeneral +=
+  "<li id='biControlTowerNavItem' class='d-none'><a class='dropdown-item' href='/bi/control-tower' data-bi-access-link='control-tower'><i class='fas fa-chart-line mr-2'></i>Control Tower</a></li></ul></li>";
 
 // 2. Integración
 var navIntegracion =
@@ -84,6 +87,12 @@ if (!document.querySelector('script[src*="ContextManager.js"]')) {
   document.head.appendChild(scriptCtx);
 }
 
+if (!document.querySelector('script[src*="bi-access.js"]')) {
+  var scriptBiAccess = document.createElement('script');
+  scriptBiAccess.src = '/js/modules/bi-access.js?v=' + new Date().getTime();
+  document.head.appendChild(scriptBiAccess);
+}
+
 
 
 // --- Unified Navbar Container Construction ---
@@ -94,23 +103,23 @@ var navbarComponentStart = `
 
     <div class="container-fluid">
         <!-- Brand / Logo -->
-        <a class="navbar-brand" href="/proyectos">
-            <i class="fas fa-drafting-compass mr-2"></i>
-            Last Planner AIA
+        <a class="navbar-brand aia-brand" href="/proyectos" aria-label="Last Planner AIA">
+            <span class="aia-brand-mark" aria-hidden="true"></span>
+            <span class="aia-brand-name">Last Planner AIA</span>
         </a>
 
         <!-- Mobile Toggler -->
-        <button class="navbar-toggler" type="button" id="drawerToggle">
+                <button class="navbar-toggler" type="button" id="drawerToggle" aria-label="Abrir menú" aria-controls="aiaNavbar" aria-expanded="false">
             <span class="navbar-toggler-icon"></span>
         </button>
 
         <!-- Navbar Content (Desktop: Row, Mobile: Drawer) -->
-        <div class="collapse navbar-collapse navbar-collapse-drawer" id="aiaNavbar">
+                <div class="collapse navbar-collapse navbar-collapse-drawer" id="aiaNavbar" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
 
             <!-- Mobile Drawer Header -->
             <div class="drawer-header d-xl-none">
-                <h5 class="m-0">Menú</h5>
-                <button type="button" class="close-drawer" id="drawerClose">&times;</button>
+                        <h5 class="m-0" id="drawerTitle">Menú</h5>
+                        <button type="button" class="close-drawer" id="drawerClose" aria-label="Cerrar menú">&times;</button>
             </div>
 
             <!-- Main Navigation Links (Center/Left) -->
@@ -127,7 +136,7 @@ var navbarComponentEnd = `
                 <li class="nav-item dropdown mr-2">
                     <a class="nav-link dropdown-toggle" href="#" id="notificationDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="position: relative;">
                         <i class="fas fa-bell"></i>
-                        <span class="badge badge-danger badge-pill" id="notificationBadge" style="position: absolute; top: 0px; right: -5px; display: none; font-size: 0.6rem;">0</span>
+                        <span class="badge badge-danger badge-pill" id="notificationBadge" style="position: absolute; top: 0px; right: 0; display: none; font-size: 0.6rem;">0</span>
                     </a>
                     <div class="dropdown-menu dropdown-menu-right shadow-sm border-0" aria-labelledby="notificationDropdown" style="width: 320px; max-height: 400px; overflow-y: auto; padding: 0;">
                         <h6 class="dropdown-header bg-light border-bottom py-2 font-weight-bold">Centro de Notificaciones</h6>
@@ -152,6 +161,11 @@ var navbarComponentEnd = `
                             <i class="fas fa-exchange-alt mr-2 text-muted"></i> Cambiar Proyecto
                         </a>
                         <div class="dropdown-divider"></div>
+                        <button type="button" class="dropdown-item aia-theme-switch" aria-pressed="false">
+                            <i class="fas fa-moon mr-2 text-muted" aria-hidden="true"></i>
+                            <span class="aia-theme-switch-text">Modo oscuro</span>
+                        </button>
+                        <div class="dropdown-divider"></div>
                         <a class="dropdown-item text-danger" href="/logout">
                             <i class="fas fa-sign-out-alt mr-2"></i> Cerrar Sesión
                         </a>
@@ -174,6 +188,11 @@ var navbarComponentEnd = `
                     <a href="/proyectos" class="island-btn">
                         <i class="fas fa-exchange-alt"></i> Proyecto
                     </a>
+
+                    <button type="button" class="island-btn aia-theme-switch" aria-pressed="false">
+                        <i class="fas fa-moon" aria-hidden="true"></i>
+                        <span class="aia-theme-switch-text">Modo oscuro</span>
+                    </button>
 
                     <!-- Notificaciones Dropdown Mobile -->
                     <div class="dropdown" style="display: flex;">
@@ -198,8 +217,9 @@ var navbarComponentEnd = `
     </div>
 </nav>
 
+<div class="shell-nav-spacer" aria-hidden="true"></div>
 <!-- Context Bar (New) -->
-<div class="context-bar fixed-top" style="top: 56px; z-index: 1020; background: #e9ecef; border-bottom: 1px solid #dee2e6; padding: 0.25rem 1rem;">
+<div class="context-bar">
     <div class="container-fluid d-flex align-items-center justify-content-between">
         <div class="context-breadcrumb">
              <i class="fas fa-building text-muted mr-1"></i>
@@ -215,7 +235,6 @@ var navbarComponentEnd = `
     </div>
 </div>
 
-<div style="height: 100px;"></div> <!-- Spacing (Navbar + ContextBar) -->
 `;
 
 var finalNavbarHTML =
@@ -262,28 +281,20 @@ if (!document.querySelector('script[src*="notifications.js"]')) {
 }
 
 // --- Initialize Drawer Handling ---
+function bindThemeSwitchesWhenReady() {
+  if (window.AiaDesignSystem && typeof window.AiaDesignSystem.bindThemeSwitches === 'function') {
+    window.AiaDesignSystem.bindThemeSwitches(document);
+    return;
+  }
+  document.addEventListener('aia-theme-ready', function () {
+    window.AiaDesignSystem.bindThemeSwitches(document);
+  }, { once: true });
+}
+
 $(document).ready(function () {
-  // Drawer Logic
-  var toggle = document.getElementById('drawerToggle');
-  var drawer = document.getElementById('aiaNavbar');
-  var close = document.getElementById('drawerClose');
-  var overlay = document.getElementById('drawerOverlay');
+  if (window.AiaNavDrawer) window.AiaNavDrawer.init();
 
-  function openDrawer() {
-    drawer.classList.add('show');
-    overlay.classList.add('show');
-    document.body.style.overflow = 'hidden';
-  }
-
-  function closeDrawer() {
-    drawer.classList.remove('show');
-    overlay.classList.remove('show');
-    document.body.style.overflow = '';
-  }
-
-  if (toggle) toggle.addEventListener('click', openDrawer);
-  if (close) close.addEventListener('click', closeDrawer);
-  if (overlay) overlay.addEventListener('click', closeDrawer);
+  bindThemeSwitchesWhenReady();
 
   // Existing initialization...
 });
@@ -303,9 +314,24 @@ var cargarDatosGeneralesPagina = function (seccion) {
         json_info_global = info;
       }
       //console.log(json_info_global["data"]);
-      datosGenerales = json_info_global['data'];
-      listadoSemanas = json_info_global['data']['listadoSemanas'];
+      var responseData = json_info_global && json_info_global['data'];
+      if (!responseData || typeof responseData !== 'object') {
+        return;
+      }
+      datosGenerales = responseData;
+      listadoSemanas = Array.isArray(responseData.listadoSemanas)
+        ? responseData.listadoSemanas
+        : [];
       applyProjectTypeVisibility(datosGenerales);
+      if (window.BiAccess) {
+        window.BiAccess.syncAccessLinks();
+      }
+      var biNavItem = document.getElementById('biControlTowerNavItem');
+      if (biNavItem && datosGenerales.canAccessBi === true) {
+        var biLink = biNavItem.querySelector('[data-bi-access-link]');
+        if (biLink) biLink.href = window.BiAccess ? window.BiAccess.buildUrl(biLink) : biLink.href;
+        biNavItem.classList.remove('d-none');
+      }
 
       // Update User Name + Role (stacked)
       if (document.getElementById('labelNombreUsuario')) {
@@ -334,6 +360,19 @@ var cargarDatosGeneralesPagina = function (seccion) {
       document.getElementById('pdcActivo').value = datosGenerales.pdcActivo;
       document.getElementById('proyecto').value = datosGenerales.proyecto;
       document.getElementById('semana').value = datosGenerales.semana;
+
+      console.log("🕵️ [DeepAnalysis] A punto de llamar a cargaParametros() en cargarDatosGeneralesPagina2.js");
+      try {
+        if (typeof cargaParametros === 'function') {
+          console.log("🕵️ [DeepAnalysis] cargaParametros es una función. Ejecutando...");
+          cargaParametros();
+        } else {
+          console.error("🕵️ [DeepAnalysis] CRÍTICO: cargaParametros NO es una función o es undefined en este contexto global. Tipo actual:", typeof cargaParametros);
+        }
+      } catch (error) {
+        console.error("🕵️ [DeepAnalysis] Excepción ahogada (swallowed) capturada al ejecutar cargaParametros():", error);
+      }
+
       document.getElementById('Semanal_Confirmada').value = datosGenerales.Semanal_Confirmada;
       if (datosGenerales.fechaCierreCompromisos == null) {
         document.getElementById('fechaCierreCompromisos').value = '';
@@ -653,17 +692,6 @@ var cargarDatosGeneralesPagina = function (seccion) {
         if (menuElem) menuElem.classList.add('active');
       }
 
-      console.log("🕵️ [DeepAnalysis] A punto de llamar a cargaParametros() en cargarDatosGeneralesPagina2.js");
-      try {
-        if (typeof cargaParametros === 'function') {
-          console.log("🕵️ [DeepAnalysis] cargaParametros es una función. Ejecutando...");
-          cargaParametros();
-        } else {
-          console.error("🕵️ [DeepAnalysis] CRÍTICO: cargaParametros NO es una función o es undefined en este contexto global. Tipo actual:", typeof cargaParametros);
-        }
-      } catch (error) {
-        console.error("🕵️ [DeepAnalysis] Excepción ahogada (swallowed) capturada al ejecutar cargaParametros():", error);
-      }
     },
     error: function(xhr, status, error) {
       console.error("🕵️ [DeepAnalysis] Error AJAX en cargarDatosGeneralesPagina2.js:", status, error);
@@ -699,6 +727,17 @@ window.cambiarSemanaSesion = function (semana, redirectUrl) {
       console.error('Error:', error);
       // Fallback legacy behavior if fetch fails? verify network
     });
+};
+
+var syncCicDisciplineInputs = function () {
+  ['cal', 'adm', 'gsa', 'sst'].forEach(function (discipline) {
+    ['si', 'mdo'].forEach(function (prefix) {
+      var section = document.getElementById(prefix + '_' + discipline);
+      if (!section) return;
+      var blocked = window.getComputedStyle(section).display === 'none';
+      $(section).find(':input').prop('disabled', blocked);
+    });
+  });
 };
 
 var maestroPermisos = function (permiso) {
@@ -888,14 +927,16 @@ var maestroPermisos = function (permiso) {
         '#tituloInteresados, #info_profesionales, #btn_nuevo, #info_subcontratistas, #tituloActividadesProyecto, #info_listadoActividades, #btn_cargarActividadesExcel, #btn_nueva_actividad, #info_contratos, #btn_guardar_contratos, #planCompras, #btn_guardar_pdc, #btn_actualizarPDC, #btn_informeProgramaGeneral, #btn_informeProgramacionIntermedia, #btn_informeProgramacionSemanal, #btn_informePDC, #informe_productividad, #tituloActualizarCronograma, #btn_tutorialActualizarCronograma, #actualizarCronograma, #btn_cargarCronogramaExcel, #btn_eliminarActualizacion'
       ).css('display', 'none');
 
-      // Hard Gating: Bloqueo de clics en filas y cursor para Contratos
-      $('body').append('<style>#dt_cliente tbody tr { cursor: default !important; } .ps-action-btn { display: none !important; }</style>');
-      $(document).on('click', '#dt_cliente tbody tr', function(e) {
+      if (!window.__AIA_HANDSONTABLE_ONLY__) {
+        // Compatibilidad temporal para módulos que aún conservan tablas legacy.
+        $('body').append('<style>#dt_cliente tbody tr { cursor: default !important; } .ps-action-btn { display: none !important; }</style>');
+        $(document).on('click', '#dt_cliente tbody tr', function(e) {
           if (permiso === 'C') {
-              e.stopImmediatePropagation();
-              return false;
+            e.stopImmediatePropagation();
+            return false;
           }
-      });
+        });
+      }
 
       //Bloqueos Integración
       $('#integracion').css('display', 'none');
@@ -922,4 +963,5 @@ var maestroPermisos = function (permiso) {
       // window.location.href = '../programacion_semanal/programacion_semanal.php';
       break;
   }
+  syncCicDisciplineInputs();
 };

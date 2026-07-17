@@ -14,11 +14,24 @@ require_once __DIR__ . '/../src/Controllers/Api/PdcApiController.php';
 use App\Controllers\Api\ContratosApiController;
 use App\Controllers\Api\ListadoActividadesApiController;
 use App\Controllers\Api\PdcApiController;
+use App\Security\CsrfTokenManager;
 
 $failed = 0;
+$completed = false;
+$db = null;
 $projectId = 987656;
 $week = 1;
 $prefix = 'lacp_manual_test';
+
+register_shutdown_function(static function () use (&$completed, &$failed, &$db, $projectId, $prefix): void {
+    if (!$completed) {
+        if ($db instanceof Database) {
+            lcpCleanup($db, $projectId, $prefix);
+        }
+        fwrite(STDERR, "LACP manual CRUD persistence ended before its assertions completed.\n");
+        exit(1);
+    }
+});
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -73,7 +86,11 @@ function lcpResetRequest(string $prefix, int $projectId, int $week, array $post 
     $_SESSION['pdcActivo'] = 1;
     $_SERVER['REQUEST_METHOD'] = 'POST';
     $_SERVER['HTTP_ACCEPT'] = 'application/json';
-    $_POST = array_merge(['db' => $prefix, 'semana' => $week], $post);
+    $_POST = array_merge([
+        'db' => $prefix,
+        'semana' => $week,
+        '_csrf_token' => CsrfTokenManager::generate('pdc_save'),
+    ], $post);
     $_GET = $get;
 }
 
@@ -241,14 +258,10 @@ try {
         ? lcpPass('Contratos registra trazabilidad semanal de cantidades')
         : lcpFail('Contratos no registro trazabilidad de cantidades');
 
-    $editActivityWithContract = lcpCall($listado, 'save', $prefix, $projectId, $week, [
-        'opcion' => 'modificar',
-        'Id' => $activityId,
-        'Actividad' => 'E2E Manual Actividad Editada',
-        'descripcionActividad' => 'Actividad editada manualmente para prueba.',
-        'fechaInicio' => '2030-02-12',
-        'tipoContrato' => 'SI,MO',
-        'actividadInicio' => '1001',
+    $editActivityWithContract = lcpCall($listado, 'updateCell', $prefix, $projectId, $week, [
+        'id' => $activityId,
+        'prop' => 'fechaInicio',
+        'value' => '2030-02-12',
     ]);
     lcpAssertResponseOk($editActivityWithContract, 'Listado permite cambiar fecha de actividad con contratos');
 
@@ -353,4 +366,5 @@ try {
 }
 
 echo "=== LACP manual CRUD persistence: {$failed} failed ===\n";
+$completed = true;
 exit($failed === 0 ? 0 : 1);

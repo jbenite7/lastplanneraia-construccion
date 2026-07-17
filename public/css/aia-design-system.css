@@ -1,0 +1,336 @@
+@layer reset, vendor, theme, base, layout, components, utilities, module, legacy-overrides;
+@import url('/public/vendor/font-awesome/css/all.css') layer(vendor);
+@import url('/public/vendor/bootstrap/bootstrap.min.css') layer(vendor);
+@import url('/public/vendor/jquery-ui.css') layer(vendor);
+@import url('/public/vendor/anychart/anychart-ui.min.css') layer(vendor);
+@import url('/public/vendor/anychart/anychart-font.min.css') layer(vendor);
+@import url('/public/vendor/select2/select2.min.css') layer(vendor);
+@import url('/public/vendor/sweetalert2.min.css') layer(vendor);
+@import url('/public/vendor/handsontable/handsontable.full.min.css') layer(vendor);
+@import url('./handsontable-module.css?v=1.0.0') layer(vendor);
+@import url('./handsontable-header-global.css?v=1.0.0') layer(vendor);
+@import url('./design-system/fonts.css?v=1.0.0');
+@import url('./design-system/foundation.css?v=1.0.0');
+@import url('./design-system/components/navigation.css?v=1.0.0');
+@import url('./design-system/components/page-header.css?v=1.0.0');
+@import url('./design-system/components/action-group.css?v=1.0.0');
+@import url('./design-system/components/filter-form.css?v=1.0.0');
+@import url('./design-system/components/states-feedback.css?v=1.0.0');
+@import url('./design-system/components/data-display.css?v=1.0.0');
+@import url('./design-system/components/dialog.css?v=1.0.0');
+@import url('./design-system/components/bi-figure.css?v=1.0.0');
+@import url('./design-system/components/primitives.css?v=1.0.0');
+@import url('./design-system/adapters/legacy-bridge.css?v=1.0.0');
+@import url('./design-system/adapters/handsontable.css?v=1.0.0');
+@import url('./design-system/adapters/programa-general-handsontable.css?v=1.0.0');
+@import url('./design-system/adapters/select2.css?v=1.0.0');
+@import url('./design-system/adapters/sweetalert2.css?v=1.0.0');
+@import url('./design-system/adapters/semi-auto-review.css?v=1.0.0');
+@import url('./design-system/adapters/lps-drawer.css?v=1.0.0');
+@import url('./styles.css?v=1.0.0') layer(module);
+@import url('./buttons.css?v=1.0.0') layer(components);
+@import url('./access.css?v=1.0.0') layer(utilities);
+
+@layer theme {
+  :root,
+  [data-aia-theme='linen'],
+  .aia-theme-linen {
+    color-scheme: light;
+    --ds-active-bg-canvas: var(--ds-color-bg-canvas);
+    --ds-active-bg-page: var(--ds-color-bg-page);
+    --ds-active-surface: var(--ds-color-surface);
+    --ds-active-surface-raised: var(--ds-color-surface-raised);
+    --ds-active-surface-glass: var(--ds-color-surface-glass);
+    --ds-active-text-primary: var(--ds-color-text-primary);
+    --ds-active-text-secondary: var(--ds-color-text-secondary);
+    --ds-active-border: var(--ds-color-border-default);
+    --ds-active-action-primary: var(--ds-color-domain-corporate);
+    --ds-active-action-primary-hover: var(--ds-color-brand-primary-dark);
+    --ds-active-action-text: var(--ds-color-text-inverse);
+    --ds-active-data-plan: var(--ds-color-domain-real-estate);
+    --ds-active-data-executed: var(--ds-color-domain-corporate);
+    --ds-active-nav-bg: var(--ds-color-surface-raised);
+    --ds-active-nav-border: var(--ds-color-border-default);
+    --ds-active-nav-text: var(--ds-color-text-primary);
+    --ds-active-nav-text-muted: var(--ds-color-text-secondary);
+    --ds-active-nav-mark-filter: none;
+  }
+
+  [data-aia-theme='dark'],
+  .aia-theme-dark {
+    color-scheme: dark;
+    --ds-active-bg-canvas: #0b100d;
+    --ds-active-bg-page: #111a15;
+    --ds-active-surface: rgba(28, 36, 31, 0.92);
+    --ds-active-surface-raised: rgba(35, 48, 41, 0.86);
+    --ds-active-surface-glass: rgba(35, 48, 41, 0.66);
+    --ds-active-text-primary: #f7faf8;
+    --ds-active-text-secondary: #c7d4cc;
+    --ds-active-border: rgba(221, 239, 230, 0.22);
+    --ds-active-action-primary: var(--ds-color-domain-corporate-on-dark);
+    --ds-active-action-primary-hover: var(--aia-green-light);
+    --ds-active-action-text: var(--ds-color-text-on-domain-dark);
+    --ds-active-data-plan: var(--ds-color-domain-real-estate-on-dark);
+    --ds-active-data-executed: var(--ds-color-domain-corporate-on-dark);
+    --ds-active-nav-bg: var(--ds-nav-bg-dark);
+    --ds-active-nav-border: var(--ds-nav-border-color-dark);
+    --ds-active-nav-text: var(--ds-active-text-primary);
+    --ds-active-nav-text-muted: var(--ds-active-text-secondary);
+    --ds-active-nav-mark-filter: invert(1) brightness(1.15);
+  }
+}
+
+@layer components {
+  .aia-shell {
+    min-height: 100vh;
+    background:
+      radial-gradient(circle at 8% 0%, rgba(167, 213, 193, 0.35), transparent 34rem),
+      linear-gradient(180deg, var(--ds-active-bg-page), var(--ds-active-bg-canvas));
+    color: var(--ds-active-text-primary);
+    font-family: var(--ds-font-body);
+  }
+
+  .aia-page {
+    width: min(100%, 1440px);
+    margin: 0 auto;
+    padding: clamp(1rem, 2vw, 1.5rem);
+  }
+
+  .aia-section {
+    margin-block: 1rem;
+  }
+
+  .aia-card,
+  .aia-panel,
+  .aia-toolbar,
+  .aia-table-shell,
+  .aia-grid-shell,
+  .aia-modal-surface {
+    background: var(--ds-active-surface);
+    border: 1px solid var(--ds-active-border);
+    border-radius: var(--ds-radius-card);
+    box-shadow: var(--ds-shadow-xs);
+    color: var(--ds-active-text-primary);
+  }
+
+  .aia-glass {
+    background: var(--ds-active-surface-glass);
+    border: 1px solid var(--ds-color-border-subtle);
+    box-shadow: var(--ds-shadow-md);
+    -webkit-backdrop-filter: blur(var(--ds-blur-glass));
+    backdrop-filter: blur(var(--ds-blur-glass));
+  }
+
+  .aia-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.75rem;
+  }
+
+  .aia-card,
+  .aia-panel {
+    padding: clamp(0.875rem, 1.8vw, 1.25rem);
+  }
+
+  .aia-title,
+  .aia-kpi-value {
+    color: var(--ds-active-text-primary);
+    font-family: var(--ds-font-display);
+    font-weight: 700;
+    letter-spacing: 0;
+  }
+
+  .aia-copy,
+  .aia-label,
+  .aia-helper {
+    color: var(--ds-active-text-secondary);
+    font-family: var(--ds-font-body);
+    letter-spacing: 0;
+  }
+
+  .aia-btn {
+    display: inline-flex;
+    min-height: var(--ds-target-min);
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: 1px solid var(--ds-active-action-primary);
+    border-radius: var(--ds-radius-control);
+    background: var(--ds-active-action-primary);
+    color: var(--ds-active-action-text);
+    font-family: var(--ds-font-body);
+    font-weight: 700;
+    line-height: 1.1;
+    padding: 0.65rem 1rem;
+    text-decoration: none;
+    transition: box-shadow var(--ds-motion-fast), transform var(--ds-motion-fast);
+  }
+
+  .aia-btn:hover {
+    border-color: var(--ds-active-action-primary-hover);
+    background: var(--ds-active-action-primary-hover);
+    color: var(--ds-active-action-text);
+    text-decoration: none;
+  }
+
+  .aia-btn:focus-visible,
+  .aia-input:focus-visible,
+  .aia-select:focus-visible,
+  .aia-textarea:focus-visible {
+    outline: 2px solid var(--ds-color-brand-primary);
+    outline-offset: 2px;
+    box-shadow: var(--ds-shadow-focus);
+  }
+
+  .aia-btn--secondary {
+    border-color: var(--ds-active-border);
+    background: var(--ds-active-surface-raised);
+    color: var(--ds-active-text-primary);
+  }
+
+  .aia-btn--construction {
+    border-color: var(--ds-color-brand-construction);
+    background: var(--ds-color-brand-construction);
+    color: var(--ds-color-text-inverse);
+  }
+
+  .aia-input,
+  .aia-select,
+  .aia-textarea {
+    min-height: var(--ds-target-min);
+    width: 100%;
+    border: 1px solid var(--ds-active-border);
+    border-radius: var(--ds-radius-control);
+    background: var(--ds-active-surface);
+    color: var(--ds-active-text-primary);
+    font-family: var(--ds-font-body);
+    padding: 0.625rem 0.75rem;
+  }
+
+  .aia-chip {
+    display: inline-flex;
+    min-height: 1.75rem;
+    align-items: center;
+    gap: 0.35rem;
+    border: 1px solid var(--ds-color-border-default);
+    border-radius: var(--ds-radius-pill);
+    background: var(--ds-color-state-info-bg);
+    color: var(--ds-color-state-info-text);
+    font-size: 0.78rem;
+    font-weight: 800;
+    padding: 0.25rem 0.65rem;
+  }
+
+  .aia-chip--success {
+    background: var(--ds-color-state-success-bg);
+    color: var(--ds-color-state-success-text);
+  }
+
+  .aia-chip--warning {
+    background: var(--ds-color-state-warning-bg);
+    color: var(--ds-color-state-warning-text);
+  }
+
+  .aia-chip--critical {
+    background: var(--ds-color-state-critical-bg);
+    color: var(--ds-color-state-critical-text);
+  }
+
+  .aia-alert {
+    border: 1px solid var(--ds-color-border-default);
+    border-radius: var(--ds-radius-panel);
+    background: var(--ds-active-surface-raised);
+    color: var(--ds-active-text-primary);
+    padding: 0.75rem 0.875rem;
+  }
+
+  .aia-empty {
+    display: grid;
+    place-items: center;
+    min-height: 12rem;
+    border: 1px dashed var(--ds-active-border);
+    border-radius: var(--ds-radius-panel);
+    color: var(--ds-active-text-secondary);
+    text-align: center;
+  }
+}
+
+@layer legacy-overrides {
+:where(.card, .project-card, .aia-card, .aia-panel, .aia-table-shell, .aia-grid-shell) {
+  border-radius: var(--ds-radius-card) !important;
+}
+
+:where(.aia-card, .aia-panel) {
+  padding: var(--ds-space-4);
+}
+
+:where(.modal-content, .swal2-popup, .aia-modal-surface) {
+  border-radius: var(--ds-radius-modal) !important;
+}
+
+:where(.dropdown-menu, .popover, .toast, .tooltip-inner) {
+  border-radius: var(--ds-radius-popover) !important;
+}
+
+:where(.btn, .btn-pdc-modern, .btn-enter, .island-btn, .pdc-mobile-toggle, .btn-filter-toggle, .aia-btn) {
+  border-radius: var(--ds-radius-control) !important;
+}
+
+:where(.form-control, .custom-select, .input-group-text, .select2-selection, .ts-control, .ts-dropdown, .aia-input, .aia-select, .aia-textarea) {
+  border-radius: var(--ds-radius-control) !important;
+}
+
+:where(.input-group > .form-control:not(:last-child), .input-group > .custom-select:not(:last-child)) {
+  border-start-end-radius: var(--ds-radius-none) !important;
+  border-end-end-radius: var(--ds-radius-none) !important;
+}
+
+:where(.input-group > .input-group-append > .btn, .input-group > .input-group-append > .input-group-text) {
+  border-start-start-radius: var(--ds-radius-none) !important;
+  border-end-start-radius: var(--ds-radius-none) !important;
+}
+
+:where(.badge, .badge-status, .count-badge, .pdc-legend-item, .aia-chip) {
+  border-radius: var(--ds-radius-pill) !important;
+}
+
+:where(.progress, .progress-bar, .progress-xs) {
+  border-radius: var(--ds-radius-progress) !important;
+}
+}
+
+@layer utilities {
+  .aia-visually-hidden {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+  }
+
+  .aia-no-motion,
+  .aia-no-motion * {
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .aia-shell *,
+    .aia-card,
+    .aia-panel,
+    .aia-toolbar,
+    .aia-btn {
+      transition-duration: 1ms !important;
+      animation-duration: 1ms !important;
+      animation-iteration-count: 1 !important;
+    }
+  }
+}
