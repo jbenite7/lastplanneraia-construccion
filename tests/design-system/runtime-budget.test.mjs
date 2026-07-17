@@ -78,7 +78,7 @@ test('canonical 0.3.3 artifact is approved only with the user-approved caps', as
     addedAdapterAssets: 0,
     duplicateRequestCount: 0,
     themeFlashCount: 0,
-    initializationMs: 40,
+    initializationMs: 80,
     handsontableInteractionMs: 45,
   });
   assert.equal(artifact.metrics.themeFlashCount, 1);

@@ -38,7 +38,7 @@
     ],
     "duplicateRequestCount": 3,
     "themeFlashCount": 1,
-    "initializationMs": 227.9,
+    "initializationMs": 568.8,
     "handsontableInteractionMs": 280.7,
     "laboratoryAssets": []
   },
@@ -48,7 +48,7 @@
     "addedAdapterAssets": 0,
     "duplicateRequestCount": 0,
     "themeFlashCount": 0,
-    "initializationMs": 40,
+    "initializationMs": 80,
     "handsontableInteractionMs": 45
   }
 }

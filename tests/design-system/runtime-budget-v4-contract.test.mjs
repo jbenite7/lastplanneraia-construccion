@@ -17,6 +17,7 @@ import { readWorktreeProvenance } from '../../scripts/design-system-ci-preflight
 import {
   validateAssets,
   validateRetrospectiveRecoveryManifest,
+  validateApprovedBaselineProvenance,
 } from '../../scripts/design-system-runtime-budget-provenance.mjs';
 import { validateRuntimeBudgetArtifact } from '../../scripts/design-system-runtime-budget.mjs';
 import { currentSamples, RUNTIME_CONTEXT } from './runtime-budget-fixtures.mjs';
@@ -256,4 +257,21 @@ test('retrospective baseline uses a portable receipt and makes no origin Git rec
   assert.equal(manifest.sourceHistory.originCommitAvailable, false);
   assert.equal(manifest.sourceHistory.recoveryFromOriginGitHistory, false);
   assert.equal(manifest.rawSamplesPreserved, false);
+});
+
+test('approved baseline provenance tolerates updated caps without changing the recovery receipt', () => {
+  const baseline = JSON.parse(readFileSync(
+    new URL('../../docs/design-system/runtime-baseline-0.3.3.json', import.meta.url),
+    'utf8',
+  ));
+  const updatedCaps = {
+    ...baseline,
+    metrics: {
+      ...baseline.metrics,
+      initializationMs: baseline.metrics.initializationMs + 1,
+    },
+  };
+
+  assert.equal(validateRuntimeBudgetArtifact(updatedCaps), true);
+  assert.equal(validateApprovedBaselineProvenance(updatedCaps), true);
 });

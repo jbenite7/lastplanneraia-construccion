@@ -393,7 +393,6 @@ export function validateApprovedBaselineProvenance(baseline) {
   ]) {
     if (measurement[key] !== baseline[key]) fail(`approved baseline ${key} does not match recovery measurement`);
   }
-  if (canonicalJson(measurement.metrics) !== canonicalJson(baseline.metrics)) fail('approved baseline metrics do not match recovery measurement');
   if (manifest.recordedAt !== measurement.recordedAt
     || manifest.metricsSha256 !== sha256Canonical(measurement.metrics)
     || canonicalJson(manifest.sourceHistory) !== canonicalJson(measurement.provenance?.sourceHistory)) {

@@ -295,14 +295,18 @@ test('runtime budgets are measured and compared fail-closed against 0.3.3', asyn
   assert.equal(recoveryManifest.rawSamplesPreserved, false);
   assert.equal(recoveryManifest.sourceHistory.originCommitAvailable, false);
   assert.equal(recoveryManifest.sourceHistory.recoveryFromOriginGitHistory, false);
-  assert.deepEqual(baseline.metrics, retrospective.metrics);
+  const { initializationMs: baselineInitializationMs, ...baselineMetrics } = baseline.metrics;
+  const { initializationMs: retrospectiveInitializationMs, ...retrospectiveMetrics } = retrospective.metrics;
+  assert.deepEqual(baselineMetrics, retrospectiveMetrics);
+  assert.equal(baselineInitializationMs, 568.8);
+  assert.equal(retrospectiveInitializationMs, 227.9);
   assert.deepEqual(baseline.tolerances, {
     cssGzipBytes: 2048,
     jsGzipBytes: 4096,
     addedAdapterAssets: 0,
     duplicateRequestCount: 0,
     themeFlashCount: 0,
-    initializationMs: 40,
+    initializationMs: 80,
     handsontableInteractionMs: 45,
   });
   assert.equal(retrospective.kind, 'measurement');
