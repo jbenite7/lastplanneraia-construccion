@@ -76,6 +76,15 @@ test('fixture pre-seeds migration defaults that would otherwise use runtime time
   );
 });
 
+test('synthetic fixture keeps role C out of Programa General read grants', async () => {
+  const fixture = await readFile(fixtureUrl, 'utf8');
+
+  assert.doesNotMatch(
+    fixture,
+    /SELECT 'A' role_code UNION ALL SELECT 'R' UNION ALL SELECT 'V' UNION ALL SELECT 'C'/,
+  );
+});
+
 test('fixture includes the global report-table contract used by the full-app report flow', async () => {
   const fixture = await readFile(fixtureUrl, 'utf8');
 

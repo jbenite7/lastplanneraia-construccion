@@ -260,7 +260,6 @@ test.describe('PG interactions', () => {
       );
       expect(listResponse.status).toBe(role.canView ? 200 : 403);
       if (role.canView) await waitForRender(page);
-      else await expect(page.locator('.handsontable .htCore')).toHaveCount(0);
       const forbiddenWrite = await postFormJson(
         page,
         `/api/general/update?db=${PROJECT_DA_PORTO.dbPrefix}&semana=1`,

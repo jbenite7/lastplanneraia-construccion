@@ -415,7 +415,7 @@ INSERT INTO `rbac_role_permissions`
   (`role_code`, `permission_key`, `allowed`, `source`, `created_at`, `updated_at`)
 SELECT role_code, permission_key, 1, 'synthetic_ci', '2026-01-01 00:00:00', '2026-01-01 00:00:00'
 FROM (
-  SELECT 'A' role_code UNION ALL SELECT 'R' UNION ALL SELECT 'V' UNION ALL SELECT 'C'
+  SELECT 'A' role_code UNION ALL SELECT 'R' UNION ALL SELECT 'V'
 ) roles
 CROSS JOIN (
   SELECT 'lps.programa_general.ver' permission_key UNION ALL
