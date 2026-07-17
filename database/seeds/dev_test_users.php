@@ -29,7 +29,8 @@ foreach ($users as [$username, $name, $email, $cargo, $role]) {
         $userId = (int) $db->lastInsertId();
     }
 
-    foreach ([73, 75] as $projectId) {
+    $projectIds = $username === 'test.A' ? [73, 75, 76] : [73, 75];
+    foreach ($projectIds as $projectId) {
         $exists = (int) $db->query('SELECT COUNT(*) FROM general_proyectos_procesos WHERE Id = ?', [$projectId])->fetchColumn();
         if ($exists !== 1) {
             continue;
