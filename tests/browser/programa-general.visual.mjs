@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { PROJECTS } from './fixtures/projects.mjs';
-import { loginAndSelectProject } from './support/session.mjs';
+import { changeWeek, loginAndSelectProject } from './support/session.mjs';
 
 const MANIFEST = JSON.parse(readFileSync(
   new URL('../../docs/design-system/manifests/programa-general.json', import.meta.url),
@@ -46,7 +46,7 @@ for (const scenario of MANIFEST.scenarios) {
     test(`${scenario.id} remains stable`, async ({ page }) => {
       await mockDeterministicData(page);
       await loginAndSelectProject(page, PROJECTS[0], ADMIN);
-      await page.goto('/programa-general', { waitUntil: 'domcontentloaded' });
+      await changeWeek(page, PROJECTS[0].maxWeek, '/programa-general');
       await page.setViewportSize(scenario.viewport);
       await storeTheme(page, scenario.theme);
       await page.reload({ waitUntil: 'domcontentloaded' });
