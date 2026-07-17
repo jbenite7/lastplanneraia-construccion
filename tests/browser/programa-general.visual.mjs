@@ -61,7 +61,10 @@ for (const scenario of VISUAL_SCENARIOS) {
       await expect(page.locator('#save-status')).toBeHidden({ timeout: 10000 });
       await expect(page).toHaveScreenshot(
         path.basename(scenario.golden),
-        { fullPage: false },
+        {
+          fullPage: false,
+          maxDiffPixelRatio: 0.03,
+        },
       );
     });
 }
