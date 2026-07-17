@@ -36,9 +36,8 @@ async function reflowState(page, scopeSelector) {
 
 test('laboratory families reflow at 320 CSS px without fragmenting words', async ({ page }) => {
   await openAsAdmin(page, '/internal/design-system');
-  const selector = page.locator('[data-lab-family]');
   for (const family of FAMILIES) {
-    await selector.selectOption(family);
+    await page.locator(`[data-lab-family-link][data-family-target="${family}"]`).click();
     const scope = `[data-family="${family}"]`;
     await expect(page.locator(scope)).toBeVisible();
     for (const theme of ['dark', 'linen']) {

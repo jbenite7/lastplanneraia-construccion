@@ -31,13 +31,12 @@ async function tabSequence(page, scope, required) {
 
 test('canonical actions and filters have logical keyboard order and visible focus', async ({ page }) => {
   await openAsAdmin(page, '/internal/design-system');
-  const family = page.locator('[data-lab-family]');
-  await family.selectOption('actions');
+  await page.locator('[data-lab-family-link][data-family-target="actions"]').click();
   const actions = await tabSequence(page, '[data-family="actions"] [data-aia-component="action-group"]', 2);
   expect(actions.map(({ label }) => label)).toEqual(['Guardar cambios', 'Cancelar']);
   expect(actions.every(({ focusVisible }) => focusVisible)).toBe(true);
 
-  await family.selectOption('forms-filters');
+  await page.locator('[data-lab-family-link][data-family-target="forms-filters"]').click();
   const filters = await tabSequence(page, '[data-family="forms-filters"] [data-aia-component="filter-form"]', 5);
   expect(filters.map(({ label }) => label)).toEqual([
     'Buscar', 'Responsable', 'Estado', 'Aplicar filtros', 'Limpiar',

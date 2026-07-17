@@ -4,7 +4,7 @@ $familyGroups = array_values(array_filter(
     static fn(array $group): bool => $group['family'] === $family['id']
 ));
 ?>
-<details class="ds-ui-index">
+<details class="ds-ui-index" open>
     <summary>Inventario de esta familia · <?= count($familyGroups) ?> grupos</summary>
     <ul>
         <?php foreach ($familyGroups as $group): ?>

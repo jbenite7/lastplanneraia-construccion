@@ -7,26 +7,65 @@
     <?= \App\View\Components\DesignSystemHeadComponent::render(true) ?>
     <?= \App\View\Components\DesignSystemHeadComponent::renderStylesheet('/css/design-system/lab.css') ?>
 </head>
-<body class="aia-shell ds-lab" data-density="touch">
+<body class="aia-shell ds-lab" data-density="compact">
     <header class="ds-lab__header">
-        <div><p class="ds-lab__eyebrow">Sprint 00 · 1.0.0</p><h1>Laboratorio del Design System AIA</h1></div>
+        <div class="ds-lab__identity">
+            <p class="ds-lab__eyebrow">Sistema vivo · Revisión de patrones</p>
+            <h1>Laboratorio AIA</h1>
+            <p class="ds-lab__lede">Fundamentos, decisiones y componentes listos para validar.</p>
+        </div>
         <div class="ds-lab__controls" aria-label="Controles del laboratorio">
             <button type="button" class="aia-btn aia-btn--secondary" data-lab-theme>Usar tema dark</button>
-            <label class="aia-label" for="lab-family">Familia</label>
-            <select class="aia-select" id="lab-family" data-lab-family>
-                <?php foreach ($contract['families'] as $family): ?>
-                    <option value="<?= htmlspecialchars($family['id'], ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($family['label'] ?? $family['id'], ENT_QUOTES, 'UTF-8') ?></option>
-                <?php endforeach; ?>
-            </select>
-            <label class="aia-label" for="lab-density">Densidad</label>
-            <select class="aia-select" id="lab-density" data-lab-density>
-                <option value="touch">Touch</option>
-                <option value="compact">Compacta</option>
-            </select>
+            <fieldset class="ds-lab__density" aria-label="Densidad de la muestra">
+                <legend class="aia-visually-hidden">Densidad de la muestra</legend>
+                <label><input type="radio" name="lab-density" value="compact" data-lab-density checked> Compacta</label>
+                <label><input type="radio" name="lab-density" value="touch" data-lab-density> Touch</label>
+            </fieldset>
         </div>
     </header>
-    <main class="aia-page ds-lab__families" id="contenido">
-        <?php foreach ($contract['families'] as $family): ?>
+    <div class="ds-lab__workspace">
+        <aside class="ds-lab__rail-wrap">
+            <nav class="ds-lab__rail" aria-label="Familias del design system">
+                <p class="ds-lab__rail-title">Familias <span><?= count($contract['families']) ?></span></p>
+                <ul>
+                    <?php foreach ($contract['families'] as $index => $family): ?>
+                        <?php
+                        $familyId = (string) $family['id'];
+                        $groupCount = count(array_filter(
+                            $uiGroups,
+                            static fn(array $group): bool => $group['family'] === $familyId
+                        ));
+                        $railCandidates = $family['candidates'] ?? [];
+                        $railCandidateId = trim((string) ($family['activeCandidate'] ?? ''));
+                        $railCandidate = null;
+                        foreach ($railCandidates as $candidate) {
+                            if (($candidate['id'] ?? '') === $railCandidateId) {
+                                $railCandidate = $candidate;
+                                break;
+                            }
+                        }
+                        if ($railCandidate === null) {
+                            foreach ($railCandidates as $candidate) {
+                                if (($candidate['status'] ?? '') === 'approved') {
+                                    $railCandidate = $candidate;
+                                    break;
+                                }
+                            }
+                        }
+                        $familyApproved = ($railCandidate['status'] ?? 'candidate') === 'approved';
+                        ?>
+                        <li>
+                            <a href="?family=<?= htmlspecialchars($familyId, ENT_QUOTES, 'UTF-8') ?>" data-lab-family-link data-family-target="<?= htmlspecialchars($familyId, ENT_QUOTES, 'UTF-8') ?>"<?= $index === 0 ? ' aria-current="page"' : '' ?>>
+                                <span class="ds-lab__rail-label"><?= htmlspecialchars($family['label'] ?? $familyId, ENT_QUOTES, 'UTF-8') ?></span>
+                                <span class="ds-lab__rail-meta"><?= $groupCount ?> <?= $groupCount === 1 ? 'grupo' : 'grupos' ?> · <?= $familyApproved ? 'Aprobado' : 'En revisión' ?></span>
+                            </a>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            </nav>
+        </aside>
+        <main class="aia-page ds-lab__families" id="contenido">
+            <?php foreach ($contract['families'] as $family): ?>
             <?php
             $candidates = $family['candidates'] ?? [];
             $activeCandidateId = trim((string) ($family['activeCandidate'] ?? ''));
@@ -49,9 +88,9 @@
             $approved = ($activeCandidate['status'] ?? 'candidate') === 'approved';
             $familyCandidateEyebrow = $approved ? 'Patrón aprobado' : 'Patrón en revisión';
             ?>
-            <section class="aia-panel ds-lab__family" data-family="<?= htmlspecialchars($family['id'], ENT_QUOTES, 'UTF-8') ?>" data-active-candidate="<?= htmlspecialchars($activeCandidateId, ENT_QUOTES, 'UTF-8') ?>" data-family-status="<?= $approved ? 'approved' : 'candidate' ?>">
+            <section class="aia-panel ds-lab__family" data-family="<?= htmlspecialchars($family['id'], ENT_QUOTES, 'UTF-8') ?>" data-active-candidate="<?= htmlspecialchars($activeCandidateId, ENT_QUOTES, 'UTF-8') ?>" data-family-status="<?= $approved ? 'approved' : 'candidate' ?>" aria-labelledby="family-<?= htmlspecialchars($family['id'], ENT_QUOTES, 'UTF-8') ?>-title">
                 <header class="ds-lab__family-head">
-                    <h2><?= htmlspecialchars($family['label'] ?? $family['id'], ENT_QUOTES, 'UTF-8') ?></h2>
+                    <div><p class="ds-lab__family-kicker"><?= $familyCandidateEyebrow ?></p><h2 id="family-<?= htmlspecialchars($family['id'], ENT_QUOTES, 'UTF-8') ?>-title" tabindex="-1"><?= htmlspecialchars($family['label'] ?? $family['id'], ENT_QUOTES, 'UTF-8') ?></h2></div>
                     <span class="aia-chip<?= $approved ? ' aia-chip--success' : '' ?>" title="<?= $approved ? 'Familia aprobada' : 'Candidato activo pendiente de aprobación visual' ?>"><?= $approved ? 'Aprobado' : 'En revisión' ?></span>
                 </header>
                 <p class="ds-lab__review-note">Estado: <?= $approved ? 'familia aprobada y congelada.' : 'candidato activo pendiente de aprobación visual; la base aprobada se conserva como referencia.' ?></p>
@@ -61,8 +100,9 @@
                 <?php require __DIR__ . '/ui-group-index.php'; ?>
                 <?php require __DIR__ . '/families/' . basename($family['id']) . '.php'; ?>
             </section>
-        <?php endforeach; ?>
-    </main>
+            <?php endforeach; ?>
+        </main>
+    </div>
     <script src="/public/js/modules/aia_ui/theme.js"></script>
     <script src="/public/js/modules/aia_ui/components.js"></script>
     <script src="/public/js/modules/aia_ui/design_system_lab.js"></script>

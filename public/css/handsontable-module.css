@@ -944,12 +944,12 @@ body {
   }
 
   /* Ajuste Dinámico de Layout para Evitar Solapamiento de Sidebar y Drawer */
-  body {
+  body:not(.ds-lab) {
     padding-right: var(--lps-rail-safe-width) !important;
     transition: padding-right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  body.lps-drawer-open {
+  body:not(.ds-lab).lps-drawer-open {
     padding-right: var(--lps-context-drawer-width) !important;
   }
 

@@ -45,10 +45,21 @@ test('administrator can open the laboratory before selecting a project', async (
 });
 
 async function selectFamily(page, family) {
-  await page.locator('[data-lab-family]').selectOption(family);
+  await page.locator(`[data-lab-family-link][data-family-target="${family}"]`).click();
   await expect(page.locator(`[data-family="${family}"]`)).toBeVisible();
   await expect(page.locator('[data-family]:visible')).toHaveCount(1);
 }
+
+test('family rail normalizes the initial URL and restores the selected family through history', async ({ page }) => {
+  await login(page, ADMIN);
+  await page.goto('/internal/design-system', { waitUntil: 'domcontentloaded' });
+  await expect(page).toHaveURL(/\?family=foundations$/);
+  await selectFamily(page, 'actions');
+  await page.goBack({ waitUntil: 'domcontentloaded' });
+  await expect(page).toHaveURL(/\?family=foundations$/);
+  await expect(page.locator('[data-family="foundations"]')).toBeVisible();
+  await expect(page.locator('[data-lab-family-link][data-family-target="foundations"]')).toHaveAttribute('aria-current', 'page');
+});
 
 test('admin laboratory is deterministic across themes and viewports', async ({ page }) => {
   await openAs(page, ADMIN);
@@ -77,7 +88,7 @@ test('defaults to dark and maps responsive density by viewport', async ({ page }
   await expect(foundations).toHaveAttribute('data-active-candidate', 'foundation-inventory-action-color');
   await expect(foundations).toHaveAttribute('data-family-status', 'candidate');
   await expect(foundations.locator('.ds-lab__family-head .aia-chip')).toHaveText('En revisión');
-  await expect(page.locator('body')).toHaveAttribute('data-density', 'touch');
+  await expect(page.locator('body')).toHaveAttribute('data-density', 'compact');
   await page.setViewportSize(VIEWPORTS[1]);
   await page.reload({ waitUntil: 'domcontentloaded' });
   await expect(page.locator('body')).toHaveAttribute('data-density', 'compact');
@@ -126,7 +137,7 @@ test('state words, density and dialog behavior follow the family contract', asyn
   expect(stateContract.wordBreak).toBe('normal');
   expect(stateContract.hyphens).toBe('none');
 
-  await page.locator('[data-lab-density]').selectOption('compact');
+  await page.locator('[data-lab-density][value="compact"]').check();
   await expect(page.locator('body')).toHaveAttribute('data-density', 'compact');
 
   await selectFamily(page, 'overlays');
@@ -238,13 +249,14 @@ test('density selector shows and applies the touch and compact contracts', async
   await page.setViewportSize(VIEWPORTS[0]);
   await openAs(page, ADMIN);
   const swatch = page.locator('[data-family="foundations"] .ds-swatch').first();
+  await page.locator('[data-lab-density][value="touch"]').check();
   const touchHeight = await swatch.evaluate((element) => element.getBoundingClientRect().height);
   await expect(page.locator('[data-density-sample="touch"]')).toContainText('44 px visual y operable');
   await expect(page.locator('[data-density-sample="compact"]')).toContainText('36 px visual');
-  await page.locator('[data-lab-density]').selectOption('compact');
+  await page.locator('[data-lab-density][value="compact"]').check();
   const compactHeight = await swatch.evaluate((element) => element.getBoundingClientRect().height);
   expect(compactHeight).toBeLessThan(touchHeight);
-  await expect(page.locator('[data-density-sample="compact"]')).toHaveAttribute('aria-current', 'true');
+  await expect(page.locator('[data-density-sample="compact"]')).toHaveAttribute('data-selected', 'true');
   const compactAction = page.locator('[data-density-sample="compact"] .aia-btn');
   const actionSize = await compactAction.evaluate((element) => element.getBoundingClientRect());
   expect(actionSize.height).toBeGreaterThanOrEqual(44);

@@ -32,6 +32,8 @@ test('the foundations specimen explains its internal governance terms', async ()
   assert.equal(foundations.label, 'Fundamentos de marca');
   assert.match(foundations.description, /color|tipograf/i);
   assert.match(view, /En revisión/);
+  assert.match(view, /data-lab-family-link/);
+  assert.match(view, /Familias del design system/);
   assert.doesNotMatch(view, />candidate</);
 });
 
@@ -64,7 +66,37 @@ test('the foundations specimen separates AIA brand domains from operational stat
   assert.match(specimen, /Corporativo/);
   assert.match(specimen, /Inmobiliario/);
   assert.match(specimen, /Arquitectura/);
+  assert.match(specimen, /Jerarquía para lectura operativa/);
+  assert.doesNotMatch(specimen, /aria-current/);
   assert.doesNotMatch(specimen, />Éxito</);
+});
+
+test('the laboratory navigation uses native links and density radios', async () => {
+  const [view, script] = await Promise.all([
+    read('views/design-system/lab.view.php'),
+    read('public/js/modules/aia_ui/design_system_lab.js'),
+  ]);
+  assert.match(view, /<nav class="ds-lab__rail" aria-label="Familias del design system">/);
+  assert.match(view, /type="radio" name="lab-density" value="compact" data-lab-density/);
+  assert.match(view, /type="radio" name="lab-density" value="touch" data-lab-density/);
+  assert.doesNotMatch(view, /id="lab-family"/);
+  assert.match(script, /window\.history\[historyMode \+ 'State'\]/);
+  assert.match(script, /window\.addEventListener\('popstate'/);
+});
+
+test('dark controls expose a semantic high-contrast focus token', async () => {
+  const [tokens, css] = await Promise.all([
+    read('public/css/tokens.css'),
+    read('public/css/aia-design-system.css'),
+  ]);
+  assert.match(tokens, /--ds-color-focus-ring-dark:\s*#2caa9f/);
+  assert.match(css, /--ds-active-focus-ring:\s*var\(--ds-color-focus-ring-dark\)/);
+  assert.match(css, /outline:\s*2px solid var\(--ds-active-focus-ring\)/);
+});
+
+test('the Handsontable rail does not reserve space in the standalone laboratory', async () => {
+  const css = await read('public/css/handsontable-module.css');
+  assert.match(css, /body:not\(\.ds-lab\)\s*\{[\s\S]*padding-right:\s*var\(--lps-rail-safe-width\) !important/);
 });
 
 test('every brand domain has an accessible dark-appearance variant', async () => {

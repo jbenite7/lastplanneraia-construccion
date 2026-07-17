@@ -110,15 +110,15 @@ async function assertStatesFeedbackVisualContract(page, panel) {
 for (const scenario of VISUAL_SCENARIOS) {
   test(`${scenario.id} remains stable`, async ({ page }) => {
     await openLaboratory(page, scenario);
-    const options = page.locator('[data-lab-family] option');
-    await expect(options).toHaveCount(FAMILY_COUNT);
-    const families = await options.evaluateAll((nodes) => nodes.map((node) => node.value));
+    const links = page.locator('[data-lab-family-link]');
+    await expect(links).toHaveCount(FAMILY_COUNT);
+    const families = await links.evaluateAll((nodes) => nodes.map((node) => node.dataset.familyTarget));
     expect(families).toContain(scenario.family);
     expect(scenario.fixture).toBe('approved-family-v1');
     await page.setViewportSize(scenario.viewport);
-    await page.locator('#lab-density').selectOption(scenario.density);
+    await page.locator(`[data-lab-density][value="${scenario.density}"]`).check();
     await freezeTheme(page, scenario.theme);
-    await page.locator('[data-lab-family]').selectOption(scenario.family);
+    await page.locator(`[data-lab-family-link][data-family-target="${scenario.family}"]`).click();
     const panel = page.locator(`[data-family="${scenario.family}"]`);
     await expect(panel).toBeVisible();
     const approvedCandidateId = APPROVED_BY_FAMILY.get(scenario.family);

@@ -44,6 +44,7 @@
     --ds-active-text-primary: var(--ds-color-text-primary);
     --ds-active-text-secondary: var(--ds-color-text-secondary);
     --ds-active-border: var(--ds-color-border-default);
+    --ds-active-focus-ring: var(--ds-color-focus-ring-light);
     --ds-active-action-primary: var(--ds-color-domain-corporate);
     --ds-active-action-primary-hover: var(--ds-color-brand-primary-dark);
     --ds-active-action-text: var(--ds-color-text-inverse);
@@ -67,6 +68,7 @@
     --ds-active-text-primary: #f7faf8;
     --ds-active-text-secondary: #c7d4cc;
     --ds-active-border: rgba(221, 239, 230, 0.22);
+    --ds-active-focus-ring: var(--ds-color-focus-ring-dark);
     --ds-active-action-primary: var(--ds-color-domain-corporate-on-dark);
     --ds-active-action-primary-hover: var(--aia-green-light);
     --ds-active-action-text: var(--ds-color-text-on-domain-dark);
@@ -180,7 +182,7 @@
   .aia-input:focus-visible,
   .aia-select:focus-visible,
   .aia-textarea:focus-visible {
-    outline: 2px solid var(--ds-color-brand-primary);
+    outline: 2px solid var(--ds-active-focus-ring);
     outline-offset: 2px;
     box-shadow: var(--ds-shadow-focus);
   }
