@@ -5,6 +5,21 @@ import { statSync } from 'node:fs';
 import test from 'node:test';
 
 const read = (path) => readFile(new URL(`../../${path}`, import.meta.url), 'utf8');
+const repositoryRoot = new URL('../..', import.meta.url);
+
+const runPhpInApp = (script) => {
+  const composeOptions = { cwd: repositoryRoot };
+  const runningServices = execFileSync(
+    'docker',
+    ['compose', 'ps', '--status', 'running', '--services'],
+    composeOptions,
+  ).toString().split(/\r?\n/);
+  const appCommand = runningServices.includes('app')
+    ? ['compose', 'exec', '-T', 'app']
+    : ['compose', 'run', '--rm', '--no-deps', 'app'];
+
+  return execFileSync('docker', [...appCommand, 'php', '-r', script], composeOptions).toString();
+};
 
 test('semantic tokens cover every governed foundation', async () => {
   const css = await read('public/css/tokens.css');
@@ -169,7 +184,7 @@ test('the shared head applies the persisted theme before the first stylesheet ca
 
   const render = 'require "src/View/Components/DesignSystemHeadComponent.php";'
     + ' echo App\\View\\Components\\DesignSystemHeadComponent::render(true);';
-  const html = execFileSync('php', ['-r', render], { cwd: new URL('../..', import.meta.url) }).toString();
+  const html = runPhpInApp(render);
   assert.match(html, /<script src="\/js\/modules\/aia_ui\/theme-bootstrap\.js\?v=\d+"><\/script>/);
   assert.ok(
     html.indexOf('theme-bootstrap.js') < html.indexOf('aia-design-system.css'),
@@ -196,7 +211,7 @@ test('local entrypoint imports share the published design-system version', async
 test('stylesheet versions follow nested CSS changes', () => {
   const php = 'require "src/View/Components/DesignSystemHeadComponent.php";'
     + ' echo App\\View\\Components\\DesignSystemHeadComponent::render(true);';
-  const html = execFileSync('php', ['-r', php], { cwd: new URL('../..', import.meta.url) }).toString();
+  const html = runPhpInApp(php);
   const version = Number(html.match(/aia-design-system\.css\?v=(\d+)/)?.[1]);
   const tokensMtime = Math.floor(statSync(new URL('../../public/css/tokens.css', import.meta.url)).mtimeMs / 1000);
   assert.ok(version >= tokensMtime, `entrypoint ${version} is older than tokens ${tokensMtime}`);
