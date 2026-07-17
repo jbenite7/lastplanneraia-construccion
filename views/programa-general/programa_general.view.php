@@ -8,6 +8,7 @@
     <?= \App\View\Components\DesignSystemHeadComponent::render() ?>
     <script type="text/javascript" src="/js/linksComunesHead2.js?v=20260711foundation5" charset="utf-8"></script>
     <?php $pgCssVersion = @filemtime(dirname(__DIR__, 2) . '/public/css/programa-general.css') ?: 'pgSprint04'; ?>
+    <?php $pgGeneralJsVersion = @filemtime(dirname(__DIR__, 2) . '/public/js/funcionesGenerales6.js') ?: 'pgGeneralJs04'; ?>
     <link rel="stylesheet" href="/css/programa-general.css?v=<?php echo urlencode((string) $pgCssVersion); ?>" />
     <!-- Toastr (Mensajes Emergentes) -->
     <link rel="stylesheet" href="/public/vendor/toastr.min.css" />
@@ -135,5 +136,6 @@
             window.PGHotModule.init();
         }
     </script>
+    <script type="text/javascript" src="/js/funcionesGenerales6.js?v=<?php echo urlencode((string) $pgGeneralJsVersion); ?>" charset="utf-8"></script>
 </body>
 </html>
