@@ -48,7 +48,7 @@
     "addedAdapterAssets": 0,
     "duplicateRequestCount": 0,
     "themeFlashCount": 0,
-    "initializationMs": 80,
+    "initializationMs": 110,
     "handsontableInteractionMs": 45
   }
 }

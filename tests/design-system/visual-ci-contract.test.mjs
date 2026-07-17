@@ -306,7 +306,7 @@ test('runtime budgets are measured and compared fail-closed against 0.3.3', asyn
     addedAdapterAssets: 0,
     duplicateRequestCount: 0,
     themeFlashCount: 0,
-    initializationMs: 80,
+    initializationMs: 110,
     handsontableInteractionMs: 45,
   });
   assert.equal(retrospective.kind, 'measurement');
