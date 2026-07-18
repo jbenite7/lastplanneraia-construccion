@@ -1,97 +1,101 @@
 @layer legacy-overrides {
-:where(.handsontable tbody td) {
-  border-right-color: var(--ds-color-border-default);
-  border-bottom-color: var(--ds-color-border-default);
-}
+  :where(.handsontable tbody td) {
+    border-right-color: var(--ds-color-border-default);
+    border-bottom-color: var(--ds-color-border-default);
+  }
 
-:where(.table th, .table td, table.dataTable th, table.dataTable td) {
-  border-color: var(--ds-color-border-default);
-}
+  :where(.table th, .table td, table.dataTable th, table.dataTable td) {
+    border-color: var(--ds-color-border-default);
+  }
 
-:where(.pg-page #pgLegend.pdc-legend-autoscaling .pdc-legend-item) {
-  height: auto !important;
-  min-height: var(--ds-target-min) !important;
-  max-height: none !important;
-  block-size: auto !important;
-  min-block-size: var(--ds-target-min) !important;
-  max-block-size: none !important;
-  overflow-wrap: normal;
-  word-break: normal;
-}
+  :where(.pg-page #pgLegend.pdc-legend-autoscaling .pdc-legend-item) {
+    height: auto !important;
+    min-height: var(--ds-target-min) !important;
+    max-height: none !important;
+    block-size: auto !important;
+    min-block-size: var(--ds-target-min) !important;
+    max-block-size: none !important;
+    overflow-wrap: normal;
+    word-break: normal;
+  }
 
-/* The legacy module reset zeroes every element's padding. Reassert the
+  /* The legacy module reset zeroes every element's padding. Reassert the
    canonical Select2 inset in the final bridge layer so the adapter, rather
    than the reset, owns the rendered control geometry. */
-:where(.select2-container .select2-selection--single .select2-selection__rendered) {
-  padding-inline: var(--ds-space-4);
-}
+  :where(.select2-container .select2-selection--single .select2-selection__rendered) {
+    padding-inline: var(--ds-space-4);
+  }
 
-:where(.select2-container--multiple .select2-selection--multiple) {
-  padding: var(--ds-space-2) var(--ds-space-3);
-}
+  :where(.select2-container--multiple .select2-selection--multiple) {
+    padding: var(--ds-space-2) var(--ds-space-3);
+  }
 
-:where(.aia-input, .aia-select, .aia-textarea) {
-  padding-block: var(--ds-space-3);
-  padding-inline: var(--ds-space-4);
-}
+  :where(.aia-input, .aia-select, .aia-textarea) {
+    padding-block: var(--ds-space-3);
+    padding-inline: var(--ds-space-4);
+  }
 
-:where(.aia-input[type='file']) {
-  padding: var(--ds-space-1);
-}
+  :where(.aia-input[type="file"]) {
+    padding: var(--ds-space-1);
+  }
 
-:where(.aia-navigation__global) {
-  padding: var(--ds-space-4);
-}
+  :where(.aia-navigation__global) {
+    padding: var(--ds-space-4);
+  }
 
-:where(.aia-btn--icon) {
-  font-size: var(--ds-type-size-xl);
-}
+  :where(.aia-btn--icon) {
+    font-size: var(--ds-type-size-xl);
+  }
 
-:where(.aia-feedback) {
-  padding: var(--ds-space-3) var(--ds-space-4);
-}
+  :where(.aia-feedback) {
+    padding: var(--ds-space-3) var(--ds-space-4);
+  }
 
-:where([data-aia-severity='none'][data-aia-urgency='none']) {
-  background: var(--ds-color-state-info-bg);
-  color: var(--ds-color-state-info-text);
-}
+  :where([data-aia-severity="none"][data-aia-urgency="none"]) {
+    background: var(--ds-color-state-info-bg);
+    color: var(--ds-color-state-info-text);
+  }
 
-:where([data-aia-severity='low'][data-aia-urgency='none']) {
-  background: var(--ds-color-state-success-bg);
-  color: var(--ds-color-state-success-text);
-}
+  :where([data-aia-severity="low"][data-aia-urgency="none"]) {
+    background: var(--ds-color-state-success-bg);
+    color: var(--ds-color-state-success-text);
+  }
 
-:where([data-aia-severity='medium'][data-aia-urgency='soon']) {
-  background: var(--ds-color-state-warning-bg);
-  color: var(--ds-color-state-warning-text);
-}
+  :where([data-aia-severity="medium"][data-aia-urgency="soon"]) {
+    background: var(--ds-color-state-warning-bg);
+    color: var(--ds-color-state-warning-text);
+  }
 
-:where([data-aia-severity='high'][data-aia-urgency='now']) {
-  background: var(--ds-color-state-critical-bg);
-  color: var(--ds-color-state-critical-text);
-}
+  :where([data-aia-severity="high"][data-aia-urgency="now"]) {
+    background: var(--ds-color-state-critical-bg);
+    color: var(--ds-color-state-critical-text);
+  }
 
-:where(.aia-pagination a[aria-current='page']) {
-  color: var(--ds-color-state-success-text);
-}
+  :where(.aia-pagination a[aria-current="page"]) {
+    color: var(--ds-color-state-success-text);
+  }
 
-:where(.aia-glass-popup .swal2-title) {
-  color: var(--ds-active-text-primary);
-}
+  :where(.aia-glass-popup .swal2-title) {
+    color: var(--ds-active-text-primary);
+  }
 
-:where(html.aia-theme-dark body.dark-mode .aia-info-nav__trigger,
-  html.aia-theme-dark body.dark-mode .aia-info-nav__menu) {
-  border-color: var(--ds-active-border);
-  background: var(--ds-active-surface-raised);
-  color: var(--ds-active-text-primary);
-}
+  :where(
+    html.aia-theme-dark body.dark-mode .aia-info-nav__trigger,
+    html.aia-theme-dark body.dark-mode .aia-info-nav__menu
+  ) {
+    border-color: var(--ds-active-border);
+    background: var(--ds-active-surface-raised);
+    color: var(--ds-active-text-primary);
+  }
 
-:where(html.aia-theme-dark body.dark-mode .aia-info-nav__current,
-  html.aia-theme-dark body.dark-mode .aia-info-nav__chevron) {
-  color: var(--ds-active-text-primary);
-}
+  :where(
+    html.aia-theme-dark body.dark-mode .aia-info-nav__current,
+    html.aia-theme-dark body.dark-mode .aia-info-nav__chevron
+  ) {
+    color: var(--ds-active-text-primary);
+  }
 
-:where(html.aia-theme-dark body.dark-mode .aia-info-nav__eyebrow) {
-  color: var(--ds-active-text-secondary);
-}
+  :where(html.aia-theme-dark body.dark-mode .aia-info-nav__eyebrow) {
+    color: var(--ds-active-text-secondary);
+  }
 }

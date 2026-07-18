@@ -10,11 +10,15 @@
   }
 
   @keyframes aia-spin {
-    to { transform: rotate(1turn); }
+    to {
+      transform: rotate(1turn);
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .aia-spinner { animation: none; }
+    .aia-spinner {
+      animation: none;
+    }
   }
 
   .aia-feedback {

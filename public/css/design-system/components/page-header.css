@@ -27,7 +27,7 @@
 
   .aia-page-header__breadcrumb li + li::before {
     margin-inline-end: var(--ds-space-2);
-    content: '/';
+    content: "/";
   }
 
   .aia-page-header__breadcrumb a,

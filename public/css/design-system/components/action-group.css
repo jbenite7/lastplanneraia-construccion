@@ -6,7 +6,7 @@
     gap: var(--ds-space-3);
   }
 
-  .aia-action-group .aia-btn[aria-busy='true'] {
+  .aia-action-group .aia-btn[aria-busy="true"] {
     cursor: wait;
   }
 

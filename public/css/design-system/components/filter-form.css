@@ -18,7 +18,7 @@
     color: var(--ds-active-text-primary);
   }
 
-  .aia-field:has(> .aia-input[type='file']) {
+  .aia-field:has(> .aia-input[type="file"]) {
     align-content: center;
   }
 
@@ -36,13 +36,13 @@
     resize: vertical;
   }
 
-  .aia-input[type='file'] {
+  .aia-input[type="file"] {
     display: flex;
     align-items: center;
     padding: var(--ds-space-1);
   }
 
-  .aia-input[type='file']::file-selector-button {
+  .aia-input[type="file"]::file-selector-button {
     min-height: calc(var(--ds-target-min) - var(--ds-space-2));
     margin-inline-end: var(--ds-space-3);
     padding: var(--ds-space-2) var(--ds-space-3);
@@ -81,7 +81,7 @@
     accent-color: var(--ds-active-action-primary);
   }
 
-  .aia-input[type='date'] {
+  .aia-input[type="date"] {
     color-scheme: inherit;
   }
 
@@ -100,7 +100,7 @@
     padding-inline: var(--ds-space-4);
   }
 
-  .aia-input[type='file'] {
+  .aia-input[type="file"] {
     padding: var(--ds-space-1);
   }
 }

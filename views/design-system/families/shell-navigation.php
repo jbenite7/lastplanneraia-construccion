@@ -9,9 +9,9 @@
         'context' => 'Optimización Aeropuerto JMC',
         'active' => 'programa-general',
         'destinations' => [
-            ['id' => 'programa-general', 'label' => 'Programa General', 'href' => '#contenido'],
-            ['id' => 'programacion-semanal', 'label' => 'Programación Semanal', 'href' => '#contenido'],
-            ['id' => 'pdc', 'label' => 'PDC', 'href' => '#contenido'],
+            ['id' => 'programa-general', 'label' => 'Programa General', 'href' => '/programa-general'],
+            ['id' => 'programacion-semanal', 'label' => 'Programación Semanal', 'href' => '/programacion-semanal'],
+            ['id' => 'pdc', 'label' => 'PDC', 'href' => '/pdc'],
         ],
     ]) ?>
     <div class="ds-shell-utilities" aria-label="Utilidades globales">

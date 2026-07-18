@@ -1,18 +1,18 @@
 @layer base {
-:where(*, *::before, *::after) {
-  box-sizing: border-box;
-}
+  :where(*, *::before, *::after) {
+    box-sizing: border-box;
+  }
 
-:where(html) {
-  font-family: var(--ds-font-body);
-  color: var(--ds-active-text-primary, var(--ds-color-text-primary));
-  background: var(--ds-active-bg-canvas, var(--ds-color-bg-canvas));
-}
+  :where(html) {
+    font-family: var(--ds-font-body);
+    color: var(--ds-active-text-primary, var(--ds-color-text-primary));
+    background: var(--ds-active-bg-canvas, var(--ds-color-bg-canvas));
+  }
 
-:where(.aia-state, .aia-chip, [data-aia-state]) {
-  white-space: normal;
-  overflow-wrap: normal;
-  word-break: normal;
-  hyphens: none;
-}
+  :where(.aia-state, .aia-chip, [data-aia-state]) {
+    white-space: normal;
+    overflow-wrap: normal;
+    word-break: normal;
+    hyphens: none;
+  }
 }

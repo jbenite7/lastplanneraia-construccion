@@ -9,8 +9,8 @@
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     grid-template-areas:
-      'brand toggle'
-      'context context';
+      "brand toggle"
+      "context context";
     min-height: var(--ds-target-min);
     align-items: center;
     gap: var(--ds-space-2) var(--ds-space-3);
@@ -82,7 +82,7 @@
     min-height: var(--ds-target-min);
   }
 
-  .aia-navigation__links a[aria-current='page'] {
+  .aia-navigation__links a[aria-current="page"] {
     background: var(--ds-color-state-info-bg);
     color: var(--ds-color-state-info-text);
   }
@@ -90,7 +90,7 @@
   @media (min-width: 75rem) {
     .aia-navigation__global {
       grid-template-columns: max-content minmax(0, 1fr);
-      grid-template-areas: 'brand context';
+      grid-template-areas: "brand context";
     }
 
     .aia-navigation__context {

@@ -1,8 +1,8 @@
 @layer reset, vendor, theme, base, layout, components, utilities, module, legacy-overrides;
-@import url('/public/vendor/datatables/jquery.dataTables.css') layer(vendor);
-@import url('/public/vendor/datatables/dataTables.bootstrap4.min.css') layer(vendor);
-@import url('/public/vendor/datatables/buttons.bootstrap4.min.css') layer(vendor);
-@import url('/public/vendor/datatables/dataTables.checkboxes.css') layer(vendor);
+@import url("/public/vendor/datatables/jquery.dataTables.css") layer(vendor);
+@import url("/public/vendor/datatables/dataTables.bootstrap4.min.css") layer(vendor);
+@import url("/public/vendor/datatables/buttons.bootstrap4.min.css") layer(vendor);
+@import url("/public/vendor/datatables/dataTables.checkboxes.css") layer(vendor);
 
 @layer legacy-overrides {
   .dataTables_wrapper {

@@ -95,8 +95,8 @@ test('the laboratory navigation uses native links and density radios', async () 
   assert.match(view, /type="radio" name="lab-density" value="compact" data-lab-density/);
   assert.match(view, /type="radio" name="lab-density" value="touch" data-lab-density/);
   assert.doesNotMatch(view, /id="lab-family"/);
-  assert.match(script, /window\.history\[historyMode \+ 'State'\]/);
-  assert.match(script, /window\.addEventListener\('popstate'/);
+  assert.match(script, /window\.history\[[^\]]*historyMode[^\]]*\]/);
+  assert.match(script, /window\.addEventListener\(["']popstate["']/);
 });
 
 test('dark controls expose a semantic high-contrast focus token', async () => {
