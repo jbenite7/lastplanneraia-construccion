@@ -1,5 +1,9 @@
 {
   "scripts": {
+    "check:frontend": "biome check public/js public/css admin/public/css",
+    "check:design-system:biome": "biome check public/css/design-system public/js/modules/aia_ui",
+    "format:frontend": "biome format --write public/js public/css admin/public/css",
+    "lint:frontend": "biome lint public/js public/css admin/public/css",
     "test:design-system:preservation": "node scripts/design-system-worktree-preservation.mjs check goals/design-system-nucleo-gobernanza/worktree-preservation.json",
     "test:design-system:static": "node --test tests/design-system/*.test.mjs tests/scripts/design-system-audit.test.mjs && node scripts/design-system-contracts.mjs && node scripts/design-system-audit.mjs",
     "test:design-system:phpstan": "node scripts/design-system-phpstan-baseline.mjs",
@@ -16,6 +20,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.12.1",
+    "@biomejs/biome": "2.5.4",
     "@playwright/test": "^1.61.1"
   }
 }

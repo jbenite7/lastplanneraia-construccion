@@ -63,6 +63,16 @@ Este directorio define la parte versionada del design system. Stitch y `docs/bra
 
 ## Gate
 
+El laboratorio se valida de forma aislada con Biome:
+
+```bash
+npm run check:design-system:biome
+```
+
+La regla `noImportantStyles` sigue activa para el laboratorio. Solo los adaptadores
+en `public/css/design-system/adapters/` están exentos porque deben fijar la prioridad
+frente a CSS de proveedores; ningún otro archivo se excluye del chequeo.
+
 Ejecutar:
 
 ```bash
