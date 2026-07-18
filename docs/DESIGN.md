@@ -51,6 +51,10 @@ Estados interactivos mínimos: hover, focus-visible, active y disabled. Toda mut
 
 Las tablas conservan encabezados semánticos y una región desplazable enfocada cuando la densidad obliga a scroll horizontal. Selección, edición y acciones por fila no dependen solo del color. Los estados guardando, guardado, error y revertido se mantienen visibles en el mismo contexto.
 
+### Portafolio analítico
+
+`aia-bi` cubre comparación, serie temporal, embudo, gauge, radar, resumen de métricas, ranking y matriz de decisión. Las métricas se expresan en texto y cifras tabulares; los gráficos incluyen un resumen y datos equivalentes. El ranking prioriza causas por cantidad y la matriz vincula prioridad con acción y responsable. El embudo expone detalle contextual en hover y foco visible, mientras que sus datos equivalentes siguen disponibles sin interacción.
+
 ### Timeline contractual
 
 La secuencia usa una lista ordenada con estado textual para cada hito. Aqua marca selección o momento actual; naranja señala riesgo que requiere acción. La línea es apoyo visual y nunca sustituye el texto.

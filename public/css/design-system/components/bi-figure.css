@@ -169,6 +169,113 @@
     color: var(--ds-active-text-primary);
     font-weight: var(--ds-type-weight-semibold);
   }
+
+  .aia-bi--metrics,
+  .aia-bi--ranked,
+  .aia-bi--matrix {
+    display: grid;
+    gap: var(--ds-space-4);
+  }
+
+  .aia-bi > header {
+    display: grid;
+    gap: var(--ds-space-1);
+  }
+
+  .aia-bi > header :where(h3, p) {
+    margin: var(--ds-space-0);
+  }
+
+  .aia-bi-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--ds-space-3);
+    margin: var(--ds-space-0);
+  }
+
+  .aia-bi-metrics > div {
+    display: grid;
+    gap: var(--ds-space-1);
+    min-width: 0;
+    padding: var(--ds-space-3);
+    border-inline-start: var(--ds-space-1) solid var(--ds-active-action-primary);
+    background: var(--ds-active-surface);
+  }
+
+  .aia-bi-metrics dt {
+    color: var(--ds-active-text-secondary);
+    font-size: var(--ds-type-size-xs);
+    font-weight: var(--ds-type-weight-semibold);
+  }
+
+  .aia-bi-metrics dd {
+    display: grid;
+    gap: var(--ds-space-1);
+    margin: var(--ds-space-0);
+    color: var(--ds-active-text-primary);
+  }
+
+  .aia-bi-metrics strong {
+    font-family: var(--ds-font-display);
+    font-size: var(--ds-type-size-2xl);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .aia-bi-metrics span {
+    color: var(--ds-active-text-secondary);
+    font-size: var(--ds-type-size-xs);
+    line-height: var(--ds-type-line-body);
+  }
+
+  .aia-bi-ranked__plot {
+    display: block;
+    width: 100%;
+    height: 12rem;
+  }
+
+  .aia-bi-ranked__track {
+    fill: var(--ds-active-border);
+    opacity: 0.45;
+  }
+
+  .aia-bi-ranked__bar {
+    fill: var(--ds-active-action-primary);
+  }
+
+  .aia-bi-ranked__label,
+  .aia-bi-ranked__value {
+    fill: var(--ds-active-text-secondary);
+    font-family: var(--ds-font-body);
+    font-size: 3.6px;
+    font-weight: var(--ds-type-weight-semibold);
+  }
+
+  .aia-bi-ranked__value {
+    fill: var(--ds-active-text-primary);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .aia-bi--matrix .aia-table-shell {
+    overflow-x: auto;
+  }
+
+  .aia-bi--matrix table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .aia-bi--matrix :where(th, td) {
+    padding: var(--ds-space-3);
+    border-bottom: var(--ds-border-width) solid var(--ds-active-border);
+    color: var(--ds-active-text-primary);
+    text-align: start;
+  }
+
+  .aia-bi--matrix thead th {
+    color: var(--ds-active-text-secondary);
+    font-size: var(--ds-type-size-xs);
+    text-transform: uppercase;
+  }
 }
 
 @layer components {
@@ -196,6 +303,146 @@
 }
 
 @layer legacy-overrides {
+  .aia-bi--gauge,
+  .aia-bi--funnel {
+    display: grid;
+    gap: var(--ds-space-4);
+  }
+
+  .aia-bi--gauge > header :where(h3, p) {
+    margin: var(--ds-space-0);
+  }
+
+  .aia-bi-gauge__meter--caution::before {
+    background: conic-gradient(
+      var(--ds-active-action-primary) 0 78%,
+      var(--ds-color-state-warning-text) 78% 85%,
+      var(--ds-active-border) 85% 100%
+    );
+  }
+
+  .aia-bi-gauge__summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--ds-space-3);
+    width: 100%;
+    margin: var(--ds-space-0);
+  }
+
+  .aia-bi-gauge__summary > div {
+    display: grid;
+    gap: var(--ds-space-1);
+    padding-block-start: var(--ds-space-2);
+    border-block-start: var(--ds-border-width) solid var(--ds-active-border);
+  }
+
+  .aia-bi-gauge__summary dt {
+    color: var(--ds-active-text-secondary);
+    font-size: var(--ds-type-size-xs);
+    font-weight: var(--ds-type-weight-semibold);
+  }
+
+  .aia-bi-gauge__summary dd {
+    margin: var(--ds-space-0);
+    color: var(--ds-active-text-primary);
+    font-family: var(--ds-font-display);
+    font-size: var(--ds-type-size-xl);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .aia-bi-funnel {
+    display: grid;
+    gap: var(--ds-space-2);
+    margin: var(--ds-space-0);
+    padding: var(--ds-space-0);
+    list-style: none;
+  }
+
+  .aia-bi-funnel__item {
+    position: relative;
+    display: grid;
+    justify-items: center;
+  }
+
+  .aia-bi-funnel__trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: var(--ds-target-min);
+    padding-inline: var(--ds-space-3);
+    border: var(--ds-border-width) solid var(--ds-active-border);
+    background: var(--ds-active-surface);
+    color: var(--ds-active-text-primary);
+    cursor: help;
+    font-weight: var(--ds-type-weight-semibold);
+    outline: none;
+    transition:
+      transform var(--ds-motion-fast),
+      border-color var(--ds-motion-fast),
+      background-color var(--ds-motion-fast);
+  }
+
+  .aia-bi-funnel__trigger strong {
+    font-family: var(--ds-font-display);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .aia-bi-funnel__item--committed .aia-bi-funnel__trigger {
+    width: 100%;
+  }
+  .aia-bi-funnel__item--ready .aia-bi-funnel__trigger {
+    width: 86%;
+  }
+  .aia-bi-funnel__item--active .aia-bi-funnel__trigger {
+    width: 72%;
+  }
+  .aia-bi-funnel__item--completed .aia-bi-funnel__trigger {
+    width: 58%;
+  }
+
+  .aia-bi-funnel__trigger:hover,
+  .aia-bi-funnel__trigger:focus-visible {
+    border-color: var(--ds-active-action-primary);
+    background: var(--ds-active-surface-raised);
+    transform: translateY(calc(var(--ds-space-1) * -1));
+  }
+
+  .aia-bi-funnel__trigger:focus-visible {
+    box-shadow: var(--ds-shadow-focus);
+  }
+
+  .aia-bi-funnel__tooltip {
+    position: absolute;
+    z-index: var(--ds-z-dropdown);
+    inset-block-end: calc(100% + var(--ds-space-2));
+    inline-size: min(100%, 20rem);
+    padding: var(--ds-space-3);
+    border: var(--ds-border-width) solid var(--ds-active-border);
+    border-radius: var(--ds-radius-control);
+    background: var(--ds-active-surface-raised);
+    box-shadow: var(--ds-shadow-md);
+    color: var(--ds-active-text-primary);
+    font-size: var(--ds-type-size-sm);
+    line-height: var(--ds-type-line-body);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(var(--ds-space-1));
+    transition:
+      opacity var(--ds-motion-fast),
+      transform var(--ds-motion-fast),
+      visibility var(--ds-motion-fast);
+    visibility: hidden;
+  }
+
+  .aia-bi-funnel__trigger:hover + .aia-bi-funnel__tooltip,
+  .aia-bi-funnel__trigger:focus-visible + .aia-bi-funnel__tooltip {
+    position: static;
+    margin-block-start: var(--ds-space-2);
+    opacity: 1;
+    transform: translateY(var(--ds-space-0));
+    visibility: visible;
+  }
+
   /* Recupera el inset canónico frente al reset universal del modulo legacy. */
   .aia-bi__guidance {
     padding: var(--ds-space-3) var(--ds-space-4);

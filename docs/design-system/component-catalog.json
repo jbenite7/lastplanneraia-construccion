@@ -475,7 +475,13 @@
       ],
       "markup": "figure with caption, summary, legend, plot and equivalent table",
       "variants": [
-        "accessible-figure"
+        "accessible-figure",
+        "metric-summary",
+        "ranked-causes",
+        "decision-matrix",
+        "commitment-funnel",
+        "threshold-gauge",
+        "emphasis-tooltip"
       ],
       "states": [
         "normal",

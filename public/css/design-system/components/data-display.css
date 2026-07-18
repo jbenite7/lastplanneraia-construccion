@@ -2,6 +2,7 @@
   .aia-data-display__table {
     display: none;
     overflow-x: auto;
+    padding: var(--ds-space-3);
   }
 
   .aia-data-display__cards {
@@ -40,5 +41,11 @@
     .aia-data-display__cards {
       display: none;
     }
+  }
+}
+
+@layer legacy-overrides {
+  .aia-data-display__table {
+    padding: var(--ds-space-3);
   }
 }
