@@ -97,6 +97,11 @@ docs/pdc/
 .claude/
 .gemini/
 .omo/
+.agents/
+.codex/
+
+# Local code graph cache
+.codegraph/
 
 # Node.js / Playwright testing
 node_modules/
