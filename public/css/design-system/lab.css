@@ -1,5 +1,11 @@
 @layer module {
   .ds-lab {
+    --ds-lab-header-offset: calc(
+      var(--ds-target-min) +
+      var(--ds-space-12) +
+      var(--ds-space-1) +
+      var(--ds-border-width)
+    );
     min-width: 20rem;
     overflow-y: auto;
     background: var(--ds-active-bg-canvas);
@@ -61,19 +67,10 @@
     text-transform: uppercase;
   }
 
-  .ds-lab__lede,
-  .ds-lab__family-kicker {
+  .ds-lab__lede {
     margin: 0;
     color: var(--ds-active-text-secondary);
     font-size: var(--ds-type-size-sm);
-  }
-
-  .ds-lab__family-kicker {
-    margin-block-end: var(--ds-space-1);
-    font-size: var(--ds-type-size-xs);
-    font-weight: var(--ds-type-weight-bold);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
   }
 
   .ds-lab__controls {
@@ -130,9 +127,9 @@
 
   .ds-lab__rail-wrap {
     position: sticky;
-    top: calc(var(--ds-target-min) + var(--ds-space-8));
+    top: var(--ds-lab-header-offset);
     align-self: start;
-    max-block-size: calc(100vh - var(--ds-target-min) - var(--ds-space-8));
+    max-block-size: calc(100vh - var(--ds-lab-header-offset));
     padding: var(--ds-space-4);
     overflow-y: auto;
   }
@@ -312,6 +309,10 @@
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--ds-space-4);
+  }
+
+  .ds-actions-comparison {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .ds-shell-comparison {
@@ -733,7 +734,6 @@
     padding: var(--ds-space-3);
     border-inline-start: var(--ds-space-1) solid currentColor;
     border-radius: var(--ds-radius-control-sm);
-    background: var(--ds-active-surface);
   }
 
   .ds-state-semantics__level header {
@@ -764,7 +764,6 @@
     padding: var(--ds-space-3);
     border-inline-start: var(--ds-space-1) solid currentColor;
     border-radius: var(--ds-radius-control-sm);
-    background: var(--ds-active-surface);
   }
 
   .ds-state-module__state .aia-chip {
@@ -1811,5 +1810,9 @@
     .ds-lab__controls {
       display: grid;
     }
+  }
+
+  .ds-lab [hidden] {
+    display: none;
   }
 }

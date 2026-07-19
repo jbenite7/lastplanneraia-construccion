@@ -1,6 +1,5 @@
 <article class="ds-page-candidate" data-page-structure-candidate="inline-header">
     <div class="ds-page-candidate__head">
-        <p class="ds-lab__eyebrow">Patrón aprobado</p>
         <h3>Encabezado integrado</h3>
     </div>
     <div class="ds-page-specimen ds-page-specimen--inline-header">

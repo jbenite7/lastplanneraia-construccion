@@ -7,7 +7,7 @@
 </div>
 <p class="aia-copy">En tema dark se usan variantes “sobre oscuro”: mismo matiz de marca, mayor luminosidad y contraste AA.</p>
 <section class="ds-type-specimen" aria-labelledby="type-specimen-title">
-    <header><p class="ds-lab__family-kicker">Tipografía</p><h3 id="type-specimen-title">Jerarquía para lectura operativa</h3></header>
+    <header><p class="ds-lab__eyebrow">Tipografía</p><h3 id="type-specimen-title">Jerarquía para lectura operativa</h3></header>
     <div class="ds-type-specimen__grid">
         <div><p class="ds-type-specimen__display">Planificar con claridad.</p><p class="aia-helper">Montserrat · titular y decisiones de alto impacto</p></div>
         <div><p class="ds-type-specimen__body">Una muestra de cuerpo para revisar estados, detalles y acciones sin perder contexto.</p><p class="aia-helper">Inter · interfaz, tablas, formularios y ayudas</p></div>

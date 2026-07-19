@@ -64,8 +64,8 @@ test('responsive density defaults are encoded in the shared token API', async ()
   assert.match(css, /--ds-density-active-visual:\s*var\(--ds-density-touch-control\)/);
   assert.match(css, /@media\s*\(min-width:\s*75rem\)[\s\S]*--ds-density-active-visual:\s*var\(--ds-density-compact-visual\)/);
   assert.match(css, /--ds-density-active-control:\s*var\(--ds-target-min\)/);
-  assert.match(css, /\[data-density='touch'\][\s\S]*--ds-density-active-gap:\s*var\(--ds-density-touch-gap\)/);
-  assert.match(css, /\[data-density='compact'\][\s\S]*--ds-density-active-gap:\s*var\(--ds-density-compact-gap\)/);
+  assert.match(css, /\[data-density=["']touch["']\][\s\S]*--ds-density-active-gap:\s*var\(--ds-density-touch-gap\)/);
+  assert.match(css, /\[data-density=["']compact["']\][\s\S]*--ds-density-active-gap:\s*var\(--ds-density-compact-gap\)/);
 });
 
 test('the foundations specimen explains its internal governance terms', async () => {
@@ -140,13 +140,14 @@ test('the laboratory navigation uses native links and density radios', async () 
 });
 
 test('dark controls expose a semantic high-contrast focus token', async () => {
-  const [tokens, css] = await Promise.all([
+  const [tokens, core, laboratoryTheme] = await Promise.all([
     read('public/css/tokens.css'),
-    read('public/css/aia-design-system.css'),
+    read('public/css/design-system/core.css'),
+    read('public/css/design-system/laboratory-foundation.css'),
   ]);
   assert.match(tokens, /--ds-color-focus-ring-dark:\s*#2caa9f/);
-  assert.match(css, /--ds-active-focus-ring:\s*var\(--ds-color-focus-ring-dark\)/);
-  assert.match(css, /outline:\s*2px solid var\(--ds-active-focus-ring\)/);
+  assert.match(laboratoryTheme, /--ds-active-focus-ring:\s*var\(--ds-color-focus-ring-dark\)/);
+  assert.match(core, /outline:\s*var\(--ds-outline-width\) solid var\(--ds-active-focus-ring\)/);
 });
 
 test('the Handsontable rail does not reserve space in the standalone laboratory', async () => {
@@ -171,21 +172,25 @@ test('every brand domain has an accessible dark-appearance variant', async () =>
 });
 
 test('primary actions remap to the canonical corporate color in each theme', async () => {
-  const css = await read('public/css/aia-design-system.css');
-  assert.match(css, /\[data-aia-theme='linen'\][\s\S]*--ds-active-action-primary:\s*var\(--ds-color-domain-corporate\)/);
-  assert.match(css, /\[data-aia-theme='dark'\][\s\S]*--ds-active-action-primary:\s*var\(--ds-color-domain-corporate-on-dark\)/);
-  assert.match(css, /\.aia-btn\s*\{[\s\S]*background:\s*var\(--ds-active-action-primary\)/);
-  assert.match(css, /\.aia-btn\s*\{[\s\S]*color:\s*var\(--ds-active-action-text\)/);
+  const [entrypoint, core] = await Promise.all([
+    read('public/css/aia-design-system.css'),
+    read('public/css/design-system/core.css'),
+  ]);
+  assert.match(entrypoint, /\[data-aia-theme=["']linen["']\][\s\S]*--ds-active-action-primary:\s*var\(--ds-color-domain-corporate\)/);
+  assert.match(entrypoint, /\[data-aia-theme=["']dark["']\][\s\S]*--ds-active-action-primary:\s*var\(--ds-color-domain-corporate-on-dark\)/);
+  assert.match(core, /\.aia-btn\s*\{[\s\S]*background:\s*var\(--ds-active-action-primary\)/);
+  assert.match(core, /\.aia-btn\s*\{[\s\S]*color:\s*var\(--ds-active-action-text\)/);
 });
 
 test('the entrypoint declares the deterministic cascade', async () => {
   const css = await read('public/css/aia-design-system.css');
   assert.match(css, /^@layer reset, vendor, theme, base, layout, components, utilities, module, legacy-overrides;/);
-  assert.match(css, /bootstrap\.min\.css'\) layer\(vendor\);/);
-  assert.match(css, /styles\.css\?v=\d+\.\d+\.\d+'\) layer\(module\);/);
-  assert.match(css, /@import url\('\/css\/design-system\/foundation\.css\?v=\d+\.\d+\.\d+'\);/);
-  assert.match(css, /@import url\('\/css\/design-system\/adapters\/legacy-bridge\.css\?v=\d+\.\d+\.\d+'\);/);
-  assert.doesNotMatch(css, /@import url\('\.\//, 'axe CSSOM preload requires absolute internal imports');
+  assert.match(css, /bootstrap\.min\.css["']\) layer\(vendor\);/);
+  assert.match(css, /styles\.css\?v=\d+\.\d+\.\d+["']\) layer\(module\);/);
+  assert.match(css, /@import url\(["']\/css\/design-system\/foundation\.css\?v=\d+\.\d+\.\d+["']\);/);
+  assert.match(css, /@import url\(["']\/css\/design-system\/core\.css\?v=\d+\.\d+\.\d+["']\);/);
+  assert.match(css, /@import url\(["']\/css\/design-system\/adapters\/legacy-bridge\.css\?v=\d+\.\d+\.\d+["']\);/);
+  assert.doesNotMatch(css, /@import url\(["']\.\//, 'axe CSSOM preload requires absolute internal imports');
 });
 
 test('the common loader keeps JavaScript compatibility only', async () => {
@@ -241,8 +246,8 @@ test('versioned tokens are not hidden behind an unversioned CSS import', async (
 test('local entrypoint imports share the published design-system version', async () => {
   const css = await read('public/css/aia-design-system.css');
   const { version } = JSON.parse(await read('docs/design-system/version.json'));
-  const imports = [...css.matchAll(/@import url\('\/css\/([^']+)'\)/g)]
-    .map(([, url]) => url);
+  const imports = [...css.matchAll(/@import url\((["'])\/css\/([^"']+)\1\)/g)]
+    .map((match) => match[2]);
   assert.ok(imports.length > 0, 'expected local design-system imports');
   for (const url of imports) {
     assert.match(url, new RegExp(`\\?v=${version.replaceAll('.', '\\.')}$`), `unversioned import: ${url}`);
@@ -260,7 +265,13 @@ test('stylesheet versions follow nested CSS changes', () => {
 
 test('the laboratory stylesheet has its own cache version', async () => {
   const view = await read('views/design-system/lab.view.php');
-  assert.match(view, /DesignSystemHeadComponent::renderStylesheet\('\/css\/design-system\/lab\.css'\)/);
+  assert.match(view, /DesignSystemHeadComponent::renderLaboratory\(\)/);
+
+  const php = 'require "src/View/Components/DesignSystemHeadComponent.php";'
+    + ' echo App\\View\\Components\\DesignSystemHeadComponent::renderLaboratory();';
+  const html = runPhpInApp(php);
+  assert.match(html, /tokens\.css\?v=\d+/);
+  assert.match(html, /lab-entrypoint\.css\?v=\d+/);
 });
 
 test('the laboratory document explicitly enables vertical scrolling', async () => {

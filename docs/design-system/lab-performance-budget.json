@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "route": "/internal/design-system?fixture=approved-family-v1&family=bi-primitives",
+  "theme": "dark",
+  "density": "compact",
+  "viewports": [
+    "1180x820",
+    "1440x900"
+  ],
+  "sampling": {
+    "cache": "cold",
+    "sampleCountPerViewport": 3,
+    "aggregation": "median-of-three"
+  },
+  "budgets": {
+    "firstContentfulPaintMs": 750,
+    "cumulativeLayoutShift": 0.1,
+    "maxLongTaskMs": 250,
+    "totalLongTaskMs": 500,
+    "resourceCount": 28,
+    "cssRequestCount": 20,
+    "cssTransferBytes": 80000,
+    "cssDecodedBytes": 180000
+  },
+  "historicalReference": {
+    "status": "summary-only",
+    "recordedAt": "2026-07-19",
+    "note": "Pre-optimization raw samples were not preserved; these medians are contextual only.",
+    "cssRequestCount": 34,
+    "cssTransferBytes": 143457,
+    "cssDecodedBytes": 752066,
+    "viewports": {
+      "1180x820": {
+        "firstContentfulPaintMs": 212,
+        "cumulativeLayoutShift": 0,
+        "longTaskCount": 0
+      },
+      "1440x900": {
+        "firstContentfulPaintMs": 208,
+        "cumulativeLayoutShift": 0,
+        "longTaskCount": 0
+      }
+    }
+  }
+}

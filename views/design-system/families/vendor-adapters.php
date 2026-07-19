@@ -1,4 +1,3 @@
-<p class="ds-lab__eyebrow">Patrón aprobado · skins centrales tokenizadas</p>
 <div class="ds-vendor-grid">
     <article class="ds-vendor-fixture ds-vendor-fixture--grid" data-vendor-fixture="handsontable" data-adapter="canonical">
         <header>
@@ -61,7 +60,7 @@
             <dl class="ds-vendor-alert__impact"><div><dt>Actividad</dt><dd>Cimentación · avance 50 % → 65 %</dd></div><div><dt>Responsable</dt><dd>Redes hidrosanitarias · Carlos Ruiz</dd></div><div><dt>Control</dt><dd>1 regla requiere validación posterior</dd></div></dl>
             <p class="aia-feedback aia-feedback--warning">Podrás deshacer la aplicación desde el historial de cambios.</p>
             <p class="ds-vendor-status" role="status" aria-live="polite" data-sweetalert-status>Esperando decisión del responsable.</p>
-            <div class="ds-fixture-actions"><button class="aia-btn aia-btn--secondary" type="button" data-sweetalert-action="cancel">Cancelar</button><button class="aia-btn" type="button" data-sweetalert-action="confirm">Aplicar cambios</button></div>
+            <div class="ds-fixture-actions"><button class="aia-btn aia-btn--secondary aia-glass-cancel-btn" type="button" data-sweetalert-action="cancel">Cancelar</button><button class="aia-btn aia-glass-confirm-btn" type="button" data-sweetalert-action="confirm">Aplicar cambios</button></div>
         </div>
     </article>
 </div>

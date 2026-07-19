@@ -1,0 +1,210 @@
+@layer components {
+  .aia-shell {
+    min-height: 100vh;
+    background: var(--ds-shell-background);
+    color: var(--ds-active-text-primary);
+    font-family: var(--ds-font-body);
+  }
+
+  .aia-page {
+    width: min(100%, var(--ds-content-max-width));
+    margin: 0 auto;
+    padding: var(--ds-page-padding);
+  }
+
+  .aia-section {
+    margin-block: var(--ds-space-4);
+  }
+
+  .aia-card,
+  .aia-panel,
+  .aia-toolbar,
+  .aia-table-shell,
+  .aia-grid-shell,
+  .aia-modal-surface {
+    background: var(--ds-active-surface);
+    border: var(--ds-border-width) solid var(--ds-active-border);
+    border-radius: var(--ds-radius-card);
+    box-shadow: var(--ds-shadow-xs);
+    color: var(--ds-active-text-primary);
+  }
+
+  .aia-glass {
+    background: var(--ds-active-surface-glass);
+    border: var(--ds-border-width) solid var(--ds-color-border-subtle);
+    box-shadow: var(--ds-shadow-md);
+    -webkit-backdrop-filter: blur(var(--ds-blur-glass));
+    backdrop-filter: blur(var(--ds-blur-glass));
+  }
+
+  .aia-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ds-space-3);
+    padding: var(--ds-space-3);
+  }
+
+  .aia-card,
+  .aia-panel {
+    padding: var(--ds-card-padding);
+  }
+
+  .aia-title,
+  .aia-kpi-value {
+    color: var(--ds-active-text-primary);
+    font-family: var(--ds-font-display);
+    font-weight: var(--ds-type-weight-bold);
+    letter-spacing: 0;
+  }
+
+  .aia-copy,
+  .aia-label,
+  .aia-helper {
+    color: var(--ds-active-text-secondary);
+    font-family: var(--ds-font-body);
+    letter-spacing: 0;
+  }
+
+  .aia-btn {
+    display: inline-flex;
+    min-height: var(--ds-target-min);
+    align-items: center;
+    justify-content: center;
+    gap: var(--ds-space-2);
+    border: var(--ds-border-width) solid var(--ds-active-action-primary);
+    border-radius: var(--ds-radius-control);
+    background: var(--ds-active-action-primary);
+    color: var(--ds-active-action-text);
+    font-family: var(--ds-font-body);
+    font-weight: var(--ds-type-weight-bold);
+    line-height: var(--ds-control-line-height);
+    padding: var(--ds-control-padding-block) var(--ds-space-4);
+    text-decoration: none;
+    transition:
+      box-shadow var(--ds-motion-fast),
+      transform var(--ds-motion-fast);
+  }
+
+  .aia-btn:hover {
+    border-color: var(--ds-active-action-primary-hover);
+    background: var(--ds-active-action-primary-hover);
+    color: var(--ds-active-action-text);
+    text-decoration: none;
+  }
+
+  .aia-btn:focus-visible,
+  .aia-input:focus-visible,
+  .aia-select:focus-visible,
+  .aia-textarea:focus-visible {
+    outline: var(--ds-outline-width) solid var(--ds-active-focus-ring);
+    outline-offset: var(--ds-outline-offset);
+    box-shadow: var(--ds-shadow-focus);
+  }
+
+  .aia-btn--secondary {
+    border-color: var(--ds-active-border);
+    background: var(--ds-active-surface-raised);
+    color: var(--ds-active-text-primary);
+  }
+
+  .aia-btn--construction {
+    border-color: var(--ds-color-brand-construction);
+    background: var(--ds-color-brand-construction);
+    color: var(--ds-color-text-inverse);
+  }
+
+  .aia-input,
+  .aia-select,
+  .aia-textarea {
+    min-height: var(--ds-target-min);
+    width: 100%;
+    border: var(--ds-border-width) solid var(--ds-active-border);
+    border-radius: var(--ds-radius-control);
+    background: var(--ds-active-surface);
+    color: var(--ds-active-text-primary);
+    font-family: var(--ds-font-body);
+    padding: var(--ds-field-padding-block) var(--ds-space-3);
+  }
+
+  .aia-chip {
+    display: inline-flex;
+    min-height: var(--ds-chip-min-height);
+    align-items: center;
+    gap: var(--ds-chip-gap);
+    border: var(--ds-border-width) solid var(--ds-color-border-default);
+    border-radius: var(--ds-radius-pill);
+    background: var(--ds-color-state-info-bg);
+    color: var(--ds-color-state-info-text);
+    font-size: var(--ds-chip-font-size);
+    font-weight: var(--ds-chip-font-weight);
+    padding: var(--ds-space-1) var(--ds-chip-padding-inline);
+  }
+
+  .aia-chip--success {
+    background: var(--ds-color-state-success-bg);
+    color: var(--ds-color-state-success-text);
+  }
+
+  .aia-chip--warning {
+    background: var(--ds-color-state-warning-bg);
+    color: var(--ds-color-state-warning-text);
+  }
+
+  .aia-chip--critical {
+    background: var(--ds-color-state-critical-bg);
+    color: var(--ds-color-state-critical-text);
+  }
+
+  .aia-alert {
+    border: var(--ds-border-width) solid var(--ds-color-border-default);
+    border-radius: var(--ds-radius-panel);
+    background: var(--ds-active-surface-raised);
+    color: var(--ds-active-text-primary);
+    padding: var(--ds-space-3) var(--ds-alert-padding-inline);
+  }
+
+  .aia-empty {
+    display: grid;
+    place-items: center;
+    min-height: var(--ds-empty-min-height);
+    border: var(--ds-border-width) dashed var(--ds-active-border);
+    border-radius: var(--ds-radius-panel);
+    color: var(--ds-active-text-secondary);
+    text-align: center;
+  }
+}
+
+@layer utilities {
+  .aia-visually-hidden {
+    position: absolute !important;
+    width: var(--ds-visually-hidden-size) !important;
+    height: var(--ds-visually-hidden-size) !important;
+    padding: 0 !important;
+    margin: var(--ds-visually-hidden-offset) !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+  }
+
+  .aia-no-motion,
+  .aia-no-motion * {
+    transition-duration: var(--ds-motion-reduced-duration) !important;
+    animation-duration: var(--ds-motion-reduced-duration) !important;
+    animation-iteration-count: 1 !important;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .aia-shell *,
+    .aia-card,
+    .aia-panel,
+    .aia-toolbar,
+    .aia-btn {
+      transition-duration: var(--ds-motion-reduced-duration) !important;
+      animation-duration: var(--ds-motion-reduced-duration) !important;
+      animation-iteration-count: 1 !important;
+    }
+  }
+}

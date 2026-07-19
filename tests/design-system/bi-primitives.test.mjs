@@ -74,3 +74,11 @@ test('radar labels use the chart scale instead of the page type scale', async ()
   assert.match(specimen, /x="118" y="43" text-anchor="end">Restricciones/);
   assert.match(specimen, /x="116" y="108" text-anchor="end">Recursos/);
 });
+
+test('metric summaries use a quiet full border instead of an accent stripe', async () => {
+  const css = await readFile('public/css/design-system/components/bi-figure.css', 'utf8');
+  const metricRule = css.match(/\.aia-bi-metrics\s*>\s*div\s*\{([\s\S]*?)\n\s*\}/)?.[1] ?? '';
+
+  assert.match(metricRule, /border:\s*var\(--ds-border-width\) solid var\(--ds-active-border\)/);
+  assert.doesNotMatch(metricRule, /border-inline-(?:start|end)/);
+});

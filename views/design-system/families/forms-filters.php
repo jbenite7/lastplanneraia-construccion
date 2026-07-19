@@ -1,6 +1,6 @@
 <div class="ds-candidate-grid ds-filter-comparison">
     <article class="ds-filter-candidate" data-filter-candidate="inline-fields">
-        <header><p class="ds-lab__eyebrow">Patrón aprobado</p><h3>Filtros siempre visibles</h3><p>Los criterios permanecen disponibles sin introducir pasos adicionales.</p></header>
+        <header><h3>Filtros siempre visibles</h3><p>Los criterios permanecen disponibles sin introducir pasos adicionales.</p></header>
         <?= \App\View\Components\DesignSystemComponent::filterForm([
             'id' => 'lab-filters', 'label' => 'Filtrar actividades',
             'fields' => [

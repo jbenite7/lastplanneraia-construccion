@@ -1,5 +1,5 @@
 <article data-overlay-candidate="modal-drawer">
-    <header><p class="ds-lab__eyebrow">Patrón aprobado</p><h3>Modal y drawer responsive</h3><p>La semántica y el foco permanecen; solo cambia la presentación espacial.</p></header>
+    <header><h3>Modal y drawer responsive</h3><p>La semántica y el foco permanecen; solo cambia la presentación espacial.</p></header>
     <?= \App\View\Components\DesignSystemComponent::dialog([
         'id' => 'lab-dialog',
         'title' => 'Confirmar cambio',

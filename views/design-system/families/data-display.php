@@ -1,5 +1,5 @@
 <article data-data-display-candidate="responsive-shell">
-    <header><p class="ds-lab__eyebrow">Patrón aprobado</p><h3>Tabla compacta y tarjetas Touch</h3><p>Una misma colección alimenta ambas representaciones responsive.</p></header>
+    <header><h3>Tabla compacta y tarjetas Touch</h3><p>Una misma colección alimenta ambas representaciones responsive.</p></header>
     <?= \App\View\Components\DesignSystemComponent::dataDisplay([
         'label' => 'Actividades',
         'records' => [

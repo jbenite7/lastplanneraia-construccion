@@ -69,6 +69,19 @@ test('form controls reserve internal padding and include a Select2 multi-select 
   assert.match(view, /data-select2-multi/);
 });
 
+test('Select2 removal controls expose the governed 44px target', async () => {
+  const css = await readFile('public/css/design-system/adapters/select2.css', 'utf8');
+  const remove = cssRule(
+    css,
+    ':where(.select2-container--multiple .select2-selection__choice__remove)',
+  );
+
+  assert.equal(declaration(remove, 'display'), 'inline-grid');
+  assert.equal(declaration(remove, 'min-inline-size'), 'var(--ds-target-min)');
+  assert.equal(declaration(remove, 'min-block-size'), 'var(--ds-target-min)');
+  assert.equal(declaration(remove, 'place-items'), 'center');
+});
+
 test('public styles reference only canonical declared spacing tokens', async () => {
   const [cssFiles, tokens] = await Promise.all([
     readdir(new URL('../../public/css/', import.meta.url), { recursive: true }),

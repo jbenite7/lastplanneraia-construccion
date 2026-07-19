@@ -23,6 +23,14 @@ final class DesignSystemHeadComponent
         ));
     }
 
+    public static function renderLaboratory(): string
+    {
+        return implode("\n", array_map([self::class, 'renderStylesheet'], [
+            '/css/tokens.css',
+            '/css/design-system/lab-entrypoint.css',
+        ]));
+    }
+
     public static function renderScript(string $url): string
     {
         $root = dirname(__DIR__, 3);
@@ -52,7 +60,10 @@ final class DesignSystemHeadComponent
     private static function assetVersion(string $file, string $url): string
     {
         $version = is_file($file) ? (int) filemtime($file) : 0;
-        if ($url !== '/css/aia-design-system.css') {
+        if (!in_array($url, [
+            '/css/aia-design-system.css',
+            '/css/design-system/lab-entrypoint.css',
+        ], true)) {
             return (string) $version;
         }
         $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(dirname($file)));

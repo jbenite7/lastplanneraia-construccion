@@ -18,6 +18,21 @@ estado revelado, regla, impacto, tipo de resultado, selector y decisión.
 | Axe — estados revelados | Los estados interactivos incluidos en la matriz conservan el mismo contrato bloqueante | Aprobado 2026-07-18 |
 | Revisión manual independiente | Teclado, foco, lectura y estados operables verificados por una persona si el release lo exige | Pendiente |
 
+## Revisión local asistida — 2026-07-19
+
+Revisor: Codex, mediante inspección local automatizada en Chromium. Esta revisión
+no sustituye la revisión humana independiente, que permanece pendiente.
+
+- Superficie: diez familias del laboratorio en dark, sin visitar otros módulos.
+- Viewports: `1180x820` en densidad Touch y `1440x900` en densidad Compacta.
+- Teclado y foco: orden de acciones y filtros correcto; el diálogo recibe foco,
+  cierra con Escape y lo devuelve al disparador.
+- Contraste de gráficos: 28 textos SVG medidos; mínimo `11.6:1`, sin resultados
+  por debajo de `4.5:1`.
+- Axe: 20 escenarios desktop dark aprobados, sin violaciones serias.
+
+La revisión humana independiente continúa **pendiente** si el release la exige.
+
 ## Evidencia requerida
 
 - Fecha, revisor y versión del design system.

@@ -27,13 +27,20 @@ Este directorio define la parte versionada del design system. Stitch y `docs/bra
 - `vendors.json` y `legacy-aliases.json`: dependencias y puente de compatibilidad.
 - `manifests/`: consumo por módulo; Programa General es el único piloto completo.
 - `public/css/tokens.css`: tokens base AIA y alias semanticos `--ds-*`.
-- `public/css/aia-design-system.css`: componentes y utilidades `aia-*`.
+- `public/css/design-system/core.css`: componentes y utilidades canónicas
+  `aia-*`, compartidas por los entrypoints productivo y del laboratorio.
+- `public/css/aia-design-system.css`: entrypoint productivo, temas y puentes
+  legacy; importa el core sin redefinir sus primitivas.
 - `public/js/modules/aia_ui/theme-bootstrap.js`: aplica dark por defecto o la preferencia persistida antes de la primera hoja de estilo y evita flash de tema.
 - `public/js/modules/aia_ui/theme.js`: API interactiva linen/dark y reduced motion después del bootstrap.
 - `scripts/design-system-audit.mjs`: gate estatico de deuda visual.
 - `audit-baseline.json` y `exceptions.json`: deuda congelada y excepciones exactas.
 - `phpstan-baseline.json`: cinco fingerprints legacy tolerados; cualquier hallazgo nuevo bloquea CI.
 - `runtime-budget.schema.json`, `runtime-baseline-0.3.3.json`, `runtime-measurements/0.3.3-retrospective.json` y `runtime-measurements/0.3.3-recovery-manifest.json`: contrato fail-closed, presupuesto aprobado y retrospectiva histórica portable pero incompleta. La retrospectiva usa `sourceRef:null` y `rawSamplesPreserved:false`; el manifiesto comprometido verifica sus resúmenes recuperados sin depender de un objeto o checkpoint Git oculto. El gate actual permanece pendiente hasta obtener tres muestras frescas desde un `HEAD` limpio, con recibos verificables, y compararlas contra los límites aprobados.
+- `lab-performance-budget.json` y `lab-performance-baseline.json`: presupuesto
+  y medición reproducible del laboratorio en dark a `1180x820` y `1440x900`.
+  El gate conserva tres cargas frías por viewport y no navega al piloto ni usa su
+  baseline histórico.
 - `tests/browser/__screenshots__/design-system-lab.visual.mjs/`: archivo de
   snapshots del laboratorio. El gate vigente consume solo 18 goldens desktop
   dark (nueve familias con captura en dos viewports); `states-feedback` conserva
@@ -105,6 +112,11 @@ al cerrar elimina el volumen.
 `test:design-system:evidence` ejecuta teclado y reflow como diagnóstico
 no bloqueante. El comando runtime no los invoca; CI tolera su fallo y conserva
 los artefactos correspondientes.
+
+El runtime canónico de este laboratorio permanece en desktop dark y ejecuta solo
+la ruta `/internal/design-system`: smoke funcional, Axe, visual y tres muestras
+frías de rendimiento por viewport. Los comandos históricos del piloto se
+conservan separados y no forman parte de este gate.
 
 La automatización Axe agrega las 20 combinaciones permitidas del laboratorio.
 Toda violación seria bloquea; los resultados `incomplete` solo pueden exceptuarse

@@ -16,8 +16,8 @@ test('states feedback keeps a canonical spinner contract without rewriting legac
     /data-ui-group="loading-spinner"[^>]*role="status"[^>]*aria-live="polite"/g,
   );
 
-  assert.equal(feedbackScenarios.length, 6);
-  assert.equal(manifest.scenarios.length - feedbackScenarios.length, 54);
+  assert.equal(feedbackScenarios.length, 2);
+  assert.equal(manifest.scenarios.length - feedbackScenarios.length, 18);
   assert.equal(canonicalSpinner?.length, 1);
   assert.match(source, /async function assertStatesFeedbackVisualContract/);
   assert.match(source, /scenario\.family === STATES_FEEDBACK_FAMILY/);

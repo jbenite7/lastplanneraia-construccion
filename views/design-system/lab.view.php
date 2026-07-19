@@ -1,11 +1,10 @@
 <!DOCTYPE html>
-<html lang="es" data-aia-theme="dark">
+<html lang="es" data-aia-theme="dark" class="aia-theme-dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Laboratorio interno · Design System AIA</title>
-    <?= \App\View\Components\DesignSystemHeadComponent::render(true) ?>
-    <?= \App\View\Components\DesignSystemHeadComponent::renderStylesheet('/css/design-system/lab.css') ?>
+    <?= \App\View\Components\DesignSystemHeadComponent::renderLaboratory() ?>
 </head>
 <body class="aia-shell ds-lab" data-density="compact">
     <header class="ds-lab__header">
@@ -15,7 +14,6 @@
             <p class="ds-lab__lede">Fundamentos, decisiones y componentes listos para validar.</p>
         </div>
         <div class="ds-lab__controls" aria-label="Controles del laboratorio">
-            <button type="button" class="aia-btn aia-btn--secondary" data-lab-theme>Usar tema dark</button>
             <fieldset class="ds-lab__density" aria-label="Densidad de la muestra">
                 <legend class="aia-visually-hidden">Densidad de la muestra</legend>
                 <label><input type="radio" name="lab-density" value="compact" data-lab-density checked> Compacta</label>
@@ -87,14 +85,12 @@
             }
             $activeCandidateId = (string) ($activeCandidate['id'] ?? '');
             $approved = ($activeCandidate['status'] ?? 'candidate') === 'approved';
-            $familyCandidateEyebrow = $approved ? 'Patrón aprobado' : 'Patrón en revisión';
             ?>
             <section class="aia-panel ds-lab__family" data-family="<?= htmlspecialchars($familyId, ENT_QUOTES, 'UTF-8') ?>" data-active-candidate="<?= htmlspecialchars($activeCandidateId, ENT_QUOTES, 'UTF-8') ?>" data-family-status="<?= $approved ? 'approved' : 'candidate' ?>" aria-labelledby="family-<?= htmlspecialchars($familyId, ENT_QUOTES, 'UTF-8') ?>-title"<?= $familyId !== $initialFamilyId ? ' hidden' : '' ?>>
                 <header class="ds-lab__family-head">
-                    <div><p class="ds-lab__family-kicker"><?= $familyCandidateEyebrow ?></p><h2 id="family-<?= htmlspecialchars($familyId, ENT_QUOTES, 'UTF-8') ?>-title" tabindex="-1"><?= htmlspecialchars($family['label'] ?? $familyId, ENT_QUOTES, 'UTF-8') ?></h2></div>
+                    <h2 id="family-<?= htmlspecialchars($familyId, ENT_QUOTES, 'UTF-8') ?>-title" tabindex="-1"><?= htmlspecialchars($family['label'] ?? $familyId, ENT_QUOTES, 'UTF-8') ?></h2>
                     <span class="aia-chip<?= $approved ? ' aia-chip--success' : '' ?>" title="<?= $approved ? 'Familia aprobada' : 'Candidato activo pendiente de aprobación visual' ?>"><?= $approved ? 'Aprobado' : 'En revisión' ?></span>
                 </header>
-                <p class="ds-lab__review-note">Estado: <?= $approved ? 'familia aprobada y congelada.' : 'candidato activo pendiente de aprobación visual; la base aprobada se conserva como referencia.' ?></p>
                 <?php if (!empty($family['description'])): ?>
                     <p class="aia-copy ds-lab__family-description"><?= htmlspecialchars($family['description'], ENT_QUOTES, 'UTF-8') ?></p>
                 <?php endif; ?>
@@ -105,7 +101,6 @@
             <?php endforeach; ?>
         </main>
     </div>
-    <script src="/public/js/modules/aia_ui/theme.js"></script>
     <script src="/public/js/modules/aia_ui/components.js"></script>
     <?= \App\View\Components\DesignSystemHeadComponent::renderScript('/js/modules/aia_ui/design_system_lab.js') ?>
 </body>

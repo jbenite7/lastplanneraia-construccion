@@ -219,17 +219,17 @@ test('the root package exposes a non-regenerating laboratory axe gate', async ()
   assert.doesNotMatch(JSON.stringify(a11yScripts), /update|baseline|regener/i);
 });
 
-test('keyboard and reflow have one non-blocking evidence command outside runtime', async () => {
+test('keyboard and desktop layout have one non-blocking laboratory command outside runtime', async () => {
   const packageJson = JSON.parse(await readFile(
     new URL('../../package.json', import.meta.url), 'utf8',
   ));
   assert.equal(
     packageJson.scripts?.['test:keyboard'],
-    'playwright test tests/browser/design-system-keyboard.mjs --workers=1',
+    'playwright test tests/browser/design-system-lab-keyboard.mjs --workers=1',
   );
   assert.equal(
     packageJson.scripts?.['test:design-system:evidence'],
-    'playwright test tests/browser/design-system-keyboard.mjs tests/browser/design-system-reflow.mjs --workers=1',
+    'playwright test tests/browser/design-system-lab-keyboard.mjs tests/browser/design-system-lab-desktop-layout.mjs --workers=1',
   );
-  assert.doesNotMatch(packageJson.scripts?.['test:design-system:runtime'], /keyboard|reflow/);
+  assert.doesNotMatch(packageJson.scripts?.['test:design-system:runtime'], /keyboard|reflow|desktop-layout/);
 });

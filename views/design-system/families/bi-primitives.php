@@ -1,5 +1,5 @@
 <article data-bi-candidate="accessible-figure">
-    <header><p class="ds-lab__eyebrow">Patrón aprobado</p><h3>Figura accesible y datos equivalentes</h3><p>La lectura no depende del color ni de una interacción con el gráfico.</p></header>
+    <header><h3>Figura accesible y datos equivalentes</h3><p>La lectura no depende del color ni de una interacción con el gráfico.</p></header>
     <?= \App\View\Components\DesignSystemComponent::biFigure([
         'id' => 'bi',
         'title' => 'PAC vs Programado',

@@ -11,7 +11,8 @@
     "views/design-system/families/",
     "views/design-system/operational-fixtures.php",
     "docs/design-system/operational-fixtures.json",
-    "public/css/aia-design-system.css",
+    "public/css/design-system/core.css",
+    "public/css/design-system/lab-entrypoint.css",
     "public/js/modules/aia_ui/design_system_lab.js"
   ],
   "components": [
@@ -56,8 +57,6 @@
     "font-awesome"
   ],
   "layouts": [
-    "mobile",
-    "tablet",
     "desktop",
     "wide"
   ],
@@ -83,7 +82,11 @@
     "tests/browser/operational-fixtures.mjs",
     "tests/browser/design-system-lab.mjs",
     "tests/browser/design-system-lab.a11y.mjs",
-    "tests/browser/design-system-lab.visual.mjs"
+    "tests/browser/design-system-lab.visual.mjs",
+    "tests/design-system/laboratory-hardening.test.mjs",
+    "tests/browser/design-system-lab-keyboard.mjs",
+    "tests/browser/design-system-lab-desktop-layout.mjs",
+    "tests/browser/design-system-lab.performance.mjs"
   ],
   "evidence": [
     "tests/browser/__screenshots__/design-system-lab.visual.mjs/"
@@ -103,7 +106,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/actions-dark-1180x820.png",
-      "sha256": "2a5fbc0604a1712f775aeceeaccd2a303bf982fef01a860e8b768ebb8f766ddc"
+      "sha256": "28debd5732900b0bf4e4ccce64ccd4ac14c52a60ce748a9ffc7b4f5c4e9ca332"
     },
     {
       "id": "actions-dark-1440x900",
@@ -119,71 +122,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/actions-dark-1440x900.png",
-      "sha256": "6889f387a69ed3d1373a8e11a952fd551f8fb27ad06d6e87fed592246054832c"
-    },
-    {
-      "id": "actions-dark-390x844",
-      "family": "actions",
-      "route": "/internal/design-system",
-      "fixture": "approved-family-v1",
-      "theme": "dark",
-      "viewport": {
-        "width": 390,
-        "height": 844
-      },
-      "density": "touch",
-      "state": "deterministic",
-      "role": "A",
-      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/actions-dark-390x844.png",
-      "sha256": "e35f8e0d15504749f7c8e4fb4d23147c1fadb301da57d1d22920000decc6a187"
-    },
-    {
-      "id": "actions-linen-1180x820",
-      "family": "actions",
-      "route": "/internal/design-system",
-      "fixture": "approved-family-v1",
-      "theme": "linen",
-      "viewport": {
-        "width": 1180,
-        "height": 820
-      },
-      "density": "touch",
-      "state": "deterministic",
-      "role": "A",
-      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/actions-linen-1180x820.png",
-      "sha256": "912133ed8249e26834b9f7d935e7dd4dea3b8ed09968c6237277cc144a453411"
-    },
-    {
-      "id": "actions-linen-1440x900",
-      "family": "actions",
-      "route": "/internal/design-system",
-      "fixture": "approved-family-v1",
-      "theme": "linen",
-      "viewport": {
-        "width": 1440,
-        "height": 900
-      },
-      "density": "compact",
-      "state": "deterministic",
-      "role": "A",
-      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/actions-linen-1440x900.png",
-      "sha256": "c40d29db1c3e908b774407d243445e9768c2975ee100348e8df8991866790227"
-    },
-    {
-      "id": "actions-linen-390x844",
-      "family": "actions",
-      "route": "/internal/design-system",
-      "fixture": "approved-family-v1",
-      "theme": "linen",
-      "viewport": {
-        "width": 390,
-        "height": 844
-      },
-      "density": "touch",
-      "state": "deterministic",
-      "role": "A",
-      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/actions-linen-390x844.png",
-      "sha256": "52c3530f3f8ddb1763cb96215c53f271d779cd84830af3bbd5ef0feecbb7ee67"
+      "sha256": "128c7428acd20558b3a23fc9256949d2b10b4e45541dfe9dd590894cf015fcec"
     },
     {
       "id": "bi-primitives-dark-1180x820",
@@ -199,7 +138,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/bi-primitives-dark-1180x820.png",
-      "sha256": "29c8c9ce90719b6cd9873e4eca912be1582a6151adea587ba435ba9a1a7aec17"
+      "sha256": "47c9e9a51001fb0914a77d8cc50a02939379065ad8a655bd330e7b92a7710c96"
     },
     {
       "id": "bi-primitives-dark-1440x900",
@@ -215,71 +154,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/bi-primitives-dark-1440x900.png",
-      "sha256": "dd2664aa71125d0eb00a97932dabee0ca7a1ebaf70353df214158775ada0cc5e"
-    },
-    {
-      "id": "bi-primitives-dark-390x844",
-      "family": "bi-primitives",
-      "route": "/internal/design-system",
-      "fixture": "approved-family-v1",
-      "theme": "dark",
-      "viewport": {
-        "width": 390,
-        "height": 844
-      },
-      "density": "touch",
-      "state": "deterministic",
-      "role": "A",
-      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/bi-primitives-dark-390x844.png",
-      "sha256": "06726fbd1e85f7276f60a1347293fb40aa36321e848d9ac629bdfd81dcdbc60b"
-    },
-    {
-      "id": "bi-primitives-linen-1180x820",
-      "family": "bi-primitives",
-      "route": "/internal/design-system",
-      "fixture": "approved-family-v1",
-      "theme": "linen",
-      "viewport": {
-        "width": 1180,
-        "height": 820
-      },
-      "density": "touch",
-      "state": "deterministic",
-      "role": "A",
-      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/bi-primitives-linen-1180x820.png",
-      "sha256": "3eac601c4f33accd6f51884ba6985c4abf2b7a2c284582edc0f6eaf744304309"
-    },
-    {
-      "id": "bi-primitives-linen-1440x900",
-      "family": "bi-primitives",
-      "route": "/internal/design-system",
-      "fixture": "approved-family-v1",
-      "theme": "linen",
-      "viewport": {
-        "width": 1440,
-        "height": 900
-      },
-      "density": "compact",
-      "state": "deterministic",
-      "role": "A",
-      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/bi-primitives-linen-1440x900.png",
-      "sha256": "e8b55c9b0186eccb2c5e5aaf0d6e1135778a79727f2fed84f8cdf11a45011338"
-    },
-    {
-      "id": "bi-primitives-linen-390x844",
-      "family": "bi-primitives",
-      "route": "/internal/design-system",
-      "fixture": "approved-family-v1",
-      "theme": "linen",
-      "viewport": {
-        "width": 390,
-        "height": 844
-      },
-      "density": "touch",
-      "state": "deterministic",
-      "role": "A",
-      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/bi-primitives-linen-390x844.png",
-      "sha256": "11b2edfaff9893a11cb28b9d80a79b847807974cc949a98163a778b6211811d8"
+      "sha256": "bc7c9da7bdc809ce6c79ad759c59a2749684bc33996f09dd59fa7eb5e43c1c64"
     },
     {
       "id": "data-display-dark-1180x820",
@@ -295,7 +170,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/data-display-dark-1180x820.png",
-      "sha256": "9ab931a6c625cff1f317b25577348a46387ec18cd2be47c39fde4a942fd99b0c"
+      "sha256": "07c203818fe6c681d7bc9c4684ad2135aed89c75d43406f1edea9569ce944564"
     },
     {
       "id": "data-display-dark-1440x900",
@@ -311,71 +186,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/data-display-dark-1440x900.png",
-      "sha256": "c6741fe2b4b97baa2807f5b656e0ff084bcb8f14c892eb058f4d8ed07c865102"
-    },
-    {
-      "id": "data-display-dark-390x844",
-      "family": "data-display",
-      "route": "/internal/design-system",
-      "fixture": "approved-family-v1",
-      "theme": "dark",
-      "viewport": {
-        "width": 390,
-        "height": 844
-      },
-      "density": "touch",
-      "state": "deterministic",
-      "role": "A",
-      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/data-display-dark-390x844.png",
-      "sha256": "f7ff6ec8ddb6aaff82cb995090570b35c0016f36497abf0888a589bae86daa87"
-    },
-    {
-      "id": "data-display-linen-1180x820",
-      "family": "data-display",
-      "route": "/internal/design-system",
-      "fixture": "approved-family-v1",
-      "theme": "linen",
-      "viewport": {
-        "width": 1180,
-        "height": 820
-      },
-      "density": "touch",
-      "state": "deterministic",
-      "role": "A",
-      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/data-display-linen-1180x820.png",
-      "sha256": "f472570b31e94004a15ccbf0f1133ef9252bc58dfcf5ef017d231c20cfbe6ca1"
-    },
-    {
-      "id": "data-display-linen-1440x900",
-      "family": "data-display",
-      "route": "/internal/design-system",
-      "fixture": "approved-family-v1",
-      "theme": "linen",
-      "viewport": {
-        "width": 1440,
-        "height": 900
-      },
-      "density": "compact",
-      "state": "deterministic",
-      "role": "A",
-      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/data-display-linen-1440x900.png",
-      "sha256": "265fcfd1294e3f8c57178e29e6bbaa52e48d7deae55dd20b4828f237a1a38d4e"
-    },
-    {
-      "id": "data-display-linen-390x844",
-      "family": "data-display",
-      "route": "/internal/design-system",
-      "fixture": "approved-family-v1",
-      "theme": "linen",
-      "viewport": {
-        "width": 390,
-        "height": 844
-      },
-      "density": "touch",
-      "state": "deterministic",
-      "role": "A",
-      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/data-display-linen-390x844.png",
-      "sha256": "34a95b2c47a18f11ad2c750d8d8803185180bf66b50d921c6716e427993e3e7e"
+      "sha256": "feccf731d5f72356c21e920efbb34ce1b479ab421cd3cdbb1c08ad4b96f47ddf"
     },
     {
       "id": "forms-filters-dark-1180x820",
@@ -391,7 +202,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/forms-filters-dark-1180x820.png",
-      "sha256": "e7e13870d75d75675e293ec846015d3fbf1a62f28802757f6055080a00026114"
+      "sha256": "c62330185656b4d75a92861ccf69952132dd9ffde702f506bfac39736e791620"
     },
     {
       "id": "forms-filters-dark-1440x900",
@@ -407,71 +218,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/forms-filters-dark-1440x900.png",
-      "sha256": "59d34ff94453ed38c1e5a897bb0e68ec383bb7f2b5904ee99bea73c2e9989158"
-    },
-    {
-      "id": "forms-filters-dark-390x844",
-      "family": "forms-filters",
-      "route": "/internal/design-system",
-      "fixture": "approved-family-v1",
-      "theme": "dark",
-      "viewport": {
-        "width": 390,
-        "height": 844
-      },
-      "density": "touch",
-      "state": "deterministic",
-      "role": "A",
-      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/forms-filters-dark-390x844.png",
-      "sha256": "403e485fc0c98fe543d5c96cf83b3d817cecdcec0b9b75e8db664c56ee01605c"
-    },
-    {
-      "id": "forms-filters-linen-1180x820",
-      "family": "forms-filters",
-      "route": "/internal/design-system",
-      "fixture": "approved-family-v1",
-      "theme": "linen",
-      "viewport": {
-        "width": 1180,
-        "height": 820
-      },
-      "density": "touch",
-      "state": "deterministic",
-      "role": "A",
-      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/forms-filters-linen-1180x820.png",
-      "sha256": "2f45cb14ff338ea9e2c8f481b24686864f97fa2a4f5bdf3336262b8ec74a4d7d"
-    },
-    {
-      "id": "forms-filters-linen-1440x900",
-      "family": "forms-filters",
-      "route": "/internal/design-system",
-      "fixture": "approved-family-v1",
-      "theme": "linen",
-      "viewport": {
-        "width": 1440,
-        "height": 900
-      },
-      "density": "compact",
-      "state": "deterministic",
-      "role": "A",
-      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/forms-filters-linen-1440x900.png",
-      "sha256": "42d3667e1f9e0605011869a4d609fd40ce69843af844d2ed8fcbff2a2beb93d6"
-    },
-    {
-      "id": "forms-filters-linen-390x844",
-      "family": "forms-filters",
-      "route": "/internal/design-system",
-      "fixture": "approved-family-v1",
-      "theme": "linen",
-      "viewport": {
-        "width": 390,
-        "height": 844
-      },
-      "density": "touch",
-      "state": "deterministic",
-      "role": "A",
-      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/forms-filters-linen-390x844.png",
-      "sha256": "469ef953c4adb78216cf12d284fbf9a75160db91c7f2d5b0faa21b3c842e4cdd"
+      "sha256": "dfa1b9c3ed7e7dbfb484e7885b39f030daca2323b0138d1544e20117968516f9"
     },
     {
       "id": "foundations-dark-1180x820",
@@ -487,7 +234,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/foundations-dark-1180x820.png",
-      "sha256": "171911c3cf457f383ae735576e2316766a8c4c51d2cccb9c2c83f9db0e119387"
+      "sha256": "220d216cbc46abd1940df386ee0713da0121323a4533884cf8a4c5307c82a202"
     },
     {
       "id": "foundations-dark-1440x900",
@@ -503,71 +250,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/foundations-dark-1440x900.png",
-      "sha256": "70b0c32ae95557f0e611ef8184cf393f28d1f8ad9b73750e69bc332c71fa6f33"
-    },
-    {
-      "id": "foundations-dark-390x844",
-      "family": "foundations",
-      "route": "/internal/design-system",
-      "fixture": "approved-family-v1",
-      "theme": "dark",
-      "viewport": {
-        "width": 390,
-        "height": 844
-      },
-      "density": "touch",
-      "state": "deterministic",
-      "role": "A",
-      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/foundations-dark-390x844.png",
-      "sha256": "28bdb351ef0566fba018fd73f39443160080d1adc128d5a31a00b75068248865"
-    },
-    {
-      "id": "foundations-linen-1180x820",
-      "family": "foundations",
-      "route": "/internal/design-system",
-      "fixture": "approved-family-v1",
-      "theme": "linen",
-      "viewport": {
-        "width": 1180,
-        "height": 820
-      },
-      "density": "touch",
-      "state": "deterministic",
-      "role": "A",
-      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/foundations-linen-1180x820.png",
-      "sha256": "9975bbab16c993c69adf2698d7cffd85c5736841f839de565418e73cdeda2c73"
-    },
-    {
-      "id": "foundations-linen-1440x900",
-      "family": "foundations",
-      "route": "/internal/design-system",
-      "fixture": "approved-family-v1",
-      "theme": "linen",
-      "viewport": {
-        "width": 1440,
-        "height": 900
-      },
-      "density": "compact",
-      "state": "deterministic",
-      "role": "A",
-      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/foundations-linen-1440x900.png",
-      "sha256": "5ebbada1f2108b5bf3a01aac0c7b83520f53b61b889bf63e0629d32e7eca1ad3"
-    },
-    {
-      "id": "foundations-linen-390x844",
-      "family": "foundations",
-      "route": "/internal/design-system",
-      "fixture": "approved-family-v1",
-      "theme": "linen",
-      "viewport": {
-        "width": 390,
-        "height": 844
-      },
-      "density": "touch",
-      "state": "deterministic",
-      "role": "A",
-      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/foundations-linen-390x844.png",
-      "sha256": "a2cc4ace3dc3f7a7ea48590dcf00863c30342a9f22b2fb56ad586871ffa31b60"
+      "sha256": "287d31d89cc183f2c6bd6590e6afbc53dd6d782a95d7d9e32ebbc2a3c241fab1"
     },
     {
       "id": "overlays-dark-1180x820",
@@ -583,7 +266,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/overlays-dark-1180x820.png",
-      "sha256": "a36d1129200c12147de0d01843c4df69dca2ad2c45b4bd72ab734cb0516c4268"
+      "sha256": "bbbaaf35073114988c483c737698e28f93918a1f87a1435a654efe29597d07f0"
     },
     {
       "id": "overlays-dark-1440x900",
@@ -599,71 +282,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/overlays-dark-1440x900.png",
-      "sha256": "41f83f74936a94498a09b7ac9561261ae8d0f4778a98641ebf9bde8035e9d4fc"
-    },
-    {
-      "id": "overlays-dark-390x844",
-      "family": "overlays",
-      "route": "/internal/design-system",
-      "fixture": "approved-family-v1",
-      "theme": "dark",
-      "viewport": {
-        "width": 390,
-        "height": 844
-      },
-      "density": "touch",
-      "state": "deterministic",
-      "role": "A",
-      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/overlays-dark-390x844.png",
-      "sha256": "59a3b335381956f049c8f762af65d431f9006bcb03c8c256d485e5548010938b"
-    },
-    {
-      "id": "overlays-linen-1180x820",
-      "family": "overlays",
-      "route": "/internal/design-system",
-      "fixture": "approved-family-v1",
-      "theme": "linen",
-      "viewport": {
-        "width": 1180,
-        "height": 820
-      },
-      "density": "touch",
-      "state": "deterministic",
-      "role": "A",
-      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/overlays-linen-1180x820.png",
-      "sha256": "9598035cadfe8b8c8a31146348d047eb5193d2a6003ce15a9918b7ca38ae0ed1"
-    },
-    {
-      "id": "overlays-linen-1440x900",
-      "family": "overlays",
-      "route": "/internal/design-system",
-      "fixture": "approved-family-v1",
-      "theme": "linen",
-      "viewport": {
-        "width": 1440,
-        "height": 900
-      },
-      "density": "compact",
-      "state": "deterministic",
-      "role": "A",
-      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/overlays-linen-1440x900.png",
-      "sha256": "787284cb0989dd69dc2879c25115e5c9d5f83f9feda3294a6f0a5f63f197bc0d"
-    },
-    {
-      "id": "overlays-linen-390x844",
-      "family": "overlays",
-      "route": "/internal/design-system",
-      "fixture": "approved-family-v1",
-      "theme": "linen",
-      "viewport": {
-        "width": 390,
-        "height": 844
-      },
-      "density": "touch",
-      "state": "deterministic",
-      "role": "A",
-      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/overlays-linen-390x844.png",
-      "sha256": "4e0f5700e134ac95e8bc828bc3fbcf4e38f2ba51780dfd093865b4f3db926043"
+      "sha256": "3aa76240bfc57da163433e857e1a48f757368eee2d9dd9bf1b0f7913d1de979c"
     },
     {
       "id": "page-structure-dark-1180x820",
@@ -679,7 +298,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/page-structure-dark-1180x820.png",
-      "sha256": "adff05d5b9269530edc4fdbaaf0fa84510ed5518f4d7b5f1c02cdaf862689fa0"
+      "sha256": "958bc9282859b59884504f781520096706d6ee8226639d861e34b7d363b8bfce"
     },
     {
       "id": "page-structure-dark-1440x900",
@@ -695,71 +314,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/page-structure-dark-1440x900.png",
-      "sha256": "ef0d322d17b0beb0bd839087728825666413e24d7148ba6da865d673047e43b0"
-    },
-    {
-      "id": "page-structure-dark-390x844",
-      "family": "page-structure",
-      "route": "/internal/design-system",
-      "fixture": "approved-family-v1",
-      "theme": "dark",
-      "viewport": {
-        "width": 390,
-        "height": 844
-      },
-      "density": "touch",
-      "state": "deterministic",
-      "role": "A",
-      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/page-structure-dark-390x844.png",
-      "sha256": "3693d878d9108b7648feb06bd395badf859aa5477e4af5a307b480e6a615eb03"
-    },
-    {
-      "id": "page-structure-linen-1180x820",
-      "family": "page-structure",
-      "route": "/internal/design-system",
-      "fixture": "approved-family-v1",
-      "theme": "linen",
-      "viewport": {
-        "width": 1180,
-        "height": 820
-      },
-      "density": "touch",
-      "state": "deterministic",
-      "role": "A",
-      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/page-structure-linen-1180x820.png",
-      "sha256": "43fca5a21ea3e444a5755b170a970798d846499bdf257c1ead942238f7eb5591"
-    },
-    {
-      "id": "page-structure-linen-1440x900",
-      "family": "page-structure",
-      "route": "/internal/design-system",
-      "fixture": "approved-family-v1",
-      "theme": "linen",
-      "viewport": {
-        "width": 1440,
-        "height": 900
-      },
-      "density": "compact",
-      "state": "deterministic",
-      "role": "A",
-      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/page-structure-linen-1440x900.png",
-      "sha256": "6c7d358fdfbcdf956f880150c47cf860a58d71811b9d75b9f673ffa41980e92e"
-    },
-    {
-      "id": "page-structure-linen-390x844",
-      "family": "page-structure",
-      "route": "/internal/design-system",
-      "fixture": "approved-family-v1",
-      "theme": "linen",
-      "viewport": {
-        "width": 390,
-        "height": 844
-      },
-      "density": "touch",
-      "state": "deterministic",
-      "role": "A",
-      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/page-structure-linen-390x844.png",
-      "sha256": "4e4277093e03935ddfcb3441663c6c446d398aab68c6cec764c1317ead44c3f0"
+      "sha256": "df6619634b432c864b4290e38243fa8e598b4d706348893aaba7401dd5d90a90"
     },
     {
       "id": "shell-navigation-dark-1180x820",
@@ -775,7 +330,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/shell-navigation-dark-1180x820.png",
-      "sha256": "586b89b380c7fb86624d010cb2e0173bb2842e468e05f7dc646141b7fa00f920"
+      "sha256": "959995317819eda2e9ac174ea3c452399aa6507a416106dc470308b1bba18b3f"
     },
     {
       "id": "shell-navigation-dark-1440x900",
@@ -791,71 +346,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/shell-navigation-dark-1440x900.png",
-      "sha256": "b644c5d38550249aa8739d13fe6070bbe5e3c2c9425e4a95a64fd18a47e82eb0"
-    },
-    {
-      "id": "shell-navigation-dark-390x844",
-      "family": "shell-navigation",
-      "route": "/internal/design-system",
-      "fixture": "approved-family-v1",
-      "theme": "dark",
-      "viewport": {
-        "width": 390,
-        "height": 844
-      },
-      "density": "touch",
-      "state": "deterministic",
-      "role": "A",
-      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/shell-navigation-dark-390x844.png",
-      "sha256": "e1147a4931865ed0b8a7c79351b257a7dac939fab3ee800ce057b4527003d817"
-    },
-    {
-      "id": "shell-navigation-linen-1180x820",
-      "family": "shell-navigation",
-      "route": "/internal/design-system",
-      "fixture": "approved-family-v1",
-      "theme": "linen",
-      "viewport": {
-        "width": 1180,
-        "height": 820
-      },
-      "density": "touch",
-      "state": "deterministic",
-      "role": "A",
-      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/shell-navigation-linen-1180x820.png",
-      "sha256": "b8ae4e2b25a0f0bd9b507882a384e5bc83f93e1bfb33a9c381d6a933c94dcce5"
-    },
-    {
-      "id": "shell-navigation-linen-1440x900",
-      "family": "shell-navigation",
-      "route": "/internal/design-system",
-      "fixture": "approved-family-v1",
-      "theme": "linen",
-      "viewport": {
-        "width": 1440,
-        "height": 900
-      },
-      "density": "compact",
-      "state": "deterministic",
-      "role": "A",
-      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/shell-navigation-linen-1440x900.png",
-      "sha256": "bf3ba971735ecf01f3dcabfa32f62ad1e1b9f1115c9882bf74326cac0f466ad5"
-    },
-    {
-      "id": "shell-navigation-linen-390x844",
-      "family": "shell-navigation",
-      "route": "/internal/design-system",
-      "fixture": "approved-family-v1",
-      "theme": "linen",
-      "viewport": {
-        "width": 390,
-        "height": 844
-      },
-      "density": "touch",
-      "state": "deterministic",
-      "role": "A",
-      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/shell-navigation-linen-390x844.png",
-      "sha256": "5e60f2d768f6c4ecaf48e334d246d62b62e645cfd781c3b053b7e71e1243a6fb"
+      "sha256": "1f3767cea0ffc687f8463e9f5a75886c2026247532674c815689b5deedb75f29"
     },
     {
       "id": "states-feedback-dark-1180x820",
@@ -890,70 +381,6 @@
       "sha256": "c26420f0fd75c8ec64ac2cfd104805d52a62a43d301ddc5264ab651b440a8ef7"
     },
     {
-      "id": "states-feedback-dark-390x844",
-      "family": "states-feedback",
-      "route": "/internal/design-system",
-      "fixture": "approved-family-v1",
-      "theme": "dark",
-      "viewport": {
-        "width": 390,
-        "height": 844
-      },
-      "density": "touch",
-      "state": "deterministic",
-      "role": "A",
-      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/states-feedback-dark-390x844.png",
-      "sha256": "41fcb6f27209b88493af1e6d4419ca4cbe31b1da4144f542bc1276467f52c13e"
-    },
-    {
-      "id": "states-feedback-linen-1180x820",
-      "family": "states-feedback",
-      "route": "/internal/design-system",
-      "fixture": "approved-family-v1",
-      "theme": "linen",
-      "viewport": {
-        "width": 1180,
-        "height": 820
-      },
-      "density": "touch",
-      "state": "deterministic",
-      "role": "A",
-      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/states-feedback-linen-1180x820.png",
-      "sha256": "d78f535d77cb3a4c7da63ebaa27481493671e7b4ebb068282b9febbabc03179d"
-    },
-    {
-      "id": "states-feedback-linen-1440x900",
-      "family": "states-feedback",
-      "route": "/internal/design-system",
-      "fixture": "approved-family-v1",
-      "theme": "linen",
-      "viewport": {
-        "width": 1440,
-        "height": 900
-      },
-      "density": "compact",
-      "state": "deterministic",
-      "role": "A",
-      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/states-feedback-linen-1440x900.png",
-      "sha256": "29ec21ac5cd84ad6029d8962708e8c9b7c3cbe0a5b03564d550631a197b82785"
-    },
-    {
-      "id": "states-feedback-linen-390x844",
-      "family": "states-feedback",
-      "route": "/internal/design-system",
-      "fixture": "approved-family-v1",
-      "theme": "linen",
-      "viewport": {
-        "width": 390,
-        "height": 844
-      },
-      "density": "touch",
-      "state": "deterministic",
-      "role": "A",
-      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/states-feedback-linen-390x844.png",
-      "sha256": "746f12cee157d148fecfe00a5f2f213ab8c8fd818dffcf19235352aee1653fd5"
-    },
-    {
       "id": "vendor-adapters-dark-1180x820",
       "family": "vendor-adapters",
       "route": "/internal/design-system",
@@ -967,7 +394,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/vendor-adapters-dark-1180x820.png",
-      "sha256": "f523aa3be42b326a60810dfe7a9ef5c217a035f4184be4957d909f796552d543"
+      "sha256": "b9bdba6a29a90e5cfeb385b0340ad94434f05c01a89153022c453a81575fb5b0"
     },
     {
       "id": "vendor-adapters-dark-1440x900",
@@ -983,71 +410,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/vendor-adapters-dark-1440x900.png",
-      "sha256": "e97ef4ce581dd2f705dc7dcb2075a2ddca10b03639433a613f1c04c5aacfc126"
-    },
-    {
-      "id": "vendor-adapters-dark-390x844",
-      "family": "vendor-adapters",
-      "route": "/internal/design-system",
-      "fixture": "approved-family-v1",
-      "theme": "dark",
-      "viewport": {
-        "width": 390,
-        "height": 844
-      },
-      "density": "touch",
-      "state": "deterministic",
-      "role": "A",
-      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/vendor-adapters-dark-390x844.png",
-      "sha256": "2aecc1227bb3432da405e29ecf7e884d01180e50af48a202c5a4496d0486591e"
-    },
-    {
-      "id": "vendor-adapters-linen-1180x820",
-      "family": "vendor-adapters",
-      "route": "/internal/design-system",
-      "fixture": "approved-family-v1",
-      "theme": "linen",
-      "viewport": {
-        "width": 1180,
-        "height": 820
-      },
-      "density": "touch",
-      "state": "deterministic",
-      "role": "A",
-      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/vendor-adapters-linen-1180x820.png",
-      "sha256": "fd2e9a5607ebc8dbb5f3936dd7b6a53398713589704db8b142582b0021fd2cf0"
-    },
-    {
-      "id": "vendor-adapters-linen-1440x900",
-      "family": "vendor-adapters",
-      "route": "/internal/design-system",
-      "fixture": "approved-family-v1",
-      "theme": "linen",
-      "viewport": {
-        "width": 1440,
-        "height": 900
-      },
-      "density": "compact",
-      "state": "deterministic",
-      "role": "A",
-      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/vendor-adapters-linen-1440x900.png",
-      "sha256": "04aba81a7b4ffeab583842dfdf81511c4beda7361a849df1536a278cf07ac972"
-    },
-    {
-      "id": "vendor-adapters-linen-390x844",
-      "family": "vendor-adapters",
-      "route": "/internal/design-system",
-      "fixture": "approved-family-v1",
-      "theme": "linen",
-      "viewport": {
-        "width": 390,
-        "height": 844
-      },
-      "density": "touch",
-      "state": "deterministic",
-      "role": "A",
-      "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/vendor-adapters-linen-390x844.png",
-      "sha256": "37c93668afc6738f4e096bf12ca1b3bcf98fec633076232d3cb007caade61ba0"
+      "sha256": "835ff7f2b253ed0de79f636340197d2cba8292fe4ab132a68ae376660a776679"
     }
   ]
 }

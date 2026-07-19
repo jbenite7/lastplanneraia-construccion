@@ -238,7 +238,7 @@ test('state words, density and dialog behavior follow the family contract', asyn
 });
 
 test('severity and urgency blocks keep distinct semantic backgrounds', async ({ page }) => {
-  await page.setViewportSize({ width: 634, height: 750 });
+  await page.setViewportSize(VIEWPORTS[0]);
   await openAs(page, ADMIN);
   await selectFamily(page, 'states-feedback');
   const family = page.locator('[data-family="states-feedback"]');
@@ -261,7 +261,7 @@ test('severity and urgency blocks keep distinct semantic backgrounds', async ({ 
   expect(new Set(mappedColors.map(({ background }) => background)).size).toBeGreaterThanOrEqual(3);
 });
 
-test('state headings and canonical spinner remain legible across themes and viewports', async ({ page }) => {
+test('state headings and canonical spinner remain legible across desktop dark viewports', async ({ page }) => {
   await page.setViewportSize(VIEWPORTS[0]);
   await openAs(page, ADMIN);
   await page.goto(
@@ -352,7 +352,7 @@ test('approved shell uses drawer below 1200px and contextual navigation from 120
 });
 
 test('shell navigation keeps four-sided padding and a theme-visible brand mark', async ({ page }) => {
-  await page.setViewportSize({ width: 634, height: 750 });
+  await page.setViewportSize(VIEWPORTS[0]);
   await openAs(page, ADMIN);
   await selectFamily(page, 'shell-navigation');
   const navigation = page.locator('[data-family="shell-navigation"] .aia-navigation__global');
@@ -420,7 +420,7 @@ test('action theme candidate keeps the integrated hierarchy and operable states'
   await expect(candidates).toHaveAttribute('data-action-pattern', 'solid-outline');
   await expect(candidates.locator('h3')).toHaveText('Primaria corporativa por tema');
   await expect(candidates.locator('[data-aia-component="action-group"]')).toHaveCount(1);
-  await expect(candidates.locator('[data-aia-component="icon"]')).toHaveCount(2);
+  await expect(candidates.locator('[data-aia-component="icon"]')).toHaveCount(4);
   const contracts = await candidates.evaluateAll((elements) => elements.map((element) => ({
     labels: [...element.querySelectorAll('[data-aia-component="action-group"] button')].map((button) => button.textContent.trim()),
     disabled: [...element.querySelectorAll('[data-aia-component="action-group"] button')].map((button) => button.disabled),
@@ -432,7 +432,7 @@ test('action theme candidate keeps the integrated hierarchy and operable states'
 });
 
 test('icon-only actions use a legible canonical glyph size', async ({ page }) => {
-  await page.setViewportSize({ width: 634, height: 750 });
+  await page.setViewportSize(VIEWPORTS[0]);
   await openAs(page, ADMIN);
   await selectFamily(page, 'actions');
   const iconButton = page.getByRole('button', { name: 'Filtrar', exact: true });
@@ -461,7 +461,7 @@ test('approved visible filters expose the canonical fields and actions', async (
 });
 
 test('form controls, Select2 multi and active pagination preserve readable insets', async ({ page }) => {
-  await page.setViewportSize({ width: 634, height: 750 });
+  await page.setViewportSize(VIEWPORTS[0]);
   await openAs(page, ADMIN);
   await selectFamily(page, 'forms-filters');
   const family = page.locator('[data-family="forms-filters"]');
@@ -486,7 +486,7 @@ test('form controls, Select2 multi and active pagination preserve readable inset
   expect(contrastRatio(paginationColors.foreground, paginationColors.background)).toBeGreaterThanOrEqual(4.5);
 });
 
-test('laboratory scroll and file alignment hold across themes and viewports', async ({ page }) => {
+test('laboratory scroll and file alignment hold across desktop dark viewports', async ({ page }) => {
   await page.setViewportSize(VIEWPORTS[0]);
   await openAs(page, ADMIN);
   await page.goto(
@@ -584,7 +584,7 @@ test('vendor fixtures use canonical adapters without local inline styles', async
 });
 
 test('Select2 single selection preserves the canonical lateral inset', async ({ page }) => {
-  await page.setViewportSize({ width: 634, height: 750 });
+  await page.setViewportSize(VIEWPORTS[0]);
   await openAs(page, ADMIN);
   await selectFamily(page, 'vendor-adapters');
 
@@ -607,7 +607,7 @@ test('Select2 single selection preserves the canonical lateral inset', async ({ 
 });
 
 test('SweetAlert2 title and action remain legible in dark mode', async ({ page }) => {
-  await page.setViewportSize({ width: 634, height: 750 });
+  await page.setViewportSize(VIEWPORTS[0]);
   await openAs(page, ADMIN);
   await selectFamily(page, 'vendor-adapters');
   await page.evaluate(() => window.AiaDesignSystem.setTheme('dark'));
@@ -667,7 +667,7 @@ test('BI figure exposes equivalent visual and tabular data', async ({ page }) =>
   expect(curveContract.planPointFill).toBe(curveContract.planColor);
   expect(curveContract.executedPointFill).toBe(curveContract.executedColor);
 
-  await page.setViewportSize({ width: 634, height: 750 });
+  await page.setViewportSize(VIEWPORTS[0]);
   const radarLayout = await page.locator('.aia-bi-radar').evaluate((radar) => {
     const radarRect = radar.getBoundingClientRect();
     const figureRect = radar.closest('figure').getBoundingClientRect();

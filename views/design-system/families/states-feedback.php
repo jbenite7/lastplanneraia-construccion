@@ -1,6 +1,6 @@
 <div class="ds-candidate-grid ds-state-comparison">
     <article class="ds-state-candidate" data-state-candidate="tinted-status">
-        <header><p class="ds-lab__eyebrow">Patrón aprobado</p><h3>Estados con fondo tenue</h3><p>El significado conserva texto explícito y el color actúa como refuerzo.</p></header>
+        <header><h3>Estados con fondo tenue</h3><p>El significado conserva texto explícito y el color actúa como refuerzo.</p></header>
         <div class="ds-state-set">
             <?= \App\View\Components\DesignSystemComponent::status(['label' => 'A tiempo', 'tone' => 'success', 'severity' => 'low', 'urgency' => 'none']) ?>
             <?= \App\View\Components\DesignSystemComponent::status(['label' => 'Por comprometer', 'tone' => 'warning', 'severity' => 'medium', 'urgency' => 'soon']) ?>

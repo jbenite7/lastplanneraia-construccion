@@ -254,7 +254,7 @@ test('manifests declare the complete deterministic visual matrix', () => {
   const pilot = JSON.parse(readFileSync(
     path.join(root, 'docs/design-system/manifests/programa-general.json'), 'utf8',
   ));
-  assert.equal(laboratory.scenarios.length, 60);
+  assert.equal(laboratory.scenarios.length, 20);
   assert.equal(pilot.scenarios.length, 6);
 });
 

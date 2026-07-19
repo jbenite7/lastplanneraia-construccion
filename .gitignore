@@ -123,6 +123,9 @@ tests/browser/*
 !tests/browser/design-system-consumer-smoke.mjs
 !tests/browser/design-system-foundation-shell.mjs
 !tests/browser/design-system-keyboard.mjs
+!tests/browser/design-system-lab-keyboard.mjs
+!tests/browser/design-system-lab-desktop-layout.mjs
+!tests/browser/design-system-lab.performance.mjs
 !tests/browser/design-system-reflow.mjs
 !tests/browser/programa-general-design-system.mjs
 !tests/browser/programa-general-runtime-requests.mjs

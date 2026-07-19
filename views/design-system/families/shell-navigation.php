@@ -1,6 +1,6 @@
 <article class="ds-shell-candidate">
     <header class="ds-shell-candidate__head">
-        <div><p class="ds-lab__eyebrow">Patrón aprobado</p><h3>Navegación adaptativa</h3></div>
+        <h3>Navegación adaptativa</h3>
         <span class="aia-chip">Híbrido</span>
     </header>
     <?= \App\View\Components\DesignSystemComponent::navigation([

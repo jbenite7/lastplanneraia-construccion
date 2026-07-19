@@ -324,16 +324,15 @@ for (const manifest of manifests) {
 }
 
 const requiredViewportKeys = new Set(['390x844', '1180x820', '1440x900']);
+const laboratoryViewportKeys = new Set(['1180x820', '1440x900']);
 const scenarioKey = (scenario) => `${scenario.theme}/${scenario.viewport.width}x${scenario.viewport.height}`;
 for (const familyId of governedFamilies) {
   const familyScenarios = (laboratoryManifest?.scenarios || [])
     .filter((scenario) => scenario.family === familyId);
   const keys = new Set(familyScenarios.map(scenarioKey));
-  for (const theme of ['dark', 'linen']) {
-    for (const viewport of requiredViewportKeys) {
-      if (!keys.has(`${theme}/${viewport}`)) {
-        failures.push(`design-system-laboratory: missing scenario ${familyId}/${theme}/${viewport}`);
-      }
+  for (const viewport of laboratoryViewportKeys) {
+    if (!keys.has(`dark/${viewport}`)) {
+      failures.push(`design-system-laboratory: missing scenario ${familyId}/dark/${viewport}`);
     }
   }
 }

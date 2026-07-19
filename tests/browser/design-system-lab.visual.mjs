@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { readFileSync } from 'node:fs';
+import { mkdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { PROJECTS } from './fixtures/projects.mjs';
 import { login, selectProject } from './support/session.mjs';
@@ -20,6 +20,11 @@ const APPROVED_BY_FAMILY = new Map(
 const FAMILY_COUNT = new Set(MANIFEST.scenarios.map(({ family }) => family)).size;
 const STATES_FEEDBACK_FAMILY = 'states-feedback';
 const VISUAL_SCENARIOS = MANIFEST.scenarios.filter(({ theme, viewport }) => theme === 'dark' && viewport.width >= 1180);
+const EVIDENCE_DIR = process.env.DESIGN_SYSTEM_EVIDENCE_DIR
+  ? path.resolve(process.env.DESIGN_SYSTEM_EVIDENCE_DIR)
+  : null;
+
+if (EVIDENCE_DIR) mkdirSync(EVIDENCE_DIR, { recursive: true });
 
 function contrastRatio(foreground, background) {
   const luminance = (color) => {
@@ -62,6 +67,11 @@ async function prepareSnapshot(panel) {
   }
 }
 
+async function captureEvidence(page, scenario) {
+  if (!EVIDENCE_DIR) return;
+  await page.screenshot({ path: path.join(EVIDENCE_DIR, `${scenario.id}.png`) });
+}
+
 async function assertStatesFeedbackVisualContract(page, panel) {
   const status = panel.locator('[data-ui-group="loading-spinner"][role="status"]');
   const spinner = status.locator('.aia-spinner');
@@ -73,6 +83,9 @@ async function assertStatesFeedbackVisualContract(page, panel) {
   await expect(status).toContainText('Carga indeterminada');
   await expect(spinner).toBeVisible();
   await expect(spinner).toHaveAttribute('aria-hidden', 'true');
+  await status.evaluate((element) => {
+    element.scrollIntoView({ block: 'center', inline: 'nearest' });
+  });
 
   const contract = await status.evaluate((element) => {
     const panelElement = element.closest('[data-family="states-feedback"]');
@@ -139,9 +152,11 @@ for (const scenario of VISUAL_SCENARIOS) {
     await expect(panel).toHaveAttribute('data-family-status', 'approved');
     if (scenario.family === STATES_FEEDBACK_FAMILY) {
       await assertStatesFeedbackVisualContract(page, panel);
+      await captureEvidence(page, scenario);
       return;
     }
     await prepareSnapshot(panel);
+    await captureEvidence(page, scenario);
     await expect(page).toHaveScreenshot(path.basename(scenario.golden));
   });
 }

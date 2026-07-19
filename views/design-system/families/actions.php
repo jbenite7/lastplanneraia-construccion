@@ -7,7 +7,7 @@ $actionDescription = $actionThemeCandidate
 ?>
 <div class="ds-candidate-grid ds-actions-comparison">
     <article class="ds-action-candidate" data-action-candidate="<?= htmlspecialchars($activeCandidateId, ENT_QUOTES, 'UTF-8') ?>" data-action-pattern="solid-outline">
-        <header><p class="ds-lab__eyebrow"><?= htmlspecialchars($familyCandidateEyebrow, ENT_QUOTES, 'UTF-8') ?></p><h3><?= htmlspecialchars($actionTitle, ENT_QUOTES, 'UTF-8') ?></h3><p><?= htmlspecialchars($actionDescription, ENT_QUOTES, 'UTF-8') ?></p></header>
+        <header><h3><?= htmlspecialchars($actionTitle, ENT_QUOTES, 'UTF-8') ?></h3><p><?= htmlspecialchars($actionDescription, ENT_QUOTES, 'UTF-8') ?></p></header>
         <?= \App\View\Components\DesignSystemComponent::actionGroup([
             'label' => 'Acciones del formulario',
             'actions' => [

@@ -33,15 +33,18 @@ test('the active action candidate applies theme color changes without chromatic 
     new URL('../../views/design-system/families/actions.php', import.meta.url), 'utf8',
   );
   const css = await readFile(
-    new URL('../../public/css/aia-design-system.css', import.meta.url), 'utf8',
+    new URL('../../public/css/design-system/core.css', import.meta.url), 'utf8',
+  );
+  const labCss = await readFile(
+    new URL('../../public/css/design-system/lab.css', import.meta.url), 'utf8',
   );
 
   assert.equal(family.activeCandidate, 'theme-adaptive-primary');
   assert.equal(active?.status, 'candidate');
   assert.match(specimen, /data-action-candidate="<\?= htmlspecialchars\(\$activeCandidateId/);
-  assert.match(specimen, /\$familyCandidateEyebrow/);
-  assert.doesNotMatch(specimen, />Patrón aprobado</);
+  assert.doesNotMatch(specimen, /familyCandidateEyebrow|Patrón aprobado|Patrón en revisión/);
   const buttonRule = css.match(/\.aia-btn\s*\{([\s\S]*?)\n\s*\}/)?.[1] ?? '';
-  assert.match(buttonRule, /transition:\s*box-shadow var\(--ds-motion-fast\), transform var\(--ds-motion-fast\)/);
+  assert.match(buttonRule, /transition:\s*box-shadow var\(--ds-motion-fast\),\s*transform var\(--ds-motion-fast\)/);
   assert.doesNotMatch(buttonRule, /(?:background|border-color|color)\s+var\(--ds-motion-fast\)/);
+  assert.match(labCss, /\.ds-actions-comparison\s*\{[^}]*grid-template-columns:\s*minmax\(0, 1fr\)/s);
 });

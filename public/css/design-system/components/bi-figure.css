@@ -195,7 +195,8 @@
     gap: var(--ds-space-1);
     min-width: 0;
     padding: var(--ds-space-3);
-    border-inline-start: var(--ds-space-1) solid var(--ds-active-action-primary);
+    border: var(--ds-border-width) solid var(--ds-active-border);
+    border-radius: var(--ds-radius-control-sm);
     background: var(--ds-active-surface);
   }
 

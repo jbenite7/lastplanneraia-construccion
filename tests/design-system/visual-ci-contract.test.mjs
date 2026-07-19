@@ -7,6 +7,7 @@ import { parseJobSteps } from './workflow-contract-parser.mjs';
 const read = (path) => readFile(new URL(`../../${path}`, import.meta.url), 'utf8');
 const readJson = async (path) => JSON.parse(await read(path));
 const requiredViewports = ['390x844', '1180x820', '1440x900'];
+const laboratoryViewports = ['1180x820', '1440x900'];
 
 const viewportKey = ({ width, height }) => `${width}x${height}`;
 
@@ -33,6 +34,21 @@ function assertCompleteThemeViewportMatrix(scenarios, expectedPerCombination) {
   }
 }
 
+function assertDesktopDarkLaboratoryMatrix(scenarios, familyCount) {
+  assert.deepEqual([...new Set(scenarios.map(({ theme }) => theme))], ['dark']);
+  assert.deepEqual(
+    [...new Set(scenarios.map(({ viewport }) => viewportKey(viewport)))].sort(),
+    [...laboratoryViewports].sort(),
+  );
+  for (const viewport of laboratoryViewports) {
+    assert.equal(
+      scenarios.filter((scenario) => viewportKey(scenario.viewport) === viewport).length,
+      familyCount,
+      `dark ${viewport}`,
+    );
+  }
+}
+
 test('visual regression contract covers the approved laboratory matrix', async () => {
   const [source, manifest] = await Promise.all([
     read('tests/browser/design-system-lab.visual.mjs'),
@@ -42,8 +58,8 @@ test('visual regression contract covers the approved laboratory matrix', async (
   assert.match(source, /MANIFEST\.scenarios/);
   const familyCount = new Set(manifest.scenarios.map(({ family }) => family)).size;
   assert.equal(familyCount, 10);
-  assert.equal(manifest.scenarios.length, 60);
-  assertCompleteThemeViewportMatrix(manifest.scenarios, familyCount);
+  assert.equal(manifest.scenarios.length, 20);
+  assertDesktopDarkLaboratoryMatrix(manifest.scenarios, familyCount);
 });
 
 test('visual regression contract covers the Programa General pilot matrix', async () => {
@@ -173,11 +189,12 @@ test('versioned runner scripts separate static, accessibility and visual gates',
   ]) {
     assert.ok(packageJson.scripts[script], script);
   }
-  assert.match(packageJson.scripts['test:design-system:runtime'], /design-system-consumer-smoke/);
+  assert.match(packageJson.scripts['test:design-system:runtime'], /design-system-lab\.mjs/);
+  assert.doesNotMatch(packageJson.scripts['test:design-system:runtime'], /consumer-smoke|pilot|programa-general/);
   assert.doesNotMatch(packageJson.scripts['test:design-system:runtime'], /keyboard|reflow/);
-  assert.match(packageJson.scripts['test:design-system:evidence'], /design-system-keyboard\.mjs/);
-  assert.match(packageJson.scripts['test:design-system:evidence'], /design-system-reflow\.mjs/);
-  assert.match(packageJson.scripts['test:reflow'], /design-system-reflow\.mjs/);
+  assert.match(packageJson.scripts['test:design-system:evidence'], /design-system-lab-keyboard\.mjs/);
+  assert.match(packageJson.scripts['test:design-system:evidence'], /design-system-lab-desktop-layout\.mjs/);
+  assert.match(packageJson.scripts['test:reflow'], /design-system-lab-desktop-layout\.mjs/);
   const config = await read('playwright.config.mjs');
   assert.match(config, /snapshotPathTemplate/);
   assert.match(config, /animations:\s*'disabled'/);
@@ -222,7 +239,7 @@ test('runtime failures preserve Playwright, axe and Docker evidence', async () =
   assert.match(workflow, /test-output\//);
 });
 
-test('runtime budgets are measured and compared fail-closed against 0.3.3', async () => {
+test('pilot runtime budgets remain available while the canonical runtime uses the isolated laboratory budget', async () => {
   const [packageJson, workflow, collector, baseline, retrospective, recoveryManifest, schema, closeout] = await Promise.all([
     readJson('package.json'),
     read('.github/workflows/design-system.yml'),
@@ -236,8 +253,9 @@ test('runtime budgets are measured and compared fail-closed against 0.3.3', asyn
 
   assert.match(packageJson.scripts['test:runtime-budget:measure'], /design-system-runtime-budget\.mjs/);
   assert.match(packageJson.scripts['test:runtime-budget:check'], /runtime-baseline-0\.3\.3\.json/);
-  assert.match(packageJson.scripts['test:design-system:runtime'], /test:runtime-budget:measure/);
-  assert.match(packageJson.scripts['test:design-system:runtime'], /test:runtime-budget:check/);
+  assert.match(packageJson.scripts['test:performance:lab'], /design-system-lab\.performance\.mjs/);
+  assert.match(packageJson.scripts['test:design-system:runtime'], /test:performance:lab/);
+  assert.doesNotMatch(packageJson.scripts['test:design-system:runtime'], /test:runtime-budget/);
   assert.match(workflow, /npm run test:design-system:runtime/);
   assert.match(workflow, /test-output\//);
 
