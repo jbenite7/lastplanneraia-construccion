@@ -1,6 +1,6 @@
 # Revisión automatizada básica de accesibilidad — Sprint 00
 
-Estado: **Axe desktop dark aprobado; revisión manual independiente pendiente si se exige**.
+Estado: **Axe desktop dark y revisión manual independiente aprobados — 2026-07-19**.
 
 Superficies autorizadas: las diez familias aprobadas del laboratorio. No se
 revisan otros módulos.
@@ -16,12 +16,12 @@ estado revelado, regla, impacto, tipo de resultado, selector y decisión.
 |---|---|---|
 | Axe — laboratorio | 20 escenarios desktop dark, cero violaciones serias y excepciones `incomplete` exactas, vigentes y justificadas | Aprobado 2026-07-18 |
 | Axe — estados revelados | Los estados interactivos incluidos en la matriz conservan el mismo contrato bloqueante | Aprobado 2026-07-18 |
-| Revisión manual independiente | Teclado, foco, lectura y estados operables verificados por una persona si el release lo exige | Pendiente |
+| Revisión manual independiente | Teclado, foco, lectura y estados operables verificados por una persona | Aprobado 2026-07-19 |
 
 ## Revisión local asistida — 2026-07-19
 
-Revisor: Codex, mediante inspección local automatizada en Chromium. Esta revisión
-no sustituye la revisión humana independiente, que permanece pendiente.
+Revisor técnico: Codex, mediante inspección local automatizada en Chromium.
+Esta evidencia se presentó para revisión humana independiente.
 
 - Superficie: diez familias del laboratorio en dark, sin visitar otros módulos.
 - Viewports: `1180x820` en densidad Touch y `1440x900` en densidad Compacta.
@@ -31,7 +31,13 @@ no sustituye la revisión humana independiente, que permanece pendiente.
   por debajo de `4.5:1`.
 - Axe: 20 escenarios desktop dark aprobados, sin violaciones serias.
 
-La revisión humana independiente continúa **pendiente** si el release la exige.
+## Aprobación humana independiente — 2026-07-19
+
+La persona solicitante confirmó explícitamente **Aprobado** después de revisar el
+checklist de teclado, foco, lectura y estados operables para el laboratorio
+desktop dark. La aprobación cubre el commit `750e24a0f07a92e31c2d8c482d2ce3b3f4e11ab8`,
+las diez familias, los viewports `1180x820` y `1440x900`, y no extiende el alcance
+a Programa General, mobile, tablet ni `linen`.
 
 ## Evidencia requerida
 
