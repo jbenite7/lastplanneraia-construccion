@@ -54,7 +54,7 @@ $stateLabels = [
                         <label class="aia-field" for="fixture-project-search"><span>Buscar proyecto</span><input class="aia-input" id="fixture-project-search" type="search" placeholder="Nombre, ciudad o código"></label>
                         <button class="aia-btn" type="submit">Buscar</button>
                     </form>
-                    <div class="ds-project-list" aria-label="Proyectos de ejemplo">
+                    <div class="ds-project-list" role="group" aria-label="Proyectos de ejemplo">
                         <button type="button" class="ds-project-row" data-project-item data-search-value="nuevo edificio corporativo bogota"><strong>Nuevo Edificio Corporativo</strong><span>Bogotá · Construcción</span><span>Rol: Planificador</span></button>
                         <button type="button" class="ds-project-row" data-project-item data-search-value="da porto cartagena"><strong>Da Porto</strong><span>Cartagena · Inmobiliario</span><span>Rol: Residente</span></button>
                     </div>
@@ -68,7 +68,7 @@ $stateLabels = [
                     </form>
                 <?php break;
                 case 'context-week': ?>
-                    <div class="ds-context-contract" aria-label="Contexto operativo">
+                    <div class="ds-context-contract" role="group" aria-label="Contexto operativo">
                         <label class="aia-field"><span>Proyecto</span><select class="aia-select"><option>Nuevo Edificio Corporativo</option><option>Da Porto</option></select></label>
                         <label class="aia-field"><span>Módulo</span><select class="aia-select"><option>Programa General</option><option>Programación Intermedia</option></select></label>
                         <label class="aia-field"><span>Semana</span><select class="aia-select"><option>Semana 29 · actual</option><option>Semana 28</option></select></label>
@@ -120,7 +120,21 @@ $stateLabels = [
                     </div>
                 <?php break;
                 case 'tom-select-advanced': ?>
-                    <div class="ds-tom-contract"><label class="aia-field" for="fixture-tom-search"><span>Responsables</span><div class="ts-wrapper multi"><div class="ts-control" role="combobox" aria-expanded="true" aria-controls="fixture-tom-options"><span class="item" data-value="ana">Ana Torres <button type="button" aria-label="Quitar Ana Torres" data-fixture-action="remove-tom-option">Quitar</button></span><span class="item" data-value="carlos" hidden>Carlos Ruiz · Director <button type="button" aria-label="Quitar Carlos Ruiz · Director" data-fixture-action="remove-tom-option" data-tom-value="carlos">Quitar</button></span><span class="item" data-value="laura" hidden>Laura Gómez · Oficina Técnica <button type="button" aria-label="Quitar Laura Gómez · Oficina Técnica" data-fixture-action="remove-tom-option" data-tom-value="laura">Quitar</button></span><input id="fixture-tom-search" type="search" placeholder="Buscar responsable" data-tom-search></div><div class="ts-dropdown" id="fixture-tom-options"><div role="listbox" aria-label="Responsables disponibles"><button type="button" role="option" aria-selected="false" data-fixture-action="add-tom-option" data-tom-value="carlos">Carlos Ruiz · Director</button><button type="button" role="option" aria-selected="false" data-fixture-action="add-tom-option" data-tom-value="laura">Laura Gómez · Oficina Técnica</button></div></div></div></label><div class="ds-fixture-actions"><button class="aia-btn aia-btn--secondary" type="button" data-fixture-action="clear-tom">Limpiar</button><button class="aia-btn" type="button">Confirmar selección</button></div></div>
+                    <div class="ds-tom-contract">
+                        <div class="aia-field">
+                            <span id="fixture-tom-label">Responsables</span>
+                            <div class="ts-wrapper multi">
+                                <div class="ts-control" role="combobox" aria-labelledby="fixture-tom-label" aria-expanded="true" aria-controls="fixture-tom-options">
+                                    <span class="item" data-value="ana">Ana Torres <button type="button" aria-label="Quitar Ana Torres" data-fixture-action="remove-tom-option">Quitar</button></span>
+                                    <span class="item" data-value="carlos" hidden>Carlos Ruiz · Director <button type="button" aria-label="Quitar Carlos Ruiz · Director" data-fixture-action="remove-tom-option" data-tom-value="carlos">Quitar</button></span>
+                                    <span class="item" data-value="laura" hidden>Laura Gómez · Oficina Técnica <button type="button" aria-label="Quitar Laura Gómez · Oficina Técnica" data-fixture-action="remove-tom-option" data-tom-value="laura">Quitar</button></span>
+                                    <input id="fixture-tom-search" type="search" aria-label="Buscar responsable" placeholder="Buscar responsable" data-tom-search>
+                                </div>
+                                <div class="ts-dropdown" id="fixture-tom-options"><div role="listbox" aria-labelledby="fixture-tom-label"><button type="button" role="option" aria-selected="false" data-fixture-action="add-tom-option" data-tom-value="carlos">Carlos Ruiz · Director</button><button type="button" role="option" aria-selected="false" data-fixture-action="add-tom-option" data-tom-value="laura">Laura Gómez · Oficina Técnica</button></div></div>
+                            </div>
+                        </div>
+                        <div class="ds-fixture-actions"><button class="aia-btn aia-btn--secondary" type="button" data-fixture-action="clear-tom">Limpiar</button><button class="aia-btn" type="button">Confirmar selección</button></div>
+                    </div>
                 <?php break;
                 case 'enriched-datepicker': ?>
                     <div class="ds-datepicker-contract"><label class="aia-field" for="fixture-date"><span>Fecha de vencimiento</span><span class="ds-input-action"><input class="aia-input" id="fixture-date" value="24/07/2026" aria-describedby="fixture-date-help"><button class="aia-btn aia-btn--secondary" type="button" data-fixture-action="toggle-calendar" aria-expanded="true" aria-controls="fixture-calendar">Abrir calendario</button></span><small class="aia-helper" id="fixture-date-help">Formato local: día/mes/año. Rango permitido: julio a septiembre de 2026.</small></label><section class="ds-calendar" id="fixture-calendar" aria-label="Julio de 2026"><header><button type="button" aria-label="Mes anterior">Anterior</button><h4>Julio de 2026</h4><button type="button" aria-label="Mes siguiente">Siguiente</button></header><table role="grid"><thead><tr><th scope="col">Lu</th><th scope="col">Ma</th><th scope="col">Mi</th><th scope="col">Ju</th><th scope="col">Vi</th></tr></thead><tbody><tr><td><button type="button">20</button></td><td><button type="button">21</button></td><td><button type="button">22</button></td><td><button type="button">23</button></td><td><button type="button" aria-current="date">24</button></td></tr><tr><td><button type="button">27</button></td><td><button type="button">28</button></td><td><button type="button">29</button></td><td><button type="button">30</button></td><td><button type="button">31</button></td></tr></tbody></table></section><div class="ds-fixture-actions"><button class="aia-btn aia-btn--secondary" type="button" data-fixture-action="clear-date">Limpiar</button><button class="aia-btn" type="button">Aplicar fecha</button></div></div>

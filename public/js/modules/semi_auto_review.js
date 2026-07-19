@@ -543,10 +543,14 @@
       + '<span class="sar-analysis-title">Estamos revisando tus propuestas</span>'
       + '<span class="sar-analysis-copy">Te mostramos cada paso para que sepas qué está haciendo el asistente.</span>'
       + '</div><span class="sar-analysis-progress">' + progress + '%</span></div>'
-      + '<div class="sar-analysis-bar"><span style="width:' + progress + '%"></span></div>'
+      + '<div class="sar-analysis-bar"><span data-sar-analysis-progress></span></div>'
       + '<div class="sar-analysis-steps">' + steps.map(analysisStepHtml).join('') + '</div>'
       + analysisSummaryHtml(friendly.summary || {}) + '</div>';
     instance.panel.find('.sar-analysis-wrap').html(html);
+    var progressBar = instance.panel.find('[data-sar-analysis-progress]').get(0);
+    if (progressBar) {
+      progressBar.style.setProperty('--sar-analysis-progress', String(progress / 100));
+    }
   }
 
   function analysisStepHtml(step) {

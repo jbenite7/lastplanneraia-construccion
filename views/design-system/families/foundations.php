@@ -1,9 +1,9 @@
 <h3>Paleta de marca</h3>
-<div class="ds-lab__swatches" aria-label="Áreas cromáticas de la marca AIA">
-    <span class="ds-swatch ds-swatch--brand"><strong>Corporativo</strong><small><span class="ds-swatch__light">#1A5633</span><span class="ds-swatch__dark">#6C9077</span></small></span>
-    <span class="ds-swatch ds-swatch--construction"><strong>Construcción</strong><small><span class="ds-swatch__light">#B55211</span><span class="ds-swatch__dark">#C57247</span></small></span>
-    <span class="ds-swatch ds-swatch--real-estate"><strong>Inmobiliario</strong><small><span class="ds-swatch__light">#00A499</span><span class="ds-swatch__dark">#2CAA9F</span></small></span>
-    <span class="ds-swatch ds-swatch--architecture"><strong>Arquitectura</strong><small><span class="ds-swatch__light">#6752BF</span><span class="ds-swatch__dark">#877CD1</span></small></span>
+<div class="ds-lab__swatches" role="list" aria-label="Áreas cromáticas de la marca AIA">
+    <span class="ds-swatch ds-swatch--brand" role="listitem"><strong>Corporativo</strong><small><span class="ds-swatch__light">#1A5633</span><span class="ds-swatch__dark">#6C9077</span></small></span>
+    <span class="ds-swatch ds-swatch--construction" role="listitem"><strong>Construcción</strong><small><span class="ds-swatch__light">#B55211</span><span class="ds-swatch__dark">#C57247</span></small></span>
+    <span class="ds-swatch ds-swatch--real-estate" role="listitem"><strong>Inmobiliario</strong><small><span class="ds-swatch__light">#00A499</span><span class="ds-swatch__dark">#2CAA9F</span></small></span>
+    <span class="ds-swatch ds-swatch--architecture" role="listitem"><strong>Arquitectura</strong><small><span class="ds-swatch__light">#6752BF</span><span class="ds-swatch__dark">#877CD1</span></small></span>
 </div>
 <p class="aia-copy">En tema dark se usan variantes “sobre oscuro”: mismo matiz de marca, mayor luminosidad y contraste AA.</p>
 <section class="ds-type-specimen" aria-labelledby="type-specimen-title">

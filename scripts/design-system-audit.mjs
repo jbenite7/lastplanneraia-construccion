@@ -92,6 +92,15 @@ function normalizeRepoPath(path) {
   return path.replace(/^\/+/, '').replace(/\\/g, '/');
 }
 
+function normalizeSelector(selector) {
+  return String(selector || '')
+    .replace(/\s+/g, ' ')
+    .replace(/\(\s+/g, '(')
+    .replace(/\s+\)/g, ')')
+    .replace(/\s*,\s*/g, ', ')
+    .trim();
+}
+
 function fileMatchesConfiguredPath(file, configuredPath) {
   const normalizedPath = normalizeRepoPath(configuredPath);
   if (normalizedPath.endsWith('/')) return file.startsWith(normalizedPath);
@@ -291,7 +300,7 @@ for (const filePath of files) {
 const auditedViolations = violations.filter((violation) => !(config.exceptions || [])
   .some((exception) => exception.rule === violation.rule
     && normalizeRepoPath(exception.file) === violation.file
-    && exception.selector === violation.selector));
+    && normalizeSelector(exception.selector) === normalizeSelector(violation.selector)));
 const summary = countByRuleAndFile(auditedViolations);
 const pathBudgetReports = (config.pathBudgets || []).map((budget) => {
   const paths = budget.paths || [];

@@ -23,6 +23,7 @@
           "surface",
           "rule",
           "impact",
+          "kind",
           "selector",
           "owner",
           "reason",
@@ -32,7 +33,7 @@
         "properties": {
           "fingerprint": {
             "type": "string",
-            "pattern": "^[^*|]+[|][^*|]+[|][^*|]+[|][^*]+$"
+            "pattern": "^[^*|]+[|][^*|]+[|][^*|]+[|][^*|]+[|][^*]+$"
           },
           "surface": {
             "type": "string",
@@ -48,6 +49,12 @@
               "serious",
               "moderate",
               "minor"
+            ]
+          },
+          "kind": {
+            "enum": [
+              "violation",
+              "incomplete"
             ]
           },
           "selector": {

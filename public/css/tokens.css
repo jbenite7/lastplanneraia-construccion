@@ -180,22 +180,22 @@
   --ds-color-state-info-text: #006d66;
 
   --ds-radius-none: 0;
-  --ds-radius-xs: 0.5rem;
-  --ds-radius-sm: 0.75rem;
-  --ds-radius-md: 1rem;
-  --ds-radius-lg: 1.25rem;
-  --ds-radius-xl: 1.5rem;
-  --ds-radius-2xl: 1.75rem;
+  --ds-radius-xs: 0.25rem;
+  --ds-radius-sm: 0.5rem;
+  --ds-radius-md: 0.75rem;
+  --ds-radius-lg: 1rem;
+  --ds-radius-xl: 1.25rem;
+  --ds-radius-2xl: 1.5rem;
   --ds-radius-3xl: 2rem;
   --ds-radius-pill: 9999px;
-  --ds-radius-control: var(--ds-radius-lg);
-  --ds-radius-control-sm: var(--ds-radius-md);
-  --ds-radius-card: var(--ds-radius-2xl);
-  --ds-radius-panel: var(--ds-radius-xl);
-  --ds-radius-popover: var(--ds-radius-xl);
-  --ds-radius-modal: var(--ds-radius-3xl);
+  --ds-radius-control: var(--ds-radius-md);
+  --ds-radius-control-sm: var(--ds-radius-sm);
+  --ds-radius-card: var(--ds-radius-lg);
+  --ds-radius-panel: var(--ds-radius-2xl);
+  --ds-radius-popover: var(--ds-radius-lg);
+  --ds-radius-modal: var(--ds-radius-2xl);
   --ds-radius-table: var(--ds-radius-lg);
-  --ds-radius-search: var(--ds-radius-lg);
+  --ds-radius-search: var(--ds-radius-md);
   --ds-radius-progress: var(--ds-radius-pill);
 
   --ds-shadow-xs: 0 1px 2px rgba(20, 28, 24, 0.06);

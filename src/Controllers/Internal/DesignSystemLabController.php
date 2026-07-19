@@ -52,6 +52,16 @@ final class DesignSystemLabController
             }
             unset($family);
         }
+        $familyIds = array_values(array_filter(array_map(
+            static fn(array $family): string => trim((string) ($family['id'] ?? '')),
+            $contract['families'] ?? []
+        )));
+        $requestedFamilyId = is_string($_GET['family'] ?? null)
+            ? trim($_GET['family'])
+            : '';
+        $initialFamilyId = in_array($requestedFamilyId, $familyIds, true)
+            ? $requestedFamilyId
+            : ($familyIds[0] ?? '');
         $uiGroups = json_decode((string) file_get_contents(
             PROJECT_ROOT . '/docs/design-system/ui-groups-inventory.json'
         ), true, 512, JSON_THROW_ON_ERROR)['groups'];

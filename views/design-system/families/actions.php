@@ -17,10 +17,10 @@ $actionDescription = $actionThemeCandidate
                 ['label' => 'No disponible', 'variant' => 'secondary', 'state' => 'disabled'],
             ],
         ]) ?>
-        <div class="ds-primitive-row" aria-label="Iconos canónicos">
+        <div class="ds-primitive-row" role="group" aria-label="Iconos canónicos">
             <button class="aia-btn aia-btn--critical" type="button">Eliminar</button>
-            <button class="aia-btn aia-btn--icon" type="button" aria-label="Filtrar">⌕</button>
-            <button class="aia-btn aia-btn--floating" type="button" aria-label="Abrir ayuda">?</button>
+            <button class="aia-btn aia-btn--icon" type="button" aria-label="Filtrar"><?= \App\View\Components\DesignSystemComponent::icon(['name' => 'filter', 'decorative' => true]) ?></button>
+            <button class="aia-btn aia-btn--floating" type="button" aria-label="Abrir ayuda"><?= \App\View\Components\DesignSystemComponent::icon(['name' => 'help', 'decorative' => true]) ?></button>
             <span><?= \App\View\Components\DesignSystemComponent::icon([
                 'name' => 'filter', 'decorative' => true,
             ]) ?> Icono decorativo junto a texto</span>

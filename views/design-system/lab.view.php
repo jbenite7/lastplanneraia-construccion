@@ -28,7 +28,7 @@
             <nav class="ds-lab__rail" aria-label="Familias del design system">
                 <p class="ds-lab__rail-title">Familias <span><?= count($contract['families']) ?></span></p>
                 <ul>
-                    <?php foreach ($contract['families'] as $index => $family): ?>
+                    <?php foreach ($contract['families'] as $family): ?>
                         <?php
                         $familyId = (string) $family['id'];
                         $groupCount = count(array_filter(
@@ -55,7 +55,7 @@
                         $familyApproved = ($railCandidate['status'] ?? 'candidate') === 'approved';
                         ?>
                         <li>
-                            <a href="?family=<?= htmlspecialchars($familyId, ENT_QUOTES, 'UTF-8') ?>" data-lab-family-link data-family-target="<?= htmlspecialchars($familyId, ENT_QUOTES, 'UTF-8') ?>"<?= $index === 0 ? ' aria-current="page"' : '' ?>>
+                            <a href="?family=<?= htmlspecialchars($familyId, ENT_QUOTES, 'UTF-8') ?>" data-lab-family-link data-family-target="<?= htmlspecialchars($familyId, ENT_QUOTES, 'UTF-8') ?>"<?= $familyId === $initialFamilyId ? ' aria-current="page"' : '' ?>>
                                 <span class="ds-lab__rail-label"><?= htmlspecialchars($family['label'] ?? $familyId, ENT_QUOTES, 'UTF-8') ?></span>
                                 <span class="ds-lab__rail-meta"><?= $groupCount ?> <?= $groupCount === 1 ? 'grupo' : 'grupos' ?> · <?= $familyApproved ? 'Aprobado' : 'En revisión' ?></span>
                             </a>
@@ -67,6 +67,7 @@
         <main class="aia-page ds-lab__families" id="contenido">
             <?php foreach ($contract['families'] as $family): ?>
             <?php
+            $familyId = (string) $family['id'];
             $candidates = $family['candidates'] ?? [];
             $activeCandidateId = trim((string) ($family['activeCandidate'] ?? ''));
             $activeCandidate = null;
@@ -88,9 +89,9 @@
             $approved = ($activeCandidate['status'] ?? 'candidate') === 'approved';
             $familyCandidateEyebrow = $approved ? 'Patrón aprobado' : 'Patrón en revisión';
             ?>
-            <section class="aia-panel ds-lab__family" data-family="<?= htmlspecialchars($family['id'], ENT_QUOTES, 'UTF-8') ?>" data-active-candidate="<?= htmlspecialchars($activeCandidateId, ENT_QUOTES, 'UTF-8') ?>" data-family-status="<?= $approved ? 'approved' : 'candidate' ?>" aria-labelledby="family-<?= htmlspecialchars($family['id'], ENT_QUOTES, 'UTF-8') ?>-title">
+            <section class="aia-panel ds-lab__family" data-family="<?= htmlspecialchars($familyId, ENT_QUOTES, 'UTF-8') ?>" data-active-candidate="<?= htmlspecialchars($activeCandidateId, ENT_QUOTES, 'UTF-8') ?>" data-family-status="<?= $approved ? 'approved' : 'candidate' ?>" aria-labelledby="family-<?= htmlspecialchars($familyId, ENT_QUOTES, 'UTF-8') ?>-title"<?= $familyId !== $initialFamilyId ? ' hidden' : '' ?>>
                 <header class="ds-lab__family-head">
-                    <div><p class="ds-lab__family-kicker"><?= $familyCandidateEyebrow ?></p><h2 id="family-<?= htmlspecialchars($family['id'], ENT_QUOTES, 'UTF-8') ?>-title" tabindex="-1"><?= htmlspecialchars($family['label'] ?? $family['id'], ENT_QUOTES, 'UTF-8') ?></h2></div>
+                    <div><p class="ds-lab__family-kicker"><?= $familyCandidateEyebrow ?></p><h2 id="family-<?= htmlspecialchars($familyId, ENT_QUOTES, 'UTF-8') ?>-title" tabindex="-1"><?= htmlspecialchars($family['label'] ?? $familyId, ENT_QUOTES, 'UTF-8') ?></h2></div>
                     <span class="aia-chip<?= $approved ? ' aia-chip--success' : '' ?>" title="<?= $approved ? 'Familia aprobada' : 'Candidato activo pendiente de aprobación visual' ?>"><?= $approved ? 'Aprobado' : 'En revisión' ?></span>
                 </header>
                 <p class="ds-lab__review-note">Estado: <?= $approved ? 'familia aprobada y congelada.' : 'candidato activo pendiente de aprobación visual; la base aprobada se conserva como referencia.' ?></p>

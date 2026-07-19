@@ -53,6 +53,15 @@ async function freezeTheme(page, theme) {
   await expect(page.locator('html')).toHaveAttribute('data-aia-theme', theme);
 }
 
+async function prepareSnapshot(panel) {
+  const inventory = panel.locator('.ds-ui-index');
+  if (await inventory.count()) {
+    await inventory.evaluate((details) => {
+      details.open = false;
+    });
+  }
+}
+
 async function assertStatesFeedbackVisualContract(page, panel) {
   const status = panel.locator('[data-ui-group="loading-spinner"][role="status"]');
   const spinner = status.locator('.aia-spinner');
@@ -132,6 +141,7 @@ for (const scenario of VISUAL_SCENARIOS) {
       await assertStatesFeedbackVisualContract(page, panel);
       return;
     }
-    await expect(panel).toHaveScreenshot(path.basename(scenario.golden));
+    await prepareSnapshot(panel);
+    await expect(page).toHaveScreenshot(path.basename(scenario.golden));
   });
 }

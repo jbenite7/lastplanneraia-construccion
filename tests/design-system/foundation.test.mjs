@@ -31,6 +31,34 @@ test('semantic tokens cover every governed foundation', async () => {
   }
 });
 
+test('the canonical radius scale matches the AIA brand contract', async () => {
+  const css = await read('public/css/tokens.css');
+  const expected = new Map([
+    ['--ds-radius-none', '0'],
+    ['--ds-radius-xs', '0.25rem'],
+    ['--ds-radius-sm', '0.5rem'],
+    ['--ds-radius-md', '0.75rem'],
+    ['--ds-radius-lg', '1rem'],
+    ['--ds-radius-xl', '1.25rem'],
+    ['--ds-radius-2xl', '1.5rem'],
+    ['--ds-radius-3xl', '2rem'],
+    ['--ds-radius-pill', '9999px'],
+    ['--ds-radius-control', 'var(--ds-radius-md)'],
+    ['--ds-radius-control-sm', 'var(--ds-radius-sm)'],
+    ['--ds-radius-card', 'var(--ds-radius-lg)'],
+    ['--ds-radius-panel', 'var(--ds-radius-2xl)'],
+    ['--ds-radius-popover', 'var(--ds-radius-lg)'],
+    ['--ds-radius-modal', 'var(--ds-radius-2xl)'],
+    ['--ds-radius-table', 'var(--ds-radius-lg)'],
+    ['--ds-radius-search', 'var(--ds-radius-md)'],
+  ]);
+
+  for (const [token, value] of expected) {
+    const declaration = css.match(new RegExp(`${token}:\\s*([^;]+);`));
+    assert.equal(declaration?.[1].trim(), value, `${token} must equal ${value}`);
+  }
+});
+
 test('responsive density defaults are encoded in the shared token API', async () => {
   const css = await read('public/css/tokens.css');
   assert.match(css, /--ds-density-active-visual:\s*var\(--ds-density-touch-control\)/);
@@ -50,6 +78,18 @@ test('the foundations specimen explains its internal governance terms', async ()
   assert.match(view, /data-lab-family-link/);
   assert.match(view, /Familias del design system/);
   assert.doesNotMatch(view, />candidate</);
+});
+
+test('the laboratory server renders only the requested valid family on first paint', async () => {
+  const [controller, view] = await Promise.all([
+    read('src/Controllers/Internal/DesignSystemLabController.php'),
+    read('views/design-system/lab.view.php'),
+  ]);
+
+  assert.match(controller, /\$requestedFamilyId\s*=\s*is_string\(\$_GET\['family'\]/);
+  assert.match(controller, /in_array\(\$requestedFamilyId,\s*\$familyIds,\s*true\)/);
+  assert.match(view, /\$familyId === \$initialFamilyId\s*\?\s*' aria-current="page"'/);
+  assert.match(view, /\$familyId !== \$initialFamilyId\s*\?\s*' hidden'/);
 });
 
 test('the rendered foundations specimen does not inherit approval from a different baseline', async () => {
@@ -143,8 +183,9 @@ test('the entrypoint declares the deterministic cascade', async () => {
   assert.match(css, /^@layer reset, vendor, theme, base, layout, components, utilities, module, legacy-overrides;/);
   assert.match(css, /bootstrap\.min\.css'\) layer\(vendor\);/);
   assert.match(css, /styles\.css\?v=\d+\.\d+\.\d+'\) layer\(module\);/);
-  assert.match(css, /@import url\('\.\/design-system\/foundation\.css\?v=\d+\.\d+\.\d+'\);/);
-  assert.match(css, /@import url\('\.\/design-system\/adapters\/legacy-bridge\.css\?v=\d+\.\d+\.\d+'\);/);
+  assert.match(css, /@import url\('\/css\/design-system\/foundation\.css\?v=\d+\.\d+\.\d+'\);/);
+  assert.match(css, /@import url\('\/css\/design-system\/adapters\/legacy-bridge\.css\?v=\d+\.\d+\.\d+'\);/);
+  assert.doesNotMatch(css, /@import url\('\.\//, 'axe CSSOM preload requires absolute internal imports');
 });
 
 test('the common loader keeps JavaScript compatibility only', async () => {
@@ -200,7 +241,7 @@ test('versioned tokens are not hidden behind an unversioned CSS import', async (
 test('local entrypoint imports share the published design-system version', async () => {
   const css = await read('public/css/aia-design-system.css');
   const { version } = JSON.parse(await read('docs/design-system/version.json'));
-  const imports = [...css.matchAll(/@import url\('\.\/(?!\.\.\/)([^']+)'\)/g)]
+  const imports = [...css.matchAll(/@import url\('\/css\/([^']+)'\)/g)]
     .map(([, url]) => url);
   assert.ok(imports.length > 0, 'expected local design-system imports');
   for (const url of imports) {

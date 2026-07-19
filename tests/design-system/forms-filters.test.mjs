@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile, readdir } from 'node:fs/promises';
 import test from 'node:test';
+import { parseCssStructure } from '../../scripts/lib/css-structure-parser.mjs';
 
 const readJson = async (file) => JSON.parse(await readFile(
   new URL(`../../docs/design-system/${file}`, import.meta.url), 'utf8',
@@ -25,6 +26,12 @@ const scanSpacingTokens = ({ stylesheets, tokens }) => {
   ));
 };
 
+const normalizeSelector = (selector) => String(selector).replace(/\s+/g, ' ').trim();
+const cssRule = (css, selector) => parseCssStructure(css)
+  .find((rule) => normalizeSelector(rule.selector) === selector);
+const declaration = (rule, property) => rule?.declarations
+  .find((candidate) => candidate.property === property)?.value;
+
 test('always-visible filters are approved and canonical', async () => {
   const homologation = await readJson('homologation.json');
   const approvals = await readJson('family-approvals.json');
@@ -48,9 +55,15 @@ test('always-visible filters are approved and canonical', async () => {
 test('form controls reserve internal padding and include a Select2 multi-select reference', async () => {
   const css = await readFile('public/css/design-system/components/filter-form.css', 'utf8');
   const view = await readFile('views/design-system/families/forms-filters.php', 'utf8');
-  assert.match(css, /\.aia-input,\s*\.aia-select,\s*\.aia-textarea\s*\{[\s\S]*box-sizing:\s*border-box[\s\S]*padding-block:\s*var\(--ds-space-3\)[\s\S]*padding-inline:\s*var\(--ds-space-4\)/);
-  assert.match(css, /\.aia-input\[type='file'\]\s*\{[\s\S]*display:\s*flex[\s\S]*align-items:\s*center/);
-  assert.match(css, /\.aia-input\[type='file'\]::file-selector-button\s*\{[\s\S]*padding:/);
+  const controls = cssRule(css, '.aia-input, .aia-select, .aia-textarea');
+  const fileInput = cssRule(css, '.aia-input[type="file"]');
+  const fileButton = cssRule(css, '.aia-input[type="file"]::file-selector-button');
+  assert.equal(declaration(controls, 'box-sizing'), 'border-box');
+  assert.equal(declaration(controls, 'padding-block'), 'var(--ds-space-3)');
+  assert.equal(declaration(controls, 'padding-inline'), 'var(--ds-space-4)');
+  assert.equal(declaration(fileInput, 'display'), 'flex');
+  assert.equal(declaration(fileInput, 'align-items'), 'center');
+  assert.ok(declaration(fileButton, 'padding'));
   assert.match(css, /@layer components\s*\{[\s\S]*\.aia-input,\s*\.aia-select,\s*\.aia-textarea\s*\{[\s\S]*padding-block:\s*var\(--ds-space-3\)[\s\S]*padding-inline:\s*var\(--ds-space-4\)/);
   assert.match(view, /select2-container--multiple/);
   assert.match(view, /data-select2-multi/);
@@ -70,10 +83,12 @@ test('public styles reference only canonical declared spacing tokens', async () 
     })));
   const css = stylesheets.find(({ file }) => file === 'design-system/components/filter-form.css')?.css ?? '';
   const undefinedReferences = scanSpacingTokens({ stylesheets, tokens });
+  const fileField = cssRule(css, '.aia-field:has(> .aia-input[type="file"])');
+  const switchInput = cssRule(css, '.aia-switch input');
 
   assert.deepEqual(undefinedReferences, []);
-  assert.match(css, /\.aia-field:has\(> \.aia-input\[type='file'\]\)\s*{[^}]*align-content:\s*center/s);
-  assert.match(css, /\.aia-switch input\s*{[^}]*height:\s*var\(--ds-space-6\)/s);
+  assert.equal(declaration(fileField, 'align-content'), 'center');
+  assert.equal(declaration(switchInput, 'height'), 'var(--ds-space-6)');
 });
 
 test('spacing token scan parses whitespace and ignores commented declarations and references', () => {

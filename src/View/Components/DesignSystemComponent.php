@@ -6,6 +6,12 @@ use InvalidArgumentException;
 
 final class DesignSystemComponent
 {
+    private const ICON_GLYPHS = [
+        'filter' => '<path d="M3 5h18l-7 8v5l-4 2v-7L3 5Z"/>',
+        'help' => '<circle cx="12" cy="12" r="9"/><path d="M9.8 9a2.5 2.5 0 1 1 4.7 1.2c0 1.8-2.5 2.1-2.5 3.8"/><path d="M12 17.5h.01"/>',
+        'warning' => '<path d="M12 3 2.5 20.5h19L12 3Z"/><path d="M12 9v5"/><path d="M12 17.5h.01"/>',
+    ];
+
     public static function icon(array $config): string
     {
         $name = self::id($config['name'] ?? '', 'icon name');
@@ -14,8 +20,10 @@ final class DesignSystemComponent
             $label = self::text($config['label'] ?? '', 'icon label');
             $attributes = 'role="img" aria-label="' . self::escape($label) . '"';
         }
+        $glyph = self::ICON_GLYPHS[$name] ?? '<circle cx="12" cy="12" r="7"/>';
         return '<span class="aia-icon aia-icon--' . self::escape($name)
-            . '" data-aia-component="icon" ' . $attributes . '></span>';
+            . '" data-aia-component="icon" ' . $attributes . '><svg class="aia-icon__glyph"'
+            . ' viewBox="0 0 24 24" aria-hidden="true" focusable="false">' . $glyph . '</svg></span>';
     }
 
     public static function search(array $config): string
@@ -42,7 +50,7 @@ final class DesignSystemComponent
         for ($page = 1; $page <= $total; $page++) {
             $currentAttribute = $page === $current ? ' aria-current="page"' : '';
             $items[] = '<a href="#page-' . $page . '" data-page="' . $page . '"'
-                . $currentAttribute . ' aria-label="Página ' . $page . '">' . $page . '</a>';
+                . $currentAttribute . '>Página ' . $page . '</a>';
         }
         return '<nav class="aia-pagination" data-aia-component="pagination" aria-label="'
             . self::escape($label) . '">' . implode('', $items) . '</nav>';
@@ -291,7 +299,7 @@ final class DesignSystemComponent
         array $items
     ): string {
         $titleId = $id . '-title';
-        return '<header class="aia-page-header" data-aia-component="page-header"'
+        return '<header class="aia-page-header" data-aia-component="page-header" role="region"'
             . ' aria-labelledby="' . self::escape($titleId) . '">'
             . self::breadcrumbMarkup($items)
             . "<h{$level} id=\"" . self::escape($titleId) . '">' . self::escape($title) . "</h{$level}>"

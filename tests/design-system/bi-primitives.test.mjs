@@ -44,7 +44,7 @@ test('curve guidance has padding and a subtle grid', async () => {
   assert.ok((specimen.match(/<line class="aia-bi__grid-line"/g) || []).length >= 8);
 });
 
-test('progress uses a donut and radar is a governed variant', async () => {
+test('progress uses an inspectable donut and radar is a governed variant', async () => {
   const css = await readFile('public/css/design-system/components/bi-figure.css', 'utf8');
   const specimen = await readFile('views/design-system/families/bi-primitives.php', 'utf8');
   const catalog = await readJson('component-catalog.json');
@@ -52,7 +52,9 @@ test('progress uses a donut and radar is a governed variant', async () => {
   const chart = catalog.components.find(({ id }) => id === 'bi-chart');
   assert.match(css, /\.aia-bi-gauge__meter\s*{[^}]*aspect-ratio:\s*1\s*\/\s*1/s);
   assert.match(css, /\.aia-bi-gauge__meter\s*{[^}]*border-radius:\s*50%/s);
-  assert.match(css, /\.aia-bi-gauge__meter::before\s*{[^}]*radial-gradient/s);
+  assert.match(css, /\.aia-bi-gauge__meter\s*{[^}]*background:\s*conic-gradient/s);
+  assert.match(css, /\.aia-bi-gauge__meter span\s*{[^}]*background:\s*var\(--ds-active-bg-page\)/s);
+  assert.doesNotMatch(css, /\.aia-bi-gauge__meter::before/);
   assert.match(specimen, /class="aia-bi-radar"[^>]*role="img"/);
   assert.equal((specimen.match(/class="aia-bi-radar__label"/g) || []).length, 5);
   assert.ok(chart.variants.includes('donut'));

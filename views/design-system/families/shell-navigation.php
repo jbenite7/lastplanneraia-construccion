@@ -14,7 +14,7 @@
             ['id' => 'pdc', 'label' => 'PDC', 'href' => '/pdc'],
         ],
     ]) ?>
-    <div class="ds-shell-utilities" aria-label="Utilidades globales">
+    <div class="ds-shell-utilities" role="group" aria-label="Utilidades globales">
         <?= \App\View\Components\DesignSystemComponent::status(['label' => 'Semana 7', 'tone' => 'info']) ?>
         <?= \App\View\Components\DesignSystemComponent::status(['label' => '10 avisos', 'tone' => 'warning']) ?>
         <?= \App\View\Components\DesignSystemComponent::menu([

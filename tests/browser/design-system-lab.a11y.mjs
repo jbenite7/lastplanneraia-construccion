@@ -18,6 +18,8 @@ test('every approved family has no blocking axe findings in the required matrix'
   const scenarios = helper.approvedAccessibilityScenarios(homologation)
     .filter((scenario) => scenario.theme === 'dark' && scenario.size.width >= 1180);
   expect(scenarios).toHaveLength(20);
+  const matrixBlocking = [];
+  const contrastSamples = [];
 
   for (const scenario of scenarios) {
     await page.evaluate((theme) => localStorage.setItem('aia-theme', theme), scenario.theme);
@@ -32,12 +34,13 @@ test('every approved family has no blocking axe findings in the required matrix'
       ),
     });
     expect(report.designSystemVersion).toBe(homologation.designSystemVersion);
-    const contrastSample = report.blocking.length === 0 ? null : await page.locator(
-      report.blocking[0].selector,
-    ).first().evaluate((element) => ({
+    if (report.blocking.length === 0) continue;
+    const contrastSample = await page.locator(report.blocking[0].selector).first().evaluate((element) => ({
       selector: element.outerHTML.slice(0, 120),
       color: getComputedStyle(element).color,
       background: getComputedStyle(element).backgroundColor,
+      actionText: getComputedStyle(element).getPropertyValue('--ds-active-action-text').trim(),
+      actionBackground: getComputedStyle(element).getPropertyValue('--ds-active-action-primary').trim(),
       ancestors: [element.parentElement, element.parentElement?.parentElement,
         element.parentElement?.parentElement?.parentElement, element.closest('figure')]
         .filter(Boolean).map((ancestor) => ({
@@ -46,6 +49,8 @@ test('every approved family has no blocking axe findings in the required matrix'
           background: getComputedStyle(ancestor).backgroundColor,
         })),
     }));
-    expect(report.blocking, `${report.surface} ${JSON.stringify(contrastSample)}`).toEqual([]);
+    matrixBlocking.push(...report.blocking);
+    contrastSamples.push({ surface: report.surface, sample: contrastSample });
   }
+  expect(matrixBlocking, JSON.stringify(contrastSamples)).toEqual([]);
 });

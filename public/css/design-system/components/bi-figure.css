@@ -111,21 +111,18 @@
     border-radius: 50%;
     overflow: visible;
     place-items: center;
+    background: conic-gradient(var(--ds-active-action-primary) 0 64%, var(--ds-active-border) 64% 100%);
     color: var(--ds-active-text-primary);
   }
 
-  .aia-bi-gauge__meter::before {
-    position: absolute;
-    inset: var(--ds-space-0);
-    border-radius: 50%;
-    background: conic-gradient(var(--ds-active-action-primary) 0 64%, var(--ds-active-border) 64% 100%);
-    -webkit-mask: radial-gradient(circle, transparent 0 58%, var(--ds-active-text-primary) 59%);
-    mask: radial-gradient(circle, transparent 0 58%, var(--ds-active-text-primary) 59%);
-    content: "";
-  }
-
   .aia-bi-gauge__meter span {
+    display: grid;
     position: relative;
+    width: 58%;
+    border-radius: 50%;
+    aspect-ratio: 1;
+    place-items: center;
+    background: var(--ds-active-bg-page);
     font-family: var(--ds-font-display);
     font-size: var(--ds-type-size-2xl);
     font-weight: var(--ds-type-weight-bold);
@@ -313,7 +310,7 @@
     margin: var(--ds-space-0);
   }
 
-  .aia-bi-gauge__meter--caution::before {
+  .aia-bi-gauge__meter--caution {
     background: conic-gradient(
       var(--ds-active-action-primary) 0 78%,
       var(--ds-color-state-warning-text) 78% 85%,

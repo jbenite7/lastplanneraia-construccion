@@ -30,23 +30,30 @@ function selectorFor(node) {
   return target.map((part) => String(part)).join(' > ');
 }
 
-function violationEntries(results, surface) {
-  return (results?.violations || []).flatMap((violation) => (
-    (violation.nodes || []).map((node) => ({
-      rule: violation.id,
-      impact: violation.impact || 'unknown',
-      surface,
-      selector: selectorFor(node),
-    }))
+function resultEntries(results, surface) {
+  return [
+    ['violations', 'violation'],
+    ['incomplete', 'incomplete'],
+  ].flatMap(([collection, kind]) => (
+    (results?.[collection] || []).flatMap((result) => (
+      (result.nodes || []).map((node) => ({
+        rule: result.id,
+        impact: result.impact || 'unknown',
+        kind,
+        surface,
+        selector: selectorFor(node),
+        message: node.failureSummary || '',
+      }))
+    ))
   ));
 }
 
 function fingerprint(entry) {
-  return [entry.rule, entry.impact, entry.surface, entry.selector].join('|');
+  return [entry.rule, entry.impact, entry.kind, entry.surface, entry.selector].join('|');
 }
 
 export function fingerprintViolations(results, surface) {
-  return violationEntries(results, surface).map(fingerprint).sort();
+  return resultEntries(results, surface).map(fingerprint).sort();
 }
 
 export function validateAccessibilityExceptions(exceptions, now = new Date().toISOString().slice(0, 10)) {
@@ -56,12 +63,12 @@ export function validateAccessibilityExceptions(exceptions, now = new Date().toI
       throw new Error('accessibility exception requires an exact fingerprint');
     }
     for (const field of [
-      'surface', 'rule', 'impact', 'selector', 'owner', 'reason', 'milestone', 'expiresAt',
+      'surface', 'rule', 'impact', 'kind', 'selector', 'owner', 'reason', 'milestone', 'expiresAt',
     ]) {
       if (!exception[field]) throw new Error(`accessibility exception requires ${field}`);
     }
     const declaredFingerprint = [
-      exception.rule, exception.impact, exception.surface, exception.selector,
+      exception.rule, exception.impact, exception.kind, exception.surface, exception.selector,
     ].join('|');
     if (exception.fingerprint !== declaredFingerprint) {
       throw new Error('accessibility exception fingerprint must match declared fields');
@@ -77,7 +84,7 @@ export function evaluateAccessibility(results, { surface, baseline = [], excepti
   const approved = new Set(exceptions.map((exception) => exception.fingerprint));
   const known = new Set(baseline);
   const outcome = { blocking: [], reported: [], excepted: [], existing: [], newFindings: [] };
-  for (const entry of violationEntries(results, surface)) {
+  for (const entry of resultEntries(results, surface)) {
     const finding = { ...entry, fingerprint: fingerprint(entry) };
     (known.has(finding.fingerprint) ? outcome.existing : outcome.newFindings).push(finding);
     if (approved.has(finding.fingerprint)) {

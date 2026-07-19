@@ -1,11 +1,13 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
+import { parseCssStructure } from '../../scripts/lib/css-structure-parser.mjs';
 
 const adapterUrl = new URL(
   '../../public/css/design-system/adapters/semi-auto-review.css',
   import.meta.url,
 );
+const moduleUrl = new URL('../../public/js/modules/semi_auto_review.js', import.meta.url);
 
 test('semi-auto adapter covers the rendered panel anatomy', async () => {
   // Given: the governed adapter extracted from the historical inline styles.
@@ -54,15 +56,40 @@ test('semi-auto adapter preserves interactive state presentation', async () => {
   }
 });
 
+test('semi-auto progress animates with a compositor transform instead of layout width', async () => {
+  const [css, script] = await Promise.all([
+    readFile(adapterUrl, 'utf8'),
+    readFile(moduleUrl, 'utf8'),
+  ]);
+  const progressRule = parseCssStructure(css).find(({ selector }) => (
+    selector === '.sar-analysis-bar span'
+  ));
+  const declarations = new Map(progressRule?.declarations.map(({ property, value }) => (
+    [property, value]
+  )));
+
+  assert.equal(declarations.get('width'), '100%');
+  assert.match(declarations.get('transform') || '', /scaleX\(var\(--sar-analysis-progress,\s*0\)\)/);
+  assert.match(declarations.get('transition') || '', /^transform\b/);
+  assert.ok(declarations.has('transform-origin'));
+  assert.doesNotMatch(script, /sar-analysis-bar"><span style="width:/);
+  assert.match(script, /data-sar-analysis-progress/);
+  assert.match(script, /style\.setProperty\('--sar-analysis-progress'/);
+});
+
 test('semi-auto interactive controls keep the canonical 44px target and focus ring', async () => {
   // Given: the adapter's shared interactive-control rule.
   const css = await readFile(adapterUrl, 'utf8');
+  const interactiveRule = parseCssStructure(css).find(({ selector, declarations }) => (
+    selector.includes('.semi-auto-review')
+      && selector.includes('.sar-assistant-actions button')
+      && declarations.some(({ property, value }) => (
+        property === 'min-height' && value === 'var(--ds-target-min)'
+      ))
+  ));
 
   // When/Then: target size and focus treatment use the shared design tokens.
-  assert.match(
-    css,
-    /\.semi-auto-review :is\([^}]*\.sar-assistant-actions button[^}]*\)\s*\{[^}]*min-height:\s*var\(--ds-target-min\)/s,
-  );
+  assert.ok(interactiveRule, 'missing shared 44px interactive-control rule');
   assert.match(
     css,
     /:where\([^}]*\.sar-row-check:focus-visible[^}]*\)\s*\{[^}]*box-shadow:\s*var\(--ds-shadow-focus\)/s,

@@ -8,7 +8,9 @@ Este directorio define la parte versionada del design system. Stitch y `docs/bra
 - Usar Montserrat para titulos, metricas y jerarquia de alto impacto.
 - Usar Inter para cuerpo, navegacion, formularios, tablas, grillas y ayudas.
 - Mantener densidad operativa: la UI debe ayudar a leer, decidir y actuar.
-- Aplicar mobile-first, desktop denso, modo linen y modo dark reales.
+- En este repositorio, implementar y validar UI solo en desktop dark de al menos
+  1180 px; `1180x820` es el viewport canónico. Mobile, tablet y `linen` quedan
+  fuera del alcance visual vigente.
 - Diseñar según los criterios accesibles definidos para el alcance, con foco visible, targets tactiles de 44px y `prefers-reduced-motion`.
 - Usar glass solo para jerarquia: shell, nav, modales, paneles y cards. Tablas y grillas priorizan legibilidad.
 - No crear componentes visuales ad hoc en modulos migrados. Registrar excepciones en `exceptions.json`.
@@ -32,8 +34,10 @@ Este directorio define la parte versionada del design system. Stitch y `docs/bra
 - `audit-baseline.json` y `exceptions.json`: deuda congelada y excepciones exactas.
 - `phpstan-baseline.json`: cinco fingerprints legacy tolerados; cualquier hallazgo nuevo bloquea CI.
 - `runtime-budget.schema.json`, `runtime-baseline-0.3.3.json`, `runtime-measurements/0.3.3-retrospective.json` y `runtime-measurements/0.3.3-recovery-manifest.json`: contrato fail-closed, presupuesto aprobado y retrospectiva histórica portable pero incompleta. La retrospectiva usa `sourceRef:null` y `rawSamplesPreserved:false`; el manifiesto comprometido verifica sus resúmenes recuperados sin depender de un objeto o checkpoint Git oculto. El gate actual permanece pendiente hasta obtener tres muestras frescas desde un `HEAD` limpio, con recibos verificables, y compararlas contra los límites aprobados.
-- `tests/browser/__screenshots__/design-system-lab.visual.mjs/`: 60 goldens por familia, tema y viewport.
-- `tests/browser/__screenshots__/programa-general.visual.mjs/`: 6 goldens sanitizados del piloto.
+- `tests/browser/__screenshots__/design-system-lab.visual.mjs/`: archivo de
+  snapshots del laboratorio. El gate vigente consume solo 18 goldens desktop
+  dark (nueve familias con captura en dos viewports); `states-feedback` conserva
+  dos contratos visuales sin golden.
 - `docker-compose.ci.yml`: runtime aislado con base sanitizada; nunca reutiliza datos productivos.
 - `contracts/`: reglas ejecutables de gobierno, migración y cierre.
 - `manual-accessibility-review.md`: contrato bloqueante de revisión automatizada básica
@@ -87,10 +91,11 @@ La evidencia no bloqueante se ejecuta por separado:
 npm run test:design-system:evidence
 ```
 
-El gate runtime recorre diez familias y el piloto Programa General en dark y
-linen a 390x844, 1180x820 y 1440x900. Las animaciones se desactivan y Chromium
-compara los 66 goldens. Actualizar snapshots exige una decisión visual aprobada;
-CI nunca usa `--update-snapshots`.
+El gate visual autorizado recorre las diez familias del laboratorio únicamente
+en dark a `1180x820` y `1440x900`. Las animaciones se desactivan y Chromium
+compara 18 goldens; los dos escenarios de `states-feedback` validan geometría,
+contraste y overflow sin snapshot. Actualizar snapshots exige una decisión visual
+aprobada; CI nunca usa `--update-snapshots`.
 
 CI construye una imagen aislada con dependencias de análisis, mientras la imagen
 normal conserva `--no-dev`. Su base nace del schema global sin datos y añade solo
@@ -101,9 +106,10 @@ al cerrar elimina el volumen.
 no bloqueante. El comando runtime no los invoca; CI tolera su fallo y conserva
 los artefactos correspondientes.
 
-Accessibility Insights se registra como tres revisiones automatizadas básicas separadas:
-laboratorio, piloto y estados revelados. Cada una requiere cero reglas fallidas y
-cero instancias fallidas; el resultado no autoriza una afirmación más amplia.
+La automatización Axe agrega las 20 combinaciones permitidas del laboratorio.
+Toda violación seria bloquea; los resultados `incomplete` solo pueden exceptuarse
+mediante fingerprint exacto que incluye `kind`, regla, impacto, superficie y
+selector. Una excepción de `incomplete` nunca silencia una violación posterior.
 
 El gate estatico permite deuda legacy registrada, pero debe fallar si una ruta marcada como migrada supera su baseline o si se introduce deuda visual nueva sin excepcion.
 Login, Projects, Programa General, PDC, Contratos, Listado de Actividades y el modulo de tema tienen presupuesto cero por ruta para hex sueltos, inline styles, bloques `<style>`, Roboto y radios hardcodeados.
@@ -112,8 +118,7 @@ Cobertura automática del Sprint 00:
 
 - Assets canonicos: tokens, CSS del sistema y API de tema.
 - Shell autenticado.
-- Laboratorio protegido: diez familias, dos temas y tres viewports.
-- Programa General: único piloto, con componentes canónicos, axe y goldens.
+- Laboratorio protegido: diez familias, dark y dos viewports desktop permitidos.
 - Los demás módulos permanecen fuera de la migración y solo conservan sus
   contratos preexistentes hasta un sprint posterior.
 

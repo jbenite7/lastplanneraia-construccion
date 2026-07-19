@@ -72,7 +72,7 @@
   }
 
   :where(.aia-pagination a[aria-current="page"]) {
-    color: var(--ds-color-state-success-text);
+    color: var(--ds-active-action-text);
   }
 
   :where(.aia-glass-popup .swal2-title) {

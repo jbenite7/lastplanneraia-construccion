@@ -362,6 +362,25 @@ test('permite una excepcion exacta de regla archivo y selector', () => {
   }
 });
 
+test('normaliza el formato de un selector antes de aplicar su excepcion exacta', () => {
+  const root = mkdtempSync(join(tmpdir(), 'design-system-audit-'));
+  try {
+    writeFixture(root, 'docs/design-system/audit-baseline.json', '{"totals":{}}\n');
+    writeFixture(root, 'docs/design-system/exceptions.json', JSON.stringify({ exceptions: [{
+      module: 'fixture', rule: 'unauthorized-important', file: 'public/css/example.css',
+      selector: ':where(.x, .y)', owner: 'AIA', reason: 'vendor bridge', expiresAtVersion: '1.0.0',
+    }] }));
+    writeFixture(root, 'public/css/example.css', (
+      '@layer module { :where(\n  .x,\n  .y\n) { color: red !important; } }'
+    ));
+
+    const result = runAudit(root);
+    assert.equal(result.status, 0, result.stderr);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test('emite completo un reporte grande aun cuando el gate falla', () => {
   const root = mkdtempSync(join(tmpdir(), 'design-system-audit-'));
   try {

@@ -10,7 +10,7 @@
             <span class="aia-chip aia-chip--success" data-handsontable-autosave>Autoguardado activo</span>
             <span>4 actividades visibles</span>
         </div>
-        <div class="ds-vendor-toolbar" aria-label="Acciones de la grilla">
+        <div class="ds-vendor-toolbar" role="group" aria-label="Acciones de la grilla">
             <span>Rango activo: B2:D3 · último guardado hace 2 min</span>
             <div class="ds-fixture-actions"><button class="aia-btn aia-btn--secondary" type="button" data-vendor-action="handsontable-undo">Deshacer</button><button class="aia-btn" type="button" data-vendor-action="handsontable-add">Añadir actividad</button></div>
         </div>
@@ -25,7 +25,7 @@
                 </tbody>
             </table>
         </div>
-        <footer class="ds-vendor-grid-footer"><span>3 de 4 actividades · último cambio hace 2 min</span><button type="button" data-vendor-action="handsontable-add">Insertar fila</button></footer>
+        <footer class="ds-vendor-grid-footer"><span>3 de 4 actividades · último cambio hace 2 min</span><button class="aia-btn aia-btn--secondary" type="button" data-vendor-action="handsontable-add">Insertar fila</button></footer>
     </article>
 
     <article class="ds-vendor-fixture ds-vendor-fixture--select" data-vendor-fixture="select2" data-adapter="canonical">
@@ -36,7 +36,7 @@
         </header>
         <label class="aia-field" for="lab-select2-search"><span>Responsable AIA</span><span class="aia-helper">Requerido · muestra el cargo y la disponibilidad antes de confirmar.</span></label>
         <span class="select2 select2-container select2-container--default">
-            <span class="selection"><button type="button" class="select2-selection select2-selection--single" role="combobox" aria-expanded="false" aria-controls="lab-select2-options" aria-label="Responsable AIA" data-select2-preview-toggle><span class="select2-selection__rendered" data-select2-preview-value>Ana Torres · Residente</span><span aria-hidden="true">⌄</span></button></span>
+            <span class="selection"><button type="button" class="select2-selection select2-selection--single" role="combobox" aria-expanded="false" aria-controls="lab-select2-options" aria-label="Responsable AIA" data-select2-preview-toggle><span class="select2-selection__rendered" data-select2-preview-value>Ana Torres · Residente</span></button></span>
             <span class="select2-dropdown" data-select2-preview-dropdown hidden>
                 <label class="aia-visually-hidden" for="lab-select2-search">Buscar responsable</label><input class="aia-input" id="lab-select2-search" type="search" placeholder="Buscar por nombre o cargo" data-select2-search>
                 <span class="select2-results"><span class="select2-results__meta" data-select2-result-count>3 responsables disponibles</span><span class="select2-results__options" id="lab-select2-options" role="listbox" aria-label="Responsables de prueba">

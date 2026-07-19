@@ -32,16 +32,16 @@
     <label class="aia-field"><span>Nombre de actividad</span><input class="aia-input" value="Cimentación"></label>
     <label class="aia-field"><span>Observaciones</span><textarea class="aia-textarea">Revisión semanal</textarea></label>
     <label class="aia-field"><span>Responsable</span><select class="aia-select"><option>Ana Torres</option><option>Carlos Ruiz</option></select></label>
-    <label class="aia-field"><span>Responsables de revisión</span>
+    <div class="aia-field"><span id="reviewers-combobox-label">Responsables de revisión</span>
         <span class="select2 select2-container select2-container--default select2-container--multiple aia-select2-reference" data-select2-multi>
-            <span class="selection"><span class="select2-selection select2-selection--multiple" role="combobox" aria-label="Responsables de revisión" aria-expanded="false" aria-haspopup="listbox">
+            <span class="selection"><span class="select2-selection select2-selection--multiple" role="combobox" aria-labelledby="reviewers-combobox-label" aria-expanded="false" aria-haspopup="listbox">
                 <span class="select2-selection__rendered">
                     <span class="select2-selection__choice">Ana Torres <button type="button" class="select2-selection__choice__remove" aria-label="Quitar Ana Torres">×</button></span>
                     <span class="select2-selection__choice">Carlos Ruiz <button type="button" class="select2-selection__choice__remove" aria-label="Quitar Carlos Ruiz">×</button></span>
                 </span>
             </span></span>
         </span>
-    </label>
+    </div>
     <label class="aia-field"><span>Fecha de inicio</span><input class="aia-input" type="date" value="2026-07-13"></label>
     <label class="aia-choice"><input type="checkbox" checked><span>Actividad crítica</span></label>
     <label class="aia-choice"><input type="radio" name="priority" checked><span>Prioridad normal</span></label>

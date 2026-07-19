@@ -37,8 +37,8 @@ test('axe fingerprints are stable and surface-specific', async () => {
     { target: ['.summary', 'button'] }, { target: ['#primary'] },
   ] }] };
   assert.deepEqual(fingerprintViolations(results, 'lab/page-structure'), [
-    'color-contrast|serious|lab/page-structure|#primary',
-    'color-contrast|serious|lab/page-structure|.summary > button',
+    'color-contrast|serious|violation|lab/page-structure|#primary',
+    'color-contrast|serious|violation|lab/page-structure|.summary > button',
   ]);
 });
 
@@ -56,6 +56,28 @@ test('critical and serious findings block while lower impacts are reported', asy
   assert.deepEqual(outcome.reported.map(({ impact }) => impact), ['moderate']);
 });
 
+test('serious axe findings that require review still block the gate', async () => {
+  const { evaluateAccessibility, fingerprintViolations } = await import(helperPath);
+  const results = {
+    violations: [],
+    incomplete: [{
+      id: 'color-contrast',
+      impact: 'serious',
+      nodes: [{ target: ['.aia-card', '.aia-copy'] }],
+    }],
+  };
+  const outcome = evaluateAccessibility(results, {
+    surface: 'lab/data-display', exceptions: [], now: '2026-07-12',
+  });
+
+  assert.deepEqual(outcome.blocking.map(({ rule, kind }) => ({ rule, kind })), [{
+    rule: 'color-contrast', kind: 'incomplete',
+  }]);
+  assert.deepEqual(fingerprintViolations(results, 'lab/data-display'), [
+    'color-contrast|serious|incomplete|lab/data-display|.aia-card > .aia-copy',
+  ]);
+});
+
 test('the baseline distinguishes existing fingerprints from new findings', async () => {
   const { evaluateAccessibility } = await import(helperPath);
   const results = { violations: [
@@ -64,7 +86,7 @@ test('the baseline distinguishes existing fingerprints from new findings', async
   ] };
   const outcome = evaluateAccessibility(results, {
     surface: 'lab/actions', exceptions: [], now: '2026-07-12',
-    baseline: ['landmark|moderate|lab/actions|main'],
+    baseline: ['landmark|moderate|violation|lab/actions|main'],
   });
   assert.deepEqual(outcome.existing.map(({ rule }) => rule), ['landmark']);
   assert.deepEqual(outcome.newFindings.map(({ rule }) => rule), ['button-name']);
@@ -76,8 +98,9 @@ test('only an exact active exception can suppress a blocking fingerprint', async
     { id: 'button-name', impact: 'critical', nodes: [{ target: ['#save'] }] },
   ] };
   const exception = {
-    fingerprint: 'button-name|critical|pilot/programa-general|#save',
-    surface: 'pilot/programa-general', rule: 'button-name', impact: 'critical', selector: '#save',
+    fingerprint: 'button-name|critical|violation|pilot/programa-general|#save',
+    surface: 'pilot/programa-general', rule: 'button-name', impact: 'critical',
+    kind: 'violation', selector: '#save',
     owner: 'Design System', reason: 'Remediación trazada', milestone: '1.0.0',
     expiresAt: '2026-08-01',
   };
@@ -88,11 +111,29 @@ test('only an exact active exception can suppress a blocking fingerprint', async
   assert.equal(outcome.excepted.length, 1);
 });
 
+test('an incomplete review exception cannot suppress a later violation', async () => {
+  const { evaluateAccessibility } = await import(helperPath);
+  const results = { violations: [
+    { id: 'color-contrast', impact: 'serious', nodes: [{ target: ['svg text'] }] },
+  ] };
+  const exception = {
+    fingerprint: 'color-contrast|serious|incomplete|lab/bi-primitives|svg text',
+    surface: 'lab/bi-primitives', rule: 'color-contrast', impact: 'serious',
+    kind: 'incomplete', selector: 'svg text', owner: 'AIA', reason: 'Revisión manual',
+    milestone: '1.0.0', expiresAt: '2026-08-01',
+  };
+  const outcome = evaluateAccessibility(results, {
+    surface: 'lab/bi-primitives', exceptions: [exception], now: '2026-07-12',
+  });
+  assert.equal(outcome.blocking.length, 1);
+  assert.equal(outcome.excepted.length, 0);
+});
+
 test('expired and wildcard accessibility exceptions are rejected', async () => {
   const { validateAccessibilityExceptions } = await import(helperPath);
   const valid = {
-    fingerprint: 'button-name|critical|lab/actions|#save', owner: 'AIA',
-    surface: 'lab/actions', rule: 'button-name', impact: 'critical', selector: '#save',
+    fingerprint: 'button-name|critical|violation|lab/actions|#save', owner: 'AIA',
+    surface: 'lab/actions', rule: 'button-name', impact: 'critical', kind: 'violation', selector: '#save',
     reason: 'Pendiente', milestone: '1.0.0', expiresAt: '2026-07-01',
   };
   assert.throws(
@@ -122,7 +163,25 @@ test('axe baseline and exceptions are separate versioned contracts', async () =>
   assert.equal(baseline.designSystemVersion, '1.0.0');
   assert.deepEqual(baseline.fingerprints, []);
   assert.equal(exceptions.designSystemVersion, '1.0.0');
-  assert.deepEqual(exceptions.exceptions, []);
+  const reviewedSelectors = [
+    'text[x="1"]', 'text[x="109"]', 'text[x="116"]', 'text[x="118"]',
+    'text[x="164"]', 'text[x="36"]', 'text[x="39"]', 'text[x="76"]',
+    'text[x="88"]', 'text[y="31"]', 'text[y="42"]', 'text[y="53"]',
+    'text[y="7"]', 'text[y="9"]',
+  ];
+  assert.equal(exceptions.exceptions.length, reviewedSelectors.length * 2);
+  for (const viewport of ['1180x820', '1440x900']) {
+    const surface = `lab/bi-primitives/dark/${viewport}`;
+    const scoped = exceptions.exceptions.filter((exception) => exception.surface === surface);
+    assert.deepEqual(scoped.map(({ selector }) => selector).sort(), reviewedSelectors);
+    assert.equal(scoped.every((exception) => (
+      exception.kind === 'incomplete'
+      && exception.rule === 'color-contrast'
+      && exception.impact === 'serious'
+      && exception.fingerprint === [exception.rule, exception.impact, exception.kind,
+        exception.surface, exception.selector].join('|')
+    )), true);
+  }
 });
 
 test('the shared helper loads the versioned baseline and exceptions', async () => {
@@ -131,7 +190,7 @@ test('the shared helper loads the versioned baseline and exceptions', async () =
   const governance = await helper.loadAccessibilityGovernance();
   assert.equal(governance.designSystemVersion, '1.0.0');
   assert.deepEqual(governance.baseline, []);
-  assert.deepEqual(governance.exceptions, []);
+  assert.equal(governance.exceptions.length, 28);
 });
 
 test('axe schemas prohibit undeclared fields and broad exclusions', async () => {

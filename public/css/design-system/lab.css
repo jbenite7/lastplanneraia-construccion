@@ -2,6 +2,7 @@
   .ds-lab {
     min-width: 20rem;
     overflow-y: auto;
+    background: var(--ds-active-bg-canvas);
   }
 
   .ds-lab__header {
@@ -211,6 +212,7 @@
     display: grid;
     gap: var(--ds-space-4);
     padding: var(--ds-space-4);
+    background: var(--ds-active-bg-page);
   }
 
   .ds-ui-index {
@@ -903,9 +905,19 @@
 
   .ds-vendor-status {
     margin: 0;
-    color: var(--ds-active-action-primary);
+    color: var(--ds-active-text-secondary);
     font-size: var(--ds-type-size-sm);
     font-weight: var(--ds-type-weight-semibold);
+  }
+
+  .ds-vendor-fixture--select .select2-selection--single::after {
+    width: var(--ds-space-2);
+    height: var(--ds-space-2);
+    margin-inline-end: var(--ds-space-3);
+    border-inline-end: var(--ds-border-width) solid currentColor;
+    border-block-end: var(--ds-border-width) solid currentColor;
+    content: "";
+    transform: rotate(45deg);
   }
 
   .ds-vendor-fixture .handsontable {
@@ -971,7 +983,7 @@
     padding: 0;
     border: 0;
     background: transparent;
-    color: var(--ds-active-action-primary);
+    color: var(--ds-active-text-primary);
     font: inherit;
     font-weight: var(--ds-type-weight-semibold);
   }
@@ -1386,7 +1398,7 @@
 
   .ds-operational-fixture__status {
     margin: 0;
-    color: var(--ds-active-action-primary);
+    color: var(--ds-active-text-secondary);
     font-size: var(--ds-type-size-sm);
     font-weight: var(--ds-type-weight-semibold);
   }

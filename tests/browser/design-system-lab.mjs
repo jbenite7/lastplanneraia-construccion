@@ -61,6 +61,60 @@ test('family rail normalizes the initial URL and restores the selected family th
   await expect(page.locator('[data-lab-family-link][data-family-target="foundations"]')).toHaveAttribute('aria-current', 'page');
 });
 
+test('laboratory first paint stays within the desktop performance budget', async ({ page }) => {
+  await page.setViewportSize(VIEWPORTS[0]);
+  await page.addInitScript(() => {
+    window.__labPerformance = {
+      cumulativeLayoutShift: 0,
+      longTasks: [],
+    };
+
+    new PerformanceObserver((list) => {
+      for (const entry of list.getEntries()) {
+        if (!entry.hadRecentInput) {
+          window.__labPerformance.cumulativeLayoutShift += entry.value;
+        }
+      }
+    }).observe({ type: 'layout-shift', buffered: true });
+
+    new PerformanceObserver((list) => {
+      for (const entry of list.getEntries()) {
+        window.__labPerformance.longTasks.push(entry.duration);
+      }
+    }).observe({ type: 'longtask', buffered: true });
+  });
+
+  await login(page, ADMIN);
+  await selectProject(page, DA_PORTO);
+  const response = await page.goto(
+    '/internal/design-system?family=bi-primitives',
+    { waitUntil: 'domcontentloaded' },
+  );
+  await page.evaluate(() => document.fonts.ready);
+  await page.waitForTimeout(500);
+
+  const metrics = await page.evaluate(() => ({
+    cumulativeLayoutShift: window.__labPerformance.cumulativeLayoutShift,
+    longTaskCount: window.__labPerformance.longTasks.length,
+    maxLongTask: Math.max(0, ...window.__labPerformance.longTasks),
+    totalLongTask: window.__labPerformance.longTasks.reduce((total, duration) => total + duration, 0),
+    visibleFamilies: document.querySelectorAll('[data-family]:not([hidden])').length,
+  }));
+
+  test.info().annotations.push({
+    type: 'performance',
+    description: JSON.stringify(metrics),
+  });
+
+  expect(response?.status()).toBe(200);
+  await expect(page.locator('html')).toHaveAttribute('data-aia-theme', 'dark');
+  await expect(page.locator('[data-family="bi-primitives"]')).toBeVisible();
+  expect(metrics.visibleFamilies).toBe(1);
+  expect(metrics.cumulativeLayoutShift).toBeLessThanOrEqual(0.1);
+  expect(metrics.maxLongTask).toBeLessThanOrEqual(250);
+  expect(metrics.totalLongTask).toBeLessThanOrEqual(500);
+});
+
 test('admin laboratory is deterministic across themes and viewports', async ({ page }) => {
   await openAs(page, ADMIN);
   await expect(page.locator('[data-family]')).toHaveCount(10);
