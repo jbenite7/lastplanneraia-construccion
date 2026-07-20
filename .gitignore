@@ -124,6 +124,7 @@ tests/browser/*
 !tests/browser/design-system-foundation-shell.mjs
 !tests/browser/design-system-keyboard.mjs
 !tests/browser/design-system-lab-keyboard.mjs
+!tests/browser/design-system-lab-sidebar.mjs
 !tests/browser/design-system-lab-desktop-layout.mjs
 !tests/browser/design-system-lab.performance.mjs
 !tests/browser/design-system-reflow.mjs

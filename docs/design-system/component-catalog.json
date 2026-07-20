@@ -537,19 +537,30 @@
         "navbar",
         "contextual",
         "drawer",
-        "account"
+        "account",
+        "sidebar",
+        "collapsed"
       ],
       "states": [
         "normal",
         "open",
-        "focus"
+        "focus",
+        "active",
+        "disabled",
+        "loading",
+        "empty",
+        "error"
       ],
       "densities": [
         "compact",
         "touch"
       ],
       "tokens": [
-        "--ds-navbar-height"
+        "--ds-navbar-height",
+        "--ds-sidebar-width-expanded",
+        "--ds-sidebar-width-collapsed",
+        "--ds-sidebar-item-min-height",
+        "--ds-sidebar-section-gap"
       ],
       "responsive": [
         "mobile",

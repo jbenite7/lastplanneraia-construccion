@@ -324,6 +324,11 @@
     --ds-nav-brand-name-white-space: nowrap;
     --ds-nav-brand-text-decoration: none;
     --ds-nav-brand-text-shadow: 0 1px 1px oklch(0% 0 0 / 16%);
+
+    --ds-sidebar-width-expanded: 17.5rem;
+    --ds-sidebar-width-collapsed: 4.5rem;
+    --ds-sidebar-item-min-height: var(--ds-target-min);
+    --ds-sidebar-section-gap: var(--ds-space-6);
   }
 
   @media (min-width: 75rem) {

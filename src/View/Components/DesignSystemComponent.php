@@ -10,6 +10,21 @@ final class DesignSystemComponent
         'filter' => '<path d="M3 5h18l-7 8v5l-4 2v-7L3 5Z"/>',
         'help' => '<circle cx="12" cy="12" r="9"/><path d="M9.8 9a2.5 2.5 0 1 1 4.7 1.2c0 1.8-2.5 2.1-2.5 3.8"/><path d="M12 17.5h.01"/>',
         'warning' => '<path d="M12 3 2.5 20.5h19L12 3Z"/><path d="M12 9v5"/><path d="M12 17.5h.01"/>',
+        'overview' => '<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>',
+        'integration' => '<circle cx="7" cy="12" r="3"/><circle cx="17" cy="7" r="3"/><circle cx="17" cy="17" r="3"/><path d="m9.5 10.5 5-2M9.5 13.5l5 2"/>',
+        'calendar' => '<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/>',
+        'program' => '<path d="M5 5h14v14H5z"/><path d="M8 9h8M8 13h5M8 17h3"/>',
+        'tasks' => '<path d="M5 6h14M5 12h14M5 18h14"/><path d="m7 6 .01 0M7 12 .01 0M7 18 .01 0"/>',
+        'list' => '<path d="M8 6h12M8 12h12M8 18h12"/><path d="M4 6h.01M4 12h.01M4 18h.01"/>',
+        'clipboard' => '<path d="M8 5h8a2 2 0 0 1 2 2v13H6V7a2 2 0 0 1 2-2Z"/><path d="M9 5a3 3 0 0 1 6 0M9 11h6M9 15h4"/>',
+        'contract' => '<path d="M6 3h9l3 3v15H6z"/><path d="M15 3v4h3M9 12h6M9 16h6"/>',
+        'chart' => '<path d="M5 20V10M12 20V4M19 20v-7"/><path d="M3 20h18"/>',
+        'bell' => '<path d="M6 17h12l-1.5-2.5V10a4.5 4.5 0 0 0-9 0v4.5z"/><path d="M10 20h4"/>',
+        'user' => '<circle cx="12" cy="8" r="3"/><path d="M5 20a7 7 0 0 1 14 0"/>',
+        'project' => '<path d="M4 7h6l2 2h8v10H4z"/><path d="M4 7V5h6l2 2"/>',
+        'theme' => '<path d="M20 15.5A8.5 8.5 0 1 1 8.5 4 6.5 6.5 0 0 0 20 15.5Z"/>',
+        'logout' => '<path d="M10 5H5v14h5M14 8l4 4-4 4M8 12h10"/>',
+        'collapse' => '<path d="m14 6-6 6 6 6"/>',
     ];
 
     public static function icon(array $config): string
@@ -242,6 +257,9 @@ final class DesignSystemComponent
     {
         $id = self::id($config['id'] ?? 'aia-navigation', 'navigation id');
         $brand = self::text($config['brand'] ?? '', 'brand');
+        if (($config['presentation'] ?? 'adaptive') === 'sidebar') {
+            return self::sidebarNavigation($id, $brand, $config);
+        }
         $context = self::text($config['context'] ?? '', 'context');
         $active = (string) ($config['active'] ?? '');
         $destinations = $config['destinations'] ?? null;
@@ -269,6 +287,128 @@ final class DesignSystemComponent
         }
 
         return self::navigationMarkup($id, $brand, $context, implode('', $links));
+    }
+
+    private static function sidebarNavigation(string $id, string $brand, array $config): string
+    {
+        $context = $config['context'] ?? null;
+        if (!is_array($context)) {
+            throw new InvalidArgumentException('sidebar context must be an array');
+        }
+        $project = self::text($context['project'] ?? '', 'sidebar project');
+        $week = self::text($context['week'] ?? '', 'sidebar week');
+        $active = (string) ($config['active'] ?? '');
+        $groups = $config['groups'] ?? null;
+        if (!is_array($groups) || $groups === []) {
+            throw new InvalidArgumentException('sidebar groups must be a non-empty array');
+        }
+        $state = $config['initialState'] ?? 'expanded';
+        if (!in_array($state, ['expanded', 'collapsed'], true)) {
+            throw new InvalidArgumentException('invalid sidebar initial state');
+        }
+        $seen = [];
+        $groupsMarkup = [];
+        foreach ($groups as $group) {
+            if (!is_array($group)) throw new InvalidArgumentException('each sidebar group must be an array');
+            $groupId = self::id($group['id'] ?? '', 'sidebar group id');
+            $groupLabel = self::text($group['label'] ?? '', 'sidebar group label');
+            $items = $group['items'] ?? null;
+            if (!is_array($items)) throw new InvalidArgumentException('sidebar group items must be an array');
+            $itemsMarkup = [];
+            foreach ($items as $item) {
+                if (!is_array($item)) throw new InvalidArgumentException('each sidebar item must be an array');
+                $itemId = self::id($item['id'] ?? '', 'sidebar item id');
+                if (isset($seen[$itemId])) throw new InvalidArgumentException("duplicate sidebar item id: {$itemId}");
+                $seen[$itemId] = true;
+                $label = self::text($item['label'] ?? '', 'sidebar item label');
+                $icon = self::id($item['icon'] ?? 'overview', 'sidebar item icon');
+                $itemState = $item['state'] ?? 'default';
+                if (!in_array($itemState, ['default', 'disabled'], true)) {
+                    throw new InvalidArgumentException('invalid sidebar item state');
+                }
+                $href = self::href($item['href'] ?? '#sidebar-item');
+                $current = $itemId === $active ? ' aria-current="page"' : '';
+                $disabled = $itemState === 'disabled'
+                    ? ' aria-disabled="true" tabindex="-1" data-sidebar-disabled'
+                    : '';
+                $badge = '';
+                if (array_key_exists('badge', $item)) {
+                    $badgeValue = self::text((string) $item['badge'], 'sidebar item badge');
+                    $badge = '<span class="aia-sidebar__badge" aria-label="' . self::escape($badgeValue)
+                        . '">' . self::escape($badgeValue) . '</span>';
+                }
+                $itemsMarkup[] = '<li><a class="aia-sidebar__link" href="' . self::escape($href)
+                    . '" data-shell-destination data-destination-id="' . self::escape($itemId) . '"'
+                    . ' data-sidebar-item data-sidebar-icon="' . self::escape($icon) . '"'
+                    . ' title="' . self::escape($label) . '"' . $current . $disabled . '>'
+                    . self::icon(['name' => $icon, 'decorative' => true])
+                    . '<span class="aia-sidebar__label">' . self::escape($label) . '</span>' . $badge . '</a></li>';
+            }
+            $groupsMarkup[] = '<section class="aia-sidebar__group" data-sidebar-group="' . self::escape($groupId) . '"'
+                . ' aria-labelledby="' . self::escape($id . '-' . $groupId . '-label') . '">'
+                . '<h3 id="' . self::escape($id . '-' . $groupId . '-label') . '">' . self::escape($groupLabel) . '</h3>'
+                . ($itemsMarkup === []
+                    ? '<p class="aia-sidebar__empty" data-sidebar-empty>No hay módulos disponibles.</p>'
+                    : '<ul>' . implode('', $itemsMarkup) . '</ul><p class="aia-sidebar__empty" data-sidebar-empty hidden>No hay módulos disponibles.</p>') . '</section>';
+        }
+        if ($active !== '' && !isset($seen[$active])) {
+            throw new InvalidArgumentException("unknown active sidebar destination: {$active}");
+        }
+        $toggleId = $id . '-toggle';
+        $panelId = $id . '-panel';
+        $notifications = $config['utilities']['notifications'] ?? [];
+        $notificationLabel = self::text($notifications['label'] ?? 'Avisos', 'sidebar notification label');
+        $notificationState = $notifications['state'] ?? 'default';
+        if (!in_array($notificationState, ['default', 'loading', 'empty', 'error'], true)) {
+            throw new InvalidArgumentException('invalid sidebar notification state');
+        }
+        $notificationCount = array_key_exists('count', $notifications)
+            ? self::text((string) $notifications['count'], 'sidebar notification count') : '';
+        $account = $config['utilities']['account'] ?? [];
+        $accountLabel = self::text($account['label'] ?? 'Cuenta', 'sidebar account label');
+        $accountItems = $account['items'] ?? [
+            ['label' => 'Cambiar proyecto'], ['label' => 'Cambiar tema'], ['label' => 'Cerrar sesión'],
+        ];
+        $accountMarkup = self::sidebarAccountMarkup($id . '-account', $accountLabel, $accountItems);
+        $notificationText = $notificationState === 'loading' ? 'Cargando avisos…'
+            : ($notificationState === 'empty' ? 'No hay avisos nuevos.'
+                : ($notificationState === 'error' ? 'No se pudieron cargar los avisos.' : $notificationLabel));
+        return '<aside class="aia-navigation aia-navigation--sidebar" data-aia-component="navigation"'
+            . ' data-shell-pattern="sidebar" data-sidebar-state="' . self::escape($state) . '">'
+            . '<header class="aia-sidebar__header"><a class="aia-sidebar__brand aia-brand-lockup" href="/proyectos"'
+            . ' aria-label="' . self::escape($brand) . '"><img src="/public/img/aia-last-planner-mark.svg" alt="" aria-hidden="true">'
+            . '<strong class="aia-sidebar__brand-name">' . self::escape($brand) . '</strong></a>'
+            . '<div class="aia-sidebar__context"><span>' . self::escape($project) . '</span><small>' . self::escape($week) . '</small></div>'
+            . '<button type="button" class="aia-btn aia-btn--secondary aia-sidebar__toggle" id="' . self::escape($toggleId)
+            . '" data-sidebar-toggle aria-controls="' . self::escape($panelId) . '" aria-expanded="'
+            . ($state === 'expanded' ? 'true' : 'false') . '"><span class="aia-sidebar__toggle-icon">'
+            . self::icon(['name' => 'collapse', 'decorative' => true]) . '</span><span class="aia-sidebar__toggle-label">'
+            . ($state === 'expanded' ? 'Colapsar menú' : 'Expandir menú') . '</span></button></header>'
+            . '<nav id="' . self::escape($panelId) . '" class="aia-sidebar__nav" aria-label="Navegación del proyecto">'
+            . implode('', $groupsMarkup) . '</nav>'
+            . '<footer class="aia-sidebar__footer"><button type="button" class="aia-sidebar__utility" data-sidebar-notifications'
+            . ' aria-label="' . self::escape($notificationText) . '" data-sidebar-notification-state="'
+            . self::escape($notificationState) . '">' . self::icon(['name' => 'bell', 'decorative' => true])
+            . '<span class="aia-sidebar__label">' . self::escape($notificationLabel) . '</span>'
+            . ($notificationCount !== '' ? '<span class="aia-sidebar__badge">' . self::escape($notificationCount) . '</span>' : '')
+            . '</button><span class="aia-sidebar__notification-state" data-sidebar-notification-message>'
+            . self::escape($notificationText) . '</span>' . $accountMarkup . '</footer></aside>';
+    }
+
+    private static function sidebarAccountMarkup(string $id, string $label, mixed $items): string
+    {
+        if (!is_array($items) || $items === []) throw new InvalidArgumentException('sidebar account items must be a non-empty array');
+        $buttons = [];
+        foreach ($items as $item) {
+            if (!is_array($item)) throw new InvalidArgumentException('each sidebar account item must be an array');
+            $itemLabel = self::text($item['label'] ?? '', 'sidebar account item label');
+            $buttons[] = '<button type="button" role="menuitem">' . self::escape($itemLabel) . '</button>';
+        }
+        return '<div class="aia-menu aia-sidebar__account" data-aia-component="menu"><button type="button" class="aia-sidebar__utility"'
+            . ' data-aia-menu-trigger aria-controls="' . self::escape($id) . '" aria-expanded="false">'
+            . self::icon(['name' => 'user', 'decorative' => true]) . '<span class="aia-sidebar__label">'
+            . self::escape($label) . '</span></button><div id="' . self::escape($id) . '" data-aia-menu-panel role="menu" hidden>'
+            . implode('', $buttons) . '</div></div>';
     }
 
     private static function link(string $id, string $label, string $href, string $current): string

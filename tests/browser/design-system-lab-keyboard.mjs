@@ -61,6 +61,17 @@ for (const viewport of VIEWPORTS) {
     ]);
     expect(filters.every(({ focusVisible }) => focusVisible)).toBe(true);
 
+    await page.locator('[data-lab-family-link][data-family-target="shell-navigation"]').click();
+    const sidebar = page.locator('[data-family="shell-navigation"] [data-shell-pattern="sidebar"]');
+    const sidebarToggle = sidebar.locator('[data-sidebar-toggle]');
+    await sidebarToggle.focus();
+    await sidebarToggle.press('Enter');
+    await expect(sidebar).toHaveAttribute('data-sidebar-state', 'collapsed');
+    await expect(sidebarToggle).toHaveAttribute('aria-expanded', 'false');
+    await sidebarToggle.press('Escape');
+    await expect(sidebar).toHaveAttribute('data-sidebar-state', 'expanded');
+    await expect(sidebarToggle).toBeFocused();
+
     await page.locator('[data-lab-family-link][data-family-target="overlays"]').click();
     const open = page.locator('[data-family="overlays"] [data-aia-dialog-open]');
     const dialog = page.locator('[data-family="overlays"] [data-aia-dialog]');

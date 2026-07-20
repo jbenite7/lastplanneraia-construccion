@@ -30,5 +30,6 @@ Las variantes permanecen como `candidate` hasta aprobación en el laboratorio.
 | DS-023 | Transición de tema | Los chips semánticos aplican inmediatamente superficie, borde y texto del tema destino; solo pueden animar transform y sombra, nunca color o fondo | candidate |
 | DS-024 | Estado de revisión | El laboratorio muestra el estado del candidato activo que renderiza; una base aprobada no aprueba automáticamente una variante visual distinta | candidate |
 | DS-025 | Acciones por tema | La acción primaria aplica de inmediato superficie, borde y texto del tema destino; solo puede animar transform y sombra, nunca color o fondo | candidate |
+| DS-026 | Sidebar desktop | El sidebar persistente es el candidato canónico para desktop, con Información, Obra y Compras como agrupaciones operativas; el drawer adaptativo permanece como compatibilidad hasta completar aprobación visual | candidate |
 
 Cada aprobación futura registra evidencia, fecha y versión.

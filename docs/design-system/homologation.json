@@ -64,11 +64,17 @@
         "1180x820",
         "1440x900"
       ],
+      "activeCandidate": "sidebar-shell",
       "candidates": [
         {
           "id": "adaptive-shell",
           "intent": "Contexto visible desde 1200 px y drawer táctil en anchos menores",
           "status": "approved"
+        },
+        {
+          "id": "sidebar-shell",
+          "intent": "Rail persistente desktop con contexto de proyecto, grupos operativos y colapso accesible",
+          "status": "candidate"
         }
       ]
     },

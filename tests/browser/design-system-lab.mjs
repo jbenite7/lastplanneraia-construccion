@@ -329,47 +329,68 @@ test('dark appearance applies distinct accessible brand variants', async ({ page
   await expect(swatches.first()).toHaveCSS('color', 'rgb(20, 28, 24)');
 });
 
-test('approved shell uses drawer below 1200px and contextual navigation from 1200px', async ({ page }) => {
+test('sidebar shell exposes grouped navigation and an accessible collapse state', async ({ page }) => {
   await page.setViewportSize(VIEWPORTS[0]);
   await openAs(page, ADMIN);
   await selectFamily(page, 'shell-navigation');
-  const shell = page.locator('[data-shell-pattern="adaptive"]');
+  const shell = page.locator('[data-shell-pattern="sidebar"]');
   await expect(shell).toHaveCount(1);
   await expect(shell).toHaveAttribute('data-aia-component', 'navigation');
-  await expect(shell.locator('[data-shell-destination]')).toHaveCount(3);
-  const toggle = page.locator('[data-shell-drawer-toggle]');
-  const panel = page.locator('[data-shell-drawer-panel]');
-  await toggle.click();
+  await expect(shell.locator('[data-shell-destination]')).toHaveCount(10);
+  await expect(shell.locator('[aria-current="page"]')).toHaveCount(1);
+  await expect(shell.locator('[data-sidebar-group="obra"]')).toContainText('Programación Semanal');
+  await expect(shell.locator('[data-sidebar-group="compras"]')).toContainText('Plan de Compras');
+  await expect(shell.locator('[data-sidebar-group="information"]')).not.toContainText('Integración');
+  const toggle = shell.locator('[data-sidebar-toggle]');
   await expect(toggle).toHaveAttribute('aria-expanded', 'true');
-  await expect(panel).toBeVisible();
-  await toggle.press('Escape');
+  await toggle.click();
+  await expect(shell).toHaveAttribute('data-sidebar-state', 'collapsed');
   await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  await toggle.press('Escape');
+  await expect(shell).toHaveAttribute('data-sidebar-state', 'expanded');
   await expect(toggle).toBeFocused();
-  await page.setViewportSize(VIEWPORTS[1]);
-  await expect(toggle).toBeHidden();
-  await expect(panel).toBeVisible();
-  await expect(panel).toHaveAttribute('data-shell-presentation', 'contextual');
 });
 
-test('shell navigation keeps four-sided padding and a theme-visible brand mark', async ({ page }) => {
-  await page.setViewportSize(VIEWPORTS[0]);
+test('sidebar shell keeps desktop width, context and theme-visible brand mark', async ({ page }) => {
+  await page.setViewportSize(VIEWPORTS[1]);
   await openAs(page, ADMIN);
   await selectFamily(page, 'shell-navigation');
-  const navigation = page.locator('[data-family="shell-navigation"] .aia-navigation__global');
-  const logo = navigation.locator('.aia-brand-lockup img');
+  const navigation = page.locator('[data-family="shell-navigation"] [data-shell-pattern="sidebar"]');
+  const logo = navigation.locator('.aia-sidebar__brand img');
 
   await page.evaluate(() => window.AiaDesignSystem.setTheme('dark'));
   const dark = await navigation.evaluate((element) => ({
     background: getComputedStyle(element).backgroundColor,
-    pageSurface: getComputedStyle(document.documentElement).getPropertyValue('--ds-active-surface-raised').trim(),
-    paddingBlock: Number.parseFloat(getComputedStyle(element).paddingBlockStart),
-    paddingInline: Number.parseFloat(getComputedStyle(element).paddingInlineStart),
+    width: Number.parseFloat(getComputedStyle(element).width),
+    collapsedWidth: (() => {
+      const probe = document.createElement('div');
+      probe.style.width = 'var(--ds-sidebar-width-collapsed)';
+      document.body.append(probe);
+      const value = probe.getBoundingClientRect().width;
+      probe.remove();
+      return value;
+    })(),
+    expandedWidth: (() => {
+      const probe = document.createElement('div');
+      probe.style.width = 'var(--ds-sidebar-width-expanded)';
+      document.body.append(probe);
+      const value = probe.getBoundingClientRect().width;
+      probe.remove();
+      return value;
+    })(),
   }));
-  expect(dark.paddingBlock).toBeGreaterThanOrEqual(16);
-  expect(dark.paddingInline).toBeGreaterThanOrEqual(16);
+  expect(dark.width).toBeGreaterThanOrEqual(dark.expandedWidth - 1);
+  expect(dark.width).toBeLessThanOrEqual(dark.expandedWidth + 1);
+  expect(dark.collapsedWidth).toBeGreaterThan(0);
   expect(dark.background).not.toBe('rgba(0, 0, 0, 0)');
-  expect(dark.pageSurface).not.toBe('');
   await expect(logo).not.toHaveCSS('filter', 'none');
+
+  for (const state of ['loading', 'empty', 'error', 'default']) {
+    await navigation.locator('xpath=..').locator(`[data-sidebar-state-action="${state}"]`).click();
+    if (state === 'default') {
+      await expect(navigation.locator('.aia-sidebar__notification-state')).toContainText('Avisos');
+    }
+  }
 });
 
 test('approved page structure freezes the integrated header with bounded content', async ({ page }) => {

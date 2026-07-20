@@ -18,6 +18,43 @@ dsComponentAssert(substr_count($html, 'data-shell-destination') === 2, 'one link
 dsComponentAssert(substr_count($html, 'aria-current="page"') === 1, 'exactly one active destination');
 dsComponentAssert(str_contains($html, 'data-aia-component="navigation"'), 'canonical component marker');
 
+$sidebar = DesignSystemComponent::navigation([
+    'id' => 'lab-sidebar',
+    'presentation' => 'sidebar',
+    'brand' => '<AIA>',
+    'context' => ['project' => 'Proyecto & Uno', 'week' => 'Semana 7'],
+    'active' => 'pg',
+    'initialState' => 'expanded',
+    'groups' => [
+        ['id' => 'planning', 'label' => 'Planificación', 'items' => [
+            ['id' => 'pg', 'label' => 'Programa <General>', 'href' => '/programa-general', 'icon' => 'program'],
+        ]],
+        ['id' => 'empty', 'label' => 'Sin módulos', 'items' => []],
+    ],
+    'utilities' => [
+        'notifications' => ['label' => 'Avisos', 'count' => 10, 'state' => 'default'],
+        'account' => ['label' => 'Usuario · Admin', 'items' => [['label' => 'Cerrar sesión']]],
+    ],
+]);
+dsComponentAssert(str_contains($sidebar, 'data-shell-pattern="sidebar"'), 'sidebar pattern marker');
+dsComponentAssert(str_contains($sidebar, 'Proyecto &amp; Uno'), 'sidebar context must be escaped');
+dsComponentAssert(str_contains($sidebar, 'Programa &lt;General&gt;'), 'sidebar labels must be escaped');
+dsComponentAssert(str_contains($sidebar, 'aria-controls="lab-sidebar-panel"'), 'sidebar toggle controls navigation panel');
+dsComponentAssert(substr_count($sidebar, 'aria-current="page"') === 1, 'sidebar has one active destination');
+dsComponentAssert(str_contains($sidebar, 'data-sidebar-empty'), 'empty sidebar groups expose an empty state');
+dsComponentAssert(str_contains($sidebar, 'data-sidebar-notification-state="default"'), 'notification state is explicit');
+
+try {
+    DesignSystemComponent::navigation([
+        'id' => 'invalid-sidebar', 'presentation' => 'sidebar', 'brand' => 'AIA',
+        'context' => ['project' => 'Proyecto', 'week' => 'Semana 1'], 'active' => 'missing',
+        'groups' => [['id' => 'planning', 'label' => 'Planificación', 'items' => [
+            ['id' => 'pg', 'label' => 'Programa', 'href' => '/pg'],
+        ]]],
+    ]);
+    throw new RuntimeException('unknown sidebar active destination accepted');
+} catch (InvalidArgumentException) {}
+
 $header = DesignSystemComponent::pageHeader([
     'id' => 'programa-general', 'title' => 'Programa <General>',
     'context' => 'Semana 6 & proyecto', 'headingLevel' => 2,

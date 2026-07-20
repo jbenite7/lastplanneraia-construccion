@@ -102,6 +102,7 @@
         </main>
     </div>
     <script src="/public/js/modules/aia_ui/components.js"></script>
+    <?= \App\View\Components\DesignSystemHeadComponent::renderScript('/js/modules/aia_ui/sidebar_navigation.js') ?>
     <?= \App\View\Components\DesignSystemHeadComponent::renderScript('/js/modules/aia_ui/design_system_lab.js') ?>
 </body>
 </html>
