@@ -1,0 +1,94 @@
+{
+  "$schema": "../module-manifest.schema.json",
+  "schemaVersion": 2,
+  "designSystemVersion": "1.0.0",
+  "moduleId": "project-selector",
+  "consumerContract": "v1",
+  "routes": [
+    "/proyectos",
+    "/proyecto/seleccionar"
+  ],
+  "sources": [
+    "views/core/project_selector.view.php",
+    "public/css/project-selector.css",
+    "public/css/navbar.css",
+    "public/css/dark-mode.css"
+  ],
+  "components": [
+    "shell",
+    "page-header",
+    "field",
+    "button",
+    "card",
+    "search",
+    "state",
+    "feedback",
+    "live-region"
+  ],
+  "vendors": [
+    "bootstrap",
+    "jquery",
+    "font-awesome",
+    "aia-fonts"
+  ],
+  "layouts": [
+    "desktop"
+  ],
+  "states": [
+    "normal",
+    "loading",
+    "empty",
+    "no-results",
+    "error",
+    "focus"
+  ],
+  "roles": [
+    "authenticated-project-member"
+  ],
+  "persistence": {
+    "session": "authenticated project selection",
+    "search": "ephemeral"
+  },
+  "exceptions": [],
+  "tests": [
+    "tests/browser/design-system-compliance.mjs",
+    "tests/design-system/project-selector-contract.test.mjs"
+  ],
+  "evidence": [
+    "tests/browser/__screenshots__/project-selector/"
+  ],
+  "scenarios": [
+    {
+      "id": "project-selector-dark-1180x820",
+      "family": "page-structure",
+      "route": "/proyectos",
+      "fixture": "authenticated-project-member",
+      "theme": "dark",
+      "viewport": {
+        "width": 1180,
+        "height": 820
+      },
+      "density": "touch",
+      "state": "normal",
+      "role": "authenticated-project-member",
+      "golden": "tests/browser/__screenshots__/project-selector/project-selector-dark-1180x820.png",
+      "sha256": "85c93551c5d7ceadf939c0e91d8763a8c4e858e748eaeb700ad2548bdb1e441f"
+    },
+    {
+      "id": "project-selector-dark-1440x900",
+      "family": "page-structure",
+      "route": "/proyectos",
+      "fixture": "authenticated-project-member",
+      "theme": "dark",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "density": "compact",
+      "state": "normal",
+      "role": "authenticated-project-member",
+      "golden": "tests/browser/__screenshots__/project-selector/project-selector-dark-1440x900.png",
+      "sha256": "50ce4bf912e836dfdd49a63fa6d3c368e5c0b07e42b0f2a023c925a6d1265f9d"
+    }
+  ]
+}

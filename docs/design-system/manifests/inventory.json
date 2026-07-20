@@ -4,7 +4,8 @@
   "provenanceManifest": "goal-provenance.json",
   "manifests": [
     "laboratory.json",
-    "programa-general.json"
+    "programa-general.json",
+    "project-selector.json"
   ],
   "sharedHeadConsumers": [
     "views/contratos/contratos.view.php",
@@ -36,8 +37,8 @@
     },
     {
       "moduleId": "projects",
-      "status": "inventory-only",
-      "manifest": null
+      "status": "pilot",
+      "manifest": "project-selector.json"
     },
     {
       "moduleId": "programacion-intermedia",

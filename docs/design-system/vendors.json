@@ -3,6 +3,20 @@
   "designSystemVersion": "1.0.0",
   "vendors": [
     {
+      "id": "jquery",
+      "versions": [
+        "3.6.0"
+      ],
+      "delivery": [
+        "local"
+      ],
+      "classification": "adapter",
+      "assets": [
+        "public/vendor/jquery.min.js"
+      ],
+      "adapterMaturity": "compatibility-skin"
+    },
+    {
       "id": "bootstrap",
       "versions": [
         "4.3.1",

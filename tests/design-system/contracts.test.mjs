@@ -246,7 +246,7 @@ test('manifests declare the complete deterministic visual matrix', () => {
   const inventory = JSON.parse(readFileSync(
     path.join(root, 'docs/design-system/manifests/inventory.json'), 'utf8',
   ));
-  assert.deepEqual(inventory.manifests.sort(), ['laboratory.json', 'programa-general.json']);
+  assert.deepEqual(inventory.manifests.sort(), ['laboratory.json', 'programa-general.json', 'project-selector.json']);
 
   const laboratory = JSON.parse(readFileSync(
     path.join(root, 'docs/design-system/manifests/laboratory.json'), 'utf8',
@@ -346,7 +346,7 @@ test('declared local vendor assets must exist', () => {
   const result = runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/vendors.json');
     const vendors = JSON.parse(readFileSync(file, 'utf8'));
-    vendors.vendors[0].assets.push('public/vendor/missing.css');
+    vendors.vendors.find((vendor) => vendor.id === 'bootstrap').assets.push('public/vendor/missing.css');
     writeFileSync(file, `${JSON.stringify(vendors, null, 2)}\n`);
   });
 

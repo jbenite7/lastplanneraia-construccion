@@ -32,6 +32,11 @@
     "moduleId": {
       "type": "string"
     },
+    "consumerContract": {
+      "enum": [
+        "v1"
+      ]
+    },
     "routes": {
       "type": "array",
       "items": {
