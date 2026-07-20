@@ -72,7 +72,7 @@
       "state": "normal",
       "role": "authenticated-project-member",
       "golden": "tests/browser/__screenshots__/project-selector/project-selector-dark-1180x820.png",
-      "sha256": "f8e7c8800908a8d8be451f84764d3c674b34f52348870cf0332683a46f817a39"
+      "sha256": "c21cedb4e72ebf4808e3184f961ffbf446f6b61dbf3007bfc6a8ce210bda4221"
     },
     {
       "id": "project-selector-dark-1440x900",
@@ -88,7 +88,7 @@
       "state": "normal",
       "role": "authenticated-project-member",
       "golden": "tests/browser/__screenshots__/project-selector/project-selector-dark-1440x900.png",
-      "sha256": "4dfd08674bcdb434e0cd66fa9c2f21aec7cd51fe61f00d4559a9b7b2901f3def"
+      "sha256": "53dfdfb9e48f564715d33d33ba0c699b05b9d30f013829f222ed926121942a74"
     }
   ]
 }
