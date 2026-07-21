@@ -36,6 +36,18 @@ for (const viewport of VIEWPORTS) {
     ]);
     expect(headingColor, 'group heading is not muted').toBe(secondaryToken);
 
+    // The group heading is sentence case, not the uppercase eyebrow that
+    // remained before, and legacy globals (styles.css `*` reset / `h1..h6`
+    // tracking) must not claw back its inset or letter-spacing.
+    const heading = await sidebar.locator('.aia-sidebar__group h3').first().evaluate((el) => {
+      const style = getComputedStyle(el);
+      return { textTransform: style.textTransform, marginLeft: style.marginLeft, marginTop: style.marginTop, letterSpacing: style.letterSpacing };
+    });
+    expect(heading.textTransform, 'group heading must not be uppercase').toBe('none');
+    expect(heading.letterSpacing, 'group heading must not keep legacy tracking').toBe('normal');
+    expect(parseFloat(heading.marginLeft), 'group heading needs a left inset').toBeGreaterThan(0);
+    expect(parseFloat(heading.marginTop), 'group heading needs top spacing').toBeGreaterThan(0);
+
     const main = page.locator('.project-selector-main');
     const sidebarWidth = await sidebar.evaluate((el) => el.getBoundingClientRect().width);
     const mainLeft = await main.evaluate((el) => el.getBoundingClientRect().left);

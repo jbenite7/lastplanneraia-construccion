@@ -262,17 +262,18 @@
     gap: var(--ds-space-2);
   }
 
-  /* The scoped selector plus !important reasserts the muted heading colour
-   over `body.dark-mode h1..h6 { color: !important }` in dark-mode.css, which
-   shares the components layer and would otherwise repaint the group label as
-   primary text, flattening the sidebar's hierarchy. */
+  /* !important reasserts the canonical heading treatment over legacy globals
+   that would otherwise win: dark-mode.css `body.dark-mode h1..h6 { color:
+   !important }` (components layer) repaints the colour, and styles.css —
+   imported into the later `module` layer — zeroes the margin via its `*`
+   reset and forces `letter-spacing: -0.02em` on every heading. Scope keeps
+   this to sidebar group labels only. */
   .aia-navigation--sidebar .aia-sidebar__group h3 {
-    margin: 0 var(--ds-space-2);
+    margin: var(--ds-space-2) var(--ds-space-3) 0 !important;
     color: var(--ds-active-text-secondary) !important;
     font-size: var(--ds-type-size-xs);
     font-weight: var(--ds-type-weight-bold);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+    letter-spacing: normal !important;
   }
 
   .aia-sidebar__group ul {
