@@ -56,10 +56,10 @@
         ],
     ]) ?>
     <div class="ds-shell-state-controls" role="group" aria-label="Estados del sidebar">
-        <button type="button" class="aia-btn aia-btn--secondary" data-sidebar-state-action="default">Default</button>
-        <button type="button" class="aia-btn aia-btn--secondary" data-sidebar-state-action="loading">Loading</button>
-        <button type="button" class="aia-btn aia-btn--secondary" data-sidebar-state-action="empty">Empty</button>
-        <button type="button" class="aia-btn aia-btn--secondary" data-sidebar-state-action="error">Error</button>
+        <button type="button" class="aia-btn aia-btn--secondary" data-sidebar-state-action="default">Estado normal</button>
+        <button type="button" class="aia-btn aia-btn--secondary" data-sidebar-state-action="loading">Cargando módulos</button>
+        <button type="button" class="aia-btn aia-btn--secondary" data-sidebar-state-action="empty">Sin módulos</button>
+        <button type="button" class="aia-btn aia-btn--secondary" data-sidebar-state-action="error">Error de avisos</button>
     </div>
     <p class="aia-helper">Rail persistente desktop; el drawer inferior a 1200 px permanece como compatibilidad legacy.</p>
 </article>

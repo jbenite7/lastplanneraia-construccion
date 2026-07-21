@@ -335,7 +335,7 @@ final class DesignSystemComponent
                         . '">' . self::escape($badgeValue) . '</span>';
                 }
                 $linkAttributes = $itemState === 'disabled'
-                    ? ' role="link" aria-disabled="true" data-sidebar-disabled'
+                    ? ' role="link" aria-disabled="true" aria-label="' . self::escape($label . ' (no disponible temporalmente)') . '" data-sidebar-disabled'
                     : ' href="' . self::escape($href) . '" data-shell-destination data-destination-id="' . self::escape($itemId) . '"';
                 $itemsMarkup[] = '<li><' . ($itemState === 'disabled' ? 'span' : 'a') . ' class="aia-sidebar__link"'
                     . $linkAttributes . ' data-sidebar-item data-sidebar-icon="' . self::escape($icon) . '"'
@@ -343,12 +343,12 @@ final class DesignSystemComponent
                     . self::icon(['name' => $icon, 'decorative' => true])
                     . '<span class="aia-sidebar__label">' . self::escape($label) . '</span>' . $badge . '</' . ($itemState === 'disabled' ? 'span' : 'a') . '></li>';
             }
-            $groupsMarkup[] = '<section class="aia-sidebar__group" data-sidebar-group="' . self::escape($groupId) . '"'
+                $groupsMarkup[] = '<section class="aia-sidebar__group" data-sidebar-group="' . self::escape($groupId) . '"'
                 . ' aria-labelledby="' . self::escape($id . '-' . $groupId . '-label') . '">'
                 . '<h3 id="' . self::escape($id . '-' . $groupId . '-label') . '">' . self::escape($groupLabel) . '</h3>'
                 . ($itemsMarkup === []
-                    ? '<p class="aia-sidebar__empty" data-sidebar-empty>No hay módulos disponibles.</p>'
-                    : '<ul>' . implode('', $itemsMarkup) . '</ul><p class="aia-sidebar__empty" data-sidebar-empty hidden>No hay módulos disponibles.</p>') . '</section>';
+                    ? '<p class="aia-sidebar__empty" data-sidebar-empty>Este proyecto aún no tiene módulos disponibles.</p>'
+                    : '<ul>' . implode('', $itemsMarkup) . '</ul><p class="aia-sidebar__empty" data-sidebar-empty hidden>Este proyecto aún no tiene módulos disponibles.</p>') . '</section>';
         }
         if ($active !== '' && !isset($seen[$active])) {
             throw new InvalidArgumentException("unknown active sidebar destination: {$active}");
@@ -370,8 +370,8 @@ final class DesignSystemComponent
         ];
         $accountMarkup = self::sidebarAccountMarkup($id . '-account', $accountLabel, $accountItems);
         $notificationText = $notificationState === 'loading' ? 'Cargando avisos…'
-            : ($notificationState === 'empty' ? 'No hay avisos nuevos.'
-                : ($notificationState === 'error' ? 'No se pudieron cargar los avisos.' : $notificationLabel));
+                : ($notificationState === 'empty' ? 'No hay avisos nuevos.'
+                : ($notificationState === 'error' ? 'No pudimos cargar los avisos. Intenta de nuevo.' : $notificationLabel));
         return '<aside class="aia-navigation aia-navigation--sidebar" aria-label="Navegación de ' . self::escape($brand) . '" data-aia-component="navigation"'
             . ' data-shell-pattern="sidebar" data-sidebar-state="' . self::escape($state) . '">'
             . '<header class="aia-sidebar__header"><a class="aia-sidebar__brand aia-brand-lockup" href="/proyectos"'
@@ -391,7 +391,7 @@ final class DesignSystemComponent
             . '<span class="aia-sidebar__label">' . self::escape($notificationLabel) . '</span>'
             . ($notificationCount !== '' ? '<span class="aia-sidebar__badge">' . self::escape($notificationCount) . '</span>' : '')
             . '</button><span class="aia-sidebar__notification-state" data-sidebar-notification-message role="status" aria-live="polite">'
-            . self::escape($notificationText) . '</span><button type="button" class="aia-sidebar__retry" data-sidebar-notification-retry hidden>Reintentar</button>' . $accountMarkup . '</footer></aside>';
+            . self::escape($notificationText) . '</span><button type="button" class="aia-sidebar__retry" data-sidebar-notification-retry hidden>Volver a cargar avisos</button>' . $accountMarkup . '</footer></aside>';
     }
 
     private static function sidebarAccountMarkup(string $id, string $label, mixed $items): string

@@ -65,7 +65,7 @@ for (const viewport of VIEWPORTS) {
       await candidate.locator(`[data-sidebar-state-action="${state}"]`).click();
       await expect(candidate.locator(`[data-sidebar-state-action="${state}"]`)).toHaveAttribute('aria-pressed', 'true');
       if (state === 'empty') await expect(sidebar.locator('[data-sidebar-empty]').first()).toBeVisible();
-      if (state === 'error') await expect(sidebar.locator('[data-sidebar-notification-message]')).toContainText('No se pudieron');
+      if (state === 'error') await expect(sidebar.locator('[data-sidebar-notification-message]')).toContainText('No pudimos cargar los avisos');
       if (state === 'error') {
         const retry = sidebar.locator('[data-sidebar-notification-retry]');
         await expect(retry).toBeVisible();

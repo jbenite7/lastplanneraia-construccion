@@ -19,7 +19,7 @@
         default: "Avisos",
         loading: "Cargando avisos…",
         empty: "No hay avisos nuevos.",
-        error: "No se pudieron cargar los avisos.",
+        error: "No pudimos cargar los avisos. Intenta de nuevo.",
       }[state] || "Avisos";
     if (notificationMessage) notificationMessage.textContent = notificationCopy;
     if (notificationButton) notificationButton.setAttribute("aria-label", notificationCopy);
