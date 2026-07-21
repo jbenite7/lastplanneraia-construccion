@@ -241,9 +241,18 @@ test('API semanal rechaza un proyecto distinto al seleccionado', async ({ page }
     page.request.get('/api/semanal/tnp-actividades?db=da_porto&semana=1'),
     page.request.get('/api/semanal/auto-program-log?db=da_porto&semana=1'),
     page.request.post('/api/semanal/auto-program', { form: { db: 'da_porto', semana: '0' } }),
-    page.request.post('/api/semanal/reabrir?db=da_porto', { form: { semana: '0', motivo: '' } }),
+    page.request.post('/api/semanal/reabrir?db=da_porto', {
+      form: { semana: '0', motivo: '', _csrf_token: csrf || '' },
+    }),
   ];
   for (const response of await Promise.all(checks)) expect(response.status()).toBe(403);
+
+  // reabrir exige CSRF como el resto de mutaciones privilegiadas
+  const sinCsrf = await page.request.post(`/api/semanal/reabrir?db=${JMC.dbPrefix}`, {
+    form: { semana: '4', motivo: 'Motivo de reapertura suficientemente largo' },
+  });
+  expect(sinCsrf.status()).toBe(403);
+  expect((await sinCsrf.json()).mensaje).toContain('CSRF');
 });
 
 test('rol R histórico solo puede calificar el compromiso confirmado', async ({ page }) => {
@@ -258,9 +267,10 @@ test('rol R histórico solo puede calificar el compromiso confirmado', async ({ 
       Descripcion: `${original.Descripcion || ''} QA histórico`,
     });
     expect(planning.status()).toBe(409);
+    const csrf = await page.locator('meta[name="csrf-token"]').getAttribute('content');
     const blocked = [
       page.request.post(`/api/semanal/reabrir?db=${JMC.dbPrefix}`, {
-        form: { semana: '4', motivo: '' },
+        form: { semana: '4', motivo: '', _csrf_token: csrf || '' },
       }),
       page.request.post('/api/cnp/save', { form: {
         Id: '1', semana: '4', Categoria_CNP: 'Programación', CNP: 'QA',

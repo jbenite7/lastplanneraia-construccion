@@ -946,6 +946,15 @@ private function autoprogramar(string $dbPrefix, int $semana): void
         $semana = filter_var($_POST['semana'] ?? 0, FILTER_VALIDATE_INT);
         $motivo = trim($_POST['motivo'] ?? '');
 
+        // CSRF protection: reabrir es una mutación privilegiada, igual que las opciones de save().
+        $csrfToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? $_POST['_csrf_token'] ?? '';
+        if (!CsrfTokenManager::validate($csrfToken, 'semanal_save')) {
+            http_response_code(403);
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode(["respuesta" => "ERROR", "mensaje" => "Token CSRF inválido o expirado."], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
         if (!$this->requireSessionDbPrefix($dbPrefix)) {
             return;
         }
