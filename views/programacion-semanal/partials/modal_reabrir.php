@@ -43,6 +43,30 @@ $(function () {
         $btnConfirm.prop('disabled', len < 20);
     }
 
+    function resetConfirmButton() {
+        $btnConfirm.prop('disabled', false).html('<i class="fas fa-unlock"></i> Confirmar Reapertura');
+    }
+
+    function mostrarError(msg) {
+        // .text() sobre el mensaje: puede venir de una excepción del servidor.
+        $feedback.removeClass('d-none alert-success').addClass('alert alert-danger')
+            .empty()
+            .append($('<i class="fas fa-times-circle"></i>'))
+            .append(document.createTextNode(' ' + msg));
+        resetConfirmButton();
+    }
+
+    // Mismas fuentes de contexto que public/js/modules/programacion_semanal/hot.js:
+    // el prefijo de proyecto vive en #baseDatos_PHP (o #baseDatos, inyectado por
+    // cargarDatosGeneralesPagina2.js), nunca en #seccion.
+    function getContextDb() {
+        return String($('#baseDatos_PHP').val() || $('#baseDatos').val() || '').trim();
+    }
+
+    function getContextSemana() {
+        return parseInt($('#semana_PHP').val() || $('#semana').val() || '0', 10);
+    }
+
     $motivo.on('input', updateReopenState);
 
     $('#modal_reabrir_semana').on('show.bs.modal', function () {
@@ -55,18 +79,13 @@ $(function () {
         var motivo = ($motivo.val() || '').trim();
         if (motivo.length < 20) { return; }
 
-        var semana = '';
-        if (typeof getSemana === 'function') {
-            semana = getSemana();
-        } else {
-            semana = $('#semana_PHP').val() || $('#semana').val() || '';
-        }
+        var db = getContextDb();
+        var semana = getContextSemana();
+        var csrfToken = $('meta[name="csrf-token"]').attr('content') || '';
 
-        var db = '';
-        if (typeof getDb === 'function') {
-            db = getDb();
-        } else {
-            db = $('#seccion').val() || '';
+        if (db === '' || !Number.isFinite(semana) || semana <= 0) {
+            mostrarError('No se pudo determinar el proyecto o la semana activa. Recargue la página e intente de nuevo.');
+            return;
         }
 
         $btnConfirm.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Procesando...');
@@ -75,11 +94,12 @@ $(function () {
         $.ajax({
             url: '/api/semanal/reabrir',
             method: 'POST',
+            headers: { 'X-CSRF-Token': csrfToken },
             data: {
                 db: db,
                 semana: semana,
                 motivo: motivo,
-                _csrf_token: $('meta[name="csrf-token"]').attr('content') || ''
+                _csrf_token: csrfToken
             },
             dataType: 'json'
         }).done(function (resp) {
@@ -88,17 +108,15 @@ $(function () {
                     .html('<i class="fas fa-check-circle"></i> Semana reabierta correctamente. Recargando...');
                 setTimeout(function () { location.reload(); }, 1200);
             } else {
-                var msg = (resp && (resp.mensaje || resp.message || resp.respuesta)) || 'Error desconocido.';
-                $feedback.removeClass('d-none alert-success').addClass('alert alert-danger')
-                    .html('<i class="fas fa-times-circle"></i> ' + msg);
-                $btnConfirm.prop('disabled', false).html('<i class="fas fa-unlock"></i> Confirmar Reapertura');
+                mostrarError((resp && (resp.mensaje || resp.message || resp.respuesta)) || 'Error desconocido.');
             }
         }).fail(function (xhr) {
-            var msg = 'Error de conexión. Intente de nuevo.';
-            try { var r = JSON.parse(xhr.responseText); if (r && r.message) msg = r.message; } catch (e) {}
-            $feedback.removeClass('d-none alert-success').addClass('alert alert-danger')
-                .html('<i class="fas fa-times-circle"></i> ' + msg);
-            $btnConfirm.prop('disabled', false).html('<i class="fas fa-unlock"></i> Confirmar Reapertura');
+            var body = xhr.responseJSON;
+            if (!body) {
+                try { body = JSON.parse(xhr.responseText); } catch (e) { body = null; }
+            }
+            var msg = (body && (body.mensaje || body.message)) || ('Error de conexión (HTTP ' + xhr.status + '). Intente de nuevo.');
+            mostrarError(msg);
         });
     });
 });
