@@ -11,7 +11,8 @@
   "sources": [
     "views/core/project_selector.view.php",
     "public/css/project-selector.css",
-    "public/css/navbar.css",
+    "public/css/design-system/components/navigation.css",
+    "public/js/modules/aia_ui/sidebar_navigation.js",
     "public/css/dark-mode.css"
   ],
   "components": [
@@ -21,6 +22,7 @@
     "button",
     "card",
     "search",
+    "navigation",
     "state",
     "feedback",
     "live-region"
