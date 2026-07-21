@@ -48,6 +48,17 @@ for (const viewport of VIEWPORTS) {
     expect(parseFloat(heading.marginLeft), 'group heading needs a left inset').toBeGreaterThan(0);
     expect(parseFloat(heading.marginTop), 'group heading needs top spacing').toBeGreaterThan(0);
 
+    // styles.css's `* { padding: 0 }` reset (module layer) would collapse every
+    // rail inset; the component's !important paddings must hold so content is
+    // not flush against the edge and the icon columns line up.
+    const insets = await sidebar.evaluate((rail) => {
+      const railLeft = rail.getBoundingClientRect().left;
+      const at = (sel) => { const el = rail.querySelector(sel); return el ? Math.round(el.getBoundingClientRect().left - railLeft) : null; };
+      return { linkIcon: at('.aia-sidebar__link .aia-icon'), utilityIcon: at('.aia-sidebar__utility .aia-icon') };
+    });
+    expect(insets.linkIcon, 'nav item icons must be inset from the rail edge').toBeGreaterThan(16);
+    expect(Math.abs(insets.linkIcon - insets.utilityIcon), 'nav and footer icon columns must align').toBeLessThanOrEqual(2);
+
     const main = page.locator('.project-selector-main');
     const sidebarWidth = await sidebar.evaluate((el) => el.getBoundingClientRect().width);
     const mainLeft = await main.evaluate((el) => el.getBoundingClientRect().left);

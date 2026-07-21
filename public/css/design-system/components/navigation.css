@@ -135,11 +135,16 @@
     --aia-sidebar-width: var(--ds-sidebar-width-collapsed);
   }
 
+  /* Every sidebar padding carries !important because styles.css ships a global
+   `* { padding: 0 }` reset in the later `module` layer that would otherwise
+   collapse the rail's insets on any consumer page that loads it (the lab does
+   not, which is why it renders correctly there). Keeps the rail matching its
+   canonical geometry everywhere. */
   .aia-sidebar__header,
   .aia-sidebar__footer {
     display: grid;
     gap: var(--ds-space-3);
-    padding: var(--ds-space-4);
+    padding: var(--ds-space-4) !important;
   }
 
   .aia-sidebar__header {
@@ -206,7 +211,7 @@
     justify-content: flex-start;
     width: 100%;
     min-height: var(--ds-target-min);
-    padding: var(--ds-space-2) var(--ds-space-3);
+    padding: var(--ds-space-2) var(--ds-space-3) !important;
     border: var(--ds-border-width) solid transparent;
     border-radius: var(--ds-radius-control-sm);
     background: transparent;
@@ -253,7 +258,7 @@
     align-content: start;
     gap: var(--ds-sidebar-section-gap);
     min-height: 0;
-    padding: var(--ds-space-4) var(--ds-space-3);
+    padding: var(--ds-space-4) var(--ds-space-3) !important;
     overflow-y: auto;
   }
 
@@ -287,7 +292,7 @@
   .aia-sidebar__link {
     position: relative;
     min-width: 0;
-    padding: var(--ds-space-2) var(--ds-space-3);
+    padding: var(--ds-space-2) var(--ds-space-3) !important;
     border: var(--ds-border-width) solid transparent;
     border-radius: var(--ds-radius-control-sm);
     font-size: var(--ds-type-size-sm);
