@@ -343,7 +343,7 @@
     inset-block-end: calc(100% + var(--ds-space-2));
     min-width: 13rem;
     max-width: min(20rem, calc(100vw - var(--ds-space-6)));
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
   }
 
   .aia-sidebar__retry {
