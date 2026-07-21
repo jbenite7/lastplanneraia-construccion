@@ -54,7 +54,8 @@
   "exceptions": [],
   "tests": [
     "tests/browser/design-system-compliance.mjs",
-    "tests/design-system/project-selector-contract.test.mjs"
+    "tests/design-system/project-selector-contract.test.mjs",
+    "tests/browser/project-selector-sidebar.spec.mjs"
   ],
   "evidence": [
     "tests/browser/__screenshots__/project-selector/"
