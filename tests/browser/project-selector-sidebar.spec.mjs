@@ -69,6 +69,24 @@ for (const viewport of VIEWPORTS) {
     );
     expect(overflow).toBeLessThanOrEqual(0);
 
+    // handsontable-module.css locks `body { overflow: hidden }` on desktop for
+    // grid pages; the selector must stay a scrollable document. Force content
+    // past the fold and confirm the document actually scrolls to reveal it.
+    const verticalScroll = await page.evaluate(() => {
+      const probe = document.createElement('div');
+      probe.style.height = '600px';
+      probe.dataset.e2eScrollProbe = 'true';
+      document.querySelector('.project-selector-main').appendChild(probe);
+      window.scrollTo(0, document.documentElement.scrollHeight);
+      const scrolledY = Math.round(window.scrollY || document.documentElement.scrollTop);
+      const bodyOverflowY = getComputedStyle(document.body).overflowY;
+      probe.remove();
+      window.scrollTo(0, 0);
+      return { scrolledY, bodyOverflowY };
+    });
+    expect(verticalScroll.bodyOverflowY, 'body scroll is locked to hidden').not.toBe('hidden');
+    expect(verticalScroll.scrolledY, 'document cannot scroll past the fold').toBeGreaterThan(0);
+
     // The card grid must clear the rail and breathe symmetrically. A `* { padding: 0 }`
     // reset in a late layer strips the vendor gutters, so this is easy to lose.
     const gutters = await page.evaluate(() => {

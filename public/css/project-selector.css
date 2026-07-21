@@ -1,9 +1,20 @@
 @layer components, states, responsive;
 
 @layer components {
+  /* handsontable-module.css locks `html, body { height: 100%; overflow: hidden }`
+   on desktop so grid pages scroll internally, and only unlocks it below 768px.
+   The selector is a normal scrolling document, so restore document scroll when
+   its cards run past the fold. Scoped to the selector; grid pages keep the lock. */
+  html:has(body.project-selector-page) {
+    height: auto;
+    overflow-y: auto;
+  }
+
   body.project-selector-page {
     display: block;
+    height: auto;
     min-height: 100vh;
+    overflow-y: visible;
     font-family: var(--ds-font-body);
     color: var(--ds-active-text-primary);
     background: var(--ds-active-bg-page);
