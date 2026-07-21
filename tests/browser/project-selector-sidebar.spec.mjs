@@ -21,6 +21,21 @@ for (const viewport of VIEWPORTS) {
     await expect(sidebar.locator('[aria-current="page"]')).toHaveCount(1);
     await expect(sidebar.locator('[data-sidebar-notifications]')).toHaveCount(0);
 
+    // The group heading stays muted (secondary), not the primary text that
+    // dark-mode.css's `body.dark-mode h1..h6 !important` would otherwise force.
+    const [headingColor, secondaryToken] = await Promise.all([
+      sidebar.locator('.aia-sidebar__group h3').first().evaluate((el) => getComputedStyle(el).color),
+      page.evaluate(() => {
+        const probe = document.createElement('span');
+        probe.style.color = getComputedStyle(document.documentElement).getPropertyValue('--ds-active-text-secondary').trim();
+        document.body.append(probe);
+        const value = getComputedStyle(probe).color;
+        probe.remove();
+        return value;
+      }),
+    ]);
+    expect(headingColor, 'group heading is not muted').toBe(secondaryToken);
+
     const main = page.locator('.project-selector-main');
     const sidebarWidth = await sidebar.evaluate((el) => el.getBoundingClientRect().width);
     const mainLeft = await main.evaluate((el) => el.getBoundingClientRect().left);

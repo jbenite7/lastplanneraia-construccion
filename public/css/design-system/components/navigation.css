@@ -262,9 +262,13 @@
     gap: var(--ds-space-2);
   }
 
-  .aia-sidebar__group h3 {
+  /* The scoped selector plus !important reasserts the muted heading colour
+   over `body.dark-mode h1..h6 { color: !important }` in dark-mode.css, which
+   shares the components layer and would otherwise repaint the group label as
+   primary text, flattening the sidebar's hierarchy. */
+  .aia-navigation--sidebar .aia-sidebar__group h3 {
     margin: 0 var(--ds-space-2);
-    color: var(--ds-active-text-secondary);
+    color: var(--ds-active-text-secondary) !important;
     font-size: var(--ds-type-size-xs);
     font-weight: var(--ds-type-weight-bold);
     letter-spacing: 0.04em;
