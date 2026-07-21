@@ -150,9 +150,18 @@ test('dark controls expose a semantic high-contrast focus token', async () => {
   assert.match(core, /outline:\s*var\(--ds-outline-width\) solid var\(--ds-active-focus-ring\)/);
 });
 
-test('the Handsontable rail does not reserve space in the standalone laboratory', async () => {
+test('the Handsontable rail only reserves space where the rail is mounted', async () => {
   const css = await read('public/css/handsontable-module.css');
-  assert.match(css, /body:not\(\.ds-lab\)\s*\{[\s\S]*padding-right:\s*var\(--lps-rail-safe-width\) !important/);
+  const rule = css.match(/(body:not\([^{]*)\{[^}]*padding-right:\s*var\(--lps-rail-safe-width\) !important/);
+  assert.ok(rule, 'the rail-safe reservation rule must exist');
+  // Surfaces that never mount the LPS rail must be excluded, or they inherit dead
+  // right-hand gutter. Assert the exclusions, not one exact selector string.
+  for (const excluded of ['.ds-lab', '.project-selector-page']) {
+    assert.ok(
+      rule[1].includes(`:not(${excluded})`),
+      `${excluded} must be excluded from the rail-safe reservation`,
+    );
+  }
 });
 
 test('every brand domain has an accessible dark-appearance variant', async () => {

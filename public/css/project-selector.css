@@ -36,6 +36,18 @@
     flex: 1 0 auto;
   }
 
+  /* Three up, matching the approved Bootstrap `col-lg-4` layout; the desktop
+   scope starts at 1180px so the column count does not need to flex. */
+  .project-selector-page #projectGrid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--ds-space-6);
+  }
+
+  .project-selector-page #projectGrid .project-item {
+    max-width: none;
+  }
+
   .project-selector-shell,
   .project-selector-page .content-wrapper {
     background: transparent;
@@ -245,6 +257,17 @@
 /* Vendor styles are unlayered; keep the selector's canonical primitives authoritative. */
 .project-selector-page .project-card {
   background: var(--ds-active-surface-raised);
+}
+
+/* styles.css ships a `* { padding: 0 }` reset in the `module` layer, which
+   outranks both the vendor grid and this file's `components` rules, so
+   Bootstrap's container gutters never apply. Restore the horizontal breathing
+   room from tokens here, where unlayered rules win. */
+.project-selector-page .project-selector-main .container {
+  /* The reset also drops Bootstrap's auto margins, which left the capped
+     container hugging the rail on wide viewports. */
+  margin-inline: auto;
+  padding-inline: var(--ds-space-6);
 }
 
 .project-selector-page .input-group .form-control {

@@ -20,7 +20,7 @@ export function consumerContractFailures({ root, manifest, viewOverride = null, 
   const view = viewOverride ?? read('views/core/project_selector.view.php');
   const css = cssOverride ?? read('public/css/project-selector.css');
   const required = [
-    'public/css/tokens.css',
+    '/css/tokens.css',
     '/css/aia-design-system.css',
   ];
   for (const asset of required) {
