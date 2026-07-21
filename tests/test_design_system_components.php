@@ -28,6 +28,7 @@ $sidebar = DesignSystemComponent::navigation([
     'groups' => [
         ['id' => 'planning', 'label' => 'Planificación', 'items' => [
             ['id' => 'pg', 'label' => 'Programa <General>', 'href' => '/programa-general', 'icon' => 'program'],
+            ['id' => 'future', 'label' => 'Próximamente', 'state' => 'disabled', 'icon' => 'overview'],
         ]],
         ['id' => 'empty', 'label' => 'Sin módulos', 'items' => []],
     ],
@@ -43,6 +44,9 @@ dsComponentAssert(str_contains($sidebar, 'aria-controls="lab-sidebar-panel"'), '
 dsComponentAssert(substr_count($sidebar, 'aria-current="page"') === 1, 'sidebar has one active destination');
 dsComponentAssert(str_contains($sidebar, 'data-sidebar-empty'), 'empty sidebar groups expose an empty state');
 dsComponentAssert(str_contains($sidebar, 'data-sidebar-notification-state="default"'), 'notification state is explicit');
+dsComponentAssert(str_contains($sidebar, 'aria-label="Navegación de &lt;AIA&gt;"'), 'sidebar landmark has an accessible name');
+dsComponentAssert(str_contains($sidebar, 'data-sidebar-notification-retry'), 'sidebar error state exposes recovery control');
+dsComponentAssert(!str_contains($sidebar, '#sidebar-item'), 'sidebar never invents disabled destination URLs');
 
 try {
     DesignSystemComponent::navigation([

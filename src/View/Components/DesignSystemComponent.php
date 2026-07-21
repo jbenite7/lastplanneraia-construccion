@@ -326,23 +326,22 @@ final class DesignSystemComponent
                 if (!in_array($itemState, ['default', 'disabled'], true)) {
                     throw new InvalidArgumentException('invalid sidebar item state');
                 }
-                $href = self::href($item['href'] ?? '#sidebar-item');
+                $href = array_key_exists('href', $item) ? self::href($item['href']) : '';
                 $current = $itemId === $active ? ' aria-current="page"' : '';
-                $disabled = $itemState === 'disabled'
-                    ? ' aria-disabled="true" tabindex="-1" data-sidebar-disabled'
-                    : '';
                 $badge = '';
                 if (array_key_exists('badge', $item)) {
                     $badgeValue = self::text((string) $item['badge'], 'sidebar item badge');
                     $badge = '<span class="aia-sidebar__badge" aria-label="' . self::escape($badgeValue)
                         . '">' . self::escape($badgeValue) . '</span>';
                 }
-                $itemsMarkup[] = '<li><a class="aia-sidebar__link" href="' . self::escape($href)
-                    . '" data-shell-destination data-destination-id="' . self::escape($itemId) . '"'
-                    . ' data-sidebar-item data-sidebar-icon="' . self::escape($icon) . '"'
-                    . ' title="' . self::escape($label) . '"' . $current . $disabled . '>'
+                $linkAttributes = $itemState === 'disabled'
+                    ? ' role="link" aria-disabled="true" data-sidebar-disabled'
+                    : ' href="' . self::escape($href) . '" data-shell-destination data-destination-id="' . self::escape($itemId) . '"';
+                $itemsMarkup[] = '<li><' . ($itemState === 'disabled' ? 'span' : 'a') . ' class="aia-sidebar__link"'
+                    . $linkAttributes . ' data-sidebar-item data-sidebar-icon="' . self::escape($icon) . '"'
+                    . ' title="' . self::escape($label) . '"' . $current . '>'
                     . self::icon(['name' => $icon, 'decorative' => true])
-                    . '<span class="aia-sidebar__label">' . self::escape($label) . '</span>' . $badge . '</a></li>';
+                    . '<span class="aia-sidebar__label">' . self::escape($label) . '</span>' . $badge . '</' . ($itemState === 'disabled' ? 'span' : 'a') . '></li>';
             }
             $groupsMarkup[] = '<section class="aia-sidebar__group" data-sidebar-group="' . self::escape($groupId) . '"'
                 . ' aria-labelledby="' . self::escape($id . '-' . $groupId . '-label') . '">'
@@ -373,7 +372,7 @@ final class DesignSystemComponent
         $notificationText = $notificationState === 'loading' ? 'Cargando avisos…'
             : ($notificationState === 'empty' ? 'No hay avisos nuevos.'
                 : ($notificationState === 'error' ? 'No se pudieron cargar los avisos.' : $notificationLabel));
-        return '<aside class="aia-navigation aia-navigation--sidebar" data-aia-component="navigation"'
+        return '<aside class="aia-navigation aia-navigation--sidebar" aria-label="Navegación de ' . self::escape($brand) . '" data-aia-component="navigation"'
             . ' data-shell-pattern="sidebar" data-sidebar-state="' . self::escape($state) . '">'
             . '<header class="aia-sidebar__header"><a class="aia-sidebar__brand aia-brand-lockup" href="/proyectos"'
             . ' aria-label="' . self::escape($brand) . '"><img src="/public/img/aia-last-planner-mark.svg" alt="" aria-hidden="true">'
@@ -384,15 +383,15 @@ final class DesignSystemComponent
             . ($state === 'expanded' ? 'true' : 'false') . '"><span class="aia-sidebar__toggle-icon">'
             . self::icon(['name' => 'collapse', 'decorative' => true]) . '</span><span class="aia-sidebar__toggle-label">'
             . ($state === 'expanded' ? 'Colapsar menú' : 'Expandir menú') . '</span></button></header>'
-            . '<nav id="' . self::escape($panelId) . '" class="aia-sidebar__nav" aria-label="Navegación del proyecto">'
+            . '<nav id="' . self::escape($panelId) . '" class="aia-sidebar__nav" aria-label="Navegación del proyecto" aria-busy="false">'
             . implode('', $groupsMarkup) . '</nav>'
             . '<footer class="aia-sidebar__footer"><button type="button" class="aia-sidebar__utility" data-sidebar-notifications'
             . ' aria-label="' . self::escape($notificationText) . '" data-sidebar-notification-state="'
             . self::escape($notificationState) . '">' . self::icon(['name' => 'bell', 'decorative' => true])
             . '<span class="aia-sidebar__label">' . self::escape($notificationLabel) . '</span>'
             . ($notificationCount !== '' ? '<span class="aia-sidebar__badge">' . self::escape($notificationCount) . '</span>' : '')
-            . '</button><span class="aia-sidebar__notification-state" data-sidebar-notification-message>'
-            . self::escape($notificationText) . '</span>' . $accountMarkup . '</footer></aside>';
+            . '</button><span class="aia-sidebar__notification-state" data-sidebar-notification-message role="status" aria-live="polite">'
+            . self::escape($notificationText) . '</span><button type="button" class="aia-sidebar__retry" data-sidebar-notification-retry hidden>Reintentar</button>' . $accountMarkup . '</footer></aside>';
     }
 
     private static function sidebarAccountMarkup(string $id, string $label, mixed $items): string

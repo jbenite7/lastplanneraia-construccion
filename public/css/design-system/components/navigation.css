@@ -291,6 +291,7 @@
     color: var(--ds-active-text-secondary);
     cursor: not-allowed;
     opacity: var(--ds-opacity-disabled);
+    pointer-events: none;
   }
 
   .aia-sidebar__badge {
@@ -325,13 +326,39 @@
 
   .aia-sidebar__account {
     width: 100%;
+    position: relative;
   }
 
   .aia-sidebar__account [data-aia-menu-panel] {
     position: absolute;
-    inset-inline-start: calc(var(--aia-sidebar-width) - var(--ds-space-4));
-    inset-block-end: var(--ds-space-4);
+    inset-inline-start: 0;
+    inset-block-end: calc(100% + var(--ds-space-2));
     min-width: 13rem;
+    max-width: min(20rem, calc(100vw - var(--ds-space-6)));
+    overflow-wrap: anywhere;
+  }
+
+  .aia-sidebar__retry {
+    min-height: var(--ds-target-min);
+    padding: var(--ds-space-2) var(--ds-space-3);
+    border: var(--ds-border-width) solid var(--ds-color-border-strong);
+    border-radius: var(--ds-radius-control-sm);
+    background: transparent;
+    color: var(--ds-color-state-critical-text);
+    font: inherit;
+    font-size: var(--ds-type-size-xs);
+    font-weight: var(--ds-type-weight-semibold);
+    text-align: start;
+  }
+
+  .aia-sidebar__retry:hover {
+    background: var(--ds-active-surface);
+  }
+
+  .aia-sidebar__retry:focus-visible {
+    outline: var(--ds-outline-width) solid var(--ds-active-focus-ring);
+    outline-offset: var(--ds-outline-offset);
+    box-shadow: var(--ds-shadow-focus);
   }
 
   .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__brand-name,

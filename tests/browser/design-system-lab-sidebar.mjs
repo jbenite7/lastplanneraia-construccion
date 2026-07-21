@@ -66,6 +66,12 @@ for (const viewport of VIEWPORTS) {
       await expect(candidate.locator(`[data-sidebar-state-action="${state}"]`)).toHaveAttribute('aria-pressed', 'true');
       if (state === 'empty') await expect(sidebar.locator('[data-sidebar-empty]').first()).toBeVisible();
       if (state === 'error') await expect(sidebar.locator('[data-sidebar-notification-message]')).toContainText('No se pudieron');
+      if (state === 'error') {
+        const retry = sidebar.locator('[data-sidebar-notification-retry]');
+        await expect(retry).toBeVisible();
+        await retry.click();
+        await expect(candidate.locator('[data-sidebar-state-action="default"]')).toHaveAttribute('aria-pressed', 'true');
+      }
       if (state === 'default') await expect(sidebar.locator('[data-sidebar-notification-message]')).toContainText('Avisos');
     }
     const stateButtonColors = await candidate.locator('[data-sidebar-state-action]').evaluateAll((buttons) => buttons.map((button) => getComputedStyle(button).backgroundColor));

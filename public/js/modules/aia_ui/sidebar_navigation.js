@@ -13,6 +13,7 @@
     });
     const notificationMessage = candidate.querySelector("[data-sidebar-notification-message]");
     const notificationButton = candidate.querySelector("[data-sidebar-notifications]");
+    const retryButton = candidate.querySelector("[data-sidebar-notification-retry]");
     const notificationCopy =
       {
         default: "Avisos",
@@ -22,9 +23,17 @@
       }[state] || "Avisos";
     if (notificationMessage) notificationMessage.textContent = notificationCopy;
     if (notificationButton) notificationButton.setAttribute("aria-label", notificationCopy);
+    if (retryButton) retryButton.hidden = state !== "error";
+    const sidebarNav = candidate.querySelector(".aia-sidebar__nav");
+    if (sidebarNav) sidebarNav.setAttribute("aria-busy", String(state === "loading"));
     candidate.querySelectorAll("[data-sidebar-state-action]").forEach((button) => {
       button.setAttribute("aria-pressed", String(button.dataset.sidebarStateAction === state));
     });
+
+    if (retryButton && !retryButton.dataset.sidebarRetryReady) {
+      retryButton.dataset.sidebarRetryReady = "true";
+      retryButton.addEventListener("click", () => setPreviewState(candidate, "default"));
+    }
   }
 
   function setCollapsed(shell, collapsed, restoreFocus) {
