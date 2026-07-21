@@ -129,7 +129,28 @@ for (const viewport of VIEWPORTS) {
     ]);
     expect(logoutColor, 'logout link uses the vendor anchor colour').toBe(themeColor);
 
-    await accountTrigger.press('Escape');
+    // Hardened menu semantics: the trigger advertises the popup, clicking away
+    // dismisses it, and the role=menu is keyboard navigable.
+    await expect(accountTrigger).toHaveAttribute('aria-haspopup', 'menu');
+
+    // Dismiss on outside click.
+    await page.locator('#main-content').click({ position: { x: 10, y: 10 } });
+    await expect(accountPanel).toBeHidden();
+
+    // Arrow keys open the menu and move focus onto the items; once open the
+    // keys act on the focused menuitem, so drive them through the keyboard.
+    const menuItems = sidebar.locator('[data-aia-menu-panel] [role="menuitem"]');
+    await accountTrigger.press('ArrowDown');
+    await expect(accountPanel).toBeVisible();
+    await expect(menuItems.first()).toBeFocused();
+    await page.keyboard.press('End');
+    await expect(menuItems.last()).toBeFocused();
+    await page.keyboard.press('Home');
+    await expect(menuItems.first()).toBeFocused();
+    await page.keyboard.press('ArrowDown');
+    await expect(menuItems.nth(1)).toBeFocused();
+
+    await page.keyboard.press('Escape');
     await expect(accountPanel).toBeHidden();
     await expect(accountTrigger).toBeFocused();
 

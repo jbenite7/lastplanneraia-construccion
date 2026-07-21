@@ -98,7 +98,7 @@ final class DesignSystemComponent
         $label = self::text($config['label'] ?? '', 'menu label');
         $items = self::menuItems($config['items'] ?? null);
         return '<div class="aia-menu" data-aia-component="menu"><button class="aia-btn aia-btn--secondary"'
-            . ' type="button" data-aia-menu-trigger aria-controls="' . self::escape($id)
+            . ' type="button" data-aia-menu-trigger aria-haspopup="menu" aria-controls="' . self::escape($id)
             . '" aria-expanded="false">' . self::escape($label) . '</button><div id="'
             . self::escape($id) . '" data-aia-menu-panel role="menu" hidden>' . $items . '</div></div>';
     }
@@ -430,7 +430,7 @@ final class DesignSystemComponent
             }
         }
         return '<div class="aia-menu aia-sidebar__account" data-aia-component="menu"><button type="button" class="aia-sidebar__utility"'
-            . ' data-aia-menu-trigger aria-controls="' . self::escape($id) . '" aria-expanded="false">'
+            . ' data-aia-menu-trigger aria-haspopup="menu" aria-controls="' . self::escape($id) . '" aria-expanded="false">'
             . self::icon(['name' => 'user', 'decorative' => true]) . '<span class="aia-sidebar__label">'
             . self::escape($label) . '</span></button><div id="' . self::escape($id) . '" data-aia-menu-panel role="menu" hidden>'
             . implode('', $buttons) . '</div></div>';
