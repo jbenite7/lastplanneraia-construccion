@@ -31,6 +31,37 @@ for (const viewport of VIEWPORTS) {
     );
     expect(overflow).toBeLessThanOrEqual(0);
 
+    // The card grid must clear the rail and breathe symmetrically. A `* { padding: 0 }`
+    // reset in a late layer strips the vendor gutters, so this is easy to lose.
+    const gutters = await page.evaluate(() => {
+      const box = (el) => el.getBoundingClientRect();
+      const railRight = box(document.querySelector('.aia-navigation--sidebar')).right;
+      const items = [...document.querySelectorAll('#projectGrid .project-item')];
+      const perRow = items.filter((i) => Math.abs(box(i).top - box(items[0]).top) < 2).length;
+      return {
+        left: Math.round(box(items[0]).left - railRight),
+        right: Math.round(window.innerWidth - box(items[perRow - 1]).right),
+        between: perRow > 1 ? Math.round(box(items[1]).left - box(items[0]).right) : null,
+      };
+    });
+    expect(gutters.left, 'cards touch the rail').toBeGreaterThan(0);
+    expect(gutters.between, 'cards touch each other').toBeGreaterThan(0);
+    expect(Math.abs(gutters.left - gutters.right), 'left/right gutters are lopsided').toBeLessThanOrEqual(2);
+
+    // A long real account name must ellipsize inside the rail, never widen it.
+    // `.aia-menu { width: fit-content }` in primitives.css would otherwise win.
+    await sidebar.locator('.aia-sidebar__account .aia-sidebar__label').evaluate((el) => {
+      el.textContent = 'Usuario · Juan Felipe Benitez Ramos';
+    });
+    const railRight = await sidebar.evaluate((el) => el.getBoundingClientRect().right);
+    for (const selector of ['.aia-sidebar__account', '.aia-sidebar__account .aia-sidebar__label']) {
+      const right = await sidebar.locator(selector).evaluate((el) => el.getBoundingClientRect().right);
+      expect(right, `${selector} escapes the rail`).toBeLessThanOrEqual(railRight);
+    }
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth),
+    ).toBeLessThanOrEqual(0);
+
     const toggle = sidebar.locator('[data-sidebar-toggle]');
     await toggle.click();
     await expect(sidebar).toHaveAttribute('data-sidebar-state', 'collapsed');
@@ -52,6 +83,13 @@ for (const viewport of VIEWPORTS) {
     await page.evaluate(() => window.AiaDesignSystem.setTheme('dark'));
 
     await expect(sidebar.getByRole('menuitem', { name: 'Cerrar sesión' })).toHaveAttribute('href', '/logout');
+
+    // Anchor menu items must take the panel's colour, not the vendor link blue.
+    const [logoutColor, themeColor] = await Promise.all([
+      sidebar.getByRole('menuitem', { name: 'Cerrar sesión' }).evaluate((el) => getComputedStyle(el).color),
+      sidebar.locator('.aia-theme-switch').evaluate((el) => getComputedStyle(el).color),
+    ]);
+    expect(logoutColor, 'logout link uses the vendor anchor colour').toBe(themeColor);
 
     await accountTrigger.press('Escape');
     await expect(accountPanel).toBeHidden();
