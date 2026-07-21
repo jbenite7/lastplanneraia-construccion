@@ -123,7 +123,7 @@
     min-height: 38rem;
     border: var(--ds-border-width) solid var(--ds-active-border);
     border-radius: var(--ds-radius-lg);
-    background: var(--ds-active-surface-dark, var(--ds-active-surface-raised));
+    background: var(--ds-active-nav-bg);
     color: var(--ds-active-text-primary);
     overflow: visible;
     transition:
@@ -332,8 +332,12 @@
     border-block-start: var(--ds-border-width) solid var(--ds-active-border);
   }
 
-  .aia-sidebar__account {
+  /* Scoped past `.aia-menu { width: fit-content }` in primitives.css, which is
+   imported after this file in the same layer and would otherwise size the
+   account control to its label and push it past the rail. */
+  .aia-navigation--sidebar .aia-sidebar__account {
     width: 100%;
+    min-width: 0;
     position: relative;
   }
 

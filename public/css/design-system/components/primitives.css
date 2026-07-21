@@ -45,14 +45,19 @@
     box-shadow: var(--ds-shadow-md);
   }
 
-  [data-aia-menu-panel] button {
-    display: block;
+  /* Menu items may be buttons or links; anchors need the same treatment or the
+   vendor anchor colour shows through. */
+  [data-aia-menu-panel] :is(button, a) {
+    display: flex;
+    align-items: center;
+    gap: var(--ds-space-2);
     width: 100%;
     min-height: var(--ds-target-min);
     border: 0;
     background: transparent;
     color: inherit;
     text-align: start;
+    text-decoration: none;
   }
 }
 
