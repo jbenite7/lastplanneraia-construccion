@@ -61,9 +61,15 @@
           "type": "string",
           "format": "date"
         },
+        "scope": {
+          "type": "string",
+          "enum": [
+            "desktop-dark"
+          ]
+        },
         "themes": {
           "type": "array",
-          "minItems": 2,
+          "minItems": 1,
           "uniqueItems": true,
           "items": {
             "enum": [
@@ -74,7 +80,7 @@
         },
         "viewports": {
           "type": "array",
-          "minItems": 3,
+          "minItems": 1,
           "uniqueItems": true,
           "items": {
             "enum": [

@@ -159,11 +159,20 @@ for (const approval of approvals?.approvals || []) {
   const candidate = family?.candidates?.find((item) => item.id === approval.candidateId);
   if (!candidate) failures.push(`family approval: unknown candidate ${key}`);
   if (!approval.evidence?.length) failures.push(`${key}: approval requires evidence`);
-  if (JSON.stringify(approval.themes) !== JSON.stringify(['linen', 'dark'])) {
-    failures.push(`${key}: approval must cover linen and dark`);
-  }
-  if (JSON.stringify(approval.viewports) !== JSON.stringify(['390x844', '1180x820', '1440x900'])) {
-    failures.push(`${key}: approval must cover all viewports`);
+  if (approval.scope === 'desktop-dark') {
+    if (JSON.stringify(approval.themes) !== JSON.stringify(['dark'])) {
+      failures.push(`${key}: desktop-dark scoped approval must cover only dark`);
+    }
+    if (JSON.stringify(approval.viewports) !== JSON.stringify(['1180x820', '1440x900'])) {
+      failures.push(`${key}: desktop-dark scoped approval must cover the canonical desktop viewports`);
+    }
+  } else {
+    if (JSON.stringify(approval.themes) !== JSON.stringify(['linen', 'dark'])) {
+      failures.push(`${key}: approval must cover linen and dark`);
+    }
+    if (JSON.stringify(approval.viewports) !== JSON.stringify(['390x844', '1180x820', '1440x900'])) {
+      failures.push(`${key}: approval must cover all viewports`);
+    }
   }
 }
 for (const family of homologation?.families || []) {

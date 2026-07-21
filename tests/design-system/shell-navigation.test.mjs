@@ -4,7 +4,7 @@ import test from 'node:test';
 
 const readJson = async (file) => JSON.parse(await readFile(file, 'utf8'));
 
-test('shell navigation registers the sidebar candidate without borrowing approval', async () => {
+test('shell navigation registers the sidebar candidate as approved', async () => {
   const homologation = await readJson('docs/design-system/homologation.json');
   const approvals = await readJson('docs/design-system/family-approvals.json');
   const decisions = await readFile('docs/design-system/decisions.md', 'utf8');
@@ -20,14 +20,18 @@ test('shell navigation registers the sidebar candidate without borrowing approva
     {
       id: 'sidebar-shell',
       intent: 'Rail persistente desktop con contexto de proyecto, grupos operativos y colapso accesible',
-      status: 'candidate',
+      status: 'approved',
     },
   ]);
-  const approval = approvals.approvals.find(({ familyId }) => familyId === family.id);
-  assert.equal(approval.candidateId, 'adaptive-shell');
-  assert.deepEqual(approval.themes, ['linen', 'dark']);
-  assert.deepEqual(approval.viewports, family.viewports);
-  assert.match(decisions, /DS-026.*Sidebar desktop.*candidate/);
+  const adaptiveApproval = approvals.approvals.find(({ familyId, candidateId }) => familyId === family.id && candidateId === 'adaptive-shell');
+  assert.equal(adaptiveApproval.candidateId, 'adaptive-shell');
+  assert.deepEqual(adaptiveApproval.themes, ['linen', 'dark']);
+  assert.deepEqual(adaptiveApproval.viewports, family.viewports);
+  const sidebarApproval = approvals.approvals.find(({ familyId, candidateId }) => familyId === family.id && candidateId === 'sidebar-shell');
+  assert.ok(sidebarApproval, 'sidebar-shell must have its own approval entry');
+  assert.deepEqual(sidebarApproval.themes, ['dark']);
+  assert.deepEqual(sidebarApproval.viewports, ['1180x820', '1440x900']);
+  assert.match(decisions, /DS-026.*Sidebar desktop.*approved/);
   for (const label of ['Obra', 'Programa General', 'Programación Intermedia', 'Programación Semanal', 'Compras', 'Familias de Actividades', 'Paquetes de Contratación', 'Plan de Compras', 'Control Tower - Informes', 'Profesionales', 'Subcontratistas']) {
     assert.match(fixture, new RegExp(label.replace(/[+]/g, '\\+')));
   }

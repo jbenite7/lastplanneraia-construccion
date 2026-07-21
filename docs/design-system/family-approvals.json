@@ -45,6 +45,26 @@
       ]
     },
     {
+      "familyId": "shell-navigation",
+      "candidateId": "sidebar-shell",
+      "approvedBy": "user",
+      "approvalRef": "chat-2026-07-21-sidebar-approved-for-project-selector",
+      "approvedAt": "2026-07-21",
+      "scope": "desktop-dark",
+      "themes": [
+        "dark"
+      ],
+      "viewports": [
+        "1180x820",
+        "1440x900"
+      ],
+      "evidence": [
+        "tests/browser/design-system-lab-sidebar.mjs",
+        "tests/design-system/shell-navigation.test.mjs",
+        "tests/browser/project-selector-sidebar.spec.mjs"
+      ]
+    },
+    {
       "familyId": "page-structure",
       "candidateId": "inline-header",
       "approvedBy": "user",
