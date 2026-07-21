@@ -14,11 +14,37 @@
     <link rel="stylesheet" href="/css/aia-design-system.css?v=20260719search1">
     <link rel="stylesheet" href="/css/project-selector.css?v=20260719surface1">
 </head>
-<body class="hold-transition layout-top-nav project-selector-page aia-shell">
-<div class="wrapper">
-
-  <!-- Navbar -->
-  <?php echo \App\View\Components\NavbarComponent::render('proyectos'); ?>
+<body class="hold-transition aia-shell project-selector-page">
+<?php
+$canAccessBi = \App\View\Components\BiAccessComponent::canAccessAny();
+echo \App\View\Components\DesignSystemComponent::navigation([
+    'id' => 'project-selector-shell',
+    'presentation' => 'sidebar',
+    'brand' => 'Last Planner AIA',
+    'active' => 'proyectos',
+    'groups' => [
+        [
+            'id' => 'navigation',
+            'label' => 'Navegación',
+            'items' => array_values(array_filter([
+                ['id' => 'proyectos', 'label' => 'Tus proyectos', 'href' => '/proyectos', 'icon' => 'project'],
+                $canAccessBi ? ['id' => 'control-tower', 'label' => 'Control Tower - Informes', 'href' => \App\View\Components\BiAccessComponent::globalUrl(), 'icon' => 'chart'] : null,
+            ])),
+        ],
+    ],
+    'utilities' => [
+        'notifications' => ['enabled' => false],
+        'account' => [
+            'label' => 'Usuario · ' . htmlspecialchars(trim($_SESSION['nombreUsuario'] ?? 'Usuario'), ENT_QUOTES, 'UTF-8'),
+            'items' => [
+                ['label' => 'Cambiar tema', 'icon' => 'theme', 'themeToggle' => true],
+                ['label' => 'Cerrar sesión', 'icon' => 'logout', 'href' => '/logout'],
+            ],
+        ],
+    ],
+]);
+?>
+<div class="project-selector-main">
 
   <!-- Content Wrapper -->
   <main id="main-content" class="content-wrapper project-selector-shell">
@@ -133,6 +159,8 @@
 <script src="/vendor/jquery.min.js" defer></script>
 <script src="/vendor/bootstrap/bootstrap.min.js" defer></script>
 <script src="/public/js/modules/aia_ui/theme.js?v=<?= filemtime(__DIR__ . '/../../public/js/modules/aia_ui/theme.js') ?>" defer></script>
+<script src="/public/js/modules/aia_ui/components.js?v=<?= filemtime(__DIR__ . '/../../public/js/modules/aia_ui/components.js') ?>" defer></script>
+<script src="/public/js/modules/aia_ui/sidebar_navigation.js?v=<?= filemtime(__DIR__ . '/../../public/js/modules/aia_ui/sidebar_navigation.js') ?>" defer></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {

@@ -1,21 +1,35 @@
 @layer components, states, responsive;
 
 @layer components {
-  body.project-selector-page,
-  body.project-selector-page.layout-top-nav {
-    display: flex;
-    flex-direction: column;
+  body.project-selector-page {
+    display: block;
     min-height: 100vh;
     font-family: var(--ds-font-body);
     color: var(--ds-active-text-primary);
     background: var(--ds-active-bg-page);
   }
 
-  .project-selector-page .wrapper {
+  .project-selector-page [data-shell-pattern="sidebar"] {
+    position: fixed;
+    inset-block: 0;
+    left: 0;
+    z-index: var(--ds-z-sticky);
+  }
+
+  .project-selector-main {
     display: flex;
     flex: 1 0 auto;
     flex-direction: column;
     min-height: 100vh;
+    position: relative;
+    left: var(--ds-sidebar-width-expanded);
+    width: calc(100% - var(--ds-sidebar-width-expanded));
+    transition: left var(--ds-motion-standard), width var(--ds-motion-standard);
+  }
+
+  .project-selector-page:has([data-shell-pattern="sidebar"][data-sidebar-state="collapsed"]) .project-selector-main {
+    left: var(--ds-sidebar-width-collapsed);
+    width: calc(100% - var(--ds-sidebar-width-collapsed));
   }
 
   .project-selector-page #main-content {
