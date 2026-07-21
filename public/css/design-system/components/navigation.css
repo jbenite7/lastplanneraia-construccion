@@ -202,6 +202,7 @@
 
   .aia-sidebar__toggle,
   .aia-sidebar__utility {
+    position: relative;
     justify-content: flex-start;
     width: 100%;
     min-height: var(--ds-target-min);
@@ -219,6 +220,13 @@
   .aia-sidebar__link:hover:not([aria-disabled="true"]) {
     background: var(--ds-active-surface);
     color: var(--ds-active-text-primary);
+  }
+
+  .aia-sidebar__toggle:active,
+  .aia-sidebar__utility:active,
+  .aia-sidebar__link:active:not([aria-disabled="true"]) {
+    border-color: var(--ds-color-border-strong);
+    background: var(--ds-active-surface-raised);
   }
 
   .aia-sidebar__toggle:focus-visible,
