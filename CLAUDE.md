@@ -6,7 +6,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Rama `pdc-v2-fundacion`: **fundación implementada** — SPA React + Vite + TypeScript + AG Grid Community en `src/` (bootstrap, cliente API, página inicial de maestro de insumos), montada como isla en lps-aia (shell PHP + endpoint de contexto + bundle commiteado en `lps-aia/public/pdc-app/`). Verificada con Vitest (9 tests), test PHP autoejecutable (11 asserts) y e2e Playwright.
 
-Pendiente de las siguientes fases: import de presupuesto, maestro de insumos real, Pareto, paquetes y matching de cronograma (ver `docs/superpowers/plans/`).
+El desarrollo sigue el **roadmap maestro** `docs/superpowers/plans/2026-07-22-roadmap-pdc-v2.md` (fases A1→A4, B1→B3, C1); cada fase recibe su propio spec y plan detallado antes de ejecutarse.
+
+## Producto: 2 submódulos de UI
+
+La app se organiza en exactamente **dos submódulos** (decisión 2026-07-22):
+
+1. **Ensamble del Plan de Compras** — construir el plan: importar presupuesto → maestro de insumos → paquetes de contratación → matching con cronograma → plan con fechas. (Fases A1–A4.)
+2. **Seguimiento al Plan de Compras** — operar el plan: avance por pasos de contratación (fechas reales vs programadas), alertas/semáforos, re-matching automático al reprogramar, responsables y gestión, y Torre de Control (BI). (Fases B1–B3.)
+
+No existe una vista de Pareto en este desarrollo.
+
+## Hechos del modelo de datos LPS (verificados en lps-aia — vinculantes)
+
+- **Última semana activa** = `MAX(Semana)` de `semanas_activas` (no hay flag).
+- El programa se versiona por semana: `programa` (viva) vs **`programa_consolidado`** (snapshot semanal). El matching de v2 va contra `programa_consolidado WHERE Semana = MAX` y persiste **`unique_id`** (identidad de actividad estable ante reprogramaciones).
+- **Fechas:** programación hacia atrás desde `Fecha_Inicio` de la actividad ancla, con duraciones por paso del catálogo global `general_dias_procesos_contratacion` (pasos configurables por proyecto). **No usar** `general_pdc_plantillas` (dropeada).
+- Tablas nuevas: operativas con `project_id int NOT NULL` + índice liderado por `project_id` + `utf8mb4_unicode_ci`; catálogos `general_*` sin `project_id`; migraciones en `lps-aia/database/migrations/` (DDL `.sql`; backfills `.php` dry-run→`--apply`).
+- **Verificación de BD por fase sobre el MySQL real de Docker (nunca mocks):** migraciones aplicadas, asserts de integridad en tests PHP, y gates `test_global_table_safety` + `test_global_table_reconciliation` en verde.
 
 ## Propósito del proyecto
 
