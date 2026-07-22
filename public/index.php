@@ -125,6 +125,7 @@ $router->get('/programa-general-actualizar', [\App\Controllers\Programacion\Prog
 
 // Gestion
 $router->get('/pdc', [\App\Controllers\Gestion\PdcController::class, 'index']);
+$router->get('/plan-compras', [\App\Controllers\Gestion\PlanComprasController::class, 'index']);
 $router->get('/profesionales', [\App\Controllers\Gestion\ProfesionalesController::class, 'index']);
 $router->get('/subcontratistas', [\App\Controllers\Gestion\SubcontratistasController::class, 'index']);
 $router->get('/contratos', [\App\Controllers\Gestion\ContratosController::class, 'index']);
@@ -180,6 +181,8 @@ $router->post('/api/pdc/list', [\App\Controllers\Api\PdcApiController::class, 'l
 $router->post('/api/pdc/save', [\App\Controllers\Api\PdcApiController::class, 'save']);
 $router->post('/api/pdc/update-cell', [\App\Controllers\Api\PdcApiController::class, 'updateCell']);
 $router->get('/api/pdc/duracion-sugerida', [\App\Controllers\Api\PdcApiController::class, 'duracionSugerida']);
+// Api/Plan de Compras v2 (isla React — namespace nuevo, no tocar /api/pdc/*)
+$router->get('/plan-compras/api/contexto', [\App\Controllers\Api\PlanComprasApiController::class, 'contexto']);
 // Api/PDC Plantillas
 $router->get('/api/pdc/plantillas', [\App\Controllers\Api\PdcPlantillaController::class, 'list']);
 $router->get('/api/pdc/plantillas/{id}', [\App\Controllers\Api\PdcPlantillaController::class, 'show']);

@@ -2,7 +2,7 @@
     RewriteEngine On
 
     # 0. Mapear rutas de FrontEnd y assets absolutos a /public en local
-    RewriteCond %{REQUEST_URI} ^/(css|js|img|vendor|storage|archivosBase)/(.*)$ [NC]
+    RewriteCond %{REQUEST_URI} ^/(css|js|img|vendor|storage|archivosBase|pdc-app)/(.*)$ [NC]
     RewriteRule ^(.*)$ public/%{REQUEST_URI} [L]
 
     # 1. Si el archivo existe físicamente, sírvelo directamente (Legacy Support de Assets)
