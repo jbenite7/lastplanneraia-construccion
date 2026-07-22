@@ -36,6 +36,7 @@ $out = $capture(static fn () => (new PlanComprasApiController())->contexto());
 $assert(($out['ok'] ?? null) === true, 'Responde envelope ok:true con sesión válida.');
 $assert(($out['data']['projectId'] ?? 0) === 999, 'projectId viene de $_SESSION[project_id].');
 $assert(($out['data']['proyectoNombre'] ?? '') === 'PROYECTO TEST', 'proyectoNombre viene de la sesión.');
+$assert(($out['data']['usuario'] ?? '') === 'Test Dir', 'usuario prefiere nombreUsuario de la sesión.');
 $assert(($out['data']['rol'] ?? '') === 'D', 'rol usa permiso_canonico.');
 $assert(is_string($out['data']['csrfToken'] ?? null) && strlen($out['data']['csrfToken']) === 64, 'csrfToken generado (64 hex).');
 

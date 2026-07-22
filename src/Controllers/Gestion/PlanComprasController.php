@@ -40,6 +40,10 @@ class PlanComprasController extends BaseController
         $bundlePath = PROJECT_ROOT . '/public/pdc-app/assets/pdc.js';
         $assetVersion = is_file($bundlePath) ? (int) filemtime($bundlePath) : 0;
 
+        // tokens.css evoluciona con lps-aia, no con el bundle: cache-busting propio.
+        $tokensPath = PROJECT_ROOT . '/public/css/tokens.css';
+        $tokensVersion = is_file($tokensPath) ? (int) filemtime($tokensPath) : 0;
+
         require PROJECT_ROOT . '/views/plan-compras/app.view.php';
     }
 }

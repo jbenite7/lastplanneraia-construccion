@@ -1,7 +1,8 @@
 <?php
 /**
  * Shell de la isla React — Plan de Compras v2.
- * Variables: $bootstrapJson (JSON seguro), $assetVersion (int cache-busting).
+ * Variables: $bootstrapJson (JSON seguro), $assetVersion (int cache-busting del
+ * bundle), $tokensVersion (int cache-busting propio de tokens.css).
  * El bundle NO se edita aquí: se compila en el repo `plan-de-compras`
  * (npm run sync) y llega a public/pdc-app/.
  */
@@ -13,7 +14,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Plan de Compras — Last Planner AIA</title>
 	<link rel="icon" href="/favicon.ico">
-	<link rel="stylesheet" href="/css/tokens.css?v=<?php echo (int) $assetVersion; ?>">
+	<link rel="stylesheet" href="/css/tokens.css?v=<?php echo (int) $tokensVersion; ?>">
 	<link rel="stylesheet" href="/pdc-app/assets/pdc.css?v=<?php echo (int) $assetVersion; ?>">
 </head>
 <body>
