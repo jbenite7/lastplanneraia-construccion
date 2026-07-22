@@ -52,7 +52,7 @@ class PlanComprasApiController
         if (!headers_sent()) {
             header('Content-Type: application/json; charset=utf-8');
         }
-        echo json_encode(['ok' => true, 'data' => $data], JSON_UNESCAPED_UNICODE);
+        echo json_encode(['ok' => true, 'data' => $data], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
     }
 
     private function fail(string $code, string $message, int $status): void
@@ -63,7 +63,7 @@ class PlanComprasApiController
         }
         echo json_encode(
             ['ok' => false, 'error' => ['code' => $code, 'message' => $message]],
-            JSON_UNESCAPED_UNICODE
+            JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE
         );
     }
 }
