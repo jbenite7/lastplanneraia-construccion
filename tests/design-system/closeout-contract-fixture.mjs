@@ -22,6 +22,8 @@ const referencedTests = [
   'tests/browser/design-system-compliance.mjs',
   'tests/design-system/operational-fixtures.test.mjs',
   'tests/browser/operational-fixtures.mjs',
+  'tests/design-system/project-selector-contract.test.mjs',
+  'tests/browser/project-selector-sidebar.spec.mjs',
   'e2e/tests/workflows/pg-interactions.spec.mjs',
 ];
 

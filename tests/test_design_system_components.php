@@ -59,6 +59,35 @@ try {
     throw new RuntimeException('unknown sidebar active destination accepted');
 } catch (InvalidArgumentException) {}
 
+$contextlessSidebar = DesignSystemComponent::navigation([
+    'id' => 'lab-contextless',
+    'presentation' => 'sidebar',
+    'brand' => 'Last Planner AIA',
+    'active' => 'proyectos',
+    'groups' => [
+        ['id' => 'navigation', 'label' => 'Navegación', 'items' => [
+            ['id' => 'proyectos', 'label' => 'Tus proyectos', 'href' => '/proyectos', 'icon' => 'project'],
+            ['id' => 'control-tower', 'label' => 'Control Tower - Informes', 'href' => '/bi/control-tower', 'icon' => 'chart'],
+        ]],
+    ],
+    'utilities' => [
+        'notifications' => ['enabled' => false],
+        'account' => [
+            'label' => 'Usuario · Administrador',
+            'items' => [
+                ['label' => 'Cambiar tema', 'icon' => 'theme', 'themeToggle' => true],
+                ['label' => 'Cerrar sesión', 'icon' => 'logout', 'href' => '/logout'],
+            ],
+        ],
+    ],
+]);
+dsComponentAssert(!str_contains($contextlessSidebar, 'aia-sidebar__context'), 'contextless sidebar omits project/week block');
+dsComponentAssert(!str_contains($contextlessSidebar, 'data-sidebar-notifications'), 'disabled notifications omit the utility button');
+dsComponentAssert(!str_contains($contextlessSidebar, 'data-sidebar-notification-retry'), 'disabled notifications omit the retry control');
+dsComponentAssert(str_contains($contextlessSidebar, 'aia-theme-switch'), 'themeToggle account item exposes the global theme switch hook');
+dsComponentAssert(str_contains($contextlessSidebar, 'href="/logout"'), 'account item with href renders a real link');
+dsComponentAssert(str_contains($contextlessSidebar, 'aria-current="page"'), 'contextless sidebar still marks the active destination');
+
 $header = DesignSystemComponent::pageHeader([
     'id' => 'programa-general', 'title' => 'Programa <General>',
     'context' => 'Semana 6 & proyecto', 'headingLevel' => 2,

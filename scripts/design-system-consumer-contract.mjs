@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import process from 'node:process';
+import { pathToFileURL } from 'node:url';
 
 export function consumerContractFailures({ root, manifest, viewOverride = null, cssOverride = null }) {
   const failures = [];
@@ -17,10 +18,14 @@ export function consumerContractFailures({ root, manifest, viewOverride = null, 
 
   if (manifest.consumerContract !== 'v1') return failures;
 
-  const view = viewOverride ?? read('views/core/project_selector.view.php');
-  const css = cssOverride ?? read('public/css/project-selector.css');
+  const sources = manifest.sources || [];
+  const viewSource = sources.find((s) => s.endsWith('.view.php')) ?? 'views/core/project_selector.view.php';
+  const cssSource = sources.find((s) => /project-selector\.css$|\/module\.css$/.test(s))
+    ?? sources.find((s) => s.endsWith('.css')) ?? 'public/css/project-selector.css';
+  const view = viewOverride ?? read(viewSource);
+  const css = cssOverride ?? read(cssSource);
   const required = [
-    'public/css/tokens.css',
+    '/css/tokens.css',
     '/css/aia-design-system.css',
   ];
   for (const asset of required) {
@@ -88,15 +93,28 @@ export function consumerContractFailures({ root, manifest, viewOverride = null, 
   return failures;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   const root = process.cwd();
-  const manifestPath = process.argv[2] || 'docs/design-system/manifests/project-selector.json';
-  const manifest = JSON.parse(readFileSync(join(root, manifestPath), 'utf8'));
-  const failures = consumerContractFailures({ root, manifest });
+  const explicit = process.argv[2];
+  const readManifest = (rel) => JSON.parse(readFileSync(join(root, 'docs/design-system/manifests', rel), 'utf8'));
+
+  let manifests;
+  if (explicit) {
+    manifests = [JSON.parse(readFileSync(join(root, explicit), 'utf8'))];
+  } else {
+    const inventory = JSON.parse(readFileSync(join(root, 'docs/design-system/manifests/inventory.json'), 'utf8'));
+    manifests = (inventory.manifests || [])
+      .map(readManifest)
+      .filter((m) => m.consumerContract === 'v1');
+  }
+
+  const failures = manifests.flatMap((manifest) =>
+    consumerContractFailures({ root, manifest }).map((f) => `[${manifest.moduleId}] ${f}`));
+
   if (failures.length) {
     console.error('Design system consumer contracts: FAIL');
     failures.forEach((failure) => console.error(`- ${failure}`));
     process.exit(1);
   }
-  console.log('Design system consumer contracts: PASS');
+  console.log(`Design system consumer contracts: PASS (${manifests.length} manifiesto/s v1)`);
 }

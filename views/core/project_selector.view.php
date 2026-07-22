@@ -7,18 +7,44 @@
     <script src="/public/js/core/SessionTimeoutManager.js?v=20260328a" defer></script>
     <script src="/js/tablet-viewport-scale.js?v=1.2" defer></script>
     <title>Seleccionar Proyecto - Last Planner AIA</title>
-    <!-- Local vendor adapters; canonical AIA entrypoint owns tokens and fonts. -->
-    <link rel="stylesheet" href="/vendor/font-awesome/css/all.css">
-    <link rel="stylesheet" href="/vendor/bootstrap/bootstrap.min.css">
-    <link rel="stylesheet" href="/css/tokens.css?v=<?= filemtime(__DIR__ . '/../../public/css/tokens.css') ?>">
-    <link rel="stylesheet" href="/css/aia-design-system.css?v=20260719search1">
-    <link rel="stylesheet" href="/css/project-selector.css?v=20260719surface1">
+    <!-- The canonical AIA entrypoint owns tokens, fonts and the layered vendor adapters.
+         renderStylesheet versions the entrypoint by its newest nested stylesheet. -->
+    <?= \App\View\Components\DesignSystemHeadComponent::renderStylesheet('/css/tokens.css') ?>
+    <?= \App\View\Components\DesignSystemHeadComponent::renderStylesheet('/css/aia-design-system.css') ?>
+    <?= \App\View\Components\DesignSystemHeadComponent::renderStylesheet('/css/dark-mode.css') ?>
+    <?= \App\View\Components\DesignSystemHeadComponent::renderStylesheet('/css/project-selector.css') ?>
 </head>
-<body class="hold-transition layout-top-nav project-selector-page aia-shell">
-<div class="wrapper">
-
-  <!-- Navbar -->
-  <?php echo \App\View\Components\NavbarComponent::render('proyectos'); ?>
+<body class="hold-transition aia-shell project-selector-page">
+<?php
+$canAccessBi = \App\View\Components\BiAccessComponent::canAccessAny();
+echo \App\View\Components\DesignSystemComponent::navigation([
+    'id' => 'project-selector-shell',
+    'presentation' => 'sidebar',
+    'brand' => 'Last Planner AIA',
+    'active' => 'proyectos',
+    'groups' => [
+        [
+            'id' => 'navigation',
+            'label' => 'Navegación',
+            'items' => array_values(array_filter([
+                ['id' => 'proyectos', 'label' => 'Tus proyectos', 'href' => '/proyectos', 'icon' => 'project'],
+                $canAccessBi ? ['id' => 'control-tower', 'label' => 'Control Tower - Informes', 'href' => \App\View\Components\BiAccessComponent::globalUrl(), 'icon' => 'chart'] : null,
+            ])),
+        ],
+    ],
+    'utilities' => [
+        'notifications' => ['enabled' => false],
+        'account' => [
+            'label' => 'Usuario · ' . htmlspecialchars(trim($_SESSION['nombreUsuario'] ?? 'Usuario'), ENT_QUOTES, 'UTF-8'),
+            'items' => [
+                ['label' => 'Cambiar tema', 'icon' => 'theme', 'themeToggle' => true],
+                ['label' => 'Cerrar sesión', 'icon' => 'logout', 'href' => '/logout'],
+            ],
+        ],
+    ],
+]);
+?>
+<div class="project-selector-main">
 
   <!-- Content Wrapper -->
   <main id="main-content" class="content-wrapper project-selector-shell">
@@ -67,7 +93,7 @@
             <?php foreach ($proyectos as $proyecto): ?>
             <?php $projectTitle = (string) $proyecto['Proyecto_Proceso']; ?>
             <?php $projectId = (int) ($proyecto['ID'] ?? $proyecto['id'] ?? 0); ?>
-            <div class="col-lg-4 col-md-6 mb-4 project-item" role="listitem" data-name="<?php echo htmlspecialchars(strtolower($projectTitle), ENT_QUOTES, 'UTF-8'); ?>">
+            <div class="col-lg-4 col-md-6 project-item" role="listitem" data-name="<?php echo htmlspecialchars(strtolower($projectTitle), ENT_QUOTES, 'UTF-8'); ?>">
                 <article class="card project-card aia-card" aria-labelledby="project-title-<?php echo $projectId; ?>">
                     <div class="card-header-project d-flex justify-content-between align-items-start">
                         <h2 id="project-title-<?php echo $projectId; ?>" class="project-title" title="<?php echo htmlspecialchars($projectTitle, ENT_QUOTES, 'UTF-8'); ?>">
@@ -133,6 +159,8 @@
 <script src="/vendor/jquery.min.js" defer></script>
 <script src="/vendor/bootstrap/bootstrap.min.js" defer></script>
 <script src="/public/js/modules/aia_ui/theme.js?v=<?= filemtime(__DIR__ . '/../../public/js/modules/aia_ui/theme.js') ?>" defer></script>
+<script src="/public/js/modules/aia_ui/components.js?v=<?= filemtime(__DIR__ . '/../../public/js/modules/aia_ui/components.js') ?>" defer></script>
+<script src="/public/js/modules/aia_ui/sidebar_navigation.js?v=<?= filemtime(__DIR__ . '/../../public/js/modules/aia_ui/sidebar_navigation.js') ?>" defer></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {

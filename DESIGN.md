@@ -17,6 +17,11 @@ es la referencia visual versionada de esas mismas primitivas.
   interacción de al menos `44px`.
 - La validación visual vigente es únicamente desktop dark: `1180x820` (canónico)
   y `1440x900`. Mobile, tablet y `linen` no forman parte de este alcance.
+- Deuda consciente `linen`: el tema `linen` se envía y el usuario puede activarlo
+  con el toggle (`public/js/modules/aia_ui/theme.js`), pero **ningún gate lo
+  valida** (shipped-but-ungated). Está fuera del alcance de enforcement vigente
+  por decisión explícita, no por olvido; cualquier regresión visual en `linen`
+  no está cubierta por los gates hasta que se decida validarlo o retirarlo.
 - Programa General y sus archivos protegidos no se modifican desde una
   migración de otra superficie.
 
@@ -33,3 +38,35 @@ Antes de editar una superficie declarada:
 Solo las superficies registradas como migradas fallan cerradamente. Un módulo
 legacy no declarado queda congelado: para editarlo primero hay que crear su
 manifiesto y activar sus gates.
+
+## Enrutador de gates y hook local (opcional)
+
+`scripts/design-system-router.mjs` traduce "estos archivos cambiaron" a "corre
+estos gates". Úsalo manualmente:
+
+```bash
+node scripts/design-system-router.mjs            # sobre el diff actual del worktree
+node scripts/design-system-router.mjs views/pdc/pdc.view.php
+```
+
+Para superficies UI sin manifiesto advierte (no bloquea) y recuerda que el cambio
+no debe subir `docs/design-system/audit-baseline.json`.
+
+Opcionalmente, cada desarrollador puede activarlo como hook `PostToolUse` de su
+asistente para que se ejecute al editar UI. `.claude/settings.json` (Claude Code)
+y `.codex/hooks.json` (Codex) están en `.gitignore`: son configuración local por
+máquina, no contrato del repo. Ejemplo para Claude Code en `.claude/settings.json`:
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      { "matcher": "Edit|Write",
+        "hooks": [ { "type": "command", "command": "node scripts/design-system-router.mjs", "timeout": 10 } ] }
+    ]
+  }
+}
+```
+
+La garantía compartida real sigue siendo CI (`.github/workflows/design-system.yml`)
+más los gates en `scripts/`; el hook es solo una ayuda temprana.

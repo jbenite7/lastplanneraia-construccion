@@ -39,18 +39,63 @@
     if (!open && restoreFocus) parts.trigger.focus();
   }
 
+  function menuItems(panel) {
+    return Array.prototype.slice.call(panel.querySelectorAll('[role="menuitem"]'));
+  }
+
   function initDisclosure(root, kind) {
     if (root.dataset.aiaReady === "true") return;
     var parts = disclosureParts(root, kind);
     if (!parts.trigger || !parts.panel) return;
     root.dataset.aiaReady = "true";
+    var isMenu = kind === "menu";
+    var isOpen = () => parts.trigger.getAttribute("aria-expanded") === "true";
+
+    // Roving tab order: a role=menu owns keyboard nav, so items leave the tab
+    // sequence and are reached with the arrow keys once the menu is open.
+    if (isMenu) menuItems(parts.panel).forEach((item) => { item.tabIndex = -1; });
+
+    var focusItem = (index) => {
+      var items = menuItems(parts.panel);
+      if (!items.length) return;
+      items[((index % items.length) + items.length) % items.length].focus();
+    };
+    var openMenu = (focusIndex) => {
+      setDisclosure(parts, true, false);
+      if (isMenu && typeof focusIndex === "number") focusItem(focusIndex);
+    };
+    var closeMenu = (restoreFocus) => setDisclosure(parts, false, restoreFocus);
+
     parts.trigger.addEventListener("click", () => {
-      setDisclosure(parts, parts.trigger.getAttribute("aria-expanded") !== "true", false);
+      if (isOpen()) closeMenu(false); else openMenu();
     });
+
+    if (isMenu) {
+      parts.trigger.addEventListener("keydown", (event) => {
+        if (event.key === "ArrowDown") { event.preventDefault(); openMenu(0); }
+        else if (event.key === "ArrowUp") { event.preventDefault(); openMenu(-1); }
+      });
+      parts.panel.addEventListener("keydown", (event) => {
+        var items = menuItems(parts.panel);
+        var current = items.indexOf(document.activeElement);
+        if (event.key === "ArrowDown") { event.preventDefault(); focusItem(current + 1); }
+        else if (event.key === "ArrowUp") { event.preventDefault(); focusItem(current - 1); }
+        else if (event.key === "Home") { event.preventDefault(); focusItem(0); }
+        else if (event.key === "End") { event.preventDefault(); focusItem(items.length - 1); }
+        else if (event.key === "Tab") { closeMenu(false); }
+      });
+    }
+
     root.addEventListener("keydown", (event) => {
-      if (event.key !== "Escape") return;
+      if (event.key !== "Escape" || !isOpen()) return;
       event.preventDefault();
-      setDisclosure(parts, false, true);
+      closeMenu(true);
+    });
+
+    // Dismiss on click outside the disclosure.
+    document.addEventListener("click", (event) => {
+      if (!isOpen() || root.contains(event.target)) return;
+      closeMenu(false);
     });
   }
 

@@ -27,8 +27,8 @@
         })();
     </script>
 
-    <link rel="stylesheet" href="/css/tokens.css">
-    <link rel="stylesheet" href="/css/aia-design-system.css">
+    <?= \App\View\Components\DesignSystemHeadComponent::renderStylesheet('/css/tokens.css') ?>
+    <?= \App\View\Components\DesignSystemHeadComponent::renderStylesheet('/css/aia-design-system.css') ?>
 
     <script>
         window.tailwind = window.tailwind || {};

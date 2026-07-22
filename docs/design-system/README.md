@@ -17,6 +17,7 @@ Este directorio define la parte versionada del design system. Stitch y `docs/bra
 
 ## Archivos canonicos
 
+- `DESIGN.md` (raíz): guía de consumo para desarrolladores; no es fuente de verdad, apunta a este directorio.
 - `version.json` y `CHANGELOG.md`: SemVer y evolución contractual.
 - `component-catalog.json`: inventario ejecutable de componentes y familias.
 - `stable-api-1.0.0.json`: enumeración exacta de la API `stable` candidata a la

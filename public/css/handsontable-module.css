@@ -943,8 +943,10 @@ body {
     animation: none;
   }
 
-  /* Ajuste Dinámico de Layout para Evitar Solapamiento de Sidebar y Drawer */
-  body:not(.ds-lab) {
+  /* Ajuste Dinámico de Layout para Evitar Solapamiento de Sidebar y Drawer.
+     El selector de proyectos no monta el rail ni el drawer LPS, así que
+     reservarle el ancho solo le deja un margen derecho muerto. */
+  body:not(.ds-lab):not(.project-selector-page) {
     padding-right: var(--lps-rail-safe-width) !important;
     transition: padding-right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }

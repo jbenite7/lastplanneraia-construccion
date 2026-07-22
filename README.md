@@ -49,6 +49,9 @@ plataforma, estructurada en el arco de tres actos que rige nuestra visión opera
   modernización.
 - **[Rutas del Sistema (docs/ROUTES.md)](docs/ROUTES.md)**: Direccionamiento del MVC, APIs e
   instrucciones del Front Controller.
+- **[Contrato de consumo del Design System (DESIGN.md)](DESIGN.md)**: Tokens `--ds-*`/`--aia-*`,
+  primitivas `aia-*` y flujo obligatorio antes de tocar UI. Léelo antes de cualquier cambio visual;
+  la autoridad ejecutable vive en `docs/design-system/`.
 - **[Guía de Stitch (docs/STITCH.md)](docs/STITCH.md)**: Conexión, autenticación e interacción con
   Stitch para generar el design system y las pantallas de la app.
 - **[Rutina de despliegue SiteGround](docs/siteground-deploy-routine.md)**: Checklist operativo para

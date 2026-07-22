@@ -1,25 +1,62 @@
 @layer components, states, responsive;
 
 @layer components {
-  body.project-selector-page,
-  body.project-selector-page.layout-top-nav {
-    display: flex;
-    flex-direction: column;
+  /* handsontable-module.css locks `html, body { height: 100%; overflow: hidden }`
+   on desktop so grid pages scroll internally, and only unlocks it below 768px.
+   The selector is a normal scrolling document, so restore document scroll when
+   its cards run past the fold. Scoped to the selector; grid pages keep the lock. */
+  html:has(body.project-selector-page) {
+    height: auto;
+    overflow-y: auto;
+  }
+
+  body.project-selector-page {
+    display: block;
+    height: auto;
     min-height: 100vh;
+    overflow-y: visible;
     font-family: var(--ds-font-body);
     color: var(--ds-active-text-primary);
     background: var(--ds-active-bg-page);
   }
 
-  .project-selector-page .wrapper {
+  .project-selector-page [data-shell-pattern="sidebar"] {
+    position: fixed;
+    inset-block: 0;
+    left: 0;
+    z-index: var(--ds-z-sticky);
+  }
+
+  .project-selector-main {
     display: flex;
     flex: 1 0 auto;
     flex-direction: column;
     min-height: 100vh;
+    position: relative;
+    left: var(--ds-sidebar-width-expanded);
+    width: calc(100% - var(--ds-sidebar-width-expanded));
+    transition: left var(--ds-motion-standard), width var(--ds-motion-standard);
+  }
+
+  .project-selector-page:has([data-shell-pattern="sidebar"][data-sidebar-state="collapsed"]) .project-selector-main {
+    left: var(--ds-sidebar-width-collapsed);
+    width: calc(100% - var(--ds-sidebar-width-collapsed));
   }
 
   .project-selector-page #main-content {
     flex: 1 0 auto;
+  }
+
+  /* Three up, matching the approved Bootstrap `col-lg-4` layout; the desktop
+   scope starts at 1180px so the column count does not need to flex. */
+  .project-selector-page #projectGrid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--ds-space-6);
+  }
+
+  .project-selector-page #projectGrid .project-item {
+    max-width: none;
   }
 
   .project-selector-shell,
@@ -231,6 +268,17 @@
 /* Vendor styles are unlayered; keep the selector's canonical primitives authoritative. */
 .project-selector-page .project-card {
   background: var(--ds-active-surface-raised);
+}
+
+/* styles.css ships a `* { padding: 0 }` reset in the `module` layer, which
+   outranks both the vendor grid and this file's `components` rules, so
+   Bootstrap's container gutters never apply. Restore the horizontal breathing
+   room from tokens here, where unlayered rules win. */
+.project-selector-page .project-selector-main .container {
+  /* The reset also drops Bootstrap's auto margins, which left the capped
+     container hugging the rail on wide viewports. */
+  margin-inline: auto;
+  padding-inline: var(--ds-space-6);
 }
 
 .project-selector-page .input-group .form-control {
