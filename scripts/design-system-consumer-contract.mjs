@@ -24,12 +24,15 @@ export function consumerContractFailures({ root, manifest, viewOverride = null, 
     ?? sources.find((s) => s.endsWith('.css')) ?? 'public/css/project-selector.css';
   const view = viewOverride ?? read(viewSource);
   const css = cssOverride ?? read(cssSource);
-  const required = [
-    '/css/tokens.css',
-    '/css/aia-design-system.css',
-  ];
-  for (const asset of required) {
-    if (!view.includes(asset)) failures.push(`${manifest.moduleId}: canonical asset missing ${asset}`);
+  const usesRenderForModule = view.includes(`renderForModule('${manifest.moduleId}')`);
+  if (!usesRenderForModule) {
+    const required = [
+      '/css/tokens.css',
+      '/css/aia-design-system.css',
+    ];
+    for (const asset of required) {
+      if (!view.includes(asset)) failures.push(`${manifest.moduleId}: canonical asset missing ${asset}`);
+    }
   }
 
   for (const primitive of ['aia-shell', 'aia-card', 'aia-input', 'aia-btn', 'aia-chip', 'aia-empty', 'aia-alert']) {

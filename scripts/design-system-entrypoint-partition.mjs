@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // scripts/design-system-entrypoint-partition.mjs
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import process from 'node:process';
 import { pathToFileURL } from 'node:url';
@@ -113,8 +113,88 @@ export function partitionFailures({
   return failures;
 }
 
+const HEAD_COMPONENT = 'src/View/Components/DesignSystemHeadComponent.php';
+
+// PHP es la fuente de verdad de vendors core y adjuntos; el gate los parsea
+// para que no exista una segunda copia que mantener sincronizada a mano.
+export function phpVendorRegistry(root) {
+  const php = readFileSync(join(root, HEAD_COMPONENT), 'utf8');
+  const coreBlock = php.match(/const CORE_VENDORS = \[([^\]]*)\]/s)?.[1] ?? '';
+  const attachmentsBlock = php.match(/const VENDOR_ATTACHMENTS = \[([^\]]*)\]/s)?.[1] ?? '';
+  const coreVendors = [...coreBlock.matchAll(/'([a-z0-9-]+)'/g)].map(([, v]) => v);
+  const attachments = [...attachmentsBlock.matchAll(/'([a-z0-9-]+)' => '([^']+)'/g)]
+    .map(([, vendor, url]) => ({ vendor, url }));
+  return { coreVendors, attachments };
+}
+
+function* phpViews(root) {
+  const stack = [join(root, 'views')];
+  while (stack.length) {
+    const dir = stack.pop();
+    for (const name of readdirSync(dir)) {
+      const path = join(dir, name);
+      if (statSync(path).isDirectory()) stack.push(path);
+      else if (name.endsWith('.php')) {
+        yield { file: path.slice(root.length).replace(/^\//, ''), content: readFileSync(path, 'utf8') };
+      }
+    }
+  }
+}
+
+export function coherenceFailures({ root, viewsOverride = null, manifestsOverride = null }) {
+  const failures = [];
+  const { coreVendors, attachments } = phpVendorRegistry(root);
+  if (coreVendors.length === 0 || attachments.length === 0) {
+    return ['php-registry-unreadable: no se pudieron extraer CORE_VENDORS/VENDOR_ATTACHMENTS'];
+  }
+  const known = new Set([...coreVendors, ...attachments.map(({ vendor }) => vendor)]);
+
+  // 1. Todo adjunto PHP apunta a un archivo de la partición y existe.
+  const partitionUrls = new Set(
+    Object.values(ENTRYPOINT_FILES.attachments).map((file) => file.replace('public', '')),
+  );
+  for (const { vendor, url } of attachments) {
+    if (!partitionUrls.has(url)) failures.push(`attachment-url-drift: ${vendor} → ${url}`);
+  }
+
+  // 2. Toda vista que llama renderForModule('X') tiene manifiesto X válido.
+  const views = viewsOverride ?? [...phpViews(root)];
+  const usedModules = new Set();
+  for (const { file, content } of views) {
+    for (const match of content.matchAll(/renderForModule\('([^']+)'\)/g)) {
+      const moduleId = match[1];
+      usedModules.add(moduleId);
+      const manifestPath = join(root, 'docs/design-system/manifests', `${moduleId}.json`);
+      try {
+        JSON.parse(readFileSync(manifestPath, 'utf8'));
+      } catch {
+        failures.push(`missing-manifest: ${moduleId} (usado por ${file})`);
+      }
+    }
+  }
+
+  // 3. Todo vendors[] de los manifiestos usados (o inyectados) resuelve contra PHP.
+  const manifests = manifestsOverride ?? [...usedModules].flatMap((moduleId) => {
+    try {
+      return [JSON.parse(readFileSync(join(root, 'docs/design-system/manifests', `${moduleId}.json`), 'utf8'))];
+    } catch {
+      return [];
+    }
+  });
+  for (const manifest of manifests) {
+    for (const vendor of manifest.vendors ?? []) {
+      if (!known.has(vendor)) {
+        failures.push(`unknown-vendor: ${vendor} (manifiesto ${manifest.moduleId})`);
+      }
+    }
+  }
+
+  return failures;
+}
+
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const failures = partitionFailures({ root: process.cwd() });
+  const root = process.cwd();
+  const failures = [...partitionFailures({ root }), ...coherenceFailures({ root })];
   if (failures.length) {
     console.error('Design system entrypoint partition: FAIL');
     failures.forEach((failure) => console.error(`- ${failure}`));

@@ -20,3 +20,11 @@ test('consumer contract rejects external vendors and local visual primitives', (
   assert.ok(failures.some((failure) => failure.includes('local font size')));
   assert.ok(failures.some((failure) => failure.includes('local radius')));
 });
+
+test('consumer contract accepts renderForModule as canonical consumption', () => {
+  const view = "<?= \\App\\View\\Components\\DesignSystemHeadComponent::renderForModule('project-selector') ?>"
+    + '<div class="aia-shell aia-card aia-input aia-btn aia-chip aia-empty aia-alert"></div>';
+  const css = '.ok { color: var(--ds-active-text-primary); }';
+  const failures = consumerContractFailures({ root, manifest, viewOverride: view, cssOverride: css });
+  assert.ok(!failures.some((failure) => failure.includes('canonical asset missing')));
+});
