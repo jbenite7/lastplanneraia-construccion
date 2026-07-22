@@ -24,6 +24,7 @@ describe('apiGet', () => {
     await expect(apiGet<{ x: number }>('/plan-compras/api/algo')).resolves.toEqual({ x: 1 })
     const [, init] = fetchMock.mock.calls[0]
     expect(init.headers['X-AIA-Expect-Json']).toBe('1')
+    expect(init.credentials).toBe('same-origin')
   })
 
   it('lanza PdcApiError con code del envelope de error', async () => {
@@ -53,6 +54,17 @@ describe('apiGet', () => {
     }))
     const err = await apiGet('/plan-compras/api/algo').catch((e) => e)
     expect((err as PdcApiError).code).toBe('BAD_RESPONSE')
+  })
+
+  it('mapea HTTP 200 con JSON válido pero sin envelope a BAD_RESPONSE', async () => {
+    stubBootstrap()
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true, status: 200, json: async () => ({ resultado: 'html-login-o-legacy' }),
+    }))
+    const err = await apiGet('/plan-compras/api/algo').catch((e) => e)
+    expect(err).toBeInstanceOf(PdcApiError)
+    expect((err as PdcApiError).code).toBe('BAD_RESPONSE')
+    expect((err as PdcApiError).message).toContain('HTTP 200')
   })
 })
 

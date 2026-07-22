@@ -1,4 +1,5 @@
-import type { ApiResult, Bootstrap, Contexto } from './types'
+import { apiGet } from './api'
+import type { Bootstrap, Contexto } from './types'
 
 let cached: Bootstrap | null = null
 let pending: Promise<Bootstrap> | null = null
@@ -17,13 +18,8 @@ function fromInjected(raw: unknown): Bootstrap | null {
 }
 
 async function fetchContexto(): Promise<Bootstrap> {
-  const res = await fetch('/plan-compras/api/contexto', {
-    credentials: 'same-origin',
-    headers: { 'X-AIA-Expect-Json': '1' },
-  })
-  const body = (await res.json()) as ApiResult<Contexto>
-  if (!body.ok) throw new Error(body.error.message)
-  const c = body.data
+  // apiGet centraliza credentials, headers, envelope y mapeo de errores.
+  const c = await apiGet<Contexto>('/plan-compras/api/contexto')
   return { projectId: c.projectId, proyectoNombre: c.proyectoNombre, rol: c.rol, csrfToken: c.csrfToken, usuario: c.usuario }
 }
 

@@ -1,12 +1,17 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AgGridReact } from 'ag-grid-react'
-import { AllCommunityModule, ModuleRegistry, themeQuartz } from 'ag-grid-community'
+import { ClientSideRowModelModule, ModuleRegistry, ValidationModule, themeQuartz } from 'ag-grid-community'
 import type { ColDef } from 'ag-grid-community'
 import { getBootstrap } from '../lib/bootstrap'
 import type { Bootstrap } from '../lib/types'
 
-// AG Grid v33+: registro explícito de módulos (Community completo).
-ModuleRegistry.registerModules([AllCommunityModule])
+// AG Grid v33+: registro explícito de módulos selectivos (no AllCommunityModule,
+// que arrastra ~1.3MB). Al agregar features (filtros, edición, export) hay que
+// registrar aquí su módulo. ValidationModule solo en dev: avisa módulos faltantes.
+ModuleRegistry.registerModules([
+  ClientSideRowModelModule,
+  ...(import.meta.env.DEV ? [ValidationModule] : []),
+])
 
 // Tema oscuro alineado al design system aia — Theming API de Community.
 const pdcTheme = themeQuartz.withParams({
@@ -47,7 +52,7 @@ export default function MaestroInsumos() {
           {boot ? `${boot.proyectoNombre} · ${boot.usuario} (${boot.rol})` : 'Cargando contexto…'}
         </p>
       </header>
-      <div style={{ height: 320 }}>
+      <div className="pdc-grid">
         <AgGridReact<Row> theme={pdcTheme} rowData={rows} columnDefs={cols} />
       </div>
     </section>

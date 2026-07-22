@@ -15,7 +15,10 @@ export default defineConfig({
       output: {
         entryFileNames: 'assets/pdc.js',
         chunkFileNames: 'assets/chunk-[name].js',
-        assetFileNames: 'assets/pdc.[ext]',
+        // El CSS del entry mantiene el nombre fijo pdc.css (contrato con el shell);
+        // cualquier otro asset conserva su nombre con prefijo pdc- para no colisionar.
+        assetFileNames: (info) =>
+          info.names.some((n) => n.endsWith('.css')) ? 'assets/pdc.css' : 'assets/pdc-[name].[ext]',
       },
     },
   },
