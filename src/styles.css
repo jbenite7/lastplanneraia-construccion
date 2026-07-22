@@ -1,0 +1,14 @@
+:root {
+  /* Fallbacks para `npm run dev` fuera de lps-aia. En prod manda tokens.css. */
+  --aia-green-primary: #1a5633;
+  --aia-green-dark: #1a3c2a;
+  --ds-font-body: "Inter", system-ui, sans-serif;
+}
+
+.pdc-shell {
+  min-height: 100vh;
+  padding: 16px;
+  background: #1c1c1e; /* dark: contrato design system lps-aia */
+  color: #f4f1ea;
+  font-family: var(--ds-font-body);
+}

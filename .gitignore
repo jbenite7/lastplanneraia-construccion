@@ -3,3 +3,5 @@
 docs/*
 !docs/superpowers/
 *.mp4
+node_modules/
+dist/
