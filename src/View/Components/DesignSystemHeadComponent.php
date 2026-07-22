@@ -79,7 +79,8 @@ final class DesignSystemHeadComponent
             return $cache[$moduleId];
         }
         if (preg_match('/^[a-z0-9-]+$/', $moduleId) !== 1) {
-            error_log("design-system: moduleId inválido '$moduleId', fallback al agregador");
+            $safeId = substr(preg_replace('/[^\x20-\x7e]/', '?', $moduleId) ?? '', 0, 64);
+            error_log("design-system: moduleId inválido '$safeId', fallback al agregador");
 
             return $cache[$moduleId] = null;
         }
@@ -159,13 +160,17 @@ final class DesignSystemHeadComponent
         if (!isset(self::RUNTIME_ENTRYPOINTS[$url])) {
             return (string) $version;
         }
-        $root = dirname(__DIR__, 3) . '/public/css';
-        $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($root));
-        foreach ($files as $dependency) {
-            if ($dependency->isFile() && $dependency->getExtension() === 'css') {
-                $version = max($version, $dependency->getMTime());
+        static $cssTreeVersion = null;
+        if ($cssTreeVersion === null) {
+            $cssTreeVersion = 0;
+            $root = dirname(__DIR__, 3) . '/public/css';
+            $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($root));
+            foreach ($files as $dependency) {
+                if ($dependency->isFile() && $dependency->getExtension() === 'css') {
+                    $cssTreeVersion = max($cssTreeVersion, $dependency->getMTime());
+                }
             }
         }
-        return (string) $version;
+        return (string) max($version, $cssTreeVersion);
     }
 }
