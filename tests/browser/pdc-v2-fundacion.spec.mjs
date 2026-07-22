@@ -11,7 +11,7 @@ test('la isla React del PDC v2 monta con contexto real del proyecto', async ({ p
   try {
     // La API de contexto responde envelope ok durante la carga de la vista.
     // Timeout corto y explícito: en prod el bootstrap va inyectado y el fetch puede no
-    // ocurrir, así que no debe esperar el timeout global del test (ver nota de fix abajo).
+    // ocurrir nunca, así que esta espera no debe consumir el timeout global del test.
     const contextoPromise = page.waitForResponse(
       (res) => res.url().includes('/plan-compras/api/contexto') && res.status() === 200,
       { timeout: 5000 },
