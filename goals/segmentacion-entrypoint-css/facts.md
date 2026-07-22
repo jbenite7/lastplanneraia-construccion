@@ -1,0 +1,47 @@
+# Facts
+
+## Estado de partida verificado
+
+- `public/css/aia-design-system.css` importa en `layer(vendor)`: font-awesome, bootstrap, jquery-ui (32 KB), anychart-ui + anychart-font (36 KB+), select2 (16 KB), sweetalert2 (28 KB), handsontable.full (40 KB), `handsontable-module.css` (28 KB) y `handsontable-header-global.css` (8 KB); después los archivos del design system (fonts, foundation, core, 9 componentes, 7 adapters), `styles.css`, `buttons.css`, `access.css`, y dos bloques inline `@layer theme` y `@layer legacy-overrides`.
+- `handsontable-module.css` fija `html, body { overflow: hidden }` en desktop; project-selector lo revierte con reglas compensatorias al inicio de `public/css/project-selector.css` (`html:has(body.project-selector-page)` y ajustes de `height`/`overflow-y`).
+- Unas 20 vistas consumen el entrypoint: 12 vía `DesignSystemHeadComponent::render()`, 3 vía `render(true)`, y 5 con `renderStylesheet('/css/aia-design-system.css')` directo (login, password-forgot, password-reset, project-selector, bi/_layout).
+- El schema de manifiestos (v2) ya exige el campo `vendors`; `manifests/project-selector.json` declara `bootstrap, jquery, font-awesome, aia-fonts` y ningún vendor de grilla. Solo existen manifiestos para project-selector, programa-general y laboratory (más inventory y goal-provenance).
+- Los entrypoints con imports anidados se sirven vía `DesignSystemAssetController` (reescritura de `?v=1.0.0` al mtime real) con mapa fijo de dos entradas, dos rutas en `public/index.php` y presencia en `$publicRoutes`; el `?v=` del `<link>` lo calcula `assetVersion()` con escaneo recursivo de mtimes.
+- Existe precedente de lectura runtime de `docs/design-system/*.json` desde PHP (`DesignSystemLabController`), por lo que leer manifiestos en runtime es viable en el despliegue actual.
+- Las vistas de auth cargan además CDN legacy (AdminLTE, Font Awesome 5, SweetAlert2 v11) fuera del entrypoint; SweetAlert2 se carga hoy por duplicado (CDN + vendored).
+
+## Partición CSS (Sección 1 aprobada)
+
+- `public/css/aia-design-system.css` no se modifica en este goal: sigue siendo el entrypoint de todas las superficies no migradas, con bytes y mtime intactos.
+- Se crean bajo `public/css/design-system/entrypoints/`: `core.css` y cinco adjuntos `attach-jquery-ui.css`, `attach-anychart.css` (anychart-ui + anychart-font), `attach-select2.css` (vendor + adapter), `attach-sweetalert2.css` (vendor + adapter) y `attach-handsontable.css` (handsontable.full + handsontable-module + handsontable-header-global + adapters handsontable y programa-general-handsontable).
+- `core.css` contiene: la declaración canónica de capas (`@layer reset, vendor, theme, base, layout, components, utilities, module, legacy-overrides`), font-awesome y bootstrap en `layer(vendor)`, fonts/foundation/core/los 9 componentes, los adapters `legacy-bridge`, `semi-auto-review` y `lps-drawer`, `styles.css`, `buttons.css` y `access.css`. Los bloques inline `@layer theme` y `@layer legacy-overrides` del agregador se copian a un archivo nuevo importado por core (el agregador conserva su copia inline intacta); el gate de partición verifica que ambas copias permanezcan textualmente idénticas mientras coexistan.
+- Los adapters `semi-auto-review` y `lps-drawer` quedan en core en esta iteración por no tener vendor asociado; son candidatos declarados a adjunto de módulo en un goal posterior.
+- Los imports de vendors dentro de los adjuntos van en `layer(vendor)` y los adapters en su capa actual: la posición del `<link>` no altera la cascada porque las capas se resuelven por su orden de declaración en core, no por orden textual del documento.
+- `handsontable-module.css` no se edita: su bloqueo de scroll deja de ser global porque solo lo cargan las superficies que declaran `handsontable` en su manifiesto.
+- Un gate de partición (script nuevo sumado al router de gates y a CI) verifica que el conjunto de imports del agregador es exactamente la unión disjunta de core y los adjuntos, sin faltantes ni duplicados y con el orden relativo por capa preservado, y que los bloques inline del agregador y su copia importada por core son textualmente idénticos. Este gate impide el drift entre agregador y partición.
+
+## Runtime PHP (Sección 2 aprobada)
+
+- `DesignSystemHeadComponent` gana `renderForModule(string $moduleId): string`; `render()`, `render(true)`, `renderStylesheet()` y `renderLaboratory()` no cambian.
+- `renderForModule` lee `docs/design-system/manifests/{moduleId}.json` con caché estático por request, cruza `vendors[]` contra una constante `VENDOR_ATTACHMENTS`, ignora los vendors cubiertos por core (`bootstrap`, `jquery`, `font-awesome`, `aia-fonts`) y emite `theme-bootstrap.js` + `core.css` + los adjuntos declarados en el orden canónico del agregador (jquery-ui → anychart → select2 → sweetalert2 → handsontable) + `tokens.css`.
+- Fallback fail-safe: si el manifiesto falta, no parsea o declara un vendor desconocido (ni en registro ni en core), `renderForModule` emite exactamente lo mismo que `render()` y registra el problema con `error_log`. La degradación es siempre a "cargar de más", nunca a "cargar de menos".
+- `DesignSystemAssetController` generaliza su mapa fijo a una allowlist constante (agregador, laboratorio, core, cinco adjuntos); `serve()` funciona sin cambios. Las rutas `/runtime/css/design-system/entrypoints/*.css` se registran en `public/index.php` como rutas fijas generadas desde esa constante y se añaden a `$publicRoutes` porque login las necesita pre-autenticación.
+- El `?v=` de los `<link>` nuevos usa el mismo `assetVersion()` recursivo existente: editar cualquier CSS anidado bustea la caché sin lógica nueva.
+
+## Manifiestos y superficies migradas (Sección 3 aprobada)
+
+- Migran en este goal únicamente project-selector y auth. Programa General y el resto de superficies siguen en `render()`/`render(true)` sobre el agregador intacto; ni sus vistas ni archivos protegidos aparecen en el diff.
+- project-selector: la vista pasa a `renderForModule('project-selector')` y se elimina la carga duplicada de `tokens.css`; sus `vendors` actuales ya no requieren ningún adjunto.
+- De las reglas compensatorias de scroll en `project-selector.css` se retiran solo las que la evidencia visual confirme inertes tras dejar de cargar `handsontable-module.css`; `display`, `min-height` y tipografía se conservan si siguen haciendo trabajo. El manifiesto actualiza `sources`, `tests` y `evidence` en el mismo cambio.
+- auth: manifiesto nuevo `manifests/auth.json` conforme al schema v2 completo, con `routes: ["/login", "/password/forgot", "/password/reset"]`, las tres vistas como `sources` y `vendors` según uso real verificado durante la implementación. La migración de cada vista es el reemplazo de la línea del entrypoint por `renderForModule('auth')`.
+- Los CDN legacy de auth (AdminLTE, Font Awesome 5, SweetAlert2 v11) no se tocan en este goal; la doble carga de SweetAlert2 queda documentada como deuda observada. Sanearlos es una migración visual completa de auth, no segmentación de entrypoint.
+- Gate de coherencia (misma pieza que el gate de partición): toda vista que llame `renderForModule(X)` debe tener `manifests/X.json` válido y todo `vendors[]` debe resolver contra el registro de adjuntos o el core. Corre en el router de gates y en CI.
+
+## Validación y riesgos (Sección 4 aprobada)
+
+- Dry-run por superficie migrada, en desktop dark 1180x820 y 1440x900 (único alcance visual vigente): captura before (agregador) y after (`renderForModule`) de screenshot, lista de stylesheets cargadas, consola limpia y Axe. El after debe mostrar core más solo los adjuntos declarados, ausencia de los CSS de grilla, sin regresión visual, sin violaciones serias nuevas de Axe, foco visible y targets de 44 px.
+- La evidencia se guarda en `docs/design-system/evidence/` bajo este goal y se referencia desde el manifiesto de cada superficie migrada (manifiesto + tests + evidencia en el mismo cambio).
+- Equivalencia para superficies no migradas: el hash del cuerpo servido de `/runtime/css/aia-design-system.css` antes y después del goal debe ser idéntico. Programa General se verifica con sus tests existentes (`programa-general-runtime-requests.mjs`, goldens visuales) sin reconciliar goldens: si un golden de Programa General cambia, el goal está mal.
+- `design-system-consumer-smoke.mjs` se extiende con asserts por superficie migrada (qué entrypoints carga y cuáles no debe cargar); `project-selector-contract.test.mjs` y `project-selector-sidebar.spec.mjs` deben pasar sin cambios de contrato. El manifiesto `auth` referencia estos asserts como sus tests.
+- Gates obligatorios del goal: `npm run check:design-system:biome`, `npm run test:design-system:static`, `npm run test:design-system:phpstan`, el router de gates sobre el diff y el gate nuevo de partición + coherencia. El gate de contratos exige worktree limpio; el único rojo preexistente tolerado es laboratory-hardening (doc-drift) y no puede crecer.
+- Riesgos aceptados y mitigados: dependencias no declaradas de una superficie migrada sobre vendors ausentes (las detecta el dry-run visual; el fallback permite revertir una superficie sin tocar el resto); retiro de reglas compensatorias en project-selector.css (solo confirmadas inertes, con evidencia de scroll funcional); doble carga transitoria en auth (preexistente, documentada, fuera de alcance).
