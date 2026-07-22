@@ -55,3 +55,11 @@ test('project selector loads the segmented core without grid vendors', async ({ 
     await logout(page).catch(() => {});
   }
 });
+
+test('auth surfaces load the segmented core with only their declared attachments', async ({ page }) => {
+  for (const route of ['/login', '/password/forgot', '/password/reset']) {
+    const response = await page.goto(route, { waitUntil: 'domcontentloaded' });
+    expect(response?.status(), `${route} must respond`).toBeLessThan(400);
+    await expectSegmentedHead(page, { attachments: ['sweetalert2'] });
+  }
+});

@@ -117,3 +117,91 @@
 - Veredicto: compensaciones de scroll retiradas (incluido `display: block`, confirmado inerte por
   probe); scroll del documento funcional (`htmlOverflowY: auto`); sin regresión visual en el
   dry-run; contrato v1 y partición estáticos en verde. Retiro aprobado.
+
+## Task 7 — Manifiesto auth + migración de las tres vistas de autenticación
+
+- Fecha: 2026-07-22
+- Stack: `lps-aia-sdd-epic-nobel` en `http://127.0.0.1:18081`.
+- Step 1 (grep de vendors reales, antes de tocar nada):
+  ```
+  views/auth/login.view.php:152/156/160/164/181: Swal.showValidationMessage(...)
+  ```
+  `Swal` solo aparece en `login.view.php` (el modal de cambio de contraseña obligatorio); ninguna
+  referencia a `select2`, `handsontable`, `anychart`, `jquery-ui` ni `$(` de grilla en las tres
+  vistas ni en `views/auth/partials/*.php`. **Decisión**: lista de vendors del brief se mantiene
+  sin cambios — `["bootstrap", "font-awesome", "aia-fonts", "sweetalert2"]` — y el `attachments`
+  del smoke test queda `['sweetalert2']`.
+- Step 2 (RED antes de migrar): test `auth surfaces load the segmented core...` añadido a
+  `tests/browser/design-system-consumer-smoke.mjs`; falló contra el estado pre-migración (las
+  tres vistas cargaban `/runtime/css/aia-design-system.css`, no el core segmentado) —
+  confirmado por inspección del `stylesheets.json` `before/` (ver más abajo), equivalente al RED
+  esperado.
+- Step 3: creado `docs/design-system/manifests/auth.json` (schema v2, **sin** `consumerContract`
+  — CDNs legacy AdminLTE/FA5/Swal11 que v1 prohibiría; mismo patrón que `programa-general`).
+  Registrado en `inventory.json`: `"auth.json"` añadido a `manifests[]`; entrada `modules[]` de
+  `auth` actualizada a `{ "moduleId": "auth", "status": "pilot", "manifest": "auth.json" }`.
+  `sharedHeadConsumers` sin cambios (sigue en 15, verificado con `foundation.test.mjs`).
+- Step 4: migradas las tres vistas — reemplazadas las dos líneas (`<link>` de `tokens.css` +
+  `renderStylesheet('/css/aia-design-system.css')`) por
+  `DesignSystemHeadComponent::renderForModule('auth')` en `login.view.php:17-18`,
+  `password-forgot.view.php:13-14` y `password-reset.view.php:13-14`. Sin tocar los `<link>` de
+  Google Fonts/FA5/AdminLTE/Swal-CDN, `login-brand-unified.css` ni los `<script>` finales.
+  Efectos deliberados documentados:
+  - `auth` gana `theme-bootstrap.js` en `<head>` (antes del primer CSS) — elimina el flash de
+    tema en las tres superficies; antes solo tenían `theme.js` al final del `<body>`. Confirmado
+    en el `stylesheets.json` de after (mismo orden de `<link>` que antes salvo la sustitución del
+    agregador por `core.css` + `attach-sweetalert2.css`).
+  - `auth` pierde el lock de scroll de `handsontable-module` que hoy le llegaba vía agregador
+    (nunca lo necesitó — no hay grillas en login/forgot/reset). Es el efecto de des-bloqueo de
+    scroll buscado por el goal; visible en los PNG after como un corrimiento horizontal de ~11px
+    de la tarjeta (reserva de scrollbar), sin cambios de layout/color/tipografía.
+- Step 5 (rebuild de la imagen antes de correr las pruebas — el manifiesto lo lee PHP dentro del
+  contenedor):
+  - `npx playwright test tests/browser/design-system-consumer-smoke.mjs --workers=1`: **3
+    passed** (15 consumidores compartidos + selector de proyecto + auth).
+  - `npm run test:design-system:static`: corta en el mismo rojo tolerado ya documentado
+    (`laboratory-hardening` doc-drift, ver Task 4/6).
+  - `node scripts/design-system-entrypoint-partition.mjs`: PASS (auth resuelve en la coherencia).
+  - `node scripts/design-system-consumer-contract.mjs`: PASS (`1 manifiesto/s v1`) — auth no
+    tiene `consumerContract`, por lo tanto se omite del contrato v1 (solo project-selector
+    cuenta), tal como se esperaba.
+  - `node --test tests/design-system/foundation.test.mjs`: **28/28 PASS** —
+    `sharedHeadConsumers` se mantiene en 15 (auth no está en esa lista).
+  - `node --test tests/design-system/contracts.test.mjs`: detectó una trampa no listada en el
+    brief — el test `manifests declare the complete deterministic visual matrix` (línea ~249)
+    hardcodea la lista completa de manifiestos y falló al no incluir `auth.json`. Corregido
+    añadiendo `'auth.json'` al array esperado en `tests/design-system/contracts.test.mjs`.
+  - Verificado (trampa conocida de Task 5): `tests/design-system/closeout-contract-fixture.mjs`
+    ya incluía `tests/browser/design-system-consumer-smoke.mjs` y
+    `tests/browser/entrypoint-segmentation-dryrun.mjs` en `referencedTests` desde Task 5 — sin
+    cambios necesarios (verificado con `grep`).
+- Step 6 (dry-run after + golden):
+  - `DRYRUN_SURFACE=auth DRYRUN_PHASE=after npx playwright test
+    tests/browser/entrypoint-segmentation-dryrun.mjs --workers=1`: 1 passed.
+  - `after/stylesheets.json` por ruta: `core.css` presente, agregador ausente,
+    `attach-sweetalert2.css` presente en las tres rutas (solo `/login` también carga el
+    `sweetalert2.min.css`/`.js` de CDN, que no forma parte de la partición), ningún otro attach.
+    `cssRequests` del after: sin `handsontable`, `anychart`, `select2` ni `jquery-ui` (comparado
+    contra el `before/stylesheets.json`, que sí los traía vía agregador).
+  - `console.json` after: `[]` — sin errores nuevos.
+  - Axe: mismos hallazgos exactos antes/después por ruta (`landmark-one-main` 1 nodo,
+    `region` 7/5/4 nodos en login/forgot/reset respectivamente) — sin violaciones serias nuevas.
+  - PNGs before/after, las 6 combinaciones ruta×viewport: difieren en bytes en las 6, pero la
+    inspección visual (login y password-reset a 1180×820) muestra únicamente un corrimiento
+    horizontal de la tarjeta de ~11px (reserva de scrollbar tras el des-bloqueo) — sin cambio de
+    layout, color ni tipografía. Verdict por ruta: **OK** (login, password/forgot, password/reset
+    — ambos viewports).
+  - Golden fijado: `cp .../auth/after/login-1180x820.png
+    tests/browser/__screenshots__/auth/login-dark-1180x820.png`; sha256
+    `d932f02b8132f924cbc2fa61128ebe3603aaf3eb7fbb38e4fedda04c3e857fb3` (64 hex) escrito en
+    `scenarios[0].sha256` de `auth.json`, reemplazando `PENDIENTE-STEP-6`.
+  - Re-verificación tras fijar el hash: `node scripts/design-system-entrypoint-partition.mjs`
+    PASS; `node --test tests/design-system/contracts.test.mjs`: 23/24 PASS — el único rojo
+    restante es `canonical design-system contracts pass the executable gate` por
+    `activation: worktree and index must be clean` (árbol con el WIP de este task sin
+    commitear; mismo artefacto transitorio documentado en Task 5/6, se resuelve con el commit).
+- Veredicto: manifiesto `auth` completo y sin `consumerContract` (CDN legacy documentado); tres
+  vistas migradas a `renderForModule('auth')`; smoke 3/3 en verde; partición y coherencia en
+  verde; consumer-contract omite auth correctamente; `foundation.test.mjs` 28/28 con
+  `sharedHeadConsumers` intacto en 15; golden y sha256 fijados; sin regresión visual, de consola
+  ni de accesibilidad en el dry-run after. Migración aprobada.

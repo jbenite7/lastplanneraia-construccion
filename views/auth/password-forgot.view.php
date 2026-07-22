@@ -10,8 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
-    <link rel="stylesheet" href="/css/tokens.css?v=<?= filemtime(__DIR__ . '/../../public/css/tokens.css') ?>">
-    <?= \App\View\Components\DesignSystemHeadComponent::renderStylesheet('/css/aia-design-system.css') ?>
+    <?= \App\View\Components\DesignSystemHeadComponent::renderForModule('auth') ?>
     <link rel="stylesheet" href="/css/login-brand-unified.css?v=<?= filemtime(__DIR__ . '/../../public/css/login-brand-unified.css') ?>">
 </head>
 <body class="hold-transition login-page login-brand-page aia-shell">
