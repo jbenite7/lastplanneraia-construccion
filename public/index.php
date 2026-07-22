@@ -43,7 +43,7 @@ if (file_exists(PROJECT_ROOT . '/.env')) {
 }
 
 // 3.5 Verificar Sesión y Timeout (Protección Universal)
-$publicRoutes = ['/', '/login', '/password/forgot', '/password/reset', '/password/update', '/runtime/frontend-config.js', MaintenanceMode::SECRET_PATH];
+$publicRoutes = ['/', '/login', '/password/forgot', '/password/reset', '/password/update', '/runtime/frontend-config.js', '/runtime/css/aia-design-system.css', '/runtime/css/design-system/lab-entrypoint.css', MaintenanceMode::SECRET_PATH];
 if (!in_array($requestUri, $publicRoutes, true)) {
     \App\Core\SessionMiddleware::check();
 }
@@ -248,6 +248,8 @@ $router->get('/api/notifications/unread', [\App\Controllers\Core\NotificationCon
 $router->post('/api/notifications/read', [\App\Controllers\Core\NotificationController::class, 'markAsRead']);
 $router->get('/dashboard', [\App\Controllers\Core\DashboardController::class, 'index']);
 $router->get('/runtime/frontend-config.js', [\App\Controllers\Core\FrontendConfigController::class, 'javascript']);
+$router->get('/runtime/css/aia-design-system.css', [\App\Controllers\Core\DesignSystemAssetController::class, 'main']);
+$router->get('/runtime/css/design-system/lab-entrypoint.css', [\App\Controllers\Core\DesignSystemAssetController::class, 'laboratory']);
 $router->post('/session/touch', [\App\Controllers\Core\SessionController::class, 'touch']);
 $router->post('/context/week', [\App\Controllers\Core\ContextController::class, 'setWeek']);
 

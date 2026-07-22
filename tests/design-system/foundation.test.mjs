@@ -270,6 +270,19 @@ test('stylesheet versions follow nested CSS changes', () => {
   const version = Number(html.match(/aia-design-system\.css\?v=(\d+)/)?.[1]);
   const tokensMtime = Math.floor(statSync(new URL('../../public/css/tokens.css', import.meta.url)).mtimeMs / 1000);
   assert.ok(version >= tokensMtime, `entrypoint ${version} is older than tokens ${tokensMtime}`);
+  // The entrypoint is served through PHP so its nested imports can carry real
+  // file mtimes; the static file keeps the published semver untouched.
+  assert.match(html, /href="\/runtime\/css\/aia-design-system\.css\?v=\d+"/);
+});
+
+test('runtime-served entrypoints stamp nested imports with file mtimes', () => {
+  const php = 'require "src/Controllers/Core/DesignSystemAssetController.php";'
+    + ' (new App\\Controllers\\Core\\DesignSystemAssetController())->main();';
+  const css = runPhpInApp(php);
+  assert.doesNotMatch(css, /\?v=1\.0\.0/, 'served entrypoint must not keep the static semver');
+  assert.match(css, /navigation\.css\?v=\d{9,}/, 'imports must carry unix-mtime versions');
+  assert.match(css, /^@layer reset, vendor, theme, base, layout, components, utilities, module, legacy-overrides;/, 'layer order must survive the rewrite');
+  assert.match(css, /@import url\("\/public\/vendor\/bootstrap\/bootstrap\.min\.css"\) layer\(vendor\)/, 'vendor imports stay untouched');
 });
 
 test('the laboratory stylesheet has its own cache version', async () => {
@@ -280,7 +293,7 @@ test('the laboratory stylesheet has its own cache version', async () => {
     + ' echo App\\View\\Components\\DesignSystemHeadComponent::renderLaboratory();';
   const html = runPhpInApp(php);
   assert.match(html, /tokens\.css\?v=\d+/);
-  assert.match(html, /lab-entrypoint\.css\?v=\d+/);
+  assert.match(html, /href="\/runtime\/css\/design-system\/lab-entrypoint\.css\?v=\d+"/);
 });
 
 test('the laboratory document explicitly enables vertical scrolling', async () => {
