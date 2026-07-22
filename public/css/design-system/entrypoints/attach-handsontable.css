@@ -1,0 +1,6 @@
+/* public/css/design-system/entrypoints/attach-handsontable.css */
+@import url("/public/vendor/handsontable/handsontable.full.min.css") layer(vendor);
+@import url("/css/handsontable-module.css?v=1.0.0") layer(vendor);
+@import url("/css/handsontable-header-global.css?v=1.0.0") layer(vendor);
+@import url("/css/design-system/adapters/handsontable.css?v=1.0.0");
+@import url("/css/design-system/adapters/programa-general-handsontable.css?v=1.0.0");

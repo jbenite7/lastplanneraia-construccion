@@ -5,7 +5,7 @@
     "format:frontend": "biome format --write public/js public/css admin/public/css",
     "lint:frontend": "biome lint public/js public/css admin/public/css",
     "test:design-system:preservation": "node scripts/design-system-worktree-preservation.mjs check goals/design-system-nucleo-gobernanza/worktree-preservation.json",
-    "test:design-system:static": "node --test tests/design-system/*.test.mjs tests/scripts/design-system-audit.test.mjs && node scripts/design-system-contracts.mjs && node scripts/design-system-consumer-contract.mjs && node scripts/design-system-audit.mjs",
+    "test:design-system:static": "node --test tests/design-system/*.test.mjs tests/scripts/design-system-audit.test.mjs && node scripts/design-system-contracts.mjs && node scripts/design-system-consumer-contract.mjs && node scripts/design-system-audit.mjs && node scripts/design-system-entrypoint-partition.mjs",
     "test:design-system:consumers": "node scripts/design-system-consumer-contract.mjs",
     "test:design-system:phpstan": "node scripts/design-system-phpstan-baseline.mjs",
     "test:design-system:runtime": "playwright test tests/browser/design-system-lab.mjs --workers=1 && npm run test:a11y:lab && npm run test:visual:lab && npm run test:performance:lab",

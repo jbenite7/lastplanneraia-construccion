@@ -1,0 +1,3 @@
+/* public/css/design-system/entrypoints/attach-anychart.css */
+@import url("/public/vendor/anychart/anychart-ui.min.css") layer(vendor);
+@import url("/public/vendor/anychart/anychart-font.min.css") layer(vendor);

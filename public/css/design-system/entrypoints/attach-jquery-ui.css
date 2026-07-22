@@ -1,0 +1,2 @@
+/* public/css/design-system/entrypoints/attach-jquery-ui.css */
+@import url("/public/vendor/jquery-ui.css") layer(vendor);
