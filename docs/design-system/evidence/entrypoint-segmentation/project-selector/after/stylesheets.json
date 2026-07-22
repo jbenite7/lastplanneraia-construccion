@@ -1,0 +1,66 @@
+{
+  "/proyectos": {
+    "1180x820": {
+      "links": [
+        "/runtime/css/design-system/entrypoints/core.css",
+        "/css/tokens.css",
+        "/css/dark-mode.css",
+        "/css/project-selector.css"
+      ]
+    },
+    "1440x900": {
+      "links": [
+        "/runtime/css/design-system/entrypoints/core.css",
+        "/css/tokens.css",
+        "/css/dark-mode.css",
+        "/css/project-selector.css"
+      ]
+    },
+    "axeViolations": []
+  },
+  "cssRequests": [
+    "/ajax/libs/font-awesome/5.15.4/css/all.min.css",
+    "/ajax/libs/limonte-sweetalert2/11.4.24/sweetalert2.min.css",
+    "/css/access.css",
+    "/css/buttons.css",
+    "/css/dark-mode.css",
+    "/css/design-system/adapters/handsontable.css",
+    "/css/design-system/adapters/legacy-bridge.css",
+    "/css/design-system/adapters/lps-drawer.css",
+    "/css/design-system/adapters/programa-general-handsontable.css",
+    "/css/design-system/adapters/select2.css",
+    "/css/design-system/adapters/semi-auto-review.css",
+    "/css/design-system/adapters/sweetalert2.css",
+    "/css/design-system/components/action-group.css",
+    "/css/design-system/components/bi-figure.css",
+    "/css/design-system/components/data-display.css",
+    "/css/design-system/components/dialog.css",
+    "/css/design-system/components/filter-form.css",
+    "/css/design-system/components/navigation.css",
+    "/css/design-system/components/page-header.css",
+    "/css/design-system/components/primitives.css",
+    "/css/design-system/components/states-feedback.css",
+    "/css/design-system/core.css",
+    "/css/design-system/entrypoints/theme-overrides.css",
+    "/css/design-system/fonts.css",
+    "/css/design-system/foundation.css",
+    "/css/handsontable-header-global.css",
+    "/css/handsontable-module.css",
+    "/css/login-brand-unified.css",
+    "/css/project-selector.css",
+    "/css/styles.css",
+    "/css/tokens.css",
+    "/css2",
+    "/npm/admin-lte@3.2/dist/css/adminlte.min.css",
+    "/public/vendor/anychart/anychart-font.min.css",
+    "/public/vendor/anychart/anychart-ui.min.css",
+    "/public/vendor/bootstrap/bootstrap.min.css",
+    "/public/vendor/font-awesome/css/all.css",
+    "/public/vendor/handsontable/handsontable.full.min.css",
+    "/public/vendor/jquery-ui.css",
+    "/public/vendor/select2/select2.min.css",
+    "/public/vendor/sweetalert2.min.css",
+    "/runtime/css/aia-design-system.css",
+    "/runtime/css/design-system/entrypoints/core.css"
+  ]
+}

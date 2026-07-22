@@ -55,10 +55,13 @@
   "tests": [
     "tests/browser/design-system-compliance.mjs",
     "tests/design-system/project-selector-contract.test.mjs",
-    "tests/browser/project-selector-sidebar.spec.mjs"
+    "tests/browser/project-selector-sidebar.spec.mjs",
+    "tests/browser/design-system-consumer-smoke.mjs",
+    "tests/browser/entrypoint-segmentation-dryrun.mjs"
   ],
   "evidence": [
-    "tests/browser/__screenshots__/project-selector/"
+    "tests/browser/__screenshots__/project-selector/",
+    "docs/design-system/evidence/entrypoint-segmentation/project-selector/"
   ],
   "scenarios": [
     {
