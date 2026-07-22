@@ -16,7 +16,7 @@ const pdcTheme = themeQuartz.withParams({
   headerBackgroundColor: '#1a3c2a',
 })
 
-type Fila = { campo: string; valor: string }
+type Row = { field: string; value: string }
 
 export default function MaestroInsumos() {
   const [boot, setBoot] = useState<Bootstrap | null>(null)
@@ -26,15 +26,15 @@ export default function MaestroInsumos() {
     getBootstrap().then(setBoot).catch((e: Error) => setError(e.message))
   }, [])
 
-  const rows: Fila[] = useMemo(() => boot ? [
-    { campo: 'Proyecto', valor: `${boot.projectId} — ${boot.proyectoNombre}` },
-    { campo: 'Usuario', valor: boot.usuario },
-    { campo: 'Rol', valor: boot.rol },
+  const rows: Row[] = useMemo(() => boot ? [
+    { field: 'Proyecto', value: `${boot.projectId} — ${boot.proyectoNombre}` },
+    { field: 'Usuario', value: boot.usuario },
+    { field: 'Rol', value: boot.rol },
   ] : [], [boot])
 
-  const cols: ColDef<Fila>[] = [
-    { field: 'campo', headerName: 'Campo', flex: 1 },
-    { field: 'valor', headerName: 'Valor', flex: 2 },
+  const cols: ColDef<Row>[] = [
+    { field: 'field', headerName: 'Campo', flex: 1 },
+    { field: 'value', headerName: 'Valor', flex: 2 },
   ]
 
   if (error) return <div className="pdc-error" role="alert">Error: {error}</div>
@@ -48,7 +48,7 @@ export default function MaestroInsumos() {
         </p>
       </header>
       <div style={{ height: 320 }}>
-        <AgGridReact<Fila> theme={pdcTheme} rowData={rows} columnDefs={cols} />
+        <AgGridReact<Row> theme={pdcTheme} rowData={rows} columnDefs={cols} />
       </div>
     </section>
   )
