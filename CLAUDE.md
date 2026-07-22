@@ -4,10 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Estado actual
 
-Repositorio recién inicializado. **Todavía no hay código fuente, sistema de build ni pruebas.**
-El único archivo versionado es `.gitignore`; el resto del árbol (`docs/`, `.omo/`, `.claude/`) está ignorado por git.
+Rama `pdc-v2-fundacion`: **fundación implementada** — SPA React + Vite + TypeScript + AG Grid Community en `src/` (bootstrap, cliente API, página inicial de maestro de insumos), montada como isla en lps-aia (shell PHP + endpoint de contexto + bundle commiteado en `lps-aia/public/pdc-app/`). Verificada con Vitest (9 tests), test PHP autoejecutable (11 asserts) y e2e Playwright.
 
-Cuando se agregue código, actualiza este archivo con los comandos reales (build, lint, test — incluido cómo correr un solo test) y con la arquitectura de alto nivel.
+Pendiente de las siguientes fases: import de presupuesto, maestro de insumos real, Pareto, paquetes y matching de cronograma (ver `docs/superpowers/plans/`).
 
 ## Propósito del proyecto
 
@@ -63,7 +62,14 @@ docker compose exec app php tests/test_global_table_safety.php   # correr un sol
 npx playwright test tests/browser/full-app-flow.spec.mjs --workers=1
 ```
 
-Cuando exista el scaffold de Vite en este repo, documenta aquí sus comandos reales (`npm run dev`, `npm run build`, `npm run test`).
+Comandos de este repo:
+
+```bash
+npm run dev     # Vite dev server con proxy /plan-compras/api → localhost:8081 (Docker de lps-aia)
+npm run build   # tsc + vite build → dist/ con nombres fijos (assets/pdc.js, assets/pdc.css)
+npm run test    # Vitest (src/lib/*.test.ts)
+npm run sync    # build + copia dist/ a ../lps-aia/public/pdc-app/ (commitear allá: deploy = git pull)
+```
 
 ## Materiales de referencia (locales, no versionados)
 
