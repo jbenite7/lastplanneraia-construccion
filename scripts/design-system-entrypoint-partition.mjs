@@ -21,6 +21,11 @@ export const ENTRYPOINT_FILES = {
 // Import propio de la partición, ausente del agregador por diseño.
 const THEME_OVERRIDES_IMPORT = '/css/design-system/entrypoints/theme-overrides.css';
 const IMPORT_PATTERN = /@import url\("([^"]+)"\)(?: layer\(([a-z-]+)\))?;/g;
+// Misma forma que IMPORT_PATTERN, anclada a la línea completa: es la única
+// forma canónica de import permitida. Cualquier otra sintaxis (comillas
+// simples, sin url(), media query, etc.) es CSS válido pero invisible para
+// IMPORT_PATTERN/matchAll, así que se detecta aquí por separado.
+const IMPORT_LINE_PATTERN = /^@import url\("([^"]+)"\)(?: layer\(([a-z-]+)\))?;$/;
 
 function parseImports(css) {
   return [...css.matchAll(IMPORT_PATTERN)].map(([, url, layer]) => ({
@@ -35,6 +40,15 @@ function readOrFail(root, file, failures) {
   } catch {
     failures.push(`missing-file: ${file}`);
     return '';
+  }
+}
+
+function collectUnparseableImports(file, css, failures) {
+  for (const rawLine of css.split('\n')) {
+    const line = rawLine.trim();
+    if (line.includes('@import') && !IMPORT_LINE_PATTERN.test(line)) {
+      failures.push(`unparseable-import: ${file}: ${line}`);
+    }
   }
 }
 
@@ -57,9 +71,31 @@ export function partitionFailures({
   );
   if (failures.length) return failures;
 
+  // Cualquier @import que no siga IMPORT_PATTERN es invisible para parseImports
+  // en todos los chequeos siguientes: se detecta aparte, línea a línea, en
+  // cada miembro con imports propios (theme-overrides.css no tiene imports).
+  collectUnparseableImports(ENTRYPOINT_FILES.aggregator, aggregator, failures);
+  collectUnparseableImports(ENTRYPOINT_FILES.core, core, failures);
+  for (const [vendor, css] of Object.entries(attachments)) {
+    collectUnparseableImports(ENTRYPOINT_FILES.attachments[vendor], css, failures);
+  }
+
   const aggregatorImports = parseImports(aggregator);
+  const coreImports = parseImports(core);
+
+  // core.css es el único miembro de la partición con import propio
+  // (theme-overrides.css); debe estar presente exactamente una vez y en
+  // última posición, o @layer theme + legacy-overrides se pierden en
+  // silencio para toda superficie migrada.
+  const themeOverridesImportsInCore = coreImports.filter(({ url }) => url === THEME_OVERRIDES_IMPORT);
+  const themeOverridesIsLast = coreImports.length > 0
+    && coreImports[coreImports.length - 1].url === THEME_OVERRIDES_IMPORT;
+  if (themeOverridesImportsInCore.length !== 1 || !themeOverridesIsLast) {
+    failures.push(`theme-overrides-missing: core.css debe importar ${THEME_OVERRIDES_IMPORT} como último import`);
+  }
+
   const partitionMembers = [
-    ['core', parseImports(core).filter(({ url }) => url !== THEME_OVERRIDES_IMPORT)],
+    ['core', coreImports.filter(({ url }) => url !== THEME_OVERRIDES_IMPORT)],
     ...Object.entries(attachments).map(([vendor, css]) => [vendor, parseImports(css)]),
   ];
 
@@ -192,7 +228,7 @@ export function coherenceFailures({ root, viewsOverride = null, manifestsOverrid
   return failures;
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const root = process.cwd();
   const failures = [...partitionFailures({ root }), ...coherenceFailures({ root })];
   if (failures.length) {

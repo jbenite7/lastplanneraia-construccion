@@ -413,3 +413,22 @@ auth migrados y verificados en tareas previas; suite completa de gates en verde 
 rojos preexistentes y tolerados documentados arriba; deuda visual del `!important` duplicado en
 la partición autorizada explícitamente vía excepciones exactas (no vía baseline). **Goal
 `segmentacion-entrypoint-css` cerrado.**
+
+## Addendum post-review (fixes finales)
+
+- Fecha: 2026-07-22
+- Fix 1: `partitionFailures` exige que `core.css` importe `theme-overrides.css` exactamente una
+  vez y como último import; antes el filtro previo a los chequeos dejaba pasar en silencio su
+  eliminación de `core.css`.
+- Fix 2: `partitionFailures` rechaza cualquier línea `@import` que no siga la forma canónica
+  (comillas simples, sin `url()`, media query, etc.) en agregador, core y cada adjunto; antes esas
+  líneas eran invisibles para todos los chequeos.
+- Fix 3: cuatro tests nuevos en `entrypoint-partition.test.mjs` cubren `theme-overrides-missing`,
+  `unparseable-import`, `order-drift` y `layer-drift` (11/11 tests en verde).
+- Fix 4: el guard CLI del script ya no crashea cuando `process.argv[1]` es `undefined`.
+- Fix 5: `DESIGN.md` y `docs/design-system/README.md` documentan el entrypoint productivo
+  segmentado (`renderForModule`, `core.css` + adjuntos, gate de partición) en vez de presentar
+  solo el agregador.
+- Fix 6: `facts.md` amplía la nota de cascada con la salvedad intra-capa (adapters de adjuntos vs
+  `styles.css`/`buttons.css`/`access.css` de core) y el riesgo pendiente de re-verificación para
+  una futura migración de Programa General.

@@ -32,6 +32,14 @@ Este directorio define la parte versionada del design system. Stitch y `docs/bra
   `aia-*`, compartidas por los entrypoints productivo y del laboratorio.
 - `public/css/aia-design-system.css`: entrypoint productivo, temas y puentes
   legacy; importa el core sin redefinir sus primitivas.
+- `public/css/design-system/entrypoints/`: partición del entrypoint productivo
+  — `core.css` más un adjunto por vendor (`attach-jquery-ui.css`,
+  `attach-anychart.css`, `attach-select2.css`, `attach-sweetalert2.css`,
+  `attach-handsontable.css`) y `theme-overrides.css` (copia verbatim de los
+  bloques inline del agregador, vigilada por el gate de partición). El campo
+  `vendors[]` de los manifiestos es ejecutable vía
+  `DesignSystemHeadComponent::renderForModule()`, con fallback fail-safe al
+  agregador si el manifiesto falta, no parsea o declara un vendor desconocido.
 - `public/js/modules/aia_ui/theme-bootstrap.js`: aplica dark por defecto o la preferencia persistida antes de la primera hoja de estilo y evita flash de tema.
 - `public/js/modules/aia_ui/theme.js`: API interactiva linen/dark y reduced motion después del bootstrap.
 - `scripts/design-system-audit.mjs`: gate estatico de deuda visual.
