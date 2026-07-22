@@ -237,8 +237,7 @@
         }
     </style>
     
-    <!-- CSS del drawer que ya creamos en el Ciclo 2 -->
-    <link rel="stylesheet" href="/css/handsontable-module.css?v=20260711foundation5" />
+    <!-- El CSS del drawer llega vía aia-design-system.css (layer vendor); el link crudo duplicaba la cascada. -->
 </head>
 <body class="pi-page">
 
@@ -328,7 +327,7 @@ foreach ($crisis as $c) {
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
     
     <!-- Script del Drawer -->
-    <script src="/js/modules/lps_drawer.js?v=20260522c"></script>
+    <script src="/js/modules/lps_drawer.js?v=20260722shell1"></script>
 
     <script>
         let currentSelectedCardData = null;

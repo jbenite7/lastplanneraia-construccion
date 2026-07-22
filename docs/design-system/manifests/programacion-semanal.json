@@ -1,0 +1,123 @@
+{
+  "$schema": "../module-manifest.schema.json",
+  "schemaVersion": 2,
+  "designSystemVersion": "1.0.0",
+  "moduleId": "programacion-semanal",
+  "consumerContract": "v1",
+  "routes": [
+    "/programacion-semanal",
+    "/programacion-semanal/cnp",
+    "/programacion-semanal/cnc",
+    "/programacion-semanal/cic"
+  ],
+  "sources": [
+    "views/programacion-semanal/programacion_semanal.view.php",
+    "views/programacion-semanal/CNP.view.php",
+    "views/programacion-semanal/CNC.view.php",
+    "views/programacion-semanal/CIC.view.php",
+    "public/css/programacion-semanal.css",
+    "public/js/modules/programacion_semanal/hot.js",
+    "public/js/modules/programacion_semanal/stateMachine.js",
+    "public/js/modules/programacion_semanal/changeMonitor.js",
+    "public/js/modules/programacion_semanal/legacyCards.js"
+  ],
+  "components": [
+    "shell",
+    "page-header",
+    "toolbar",
+    "button",
+    "field",
+    "state",
+    "card",
+    "table-shell",
+    "overlay",
+    "menu",
+    "search",
+    "filter",
+    "progress",
+    "feedback",
+    "live-region",
+    "handsontable-adapter",
+    "datatables-adapter",
+    "select-adapter"
+  ],
+  "vendors": [
+    "jquery",
+    "jquery-ui",
+    "bootstrap",
+    "handsontable",
+    "datatables",
+    "select2",
+    "font-awesome",
+    "aia-fonts"
+  ],
+  "layouts": [
+    "desktop"
+  ],
+  "states": [
+    "normal",
+    "loading",
+    "empty",
+    "error",
+    "week-closed",
+    "week-open"
+  ],
+  "roles": [
+    "A",
+    "D",
+    "R",
+    "C",
+    "V"
+  ],
+  "persistence": {
+    "compromisos": "server",
+    "projectContext": "session",
+    "weekContext": "session"
+  },
+  "exceptions": [],
+  "tests": [
+    "tests/browser/programacion-semanal-dark-density.mjs",
+    "tests/browser/programacion-semanal-subviews.mjs",
+    "tests/browser/programacion-semanal-cnp-lifecycle.mjs",
+    "tests/browser/programacion-semanal-roles-phases.mjs",
+    "tests/browser/programacion-semanal-sprint.mjs",
+    "tests/browser/design-system-compliance.mjs"
+  ],
+  "evidence": [
+    "tests/browser/__screenshots__/programacion-semanal/"
+  ],
+  "scenarios": [
+    {
+      "id": "programacion-semanal-dark-1180x820",
+      "family": null,
+      "route": "/programacion-semanal",
+      "fixture": "da-porto-semana-4",
+      "theme": "dark",
+      "viewport": {
+        "width": 1180,
+        "height": 820
+      },
+      "density": "touch",
+      "state": "normal",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/programacion-semanal/programacion-semanal-dark-1180x820.png",
+      "sha256": "c11bc8fb6f8f0825e63b4baff76588c8486ab5079b944846d2cf4d14175e53dd"
+    },
+    {
+      "id": "programacion-semanal-dark-1440x900",
+      "family": null,
+      "route": "/programacion-semanal",
+      "fixture": "da-porto-semana-4",
+      "theme": "dark",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "density": "compact",
+      "state": "normal",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/programacion-semanal/programacion-semanal-dark-1440x900.png",
+      "sha256": "a667c670ae94273a7aa9ca460c681eff1dd6ceb404e6f75bbfde9fb5920c7fd0"
+    }
+  ]
+}

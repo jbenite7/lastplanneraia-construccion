@@ -351,7 +351,8 @@ test('CNP mobile alinea acciones, limpia HTML y ofrece búsqueda explicita', asy
   const search = page.locator('#ps_legacy_search');
   const searchLabel = page.locator('label[for="ps_legacy_search"]');
   const clear = page.locator('#btn_limpiar_buscador');
-  const expectedSearchCopy = 'Buscar en Causas de No Programación';
+  // Copy corto a propósito: los rótulos largos truncaban el placeholder a 1180px.
+  const expectedSearchCopy = 'Buscar actividad o causa';
   await expect(search).toBeVisible();
   await expect(search).toHaveAttribute('placeholder', expectedSearchCopy);
   await expect(search).toHaveAccessibleName(expectedSearchCopy);

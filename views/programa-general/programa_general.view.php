@@ -4,15 +4,13 @@
     <meta charset="UTF-8">
     <meta name="csrf-token" content="<?php echo htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8'); ?>">
     <script src="/public/vendor/jquery.min.js"></script>
-    <script src="/public/vendor/jquery-ui.min.js"></script>
     <?= \App\View\Components\DesignSystemHeadComponent::render() ?>
     <script type="text/javascript" src="/js/linksComunesHead2.js?v=20260711foundation5" charset="utf-8"></script>
     <?php $pgCssVersion = @filemtime(dirname(__DIR__, 2) . '/public/css/programa-general.css') ?: 'pgSprint04'; ?>
     <?php $pgGeneralJsVersion = @filemtime(dirname(__DIR__, 2) . '/public/js/funcionesGenerales6.js') ?: 'pgGeneralJs04'; ?>
     <link rel="stylesheet" href="/css/programa-general.css?v=<?php echo urlencode((string) $pgCssVersion); ?>" />
-    <!-- Toastr (Mensajes Emergentes) -->
+    <!-- Toastr (Mensajes Emergentes); su JS carga al final del body -->
     <link rel="stylesheet" href="/public/vendor/toastr.min.css" />
-    <script src="/public/vendor/toastr.min.js"></script>
     <script>
         window.getCsrfToken = window.getCsrfToken || function() {
             var meta = document.querySelector('meta[name="csrf-token"]');
@@ -44,16 +42,16 @@
     </div>
 
     <main class="aia-page hot-full-bleed" id="contenido">
+    <h1 class="aia-visually-hidden">Programa General<?php if ($area === 'Pre-Construccion'): ?> — Pre-Construcción<?php endif; ?></h1>
+    <?php if ($area === 'Pre-Construccion'): ?>
     <div class="row direccionSeccion pg-direction-row">
-        <?php if ($area === 'Pre-Construccion'): ?>
         <div class="col-sm-12 text-left mb-1">
             <small class="text-muted"><i class="fas fa-drafting-compass mr-1"></i>Pre-Construcción</small>
         </div>
-        <?php endif; ?>
-        <div class="col-sm-10 col-md-10 col-lg-10 ml-0 mr-auto text-left" id="textoDireccionSeccion"></div>
     </div>
+    <?php endif; ?>
 
-    <section class="aia-toolbar header-actions action-bar" aria-label="Controles de Programa General">
+    <section class="aia-toolbar pg-toolbar" aria-label="Controles de Programa General">
         <div class="pg-actions-row">
             <div class="aia-action-group pg-toolbar-buttons" role="group" aria-label="Acciones del programa">
                 <button type="button" class="aia-btn aia-btn--secondary leyenda_colores" data-toggle="modal" data-target="#modal_leyenda_colores">Leyenda <i class="fas fa-question-circle ml-1" aria-hidden="true"></i></button>
@@ -61,35 +59,33 @@
                 <button type="button" id="descargarCorteProgramacion" class="aia-btn aia-btn--secondary">Descargar Corte <i class="fas fa-download ml-1" aria-hidden="true"></i></button>
                 <button id="btn-export" class="aia-btn aia-btn--secondary">Exportar CSV</button>
                 <button id="btn-refresh" class="aia-btn aia-btn--secondary">Recargar</button>
-                <?= \App\View\Components\BiAccessComponent::renderLink('programa-general', 'BI Programa') ?>
+                <?= \App\View\Components\BiAccessComponent::renderLink('programa-general', 'BI Programa', 'aia-btn aia-btn--secondary') ?>
             </div>
-            <div class="pg-status-badges">
+            <div class="pg-status-badges" aria-live="polite">
                 <span id="save-status" class="aia-chip aia-chip--success badge-badge-hidden">Guardado</span>
-                <span id="save-error" class="aia-chip aia-chip--critical badge-badge-hidden">Error al guardar</span>
-                <span class="aia-chip" aria-live="polite">Filtros <span id="mobileFilterCount" hidden></span></span>
             </div>
         </div>
 
         <div class="aia-filter-form" id="pdcFiltersMobile" role="group" aria-label="Filtros por estado">
             <?php if ($area === 'Pre-Construccion'): ?>
-            <div class="pdc-legend pg-legend pdc-legend-autoscaling" id="pgLegend">
-                <span class="pdc-legend-item alerta-restricciones" data-filter="con-alerta-restricciones" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> Con Restricción Pendiente <span id="count-con-alerta-restricciones" class="count-badge">(...)</span></span>
-                <span class="pdc-legend-item debe-iniciar" data-filter="debe-iniciar" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> Por Iniciar <span id="count-debe-iniciar" class="count-badge">(...)</span></span>
-                <span class="pdc-legend-item actividad-futura" data-filter="actividad-futura" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> Actividad Futura <span id="count-actividad-futura" class="count-badge">(...)</span></span>
-                <span class="pdc-legend-item en-curso" data-filter="en-curso" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> En Ejecución <span id="count-en-curso" class="count-badge">(...)</span></span>
-                <span class="pdc-legend-item atrasada" data-filter="atrasada" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> Atrasada <span id="count-atrasada" class="count-badge">(...)</span></span>
-                <span class="pdc-legend-item terminada" data-filter="terminada" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> Completada <span id="count-terminada" class="count-badge">(...)</span></span>
-                <span class="pdc-legend-item sin-datos" data-filter="sin-datos" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> Sin Datos <span id="count-sin-datos" class="count-badge">(...)</span></span>
+            <div id="pgLegend">
+                <span class="aia-chip pg-filter-chip alerta-restricciones" data-filter="con-alerta-restricciones" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> Con Restricción Pendiente <span id="count-con-alerta-restricciones" class="count-badge">…</span></span>
+                <span class="aia-chip pg-filter-chip debe-iniciar" data-filter="debe-iniciar" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> Por Iniciar <span id="count-debe-iniciar" class="count-badge">…</span></span>
+                <span class="aia-chip pg-filter-chip actividad-futura" data-filter="actividad-futura" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> Actividad Futura <span id="count-actividad-futura" class="count-badge">…</span></span>
+                <span class="aia-chip pg-filter-chip en-curso" data-filter="en-curso" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> En Ejecución <span id="count-en-curso" class="count-badge">…</span></span>
+                <span class="aia-chip pg-filter-chip atrasada" data-filter="atrasada" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> Atrasada <span id="count-atrasada" class="count-badge">…</span></span>
+                <span class="aia-chip pg-filter-chip terminada" data-filter="terminada" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> Completada <span id="count-terminada" class="count-badge">…</span></span>
+                <span class="aia-chip pg-filter-chip sin-datos" data-filter="sin-datos" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> Sin Datos <span id="count-sin-datos" class="count-badge">…</span></span>
             </div>
             <?php else: ?>
-            <div class="pdc-legend pg-legend pdc-legend-autoscaling" id="pgLegend">
-                <span class="pdc-legend-item alerta-restricciones" data-filter="con-alerta-restricciones" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> Con Alerta Restricciones <span id="count-con-alerta-restricciones" class="count-badge">(...)</span></span>
-                <span class="pdc-legend-item debe-iniciar" data-filter="debe-iniciar" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> Debe Iniciar <span id="count-debe-iniciar" class="count-badge">(...)</span></span>
-                <span class="pdc-legend-item actividad-futura" data-filter="actividad-futura" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> Actividad Futura <span id="count-actividad-futura" class="count-badge">(...)</span></span>
-                <span class="pdc-legend-item en-curso" data-filter="en-curso" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> En Curso <span id="count-en-curso" class="count-badge">(...)</span></span>
-                <span class="pdc-legend-item atrasada" data-filter="atrasada" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> Atrasada <span id="count-atrasada" class="count-badge">(...)</span></span>
-                <span class="pdc-legend-item terminada" data-filter="terminada" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> Terminada <span id="count-terminada" class="count-badge">(...)</span></span>
-                <span class="pdc-legend-item sin-datos" data-filter="sin-datos" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> Sin Datos <span id="count-sin-datos" class="count-badge">(...)</span></span>
+            <div id="pgLegend">
+                <span class="aia-chip pg-filter-chip alerta-restricciones" data-filter="con-alerta-restricciones" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> Con Alerta Restricciones <span id="count-con-alerta-restricciones" class="count-badge">…</span></span>
+                <span class="aia-chip pg-filter-chip debe-iniciar" data-filter="debe-iniciar" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> Debe Iniciar <span id="count-debe-iniciar" class="count-badge">…</span></span>
+                <span class="aia-chip pg-filter-chip actividad-futura" data-filter="actividad-futura" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> Actividad Futura <span id="count-actividad-futura" class="count-badge">…</span></span>
+                <span class="aia-chip pg-filter-chip en-curso" data-filter="en-curso" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> En Curso <span id="count-en-curso" class="count-badge">…</span></span>
+                <span class="aia-chip pg-filter-chip atrasada" data-filter="atrasada" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> Atrasada <span id="count-atrasada" class="count-badge">…</span></span>
+                <span class="aia-chip pg-filter-chip terminada" data-filter="terminada" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> Terminada <span id="count-terminada" class="count-badge">…</span></span>
+                <span class="aia-chip pg-filter-chip sin-datos" data-filter="sin-datos" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> Sin Datos <span id="count-sin-datos" class="count-badge">…</span></span>
             </div>
             <?php endif; ?>
         </div>
@@ -99,7 +95,7 @@
     <div id="mobile-card-view" class="aia-data-display__cards"></div>
     </main>
 
-    <div class="modal fade aia-modal" id="modal_leyenda_colores" tabindex="-1" role="dialog" data-backdrop="static">
+    <div class="modal fade aia-modal" id="modal_leyenda_colores" tabindex="-1" role="dialog" aria-labelledby="modal_leyenda_colores_Label" data-backdrop="static">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content aia-modal-surface">
                 <div class="modal-header">
@@ -117,13 +113,16 @@
 
     <script src="/public/vendor/popper.min.js"></script>
     <script src="/public/vendor/bootstrap/bootstrap.min.js"></script>
+    <!-- Vendors diferidos del head: jQuery-UI (datepicker del modal de semanas) y Toastr, necesarios solo tras la carga -->
+    <script src="/public/vendor/jquery-ui.min.js"></script>
+    <script src="/public/vendor/toastr.min.js"></script>
     <script>window.__PROJECT_AREA__ = <?php echo json_encode($_SESSION['area'] ?? 'Construccion'); ?>;</script>
     <?= \App\View\Components\BiAccessComponent::renderBootConfig('programa-general') ?>
     <script type="text/javascript" src="/js/modules/bi-access.js" charset="utf-8"></script>
 
     <script src="/public/vendor/handsontable/handsontable.full.min.js"></script>
     <script src="/public/vendor/handsontable/es-MX.js"></script>
-    <script src="/js/modules/lps_drawer.js?v=20260522d"></script>
+    <script src="/js/modules/lps_drawer.js?v=20260722shell1"></script>
     <?php if ($area === 'Pre-Construccion' && $restrictionConfig): ?>
     <script>
         window.__RESTRICTION_CONFIG__ = <?php echo json_encode($restrictionConfig, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;

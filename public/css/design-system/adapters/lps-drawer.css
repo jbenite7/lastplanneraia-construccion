@@ -17,4 +17,276 @@
   .lps-drawer-state--error {
     color: var(--ds-color-state-critical-text);
   }
+
+  .lps-card-heading {
+    margin: 0 0 var(--ds-space-2);
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .lps-caption {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+
+  .lps-closure-count {
+    color: var(--aia-alert-medium);
+  }
+
+  /* Campos de texto del drawer sobre superficies oscuras. */
+  .lps-textarea {
+    border: 1px solid var(--ds-active-border);
+    border-radius: var(--ds-radius-control-sm);
+    padding: var(--ds-space-2);
+    background: var(--ds-active-surface);
+    color: var(--ds-active-text-primary);
+    font-size: 0.85rem;
+    font-family: inherit;
+  }
+
+  .lps-textarea::placeholder {
+    color: var(--ds-active-text-secondary);
+  }
+
+  /* Indicador de respuesta en hilo (antes isla light #e8f0fe). */
+  .lps-reply-indicator {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ds-space-2);
+    margin-top: 6px;
+    padding: 4px 8px;
+    border-radius: var(--ds-radius-control-sm);
+    background: color-mix(in srgb, var(--aia-blue-primary) 20%, transparent);
+    color: var(--aia-blue-light);
+    font-size: 0.75rem;
+  }
+
+  .lps-reply-indicator__close {
+    padding: 0 4px;
+    border: none;
+    background: transparent;
+    color: var(--aia-alert-medium);
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  /* Bitácora: comentarios e hilos en superficies del tema activo. */
+  .lps-comment {
+    margin-bottom: var(--ds-space-2);
+    padding: var(--ds-space-2) 10px;
+    border: 1px solid var(--ds-active-border);
+    border-radius: var(--ds-radius-control-sm);
+    background: var(--ds-active-surface);
+    font-size: 0.82rem;
+  }
+
+  .lps-comment--system {
+    border-color: color-mix(in srgb, var(--aia-alert-high) 55%, transparent);
+    background: color-mix(in srgb, var(--aia-alert-high) 10%, transparent);
+  }
+
+  .lps-comment__head {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--ds-space-2);
+    margin-bottom: 4px;
+  }
+
+  .lps-comment__author {
+    color: var(--ds-active-text-primary);
+  }
+
+  .lps-comment__meta {
+    color: var(--ds-active-text-secondary);
+    font-size: 0.7rem;
+  }
+
+  .lps-comment__body {
+    color: var(--ds-active-text-primary);
+    line-height: 1.4;
+    white-space: pre-wrap;
+  }
+
+  .lps-comment__actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 6px;
+    font-size: 0.72rem;
+  }
+
+  .lps-reply-trigger {
+    color: var(--ds-active-action-primary);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .lps-replies-container {
+    margin-top: var(--ds-space-2);
+    margin-left: 16px;
+    border-left: 1px dashed var(--ds-active-border);
+    padding-left: 10px;
+  }
+
+  .lps-comment-reply {
+    margin-top: 4px;
+    padding: 5px 8px;
+    border: 1px solid var(--ds-active-border);
+    border-radius: var(--ds-radius-control-sm);
+    background: var(--ds-active-surface-raised);
+    font-size: 0.8rem;
+  }
+
+  .lps-comment-reply .lps-comment__body {
+    line-height: 1.35;
+  }
+
+  .lps-mention-badge {
+    color: var(--ds-active-action-primary);
+    font-weight: 700;
+  }
+
+  /* Badge P3 legible en dark (antes: verde oscuro sobre tint oscuro). */
+  .lps-badge-p3 {
+    background: color-mix(in srgb, var(--aia-green-primary) 22%, transparent);
+    color: var(--aia-green-light);
+  }
+
+  /* Objetivo de interacción del toggle de simulación (contrato 44px). */
+  .lps-sim-toggle-container {
+    min-height: var(--ds-target-min);
+  }
+
+  .lps-sim-label {
+    cursor: pointer;
+  }
+
+  /* Foco visible del shell LPS con el mismo vocabulario del sidebar canónico. */
+  .lps-sidebar-trigger:focus-visible,
+  .lps-drawer-close:focus-visible,
+  .lps-btn:focus-visible,
+  .lps-reply-trigger:focus-visible,
+  .lps-reply-indicator__close:focus-visible,
+  .lps-textarea:focus-visible,
+  #lps_sim_mode_toggle:focus-visible {
+    outline: var(--ds-outline-width) solid var(--ds-active-focus-ring);
+    outline-offset: var(--ds-outline-offset);
+    box-shadow: var(--ds-shadow-focus);
+  }
+}
+
+@layer legacy-overrides {
+  /* Colores de texto del drawer en tokens activos. Viven en legacy-overrides
+     (posterior a module) porque styles.css pinta h1..h6 con --text-main desde
+     la capa module y vencería a components sin necesidad de !important aquí. */
+  .lps-drawer .lps-text-primary,
+  .lps-drawer .lps-card-heading,
+  .lps-drawer .lps-bi-access-card__title {
+    color: var(--ds-active-text-primary);
+  }
+
+  .lps-drawer .lps-text-secondary,
+  .lps-drawer .lps-caption {
+    color: var(--ds-active-text-secondary);
+  }
+
+  .lps-drawer .lps-card-heading--critical {
+    color: var(--aia-alert-medium);
+  }
+
+  /* Spacing del drawer en tokens. styles.css trae `* { margin: 0; padding: 0 }`
+     en la capa module (posterior a vendor/components) y colapsa los insets del
+     drawer; esta capa (posterior a module) los reafirma sin !important — el
+     mismo problema que navigation.css:138-142 resuelve para el rail canónico. */
+  .lps-drawer .lps-drawer-header {
+    padding: var(--ds-space-4);
+  }
+
+  .lps-drawer .lps-drawer-body {
+    padding: var(--ds-space-4);
+  }
+
+  .lps-drawer .lps-drawer-footer {
+    padding: var(--ds-space-3) var(--ds-space-4);
+  }
+
+  .lps-drawer .lps-card-glass {
+    margin-bottom: var(--ds-space-3);
+    padding: var(--ds-space-4);
+    border-radius: var(--ds-radius-card);
+  }
+
+  .lps-drawer .lps-digest-card {
+    margin-top: var(--ds-space-4);
+    padding: var(--ds-space-3);
+    border-radius: var(--ds-radius-card);
+  }
+
+  .lps-drawer .lps-digest-preview {
+    margin-top: var(--ds-space-2);
+    padding: var(--ds-space-3);
+  }
+
+  .lps-drawer .lps-drawer-state {
+    padding: var(--ds-space-3);
+  }
+
+  .lps-drawer .lps-badge {
+    padding: var(--ds-space-1) var(--ds-space-2);
+  }
+
+  .lps-drawer .lps-btn {
+    padding: var(--ds-space-2) var(--ds-space-4);
+  }
+
+  .lps-drawer .lps-textarea {
+    padding: var(--ds-space-2);
+  }
+
+  .lps-drawer .lps-sim-toggle-container {
+    padding: var(--ds-space-2) var(--ds-space-3);
+  }
+
+  .lps-drawer .lps-reply-indicator {
+    margin-top: var(--ds-space-2);
+    padding: var(--ds-space-1) var(--ds-space-2);
+  }
+
+  .lps-drawer .lps-comment {
+    margin-bottom: var(--ds-space-2);
+    padding: var(--ds-space-2) var(--ds-space-3);
+  }
+
+  .lps-drawer .lps-comment__head {
+    margin-bottom: var(--ds-space-1);
+  }
+
+  .lps-drawer .lps-comment__actions {
+    margin-top: var(--ds-space-2);
+  }
+
+  .lps-drawer .lps-replies-container {
+    margin-top: var(--ds-space-2);
+    margin-left: var(--ds-space-4);
+    padding-left: var(--ds-space-3);
+  }
+
+  .lps-drawer .lps-comment-reply {
+    margin-top: var(--ds-space-1);
+    padding: var(--ds-space-2);
+  }
+
+  /* Tipografía de headings reafirmada: styles.css fuerza weight 600 y
+     letter-spacing -0.02em sobre h1..h6 desde module. */
+  .lps-drawer .lps-card-heading {
+    margin: 0 0 var(--ds-space-2);
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
 }

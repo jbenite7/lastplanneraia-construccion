@@ -121,6 +121,22 @@ body.ps-page #hot-container .handsontableInput {
     justify-content: center;
 }
 
+/* Bootstrap .badge-success (blanco sobre su verde 28a745 = 3.13:1) no cumple AA en dark;
+   misma receta que los pills ops-state: superficie tintada + texto primario. */
+body.ps-page .ps-status-badges .badge-success {
+    background-color: color-mix(in srgb, var(--ds-color-state-success-text) 18%, var(--ds-active-surface-raised) 82%);
+    color: var(--ds-active-text-primary);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ds-color-state-success-text) 30%, transparent);
+}
+
+/* Paridad con el piloto (.pg-page): el badge de guardado nace oculto y solo se
+   muestra durante el ciclo de guardado que orquesta el JS. */
+body.ps-page .ps-status-badges .badge-badge-hidden {
+    display: none;
+    opacity: 0;
+    pointer-events: none;
+}
+
 .ps-actions-row.ps-actions-stacked {
     flex-wrap: wrap;
     align-items: flex-start;
@@ -184,7 +200,10 @@ body.ps-page #hot-container .handsontableInput {
 }
 
 /* En tablet las acciones conservan texto visible y se distribuyen en filas. */
-@media (min-width: 769px) and (max-width: 1200px) {
+/* 1160px y no 1200px: el viewport desktop canónico (1180×820) debe recibir el
+   layout compacto de escritorio; el auto-ajuste JS (ps-actions-stacked +
+   --ps-hot-scale en hot.js) cubre el rango 1161-1440. */
+@media (min-width: 769px) and (max-width: 1160px) {
     .ps-page .ps-hot-toolbar-shell .ps-actions-row {
         flex-wrap: wrap;
         align-items: stretch;
@@ -286,7 +305,7 @@ body.ps-page #hot-container .handsontableInput {
     font-size: 0.85rem;
     font-weight: 500;
     border-bottom: 1px solid var(--ds-color-bg-page);
-    transition: all 0.2s;
+    transition: background-color 0.2s ease-out, color 0.2s ease-out;
     background: none;
     border-left: none;
     border-right: none;
@@ -315,7 +334,6 @@ body.ps-page .ps-hot-toolbar-shell {
     background-color: var(--ds-color-state-info-bg) !important;
     color: var(--ds-color-brand-architecture) !important;
     font-weight: 700 !important;
-    border-left: 3px solid var(--ds-color-brand-architecture) !important;
 }
 
 .ps-dropdown-item i {
@@ -487,7 +505,7 @@ body.ps-page .ps-hot-toolbar-shell {
 }
 
 .ps-alert-tnp {
-    border-left: 3px solid var(--aia-blue-primary);
+    border: 1px solid var(--aia-blue-primary);
     background-color: var(--aia-blue-very-light);
 }
 
@@ -1346,6 +1364,37 @@ html body.ps-page #hot-container .handsontable .changeType:before {
     width: 100%;
     gap: 6px;
 }
+/* Los DataTables de CNP/CNC/CIC heredan overflow-wrap: break-word desde
+   styles.css (compartido) y a 1180px las columnas estrechas parten palabras
+   sin guion ("Gestió n"). Con lang="es", hyphens: auto corta con guion
+   tipográfico ("Ges-tión") solo cuando la palabra no cabe. */
+body.ps-page table.dataTable thead th,
+body.ps-page table.dataTable tbody td {
+    hyphens: auto;
+}
+
+/* El rojo utilitario de Bootstrap (dc3545 = 3.51:1 sobre celda dark) no cumple
+   AA; se aclara mezclando el token crítico con el texto primario, el patrón
+   estándar de danger en paletas dark. Bootstrap entra por layer(vendor) con
+   !important y, entre importants, gana la capa declarada antes (y toda capa
+   vence a lo sin capa): este remap vive en `reset` (anterior a `vendor`)
+   precisamente para ganar esa inversión. */
+@layer reset {
+    body.ps-page.dark-mode .text-danger {
+        color: color-mix(in srgb, var(--ds-color-state-critical-text) 40%, var(--ds-active-text-primary) 60%) !important;
+    }
+}
+
+/* styles.css pinta .pdc-legend con su gris claro f8fafc dentro de @media (max-width: 1180px)
+   ("Filter Drawer Styling"), que incluye el viewport canónico 1180: banda clara
+   sobre página dark. Se re-tokeniza a la superficie activa del módulo. */
+@media (max-width: 1180px) {
+    body.ps-page .pdc-legend {
+        background-color: var(--ds-active-surface);
+        border-color: var(--ds-active-border);
+    }
+}
+
 /* Nuclear specificity to force rectangular tools for DataTable Header */
 body #dt_cliente_wrapper .filaBotones .btn,
 body #dt_cliente_wrapper .filaBotones button,
@@ -2264,46 +2313,73 @@ body.ps-page #modal_cnc_hot .ps-modal-control {
     }
 }
 
+/* Fuera de @layer a propósito: las reglas base .ps-page .ops-state-* de este
+   archivo son unlayered y las declaraciones normales unlayered ganan a cualquier
+   regla dentro de @layer components. Estas sobrescrituras de tabla (#hot-container)
+   deben resolver por especificidad para que la truncación y los remaps dark
+   apliquen de verdad. */
+body.ps-page #hot-container .ops-state-zoom {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--spacing-xs);
+    min-height: var(--ds-target-min);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    container-type: inline-size;
+}
+
+body.ps-page #hot-container .ops-state-chip {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap !important;
+    overflow-wrap: normal;
+    word-break: normal;
+}
+
+/* Cuando la columna queda cerca de su mínimo (~118px), el label no puede
+   mostrar ni una sílaba: se oculta y el estado se comunica con el punto de
+   color + contador; el nombre completo sigue en el aria-label del botón. */
+@container (max-width: 120px) {
+    body.ps-page #hot-container .ops-state-topline .ops-state-chip {
+        display: none;
+    }
+}
+
+body.ps-page #hot-container .ops-state-summary {
+    flex: 0 0 auto;
+}
+
+/* Feedback de edición rechazada: hot.js aplica esta clase al revertir una celda
+   (reflow forzado + re-add). El guard global de reduced-motion la anula. */
+@keyframes ps-cell-shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-3px); }
+    75% { transform: translateX(3px); }
+}
+
+body.ps-page #hot-container td.ps-cell-shake {
+    animation: ps-cell-shake 180ms ease-out 2;
+}
+
+html.aia-theme-dark body.ps-page.dark-mode #hot-container .ops-state-zoom.is-critical {
+    --ops-state-bg: color-mix(in srgb, var(--ds-color-state-critical-text) 22%, var(--ds-active-surface) 78%);
+    --ops-state-count-bg: color-mix(in srgb, var(--ds-color-state-critical-text) 18%, var(--ds-active-surface-raised) 82%);
+    --ops-state-count-text: var(--ds-active-text-primary);
+}
+
+html.aia-theme-dark body.ps-page.dark-mode #hot-container :is(.ops-state-zoom.is-pending, .ops-state-zoom.is-partial) {
+    --ops-state-bg: color-mix(in srgb, var(--ds-color-state-warning-text) 18%, var(--ds-active-surface) 82%);
+    --ops-state-count-bg: color-mix(in srgb, var(--ds-color-state-warning-text) 14%, var(--ds-active-surface-raised) 86%);
+    --ops-state-count-text: var(--ds-active-text-primary);
+}
+
+html.aia-theme-dark body.ps-page.dark-mode #hot-container .ops-state-zoom.is-ready {
+    --ops-state-bg: color-mix(in srgb, var(--ds-color-state-success-text) 18%, var(--ds-active-surface) 82%);
+    --ops-state-count-bg: color-mix(in srgb, var(--ds-color-state-success-text) 14%, var(--ds-active-surface-raised) 86%);
+    --ops-state-count-text: var(--ds-active-text-primary);
+}
+
 @layer components {
-    body.ps-page #hot-container .ops-state-zoom {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        align-items: center;
-        gap: var(--spacing-xs);
-        min-height: var(--ds-target-min);
-        padding: var(--spacing-xs) var(--spacing-sm);
-    }
-
-    body.ps-page #hot-container .ops-state-chip {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap !important;
-        overflow-wrap: normal;
-        word-break: normal;
-    }
-
-    body.ps-page #hot-container .ops-state-summary {
-        flex: 0 0 auto;
-    }
-
-    html.aia-theme-dark body.ps-page.dark-mode #hot-container .ops-state-zoom.is-critical {
-        --ops-state-bg: color-mix(in srgb, var(--ds-color-state-critical-text) 22%, var(--ds-active-surface) 78%);
-        --ops-state-count-bg: color-mix(in srgb, var(--ds-color-state-critical-text) 18%, var(--ds-active-surface-raised) 82%);
-        --ops-state-count-text: var(--ds-active-text-primary);
-    }
-
-    html.aia-theme-dark body.ps-page.dark-mode #hot-container :is(.ops-state-zoom.is-pending, .ops-state-zoom.is-partial) {
-        --ops-state-bg: color-mix(in srgb, var(--ds-color-state-warning-text) 18%, var(--ds-active-surface) 82%);
-        --ops-state-count-bg: color-mix(in srgb, var(--ds-color-state-warning-text) 14%, var(--ds-active-surface-raised) 86%);
-        --ops-state-count-text: var(--ds-active-text-primary);
-    }
-
-    html.aia-theme-dark body.ps-page.dark-mode #hot-container .ops-state-zoom.is-ready {
-        --ops-state-bg: color-mix(in srgb, var(--ds-color-state-success-text) 18%, var(--ds-active-surface) 82%);
-        --ops-state-count-bg: color-mix(in srgb, var(--ds-color-state-success-text) 14%, var(--ds-active-surface-raised) 86%);
-        --ops-state-count-text: var(--ds-active-text-primary);
-    }
-
     body.ps-page #hot-container .ps-action-btn {
         display: grid !important;
         place-items: center !important;
@@ -2746,7 +2822,7 @@ body.ps-page #modal_cnc_hot .ps-modal-control {
     font-size: 0.85rem;
     font-weight: 500;
     border-bottom: 1px solid var(--ds-color-bg-page);
-    transition: all 0.2s;
+    transition: background-color 0.2s ease-out, color 0.2s ease-out;
     background: none;
     border-left: none;
     border-right: none;
@@ -2769,7 +2845,6 @@ body.ps-page #modal_cnc_hot .ps-modal-control {
     background-color: var(--ds-color-state-info-bg) !important;
     color: var(--ds-color-brand-architecture) !important;
     font-weight: 700 !important;
-    border-left: 3px solid var(--ds-color-brand-architecture) !important;
 }
 
 .ps-dropdown-item i {
@@ -2904,7 +2979,7 @@ body.ps-page #modal_cnc_hot .ps-modal-control {
     padding: 0.3rem 0.75rem;
     border-radius: var(--ds-radius-xs);
     cursor: pointer;
-    transition: all 0.15s;
+    transition: background-color 0.15s ease-out, border-color 0.15s ease-out, color 0.15s ease-out;
 }
 
 .cm-refresh-btn:hover {
@@ -2968,16 +3043,18 @@ body.ps-page #modal_cnc_hot .ps-modal-control {
     background: var(--ds-color-bg-page);
 }
 
+/* El tipo de cambio se codifica con un tinte de fondo de fila (sin stripes
+   laterales); el color semántico se mezcla sobre la superficie activa. */
 .cm-row-comprometer {
-    border-left: 3px solid var(--ds-color-state-success-text);
+    background: color-mix(in srgb, var(--ds-color-state-success-text) 10%, transparent);
 }
 
 .cm-row-descomprometer {
-    border-left: 3px solid var(--ds-color-state-critical-text);
+    background: color-mix(in srgb, var(--ds-color-state-critical-text) 10%, transparent);
 }
 
 .cm-row-insert_cnp {
-    border-left: 3px solid var(--ds-color-state-warning-text);
+    background: color-mix(in srgb, var(--ds-color-state-warning-text) 10%, transparent);
 }
 
 .cm-detail-cell {
@@ -3120,5 +3197,17 @@ body.ps-page #dt_cliente_wrapper .filaMensajes:has(#mensajeActualizacion:empty) 
         width: 100% !important;
         min-width: 0 !important;
         margin: 0 !important;
+    }
+}
+
+/* Guard local de reduced-motion: core.css solo cubre primitivas aia-*; las
+   transiciones y animaciones propias del módulo (ps-*, cm-*) se reducen aquí. */
+@media (prefers-reduced-motion: reduce) {
+    body.ps-page *,
+    body.ps-page *::before,
+    body.ps-page *::after {
+        transition-duration: var(--ds-motion-reduced-duration, 0.01ms) !important;
+        animation-duration: var(--ds-motion-reduced-duration, 0.01ms) !important;
+        animation-iteration-count: 1 !important;
     }
 }

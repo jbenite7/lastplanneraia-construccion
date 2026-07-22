@@ -2,19 +2,20 @@
 <html lang="es">
 <head id="head">
     <meta charset="UTF-8">
+    <title>Programación Intermedia · Last Planner AIA</title>
     <script src="/public/vendor/jquery.min.js"></script>
     <script src="/public/vendor/jquery-ui.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap4.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
     <?= \App\View\Components\DesignSystemHeadComponent::render() ?>
-    <script type="text/javascript" src="/js/linksComunesHead2.js?v=20260711foundation5" charset="utf-8"></script>
-    <link rel="stylesheet" href="/public/vendor/handsontable/handsontable.full.min.css" />
-    <link rel="stylesheet" href="/css/handsontable-module.css?v=20260711foundation5" />
-    <link rel="stylesheet" href="/css/programacion-intermedia.css?v=20260708a" />
-    <link rel="stylesheet" href="/css/handsontable-header-global.css?v=20260223a" />
+    <script type="text/javascript" src="/js/linksComunesHead2.js?v=20260722pi1" charset="utf-8"></script>
+    <?php $piCssVersion = @filemtime(dirname(__DIR__, 2) . '/public/css/programacion-intermedia.css') ?: 'piDark1'; ?>
+    <link rel="stylesheet" href="/css/programacion-intermedia.css?v=<?php echo urlencode((string) $piCssVersion); ?>" />
 </head>
-<body class="pi-page">
+<body class="aia-shell aia-shell--sidebar pi-page">
     <div id="loading"><div class="spinner-border text-primary" role="status"><span class="sr-only">Cargando...</span></div></div>
+
+    <?php require __DIR__ . '/../partials/shell_sidebar.php'; ?>
 
     <div class="encabezado" id="encabezado">
         <input type="hidden" name="seccion" id="seccion" value="programacion_intermedia" aria-hidden="true">
@@ -27,10 +28,6 @@
 
 
     <div class="hot-full-bleed">
-    <div class="row direccionSeccion" style="margin:0;">
-        <div class="col-sm-10 col-md-10 col-lg-10 ml-0 mr-auto text-left" id="textoDireccionSeccion"></div>
-    </div>
-
     <div class="header-actions action-bar">
         <div class="pi-actions-row">
             <div class="pi-toolbar-actions">
@@ -46,37 +43,34 @@
                     </div>
                 </div>
                 <button id="btn-shared-constraint" class="btn-pdc-modern">Restricción Compartida</button>
-                <button id="btn-refresh-listas" class="btn-pdc-modern" title="Recargar listas de Subcontratistas y Profesionales">🔄 Listas</button>
+                <button id="btn-refresh-listas" class="btn-pdc-modern" title="Recargar listas de Subcontratistas y Profesionales"><i class="fas fa-sync" aria-hidden="true"></i> Listas</button>
                 <button id="btn-shared-select-visible" class="btn-pdc-modern">Seleccionar visibles</button>
                 <button id="btn-shared-clear-selection" class="btn-pdc-modern">Limpiar selección</button>
                 <?= \App\View\Components\BiAccessComponent::renderLink('intermedia', 'BI Intermedia') ?>
-                <span id="shared-selection-count" class="badge badge-secondary">0 selec.</span>
+                <span id="shared-selection-count" class="badge badge-secondary" aria-live="polite">0 selec.</span>
                 <div class="pi-status-badges">
-                    <span id="save-status" class="badge badge-success" style="display:none;">Guardado</span>
-                    <span id="save-error" class="badge badge-danger" style="display:none;">Error al guardar</span>
+                    <span id="save-status" class="badge badge-success pi-status-badge-hidden" role="status">Guardado</span>
+                    <span id="save-error" class="badge badge-danger pi-status-badge-hidden" role="alert">Error al guardar</span>
                 </div>
             </div>
-            <button class="btn-filter-toggle pdc-mobile-toggle" type="button" data-toggle="collapse" data-target="#pdcFiltersMobile" aria-expanded="false" aria-controls="pdcFiltersMobile">
-                <i class="fas fa-filter"></i> Filtros <span class="badge badge-light" id="mobileFilterCount">0</span>
-            </button>
         </div>
 
         <div class="collapse d-md-block" id="pdcFiltersMobile">
             <div class="pdc-legend pi-legend pdc-legend-autoscaling" id="piLegend">
                 <span class="pi-legend-window-label <?= $viewAll ? 'is-active' : '' ?>" title="Los conteos del semaforo se calculan sobre la ventana de 6 semanas, no sobre la vista actual.">(Ventana 6 sem.)</span>
                 <?php if ($area === 'Pre-Construccion'): ?>
-                <span class="pi-legend-window-label is-active" title="Pre-Construccion: 4 restricciones activas" style="background:#dbeafe;color:#1e40af;border-color:#93c5fd;">Pre-Cons. 4R</span>
+                <span class="pi-legend-window-label pi-legend-window-label--info is-active" title="Pre-Construccion: 4 restricciones activas">Pre-Cons. 4R</span>
                 <?php endif; ?>
-                <span class="pdc-legend-item blocked-overdue-critical" data-filter="blocked-overdue-critical" role="button" tabindex="0"><span class="indicator"></span> RC inicio vencido <span id="count-blocked-overdue-critical" class="count-badge">(...)</span></span>
+                <span class="pdc-legend-item blocked-overdue-critical" data-filter="blocked-overdue-critical" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> RC inicio vencido <span id="count-blocked-overdue-critical" class="count-badge">(...)</span></span>
 
-                <span class="pdc-legend-item blocked-overdue" data-filter="blocked-overdue" role="button" tabindex="0"><span class="indicator"></span> Inicio Vencido <span id="count-blocked-overdue" class="count-badge">(...)</span></span>
+                <span class="pdc-legend-item blocked-overdue" data-filter="blocked-overdue" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> Inicio Vencido <span id="count-blocked-overdue" class="count-badge">(...)</span></span>
 
-                <span class="pdc-legend-item blocked-due" data-filter="blocked-due" role="button" tabindex="0"><span class="indicator"></span> Inicio por Habilitar <span id="count-blocked-due" class="count-badge">(...)</span></span>
-                <span class="pdc-legend-item alert-1-week" data-filter="alert-1-week" role="button" tabindex="0"><span class="indicator"></span> Alistamiento Urgente <span id="count-alert-1-week" class="count-badge">(...)</span></span>
-                <span class="pdc-legend-item alert-2-3-weeks" data-filter="alert-2-3-weeks" role="button" tabindex="0"><span class="indicator"></span> Alistamiento en Riesgo <span id="count-alert-2-3-weeks" class="count-badge">(...)</span></span>
-                <span class="pdc-legend-item alert-4-6-weeks" data-filter="alert-4-6-weeks" role="button" tabindex="0"><span class="indicator"></span> Alistamiento Pendiente <span id="count-alert-4-6-weeks" class="count-badge">(...)</span></span>
-                <span class="pdc-legend-item execution-blocked" data-filter="execution-blocked" role="button" tabindex="0"><span class="indicator"></span> En Ejecución Pendiente <span id="count-execution-blocked" class="count-badge">(...)</span></span>
-                <span class="pdc-legend-item liberated-control" data-filter="liberated-control" role="button" tabindex="0"><span class="indicator"></span> Listo para Comprometer <span id="count-liberated-control" class="count-badge">(...)</span></span>
+                <span class="pdc-legend-item blocked-due" data-filter="blocked-due" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> Inicio por Habilitar <span id="count-blocked-due" class="count-badge">(...)</span></span>
+                <span class="pdc-legend-item alert-1-week" data-filter="alert-1-week" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> Alistamiento Urgente <span id="count-alert-1-week" class="count-badge">(...)</span></span>
+                <span class="pdc-legend-item alert-2-3-weeks" data-filter="alert-2-3-weeks" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> Alistamiento en Riesgo <span id="count-alert-2-3-weeks" class="count-badge">(...)</span></span>
+                <span class="pdc-legend-item alert-4-6-weeks" data-filter="alert-4-6-weeks" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> Alistamiento Pendiente <span id="count-alert-4-6-weeks" class="count-badge">(...)</span></span>
+                <span class="pdc-legend-item execution-blocked" data-filter="execution-blocked" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> En Ejecución Pendiente <span id="count-execution-blocked" class="count-badge">(...)</span></span>
+                <span class="pdc-legend-item liberated-control" data-filter="liberated-control" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> Listo para Comprometer <span id="count-liberated-control" class="count-badge">(...)</span></span>
             </div>
         </div>
     </div>
@@ -85,7 +79,7 @@
     <div id="mobile-card-view" style="display:none;"></div>
     </div>
 
-    <div class="modal fade aia-modal" id="modal_leyenda_colores" role="dialog" data-backdrop="static">
+    <div class="modal fade aia-modal" id="modal_leyenda_colores" role="dialog" data-backdrop="static" aria-labelledby="modal_leyenda_colores_Label" aria-modal="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -97,11 +91,11 @@
         </div>
     </div>
 
-    <div class="modal fade aia-modal" id="modal_shared_constraint" role="dialog" data-backdrop="static" aria-hidden="true">
+    <div class="modal fade aia-modal" id="modal_shared_constraint" role="dialog" data-backdrop="static" aria-labelledby="modal_shared_constraint_Label" aria-modal="true">
         <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><b>Aplicar Restricción Compartida</b></h5>
+                    <h5 class="modal-title" id="modal_shared_constraint_Label"><b>Aplicar Restricción Compartida</b></h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">&times;</button>
                 </div>
                 <div class="modal-body">
@@ -139,49 +133,49 @@
                                         <input type="checkbox" class="custom-control-input pi-shared-restriction-check" id="piSharedRestriction_D_y_E" data-restriction-type="D_y_E" checked>
                                         <label class="custom-control-label" for="piSharedRestriction_D_y_E">Diseños y Especif.</label>
                                     </div>
-                                    <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="D_y_E"></select>
+                                    <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="D_y_E" aria-label="Valor objetivo para Diseños y Especificaciones"></select>
                                 </div>
                                 <div class="pi-shared-restriction-row" data-restriction-row="Materiales">
                                     <div class="custom-control custom-checkbox">
                                         <input type="checkbox" class="custom-control-input pi-shared-restriction-check" id="piSharedRestriction_Materiales" data-restriction-type="Materiales">
                                         <label class="custom-control-label" for="piSharedRestriction_Materiales">Materiales</label>
                                     </div>
-                                    <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="Materiales"></select>
+                                    <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="Materiales" aria-label="Valor objetivo para Materiales"></select>
                                 </div>
                                 <div class="pi-shared-restriction-row" data-restriction-row="MdeO">
                                     <div class="custom-control custom-checkbox">
                                         <input type="checkbox" class="custom-control-input pi-shared-restriction-check" id="piSharedRestriction_MdeO" data-restriction-type="MdeO">
                                         <label class="custom-control-label" for="piSharedRestriction_MdeO">Mano de Obra</label>
                                     </div>
-                                    <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="MdeO"></select>
+                                    <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="MdeO" aria-label="Valor objetivo para Mano de Obra"></select>
                                 </div>
                                 <div class="pi-shared-restriction-row" data-restriction-row="Equipos">
                                     <div class="custom-control custom-checkbox">
                                         <input type="checkbox" class="custom-control-input pi-shared-restriction-check" id="piSharedRestriction_Equipos" data-restriction-type="Equipos">
                                         <label class="custom-control-label" for="piSharedRestriction_Equipos">Equipos</label>
                                     </div>
-                                    <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="Equipos"></select>
+                                    <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="Equipos" aria-label="Valor objetivo para Equipos"></select>
                                 </div>
                                 <div class="pi-shared-restriction-row" data-restriction-row="Predecesora">
                                     <div class="custom-control custom-checkbox">
                                         <input type="checkbox" class="custom-control-input pi-shared-restriction-check" id="piSharedRestriction_Predecesora" data-restriction-type="Predecesora">
                                         <label class="custom-control-label" for="piSharedRestriction_Predecesora">Predecesora</label>
                                     </div>
-                                    <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="Predecesora"></select>
+                                    <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="Predecesora" aria-label="Valor objetivo para Predecesora"></select>
                                 </div>
                                 <div class="pi-shared-restriction-row" data-restriction-row="Pdto_Cons">
                                     <div class="custom-control custom-checkbox">
                                         <input type="checkbox" class="custom-control-input pi-shared-restriction-check" id="piSharedRestriction_Pdto_Cons" data-restriction-type="Pdto_Cons">
                                         <label class="custom-control-label" for="piSharedRestriction_Pdto_Cons">Proced. Constructivo</label>
                                     </div>
-                                    <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="Pdto_Cons"></select>
+                                    <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="Pdto_Cons" aria-label="Valor objetivo para Procedimiento Constructivo"></select>
                                 </div>
                                 <div class="pi-shared-restriction-row" data-restriction-row="Modelo">
                                     <div class="custom-control custom-checkbox">
                                         <input type="checkbox" class="custom-control-input pi-shared-restriction-check" id="piSharedRestriction_Modelo" data-restriction-type="Modelo">
                                         <label class="custom-control-label" for="piSharedRestriction_Modelo">Modelación BIM</label>
                                     </div>
-                                    <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="Modelo"></select>
+                                    <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="Modelo" aria-label="Valor objetivo para Modelación BIM"></select>
                                 </div>
                                 <?php else: ?>
                                 <!-- PRE-CONSTRUCCION: Predecesora + personalizadas nombradas -->
@@ -190,7 +184,7 @@
                                         <input type="checkbox" class="custom-control-input pi-shared-restriction-check" id="piSharedRestriction_restriccion_pc_1" data-restriction-type="restriccion_pc_1" checked>
                                         <label class="custom-control-label" for="piSharedRestriction_restriccion_pc_1">Predecesora</label>
                                     </div>
-                                    <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="restriccion_pc_1"></select>
+                                    <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="restriccion_pc_1" aria-label="Valor objetivo para Predecesora"></select>
                                 </div>
                                 <?php if (!empty($pcRestrictionNames[2])): ?>
                                 <div class="pi-shared-restriction-row" data-restriction-row="restriccion_pc_2">
@@ -198,7 +192,7 @@
                                         <input type="checkbox" class="custom-control-input pi-shared-restriction-check" id="piSharedRestriction_restriccion_pc_2" data-restriction-type="restriccion_pc_2">
                                         <label class="custom-control-label" for="piSharedRestriction_restriccion_pc_2"><?= htmlspecialchars($pcRestrictionNames[2], ENT_QUOTES, 'UTF-8') ?></label>
                                     </div>
-                                    <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="restriccion_pc_2"></select>
+                                    <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="restriccion_pc_2" aria-label="Valor objetivo para <?= htmlspecialchars($pcRestrictionNames[2], ENT_QUOTES, 'UTF-8') ?>"></select>
                                 </div>
                                 <?php endif; ?>
                                 <?php if (!empty($pcRestrictionNames[3])): ?>
@@ -207,7 +201,7 @@
                                         <input type="checkbox" class="custom-control-input pi-shared-restriction-check" id="piSharedRestriction_restriccion_pc_3" data-restriction-type="restriccion_pc_3">
                                         <label class="custom-control-label" for="piSharedRestriction_restriccion_pc_3"><?= htmlspecialchars($pcRestrictionNames[3], ENT_QUOTES, 'UTF-8') ?></label>
                                     </div>
-                                    <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="restriccion_pc_3"></select>
+                                    <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="restriccion_pc_3" aria-label="Valor objetivo para <?= htmlspecialchars($pcRestrictionNames[3], ENT_QUOTES, 'UTF-8') ?>"></select>
                                 </div>
                                 <?php endif; ?>
                                 <?php if (!empty($pcRestrictionNames[4])): ?>
@@ -216,7 +210,7 @@
                                         <input type="checkbox" class="custom-control-input pi-shared-restriction-check" id="piSharedRestriction_restriccion_pc_4" data-restriction-type="restriccion_pc_4">
                                         <label class="custom-control-label" for="piSharedRestriction_restriccion_pc_4"><?= htmlspecialchars($pcRestrictionNames[4], ENT_QUOTES, 'UTF-8') ?></label>
                                     </div>
-                                    <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="restriccion_pc_4"></select>
+                                    <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="restriccion_pc_4" aria-label="Valor objetivo para <?= htmlspecialchars($pcRestrictionNames[4], ENT_QUOTES, 'UTF-8') ?>"></select>
                                 </div>
                                 <?php endif; ?>
                                 <?php endif; ?>
@@ -284,11 +278,16 @@
 
     <?php include __DIR__ . '/../partials/drawer_unificado.php'; ?>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-    <script>window.__PROJECT_AREA__ = <?php echo json_encode($_SESSION['area'] ?? 'Construccion'); ?>;</script>
+    <script src="/public/vendor/popper.min.js"></script>
+    <script src="/public/vendor/bootstrap/bootstrap.min.js"></script>
+    <script>
+        window.__PROJECT_AREA__ = <?php echo json_encode($_SESSION['area'] ?? 'Construccion'); ?>;
+        // Shell sidebar (DS-027): el loader conserva datos/permisos pero no monta navbar.
+        window.__AIA_SHELL_SIDEBAR__ = true;
+    </script>
     <?= \App\View\Components\BiAccessComponent::renderBootConfig('intermedia') ?>
-	<script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js?v=20260708theme" charset="utf-8"></script>
+	<script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js?v=20260722shell2" charset="utf-8"></script>
+    <?= \App\View\Components\DesignSystemHeadComponent::renderScript('/js/modules/aia_ui/sidebar_navigation.js') ?>
     <script type="text/javascript" src="/js/modules/bi-access.js" charset="utf-8"></script>
     <script type="text/javascript" src="/js/funcionesGenerales6.js" charset="utf-8"></script>
 
@@ -325,7 +324,7 @@
     </script>
 
     <script type="text/javascript" src="/js/HandsontableTomSelectEditor.js?v=tomselect30"></script>
-    <script src="/js/modules/lps_drawer.js?v=20260522d"></script>
+    <script src="/js/modules/lps_drawer.js?v=20260722shell1"></script>
     <?php $piHotVersion = @filemtime(dirname(__DIR__, 2) . '/public/js/modules/programacion_intermedia/hot.js') ?: 'hot38'; ?>
     <script src="/js/modules/programacion_intermedia/hot.js?v=<?php echo urlencode((string) $piHotVersion); ?>"></script>
 

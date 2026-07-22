@@ -11,7 +11,6 @@
          renderStylesheet versions the entrypoint by its newest nested stylesheet. -->
     <?= \App\View\Components\DesignSystemHeadComponent::renderStylesheet('/css/tokens.css') ?>
     <?= \App\View\Components\DesignSystemHeadComponent::renderStylesheet('/css/aia-design-system.css') ?>
-    <?= \App\View\Components\DesignSystemHeadComponent::renderStylesheet('/css/dark-mode.css') ?>
     <?= \App\View\Components\DesignSystemHeadComponent::renderStylesheet('/css/project-selector.css') ?>
 </head>
 <body class="hold-transition aia-shell project-selector-page">
@@ -102,20 +101,20 @@ echo \App\View\Components\DesignSystemComponent::navigation([
                         <div class="d-flex align-items-center">
                             <?php if (($proyecto['Area'] ?? 'Construccion') === 'Pre-Construccion'): ?>
                             <span class="aia-chip badge-status project-badge-domain project-badge-domain--preconstruction mr-2">
-                                <i class="fas fa-hard-hat mr-1"></i>Pre-Construcción
+                                <i class="fas fa-hard-hat mr-1" aria-hidden="true"></i>Pre-Construcción
                             </span>
                             <?php elseif (($proyecto['Area'] ?? 'Construccion') === 'Construccion'): ?>
                             <span class="aia-chip badge-status project-badge-domain project-badge-domain--construction mr-2">
-                                <i class="fas fa-hard-hat mr-1"></i>Construcción
+                                <i class="fas fa-hard-hat mr-1" aria-hidden="true"></i>Construcción
                             </span>
                             <?php endif; ?>
-                            <span class="aia-chip badge-status aia-chip--success"><?php echo $proyecto['Activo'] == 1 ? 'Activo' : 'Inactivo'; ?></span>
+                            <span class="aia-chip badge-status<?php echo $proyecto['Activo'] == 1 ? ' aia-chip--success' : ''; ?>"><?php echo $proyecto['Activo'] == 1 ? 'Activo' : 'Inactivo'; ?></span>
                         </div>
                     </div>
 
                     <div class="card-body-project">
                         <div class="meta-row">
-                            <i class="fas fa-hard-hat"></i>
+                            <i class="fas fa-hard-hat" aria-hidden="true"></i>
                             <span>Rol: <b><?php echo htmlspecialchars($proyecto['rol_nombre'] ?? $proyecto['permiso']); ?></b></span>
                         </div>
 
@@ -130,16 +129,15 @@ echo \App\View\Components\DesignSystemComponent::navigation([
             </div>
             <?php endforeach; ?>
 
-            <?php if (empty($proyectos)): ?>
-                <div class="col-12 text-center py-5 aia-empty">
-                    <img src="/img/empty_state.svg" alt="" class="project-empty-image" aria-hidden="true">
-                    <h2 class="text-muted">No tienes proyectos asignados</h2>
-                    <p class="text-muted">Contacta al administrador para solicitar acceso.</p>
-                </div>
-            <?php endif; ?>
-
         </div>
-        <div id="projectNoResults" class="aia-empty" hidden>
+        <?php if (empty($proyectos)): ?>
+            <div class="aia-empty project-empty text-center py-5">
+                <img src="/img/empty_state.svg" alt="" class="project-empty-image" aria-hidden="true">
+                <h2 class="aia-title">No tienes proyectos asignados</h2>
+                <p>Contacta al administrador para solicitar acceso.</p>
+            </div>
+        <?php endif; ?>
+        <div id="projectNoResults" class="aia-empty project-empty" hidden>
             <h2 class="aia-title">No encontramos proyectos</h2>
             <p>Prueba con otro término de búsqueda.</p>
         </div>

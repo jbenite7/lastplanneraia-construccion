@@ -1,4 +1,79 @@
 /* Extracted from views/programacion-intermedia/programacion_intermedia.view.php. Keep module-specific PI UI rules here. */
+/* Capa module: participa del cascade del design system (misma receta que programa-general.css). */
+
+@layer module {
+
+/* Tokens de estado PI: base (linen) + variantes dark. Receta de mezclas = Programa General. */
+.pi-page {
+    --pi-critical-bg: var(--ds-color-state-critical-bg);
+    --pi-critical-text: var(--ds-color-state-critical-text);
+    --pi-critical-border: color-mix(in srgb, var(--ds-color-state-critical-text) 55%, var(--ds-active-border));
+    --pi-overdue-bg: color-mix(in srgb, var(--ds-color-state-critical-bg) 62%, var(--ds-color-state-warning-bg) 38%);
+    --pi-overdue-text: var(--ds-color-state-critical-text);
+    --pi-overdue-border: color-mix(in srgb, var(--ds-color-state-critical-text) 40%, var(--ds-active-border));
+    --pi-due-bg: var(--ds-color-state-warning-bg);
+    --pi-due-text: var(--ds-color-state-warning-text);
+    --pi-due-border: color-mix(in srgb, var(--ds-color-state-warning-text) 50%, var(--ds-active-border));
+    --pi-alert1-bg: var(--ds-color-state-warning-bg);
+    --pi-alert1-text: var(--ds-color-state-warning-text);
+    --pi-alert1-border: color-mix(in srgb, var(--ds-color-state-warning-text) 42%, var(--ds-active-border));
+    --pi-alert23-bg: color-mix(in srgb, var(--ds-color-state-warning-bg) 55%, var(--ds-color-state-success-bg) 45%);
+    --pi-alert23-text: var(--ds-color-state-warning-text);
+    --pi-alert23-border: color-mix(in srgb, var(--ds-color-state-warning-text) 34%, var(--ds-active-border));
+    --pi-alert46-bg: var(--ds-color-state-success-bg);
+    --pi-alert46-text: var(--ds-color-state-success-text);
+    --pi-alert46-border: color-mix(in srgb, var(--ds-color-state-success-text) 40%, var(--ds-active-border));
+    --pi-exec-blocked-bg: color-mix(in srgb, var(--ds-color-state-warning-bg) 55%, var(--ds-color-state-critical-bg) 45%);
+    --pi-exec-blocked-text: var(--ds-color-state-critical-text);
+    --pi-exec-blocked-border: color-mix(in srgb, var(--ds-color-state-critical-text) 34%, var(--ds-active-border));
+    --pi-control-bg: var(--ds-color-state-info-bg);
+    --pi-control-text: var(--ds-color-state-info-text);
+    --pi-control-border: color-mix(in srgb, var(--ds-color-state-info-text) 44%, var(--ds-active-border));
+    --pi-ok-soft-bg: var(--ds-color-state-success-bg);
+    --pi-ok-text: var(--ds-color-state-success-text);
+    --pi-ok-border: color-mix(in srgb, var(--ds-color-state-success-text) 30%, var(--ds-active-border));
+    --pi-danger-soft-bg: var(--ds-color-state-critical-bg);
+    --pi-danger-text: var(--ds-color-state-critical-text);
+    --pi-danger-border: color-mix(in srgb, var(--ds-color-state-critical-text) 30%, var(--ds-active-border));
+    --pi-neutral-soft-bg: var(--ds-active-surface-raised);
+    --pi-neutral-text: var(--ds-active-text-secondary);
+    --pi-neutral-border: var(--ds-active-border);
+    background: var(--ds-active-bg-page);
+    color: var(--ds-active-text-primary);
+}
+
+html.aia-theme-dark .pi-page.dark-mode {
+    --pi-critical-bg: color-mix(in srgb, var(--ds-color-state-critical-text) 48%, var(--ds-active-surface-raised) 52%);
+    --pi-critical-text: var(--ds-active-text-primary);
+    --pi-critical-border: color-mix(in srgb, var(--ds-color-state-critical-bg) 54%, var(--ds-active-border) 46%);
+    --pi-overdue-bg: color-mix(in srgb, var(--ds-color-state-critical-text) 38%, var(--ds-active-surface-raised) 62%);
+    --pi-overdue-text: var(--ds-active-text-primary);
+    --pi-overdue-border: color-mix(in srgb, var(--ds-color-state-critical-bg) 46%, var(--ds-active-border) 54%);
+    --pi-due-bg: color-mix(in srgb, var(--ds-color-state-warning-text) 42%, var(--ds-active-surface-raised) 58%);
+    --pi-due-text: var(--ds-active-text-primary);
+    --pi-due-border: color-mix(in srgb, var(--ds-color-state-warning-bg) 54%, var(--ds-active-border) 46%);
+    --pi-alert1-bg: color-mix(in srgb, var(--ds-color-state-warning-text) 36%, var(--ds-active-surface-raised) 64%);
+    --pi-alert1-text: var(--ds-active-text-primary);
+    --pi-alert1-border: color-mix(in srgb, var(--ds-color-state-warning-bg) 50%, var(--ds-active-border) 50%);
+    --pi-alert23-bg: color-mix(in srgb, var(--ds-color-state-warning-text) 30%, var(--ds-active-surface-raised) 70%);
+    --pi-alert23-text: var(--ds-active-text-primary);
+    --pi-alert23-border: color-mix(in srgb, var(--ds-color-state-warning-bg) 46%, var(--ds-active-border) 54%);
+    --pi-alert46-bg: color-mix(in srgb, var(--ds-color-state-success-text) 30%, var(--ds-active-surface-raised) 70%);
+    --pi-alert46-text: var(--ds-active-text-primary);
+    --pi-alert46-border: color-mix(in srgb, var(--ds-color-state-success-bg) 46%, var(--ds-active-border) 54%);
+    --pi-exec-blocked-bg: color-mix(in srgb, var(--ds-color-state-critical-text) 26%, var(--ds-active-surface-raised) 74%);
+    --pi-exec-blocked-text: var(--ds-active-text-primary);
+    --pi-exec-blocked-border: color-mix(in srgb, var(--ds-color-state-critical-bg) 40%, var(--ds-active-border) 60%);
+    --pi-control-bg: color-mix(in srgb, var(--ds-color-state-info-text) 42%, var(--ds-active-surface-raised) 58%);
+    --pi-control-text: var(--ds-active-text-primary);
+    --pi-control-border: color-mix(in srgb, var(--ds-color-state-info-bg) 54%, var(--ds-active-border) 46%);
+    --pi-ok-soft-bg: color-mix(in srgb, var(--ds-color-state-success-text) 26%, var(--ds-active-surface-raised) 74%);
+    --pi-ok-text: var(--ds-active-text-primary);
+    --pi-ok-border: color-mix(in srgb, var(--ds-color-state-success-bg) 40%, var(--ds-active-border) 60%);
+    --pi-danger-soft-bg: color-mix(in srgb, var(--ds-color-state-critical-text) 30%, var(--ds-active-surface-raised) 70%);
+    --pi-danger-text: var(--ds-active-text-primary);
+    --pi-danger-border: color-mix(in srgb, var(--ds-color-state-critical-bg) 44%, var(--ds-active-border) 56%);
+}
 
 /* programacion_intermedia.view.php style block 1 */
 .hot-full-bleed {
@@ -111,7 +186,7 @@
 }
 
 .pi-page .ops-state-zoom:focus-visible {
-    outline: 2px solid oklch(62% 0.18 250);
+    outline: 2px solid var(--ds-active-focus-ring);
     outline-offset: 2px;
     border-radius: 8px;
 }
@@ -131,9 +206,9 @@
     min-width: 0;
     max-width: 100%;
     padding: 4px 8px;
-    border: 1px solid rgba(15, 23, 42, 0.08);
+    border: 1px solid var(--ds-active-border);
     border-radius: 8px;
-    background: rgba(255, 255, 255, 0.9);
+    background: color-mix(in srgb, var(--ds-active-surface-raised) 92%, transparent);
     color: inherit;
     font-weight: 900;
     font-size: 0.78rem;
@@ -146,10 +221,10 @@
 }
 
 .pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-blocked-overdue-critical .ops-state-chip {
-    background: var(--pi-critical-bg, #fee2e2);
-    background: color-mix(in srgb, var(--pi-critical-bg, #fee2e2) 78%, #fff 22%);
-    border-color: var(--pi-critical-border, #dc2626);
-    color: var(--pi-critical-text, #991b1b);
+    background: var(--pi-critical-bg);
+    background: color-mix(in srgb, var(--pi-critical-bg) 78%, var(--ds-active-surface-raised) 22%);
+    border-color: var(--pi-critical-border);
+    color: var(--pi-critical-text);
     font-weight: 900;
     box-shadow: inset 0 0 0 1px rgba(220, 38, 38, 0.24), 0 1px 3px rgba(153, 27, 27, 0.14);
 }
@@ -166,64 +241,64 @@
 }
 
 .pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-blocked-overdue .ops-state-chip {
-    background: var(--pi-overdue-bg, #ffedd5);
-    background: color-mix(in srgb, var(--pi-overdue-bg, #ffedd5) 70%, #fff 30%);
-    border-color: var(--pi-overdue-border, #f97316);
-    color: var(--pi-overdue-text, #9a3412);
+    background: var(--pi-overdue-bg);
+    background: color-mix(in srgb, var(--pi-overdue-bg) 70%, var(--ds-active-surface-raised) 30%);
+    border-color: var(--pi-overdue-border);
+    color: var(--pi-overdue-text);
 }
 
 .pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-blocked-due .ops-state-chip {
-    background: var(--pi-due-bg, #fef3c7);
-    background: color-mix(in srgb, var(--pi-due-bg, #fef3c7) 68%, #fff 32%);
-    border-color: var(--pi-due-border, #f59e0b);
-    color: var(--pi-due-text, #92400e);
+    background: var(--pi-due-bg);
+    background: color-mix(in srgb, var(--pi-due-bg) 68%, var(--ds-active-surface-raised) 32%);
+    border-color: var(--pi-due-border);
+    color: var(--pi-due-text);
 }
 
 .pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-alert-1-week .ops-state-chip {
-    background: var(--pi-alert1-bg, #fef9c3);
-    background: color-mix(in srgb, var(--pi-alert1-bg, #fef9c3) 66%, #fff 34%);
-    border-color: var(--pi-alert1-border, #eab308);
-    color: var(--pi-alert1-text, #854d0e);
+    background: var(--pi-alert1-bg);
+    background: color-mix(in srgb, var(--pi-alert1-bg) 66%, var(--ds-active-surface-raised) 34%);
+    border-color: var(--pi-alert1-border);
+    color: var(--pi-alert1-text);
 }
 
 .pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-alert-2-3-weeks .ops-state-chip {
-    background: var(--pi-alert23-bg, #ecfccb);
-    background: color-mix(in srgb, var(--pi-alert23-bg, #ecfccb) 66%, #fff 34%);
-    border-color: var(--pi-alert23-border, #84cc16);
-    color: var(--pi-alert23-text, #3f6212);
+    background: var(--pi-alert23-bg);
+    background: color-mix(in srgb, var(--pi-alert23-bg) 66%, var(--ds-active-surface-raised) 34%);
+    border-color: var(--pi-alert23-border);
+    color: var(--pi-alert23-text);
 }
 
 .pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-alert-4-6-weeks .ops-state-chip {
-    background: var(--pi-alert46-bg, #dcfce7);
-    background: color-mix(in srgb, var(--pi-alert46-bg, #dcfce7) 66%, #fff 34%);
-    border-color: var(--pi-alert46-border, #22c55e);
-    color: var(--pi-alert46-text, #166534);
+    background: var(--pi-alert46-bg);
+    background: color-mix(in srgb, var(--pi-alert46-bg) 66%, var(--ds-active-surface-raised) 34%);
+    border-color: var(--pi-alert46-border);
+    color: var(--pi-alert46-text);
 }
 
 .pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-execution-blocked .ops-state-chip {
-    background: var(--pi-exec-blocked-bg, #fed7aa);
-    background: color-mix(in srgb, var(--pi-exec-blocked-bg, #fed7aa) 66%, #fff 34%);
-    border-color: var(--pi-exec-blocked-border, #fb923c);
-    color: var(--pi-exec-blocked-text, #9a3412);
+    background: var(--pi-exec-blocked-bg);
+    background: color-mix(in srgb, var(--pi-exec-blocked-bg) 66%, var(--ds-active-surface-raised) 34%);
+    border-color: var(--pi-exec-blocked-border);
+    color: var(--pi-exec-blocked-text);
 }
 
 .pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-liberated-control .ops-state-chip {
-    background: var(--pi-control-bg, #e0f2fe);
-    background: color-mix(in srgb, var(--pi-control-bg, #e0f2fe) 66%, #fff 34%);
-    border-color: var(--pi-control-border, #38bdf8);
-    color: var(--pi-control-text, #0c4a6e);
+    background: var(--pi-control-bg);
+    background: color-mix(in srgb, var(--pi-control-bg) 66%, var(--ds-active-surface-raised) 34%);
+    border-color: var(--pi-control-border);
+    color: var(--pi-control-text);
 }
 
 .pi-page .handsontable td.pi-soft-restriction-cell:not(.pi-row-state) {
-    background: color-mix(in srgb, var(--pi-due-bg, #fde68a) 62%, #fff 38%) !important;
-    color: var(--pi-due-text, #78350f) !important;
+    background: color-mix(in srgb, var(--pi-due-bg) 62%, var(--ds-active-surface-raised) 38%) !important;
+    color: var(--pi-due-text) !important;
     box-shadow: inset 0 0 0 1px rgba(245, 158, 11, 0.24);
 }
 
 .pi-page .handsontable th.pi-soft-restriction-th,
 .pi-page .handsontable th.pi-soft-restriction-th .colHeader {
-    background: color-mix(in srgb, var(--pi-due-bg, #fef3c7) 70%, #fff 30%) !important;
-    color: var(--pi-due-text, #92400e) !important;
+    background: color-mix(in srgb, var(--pi-due-bg) 70%, var(--ds-active-surface-raised) 30%) !important;
+    color: var(--pi-due-text) !important;
 }
 
 .pi-page .pi-soft-restriction-header::after {
@@ -232,8 +307,8 @@
     margin-left: 4px;
     padding: 1px 5px;
     border-radius: 999px;
-    background: var(--pi-due-bg, #fef3c7);
-    color: var(--pi-due-text, #92400e);
+    background: var(--pi-due-bg);
+    color: var(--pi-due-text);
     font-size: 0.66rem;
     font-weight: 800;
     line-height: 1.1;
@@ -250,12 +325,12 @@
     height: auto;
     padding: 0 6px;
     border-radius: 999px;
-    background: oklch(97% 0.02 80);
-    color: oklch(38% 0.12 55);
+    background: var(--ds-active-surface-raised);
+    color: var(--ds-active-text-secondary);
     font-weight: 800;
     font-size: 0.75rem;
     line-height: 1;
-    box-shadow: inset 0 0 0 1px rgba(120, 53, 15, 0.12);
+    box-shadow: inset 0 0 0 1px var(--ds-active-border);
 }
 
 .pi-page .ops-state-pills {
@@ -274,9 +349,9 @@
     align-items: flex-start;
     max-width: 100%;
     padding: 3px 6px;
-    border: 1px solid rgba(120, 53, 15, 0.1);
+    border: 1px solid var(--ds-active-border);
     border-radius: 7px;
-    background: rgba(255, 255, 255, 0.86);
+    background: color-mix(in srgb, var(--ds-active-surface-raised) 88%, transparent);
     color: inherit;
     font-weight: 800;
     font-size: 0.7rem;
@@ -289,7 +364,7 @@
 
 .pi-page .ops-state-ready {
     max-width: 140px;
-    color: oklch(36% 0.12 150);
+    color: var(--pi-alert46-text);
 }
 
 .pi-page .ops-state-drawer {
@@ -306,7 +381,7 @@
 .pi-page .ops-state-backdrop {
     position: absolute;
     inset: 0;
-    background: rgba(15, 23, 42, 0.22);
+    background: color-mix(in srgb, var(--ds-active-bg-canvas) 55%, transparent);
     opacity: 0;
     transition: opacity 160ms ease;
 }
@@ -323,8 +398,8 @@
     grid-template-rows: auto 1fr;
     width: min(420px, 92vw);
     height: 100dvh;
-    background: #ffffff;
-    color: #1f2937;
+    background: var(--ds-active-surface);
+    color: var(--ds-active-text-primary);
     box-shadow: -20px 0 40px rgba(15, 23, 42, 0.18);
     transform: translateX(102%);
     transition: transform 180ms ease;
@@ -340,12 +415,12 @@
     justify-content: space-between;
     gap: 16px;
     padding: 18px 20px;
-    border-bottom: 1px solid rgba(148, 163, 184, 0.28);
+    border-bottom: 1px solid var(--ds-active-border);
 }
 
 .pi-page .ops-state-eyebrow {
     display: block;
-    color: #64748b;
+    color: var(--ds-active-text-secondary);
     font-size: 0.75rem;
     font-weight: 800;
     letter-spacing: 0.08em;
@@ -354,7 +429,7 @@
 
 .pi-page .ops-state-panel-header h5 {
     margin: 4px 0 0;
-    color: #111827;
+    color: var(--ds-active-text-primary);
     font-weight: 800;
 }
 
@@ -363,8 +438,8 @@
     height: 34px;
     border: 0;
     border-radius: 999px;
-    background: #f1f5f9;
-    color: #334155;
+    background: var(--ds-active-surface-raised);
+    color: var(--ds-active-text-primary);
     font-size: 1.4rem;
     line-height: 1;
     cursor: pointer;
@@ -385,7 +460,7 @@
 
 .pi-page .ops-state-activity {
     align-items: flex-start;
-    color: #334155;
+    color: var(--ds-active-text-secondary);
     line-height: 1.3;
 }
 
@@ -396,8 +471,8 @@
     align-items: center;
     padding: 3px 7px;
     border-radius: 999px;
-    background: #f8fafc;
-    color: #475569;
+    background: var(--ds-active-surface-raised);
+    color: var(--ds-active-text-secondary);
     font-size: 0.74rem;
     font-weight: 800;
     white-space: nowrap;
@@ -405,7 +480,7 @@
 
 .pi-page .ops-state-panel-body h6 {
     margin: 18px 0 10px;
-    color: #111827;
+    color: var(--ds-active-text-primary);
     font-weight: 800;
 }
 
@@ -423,21 +498,21 @@
     gap: 8px;
     align-items: start;
     padding: 10px;
-    border: 1px solid rgba(148, 163, 184, 0.24);
+    border: 1px solid var(--ds-active-border);
     border-radius: 12px;
-    background: #f8fafc;
+    background: var(--ds-active-surface-raised);
 }
 
 .pi-page .ops-state-action-text {
-    color: #1f2937;
+    color: var(--ds-active-text-primary);
     line-height: 1.35;
 }
 
 .pi-page .ops-state-empty-detail {
     padding: 14px;
     border-radius: 12px;
-    background: oklch(97% 0.03 150);
-    color: oklch(35% 0.11 150);
+    background: var(--pi-alert46-bg);
+    color: var(--pi-alert46-text);
     font-weight: 700;
 }
 
@@ -447,7 +522,7 @@
 }
 
 .pi-page #hot-container td.pi-cell-editable:not(.pi-row-state) {
-    box-shadow: inset 0 0 0 9999px rgba(34, 197, 94, 0.05);
+    box-shadow: inset 0 0 0 9999px color-mix(in srgb, var(--ds-color-state-success-text) 6%, transparent);
     cursor: text;
 }
 
@@ -456,7 +531,7 @@
 }
 
 .pi-page #hot-container td.pi-cell-readonly:not(.pi-row-state) {
-    box-shadow: inset 0 0 0 9999px rgba(148, 163, 184, 0.06);
+    box-shadow: inset 0 0 0 9999px color-mix(in srgb, var(--ds-active-text-secondary) 7%, transparent);
     cursor: not-allowed;
 }
 
@@ -466,7 +541,7 @@
 
 .pi-page #hot-container td.pi-cell-editable.current,
 .pi-page #hot-container td.pi-cell-editable.area {
-    box-shadow: inset 0 0 0 2px rgba(22, 163, 74, 0.32);
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--ds-color-state-success-text) 38%, transparent);
 }
 
 .pi-page #hot-container td.pi-cell-dropdown {
@@ -481,12 +556,12 @@
     top: 50%;
     transform: translateY(-50%);
     font-size: 10px;
-    color: rgba(71, 85, 105, 0.72);
+    color: color-mix(in srgb, var(--ds-active-text-secondary) 72%, transparent);
     pointer-events: none;
 }
 
 .pi-page #hot-container td.pi-cell-dropdown.current::after {
-    color: #1e5ea8;
+    color: var(--ds-active-focus-ring);
 }
 
 .pi-page #hot-container td.pi-shared-selector {
@@ -499,7 +574,7 @@
 }
 
 .pi-page #hot-container td.pi-row-shared-picked {
-    box-shadow: inset 0 0 0 9999px rgba(30, 94, 168, 0.08);
+    box-shadow: inset 0 0 0 9999px color-mix(in srgb, var(--ds-active-data-plan) 10%, transparent);
 }
 
 .pi-page #hot-container .handsontable thead th {
@@ -563,10 +638,10 @@
     height: 13px;
     margin: 0 !important;
     padding: 0 !important;
-    border: 1px solid #cfd8e3;
+    border: 1px solid var(--ds-active-border);
     border-radius: 4px;
-    background: #f4f7fb;
-    color: #5c6b7a;
+    background: var(--ds-active-surface-raised);
+    color: var(--ds-active-text-secondary);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -587,9 +662,9 @@
 
 .pi-page #hot-container .handsontable .changeType:hover,
 .pi-page #hot-container .handsontable .changeType:focus {
-    border-color: #7ea7d8;
-    background: #eaf3ff;
-    color: #1e5ea8;
+    border-color: var(--ds-active-focus-ring);
+    background: var(--ds-active-surface-raised);
+    color: var(--ds-active-focus-ring);
     cursor: pointer;
 }
 
@@ -607,7 +682,7 @@
     margin-bottom: 0.32rem;
     font-size: 0.9rem;
     font-weight: 600;
-    color: #2c3a48;
+    color: var(--ds-active-text-primary);
 }
 
 #modal_shared_constraint .form-control,
@@ -641,9 +716,9 @@
 }
 
 .pi-shared-preview {
-    border: 1px solid #d7e0ea;
+    border: 1px solid var(--ds-active-border);
     border-radius: 8px;
-    background: linear-gradient(180deg, #f9fbfe 0%, #f4f8fc 100%);
+    background: var(--ds-active-surface-raised);
     padding: 12px;
     min-height: 96px;
     max-height: 380px;
@@ -666,9 +741,9 @@
 }
 
 .pi-shared-kpi {
-    border: 1px solid #dbe6f1;
+    border: 1px solid var(--ds-active-border);
     border-radius: 8px;
-    background: #ffffff;
+    background: var(--ds-active-surface);
     padding: 7px 9px;
     min-height: 58px;
     display: flex;
@@ -680,7 +755,7 @@
 .pi-shared-kpi-label {
     font-size: 0.72rem;
     letter-spacing: 0.01em;
-    color: #607083;
+    color: var(--ds-active-text-secondary);
     text-transform: uppercase;
 }
 
@@ -688,7 +763,7 @@
     font-size: 0.95rem;
     font-weight: 700;
     line-height: 1.2;
-    color: #1f2d3a;
+    color: var(--ds-active-text-primary);
     overflow-wrap: anywhere;
 }
 
@@ -702,14 +777,14 @@
     flex: 1 1 auto;
     height: 8px;
     border-radius: 999px;
-    background: #dde6f0;
+    background: var(--ds-active-border);
     overflow: hidden;
 }
 
 .pi-shared-coverage-fill {
     height: 100%;
     border-radius: 999px;
-    background: linear-gradient(90deg, #2f7dd6 0%, #1e62b2 100%);
+    background: var(--ds-active-data-plan);
 }
 
 .pi-shared-coverage-text {
@@ -717,42 +792,42 @@
     font-size: 0.78rem;
     font-weight: 600;
     text-align: right;
-    color: #516273;
+    color: var(--ds-active-text-secondary);
 }
 
 .pi-shared-missing {
-    border: 1px solid #f3c4be;
+    border: 1px solid var(--pi-danger-border);
     border-radius: 8px;
-    background: #fff6f5;
+    background: var(--pi-danger-soft-bg);
     padding: 7px 9px;
-    color: #8f3a2f;
+    color: var(--pi-danger-text);
     font-size: 0.8rem;
     line-height: 1.3;
 }
 
 .pi-shared-kpi.pi-shared-kpi-conflict {
-    border-color: #f1b5aa;
-    background: #fff4f1;
+    border-color: var(--pi-danger-border);
+    background: var(--pi-danger-soft-bg);
 }
 .pi-shared-kpi.pi-shared-kpi-conflict .pi-shared-kpi-value {
-    color: #9d321f;
+    color: var(--pi-danger-text);
 }
 
 .pi-shared-conflicts {
-    border: 1px solid #f1b5aa;
+    border: 1px solid var(--pi-danger-border);
     border-radius: 8px;
-    background: #fff4f1;
+    background: var(--pi-danger-soft-bg);
     padding: 9px 11px;
     display: flex;
     flex-direction: column;
     gap: 6px;
     font-size: 0.82rem;
     line-height: 1.32;
-    color: #6f281b;
+    color: var(--pi-danger-text);
 }
 .pi-shared-conflicts-title {
     font-weight: 700;
-    color: #8f3a2f;
+    color: var(--pi-danger-text);
 }
 .pi-shared-conflict-badge {
     display: inline-flex;
@@ -760,39 +835,39 @@
     gap: 4px;
     padding: 2px 8px;
     border-radius: 999px;
-    background: #fde2dc;
-    border: 1px solid #f1b5aa;
-    color: #6f281b;
+    background: var(--pi-danger-soft-bg);
+    border: 1px solid var(--pi-danger-border);
+    color: var(--pi-danger-text);
     font-size: 0.76rem;
     font-weight: 600;
     margin-right: 4px;
 }
 .pi-shared-conflict-badge b {
-    color: #8f3a2f;
+    color: var(--pi-danger-text);
 }
 .pi-shared-conflicts-hint {
     font-size: 0.74rem;
-    color: #7a4434;
+    color: var(--pi-danger-text);
     font-style: italic;
 }
 .pi-shared-table tr.pi-shared-row-conflict {
-    background: #fff8f6;
+    background: var(--pi-danger-soft-bg);
 }
 .pi-shared-table tr.pi-shared-row-conflict:hover {
-    background: #ffece6;
+    background: color-mix(in srgb, var(--pi-danger-soft-bg) 85%, var(--pi-danger-text) 15%);
 }
 .pi-shared-table td.pi-shared-cell-conflict {
-    color: #8f3a2f;
+    color: var(--pi-danger-text);
     font-weight: 600;
-    background: #fff0eb;
+    background: var(--pi-danger-soft-bg);
 }
 
 .pi-shared-table-wrap {
-    border: 1px solid #dbe6f1;
+    border: 1px solid var(--ds-active-border);
     border-radius: 8px;
     overflow: auto;
     max-height: 228px;
-    background: #ffffff;
+    background: var(--ds-active-surface);
 }
 
 .pi-shared-table {
@@ -804,7 +879,7 @@
 
 .pi-shared-table th,
 .pi-shared-table td {
-    border-bottom: 1px solid #e6edf5;
+    border-bottom: 1px solid var(--ds-active-border);
     padding: 6px 8px;
     vertical-align: top;
     text-align: left;
@@ -817,14 +892,14 @@
     font-size: 0.74rem;
     text-transform: uppercase;
     letter-spacing: 0.02em;
-    color: #4f6173;
-    background: #eef4fa;
+    color: var(--ds-active-text-secondary);
+    background: var(--ds-active-surface-raised);
 }
 
 .pi-shared-col-id {
     white-space: nowrap;
     font-weight: 700;
-    color: #27435f;
+    color: var(--ds-active-text-primary);
 }
 
 .pi-shared-activity-cell {
@@ -846,21 +921,21 @@
 }
 
 .pi-shared-delta-up {
-    color: #0e5c32;
-    background: #e9f7ee;
-    border: 1px solid #bfe7cc;
+    color: var(--pi-ok-text);
+    background: var(--pi-ok-soft-bg);
+    border: 1px solid var(--pi-ok-border);
 }
 
 .pi-shared-delta-down {
-    color: #9d321f;
-    background: #fff1ed;
-    border: 1px solid #f4c9c0;
+    color: var(--pi-danger-text);
+    background: var(--pi-danger-soft-bg);
+    border: 1px solid var(--pi-danger-border);
 }
 
 .pi-shared-delta-neutral {
-    color: #4f6173;
-    background: #f1f5f9;
-    border: 1px solid #d9e2ec;
+    color: var(--pi-neutral-text);
+    background: var(--pi-neutral-soft-bg);
+    border: 1px solid var(--pi-neutral-border);
 }
 
 .pi-shared-restriction-changes {
@@ -880,19 +955,19 @@
 .pi-shared-empty,
 .pi-shared-loading {
     font-size: 0.8rem;
-    color: #506173;
+    color: var(--ds-active-text-secondary);
 }
 
 .pi-shared-empty {
-    border: 1px dashed #c7d6e6;
+    border: 1px dashed var(--ds-active-border);
     border-radius: 8px;
-    background: #ffffff;
+    background: var(--ds-active-surface);
     padding: 9px 10px;
 }
 
 .pi-shared-more {
     font-weight: 600;
-    color: #466382;
+    color: var(--ds-active-text-secondary);
 }
 
 .pi-shared-loading {
@@ -905,7 +980,7 @@
 
 .pi-shared-hint {
     font-size: 0.8rem;
-    color: #5b6b7a;
+    color: var(--ds-active-text-secondary);
 }
 
 .pi-shared-tools {
@@ -925,7 +1000,7 @@
     display: block;
     margin-top: 4px;
     font-size: 0.78rem;
-    color: #5b6b7a;
+    color: var(--ds-active-text-secondary);
 }
 
 .pi-shared-restrictions-header {
@@ -953,9 +1028,9 @@
 .pi-shared-restrictions-panel {
     display: grid;
     gap: 6px;
-    border: 1px solid #d7e0ea;
+    border: 1px solid var(--ds-active-border);
     border-radius: 8px;
-    background: #f8fbff;
+    background: var(--ds-active-surface-raised);
     padding: 8px;
 }
 
@@ -964,9 +1039,9 @@
     grid-template-columns: minmax(170px, 1fr) minmax(96px, 124px);
     gap: 8px;
     align-items: center;
-    border: 1px solid #e0e8f2;
+    border: 1px solid var(--ds-active-border);
     border-radius: 7px;
-    background: #ffffff;
+    background: var(--ds-active-surface);
     padding: 6px 8px;
 }
 
@@ -1000,6 +1075,9 @@
     .pi-shared-restriction-row {
         grid-template-columns: 1fr;
     }
+}
+
+/* fin @layer module (el bloque mobile-cards conserva su capa components original) */
 }
 
 @layer components {
@@ -1118,6 +1196,9 @@
         }
     }
 }
+
+@layer module {
+
 /* Help trigger icons in restriction headers */
 .pi-header-controls {
     display: flex;
@@ -1132,13 +1213,13 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: #5b7fa6;
+    color: var(--ds-active-text-secondary);
     font-size: 8px;
     cursor: pointer;
     line-height: 1;
 }
 .pi-help-trigger:hover {
-    color: #1e5ea8;
+    color: var(--ds-active-focus-ring);
 }
 .tooltip-inner--wide {
     max-width: 380px;
@@ -1179,7 +1260,7 @@
     min-width: 100% !important;
     box-sizing: border-box !important;
     font-size: 0.83rem !important;
-    font-family: 'Inter', sans-serif !important;
+    font-family: var(--ds-font-body) !important;
     color: #1c1c1e !important;
     padding: 2px 4px 0 4px !important; /* Removed bottom padding, the button will be the floor */
     box-shadow: none !important;
@@ -1188,7 +1269,7 @@
 .htTomSelectWrapper .ts-control input {
     width: 90% !important;
     font-size: 0.83rem !important;
-    font-family: 'Inter', sans-serif !important;
+    font-family: var(--ds-font-body) !important;
     color: #1c1c1e !important;
     margin: 0 !important;
     padding: 0 !important;
@@ -1234,7 +1315,7 @@
     max-height: 220px !important;
     overflow-y: auto !important;
     font-size: 0.83rem !important;
-    font-family: 'Inter', sans-serif !important;
+    font-family: var(--ds-font-body) !important;
     z-index: 99999 !important;
 }
 .htTomSelectWrapper .ts-dropdown .ts-dropdown-content {
@@ -1258,7 +1339,7 @@
     padding: 8px 12px !important;
     cursor: pointer !important;
     color: #1c1c1e !important;
-    font-family: 'Inter', sans-serif !important;
+    font-family: var(--ds-font-body) !important;
     border-bottom: 1px solid #f4f1ea !important; /* Linen separator */
     transition: background 0.12s ease !important;
 }
@@ -1358,34 +1439,34 @@ gap: 4px;
       .pi-view-all-toggle-label {
 font-size: 0.78rem;
 font-weight: 600;
-color: #4a5568;
+color: var(--ds-active-text-secondary);
 letter-spacing: 0.01em;
 white-space: nowrap;
       }
       /* Switch: estado apagado (look neutro, sin el primary azul por defecto) */
       .pi-view-all-toggle .custom-control-label::before {
-background-color: #cbd5e0;
-border-color: #cbd5e0;
+background-color: var(--ds-active-border);
+border-color: var(--ds-active-border);
       }
       /* Switch: estado encendido (verde AIA brand #1a5633) */
       .pi-view-all-toggle .custom-control-input:checked ~ .custom-control-label::before {
-background-color: #1a5633;
-border-color: #1a5633;
+background-color: var(--ds-active-action-primary);
+border-color: var(--ds-active-action-primary);
       }
       .pi-view-all-toggle .custom-control-input:focus ~ .custom-control-label::before {
-box-shadow: 0 0 0 0.2rem rgba(26, 86, 51, 0.25);
-border-color: #1a5633;
+box-shadow: 0 0 0 0.2rem var(--ds-active-focus-ring);
+border-color: var(--ds-active-action-primary);
       }
       .pi-view-all-toggle .custom-control-input:active ~ .custom-control-label::before {
-background-color: #1a5633;
-border-color: #1a5633;
+background-color: var(--ds-active-action-primary);
+border-color: var(--ds-active-action-primary);
       }
       .pi-view-all-toggle .custom-control-input:checked ~ .custom-control-label::after {
-background-color: #ffffff;
+background-color: var(--ds-active-surface);
       }
       /* Refleja el estado en el texto del label (oscurece cuando está activo) */
       .pi-view-all-toggle.is-on .pi-view-all-toggle-label {
-color: #1a5633;
+color: var(--ds-active-action-primary);
 font-weight: 700;
       }
       /* Badge en el semaforo que recuerda que los conteos son de la ventana de 6 sem. */
@@ -1394,12 +1475,220 @@ display: inline-block;
 padding: 2px 8px;
 margin-right: 8px;
 border-radius: 999px;
-background: #fef3c7;
-color: #92400e;
+background: var(--pi-due-bg);
+color: var(--pi-due-text);
 font-size: 0.72rem;
 font-weight: 700;
 letter-spacing: 0.02em;
 align-self: center;
-border: 1px solid #fde68a;
+border: 1px solid var(--pi-due-border);
       }
       .pi-legend-window-label:not(.is-active) { display: none; }
+
+/* ── Migración dark: scaffold de página y grid (tokens --ds-active-*) ── */
+
+.pi-page .encabezado {
+    background: var(--ds-active-bg-page);
+    color: var(--ds-active-text-primary);
+}
+
+/* Contenedor de la toolbar: handsontable-module.css (capa vendor) lo pinta
+   #f8f9fa; aquí se funde con el fondo de página del tema activo. */
+.pi-page .header-actions,
+.pi-page .action-bar {
+    background: var(--ds-active-bg-page);
+    border-bottom-color: var(--ds-active-border);
+}
+
+.pi-page #loading {
+    background: color-mix(in srgb, var(--ds-active-bg-page) 82%, transparent);
+}
+
+.pi-page .pdc-legend {
+    background: var(--ds-active-surface);
+    border-color: var(--ds-active-border);
+}
+
+.pi-page .btn-pdc-modern {
+    background: var(--ds-active-surface-raised);
+    color: var(--ds-active-text-primary);
+    border-color: var(--ds-active-border);
+}
+
+.pi-page .btn-pdc-modern:hover {
+    background: color-mix(in srgb, var(--ds-active-surface-raised) 86%, var(--ds-active-text-primary) 14%);
+    color: var(--ds-active-text-primary);
+}
+
+/* Superficies internas del grid (misma receta que el adapter de Programa General) */
+.pi-page #hot-container,
+.pi-page #hot-container .handsontable,
+.pi-page #hot-container .ht_master,
+.pi-page #hot-container .wtHolder,
+.pi-page #hot-container .wtHider,
+.pi-page #hot-container .wtSpreader,
+.pi-page #hot-container table.htCore {
+    background: var(--ds-active-bg-page) !important;
+    color: var(--ds-active-text-primary) !important;
+}
+
+.pi-page .handsontable th,
+.pi-page .handsontable td {
+    border-color: var(--ds-active-border) !important;
+    background-color: var(--ds-active-surface);
+    color: var(--ds-active-text-primary);
+}
+
+.pi-page .handsontable thead th,
+.pi-page .handsontable .colHeader {
+    background: var(--ds-active-surface-raised);
+    color: var(--ds-active-text-primary);
+}
+
+/* Estado oculto de badges de guardado (sustituye display:none inline) */
+.pi-page .pi-status-badge-hidden {
+    display: none;
+}
+
+/* Targets mínimos de 44px en la toolbar (DESIGN.md).
+   !important: styles.css los fija a 32px con !important (capa module previa). */
+.pi-page .pi-toolbar-actions .btn-pdc-modern,
+.pi-page .pi-toolbar-actions .aia-btn {
+    min-height: var(--ds-target-min) !important;
+    height: auto !important;
+}
+
+.pi-page .pi-view-all-toggle {
+    min-height: var(--ds-target-min);
+}
+
+/* Foco visible con el anillo del sistema */
+.pi-page :is(.btn-pdc-modern, .pdc-legend-item, .ops-state-close, .ops-state-zoom):focus-visible {
+    outline: var(--ds-outline-width) solid var(--ds-active-focus-ring);
+    outline-offset: var(--ds-outline-offset);
+}
+
+/* Variante informativa del badge de ventana (Pre-Construcción) */
+.pi-legend-window-label--info {
+    background: var(--ds-color-state-info-bg);
+    color: var(--ds-color-state-info-text);
+    border-color: color-mix(in srgb, var(--ds-color-state-info-text) 30%, var(--ds-active-border));
+}
+
+html.aia-theme-dark .pi-page.dark-mode .pi-legend-window-label--info {
+    background: color-mix(in srgb, var(--ds-color-state-info-text) 30%, var(--ds-active-surface-raised));
+    color: var(--ds-active-text-primary);
+}
+
+/* Modales PI sobre superficie activa (familia programación: misma receta que
+   programacion-semanal.css). En linen resuelven claro; en dark, oscuro. */
+body.pi-page :is(#modal_leyenda_colores, #modal_shared_constraint) :is(.modal-content, .modal-body, .modal-footer) {
+    background: var(--ds-active-surface) !important;
+    color: var(--ds-active-text-primary) !important;
+    border-color: var(--ds-active-border) !important;
+}
+
+/* (Los controles de formulario del modal se estilizan al final del archivo en
+   @layer components: la regla blanca de styles.css vive en module.components y
+   solo una capa components de nivel superior la supera en important.) */
+
+/* Contenido de la Guía Operativa: superficies y badges con tokens (ambos temas) */
+.pi-page .pi-legend-quick-header {
+    border-color: var(--ds-active-border);
+    background: var(--ds-active-surface-raised);
+}
+
+.pi-page .pi-legend-quick-intro {
+    color: var(--ds-active-text-primary);
+}
+
+.pi-page .pi-legend-quick-badge.is-p1,
+.pi-page .pi-legend-quick-priority.is-p1 {
+    background-color: var(--pi-critical-bg);
+    color: var(--pi-critical-text);
+    border-color: var(--pi-critical-border);
+}
+
+.pi-page .pi-legend-quick-badge.is-p2,
+.pi-page .pi-legend-quick-priority.is-p2 {
+    background-color: var(--pi-overdue-bg);
+    color: var(--pi-overdue-text);
+    border-color: var(--pi-overdue-border);
+}
+
+.pi-page .pi-legend-quick-badge.is-p3,
+.pi-page .pi-legend-quick-priority.is-p3 {
+    background-color: var(--pi-neutral-soft-bg);
+    color: var(--pi-neutral-text);
+    border-color: var(--pi-neutral-border);
+}
+
+.pi-page .pi-legend-quick-group {
+    border-color: var(--ds-active-border);
+    background: var(--ds-active-surface);
+}
+
+.pi-page .pi-legend-quick-group-title {
+    color: var(--ds-active-text-primary);
+    background-color: var(--ds-active-surface-raised);
+    border-bottom-color: var(--ds-active-border);
+}
+
+.pi-page .pi-legend-quick-row {
+    border-top-color: var(--ds-active-border);
+}
+
+.pi-page .pi-legend-quick-state strong {
+    color: var(--ds-active-text-primary);
+}
+
+.pi-page .pi-legend-quick-state small,
+.pi-page .pi-legend-quick-action {
+    color: var(--ds-active-text-secondary);
+}
+
+/* Reduced motion: las transiciones del drawer y afines pasan a corte directo */
+@media (prefers-reduced-motion: reduce) {
+    .pi-page .ops-state-backdrop,
+    .pi-page .ops-state-panel,
+    .pi-page .ops-state-zoom,
+    .pi-page .pi-view-all-toggle .custom-control-label::before,
+    .pi-page .pi-view-all-toggle .custom-control-label::after {
+        transition: none !important;
+    }
+}
+
+/* fin @layer module */
+}
+
+/* Controles de formulario de los modales PI. En @layer components de nivel
+   superior a propósito (receta de programacion-semanal.css): la regla
+   `background: #fff !important` de styles.css vive en module.components y en
+   la inversión de important solo la supera una capa declarada antes. */
+@layer components {
+body.pi-page :is(#modal_leyenda_colores, #modal_shared_constraint) :is(.form-control, .custom-select) {
+    background-color: var(--ds-active-surface-raised) !important;
+    color: var(--ds-active-text-primary) !important;
+    border-color: var(--ds-active-border) !important;
+    box-shadow: none !important;
+}
+
+body.pi-page :is(#modal_leyenda_colores, #modal_shared_constraint) .form-control::placeholder {
+    color: var(--ds-active-text-secondary);
+}
+
+body.pi-page :is(#modal_leyenda_colores, #modal_shared_constraint) .btn-outline-secondary {
+    color: var(--ds-active-text-primary) !important;
+    border-color: var(--ds-active-border) !important;
+    background-color: transparent !important;
+}
+
+body.pi-page :is(#modal_leyenda_colores, #modal_shared_constraint) .btn-outline-secondary:hover {
+    background-color: var(--ds-active-surface-raised) !important;
+}
+
+body.pi-page :is(#modal_leyenda_colores, #modal_shared_constraint) .custom-control-input:not(:checked) ~ .custom-control-label::before {
+    background-color: var(--ds-active-surface-raised);
+    border: 1px solid var(--ds-active-text-secondary);
+}
+}

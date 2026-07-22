@@ -25,6 +25,8 @@ final class DesignSystemComponent
         'theme' => '<path d="M20 15.5A8.5 8.5 0 1 1 8.5 4 6.5 6.5 0 0 0 20 15.5Z"/>',
         'logout' => '<path d="M10 5H5v14h5M14 8l4 4-4 4M8 12h10"/>',
         'collapse' => '<path d="m14 6-6 6 6 6"/>',
+        'sync' => '<path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 3v4h-4"/>',
+        'package' => '<path d="m12 3 8 4v10l-8 4-8-4V7l8-4Z"/><path d="m4 7 8 4 8-4M12 11v10"/>',
     ];
 
     public static function icon(array $config): string

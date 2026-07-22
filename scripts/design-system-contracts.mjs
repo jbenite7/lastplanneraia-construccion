@@ -32,6 +32,7 @@ const required = [
   'docs/design-system/manifests/goal-provenance.json',
   'docs/design-system/manifests/laboratory.json',
   'docs/design-system/manifests/programa-general.json',
+  'docs/design-system/manifests/programacion-intermedia.json',
   'docs/design-system/manifests/project-selector.json',
   'docs/design-system/manifests/inventory.json',
   'docs/design-system/closeout-evidence.json',
@@ -239,6 +240,7 @@ const manifestSchema = documents.get('docs/design-system/module-manifest.schema.
 const manifests = [
   documents.get('docs/design-system/manifests/laboratory.json'),
   documents.get('docs/design-system/manifests/programa-general.json'),
+  documents.get('docs/design-system/manifests/programacion-intermedia.json'),
   documents.get('docs/design-system/manifests/project-selector.json'),
 ].filter(Boolean);
 const programManifest = manifests.find(({ moduleId }) => moduleId === 'programa-general');

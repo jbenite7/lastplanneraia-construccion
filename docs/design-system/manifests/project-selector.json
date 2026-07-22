@@ -12,8 +12,7 @@
     "views/core/project_selector.view.php",
     "public/css/project-selector.css",
     "public/css/design-system/components/navigation.css",
-    "public/js/modules/aia_ui/sidebar_navigation.js",
-    "public/css/dark-mode.css"
+    "public/js/modules/aia_ui/sidebar_navigation.js"
   ],
   "components": [
     "shell",
@@ -75,7 +74,7 @@
       "state": "normal",
       "role": "authenticated-project-member",
       "golden": "tests/browser/__screenshots__/project-selector/project-selector-dark-1180x820.png",
-      "sha256": "c21cedb4e72ebf4808e3184f961ffbf446f6b61dbf3007bfc6a8ce210bda4221"
+      "sha256": "47bfde337cae1941cb88c0b1d49d305c4c7b940f821f19dc49d19de0405b00ac"
     },
     {
       "id": "project-selector-dark-1440x900",
@@ -91,7 +90,7 @@
       "state": "normal",
       "role": "authenticated-project-member",
       "golden": "tests/browser/__screenshots__/project-selector/project-selector-dark-1440x900.png",
-      "sha256": "53dfdfb9e48f564715d33d33ba0c699b05b9d30f013829f222ed926121942a74"
+      "sha256": "ee768a1332d64688e3690172843a6a32b6d436bfc2b292a54463194d4eb3e0e5"
     }
   ]
 }

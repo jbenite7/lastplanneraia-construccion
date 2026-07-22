@@ -16,8 +16,15 @@
     border-color: var(--ds-active-border) !important;
   }
 
-  :where(.pg-page .handsontable thead th, .pg-page .handsontable .colHeader) {
+  :where(.pg-page .handsontable thead th) {
     background: var(--ds-active-surface-raised) !important;
+    color: var(--ds-active-text-primary) !important;
+  }
+
+  /* El span del texto hereda el fondo del th: pintarlo aparte creaba un
+     rectángulo del ancho del texto sobre la cabecera. */
+  :where(.pg-page .handsontable .colHeader) {
+    background: transparent !important;
     color: var(--ds-active-text-primary) !important;
   }
 
@@ -90,6 +97,19 @@
 
   :where(.pg-page .htDropdownMenu:not(.htGhostTable), .pg-page .htFiltersConditionsMenu:not(.htGhostTable)) {
     z-index: var(--ds-z-dropdown);
+  }
+
+  :where(
+    .pg-page #hot-container.hot-fixed-columns .handsontable table.htCore,
+    .pg-page #hot-container.hot-fixed-columns .wtHider,
+    .pg-page #hot-container.hot-fixed-columns .wtSpreader
+  ) {
+    width: var(--hot-table-width) !important;
+    min-width: var(--hot-table-width) !important;
+  }
+
+  :where(.pg-page #hot-container.hot-fixed-columns .handsontable table.htCore) {
+    table-layout: fixed !important;
   }
 }
 

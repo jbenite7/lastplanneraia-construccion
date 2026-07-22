@@ -12,11 +12,13 @@ const hot = fs.readFileSync(
   'utf8',
 );
 const css = fs.readFileSync(path.join(root, 'public/css/programa-general.css'), 'utf8');
-const coreCss = fs.readFileSync(path.join(root, 'public/css/aia-design-system.css'), 'utf8');
+// La primitiva aia-btn migró de aia-design-system.css al core compartido;
+// el contrato sigue validando la fuente canónica real.
+const coreCss = fs.readFileSync(path.join(root, 'public/css/design-system/core.css'), 'utf8');
 const buttonsCss = fs.readFileSync(path.join(root, 'public/css/buttons.css'), 'utf8');
 const bridgeCss = fs.readFileSync(path.join(root, 'public/css/design-system/adapters/legacy-bridge.css'), 'utf8');
 
-const filterMarkup = view.match(/class="pdc-legend-item[^"]*"[^>]*data-filter="[^"]+"[^>]*>/g) || [];
+const filterMarkup = view.match(/class="aia-chip pg-filter-chip[^"]*"[^>]*data-filter="[^"]+"[^>]*>/g) || [];
 
 assert.match(view, /<body class="aia-shell pg-page">/, 'PG debe usar el shell canónico');
 assert.match(view, /<main[^>]*class="aia-page/, 'PG debe usar el canvas canónico');

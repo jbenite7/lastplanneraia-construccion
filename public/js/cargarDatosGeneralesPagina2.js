@@ -1,9 +1,14 @@
-// Inyectar CSS de Navegación Unificada
-var cssLink = document.createElement('link');
-cssLink.href = '/public/css/navbar.css?v=' + new Date().getTime();
-cssLink.rel = 'stylesheet';
-cssLink.type = 'text/css';
-document.head.appendChild(cssLink);
+// Inyectar CSS de Navegación Unificada.
+// Las vistas migradas al shell sidebar (window.__AIA_SHELL_SIDEBAR__) no montan
+// el navbar superior: conservan inputs ocultos, AJAX de datos y permisos de
+// vista, pero omiten navbar.css y el markup de navegación.
+if (!window.__AIA_SHELL_SIDEBAR__) {
+  var cssLink = document.createElement('link');
+  cssLink.href = '/public/css/navbar.css?v=' + new Date().getTime();
+  cssLink.rel = 'stylesheet';
+  cssLink.type = 'text/css';
+  document.head.appendChild(cssLink);
+}
 
 // Inyectar FontAwesome si no existe (para iconos extra)
 if (!document.querySelector('link[href*="font-awesome"]')) {
@@ -248,7 +253,9 @@ var finalNavbarHTML =
   navbarComponentEnd;
 
 document.getElementById('encabezado').innerHTML =
-  document.getElementById('encabezado').innerHTML + inputosOcultos + finalNavbarHTML;
+  document.getElementById('encabezado').innerHTML +
+  inputosOcultos +
+  (window.__AIA_SHELL_SIDEBAR__ ? '' : finalNavbarHTML);
 
 // --- Pre-Construction Area: Hide construction-only modules ---
 if (window.__PROJECT_AREA__ === 'Pre-Construccion') {
@@ -361,10 +368,8 @@ var cargarDatosGeneralesPagina = function (seccion) {
       document.getElementById('proyecto').value = datosGenerales.proyecto;
       document.getElementById('semana').value = datosGenerales.semana;
 
-      console.log("🕵️ [DeepAnalysis] A punto de llamar a cargaParametros() en cargarDatosGeneralesPagina2.js");
       try {
         if (typeof cargaParametros === 'function') {
-          console.log("🕵️ [DeepAnalysis] cargaParametros es una función. Ejecutando...");
           cargaParametros();
         } else {
           console.error("🕵️ [DeepAnalysis] CRÍTICO: cargaParametros NO es una función o es undefined en este contexto global. Tipo actual:", typeof cargaParametros);
@@ -394,10 +399,12 @@ var cargarDatosGeneralesPagina = function (seccion) {
       }
 
       // --- Context Bar Population ---
-      if (document.getElementById('ctxProyecto')) {
+      // En vistas con shell sidebar la context-bar la renderiza el servidor
+      // con etiquetas canónicas; el callback no debe pisarla.
+      if (!window.__AIA_SHELL_SIDEBAR__ && document.getElementById('ctxProyecto')) {
         document.getElementById('ctxProyecto').textContent = datosGenerales.proyecto || 'Proyecto';
       }
-      if (document.getElementById('ctxModulo')) {
+      if (!window.__AIA_SHELL_SIDEBAR__ && document.getElementById('ctxModulo')) {
         var mapTitulos = {
           programa_general: 'Programa General',
           programacion_semanal: 'Programación Semanal',
@@ -414,7 +421,7 @@ var cargarDatosGeneralesPagina = function (seccion) {
         document.getElementById('ctxModulo').textContent =
           mapTitulos[seccion] || seccion.replace(/_/g, ' ');
       }
-      if (document.getElementById('ctxSemanaTexto')) {
+      if (!window.__AIA_SHELL_SIDEBAR__ && document.getElementById('ctxSemanaTexto')) {
         if (datosGenerales.semana > 0) {
           document.getElementById('ctxSemanaTexto').textContent = 'Semana ' + datosGenerales.semana;
           // Add date details if available?

@@ -1,0 +1,48 @@
+{
+  "$schema": "../module-manifest.schema.json",
+  "schemaVersion": 2,
+  "designSystemVersion": "1.0.0",
+  "moduleId": "foundation-shell",
+  "consumerContract": "v1",
+  "routes": [
+    "/programacion-intermedia"
+  ],
+  "sources": [
+    "public/css/design-system/components/navigation.css",
+    "public/css/design-system/adapters/shell-sidebar.css",
+    "public/js/modules/aia_ui/sidebar_navigation.js"
+  ],
+  "components": [
+    "shell",
+    "button",
+    "navigation",
+    "state",
+    "feedback"
+  ],
+  "vendors": [
+    "bootstrap",
+    "jquery",
+    "font-awesome",
+    "aia-fonts"
+  ],
+  "layouts": [
+    "desktop"
+  ],
+  "states": [
+    "normal",
+    "focus"
+  ],
+  "roles": [
+    "authenticated-project-member"
+  ],
+  "persistence": {
+    "sidebar": "collapsed/expanded state in localStorage (aia-sidebar-state)"
+  },
+  "exceptions": [],
+  "tests": [
+    "tests/test_foundation_shell_contract.mjs",
+    "tests/design-system/shell-navigation.test.mjs"
+  ],
+  "evidence": [],
+  "scenarios": []
+}

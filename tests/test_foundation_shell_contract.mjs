@@ -18,18 +18,19 @@ const renderers = [
   read('public/js/cargarDatosGeneralesPagina2.js'),
 ];
 
-assert.match(drawer, /key === 'Escape'/);
+// Tolerantes al estilo de comillas: biome formatea el JS con comillas dobles.
+assert.match(drawer, /key === ["']Escape["']/);
 assert.match(drawer, /aria-expanded/);
 assert.match(drawer, /focus\(\)/);
-assert.match(drawer, /key === 'Tab'/);
-assert.match(drawer, /setTimeout\(function \(\) \{ ui\.close\.focus\(\); \}, 450\)/);
+assert.match(drawer, /key === ["']Tab["']/);
+assert.match(drawer, /setTimeout\((?:function \(\) \{ ui\.close\.focus\(\); \}|\(\) => \{\s*ui\.close\.focus\(\);\s*\}), 450\)/);
 assert.match(drawer, /function isVisibleFocusable\(element\)/);
 assert.match(drawer, /getClientRects\(\)\.length/);
 assert.match(drawer, /aria-hidden/);
-assert.match(drawer, /ui\.drawer\.setAttribute\('aria-hidden', 'true'\)/);
-assert.match(drawer, /ui\.drawer\.setAttribute\('aria-hidden', 'false'\)/);
-assert.match(drawer, /ui\.drawer\.removeAttribute\('aria-modal'\)/);
-assert.match(drawer, /ui\.drawer\.removeAttribute\('role'\)/);
+assert.match(drawer, /ui\.drawer\.setAttribute\(["']aria-hidden["'], ["']true["']\)/);
+assert.match(drawer, /ui\.drawer\.setAttribute\(["']aria-hidden["'], ["']false["']\)/);
+assert.match(drawer, /ui\.drawer\.removeAttribute\(["']aria-modal["']\)/);
+assert.match(drawer, /ui\.drawer\.removeAttribute\(["']role["']\)/);
 assert.match(drawer, /function syncResponsiveSemantics\(isDesktop\)/);
 assert.match(drawer, /function boot\(\)/);
 assert.match(drawer, /DOMContentLoaded/);
@@ -61,15 +62,17 @@ assert.match(lpsDrawer, /lpsFocusableSelector/);
 assert.match(lpsDrawer, /event\.shiftKey/);
 assert.match(lpsView, /<button[^>]*id="lps_sidebar_trigger"[^>]*aria-controls="lps_drawer"[^>]*aria-expanded="false"/s);
 assert.match(lpsView, /id="lps_drawer"[^>]*aria-hidden="true"/s);
-assert.match(weeklyView, /handsontable-module\.css\?v=20260711foundation5/);
-assert.match(weeklyView, /lps_drawer\.js\?v=20260711foundation5/);
+// El CSS del shell llega una sola vez vía aia-design-system.css (layer vendor);
+// un <link> crudo duplicaría la cascada y reabriría el conflicto de !important.
+assert.doesNotMatch(weeklyView, /<link[^>]*handsontable-module\.css/);
+assert.match(weeklyView, /lps_drawer\.js\?v=20260722shell1/);
 const shellBudget = exceptions.pathBudgets.find((budget) => budget.name === 'foundation-shell');
 assert.ok(shellBudget, 'Foundation/Shell must have an explicit debt budget');
 assert.ok(shellBudget.paths.includes('public/css/navbar.css'));
 assert.ok(shellBudget.paths.includes('views/partials/drawer_unificado.php'));
 assert.match(theme, /bindThemeSwitches/);
 assert.match(theme, /function boot\(\)/);
-assert.match(theme, /document\.readyState === 'loading'/);
+assert.match(theme, /document\.readyState === ["']loading["']/);
 assert.match(theme, /DOMContentLoaded/);
 assert.match(theme, /window\.AiaDesignSystem\.bindThemeSwitches\(document\)/);
 assert.match(theme, /aia-theme-ready/);
@@ -77,13 +80,14 @@ assert.doesNotMatch(renderers[0], /function currentTheme\(/);
 assert.doesNotMatch(renderers[1], /function currentTheme\(/);
 assert.match(renderers[0], /AiaDesignSystem\.bindThemeSwitches\(document\)/);
 assert.match(renderers[1], /AiaDesignSystem\.bindThemeSwitches\(document\)/);
-assert.match(renderers[0], /typeof window\.AiaDesignSystem\.bindThemeSwitches === 'function'/);
-assert.match(renderers[1], /typeof window\.AiaDesignSystem\.bindThemeSwitches === 'function'/);
+assert.match(renderers[0], /typeof window\.AiaDesignSystem\.bindThemeSwitches === ["']function["']/);
+assert.match(renderers[1], /typeof window\.AiaDesignSystem\.bindThemeSwitches === ["']function["']/);
 assert.match(renderers[0], /aia-theme-ready/);
 assert.match(renderers[1], /aia-theme-ready/);
 assert.match(commonLoader, /theme\.js\?v=20260711foundation5/);
 assert.match(commonLoader, /nav_drawer\.js\?v=20260711foundation5/);
-assert.match(commonLoader, /tokens\.css\?v=20260711foundation5/);
+// tokens.css llega vía el entrypoint runtime de aia-design-system.css, no por el loader.
+assert.doesNotMatch(commonLoader, /tokens\.css/);
 assert.doesNotMatch(renderers[0], /nav_drawer\.js\?v=<\?php echo time\(\)/);
 assert.match(loginView, /theme\.js\?v=<\?= filemtime\(/);
 assert.match(projectSelectorView, /theme\.js\?v=<\?= filemtime\(/);

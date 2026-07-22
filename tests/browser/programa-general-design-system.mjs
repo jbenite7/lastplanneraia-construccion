@@ -30,15 +30,15 @@ for (const viewport of VIEWPORTS) {
 
       const state = await page.evaluate(() => ({
         overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
-        filtersVisible: [...document.querySelectorAll('#pgLegend .pdc-legend-item')]
+        filtersVisible: [...document.querySelectorAll('#pgLegend .pg-filter-chip')]
           .every((item) => item.getBoundingClientRect().height >= 44),
-        filterHeights: [...document.querySelectorAll('#pgLegend .pdc-legend-item')]
+        filterHeights: [...document.querySelectorAll('#pgLegend .pg-filter-chip')]
           .map((item) => Math.round(item.getBoundingClientRect().height)),
         legendContained: (() => {
           const legend = document.querySelector('#pgLegend');
           if (!legend) return false;
           const boundary = legend.getBoundingClientRect();
-          return [...legend.querySelectorAll('.pdc-legend-item')].every((item) => {
+          return [...legend.querySelectorAll('.pg-filter-chip')].every((item) => {
             const box = item.getBoundingClientRect();
             return box.left >= boundary.left - 1 && box.right <= boundary.right + 1;
           });

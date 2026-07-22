@@ -121,10 +121,10 @@ window.AIA = window.AIA || {};
             });
         },
 
-        error: function(msg) {
+        error: function(msg, title) {
             return Swal.fire({
                 icon: 'error',
-                title: 'Error detectado',
+                title: title || 'Error detectado',
                 html: msg ? msg.replace(/\\n|\n/g, '<br>') : '',
                 customClass: {
                     popup: 'aia-glass-popup',
@@ -207,5 +207,4 @@ window.AIA = window.AIA || {};
         }
     };
 
-    console.log("AIA Alert Interceptor (Liquid Glass) cargado correctamente.");
 })();

@@ -331,66 +331,9 @@ body {
 }
 }
 
-/* ========================================
-   NAVBAR - MOBILE DRAWER (UNLAYERED INTENTIONAL)
-   ======================================== */
-@media (max-width: 1199px) {
-  #navbarSupportedContent {
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 100vh;
-    width: 85%;
-    max-width: 320px;
-    background-color: #ffffff !important;
-    z-index: 99999 !important;
-    padding-top: 0;
-    overflow-y: auto;
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
-    transform: translateX(-100%);
-    transition: transform 0.3s ease-in-out;
-    display: block !important;
-  }
-
-  #navbarSupportedContent.show {
-    transform: translateX(0) !important;
-  }
-
-  #navbarSupportedContent.show::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: -1;
-  }
-
-  .navbar-nav .nav-link {
-    color: #000000 !important;
-    font-size: 1rem !important;
-    padding: 12px 20px !important;
-    border-bottom: 1px solid #f0f0f0;
-  }
-
-  .navbar-nav .dropdown-menu {
-    background-color: #f8f9fa !important;
-    border: none !important;
-    padding-left: 20px !important;
-  }
-
-  .navbar-nav .dropdown-item {
-    color: #333 !important;
-    padding: 10px 15px !important;
-    white-space: normal !important;
-    height: auto !important;
-  }
-
-  .navbar-nav.ml-4 {
-    margin-left: 0 !important;
-  }
-}
+/* El drawer móvil del navbar legacy (#navbarSupportedContent) se retiró: el
+   markup ya no existe y sus selectores genéricos (.navbar-nav .nav-link en
+   negro) pisaban el drawer premium de navbar.css en viewports < 1200px. */
 
 /* ========================================
    NAVBAR - DESKTOP OPTIMIZATION (XL)
@@ -428,12 +371,12 @@ body {
   -webkit-backdrop-filter: blur(16px) saturate(120%);
   border-left: 1px solid var(--ds-active-border);
   box-shadow: var(--ds-shadow-lg);
-  z-index: 2200;
+  z-index: var(--ds-z-shell-drawer, 2200);
   display: flex;
   flex-direction: column;
   transform: translateX(100%);
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: var(--ds-font-body);
 }
 .lps-drawer.open {
   transform: translateX(0);
@@ -447,7 +390,7 @@ body {
   height: 100vh;
   background: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(4px);
-  z-index: 2100;
+  z-index: var(--ds-z-shell-overlay, 2100);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s ease;
@@ -471,7 +414,7 @@ body {
   margin: 0;
   font-size: 1.15rem;
   font-weight: 600;
-  font-family: 'Montserrat', sans-serif;
+  font-family: var(--ds-font-display);
   letter-spacing: 0.5px;
   color: var(--ds-active-text-primary) !important;
 }
@@ -518,39 +461,33 @@ body {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
 }
 
-.lps-drawer :is(#lps_actividad_title, #lps_diagnostic_card p,
-  #lps_digest_section h4, #lps_digest_section p, .lps-bi-access-card__title) {
-  color: var(--ds-active-text-primary) !important;
-}
-
-.lps-drawer :is(#lps_consecutivo, .lps-bi-access-card__description,
-  .lps-drawer-footer p) {
-  color: var(--ds-active-text-secondary) !important;
-}
+/* Los parches !important de texto se retiraron: el partial consume ahora
+   .lps-text-* / .lps-card-heading del adapter lps-drawer.css con tokens. */
 
 .lps-drawer .lps-btn-outline {
   border-color: var(--ds-active-border);
   color: var(--ds-active-text-primary);
 }
 
+/* Tints translúcidos sobre la superficie activa: legibles en dark y linen,
+   a diferencia de los fondos fijos light (--aia-*-background). */
 .lps-state-p1 {
-  border-left: 5px solid var(--aia-alert-high, #e53935) !important;
-  background: var(--aia-alert-background, #fdecec);
-  box-shadow: 0 0 10px rgba(229, 57, 53, 0.1);
+  border: 1px solid var(--aia-alert-high, #e53935) !important;
+  background: color-mix(in srgb, var(--aia-alert-high) 14%, transparent);
 }
 .lps-state-p2 {
-  border-left: 5px solid var(--aia-warning-high, #ffca28) !important;
-  background: var(--aia-warning-background, #fff8e1);
+  border: 1px solid var(--aia-warning-high, #ffca28) !important;
+  background: color-mix(in srgb, var(--aia-warning-high) 12%, transparent);
 }
 .lps-state-p3 {
-  border-left: 5px solid var(--aia-green-primary, #1a5633) !important;
+  border: 1px solid var(--aia-green-primary, #1a5633) !important;
 }
 .lps-state-info {
-  border-left: 5px solid var(--aia-blue-primary, #4a81bd) !important;
-  background: var(--aia-blue-very-light, #e6f0fa);
+  border: 1px solid var(--aia-blue-primary, #4a81bd) !important;
+  background: color-mix(in srgb, var(--aia-blue-primary) 14%, transparent);
 }
 .lps-state-neutral {
-  border-left: 5px solid #eaeaea !important;
+  border: 1px solid var(--ds-active-border, #eaeaea) !important;
 }
 
 .lps-badge {
@@ -563,7 +500,7 @@ body {
 }
 .lps-badge-p1 { background: var(--aia-alert-background, #fdecec); color: var(--aia-alert-critical, #9a1f1f); }
 .lps-badge-p2 { background: var(--aia-warning-background, #fff8e1); color: var(--aia-warning-critical, #a0731a); }
-.lps-badge-p3 { background: rgba(26, 60, 42, 0.15); color: #1a3c2a; }
+/* .lps-badge-p3 vive en el adapter lps-drawer.css (tokens del design system). */
 .lps-badge-info { background: var(--aia-blue-very-light, #e6f0fa); color: var(--aia-blue-dark, #2a5a8f); }
 .lps-badge-neutral { background: #eaeaea; color: #4a4a4d; }
 
@@ -579,14 +516,14 @@ body {
   font-family: monospace;
   font-size: 0.8rem;
   white-space: pre-wrap;
-  background: rgba(255, 255, 255, 0.85);
+  background: var(--ds-active-surface);
   padding: 10px;
   border-radius: 6px;
   max-height: 150px;
   overflow-y: auto;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--ds-active-border);
   margin-top: 8px;
-  color: #333;
+  color: var(--ds-active-text-primary);
 }
 
 .lps-btn {
@@ -630,14 +567,14 @@ body {
 
 .lps-bi-access-card__title {
   margin: 0 0 var(--spacing-sm);
-  color: var(--ds-color-text-primary);
+  color: var(--ds-active-text-primary);
   font-family: var(--ds-font-display);
   font-weight: 700;
 }
 
 .lps-bi-access-card__description {
   margin: 0 0 var(--spacing-md);
-  color: var(--ds-color-text-secondary);
+  color: var(--ds-active-text-secondary);
   line-height: 1.5;
 }
 
@@ -715,16 +652,15 @@ body {
   -webkit-backdrop-filter: blur(12px) saturate(140%);
   border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.16);
-  z-index: 2050;
+  z-index: var(--ds-z-shell-rail, 2050);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
-              background 0.3s ease, 
-              box-shadow 0.3s ease,
-              width 0.3s ease,
-              padding 0.3s ease;
+  /* Ease-out exponencial (sin rebote) y sin transicionar propiedades de layout */
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              background 0.3s ease,
+              box-shadow 0.3s ease;
 }
 
 .lps-sidebar-trigger:hover,
@@ -848,7 +784,7 @@ body {
     border: none;
     border-left: 1px solid rgba(26, 60, 42, 0.12);
     box-shadow: -2px 0 8px rgba(0, 0, 0, 0.04);
-    z-index: 2050;
+    z-index: var(--ds-z-shell-rail, 2050);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -945,7 +881,10 @@ body {
 
   /* Ajuste Dinámico de Layout para Evitar Solapamiento de Sidebar y Drawer.
      El selector de proyectos no monta el rail ni el drawer LPS, así que
-     reservarle el ancho solo le deja un margen derecho muerto. */
+     reservarle el ancho solo le deja un margen derecho muerto.
+     Deuda consciente: se anima padding-right (layout) porque navbar y
+     context-bar son fixed-top acoplados a este ancho; migrar a transform
+     exige reestructurar el shell completo. prefers-reduced-motion lo anula. */
   body:not(.ds-lab):not(.project-selector-page) {
     padding-right: var(--lps-rail-safe-width) !important;
     transition: padding-right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -1003,4 +942,31 @@ body {
   body.lps-drawer-open .navbar-aia .main-links {
     margin-left: 8px !important;
   }
+}
+
+@layer components {
+/* Reduced motion: transiciones del cajón LPS y su disparador pasan a corte directo */
+@media (prefers-reduced-motion: reduce) {
+  .lps-sidebar-trigger,
+  .lps-drawer,
+  .lps-drawer * ,
+  .lps-drawer-overlay,
+  .btn-delete,
+  body:not(.ds-lab),
+  .navbar-aia.fixed-top,
+  .context-bar.fixed-top {
+    transition: none !important;
+  }
+  .lps-sidebar-trigger:hover,
+  .lps-sidebar-trigger:focus-visible,
+  .btn-delete:hover {
+    transform: none;
+  }
+  /* La crisis conserva color y badge; solo se apagan pulso y heartbeat infinitos. */
+  .lps-sidebar-trigger.has-crisis,
+  .lps-sidebar-trigger.has-crisis .lps-sidebar-badge,
+  .lps-sidebar-trigger.has-attention .lps-sidebar-badge {
+    animation: none !important;
+  }
+}
 }

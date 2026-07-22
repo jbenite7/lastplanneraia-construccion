@@ -39,7 +39,8 @@ Un modulo esta migrado cuando cumple:
 - `public/js/modules/aia_ui/theme.js` tambien tiene presupuesto cero para evitar deuda visual en la API de tema.
 - Programacion Intermedia y Programacion Semanal tienen contrato base cubierto por Playwright: carga de assets canonicos, tema linen/dark, ausencia de overflow de pagina, grilla desktop alineada al contenedor y fallback mobile presente.
 - PDC, Contratos y Listado de Actividades tienen contrato base cubierto por Playwright: carga de assets canonicos, tema linen/dark, ausencia de overflow de pagina y tabla/grilla visible en desktop/mobile.
-- PI y PS aun no se declaran migrados en `exceptions.json`; conservan deuda legacy de estilos embebidos, hex y radios que debe reducirse por lote antes de cerrar el objetivo.
+- Programacion Intermedia tiene manifiesto (`programacion-intermedia.json`), goldens dark 1180x820/1440x900 y theming por tokens con variantes dark; su deuda restante (skin claro del editor Tom Select y `!important` heredados) queda inventariada en las excepciones del manifiesto. Aun no declara presupuesto cero por ruta en `exceptions.json`.
+- PS aun no se declara migrado en `exceptions.json`; conserva deuda legacy de estilos embebidos, hex y radios que debe reducirse por lote antes de cerrar el objetivo.
 
 ## Compatibilidad legacy
 

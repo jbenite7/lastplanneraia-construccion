@@ -24,6 +24,13 @@ class ProgramacionIntermediaController extends BaseController
             $dbName = '';
         }
 
+        // Sin proyecto en sesión la vista quedaría en spinner infinito:
+        // redirigir al selector, igual que Programa General y Semanal.
+        if ($dbName === '') {
+            header('Location: /proyectos');
+            exit;
+        }
+
         // 1. Subcontratistas
         $subcontratistas = [];
         if ($dbName) {
@@ -83,6 +90,22 @@ class ProgramacionIntermediaController extends BaseController
             }
         }
 
+        // Shell sidebar (DS-027): semanas del proyecto para el chip de contexto.
+        $shellWeeks = [];
+        if ($dbName) {
+            try {
+                $tSa = TableResolver::resolveByPrefix($dbName, 'semanas_activas');
+                $projectId = TableResolver::getProjectIdByPrefix($dbName);
+                $stmtWeeks = $this->db->queryWithProject(
+                    "SELECT Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem FROM {$tSa} WHERE project_id = ? ORDER BY Semana DESC",
+                    [$projectId]
+                );
+                $shellWeeks = $stmtWeeks->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+            } catch (\Throwable $e) {
+                error_log('Error cargando semanas para el shell PI: ' . $e->getMessage());
+            }
+        }
+
         $data = array_merge($vars, [
             'subcontratistas' => $subcontratistas,
             'profesionales' => $profesionales,
@@ -90,6 +113,9 @@ class ProgramacionIntermediaController extends BaseController
             'area' => $_SESSION['area'] ?? 'Construccion',
             'pcRestrictionNames' => $pcRestrictionNames,
             'semanalConfirmada' => $semanalConfirmada,
+            'shellWeeks' => $shellWeeks,
+            'shellActive' => 'programacion-intermedia',
+            'shellModuleLabel' => 'Programación Intermedia',
         ]);
 
         $this->render('/views/programacion-intermedia/programacion_intermedia.view.php', $data);

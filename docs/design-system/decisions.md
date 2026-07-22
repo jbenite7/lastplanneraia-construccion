@@ -31,5 +31,6 @@ Las variantes permanecen como `candidate` hasta aprobación en el laboratorio.
 | DS-024 | Estado de revisión | El laboratorio muestra el estado del candidato activo que renderiza; una base aprobada no aprueba automáticamente una variante visual distinta | candidate |
 | DS-025 | Acciones por tema | La acción primaria aplica de inmediato superficie, borde y texto del tema destino; solo puede animar transform y sombra, nunca color o fondo | candidate |
 | DS-026 | Sidebar desktop | El sidebar persistente es el candidato canónico para desktop, con Información, Obra y Compras como agrupaciones operativas; el drawer adaptativo permanece como compatibilidad hasta completar aprobación visual | approved |
+| DS-027 | Shell global | El sidebar canónico colapsable reemplaza al navbar superior como navegación global de la app (piloto: Programación Intermedia): rail visible colapsado por defecto en vistas de grilla con persistencia local, cambio de semana en el chip de la context-bar y grupos filtrados por rol en servidor | approved |
 
 Cada aprobación futura registra evidencia, fecha y versión.

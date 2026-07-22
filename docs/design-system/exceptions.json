@@ -77,9 +77,18 @@
       "module": "programa-general-pilot",
       "rule": "unauthorized-important",
       "file": "public/css/design-system/adapters/programa-general-handsontable.css",
-      "selector": ":where(.pg-page .handsontable thead th, .pg-page .handsontable .colHeader)",
+      "selector": ":where(.pg-page .handsontable thead th)",
       "owner": "design-system",
       "reason": "Conservar la cabecera tokenizada del piloto frente a la piel Handsontable heredada.",
+      "expiresAtVersion": "1.1.0"
+    },
+    {
+      "module": "programa-general-pilot",
+      "rule": "unauthorized-important",
+      "file": "public/css/design-system/adapters/programa-general-handsontable.css",
+      "selector": ":where(.pg-page .handsontable .colHeader)",
+      "owner": "design-system",
+      "reason": "Dejar transparente el span del texto de cabecera para que herede el fondo del th y no pinte un rectángulo propio.",
       "expiresAtVersion": "1.1.0"
     },
     {
@@ -152,6 +161,24 @@
       "selector": ":where(.pg-page #hot-container td.pg-date-cell)",
       "owner": "design-system",
       "reason": "Conservar fechas en una línea dentro del adaptador Handsontable del piloto.",
+      "expiresAtVersion": "1.1.0"
+    },
+    {
+      "module": "programa-general-pilot",
+      "rule": "unauthorized-important",
+      "file": "public/css/design-system/adapters/programa-general-handsontable.css",
+      "selector": ":where(.pg-page #hot-container.hot-fixed-columns .handsontable table.htCore, .pg-page #hot-container.hot-fixed-columns .wtHider, .pg-page #hot-container.hot-fixed-columns .wtSpreader)",
+      "owner": "design-system",
+      "reason": "Fijar el ancho calculado de la grilla frente a los estilos inline del vendor; sustituye los style.setProperty !important que hot.js aplicaba fuera de gobernanza.",
+      "expiresAtVersion": "1.1.0"
+    },
+    {
+      "module": "programa-general-pilot",
+      "rule": "unauthorized-important",
+      "file": "public/css/design-system/adapters/programa-general-handsontable.css",
+      "selector": ":where(.pg-page #hot-container.hot-fixed-columns .handsontable table.htCore)",
+      "owner": "design-system",
+      "reason": "Conservar table-layout fixed para columnas estables frente a los estilos inline del vendor; antes vivía como !important inline en hot.js.",
       "expiresAtVersion": "1.1.0"
     },
     {

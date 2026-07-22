@@ -88,9 +88,9 @@
 	<!-- Iniciar Jquery-->
 	<script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-1.12.4.js"></script>
 	<!-- Iniciar Popper-->
-	<script type="text/javascript" charset="utf8" src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+	<script type="text/javascript" charset="utf8" src="/public/vendor/popper.min.js"></script>
 	<!-- Iniciar Bootstrap-->
-	<script type="text/javascript" charset="utf8" src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+	<script type="text/javascript" charset="utf8" src="/public/vendor/bootstrap/bootstrap.min.js"></script>
 	<!--Iniciar DataTables-->
 	<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.4/js/jquery.dataTables.js"></script>
 	<?php
@@ -687,7 +687,7 @@
 		  "sProcessing": "Procesando...",
 		  "sLengthMenu": "Mostrar _MENU_ registros",
 		  "sZeroRecords": "No se encontraron resultados",
-		  "sEmptyTable": "Ningún dato disponible en esta tabla =(",
+		  "sEmptyTable": "Sin causas de no programación esta semana. Se registran al eliminar o reprogramar actividades desde Programación Semanal.",
 		  "sInfo": "Mostrando  _TOTAL_ registros",
 		  "sInfoEmpty": "Mostrando registros del 0 al 0 de un total de 0 registros",
 		  "sInfoFiltered": "(filtrado de un total de _MAX_ registros)",

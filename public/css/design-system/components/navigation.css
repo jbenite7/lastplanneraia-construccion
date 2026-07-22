@@ -234,6 +234,7 @@
     background: var(--ds-active-surface-raised);
   }
 
+  .aia-sidebar__brand:focus-visible,
   .aia-sidebar__toggle:focus-visible,
   .aia-sidebar__utility:focus-visible,
   .aia-sidebar__link:focus-visible {

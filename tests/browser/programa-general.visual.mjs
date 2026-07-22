@@ -36,7 +36,7 @@ async function storeTheme(page, theme) {
 async function expectLegendContained(page) {
   await expect.poll(() => page.locator('#pgLegend').evaluate((legend) => {
     const boundary = legend.getBoundingClientRect();
-    return [...legend.querySelectorAll('.pdc-legend-item')].every((item) => {
+    return [...legend.querySelectorAll('.pg-filter-chip')].every((item) => {
       const box = item.getBoundingClientRect();
       return box.left >= boundary.left - 1 && box.right <= boundary.right + 1;
     });

@@ -3,8 +3,11 @@
   "designSystemVersion": "1.0.0",
   "provenanceManifest": "goal-provenance.json",
   "manifests": [
+    "foundation-shell.json",
     "laboratory.json",
     "programa-general.json",
+    "programacion-intermedia.json",
+    "programacion-semanal.json",
     "project-selector.json"
   ],
   "sharedHeadConsumers": [
@@ -42,13 +45,13 @@
     },
     {
       "moduleId": "programacion-intermedia",
-      "status": "inventory-only",
-      "manifest": null
+      "status": "pilot",
+      "manifest": "programacion-intermedia.json"
     },
     {
       "moduleId": "programacion-semanal",
-      "status": "inventory-only",
-      "manifest": null
+      "status": "pilot",
+      "manifest": "programacion-semanal.json"
     },
     {
       "moduleId": "listado-actividades",

@@ -173,3 +173,7 @@ pg_activities_complete.txt
 /login-page
 /login-page-snapshot.md
 /proyectos-page
+
+# Estado local del hook de diseño Impeccable (config.json sí se versiona)
+.impeccable/hook.cache.json
+.impeccable/live/

@@ -31,8 +31,8 @@
 }
 
 :where(
-  button:not(.navbar-toggler):not(.lps-drawer-close):not(.close),
-  .btn,
+  button:not(.navbar-toggler):not(.lps-drawer-close):not(.close):not(.lps-btn):not(.lps-sidebar-trigger),
+  .btn:not(.lps-btn),
   .btn-pdc-modern,
   .btn-filter-toggle,
   [role="button"]:not(.badge):not(.count-badge):not(.badge-status),

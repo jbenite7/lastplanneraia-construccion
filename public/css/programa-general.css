@@ -102,20 +102,18 @@ html.aia-theme-dark .pg-page.dark-mode {
   color: var(--ds-active-text-primary);
 }
 
-.pg-page #textoDireccionSeccion,
-.pg-page #textoDireccionSeccion a {
-  color: var(--ds-active-text-primary);
-}
-
-.pg-page .header-actions {
-  display: grid;
+/* Toolbar canónica del PG: una sola superficie (sin panel anidado) con dos
+   filas — acciones y leyenda de filtros. El layout base viene de .aia-toolbar
+   (core); aquí solo la orientación y la superficie del módulo. */
+.pg-page .pg-toolbar {
+  flex-direction: column;
+  align-items: stretch;
   gap: var(--ds-space-2);
-  align-items: center;
   background: var(--ds-active-surface);
-  border: 1px solid var(--ds-active-border);
+  border: var(--ds-border-width) solid var(--ds-active-border);
   border-radius: var(--ds-radius-panel);
   color: var(--ds-active-text-primary);
-  padding: var(--ds-space-2);
+  padding: var(--ds-space-2) var(--ds-space-3);
 }
 
 .pg-page .pg-actions-row {
@@ -135,39 +133,6 @@ html.aia-theme-dark .pg-page.dark-mode {
   gap: var(--ds-space-2);
   align-items: center;
   justify-content: flex-end;
-  min-width: 220px;
-  min-height: 24px;
-}
-
-.pg-page .btn-filter-toggle.pdc-mobile-toggle {
-  min-height: var(--ds-target-min);
-  background: var(--ds-active-surface-raised);
-  border-color: var(--ds-active-border);
-  color: var(--ds-active-text-primary);
-  box-shadow: var(--ds-shadow-xs);
-}
-
-.pg-page .btn-filter-toggle.pdc-mobile-toggle .badge {
-  display: inline-grid;
-  place-items: center;
-  min-inline-size: calc(var(--ds-space-4) + var(--ds-space-2));
-  min-block-size: calc(var(--ds-space-4) + var(--ds-space-1));
-  margin-inline-start: var(--ds-space-1);
-  background: var(--ds-color-brand-construction);
-  border: 1px solid var(--ds-color-brand-construction);
-  border-radius: var(--ds-radius-pill);
-  color: var(--ds-color-text-inverse);
-  padding-inline: var(--ds-space-1);
-  line-height: 1;
-}
-
-.pg-page .btn-filter-toggle.pdc-mobile-toggle .badge[hidden] {
-  display: none;
-}
-
-.pg-page .pg-status-badges .badge {
-  min-width: 88px;
-  justify-content: center;
 }
 
 .pg-page .pg-status-badges .badge-badge-hidden {
@@ -176,35 +141,123 @@ html.aia-theme-dark .pg-page.dark-mode {
   pointer-events: none;
 }
 
-html.aia-theme-dark .pg-page.dark-mode #pgLegend {
-  background: var(--ds-active-surface);
-  border: 1px solid var(--ds-active-border);
-  border-radius: var(--ds-radius-panel);
-  box-shadow: var(--ds-shadow-xs);
+/* El filter-form canónico es un grid de dos columnas pensado para campos;
+   aquí solo envuelve la fila de chips, así que fluye como bloque. */
+.pg-page #pdcFiltersMobile {
+  display: block;
+}
+
+/* Leyenda de filtros: una fila de chips canónicos. En reposo son neutros con
+   un punto indicador del color semántico; el estado activo recupera el tinte
+   completo. Sin panel propio: la superficie la da .pg-toolbar. */
+.pg-page #pgLegend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-1);
+  background: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
+  overflow: visible;
+}
+
+.pg-page #pgLegend .pg-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-chip-gap);
+  min-height: var(--ds-target-min);
+  font-size: var(--ds-chip-font-size);
+  line-height: var(--ds-type-line-compact);
+  white-space: nowrap;
+  border: var(--ds-border-width) solid var(--ds-active-border);
+  border-radius: var(--ds-radius-pill);
+  background: var(--ds-active-surface-raised);
   color: var(--ds-active-text-primary);
-  padding: var(--ds-space-2);
+  font-weight: var(--ds-type-weight-semibold);
+  box-shadow: none;
+  backdrop-filter: none;
+  cursor: pointer;
+  transition: border-color var(--ds-motion-fast), background-color var(--ds-motion-fast), opacity var(--ds-motion-fast);
 }
 
-html.aia-theme-dark .pg-page.dark-mode #pgLegend .pdc-legend-item {
+.pg-page #pgLegend .pg-filter-chip .indicator {
+  display: inline-block;
+  flex: 0 0 auto;
+  inline-size: var(--ds-space-2);
+  block-size: var(--ds-space-2);
+  border-radius: var(--ds-radius-pill);
+  background: var(--ds-active-border);
+}
+
+.pg-page #pgLegend .pg-filter-chip.alerta-restricciones .indicator { background: var(--pg-alert-border); }
+.pg-page #pgLegend .pg-filter-chip.debe-iniciar .indicator { background: var(--pg-due-border); }
+.pg-page #pgLegend .pg-filter-chip.actividad-futura .indicator { background: var(--pg-future-border); }
+.pg-page #pgLegend .pg-filter-chip.en-curso .indicator { background: var(--pg-progress-border); }
+.pg-page #pgLegend .pg-filter-chip.atrasada .indicator { background: var(--pg-delayed-border); }
+
+.pg-page #pgLegend .pg-filter-chip[aria-pressed="true"] {
+  border-color: var(--ds-active-text-secondary);
+  background: color-mix(in srgb, var(--ds-active-text-primary) 12%, var(--ds-active-surface-raised));
+}
+
+.pg-page #pgLegend .pg-filter-chip.alerta-restricciones[aria-pressed="true"],
+.pg-page #pgLegend .pg-filter-chip.debe-iniciar[aria-pressed="true"] {
+  background: var(--pg-alert-bg);
+  border-color: var(--pg-alert-border);
+  color: var(--pg-alert-text);
+}
+
+.pg-page #pgLegend .pg-filter-chip.actividad-futura[aria-pressed="true"] {
+  background: var(--pg-future-bg);
+  border-color: var(--pg-future-border);
+  color: var(--pg-future-text);
+}
+
+.pg-page #pgLegend .pg-filter-chip.en-curso[aria-pressed="true"] {
+  background: var(--pg-progress-bg);
+  border-color: var(--pg-progress-border);
+  color: var(--pg-progress-text);
+}
+
+.pg-page #pgLegend .pg-filter-chip.atrasada[aria-pressed="true"] {
+  background: var(--pg-delayed-bg);
+  border-color: var(--pg-delayed-border);
+  color: var(--pg-delayed-text);
+}
+
+.pg-page #pgLegend .pg-filter-chip.inactive-filter {
+  opacity: 0.6;
+}
+
+.pg-page #pgLegend .pg-filter-chip.inactive-filter[aria-pressed="true"] {
+  opacity: 1;
+}
+
+.pg-page #pgLegend .count-badge {
+  background: color-mix(in srgb, var(--ds-active-surface) 76%, transparent);
+  border: var(--ds-border-width) solid var(--ds-active-border);
+  border-radius: var(--ds-radius-pill);
   color: var(--ds-active-text-primary);
-  box-shadow: var(--ds-shadow-xs);
+  font-size: var(--ds-type-size-xs);
+  font-weight: var(--ds-type-weight-bold);
 }
 
-html.aia-theme-dark .pg-page.dark-mode #pgLegend .count-badge {
-  background: color-mix(in srgb, var(--ds-active-surface-raised) 76%, transparent);
-  border: 1px solid var(--ds-active-border);
-  color: var(--ds-active-text-primary);
+.pg-page #pgLegend .pg-filter-chip:hover {
+  border-color: var(--ds-active-text-secondary);
 }
 
-.pg-page .btn-filter-toggle.pg-filter-active {
-  background-color: var(--ds-color-brand-construction);
-  border-color: var(--ds-color-brand-construction);
-  color: var(--ds-color-text-inverse);
+.pg-page #pgLegend .pg-filter-chip:focus-visible {
+  outline: var(--ds-outline-width) solid var(--ds-active-focus-ring);
+  outline-offset: var(--ds-outline-offset);
+  box-shadow: var(--ds-shadow-focus);
 }
 
-.pg-page .btn-filter-toggle.pg-filter-active .badge {
-  background-color: var(--ds-color-text-inverse);
-  color: var(--ds-color-brand-construction);
+@media (prefers-reduced-motion: reduce) {
+  .pg-page #pgLegend .pg-filter-chip {
+    transition-duration: var(--ds-motion-reduced-duration);
+  }
 }
 
 

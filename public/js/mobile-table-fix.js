@@ -32,5 +32,4 @@ function initMobileTables() {
       });
     });
   });
-  console.log('Mobile Table Fix applied: Data-labels injected.');
 }

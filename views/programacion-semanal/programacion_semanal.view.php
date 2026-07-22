@@ -34,7 +34,7 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
     <?= \App\View\Components\DesignSystemHeadComponent::render() ?>
     <script type="text/javascript" src="/js/linksComunesHead2.js?v=20260711foundation5" charset="utf-8"></script>
     <link rel="stylesheet" href="/public/vendor/handsontable/handsontable.full.min.css" />
-    <link rel="stylesheet" href="/css/handsontable-module.css?v=20260711foundation5" />
+    <!-- handsontable-module.css llega vía aia-design-system.css (layer vendor); el link crudo duplicaba la cascada. -->
     <link rel="stylesheet" href="/public/vendor/select2/select2.min.css" />
     <?php $psCssVersion = @filemtime(dirname(__DIR__, 2) . '/public/css/programacion-semanal.css') ?: 'ps1'; ?>
     <link rel="stylesheet" href="/css/programacion-semanal.css?v=<?= urlencode((string) $psCssVersion) ?>">
@@ -61,20 +61,20 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
     <div class="header-actions action-bar ps-hot-toolbar-shell">
             <div class="ps-actions-row">
             <button class="btn-pdc-modern ps-mobile-actions-toggle d-md-none" type="button" data-toggle="collapse" data-target="#psMobileActionsPanel" aria-expanded="false" aria-controls="psMobileActionsPanel">
-                <i class="fas fa-sliders-h"></i> <span>Botones de acción</span>
+                <i aria-hidden="true" class="fas fa-sliders-h"></i> <span>Botones de acción</span>
             </button>
             <div class="ps-toolbar-left collapse d-md-flex" id="psMobileActionsPanel">
                 <span class="ps-mobile-actions-title d-md-none">Acciones disponibles</span>
                 <div class="ps-hot-toolbar-actions">
-                    <button type="button" class="leyenda_colores btn-pdc-modern" data-toggle="modal" data-target="#modal_leyenda_colores_ps" aria-label="Ver leyenda de colores"><i class="fas fa-question-circle"></i> <span>Leyenda</span></button>
-                    <button id="btn_autoprogramar" class="btn-pdc-modern" aria-label="Autoprogramar Actividades"><i class="fas fa-magic"></i> <span>Autoprogramar Actividades</span></button>
-                    <button id="btn_agregar_actividad" type="button" class="btn-pdc-modern" aria-label="Agregar Actividad Manual"><i class="fas fa-plus"></i> <span>Agregar Actividad</span></button>
-                    <button id="btn_cerrar_compromisos_semana" type="button" class="btn-pdc-modern" data-toggle="modal" data-target="#modal_cerrar_compromisos" aria-label="Confirmar Compromisos de la Semana"><i class="fas fa-lock"></i> <span>Confirmar Compromisos</span></button>
-                    <button type="button" id="btn_reabrir_semana" class="btn-pdc-modern ps-runtime-hidden" aria-label="Reabrir semana para edición"><i class="fas fa-unlock"></i> <span>Reabrir Semana</span></button>
-                    <button id="btn_tnp" type="button" class="btn-pdc-modern ps-runtime-hidden" aria-label="Registrar Trabajo No Planificado"><i class="fas fa-bolt"></i> <span>Registrar TNP</span></button>
-                    <button id="btn_informe_compromisos" type="button" class="btn-pdc-modern" aria-label="Imprimir Informe de Compromisos"><i class="fas fa-print"></i> <span>Imprimir</span></button>
-                    <button id="btn-export" class="btn-pdc-modern" aria-label="Exportar datos a CSV"><i class="fas fa-file-csv"></i> <span>Exportar CSV</span></button>
-                    <button id="btn-refresh" class="btn-pdc-modern" aria-label="Recargar tabla de actividades"><i class="fas fa-sync"></i> <span>Recargar</span></button>
+                    <button type="button" class="leyenda_colores btn-pdc-modern" data-toggle="modal" data-target="#modal_leyenda_colores_ps" aria-label="Ver leyenda de colores"><i aria-hidden="true" class="fas fa-question-circle"></i> <span>Leyenda</span></button>
+                    <button id="btn_autoprogramar" class="btn-pdc-modern" aria-label="Autoprogramar Actividades"><i aria-hidden="true" class="fas fa-magic"></i> <span>Autoprogramar Actividades</span></button>
+                    <button id="btn_agregar_actividad" type="button" class="btn-pdc-modern" aria-label="Agregar Actividad Manual"><i aria-hidden="true" class="fas fa-plus"></i> <span>Agregar Actividad</span></button>
+                    <button id="btn_cerrar_compromisos_semana" type="button" class="btn-pdc-modern" data-toggle="modal" data-target="#modal_cerrar_compromisos" aria-label="Confirmar Compromisos de la Semana"><i aria-hidden="true" class="fas fa-lock"></i> <span>Confirmar Compromisos</span></button>
+                    <button type="button" id="btn_reabrir_semana" class="btn-pdc-modern ps-runtime-hidden" aria-label="Reabrir semana para edición"><i aria-hidden="true" class="fas fa-unlock"></i> <span>Reabrir Semana</span></button>
+                    <button id="btn_tnp" type="button" class="btn-pdc-modern ps-runtime-hidden" aria-label="Registrar Trabajo No Planificado"><i aria-hidden="true" class="fas fa-bolt"></i> <span>Registrar TNP</span></button>
+                    <button id="btn_informe_compromisos" type="button" class="btn-pdc-modern" aria-label="Imprimir Informe de Compromisos"><i aria-hidden="true" class="fas fa-print"></i> <span>Imprimir</span></button>
+                    <button id="btn-export" class="btn-pdc-modern" aria-label="Exportar datos a CSV"><i aria-hidden="true" class="fas fa-file-csv"></i> <span>Exportar CSV</span></button>
+                    <button id="btn-refresh" class="btn-pdc-modern" aria-label="Recargar tabla de actividades"><i aria-hidden="true" class="fas fa-sync"></i> <span>Recargar</span></button>
                     <?= \App\View\Components\BiAccessComponent::renderLink('semanal', 'BI Semanal') ?>
                 </div>
             </div>
@@ -85,18 +85,18 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
                 </div>
                 <div id="ps-toast-container" aria-live="polite"></div>
                 <div class="ps-dropdown-nav" aria-label="Navegacion Programacion Semanal">
-                    <button type="button" class="btn-pdc-modern btn-dropdown-trigger">
-                        <i class="fas fa-th-list"></i> <span>Ver Secciones</span> <i class="fas fa-chevron-down ml-1"></i>
+                    <button type="button" class="btn-pdc-modern btn-dropdown-trigger" aria-haspopup="true" aria-expanded="false">
+                        <i aria-hidden="true" class="fas fa-th-list"></i> <span>Ver Secciones</span> <i aria-hidden="true" class="fas fa-chevron-down ml-1"></i>
                     </button>
                     <div class="ps-dropdown-content" role="menu">
-                        <button id="btn_Actividades" type="button" class="ps-dropdown-item is-active" role="menuitem"><i class="fas fa-table"></i> Actividades</button>
-                        <button id="btn_CNP" type="button" class="ps-dropdown-item" role="menuitem"><i class="fas fa-calendar-times"></i> Causas No Programacion</button>
-                        <button id="btn_CNC" type="button" class="ps-dropdown-item" role="menuitem"><i class="fas fa-exclamation-triangle"></i> Causas No Cumplimiento</button>
-                        <button id="btn_Cal_Proveedores" type="button" class="ps-dropdown-item" role="menuitem"><i class="fas fa-clipboard-check"></i> Calificacion Proveedores</button>
+                        <button id="btn_Actividades" type="button" class="ps-dropdown-item is-active" role="menuitem"><i aria-hidden="true" class="fas fa-table"></i> Actividades</button>
+                        <button id="btn_CNP" type="button" class="ps-dropdown-item" role="menuitem"><i aria-hidden="true" class="fas fa-calendar-times"></i> Causas No Programacion</button>
+                        <button id="btn_CNC" type="button" class="ps-dropdown-item" role="menuitem"><i aria-hidden="true" class="fas fa-exclamation-triangle"></i> Causas No Cumplimiento</button>
+                        <button id="btn_Cal_Proveedores" type="button" class="ps-dropdown-item" role="menuitem"><i aria-hidden="true" class="fas fa-clipboard-check"></i> Calificacion Proveedores</button>
                     </div>
                 </div>
                 <button class="btn-filter-toggle pdc-mobile-toggle" type="button" data-toggle="collapse" data-target="#psAlertsMobile" aria-expanded="false" aria-controls="psAlertsMobile">
-                    <i class="fas fa-filter"></i> Alertas <span id="weeklyPhaseMobileLabel" class="ps-weekly-phase-mobile-label">Programacion</span> <span class="badge badge-light" id="mobileAlertCount">0</span>
+                    <i aria-hidden="true" class="fas fa-filter"></i> Alertas <span id="weeklyPhaseMobileLabel" class="ps-weekly-phase-mobile-label">Programacion</span> <span class="badge badge-light" id="mobileAlertCount">0</span>
                 </button>
             </div>
         </div>
@@ -136,7 +136,7 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
                 </div>
                 <div class="modal-body" id="cerrar_compromisos_semana"></div>
                 <div class="modal-footer">
-                    <input id="btn_confirmar_compromisos_semana" type="button" class="btn btn-primary btn-lg" value="Confirmar" aria-label="Confirmar cerrar compromisos" aria-pressed="false">
+                    <input id="btn_confirmar_compromisos_semana" type="button" class="btn btn-primary btn-lg" value="Confirmar" aria-label="Confirmar cerrar compromisos">
                     <input id="btn_cancelar_compromisos_semana" type="button" data-dismiss="modal" class="btn btn-danger btn-lg" value="Cancelar" aria-label="Cancelar cerrar compromisos">
                 </div>
             </div>
@@ -473,11 +473,11 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
 <?php include __DIR__ . '/partials/modal_reabrir.php'; ?>
     <?php include __DIR__ . '/../partials/drawer_unificado.php'; ?>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="/public/vendor/popper.min.js"></script>
+    <script src="/public/vendor/bootstrap/bootstrap.min.js"></script>
     <script>window.__PROJECT_AREA__ = <?php echo json_encode($_SESSION['area'] ?? 'Construccion'); ?>;</script>
     <?= \App\View\Components\BiAccessComponent::renderBootConfig('semanal') ?>
-	<script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js?v=20260708theme" charset="utf-8"></script>
+	<script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js?v=20260722polish" charset="utf-8"></script>
     <script type="text/javascript" src="/js/modules/bi-access.js" charset="utf-8"></script>
     <script type="text/javascript" src="/js/funcionesGenerales6.js" charset="utf-8"></script>
 
@@ -524,7 +524,7 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
         ?>
         };
     </script>
-    <script src="/js/modules/lps_drawer.js?v=20260711foundation5"></script>
+    <script src="/js/modules/lps_drawer.js?v=20260722shell1"></script>
     <?php $psHotVersion = @filemtime(dirname(__DIR__, 2) . '/public/js/modules/programacion_semanal/hot.js') ?: 'hot50'; ?>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
     <script src="/js/modules/programacion_semanal/hot.js?v=<?php echo urlencode((string) $psHotVersion); ?>"></script>

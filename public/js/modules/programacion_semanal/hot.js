@@ -70,7 +70,7 @@
   var columnMaxWidths = [
     90, 98, 120, 460, 120, 100, 238,
     238, 120, 86, 108, 122, 136, 122, 120,
-    110, 84, 96, 170, 220, 260, 250, 150, 84,
+    110, 84, 96, 170, 220, 260, 250, 192, 84,
   ];
   var columnShrinkPriority = [
     21, 20, 19, 9, 6, 2, 0,
@@ -4224,15 +4224,33 @@
     });
 
     // Dropdown interactividad (Click fallback con delegación robusta)
+    var syncDropdownAria = function () {
+      $('.ps-dropdown-nav').each(function () {
+        var open = $(this).hasClass('is-open');
+        $(this).find('.btn-dropdown-trigger').attr('aria-expanded', open ? 'true' : 'false');
+      });
+    };
+
     $(document).off('click.psDropdown').on('click.psDropdown', '.btn-dropdown-trigger', function(e) {
       e.stopPropagation();
       var $nav = $(this).closest('.ps-dropdown-nav');
       $('.ps-dropdown-nav').not($nav).removeClass('is-open');
       $nav.toggleClass('is-open');
+      syncDropdownAria();
     });
 
     $(document).off('click.psDropdownClose').on('click.psDropdownClose', function() {
       $('.ps-dropdown-nav').removeClass('is-open');
+      syncDropdownAria();
+    });
+
+    $(document).off('keydown.psDropdownEsc').on('keydown.psDropdownEsc', function (e) {
+      if (e.key !== 'Escape') { return; }
+      var $open = $('.ps-dropdown-nav.is-open');
+      if (!$open.length) { return; }
+      $open.removeClass('is-open');
+      syncDropdownAria();
+      $open.find('.btn-dropdown-trigger').trigger('focus');
     });
 
     $(document).off('click.psNavItems').on('click.psNavItems', '.ps-dropdown-item', function() {

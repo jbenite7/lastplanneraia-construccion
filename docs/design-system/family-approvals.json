@@ -48,8 +48,8 @@
       "familyId": "shell-navigation",
       "candidateId": "sidebar-shell",
       "approvedBy": "user",
-      "approvalRef": "chat-2026-07-21-sidebar-approved-for-project-selector",
-      "approvedAt": "2026-07-21",
+      "approvalRef": "chat-2026-07-22-sidebar-approved-as-global-shell-collapsible-rail-pilot-programacion-intermedia (amplía chat-2026-07-21-sidebar-approved-for-project-selector)",
+      "approvedAt": "2026-07-22",
       "scope": "desktop-dark",
       "themes": [
         "dark"
@@ -61,7 +61,8 @@
       "evidence": [
         "tests/browser/design-system-lab-sidebar.mjs",
         "tests/design-system/shell-navigation.test.mjs",
-        "tests/browser/project-selector-sidebar.spec.mjs"
+        "tests/browser/project-selector-sidebar.spec.mjs",
+        "tests/test_foundation_shell_contract.mjs"
       ]
     },
     {

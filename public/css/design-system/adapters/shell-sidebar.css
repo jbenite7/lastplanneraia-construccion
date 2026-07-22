@@ -1,0 +1,296 @@
+/* Shell global con sidebar canónico (.aia-navigation--sidebar) como navegación
+   de la app. El layout vive en legacy-overrides porque styles.css trae un reset
+   global `* { margin: 0; padding: 0 }` en la capa module que colapsaría los
+   offsets del body declarados en capas anteriores. */
+
+@layer legacy-overrides {
+  /* Dos columnas: rail fijo a la izquierda + contenido desplazado por padding.
+     Compone con el rail LPS derecho (padding-right en handsontable-module.css).
+     Deuda consciente: se anima padding-left (layout) igual que el colapso
+     aprobado del project-selector (left/width del main); solo corre al accionar
+     el toggle y prefers-reduced-motion la anula. */
+  body.aia-shell--sidebar {
+    padding-left: var(--ds-sidebar-width-expanded);
+    transition: padding-left var(--ds-motion-standard);
+  }
+
+  body.aia-shell--sidebar:has([data-shell-pattern="sidebar"][data-sidebar-state="collapsed"]) {
+    padding-left: var(--ds-sidebar-width-collapsed);
+  }
+
+  body.aia-shell--sidebar .aia-navigation--sidebar[data-shell-pattern="sidebar"] {
+    position: fixed;
+    inset-block: 0;
+    inset-inline-start: 0;
+    /* z-dropdown (no sticky): el aside es el stacking context de sus flyouts
+       y debe quedar sobre los clones de encabezado de Handsontable (~101-103)
+       y la context-bar (100); sigue debajo de modales y del cajón LPS. */
+    z-index: var(--ds-z-dropdown);
+    min-height: 0;
+    border-block: none;
+    border-inline-start: none;
+    border-radius: 0;
+  }
+
+  /* Barra de contexto del shell (proyecto / módulo / semana). Reemplaza a la
+     versión de navbar.css, que ya no se carga en vistas sin navbar superior. */
+  body.aia-shell--sidebar .context-bar {
+    position: sticky;
+    top: 0;
+    z-index: var(--ds-z-sticky);
+    display: flex;
+    align-items: center;
+    gap: var(--ds-space-3);
+    min-height: var(--ds-context-bar-height, 2.5rem);
+    padding: var(--ds-space-2) var(--ds-space-4);
+    border-block-end: var(--ds-border-width) solid var(--ds-active-border);
+    background: var(--ds-active-nav-bg);
+    color: var(--ds-active-text-secondary);
+    font-size: var(--ds-type-size-sm);
+  }
+
+  body.aia-shell--sidebar .context-bar #ctxProyecto {
+    color: var(--ds-active-text-primary);
+    font-weight: var(--ds-type-weight-semibold);
+  }
+
+  body.aia-shell--sidebar .context-week-menu {
+    position: relative;
+    margin-inline-start: auto;
+  }
+
+  body.aia-shell--sidebar .context-week-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--ds-space-2);
+    min-height: 2rem;
+    padding: var(--ds-space-1) var(--ds-space-3);
+    border: var(--ds-border-width) solid var(--ds-active-border);
+    border-radius: var(--ds-radius-pill);
+    background: var(--ds-active-surface-raised);
+    color: var(--ds-active-text-primary);
+    font-size: var(--ds-type-size-sm);
+    font-weight: var(--ds-type-weight-semibold);
+    cursor: pointer;
+  }
+
+  body.aia-shell--sidebar .context-week-chip:hover {
+    background: var(--ds-active-surface);
+  }
+
+  body.aia-shell--sidebar .context-week-chip:focus-visible {
+    outline: var(--ds-outline-width) solid var(--ds-active-focus-ring);
+    outline-offset: var(--ds-outline-offset);
+    box-shadow: var(--ds-shadow-focus);
+  }
+
+  body.aia-shell--sidebar .context-week-menu [data-aia-menu-panel] {
+    position: absolute;
+    inset-inline-end: 0;
+    inset-block-start: calc(100% + var(--ds-space-2));
+    z-index: var(--ds-z-dropdown);
+    min-width: 16rem;
+    max-height: 22rem;
+    overflow-y: auto;
+    padding: var(--ds-space-2);
+    border: var(--ds-border-width) solid var(--ds-active-border);
+    border-radius: var(--ds-radius-popover);
+    background: var(--ds-active-surface-raised);
+    box-shadow: var(--ds-shadow-lg);
+  }
+
+  body.aia-shell--sidebar .context-week-menu [role="menuitem"] {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ds-space-2);
+    min-height: var(--ds-target-min);
+    padding: var(--ds-space-2) var(--ds-space-3);
+    border: var(--ds-border-width) solid transparent;
+    border-radius: var(--ds-radius-control-sm);
+    background: transparent;
+    color: var(--ds-active-text-primary);
+    font-size: var(--ds-type-size-sm);
+    text-align: start;
+    cursor: pointer;
+  }
+
+  body.aia-shell--sidebar .context-week-menu [role="menuitem"]:hover {
+    background: var(--ds-active-surface);
+  }
+
+  body.aia-shell--sidebar .context-week-menu [role="menuitem"][aria-current="true"] {
+    border-color: var(--ds-color-border-strong);
+    background: var(--ds-active-action-primary);
+    color: var(--ds-active-action-text);
+  }
+
+  body.aia-shell--sidebar .context-week-menu [role="menuitem"] small {
+    color: var(--ds-active-text-secondary);
+    font-size: var(--ds-type-size-xs);
+  }
+
+  body.aia-shell--sidebar .context-week-menu [role="menuitem"][aria-current="true"] small {
+    color: inherit;
+  }
+
+  /* Padding de los flyouts del rail colapsado: el reset global de styles.css
+     (capa module) lo dejaba en 0 — la píldora se veía pelada. Debe vivir aquí
+     (legacy-overrides, posterior a module), no en components. */
+  body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link .aia-sidebar__label,
+  body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__utility .aia-sidebar__label,
+  body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__toggle .aia-sidebar__toggle-label {
+    padding: var(--ds-space-3) var(--ds-space-6);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    body.aia-shell--sidebar {
+      transition: none;
+    }
+  }
+}
+
+/* ===== Rail colapsado del shell: cero scroll + flyouts + jerarquía =====
+   Vive en components (misma capa que navigation.css, importado después) para
+   poder reafirmar con !important los paddings que el canónico protege con
+   !important frente al reset global de styles.css. */
+@layer components {
+  /* Cero scroll: el contenido cabe por presupuesto (header 116 + nav ≈598 +
+     footer 60 ≤ 820). El probe lo asegura fail-closed; nunca degradar a scroll. */
+  body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] {
+    overflow: visible;
+  }
+
+  body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__nav {
+    overflow: visible;
+    padding-block: var(--ds-space-2) !important;
+    gap: var(--ds-space-2);
+  }
+
+  body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__header,
+  body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__footer {
+    padding-block: var(--ds-space-2) !important;
+  }
+
+  body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__group ul {
+    gap: 2px;
+  }
+
+  /* El canónico oculta contexto y h3 a 1px de ancho, pero siguen ocupando
+     filas del grid (~42px + ~30px por grupo) y provocan scroll. En el shell
+     se retiran del flujo: el contexto vive en la context-bar visible y los
+     aria-labelledby siguen computando el nombre desde elementos display:none. */
+  body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__context,
+  body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__group h3 {
+    display: none;
+  }
+
+  /* Separador hairline entre grupos (el h3 queda invisible en colapsado). */
+  body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__group + .aia-sidebar__group::before {
+    content: "";
+    justify-self: center;
+    width: 1.25rem;
+    border-block-start: var(--ds-border-width) solid var(--ds-active-border);
+  }
+
+  /* Iconos con presencia y jerarquía: reposo en secundario, hover/activo encienden. */
+  body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__nav .aia-icon__glyph {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link .aia-icon {
+    color: var(--ds-active-text-secondary);
+    transition: color 150ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link:hover .aia-icon,
+  body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link:focus-visible .aia-icon {
+    color: var(--ds-active-text-primary);
+  }
+
+  body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link[aria-current="page"] .aia-icon {
+    color: inherit;
+  }
+
+  body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link[aria-current="page"] {
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--aia-green-light) 35%, transparent);
+  }
+
+  /* Flyout labels: el label real del DOM se vuelve una píldora instantánea al
+     lado del rail en hover/foco. Sustituye al title nativo (lento), que el JS
+     suprime en colapsado. */
+  body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link,
+  body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__toggle,
+  body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__utility {
+    position: relative;
+  }
+
+  body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link .aia-sidebar__label,
+  body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__utility .aia-sidebar__label,
+  body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__toggle .aia-sidebar__toggle-label {
+    position: absolute;
+    inset-inline-start: calc(100% + var(--ds-space-4));
+    inset-block-start: 50%;
+    translate: -4px -50%;
+    width: max-content;
+    max-width: 18rem;
+    padding: var(--ds-space-3) var(--ds-space-6);
+    border: var(--ds-border-width) solid var(--ds-active-border);
+    border-radius: var(--ds-radius-control);
+    background: var(--ds-active-surface-raised);
+    box-shadow: var(--ds-shadow-lg);
+    color: var(--ds-active-text-primary);
+    font-size: var(--ds-type-size-md);
+    font-weight: var(--ds-type-weight-semibold);
+    white-space: nowrap;
+    overflow: visible;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    z-index: var(--ds-z-tooltip);
+    transition:
+      opacity 150ms cubic-bezier(0.22, 1, 0.36, 1),
+      translate 150ms cubic-bezier(0.22, 1, 0.36, 1),
+      visibility 0s 150ms;
+  }
+
+  /* Caret que ancla la píldora a su tile. */
+  body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link .aia-sidebar__label::before,
+  body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__utility .aia-sidebar__label::before,
+  body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__toggle .aia-sidebar__toggle-label::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: -5px;
+    inset-block-start: 50%;
+    width: 8px;
+    height: 8px;
+    translate: 0 -50%;
+    rotate: 45deg;
+    background: var(--ds-active-surface-raised);
+    border-inline-start: var(--ds-border-width) solid var(--ds-active-border);
+    border-block-end: var(--ds-border-width) solid var(--ds-active-border);
+  }
+
+  body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link:hover .aia-sidebar__label,
+  body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link:focus-visible .aia-sidebar__label,
+  body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__utility:hover .aia-sidebar__label,
+  body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__utility:focus-visible .aia-sidebar__label,
+  body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__toggle:hover .aia-sidebar__toggle-label,
+  body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__toggle:focus-visible .aia-sidebar__toggle-label {
+    opacity: 1;
+    visibility: visible;
+    translate: 0 -50%;
+    transition-delay: 0s;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link .aia-icon,
+    body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link .aia-sidebar__label,
+    body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__utility .aia-sidebar__label,
+    body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__toggle .aia-sidebar__toggle-label {
+      transition: none;
+    }
+  }
+}

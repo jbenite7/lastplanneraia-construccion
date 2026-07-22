@@ -297,11 +297,7 @@ window.LPSContextualDrawer = (function() {
         const counter = document.getElementById('lps_closure_char_count');
         if (counter) {
           counter.textContent = `${len} / 100 caracteres`;
-          if (len >= 100) {
-            counter.style.color = '#198754';
-          } else {
-            counter.style.color = '#dc3545';
-          }
+          counter.style.color = len >= 100 ? 'var(--aia-green-light)' : 'var(--aia-alert-medium)';
         }
         closureBtn.disabled = len < 100;
       });
@@ -325,7 +321,7 @@ window.LPSContextualDrawer = (function() {
     toast.style.cssText = `
       position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
       background: rgba(26, 60, 42, 0.96); color: #ffffff; padding: 10px 20px;
-      border-radius: 8px; font-size: 0.85rem; font-weight: 600; z-index: 99999;
+      border-radius: 8px; font-size: 0.85rem; font-weight: 600; z-index: var(--ds-z-shell-toast, 2300);
       box-shadow: 0 4px 12px rgba(0,0,0,0.15); pointer-events: none; transition: opacity 0.3s;
     `;
     toast.textContent = message;
@@ -780,7 +776,7 @@ window.LPSContextualDrawer = (function() {
     if (!softContainer && card) {
       softContainer = document.createElement('div');
       softContainer.id = 'lps_soft_restrictions_container';
-      softContainer.style.cssText = 'margin-top: 10px; border-top: 1px dashed rgba(26, 60, 42, 0.15); padding-top: 8px;';
+      softContainer.style.cssText = 'margin-top: 10px; border-top: 1px dashed var(--ds-active-border); padding-top: 8px;';
       card.appendChild(softContainer);
     }
 
@@ -789,7 +785,7 @@ window.LPSContextualDrawer = (function() {
       const softRestrictions = getSoftRestrictions();
 
       let hasSoft = false;
-      let html = '<div style="font-size: 0.75rem; font-weight: 700; color: #1a3c2a; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.3px;">Restricciones Blandas (Informativas)</div><div style="display:flex; flex-direction:column; gap:4px;">';
+      let html = '<div class="lps-caption" style="margin-bottom: 4px;">Restricciones Blandas (Informativas)</div><div style="display:flex; flex-direction:column; gap:4px;">';
 
       softRestrictions.forEach(r => {
         const val = firstValue(rowData, r.aliases);
@@ -808,7 +804,7 @@ window.LPSContextualDrawer = (function() {
             }
 
             html += `
-              <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; color:#495057;">
+              <div class="lps-text-secondary" style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem;">
                 <span>${r.label}:</span>
                 <span class="lps-badge" style="background:${badgeColor}; color:${percent > 0 && percent < 100 ? '#212529' : '#fff'}; padding:2px 6px; font-size:0.68rem; border-radius:4px; font-weight:700;">${percent}%</span>
               </div>
@@ -948,30 +944,22 @@ window.LPSContextualDrawer = (function() {
       const autor = isSystem ? 'Sistema AIA' : `${c.autor_nombre} (${c.autor_cargo || 'Cargo'})`;
 
       const commentDiv = document.createElement('div');
-      commentDiv.className = 'lps-comment';
-      commentDiv.style.cssText = `
-        padding: 8px 10px; background: rgba(0,0,0,0.02); border-radius: 8px; border-left: 3px solid #1a3c2a;
-        margin-bottom: 8px; font-size: 0.82rem;
-      `;
-      if (isSystem) {
-        commentDiv.style.borderLeftColor = '#dc3545';
-        commentDiv.style.background = 'rgba(220,53,69,0.03)';
-      }
+      commentDiv.className = isSystem ? 'lps-comment lps-comment--system' : 'lps-comment';
 
       // Reemplazar @D, @OT, etc. con badges
       let commentText = escapeHtml(c.comentario);
       commentText = commentText.replace(/@([A-Z]+)/g, '<span class="lps-mention-badge">@$1</span>');
 
       commentDiv.innerHTML = `
-        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-          <strong style="color:#1a3c2a;">${escapeHtml(autor)}</strong>
-          <span style="font-size:0.7rem; color:#888;">${c.created_at}</span>
+        <div class="lps-comment__head">
+          <strong class="lps-comment__author">${escapeHtml(autor)}</strong>
+          <span class="lps-comment__meta">${escapeHtml(c.created_at || '')}</span>
         </div>
-        <div style="color:#2d3748; line-height:1.4; white-space:pre-wrap;">${commentText}</div>
-        <div style="margin-top:6px; display:flex; gap:12px; font-size:0.72rem;">
-          <a href="#" class="lps-reply-trigger" data-id="${c.id}" style="color:#198754; font-weight:700; text-decoration:none;">Responder</a>
+        <div class="lps-comment__body">${commentText}</div>
+        <div class="lps-comment__actions">
+          <a href="#" class="lps-reply-trigger" data-id="${c.id}">Responder</a>
         </div>
-        <div class="lps-replies-container" style="margin-left: 16px; margin-top: 8px; border-left: 1px dashed rgba(0,0,0,0.08); padding-left: 10px;"></div>
+        <div class="lps-replies-container"></div>
       `;
 
       // Renderizar respuestas del hilo
@@ -979,7 +967,7 @@ window.LPSContextualDrawer = (function() {
       if (c.respuestas && c.respuestas.length > 0) {
         c.respuestas.forEach(r => {
           const rDiv = document.createElement('div');
-          rDiv.style.cssText = 'padding: 5px 8px; background: #ffffff; border-radius: 6px; margin-top: 4px; font-size: 0.8rem; box-shadow: 0 1px 2px rgba(0,0,0,0.02);';
+          rDiv.className = 'lps-comment-reply';
 
           let replyText = escapeHtml(r.comentario);
           replyText = replyText.replace(/@([A-Z]+)/g, '<span class="lps-mention-badge">@$1</span>');
@@ -988,11 +976,11 @@ window.LPSContextualDrawer = (function() {
           const rAutor = rSystem ? 'Sistema AIA' : `${r.autor_nombre} (${r.autor_cargo || 'Cargo'})`;
 
           rDiv.innerHTML = `
-            <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
-              <strong style="color: #495057;">${escapeHtml(rAutor)}</strong>
-              <span style="font-size:0.68rem; color:#aaa;">${r.created_at}</span>
+            <div class="lps-comment__head">
+              <strong class="lps-comment__author">${escapeHtml(rAutor)}</strong>
+              <span class="lps-comment__meta">${escapeHtml(r.created_at || '')}</span>
             </div>
-            <div style="color:#333; line-height:1.35; white-space:pre-wrap;">${replyText}</div>
+            <div class="lps-comment__body">${replyText}</div>
           `;
           repliesContainer.appendChild(rDiv);
         });
@@ -1116,6 +1104,9 @@ window.LPSContextualDrawer = (function() {
 
     drawer.classList.add('open');
     drawer.setAttribute('aria-hidden', 'false');
+    // inert espeja aria-hidden: sin él, el contenido oculto sigue siendo
+    // enfocable y Axe reporta aria-hidden-focus (serio).
+    drawer.removeAttribute('inert');
     if (sidebarTrigger) sidebarTrigger.setAttribute('aria-expanded', 'true');
     if (closeBtn) setTimeout(() => closeBtn.focus(), 320);
 
@@ -1138,6 +1129,7 @@ window.LPSContextualDrawer = (function() {
     if (drawer) {
       drawer.classList.remove('open');
       drawer.setAttribute('aria-hidden', 'true');
+      drawer.setAttribute('inert', '');
     }
     if (overlay) overlay.classList.remove('active');
     if (sidebarTrigger) {
@@ -1498,8 +1490,7 @@ window.LPSContextualDrawer = (function() {
           priorityBadge.textContent = 'Capítulo';
         }
         if (diagCard) {
-          diagCard.className = 'lps-card-glass lps-state-p3';
-          diagCard.style.borderLeft = '4px solid #6c757d';
+          diagCard.className = 'lps-card-glass lps-state-neutral';
         }
         if (descEl) {
           descEl.innerHTML = `ℹ️ <strong>FILA DE CAPÍTULO.</strong> Selecciona una actividad específica para ver diagnóstico LPS, restricciones, comentarios y escalamiento.`;
@@ -1521,7 +1512,6 @@ window.LPSContextualDrawer = (function() {
 
       if (diagCard) {
         diagCard.className = 'lps-card-glass ' + context.severityVisual.cardClass;
-        diagCard.style.borderLeft = '';
       }
 
       renderDiagnosis(context, descEl);

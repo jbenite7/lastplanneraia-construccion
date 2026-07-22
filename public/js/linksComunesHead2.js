@@ -13,9 +13,11 @@
     head.appendChild(metaCharset);
   }
 
-  var titleTag = document.getElementsByTagName('title')[0] || document.createElement('title');
-  titleTag.textContent = 'Last Planner AIA';
-  if (!titleTag.parentNode) {
+  // Respetar el <title> definido por la vista; solo aportar el genérico si falta.
+  var titleTag = document.getElementsByTagName('title')[0];
+  if (!titleTag) {
+    titleTag = document.createElement('title');
+    titleTag.textContent = 'Last Planner AIA';
     head.appendChild(titleTag);
   }
 
@@ -51,7 +53,7 @@
 
   loadScript('/runtime/frontend-config.js?v=20260325a');
   loadScript('https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.4.24/sweetalert2.all.min.js');
-  loadScript('/public/js/core/AiaAlertInterceptor.js?v=20260324a');
+  loadScript('/public/js/core/AiaAlertInterceptor.js?v=20260722a');
   loadScript('/public/js/core/SessionTimeoutManager.js?v=20260328a');
   loadScript('/public/js/modules/aia_ui/theme.js?v=20260711foundation5');
   loadScript('/public/js/modules/aia_ui/nav_drawer.js?v=20260711foundation5');
@@ -61,7 +63,7 @@
   if (!window.__AIA_HANDSONTABLE_ONLY__) {
     loadScript('/js/datatable-height-manager.js?v=1.2');
     loadScript('/js/global-table-align.js?v=1.0');
-    loadScript('/js/mobile-table-fix.js?v=mobileFix2');
+    loadScript('/js/mobile-table-fix.js?v=mobileFix3');
   }
   
   // Script de Capacidades RBAC Moderno

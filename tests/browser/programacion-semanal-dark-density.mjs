@@ -42,18 +42,37 @@ test('modal de actividad manual usa superficies dark coherentes', async ({ page 
 
 test('estado operativo permanece en una linea sin recorte vertical', async ({ page }) => {
   await openDarkWeek(page);
-  const states = page.locator('.ops-state-chip:visible');
-  await expect(states.first()).toBeVisible();
-  const metrics = await states.evaluateAll((nodes) => nodes.map((node) => {
-    const style = getComputedStyle(node);
-    return { text: node.textContent.trim(), whiteSpace: style.whiteSpace,
-      scrollHeight: node.scrollHeight, clientHeight: node.clientHeight,
-      hasAccessibleDetail: Boolean(node.closest('[title], [aria-label]')) };
+  // Contrato: si el label cabe, va en una linea sin recorte vertical; si el
+  // boton queda cerca del minimo de columna (container query <= 120px), el
+  // label se oculta y el estado se comunica con punto + contador, con el
+  // nombre completo en title/aria-label. Nunca texto solapado o recortado.
+  const zooms = page.locator('#hot-container .ops-state-zoom:visible');
+  await expect(zooms.first()).toBeVisible();
+  const metrics = await zooms.evaluateAll((nodes) => nodes.map((node) => {
+    const chip = node.querySelector('.ops-state-chip');
+    const count = node.querySelector('.ops-state-count');
+    const chipStyle = chip ? getComputedStyle(chip) : null;
+    const chipVisible = Boolean(chipStyle && chipStyle.display !== 'none');
+    return {
+      text: node.getAttribute('aria-label') || node.textContent.trim(),
+      chipVisible,
+      whiteSpace: chipVisible ? chipStyle.whiteSpace : null,
+      overflow: chipVisible ? chipStyle.overflow : null,
+      scrollHeight: chipVisible ? chip.scrollHeight : 0,
+      clientHeight: chipVisible ? chip.clientHeight : 0,
+      countVisible: Boolean(count && count.getClientRects().length),
+      hasAccessibleDetail: Boolean(node.closest('[title], [aria-label]')),
+    };
   }));
   expect(metrics.length).toBeGreaterThan(0);
   for (const item of metrics) {
-    expect(item.whiteSpace, item.text).toBe('nowrap');
-    expect(item.scrollHeight, item.text).toBeLessThanOrEqual(item.clientHeight + 1);
+    if (item.chipVisible) {
+      expect(item.whiteSpace, item.text).toBe('nowrap');
+      expect(item.overflow, item.text).toBe('hidden');
+      expect(item.scrollHeight, item.text).toBeLessThanOrEqual(item.clientHeight + 1);
+    } else {
+      expect(item.countVisible, item.text).toBe(true);
+    }
     expect(item.hasAccessibleDetail, item.text).toBe(true);
   }
 });

@@ -1,0 +1,121 @@
+{
+  "$schema": "../module-manifest.schema.json",
+  "schemaVersion": 2,
+  "designSystemVersion": "1.0.0",
+  "moduleId": "programacion-intermedia",
+  "consumerContract": "v1",
+  "routes": [
+    "/programacion-intermedia",
+    "/programacion-intermedia/filtros",
+    "/programacion-intermedia/set-filtro",
+    "/programacion-intermedia/set-view-all",
+    "/programacion-intermedia/shared-constraints/preview",
+    "/programacion-intermedia/shared-constraints/apply"
+  ],
+  "sources": [
+    "views/programacion-intermedia/programacion_intermedia.view.php",
+    "public/css/programacion-intermedia.css",
+    "public/js/modules/programacion_intermedia/hot.js",
+    "public/js/modules/programacion_intermedia/stateMachine.js"
+  ],
+  "components": [
+    "shell",
+    "page-header",
+    "toolbar",
+    "button",
+    "field",
+    "state",
+    "table-shell",
+    "overlay",
+    "handsontable-adapter",
+    "feedback",
+    "live-region"
+  ],
+  "vendors": [
+    "bootstrap",
+    "handsontable",
+    "tom-select",
+    "sweetalert2",
+    "font-awesome",
+    "jquery-ui"
+  ],
+  "layouts": [
+    "desktop"
+  ],
+  "states": [
+    "normal",
+    "loading",
+    "empty",
+    "error",
+    "filtered",
+    "batch-selection"
+  ],
+  "roles": [
+    "A",
+    "D",
+    "R",
+    "C",
+    "V"
+  ],
+  "persistence": {
+    "session": "proyecto y semana activa; pi_view_all",
+    "grid": "autosave por celda via /api/pi/save",
+    "batch": "restricciones compartidas via shared-constraints/apply"
+  },
+  "exceptions": [
+    {
+      "id": "tom-select-editor-light-skin",
+      "reason": "El editor flotante Tom Select conserva su skin claro de marca (compartido con Listado de Actividades); su migracion a tokens dark se hara como lote transversal de vendor.",
+      "scope": "public/css/programacion-intermedia.css (.htTomSelectWrapper)",
+      "date": "2026-07-22"
+    },
+    {
+      "id": "cdn-delivery-tom-select-sweetalert2",
+      "reason": "vendors.json declara delivery cdn para tom-select y cdn-js para sweetalert2; vendorizarlos requiere descarga aprobada y actualizacion del contrato de vendors.",
+      "scope": "views/programacion-intermedia/programacion_intermedia.view.php, public/js/linksComunesHead2.js",
+      "date": "2026-07-22"
+    }
+  ],
+  "tests": [
+    "tests/browser/design-system-compliance.mjs",
+    "tests/browser/design-system-consumer-smoke.mjs",
+    "tests/browser/programacion-intermedia.visual.mjs"
+  ],
+  "evidence": [
+    "tests/browser/__screenshots__/programacion-intermedia.visual.mjs/"
+  ],
+  "scenarios": [
+    {
+      "id": "programacion-intermedia-dark-1180x820",
+      "family": null,
+      "route": "/programacion-intermedia",
+      "fixture": "deterministic-empty",
+      "theme": "dark",
+      "viewport": {
+        "width": 1180,
+        "height": 820
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/programacion-intermedia.visual.mjs/programacion-intermedia-dark-1180x820.png",
+      "sha256": "3dd9b95d6e9696b6c5a02d3aff84ede85cd8ddc5dd7d0063f0a5ebf137905339"
+    },
+    {
+      "id": "programacion-intermedia-dark-1440x900",
+      "family": null,
+      "route": "/programacion-intermedia",
+      "fixture": "deterministic-empty",
+      "theme": "dark",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "density": "compact",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/programacion-intermedia.visual.mjs/programacion-intermedia-dark-1440x900.png",
+      "sha256": "231405a2cab9893dd18369d19edcf48521257322300ca5ee7ee67008951e96ce"
+    }
+  ]
+}

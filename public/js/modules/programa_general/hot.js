@@ -823,7 +823,6 @@
   function showFeedback(type, message) {
     clearTimeout(saveBadgeTimer);
     $('#save-status').hide();
-    $('#save-error').hide();
 
     if (type === 'success') {
       if (window.AIA && window.AIA.Notice && window.AIA.Notice.badge) {
@@ -2106,15 +2105,37 @@
 
     var width = totalWidth + 'px';
     container.classList.add('hot-fixed-columns');
+    // El dimensionado con !important vive en el adaptador
+    // programa-general-handsontable.css (gobernado por exceptions.json);
+    // aquí solo se publica la variable que consumen esas reglas.
     container.style.setProperty('--hot-table-width', width);
+  }
 
-    var nodes = container.querySelectorAll('.handsontable table.htCore, .handsontable .wtHider, .handsontable .wtSpreader');
-    Array.prototype.forEach.call(nodes, function (node) {
-      node.style.setProperty('width', width, 'important');
-      node.style.setProperty('min-width', width, 'important');
-      if (node.matches && node.matches('table.htCore')) {
-        node.style.setProperty('table-layout', 'fixed', 'important');
+  function syncFocusCatcherA11y(container) {
+    // HOT 14 arma sus .htFocusCatcher (tabindex 0) manteniendo aria-hidden,
+    // lo que dispara aria-hidden-focus en Axe. Espejo: expuesto si es
+    // tabulable, oculto si no; las escrituras condicionales evitan bucles
+    // del MutationObserver.
+    var catchers = container.querySelectorAll('.htFocusCatcher');
+    Array.prototype.forEach.call(catchers, function (catcher) {
+      if (catcher.__pgA11ySynced) {
+        return;
       }
+      catcher.__pgA11ySynced = true;
+      catcher.setAttribute('aria-label', 'Ir a la grilla del Programa General');
+      var sync = function () {
+        var armed = catcher.getAttribute('tabindex') === '0';
+        if (armed && catcher.hasAttribute('aria-hidden')) {
+          catcher.removeAttribute('aria-hidden');
+        } else if (!armed && catcher.getAttribute('aria-hidden') !== 'true') {
+          catcher.setAttribute('aria-hidden', 'true');
+        }
+      };
+      sync();
+      new MutationObserver(sync).observe(catcher, {
+        attributes: true,
+        attributeFilter: ['tabindex', 'aria-hidden'],
+      });
     });
   }
 
@@ -2688,7 +2709,7 @@
     }
 
     Object.keys(counts).forEach(function (key) {
-      $('#count-' + key).text('(' + counts[key] + ')');
+      $('#count-' + key).text(counts[key]);
     });
   }
 
@@ -2982,6 +3003,7 @@
     // Fix: Asegurar que HOT mantenga el listening activo.
     // Bootstrap/jQuery roban el foco a nivel de document.
     hot.listen();
+    syncFocusCatcherA11y(container);
     hot.addHook('afterFilter', function () {
       if (!hot) return;
       window.setTimeout(function () {
@@ -3054,24 +3076,21 @@
   }
 
   function syncLegendVisualState() {
-    $('#pgLegend .pdc-legend-item').attr('aria-pressed', function () {
+    $('#pgLegend .pg-filter-chip').attr('aria-pressed', function () {
       return activeFilters.indexOf(String($(this).data('filter'))) > -1 ? 'true' : 'false';
     });
 
     if (activeFilters.length === 0) {
-      $('#pgLegend .pdc-legend-item').removeClass('inactive-filter');
+      $('#pgLegend .pg-filter-chip').removeClass('inactive-filter');
     } else {
-      $('#pgLegend .pdc-legend-item').addClass('inactive-filter');
+      $('#pgLegend .pg-filter-chip').addClass('inactive-filter');
       for (var i = 0; i < activeFilters.length; i++) {
-        $("#pgLegend .pdc-legend-item[data-filter='" + activeFilters[i] + "']").removeClass(
+        $("#pgLegend .pg-filter-chip[data-filter='" + activeFilters[i] + "']").removeClass(
           'inactive-filter'
         );
       }
     }
 
-    $('#mobileFilterCount')
-      .text(activeFilters.length > 0 ? activeFilters.length : '')
-      .prop('hidden', activeFilters.length === 0);
   }
 
   function toggleLegendFilter(filterState, event) {
@@ -3121,13 +3140,13 @@
 
     $('#pgLegend')
       .off('click.pg keydown.pg')
-      .on('click.pg', '.pdc-legend-item', function (event) {
+      .on('click.pg', '.pg-filter-chip', function (event) {
         var key = $(this).data('filter');
         if (key) {
           toggleLegendFilter(String(key), event);
         }
       })
-      .on('keydown.pg', '.pdc-legend-item', function (event) {
+      .on('keydown.pg', '.pg-filter-chip', function (event) {
         if (event.key === 'Enter' || event.keyCode === 13 || event.keyCode === 32) {
           event.preventDefault();
           var key = $(this).data('filter');

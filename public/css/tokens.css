@@ -275,6 +275,14 @@
     --ds-z-toast: 500;
     --ds-z-tooltip: 600;
 
+    /* Estrato del shell legacy (rail + cajón LPS): vive por encima del
+       fixed-top de Bootstrap (1030) hasta que el navbar migre a la escala
+       semántica base. No añadir capas nuevas fuera de estos tokens. */
+    --ds-z-shell-rail: 2050;
+    --ds-z-shell-overlay: 2100;
+    --ds-z-shell-drawer: 2200;
+    --ds-z-shell-toast: 2300;
+
     --ds-breakpoint-compact: 0px;
     --ds-breakpoint-mobile: 390px;
     --ds-breakpoint-tablet: 768px;

@@ -2473,7 +2473,8 @@
     }
   }
 
-  function showFeedback(type, message) {
+  function showFeedback(type, message, options) {
+    options = options || {};
     clearTimeout(saveBadgeTimer);
     $('#save-status').hide();
     $('#save-error').hide();
@@ -2491,7 +2492,7 @@
       }
     } else {
       if (window.AIA && window.AIA.Notice && window.AIA.Notice.error) {
-        window.AIA.Notice.error(message || 'Error al guardar');
+        window.AIA.Notice.error(message || 'Error al guardar', options.title);
       } else {
         var $error = $('#save-error');
         if ($error.length) {
@@ -4019,6 +4020,12 @@
       }
     }
 
+    // Estado toggle expuesto a tecnologías de asistencia
+    $('#piLegend .pdc-legend-item').each(function () {
+      var isActive = activeFilters.indexOf(String($(this).data('filter'))) > -1;
+      $(this).attr('aria-pressed', isActive ? 'true' : 'false');
+    });
+
     $('#mobileFilterCount').text(activeFilters.length);
   }
 
@@ -4218,7 +4225,7 @@
     }).fail(function () {
       showFeedback('error', 'Error al conectar con el servidor');
     }).always(function () {
-      $('#btn-refresh-listas').prop('disabled', false).text('🔄 Listas');
+      $('#btn-refresh-listas').prop('disabled', false).html('<i class="fas fa-sync" aria-hidden="true"></i> Listas');
     });
   }
 
@@ -4243,13 +4250,26 @@
 
       var selectedIdsForOpen = collectSelectedActivityIds();
       if (selectedIdsForOpen.length < 2) {
-        showFeedback('error', 'Seleccione al menos 2 actividades (marcadas o visibles) para abrir Restricciones Compartidas. Con una sola actividad no hay lote que comparar.');
+        showFeedback('error', 'Marque al menos 2 filas en la columna Lote, o use "Seleccionar visibles", antes de abrir Restricción Compartida. Con una sola actividad no hay lote que comparar.', { title: 'Selección insuficiente' });
         return;
       }
 
       resetSharedConstraintModal();
       $('#modal_shared_constraint').modal('show');
     });
+
+    // Escape cierra los modales PI: el backdrop estático los dejaba sin salida de teclado.
+    $(document)
+      .off('keydown.piModalEscape')
+      .on('keydown.piModalEscape', function (event) {
+        if (event.key !== 'Escape' && event.keyCode !== 27) {
+          return;
+        }
+        var $open = $('#modal_shared_constraint.show, #modal_leyenda_colores.show').last();
+        if ($open.length) {
+          $open.modal('hide');
+        }
+      });
 
     $('#piViewAllToggle')
       .off('change.piViewAll')

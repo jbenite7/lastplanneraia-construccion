@@ -358,9 +358,10 @@
   });
 
   function searchLabel(type) {
-    if (type === 'cnp') return 'Buscar en Causas de No Programación';
-    if (type === 'cnc') return 'Buscar en causas de no cumplimiento';
-    return 'Buscar en calificación de proveedores';
+    // Cortas a propósito: el input a 1180px trunca los rótulos largos.
+    if (type === 'cnp') return 'Buscar actividad o causa';
+    if (type === 'cnc') return 'Buscar actividad o causa';
+    return 'Buscar subcontratista';
   }
 
   function installSearch(table, type) {
