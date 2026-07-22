@@ -205,3 +205,211 @@
   verde; consumer-contract omite auth correctamente; `foundation.test.mjs` 28/28 con
   `sharedHeadConsumers` intacto en 15; golden y sha256 fijados; sin regresión visual, de consola
   ni de accesibilidad en el dry-run after. Migración aprobada.
+
+## Task 8 — Equivalencia del agregador, suite completa de gates (hallazgo inicial y fix)
+
+- Fecha: 2026-07-22
+- Stack: `lps-aia-sdd-epic-nobel` en `http://127.0.0.1:18081` (contenedores ya arriba,
+  `CI_RUN_ID=sdd-epic-nobel`).
+
+### Step 1 — Equivalencia byte-a-byte del agregador (PASS)
+
+- `git diff --stat 0c08755 -- public/css/aia-design-system.css`: **vacío** (el archivo estático
+  del agregador no cambió un solo byte respecto al commit de diseño del goal).
+- Hash normalizado (`curl .../runtime/css/aia-design-system.css | sed -E 's/\?v=[0-9]+/?v=X/g' |
+  shasum -a 256`): `241ea522685bb895858fc45c5280c98934235b111eb698e029ca160ced7761a4`.
+- Idéntico al hash `before` registrado en `## Baseline (Task 1)` de este mismo archivo.
+  **Equivalencia confirmada**: el agregador servido a las superficies aún no migradas es
+  byte-a-byte indistinguible del comportamiento previo a todo el goal.
+
+### Step 2 — Programa General intacto (PASS)
+
+- `git diff --stat 0c08755 -- views/programa-general views/programa-general-actualizar
+  public/css/programa-general.css public/css/design-system/adapters/programa-general-handsontable.css
+  docs/design-system/manifests/programa-general.json 'tests/browser/__screenshots__/programa-general*'`:
+  **vacío** en todas las rutas.
+- `node --test tests/design-system/programa-general-runtime-requests.test.mjs`: **2/2 PASS**.
+
+### Step 3 — Suite completa
+
+| Gate | Comando | Resultado |
+|---|---|---|
+| Biome | `npm run check:design-system:biome` | exit 1 — **1 error preexistente** (`public/js/modules/aia_ui/components.js` format, ya presente antes de este goal) + 37 warnings `noImportantStyles` (22 preexistentes en `core.css`/`navigation.css`, **15 nuevas y plan-mandated** en `public/css/design-system/entrypoints/theme-overrides.css`). Lista de errores no creció (sigue en 1). |
+| `test:design-system:static` (cadena npm) | `npm run test:design-system:static` | exit 1 — empieza con `Design system entrypoint partition: PASS`; 283/284 tests, único rojo `laboratory accessibility evidence distinguishes automation from human signoff` (doc-drift preexistente y tolerado, ver Task 4/6/7). La cadena corta ahí por diseño (short-circuit), sin llegar a `contracts.mjs`/`consumer-contract.mjs`/`audit.mjs`. |
+| `design-system-entrypoint-partition.mjs` (directo) | `node scripts/design-system-entrypoint-partition.mjs` | **PASS** |
+| `design-system-consumer-contract.mjs` (directo) | `node scripts/design-system-consumer-contract.mjs` | **PASS** (`1 manifiesto/s v1`) |
+| `design-system-contracts.mjs` (directo) | `node scripts/design-system-contracts.mjs` | **PASS** |
+| `design-system-audit.mjs` (directo) | `node scripts/design-system-audit.mjs` | **FAIL (exit 1) — no tolerado, no estaba en la lista de rojos esperados.** `unauthorized-important: 2271 > baseline 2263` (+8) y `duplicate-canonical-primitive: 150 > baseline 147` (este segundo, preexistente y ya documentado en memoria de sesión sobre `main` bb97934). |
+| PHPStan | `npm run test:design-system:phpstan` | **PASS** — `PHPStan baseline OK: 0 known, 0 new` |
+| Router | `node scripts/design-system-router.mjs` (sin args) | `sin cambios de UI relevantes` (worktree limpio) |
+| Router sobre diff completo del goal | `node scripts/design-system-router.mjs $(git diff --name-only 0c08755..HEAD | tr '\n' ' ')` | Declara `project-selector, auth` correctamente. También reporta como **"sin manifiesto"** los archivos de infraestructura compartida (`core.css`, los cinco `attach-*.css`, `theme-overrides.css`, `DesignSystemHeadComponent.php`) — esperable porque son partición/plumbing sin manifiesto propio, no vistas de módulo. Emite además su advertencia estándar: *"El cambio NO debe subir `docs/design-system/audit-baseline.json` (`design-system-audit.mjs` falla si la deuda visual aumenta)"* — advertencia genérica que, en este caso, señala exactamente el hallazgo de la fila anterior. |
+| Playwright | `E2E_BASE_URL=http://127.0.0.1:18081 E2E_PROJECT_KEYS=construction E2E_REQUIRE_ISOLATED_DB=1 E2E_ALLOW_DB_MUTATION=design-system-ci npx playwright test tests/browser/design-system-consumer-smoke.mjs tests/browser/project-selector-sidebar.spec.mjs --workers=1` | **5/5 PASS** |
+| PHP (docker) | `docker compose -p lps-aia-sdd-epic-nobel -f docker-compose.yml -f docker-compose.ci.yml exec -T app php tests/test_design_system_head_component.php` | **PASS** (`DesignSystemHeadComponent: PASS`) |
+
+### Hallazgo bloqueante — `design-system-audit.mjs`
+
+- Diagnóstico: `public/css/design-system/entrypoints/theme-overrides.css` (creado en Task 2,
+  commit `cfa35e0`) no existía en `0c08755`. Corriendo el mismo `design-system-audit.mjs` sobre
+  un worktree en `0c08755` da `unauthorized-important` total **2256** (bajo el baseline 2263,
+  gate en verde) con **0** ocurrencias en ese archivo (porque no existía). Sobre HEAD da total
+  **2271**, con exactamente **15** ocurrencias nuevas en
+  `public/css/design-system/entrypoints/theme-overrides.css` — el mismo número que las 15
+  advertencias `noImportantStyles` de Biome ya calificadas como "plan-mandated" en la instrucción
+  de esta tarea. Es decir: la partición del Task 2 introdujo 15 `!important` legítimos (cascada
+  de capas, ver nota de memoria de sesión "override `!important` requiere `@layer components`
+  top-level") en un archivo nuevo, sin que ninguna tarea anterior bajara/subiera
+  `docs/design-system/audit-baseline.json` para reflejarlo — el gate nunca se corrió de forma
+  directa en Tasks 2/4/5/6/7 porque la cadena `npm run test:design-system:static` corta antes de
+  llegar a él (falla primero en `laboratory-hardening`).
+- `duplicate-canonical-primitive: 150 > baseline 147` es el mismo rojo preexistente en `main`
+  (confirmado también presente en `0c08755`, sin cambios); no es atribuible a este goal ni a esta
+  tarea.
+- Esta tarea es verify-only sobre todo excepto este archivo: no se modificó
+  `docs/design-system/audit-baseline.json` ni ningún gate. Se registra el hallazgo para decisión
+  humana explícita (bump del baseline `unauthorized-important` de 2263 a 2271, análogo al
+  tratamiento ya dado a `duplicate-canonical-primitive`) antes de poder declarar el cierre.
+
+### Estado del hallazgo inicial
+
+Steps 1, 2 y el resto de Step 3 en verde; `design-system-audit.mjs` en rojo no tolerado
+(`unauthorized-important: 2271 > baseline 2263`). Reportado como BLOQUEADO al controlador antes
+de tocar ningún archivo fuera de este log. Ver `.superpowers/sdd/task-8-report.md` para el
+detalle completo de comandos y salidas del hallazgo.
+
+### Decisión del controlador y resolución (fix round 1)
+
+El controlador decidió: los 15 `!important` de `theme-overrides.css` son deuda **aprobada por el
+diseño** (copia verbatim de los bloques inline del agregador, exigida por el gate de identidad
+textual de la partición mientras coexistan agregador y partición). El canal nativo del repo para
+deuda autorizada exacta es `docs/design-system/exceptions.json` (mismo patrón que las excepciones
+ya existentes de `design-system-core` sobre `adapters/handsontable.css`) — **no**
+`docs/design-system/audit-baseline.json`, que debía permanecer intocado.
+
+- Se extrajeron las 15 violaciones exactas (`file` + `selector`, tal como las reporta el propio
+  audit) parseando `public/css/design-system/entrypoints/theme-overrides.css` con
+  `scripts/lib/css-structure-parser.mjs` (el mismo parser que usa `design-system-audit.mjs`) y
+  filtrando declaraciones con `important: true`. Confirmado: exactamente 15, mismas líneas que
+  las 15 advertencias de Biome sobre el mismo archivo.
+- Se añadieron 15 entradas a `docs/design-system/exceptions.json` → `exceptions[]`, una por
+  violación, con la forma exacta de las entradas `design-system-core` existentes: `module:
+  "design-system-core"`, `rule: "unauthorized-important"`, `file:
+  "public/css/design-system/entrypoints/theme-overrides.css"`, `selector` = el selector exacto
+  de cada violación, `owner: "design-system"`, `reason` = *"Copia verbatim plan-mandated de los
+  bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige
+  identidad textual mientras coexistan."*, `expiresAtVersion: "1.1.0"` (las excepciones expiran
+  cuando el agregador retire sus bloques inline duplicados, presumiblemente en la migración
+  visual completa posterior).
+- Verificación:
+  - `node scripts/design-system-audit.mjs`: `unauthorized-important` total ahora **2256** (por
+    debajo del baseline 2263 — el mismo valor que arrojaba `0c08755` antes de que existiera
+    `theme-overrides.css`). El hallazgo original queda resuelto.
+  - `git diff docs/design-system/audit-baseline.json`: **vacío** — baseline intocado, como exigió
+    el controlador.
+  - `node scripts/design-system-entrypoint-partition.mjs`: **PASS**.
+  - `node scripts/design-system-consumer-contract.mjs`: **PASS** (`1 manifiesto/s v1`).
+  - El script sigue en **exit 1**, pero ahora únicamente por
+    `duplicate-canonical-primitive: 150 > baseline 147` — el mismo rojo preexistente y ya
+    documentado (confirmado idéntico en `0c08755` durante el diagnóstico del hallazgo original y
+    en memoria de sesión sobre `main` bb97934 puro); no relacionado con este goal ni con esta
+    tarea, mismo tratamiento que el rojo tolerado de `laboratory-hardening`.
+
+### Observación del router (no bloqueante)
+
+`node scripts/design-system-router.mjs $(git diff --name-only 0c08755..HEAD | tr '\n' ' ')`
+declara correctamente `project-selector, auth` como superficies migradas, pero además reporta
+"sin manifiesto" ocho archivos de infraestructura compartida (`core.css`, los cinco
+`attach-*.css`, `theme-overrides.css`, `src/View/Components/DesignSystemHeadComponent.php`).
+Es comportamiento inherente del router (solo mapea `sources[]` declarados en manifiestos de
+*módulo*; la partición/plumbing compartida nunca tiene manifiesto propio por diseño) — nivel
+advertencia, no un rojo, y no atribuible a ninguna tarea de este goal.
+
+## Cierre (Task 8)
+
+### Equivalencia del agregador
+
+- `git diff --stat 0c08755 -- public/css/aia-design-system.css`: vacío.
+- Hash normalizado `/runtime/css/aia-design-system.css` **antes** (Task 1, baseline):
+  `241ea522685bb895858fc45c5280c98934235b111eb698e029ca160ced7761a4`.
+- Hash normalizado **después** (Task 8, stack `lps-aia-sdd-epic-nobel`):
+  `241ea522685bb895858fc45c5280c98934235b111eb698e029ca160ced7761a4`.
+- **Veredicto: IDÉNTICOS.** El agregador servido a las superficies aún no migradas es
+  byte-a-byte indistinguible del comportamiento previo a todo el goal.
+
+### Programa General intacto
+
+- `git diff --stat 0c08755` vacío en: `views/programa-general`,
+  `views/programa-general-actualizar`, `public/css/programa-general.css`,
+  `public/css/design-system/adapters/programa-general-handsontable.css`,
+  `docs/design-system/manifests/programa-general.json`,
+  `tests/browser/__screenshots__/programa-general*`.
+- `node --test tests/design-system/programa-general-runtime-requests.test.mjs`: 2/2 PASS.
+
+### Tabla de gates (estado final)
+
+| Gate | Resultado |
+|---|---|
+| `design-system-entrypoint-partition.mjs` | PASS |
+| `design-system-consumer-contract.mjs` | PASS (1 manifiesto/s v1) |
+| `design-system-contracts.mjs` | PASS (worktree limpio tras commit) |
+| `design-system-audit.mjs` | Rojo único tolerado: `duplicate-canonical-primitive: 150 > baseline 147` (preexistente en `main`/`0c08755`, ajeno a este goal). `unauthorized-important` resuelto vía 15 excepciones exactas en `exceptions.json`; baseline intocado. |
+| `npm run test:design-system:static` (cadena) | Empieza con `Design system entrypoint partition: PASS`; 283/284 tests, único rojo tolerado `laboratory accessibility evidence distinguishes automation from human signoff` (doc-drift preexistente, ver Task 4/6/7). |
+| Biome (`check:design-system:biome`) | exit 1 — 1 error preexistente (`components.js` format) + 37 warnings (22 preexistentes + 15 plan-mandated en `theme-overrides.css`, ahora también excepcionadas en el audit). |
+| PHPStan (`test:design-system:phpstan`) | PASS — `0 known, 0 new`. |
+| Router (`design-system-router.mjs` sobre el diff completo del goal) | Declara `project-selector, auth`; advierte (no bloqueante) sobre 8 archivos de infraestructura compartida sin manifiesto — ver observación arriba. |
+| Playwright (`design-system-consumer-smoke.mjs` + `project-selector-sidebar.spec.mjs`) | 5/5 PASS. |
+| PHP (`test_design_system_head_component.php`, docker) | PASS. |
+
+**Los dos únicos rojos tolerados de toda la suite son, explícitamente:** (1)
+`laboratory-hardening` doc-drift (`laboratory accessibility evidence distinguishes automation
+from human signoff`) y (2) `duplicate-canonical-primitive: 150 > baseline 147` en
+`design-system-audit.mjs` — ambos preexistentes en `main`/`0c08755`, confirmados sin cambios por
+este goal, y ya documentados en tareas/memoria anteriores a Task 8.
+
+### Efectos deliberados documentados
+
+- **Theme-bootstrap en auth**: las tres vistas de `auth` (`login`, `password-forgot`,
+  `password-reset`) ganan `theme-bootstrap.js` en `<head>` (antes del primer CSS) al migrar a
+  `renderForModule('auth')` — elimina el flash de tema; antes solo tenían `theme.js` al final del
+  `<body>` (Task 7).
+- **Scrollbar shift ~11px en auth**: al perder el lock de scroll de `handsontable-module` que
+  llegaba vía agregador (nunca necesario, sin grillas en login/forgot/reset), las tres vistas
+  muestran un corrimiento horizontal de ~11px de la tarjeta (reserva de scrollbar tras el
+  des-bloqueo de scroll) — sin cambios de layout, color ni tipografía (Task 7).
+- **Doble carga de SweetAlert2 en auth (deuda observada)**: `/login` carga tanto el
+  `sweetalert2.min.css`/`.js` de CDN (v11, legacy AdminLTE) como el `attach-sweetalert2.css` de
+  la partición — redundancia documentada y aceptada; se resuelve en la migración visual completa
+  de `auth` (goal posterior), no en este goal.
+
+### Superficies que permanecen en el agregador legacy (`/css/aia-design-system.css` completo)
+
+Las 15 `sharedHeadConsumers` de `docs/design-system/manifests/inventory.json` (sin migrar a
+`renderForModule`):
+
+```
+views/contratos/contratos.view.php
+views/control-cambios/controlCambios.view.php
+views/dashboard/escalamientos.php
+views/indicadores/indicadores.view.php
+views/listado-actividades/listadoActividades.view.php
+views/pdc/pdc.view.php
+views/profesionales/profesionales.view.php
+views/programa-general-actualizar/programaGeneralActualizar.view.php
+views/programa-general/programa_general.view.php
+views/programacion-intermedia/programacion_intermedia.view.php
+views/programacion-semanal/CIC.view.php
+views/programacion-semanal/CNC.view.php
+views/programacion-semanal/CNP.view.php
+views/programacion-semanal/programacion_semanal.view.php
+views/subcontratistas/subcontratistas.view.php
+```
+
+Más `views/bi/_layout.php`, que también consume el agregador fuera de la lista formal de
+`sharedHeadConsumers`.
+
+### Veredicto final
+
+Equivalencia byte-a-byte del agregador confirmada; Programa General intacto; project-selector y
+auth migrados y verificados en tareas previas; suite completa de gates en verde salvo los dos
+rojos preexistentes y tolerados documentados arriba; deuda visual del `!important` duplicado en
+la partición autorizada explícitamente vía excepciones exactas (no vía baseline). **Goal
+`segmentacion-entrypoint-css` cerrado.**
