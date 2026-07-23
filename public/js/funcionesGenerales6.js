@@ -115,6 +115,14 @@ var nueva_sem = function (db, carpeta, seccion) {
                 '/legacy/cambiar_pagina.php?seccion=programa_general&semana=' + semana
               );
           }
+        }).fail(function (xhr, status, error) {
+          $('#modal_spinner').modal('hide');
+          var msg = 'Error al crear la semana';
+          try {
+            var errJson = xhr.responseJSON || JSON.parse(xhr.responseText);
+            msg = errJson.mensaje || msg;
+          } catch (e) {}
+          aiaNoticeInvoke('error', msg, 'Error');
         }).always(function() {
           $('#btn_guardar_nueva_sem').prop('disabled', false);
         });

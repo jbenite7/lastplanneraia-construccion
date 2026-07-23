@@ -132,13 +132,16 @@ export const SEMANA_API = {
   list: { method: 'GET', url: '/api/semanas/list' },
   /**
    * Create new week via legacy endpoint.
-   * Payload: { opcion: 'nueva_sem', f_inicio_sem: 'YYYY-MM-DD' }
+   * Payload: { opcion: 'nueva_sem', f_inicio_sem: 'YYYY-MM-DD', _csrf_token: '<token>' }
    * URL: /legacy/funciones_generales/php/nueva_semana.php?db=%DB%
+   * `_csrf_token` is required (legacy_require_csrf, formKey `lps_week_admin`);
+   * see tests/browser/support/session.mjs#postFormJson, which resolves it
+   * automatically for this endpoint.
    */
   create: {
     method: 'POST',
     url: '/legacy/funciones_generales/php/nueva_semana.php?db=%DB%',
-    payload: { opcion: 'nueva_sem', f_inicio_sem: '%FECHA%' },
+    payload: { opcion: 'nueva_sem', f_inicio_sem: '%FECHA%', _csrf_token: '%CSRF%' },
   },
 };
 export const SEMANA_DB = {

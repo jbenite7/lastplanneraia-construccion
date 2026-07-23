@@ -289,7 +289,8 @@
 	<script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js?v=20260722shell2" charset="utf-8"></script>
     <?= \App\View\Components\DesignSystemHeadComponent::renderScript('/js/modules/aia_ui/sidebar_navigation.js') ?>
     <script type="text/javascript" src="/js/modules/bi-access.js" charset="utf-8"></script>
-    <script type="text/javascript" src="/js/funcionesGenerales6.js" charset="utf-8"></script>
+    <?php $piGeneralJsVersion = @filemtime(dirname(__DIR__, 2) . '/public/js/funcionesGenerales6.js') ?: 'pi1'; ?>
+    <script type="text/javascript" src="/js/funcionesGenerales6.js?v=<?php echo urlencode((string) $piGeneralJsVersion); ?>" charset="utf-8"></script>
 
     <script src="/public/vendor/handsontable/handsontable.full.min.js"></script>
     <script src="/public/vendor/handsontable/es-MX.js"></script>

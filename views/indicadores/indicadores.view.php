@@ -75,10 +75,12 @@
 	<!--Script con la funcion que carga los datos generales del archivo-->
 	<script>window.__PROJECT_AREA__ = <?php echo json_encode($_SESSION['area'] ?? 'Construccion'); ?>;</script>
 	<?= \App\View\Components\BiAccessComponent::renderBootConfig('indicadores') ?>
-	<script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js" charset="utf-8"></script>
+	<?php $indCargarDatosVersion = @filemtime(dirname(__DIR__, 2) . '/public/js/cargarDatosGeneralesPagina2.js') ?: 'ind1'; ?>
+	<script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js?v=<?php echo urlencode((string) $indCargarDatosVersion); ?>" charset="utf-8"></script>
 	<script type="text/javascript" src="/js/modules/bi-access.js" charset="utf-8"></script>
 	<!--Script con las funciones NUEVA SEMANA y ELIMINAR SEMANA-->
-	<script type="text/javascript" src="/js/funcionesGenerales6.js" charset="utf-8"></script>
+	<?php $indGeneralJsVersion = @filemtime(dirname(__DIR__, 2) . '/public/js/funcionesGenerales6.js') ?: 'ind1'; ?>
+	<script type="text/javascript" src="/js/funcionesGenerales6.js?v=<?php echo urlencode((string) $indGeneralJsVersion); ?>" charset="utf-8"></script>
 	<!-- Bloquear el click derecho-->
 	<!--    <script type='text/javascript'>document.oncontextmenu = function(){return false}</script>-->
 

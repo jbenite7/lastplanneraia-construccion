@@ -115,6 +115,40 @@ export async function postFormJson(page, url, body = {}, options = {}) {
       if (shouldAttachCsrf) {
         headers['X-CSRF-Token'] = csrfToken;
       }
+
+      // nueva_semana.php / eliminar_semana.php (legacy_require_csrf, formKey
+      // lps_week_admin) exigen _csrf_token en el body POST, no en un header.
+      // El shell (#shellWeekMenusData) y cargarDatosGeneralesPagina2.js
+      // (window.__lpsWeekCsrf) lo publican solo en algunas vistas; si la
+      // página actual no cargó ninguno de los dos (p. ej. justo tras login,
+      // antes de navegar a un módulo con el shell), se pide uno fresco al
+      // endpoint legacy que ya lo emite en cada respuesta.
+      const isWeekAdminUrl = apiUrl.includes('nueva_semana.php') || apiUrl.includes('eliminar_semana.php');
+      if (isWeekAdminUrl && !formData.has('_csrf_token')) {
+        let weekCsrfToken = '';
+        try {
+          weekCsrfToken = JSON.parse(document.getElementById('shellWeekMenusData')?.textContent || '{}').csrfToken || '';
+        } catch {
+          weekCsrfToken = '';
+        }
+        if (!weekCsrfToken) {
+          weekCsrfToken = window.__lpsWeekCsrf || '';
+        }
+        if (!weekCsrfToken) {
+          try {
+            const weekRes = await fetch('/legacy/funciones_generales/php/datosGeneralesPagina.php', {
+              method: 'POST',
+              credentials: 'same-origin',
+            });
+            const weekPayload = await weekRes.json().catch(() => ({}));
+            weekCsrfToken = weekPayload?.data?.weekCsrfToken || '';
+          } catch {
+            weekCsrfToken = '';
+          }
+        }
+        formData.set('_csrf_token', weekCsrfToken);
+      }
+
       const res = await fetch(apiUrl, {
         method: 'POST',
         credentials: 'same-origin',
