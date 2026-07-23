@@ -135,7 +135,7 @@ export default function ComparativoPresupuesto() {
         <>
           <div className="pdc-cmp-resumen" data-testid="pdc-cmp-resumen">
             <span>{moneda(data.resumen.costoA)} → {moneda(data.resumen.costoB)}</span>
-            <span className={claseDelta(data.resumen.delta, data.resumen.delta === 0 ? 'igual' : 'modificado')}>
+            <span className={claseDelta(data.resumen.delta, 'modificado')}>
               Δ {signo(data.resumen.delta)}
             </span>
             <span className="pdc-cmp-sobrecosto">Sobrecostos {moneda(data.resumen.sobrecostos)}</span>
@@ -152,7 +152,7 @@ export default function ComparativoPresupuesto() {
             {eje === 'actividades' ? (
               <AgGridReact<FilaComparativo> theme={pdcTheme} rowData={filasAct} columnDefs={colsAct} getRowId={(p) => p.data.key} onCellClicked={onCellClickedAct} />
             ) : (
-              <AgGridReact<InsumoDiff> theme={pdcTheme} rowData={data.insumos} columnDefs={colsIns} getRowId={(p) => p.data.descripcionNorm} />
+              <AgGridReact<InsumoDiff> theme={pdcTheme} rowData={data.insumos} columnDefs={colsIns} getRowId={(p) => `${p.data.descripcionNorm}|${p.data.unidad}`} />
             )}
           </div>
         </>

@@ -1,4 +1,4 @@
-import type { ActividadDiff } from './types'
+import type { ActividadDiff, EstadoDiff } from './types'
 
 export type FilaComparativo = ActividadDiff & {
   key: string
@@ -34,7 +34,7 @@ export function filasComparativoVisibles(actividades: ActividadDiff[], expandido
 }
 
 /** Clase CSS para colorear un delta: sobrecosto (sube) / ahorro (baja) / neutro. */
-export function claseDelta(deltaValor: number, estado: string): string {
+export function claseDelta(deltaValor: number, estado: EstadoDiff): string {
   if (estado === 'igual' || deltaValor === 0) return ''
   return deltaValor > 0 ? 'pdc-cmp-sobrecosto' : 'pdc-cmp-ahorro'
 }
