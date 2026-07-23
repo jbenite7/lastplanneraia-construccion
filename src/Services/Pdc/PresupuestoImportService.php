@@ -188,4 +188,63 @@ final class PresupuestoImportService
             'createdAt' => $r['created_at'],
         ], $rows);
     }
+
+    /** Árbol plano del presupuesto de una versión (default: la activa), o null si no existe. */
+    public function arbol(int $projectId, ?int $versionId = null): ?array
+    {
+        if ($versionId === null) {
+            $version = $this->db->query(
+                'SELECT id, version_label, activa FROM pdc_presupuesto_versiones WHERE project_id = ? AND activa = 1',
+                [$projectId],
+            )->fetch(\PDO::FETCH_ASSOC);
+        } else {
+            $version = $this->db->query(
+                'SELECT id, version_label, activa FROM pdc_presupuesto_versiones WHERE project_id = ? AND id = ?',
+                [$projectId, $versionId],
+            )->fetch(\PDO::FETCH_ASSOC);
+        }
+        if ($version === false) {
+            return null;
+        }
+        $vid = (int) $version['id'];
+
+        $items = $this->db->query(
+            'SELECT id, codigo, codigo_padre, nivel, tipo_fila, descripcion, unidad, cantidad
+             FROM pdc_presupuesto_items WHERE project_id = ? AND version_id = ? ORDER BY id ASC',
+            [$projectId, $vid],
+        )->fetchAll(\PDO::FETCH_ASSOC);
+
+        $insumos = $this->db->query(
+            'SELECT item_id, descripcion, tipo_insumo, unidad, cant_apu, rendimiento, cantidad_total, valor_unitario, valor_total
+             FROM pdc_presupuesto_apu_insumos WHERE project_id = ? AND version_id = ? ORDER BY id ASC',
+            [$projectId, $vid],
+        )->fetchAll(\PDO::FETCH_ASSOC);
+
+        $num = static fn ($v): ?float => $v === null ? null : (float) $v;
+
+        return [
+            'version' => ['id' => $vid, 'versionLabel' => $version['version_label'], 'activa' => (int) $version['activa']],
+            'items' => array_map(static fn (array $r): array => [
+                'id' => (int) $r['id'],
+                'codigo' => $r['codigo'],
+                'codigoPadre' => $r['codigo_padre'],
+                'nivel' => (int) $r['nivel'],
+                'tipoFila' => $r['tipo_fila'],
+                'descripcion' => $r['descripcion'],
+                'unidad' => $r['unidad'],
+                'cantidad' => $num($r['cantidad']),
+            ], $items),
+            'insumos' => array_map(static fn (array $r): array => [
+                'itemId' => (int) $r['item_id'],
+                'descripcion' => $r['descripcion'],
+                'tipoInsumo' => $r['tipo_insumo'],
+                'unidad' => $r['unidad'],
+                'cantApu' => $num($r['cant_apu']),
+                'rendimiento' => $num($r['rendimiento']),
+                'cantidadTotal' => $num($r['cantidad_total']),
+                'valorUnitario' => $num($r['valor_unitario']),
+                'valorTotal' => $num($r['valor_total']),
+            ], $insumos),
+        ];
+    }
 }
