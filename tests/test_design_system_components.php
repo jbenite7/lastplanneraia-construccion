@@ -87,6 +87,7 @@ dsComponentAssert(!str_contains($contextlessSidebar, 'data-sidebar-notification-
 dsComponentAssert(str_contains($contextlessSidebar, 'aia-theme-switch'), 'themeToggle account item exposes the global theme switch hook');
 dsComponentAssert(str_contains($contextlessSidebar, 'href="/logout"'), 'account item with href renders a real link');
 dsComponentAssert(str_contains($contextlessSidebar, '<span class="aia-sidebar__account-head" role="presentation">Usuario · Administrador</span>'), 'account panel leads with the identity head');
+dsComponentAssert(substr_count($contextlessSidebar, 'aia-sidebar__account-item') === 2, 'every account item carries the alignment class (buttons.css exemption)');
 dsComponentAssert(str_contains($contextlessSidebar, 'aria-current="page"'), 'contextless sidebar still marks the active destination');
 
 $header = DesignSystemComponent::pageHeader([

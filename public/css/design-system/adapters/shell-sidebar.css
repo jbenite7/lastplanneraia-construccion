@@ -172,6 +172,23 @@
     margin-block-start: var(--ds-space-2);
   }
 
+  /* Panel del menú de cuenta: el mismo reset global deja el panel, su
+     encabezado de identidad y las opciones sin insets — y "Modo linen"
+     (aia-theme-switch) trae un padding propio distinto. Un solo padding
+     uniforme alinea las tres opciones a la izquierda. */
+  body.aia-shell--sidebar .aia-sidebar__account [data-aia-menu-panel] {
+    padding: var(--ds-space-2);
+  }
+
+  body.aia-shell--sidebar .aia-sidebar__account-head {
+    padding: var(--ds-space-2) var(--ds-space-3) var(--ds-space-3);
+    margin-block-end: var(--ds-space-2);
+  }
+
+  body.aia-shell--sidebar .aia-sidebar__account [data-aia-menu-panel] [role="menuitem"] {
+    padding: var(--ds-space-2) var(--ds-space-3);
+  }
+
   @media (prefers-reduced-motion: reduce) {
     body.aia-shell--sidebar {
       transition: none;
@@ -235,6 +252,7 @@
   body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__footer {
     padding-block: var(--ds-space-2) !important;
   }
+
 
   body.aia-shell--sidebar .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__group ul {
     gap: 2px;

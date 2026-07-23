@@ -433,12 +433,16 @@ final class DesignSystemComponent
             $labelMarkup = $themeToggleClass !== ''
                 ? '<span class="aia-theme-switch-text">' . self::escape($itemLabel) . '</span>'
                 : self::escape($itemLabel);
+            // La clase por ítem exime a los <button> del padding !important
+            // global de buttons.css (lista :not()) y da un gancho de estilo
+            // uniforme para <a> y <button> del panel.
+            $itemClass = trim('aia-sidebar__account-item' . $themeToggleClass);
             if (array_key_exists('href', $item)) {
                 $href = self::href($item['href']);
-                $buttons[] = '<a href="' . self::escape($href) . '" role="menuitem"' . ($themeToggleClass !== '' ? ' class="' . trim($themeToggleClass) . '"' : '') . '>'
+                $buttons[] = '<a href="' . self::escape($href) . '" role="menuitem" class="' . $itemClass . '">'
                     . $icon . $labelMarkup . '</a>';
             } else {
-                $buttons[] = '<button type="button" role="menuitem"' . ($themeToggleClass !== '' ? ' class="' . trim($themeToggleClass) . '"' : '') . '>'
+                $buttons[] = '<button type="button" role="menuitem" class="' . $itemClass . '">'
                     . $icon . $labelMarkup . '</button>';
             }
         }
