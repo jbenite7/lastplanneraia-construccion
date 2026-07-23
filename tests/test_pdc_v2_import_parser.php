@@ -75,6 +75,21 @@ try {
     $assert(str_contains($e->getMessage(), 'Presupuesto'), 'Hoja faltante lanza RuntimeException con mensaje claro.');
 }
 
+// Guard de nivel: CANTIDAD numérica accidental en capítulo/subcapítulo NO los
+// convierte en actividad; solo la fila nivel >= 3 con CANTIDAD lo es.
+$cantidadEnCapitulo = $tmpDir . '/pdc_fixture_cantidad_en_capitulo.xlsx';
+pdcFixturePresupuestoCantidadEnCapitulo($cantidadEnCapitulo);
+$c = $parser->parse($cantidadEnCapitulo);
+$capitulo = array_values(array_filter($c['items'], fn ($i) => $i['codigo'] === '01'))[0];
+$subcapitulo = array_values(array_filter($c['items'], fn ($i) => $i['codigo'] === '01.01'))[0];
+$assert($capitulo['tipo_fila'] === 'capitulo', 'Capítulo con CANTIDAD accidental sigue siendo capitulo (no actividad).');
+$assert($subcapitulo['tipo_fila'] === 'subcapitulo', 'Subcapítulo con CANTIDAD accidental sigue siendo subcapitulo (no actividad).');
+$assert($c['resumen']['actividades'] === 1, 'Solo la fila nivel 4 cuenta como actividad.');
+$insumoY = $c['insumos'][0];
+$assert($insumoY['codigo_actividad'] === '01.01.01.01', 'El insumo se amarra a la actividad legítima (nivel 4), no al capítulo/subcapítulo.');
+$assert($c['valido'] === true, 'Fixture del guard de nivel parsea sin errores.');
+@unlink($cantidadEnCapitulo);
+
 foreach ([$valido, $invalido, $sinHoja] as $f) { @unlink($f); }
 echo $failures === [] ? "=== OK ===\n" : '=== ' . count($failures) . " FAILED ===\n";
 exit($failures === [] ? 0 : 1);

@@ -7,8 +7,9 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 /**
  * Parser de la hoja "Presupuesto" del Excel del software de presupuestos.
  * Reglas (spec A1): encabezados por nombre; fila con "Tipo Insumo" = insumo de la
- * actividad vigente; fila jerárquica con "ID APU" = actividad; validación
- * todo-o-nada con reporte por fila/columna (tope 200 errores).
+ * actividad vigente; fila jerárquica = actividad cuando tiene "ID APU" no vacío,
+ * o cuando tiene CANTIDAD numérica en nivel >= 3; validación todo-o-nada con
+ * reporte por fila/columna (tope 200 errores).
  */
 final class PresupuestoExcelParser
 {
@@ -134,9 +135,13 @@ final class PresupuestoExcelParser
             }
             $idApu = $cel('ID APU');
             $cantidad = $this->numero($cel('CANTIDAD'));
-            // Actividad: fila con ID APU (formato legado) o con CANTIDAD numérica
-            // (formato real de exportación AIA, donde ID APU siempre viene vacío).
-            $esActividad = $idApu !== '' || $cantidad !== null;
+            // Actividad: fila con ID APU no vacío (formato legado, señal fuerte a
+            // cualquier nivel) o con CANTIDAD numérica en nivel >= 3 (formato real
+            // de exportación AIA, donde ID APU siempre viene vacío). El guard de
+            // nivel evita que un capítulo o subcapítulo con un total numérico
+            // accidental en CANTIDAD se clasifique como actividad: en el
+            // presupuesto real de DAPORTO los niveles 1-2 nunca traen CANTIDAD.
+            $esActividad = $idApu !== '' || ($cantidad !== null && $nivel >= 3);
             $tipoFila = $esActividad ? 'actividad' : ($nivel === 1 ? 'capitulo' : ($nivel === 2 ? 'subcapitulo' : 'grupo'));
             if ($esActividad && $cantidad === null) {
                 if (!$err($fila, 'CANTIDAD', "La actividad {$codigo} no tiene cantidad numérica.")) break;

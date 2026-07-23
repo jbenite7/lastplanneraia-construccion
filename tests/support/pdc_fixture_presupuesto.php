@@ -53,6 +53,20 @@ function pdcFixturePresupuestoSinIdApu(string $path): void
     ]);
 }
 
+// Falso-positivo: capítulo (nivel 1) y subcapítulo (nivel 2) con un total
+// numérico accidental en CANTIDAD. El guard de nivel debe mantenerlos como
+// capitulo/subcapitulo; solo la fila nivel 4 (con CANTIDAD) es la actividad.
+function pdcFixturePresupuestoCantidadEnCapitulo(string $path): void
+{
+    pdcFixtureEscribir($path, [
+        ['01',          'CAPITULO CON TOTAL',    '',         '',   100, '', 102, '', '', null, null, null, null, '',    ''],
+        ['01.01',       'SUBCAPITULO CON TOTAL', '01',       '',   100, '', 102, '', '', null, null, null, null, '',    ''],
+        ['01.01.01',    'GRUPO',                 '01.01',    '',   null, '', 102, '', '', null, null, null, null, '',    ''],
+        ['01.01.01.01', 'ACTIVIDAD LEGITIMA',    '01.01.01', 'M2', 5,   '', 102, '', '', null, null, null, null, '',    ''],
+        ['',            'INSUMO Y',              '',         'UN', null, '', 102, '', '', 1.0,  2.0,  null, 100,  'MAT', ''],
+    ]);
+}
+
 function pdcFixturePresupuestoInvalido(string $path): void
 {
     pdcFixtureEscribir($path, [
