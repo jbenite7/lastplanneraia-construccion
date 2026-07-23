@@ -1,12 +1,17 @@
 import { useCallback, useEffect, useMemo, useReducer, useState } from 'react'
 import { AgGridReact } from 'ag-grid-react'
-import { ClientSideRowModelModule, ModuleRegistry, themeQuartz } from 'ag-grid-community'
+import { ClientSideRowModelModule, ModuleRegistry, ValidationModule, themeQuartz } from 'ag-grid-community'
 import type { CellClickedEvent, ColDef, RowDoubleClickedEvent } from 'ag-grid-community'
 import { PdcApiError, apiGet, apiPost } from '../lib/api'
 import { estadoInicialMaestro, maestroReducer } from '../lib/maestroState'
 import type { MaestroInsumo, ResumenVinculos, SugerenciaMaestro, VinculoInsumo } from '../lib/types'
 
-ModuleRegistry.registerModules([ClientSideRowModelModule])
+// Mismo criterio que ImportarPresupuesto.tsx/VisorPresupuesto.tsx: registro selectivo de módulos
+// (no AllCommunityModule, que arrastra ~1.3MB). ValidationModule solo en dev.
+ModuleRegistry.registerModules([
+  ClientSideRowModelModule,
+  ...(import.meta.env.DEV ? [ValidationModule] : []),
+])
 
 const pdcTheme = themeQuartz.withParams({
   backgroundColor: '#1c1c1e',
