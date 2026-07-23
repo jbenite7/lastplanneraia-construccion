@@ -167,7 +167,7 @@
     margin-inline-end: var(--ds-space-2);
   }
 
-  body.aia-shell--sidebar .shell-week-flyout__create {
+  body.aia-shell--sidebar .shell-week-flyout [role="menuitem"].shell-week-flyout__create {
     margin-inline: var(--ds-space-2);
     margin-block-start: var(--ds-space-2);
   }
@@ -478,14 +478,14 @@
     flex: 1 1 auto;
   }
 
-  body.aia-shell--sidebar .shell-week-flyout__create {
+  body.aia-shell--sidebar .shell-week-flyout [role="menuitem"].shell-week-flyout__create {
     justify-content: center;
     border: var(--ds-border-width) solid var(--ds-color-border-strong);
     background: color-mix(in srgb, var(--ds-active-action-primary) 16%, transparent);
     color: var(--ds-active-text-primary);
   }
 
-  body.aia-shell--sidebar .shell-week-flyout__create:hover {
+  body.aia-shell--sidebar .shell-week-flyout [role="menuitem"].shell-week-flyout__create:hover {
     background: color-mix(in srgb, var(--ds-active-action-primary) 30%, transparent);
   }
 

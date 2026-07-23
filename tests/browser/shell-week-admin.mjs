@@ -149,8 +149,12 @@ const lastError = await page.evaluate(() => window.__lastError);
 check('eliminar: error del backend se muestra (no "Semana undefined")', lastError === 'Fallo simulado', `lastError=${JSON.stringify(lastError)}`);
 
 // 5) Afordancia del botón "+ Nueva semana": borde visible (no solo texto de color)
-const createBorder = await page.evaluate(() => getComputedStyle(document.getElementById('shellWeekCreateOpen')).borderTopWidth);
-check('botón crear tiene afordancia de botón (borde visible)', createBorder !== '0px', `borderTopWidth=${createBorder}`);
+const createAfford = await page.evaluate(() => {
+  const cs = getComputedStyle(document.getElementById('shellWeekCreateOpen'));
+  const invisible = (v) => v === 'transparent' || v.startsWith('rgba(0, 0, 0, 0)');
+  return { border: cs.borderTopWidth, borderColor: cs.borderTopColor, bg: cs.backgroundColor, visible: cs.borderTopWidth !== '0px' && !invisible(cs.borderTopColor) && !invisible(cs.backgroundColor) };
+});
+check('botón crear tiene afordancia de botón (borde y fondo visibles)', createAfford.visible, JSON.stringify(createAfford));
 
 console.log(
   `\nauditoría de red — mutaciones colaterales interceptadas (PS bootstrap): `
