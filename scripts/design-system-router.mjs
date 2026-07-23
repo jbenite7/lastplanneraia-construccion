@@ -76,7 +76,7 @@ function filesFromHookEvent(stdinJson) {
   }
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   let files = process.argv.slice(2);
   if (files.length === 0) files = filesFromHookEvent(await readStdin());
   if (files.length === 0) {
