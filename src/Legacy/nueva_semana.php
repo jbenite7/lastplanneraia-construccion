@@ -28,6 +28,7 @@ $esAdmin = ($rolCanon === 'A');
 
 require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
 rbac_guard_require_permission('lps.semana.crear');
+legacy_require_csrf('lps_week_admin');
 
 if (!preg_match('/^[a-zA-Z0-9_]+$/', $db)) {
     die(json_encode(["respuesta" => "ERROR", "mensaje" => "Nombre de base de datos inválido."]));

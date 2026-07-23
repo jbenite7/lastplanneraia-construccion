@@ -3,6 +3,7 @@
 session_start();
 require_once __DIR__ . '/rbac_guard.php';
 rbac_guard_require_permission('lps.semana.eliminar');
+legacy_require_csrf('lps_week_admin');
 require_once __DIR__ . "/conexion.php";
 
 /** @var Database $dbInstance */
