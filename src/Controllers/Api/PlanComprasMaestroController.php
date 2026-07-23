@@ -31,7 +31,8 @@ class PlanComprasMaestroController
             return;
         }
         $busqueda = isset($_GET['busqueda']) ? (string) $_GET['busqueda'] : null;
-        $this->ok(['insumos' => $this->service->catalogo($busqueda)]);
+        $incluirInactivos = ($_GET['incluirInactivos'] ?? '') === '1';
+        $this->ok(['insumos' => $this->service->catalogo($busqueda, $incluirInactivos)]);
     }
 
     /** GET /plan-compras/api/maestro/vinculos[?versionId=N] */
@@ -139,6 +140,36 @@ class PlanComprasMaestroController
             return;
         }
         $this->ok(['id' => $r['id']]);
+    }
+
+    /** POST /plan-compras/api/maestro/desactivar {maestroId} */
+    public function desactivar(): void
+    {
+        if ($this->guardEscritura() === null) {
+            return;
+        }
+        $body = $this->body();
+        $r = $this->service->desactivar((int) ($body['maestroId'] ?? 0), $this->usuario());
+        if (!$r['ok']) {
+            $this->fail('MAESTRO_INVALIDO', 'El insumo no existe o ya está retirado.', 422);
+            return;
+        }
+        $this->ok(['revertidos' => $r['revertidos']]);
+    }
+
+    /** POST /plan-compras/api/maestro/reactivar {maestroId} */
+    public function reactivar(): void
+    {
+        if ($this->guardEscritura() === null) {
+            return;
+        }
+        $body = $this->body();
+        $r = $this->service->reactivar((int) ($body['maestroId'] ?? 0), $this->usuario());
+        if (!$r['ok']) {
+            $this->fail('MAESTRO_INVALIDO', 'El insumo no existe o ya está activo.', 422);
+            return;
+        }
+        $this->ok(['reactivado' => 1]);
     }
 
     // ── guards ──────────────────────────────────────────────

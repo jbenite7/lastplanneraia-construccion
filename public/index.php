@@ -196,6 +196,8 @@ $router->post('/plan-compras/api/maestro/vinculos/generar', [\App\Controllers\Ap
 $router->post('/plan-compras/api/maestro/vinculos/confirmar', [\App\Controllers\Api\PlanComprasMaestroController::class, 'confirmar']);
 $router->post('/plan-compras/api/maestro/crear-desde-pendientes', [\App\Controllers\Api\PlanComprasMaestroController::class, 'crearDesdePendientes']);
 $router->post('/plan-compras/api/maestro', [\App\Controllers\Api\PlanComprasMaestroController::class, 'crearManual']);
+$router->post('/plan-compras/api/maestro/desactivar', [\App\Controllers\Api\PlanComprasMaestroController::class, 'desactivar']);
+$router->post('/plan-compras/api/maestro/reactivar', [\App\Controllers\Api\PlanComprasMaestroController::class, 'reactivar']);
 // Api/PDC Plantillas
 $router->get('/api/pdc/plantillas', [\App\Controllers\Api\PdcPlantillaController::class, 'list']);
 $router->get('/api/pdc/plantillas/{id}', [\App\Controllers\Api\PdcPlantillaController::class, 'show']);

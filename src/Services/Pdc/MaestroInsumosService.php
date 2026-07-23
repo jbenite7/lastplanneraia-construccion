@@ -327,16 +327,16 @@ final class MaestroInsumosService
         return (int) ($e->errorInfo[1] ?? 0) === 1062;
     }
 
-    public function catalogo(?string $busqueda = null, int $limite = 200): array
+    public function catalogo(?string $busqueda = null, bool $incluirInactivos = false, int $limite = 200): array
     {
-        $where = 'activo = 1';
+        $where = $incluirInactivos ? '1 = 1' : 'activo = 1';
         $params = [];
         if ($busqueda !== null && trim($busqueda) !== '') {
             $where .= ' AND descripcion_norm LIKE ?';
             $params[] = '%' . addcslashes(self::normalizar($busqueda), '\\%_') . '%';
         }
         $rows = $this->db->query(
-            "SELECT id, descripcion, unidad, tipo_insumo, creado_por, created_at
+            "SELECT id, descripcion, unidad, tipo_insumo, activo, creado_por, created_at, updated_at
              FROM general_maestro_insumos WHERE {$where} ORDER BY descripcion ASC LIMIT " . (int) $limite,
             $params,
         )->fetchAll(\PDO::FETCH_ASSOC);
@@ -345,8 +345,50 @@ final class MaestroInsumosService
             'descripcion' => $r['descripcion'],
             'unidad' => $r['unidad'],
             'tipoInsumo' => $r['tipo_insumo'],
+            'activo' => (int) $r['activo'],
             'creadoPor' => $r['creado_por'],
             'createdAt' => $r['created_at'],
+            'updatedAt' => $r['updated_at'],
         ], $rows);
+    }
+
+    /** Retira un insumo del catálogo: activo=0, auditoría y reversión global del auto-match. */
+    public function desactivar(int $maestroId, string $usuario): array
+    {
+        $activo = $this->db->query('SELECT activo FROM general_maestro_insumos WHERE id = ?', [$maestroId])->fetchColumn();
+        if ($activo === false || (int) $activo === 0) {
+            return ['ok' => false, 'code' => 'MAESTRO_INVALIDO'];
+        }
+        $this->db->beginTransaction();
+        try {
+            $this->db->query(
+                'UPDATE general_maestro_insumos SET activo = 0, actualizado_por = ?, updated_at = NOW() WHERE id = ?',
+                [$usuario, $maestroId],
+            );
+            // Reversión global del auto-match: los vínculos confirmados (decisión humana) se conservan.
+            $stmt = $this->db->query(
+                "UPDATE pdc_insumo_vinculos SET maestro_id = NULL, estado = 'pendiente' WHERE maestro_id = ? AND estado = 'auto'",
+                [$maestroId],
+            );
+            $revertidos = $stmt->rowCount();
+            $this->db->commit();
+        } catch (\Throwable $t) {
+            $this->db->rollBack();
+            throw $t;
+        }
+        return ['ok' => true, 'revertidos' => $revertidos];
+    }
+
+    public function reactivar(int $maestroId, string $usuario): array
+    {
+        $activo = $this->db->query('SELECT activo FROM general_maestro_insumos WHERE id = ?', [$maestroId])->fetchColumn();
+        if ($activo === false || (int) $activo === 1) {
+            return ['ok' => false, 'code' => 'MAESTRO_INVALIDO'];
+        }
+        $this->db->query(
+            'UPDATE general_maestro_insumos SET activo = 1, actualizado_por = ?, updated_at = NOW() WHERE id = ?',
+            [$usuario, $maestroId],
+        );
+        return ['ok' => true];
     }
 }

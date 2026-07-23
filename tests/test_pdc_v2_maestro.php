@@ -177,6 +177,43 @@ $db->query(
 $sugL = $maestro->sugerencias(PDC_M_PROJECT_A, (int) $db->lastInsertId());
 $assert($sugL !== [] && $sugL[0]['descripcion'] === 'Viga C_10', 'Sugerencias: tokens con _ puntúan solo el literal.');
 
+echo "=== PDC v2: maestro — follow-ups A2 (retiro y reactivación) ===\n";
+
+// Estado al llegar aquí: TEJA DE ZINC tiene un vínculo auto (re-import) y uno
+// confirmado (TEJA ZINC CALIBRE 34, vinculado a mano más arriba).
+$midTeja = (int) $db->query("SELECT id FROM general_maestro_insumos WHERE descripcion_norm = 'TEJA DE ZINC' AND unidad = 'M2'")->fetchColumn();
+$rd = $maestro->desactivar($midTeja, PDC_M_MARCA);
+$assert($rd['ok'] === true && $rd['revertidos'] === 1, 'Retiro revierte exactamente el vínculo auto.');
+$auto = $db->query("SELECT estado, maestro_id FROM pdc_insumo_vinculos WHERE project_id = ? AND version_id = ? AND descripcion_norm = 'TEJA DE ZINC'", [PDC_M_PROJECT_A, $g['versionId']])->fetch(\PDO::FETCH_ASSOC);
+$assert($auto['estado'] === 'pendiente' && $auto['maestro_id'] === null, 'Vínculo auto vuelve a pendiente sin maestro.');
+$conf = $db->query("SELECT estado, maestro_id FROM pdc_insumo_vinculos WHERE project_id = ? AND version_id = ? AND descripcion_norm = 'TEJA ZINC CALIBRE 34'", [PDC_M_PROJECT_A, $g['versionId']])->fetch(\PDO::FETCH_ASSOC);
+$assert($conf['estado'] === 'confirmado' && (int) $conf['maestro_id'] === $midTeja, 'Vínculo confirmado (decisión humana) se conserva.');
+
+// Auditoría y visibilidad en catálogo.
+$aud = $db->query('SELECT activo, actualizado_por, updated_at FROM general_maestro_insumos WHERE id = ?', [$midTeja])->fetch(\PDO::FETCH_ASSOC);
+$assert((int) $aud['activo'] === 0 && $aud['actualizado_por'] === PDC_M_MARCA && $aud['updated_at'] !== null, 'Retiro audita actualizado_por y updated_at.');
+$assert(array_column($maestro->catalogo('teja de zinc'), 'id') === [], 'Catálogo por defecto oculta retirados.');
+$idsInactivos = array_column($maestro->catalogo('teja de zinc', true), 'id');
+$assert(in_array($midTeja, $idsInactivos, true), 'Catálogo con incluirInactivos muestra retirados.');
+
+// Guardas.
+$assert($maestro->desactivar($midTeja, PDC_M_MARCA)['code'] === 'MAESTRO_INVALIDO', 'Retirar dos veces se rechaza.');
+$assert($maestro->desactivar(999999999, PDC_M_MARCA)['code'] === 'MAESTRO_INVALIDO', 'Retirar inexistente se rechaza.');
+
+// Reactivar + regenerar repone el auto-match.
+$assert($maestro->reactivar($midTeja, PDC_M_MARCA)['ok'] === true, 'Reactivación OK.');
+$assert($maestro->reactivar($midTeja, PDC_M_MARCA)['code'] === 'MAESTRO_INVALIDO', 'Reactivar un activo se rechaza.');
+$maestro->generarVinculos(PDC_M_PROJECT_A);
+$autoR = $db->query("SELECT estado FROM pdc_insumo_vinculos WHERE project_id = ? AND version_id = ? AND descripcion_norm = 'TEJA DE ZINC'", [PDC_M_PROJECT_A, $g['versionId']])->fetchColumn();
+$assert($autoR === 'auto', 'Tras reactivar, regenerar repone el auto-match.');
+
+// crearDesdePendientes reactiva un maestro retirado en vez de duplicar o fallar.
+$maestro->desactivar($midTeja, PDC_M_MARCA);
+$vidTeja = (int) $db->query("SELECT id FROM pdc_insumo_vinculos WHERE project_id = ? AND version_id = ? AND descripcion_norm = 'TEJA DE ZINC'", [PDC_M_PROJECT_A, $g['versionId']])->fetchColumn();
+$rReact = $maestro->crearDesdePendientes(PDC_M_PROJECT_A, [$vidTeja], PDC_M_MARCA);
+$actTeja = (int) $db->query('SELECT activo FROM general_maestro_insumos WHERE id = ?', [$midTeja])->fetchColumn();
+$assert($rReact['creados'] === 0 && $rReact['vinculados'] === 1 && $actTeja === 1, 'El masivo reactiva un maestro retirado y vincula.');
+
 foreach ([$tmpB, $tmp2] as $f) { @unlink($f); }
 
 @unlink($tmp);
