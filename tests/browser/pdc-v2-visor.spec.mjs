@@ -53,7 +53,7 @@ test('visor: árbol expandible del presupuesto activo con insumos y totales', as
     // Cambio de versión: seleccionar una histórica re-renderiza el árbol.
     const opciones = await selectorVersion.locator('option').count();
     expect(opciones).toBeGreaterThanOrEqual(2);
-    await selectorVersion.selectOption({ index: 1 }); // una versión no activa
+    await selectorVersion.selectOption({ index: 1 }); // selección explícita por versionId (la más reciente; el camino histórico lo cubre el test PHP)
     await expect(arbol.locator('.ag-cell', { hasText: 'PRELIMINARES' }).first()).toBeVisible({ timeout: 10000 });
 
     expect(await page.locator('body').innerText()).not.toContain('Fatal error');
