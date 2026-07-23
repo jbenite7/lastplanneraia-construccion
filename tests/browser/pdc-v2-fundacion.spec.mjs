@@ -17,6 +17,23 @@ test('la isla React del PDC v2 monta con contexto real del proyecto', async ({ p
     expect(bootstrap?.projectId).toBe(project.projectId);
     expect(String(bootstrap?.csrfToken || '')).toHaveLength(64);
 
+    // La ruta HTTP real del endpoint responde envelope ok con el proyecto activo.
+    const ctx = await getJson(page, '/plan-compras/api/contexto');
+    expect(ctx.status, 'contexto debe responder 200').toBe(200);
+    expect(ctx.payload?.ok).toBe(true);
+    expect(ctx.payload?.data?.projectId).toBe(project.projectId);
+
+    // Desde la Fase A1, `/` redirige a Ensamble → Importar; el contexto/grid
+    // de fundación ahora vive en Ensamble → Maestro. Navegamos con un cambio
+    // de hash (HashRouter) en vez de page.goto, cuyo hashchange same-document
+    // no siempre re-dispara los checks de Playwright.
+    await page.evaluate(() => {
+      window.location.hash = '#/ensamble/maestro';
+    });
+
+    // El nav de submódulos sigue presente en el nuevo layout.
+    await expect(page.locator('.pdc-nav')).toContainText('Ensamble');
+
     // La SPA montó y muestra el contexto.
     await expect(page.locator('[data-testid="pdc-contexto"]')).toContainText(project.name, { timeout: 15000 });
 
@@ -24,12 +41,6 @@ test('la isla React del PDC v2 monta con contexto real del proyecto', async ({ p
     await expect(
       page.locator('.ag-cell').filter({ hasText: `${project.projectId} — ${project.name}` }),
     ).toBeVisible({ timeout: 15000 });
-
-    // La ruta HTTP real del endpoint responde envelope ok con el proyecto activo.
-    const ctx = await getJson(page, '/plan-compras/api/contexto');
-    expect(ctx.status, 'contexto debe responder 200').toBe(200);
-    expect(ctx.payload?.ok).toBe(true);
-    expect(ctx.payload?.data?.projectId).toBe(project.projectId);
 
     expect(await page.locator('body').innerText()).not.toContain('Fatal error');
   } finally {

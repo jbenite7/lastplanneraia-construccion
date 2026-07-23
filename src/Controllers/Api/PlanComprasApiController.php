@@ -12,6 +12,8 @@ use App\Security\RbacService;
  */
 class PlanComprasApiController
 {
+    use PlanComprasJsonRespuestas;
+
     private $db;
 
     public function __construct()
@@ -45,25 +47,5 @@ class PlanComprasApiController
     private function can(string $permissionKey): bool
     {
         return (new RbacService($this->db))->can($permissionKey);
-    }
-
-    private function ok(array $data): void
-    {
-        if (!headers_sent()) {
-            header('Content-Type: application/json; charset=utf-8');
-        }
-        echo json_encode(['ok' => true, 'data' => $data], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
-    }
-
-    private function fail(string $code, string $message, int $status): void
-    {
-        if (!headers_sent()) {
-            http_response_code($status);
-            header('Content-Type: application/json; charset=utf-8');
-        }
-        echo json_encode(
-            ['ok' => false, 'error' => ['code' => $code, 'message' => $message]],
-            JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE
-        );
     }
 }
