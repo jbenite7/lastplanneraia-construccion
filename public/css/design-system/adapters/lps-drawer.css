@@ -121,10 +121,18 @@
     font-size: 0.72rem;
   }
 
+  /* Texto primario + subrayado como affordance: action-primary queda a 4.51:1
+     sobre la superficie de la tarjeta en dark (borde AA exacto) y Axe lo marca
+     con comentarios renderizados; el golden por defecto no monta este enlace. */
   .lps-reply-trigger {
-    color: var(--ds-active-action-primary);
+    color: var(--ds-active-text-primary);
     font-weight: 700;
-    text-decoration: none;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  .lps-reply-trigger:hover {
+    color: var(--ds-active-text-secondary);
   }
 
   .lps-replies-container {
@@ -147,8 +155,11 @@
     line-height: 1.35;
   }
 
+  /* action-primary cae a 3.96:1 sobre la reply raised y 4.19:1 sobre el tint
+     crítico; el par hover (green-light en dark, brand oscuro en linen) da
+     6.15–11.5:1 en todos los fondos de la bitácora. */
   .lps-mention-badge {
-    color: var(--ds-active-action-primary);
+    color: var(--ds-active-action-primary-hover);
     font-weight: 700;
   }
 
