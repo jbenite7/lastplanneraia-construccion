@@ -79,3 +79,24 @@ if (!function_exists('rbac_guard_require_permission')) {
         exit;
     }
 }
+
+if (!function_exists('legacy_require_csrf')) {
+    function legacy_require_csrf(string $formKey, array $options = []): void
+    {
+        rbac_guard_bootstrap();
+
+        $token = $_POST['_csrf_token'] ?? null;
+        if (is_string($token) && \App\Security\CsrfTokenManager::validate($token, $formKey)) {
+            return;
+        }
+
+        http_response_code((int) ($options['http_code'] ?? 403));
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode([
+            'respuesta' => 'ERROR',
+            'success' => false,
+            'mensaje' => $options['message'] ?? 'Token de seguridad inválido. Recargue la página e intente de nuevo.',
+        ], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+}
