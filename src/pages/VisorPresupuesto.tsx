@@ -1,13 +1,18 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AgGridReact } from 'ag-grid-react'
-import { ClientSideRowModelModule, ModuleRegistry, themeQuartz } from 'ag-grid-community'
+import { ClientSideRowModelModule, ModuleRegistry, ValidationModule, themeQuartz } from 'ag-grid-community'
 import type { CellClickedEvent, ColDef } from 'ag-grid-community'
 import { PdcApiError, apiGet } from '../lib/api'
 import { filasVisibles } from '../lib/presupuestoTree'
 import type { FilaVisor } from '../lib/presupuestoTree'
 import type { ArbolPresupuesto, VersionPresupuesto } from '../lib/types'
 
-ModuleRegistry.registerModules([ClientSideRowModelModule])
+// Mismo criterio que ImportarPresupuesto.tsx: registro selectivo de módulos
+// (no AllCommunityModule, que arrastra ~1.3MB). ValidationModule solo en dev.
+ModuleRegistry.registerModules([
+  ClientSideRowModelModule,
+  ...(import.meta.env.DEV ? [ValidationModule] : []),
+])
 
 const pdcTheme = themeQuartz.withParams({
   backgroundColor: '#1c1c1e',
@@ -35,6 +40,7 @@ export default function VisorPresupuesto() {
   useEffect(() => {
     const q = versionId != null ? `?versionId=${versionId}` : ''
     setError(null)
+    setSinPresupuesto(false)
     apiGet<ArbolPresupuesto>(`/plan-compras/api/presupuesto/arbol${q}`)
       .then((a) => {
         setArbol(a)
@@ -42,8 +48,13 @@ export default function VisorPresupuesto() {
         setExpandidos(new Set())
       })
       .catch((e) => {
-        if (e instanceof PdcApiError && e.code === 'NO_VERSION') setSinPresupuesto(true)
-        else setError(e instanceof Error ? e.message : String(e))
+        if (e instanceof PdcApiError && e.code === 'NO_VERSION') {
+          setSinPresupuesto(true)
+          setArbol(null)
+        } else {
+          setError(e instanceof Error ? e.message : String(e))
+          setArbol(null)
+        }
       })
   }, [versionId])
 
