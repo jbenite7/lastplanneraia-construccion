@@ -73,21 +73,21 @@ $shellInformacion = array_values(array_filter([
         : null,
     ['id' => 'semanas-proyecto', 'label' => 'Semanas del Proyecto', 'icon' => 'calendar', 'action' => true],
     $shellItem('profesionales', 'Profesionales', '/profesionales', 'user'),
-    $shellItem('subcontratistas', 'Subcontratistas', '/subcontratistas', 'contract'),
-    $shellItem('indicadores', 'Indicadores LPS', '/indicadores', 'overview'),
-    $shellItem('control-cambios', 'Control de Cambios', '/control-cambios', 'integration'),
+    $shellItem('subcontratistas', 'Subcontratistas', '/subcontratistas', 'company'),
+    $shellItem('indicadores', 'Indicadores LPS', '/indicadores', 'gauge'),
+    $shellItem('control-cambios', 'Control de Cambios', '/control-cambios', 'change'),
 ]));
 
 $shellObra = array_values(array_filter([
     $shellItem('programa-general', 'Programa General', '/programa-general', 'program'),
-    $shellItem('programacion-intermedia', 'Programación Intermedia', '/programacion-intermedia', 'tasks'),
-    $shellItem('programacion-semanal', 'Programación Semanal', '/programacion-semanal', 'calendar'),
+    $shellItem('programacion-intermedia', 'Programación Intermedia', '/programacion-intermedia', 'unlock'),
+    $shellItem('programacion-semanal', 'Programación Semanal', '/programacion-semanal', 'week-commit'),
     $shellItem('actualizar-cronograma', 'Actualizar Cronograma', '/programa-general-actualizar', 'sync'),
 ]));
 
 $shellCompras = array_values(array_filter([
-    $shellItem('listado-actividades', 'Familias de Actividades', '/listado-actividades', 'list'),
-    $shellItem('contratos', 'Paquetes de Contratación', '/contratos', 'package'),
+    $shellItem('listado-actividades', 'Familias de Actividades', '/listado-actividades', 'hierarchy'),
+    $shellItem('contratos', 'Paquetes de Contratación', '/contratos', 'contract'),
     $shellItem('plan-compras', 'Plan de Compras', '/pdc', 'clipboard'),
 ]));
 

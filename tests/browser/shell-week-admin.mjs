@@ -83,6 +83,20 @@ const s = await page.evaluate(() => {
 check('ítem Semanas es botón con flyout', s.isButton && s.hasPanel, JSON.stringify(s));
 check('flyout lista semanas y acciones', s.weeks > 0 && s.createBtn && s.trash === 1, `weeks=${s.weeks} trash=${s.trash}`);
 
+// Iconografía del rail: cada módulo con glifo único y no vacío (sin duplicados).
+const icons = await page.evaluate(() => {
+  const items = Array.from(document.querySelectorAll('[data-shell-pattern="sidebar"] .aia-sidebar__link[data-sidebar-icon]'));
+  return items.map((a) => ({
+    icon: a.getAttribute('data-sidebar-icon'),
+    glyphs: a.querySelectorAll('.aia-icon__glyph path, .aia-icon__glyph rect, .aia-icon__glyph circle').length,
+  }));
+});
+const names = icons.map((i) => i.icon);
+const dupes = names.filter((v, i) => names.indexOf(v) !== i);
+const empty = icons.filter((i) => i.glyphs === 0).map((i) => i.icon);
+check('iconos del rail únicos (sin duplicados)', dupes.length === 0, dupes.length ? `duplicados: ${[...new Set(dupes)].join(', ')}` : `${names.length} únicos`);
+check('todos los iconos renderizan glifo', empty.length === 0, empty.length ? `vacíos: ${empty.join(', ')}` : 'ninguno vacío');
+
 // 2) Diálogo crear: fecha sugerida + preview viva + flujo interceptado
 await page.evaluate(() => document.getElementById('shellWeekCreateOpen').click());
 await page.waitForTimeout(200);
