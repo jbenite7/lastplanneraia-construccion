@@ -123,6 +123,8 @@ try {
 
     $_SESSION["Fecha_Inicio_SemYMD"] = $arreglo["Fecha_Inicio_SemYMD"];
 
+    $arreglo["weekCsrfToken"] = \App\Security\CsrfTokenManager::generate('lps_week_admin');
+
     header('Content-Type: application/json');
     echo json_encode(["data" => $arreglo], JSON_UNESCAPED_UNICODE);
 
