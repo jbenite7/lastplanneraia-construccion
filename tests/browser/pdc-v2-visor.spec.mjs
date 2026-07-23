@@ -10,7 +10,13 @@ test('visor: árbol expandible del presupuesto activo con insumos y totales', as
 
   await loginAndSelectProject(page, project);
   try {
-    // Garantizar una versión activa: importar el fixture (idempotente para el visor).
+    // Garantizar DOS versiones (una activa + una histórica): importar el fixture dos veces.
+    await page.goto('/plan-compras', { waitUntil: 'domcontentloaded' });
+    await page.locator('[data-testid="pdc-import-file"]').setInputFiles(FIXTURE);
+    await expect(page.locator('[data-testid="pdc-import-resumen"]')).toContainText('PI_TEST_1', { timeout: 20000 });
+    await page.locator('[data-testid="pdc-import-confirmar"]').click();
+    await expect(page.locator('.pdc-exito')).toBeVisible({ timeout: 20000 });
+
     await page.goto('/plan-compras', { waitUntil: 'domcontentloaded' });
     await page.locator('[data-testid="pdc-import-file"]').setInputFiles(FIXTURE);
     await expect(page.locator('[data-testid="pdc-import-resumen"]')).toContainText('PI_TEST_1', { timeout: 20000 });
@@ -35,8 +41,20 @@ test('visor: árbol expandible del presupuesto activo con insumos y totales', as
     await expect(arbol.locator('.ag-cell', { hasText: 'TEJA DE ZINC' }).first()).toBeVisible();
     await expect(arbol.locator('.ag-cell', { hasText: '$ 540.000' }).first()).toBeVisible();
 
+    // Colapsar el capítulo: toda la rama desaparece.
+    await cap.click();
+    await expect(arbol.locator('.ag-cell', { hasText: 'CAMPAMENTO 18M2' })).toHaveCount(0);
+    await expect(arbol.locator('.ag-cell', { hasText: 'TEJA DE ZINC' })).toHaveCount(0);
+
     // Selector de versión presente.
-    await expect(page.locator('[data-testid="pdc-visor-version"]')).toBeVisible();
+    const selectorVersion = page.locator('[data-testid="pdc-visor-version"]');
+    await expect(selectorVersion).toBeVisible();
+
+    // Cambio de versión: seleccionar una histórica re-renderiza el árbol.
+    const opciones = await selectorVersion.locator('option').count();
+    expect(opciones).toBeGreaterThanOrEqual(2);
+    await selectorVersion.selectOption({ index: 1 }); // una versión no activa
+    await expect(arbol.locator('.ag-cell', { hasText: 'PRELIMINARES' }).first()).toBeVisible({ timeout: 10000 });
 
     expect(await page.locator('body').innerText()).not.toContain('Fatal error');
   } finally {
