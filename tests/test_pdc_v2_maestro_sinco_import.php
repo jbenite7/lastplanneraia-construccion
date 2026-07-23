@@ -73,7 +73,22 @@ $assert(($c4['enriquecidos'] ?? 0) >= 1, 'Fila huérfana por norma+unidad se enr
 $enr = $db->query("SELECT codigo_sinco FROM general_maestro_insumos WHERE descripcion_norm = 'PISO CERAMICO 30X30' AND unidad = 'M2'")->fetchColumn();
 $assert($enr === 'TEST-101', 'La fila huérfana quedó con codigo_sinco = TEST-101.');
 
-foreach ([$tmp, $tmp2, $tmp3] as $f) { @unlink($f); }
+// Conflicto: otra fila (con OTRO codigo_sinco) ya ocupa la norma+unidad de TEST-102.
+$db->query("DELETE FROM general_maestro_insumos WHERE codigo_sinco IN ('TEST-102', 'TEST-901')");
+$db->query(
+    "INSERT INTO general_maestro_insumos (codigo_sinco, descripcion, descripcion_norm, unidad, tipo_insumo, activo, creado_por, created_at)
+     VALUES ('TEST-901', 'Piso porcelanato 60x60', 'PISO PORCELANATO 60X60', 'M2', 'MAT-ACABADOS', 1, 'test-a25', NOW())",
+);
+$tmp4 = sys_get_temp_dir() . '/sinco_import4.xlsx';
+pdcFixtureMaestroSinco($tmp4);
+$p4 = $svc->preview($tmp4, 'maestro.xlsx', 'test-a25');
+$c5 = $svc->confirmar($p4['importToken']);
+$assert(count($c5['conflictos']) === 1, 'Conflicto reportado: TEST-102 choca con TEST-901.');
+$assert($c5['conflictos'][0]['codigoSinco'] === 'TEST-102' && $c5['conflictos'][0]['chocaCon'] === 'TEST-901', 'Detalle del conflicto correcto.');
+$sigue = $db->query("SELECT codigo_sinco FROM general_maestro_insumos WHERE descripcion_norm = 'PISO PORCELANATO 60X60' AND unidad = 'M2'")->fetchColumn();
+$assert($sigue === 'TEST-901', 'La fila existente NO fue pisada.');
+
+foreach ([$tmp, $tmp2, $tmp3, $tmp4] as $f) { @unlink($f); }
 $limpiar();
 echo $failures === [] ? "=== OK ===\n" : '=== ' . count($failures) . " FAILED ===\n";
 exit($failures === [] ? 0 : 1);
