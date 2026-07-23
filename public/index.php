@@ -187,6 +187,15 @@ $router->post('/plan-compras/api/presupuesto/preview', [\App\Controllers\Api\Pla
 $router->post('/plan-compras/api/presupuesto/confirmar', [\App\Controllers\Api\PlanComprasImportController::class, 'confirmar']);
 $router->get('/plan-compras/api/presupuesto/versiones', [\App\Controllers\Api\PlanComprasImportController::class, 'versiones']);
 $router->get('/plan-compras/api/presupuesto/arbol', [\App\Controllers\Api\PlanComprasImportController::class, 'arbol']);
+
+// Api/Plan de Compras v2 — maestro de insumos (A2)
+$router->get('/plan-compras/api/maestro', [\App\Controllers\Api\PlanComprasMaestroController::class, 'catalogo']);
+$router->get('/plan-compras/api/maestro/vinculos', [\App\Controllers\Api\PlanComprasMaestroController::class, 'vinculos']);
+$router->get('/plan-compras/api/maestro/sugerencias', [\App\Controllers\Api\PlanComprasMaestroController::class, 'sugerencias']);
+$router->post('/plan-compras/api/maestro/vinculos/generar', [\App\Controllers\Api\PlanComprasMaestroController::class, 'generar']);
+$router->post('/plan-compras/api/maestro/vinculos/confirmar', [\App\Controllers\Api\PlanComprasMaestroController::class, 'confirmar']);
+$router->post('/plan-compras/api/maestro/crear-desde-pendientes', [\App\Controllers\Api\PlanComprasMaestroController::class, 'crearDesdePendientes']);
+$router->post('/plan-compras/api/maestro', [\App\Controllers\Api\PlanComprasMaestroController::class, 'crearManual']);
 // Api/PDC Plantillas
 $router->get('/api/pdc/plantillas', [\App\Controllers\Api\PdcPlantillaController::class, 'list']);
 $router->get('/api/pdc/plantillas/{id}', [\App\Controllers\Api\PdcPlantillaController::class, 'show']);
