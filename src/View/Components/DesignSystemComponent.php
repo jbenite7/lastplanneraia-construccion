@@ -333,16 +333,6 @@ final class DesignSystemComponent
                 if (!in_array($itemState, ['default', 'disabled'], true)) {
                     throw new InvalidArgumentException('invalid sidebar item state');
                 }
-                $isAction = ($item['action'] ?? false) === true;
-                if ($isAction) {
-                    $itemsMarkup[] = '<li><button type="button" class="aia-sidebar__link"'
-                        . ' data-sidebar-item data-sidebar-action data-destination-id="' . self::escape($itemId) . '"'
-                        . ' data-sidebar-icon="' . self::escape($icon) . '" title="' . self::escape($label) . '"'
-                        . ' aria-haspopup="menu" aria-expanded="false">'
-                        . self::icon(['name' => $icon, 'decorative' => true])
-                        . '<span class="aia-sidebar__label">' . self::escape($label) . '</span></button></li>';
-                    continue;
-                }
                 $href = array_key_exists('href', $item) ? self::href($item['href']) : '';
                 $current = $itemId === $active ? ' aria-current="page"' : '';
                 $badge = '';
@@ -350,6 +340,16 @@ final class DesignSystemComponent
                     $badgeValue = self::text((string) $item['badge'], 'sidebar item badge');
                     $badge = '<span class="aia-sidebar__badge" aria-label="' . self::escape($badgeValue)
                         . '">' . self::escape($badgeValue) . '</span>';
+                }
+                $isAction = ($item['action'] ?? false) === true;
+                if ($isAction) {
+                    $itemsMarkup[] = '<li><button type="button" class="aia-sidebar__link"'
+                        . ' data-sidebar-item data-sidebar-action data-destination-id="' . self::escape($itemId) . '"'
+                        . ' data-sidebar-icon="' . self::escape($icon) . '" title="' . self::escape($label) . '"'
+                        . ' aria-haspopup="menu" aria-expanded="false">'
+                        . self::icon(['name' => $icon, 'decorative' => true])
+                        . '<span class="aia-sidebar__label">' . self::escape($label) . '</span>' . $badge . '</button></li>';
+                    continue;
                 }
                 $linkAttributes = $itemState === 'disabled'
                     ? ' role="link" aria-disabled="true" aria-label="' . self::escape($label . ' (no disponible temporalmente)') . '" data-sidebar-disabled'
