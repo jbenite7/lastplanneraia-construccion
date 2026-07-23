@@ -366,6 +366,32 @@ $shellGroups = array_values(array_filter([
         semTrigger.setAttribute('aria-expanded', String(open));
       });
     }
+
+    // Menú de cuenta: abre por hover con el mismo periodo de gracia que los
+    // flyouts de semana. No basta CSS: Bootstrap declara
+    // [hidden]{display:none!important} y el panel del componente usa [hidden],
+    // así que el estado se gobierna por atributo (igual que el click de
+    // components.js, que sigue funcionando para teclado y lectores).
+    var account = document.querySelector('[data-shell-pattern="sidebar"] .aia-sidebar__account');
+    if (account) {
+      var accTrigger = account.querySelector('[data-aia-menu-trigger]');
+      var accPanel = account.querySelector('[data-aia-menu-panel]');
+      if (accTrigger && accPanel) {
+        var setAccOpen = function (open) {
+          accTrigger.setAttribute('aria-expanded', String(open));
+          accPanel.hidden = !open;
+        };
+        account.addEventListener('mouseenter', function () {
+          clearTimeout(account._shellCloseTimer);
+          setAccOpen(true);
+        });
+        account.addEventListener('mouseleave', function () {
+          account._shellCloseTimer = setTimeout(function () {
+            setAccOpen(false);
+          }, 350);
+        });
+      }
+    }
   })();
 </script>
 <?php if ($shellCanCreate || $shellCanDelete): ?>
