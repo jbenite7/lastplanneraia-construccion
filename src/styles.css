@@ -24,3 +24,10 @@
 .pdc-header p { margin: 0 0 16px; opacity: 0.8; }
 .pdc-error { padding: 16px; border: 1px solid #dc2626; background: #2c1618; color: #fecaca; border-radius: 8px; }
 .pdc-grid { height: 320px; }
+
+.pdc-bloque { margin-top: 20px; }
+.pdc-bloque h2 { font-size: 16px; margin: 0 0 8px; }
+.pdc-advertencia { color: #ffca28; }
+.pdc-exito { padding: 12px 16px; border: 1px solid #69b578; background: #17251c; color: #b7e4c4; border-radius: 8px; }
+.pdc-bloque button { background: #1a5633; color: #f4f1ea; border: 1px solid #69b578; border-radius: 6px; padding: 8px 16px; cursor: pointer; }
+.pdc-bloque button:disabled { opacity: 0.5; cursor: wait; }
