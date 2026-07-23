@@ -36,7 +36,7 @@ docker run -d --name lps-aia-lab --network last-planner-aia_default -p 8085:80 \
 sleep 3 && curl -s -o /dev/null -w "8085: %{http_code}\n" http://localhost:8085/login   # espera 200
 ```
 
-El lab (`/internal/design-system`) NO exige login. `programacion-intermedia` sí; credenciales E2E `test.A`/`aia2026`, proyecto «Da Porto».
+El lab (`/internal/design-system`) SÍ exige login+proyecto (redirige a /login). Los tests del lab ya lo manejan con `loginAndSelectProject(page, PROJECTS[0], ADMIN)` de `tests/browser/support/session.mjs` — no reinventarlo. Credenciales E2E `test.A`/`aia2026`, proyecto «Da Porto» (project_id 73).
 
 ---
 
