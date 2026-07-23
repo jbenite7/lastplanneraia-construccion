@@ -29,6 +29,15 @@ $limpiar = static function () use ($db): void {
         $db->query('DELETE FROM pdc_presupuesto_versiones WHERE project_id = ?', [$pid]);
     }
     $db->query('DELETE FROM general_maestro_insumos WHERE creado_por = ?', [PDC_M_MARCA]);
+
+    // El e2e (pdc-v2-maestro.spec.mjs) puebla el catálogo GLOBAL general_maestro_insumos
+    // con estos nombres del fixture compartido bajo creado_por='Test Admin' (no PDC_M_MARCA).
+    // El cold start de este test exige que no existan, así que se borran por nombre
+    // sin importar el creador. Orden FK-safe: vínculos primero (FK RESTRICT).
+    $normsFixture = ['TEJA DE ZINC', 'AYUDANTE', 'CONCRETO 4000PSI', 'SERVICIO BOMBEO'];
+    $marcadores = implode(',', array_fill(0, count($normsFixture), '?'));
+    $db->query("DELETE FROM pdc_insumo_vinculos WHERE maestro_id IN (SELECT id FROM general_maestro_insumos WHERE descripcion_norm IN ({$marcadores}))", $normsFixture);
+    $db->query("DELETE FROM general_maestro_insumos WHERE descripcion_norm IN ({$marcadores})", $normsFixture);
 };
 $limpiar();
 
