@@ -22,7 +22,6 @@ test('maestro: cold start masivo y re-import con auto-match', async ({ page }) =
     await expect(page.locator('h1')).toContainText('Maestro de insumos', { timeout: 15000 });
     await expect(page.locator('[data-testid="pdc-maestro-cobertura"]')).toBeVisible({ timeout: 15000 });
 
-    const pendientesGrid = page.locator('[data-testid="pdc-maestro-pendientes"]');
     const cobertura = page.locator('[data-testid="pdc-maestro-cobertura"]');
 
     // Si hay pendientes (cold start o insumos nuevos): masivo → cobertura 100%.

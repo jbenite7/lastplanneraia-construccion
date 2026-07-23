@@ -106,6 +106,10 @@ class PlanComprasMaestroController
         }
         $body = $this->body();
         $ids = is_array($body['vinculoIds'] ?? null) ? $body['vinculoIds'] : [];
+        $ids = array_values(array_filter(
+            $ids,
+            static fn ($v): bool => (is_int($v) && $v > 0) || (is_string($v) && ctype_digit($v)),
+        ));
         $r = $this->service->crearDesdePendientes($projectId, $ids, $this->usuario());
         $vin = $this->service->vinculos($projectId);
         $this->ok(['creados' => $r['creados'], 'vinculados' => $r['vinculados'], 'resumen' => $vin['resumen'] ?? null]);
