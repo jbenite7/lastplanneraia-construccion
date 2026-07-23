@@ -49,3 +49,11 @@
 .pdc-celda-accion { color: #9fd3ae; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
 .pdc-fila-retirada { opacity: 0.55; }
 .pdc-maestro-import { border-bottom: 1px solid #2c2c2e; padding-bottom: 16px; }
+
+.pdc-cmp-selectores { display: flex; gap: 16px; flex-wrap: wrap; }
+.pdc-cmp-resumen { display: flex; gap: 20px; flex-wrap: wrap; align-items: center; padding: 12px 0; font-size: 14px; }
+.pdc-cmp-toggle { display: flex; gap: 8px; margin: 8px 0; }
+.pdc-cmp-toggle button { background: #2c2c2e; color: #f4f1ea; border: 1px solid #3a3a3c; border-radius: 6px; padding: 6px 14px; cursor: pointer; }
+.pdc-cmp-toggle button.activo { background: #1a3c2a; border-color: #69b578; }
+.pdc-cmp-sobrecosto { color: #ff6b6b; }
+.pdc-cmp-ahorro { color: #69b578; }

@@ -2,6 +2,7 @@ import { HashRouter, NavLink, Navigate, Route, Routes } from 'react-router-dom'
 import MaestroInsumos from './pages/MaestroInsumos'
 import ImportarPresupuesto from './pages/ImportarPresupuesto'
 import VisorPresupuesto from './pages/VisorPresupuesto'
+import ComparativoPresupuesto from './pages/ComparativoPresupuesto'
 
 export default function App() {
   return (
@@ -12,6 +13,7 @@ export default function App() {
           <NavLink to="/ensamble/importar" className="pdc-nav-link">Ensamble</NavLink>
           <NavLink to="/ensamble/maestro" className="pdc-nav-link">Maestro</NavLink>
           <NavLink to="/ensamble/presupuesto" className="pdc-nav-link">Presupuesto</NavLink>
+          <NavLink to="/ensamble/comparar" className="pdc-nav-link">Comparar</NavLink>
           <span className="pdc-nav-link pdc-nav-disabled" aria-disabled="true" title="Disponible en la fase B">
             Seguimiento
           </span>
@@ -21,6 +23,7 @@ export default function App() {
           <Route path="/ensamble/importar" element={<ImportarPresupuesto />} />
           <Route path="/ensamble/maestro" element={<MaestroInsumos />} />
           <Route path="/ensamble/presupuesto" element={<VisorPresupuesto />} />
+          <Route path="/ensamble/comparar" element={<ComparativoPresupuesto />} />
           <Route path="/maestro" element={<Navigate to="/ensamble/maestro" replace />} />
         </Routes>
       </div>
