@@ -26,20 +26,8 @@
 	<!-- <div class="row formularioRegistro">
 	</div> -->
 
-	<div class="row filaBotones action-bar">
-		<div class="col-sm-12 col-md-12 col-lg-12 ml-auto mr-auto p-0" id="filaBotones" style="text-align: center; margin:5px auto 2px auto; width:100%; max-width:1300px">
-			<div class="grupo_botones_informes btn-group" id="grupo_botones_informes" role="group" aria-label="Basic example" style="margin: 0 auto">
-				<button id="btn_informeFichaResumen" type="button" class="btn-pdc-modern" onclick="listar('informeFichaResumen')" disabled>Resumen</button>
-				<button id="btn_informeProgramaGeneral" type="button" class="btn-pdc-modern" onclick="listar('informeProgramaGeneral')" disabled>Programa General</button>
-				<button id="btn_informeProgramacionIntermedia" type="button" class="btn-pdc-modern" onclick="listar('informeProgramacionIntermedia')">Liberación de Restricciones</button>
-				<button id="btn_informeProgramacionSemanal" type="button" class="btn-pdc-modern" onclick="listar('informeProgramacionSemanal')">Programación Semanal</button>
-				<?= \App\View\Components\BiAccessComponent::renderLink('indicadores', 'BI Curva S') ?>
-			</div>
-		</div>
-	</div>
-
   <!--Se crea la estructura de la tabla, y Se crea el mensaje emergente que dice si los comandos fueron ejecutados correctamente o no (se repite el mismo de la línea anterior) -->
-	<div class="tabla" id="contenedorInformeDataStudio" style="text-align: center; margin:2px auto 10px auto; width:100%; max-width:1300px">
+	<div class="tabla" id="contenedorInformePowerBI" style="text-align:center; width:100vw; position:relative; left:50%; margin-left:-50vw; margin-top:2px; margin-bottom:10px;">
 	</div>
 
 	<div class="row ventanasModalesSemana" id="ventanasModalesSemana">
@@ -97,72 +85,68 @@
 			maestroPermisos(document.getElementById('permiso_canonico').value);
 		}
 
-		/*Acá se inicia la datatable y se crean sus valores por defecto como el ordenamiento, las celdas que se muestran, los datos, las opciones de longitud de los registros, y el color de las filas dependiendo del estado de las actividades*/
-		var listar = function(seccion) {
-			var db = document.getElementById('baseDatos').value;
-			var semana = document.getElementById('semana').value;
-			var Max_Semana = document.getElementById('Max_Semana').value;
-			var proyecto = document.getElementById('proyecto').value;
-			var permiso = document.getElementById('permiso_canonico').value;
-			const permisos = ["G", "S", "SG", "C"];
-			if(permisos.includes(permiso)){
-				seccion = "informeProveedores";
-			}
+		/*
+		 * Informe de indicadores de Last Planner.
+		 *
+		 * HOTFIX 2026-07: se deprecó el reporte de Google Data Studio (filtrado por
+		 * proyecto vía query string) y se embebe el reporte de Power BI.
+		 *
+		 * Limitaciones conocidas del embed actual (Power BI "publish to web"), a
+		 * resolver en la fase de Power BI Embedded (app-owns-data + embed-token):
+		 *   - Es público por link y NO admite filtrado por proyecto vía URL ni control
+		 *     con la JS API de Power BI; por eso, de momento, todos los proyectos ven
+		 *     el mismo reporte.
+		 *   - Para no exponer el dashboard completo a perfiles externos, los roles
+		 *     restringidos no ven el reporte hasta que exista una versión con alcance
+		 *     por rol/proyecto.
+		 */
+		var POWER_BI_REPORT_URL = 'https://app.powerbi.com/view?r=eyJrIjoiN2ZhODkwNzMtMDg0ZC00MTIzLWFiMjAtOTk0ZGM0MTUzOGY5IiwidCI6IjQxZjUxNDhjLThlNGMtNGE5Ny05M2Q5LWNhMzJhNDJhYzUyOCIsImMiOjR9';
+		// Roles restringidos (Ambiental, SST, SG, Subcontratista): antes solo veían el
+		// informe de proveedores; con el embed único no deben ver el dashboard completo.
+		var ROLES_SIN_INFORME_INDICADORES = ["G", "S", "SG", "C"];
 
-			var alturahoja = $(window).height();
-			var posicionInicioInforme = document.getElementById('encabezado').getBoundingClientRect().height +document.getElementById('textoDireccionSeccion').getBoundingClientRect().height;
+		// Proporción (ancho/alto) del reporte de Power BI para conservar su forma.
+		var REPORTE_ASPECTO = 980 / 600;
 
-			if (seccion == 'informeProgramacionSemanal') {
-				var url = 'https://datastudio.google.com/embed/reporting/aebe8495-3e8a-47be-a294-85c4b6384338/page/p_hmejfblomc' + '?params=%7B"df49":"include%25EE%2580%25800%25EE%2580%2580IN%25EE%2580%2580' + proyecto + '",';
-
-				if(semana > 6){
-					url = url + '"df95":"include%25EE%2580%25801%25EE%2580%2580BT%25EE%2580%2580'+ (semana-5) + '%25EE%2580%2580'+ semana + '"%7D';
-				}
-				else{
-					url = url + '"df95":"include%25EE%2580%25801%25EE%2580%2580' + 'LTE%25EE%2580%2580'+ (semana) + '"%7D';
-				}
-			}else if (seccion == 'informeProgramacionIntermedia') {
-				var url = 'https://datastudio.google.com/embed/reporting/aebe8495-3e8a-47be-a294-85c4b6384338/page/p_v8jvkiw2rc' + '?params=%7B"df79":"include%25EE%2580%25800%25EE%2580%2580IN%25EE%2580%2580' + proyecto + '",';
-
-				url = url + '"df65":"include%25EE%2580%25801%25EE%2580%2580IN%25EE%2580%2580'+ semana +'"%7D';
-			}else if (seccion == 'informeFichaResumen') {
-				var url = 'https://datastudio.google.com/embed/reporting/aebe8495-3e8a-47be-a294-85c4b6384338/page/p_orh49lctld' + '?params=%7B"df466":"include%25EE%2580%25800%25EE%2580%2580IN%25EE%2580%2580' + proyecto + '"%7D';
-			}else if (seccion == 'informeProgramaGeneral') {
-				var url = 'https://datastudio.google.com/embed/reporting/aebe8495-3e8a-47be-a294-85c4b6384338/page/p_4yvejh07oc' + '?params=%7B"df54":"include%25EE%2580%25800%25EE%2580%2580IN%25EE%2580%2580' + proyecto + '"%7D';
-			}else if (seccion == 'informePDC') {
-				var url = 'https://datastudio.google.com/embed/reporting/aebe8495-3e8a-47be-a294-85c4b6384338/page/p_o2fbmajg1c' + '?params=%7B"df297":"include%25EE%2580%25800%25EE%2580%2580IN%25EE%2580%2580' + proyecto + '"%7D';
-			}else if (seccion == 'informeProveedores') {
-				var url = 'https://datastudio.google.com/embed/reporting/aebe8495-3e8a-47be-a294-85c4b6384338/page/p_23433wqtuc' + '?params=%7B"df173":"include%25EE%2580%25800%25EE%2580%2580IN%25EE%2580%2580' + proyecto + '"%7D';
-			}
-
-			console.log(url);
-			var informe = '<iframe width="100%" height="100%" src=\''+ url +'\' frameborder="0" style="border:0" allowfullscreen></iframe>';
-			var biCurveSLink = <?php echo json_encode(
-                \App\View\Components\BiAccessComponent::renderLink('indicadores', 'BI Curva S'),
-                JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES,
-            ); ?>;
-
-			var filaBotones = '<button id="btn_informeFichaResumen" type="button" class="btn-pdc-modern" onclick="listar(\'informeFichaResumen\')">Resumen</button><button id="btn_informeProgramaGeneral" type="button" class="btn-pdc-modern" onclick="listar(\'informeProgramaGeneral\')">Programa General</button><button id="btn_informeProgramacionIntermedia" type="button" class="btn-pdc-modern" onclick="listar(\'informeProgramacionIntermedia\')">Liberación de Restricciones</button><button id="btn_informeProgramacionSemanal" type="button" class="btn-pdc-modern" onclick="listar(\'informeProgramacionSemanal\')">Programación Semanal</button><button id="btn_informePDC" type="button" class="btn-pdc-modern" onclick="listar(\'informePDC\')">Plan de Compras</button><button id="btn_informeProveedores" type="button" class="btn-pdc-modern" onclick="listar(\'informeProveedores\')">Calificación de Subcontratistas</button>' + biCurveSLink;
-
-
-			document.getElementById('contenedorInformeDataStudio').innerHTML = informe;
-			document.getElementById('contenedorInformeDataStudio').style.height = (alturahoja - posicionInicioInforme - 50) + "px";
-
-			document.getElementById('grupo_botones_informes').innerHTML = filaBotones;
-			if (window.BiAccess) {
-				window.BiAccess.syncAccessLinks();
-			}
-			// document.getElementById('btn_programacionSemanal').classList.remove("active");
-			// document.getElementById('btn_programacionIntermedia').classList.remove("active");
-			// document.getElementById('btn_programaGeneral').classList.remove("active");
-			if(document.getElementById('pdcActivo').value == 0){
-				document.getElementById('btn_informePDC').style.display = "none";
-			}
-			document.getElementById('btn_' + seccion).classList.add("active");
-
-			//console.log(informe);
-
+		// Ajusta el tamaño del reporte según la ALTURA libre visible: el reporte tiene
+		// forma fija, así que fijamos su alto al espacio vertical disponible (viewport
+		// menos lo que hay encima del contenedor) y derivamos el ancho por su
+		// proporción, con tope del 95% del ancho (holgura lateral). Así llena el alto
+		// visible sin cortarse y toma el mayor ancho posible dentro de ese límite.
+		function ajustarInformePowerBI() {
+			var contenedor = document.getElementById('contenedorInformePowerBI');
+			if (!contenedor) { return; }
+			var iframe = contenedor.querySelector('iframe');
+			if (!iframe) { return; }
+			var margenSuperior = contenedor.getBoundingClientRect().top; // navbar + breadcrumb, etc.
+			var margenInferior = 16;
+			var alturaLibre = window.innerHeight - margenSuperior - margenInferior;
+			if (alturaLibre < 320) { alturaLibre = 320; } // piso razonable
+			var anchoMax = window.innerWidth * 0.95;       // 5% de holgura lateral
+			var ancho = Math.min(alturaLibre * REPORTE_ASPECTO, anchoMax);
+			iframe.style.width = Math.round(ancho) + 'px';
+			iframe.style.height = Math.round(ancho / REPORTE_ASPECTO) + 'px';
 		}
+
+		var listar = function(seccion) {
+			var contenedor = document.getElementById('contenedorInformePowerBI');
+			if (!contenedor) { return; }
+
+			var permiso = document.getElementById('permiso_canonico').value;
+			if (ROLES_SIN_INFORME_INDICADORES.includes(permiso)) {
+				contenedor.innerHTML = '<p style="padding:24px; text-align:center;">El informe de indicadores no está disponible para tu perfil.</p>';
+				return;
+			}
+			contenedor.innerHTML = '<iframe title="Last Planner AIA - Power BI" src="' + POWER_BI_REPORT_URL + '" frameborder="0" allowfullscreen="true" onload="ajustarInformePowerBI()" style="border:0; display:block; margin:0 auto;"></iframe>';
+			ajustarInformePowerBI();
+		}
+
+		// Reajusta al redimensionar la ventana (debounce ligero).
+		var _ajusteInformeTO;
+		window.addEventListener('resize', function () {
+			clearTimeout(_ajusteInformeTO);
+			_ajusteInformeTO = setTimeout(ajustarInformePowerBI, 120);
+		});
 
 
 		var ocultos=function(table){

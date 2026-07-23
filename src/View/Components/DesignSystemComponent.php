@@ -28,6 +28,18 @@ final class DesignSystemComponent
         'chevron-down' => '<path d="m6 10 6 6 6-6"/>',
         'sync' => '<path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 3v4h-4"/>',
         'package' => '<path d="m12 3 8 4v10l-8 4-8-4V7l8-4Z"/><path d="m4 7 8 4 8-4M12 11v10"/>',
+        // Semana de compromisos (PPC/PAC): calendario con verificación.
+        'week-commit' => '<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/><path d="m9 15 2 2 4-4"/>',
+        // Subcontratista = empresa externa (glosario): edificio con ventanas.
+        'company' => '<path d="M4 21V6l8-3 8 3v15"/><path d="M9 21v-4h6v4"/><path d="M8 9h.01M12 9h.01M16 9h.01M8 13h.01M12 13h.01M16 13h.01"/>',
+        // Liberación de restricciones: candado abierto.
+        'unlock' => '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.5-1.9"/>',
+        // Familias de obra = taxonomía jerárquica: organigrama.
+        'hierarchy' => '<rect x="9" y="3" width="6" height="4" rx="1"/><rect x="3" y="17" width="6" height="4" rx="1"/><rect x="15" y="17" width="6" height="4" rx="1"/><path d="M12 7v4M6 17v-2h12v2M12 11v4"/>',
+        // Control de cambios: flechas de intercambio (versión/modificación).
+        'change' => '<path d="M4 8h13l-3-3M20 16H7l3 3"/>',
+        // Indicadores/KPIs: medidor con aguja.
+        'gauge' => '<path d="M4 15a8 8 0 0 1 16 0"/><path d="m12 15 4.5-4.5"/><circle cx="12" cy="15" r="1.4"/>',
     ];
 
     public static function icon(array $config): string
