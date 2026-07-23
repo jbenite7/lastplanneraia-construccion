@@ -11,7 +11,7 @@
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
   <!-- SweetAlert2 -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.4.24/sweetalert2.min.css">
+  <link rel="stylesheet" href="/public/vendor/sweetalert2.min.css?v=11.4.24">
   <!-- Toastr -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
   <!-- DataTables -->
@@ -29,7 +29,7 @@
   <!-- Bootstrap 4 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.1/js/bootstrap.bundle.min.js"></script>
   <!-- SweetAlert2 + AIA Notice -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.4.24/sweetalert2.all.min.js"></script>
+  <script src="/public/vendor/sweetalert2.all.min.js?v=11.4.24"></script>
   <script src="/runtime/frontend-config.js?v=20260325a"></script>
   <script src="/public/js/core/AiaAlertInterceptor.js?v=20260324a"></script>
 </head>

@@ -10,10 +10,16 @@ if (!window.__AIA_SHELL_SIDEBAR__) {
   document.head.appendChild(cssLink);
 }
 
-// Inyectar FontAwesome si no existe (para iconos extra)
-if (!document.querySelector('link[href*="font-awesome"]')) {
+// Inyectar FontAwesome local si no llegó ya, sea por <link> directo o por el
+// entrypoint del design system (que lo importa como vendor). Antes se traía
+// 5.15.4 de cdnjs duplicando la copia local: todos los iconos usados en el
+// código existen en el vendor local.
+if (
+  !document.querySelector('link[href*="font-awesome"]') &&
+  !document.querySelector('link[href*="aia-design-system"]')
+) {
   var faLink = document.createElement('link');
-  faLink.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css';
+  faLink.href = '/public/vendor/font-awesome/css/all.css';
   faLink.rel = 'stylesheet';
   document.head.appendChild(faLink);
 }
