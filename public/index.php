@@ -187,6 +187,7 @@ $router->post('/plan-compras/api/presupuesto/preview', [\App\Controllers\Api\Pla
 $router->post('/plan-compras/api/presupuesto/confirmar', [\App\Controllers\Api\PlanComprasImportController::class, 'confirmar']);
 $router->get('/plan-compras/api/presupuesto/versiones', [\App\Controllers\Api\PlanComprasImportController::class, 'versiones']);
 $router->get('/plan-compras/api/presupuesto/arbol', [\App\Controllers\Api\PlanComprasImportController::class, 'arbol']);
+$router->get('/plan-compras/api/presupuesto/comparar', [\App\Controllers\Api\PlanComprasImportController::class, 'comparar']);
 
 // Api/Plan de Compras v2 — maestro de insumos (A2)
 $router->get('/plan-compras/api/maestro', [\App\Controllers\Api\PlanComprasMaestroController::class, 'catalogo']);

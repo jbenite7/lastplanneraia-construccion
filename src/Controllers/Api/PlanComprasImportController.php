@@ -150,6 +150,32 @@ class PlanComprasImportController
         $this->ok($arbol);
     }
 
+    /** GET /plan-compras/api/presupuesto/comparar?versionA=N&versionB=M — solo lectura. */
+    public function comparar(): void
+    {
+        if (!(new RbacService($this->db))->can('lps.pdc.ver')) {
+            $this->fail('FORBIDDEN', 'No autorizado para consultar el plan de compras.', 403);
+            return;
+        }
+        $projectId = (int) ($_SESSION['project_id'] ?? 0);
+        if ($projectId <= 0) {
+            $this->fail('NO_PROJECT', 'No hay proyecto activo. Selecciona un proyecto.', 409);
+            return;
+        }
+        $va = filter_var($_GET['versionA'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        $vb = filter_var($_GET['versionB'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        if ($va === false || $va === null || $vb === false || $vb === null || $va === $vb) {
+            $this->fail('PARAMS_INVALIDOS', 'Debes elegir dos versiones distintas para comparar.', 422);
+            return;
+        }
+        $r = $this->service->comparar($projectId, (int) $va, (int) $vb);
+        if ($r === null) {
+            $this->fail('NO_VERSION', 'Alguna de las versiones no existe en este proyecto.', 404);
+            return;
+        }
+        $this->ok($r);
+    }
+
     /** RBAC importar + proyecto + CSRF para los POST. Retorna projectId o null (ya respondió). */
     private function guardEscritura(): ?int
     {
