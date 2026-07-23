@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useReducer, useState } from 'react'
 import { AgGridReact } from 'ag-grid-react'
-import { ClientSideRowModelModule, ModuleRegistry, ValidationModule, themeQuartz } from 'ag-grid-community'
+import { CellStyleModule, ClientSideRowModelModule, ModuleRegistry, RowStyleModule, ValidationModule, themeQuartz } from 'ag-grid-community'
 import type { CellClickedEvent, ColDef, RowDoubleClickedEvent } from 'ag-grid-community'
 import { PdcApiError, apiGet, apiPost } from '../lib/api'
 import { estadoInicialMaestro, maestroReducer } from '../lib/maestroState'
@@ -10,6 +10,8 @@ import type { MaestroInsumo, ResumenVinculos, SugerenciaMaestro, VinculoInsumo }
 // (no AllCommunityModule, que arrastra ~1.3MB). ValidationModule solo en dev.
 ModuleRegistry.registerModules([
   ClientSideRowModelModule,
+  CellStyleModule, // cellClass de la columna de acción del catálogo
+  RowStyleModule, // rowClassRules de filas retiradas
   ...(import.meta.env.DEV ? [ValidationModule] : []),
 ])
 
