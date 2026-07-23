@@ -7,10 +7,9 @@
     <script src="/public/js/core/SessionTimeoutManager.js?v=20260328a" defer></script>
     <script src="/js/tablet-viewport-scale.js?v=1.2" defer></script>
     <title>Seleccionar Proyecto - Last Planner AIA</title>
-    <!-- The canonical AIA entrypoint owns tokens, fonts and the layered vendor adapters.
-         renderStylesheet versions the entrypoint by its newest nested stylesheet. -->
-    <?= \App\View\Components\DesignSystemHeadComponent::renderStylesheet('/css/tokens.css') ?>
-    <?= \App\View\Components\DesignSystemHeadComponent::renderStylesheet('/css/aia-design-system.css') ?>
+    <!-- Head segmentado: core del design system + adjuntos declarados en
+         docs/design-system/manifests/project-selector.json (sin vendors de grilla). -->
+    <?= \App\View\Components\DesignSystemHeadComponent::renderForModule('project-selector') ?>
     <?= \App\View\Components\DesignSystemHeadComponent::renderStylesheet('/css/project-selector.css') ?>
 </head>
 <body class="hold-transition aia-shell project-selector-page">

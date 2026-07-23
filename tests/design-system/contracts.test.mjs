@@ -246,7 +246,7 @@ test('manifests declare the complete deterministic visual matrix', () => {
   const inventory = JSON.parse(readFileSync(
     path.join(root, 'docs/design-system/manifests/inventory.json'), 'utf8',
   ));
-  assert.deepEqual(inventory.manifests.sort(), ['foundation-shell.json', 'laboratory.json', 'programa-general.json', 'programacion-intermedia.json', 'programacion-semanal.json', 'project-selector.json']);
+  assert.deepEqual(inventory.manifests.sort(), ['auth.json', 'foundation-shell.json', 'laboratory.json', 'programa-general.json', 'programacion-intermedia.json', 'programacion-semanal.json', 'project-selector.json']);
 
   const laboratory = JSON.parse(readFileSync(
     path.join(root, 'docs/design-system/manifests/laboratory.json'), 'utf8',

@@ -17,6 +17,12 @@ final class DesignSystemAssetController
     private const ENTRYPOINTS = [
         'main' => '/css/aia-design-system.css',
         'laboratory' => '/css/design-system/lab-entrypoint.css',
+        'core' => '/css/design-system/entrypoints/core.css',
+        'attach-jquery-ui' => '/css/design-system/entrypoints/attach-jquery-ui.css',
+        'attach-anychart' => '/css/design-system/entrypoints/attach-anychart.css',
+        'attach-select2' => '/css/design-system/entrypoints/attach-select2.css',
+        'attach-sweetalert2' => '/css/design-system/entrypoints/attach-sweetalert2.css',
+        'attach-handsontable' => '/css/design-system/entrypoints/attach-handsontable.css',
     ];
 
     public function main(): void
@@ -27,6 +33,36 @@ final class DesignSystemAssetController
     public function laboratory(): void
     {
         $this->serve(self::ENTRYPOINTS['laboratory']);
+    }
+
+    public function core(): void
+    {
+        $this->serve(self::ENTRYPOINTS['core']);
+    }
+
+    public function attachJqueryUi(): void
+    {
+        $this->serve(self::ENTRYPOINTS['attach-jquery-ui']);
+    }
+
+    public function attachAnychart(): void
+    {
+        $this->serve(self::ENTRYPOINTS['attach-anychart']);
+    }
+
+    public function attachSelect2(): void
+    {
+        $this->serve(self::ENTRYPOINTS['attach-select2']);
+    }
+
+    public function attachSweetalert2(): void
+    {
+        $this->serve(self::ENTRYPOINTS['attach-sweetalert2']);
+    }
+
+    public function attachHandsontable(): void
+    {
+        $this->serve(self::ENTRYPOINTS['attach-handsontable']);
     }
 
     private function serve(string $url): void

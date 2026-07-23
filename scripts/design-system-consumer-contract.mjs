@@ -19,17 +19,24 @@ export function consumerContractFailures({ root, manifest, viewOverride = null, 
   if (manifest.consumerContract !== 'v1') return failures;
 
   const sources = manifest.sources || [];
-  const viewSource = sources.find((s) => s.endsWith('.view.php')) ?? 'views/core/project_selector.view.php';
+  const ownViewSource = sources.find((s) => s.endsWith('.view.php'));
+  const viewSource = ownViewSource ?? 'views/core/project_selector.view.php';
   const cssSource = sources.find((s) => /project-selector\.css$|\/module\.css$/.test(s))
     ?? sources.find((s) => s.endsWith('.css')) ?? 'public/css/project-selector.css';
   const view = viewOverride ?? read(viewSource);
   const css = cssOverride ?? read(cssSource);
-  const required = [
-    '/css/tokens.css',
-    '/css/aia-design-system.css',
-  ];
-  for (const asset of required) {
-    if (!view.includes(asset)) failures.push(`${manifest.moduleId}: canonical asset missing ${asset}`);
+  const usesRenderForModule = view.includes(`renderForModule('${manifest.moduleId}')`);
+  // El check de assets canónicos solo aplica a la vista del propio manifiesto:
+  // un manifiesto sin vista (p. ej. foundation-shell) no debe validarse contra
+  // la vista fallback de otro módulo, que puede consumir vía renderForModule.
+  if ((viewOverride !== null || ownViewSource) && !usesRenderForModule) {
+    const required = [
+      '/css/tokens.css',
+      '/css/aia-design-system.css',
+    ];
+    for (const asset of required) {
+      if (!view.includes(asset)) failures.push(`${manifest.moduleId}: canonical asset missing ${asset}`);
+    }
   }
 
   for (const primitive of ['aia-shell', 'aia-card', 'aia-input', 'aia-btn', 'aia-chip', 'aia-empty', 'aia-alert']) {

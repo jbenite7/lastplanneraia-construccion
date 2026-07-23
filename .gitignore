@@ -63,6 +63,12 @@ goals/design-system-nucleo-gobernanza/*
 !goals/design-system-nucleo-gobernanza/facts.md
 !goals/design-system-nucleo-gobernanza/validation-log.md
 !goals/design-system-nucleo-gobernanza/*.json
+!goals/segmentacion-entrypoint-css/
+goals/segmentacion-entrypoint-css/*
+!goals/segmentacion-entrypoint-css/goal.md
+!goals/segmentacion-entrypoint-css/plan.md
+!goals/segmentacion-entrypoint-css/facts.md
+!goals/segmentacion-entrypoint-css/validation-log.md
 !goals/validar-migracion-handsontable/
 goals/validar-migracion-handsontable/*
 !goals/validar-migracion-handsontable/goal.md
@@ -152,6 +158,7 @@ tests/browser/*
 !tests/browser/preconstruccion-full-cycle.mjs
 !tests/browser/test-pdc.mjs
 !tests/browser/pdc-handsontable.mjs
+!tests/browser/entrypoint-segmentation-dryrun.mjs
 .playwright-mcp/
 .tmp-e2e/
 

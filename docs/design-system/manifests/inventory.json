@@ -8,7 +8,8 @@
     "programa-general.json",
     "programacion-intermedia.json",
     "programacion-semanal.json",
-    "project-selector.json"
+    "project-selector.json",
+    "auth.json"
   ],
   "sharedHeadConsumers": [
     "views/contratos/contratos.view.php",
@@ -35,8 +36,8 @@
     },
     {
       "moduleId": "auth",
-      "status": "inventory-only",
-      "manifest": null
+      "status": "pilot",
+      "manifest": "auth.json"
     },
     {
       "moduleId": "projects",

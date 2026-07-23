@@ -6,6 +6,15 @@ fuente de verdad: la autoridad ejecutable permanece en `docs/design-system/`,
 `public/css/aia-design-system.css`. El laboratorio en `/internal/design-system`
 es la referencia visual versionada de esas mismas primitivas.
 
+El entrypoint productivo ya está segmentado: las superficies migradas a
+segmentación consumen `DesignSystemHeadComponent::renderForModule('<moduleId>')`,
+que emite `public/css/design-system/entrypoints/core.css` más los adjuntos
+declarados en `vendors[]` del manifiesto del módulo (`docs/design-system/manifests/`),
+validado por el gate de partición/coherencia
+(`scripts/design-system-entrypoint-partition.mjs`). Las superficies no
+migradas siguen consumiendo el agregador, que permanece congelado y
+equivalente (ver `goals/segmentacion-entrypoint-css/`).
+
 ## Reglas para superficies migradas
 
 - Consumir tokens `--ds-*`/`--aia-*` y primitivas `aia-*`; no introducir
