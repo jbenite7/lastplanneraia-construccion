@@ -10,6 +10,7 @@ export default function App() {
         <nav className="pdc-nav" aria-label="Submódulos del plan de compras">
           <span className="pdc-nav-title">Plan de Compras</span>
           <NavLink to="/ensamble/importar" className="pdc-nav-link">Ensamble</NavLink>
+          <NavLink to="/ensamble/maestro" className="pdc-nav-link">Maestro</NavLink>
           <NavLink to="/ensamble/presupuesto" className="pdc-nav-link">Presupuesto</NavLink>
           <span className="pdc-nav-link pdc-nav-disabled" aria-disabled="true" title="Disponible en la fase B">
             Seguimiento
