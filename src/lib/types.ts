@@ -55,3 +55,32 @@ export type VersionPresupuesto = {
   importadoPor: string
   createdAt: string
 }
+
+export type ArbolItem = {
+  id: number
+  codigo: string
+  codigoPadre: string | null
+  nivel: number
+  tipoFila: 'capitulo' | 'subcapitulo' | 'grupo' | 'actividad'
+  descripcion: string
+  unidad: string | null
+  cantidad: number | null
+}
+
+export type ArbolInsumo = {
+  itemId: number
+  descripcion: string
+  tipoInsumo: string
+  unidad: string
+  cantApu: number | null
+  rendimiento: number | null
+  cantidadTotal: number | null
+  valorUnitario: number | null
+  valorTotal: number | null
+}
+
+export type ArbolPresupuesto = {
+  version: { id: number; versionLabel: string; activa: number }
+  items: ArbolItem[]
+  insumos: ArbolInsumo[]
+}
