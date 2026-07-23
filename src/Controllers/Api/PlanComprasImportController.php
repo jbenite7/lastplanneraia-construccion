@@ -129,6 +129,27 @@ class PlanComprasImportController
         $this->ok(['versiones' => $this->service->versiones($projectId)]);
     }
 
+    /** GET /plan-compras/api/presupuesto/arbol[?versionId=N] — solo lectura. */
+    public function arbol(): void
+    {
+        if (!(new RbacService($this->db))->can('lps.pdc.ver')) {
+            $this->fail('FORBIDDEN', 'No autorizado para consultar el plan de compras.', 403);
+            return;
+        }
+        $projectId = (int) ($_SESSION['project_id'] ?? 0);
+        if ($projectId <= 0) {
+            $this->fail('NO_PROJECT', 'No hay proyecto activo. Selecciona un proyecto.', 409);
+            return;
+        }
+        $versionId = filter_var($_GET['versionId'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        $arbol = $this->service->arbol($projectId, $versionId === false ? null : $versionId);
+        if ($arbol === null) {
+            $this->fail('NO_VERSION', 'El proyecto no tiene un presupuesto importado (o la versión no existe).', 404);
+            return;
+        }
+        $this->ok($arbol);
+    }
+
     /** RBAC importar + proyecto + CSRF para los POST. Retorna projectId o null (ya respondió). */
     private function guardEscritura(): ?int
     {
