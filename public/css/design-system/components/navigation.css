@@ -483,4 +483,192 @@
       transition-duration: var(--ds-motion-reduced-duration);
     }
   }
+
+  /* ===== Rail colapsado: primitivas canónicas =====
+     Pulido del estado colapsado (sin-scroll, píldora de label instantánea,
+     separadores, iconos 20px, jerarquía de color). Promovido desde el adapter
+     del shell (shell-sidebar.css) para que el laboratorio lo versione y todos
+     los consumidores (.aia-navigation--sidebar) lo hereden. Los flyouts de
+     gestión de semanas siguen siendo del shell (shell-sidebar.css). */
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"] {
+    overflow: visible;
+  }
+
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__nav {
+    overflow: visible;
+    padding-block: var(--ds-space-2) !important;
+    gap: var(--ds-space-2);
+  }
+
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__header,
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__footer {
+    padding-block: var(--ds-space-2) !important;
+  }
+
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__group ul {
+    gap: 2px;
+  }
+
+  /* El canónico oculta contexto y h3 a 1px de ancho, pero siguen ocupando
+     filas del grid (~42px + ~30px por grupo) y provocan scroll. En el shell
+     se retiran del flujo: el contexto vive en la context-bar visible y los
+     aria-labelledby siguen computando el nombre desde elementos display:none. */
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__context,
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__group h3 {
+    display: none;
+  }
+
+  /* Separador hairline entre grupos (el h3 queda invisible en colapsado). */
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__group + .aia-sidebar__group::before {
+    content: "";
+    justify-self: center;
+    width: 1.25rem;
+    border-block-start: var(--ds-border-width) solid var(--ds-active-border);
+  }
+
+  /* Iconos con presencia y jerarquía: reposo en secundario, hover/activo encienden. */
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__nav .aia-icon__glyph {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link .aia-icon {
+    color: var(--ds-active-text-secondary);
+    transition: color 150ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link:hover .aia-icon,
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link:focus-visible .aia-icon {
+    color: var(--ds-active-text-primary);
+  }
+
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link[aria-current="page"] .aia-icon {
+    color: inherit;
+  }
+
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link[aria-current="page"] {
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--aia-green-light) 35%, transparent);
+  }
+
+  /* Flyout labels: el label real del DOM se vuelve una píldora instantánea al
+     lado del rail en hover/foco. Sustituye al title nativo (lento), que el JS
+     suprime en colapsado. */
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link,
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__toggle,
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__utility {
+    position: relative;
+  }
+
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link .aia-sidebar__label,
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__utility .aia-sidebar__label,
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__toggle .aia-sidebar__toggle-label {
+    position: absolute;
+    inset-inline-start: calc(100% + var(--ds-space-4));
+    inset-block-start: 50%;
+    translate: -4px -50%;
+    width: max-content;
+    max-width: 18rem;
+    padding: var(--ds-space-3) var(--ds-space-6) !important;
+    border: var(--ds-border-width) solid var(--ds-active-border);
+    border-radius: var(--ds-radius-control);
+    background: var(--ds-active-surface-raised);
+    box-shadow: var(--ds-shadow-lg);
+    color: var(--ds-active-text-primary);
+    font-size: var(--ds-type-size-md);
+    font-weight: var(--ds-type-weight-semibold);
+    white-space: nowrap;
+    /* El caret vive en el trigger (::after), no aquí: así un nombre/label
+       largo se recorta con ellipsis sin cortar también el triángulo. */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    z-index: var(--ds-z-tooltip);
+    transition:
+      opacity 150ms cubic-bezier(0.22, 1, 0.36, 1),
+      translate 150ms cubic-bezier(0.22, 1, 0.36, 1),
+      visibility 0s 150ms;
+  }
+
+  /* Caret que ancla la píldora a su tile: pseudo-elemento del trigger (no del
+     label) para que el overflow:hidden del label de arriba no lo recorte. */
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link::after,
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__utility::after,
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__toggle::after {
+    content: "";
+    position: absolute;
+    inset-inline-start: calc(100% + var(--ds-space-4) - 5px);
+    inset-block-start: 50%;
+    width: 8px;
+    height: 8px;
+    translate: 0 -50%;
+    rotate: 45deg;
+    background: var(--ds-active-surface-raised);
+    border-inline-start: var(--ds-border-width) solid var(--ds-active-border);
+    border-block-end: var(--ds-border-width) solid var(--ds-active-border);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+      opacity 150ms cubic-bezier(0.22, 1, 0.36, 1),
+      visibility 0s 150ms;
+  }
+
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link:hover .aia-sidebar__label,
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link:focus-visible .aia-sidebar__label,
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__utility:hover .aia-sidebar__label,
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__utility:focus-visible .aia-sidebar__label,
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__toggle:hover .aia-sidebar__toggle-label,
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"]
+    .aia-sidebar__toggle:focus-visible
+    .aia-sidebar__toggle-label {
+    opacity: 1;
+    visibility: visible;
+    translate: 0 -50%;
+    transition-delay: 0s;
+  }
+
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link:hover::after,
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link:focus-visible::after,
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__utility:hover::after,
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__utility:focus-visible::after,
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__toggle:hover::after,
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__toggle:focus-visible::after {
+    opacity: 1;
+    visibility: visible;
+    transition-delay: 0s;
+  }
+
+  /* Con el menú de cuenta abierto (click/teclado) o simplemente en hover/foco
+     (el panel también abre así, ver navigation.css), retirar la píldora de
+     identidad: ambas comparten el mismo punto de anclaje a la derecha del
+     icono y se solaparían con el panel de opciones. */
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__utility[aria-expanded="true"]
+    .aia-sidebar__label,
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__utility[aria-expanded="true"]::after,
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__account:hover .aia-sidebar__label,
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__account:hover .aia-sidebar__utility::after,
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__account:focus-within .aia-sidebar__label,
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"]
+    .aia-sidebar__account:focus-within
+    .aia-sidebar__utility::after {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__account [data-aia-menu-panel] {
+    inset-inline-start: calc(100% + var(--ds-space-4));
+    inset-block-start: auto;
+    inset-block-end: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link .aia-icon,
+    .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link .aia-sidebar__label,
+    .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__utility .aia-sidebar__label,
+    .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__toggle .aia-sidebar__toggle-label {
+      transition: none;
+    }
+  }
 }
