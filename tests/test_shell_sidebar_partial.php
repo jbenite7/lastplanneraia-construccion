@@ -56,5 +56,10 @@ $check(!str_contains($viewer, 'shellWeekCreateDialog'), 'V: sin diálogo crear')
 $check(!str_contains($viewer, 'shellWeekDeleteDialog'), 'V: sin diálogo eliminar');
 $check(str_contains($viewer, '"canCreate":false'), 'V: JSON canCreate false');
 
+$check(str_contains($admin, 'shellWeekCreateOpen'), 'A: builder emite botón Nueva semana');
+$check(str_contains($admin, 'data-shell-delete-week'), 'A: builder emite trash de última semana');
+$check(!str_contains($viewer, 'shellWeekCreateOpen'), 'V: sin botón Nueva semana');
+$check(!str_contains($viewer, 'data-shell-delete-week'), 'V: sin trash');
+
 echo $fails === 0 ? "Shell sidebar partial: PASS\n" : "Shell sidebar partial: FAIL ({$fails})\n";
 exit($fails === 0 ? 0 : 1);

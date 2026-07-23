@@ -282,5 +282,84 @@ $shellGroups = array_values(array_filter([
         }, 350);
       });
     });
+
+    // Flyout de gestión del ítem "Semanas del Proyecto"
+    var semTrigger = document.querySelector('[data-shell-pattern="sidebar"] [data-destination-id="semanas-proyecto"]');
+    if (semTrigger) {
+      var semLi = semTrigger.closest('li');
+      var semPanel = document.createElement('div');
+      semPanel.className = 'shell-week-flyout';
+      semPanel.setAttribute('role', 'menu');
+      semPanel.setAttribute('aria-label', 'Semanas del Proyecto');
+
+      var semHead = document.createElement('span');
+      semHead.className = 'shell-week-flyout__head';
+      semHead.textContent = 'Semanas del Proyecto';
+      semPanel.appendChild(semHead);
+
+      <?php if ($shellCanCreate): ?>
+      var createBtn = document.createElement('button');
+      createBtn.type = 'button';
+      createBtn.id = 'shellWeekCreateOpen';
+      createBtn.className = 'shell-week-flyout__item shell-week-flyout__create';
+      createBtn.setAttribute('role', 'menuitem');
+      createBtn.innerHTML = '<span>+ Nueva semana</span>';
+      semPanel.appendChild(createBtn);
+      <?php endif; ?>
+
+      data.weeks.forEach(function (w) {
+        var row = document.createElement('div');
+        row.className = 'shell-week-flyout__row';
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'shell-week-flyout__item';
+        btn.setAttribute('role', 'menuitem');
+        btn.setAttribute('data-shell-week', String(w.semana));
+        if (w.semana === data.currentWeek) btn.setAttribute('aria-current', 'true');
+        var label = document.createElement('span');
+        label.textContent = 'Semana ' + w.semana;
+        btn.appendChild(label);
+        if (w.inicio && w.fin) {
+          var dates = document.createElement('small');
+          dates.textContent = w.inicio + ' – ' + w.fin;
+          btn.appendChild(dates);
+        }
+        row.appendChild(btn);
+        <?php if ($shellCanDelete): ?>
+        if (w.semana === data.maxSemana) {
+          var del = document.createElement('button');
+          del.type = 'button';
+          del.className = 'shell-week-flyout__delete';
+          del.setAttribute('data-shell-delete-week', String(w.semana));
+          del.setAttribute('aria-label', 'Eliminar Semana ' + w.semana);
+          del.innerHTML = '<i class="fas fa-trash" aria-hidden="true"></i>';
+          row.appendChild(del);
+        }
+        <?php endif; ?>
+        semPanel.appendChild(row);
+      });
+
+      semLi.classList.add('shell-has-week-menu');
+      semLi.appendChild(semPanel);
+      // Mismo periodo de gracia que los flyouts de módulos.
+      semLi.addEventListener('mouseenter', function () {
+        clearTimeout(semLi._shellCloseTimer);
+        document.querySelectorAll('li.shell-week-open').forEach(function (other) {
+          if (other !== semLi) other.classList.remove('shell-week-open');
+        });
+        semLi.classList.add('shell-week-open');
+        semTrigger.setAttribute('aria-expanded', 'true');
+      });
+      semLi.addEventListener('mouseleave', function () {
+        semLi._shellCloseTimer = setTimeout(function () {
+          semLi.classList.remove('shell-week-open');
+          semTrigger.setAttribute('aria-expanded', 'false');
+        }, 350);
+      });
+      semTrigger.addEventListener('click', function () {
+        var open = semLi.classList.toggle('shell-week-open');
+        semTrigger.setAttribute('aria-expanded', String(open));
+      });
+    }
   })();
 </script>
