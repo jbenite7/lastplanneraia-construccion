@@ -179,7 +179,7 @@ final class MaestroInsumosService
             return [];
         }
         $condiciones = implode(' + ', array_fill(0, count($tokens), '(descripcion_norm LIKE ?)'));
-        $params = array_map(static fn ($t) => "%{$t}%", $tokens);
+        $params = array_map(static fn ($t) => '%' . addcslashes($t, '\\%_') . '%', $tokens);
         $rows = $this->db->query(
             "SELECT id, descripcion, unidad, tipo_insumo, ({$condiciones}) AS coincidencias
              FROM general_maestro_insumos
@@ -333,7 +333,7 @@ final class MaestroInsumosService
         $params = [];
         if ($busqueda !== null && trim($busqueda) !== '') {
             $where .= ' AND descripcion_norm LIKE ?';
-            $params[] = '%' . self::normalizar($busqueda) . '%';
+            $params[] = '%' . addcslashes(self::normalizar($busqueda), '\\%_') . '%';
         }
         $rows = $this->db->query(
             "SELECT id, descripcion, unidad, tipo_insumo, creado_por, created_at

@@ -156,6 +156,27 @@ $vinculoLargo = (int) $db->lastInsertId();
 $rL = $maestro->crearDesdePendientes(PDC_M_PROJECT_A, [$vinculoLargo], PDC_M_MARCA);
 $assert($rL['ok'] === true && $rL['creados'] === 0 && $rL['vinculados'] === 1, 'Colisión de prefijo: vincula al existente sin crear ni abortar.');
 
+echo "=== PDC v2: maestro — follow-ups A2 (escape de comodines LIKE) ===\n";
+
+$maestro->crearManual(PDC_M_PROJECT_A, 'Viga C_10', 'UN', 'MAT', PDC_M_MARCA);
+$maestro->crearManual(PDC_M_PROJECT_A, 'Viga C 10', 'UN', 'MAT', PDC_M_MARCA);
+$maestro->crearManual(PDC_M_PROJECT_A, 'Malla 100%', 'UN', 'MAT', PDC_M_MARCA);
+$maestro->crearManual(PDC_M_PROJECT_A, 'Malla 100337', 'UN', 'MAT', PDC_M_MARCA);
+
+$descs = array_column($maestro->catalogo('C_10'), 'descripcion');
+$assert(in_array('Viga C_10', $descs, true) && !in_array('Viga C 10', $descs, true), 'Catálogo: _ se busca literal, no como comodín.');
+$descs = array_column($maestro->catalogo('100%'), 'descripcion');
+$assert(in_array('Malla 100%', $descs, true) && !in_array('Malla 100337', $descs, true), 'Catálogo: % se busca literal, no como comodín.');
+
+// Sugerencias: el token C_10 solo debe puntuar el match literal.
+$db->query(
+    'INSERT INTO pdc_insumo_vinculos (project_id, version_id, descripcion_norm, unidad, descripcion_original, tipo_insumo, cantidad_total, valor_total, apariciones, estado)
+     VALUES (?, ?, ?, ?, ?, ?, 1, 1, 1, \'pendiente\')',
+    [PDC_M_PROJECT_A, $g['versionId'], 'VIGA C_10 REFORZADA', 'UN', 'Viga C_10 reforzada', 'MAT'],
+);
+$sugL = $maestro->sugerencias(PDC_M_PROJECT_A, (int) $db->lastInsertId());
+$assert($sugL !== [] && $sugL[0]['descripcion'] === 'Viga C_10', 'Sugerencias: tokens con _ puntúan solo el literal.');
+
 foreach ([$tmpB, $tmp2] as $f) { @unlink($f); }
 
 @unlink($tmp);
