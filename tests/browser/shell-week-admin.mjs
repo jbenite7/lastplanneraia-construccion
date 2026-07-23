@@ -12,7 +12,7 @@ const check = (name, ok, detail) => {
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1180, height: 820 }, colorScheme: 'dark' });
 
-const calls = { cic: [], crear: [], eliminar: [], contexto: [] };
+const calls = { cic: [], crear: [], eliminar: [], contexto: [], semanalSave: [], semanalAutoProgram: [] };
 await page.route('**/verificarCICActualizada.php', async (route) => {
   calls.cic.push(route.request().postData());
   await route.fulfill({ contentType: 'application/json', body: '0' });
@@ -24,6 +24,16 @@ await page.route('**/nueva_semana.php*', async (route) => {
 await page.route('**/eliminar_semana.php*', async (route) => {
   calls.eliminar.push({ url: route.request().url(), body: route.request().postData() });
   await route.fulfill({ contentType: 'application/json', body: '{"puedeEliminar":"SI","maxSemana":4}' });
+});
+// El aterrizaje por defecto del proyecto pasa por /programacion-semanal, cuyo bootstrap
+// dispara save (opcion=sanear) y auto-program reales: se interceptan para no mutar la BD.
+await page.route('**/api/semanal/save*', (route) => {
+  calls.semanalSave.push(route.request().url());
+  return route.fulfill({ contentType: 'application/json', body: '{"respuesta":"OK"}' });
+});
+await page.route('**/api/semanal/auto-program*', (route) => {
+  calls.semanalAutoProgram.push(route.request().url());
+  return route.fulfill({ contentType: 'application/json', body: '{"respuesta":"OK"}' });
 });
 
 await page.goto(`${BASE_URL}/login`);
@@ -45,7 +55,18 @@ await page.evaluate(() => {
   window.cambiarSemanaSesion = (week, path) => { window.__weekCalls.push({ week, path }); };
 });
 
-const maxSemana = await page.evaluate(() => JSON.parse(document.getElementById('shellWeekMenusData').textContent).maxSemana);
+const shellData = await page.evaluate(() => JSON.parse(document.getElementById('shellWeekMenusData').textContent));
+const maxSemana = shellData.maxSemana;
+
+// Mismo algoritmo que formatEnd() en shell_week_admin.js: Date en T00:00:00 local, +6 días.
+const formatEnd = (startIso) => {
+  const d = new Date(`${startIso}T00:00:00`);
+  if (Number.isNaN(d.getTime())) return '';
+  d.setDate(d.getDate() + 6);
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${d.getFullYear()}-${mm}-${dd}`;
+};
 
 // 1) Estructura del flyout de gestión
 const s = await page.evaluate(() => {
@@ -70,8 +91,19 @@ const create = await page.evaluate(() => ({
   fecha: document.getElementById('shellWeekCreateDate').value,
   preview: document.getElementById('shellWeekCreatePreview').textContent,
 }));
-check('diálogo crear abre con fecha sugerida', create.open && /^\d{4}-\d{2}-\d{2}$/.test(create.fecha), JSON.stringify(create));
-check('preview viva calcula el fin (+6 días)', create.preview.includes(create.fecha), create.preview);
+const fechaSugeridaVacia = !shellData.fechaSugerida;
+check('diálogo crear abre con fecha sugerida',
+  create.open && (fechaSugeridaVacia
+    ? /^\d{4}-\d{2}-\d{2}$/.test(create.fecha)
+    : create.fecha === shellData.fechaSugerida),
+  fechaSugeridaVacia
+    ? `fechaSugerida vacía en backend, fallback a regex de formato — ${JSON.stringify(create)}`
+    : JSON.stringify({ ...create, fechaSugerida: shellData.fechaSugerida }));
+
+const finEsperado = formatEnd(create.fecha);
+check('preview viva calcula el fin (+6 días)',
+  finEsperado !== '' && create.preview.includes(create.fecha) && create.preview.includes(finEsperado),
+  `preview="${create.preview}" inicio=${create.fecha} finEsperado=${finEsperado}`);
 
 await page.evaluate(() => document.getElementById('shellWeekCreateSubmit').click());
 await page.waitForTimeout(600);
@@ -95,6 +127,12 @@ check('eliminar: POST correcto + redirect a semana-1',
     && calls.eliminar[0].body.includes('opcion=eliminar_sem')
     && afterDelete.some((c) => c.week === maxSemana - 1),
   JSON.stringify({ eliminar: calls.eliminar.length, redirects: afterDelete }));
+
+console.log(
+  `\nauditoría de red — mutaciones colaterales interceptadas (PS bootstrap): `
+  + `semanal/save=${calls.semanalSave.length} semanal/auto-program=${calls.semanalAutoProgram.length} `
+  + `(fulfill-eadas por page.route, cero llegó al backend real)`,
+);
 
 await browser.close();
 const failed = results.filter((r) => !r.ok);
