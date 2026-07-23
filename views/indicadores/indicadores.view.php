@@ -26,16 +26,8 @@
 	<!-- <div class="row formularioRegistro">
 	</div> -->
 
-	<div class="row filaBotones action-bar">
-		<div class="col-sm-12 col-md-12 col-lg-12 ml-auto mr-auto p-0" id="filaBotones" style="text-align: center; margin:5px auto 2px auto; width:100%; max-width:1300px">
-			<div class="grupo_botones_informes btn-group" id="grupo_botones_informes" role="group" aria-label="Accesos de informes" style="margin: 0 auto">
-				<?= \App\View\Components\BiAccessComponent::renderLink('indicadores', 'BI Curva S') ?>
-			</div>
-		</div>
-	</div>
-
   <!--Se crea la estructura de la tabla, y Se crea el mensaje emergente que dice si los comandos fueron ejecutados correctamente o no (se repite el mismo de la línea anterior) -->
-	<div class="tabla" id="contenedorInformePowerBI" style="text-align: center; margin:2px auto 10px auto; width:100%; max-width:1300px">
+	<div class="tabla" id="contenedorInformePowerBI" style="text-align:center; width:100vw; position:relative; left:50%; margin-left:-50vw; margin-top:2px; margin-bottom:10px;">
 	</div>
 
 	<div class="row ventanasModalesSemana" id="ventanasModalesSemana">
@@ -111,25 +103,48 @@
 		// informe de proveedores; con el embed único no deben ver el dashboard completo.
 		var ROLES_SIN_INFORME_INDICADORES = ["G", "S", "SG", "C"];
 
+		// Proporción (ancho/alto) del reporte de Power BI para conservar su forma.
+		var REPORTE_ASPECTO = 980 / 600;
+
+		// Ajusta el tamaño del reporte según la ALTURA libre visible: el reporte tiene
+		// forma fija, así que fijamos su alto al espacio vertical disponible (viewport
+		// menos lo que hay encima del contenedor) y derivamos el ancho por su
+		// proporción, con tope del 95% del ancho (holgura lateral). Así llena el alto
+		// visible sin cortarse y toma el mayor ancho posible dentro de ese límite.
+		function ajustarInformePowerBI() {
+			var contenedor = document.getElementById('contenedorInformePowerBI');
+			if (!contenedor) { return; }
+			var iframe = contenedor.querySelector('iframe');
+			if (!iframe) { return; }
+			var margenSuperior = contenedor.getBoundingClientRect().top; // navbar + breadcrumb, etc.
+			var margenInferior = 16;
+			var alturaLibre = window.innerHeight - margenSuperior - margenInferior;
+			if (alturaLibre < 320) { alturaLibre = 320; } // piso razonable
+			var anchoMax = window.innerWidth * 0.95;       // 5% de holgura lateral
+			var ancho = Math.min(alturaLibre * REPORTE_ASPECTO, anchoMax);
+			iframe.style.width = Math.round(ancho) + 'px';
+			iframe.style.height = Math.round(ancho / REPORTE_ASPECTO) + 'px';
+		}
+
 		var listar = function(seccion) {
 			var contenedor = document.getElementById('contenedorInformePowerBI');
 			if (!contenedor) { return; }
 
 			var permiso = document.getElementById('permiso_canonico').value;
-			var alturahoja = $(window).height();
-			var posicionInicioInforme = document.getElementById('encabezado').getBoundingClientRect().height + document.getElementById('textoDireccionSeccion').getBoundingClientRect().height;
-			contenedor.style.height = (alturahoja - posicionInicioInforme - 50) + "px";
-
 			if (ROLES_SIN_INFORME_INDICADORES.includes(permiso)) {
 				contenedor.innerHTML = '<p style="padding:24px; text-align:center;">El informe de indicadores no está disponible para tu perfil.</p>';
-			} else {
-				contenedor.innerHTML = '<iframe title="Last Planner AIA - Power BI" width="100%" height="100%" src="' + POWER_BI_REPORT_URL + '" frameborder="0" style="border:0" allowfullscreen="true"></iframe>';
+				return;
 			}
-
-			if (window.BiAccess) {
-				window.BiAccess.syncAccessLinks();
-			}
+			contenedor.innerHTML = '<iframe title="Last Planner AIA - Power BI" src="' + POWER_BI_REPORT_URL + '" frameborder="0" allowfullscreen="true" onload="ajustarInformePowerBI()" style="border:0; display:block; margin:0 auto;"></iframe>';
+			ajustarInformePowerBI();
 		}
+
+		// Reajusta al redimensionar la ventana (debounce ligero).
+		var _ajusteInformeTO;
+		window.addEventListener('resize', function () {
+			clearTimeout(_ajusteInformeTO);
+			_ajusteInformeTO = setTimeout(ajustarInformePowerBI, 120);
+		});
 
 
 		var ocultos=function(table){
