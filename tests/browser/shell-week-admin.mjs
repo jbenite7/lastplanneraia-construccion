@@ -79,6 +79,7 @@ const afterCreate = await page.evaluate(() => window.__weekCalls);
 check('crear: pre-check CIC + POST + redirect a PG semana nueva',
   calls.cic.length === 1 && calls.crear.length === 1
     && calls.crear[0].body.includes('opcion=nueva_sem')
+    && /(?:^|&)_csrf_token=[a-f0-9]{64}(?:&|$)/.test(calls.crear[0].body)
     && afterCreate.some((c) => c.week === 5 && c.path === '/programa-general'),
   JSON.stringify({ cic: calls.cic.length, crear: calls.crear.length, redirects: afterCreate }));
 
@@ -93,6 +94,7 @@ const afterDelete = await page.evaluate(() => window.__weekCalls);
 check('eliminar: POST correcto + redirect a semana-1',
   calls.eliminar.length === 1
     && calls.eliminar[0].body.includes('opcion=eliminar_sem')
+    && /(?:^|&)_csrf_token=[a-f0-9]{64}(?:&|$)/.test(calls.eliminar[0].body)
     && afterDelete.some((c) => c.week === maxSemana - 1),
   JSON.stringify({ eliminar: calls.eliminar.length, redirects: afterDelete }));
 
