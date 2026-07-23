@@ -48,3 +48,4 @@
 .pdc-check input { accent-color: #69b578; }
 .pdc-celda-accion { color: #9fd3ae; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
 .pdc-fila-retirada { opacity: 0.55; }
+.pdc-maestro-import { border-bottom: 1px solid #2c2c2e; padding-bottom: 16px; }

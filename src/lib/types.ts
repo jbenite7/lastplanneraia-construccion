@@ -125,3 +125,23 @@ export type SugerenciaMaestro = {
   unidad: string
   tipoInsumo: string
 }
+
+// Tipos del importador del maestro SINCO (Fase A2.5)
+export type MaestroImportResumen = {
+  total: number
+  activos: number
+  omitidos: number
+  agrupaciones: number
+  tiposRecurso: number
+}
+
+export type MaestroImportPreview = { importToken: string; resumen: MaestroImportResumen }
+
+export type MaestroImportResultado = {
+  creados: number
+  actualizados: number
+  enriquecidos: number
+  conflictos: unknown[]
+}
+
+export type MaestroImportErrorFila = { fila: number; columna: string; motivo: string }

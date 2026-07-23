@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useMemo, useReducer, useState } from 'react'
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { AgGridReact } from 'ag-grid-react'
 import { CellStyleModule, ClientSideRowModelModule, ModuleRegistry, RowStyleModule, ValidationModule, themeQuartz } from 'ag-grid-community'
 import type { CellClickedEvent, ColDef, RowDoubleClickedEvent } from 'ag-grid-community'
-import { PdcApiError, apiGet, apiPost } from '../lib/api'
+import { PdcApiError, apiGet, apiPost, apiUpload } from '../lib/api'
 import { estadoInicialMaestro, maestroReducer } from '../lib/maestroState'
-import type { MaestroInsumo, ResumenVinculos, SugerenciaMaestro, VinculoInsumo } from '../lib/types'
+import { estadoInicialMaestroImport, maestroImportReducer } from '../lib/maestroImportState'
+import type { MaestroImportErrorFila, MaestroImportPreview, MaestroImportResultado, MaestroInsumo, ResumenVinculos, SugerenciaMaestro, VinculoInsumo } from '../lib/types'
 
 // Mismo criterio que ImportarPresupuesto.tsx/VisorPresupuesto.tsx: registro selectivo de módulos
 // (no AllCommunityModule, que arrastra ~1.3MB). ValidationModule solo en dev.
@@ -33,6 +34,8 @@ export default function MaestroInsumos() {
   const [sugerencias, setSugerencias] = useState<SugerenciaMaestro[]>([])
   const [sinPresupuesto, setSinPresupuesto] = useState(false)
   const [verRetirados, setVerRetirados] = useState(false)
+  const [imp, dispatchImp] = useReducer(maestroImportReducer, estadoInicialMaestroImport)
+  const impFileRef = useRef<HTMLInputElement>(null)
 
   const cargar = useCallback(async () => {
     try {
@@ -71,6 +74,36 @@ export default function MaestroInsumos() {
       .then((d) => setSugerencias(d.sugerencias))
       .catch(() => setSugerencias([]))
   }, [state.vinculando])
+
+  const onArchivoMaestro = async (file: File | undefined) => {
+    if (!file) return
+    dispatchImp({ type: 'SUBIR' })
+    try {
+      const preview = await apiUpload<MaestroImportPreview>('/plan-compras/api/maestro/importar/preview', file)
+      dispatchImp({ type: 'PREVIEW_OK', preview })
+    } catch (e) {
+      if (e instanceof PdcApiError && e.code === 'VALIDATION_FAILED') {
+        const d = e.details as { errores?: MaestroImportErrorFila[] } | undefined
+        dispatchImp({ type: 'PREVIEW_ERRORES', errores: d?.errores ?? [] })
+      } else {
+        dispatchImp({ type: 'FALLO', mensaje: e instanceof Error ? e.message : String(e) })
+      }
+    } finally {
+      if (impFileRef.current) impFileRef.current.value = ''
+    }
+  }
+
+  const onConfirmarMaestro = async () => {
+    if (!imp.preview) return
+    dispatchImp({ type: 'CONFIRMAR' })
+    try {
+      const resultado = await apiPost<MaestroImportResultado>('/plan-compras/api/maestro/importar/confirmar', { importToken: imp.preview.importToken })
+      dispatchImp({ type: 'CONFIRMADO', resultado })
+      cargarCatalogo(busqueda, verRetirados)
+    } catch (e) {
+      dispatchImp({ type: 'FALLO', mensaje: e instanceof Error ? e.message : String(e) })
+    }
+  }
 
   const pendientes = useMemo(() => vinculos.filter((v) => v.estado === 'pendiente'), [vinculos])
 
@@ -186,6 +219,37 @@ export default function MaestroInsumos() {
       </header>
 
       {state.mensaje && <div className="pdc-exito" role="status">{state.mensaje}</div>}
+
+      <section className="pdc-bloque pdc-maestro-import">
+        <h2>Importar maestro (SINCO)</h2>
+        <p>Sube el Excel del maestro de insumos exportado de SINCO (hoja «Maestro Insumos», máx. 10MB).</p>
+        <input
+          ref={impFileRef}
+          data-testid="pdc-maestro-import-file"
+          type="file"
+          accept=".xlsx"
+          disabled={imp.fase === 'subiendo' || imp.fase === 'confirmando'}
+          onChange={(e) => onArchivoMaestro(e.target.files?.[0])}
+        />
+        {imp.fase === 'subiendo' && <p>Analizando el archivo…</p>}
+        {imp.mensajeError && <div className="pdc-error" role="alert">{imp.mensajeError}</div>}
+        {imp.fase === 'previewErrores' && (
+          <div className="pdc-error" role="alert">El archivo tiene {imp.errores.length} error(es); no se importó nada.</div>
+        )}
+        {(imp.fase === 'previewOk' || imp.fase === 'confirmando') && imp.preview && (
+          <div data-testid="pdc-maestro-import-resumen">
+            <p>{imp.preview.resumen.activos} insumos activos · {imp.preview.resumen.omitidos} omitidos · {imp.preview.resumen.agrupaciones} agrupaciones · {imp.preview.resumen.tiposRecurso} tipos</p>
+            <button type="button" data-testid="pdc-maestro-import-confirmar" disabled={imp.fase === 'confirmando'} onClick={onConfirmarMaestro}>
+              {imp.fase === 'confirmando' ? 'Importando…' : 'Confirmar e importar'}
+            </button>
+          </div>
+        )}
+        {imp.fase === 'confirmado' && imp.resultado && (
+          <div className="pdc-exito" role="status">
+            Maestro importado: {imp.resultado.creados} creados, {imp.resultado.actualizados} actualizados, {imp.resultado.enriquecidos} enriquecidos.
+          </div>
+        )}
+      </section>
 
       <div className="pdc-bloque">
         <div className="pdc-fila-acciones">
