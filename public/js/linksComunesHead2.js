@@ -54,7 +54,7 @@
   }
 
   loadScript('/runtime/frontend-config.js?v=20260325a');
-  loadScript('https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.4.24/sweetalert2.all.min.js');
+  loadScript('/public/vendor/sweetalert2.all.min.js?v=11.4.24');
   loadScript('/public/js/core/AiaAlertInterceptor.js?v=20260722a');
   loadScript('/public/js/core/SessionTimeoutManager.js?v=20260328a');
   loadScript('/public/js/modules/aia_ui/theme.js?v=20260711foundation5');

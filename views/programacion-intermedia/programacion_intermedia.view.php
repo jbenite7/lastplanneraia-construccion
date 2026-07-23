@@ -5,8 +5,8 @@
     <title>Programación Intermedia · Last Planner AIA</title>
     <script src="/public/vendor/jquery.min.js"></script>
     <script src="/public/vendor/jquery-ui.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap4.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+    <link href="/public/vendor/tom-select/tom-select.bootstrap4.min.css" rel="stylesheet">
+    <script src="/public/vendor/tom-select/tom-select.complete.min.js"></script>
     <?= \App\View\Components\DesignSystemHeadComponent::render() ?>
     <script type="text/javascript" src="/js/linksComunesHead2.js?v=20260722pi1" charset="utf-8"></script>
     <?php $piCssVersion = @filemtime(dirname(__DIR__, 2) . '/public/css/programacion-intermedia.css') ?: 'piDark1'; ?>
@@ -286,7 +286,7 @@
         window.__AIA_SHELL_SIDEBAR__ = true;
     </script>
     <?= \App\View\Components\BiAccessComponent::renderBootConfig('intermedia') ?>
-	<script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js?v=20260722shell2" charset="utf-8"></script>
+	<script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js?v=20260722falocal" charset="utf-8"></script>
     <?= \App\View\Components\DesignSystemHeadComponent::renderScript('/js/modules/aia_ui/sidebar_navigation.js') ?>
     <script type="text/javascript" src="/js/modules/bi-access.js" charset="utf-8"></script>
     <script type="text/javascript" src="/js/funcionesGenerales6.js" charset="utf-8"></script>
