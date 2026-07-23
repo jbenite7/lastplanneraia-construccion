@@ -189,3 +189,4 @@ pg_activities_complete.txt
 
 # PDC v2: archivos temporales de import de presupuestos (datos de obra — nunca commitear)
 storage/pdc-imports/
+!tests/browser/shell-week-admin.mjs
