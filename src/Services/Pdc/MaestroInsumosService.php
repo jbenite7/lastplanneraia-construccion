@@ -72,18 +72,25 @@ final class MaestroInsumosService
         }
 
         // 2) Upsert de vínculos sin pisar decisiones humanas ni des-vincular.
-        foreach ($porClave as $u) {
+        //    Multi-fila por lotes: un presupuesto real trae ~800 insumos únicos y el
+        //    upsert fila a fila costaba ~800 round-trips en cada carga de la vista.
+        foreach (array_chunk(array_values($porClave), 200) as $lote) {
+            $valores = implode(', ', array_fill(0, count($lote), "(?, ?, ?, ?, ?, ?, ?, ?, ?, 'pendiente')"));
+            $params = [];
+            foreach ($lote as $u) {
+                array_push($params, $projectId, $vid, $u['norm'], $u['unidad'], mb_substr($u['original'], 0, 500), $u['tipo'], round($u['cantidad'], 4), round($u['valor'], 2), $u['apariciones']);
+            }
             $this->db->query(
-                'INSERT INTO pdc_insumo_vinculos
+                "INSERT INTO pdc_insumo_vinculos
                     (project_id, version_id, descripcion_norm, unidad, descripcion_original, tipo_insumo, cantidad_total, valor_total, apariciones, estado)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, \'pendiente\')
+                 VALUES {$valores}
                  ON DUPLICATE KEY UPDATE
                     descripcion_original = VALUES(descripcion_original),
                     tipo_insumo = VALUES(tipo_insumo),
                     cantidad_total = VALUES(cantidad_total),
                     valor_total = VALUES(valor_total),
-                    apariciones = VALUES(apariciones)',
-                [$projectId, $vid, $u['norm'], $u['unidad'], mb_substr($u['original'], 0, 500), $u['tipo'], round($u['cantidad'], 4), round($u['valor'], 2), $u['apariciones']],
+                    apariciones = VALUES(apariciones)",
+                $params,
             );
         }
 
