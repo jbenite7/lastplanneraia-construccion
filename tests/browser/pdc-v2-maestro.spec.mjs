@@ -41,6 +41,25 @@ test('maestro: cold start masivo y re-import con auto-match', async ({ page }) =
     await page.locator('[data-testid="pdc-maestro-busqueda"]').fill('concreto');
     await expect(catalogo.locator('.ag-cell', { hasText: 'CONCRETO 4000PSI' }).first()).toBeVisible({ timeout: 15000 });
 
+    // Retiro desde el catálogo: la fila desaparece de la vista activa.
+    await page.locator('[data-testid="pdc-maestro-busqueda"]').fill('bombeo');
+    const filaBombeo = catalogo.locator('.ag-row', { hasText: 'SERVICIO BOMBEO' }).first();
+    await expect(filaBombeo).toBeVisible({ timeout: 15000 });
+    await filaBombeo.locator('.pdc-celda-accion').click();
+    await expect(page.locator('.pdc-exito')).toContainText('retirado', { timeout: 15000 });
+    await expect(catalogo.locator('.ag-cell', { hasText: 'SERVICIO BOMBEO' })).toHaveCount(0, { timeout: 15000 });
+
+    // Ver retirados → reaparece con acción Reactivar.
+    await page.locator('[data-testid="pdc-maestro-ver-retirados"]').check();
+    const filaRetirada = catalogo.locator('.ag-row', { hasText: 'SERVICIO BOMBEO' }).first();
+    await expect(filaRetirada.locator('.pdc-celda-accion')).toHaveText('Reactivar', { timeout: 15000 });
+    await filaRetirada.locator('.pdc-celda-accion').click();
+    await expect(page.locator('.pdc-exito')).toContainText('reactivado', { timeout: 15000 });
+
+    // Recargar el maestro: regenerar repone el auto-match → cobertura 100% de nuevo.
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await expect(page.locator('[data-testid="pdc-maestro-cobertura"]')).toContainText('Cobertura: 100%', { timeout: 20000 });
+
     expect(await page.locator('body').innerText()).not.toContain('Fatal error');
   } finally {
     await logout(page).catch(() => {});

@@ -1,3 +1,3 @@
 repo: plan-de-compras
-commit: 424bb24a22dca2eceb0ff8c9e6f169c7b89c9705 (dirty)
-fecha: 2026-07-23T17:22:52Z
+commit: 6bef5d439c3b162c217ad6531aa1fb741b6756b7 (dirty)
+fecha: 2026-07-23T17:28:39Z
