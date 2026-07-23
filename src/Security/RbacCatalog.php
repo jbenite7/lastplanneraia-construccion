@@ -116,6 +116,7 @@ class RbacCatalog
             ['key' => 'lps.pdc.editar', 'module' => 'lps', 'action' => 'pdc_editar', 'description' => 'Editar PDC'],
             ['key' => 'lps.pdc.auto_generar', 'module' => 'lps', 'action' => 'pdc_auto_generar', 'description' => 'Auto-generar PDC desde el programa general'],
             ['key' => 'lps.pdc.importar', 'module' => 'lps', 'action' => 'pdc_importar', 'description' => 'Importar presupuesto Excel al plan de compras v2'],
+            ['key' => 'lps.pdc.maestro', 'module' => 'lps', 'action' => 'pdc_maestro', 'description' => 'Administrar el maestro global de insumos del plan de compras v2'],
             ['key' => 'lps.control_cambios.ver', 'module' => 'lps', 'action' => 'control_cambios_ver', 'description' => 'Ver control de cambios'],
             ['key' => 'lps.control_cambios.editar', 'module' => 'lps', 'action' => 'control_cambios_editar', 'description' => 'Editar control de cambios'],
             ['key' => 'lps.paquetes_contratacion.ver', 'module' => 'lps', 'action' => 'paquetes_contratacion_ver', 'description' => 'Ver paquetes de contratacion'],
@@ -193,6 +194,7 @@ class RbacCatalog
                 [
                     'lps.contratos.auto_definir',
                     'lps.pdc.importar',
+                    'lps.pdc.maestro',
                     'lps.semana.crear',
                     'lps.semana.eliminar',
                     'notificaciones.resumen_semanal',
