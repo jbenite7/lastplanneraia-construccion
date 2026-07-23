@@ -366,3 +366,6 @@ $shellGroups = array_values(array_filter([
     }
   })();
 </script>
+<?php if ($shellCanCreate || $shellCanDelete): ?>
+<?= \App\View\Components\DesignSystemHeadComponent::renderScript('/js/modules/aia_ui/shell_week_admin.js') ?>
+<?php endif; ?>
