@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Estado actual
 
-Rama `pdc-v2-fundacion`: **fundación implementada** — SPA React + Vite + TypeScript + AG Grid Community en `src/` (bootstrap, cliente API, página inicial de maestro de insumos), montada como isla en lps-aia (shell PHP + endpoint de contexto + bundle commiteado en `lps-aia/public/pdc-app/`). Verificada con Vitest (9 tests), test PHP autoejecutable (11 asserts) y e2e Playwright.
+Rama en curso: **Fase A1 implementada** — importador de presupuesto (preview→confirmar, versionado con única activa, todo-o-nada) sobre 3 tablas `pdc_presupuesto_*` en lps-aia, con RBAC `lps.pdc.importar`, vista `#/ensamble/importar` y navegación de submódulos Ensamble | Seguimiento. Verificado con Vitest (29 tests), tests PHP autoejecutables (RBAC, parser, flujo BD) y e2e Playwright de import.
 
 El desarrollo sigue el **roadmap maestro** `docs/superpowers/plans/2026-07-22-roadmap-pdc-v2.md` (fases A1→A4, B1→B3, C1); cada fase recibe su propio spec y plan detallado antes de ejecutarse.
 
