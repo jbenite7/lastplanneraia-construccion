@@ -84,3 +84,42 @@ export type ArbolPresupuesto = {
   items: ArbolItem[]
   insumos: ArbolInsumo[]
 }
+
+// Tipos del maestro de insumos (Task 6)
+export type VinculoInsumo = {
+  id: number
+  descripcionOriginal: string
+  descripcionNorm: string
+  unidad: string
+  tipoInsumo: string
+  cantidadTotal: number
+  valorTotal: number
+  apariciones: number
+  maestroId: number | null
+  maestroDescripcion: string | null
+  estado: 'pendiente' | 'auto' | 'confirmado'
+}
+
+export type ResumenVinculos = {
+  total: number
+  auto: number
+  confirmados: number
+  pendientes: number
+  cobertura: number
+}
+
+export type MaestroInsumo = {
+  id: number
+  descripcion: string
+  unidad: string
+  tipoInsumo: string
+  creadoPor?: string
+  createdAt?: string
+}
+
+export type SugerenciaMaestro = {
+  id: number
+  descripcion: string
+  unidad: string
+  tipoInsumo: string
+}
