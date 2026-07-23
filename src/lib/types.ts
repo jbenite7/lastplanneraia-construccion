@@ -49,7 +49,9 @@ export type VersionPresupuesto = {
   totalActividades: number
   totalInsumos: number
   costoTotal: number
-  activa: boolean
+  // 1|0 deliberado (no boolean): AG Grid inferiría cellDataType boolean y
+  // renderizaría checkbox ignorando el valueFormatter "Activa" del historial.
+  activa: number
   importadoPor: string
   createdAt: string
 }
