@@ -157,4 +157,147 @@ final class MaestroInsumosService
             'cobertura' => $total === 0 ? 100.0 : round($vinculados * 100 / $total, 1),
         ];
     }
+
+    public function sugerencias(int $projectId, int $vinculoId, int $limite = 8): array
+    {
+        $vinculo = $this->db->query(
+            'SELECT descripcion_norm FROM pdc_insumo_vinculos WHERE project_id = ? AND id = ?',
+            [$projectId, $vinculoId],
+        )->fetch(\PDO::FETCH_ASSOC);
+        if ($vinculo === false) {
+            return [];
+        }
+        $tokens = array_values(array_filter(explode(' ', $vinculo['descripcion_norm']), static fn ($t) => mb_strlen($t) >= 4));
+        if ($tokens === []) {
+            return [];
+        }
+        $condiciones = implode(' + ', array_fill(0, count($tokens), '(descripcion_norm LIKE ?)'));
+        $params = array_map(static fn ($t) => "%{$t}%", $tokens);
+        $rows = $this->db->query(
+            "SELECT id, descripcion, unidad, tipo_insumo, ({$condiciones}) AS coincidencias
+             FROM general_maestro_insumos
+             WHERE activo = 1
+             HAVING coincidencias > 0
+             ORDER BY coincidencias DESC, descripcion ASC
+             LIMIT " . (int) $limite,
+            $params,
+        )->fetchAll(\PDO::FETCH_ASSOC);
+        return array_map(static fn (array $r): array => [
+            'id' => (int) $r['id'],
+            'descripcion' => $r['descripcion'],
+            'unidad' => $r['unidad'],
+            'tipoInsumo' => $r['tipo_insumo'],
+        ], $rows);
+    }
+
+    public function vincular(int $projectId, int $vinculoId, int $maestroId): array
+    {
+        $existeVinculo = (int) $this->db->query(
+            'SELECT COUNT(*) FROM pdc_insumo_vinculos WHERE project_id = ? AND id = ?',
+            [$projectId, $vinculoId],
+        )->fetchColumn();
+        $existeMaestro = (int) $this->db->query(
+            'SELECT COUNT(*) FROM general_maestro_insumos WHERE id = ? AND activo = 1',
+            [$maestroId],
+        )->fetchColumn();
+        if ($existeVinculo === 0 || $existeMaestro === 0) {
+            return ['ok' => false, 'code' => 'VINCULO_INVALIDO'];
+        }
+        $this->db->query(
+            "UPDATE pdc_insumo_vinculos SET maestro_id = ?, estado = 'confirmado' WHERE project_id = ? AND id = ?",
+            [$maestroId, $projectId, $vinculoId],
+        );
+        return ['ok' => true];
+    }
+
+    public function crearDesdePendientes(int $projectId, array $vinculoIds, string $usuario): array
+    {
+        $ids = array_values(array_filter(array_map('intval', $vinculoIds), static fn ($i) => $i > 0));
+        if ($ids === []) {
+            return ['ok' => true, 'creados' => 0, 'vinculados' => 0];
+        }
+        $marcadores = implode(',', array_fill(0, count($ids), '?'));
+        $pendientes = $this->db->query(
+            "SELECT id, descripcion_norm, unidad, descripcion_original, tipo_insumo
+             FROM pdc_insumo_vinculos
+             WHERE project_id = ? AND estado = 'pendiente' AND id IN ({$marcadores})",
+            array_merge([$projectId], $ids),
+        )->fetchAll(\PDO::FETCH_ASSOC);
+
+        $creados = 0;
+        $vinculados = 0;
+        $this->db->beginTransaction();
+        try {
+            foreach ($pendientes as $p) {
+                $maestroId = $this->db->query(
+                    'SELECT id FROM general_maestro_insumos WHERE descripcion_norm = ? AND unidad = ?',
+                    [$p['descripcion_norm'], $p['unidad']],
+                )->fetchColumn();
+                if ($maestroId === false) {
+                    $this->db->query(
+                        'INSERT INTO general_maestro_insumos (descripcion, descripcion_norm, unidad, tipo_insumo, activo, creado_por, created_at)
+                         VALUES (?, ?, ?, ?, 1, ?, NOW())',
+                        [$p['descripcion_original'], $p['descripcion_norm'], $p['unidad'], $p['tipo_insumo'], $usuario],
+                    );
+                    $maestroId = (int) $this->db->lastInsertId();
+                    $creados++;
+                }
+                $this->db->query(
+                    "UPDATE pdc_insumo_vinculos SET maestro_id = ?, estado = 'confirmado' WHERE project_id = ? AND id = ?",
+                    [(int) $maestroId, $projectId, (int) $p['id']],
+                );
+                $vinculados++;
+            }
+            $this->db->commit();
+        } catch (\Throwable $t) {
+            $this->db->rollBack();
+            throw $t;
+        }
+        return ['ok' => true, 'creados' => $creados, 'vinculados' => $vinculados];
+    }
+
+    public function crearManual(int $projectId, string $descripcion, string $unidad, string $tipoInsumo, string $usuario): array
+    {
+        $norm = self::normalizar($descripcion);
+        $unidad = trim($unidad);
+        if ($norm === '' || $unidad === '') {
+            return ['ok' => false, 'code' => 'VINCULO_INVALIDO'];
+        }
+        $existe = (int) $this->db->query(
+            'SELECT COUNT(*) FROM general_maestro_insumos WHERE descripcion_norm = ? AND unidad = ?',
+            [$norm, $unidad],
+        )->fetchColumn();
+        if ($existe > 0) {
+            return ['ok' => false, 'code' => 'MAESTRO_DUPLICADO'];
+        }
+        $this->db->query(
+            'INSERT INTO general_maestro_insumos (descripcion, descripcion_norm, unidad, tipo_insumo, activo, creado_por, created_at)
+             VALUES (?, ?, ?, ?, 1, ?, NOW())',
+            [mb_substr(trim($descripcion), 0, 500), $norm, mb_substr($unidad, 0, 20), mb_substr(trim($tipoInsumo), 0, 100), $usuario],
+        );
+        return ['ok' => true, 'id' => (int) $this->db->lastInsertId()];
+    }
+
+    public function catalogo(?string $busqueda = null, int $limite = 200): array
+    {
+        $where = 'activo = 1';
+        $params = [];
+        if ($busqueda !== null && trim($busqueda) !== '') {
+            $where .= ' AND descripcion_norm LIKE ?';
+            $params[] = '%' . self::normalizar($busqueda) . '%';
+        }
+        $rows = $this->db->query(
+            "SELECT id, descripcion, unidad, tipo_insumo, creado_por, created_at
+             FROM general_maestro_insumos WHERE {$where} ORDER BY descripcion ASC LIMIT " . (int) $limite,
+            $params,
+        )->fetchAll(\PDO::FETCH_ASSOC);
+        return array_map(static fn (array $r): array => [
+            'id' => (int) $r['id'],
+            'descripcion' => $r['descripcion'],
+            'unidad' => $r['unidad'],
+            'tipoInsumo' => $r['tipo_insumo'],
+            'creadoPor' => $r['creado_por'],
+            'createdAt' => $r['created_at'],
+        ], $rows);
+    }
 }

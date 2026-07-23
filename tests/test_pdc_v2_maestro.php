@@ -70,7 +70,64 @@ $assert($v['vinculos'][0]['estado'] === 'pendiente', 'Orden: pendientes primero.
 // Aislamiento: B sin vínculos.
 $assert($maestro->generarVinculos(PDC_M_PROJECT_B) === null, 'B sin versión → null.');
 
-echo "--- acciones (T4) se agregan después ---\n";
+echo "=== PDC v2: maestro — acciones de la cola ===\n";
+
+// Re-preparar: importar y generar de nuevo (la limpieza de arriba borró todo).
+$tmpB = sys_get_temp_dir() . '/pdc_m_v1b.xlsx';
+pdcFixturePresupuestoValido($tmpB);
+$pB = $importSvc->previewDesdeArchivo($tmpB, 'v1b.xlsx', PDC_M_PROJECT_A, PDC_M_MARCA);
+$cB = $importSvc->confirmar($pB['importToken'], PDC_M_PROJECT_A);
+$maestro->generarVinculos(PDC_M_PROJECT_A);
+$v = $maestro->vinculos(PDC_M_PROJECT_A);
+$ids = array_column($v['vinculos'], 'id');
+
+// Cold start masivo: crear TODOS los pendientes en el maestro.
+$r = $maestro->crearDesdePendientes(PDC_M_PROJECT_A, $ids, PDC_M_MARCA);
+$assert($r['ok'] === true && $r['creados'] === 4 && $r['vinculados'] === 4, 'Creación masiva: 4 creados y vinculados.');
+$v2 = $maestro->vinculos(PDC_M_PROJECT_A);
+$assert($v2['resumen']['pendientes'] === 0 && $v2['resumen']['cobertura'] === 100.0, 'Cobertura 100% tras el masivo.');
+$assert($v2['vinculos'][0]['estado'] !== 'pendiente' && $v2['vinculos'][0]['maestroDescripcion'] !== null, 'Vínculos con maestro asignado.');
+
+// Segundo import (contenido idéntico) → auto-match 100% sin intervención.
+$tmp2 = sys_get_temp_dir() . '/pdc_m_v2.xlsx';
+pdcFixturePresupuestoValido($tmp2);
+$p2 = $importSvc->previewDesdeArchivo($tmp2, 'v2.xlsx', PDC_M_PROJECT_A, PDC_M_MARCA);
+$c2 = $importSvc->confirmar($p2['importToken'], PDC_M_PROJECT_A);
+$g = $maestro->generarVinculos(PDC_M_PROJECT_A);
+$assert($g['total'] === 4 && $g['auto'] === 4 && $g['pendientes'] === 0, 'Re-import: auto-match 100% contra el maestro poblado.');
+
+// Idempotencia del masivo: repetir con los mismos ids no duplica el catálogo.
+$antes = (int) $db->query('SELECT COUNT(*) FROM general_maestro_insumos WHERE creado_por = ?', [PDC_M_MARCA])->fetchColumn();
+$maestro->crearDesdePendientes(PDC_M_PROJECT_A, $ids, PDC_M_MARCA);
+$despues = (int) $db->query('SELECT COUNT(*) FROM general_maestro_insumos WHERE creado_por = ?', [PDC_M_MARCA])->fetchColumn();
+$assert($antes === $despues && $antes === 4, 'El masivo repetido no duplica insumos del maestro.');
+
+// Sugerencias: buscar para un pendiente artificial con texto similar.
+$db->query(
+    'INSERT INTO pdc_insumo_vinculos (project_id, version_id, descripcion_norm, unidad, descripcion_original, tipo_insumo, cantidad_total, valor_total, apariciones, estado)
+     VALUES (?, ?, ?, ?, ?, ?, 1, 1, 1, \'pendiente\')',
+    [PDC_M_PROJECT_A, $g['versionId'], 'TEJA ZINC CALIBRE 34', 'M2', 'Teja Zinc calibre 34', 'MAT', ],
+);
+$pendienteId = (int) $db->lastInsertId();
+$sug = $maestro->sugerencias(PDC_M_PROJECT_A, $pendienteId);
+$assert(count($sug) >= 1 && str_contains($sug[0]['descripcion'], 'TEJA'), 'Sugerencias por tokens encuentran TEJA DE ZINC.');
+
+// Vincular manual a una sugerencia.
+$rv = $maestro->vincular(PDC_M_PROJECT_A, $pendienteId, $sug[0]['id']);
+$assert($rv['ok'] === true, 'Vinculación manual confirma.');
+$assert($maestro->vincular(PDC_M_PROJECT_A, 999999999, $sug[0]['id'])['code'] === 'VINCULO_INVALIDO', 'Vínculo inexistente rechazado.');
+
+// Crear manual duplicado → MAESTRO_DUPLICADO.
+$dup = $maestro->crearManual(PDC_M_PROJECT_A, 'Teja de Zinc', 'M2', 'MAT', PDC_M_MARCA);
+$assert($dup['ok'] === false && $dup['code'] === 'MAESTRO_DUPLICADO', 'Crear manual duplicado se rechaza.');
+
+// Catálogo con búsqueda.
+$cat = $maestro->catalogo('teja');
+$assert(count($cat) >= 1 && str_contains($cat[0]['descripcion'], 'TEJA'), 'Catálogo filtra por búsqueda normalizada.');
+
+foreach ([$tmpB, $tmp2] as $f) { @unlink($f); }
+
+@unlink($tmp);
 $limpiar();
 echo $failures === [] ? "=== OK ===\n" : '=== ' . count($failures) . " FAILED ===\n";
 exit($failures === [] ? 0 : 1);
