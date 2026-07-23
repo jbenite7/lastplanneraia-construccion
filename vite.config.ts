@@ -1,6 +1,7 @@
 /// <reference types="vitest/config" />
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { configDefaults } from 'vitest/config'
 
 // base '/pdc-app/': los assets viven en lps-aia/public/pdc-app/ (nombre distinto
 // de la ruta /plan-compras para que Apache no sirva el directorio en vez de rutear).
@@ -31,5 +32,6 @@ export default defineConfig({
   },
   test: {
     environment: 'node',
+    exclude: [...configDefaults.exclude, '**/.claude/**'],
   },
 })
