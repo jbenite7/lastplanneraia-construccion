@@ -25,7 +25,9 @@
   if (!document.querySelector('meta[name="viewport"]')) {
     var metaView = document.createElement('meta');
     metaView.name = 'viewport';
-    metaView.content = 'width=device-width, user-scalable=no,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0';
+    // WCAG 1.4.4: nunca bloquear el zoom del usuario (DS-028). El modo tablet
+    // de tablet-viewport-scale.js reescribe esta meta con su propia escala.
+    metaView.content = 'width=device-width, initial-scale=1.0';
     head.appendChild(metaView);
   }
 
@@ -52,7 +54,7 @@
   }
 
   loadScript('/runtime/frontend-config.js?v=20260325a');
-  loadScript('https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.4.24/sweetalert2.all.min.js');
+  loadScript('/public/vendor/sweetalert2.all.min.js?v=11.4.24');
   loadScript('/public/js/core/AiaAlertInterceptor.js?v=20260722a');
   loadScript('/public/js/core/SessionTimeoutManager.js?v=20260328a');
   loadScript('/public/js/modules/aia_ui/theme.js?v=20260711foundation5');

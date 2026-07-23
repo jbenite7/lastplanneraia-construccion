@@ -111,6 +111,22 @@
   :where(.pg-page #hot-container.hot-fixed-columns .handsontable table.htCore) {
     table-layout: fixed !important;
   }
+
+  /* El glifo ▼ vendor es texto no-medible para Axe (incompletes serios de
+     contraste en cada celda dropdown). Se anula el texto y se dibuja la
+     flecha con bordes, tokenizada; el hitbox del vendor se conserva. */
+  :where(.pg-page #hot-container .htAutocompleteArrow) {
+    font-size: 0 !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  :where(.pg-page #hot-container .htAutocompleteArrow)::after {
+    content: "";
+    border-inline: calc(var(--ds-border-width) * 4) solid transparent;
+    border-top: calc(var(--ds-border-width) * 5) solid var(--ds-active-text-secondary);
+  }
 }
 
 @layer legacy-overrides {

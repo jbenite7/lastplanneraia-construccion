@@ -121,10 +121,18 @@
     font-size: 0.72rem;
   }
 
+  /* Texto primario + subrayado como affordance: action-primary queda a 4.51:1
+     sobre la superficie de la tarjeta en dark (borde AA exacto) y Axe lo marca
+     con comentarios renderizados; el golden por defecto no monta este enlace. */
   .lps-reply-trigger {
-    color: var(--ds-active-action-primary);
+    color: var(--ds-active-text-primary);
     font-weight: 700;
-    text-decoration: none;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  .lps-reply-trigger:hover {
+    color: var(--ds-active-text-secondary);
   }
 
   .lps-replies-container {
@@ -147,8 +155,11 @@
     line-height: 1.35;
   }
 
+  /* action-primary cae a 3.96:1 sobre la reply raised y 4.19:1 sobre el tint
+     crítico; el par hover (green-light en dark, brand oscuro en linen) da
+     6.15–11.5:1 en todos los fondos de la bitácora. */
   .lps-mention-badge {
-    color: var(--ds-active-action-primary);
+    color: var(--ds-active-action-primary-hover);
     font-weight: 700;
   }
 
@@ -241,6 +252,20 @@
     padding: var(--ds-space-1) var(--ds-space-2);
   }
 
+  /* Default legible del badge sin variante (p. ej. «Prioridad» sin fila
+     seleccionada): la base legacy no define colores y el texto heredado
+     quedaba a 1.11:1 sobre la superficie oscura. Las variantes
+     lps-badge-p1/p2/p3/info/neutral conservan sus colores. */
+  .lps-drawer .lps-badge:not(.lps-badge-p1, .lps-badge-p2, .lps-badge-p3, .lps-badge-info, .lps-badge-neutral) {
+    background: var(--ds-active-surface-raised);
+    border: var(--ds-border-width) solid var(--ds-active-border);
+    color: var(--ds-active-text-primary);
+  }
+
+  .lps-drawer .lps-badge:empty {
+    display: none;
+  }
+
   .lps-drawer .lps-btn {
     padding: var(--ds-space-2) var(--ds-space-4);
   }
@@ -288,5 +313,261 @@
     margin: 0 0 var(--ds-space-2);
     font-weight: 700;
     letter-spacing: 0.5px;
+  }
+}
+
+/* Migración de los estilos inline del parcial y del JS del drawer (DS-018:
+   una sola skin central tokenizada). El JS revela/oculta tarjetas con
+   style.display inline, que gana a la clase de arranque oculto. */
+@layer components {
+  .lps-start-hidden {
+    display: none;
+  }
+
+  .lps-drawer .lps-drawer-header__titles {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ds-space-1);
+  }
+
+  .lps-drawer .lps-badge--rol {
+    font-size: 0.7rem;
+    align-self: flex-start;
+    margin-top: var(--ds-space-1);
+  }
+
+  .lps-drawer .lps-diagnostic__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--ds-space-2);
+  }
+
+  .lps-drawer .lps-diagnostic__consecutivo {
+    font-size: 0.8rem;
+    font-weight: var(--ds-type-weight-semibold);
+  }
+
+  .lps-drawer .lps-diagnostic__title {
+    margin: 0 0 var(--ds-space-1);
+    font-size: 1.05rem;
+    font-weight: var(--ds-type-weight-bold);
+    line-height: 1.3;
+  }
+
+  .lps-drawer .lps-diagnostic__desc {
+    margin: 0;
+    font-size: 0.88rem;
+    line-height: 1.45;
+  }
+
+  .lps-drawer .lps-card-copy {
+    margin: 0 0 var(--ds-space-2);
+    font-size: 0.8rem;
+    line-height: 1.35;
+  }
+
+  .lps-drawer .lps-itr__row {
+    display: flex;
+    align-items: center;
+    gap: var(--ds-space-3);
+  }
+
+  .lps-drawer .lps-itr__track {
+    position: relative;
+    flex: 1;
+    height: var(--ds-space-3);
+    border-radius: var(--ds-radius-progress);
+    background: color-mix(in srgb, var(--ds-active-border) 45%, transparent);
+    overflow: hidden;
+  }
+
+  .lps-drawer .lps-itr__bar {
+    width: 100%;
+    height: 100%;
+    border-radius: var(--ds-radius-progress);
+    background: var(--aia-alert-high);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition:
+      transform var(--ds-motion-slow),
+      background-color var(--ds-motion-standard);
+  }
+
+  .lps-drawer .lps-itr__bar--warning {
+    background: var(--aia-warning-high);
+  }
+
+  .lps-drawer .lps-itr__bar--success {
+    background: var(--aia-green-medium);
+  }
+
+  .lps-drawer .lps-itr__value {
+    min-width: 2.8rem;
+    font-size: 0.95rem;
+    font-weight: var(--ds-type-weight-bold);
+    text-align: right;
+  }
+
+  .lps-drawer .lps-divided-section {
+    margin-top: var(--ds-space-3);
+    border-top: var(--ds-border-width) dashed var(--ds-active-border);
+    padding-top: var(--ds-space-2);
+  }
+
+  .lps-drawer .lps-caption--block {
+    display: block;
+    margin-bottom: var(--ds-space-1);
+  }
+
+  .lps-drawer .lps-soft-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ds-space-1);
+  }
+
+  .lps-drawer .lps-soft-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.75rem;
+  }
+
+  .lps-drawer .lps-badge--success,
+  .lps-drawer .lps-badge--warning,
+  .lps-drawer .lps-badge--critical {
+    padding: 0.125rem var(--ds-space-2);
+    border-radius: var(--ds-radius-xs);
+    font-size: 0.68rem;
+    font-weight: var(--ds-type-weight-bold);
+  }
+
+  .lps-drawer .lps-badge--success {
+    background: var(--aia-green-medium);
+    color: var(--ds-color-text-inverse);
+  }
+
+  .lps-drawer .lps-badge--warning {
+    background: var(--aia-warning-high);
+    color: var(--aia-text-primary);
+  }
+
+  .lps-drawer .lps-badge--critical {
+    background: var(--aia-alert-high);
+    color: var(--ds-color-text-inverse);
+  }
+
+  .lps-drawer .lps-btn--target {
+    min-height: var(--ds-target-min);
+  }
+
+  .lps-drawer .lps-btn--stacked {
+    margin-bottom: var(--ds-space-2);
+  }
+
+  .lps-drawer .lps-btn--flush {
+    margin-bottom: 0;
+  }
+
+  .lps-drawer .lps-btn__emoji {
+    font-size: 1.1rem;
+    line-height: 1;
+  }
+
+  .lps-drawer .lps-comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ds-space-4);
+    max-height: 20rem;
+    overflow-y: auto;
+    margin-bottom: var(--ds-space-3);
+    padding-right: var(--ds-space-1);
+  }
+
+  .lps-drawer .lps-comment-form {
+    border-top: var(--ds-border-width) solid var(--ds-active-border);
+    padding-top: var(--ds-space-3);
+  }
+
+  .lps-drawer .lps-comment-form__row {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--ds-space-2);
+  }
+
+  .lps-drawer .lps-comment-form__input {
+    flex: 1;
+    resize: none;
+  }
+
+  .lps-drawer .lps-comment-form__send {
+    width: auto;
+    min-height: var(--ds-target-min);
+    margin-bottom: 0;
+    padding: 0 var(--ds-space-3);
+  }
+
+  .lps-drawer .lps-closure-input {
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: var(--ds-space-2);
+    resize: none;
+  }
+
+  .lps-drawer .lps-closure-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--ds-space-3);
+  }
+
+  .lps-drawer .lps-closure-count {
+    font-size: 0.75rem;
+    font-weight: var(--ds-type-weight-semibold);
+  }
+
+  .lps-drawer .lps-digest-card__copy {
+    min-height: var(--ds-target-min);
+    margin: var(--ds-space-3) 0 0;
+    font-size: 0.85rem;
+  }
+
+  .lps-drawer .lps-sim-checkbox {
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: var(--ds-radius-xs);
+    cursor: pointer;
+    accent-color: var(--ds-active-action-primary);
+  }
+
+  .lps-drawer .lps-footer-note {
+    margin: var(--ds-space-2) 0 0;
+    font-size: 0.72rem;
+    line-height: 1.2;
+    text-align: center;
+  }
+
+  .lps-toast-fallback {
+    position: fixed;
+    bottom: var(--ds-space-6);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--ds-color-brand-primary-dark);
+    color: var(--ds-color-text-inverse);
+    padding: var(--ds-space-2) var(--ds-space-4);
+    border-radius: var(--ds-radius-sm);
+    font-size: 0.85rem;
+    font-weight: var(--ds-type-weight-semibold);
+    z-index: var(--ds-z-shell-toast, var(--ds-z-toast));
+    box-shadow: var(--ds-shadow-md);
+    pointer-events: none;
+    transition: opacity var(--ds-motion-slow);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lps-drawer .lps-itr__bar,
+    .lps-toast-fallback {
+      transition-duration: var(--ds-motion-reduced-duration);
+    }
   }
 }

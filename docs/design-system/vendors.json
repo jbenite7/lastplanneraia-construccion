@@ -87,13 +87,20 @@
         "2.3.1"
       ],
       "delivery": [
+        "local",
         "cdn"
       ],
       "classification": "adapter",
       "assets": [
-        "public/css/tom-select-premium-aia.css"
+        "public/css/tom-select-premium-aia.css",
+        "public/vendor/tom-select/tom-select.bootstrap4.min.css",
+        "public/vendor/tom-select/tom-select.complete.min.js"
       ],
-      "adapterMaturity": "candidate-adapter"
+      "adapterMaturity": "candidate-adapter",
+      "sha256": {
+        "tom-select.bootstrap4.min.css": "a0e336d9b9e0ea93ecc343986b7d56d5a95eca3f3451241fc633bc47ce97f954",
+        "tom-select.complete.min.js": "28d785eb15b9a3fb56d6869ee57952e0908d003a0cf911eaae7a14a8bea9bc76"
+      }
     },
     {
       "id": "sweetalert2",
@@ -101,14 +108,18 @@
         "11.4.24"
       ],
       "delivery": [
-        "local-css",
-        "cdn-js"
+        "local"
       ],
       "classification": "adapter",
       "assets": [
-        "public/vendor/sweetalert2.min.css"
+        "public/vendor/sweetalert2.min.css",
+        "public/vendor/sweetalert2.all.min.js"
       ],
-      "adapterMaturity": "candidate-adapter"
+      "adapterMaturity": "candidate-adapter",
+      "sha256": {
+        "sweetalert2.min.css": "1764c65d6fa673c7b9ead5d804561eb9c1bf4a00faa90b7848d1719a95577549",
+        "sweetalert2.all.min.js": "4e7ede661a7d85d01f3cc662feb578ac1076d5ff6c294fe813858cf2bbbada70"
+      }
     },
     {
       "id": "toastr",

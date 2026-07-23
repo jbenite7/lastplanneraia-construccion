@@ -318,12 +318,7 @@ window.LPSContextualDrawer = (function() {
       return;
     }
     const toast = document.createElement('div');
-    toast.style.cssText = `
-      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-      background: rgba(26, 60, 42, 0.96); color: #ffffff; padding: 10px 20px;
-      border-radius: 8px; font-size: 0.85rem; font-weight: 600; z-index: var(--ds-z-shell-toast, 2300);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15); pointer-events: none; transition: opacity 0.3s;
-    `;
+    toast.className = 'lps-toast-fallback';
     toast.textContent = message;
     document.body.appendChild(toast);
     setTimeout(() => {
@@ -756,14 +751,13 @@ window.LPSContextualDrawer = (function() {
     card.style.display = 'block';
 
     if (bar) {
-      bar.style.width = `${itr.porcentaje}%`;
-      // Gradiente o colores según el porcentaje
+      // scaleX en lugar de width: animación solo de compositor (DS motion).
+      bar.style.transform = `scaleX(${Math.max(0, Math.min(100, itr.porcentaje)) / 100})`;
+      bar.classList.remove('lps-itr__bar--success', 'lps-itr__bar--warning');
       if (itr.porcentaje >= 80) {
-        bar.style.background = '#198754'; // Verde
+        bar.classList.add('lps-itr__bar--success');
       } else if (itr.porcentaje >= 50) {
-        bar.style.background = '#ffc107'; // Amarillo
-      } else {
-        bar.style.background = '#dc3545'; // Rojo
+        bar.classList.add('lps-itr__bar--warning');
       }
     }
     if (valText) valText.textContent = `${itr.porcentaje}%`;
@@ -776,7 +770,7 @@ window.LPSContextualDrawer = (function() {
     if (!softContainer && card) {
       softContainer = document.createElement('div');
       softContainer.id = 'lps_soft_restrictions_container';
-      softContainer.style.cssText = 'margin-top: 10px; border-top: 1px dashed var(--ds-active-border); padding-top: 8px;';
+      softContainer.className = 'lps-divided-section';
       card.appendChild(softContainer);
     }
 
@@ -785,7 +779,7 @@ window.LPSContextualDrawer = (function() {
       const softRestrictions = getSoftRestrictions();
 
       let hasSoft = false;
-      let html = '<div class="lps-caption" style="margin-bottom: 4px;">Restricciones Blandas (Informativas)</div><div style="display:flex; flex-direction:column; gap:4px;">';
+      let html = '<div class="lps-caption lps-caption--block">Restricciones Blandas (Informativas)</div><div class="lps-soft-list">';
 
       softRestrictions.forEach(r => {
         const val = firstValue(rowData, r.aliases);
@@ -796,17 +790,17 @@ window.LPSContextualDrawer = (function() {
             const ratio = parseRatioValue(strVal);
             const percent = ratio === null ? 0 : Math.round(ratio * 100);
 
-            let badgeColor = '#dc3545'; // Rojo
+            let badgeTone = 'lps-badge--critical';
             if (percent >= 100) {
-              badgeColor = '#198754'; // Verde
+              badgeTone = 'lps-badge--success';
             } else if (percent > 0) {
-              badgeColor = '#ffc107'; // Amarillo
+              badgeTone = 'lps-badge--warning';
             }
 
             html += `
-              <div class="lps-text-secondary" style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem;">
+              <div class="lps-text-secondary lps-soft-row">
                 <span>${r.label}:</span>
-                <span class="lps-badge" style="background:${badgeColor}; color:${percent > 0 && percent < 100 ? '#212529' : '#fff'}; padding:2px 6px; font-size:0.68rem; border-radius:4px; font-weight:700;">${percent}%</span>
+                <span class="lps-badge ${badgeTone}">${percent}%</span>
               </div>
             `;
           }

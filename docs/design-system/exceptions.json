@@ -182,6 +182,15 @@
       "expiresAtVersion": "1.1.0"
     },
     {
+      "module": "programa-general-pilot",
+      "rule": "unauthorized-important",
+      "file": "public/css/design-system/adapters/programa-general-handsontable.css",
+      "selector": ":where(.pg-page #hot-container .htAutocompleteArrow)",
+      "owner": "design-system",
+      "reason": "Anular el glifo de texto vendor de las celdas dropdown (incompletes serios de contraste en Axe) y sustituirlo por una flecha dibujada con tokens.",
+      "expiresAtVersion": "1.1.0"
+    },
+    {
       "module": "foundation-shell-legacy",
       "rule": "unknown-css-layer",
       "file": "public/css/navbar.css",
@@ -405,12 +414,12 @@
         "views/partials/drawer_unificado.php"
       ],
       "maxViolations": {
-        "hardcoded-hex": 127,
-        "hardcoded-color-function": 113,
-        "inline-style": 72,
+        "hardcoded-hex": 60,
+        "hardcoded-color-function": 98,
+        "inline-style": 12,
         "embedded-style-block": 1,
         "forbidden-font-roboto": 0,
-        "hardcoded-radius": 19
+        "hardcoded-radius": 10
       }
     },
     {
