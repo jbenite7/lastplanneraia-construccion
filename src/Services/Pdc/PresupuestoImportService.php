@@ -247,4 +247,163 @@ final class PresupuestoImportService
             ], $insumos),
         ];
     }
+
+    /** Compara dos versiones del presupuesto: diff por actividad (roll-up) y por insumo consolidado. */
+    public function comparar(int $projectId, int $versionA, int $versionB): ?array
+    {
+        $va = $this->versionMeta($projectId, $versionA);
+        $vb = $this->versionMeta($projectId, $versionB);
+        if ($va === null || $vb === null) {
+            return null;
+        }
+
+        // --- Insumos consolidados por (norm, unidad) en cada versión ---
+        $insA = $this->insumosConsolidados($projectId, $versionA);
+        $insB = $this->insumosConsolidados($projectId, $versionB);
+        $claves = array_unique(array_merge(array_keys($insA), array_keys($insB)));
+        $insumos = [];
+        $costoA = 0.0; $costoB = 0.0; $sobrecostos = 0.0; $ahorros = 0.0;
+        $nuevos = 0; $eliminados = 0; $modificados = 0;
+        foreach ($claves as $k) {
+            $a = $insA[$k] ?? null;
+            $b = $insB[$k] ?? null;
+            $valorA = $a['valorTotal'] ?? 0.0;
+            $valorB = $b['valorTotal'] ?? 0.0;
+            $cantA = $a['cantidadTotal'] ?? 0.0;
+            $cantB = $b['cantidadTotal'] ?? 0.0;
+            $delta = $valorB - $valorA;
+            $costoA += $valorA; $costoB += $valorB;
+            if ($delta > 0) { $sobrecostos += $delta; } elseif ($delta < 0) { $ahorros += $delta; }
+            $estado = $this->estadoDiff($a !== null, $b !== null, $delta, $cantB - $cantA);
+            if ($estado === 'nuevo') { $nuevos++; } elseif ($estado === 'eliminado') { $eliminados++; } elseif ($estado === 'modificado') { $modificados++; }
+            $ref = $b ?? $a;
+            $insumos[] = [
+                'descripcionNorm' => $ref['norm'],
+                'unidad' => $ref['unidad'],
+                'descripcion' => $ref['descripcion'],
+                'tipoInsumo' => $ref['tipoInsumo'],
+                'cantidadA' => $cantA, 'cantidadB' => $cantB,
+                'valorA' => $valorA, 'valorB' => $valorB,
+                'deltaValor' => $delta,
+                'deltaPct' => $valorA == 0.0 ? null : round($delta / $valorA * 100, 1),
+                'estado' => $estado,
+            ];
+        }
+        usort($insumos, static fn ($x, $y) => max($y['valorA'], $y['valorB']) <=> max($x['valorA'], $x['valorB']));
+
+        // --- Actividades por codigo con roll-up en cada versión ---
+        $totA = $this->totalesPorCodigo($projectId, $versionA);
+        $totB = $this->totalesPorCodigo($projectId, $versionB);
+        $codigos = array_unique(array_merge(array_keys($totA), array_keys($totB)));
+        $actividades = [];
+        foreach ($codigos as $cod) {
+            $a = $totA[$cod] ?? null;
+            $b = $totB[$cod] ?? null;
+            $ref = $b ?? $a;
+            $valorA = $a['total'] ?? 0.0;
+            $valorB = $b['total'] ?? 0.0;
+            $delta = $valorB - $valorA;
+            $actividades[] = [
+                'codigo' => $cod,
+                'codigoPadre' => $ref['codigoPadre'],
+                'nivel' => $ref['nivel'],
+                'tipoFila' => $ref['tipoFila'],
+                'descripcion' => $ref['descripcion'],
+                'valorA' => $valorA, 'valorB' => $valorB,
+                'deltaValor' => $delta,
+                'deltaPct' => $valorA == 0.0 ? null : round($delta / $valorA * 100, 1),
+                'estado' => $this->estadoDiff($a !== null, $b !== null, $delta, 0.0),
+                'orden' => $ref['orden'],
+            ];
+        }
+        usort($actividades, static fn ($x, $y) => $x['orden'] <=> $y['orden']);
+        foreach ($actividades as &$act) { unset($act['orden']); }
+        unset($act);
+
+        return [
+            'versionA' => ['id' => (int) $va['id'], 'label' => $va['version_label']],
+            'versionB' => ['id' => (int) $vb['id'], 'label' => $vb['version_label']],
+            'resumen' => [
+                'costoA' => round($costoA, 2), 'costoB' => round($costoB, 2),
+                'delta' => round($costoB - $costoA, 2),
+                'sobrecostos' => round($sobrecostos, 2), 'ahorros' => round($ahorros, 2),
+                'nuevos' => $nuevos, 'eliminados' => $eliminados, 'modificados' => $modificados,
+            ],
+            'actividades' => $actividades,
+            'insumos' => $insumos,
+        ];
+    }
+
+    /** Cabecera de una versión del proyecto, o null. */
+    private function versionMeta(int $projectId, int $versionId): ?array
+    {
+        $row = $this->db->query(
+            'SELECT id, version_label FROM pdc_presupuesto_versiones WHERE project_id = ? AND id = ?',
+            [$projectId, $versionId],
+        )->fetch(\PDO::FETCH_ASSOC);
+        return $row === false ? null : $row;
+    }
+
+    /** Insumos consolidados por (descripcion_norm, unidad) de una versión. */
+    private function insumosConsolidados(int $projectId, int $versionId): array
+    {
+        $rows = $this->db->query(
+            'SELECT descripcion, tipo_insumo, unidad, cantidad_total, valor_total
+             FROM pdc_presupuesto_apu_insumos WHERE project_id = ? AND version_id = ?',
+            [$projectId, $versionId],
+        )->fetchAll(\PDO::FETCH_ASSOC);
+        $acc = [];
+        foreach ($rows as $r) {
+            $norm = MaestroInsumosService::normalizar($r['descripcion']);
+            $clave = $norm . '|' . $r['unidad'];
+            if (!isset($acc[$clave])) {
+                $acc[$clave] = ['norm' => $norm, 'descripcion' => $r['descripcion'], 'tipoInsumo' => $r['tipo_insumo'], 'unidad' => $r['unidad'], 'cantidadTotal' => 0.0, 'valorTotal' => 0.0];
+            }
+            $acc[$clave]['cantidadTotal'] += (float) ($r['cantidad_total'] ?? 0);
+            $acc[$clave]['valorTotal'] += (float) ($r['valor_total'] ?? 0);
+        }
+        return $acc; // indexado por "norm|unidad" (clave de fusión del diff = descripcion_norm + unidad, spec A1.6)
+    }
+
+    /** Total por codigo de item con roll-up de hojas a raíces (hoja = suma de sus insumos). */
+    private function totalesPorCodigo(int $projectId, int $versionId): array
+    {
+        $items = $this->db->query(
+            'SELECT id, codigo, codigo_padre, nivel, tipo_fila, descripcion
+             FROM pdc_presupuesto_items WHERE project_id = ? AND version_id = ? ORDER BY id ASC',
+            [$projectId, $versionId],
+        )->fetchAll(\PDO::FETCH_ASSOC);
+        $sumaHojas = $this->db->query(
+            'SELECT item_id, SUM(valor_total) AS total
+             FROM pdc_presupuesto_apu_insumos WHERE project_id = ? AND version_id = ? GROUP BY item_id',
+            [$projectId, $versionId],
+        )->fetchAll(\PDO::FETCH_KEY_PAIR);
+
+        $porCodigo = [];
+        $orden = 0;
+        foreach ($items as $it) {
+            $porCodigo[$it['codigo']] = [
+                'codigo' => $it['codigo'], 'codigoPadre' => $it['codigo_padre'],
+                'nivel' => (int) $it['nivel'], 'tipoFila' => $it['tipo_fila'], 'descripcion' => $it['descripcion'],
+                'total' => (float) ($sumaHojas[$it['id']] ?? 0), 'orden' => $orden++,
+            ];
+        }
+        // Propagar de hojas a raíces: por nivel descendente, sumar cada hijo a su padre.
+        usort($items, static fn ($a, $b) => (int) $b['nivel'] <=> (int) $a['nivel']);
+        foreach ($items as $it) {
+            $padre = $it['codigo_padre'];
+            if ($padre !== null && isset($porCodigo[$padre])) {
+                $porCodigo[$padre]['total'] += $porCodigo[$it['codigo']]['total'];
+            }
+        }
+        return $porCodigo;
+    }
+
+    /** Clasifica un renglón del diff. */
+    private function estadoDiff(bool $enA, bool $enB, float $deltaValor, float $deltaCantidad): string
+    {
+        if (!$enA && $enB) { return 'nuevo'; }
+        if ($enA && !$enB) { return 'eliminado'; }
+        return (abs($deltaValor) < 0.01 && abs($deltaCantidad) < 0.01) ? 'igual' : 'modificado';
+    }
 }
