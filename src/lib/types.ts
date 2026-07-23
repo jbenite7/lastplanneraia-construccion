@@ -137,11 +137,13 @@ export type MaestroImportResumen = {
 
 export type MaestroImportPreview = { importToken: string; resumen: MaestroImportResumen }
 
+export type MaestroImportConflicto = { codigoSinco: string; descripcion: string; chocaCon: string }
+
 export type MaestroImportResultado = {
   creados: number
   actualizados: number
   enriquecidos: number
-  conflictos: unknown[]
+  conflictos: MaestroImportConflicto[]
 }
 
 export type MaestroImportErrorFila = { fila: number; columna: string; motivo: string }

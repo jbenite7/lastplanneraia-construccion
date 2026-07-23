@@ -249,6 +249,19 @@ export default function MaestroInsumos() {
             Maestro importado: {imp.resultado.creados} creados, {imp.resultado.actualizados} actualizados, {imp.resultado.enriquecidos} enriquecidos.
           </div>
         )}
+        {imp.fase === 'confirmado' && imp.resultado && imp.resultado.conflictos.length > 0 && (
+          <div className="pdc-error" role="alert" data-testid="pdc-maestro-import-conflictos">
+            <div>
+              {imp.resultado.conflictos.length} conflicto(s): ya existe otro insumo con la misma descripción y unidad — revísalos manualmente:
+            </div>
+            {imp.resultado.conflictos.slice(0, 20).map((c, i) => (
+              <div key={`${c.codigoSinco}-${i}`}>
+                {c.codigoSinco} «{c.descripcion}» choca con {c.chocaCon}
+              </div>
+            ))}
+            {imp.resultado.conflictos.length > 20 && <div>… y {imp.resultado.conflictos.length - 20} más</div>}
+          </div>
+        )}
       </section>
 
       <div className="pdc-bloque">
