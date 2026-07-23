@@ -3,7 +3,6 @@
   "schemaVersion": 2,
   "designSystemVersion": "1.0.0",
   "moduleId": "foundation-shell",
-  "consumerContract": "v1",
   "routes": [
     "/programacion-intermedia"
   ],
