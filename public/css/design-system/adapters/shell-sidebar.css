@@ -352,7 +352,10 @@
     width: var(--ds-space-4);
   }
 
+  /* .shell-week-open lo gestiona el JS con periodo de gracia de 350ms al salir
+     (un trayecto diagonal hacia el panel cruza brevemente fuera del li). */
   body.aia-shell--sidebar li.shell-has-week-menu:hover .shell-week-flyout,
+  body.aia-shell--sidebar li.shell-has-week-menu.shell-week-open .shell-week-flyout,
   body.aia-shell--sidebar li.shell-has-week-menu:focus-within .shell-week-flyout {
     opacity: 1;
     visibility: visible;

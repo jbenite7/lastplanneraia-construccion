@@ -201,6 +201,22 @@ $shellGroups = array_values(array_filter([
 
       li.classList.add('shell-has-week-menu');
       li.appendChild(panel);
+
+      // Periodo de gracia al salir: un trayecto diagonal hacia el panel cruza
+      // brevemente fuera del li y el cierre por :hover puro sería instantáneo.
+      // El estado .shell-week-open aguanta 350ms y re-entrar lo cancela.
+      li.addEventListener('mouseenter', function () {
+        clearTimeout(li._shellCloseTimer);
+        document.querySelectorAll('li.shell-week-open').forEach(function (other) {
+          if (other !== li) other.classList.remove('shell-week-open');
+        });
+        li.classList.add('shell-week-open');
+      });
+      li.addEventListener('mouseleave', function () {
+        li._shellCloseTimer = setTimeout(function () {
+          li.classList.remove('shell-week-open');
+        }, 350);
+      });
     });
   })();
 </script>
