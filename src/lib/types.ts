@@ -147,3 +147,52 @@ export type MaestroImportResultado = {
 }
 
 export type MaestroImportErrorFila = { fila: number; columna: string; motivo: string }
+
+// Tipos del comparativo de versiones (Fase A1.6)
+export type EstadoDiff = 'nuevo' | 'eliminado' | 'modificado' | 'igual'
+
+export type ActividadDiff = {
+  codigo: string
+  codigoPadre: string | null
+  nivel: number
+  tipoFila: 'capitulo' | 'subcapitulo' | 'grupo' | 'actividad'
+  descripcion: string
+  valorA: number
+  valorB: number
+  deltaValor: number
+  deltaPct: number | null
+  estado: EstadoDiff
+}
+
+export type InsumoDiff = {
+  descripcionNorm: string
+  unidad: string
+  descripcion: string
+  tipoInsumo: string
+  cantidadA: number
+  cantidadB: number
+  valorA: number
+  valorB: number
+  deltaValor: number
+  deltaPct: number | null
+  estado: EstadoDiff
+}
+
+export type ResumenDiff = {
+  costoA: number
+  costoB: number
+  delta: number
+  sobrecostos: number
+  ahorros: number
+  nuevos: number
+  eliminados: number
+  modificados: number
+}
+
+export type Comparativo = {
+  versionA: { id: number; label: string }
+  versionB: { id: number; label: string }
+  resumen: ResumenDiff
+  actividades: ActividadDiff[]
+  insumos: InsumoDiff[]
+}
