@@ -73,9 +73,15 @@ $row = $db->query(
 )->fetchColumn();
 $assert($row === '01.01.01.01', 'Insumo amarrado por item_id a su actividad.');
 
-// Token de un solo uso.
+// Retry idempotente: reusar el token tras confirmar responde la MISMA versión, sin duplicar.
 $c2 = $service->confirmar($p['importToken'], PDC_TEST_PROJECT_A);
-$assert($c2['ok'] === false && $c2['code'] === 'TOKEN_EXPIRED', 'El token no se puede reutilizar.');
+$assert($c2['ok'] === true && $c2['versionId'] === $c1['versionId'], 'Retry con el mismo token responde la versión existente (idempotencia).');
+$assert(($c2['idempotente'] ?? false) === true, 'El retry idempotente se marca como tal.');
+$totalTrasRetry = (int) $db->query('SELECT COUNT(*) FROM pdc_presupuesto_versiones WHERE project_id = ?', [PDC_TEST_PROJECT_A])->fetchColumn();
+$assert($totalTrasRetry === 1, 'El retry no crea una versión duplicada.');
+// Un token jamás visto sí expira.
+$cInventado = $service->confirmar(str_repeat('f', 32), PDC_TEST_PROJECT_A);
+$assert($cInventado['ok'] === false && $cInventado['code'] === 'TOKEN_EXPIRED', 'Token desconocido → TOKEN_EXPIRED.');
 
 // Segundo import → la primera versión queda inactiva, ambas se conservan.
 $tmp2 = sys_get_temp_dir() . '/pdc_flujo_valido2.xlsx';

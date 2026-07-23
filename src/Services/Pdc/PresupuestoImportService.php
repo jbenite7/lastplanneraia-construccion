@@ -53,6 +53,12 @@ final class PresupuestoImportService
         $ruta = $this->store->ruta($token);
         $meta = $this->store->meta($token);
         if ($ruta === null || $meta === null || (int) ($meta['projectId'] ?? 0) !== $projectId) {
+            // Idempotencia: si el token ya produjo una versión (retry tras commit,
+            // p.ej. timeout HTTP con el proceso PHP terminado), responder esa versión.
+            $existente = $this->versionPorToken($token, $projectId);
+            if ($existente !== null) {
+                return $existente + ['idempotente' => true];
+            }
             return ['ok' => false, 'code' => 'TOKEN_EXPIRED'];
         }
 
@@ -72,13 +78,14 @@ final class PresupuestoImportService
             $this->db->query('UPDATE pdc_presupuesto_versiones SET activa = 0 WHERE project_id = ? AND activa = 1', [$projectId]);
             $this->db->query(
                 'INSERT INTO pdc_presupuesto_versiones
-                    (project_id, version_label, archivo_nombre, archivo_hash, total_actividades, total_insumos, costo_total, activa, importado_por, created_at)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, NOW())',
+                    (project_id, version_label, archivo_nombre, archivo_hash, import_token, total_actividades, total_insumos, costo_total, activa, importado_por, created_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, NOW())',
                 [
                     $projectId,
                     (string) ($resultado['versionLabel'] ?? ''),
                     (string) ($meta['nombre'] ?? ''),
                     (string) ($meta['hash'] ?? ''),
+                    $token,
                     $resultado['resumen']['actividades'],
                     $resultado['resumen']['insumos'],
                     $resultado['resumen']['costoTotal'],
@@ -128,6 +135,36 @@ final class PresupuestoImportService
         ];
     }
 
+    /** Versión ya creada con este token (idempotencia de confirmar), o null. */
+    private function versionPorToken(string $token, int $projectId): ?array
+    {
+        if (!preg_match('/^[a-f0-9]{32}$/', $token)) {
+            return null;
+        }
+        $row = $this->db->query(
+            'SELECT id, version_label, total_actividades, total_insumos, costo_total
+             FROM pdc_presupuesto_versiones WHERE project_id = ? AND import_token = ?',
+            [$projectId, $token],
+        )->fetch(\PDO::FETCH_ASSOC);
+        if ($row === false) {
+            return null;
+        }
+        return [
+            'ok' => true,
+            'versionId' => (int) $row['id'],
+            'versionLabel' => $row['version_label'],
+            // Solo los campos persistidos; la jerarquía no se almacena en la cabecera.
+            'resumen' => [
+                'capitulos' => 0,
+                'subcapitulos' => 0,
+                'grupos' => 0,
+                'actividades' => (int) $row['total_actividades'],
+                'insumos' => (int) $row['total_insumos'],
+                'costoTotal' => (float) $row['costo_total'],
+            ],
+        ];
+    }
+
     public function versiones(int $projectId): array
     {
         $rows = $this->db->query(
@@ -143,6 +180,9 @@ final class PresupuestoImportService
             'totalActividades' => (int) $r['total_actividades'],
             'totalInsumos' => (int) $r['total_insumos'],
             'costoTotal' => (float) $r['costo_total'],
+            // int 1/0 deliberado: AG Grid infiere cellDataType boolean para true/false
+            // y renderiza checkbox ignorando el valueFormatter ("Activa" desaparecería).
+            // El tipo SPA (VersionPresupuesto.activa: number) está alineado a esto.
             'activa' => (int) $r['activa'],
             'importadoPor' => $r['importado_por'],
             'createdAt' => $r['created_at'],

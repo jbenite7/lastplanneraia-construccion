@@ -13,12 +13,36 @@ const PDC_FIXTURE_HEADERS = ['Código', 'Descripción', 'Padre', 'UM', 'CANTIDAD
 function pdcFixtureEscribir(string $path, array $rows): void
 {
     $book = new Spreadsheet();
+    // Timestamps fijos: mismo contenido lógico → mismo binario (fixtures commiteados sin churn).
+    $book->getProperties()->setCreated(0)->setModified(0);
     $sheet = $book->getActiveSheet();
     $sheet->setTitle('Presupuesto');
     $sheet->fromArray(PDC_FIXTURE_HEADERS, null, 'A1');
     $sheet->fromArray($rows, null, 'A2');
     (new Xlsx($book))->save($path);
     $book->disconnectWorksheets();
+}
+
+// Rend como string es-CO ("1,2") — cubre la rama de coma decimal de numero().
+function pdcFixturePresupuestoComaDecimal(string $path): void
+{
+    pdcFixtureEscribir($path, [
+        ['01',          'PRELIMINARES',    '',         '',   null, '', 102, 'PI_TEST_COMA', '',        null, null,  null, null,  '',              ''],
+        ['01.01',       'CAMPAMENTO',      '01',       '',   null, '', 102, 'PI_TEST_COMA', '',        null, null,  null, null,  '',              ''],
+        ['01.01.01',    'INSTALACIONES',   '01.01',    '',   null, '', 102, 'PI_TEST_COMA', '',        null, null,  null, null,  '',              ''],
+        ['01.01.01.01', 'CASETA',          '01.01.01', 'M2', 10,   '', 102, 'PI_TEST_COMA', 'APU-C1',  null, null,  null, null,  '',              ''],
+        ['',            'TEJA',            '',         'M2', null, '', 102, 'PI_TEST_COMA', '',        '1,05', '1,2', null, 25000, 'MAT-CUBIERTAS', ''],
+    ]);
+}
+
+// N insumos huérfanos (sin actividad previa) → N errores; sirve para el tope de 200.
+function pdcFixturePresupuestoMuchosErrores(string $path, int $errores): void
+{
+    $rows = [];
+    for ($i = 0; $i < $errores; $i++) {
+        $rows[] = ['', "INSUMO HUERFANO {$i}", '', 'UN', null, '', 102, 'PI_TEST_TOPE', '', 1.0, 1.0, null, 100, 'MAT-VARIOS', ''];
+    }
+    pdcFixtureEscribir($path, $rows);
 }
 
 function pdcFixturePresupuestoValido(string $path): void

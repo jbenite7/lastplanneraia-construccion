@@ -90,6 +90,27 @@ $assert($insumoY['codigo_actividad'] === '01.01.01.01', 'El insumo se amarra a l
 $assert($c['valido'] === true, 'Fixture del guard de nivel parsea sin errores.');
 @unlink($cantidadEnCapitulo);
 
+// Coma decimal es-CO: celdas de texto "1,2"/"1,05" deben parsear como 1.2/1.05.
+$comaDecimal = $tmpDir . '/pdc_fixture_coma.xlsx';
+pdcFixturePresupuestoComaDecimal($comaDecimal);
+$cd = $parser->parse($comaDecimal);
+$assert($cd['valido'] === true, 'Fixture con coma decimal parsea sin errores.');
+$teja2 = $cd['insumos'][0];
+$assert(abs($teja2['rendimiento'] - 1.2) < 0.0001, 'Rend "1,2" (string es-CO) se parsea como 1.2.');
+$assert(abs($teja2['cant_apu'] - 1.05) < 0.0001, 'Cant APU "1,05" (string es-CO) se parsea como 1.05.');
+$assert(abs($teja2['cantidad_total'] - 12.0) < 0.0001, 'cantidad_total usa el rendimiento parseado (1.2 × 10 = 12).');
+@unlink($comaDecimal);
+
+// Tope de 200 errores: 205 filas inválidas → 200 reportadas + marcador de truncado.
+$muchosErrores = $tmpDir . '/pdc_fixture_tope.xlsx';
+pdcFixturePresupuestoMuchosErrores($muchosErrores, 205);
+$mt = $parser->parse($muchosErrores);
+$assert($mt['valido'] === false, 'Archivo con 205 errores es inválido.');
+$assert(count($mt['errores']) === PresupuestoExcelParser::MAX_ERRORES + 1, 'Reporte truncado en MAX_ERRORES + 1 fila de marcador.');
+$ultimo = end($mt['errores']);
+$assert(str_contains($ultimo['motivo'], 'truncado'), 'El último elemento es el marcador de truncado.');
+@unlink($muchosErrores);
+
 foreach ([$valido, $invalido, $sinHoja] as $f) { @unlink($f); }
 echo $failures === [] ? "=== OK ===\n" : '=== ' . count($failures) . " FAILED ===\n";
 exit($failures === [] ? 0 : 1);

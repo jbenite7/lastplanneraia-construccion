@@ -37,7 +37,14 @@ class PlanComprasImportController
         }
 
         $archivo = $_FILES['archivo'] ?? null;
-        if (!is_array($archivo) || ($archivo['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK || !is_uploaded_file($archivo['tmp_name'])) {
+        $errorSubida = is_array($archivo) ? (int) ($archivo['error'] ?? UPLOAD_ERR_NO_FILE) : UPLOAD_ERR_NO_FILE;
+        if (in_array($errorSubida, [UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE], true)) {
+            // PHP rechazó el archivo antes de llegar al chequeo de bytes propio:
+            // el código correcto sigue siendo "demasiado grande", no "inválido".
+            $this->fail('FILE_TOO_LARGE', 'El archivo supera el límite de 10MB.', 413);
+            return;
+        }
+        if (!is_array($archivo) || $errorSubida !== UPLOAD_ERR_OK || !is_uploaded_file($archivo['tmp_name'])) {
             $this->fail('INVALID_FILE', 'No llegó ningún archivo válido.', 422);
             return;
         }
@@ -63,7 +70,12 @@ class PlanComprasImportController
                 $projectId,
                 (string) ($_SESSION['nombreUsuario'] ?? ($_SESSION['usuario'] ?? '')),
             );
+        } catch (\PhpOffice\PhpSpreadsheet\Exception) {
+            // Mensajes del vendor pueden filtrar rutas internas del servidor: genericar.
+            $this->fail('INVALID_FILE', 'El archivo no es un Excel .xlsx válido.', 422);
+            return;
         } catch (\RuntimeException $e) {
+            // Mensajes propios del parser (hoja faltante, columnas requeridas): curados y accionables.
             $this->fail('INVALID_FILE', $e->getMessage(), 422);
             return;
         }
