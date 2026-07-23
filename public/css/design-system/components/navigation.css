@@ -361,6 +361,21 @@
     overflow-wrap: break-word;
   }
 
+  /* Identidad al frente del panel: en colapsado la píldora del trigger se
+     suprime mientras el menú está abierto, así que el nombre vive aquí. */
+  .aia-sidebar__account-head {
+    display: block;
+    padding: var(--ds-space-2) var(--ds-space-3) var(--ds-space-3);
+    border-block-end: var(--ds-border-width) solid var(--ds-active-border);
+    margin-block-end: var(--ds-space-2);
+    color: var(--ds-active-text-primary);
+    font-size: var(--ds-type-size-sm);
+    font-weight: var(--ds-type-weight-semibold);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   .aia-sidebar__retry {
     min-height: var(--ds-target-min);
     padding: var(--ds-space-2) var(--ds-space-3);

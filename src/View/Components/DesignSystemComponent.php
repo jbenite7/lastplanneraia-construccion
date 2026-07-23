@@ -446,6 +446,7 @@ final class DesignSystemComponent
             . ' data-aia-menu-trigger aria-haspopup="menu" aria-controls="' . self::escape($id) . '" aria-expanded="false">'
             . self::icon(['name' => 'user', 'decorative' => true]) . '<span class="aia-sidebar__label">'
             . self::escape($label) . '</span></button><div id="' . self::escape($id) . '" data-aia-menu-panel role="menu" hidden>'
+            . '<span class="aia-sidebar__account-head" role="presentation">' . self::escape($label) . '</span>'
             . implode('', $buttons) . '</div></div>';
     }
 
