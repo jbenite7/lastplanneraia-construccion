@@ -313,12 +313,9 @@ final class PresupuestoImportService
                 'deltaValor' => $delta,
                 'deltaPct' => $valorA == 0.0 ? null : round($delta / $valorA * 100, 1),
                 'estado' => $this->estadoDiff($a !== null, $b !== null, $delta, 0.0),
-                'orden' => $ref['orden'],
             ];
         }
-        usort($actividades, static fn ($x, $y) => $x['orden'] <=> $y['orden']);
-        foreach ($actividades as &$act) { unset($act['orden']); }
-        unset($act);
+        usort($actividades, fn ($x, $y) => $this->compararCodigos($x['codigo'], $y['codigo']));
 
         return [
             'versionA' => ['id' => (int) $va['id'], 'label' => $va['version_label']],
@@ -380,12 +377,11 @@ final class PresupuestoImportService
         )->fetchAll(\PDO::FETCH_KEY_PAIR);
 
         $porCodigo = [];
-        $orden = 0;
         foreach ($items as $it) {
             $porCodigo[$it['codigo']] = [
                 'codigo' => $it['codigo'], 'codigoPadre' => $it['codigo_padre'],
                 'nivel' => (int) $it['nivel'], 'tipoFila' => $it['tipo_fila'], 'descripcion' => $it['descripcion'],
-                'total' => (float) ($sumaHojas[$it['id']] ?? 0), 'orden' => $orden++,
+                'total' => (float) ($sumaHojas[$it['id']] ?? 0),
             ];
         }
         // Propagar de hojas a raíces: por nivel descendente, sumar cada hijo a su padre.
@@ -405,5 +401,19 @@ final class PresupuestoImportService
         if (!$enA && $enB) { return 'nuevo'; }
         if ($enA && !$enB) { return 'eliminado'; }
         return (abs($deltaValor) < 0.01 && abs($deltaCantidad) < 0.01) ? 'igual' : 'modificado';
+    }
+
+    /** Compara dos códigos de presupuesto en orden jerárquico (pre-orden): "01" < "01.01" < "01.02" < "02". */
+    private function compararCodigos(string $a, string $b): int
+    {
+        $pa = array_map('intval', explode('.', $a));
+        $pb = array_map('intval', explode('.', $b));
+        $n = min(count($pa), count($pb));
+        for ($i = 0; $i < $n; $i++) {
+            if ($pa[$i] !== $pb[$i]) {
+                return $pa[$i] <=> $pb[$i];
+            }
+        }
+        return count($pa) <=> count($pb); // prefijo común igual → el más corto (padre) va primero
     }
 }

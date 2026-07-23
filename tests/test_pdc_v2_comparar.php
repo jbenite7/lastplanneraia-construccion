@@ -45,6 +45,25 @@ $fixtureV2 = static function (string $path): void {
     ]);
 };
 
+// V3 del mismo presupuesto: se elimina el capítulo 01 completo, el capítulo 02 queda igual a v2
+// (mismo subárbol LOSA MACIZA/CONCRETO/BOMBEO/MALLA), y se agrega un capítulo 03 (ACABADOS) nuevo.
+$fixtureV3 = static function (string $path): void {
+    pdcFixtureEscribir($path, [
+        ['02',          'ESTRUCTURA',       '',         '',   null, '', 102, 'PI_TEST_3', '',        null, null, null, null,   '',              ''],
+        ['02.01',       'CONCRETOS',        '02',       '',   null, '', 102, 'PI_TEST_3', '',        null, null, null, null,   '',              ''],
+        ['02.01.01',    'LOSAS',            '02.01',    '',   null, '', 102, 'PI_TEST_3', '',        null, null, null, null,   '',              ''],
+        ['02.01.01.01', 'LOSA MACIZA E=12', '02.01.01', 'M3', 40,   '', 102, 'PI_TEST_3', 'APU-002', null, null, null, null,   '',              ''],
+        ['',            'CONCRETO 4000PSI', '',         'M3', null, '', 102, 'PI_TEST_3', '',        1.0,  1.05, 19,   620000, 'MAT-CONCRETOS', ''],
+        ['',            'SERVICIO BOMBEO',  '',         'M3', null, '', 102, 'PI_TEST_3', '',        1.0,  1.0,  null, 28000,  'EQUIPOS',       ''],
+        ['',            'MALLA ELECTROSOLDADA', '',     'KG', null, '', 102, 'PI_TEST_3', '',        1.0,  1.0,  19,   6000,   'MAT-ACEROS',    ''],
+        ['03',          'ACABADOS',         '',         '',   null, '', 102, 'PI_TEST_3', '',        null, null, null, null,   '',              ''],
+        ['03.01',       'PISOS',            '03',       '',   null, '', 102, 'PI_TEST_3', '',        null, null, null, null,   '',              ''],
+        ['03.01.01',    'ENCHAPES',         '03.01',    '',   null, '', 102, 'PI_TEST_3', '',        null, null, null, null,   '',              ''],
+        ['03.01.01.01', 'PISO CERAMICO',    '03.01.01', 'M2', 30,   '', 102, 'PI_TEST_3', 'APU-003', null, null, null, null,   '',              ''],
+        ['',            'ADHESIVO CERAMICO', '',        'KG', null, '', 102, 'PI_TEST_3', '',        1.0,  1.0,  19,   8000,   'MAT-ACABADOS',  ''],
+    ]);
+};
+
 echo "=== PDC v2: comparar() de versiones ===\n";
 $store = new PresupuestoImportStore(sys_get_temp_dir() . '/pdc-cmp-store-' . getmypid());
 $service = new PresupuestoImportService($db, $store, new PresupuestoExcelParser());
@@ -89,7 +108,36 @@ $mags = array_map(static fn ($i) => max($i['valorA'], $i['valorB']), $r['insumos
 $magsOrden = $mags; rsort($magsOrden);
 $assert($mags === $magsOrden, 'Insumos ordenados por magnitud del valor (desc).');
 
-foreach ([$v1, $v2] as $f) { @unlink($f); }
+// V3: capítulo 01 se elimina por completo y capítulo 03 se agrega — los sets de códigos de
+// actividad de v2 y v3 difieren, por lo que el orden de "actividades" ya no puede depender
+// de un contador de inserción por versión; debe ser jerárquico por código.
+$v3 = sys_get_temp_dir() . '/pdc_cmp_v3.xlsx';
+$fixtureV3($v3);
+$p3 = $service->previewDesdeArchivo($v3, 'v3.xlsx', PDC_CMP_A, 'tester');
+$c3 = $service->confirmar($p3['importToken'], PDC_CMP_A);
+
+$r3 = $service->comparar(PDC_CMP_A, $c2['versionId'], $c3['versionId']);
+$assert($r3 !== null, 'Comparación v2 vs v3 válida devuelve resultado.');
+
+$act3 = [];
+foreach ($r3['actividades'] as $a) { $act3[$a['codigo']] = $a; }
+$assert(($act3['01']['estado'] ?? '') === 'eliminado', 'Capítulo 01 eliminado en v3.');
+$assert(($act3['01.01.01.01']['estado'] ?? '') === 'eliminado', 'Actividad CAMPAMENTO 18M2 (bajo 01) eliminada en v3.');
+$assert(($act3['03']['estado'] ?? '') === 'nuevo', 'Capítulo 03 nuevo en v3.');
+$assert(($act3['03.01.01.01']['estado'] ?? '') === 'nuevo', 'Actividad de acabados nueva en v3.');
+$assert(($act3['02.01.01.01']['estado'] ?? '') === 'igual', 'Actividad de la losa (código común a v2 y v3): igual.');
+
+// Orden jerárquico del array devuelto (no debe depender de un "orden" por versión):
+$codigos3 = array_column($r3['actividades'], 'codigo');
+$ordenado3 = $codigos3;
+usort($ordenado3, static function (string $x, string $y): int {
+    $px = array_map('intval', explode('.', $x)); $py = array_map('intval', explode('.', $y));
+    for ($i = 0; $i < min(count($px), count($py)); $i++) { if ($px[$i] !== $py[$i]) return $px[$i] <=> $py[$i]; }
+    return count($px) <=> count($py);
+});
+$assert($codigos3 === $ordenado3, 'actividades en orden jerárquico por código.');
+
+foreach ([$v1, $v2, $v3] as $f) { @unlink($f); }
 $limpiar();
 echo $failures === [] ? "=== OK ===\n" : '=== ' . count($failures) . " FAILED ===\n";
 exit($failures === [] ? 0 : 1);
