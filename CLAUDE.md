@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Estado actual
 
-Rama en curso: **Fase A1 implementada** — importador de presupuesto (preview→confirmar, versionado con única activa, todo-o-nada) sobre 3 tablas `pdc_presupuesto_*` en lps-aia, con RBAC `lps.pdc.importar`, vista `#/ensamble/importar` y visor `#/ensamble/presupuesto` (A1.5) y navegación de submódulos Ensamble | Seguimiento. Verificado con Vitest (18 tests), tests PHP autoejecutables (RBAC, parser, flujo BD) y e2e Playwright de import.
+Rama en curso: **Fases A1 + A1.5 implementadas** — importador de presupuesto (preview→confirmar, versionado con única activa, todo-o-nada) sobre 3 tablas `pdc_presupuesto_*` en lps-aia con RBAC `lps.pdc.importar`, y visor del presupuesto en árbol jerárquico con selector de versión (`#/ensamble/presupuesto`), bajo la navegación de submódulos Ensamble | Seguimiento. Verificado con Vitest (24 tests), tests PHP autoejecutables (RBAC, parser, flujo BD, árbol) y e2e Playwright (import, fundación y visor).
 
 El desarrollo sigue el **roadmap maestro** `docs/superpowers/plans/2026-07-22-roadmap-pdc-v2.md` (fases A1→A4, B1→B3, C1); cada fase recibe su propio spec y plan detallado antes de ejecutarse.
 

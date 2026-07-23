@@ -67,6 +67,7 @@ export default function VisorPresupuesto() {
     { field: 'codigo', headerName: 'Código', width: 130 },
     {
       field: 'descripcion', headerName: 'Descripción', flex: 1, minWidth: 320,
+      cellClass: 'pdc-visor-descripcion',
       valueFormatter: (p) => {
         const f = p.data as FilaVisor
         const sangria = ' '.repeat((f.nivel - 1) * 4)
