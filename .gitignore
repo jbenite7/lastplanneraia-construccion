@@ -185,3 +185,6 @@ pg_activities_complete.txt
 # Estado local del hook de diseño Impeccable (config.json sí se versiona)
 .impeccable/hook.cache.json
 .impeccable/live/
+
+# PDC v2: archivos temporales de import de presupuestos (datos de obra — nunca commitear)
+storage/pdc-imports/

@@ -45,7 +45,7 @@ class PlanComprasImportController
             $this->fail('FILE_TOO_LARGE', 'El archivo supera el límite de 10MB.', 413);
             return;
         }
-        $nombre = (string) ($archivo['name'] ?? 'presupuesto.xlsx');
+        $nombre = mb_substr((string) ($archivo['name'] ?? 'presupuesto.xlsx'), 0, 255);
         if (!preg_match('/\.xlsx$/i', $nombre)) {
             $this->fail('INVALID_FILE', 'Solo se aceptan archivos .xlsx.', 422);
             return;
