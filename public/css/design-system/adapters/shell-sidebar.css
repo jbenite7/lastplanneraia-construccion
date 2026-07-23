@@ -162,6 +162,11 @@
     margin-block-end: var(--ds-space-2);
   }
 
+  body.aia-shell--sidebar .shell-week-flyout__delete {
+    padding: var(--ds-space-1);
+    margin-inline-end: var(--ds-space-2);
+  }
+
   @media (prefers-reduced-motion: reduce) {
     body.aia-shell--sidebar {
       transition: none;
@@ -421,6 +426,43 @@
 
   body.aia-shell--sidebar .shell-week-flyout [role="menuitem"][aria-current="true"] small {
     color: inherit;
+  }
+
+  body.aia-shell--sidebar .shell-week-flyout__row {
+    display: flex;
+    align-items: stretch;
+    gap: var(--ds-space-1);
+  }
+
+  body.aia-shell--sidebar .shell-week-flyout__row .shell-week-flyout__item {
+    flex: 1 1 auto;
+  }
+
+  body.aia-shell--sidebar .shell-week-flyout__create {
+    color: var(--ds-active-action-primary);
+  }
+
+  body.aia-shell--sidebar .shell-week-flyout__delete {
+    display: inline-grid;
+    place-items: center;
+    min-width: var(--ds-target-min);
+    min-height: var(--ds-target-min);
+    margin-inline-end: var(--ds-space-2);
+    border: var(--ds-border-width) solid transparent;
+    border-radius: var(--ds-radius-control-sm);
+    background: transparent;
+    color: var(--aia-alert-medium);
+    cursor: pointer;
+  }
+
+  body.aia-shell--sidebar .shell-week-flyout__delete:hover {
+    background: color-mix(in srgb, var(--aia-alert-high) 14%, transparent);
+    color: var(--aia-alert-high);
+  }
+
+  body.aia-shell--sidebar .shell-week-flyout__delete:focus-visible {
+    outline: var(--ds-outline-width) solid var(--ds-active-focus-ring);
+    outline-offset: var(--ds-outline-offset);
   }
 
   @media (prefers-reduced-motion: reduce) {
