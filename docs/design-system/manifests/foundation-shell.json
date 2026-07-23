@@ -9,7 +9,8 @@
   "sources": [
     "public/css/design-system/components/navigation.css",
     "public/css/design-system/adapters/shell-sidebar.css",
-    "public/js/modules/aia_ui/sidebar_navigation.js"
+    "public/js/modules/aia_ui/sidebar_navigation.js",
+    "public/js/modules/aia_ui/shell_week_admin.js"
   ],
   "components": [
     "shell",
@@ -40,7 +41,9 @@
   "exceptions": [],
   "tests": [
     "tests/test_foundation_shell_contract.mjs",
-    "tests/design-system/shell-navigation.test.mjs"
+    "tests/design-system/shell-navigation.test.mjs",
+    "tests/test_shell_sidebar_partial.php",
+    "tests/browser/shell-week-admin.mjs"
   ],
   "evidence": [],
   "scenarios": []
