@@ -129,9 +129,18 @@
           opcion: "eliminar_sem",
         })
           .then((info) => {
+            if (info && info.respuesta === "ERROR") {
+              return notice("error", info.mensaje || "No se pudo eliminar la semana.");
+            }
             if (info && info.puedeEliminar === "SI") {
               deleteDialog.close();
-              global.cambiarSemanaSesion(deleteWeek - 1, global.location.pathname);
+              const target = deleteWeek - 1;
+              if (target >= 1) {
+                global.cambiarSemanaSesion(target, global.location.pathname);
+              } else {
+                // Última semana del proyecto eliminada: recargar para que el servidor recalcule el contexto.
+                global.location.reload();
+              }
               return undefined;
             }
             return notice(

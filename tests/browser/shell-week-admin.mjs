@@ -128,6 +128,30 @@ check('eliminar: POST correcto + redirect a semana-1',
     && afterDelete.some((c) => c.week === maxSemana - 1),
   JSON.stringify({ eliminar: calls.eliminar.length, redirects: afterDelete }));
 
+// 4) Diálogo eliminar: branch ERROR del backend muestra el mensaje real (no "undefined")
+await page.evaluate(() => {
+  window.AIA = window.AIA || {};
+  window.AIA.Notice = {
+    error: (m) => { window.__lastError = m; return Promise.resolve(); },
+    warning: (m) => { window.__lastWarn = m; return Promise.resolve(); },
+  };
+});
+await page.unroute('**/eliminar_semana.php*');
+await page.route('**/eliminar_semana.php*', async (route) => {
+  calls.eliminar.push({ url: route.request().url(), body: route.request().postData() });
+  await route.fulfill({ contentType: 'application/json', body: '{"respuesta":"ERROR","mensaje":"Fallo simulado"}' });
+});
+await page.evaluate(() => document.querySelector('[data-shell-delete-week]').click());
+await page.waitForTimeout(200);
+await page.evaluate(() => document.getElementById('shellWeekDeleteSubmit').click());
+await page.waitForTimeout(400);
+const lastError = await page.evaluate(() => window.__lastError);
+check('eliminar: error del backend se muestra (no "Semana undefined")', lastError === 'Fallo simulado', `lastError=${JSON.stringify(lastError)}`);
+
+// 5) Afordancia del botón "+ Nueva semana": borde visible (no solo texto de color)
+const createBorder = await page.evaluate(() => getComputedStyle(document.getElementById('shellWeekCreateOpen')).borderTopWidth);
+check('botón crear tiene afordancia de botón (borde visible)', createBorder !== '0px', `borderTopWidth=${createBorder}`);
+
 console.log(
   `\nauditoría de red — mutaciones colaterales interceptadas (PS bootstrap): `
   + `semanal/save=${calls.semanalSave.length} semanal/auto-program=${calls.semanalAutoProgram.length} `
