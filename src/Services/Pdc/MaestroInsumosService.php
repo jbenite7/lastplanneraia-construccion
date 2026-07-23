@@ -229,22 +229,29 @@ final class MaestroInsumosService
         $this->db->beginTransaction();
         try {
             foreach ($pendientes as $p) {
-                $maestroId = $this->db->query(
-                    'SELECT id FROM general_maestro_insumos WHERE descripcion_norm = ? AND unidad = ?',
-                    [$p['descripcion_norm'], $p['unidad']],
-                )->fetchColumn();
-                if ($maestroId === false) {
-                    $this->db->query(
-                        'INSERT INTO general_maestro_insumos (descripcion, descripcion_norm, unidad, tipo_insumo, activo, creado_por, created_at)
-                         VALUES (?, ?, ?, ?, 1, ?, NOW())',
-                        [$p['descripcion_original'], $p['descripcion_norm'], $p['unidad'], $p['tipo_insumo'], $usuario],
-                    );
-                    $maestroId = (int) $this->db->lastInsertId();
-                    $creados++;
+                $existente = $this->maestroPorClave($p['descripcion_norm'], $p['unidad']);
+                if ($existente === null) {
+                    try {
+                        $this->db->query(
+                            'INSERT INTO general_maestro_insumos (descripcion, descripcion_norm, unidad, tipo_insumo, activo, creado_por, created_at)
+                             VALUES (?, ?, ?, ?, 1, ?, NOW())',
+                            [$p['descripcion_original'], $p['descripcion_norm'], $p['unidad'], $p['tipo_insumo'], $usuario],
+                        );
+                        $maestroId = (int) $this->db->lastInsertId();
+                        $creados++;
+                    } catch (\PDOException $e) {
+                        // Carrera concurrente (otro proceso insertó la misma clave): re-leer y vincular.
+                        if (!self::esDuplicado($e) || ($existente = $this->maestroPorClave($p['descripcion_norm'], $p['unidad'])) === null) {
+                            throw $e;
+                        }
+                        $maestroId = $this->reactivarSiInactivo($existente, $usuario);
+                    }
+                } else {
+                    $maestroId = $this->reactivarSiInactivo($existente, $usuario);
                 }
                 $this->db->query(
                     "UPDATE pdc_insumo_vinculos SET maestro_id = ?, estado = 'confirmado' WHERE project_id = ? AND id = ?",
-                    [(int) $maestroId, $projectId, (int) $p['id']],
+                    [$maestroId, $projectId, (int) $p['id']],
                 );
                 $vinculados++;
             }
@@ -270,12 +277,47 @@ final class MaestroInsumosService
         if ($existe > 0) {
             return ['ok' => false, 'code' => 'MAESTRO_DUPLICADO'];
         }
-        $this->db->query(
-            'INSERT INTO general_maestro_insumos (descripcion, descripcion_norm, unidad, tipo_insumo, activo, creado_por, created_at)
-             VALUES (?, ?, ?, ?, 1, ?, NOW())',
-            [mb_substr(trim($descripcion), 0, 500), $norm, mb_substr($unidad, 0, 20), mb_substr(trim($tipoInsumo), 0, 100), $usuario],
-        );
+        try {
+            $this->db->query(
+                'INSERT INTO general_maestro_insumos (descripcion, descripcion_norm, unidad, tipo_insumo, activo, creado_por, created_at)
+                 VALUES (?, ?, ?, ?, 1, ?, NOW())',
+                [mb_substr(trim($descripcion), 0, 500), $norm, mb_substr($unidad, 0, 20), mb_substr(trim($tipoInsumo), 0, 100), $usuario],
+            );
+        } catch (\PDOException $e) {
+            // Carrera concurrente o colisión por el prefijo (191 chars) de la unique key.
+            if (self::esDuplicado($e)) {
+                return ['ok' => false, 'code' => 'MAESTRO_DUPLICADO'];
+            }
+            throw $e;
+        }
         return ['ok' => true, 'id' => (int) $this->db->lastInsertId()];
+    }
+
+    /** Fila del maestro que ocupa la clave única (prefijo de 191 chars de la norma + unidad), o null. */
+    private function maestroPorClave(string $norm, string $unidad): ?array
+    {
+        $fila = $this->db->query(
+            'SELECT id, activo FROM general_maestro_insumos WHERE LEFT(descripcion_norm, 191) = LEFT(?, 191) AND unidad = ? LIMIT 1',
+            [$norm, $unidad],
+        )->fetch(\PDO::FETCH_ASSOC);
+        return $fila === false ? null : ['id' => (int) $fila['id'], 'activo' => (int) $fila['activo']];
+    }
+
+    /** Un maestro retirado que vuelve a usarse se reactiva (con auditoría) antes de vincular. */
+    private function reactivarSiInactivo(array $maestro, string $usuario): int
+    {
+        if ($maestro['activo'] === 0) {
+            $this->db->query(
+                'UPDATE general_maestro_insumos SET activo = 1, actualizado_por = ?, updated_at = NOW() WHERE id = ?',
+                [$usuario, $maestro['id']],
+            );
+        }
+        return $maestro['id'];
+    }
+
+    private static function esDuplicado(\PDOException $e): bool
+    {
+        return (int) ($e->errorInfo[1] ?? 0) === 1062;
     }
 
     public function catalogo(?string $busqueda = null, int $limite = 200): array

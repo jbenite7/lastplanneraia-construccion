@@ -134,6 +134,28 @@ $assert($dup['ok'] === false && $dup['code'] === 'MAESTRO_DUPLICADO', 'Crear man
 $cat = $maestro->catalogo('teja');
 $assert(count($cat) >= 1 && str_contains($cat[0]['descripcion'], 'TEJA'), 'Catálogo filtra por búsqueda normalizada.');
 
+echo "=== PDC v2: maestro — follow-ups A2 (1062 / colisión de prefijo) ===\n";
+
+// La unique key es (descripcion_norm(191), unidad): dos normas que comparten los
+// primeros 191 chars chocan en el INSERT aunque el igual estricto no las encuentre.
+$prefijo191 = str_repeat('X', 191);
+$mL = $maestro->crearManual(PDC_M_PROJECT_A, $prefijo191 . 'AAA', 'UN', 'MAT', PDC_M_MARCA);
+$assert($mL['ok'] === true, 'Prefijo: primer insumo largo se crea.');
+
+// crearManual: el pre-check (igualdad completa) no lo ve → INSERT 1062 → MAESTRO_DUPLICADO, no 500.
+$mL2 = $maestro->crearManual(PDC_M_PROJECT_A, $prefijo191 . 'CCC', 'UN', 'MAT', PDC_M_MARCA);
+$assert($mL2['ok'] === false && ($mL2['code'] ?? '') === 'MAESTRO_DUPLICADO', 'crearManual captura 1062 como MAESTRO_DUPLICADO.');
+
+// crearDesdePendientes: vincula al existente en vez de abortar el lote con excepción.
+$db->query(
+    'INSERT INTO pdc_insumo_vinculos (project_id, version_id, descripcion_norm, unidad, descripcion_original, tipo_insumo, cantidad_total, valor_total, apariciones, estado)
+     VALUES (?, ?, ?, ?, ?, ?, 1, 1, 1, \'pendiente\')',
+    [PDC_M_PROJECT_A, $g['versionId'], $prefijo191 . 'BBB', 'UN', $prefijo191 . 'BBB', 'MAT'],
+);
+$vinculoLargo = (int) $db->lastInsertId();
+$rL = $maestro->crearDesdePendientes(PDC_M_PROJECT_A, [$vinculoLargo], PDC_M_MARCA);
+$assert($rL['ok'] === true && $rL['creados'] === 0 && $rL['vinculados'] === 1, 'Colisión de prefijo: vincula al existente sin crear ni abortar.');
+
 foreach ([$tmpB, $tmp2] as $f) { @unlink($f); }
 
 @unlink($tmp);
