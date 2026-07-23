@@ -23,6 +23,25 @@ $shellNombre = (string) ($nombreUsuario ?? ($_SESSION['nombreUsuario'] ?? 'Usuar
 $shellArea = (string) ($area ?? ($_SESSION['area'] ?? 'Construccion'));
 $shellRol = \Admin\Core\RoleManager::normalizeRole($permiso ?? ($_SESSION['permiso'] ?? ''));
 
+$shellRbac = new \App\Security\RbacService(\Database::getInstance());
+$shellCanCreate = $shellRbac->can('lps.semana.crear', $shellRol);
+$shellCanDelete = $shellRbac->can('lps.semana.eliminar', $shellRol);
+$shellEsAdmin = $shellRol === 'A';
+$shellDb = (string) ($_SESSION['db'] ?? '');
+$shellMaxSemana = 0;
+$shellUltimaSemana = null;
+foreach ($shellWeeks as $shellW) {
+    $shellN = (int) ($shellW['Semana'] ?? 0);
+    if ($shellN > $shellMaxSemana) {
+        $shellMaxSemana = $shellN;
+        $shellUltimaSemana = $shellW;
+    }
+}
+$shellFechaSugerida = '';
+if (!empty($shellUltimaSemana['Fecha_Fin_Sem'])) {
+    $shellFechaSugerida = date('Y-m-d', strtotime($shellUltimaSemana['Fecha_Fin_Sem'] . ' +1 day'));
+}
+
 // Transcripción server-side de la visibilidad legacy de maestroPermisos
 // (cargarDatosGeneralesPagina2.js): qué ítems de navegación NO ve cada rol.
 $shellHiddenByRole = [
@@ -52,6 +71,7 @@ $shellInformacion = array_values(array_filter([
     \App\View\Components\BiAccessComponent::canAccess()
         ? ['id' => 'control-tower', 'label' => 'Control Tower - Informes', 'href' => \App\View\Components\BiAccessComponent::url('control-tower'), 'icon' => 'chart']
         : null,
+    ['id' => 'semanas-proyecto', 'label' => 'Semanas del Proyecto', 'icon' => 'calendar', 'action' => true],
     $shellItem('profesionales', 'Profesionales', '/profesionales', 'user'),
     $shellItem('subcontratistas', 'Subcontratistas', '/subcontratistas', 'contract'),
     $shellItem('indicadores', 'Indicadores LPS', '/indicadores', 'overview'),
@@ -115,6 +135,7 @@ $shellGroups = array_values(array_filter([
       <?= $shellSemana > 0 ? '' : 'style="display: none;"' ?>>
       <i class="far fa-calendar-alt" aria-hidden="true"></i>
       <span id="ctxSemanaTexto">Semana <?= $shellSemana ?></span>
+      <?= \App\View\Components\DesignSystemComponent::icon(['name' => 'chevron-down', 'decorative' => true]) ?>
     </button>
     <div id="ctxWeekMenu" data-aia-menu-panel role="menu" hidden>
       <?php foreach ($shellWeeks as $shellWeek): ?>
@@ -131,6 +152,41 @@ $shellGroups = array_values(array_filter([
     </div>
   </div>
 </div>
+<?php if ($shellCanCreate): ?>
+<div class="aia-dialog" data-aia-component="dialog">
+  <dialog id="shellWeekCreateDialog" class="aia-modal-surface shell-week-dialog" data-aia-dialog
+    aria-labelledby="shellWeekCreateTitle" aria-describedby="shellWeekCreateDesc">
+    <h3 id="shellWeekCreateTitle">Crear Semana <?= $shellMaxSemana + 1 ?></h3>
+    <p id="shellWeekCreateDesc" class="shell-week-dialog__copy">
+      La nueva semana copia el programa de la Semana <?= $shellMaxSemana ?> y se convierte en la semana activa del proyecto.
+    </p>
+    <label class="shell-week-dialog__label" for="shellWeekCreateDate">Fecha de inicio</label>
+    <input type="date" id="shellWeekCreateDate" class="shell-week-dialog__date"
+      value="<?= htmlspecialchars($shellFechaSugerida, ENT_QUOTES, 'UTF-8') ?>">
+    <p class="shell-week-dialog__preview" id="shellWeekCreatePreview" aria-live="polite"></p>
+    <div class="shell-week-dialog__actions">
+      <button type="button" class="aia-btn" id="shellWeekCreateSubmit">Crear semana</button>
+      <button type="button" class="aia-btn aia-btn--secondary" data-aia-dialog-close>Cancelar</button>
+    </div>
+  </dialog>
+</div>
+<?php endif; ?>
+<?php if ($shellCanDelete && $shellMaxSemana > 0): ?>
+<div class="aia-dialog" data-aia-component="dialog">
+  <dialog id="shellWeekDeleteDialog" class="aia-modal-surface shell-week-dialog" data-aia-dialog
+    aria-labelledby="shellWeekDeleteTitle" aria-describedby="shellWeekDeleteText">
+    <h3 id="shellWeekDeleteTitle">Eliminar Semana <?= $shellMaxSemana ?></h3>
+    <p id="shellWeekDeleteText" class="shell-week-dialog__copy">
+      ¿Eliminar la Semana <?= $shellMaxSemana ?><?= $shellUltimaSemana && !empty($shellUltimaSemana['Fecha_Inicio_Sem']) ? ' (del ' . htmlspecialchars($shellUltimaSemana['Fecha_Inicio_Sem'] . ' al ' . $shellUltimaSemana['Fecha_Fin_Sem'], ENT_QUOTES, 'UTF-8') . ')' : '' ?>?
+      Esta acción elimina su programación y no se puede deshacer.
+    </p>
+    <div class="shell-week-dialog__actions">
+      <button type="button" class="aia-btn shell-week-dialog__danger" id="shellWeekDeleteSubmit">Eliminar semana</button>
+      <button type="button" class="aia-btn aia-btn--secondary" data-aia-dialog-close>Cancelar</button>
+    </div>
+  </dialog>
+</div>
+<?php endif; ?>
 <script type="application/json" id="shellWeekMenusData"><?= json_encode([
     'currentWeek' => $shellSemana,
     'weeks' => array_values(array_filter(array_map(static fn ($w) => [
@@ -143,6 +199,13 @@ $shellGroups = array_values(array_filter([
         'programacion-intermedia' => ['label' => 'Programación Intermedia', 'path' => '/programacion-intermedia'],
         'programacion-semanal' => ['label' => 'Programación Semanal', 'path' => '/programacion-semanal'],
     ],
+    'db' => $shellDb,
+    'esAdmin' => $shellEsAdmin,
+    'maxSemana' => $shellMaxSemana,
+    'canCreate' => $shellCanCreate,
+    'canDelete' => $shellCanDelete,
+    'fechaSugerida' => $shellFechaSugerida,
+    'cicPath' => '/programacion-semanal/cic',
 ], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) ?></script>
 <script>
   // Cambio de semana (chip de contexto y flyouts del rail): endpoint legacy de contexto.
