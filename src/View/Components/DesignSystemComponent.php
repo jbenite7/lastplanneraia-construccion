@@ -25,6 +25,7 @@ final class DesignSystemComponent
         'theme' => '<path d="M20 15.5A8.5 8.5 0 1 1 8.5 4 6.5 6.5 0 0 0 20 15.5Z"/>',
         'logout' => '<path d="M10 5H5v14h5M14 8l4 4-4 4M8 12h10"/>',
         'collapse' => '<path d="m14 6-6 6 6 6"/>',
+        'chevron-down' => '<path d="m6 10 6 6 6-6"/>',
         'sync' => '<path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 3v4h-4"/>',
         'package' => '<path d="m12 3 8 4v10l-8 4-8-4V7l8-4Z"/><path d="m4 7 8 4 8-4M12 11v10"/>',
     ];
@@ -339,6 +340,16 @@ final class DesignSystemComponent
                     $badgeValue = self::text((string) $item['badge'], 'sidebar item badge');
                     $badge = '<span class="aia-sidebar__badge" aria-label="' . self::escape($badgeValue)
                         . '">' . self::escape($badgeValue) . '</span>';
+                }
+                $isAction = ($item['action'] ?? false) === true;
+                if ($isAction) {
+                    $itemsMarkup[] = '<li><button type="button" class="aia-sidebar__link"'
+                        . ' data-sidebar-item data-sidebar-action data-destination-id="' . self::escape($itemId) . '"'
+                        . ' data-sidebar-icon="' . self::escape($icon) . '" title="' . self::escape($label) . '"'
+                        . ' aria-haspopup="menu" aria-expanded="false">'
+                        . self::icon(['name' => $icon, 'decorative' => true])
+                        . '<span class="aia-sidebar__label">' . self::escape($label) . '</span>' . $badge . '</button></li>';
+                    continue;
                 }
                 $linkAttributes = $itemState === 'disabled'
                     ? ' role="link" aria-disabled="true" aria-label="' . self::escape($label . ' (no disponible temporalmente)') . '" data-sidebar-disabled'

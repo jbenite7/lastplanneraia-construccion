@@ -303,4 +303,27 @@ foreach (['icon', 'search', 'pagination', 'progress', 'liveRegion', 'menu', 'pop
     } catch (InvalidArgumentException) {}
 }
 
+// Sidebar action item (trigger de menú, no navegación)
+$actionNav = DesignSystemComponent::navigation([
+    'id' => 'shell-action-test',
+    'presentation' => 'sidebar',
+    'brand' => 'Last Planner AIA',
+    'context' => ['project' => 'P', 'week' => 'Semana 1'],
+    'groups' => [[
+        'id' => 'information',
+        'label' => 'Información',
+        'items' => [
+            ['id' => 'semanas-proyecto', 'label' => 'Semanas del Proyecto', 'icon' => 'calendar', 'action' => true],
+            ['id' => 'pg', 'label' => 'Programa General', 'href' => '/programa-general', 'icon' => 'program'],
+        ],
+    ]],
+]);
+dsComponentAssert(str_contains($actionNav, '<button type="button" class="aia-sidebar__link"'), 'action item renders as button');
+dsComponentAssert(str_contains($actionNav, 'data-sidebar-action'), 'action item is marked');
+dsComponentAssert(str_contains($actionNav, 'aria-haspopup="menu"'), 'action item announces menu');
+dsComponentAssert(str_contains($actionNav, 'aria-expanded="false"'), 'action item starts collapsed');
+dsComponentAssert(!str_contains($actionNav, 'href=""'), 'action item has no empty href');
+$chevron = DesignSystemComponent::icon(['name' => 'chevron-down', 'decorative' => true]);
+dsComponentAssert(str_contains($chevron, 'aia-icon--chevron-down'), 'chevron-down glyph exists');
+
 echo "Design system components: PASS\n";
