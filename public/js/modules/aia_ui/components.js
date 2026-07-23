@@ -53,7 +53,10 @@
 
     // Roving tab order: a role=menu owns keyboard nav, so items leave the tab
     // sequence and are reached with the arrow keys once the menu is open.
-    if (isMenu) menuItems(parts.panel).forEach((item) => { item.tabIndex = -1; });
+    if (isMenu)
+      menuItems(parts.panel).forEach((item) => {
+        item.tabIndex = -1;
+      });
 
     var focusItem = (index) => {
       var items = menuItems(parts.panel);
@@ -67,22 +70,38 @@
     var closeMenu = (restoreFocus) => setDisclosure(parts, false, restoreFocus);
 
     parts.trigger.addEventListener("click", () => {
-      if (isOpen()) closeMenu(false); else openMenu();
+      if (isOpen()) closeMenu(false);
+      else openMenu();
     });
 
     if (isMenu) {
       parts.trigger.addEventListener("keydown", (event) => {
-        if (event.key === "ArrowDown") { event.preventDefault(); openMenu(0); }
-        else if (event.key === "ArrowUp") { event.preventDefault(); openMenu(-1); }
+        if (event.key === "ArrowDown") {
+          event.preventDefault();
+          openMenu(0);
+        } else if (event.key === "ArrowUp") {
+          event.preventDefault();
+          openMenu(-1);
+        }
       });
       parts.panel.addEventListener("keydown", (event) => {
         var items = menuItems(parts.panel);
         var current = items.indexOf(document.activeElement);
-        if (event.key === "ArrowDown") { event.preventDefault(); focusItem(current + 1); }
-        else if (event.key === "ArrowUp") { event.preventDefault(); focusItem(current - 1); }
-        else if (event.key === "Home") { event.preventDefault(); focusItem(0); }
-        else if (event.key === "End") { event.preventDefault(); focusItem(items.length - 1); }
-        else if (event.key === "Tab") { closeMenu(false); }
+        if (event.key === "ArrowDown") {
+          event.preventDefault();
+          focusItem(current + 1);
+        } else if (event.key === "ArrowUp") {
+          event.preventDefault();
+          focusItem(current - 1);
+        } else if (event.key === "Home") {
+          event.preventDefault();
+          focusItem(0);
+        } else if (event.key === "End") {
+          event.preventDefault();
+          focusItem(items.length - 1);
+        } else if (event.key === "Tab") {
+          closeMenu(false);
+        }
       });
     }
 

@@ -173,6 +173,13 @@ test('laboratory accessibility evidence distinguishes automation from human sign
   assert.match(review, /teclado|keyboard/i);
   assert.match(review, /foco/i);
   assert.match(review, /contraste/i);
-  assert.match(review, /revisión humana independiente[^\n]*pendiente/i);
-  assert.doesNotMatch(review, /revisión manual independiente[^\n]*aprobada/i);
+  // La revisión humana independiente fue otorgada el 2026-07-19; el contrato
+  // ahora exige que quede registrada con trazabilidad (fecha, confirmación
+  // explícita y commit cubierto), manteniendo separada la evidencia
+  // automatizada de la firma humana.
+  assert.match(review, /Aprobación humana independiente — 2026-07-19/);
+  assert.match(review, /confirmó explícitamente \*\*Aprobado\*\*/);
+  assert.match(review, /cubre el commit `[0-9a-f]{40}`/);
+  assert.match(review, /Revisión local asistida/);
+  assert.doesNotMatch(review, /revisión humana independiente[^\n]*pendiente/i);
 });
