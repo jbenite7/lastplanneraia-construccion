@@ -12,16 +12,18 @@
             'week' => 'Semana 7',
         ],
         'active' => 'programa-general',
-        'initialState' => 'expanded',
+        'initialState' => 'collapsed',
         'groups' => [
             [
                 'id' => 'information',
                 'label' => 'Información',
                 'items' => [
                     ['id' => 'control-tower', 'label' => 'Control Tower - Informes', 'href' => '/bi/control-tower', 'icon' => 'chart'],
-                    ['id' => 'project-weeks', 'label' => 'Semanas del Proyecto', 'href' => '#project-weeks', 'icon' => 'calendar', 'state' => 'disabled'],
+                    ['id' => 'project-weeks', 'label' => 'Semanas del Proyecto', 'href' => '#project-weeks', 'icon' => 'calendar'],
                     ['id' => 'professionals', 'label' => 'Profesionales', 'href' => '/profesionales', 'icon' => 'user'],
-                    ['id' => 'subcontractors', 'label' => 'Subcontratistas', 'href' => '/subcontratistas', 'icon' => 'contract'],
+                    ['id' => 'subcontractors', 'label' => 'Subcontratistas', 'href' => '/subcontratistas', 'icon' => 'company'],
+                    ['id' => 'indicators', 'label' => 'Indicadores LPS', 'href' => '/indicadores', 'icon' => 'gauge'],
+                    ['id' => 'change-control', 'label' => 'Control de Cambios', 'href' => '/control-cambios', 'icon' => 'change'],
                 ],
             ],
             [
@@ -29,15 +31,16 @@
                 'label' => 'Obra',
                 'items' => [
                     ['id' => 'programa-general', 'label' => 'Programa General', 'href' => '/programa-general', 'icon' => 'program'],
-                    ['id' => 'programacion-intermedia', 'label' => 'Programación Intermedia', 'href' => '/programacion-intermedia', 'icon' => 'tasks'],
-                    ['id' => 'programacion-semanal', 'label' => 'Programación Semanal', 'href' => '/programacion-semanal', 'icon' => 'calendar'],
+                    ['id' => 'programacion-intermedia', 'label' => 'Programación Intermedia', 'href' => '/programacion-intermedia', 'icon' => 'unlock'],
+                    ['id' => 'programacion-semanal', 'label' => 'Programación Semanal', 'href' => '/programacion-semanal', 'icon' => 'week-commit'],
+                    ['id' => 'update-schedule', 'label' => 'Actualizar Cronograma', 'href' => '/programa-general-actualizar', 'icon' => 'sync'],
                 ],
             ],
             [
                 'id' => 'compras',
                 'label' => 'Compras',
                 'items' => [
-                    ['id' => 'activity-families', 'label' => 'Familias de Actividades', 'href' => '/listado-actividades', 'icon' => 'list'],
+                    ['id' => 'activity-families', 'label' => 'Familias de Actividades', 'href' => '/listado-actividades', 'icon' => 'hierarchy'],
                     ['id' => 'contracts', 'label' => 'Paquetes de Contratación', 'href' => '/contratos', 'icon' => 'contract'],
                     ['id' => 'pdc', 'label' => 'Plan de Compras', 'href' => '/pdc', 'icon' => 'clipboard'],
                 ],

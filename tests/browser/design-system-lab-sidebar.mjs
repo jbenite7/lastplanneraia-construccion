@@ -24,39 +24,46 @@ for (const viewport of VIEWPORTS) {
     await expect(sidebar.locator('[data-sidebar-group="information"]')).toContainText('Control Tower - Informes');
     await expect(sidebar.locator('[data-sidebar-group="information"]')).toContainText('Profesionales');
     await expect(sidebar.locator('[data-sidebar-group="information"]')).toContainText('Subcontratistas');
+    await expect(sidebar.locator('[data-sidebar-group="information"]')).toContainText('Indicadores LPS');
+    await expect(sidebar.locator('[data-sidebar-group="information"]')).toContainText('Control de Cambios');
     await expect(sidebar.locator('[data-sidebar-group="information"]')).not.toContainText('Integración');
+    await expect(sidebar.locator('[data-sidebar-group="information"] [data-sidebar-item]')).toHaveCount(6);
     await expect(sidebar.locator('[data-sidebar-group="obra"]')).toContainText('Programa General');
     await expect(sidebar.locator('[data-sidebar-group="obra"]')).toContainText('Programación Intermedia');
     await expect(sidebar.locator('[data-sidebar-group="obra"]')).toContainText('Programación Semanal');
+    await expect(sidebar.locator('[data-sidebar-group="obra"]')).toContainText('Actualizar Cronograma');
+    await expect(sidebar.locator('[data-sidebar-group="obra"] [data-sidebar-item]')).toHaveCount(4);
     await expect(sidebar.locator('[data-sidebar-group="compras"]')).toContainText('Familias de Actividades');
     await expect(sidebar.locator('[data-sidebar-group="compras"]')).toContainText('Paquetes de Contratación');
     await expect(sidebar.locator('[data-sidebar-group="compras"]')).toContainText('Plan de Compras');
+    await expect(sidebar.locator('[data-sidebar-group="compras"] [data-sidebar-item]')).toHaveCount(3);
 
-    const expanded = await sidebar.evaluate((element) => {
-      const probe = document.createElement('div');
-      probe.style.width = 'var(--ds-sidebar-width-expanded)';
-      document.body.append(probe);
-      const expanded = probe.getBoundingClientRect().width;
-      probe.remove();
-      return { width: element.getBoundingClientRect().width, expanded };
-    });
-    expect(expanded.width).toBeGreaterThanOrEqual(expanded.expanded - 1);
-    expect(expanded.width).toBeLessThanOrEqual(expanded.expanded + 1);
-
-    await toggle.click();
     await expect(sidebar).toHaveAttribute('data-sidebar-state', 'collapsed');
-    const collapsed = await sidebar.evaluate((element) => element.getBoundingClientRect().width);
-    const collapsedToken = await page.evaluate(() => {
+    const collapsedInitial = await sidebar.evaluate((element) => {
       const probe = document.createElement('div');
       probe.style.width = 'var(--ds-sidebar-width-collapsed)';
+      document.body.append(probe);
+      const collapsed = probe.getBoundingClientRect().width;
+      probe.remove();
+      return { width: element.getBoundingClientRect().width, collapsed };
+    });
+    expect(collapsedInitial.width).toBeGreaterThanOrEqual(collapsedInitial.collapsed - 1);
+    expect(collapsedInitial.width).toBeLessThanOrEqual(collapsedInitial.collapsed + 1);
+
+    await toggle.click();
+    await expect(sidebar).toHaveAttribute('data-sidebar-state', 'expanded');
+    const expandedToken = await page.evaluate(() => {
+      const probe = document.createElement('div');
+      probe.style.width = 'var(--ds-sidebar-width-expanded)';
       document.body.append(probe);
       const width = probe.getBoundingClientRect().width;
       probe.remove();
       return width;
     });
-    expect(collapsed).toBeGreaterThanOrEqual(collapsedToken - 1);
     await expect.poll(() => sidebar.evaluate((element) => element.getBoundingClientRect().width))
-      .toBeLessThanOrEqual(collapsedToken + 1);
+      .toBeGreaterThanOrEqual(expandedToken - 1);
+    await expect.poll(() => sidebar.evaluate((element) => element.getBoundingClientRect().width))
+      .toBeLessThanOrEqual(expandedToken + 1);
     await toggle.press('Escape');
     await expect(sidebar).toHaveAttribute('data-sidebar-state', 'expanded');
     await expect(toggle).toBeFocused();
