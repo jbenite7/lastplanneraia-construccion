@@ -113,8 +113,10 @@ export type MaestroInsumo = {
   descripcion: string
   unidad: string
   tipoInsumo: string
+  activo?: number
   creadoPor?: string
   createdAt?: string
+  updatedAt?: string | null
 }
 
 export type SugerenciaMaestro = {

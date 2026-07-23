@@ -30,6 +30,7 @@ export default function MaestroInsumos() {
   const [busqueda, setBusqueda] = useState('')
   const [sugerencias, setSugerencias] = useState<SugerenciaMaestro[]>([])
   const [sinPresupuesto, setSinPresupuesto] = useState(false)
+  const [verRetirados, setVerRetirados] = useState(false)
 
   const cargar = useCallback(async () => {
     try {
@@ -52,14 +53,15 @@ export default function MaestroInsumos() {
     }
   }, [])
 
-  const cargarCatalogo = useCallback((q: string) => {
-    apiGet<{ insumos: MaestroInsumo[] }>(`/plan-compras/api/maestro?busqueda=${encodeURIComponent(q)}`)
+  const cargarCatalogo = useCallback((q: string, incluirRetirados = false) => {
+    const extra = incluirRetirados ? '&incluirInactivos=1' : ''
+    apiGet<{ insumos: MaestroInsumo[] }>(`/plan-compras/api/maestro?busqueda=${encodeURIComponent(q)}${extra}`)
       .then((d) => setCatalogo(d.insumos))
       .catch(() => setCatalogo([]))
   }, [])
 
   useEffect(() => { void cargar() }, [cargar])
-  useEffect(() => { cargarCatalogo(busqueda) }, [busqueda, cargarCatalogo])
+  useEffect(() => { cargarCatalogo(busqueda, verRetirados) }, [busqueda, verRetirados, cargarCatalogo])
 
   useEffect(() => {
     if (!state.vinculando) { setSugerencias([]); return }
@@ -86,7 +88,18 @@ export default function MaestroInsumos() {
     { field: 'descripcion', headerName: 'Insumo', flex: 1, minWidth: 280 },
     { field: 'unidad', headerName: 'Und', width: 80 },
     { field: 'tipoInsumo', headerName: 'Tipo', width: 160 },
-  ], [])
+    ...(verRetirados
+      ? [{
+          field: 'activo', headerName: 'Estado', width: 100,
+          valueFormatter: (p) => (p.value === 0 ? 'Retirado' : 'Activo'),
+        } satisfies ColDef<MaestroInsumo>]
+      : []),
+    {
+      colId: 'accion', headerName: '', width: 110, sortable: false,
+      cellClass: 'pdc-celda-accion',
+      valueGetter: (p) => (p.data?.activo === 0 ? 'Reactivar' : 'Retirar'),
+    },
+  ], [verRetirados])
 
   const onPendienteClick = (e: CellClickedEvent<VinculoInsumo>) => {
     if (e.data) dispatch({ type: 'TOGGLE_SEL', id: e.data.id })
@@ -107,6 +120,30 @@ export default function MaestroInsumos() {
     } catch (e) {
       dispatch({ type: 'FALLO', mensaje: e instanceof Error ? e.message : String(e) })
     }
+  }
+
+  const cambiarEstadoMaestro = async (insumo: MaestroInsumo) => {
+    dispatch({ type: 'OCUPADO' })
+    try {
+      if (insumo.activo === 0) {
+        await apiPost('/plan-compras/api/maestro/reactivar', { maestroId: insumo.id })
+        dispatch({ type: 'LISTO', mensaje: `«${insumo.descripcion}» reactivado en el catálogo.` })
+      } else {
+        const r = await apiPost<{ revertidos: number }>('/plan-compras/api/maestro/desactivar', { maestroId: insumo.id })
+        dispatch({
+          type: 'LISTO',
+          mensaje: `«${insumo.descripcion}» retirado del catálogo. ${r.revertidos} vínculo(s) automático(s) vuelven a pendientes.`,
+        })
+      }
+      await cargar()
+      cargarCatalogo(busqueda, verRetirados)
+    } catch (e) {
+      dispatch({ type: 'FALLO', mensaje: e instanceof Error ? e.message : String(e) })
+    }
+  }
+
+  const onCatalogoClick = (e: CellClickedEvent<MaestroInsumo>) => {
+    if (e.colDef.colId === 'accion' && e.data && !state.ocupado) void cambiarEstadoMaestro(e.data)
   }
 
   const vincularA = async (maestroId: number) => {
@@ -201,13 +238,24 @@ export default function MaestroInsumos() {
       <div className="pdc-bloque">
         <div className="pdc-fila-acciones">
           <h2>Catálogo global</h2>
-          <input
-            data-testid="pdc-maestro-busqueda"
-            type="search"
-            placeholder="Buscar insumo…"
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
-          />
+          <div className="pdc-selector">
+            <label className="pdc-check">
+              <input
+                data-testid="pdc-maestro-ver-retirados"
+                type="checkbox"
+                checked={verRetirados}
+                onChange={(e) => setVerRetirados(e.target.checked)}
+              />{' '}
+              Ver retirados
+            </label>
+            <input
+              data-testid="pdc-maestro-busqueda"
+              type="search"
+              placeholder="Buscar insumo…"
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+            />
+          </div>
         </div>
         <div style={{ height: 280 }} data-testid="pdc-maestro-catalogo">
           <AgGridReact<MaestroInsumo>
@@ -215,6 +263,8 @@ export default function MaestroInsumos() {
             rowData={catalogo}
             columnDefs={colsCatalogo}
             getRowId={(p) => String(p.data.id)}
+            onCellClicked={onCatalogoClick}
+            rowClassRules={{ 'pdc-fila-retirada': (p) => p.data?.activo === 0 }}
           />
         </div>
       </div>
