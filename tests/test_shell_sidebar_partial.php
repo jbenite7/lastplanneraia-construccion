@@ -46,6 +46,7 @@ $check(str_contains($admin, '"canDelete":true'), 'A: JSON canDelete true');
 $check(str_contains($admin, '"db":"contrato_db"'), 'A: JSON db');
 $check(str_contains($admin, '"maxSemana":3'), 'A: JSON maxSemana');
 $check(str_contains($admin, '"esAdmin":true'), 'A: JSON esAdmin');
+$check((bool) preg_match('/"csrfToken":"[a-f0-9]{64}"/', $admin), 'A: JSON incluye csrfToken de 64 hex');
 $check(str_contains($admin, 'aia-modal-surface'), 'A: diálogos con clase canónica');
 $check(str_contains($admin, 'aia-icon--chevron-down'), 'chip con chevron');
 $check(substr_count($admin, 'aria-current="page"') === 1, 'A: un solo aria-current');

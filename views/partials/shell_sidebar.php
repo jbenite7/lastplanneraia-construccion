@@ -29,6 +29,7 @@ $shellCanCreate = $shellRbac->can('lps.semana.crear', $shellRol);
 $shellCanDelete = $shellRbac->can('lps.semana.eliminar', $shellRol);
 $shellEsAdmin = $shellRol === 'A';
 $shellDb = (string) ($_SESSION['db'] ?? '');
+$shellWeekCsrf = \App\Security\CsrfTokenManager::generate('lps_week_admin');
 $shellMaxSemana = 0;
 $shellUltimaSemana = null;
 foreach ($shellWeeks as $shellW) {
@@ -207,6 +208,7 @@ $shellGroups = array_values(array_filter([
     'canDelete' => $shellCanDelete,
     'fechaSugerida' => $shellFechaSugerida,
     'cicPath' => '/programacion-semanal/cic',
+    'csrfToken' => $shellWeekCsrf,
 ], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) ?></script>
 <script>
   // Cambio de semana (chip de contexto y flyouts del rail): endpoint legacy de contexto.

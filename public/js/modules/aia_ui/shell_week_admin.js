@@ -85,6 +85,7 @@
             return postForm(`/legacy/funciones_generales/php/nueva_semana.php?db=${encodeURIComponent(data.db)}`, {
               f_inicio_sem: dateInput ? dateInput.value : "",
               opcion: "nueva_sem",
+              _csrf_token: data.csrfToken,
             }).then((info) => {
               if (info && info.respuesta === "ERROR") {
                 return notice("error", info.mensaje || "No se pudo crear la semana.");
@@ -127,6 +128,7 @@
         postForm(`/legacy/funciones_generales/php/eliminar_semana.php?db=${encodeURIComponent(data.db)}`, {
           semana: String(deleteWeek),
           opcion: "eliminar_sem",
+          _csrf_token: data.csrfToken,
         })
           .then((info) => {
             if (info && info.puedeEliminar === "SI") {
