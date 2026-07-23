@@ -131,13 +131,76 @@ $shellGroups = array_values(array_filter([
     </div>
   </div>
 </div>
+<script type="application/json" id="shellWeekMenusData"><?= json_encode([
+    'currentWeek' => $shellSemana,
+    'weeks' => array_values(array_filter(array_map(static fn ($w) => [
+        'semana' => (int) ($w['Semana'] ?? 0),
+        'inicio' => (string) ($w['Fecha_Inicio_Sem'] ?? ''),
+        'fin' => (string) ($w['Fecha_Fin_Sem'] ?? ''),
+    ], $shellWeeks), static fn ($w) => $w['semana'] > 0)),
+    'modules' => [
+        'programa-general' => ['label' => 'Programa General', 'path' => '/programa-general'],
+        'programacion-intermedia' => ['label' => 'Programación Intermedia', 'path' => '/programacion-intermedia'],
+        'programacion-semanal' => ['label' => 'Programación Semanal', 'path' => '/programacion-semanal'],
+    ],
+], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) ?></script>
 <script>
-  // Cambio de semana desde el chip: reutiliza el endpoint de contexto legacy.
+  // Cambio de semana (chip de contexto y flyouts del rail): endpoint legacy de contexto.
   document.addEventListener('click', function (event) {
     var item = event.target.closest('[data-shell-week]');
     if (!item) return;
     var week = parseInt(item.getAttribute('data-shell-week'), 10);
     if (!week || typeof window.cambiarSemanaSesion !== 'function') return;
-    window.cambiarSemanaSesion(week, window.location.pathname);
+    window.cambiarSemanaSesion(week, item.getAttribute('data-shell-path') || window.location.pathname);
   });
+
+  // Flyout de semanas por módulo (PG/PI/PS): panel alineado con la píldora del rail.
+  (function () {
+    var dataEl = document.getElementById('shellWeekMenusData');
+    if (!dataEl) return;
+    var data;
+    try { data = JSON.parse(dataEl.textContent); } catch (_e) { return; }
+    if (!data || !Array.isArray(data.weeks) || data.weeks.length === 0) return;
+
+    Object.keys(data.modules).forEach(function (moduleId) {
+      var link = document.querySelector('[data-shell-pattern="sidebar"] [data-destination-id="' + moduleId + '"]');
+      if (!link) return;
+      var li = link.closest('li');
+      if (!li) return;
+      var module = data.modules[moduleId];
+      var isActiveModule = link.getAttribute('aria-current') === 'page';
+
+      var panel = document.createElement('div');
+      panel.className = 'shell-week-flyout';
+      panel.setAttribute('role', 'menu');
+      panel.setAttribute('aria-label', 'Semanas de ' + module.label);
+
+      var head = document.createElement('span');
+      head.className = 'shell-week-flyout__head';
+      head.textContent = module.label;
+      panel.appendChild(head);
+
+      data.weeks.forEach(function (w) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'shell-week-flyout__item';
+        btn.setAttribute('role', 'menuitem');
+        btn.setAttribute('data-shell-week', String(w.semana));
+        btn.setAttribute('data-shell-path', module.path);
+        if (isActiveModule && w.semana === data.currentWeek) btn.setAttribute('aria-current', 'true');
+        var label = document.createElement('span');
+        label.textContent = 'Semana ' + w.semana;
+        btn.appendChild(label);
+        if (w.inicio && w.fin) {
+          var dates = document.createElement('small');
+          dates.textContent = w.inicio + ' – ' + w.fin;
+          btn.appendChild(dates);
+        }
+        panel.appendChild(btn);
+      });
+
+      li.classList.add('shell-has-week-menu');
+      li.appendChild(panel);
+    });
+  })();
 </script>
