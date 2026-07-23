@@ -34,13 +34,8 @@ test('la isla React del PDC v2 monta con contexto real del proyecto', async ({ p
     // El nav de submódulos sigue presente en el nuevo layout.
     await expect(page.locator('.pdc-nav')).toContainText('Ensamble');
 
-    // La SPA montó y muestra el contexto.
-    await expect(page.locator('[data-testid="pdc-contexto"]')).toContainText(project.name, { timeout: 15000 });
-
-    // AG Grid renderizó la fila del proyecto.
-    await expect(
-      page.locator('.ag-cell').filter({ hasText: `${project.projectId} — ${project.name}` }),
-    ).toBeVisible({ timeout: 15000 });
+    // La página del maestro (A2) reemplazó la página de contexto de la fundación.
+    await expect(page.locator('h1')).toContainText('Maestro de insumos', { timeout: 15000 });
 
     expect(await page.locator('body').innerText()).not.toContain('Fatal error');
   } finally {
