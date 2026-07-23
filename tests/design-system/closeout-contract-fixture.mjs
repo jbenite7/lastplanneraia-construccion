@@ -25,6 +25,7 @@ const referencedTests = [
   'tests/design-system/project-selector-contract.test.mjs',
   'tests/browser/project-selector-sidebar.spec.mjs',
   'tests/browser/design-system-consumer-smoke.mjs',
+  'tests/browser/programacion-intermedia.visual.mjs',
   'tests/browser/entrypoint-segmentation-dryrun.mjs',
   'e2e/tests/workflows/pg-interactions.spec.mjs',
 ];

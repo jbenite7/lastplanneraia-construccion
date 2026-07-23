@@ -3,7 +3,6 @@
   "schemaVersion": 2,
   "designSystemVersion": "1.0.0",
   "moduleId": "programacion-intermedia",
-  "consumerContract": "v1",
   "routes": [
     "/programacion-intermedia",
     "/programacion-intermedia/filtros",

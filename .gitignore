@@ -146,6 +146,7 @@ tests/browser/*
 !tests/browser/programacion-semanal-cnp-lifecycle.mjs
 !tests/browser/programacion-semanal-dark-density.mjs
 !tests/browser/programacion-intermedia-mobile-runtime.mjs
+!tests/browser/programacion-intermedia.visual.mjs
 !tests/browser/cic-role-disciplines.mjs
 !tests/browser/listado-actividades-handsontable.mjs
 !tests/browser/fixtures/
