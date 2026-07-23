@@ -83,7 +83,7 @@ var nueva_sem = function (db, carpeta, seccion) {
           method: 'POST',
           url: url,
           dataType: 'json',
-          data: { f_inicio_sem: f_inicio_sem, opcion: opcion },
+          data: { f_inicio_sem: f_inicio_sem, opcion: opcion, _csrf_token: window.__lpsWeekCsrf || '' },
         }).done(function (info) {
           var json_info = info;
           if (json_info && json_info.respuesta === 'ERROR') {
@@ -138,7 +138,7 @@ var eliminar_sem = function (semana, db, carpeta, seccion) {
       method: 'POST',
       url: url,
       contenttype: 'charset=utf-8',
-      data: { semana: semana, opcion: opcion },
+      data: { semana: semana, opcion: opcion, _csrf_token: window.__lpsWeekCsrf || '' },
     })
       .done(function (info) {
         var json_info = typeof info === 'string' ? JSON.parse(info) : info;

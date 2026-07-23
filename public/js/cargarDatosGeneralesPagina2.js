@@ -332,6 +332,7 @@ var cargarDatosGeneralesPagina = function (seccion) {
         return;
       }
       datosGenerales = responseData;
+      window.__lpsWeekCsrf = responseData.weekCsrfToken || '';
       listadoSemanas = Array.isArray(responseData.listadoSemanas)
         ? responseData.listadoSemanas
         : [];
