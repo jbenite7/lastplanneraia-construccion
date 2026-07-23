@@ -178,6 +178,19 @@
     padding: var(--ds-space-6);
   }
 
+  /* Título del diálogo: styles.css pinta h1..h6 con --text-main desde la capa
+     module (ilegible dentro del dialog dark); reafirmar el token activo aquí. */
+  .shell-week-dialog h3 {
+    margin-block: 0 var(--ds-space-2);
+    color: var(--ds-active-text-primary);
+  }
+
+  /* El botón action del rail no estira como los <a> (sizing intrínseco de
+     form controls) — igualar ancho para que el icono quede centrado. */
+  body.aia-shell--sidebar .aia-sidebar__link[data-sidebar-action] {
+    width: 100%;
+  }
+
   .shell-week-dialog__copy,
   .shell-week-dialog__preview {
     margin-block: var(--ds-space-2) var(--ds-space-3);

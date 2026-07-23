@@ -145,7 +145,7 @@ $shellGroups = array_values(array_filter([
           <?= $shellWeekNum === $shellSemana ? 'aria-current="true"' : '' ?>>
           <span>Semana <?= $shellWeekNum ?></span>
           <?php if (!empty($shellWeek['Fecha_Inicio_Sem']) && !empty($shellWeek['Fecha_Fin_Sem'])): ?>
-            <small><?= htmlspecialchars($shellWeek['Fecha_Inicio_Sem'] . ' – ' . $shellWeek['Fecha_Fin_Sem'], ENT_QUOTES, 'UTF-8') ?></small>
+            <small><?= htmlspecialchars('Del ' . $shellWeek['Fecha_Inicio_Sem'] . ' al ' . $shellWeek['Fecha_Fin_Sem'], ENT_QUOTES, 'UTF-8') ?></small>
           <?php endif; ?>
         </button>
       <?php endforeach; ?>
@@ -260,7 +260,7 @@ $shellGroups = array_values(array_filter([
         btn.appendChild(label);
         if (w.inicio && w.fin) {
           var dates = document.createElement('small');
-          dates.textContent = w.inicio + ' – ' + w.fin;
+          dates.textContent = 'Del ' + w.inicio + ' al ' + w.fin;
           btn.appendChild(dates);
         }
         panel.appendChild(btn);
@@ -324,7 +324,7 @@ $shellGroups = array_values(array_filter([
         btn.appendChild(label);
         if (w.inicio && w.fin) {
           var dates = document.createElement('small');
-          dates.textContent = w.inicio + ' – ' + w.fin;
+          dates.textContent = 'Del ' + w.inicio + ' al ' + w.fin;
           btn.appendChild(dates);
         }
         row.appendChild(btn);

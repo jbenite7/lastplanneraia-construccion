@@ -31,7 +31,7 @@
 }
 
 :where(
-  button:not(.navbar-toggler):not(.lps-drawer-close):not(.close):not(.lps-btn):not(.lps-sidebar-trigger):not(.shell-week-flyout__item),
+  button:not(.navbar-toggler):not(.lps-drawer-close):not(.close):not(.lps-btn):not(.lps-sidebar-trigger):not(.shell-week-flyout__item):not([data-sidebar-action]),
   .btn:not(.lps-btn),
   .btn-pdc-modern,
   .btn-filter-toggle,
