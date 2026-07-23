@@ -13,6 +13,12 @@
   font-family: var(--ds-font-body);
 }
 
+.pdc-nav { display: flex; align-items: center; gap: 16px; max-width: 1180px; margin: 0 auto 20px; padding-bottom: 12px; border-bottom: 1px solid #2c2c2e; }
+.pdc-nav-title { font-weight: 600; margin-right: 8px; }
+.pdc-nav-link { color: #f4f1ea; text-decoration: none; opacity: 0.75; padding: 4px 2px; }
+.pdc-nav-link.active { opacity: 1; border-bottom: 2px solid #69b578; }
+.pdc-nav-disabled { opacity: 0.35; cursor: not-allowed; }
+
 .pdc-page { max-width: 1180px; margin: 0 auto; }
 .pdc-header h1 { font-size: 20px; margin: 0 0 4px; }
 .pdc-header p { margin: 0 0 16px; opacity: 0.8; }
