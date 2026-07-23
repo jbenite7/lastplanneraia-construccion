@@ -414,12 +414,12 @@
         "views/partials/drawer_unificado.php"
       ],
       "maxViolations": {
-        "hardcoded-hex": 127,
-        "hardcoded-color-function": 113,
-        "inline-style": 72,
+        "hardcoded-hex": 60,
+        "hardcoded-color-function": 98,
+        "inline-style": 12,
         "embedded-style-block": 1,
         "forbidden-font-roboto": 0,
-        "hardcoded-radius": 19
+        "hardcoded-radius": 10
       }
     },
     {
