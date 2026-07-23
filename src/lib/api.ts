@@ -3,9 +3,11 @@ import type { ApiResult } from './types'
 
 export class PdcApiError extends Error {
   code: string
-  constructor(code: string, message: string) {
+  details?: unknown
+  constructor(code: string, message: string, details?: unknown) {
     super(message)
     this.code = code
+    this.details = details
   }
 }
 
@@ -22,7 +24,7 @@ async function request<T>(path: string, init: RequestInit & { headers?: Record<s
   if (!body || typeof (body as { ok?: unknown }).ok !== 'boolean') {
     throw new PdcApiError('BAD_RESPONSE', `Respuesta inválida del servidor (HTTP ${res.status}).`)
   }
-  if (!body.ok) throw new PdcApiError(body.error.code, body.error.message)
+  if (!body.ok) throw new PdcApiError(body.error.code, body.error.message, body.error)
   return body.data
 }
 
@@ -39,5 +41,17 @@ export async function apiPost<T>(path: string, payload: unknown): Promise<T> {
       'X-CSRF-Token': boot.csrfToken,
     },
     body: JSON.stringify(payload),
+  })
+}
+
+export async function apiUpload<T>(path: string, file: File, field = 'archivo'): Promise<T> {
+  const boot = await getBootstrap()
+  const form = new FormData()
+  form.append(field, file)
+  // Sin Content-Type manual: el navegador define el boundary del multipart.
+  return request<T>(path, {
+    method: 'POST',
+    headers: { 'X-CSRF-Token': boot.csrfToken },
+    body: form,
   })
 }

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { apiGet, apiPost, PdcApiError } from './api'
+import { apiGet, apiPost, apiUpload, PdcApiError } from './api'
 import { __resetBootstrapForTests } from './bootstrap'
 
 function stubBootstrap() {
@@ -81,5 +81,43 @@ describe('apiPost', () => {
     expect(init.headers['X-CSRF-Token']).toBe('tok-csrf')
     expect(init.headers['Content-Type']).toBe('application/json')
     expect(init.body).toBe(JSON.stringify({ a: 1 }))
+  })
+})
+
+describe('apiUpload', () => {
+  it('envía FormData con X-CSRF-Token y sin Content-Type manual', async () => {
+    stubBootstrap()
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true, status: 200, json: async () => ({ ok: true, data: { importToken: 't' } }),
+    })
+    vi.stubGlobal('fetch', fetchMock)
+    const file = new File(['x'], 'p.xlsx')
+    await apiUpload('/plan-compras/api/presupuesto/preview', file)
+    const [, init] = fetchMock.mock.calls[0]
+    expect(init.method).toBe('POST')
+    expect(init.body).toBeInstanceOf(FormData)
+    expect((init.body as FormData).get('archivo')).toBe(file)
+    expect(init.headers['X-CSRF-Token']).toBe('tok-csrf')
+    expect(init.headers['X-AIA-Expect-Json']).toBe('1')
+    expect('Content-Type' in init.headers).toBe(false)
+  })
+
+  it('propaga PdcApiError con details del envelope (errores de validación)', async () => {
+    stubBootstrap()
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: false, status: 422,
+      json: async () => ({ ok: false, error: { code: 'VALIDATION_FAILED', message: 'Con errores', errores: [{ fila: 2, columna: 'UM', motivo: 'vacía' }] } }),
+    }))
+    const err = await apiUpload('/plan-compras/api/presupuesto/preview', new File(['x'], 'p.xlsx')).catch((e) => e)
+    expect((err as PdcApiError).code).toBe('VALIDATION_FAILED')
+    expect(((err as PdcApiError).details as { errores: unknown[] }).errores).toHaveLength(1)
+  })
+
+  it('permite cambiar el nombre del campo', async () => {
+    stubBootstrap()
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => ({ ok: true, data: null }) })
+    vi.stubGlobal('fetch', fetchMock)
+    await apiUpload('/x', new File(['x'], 'f.bin'), 'adjunto')
+    expect(((fetchMock.mock.calls[0][1] as RequestInit).body as FormData).get('adjunto')).not.toBeNull()
   })
 })
