@@ -25,8 +25,15 @@ const ALL_ROUTES = [
   { route: '/programacion-semanal/cnp', active: 'programacion-semanal', label: 'CNP' },
   { route: '/indicadores', active: 'indicadores', label: 'Indicadores LPS' },
   { route: '/bi/control-tower', active: 'control-tower', label: 'Control Tower - Informes' },
+  { route: '/bi/programa-general', active: 'control-tower', label: 'Control Tower - Programa General' },
+  { route: '/bi/intermedia', active: 'control-tower', label: 'Control Tower - Prog. Intermedia' },
+  { route: '/bi/semanal', active: 'control-tower', label: 'Control Tower - Programación Semanal' },
+  { route: '/bi/pdc', active: 'control-tower', label: 'Control Tower - Plan de Compras' },
+  { route: '/bi/contratistas', active: 'control-tower', label: 'Control Tower - Proveedores (CIC)' },
+  { route: '/bi/responsables', active: 'control-tower', label: 'Control Tower - Responsables (CIP)' },
+  { route: '/bi/curva-s', active: 'control-tower', label: 'Control Tower - Curva S' },
 ];
-const MIGRATED = new Set(['/programacion-intermedia', '/programa-general', '/profesionales', '/subcontratistas', '/control-cambios', '/programa-general-actualizar', '/programacion-semanal', '/programacion-semanal/cic', '/programacion-semanal/cnc', '/programacion-semanal/cnp', '/indicadores']); // se irá ampliando módulo a módulo
+const MIGRATED = new Set(['/programacion-intermedia', '/programa-general', '/profesionales', '/subcontratistas', '/control-cambios', '/programa-general-actualizar', '/programacion-semanal', '/programacion-semanal/cic', '/programacion-semanal/cnc', '/programacion-semanal/cnp', '/indicadores', '/bi/control-tower', '/bi/programa-general', '/bi/intermedia', '/bi/semanal', '/bi/pdc', '/bi/contratistas', '/bi/responsables', '/bi/curva-s']); // se irá ampliando módulo a módulo
 
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1180, height: 820 }, colorScheme: 'dark' });
@@ -136,6 +143,28 @@ for (const r of ALL_ROUTES) {
     !!document.querySelector(`[data-shell-pattern="sidebar"] [data-destination-id="${activeId}"][aria-current="page"]`)
   ), r.active);
   check(`[${r.label}] ítem activo con aria-current`, activeOk, `active=${r.active} found=${activeOk}`);
+
+  // 6) [Control Tower] Cajón derecho de filtros (CT-2): trigger existe, click abre, Escape cierra.
+  if (r.route === '/bi/control-tower') {
+    const triggerExists = await page.evaluate(() => !!document.querySelector('[data-bi-filter-trigger]'));
+    check(`[${r.label}] trigger de filtros existe`, triggerExists, `found=${triggerExists}`);
+
+    await page.evaluate(() => document.querySelector('[data-bi-filter-trigger]').click());
+    await page.waitForTimeout(350);
+    const drawerOpenOk = await page.evaluate(() => {
+      const drawer = document.querySelector('[data-bi-filter-drawer]');
+      return !!drawer && !drawer.hidden && drawer.classList.contains('is-open') && drawer.getAttribute('aria-hidden') === 'false';
+    });
+    check(`[${r.label}] click en trigger abre [data-bi-filter-drawer]`, drawerOpenOk, `open=${drawerOpenOk}`);
+
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(350);
+    const drawerClosedOk = await page.evaluate(() => {
+      const drawer = document.querySelector('[data-bi-filter-drawer]');
+      return !!drawer && !drawer.classList.contains('is-open') && drawer.getAttribute('aria-hidden') === 'true';
+    });
+    check(`[${r.label}] Escape cierra el cajón de filtros`, drawerClosedOk, `closed=${drawerClosedOk}`);
+  }
 
   // Deja el estado colapsado al terminar (el contexto/page se reutiliza entre rutas).
   const finalState = await page.evaluate(() => document.querySelector('[data-shell-pattern="sidebar"]').dataset.sidebarState);
