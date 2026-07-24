@@ -3489,7 +3489,9 @@ function renderDoughnutChart(canvasId, labels, values, label, options = {}) {
   stabilizeCanvas(canvas, 'donut');
   const theme = chartTheme();
   const chartData = sanitizeChartData(values);
-  const palette = CHART_PALETTE.map(resolveChartColor);
+  const palette = (window.BiChartTheme && window.BiChartTheme.colors && window.BiChartTheme.colors.length)
+    ? window.BiChartTheme.colors
+    : CHART_PALETTE.map(resolveChartColor);
   const chartTotal = chartData.reduce((sum, value) => sum + toNumber(value), 0);
   const tooltip = chartTooltipOptions(theme, options.showShare ? {
     callbacks: {

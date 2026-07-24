@@ -103,6 +103,7 @@
     </script>
     <?= \App\View\Components\DesignSystemHeadComponent::renderScript('/js/modules/aia_ui/sidebar_navigation.js') ?>
     <script src="/js/modules/aia_ui/theme.js?v=<?= filemtime(__DIR__ . '/../../public/js/modules/aia_ui/theme.js') ?>"></script>
+    <script src="/js/modules/bi_chart_theme.js?v=<?= filemtime(__DIR__ . '/../../public/js/modules/bi_chart_theme.js') ?>"></script>
     <script src="/js/modules/bi-spa.js?v=<?= filemtime(__DIR__ . '/../../public/js/modules/bi-spa.js') ?>"></script>
     <?= \App\View\Components\DesignSystemHeadComponent::renderScript('/js/modules/bi_filter_drawer.js') ?>
     <script>lucide.createIcons();</script>
