@@ -20,10 +20,13 @@ const ALL_ROUTES = [
   { route: '/control-cambios', active: 'control-cambios', label: 'Control de Cambios' },
   { route: '/programa-general-actualizar', active: 'actualizar-cronograma', label: 'Actualizar Cronograma' },
   { route: '/programacion-semanal', active: 'programacion-semanal', label: 'Programación Semanal' },
+  { route: '/programacion-semanal/cic', active: 'programacion-semanal', label: 'CIC' },
+  { route: '/programacion-semanal/cnc', active: 'programacion-semanal', label: 'CNC' },
+  { route: '/programacion-semanal/cnp', active: 'programacion-semanal', label: 'CNP' },
   { route: '/indicadores', active: 'indicadores', label: 'Indicadores LPS' },
   { route: '/bi/control-tower', active: 'control-tower', label: 'Control Tower - Informes' },
 ];
-const MIGRATED = new Set(['/programacion-intermedia', '/programa-general', '/profesionales', '/subcontratistas', '/control-cambios', '/programa-general-actualizar', '/programacion-semanal']); // se irá ampliando módulo a módulo
+const MIGRATED = new Set(['/programacion-intermedia', '/programa-general', '/profesionales', '/subcontratistas', '/control-cambios', '/programa-general-actualizar', '/programacion-semanal', '/programacion-semanal/cic', '/programacion-semanal/cnc', '/programacion-semanal/cnp']); // se irá ampliando módulo a módulo
 
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1180, height: 820 }, colorScheme: 'dark' });
@@ -38,6 +41,19 @@ await page.route('**/api/semanal/auto-program*', (route) => (
 await page.route('**/nueva_semana.php*', (route) => route.fulfill({ contentType: 'application/json', body: '0' }));
 await page.route('**/eliminar_semana.php*', (route) => route.fulfill({ contentType: 'application/json', body: '0' }));
 await page.route('**/verificarCICActualizada.php', (route) => route.fulfill({ contentType: 'application/json', body: '0' }));
+// Subvistas CIC/CNC/CNP (task 8): sus propios endpoints de guardado/mutación.
+await page.route('**/api/cic/save*', (route) => (
+  route.fulfill({ contentType: 'application/json', body: '{"respuesta":"BIEN"}' })
+));
+await page.route('**/api/cnc/save*', (route) => (
+  route.fulfill({ contentType: 'application/json', body: '{"respuesta":"BIEN"}' })
+));
+await page.route('**/api/cnp/save*', (route) => (
+  route.fulfill({ contentType: 'application/json', body: '{"respuesta":"BIEN"}' })
+));
+await page.route('**/api/cnp/reprogramar*', (route) => (
+  route.fulfill({ contentType: 'application/json', body: '{"respuesta":"BIEN"}' })
+));
 
 await page.goto(`${BASE_URL}/login`);
 await page.locator('#usuario').fill(CREDENTIALS.username);
