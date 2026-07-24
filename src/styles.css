@@ -120,3 +120,13 @@
 .pdc-wiz-cand-meta { margin-left: auto; opacity: 0.7; font-size: 13px; }
 .pdc-wiz-fin { border: 1px dashed #3a3a3c; border-radius: 12px; padding: 24px; text-align: center; max-width: 720px; }
 .pdc-wiz-fin h3 { margin: 0 0 6px; }
+
+/* Tooltip de actividades que requieren un insumo */
+.pdc-tt { background: #17251c; border: 1px solid #69b578; border-radius: 8px; padding: 10px 12px; max-width: 440px; color: #f4f1ea; box-shadow: 0 8px 24px rgba(0,0,0,.5); font-size: 12px; }
+.pdc-tt-cab { font-weight: 600; color: #9fd3ae; margin-bottom: 6px; }
+.pdc-tt-lista { list-style: none; margin: 0; padding: 0; display: grid; gap: 3px; }
+.pdc-tt-lista li { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: baseline; }
+.pdc-tt-cod { font-family: ui-monospace, monospace; color: #69b578; white-space: nowrap; }
+.pdc-tt-act { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pdc-tt-cant { color: #8e8e93; white-space: nowrap; }
+.pdc-tt-mas { margin-top: 6px; color: #8e8e93; font-style: italic; }

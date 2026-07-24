@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useReducer, useState } from 'react'
 import { AgGridReact } from 'ag-grid-react'
-import { CellStyleModule, ClientSideRowModelModule, ModuleRegistry, RowStyleModule, ValidationModule, themeQuartz } from 'ag-grid-community'
-import type { ColDef, RowClickedEvent } from 'ag-grid-community'
+import { CellStyleModule, ClientSideRowModelModule, ModuleRegistry, RowStyleModule, TooltipModule, ValidationModule, themeQuartz } from 'ag-grid-community'
+import type { ColDef, ITooltipParams, RowClickedEvent } from 'ag-grid-community'
 import { PdcApiError, apiGet, apiPost } from '../lib/api'
 import { claveInsumo, estadoInicialPaquetes, paquetesReducer } from '../lib/paquetesState'
 import { TIPOS_NEGOCIACION } from '../lib/types'
-import type { InsumoPaquete, PaqueteCatalogo, ResumenPaquetes, SugerenciaPaquete } from '../lib/types'
+import type { ActividadesInsumo, InsumoPaquete, PaqueteCatalogo, ResumenPaquetes, SugerenciaPaquete } from '../lib/types'
 import PaquetesAsistente from './PaquetesAsistente'
 
 // Registro selectivo de módulos (no AllCommunityModule); ValidationModule solo en dev — patrón del repo.
@@ -13,8 +13,35 @@ ModuleRegistry.registerModules([
   ClientSideRowModelModule,
   CellStyleModule,
   RowStyleModule,
+  TooltipModule, // tooltip de actividades que requieren el insumo
   ...(import.meta.env.DEV ? [ValidationModule] : []),
 ])
+
+/** Tooltip: actividades del presupuesto que requieren el insumo (códigos = amarre al cronograma en A4). */
+function TooltipActividades(params: ITooltipParams<InsumoPaquete>) {
+  const data = params.data
+  const mapa = (params.context?.actividadesMap ?? {}) as Record<string, ActividadesInsumo>
+  const info = data ? mapa[claveInsumo(data.descripcionNorm, data.unidad)] : undefined
+  if (!info || info.total === 0) {
+    return <div className="pdc-tt">Sin actividades registradas para este insumo.</div>
+  }
+  const ocultas = info.total - info.items.length
+  return (
+    <div className="pdc-tt">
+      <div className="pdc-tt-cab">Requerido por {info.total} actividad(es):</div>
+      <ul className="pdc-tt-lista">
+        {info.items.map((a, i) => (
+          <li key={`${a.codigo}-${i}`}>
+            <span className="pdc-tt-cod">{a.codigo}</span>
+            <span className="pdc-tt-act">{a.actividad}</span>
+            <span className="pdc-tt-cant">{a.cantidad.toLocaleString('es-CO')} {data?.unidad}</span>
+          </li>
+        ))}
+      </ul>
+      {ocultas > 0 && <div className="pdc-tt-mas">y {ocultas} más…</div>}
+    </div>
+  )
+}
 
 const pdcTheme = themeQuartz.withParams({
   backgroundColor: '#1c1c1e',
@@ -36,6 +63,7 @@ export default function PaquetesContratacion() {
   const [insumos, setInsumos] = useState<InsumoPaquete[]>([])
   const [paquetes, setPaquetes] = useState<PaqueteCatalogo[]>([])
   const [resumen, setResumen] = useState<ResumenPaquetes | null>(null)
+  const [actividadesMap, setActividadesMap] = useState<Record<string, ActividadesInsumo>>({})
   const [filtro, setFiltro] = useState<Filtro>('todos')
   const [agrupacion, setAgrupacion] = useState<string>('')
   const [sinVersion, setSinVersion] = useState(false)
@@ -53,6 +81,9 @@ export default function PaquetesContratacion() {
     apiGet<ResumenPaquetes>('/plan-compras/api/paquetes/resumen')
       .then(setResumen)
       .catch(() => setResumen(null))
+    apiGet<{ mapa: Record<string, ActividadesInsumo> }>('/plan-compras/api/paquetes/insumo-actividades')
+      .then((d) => setActividadesMap(d.mapa))
+      .catch(() => setActividadesMap({}))
   }, [])
   useEffect(() => { if (modo === 'masivo') cargar(filtro) }, [cargar, filtro, modo])
 
@@ -71,7 +102,12 @@ export default function PaquetesContratacion() {
       valueGetter: (p) => (p.data && state.seleccion.has(claveInsumo(p.data.descripcionNorm, p.data.unidad)) ? 1 : 0),
       valueFormatter: (p) => (p.value === 1 ? '✔' : ''),
     },
-    { headerName: 'Insumo', field: 'descripcion', flex: 2, minWidth: 220 },
+    {
+      headerName: 'Insumo', field: 'descripcion', flex: 2, minWidth: 220,
+      // Tooltip con las actividades que requieren el insumo (el valueGetter solo dispara el tooltip).
+      tooltipValueGetter: (p) => (p.data ? p.data.descripcion : ''),
+      tooltipComponent: TooltipActividades,
+    },
     { headerName: 'Agrupación', field: 'agrupacion', flex: 1, minWidth: 130, valueFormatter: (p) => p.value ?? '—' },
     { headerName: 'Recurso', field: 'tipoRecurso', width: 120, valueFormatter: (p) => p.value ?? '—' },
     { headerName: 'Und', field: 'unidad', width: 78 },
@@ -306,6 +342,8 @@ export default function PaquetesContratacion() {
           theme={pdcTheme}
           rowData={visibles}
           columnDefs={cols}
+          context={{ actividadesMap }}
+          tooltipShowDelay={350}
           onRowClicked={onRowClicked}
           domLayout="autoHeight"
           suppressCellFocus

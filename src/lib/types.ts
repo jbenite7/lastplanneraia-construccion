@@ -225,7 +225,12 @@ export type InsumoPaquete = {
   paqueteNombre: string | null
   // 1|0 deliberado (no boolean) — consistente con el resto de flags de la SPA.
   omitido: number
+  // Actividades del presupuesto que requieren el insumo (se rellena en cliente para el tooltip).
+  actividades?: ActividadesInsumo
 }
+
+export type ActividadDeInsumo = { codigo: string; actividad: string; cantidad: number; valor: number }
+export type ActividadesInsumo = { total: number; items: ActividadDeInsumo[] }
 
 export type SugerenciaPaquete = {
   descripcionNorm: string
