@@ -43,7 +43,7 @@ Este repo **no es autónomo**: es la reimplementación (modelo nuevo, ver abajo)
 ## Flujo de negocio (modelo de dominio)
 
 Entender esta cadena es clave para cualquier funcionalidad. Anatomía de un presupuesto:
-`capítulos > subcapítulos > grupos > actividades`. Cada **actividad** tiene un **APU** (Análisis de Precios Unitarios) que la descompone en **insumos** (mano de obra, materiales, equipos, transporte, subcontratos), cada uno con tipo, unidad, cantidad (rendimiento × cantidad de actividad) y valor.
+`capítulos > subcapítulos > grupos > actividades`. Cada **actividad** tiene un **APU** (Análisis de Precios Unitarios) que la descompone en **insumos** (mano de obra, materiales, equipos, transporte, subcontratos), cada uno con tipo, unidad, cantidad (**Cant APU × rendimiento × cantidad de actividad** — el coeficiente de consumo vive en `Cant APU`; en el export real de AIA `Rend` es 1. Ver fix A1.8: omitir `Cant APU` inflaba los insumos de coeficiente pequeño y el costo total) y valor.
 
 Flujo acordado (orden importante — refleja el "cambiazo" decidido en la reunión de 2026-07-16):
 
