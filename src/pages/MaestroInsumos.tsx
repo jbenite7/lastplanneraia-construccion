@@ -316,7 +316,7 @@ export default function MaestroInsumos() {
 
       <div className="pdc-bloque">
         <div className="pdc-fila-acciones">
-          <h2>Catálogo global</h2>
+          <h2>Catálogo global ({catalogo.length.toLocaleString('es-CO')}{busqueda.trim() ? ' resultados' : ' insumos'})</h2>
           <div className="pdc-selector">
             <label className="pdc-check">
               <input
