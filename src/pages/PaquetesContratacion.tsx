@@ -268,6 +268,13 @@ export default function PaquetesContratacion() {
       </div>
 
       <div className="pdc-paq-acciones">
+        <button type="button" data-testid="pdc-paq-sel-todos" disabled={visibles.length === 0}
+          onClick={() => dispatch({ type: 'SEL_TODOS', claves: visibles.map((i) => claveInsumo(i.descripcionNorm, i.unidad)) })}>
+          Seleccionar visibles
+        </button>
+        <button type="button" data-testid="pdc-paq-limpiar-sel" disabled={seleccionados.length === 0} onClick={() => dispatch({ type: 'LIMPIAR_SEL' })}>
+          Limpiar
+        </button>
         <span className="pdc-paq-sel">{seleccionados.length} seleccionado(s)</span>
         <select data-testid="pdc-paq-select-paquete" aria-label="Paquete destino" value={paqueteDestino} onChange={(e) => setPaqueteDestino(e.target.value === '' ? '' : Number(e.target.value))}>
           <option value="">Paquete destino…</option>
