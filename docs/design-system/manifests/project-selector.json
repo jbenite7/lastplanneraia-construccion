@@ -77,7 +77,7 @@
       "state": "normal",
       "role": "authenticated-project-member",
       "golden": "tests/browser/__screenshots__/project-selector/project-selector-dark-1180x820.png",
-      "sha256": "9058cf01c436d74310c849aac114958b46dc784d5ba135a1f07b5ea43b9fde1f"
+      "sha256": "47bfde337cae1941cb88c0b1d49d305c4c7b940f821f19dc49d19de0405b00ac"
     },
     {
       "id": "project-selector-dark-1440x900",
@@ -93,7 +93,7 @@
       "state": "normal",
       "role": "authenticated-project-member",
       "golden": "tests/browser/__screenshots__/project-selector/project-selector-dark-1440x900.png",
-      "sha256": "68e276f66e2ae02fa2e15f3b7264d0323123c1d00317e6617ed5fe67f269e249"
+      "sha256": "ee768a1332d64688e3690172843a6a32b6d436bfc2b292a54463194d4eb3e0e5"
     }
   ]
 }
