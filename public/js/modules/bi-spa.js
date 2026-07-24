@@ -379,11 +379,6 @@ function switchView(viewId) {
     nav.setAttribute('tabindex', '0');
   }
 
-  const sheetSelect = document.getElementById('bi-mobile-sheet-select');
-  if (sheetSelect && sheetSelect.value !== viewId) {
-    sheetSelect.value = viewId;
-  }
-
   const title = document.getElementById('current-view-title');
   if (title) title.textContent = VIEW_META[viewId]?.label || viewId;
 
