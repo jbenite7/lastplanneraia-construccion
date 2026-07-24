@@ -137,6 +137,28 @@ for (const r of ALL_ROUTES) {
   ), r.active);
   check(`[${r.label}] ítem activo con aria-current`, activeOk, `active=${r.active} found=${activeOk}`);
 
+  // 6) [Control Tower] Cajón derecho de filtros (CT-2): trigger existe, click abre, Escape cierra.
+  if (r.route === '/bi/control-tower') {
+    const triggerExists = await page.evaluate(() => !!document.querySelector('[data-bi-filter-trigger]'));
+    check(`[${r.label}] trigger de filtros existe`, triggerExists, `found=${triggerExists}`);
+
+    await page.evaluate(() => document.querySelector('[data-bi-filter-trigger]').click());
+    await page.waitForTimeout(350);
+    const drawerOpenOk = await page.evaluate(() => {
+      const drawer = document.querySelector('[data-bi-filter-drawer]');
+      return !!drawer && !drawer.hidden && drawer.classList.contains('is-open') && drawer.getAttribute('aria-hidden') === 'false';
+    });
+    check(`[${r.label}] click en trigger abre [data-bi-filter-drawer]`, drawerOpenOk, `open=${drawerOpenOk}`);
+
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(350);
+    const drawerClosedOk = await page.evaluate(() => {
+      const drawer = document.querySelector('[data-bi-filter-drawer]');
+      return !!drawer && !drawer.classList.contains('is-open') && drawer.getAttribute('aria-hidden') === 'true';
+    });
+    check(`[${r.label}] Escape cierra el cajón de filtros`, drawerClosedOk, `closed=${drawerClosedOk}`);
+  }
+
   // Deja el estado colapsado al terminar (el contexto/page se reutiliza entre rutas).
   const finalState = await page.evaluate(() => document.querySelector('[data-shell-pattern="sidebar"]').dataset.sidebarState);
   if (finalState !== 'collapsed') {

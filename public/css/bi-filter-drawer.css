@@ -1,0 +1,159 @@
+/* public/css/bi-filter-drawer.css
+ * ================================
+ * Cajón derecho de filtros del Control Tower BI. Componente propio (no
+ * reutiliza el JS del cajón LPS), con el mismo lenguaje visual: overlay +
+ * panel deslizante desde la derecha, tokens --ds-* del tema activo, dark
+ * desktop-only (DS-027 pilot scope).
+ *
+ * Insets (padding/margin) viven en @layer legacy-overrides: styles.css
+ * importa `* { margin: 0; padding: 0; }` en @layer module (posterior a
+ * components en el orden global de core.css), así que cualquier padding
+ * declarado aquí en @layer components perdería contra ese reset pese a
+ * tener selectores más específicos — las capas ganan sobre especificidad.
+ * Mismo problema y misma solución que design-system/adapters/lps-drawer.css.
+ */
+@layer components {
+  .bi-filter-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .bi-filter-trigger__count {
+    display: inline-flex;
+    min-width: 1.5rem;
+    height: 1.5rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--ds-radius-pill);
+    background-color: var(--ds-color-state-info-bg);
+    color: var(--ds-color-state-info-text);
+    font-size: var(--ds-type-size-xs);
+    font-weight: var(--ds-type-weight-bold);
+  }
+
+  .bi-filter-drawer-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: color-mix(in srgb, var(--ds-active-text-primary) 42%, transparent);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: var(--ds-z-shell-overlay);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--ds-motion-standard);
+  }
+
+  .bi-filter-drawer-overlay:not([hidden]) {
+    display: block;
+  }
+
+  .bi-filter-drawer-overlay.is-open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .bi-filter-drawer {
+    display: none;
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: min(23rem, 100vw);
+    height: 100vh;
+    background: var(--ds-active-bg-page);
+    border-left: var(--ds-border-width) solid var(--ds-active-border);
+    box-shadow: var(--ds-shadow-lg);
+    z-index: var(--ds-z-shell-drawer);
+    flex-direction: column;
+    transform: translateX(100%);
+    transition: transform var(--ds-motion-standard);
+    font-family: var(--ds-font-body);
+  }
+
+  .bi-filter-drawer:not([hidden]) {
+    display: flex;
+  }
+
+  .bi-filter-drawer.is-open {
+    transform: translateX(0);
+  }
+
+  .bi-filter-drawer__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-sm);
+    border-bottom: var(--ds-border-width) solid var(--ds-active-border);
+    background: var(--ds-active-surface-raised);
+  }
+
+  .bi-filter-drawer__title {
+    color: var(--ds-active-text-primary);
+    font-size: var(--ds-type-size-md);
+    font-weight: var(--ds-type-weight-bold);
+  }
+
+  .bi-filter-drawer__close {
+    display: inline-grid;
+    place-items: center;
+    inline-size: var(--ds-target-min);
+    block-size: var(--ds-target-min);
+    flex-shrink: 0;
+    border: 0;
+    border-radius: var(--ds-radius-pill);
+    background: transparent;
+    color: var(--ds-active-text-secondary);
+    font-size: var(--ds-type-size-2xl);
+    line-height: 1;
+    cursor: pointer;
+    transition: color var(--ds-motion-fast);
+  }
+
+  .bi-filter-drawer__close:hover {
+    color: var(--ds-active-text-primary);
+  }
+
+  .bi-filter-drawer__body {
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  .bi-filter-trigger:focus-visible,
+  .bi-filter-drawer__close:focus-visible {
+    outline: var(--ds-outline-width) solid var(--ds-active-focus-ring);
+    outline-offset: var(--ds-outline-offset);
+    box-shadow: var(--ds-shadow-focus);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bi-filter-drawer,
+    .bi-filter-drawer-overlay {
+      transition-duration: var(--ds-motion-reduced-duration);
+    }
+  }
+}
+
+@layer legacy-overrides {
+  .bi-filter-trigger__count {
+    padding: 0 0.35rem;
+  }
+
+  .bi-filter-drawer__header {
+    padding: var(--spacing-lg);
+  }
+
+  .bi-filter-drawer__title {
+    margin: 0;
+  }
+
+  .bi-filter-drawer__close {
+    padding: 0;
+  }
+
+  .bi-filter-drawer .bi-filter-form {
+    padding: var(--spacing-lg);
+  }
+}

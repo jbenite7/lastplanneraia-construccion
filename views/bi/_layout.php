@@ -43,6 +43,7 @@
 
     <link rel="stylesheet" href="/css/access.css">
     <link rel="stylesheet" href="/css/bi-control-tower.css?v=<?= filemtime(__DIR__ . '/../../public/css/bi-control-tower.css') ?>">
+    <?= \App\View\Components\DesignSystemHeadComponent::renderStylesheet('/css/bi-filter-drawer.css') ?>
 </head>
 <body class="aia-shell aia-shell--sidebar bi-control-tower-page antialiased text-sm">
 
@@ -50,13 +51,27 @@
 
     <?php require __DIR__ . '/_nav.php'; ?>
 
-    <div class="bi-filters-block aia-panel flex-shrink-0">
-        <?php require __DIR__ . '/_filters.php'; ?>
+    <div class="bi-filter-drawer-overlay" data-bi-filter-drawer-overlay hidden></div>
+    <div class="bi-filter-drawer" id="bi-filter-drawer" data-bi-filter-drawer hidden role="dialog" aria-modal="true" aria-labelledby="bi-filter-drawer-title" aria-hidden="true">
+        <div class="bi-filter-drawer__header">
+            <h3 id="bi-filter-drawer-title" class="bi-filter-drawer__title">Filtros</h3>
+            <button type="button" class="bi-filter-drawer__close" data-bi-filter-close aria-label="Cerrar filtros">&times;</button>
+        </div>
+        <div class="bi-filter-drawer__body">
+            <?php require __DIR__ . '/_filters.php'; ?>
+        </div>
     </div>
 
     <div class="bi-main-shell flex-1 flex flex-col min-h-0 overflow-hidden relative">
         <header class="bi-main-header border-b border-gray-200 py-3 px-6 flex flex-col justify-center flex-shrink-0 z-10 min-h-[72px]">
-            <h2 id="current-view-title" class="text-xl font-bold text-gray-800 tracking-tight leading-none mb-2">Resumen Ejecutivo</h2>
+            <div class="flex items-center justify-between gap-4 mb-2">
+                <h2 id="current-view-title" class="text-xl font-bold text-gray-800 tracking-tight leading-none">Resumen Ejecutivo</h2>
+                <button type="button" data-bi-filter-trigger class="aia-btn aia-btn--secondary bi-filter-trigger" aria-haspopup="dialog" aria-controls="bi-filter-drawer" aria-expanded="false">
+                    <i data-lucide="sliders-horizontal" class="w-4 h-4" aria-hidden="true"></i>
+                    <span>Filtros</span>
+                    <strong id="bi-filter-count" class="bi-filter-trigger__count">0</strong>
+                </button>
+            </div>
             <div id="active-filters" class="flex flex-wrap gap-2 min-h-[24px]" aria-label="Filtros activos aplicados" role="group"></div>
         </header>
 
@@ -89,6 +104,7 @@
     <?= \App\View\Components\DesignSystemHeadComponent::renderScript('/js/modules/aia_ui/sidebar_navigation.js') ?>
     <script src="/js/modules/aia_ui/theme.js?v=<?= filemtime(__DIR__ . '/../../public/js/modules/aia_ui/theme.js') ?>"></script>
     <script src="/js/modules/bi-spa.js?v=<?= filemtime(__DIR__ . '/../../public/js/modules/bi-spa.js') ?>"></script>
+    <?= \App\View\Components\DesignSystemHeadComponent::renderScript('/js/modules/bi_filter_drawer.js') ?>
     <script>lucide.createIcons();</script>
 </body>
 </html>

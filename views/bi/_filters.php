@@ -1,10 +1,4 @@
 <form class="bi-filter-form aia-panel text-sm" id="filters-form" onsubmit="event.preventDefault(); applyFilters();" aria-label="Filtros del Dashboard">
-    <button type="button" id="bi-mobile-filter-toggle" class="bi-mobile-filter-toggle aia-btn aia-btn--secondary" onclick="toggleMobileFilters()" aria-expanded="false" aria-controls="bi-mobile-filter-panel">
-        <span><i data-lucide="sliders-horizontal" class="w-4 h-4"></i> Filtros</span>
-        <strong id="bi-mobile-filter-count">0</strong>
-    </button>
-
-    <div id="bi-mobile-filter-panel" class="bi-mobile-filter-panel">
 
     <!-- F01: Proyecto (Multi-select) -->
     <div class="relative">
@@ -70,6 +64,5 @@
                 <i data-lucide="filter-x" class="w-4 h-4"></i><span class="bi-clear-filter-label">Limpiar</span>
             </button>
         </div>
-    </div>
     </div>
 </form>
