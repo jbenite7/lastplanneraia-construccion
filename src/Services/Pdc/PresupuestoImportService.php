@@ -15,6 +15,47 @@ final class PresupuestoImportService
     ) {
     }
 
+    /**
+     * Hash SHA-256 del CONTENIDO canónico del presupuesto (items + insumos), estable
+     * ante reordenamiento de filas y metadata del Excel. Base del anti-duplicado por contenido.
+     */
+    public function hashContenido(array $items, array $insumos): string
+    {
+        $itemLineas = array_map(static function (array $i): string {
+            return implode('|', [
+                (string) ($i['codigo'] ?? ''),
+                (string) ($i['tipo_fila'] ?? ''),
+                (string) ($i['unidad'] ?? ''),
+                number_format((float) ($i['cantidad'] ?? 0), 4, '.', ''),
+            ]);
+        }, $items);
+        sort($itemLineas, SORT_STRING);
+
+        $insumoLineas = array_map(static function (array $x): string {
+            return implode('|', [
+                (string) ($x['codigo_actividad'] ?? ''),
+                MaestroInsumosService::normalizar((string) ($x['descripcion'] ?? '')),
+                (string) ($x['unidad'] ?? ''),
+                number_format((float) ($x['cantidad_total'] ?? 0), 4, '.', ''),
+                number_format((float) ($x['valor_total'] ?? 0), 2, '.', ''),
+            ]);
+        }, $insumos);
+        sort($insumoLineas, SORT_STRING);
+
+        return hash('sha256', implode("\n", $itemLineas) . "\n##\n" . implode("\n", $insumoLineas));
+    }
+
+    /** Versión activa del proyecto (con su número y hash de contenido), o null. */
+    private function versionActivaDe(int $projectId): ?array
+    {
+        $row = $this->db->query(
+            'SELECT id, version_numero, version_label, contenido_hash, created_at
+             FROM pdc_presupuesto_versiones WHERE project_id = ? AND activa = 1',
+            [$projectId],
+        )->fetch(\PDO::FETCH_ASSOC);
+        return $row === false ? null : $row;
+    }
+
     public function previewDesdeArchivo(string $rutaArchivo, string $nombreOriginal, int $projectId, string $usuario): array
     {
         $resultado = $this->parser->parse($rutaArchivo);
@@ -32,9 +73,14 @@ final class PresupuestoImportService
             $advertencias[] = 'Este archivo ya fue importado antes en este proyecto (contenido idéntico).';
         }
 
+        $contenidoHash = $this->hashContenido($resultado['items'], $resultado['insumos']);
+        $activa = $this->versionActivaDe($projectId);
+        $sinCambios = $activa !== null && $activa['contenido_hash'] !== null && $activa['contenido_hash'] === $contenidoHash;
+
         $token = $this->store->guardar($rutaArchivo, [
             'nombre' => $nombreOriginal,
             'hash' => $hash,
+            'contenidoHash' => $contenidoHash,
             'projectId' => $projectId,
             'usuario' => $usuario,
         ]);
@@ -45,6 +91,13 @@ final class PresupuestoImportService
             'versionLabel' => $resultado['versionLabel'],
             'resumen' => $resultado['resumen'],
             'advertencias' => $advertencias,
+            'sinCambios' => $sinCambios,
+            'versionActiva' => $activa === null ? null : [
+                'id' => (int) $activa['id'],
+                'numero' => (int) $activa['version_numero'],
+                'label' => $activa['version_label'],
+                'createdAt' => $activa['created_at'],
+            ],
         ];
     }
 
@@ -73,18 +126,41 @@ final class PresupuestoImportService
             return ['ok' => false, 'code' => 'INVALID_FILE'];
         }
 
+        $contenidoHash = $this->hashContenido($resultado['items'], $resultado['insumos']);
+        $activa = $this->versionActivaDe($projectId);
+        if ($activa !== null && $activa['contenido_hash'] !== null && $activa['contenido_hash'] === $contenidoHash) {
+            // Anti-duplicado: el contenido es idéntico a la versión activa → no se crea una versión nueva.
+            $this->store->eliminar($token);
+            return [
+                'ok' => true,
+                'sinCambios' => true,
+                'versionId' => (int) $activa['id'],
+                'versionNumero' => (int) $activa['version_numero'],
+                'versionLabel' => $activa['version_label'],
+                'versionIdAnterior' => null,
+                'resumen' => $resultado['resumen'],
+            ];
+        }
+        $versionIdAnterior = $activa === null ? null : (int) $activa['id'];
+
         $this->db->beginTransaction();
         try {
+            $numero = (int) $this->db->query(
+                'SELECT COALESCE(MAX(version_numero), 0) + 1 FROM pdc_presupuesto_versiones WHERE project_id = ?',
+                [$projectId],
+            )->fetchColumn();
             $this->db->query('UPDATE pdc_presupuesto_versiones SET activa = 0 WHERE project_id = ? AND activa = 1', [$projectId]);
             $this->db->query(
                 'INSERT INTO pdc_presupuesto_versiones
-                    (project_id, version_label, archivo_nombre, archivo_hash, import_token, total_actividades, total_insumos, costo_total, activa, importado_por, created_at)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, NOW())',
+                    (project_id, version_label, version_numero, archivo_nombre, archivo_hash, contenido_hash, import_token, total_actividades, total_insumos, costo_total, activa, importado_por, created_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, NOW())',
                 [
                     $projectId,
                     (string) ($resultado['versionLabel'] ?? ''),
+                    $numero,
                     (string) ($meta['nombre'] ?? ''),
                     (string) ($meta['hash'] ?? ''),
+                    $contenidoHash,
                     $token,
                     $resultado['resumen']['actividades'],
                     $resultado['resumen']['insumos'],
@@ -129,8 +205,11 @@ final class PresupuestoImportService
 
         return [
             'ok' => true,
+            'sinCambios' => false,
             'versionId' => $versionId,
+            'versionNumero' => $numero,
             'versionLabel' => $resultado['versionLabel'],
+            'versionIdAnterior' => $versionIdAnterior,
             'resumen' => $resultado['resumen'],
         ];
     }
@@ -142,7 +221,7 @@ final class PresupuestoImportService
             return null;
         }
         $row = $this->db->query(
-            'SELECT id, version_label, total_actividades, total_insumos, costo_total
+            'SELECT id, version_label, version_numero, total_actividades, total_insumos, costo_total
              FROM pdc_presupuesto_versiones WHERE project_id = ? AND import_token = ?',
             [$projectId, $token],
         )->fetch(\PDO::FETCH_ASSOC);
@@ -151,8 +230,11 @@ final class PresupuestoImportService
         }
         return [
             'ok' => true,
+            'sinCambios' => false,
             'versionId' => (int) $row['id'],
+            'versionNumero' => (int) $row['version_numero'],
             'versionLabel' => $row['version_label'],
+            'versionIdAnterior' => null,
             // Solo los campos persistidos; la jerarquía no se almacena en la cabecera.
             'resumen' => [
                 'capitulos' => 0,
@@ -168,13 +250,14 @@ final class PresupuestoImportService
     public function versiones(int $projectId): array
     {
         $rows = $this->db->query(
-            'SELECT id, version_label, archivo_nombre, total_actividades, total_insumos, costo_total, activa, importado_por, created_at
+            'SELECT id, version_label, version_numero, archivo_nombre, total_actividades, total_insumos, costo_total, activa, importado_por, created_at
              FROM pdc_presupuesto_versiones WHERE project_id = ? ORDER BY created_at DESC, id DESC',
             [$projectId],
         )->fetchAll(\PDO::FETCH_ASSOC);
 
         return array_map(static fn (array $r): array => [
             'id' => (int) $r['id'],
+            'versionNumero' => (int) $r['version_numero'],
             'versionLabel' => $r['version_label'],
             'archivoNombre' => $r['archivo_nombre'],
             'totalActividades' => (int) $r['total_actividades'],

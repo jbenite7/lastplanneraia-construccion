@@ -83,16 +83,17 @@ $assert($totalTrasRetry === 1, 'El retry no crea una versión duplicada.');
 $cInventado = $service->confirmar(str_repeat('f', 32), PDC_TEST_PROJECT_A);
 $assert($cInventado['ok'] === false && $cInventado['code'] === 'TOKEN_EXPIRED', 'Token desconocido → TOKEN_EXPIRED.');
 
-// Segundo import → la primera versión queda inactiva, ambas se conservan.
+// Segundo import con contenido idéntico → anti-duplicado (A1.7): sin cambios, NO crea versión nueva.
 $tmp2 = sys_get_temp_dir() . '/pdc_flujo_valido2.xlsx';
 pdcFixturePresupuestoValido($tmp2);
 $p2 = $service->previewDesdeArchivo($tmp2, 'presupuesto-v2.xlsx', PDC_TEST_PROJECT_A, 'tester');
 $assert($p2['advertencias'] !== [], 'Re-import de contenido idéntico advierte.');
 $c3 = $service->confirmar($p2['importToken'], PDC_TEST_PROJECT_A);
+$assert($c3['ok'] === true && $c3['sinCambios'] === true && $c3['versionId'] === $c1['versionId'], 'Confirmar contenido idéntico: sin cambios, NO crea versión nueva.');
 $versiones = $service->versiones(PDC_TEST_PROJECT_A);
-$assert(count($versiones) === 2, 'Se conservan las 2 versiones.');
+$assert(count($versiones) === 1, 'Sigue habiendo 1 sola versión (el anti-duplicado no crea una 2ª).');
 $activas = array_values(array_filter($versiones, fn ($x) => (int) $x['activa'] === 1));
-$assert(count($activas) === 1 && $activas[0]['id'] === $c3['versionId'], 'Solo la nueva versión queda activa.');
+$assert(count($activas) === 1 && $activas[0]['id'] === $c1['versionId'], 'La única versión sigue activa.');
 
 // Aislamiento por proyecto: B no ve nada.
 $assert($service->versiones(PDC_TEST_PROJECT_B) === [], 'Proyecto B no ve versiones de A.');
