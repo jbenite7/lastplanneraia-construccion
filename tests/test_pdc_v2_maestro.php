@@ -93,7 +93,7 @@ $assert($g2['total'] === 4 && $g2['pendientes'] === 4, 'Regenerar es idempotente
 // y verificamos los agregados del vínculo de TEJA en A.)
 $v = $maestro->vinculos(PDC_M_PROJECT_A);
 $teja = array_values(array_filter($v['vinculos'], fn ($x) => $x['descripcionNorm'] === 'TEJA DE ZINC'))[0];
-$assert(abs($teja['cantidadTotal'] - 21.6) < 0.001 && abs($teja['valorTotal'] - 540000.0) < 0.01 && $teja['apariciones'] === 1, 'Consolidado de TEJA correcto.');
+$assert(abs($teja['cantidadTotal'] - 22.68) < 0.001 && abs($teja['valorTotal'] - 567000.0) < 0.01 && $teja['apariciones'] === 1, 'Consolidado de TEJA correcto.');
 $assert($v['resumen']['cobertura'] === 0.0, 'Cobertura 0% en cold start.');
 $assert($v['vinculos'][0]['estado'] === 'pendiente', 'Orden: pendientes primero.');
 

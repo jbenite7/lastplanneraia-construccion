@@ -33,13 +33,13 @@ $assert($r['resumen']['actividades'] === 2 && $r['resumen']['insumos'] === 4, '2
 $assert(count($r['items']) === 8 && count($r['insumos']) === 4, 'Listas items/insumos completas.');
 $acts = array_values(array_filter($r['items'], fn ($i) => $i['tipo_fila'] === 'actividad'));
 $assert($acts[0]['codigo'] === '01.01.01.01' && $acts[0]['id_apu'] === 'APU-001', 'Actividad detectada por ID APU.');
-// cantidad_total = rend × cantidad de actividad: TEJA = 1.2 × 18 = 21.6
+// cantidad_total = cant_apu × rend × cantidad de actividad: TEJA = 1.05 × 1.2 × 18 = 22.68 (A1.8)
 $teja = array_values(array_filter($r['insumos'], fn ($i) => $i['descripcion'] === 'TEJA DE ZINC'))[0];
-$assert(abs($teja['cantidad_total'] - 21.6) < 0.0001, 'cantidad_total = rendimiento × cantidad de la actividad.');
-$assert(abs($teja['valor_total'] - (21.6 * 25000)) < 0.01, 'valor_total = cantidad_total × valor_unitario.');
+$assert(abs($teja['cantidad_total'] - 22.68) < 0.0001, 'cantidad_total = cant_apu × rendimiento × cantidad de la actividad.');
+$assert(abs($teja['valor_total'] - (22.68 * 25000)) < 0.01, 'valor_total = cantidad_total × valor_unitario.');
 $assert($teja['codigo_actividad'] === '01.01.01.01', 'Insumo amarrado a su actividad.');
-// costoTotal = suma de valor_total de los 4 insumos
-$esperado = (1.2 * 18 * 25000) + (0.5 * 18 * 9500) + (1.05 * 40 * 620000) + (1.0 * 40 * 28000);
+// costoTotal = suma de valor_total de los 4 insumos (cant_apu × rend × cantidad × vrUnit)
+$esperado = (1.05 * 1.2 * 18 * 25000) + (8.0 * 0.5 * 18 * 9500) + (1.0 * 1.05 * 40 * 620000) + (1.0 * 1.0 * 40 * 28000);
 $assert(abs($r['resumen']['costoTotal'] - $esperado) < 0.01, 'costoTotal es la suma de valor_total.');
 
 // Archivo inválido: 3 errores esperados (huérfano, VrUnit, UM) y valido=false
@@ -60,7 +60,7 @@ $assert($s['resumen']['actividades'] === 1 && $s['resumen']['insumos'] === 1, 'A
 $actSinIdApu = array_values(array_filter($s['items'], fn ($i) => $i['tipo_fila'] === 'actividad'))[0];
 $assert($actSinIdApu['id_apu'] === null, 'id_apu queda null cuando la columna viene vacía.');
 $insumoX = $s['insumos'][0];
-$assert(abs($insumoX['cantidad_total'] - 10.0) < 0.0001, 'cantidad_total = rendimiento(2.0) × cantidad de la actividad(5) = 10.');
+$assert(abs($insumoX['cantidad_total'] - 10.0) < 0.0001, 'cantidad_total = cant_apu(1.0) × rendimiento(2.0) × cantidad de la actividad(5) = 10.');
 @unlink($sinIdApu);
 
 // Nivel archivo: hoja faltante → RuntimeException
@@ -98,7 +98,7 @@ $assert($cd['valido'] === true, 'Fixture con coma decimal parsea sin errores.');
 $teja2 = $cd['insumos'][0];
 $assert(abs($teja2['rendimiento'] - 1.2) < 0.0001, 'Rend "1,2" (string es-CO) se parsea como 1.2.');
 $assert(abs($teja2['cant_apu'] - 1.05) < 0.0001, 'Cant APU "1,05" (string es-CO) se parsea como 1.05.');
-$assert(abs($teja2['cantidad_total'] - 12.0) < 0.0001, 'cantidad_total usa el rendimiento parseado (1.2 × 10 = 12).');
+$assert(abs($teja2['cantidad_total'] - 12.6) < 0.0001, 'cantidad_total = cant_apu(1.05) × rend(1.2) × cantidad(10) = 12.6.');
 @unlink($comaDecimal);
 
 // Tope de 200 errores: 205 filas inválidas → 200 reportadas + marcador de truncado.

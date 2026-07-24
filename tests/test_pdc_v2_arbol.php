@@ -69,7 +69,7 @@ $act = array_values(array_filter($a['items'], fn ($i) => $i['codigo'] === '01.01
 $assert($act['tipoFila'] === 'actividad' && abs($act['cantidad'] - 18.0) < 0.001, 'Actividad con cantidad 18.');
 $insumosAct = array_values(array_filter($a['insumos'], fn ($i) => $i['itemId'] === $act['id']));
 $assert(count($insumosAct) === 2 && $insumosAct[0]['descripcion'] === 'TEJA DE ZINC', 'Insumos amarrados por itemId, en orden.');
-$assert(abs($insumosAct[0]['valorTotal'] - 540000.0) < 0.01, 'valorTotal del insumo (21.6 × 25000).');
+$assert(abs($insumosAct[0]['valorTotal'] - 567000.0) < 0.01, 'valorTotal del insumo (22.68 × 25000).');
 
 // Segunda versión (contenido distinto) → la activa cambia; la histórica sigue consultable por versionId.
 $tmp2 = sys_get_temp_dir() . '/pdc_arbol_v2.xlsx';

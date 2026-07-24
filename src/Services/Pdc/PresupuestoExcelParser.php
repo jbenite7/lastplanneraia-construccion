@@ -96,10 +96,16 @@ final class PresupuestoExcelParser
                 if ($rend === null) {
                     if (!$err($fila, 'Rend', 'Rendimiento no numérico o vacío.')) break;
                 }
-                if ($um === '' || $vrUnit === null || $rend === null) {
+                if ($cantApu === null) {
+                    if (!$err($fila, 'Cant APU', 'Cantidad de APU no numérica o vacía.')) break;
+                }
+                if ($um === '' || $vrUnit === null || $rend === null || $cantApu === null) {
                     continue; // fila insumo inválida: no acumular
                 }
-                $cantidadTotal = round($rend * $actividadVigente['cantidad'], 4);
+                // Cantidad del insumo en la actividad = coeficiente APU (Cant APU) × rendimiento × cantidad
+                // de la actividad. El coeficiente de consumo vive en Cant APU (en el export real de AIA
+                // Rend es 1); omitirlo inflaba el valor de los insumos de coeficiente pequeño (A1.8).
+                $cantidadTotal = round($cantApu * $rend * $actividadVigente['cantidad'], 4);
                 $valorTotal = round($cantidadTotal * $vrUnit, 2);
                 $costoTotal += $valorTotal;
                 $insumos[] = [
