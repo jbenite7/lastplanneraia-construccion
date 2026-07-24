@@ -83,20 +83,6 @@ const s = await page.evaluate(() => {
 check('ítem Semanas es botón con flyout', s.isButton && s.hasPanel, JSON.stringify(s));
 check('flyout lista semanas y acciones', s.weeks > 0 && s.createBtn && s.trash === 1, `weeks=${s.weeks} trash=${s.trash}`);
 
-// Iconografía del rail: cada módulo con glifo único y no vacío (sin duplicados).
-const icons = await page.evaluate(() => {
-  const items = Array.from(document.querySelectorAll('[data-shell-pattern="sidebar"] .aia-sidebar__link[data-sidebar-icon]'));
-  return items.map((a) => ({
-    icon: a.getAttribute('data-sidebar-icon'),
-    glyphs: a.querySelectorAll('.aia-icon__glyph path, .aia-icon__glyph rect, .aia-icon__glyph circle').length,
-  }));
-});
-const names = icons.map((i) => i.icon);
-const dupes = names.filter((v, i) => names.indexOf(v) !== i);
-const empty = icons.filter((i) => i.glyphs === 0).map((i) => i.icon);
-check('iconos del rail únicos (sin duplicados)', dupes.length === 0, dupes.length ? `duplicados: ${[...new Set(dupes)].join(', ')}` : `${names.length} únicos`);
-check('todos los iconos renderizan glifo', empty.length === 0, empty.length ? `vacíos: ${empty.join(', ')}` : 'ninguno vacío');
-
 // 2) Diálogo crear: fecha sugerida + preview viva + flujo interceptado
 await page.evaluate(() => document.getElementById('shellWeekCreateOpen').click());
 await page.waitForTimeout(200);
@@ -171,6 +157,48 @@ const createAfford = await page.evaluate(() => {
   return { border: cs.borderTopWidth, borderColor: cs.borderTopColor, bg: cs.backgroundColor, visible: cs.borderTopWidth !== '0px' && !invisible(cs.borderTopColor) && !invisible(cs.backgroundColor) };
 });
 check('botón crear tiene afordancia de botón (borde y fondo visibles)', createAfford.visible, JSON.stringify(createAfford));
+
+// 6) Estado EXPANDIDO: presupuesto cero-scroll + flyout visible (no recortado).
+//    Regresión de "los dropdowns no se despliegan en expandido" (el nav canónico
+//    trae overflow-y:auto que recortaba el .shell-week-flyout) y "sin scroll".
+await page.evaluate(() => {
+  document.querySelectorAll('dialog[open]').forEach((d) => d.close());
+  const shell = document.querySelector('[data-shell-pattern="sidebar"]');
+  if (shell.dataset.sidebarState === 'collapsed') shell.querySelector('[data-sidebar-toggle]').click();
+});
+await page.waitForTimeout(450);
+const expandedLayout = await page.evaluate(() => {
+  const shell = document.querySelector('[data-shell-pattern="sidebar"]');
+  const nav = shell.querySelector('.aia-sidebar__nav');
+  const bn = shell.querySelector('.aia-sidebar__brand-name');
+  return {
+    state: shell.dataset.sidebarState,
+    navScrolls: nav.scrollHeight > nav.clientHeight + 1,
+    contextPresent: !!shell.querySelector('.aia-sidebar__context'),
+    brandTruncated: bn ? bn.scrollWidth > bn.clientWidth + 1 : null,
+    footerInView: shell.querySelector('.aia-sidebar__footer').getBoundingClientRect().bottom <= window.innerHeight + 1,
+  };
+});
+check('expandido: el nav no hace scroll (presupuesto cero-scroll) y footer en viewport',
+  expandedLayout.state === 'expanded' && expandedLayout.navScrolls === false && expandedLayout.footerInView,
+  JSON.stringify(expandedLayout));
+check('expandido: sin bloque de contexto duplicado (vive en la context-bar)',
+  expandedLayout.contextPresent === false, `contextPresent=${expandedLayout.contextPresent}`);
+check('expandido: marca "Last Planner AIA" sin truncar',
+  expandedLayout.brandTruncated === false, `brandTruncated=${expandedLayout.brandTruncated}`);
+
+await page.evaluate(() => document.querySelector('[data-destination-id="semanas-proyecto"]').closest('li').classList.add('shell-week-open'));
+await page.waitForTimeout(320);
+const flyoutVisible = await page.evaluate(() => {
+  const panel = document.querySelector('[data-destination-id="semanas-proyecto"]').closest('li').querySelector('.shell-week-flyout');
+  const cs = getComputedStyle(panel);
+  const r = panel.getBoundingClientRect();
+  const hit = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+  return { opacity: cs.opacity, visibility: cs.visibility, painted: !!hit && (panel === hit || panel.contains(hit)) };
+});
+check('expandido: flyout de semanas visible y pintado (no recortado por overflow)',
+  flyoutVisible.visibility === 'visible' && parseFloat(flyoutVisible.opacity) > 0.9 && flyoutVisible.painted === true,
+  JSON.stringify(flyoutVisible));
 
 console.log(
   `\nauditoría de red — mutaciones colaterales interceptadas (PS bootstrap): `

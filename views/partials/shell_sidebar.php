@@ -74,21 +74,21 @@ $shellInformacion = array_values(array_filter([
         : null,
     ['id' => 'semanas-proyecto', 'label' => 'Semanas del Proyecto', 'icon' => 'calendar', 'action' => true],
     $shellItem('profesionales', 'Profesionales', '/profesionales', 'user'),
-    $shellItem('subcontratistas', 'Subcontratistas', '/subcontratistas', 'company'),
-    $shellItem('indicadores', 'Indicadores LPS', '/indicadores', 'gauge'),
-    $shellItem('control-cambios', 'Control de Cambios', '/control-cambios', 'change'),
+    $shellItem('subcontratistas', 'Subcontratistas', '/subcontratistas', 'contract'),
+    $shellItem('indicadores', 'Indicadores LPS', '/indicadores', 'overview'),
+    $shellItem('control-cambios', 'Control de Cambios', '/control-cambios', 'integration'),
 ]));
 
 $shellObra = array_values(array_filter([
     $shellItem('programa-general', 'Programa General', '/programa-general', 'program'),
-    $shellItem('programacion-intermedia', 'Programación Intermedia', '/programacion-intermedia', 'unlock'),
-    $shellItem('programacion-semanal', 'Programación Semanal', '/programacion-semanal', 'week-commit'),
+    $shellItem('programacion-intermedia', 'Programación Intermedia', '/programacion-intermedia', 'tasks'),
+    $shellItem('programacion-semanal', 'Programación Semanal', '/programacion-semanal', 'calendar'),
     $shellItem('actualizar-cronograma', 'Actualizar Cronograma', '/programa-general-actualizar', 'sync'),
 ]));
 
 $shellCompras = array_values(array_filter([
-    $shellItem('listado-actividades', 'Familias de Actividades', '/listado-actividades', 'hierarchy'),
-    $shellItem('contratos', 'Paquetes de Contratación', '/contratos', 'contract'),
+    $shellItem('listado-actividades', 'Familias de Actividades', '/listado-actividades', 'list'),
+    $shellItem('contratos', 'Paquetes de Contratación', '/contratos', 'package'),
     $shellItem('plan-compras', 'Plan de Compras', '/pdc', 'clipboard'),
 ]));
 
@@ -104,10 +104,8 @@ $shellGroups = array_values(array_filter([
     'presentation' => 'sidebar',
     'brand' => 'Last Planner AIA',
     'initialState' => 'collapsed',
-    'context' => [
-        'project' => $shellProyecto !== '' ? $shellProyecto : 'Proyecto',
-        'week' => $shellSemana > 0 ? 'Semana ' . $shellSemana : 'Sin semana activa',
-    ],
+    // El contexto proyecto/semana no se duplica en el encabezado del sidebar:
+    // ya vive en la context-bar (#ctxProyecto / #ctxModulo / chip de semana).
     'active' => $shellActive,
     'groups' => $shellGroups,
     'utilities' => [
