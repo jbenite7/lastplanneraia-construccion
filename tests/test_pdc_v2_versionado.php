@@ -45,6 +45,26 @@ $fixtureV2 = static function (string $path): void {
     ]);
 };
 
+// v3: idéntico a fixtureV2 salvo el tipo_insumo de SERVICIO BOMBEO (EQUIPOS → EQUIPO-MAYOR).
+// Solo cambia la categoría; cantidad/valor idénticos → debe considerarse contenido distinto
+// (la categoría alimenta el maestro A2 y no puede perderse en el anti-duplicado).
+$fixtureV2Recat = static function (string $path): void {
+    pdcFixtureEscribir($path, [
+        ['01','PRELIMINARES','','',null,'',102,'PI_V2','',null,null,null,null,'',''],
+        ['01.01','CAMPAMENTO','01','',null,'',102,'PI_V2','',null,null,null,null,'',''],
+        ['01.01.01','INSTALACIONES','01.01','',null,'',102,'PI_V2','',null,null,null,null,'',''],
+        ['01.01.01.01','CAMPAMENTO 18M2','01.01.01','M2',18,'',102,'PI_V2','APU-001',null,null,null,null,'',''],
+        ['','TEJA DE ZINC','','M2',null,'',102,'PI_V2','',1.05,1.2,19,30000,'MAT-CUBIERTAS',''],
+        ['','AYUDANTE','','HC',null,'',102,'PI_V2','',8.0,0.5,null,9500,'MANO DE OBRA',''],
+        ['02','ESTRUCTURA','','',null,'',102,'PI_V2','',null,null,null,null,'',''],
+        ['02.01','CONCRETOS','02','',null,'',102,'PI_V2','',null,null,null,null,'',''],
+        ['02.01.01','LOSAS','02.01','',null,'',102,'PI_V2','',null,null,null,null,'',''],
+        ['02.01.01.01','LOSA MACIZA E=12','02.01.01','M3',40,'',102,'PI_V2','APU-002',null,null,null,null,'',''],
+        ['','CONCRETO 4000PSI','','M3',null,'',102,'PI_V2','',1.0,1.05,19,620000,'MAT-CONCRETOS',''],
+        ['','SERVICIO BOMBEO','','M3',null,'',102,'PI_V2','',1.0,1.0,null,28000,'EQUIPO-MAYOR',''],
+    ]);
+};
+
 echo "=== PDC v2: versionamiento inteligente ===\n";
 $store = new PresupuestoImportStore(sys_get_temp_dir() . '/pdc-ver-store-' . getmypid());
 $service = new PresupuestoImportService($db, $store, new PresupuestoExcelParser());
@@ -62,6 +82,12 @@ $insumos = [
 $insumosRev = array_reverse($insumos);
 $assert($service->hashContenido($items, $insumos) === $service->hashContenido($itemsRev, $insumosRev), 'hashContenido estable ante reordenamiento.');
 $assert($service->hashContenido($items, $insumos) !== $service->hashContenido($items, array_slice($insumos, 0, 1)), 'hashContenido distingue contenidos distintos.');
+// Recategorizar un insumo (mismo valor/cantidad, distinto tipo_insumo) debe dar hash distinto:
+// tipo_insumo alimenta el maestro A2 y no puede perderse en el anti-duplicado por contenido.
+$insumoBase = ['codigo_actividad' => '01.01.01.01', 'descripcion' => 'Teja de Zinc', 'unidad' => 'M2', 'cantidad_total' => 21.6, 'valor_total' => 540000];
+$insumoMat = [$insumoBase + ['tipo_insumo' => 'MAT-CUBIERTAS']];
+$insumoEqp = [$insumoBase + ['tipo_insumo' => 'EQUIPOS']];
+$assert($service->hashContenido($items, $insumoMat) !== $service->hashContenido($items, $insumoEqp), 'hashContenido distingue por tipo_insumo (recategorización).');
 
 // --- Primer cargue → Versión 1 ---
 $v1 = sys_get_temp_dir() . '/pdc_ver_v1.xlsx';
@@ -89,12 +115,20 @@ $assert($p3['sinCambios'] === false, 'Preview con contenido distinto: no "sin ca
 $c3 = $service->confirmar($p3['importToken'], PDC_VER_A);
 $assert($c3['ok'] === true && $c3['versionNumero'] === 2 && $c3['versionIdAnterior'] === $c1['versionId'] && $c3['sinCambios'] === false, 'Confirmar distinto → Versión 2 con versionIdAnterior = V1.');
 
+// --- Re-cargue que cambia SOLO el tipo_insumo de un insumo → Versión 3 ---
+$v3 = sys_get_temp_dir() . '/pdc_ver_v3.xlsx';
+$fixtureV2Recat($v3);
+$p4 = $service->previewDesdeArchivo($v3, 'v3.xlsx', PDC_VER_A, 'tester');
+$assert($p4['sinCambios'] === false, 'Preview con solo tipo_insumo distinto: no "sin cambios".');
+$c4 = $service->confirmar($p4['importToken'], PDC_VER_A);
+$assert($c4['ok'] === true && $c4['versionNumero'] === 3 && $c4['versionIdAnterior'] === $c3['versionId'] && $c4['sinCambios'] === false, 'Recategorizar un insumo (solo tipo_insumo) → Versión 3 con versionIdAnterior = V2.');
+
 // --- versiones() incluye versionNumero; aislamiento por proyecto ---
 $vers = $service->versiones(PDC_VER_A);
-$assert(isset($vers[0]['versionNumero']) && $vers[0]['versionNumero'] === 2, 'versiones() trae versionNumero (la más reciente = 2).');
+$assert(isset($vers[0]['versionNumero']) && $vers[0]['versionNumero'] === 3, 'versiones() trae versionNumero (la más reciente = 3).');
 $assert($service->versiones(PDC_VER_B) === [], 'Aislamiento: proyecto B sin versiones.');
 
-foreach ([$v1, $v1b, $v2] as $f) { @unlink($f); }
+foreach ([$v1, $v1b, $v2, $v3] as $f) { @unlink($f); }
 $limpiar();
 echo $failures === [] ? "=== OK ===\n" : '=== ' . count($failures) . " FAILED ===\n";
 exit($failures === [] ? 0 : 1);

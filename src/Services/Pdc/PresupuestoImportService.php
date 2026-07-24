@@ -35,6 +35,9 @@ final class PresupuestoImportService
             return implode('|', [
                 (string) ($x['codigo_actividad'] ?? ''),
                 MaestroInsumosService::normalizar((string) ($x['descripcion'] ?? '')),
+                // tipo_insumo (raw, como unidad/codigo): la categoría alimenta el maestro A2 y
+                // su recategorización debe contar como cambio de contenido → versión nueva.
+                (string) ($x['tipo_insumo'] ?? ''),
                 (string) ($x['unidad'] ?? ''),
                 number_format((float) ($x['cantidad_total'] ?? 0), 4, '.', ''),
                 number_format((float) ($x['valor_total'] ?? 0), 2, '.', ''),
