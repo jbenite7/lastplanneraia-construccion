@@ -89,6 +89,8 @@ class PlanComprasImportController
             'versionLabel' => $r['versionLabel'],
             'resumen' => $r['resumen'],
             'advertencias' => $r['advertencias'],
+            'sinCambios' => $r['sinCambios'],
+            'versionActiva' => $r['versionActiva'],
         ]);
     }
 
@@ -111,7 +113,14 @@ class PlanComprasImportController
             }
             return;
         }
-        $this->ok(['versionId' => $r['versionId'], 'versionLabel' => $r['versionLabel'], 'resumen' => $r['resumen']]);
+        $this->ok([
+            'versionId' => $r['versionId'],
+            'versionNumero' => $r['versionNumero'],
+            'versionLabel' => $r['versionLabel'],
+            'versionIdAnterior' => $r['versionIdAnterior'],
+            'sinCambios' => $r['sinCambios'],
+            'resumen' => $r['resumen'],
+        ]);
     }
 
     /** GET /plan-compras/api/presupuesto/versiones */

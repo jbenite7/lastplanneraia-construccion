@@ -41,6 +41,27 @@ $limpiar = static function () use ($db): void {
 };
 $limpiar();
 
+// v2: mismo presupuesto pero el precio de TEJA cambia (contenido distinto → versión nueva real).
+// Con el anti-duplicado de A1.7 un re-import de contenido IDÉNTICO ya no crea versión (sinCambios),
+// y este test necesita una versión nueva genuina para ejercer el auto-match de un cold start
+// contra un maestro ya poblado (mismos descripcion_norm/unidad, para que siga hiciendo match).
+$fixtureMaestroV2 = static function (string $path): void {
+    pdcFixtureEscribir($path, [
+        ['01',          'PRELIMINARES',           '',      '',   null, '',  102, 'PI_TEST_1', '',     null,  null, null, null,   '',                        ''],
+        ['01.01',       'CAMPAMENTO',             '01',    '',   null, '',  102, 'PI_TEST_1', '',     null,  null, null, null,   '',                        ''],
+        ['01.01.01',    'INSTALACIONES',          '01.01', '',   null, '',  102, 'PI_TEST_1', '',     null,  null, null, null,   '',                        ''],
+        ['01.01.01.01', 'CAMPAMENTO 18M2',        '01.01.01', 'M2', 18, '', 102, 'PI_TEST_1', 'APU-001', null, null, null, null, '',                        ''],
+        ['',            'TEJA DE ZINC',           '',      'M2', null, '', 102, 'PI_TEST_1', '',     1.05,  1.2, 19, 26000, 'MAT-CUBIERTAS',            ''],
+        ['',            'AYUDANTE',               '',      'HC', null, '', 102, 'PI_TEST_1', '',     8.0,   0.5, null, 9500, 'MANO DE OBRA',             ''],
+        ['02',          'ESTRUCTURA',             '',      '',   null, '',  102, 'PI_TEST_1', '',     null,  null, null, null,   '',                        ''],
+        ['02.01',       'CONCRETOS',              '02',    '',   null, '',  102, 'PI_TEST_1', '',     null,  null, null, null,   '',                        ''],
+        ['02.01.01',    'LOSAS',                  '02.01', '',   null, '',  102, 'PI_TEST_1', '',     null,  null, null, null,   '',                        ''],
+        ['02.01.01.01', 'LOSA MACIZA E=12',       '02.01.01', 'M3', 40, '', 102, 'PI_TEST_1', 'APU-002', null, null, null, null, '',                        ''],
+        ['',            'CONCRETO 4000PSI',       '',      'M3', null, '', 102, 'PI_TEST_1', '',     1.0,   1.05, 19, 620000, 'MAT-CONCRETOS',           ''],
+        ['',            'SERVICIO BOMBEO',        '',      'M3', null, '', 102, 'PI_TEST_1', '',     1.0,   1.0, null, 28000, 'EQUIPOS',                  ''],
+    ]);
+};
+
 echo "=== PDC v2: maestro de insumos (normalizar/consolidar/generar) ===\n";
 
 // normalizar()
@@ -97,9 +118,9 @@ $v2 = $maestro->vinculos(PDC_M_PROJECT_A);
 $assert($v2['resumen']['pendientes'] === 0 && $v2['resumen']['cobertura'] === 100.0, 'Cobertura 100% tras el masivo.');
 $assert($v2['vinculos'][0]['estado'] !== 'pendiente' && $v2['vinculos'][0]['maestroDescripcion'] !== null, 'Vínculos con maestro asignado.');
 
-// Segundo import (contenido idéntico) → auto-match 100% sin intervención.
+// Segundo import (contenido distinto → versión nueva real) → auto-match 100% sin intervención.
 $tmp2 = sys_get_temp_dir() . '/pdc_m_v2.xlsx';
-pdcFixturePresupuestoValido($tmp2);
+$fixtureMaestroV2($tmp2);
 $p2 = $importSvc->previewDesdeArchivo($tmp2, 'v2.xlsx', PDC_M_PROJECT_A, PDC_M_MARCA);
 $c2 = $importSvc->confirmar($p2['importToken'], PDC_M_PROJECT_A);
 $g = $maestro->generarVinculos(PDC_M_PROJECT_A);
