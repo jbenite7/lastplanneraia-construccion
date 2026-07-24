@@ -23,7 +23,7 @@ const ALL_ROUTES = [
   { route: '/indicadores', active: 'indicadores', label: 'Indicadores LPS' },
   { route: '/bi/control-tower', active: 'control-tower', label: 'Control Tower - Informes' },
 ];
-const MIGRATED = new Set(['/programacion-intermedia', '/programa-general', '/profesionales', '/subcontratistas']); // se irá ampliando módulo a módulo
+const MIGRATED = new Set(['/programacion-intermedia', '/programa-general', '/profesionales', '/subcontratistas', '/control-cambios']); // se irá ampliando módulo a módulo
 
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1180, height: 820 }, colorScheme: 'dark' });
