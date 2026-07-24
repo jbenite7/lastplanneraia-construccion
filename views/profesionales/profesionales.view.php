@@ -314,9 +314,11 @@
     </style>
     <link rel="stylesheet" href="/css/handsontable-header-global.css?v=20260223a" />
 </head>
-<body>
+<body class="aia-shell aia-shell--sidebar">
 
     <div id="loading"><div class="spinner-border text-primary" role="status"><span class="sr-only">Cargando...</span></div></div>
+
+    <?php require __DIR__ . '/../partials/shell_sidebar.php'; ?>
 
     <!-- Estructura Original de Navegación -->
     <div class="encabezado" id="encabezado">
@@ -354,8 +356,13 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 
     <!-- Common Scripts for Navigation (Depends on jQuery) -->
-    <script>window.__PROJECT_AREA__ = <?php echo json_encode($_SESSION['area'] ?? 'Construccion'); ?>;</script>
+    <script>
+        window.__PROJECT_AREA__ = <?php echo json_encode($_SESSION['area'] ?? 'Construccion'); ?>;
+        // Shell sidebar (DS-027): el loader conserva datos/permisos pero no monta navbar.
+        window.__AIA_SHELL_SIDEBAR__ = true;
+    </script>
     <?= \App\View\Components\BiAccessComponent::renderBootConfig('profesionales') ?>
+    <?= \App\View\Components\DesignSystemHeadComponent::renderScript('/js/modules/aia_ui/sidebar_navigation.js') ?>
 	<script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js" charset="utf-8"></script>
     <script type="text/javascript" src="/js/modules/bi-access.js" charset="utf-8"></script>
 
