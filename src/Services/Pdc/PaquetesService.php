@@ -14,6 +14,65 @@ final class PaquetesService
 {
     public const TIPOS = ['a_todo_costo', 'mano_obra', 'suministro', 'consumibles'];
 
+    /** Paquete bucket para insumos no empaquetables (A3.1). */
+    public const PAQUETE_INDIRECTOS = 'Indirectos / Administración';
+
+    /** Keywords (ya normalizadas) que marcan un insumo como indirecto/administrativo. */
+    private const KEYWORDS_INDIRECTOS = [
+        'IMPREVISTO', 'NOMINA', 'DOTACION', 'PAPELERIA', 'FOTOCOPIA', 'UTILES', 'CAFETERIA',
+        'ASEO', 'VIGILANCIA', 'HONORARIO', 'ADMINISTRA', 'GASTOS MEDICOS', 'DROGAS',
+        'ELEMENTOS DE ASEO', 'EQUIPO DE OFICINA', 'EQ DE COMPUTO', 'COMUNICACIONES',
+    ];
+
+    /**
+     * Reglas de dominio para el sembrado (A3.1): keyword/capítulo → paquete del catálogo.
+     * Un insumo casa una regla si algún keyword aparece en su descripción normalizada O en su
+     * actividad dominante, y su tipo_recurso está en `tipos` (vacío = cualquiera). Orden = prioridad
+     * (específicas primero). El nombre de paquete debe existir en el catálogo (188 + Indirectos).
+     */
+    private const REGLAS_SEMBRADO = [
+        // Instalaciones (subcontrato / a todo costo) — muy señalizadas por su nombre/actividad.
+        ['kw' => ['INSTALACION ELECTRIC', 'ELECTRIC', 'ILUMINACION', 'VOZ Y DATOS', 'RETIE'], 'paq' => 'Sum + Inst INSTALACIONES ELÉCTRICAS, VOZ Y DATOS (INTERIORES)', 'tipos' => ['SUBCONTRATO', 'MANO DE OBRA']],
+        ['kw' => ['HIDROSANITARI', 'HIDRAULIC', 'SANITARIA', 'DESAGUE', 'TUBERIA PVC', 'RED DE AGUA'], 'paq' => 'Sum + Inst INSTALACIONES HIDROSANITARIAS', 'tipos' => ['SUBCONTRATO', 'MANO DE OBRA']],
+        ['kw' => ['RED DE GAS', 'GAS DOMICILIAR', 'INSTALACION DE GAS', 'GAS NATURAL'], 'paq' => 'Sum + Inst RED DE GAS', 'tipos' => ['SUBCONTRATO', 'MANO DE OBRA']],
+        ['kw' => ['RED CONTRA INCENDIO', 'DETECCION', 'EXTINCION', 'ROCIADOR'], 'paq' => 'Sum + Inst RED CONTRA INCENDIO, DETECCIÓN Y EXTINCIÓN', 'tipos' => ['SUBCONTRATO']],
+        ['kw' => ['AIRE ACONDICIONADO', 'EXTRACCION', 'VENTILACION MECANIC'], 'paq' => 'Sum + Inst RED DE AIRE ACONDICIONADO Y EQUIPOS DE EXTRACCIÓN', 'tipos' => ['SUBCONTRATO']],
+        ['kw' => ['ASCENSOR'], 'paq' => 'Sum + Inst ASCENSORES', 'tipos' => ['SUBCONTRATO']],
+        ['kw' => ['CIELO', 'DRYWALL', 'SUPERBOARD', 'CIELORRASO', 'CIELO RASO', 'FALSO'], 'paq' => 'Sum + Inst CIELOS RASOS', 'tipos' => ['SUBCONTRATO', 'MANO DE OBRA']],
+        ['kw' => ['CLOSET', 'MUEBLE', 'COCINA INTEGRAL', 'MOBILIARIO'], 'paq' => 'Sum + Inst DOTACIÓN COCINAS Y LAVADEROS', 'tipos' => ['SUBCONTRATO']],
+        ['kw' => ['IMPERMEABILIZ'], 'paq' => 'Sum + Inst IMPERMEABILIZACIONES', 'tipos' => ['SUBCONTRATO', 'MANO DE OBRA', 'MATERIAL']],
+        ['kw' => ['VENTAN', 'VIDRIO', 'FACHADA FLOTANTE', 'ALUMINIO'], 'paq' => 'Sum + Inst VENTANERÍA', 'tipos' => ['SUBCONTRATO']],
+        ['kw' => ['CARPINTERIA METAL', 'PUERTA METAL', 'BARANDA', 'PASAMANO', 'REJA'], 'paq' => 'Sum + Inst CARPINTERÍA METÁLICA', 'tipos' => ['SUBCONTRATO']],
+        ['kw' => ['CARPINTERIA MADERA', 'PUERTA EN MADERA', 'PUERTA MADERA'], 'paq' => 'Sum + Inst CARPINTERÍA DE MADERA', 'tipos' => ['SUBCONTRATO']],
+
+        // Mano de obra por capítulo (se matchea sobre todo por la actividad dominante).
+        ['kw' => ['MAMPOSTERIA', 'MURO EN LADRILLO', 'MURO EN BLOQUE', 'MURO EN CATALAN', 'MURO EN CONCRETO', 'MURO LADRILLO'], 'paq' => 'M. de O MAMPOSTERÍA', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
+        ['kw' => ['REVOQUE', 'PAÑETE', 'PANETE', 'REPELLO'], 'paq' => 'M. de O REVOQUE INTERIOR', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
+        ['kw' => ['ESTUCO', 'PINTURA', 'VINILO'], 'paq' => 'M. de O ESTUCO Y PINTURA', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
+        ['kw' => ['ENCHAPE', 'ENCHAPES CERAMIC', 'CERAMIC', 'PORCELANATO', 'BALDOSA', 'GRES', 'PISO'], 'paq' => 'M. de O ENCHAPES CERÁMICOS', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
+        ['kw' => ['MORTERO DE PISO', 'ALISTADO', 'MORTERO DE NIVELACION', 'AFINADO DE PISO'], 'paq' => 'M. de O MORTEROS DE PISO', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
+        ['kw' => ['LOSA', 'PLACA', 'COLUMNA', 'VIGA', 'ESTRUCTURA EN CONCRETO', 'PANTALLA', 'ENTREPISO', 'ESCALERA EN CONCRETO', 'FUNDIDA', 'CONCRETO ALIGERAD'], 'paq' => 'M. de O ESTRUCTURA EN CONCRETO', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
+        ['kw' => ['ACERO', 'REFUERZO', 'FIGURAD', 'AMARRE Y COLOCACION'], 'paq' => 'M. de O ESTRUCTURA EN CONCRETO', 'tipos' => ['MANO DE OBRA']],
+        ['kw' => ['CIMENTACION', 'ZAPATA', 'DADO', 'VIGA DE FUNDACION'], 'paq' => 'M. de O CIMENTACIÓN SUPERFICIAL EN CONCRETO', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
+        ['kw' => ['PILOTE', 'CAISSON', 'PILOTAJE', 'DESCABECE'], 'paq' => 'M. de O CIMENTACIÓN PROFUNDA EN CONCRETO', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
+        ['kw' => ['EXCAVACION', 'RELLENO', 'MOVIMIENTO DE TIERRA', 'DESCAPOTE', 'MOVIMIENTOS DE TIERRA'], 'paq' => 'M. de O MOVIMIENTOS DE TIERRA (EXCAVACIONES Y RELLENOS)', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO', 'EQUIPO']],
+        ['kw' => ['DEMOLICION', 'DEMOLER'], 'paq' => 'M. de O DEMOLICIONES', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
+        ['kw' => ['PISO INDUSTRIAL', 'PISO EN CONCRETO', 'ENDURECEDOR'], 'paq' => 'M. de O PISOS INDUSTRIALES EN CONCRETO', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
+        ['kw' => ['PREPARACION MEZCLA', 'TRANSPORTE INTERNO', 'MEZCLA', 'PREPARACION DE CONCRETO'], 'paq' => 'M. de O ESTRUCTURA EN CONCRETO', 'tipos' => ['MANO DE OBRA']],
+
+        // Materiales (suministro) por descripción del insumo.
+        ['kw' => ['CONCRETO', 'HORMIGON'], 'paq' => 'Suministro CONCRETO', 'tipos' => ['MATERIAL']],
+        ['kw' => ['CEMENTO', 'MORTERO', 'GROUTING'], 'paq' => 'Suministro CEMENTO', 'tipos' => ['MATERIAL']],
+        ['kw' => ['ACERO', 'REFUERZO', 'ALAMBRE', 'MALLA ELECTROSOLDADA', 'FLEJE', 'VARILLA', 'FIGURAD'], 'paq' => 'Suministro ACERO DE REFUERZO', 'tipos' => ['MATERIAL']],
+        ['kw' => ['LADRILLO', 'BLOQUE', 'ADOBE', 'CATALAN'], 'paq' => 'Suministro LADRILLO', 'tipos' => ['MATERIAL']],
+        ['kw' => ['ARENA', 'GRAVA', 'TRITURADO', 'AGREGADO', 'RECEBO', 'GRANULAR', 'BASE', 'SUBBASE'], 'paq' => 'Suministro AGREGADOS', 'tipos' => ['MATERIAL']],
+        ['kw' => ['PORCELANATO', 'CERAMIC', 'BALDOSA', 'GRES', 'TABLETA', 'ENCHAPE'], 'paq' => 'Suministro PISOS Y ENCHAPES CERÁMICOS/PORCELANATO', 'tipos' => ['MATERIAL']],
+        ['kw' => ['SANITARIO', 'LAVAMANOS', 'ORINAL', 'GRIFERIA', 'LAVAPLATOS', 'DUCHA', 'SIFON'], 'paq' => 'Suministro APARATOS SANITARIOS Y GRIFERÍA', 'tipos' => ['MATERIAL']],
+        ['kw' => ['FORMALETA', 'ENCOFRADO', 'OBRA FALSA', 'TABLERO FENOLIC'], 'paq' => 'Suministro FORMALETA MUROS, LOSAS Y CONTENCIÓN', 'tipos' => ['MATERIAL']],
+
+        // Equipos (alquiler) → tratado como indirecto salvo regla específica; no forzamos paquete aquí.
+    ];
+
     public function __construct(private readonly \Database $db)
     {
     }
@@ -304,10 +363,21 @@ final class PaquetesService
         if ($sin === null) {
             return null;
         }
+        // Contexto cargado una sola vez para el sembrado (A3.1): catálogo, overrides IA y actividad dominante.
+        $catalogo = $this->catalogoActivoPorNombre();
+        $overrides = $this->overridesIA();
+        $actMap = $this->actividadDominantePorInsumo($projectId, $versionId);
+
         $sugerencias = [];
         foreach ($sin['insumos'] as $insumo) {
-            $s = $this->sugerirExacta($projectId, $insumo)
+            $clave = $insumo['descripcionNorm'] . '@@' . mb_strtoupper((string) $insumo['unidad']);
+            $actividad = $actMap[$clave] ?? '';
+            // Cascada de fuentes (la primera que acierta gana): IA → exacta → reglas → tokens → indirectos → agrupación.
+            $s = $this->sugerirOverrideIA($insumo, $overrides, $catalogo)
+                ?? $this->sugerirExacta($projectId, $insumo)
+                ?? $this->sugerirPorReglas($insumo, $actividad, $catalogo)
                 ?? $this->sugerirPorTokens($projectId, $insumo)
+                ?? $this->sugerirIndirectos($insumo, $catalogo)
                 ?? $this->sugerirPorAgrupacion($insumo);
             if ($s !== null) {
                 $sugerencias[] = array_merge(
@@ -502,6 +572,144 @@ final class PaquetesService
             }
         }
         return ['version' => ['id' => $vid, 'label' => $version['version_label']], 'mapa' => $mapa];
+    }
+
+    /** Catálogo activo indexado por nombre_norm → {id, nombre, tipoNegociacion} (una consulta). */
+    private function catalogoActivoPorNombre(): array
+    {
+        $rows = $this->db->query(
+            'SELECT id, nombre, nombre_norm, tipo_negociacion FROM general_paquetes_contratacion WHERE activo = 1',
+        )->fetchAll(\PDO::FETCH_ASSOC);
+        $mapa = [];
+        foreach ($rows as $r) {
+            $mapa[$r['nombre_norm']] = ['id' => (int) $r['id'], 'nombre' => $r['nombre'], 'tipoNegociacion' => $r['tipo_negociacion']];
+        }
+        return $mapa;
+    }
+
+    /** Overrides expertos (pasada semántica IA) desde el JSON versionado: NORMA@@UNIDAD → nombre de paquete. */
+    private function overridesIA(): array
+    {
+        $ruta = __DIR__ . '/../../../database/seeds/sembrado_ia_overrides.json';
+        if (!is_file($ruta)) {
+            return [];
+        }
+        $data = json_decode((string) file_get_contents($ruta), true);
+        return is_array($data['overrides'] ?? null) ? $data['overrides'] : [];
+    }
+
+    /** Actividad dominante (mayor valor) por insumo de la versión: NORMA@@UNIDAD → texto de la actividad. */
+    private function actividadDominantePorInsumo(int $projectId, ?int $versionId): array
+    {
+        $act = $this->actividadesPorInsumo($projectId, $versionId, 1);
+        if ($act === null) {
+            return [];
+        }
+        $mapa = [];
+        foreach ($act['mapa'] as $clave => $info) {
+            $mapa[$clave] = (string) ($info['items'][0]['actividad'] ?? '');
+        }
+        return $mapa;
+    }
+
+    /** tipo_negociacion compatibles con un tipo_recurso SINCO (evita ubicar material en paquete de mano de obra). */
+    private static function tiposCompatibles(?string $tipoRecurso): array
+    {
+        return match (mb_strtoupper((string) $tipoRecurso)) {
+            'MATERIAL' => ['suministro', 'a_todo_costo', 'consumibles'],
+            'MANO DE OBRA' => ['mano_obra', 'a_todo_costo'],
+            'NOMINA' => ['mano_obra', 'consumibles'],
+            'SUBCONTRATO' => ['a_todo_costo', 'mano_obra', 'suministro'],
+            'EQUIPO', 'TRANSPORTE' => ['suministro', 'a_todo_costo', 'consumibles'],
+            'HONORARIOS', 'CONSUMIBLES' => ['consumibles', 'a_todo_costo'],
+            default => self::TIPOS,
+        };
+    }
+
+    /** Resuelve un paquete del catálogo por nombre (normalizado), respetando compatibilidad de tipo. */
+    private function resolverPaquete(string $nombre, ?string $tipoRecurso, array $catalogo): ?array
+    {
+        $norm = mb_substr(MaestroInsumosService::normalizar($nombre), 0, 200);
+        $paq = $catalogo[$norm] ?? null;
+        if ($paq === null) {
+            return null;
+        }
+        if (!in_array($paq['tipoNegociacion'], self::tiposCompatibles($tipoRecurso), true)) {
+            return null;
+        }
+        return $paq;
+    }
+
+    /** Capa IA (alta): override experto por (norma, unidad). */
+    private function sugerirOverrideIA(array $insumo, array $overrides, array $catalogo): ?array
+    {
+        $clave = $insumo['descripcionNorm'] . '@@' . mb_strtoupper((string) $insumo['unidad']);
+        $nombre = $overrides[$clave] ?? null;
+        if (!is_string($nombre) || $nombre === '') {
+            return null;
+        }
+        $paq = $catalogo[mb_substr(MaestroInsumosService::normalizar($nombre), 0, 200)] ?? null;
+        if ($paq === null) {
+            return null;
+        }
+        return [
+            'paqueteId' => $paq['id'], 'paqueteNombre' => $paq['nombre'],
+            'capa' => 'ia', 'confianza' => 'alta',
+            'evidencia' => 'Mapeo experto (pasada semántica de la primera iteración).',
+        ];
+    }
+
+    /** Capa reglas (media): diccionario de dominio sobre descripción + actividad dominante, filtrado por tipo_recurso. */
+    private function sugerirPorReglas(array $insumo, string $actividad, array $catalogo): ?array
+    {
+        $heno = ' ' . $insumo['descripcionNorm'] . ' ' . MaestroInsumosService::normalizar($actividad) . ' ';
+        $tipoRecurso = mb_strtoupper((string) ($insumo['tipoRecurso'] ?? ''));
+        foreach (self::REGLAS_SEMBRADO as $regla) {
+            if ($regla['tipos'] !== [] && !in_array($tipoRecurso, $regla['tipos'], true)) {
+                continue;
+            }
+            foreach ($regla['kw'] as $kw) {
+                if (str_contains($heno, $kw)) {
+                    $paq = $this->resolverPaquete($regla['paq'], $insumo['tipoRecurso'] ?? null, $catalogo);
+                    if ($paq !== null) {
+                        return [
+                            'paqueteId' => $paq['id'], 'paqueteNombre' => $paq['nombre'],
+                            'capa' => 'reglas', 'confianza' => 'media',
+                            'evidencia' => "Regla de dominio «{$kw}» → {$paq['nombre']}.",
+                        ];
+                    }
+                    break; // regla casó pero el paquete no resolvió/compatibiliza: pasa a la siguiente regla
+                }
+            }
+        }
+        return null;
+    }
+
+    /** Capa indirectos (media): admin/nómina/dotación → paquete «Indirectos / Administración». */
+    private function sugerirIndirectos(array $insumo, array $catalogo): ?array
+    {
+        $tipoRecurso = mb_strtoupper((string) ($insumo['tipoRecurso'] ?? ''));
+        $esAdmin = in_array($tipoRecurso, ['NOMINA', 'HONORARIOS', 'CONSUMIBLES'], true);
+        if (!$esAdmin) {
+            foreach (self::KEYWORDS_INDIRECTOS as $kw) {
+                if (str_contains(' ' . $insumo['descripcionNorm'] . ' ', $kw)) {
+                    $esAdmin = true;
+                    break;
+                }
+            }
+        }
+        if (!$esAdmin) {
+            return null;
+        }
+        $paq = $catalogo[mb_substr(MaestroInsumosService::normalizar(self::PAQUETE_INDIRECTOS), 0, 200)] ?? null;
+        if ($paq === null) {
+            return null;
+        }
+        return [
+            'paqueteId' => $paq['id'], 'paqueteNombre' => $paq['nombre'],
+            'capa' => 'indirectos', 'confianza' => 'media',
+            'evidencia' => 'Insumo administrativo / no empaquetable.',
+        ];
     }
 
     /** Tokens significativos (>=4 chars) de una descripción normalizada. */
