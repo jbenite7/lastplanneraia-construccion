@@ -1,5 +1,7 @@
 # Fase A3: Paquetes de contratación + motor de sugerencias — Implementation Plan
 
+> **NOTA (2026-07-24): EJECUTADO con los deltas del spec revisado.** Este plan es la versión **pre-destilación** de la app de Tomás. Se ejecutó reconciliándolo con el spec revisado (`docs/superpowers/specs/2026-07-23-a3-paquetes-contratacion-design.md`) según el plan de sesión: `pdc_insumo_paquete` con `paquete_id` NULLABLE + columna `omitido`; **seed de 188 paquetes** (extraídos del bundle → `database/seeds/paquetes_contratacion_aia.json`); 4ª señal `tipo_recurso` vía `candidatosParaPaquete` (filtro del asistente); **asistente wizard** además de la grilla masiva. Ramas: plan-de-compras en `main`, lps-aia en el worktree `lps-aia-pdc` sobre `pdc-dev` (sin feature branch). Verificado: PHP 53+9 asserts sobre MySQL real, migración+seed idempotentes, Vitest 48, build, e2e `pdc-v2-paquetes` ×2.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Agrupar los insumos únicos del presupuesto activo en paquetes de contratación globales (un insumo → un paquete, meta 100% asignado), con un motor de sugerencias cross-proyecto de 3 capas (exacta / tokens / Agrupación SINCO) siempre confirmado por un humano.
