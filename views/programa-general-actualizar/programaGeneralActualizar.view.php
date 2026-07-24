@@ -24,6 +24,13 @@
 	<style>
 		/* Estilos Core 2026 para Handsontable Full Bleed */
 		body.pg-page { padding: 0; margin: 0; overflow: hidden !important; background: #f8fafc; }
+		/* Shell sidebar (DS-027): la altura ya no resta el navbar legacy (80px).
+		   #encabezado solo aloja inputs ocultos (0px); el único elemento con
+		   altura real entre el body y este contenedor es la context-bar sticky
+		   del shell (#shellContextBar), medida en runtime a 1180x820 dark = 49px
+		   (chip de semana 2rem + padding-block 2*0.5rem + borde 1px). Ver
+		   goals/sidebar-todos-modulos/reports/task-6-report.md. */
+		body.aia-shell--sidebar .hot-full-bleed { height: calc(100vh - 49px); }
 		.hot-full-bleed { display: flex; flex-direction: column; height: calc(100vh - 80px); --hot-gutter: 8px; width: 100%; max-width: 100%; margin: 0; padding-left: var(--hot-gutter); padding-right: var(--hot-gutter); box-sizing: border-box; overflow: hidden; }
 		#hot-container { flex: 1 1 auto; min-height: 0; min-width: 0; position: relative; width: 100% !important; overflow: hidden; z-index: 1; }
 		/* Utilidades para celdas Handsontable */
@@ -439,8 +446,10 @@
 	</script>
 </head>
 
-<body class="pg-page">
+<body class="aia-shell aia-shell--sidebar pg-page">
 	<div id="loading"><div class="spinner-border text-primary" role="status"><span class="sr-only">Cargando...</span></div></div>
+
+	<?php require __DIR__ . '/../partials/shell_sidebar.php'; ?>
 
 	<?php
     // PRE-CARGA JSON: Opciones del cronograma anterior
@@ -792,7 +801,12 @@
 	<!--Selector de fechas -->
 
 	<!--Global AJAX Loaders-->
-	<script>window.__PROJECT_AREA__ = <?php echo json_encode($_SESSION['area'] ?? 'Construccion'); ?>;</script>
+	<script>
+		window.__PROJECT_AREA__ = <?php echo json_encode($_SESSION['area'] ?? 'Construccion'); ?>;
+		// Shell sidebar (DS-027): el loader conserva datos/permisos pero no monta navbar.
+		window.__AIA_SHELL_SIDEBAR__ = true;
+	</script>
+	<?= \App\View\Components\DesignSystemHeadComponent::renderScript('/js/modules/aia_ui/sidebar_navigation.js') ?>
 	<script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js" charset="utf-8"></script>
 	<script type="text/javascript" src="/js/funcionesGenerales6.js" charset="utf-8"></script>
 

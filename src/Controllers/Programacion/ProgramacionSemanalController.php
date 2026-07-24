@@ -45,6 +45,24 @@ class ProgramacionSemanalController extends BaseController
             }
         }
 
+        // Shell sidebar (DS-027): semanas del proyecto para el chip de contexto.
+        $shellWeeks = [];
+        if (!empty($dbName) && preg_match('/^[a-zA-Z0-9_]+$/', $dbName)) {
+            try {
+                $tSaShell = TableResolver::resolveByPrefix($dbName, 'semanas_activas');
+                $projectIdShell = TableResolver::getProjectIdByPrefix($dbName);
+                $stmtShellWeeks = $this->db->queryWithProject(
+                    "SELECT Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem FROM {$tSaShell} WHERE project_id = ? ORDER BY Semana DESC",
+                    [$projectIdShell]
+                );
+                $shellWeeks = $stmtShellWeeks->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+            } catch (\Throwable $e) {
+                error_log('Error cargando semanas para el shell Programación Semanal: ' . $e->getMessage());
+            }
+        }
+        $shellActive = 'programacion-semanal';
+        $shellModuleLabel = 'Programación Semanal';
+
         require PROJECT_ROOT . '/views/programacion-semanal/programacion_semanal.view.php';
     }
 
@@ -58,6 +76,11 @@ class ProgramacionSemanalController extends BaseController
         $proyecto = $_SESSION['proyecto'] ?? '';
         $nombreUsuario = $_SESSION['nombreUsuario'] ?? '';
         $area = $_SESSION['area'] ?? 'Construccion';
+        $permiso = $_SESSION['permiso'] ?? '';
+
+        $shellWeeks = $this->loadShellWeeks($dbName);
+        $shellActive = 'programacion-semanal';
+        $shellModuleLabel = 'CNP';
 
         require PROJECT_ROOT . '/views/programacion-semanal/CNP.view.php';
     }
@@ -72,6 +95,11 @@ class ProgramacionSemanalController extends BaseController
         $proyecto = $_SESSION['proyecto'] ?? '';
         $nombreUsuario = $_SESSION['nombreUsuario'] ?? '';
         $area = $_SESSION['area'] ?? 'Construccion';
+        $permiso = $_SESSION['permiso'] ?? '';
+
+        $shellWeeks = $this->loadShellWeeks($dbName);
+        $shellActive = 'programacion-semanal';
+        $shellModuleLabel = 'CNC';
 
         require PROJECT_ROOT . '/views/programacion-semanal/CNC.view.php';
     }
@@ -85,8 +113,40 @@ class ProgramacionSemanalController extends BaseController
         $semana = (int) ($_SESSION['semana'] ?? 0);
         $proyecto = $_SESSION['proyecto'] ?? '';
         $nombreUsuario = $_SESSION['nombreUsuario'] ?? '';
+        $area = $_SESSION['area'] ?? 'Construccion';
+        $permiso = $_SESSION['permiso'] ?? '';
+
+        $shellWeeks = $this->loadShellWeeks($dbName);
+        $shellActive = 'programacion-semanal';
+        $shellModuleLabel = 'CIC';
 
         require PROJECT_ROOT . '/views/programacion-semanal/CIC.view.php';
+    }
+
+    /**
+     * Shell sidebar (DS-027): semanas del proyecto para el chip de contexto.
+     * Compartido por cic()/cnc()/cnp() (subvistas de Programación Semanal).
+     *
+     * @return array<int, array{Semana: int, Fecha_Inicio_Sem: ?string, Fecha_Fin_Sem: ?string}>
+     */
+    private function loadShellWeeks(string $dbName): array
+    {
+        $shellWeeks = [];
+        if (!empty($dbName) && preg_match('/^[a-zA-Z0-9_]+$/', $dbName)) {
+            try {
+                $tSaShell = TableResolver::resolveByPrefix($dbName, 'semanas_activas');
+                $projectIdShell = TableResolver::getProjectIdByPrefix($dbName);
+                $stmtShellWeeks = $this->db->queryWithProject(
+                    "SELECT Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem FROM {$tSaShell} WHERE project_id = ? ORDER BY Semana DESC",
+                    [$projectIdShell]
+                );
+                $shellWeeks = $stmtShellWeeks->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+            } catch (\Throwable $e) {
+                error_log('Error cargando semanas para el shell Programación Semanal (subvista): ' . $e->getMessage());
+            }
+        }
+
+        return $shellWeeks;
     }
 
     private function healWeeklyContext(): void

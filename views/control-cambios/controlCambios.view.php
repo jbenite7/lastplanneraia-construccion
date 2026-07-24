@@ -8,7 +8,9 @@
 </head>
 
 <!--Etiqueta superior-->
-<body>
+<body class="aia-shell aia-shell--sidebar">
+
+	<?php require __DIR__ . '/../partials/shell_sidebar.php'; ?>
 
 	<div class="encabezado" id="encabezado">
 		<input type="hidden" name="seccion" id="seccion" value="controlCambios" aria-hidden="true">
@@ -622,7 +624,12 @@
 	<!-- Tabulator -->
 	<script type="text/javascript" src="https://unpkg.com/tabulator-tables@5.3.4/dist/js/tabulator.min.js"></script>
 	<!--Script con la funcion que carga los datos generales del archivo-->
-	<script>window.__PROJECT_AREA__ = <?php echo json_encode($_SESSION['area'] ?? 'Construccion'); ?>;</script>
+	<script>
+		window.__PROJECT_AREA__ = <?php echo json_encode($_SESSION['area'] ?? 'Construccion'); ?>;
+		// Shell sidebar (DS-027): el loader conserva datos/permisos pero no monta navbar.
+		window.__AIA_SHELL_SIDEBAR__ = true;
+	</script>
+	<?= \App\View\Components\DesignSystemHeadComponent::renderScript('/js/modules/aia_ui/sidebar_navigation.js') ?>
 	<script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js" charset="utf-8"></script>
 	<!--Script con las funciones NUEVA SEMANA y ELIMINAR SEMANA-->
 	<script type="text/javascript" src="/js/funcionesGenerales6.js" charset="utf-8"></script>

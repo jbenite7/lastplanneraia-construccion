@@ -8,7 +8,9 @@
 </head>
 
 <!--Etiqueta superior-->
-<body>
+<body class="aia-shell aia-shell--sidebar">
+
+	<?php require __DIR__ . '/../partials/shell_sidebar.php'; ?>
 
 	<div class="encabezado" id="encabezado">
 		<input type="hidden" name="seccion" id="seccion" value="indicadores" aria-hidden="true">
@@ -27,7 +29,7 @@
 	</div> -->
 
   <!--Se crea la estructura de la tabla, y Se crea el mensaje emergente que dice si los comandos fueron ejecutados correctamente o no (se repite el mismo de la línea anterior) -->
-	<div class="tabla" id="contenedorInformePowerBI" style="text-align:center; width:100vw; position:relative; left:50%; margin-left:-50vw; margin-top:2px; margin-bottom:10px;">
+	<div class="tabla" id="contenedorInformePowerBI" style="text-align:center; margin-top:2px; margin-bottom:10px;">
 	</div>
 
 	<div class="row ventanasModalesSemana" id="ventanasModalesSemana">
@@ -61,8 +63,13 @@
 	<!-- Lista desplegable con buscador -->
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
 	<!--Script con la funcion que carga los datos generales del archivo-->
-	<script>window.__PROJECT_AREA__ = <?php echo json_encode($_SESSION['area'] ?? 'Construccion'); ?>;</script>
+	<script>
+		window.__PROJECT_AREA__ = <?php echo json_encode($_SESSION['area'] ?? 'Construccion'); ?>;
+		// Shell sidebar (DS-027): el loader conserva datos/permisos pero no monta navbar.
+		window.__AIA_SHELL_SIDEBAR__ = true;
+	</script>
 	<?= \App\View\Components\BiAccessComponent::renderBootConfig('indicadores') ?>
+	<?= \App\View\Components\DesignSystemHeadComponent::renderScript('/js/modules/aia_ui/sidebar_navigation.js') ?>
 	<?php $indCargarDatosVersion = @filemtime(dirname(__DIR__, 2) . '/public/js/cargarDatosGeneralesPagina2.js') ?: 'ind1'; ?>
 	<script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js?v=<?php echo urlencode((string) $indCargarDatosVersion); ?>" charset="utf-8"></script>
 	<script type="text/javascript" src="/js/modules/bi-access.js" charset="utf-8"></script>
@@ -113,16 +120,23 @@
 		// menos lo que hay encima del contenedor) y derivamos el ancho por su
 		// proporción, con tope del 95% del ancho (holgura lateral). Así llena el alto
 		// visible sin cortarse y toma el mayor ancho posible dentro de ese límite.
+		//
+		// Shell sidebar (DS-027): el contenedor ya NO usa el hack full-bleed
+		// 100vw/margin-left:-50vw (rompía bajo/sobre el rail izquierdo). Al ser un
+		// bloque normal dentro de body.aia-shell--sidebar, su ancho ya respeta el
+		// padding-left del rail; por eso el ancho disponible se mide del propio
+		// contenedor (clientWidth) y NO de window.innerWidth, que ignora el rail.
 		function ajustarInformePowerBI() {
 			var contenedor = document.getElementById('contenedorInformePowerBI');
 			if (!contenedor) { return; }
 			var iframe = contenedor.querySelector('iframe');
 			if (!iframe) { return; }
-			var margenSuperior = contenedor.getBoundingClientRect().top; // navbar + breadcrumb, etc.
+			var margenSuperior = contenedor.getBoundingClientRect().top; // context-bar del shell, etc.
 			var margenInferior = 16;
 			var alturaLibre = window.innerHeight - margenSuperior - margenInferior;
 			if (alturaLibre < 320) { alturaLibre = 320; } // piso razonable
-			var anchoMax = window.innerWidth * 0.95;       // 5% de holgura lateral
+			var anchoDisponible = contenedor.clientWidth || document.documentElement.clientWidth;
+			var anchoMax = anchoDisponible * 0.95;         // 5% de holgura lateral
 			var ancho = Math.min(alturaLibre * REPORTE_ASPECTO, anchoMax);
 			iframe.style.width = Math.round(ancho) + 'px';
 			iframe.style.height = Math.round(ancho / REPORTE_ASPECTO) + 'px';
@@ -147,6 +161,32 @@
 			clearTimeout(_ajusteInformeTO);
 			_ajusteInformeTO = setTimeout(ajustarInformePowerBI, 120);
 		});
+
+		// Shell sidebar (DS-027): colapsar/expandir anima `padding-left` del body
+		// (rail) y NO redimensiona la ventana, así que 'resize' no lo detecta.
+		// Tampoco basta con escuchar el click del toggle: sidebar_navigation.js
+		// también cambia data-sidebar-state al aplicar el estado persistido en
+		// localStorage al cargar la página (si el usuario dejó el rail expandido
+		// en una visita anterior), sin que medie ningún click — y ese cambio de
+		// ancho ocurría DESPUÉS del primer ajustarInformePowerBI() (el del onload
+		// del iframe), dejando el reporte dimensionado para el ancho equivocado.
+		// Un MutationObserver sobre data-sidebar-state cubre ambos orígenes del
+		// cambio de estado. Reajusta dos veces: de inmediato (prefers-reduced-motion
+		// no anima, cambia al instante) y otra al terminar la transición (220ms,
+		// --ds-motion-standard) para el caso animado.
+		function reajustarInformeConDemora() {
+			ajustarInformePowerBI();
+			clearTimeout(_ajusteInformeTO);
+			_ajusteInformeTO = setTimeout(ajustarInformePowerBI, 260);
+		}
+		(function observarEstadoSidebar() {
+			var shellNav = document.querySelector('[data-shell-pattern="sidebar"]');
+			if (!shellNav) { return; }
+			new MutationObserver(reajustarInformeConDemora).observe(shellNav, {
+				attributes: true,
+				attributeFilter: ['data-sidebar-state'],
+			});
+		})();
 
 
 		var ocultos=function(table){

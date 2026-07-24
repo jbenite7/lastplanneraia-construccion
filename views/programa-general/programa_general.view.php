@@ -27,8 +27,10 @@
         }
     </script>
 </head>
-<body class="aia-shell pg-page">
+<body class="aia-shell aia-shell--sidebar pg-page">
     <div id="loading"><div class="spinner-border text-primary" role="status"><span class="sr-only">Cargando...</span></div></div>
+
+    <?php require __DIR__ . '/../partials/shell_sidebar.php'; ?>
 
     <div class="encabezado" id="encabezado">
         <input type="hidden" name="seccion" id="seccion" value="programa_general" aria-hidden="true">
@@ -116,8 +118,13 @@
     <!-- Vendors diferidos del head: jQuery-UI (datepicker del modal de semanas) y Toastr, necesarios solo tras la carga -->
     <script src="/public/vendor/jquery-ui.min.js"></script>
     <script src="/public/vendor/toastr.min.js"></script>
-    <script>window.__PROJECT_AREA__ = <?php echo json_encode($_SESSION['area'] ?? 'Construccion'); ?>;</script>
+    <script>
+        window.__PROJECT_AREA__ = <?php echo json_encode($_SESSION['area'] ?? 'Construccion'); ?>;
+        // Shell sidebar (DS-027): el loader conserva datos/permisos pero no monta navbar.
+        window.__AIA_SHELL_SIDEBAR__ = true;
+    </script>
     <?= \App\View\Components\BiAccessComponent::renderBootConfig('programa-general') ?>
+    <?= \App\View\Components\DesignSystemHeadComponent::renderScript('/js/modules/aia_ui/sidebar_navigation.js') ?>
     <script type="text/javascript" src="/js/modules/bi-access.js" charset="utf-8"></script>
 
     <script src="/public/vendor/handsontable/handsontable.full.min.js"></script>
