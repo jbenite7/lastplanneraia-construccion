@@ -4,7 +4,7 @@ import { ClientSideRowModelModule, ModuleRegistry, ValidationModule, themeQuartz
 import type { ColDef } from 'ag-grid-community'
 import { PdcApiError, apiGet, apiPost, apiUpload } from '../lib/api'
 import { estadoInicial, importReducer } from '../lib/importState'
-import type { ImportErrorFila, ImportPreview, VersionPresupuesto } from '../lib/types'
+import type { ImportConfirmResult, ImportErrorFila, ImportPreview, VersionPresupuesto } from '../lib/types'
 
 // Mismo criterio que MaestroInsumos.tsx: registro selectivo de módulos
 // (no AllCommunityModule, que arrastra ~1.3MB). ValidationModule solo en dev.
@@ -74,8 +74,8 @@ export default function ImportarPresupuesto() {
     if (!state.preview) return
     dispatch({ type: 'CONFIRMAR' })
     try {
-      await apiPost('/plan-compras/api/presupuesto/confirmar', { importToken: state.preview.importToken })
-      dispatch({ type: 'CONFIRMADO' })
+      const resultado = await apiPost<ImportConfirmResult>('/plan-compras/api/presupuesto/confirmar', { importToken: state.preview.importToken })
+      dispatch({ type: 'CONFIRMADO', resultado })
       cargarVersiones()
     } catch (e) {
       dispatch({ type: 'FALLO', mensaje: e instanceof Error ? e.message : String(e) })

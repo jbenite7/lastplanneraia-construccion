@@ -1,12 +1,23 @@
 import { describe, expect, it } from 'vitest'
 import { estadoInicial, importReducer } from './importState'
-import type { ImportPreview } from './types'
+import type { ImportConfirmResult, ImportPreview } from './types'
 
 const preview: ImportPreview = {
   importToken: 'a'.repeat(32),
   versionLabel: 'PI_TEST_1',
   resumen: { capitulos: 2, subcapitulos: 2, grupos: 2, actividades: 2, insumos: 4, costoTotal: 100 },
   advertencias: [],
+  sinCambios: false,
+  versionActiva: null,
+}
+
+const resultado: ImportConfirmResult = {
+  versionId: 5,
+  versionNumero: 2,
+  versionLabel: null,
+  versionIdAnterior: 4,
+  sinCambios: false,
+  resumen: preview.resumen,
 }
 
 describe('importReducer', () => {
@@ -18,7 +29,7 @@ describe('importReducer', () => {
     expect(s.preview?.importToken).toBe(preview.importToken)
     s = importReducer(s, { type: 'CONFIRMAR' })
     expect(s.fase).toBe('confirmando')
-    s = importReducer(s, { type: 'CONFIRMADO' })
+    s = importReducer(s, { type: 'CONFIRMADO', resultado })
     expect(s.fase).toBe('confirmado')
   })
 
@@ -41,5 +52,23 @@ describe('importReducer', () => {
     let s = importReducer(estadoInicial, { type: 'PREVIEW_OK', preview })
     s = importReducer(s, { type: 'REINICIAR' })
     expect(s).toEqual(estadoInicial)
+  })
+
+  it('CONFIRMADO guarda el resultado', () => {
+    let s = importReducer(estadoInicial, { type: 'PREVIEW_OK', preview })
+    s = importReducer(s, { type: 'CONFIRMAR' })
+    s = importReducer(s, { type: 'CONFIRMADO', resultado })
+    expect(s.fase).toBe('confirmado')
+    expect(s.resultado?.versionNumero).toBe(2)
+    expect(s.resultado?.versionIdAnterior).toBe(4)
+  })
+
+  it('PREVIEW_OK conserva sinCambios/versionActiva', () => {
+    const s = importReducer(estadoInicial, {
+      type: 'PREVIEW_OK',
+      preview: { ...preview, sinCambios: true, versionActiva: { id: 4, numero: 1, label: null, createdAt: '2026-07-23' } },
+    })
+    expect(s.preview?.sinCambios).toBe(true)
+    expect(s.preview?.versionActiva?.numero).toBe(1)
   })
 })

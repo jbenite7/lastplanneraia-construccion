@@ -34,6 +34,17 @@ export type ImportPreview = {
   versionLabel: string | null
   resumen: ImportResumen
   advertencias: string[]
+  sinCambios: boolean
+  versionActiva: { id: number; numero: number; label: string | null; createdAt: string } | null
+}
+
+export type ImportConfirmResult = {
+  versionId: number
+  versionNumero: number
+  versionLabel: string | null
+  versionIdAnterior: number | null
+  sinCambios: boolean
+  resumen: ImportResumen
 }
 
 export type ImportErrorFila = {
@@ -44,6 +55,7 @@ export type ImportErrorFila = {
 
 export type VersionPresupuesto = {
   id: number
+  versionNumero: number
   versionLabel: string
   archivoNombre: string
   totalActividades: number
