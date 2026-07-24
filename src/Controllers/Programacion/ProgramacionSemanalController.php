@@ -45,6 +45,24 @@ class ProgramacionSemanalController extends BaseController
             }
         }
 
+        // Shell sidebar (DS-027): semanas del proyecto para el chip de contexto.
+        $shellWeeks = [];
+        if (!empty($dbName) && preg_match('/^[a-zA-Z0-9_]+$/', $dbName)) {
+            try {
+                $tSaShell = TableResolver::resolveByPrefix($dbName, 'semanas_activas');
+                $projectIdShell = TableResolver::getProjectIdByPrefix($dbName);
+                $stmtShellWeeks = $this->db->queryWithProject(
+                    "SELECT Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem FROM {$tSaShell} WHERE project_id = ? ORDER BY Semana DESC",
+                    [$projectIdShell]
+                );
+                $shellWeeks = $stmtShellWeeks->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+            } catch (\Throwable $e) {
+                error_log('Error cargando semanas para el shell Programación Semanal: ' . $e->getMessage());
+            }
+        }
+        $shellActive = 'programacion-semanal';
+        $shellModuleLabel = 'Programación Semanal';
+
         require PROJECT_ROOT . '/views/programacion-semanal/programacion_semanal.view.php';
     }
 

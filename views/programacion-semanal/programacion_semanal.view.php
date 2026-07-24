@@ -40,9 +40,20 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
     <link rel="stylesheet" href="/css/programacion-semanal.css?v=<?= urlencode((string) $psCssVersion) ?>">
     <link rel="stylesheet" href="/css/handsontable-header-global.css?v=20260223a" />
     <link rel="stylesheet" href="/css/change-monitor.css?v=20260602a" />
+    <style>
+        /* Shell sidebar (DS-027): la altura del HOT ya no resta el navbar legacy
+           (380px). #encabezado solo aloja inputs ocultos (0px); el único elemento
+           con altura real entre el body y este contenedor es la context-bar sticky
+           del shell (#shellContextBar), medida en runtime a 1180x820 dark = 49px
+           (chip de semana 2rem + padding-block 2*0.5rem + borde 1px). Ver
+           goals/sidebar-todos-modulos/reports/task-6-report.md. */
+        body.aia-shell--sidebar #hot-container { height: calc(100vh - 49px); }
+    </style>
 </head>
-<body class="ps-page">
+<body class="aia-shell aia-shell--sidebar ps-page">
     <div id="loading"><div class="spinner-border text-primary" role="status"><span class="sr-only">Cargando...</span></div></div>
+
+    <?php require __DIR__ . '/../partials/shell_sidebar.php'; ?>
 
     <div class="encabezado" id="encabezado">
         <input type="hidden" name="seccion" id="seccion" value="programacion_semanal" aria-hidden="true">
@@ -475,8 +486,13 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
 
     <script src="/public/vendor/popper.min.js"></script>
     <script src="/public/vendor/bootstrap/bootstrap.min.js"></script>
-    <script>window.__PROJECT_AREA__ = <?php echo json_encode($_SESSION['area'] ?? 'Construccion'); ?>;</script>
+    <script>
+        window.__PROJECT_AREA__ = <?php echo json_encode($_SESSION['area'] ?? 'Construccion'); ?>;
+        // Shell sidebar (DS-027): el loader conserva datos/permisos pero no monta navbar.
+        window.__AIA_SHELL_SIDEBAR__ = true;
+    </script>
     <?= \App\View\Components\BiAccessComponent::renderBootConfig('semanal') ?>
+    <?= \App\View\Components\DesignSystemHeadComponent::renderScript('/js/modules/aia_ui/sidebar_navigation.js') ?>
 	<script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js?v=20260722polish" charset="utf-8"></script>
     <script type="text/javascript" src="/js/modules/bi-access.js" charset="utf-8"></script>
     <script type="text/javascript" src="/js/funcionesGenerales6.js" charset="utf-8"></script>
