@@ -57,3 +57,66 @@
 .pdc-cmp-toggle button.activo { background: #1a3c2a; border-color: #69b578; }
 .pdc-cmp-sobrecosto { color: #ff6b6b; }
 .pdc-cmp-ahorro { color: #69b578; }
+
+/* Paquetes de contratación (Fase A3) */
+.pdc-sub { margin: 4px 0 0; opacity: 0.75; font-size: 13px; }
+.pdc-info { padding: 10px 14px; border: 1px solid #69b578; background: #17251c; color: #b7e4c4; border-radius: 8px; margin: 10px 0; }
+
+.pdc-paq-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; flex-wrap: wrap; }
+.pdc-paq-header h1 { margin: 0; font-size: 22px; }
+
+/* Botones: por defecto secundarios (muted); el primario resalta en verde AIA. */
+.pdc-paquetes button { background: #2c2c2e; color: #f4f1ea; border: 1px solid #3a3a3c; border-radius: 6px; padding: 8px 14px; cursor: pointer; }
+.pdc-paquetes button:hover:not(:disabled) { border-color: #69b578; }
+.pdc-paquetes button:disabled { opacity: 0.45; cursor: not-allowed; }
+.pdc-paquetes .pdc-paq-primario:not(:disabled) { background: #1a5633; border-color: #69b578; }
+.pdc-paquetes select, .pdc-paquetes input { background: #2c2c2e; color: #f4f1ea; border: 1px solid #3a3a3c; border-radius: 6px; padding: 7px 10px; }
+
+.pdc-paq-modos { display: flex; gap: 8px; margin: 14px 0 6px; }
+.pdc-paq-modos button.is-activo { background: #1a3c2a; border-color: #69b578; }
+
+.pdc-paq-cobertura { min-width: 260px; text-align: right; }
+.pdc-paq-cobertura-num { font-size: 30px; font-weight: 700; color: #9fd3ae; line-height: 1; }
+.pdc-paq-cobertura-detalle { font-size: 12px; opacity: 0.8; margin-top: 2px; }
+.pdc-paq-barra { height: 8px; background: #2c2c2e; border-radius: 4px; margin-top: 6px; overflow: hidden; }
+.pdc-paq-barra-fill { height: 100%; width: 100%; transform-origin: left; background: linear-gradient(90deg, #1a5633, #69b578); transition: transform .35s ease; }
+
+.pdc-paq-toolbar, .pdc-paq-acciones, .pdc-paq-crear { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
+.pdc-paq-acciones { border-top: 1px solid #2c2c2e; border-bottom: 1px solid #2c2c2e; padding: 12px 0; }
+.pdc-paq-sel { color: #9fd3ae; font-size: 13px; min-width: 120px; }
+.pdc-paq-check { text-align: center; color: #69b578; }
+.pdc-paq-fila-omitida { opacity: 0.5; font-style: italic; }
+
+.pdc-paq-lista { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 6px; }
+.pdc-paq-lista li { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: #232325; border: 1px solid #2c2c2e; border-radius: 6px; }
+.pdc-paq-tag { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; padding: 2px 8px; border-radius: 999px; background: #1a3c2a; color: #b7e4c4; }
+.pdc-paq-meta { margin-left: auto; opacity: 0.8; font-size: 13px; }
+
+/* Asistente paso a paso (wizard) */
+.pdc-wiz { margin-top: 8px; }
+.pdc-wiz-progreso { font-size: 13px; opacity: 0.8; margin-bottom: 10px; }
+.pdc-wiz-card { border: 1px solid #3a3a3c; border-radius: 12px; padding: 18px 20px; background: #202022; max-width: 720px; }
+.pdc-wiz-card > header { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.pdc-wiz-card h3 { margin: 0; font-size: 18px; }
+.pdc-wiz-valor { font-weight: 700; color: #9fd3ae; white-space: nowrap; }
+.pdc-wiz-atributos { display: flex; gap: 24px; margin: 12px 0 0; flex-wrap: wrap; }
+.pdc-wiz-atributos dt { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; opacity: 0.6; }
+.pdc-wiz-atributos dd { margin: 2px 0 0; font-size: 14px; }
+.pdc-wiz-sugerencia { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 16px 0; padding: 12px 14px; border: 1px solid #69b578; border-radius: 8px; background: #17251c; }
+.pdc-wiz-sugerencia .pdc-sub { margin-top: 4px; }
+.pdc-wiz-manual { margin-top: 14px; display: grid; gap: 10px; }
+.pdc-wiz-fila { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
+.pdc-wiz-fila label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; opacity: 0.85; }
+.pdc-wiz-fila input { flex: 1; min-width: 220px; }
+.pdc-wiz-acciones { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+.pdc-wiz-card button, .pdc-wiz-candidatos button { background: #2c2c2e; color: #f4f1ea; border: 1px solid #3a3a3c; border-radius: 6px; padding: 8px 14px; cursor: pointer; }
+.pdc-wiz-card button:disabled, .pdc-wiz-candidatos button:disabled { opacity: 0.45; cursor: not-allowed; }
+.pdc-wiz-card .pdc-paq-primario:not(:disabled), .pdc-wiz-candidatos .pdc-paq-primario:not(:disabled) { background: #1a5633; border-color: #69b578; }
+.pdc-wiz-candidatos { border: 1px solid #3a3a3c; border-radius: 12px; padding: 18px 20px; background: #202022; max-width: 720px; }
+.pdc-wiz-cand-lista { list-style: none; padding: 0; margin: 12px 0; display: grid; gap: 4px; }
+.pdc-wiz-cand-lista label { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 6px; cursor: pointer; }
+.pdc-wiz-cand-lista label:hover { background: #232325; }
+.pdc-wiz-cand-lista input { accent-color: #69b578; }
+.pdc-wiz-cand-meta { margin-left: auto; opacity: 0.7; font-size: 13px; }
+.pdc-wiz-fin { border: 1px dashed #3a3a3c; border-radius: 12px; padding: 24px; text-align: center; max-width: 720px; }
+.pdc-wiz-fin h3 { margin: 0 0 6px; }

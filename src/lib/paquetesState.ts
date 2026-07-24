@@ -1,0 +1,55 @@
+import type { SugerenciaPaquete } from './types'
+
+/** Clave estable de un insumo único: norma + unidad. */
+export function claveInsumo(descripcionNorm: string, unidad: string): string {
+  return `${descripcionNorm}@@${unidad}`
+}
+
+export type PaquetesState = {
+  seleccion: Set<string>
+  sugerencias: Map<string, SugerenciaPaquete>
+  ocupado: boolean
+  mensaje: string | null
+}
+
+export type PaquetesAction =
+  | { type: 'TOGGLE_SEL'; clave: string }
+  | { type: 'SEL_TODOS'; claves: string[] }
+  | { type: 'LIMPIAR_SEL' }
+  | { type: 'SUGERENCIAS_OK'; sugerencias: SugerenciaPaquete[] }
+  | { type: 'LIMPIAR_SUGERENCIAS' }
+  | { type: 'OCUPADO' }
+  | { type: 'LISTO'; mensaje?: string }
+  | { type: 'FALLO'; mensaje: string }
+
+export const estadoInicialPaquetes: PaquetesState = {
+  seleccion: new Set(), sugerencias: new Map(), ocupado: false, mensaje: null,
+}
+
+export function paquetesReducer(state: PaquetesState, action: PaquetesAction): PaquetesState {
+  switch (action.type) {
+    case 'TOGGLE_SEL': {
+      const seleccion = new Set(state.seleccion)
+      if (seleccion.has(action.clave)) seleccion.delete(action.clave)
+      else seleccion.add(action.clave)
+      return { ...state, seleccion }
+    }
+    case 'SEL_TODOS':
+      return { ...state, seleccion: new Set(action.claves) }
+    case 'LIMPIAR_SEL':
+      return { ...state, seleccion: new Set() }
+    case 'SUGERENCIAS_OK': {
+      const sugerencias = new Map<string, SugerenciaPaquete>()
+      for (const s of action.sugerencias) sugerencias.set(claveInsumo(s.descripcionNorm, s.unidad), s)
+      return { ...state, sugerencias, ocupado: false, mensaje: null }
+    }
+    case 'LIMPIAR_SUGERENCIAS':
+      return { ...state, sugerencias: new Map() }
+    case 'OCUPADO':
+      return { ...state, ocupado: true, mensaje: null }
+    case 'LISTO':
+      return { ...state, ocupado: false, mensaje: action.mensaje ?? null }
+    case 'FALLO':
+      return { ...state, ocupado: false, mensaje: action.mensaje }
+  }
+}

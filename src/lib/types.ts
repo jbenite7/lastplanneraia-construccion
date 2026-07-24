@@ -208,3 +208,56 @@ export type Comparativo = {
   actividades: ActividadDiff[]
   insumos: InsumoDiff[]
 }
+
+// Tipos de paquetes de contratación (Fase A3)
+export type PaqueteCatalogo = { id: number; nombre: string; tipoNegociacion: string; insumosGlobal: number }
+
+export type InsumoPaquete = {
+  descripcionNorm: string
+  unidad: string
+  descripcion: string
+  tipoInsumo: string
+  agrupacion: string | null
+  tipoRecurso: string | null
+  cantidadTotal: number
+  valorTotal: number
+  paqueteId: number | null
+  paqueteNombre: string | null
+  // 1|0 deliberado (no boolean) — consistente con el resto de flags de la SPA.
+  omitido: number
+}
+
+export type SugerenciaPaquete = {
+  descripcionNorm: string
+  unidad: string
+  paqueteId: number
+  paqueteNombre: string
+  capa: 'exacta' | 'tokens' | 'agrupacion'
+  confianza: 'alta' | 'media' | 'baja'
+  evidencia: string
+}
+
+export type CandidatoPaquete = {
+  descripcionNorm: string
+  unidad: string
+  descripcion: string
+  agrupacion: string | null
+  tipoRecurso: string | null
+  valorTotal: number
+}
+
+export type ResumenPaquetes = {
+  version: { id: number; label: string }
+  total: number
+  asignados: number
+  omitidos: number
+  cobertura: number
+  porPaquete: { paqueteId: number; nombre: string; tipoNegociacion: string; insumos: number; subtotal: number }[]
+}
+
+export const TIPOS_NEGOCIACION: { value: string; label: string }[] = [
+  { value: 'a_todo_costo', label: 'A todo costo (Sum. + Inst.)' },
+  { value: 'suministro', label: 'Suministro' },
+  { value: 'mano_obra', label: 'Mano de obra' },
+  { value: 'consumibles', label: 'Consumibles' },
+]
