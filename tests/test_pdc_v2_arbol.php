@@ -28,6 +28,26 @@ $limpiar = static function () use ($db): void {
 };
 $limpiar();
 
+// v2: mismo presupuesto pero el precio de TEJA cambia (contenido distinto → versión nueva real;
+// con el anti-duplicado de A1.7 un segundo import IDÉNTICO ya no crea versión, y este test
+// necesita una 2ª versión genuina para probar que la histórica queda inactiva pero consultable).
+$fixtureArbolV2 = static function (string $path): void {
+    pdcFixtureEscribir($path, [
+        ['01',          'PRELIMINARES',           '',      '',   null, '',  102, 'PI_TEST_1', '',     null,  null, null, null,   '',                        ''],
+        ['01.01',       'CAMPAMENTO',             '01',    '',   null, '',  102, 'PI_TEST_1', '',     null,  null, null, null,   '',                        ''],
+        ['01.01.01',    'INSTALACIONES',          '01.01', '',   null, '',  102, 'PI_TEST_1', '',     null,  null, null, null,   '',                        ''],
+        ['01.01.01.01', 'CAMPAMENTO 18M2',        '01.01.01', 'M2', 18, '', 102, 'PI_TEST_1', 'APU-001', null, null, null, null, '',                        ''],
+        ['',            'TEJA DE ZINC',           '',      'M2', null, '', 102, 'PI_TEST_1', '',     1.05,  1.2, 19, 26000, 'MAT-CUBIERTAS',            ''],
+        ['',            'AYUDANTE',               '',      'HC', null, '', 102, 'PI_TEST_1', '',     8.0,   0.5, null, 9500, 'MANO DE OBRA',             ''],
+        ['02',          'ESTRUCTURA',             '',      '',   null, '',  102, 'PI_TEST_1', '',     null,  null, null, null,   '',                        ''],
+        ['02.01',       'CONCRETOS',              '02',    '',   null, '',  102, 'PI_TEST_1', '',     null,  null, null, null,   '',                        ''],
+        ['02.01.01',    'LOSAS',                  '02.01', '',   null, '',  102, 'PI_TEST_1', '',     null,  null, null, null,   '',                        ''],
+        ['02.01.01.01', 'LOSA MACIZA E=12',       '02.01.01', 'M3', 40, '', 102, 'PI_TEST_1', 'APU-002', null, null, null, null, '',                        ''],
+        ['',            'CONCRETO 4000PSI',       '',      'M3', null, '', 102, 'PI_TEST_1', '',     1.0,   1.05, 19, 620000, 'MAT-CONCRETOS',           ''],
+        ['',            'SERVICIO BOMBEO',        '',      'M3', null, '', 102, 'PI_TEST_1', '',     1.0,   1.0, null, 28000, 'EQUIPOS',                  ''],
+    ]);
+};
+
 echo "=== PDC v2: arbol() del visor ===\n";
 $store = new PresupuestoImportStore(sys_get_temp_dir() . '/pdc-arbol-store-' . getmypid());
 $service = new PresupuestoImportService($db, $store, new PresupuestoExcelParser());
@@ -51,9 +71,9 @@ $insumosAct = array_values(array_filter($a['insumos'], fn ($i) => $i['itemId'] =
 $assert(count($insumosAct) === 2 && $insumosAct[0]['descripcion'] === 'TEJA DE ZINC', 'Insumos amarrados por itemId, en orden.');
 $assert(abs($insumosAct[0]['valorTotal'] - 540000.0) < 0.01, 'valorTotal del insumo (21.6 × 25000).');
 
-// Segunda versión → la activa cambia; la histórica sigue consultable por versionId.
+// Segunda versión (contenido distinto) → la activa cambia; la histórica sigue consultable por versionId.
 $tmp2 = sys_get_temp_dir() . '/pdc_arbol_v2.xlsx';
-pdcFixturePresupuestoValido($tmp2);
+$fixtureArbolV2($tmp2);
 $p2 = $service->previewDesdeArchivo($tmp2, 'v2.xlsx', PDC_ARBOL_PROJECT_A, 'tester');
 $c2 = $service->confirmar($p2['importToken'], PDC_ARBOL_PROJECT_A);
 $assert($service->arbol(PDC_ARBOL_PROJECT_A)['version']['id'] === $c2['versionId'], 'La activa es la nueva.');
