@@ -130,3 +130,9 @@
 .pdc-tt-act { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pdc-tt-cant { color: #8e8e93; white-space: nowrap; }
 .pdc-tt-mas { margin-top: 6px; color: #8e8e93; font-style: italic; }
+
+/* Actividades del insumo dentro del asistente (inline, plegable) */
+.pdc-wiz-actividades { margin: 14px 0; border: 1px solid #2c2c2e; border-radius: 8px; padding: 8px 12px; background: #1a1a1c; }
+.pdc-wiz-actividades summary { cursor: pointer; color: #9fd3ae; font-size: 13px; font-weight: 600; }
+.pdc-wiz-act-lista { list-style: none; margin: 10px 0 2px; padding: 0; display: grid; gap: 4px; max-height: 220px; overflow-y: auto; font-size: 12px; }
+.pdc-wiz-act-lista li { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: baseline; }

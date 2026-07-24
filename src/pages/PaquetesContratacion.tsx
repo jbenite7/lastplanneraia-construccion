@@ -263,7 +263,7 @@ export default function PaquetesContratacion() {
           {resumen && <Cobertura resumen={resumen} />}
         </header>
         {barra}
-        <PaquetesAsistente onCambio={() => cargar(filtro)} />
+        <PaquetesAsistente onCambio={() => cargar(filtro)} actividadesMap={actividadesMap} />
       </section>
     )
   }

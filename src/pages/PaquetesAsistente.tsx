@@ -3,14 +3,14 @@ import { apiGet, apiPost } from '../lib/api'
 import { claveInsumo } from '../lib/paquetesState'
 import { estadoInicialWizard, wizardReducer } from '../lib/paqueteWizardState'
 import { TIPOS_NEGOCIACION } from '../lib/types'
-import type { CandidatoPaquete, InsumoPaquete, PaqueteCatalogo, SugerenciaPaquete } from '../lib/types'
+import type { ActividadesInsumo, CandidatoPaquete, InsumoPaquete, PaqueteCatalogo, SugerenciaPaquete } from '../lib/types'
 
 const moneda = (v: number | null | undefined) => (v == null ? '' : `$ ${v.toLocaleString('es-CO')}`)
 const tipoNegLabel = (v: string) => TIPOS_NEGOCIACION.find((t) => t.value === v)?.label ?? v
 
 type PanelCandidatos = { paquete: { id: number; nombre: string }; lista: CandidatoPaquete[] } | null
 
-export default function PaquetesAsistente({ onCambio }: { onCambio: () => void }) {
+export default function PaquetesAsistente({ onCambio, actividadesMap }: { onCambio: () => void; actividadesMap: Record<string, ActividadesInsumo> }) {
   const [state, dispatch] = useReducer(wizardReducer, estadoInicialWizard)
   const [insumos, setInsumos] = useState<InsumoPaquete[]>([])
   const [sugerencias, setSugerencias] = useState<Map<string, SugerenciaPaquete>>(new Map())
@@ -38,6 +38,7 @@ export default function PaquetesAsistente({ onCambio }: { onCambio: () => void }
 
   const actual = insumos[state.indice]
   const sugerencia = actual ? sugerencias.get(claveInsumo(actual.descripcionNorm, actual.unidad)) ?? null : null
+  const actividades = actual ? actividadesMap[claveInsumo(actual.descripcionNorm, actual.unidad)] ?? null : null
   const paquetesFiltrados = useMemo(
     () => (tipoNeg === '' ? paquetes : paquetes.filter((p) => p.tipoNegociacion === tipoNeg)),
     [paquetes, tipoNeg],
@@ -179,6 +180,24 @@ export default function PaquetesAsistente({ onCambio }: { onCambio: () => void }
           <div><dt>Tipo de recurso</dt><dd>{actual.tipoRecurso ?? '—'}</dd></div>
           <div><dt>Agrupación</dt><dd>{actual.agrupacion ?? '—'}</dd></div>
         </dl>
+
+        {actividades && actividades.total > 0 && (
+          <details className="pdc-wiz-actividades" data-testid="pdc-wiz-actividades">
+            <summary>Requerido por {actividades.total} actividad(es) del presupuesto</summary>
+            <ul className="pdc-wiz-act-lista">
+              {actividades.items.map((a, i) => (
+                <li key={`${a.codigo}-${i}`}>
+                  <span className="pdc-tt-cod">{a.codigo}</span>
+                  <span className="pdc-tt-act">{a.actividad}</span>
+                  <span className="pdc-tt-cant">{a.cantidad.toLocaleString('es-CO')} {actual.unidad}</span>
+                </li>
+              ))}
+            </ul>
+            {actividades.total > actividades.items.length && (
+              <div className="pdc-tt-mas">y {actividades.total - actividades.items.length} más…</div>
+            )}
+          </details>
+        )}
 
         {sugerencia && (
           <div className="pdc-wiz-sugerencia" data-testid="pdc-wiz-sugerencia">
