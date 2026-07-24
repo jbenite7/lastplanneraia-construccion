@@ -1,5 +1,5 @@
 <!-- Vista: Resumen Ejecutivo -->
-<section id="view-torre-control" class="view-section w-full flex flex-col gap-6">
+<section id="view-torre-control" class="view-section w-full flex flex-col gap-6" role="tabpanel" aria-labelledby="nav-torre-control">
     <section class="card p-5">
         <h3 class="font-semibold text-gray-800 mb-1">Resumen Ejecutivo</h3>
         <p id="executive-brief" class="text-sm text-gray-600 leading-relaxed">Cargando diagnóstico...</p>
@@ -246,7 +246,7 @@
 </div>
 
 <!-- Vista: Programa General -->
-<section id="view-programa-general" class="view-section w-full hidden flex flex-col gap-6" aria-label="Programa General">
+<section id="view-programa-general" class="view-section w-full hidden flex flex-col gap-6" aria-label="Programa General" role="tabpanel" aria-labelledby="nav-programa-general">
     <div class="grid grid-cols-1 gap-6">
         <div class="card p-5">
             <div class="bi-chart-card-header mb-3">
@@ -502,7 +502,7 @@
 </div>
 
 <!-- Vista: Curva S -->
-<section id="view-curva-s" class="view-section w-full hidden" aria-label="Curva S">
+<section id="view-curva-s" class="view-section w-full hidden" aria-label="Curva S" role="tabpanel" aria-labelledby="nav-curva-s">
     <div class="card p-5">
         <div class="flex items-center gap-2 mb-3">
             <i data-lucide="trending-up" class="w-5 h-5 text-aia-const-main" aria-hidden="true"></i>
@@ -513,7 +513,7 @@
 </section>
 
 <!-- Vista: Programación Intermedia (6 Semanas) -->
-<section id="view-intermedia" class="view-section w-full hidden" aria-label="Programación Intermedia 6 Semanas">
+<section id="view-intermedia" class="view-section w-full hidden" aria-label="Programación Intermedia 6 Semanas" role="tabpanel" aria-labelledby="nav-intermedia">
     <div class="card p-5 flex flex-col gap-4">
         <div class="flex items-center gap-2">
             <i data-lucide="filter" class="w-5 h-5 text-aia-proj-main" aria-hidden="true"></i>
@@ -534,7 +534,7 @@
 </section>
 
 <!-- Vista: Programación Semanal -->
-<section id="view-semanal" class="view-section w-full hidden" aria-label="Programación Semanal">
+<section id="view-semanal" class="view-section w-full hidden" aria-label="Programación Semanal" role="tabpanel" aria-labelledby="nav-semanal">
     <div class="card p-5 flex flex-col gap-4">
         <div class="flex items-center gap-2">
             <i data-lucide="calendar-check" class="w-5 h-5 text-aia-corp-main" aria-hidden="true"></i>
@@ -557,7 +557,7 @@
 </section>
 
 <!-- Vista: Plan de Compras (PDC) -->
-<section id="view-pdc" class="view-section w-full hidden" aria-label="Plan de Compras">
+<section id="view-pdc" class="view-section w-full hidden" aria-label="Plan de Compras" role="tabpanel" aria-labelledby="nav-pdc">
     <div class="card p-5 flex flex-col gap-4">
         <div class="flex items-center gap-2">
             <i data-lucide="shopping-cart" class="w-5 h-5 text-aia-const-main" aria-hidden="true"></i>
@@ -573,7 +573,7 @@
 </section>
 
 <!-- Vista: Proveedores (CIC) -->
-<section id="view-cic" class="view-section w-full hidden" aria-label="Proveedores CIC">
+<section id="view-cic" class="view-section w-full hidden" aria-label="Proveedores CIC" role="tabpanel" aria-labelledby="nav-cic">
     <div class="card p-5 flex flex-col gap-4">
         <div class="flex items-center gap-2">
             <i data-lucide="hard-hat" class="w-5 h-5 text-aia-proj-main" aria-hidden="true"></i>
@@ -589,7 +589,7 @@
 </section>
 
 <!-- Vista: Responsables (CIP) -->
-<section id="view-cip" class="view-section w-full hidden" aria-label="Responsables CIP">
+<section id="view-cip" class="view-section w-full hidden" aria-label="Responsables CIP" role="tabpanel" aria-labelledby="nav-cip">
     <div class="card p-5 flex flex-col gap-4">
         <div class="flex items-center gap-2">
             <i data-lucide="users" class="w-5 h-5 text-aia-const-main" aria-hidden="true"></i>

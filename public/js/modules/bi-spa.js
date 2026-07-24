@@ -173,6 +173,7 @@ function init() {
   wireCausalDrilldownEvents();
   wireRadarDrilldownEvents();
   wireDelayDrilldownEvents();
+  wireSheetTabsEvents();
   wireThemeEvents();
   renderActiveChips();
   renderMobileFilterState();
@@ -368,12 +369,14 @@ function switchView(viewId) {
 
   document.querySelectorAll('.nav-item').forEach((item) => {
     item.classList.remove('active');
-    item.removeAttribute('aria-current');
+    item.setAttribute('aria-selected', 'false');
+    item.setAttribute('tabindex', '-1');
   });
   const nav = document.getElementById('nav-' + viewId);
   if (nav) {
     nav.classList.add('active');
-    nav.setAttribute('aria-current', 'page');
+    nav.setAttribute('aria-selected', 'true');
+    nav.setAttribute('tabindex', '0');
   }
 
   const sheetSelect = document.getElementById('bi-mobile-sheet-select');
@@ -385,6 +388,32 @@ function switchView(viewId) {
   if (title) title.textContent = VIEW_META[viewId]?.label || viewId;
 
   ensureCurrentViewLoaded();
+}
+
+function wireSheetTabsEvents() {
+  const nav = document.querySelector('.bi-tabs-nav');
+  if (!nav || nav.dataset.sheetTabsBound === '1') return;
+  nav.addEventListener('keydown', handleSheetTabsKeydown);
+  nav.dataset.sheetTabsBound = '1';
+}
+
+function handleSheetTabsKeydown(event) {
+  if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+  const currentTab = event.target instanceof Element ? event.target.closest('[role="tab"].nav-item') : null;
+  if (!currentTab) return;
+  const tabs = Array.from(event.currentTarget.querySelectorAll('[role="tab"].nav-item'));
+  const currentIndex = tabs.indexOf(currentTab);
+  if (currentIndex < 0 || !tabs.length) return;
+  event.preventDefault();
+  let nextIndex = currentIndex;
+  if (event.key === 'Home') nextIndex = 0;
+  if (event.key === 'End') nextIndex = tabs.length - 1;
+  if (event.key === 'ArrowLeft') nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+  if (event.key === 'ArrowRight') nextIndex = (currentIndex + 1) % tabs.length;
+  const nextTab = tabs[nextIndex];
+  const nextViewId = (nextTab.id || '').replace(/^nav-/, '');
+  if (nextViewId) switchView(nextViewId);
+  nextTab.focus();
 }
 
 function renderView(viewId, data) {
@@ -2854,14 +2883,6 @@ function renderActiveChips() {
   });
   renderMobileFilterState(entries.length);
   if (window.lucide) window.lucide.createIcons();
-}
-
-function toggleMobileFilters() {
-  const form = document.getElementById('filters-form');
-  const button = document.getElementById('bi-mobile-filter-toggle');
-  if (!form || !button) return;
-  const isOpen = form.classList.toggle('is-open');
-  button.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
 }
 
 function closeMobileFilters() {

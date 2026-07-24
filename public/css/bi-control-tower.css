@@ -1,7 +1,7 @@
 @layer components {
   .bi-control-tower-page {
     background-color: var(--ds-active-bg-canvas) !important;
-    color: var(--ds-active-text-primary);
+    color: var(--ds-active-text-primary) !important;
     overflow: hidden;
   }
 
@@ -90,57 +90,6 @@
       min-width: 0;
       flex: 1 1 auto;
     }
-
-    .bi-control-tower-page .bi-sidebar {
-      background-color: var(--ds-active-nav-bg) !important;
-      color: var(--ds-color-text-inverse) !important;
-      border-right: var(--ds-nav-border-width) solid var(--ds-active-nav-border);
-    }
-
-    .bi-control-tower-page .bi-sidebar > header {
-      border-color: var(--ds-active-nav-border) !important;
-    }
-
-    .bi-control-tower-page .bi-sidebar > header h1 {
-      color: var(--ds-color-text-inverse) !important;
-    }
-  }
-
-  @media (min-width: 768px) {
-    .bi-control-tower-page .bi-sidebar .nav-item,
-    .bi-control-tower-page .bi-sidebar #filters-form {
-      color: var(--ds-color-text-inverse) !important;
-    }
-
-    .bi-control-tower-page .bi-sidebar #filters-form label,
-    .bi-control-tower-page .bi-sidebar #filters-form span,
-    .bi-control-tower-page .bi-sidebar #filters-form p,
-    .bi-control-tower-page .bi-sidebar .text-gray-300,
-    .bi-control-tower-page .bi-sidebar .text-aia-corp-light {
-      color: color-mix(in srgb, var(--ds-color-text-inverse) 78%, transparent) !important;
-    }
-
-    .bi-control-tower-page .bi-sidebar #filters-form select,
-    .bi-control-tower-page .bi-sidebar #filters-form input,
-    .bi-control-tower-page .bi-sidebar #btn-project-dropdown,
-    .bi-control-tower-page .bi-sidebar #project-checkbox-list {
-      background-color: var(--ds-active-surface) !important;
-      color: var(--ds-active-text-primary) !important;
-      border-color: var(--ds-active-border) !important;
-    }
-
-    .bi-control-tower-page .bi-sidebar #filters-form input::placeholder {
-      color: var(--ds-active-text-secondary);
-    }
-
-    .bi-control-tower-page .bi-sidebar #btn-project-dropdown span {
-      color: var(--ds-active-text-primary) !important;
-    }
-
-    .bi-control-tower-page .bi-sidebar #btn-project-dropdown i,
-    .bi-control-tower-page .bi-sidebar #btn-project-dropdown svg {
-      color: var(--ds-active-text-secondary) !important;
-    }
   }
 
   .bi-control-tower-page .nav-item {
@@ -149,12 +98,12 @@
   }
 
   .bi-control-tower-page .nav-item.active {
-    background-color: var(--aia-green-medium);
-    border-left-color: var(--ds-color-brand-construction);
+    background-color: var(--aia-green-medium) !important;
+    border-left-color: var(--ds-color-brand-construction) !important;
   }
 
   .bi-control-tower-page .nav-item:hover:not(.active) {
-    background-color: color-mix(in srgb, var(--aia-green-light) 12%, transparent);
+    background-color: color-mix(in srgb, var(--aia-green-light) 12%, transparent) !important;
   }
 
   .bi-chip {
@@ -199,27 +148,12 @@
     outline: 0;
   }
 
-  .bi-mobile-filter-toggle {
-    display: none;
-  }
-
-  .bi-mobile-filter-panel {
-    display: contents;
-  }
-
   .bi-filter-form {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-lg);
     margin: 0;
     padding: var(--spacing-lg);
-  }
-
-  .bi-control-tower-page .bi-sidebar .bi-filter-form {
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    box-shadow: none;
   }
 
   .bi-field-label {
@@ -286,8 +220,7 @@
     flex: 1;
   }
 
-  .bi-control-tower-page .bi-filter-form .aia-btn--secondary,
-  .bi-control-tower-page .bi-mobile-filter-toggle.aia-btn--secondary {
+  .bi-control-tower-page .bi-filter-form .aia-btn--secondary {
     border-color: var(--ds-active-border) !important;
     background-color: var(--ds-active-surface-raised) !important;
     color: var(--ds-active-text-primary) !important;
@@ -1450,7 +1383,6 @@
     font-size: var(--ds-type-size-sm);
   }
 
-  .bi-control-tower-page .bi-sidebar-scroll,
   .bi-control-tower-page .bi-main-content {
     overflow-x: hidden !important;
   }
@@ -1506,38 +1438,6 @@
       overflow-y: auto;
     }
 
-    .bi-control-tower-page .bi-sidebar {
-      width: 100% !important;
-      height: auto !important;
-      flex: none !important;
-      background-color: var(--ds-active-bg-canvas) !important;
-      color: var(--ds-active-text-primary) !important;
-    }
-
-    .bi-control-tower-page .bi-sidebar > header {
-      display: none !important;
-    }
-
-    .bi-control-tower-page .bi-sidebar-scroll {
-      display: flex !important;
-      flex: none !important;
-      max-height: none !important;
-      overflow: visible !important;
-      flex-direction: column;
-    }
-
-    .bi-control-tower-page .bi-sidebar nav {
-      order: 1;
-      display: flex !important;
-      flex-direction: column !important;
-      gap: var(--spacing-sm);
-      overflow-x: hidden;
-      overflow-y: hidden;
-      padding: var(--spacing-md);
-      background-color: var(--ds-active-bg-canvas);
-      white-space: normal;
-    }
-
     .bi-control-tower-page .bi-sheet-selector {
       display: flex;
       flex-direction: column;
@@ -1577,10 +1477,6 @@
       display: none !important;
     }
 
-    .bi-control-tower-page .bi-sidebar .nav-item {
-      display: none !important;
-    }
-
     .bi-control-tower-page #filters-form {
       order: 2;
       gap: var(--spacing-md);
@@ -1593,54 +1489,10 @@
       box-shadow: var(--ds-shadow-xs);
     }
 
-    .bi-control-tower-page .bi-mobile-filter-toggle {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: var(--spacing-sm);
-      width: 100%;
-    }
-
-    .bi-control-tower-page .bi-mobile-filter-toggle span {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--spacing-xs);
-      color: inherit;
-    }
-
-    .bi-control-tower-page .bi-mobile-filter-toggle strong {
-      display: inline-flex;
-      min-width: 1.5rem;
-      height: 1.5rem;
-      align-items: center;
-      justify-content: center;
-      border-radius: var(--ds-radius-pill);
-      background-color: var(--ds-color-state-info-bg);
-      color: var(--ds-color-state-info-text);
-      font-size: 0.75rem;
-    }
-
-    .bi-control-tower-page .bi-mobile-filter-panel {
-      display: none;
-    }
-
-    .bi-control-tower-page #filters-form.is-open .bi-mobile-filter-panel {
-      display: flex;
-      flex-direction: column;
-      gap: var(--spacing-md);
-    }
-
     .bi-control-tower-page #filters-form label,
     .bi-control-tower-page #filters-form span,
     .bi-control-tower-page #filters-form p {
       color: var(--ds-active-text-secondary) !important;
-    }
-
-    .bi-control-tower-page .bi-sidebar #project-dropdown-text,
-    .bi-control-tower-page .bi-sidebar #dynamic-filters > span,
-    .bi-control-tower-page .bi-sidebar #label-proyectos,
-    .bi-control-tower-page .bi-sidebar .bi-mobile-filter-toggle span {
-      color: var(--ds-active-text-primary) !important;
     }
 
     .bi-control-tower-page #filters-form hr {
