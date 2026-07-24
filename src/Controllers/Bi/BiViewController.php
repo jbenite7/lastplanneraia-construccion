@@ -8,6 +8,7 @@ use App\Controllers\BaseController;
 use App\Services\ControlTowerService;
 use App\Support\BiProjectScope;
 use DomainException;
+use TableResolver;
 
 /**
  * BI Control Tower — View Controller.
@@ -18,6 +19,21 @@ use DomainException;
  */
 class BiViewController extends BaseController
 {
+    /**
+     * Shell sidebar (DS-027): etiqueta de la context-bar por hoja ($reportKey).
+     * Debe reflejar los 8 reportKey que produce cada acción pública de este controlador.
+     */
+    private const SHELL_MODULE_LABELS = [
+        'overview'         => 'Resumen Ejecutivo',
+        'programa-general' => 'Programa General',
+        'curva-s'          => 'Curva S',
+        'intermedia'       => 'Prog. Intermedia (6 Sem)',
+        'semanal'          => 'Programación Semanal',
+        'pdc'              => 'Plan de Compras',
+        'cic'              => 'Proveedores (CIC)',
+        'cip'              => 'Responsables (CIP)',
+    ];
+
     private ControlTowerService $bi;
     private BiProjectScope $projectScope;
 
@@ -51,6 +67,11 @@ class BiViewController extends BaseController
         // Inject data for JS hydration
         $initialData = json_encode($brief, JSON_UNESCAPED_UNICODE);
 
+        // Shell sidebar (DS-027): Control Tower consume el shell canónico dark.
+        $shellActive = 'control-tower';
+        $shellModuleLabel = self::SHELL_MODULE_LABELS[$reportKey] ?? 'Control Tower - Informes';
+        $shellWeeks = $this->loadShellWeeks();
+
         // Pass variables to view
         $viewData = [
             'reportKey'   => $reportKey,
@@ -62,10 +83,40 @@ class BiViewController extends BaseController
             'brief'       => $brief,
             'initialData' => $initialData,
             'viewFile'    => $viewFile,
+            'shellActive'      => $shellActive,
+            'shellModuleLabel' => $shellModuleLabel,
+            'shellWeeks'       => $shellWeeks,
         ];
 
         extract($viewData);
         require_once __DIR__ . '/../../../views/bi/_layout.php';
+    }
+
+    /**
+     * Shell sidebar (DS-027): semanas del proyecto para el chip de contexto.
+     * Copia el patrón de ProgramacionSemanalController::loadShellWeeks().
+     *
+     * @return array<int, array{Semana: int, Fecha_Inicio_Sem: ?string, Fecha_Fin_Sem: ?string}>
+     */
+    private function loadShellWeeks(): array
+    {
+        $shellWeeks = [];
+        $dbName = (string) ($_SESSION['db'] ?? '');
+        if ($dbName !== '' && preg_match('/^[a-zA-Z0-9_]+$/', $dbName)) {
+            try {
+                $tSaShell = TableResolver::resolveByPrefix($dbName, 'semanas_activas');
+                $projectIdShell = TableResolver::getProjectIdByPrefix($dbName);
+                $stmtShellWeeks = $this->db->queryWithProject(
+                    "SELECT Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem FROM {$tSaShell} WHERE project_id = ? ORDER BY Semana DESC",
+                    [$projectIdShell]
+                );
+                $shellWeeks = $stmtShellWeeks->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+            } catch (\Throwable $e) {
+                error_log('Error cargando semanas para el shell Control Tower: ' . $e->getMessage());
+            }
+        }
+
+        return $shellWeeks;
     }
 
     // -----------------------------------------------------------------

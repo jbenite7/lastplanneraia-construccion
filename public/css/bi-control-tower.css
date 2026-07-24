@@ -86,11 +86,6 @@
   }
 
   @media (min-width: 768px) {
-    .bi-control-tower-page {
-      flex-direction: row;
-      flex-wrap: nowrap;
-    }
-
     .bi-control-tower-page .bi-main-shell {
       min-width: 0;
       flex: 1 1 auto;
