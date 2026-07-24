@@ -60,15 +60,18 @@ final class PaquetesService
         ['kw' => ['PISO INDUSTRIAL', 'PISO EN CONCRETO', 'ENDURECEDOR'], 'paq' => 'M. de O PISOS INDUSTRIALES EN CONCRETO', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
         ['kw' => ['PREPARACION MEZCLA', 'TRANSPORTE INTERNO', 'MEZCLA', 'PREPARACION DE CONCRETO'], 'paq' => 'M. de O ESTRUCTURA EN CONCRETO', 'tipos' => ['MANO DE OBRA']],
 
-        // Materiales (suministro) por descripción del insumo.
-        ['kw' => ['CONCRETO', 'HORMIGON'], 'paq' => 'Suministro CONCRETO', 'tipos' => ['MATERIAL']],
-        ['kw' => ['CEMENTO', 'MORTERO', 'GROUTING'], 'paq' => 'Suministro CEMENTO', 'tipos' => ['MATERIAL']],
-        ['kw' => ['ACERO', 'REFUERZO', 'ALAMBRE', 'MALLA ELECTROSOLDADA', 'FLEJE', 'VARILLA', 'FIGURAD'], 'paq' => 'Suministro ACERO DE REFUERZO', 'tipos' => ['MATERIAL']],
-        ['kw' => ['LADRILLO', 'BLOQUE', 'ADOBE', 'CATALAN'], 'paq' => 'Suministro LADRILLO', 'tipos' => ['MATERIAL']],
-        ['kw' => ['ARENA', 'GRAVA', 'TRITURADO', 'AGREGADO', 'RECEBO', 'GRANULAR', 'BASE', 'SUBBASE'], 'paq' => 'Suministro AGREGADOS', 'tipos' => ['MATERIAL']],
-        ['kw' => ['PORCELANATO', 'CERAMIC', 'BALDOSA', 'GRES', 'TABLETA', 'ENCHAPE'], 'paq' => 'Suministro PISOS Y ENCHAPES CERÁMICOS/PORCELANATO', 'tipos' => ['MATERIAL']],
-        ['kw' => ['SANITARIO', 'LAVAMANOS', 'ORINAL', 'GRIFERIA', 'LAVAPLATOS', 'DUCHA', 'SIFON'], 'paq' => 'Suministro APARATOS SANITARIOS Y GRIFERÍA', 'tipos' => ['MATERIAL']],
-        ['kw' => ['FORMALETA', 'ENCOFRADO', 'OBRA FALSA', 'TABLERO FENOLIC'], 'paq' => 'Suministro FORMALETA MUROS, LOSAS Y CONTENCIÓN', 'tipos' => ['MATERIAL']],
+        // Materiales (suministro) — SOLO por la descripción del insumo (soloDesc): un material se
+        // identifica por su nombre, no por la actividad que lo consume. Orden: los específicos primero
+        // (MORTERO y BLOQUE/LADRILLO antes que CONCRETO, para no capturarlos por el token «CONCRETO»).
+        ['kw' => ['MORTERO', 'GROUTING'], 'paq' => 'Suministro MORTEROS', 'tipos' => ['MATERIAL'], 'soloDesc' => true],
+        ['kw' => ['LADRILLO', 'BLOQUE', 'ADOBE', 'CATALAN'], 'paq' => 'Suministro LADRILLO', 'tipos' => ['MATERIAL'], 'soloDesc' => true],
+        ['kw' => ['ACERO', 'REFUERZO', 'ALAMBRE', 'MALLA ELECTROSOLDADA', 'FLEJE', 'VARILLA', 'FIGURAD'], 'paq' => 'Suministro ACERO DE REFUERZO', 'tipos' => ['MATERIAL'], 'soloDesc' => true],
+        ['kw' => ['CEMENTO'], 'paq' => 'Suministro CEMENTO', 'tipos' => ['MATERIAL'], 'soloDesc' => true],
+        ['kw' => ['ARENA', 'GRAVA', 'TRITURADO', 'AGREGADO', 'RECEBO', 'GRANULAR', 'SUBBASE'], 'paq' => 'Suministro AGREGADOS', 'tipos' => ['MATERIAL'], 'soloDesc' => true],
+        ['kw' => ['PORCELANATO', 'CERAMIC', 'BALDOSA', 'GRES', 'TABLETA', 'ENCHAPE'], 'paq' => 'Suministro PISOS Y ENCHAPES CERÁMICOS/PORCELANATO', 'tipos' => ['MATERIAL'], 'soloDesc' => true],
+        ['kw' => ['SANITARIO', 'LAVAMANOS', 'ORINAL', 'GRIFERIA', 'LAVAPLATOS', 'DUCHA', 'SIFON'], 'paq' => 'Suministro APARATOS SANITARIOS Y GRIFERÍA', 'tipos' => ['MATERIAL'], 'soloDesc' => true],
+        ['kw' => ['FORMALETA', 'ENCOFRADO', 'OBRA FALSA', 'TABLERO FENOLIC'], 'paq' => 'Suministro FORMALETA MUROS, LOSAS Y CONTENCIÓN', 'tipos' => ['MATERIAL'], 'soloDesc' => true],
+        ['kw' => ['CONCRETO', 'HORMIGON'], 'paq' => 'Suministro CONCRETO', 'tipos' => ['MATERIAL'], 'soloDesc' => true],
 
         // Equipos (alquiler) → tratado como indirecto salvo regla específica; no forzamos paquete aquí.
     ];
@@ -688,12 +691,17 @@ final class PaquetesService
     /** Capa reglas (media): diccionario de dominio sobre descripción + actividad dominante, filtrado por tipo_recurso. */
     private function sugerirPorReglas(array $insumo, string $actividad, array $catalogo): ?array
     {
-        $heno = ' ' . $insumo['descripcionNorm'] . ' ' . MaestroInsumosService::normalizar($actividad) . ' ';
+        $desc = ' ' . $insumo['descripcionNorm'] . ' ';
+        // Descripción + actividad para reglas de mano de obra/subcontrato; solo descripción para las
+        // de material (regla 'soloDesc') — un material se identifica por su nombre, no por la actividad
+        // que lo consume (ej. MORTERO no es CONCRETO aunque su actividad mencione «CONCRETO»).
+        $henoFull = $desc . MaestroInsumosService::normalizar($actividad) . ' ';
         $tipoRecurso = mb_strtoupper((string) ($insumo['tipoRecurso'] ?? ''));
         foreach (self::REGLAS_SEMBRADO as $regla) {
             if ($regla['tipos'] !== [] && !in_array($tipoRecurso, $regla['tipos'], true)) {
                 continue;
             }
+            $heno = ($regla['soloDesc'] ?? false) ? $desc : $henoFull;
             foreach ($regla['kw'] as $kw) {
                 if (str_contains($heno, $kw)) {
                     $paq = $this->resolverPaquete($regla['paq'], $insumo['tipoRecurso'] ?? null, $catalogo);
