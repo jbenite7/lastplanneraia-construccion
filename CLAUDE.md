@@ -70,7 +70,15 @@ Arquitectura de **"isla moderna" dentro de lps-aia**, pensada para SiteGround ho
 - **Testing:** Vitest (lógica SPA) y `npm run build` como gate aquí; en lps-aia, scripts `tests/test_pdc_*.php` autoejecutables (no hay PHPUnit), PHPStan, y e2e Playwright en `tests/browser/`.
 - **Deploy:** rutina de lps-aia (`docs/siteground-deploy-routine.md`). Watch-items SiteGround: verificar `upload_max_filesize`/`post_max_size` ≥ 10M (límite del importador) y `memory_limit` de PhpSpreadsheet con presupuestos grandes — el parser usa `toArray()` sobre la hoja completa (read-only, medido OK a escala DAPORTO: parse 0.13s / confirmar 0.42s); migrar a lectura por chunks solo si un presupuesto real lo exige.
 
-Comandos de lps-aia para la parte PHP/e2e (se ejecutan en `../lps-aia`):
+### Worktree dedicado en lps-aia (sesiones paralelas)
+
+El working tree principal de lps-aia (`../lps-aia`) lo comparten otras sesiones activas (indicadores/Power BI, design-system/sidebar) que lo dejan con cambios sin commitear y bloquean checkouts/merges. Por eso **el trabajo PDC en lps-aia se hace en un git worktree dedicado**, no en el principal:
+
+- **Worktree PDC:** `/Volumes/Crucial X6/Developer/lps-aia-pdc`, rama base `pdc-dev` (desde `main`). Crear ahí las ramas de feature por fase (`git checkout -b pdc-a3-paquetes`, etc.). NO trabajar PDC en `../lps-aia` (es de las otras sesiones); tampoco tocar `../lps-aia/.claude/worktrees/lab-preview` (locked, ajeno).
+- **Docker:** el `docker-compose.override.yml` (versionado) monta `./` (relativo), así que `docker compose` **desde el worktree** monta el código del worktree. Levantar el stack del worktree con `COMPOSE_PROJECT_NAME` y puertos propios para no chocar con el principal (app `8081` es fijo en `docker-compose.yml`; db/adminer son `${DOCKER_DB_PORT:-3307}`/`${DOCKER_ADMINER_PORT:-8082}`).
+- **Integración:** consolidar en `origin/main` (decisión 2026-07-23; ya no la rama `desarrollo-pdc-v2`). Antes de mergear: `git fetch` y FF `main` a `origin/main` — las sesiones ajenas pushean seguido, así que main avanza en horas. Si el principal está bloqueado, mergear vía worktree temporal aislado.
+
+Comandos de lps-aia para la parte PHP/e2e (se ejecutan en el **worktree** `/Volumes/Crucial X6/Developer/lps-aia-pdc`):
 
 ```bash
 docker compose up -d --build db app adminer   # levantar stack (app: localhost:8081, adminer: 8082)
@@ -86,6 +94,8 @@ npm run dev     # Vite dev server con proxy /plan-compras/api → localhost:8081
 npm run build   # tsc + vite build → dist/ con nombres fijos (assets/pdc.js, assets/pdc.css)
 npm run test    # Vitest (src/lib/*.test.ts)
 npm run sync    # build + copia dist/ a ../lps-aia/public/pdc-app/ (commitear allá: deploy = git pull)
+                # OJO: apunta a ../lps-aia (principal). Trabajando en el worktree, copiar el bundle
+                # a /Volumes/Crucial X6/Developer/lps-aia-pdc/public/pdc-app/ y commitear en la rama del worktree.
 ```
 
 ## Materiales de referencia (locales, no versionados)
