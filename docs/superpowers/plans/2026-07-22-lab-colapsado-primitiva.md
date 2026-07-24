@@ -196,7 +196,7 @@ Leer el test (`grep -n 'information\|obra\|compras\|querySelectorAll\|data-sideb
 
 - [ ] **Step 4: Ejecutar el test del lab sidebar**
 
-Run: `E2E_BASE_URL=http://localhost:8085 node tests/browser/design-system-lab-sidebar.mjs`
+Run: `E2E_BASE_URL=http://localhost:8085 npx playwright test tests/browser/design-system-lab-sidebar.mjs`
 Expected: todos los checks OK (conteos nuevos, geometría de colapso por token, estados, targets 44px).
 
 - [ ] **Step 5: Commit**
@@ -276,7 +276,7 @@ node tests/test_foundation_shell_contract.mjs && echo "shell-contract exit $?"
 node --test tests/design-system/shell-navigation.test.mjs tests/design-system/contracts.test.mjs   # pass, 0 fail
 docker exec lps-aia-lab php tests/test_design_system_components.php   # PASS
 E2E_BASE_URL=http://localhost:8085 node tests/browser/shell-week-admin.mjs   # 11/11
-E2E_BASE_URL=http://localhost:8085 node tests/browser/design-system-lab-sidebar.mjs   # OK
+E2E_BASE_URL=http://localhost:8085 npx playwright test tests/browser/design-system-lab-sidebar.mjs   # OK
 git stash -u >/dev/null 2>&1; node scripts/design-system-contracts.mjs; git stash pop >/dev/null 2>&1   # PASS
 ```
 
