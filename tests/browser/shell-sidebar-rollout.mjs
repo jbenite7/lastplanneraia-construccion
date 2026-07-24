@@ -23,7 +23,7 @@ const ALL_ROUTES = [
   { route: '/indicadores', active: 'indicadores', label: 'Indicadores LPS' },
   { route: '/bi/control-tower', active: 'control-tower', label: 'Control Tower - Informes' },
 ];
-const MIGRATED = new Set(['/programacion-intermedia']); // se irá ampliando módulo a módulo
+const MIGRATED = new Set(['/programacion-intermedia', '/programa-general']); // se irá ampliando módulo a módulo
 
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1180, height: 820 }, colorScheme: 'dark' });
@@ -57,6 +57,12 @@ for (const r of ALL_ROUTES) {
   }
 
   await page.goto(`${BASE_URL}${r.route}`, { waitUntil: 'domcontentloaded' });
+  await page.waitForSelector('[data-shell-pattern="sidebar"]', { timeout: 20000 });
+
+  // Robustez: limpiar estado persistido para que el check de "default colapsado"
+  // sea genuino, no un remanente de una ruta anterior en el mismo contexto.
+  await page.evaluate(() => localStorage.removeItem('aia-sidebar-state'));
+  await page.reload({ waitUntil: 'domcontentloaded' });
   await page.waitForSelector('[data-shell-pattern="sidebar"]', { timeout: 20000 });
 
   // 1) Default colapsado
