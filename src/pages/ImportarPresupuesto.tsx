@@ -4,7 +4,8 @@ import { ClientSideRowModelModule, ModuleRegistry, ValidationModule, themeQuartz
 import type { ColDef } from 'ag-grid-community'
 import { PdcApiError, apiGet, apiPost, apiUpload } from '../lib/api'
 import { estadoInicial, importReducer } from '../lib/importState'
-import type { ImportConfirmResult, ImportErrorFila, ImportPreview, VersionPresupuesto } from '../lib/types'
+import { etiquetaVersion } from '../lib/versionLabel'
+import type { Comparativo, ImportConfirmResult, ImportErrorFila, ImportPreview, ResumenDiff, VersionPresupuesto } from '../lib/types'
 
 // Mismo criterio que MaestroInsumos.tsx: registro selectivo de módulos
 // (no AllCommunityModule, que arrastra ~1.3MB). ValidationModule solo en dev.
@@ -27,7 +28,10 @@ const colsErrores: ColDef<ImportErrorFila>[] = [
 ]
 
 const colsVersiones: ColDef<VersionPresupuesto>[] = [
-  { field: 'versionLabel', headerName: 'Versión', flex: 1 },
+  {
+    headerName: 'Versión', flex: 1, minWidth: 220,
+    valueGetter: (p) => (p.data ? etiquetaVersion(p.data) : ''),
+  },
   { field: 'archivoNombre', headerName: 'Archivo', flex: 1 },
   { field: 'totalActividades', headerName: 'Actividades', width: 120 },
   { field: 'totalInsumos', headerName: 'Insumos', width: 110 },
@@ -36,13 +40,13 @@ const colsVersiones: ColDef<VersionPresupuesto>[] = [
     valueFormatter: (p) => p.value != null ? `$ ${Number(p.value).toLocaleString('es-CO')}` : '',
   },
   { field: 'importadoPor', headerName: 'Importó', width: 130 },
-  { field: 'createdAt', headerName: 'Fecha', width: 160 },
   { field: 'activa', headerName: 'Estado', width: 100, valueFormatter: (p) => (p.value ? 'Activa' : '') },
 ]
 
 export default function ImportarPresupuesto() {
   const [state, dispatch] = useReducer(importReducer, estadoInicial)
   const [versiones, setVersiones] = useState<VersionPresupuesto[]>([])
+  const [cmp, setCmp] = useState<ResumenDiff | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
   const cargarVersiones = () => {
@@ -73,10 +77,16 @@ export default function ImportarPresupuesto() {
   const onConfirmar = async () => {
     if (!state.preview) return
     dispatch({ type: 'CONFIRMAR' })
+    setCmp(null)
     try {
       const resultado = await apiPost<ImportConfirmResult>('/plan-compras/api/presupuesto/confirmar', { importToken: state.preview.importToken })
       dispatch({ type: 'CONFIRMADO', resultado })
       cargarVersiones()
+      if (!resultado.sinCambios && resultado.versionIdAnterior != null) {
+        apiGet<Comparativo>(`/plan-compras/api/presupuesto/comparar?versionA=${resultado.versionIdAnterior}&versionB=${resultado.versionId}`)
+          .then((c) => setCmp(c.resumen))
+          .catch(() => setCmp(null))
+      }
     } catch (e) {
       dispatch({ type: 'FALLO', mensaje: e instanceof Error ? e.message : String(e) })
     }
@@ -124,6 +134,11 @@ export default function ImportarPresupuesto() {
           {state.preview?.advertencias.map((a) => (
             <p key={a} className="pdc-advertencia">⚠ {a}</p>
           ))}
+          {state.preview?.sinCambios && state.preview.versionActiva && (
+            <p className="pdc-advertencia" data-testid="pdc-import-sincambios">
+              ⚠ Este presupuesto es idéntico a la <strong>Versión {state.preview.versionActiva.numero}</strong> (activa). No se creará una versión nueva.
+            </p>
+          )}
           <button
             type="button"
             data-testid="pdc-import-confirmar"
@@ -135,9 +150,25 @@ export default function ImportarPresupuesto() {
         </div>
       )}
 
-      {state.fase === 'confirmado' && (
-        <div className="pdc-bloque pdc-exito" role="status">
-          Presupuesto importado: ahora es la versión activa del proyecto.
+      {state.fase === 'confirmado' && state.resultado && (
+        <div className="pdc-bloque pdc-exito" role="status" data-testid="pdc-import-confirmado">
+          {state.resultado.sinCambios ? (
+            <p>Sin cambios: se mantiene la <strong>Versión {state.resultado.versionNumero}</strong> activa.</p>
+          ) : (
+            <>
+              <p>Cargada la <strong>Versión {state.resultado.versionNumero}</strong> — ahora es la versión activa del proyecto.</p>
+              {cmp && (
+                <div data-testid="pdc-import-comparativo">
+                  <p>
+                    Cambios vs la versión anterior: {cmp.nuevos} nuevos · {cmp.eliminados} eliminados · {cmp.modificados} modificados ·{' '}
+                    <span className="pdc-cmp-sobrecosto">sobrecostos $ {cmp.sobrecostos.toLocaleString('es-CO')}</span> ·{' '}
+                    <span className="pdc-cmp-ahorro">ahorros $ {cmp.ahorros.toLocaleString('es-CO')}</span>
+                  </p>
+                  <a className="pdc-nav-link" href="#/ensamble/comparar">Ver comparativo completo →</a>
+                </div>
+              )}
+            </>
+          )}
         </div>
       )}
 

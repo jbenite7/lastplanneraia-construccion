@@ -6,6 +6,7 @@ import { PdcApiError, apiGet } from '../lib/api'
 import { filasVisibles } from '../lib/presupuestoTree'
 import type { FilaVisor } from '../lib/presupuestoTree'
 import type { ArbolPresupuesto, VersionPresupuesto } from '../lib/types'
+import { etiquetaVersion } from '../lib/versionLabel'
 
 // Mismo criterio que ImportarPresupuesto.tsx: registro selectivo de módulos
 // (no AllCommunityModule, que arrastra ~1.3MB). ValidationModule solo en dev.
@@ -111,7 +112,7 @@ export default function VisorPresupuesto() {
               <option value="">Activa</option>
               {versiones.map((v) => (
                 <option key={v.id} value={v.id}>
-                  {v.versionLabel} — {v.createdAt}{v.activa ? ' (activa)' : ''}
+                  {etiquetaVersion(v)}{v.activa ? ' (activa)' : ''}
                 </option>
               ))}
             </select>

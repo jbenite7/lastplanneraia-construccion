@@ -6,6 +6,7 @@ import { PdcApiError, apiGet } from '../lib/api'
 import { claseDelta, filasComparativoVisibles } from '../lib/comparativo'
 import type { FilaComparativo } from '../lib/comparativo'
 import type { Comparativo, InsumoDiff, VersionPresupuesto } from '../lib/types'
+import { etiquetaVersion } from '../lib/versionLabel'
 
 // Mismo criterio que VisorPresupuesto.tsx: registro selectivo de módulos.
 ModuleRegistry.registerModules([
@@ -108,7 +109,7 @@ export default function ComparativoPresupuesto() {
     <select data-testid={testid} value={value ?? ''} onChange={(e) => on(e.target.value === '' ? null : Number(e.target.value))}>
       <option value="">—</option>
       {versiones.map((v) => (
-        <option key={v.id} value={v.id}>{v.versionLabel} — {v.createdAt}{v.activa ? ' (activa)' : ''}</option>
+        <option key={v.id} value={v.id}>{etiquetaVersion(v)}{v.activa ? ' (activa)' : ''}</option>
       ))}
     </select>
   )
