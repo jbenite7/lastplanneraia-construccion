@@ -41,6 +41,13 @@ await page.route('**/api/semanal/auto-program*', (route) => (
 await page.route('**/nueva_semana.php*', (route) => route.fulfill({ contentType: 'application/json', body: '0' }));
 await page.route('**/eliminar_semana.php*', (route) => route.fulfill({ contentType: 'application/json', body: '0' }));
 await page.route('**/verificarCICActualizada.php', (route) => route.fulfill({ contentType: 'application/json', body: '0' }));
+// /api/cic/list NO es solo-lectura pese al nombre: CicApiController::list() ejecuta
+// syncPac()/generateMissingSubs()/updateIntegral() (UPDATE/INSERT reales) antes de
+// responder. Se intercepta con la forma vacía que espera el DataTables de CIC.view.php
+// ({"data":[...]}) para que la vista siga renderizando sin tocar la BD compartida.
+await page.route('**/api/cic/list*', (route) => (
+  route.fulfill({ contentType: 'application/json', body: '{"data":[]}' })
+));
 // Subvistas CIC/CNC/CNP (task 8): sus propios endpoints de guardado/mutación.
 await page.route('**/api/cic/save*', (route) => (
   route.fulfill({ contentType: 'application/json', body: '{"respuesta":"BIEN"}' })
