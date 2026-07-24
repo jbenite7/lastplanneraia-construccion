@@ -462,6 +462,48 @@ final class PaquetesService
         return ['version' => $sin['version'], 'candidatos' => $candidatos];
     }
 
+    /**
+     * Para cada insumo único de la versión, las actividades del presupuesto que lo requieren
+     * (vía el APU) — código, descripción, cantidad y valor. La clave del mapa es "NORMA@@UNIDAD"
+     * (misma que usa la SPA). Los códigos son el futuro amarre con el cronograma (A4).
+     * Devuelve top-`$tope` actividades por valor por insumo + el total. null sin versión.
+     */
+    public function actividadesPorInsumo(int $projectId, ?int $versionId = null, int $tope = 15): ?array
+    {
+        $version = $this->versionDe($projectId, $versionId);
+        if ($version === null) {
+            return null;
+        }
+        $vid = (int) $version['id'];
+        $rows = $this->db->query(
+            "SELECT ai.descripcion, ai.unidad, ai.cantidad_total, ai.valor_total,
+                    it.codigo, it.descripcion AS actividad
+             FROM pdc_presupuesto_apu_insumos ai
+             JOIN pdc_presupuesto_items it ON it.id = ai.item_id
+             WHERE ai.project_id = ? AND ai.version_id = ?
+             ORDER BY ai.valor_total DESC",
+            [$projectId, $vid],
+        )->fetchAll(\PDO::FETCH_ASSOC);
+
+        $mapa = [];
+        foreach ($rows as $r) {
+            $clave = MaestroInsumosService::normalizar((string) $r['descripcion']) . '@@' . mb_strtoupper(trim((string) $r['unidad']));
+            if (!isset($mapa[$clave])) {
+                $mapa[$clave] = ['total' => 0, 'items' => []];
+            }
+            $mapa[$clave]['total']++;
+            if (count($mapa[$clave]['items']) < $tope) {
+                $mapa[$clave]['items'][] = [
+                    'codigo' => (string) $r['codigo'],
+                    'actividad' => (string) $r['actividad'],
+                    'cantidad' => (float) $r['cantidad_total'],
+                    'valor' => (float) $r['valor_total'],
+                ];
+            }
+        }
+        return ['version' => ['id' => $vid, 'label' => $version['version_label']], 'mapa' => $mapa];
+    }
+
     /** Tokens significativos (>=4 chars) de una descripción normalizada. */
     private static function tokens(string $norm): array
     {

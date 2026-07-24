@@ -88,6 +88,21 @@ class PlanComprasPaquetesController
         $this->ok($r);
     }
 
+    /** GET /plan-compras/api/paquetes/insumo-actividades?versionId= */
+    public function insumoActividades(): void
+    {
+        $projectId = $this->guardLectura();
+        if ($projectId === null) {
+            return;
+        }
+        $r = $this->service->actividadesPorInsumo($projectId, $this->versionIdParam());
+        if ($r === null) {
+            $this->fail('NO_VERSION', 'El proyecto no tiene un presupuesto importado.', 404);
+            return;
+        }
+        $this->ok($r);
+    }
+
     /** GET /plan-compras/api/paquetes/resumen?versionId= */
     public function resumen(): void
     {

@@ -24,6 +24,8 @@ $limpiar = static function () use ($db, $P1, $P2): void {
     $db->query('DELETE FROM pdc_insumo_paquete WHERE project_id IN (?, ?)', [$P1, $P2]);
     $db->query("DELETE FROM general_paquetes_contratacion WHERE creado_por = 'test-a3'");
     $db->query('DELETE FROM pdc_insumo_vinculos WHERE project_id IN (?, ?)', [$P1, $P2]);
+    $db->query('DELETE FROM pdc_presupuesto_apu_insumos WHERE project_id IN (?, ?)', [$P1, $P2]);
+    $db->query('DELETE FROM pdc_presupuesto_items WHERE project_id IN (?, ?)', [$P1, $P2]);
     $db->query('DELETE FROM pdc_presupuesto_versiones WHERE project_id IN (?, ?)', [$P1, $P2]);
     $db->query("DELETE FROM general_maestro_insumos WHERE creado_por = 'test-a3'");
 };
@@ -56,6 +58,21 @@ foreach ($insumosP1 as $i) {
         "INSERT INTO pdc_insumo_vinculos (project_id, version_id, descripcion_norm, unidad, descripcion_original, tipo_insumo, cantidad_total, valor_total, apariciones, maestro_id, estado)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, 'pendiente')",
         [$P1, $vid1, $i[0], $i[1], $i[0], $i[2], $i[3], $i[4], $i[5]],
+    );
+}
+
+// Fixture para actividadesPorInsumo: 2 actividades cuyo APU usa PISO CERAMICO 30X30.
+foreach ([['01.01.01.01', 'MURO EN LADRILLO'], ['01.02.03.04', 'ENCHAPE DE PISOS']] as $it) {
+    $db->query(
+        "INSERT INTO pdc_presupuesto_items (project_id, version_id, codigo, codigo_padre, nivel, tipo_fila, descripcion, unidad, cantidad)
+         VALUES (?, ?, ?, NULL, 4, 'actividad', ?, 'M2', 100)",
+        [$P1, $vid1, $it[0], $it[1]],
+    );
+    $itemId = (int) $db->lastInsertId();
+    $db->query(
+        "INSERT INTO pdc_presupuesto_apu_insumos (project_id, version_id, item_id, descripcion, tipo_insumo, unidad, cant_apu, rendimiento, cantidad_total, valor_unitario, valor_total, iva)
+         VALUES (?, ?, ?, 'PISO CERAMICO 30X30', 'MAT-ACABADOS', 'M2', 1, 1, 60, 25000, 1500000, 0)",
+        [$P1, $vid1, $itemId],
     );
 }
 
@@ -158,6 +175,15 @@ $assert($res['total'] === 4 && $res['asignados'] === 1 && $res['omitidos'] === 1
 $assert(abs($res['cobertura'] - 50.0) < 0.01, 'Cobertura 50% (asignados + omitidos).');
 $assert(count($res['porPaquete']) === 1 && $res['porPaquete'][0]['insumos'] === 1, 'porPaquete: Pisos con 1 insumo.');
 $assert(abs((float) $res['porPaquete'][0]['subtotal'] - 2500000) < 0.01, 'Subtotal del paquete = valor consolidado del insumo.');
+
+// --- actividadesPorInsumo (tooltip: qué actividades requieren cada insumo) ---
+$act = $svc->actividadesPorInsumo($P1);
+$assert($act !== null && isset($act['mapa']['PISO CERAMICO 30X30@@M2']), 'actividadesPorInsumo indexa por NORMA@@UNIDAD.');
+$ceram = $act['mapa']['PISO CERAMICO 30X30@@M2'];
+$assert($ceram['total'] === 2 && count($ceram['items']) === 2, 'PISO CERAMICO lo requieren 2 actividades.');
+$codigos = array_column($ceram['items'], 'codigo');
+$assert(in_array('01.01.01.01', $codigos, true) && in_array('01.02.03.04', $codigos, true), 'El tooltip trae los códigos de actividad (amarre al cronograma A4).');
+$assert($svc->actividadesPorInsumo($P2) === null, 'Proyecto sin versión → null.');
 
 // --- Herencia en re-import ---
 $db->query('UPDATE pdc_presupuesto_versiones SET activa = 0 WHERE project_id = ?', [$P1]);

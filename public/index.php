@@ -207,6 +207,7 @@ $router->get('/plan-compras/api/paquetes/insumos', [\App\Controllers\Api\PlanCom
 $router->get('/plan-compras/api/paquetes/sugerencias', [\App\Controllers\Api\PlanComprasPaquetesController::class, 'sugerencias']);
 $router->get('/plan-compras/api/paquetes/candidatos', [\App\Controllers\Api\PlanComprasPaquetesController::class, 'candidatos']);
 $router->get('/plan-compras/api/paquetes/resumen', [\App\Controllers\Api\PlanComprasPaquetesController::class, 'resumen']);
+$router->get('/plan-compras/api/paquetes/insumo-actividades', [\App\Controllers\Api\PlanComprasPaquetesController::class, 'insumoActividades']);
 $router->post('/plan-compras/api/paquetes', [\App\Controllers\Api\PlanComprasPaquetesController::class, 'crear']);
 $router->post('/plan-compras/api/paquetes/asignar', [\App\Controllers\Api\PlanComprasPaquetesController::class, 'asignar']);
 $router->post('/plan-compras/api/paquetes/omitir', [\App\Controllers\Api\PlanComprasPaquetesController::class, 'omitir']);

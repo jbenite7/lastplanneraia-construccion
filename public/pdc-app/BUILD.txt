@@ -1,3 +1,3 @@
 repo: plan-de-compras
-commit: e2d60cca49ec45ae9ad7c838086a8cfa464b4d9d
-fecha: 2026-07-24T16:33:49Z
+commit: 6b339e87321ea0b7cd36d449347ad647454c0d64
+fecha: 2026-07-24T16:47:42Z
