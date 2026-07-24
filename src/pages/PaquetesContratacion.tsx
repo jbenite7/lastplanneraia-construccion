@@ -53,6 +53,11 @@ const pdcTheme = themeQuartz.withParams({
 const moneda = (v: number | null | undefined) => (v == null ? '' : `$ ${v.toLocaleString('es-CO')}`)
 const CONFIANZA_LABEL: Record<string, string> = { alta: 'alta', media: 'media', baja: 'baja' }
 const tipoNegLabel = (v: string) => TIPOS_NEGOCIACION.find((t) => t.value === v)?.label ?? v
+// Etiquetas humanas de la fuente de cada propuesta del sembrado.
+const FUENTE_LABEL: Record<string, string> = {
+  ia: 'Experto (IA)', exacta: 'Histórico', reglas: 'Reglas', tokens: 'Similitud', indirectos: 'Indirectos', agrupacion: 'Agrupación',
+}
+const FUENTES_ORDEN = ['reglas', 'ia', 'indirectos', 'exacta', 'tokens', 'agrupacion']
 
 type Filtro = 'todos' | 'sin_asignar' | 'asignados' | 'omitidos'
 type Modo = 'masivo' | 'asistente'
@@ -125,7 +130,7 @@ export default function PaquetesContratacion() {
       valueGetter: (p) => {
         if (!p.data) return ''
         const s = state.sugerencias.get(claveInsumo(p.data.descripcionNorm, p.data.unidad))
-        return s ? `${s.paqueteNombre} · ${s.capa}/${CONFIANZA_LABEL[s.confianza]}` : ''
+        return s ? `${s.paqueteNombre} · ${FUENTE_LABEL[s.capa] ?? s.capa}/${CONFIANZA_LABEL[s.confianza]}` : ''
       },
     },
   ], [state.seleccion, state.sugerencias])
@@ -141,6 +146,13 @@ export default function PaquetesContratacion() {
   )
   const insumosPayload = (lista: InsumoPaquete[]) => lista.map((i) => ({ descripcionNorm: i.descripcionNorm, unidad: i.unidad }))
 
+  // Resumen de la propuesta de sembrado por fuente (para el preview).
+  const resumenSembrado = useMemo(() => {
+    const porFuente: Record<string, number> = {}
+    for (const s of state.sugerencias.values()) porFuente[s.capa] = (porFuente[s.capa] ?? 0) + 1
+    return { total: state.sugerencias.size, porFuente }
+  }, [state.sugerencias])
+
   const refrescar = () => { cargar(filtro); dispatch({ type: 'LIMPIAR_SEL' }) }
 
   const onSugerir = async () => {
@@ -148,7 +160,7 @@ export default function PaquetesContratacion() {
     try {
       const d = await apiGet<{ version: unknown; sugerencias: SugerenciaPaquete[] }>('/plan-compras/api/paquetes/sugerencias')
       dispatch({ type: 'SUGERENCIAS_OK', sugerencias: d.sugerencias })
-      if (d.sugerencias.length === 0) dispatch({ type: 'LISTO', mensaje: 'Sin sugerencias: no hay historial suficiente todavía.' })
+      if (d.sugerencias.length === 0) dispatch({ type: 'LISTO', mensaje: 'No hay propuestas: todo asignado o sin señales para sembrar.' })
     } catch (e) {
       dispatch({ type: 'FALLO', mensaje: e instanceof Error ? e.message : String(e) })
     }
@@ -293,8 +305,8 @@ export default function PaquetesContratacion() {
           <option value="">Todas las agrupaciones</option>
           {agrupaciones.map((a) => <option key={a} value={a}>{a}</option>)}
         </select>
-        <button type="button" data-testid="pdc-paq-sugerir" disabled={state.ocupado} onClick={onSugerir}>
-          Sugerir asignaciones
+        <button type="button" data-testid="pdc-paq-sembrar" className="pdc-paq-primario" disabled={state.ocupado} onClick={onSugerir}>
+          Sembrar 1ª iteración
         </button>
         {state.sugerencias.size > 0 && (
           <button type="button" data-testid="pdc-paq-aceptar-sugeridos" className="pdc-paq-primario" disabled={state.ocupado} onClick={onAceptarSugeridos}>
@@ -302,6 +314,17 @@ export default function PaquetesContratacion() {
           </button>
         )}
       </div>
+
+      {resumenSembrado.total > 0 && (
+        <div data-testid="pdc-paq-sembrado-resumen" className="pdc-paq-sembrado">
+          <strong>Propuesta de sembrado: {resumenSembrado.total} insumo(s)</strong> — revísala en la columna «Sugerencia» y ajusta lo que quieras antes de <em>Aceptar</em>.
+          <div className="pdc-paq-fuentes">
+            {FUENTES_ORDEN.filter((f) => resumenSembrado.porFuente[f]).map((f) => (
+              <span key={f} className="pdc-paq-fuente"><span className={`pdc-paq-punto pdc-fuente-${f}`} />{FUENTE_LABEL[f]}: {resumenSembrado.porFuente[f]}</span>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="pdc-paq-acciones">
         <button type="button" data-testid="pdc-paq-sel-todos" disabled={visibles.length === 0}

@@ -237,7 +237,7 @@ export type SugerenciaPaquete = {
   unidad: string
   paqueteId: number
   paqueteNombre: string
-  capa: 'exacta' | 'tokens' | 'agrupacion'
+  capa: 'ia' | 'exacta' | 'reglas' | 'tokens' | 'indirectos' | 'agrupacion'
   confianza: 'alta' | 'media' | 'baja'
   evidencia: string
 }

@@ -82,6 +82,16 @@
 .pdc-paq-barra-fill { height: 100%; width: 100%; transform-origin: left; background: linear-gradient(90deg, #1a5633, #69b578); transition: transform .35s ease; }
 
 .pdc-paq-toolbar, .pdc-paq-acciones, .pdc-paq-crear { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
+.pdc-paq-sembrado { border: 1px solid #69b578; background: #17251c; border-radius: 8px; padding: 10px 14px; margin: 4px 0 12px; font-size: 13px; }
+.pdc-paq-fuentes { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 6px; }
+.pdc-paq-fuente { display: inline-flex; align-items: center; gap: 6px; opacity: 0.9; }
+.pdc-paq-punto { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.pdc-fuente-reglas { background: #69b578; }
+.pdc-fuente-ia { background: #4aa3d6; }
+.pdc-fuente-indirectos { background: #8e8e93; }
+.pdc-fuente-exacta { background: #1a5633; }
+.pdc-fuente-tokens { background: #ffca28; }
+.pdc-fuente-agrupacion { background: #b07cc9; }
 .pdc-paq-acciones { border-top: 1px solid #2c2c2e; border-bottom: 1px solid #2c2c2e; padding: 12px 0; }
 .pdc-paq-sel { color: #9fd3ae; font-size: 13px; min-width: 120px; }
 .pdc-paq-check { text-align: center; color: #69b578; }
