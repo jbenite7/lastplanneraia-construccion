@@ -32,7 +32,7 @@ Al cargar el presupuesto real **DAPORTO** (`102 - 2026 09 DAPORTO - RIONEGRO - P
 
 ## Backend (lps-aia)
 
-**Hash de contenido canónico** — nuevo helper en `PresupuestoImportService` (o en el parser): serializa determinísticamente los `items` (codigo, tipo_fila, cantidad) y los `insumos` (agrupados por codigo de actividad: descripcion_norm, unidad, cantidad_total, valor_total), **ordenados por código**, y calcula `sha256`. Estable ante reordenamiento irrelevante de filas y metadata del Excel. Usa `MaestroInsumosService::normalizar` para las descripciones (misma norma que A2).
+**Hash de contenido canónico** — nuevo helper en `PresupuestoImportService` (o en el parser): serializa determinísticamente los `items` (codigo, tipo_fila, unidad, cantidad) y los `insumos` (agrupados por codigo de actividad: descripcion_norm, tipo_insumo, unidad, cantidad_total, valor_total), **ordenados por código**, y calcula `sha256`. Estable ante reordenamiento irrelevante de filas y metadata del Excel. Usa `MaestroInsumosService::normalizar` para las descripciones (misma norma que A2). `tipo_insumo` entra crudo (como `unidad`/`codigo_actividad`): la categoría alimenta el maestro A2, así que recategorizar un insumo sin cambiar valor/cantidad cuenta como contenido distinto → versión nueva (no se pierde en el anti-duplicado).
 
 **`previewDesdeArchivo`** — además de lo actual:
 - Calcula `contenidoHash`.
