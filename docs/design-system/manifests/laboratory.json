@@ -330,7 +330,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/shell-navigation-dark-1180x820.png",
-      "sha256": "959995317819eda2e9ac174ea3c452399aa6507a416106dc470308b1bba18b3f"
+      "sha256": "0609cf0e42bb22f4ee639653853f9cf15fd365c3ce543a6e6c5cc62eb7f39ee5"
     },
     {
       "id": "shell-navigation-dark-1440x900",
@@ -346,7 +346,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/shell-navigation-dark-1440x900.png",
-      "sha256": "1f3767cea0ffc687f8463e9f5a75886c2026247532674c815689b5deedb75f29"
+      "sha256": "eecd86517048463295a8057004038de9e4f8b69b1e88a9c495b0a772be954137"
     },
     {
       "id": "states-feedback-dark-1180x820",

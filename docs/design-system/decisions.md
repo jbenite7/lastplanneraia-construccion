@@ -33,5 +33,6 @@ Las variantes permanecen como `candidate` hasta aprobación en el laboratorio.
 | DS-026 | Sidebar desktop | El sidebar persistente es el candidato canónico para desktop, con Información, Obra y Compras como agrupaciones operativas; el drawer adaptativo permanece como compatibilidad hasta completar aprobación visual | approved |
 | DS-027 | Shell global | El sidebar canónico colapsable reemplaza al navbar superior como navegación global de la app (piloto: Programación Intermedia): rail visible colapsado por defecto en vistas de grilla con persistencia local, cambio de semana en el chip de la context-bar y grupos filtrados por rol en servidor | approved |
 | DS-028 | Viewport accesible | La meta viewport compartida nunca bloquea el zoom del usuario (`width=device-width, initial-scale=1.0`, sin `user-scalable=no` ni `maximum-scale`); el modo tablet conserva su escala propia con `user-scalable=yes` (WCAG 1.4.4, 2026-07-22) | approved |
+| DS-029 | Colapsado canónico | El estado colapsado pulido del sidebar (sin-scroll, píldora de label, separadores, iconos 20px) es primitiva de navigation.css versionada por el laboratorio; el lab captura el rail colapsado por defecto y todos los consumidores lo heredan | approved |
 
 Cada aprobación futura registra evidencia, fecha y versión.
