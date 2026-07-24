@@ -4,7 +4,17 @@
   "designSystemVersion": "1.0.0",
   "moduleId": "foundation-shell",
   "routes": [
-    "/programacion-intermedia"
+    "/control-cambios",
+    "/indicadores",
+    "/profesionales",
+    "/programa-general",
+    "/programa-general-actualizar",
+    "/programacion-intermedia",
+    "/programacion-semanal",
+    "/programacion-semanal/cic",
+    "/programacion-semanal/cnc",
+    "/programacion-semanal/cnp",
+    "/subcontratistas"
   ],
   "sources": [
     "public/css/design-system/components/navigation.css",
