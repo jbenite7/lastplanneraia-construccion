@@ -201,6 +201,16 @@ $router->post('/plan-compras/api/maestro/desactivar', [\App\Controllers\Api\Plan
 $router->post('/plan-compras/api/maestro/reactivar', [\App\Controllers\Api\PlanComprasMaestroController::class, 'reactivar']);
 $router->post('/plan-compras/api/maestro/importar/preview', [\App\Controllers\Api\PlanComprasMaestroImportController::class, 'preview']);
 $router->post('/plan-compras/api/maestro/importar/confirmar', [\App\Controllers\Api\PlanComprasMaestroImportController::class, 'confirmar']);
+// Api/Plan de Compras v2 — paquetes de contratación (A3)
+$router->get('/plan-compras/api/paquetes', [\App\Controllers\Api\PlanComprasPaquetesController::class, 'catalogo']);
+$router->get('/plan-compras/api/paquetes/insumos', [\App\Controllers\Api\PlanComprasPaquetesController::class, 'insumos']);
+$router->get('/plan-compras/api/paquetes/sugerencias', [\App\Controllers\Api\PlanComprasPaquetesController::class, 'sugerencias']);
+$router->get('/plan-compras/api/paquetes/candidatos', [\App\Controllers\Api\PlanComprasPaquetesController::class, 'candidatos']);
+$router->get('/plan-compras/api/paquetes/resumen', [\App\Controllers\Api\PlanComprasPaquetesController::class, 'resumen']);
+$router->post('/plan-compras/api/paquetes', [\App\Controllers\Api\PlanComprasPaquetesController::class, 'crear']);
+$router->post('/plan-compras/api/paquetes/asignar', [\App\Controllers\Api\PlanComprasPaquetesController::class, 'asignar']);
+$router->post('/plan-compras/api/paquetes/omitir', [\App\Controllers\Api\PlanComprasPaquetesController::class, 'omitir']);
+$router->post('/plan-compras/api/paquetes/desasignar', [\App\Controllers\Api\PlanComprasPaquetesController::class, 'desasignar']);
 // Api/PDC Plantillas
 $router->get('/api/pdc/plantillas', [\App\Controllers\Api\PdcPlantillaController::class, 'list']);
 $router->get('/api/pdc/plantillas/{id}', [\App\Controllers\Api\PdcPlantillaController::class, 'show']);
