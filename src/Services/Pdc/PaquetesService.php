@@ -359,34 +359,60 @@ final class PaquetesService
      */
     public function sugerencias(int $projectId, ?int $versionId = null): ?array
     {
-        $sin = $this->insumosDeVersion($projectId, 'sin_asignar', $versionId);
-        if ($sin === null) {
+        $r = $this->proponerSembrado($projectId, $versionId, 'sin_asignar');
+        if ($r === null) {
             return null;
         }
-        // Contexto cargado una sola vez para el sembrado (A3.1): catálogo, overrides IA y actividad dominante.
+        $sugerencias = [];
+        foreach ($r['propuestas'] as $p) {
+            if ($p['propuesta'] !== null) {
+                $sugerencias[] = array_merge(
+                    ['descripcionNorm' => $p['descripcionNorm'], 'unidad' => $p['unidad']],
+                    $p['propuesta'],
+                );
+            }
+        }
+        return ['version' => $r['version'], 'sugerencias' => $sugerencias];
+    }
+
+    /**
+     * Propuesta de sembrado por insumo (A3.1). Devuelve CADA insumo del filtro con su propuesta
+     * (paquete + capa + confianza + evidencia) o null si nada aplicó — útil para explicar el "porqué"
+     * incluso de los ya asignados (filtro 'todos') y de los que quedan sin propuesta.
+     * Cascada de fuentes (la primera que acierta gana): IA → exacta → reglas → tokens → indirectos → agrupación.
+     */
+    public function proponerSembrado(int $projectId, ?int $versionId = null, string $filtro = 'todos'): ?array
+    {
+        $ins = $this->insumosDeVersion($projectId, $filtro, $versionId);
+        if ($ins === null) {
+            return null;
+        }
         $catalogo = $this->catalogoActivoPorNombre();
         $overrides = $this->overridesIA();
         $actMap = $this->actividadDominantePorInsumo($projectId, $versionId);
 
-        $sugerencias = [];
-        foreach ($sin['insumos'] as $insumo) {
+        $propuestas = [];
+        foreach ($ins['insumos'] as $insumo) {
             $clave = $insumo['descripcionNorm'] . '@@' . mb_strtoupper((string) $insumo['unidad']);
             $actividad = $actMap[$clave] ?? '';
-            // Cascada de fuentes (la primera que acierta gana): IA → exacta → reglas → tokens → indirectos → agrupación.
-            $s = $this->sugerirOverrideIA($insumo, $overrides, $catalogo)
+            $p = $this->sugerirOverrideIA($insumo, $overrides, $catalogo)
                 ?? $this->sugerirExacta($projectId, $insumo)
                 ?? $this->sugerirPorReglas($insumo, $actividad, $catalogo)
                 ?? $this->sugerirPorTokens($projectId, $insumo)
                 ?? $this->sugerirIndirectos($insumo, $catalogo)
                 ?? $this->sugerirPorAgrupacion($insumo);
-            if ($s !== null) {
-                $sugerencias[] = array_merge(
-                    ['descripcionNorm' => $insumo['descripcionNorm'], 'unidad' => $insumo['unidad']],
-                    $s,
-                );
-            }
+            $propuestas[] = [
+                'descripcionNorm' => $insumo['descripcionNorm'],
+                'unidad' => $insumo['unidad'],
+                'descripcion' => $insumo['descripcion'],
+                'tipoRecurso' => $insumo['tipoRecurso'],
+                'agrupacion' => $insumo['agrupacion'],
+                'valorTotal' => $insumo['valorTotal'],
+                'actividad' => $actividad,
+                'propuesta' => $p,
+            ];
         }
-        return ['version' => $sin['version'], 'sugerencias' => $sugerencias];
+        return ['version' => $ins['version'], 'propuestas' => $propuestas];
     }
 
     /** Capa 1: mismo (norma, unidad) asignado en OTROS proyectos. Consenso = más proyectos. */
@@ -672,10 +698,13 @@ final class PaquetesService
                 if (str_contains($heno, $kw)) {
                     $paq = $this->resolverPaquete($regla['paq'], $insumo['tipoRecurso'] ?? null, $catalogo);
                     if ($paq !== null) {
+                        $donde = str_contains(' ' . $insumo['descripcionNorm'] . ' ', $kw)
+                            ? 'en la descripción del insumo'
+                            : ($actividad !== '' ? "en su actividad «{$actividad}»" : 'en el texto');
                         return [
                             'paqueteId' => $paq['id'], 'paqueteNombre' => $paq['nombre'],
                             'capa' => 'reglas', 'confianza' => 'media',
-                            'evidencia' => "Regla de dominio «{$kw}» → {$paq['nombre']}.",
+                            'evidencia' => "Regla de dominio: «{$kw}» {$donde} (recurso {$tipoRecurso}) → {$paq['nombre']}.",
                         ];
                     }
                     break; // regla casó pero el paquete no resolvió/compatibiliza: pasa a la siguiente regla
@@ -689,16 +718,18 @@ final class PaquetesService
     private function sugerirIndirectos(array $insumo, array $catalogo): ?array
     {
         $tipoRecurso = mb_strtoupper((string) ($insumo['tipoRecurso'] ?? ''));
-        $esAdmin = in_array($tipoRecurso, ['NOMINA', 'HONORARIOS', 'CONSUMIBLES'], true);
-        if (!$esAdmin) {
+        $motivo = null;
+        if (in_array($tipoRecurso, ['NOMINA', 'HONORARIOS', 'CONSUMIBLES'], true)) {
+            $motivo = "tipo de recurso {$tipoRecurso}";
+        } else {
             foreach (self::KEYWORDS_INDIRECTOS as $kw) {
                 if (str_contains(' ' . $insumo['descripcionNorm'] . ' ', $kw)) {
-                    $esAdmin = true;
+                    $motivo = "«{$kw}» en la descripción";
                     break;
                 }
             }
         }
-        if (!$esAdmin) {
+        if ($motivo === null) {
             return null;
         }
         $paq = $catalogo[mb_substr(MaestroInsumosService::normalizar(self::PAQUETE_INDIRECTOS), 0, 200)] ?? null;
@@ -708,7 +739,7 @@ final class PaquetesService
         return [
             'paqueteId' => $paq['id'], 'paqueteNombre' => $paq['nombre'],
             'capa' => 'indirectos', 'confianza' => 'media',
-            'evidencia' => 'Insumo administrativo / no empaquetable.',
+            'evidencia' => "Administrativo/no empaquetable ({$motivo}) → Indirectos.",
         ];
     }
 

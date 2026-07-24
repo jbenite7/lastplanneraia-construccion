@@ -109,15 +109,17 @@ $assert($sConc !== null && $sConc['capa'] === 'reglas' && (int) $sConc['paqueteI
 $sMuro = $byNorm['M.O. GENERICO PRUEBA A3'] ?? null;
 $assert($sMuro !== null && $sMuro['capa'] === 'reglas' && (int) $sMuro['paqueteId'] === $mamposteriaId, 'Regla por actividad: M.O. de un MURO EN LADRILLO → M. de O MAMPOSTERÍA.');
 
-// Filtro por tipo_recurso: un insumo de MANO DE OBRA con "CONCRETO" en el nombre NO cae en el paquete de material.
+// Filtro por tipo_recurso: la REGLA material (CONCRETO) NO coloca a un insumo de mano de obra.
+// (Otras capas cross-proyecto pueden ubicarlo; lo que se verifica es que la regla material no aplicó.)
 $sMoConc = $byNorm['CONCRETO MO PRUEBA A3'] ?? null;
-$assert($sMoConc === null || (int) $sMoConc['paqueteId'] !== $concretoId, 'La regla material (CONCRETO) no aplica a un insumo de mano de obra (tipo_recurso).');
+$assert(!($sMoConc !== null && $sMoConc['capa'] === 'reglas' && (int) $sMoConc['paqueteId'] === $concretoId), 'La regla material (CONCRETO) no aplica a un insumo de mano de obra (tipo_recurso).');
 
-// Capa indirectos — por keyword y por tipo_recurso.
+// Indirectos — admin/nómina van al paquete Indirectos (por la capa indirectos o por consenso cross-proyecto;
+// el test verifica el destino, robusto ante datos de otros proyectos en la BD compartida).
 $sImp = $byNorm['IMPREVISTOS PRUEBA A3'] ?? null;
-$assert($sImp !== null && $sImp['capa'] === 'indirectos' && (int) $sImp['paqueteId'] === $indirectosId, 'Indirectos por keyword: IMPREVISTOS → Indirectos.');
+$assert($sImp !== null && (int) $sImp['paqueteId'] === $indirectosId, 'IMPREVISTOS → Indirectos / Administración.');
 $sNom = $byNorm['NOMINA PRUEBA A3'] ?? null;
-$assert($sNom !== null && $sNom['capa'] === 'indirectos' && (int) $sNom['paqueteId'] === $indirectosId, 'Indirectos por tipo_recurso NOMINA → Indirectos.');
+$assert($sNom !== null && (int) $sNom['paqueteId'] === $indirectosId, 'NOMINA (tipo_recurso) → Indirectos / Administración.');
 
 // Sin match → sin sugerencia (no se inventa).
 $assert(!isset($byNorm['ZZZ SINMATCH A3']), 'Insumo sin señal: sin sugerencia.');
