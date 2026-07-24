@@ -1,0 +1,758 @@
+{
+  "fuente": "analisis-presupuestos.web.app v33 (bundle index-CL9gZAct.js)",
+  "total": 188,
+  "paquetes": [
+    {
+      "nombre": "Sum + Inst ACTAS DE VECINDAD",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst ADECUACION CARRETEABLE",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst ALQUILER BAÑOS PORTATILES",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst ANCLAJES",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst APARATOS SANITARIOS Y GRIFERÍA",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst ASCENSORES",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst ASEO FINAL DE OBRA",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst BARANDAS Y PASAMANOS",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst BOMBEO DE CONCRETO",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst CABINAS Y ESPEJOS DE BAÑOS",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst CAMPAMENTO - ALMACEN",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst CANALES Y FLANCHES",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst CARPETA ASFALTICA",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst CARPINTERÍA DE MADERA",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst CARPINTERÍA METÁLICA",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst CCTV",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst CERRAMIENTO DE FACHADA",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst CERRAMIENTO PRELIMINAR DEL LOTE",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst CERTIFICACION RETILAP Y RETIE",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst CIELOS RASOS",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst COMUNICACIONES Y SEGURIDAD",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst CONTROL ACCESO",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst CUBIERTAS METÁLICAS",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst DEMARCACIÓN Y SEÑALIZACIÓN",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst DESMONTE CAMPAMENTOS",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst DIVISIONES DE BAÑOS",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst DOTACIÓN COCINAS Y LAVADEROS",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst DOTACIÓN ZONAS COMUNES",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst DUPLICADORES",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst ENGRAMADO",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst EQUIPOS PLANTA DE CONCRETO (silos, planta mezclas)",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst EQUIPOS TRANSPORTE VERTICAL",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst ESCALERAS DE GATO",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst ESCALERAS ELÉCTRICAS",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst ESCALERAS METÁLICAS",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst ESTRUCTURA METÁLICA",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst ESTRUCTURA METÁLICA DE FACHADA",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst ESTUCO",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst FACHADAS EN LÁMINA",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst FACHADAS EN SUPERBOARD",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst FILTROS",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst GRAMA SINTÉTICA",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst ILUMINACIÓN INTERIOR",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst IMPERMEABILIZACIÓN DE CUBIERTA",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst IMPERMEABILIZACIÓN DE LOSAS",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst IMPERMEABILIZACIÓN DE MURO DE CONTENCIÓN",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst IMPERMEABILIZACIÓN FOSO DE ASCENSOR",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst IMPERMEABILIZACIONES",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst INSTALACIÓN INSTRUMENTACIÓN GEOTÉCNICA",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst INSTALACIONES DE GAS",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst INSTALACIONES ELÉCTRICAS, VOZ Y DATOS (INTERIORES)",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst INSTALACIONES HIDROSANITARIAS",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst JUNTA METÁLICA ESTRUCTURAL",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst LABORATORIO DE MATERIALES",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst LAVADA E HIDROFUGADA DE FACHADAS",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst MARQUESINA EN ALUMINIO Y VIDRIO",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst MEJORAMIENTO DEL SUELO",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst MOVIMIENTOS DE TIERRA",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst MUEBLE BAÑO Y MESÓN",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst MUROS LIVIANOS",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst PANTALLAS PREEXCAVADAS",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst PAVIMENTOS EXTERIORES",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst PAVIMENTOS INTERIORES",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst PILOTAJE",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst PILOTES HINCADOS",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst PILOTES INSERTOS",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst PINTURA DEMARCACIÓN, NUMERACIÓN Y FLECHAS DE PARQUEADEROS",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst PINTURA FACHADA",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst PINTURA INTERIOR",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst PISOS Y ENCHAPES CERÁMICOS/PORCELANATO",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst PISOS VINÍLICOS",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst PISOS TÉCNICOS / FALSOS",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst PISOS INDUSTRIALES EN CONCRETO",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst PISOS EN MADERA/LAMINADOS",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst PISOS Y ENCHAPES EN MÁRMOL",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst PLAN DE MANEJO DE TRÁNSITO (PMT)",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst PLANTA ELÉCTRICA",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst PROVISIONAL ELÉCTRICA",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst PROVISIONAL HIDROSANITARIA",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst PUERTAS BAÑOS",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst PUERTAS CORTAFUEGO",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst PUERTAS EN LAMINA",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst PUERTAS EN MADERA",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst PUERTAS METÁLICAS",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst PUESTA A TIERRA Y APANTALLAMIENTO",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst RAMPAS ELÉCTRICAS",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst RECUBRIMIENTOS DE FACHADA",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst RED CONTRA INCENDIO, DETECCIÓN Y EXTINCIÓN",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst RED DE AIRE ACONDICIONADO Y EQUIPOS DE EXTRACCIÓN",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst RED DE GAS",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst REDES ELÉCTRICAS, VOZ Y DATOS (EXTERIORES)",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst REDES Y SISTEMAS DE GASES MEDICINALES",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst REDES HIDROSANITARIAS EXTERIORES",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst REDES HIDROSANITARIAS INTERNAS",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst SEGURIDAD HUMANA (LINEAS LONGITUDINALES Y TRANSVERSALES, PUNTOS ANTIPÉNDULO)",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst SEÑALIZACIÓN",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst SERVICIO DE VIGILANCIA",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst SHUT DE BASURAS",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst SISTEMA DE CALENTAMIENTO AGUA",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst SISTEMA DE INTRUSIÓN",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst SISTEMA DE LAVADO DE LLANTAS",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst TALA DE ARBOLES",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst TANQUE METALICO PERNADO",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst TANQUE RED CONTRA INCENDIOS",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst TANQUES (ALMACENAMIENTO AGUAS LLUVIAS Y AGUA POTABLE)",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst TOPOGRAFÍA",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Sum + Inst VENTANERÍA",
+      "tipoNegociacion": "a_todo_costo"
+    },
+    {
+      "nombre": "Suministro ADOQUIN",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro AGREGADOS",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro AISLAMIENTO FIBRA DE VIDRIO",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro ALIGERANTE PERDIDO PARA LOSA DE CIMENTACIÓN",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro ALIGERANTE RECUPERABLE PARA LOSAS EN CONCRETO",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro ANILLOS Y PLACAS BASE",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro APARATOS SANITARIOS Y GRIFERÍA",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro BASE Y SUB BASE GRANULAR",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro BLOQUE DE CONCRETO",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro BOLARDOS",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro BOMBA RED CONTRA INCENDIO",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro BOMBAS HIDRÁULICAS",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro BORDILLOS",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro CAMPANA DE EXTRACCIÓN",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro CEMENTO",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro CONCRETO",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro ACERO DE REFUERZO",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro DOTACIÓN Y ACCESORIOS DE BAÑOS",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro ENCHAPES METÁLICOS",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro ENCOFRADO Y OBRA FALSA",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro ENDURECEDOR",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro EQUIPOS HIDRONEUMÁTICOS",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro EQUIPOS TRANSPORTE VERTICAL",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro ESTUFA ELÉCTRICA",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro FORMALETA MUROS, LOSAS Y CONTENCIÓN",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro GEOCELDA PARA ESTABILIZACIÓN",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro GEODREN",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro GUARDACAMILLAS",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro GUARDAESCOBAS (cerámico/madera/otros)",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro ILUMINACIÓN EXTERIOR",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro JUEGOS INFANTILES",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro JUNTA DE DILATACIÓN",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro LADRILLO",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro LAVADERO PREFABRICADO",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro MALLA DE PROTECCIÓN ANTICAÍDAS",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro MATERAS - ÁRBOLES",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro MEDIACAÑA",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro MESONES Y ENCIMERAS DE COCINA (granito/cuarzo/acero/otros)",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro MUEBLE BAÑO Y MESÓN",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro PIRLÁN (aluminio/madera)",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro PISOS TÉCNICOS / FALSOS",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro PISOS Y ENCHAPES CERÁMICOS/PORCELANATO",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro PISOS EN MADERA/LAMINADOS",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro PISOS Y ENCHAPES EN MÁRMOL",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro PISOS VINÍLICOS",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro PLAN DE MANEJO DE TRÁNSITO (PMT) - INSUMOS",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro POLIESTIRENO EXTRUIDO",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro PREFABRICADOS URBANISMO Y EXTERIORES",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro SOPORTE PARA BICICLETAS",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro TANQUES DE RESERVA DE AGUA",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro TAPA DE REGISTRO",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro TOPELLANTAS",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "Suministro TORREGRÍA",
+      "tipoNegociacion": "suministro"
+    },
+    {
+      "nombre": "M. de O APARATOS SANITARIOS Y GRIFERÍA",
+      "tipoNegociacion": "mano_obra"
+    },
+    {
+      "nombre": "M. de O CIMENTACIÓN PROFUNDA EN CONCRETO",
+      "tipoNegociacion": "mano_obra"
+    },
+    {
+      "nombre": "M. de O CIMENTACIÓN SEMIPROFUNDA EN CONCRETO",
+      "tipoNegociacion": "mano_obra"
+    },
+    {
+      "nombre": "M. de O CIMENTACIÓN SUPERFICIAL EN CONCRETO",
+      "tipoNegociacion": "mano_obra"
+    },
+    {
+      "nombre": "M. de O CONTENCIONES",
+      "tipoNegociacion": "mano_obra"
+    },
+    {
+      "nombre": "M. de O CUNETA TALUD",
+      "tipoNegociacion": "mano_obra"
+    },
+    {
+      "nombre": "M. de O DEMOLICIÓN DE ASFALTO",
+      "tipoNegociacion": "mano_obra"
+    },
+    {
+      "nombre": "M. de O DEMOLICIONES",
+      "tipoNegociacion": "mano_obra"
+    },
+    {
+      "nombre": "M. de O DESCABECE DE PILOTES",
+      "tipoNegociacion": "mano_obra"
+    },
+    {
+      "nombre": "M. de O ENCHAPES CERÁMICOS",
+      "tipoNegociacion": "mano_obra"
+    },
+    {
+      "nombre": "M. de O ESCALERAS EN CONCRETO",
+      "tipoNegociacion": "mano_obra"
+    },
+    {
+      "nombre": "M. de O ESTRUCTURA EN CONCRETO",
+      "tipoNegociacion": "mano_obra"
+    },
+    {
+      "nombre": "M. de O ESTUCO Y PINTURA",
+      "tipoNegociacion": "mano_obra"
+    },
+    {
+      "nombre": "M. de O EXCAVACIÓN DE REDES EXTERIORES",
+      "tipoNegociacion": "mano_obra"
+    },
+    {
+      "nombre": "M. de O FILTROS",
+      "tipoNegociacion": "mano_obra"
+    },
+    {
+      "nombre": "M. de O MAMPOSTERÍA",
+      "tipoNegociacion": "mano_obra"
+    },
+    {
+      "nombre": "M. de O MAMPOSTERÍA DE FACHADA",
+      "tipoNegociacion": "mano_obra"
+    },
+    {
+      "nombre": "M. de O MAMPOSTERÍA INTERIOR",
+      "tipoNegociacion": "mano_obra"
+    },
+    {
+      "nombre": "M. de O MORTEROS DE PISO",
+      "tipoNegociacion": "mano_obra"
+    },
+    {
+      "nombre": "M. de O MOVIMIENTOS DE TIERRA (EXCAVACIONES Y RELLENOS)",
+      "tipoNegociacion": "mano_obra"
+    },
+    {
+      "nombre": "M. de O PAÑETES",
+      "tipoNegociacion": "mano_obra"
+    },
+    {
+      "nombre": "M. de O PISOS INDUSTRIALES EN CONCRETO",
+      "tipoNegociacion": "mano_obra"
+    },
+    {
+      "nombre": "M. de O PLAN DE MANEJO DE TRÁNSITO (PMT)",
+      "tipoNegociacion": "mano_obra"
+    },
+    {
+      "nombre": "M. de O REJILLAS DE VENTILACIÓN SÓTANOS",
+      "tipoNegociacion": "mano_obra"
+    },
+    {
+      "nombre": "M. de O REVOQUE DE FACHADA",
+      "tipoNegociacion": "mano_obra"
+    },
+    {
+      "nombre": "M. de O REVOQUE INTERIOR",
+      "tipoNegociacion": "mano_obra"
+    },
+    {
+      "nombre": "M. de O URBANISMO (MUROS, ANDENES, ESCALAS, GRAMA, ETC)",
+      "tipoNegociacion": "mano_obra"
+    },
+    {
+      "nombre": "M. de O VIGA GUÍA",
+      "tipoNegociacion": "mano_obra"
+    }
+  ]
+}
