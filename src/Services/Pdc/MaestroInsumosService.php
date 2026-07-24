@@ -327,7 +327,9 @@ final class MaestroInsumosService
         return (int) ($e->errorInfo[1] ?? 0) === 1062;
     }
 
-    public function catalogo(?string $busqueda = null, bool $incluirInactivos = false, int $limite = 200): array
+    // Límite alto: el maestro global es un catálogo administrable completo (AG Grid lo virtualiza).
+    // La búsqueda acota; sin búsqueda se listan todos (headroom sobre los ~3.083 de SINCO).
+    public function catalogo(?string $busqueda = null, bool $incluirInactivos = false, int $limite = 10000): array
     {
         $where = $incluirInactivos ? '1 = 1' : 'activo = 1';
         $params = [];
