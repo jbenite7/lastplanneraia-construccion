@@ -25,7 +25,7 @@
   color: var(--ds-active-text-primary);
 }
 
-html.aia-theme-dark .pg-page.dark-mode {
+html.aia-theme-dark .pg-page {
   --pg-critical-bg: color-mix(in srgb, var(--ds-color-state-critical-text) 48%, var(--ds-active-surface-raised) 52%);
   --pg-critical-text: var(--ds-active-text-primary);
   --pg-critical-border: color-mix(in srgb, var(--ds-color-state-critical-bg) 54%, var(--ds-active-border) 46%);

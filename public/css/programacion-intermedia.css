@@ -42,7 +42,7 @@
     color: var(--ds-active-text-primary);
 }
 
-html.aia-theme-dark .pi-page.dark-mode {
+html.aia-theme-dark .pi-page {
     --pi-critical-bg: color-mix(in srgb, var(--ds-color-state-critical-text) 48%, var(--ds-active-surface-raised) 52%);
     --pi-critical-text: var(--ds-active-text-primary);
     --pi-critical-border: color-mix(in srgb, var(--ds-color-state-critical-bg) 54%, var(--ds-active-border) 46%);
@@ -1575,7 +1575,7 @@ border: 1px solid var(--pi-due-border);
     border-color: color-mix(in srgb, var(--ds-color-state-info-text) 30%, var(--ds-active-border));
 }
 
-html.aia-theme-dark .pi-page.dark-mode .pi-legend-window-label--info {
+html.aia-theme-dark .pi-page .pi-legend-window-label--info {
     background: color-mix(in srgb, var(--ds-color-state-info-text) 30%, var(--ds-active-surface-raised));
     color: var(--ds-active-text-primary);
 }

@@ -79,23 +79,17 @@
     color: var(--ds-active-text-primary);
   }
 
-  :where(
-    html.aia-theme-dark body.dark-mode .aia-info-nav__trigger,
-    html.aia-theme-dark body.dark-mode .aia-info-nav__menu
-  ) {
+  :where(html.aia-theme-dark .aia-info-nav__trigger, html.aia-theme-dark .aia-info-nav__menu) {
     border-color: var(--ds-active-border);
     background: var(--ds-active-surface-raised);
     color: var(--ds-active-text-primary);
   }
 
-  :where(
-    html.aia-theme-dark body.dark-mode .aia-info-nav__current,
-    html.aia-theme-dark body.dark-mode .aia-info-nav__chevron
-  ) {
+  :where(html.aia-theme-dark .aia-info-nav__current, html.aia-theme-dark .aia-info-nav__chevron) {
     color: var(--ds-active-text-primary);
   }
 
-  :where(html.aia-theme-dark body.dark-mode .aia-info-nav__eyebrow) {
+  :where(html.aia-theme-dark .aia-info-nav__eyebrow) {
     color: var(--ds-active-text-secondary);
   }
 }
