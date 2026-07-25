@@ -1,0 +1,230 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-24T00:00:00Z",
+  "title": "Design System: Last Planner AIA",
+  "extensions": {
+    "colorMeta": {
+      "corporate": {
+        "role": "primary",
+        "displayName": "Verde Corporativo",
+        "canonical": "oklch(32% 0.07 148.5)",
+        "tonalRamp": ["#1a3c2a", "#1a5633", "#4a7c64", "#8cb4a1", "#d5e5db"]
+      },
+      "corporate-on-dark": {
+        "role": "primary",
+        "displayName": "Verde Corporativo (on-dark)",
+        "canonical": "#6c9077",
+        "note": "Mezcla 64% marca + 36% blanco. Texto #141c18 encima = 4.87:1 AA.",
+        "tonalRamp": ["#1a5633", "#4a7c64", "#6c9077", "#8cb4a1", "#d5e5db"]
+      },
+      "construction": {
+        "role": "secondary",
+        "displayName": "Naranja Construcción",
+        "canonical": "oklch(45% 0.16 46.2)",
+        "tonalRamp": ["#8b4011", "#b55211", "#e87722", "#f6c79b", "#fbead9"]
+      },
+      "construction-on-dark": {
+        "role": "secondary",
+        "displayName": "Naranja Construcción (on-dark)",
+        "canonical": "#c57247",
+        "note": "Mezcla 82% marca + 18% blanco. Texto #141c18 encima = 4.86:1 AA.",
+        "tonalRamp": ["#8b4011", "#b55211", "#c57247", "#e87722", "#f6c79b"]
+      },
+      "real-estate": {
+        "role": "tertiary",
+        "displayName": "Aqua Inmobiliario",
+        "canonical": "oklch(61% 0.13 189)",
+        "tonalRamp": ["#007a71", "#00a499", "#5ec9bd", "#ace5e0", "#e3f9f7"]
+      },
+      "real-estate-on-dark": {
+        "role": "tertiary",
+        "displayName": "Aqua Inmobiliario (on-dark)",
+        "canonical": "#2caa9f",
+        "note": "Mezcla 94% marca + 6% blanco. Texto #141c18 encima = 6.09:1 AA.",
+        "tonalRamp": ["#007a71", "#00a499", "#2caa9f", "#5ec9bd", "#ace5e0"]
+      },
+      "architecture": {
+        "role": "tertiary",
+        "displayName": "Violeta Arquitectura",
+        "canonical": "#6752bf",
+        "tonalRamp": ["#3f2f80", "#6752bf", "#877cd1", "#b3ace4", "#e5e1f5"]
+      },
+      "architecture-on-dark": {
+        "role": "tertiary",
+        "displayName": "Violeta Arquitectura (on-dark)",
+        "canonical": "#877cd1",
+        "note": "Mezcla 76% marca + 24% blanco. Texto #141c18 encima = 4.83:1 AA.",
+        "tonalRamp": ["#3f2f80", "#6752bf", "#877cd1", "#b3ace4", "#e5e1f5"]
+      },
+      "bg-canvas-dark": {
+        "role": "neutral",
+        "displayName": "Lienzo Dark",
+        "canonical": "#0b100d",
+        "tonalRamp": ["#0b100d", "#111a15", "#1c241f", "#233029", "#52645a"]
+      },
+      "surface-dark": {
+        "role": "neutral",
+        "displayName": "Superficie Dark",
+        "canonical": "rgba(28,36,31,0.92)",
+        "note": "Semitranslúcida; sobre lienzo dark rinde ~#1c241f.",
+        "tonalRamp": ["#111a15", "#1c241f", "#233029", "#2f3d35", "#3b4c42"]
+      },
+      "text-primary-dark": {
+        "role": "neutral",
+        "displayName": "Tinta Dark",
+        "canonical": "#f7faf8",
+        "tonalRamp": ["#52645a", "#72857a", "#c7d4cc", "#e3ece7", "#f7faf8"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Montserrat 700. Título de página y valores KPI (.aia-title, .aia-kpi-value)." },
+      "headline": { "displayName": "Headline", "purpose": "Montserrat 700. Encabezados de sección de alto impacto." },
+      "title": { "displayName": "Title", "purpose": "Montserrat 600. Títulos de card, panel y modal." },
+      "body": { "displayName": "Body", "purpose": "Inter 400. Cuerpo operativo; prosa a 65–75ch, datos densos pueden correr más." },
+      "label": { "displayName": "Label", "purpose": "Inter 500, sin uppercase. Etiquetas de control y ayudas." },
+      "mono": { "displayName": "Mono", "purpose": "ui-monospace. Cifras y datos técnicos puntuales." }
+    },
+    "shadows": [
+      { "name": "xs", "value": "0 1px 2px rgba(20,28,24,0.06)", "purpose": "Reposo de cards, paneles, toolbars y tablas — casi plano." },
+      { "name": "sm", "value": "0 2px 6px rgba(20,28,24,0.08)", "purpose": "Hover discreto y controles elevados." },
+      { "name": "md", "value": "0 8px 24px rgba(20,28,24,0.10)", "purpose": "Material glass y navegación." },
+      { "name": "lg", "value": "0 16px 48px rgba(20,28,24,0.14)", "purpose": "Popovers y menús." },
+      { "name": "xl", "value": "0 24px 72px rgba(20,28,24,0.18)", "purpose": "Modales y capas superiores." },
+      { "name": "focus", "value": "0 0 0 4px var(--ds-active-focus-ring)", "purpose": "Anillo de foco visible de 4px sobre el color de foco del tema activo." }
+    ],
+    "motion": [
+      { "name": "fast", "value": "140ms ease", "purpose": "Feedback inmediato: hover, foco, cambios de estado de control." },
+      { "name": "standard", "value": "220ms ease", "purpose": "Transiciones estándar de superficie y revelado." },
+      { "name": "slow", "value": "360ms ease", "purpose": "Movimientos mayores, uso puntual." },
+      { "name": "reduced", "value": "1ms linear", "purpose": "Alternativa prefers-reduced-motion; crossfade/instantáneo." }
+    ],
+    "breakpoints": [
+      { "name": "compact", "value": "0px" },
+      { "name": "mobile", "value": "390px" },
+      { "name": "tablet", "value": "768px" },
+      { "name": "desktop", "value": "1200px" },
+      { "name": "wide", "value": "1440px" }
+    ],
+    "scope": {
+      "operativeTheme": "dark",
+      "validation": "desktop dark únicamente — 1180x820 canónico, 1440x900 secundario",
+      "outOfScope": ["mobile", "tablet", "tema linen (shipped-but-ungated)"],
+      "density": "Compacta desde 1200px; Táctil por debajo. Target táctil mínimo 44px."
+    }
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Acción primaria corporativa. En dark usa la variante on-dark del verde AIA con texto oscuro.",
+      "html": "<button class=\"ds-btn-primary\">Guardar semana</button>",
+      "css": ".ds-btn-primary { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.65rem 1rem; border: 1px solid #6c9077; border-radius: 0.75rem; background: #6c9077; color: #141c18; font-family: Inter, sans-serif; font-weight: 700; line-height: 1.1; cursor: pointer; transition: background 140ms ease, transform 140ms ease, box-shadow 140ms ease; } .ds-btn-primary:hover { background: #8cb4a1; border-color: #8cb4a1; } .ds-btn-primary:active { transform: translateY(1px); } .ds-btn-primary:focus-visible { outline: 2px solid #2caa9f; outline-offset: 2px; box-shadow: 0 0 0 4px rgba(44,170,159,0.4); }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Acción secundaria sobre superficie elevada del tema.",
+      "html": "<button class=\"ds-btn-secondary\">Cancelar</button>",
+      "css": ".ds-btn-secondary { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.65rem 1rem; border: 1px solid rgba(221,239,230,0.22); border-radius: 0.75rem; background: rgba(35,48,41,0.86); color: #f7faf8; font-family: Inter, sans-serif; font-weight: 700; line-height: 1.1; cursor: pointer; transition: background 140ms ease, transform 140ms ease; } .ds-btn-secondary:hover { background: rgba(47,61,53,0.92); } .ds-btn-secondary:active { transform: translateY(1px); } .ds-btn-secondary:focus-visible { outline: 2px solid #2caa9f; outline-offset: 2px; box-shadow: 0 0 0 4px rgba(44,170,159,0.4); }"
+    },
+    {
+      "name": "Construction Button",
+      "kind": "button",
+      "refersTo": "button-construction",
+      "description": "Acción del dominio construcción (obra). Naranja on-dark con texto oscuro.",
+      "html": "<button class=\"ds-btn-construction\">Programar obra</button>",
+      "css": ".ds-btn-construction { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.65rem 1rem; border: 1px solid #c57247; border-radius: 0.75rem; background: #c57247; color: #141c18; font-family: Inter, sans-serif; font-weight: 700; line-height: 1.1; cursor: pointer; transition: background 140ms ease, transform 140ms ease; } .ds-btn-construction:hover { background: #e87722; border-color: #e87722; } .ds-btn-construction:active { transform: translateY(1px); } .ds-btn-construction:focus-visible { outline: 2px solid #2caa9f; outline-offset: 2px; box-shadow: 0 0 0 4px rgba(44,170,159,0.4); }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Campo de formulario. Ancho completo, superficie del tema, foco con anillo de 4px.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-field__label\">Buscar actividad</span><span class=\"ds-field__control\"><svg viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" fill=\"none\" stroke=\"#c7d4cc\" stroke-width=\"2\" stroke-linecap=\"round\"><circle cx=\"11\" cy=\"11\" r=\"7\"/><line x1=\"21\" y1=\"21\" x2=\"16.65\" y2=\"16.65\"/></svg><input class=\"ds-input\" type=\"text\" placeholder=\"Ej. Vaciado de losa N4\"/></span></label>",
+      "css": ".ds-field { display: grid; gap: 0.35rem; font-family: Inter, sans-serif; } .ds-field__label { color: #c7d4cc; font-size: 0.875rem; font-weight: 500; } .ds-field__control { display: flex; align-items: center; gap: 0.5rem; min-height: 44px; padding: 0.625rem 0.75rem; border: 1px solid rgba(221,239,230,0.22); border-radius: 0.75rem; background: rgba(28,36,31,0.92); } .ds-field__control:focus-within { outline: 2px solid #2caa9f; outline-offset: 2px; box-shadow: 0 0 0 4px rgba(44,170,159,0.4); } .ds-input { flex: 1; border: 0; background: transparent; color: #f7faf8; font: inherit; } .ds-input::placeholder { color: #72857a; } .ds-input:focus { outline: none; }"
+    },
+    {
+      "name": "Status Chips",
+      "kind": "chip",
+      "refersTo": "chip-info",
+      "description": "Vocabulario semántico de estado. Cuatro niveles con tinte fijo; el texto siempre nombra el significado y nunca se fragmenta una palabra.",
+      "html": "<div class=\"ds-chips\"><span class=\"ds-chip ds-chip--info\">Sin datos</span><span class=\"ds-chip ds-chip--success\">Al día</span><span class=\"ds-chip ds-chip--warning\">Revisar</span><span class=\"ds-chip ds-chip--critical\">Atraso</span></div>",
+      "css": ".ds-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; font-family: Inter, sans-serif; } .ds-chip { display: inline-flex; min-height: 1.75rem; align-items: center; padding: 0.25rem 0.65rem; border: 1px solid rgba(26,86,51,0.2); border-radius: 9999px; font-size: 0.78rem; font-weight: 800; overflow-wrap: normal; word-break: normal; hyphens: none; } .ds-chip--info { background: #e3f9f7; color: #006d66; } .ds-chip--success { background: #ddefe6; color: #1a5633; } .ds-chip--warning { background: #fff8e1; color: #5d4200; } .ds-chip--critical { background: #fdecec; color: #8f1d1d; }"
+    },
+    {
+      "name": "Card / Panel",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Superficie de contenido casi plana, semitranslúcida en dark, radio de card y sombra xs.",
+      "html": "<article class=\"ds-card\"><h3 class=\"ds-card__title\">Programación intermedia</h3><p class=\"ds-card__body\">3 restricciones abiertas para la semana en curso. Liberar antes del jueves para no comprometer el vaciado.</p></article>",
+      "css": ".ds-card { max-width: 22rem; padding: 1rem; border: 1px solid rgba(221,239,230,0.22); border-radius: 1rem; background: rgba(28,36,31,0.92); box-shadow: 0 1px 2px rgba(20,28,24,0.06); font-family: Inter, sans-serif; } .ds-card__title { margin: 0 0 0.5rem; font-family: Montserrat, sans-serif; font-weight: 600; font-size: 1.25rem; line-height: 1.2; color: #f7faf8; } .ds-card__body { margin: 0; font-size: 1rem; line-height: 1.5; color: #c7d4cc; }"
+    },
+    {
+      "name": "Alert",
+      "kind": "custom",
+      "refersTo": "alert",
+      "description": "Mensaje contextual sobre superficie elevada, radio de panel.",
+      "html": "<div class=\"ds-alert\" role=\"status\"><strong class=\"ds-alert__title\">Semana bloqueada para edición</strong><span class=\"ds-alert__body\">El compromiso ya fue firmado; los cambios pasan por control de cambios.</span></div>",
+      "css": ".ds-alert { display: grid; gap: 0.25rem; max-width: 30rem; padding: 0.75rem 0.875rem; border: 1px solid rgba(26,86,51,0.2); border-radius: 1.5rem; background: rgba(35,48,41,0.86); color: #f7faf8; font-family: Inter, sans-serif; } .ds-alert__title { font-weight: 700; } .ds-alert__body { color: #c7d4cc; font-size: 0.875rem; }"
+    },
+    {
+      "name": "Empty State",
+      "kind": "custom",
+      "refersTo": "card",
+      "description": "Estado vacío que enseña la interfaz en vez de decir 'nada aquí'. Borde dashed, centrado.",
+      "html": "<div class=\"ds-empty\"><svg viewBox=\"0 0 24 24\" width=\"28\" height=\"28\" fill=\"none\" stroke=\"#72857a\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 7l9-4 9 4-9 4-9-4z\"/><path d=\"M3 7v10l9 4 9-4V7\"/></svg><p class=\"ds-empty__title\">Aún no hay actividades planificadas</p><p class=\"ds-empty__hint\">Importa el programa o crea la primera actividad para empezar el ciclo.</p></div>",
+      "css": ".ds-empty { display: grid; place-items: center; gap: 0.5rem; min-height: 12rem; padding: 1.5rem; border: 1px dashed rgba(221,239,230,0.22); border-radius: 1.5rem; text-align: center; font-family: Inter, sans-serif; color: #c7d4cc; } .ds-empty__title { margin: 0.25rem 0 0; font-weight: 600; color: #f7faf8; } .ds-empty__hint { margin: 0; font-size: 0.875rem; color: #72857a; }"
+    },
+    {
+      "name": "Nav Context Bar",
+      "kind": "nav",
+      "refersTo": "button-primary",
+      "description": "Lockup de marca + context-bar del shell global. El cambio de semana ocurre en el chip de contexto.",
+      "html": "<header class=\"ds-nav\"><span class=\"ds-nav__brand\"><span class=\"ds-nav__mark\">AIA</span><span class=\"ds-nav__name\">Last Planner</span></span><button class=\"ds-nav__week\">Semana 31 · 2026<svg viewBox=\"0 0 24 24\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><path d=\"M6 9l6 6 6-6\"/></svg></button></header>",
+      "css": ".ds-nav { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; min-height: 60px; padding: 0.75rem 1rem; border: 1px solid rgba(221,239,230,0.22); border-radius: 1.5rem; background: rgba(35,48,41,0.86); font-family: Inter, sans-serif; } .ds-nav__brand { display: inline-flex; align-items: center; gap: 0.5rem; color: #f7faf8; } .ds-nav__mark { display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: 0.5rem; background: #6c9077; color: #141c18; font-family: Montserrat, sans-serif; font-weight: 800; font-size: 0.8rem; } .ds-nav__name { font-family: Montserrat, sans-serif; font-weight: 800; } .ds-nav__week { display: inline-flex; align-items: center; gap: 0.4rem; min-height: 44px; padding: 0.4rem 0.75rem; border: 1px solid rgba(221,239,230,0.22); border-radius: 9999px; background: rgba(28,36,31,0.92); color: #c7d4cc; font: inherit; font-weight: 600; cursor: pointer; } .ds-nav__week:hover { color: #f7faf8; } .ds-nav__week:focus-visible { outline: 2px solid #2caa9f; outline-offset: 2px; box-shadow: 0 0 0 4px rgba(44,170,159,0.4); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "La Sala de Control Serena",
+    "overview": "Last Planner AIA es la superficie donde un equipo de obra lee el estado de la planificación y decide la siguiente acción antes de que una restricción escale a incidente. La estética es la de un puesto de mando en penumbra: fondo oscuro y tranquilo, superficies que retroceden, y color reservado para lo que exige una decisión. El tema dark es el modo operativo por defecto (DS-009); las cuatro submarcas de AIA viven como acentos de dominio con variante perceptual on-dark que preserva el matiz y cumple AA. Los estados forman un vocabulario semántico estable: el color refuerza el significado, nunca lo sustituye. La densidad es operativa y se adapta: compacta en desktop ancho, táctil por debajo. Rechaza lo decorativo, lo saturado de alertas y la lectura innecesaria antes de actuar.",
+    "keyCharacteristics": [
+      "Superficie dark-first y casi plana; la profundidad se insinúa, no se grita.",
+      "Sistema de submarcas OKLCH con variante on-dark perceptual por dominio (matiz preservado, AA).",
+      "Vocabulario semántico de estados que refuerza el significado (color + texto + data-aia-severity/urgency), nunca solo color.",
+      "Elevación mínima con tintes fríos; glass reservado para jerarquía (shell, nav, modales, paneles, cards).",
+      "Montserrat para jerarquía de decisión; Inter para todo lo operativo. Sin Roboto.",
+      "Objetivos táctiles de 44px, foco visible de 4px, prefers-reduced-motion respetado.",
+      "Densidad adaptativa: Compacta desde 1200 px, Táctil por debajo."
+    ],
+    "rules": [
+      { "name": "La Regla On-Dark", "body": "Toda submarca tiene una variante on-dark derivada por mezcla perceptual OKLCH con blanco, con el matiz oficial preservado y contraste ≥4.5:1 del texto #141c18 encima (DS-008). En dark los fondos retroceden y los acentos suben en luminosidad; nunca se invierte el color mecánicamente.", "section": "colors" },
+      { "name": "La Regla del Color que Refuerza", "body": "El color nunca es el único canal. La gravedad y la urgencia se expresan con data-aia-severity y data-aia-urgency y el texto siempre nombra el significado. Los estados now usan siempre critical; un estado sin datos no escala a warning por sí solo.", "section": "colors" },
+      { "name": "La Regla del Acento Escaso", "body": "El acento es para acción primaria, selección actual e indicadores de estado. Prohibido a plena saturación en estados inactivos y prohibido como relleno decorativo.", "section": "colors" },
+      { "name": "La Regla de Escala Fija", "body": "Los tamaños son rem fijos, nunca clamp() fluido en UI de producto. Un h1 que encoge dentro de un sidebar se ve peor, no mejor. El fluido queda para la marca, no para la operación.", "section": "typography" },
+      { "name": "La Regla de Palabra Íntegra", "body": "El texto de estados y chips envuelve entre palabras y nunca fragmenta una palabra (DS-001/DS-015): overflow-wrap: normal, word-break: normal, hyphens: none.", "section": "typography" },
+      { "name": "La Regla del Vidrio Jerárquico", "body": "El glass (backdrop-filter: blur(18px), .aia-glass) se usa solo para jerarquía: shell, nav, modales, paneles y cards. Tablas y grillas priorizan legibilidad con superficies opacas — nunca glass detrás de datos.", "section": "elevation" },
+      { "name": "La Regla Plana por Defecto", "body": "Las superficies están planas en reposo (xs). Una sombra mayor es respuesta a un estado (flotar, elevarse, enfocar), no decoración fija.", "section": "elevation" }
+    ],
+    "dos": [
+      "Usa tokens --ds-*/--aia-* y primitivas aia-*. Cambia primero tokens, componentes o capas canónicas.",
+      "Usa Montserrat para títulos, métricas y jerarquía de decisión; Inter para cuerpo, navegación, formularios, tablas y ayudas.",
+      "Diseña y valida solo en desktop dark de al menos 1180 px. Viewport canónico 1180x820; secundario 1440x900.",
+      "Mantén WCAG AA, foco visible de 4px, objetivos táctiles de 44px y una alternativa prefers-reduced-motion en toda animación.",
+      "Reserva el glass para jerarquía (shell, nav, modales, paneles, cards); tablas y grillas van opacas y legibles.",
+      "Expresa el estado con superficie + borde + texto del tema destino; anima solo transform y box-shadow, nunca color/background (DS-023/DS-025).",
+      "Registra en exceptions.json cualquier excepción temporal, y mantén manifiesto + pruebas + evidencia juntos."
+    ],
+    "donts": [
+      "Nunca introduzcas hex sueltos, estilos inline, bloques <style>, gradientes decorativos, skins de vendors ni nuevas CDN en módulos migrados.",
+      "Nunca hagas que la interfaz se vea decorativa, saturada de alertas o que exija lectura innecesaria antes de actuar (anti-referencia de PRODUCT.md).",
+      "Nunca uses el color como único canal de significado, ni acentos a plena saturación en estados inactivos.",
+      "Nunca trabajes ni generes cambios, pruebas o evidencia para mobile, tablet o el tema linen: fuera del alcance visual vigente. linen se envía pero ningún gate lo valida (deuda consciente).",
+      "Nunca uses clamp() fluido para tamaños de texto de UI, ni fragmentes una palabra en chips o estados.",
+      "Nunca uses Roboto ni radios hardcodeados: Login, Projects, Programa General, PDC, Contratos, Listado de Actividades y el módulo de tema tienen presupuesto cero.",
+      "Nunca regeneres snapshots ni baselines para forzar verde: requieren decisión visual aprobada con hashes before/after.",
+      "Nunca modifiques Programa General ni sus archivos protegidos desde la migración de otra superficie."
+    ]
+  }
+}

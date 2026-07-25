@@ -14,7 +14,7 @@ body.ps-page,
     color: var(--ds-active-text-primary);
 }
 
-html.aia-theme-dark body.ps-page.dark-mode {
+html.aia-theme-dark body.ps-page {
     --ps-critical-bg: color-mix(in srgb, var(--ds-color-state-critical-text) 24%, var(--ds-active-surface) 76%);
     --ps-critical-text: var(--ds-active-text-primary);
     --ps-high-bg: color-mix(in srgb, var(--ds-color-state-warning-text) 22%, var(--ds-active-surface) 78%);
@@ -1380,7 +1380,7 @@ body.ps-page table.dataTable tbody td {
    vence a lo sin capa): este remap vive en `reset` (anterior a `vendor`)
    precisamente para ganar esa inversión. */
 @layer reset {
-    body.ps-page.dark-mode .text-danger {
+    html.aia-theme-dark body.ps-page .text-danger {
         color: color-mix(in srgb, var(--ds-color-state-critical-text) 40%, var(--ds-active-text-primary) 60%) !important;
     }
 }
@@ -1435,22 +1435,22 @@ body.ps-page #dt_cliente_wrapper .ps-toolbar-filter label {
     opacity: 1;
 }
 
-html.aia-theme-dark body.ps-page.dark-mode #dt_cliente_wrapper .dataTables_scrollHead,
-html.aia-theme-dark body.ps-page.dark-mode #dt_cliente_wrapper .dataTables_scrollBody,
-html.aia-theme-dark body.ps-page.dark-mode #dt_cliente_wrapper table.dataTable {
+html.aia-theme-dark body.ps-page #dt_cliente_wrapper .dataTables_scrollHead,
+html.aia-theme-dark body.ps-page #dt_cliente_wrapper .dataTables_scrollBody,
+html.aia-theme-dark body.ps-page #dt_cliente_wrapper table.dataTable {
     border-color: var(--ds-active-border) !important;
     background: var(--ds-active-bg-page) !important;
     color: var(--ds-active-text-primary) !important;
 }
 
-html.aia-theme-dark body.ps-page.dark-mode #dt_cliente_wrapper table.dataTable thead th {
+html.aia-theme-dark body.ps-page #dt_cliente_wrapper table.dataTable thead th {
     border-color: var(--ds-active-border) !important;
     background: var(--ds-active-surface-raised) !important;
     color: var(--ds-active-text-primary) !important;
 }
 
-html.aia-theme-dark body.ps-page.dark-mode #dt_cliente_wrapper table.dataTable tbody td,
-html.aia-theme-dark body.ps-page.dark-mode #dt_cliente_wrapper table.dataTable tbody td.dataTables_empty {
+html.aia-theme-dark body.ps-page #dt_cliente_wrapper table.dataTable tbody td,
+html.aia-theme-dark body.ps-page #dt_cliente_wrapper table.dataTable tbody td.dataTables_empty {
     border-color: var(--ds-active-border) !important;
     background: var(--cnp-row-bg, var(--ds-active-surface)) !important;
     color: var(--ds-active-text-primary) !important;
@@ -1692,27 +1692,27 @@ body.ps-page #modal_cnc_hot .ps-modal-control {
         color: var(--ds-color-text-inverse) !important;
     }
 
-    html.aia-theme-dark body.ps-page.dark-mode #dt_cliente_wrapper table.dataTable thead th {
+    html.aia-theme-dark body.ps-page #dt_cliente_wrapper table.dataTable thead th {
         border-color: var(--ds-active-border) !important;
         background: var(--ds-active-surface-raised) !important;
         color: var(--ds-active-text-primary) !important;
     }
 
-    html.aia-theme-dark body.ps-page.dark-mode #dt_cliente_wrapper table.dataTable tbody td {
+    html.aia-theme-dark body.ps-page #dt_cliente_wrapper table.dataTable tbody td {
         border-color: var(--ds-active-border) !important;
         background: var(--cnp-row-bg, var(--ds-active-surface)) !important;
         color: var(--ds-active-text-primary) !important;
     }
 
-    html.aia-theme-dark body.ps-page.dark-mode #dt_cliente_wrapper tr.row-critical-delay td {
+    html.aia-theme-dark body.ps-page #dt_cliente_wrapper tr.row-critical-delay td {
         background: color-mix(in srgb, var(--ds-color-state-critical-text) 24%, var(--ds-active-surface) 76%) !important;
     }
 
-    html.aia-theme-dark body.ps-page.dark-mode #dt_cliente_wrapper tr.row-delayed td {
+    html.aia-theme-dark body.ps-page #dt_cliente_wrapper tr.row-delayed td {
         background: color-mix(in srgb, var(--ds-color-state-warning-text) 22%, var(--ds-active-surface) 78%) !important;
     }
 
-    html.aia-theme-dark body.ps-page.dark-mode #dt_cliente_wrapper tr.row-warning td {
+    html.aia-theme-dark body.ps-page #dt_cliente_wrapper tr.row-warning td {
         background: color-mix(in srgb, var(--ds-color-state-warning-text) 14%, var(--ds-active-surface) 86%) !important;
     }
 
@@ -2361,19 +2361,19 @@ body.ps-page #hot-container td.ps-cell-shake {
     animation: ps-cell-shake 180ms ease-out 2;
 }
 
-html.aia-theme-dark body.ps-page.dark-mode #hot-container .ops-state-zoom.is-critical {
+html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-critical {
     --ops-state-bg: color-mix(in srgb, var(--ds-color-state-critical-text) 22%, var(--ds-active-surface) 78%);
     --ops-state-count-bg: color-mix(in srgb, var(--ds-color-state-critical-text) 18%, var(--ds-active-surface-raised) 82%);
     --ops-state-count-text: var(--ds-active-text-primary);
 }
 
-html.aia-theme-dark body.ps-page.dark-mode #hot-container :is(.ops-state-zoom.is-pending, .ops-state-zoom.is-partial) {
+html.aia-theme-dark body.ps-page #hot-container :is(.ops-state-zoom.is-pending, .ops-state-zoom.is-partial) {
     --ops-state-bg: color-mix(in srgb, var(--ds-color-state-warning-text) 18%, var(--ds-active-surface) 82%);
     --ops-state-count-bg: color-mix(in srgb, var(--ds-color-state-warning-text) 14%, var(--ds-active-surface-raised) 86%);
     --ops-state-count-text: var(--ds-active-text-primary);
 }
 
-html.aia-theme-dark body.ps-page.dark-mode #hot-container .ops-state-zoom.is-ready {
+html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
     --ops-state-bg: color-mix(in srgb, var(--ds-color-state-success-text) 18%, var(--ds-active-surface) 82%);
     --ops-state-count-bg: color-mix(in srgb, var(--ds-color-state-success-text) 14%, var(--ds-active-surface-raised) 86%);
     --ops-state-count-text: var(--ds-active-text-primary);
@@ -2428,54 +2428,54 @@ html.aia-theme-dark body.ps-page.dark-mode #hot-container .ops-state-zoom.is-rea
         box-shadow: var(--ds-shadow-xs) !important;
     }
 
-    html.aia-theme-dark body.ps-page.dark-mode #psAlertsLegend .pdc-legend-item {
+    html.aia-theme-dark body.ps-page #psAlertsLegend .pdc-legend-item {
         border-color: var(--ds-active-border) !important;
         color: var(--ds-active-text-primary) !important;
         box-shadow: var(--ds-shadow-xs) !important;
     }
 
-    html.aia-theme-dark body.ps-page.dark-mode #psAlertsLegend :is(
+    html.aia-theme-dark body.ps-page #psAlertsLegend :is(
         .ps-alert-critical-route, .ps-alert-critical) {
         background: var(--ps-critical-bg) !important;
     }
 
-    html.aia-theme-dark body.ps-page.dark-mode #psAlertsLegend :is(
+    html.aia-theme-dark body.ps-page #psAlertsLegend :is(
         .ps-alert-high, .ps-alert-medium) {
         background: var(--ps-high-bg) !important;
     }
 
-    html.aia-theme-dark body.ps-page.dark-mode #psAlertsLegend .ps-alert-info {
+    html.aia-theme-dark body.ps-page #psAlertsLegend .ps-alert-info {
         background: var(--ps-info-bg) !important;
     }
 
-    html.aia-theme-dark body.ps-page.dark-mode #psAlertsLegend .ps-alert-control {
+    html.aia-theme-dark body.ps-page #psAlertsLegend .ps-alert-control {
         background: var(--ps-control-bg) !important;
     }
 
-    html.aia-theme-dark body.ps-page.dark-mode #psAlertsLegend .ps-alert-tnp {
+    html.aia-theme-dark body.ps-page #psAlertsLegend .ps-alert-tnp {
         border-color: var(--ds-active-border) !important;
         background: var(--ps-info-bg) !important;
         color: var(--ds-active-text-primary) !important;
     }
 
-    html.aia-theme-dark body.ps-page.dark-mode #psAlertsLegend .count-badge {
+    html.aia-theme-dark body.ps-page #psAlertsLegend .count-badge {
         border-color: var(--ds-active-border) !important;
         background: var(--ds-active-surface-raised) !important;
         color: var(--ds-active-text-primary) !important;
     }
 
-    html.aia-theme-dark body.ps-page.dark-mode :is(.handsontable.listbox, .htAutocomplete) :is(
+    html.aia-theme-dark body.ps-page :is(.handsontable.listbox, .htAutocomplete) :is(
         .wtHolder, .wtHider, .wtSpreader, table, tbody, tr, td) {
         border-color: var(--ds-active-border) !important;
         background: var(--ds-active-surface-raised) !important;
         color: var(--ds-active-text-primary) !important;
     }
 
-    html.aia-theme-dark body.ps-page.dark-mode :is(.handsontable.listbox, .htAutocomplete) td.htDimmed {
+    html.aia-theme-dark body.ps-page :is(.handsontable.listbox, .htAutocomplete) td.htDimmed {
         color: var(--ds-active-text-primary) !important;
     }
 
-    html.aia-theme-dark body.ps-page.dark-mode :is(.handsontable.listbox, .htAutocomplete) :is(td.current, tr:hover td) {
+    html.aia-theme-dark body.ps-page :is(.handsontable.listbox, .htAutocomplete) :is(td.current, tr:hover td) {
         background: color-mix(in srgb, var(--ds-color-brand-primary) 28%, var(--ds-active-surface-raised) 72%) !important;
         color: var(--ds-color-text-inverse) !important;
     }
@@ -2773,6 +2773,24 @@ html.aia-theme-dark body.ps-page.dark-mode #hot-container .ops-state-zoom.is-rea
             grid-column: 1;
         }
     }
+
+    /* Shell sidebar (DS-027): aquí vivía `#hot-container { height: calc(100vh - 49px) }`,
+       retirada porque su premisa era falsa. El 49px es el alto de la context-bar
+       sticky (#shellContextBar) y sólo describe el `top` de `.hot-full-bleed`, que
+       es el sujeto al que se aplicó en programaGeneralActualizar.view.php:33. En
+       esta vista `#hot-container` va DENTRO de `.hot-full-bleed`, detrás de
+       `.header-actions` (131px medidos a 1180x820 dark), así que la regla resolvía
+       771px donde el alto correcto es 632px: 139px de desborde vertical.
+
+       Además `.header-actions` no tiene alto constante — es una toolbar que refluye
+       al poblarse la leyenda, `#mensajeActualizacion` y los botones sujetos a
+       permisos/estado de semana — por lo que ningún `calc(100vh - Npx)` sobre este
+       contenedor puede ser correcto. La altura la resuelve `syncContainerHeight()`
+       (public/js/modules/programacion_semanal/hot.js), que mide
+       `getBoundingClientRect().top` y alimenta `updateSettings({ height })`; el
+       `calc(100vh - 380px)` del bloque base queda sólo como fallback conservador
+       antes de que corra el JS. Contrato verificado en
+       tests/browser/programacion-semanal-hot-height.mjs. */
 }
 
 /* Dropdown de Navegación por Hover - Visibility Fix */

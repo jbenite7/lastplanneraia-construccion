@@ -22,17 +22,6 @@
     document.documentElement.setAttribute("data-aia-theme", nextTheme);
     document.documentElement.classList.toggle("aia-theme-dark", nextTheme === "dark");
     document.documentElement.classList.toggle("aia-theme-linen", nextTheme !== "dark");
-    if (document.body) {
-      document.body.classList.toggle("dark-mode", nextTheme === "dark");
-    } else {
-      document.addEventListener(
-        "DOMContentLoaded",
-        () => {
-          document.body.classList.toggle("dark-mode", nextTheme === "dark");
-        },
-        { once: true },
-      );
-    }
     document.dispatchEvent(new CustomEvent("aia-theme-change", { detail: { theme: nextTheme } }));
     return nextTheme;
   }

@@ -6,25 +6,25 @@
  * colores Linen dentro de Contratos cuando el tema activo es Dark. La capa
  * reset precede a la capa del drawer y por eso también domina sus !important. */
 @layer reset {
-  body.contratos-page.dark-mode #aiaNavbar .nav-link,
-  body.contratos-page.dark-mode #aiaNavbar .nav-link .nav-text-full,
-  body.contratos-page.dark-mode #aiaNavbar .nav-link .nav-text-compact,
-  body.contratos-page.dark-mode #aiaNavbar .nav-link i,
-  body.contratos-page.dark-mode #aiaNavbar .nav-link::after {
+  html.aia-theme-dark body.contratos-page #aiaNavbar .nav-link,
+  html.aia-theme-dark body.contratos-page #aiaNavbar .nav-link .nav-text-full,
+  html.aia-theme-dark body.contratos-page #aiaNavbar .nav-link .nav-text-compact,
+  html.aia-theme-dark body.contratos-page #aiaNavbar .nav-link i,
+  html.aia-theme-dark body.contratos-page #aiaNavbar .nav-link::after {
     color: var(--ds-active-text-primary) !important;
   }
 
-  body.contratos-page.dark-mode #aiaNavbar .nav-link.active {
+  html.aia-theme-dark body.contratos-page #aiaNavbar .nav-link.active {
     background: var(--ds-active-surface-raised) !important;
     color: var(--ds-active-text-primary) !important;
   }
 
-  body.contratos-page.dark-mode #aiaNavbar .dropdown-menu {
+  html.aia-theme-dark body.contratos-page #aiaNavbar .dropdown-menu {
     background: var(--ds-active-surface-raised);
     border-color: var(--ds-active-border-default);
   }
 
-  body.contratos-page.dark-mode #aiaNavbar .dropdown-item {
+  html.aia-theme-dark body.contratos-page #aiaNavbar .dropdown-item {
     color: var(--ds-active-text-primary) !important;
   }
 }
@@ -164,12 +164,12 @@
   flex: 0 0 auto;
 }
 
-html.aia-theme-dark body.dark-mode {
+html.aia-theme-dark body {
   background: var(--ds-active-bg-canvas) !important;
   color: var(--ds-active-text-primary) !important;
 }
 
-html.aia-theme-dark body.dark-mode :is(
+html.aia-theme-dark :is(
   .filaBotones,
   .filaMensajes,
   .tabla,
@@ -183,7 +183,7 @@ html.aia-theme-dark body.dark-mode :is(
   color: var(--ds-active-text-primary) !important;
 }
 
-html.aia-theme-dark body.dark-mode :is(
+html.aia-theme-dark :is(
   .ct-contract-row,
   .select2-selection,
   .form-control
@@ -193,7 +193,7 @@ html.aia-theme-dark body.dark-mode :is(
   color: var(--ds-active-text-primary) !important;
 }
 
-html.aia-theme-dark body.dark-mode :is(
+html.aia-theme-dark :is(
   .ct-mobile-card__title,
   .ct-mobile-card__value,
   .ct-mobile-card__summary,
@@ -204,7 +204,7 @@ html.aia-theme-dark body.dark-mode :is(
   color: var(--ds-active-text-primary) !important;
 }
 
-html.aia-theme-dark body.dark-mode :is(
+html.aia-theme-dark :is(
   .ct-mobile-card__code,
   .ct-mobile-card__label,
   .ct-contract-mobile-help,
@@ -213,39 +213,39 @@ html.aia-theme-dark body.dark-mode :is(
   color: var(--ds-active-text-secondary) !important;
 }
 
-html.aia-theme-dark body.dark-mode #hot-container,
-html.aia-theme-dark body.dark-mode #hot-container .handsontable,
-html.aia-theme-dark body.dark-mode #hot-container .ht_master,
-html.aia-theme-dark body.dark-mode #hot-container .wtHolder,
-html.aia-theme-dark body.dark-mode #hot-container .wtHider,
-html.aia-theme-dark body.dark-mode #hot-container .wtSpreader,
-html.aia-theme-dark body.dark-mode #hot-container table.htCore {
+html.aia-theme-dark #hot-container,
+html.aia-theme-dark #hot-container .handsontable,
+html.aia-theme-dark #hot-container .ht_master,
+html.aia-theme-dark #hot-container .wtHolder,
+html.aia-theme-dark #hot-container .wtHider,
+html.aia-theme-dark #hot-container .wtSpreader,
+html.aia-theme-dark #hot-container table.htCore {
   background: var(--ds-active-bg-page) !important;
   color: var(--ds-active-text-primary) !important;
 }
 
-html.aia-theme-dark body.dark-mode #hot-container .handsontable :is(th, td, td.htDimmed, td.force-wrap),
-html.aia-theme-dark body.dark-mode #hot-container .handsontable td.force-wrap :is(b, small) {
+html.aia-theme-dark #hot-container .handsontable :is(th, td, td.htDimmed, td.force-wrap),
+html.aia-theme-dark #hot-container .handsontable td.force-wrap :is(b, small) {
   border-color: var(--ds-active-border) !important;
   background: var(--ds-active-surface) !important;
   color: var(--ds-active-text-primary) !important;
 }
 
-html.aia-theme-dark body.dark-mode #hot-container .handsontable thead th,
-html.aia-theme-dark body.dark-mode #hot-container .handsontable thead th .changeType {
+html.aia-theme-dark #hot-container .handsontable thead th,
+html.aia-theme-dark #hot-container .handsontable thead th .changeType {
   border-color: var(--ds-active-border) !important;
   background-color: var(--ds-active-surface-raised) !important;
   color: var(--ds-active-text-secondary) !important;
 }
 
-html.aia-theme-dark body.dark-mode #hot-container .ht_clone_top.handsontable table.htCore thead th {
+html.aia-theme-dark #hot-container .ht_clone_top.handsontable table.htCore thead th {
   background-color: var(--ds-active-surface-raised) !important;
   color: var(--ds-active-text-primary) !important;
 }
 
 @layer reset {
-  html.aia-theme-dark body.dark-mode #hot-container .handsontable thead th,
-  html.aia-theme-dark body.dark-mode #hot-container .handsontable thead th .changeType {
+  html.aia-theme-dark #hot-container .handsontable thead th,
+  html.aia-theme-dark #hot-container .handsontable thead th .changeType {
     border-color: var(--ds-active-border) !important;
     background-color: var(--ds-active-surface-raised) !important;
     color: var(--ds-active-text-primary) !important;

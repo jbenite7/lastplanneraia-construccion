@@ -19,7 +19,7 @@
 }
 
 body #encabezado nav.navbar.navbar-aia,
-body.dark-mode #encabezado nav.navbar.navbar-aia,
+html.aia-theme-dark #encabezado nav.navbar.navbar-aia,
 body .navbar-aia {
   background: var(--ds-color-brand-primary-dark) !important;
   background-color: var(--ds-color-brand-primary-dark) !important;
@@ -727,110 +727,110 @@ body .navbar-aia .navbar-brand.aia-brand .aia-brand-mark {
   }
 }
 
-html.aia-theme-dark body.dark-mode {
+html.aia-theme-dark body {
   background: var(--ds-active-bg-canvas) !important;
   color: var(--ds-active-text-primary) !important;
 }
 
-html.aia-theme-dark body.dark-mode .filaBotones .la-toolbar-actions .btn-pdc-modern,
-html.aia-theme-dark body.dark-mode .filaBotones .la-toolbar-switcher .aia-info-nav__trigger {
+html.aia-theme-dark .filaBotones .la-toolbar-actions .btn-pdc-modern,
+html.aia-theme-dark .filaBotones .la-toolbar-switcher .aia-info-nav__trigger {
   border-color: var(--ds-active-border) !important;
   background: var(--ds-active-surface-raised) !important;
   color: var(--ds-active-text-primary) !important;
   box-shadow: var(--ds-shadow-xs) !important;
 }
 
-html.aia-theme-dark body.dark-mode .filaBotones .aia-info-nav__eyebrow,
-html.aia-theme-dark body.dark-mode .filaBotones .aia-info-nav__item {
+html.aia-theme-dark .filaBotones .aia-info-nav__eyebrow,
+html.aia-theme-dark .filaBotones .aia-info-nav__item {
   color: var(--ds-active-text-secondary) !important;
 }
 
-html.aia-theme-dark body.dark-mode .filaBotones .aia-info-nav__current,
-html.aia-theme-dark body.dark-mode .filaBotones .aia-info-nav__chevron {
+html.aia-theme-dark .filaBotones .aia-info-nav__current,
+html.aia-theme-dark .filaBotones .aia-info-nav__chevron {
   color: var(--ds-active-text-primary) !important;
 }
 
-html.aia-theme-dark body.dark-mode .filaBotones .aia-info-nav__menu {
+html.aia-theme-dark .filaBotones .aia-info-nav__menu {
   border-color: var(--ds-active-border) !important;
   background: var(--ds-active-surface) !important;
 }
 
-html.aia-theme-dark body.dark-mode .filaBotones .aia-info-nav__item:hover,
-html.aia-theme-dark body.dark-mode .filaBotones .aia-info-nav__item:focus {
+html.aia-theme-dark .filaBotones .aia-info-nav__item:hover,
+html.aia-theme-dark .filaBotones .aia-info-nav__item:focus {
   background: var(--ds-active-surface-raised) !important;
   color: var(--ds-active-text-primary) !important;
 }
 
-html.aia-theme-dark body.dark-mode .filaBotones .aia-info-nav__item.is-active {
+html.aia-theme-dark .filaBotones .aia-info-nav__item.is-active {
   background: var(--ds-color-brand-primary) !important;
   color: var(--ds-color-text-inverse) !important;
 }
 
-html.aia-theme-dark body.dark-mode .la-mobile-card {
+html.aia-theme-dark .la-mobile-card {
   border-color: var(--ds-active-border);
   background: var(--ds-active-surface);
   color: var(--ds-active-text-primary);
 }
 
-html.aia-theme-dark body.dark-mode .la-mobile-card__title,
-html.aia-theme-dark body.dark-mode .la-mobile-card__value {
+html.aia-theme-dark .la-mobile-card__title,
+html.aia-theme-dark .la-mobile-card__value {
   color: var(--ds-active-text-primary);
 }
 
-html.aia-theme-dark body.dark-mode .la-mobile-card__code,
-html.aia-theme-dark body.dark-mode .la-mobile-card__label,
-html.aia-theme-dark body.dark-mode .la-mobile-card-list__empty {
+html.aia-theme-dark .la-mobile-card__code,
+html.aia-theme-dark .la-mobile-card__label,
+html.aia-theme-dark .la-mobile-card-list__empty {
   color: var(--ds-active-text-secondary);
 }
 
-html.aia-theme-dark body.dark-mode .la-mobile-card__edit-field {
+html.aia-theme-dark .la-mobile-card__edit-field {
   border-color: var(--ds-active-border);
   background: var(--ds-active-surface-raised);
 }
 
-html.aia-theme-dark body.dark-mode .la-mobile-card__select,
-html.aia-theme-dark body.dark-mode .la-mobile-tipo-pill {
+html.aia-theme-dark .la-mobile-card__select,
+html.aia-theme-dark .la-mobile-tipo-pill {
   border-color: var(--ds-active-border);
   background: var(--ds-active-bg-page);
   color: var(--ds-active-text-primary);
 }
 
-html.aia-theme-dark body.dark-mode .la-mobile-tipo-pill::before {
+html.aia-theme-dark .la-mobile-tipo-pill::before {
   border-color: var(--ds-active-border);
   background: var(--ds-active-surface-raised);
 }
 
-html.aia-theme-dark body.dark-mode .la-mobile-tipo-pill__code {
+html.aia-theme-dark .la-mobile-tipo-pill__code {
   background: var(--ds-active-surface-raised);
   color: var(--ds-active-text-primary);
 }
 
-html.aia-theme-dark body.dark-mode .la-mobile-tipo-pill.is-checked {
+html.aia-theme-dark .la-mobile-tipo-pill.is-checked {
   border-color: var(--ds-color-brand-primary);
   background: var(--ds-active-surface-raised);
   color: var(--ds-active-text-primary);
 }
 
-html.aia-theme-dark body.dark-mode .la-mobile-tipo-pill.is-checked::before {
+html.aia-theme-dark .la-mobile-tipo-pill.is-checked::before {
   box-shadow: inset 0 0 0 calc(var(--spacing-xs) / 2) var(--ds-active-bg-page);
 }
 
-html.aia-theme-dark body.dark-mode #hot-container,
-html.aia-theme-dark body.dark-mode #hot-container .handsontable,
-html.aia-theme-dark body.dark-mode #hot-container .ht_master,
-html.aia-theme-dark body.dark-mode #hot-container .wtHolder,
-html.aia-theme-dark body.dark-mode #hot-container .wtHider,
-html.aia-theme-dark body.dark-mode #hot-container .wtSpreader,
-html.aia-theme-dark body.dark-mode #hot-container table.htCore {
+html.aia-theme-dark #hot-container,
+html.aia-theme-dark #hot-container .handsontable,
+html.aia-theme-dark #hot-container .ht_master,
+html.aia-theme-dark #hot-container .wtHolder,
+html.aia-theme-dark #hot-container .wtHider,
+html.aia-theme-dark #hot-container .wtSpreader,
+html.aia-theme-dark #hot-container table.htCore {
   background: var(--ds-active-bg-page) !important;
   color: var(--ds-active-text-primary) !important;
 }
 
-html.aia-theme-dark body.dark-mode #hot-container .handsontable td,
-html.aia-theme-dark body.dark-mode #hot-container .handsontable td.htDimmed,
-html.aia-theme-dark body.dark-mode #hot-container .handsontable td.force-wrap,
-html.aia-theme-dark body.dark-mode #hot-container .handsontable td.force-wrap b,
-html.aia-theme-dark body.dark-mode #hot-container .handsontable td.force-wrap small {
+html.aia-theme-dark #hot-container .handsontable td,
+html.aia-theme-dark #hot-container .handsontable td.htDimmed,
+html.aia-theme-dark #hot-container .handsontable td.force-wrap,
+html.aia-theme-dark #hot-container .handsontable td.force-wrap b,
+html.aia-theme-dark #hot-container .handsontable td.force-wrap small {
   border-color: var(--ds-active-border) !important;
   background: var(--ds-active-surface) !important;
   color: var(--ds-active-text-primary) !important;

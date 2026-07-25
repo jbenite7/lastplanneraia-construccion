@@ -10,6 +10,16 @@ const APPROVALS = JSON.parse(readFileSync(
   new URL('../../docs/design-system/family-approvals.json', import.meta.url),
   'utf8',
 ));
+// El ledger es un histórico append-only: una familia puede acumular varias
+// aprobaciones y solo la última queda vigente. `shell-navigation` acumula
+// `adaptive-shell` (2026-07-12) y `sidebar-shell` (DS-026, 2026-07-22), que lo
+// sustituye como shell desktop dejando el drawer adaptativo como compatibilidad.
+// El laboratorio resuelve el candidato activo con esa misma regla de última
+// entrada por familia (DesignSystemLabController::__invoke), así que el fixture
+// se contrasta contra el candidato vigente, no contra cada entrada histórica.
+const APPROVED_CANDIDATE_BY_FAMILY = new Map(
+  APPROVALS.approvals.map(({ familyId, candidateId }) => [familyId, candidateId]),
+);
 const VIEWPORTS = [
   { width: 1180, height: 820 },
   { width: 1440, height: 900 },
@@ -157,7 +167,8 @@ test('approved visual fixture resolves every family from the approval ledger', a
   );
 
   expect(response?.status()).toBe(200);
-  for (const { familyId, candidateId } of APPROVALS.approvals) {
+  await expect(page.locator('[data-family]')).toHaveCount(APPROVED_CANDIDATE_BY_FAMILY.size);
+  for (const [familyId, candidateId] of APPROVED_CANDIDATE_BY_FAMILY) {
     const family = page.locator(`[data-family="${familyId}"]`);
     await expect(family).toHaveAttribute('data-active-candidate', candidateId);
     await expect(family).toHaveAttribute('data-family-status', 'approved');
@@ -336,18 +347,28 @@ test('sidebar shell exposes grouped navigation and an accessible collapse state'
   const shell = page.locator('[data-shell-pattern="sidebar"]');
   await expect(shell).toHaveCount(1);
   await expect(shell).toHaveAttribute('data-aia-component', 'navigation');
-  await expect(shell.locator('[data-shell-destination]')).toHaveCount(10);
+  // 13 destinos = Información 6 + Obra 4 + Compras 3, el espejo del shell real.
+  await expect(shell.locator('[data-shell-destination]')).toHaveCount(13);
   await expect(shell.locator('[aria-current="page"]')).toHaveCount(1);
   await expect(shell.locator('[data-sidebar-group="obra"]')).toContainText('Programación Semanal');
   await expect(shell.locator('[data-sidebar-group="compras"]')).toContainText('Plan de Compras');
   await expect(shell.locator('[data-sidebar-group="information"]')).not.toContainText('Integración');
+  // El rail arranca colapsado por contrato (fixture `initialState => 'collapsed'`,
+  // igual que el shell real). El toggle alterna en ambos sentidos y Escape es la
+  // salida accesible del rail de solo iconos: expande cuando está colapsado y no
+  // hace nada cuando ya está expandido (sidebar_navigation.js).
   const toggle = shell.locator('[data-sidebar-toggle]');
+  await expect(shell).toHaveAttribute('data-sidebar-state', 'collapsed');
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  await toggle.click();
+  await expect(shell).toHaveAttribute('data-sidebar-state', 'expanded');
   await expect(toggle).toHaveAttribute('aria-expanded', 'true');
   await toggle.click();
   await expect(shell).toHaveAttribute('data-sidebar-state', 'collapsed');
   await expect(toggle).toHaveAttribute('aria-expanded', 'false');
   await toggle.press('Escape');
   await expect(shell).toHaveAttribute('data-sidebar-state', 'expanded');
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
   await expect(toggle).toBeFocused();
 });
 
@@ -379,9 +400,16 @@ test('sidebar shell keeps desktop width, context and theme-visible brand mark', 
       return value;
     })(),
   }));
-  expect(dark.width).toBeGreaterThanOrEqual(dark.expandedWidth - 1);
-  expect(dark.width).toBeLessThanOrEqual(dark.expandedWidth + 1);
+  // El ancho lo manda el token del estado renderizado, no un valor suelto: en
+  // desktop el rail arranca colapsado, así que se contrasta contra
+  // --ds-sidebar-width-collapsed y se comprueba que el par de tokens desktop
+  // existe y es coherente. La geometría del ciclo colapsar/expandir en ambos
+  // viewports la cubre tests/browser/design-system-lab-sidebar.mjs.
+  await expect(navigation).toHaveAttribute('data-sidebar-state', 'collapsed');
+  expect(dark.width).toBeGreaterThanOrEqual(dark.collapsedWidth - 1);
+  expect(dark.width).toBeLessThanOrEqual(dark.collapsedWidth + 1);
   expect(dark.collapsedWidth).toBeGreaterThan(0);
+  expect(dark.expandedWidth).toBeGreaterThan(dark.collapsedWidth);
   expect(dark.background).not.toBe('rgba(0, 0, 0, 0)');
   await expect(logo).not.toHaveCSS('filter', 'none');
 

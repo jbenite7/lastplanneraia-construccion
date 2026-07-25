@@ -3,7 +3,11 @@ import { readFileSync } from 'node:fs';
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 const drawer = read('public/js/modules/aia_ui/nav_drawer.js');
-const css = read('public/css/navbar.css');
+// El navbar superior legacy (public/css/navbar.css + NavbarComponent.php) se
+// borró en 42ba76c y su última inyección viva se retiró al migrar /contratos,
+// /listado-actividades y /pdc al shell sidebar. La context-bar es ahora
+// responsabilidad del adaptador del shell.
+const shellCss = read('public/css/design-system/adapters/shell-sidebar.css');
 const lpsCss = read('public/css/handsontable-module.css');
 const lpsDrawer = read('public/js/modules/lps_drawer.js');
 const lpsView = read('views/partials/drawer_unificado.php');
@@ -13,10 +17,7 @@ const theme = read('public/js/modules/aia_ui/theme.js');
 const commonLoader = read('public/js/linksComunesHead2.js');
 const loginView = read('views/auth/login.view.php');
 const projectSelectorView = read('views/core/project_selector.view.php');
-const renderers = [
-  read('src/View/Components/NavbarComponent.php'),
-  read('public/js/cargarDatosGeneralesPagina2.js'),
-];
+const loader = read('public/js/cargarDatosGeneralesPagina2.js');
 
 // Tolerantes al estilo de comillas: biome formatea el JS con comillas dobles.
 assert.match(drawer, /key === ["']Escape["']/);
@@ -34,23 +35,15 @@ assert.match(drawer, /ui\.drawer\.removeAttribute\(["']role["']\)/);
 assert.match(drawer, /function syncResponsiveSemantics\(isDesktop\)/);
 assert.match(drawer, /function boot\(\)/);
 assert.match(drawer, /DOMContentLoaded/);
-assert.match(css, /\.close-drawer[\s\S]*?min-width:\s*var\(--ds-target-min\)/);
-assert.match(css, /\.user-island-actions[\s\S]*?\.island-btn\s*\{[^}]*min-height:\s*var\(--ds-target-min\)/s);
-assert.match(css, /\.navbar-collapse-drawer[\s\S]*?max-width:\s*100vw/);
-assert.match(css, /\.navbar-collapse-drawer \.nav-link\s*\{[^}]*min-height:\s*var\(--ds-target-min\)/s);
-assert.match(css, /\.dropdown-menu\[aria-labelledby="userDropdown"\] \.dropdown-item\s*\{[^}]*min-height:\s*var\(--ds-target-min\)/s);
-assert.match(css, /\.context-bar\s*\{[^}]*position:\s*sticky[^}]*top:\s*var\(--navbar-height\)/s);
-assert.match(css, /\.shell-nav-spacer\s*\{[^}]*height:\s*var\(--navbar-height\)/s);
-for (const renderer of renderers) {
-  assert.match(renderer, /aria-controls=/);
-  assert.match(renderer, /aria-label=["']Cerrar menú/);
-}
-assert.doesNotMatch(renderers[1], /context-bar fixed-top" style=/);
-assert.doesNotMatch(renderers[1], /context-bar fixed-top/);
-assert.doesNotMatch(renderers[1], /<div style="height: 100px;/);
-assert.doesNotMatch(renderers[0], /<div style="height: 70px;/);
-assert.match(renderers[1], /shell-nav-spacer[\s\S]*context-bar/);
-assert.doesNotMatch(renderers[1], /shell-context-spacer/);
+// La context-bar ya no se ancla bajo un navbar superior (--navbar-height): con
+// el shell sidebar es sticky en el borde superior del viewport.
+assert.match(shellCss, /body\.aia-shell--sidebar \.context-bar\s*\{[^}]*position:\s*sticky[^}]*top:\s*0/s);
+// El loader no debe volver a montar navegación propia: la única navegación es
+// el shell sidebar. Estos guards evitan que reaparezca el navbar huérfano.
+assert.doesNotMatch(loader, /navbar-aia/);
+assert.doesNotMatch(loader, /shell-nav-spacer/);
+assert.doesNotMatch(loader, /<div class="context-bar"/);
+assert.doesNotMatch(loader, /cssLink\.href/);
 assert.match(lpsCss, /\.lps-drawer\s*\{[^}]*background:\s*var\(--ds-active-bg-page\)/s);
 assert.match(lpsCss, /\.lps-drawer-header\s*\{[^}]*background:\s*var\(--ds-active-surface-raised\)/s);
 assert.match(lpsCss, /\.lps-card-glass\s*\{[^}]*background:\s*var\(--ds-active-surface-raised\)/s);
@@ -68,7 +61,6 @@ assert.doesNotMatch(weeklyView, /<link[^>]*handsontable-module\.css/);
 assert.match(weeklyView, /lps_drawer\.js\?v=20260722shell1/);
 const shellBudget = exceptions.pathBudgets.find((budget) => budget.name === 'foundation-shell');
 assert.ok(shellBudget, 'Foundation/Shell must have an explicit debt budget');
-assert.ok(shellBudget.paths.includes('public/css/navbar.css'));
 assert.ok(shellBudget.paths.includes('views/partials/drawer_unificado.php'));
 assert.match(theme, /bindThemeSwitches/);
 assert.match(theme, /function boot\(\)/);
@@ -76,18 +68,13 @@ assert.match(theme, /document\.readyState === ["']loading["']/);
 assert.match(theme, /DOMContentLoaded/);
 assert.match(theme, /window\.AiaDesignSystem\.bindThemeSwitches\(document\)/);
 assert.match(theme, /aia-theme-ready/);
-assert.doesNotMatch(renderers[0], /function currentTheme\(/);
-assert.doesNotMatch(renderers[1], /function currentTheme\(/);
-assert.match(renderers[0], /AiaDesignSystem\.bindThemeSwitches\(document\)/);
-assert.match(renderers[1], /AiaDesignSystem\.bindThemeSwitches\(document\)/);
-assert.match(renderers[0], /typeof window\.AiaDesignSystem\.bindThemeSwitches === ["']function["']/);
-assert.match(renderers[1], /typeof window\.AiaDesignSystem\.bindThemeSwitches === ["']function["']/);
-assert.match(renderers[0], /aia-theme-ready/);
-assert.match(renderers[1], /aia-theme-ready/);
+assert.doesNotMatch(loader, /function currentTheme\(/);
+assert.match(loader, /AiaDesignSystem\.bindThemeSwitches\(document\)/);
+assert.match(loader, /typeof window\.AiaDesignSystem\.bindThemeSwitches === ["']function["']/);
+assert.match(loader, /aia-theme-ready/);
 assert.match(commonLoader, /theme\.js\?v=20260711foundation5/);
 assert.match(commonLoader, /nav_drawer\.js\?v=20260711foundation5/);
 // tokens.css llega vía el entrypoint runtime de aia-design-system.css, no por el loader.
 assert.doesNotMatch(commonLoader, /tokens\.css/);
-assert.doesNotMatch(renderers[0], /nav_drawer\.js\?v=<\?php echo time\(\)/);
 assert.match(loginView, /theme\.js\?v=<\?= filemtime\(/);
 assert.match(projectSelectorView, /theme\.js\?v=<\?= filemtime\(/);

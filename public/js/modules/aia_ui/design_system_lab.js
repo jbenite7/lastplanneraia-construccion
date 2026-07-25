@@ -4,7 +4,6 @@
     root.setAttribute("data-aia-theme", "dark");
     root.classList.add("aia-theme-dark");
     root.classList.remove("aia-theme-linen");
-    if (document.body) document.body.classList.add("dark-mode");
     return "dark";
   }
 

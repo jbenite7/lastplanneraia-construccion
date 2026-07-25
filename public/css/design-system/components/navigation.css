@@ -268,12 +268,12 @@
     gap: var(--ds-space-2);
   }
 
-  /* !important reasserts the canonical heading treatment over legacy globals
-   that would otherwise win: dark-mode.css `body.dark-mode h1..h6 { color:
-   !important }` (components layer) repaints the colour, and styles.css —
-   imported into the later `module` layer — zeroes the margin via its `*`
-   reset and forces `letter-spacing: -0.02em` on every heading. Scope keeps
-   this to sidebar group labels only. */
+  /* !important reasserts the canonical heading treatment over legacy globals:
+   a components-layer heading-colour rule que antes ganaba desde la hoja
+   legacy de tema, ya retirada (F0/Task 2), and styles.css — imported into
+   the later `module` layer — zeroes the margin via its `*` reset and forces
+   `letter-spacing: -0.02em` on every heading. Scope keeps this to sidebar
+   group labels only. */
   .aia-navigation--sidebar .aia-sidebar__group h3 {
     margin: var(--ds-space-2) var(--ds-space-3) 0 !important;
     color: var(--ds-active-text-secondary) !important;

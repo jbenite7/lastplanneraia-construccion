@@ -25,10 +25,13 @@ final class DesignSystemHeadComponent
 
     public static function renderLaboratory(): string
     {
-        return implode("\n", array_map([self::class, 'renderStylesheet'], [
-            '/css/tokens.css',
-            '/css/design-system/lab-entrypoint.css',
-        ]));
+        return implode("\n", array_merge(
+            [self::renderScript('/js/modules/aia_ui/theme-bootstrap.js')],
+            array_map([self::class, 'renderStylesheet'], [
+                '/css/tokens.css',
+                '/css/design-system/lab-entrypoint.css',
+            ]),
+        ));
     }
 
     /** Vendors ya cubiertos por el core; declararlos no añade adjuntos. */

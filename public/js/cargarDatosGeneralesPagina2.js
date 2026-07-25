@@ -1,14 +1,14 @@
-// Inyectar CSS de Navegación Unificada.
-// Las vistas migradas al shell sidebar (window.__AIA_SHELL_SIDEBAR__) no montan
-// el navbar superior: conservan inputs ocultos, AJAX de datos y permisos de
-// vista, pero omiten navbar.css y el markup de navegación.
-if (!window.__AIA_SHELL_SIDEBAR__) {
-  var cssLink = document.createElement('link');
-  cssLink.href = '/public/css/navbar.css?v=' + new Date().getTime();
-  cssLink.rel = 'stylesheet';
-  cssLink.type = 'text/css';
-  document.head.appendChild(cssLink);
-}
+// Este loader ya no monta navegación: todas las vistas que lo cargan usan el
+// shell sidebar canónico (views/partials/shell_sidebar.php) y declaran
+// window.__AIA_SHELL_SIDEBAR__ = true. Aquí solo quedan los inputs ocultos, el
+// AJAX de datos generales y los permisos de vista.
+//
+// La rama legacy inyectaba la barra superior y su hoja de estilos, borrada en
+// 42ba76c. La inyección seguía viva y producía un 404 más una barra sin estilos
+// (position:fixed) superpuesta a la barra de contexto en las tres vistas que aún
+// no tenían shell (/contratos, /listado-actividades, /pdc). Los guards viven en
+// tests/test_foundation_shell_contract.mjs y en
+// tests/design-system/dead-theme-removal.test.mjs.
 
 // Inyectar FontAwesome local si no llegó ya, sea por <link> directo o por el
 // entrypoint del design system (que lo importa como vendor). Antes se traía
@@ -47,50 +47,6 @@ function applyProjectTypeVisibility(datosGenerales) {
   if (subcontratistas) subcontratistas.textContent = 'Interesados Externos';
 }
 
-// Drawer Overlay HTML
-var drawerOverlay = '<div class="drawer-overlay" id="drawerOverlay"></div>';
-
-// --- Restoring Dynamic Dropdown Variables (Adapted for New Navbar) ---
-
-// 1. Información General
-var navInformacionGeneral =
-  "<li class='nav-item dropdown'><a class='nav-link dropdown-toggle' href='#' id='informacionGeneral' role='button' data-toggle='dropdown' aria-expanded='false'><i class='fas fa-info-circle nav-icon'></i> <span class='nav-text-full'>Información General</span><span class='nav-text-compact'>I. General</span></a><ul class='dropdown-menu' id='informacionGeneralMenu' aria-labelledby='informacionGeneral'>";
-
-navInformacionGeneral +=
-  "<li id='tituloInteresados' class='dropdown-header'><b>Interesados</b></li><li><a class='dropdown-item' id='info_profesionales' href='#'>Profesionales AIA</a></li><li><a class='dropdown-item' id='info_subcontratistas' href='#'>Sub-Contratistas</a></li>";
-
-navInformacionGeneral +=
-  "<li id='tituloActividadesProyecto' class='dropdown-header mt-2'><b>Familias y contratacion</b></li><li><a class='dropdown-item' id='info_listadoActividades' href='#'>Familias de obra</a></li><li><a class='dropdown-item' id='info_contratos' href='#'>Paquetes de contratacion</a></li><li><a class='dropdown-item' id='planCompras' href='#'>Plan de Compras y Contrataciones</a></li>";
-
-navInformacionGeneral +=
-  " <li id='tituloIndicadores' class='dropdown-header mt-2'><b>Indicadores</b></li><li><a class='dropdown-item' id='informe_lps' href='#'>Indicadores de Last Planner</a></li><!-- <li><a class='dropdown-item' id='informe_productividad' href='#'>Indicadores de Tasas de Producción</a></li> -->";
-
-navInformacionGeneral +=
-  "<li id='tituloActualizarCronograma' class='dropdown-header mt-2'><b>Cronograma</b></li><li><a class='dropdown-item' id='actualizarCronograma' href='#'>Actualizar Cronograma</a></li>";
-
-navInformacionGeneral +=
-  "<li id='biControlTowerNavItem' class='d-none'><a class='dropdown-item' href='/bi/control-tower' data-bi-access-link='control-tower'><i class='fas fa-chart-line mr-2'></i>Control Tower</a></li></ul></li>";
-
-// 2. Integración
-var navIntegracion =
-  "<li class='nav-item dropdown'><a class='nav-link dropdown-toggle' href='#' id='integracion' role='button' data-toggle='dropdown' aria-expanded='false'><i class='fas fa-network-wired nav-icon'></i> <span class='nav-text-full'>Integración</span><span class='nav-text-compact'>Integración</span></a><ul class='dropdown-menu' id='integracionMenu' aria-labelledby='integracion'><li><a class='dropdown-item' id='controlCambios' href='#'>Control de Cambios</a></li></ul></li>";
-
-// 3. Semanas del Proyecto
-var navSemanasProyecto =
-  "<li class='nav-item dropdown'><a class='nav-link dropdown-toggle' href='#' id='semanasProyecto' role='button' data-toggle='dropdown' aria-expanded='false'><i class='far fa-calendar-alt nav-icon'></i> <span class='nav-text-full'>Semanas del Proyecto</span><span class='nav-text-compact'>Semanas</span></a><ul class='dropdown-menu' id='semanasProyectoMenu' aria-labelledby='semanasProyecto'></ul></li>";
-
-// 4. Programa General
-var navProgramaGeneral =
-  "<li class='nav-item dropdown'><a class='nav-link dropdown-toggle' id='programa_general' href='#' role='button' data-toggle='dropdown' aria-expanded='false'><i class='fas fa-project-diagram nav-icon'></i> <span class='nav-text-full'>Programa General</span><span class='nav-text-compact'>P. General</span></a><ul class='dropdown-menu' id='programa_generalMenu' aria-labelledby='programa_general'></ul></li>";
-
-// 5. Programación Intermedia
-var navProgramacionIntermedia =
-  "<li class='nav-item dropdown'><a class='nav-link dropdown-toggle' id='programacion_intermedia' href='#' role='button' data-toggle='dropdown' aria-expanded='false'><i class='fas fa-clipboard-list nav-icon'></i> <span class='nav-text-full'>Liberación de Restricciones</span><span class='nav-text-compact'>Restricciones</span></a><ul class='dropdown-menu' id='programacion_intermediaMenu' aria-labelledby='programacion_intermedia'></ul></li>";
-
-// 6. Programación Semanal
-var navProgramacionSemanal =
-  "<li class='nav-item dropdown'><a class='nav-link dropdown-toggle' href='#' id='programacion_semanal' role='button' data-toggle='dropdown' aria-expanded='false'><i class='fas fa-tasks nav-icon'></i> <span class='nav-text-full'>Programación Semanal</span><span class='nav-text-compact'>P. Semanal</span></a><ul class='dropdown-menu' id='programacion_semanalMenu' aria-labelledby='programacion_semanal'></ul></li>";
-
 // Inyectar Script ContextManager
 if (!document.querySelector('script[src*="ContextManager.js"]')) {
   var scriptCtx = document.createElement('script');
@@ -104,164 +60,8 @@ if (!document.querySelector('script[src*="bi-access.js"]')) {
   document.head.appendChild(scriptBiAccess);
 }
 
-
-
-// --- Unified Navbar Container Construction ---
-var navbarComponentStart = `
-<nav class="navbar navbar-expand-xl navbar-dark navbar-aia fixed-top">
-    <!-- Drawer Overlay -->
-    <div class="drawer-overlay" id="drawerOverlay"></div>
-
-    <div class="container-fluid">
-        <!-- Brand / Logo -->
-        <a class="navbar-brand aia-brand" href="/proyectos" aria-label="Last Planner AIA">
-            <span class="aia-brand-mark" aria-hidden="true"></span>
-            <span class="aia-brand-name">Last Planner AIA</span>
-        </a>
-
-        <!-- Mobile Toggler -->
-                <button class="navbar-toggler" type="button" id="drawerToggle" aria-label="Abrir menú" aria-controls="aiaNavbar" aria-expanded="false">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <!-- Navbar Content (Desktop: Row, Mobile: Drawer) -->
-                <div class="collapse navbar-collapse navbar-collapse-drawer" id="aiaNavbar" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
-
-            <!-- Mobile Drawer Header -->
-            <div class="drawer-header d-xl-none">
-                        <h5 class="m-0" id="drawerTitle">Menú</h5>
-                        <button type="button" class="close-drawer" id="drawerClose" aria-label="Cerrar menú">&times;</button>
-            </div>
-
-            <!-- Main Navigation Links (Center/Left) -->
-            <ul class="navbar-nav mr-auto ml-lg-2 main-links">
-`;
-
-var navbarComponentEnd = `
-            </ul>
-
-            <!-- User Profile & Actions (Right - Desktop Only) -->
-            <ul class="navbar-nav ml-auto align-items-center d-none d-xl-flex">
-
-                <!-- Notificaciones (Campana) Desktop -->
-                <li class="nav-item dropdown mr-2">
-                    <a class="nav-link dropdown-toggle" href="#" id="notificationDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="position: relative;">
-                        <i class="fas fa-bell"></i>
-                        <span class="badge badge-danger badge-pill" id="notificationBadge" style="position: absolute; top: 0px; right: 0; display: none; font-size: 0.6rem;">0</span>
-                    </a>
-                    <div class="dropdown-menu dropdown-menu-right shadow-sm border-0" aria-labelledby="notificationDropdown" style="width: 320px; max-height: 400px; overflow-y: auto; padding: 0;">
-                        <h6 class="dropdown-header bg-light border-bottom py-2 font-weight-bold">Centro de Notificaciones</h6>
-                        <div id="notificationList">
-                            <a class="dropdown-item text-muted text-center py-3" href="#"><i class="fas fa-spinner fa-spin mr-2"></i> Cargando...</a>
-                        </div>
-                    </div>
-                </li>
-
-                 <li class="nav-item dropdown">
-                    <!-- Desktop Trigger -->
-                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <div class="user-avatar-sm">
-                            <i class="fas fa-user"></i>
-                        </div>
-                        <span id="labelNombreUsuario">Usuario</span>
-                    </a>
-
-                    <!-- Dropdown Menu -->
-                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
-                        <a class="dropdown-item" href="/proyectos">
-                            <i class="fas fa-exchange-alt mr-2 text-muted"></i> Cambiar Proyecto
-                        </a>
-                        <div class="dropdown-divider"></div>
-                        <button type="button" class="dropdown-item aia-theme-switch" aria-pressed="false">
-                            <i class="fas fa-moon mr-2 text-muted" aria-hidden="true"></i>
-                            <span class="aia-theme-switch-text">Modo oscuro</span>
-                        </button>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item text-danger" href="/logout">
-                            <i class="fas fa-sign-out-alt mr-2"></i> Cerrar Sesión
-                        </a>
-                    </div>
-                </li>
-            </ul>
-
-            <!-- Mobile User Island (Thumb Zone - Mobile Only) -->
-            <div class="user-island d-xl-none">
-                <div class="user-island-header">
-                    <div class="user-avatar-lg">
-                        <i class="fas fa-user text-white"></i>
-                    </div>
-                    <div class="user-info">
-                        <div class="user-name" id="labelNombreUsuarioMobile">Usuario</div>
-                        <div class="user-role" id="labelRolUsuarioMobile">Usuario</div>
-                    </div>
-                </div>
-                <div class="user-island-actions">
-                    <a href="/proyectos" class="island-btn">
-                        <i class="fas fa-exchange-alt"></i> Proyecto
-                    </a>
-
-                    <button type="button" class="island-btn aia-theme-switch" aria-pressed="false">
-                        <i class="fas fa-moon" aria-hidden="true"></i>
-                        <span class="aia-theme-switch-text">Modo oscuro</span>
-                    </button>
-
-                    <!-- Notificaciones Dropdown Mobile -->
-                    <div class="dropdown" style="display: flex;">
-                        <a href="#" class="island-btn w-100 island-notification-btn" id="notificationDropdownMobile" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <i class="fas fa-bell"></i> Avisos
-                            <span class="badge badge-danger badge-pill" id="notificationBadgeMobile" style="display: none;">0</span>
-                        </a>
-                        <div class="dropdown-menu shadow-sm border-0" aria-labelledby="notificationDropdownMobile" style="width: 260px; max-height: 300px; overflow-y: auto; padding: 0; bottom: 100%; top: auto !important; margin-bottom: 5px; left: 0;">
-                            <h6 class="dropdown-header bg-light border-bottom py-2 font-weight-bold">Notificaciones</h6>
-                            <div id="notificationListMobile">
-                                <a class="dropdown-item text-muted text-center py-3" href="#"><i class="fas fa-spinner fa-spin mr-2"></i> Cargando...</a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <a href="/logout" class="island-btn btn-danger-soft" style="grid-column: span 2;">
-                        <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</nav>
-
-<div class="shell-nav-spacer" aria-hidden="true"></div>
-<!-- Context Bar (New) -->
-<div class="context-bar">
-    <div class="container-fluid d-flex align-items-center justify-content-between">
-        <div class="context-breadcrumb">
-             <i class="fas fa-building text-muted mr-1"></i>
-             <span class="font-weight-bold" id="ctxProyecto">Proyecto...</span>
-             <span class="text-muted mx-2">/</span>
-             <span id="ctxModulo" class="text-primary">Módulo...</span>
-        </div>
-        <div class="context-week-info">
-             <span class="badge badge-info p-2" id="ctxSemanaBadge">
-                <i class="far fa-calendar-alt mr-1"></i> <span id="ctxSemanaTexto">Semana...</span>
-             </span>
-        </div>
-    </div>
-</div>
-
-`;
-
-var finalNavbarHTML =
-  navbarComponentStart +
-  navInformacionGeneral +
-  navIntegracion +
-  navSemanasProyecto +
-  navProgramaGeneral +
-  navProgramacionIntermedia +
-  navProgramacionSemanal +
-  navbarComponentEnd;
-
 document.getElementById('encabezado').innerHTML =
-  document.getElementById('encabezado').innerHTML +
-  inputosOcultos +
-  (window.__AIA_SHELL_SIDEBAR__ ? '' : finalNavbarHTML);
+  document.getElementById('encabezado').innerHTML + inputosOcultos;
 
 // --- Pre-Construction Area: Hide construction-only modules ---
 if (window.__PROJECT_AREA__ === 'Pre-Construccion') {
