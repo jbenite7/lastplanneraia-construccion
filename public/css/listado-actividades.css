@@ -727,7 +727,7 @@ body .navbar-aia .navbar-brand.aia-brand .aia-brand-mark {
   }
 }
 
-html.aia-theme-dark {
+html.aia-theme-dark body {
   background: var(--ds-active-bg-canvas) !important;
   color: var(--ds-active-text-primary) !important;
 }

@@ -164,7 +164,7 @@
   flex: 0 0 auto;
 }
 
-html.aia-theme-dark {
+html.aia-theme-dark body {
   background: var(--ds-active-bg-canvas) !important;
   color: var(--ds-active-text-primary) !important;
 }

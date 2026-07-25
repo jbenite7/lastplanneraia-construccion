@@ -127,6 +127,7 @@ tests/browser/*
 !tests/browser/design-system-lab.visual.mjs
 !tests/browser/design-system-runtime-budget.mjs
 !tests/browser/design-system-consumer-smoke.mjs
+!tests/browser/design-system-body-canvas-dark.mjs
 !tests/browser/design-system-foundation-shell.mjs
 !tests/browser/design-system-keyboard.mjs
 !tests/browser/design-system-lab-keyboard.mjs
