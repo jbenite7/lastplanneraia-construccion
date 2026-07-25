@@ -118,7 +118,7 @@
       "family": "shell-navigation",
       "label": "Marca AIA completa",
       "sources": [
-        "src/View/Components/NavbarComponent.php"
+        "src/View/Components/DesignSystemComponent.php"
       ],
       "catalogIds": [
         "navigation",
@@ -131,24 +131,6 @@
         "dark"
       ],
       "labSelector": "[data-ui-group=\"brand-lockup\"]"
-    },
-    {
-      "id": "top-navbar",
-      "family": "shell-navigation",
-      "label": "Navbar superior",
-      "sources": [
-        "src/View/Components/NavbarComponent.php"
-      ],
-      "catalogIds": [
-        "navigation"
-      ],
-      "styleApi": [
-        ".aia-navigation__global"
-      ],
-      "themes": [
-        "dark"
-      ],
-      "labSelector": "[data-ui-group=\"top-navbar\"]"
     },
     {
       "id": "menu-toggle",
@@ -1344,7 +1326,7 @@
       "family": "vendor-adapters",
       "label": "Font Awesome",
       "sources": [
-        "src/View/Components/NavbarComponent.php"
+        "public/css/aia-design-system.css"
       ],
       "catalogIds": [
         "icon"
