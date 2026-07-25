@@ -4,15 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BI Control Tower — LPS AIA</title>
-    <script>
-        // Control Tower consume el shell canónico: tema dark forzado (sin
-        // default a linen ni lectura de localStorage/query — DS-027 pilot scope).
-        (function () {
-            document.documentElement.setAttribute('data-aia-theme', 'dark');
-            document.documentElement.classList.add('aia-theme-dark');
-            document.documentElement.classList.remove('aia-theme-linen');
-        })();
-    </script>
+    <?= \App\View\Components\DesignSystemHeadComponent::renderScript('/js/modules/aia_ui/theme-bootstrap.js') ?>
 
     <?= \App\View\Components\DesignSystemHeadComponent::renderStylesheet('/css/tokens.css') ?>
     <?= \App\View\Components\DesignSystemHeadComponent::renderStylesheet('/css/aia-design-system.css') ?>

@@ -15,7 +15,7 @@ test('the laboratory owns a dark-only lightweight entrypoint', async () => {
   ]);
 
   assert.match(view, /DesignSystemHeadComponent::renderLaboratory\(\)/);
-  assert.match(view, /<html[^>]*data-aia-theme="dark"[^>]*class="aia-theme-dark"/);
+  assert.doesNotMatch(view, /<html[^>]*data-aia-theme/);
   assert.doesNotMatch(view, /DesignSystemHeadComponent::render\(true\)/);
   assert.doesNotMatch(view, /data-lab-theme|\/js\/modules\/aia_ui\/theme\.js/);
 
@@ -23,6 +23,7 @@ test('the laboratory owns a dark-only lightweight entrypoint', async () => {
     head.indexOf('public static function renderLaboratory'),
     head.indexOf('public static function renderScript'),
   );
+  assert.match(laboratoryMethod, /theme-bootstrap\.js/);
   assert.match(laboratoryMethod, /\/css\/tokens\.css/);
   assert.match(laboratoryMethod, /\/css\/design-system\/lab-entrypoint\.css/);
   assert.doesNotMatch(laboratoryMethod, /aia-design-system\.css|vendor-datatables-legacy/);
