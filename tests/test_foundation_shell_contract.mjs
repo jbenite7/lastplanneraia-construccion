@@ -66,11 +66,15 @@ assert.ok(shellBudget.paths.includes('views/partials/drawer_unificado.php'));
 // alternancia (setTheme/toggleTheme/bindThemeSwitches) ni ata el boot al
 // DOMContentLoaded — aplica dark de forma sincrona. Los guards evitan que la
 // API retirada reaparezca (mismo patron que los guards del navbar arriba).
+// F0/Task 9 retiro tambien aia-theme-ready y aia-theme-change: con un solo
+// tema no hay cambio que anunciar, y sus unicos oyentes (bi_chart_theme.js,
+// bi-spa.js) cargaban despues de theme.js en views/bi/_layout.php y nunca
+// podian recibirlos; aia-theme-ready no tenia ningun oyente en el repo.
 assert.doesNotMatch(theme, /bindThemeSwitches/);
 assert.doesNotMatch(theme, /\bsetTheme\b/);
 assert.doesNotMatch(theme, /\btoggleTheme\b/);
-assert.match(theme, /aia-theme-ready/);
-assert.match(theme, /aia-theme-change/);
+assert.doesNotMatch(theme, /aia-theme-ready/);
+assert.doesNotMatch(theme, /aia-theme-change/);
 assert.doesNotMatch(loader, /function currentTheme\(/);
 assert.doesNotMatch(loader, /bindThemeSwitches/);
 assert.doesNotMatch(loader, /aia-theme-ready/);

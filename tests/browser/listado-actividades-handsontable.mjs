@@ -534,7 +534,7 @@ test('Listado respeta una sesión readOnly real sin alterar permisos en el naveg
   }
 });
 
-test('Listado cumple la matriz responsive Dark/Linen', async ({ page }) => {
+test('Listado cumple la matriz responsive Dark', async ({ page }) => {
   await openListado(page, HANDSONTABLE_GOAL_VIEWPORTS[0]);
   for (const viewport of HANDSONTABLE_GOAL_VIEWPORTS) {
     await page.setViewportSize(viewport);
@@ -550,8 +550,11 @@ test('Listado cumple la matriz responsive Dark/Linen', async ({ page }) => {
           cells: '#hot-container .ht_master tbody tr:first-child td',
         });
         const shell = await page.evaluate(() => ({
+          // F0/Task 9: linen ya no existe como clase; el unico tema valido
+          // es aia-theme-dark, asi que esto solo confirma que no aparece
+          // ninguna otra clase de tema junto a ella.
           mixedTheme: document.documentElement.classList.contains('aia-theme-dark')
-            && document.documentElement.classList.contains('aia-theme-linen'),
+            && [...document.documentElement.classList].some((name) => name.startsWith('aia-theme-') && name !== 'aia-theme-dark'),
           toolbarRows: new Set([...document.querySelectorAll('.toolbarFilaBotones > div')]
             .filter((node) => getComputedStyle(node).display !== 'none')
             .map((node) => {

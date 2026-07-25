@@ -15,11 +15,9 @@ async function openShell(page, viewport) {
   await expect(page.locator('#lps_sidebar_trigger')).toBeVisible({ timeout: 45000 });
 }
 
-async function setTheme(page, theme) {
-  const applied = await page.evaluate((nextTheme) => {
-    return window.AiaDesignSystem?.setTheme(nextTheme) || null;
-  }, theme);
-  expect(applied).toBe(theme);
+async function expectTheme(page, theme) {
+  // F0/Task 9: theme.js ya no expone setTheme; dark se aplica sin conmutacion.
+  // Esto solo confirma el estado en vez de forzarlo.
   await expect(page.locator('html')).toHaveAttribute('data-aia-theme', theme);
 }
 
@@ -47,7 +45,7 @@ async function expectFocusInside(page, selector, label) {
 }
 
 test.describe('Design system foundation shell drawers', () => {
-  test('navbar drawer works on mobile and tablet in dark and linen', async ({ page }) => {
+  test('navbar drawer works on mobile and tablet in dark', async ({ page }) => {
     await page.setViewportSize(VIEWPORTS[0]);
     await loginAndSelectProject(page, DA_PORTO);
 
@@ -61,9 +59,10 @@ test.describe('Design system foundation shell drawers', () => {
       await expectMinimumTarget(trigger, 'navbar trigger');
       await expectMinimumTarget(close, 'navbar close');
 
-      for (const theme of ['linen', 'dark']) {
-        await setTheme(page, theme);
+      for (const theme of ['dark']) {
+        await expectTheme(page, theme);
         await expectNoHorizontalOverflow(page, `${viewport.name} navbar ${theme} overflow`);
       }
     }
   });
+});

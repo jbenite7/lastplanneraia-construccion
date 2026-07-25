@@ -29,7 +29,7 @@ const VIEWPORTS = [
   { name: 'tablet', width: 1180, height: 820 },
   { name: 'desktop', width: 1440, height: 900 },
 ];
-const THEMES = ['dark', 'linen'];
+const THEMES = ['dark'];
 const SECTIONS = [
   {
     key: 'CNP',
@@ -116,8 +116,9 @@ async function reloadSection(page, section) {
   await waitForSection(page);
 }
 
-async function setTheme(page, theme) {
-  await page.evaluate((nextTheme) => window.AiaDesignSystem.setTheme(nextTheme), theme);
+async function expectTheme(page, theme) {
+  // F0/Task 9: theme.js ya no expone setTheme; dark se aplica sin conmutacion.
+  // Esto solo confirma el estado en vez de forzarlo.
   await expect(page.locator('html')).toHaveAttribute('data-aia-theme', theme);
 }
 
@@ -296,15 +297,11 @@ for (const section of SECTIONS) {
       await test.step(viewport.name, async () => {
         await page.setViewportSize(viewport);
         await waitForViewportMode(page, viewport.name);
-        const signatures = {};
         for (const theme of THEMES) {
-          await setTheme(page, theme);
+          await expectTheme(page, theme);
           const state = await readLayoutState(page, viewport.name);
           expectLayout(state, section, viewport, theme);
-          signatures[theme] = state.signature;
         }
-        expect(signatures.dark, `${section.key} ${viewport.name} themes differ`)
-          .not.toBe(signatures.linen);
         await expectEmptyState(page, viewport.name);
       });
     }
@@ -638,7 +635,7 @@ test('CNP: reprogramar desde card cambia el estado y finally lo restaura', async
   let selectedId;
   try {
     await openSection(page, section, VIEWPORTS[0], 1, DA_PORTO, CREDENTIALS);
-    await setTheme(page, 'dark');
+    await expectTheme(page, 'dark');
     const before = await listRows(page, section.endpoint, 1);
     await page.locator('#dt_cliente tbody button.reprogramar').evaluateAll((buttons) => {
       buttons.forEach((button) => button.remove());
@@ -805,10 +802,10 @@ test('CIC respeta la semana seleccionada aunque exista una posterior', async ({ 
   expect(new Set(renderedWeeks)).toEqual(new Set([6]));
 });
 
-test('CNP tablet no mezcla superficies linen dentro del tema dark', async ({ page }) => {
+test('CNP tablet mantiene todas las superficies dark, sin claras residuales', async ({ page }) => {
   const section = SECTIONS.find(({ key }) => key === 'CNP');
   await openSection(page, section, { width: 787, height: 750 }, 7, PRUEBA, CREDENTIALS);
-  await setTheme(page, 'dark');
+  await expectTheme(page, 'dark');
   await expect.poll(() => page.evaluate(() => {
     const lightness = (value) => value.match(/[\d.]+/g).slice(0, 3)
       .map(Number).reduce((sum, channel) => sum + channel, 0) / 3;
@@ -826,7 +823,7 @@ test('CNP tablet no mezcla superficies linen dentro del tema dark', async ({ pag
 test('CNP tablet contiene las acciones dentro de su columna', async ({ page }) => {
   const section = SECTIONS.find(({ key }) => key === 'CNP');
   await openSection(page, section, { width: 787, height: 750 }, 7, PRUEBA, CREDENTIALS);
-  await setTheme(page, 'dark');
+  await expectTheme(page, 'dark');
   const geometry = await page.evaluate(() => [...document.querySelectorAll(
     '#dt_cliente tbody td:first-child button.editar, #dt_cliente tbody td:first-child button.reprogramar',
   )].map((button) => {

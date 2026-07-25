@@ -70,3 +70,18 @@ test('ninguna vista incluye el conmutador de tema', async () => {
   }
   assert.deepEqual(offenders, [], `vistas con conmutador: ${offenders.join(', ')}`);
 });
+
+test('los gates no iteran sobre dos temas', async () => {
+  for (const script of [
+    'scripts/design-system-contracts.mjs',
+    'scripts/design-system-runtime-budget.mjs',
+    'scripts/design-system-runtime-budget-provenance.mjs',
+  ]) {
+    assert.equal(/linen/i.test(await read(script)), false, `${script} menciona linen`);
+  }
+});
+
+test('el contrato de consumo no promete un tema retirado', async () => {
+  const design = await read('DESIGN.md');
+  assert.equal(/tema `linen`/.test(design), false, 'DESIGN.md sigue prometiendo linen');
+});

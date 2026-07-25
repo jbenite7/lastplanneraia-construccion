@@ -303,24 +303,6 @@
       "labSelector": "[data-ui-group=\"project-switcher\"]"
     },
     {
-      "id": "theme-switcher",
-      "family": "shell-navigation",
-      "label": "Cambio de tema",
-      "sources": [
-        "views/auth/partials/auth-theme-switch.php"
-      ],
-      "catalogIds": [
-        "button"
-      ],
-      "styleApi": [
-        ".aia-btn"
-      ],
-      "themes": [
-        "dark"
-      ],
-      "labSelector": "[data-ui-group=\"theme-switcher\"]"
-    },
-    {
       "id": "week-badge",
       "family": "shell-navigation",
       "label": "Semana activa",

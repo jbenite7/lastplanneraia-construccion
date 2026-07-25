@@ -9,8 +9,9 @@ Este directorio define la parte versionada del design system. Stitch y `docs/bra
 - Usar Inter para cuerpo, navegacion, formularios, tablas, grillas y ayudas.
 - Mantener densidad operativa: la UI debe ayudar a leer, decidir y actuar.
 - En este repositorio, implementar y validar UI solo en desktop dark de al menos
-  1180 px; `1180x820` es el viewport canónico. Mobile, tablet y `linen` quedan
-  fuera del alcance visual vigente.
+  1180 px; `1180x820` es el viewport canónico. Mobile y tablet quedan fuera del
+  alcance visual vigente; `linen` fue retirado del producto en F0 del goal
+  `dark-mode-todos-los-modulos` y no existe conmutador de tema.
 - Diseñar según los criterios accesibles definidos para el alcance, con foco visible, targets tactiles de 44px y `prefers-reduced-motion`.
 - Usar glass solo para jerarquia: shell, nav, modales, paneles y cards. Tablas y grillas priorizan legibilidad.
 - No crear componentes visuales ad hoc en modulos migrados. Registrar excepciones en `exceptions.json`.
@@ -41,7 +42,7 @@ Este directorio define la parte versionada del design system. Stitch y `docs/bra
   `DesignSystemHeadComponent::renderForModule()`, con fallback fail-safe al
   agregador si el manifiesto falta, no parsea o declara un vendor desconocido.
 - `public/js/modules/aia_ui/theme-bootstrap.js`: aplica dark por defecto o la preferencia persistida antes de la primera hoja de estilo y evita flash de tema.
-- `public/js/modules/aia_ui/theme.js`: API interactiva linen/dark y reduced motion después del bootstrap.
+- `public/js/modules/aia_ui/theme.js`: aplica dark de forma incondicional (sin conmutador) y reduced motion después del bootstrap.
 - `scripts/design-system-audit.mjs`: gate estatico de deuda visual.
 - `audit-baseline.json` y `exceptions.json`: deuda congelada y excepciones exactas.
 - `phpstan-baseline.json`: cinco fingerprints legacy tolerados; cualquier hallazgo nuevo bloquea CI.

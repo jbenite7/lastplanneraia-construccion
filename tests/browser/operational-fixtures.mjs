@@ -19,7 +19,6 @@ test('P1 and P2 operational fixtures stay contained in the dark desktop laborato
 
   for (const [family, count] of Object.entries(FIXTURES_BY_FAMILY)) {
     await page.goto(`/internal/design-system?family=${family}`, { waitUntil: 'domcontentloaded' });
-    await page.evaluate(() => window.AiaDesignSystem.setTheme('dark'));
     await expect(page.locator('html')).toHaveAttribute('data-aia-theme', 'dark');
     await expect(page.locator(`[data-family="${family}"] [data-operational-fixture]`)).toHaveCount(count);
     const overflow = await page.evaluate(() => (
@@ -33,7 +32,7 @@ test('vendor fixtures announce observable P1 and P2 state changes', async ({ pag
   await page.setViewportSize({ width: 1180, height: 820 });
   await login(page, ADMIN);
   await page.goto('/internal/design-system?family=vendor-adapters', { waitUntil: 'domcontentloaded' });
-  await page.evaluate(() => window.AiaDesignSystem.setTheme('dark'));
+  await expect(page.locator('html')).toHaveAttribute('data-aia-theme', 'dark');
 
   const grid = page.locator('[data-operational-fixture="editable-grid"]');
   await grid.getByRole('button', { name: 'Guardar cambios' }).click();
@@ -58,7 +57,7 @@ test('vendor adapter previews expose their full operational affordances', async 
   await page.setViewportSize({ width: 1180, height: 820 });
   await login(page, ADMIN);
   await page.goto('/internal/design-system?family=vendor-adapters', { waitUntil: 'domcontentloaded' });
-  await page.evaluate(() => window.AiaDesignSystem.setTheme('dark'));
+  await expect(page.locator('html')).toHaveAttribute('data-aia-theme', 'dark');
 
   const handsontable = page.locator('[data-vendor-fixture="handsontable"]');
   await handsontable.getByRole('button', { name: 'Añadir actividad' }).click();

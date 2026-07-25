@@ -505,7 +505,7 @@ for (const project of BI_PROJECT_SCOPE) {
       expect(detail.payload.activities.length).toBeGreaterThan(0);
       expect(detail.payload.activities.every((activity) => Number(activity.gap_pp) < 0)).toBe(true);
 
-      await page.goto('/bi/programa-general?project_id=68&semana=6&theme=linen', { waitUntil: 'domcontentloaded' });
+      await page.goto('/bi/programa-general?project_id=68&semana=6&theme=dark', { waitUntil: 'domcontentloaded' });
       await expect(page.locator('#programa-gauge-theoretical')).toContainText(formatPercent(gauge.metrics.theoretical_pct));
       await expect(page.locator('#programa-gauge-gap')).toContainText(formatPp(gauge.metrics.gap_pp));
       await expect(page.locator('#programa-compliance-explanation')).toContainText(compliance.metrics.explanation.headline);
@@ -605,7 +605,7 @@ for (const project of BI_PROJECT_SCOPE) {
 
     test('renders compliance drill-down as a table on tablet/desktop without overflow', async ({ page }) => {
       await page.setViewportSize({ width: 1280, height: 900 });
-      await page.goto('/bi/programa-general?project_id=68&semana=6&theme=linen', { waitUntil: 'domcontentloaded' });
+      await page.goto('/bi/programa-general?project_id=68&semana=6&theme=dark', { waitUntil: 'domcontentloaded' });
       await page.locator('#programa-compliance-card').dblclick();
       await expect(page.locator('#programa-compliance-drilldown')).toBeVisible();
       await expect.poll(async () => page.locator('#programa-compliance-drilldown-body tr').count(), { timeout: 15000 })
@@ -632,7 +632,7 @@ for (const project of BI_PROJECT_SCOPE) {
 
     test('opens progress composition by double click and renders desktop table', async ({ page }) => {
       await page.setViewportSize({ width: 1280, height: 900 });
-      await page.goto('/bi/programa-general?project_id=68&semana=6&theme=linen', { waitUntil: 'domcontentloaded' });
+      await page.goto('/bi/programa-general?project_id=68&semana=6&theme=dark', { waitUntil: 'domcontentloaded' });
       await page.locator('#programa-gauge-card').dblclick();
       await expect(page.locator('#programa-gauge-drilldown')).toBeVisible();
       await expect(page.locator('#programa-gauge-drilldown-table')).toBeVisible();
@@ -654,7 +654,7 @@ for (const project of BI_PROJECT_SCOPE) {
       const subcontractorPattern = new RegExp(`Subcontratista:\\s*${escapeRegExp(ownedActivity.subcontractor)}`);
 
       await page.setViewportSize({ width: 1280, height: 900 });
-      await page.goto('/bi/programa-general?project_id=68&semana=6&theme=linen', { waitUntil: 'domcontentloaded' });
+      await page.goto('/bi/programa-general?project_id=68&semana=6&theme=dark', { waitUntil: 'domcontentloaded' });
       await page.locator('#programa-compliance-card').dblclick();
       await expect(page.locator('#programa-compliance-drilldown')).toBeVisible();
       await expect.poll(async () => page.locator('#programa-compliance-drilldown-body tr').count(), { timeout: 15000 })
@@ -701,10 +701,10 @@ for (const project of BI_PROJECT_SCOPE) {
           visibleSelector: '.programa-compliance-drilldown-card',
         },
         {
-          label: 'desktop-table-linen',
+          label: 'desktop-table',
           width: 1280,
           height: 900,
-          theme: 'linen',
+          theme: 'dark',
           open: async () => {
             await page.locator('#programa-compliance-card').dblclick();
             await expect.poll(async () => page.locator('#programa-compliance-drilldown-body tr').count(), { timeout: 15000 })
@@ -812,7 +812,7 @@ for (const project of BI_PROJECT_SCOPE) {
       const errors = installErrorCollectors(page);
       const viewports = [
         { label: 'mobile', width: 390, height: 844, theme: 'dark' },
-        { label: 'desktop', width: 1280, height: 900, theme: 'linen' },
+        { label: 'desktop', width: 1280, height: 900, theme: 'dark' },
       ];
 
       for (const viewport of viewports) {
@@ -1012,7 +1012,7 @@ for (const project of BI_PROJECT_SCOPE) {
       };
       await page.route(pattern, routeHandler);
       await page.setViewportSize({ width: 1280, height: 900 });
-      await page.goto('/bi/programa-general?project_id=68&semana=6&theme=linen', { waitUntil: 'domcontentloaded' });
+      await page.goto('/bi/programa-general?project_id=68&semana=6&theme=dark', { waitUntil: 'domcontentloaded' });
 
       await expect(page.locator('#programa-delay-card')).toContainText('Variación probable de fecha final');
       await expect(page.locator('#programa-delay-status')).not.toContainText('Atraso operativo observado');
@@ -1100,7 +1100,7 @@ for (const project of BI_PROJECT_SCOPE) {
 
       await page.route(pattern, routeHandler);
       await page.setViewportSize({ width: 1280, height: 900 });
-      await page.goto('/bi/programa-general?project_id=68&semana=6&theme=linen', { waitUntil: 'domcontentloaded' });
+      await page.goto('/bi/programa-general?project_id=68&semana=6&theme=dark', { waitUntil: 'domcontentloaded' });
 
       await expect(page.locator('#programa-radar-axes .bi-radar-axis')).toHaveCount(3);
       await expect(page.locator('#programa-radar-axes')).toContainText('Avance promedio');
@@ -1177,7 +1177,7 @@ for (const project of BI_PROJECT_SCOPE) {
 
     test('expone CNP accionable con detalle responsivo y paginación coherente', async ({ page }) => {
       const errors = installErrorCollectors(page);
-      const query = 'project_id=68&semana=6&theme=linen';
+      const query = 'project_id=68&semana=6&theme=dark';
       const detailRequests = [];
       page.on('request', (request) => {
         if (request.url().includes('/api/bi/report/programa-general/cnp-detail')) {
@@ -1379,7 +1379,7 @@ for (const project of BI_PROJECT_SCOPE) {
 
     test('conserva los registros CNP y permite reintentar si falla Cargar más', async ({ page }) => {
       await page.setViewportSize({ width: 1280, height: 900 });
-      await page.goto('/bi/programa-general?project_id=68&semana=6&theme=linen', { waitUntil: 'domcontentloaded' });
+      await page.goto('/bi/programa-general?project_id=68&semana=6&theme=dark', { waitUntil: 'domcontentloaded' });
       await page.locator('#programa-cnp-drilldown-trigger').click();
       const rows = page.locator('#programa-causal-drilldown-body tr');
       await expect.poll(() => rows.count(), { timeout: 15000 }).toBeGreaterThan(0);
@@ -1410,7 +1410,7 @@ for (const project of BI_PROJECT_SCOPE) {
 
     test('explica el corte con un cronograma paginado de actividades y sin overflow', async ({ page }) => {
       const errors = installErrorCollectors(page);
-      const query = 'project_id=68&semana=6&theme=linen';
+      const query = 'project_id=68&semana=6&theme=dark';
       const report = await getJson(page, `/api/bi/report/programa-general?${query}`);
       expect(report.ok, 'Programa General activity timeline report failed').toBe(true);
 
@@ -1631,7 +1631,9 @@ for (const project of BI_PROJECT_SCOPE) {
         { width: 1024, height: 768, label: 'tablet horizontal', mobile: false },
         { width: 390, height: 844, label: 'mobile', mobile: true },
       ];
-      for (const theme of ['dark', 'linen']) {
+      // F0/Task 9: dark es el unico tema. El bucle sobrevive como marcador de
+      // "sobre cada tema gobernado" (hoy uno solo).
+      for (const theme of ['dark']) {
         await page.setViewportSize({ width: 1440, height: 900 });
         await page.goto(`/bi/programa-general?project_id=68&semana=6&theme=${theme}`, { waitUntil: 'domcontentloaded' });
         for (const mode of technicalModes) {
@@ -1655,7 +1657,7 @@ for (const project of BI_PROJECT_SCOPE) {
 
     test('descarta una página tardía del cronograma después de cambiar el filtro', async ({ page }) => {
       await page.setViewportSize({ width: 1280, height: 900 });
-      await page.goto('/bi/programa-general?project_id=68&semana=6&theme=linen', { waitUntil: 'domcontentloaded' });
+      await page.goto('/bi/programa-general?project_id=68&semana=6&theme=dark', { waitUntil: 'domcontentloaded' });
       await expect(page.locator('#programa-activity-body tr')).toHaveCount(25);
 
       const delayedPayload = await getJson(page, '/api/bi/report/programa-general/progress-detail?project_id=68&semana=6&limit=100&offset=25');
@@ -1693,7 +1695,7 @@ for (const project of BI_PROJECT_SCOPE) {
 
     test('descarta un reporte principal tardío después de aplicar filtros nuevos', async ({ page }) => {
       await page.setViewportSize({ width: 1280, height: 900 });
-      await page.goto('/bi/programa-general?project_id=68&semana=6&theme=linen', { waitUntil: 'domcontentloaded' });
+      await page.goto('/bi/programa-general?project_id=68&semana=6&theme=dark', { waitUntil: 'domcontentloaded' });
       await expect(page.locator('#programa-activity-body tr')).toHaveCount(25);
 
       const expectedWeek4 = await getJson(page, '/api/bi/report/programa-general?project_id=68&semana=4');
@@ -1788,7 +1790,7 @@ for (const project of BI_PROJECT_SCOPE) {
     });
 
     test('renders Programa General curves as clean lines without point markers', async ({ page }) => {
-      await page.goto(`/bi/programa-general?project_id=${project.projectId}&semana=${encodeURIComponent(String(project.maxWeek || 1))}&theme=linen`, { waitUntil: 'domcontentloaded' });
+      await page.goto(`/bi/programa-general?project_id=${project.projectId}&semana=${encodeURIComponent(String(project.maxWeek || 1))}&theme=dark`, { waitUntil: 'domcontentloaded' });
       await expect.poll(() => chartState(page, 'programa-curva-ejecucion'), { timeout: 15000 }).not.toBeNull();
 
       const style = await page.evaluate(() => {

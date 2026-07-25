@@ -9,7 +9,8 @@ async function openDarkWeek(page) {
   await loginAndSelectProject(page, JMC);
   await changeWeek(page, 6, '/programacion-semanal');
   await page.locator('#loading').waitFor({ state: 'hidden', timeout: 45000 });
-  await page.evaluate(() => window.AiaDesignSystem.setTheme('dark'));
+  // F0/Task 9: theme.js ya no expone setTheme; dark se aplica sin conmutacion.
+  await expect(page.locator('html')).toHaveAttribute('data-aia-theme', 'dark');
   await expect(page.locator('#hot-container .ht_master.handsontable')).toBeVisible();
 }
 
@@ -131,12 +132,11 @@ test('modal eliminar actividad y asignar CNP usa dark mode', async ({ page }) =>
   await expect(modal).toBeHidden();
 });
 
-test('modal de calificacion CIC contrasta en linen y dark', async ({ page }) => {
+test('modal de calificacion CIC contrasta en dark', async ({ page }) => {
   await openDarkWeek(page);
   await page.goto('/programacion-semanal/cic', { waitUntil: 'domcontentloaded' });
   await page.locator('#loading').waitFor({ state: 'hidden', timeout: 45000 }).catch(() => {});
-  for (const theme of ['linen', 'dark']) {
-    await page.evaluate((value) => window.AiaDesignSystem.setTheme(value), theme);
+  for (const theme of ['dark']) {
     await page.locator('#dt_cliente tbody button.editar:visible').first().click();
     const modal = page.locator('#modalcic_mdo.show, #modalcic_si.show');
     await expect(modal).toBeVisible();
@@ -146,7 +146,7 @@ test('modal de calificacion CIC contrasta en linen y dark', async ({ page }) => 
     }));
     const delta = Math.abs(rgbLightness(metrics.question) - rgbLightness(metrics.body));
     expect(delta, `${theme} question contrast`).toBeGreaterThan(90);
-    if (theme === 'dark') expect(rgbLightness(metrics.body)).toBeLessThan(120);
+    expect(rgbLightness(metrics.body)).toBeLessThan(120);
     await modal.locator('[data-dismiss="modal"], .close').first().click();
     await expect(modal).toBeHidden();
   }
@@ -157,8 +157,7 @@ test('modal CIC mobile conserva contraste y opciones dentro del box', async ({ p
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/programacion-semanal/cic', { waitUntil: 'domcontentloaded' });
   await page.locator('#loading').waitFor({ state: 'hidden', timeout: 45000 }).catch(() => {});
-  for (const theme of ['linen', 'dark']) {
-    await page.evaluate((value) => window.AiaDesignSystem.setTheme(value), theme);
+  for (const theme of ['dark']) {
     await page.locator(
       '#ps-legacy-card-view [data-legacy-action="edit"]:visible, #dt_cliente tbody button.editar:visible',
     ).first().click();

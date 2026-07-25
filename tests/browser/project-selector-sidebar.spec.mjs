@@ -133,19 +133,29 @@ for (const viewport of VIEWPORTS) {
     await accountTrigger.click();
     await expect(accountPanel).toBeVisible();
 
-    const themeToggle = sidebar.locator('.aia-theme-switch');
-    await themeToggle.click();
-    await expect(page.locator('html')).toHaveAttribute('data-aia-theme', 'linen');
-    await page.evaluate(() => window.AiaDesignSystem.setTheme('dark'));
+    // F0/Task 8 retiro el conmutador de tema (.aia-theme-switch); dark queda
+    // aplicado sin conmutacion.
+    await expect(page.locator('html')).toHaveAttribute('data-aia-theme', 'dark');
 
     await expect(sidebar.getByRole('menuitem', { name: 'Cerrar sesión' })).toHaveAttribute('href', '/logout');
 
-    // Anchor menu items must take the panel's colour, not the vendor link blue.
-    const [logoutColor, themeColor] = await Promise.all([
+    // Anchor menu items must take the panel's colour (--ds-active-text-primary
+    // via `color: inherit`), not the vendor link blue. /proyectos only renders
+    // one account item (Cerrar sesión; no "Cambiar proyecto" while already on
+    // the project selector), so the reference is the token itself, probed the
+    // same way as the group-heading check above.
+    const [logoutColor, primaryToken] = await Promise.all([
       sidebar.getByRole('menuitem', { name: 'Cerrar sesión' }).evaluate((el) => getComputedStyle(el).color),
-      sidebar.locator('.aia-theme-switch').evaluate((el) => getComputedStyle(el).color),
+      page.evaluate(() => {
+        const probe = document.createElement('span');
+        probe.style.color = getComputedStyle(document.documentElement).getPropertyValue('--ds-active-text-primary').trim();
+        document.body.append(probe);
+        const value = getComputedStyle(probe).color;
+        probe.remove();
+        return value;
+      }),
     ]);
-    expect(logoutColor, 'logout link uses the vendor anchor colour').toBe(themeColor);
+    expect(logoutColor, 'logout link uses the vendor anchor colour').toBe(primaryToken);
 
     // Hardened menu semantics: the trigger advertises the popup, clicking away
     // dismisses it, and the role=menu is keyboard navigable.
@@ -157,7 +167,12 @@ for (const viewport of VIEWPORTS) {
 
     // Arrow keys open the menu and move focus onto the items; once open the
     // keys act on the focused menuitem, so drive them through the keyboard.
+    // F0/Task 8 retired "Cambiar tema" from this panel (/proyectos only ever
+    // shows Cerrar sesión here, since "Cambiar proyecto" is redundant on the
+    // project selector itself), so first/last/only are the same single item;
+    // ArrowDown from it must wrap back onto itself, not move to a second one.
     const menuItems = sidebar.locator('[data-aia-menu-panel] [role="menuitem"]');
+    await expect(menuItems).toHaveCount(1);
     await accountTrigger.press('ArrowDown');
     await expect(accountPanel).toBeVisible();
     await expect(menuItems.first()).toBeFocused();
@@ -166,7 +181,7 @@ for (const viewport of VIEWPORTS) {
     await page.keyboard.press('Home');
     await expect(menuItems.first()).toBeFocused();
     await page.keyboard.press('ArrowDown');
-    await expect(menuItems.nth(1)).toBeFocused();
+    await expect(menuItems.first()).toBeFocused();
 
     await page.keyboard.press('Escape');
     await expect(accountPanel).toBeHidden();

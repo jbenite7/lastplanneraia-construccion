@@ -71,7 +71,7 @@ test('homologation covers every governed visual family', () => {
     assert.match(family.label, /^[A-ZÁÉÍÓÚÑ]/, `${family.id} needs a human label`);
     assert.ok(family.description?.length >= 24, `${family.id} needs a description`);
     assert.ok(family.candidates.length >= 1, family.id);
-    assert.deepEqual(family.themes, ['linen', 'dark'], family.id);
+    assert.deepEqual(family.themes, ['dark'], family.id);
     assert.deepEqual(family.viewports, ['390x844', '1180x820', '1440x900'], family.id);
   }
 });
@@ -255,7 +255,7 @@ test('manifests declare the complete deterministic visual matrix', () => {
     path.join(root, 'docs/design-system/manifests/programa-general.json'), 'utf8',
   ));
   assert.equal(laboratory.scenarios.length, 20);
-  assert.equal(pilot.scenarios.length, 6);
+  assert.equal(pilot.scenarios.length, 3);
 });
 
 test('golden checksums fail closed when a declared baseline changes', () => {

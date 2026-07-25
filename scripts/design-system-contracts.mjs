@@ -168,8 +168,8 @@ for (const approval of approvals?.approvals || []) {
       failures.push(`${key}: desktop-dark scoped approval must cover the canonical desktop viewports`);
     }
   } else {
-    if (JSON.stringify(approval.themes) !== JSON.stringify(['linen', 'dark'])) {
-      failures.push(`${key}: approval must cover linen and dark`);
+    if (JSON.stringify(approval.themes) !== JSON.stringify(['dark'])) {
+      failures.push(`${key}: approval must cover dark`);
     }
     if (JSON.stringify(approval.viewports) !== JSON.stringify(['390x844', '1180x820', '1440x900'])) {
       failures.push(`${key}: approval must cover all viewports`);
@@ -222,8 +222,8 @@ const componentIds = new Set((catalog?.components || []).map((component) => comp
 const uiInventory = documents.get('docs/design-system/ui-groups-inventory.json');
 enforceUnique(uiInventory?.groups, 'id', 'UI group id');
 for (const group of uiInventory?.groups || []) {
-  if (JSON.stringify(group.themes) !== JSON.stringify(['dark', 'linen'])) {
-    failures.push(`${group.id}: UI group must cover dark and linen`);
+  if (JSON.stringify(group.themes) !== JSON.stringify(['dark'])) {
+    failures.push(`${group.id}: UI group must cover dark`);
   }
   for (const componentId of group.catalogIds || []) {
     if (!componentIds.has(componentId)) failures.push(`${group.id}: unknown component ${componentId}`);
@@ -350,7 +350,7 @@ for (const familyId of governedFamilies) {
   }
 }
 const pilotScenarioKeys = new Set((programManifest?.scenarios || []).map(scenarioKey));
-for (const theme of ['dark', 'linen']) {
+for (const theme of ['dark']) {
   for (const viewport of requiredViewportKeys) {
     if (!pilotScenarioKeys.has(`${theme}/${viewport}`)) {
       failures.push(`programa-general: missing scenario ${theme}/${viewport}`);

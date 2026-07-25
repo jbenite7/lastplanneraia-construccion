@@ -11,26 +11,19 @@ const laboratoryViewports = ['1180x820', '1440x900'];
 
 const viewportKey = ({ width, height }) => `${width}x${height}`;
 
-function assertCompleteThemeViewportMatrix(scenarios, expectedPerCombination) {
-  assert.deepEqual(
-    [...new Set(scenarios.map(({ theme }) => theme))].sort(),
-    ['dark', 'linen'],
-  );
+function assertDesktopDarkPilotMatrix(scenarios, expectedPerViewport) {
+  assert.deepEqual([...new Set(scenarios.map(({ theme }) => theme))], ['dark']);
   assert.deepEqual(
     [...new Set(scenarios.map(({ viewport }) => viewportKey(viewport)))].sort(),
     [...requiredViewports].sort(),
   );
 
-  for (const theme of ['dark', 'linen']) {
-    for (const viewport of requiredViewports) {
-      assert.equal(
-        scenarios.filter((scenario) => (
-          scenario.theme === theme && viewportKey(scenario.viewport) === viewport
-        )).length,
-        expectedPerCombination,
-        `${theme} ${viewport}`,
-      );
-    }
+  for (const viewport of requiredViewports) {
+    assert.equal(
+      scenarios.filter((scenario) => viewportKey(scenario.viewport) === viewport).length,
+      expectedPerViewport,
+      `dark ${viewport}`,
+    );
   }
 }
 
@@ -69,8 +62,8 @@ test('visual regression contract covers the Programa General pilot matrix', asyn
   ]);
   assert.match(source, /toHaveScreenshot/);
   assert.match(source, /MANIFEST\.scenarios/);
-  assert.equal(manifest.scenarios.length, 6);
-  assertCompleteThemeViewportMatrix(manifest.scenarios, 1);
+  assert.equal(manifest.scenarios.length, 3);
+  assertDesktopDarkPilotMatrix(manifest.scenarios, 1);
 });
 
 test('CI is reproducible, least-privileged and has no deployment path', async () => {

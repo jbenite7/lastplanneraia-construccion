@@ -28,12 +28,6 @@ colors:
   text-secondary-dark: "#c7d4cc"
   border-dark: "#ddefe638"           # rgba(221,239,230,.22)
   focus-ring-dark: "#2caa9f"
-  # Tema light (alcance secundario; enviado)
-  bg-canvas: "#f7faf8"
-  bg-page: "#fbfdfc"
-  text-primary: "#141c18"
-  text-secondary: "#52645a"
-  text-tertiary: "#72857a"
   # Estados semánticos (tintes fijos, independientes del tema)
   state-success-bg: "#ddefe6"
   state-success-text: "#1a5633"
@@ -43,8 +37,6 @@ colors:
   state-critical-text: "#8f1d1d"
   state-info-bg: "#e3f9f7"
   state-info-text: "#006d66"
-  # Deuda consciente (shipped-but-ungated)
-  bg-linen: "#f4f1ea"
 typography:
   display:
     fontFamily: "Montserrat, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
@@ -235,7 +227,6 @@ temas. El acento aparece por significado, no por decoración.
 - **Superficies Dark** (`rgba(28,36,31,.92)` surface · `rgba(35,48,41,.86)` raised · `rgba(35,48,41,.66)` glass): capas de contenido semitranslúcidas.
 - **Tinta Dark** (`#f7faf8` primaria · `#c7d4cc` secundaria): texto sobre penumbra.
 - **Borde Dark** (`rgba(221,239,230,.22)`): separadores tenues; el foco usa `#2caa9f`.
-- **Lienzo Light** (`#f7faf8` canvas · `#fbfdfc` page) y **Tinta Light** (`#141c18` / `#52645a` / `#72857a`): alcance secundario enviado.
 
 ### Estados semánticos
 - **Info** (bg `#e3f9f7` / text `#006d66`): contexto o falta de datos, sin corrección inmediata.
@@ -365,8 +356,9 @@ desconocido. Las superficies **no** migradas siguen consumiendo el agregador
 congelado y equivalente (ver `goals/segmentacion-entrypoint-css/`). La cascada de
 capas es fija: `reset, vendor, theme, base, layout, components, utilities, module,
 legacy-overrides` (DS-006). El tema por defecto lo aplica
-`public/js/modules/aia_ui/theme-bootstrap.js` (dark sin flash); la API interactiva
-linen/dark y reduced-motion vive en `public/js/modules/aia_ui/theme.js`.
+`public/js/modules/aia_ui/theme-bootstrap.js` (dark sin flash); dark queda aplicado
+de forma incondicional y sin conmutador, y el manejo de `prefers-reduced-motion`
+vive en `public/js/modules/aia_ui/theme.js`.
 
 ### Flujo obligatorio antes de editar una superficie declarada
 
@@ -399,7 +391,7 @@ configuración por máquina (`.claude/settings.json` / `.codex/hooks.json`, en `
 - **Nunca** introduzcas hex sueltos, estilos inline, bloques `<style>`, gradientes decorativos, skins de vendors ni nuevas CDN en módulos migrados.
 - **Nunca** hagas que la interfaz se vea **decorativa, saturada de alertas o que exija lectura innecesaria antes de actuar** (anti-referencia de PRODUCT.md).
 - **Nunca** uses el color como único canal de significado, ni acentos a plena saturación en estados inactivos.
-- **Nunca** trabajes, generes cambios, pruebas o evidencia para **mobile, tablet o el tema `linen`**: fuera del alcance visual vigente. `linen` se envía y el usuario puede activarlo con el toggle (`public/js/modules/aia_ui/theme.js`), pero **ningún gate lo valida** (deuda consciente); no lo tomes como cubierto.
+- **Nunca** trabajes, generes cambios, pruebas o evidencia para **mobile o tablet**: fuera del alcance visual vigente. `linen` quedó **retirado del producto** en F0 del goal `dark-mode-todos-los-modulos`; dark es el único tema y no existe conmutador.
 - **Nunca** uses `clamp()` fluido para tamaños de texto de UI, ni fragmentes una palabra en chips o estados.
 - **Nunca** uses Roboto ni radios hardcodeados: Login, Projects, Programa General, PDC, Contratos, Listado de Actividades y el módulo de tema tienen presupuesto **cero** para hex sueltos, inline styles, `<style>`, Roboto y radios hardcodeados.
 - **Nunca** regeneres snapshots ni baselines para forzar verde: requieren decisión visual aprobada con hashes before/after.

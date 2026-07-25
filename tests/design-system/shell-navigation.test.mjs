@@ -25,7 +25,7 @@ test('shell navigation registers the sidebar candidate as approved', async () =>
   ]);
   const adaptiveApproval = approvals.approvals.find(({ familyId, candidateId }) => familyId === family.id && candidateId === 'adaptive-shell');
   assert.equal(adaptiveApproval.candidateId, 'adaptive-shell');
-  assert.deepEqual(adaptiveApproval.themes, ['linen', 'dark']);
+  assert.deepEqual(adaptiveApproval.themes, ['dark']);
   assert.deepEqual(adaptiveApproval.viewports, family.viewports);
   const sidebarApproval = approvals.approvals.find(({ familyId, candidateId }) => familyId === family.id && candidateId === 'sidebar-shell');
   assert.ok(sidebarApproval, 'sidebar-shell must have its own approval entry');

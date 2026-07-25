@@ -30,26 +30,23 @@ async function waitForDesignSystemGrid(page) {
   await page.waitForTimeout(500);
 }
 
-async function readGridContract(page, theme) {
-  return page.evaluate((activeTheme) => {
+async function readGridContract(page) {
+  return page.evaluate(() => {
     const html = document.documentElement;
     const container = document.querySelector('#hot-container');
     const table = document.querySelector('#hot-container .ht_master table.htCore') || document.querySelector('#hot-container table.htCore');
     const mobile = document.querySelector('#mobile-card-view');
-    const themeApi = window.AiaDesignSystem && typeof window.AiaDesignSystem.setTheme === 'function'
-      ? window.AiaDesignSystem
-      : null;
     const hotStyle = container ? getComputedStyle(container) : null;
     const mobileStyle = mobile ? getComputedStyle(mobile) : null;
-    const appliedTheme = themeApi ? themeApi.setTheme(activeTheme) : null;
     const containerWidth = container ? Math.round(container.getBoundingClientRect().width) : 0;
     const tableWidth = table ? Math.round(table.getBoundingClientRect().width) : 0;
 
     return {
       hasTokens: Boolean([...document.styleSheets].some((sheet) => sheet.href && sheet.href.includes('/css/tokens.css'))),
       hasDesignSystem: Boolean([...document.styleSheets].some((sheet) => sheet.href && sheet.href.includes('/css/aia-design-system.css'))),
-      hasThemeApi: Boolean(themeApi),
-      appliedTheme,
+      // F0/Task 8 retiro la API interactiva de tema (setTheme); dark se aplica
+      // sin conmutacion, asi que el contrato ahora lee el estado en vez de fijarlo.
+      appliedTheme: html.getAttribute('data-aia-theme'),
       horizontalOverflow: html.scrollWidth - html.clientWidth,
       hotDisplay: hotStyle ? hotStyle.display : '',
       mobileDisplay: mobileStyle ? mobileStyle.display : '',
@@ -60,7 +57,7 @@ async function readGridContract(page, theme) {
       fontBody: getComputedStyle(html).getPropertyValue('--ds-font-body').trim(),
       minTarget: getComputedStyle(html).getPropertyValue('--ds-target-min').trim(),
     };
-  }, theme);
+  });
 }
 
 async function waitForDesignSystemTable(page) {
@@ -75,8 +72,8 @@ async function waitForDesignSystemTable(page) {
   await page.waitForTimeout(500);
 }
 
-async function readTableContract(page, theme) {
-  return page.evaluate((activeTheme) => {
+async function readTableContract(page) {
+  return page.evaluate(() => {
     const html = document.documentElement;
     const hot = document.querySelector('#hot-container');
     const hotTable = document.querySelector('#hot-container .ht_master table.htCore')
@@ -89,10 +86,6 @@ async function readTableContract(page, theme) {
     const table = hotTable;
     const gridStyle = grid ? getComputedStyle(grid) : null;
     const mobileCardsStyle = mobileCards ? getComputedStyle(mobileCards) : null;
-    const themeApi = window.AiaDesignSystem && typeof window.AiaDesignSystem.setTheme === 'function'
-      ? window.AiaDesignSystem
-      : null;
-    const appliedTheme = themeApi ? themeApi.setTheme(activeTheme) : null;
     const gridWidth = grid ? Math.round(grid.getBoundingClientRect().width) : 0;
     const tableWidth = table ? Math.round(table.getBoundingClientRect().width) : 0;
     const mobileCardsWidth = mobileCards ? Math.round(mobileCards.getBoundingClientRect().width) : 0;
@@ -100,8 +93,9 @@ async function readTableContract(page, theme) {
     return {
       hasTokens: Boolean([...document.styleSheets].some((sheet) => sheet.href && sheet.href.includes('/css/tokens.css'))),
       hasDesignSystem: Boolean([...document.styleSheets].some((sheet) => sheet.href && sheet.href.includes('/css/aia-design-system.css'))),
-      hasThemeApi: Boolean(themeApi),
-      appliedTheme,
+      // F0/Task 8 retiro la API interactiva de tema (setTheme); dark se aplica
+      // sin conmutacion, asi que el contrato ahora lee el estado en vez de fijarlo.
+      appliedTheme: html.getAttribute('data-aia-theme'),
       horizontalOverflow: html.scrollWidth - html.clientWidth,
       gridDisplay: gridStyle ? gridStyle.display : '',
       gridWidth,
@@ -116,7 +110,7 @@ async function readTableContract(page, theme) {
       fontBody: getComputedStyle(html).getPropertyValue('--ds-font-body').trim(),
       minTarget: getComputedStyle(html).getPropertyValue('--ds-target-min').trim(),
     };
-  }, theme);
+  });
 }
 
 test.describe('Design system foundation', () => {
@@ -132,7 +126,7 @@ test.describe('Design system foundation', () => {
     }
   });
 
-  test('authenticated shell loads AIA design system and theme API', async ({ page }) => {
+  test('authenticated shell loads AIA design system in dark', async ({ page }) => {
     const project = PROJECTS[0];
     await loginAndSelectProject(page, project);
     await page.goto('/programa-general', { waitUntil: 'networkidle', timeout: 30000 });
@@ -140,25 +134,19 @@ test.describe('Design system foundation', () => {
     const state = await page.evaluate(() => ({
       hasTokens: Boolean([...document.styleSheets].some((sheet) => sheet.href && sheet.href.includes('/css/tokens.css'))),
       hasDesignSystem: Boolean([...document.styleSheets].some((sheet) => sheet.href && sheet.href.includes('/css/aia-design-system.css'))),
-      hasThemeApi: Boolean(window.AiaDesignSystem && typeof window.AiaDesignSystem.setTheme === 'function'),
       initialTheme: document.documentElement.getAttribute('data-aia-theme'),
-      darkTheme: window.AiaDesignSystem ? window.AiaDesignSystem.setTheme('dark') : null,
-      linenTheme: window.AiaDesignSystem ? window.AiaDesignSystem.setTheme('linen') : null,
       minTarget: getComputedStyle(document.documentElement).getPropertyValue('--ds-target-min').trim(),
       fontBody: getComputedStyle(document.documentElement).getPropertyValue('--ds-font-body').trim(),
     }));
 
     expect(state.hasTokens).toBe(true);
     expect(state.hasDesignSystem).toBe(true);
-    expect(state.hasThemeApi).toBe(true);
-    expect(['linen', 'dark']).toContain(state.initialTheme);
-    expect(state.darkTheme).toBe('dark');
-    expect(state.linenTheme).toBe('linen');
+    expect(state.initialTheme).toBe('dark');
     expect(state.minTarget).toBe('44px');
     expect(state.fontBody).toContain('Inter');
   });
 
-  test('login follows migrated design system contract in linen and dark', async ({ page }) => {
+  test('login follows migrated design system contract in dark', async ({ page }) => {
     for (const viewport of [
       { width: 390, height: 844 },
       { width: 1440, height: 900 },
@@ -172,19 +160,16 @@ test.describe('Design system foundation', () => {
         const card = document.querySelector('.card-login');
         const body = document.body;
         const html = document.documentElement;
-        const setDark = window.AiaDesignSystem ? window.AiaDesignSystem.setTheme('dark') : null;
-        const setLinen = window.AiaDesignSystem ? window.AiaDesignSystem.setTheme('linen') : null;
         const submitStyle = submit ? getComputedStyle(submit) : null;
         const inputStyle = userInput ? getComputedStyle(userInput) : null;
 
         return {
           hasTokens: Boolean([...document.styleSheets].some((sheet) => sheet.href && sheet.href.includes('/css/tokens.css'))),
           hasDesignSystem: Boolean([...document.styleSheets].some((sheet) => sheet.href && sheet.href.includes('/css/aia-design-system.css'))),
-          hasThemeApi: Boolean(window.AiaDesignSystem && typeof window.AiaDesignSystem.setTheme === 'function'),
           hasShellClass: body.classList.contains('aia-shell'),
           hasCard: Boolean(card),
-          darkTheme: setDark,
-          linenTheme: setLinen,
+          // F0/Task 8 retiro setTheme; dark se aplica sin conmutacion.
+          appliedTheme: html.getAttribute('data-aia-theme'),
           horizontalOverflow: html.scrollWidth - html.clientWidth,
           submitMinHeight: submitStyle ? parseFloat(submitStyle.minHeight) : 0,
           inputMinHeight: inputStyle ? parseFloat(inputStyle.minHeight) : 0,
@@ -196,11 +181,9 @@ test.describe('Design system foundation', () => {
 
       expect(state.hasTokens).toBe(true);
       expect(state.hasDesignSystem).toBe(true);
-      expect(state.hasThemeApi).toBe(true);
       expect(state.hasShellClass).toBe(true);
       expect(state.hasCard).toBe(true);
-      expect(state.darkTheme).toBe('dark');
-      expect(state.linenTheme).toBe('linen');
+      expect(state.appliedTheme).toBe('dark');
       expect(state.horizontalOverflow).toBeLessThanOrEqual(1);
       expect(state.submitMinHeight).toBeGreaterThanOrEqual(44);
       expect(state.inputMinHeight).toBeGreaterThanOrEqual(44);
@@ -210,7 +193,7 @@ test.describe('Design system foundation', () => {
     }
   });
 
-  test('project selector follows migrated design system contract in linen and dark', async ({ page }) => {
+  test('project selector follows migrated design system contract in dark', async ({ page }) => {
     await page.goto('/login', { waitUntil: 'networkidle', timeout: 30000 });
     await page.locator('#usuario').fill(CREDENTIALS.username);
     await page.locator('#password').fill(CREDENTIALS.password);
@@ -229,8 +212,6 @@ test.describe('Design system foundation', () => {
         const firstCard = document.querySelector('.project-card');
         const firstButton = document.querySelector('.btn-enter');
         const search = document.querySelector('#projectSearch');
-        const setDark = window.AiaDesignSystem ? window.AiaDesignSystem.setTheme('dark') : null;
-        const setLinen = window.AiaDesignSystem ? window.AiaDesignSystem.setTheme('linen') : null;
         const buttonStyle = firstButton ? getComputedStyle(firstButton) : null;
         const searchStyle = search ? getComputedStyle(search) : null;
 
@@ -238,12 +219,11 @@ test.describe('Design system foundation', () => {
           hasTokens: Boolean([...document.styleSheets].some((sheet) => sheet.href && sheet.href.includes('/css/tokens.css'))),
           hasDesignSystem: Boolean([...document.styleSheets].some((sheet) => sheet.href && sheet.href.includes('/css/aia-design-system.css'))),
           hasProjectCss: Boolean([...document.styleSheets].some((sheet) => sheet.href && sheet.href.includes('/css/project-selector.css'))),
-          hasThemeApi: Boolean(window.AiaDesignSystem && typeof window.AiaDesignSystem.setTheme === 'function'),
           hasShellClass: document.body.classList.contains('aia-shell'),
           hasProjectPageClass: document.body.classList.contains('project-selector-page'),
           hasCard: Boolean(firstCard),
-          darkTheme: setDark,
-          linenTheme: setLinen,
+          // F0/Task 8 retiro setTheme; dark se aplica sin conmutacion.
+          appliedTheme: html.getAttribute('data-aia-theme'),
           horizontalOverflow: html.scrollWidth - html.clientWidth,
           buttonMinHeight: buttonStyle ? parseFloat(buttonStyle.minHeight) : 0,
           searchMinHeight: searchStyle ? parseFloat(searchStyle.minHeight) : 0,
@@ -255,12 +235,10 @@ test.describe('Design system foundation', () => {
       expect(state.hasTokens).toBe(true);
       expect(state.hasDesignSystem).toBe(true);
       expect(state.hasProjectCss).toBe(true);
-      expect(state.hasThemeApi).toBe(true);
       expect(state.hasShellClass).toBe(true);
       expect(state.hasProjectPageClass).toBe(true);
       expect(state.hasCard).toBe(true);
-      expect(state.darkTheme).toBe('dark');
-      expect(state.linenTheme).toBe('linen');
+      expect(state.appliedTheme).toBe('dark');
       expect(state.horizontalOverflow).toBeLessThanOrEqual(1);
       expect(state.buttonMinHeight).toBeGreaterThanOrEqual(44);
       expect(state.searchMinHeight).toBeGreaterThanOrEqual(44);
@@ -280,12 +258,11 @@ test.describe('Design system foundation', () => {
           await page.goto(route.path, { waitUntil: 'domcontentloaded', timeout: 30000 });
           await waitForDesignSystemGrid(page);
 
-          for (const theme of ['dark', 'linen']) {
-            const state = await readGridContract(page, theme);
+          for (const theme of ['dark']) {
+            const state = await readGridContract(page);
 
           expect(state.hasTokens, `${route.label} must load tokens`).toBe(true);
           expect(state.hasDesignSystem, `${route.label} must load AIA design system CSS`).toBe(true);
-          expect(state.hasThemeApi, `${route.label} must expose theme API`).toBe(true);
           expect(state.appliedTheme, `${route.label} must apply ${theme} theme`).toBe(theme);
           expect(state.horizontalOverflow, `${route.label} must not create page overflow on ${viewport.name}`).toBeLessThanOrEqual(1);
           expect(state.hasTable, `${route.label} must render a Handsontable instance`).toBe(true);
@@ -318,12 +295,11 @@ test.describe('Design system foundation', () => {
           await page.goto(route.path, { waitUntil: 'domcontentloaded', timeout: 30000 });
           await waitForDesignSystemTable(page);
 
-          for (const theme of ['dark', 'linen']) {
-            const state = await readTableContract(page, theme);
+          for (const theme of ['dark']) {
+            const state = await readTableContract(page);
 
           expect(state.hasTokens, `${route.label} must load tokens`).toBe(true);
           expect(state.hasDesignSystem, `${route.label} must load AIA design system CSS`).toBe(true);
-          expect(state.hasThemeApi, `${route.label} must expose theme API`).toBe(true);
           expect(state.appliedTheme, `${route.label} must apply ${theme} theme`).toBe(theme);
           expect(state.horizontalOverflow, `${route.label} must not create page overflow on ${viewport.name}`).toBeLessThanOrEqual(1);
           expect(state.fontBody, `${route.label} must use Inter body token`).toContain('Inter');

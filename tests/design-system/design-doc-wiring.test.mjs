@@ -38,9 +38,10 @@ test('si los archivos de contexto locales existen, también enlazan DESIGN.md', 
   }
 });
 
-test('DESIGN.md registra linen como deuda consciente shipped-but-ungated', async () => {
+test('DESIGN.md no describe linen como una superficie enviada', async () => {
   const design = await read('DESIGN.md');
-  assert.match(design, /linen/i, 'DESIGN.md debe nombrar el tema linen');
-  assert.match(design, /shipped-but-ungated|sin gate|no se valida/i,
-    'DESIGN.md debe marcar linen como deuda no validada, no como olvido');
+  assert.doesNotMatch(design, /shipped-but-ungated/i,
+    'DESIGN.md no debe marcar linen como deuda enviada: F0 lo retiro del producto');
+  assert.match(design, /retirado del producto/i,
+    'DESIGN.md debe registrar que linen fue retirado, no dejarlo sin mencion');
 });
