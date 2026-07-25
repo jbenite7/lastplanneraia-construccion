@@ -404,13 +404,11 @@
     {
       "name": "foundation-shell",
       "paths": [
-        "public/css/navbar.css",
         "public/css/handsontable-module.css",
         "public/js/modules/aia_ui/nav_drawer.js",
         "public/js/modules/aia_ui/theme.js",
         "public/js/modules/lps_drawer.js",
         "public/js/cargarDatosGeneralesPagina2.js",
-        "src/View/Components/NavbarComponent.php",
         "views/partials/drawer_unificado.php"
       ],
       "maxViolations": {
