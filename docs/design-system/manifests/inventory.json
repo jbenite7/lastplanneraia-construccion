@@ -73,6 +73,11 @@
       "moduleId": "bi-runtime",
       "status": "deferred-last",
       "manifest": null
+    },
+    {
+      "moduleId": "admin",
+      "status": "observed-frozen",
+      "manifest": null
     }
   ]
 }

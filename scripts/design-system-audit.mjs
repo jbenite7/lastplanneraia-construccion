@@ -16,7 +16,7 @@ if (updateBaseline) {
   process.exit(1);
 }
 
-const scanRoots = ['views', 'public/js', 'public/css', 'src/View/Components'];
+const scanRoots = ['views', 'public/js', 'public/css', 'src/View/Components', 'admin'];
 const extensions = new Set(['.php', '.js', '.css', '.mjs']);
 const canonicalDesignSystemFiles = new Set([
   'public/css/tokens.css',
