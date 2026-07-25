@@ -133,6 +133,12 @@ final class PaquetesService
         ['kw' => ['LAGRIMAL', 'SILLAR'], 'paq' => 'Suministro PREFABRICADOS INTERIORES', 'tipos' => ['MATERIAL'], 'soloDesc' => true],
         ['kw' => ['PREFABRICADO'], 'paq' => 'Suministro PREFABRICADOS URBANISMO Y EXTERIORES', 'tipos' => ['MATERIAL'], 'soloDesc' => true],
         ['kw' => ['ALIGERANTE', 'PORON'], 'paq' => 'Suministro ALIGERANTES LOSAS', 'tipos' => ['MATERIAL', 'SUBCONTRATO'], 'descPrimero' => true],
+        // Químicos del concreto (curador, desmoldante, acelerante): proveedor propio, no vienen con el
+        // mixer ni con la formaleta. Van ANTES de CONCRETO/ENCOFRADO para que no los capturen.
+        ['kw' => ['ANTISOL', 'SEPAROL', 'CURADOR', 'DESMOLDANTE', 'ADITIVO', 'ACELERANTE', 'RETARDANTE', 'PLASTIFICANTE'], 'paq' => 'Suministro ADITIVOS DE CONCRETO', 'tipos' => ['MATERIAL'], 'soloDesc' => true],
+        // Pegantes y boquillas del enchape: otro proveedor que el porcelanato. Van ANTES de la regla
+        // de PORCELANATO/CERAMIC para que el adhesivo no se compre con el piso.
+        ['kw' => ['PEGACOR', 'PEGANTE', 'CONCOLOR', 'BOQUILLA', 'ADERCRIL', 'PUENTE ADHERENCIA', 'ADHESIVO', 'FRAGUA'], 'paq' => 'Suministro PEGANTES Y BOQUILLAS', 'tipos' => ['MATERIAL'], 'soloDesc' => true],
         ['kw' => ['MORTERO', 'GROUTING'], 'paq' => 'Suministro MORTEROS', 'tipos' => ['MATERIAL'], 'soloDesc' => true],
         ['kw' => ['LADRILLO', 'BLOQUE', 'ADOBE', 'CATALAN'], 'paq' => 'Suministro LADRILLO', 'tipos' => ['MATERIAL'], 'soloDesc' => true],
         ['kw' => ['ACERO', 'REFUERZO', 'ALAMBRE', 'MALLA ELECTROSOLDADA', 'FLEJE', 'VARILLA', 'FIGURAD'], 'paq' => 'Suministro ACERO DE REFUERZO', 'tipos' => ['MATERIAL'], 'soloDesc' => true],

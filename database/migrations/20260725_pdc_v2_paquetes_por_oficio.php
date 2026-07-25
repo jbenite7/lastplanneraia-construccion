@@ -31,6 +31,12 @@ $nuevos = [
     // El catálogo solo tenía prefabricados de urbanismo/exteriores; los de interior (lagrimales,
     // sillares) son otro suministro (criterio del usuario 2026-07-25).
     ['Suministro PREFABRICADOS INTERIORES', 'suministro'],
+    // Curadores, desmoldantes y aditivos: proveedor propio (químicos), no vienen con el mixer de
+    // concreto ni con la formaleta (criterio del usuario 2026-07-25).
+    ['Suministro ADITIVOS DE CONCRETO', 'suministro'],
+    // El enchape va DESAGREGADO (pegante, material y mano de obra son compras distintas): el adhesivo
+    // y la boquilla son de otro proveedor que el porcelanato (criterio del usuario 2026-07-25).
+    ['Suministro PEGANTES Y BOQUILLAS', 'suministro'],
 ];
 
 // 2) Cajón de sastre a retirar (crearPaquete lo reactivaría por nombre_norm: no volver a sembrarlo).
