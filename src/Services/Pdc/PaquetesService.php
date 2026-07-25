@@ -24,65 +24,121 @@ final class PaquetesService
         'ELEMENTOS DE ASEO', 'EQUIPO DE OFICINA', 'EQ DE COMPUTO', 'COMUNICACIONES',
     ];
 
+    /** Veto: la regla declara que NO debe proponerse nada (queda pendiente para decisión humana). */
+    public const SIN_PROPUESTA = '__SIN_PROPUESTA__';
+
     /**
-     * Reglas de dominio para el sembrado (A3.1): keyword/capítulo → paquete del catálogo.
-     * Un insumo casa una regla si algún keyword aparece en su descripción normalizada O en su
-     * actividad dominante, y su tipo_recurso está en `tipos` (vacío = cualquiera). Orden = prioridad
-     * (específicas primero). El nombre de paquete debe existir en el catálogo (188 + Indirectos).
+     * Reglas de dominio para el sembrado (A3.1) — taxonomía por OFICIO CONTRATABLE.
+     *
+     * PRINCIPIO RECTOR (usuario, 2026-07-25): un paquete es el alcance que ejecuta UN contratista
+     * especializado. La pregunta de corte es siempre «¿lo haría el mismo gremio, con la misma
+     * expertise y herramienta?». Si no, son paquetes distintos (piso cerámico ≠ piso en madera ≠
+     * deck; mediacaña de cubierta ≠ instalación de pisos). Un paquete que mezcla oficios es
+     * incontratable: nadie puede cotizarlo completo.
+     *
+     * Estructura de una regla:
+     *   kw          keywords (normalizadas, SIN Ñ ni tildes: normalizar() las elimina) que disparan la regla.
+     *   ctx         contexto OBLIGATORIO: además del kw, el heno debe contener alguno de estos (separa
+     *               «porcelanato en piso» de «porcelanato en muro» sin duplicar diccionarios).
+     *   paq         paquete destino, o self::SIN_PROPUESTA para vetar (dejar pendiente).
+     *   tipos       tipo_recurso admitidos (vacío = cualquiera).
+     *   soloDesc    la regla solo mira la descripción del insumo (materiales: el nombre identifica el producto).
+     *   descPrimero la regla se evalúa en la pasada 1 sobre la descripción: cuando el propio nombre
+     *               nombra el oficio/material, manda sobre la actividad padre.
+     *
+     * Orden = prioridad: gana la PRIMERA regla que casa.
      */
     private const REGLAS_SEMBRADO = [
-        // Instalaciones (subcontrato / a todo costo) — muy señalizadas por su nombre/actividad.
-        ['kw' => ['INSTALACION ELECTRIC', 'ELECTRIC', 'ILUMINACION', 'VOZ Y DATOS', 'RETIE'], 'paq' => 'Sum + Inst INSTALACIONES ELÉCTRICAS, VOZ Y DATOS (INTERIORES)', 'tipos' => ['SUBCONTRATO', 'MANO DE OBRA']],
-        ['kw' => ['HIDROSANITARI', 'HIDRAULIC', 'SANITARIA', 'DESAGUE', 'TUBERIA PVC', 'RED DE AGUA'], 'paq' => 'Sum + Inst INSTALACIONES HIDROSANITARIAS', 'tipos' => ['SUBCONTRATO', 'MANO DE OBRA']],
+        // ── Objetos físicos inequívocos: van primero para que no los capturen reglas de instalación ──
+        ['kw' => ['CORTA FUEGO', 'CORTAFUEGO'], 'paq' => 'Sum + Inst PUERTAS CORTAFUEGO', 'tipos' => ['SUBCONTRATO', 'MATERIAL'], 'descPrimero' => true],
+        ['kw' => ['PASAMANO', 'BARANDA', 'RODAMANOS'], 'paq' => 'Sum + Inst BARANDAS Y PASAMANOS', 'tipos' => ['SUBCONTRATO', 'MATERIAL', 'MANO DE OBRA'], 'descPrimero' => true],
+        ['kw' => ['PERGOLA', 'CERCHA', 'ESTRUCTURA METALICA'], 'paq' => 'Sum + Inst ESTRUCTURA METÁLICA', 'tipos' => ['SUBCONTRATO'], 'descPrimero' => true],
+        // Seguridad en alturas: certificador con matrícula, no el instalador de anclaje epóxico.
+        ['kw' => ['LINEA DE VIDA', 'ANTIPENDULO', 'ANCLAJE CERTIFICADO', 'ANCLAJES CERTIFICADOS'], 'paq' => 'Sum + Inst SEGURIDAD HUMANA (LINEAS LONGITUDINALES Y TRANSVERSALES, PUNTOS ANTIPÉNDULO)', 'tipos' => ['SUBCONTRATO', 'MATERIAL'], 'descPrimero' => true],
+
+        // ── Trámites y servicios: tienen su propio proceso de contratación, no son «indirectos» ──
+        ['kw' => ['RETILAP', 'CERTIFICACION RETIE', 'INSPECCION RETIE'], 'paq' => 'Sum + Inst CERTIFICACION RETILAP Y RETIE', 'tipos' => ['SUBCONTRATO'], 'descPrimero' => true],
+        ['kw' => ['VIGILANCIA'], 'paq' => 'Sum + Inst SERVICIO DE VIGILANCIA', 'tipos' => ['SUBCONTRATO'], 'descPrimero' => true],
+        ['kw' => ['ASEO'], 'paq' => 'Sum + Inst ASEO FINAL DE OBRA', 'tipos' => ['SUBCONTRATO'], 'descPrimero' => true],
+        ['kw' => ['LAVADA', 'HIDROFUG'], 'ctx' => ['FACHADA'], 'paq' => 'Sum + Inst LAVADA E HIDROFUGADA DE FACHADAS', 'tipos' => ['SUBCONTRATO'], 'descPrimero' => true],
+        ['kw' => ['DEMARCACION', 'NUMERACION'], 'ctx' => ['PARQUEADERO', 'VIAL', 'CELDA'], 'paq' => 'Sum + Inst PINTURA DEMARCACIÓN, NUMERACIÓN Y FLECHAS DE PARQUEADEROS', 'tipos' => ['SUBCONTRATO', 'MANO DE OBRA'], 'descPrimero' => true],
+        ['kw' => ['NOMENCLATURA', 'SENALIZACION', 'AVISO'], 'paq' => 'Sum + Inst SEÑALIZACIÓN', 'tipos' => ['SUBCONTRATO', 'MATERIAL', 'MANO DE OBRA'], 'descPrimero' => true],
+        ['kw' => ['POLISOMBRA', 'INVERNADERO', 'PROTECCION TEMPORAL', 'PROTECCION CON PLASTICO'], 'paq' => self::PAQUETE_INDIRECTOS, 'tipos' => ['SUBCONTRATO', 'MATERIAL'], 'descPrimero' => true],
+
+        // ── Instalaciones (subcontrato / a todo costo) ──
+        // Impermeabilización antes que ascensores: el ascensorista no impermeabiliza el foso.
+        ['kw' => ['IMPERMEABILIZ'], 'ctx' => ['FOSO', 'ASCENSOR'], 'paq' => 'Sum + Inst IMPERMEABILIZACIÓN FOSO DE ASCENSOR', 'tipos' => ['SUBCONTRATO', 'MANO DE OBRA', 'MATERIAL']],
+        ['kw' => ['IMPERMEABILIZ'], 'paq' => 'Sum + Inst IMPERMEABILIZACIONES', 'tipos' => ['SUBCONTRATO', 'MANO DE OBRA', 'MATERIAL']],
+        // Aparatos sanitarios en M.O. antes que la red hidrosanitaria: es el instalador de aparatos.
+        ['kw' => ['REJILLA DE PISO', 'REJILLA PARA DUCHA', 'SIFON', 'CROMAD', 'GRIFERIA', 'LAVAMANOS', 'LAVAPLATOS', 'ORINAL', 'APARATO SANITARIO'], 'paq' => 'M. de O APARATOS SANITARIOS Y GRIFERÍA', 'tipos' => ['MANO DE OBRA'], 'descPrimero' => true],
+        ['kw' => ['INSTALACION ELECTRIC', 'ELECTRIC', 'ILUMINACION', 'VOZ Y DATOS'], 'paq' => 'Sum + Inst INSTALACIONES ELÉCTRICAS, VOZ Y DATOS (INTERIORES)', 'tipos' => ['SUBCONTRATO', 'MANO DE OBRA']],
+        ['kw' => ['HIDROSANITARI', 'HIDRAULIC', 'SANITARIA', 'DESAGUE', 'TUBERIA PVC', 'RED DE AGUA', 'GARGOLA'], 'paq' => 'Sum + Inst INSTALACIONES HIDROSANITARIAS', 'tipos' => ['SUBCONTRATO', 'MANO DE OBRA', 'MATERIAL']],
         ['kw' => ['RED DE GAS', 'GAS DOMICILIAR', 'INSTALACION DE GAS', 'GAS NATURAL'], 'paq' => 'Sum + Inst RED DE GAS', 'tipos' => ['SUBCONTRATO', 'MANO DE OBRA']],
         ['kw' => ['RED CONTRA INCENDIO', 'DETECCION', 'EXTINCION', 'ROCIADOR'], 'paq' => 'Sum + Inst RED CONTRA INCENDIO, DETECCIÓN Y EXTINCIÓN', 'tipos' => ['SUBCONTRATO']],
         ['kw' => ['AIRE ACONDICIONADO', 'EXTRACCION', 'VENTILACION MECANIC'], 'paq' => 'Sum + Inst RED DE AIRE ACONDICIONADO Y EQUIPOS DE EXTRACCIÓN', 'tipos' => ['SUBCONTRATO']],
         ['kw' => ['ASCENSOR'], 'paq' => 'Sum + Inst ASCENSORES', 'tipos' => ['SUBCONTRATO']],
-        ['kw' => ['CIELO', 'DRYWALL', 'SUPERBOARD', 'CIELORRASO', 'CIELO RASO', 'FALSO'], 'paq' => 'Sum + Inst CIELOS RASOS', 'tipos' => ['SUBCONTRATO', 'MANO DE OBRA']],
-        ['kw' => ['CLOSET', 'MUEBLE', 'COCINA INTEGRAL', 'MOBILIARIO'], 'paq' => 'Sum + Inst DOTACIÓN COCINAS Y LAVADEROS', 'tipos' => ['SUBCONTRATO']],
-        ['kw' => ['IMPERMEABILIZ'], 'paq' => 'Sum + Inst IMPERMEABILIZACIONES', 'tipos' => ['SUBCONTRATO', 'MANO DE OBRA', 'MATERIAL']],
-        ['kw' => ['VENTAN', 'VIDRIO', 'FACHADA FLOTANTE', 'ALUMINIO'], 'paq' => 'Sum + Inst VENTANERÍA', 'tipos' => ['SUBCONTRATO']],
-        ['kw' => ['CARPINTERIA METAL', 'PUERTA METAL', 'BARANDA', 'PASAMANO', 'REJA'], 'paq' => 'Sum + Inst CARPINTERÍA METÁLICA', 'tipos' => ['SUBCONTRATO']],
-        ['kw' => ['CARPINTERIA MADERA', 'PUERTA EN MADERA', 'PUERTA MADERA'], 'paq' => 'Sum + Inst CARPINTERÍA DE MADERA', 'tipos' => ['SUBCONTRATO']],
+        // Cielos rasos ANTES de pintura y ventanería: el drywallero entrega el cielo pintado.
+        ['kw' => ['CIELO', 'DRYWALL', 'SUPERBOARD', 'CIELORRASO', 'FALSO'], 'paq' => 'Sum + Inst CIELOS RASOS', 'tipos' => ['SUBCONTRATO', 'MANO DE OBRA']],
+        ['kw' => ['CLOSET', 'MUEBLE', 'COCINA INTEGRAL', 'MOBILIARIO', 'VESTIER', 'ALACENA', 'LINO'], 'paq' => 'Sum + Inst CARPINTERÍA DE MADERA', 'tipos' => ['SUBCONTRATO']],
+        // La puerta de madera es producto de catálogo; el closet es medida y despiece: gremios distintos.
+        ['kw' => ['PUERTA EN MADERA', 'PUERTA MADERA', 'PUERTA CORREDIZA MADERA'], 'paq' => 'Sum + Inst PUERTAS EN MADERA', 'tipos' => ['SUBCONTRATO']],
+        ['kw' => ['CARPINTERIA MADERA'], 'paq' => 'Sum + Inst CARPINTERÍA DE MADERA', 'tipos' => ['SUBCONTRATO']],
+        ['kw' => ['CABINA', 'DIVISION DE DUCHA', 'DIVISIONES DE BANO', 'ESPEJO'], 'ctx' => ['BANO', 'DUCHA', 'APTO', 'VIDRIO TEMPLADO'], 'paq' => 'Sum + Inst CABINAS Y ESPEJOS DE BAÑOS', 'tipos' => ['SUBCONTRATO', 'MATERIAL'], 'descPrimero' => true],
+        ['kw' => ['VENTAN', 'VIDRIO', 'VIDRIER', 'FACHADA FLOTANTE', 'ALUMINIO'], 'paq' => 'Sum + Inst VENTANERÍA', 'tipos' => ['SUBCONTRATO']],
+        ['kw' => ['CARPINTERIA METAL', 'PUERTA METAL', 'PUERTA ACCESO', 'PUERTA BATIENTE', 'PUERTA', 'REJA'], 'paq' => 'Sum + Inst CARPINTERÍA METÁLICA', 'tipos' => ['SUBCONTRATO']],
 
-        // Mano de obra por capítulo (se matchea sobre todo por la actividad dominante).
-        // REGLA DE DOMINIO (feedback del usuario 2026-07-25): en insumos de MANO DE OBRA manda el
-        // TRABAJO, no el material que aparezca en el nombre — el profesional los nombra de forma
-        // imprecisa (p.ej. «M.O. ZOCALO EN PORCELANATO» es trabajo de pisos, no enchape de muro).
-        // Por eso las reglas de trabajo específico van ANTES que la de enchapes, y esta última ya
-        // no captura el token «PISO».
+        // ── Mano de obra por OFICIO ──
         ['kw' => ['MAMPOSTERIA', 'MURO EN LADRILLO', 'MURO EN BLOQUE', 'MURO EN CATALAN', 'MURO EN CONCRETO', 'MURO LADRILLO'], 'paq' => 'M. de O MAMPOSTERÍA', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
-        ['kw' => ['REVOQUE', 'PAÑETE', 'PANETE', 'REPELLO'], 'paq' => 'M. de O REVOQUE INTERIOR', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
-        ['kw' => ['ESTUCO', 'PINTURA', 'VINILO'], 'paq' => 'M. de O ESTUCO Y PINTURA', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
-        ['kw' => ['ACERO', 'REFUERZO', 'FIGURAD', 'AMARRE Y COLOCACION'], 'paq' => 'M. de O ESTRUCTURA EN CONCRETO', 'tipos' => ['MANO DE OBRA']],
+        // Estuco ANTES que revoque: «ESTUCO SOBRE REVOQUE» es del estucador, no del revocador.
+        // Los subcontratos de estuco/pintura incluyen material → a todo costo, no mano de obra.
+        ['kw' => ['ESTUCO'], 'paq' => 'Sum + Inst ESTUCO', 'tipos' => ['SUBCONTRATO'], 'descPrimero' => true],
+        ['kw' => ['ESTUCO'], 'paq' => 'M. de O ESTUCO Y PINTURA', 'tipos' => ['MANO DE OBRA'], 'descPrimero' => true],
+        ['kw' => ['PINTURA', 'VINILO', 'KORAZA', 'ESMALTE', 'ANTICORROSIV'], 'ctx' => ['FACHADA', 'EXTERIOR', 'KORAZA', 'POSTE', 'PISCINA'], 'paq' => 'Sum + Inst PINTURA FACHADA', 'tipos' => ['SUBCONTRATO'], 'descPrimero' => true],
+        ['kw' => ['PINTURA', 'VINILO', 'ESMALTE', 'ACRILIC'], 'paq' => 'Sum + Inst PINTURA INTERIOR', 'tipos' => ['SUBCONTRATO'], 'descPrimero' => true],
+        ['kw' => ['PINTURA', 'VINILO'], 'paq' => 'M. de O ESTUCO Y PINTURA', 'tipos' => ['MANO DE OBRA'], 'descPrimero' => true],
+        // Revoque de fachada: otra cuadrilla, con andamio y rendimientos distintos.
+        ['kw' => ['REVOQUE', 'PANETE', 'REPELLO', 'DILATACION'], 'ctx' => ['FACHADA', 'EXTERIOR'], 'paq' => 'M. de O REVOQUE DE FACHADA', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO'], 'descPrimero' => true],
+        ['kw' => ['REVOQUE', 'PANETE', 'REPELLO'], 'paq' => 'M. de O REVOQUE INTERIOR', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO'], 'descPrimero' => true],
+        ['kw' => ['ACERO', 'REFUERZO', 'FIGURAD', 'AMARRE Y COLOCACION', 'MALLA ELECTROSOLDADA'], 'paq' => 'M. de O ESTRUCTURA EN CONCRETO', 'tipos' => ['MANO DE OBRA'], 'descPrimero' => true],
+        // Pilotaje: equipo de perforación y lodos; el descabece es otra cuadrilla.
+        ['kw' => ['DESCABECE'], 'paq' => 'M. de O DESCABECE DE PILOTES', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
+        ['kw' => ['PILOTE', 'CAISSON', 'PILOTAJE', 'INCLUSION'], 'paq' => 'M. de O CIMENTACIÓN PROFUNDA EN CONCRETO', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
         ['kw' => ['CIMENTACION', 'ZAPATA', 'DADO', 'VIGA DE FUNDACION'], 'paq' => 'M. de O CIMENTACIÓN SUPERFICIAL EN CONCRETO', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
-        ['kw' => ['PILOTE', 'CAISSON', 'PILOTAJE', 'DESCABECE'], 'paq' => 'M. de O CIMENTACIÓN PROFUNDA EN CONCRETO', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
-        ['kw' => ['EXCAVACION', 'RELLENO', 'MOVIMIENTO DE TIERRA', 'DESCAPOTE', 'MOVIMIENTOS DE TIERRA'], 'paq' => 'M. de O MOVIMIENTOS DE TIERRA (EXCAVACIONES Y RELLENOS)', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO', 'EQUIPO']],
+        ['kw' => ['EXCAVACION', 'RELLENO', 'MOVIMIENTO DE TIERRA', 'DESCAPOTE', 'MOVIMIENTOS DE TIERRA', 'LLENO'], 'paq' => 'M. de O MOVIMIENTOS DE TIERRA (EXCAVACIONES Y RELLENOS)', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO', 'EQUIPO']],
         ['kw' => ['DEMOLICION', 'DEMOLER'], 'paq' => 'M. de O DEMOLICIONES', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
-        // Estructura y pisos en concreto ANTES que acabados: «LOSA PISO» es estructura, no enchape.
         ['kw' => ['LOSA', 'PLACA', 'COLUMNA', 'VIGA', 'ESTRUCTURA EN CONCRETO', 'PANTALLA', 'ENTREPISO', 'ESCALERA EN CONCRETO', 'FUNDIDA', 'CONCRETO ALIGERAD'], 'paq' => 'M. de O ESTRUCTURA EN CONCRETO', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
-        ['kw' => ['PISO INDUSTRIAL', 'PISO EN CONCRETO', 'ENDURECEDOR'], 'paq' => 'M. de O PISOS INDUSTRIALES EN CONCRETO', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
+        // Piso industrial: cuadrilla de allanadora y corte, no la de losa aérea.
+        ['kw' => ['PISO INDUSTRIAL', 'PISO EN CONCRETO', 'ENDURECEDOR', 'CORTE DE PISO'], 'paq' => 'M. de O PISOS INDUSTRIALES EN CONCRETO', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO'], 'descPrimero' => true],
         ['kw' => ['MORTERO DE PISO', 'ALISTADO', 'MORTERO DE NIVELACION', 'AFINADO DE PISO'], 'paq' => 'M. de O MORTEROS DE PISO', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
-        // Acabado de piso (incluye zócalos/guardaescobas: acompañan al piso, no al enchape de muro).
-        ['kw' => ['ZOCALO', 'GUARDAESCOBA', 'PIRLAN', 'MEDIACANA', 'MEDIACAÑA'], 'paq' => 'M. de O INSTALACION DE PISOS', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
-        ['kw' => ['PISO'], 'paq' => 'M. de O INSTALACION DE PISOS', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
-        ['kw' => ['ENCHAPE', 'ENCHAPES CERAMIC', 'CERAMIC', 'PORCELANATO', 'BALDOSA', 'GRES'], 'paq' => 'M. de O ENCHAPES CERÁMICOS', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
+        // Mediacaña de CUBIERTA: obra civil previa a impermeabilización (no es instalador de pisos).
+        ['kw' => ['MEDIA CANA', 'MEDIACANA', 'REGATA'], 'ctx' => ['CUBIERTA', 'IMPERMEABILIZ', 'TERRAZA'], 'paq' => 'Sum + Inst IMPERMEABILIZACIÓN DE CUBIERTA', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
+
+        // Acabado de piso SEPARADO POR OFICIO: el instalador de cerámico no es el de laminado ni el
+        // de deck. El zócalo viaja con el piso de SU material (mismo gremio). Sin material → veto.
+        ['kw' => ['DECK'], 'paq' => 'M. de O INSTALACIÓN DE PISO PARA DECK', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO'], 'descPrimero' => true],
+        ['kw' => ['MADERA', 'LAMINAD'], 'ctx' => ['PISO', 'ZOCALO', 'GUARDAESCOBA', 'PIRLAN'], 'paq' => 'M. de O INSTALACIÓN DE PISOS EN MADERA', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO'], 'descPrimero' => true],
+        ['kw' => ['PORCELANATO', 'CERAMIC', 'GRES', 'TABLETA', 'BALDOSA', 'ADOQUIN'], 'ctx' => ['PISO', 'ZOCALO', 'GUARDAESCOBA', 'PIRLAN', 'ADOQUIN'], 'paq' => 'M. de O INSTALACIÓN DE PISOS CERÁMICOS', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO'], 'descPrimero' => true],
+        // Mediacaña sin contexto de cubierta: pendiente explícito (no la rellenan tokens/agrupación).
+        ['kw' => ['MEDIA CANA', 'MEDIACANA'], 'paq' => self::SIN_PROPUESTA, 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
+        // Enchape de MURO (el de piso ya se resolvió arriba).
+        ['kw' => ['ENCHAPE', 'CERAMIC', 'PORCELANATO', 'BALDOSA', 'GRES', 'PUENTE ADHERENCIA'], 'paq' => 'M. de O ENCHAPES CERÁMICOS', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
         ['kw' => ['PREPARACION MEZCLA', 'TRANSPORTE INTERNO', 'MEZCLA', 'PREPARACION DE CONCRETO'], 'paq' => 'M. de O ESTRUCTURA EN CONCRETO', 'tipos' => ['MANO DE OBRA']],
 
-        // Materiales (suministro) — SOLO por la descripción del insumo (soloDesc): un material se
-        // identifica por su nombre, no por la actividad que lo consume. Orden: los específicos primero
-        // (MORTERO y BLOQUE/LADRILLO antes que CONCRETO, para no capturarlos por el token «CONCRETO»).
+        // ── Materiales (suministro) — SOLO por la descripción: el nombre identifica el producto ──
+        // Prefabricados antes que CONCRETO: su negociación no es volumen de mixer.
+        ['kw' => ['CORDON', 'BORDILLO', 'SARDINEL'], 'paq' => 'Suministro BORDILLOS', 'tipos' => ['MATERIAL'], 'soloDesc' => true],
+        ['kw' => ['LAGRIMAL', 'SILLAR', 'PREFABRICADO'], 'paq' => 'Suministro PREFABRICADOS URBANISMO Y EXTERIORES', 'tipos' => ['MATERIAL'], 'soloDesc' => true],
+        ['kw' => ['ALIGERANTE', 'PORON'], 'paq' => 'Suministro ALIGERANTES LOSAS', 'tipos' => ['MATERIAL', 'SUBCONTRATO'], 'descPrimero' => true],
         ['kw' => ['MORTERO', 'GROUTING'], 'paq' => 'Suministro MORTEROS', 'tipos' => ['MATERIAL'], 'soloDesc' => true],
         ['kw' => ['LADRILLO', 'BLOQUE', 'ADOBE', 'CATALAN'], 'paq' => 'Suministro LADRILLO', 'tipos' => ['MATERIAL'], 'soloDesc' => true],
         ['kw' => ['ACERO', 'REFUERZO', 'ALAMBRE', 'MALLA ELECTROSOLDADA', 'FLEJE', 'VARILLA', 'FIGURAD'], 'paq' => 'Suministro ACERO DE REFUERZO', 'tipos' => ['MATERIAL'], 'soloDesc' => true],
         ['kw' => ['CEMENTO'], 'paq' => 'Suministro CEMENTO', 'tipos' => ['MATERIAL'], 'soloDesc' => true],
         ['kw' => ['ARENA', 'GRAVA', 'TRITURADO', 'AGREGADO', 'RECEBO', 'GRANULAR', 'SUBBASE'], 'paq' => 'Suministro AGREGADOS', 'tipos' => ['MATERIAL'], 'soloDesc' => true],
+        ['kw' => ['ZOCALO', 'GUARDAESCOBA', 'PIRLAN'], 'paq' => 'Suministro GUARDAESCOBAS (cerámico/madera/otros)', 'tipos' => ['MATERIAL'], 'soloDesc' => true],
         ['kw' => ['PORCELANATO', 'CERAMIC', 'BALDOSA', 'GRES', 'TABLETA', 'ENCHAPE'], 'paq' => 'Suministro PISOS Y ENCHAPES CERÁMICOS/PORCELANATO', 'tipos' => ['MATERIAL'], 'soloDesc' => true],
         ['kw' => ['SANITARIO', 'LAVAMANOS', 'ORINAL', 'GRIFERIA', 'LAVAPLATOS', 'DUCHA', 'SIFON'], 'paq' => 'Suministro APARATOS SANITARIOS Y GRIFERÍA', 'tipos' => ['MATERIAL'], 'soloDesc' => true],
         ['kw' => ['FORMALETA', 'ENCOFRADO', 'OBRA FALSA', 'TABLERO FENOLIC'], 'paq' => 'Suministro FORMALETA MUROS, LOSAS Y CONTENCIÓN', 'tipos' => ['MATERIAL'], 'soloDesc' => true],
         ['kw' => ['CONCRETO', 'HORMIGON'], 'paq' => 'Suministro CONCRETO', 'tipos' => ['MATERIAL'], 'soloDesc' => true],
-
-        // Equipos (alquiler) → tratado como indirecto salvo regla específica; no forzamos paquete aquí.
     ];
 
     public function __construct(private readonly \Database $db)
@@ -407,12 +463,18 @@ final class PaquetesService
         foreach ($ins['insumos'] as $insumo) {
             $clave = $insumo['descripcionNorm'] . '@@' . mb_strtoupper((string) $insumo['unidad']);
             $actividad = $actMap[$clave] ?? '';
-            $p = $this->sugerirOverrideIA($insumo, $overrides, $catalogo)
+            // El veto de reglas corta la cascada: ni tokens ni agrupacion deben rellenar un pendiente.
+            $porReglas = $this->sugerirOverrideIA($insumo, $overrides, $catalogo)
                 ?? $this->sugerirExacta($projectId, $insumo)
-                ?? $this->sugerirPorReglas($insumo, $actividad, $catalogo)
-                ?? $this->sugerirPorTokens($projectId, $insumo)
-                ?? $this->sugerirIndirectos($insumo, $catalogo)
-                ?? $this->sugerirPorAgrupacion($insumo);
+                ?? $this->sugerirPorReglas($insumo, $actividad, $catalogo);
+            if (($porReglas['veto'] ?? false) === true) {
+                $p = null;
+            } else {
+                $p = $porReglas
+                    ?? $this->sugerirPorTokens($projectId, $insumo)
+                    ?? $this->sugerirIndirectos($insumo, $catalogo)
+                    ?? $this->sugerirPorAgrupacion($insumo);
+            }
             $propuestas[] = [
                 'descripcionNorm' => $insumo['descripcionNorm'],
                 'unidad' => $insumo['unidad'],
@@ -665,14 +727,26 @@ final class PaquetesService
     }
 
     /** Resuelve un paquete del catálogo por nombre (normalizado), respetando compatibilidad de tipo. */
-    private function resolverPaquete(string $nombre, ?string $tipoRecurso, array $catalogo): ?array
+    private function resolverPaquete(string $nombre, ?string $tipoRecurso, array $catalogo, string $descNorm = ''): ?array
     {
         $norm = mb_substr(MaestroInsumosService::normalizar($nombre), 0, 200);
         $paq = $catalogo[$norm] ?? null;
         if ($paq === null) {
             return null;
         }
+        // El bucket de indirectos no es una negociacion: exento del cuadro de compatibilidad.
+        if ($norm === mb_substr(MaestroInsumosService::normalizar(self::PAQUETE_INDIRECTOS), 0, 200)) {
+            return $paq;
+        }
         if (!in_array($paq['tipoNegociacion'], self::tiposCompatibles($tipoRecurso), true)) {
+            return null;
+        }
+        // El prefijo del NOMBRE del insumo manda: un suministro nunca cae en un paquete de mano de
+        // obra (y viceversa), aunque su tipo_recurso lo permitiria.
+        if ($descNorm !== '' && self::pareceSuministro($descNorm) && $paq['tipoNegociacion'] === 'mano_obra') {
+            return null;
+        }
+        if ($descNorm !== '' && self::pareceManoDeObra($descNorm) && $paq['tipoNegociacion'] === 'suministro') {
             return null;
         }
         return $paq;
@@ -686,7 +760,7 @@ final class PaquetesService
         if (!is_string($nombre) || $nombre === '') {
             return null;
         }
-        $paq = $catalogo[mb_substr(MaestroInsumosService::normalizar($nombre), 0, 200)] ?? null;
+        $paq = $this->resolverPaquete($nombre, $insumo['tipoRecurso'] ?? null, $catalogo, $insumo['descripcionNorm']);
         if ($paq === null) {
             return null;
         }
@@ -700,52 +774,110 @@ final class PaquetesService
     /** Capa reglas (media): diccionario de dominio sobre descripción + actividad dominante, filtrado por tipo_recurso. */
     private function sugerirPorReglas(array $insumo, string $actividad, array $catalogo): ?array
     {
-        $desc = ' ' . $insumo['descripcionNorm'] . ' ';
-        $act = $actividad !== '' ? ' ' . MaestroInsumosService::normalizar($actividad) . ' ' : '';
+        $desc = self::henoParaReglas($insumo['descripcionNorm']);
+        $act = $actividad !== '' ? self::henoParaReglas(MaestroInsumosService::normalizar($actividad)) : '';
         $tipoRecurso = mb_strtoupper((string) ($insumo['tipoRecurso'] ?? ''));
 
-        // Orden de evidencia según el tipo de recurso (regla de dominio, feedback del usuario 2026-07-25):
-        //  · MANO DE OBRA / SUBCONTRATO → manda la ACTIVIDAD PADRE, que trae el material/trabajo correcto.
-        //    El profesional nombra la M.O. de forma imprecisa (p.ej. «M.O. ZOCALO EN PORCELANATO» se
-        //    consume en su mayoría en la actividad «ZOCALO EN MADERA»); la descripción queda de respaldo.
-        //  · MATERIAL y demás → manda la DESCRIPCIÓN: un material se identifica por su nombre, no por la
-        //    actividad que lo consume (MORTERO no es CONCRETO aunque su actividad mencione «CONCRETO»).
-        $prioridadActividad = in_array($tipoRecurso, ['MANO DE OBRA', 'SUBCONTRATO'], true);
-        $pasadas = $prioridadActividad
-            ? [['heno' => $act, 'origen' => 'actividad'], ['heno' => $desc, 'origen' => 'descripcion']]
-            : [['heno' => $desc, 'origen' => 'descripcion']];
+        // Doctrina de precedencia (feedback del usuario 2026-07-25):
+        //  1) Si la propia DESCRIPCION nombra el oficio/material, manda (reglas `descPrimero`) — p.ej.
+        //     «M.O. ZOCALO EN PORCELANATO» es del enchapador aunque su actividad dominante sea de madera.
+        //  2) Si la descripcion calla, el material/trabajo lo aporta la ACTIVIDAD PADRE dominante.
+        //  3) Respaldo: el resto de reglas sobre la descripcion.
+        // Las reglas de material (`soloDesc`) nunca miran la actividad: el nombre identifica el producto.
+        $pasadas = [
+            ['heno' => $desc, 'origen' => 'descripcion', 'soloDescPrimero' => true],
+            ['heno' => $act, 'origen' => 'actividad', 'soloDescPrimero' => false],
+            ['heno' => $desc, 'origen' => 'descripcion', 'soloDescPrimero' => false],
+        ];
 
         foreach ($pasadas as $pasada) {
-            if ($pasada['heno'] === '') {
+            if (trim($pasada['heno']) === '') {
                 continue;
             }
             foreach (self::REGLAS_SEMBRADO as $regla) {
                 if ($regla['tipos'] !== [] && !in_array($tipoRecurso, $regla['tipos'], true)) {
                     continue;
                 }
-                // Las reglas de material solo miran la descripción, nunca la actividad.
+                if ($pasada['soloDescPrimero'] && !($regla['descPrimero'] ?? false)) {
+                    continue;
+                }
                 if (($regla['soloDesc'] ?? false) && $pasada['origen'] !== 'descripcion') {
                     continue;
                 }
                 foreach ($regla['kw'] as $kw) {
-                    if (str_contains($pasada['heno'], $kw)) {
-                        $paq = $this->resolverPaquete($regla['paq'], $insumo['tipoRecurso'] ?? null, $catalogo);
-                        if ($paq !== null) {
-                            $donde = $pasada['origen'] === 'actividad'
-                                ? "en su actividad padre «{$actividad}»"
-                                : 'en la descripción del insumo';
-                            return [
-                                'paqueteId' => $paq['id'], 'paqueteNombre' => $paq['nombre'],
-                                'capa' => 'reglas', 'confianza' => 'media',
-                                'evidencia' => "Regla de dominio: «{$kw}» {$donde} (recurso {$tipoRecurso}) → {$paq['nombre']}.",
-                            ];
-                        }
-                        break; // regla casó pero el paquete no resolvió: siguiente regla
+                    if (!self::casaKeyword($pasada['heno'], $kw)) {
+                        continue;
                     }
+                    // Contexto obligatorio: la regla exige que el heno hable tambien del alcance correcto.
+                    if (($regla['ctx'] ?? []) !== []) {
+                        $hayCtx = false;
+                        foreach ($regla['ctx'] as $c) {
+                            if (self::casaKeyword($pasada['heno'], $c)) {
+                                $hayCtx = true;
+                                break;
+                            }
+                        }
+                        if (!$hayCtx) {
+                            continue;
+                        }
+                    }
+                    $donde = $pasada['origen'] === 'actividad'
+                        ? "en su actividad padre «{$actividad}»"
+                        : 'en la descripcion del insumo';
+                    // Veto explicito: sin senal suficiente es preferible dejarlo pendiente que inventar.
+                    if ($regla['paq'] === self::SIN_PROPUESTA) {
+                        return [
+                            'veto' => true, 'capa' => 'reglas', 'confianza' => 'media',
+                            'paqueteId' => 0, 'paqueteNombre' => '',
+                            'evidencia' => "Regla de veto: «{$kw}» {$donde} sin contexto suficiente → queda pendiente.",
+                        ];
+                    }
+                    $paq = $this->resolverPaquete($regla['paq'], $insumo['tipoRecurso'] ?? null, $catalogo, $insumo['descripcionNorm']);
+                    if ($paq !== null) {
+                        return [
+                            'paqueteId' => $paq['id'], 'paqueteNombre' => $paq['nombre'],
+                            'capa' => 'reglas', 'confianza' => 'media',
+                            'evidencia' => "Regla de dominio: «{$kw}» {$donde} (recurso {$tipoRecurso}) → {$paq['nombre']}.",
+                        ];
+                    }
+                    break; // regla caso pero el paquete no resolvio: siguiente regla
                 }
             }
         }
         return null;
+    }
+
+    /**
+     * ¿El keyword aparece como INICIO de palabra en el heno normalizado?
+     * normalizar() no tokeniza, asi que str_contains casaba «PISO» dentro de APISONADOR/CONTRAPISO,
+     * «GRES» dentro de INGRESO y «COMUNICACIONES» dentro de TELECOMUNICACIONES. La frontera izquierda
+     * conserva plurales y compuestos legitimos (PISOS, CERAMICA sobre CERAMIC) y elimina esos falsos.
+     */
+    private static function casaKeyword(string $heno, string $kw): bool
+    {
+        return preg_match('/(?<![A-Z0-9])' . preg_quote($kw, '/') . '/u', $heno) === 1;
+    }
+
+    /** Prepara el heno (descripcion o actividad ya normalizada) para el matching de reglas. */
+    private static function henoParaReglas(string $norm): string
+    {
+        // El texto entre parentesis es nota constructiva, no alcance contratable.
+        $h = (string) preg_replace('/\([^)]*\)/u', ' ', $norm);
+        // «PISO 1», «PISOS 4», «PISO N 2» = NIVEL del edificio, nunca acabado de piso.
+        $h = (string) preg_replace('/(?<![A-Z0-9])PISOS?\s*(N[O°]?\s*)?\d+/u', ' ', $h);
+        return ' ' . trim((string) preg_replace('/\s+/u', ' ', $h)) . ' ';
+    }
+
+    /** ¿La descripcion declara que el insumo es un suministro puro (no incluye instalacion)? */
+    private static function pareceSuministro(string $d): bool
+    {
+        return (bool) preg_match('/^SUMINISTRO(?! E INSTALACION| Y (COLOCACION|INSTALACION))/u', trim($d));
+    }
+
+    /** ¿La descripcion declara que el insumo es mano de obra pura? */
+    private static function pareceManoDeObra(string $d): bool
+    {
+        return (bool) preg_match('/^(M\.?O\.?[ .]|M\. DE O|MANO DE OBRA)/u', trim($d));
     }
 
     /** Capa indirectos (media): admin/nómina/dotación → paquete «Indirectos / Administración». */
@@ -757,7 +889,7 @@ final class PaquetesService
             $motivo = "tipo de recurso {$tipoRecurso}";
         } else {
             foreach (self::KEYWORDS_INDIRECTOS as $kw) {
-                if (str_contains(' ' . $insumo['descripcionNorm'] . ' ', $kw)) {
+                if (self::casaKeyword(' ' . $insumo['descripcionNorm'] . ' ', $kw)) {
                     $motivo = "«{$kw}» en la descripción";
                     break;
                 }
