@@ -37,13 +37,17 @@ $pisosId = (int) $svc->crearPaquete('TEST A3 Pisos', 'suministro', 'test-a3')['p
 $concretoId = (int) ($db->query("SELECT id FROM general_paquetes_contratacion WHERE nombre_norm = ?", [\App\Services\Pdc\MaestroInsumosService::normalizar('Suministro CONCRETO')])->fetchColumn() ?: 0);
 $mamposteriaId = (int) ($db->query("SELECT id FROM general_paquetes_contratacion WHERE nombre_norm = ?", [\App\Services\Pdc\MaestroInsumosService::normalizar('M. de O MAMPOSTERÍA')])->fetchColumn() ?: 0);
 $indirectosId = (int) ($db->query("SELECT id FROM general_paquetes_contratacion WHERE nombre_norm = ?", [\App\Services\Pdc\MaestroInsumosService::normalizar(PaquetesService::PAQUETE_INDIRECTOS)])->fetchColumn() ?: 0);
+$pisosMoId = (int) ($db->query("SELECT id FROM general_paquetes_contratacion WHERE nombre_norm = ?", [\App\Services\Pdc\MaestroInsumosService::normalizar('M. de O INSTALACION DE PISOS')])->fetchColumn() ?: 0);
+$enchapesId = (int) ($db->query("SELECT id FROM general_paquetes_contratacion WHERE nombre_norm = ?", [\App\Services\Pdc\MaestroInsumosService::normalizar('M. de O ENCHAPES CERÁMICOS')])->fetchColumn() ?: 0);
 $assert($concretoId > 0 && $mamposteriaId > 0 && $indirectosId > 0, 'Catálogo con Suministro CONCRETO, M. de O MAMPOSTERÍA e Indirectos (seeds aplicados).');
+$assert($pisosMoId > 0 && $enchapesId > 0, 'Catálogo con M. de O INSTALACION DE PISOS y M. de O ENCHAPES CERÁMICOS.');
 
 // Maestro (tipo_recurso) para los insumos de prueba.
 $maestro = [
     ['CONCRETO PRUEBA A3', 'M3', 'MATERIAL'],
     ['CONCRETO MO PRUEBA A3', 'HC', 'MANO DE OBRA'],
     ['M.O. GENERICO PRUEBA A3', 'HC', 'MANO DE OBRA'],
+    ['M.O. ZOCALO PORCELANATO PRUEBA A3', 'M', 'MANO DE OBRA'],
     ['IMPREVISTOS PRUEBA A3', 'GL', 'SUBCONTRATO'],
     ['NOMINA PRUEBA A3', 'MES', 'NOMINA'],
     ['ZZZ ALFA A3', 'UN', 'MATERIAL'],
@@ -91,6 +95,19 @@ $db->query(
      VALUES (?, ?, ?, 'M.O. GENERICO PRUEBA A3', 'X', 'HC', 1, 1, 40, 25000, 1000000, 0)",
     [$P1, $vid, $itemMuro],
 );
+// Actividad dominante de 'M.O. ZOCALO PORCELANATO PRUEBA A3' = ZOCALO EN MADERA: el material real lo
+// da la actividad padre, no el nombre del insumo (caso real DAPORTO 01.14.04.02).
+$db->query(
+    "INSERT INTO pdc_presupuesto_items (project_id, version_id, codigo, codigo_padre, nivel, tipo_fila, descripcion, unidad, cantidad)
+     VALUES (?, ?, '01.14.04.02', NULL, 4, 'actividad', 'ZOCALO EN MADERA', 'M', 100)",
+    [$P1, $vid],
+);
+$itemZocalo = (int) $db->lastInsertId();
+$db->query(
+    "INSERT INTO pdc_presupuesto_apu_insumos (project_id, version_id, item_id, descripcion, tipo_insumo, unidad, cant_apu, rendimiento, cantidad_total, valor_unitario, valor_total, iva)
+     VALUES (?, ?, ?, 'M.O. ZOCALO PORCELANATO PRUEBA A3', 'X', 'M', 1, 1, 100, 12000, 1200000, 0)",
+    [$P1, $vid, $itemZocalo],
+);
 
 $r = $svc->sugerencias($P1);
 $assert($r !== null, 'Con versión activa hay respuesta.');
@@ -108,6 +125,14 @@ $assert($sConc !== null && $sConc['capa'] === 'reglas' && (int) $sConc['paqueteI
 // Capa reglas — mano de obra por ACTIVIDAD dominante (la descripción del insumo no tiene keyword).
 $sMuro = $byNorm['M.O. GENERICO PRUEBA A3'] ?? null;
 $assert($sMuro !== null && $sMuro['capa'] === 'reglas' && (int) $sMuro['paqueteId'] === $mamposteriaId, 'Regla por actividad: M.O. de un MURO EN LADRILLO → M. de O MAMPOSTERÍA.');
+
+// REGLA DE DOMINIO: en M.O. manda la ACTIVIDAD PADRE sobre el material del nombre del insumo.
+// «M.O. ZOCALO PORCELANATO PRUEBA A3» se consume en la actividad «ZOCALO EN MADERA»: debe clasificarse
+// como acabado de piso (por ZOCALO en la actividad), NO como enchape cerámico (por PORCELANATO en el nombre).
+$sZoc = $byNorm['M.O. ZOCALO PORCELANATO PRUEBA A3'] ?? null;
+$assert($sZoc !== null && (int) $sZoc['paqueteId'] === $pisosMoId, 'M.O.: la actividad padre («ZOCALO EN MADERA») manda sobre el material del nombre («PORCELANATO»).');
+$assert($sZoc !== null && (int) $sZoc['paqueteId'] !== $enchapesId, 'M.O. de zócalo NO cae en Enchapes cerámicos por el nombre del insumo.');
+$assert($sZoc !== null && str_contains($sZoc['evidencia'], 'actividad padre'), 'La evidencia indica que se decidió por la actividad padre.');
 
 // Filtro por tipo_recurso: la REGLA material (CONCRETO) NO coloca a un insumo de mano de obra.
 // (Otras capas cross-proyecto pueden ubicarlo; lo que se verifica es que la regla material no aplicó.)
