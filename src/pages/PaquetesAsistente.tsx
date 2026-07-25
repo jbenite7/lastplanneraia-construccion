@@ -2,11 +2,12 @@ import { useCallback, useEffect, useMemo, useReducer, useState } from 'react'
 import { apiGet, apiPost } from '../lib/api'
 import { claveInsumo } from '../lib/paquetesState'
 import { estadoInicialWizard, wizardReducer } from '../lib/paqueteWizardState'
-import { TIPOS_NEGOCIACION } from '../lib/types'
+import { MODALIDADES, TIPOS_NEGOCIACION } from '../lib/types'
 import type { ActividadesInsumo, CandidatoPaquete, InsumoPaquete, PaqueteCatalogo, SugerenciaPaquete } from '../lib/types'
 
 const moneda = (v: number | null | undefined) => (v == null ? '' : `$ ${v.toLocaleString('es-CO')}`)
 const tipoNegLabel = (v: string) => TIPOS_NEGOCIACION.find((t) => t.value === v)?.label ?? v
+const modalidadLabel = (v?: string) => MODALIDADES.find((m) => m.value === v)?.label ?? v ?? ''
 
 type PanelCandidatos = { paquete: { id: number; nombre: string }; lista: CandidatoPaquete[] } | null
 
@@ -224,7 +225,13 @@ export default function PaquetesAsistente({ onCambio, actividadesMap }: { onCamb
             <label>Paquete
               <select data-testid="pdc-wiz-paquete" value={destino} onChange={(e) => setDestino(e.target.value === '' ? '' : Number(e.target.value))}>
                 <option value="">Elegir paquete…</option>
-                {paquetesFiltrados.map((p) => <option key={p.id} value={p.id}>{p.nombre}</option>)}
+                {/* La modalidad solo se anota cuando no es «contrato»: avisa que ese destino no lleva
+                    proceso de contratación con fechas (orden de compra, consumo directo, no contratable). */}
+                {paquetesFiltrados.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.nombre}{p.modalidad && p.modalidad !== 'contrato' ? ` — ${modalidadLabel(p.modalidad)}` : ''}
+                  </option>
+                ))}
               </select>
             </label>
             <button type="button" className="pdc-paq-primario" data-testid="pdc-wiz-asignar" disabled={state.ocupado || destino === ''}

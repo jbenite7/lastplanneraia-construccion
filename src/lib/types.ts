@@ -210,7 +210,18 @@ export type Comparativo = {
 }
 
 // Tipos de paquetes de contratación (Fase A3)
-export type PaqueteCatalogo = { id: number; nombre: string; tipoNegociacion: string; insumosGlobal: number }
+export type PaqueteCatalogo = { id: number; nombre: string; tipoNegociacion: string; modalidad?: string; insumosGlobal: number }
+
+/**
+ * Modalidad de contratación — dimensión ortogonal al tipo de negociación: dice CÓMO se compra, que es
+ * lo que decide si el paquete entra al plan de fechas y cómo se le hace seguimiento.
+ */
+export const MODALIDADES: { value: string; label: string; ayuda: string }[] = [
+  { value: 'contrato', label: 'Contrato', ayuda: 'Alcance cerrado, un proveedor: proceso completo con fechas' },
+  { value: 'orden_compra', label: 'Orden de compra', ayuda: 'Commodity recurrente: solo se programa la primera entrega' },
+  { value: 'consumo_directo', label: 'Consumo directo', ayuda: 'Ferretería a demanda: sin proceso ni fecha, se controla el gasto' },
+  { value: 'no_contratable', label: 'No contratable', ayuda: 'Nómina e imprevistos: no se le compran a nadie' },
+]
 
 export type InsumoPaquete = {
   descripcionNorm: string
@@ -257,7 +268,7 @@ export type ResumenPaquetes = {
   asignados: number
   omitidos: number
   cobertura: number
-  porPaquete: { paqueteId: number; nombre: string; tipoNegociacion: string; insumos: number; subtotal: number }[]
+  porPaquete: { paqueteId: number; nombre: string; tipoNegociacion: string; modalidad?: string; insumos: number; subtotal: number }[]
 }
 
 export const TIPOS_NEGOCIACION: { value: string; label: string }[] = [

@@ -4,7 +4,7 @@ import { CellStyleModule, ClientSideRowModelModule, ModuleRegistry, RowStyleModu
 import type { ColDef, ITooltipParams, RowClickedEvent } from 'ag-grid-community'
 import { PdcApiError, apiGet, apiPost } from '../lib/api'
 import { claveInsumo, estadoInicialPaquetes, paquetesReducer } from '../lib/paquetesState'
-import { TIPOS_NEGOCIACION } from '../lib/types'
+import { MODALIDADES, TIPOS_NEGOCIACION } from '../lib/types'
 import type { ActividadesInsumo, InsumoPaquete, PaqueteCatalogo, ResumenPaquetes, SugerenciaPaquete } from '../lib/types'
 import PaquetesAsistente from './PaquetesAsistente'
 
@@ -53,6 +53,7 @@ const pdcTheme = themeQuartz.withParams({
 const moneda = (v: number | null | undefined) => (v == null ? '' : `$ ${v.toLocaleString('es-CO')}`)
 const CONFIANZA_LABEL: Record<string, string> = { alta: 'alta', media: 'media', baja: 'baja' }
 const tipoNegLabel = (v: string) => TIPOS_NEGOCIACION.find((t) => t.value === v)?.label ?? v
+const modalidadLabel = (v?: string) => MODALIDADES.find((m) => m.value === v)?.label ?? v ?? ''
 // Etiquetas humanas de la fuente de cada propuesta del sembrado.
 const FUENTE_LABEL: Record<string, string> = {
   ia: 'Experto (IA)', exacta: 'Histórico', reglas: 'Reglas', tokens: 'Similitud', indirectos: 'Indirectos', agrupacion: 'Agrupación',
@@ -75,6 +76,7 @@ export default function PaquetesContratacion() {
   const [paqueteDestino, setPaqueteDestino] = useState<number | ''>('')
   const [nuevoNombre, setNuevoNombre] = useState('')
   const [nuevoTipo, setNuevoTipo] = useState(TIPOS_NEGOCIACION[0].value)
+  const [nuevaModalidad, setNuevaModalidad] = useState(MODALIDADES[0].value)
 
   const cargar = useCallback((f: Filtro) => {
     apiGet<{ version: unknown; insumos: InsumoPaquete[] }>(`/plan-compras/api/paquetes/insumos?filtro=${f}`)
@@ -233,7 +235,7 @@ export default function PaquetesContratacion() {
     dispatch({ type: 'OCUPADO' })
     try {
       const r = await apiPost<{ paquete: PaqueteCatalogo & { existente: number } }>('/plan-compras/api/paquetes', {
-        nombre: nuevoNombre, tipoNegociacion: nuevoTipo,
+        nombre: nuevoNombre, tipoNegociacion: nuevoTipo, modalidad: nuevaModalidad,
       })
       setNuevoNombre('')
       setPaqueteDestino(r.paquete.id)
@@ -355,6 +357,15 @@ export default function PaquetesContratacion() {
         <select data-testid="pdc-paq-crear-tipo" aria-label="Tipo de negociación" value={nuevoTipo} onChange={(e) => setNuevoTipo(e.target.value)}>
           {TIPOS_NEGOCIACION.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
         </select>
+        <select
+          data-testid="pdc-paq-crear-modalidad"
+          aria-label="Modalidad de contratación"
+          title={MODALIDADES.find((m) => m.value === nuevaModalidad)?.ayuda}
+          value={nuevaModalidad}
+          onChange={(e) => setNuevaModalidad(e.target.value)}
+        >
+          {MODALIDADES.map((m) => <option key={m.value} value={m.value} title={m.ayuda}>{m.label}</option>)}
+        </select>
         <button type="button" data-testid="pdc-paq-crear" disabled={state.ocupado || nuevoNombre.trim() === ''} onClick={onCrearPaquete}>
           Crear paquete
         </button>
@@ -380,6 +391,14 @@ export default function PaquetesContratacion() {
           <li key={p.paqueteId}>
             <strong>{p.nombre}</strong>
             <span className="pdc-paq-tag">{tipoNegLabel(p.tipoNegociacion)}</span>
+            {p.modalidad && p.modalidad !== 'contrato' && (
+              <span
+                className={`pdc-paq-modalidad pdc-paq-modalidad--${p.modalidad}`}
+                title={MODALIDADES.find((m) => m.value === p.modalidad)?.ayuda}
+              >
+                {modalidadLabel(p.modalidad)}
+              </span>
+            )}
             <span className="pdc-paq-meta">{p.insumos} insumo(s) · {moneda(p.subtotal)}</span>
           </li>
         ))}
