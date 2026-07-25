@@ -10,13 +10,14 @@ const THEME_ENTRYPOINTS = [
 ];
 
 const DARK_SELECTOR = ':root,';
-const LINEN_SELECTOR = '[data-aia-theme="linen"]';
 
 // Mapeo completo y explicito de las 22 declaraciones del grupo :root/dark.
 // Escrito a mano a partir del CSS commiteado en 7770ea2 (no derivado del
 // bloque linen ni de ningun otro archivo): si un cambio futuro apunta una
 // custom property al token equivocado, este mapa no cambia solo y la
-// asercion debe fallar.
+// asercion debe fallar. Sobrevive al retiro de linen en F0/Task 7 porque
+// protege exactamente lo mismo que protegia antes: el mapeo del unico
+// grupo que queda.
 const EXPECTED_DARK_DECLARATIONS = {
   'color-scheme': 'dark',
   '--ds-active-bg-canvas': 'var(--ds-color-bg-canvas-dark)',
@@ -42,32 +43,6 @@ const EXPECTED_DARK_DECLARATIONS = {
   '--ds-active-nav-mark-filter': 'invert(1) brightness(1.15)',
 };
 
-// Mapeo completo y explicito de las 22 declaraciones del grupo linen.
-const EXPECTED_LINEN_DECLARATIONS = {
-  'color-scheme': 'light',
-  '--ds-active-bg-canvas': 'var(--ds-color-bg-canvas)',
-  '--ds-active-bg-page': 'var(--ds-color-bg-page)',
-  '--ds-active-surface': 'var(--ds-color-surface)',
-  '--ds-active-surface-raised': 'var(--ds-color-surface-raised)',
-  '--ds-active-surface-glass': 'var(--ds-color-surface-glass)',
-  '--ds-active-text-primary': 'var(--ds-color-text-primary)',
-  '--ds-active-text-secondary': 'var(--ds-color-text-secondary)',
-  '--ds-active-border': 'var(--ds-color-border-default)',
-  '--ds-active-focus-ring': 'var(--ds-color-focus-ring-light)',
-  '--ds-active-action-primary': 'var(--ds-color-domain-corporate)',
-  '--ds-active-action-primary-hover': 'var(--ds-color-brand-primary-dark)',
-  '--ds-active-action-text': 'var(--ds-color-text-inverse)',
-  '--ds-active-domain-construction': 'var(--ds-color-domain-construction)',
-  '--ds-active-domain-construction-text': 'var(--ds-color-text-inverse)',
-  '--ds-active-data-plan': 'var(--ds-color-domain-real-estate)',
-  '--ds-active-data-executed': 'var(--ds-color-domain-corporate)',
-  '--ds-active-nav-bg': 'var(--ds-color-surface-raised)',
-  '--ds-active-nav-border': 'var(--ds-color-border-default)',
-  '--ds-active-nav-text': 'var(--ds-color-text-primary)',
-  '--ds-active-nav-text-muted': 'var(--ds-color-text-secondary)',
-  '--ds-active-nav-mark-filter': 'none',
-};
-
 const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 // Cuerpo entre { y } de un bloque de selector, usado para verificar que
@@ -80,6 +55,27 @@ const blockBody = (css, selector, label) => {
   const closeBrace = css.indexOf('}', openBrace);
   assert.notEqual(closeBrace, -1, `${label}: no se encontro el cierre del bloque ${selector}`);
   return css.slice(openBrace + 1, closeBrace);
+};
+
+// Cuerpo completo (con llaves balanceadas) de la regla @layer theme, usado
+// para contar cuantos grupos de selectores de nivel superior declara. Tras
+// F0/Task 7 solo debe quedar uno (:root/dark); un segundo grupo indicaria
+// que alguien reintrodujo otro tema.
+const layerThemeBody = (css, label) => {
+  const marker = '@layer theme';
+  const markerIndex = css.indexOf(marker);
+  assert.notEqual(markerIndex, -1, `${label}: no se encontro @layer theme`);
+  const openBrace = css.indexOf('{', markerIndex);
+  assert.notEqual(openBrace, -1, `${label}: no se encontro la apertura de @layer theme`);
+  let depth = 0;
+  for (let i = openBrace; i < css.length; i += 1) {
+    if (css[i] === '{') depth += 1;
+    else if (css[i] === '}') {
+      depth -= 1;
+      if (depth === 0) return css.slice(openBrace + 1, i);
+    }
+  }
+  throw new Error(`${label}: no se encontro el cierre de @layer theme`);
 };
 
 const assertFullMapping = (body, declarations, label) => {
@@ -109,24 +105,19 @@ for (const entrypoint of THEME_ENTRYPOINTS) {
     assert.equal(/linen/.test(root), false, ':root sigue agrupado con linen');
   });
 
-  test(`${entrypoint}: linen mapea cada --ds-active-* a su token light (mapeo completo)`, async () => {
+  // F0/Task 7 retiro el grupo linen: ya no hay dos grupos cuyo orden de
+  // fuente importe, asi que "el grupo dark precede a linen" queda sin
+  // objeto. La proteccion equivalente ahora es que solo sobreviva un grupo
+  // de selectores dentro de @layer theme — si alguien reintrodujera un
+  // segundo tema, esta asercion lo detecta.
+  test(`${entrypoint}: @layer theme contiene exactamente un grupo de selectores`, async () => {
     const css = await read(entrypoint);
-    const body = blockBody(css, LINEN_SELECTOR, entrypoint);
-    assertFullMapping(body, EXPECTED_LINEN_DECLARATIONS, `${entrypoint} (linen)`);
-  });
-
-  test(`${entrypoint}: el grupo dark precede al grupo linen en el orden de fuente`, async () => {
-    const css = await read(entrypoint);
-    const darkIndex = css.indexOf(DARK_SELECTOR);
-    const linenIndex = css.indexOf(LINEN_SELECTOR);
-    assert.notEqual(darkIndex, -1, `${entrypoint}: no se encontro el grupo :root/dark`);
-    assert.notEqual(linenIndex, -1, `${entrypoint}: no se encontro el grupo linen`);
-    // :root/dark y [data-aia-theme="linen"] tienen especificidad identica;
-    // quien gane la cascada lo decide solo el orden de fuente. Si linen
-    // quedara antes, "linen" dejaria de poder overridear a dark en la practica.
-    assert.ok(
-      darkIndex < linenIndex,
-      `${entrypoint}: el grupo linen aparece antes que el grupo dark en el archivo — con especificidad identica, linen dejaria de poder actuar como override`,
+    const body = layerThemeBody(css, entrypoint);
+    const groupCount = (body.match(/{/g) || []).length;
+    assert.equal(
+      groupCount,
+      1,
+      `${entrypoint}: @layer theme declara ${groupCount} grupos de selectores, se esperaba 1 (linen se retiro en F0/Task 7; un segundo grupo indicaria que se reintrodujo otro tema)`,
     );
   });
 }

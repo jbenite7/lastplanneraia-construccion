@@ -180,12 +180,16 @@ test('every brand domain has an accessible dark-appearance variant', async () =>
   }
 });
 
-test('primary actions remap to the canonical corporate color in each theme', async () => {
+// F0/Task 7 retiro el tema linen: la asercion sobre
+// `[data-aia-theme="linen"] ... --ds-color-domain-corporate` quedo sin
+// objeto (ya no hay ningun selector linen que mapear) y se elimino. La
+// asercion sobre dark, y las dos de .aia-btn consumiendo los tokens
+// --ds-active-*, siguen intactas: siguen protegiendo lo mismo que antes.
+test('primary actions remap to the canonical corporate color in the dark theme', async () => {
   const [entrypoint, core] = await Promise.all([
     read('public/css/aia-design-system.css'),
     read('public/css/design-system/core.css'),
   ]);
-  assert.match(entrypoint, /\[data-aia-theme=["']linen["']\][\s\S]*--ds-active-action-primary:\s*var\(--ds-color-domain-corporate\)/);
   assert.match(entrypoint, /\[data-aia-theme=["']dark["']\][\s\S]*--ds-active-action-primary:\s*var\(--ds-color-domain-corporate-on-dark\)/);
   assert.match(core, /\.aia-btn\s*\{[\s\S]*background:\s*var\(--ds-active-action-primary\)/);
   assert.match(core, /\.aia-btn\s*\{[\s\S]*color:\s*var\(--ds-active-action-text\)/);
