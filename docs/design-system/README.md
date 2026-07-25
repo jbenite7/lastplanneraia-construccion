@@ -28,6 +28,18 @@ Este directorio define la parte versionada del design system. Stitch y `docs/bra
 - `family-approvals.json`: aprobaciones humanas trazables con evidencia.
 - `vendors.json` y `legacy-aliases.json`: dependencias y puente de compatibilidad.
 - `manifests/`: consumo por módulo; Programa General es el único piloto completo.
+  `manifests/inventory.json` declara el `status` de cada módulo en su
+  arreglo `modules[]` (sin `$schema`, no se valida contra
+  `module-manifest.schema.json`, que gobierna manifiestos individuales como
+  `auth.json` o `programa-general.json` y no lleva campo `status`). Los
+  cuatro valores posibles: `pilot` (migrado por completo, gobernado por un
+  manifiesto por módulo — rutas, escenarios, goldens — validado contra
+  `module-manifest.schema.json`); `inventory-only` (catalogado pero aún sin
+  migrar; sin manifiesto ni cobertura golden); `deferred-last` (programado
+  explícitamente para migrar solo después de todos los demás módulos; sin
+  manifiesto); `observed-frozen` (bajo observación de auditoría con baseline
+  congelado; sin manifiesto y sin presupuesto de rutas — el contador solo
+  puede bajar).
 - `public/css/tokens.css`: tokens base AIA y alias semanticos `--ds-*`.
 - `public/css/design-system/core.css`: componentes y utilidades canónicas
   `aia-*`, compartidas por los entrypoints productivo y del laboratorio.

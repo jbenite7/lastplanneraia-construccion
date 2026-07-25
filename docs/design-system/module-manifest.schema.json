@@ -32,15 +32,6 @@
     "moduleId": {
       "type": "string"
     },
-    "status": {
-      "description": "Inventory status tracked per module in manifests/inventory.json. pilot: fully migrated, governed by a per-module manifest (routes, scenarios, goldens) validated against this schema. inventory-only: catalogued but not yet migrated; no manifest, no golden coverage. deferred-last: explicitly scheduled to migrate only after every other module; no manifest. observed-frozen: under audit observation with a frozen baseline; no manifest and no path budget; the counter may only go down.",
-      "enum": [
-        "pilot",
-        "inventory-only",
-        "deferred-last",
-        "observed-frozen"
-      ]
-    },
     "consumerContract": {
       "enum": [
         "v1"
