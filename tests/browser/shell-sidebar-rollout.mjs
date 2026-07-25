@@ -24,6 +24,9 @@ const ALL_ROUTES = [
   { route: '/programacion-semanal/cnc', active: 'programacion-semanal', label: 'CNC' },
   { route: '/programacion-semanal/cnp', active: 'programacion-semanal', label: 'CNP' },
   { route: '/indicadores', active: 'indicadores', label: 'Indicadores LPS' },
+  { route: '/listado-actividades', active: 'listado-actividades', label: 'Familias de Actividades' },
+  { route: '/contratos', active: 'contratos', label: 'Paquetes de Contratación' },
+  { route: '/pdc', active: 'plan-compras', label: 'Plan de Compras' },
   { route: '/bi/control-tower', active: 'control-tower', label: 'Control Tower - Informes' },
   { route: '/bi/programa-general', active: 'control-tower', label: 'Control Tower - Programa General' },
   { route: '/bi/intermedia', active: 'control-tower', label: 'Control Tower - Prog. Intermedia' },
@@ -33,7 +36,7 @@ const ALL_ROUTES = [
   { route: '/bi/responsables', active: 'control-tower', label: 'Control Tower - Responsables (CIP)' },
   { route: '/bi/curva-s', active: 'control-tower', label: 'Control Tower - Curva S' },
 ];
-const MIGRATED = new Set(['/programacion-intermedia', '/programa-general', '/profesionales', '/subcontratistas', '/control-cambios', '/programa-general-actualizar', '/programacion-semanal', '/programacion-semanal/cic', '/programacion-semanal/cnc', '/programacion-semanal/cnp', '/indicadores', '/bi/control-tower', '/bi/programa-general', '/bi/intermedia', '/bi/semanal', '/bi/pdc', '/bi/contratistas', '/bi/responsables', '/bi/curva-s']); // se irá ampliando módulo a módulo
+const MIGRATED = new Set(['/programacion-intermedia', '/programa-general', '/profesionales', '/subcontratistas', '/control-cambios', '/programa-general-actualizar', '/programacion-semanal', '/programacion-semanal/cic', '/programacion-semanal/cnc', '/programacion-semanal/cnp', '/indicadores', '/listado-actividades', '/contratos', '/pdc', '/bi/control-tower', '/bi/programa-general', '/bi/intermedia', '/bi/semanal', '/bi/pdc', '/bi/contratistas', '/bi/responsables', '/bi/curva-s']); // se irá ampliando módulo a módulo
 
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1180, height: 820 }, colorScheme: 'dark' });

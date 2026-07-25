@@ -15,7 +15,8 @@
 </head>
 
 <!--Etiqueta superior-->
-<body class="pdc-page">
+<body class="pdc-page aia-shell aia-shell--sidebar">
+	<?php require __DIR__ . '/../partials/shell_sidebar.php'; ?>
 
 	<div class="encabezado" id="encabezado">
 		<input type="hidden" name="seccion" id="seccion" value="planCompras" aria-hidden="true">
@@ -583,7 +584,12 @@
 	<!--Formatos de números-->
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/numeral.js/2.0.6/numeral.min.js"></script>
 	<!--Script con la funcion que carga los datos generales del archivo-->
-	<script>window.__PROJECT_AREA__ = <?php echo json_encode($_SESSION['area'] ?? 'Construccion'); ?>;</script>
+	<script>
+		window.__PROJECT_AREA__ = <?php echo json_encode($_SESSION['area'] ?? 'Construccion'); ?>;
+		// Shell sidebar (DS-027): el loader conserva datos/permisos pero no monta navbar.
+		window.__AIA_SHELL_SIDEBAR__ = true;
+	</script>
+	<?= \App\View\Components\DesignSystemHeadComponent::renderScript('/js/modules/aia_ui/sidebar_navigation.js') ?>
 	<?= \App\View\Components\BiAccessComponent::renderBootConfig('pdc') ?>
 	<script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js?v=20260708theme" charset="utf-8"></script>
 	<script type="text/javascript" src="/js/modules/bi-access.js" charset="utf-8"></script>

@@ -15,7 +15,8 @@
 </head>
 
 <!--Etiqueta superior-->
-<body>
+<body class="aia-shell aia-shell--sidebar">
+	<?php require __DIR__ . '/../partials/shell_sidebar.php'; ?>
 	<?php
         $dbPrefixListadoActividades = $_SESSION['db'] ?? '';
 	$projectIdListadoActividades = (int) ($_SESSION['project_id'] ?? ($projectId ?? 0));
@@ -348,6 +349,11 @@
 	<link href="/css/tom-select-premium-aia.css?v=20260611" rel="stylesheet">
 	<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 	<!--Script con la funcion que carga los datos generales del archivo-->
+	<script>
+		// Shell sidebar (DS-027): el loader conserva datos/permisos pero no monta navbar.
+		window.__AIA_SHELL_SIDEBAR__ = true;
+	</script>
+	<?= \App\View\Components\DesignSystemHeadComponent::renderScript('/js/modules/aia_ui/sidebar_navigation.js') ?>
 	<script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js?v=20260708theme" charset="utf-8"></script>
 	<!--Script con las funciones NUEVA SEMANA y ELIMINAR SEMANA-->
 	<script type="text/javascript" src="/js/funcionesGenerales6.js" charset="utf-8"></script>
