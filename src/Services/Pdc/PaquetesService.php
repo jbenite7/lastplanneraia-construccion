@@ -88,7 +88,8 @@ final class PaquetesService
         ['kw' => ['CARPINTERIA METAL', 'PUERTA METAL', 'PUERTA ACCESO', 'PUERTA BATIENTE', 'PUERTA', 'REJA'], 'paq' => 'Sum + Inst CARPINTERÍA METÁLICA', 'tipos' => ['SUBCONTRATO']],
 
         // ── Mano de obra por OFICIO ──
-        ['kw' => ['MAMPOSTERIA', 'MURO EN LADRILLO', 'MURO EN BLOQUE', 'MURO EN CATALAN', 'MURO EN CONCRETO', 'MURO LADRILLO'], 'paq' => 'M. de O MAMPOSTERÍA', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
+        // El lagrimal (goterón de fachada) lo instala el mampostero, no un proveedor de urbanismo.
+        ['kw' => ['MAMPOSTERIA', 'MURO EN LADRILLO', 'MURO EN BLOQUE', 'MURO EN CATALAN', 'MURO EN CONCRETO', 'MURO LADRILLO', 'LAGRIMAL', 'DOVELA'], 'paq' => 'M. de O MAMPOSTERÍA', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO'], 'descPrimero' => true],
         // Estuco ANTES que revoque: «ESTUCO SOBRE REVOQUE» es del estucador, no del revocador.
         // Los subcontratos de estuco/pintura incluyen material → a todo costo, no mano de obra.
         ['kw' => ['ESTUCO'], 'paq' => 'Sum + Inst ESTUCO', 'tipos' => ['SUBCONTRATO'], 'descPrimero' => true],
@@ -110,8 +111,9 @@ final class PaquetesService
         // Piso industrial: cuadrilla de allanadora y corte, no la de losa aérea.
         ['kw' => ['PISO INDUSTRIAL', 'PISO EN CONCRETO', 'ENDURECEDOR', 'CORTE DE PISO'], 'paq' => 'M. de O PISOS INDUSTRIALES EN CONCRETO', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO'], 'descPrimero' => true],
         ['kw' => ['MORTERO DE PISO', 'ALISTADO', 'MORTERO DE NIVELACION', 'AFINADO DE PISO'], 'paq' => 'M. de O MORTEROS DE PISO', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
-        // Mediacaña de CUBIERTA: obra civil previa a impermeabilización (no es instalador de pisos).
-        ['kw' => ['MEDIA CANA', 'MEDIACANA', 'REGATA'], 'ctx' => ['CUBIERTA', 'IMPERMEABILIZ', 'TERRAZA'], 'paq' => 'Sum + Inst IMPERMEABILIZACIÓN DE CUBIERTA', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
+        // Mediacaña y regata: obra civil en mortero — la ejecuta el mampostero, no el impermeabilizador
+        // ni el instalador de pisos (criterio del usuario 2026-07-25).
+        ['kw' => ['MEDIA CANA', 'MEDIACANA', 'REGATA'], 'ctx' => ['CUBIERTA', 'IMPERMEABILIZ', 'TERRAZA'], 'paq' => 'M. de O MAMPOSTERÍA', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
 
         // Acabado de piso SEPARADO POR OFICIO: el instalador de cerámico no es el de laminado ni el
         // de deck. El zócalo viaja con el piso de SU material (mismo gremio). Sin material → veto.
