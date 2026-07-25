@@ -102,6 +102,17 @@ for (const r of ALL_ROUTES) {
   await page.waitForSelector('[data-shell-pattern="sidebar"]', { timeout: 20000 });
 
   // 0) Regresion CT-Final: aia-theme=linen heredado no debe devolver la ruta a claro.
+  // theme.js se inyecta dinamicamente (async=false, encolado detras de sweetalert2)
+  // en las rutas no-BI: un script insertado asi no bloquea domcontentloaded, asi que
+  // leer data-aia-theme justo despues de domcontentloaded solo es determinista en las
+  // 8 rutas /bi/* (carga sincrona via views/bi/_layout.php:97). En el resto se corre
+  // el riesgo de leer el atributo "dark" estatico del <html> del SSR antes de que
+  // theme.js haya tenido oportunidad de aplicar un tema obsoleto. window.AiaDesignSystem
+  // se define y el atributo se aplica dentro del mismo bloque sincrono top-level del
+  // IIFE de theme.js (sin await/setTimeout entre medio), asi que esperar a que el
+  // global exista es equivalente a esperar a que theme.js haya terminado de ejecutarse
+  // por completo, incluida la escritura del atributo.
+  await page.waitForFunction(() => window.AiaDesignSystem);
   const themeWithStaleLinen = await page.evaluate(() => document.documentElement.getAttribute('data-aia-theme'));
   check(`[${r.label}] aia-theme=linen heredado no vuelve a claro`,
     themeWithStaleLinen === 'dark', `data-aia-theme=${themeWithStaleLinen}`);
