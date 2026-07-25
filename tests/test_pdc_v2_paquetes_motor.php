@@ -169,12 +169,25 @@ $assert(!\str_contains(\json_encode($byNorm, JSON_UNESCAPED_UNICODE), 'APISONADO
 $sMoConc = $byNorm['CONCRETO MO PRUEBA A3'] ?? null;
 $assert(!($sMoConc !== null && $sMoConc['capa'] === 'reglas' && (int) $sMoConc['paqueteId'] === $concretoId), 'La regla material (CONCRETO) no aplica a un insumo de mano de obra (tipo_recurso).');
 
-// Indirectos — admin/nómina van al paquete Indirectos (por la capa indirectos o por consenso cross-proyecto;
-// el test verifica el destino, robusto ante datos de otros proyectos en la BD compartida).
+// MODALIDADES SIN PROCESO (A3.1): el bucket único se partió por naturaleza — lo que no se le compra a
+// nadie (nómina, imprevistos) va a paquetes `no_contratable`, y lo que se pide a necesidad contra
+// almacén va a `consumo_directo`. Así no contaminan la cobertura ni los semáforos de seguimiento.
+$impId = (int) ($db->query("SELECT id FROM general_paquetes_contratacion WHERE nombre_norm = ? AND activo = 1", [\App\Services\Pdc\MaestroInsumosService::normalizar(PaquetesService::PAQUETE_IMPREVISTOS)])->fetchColumn() ?: 0);
+$nomId = (int) ($db->query("SELECT id FROM general_paquetes_contratacion WHERE nombre_norm = ? AND activo = 1", [\App\Services\Pdc\MaestroInsumosService::normalizar(PaquetesService::PAQUETE_NOMINA)])->fetchColumn() ?: 0);
+$assert($impId > 0 && $nomId > 0, 'Catálogo con los buckets de imprevistos y nómina.');
+
 $sImp = $byNorm['IMPREVISTOS PRUEBA A3'] ?? null;
-$assert($sImp !== null && (int) $sImp['paqueteId'] === $indirectosId, 'IMPREVISTOS → Indirectos / Administración.');
+$assert($sImp !== null && (int) $sImp['paqueteId'] === $impId, 'IMPREVISTOS → Imprevistos y provisiones (no_contratable), no al bucket administrativo.');
 $sNom = $byNorm['NOMINA PRUEBA A3'] ?? null;
-$assert($sNom !== null && (int) $sNom['paqueteId'] === $indirectosId, 'NOMINA (tipo_recurso) → Indirectos / Administración.');
+$assert($sNom !== null && (int) $sNom['paqueteId'] === $nomId, 'NOMINA (tipo_recurso) → Nómina de obra (no_contratable).');
+
+// La modalidad viaja en el catálogo y por defecto es 'contrato' (cero regresión para los 199 existentes).
+$modCat = $db->query("SELECT modalidad_contratacion FROM general_paquetes_contratacion WHERE id = ?", [$pisosId])->fetchColumn();
+$assert($modCat === 'contrato', 'Un paquete creado sin modalidad nace como «contrato».');
+$modOC = $db->query("SELECT modalidad_contratacion FROM general_paquetes_contratacion WHERE nombre_norm = ?", [\App\Services\Pdc\MaestroInsumosService::normalizar('Suministro CONCRETO')])->fetchColumn();
+$assert($modOC === 'orden_compra', 'Suministro CONCRETO quedó como orden_compra (respaldado por el catálogo legacy de duraciones).');
+$malaMod = $svc->crearPaquete('TEST A3 Modalidad Mala', 'suministro', 'test-a3', 'inventada');
+$assert($malaMod['ok'] === false && $malaMod['code'] === 'PAQUETE_INVALIDO', 'Modalidad inválida rechazada.');
 
 // Sin match → sin sugerencia (no se inventa).
 $assert(!isset($byNorm['ZZZ SINMATCH A3']), 'Insumo sin señal: sin sugerencia.');

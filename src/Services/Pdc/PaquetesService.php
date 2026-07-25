@@ -14,8 +14,40 @@ final class PaquetesService
 {
     public const TIPOS = ['a_todo_costo', 'mano_obra', 'suministro', 'consumibles'];
 
+    /**
+     * Modalidad de contratación — dimensión ORTOGONAL a tipo_negociacion: `tipo_negociacion` dice QUÉ
+     * se compra; la modalidad dice CÓMO y con qué cadencia, que es lo que decide si el paquete entra
+     * al plan de fechas (A4) y cómo se le hace seguimiento (B1/B2).
+     *  · contrato        alcance cerrado, un proveedor, se firma una vez → proceso completo con fechas.
+     *  · orden_compra    commodity recurrente (concreto, acero): entra al plan pero solo se programa el
+     *                    PRIMER hito; las reposiciones son historial, no filas del plan.
+     *  · consumo_directo ferretería a demanda: SIN proceso ni fecha; se controla el gasto.
+     *  · no_contratable  nómina e imprevistos: no se le compran a nadie; fuera de cobertura y semáforos.
+     */
+    public const MODALIDADES = ['contrato', 'orden_compra', 'consumo_directo', 'no_contratable'];
+
+    /** Modalidades que NO generan proceso de contratación (quedan fuera del plan de fechas de A4). */
+    public const MODALIDADES_SIN_PROCESO = ['consumo_directo', 'no_contratable'];
+
     /** Paquete bucket para insumos no empaquetables (A3.1). */
     public const PAQUETE_INDIRECTOS = 'Indirectos / Administración';
+
+    /** Buckets sin proceso de contratación (modalidades consumo_directo / no_contratable). */
+    public const PAQUETE_FERRETERIA = 'Ferretería y consumibles de obra';
+    public const PAQUETE_NOMINA = 'Nómina de obra';
+    public const PAQUETE_IMPREVISTOS = 'Imprevistos y provisiones';
+
+    /**
+     * Ferretería y consumibles: se piden a necesidad contra almacén/caja menor, sin proceso de
+     * contratación. ANTI-CAJÓN DE SASTRE: este bucket es el ÚLTIMO recurso — cualquier paquete de
+     * oficio del catálogo gana primero (las reglas corren antes), y su peso total debe vigilarse
+     * (techo sano ≈2% del presupuesto; por encima es error de clasificación, no motivo para ampliarlo).
+     */
+    private const KEYWORDS_FERRETERIA = [
+        'PUNTILLA', 'TORNILLO', 'CHAZO', 'LIJA', 'BROCHA', 'RODILLO', 'DISCO', 'SEGUETA', 'CINTA',
+        'MANGUERA', 'HERRAMIENTA MENOR', 'EQUIPO MENOR', 'CONSUMIBLE', 'AMARRE', 'GUANTE', 'CASCO',
+        'SEGURIDAD INDUSTRIAL', 'DOTACION DE PERSONAL', 'MADERA PROVISIONALES', 'ELEMENTO DE PROTECCION',
+    ];
 
     /** Keywords (ya normalizadas) que marcan un insumo como indirecto/administrativo. */
     private const KEYWORDS_INDIRECTOS = [
@@ -176,11 +208,11 @@ final class PaquetesService
             $params[] = '%' . addcslashes(MaestroInsumosService::normalizar($busqueda), '\\%_') . '%';
         }
         $rows = $this->db->query(
-            "SELECT p.id, p.nombre, p.tipo_negociacion, COUNT(a.id) AS insumos_global
+            "SELECT p.id, p.nombre, p.tipo_negociacion, p.modalidad_contratacion, COUNT(a.id) AS insumos_global
              FROM general_paquetes_contratacion p
              LEFT JOIN pdc_insumo_paquete a ON a.paquete_id = p.id
              WHERE {$where}
-             GROUP BY p.id, p.nombre, p.tipo_negociacion
+             GROUP BY p.id, p.nombre, p.tipo_negociacion, p.modalidad_contratacion
              ORDER BY p.nombre ASC",
             $params,
         )->fetchAll(\PDO::FETCH_ASSOC);
@@ -188,21 +220,22 @@ final class PaquetesService
             'id' => (int) $r['id'],
             'nombre' => $r['nombre'],
             'tipoNegociacion' => $r['tipo_negociacion'],
+            'modalidad' => $r['modalidad_contratacion'],
             'insumosGlobal' => (int) $r['insumos_global'],
         ], $rows);
     }
 
     /** Crea un paquete global; duplicado por nombre_norm devuelve el existente (reactivado si estaba inactivo). */
-    public function crearPaquete(string $nombre, string $tipo, string $usuario): array
+    public function crearPaquete(string $nombre, string $tipo, string $usuario, string $modalidad = 'contrato'): array
     {
         $nombre = trim($nombre);
-        if ($nombre === '' || !in_array($tipo, self::TIPOS, true)) {
+        if ($nombre === '' || !in_array($tipo, self::TIPOS, true) || !in_array($modalidad, self::MODALIDADES, true)) {
             return ['ok' => false, 'code' => 'PAQUETE_INVALIDO'];
         }
         $norm = mb_substr(MaestroInsumosService::normalizar($nombre), 0, 200);
 
         $existente = $this->db->query(
-            'SELECT id, nombre, tipo_negociacion, activo FROM general_paquetes_contratacion WHERE nombre_norm = ?',
+            'SELECT id, nombre, tipo_negociacion, modalidad_contratacion, activo FROM general_paquetes_contratacion WHERE nombre_norm = ?',
             [$norm],
         )->fetch(\PDO::FETCH_ASSOC);
         if ($existente !== false) {
@@ -216,15 +249,16 @@ final class PaquetesService
                 'id' => (int) $existente['id'],
                 'nombre' => $existente['nombre'],
                 'tipoNegociacion' => $existente['tipo_negociacion'],
+                'modalidad' => $existente['modalidad_contratacion'],
                 'existente' => 1,
             ]];
         }
 
         try {
             $this->db->query(
-                'INSERT INTO general_paquetes_contratacion (nombre, nombre_norm, tipo_negociacion, activo, creado_por, created_at)
-                 VALUES (?, ?, ?, 1, ?, NOW())',
-                [mb_substr($nombre, 0, 200), $norm, $tipo, $usuario],
+                'INSERT INTO general_paquetes_contratacion (nombre, nombre_norm, tipo_negociacion, modalidad_contratacion, activo, creado_por, created_at)
+                 VALUES (?, ?, ?, ?, 1, ?, NOW())',
+                [mb_substr($nombre, 0, 200), $norm, $tipo, $modalidad, $usuario],
             );
         } catch (\PDOException $e) {
             // Carrera: otro proceso lo creó entre el SELECT y el INSERT (errno 1062) → devolver el existente.
@@ -232,18 +266,20 @@ final class PaquetesService
                 throw $e;
             }
             $row = $this->db->query(
-                'SELECT id, nombre, tipo_negociacion FROM general_paquetes_contratacion WHERE nombre_norm = ?',
+                'SELECT id, nombre, tipo_negociacion, modalidad_contratacion FROM general_paquetes_contratacion WHERE nombre_norm = ?',
                 [$norm],
             )->fetch(\PDO::FETCH_ASSOC);
             return ['ok' => true, 'paquete' => [
                 'id' => (int) $row['id'], 'nombre' => $row['nombre'],
-                'tipoNegociacion' => $row['tipo_negociacion'], 'existente' => 1,
+                'tipoNegociacion' => $row['tipo_negociacion'],
+                'modalidad' => $row['modalidad_contratacion'], 'existente' => 1,
             ]];
         }
         return ['ok' => true, 'paquete' => [
             'id' => (int) $this->db->lastInsertId(),
             'nombre' => mb_substr($nombre, 0, 200),
             'tipoNegociacion' => $tipo,
+            'modalidad' => $modalidad,
             'existente' => 0,
         ]];
     }
@@ -402,13 +438,13 @@ final class PaquetesService
         $asignados = (int) $tot['asignados'];
         $omitidos = (int) $tot['omitidos'];
         $porPaquete = $this->db->query(
-            'SELECT p.id, p.nombre, p.tipo_negociacion, COUNT(*) AS insumos, SUM(v.valor_total) AS subtotal
+            'SELECT p.id, p.nombre, p.tipo_negociacion, p.modalidad_contratacion, COUNT(*) AS insumos, SUM(v.valor_total) AS subtotal
              FROM pdc_insumo_vinculos v
              JOIN pdc_insumo_paquete a
                    ON a.project_id = v.project_id AND a.descripcion_norm = v.descripcion_norm AND a.unidad = v.unidad
              JOIN general_paquetes_contratacion p ON p.id = a.paquete_id
              WHERE v.project_id = ? AND v.version_id = ?
-             GROUP BY p.id, p.nombre, p.tipo_negociacion
+             GROUP BY p.id, p.nombre, p.tipo_negociacion, p.modalidad_contratacion
              ORDER BY subtotal DESC',
             [$projectId, $vid],
         )->fetchAll(\PDO::FETCH_ASSOC);
@@ -422,6 +458,7 @@ final class PaquetesService
                 'paqueteId' => (int) $r['id'],
                 'nombre' => $r['nombre'],
                 'tipoNegociacion' => $r['tipo_negociacion'],
+                'modalidad' => $r['modalidad_contratacion'],
                 'insumos' => (int) $r['insumos'],
                 'subtotal' => (float) $r['subtotal'],
             ], $porPaquete),
@@ -688,11 +725,14 @@ final class PaquetesService
     private function catalogoActivoPorNombre(): array
     {
         $rows = $this->db->query(
-            'SELECT id, nombre, nombre_norm, tipo_negociacion FROM general_paquetes_contratacion WHERE activo = 1',
+            'SELECT id, nombre, nombre_norm, tipo_negociacion, modalidad_contratacion FROM general_paquetes_contratacion WHERE activo = 1',
         )->fetchAll(\PDO::FETCH_ASSOC);
         $mapa = [];
         foreach ($rows as $r) {
-            $mapa[$r['nombre_norm']] = ['id' => (int) $r['id'], 'nombre' => $r['nombre'], 'tipoNegociacion' => $r['tipo_negociacion']];
+            $mapa[$r['nombre_norm']] = [
+                'id' => (int) $r['id'], 'nombre' => $r['nombre'],
+                'tipoNegociacion' => $r['tipo_negociacion'], 'modalidad' => $r['modalidad_contratacion'],
+            ];
         }
         return $mapa;
     }
@@ -894,28 +934,45 @@ final class PaquetesService
     private function sugerirIndirectos(array $insumo, array $catalogo): ?array
     {
         $tipoRecurso = mb_strtoupper((string) ($insumo['tipoRecurso'] ?? ''));
-        $motivo = null;
-        if (in_array($tipoRecurso, ['NOMINA', 'HONORARIOS', 'CONSUMIBLES'], true)) {
-            $motivo = "tipo de recurso {$tipoRecurso}";
-        } else {
-            foreach (self::KEYWORDS_INDIRECTOS as $kw) {
-                if (self::casaKeyword(' ' . $insumo['descripcionNorm'] . ' ', $kw)) {
-                    $motivo = "«{$kw}» en la descripción";
-                    break;
-                }
+        $desc = ' ' . $insumo['descripcionNorm'] . ' ';
+        $casa = static function (array $kws) use ($desc): ?string {
+            foreach ($kws as $kw) {
+                if (self::casaKeyword($desc, $kw)) { return $kw; }
             }
+            return null;
+        };
+
+        // Orden deliberado: primero lo que NO se le compra a nadie (nomina, imprevistos), luego lo que
+        // se compra sin proceso (ferreteria) y por ultimo el bucket administrativo.
+        $destino = null; $motivo = '';
+        if ($tipoRecurso === 'NOMINA') {
+            $destino = self::PAQUETE_NOMINA;
+            $motivo = 'personal propio de obra (tipo de recurso NOMINA)';
+        } elseif (($kw = $casa(['IMPREVISTO', 'PROVISION', 'AIU', 'RESERVA PRESUPUESTAL'])) !== null) {
+            $destino = self::PAQUETE_IMPREVISTOS;
+            $motivo = "«{$kw}»: reserva presupuestal, no se le compra a nadie";
+        } elseif (($kw = $casa(self::KEYWORDS_FERRETERIA)) !== null) {
+            $destino = self::PAQUETE_FERRETERIA;
+            $motivo = "«{$kw}»: se pide a necesidad contra almacen, sin proceso de contratacion";
+        } elseif ($tipoRecurso === 'HONORARIOS' || $tipoRecurso === 'CONSUMIBLES') {
+            $destino = self::PAQUETE_INDIRECTOS;
+            $motivo = "tipo de recurso {$tipoRecurso}";
+        } elseif (($kw = $casa(self::KEYWORDS_INDIRECTOS)) !== null) {
+            $destino = self::PAQUETE_INDIRECTOS;
+            $motivo = "«{$kw}» en la descripcion";
         }
-        if ($motivo === null) {
+        if ($destino === null) {
             return null;
         }
-        $paq = $catalogo[mb_substr(MaestroInsumosService::normalizar(self::PAQUETE_INDIRECTOS), 0, 200)] ?? null;
+
+        $paq = $catalogo[mb_substr(MaestroInsumosService::normalizar($destino), 0, 200)] ?? null;
         if ($paq === null) {
             return null;
         }
         return [
             'paqueteId' => $paq['id'], 'paqueteNombre' => $paq['nombre'],
             'capa' => 'indirectos', 'confianza' => 'media',
-            'evidencia' => "Administrativo/no empaquetable ({$motivo}) → Indirectos.",
+            'evidencia' => "Sin proceso de contratacion ({$motivo}) -> {$paq['nombre']}.",
         ];
     }
 

@@ -127,9 +127,11 @@ class PlanComprasPaquetesController
         $body = $this->body();
         $nombre = is_string($body['nombre'] ?? null) ? $body['nombre'] : '';
         $tipo = is_string($body['tipoNegociacion'] ?? null) ? $body['tipoNegociacion'] : '';
-        $r = $this->service->crearPaquete($nombre, $tipo, $this->usuario());
+        // La modalidad es opcional: sin ella el paquete nace como 'contrato' (proceso completo).
+        $modalidad = is_string($body['modalidad'] ?? null) && $body['modalidad'] !== '' ? $body['modalidad'] : 'contrato';
+        $r = $this->service->crearPaquete($nombre, $tipo, $this->usuario(), $modalidad);
         if (!$r['ok']) {
-            $this->fail('PAQUETE_INVALIDO', 'Nombre vacío o tipo de negociación inválido.', 422);
+            $this->fail('PAQUETE_INVALIDO', 'Nombre vacío, o tipo de negociación / modalidad inválidos.', 422);
             return;
         }
         $this->ok(['paquete' => $r['paquete']]);
