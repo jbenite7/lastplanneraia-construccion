@@ -341,6 +341,14 @@ for (const [rule, data] of Object.entries(summary)) {
   }
 }
 
+const allowedTotal = Number(baseline.totalViolations ?? Number.POSITIVE_INFINITY);
+if (violations.length > allowedTotal) {
+  failures.push(
+    `total de hallazgos: ${violations.length} > baseline ${allowedTotal}. `
+    + 'Bajar la deuda o registrar la excepcion en docs/design-system/exceptions.json.',
+  );
+}
+
 for (const [rule, allowed] of Object.entries(baseline.totals || {})) {
   if (!summary[rule] && allowed < 0) {
     failures.push(`${rule}: invalid negative baseline ${allowed}`);

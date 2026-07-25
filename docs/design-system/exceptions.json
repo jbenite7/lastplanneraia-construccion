@@ -511,6 +511,7 @@
   "notes": [
     "Baseline inicial: el repo contiene deuda visual legacy. El gate debe endurecerse por modulo cuando se declare migrado.",
     "Login, project-selector, aia-theme, programa-general, pdc, contratos y listado-actividades tienen presupuesto cero para deuda visual auditada.",
-    "Foundation/Shell conserva un presupuesto explícito y cerrado sobre deuda legacy; cada regla queda limitada al conteo auditado del Sprint 02 y no puede crecer."
+    "Foundation/Shell conserva un presupuesto explícito y cerrado sobre deuda legacy; cada regla queda limitada al conteo auditado del Sprint 02 y no puede crecer.",
+    "audit-baseline.json.totalViolations es el tope monotónico del agregado (Task 11, F0): las fases F1-F6 del goal dark-mode-todos-los-modulos solo pueden bajarlo, nunca subirlo, tal como ya ocurre por regla. Subirlo es la excepción, no la rutina, y exige las tres cosas juntas: (1) justificación escrita de por qué el total crece de forma legítima, (2) aprobación explícita del usuario, y (3) un archivo nuevo en docs/design-system/baseline-approvals/ cuyo afterHash coincida con el nuevo baseline y cuyo approvalRef cite esa aprobación. Sin las tres, el audit debe fallar."
   ]
 }

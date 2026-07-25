@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "designSystemVersion": "1.0.0",
+  "baseline": "docs/design-system/audit-baseline.json",
+  "beforeHash": "af4d8001bfa4106dfc9153624bdf0b7f1a38d6bb61131154e0189a05dc872e94",
+  "afterHash": "df7cf735fde0c727b9248431fe9c34fc0c08be28c8f8150cdbdd4259fabc159b",
+  "approvedBy": "user",
+  "approvalRef": "goals/dark-mode-todos-los-modulos/plans/F0-fundacion-tema.plan.md Task 11",
+  "recordedAt": "2026-07-25",
+  "totalViolations": 7161
+}

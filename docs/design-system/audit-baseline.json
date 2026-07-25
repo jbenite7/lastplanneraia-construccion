@@ -18,5 +18,6 @@
     "local-vendor-override": 237,
     "forbidden-font-roboto": 3
   },
-  "note": "Baseline de deuda visual legacy, incluye admin/ desde F0 del goal dark-mode-todos-los-modulos. Reducir por modulo migrado; no aumentarlo sin justificacion."
+  "note": "Baseline de deuda visual legacy, incluye admin/ desde F0 del goal dark-mode-todos-los-modulos. Reducir por modulo migrado; no aumentarlo sin justificacion.",
+  "totalViolations": 7161
 }
