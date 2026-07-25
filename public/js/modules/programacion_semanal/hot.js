@@ -4382,30 +4382,6 @@
     });
   }
 
-  function updateTableHeight() {
-    if (!hot) return;
-    var header = document.querySelector('.header-actions');
-    var nav = document.querySelector('.ps-dropdown-nav');
-    if (!header) return;
-
-    var headerHeight = header.offsetHeight || 0;
-    var vh = window.innerHeight;
-    var offset = 180; // Offset base para otros elementos (Navbar, Breadcrumb, etc)
-
-    if (window.innerWidth <= 991) {
-      offset = 220; // Ajuste para móviles
-    }
-
-    var availableHeight = vh - headerHeight - offset;
-    availableHeight = Math.max(300, availableHeight); // Mínimo de seguridad
-
-    var container = document.getElementById('hot-container');
-    if (container) {
-      container.style.height = availableHeight + 'px';
-      hot.refreshDimensions();
-    }
-  }
-
   function bindResize() {
     $(window)
       .off('resize.psHot orientationchange.psHot aia:viewport-scale-change.psHot')
@@ -4413,13 +4389,17 @@
         scheduleLayoutRefresh(80, true);
         scheduleActionsRowFit(80);
         syncFixedContextSpacer();
-        updateTableHeight();
       });
 
+    // La toolbar cambia de alto en runtime (leyenda, #mensajeActualizacion,
+    // botones sujetos a permisos/estado de semana) y con ello el `top` del
+    // contenedor. Se delega en scheduleLayoutRefresh porque syncContainerHeight()
+    // es el único que resuelve la altura, y updateSettings({ height }) debe
+    // reflejarla en la grilla.
     var header = document.querySelector('.header-actions');
     if (header && window.ResizeObserver) {
-      var ro = new ResizeObserver(function() {
-        updateTableHeight();
+      var ro = new ResizeObserver(function () {
+        scheduleLayoutRefresh(80, true);
       });
       ro.observe(header);
     }

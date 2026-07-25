@@ -2774,15 +2774,23 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
         }
     }
 
-    /* Shell sidebar (DS-027): la altura del HOT ya no resta el navbar legacy
-       (380px). #encabezado solo aloja inputs ocultos (0px); el único elemento
-       con altura real entre el body y este contenedor es la context-bar sticky
-       del shell (#shellContextBar), medida en runtime a 1180x820 dark = 49px
-       (chip de semana 2rem + padding-block 2*0.5rem + borde 1px). Ver
-       goals/sidebar-todos-modulos/reports/task-6-report.md. */
-    body.aia-shell--sidebar #hot-container {
-        height: calc(100vh - 49px);
-    }
+    /* Shell sidebar (DS-027): aquí vivía `#hot-container { height: calc(100vh - 49px) }`,
+       retirada porque su premisa era falsa. El 49px es el alto de la context-bar
+       sticky (#shellContextBar) y sólo describe el `top` de `.hot-full-bleed`, que
+       es el sujeto al que se aplicó en programaGeneralActualizar.view.php:33. En
+       esta vista `#hot-container` va DENTRO de `.hot-full-bleed`, detrás de
+       `.header-actions` (131px medidos a 1180x820 dark), así que la regla resolvía
+       771px donde el alto correcto es 632px: 139px de desborde vertical.
+
+       Además `.header-actions` no tiene alto constante — es una toolbar que refluye
+       al poblarse la leyenda, `#mensajeActualizacion` y los botones sujetos a
+       permisos/estado de semana — por lo que ningún `calc(100vh - Npx)` sobre este
+       contenedor puede ser correcto. La altura la resuelve `syncContainerHeight()`
+       (public/js/modules/programacion_semanal/hot.js), que mide
+       `getBoundingClientRect().top` y alimenta `updateSettings({ height })`; el
+       `calc(100vh - 380px)` del bloque base queda sólo como fallback conservador
+       antes de que corra el JS. Contrato verificado en
+       tests/browser/programacion-semanal-hot-height.mjs. */
 }
 
 /* Dropdown de Navegación por Hover - Visibility Fix */
