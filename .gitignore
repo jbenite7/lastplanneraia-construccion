@@ -189,6 +189,11 @@ pg_activities_complete.txt
 .impeccable/hook.cache.json
 .impeccable/live/
 
+# Scratch local del flujo Superpowers (briefs, reportes, diffs de review, ledger
+# de progreso). Nunca se versiona: el gate `activation: worktree and index must
+# be clean` de contracts.test.mjs falla mientras esté sin rastrear.
+.superpowers/
+
 # PDC v2: archivos temporales de import de presupuestos (datos de obra — nunca commitear)
 storage/pdc-imports/
 !tests/browser/shell-week-admin.mjs
