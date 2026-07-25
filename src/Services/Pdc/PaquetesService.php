@@ -921,4 +921,134 @@ final class PaquetesService
             static fn ($t) => mb_strlen($t) >= 4,
         ));
     }
+
+    /**
+     * Top-N paquetes candidatos para CADA insumo sin asignar, con confianza (0-100).
+     * Pensado para el asistente («elige entre estas 3») y para revisar la cola larga: donde el
+     * sembrado no tiene una regla clara, al menos ofrece opciones ordenadas y explicadas.
+     *
+     * Señales (en orden de peso): regla de dominio > tokens de la descripción contra el nombre del
+     * paquete > tokens de la actividad padre > consenso local por agrupación SINCO. Filtro duro de
+     * compatibilidad de tipo (un suministro no puede caer en un paquete de mano de obra).
+     */
+    public function alternativas(int $projectId, ?int $versionId = null, int $n = 3): ?array
+    {
+        $sin = $this->insumosDeVersion($projectId, 'sin_asignar', $versionId);
+        if ($sin === null) {
+            return null;
+        }
+        $catalogo = $this->catalogoActivoPorNombre();
+        $overrides = $this->overridesIA();
+        $actMap = $this->actividadDominantePorInsumo($projectId, $versionId);
+
+        // Consenso local: qué paquetes ya recibieron insumos de cada agrupación SINCO en el proyecto.
+        $porAgrupacion = [];
+        $filas = $this->db->query(
+            'SELECT m.agrupacion, p.nombre, COUNT(*) AS n
+             FROM pdc_insumo_paquete a
+             JOIN general_paquetes_contratacion p ON p.id = a.paquete_id AND p.activo = 1
+             JOIN general_maestro_insumos m ON m.descripcion_norm = a.descripcion_norm AND m.unidad = a.unidad
+             WHERE a.project_id = ? AND m.agrupacion IS NOT NULL
+             GROUP BY m.agrupacion, p.nombre',
+            [$projectId],
+        )->fetchAll(\PDO::FETCH_ASSOC);
+        foreach ($filas as $f) {
+            $porAgrupacion[(string) $f['agrupacion']][(string) $f['nombre']] = (int) $f['n'];
+        }
+
+        $salida = [];
+        foreach ($sin['insumos'] as $insumo) {
+            $clave = $insumo['descripcionNorm'] . '@@' . mb_strtoupper((string) $insumo['unidad']);
+            $actividad = $actMap[$clave] ?? '';
+            $tokIns = self::tokens($insumo['descripcionNorm']);
+            $tokAct = $actividad !== '' ? self::tokens(MaestroInsumosService::normalizar($actividad)) : [];
+            $agrup = (string) ($insumo['agrupacion'] ?? '');
+
+            $cands = [];
+            foreach ($catalogo as $normPaq => $paq) {
+                if ($this->resolverPaquete($paq['nombre'], $insumo['tipoRecurso'] ?? null, $catalogo, $insumo['descripcionNorm']) === null) {
+                    continue; // incompatible por tipo
+                }
+                $tokPaq = self::tokens($normPaq);
+                if ($tokPaq === []) {
+                    continue;
+                }
+                $hitDesc = count(array_intersect($tokIns, $tokPaq));
+                $hitAct = count(array_intersect($tokAct, $tokPaq));
+                $consenso = $agrup !== '' ? min(4, (int) ($porAgrupacion[$agrup][$paq['nombre']] ?? 0)) : 0;
+                $score = (3.0 * $hitDesc) + (2.0 * $hitAct) + (0.5 * $consenso);
+                if ($score <= 0.0) {
+                    continue;
+                }
+                $cands[] = [
+                    'paquete' => $paq['nombre'],
+                    'tipoNegociacion' => $paq['tipoNegociacion'],
+                    'score' => $score,
+                    'motivo' => self::motivoAlternativa($hitDesc, $hitAct, $consenso, $agrup),
+                ];
+            }
+
+            // La propuesta del motor (regla/override) encabeza siempre, con confianza alta.
+            $delMotor = $this->sugerirOverrideIA($insumo, $overrides, $catalogo)
+                ?? $this->sugerirPorReglas($insumo, $actividad, $catalogo);
+            if ($delMotor !== null && ($delMotor['veto'] ?? false) !== true) {
+                $cands = array_values(array_filter($cands, static fn (array $c): bool => $c['paquete'] !== $delMotor['paqueteNombre']));
+                array_unshift($cands, [
+                    'paquete' => $delMotor['paqueteNombre'],
+                    'tipoNegociacion' => '',
+                    'score' => 12.0,
+                    'motivo' => $delMotor['evidencia'],
+                ]);
+            }
+
+            usort($cands, static fn (array $a, array $b): int => $b['score'] <=> $a['score']);
+            $top = array_slice($cands, 0, $n);
+            foreach ($top as $i => $c) {
+                $top[$i]['confianza'] = self::confianzaDeScore((float) $c['score']);
+                unset($top[$i]['score']);
+            }
+            $salida[] = [
+                'descripcionNorm' => $insumo['descripcionNorm'],
+                'unidad' => $insumo['unidad'],
+                'descripcion' => $insumo['descripcion'],
+                'tipoRecurso' => $insumo['tipoRecurso'],
+                'agrupacion' => $insumo['agrupacion'],
+                'valorTotal' => $insumo['valorTotal'],
+                'actividad' => $actividad,
+                'opciones' => $top,
+            ];
+        }
+        return ['version' => $sin['version'], 'insumos' => $salida];
+    }
+
+    /** Traduce el score de una alternativa a una confianza legible (0-100). */
+    private static function confianzaDeScore(float $score): int
+    {
+        return match (true) {
+            $score >= 12.0 => 85,
+            $score >= 9.0 => 75,
+            $score >= 6.0 => 62,
+            $score >= 4.5 => 50,
+            $score >= 3.0 => 40,
+            $score >= 2.0 => 30,
+            default => 20,
+        };
+    }
+
+    /** Explica de dónde sale una alternativa (para que el humano pueda juzgarla). */
+    private static function motivoAlternativa(int $hitDesc, int $hitAct, int $consenso, string $agrup): string
+    {
+        $partes = [];
+        if ($hitDesc > 0) {
+            $partes[] = "{$hitDesc} palabra(s) en común con el nombre del insumo";
+        }
+        if ($hitAct > 0) {
+            $partes[] = "{$hitAct} con su actividad padre";
+        }
+        if ($consenso > 0) {
+            $partes[] = "otros insumos de «{$agrup}» ya van a ese paquete";
+        }
+        return $partes === [] ? 'Afinidad de tipo de recurso.' : ucfirst(implode('; ', $partes)) . '.';
+    }
+
 }
