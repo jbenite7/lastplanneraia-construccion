@@ -191,15 +191,6 @@
       "expiresAtVersion": "1.1.0"
     },
     {
-      "module": "foundation-shell-legacy",
-      "rule": "unknown-css-layer",
-      "file": "public/css/navbar.css",
-      "selector": "@layer aia-premium-drawer",
-      "owner": "foundation-shell",
-      "reason": "Capa histórica del drawer previa al contrato Sprint 00; se conserva sin migrar consumidores y no autoriza nuevas capas.",
-      "expiresAtVersion": "1.1.0"
-    },
-    {
       "module": "project-selector-legacy",
       "rule": "unknown-css-layer",
       "file": "public/css/project-selector.css",
