@@ -165,22 +165,24 @@ for (const viewport of VIEWPORTS) {
     await page.locator('#main-content').click({ position: { x: 10, y: 10 } });
     await expect(accountPanel).toBeHidden();
 
-    // Arrow keys open the menu and move focus onto the items; once open the
-    // keys act on the focused menuitem, so drive them through the keyboard.
+    // ArrowDown opens the menu and moves focus onto the first (only) item;
+    // if roving focus were broken this would leave focus on the trigger
+    // instead, so the assertion below does distinguish working from broken.
+    //
     // F0/Task 8 retired "Cambiar tema" from this panel (/proyectos only ever
     // shows Cerrar sesión here, since "Cambiar proyecto" is redundant on the
-    // project selector itself), so first/last/only are the same single item;
-    // ArrowDown from it must wrap back onto itself, not move to a second one.
+    // project selector itself), so the panel never has more than one item on
+    // this page. Home/End/wrap-around cycling can only be told apart from a
+    // no-op when there are 2+ items to move between — with a single item
+    // every one of those keys lands on the same element regardless of
+    // whether roving focus actually works, so that sub-step was deleted
+    // rather than kept as a decorative assertion. No page in the app
+    // currently renders a 2+-item account menu, so multi-item roving focus
+    // is not covered anywhere yet.
     const menuItems = sidebar.locator('[data-aia-menu-panel] [role="menuitem"]');
     await expect(menuItems).toHaveCount(1);
     await accountTrigger.press('ArrowDown');
     await expect(accountPanel).toBeVisible();
-    await expect(menuItems.first()).toBeFocused();
-    await page.keyboard.press('End');
-    await expect(menuItems.last()).toBeFocused();
-    await page.keyboard.press('Home');
-    await expect(menuItems.first()).toBeFocused();
-    await page.keyboard.press('ArrowDown');
     await expect(menuItems.first()).toBeFocused();
 
     await page.keyboard.press('Escape');
