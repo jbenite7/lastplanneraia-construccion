@@ -2,9 +2,9 @@
   min-height: 200px;
 }
 
-/* El drawer vive fuera del contenedor del módulo; este alcance evita mezclar
- * colores Linen dentro de Contratos cuando el tema activo es Dark. La capa
- * reset precede a la capa del drawer y por eso también domina sus !important. */
+/* El drawer vive fuera del contenedor del módulo; este alcance evita que sus
+ * estilos se filtren dentro de Contratos. La capa reset precede a la capa
+ * del drawer y por eso también domina sus !important. */
 @layer reset {
   html.aia-theme-dark body.contratos-page #aiaNavbar .nav-link,
   html.aia-theme-dark body.contratos-page #aiaNavbar .nav-link .nav-text-full,

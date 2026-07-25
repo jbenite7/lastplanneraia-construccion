@@ -156,8 +156,8 @@
   }
 
   /* action-primary cae a 3.96:1 sobre la reply raised y 4.19:1 sobre el tint
-     crítico; el par hover (green-light en dark, brand oscuro en linen) da
-     6.15–11.5:1 en todos los fondos de la bitácora. */
+     crítico; el hover (green-light en dark) da 6.15–11.5:1 en todos los
+     fondos de la bitácora. */
   .lps-mention-badge {
     color: var(--ds-active-action-primary-hover);
     font-weight: 700;

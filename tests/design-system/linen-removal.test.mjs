@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
 import test from 'node:test';
 
+const repositoryRoot = new URL('../..', import.meta.url);
 const read = (path) => readFile(new URL(`../../${path}`, import.meta.url), 'utf8');
 const readJson = async (path) => JSON.parse(await read(path));
 
@@ -33,4 +34,17 @@ test('los contratos de familia y catalogo no mencionan linen', async () => {
   ]) {
     assert.equal(/linen/i.test(await read(contract)), false, `${contract} menciona linen`);
   }
+});
+
+test('ninguna hoja de estilo declara el tema linen', async () => {
+  const entries = await readdir(new URL('public/css', repositoryRoot), {
+    withFileTypes: true, recursive: true,
+  });
+  const offenders = [];
+  for (const entry of entries) {
+    if (!entry.isFile() || !entry.name.endsWith('.css')) continue;
+    const file = `${entry.parentPath ?? entry.path}/${entry.name}`;
+    if (/linen/i.test(await readFile(file, 'utf8'))) offenders.push(entry.name);
+  }
+  assert.deepEqual(offenders, [], `hojas con linen: ${offenders.join(', ')}`);
 });

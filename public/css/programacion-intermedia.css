@@ -3,7 +3,7 @@
 
 @layer module {
 
-/* Tokens de estado PI: base (linen) + variantes dark. Receta de mezclas = Programa General. */
+/* Tokens de estado PI: base (claro) + variantes dark. Receta de mezclas = Programa General. */
 .pi-page {
     --pi-critical-bg: var(--ds-color-state-critical-bg);
     --pi-critical-text: var(--ds-color-state-critical-text);
@@ -1231,7 +1231,7 @@ html.aia-theme-dark .pi-page {
 
 /* ── Tom Select · Línea Construcción AIA ──────────────────
    Paleta: Naranja #b55211 (main) · #e87722 (mid) · #fbead9 (very light)
-   Fondo:  Alabaster #fafafa · Linen #f4f1ea
+   Fondo:  Alabaster #fafafa · Parchment #f4f1ea
    Tipografía: Inter (contenido) · sin abuso de uppercase
    ──────────────────────────────────────────────────────── */
 
@@ -1340,7 +1340,7 @@ html.aia-theme-dark .pi-page {
     cursor: pointer !important;
     color: #1c1c1e !important;
     font-family: var(--ds-font-body) !important;
-    border-bottom: 1px solid #f4f1ea !important; /* Linen separator */
+    border-bottom: 1px solid #f4f1ea !important; /* Parchment separator */
     transition: background 0.12s ease !important;
 }
 .htTomSelectWrapper .ts-dropdown .ts-option:hover,
@@ -1581,7 +1581,7 @@ html.aia-theme-dark .pi-page .pi-legend-window-label--info {
 }
 
 /* Modales PI sobre superficie activa (familia programación: misma receta que
-   programacion-semanal.css). En linen resuelven claro; en dark, oscuro. */
+   programacion-semanal.css). Resuelven vía --ds-active-*, tema dark. */
 body.pi-page :is(#modal_leyenda_colores, #modal_shared_constraint) :is(.modal-content, .modal-body, .modal-footer) {
     background: var(--ds-active-surface) !important;
     color: var(--ds-active-text-primary) !important;

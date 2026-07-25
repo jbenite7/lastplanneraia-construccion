@@ -64,7 +64,7 @@
     /* ========================================
      FONDOS Y NEUTROS
      ======================================== */
-    --aia-bg-linen: oklch(96% 0.01 80); /* #f4f1ea */
+    --aia-bg-parchment: oklch(96% 0.01 80); /* #f4f1ea */
     --aia-bg-alabaster: oklch(98% 0 0); /* #fafafa */
     --aia-bg-beige: oklch(96.5% 0.02 95); /* #f5f5dc */
     --aia-bg-gray-light: oklch(94% 0 0); /* #eaeaea */
@@ -153,7 +153,7 @@
 
     --ds-color-bg-canvas: #f7faf8;
     --ds-color-bg-page: #fbfdfc;
-    --ds-color-bg-linen: var(--aia-bg-linen);
+    --ds-color-bg-parchment: var(--aia-bg-parchment);
     --ds-color-surface: rgba(255, 255, 255, 0.92);
     --ds-color-surface-raised: rgba(255, 255, 255, 0.84);
     --ds-color-surface-glass: rgba(255, 255, 255, 0.68);

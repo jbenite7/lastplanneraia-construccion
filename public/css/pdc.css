@@ -281,7 +281,7 @@ body.pdc-page #dt_cliente .handsontable thead th .changeType:focus {
 	border: 0;
 	border-radius: 1.25rem;
 	overflow: hidden;
-	background: var(--ds-color-bg-linen);
+	background: var(--ds-color-bg-parchment);
 	box-shadow: var(--shadow-glass, 0 8px 32px rgba(30, 30, 30, 0.12));
 }
 
@@ -501,7 +501,7 @@ body.pdc-page #dt_cliente .handsontable thead th .changeType:focus {
 	padding: 1rem 1rem 1rem 1.1rem;
 	border: 1px solid rgba(26, 86, 51, 0.12);
 	border-radius: 0.9rem;
-	background: linear-gradient(180deg, var(--ds-color-surface-tint) 0%, var(--ds-color-bg-linen) 100%);
+	background: linear-gradient(180deg, var(--ds-color-surface-tint) 0%, var(--ds-color-bg-parchment) 100%);
 	text-align: left;
 }
 
@@ -588,7 +588,7 @@ body.pdc-page #dt_cliente .handsontable thead th .changeType:focus {
 }
 
 #modalContrato .pdc-bg-muted {
-	background: linear-gradient(180deg, var(--ds-color-bg-linen) 0%, var(--ds-color-bg-linen) 100%);
+	background: linear-gradient(180deg, var(--ds-color-bg-parchment) 0%, var(--ds-color-bg-parchment) 100%);
 }
 
 #modalContrato .pdc-bg-muted input,
