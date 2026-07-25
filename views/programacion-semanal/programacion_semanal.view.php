@@ -40,15 +40,6 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
     <link rel="stylesheet" href="/css/programacion-semanal.css?v=<?= urlencode((string) $psCssVersion) ?>">
     <link rel="stylesheet" href="/css/handsontable-header-global.css?v=20260223a" />
     <link rel="stylesheet" href="/css/change-monitor.css?v=20260602a" />
-    <style>
-        /* Shell sidebar (DS-027): la altura del HOT ya no resta el navbar legacy
-           (380px). #encabezado solo aloja inputs ocultos (0px); el único elemento
-           con altura real entre el body y este contenedor es la context-bar sticky
-           del shell (#shellContextBar), medida en runtime a 1180x820 dark = 49px
-           (chip de semana 2rem + padding-block 2*0.5rem + borde 1px). Ver
-           goals/sidebar-todos-modulos/reports/task-6-report.md. */
-        body.aia-shell--sidebar #hot-container { height: calc(100vh - 49px); }
-    </style>
 </head>
 <body class="aia-shell aia-shell--sidebar ps-page">
     <div id="loading"><div class="spinner-border text-primary" role="status"><span class="sr-only">Cargando...</span></div></div>

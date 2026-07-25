@@ -2773,6 +2773,16 @@ html.aia-theme-dark body.ps-page.dark-mode #hot-container .ops-state-zoom.is-rea
             grid-column: 1;
         }
     }
+
+    /* Shell sidebar (DS-027): la altura del HOT ya no resta el navbar legacy
+       (380px). #encabezado solo aloja inputs ocultos (0px); el único elemento
+       con altura real entre el body y este contenedor es la context-bar sticky
+       del shell (#shellContextBar), medida en runtime a 1180x820 dark = 49px
+       (chip de semana 2rem + padding-block 2*0.5rem + borde 1px). Ver
+       goals/sidebar-todos-modulos/reports/task-6-report.md. */
+    body.aia-shell--sidebar #hot-container {
+        height: calc(100vh - 49px);
+    }
 }
 
 /* Dropdown de Navegación por Hover - Visibility Fix */
