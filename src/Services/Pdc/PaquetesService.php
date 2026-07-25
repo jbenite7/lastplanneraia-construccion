@@ -129,7 +129,9 @@ final class PaquetesService
         // ── Materiales (suministro) — SOLO por la descripción: el nombre identifica el producto ──
         // Prefabricados antes que CONCRETO: su negociación no es volumen de mixer.
         ['kw' => ['CORDON', 'BORDILLO', 'SARDINEL'], 'paq' => 'Suministro BORDILLOS', 'tipos' => ['MATERIAL'], 'soloDesc' => true],
-        ['kw' => ['LAGRIMAL', 'SILLAR', 'PREFABRICADO'], 'paq' => 'Suministro PREFABRICADOS URBANISMO Y EXTERIORES', 'tipos' => ['MATERIAL'], 'soloDesc' => true],
+        // El lagrimal (goterón) es prefabricado de interior; los de urbanismo van al otro paquete.
+        ['kw' => ['LAGRIMAL', 'SILLAR'], 'paq' => 'Suministro PREFABRICADOS INTERIORES', 'tipos' => ['MATERIAL'], 'soloDesc' => true],
+        ['kw' => ['PREFABRICADO'], 'paq' => 'Suministro PREFABRICADOS URBANISMO Y EXTERIORES', 'tipos' => ['MATERIAL'], 'soloDesc' => true],
         ['kw' => ['ALIGERANTE', 'PORON'], 'paq' => 'Suministro ALIGERANTES LOSAS', 'tipos' => ['MATERIAL', 'SUBCONTRATO'], 'descPrimero' => true],
         ['kw' => ['MORTERO', 'GROUTING'], 'paq' => 'Suministro MORTEROS', 'tipos' => ['MATERIAL'], 'soloDesc' => true],
         ['kw' => ['LADRILLO', 'BLOQUE', 'ADOBE', 'CATALAN'], 'paq' => 'Suministro LADRILLO', 'tipos' => ['MATERIAL'], 'soloDesc' => true],

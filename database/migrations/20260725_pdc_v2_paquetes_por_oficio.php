@@ -28,6 +28,9 @@ $nuevos = [
     ['M. de O INSTALACIÓN DE PISOS CERÁMICOS', 'mano_obra'],
     ['M. de O INSTALACIÓN DE PISOS EN MADERA', 'mano_obra'],
     ['M. de O INSTALACIÓN DE PISO PARA DECK', 'mano_obra'],
+    // El catálogo solo tenía prefabricados de urbanismo/exteriores; los de interior (lagrimales,
+    // sillares) son otro suministro (criterio del usuario 2026-07-25).
+    ['Suministro PREFABRICADOS INTERIORES', 'suministro'],
 ];
 
 // 2) Cajón de sastre a retirar (crearPaquete lo reactivaría por nombre_norm: no volver a sembrarlo).
