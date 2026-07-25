@@ -29,7 +29,6 @@
       "label": "Fundamentos de marca",
       "description": "Colores, tipografías y escalas base que dan identidad y consistencia a AIA.",
       "themes": [
-        "linen",
         "dark"
       ],
       "viewports": [
@@ -56,7 +55,6 @@
       "label": "Navegación y estructura global",
       "description": "Cabecera, navegación principal y acceso contextual entre áreas.",
       "themes": [
-        "linen",
         "dark"
       ],
       "viewports": [
@@ -83,7 +81,6 @@
       "label": "Estructura de página",
       "description": "Jerarquía y distribución canónica del contenido de cada pantalla.",
       "themes": [
-        "linen",
         "dark"
       ],
       "viewports": [
@@ -109,7 +106,6 @@
       "label": "Acciones",
       "description": "Botones y controles que permiten ejecutar operaciones con claridad.",
       "themes": [
-        "linen",
         "dark"
       ],
       "viewports": [
@@ -131,7 +127,7 @@
         },
         {
           "id": "theme-adaptive-primary",
-          "intent": "Acción primaria corporativa por tema, aplicada sin interpolación cromática entre linen y dark",
+          "intent": "Acción primaria corporativa, aplicada sin interpolación cromática sobre dark",
           "status": "candidate"
         }
       ]
@@ -141,7 +137,6 @@
       "label": "Formularios y filtros",
       "description": "Captura, validación y refinamiento de información operativa.",
       "themes": [
-        "linen",
         "dark"
       ],
       "viewports": [
@@ -167,7 +162,6 @@
       "label": "Estados y retroalimentación",
       "description": "Mensajes y estados que comunican resultados, alertas y progreso.",
       "themes": [
-        "linen",
         "dark"
       ],
       "viewports": [
@@ -193,7 +187,6 @@
       "label": "Presentación de datos",
       "description": "Tablas, tarjetas y resúmenes para consultar información con precisión.",
       "themes": [
-        "linen",
         "dark"
       ],
       "viewports": [
@@ -214,7 +207,6 @@
       "label": "Capas y diálogos",
       "description": "Modales y paneles temporales para tareas que requieren atención.",
       "themes": [
-        "linen",
         "dark"
       ],
       "viewports": [
@@ -235,7 +227,6 @@
       "label": "Adaptadores de terceros",
       "description": "Integraciones externas alineadas visualmente con el núcleo AIA.",
       "themes": [
-        "linen",
         "dark"
       ],
       "viewports": [
@@ -256,7 +247,6 @@
       "label": "Elementos de analítica",
       "description": "Gráficos e indicadores accesibles para análisis y toma de decisiones.",
       "themes": [
-        "linen",
         "dark"
       ],
       "viewports": [

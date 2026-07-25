@@ -71,8 +71,7 @@
         },
         "themes": {
           "const": [
-            "dark",
-            "linen"
+            "dark"
           ]
         },
         "labSelector": {
