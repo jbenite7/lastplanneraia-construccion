@@ -46,18 +46,27 @@ final class PaquetesService
         ['kw' => ['CARPINTERIA MADERA', 'PUERTA EN MADERA', 'PUERTA MADERA'], 'paq' => 'Sum + Inst CARPINTERÍA DE MADERA', 'tipos' => ['SUBCONTRATO']],
 
         // Mano de obra por capítulo (se matchea sobre todo por la actividad dominante).
+        // REGLA DE DOMINIO (feedback del usuario 2026-07-25): en insumos de MANO DE OBRA manda el
+        // TRABAJO, no el material que aparezca en el nombre — el profesional los nombra de forma
+        // imprecisa (p.ej. «M.O. ZOCALO EN PORCELANATO» es trabajo de pisos, no enchape de muro).
+        // Por eso las reglas de trabajo específico van ANTES que la de enchapes, y esta última ya
+        // no captura el token «PISO».
         ['kw' => ['MAMPOSTERIA', 'MURO EN LADRILLO', 'MURO EN BLOQUE', 'MURO EN CATALAN', 'MURO EN CONCRETO', 'MURO LADRILLO'], 'paq' => 'M. de O MAMPOSTERÍA', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
         ['kw' => ['REVOQUE', 'PAÑETE', 'PANETE', 'REPELLO'], 'paq' => 'M. de O REVOQUE INTERIOR', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
         ['kw' => ['ESTUCO', 'PINTURA', 'VINILO'], 'paq' => 'M. de O ESTUCO Y PINTURA', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
-        ['kw' => ['ENCHAPE', 'ENCHAPES CERAMIC', 'CERAMIC', 'PORCELANATO', 'BALDOSA', 'GRES', 'PISO'], 'paq' => 'M. de O ENCHAPES CERÁMICOS', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
-        ['kw' => ['MORTERO DE PISO', 'ALISTADO', 'MORTERO DE NIVELACION', 'AFINADO DE PISO'], 'paq' => 'M. de O MORTEROS DE PISO', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
-        ['kw' => ['LOSA', 'PLACA', 'COLUMNA', 'VIGA', 'ESTRUCTURA EN CONCRETO', 'PANTALLA', 'ENTREPISO', 'ESCALERA EN CONCRETO', 'FUNDIDA', 'CONCRETO ALIGERAD'], 'paq' => 'M. de O ESTRUCTURA EN CONCRETO', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
         ['kw' => ['ACERO', 'REFUERZO', 'FIGURAD', 'AMARRE Y COLOCACION'], 'paq' => 'M. de O ESTRUCTURA EN CONCRETO', 'tipos' => ['MANO DE OBRA']],
         ['kw' => ['CIMENTACION', 'ZAPATA', 'DADO', 'VIGA DE FUNDACION'], 'paq' => 'M. de O CIMENTACIÓN SUPERFICIAL EN CONCRETO', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
         ['kw' => ['PILOTE', 'CAISSON', 'PILOTAJE', 'DESCABECE'], 'paq' => 'M. de O CIMENTACIÓN PROFUNDA EN CONCRETO', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
         ['kw' => ['EXCAVACION', 'RELLENO', 'MOVIMIENTO DE TIERRA', 'DESCAPOTE', 'MOVIMIENTOS DE TIERRA'], 'paq' => 'M. de O MOVIMIENTOS DE TIERRA (EXCAVACIONES Y RELLENOS)', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO', 'EQUIPO']],
         ['kw' => ['DEMOLICION', 'DEMOLER'], 'paq' => 'M. de O DEMOLICIONES', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
+        // Estructura y pisos en concreto ANTES que acabados: «LOSA PISO» es estructura, no enchape.
+        ['kw' => ['LOSA', 'PLACA', 'COLUMNA', 'VIGA', 'ESTRUCTURA EN CONCRETO', 'PANTALLA', 'ENTREPISO', 'ESCALERA EN CONCRETO', 'FUNDIDA', 'CONCRETO ALIGERAD'], 'paq' => 'M. de O ESTRUCTURA EN CONCRETO', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
         ['kw' => ['PISO INDUSTRIAL', 'PISO EN CONCRETO', 'ENDURECEDOR'], 'paq' => 'M. de O PISOS INDUSTRIALES EN CONCRETO', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
+        ['kw' => ['MORTERO DE PISO', 'ALISTADO', 'MORTERO DE NIVELACION', 'AFINADO DE PISO'], 'paq' => 'M. de O MORTEROS DE PISO', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
+        // Acabado de piso (incluye zócalos/guardaescobas: acompañan al piso, no al enchape de muro).
+        ['kw' => ['ZOCALO', 'GUARDAESCOBA', 'PIRLAN', 'MEDIACANA', 'MEDIACAÑA'], 'paq' => 'M. de O INSTALACION DE PISOS', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
+        ['kw' => ['PISO'], 'paq' => 'M. de O INSTALACION DE PISOS', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
+        ['kw' => ['ENCHAPE', 'ENCHAPES CERAMIC', 'CERAMIC', 'PORCELANATO', 'BALDOSA', 'GRES'], 'paq' => 'M. de O ENCHAPES CERÁMICOS', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
         ['kw' => ['PREPARACION MEZCLA', 'TRANSPORTE INTERNO', 'MEZCLA', 'PREPARACION DE CONCRETO'], 'paq' => 'M. de O ESTRUCTURA EN CONCRETO', 'tipos' => ['MANO DE OBRA']],
 
         // Materiales (suministro) — SOLO por la descripción del insumo (soloDesc): un material se
@@ -692,30 +701,47 @@ final class PaquetesService
     private function sugerirPorReglas(array $insumo, string $actividad, array $catalogo): ?array
     {
         $desc = ' ' . $insumo['descripcionNorm'] . ' ';
-        // Descripción + actividad para reglas de mano de obra/subcontrato; solo descripción para las
-        // de material (regla 'soloDesc') — un material se identifica por su nombre, no por la actividad
-        // que lo consume (ej. MORTERO no es CONCRETO aunque su actividad mencione «CONCRETO»).
-        $henoFull = $desc . MaestroInsumosService::normalizar($actividad) . ' ';
+        $act = $actividad !== '' ? ' ' . MaestroInsumosService::normalizar($actividad) . ' ' : '';
         $tipoRecurso = mb_strtoupper((string) ($insumo['tipoRecurso'] ?? ''));
-        foreach (self::REGLAS_SEMBRADO as $regla) {
-            if ($regla['tipos'] !== [] && !in_array($tipoRecurso, $regla['tipos'], true)) {
+
+        // Orden de evidencia según el tipo de recurso (regla de dominio, feedback del usuario 2026-07-25):
+        //  · MANO DE OBRA / SUBCONTRATO → manda la ACTIVIDAD PADRE, que trae el material/trabajo correcto.
+        //    El profesional nombra la M.O. de forma imprecisa (p.ej. «M.O. ZOCALO EN PORCELANATO» se
+        //    consume en su mayoría en la actividad «ZOCALO EN MADERA»); la descripción queda de respaldo.
+        //  · MATERIAL y demás → manda la DESCRIPCIÓN: un material se identifica por su nombre, no por la
+        //    actividad que lo consume (MORTERO no es CONCRETO aunque su actividad mencione «CONCRETO»).
+        $prioridadActividad = in_array($tipoRecurso, ['MANO DE OBRA', 'SUBCONTRATO'], true);
+        $pasadas = $prioridadActividad
+            ? [['heno' => $act, 'origen' => 'actividad'], ['heno' => $desc, 'origen' => 'descripcion']]
+            : [['heno' => $desc, 'origen' => 'descripcion']];
+
+        foreach ($pasadas as $pasada) {
+            if ($pasada['heno'] === '') {
                 continue;
             }
-            $heno = ($regla['soloDesc'] ?? false) ? $desc : $henoFull;
-            foreach ($regla['kw'] as $kw) {
-                if (str_contains($heno, $kw)) {
-                    $paq = $this->resolverPaquete($regla['paq'], $insumo['tipoRecurso'] ?? null, $catalogo);
-                    if ($paq !== null) {
-                        $donde = str_contains(' ' . $insumo['descripcionNorm'] . ' ', $kw)
-                            ? 'en la descripción del insumo'
-                            : ($actividad !== '' ? "en su actividad «{$actividad}»" : 'en el texto');
-                        return [
-                            'paqueteId' => $paq['id'], 'paqueteNombre' => $paq['nombre'],
-                            'capa' => 'reglas', 'confianza' => 'media',
-                            'evidencia' => "Regla de dominio: «{$kw}» {$donde} (recurso {$tipoRecurso}) → {$paq['nombre']}.",
-                        ];
+            foreach (self::REGLAS_SEMBRADO as $regla) {
+                if ($regla['tipos'] !== [] && !in_array($tipoRecurso, $regla['tipos'], true)) {
+                    continue;
+                }
+                // Las reglas de material solo miran la descripción, nunca la actividad.
+                if (($regla['soloDesc'] ?? false) && $pasada['origen'] !== 'descripcion') {
+                    continue;
+                }
+                foreach ($regla['kw'] as $kw) {
+                    if (str_contains($pasada['heno'], $kw)) {
+                        $paq = $this->resolverPaquete($regla['paq'], $insumo['tipoRecurso'] ?? null, $catalogo);
+                        if ($paq !== null) {
+                            $donde = $pasada['origen'] === 'actividad'
+                                ? "en su actividad padre «{$actividad}»"
+                                : 'en la descripción del insumo';
+                            return [
+                                'paqueteId' => $paq['id'], 'paqueteNombre' => $paq['nombre'],
+                                'capa' => 'reglas', 'confianza' => 'media',
+                                'evidencia' => "Regla de dominio: «{$kw}» {$donde} (recurso {$tipoRecurso}) → {$paq['nombre']}.",
+                            ];
+                        }
+                        break; // regla casó pero el paquete no resolvió: siguiente regla
                     }
-                    break; // regla casó pero el paquete no resolvió/compatibiliza: pasa a la siguiente regla
                 }
             }
         }
