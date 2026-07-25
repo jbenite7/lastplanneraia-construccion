@@ -133,8 +133,9 @@ test('admin laboratory is deterministic across themes and viewports', async ({ p
 
   for (const viewport of VIEWPORTS) {
     await page.setViewportSize(viewport);
+    // F0/Task 8: dark es el unico tema, aplicado sin conmutacion. El bucle
+    // sobrevive como marcador de "sobre cada tema gobernado" (hoy uno solo).
     for (const theme of ['dark']) {
-      await page.evaluate((value) => window.AiaDesignSystem.setTheme(value), theme);
       await expect(page.locator('html')).toHaveAttribute('data-aia-theme', theme);
       const overflow = await page.evaluate(() => (
         document.documentElement.scrollWidth - document.documentElement.clientWidth
@@ -285,7 +286,6 @@ test('state headings and canonical spinner remain legible across desktop dark vi
 
   for (const viewport of VIEWPORTS) {
     await page.setViewportSize(viewport);
-    await page.evaluate(() => window.AiaDesignSystem.setTheme('dark'));
     await expect(page.locator('html')).toHaveAttribute('data-aia-theme', 'dark');
     const colors = await heading.evaluate((element) => {
       let background = element.parentElement;
@@ -331,7 +331,6 @@ test('density selector shows and applies the touch and compact contracts', async
 test('dark appearance applies distinct accessible brand variants', async ({ page }) => {
   await openAs(page, ADMIN);
   const swatches = page.locator('[data-family="foundations"] .ds-swatch');
-  await page.evaluate(() => window.AiaDesignSystem.setTheme('dark'));
   const dark = await swatches.evaluateAll((elements) => (
     elements.map((element) => getComputedStyle(element).backgroundColor)
   ));
@@ -379,7 +378,6 @@ test('sidebar shell keeps desktop width, context and theme-visible brand mark', 
   const navigation = page.locator('[data-family="shell-navigation"] [data-shell-pattern="sidebar"]');
   const logo = navigation.locator('.aia-sidebar__brand img');
 
-  await page.evaluate(() => window.AiaDesignSystem.setTheme('dark'));
   const dark = await navigation.evaluate((element) => ({
     background: getComputedStyle(element).backgroundColor,
     width: Number.parseFloat(getComputedStyle(element).width),
@@ -547,7 +545,6 @@ test('laboratory scroll and file alignment hold across desktop dark viewports', 
 
   for (const viewport of VIEWPORTS) {
     await page.setViewportSize(viewport);
-    await page.evaluate(() => window.AiaDesignSystem.setTheme('dark'));
     await expect(page.locator('html')).toHaveAttribute('data-aia-theme', 'dark');
     const geometry = await family.evaluate((element) => {
       const file = element.querySelector('.aia-input[type="file"]');
@@ -659,7 +656,6 @@ test('SweetAlert2 title and action remain legible in dark mode', async ({ page }
   await page.setViewportSize(VIEWPORTS[0]);
   await openAs(page, ADMIN);
   await selectFamily(page, 'vendor-adapters');
-  await page.evaluate(() => window.AiaDesignSystem.setTheme('dark'));
   const popup = page.locator('[data-vendor-fixture="sweetalert2"] .aia-glass-popup');
   const titleColors = await popup.locator('.swal2-title').evaluate((element) => ({
     foreground: getComputedStyle(element).color,

@@ -234,11 +234,14 @@ test('the shared head applies the persisted theme before the first stylesheet ca
     php.indexOf('theme-bootstrap.js') < php.indexOf('/css/aia-design-system.css'),
     'theme bootstrap must precede the design-system stylesheet',
   );
-  assert.match(bootstrap, /localStorage\.getItem\(['"]aia-theme['"]\)/);
-  assert.match(bootstrap, /storedTheme === ['"]light['"] \? ['"]linen['"]/);
-  assert.match(bootstrap, /:\s*['"]dark['"]/);
-  assert.match(bootstrap, /setAttribute\(['"]data-aia-theme['"], theme\)/);
-  assert.match(bootstrap, /classList\.toggle\(['"]aia-theme-dark['"], theme === ['"]dark['"]\)/);
+  // F0/Task 8 retiro el conmutador de tema: el bootstrap ya no lee
+  // localStorage.aia-theme (una clave obsoleta heredada de un usuario que
+  // uso el toggle antes de esta tarea no debe poder devolver ninguna ruta a
+  // claro) ni conoce "linen" — aplica dark de forma incondicional.
+  assert.doesNotMatch(bootstrap, /localStorage/);
+  assert.doesNotMatch(bootstrap, /linen/);
+  assert.match(bootstrap, /setAttribute\(['"]data-aia-theme['"], ['"]dark['"]\)/);
+  assert.match(bootstrap, /classList\.add\(['"]aia-theme-dark['"]\)/);
   assert.doesNotMatch(bootstrap, /DOMContentLoaded|requestAnimationFrame|setTimeout/);
 
   const render = 'require "src/View/Components/DesignSystemHeadComponent.php";'

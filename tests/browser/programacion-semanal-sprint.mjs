@@ -91,7 +91,6 @@ test('Programacion Semanal CSS uses registered color tokens only', async ({ page
 
 test('mobile qualification opens CNC before saving an unmet commitment', async ({ page }) => {
   await openQualificationWeek(page);
-  await page.evaluate(() => window.AiaDesignSystem.setTheme('dark'));
   const { db, row } = await readWeeklyRow(page);
   expect(row).toBeTruthy();
   const original = { ...row };

@@ -48,3 +48,25 @@ test('ninguna hoja de estilo declara el tema linen', async () => {
   }
   assert.deepEqual(offenders, [], `hojas con linen: ${offenders.join(', ')}`);
 });
+
+test('el runtime de tema no ofrece conmutacion', async () => {
+  const source = await read('public/js/modules/aia_ui/theme.js');
+  for (const symbol of ['toggleTheme', 'bindThemeSwitches', 'setTheme']) {
+    assert.equal(source.includes(symbol), false, `theme.js aun expone ${symbol}`);
+  }
+});
+
+test('ninguna vista incluye el conmutador de tema', async () => {
+  const entries = await readdir(new URL('views', repositoryRoot), {
+    withFileTypes: true, recursive: true,
+  });
+  const offenders = [];
+  for (const entry of entries) {
+    if (!entry.isFile() || !entry.name.endsWith('.php')) continue;
+    const file = `${entry.parentPath ?? entry.path}/${entry.name}`;
+    if (/aia-theme-switch|auth-theme-switch/.test(await readFile(file, 'utf8'))) {
+      offenders.push(entry.name);
+    }
+  }
+  assert.deepEqual(offenders, [], `vistas con conmutador: ${offenders.join(', ')}`);
+});

@@ -346,7 +346,6 @@ test('toolbar tablet muestra texto comprensible sin overflow', async ({ page }) 
 
 test('tabla semanal tablet usa superficies dark cuando el tema es dark', async ({ page }) => {
   await openProgrammingWeek(page, ROLE_CASES[0], { width: 787, height: 750 });
-  await page.evaluate(() => window.AiaDesignSystem.setTheme('dark'));
   await expect.poll(() => page.evaluate(() => [
     '#hot-container', '.ps-hot-toolbar-shell',
     '.ps-hot-toolbar-actions .btn-pdc-modern',

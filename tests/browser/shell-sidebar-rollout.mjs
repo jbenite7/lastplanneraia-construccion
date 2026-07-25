@@ -41,6 +41,15 @@ const MIGRATED = new Set(['/programacion-intermedia', '/programa-general', '/pro
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1180, height: 820 }, colorScheme: 'dark' });
 
+// F0/Task 8: la deuda registrada en la review final del sub-goal Control Tower
+// (.superpowers/sdd/progress.md, seccion CT-Final) pedia este assert. Un
+// localStorage.aia-theme = "linen" heredado de antes del retiro del
+// conmutador no debe poder devolver ninguna ruta a claro: theme-bootstrap.js
+// ya no lee esa clave, asi que sembrarla debe ser un no-op observable.
+await page.addInitScript(() => {
+  try { window.localStorage.setItem('aia-theme', 'linen'); } catch { /* modo privado */ }
+});
+
 // Interceptar mutaciones para no tocar la BD compartida.
 await page.route('**/api/semanal/save*', (route) => (
   route.fulfill({ contentType: 'application/json', body: '{"respuesta":"OK"}' })
@@ -91,6 +100,11 @@ for (const r of ALL_ROUTES) {
 
   await page.goto(`${BASE_URL}${r.route}`, { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('[data-shell-pattern="sidebar"]', { timeout: 20000 });
+
+  // 0) Regresion CT-Final: aia-theme=linen heredado no debe devolver la ruta a claro.
+  const themeWithStaleLinen = await page.evaluate(() => document.documentElement.getAttribute('data-aia-theme'));
+  check(`[${r.label}] aia-theme=linen heredado no vuelve a claro`,
+    themeWithStaleLinen === 'dark', `data-aia-theme=${themeWithStaleLinen}`);
 
   // Robustez: limpiar estado persistido para que el check de "default colapsado"
   // sea genuino, no un remanente de una ruta anterior en el mismo contexto.

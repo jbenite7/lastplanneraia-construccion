@@ -94,20 +94,8 @@ if (!document.querySelector('script[src*="notifications.js"]')) {
 }
 
 // --- Initialize Drawer Handling ---
-function bindThemeSwitchesWhenReady() {
-  if (window.AiaDesignSystem && typeof window.AiaDesignSystem.bindThemeSwitches === 'function') {
-    window.AiaDesignSystem.bindThemeSwitches(document);
-    return;
-  }
-  document.addEventListener('aia-theme-ready', function () {
-    window.AiaDesignSystem.bindThemeSwitches(document);
-  }, { once: true });
-}
-
 $(document).ready(function () {
   if (window.AiaNavDrawer) window.AiaNavDrawer.init();
-
-  bindThemeSwitchesWhenReady();
 
   // Existing initialization...
 });

@@ -116,7 +116,6 @@ $shellGroups = array_values(array_filter([
             'label' => 'Usuario · ' . $shellNombre,
             'items' => [
                 ['label' => 'Cambiar proyecto', 'href' => '/proyectos', 'icon' => 'project'],
-                ['label' => 'Cambiar tema', 'themeToggle' => true, 'icon' => 'theme'],
                 ['label' => 'Cerrar sesión', 'href' => '/logout', 'icon' => 'logout'],
             ],
         ],

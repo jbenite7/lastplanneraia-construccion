@@ -27,23 +27,6 @@ body.login-brand-page > .login-box {
     align-self: center !important;
   }
 
-body.login-brand-page .auth-theme-tools {
-    position: fixed;
-    inset-block-start: 1rem;
-    inset-inline-end: 1rem;
-    z-index: 20;
-  }
-
-body.login-brand-page .auth-theme-switch {
-    min-height: var(--ds-target-min);
-    padding: 0.55rem 0.85rem;
-    border: 1px solid var(--ds-active-border);
-    border-radius: var(--ds-radius-pill) !important;
-    background: var(--ds-active-surface-raised);
-    color: var(--ds-active-text-primary);
-    box-shadow: var(--ds-shadow-sm);
-  }
-
   body.login-brand-page .card-login,
   body.login-brand-page .login-box > .card {
     border: 0;
@@ -286,7 +269,6 @@ body.login-brand-page .form-control:focus {
 
   body.login-brand-page .btn-aia:focus-visible,
   body.login-brand-page .btn-primary:focus-visible,
-  body.login-brand-page .auth-theme-switch:focus-visible,
   body.login-brand-page .auth-password-toggle:focus-visible,
   body.login-brand-page .auth-link:focus-visible {
     outline: 3px solid var(--ds-color-focus-ring);

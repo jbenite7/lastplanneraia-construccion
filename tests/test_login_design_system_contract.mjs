@@ -16,7 +16,9 @@ const authForms = readFileSync(authFormsUrl, 'utf8');
 const exceptions = JSON.parse(read('docs/design-system/exceptions.json'));
 
 for (const view of views) {
-  assert.match(view, /partials\/auth-theme-switch\.php/);
+  // F0/Task 8 retiro el conmutador de tema: el parcial se borro y las vistas
+  // ya no lo incluyen.
+  assert.doesNotMatch(view, /partials\/auth-theme-switch\.php/);
   assert.match(view, /aia_ui\/theme\.js\?v=<\?= filemtime/);
   assert.match(view, /aia_ui\/auth_forms\.js\?v=<\?= filemtime/);
   assert.match(view, /login-brand-unified\.css\?v=<\?= filemtime/);
@@ -38,8 +40,7 @@ assert.match(authForms, /aria-busy/);
 assert.match(authForms, /data-password-toggle/);
 assert.match(authForms, /aria-pressed/);
 assert.match(authForms, /MutationObserver/);
-assert.match(css, /\.auth-theme-switch/);
-assert.match(css, /\.auth-theme-switch\s*\{[^}]*border-radius:\s*var\(--ds-radius-pill\)\s*!important/);
+assert.doesNotMatch(css, /\.auth-theme-switch/);
 assert.match(css, /\.auth-field-label/);
 assert.match(css, /\.auth-link/);
 assert.match(css, /\.auth-link\s*\{[^}]*color:\s*var\(--ds-active-text-primary\)\s*!important/);

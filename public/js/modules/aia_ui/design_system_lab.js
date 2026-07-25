@@ -1,17 +1,11 @@
 (() => {
-  function enforceDarkTheme() {
-    var root = document.documentElement;
-    root.setAttribute("data-aia-theme", "dark");
-    root.classList.add("aia-theme-dark");
-    root.classList.remove("aia-theme-linen");
-    return "dark";
-  }
-
+  // El laboratorio solo carga theme-bootstrap.js (atributo/clase dark inline
+  // en <head>), no el runtime completo theme.js: por eso sigue siendo este
+  // modulo quien expone window.AiaDesignSystem.getTheme() en esta pagina. La
+  // conmutacion (setTheme/toggleTheme) se retiro en F0/Task 8: no hay otro
+  // tema al que alternar.
   window.AiaDesignSystem = window.AiaDesignSystem || {};
-  window.AiaDesignSystem.setTheme = enforceDarkTheme;
   window.AiaDesignSystem.getTheme = () => "dark";
-  window.AiaDesignSystem.toggleTheme = enforceDarkTheme;
-  enforceDarkTheme();
 
   function boot() {
     var root = document.querySelector(".ds-lab");

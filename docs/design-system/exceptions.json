@@ -361,7 +361,6 @@
         "views/auth/login.view.php",
         "views/auth/password-forgot.view.php",
         "views/auth/password-reset.view.php",
-        "views/auth/partials/auth-theme-switch.php",
         "public/css/login-brand-unified.css",
         "public/js/modules/aia_ui/auth_forms.js"
       ],
