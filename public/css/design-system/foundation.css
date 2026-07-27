@@ -98,22 +98,12 @@
     color: var(--text-main);
   }
 
-  /* F1 Task 5a-bis (fix): el bloque del dropdown legacy (`.dropdown-menu`,
-     `.dropdown-item`, sus `:hover`/`:focus` y `.dropdown-item.active`) se fue
-     de aqui a public/css/design-system/adapters/legacy-bridge.css, en
-     @layer module.components. Tres motivos, ninguno cosmetico:
-      - ALCANCE. foundation.css lo importan TRES entrypoints
-        (aia-design-system.css:13, entrypoints/core.css:5 y
-        lab-entrypoint.css:3) y styles.css solo dos. Los alias `--surface-card`,
-        `--surface-bg`, `--text-main` y `--font-main` los define unicamente
-        styles.css, que el laboratorio no carga: en /internal/design-system
-        `background: var(--surface-card) !important` era invalido en tiempo de
-        valor computado y el fondo caia a transparente, con un !important en
-        `base` que ninguna capa posterior del lab podia corregir. Medido.
-      - PRECEDENCIA. En styles.css el bloque vivia en module.components y su
-        !important solo ganaba a legacy-overrides; en `base` pasaba a ganar a
-        layout, components, utilities, module y legacy-overrides.
-      - CRITERIO. `.dropdown-menu`/`.dropdown-item` son contenedores legacy de
-        Bootstrap, no primitivas `aia-*`; legacy-bridge.css:112-126 ya declara
-        que esas clases no caben aqui. */
+  /* F1 Task 5a-ter: el bloque del dropdown legacy (`.dropdown-menu`,
+     `.dropdown-item`, sus `:hover`/`:focus` y `.dropdown-item.active`) paso
+     por aqui en las Tasks 4 y 5a-bis, salio a
+     public/css/design-system/adapters/legacy-bridge.css y ahi se BORRO: no
+     tiene un solo consumidor vivo. La evidencia esta al final de ese archivo.
+     No volver a traerlo: aunque reaparezca un consumidor, estas son clases
+     legacy de Bootstrap y no primitivas `aia-*`, y legacy-bridge.css:112-126
+     ya declara que no caben en foundation. */
 }

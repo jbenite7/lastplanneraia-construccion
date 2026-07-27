@@ -291,130 +291,70 @@
 }
 
 /* ───────────────────────────────────────────────────────────────────────────
-   F1 Task 5a-bis (fix): dropdown legacy de Bootstrap, devuelto a su alcance y
-   a su precedencia.
+   F1 Task 5a-ter: BORRADO el dropdown legacy de Bootstrap (`.dropdown-menu`,
+   `.dropdown-item`, sus `:hover`/`:focus` y `.dropdown-item.active`), que el
+   tramo 5a-bis habia reubicado aqui en `@layer module.components` en vez de
+   podarlo. Con el se va su `@layer module.theme, module.layout,
+   module.components;`: era la unica declaracion de subcapas de `module` de
+   este archivo y ese bloque era su unico usuario, asi que styles.css:1 vuelve
+   a ser —como antes de 5a-bis— lo primero que fija el orden `theme, layout,
+   components`. Los demas escritores de `module` del proyecto
+   (programa-general-handsontable.css:1, programa-general.css:1, lab.css:1,
+   programacion-intermedia.css:4 y :1200, bi-control-tower.css:1591) usan
+   `@layer module` SIN subcapa, que no crea ninguna y no altera ese orden.
 
-   DE DONDE VIENE. Estas reglas salieron de public/css/styles.css en dos
-   tramos: las de `.dropdown-item`, su `:hover` y `.dropdown-item.active` en la
-   Task 4, y `.dropdown-menu`, el `padding` del item y el `:focus` en la Task
-   5a-bis. Ambos tramos las dejaron en foundation.css (@layer base), y eso
-   rompio dos cosas que este bloque repara:
+   MISMA CLASE DE EVIDENCIA que la poda de los cinco `@media` de arriba: no es
+   inspeccion, es medicion. Las clases no tienen un solo consumidor vivo.
 
-    1. ALCANCE. foundation.css lo importan TRES entrypoints
-       (aia-design-system.css:13, entrypoints/core.css:5 y
-       lab-entrypoint.css:3); styles.css solo dos. Los alias `--surface-card`,
-       `--surface-bg`, `--text-main`, `--font-main`, `--primary-light` y
-       `--text-inverse` los define unicamente el `@layer theme` de styles.css,
-       que el laboratorio no carga (su bundle es tokens.css +
-       lab-entrypoint.css, ver DesignSystemHeadComponent.php:26-34). Medido en
-       /internal/design-system antes del fix: `--surface-card` sin definir y
-       `getComputedStyle(.dropdown-menu).backgroundColor` = transparente, con
-       un !important en `base` que ninguna capa posterior del lab podia
-       sobrescribir. legacy-bridge.css lo importan exactamente los DOS
-       entrypoints que importan styles.css, asi que el alcance vuelve a ser el
-       de origen: ni el laboratorio lo recibe, ni la app lo pierde.
+    - DOM. Cero `.dropdown-menu` y cero `.dropdown-item` a 1180x820 en dark,
+      con sesion real (test.A / Da Porto), en /programa-general, /contratos,
+      /pdc, /listado-actividades, /programacion-semanal,
+      /programacion-intermedia, /control-cambios, /indicadores, /profesionales,
+      /subcontratistas y /proyectos, y en las tres sub-secciones legacy
+      /programacion-semanal/cnc, /cnp y /cic.
+    - CON LOS MODALES ABIERTOS, no solo en reposo: se abrieron los 57 modales
+      de las ocho rutas que tienen y los 15 de las tres sub-secciones
+      (modalEditarContratos, modalDefinirContratos, modalNuevaActividad,
+      modal_cnc_hot, formulario_nuevo, modalordenDeCambio, lps_drawer…) y se
+      recontó tras cada apertura y tras clicar todos sus disparadores. Sigue
+      dando cero. La sonda se autovalida inyectando un `.dropdown-item` y
+      comprobando que lo cuenta, y cuenta bien las clases vecinas que SI
+      existen (`.ps-dropdown-item`: 4).
+    - EL MENU DE CUENTA Y LOS DE SEMANA no usan estas clases: son
+      `.aia-sidebar__account-item` (2 elementos) y `.shell-week-flyout__item`
+      (17 en 4 flyouts, construidos en runtime por
+      views/partials/shell_sidebar.php:240-334). Clicar los 25 controles del
+      rail no produce ni un `.dropdown-menu`.
+    - LOS INYECTORES DE JS ESTAN HUERFANOS. Los seis de
+      public/js/cargarDatosGeneralesPagina2.js (:313, :353, :369, :392, :405 y
+      :418) desembocan en cuatro `innerHTML` guardados por
+      `if (document.getElementById(...))` sobre `#semanasProyectoMenu`,
+      `#programa_generalMenu`, `#programacion_intermediaMenu` y
+      `#programacion_semanalMenu` (:433-441); esos cuatro ids no los crea
+      ningun markup del repositorio —solo aparecen dentro de ese mismo
+      archivo—, porque los aportaba la navbar que F0 retiro. Los tres de
+      public/js/components/notifications.js (:78, :107 y :139) cuelgan de
+      `initNotifications`, que retorna en :19 (`if (!badgeDesk && !badgeMob)
+      return`) porque `#notificationBadge` y `#notificationBadgeMobile`
+      tampoco existen en ningun archivo del repositorio.
+    - NINGUN DISPARADOR BOOTSTRAP. Cero `data-toggle="dropdown"` /
+      `data-bs-toggle="dropdown"` en views/, src/ y public/js/: el plugin de
+      Bootstrap no monta menus por si solo, solo alterna `.show` sobre los que
+      ya existen.
+    - TERCEROS. Select2 emite `.select2-dropdown` y Tom Select `.ts-dropdown`,
+      no estas clases. DataTables Buttons SI las emitiria —medido en el
+      navegador: en /programacion-semanal/cnc, /cnp y /cic el plugin esta
+      cargado y su `Buttons.defaults.dom.collection.className` vale
+      literalmente `dropdown-menu`—, pero solo al abrir un boton de tipo
+      `collection`, y ninguna DataTable del proyecto instancia botones: no hay
+      `B` en ningun `dom`, ni opcion `buttons: [...]`, ni llamada `.buttons()`;
+      el unico `"buttons"` de esas vistas es el bloque de traducciones de
+      `idioma_espanol`. Medido `.dt-buttons/.dt-button` = 0 en las tres. Si
+      alguna vez se anade un boton `collection`, hereda el estilo del DS
+      (`:where(.dropdown-menu, .popover, .toast, .tooltip-inner)` de
+      entrypoints/theme-overrides.css:43), que sigue vivo y no se toca aqui.
 
-    2. PRECEDENCIA. En styles.css el bloque vivia en module.components. En
-       `base`, sus tres !important pasaban a ganar a layout, components,
-       utilities, module y legacy-overrides; en module.components solo ganaban
-       a legacy-overrides. Por eso la capa de destino NO es la
-       `legacy-overrides` del resto de este archivo: para las declaraciones
-       !important el orden de capas SE INVIERTE, asi que en legacy-overrides
-       —la ultima— sus !important quedarian los mas debiles de todos, por
-       debajo de los de module. `module.components` es la unica capa que
-       reproduce la precedencia de origen para las declaraciones normales Y
-       para las !important a la vez, que es el contrato de esta fase: mover sin
-       cambiar comportamiento. No es un precedente nuevo: lab.css:1 y
-       adapters/programa-general-handsontable.css:1 ya escriben en @layer
-       module desde el design system.
-
-   ORDEN DE SUBCAPAS. El `@layer module.theme, module.layout,
-   module.components;` de abajo NO es decorativo. Los dos entrypoints importan
-   este archivo ANTES que styles.css, asi que sin esa declaracion
-   `module.components` se crearia aqui primero y las subcapas de module
-   quedarian en el orden `components, theme, layout` en vez del `theme, layout,
-   components` que declara styles.css:1 — voltearia la cascada entre el `:root`
-   de module.theme y todo module.components. La declaracion fija el orden de
-   origen antes de abrir el bloque.
-
-   QUE CAMBIA RESPECTO DE foundation.css. Solo `.dropdown-item:focus`:
-   styles.css lo emparejaba con `:hover` en una regla cuyo `background-color`
-   era NORMAL y cuyo `color` si era !important. Al fundirlo en la Task 5a-bis
-   con la regla de hover heredada de la Task 4, su `background-color` gano un
-   !important que nunca tuvo. Vuelve a su propia regla con su fuerza original
-   (background-color normal, color !important). Ampliar la lista de selectores
-   del hover era justo lo que producia el defecto.
-
-   VALORES. Se mueven verbatim, sin especificidad ni !important anadidos. Dos
-   declaraciones del bloque original siguen sin estar aqui porque los dos
-   tramos anteriores las midieron inertes: el `border-radius: var(--radius-md)`
-   del menu (lo gana `:where(.dropdown-menu, ...) { border-radius:
-   var(--ds-radius-popover) !important }` de legacy-overrides; medido 16px) y
-   el `font-size: 0.95rem` del item (lo gana `.dropdown-item { font-size: 1rem
-   !important }` de styles.css:1677, misma capa y posterior; medido 16px). El
-   `border` del menu esta retokenizado desde la Task 5a-bis: el literal
-   original era un negro translucido que medido daba 1.06:1 contra su propia
-   superficie oscura, invisible; `--ds-active-border` es el token que el DS
-   designa para bordes sobre superficies oscuras.
-
-   MEDICION. No hay un solo `.dropdown-menu` ni `.dropdown-item` en el DOM de
-   ninguna ruta del producto (la navbar que los montaba se retiro en F0 y los
-   dos inyectores de JS estan guardados por contenedores que ya no existen):
-   medido 0 elementos en /programa-general, /contratos, /listado-actividades,
-   /pdc, /programacion-semanal, /proyectos y /internal/design-system. La
-   verificacion se hizo, por eso, inyectando el markup exacto que produciria
-   public/js/cargarDatosGeneralesPagina2.js:353-365 y leyendo el valor
-   computado en normal, hover, focus y active a 1180x820 en dark. */
-@layer module.theme, module.layout, module.components;
-
-@layer module.components {
-  .dropdown-menu {
-    background: var(--surface-card) !important;
-    font-family: var(--font-main);
-    width: auto;
-    border: 1px solid var(--ds-active-border);
-    box-shadow: var(--shadow-md);
-    color: var(--text-main);
-  }
-
-  a.dropdown-item:hover,
-  .dropdown-item:hover {
-    text-decoration: none;
-    background-color: var(--surface-bg) !important; /* F1 Task 3: fondo oscuro (canvas) */
-    /* F1 Task 3: --primary (azul Apple literal) sobre el canvas oscuro mide
-       4.09:1, bajo el 4.5:1 de AA para texto normal.
-       --ds-active-action-primary-hover es el acento que el DS ya designa para
-       estados hover sobre fondo oscuro y mide 9.02:1 aqui. Medido, no
-       estimado (ver f1-task-3-report.md). */
-    color: var(--ds-active-action-primary-hover) !important;
-  }
-
-  /* Regla propia, no un selector mas en la lista del hover: reproduce
-     literalmente lo que styles.css declaraba para `:focus` antes de la dedupe
-     —`background-color` normal, `color` !important— para que el foco de
-     teclado conserve su tratamiento sin heredar una fuerza que no tenia. */
-  .dropdown-item:focus {
-    background-color: var(--surface-bg);
-    color: var(--ds-active-action-primary-hover) !important;
-  }
-
-  .dropdown-item {
-    font-family: var(--font-main);
-    border-radius: var(--radius-sm);
-    margin: 2px 4px;
-    width: auto;
-    color: var(--text-main);
-    /* Los unicos competidores medidos por CDP son el reset global
-       `* { padding: 0 }` (@layer reset) y `.dropdown-item { padding: .25rem
-       1.5rem }` de Bootstrap (@layer vendor), ambos anteriores a module en el
-       orden canonico DS-006, asi que esta gana sin necesidad de !important.
-       Medido: 8px 20px antes y despues. */
-    padding: 8px 20px;
-  }
-
-  .dropdown-item.active {
-    background-color: var(--primary-light);
-    font-weight: 500;
-    color: var(--text-inverse);
-  }
-}
+   Las apariciones que quedan en el repositorio no son consumidores: las de
+   views/profesionales/profesionales.view.php:278 y :284 son reglas CSS dentro
+   de un `<style>`, bajo `.navbar-nav` y en un `@media` de movil; y admin/ no
+   carga esta hoja ni el design system. */

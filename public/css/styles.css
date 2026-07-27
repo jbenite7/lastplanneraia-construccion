@@ -219,16 +219,18 @@ table.dataTable tbody tr:hover td {
    public/css/design-system/adapters/legacy-bridge.css, ambas en
    @layer legacy-overrides. */
 
-/* F1 Task 5a-bis: el dropdown legacy (`.dropdown-menu`, `.dropdown-item` y
-   `.dropdown-item:hover, :focus`) se deduplico contra el design system y lo
-   que quedaba vivo esta en public/css/design-system/foundation.css
-   (@layer base), junto a las reglas de `.dropdown-item` que ya vivian alli
-   desde la Task 4. `color` del item y el fix de contraste del hover estaban
-   escritos DOS VECES, en los dos archivos y con el mismo valor. Se borraron
-   ademas dos declaraciones inertes (`border-radius` del menu, ganado por el
-   `!important` de legacy-overrides, y `font-size: 0.95rem` del item, ganado
-   por `.dropdown-item { font-size: 1rem !important }` mas abajo en este
-   mismo archivo). Ver el comentario de foundation.css para las mediciones. */
+/* F1 Task 5a-ter: BORRADO el dropdown legacy de Bootstrap (`.dropdown-menu`,
+   `.dropdown-item`, sus `:hover`/`:focus` y `.dropdown-item.active`). Los
+   tramos anteriores lo habian deduplicado y reubicado —primero a
+   foundation.css, luego a legacy-bridge.css— en vez de podarlo; se borra
+   entero porque no tiene un solo consumidor vivo, con la misma clase de
+   evidencia con la que el tramo 5a-bis podo los cinco `@media` muertos de los
+   menus de semana. La medicion completa (cero elementos en 14 rutas, tambien
+   con los 72 modales abiertos; inyectores de JS huerfanos; DataTables Buttons
+   cargado pero nunca instanciado) esta en
+   public/css/design-system/adapters/legacy-bridge.css, al final. Aqui se va
+   ademas su ultimo residuo, `.dropdown-item { font-size: 1rem !important }`
+   (estaba mas abajo, en la seccion de tamanos). */
 
 .form_eval {
   border-style: solid;
@@ -1673,10 +1675,12 @@ table.dataTable thead th {
 }
 */
 
-/* Larger Dropdowns */
-.dropdown-item {
-  font-size: 1rem !important;
-}
+/* F1 Task 5a-ter: BORRADO `.dropdown-item { font-size: 1rem !important }`, el
+   ultimo residuo del dropdown legacy en esta hoja. Se va con el resto del
+   bloque (ver la nota de arriba y la evidencia completa en
+   design-system/adapters/legacy-bridge.css): sin un solo `.dropdown-item` en
+   el DOM, su unico efecto documentado era anular el `font-size: 0.95rem` del
+   propio bloque, que ya no existe. */
 
 /* Larger Inputs */
 .form-control,
