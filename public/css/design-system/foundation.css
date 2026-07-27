@@ -98,8 +98,58 @@
     color: var(--text-main);
   }
 
+  /* F1 Task 5a-bis: absorbido desde public/css/styles.css:276-298
+     (module.components) para dejar de duplicar el dropdown contra el design
+     system: `.dropdown-item` y su `:hover` ya vivian aqui desde la Task 4 y
+     styles.css repetia `color: var(--text-main)` y el MISMO fix de contraste
+     del hover, palabra por palabra, en la otra capa.
+
+     Solo sube lo que el design system no cubria ya: el contenedor
+     `.dropdown-menu` (sin equivalente aqui) y el `padding` del item. La
+     cascada resultante se midio en el navegador con markup sintetico
+     identico al que inyecta public/js/cargarDatosGeneralesPagina2.js:353-365
+     (ver abajo por que hace falta sintetico).
+
+     Dos declaraciones NO subieron porque estan demostradamente inertes:
+      - `.dropdown-menu { border-radius: var(--radius-md) }` (12px): las dos
+        entradas de la app fijan `:where(.dropdown-menu, ...) { border-radius:
+        var(--ds-radius-popover) !important }` en @layer legacy-overrides
+        (aia-design-system.css:78 y entrypoints/theme-overrides.css:43).
+        Medido: 16px antes y despues, nunca 12px.
+      - `.dropdown-item { font-size: 0.95rem }`: el propio styles.css declara
+        mas abajo `.dropdown-item { font-size: 1rem !important }` en la misma
+        capa y despues en orden de aparicion, asi que gana siempre. Medido:
+        16px antes y despues, nunca 15.2px. Esa regla cae fuera del rango de
+        este tramo; cuando su tramo la toque, el tamano lo decide el DS.
+
+     El `border` si se retokenizo: era `1px solid rgba(0, 0, 0, 0.1)`, un
+     negro translucido sobre superficie elevada oscura que medido daba 1.06:1
+     contra su propio fondo (invisible). `--ds-active-border` es el token de
+     borde que el DS ya designa para superficies oscuras.
+
+     ALCANCE: foundation.css lo importan TRES entrypoints
+     (aia-design-system.css:13, entrypoints/core.css:5 y lab-entrypoint.css:3)
+     y styles.css solo dos, asi que estas reglas alcanzan ahora tambien a
+     /internal/design-system. Comprobado que es inocuo: el laboratorio no
+     importa Bootstrap y no tiene ningun `.dropdown-menu`/`.dropdown-item` en
+     el DOM (medido: 0 elementos). */
+  .dropdown-menu {
+    background: var(--surface-card) !important;
+    font-family: var(--font-main);
+    width: auto;
+    border: 1px solid var(--ds-active-border);
+    box-shadow: var(--shadow-md);
+    color: var(--text-main);
+  }
+
+  /* `.dropdown-item:focus` se anade a esta lista de selectores en lugar de
+     dejar una regla suelta: styles.css emparejaba `:hover, :focus` y el
+     design system solo cubria `:hover`, asi que borrar sin mas habria dejado
+     el foco de teclado sin tratamiento. Los valores son los mismos que ya
+     tenia el hover. */
   a.dropdown-item:hover,
-  .dropdown-item:hover {
+  .dropdown-item:hover,
+  .dropdown-item:focus {
     text-decoration: none;
     background-color: var(--surface-bg) !important; /* F1 Task 3: fondo oscuro (canvas) */
     /* F1 Task 3: --primary (azul Apple literal) sobre el canvas oscuro mide
@@ -120,6 +170,14 @@
     margin: 2px 4px;
     width: auto;
     color: var(--text-main);
+    /* F1 Task 5a-bis: sube desde styles.css:288 (module.components). Unica
+       declaracion del bloque `.dropdown-item` de alli que el design system no
+       cubria. Los tres unicos competidores medidos por CDP son el reset
+       global `* { padding: 0 }` (@layer reset) y `.dropdown-item { padding:
+       .25rem 1.5rem }` de Bootstrap (@layer vendor), ambos anteriores a base
+       en el orden canonico DS-006, asi que esta sigue ganando sin necesidad
+       de !important. Medido: 8px 20px antes y despues. */
+    padding: 8px 20px;
   }
 
   .dropdown-item.active {

@@ -247,29 +247,16 @@ button.borrarSoporte {
   padding: 0px 5px;
 }
 
-.dropdown-menu {
-  background: var(--surface-card) !important;
-  font-family: var(--font-main);
-  width: auto;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  box-shadow: var(--shadow-md);
-  color: var(--text-main);
-  border-radius: var(--radius-md);
-}
-
-.dropdown-item {
-  color: var(--text-main) !important;
-  font-size: 0.95rem;
-  padding: 8px 20px;
-}
-
-.dropdown-item:hover,
-.dropdown-item:focus {
-  background-color: var(--surface-bg);
-  /* F1 Task 3: mismo fix de contraste que la regla base (linea ~128):
-     --primary sobre el canvas oscuro mide 4.09:1, bajo AA. */
-  color: var(--ds-active-action-primary-hover) !important;
-}
+/* F1 Task 5a-bis: el dropdown legacy (`.dropdown-menu`, `.dropdown-item` y
+   `.dropdown-item:hover, :focus`) se deduplico contra el design system y lo
+   que quedaba vivo esta en public/css/design-system/foundation.css
+   (@layer base), junto a las reglas de `.dropdown-item` que ya vivian alli
+   desde la Task 4. `color` del item y el fix de contraste del hover estaban
+   escritos DOS VECES, en los dos archivos y con el mismo valor. Se borraron
+   ademas dos declaraciones inertes (`border-radius` del menu, ganado por el
+   `!important` de legacy-overrides, y `font-size: 0.95rem` del item, ganado
+   por `.dropdown-item { font-size: 1rem !important }` mas abajo en este
+   mismo archivo). Ver el comentario de foundation.css para las mediciones. */
 
 .grupo_botones_semanal_madre,
 .grupo_botones_semanal {
