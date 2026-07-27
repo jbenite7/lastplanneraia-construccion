@@ -1134,6 +1134,45 @@ final class PaquetesService
     }
 
     /**
+     * Duraciones del proceso de contratación de un paquete, vía el puente `duracion_ref` (A3.3).
+     *
+     * El catálogo legacy `general_dias_procesos_contratacion` guarda las filas sin el prefijo de
+     * tipo («CONCRETO», no «Suministro CONCRETO»), así que buscarlas por nombre no encontraba nada.
+     * Devuelve null cuando el paquete no tiene fila emparejada: A4 deberá resolverlo con un default
+     * por modalidad, nunca inventando días.
+     */
+    public function duracionesDePaquete(int $paqueteId): ?array
+    {
+        $r = $this->db->query(
+            'SELECT d.paqueteContratacion, d.tipoPaquete, d.diasElaboracionPliegos, d.diasEntregaPliegos,
+                    d.diasReciboPropuestas, d.diasCuadrosComparativos, d.diasLegalizacionContrato,
+                    d.diasFabricacion, d.diasInsumosObra
+             FROM general_paquetes_contratacion p
+             JOIN general_dias_procesos_contratacion d ON d.id = p.duracion_ref
+             WHERE p.id = ?',
+            [$paqueteId],
+        )->fetch(\PDO::FETCH_ASSOC);
+        if ($r === false) {
+            return null;
+        }
+        $pasos = [
+            'elaboracionPliegos' => (int) $r['diasElaboracionPliegos'],
+            'entregaPliegos' => (int) $r['diasEntregaPliegos'],
+            'reciboPropuestas' => (int) $r['diasReciboPropuestas'],
+            'cuadrosComparativos' => (int) $r['diasCuadrosComparativos'],
+            'legalizacionContrato' => (int) $r['diasLegalizacionContrato'],
+            'fabricacion' => (int) $r['diasFabricacion'],
+            'insumosObra' => (int) $r['diasInsumosObra'],
+        ];
+        return [
+            'filaLegacy' => (string) $r['paqueteContratacion'],
+            'tipoLegacy' => (string) $r['tipoPaquete'],
+            'pasos' => $pasos,
+            'diasTotales' => array_sum($pasos),
+        ];
+    }
+
+    /**
      * ¿Ese tipo de recurso puede ir a ese paquete? Expone la doctrina de compatibilidad para la UI y
      * para quien audite una asignación, sin tener que replicar el cuadro en el cliente.
      */

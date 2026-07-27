@@ -121,6 +121,10 @@ class RbacCatalog
             ['key' => 'lps.control_cambios.editar', 'module' => 'lps', 'action' => 'control_cambios_editar', 'description' => 'Editar control de cambios'],
             ['key' => 'lps.paquetes_contratacion.ver', 'module' => 'lps', 'action' => 'paquetes_contratacion_ver', 'description' => 'Ver paquetes de contratacion'],
             ['key' => 'lps.paquetes_contratacion.editar', 'module' => 'lps', 'action' => 'paquetes_contratacion_editar', 'description' => 'Editar paquetes de contratacion'],
+            // A3.3: aprobar reglas y overrides GLOBALES del motor de sembrado. Es distinto de editar
+            // paquetes en un proyecto: aqui se cambia el criterio para toda AIA, y quien lo hace es
+            // el profesional de presupuestos, que es el que conoce el vocabulario de los insumos.
+            ['key' => 'lps.paquetes_contratacion.reglas', 'module' => 'lps', 'action' => 'paquetes_contratacion_reglas', 'description' => 'Aprobar reglas y overrides globales del motor de sembrado'],
             ['key' => 'lps.profesionales.ver', 'module' => 'lps', 'action' => 'profesionales_ver', 'description' => 'Ver profesionales'],
             ['key' => 'lps.profesionales.editar', 'module' => 'lps', 'action' => 'profesionales_editar', 'description' => 'Editar profesionales'],
             ['key' => 'lps.subcontratistas.ver', 'module' => 'lps', 'action' => 'subcontratistas_ver', 'description' => 'Ver subcontratistas'],
@@ -180,6 +184,7 @@ class RbacCatalog
             'lps.pdc.auto_generar',
             'lps.control_cambios.editar',
             'lps.paquetes_contratacion.editar',
+            'lps.paquetes_contratacion.reglas',
             'lps.profesionales.editar',
             'lps.subcontratistas.editar',
         ];
@@ -293,6 +298,8 @@ class RbacCatalog
                 'lps.cnp.ver',
                 'lps.control_cambios.ver',
                 'lps.paquetes_contratacion.ver',
+                'lps.paquetes_contratacion.editar',
+                'lps.paquetes_contratacion.reglas',
                 'lps.profesionales.ver',
                 'lps.subcontratistas.ver',
                 'lps.indicadores.ver',

@@ -356,6 +356,16 @@ $assert($svc->tipoRecursoAdmitido('MANO DE OBRA', $aTodoCostoId) === true, 'La m
 $dotacionId = (int) ($db->query("SELECT id FROM general_paquetes_contratacion WHERE nombre_norm = ? AND activo = 1", [\App\Services\Pdc\MaestroInsumosService::normalizar('Sum + Inst DOTACIÓN ZONAS COMUNES')])->fetchColumn() ?: 0);
 $assert($dotacionId > 0 && $svc->tipoRecursoAdmitido('MATERIAL', $dotacionId) === true, 'Los paquetes de dotación admiten materiales (excepción sembrada).');
 
+// --- A3.3 · Puente con las duraciones legacy (lo que habilita A4) ------------------------------
+// El caso que motivó el puente: «Suministro CONCRETO» no encontraba la fila «CONCRETO» porque el
+// catálogo legacy guarda los nombres sin prefijo de tipo.
+$concretoDur = $svc->duracionesDePaquete($concretoId);
+$assert($concretoDur !== null, 'Suministro CONCRETO ya encuentra su fila de duraciones.');
+$assert($concretoDur !== null && $concretoDur['diasTotales'] > 0, 'La fila trae días de proceso.');
+$assert($concretoDur !== null && array_key_exists('elaboracionPliegos', $concretoDur['pasos']), 'Las duraciones vienen desglosadas por paso.');
+// Un paquete nuevo, sin equivalente legacy, no inventa duraciones: devuelve null y A4 decidirá.
+$assert($svc->duracionesDePaquete($pisosId) === null, 'Un paquete sin fila legacy devuelve null (no se inventan días).');
+
 echo $failures === [] ? "=== OK ===\n" : '=== ' . count($failures) . " FAILED ===\n";
 $limpiar();
 exit($failures === [] ? 0 : 1);
