@@ -1134,6 +1134,92 @@ final class PaquetesService
     }
 
     /**
+     * Umbral de valor por defecto para la auto-asignación (A3.3, decisión del usuario 2026-07-26).
+     *
+     * Por debajo, una sugerencia de confianza alta se aplica sola; por encima, la ve un humano.
+     * Con DAPORTO eso deja ~90 insumos en manos del experto, que son el 80 % del presupuesto: el
+     * Pareto es tan agudo (93 insumos = 80 % del valor) que revisar todo cuesta lo mismo que revisar
+     * lo que de verdad importa.
+     */
+    public const UMBRAL_AUTO_ASIGNACION = 20000000.0;
+
+    /**
+     * Reparte las propuestas entre lo que el motor puede aplicar solo y lo que necesita un humano.
+     *
+     * Solo se auto-asigna confianza alta por debajo del umbral. Todo lo caro y todo lo dudoso queda
+     * en `revision` con el motivo, para que la UI explique por qué pide atención. Nada de lo que un
+     * humano ya decidió entra siquiera en el reparto.
+     */
+    public function planAutoAsignacion(int $projectId, ?int $versionId = null, ?float $umbral = null): ?array
+    {
+        $umbral ??= self::UMBRAL_AUTO_ASIGNACION;
+        $r = $this->proponerSembrado($projectId, $versionId, 'sin_asignar');
+        if ($r === null) {
+            return null;
+        }
+        $auto = [];
+        $revision = [];
+        foreach ($r['propuestas'] as $p) {
+            if ($p['propuesta'] === null) {
+                continue;
+            }
+            $fila = [
+                'descripcionNorm' => $p['descripcionNorm'],
+                'unidad' => $p['unidad'],
+                'descripcion' => $p['descripcion'],
+                'valorTotal' => (float) $p['valorTotal'],
+                'paqueteId' => (int) $p['propuesta']['paqueteId'],
+                'paqueteNombre' => $p['propuesta']['paqueteNombre'],
+                'capa' => $p['propuesta']['capa'],
+                'confianza' => $p['propuesta']['confianza'],
+                'evidencia' => $p['propuesta']['evidencia'],
+            ];
+            if ($fila['confianza'] !== 'alta') {
+                $revision[] = $fila + ['motivo' => 'confianza'];
+            } elseif ($fila['valorTotal'] >= $umbral) {
+                $revision[] = $fila + ['motivo' => 'valor'];
+            } else {
+                $auto[] = $fila;
+            }
+        }
+        return [
+            'version' => $r['version'],
+            'umbral' => $umbral,
+            'auto' => $auto,
+            'revision' => $revision,
+        ];
+    }
+
+    /** Aplica SOLO la parte automática del plan, con su procedencia y sin confirmar por humano. */
+    public function aplicarAutoAsignacion(int $projectId, ?int $versionId, ?float $umbral, string $usuario): ?array
+    {
+        $plan = $this->planAutoAsignacion($projectId, $versionId, $umbral);
+        if ($plan === null) {
+            return null;
+        }
+        // Un lote por (paquete, capa, confianza) para no perder la evidencia de cada grupo.
+        $grupos = [];
+        foreach ($plan['auto'] as $a) {
+            $clave = $a['paqueteId'] . '|' . $a['capa'];
+            $grupos[$clave]['paqueteId'] = $a['paqueteId'];
+            $grupos[$clave]['capa'] = $a['capa'];
+            $grupos[$clave]['evidencia'] ??= $a['evidencia'];
+            $grupos[$clave]['insumos'][] = ['descripcionNorm' => $a['descripcionNorm'], 'unidad' => $a['unidad']];
+        }
+        $asignados = 0;
+        foreach ($grupos as $g) {
+            $r = $this->asignar($projectId, $g['insumos'], $g['paqueteId'], $usuario, [
+                'origen' => $g['capa'],
+                'confianza' => 'alta',
+                'evidencia' => $g['evidencia'],
+                'confirmado' => false,
+            ]);
+            $asignados += $r['ok'] ? (int) $r['asignados'] : 0;
+        }
+        return ['asignados' => $asignados, 'aRevision' => count($plan['revision']), 'umbral' => $plan['umbral']];
+    }
+
+    /**
      * Duraciones del proceso de contratación de un paquete, vía el puente `duracion_ref` (A3.3).
      *
      * El catálogo legacy `general_dias_procesos_contratacion` guarda las filas sin el prefijo de
@@ -1347,9 +1433,15 @@ final class PaquetesService
                     }
                     $paq = $this->resolverPaquete($regla['paq'], $insumo['tipoRecurso'] ?? null, $catalogo, $insumo['descripcionNorm']);
                     if ($paq !== null) {
+                        // La confianza la da la evidencia, no la capa: si el propio nombre del insumo
+                        // dice el oficio o el material («CONCRETO 3000PSI», «M.O. MURO EN LADRILLO»),
+                        // no hay inferencia que valga y es tan fiable como una decisión curada. Si el
+                        // destino se dedujo de la actividad padre, sí hay un salto y queda en media.
+                        // (La dominancia débil la degrada después a baja, en proponerSembrado.)
                         return [
                             'paqueteId' => $paq['id'], 'paqueteNombre' => $paq['nombre'],
-                            'capa' => 'reglas', 'confianza' => 'media',
+                            'capa' => 'reglas',
+                            'confianza' => $pasada['origen'] === 'descripcion' ? 'alta' : 'media',
                             'evidencia' => "Regla de dominio: «{$kw}» {$donde} (recurso {$tipoRecurso}) → {$paq['nombre']}.",
                         ];
                     }

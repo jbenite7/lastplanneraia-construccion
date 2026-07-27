@@ -282,6 +282,45 @@ $assert((int) $res3['acierto']['sugerenciasAplicadas'] === 2, 'La base son las d
 $assert(abs((float) $res3['acierto']['tasa'] - 50.0) < 0.01, 'Una aceptada y una corregida = 50% de acierto.');
 $assert($res3['acierto']['tasa'] === null || ($res3['acierto']['tasa'] >= 0 && $res3['acierto']['tasa'] <= 100), 'La tasa es null (sin datos) o un porcentaje.');
 
+// --- A3.3 · Auto-asignación acotada y re-sembrado no destructivo ------------------------------
+// El motor puede despachar solo la cola larga barata de confianza alta; lo caro y lo dudoso siempre
+// pasa por un humano. Y nada de lo que un humano decidió se toca jamás.
+$svc->desasignar($P1, [
+    ['descripcionNorm' => 'PISO CERAMICO 30X30', 'unidad' => 'M2'],
+    ['descripcionNorm' => 'ACERO DE REFUERZO 60000PSI', 'unidad' => 'KG'],
+    ['descripcionNorm' => 'INSUMO NUEVO A3', 'unidad' => 'UN'],
+]);
+$plan = $svc->planAutoAsignacion($P1, null, 1000000);
+$assert($plan !== null && isset($plan['auto'], $plan['revision']), 'planAutoAsignacion separa lo automático de lo que va a revisión.');
+foreach ($plan['auto'] as $a) {
+    $assert($a['confianza'] === 'alta', 'Solo se auto-asigna confianza alta: ' . $a['descripcionNorm']);
+    $assert($a['valorTotal'] < 1000000, 'Solo se auto-asigna por debajo del umbral: ' . $a['descripcionNorm']);
+}
+$caro = array_filter($plan['revision'], static fn ($r) => $r['motivo'] === 'valor');
+foreach ($caro as $r) {
+    $assert($r['valorTotal'] >= 1000000, 'Lo que supera el umbral va a revisión por valor.');
+}
+
+// Aplicar el plan escribe SOLO la parte automática, y con su procedencia.
+$aplicado = $svc->aplicarAutoAsignacion($P1, null, 1000000, 'test-a3');
+$assert($aplicado !== null && $aplicado['asignados'] === count($plan['auto']), 'Aplicar escribe exactamente lo que el plan proponía.');
+if ($plan['auto'] !== []) {
+    $primera = $plan['auto'][0];
+    $fila = $db->query(
+        'SELECT origen, confianza, confirmado_humano FROM pdc_insumo_paquete
+         WHERE project_id = ? AND descripcion_norm = ? AND unidad = ?',
+        [$P1, $primera['descripcionNorm'], $primera['unidad']],
+    )->fetch(\PDO::FETCH_ASSOC);
+    $assert($fila !== false && $fila['origen'] !== 'humano', 'La auto-asignación guarda la capa del motor.');
+    $assert((int) $fila['confirmado_humano'] === 0, 'La auto-asignación NO nace confirmada: el humano aún no la vio.');
+}
+
+// Re-sembrado: lo humano es intocable; lo automático puede proponerse de nuevo.
+$svc->asignar($P1, [['descripcionNorm' => 'ACERO DE REFUERZO 60000PSI', 'unidad' => 'KG']], $pisosId, 'test-a3');
+$plan2 = $svc->planAutoAsignacion($P1, null, 1000000);
+$claves = array_map(static fn ($a) => $a['descripcionNorm'], array_merge($plan2['auto'], $plan2['revision']));
+$assert(!in_array('ACERO DE REFUERZO 60000PSI', $claves, true), 'Un insumo con decisión humana no vuelve a proponerse.');
+
 echo $failures === [] ? "=== OK ===\n" : '=== ' . count($failures) . " FAILED ===\n";
 $limpiar();
 exit($failures === [] ? 0 : 1);

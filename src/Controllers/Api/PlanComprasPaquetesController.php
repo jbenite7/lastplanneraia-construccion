@@ -118,6 +118,44 @@ class PlanComprasPaquetesController
         $this->ok($r);
     }
 
+    /** GET /plan-compras/api/paquetes/plan-auto?versionId=&umbral= — preview, no escribe. */
+    public function planAuto(): void
+    {
+        $projectId = $this->guardLectura();
+        if ($projectId === null) {
+            return;
+        }
+        $r = $this->service->planAutoAsignacion($projectId, $this->versionIdParam(), $this->umbralParam());
+        if ($r === null) {
+            $this->fail('NO_VERSION', 'El proyecto no tiene un presupuesto importado.', 404);
+            return;
+        }
+        $this->ok($r);
+    }
+
+    /** POST /plan-compras/api/paquetes/auto-asignar {versionId?, umbral?} — aplica solo lo seguro. */
+    public function autoAsignar(): void
+    {
+        $projectId = $this->guardEscritura();
+        if ($projectId === null) {
+            return;
+        }
+        $body = $this->body();
+        $versionId = filter_var($body['versionId'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        $umbral = filter_var($body['umbral'] ?? null, FILTER_VALIDATE_FLOAT, ['options' => ['min_range' => 0]]);
+        $r = $this->service->aplicarAutoAsignacion(
+            $projectId,
+            $versionId === false || $versionId === null ? null : (int) $versionId,
+            $umbral === false || $umbral === null ? null : (float) $umbral,
+            $this->usuario(),
+        );
+        if ($r === null) {
+            $this->fail('NO_VERSION', 'El proyecto no tiene un presupuesto importado.', 404);
+            return;
+        }
+        $this->ok($r);
+    }
+
     /** POST /plan-compras/api/paquetes  {nombre, tipoNegociacion} */
     public function crear(): void
     {
@@ -221,6 +259,13 @@ class PlanComprasPaquetesController
             return null;
         }
         return $projectId;
+    }
+
+    /** ?umbral=N validado, o null (el servicio usa el umbral acordado por defecto). */
+    private function umbralParam(): ?float
+    {
+        $umbral = filter_var($_GET['umbral'] ?? null, FILTER_VALIDATE_FLOAT, ['options' => ['min_range' => 0]]);
+        return $umbral === false || $umbral === null ? null : (float) $umbral;
     }
 
     /** ?versionId=N validado, o null (el servicio usa la versión activa). */

@@ -7,6 +7,14 @@ const FIXTURE = 'tests/browser/fixtures/pdc/presupuesto-mini.xlsx';
 
 test('paquetes: crear, asignar, omitir, cobertura y un paso del asistente', async ({ page }) => {
   test.skip(!project, 'Se requiere el proyecto de construcción (Da Porto)');
+  // DESTRUCTIVO: importa un presupuesto de juguete en el proyecto real y lo deja como versión
+  // activa, además de desasignar lo que encuentre. Contra un entorno con el presupuesto de DAPORTO
+  // cargado eso tumba el trabajo de empaquetamiento. Corre solo con la variable puesta:
+  //   PDC_E2E_DESTRUCTIVO=1 npx playwright test tests/browser/pdc-v2-paquetes.spec.mjs
+  test.skip(
+    process.env.PDC_E2E_DESTRUCTIVO !== '1',
+    'Test destructivo: reemplaza la versión activa del proyecto. Exporta PDC_E2E_DESTRUCTIVO=1 para correrlo.',
+  );
 
   await loginAndSelectProject(page, project);
   try {
