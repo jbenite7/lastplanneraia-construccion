@@ -1,4 +1,4 @@
-@layer reset, theme, base, layout, components, utilities;
+@layer theme, base, layout, components;
 
 @layer theme {
 :root {
@@ -60,95 +60,68 @@
 }
 /* Fin Layer Theme */
 
-@layer reset {
-* {
-  margin: 0;
-  padding: 0;
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  box-sizing: border-box;
-}
+/* reset y utilities absorbidos por public/css/design-system/foundation.css y
+   public/css/design-system/core.css (@layer utilities) en F1 Task 4. */
 
-html {
-  overflow: -moz-scrollbars-vertical;
-  overflow-y: auto; /* Fix locked scroll */
-  font-size: 100%; /* Base 16px */
-  -webkit-font-smoothing: antialiased; /* Crisp text for macOS */
-  -moz-osx-font-smoothing: grayscale;
-}
-}
-/* Fin Layer Reset */
-
-@layer utilities {
-/* Mobile First Utilities for Inline Replacement */
-.w-md-80 {
-  width: 100% !important;
-}
-.text-lg-125 {
-  font-size: 1.25em !important;
-}
-.text-justify {
-  text-align: justify !important;
-}
-.list-padded {
-  padding: 0 5% !important;
-  margin: 0 !important;
-}
-
-/* Tablet+ Overrides */
-@media (min-width: 768px) {
-  .w-md-80 {
-    width: 80% !important;
-  }
-}
-}
-/* Fin Layer Utilities */
-
+/* F1 Task 4 BLOQUEADO: body/h1-h6/.dropdown-item se quedan en module.base.
+   Medido (no razonado) con design-system-body-canvas-dark.mjs y
+   getComputedStyle en vivo: moverlos al @layer base canonico de
+   foundation.css pierde contra .aia-shell (core.css, @layer components; su
+   shorthand `background: var(--ds-shell-background)` no fija
+   background-color) y, en /pdc, /subcontratistas, /contratos,
+   /listado-actividades y /programa-general-actualizar, contra Bootstrap
+   (@layer vendor) porque esas vistas enlazan public/css/handsontable-module.css
+   crudo (sin layer) antes del agregador y ese archivo declara
+   `@layer base {}`/`@layer components {}` sin la sentencia de orden previa,
+   fijando la posicion global de esas capas por delante de `vendor`. Arreglo
+   real: .aia-shell en core.css y/o el orden de <link> en esas 5 vistas,
+   ambos fuera de los 3 archivos de destino de esta tarea. Ver
+   f1-task-4-report.md. */
 @layer base {
-body {
-  font-size: 1rem;
-  font-family: var(--font-main);
-  background-color: var(--surface-bg);
-  color: var(--text-main);
-  line-height: 1.5;
-}
+  body {
+    font-size: 1rem;
+    font-family: var(--font-main);
+    background-color: var(--surface-bg);
+    color: var(--text-main);
+    line-height: 1.5;
+  }
 
-/* Typography Overrides */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-weight: 600;
-  letter-spacing: -0.02em; /* Tight tracking like iOS */
-  color: var(--text-main);
-}
+  /* Typography Overrides */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-weight: 600;
+    letter-spacing: -0.02em; /* Tight tracking like iOS */
+    color: var(--text-main);
+  }
 
-a.dropdown-item:hover,
-.dropdown-item:hover {
-  text-decoration: none;
-  background-color: var(--surface-bg) !important; /* F1 Task 3: fondo oscuro (canvas) */
-  /* F1 Task 3: --primary (azul Apple literal) sobre el canvas oscuro mide
-     4.09:1, bajo el 4.5:1 de AA para texto normal. --ds-active-action-primary-hover
-     es el acento que el DS ya designa para estados hover sobre fondo oscuro y
-     mide 9.02:1 aqui. Medido, no estimado (ver f1-task-3-report.md). */
-  color: var(--ds-active-action-primary-hover) !important;
-}
+  a.dropdown-item:hover,
+  .dropdown-item:hover {
+    text-decoration: none;
+    background-color: var(--surface-bg) !important; /* F1 Task 3: fondo oscuro (canvas) */
+    /* F1 Task 3: --primary (azul Apple literal) sobre el canvas oscuro mide
+       4.09:1, bajo el 4.5:1 de AA para texto normal. --ds-active-action-primary-hover
+       es el acento que el DS ya designa para estados hover sobre fondo oscuro y
+       mide 9.02:1 aqui. Medido, no estimado (ver f1-task-3-report.md). */
+    color: var(--ds-active-action-primary-hover) !important;
+  }
 
-.dropdown-item {
-  font-family: var(--font-main);
-  border-radius: var(--radius-sm);
-  margin: 2px 4px;
-  width: auto;
-  color: var(--text-main);
-}
+  .dropdown-item {
+    font-family: var(--font-main);
+    border-radius: var(--radius-sm);
+    margin: 2px 4px;
+    width: auto;
+    color: var(--text-main);
+  }
 
-.dropdown-item.active {
-  background-color: var(--primary-light);
-  font-weight: 500;
-  color: var(--text-inverse);
-}
+  .dropdown-item.active {
+    background-color: var(--primary-light);
+    font-weight: 500;
+    color: var(--text-inverse);
+  }
 }
 /* Fin Layer Base */
 

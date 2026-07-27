@@ -16,3 +16,43 @@
     hyphens: none;
   }
 }
+
+/* F1 Task 4: absorbido desde public/css/styles.css (@layer reset). box-sizing
+   ya lo cubre la regla :where(*, *::before, *::after) de arriba (mismo valor,
+   borrado en origen en lugar de duplicarlo); margin/padding no tenian
+   equivalente en el design system. */
+@layer reset {
+  * {
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    overflow: -moz-scrollbars-vertical;
+    overflow-y: auto; /* Fix locked scroll */
+    font-size: 100%; /* Base 16px */
+    -webkit-font-smoothing: antialiased; /* Crisp text for macOS */
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* F1 Task 4 BLOQUEADO (no absorbido): body/h1-h6/.dropdown-item de
+   public/css/styles.css (@layer base) se quedan en module.base (ver
+   styles.css). Medido, no razonado, con design-system-body-canvas-dark.mjs y
+   getComputedStyle en vivo (/pdc, /indicadores): moverlos a este @layer base
+   pierde contra dos reglas ajenas a los 3 archivos de esta tarea:
+   (a) .aia-shell (core.css, @layer components) tiene mayor prioridad de capa
+   que base y su shorthand `background: var(--ds-shell-background)` no fija
+   background-color (solo background-image), asi que body cae a transparente
+   en vez del canvas oscuro en rutas sin CSS de modulo propio;
+   (b) public/css/handsontable-module.css se enlaza crudo (sin layer) en
+   views/pdc/pdc.view.php, views/subcontratistas/subcontratistas.view.php,
+   views/contratos/contratos.view.php, views/listado-actividades/*.php y
+   views/programa-general-actualizar/*.php ANTES del agregador, y declara
+   `@layer base {}`/`@layer components {}` sin la sentencia de orden previa
+   -- fija la posicion global de esas dos capas anticipadamente y deja
+   `vendor` (Bootstrap) por encima de `base` en esas rutas: pierde
+   background-color, color, font-weight y letter-spacing de body/h1-h6 contra
+   los valores por defecto de Bootstrap. Arreglarlo exige tocar core.css
+   (.aia-shell) y/o el orden de <link> en 5 vistas, fuera del alcance de las 3
+   rutas de destino de esta tarea. Ver f1-task-4-report.md. */

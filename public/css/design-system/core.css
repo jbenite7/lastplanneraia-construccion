@@ -208,3 +208,30 @@
     }
   }
 }
+
+/* F1 Task 4: absorbido desde public/css/styles.css (@layer utilities). Sin
+   equivalente en el design system; sin consumidores activos hoy en views/js
+   (grep verificado), se mueve tal cual, sin ampliar selectores. */
+@layer utilities {
+  /* Mobile First Utilities for Inline Replacement */
+  .w-md-80 {
+    width: 100% !important;
+  }
+  .text-lg-125 {
+    font-size: 1.25em !important;
+  }
+  .text-justify {
+    text-align: justify !important;
+  }
+  .list-padded {
+    padding: 0 5% !important;
+    margin: 0 !important;
+  }
+
+  /* Tablet+ Overrides */
+  @media (min-width: 768px) {
+    .w-md-80 {
+      width: 80% !important;
+    }
+  }
+}
