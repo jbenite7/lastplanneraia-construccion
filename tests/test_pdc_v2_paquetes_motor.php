@@ -40,11 +40,18 @@ $mamposteriaId = (int) ($db->query("SELECT id FROM general_paquetes_contratacion
 $indirectosId = (int) ($db->query("SELECT id FROM general_paquetes_contratacion WHERE nombre_norm = ?", [\App\Services\Pdc\MaestroInsumosService::normalizar(PaquetesService::PAQUETE_INDIRECTOS)])->fetchColumn() ?: 0);
 $ceramicosId = (int) ($db->query("SELECT id FROM general_paquetes_contratacion WHERE nombre_norm = ? AND activo = 1", [\App\Services\Pdc\MaestroInsumosService::normalizar('M. de O INSTALACIÓN DE PISOS CERÁMICOS')])->fetchColumn() ?: 0);
 $maderaId = (int) ($db->query("SELECT id FROM general_paquetes_contratacion WHERE nombre_norm = ? AND activo = 1", [\App\Services\Pdc\MaestroInsumosService::normalizar('M. de O INSTALACIÓN DE PISOS EN MADERA')])->fetchColumn() ?: 0);
-$enchapesId = (int) ($db->query("SELECT id FROM general_paquetes_contratacion WHERE nombre_norm = ? AND activo = 1", [\App\Services\Pdc\MaestroInsumosService::normalizar('M. de O ENCHAPES CERÁMICOS')])->fetchColumn() ?: 0);
+// A3.5 · Cuatro paquetes se retiraron tras la revisión en obra: su alcance se fusionó con otro.
+$retirados = ['M. de O ENCHAPES CERÁMICOS', 'M. de O TOPOGRAFÍA',
+              'Sum + Inst PUERTAS EN MADERA', 'Sum + Inst IMPERMEABILIZACIÓN FOSO DE ASCENSOR'];
+foreach ($retirados as $nom) {
+    $vivo = (int) ($db->query("SELECT COUNT(*) FROM general_paquetes_contratacion WHERE nombre_norm = ? AND activo = 1",
+        [\App\Services\Pdc\MaestroInsumosService::normalizar($nom)])->fetchColumn() ?: 0);
+    $assert($vivo === 0, "«{$nom}» está retirado del catálogo (activo=0).");
+}
 // El cajón de sastre debe estar retirado (su alcance se repartió por oficio).
 $cajonActivo = (int) ($db->query("SELECT COUNT(*) FROM general_paquetes_contratacion WHERE nombre_norm = ? AND activo = 1", [\App\Services\Pdc\MaestroInsumosService::normalizar('M. de O INSTALACION DE PISOS')])->fetchColumn() ?: 0);
 $assert($concretoId > 0 && $mamposteriaId > 0 && $indirectosId > 0, 'Catálogo con Suministro CONCRETO, M. de O MAMPOSTERÍA e Indirectos (seeds aplicados).');
-$assert($ceramicosId > 0 && $maderaId > 0 && $enchapesId > 0, 'Catálogo con los paquetes de piso por oficio (cerámicos, madera) y enchapes de muro.');
+$assert($ceramicosId > 0 && $maderaId > 0, 'Catálogo con los paquetes de piso por oficio (cerámicos, madera).');
 $assert($cajonActivo === 0, 'El cajón de sastre «M. de O INSTALACION DE PISOS» está retirado (activo=0).');
 
 // Maestro (tipo_recurso) para los insumos de prueba.
@@ -174,7 +181,6 @@ $assert($sMuro !== null && $sMuro['capa'] === 'reglas' && (int) $sMuro['paqueteI
 // (ZOCALO), aunque su actividad dominante sea «ZOCALO EN MADERA»: gana la descripción.
 $sZoc = $byNorm['M.O. ZOCALO PORCELANATO PRUEBA A3'] ?? null;
 $assert($sZoc !== null && (int) $sZoc['paqueteId'] === $ceramicosId, 'M.O.: el material explícito de la descripción («PORCELANATO») manda sobre la actividad («ZOCALO EN MADERA»).');
-$assert($sZoc !== null && (int) $sZoc['paqueteId'] !== $enchapesId, 'El zócalo de piso NO cae en Enchapes cerámicos (que es enchape de muro).');
 $assert($sZoc !== null && (int) $sZoc['paqueteId'] !== $maderaId, 'El zócalo de porcelanato NO cae en el paquete de pisos en madera.');
 $assert($sZoc !== null && str_contains($sZoc['evidencia'], 'descripcion del insumo'), 'La evidencia indica que se decidió por la descripción.');
 
@@ -327,7 +333,7 @@ $colaLarga = [
     ['PARTIDA PRESUPUESTAL PORTERIA A3', 'SG', 'SUBCONTRATO', 'Provisiones y partidas globales'],
     ['SUMINISTRO E INSTALACION DE ARBOLES A3', 'UN', 'SUBCONTRATO', 'Sum + Inst PAISAJISMO Y ZONAS VERDES'],
     // Destinos que ya existían en el catálogo y el motor no usaba.
-    ['LOCALIZACION Y REPLANTEO A3', 'M2', 'SUBCONTRATO', 'M. de O TOPOGRAFÍA'],
+    ['LOCALIZACION Y REPLANTEO A3', 'M2', 'SUBCONTRATO', 'Sum + Inst TOPOGRAFÍA'],
     ['M.O. LECHO FILTRANTE A3', 'M3', 'MANO DE OBRA', 'M. de O FILTROS'],
     ['M.O. INSTALACION DE CUNETAS A3', 'M', 'MANO DE OBRA', 'M. de O CUNETA TALUD'],
     ['SUMINISTRO E INSTALACION DE GRAMA A3', 'M2', 'SUBCONTRATO', 'Sum + Inst ENGRAMADO'],
@@ -474,9 +480,16 @@ $partidos = [
     ['SUMINISTRO PUERTA METALICA PM9 A3', 'UN', 'MATERIAL', 'Suministro PUERTAS METÁLICAS'],
     ['EPOXICO ESTRUCTURAL A3', 'UN', 'MATERIAL', 'Suministro ANCLAJES'],
     ['CAMPANA EXTRACTORA A3', 'UN', 'MATERIAL', 'Suministro DOTACIÓN COCINAS Y LAVADEROS'],
-    ['COMISION TOPOGRAFIA A3', 'MES', 'MANO DE OBRA', 'M. de O TOPOGRAFÍA'],
+    ['COMISION TOPOGRAFIA A3', 'MES', 'MANO DE OBRA', 'Sum + Inst TOPOGRAFÍA'],
     ['M.O. INSTALACION TOPELLANTAS A3', 'UN', 'MANO DE OBRA', 'M. de O TOPELLANTAS'],
     ['ALQUILER BUSETA PERSONAL A3', 'MES', 'TRANSPORTE', 'Alquiler de transporte de personal'],
+    // A3.5 · Fusiones de la revisión en obra. La puerta de madera es producto de catálogo: aunque
+    // el presupuesto la traiga como subcontrato, se compra, no se contrata a todo costo.
+    ['SUM PUERTA MADERA SUBCONTRATO A3', 'UN', 'SUBCONTRATO', 'Suministro PUERTAS EN MADERA'],
+    // «Pisos y enchapes son el mismo contrato»: el enchape de muro deja de tener paquete propio.
+    ['M.O. ENCHAPE CERAMICO MURO A3', 'M2', 'MANO DE OBRA', 'M. de O INSTALACIÓN DE PISOS CERÁMICOS'],
+    // El foso de ascensor lo hace el mismo impermeabilizador que el resto de la obra.
+    ['IMPERMEABILIZACION FOSO DE ASCENSOR A3', 'M2', 'SUBCONTRATO', 'Sum + Inst IMPERMEABILIZACIONES'],
 ];
 foreach ($partidos as [$desc, $und, $tipo, $_]) {
     $db->query(

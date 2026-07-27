@@ -121,8 +121,6 @@ final class PaquetesService
         ['kw' => ['EPOXICO', 'ANCLAJE QUIMICO', 'ANCLAJES QUIMICOS'], 'paq' => 'Suministro ANCLAJES', 'tipos' => ['MATERIAL'], 'soloDesc' => true, 'descPrimero' => true],
         // «Suministro solo. La MO la ejecutan los de la carpintería de madera.»
         ['kw' => ['CAMPANA EXTRACTORA', 'ASADOR', 'ESTUFA', 'HORNO EMPOTRA', 'CUBIERTA A GAS'], 'paq' => 'Suministro DOTACIÓN COCINAS Y LAVADEROS', 'tipos' => ['MATERIAL'], 'soloDesc' => true, 'descPrimero' => true],
-        // «Topografía es una MO»: hasta ahora solo existía el paquete a todo costo.
-        ['kw' => ['TOPOGRAFIA', 'LOCALIZACION Y REPLANTEO', 'COMISION TOPOGRAFICA'], 'paq' => 'M. de O TOPOGRAFÍA', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO'], 'descPrimero' => true],
         // «Aparte del urbanismo, y el suministro por aparte también.»
         ['kw' => ['TOPELLANTA'], 'paq' => 'M. de O TOPELLANTAS', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO'], 'descPrimero' => true],
         // El transporte de personal es un contrato distinto del acarreo de materiales.
@@ -194,6 +192,8 @@ final class PaquetesService
         ['kw' => ['GRAMA', 'ENGRAMADO'], 'paq' => 'Sum + Inst ENGRAMADO', 'tipos' => ['SUBCONTRATO', 'MATERIAL', 'MANO DE OBRA'], 'descPrimero' => true],
         ['kw' => ['ARBOL', 'ESPECIE VEGETAL', 'ESPECIES VEGETALES', 'JARDINERIA', 'PAISAJISMO', 'SIEMBRA'], 'paq' => 'Sum + Inst PAISAJISMO Y ZONAS VERDES', 'tipos' => ['SUBCONTRATO', 'MATERIAL', 'MANO DE OBRA'], 'descPrimero' => true],
         // Servicios y obras menores con paquete propio ya en el catálogo, que el motor no usaba.
+        // Toda la topografía en un solo paquete (revisión en obra 2026-07-27): la comisión y el
+        // replanteo los hace el mismo topógrafo, con o sin equipos propios.
         ['kw' => ['LOCALIZACION Y REPLANTEO', 'TOPOGRAFIA', 'COMISION TOPOGRAFICA'], 'paq' => 'Sum + Inst TOPOGRAFÍA', 'tipos' => ['SUBCONTRATO', 'MANO DE OBRA'], 'descPrimero' => true],
         ['kw' => ['LECHO FILTRANTE', 'MATERIAL FILTRANTE', 'FILTRO'], 'paq' => 'M. de O FILTROS', 'tipos' => ['MANO DE OBRA'], 'descPrimero' => true],
         ['kw' => ['CUNETA'], 'paq' => 'M. de O CUNETA TALUD', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO'], 'descPrimero' => true],
@@ -238,8 +238,8 @@ final class PaquetesService
         ['kw' => ['POLISOMBRA', 'INVERNADERO', 'PROTECCION TEMPORAL', 'PROTECCION CON PLASTICO'], 'paq' => self::PAQUETE_INDIRECTOS, 'tipos' => ['SUBCONTRATO', 'MATERIAL'], 'descPrimero' => true],
 
         // ── Instalaciones (subcontrato / a todo costo) ──
-        // Impermeabilización antes que ascensores: el ascensorista no impermeabiliza el foso.
-        ['kw' => ['IMPERMEABILIZ'], 'ctx' => ['FOSO', 'ASCENSOR'], 'paq' => 'Sum + Inst IMPERMEABILIZACIÓN FOSO DE ASCENSOR', 'tipos' => ['SUBCONTRATO', 'MANO DE OBRA', 'MATERIAL']],
+        // Impermeabilización antes que ascensores: el ascensorista no impermeabiliza el foso — pero
+        // tampoco necesita paquete aparte, lo hace el mismo impermeabilizador (revisión en obra).
         ['kw' => ['IMPERMEABILIZ'], 'paq' => 'Sum + Inst IMPERMEABILIZACIONES', 'tipos' => ['SUBCONTRATO', 'MANO DE OBRA', 'MATERIAL']],
         // Aparatos sanitarios en M.O. antes que la red hidrosanitaria: es el instalador de aparatos.
         ['kw' => ['REJILLA DE PISO', 'REJILLA PARA DUCHA', 'SIFON', 'CROMAD', 'GRIFERIA', 'LAVAMANOS', 'LAVAPLATOS', 'ORINAL', 'APARATO SANITARIO'], 'paq' => 'M. de O APARATOS SANITARIOS Y GRIFERÍA', 'tipos' => ['MANO DE OBRA'], 'descPrimero' => true],
@@ -252,8 +252,10 @@ final class PaquetesService
         // Cielos rasos ANTES de pintura y ventanería: el drywallero entrega el cielo pintado.
         ['kw' => ['CIELO', 'DRYWALL', 'SUPERBOARD', 'CIELORRASO', 'FALSO'], 'paq' => 'Sum + Inst CIELOS RASOS', 'tipos' => ['SUBCONTRATO', 'MANO DE OBRA']],
         ['kw' => ['CLOSET', 'MUEBLE', 'COCINA INTEGRAL', 'MOBILIARIO', 'VESTIER', 'ALACENA', 'LINO'], 'paq' => 'Sum + Inst CARPINTERÍA DE MADERA', 'tipos' => ['SUBCONTRATO']],
-        // La puerta de madera es producto de catálogo; el closet es medida y despiece: gremios distintos.
-        ['kw' => ['PUERTA EN MADERA', 'PUERTA MADERA', 'PUERTA CORREDIZA MADERA'], 'paq' => 'Sum + Inst PUERTAS EN MADERA', 'tipos' => ['SUBCONTRATO']],
+        // La puerta de madera es producto de catálogo; el closet es medida y despiece: gremios
+        // distintos. Y por ser producto se COMPRA: aunque el presupuesto la traiga como subcontrato,
+        // su destino es el suministro, no un alcance a todo costo (revisión en obra 2026-07-27).
+        ['kw' => ['PUERTA EN MADERA', 'PUERTA MADERA', 'PUERTA CORREDIZA MADERA'], 'paq' => 'Suministro PUERTAS EN MADERA', 'tipos' => ['SUBCONTRATO']],
         ['kw' => ['CARPINTERIA MADERA'], 'paq' => 'Sum + Inst CARPINTERÍA DE MADERA', 'tipos' => ['SUBCONTRATO']],
         ['kw' => ['CABINA', 'DIVISION DE DUCHA', 'DIVISIONES DE BANO', 'ESPEJO'], 'ctx' => ['BANO', 'DUCHA', 'APTO', 'VIDRIO TEMPLADO'], 'paq' => 'Sum + Inst CABINAS Y ESPEJOS DE BAÑOS', 'tipos' => ['SUBCONTRATO', 'MATERIAL'], 'descPrimero' => true],
         ['kw' => ['VENTAN', 'VIDRIO', 'VIDRIER', 'FACHADA FLOTANTE', 'ALUMINIO'], 'paq' => 'Sum + Inst VENTANERÍA', 'tipos' => ['SUBCONTRATO']],
@@ -294,8 +296,9 @@ final class PaquetesService
         ['kw' => ['PORCELANATO', 'CERAMIC', 'GRES', 'TABLETA', 'BALDOSA', 'ADOQUIN'], 'ctx' => ['PISO', 'ZOCALO', 'GUARDAESCOBA', 'PIRLAN', 'ADOQUIN'], 'paq' => 'M. de O INSTALACIÓN DE PISOS CERÁMICOS', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO'], 'descPrimero' => true],
         // Mediacaña sin contexto de cubierta: pendiente explícito (no la rellenan tokens/agrupación).
         ['kw' => ['MEDIA CANA', 'MEDIACANA'], 'paq' => self::SIN_PROPUESTA, 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
-        // Enchape de MURO (el de piso ya se resolvió arriba).
-        ['kw' => ['ENCHAPE', 'CERAMIC', 'PORCELANATO', 'BALDOSA', 'GRES', 'PUENTE ADHERENCIA'], 'paq' => 'M. de O ENCHAPES CERÁMICOS', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
+        // Enchape de MURO. «Pisos y enchapes son el mismo contrato» (revisión en obra 2026-07-27):
+        // lo instala el mismo enchapador, así que comparte paquete con el piso.
+        ['kw' => ['ENCHAPE', 'CERAMIC', 'PORCELANATO', 'BALDOSA', 'GRES', 'PUENTE ADHERENCIA'], 'paq' => 'M. de O INSTALACIÓN DE PISOS CERÁMICOS', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
         ['kw' => ['TRANSPORTE INTERNO DE CONCRETO', 'TRANSPORTE INTERNO DE ACERO'], 'paq' => 'M. de O ESTRUCTURA EN CONCRETO', 'tipos' => ['MANO DE OBRA'], 'descPrimero' => true],
         ['kw' => ['PREPARACION MEZCLA', 'TRANSPORTE INTERNO', 'MEZCLA', 'PREPARACION DE CONCRETO'], 'paq' => 'M. de O ESTRUCTURA EN CONCRETO', 'tipos' => ['MANO DE OBRA']],
 
