@@ -862,7 +862,17 @@ table.dataTable tbody tr:hover td {
   padding: 15px 20px;
   border-radius: 8px;
   box-shadow: var(--ds-shadow-md);
-  border-left: 5px solid var(--ds-color-domain-real-estate-on-dark); /* Accent color */
+  /* Acento sin token: el azul original no existe en la paleta del design
+     system, cuyos dominios son verde, naranja, teal y morado. El tramo 5b lo
+     habia sustituido por el teal de real-estate, pero eso cambia el matiz y es
+     una decision de diseno en un tramo acotado a tokenizar: revertido por
+     decision del usuario (2026-07-27). Queda como el ultimo literal de este
+     bloque, a proposito y documentado.
+     Ojo: esta regla entera es INERTE. public/css/pdc.css:249-265 la duplica y
+     entra por <link> sin capa desde views/pdc/pdc.view.php:14, y una hoja sin
+     capa gana a cualquier @layer. El toast de /pdc sigue saliendo blanco en una
+     app dark-only, y su arreglo real vive en pdc.css, no aqui. */
+  border-left: 5px solid #007bff; /* Accent color */
   font-family: var(--ds-font-body);
   font-size: 14px;
   display: none; /* Hidden by default */

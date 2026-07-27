@@ -204,11 +204,20 @@
      rediseno y tiene tarea propia fuera de F1. Aqui solo se lleva cada estado
      a oscuro conservando su identidad de matiz.
 
-     Los seis bordes cromaticos conservan el hex original (todos superan 3:1
-     contra el canvas oscuro). El unico que cambia es `not-started`: su
-     #c7cdd4 original era un gris claro discreto sobre chip claro, pero sobre
-     canvas oscuro se volvia el borde mas luminoso de la leyenda e invertia su
-     jerarquia de "estado mas silencioso". */
+     Los SIETE bordes conservan el hex original. El tramo 5b habia oscurecido
+     `not-started` de #c7cdd4 a #7c8783 para que dejara de ser el borde mas
+     luminoso de la leyenda sobre canvas oscuro; el argumento es bueno, pero es
+     un juicio de DISENO y el usuario acoto este tramo a tokenizar. Revertido
+     por decision suya (2026-07-27). Si al arreglar el borde inerte (ver abajo)
+     la jerarquia visual chirria, se decide entonces y como diseno explicito.
+
+     AVISO para quien toque estos bordes: hoy NO PINTAN NINGUNO.
+     public/css/buttons.css:981 fija un `border` con !important sobre
+     .pdc-legend-item en @layer components, y para las declaraciones !important
+     el orden de capas se INVIERTE, asi que gana a module por mucha
+     especificidad que se le ponga. Si algun dia se retira ese override, estos
+     siete valores pasan a verse y los siete cumplen WCAG 1.4.11 (3,18-5,50:1
+     medido); antes de la tokenizacion fallaban cinco de siete. */
     --pdc-missing-bg: #33204a;
     --pdc-missing-border: #c084fc;
     --pdc-missing-text: #e0cdfa;
@@ -228,7 +237,7 @@
     --pdc-active-border: #4a81bd;
     --pdc-active-text: #bbdcfb;
     --pdc-not-started-bg: #2b2f2d;
-    --pdc-not-started-border: #7c8783;
+    --pdc-not-started-border: #c7cdd4;
     --pdc-not-started-text: #d4dad6;
 
     /* Cabecera naranja de las tablas (`.pdc-header` / `.row-header`). Ya era
