@@ -22,6 +22,7 @@ $P1 = 999901; $P2 = 999902;
 // Cleanup FK-safe por marca de test: asignaciones → paquetes → vínculos → versiones → maestro.
 $limpiar = static function () use ($db, $P1, $P2): void {
     $db->query('DELETE FROM pdc_insumo_paquete WHERE project_id IN (?, ?)', [$P1, $P2]);
+    $db->query('DELETE FROM pdc_correcciones_motor WHERE project_id IN (?, ?)', [$P1, $P2]);
     $db->query("DELETE FROM general_paquetes_contratacion WHERE creado_por = 'test-a3'");
     $db->query('DELETE FROM pdc_insumo_vinculos WHERE project_id IN (?, ?)', [$P1, $P2]);
     $db->query('DELETE FROM pdc_presupuesto_apu_insumos WHERE project_id IN (?, ?)', [$P1, $P2]);
@@ -206,6 +207,119 @@ $cer2 = array_values(array_filter($iv2['insumos'], fn ($i) => $i['descripcionNor
 $assert((int) $cer2['paqueteId'] === $pisosId, 'HERENCIA: el insumo reaparecido conserva su paquete en el re-import.');
 $nuevo = array_values(array_filter($iv2['insumos'], fn ($i) => $i['descripcionNorm'] === 'INSUMO NUEVO A3'))[0];
 $assert($nuevo['paqueteId'] === null && (int) $nuevo['omitido'] === 0, 'Insumo nuevo queda sin asignar.');
+
+// --- A3.3 · Procedencia de la asignación -----------------------------------------------------
+// Al aplicar el sembrado se perdía de qué capa salió cada fila: sin eso no se puede auditar el
+// motor ni medir su acierto. Ahora la asignación guarda origen, confianza y evidencia.
+$svc->desasignar($P1, [['descripcionNorm' => 'PISO CERAMICO 30X30', 'unidad' => 'M2']]);
+$svc->asignar($P1, [['descripcionNorm' => 'PISO CERAMICO 30X30', 'unidad' => 'M2']], $pisosId, 'test-a3', [
+    'origen' => 'reglas',
+    'confianza' => 'alta',
+    'evidencia' => 'Regla «CERAMIC» sobre la descripción del insumo.',
+]);
+$proc = $db->query(
+    'SELECT origen, confianza, evidencia, confirmado_humano FROM pdc_insumo_paquete
+     WHERE project_id = ? AND descripcion_norm = ? AND unidad = ?',
+    [$P1, 'PISO CERAMICO 30X30', 'M2'],
+)->fetch(\PDO::FETCH_ASSOC);
+$assert($proc !== false && $proc['origen'] === 'reglas', 'La asignación guarda la capa que la produjo.');
+$assert($proc['confianza'] === 'alta', 'La asignación guarda la confianza.');
+$assert(str_contains((string) $proc['evidencia'], 'CERAMIC'), 'La asignación guarda la evidencia legible.');
+$assert((int) $proc['confirmado_humano'] === 0, 'Lo que viene del motor NO nace confirmado por un humano.');
+
+// Sin procedencia explícita, la asignación es un acto humano: es lo que hace la grilla y el asistente.
+$svc->asignar($P1, [['descripcionNorm' => 'INSUMO NUEVO A3', 'unidad' => 'UN']], $pisosId, 'test-a3');
+$manual = $db->query(
+    'SELECT origen, confianza, confirmado_humano FROM pdc_insumo_paquete
+     WHERE project_id = ? AND descripcion_norm = ? AND unidad = ?',
+    [$P1, 'INSUMO NUEVO A3', 'UN'],
+)->fetch(\PDO::FETCH_ASSOC);
+$assert($manual['origen'] === 'humano' && (int) $manual['confirmado_humano'] === 1, 'Asignar sin procedencia = decisión humana confirmada.');
+$assert($manual['confianza'] === null, 'Una decisión humana no lleva confianza: no es una apuesta.');
+
+// Aceptar una sugerencia tal cual es un ACIERTO del motor, no una decisión desde cero: la fila
+// conserva la capa que la propuso y además queda confirmada (el humano la revisó y la avaló).
+$svc->desasignar($P1, [['descripcionNorm' => 'ACERO DE REFUERZO 60000PSI', 'unidad' => 'KG']]);
+$svc->asignar($P1, [['descripcionNorm' => 'ACERO DE REFUERZO 60000PSI', 'unidad' => 'KG']], $pisosId, 'test-a3', [
+    'origen' => 'tokens', 'confianza' => 'media', 'evidencia' => 'Tokens comunes con el paquete.', 'confirmado' => true,
+]);
+$aceptada = $db->query(
+    'SELECT origen, confirmado_humano FROM pdc_insumo_paquete
+     WHERE project_id = ? AND descripcion_norm = ? AND unidad = ?',
+    [$P1, 'ACERO DE REFUERZO 60000PSI', 'KG'],
+)->fetch(\PDO::FETCH_ASSOC);
+$assert($aceptada['origen'] === 'tokens' && (int) $aceptada['confirmado_humano'] === 1, 'Sugerencia aceptada: conserva la capa Y queda confirmada.');
+
+// --- A3.3 · Correcciones del motor (alimentan la tasa de acierto) -----------------------------
+// Cambiar a mano un destino que propuso el motor es la señal más valiosa que tenemos: se registra.
+$otroId = $svc->crearPaquete('TEST A3 Otro Destino', 'suministro', 'test-a3')['paquete']['id'];
+$svc->asignar($P1, [['descripcionNorm' => 'PISO CERAMICO 30X30', 'unidad' => 'M2']], (int) $otroId, 'test-a3');
+$corr = $db->query(
+    'SELECT paquete_sugerido, paquete_elegido, capa_sugerida FROM pdc_correcciones_motor
+     WHERE project_id = ? AND descripcion_norm = ?',
+    [$P1, 'PISO CERAMICO 30X30'],
+)->fetch(\PDO::FETCH_ASSOC);
+$assert($corr !== false, 'Corregir a mano un destino del motor deja registro.');
+$assert((int) $corr['paquete_sugerido'] === $pisosId && (int) $corr['paquete_elegido'] === (int) $otroId, 'La corrección guarda de dónde a dónde se movió.');
+$assert($corr['capa_sugerida'] === 'reglas', 'La corrección recuerda qué capa se equivocó.');
+
+$corrHumana = (int) $db->query(
+    'SELECT COUNT(*) FROM pdc_correcciones_motor WHERE project_id = ? AND descripcion_norm = ?',
+    [$P1, 'INSUMO NUEVO A3'],
+)->fetchColumn();
+$assert($corrHumana === 0, 'Reasignar algo que ya era humano no cuenta como error del motor.');
+
+// --- A3.3 · Tres indicadores en el resumen ----------------------------------------------------
+// Un solo número miente: 82% por conteo y 98% por valor son la misma base. Y ninguno dice si el
+// motor acierta — eso lo dicen las correcciones.
+$res3 = $svc->resumen($P1);
+$assert(isset($res3['coberturaValor']), 'El resumen trae cobertura por valor, no solo por conteo.');
+$assert($res3['coberturaValor'] >= 0 && $res3['coberturaValor'] <= 100, 'La cobertura por valor es un porcentaje.');
+$assert(isset($res3['acierto']), 'El resumen trae la tasa de acierto del motor.');
+$assert(array_key_exists('sugerenciasAplicadas', $res3['acierto']) && array_key_exists('correcciones', $res3['acierto']), 'La tasa de acierto expone su base de cálculo.');
+$assert((int) $res3['acierto']['correcciones'] === 1, 'La corrección del cerámico cuenta contra el motor.');
+$assert((int) $res3['acierto']['sugerenciasAplicadas'] === 2, 'La base son las decisiones del motor: la aceptada + la corregida.');
+$assert(abs((float) $res3['acierto']['tasa'] - 50.0) < 0.01, 'Una aceptada y una corregida = 50% de acierto.');
+$assert($res3['acierto']['tasa'] === null || ($res3['acierto']['tasa'] >= 0 && $res3['acierto']['tasa'] <= 100), 'La tasa es null (sin datos) o un porcentaje.');
+
+// --- A3.3 · Auto-asignación acotada y re-sembrado no destructivo ------------------------------
+// El motor puede despachar solo la cola larga barata de confianza alta; lo caro y lo dudoso siempre
+// pasa por un humano. Y nada de lo que un humano decidió se toca jamás.
+$svc->desasignar($P1, [
+    ['descripcionNorm' => 'PISO CERAMICO 30X30', 'unidad' => 'M2'],
+    ['descripcionNorm' => 'ACERO DE REFUERZO 60000PSI', 'unidad' => 'KG'],
+    ['descripcionNorm' => 'INSUMO NUEVO A3', 'unidad' => 'UN'],
+]);
+$plan = $svc->planAutoAsignacion($P1, null, 1000000);
+$assert($plan !== null && isset($plan['auto'], $plan['revision']), 'planAutoAsignacion separa lo automático de lo que va a revisión.');
+foreach ($plan['auto'] as $a) {
+    $assert($a['confianza'] === 'alta', 'Solo se auto-asigna confianza alta: ' . $a['descripcionNorm']);
+    $assert($a['valorTotal'] < 1000000, 'Solo se auto-asigna por debajo del umbral: ' . $a['descripcionNorm']);
+}
+$caro = array_filter($plan['revision'], static fn ($r) => $r['motivo'] === 'valor');
+foreach ($caro as $r) {
+    $assert($r['valorTotal'] >= 1000000, 'Lo que supera el umbral va a revisión por valor.');
+}
+
+// Aplicar el plan escribe SOLO la parte automática, y con su procedencia.
+$aplicado = $svc->aplicarAutoAsignacion($P1, null, 1000000, 'test-a3');
+$assert($aplicado !== null && $aplicado['asignados'] === count($plan['auto']), 'Aplicar escribe exactamente lo que el plan proponía.');
+if ($plan['auto'] !== []) {
+    $primera = $plan['auto'][0];
+    $fila = $db->query(
+        'SELECT origen, confianza, confirmado_humano FROM pdc_insumo_paquete
+         WHERE project_id = ? AND descripcion_norm = ? AND unidad = ?',
+        [$P1, $primera['descripcionNorm'], $primera['unidad']],
+    )->fetch(\PDO::FETCH_ASSOC);
+    $assert($fila !== false && $fila['origen'] !== 'humano', 'La auto-asignación guarda la capa del motor.');
+    $assert((int) $fila['confirmado_humano'] === 0, 'La auto-asignación NO nace confirmada: el humano aún no la vio.');
+}
+
+// Re-sembrado: lo humano es intocable; lo automático puede proponerse de nuevo.
+$svc->asignar($P1, [['descripcionNorm' => 'ACERO DE REFUERZO 60000PSI', 'unidad' => 'KG']], $pisosId, 'test-a3');
+$plan2 = $svc->planAutoAsignacion($P1, null, 1000000);
+$claves = array_map(static fn ($a) => $a['descripcionNorm'], array_merge($plan2['auto'], $plan2['revision']));
+$assert(!in_array('ACERO DE REFUERZO 60000PSI', $claves, true), 'Un insumo con decisión humana no vuelve a proponerse.');
 
 echo $failures === [] ? "=== OK ===\n" : '=== ' . count($failures) . " FAILED ===\n";
 $limpiar();

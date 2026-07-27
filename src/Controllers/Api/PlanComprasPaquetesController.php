@@ -118,6 +118,44 @@ class PlanComprasPaquetesController
         $this->ok($r);
     }
 
+    /** GET /plan-compras/api/paquetes/plan-auto?versionId=&umbral= — preview, no escribe. */
+    public function planAuto(): void
+    {
+        $projectId = $this->guardLectura();
+        if ($projectId === null) {
+            return;
+        }
+        $r = $this->service->planAutoAsignacion($projectId, $this->versionIdParam(), $this->umbralParam());
+        if ($r === null) {
+            $this->fail('NO_VERSION', 'El proyecto no tiene un presupuesto importado.', 404);
+            return;
+        }
+        $this->ok($r);
+    }
+
+    /** POST /plan-compras/api/paquetes/auto-asignar {versionId?, umbral?} — aplica solo lo seguro. */
+    public function autoAsignar(): void
+    {
+        $projectId = $this->guardEscritura();
+        if ($projectId === null) {
+            return;
+        }
+        $body = $this->body();
+        $versionId = filter_var($body['versionId'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        $umbral = filter_var($body['umbral'] ?? null, FILTER_VALIDATE_FLOAT, ['options' => ['min_range' => 0]]);
+        $r = $this->service->aplicarAutoAsignacion(
+            $projectId,
+            $versionId === false || $versionId === null ? null : (int) $versionId,
+            $umbral === false || $umbral === null ? null : (float) $umbral,
+            $this->usuario(),
+        );
+        if ($r === null) {
+            $this->fail('NO_VERSION', 'El proyecto no tiene un presupuesto importado.', 404);
+            return;
+        }
+        $this->ok($r);
+    }
+
     /** POST /plan-compras/api/paquetes  {nombre, tipoNegociacion} */
     public function crear(): void
     {
@@ -127,15 +165,17 @@ class PlanComprasPaquetesController
         $body = $this->body();
         $nombre = is_string($body['nombre'] ?? null) ? $body['nombre'] : '';
         $tipo = is_string($body['tipoNegociacion'] ?? null) ? $body['tipoNegociacion'] : '';
-        $r = $this->service->crearPaquete($nombre, $tipo, $this->usuario());
+        // La modalidad es opcional: sin ella el paquete nace como 'contrato' (proceso completo).
+        $modalidad = is_string($body['modalidad'] ?? null) && $body['modalidad'] !== '' ? $body['modalidad'] : 'contrato';
+        $r = $this->service->crearPaquete($nombre, $tipo, $this->usuario(), $modalidad);
         if (!$r['ok']) {
-            $this->fail('PAQUETE_INVALIDO', 'Nombre vacío o tipo de negociación inválido.', 422);
+            $this->fail('PAQUETE_INVALIDO', 'Nombre vacío, o tipo de negociación / modalidad inválidos.', 422);
             return;
         }
         $this->ok(['paquete' => $r['paquete']]);
     }
 
-    /** POST /plan-compras/api/paquetes/asignar  {insumos:[{descripcionNorm,unidad}], paqueteId} */
+    /** POST /plan-compras/api/paquetes/asignar  {insumos:[...], paqueteId, procedencia?} */
     public function asignar(): void
     {
         $projectId = $this->guardEscritura();
@@ -149,7 +189,10 @@ class PlanComprasPaquetesController
             $this->fail('PAQUETE_INVALIDO', 'paqueteId inválido.', 422);
             return;
         }
-        $r = $this->service->asignar($projectId, $insumos, (int) $paqueteId, $this->usuario());
+        // Aceptar una sugerencia conserva la capa que la propuso (cuenta como acierto del motor);
+        // elegir un destino a mano llega sin procedencia y es una decisión humana desde cero.
+        $procedencia = is_array($body['procedencia'] ?? null) ? $body['procedencia'] : [];
+        $r = $this->service->asignar($projectId, $insumos, (int) $paqueteId, $this->usuario(), $procedencia);
         if (!$r['ok']) {
             $this->fail('PAQUETE_INVALIDO', 'El paquete no existe o está inactivo.', 422);
             return;
@@ -216,6 +259,13 @@ class PlanComprasPaquetesController
             return null;
         }
         return $projectId;
+    }
+
+    /** ?umbral=N validado, o null (el servicio usa el umbral acordado por defecto). */
+    private function umbralParam(): ?float
+    {
+        $umbral = filter_var($_GET['umbral'] ?? null, FILTER_VALIDATE_FLOAT, ['options' => ['min_range' => 0]]);
+        return $umbral === false || $umbral === null ? null : (float) $umbral;
     }
 
     /** ?versionId=N validado, o null (el servicio usa la versión activa). */

@@ -212,6 +212,9 @@ $router->post('/plan-compras/api/paquetes', [\App\Controllers\Api\PlanComprasPaq
 $router->post('/plan-compras/api/paquetes/asignar', [\App\Controllers\Api\PlanComprasPaquetesController::class, 'asignar']);
 $router->post('/plan-compras/api/paquetes/omitir', [\App\Controllers\Api\PlanComprasPaquetesController::class, 'omitir']);
 $router->post('/plan-compras/api/paquetes/desasignar', [\App\Controllers\Api\PlanComprasPaquetesController::class, 'desasignar']);
+// A3.3 — auto-asignación acotada: preview de qué despacharía el motor solo y qué deja al humano.
+$router->get('/plan-compras/api/paquetes/plan-auto', [\App\Controllers\Api\PlanComprasPaquetesController::class, 'planAuto']);
+$router->post('/plan-compras/api/paquetes/auto-asignar', [\App\Controllers\Api\PlanComprasPaquetesController::class, 'autoAsignar']);
 // Api/PDC Plantillas
 $router->get('/api/pdc/plantillas', [\App\Controllers\Api\PdcPlantillaController::class, 'list']);
 $router->get('/api/pdc/plantillas/{id}', [\App\Controllers\Api\PdcPlantillaController::class, 'show']);
