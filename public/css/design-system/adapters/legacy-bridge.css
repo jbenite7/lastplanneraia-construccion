@@ -265,76 +265,27 @@
     border-width: 1px;
   }
 
-  /* Los cinco bloques de abajo NO son responsive de ancho: acotan la altura
-     de los menus de semana por alto de ventana, asi que siguen dentro del
-     alcance desktop-only y se mueven tal cual.
-
-     HALLAZGO, para el controlador: hoy estan MUERTOS. El brief de este
-     tramo los daba por vivos porque
-     public/js/cargarDatosGeneralesPagina2.js:433-441 rellena
-     #semanasProyectoMenu, #programa_generalMenu, #programacion_intermediaMenu
-     y #programacion_semanalMenu — pero cada inyeccion esta guardada por un
-     `if (document.getElementById(...))` y ninguno de los cinco ids existe ya
-     en el markup: los aportaba la navbar que F0 retiro. Medido: cero
-     elementos para los cinco ids en 18 rutas autenticadas a 1180x820 dark
-     (las mismas 10 del guardian de canvas mas /proyectos, /plan-compras,
-     /dashboard/escalamientos, /internal/design-system, cic/cnc/cnp y
-     /programa-general-actualizar). #indicadoresMenu, que el brief si daba
-     por muerto, no se distingue en nada de los otros cuatro.
-     Se mueven en vez de borrarse porque el brief lo prohibe explicitamente
-     («no se borran») y la decision de borrar es del controlador. */
-  @media screen and (max-height: 700px) {
-    #semanasProyectoMenu,
-    #programa_generalMenu,
-    #programacion_intermediaMenu,
-    #programacion_semanalMenu,
-    #indicadoresMenu {
-      overflow: auto;
-      max-height: 200px;
-    }
-  }
-
-  @media screen and (min-height: 701px) and (max-height: 800px) {
-    #semanasProyectoMenu,
-    #programa_generalMenu,
-    #programacion_intermediaMenu,
-    #programacion_semanalMenu,
-    #indicadoresMenu {
-      overflow: auto;
-      max-height: 400px;
-    }
-  }
-
-  @media screen and (min-height: 801px) and (max-height: 900px) {
-    #semanasProyectoMenu,
-    #programa_generalMenu,
-    #programacion_intermediaMenu,
-    #programacion_semanalMenu,
-    #indicadoresMenu {
-      overflow: auto;
-      max-height: 450px;
-    }
-  }
-
-  @media screen and (min-height: 901px) and (max-height: 1080px) {
-    #semanasProyectoMenu,
-    #programa_generalMenu,
-    #programacion_intermediaMenu,
-    #programacion_semanalMenu,
-    #indicadoresMenu {
-      overflow: auto;
-      max-height: 500px;
-    }
-  }
-
-  @media screen and (min-height: 901px) {
-    #semanasProyectoMenu,
-    #programa_generalMenu,
-    #programacion_intermediaMenu,
-    #programacion_semanalMenu,
-    #indicadoresMenu {
-      overflow: auto;
-      max-height: 600px;
-    }
-  }
+  /* F1 Task 5a-bis (fix): aqui vivian cinco `@media (max-height)` que acotaban
+     la altura de los menus de semana (#semanasProyectoMenu,
+     #programa_generalMenu, #programacion_intermediaMenu,
+     #programacion_semanalMenu, #indicadoresMenu). BORRADOS: estaban muertos y
+     el tramo anterior los habia movido aqui en vez de podarlos porque su brief
+     lo prohibia. Evidencia, por si alguien los echa de menos:
+      - Ningun markup del repo crea esos cinco ids. El unico JS que los nombra
+        es public/js/cargarDatosGeneralesPagina2.js: en :392, :405 y :418
+        escribe ids CON sufijo de semana (`programa_generalMenu` + numero)
+        sobre los `<a class='dropdown-item'>`, y en :433-441 busca los ids SIN
+        sufijo del contenedor, guardado ademas por `if
+        (document.getElementById(...))`. Ese contenedor lo aportaba la navbar
+        que F0 retiro; y aunque existiera, `#programa_generalMenu` jamas
+        casaria `programa_generalMenu5`.
+      - Medido en el navegador (1180x820, dark, sesion real): cero elementos
+        para los cinco ids en /programa-general, /contratos,
+        /listado-actividades, /pdc, /programacion-semanal, /proyectos y
+        /internal/design-system, ademas de las 18 rutas que ya habia medido el
+        tramo anterior.
+      - Nunca llegaron a ejecutarse ni cuando habia markup: el bloque
+        901-1080px (500px) quedaba integramente tapado por el min-height:901px
+        (600px) que le seguia, con los mismos selectores y la misma
+        especificidad. */
 }
