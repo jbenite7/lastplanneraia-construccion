@@ -63,20 +63,16 @@
 /* reset y utilities absorbidos por public/css/design-system/foundation.css y
    public/css/design-system/core.css (@layer utilities) en F1 Task 4. */
 
-/* F1 Task 4 BLOQUEADO: body/h1-h6/.dropdown-item se quedan en module.base.
-   Medido (no razonado) con design-system-body-canvas-dark.mjs y
-   getComputedStyle en vivo: moverlos al @layer base canonico de
-   foundation.css pierde contra .aia-shell (core.css, @layer components; su
-   shorthand `background: var(--ds-shell-background)` no fija
-   background-color) y, en /pdc, /subcontratistas, /contratos,
-   /listado-actividades y /programa-general-actualizar, contra Bootstrap
-   (@layer vendor) porque esas vistas enlazan public/css/handsontable-module.css
-   crudo (sin layer) antes del agregador y ese archivo declara
-   `@layer base {}`/`@layer components {}` sin la sentencia de orden previa,
-   fijando la posicion global de esas capas por delante de `vendor`. Arreglo
-   real: .aia-shell en core.css y/o el orden de <link> en esas 5 vistas,
-   ambos fuera de los 3 archivos de destino de esta tarea. Ver
-   f1-task-4-report.md. */
+/* F1 Task 4 BLOQUEADO, segundo intento: se retiraron los 4 <link> crudo
+   duplicados a handsontable-module.css (ver views/pdc, contratos,
+   listado-actividades, programa-general-actualizar) y se reintento absorber
+   este bloque a foundation.css @layer base. Persiste un bloqueo distinto y
+   uniforme en las 5 rutas: .aia-shell (core.css, @layer components) gana por
+   capa sobre base (correcto) pero su shorthand `background:
+   var(--ds-shell-background)` no fija background-color, asi que
+   getComputedStyle(body).backgroundColor cae a transparente. Arreglo real:
+   .aia-shell en core.css @layer components, fuera del destino autorizado de
+   esta tarea. Ver f1-task-4-report.md. */
 @layer base {
   body {
     font-size: 1rem;

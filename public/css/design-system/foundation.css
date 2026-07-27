@@ -36,23 +36,25 @@
   }
 }
 
-/* F1 Task 4 BLOQUEADO (no absorbido): body/h1-h6/.dropdown-item de
-   public/css/styles.css (@layer base) se quedan en module.base (ver
-   styles.css). Medido, no razonado, con design-system-body-canvas-dark.mjs y
-   getComputedStyle en vivo (/pdc, /indicadores): moverlos a este @layer base
-   pierde contra dos reglas ajenas a los 3 archivos de esta tarea:
-   (a) .aia-shell (core.css, @layer components) tiene mayor prioridad de capa
-   que base y su shorthand `background: var(--ds-shell-background)` no fija
-   background-color (solo background-image), asi que body cae a transparente
-   en vez del canvas oscuro en rutas sin CSS de modulo propio;
-   (b) public/css/handsontable-module.css se enlaza crudo (sin layer) en
-   views/pdc/pdc.view.php, views/subcontratistas/subcontratistas.view.php,
-   views/contratos/contratos.view.php, views/listado-actividades/*.php y
-   views/programa-general-actualizar/*.php ANTES del agregador, y declara
-   `@layer base {}`/`@layer components {}` sin la sentencia de orden previa
-   -- fija la posicion global de esas dos capas anticipadamente y deja
-   `vendor` (Bootstrap) por encima de `base` en esas rutas: pierde
-   background-color, color, font-weight y letter-spacing de body/h1-h6 contra
-   los valores por defecto de Bootstrap. Arreglarlo exige tocar core.css
-   (.aia-shell) y/o el orden de <link> en 5 vistas, fuera del alcance de las 3
-   rutas de destino de esta tarea. Ver f1-task-4-report.md. */
+/* F1 Task 4 BLOQUEADO (no absorbido), segundo intento: body/h1-h6/
+   .dropdown-item de public/css/styles.css (@layer base) se quedan en
+   module.base (ver styles.css). El coordinador autorizo retirar el <link>
+   crudo a handsontable-module.css de views/pdc/pdc.view.php,
+   views/contratos/contratos.view.php,
+   views/listado-actividades/listadoActividades.view.php y
+   views/programa-general-actualizar/programaGeneralActualizar.view.php (ese
+   archivo ya llega via aia-design-system.css en layer(vendor); el link
+   crudo duplicaba la cascada y corrompia el orden global de @layer
+   base/components en esas 4 rutas). Con los duplicados fuera, se reintento
+   la absorcion y SE MIDIO de nuevo: la causa (a) del intento anterior
+   desaparece (ya no compite Bootstrap/vendor), pero la causa (b) persiste,
+   ahora uniforme en las 5 rutas (incl. /pdc, que antes quedaba enmascarada
+   por la corrupcion de capas): .aia-shell (core.css, @layer components) tiene
+   mayor prioridad de capa que base (correcto por diseno DS-006) y su
+   shorthand `background: var(--ds-shell-background)` no fija
+   background-color (solo background-image) -- getComputedStyle(body)
+   .backgroundColor cae a transparente en /pdc, /indicadores, /profesionales,
+   /subcontratistas y /control-cambios aunque la superficie se vea oscura por
+   el gradiente. Arreglarlo exige tocar .aia-shell en core.css @layer
+   components, fuera del destino autorizado de esta tarea (solo su @layer
+   utilities). Ver f1-task-4-report.md. */

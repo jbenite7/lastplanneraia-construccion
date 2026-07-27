@@ -9,7 +9,7 @@
 	<?= \App\View\Components\DesignSystemHeadComponent::render(true) ?>
 	<script type="text/javascript" src="/js/linksComunesHead2.js?v=20260711listadoCssPurge3" charset="utf-8"></script>
 	<link rel="stylesheet" href="/vendor/handsontable/handsontable.full.min.css?v=14.6.1" />
-	<link rel="stylesheet" href="/css/handsontable-module.css?v=20260711foundation5" />
+	<!-- handsontable-module.css llega vía aia-design-system.css (layer vendor); el link crudo duplicaba la cascada. -->
 	<link rel="stylesheet" href="/css/handsontable-header-global.css?v=20260313" />
 	<link rel="stylesheet" href="/css/listado-actividades.css?v=20260711listadoSprint2" />
 </head>
