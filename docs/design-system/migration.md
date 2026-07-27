@@ -24,7 +24,7 @@ Un modulo esta migrado cuando cumple:
 - No agrega CSS inline visible salvo excepcion.
 - No agrega hex sueltos salvo excepcion.
 - Funciona en desktop y mobile.
-- Funciona en linen y dark.
+- Funciona en dark (unico tema; linen fue retirado del producto en F0 del goal `dark-mode-todos-los-modulos`).
 - Mantiene focus visible y targets principales de 44px.
 - No expone run IDs, payloads ni trazas crudas a usuarios no admin.
 - Tiene evidencia de navegador o Playwright.
@@ -37,8 +37,8 @@ Un modulo esta migrado cuando cumple:
 - Contratos tiene contrato de navegador y presupuesto cero por ruta en `exceptions.json`; sus reglas propias viven en `public/css/contratos.css`.
 - Listado de Actividades tiene contrato de navegador y presupuesto cero por ruta en `exceptions.json`; sus reglas propias viven en `public/css/listado-actividades.css`.
 - `public/js/modules/aia_ui/theme.js` tambien tiene presupuesto cero para evitar deuda visual en la API de tema.
-- Programacion Intermedia y Programacion Semanal tienen contrato base cubierto por Playwright: carga de assets canonicos, tema linen/dark, ausencia de overflow de pagina, grilla desktop alineada al contenedor y fallback mobile presente.
-- PDC, Contratos y Listado de Actividades tienen contrato base cubierto por Playwright: carga de assets canonicos, tema linen/dark, ausencia de overflow de pagina y tabla/grilla visible en desktop/mobile.
+- Programacion Intermedia y Programacion Semanal tienen contrato base cubierto por Playwright: carga de assets canonicos, tema dark, ausencia de overflow de pagina, grilla desktop alineada al contenedor y fallback mobile presente.
+- PDC, Contratos y Listado de Actividades tienen contrato base cubierto por Playwright: carga de assets canonicos, tema dark, ausencia de overflow de pagina y tabla/grilla visible en desktop/mobile.
 - Programacion Intermedia tiene manifiesto (`programacion-intermedia.json`), goldens dark 1180x820/1440x900 y theming por tokens con variantes dark; su deuda restante (skin claro del editor Tom Select y `!important` heredados) queda inventariada en las excepciones del manifiesto. Aun no declara presupuesto cero por ruta en `exceptions.json`.
 - PS aun no se declara migrado en `exceptions.json`; conserva deuda legacy de estilos embebidos, hex y radios que debe reducirse por lote antes de cerrar el objetivo.
 

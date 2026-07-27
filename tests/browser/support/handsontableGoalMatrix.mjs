@@ -4,7 +4,9 @@ export const HANDSONTABLE_GOAL_VIEWPORTS = [
   { name: 'desktop', width: 1440, height: 900 },
 ];
 
-export const HANDSONTABLE_GOAL_THEMES = ['dark', 'linen'];
+// F0/Task 9: dark es el unico tema. El array sobrevive como marcador del eje
+// "por cada tema gobernado" (hoy uno solo) para los tres specs que lo consumen.
+export const HANDSONTABLE_GOAL_THEMES = ['dark'];
 
 const DEFAULT_SELECTORS = {
   hot: '.handsontable',
@@ -24,9 +26,12 @@ export async function setHandsontableGoalTheme(page, theme) {
     throw new Error(`Unsupported Handsontable goal theme: ${theme}`);
   }
 
-  await page.evaluate((nextTheme) => {
-    window.AiaDesignSystem?.setTheme(nextTheme);
-  }, theme);
+  // F0/Task 8: theme.js ya no expone setTheme; dark se aplica sin conmutacion.
+  // Esta llamada solo confirma el estado en vez de forzarlo.
+  await page.waitForFunction(
+    (expected) => document.documentElement.dataset.aiaTheme === expected,
+    theme,
+  );
 }
 
 export async function measureHandsontableGoalMatrix(page, selectors = {}) {

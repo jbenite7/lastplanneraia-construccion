@@ -40,8 +40,9 @@ test('laboratory families reflow at 320 CSS px without fragmenting words', async
     await page.locator(`[data-lab-family-link][data-family-target="${family}"]`).click();
     const scope = `[data-family="${family}"]`;
     await expect(page.locator(scope)).toBeVisible();
-    for (const theme of ['dark', 'linen']) {
-      await page.evaluate((value) => window.AiaDesignSystem.setTheme(value), theme);
+    // F0/Task 9: dark es el unico tema, aplicado sin conmutacion. El bucle
+    // sobrevive como marcador de "sobre cada tema gobernado" (hoy uno solo).
+    for (const theme of ['dark']) {
       const state = await reflowState(page, scope);
       expect(state.overflow, `${family}:${theme}`).toBeLessThanOrEqual(1);
       expect(state.violations, `${family}:${theme}`).toEqual([]);
@@ -49,12 +50,11 @@ test('laboratory families reflow at 320 CSS px without fragmenting words', async
   }
 });
 
-test('Programa General pilot reflows at 320 CSS px in both themes', async ({ page }) => {
+test('Programa General pilot reflows at 320 CSS px in dark', async ({ page }) => {
   await openAsAdmin(page, '/programa-general');
   await page.waitForFunction(() => Boolean(document.querySelector('#mobile-card-view')));
   await expect(page.locator('main#contenido')).toBeVisible();
-  for (const theme of ['dark', 'linen']) {
-    await page.evaluate((value) => window.AiaDesignSystem.setTheme(value), theme);
+  for (const theme of ['dark']) {
     const state = await reflowState(page, 'main#contenido');
     expect(state.overflow, `programa-general:${theme}`).toBeLessThanOrEqual(1);
     expect(state.violations, `programa-general:${theme}`).toEqual([]);

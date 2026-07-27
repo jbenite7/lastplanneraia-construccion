@@ -173,9 +173,9 @@
   }
 
   /* Panel del menú de cuenta: el mismo reset global deja el panel, su
-     encabezado de identidad y las opciones sin insets — y "Modo linen"
-     (aia-theme-switch) trae un padding propio distinto. Un solo padding
-     uniforme alinea las tres opciones a la izquierda. */
+     encabezado de identidad y las opciones sin insets — y el selector de
+     tema (aia-theme-switch) trae un padding propio distinto. Un solo
+     padding uniforme alinea las tres opciones a la izquierda. */
   body.aia-shell--sidebar .aia-sidebar__account [data-aia-menu-panel] {
     padding: var(--ds-space-2);
   }

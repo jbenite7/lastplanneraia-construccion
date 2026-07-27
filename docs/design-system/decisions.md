@@ -25,8 +25,8 @@ Las variantes permanecen como `candidate` hasta aprobación en el laboratorio.
 | DS-018 | Adaptadores de terceros | Cada vendor conserva su versión inventariada y recibe una única skin central tokenizada; no se permiten skins locales ni estilos inline | approved |
 | DS-019 | Elementos de analítica | Toda figura incluye título, resumen, leyenda textual y tabla equivalente; el color no es la única vía y no se migra BI runtime | approved |
 | DS-020 | Primitivas canónicas | Icono, búsqueda, paginación, progreso, región viva, menú y popover reutilizan contratos ejecutables del núcleo, sin variantes locales | approved |
-| DS-021 | Evidencia visual | El laboratorio versiona 60 goldens deterministas por familia, dark/linen y tres viewports; CI solo los compara y nunca los regenera | approved |
-| DS-022 | Piloto | Programa General versiona 6 goldens sanitizados, ejecuta axe en la misma matriz y mantiene acciones y estados dentro de sus contenedores | approved |
+| DS-021 | Evidencia visual | El laboratorio versiona 20 goldens deterministas por familia, dark y dos viewports; CI solo los compara y nunca los regenera | approved |
+| DS-022 | Piloto | Programa General versiona 3 goldens sanitizados, ejecuta axe en la misma matriz y mantiene acciones y estados dentro de sus contenedores | approved |
 | DS-023 | Transición de tema | Los chips semánticos aplican inmediatamente superficie, borde y texto del tema destino; solo pueden animar transform y sombra, nunca color o fondo | candidate |
 | DS-024 | Estado de revisión | El laboratorio muestra el estado del candidato activo que renderiza; una base aprobada no aprueba automáticamente una variante visual distinta | candidate |
 | DS-025 | Acciones por tema | La acción primaria aplica de inmediato superficie, borde y texto del tema destino; solo puede animar transform y sombra, nunca color o fondo | candidate |
@@ -34,5 +34,6 @@ Las variantes permanecen como `candidate` hasta aprobación en el laboratorio.
 | DS-027 | Shell global | El sidebar canónico colapsable reemplaza al navbar superior como navegación global de la app (piloto: Programación Intermedia): rail visible colapsado por defecto en vistas de grilla con persistencia local, cambio de semana en el chip de la context-bar y grupos filtrados por rol en servidor | approved |
 | DS-028 | Viewport accesible | La meta viewport compartida nunca bloquea el zoom del usuario (`width=device-width, initial-scale=1.0`, sin `user-scalable=no` ni `maximum-scale`); el modo tablet conserva su escala propia con `user-scalable=yes` (WCAG 1.4.4, 2026-07-22) | approved |
 | DS-029 | Colapsado canónico | El estado colapsado pulido del sidebar (sin-scroll, píldora de label, separadores, iconos 20px) es primitiva de navigation.css versionada por el laboratorio; el lab captura el rail colapsado por defecto y todos los consumidores lo heredan | approved |
+| DS-030 | Retirada de `linen` | 2026-07-25: `linen` queda retirado del producto (F0 del goal `dark-mode-todos-los-modulos`, ver `goals/dark-mode-todos-los-modulos/facts.md`); dark es el único tema, sin conmutador. Un solo tema reduce a la mitad la superficie de tokens, gates y evidencia, y es coherente con el alcance desktop-dark de `AGENTS.md` | approved |
 
 Cada aprobación futura registra evidencia, fecha y versión.

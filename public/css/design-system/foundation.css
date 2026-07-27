@@ -16,3 +16,115 @@
     hyphens: none;
   }
 }
+
+/* F1 Task 4: absorbido desde public/css/styles.css (@layer reset). box-sizing
+   ya lo cubre la regla :where(*, *::before, *::after) de arriba (mismo valor,
+   borrado en origen en lugar de duplicarlo); margin/padding no tenian
+   equivalente en el design system. */
+@layer reset {
+  * {
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    overflow: -moz-scrollbars-vertical;
+    overflow-y: auto; /* Fix locked scroll */
+    font-size: 100%; /* Base 16px */
+    -webkit-font-smoothing: antialiased; /* Crisp text for macOS */
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* F1 Task 5a: absorbido desde public/css/styles.css (@layer components, que
+   resolvia como module.components porque los dos entrypoints importan
+   styles.css con layer(module)). Es contencion de ancho de la app entera:
+   fundacion pura, no un componente. Se coloca en @layer base y no en el
+   bloque @layer reset de arriba porque base va despues de vendor en el orden
+   canonico DS-006 y reset va antes: en reset, cualquier regla de Bootstrap
+   sobre html/body le ganaria. No entra en conflicto con el
+   `html { overflow-y: auto }` del reset: overflow-x y overflow-y son
+   propiedades distintas y, al no ser ninguna de las dos `visible`, el par
+   (hidden, auto) se aplica tal cual sin que ninguna se promueva a `auto`.
+   Medido: es el unico consumidor layered de overflow-x sobre html/body en
+   todo public/css; el otro (login-brand-unified.css:11) no lleva capa y
+   tiene su propio sujeto (body.login-brand-page), asi que gana de todos
+   modos por ser unlayered y no depende de esta regla. */
+@layer base {
+  /* Prevent global horizontal scroll */
+  html,
+  body {
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+/* F1 shell-background: absorbido desde public/css/styles.css (@layer base),
+   bloqueado dos veces en F1 Task 4 (ver f1-task-4-report.md). La causa raiz
+   era .aia-shell (core.css, @layer components) fijando solo background-image
+   via el shorthand `background: var(--ds-shell-background)`, sin
+   background-color -- getComputedStyle(body).backgroundColor caia a
+   transparente en rutas sin CSS de modulo propio, aunque la superficie se
+   viera oscura por el gradiente. Resuelto en core.css agregando
+   `background-color: var(--ds-active-bg-canvas)` a .aia-shell (ver
+   f1-shell-background-report.md). Con eso, body ya no depende de que este
+   bloque gane la cascada: .aia-shell (components, capa superior) pinta el
+   mismo color solido para las 21 vistas que llevan esa clase; este bloque
+   solo sigue siendo necesario tal cual para los 2 <body> restantes que no
+   llevan .aia-shell hoy (views/plan-compras/app.view.php no importa
+   styles.css en absoluto; views/dashboard/escalamientos.php pinta body via
+   un <style> propio sin capa, que gana sobre cualquier @layer por spec) --
+   ninguno de los dos depende de esta regla, pero se mueve igual para no
+   dejar el modulo.base con contenido colgante. */
+@layer base {
+  body {
+    font-size: 1rem;
+    font-family: var(--font-main);
+    background-color: var(--surface-bg);
+    color: var(--text-main);
+    line-height: 1.5;
+  }
+
+  /* Typography Overrides */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-weight: 600;
+    letter-spacing: -0.02em; /* Tight tracking like iOS */
+    color: var(--text-main);
+  }
+
+  a.dropdown-item:hover,
+  .dropdown-item:hover {
+    text-decoration: none;
+    background-color: var(--surface-bg) !important; /* F1 Task 3: fondo oscuro (canvas) */
+    /* F1 Task 3: --primary (azul Apple literal) sobre el canvas oscuro mide
+       4.09:1, bajo el 4.5:1 de AA para texto normal. --ds-active-action-primary-hover
+       es el acento que el DS ya designa para estados hover sobre fondo oscuro y
+       mide 9.02:1 aqui. Medido, no estimado (ver f1-task-3-report.md). No se
+       retiraron los !important al mover el bloque: aunque ahora vive en
+       @layer base (antes de components/module en el orden canonico) en vez
+       de module.base, retirarlos es un cambio de comportamiento sin
+       verificacion en vivo propia de esta tarea -- fuera de alcance, ver
+       f1-shell-background-report.md. */
+    color: var(--ds-active-action-primary-hover) !important;
+  }
+
+  .dropdown-item {
+    font-family: var(--font-main);
+    border-radius: var(--radius-sm);
+    margin: 2px 4px;
+    width: auto;
+    color: var(--text-main);
+  }
+
+  .dropdown-item.active {
+    background-color: var(--primary-light);
+    font-weight: 500;
+    color: var(--text-inverse);
+  }
+}

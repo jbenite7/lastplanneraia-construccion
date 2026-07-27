@@ -17,8 +17,7 @@
         "--ds-color-domain-*"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"brand-palette\"]"
     },
@@ -36,8 +35,7 @@
         "--ds-color-state-*"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"semantic-colors\"]"
     },
@@ -56,8 +54,7 @@
         "--ds-type-*"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"typography\"]"
     },
@@ -76,8 +73,7 @@
         "--ds-density-*"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"spacing-density\"]"
     },
@@ -95,8 +91,7 @@
         ".aia-icon"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"iconography\"]"
     },
@@ -114,8 +109,7 @@
         ".aia-shell"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"application-shell\"]"
     },
@@ -124,7 +118,7 @@
       "family": "shell-navigation",
       "label": "Marca AIA completa",
       "sources": [
-        "src/View/Components/NavbarComponent.php"
+        "src/View/Components/DesignSystemComponent.php"
       ],
       "catalogIds": [
         "navigation",
@@ -134,29 +128,9 @@
         ".aia-navigation"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"brand-lockup\"]"
-    },
-    {
-      "id": "top-navbar",
-      "family": "shell-navigation",
-      "label": "Navbar superior",
-      "sources": [
-        "src/View/Components/NavbarComponent.php"
-      ],
-      "catalogIds": [
-        "navigation"
-      ],
-      "styleApi": [
-        ".aia-navigation__global"
-      ],
-      "themes": [
-        "dark",
-        "linen"
-      ],
-      "labSelector": "[data-ui-group=\"top-navbar\"]"
     },
     {
       "id": "menu-toggle",
@@ -173,8 +147,7 @@
         ".aia-btn"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"menu-toggle\"]"
     },
@@ -193,8 +166,7 @@
         ".aia-page-header__context"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"context-bar\"]"
     },
@@ -212,8 +184,7 @@
         ".aia-page-header__breadcrumb"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"project-breadcrumb\"]"
     },
@@ -232,8 +203,7 @@
         ".aia-navigation__links"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"navigation-drawer\"]"
     },
@@ -251,8 +221,7 @@
         "[data-shell-destination]"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"sidebar-item\"]"
     },
@@ -271,8 +240,7 @@
         ".aia-menu"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"user-menu\"]"
     },
@@ -292,8 +260,7 @@
         ".aia-chip"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"notification-menu\"]"
     },
@@ -313,29 +280,9 @@
         ".aia-select"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"project-switcher\"]"
-    },
-    {
-      "id": "theme-switcher",
-      "family": "shell-navigation",
-      "label": "Cambio de tema",
-      "sources": [
-        "views/auth/partials/auth-theme-switch.php"
-      ],
-      "catalogIds": [
-        "button"
-      ],
-      "styleApi": [
-        ".aia-btn"
-      ],
-      "themes": [
-        "dark",
-        "linen"
-      ],
-      "labSelector": "[data-ui-group=\"theme-switcher\"]"
     },
     {
       "id": "week-badge",
@@ -351,8 +298,7 @@
         ".aia-chip"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"week-badge\"]"
     },
@@ -370,8 +316,7 @@
         ".aia-btn"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"logout-action\"]"
     },
@@ -389,8 +334,7 @@
         ".aia-page-header"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"page-header\"]"
     },
@@ -408,8 +352,7 @@
         ".aia-section"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"content-section\"]"
     },
@@ -428,8 +371,7 @@
         ".aia-panel"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"panel-surface\"]"
     },
@@ -448,8 +390,7 @@
         ".aia-page"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"responsive-layout\"]"
     },
@@ -467,8 +408,7 @@
         ".aia-btn"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"primary-button\"]"
     },
@@ -486,8 +426,7 @@
         ".aia-btn--secondary"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"secondary-button\"]"
     },
@@ -507,8 +446,7 @@
         "--ds-color-state-critical-*"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"destructive-button\"]"
     },
@@ -528,8 +466,7 @@
         ".aia-icon"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"icon-button\"]"
     },
@@ -548,8 +485,7 @@
         ".aia-btn"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"floating-action\"]"
     },
@@ -567,8 +503,7 @@
         ".aia-action-group"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"action-group\"]"
     },
@@ -588,8 +523,7 @@
         ".aia-btn"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"action-dropdown\"]"
     },
@@ -607,8 +541,7 @@
         ".aia-input"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"text-input\"]"
     },
@@ -626,8 +559,7 @@
         ".aia-textarea"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"textarea\"]"
     },
@@ -645,8 +577,7 @@
         ".aia-select"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"native-select\"]"
     },
@@ -665,8 +596,7 @@
         ".ts-control"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"enhanced-select\"]"
     },
@@ -684,8 +614,7 @@
         ".aia-choice"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"checkbox\"]"
     },
@@ -703,8 +632,7 @@
         ".aia-choice"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"radio\"]"
     },
@@ -722,8 +650,7 @@
         ".aia-switch"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"switch\"]"
     },
@@ -742,8 +669,7 @@
         ".aia-input"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"date-field\"]"
     },
@@ -763,8 +689,7 @@
         ".aia-btn"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"file-upload\"]"
     },
@@ -784,8 +709,7 @@
         ".aia-btn"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"input-group\"]"
     },
@@ -803,8 +727,7 @@
         ".aia-search"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"search-field\"]"
     },
@@ -822,8 +745,7 @@
         ".aia-filter-form"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"filter-panel\"]"
     },
@@ -842,8 +764,7 @@
         ".aia-chip"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"filter-chip\"]"
     },
@@ -862,8 +783,7 @@
         ".aia-helper"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"field-help\"]"
     },
@@ -882,8 +802,7 @@
         ".aia-feedback"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"field-validation\"]"
     },
@@ -901,8 +820,7 @@
         ".aia-pagination"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"pagination\"]"
     },
@@ -920,8 +838,7 @@
         ".aia-chip"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"status-chip\"]"
     },
@@ -939,8 +856,7 @@
         ".aia-feedback"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"feedback-banner\"]"
     },
@@ -958,8 +874,7 @@
         ".aia-progress"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"progress-indicator\"]"
     },
@@ -978,8 +893,7 @@
         ".aia-spinner"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"loading-spinner\"]"
     },
@@ -997,8 +911,7 @@
         ".aia-feedback"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"empty-state\"]"
     },
@@ -1016,8 +929,7 @@
         ".aia-feedback--critical"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"error-state\"]"
     },
@@ -1035,8 +947,7 @@
         ".aia-chip"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"count-badge\"]"
     },
@@ -1054,8 +965,7 @@
         ".aia-live-region"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"live-region\"]"
     },
@@ -1073,8 +983,7 @@
         ".aia-card"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"data-card\"]"
     },
@@ -1093,8 +1002,7 @@
         ".aia-card"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"metric-card\"]"
     },
@@ -1112,8 +1020,7 @@
         ".aia-table-shell"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"responsive-table\"]"
     },
@@ -1133,8 +1040,7 @@
         ".handsontable"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"data-grid\"]"
     },
@@ -1153,8 +1059,7 @@
         ".aia-navigation__links"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"tabs\"]"
     },
@@ -1173,8 +1078,7 @@
         ".aia-navigation__links"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"accordion\"]"
     },
@@ -1192,8 +1096,7 @@
         ".aia-modal-surface"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"modal-dialog\"]"
     },
@@ -1212,8 +1115,7 @@
         ".aia-modal-surface"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"responsive-drawer\"]"
     },
@@ -1231,8 +1133,7 @@
         ".aia-popover"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"popover\"]"
     },
@@ -1250,8 +1151,7 @@
         ".aia-popover"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"tooltip\"]"
     },
@@ -1269,8 +1169,7 @@
         ".swal2-popup"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"toast\"]"
     },
@@ -1290,8 +1189,7 @@
         ".aia-modal-surface"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"confirmation\"]"
     },
@@ -1311,8 +1209,7 @@
         ".aia-spinner"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"loading-overlay\"]"
     },
@@ -1330,8 +1227,7 @@
         ".handsontable"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"handsontable\"]"
     },
@@ -1349,8 +1245,7 @@
         ".dataTables_wrapper"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"datatables\"]"
     },
@@ -1368,8 +1263,7 @@
         ".select2-selection"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"select2\"]"
     },
@@ -1387,8 +1281,7 @@
         ".ts-control"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"tom-select\"]"
     },
@@ -1406,8 +1299,7 @@
         ".swal2-popup"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"sweetalert2\"]"
     },
@@ -1425,8 +1317,7 @@
         ".toast"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"toastr\"]"
     },
@@ -1435,7 +1326,7 @@
       "family": "vendor-adapters",
       "label": "Font Awesome",
       "sources": [
-        "src/View/Components/NavbarComponent.php"
+        "public/css/aia-design-system.css"
       ],
       "catalogIds": [
         "icon"
@@ -1444,8 +1335,7 @@
         ".aia-icon"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"font-awesome\"]"
     },
@@ -1465,8 +1355,7 @@
         ".aia-shell"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"bootstrap\"]"
     },
@@ -1486,8 +1375,7 @@
         ".aia-modal-surface"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"jquery-ui\"]"
     },
@@ -1506,8 +1394,7 @@
         ".aia-navigation"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"adminlte\"]"
     },
@@ -1526,8 +1413,7 @@
         ".aia-bi"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"bi-card\"]"
     },
@@ -1545,8 +1431,7 @@
         ".aia-bi__plot"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"line-chart\"]"
     },
@@ -1564,8 +1449,7 @@
         ".aia-bi__plot"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"bar-chart\"]"
     },
@@ -1583,8 +1467,7 @@
         ".aia-bi__plot"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"comparison-chart\"]"
     },
@@ -1604,8 +1487,7 @@
         ".aia-chip"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"gauge\"]"
     },
@@ -1623,8 +1505,7 @@
         ".aia-bi-radar"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"radar-chart\"]"
     },
@@ -1642,8 +1523,7 @@
         ".aia-bi__legend"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"chart-legend\"]"
     },
@@ -1662,8 +1542,7 @@
         ".aia-switch"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"projection-toggle\"]"
     },
@@ -1682,8 +1561,7 @@
         ".aia-feedback"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"chart-guidance\"]"
     },
@@ -1702,8 +1580,7 @@
         ".aia-bi__data"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"chart-data-table\"]"
     },
@@ -1721,8 +1598,7 @@
         ".aia-popover"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"chart-tooltip\"]"
     },
@@ -1742,8 +1618,7 @@
         ".aia-chip"
       ],
       "themes": [
-        "dark",
-        "linen"
+        "dark"
       ],
       "labSelector": "[data-ui-group=\"kpi-summary\"]"
     }

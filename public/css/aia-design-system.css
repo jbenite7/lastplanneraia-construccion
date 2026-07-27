@@ -35,32 +35,6 @@
 
 @layer theme {
   :root,
-  [data-aia-theme="linen"],
-  .aia-theme-linen {
-    color-scheme: light;
-    --ds-active-bg-canvas: var(--ds-color-bg-canvas);
-    --ds-active-bg-page: var(--ds-color-bg-page);
-    --ds-active-surface: var(--ds-color-surface);
-    --ds-active-surface-raised: var(--ds-color-surface-raised);
-    --ds-active-surface-glass: var(--ds-color-surface-glass);
-    --ds-active-text-primary: var(--ds-color-text-primary);
-    --ds-active-text-secondary: var(--ds-color-text-secondary);
-    --ds-active-border: var(--ds-color-border-default);
-    --ds-active-focus-ring: var(--ds-color-focus-ring-light);
-    --ds-active-action-primary: var(--ds-color-domain-corporate);
-    --ds-active-action-primary-hover: var(--ds-color-brand-primary-dark);
-    --ds-active-action-text: var(--ds-color-text-inverse);
-    --ds-active-domain-construction: var(--ds-color-domain-construction);
-    --ds-active-domain-construction-text: var(--ds-color-text-inverse);
-    --ds-active-data-plan: var(--ds-color-domain-real-estate);
-    --ds-active-data-executed: var(--ds-color-domain-corporate);
-    --ds-active-nav-bg: var(--ds-color-surface-raised);
-    --ds-active-nav-border: var(--ds-color-border-default);
-    --ds-active-nav-text: var(--ds-color-text-primary);
-    --ds-active-nav-text-muted: var(--ds-color-text-secondary);
-    --ds-active-nav-mark-filter: none;
-  }
-
   [data-aia-theme="dark"],
   .aia-theme-dark {
     color-scheme: dark;

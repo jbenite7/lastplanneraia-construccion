@@ -6,7 +6,8 @@ Superficies autorizadas: las diez familias aprobadas del laboratorio. No se
 revisan otros módulos.
 
 La matriz obligatoria cubre dark en `1180x820` y `1440x900`; `1180x820` es el
-viewport canónico. Mobile, tablet y `linen` están fuera del alcance visual.
+viewport canónico. Mobile y tablet están fuera del alcance visual; `linen` fue
+retirado del producto en F0 del goal `dark-mode-todos-los-modulos`.
 Axe agrega los 20 escenarios permitidos y registra superficie, tema, viewport,
 estado revelado, regla, impacto, tipo de resultado, selector y decisión.
 
@@ -37,7 +38,7 @@ La persona solicitante confirmó explícitamente **Aprobado** después de revisa
 checklist de teclado, foco, lectura y estados operables para el laboratorio
 desktop dark. La aprobación cubre el commit `750e24a0f07a92e31c2d8c482d2ce3b3f4e11ab8`,
 las diez familias, los viewports `1180x820` y `1440x900`, y no extiende el alcance
-a Programa General, mobile, tablet ni `linen`.
+a Programa General, mobile ni tablet.
 
 ## Evidencia requerida
 

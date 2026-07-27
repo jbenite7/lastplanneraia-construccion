@@ -52,7 +52,6 @@
                 'label' => 'Usuario · Administrador',
                 'items' => [
                     ['label' => 'Cambiar proyecto'],
-                    ['label' => 'Cambiar tema'],
                     ['label' => 'Cerrar sesión'],
                 ],
             ],

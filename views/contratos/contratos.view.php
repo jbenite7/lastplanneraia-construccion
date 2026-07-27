@@ -4,7 +4,7 @@
 	<meta charset="UTF-8">
 	<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="/vendor/handsontable/handsontable.full.min.css?v=14.6.1" />
-	<link rel="stylesheet" href="/css/handsontable-module.css?v=20260714theme1" />
+	<!-- handsontable-module.css llega vía aia-design-system.css (layer vendor); el link crudo duplicaba la cascada. -->
 	<link rel="stylesheet" href="/css/handsontable-header-global.css?v=20260714theme1" />
 	<link rel="stylesheet" href="/css/contratos.css?v=20260714-dark7" />
 	<!--Script cque va al archivo linksComunesHead2.js-->

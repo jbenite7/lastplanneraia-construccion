@@ -35,7 +35,6 @@ echo \App\View\Components\DesignSystemComponent::navigation([
         'account' => [
             'label' => 'Usuario · ' . htmlspecialchars(trim($_SESSION['nombreUsuario'] ?? 'Usuario'), ENT_QUOTES, 'UTF-8'),
             'items' => [
-                ['label' => 'Cambiar tema', 'icon' => 'theme', 'themeToggle' => true],
                 ['label' => 'Cerrar sesión', 'icon' => 'logout', 'href' => '/logout'],
             ],
         ],

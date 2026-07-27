@@ -7,7 +7,19 @@
       var(--ds-border-width)
     );
     min-width: 20rem;
-    overflow-y: auto;
+    /* `visible` en AMBOS ejes es obligatorio, no cosmetico. .ds-lab va sobre
+       <body>, y basta con que un eje deje de ser `visible` para que body se
+       vuelva contenedor de scroll; como body nunca scrollea de verdad
+       (scrollHeight === clientHeight), todo `position: sticky` descendiente
+       —.ds-lab__header y .ds-lab__rail-wrap— queda inerte. Antes no pasaba
+       porque `html` era `visible` y el overflow de body se propagaba al
+       viewport (CSS Overflow 3 §3.3); 5134ae2 absorbio
+       `html { overflow-y: auto }` en foundation.css y corto esa propagacion.
+       Declararlo aqui tambien neutraliza el `body { overflow-x: hidden }` de
+       @layer base, porque este bloque es @layer module y va despues. La
+       contencion horizontal la sigue garantizando `html { overflow-x: hidden }`
+       propagado al viewport, asi que no se pierde. */
+    overflow: visible;
     background: var(--ds-active-bg-canvas);
   }
 
@@ -1523,7 +1535,12 @@
   .ds-calendar button,
   .ts-dropdown button,
   .ts-control .item button {
+    /* min-width ademas de min-height: sin el, un boton de texto corto (el
+       «Quitar» de un chip de Tom Select) cumple los 44px de alto pero se
+       queda en ~40px de ancho e incumple el piso de target del DS. Medido:
+       de los 23 elementos que casan este grupo, solo ese crece. */
     min-height: var(--ds-target-min);
+    min-width: var(--ds-target-min);
     border: 0;
     background: transparent;
     color: inherit;

@@ -613,7 +613,7 @@ test.describe('Contratos - Handsontable y tarjetas mobile', () => {
       .toBe(initial.rows);
   });
 
-  test('cumple la matriz técnica mobile, tablet y desktop en Dark y Linen', async ({ page }) => {
+  test('cumple la matriz técnica mobile, tablet y desktop en Dark', async ({ page }) => {
     const consoleProblems = [];
     const failedRequests = [];
     const failedResponses = [];

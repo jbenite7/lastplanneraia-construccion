@@ -1,15 +1,19 @@
-@layer reset, theme, base, layout, components, utilities;
+@layer theme, layout, components;
 
 @layer theme {
 :root {
   /* 2026 Apple-Style Design System (Premium) */
 
-  /* Palette - System Colors (Apple Inspired) */
+  /* Palette - System Colors (Apple Inspired)
+     Sin equivalente semantico 1:1 en --ds-active-action-* (verde corporate vs.
+     azul Apple): remapearlos es una decision de marca fuera del alcance de F1
+     Task 3 (solo corrige fondo/texto del body). Deuda documentada en
+     docs/design-system/exceptions.json. */
   --primary: #0071e3; /* System Blue - Action */
   --primary-dark: #005bb5; /* Darker Blue for hover */
   --primary-light: #409cff; /* Lighter Blue */
 
-  /* Palette - Semantic States */
+  /* Palette - Semantic States (sin consumidores activos hoy; ver exceptions.json) */
   --status-critical: #ff3b30; /* System Red */
   --status-delayed: #ff3b30; /* System Red (Unified) */
   --status-warning: #ff9500; /* System Orange */
@@ -17,25 +21,25 @@
   --status-ok: #34c759; /* System Green */
   --status-neutral: #8e8e93; /* System Gray */
 
-  /* Services Colors (Legacy mapping to Apple Palette) */
+  /* Services Colors (Legacy mapping to Apple Palette; sin consumidores activos hoy) */
   --color-purple: #af52de; /* System Purple */
   --color-indigo: #5856d6; /* System Indigo */
   --color-teal: #59adc4; /* Teal-ish (Custom) */
 
   /* Surfaces */
-  --surface-bg: #f5f5f7; /* Off-white background */
-  --surface-card: #ffffff; /* Pure white card */
-  --surface-header: rgba(255, 255, 255, 0.8); /* Glass effect base */
-  --surface-modal: #ffffff;
+  --surface-bg: var(--ds-active-bg-canvas); /* F1 Task 3: antes literal claro */
+  --surface-card: var(--ds-active-surface-raised); /* F1 Task 3: antes literal claro */
+  --surface-header: var(--ds-active-surface-glass); /* F1 Task 3: antes literal claro (glass) */
+  --surface-modal: var(--ds-active-surface-raised); /* F1 Task 3: antes literal claro */
 
   /* Typography */
   --font-main: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --font-mono: 'SF Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
 
   /* Text Colors */
-  --text-main: #1d1d1f; /* Almost Black */
-  --text-secondary: #86868b; /* Gray Text */
-  --text-inverse: #ffffff;
+  --text-main: var(--ds-active-text-primary); /* F1 Task 3: antes literal casi-negro */
+  --text-secondary: var(--ds-active-text-secondary); /* F1 Task 3: antes literal gris claro */
+  --text-inverse: #ffffff; /* Par de --primary-light, sin cambios (fuera de alcance) */
 
   /* Spacing & Layout */
   --radius-sm: 8px;
@@ -56,92 +60,14 @@
 }
 /* Fin Layer Theme */
 
-@layer reset {
-* {
-  margin: 0;
-  padding: 0;
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  box-sizing: border-box;
-}
-
-html {
-  overflow: -moz-scrollbars-vertical;
-  overflow-y: auto; /* Fix locked scroll */
-  font-size: 100%; /* Base 16px */
-  -webkit-font-smoothing: antialiased; /* Crisp text for macOS */
-  -moz-osx-font-smoothing: grayscale;
-}
-}
-/* Fin Layer Reset */
-
-@layer utilities {
-/* Mobile First Utilities for Inline Replacement */
-.w-md-80 {
-  width: 100% !important;
-}
-.text-lg-125 {
-  font-size: 1.25em !important;
-}
-.text-justify {
-  text-align: justify !important;
-}
-.list-padded {
-  padding: 0 5% !important;
-  margin: 0 !important;
-}
-
-/* Tablet+ Overrides */
-@media (min-width: 768px) {
-  .w-md-80 {
-    width: 80% !important;
-  }
-}
-}
-/* Fin Layer Utilities */
-
-@layer base {
-body {
-  font-size: 1rem;
-  font-family: var(--font-main);
-  background-color: var(--surface-bg);
-  color: var(--text-main);
-  line-height: 1.5;
-}
-
-/* Typography Overrides */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-weight: 600;
-  letter-spacing: -0.02em; /* Tight tracking like iOS */
-  color: var(--text-main);
-}
-
-a.dropdown-item:hover,
-.dropdown-item:hover {
-  text-decoration: none;
-  background-color: var(--surface-bg) !important; /* Force light background */
-  color: var(--primary) !important; /* Force blue text */
-}
-
-.dropdown-item {
-  font-family: var(--font-main);
-  border-radius: var(--radius-sm);
-  margin: 2px 4px;
-  width: auto;
-  color: var(--text-main);
-}
-
-.dropdown-item.active {
-  background-color: var(--primary-light);
-  font-weight: 500;
-  color: var(--text-inverse);
-}
-}
+/* reset, utilities y base absorbidos por public/css/design-system/foundation.css
+   (@layer base) y public/css/design-system/core.css (@layer utilities) en F1
+   Task 4 / F1 shell-background. El bloqueo de `base` (documentado en
+   f1-task-4-report.md) era .aia-shell (core.css @layer components) fijando
+   solo background-image via el shorthand `background: var(--ds-shell-background)`,
+   sin background-color -- resuelto agregando background-color explicito a
+   .aia-shell antes de reintentar esta absorcion. Ver
+   f1-shell-background-report.md. */
 /* Fin Layer Base */
 
 @layer components {
@@ -217,13 +143,8 @@ nav.apple-navbar {
   margin-right: 0.5rem !important;
 }
 
-/* Prevent global horizontal scroll */
-html,
-body {
-  overflow-x: hidden;
-  width: 100%;
-  max-width: 100%;
-}
+/* F1 Task 5a: `html, body { overflow-x/width/max-width }` movido a
+   public/css/design-system/foundation.css (@layer base). */
 
 .navbar-nav .dropdown-menu {
   z-index: 1050 !important; /* Higher than navbar and datatables */
@@ -235,186 +156,7 @@ body {
   letter-spacing: -0.5px;
 }
 
-/* Mobile Drawer Implementation (iOS Slide Over) — Extended to 1199px for Tablet Coverage (accounts for 0.85 viewport scale) */
-@media (max-width: 1199.98px) {
-  .navbar-collapse {
-    position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    width: 90%;
-    max-width: 480px;
-    background-color: #1a3a2a;
-    padding: 0;
-    box-shadow: 8px 0 30px rgba(0,0,0,0.4);
-    transform: translateX(-100%);
-    transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1); /* iOS Spring-like curve */
-    z-index: 1050;
-    display: flex !important;
-    flex-direction: column;
-    visibility: hidden; /* Hide when closed to prevent focus */
-  }
-
-  .navbar-collapse.show {
-    transform: translateX(0);
-    visibility: visible;
-  }
-
-  /* Drawer Header */
-  .drawer-header {
-    padding: 1.25rem 1.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 1rem;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-  }
-
-  .drawer-header h5 {
-    font-weight: 700;
-    font-size: 1.1rem;
-    letter-spacing: 0.04em;
-    color: #fff;
-    margin: 0;
-  }
-
-  .drawer-header .close-drawer {
-    background: rgba(255,255,255,0.12);
-    border: none;
-    color: #fff;
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    font-size: 1.2rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-
-  .drawer-header .close-drawer:hover {
-    background: rgba(255,255,255,0.25);
-  }
-
-  /* Drawer Overlay (Backdrop) */
-  .navbar-collapse.show::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0; /* Anchor to viewport left */
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(2px);
-    z-index: -1; /* Behind the drawer content but above page */
-    transform: translateX(0); /* Reset transform context */
-  }
-
-  /* Scrollable Content inside Drawer */
-  .navbar-nav {
-    overflow-y: auto;
-    padding: 0.75rem 1rem;
-    flex-grow: 1;
-    gap: 2px;
-  }
-
-  .navbar-nav .nav-link {
-    padding: 0.7rem 1rem !important;
-    border-radius: 8px;
-    font-size: 0.92rem;
-    font-weight: 500;
-    color: rgba(255,255,255,0.85) !important;
-    transition: background 0.2s;
-  }
-
-  .navbar-nav .nav-link:hover,
-  .navbar-nav .nav-link.active {
-    background: rgba(255,255,255,0.1);
-    color: #fff !important;
-  }
-
-  .navbar-nav .nav-link i {
-    width: 20px;
-    text-align: center;
-    opacity: 0.7;
-  }
-
-  /* Ensure Dropdowns expand naturally in drawer */
-  .dropdown-menu {
-    position: static !important;
-    float: none !important;
-    background-color: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    margin-left: 1rem;
-    padding-left: 0;
-  }
-
-  .dropdown-menu.show {
-    display: block;
-  }
-
-  .dropdown-header {
-    color: var(--text-secondary);
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    padding: 0.5rem 1rem;
-  }
-}
-
-/* Force Collapse on Tablets (992px-1199px) — Full Bootstrap navbar-expand-xl Neutralization */
-@media (min-width: 992px) and (max-width: 1199.98px) {
-  /* 1. Hide collapsed navbar, show toggler */
-  .navbar-expand-xl .navbar-collapse {
-    display: none !important;
-  }
-  .navbar-expand-xl .navbar-collapse.show {
-    display: flex !important;
-    flex-direction: column !important;
-    flex-basis: 100% !important;
-  }
-  .navbar-expand-xl .navbar-toggler {
-    display: block !important;
-  }
-  /* 2. Stack nav links vertically (Bootstrap forces row at xl) */
-  .navbar-expand-xl .navbar-nav {
-    flex-direction: column !important;
-  }
-  /* Icons inline with text in nav links */
-  .navbar-expand-xl .nav-link {
-    display: flex !important;
-    align-items: center !important;
-    gap: 0.5rem;
-    flex-direction: row !important;
-  }
-  /* 3. Dropdowns: static inside drawer (Bootstrap makes absolute) */
-  .navbar-expand-xl .dropdown-menu {
-    position: static !important;
-    float: none !important;
-  }
-  /* 4. Override Bootstrap d-xl-* utilities (kick in at 1200px) */
-  .navbar-aia .d-xl-none {
-    display: block !important;
-  }
-  /* 4b. Flex containers need flex, not block */
-  .navbar-aia .drawer-header.d-xl-none {
-    display: flex !important;
-  }
-  .navbar-aia .user-island.d-xl-none {
-    display: flex !important;
-  }
-  .navbar-aia .d-none.d-xl-flex {
-    display: none !important;
-  }
-}
-
 .navbar-brand {
-  color: white;
-}
-
-.dropdown_divider {
   color: white;
 }
 
@@ -428,56 +170,6 @@ body {
 .form-group label {
   display: inline-block;
 }
-
-/* .Semanal_Critica{
-    background: rgba(255,150,64,1);
-
-
-}
-
-.Semanal_No_Critica{
-    background: rgba(255,192,51,0.5);
-
-
-}
-
-.Semanal_Atrasada_Critica{
-    background:  #7c1c51;
-
-
-}
-
-.Semanal_Atrasada_No_Critica{
-    background:  rgba(255,83,51,0.8);
-
-
-}
-
-.Intermedia{
-    background: rgba(0,191,114,0.9);
-
-
-}
-
-.Titulo{
-    background: rgba(3,87,102,1);
-} */
-
-/* .No_Activa{
-    color: rgba(84,84,84,0.83);
-} */
-
-/* .Titulo td{
-    color: white;
-} */
-
-/* .Semanal_Atrasada_Critica td{
-    color: white;
-} */
-
-/* .OK{
-    background:white;
-} */
 
 .row {
   width: 100%;
@@ -528,9 +220,29 @@ body {
   margin: 0;
 }
 
+/* F1 Task 5a: retokenizado EN EL SITIO, no movido. Antes pintaba
+   `rgba(213, 234, 240, 0.8)` con `color: black`: azul claro con tinta negra
+   sobre todas las DataTables de una app dark-only. Remapeo semantico 1:1 a
+   la superficie elevada y al texto primario del tema, la misma pareja que ya
+   usan .cm-table y el listbox de Handsontable en programacion-semanal.css.
+   Se intento moverlo a vendor-datatables-legacy.css (@layer
+   legacy-overrides) junto con el resto del adaptador de DataTables, y se
+   revirtio por medicion, no por criterio: la regla `table.dataTable tbody
+   td` de este mismo archivo fija `color: #3a3a3c !important`, y para las
+   declaraciones !important el orden de capas se INVIERTE (gana la capa mas
+   temprana), asi que module le gana a legacy-overrides por mucha
+   especificidad que tenga el hover. Con el hover en legacy-overrides el
+   fondo si cambiaba pero la tinta se quedaba en #3a3a3c. Medido en
+   /control-cambios con una sonda que anade la clase `dataTable` a
+   #dt_cliente: 1.28:1 movido, frente a 10.95:1 del literal claro original.
+   Aqui, en la misma capa que su competidor, decide la especificidad
+   --(0,2,4) contra (0,1,3)-- y la tinta vuelve a aplicarse. El bloque
+   `table.dataTable tbody td` cae fuera del alcance de este tramo; cuando su
+   tramo lo migre, esta regla puede acompanarlo y las dos iran juntas al
+   adaptador. */
 table.dataTable tbody tr:hover td {
-  background-color: rgba(213, 234, 240, 0.8) !important;
-  color: black !important;
+  background-color: var(--ds-active-surface-raised) !important;
+  color: var(--ds-active-text-primary) !important;
 }
 
 #dt_cliente {
@@ -539,33 +251,11 @@ table.dataTable tbody tr:hover td {
   max-width: 100% !important;
 }
 
-/* Force Table Container to respect screen width - ALL MODULES */
-.dataTables_wrapper,
-.dataTables_scroll {
-  max-width: 100% !important;
-  width: 100%;
-}
-
-.dataTables_scrollHead {
-  max-width: 100% !important;
-  overflow-x: hidden !important;
-}
-
-.dataTables_scrollBody {
-  max-width: 100% !important;
-  overflow-x: auto !important;
-}
-
-.dataTables_scrollFoot {
-  max-width: 100% !important;
-  overflow-x: hidden !important;
-}
-
-/* Ensure no negative margins causing overflow */
-.row {
-  margin-right: 0 !important;
-  margin-left: 0 !important;
-}
+/* F1 Task 5a: la contencion de ancho de .dataTables_* se movio a
+   public/css/design-system/vendor-datatables-legacy.css y la neutralizacion
+   de las gutters negativas de .row a
+   public/css/design-system/adapters/legacy-bridge.css, ambas en
+   @layer legacy-overrides. */
 
 #cuadroTabla {
   padding: 2px;
@@ -602,7 +292,9 @@ button.borrarSoporte {
 .dropdown-item:hover,
 .dropdown-item:focus {
   background-color: var(--surface-bg);
-  color: var(--primary) !important;
+  /* F1 Task 3: mismo fix de contraste que la regla base (linea ~128):
+     --primary sobre el canvas oscuro mide 4.09:1, bajo AA. */
+  color: var(--ds-active-action-primary-hover) !important;
 }
 
 .grupo_botones_semanal_madre,
@@ -854,10 +546,6 @@ button.borrarSoporte {
   color: #48c22f;
 }
 
-.inputBlanco {
-  background: #ffffff;
-}
-
 .pasoProcesoContratacion {
   background: white;
   align-items: center;
@@ -960,19 +648,6 @@ button.borrarSoporte {
   font-weight: bold;
   text-align: center;
   color: #ffffff;
-}
-
-.comprometerSugerido {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 4px;
-  padding: 0.2rem 0.55rem;
-  font-size: 0.75rem;
-  line-height: 1.1;
-  width: auto;
-  max-width: 100%;
-  white-space: nowrap;
 }
 
 /* =========================================
@@ -1374,92 +1049,6 @@ button.borrarSoporte {
 }
 
 /* Mobile Breakpoint */
-@media (max-width: 1180px) {
-  /* Increased breakpoint to cover tablets/large phones */
-
-  /* Show Toggle */
-  .pdc-mobile-toggle {
-    display: flex !important;
-    width: 100%;
-    margin-top: 8px;
-  }
-
-  #pdcFiltersMobile.collapse:not(.show),
-  #psAlertsMobile.collapse:not(.show) {
-    display: none !important;
-  }
-
-  /* Adjust Toolbar Container */
-  .toolbarFilaBotones {
-    width: 100%;
-    margin-bottom: 4px;
-    /* Flex adjustments for existing buttons */
-    display: flex;
-    flex-wrap: wrap;
-  }
-  .toolbarFilaBotones > div {
-    flex-wrap: wrap; /* Allow inner button container to wrap */
-  }
-
-  /* Force Wrapping for the Main Toolbar Row */
-  .dataTables_wrapper .row.filaBotones {
-    flex-wrap: wrap !important;
-    gap: 8px;
-  }
-
-  .dataTables_wrapper .col-auto,
-  .dataTables_wrapper .col-flexible-legend {
-    width: 100% !important;
-    flex: 0 0 100% !important;
-    max-width: 100% !important;
-  }
-
-  /* Filter Drawer Styling */
-  .pdc-legend {
-    background-color: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: var(--ds-radius-panel);
-    padding: 12px;
-    margin-top: 4px !important;
-    gap: 8px;
-    justify-content: center;
-  }
-
-  .pdc-legend-item {
-    margin: 3px;
-    padding: 6px 14px;
-    font-size: 0.85rem;
-  }
-
-  /* Toggle Button Styling */
-  .btn-filter-toggle {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    background-color: #ffffff;
-    border: 1px solid #cbd5e1;
-    color: #475569;
-    font-weight: 600;
-    padding: 10px;
-    border-radius: var(--ds-radius-control);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    transition: all 0.2s ease;
-  }
-  .btn-filter-toggle:active {
-    background-color: #f1f5f9;
-    transform: scale(0.98);
-  }
-  .btn-filter-toggle .badge {
-    background-color: #0ea5e9;
-    color: white;
-    border-radius: var(--ds-radius-pill);
-    padding: 3px 7px;
-    font-size: 0.75rem;
-    vertical-align: middle;
-  }
-}
 
 @media (min-width: 1181px) {
   #pdcFiltersMobile.collapse,
@@ -1472,212 +1061,6 @@ button.borrarSoporte {
    Mobile Card View Implementation (Fixed v2)
    ========================================= */
 
-@media screen and (max-width: 768px) {
-  /* Reset Table to Block Layout */
-  .dt_programacionIntermedia,
-  .dt_programacionSemanal,
-  .dt_programaGeneral,
-  .dt_infoGeneral,
-  .dt_programacionIntermedia table,
-  .dt_programacionSemanal table,
-  .dt_programaGeneral table,
-  .dt_infoGeneral table,
-  .dt_programacionIntermedia thead,
-  .dt_programacionSemanal thead,
-  .dt_programaGeneral thead,
-  .dt_infoGeneral thead,
-  .dt_programacionIntermedia tbody,
-  .dt_programacionSemanal tbody,
-  .dt_programaGeneral tbody,
-  .dt_infoGeneral tbody,
-  .dt_programacionIntermedia th,
-  .dt_programacionSemanal th,
-  .dt_programaGeneral th,
-  .dt_infoGeneral th,
-  .dt_programacionIntermedia td,
-  .dt_programacionSemanal td,
-  .dt_programaGeneral td,
-  .dt_infoGeneral td,
-  .dt_programacionIntermedia tr,
-  .dt_programacionSemanal tr,
-  .dt_programaGeneral tr,
-  .dt_infoGeneral tr {
-    display: block !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
-    float: none !important;
-    clear: both !important;
-  }
-
-  /* Hide Table Header */
-  .dt_programacionIntermedia thead,
-  .dt_programacionSemanal thead,
-  .dt_programaGeneral thead,
-  .dt_infoGeneral thead {
-    display: none !important;
-  }
-
-  /* Card Container (Row) */
-  .dt_programacionIntermedia tbody tr,
-  .dt_programacionSemanal tbody tr,
-  .dt_programaGeneral tbody tr,
-  .dt_infoGeneral tbody tr {
-    position: relative;
-    margin-bottom: 1.5rem !important; /* Breathing room */
-    border: 0 !important;
-    border-radius: var(--radius-lg) !important;
-    background: var(--surface-card) !important;
-    box-shadow: var(--shadow-md) !important;
-    padding: 0 !important;
-    overflow: hidden !important;
-  }
-
-  /* Status Indicators (Border Left) - For all modules */
-  .dt_programacionIntermedia tr.pdc-critical-delay,
-  .dt_programacionSemanal tr.pdc-critical-delay,
-  .dt_programaGeneral tr.pdc-critical-delay {
-    border-left: 5px solid var(--status-critical) !important;
-  }
-  .dt_programacionIntermedia tr.pdc-delayed,
-  .dt_programacionSemanal tr.pdc-delayed,
-  .dt_programaGeneral tr.pdc-delayed {
-    border-left: 5px solid var(--status-delayed) !important;
-  }
-  .dt_programacionIntermedia tr.pdc-warning,
-  .dt_programacionSemanal tr.pdc-warning,
-  .dt_programaGeneral tr.pdc-warning {
-    border-left: 5px solid var(--status-warning) !important;
-  }
-  .dt_programacionIntermedia tr.pdc-attention,
-  .dt_programacionSemanal tr.pdc-attention,
-  .dt_programaGeneral tr.pdc-attention {
-    border-left: 5px solid var(--status-attention) !important;
-  }
-  .dt_programacionIntermedia tr.pdc-ok,
-  .dt_programacionSemanal tr.pdc-ok,
-  .dt_programaGeneral tr.pdc-ok {
-    border-left: 5px solid var(--status-ok) !important;
-  }
-
-  /* Reset Cell Backgrounds */
-  .dt_programacionIntermedia tr td,
-  .dt_programacionSemanal tr td,
-  .dt_programaGeneral tr td,
-  .dt_infoGeneral tr td {
-    background-color: transparent !important;
-    border: none !important;
-  }
-
-  /* Key-Value Rows (Cells) */
-  .dt_programacionIntermedia td,
-  .dt_programacionSemanal td,
-  .dt_programaGeneral td,
-  .dt_infoGeneral td {
-    display: flex !important;
-    flex-direction: row !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    padding: 10px 15px !important;
-    border-bottom: 1px solid #f0f0f0 !important;
-    min-height: auto !important;
-    line-height: 1.4 !important;
-  }
-
-  .dt_programacionIntermedia td:last-child,
-  .dt_programacionSemanal td:last-child,
-  .dt_programaGeneral td:last-child,
-  .dt_infoGeneral td:last-child {
-    border-bottom: 0 !important;
-  }
-
-  /* Label (Left) */
-  .dt_programacionIntermedia td:before,
-  .dt_programacionSemanal td:before,
-  .dt_programaGeneral td:before,
-  .dt_infoGeneral td:before {
-    content: attr(data-label);
-    font-weight: 700;
-    color: #64748b; /* Slate 500 */
-    margin-right: 15px;
-    text-align: left;
-    flex: 0 0 auto; /* Don't grow or shrink */
-    max-width: 50%;
-    font-size: 0.9rem;
-  }
-
-  /* Value (Right) */
-  .dt_programacionIntermedia td,
-  .dt_programacionSemanal td,
-  .dt_programaGeneral td,
-  .dt_infoGeneral td {
-    text-align: right !important;
-    color: #1e293b; /* Slate 800 */
-    font-size: 0.95rem;
-  }
-
-  /* HEADER: Activity Name or Name (Full Width) */
-  .dt_programacionIntermedia td[data-label='Actividad'],
-  .dt_programacionSemanal td[data-label='Actividad'],
-  .dt_programaGeneral td[data-label='Actividad'],
-  .dt_infoGeneral td[data-label='Actividad'],
-  .dt_infoGeneral td[data-label='Nombre'] {
-    display: block !important;
-    background-color: #f8fafc !important; /* Slate 50 */
-    padding: 15px !important;
-    border-bottom: 2px solid #e2e8f0 !important;
-  }
-
-  /* Style the text inside the Activity Header */
-  .dt_programacionIntermedia td[data-label='Actividad'],
-  .dt_programacionSemanal td[data-label='Actividad'],
-  .dt_programaGeneral td[data-label='Actividad'],
-  .dt_infoGeneral td[data-label='Actividad'],
-  .dt_infoGeneral td[data-label='Nombre'] {
-    color: var(--primary) !important;
-    font-weight: 700 !important;
-    font-size: 1rem !important;
-    text-align: left !important;
-    word-wrap: break-word;
-  }
-
-  .dt_programacionIntermedia td[data-label='Actividad']:before,
-  .dt_programacionSemanal td[data-label='Actividad']:before,
-  .dt_programaGeneral td[data-label='Actividad']:before,
-  .dt_infoGeneral td[data-label='Actividad']:before,
-  .dt_infoGeneral td[data-label='Nombre']:before {
-    display: none !important;
-  }
-
-  /* Hide Empty/Irrelevant Cells (Add more as needed per module) */
-  .dt_programacionIntermedia td[data-label='Consecutivo'],
-  .dt_programacionSemanal td[data-label='Consecutivo'],
-  .dt_programaGeneral td[data-label='Consecutivo'],
-  .dt_programacionIntermedia td[data-label='Id'],
-  .dt_programacionSemanal td[data-label='Id'],
-  .dt_programaGeneral td[data-label='Id'],
-  .dt_infoGeneral td[data-label='Id'],
-  .dt_programacionIntermedia td[data-label='Título'],
-  .dt_programacionSemanal td[data-label='Título'],
-  .dt_programaGeneral td[data-label='Título'] {
-    display: none !important;
-  }
-
-  /* Actions Footer */
-  .dt_programacionIntermedia td.Botones,
-  .dt_programacionSemanal td.Botones,
-  .dt_programaGeneral td.Botones,
-  .dt_infoGeneral td.Botones {
-    background-color: #f1f5f9 !important; /* Slate 100 */
-    justify-content: center !important;
-    padding: 10px !important;
-  }
-  .dt_programacionIntermedia td.Botones:before,
-  .dt_programacionSemanal td.Botones:before,
-  .dt_programaGeneral td.Botones:before,
-  .dt_infoGeneral td.Botones:before {
-    display: none !important;
-  }
-}
 
 /* =========================================
    Apple-Style Component Overrides (Premium)
@@ -2374,41 +1757,6 @@ button.borrarSoporte {
   justify-content: flex-start;
 }
 
-@media (max-width: 767.98px) {
-  .aia-modal .modal-dialog,
-  .aia-modal__confirm.modal .modal-dialog {
-    max-width: calc(100vw - 1rem);
-    margin: 0.5rem auto;
-  }
-
-  .aia-modal .modal-header,
-  .aia-modal .modal-body,
-  .aia-modal .modal-footer {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-
-  .aia-modal__section {
-    padding: 1rem;
-    border-radius: 0.9rem;
-  }
-
-  .aia-modal__field--two {
-    grid-template-columns: 1fr;
-  }
-
-  .aia-modal__buttons {
-    width: 100%;
-  }
-
-  .aia-modal__actions .btn,
-  .aia-modal .btn.aia-btn-primary,
-  .aia-modal .btn.aia-btn-secondary,
-  .aia-modal .btn.aia-btn-danger {
-    flex: 1 1 0;
-    min-width: 0;
-  }
-}
 
 /* Modal Backdrop */
 .modal-backdrop.show {
@@ -2625,119 +1973,6 @@ table.dataTable td.dt-min-width-300,
    MOBILE CARD VIEW (No-Scroll Strategy)
    ========================================= */
 
-@media (max-width: 768px) {
-  /* Force Table to Block Layout */
-  .table-responsive,
-  .dataTables_wrapper,
-  .dataTables_scrollBody,
-  table,
-  thead,
-  tbody,
-  th,
-  td,
-  tr {
-    display: block !important;
-    width: 100% !important;
-    box-sizing: border-box;
-  }
-
-  /* Hide Headers (Visual only, keep for screen readers if possible) */
-  thead tr {
-    position: absolute;
-    top: -9999px;
-    left: -9999px;
-  }
-
-  /* Make Rows look like Cards */
-  tbody tr {
-    margin-bottom: 1rem;
-    background-color: #fff;
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 12px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    padding: 1rem;
-    display: flex; /* Flex container for cells */
-    flex-direction: column;
-    height: auto !important; /* Override fixed height */
-  }
-
-  /* Style Cells */
-  td {
-    border: none !important;
-    border-bottom: 1px solid #f1f5f9 !important;
-    position: relative;
-    padding-left: 0 !important; /* Reset padding */
-    padding-right: 0 !important;
-    padding-top: 10px !important;
-    padding-bottom: 10px !important;
-    text-align: left !important;
-    display: flex !important;
-    justify-content: space-between;
-    align-items: center;
-    min-height: 40px;
-    white-space: normal !important; /* Allow text wrap */
-  }
-
-  td:last-child {
-    border-bottom: 0 !important;
-  }
-
-  /* Data Label Injection (Pseudo-element) */
-  td:before {
-    content: attr(data-label);
-    font-weight: 700;
-    color: #64748b;
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    margin-right: 1rem;
-    flex-shrink: 0; /* Prevent label from shrinking */
-    width: 40%; /* Fixed width for labels */
-  }
-
-  /* Specific override for empty cells or action buttons */
-  td[data-label='']::before {
-    display: none;
-  }
-
-  /* Fix for content inside cells */
-  td > * {
-    text-align: right;
-    width: 60%; /* Content takes remaining space */
-  }
-
-  /* Specific Fixes for your Modules */
-
-  /* Semanal Buttons - Fix Giant Circles */
-  .btn-circle-lg,
-  .btn-circle-xl {
-    width: auto !important;
-    height: auto !important;
-    border-radius: 8px !important;
-    padding: 8px 16px !important;
-    display: block !important;
-    margin-bottom: 8px !important;
-  }
-
-  /* Hide decoration icons in buttons if they take too much space */
-  .btn-circle-lg i.fa-5x {
-    font-size: 1.5rem !important;
-    margin-right: 8px;
-  }
-
-  /* Flex container for action buttons */
-  .grupo_botones_semanal {
-    display: flex;
-    flex-direction: column;
-    width: 100% !important;
-  }
-
-  /* Adjust Modal Widths */
-  .modal-dialog {
-    margin: 10px;
-    width: auto !important;
-    max-width: none !important;
-  }
-}
 
 /* ========================================
    MODERNIZATION (2026 Refactor)
@@ -3213,67 +2448,14 @@ table.dataTable td.dt-min-width-300,
   font-size: 0.9rem;
 }
 
-@media (max-width: 991.98px) {
-  #formulario_nuevo .ps-modal-nueva-actividad {
-    max-width: min(96vw, 58rem);
-    margin: 0.5rem auto;
-    max-height: calc(100dvh - 0.65rem);
-  }
-}
 
-@media (max-width: 767.98px) {
-  #formulario_nuevo .ps-nueva-actividad-grid {
-    grid-template-columns: 1fr;
-  }
 
-  #formulario_nuevo .ps-nueva-actividad-col--bandeja,
-  #formulario_nuevo .ps-nueva-actividad-col--formulario {
-    grid-column: auto;
-  }
-
-  #formulario_nuevo .ps-excepciones-scroll {
-    max-height: min(14.5rem, 34dvh);
-  }
-
-  #formulario_nuevo .modal-title {
-    font-size: 1.5rem;
-  }
-}
-
-@media (max-width: 575.98px) {
-  #formulario_nuevo .ps-modal-nueva-actividad,
-  #formulario_nuevo .modal-content {
-    max-height: calc(100dvh - 0.25rem);
-  }
-
-  #formulario_nuevo .modal-header,
-  #formulario_nuevo .modal-body {
-    padding-inline: 0.7rem;
-  }
-
-  #formulario_nuevo .ps-modal-form .form-group.mt-3 > div {
-    gap: 0.45rem;
-  }
-
-  #formulario_nuevo #btn_guardar_nueva_actividad,
-  #formulario_nuevo #btn_listar {
-    inline-size: 100%;
-  }
-}
 
 /* ===== Fixes for "Agregar Actividad" audit ===== */
 
 /* Collapse bandeja panel when empty — give form full space */
 #formulario_nuevo .ps-bandeja-empty {
   display: none;
-}
-@media (max-width: 767.98px) {
-  #formulario_nuevo .ps-bandeja-empty {
-    max-height: 0;
-    overflow: hidden;
-    opacity: 0;
-    transition: max-height 0.3s ease, opacity 0.25s ease;
-  }
 }
 
 /* Field-level validation error highlight */
@@ -3446,25 +2628,6 @@ table.dataTable td.dt-min-width-300,
   border-color: var(--aia-orange-dark, #8b4011);
 }
 
-@media (max-width: 47.99rem) {
-  .ps-modal-body-content {
-    grid-template-columns: 1fr;
-    text-align: left;
-  }
-
-  .ps-modal-icon-wrapper {
-    inline-size: 2.8rem;
-    block-size: 2.8rem;
-  }
-
-  .ps-modal-title {
-    font-size: 1.1rem;
-  }
-
-  .ps-modal-text {
-    font-size: 0.95rem;
-  }
-}
 
 .ps-meta-small {
   font-size: 0.75em;
@@ -3769,28 +2932,7 @@ table.dataTable td.dt-min-width-300,
   }
 }
 
-@media (max-width: 1100px) {
-  .filaBotones {
-    --ps-module-scale: 0.7;
-  }
-}
 
-@media (max-width: 62rem) {
-  .filaBotones .ps-module-switcher {
-    width: auto;
-    margin-left: auto;
-    justify-content: flex-start;
-  }
-
-  .filaBotones .toolbarNavegacion {
-    overflow-x: auto;
-    overflow-y: hidden;
-  }
-
-  .filaBotones .toolbarNavegacion .ps-toolbar-nav-wrap {
-    width: max-content;
-  }
-}
 
 /* Force modern toolbar layout over legacy float rules */
 .filaBotones .toolbarFilaBotones {
@@ -3997,11 +3139,6 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
   margin-bottom: var(--spacing-sm) !important;
 }
 
-@media (max-width: 43.75rem) {
-  .filaBotones .toolbarFilaBotones:has(.aia-info-nav) {
-    padding: calc(var(--spacing-sm) + var(--spacing-xs)) var(--spacing-sm) var(--spacing-xs) !important;
-  }
-}
 
 .filaBotones .ps-toolbar-actions .btn:hover,
 .filaBotones .ps-toolbar-nav-wrap .btn:hover {
@@ -4073,29 +3210,6 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
   }
 }
 
-@media (max-width: 62rem) {
-  .ps-form-col {
-    max-inline-size: 100%;
-    inline-size: 100%;
-  }
-
-  .filaBotones .ps-toolbar-actions,
-  .filaBotones .ps-toolbar-nav-wrap {
-    inline-size: 100%;
-    display: flex;
-  }
-
-  .filaBotones .ps-toolbar-nav-wrap .grupo_botones_semanal {
-    display: flex;
-    flex-wrap: nowrap;
-    gap: 0.375rem;
-  }
-
-  .filaBotones .ps-filter-input,
-  .filaBotones .ps-filter-clear {
-    max-inline-size: 100%;
-  }
-}
 
 /* Programacion Semanal - Phase Indicator in Context Bar */
 .context-has-weekly-phase {
@@ -4490,24 +3604,7 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
   line-height: 1.2;
 }
 
-@media (max-width: 62rem) {
-  .ps-legend-quick-row {
-    grid-template-columns: 1rem minmax(9rem, 1.4fr) minmax(8rem, 1fr);
-  }
-}
 
-@media (max-width: 42rem) {
-  .ps-legend-quick-row {
-    grid-template-columns: 1rem 1fr;
-    align-items: start;
-  }
-
-  .ps-legend-quick-action {
-    grid-column: 1 / -1;
-    padding-left: 1.45rem;
-    font-size: 0.73rem;
-  }
-}
 
 .ps-legend-modal {
   display: grid;
@@ -4676,26 +3773,6 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
   }
 }
 
-@media (max-width: 61.99rem) {
-  .context-has-weekly-phase {
-    grid-template-columns: 1fr;
-    row-gap: 0.25rem;
-  }
-
-  .context-has-weekly-phase .context-breadcrumb {
-    justify-self: start;
-  }
-
-  .context-has-weekly-phase .context-weekly-phase {
-    justify-self: center;
-  }
-
-  .context-has-weekly-phase .context-right-info {
-    justify-self: start;
-    inline-size: 100%;
-    margin-left: 0 !important;
-  }
-}
 
 /* Programa General / Programacion Intermedia shared cleanup */
 .pg-table-wrap,
@@ -5318,36 +4395,7 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
   line-height: 1.2;
 }
 
-@media (max-width: 62rem) {
-  .pg-page .pg-legend-quick-row {
-    grid-template-columns: 1rem minmax(9rem, 1.4fr) minmax(8rem, 1fr) auto;
-  }
 
-  .pg-page .pg-legend-quick-alert-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 42rem) {
-  .pg-page #modal_leyenda_colores .modal-dialog {
-    width: calc(100% - 1rem);
-  }
-
-  .pg-page .pg-legend-quick-row {
-    grid-template-columns: 1rem 1fr auto;
-    align-items: start;
-  }
-
-  .pg-page .pg-legend-quick-action {
-    grid-column: 1 / -1;
-    padding-left: 1.45rem;
-    font-size: 0.73rem;
-  }
-
-  .pg-page .pg-legend-quick-alert-grid {
-    grid-template-columns: 1fr;
-  }
-}
 
 .pg-page .pg-alert-badge {
   display: inline-flex;
@@ -5734,28 +4782,7 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
   line-height: 1.28;
 }
 
-@media (max-width: 62rem) {
-  .pi-page .pi-legend-quick-row {
-    grid-template-columns: 1rem minmax(9rem, 1.4fr) minmax(8rem, 1fr) auto;
-  }
-}
 
-@media (max-width: 42rem) {
-  .pi-page #modal_leyenda_colores .modal-dialog {
-    width: calc(100% - 1rem);
-  }
-
-  .pi-page .pi-legend-quick-row {
-    grid-template-columns: 1rem 1fr auto;
-    align-items: start;
-  }
-
-  .pi-page .pi-legend-quick-action {
-    grid-column: 1 / -1;
-    padding-left: 1.45rem;
-    font-size: 0.73rem;
-  }
-}
 
 .pi-page .pi-legend-modal {
   display: grid;
@@ -5894,12 +4921,6 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
   margin: 0.0625rem;
 }
 
-@media (max-width: 56.25rem) {
-  .pi-page .pdc-legend-autoscaling .pdc-legend-item {
-    padding: 0.125rem !important;
-    font-size: 0.55rem !important;
-  }
-}
 
 @media (min-width: 64rem) {
   .pi-page .pi-toolbar-shell {
@@ -6196,46 +5217,6 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
   font-size: 0.9rem;
 }
 
-@media (max-width: 47.99rem) {
-  #modalEditarContratos .modal-dialog.ct-modal-dialog {
-    max-width: calc(100vw - 1rem);
-    margin: 0.5rem auto;
-  }
-
-  #modalEditarContratos .ct-modal-body {
-    padding: 0.85rem;
-  }
-
-  #modalEditarContratos .parametro_EditarContratos {
-    padding: 0.2rem 0.2rem 0.85rem;
-  }
-
-  #modalEditarContratos .ct-contract-header {
-    display: none;
-  }
-
-  #modalEditarContratos .ct-contract-list {
-    padding: 0 0.5rem;
-  }
-
-  #modalEditarContratos .ct-contract-row {
-    grid-template-columns: 1fr;
-    gap: 0.4rem;
-  }
-
-  #modalEditarContratos .ct-contract-index {
-    padding-left: 0.2rem;
-    text-align: left;
-  }
-
-  #modalEditarContratos .ct-contract-field__label {
-    display: block;
-  }
-
-  #modalEditarContratos .ct-contract-actions__buttons {
-    flex-wrap: wrap;
-  }
-}
 
 .ct-text-danger {
   color: var(--aia-alert-high);
@@ -6424,54 +5405,8 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
    ========================================================================== */
 
 /* 1. MÓVILES (Pantallas de hasta 576px) - Barras Unificadas de Ancho Completo */
-@media (max-width: 576px) {
-  html body .pdc-legend-item,
-  html body .pg-page #pgLegend .pdc-legend-item,
-  html body .pi-page #piLegend .pdc-legend-item,
-  html body .ps-page #psAlertsLegend .pdc-legend-item,
-  html body .pdc-legend .pdc-legend-item {
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 100% !important;
-    flex: 1 1 100% !important;
-    justify-content: center !important;
-    text-align: center !important;
-    white-space: nowrap !important;
-    box-sizing: border-box !important;
-    font-size: 0.75rem !important; /* Slightly larger for easier tap on mobile */
-    padding: 6px 12px !important;   /* Comfortable touch targets (A11y/Mobile) */
-    min-height: 34px !important;   /* Match standard touch target metrics */
-    height: auto !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    margin: 3px 0 !important;
-  }
-}
 
 /* 2. TABLETS (Pantallas entre 577px y 992px) - Grilla de 2 Columnas Simétricas */
-@media (min-width: 577px) and (max-width: 992px) {
-  html body .pdc-legend-item,
-  html body .pg-page #pgLegend .pdc-legend-item,
-  html body .pi-page #piLegend .pdc-legend-item,
-  html body .ps-page #psAlertsLegend .pdc-legend-item,
-  html body .pdc-legend .pdc-legend-item {
-    width: calc(50% - 6px) !important;
-    max-width: calc(50% - 6px) !important;
-    min-width: calc(50% - 6px) !important;
-    flex: 0 0 calc(50% - 6px) !important;
-    justify-content: center !important;
-    text-align: center !important;
-    white-space: nowrap !important;
-    box-sizing: border-box !important;
-    font-size: 0.72rem !important;
-    padding: 5px 10px !important;
-    min-height: 32px !important;
-    height: 32px !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    margin: 3px !important;
-  }
-}
 
 /* 3. ESCRITORIO (Pantallas de 993px en adelante) - Ancho Fijo Premium de 205px */
 @media (min-width: 993px) {
@@ -6555,12 +5490,6 @@ html body #pdc-hot-shell .pdc-legend .pdc-legend-item {
   font-weight: 700;
 }
 
-@media (max-width: 576px) {
-  #ctxPdcCalcDate {
-    font-size: 0.72rem;
-    padding: 0.25rem 0.5rem !important;
-  }
-}
 
 /* ==========================================================================
    OPTIMIZACIÓN PREMIUM 2026: Leyendas Responsivas Simétricas Unificadas (AIA Flex-Wrap)
@@ -6622,36 +5551,6 @@ body.ps-page #psAlertsLegend.pdc-legend-autoscaling .pdc-legend-item,
 }
 
 /* MÓVILES (Pantallas de hasta 576px) - Cuadrícula simétrica perfecta de 2 columnas */
-@media (max-width: 576px) {
-  body.pi-page #piLegend.pdc-legend-autoscaling,
-  body.pg-page #pgLegend.pdc-legend-autoscaling,
-  body.ps-page #psAlertsLegend.pdc-legend-autoscaling,
-  #piLegend.pdc-legend-autoscaling,
-  #pgLegend.pdc-legend-autoscaling,
-  #psAlertsLegend.pdc-legend-autoscaling {
-    justify-content: center !important;
-    gap: 6px !important;
-    width: 100% !important;
-    inline-size: 100% !important;
-  }
-
-  body.pi-page #piLegend.pdc-legend-autoscaling .pdc-legend-item,
-  body.pg-page #pgLegend.pdc-legend-autoscaling .pdc-legend-item,
-  body.ps-page #psAlertsLegend.pdc-legend-autoscaling .pdc-legend-item,
-  #piLegend.pdc-legend-autoscaling .pdc-legend-item,
-  #pgLegend.pdc-legend-autoscaling .pdc-legend-item,
-  #psAlertsLegend.pdc-legend-autoscaling .pdc-legend-item {
-    width: calc(50% - 8px) !important;
-    max-width: calc(50% - 8px) !important;
-    min-width: calc(50% - 8px) !important;
-    flex: 0 0 calc(50% - 8px) !important;
-    margin: 3px !important;
-    font-size: 0.70rem !important;
-    min-height: var(--ds-target-min) !important;
-    height: auto !important;
-    block-size: auto !important;
-  }
-}
 
 /* Ocultar barra de scroll horizontal por compatibilidad estética */
 #piLegend.pdc-legend-autoscaling::-webkit-scrollbar,
@@ -6789,14 +5688,4 @@ html body.pdc-page #pdc-hot-shell .pdc-legend .pdc-legend-item {
   white-space: normal !important;
   overflow-wrap: anywhere !important;
   margin: 0 !important;
-}
-@media (min-width: 768px) and (max-width: 1199px) {
-  html body.pdc-page #pdc-hot-shell .pdc-legend {
-    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-  }
-}
-@media (max-width: 767px) {
-  html body.pdc-page #pdc-hot-shell .pdc-legend {
-    grid-template-columns: minmax(0, 1fr) !important;
-  }
 }

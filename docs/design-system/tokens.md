@@ -14,7 +14,7 @@ Los tokens canonicos tienen dos capas:
 
 - `--ds-color-brand-primary`: accion principal corporativa.
 - `--ds-color-brand-construction`: acciones o contexto de obra.
-- `--ds-color-bg-page`, `--ds-color-bg-canvas`, `--ds-color-bg-linen`: fondos.
+- `--ds-color-bg-page`, `--ds-color-bg-canvas`, `--ds-color-bg-parchment`: fondos.
 - `--ds-color-surface`, `--ds-color-surface-raised`, `--ds-color-surface-glass`: superficies.
 - `--ds-color-state-*`: estados informativos, correctos, advertencias y criticos.
 

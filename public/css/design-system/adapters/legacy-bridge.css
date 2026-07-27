@@ -4,8 +4,24 @@
     border-bottom-color: var(--ds-color-border-default);
   }
 
-  :where(.table th, .table td, table.dataTable th, table.dataTable td) {
+  /* F1 Task 3c/3d: Bootstrap's .table rule (vendor layer) sets a near-black
+     ink that composites against the dark canvas at ~1.24:1 once th/td
+     inherit it. th/td don't set their own color, so override it here
+     rather than patching the view. Scoped to #dt_cliente (the
+     /control-cambios table, which sits directly on the dark canvas with no
+     background of its own) rather than every .table/table.dataTable in the
+     app: the unscoped version (3c) also won against #tablaDuracionesContratos
+     (/contratos) and #autoGenListadoTable (/listado-actividades), both of
+     which render inside .aia-modal on a light green header background and
+     already carry a correct dark ink via styles.css's
+     `.aia-modal .table thead th` rule — this layer, being last, overrode
+     that correct color too. #dt_cliente is reused by the ps-page DataTables
+     (CIC/CNP/CNC), but those already set their own !important color in
+     programacion-semanal.css, and by /pdc's Handsontable container, which is
+     a <div> (not a <table>) so `table#dt_cliente` never matches it. */
+  :where(table#dt_cliente th, table#dt_cliente td) {
     border-color: var(--ds-color-border-default);
+    color: var(--ds-active-text-primary);
   }
 
   :where(.pg-page #pgLegend.pdc-legend-autoscaling .pdc-legend-item) {
@@ -91,5 +107,25 @@
 
   :where(html.aia-theme-dark .aia-info-nav__eyebrow) {
     color: var(--ds-active-text-secondary);
+  }
+
+  /* F1 Task 5a: absorbido desde public/css/styles.css:319-323
+     (module.components). Neutraliza las gutters negativas de `.row` de
+     Bootstrap (vendor: margin-inline: -15px), que empujaban contenido fuera
+     del viewport. Destino: `.row` es una clase de vendor, no una primitiva
+     `aia-*` del design system, asi que no cabe en foundation.css ni en un
+     archivo de components/; legacy-bridge.css es justo el adaptador donde
+     ya viven las neutralizaciones de vendor, y es de los pocos destinos que
+     importan LOS DOS entrypoints (aia-design-system.css:24 y
+     entrypoints/core.css:16), asi que el alcance queda identico al que la
+     regla tenia en styles.css --que tambien lo importan los dos-- sin
+     ampliarlo ni reducirlo. Se conserva el !important tal cual (mover, no
+     reescribir); no se le anadio especificidad. Unico competidor medido en
+     todo public/css es
+     `body.ps-page .ps-cic-rating-modal .modal-body > .row { margin-inline: 0 }`
+     (programacion-semanal.css:2500), que fija el mismo valor. */
+  .row {
+    margin-right: 0 !important;
+    margin-left: 0 !important;
   }
 }

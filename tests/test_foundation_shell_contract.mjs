@@ -62,16 +62,22 @@ assert.match(weeklyView, /lps_drawer\.js\?v=20260722shell1/);
 const shellBudget = exceptions.pathBudgets.find((budget) => budget.name === 'foundation-shell');
 assert.ok(shellBudget, 'Foundation/Shell must have an explicit debt budget');
 assert.ok(shellBudget.paths.includes('views/partials/drawer_unificado.php'));
-assert.match(theme, /bindThemeSwitches/);
-assert.match(theme, /function boot\(\)/);
-assert.match(theme, /document\.readyState === ["']loading["']/);
-assert.match(theme, /DOMContentLoaded/);
-assert.match(theme, /window\.AiaDesignSystem\.bindThemeSwitches\(document\)/);
-assert.match(theme, /aia-theme-ready/);
+// F0/Task 8 retiro el conmutador de tema: theme.js ya no expone la API de
+// alternancia (setTheme/toggleTheme/bindThemeSwitches) ni ata el boot al
+// DOMContentLoaded — aplica dark de forma sincrona. Los guards evitan que la
+// API retirada reaparezca (mismo patron que los guards del navbar arriba).
+// F0/Task 9 retiro tambien aia-theme-ready y aia-theme-change: con un solo
+// tema no hay cambio que anunciar, y sus unicos oyentes (bi_chart_theme.js,
+// bi-spa.js) cargaban despues de theme.js en views/bi/_layout.php y nunca
+// podian recibirlos; aia-theme-ready no tenia ningun oyente en el repo.
+assert.doesNotMatch(theme, /bindThemeSwitches/);
+assert.doesNotMatch(theme, /\bsetTheme\b/);
+assert.doesNotMatch(theme, /\btoggleTheme\b/);
+assert.doesNotMatch(theme, /aia-theme-ready/);
+assert.doesNotMatch(theme, /aia-theme-change/);
 assert.doesNotMatch(loader, /function currentTheme\(/);
-assert.match(loader, /AiaDesignSystem\.bindThemeSwitches\(document\)/);
-assert.match(loader, /typeof window\.AiaDesignSystem\.bindThemeSwitches === ["']function["']/);
-assert.match(loader, /aia-theme-ready/);
+assert.doesNotMatch(loader, /bindThemeSwitches/);
+assert.doesNotMatch(loader, /aia-theme-ready/);
 assert.match(commonLoader, /theme\.js\?v=20260711foundation5/);
 assert.match(commonLoader, /nav_drawer\.js\?v=20260711foundation5/);
 // tokens.css llega vía el entrypoint runtime de aia-design-system.css, no por el loader.

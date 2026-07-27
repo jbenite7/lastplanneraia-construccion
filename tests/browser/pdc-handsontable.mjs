@@ -286,7 +286,7 @@ test.describe('PDC Handsontable', () => {
     assertNoRuntimeErrors(runtimeErrors);
   });
 
-  test('covers mobile, tablet horizontal, and desktop in Dark and Linen', async ({ page }) => {
+  test('covers mobile, tablet horizontal, and desktop in Dark', async ({ page }) => {
     for (const viewport of HANDSONTABLE_GOAL_VIEWPORTS) {
       await page.setViewportSize(viewport);
       await page.waitForTimeout(150);

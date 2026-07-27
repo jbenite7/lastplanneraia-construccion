@@ -75,7 +75,12 @@ $contextlessSidebar = DesignSystemComponent::navigation([
         'account' => [
             'label' => 'Usuario · Administrador',
             'items' => [
-                ['label' => 'Cambiar tema', 'icon' => 'theme', 'themeToggle' => true],
+                // F0/Task 8 retiro themeToggle (dark es el unico tema). Un item sin
+                // href sigue siendo valido en el contrato del componente (ver
+                // views/design-system/families/shell-navigation.php, 'Cambiar
+                // proyecto' documentado sin href) y mantiene cubierta la rama
+                // <button> del renderizador junto a la rama <a> de abajo.
+                ['label' => 'Cambiar proyecto', 'icon' => 'project'],
                 ['label' => 'Cerrar sesión', 'icon' => 'logout', 'href' => '/logout'],
             ],
         ],
@@ -84,7 +89,8 @@ $contextlessSidebar = DesignSystemComponent::navigation([
 dsComponentAssert(!str_contains($contextlessSidebar, 'aia-sidebar__context'), 'contextless sidebar omits project/week block');
 dsComponentAssert(!str_contains($contextlessSidebar, 'data-sidebar-notifications'), 'disabled notifications omit the utility button');
 dsComponentAssert(!str_contains($contextlessSidebar, 'data-sidebar-notification-retry'), 'disabled notifications omit the retry control');
-dsComponentAssert(str_contains($contextlessSidebar, 'aia-theme-switch'), 'themeToggle account item exposes the global theme switch hook');
+dsComponentAssert(!str_contains($contextlessSidebar, 'aia-theme-switch'), 'themeToggle retired: no account item exposes the theme switch hook');
+dsComponentAssert(str_contains($contextlessSidebar, '<button type="button" role="menuitem" class="aia-sidebar__account-item">'), 'account item without href renders a real button');
 dsComponentAssert(str_contains($contextlessSidebar, 'href="/logout"'), 'account item with href renders a real link');
 dsComponentAssert(str_contains($contextlessSidebar, '<span class="aia-sidebar__account-head" role="presentation">Usuario · Administrador</span>'), 'account panel leads with the identity head');
 dsComponentAssert(substr_count($contextlessSidebar, 'aia-sidebar__account-item') === 2, 'every account item carries the alignment class (buttons.css exemption)');

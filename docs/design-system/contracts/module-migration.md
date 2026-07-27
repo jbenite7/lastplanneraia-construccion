@@ -13,7 +13,7 @@ para resolver una diferencia del consumidor.
 
 ## Gates mínimos
 
-- Dark y linen en 390x844, 1180x820 y 1440x900.
+- Dark en 390x844, 1180x820 y 1440x900.
 - Teclado, foco, targets, reflow, overflow y texto sin palabras fragmentadas.
 - Axe sin hallazgos critical o serious y revisión manual accesible.
 - Contrato funcional, consola limpia y requests esperados.

@@ -51,10 +51,9 @@ async function openLaboratory(page, scenario) {
 }
 
 async function freezeTheme(page, theme) {
-  await page.evaluate((value) => {
-    localStorage.setItem('aia-theme', value);
-    window.AiaDesignSystem.setTheme(value);
-  }, theme);
+  // F0/Task 8: dark es el unico tema y se aplica sin conmutacion (theme.js
+  // ya no expone setTheme, y localStorage.aia-theme quedo obsoleto). VISUAL_SCENARIOS
+  // ya filtra theme === 'dark' arriba, asi que esto solo confirma el estado.
   await expect(page.locator('html')).toHaveAttribute('data-aia-theme', theme);
 }
 

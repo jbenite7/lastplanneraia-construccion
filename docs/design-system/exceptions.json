@@ -191,15 +191,6 @@
       "expiresAtVersion": "1.1.0"
     },
     {
-      "module": "foundation-shell-legacy",
-      "rule": "unknown-css-layer",
-      "file": "public/css/navbar.css",
-      "selector": "@layer aia-premium-drawer",
-      "owner": "foundation-shell",
-      "reason": "Capa histórica del drawer previa al contrato Sprint 00; se conserva sin migrar consumidores y no autoriza nuevas capas.",
-      "expiresAtVersion": "1.1.0"
-    },
-    {
       "module": "project-selector-legacy",
       "rule": "unknown-css-layer",
       "file": "public/css/project-selector.css",
@@ -351,6 +342,33 @@
       "owner": "design-system",
       "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan.",
       "expiresAtVersion": "1.1.0"
+    },
+    {
+      "module": "legacy-palette-accent",
+      "rule": "hardcoded-hex",
+      "file": "public/css/styles.css",
+      "selector": ":root (--primary, --primary-dark, --primary-light, --text-inverse)",
+      "owner": "design-system",
+      "reason": "F1 Task 3 remapeo --surface-bg/--text-main a tokens activos, pero el acento azul Apple (--primary y derivados) no tiene equivalente semantico 1:1 en --ds-active-action-* (verde corporate): remapearlo es una decision de marca fuera del alcance de esta tarea (que solo corrige el fondo/texto claro heredado del body). --text-inverse queda literal porque solo empareja con --primary-light, sin cambios. Nota: el rule hardcoded-hex del audit no lleva selector (violacion sin scope de regla CSS), por lo que esta excepcion documenta la decision pero no suprime conteo alguno.",
+      "expiresAtVersion": "1.1.0"
+    },
+    {
+      "module": "legacy-palette-status",
+      "rule": "hardcoded-hex",
+      "file": "public/css/styles.css",
+      "selector": ":root (--status-critical, --status-delayed, --status-warning, --status-attention, --status-ok, --status-neutral)",
+      "owner": "design-system",
+      "reason": "F1 Task 3: colores semanticos de estado sin consumidores activos hoy en el repo (grep -rn confirma cero usos en public/css, public/js, views, src, admin). Se conservan literales para no inventar un mapeo --ds-* sin un consumidor real que lo valide.",
+      "expiresAtVersion": "1.1.0"
+    },
+    {
+      "module": "legacy-palette-services",
+      "rule": "hardcoded-hex",
+      "file": "public/css/styles.css",
+      "selector": ":root (--color-purple, --color-indigo, --color-teal)",
+      "owner": "design-system",
+      "reason": "F1 Task 3: colores de servicio heredados sin consumidores activos hoy en el repo (grep -rn confirma cero usos). Se conservan literales como deuda documentada.",
+      "expiresAtVersion": "1.1.0"
     }
   ],
   "migratedPaths": [],
@@ -361,7 +379,6 @@
         "views/auth/login.view.php",
         "views/auth/password-forgot.view.php",
         "views/auth/password-reset.view.php",
-        "views/auth/partials/auth-theme-switch.php",
         "public/css/login-brand-unified.css",
         "public/js/modules/aia_ui/auth_forms.js"
       ],
@@ -512,6 +529,7 @@
   "notes": [
     "Baseline inicial: el repo contiene deuda visual legacy. El gate debe endurecerse por modulo cuando se declare migrado.",
     "Login, project-selector, aia-theme, programa-general, pdc, contratos y listado-actividades tienen presupuesto cero para deuda visual auditada.",
-    "Foundation/Shell conserva un presupuesto explícito y cerrado sobre deuda legacy; cada regla queda limitada al conteo auditado del Sprint 02 y no puede crecer."
+    "Foundation/Shell conserva un presupuesto explícito y cerrado sobre deuda legacy; cada regla queda limitada al conteo auditado del Sprint 02 y no puede crecer.",
+    "audit-baseline.json.totalViolations es el tope monotónico del agregado (Task 11, F0): las fases F1-F6 del goal dark-mode-todos-los-modulos solo pueden bajarlo, nunca subirlo, tal como ya ocurre por regla. Subirlo es la excepción, no la rutina, y exige las tres cosas juntas: (1) justificación escrita de por qué el total crece de forma legítima, (2) aprobación explícita del usuario, y (3) un archivo nuevo en docs/design-system/baseline-approvals/ cuyo afterHash coincida con el nuevo baseline y cuyo approvalRef cite esa aprobación. Sin las tres, el audit debe fallar."
   ]
 }

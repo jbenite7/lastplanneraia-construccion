@@ -36,7 +36,7 @@ const TIMING_METRIC_EPSILON_MS = 0.5;
 
 const CONTEXT_KEYS = ['route', 'viewport', 'theme', 'density', 'fixture'];
 const SUPPORTED_VIEWPORTS = ['390x844', '1180x820', '1440x900'];
-const SUPPORTED_THEMES = ['dark', 'linen'];
+const SUPPORTED_THEMES = ['dark'];
 const SUPPORTED_DENSITIES = ['compact', 'touch'];
 const SEMVER = /^\d+\.\d+\.\d+$/;
 const COMMON_ARTIFACT_KEYS = [

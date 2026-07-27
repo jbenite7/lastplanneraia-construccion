@@ -157,8 +157,7 @@
         },
         "theme": {
           "enum": [
-            "dark",
-            "linen"
+            "dark"
           ]
         },
         "viewport": {

@@ -20,7 +20,6 @@ for (const viewport of VIEWPORTS) {
       await page.goto('/programa-general', { waitUntil: 'domcontentloaded' });
       await page.waitForFunction(() => Boolean(document.querySelector('#hot-container .handsontable')));
       await page.waitForTimeout(500);
-      await page.evaluate((value) => window.AiaDesignSystem.setTheme(value), theme);
 
       await expect(page.locator('body.aia-shell')).toBeVisible();
       await expect(page.locator('main.aia-page')).toBeVisible();

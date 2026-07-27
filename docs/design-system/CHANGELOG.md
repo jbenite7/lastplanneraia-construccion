@@ -38,6 +38,7 @@ que todos los gates de cierre estén aprobados y se cree el commit de release.
 - Evita que los chips semánticos interpolen colores durante el cambio dark/linen, para no exponer contraste transitorio insuficiente.
 - Distingue la base de Fundamentos aprobada del candidato activo que añade inventario visible y acción primaria dark; no hereda una aprobación visual ajena.
 - Hace que la acción primaria aplique su color corporativo de cada tema sin interpolación cromática y la expone como candidato visual independiente.
+- 2026-07-25: Retira el tema `linen` del producto (F0 del goal `dark-mode-todos-los-modulos`, `goals/dark-mode-todos-los-modulos/facts.md`). Un solo tema reduce a la mitad la superficie de tokens, gates y evidencia, y es coherente con el alcance desktop-dark de `AGENTS.md`; dark queda como único tema, sin conmutador.
 
 ## 0.3.5 - En construcción
 

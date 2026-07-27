@@ -10,7 +10,6 @@
       "approvalRef": "chat-2026-07-12-approved-with-dark-density-annotations",
       "approvedAt": "2026-07-12",
       "themes": [
-        "linen",
         "dark"
       ],
       "viewports": [
@@ -31,7 +30,6 @@
       "approvalRef": "chat-2026-07-12-approved-hybrid-b-desktop-a-touch",
       "approvedAt": "2026-07-12",
       "themes": [
-        "linen",
         "dark"
       ],
       "viewports": [
@@ -72,7 +70,6 @@
       "approvalRef": "chat-2026-07-12-approved-integrated-header-after-padding-fix",
       "approvedAt": "2026-07-12",
       "themes": [
-        "linen",
         "dark"
       ],
       "viewports": [
@@ -94,7 +91,6 @@
       "approvalRef": "chat-2026-07-13-approved-candidate-a",
       "approvedAt": "2026-07-13",
       "themes": [
-        "linen",
         "dark"
       ],
       "viewports": [
@@ -115,7 +111,6 @@
       "approvalRef": "chat-2026-07-12-approved-candidate-a",
       "approvedAt": "2026-07-12",
       "themes": [
-        "linen",
         "dark"
       ],
       "viewports": [
@@ -136,7 +131,6 @@
       "approvalRef": "decision-DS-015",
       "approvedAt": "2026-07-12",
       "themes": [
-        "linen",
         "dark"
       ],
       "viewports": [
@@ -158,7 +152,6 @@
       "approvalRef": "decision-DS-016",
       "approvedAt": "2026-07-12",
       "themes": [
-        "linen",
         "dark"
       ],
       "viewports": [
@@ -180,7 +173,6 @@
       "approvalRef": "decision-DS-017",
       "approvedAt": "2026-07-12",
       "themes": [
-        "linen",
         "dark"
       ],
       "viewports": [
@@ -202,7 +194,6 @@
       "approvalRef": "decision-DS-018",
       "approvedAt": "2026-07-12",
       "themes": [
-        "linen",
         "dark"
       ],
       "viewports": [
@@ -223,7 +214,6 @@
       "approvalRef": "chat-2026-07-13-approved-bi-primitives-curve-series-and-radar-centering",
       "approvedAt": "2026-07-13",
       "themes": [
-        "linen",
         "dark"
       ],
       "viewports": [

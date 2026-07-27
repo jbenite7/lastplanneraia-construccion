@@ -469,7 +469,7 @@ body {
   color: var(--ds-active-text-primary);
 }
 
-/* Tints translúcidos sobre la superficie activa: legibles en dark y linen,
+/* Tints translúcidos sobre la superficie activa: legibles en dark,
    a diferencia de los fondos fijos light (--aia-*-background). */
 .lps-state-p1 {
   border: 1px solid var(--aia-alert-high, #e53935) !important;

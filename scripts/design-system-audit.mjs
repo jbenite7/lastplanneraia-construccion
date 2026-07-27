@@ -16,7 +16,7 @@ if (updateBaseline) {
   process.exit(1);
 }
 
-const scanRoots = ['views', 'public/js', 'public/css', 'src/View/Components'];
+const scanRoots = ['views', 'public/js', 'public/css', 'src/View/Components', 'admin'];
 const extensions = new Set(['.php', '.js', '.css', '.mjs']);
 const canonicalDesignSystemFiles = new Set([
   'public/css/tokens.css',
@@ -339,6 +339,14 @@ for (const [rule, data] of Object.entries(summary)) {
   if (data.total > allowed) {
     failures.push(`${rule}: ${data.total} > baseline ${allowed}`);
   }
+}
+
+const allowedTotal = Number(baseline.totalViolations ?? Number.POSITIVE_INFINITY);
+if (violations.length > allowedTotal) {
+  failures.push(
+    `total de hallazgos: ${violations.length} > baseline ${allowedTotal}. `
+    + 'Bajar la deuda o registrar la excepcion en docs/design-system/exceptions.json.',
+  );
 }
 
 for (const [rule, allowed] of Object.entries(baseline.totals || {})) {

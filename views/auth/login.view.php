@@ -18,8 +18,6 @@
     <link rel="stylesheet" href="/css/login-brand-unified.css?v=<?= filemtime(__DIR__ . '/../../public/css/login-brand-unified.css') ?>">
 </head>
 <body class="hold-transition login-page login-brand-page aia-shell">
-    <?php require __DIR__ . '/partials/auth-theme-switch.php'; ?>
-
     <div class="login-box">
         <div class="card card-login">
             <div class="card-header">

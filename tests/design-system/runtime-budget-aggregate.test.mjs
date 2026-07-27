@@ -120,7 +120,7 @@ test('rejects repeated raw reports presented as separate samples', () => {
   );
 });
 
-test('rejects source, asset and context mismatches between raw samples', () => {
+test('rejects source and asset mismatches between raw samples', () => {
   // Given
   const sourceMismatch = { ...rawSample(2), sourceRef: '0'.repeat(40) };
   const changedAssets = [{ ...ASSETS[0], gzipBytes: 1001 }, ASSETS[1]];
@@ -132,7 +132,11 @@ test('rejects source, asset and context mismatches between raw samples', () => {
       assetInventorySha256: createHash('sha256').update(JSON.stringify(changedAssets)).digest('hex'),
     },
   };
-  const contextMismatch = { ...rawSample(2), theme: 'linen' };
+  // No cross-sample theme-mismatch case: F0/Task 9 retired linen, so 'dark' is
+  // the only shape-valid theme left. validateCurrentSampleShape (which runs
+  // before the cross-sample compatibility check) now rejects any other value
+  // per-sample, so two individually-valid samples can never disagree on theme
+  // any more; the mismatch this used to cover is no longer constructible.
 
   // When / Then
   assert.throws(
@@ -142,10 +146,6 @@ test('rejects source, asset and context mismatches between raw samples', () => {
   assert.throws(
     () => aggregateSamples([rawSample(1), assetMismatch, rawSample(3)]),
     /assets provenance mismatch/,
-  );
-  assert.throws(
-    () => aggregateSamples([rawSample(1), contextMismatch, rawSample(3)]),
-    /theme mismatch/,
   );
 });
 
