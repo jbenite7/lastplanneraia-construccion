@@ -137,7 +137,7 @@ class PlanComprasPaquetesController
         $this->ok(['paquete' => $r['paquete']]);
     }
 
-    /** POST /plan-compras/api/paquetes/asignar  {insumos:[{descripcionNorm,unidad}], paqueteId} */
+    /** POST /plan-compras/api/paquetes/asignar  {insumos:[...], paqueteId, procedencia?} */
     public function asignar(): void
     {
         $projectId = $this->guardEscritura();
@@ -151,7 +151,10 @@ class PlanComprasPaquetesController
             $this->fail('PAQUETE_INVALIDO', 'paqueteId inválido.', 422);
             return;
         }
-        $r = $this->service->asignar($projectId, $insumos, (int) $paqueteId, $this->usuario());
+        // Aceptar una sugerencia conserva la capa que la propuso (cuenta como acierto del motor);
+        // elegir un destino a mano llega sin procedencia y es una decisión humana desde cero.
+        $procedencia = is_array($body['procedencia'] ?? null) ? $body['procedencia'] : [];
+        $r = $this->service->asignar($projectId, $insumos, (int) $paqueteId, $this->usuario(), $procedencia);
         if (!$r['ok']) {
             $this->fail('PAQUETE_INVALIDO', 'El paquete no existe o está inactivo.', 422);
             return;

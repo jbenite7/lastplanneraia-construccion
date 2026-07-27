@@ -29,6 +29,12 @@ final class PaquetesService
     /** Modalidades que NO generan proceso de contratación (quedan fuera del plan de fechas de A4). */
     public const MODALIDADES_SIN_PROCESO = ['consumo_directo', 'no_contratable'];
 
+    /**
+     * Capas del motor que pueden originar una asignación (A3.3). Lo que no viene de una de estas es
+     * 'humano': se guarda como decisión confirmada y el re-sembrado no la toca.
+     */
+    public const ORIGENES_MOTOR = ['ia', 'exacta', 'reglas', 'tokens', 'indirectos', 'agrupacion'];
+
     /** Paquete bucket para insumos no empaquetables (A3.1). */
     public const PAQUETE_INDIRECTOS = 'Indirectos / Administración';
 
@@ -302,8 +308,19 @@ final class PaquetesService
         return $out;
     }
 
-    /** Asignación masiva insumo→paquete (upsert: reasignar mueve, no duplica; limpia omisión). */
-    public function asignar(int $projectId, array $insumos, int $paqueteId, string $usuario): array
+    /**
+     * Asignación masiva insumo→paquete (upsert: reasignar mueve, no duplica; limpia omisión).
+     *
+     * `$procedencia` = ['origen' => capa, 'confianza' => alta|media|baja, 'evidencia' => texto,
+     * 'confirmado' => bool] cuando la fila la produce el motor. Sin ella la asignación es un acto
+     * humano desde cero. Origen y confirmación son ortogonales a propósito (A3.3):
+     *   · origen de motor + confirmado=false → auto-asignada, el re-sembrado puede revisarla;
+     *   · origen de motor + confirmado=true  → el humano ACEPTÓ la sugerencia: es un acierto del
+     *     motor y así se contabiliza, pero ya es intocable;
+     *   · origen 'humano'                     → la persona eligió el destino; no cuenta ni a favor
+     *     ni en contra del motor.
+     */
+    public function asignar(int $projectId, array $insumos, int $paqueteId, string $usuario, array $procedencia = []): array
     {
         $paquete = $this->db->query(
             'SELECT id FROM general_paquetes_contratacion WHERE id = ? AND activo = 1',
@@ -313,21 +330,68 @@ final class PaquetesService
             return ['ok' => false, 'code' => 'PAQUETE_INVALIDO'];
         }
         $validos = self::insumosValidos($insumos);
+        $origen = in_array($procedencia['origen'] ?? '', self::ORIGENES_MOTOR, true) ? $procedencia['origen'] : 'humano';
+        $delMotor = $origen !== 'humano';
+        $confianza = $delMotor && in_array($procedencia['confianza'] ?? '', ['alta', 'media', 'baja'], true)
+            ? $procedencia['confianza'] : null;
+        $evidencia = $delMotor ? mb_substr((string) ($procedencia['evidencia'] ?? ''), 0, 500) : '';
+        $confirmado = !$delMotor || ($procedencia['confirmado'] ?? false) === true;
+
+        // Antes de mover nada: si el destino previo lo puso el motor y un humano lo está cambiando,
+        // ese par (sugerido → elegido) es la señal más valiosa que tenemos sobre dónde falla.
+        if (!$delMotor) {
+            $this->registrarCorrecciones($projectId, $validos, $paqueteId, $usuario);
+        }
+
         // Lotes multi-fila (patrón generarVinculos): evita un round-trip por insumo.
         foreach (array_chunk($validos, 200) as $lote) {
-            $valores = implode(', ', array_fill(0, count($lote), '(?, ?, ?, ?, 0, ?, NOW())'));
+            $valores = implode(', ', array_fill(0, count($lote), '(?, ?, ?, ?, 0, ?, ?, ?, ?, ?, NOW())'));
             $params = [];
             foreach ($lote as $u) {
-                array_push($params, $projectId, $u['norm'], $u['unidad'], $paqueteId, $usuario);
+                array_push(
+                    $params,
+                    $projectId, $u['norm'], $u['unidad'], $paqueteId,
+                    $origen, $confianza, $evidencia, $confirmado ? 1 : 0, $usuario,
+                );
             }
             $this->db->query(
-                "INSERT INTO pdc_insumo_paquete (project_id, descripcion_norm, unidad, paquete_id, omitido, asignado_por, updated_at)
+                "INSERT INTO pdc_insumo_paquete
+                    (project_id, descripcion_norm, unidad, paquete_id, omitido, origen, confianza, evidencia, confirmado_humano, asignado_por, updated_at)
                  VALUES {$valores}
-                 ON DUPLICATE KEY UPDATE paquete_id = VALUES(paquete_id), omitido = 0, asignado_por = VALUES(asignado_por), updated_at = NOW()",
+                 ON DUPLICATE KEY UPDATE paquete_id = VALUES(paquete_id), omitido = 0,
+                    origen = VALUES(origen), confianza = VALUES(confianza), evidencia = VALUES(evidencia),
+                    confirmado_humano = VALUES(confirmado_humano),
+                    asignado_por = VALUES(asignado_por), updated_at = NOW()",
                 $params,
             );
         }
         return ['ok' => true, 'asignados' => count($validos)];
+    }
+
+    /**
+     * Registra las correcciones humanas sobre destinos que había propuesto el motor.
+     * Cuenta cuando el destino previo venía de una capa del motor y cambia — aunque el humano lo
+     * hubiera aceptado antes: si se arrepiente, el motor falló y deja de contar como acierto.
+     * Reasignar algo que ya era una decisión humana desde cero no es un error del motor.
+     */
+    private function registrarCorrecciones(int $projectId, array $validos, int $paqueteNuevo, string $usuario): void
+    {
+        foreach (array_chunk($validos, 200) as $lote) {
+            $tuplas = implode(', ', array_fill(0, count($lote), '(?, ?)'));
+            $params = [$projectId, $paqueteNuevo];
+            foreach ($lote as $u) {
+                array_push($params, $u['norm'], $u['unidad']);
+            }
+            $this->db->query(
+                "INSERT INTO pdc_correcciones_motor
+                    (project_id, descripcion_norm, unidad, paquete_sugerido, paquete_elegido, capa_sugerida, usuario, created_at)
+                 SELECT project_id, descripcion_norm, unidad, paquete_id, ?, origen, ?, NOW()
+                 FROM pdc_insumo_paquete
+                 WHERE project_id = ? AND origen <> 'humano' AND paquete_id IS NOT NULL
+                   AND paquete_id <> ? AND (descripcion_norm, unidad) IN ({$tuplas})",
+                array_merge([$paqueteNuevo, $usuario, $projectId, $paqueteNuevo], array_slice($params, 2)),
+            );
+        }
     }
 
     /** Marca insumos como omitidos (no van al plan de compras): paquete_id NULL, omitido=1. */
@@ -416,7 +480,14 @@ final class PaquetesService
         ];
     }
 
-    /** Cobertura de la meta 100% (asignados + omitidos) + subtotales por paquete sobre la versión activa. */
+    /**
+     * Cobertura de la meta 100% + subtotales por paquete sobre la versión activa.
+     *
+     * Devuelve TRES indicadores porque uno solo miente (A3.3): por conteo («que no quede nada
+     * suelto»), por valor (lo que de verdad mueve la aguja — la cola larga es barata) y la tasa de
+     * acierto del motor, que sale de las correcciones humanas y es lo único que dice si el motor es
+     * bueno o solo prolijo.
+     */
     public function resumen(int $projectId, ?int $versionId = null): ?array
     {
         $version = $this->versionDe($projectId, $versionId);
@@ -427,7 +498,9 @@ final class PaquetesService
         $tot = $this->db->query(
             'SELECT COUNT(*) AS total,
                     SUM(CASE WHEN a.paquete_id IS NOT NULL THEN 1 ELSE 0 END) AS asignados,
-                    SUM(CASE WHEN a.omitido = 1 THEN 1 ELSE 0 END) AS omitidos
+                    SUM(CASE WHEN a.omitido = 1 THEN 1 ELSE 0 END) AS omitidos,
+                    COALESCE(SUM(v.valor_total), 0) AS valor_total,
+                    COALESCE(SUM(CASE WHEN a.paquete_id IS NOT NULL OR a.omitido = 1 THEN v.valor_total ELSE 0 END), 0) AS valor_cubierto
              FROM pdc_insumo_vinculos v
              LEFT JOIN pdc_insumo_paquete a
                     ON a.project_id = v.project_id AND a.descripcion_norm = v.descripcion_norm AND a.unidad = v.unidad
@@ -437,6 +510,8 @@ final class PaquetesService
         $total = (int) $tot['total'];
         $asignados = (int) $tot['asignados'];
         $omitidos = (int) $tot['omitidos'];
+        $valorTotal = (float) $tot['valor_total'];
+        $valorCubierto = (float) $tot['valor_cubierto'];
         $porPaquete = $this->db->query(
             'SELECT p.id, p.nombre, p.tipo_negociacion, p.modalidad_contratacion, COUNT(*) AS insumos, SUM(v.valor_total) AS subtotal
              FROM pdc_insumo_vinculos v
@@ -454,6 +529,8 @@ final class PaquetesService
             'asignados' => $asignados,
             'omitidos' => $omitidos,
             'cobertura' => $total === 0 ? 0.0 : round(($asignados + $omitidos) * 100 / $total, 1),
+            'coberturaValor' => $valorTotal <= 0 ? 0.0 : round($valorCubierto * 100 / $valorTotal, 1),
+            'acierto' => $this->tasaDeAcierto($projectId),
             'porPaquete' => array_map(static fn (array $r): array => [
                 'paqueteId' => (int) $r['id'],
                 'nombre' => $r['nombre'],
@@ -462,6 +539,32 @@ final class PaquetesService
                 'insumos' => (int) $r['insumos'],
                 'subtotal' => (float) $r['subtotal'],
             ], $porPaquete),
+        ];
+    }
+
+    /**
+     * Tasa de acierto del motor en el proyecto: 1 − correcciones / sugerencias aplicadas.
+     *
+     * `tasa` es null mientras no haya sugerencias aplicadas — un 100 % sin datos sería una mentira
+     * cómoda. La base de cálculo va expuesta para que el número sea auditable y no un adorno.
+     */
+    private function tasaDeAcierto(int $projectId): array
+    {
+        $aplicadas = (int) $this->db->query(
+            "SELECT COUNT(*) FROM pdc_insumo_paquete WHERE project_id = ? AND origen <> 'humano'",
+            [$projectId],
+        )->fetchColumn();
+        $correcciones = (int) $this->db->query(
+            'SELECT COUNT(*) FROM pdc_correcciones_motor WHERE project_id = ?',
+            [$projectId],
+        )->fetchColumn();
+        // Las corregidas ya no figuran como del motor (pasaron a 'humano'), así que el universo de
+        // decisiones que tomó el motor es lo que sobrevive más lo que se le enmendó.
+        $base = $aplicadas + $correcciones;
+        return [
+            'sugerenciasAplicadas' => $base,
+            'correcciones' => $correcciones,
+            'tasa' => $base === 0 ? null : round(($base - $correcciones) * 100 / $base, 1),
         ];
     }
 
