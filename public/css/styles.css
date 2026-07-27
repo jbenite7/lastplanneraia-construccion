@@ -134,12 +134,40 @@
    <style>, no markup. `.navbar-collapse` de la sección UNLAYERED OVERRIDE
    BRIDGE se deja intacta: es del tramo 5j. */
 
-.cuadroModal {
-  padding-left: 5%;
-  padding-right: 5%;
-  margin: auto;
-  width: 100%;
-}
+/* F1 Task 5a-bis: el layout legacy transversal de este rango
+   (`.cuadroModal`, `.filaBotones`, `.filaMensajes` y su `p`, `.encabezado`,
+   `.formularioRegistro`, `#dt_cliente`, `#cuadroTabla`, los botones legacy
+   `button.editar`…, el `float: right` de `.grupo_botones*`,
+   `#modal_spinner`, `.border-2` y los cinco `@media (max-height)` de los
+   menus de semana) se movio VERBATIM a
+   public/css/design-system/adapters/legacy-bridge.css (@layer
+   legacy-overrides), el mismo destino que la Task 5a eligio para `.row`
+   porque lo importan los dos entrypoints. Ver alli el analisis de cascada.
+
+   TRES reglas del rango SE QUEDAN AQUI, revertidas por medicion y no por
+   criterio. Las tres son declaraciones normales (sin !important) que en
+   module.components pierden hoy contra un competidor de MAS especificidad
+   de este mismo archivo; al llegar a legacy-overrides el orden de capas
+   pasa por encima de la especificidad y les ganaban. Medido a 1180x820 en
+   dark, emparejando elementos por firma de id/clases/ancestros:
+
+    - `.form-group label { display: inline-block }` (0,1,1) contra
+      `#formulario_nuevo .ps-modal-form .control-label { display: block }`
+      (1,2,0). Movida, los 8 <label> del modal «nueva actividad» de
+      /programacion-semanal pasaban de `block` a `inline-block`.
+    - `.row { width/max-width/margin }` (0,1,0) contra `.ps-table-wrap
+      { max-inline-size: 100% }` y `.pdc-row-center { margin: 0 auto
+      0.625rem }`, ambas (0,1,0) pero POSTERIORES en orden de aparicion.
+      Movida, `.row.tabla.ps-table-wrap` pasaba de `max-width: 100%` a
+      `2000px` en cic/cnc/cnp y `.row.pdc-row-center` perdia sus 10px de
+      `margin-bottom` en /pdc (3 filas).
+    - `.grupo_botones* button/input { font-size: 12px }` (0,1,1) contra
+      `.filaBotones .aia-info-nav__item { font-size: 0.86rem }` (0,2,0).
+      Movida, los 3 items del conmutador de modulo de /contratos,
+      /listado-actividades y /pdc caian de 13.76px a 12px.
+
+   Las tres podran acompanar a su competidor cuando el tramo que lo posea
+   lo migre: en la misma capa vuelve a decidir la especificidad. */
 
 .form-group label {
   display: inline-block;
@@ -151,47 +179,13 @@
   margin: 0;
 }
 
-.filaBotones,
-.filaMensajes {
-  margin: 0 !important;
-  padding: 0 !important;
-  max-width: 100%;
-  flex-wrap: wrap !important; /* Force wrapping on small screens */
-}
-
-.encabezado {
-  width: 100%;
-  margin: 0 auto;
-}
-
-.formularioRegistro {
-  width: 100%;
-  max-width: 1900px;
-  margin: 5px auto 0 auto;
-}
-
-.filaBotones {
-  --ps-btn-min-h: clamp(1.35rem, 1.05rem + 0.8vw, 1.9rem);
-  --ps-btn-py: clamp(0.12rem, 0.08rem + 0.2vw, 0.22rem);
-  --ps-btn-px: clamp(0.34rem, 0.2rem + 0.45vw, 0.62rem);
-  --ps-btn-font-size: clamp(0.6rem, 0.52rem + 0.28vw, 0.78rem);
-  --ps-btn-gap-inline: clamp(0.12rem, 0.08rem + 0.2vw, 0.24rem);
-  --ps-btn-icon-size: clamp(0.62rem, 0.54rem + 0.26vw, 0.84rem);
-  width: 100%;
-  max-width: 100%; /* Allow full width */
-  margin: 0; /* Remove auto margin */
-  padding: 0;
-}
-
-.filaMensajes {
-  width: 100%;
-  max-width: 100%;
-  margin: 0; /* Remove 5px margin */
-  padding: 0;
-}
-
-.filaMensajes p {
-  margin: 0;
+.grupo_botones1 button,
+.grupo_botones1 input,
+.grupo_botones_semanal_madre button,
+.grupo_botones_semanal_madre input,
+.grupo_botones_semanal button,
+.grupo_botones_semanal input {
+  font-size: 12px;
 }
 
 /* F1 Task 5a: retokenizado EN EL SITIO, no movido. Antes pintaba
@@ -219,33 +213,11 @@ table.dataTable tbody tr:hover td {
   color: var(--ds-active-text-primary) !important;
 }
 
-#dt_cliente {
-  padding: 0px 0px;
-  width: 100% !important;
-  max-width: 100% !important;
-}
-
 /* F1 Task 5a: la contencion de ancho de .dataTables_* se movio a
    public/css/design-system/vendor-datatables-legacy.css y la neutralizacion
    de las gutters negativas de .row a
    public/css/design-system/adapters/legacy-bridge.css, ambas en
    @layer legacy-overrides. */
-
-#cuadroTabla {
-  padding: 2px;
-  max-width: 100%;
-  overflow-x: hidden; /* Container implies constraint */
-}
-
-button.editar,
-button.duplicar,
-button.eliminar,
-button.EstadoEjecucion,
-button.reprogramar,
-button.abrirSoporte,
-button.borrarSoporte {
-  padding: 0px 5px;
-}
 
 /* F1 Task 5a-bis: el dropdown legacy (`.dropdown-menu`, `.dropdown-item` y
    `.dropdown-item:hover, :focus`) se deduplico contra el design system y lo
@@ -257,20 +229,6 @@ button.borrarSoporte {
    `!important` de legacy-overrides, y `font-size: 0.95rem` del item, ganado
    por `.dropdown-item { font-size: 1rem !important }` mas abajo en este
    mismo archivo). Ver el comentario de foundation.css para las mediciones. */
-
-.grupo_botones_semanal_madre,
-.grupo_botones_semanal {
-  float: right;
-}
-
-.grupo_botones1 button,
-.grupo_botones1 input,
-.grupo_botones_semanal_madre button,
-.grupo_botones_semanal_madre input,
-.grupo_botones_semanal button,
-.grupo_botones_semanal input {
-  font-size: 12px;
-}
 
 .form_eval {
   border-style: solid;
@@ -440,60 +398,9 @@ button.borrarSoporte {
   line-height: 1.5;
 }
 
-@media screen and (max-height: 700px) {
-  #semanasProyectoMenu,
-  #programa_generalMenu,
-  #programacion_intermediaMenu,
-  #programacion_semanalMenu,
-  #indicadoresMenu {
-    overflow: auto;
-    max-height: 200px;
-  }
-}
-
-@media screen and (min-height: 701px) and (max-height: 800px) {
-  #semanasProyectoMenu,
-  #programa_generalMenu,
-  #programacion_intermediaMenu,
-  #programacion_semanalMenu,
-  #indicadoresMenu {
-    overflow: auto;
-    max-height: 400px;
-  }
-}
-
-@media screen and (min-height: 801px) and (max-height: 900px) {
-  #semanasProyectoMenu,
-  #programa_generalMenu,
-  #programacion_intermediaMenu,
-  #programacion_semanalMenu,
-  #indicadoresMenu {
-    overflow: auto;
-    max-height: 450px;
-  }
-}
-
-@media screen and (min-height: 901px) and (max-height: 1080px) {
-  #semanasProyectoMenu,
-  #programa_generalMenu,
-  #programacion_intermediaMenu,
-  #programacion_semanalMenu,
-  #indicadoresMenu {
-    overflow: auto;
-    max-height: 500px;
-  }
-}
-
-@media screen and (min-height: 901px) {
-  #semanasProyectoMenu,
-  #programa_generalMenu,
-  #programacion_intermediaMenu,
-  #programacion_semanalMenu,
-  #indicadoresMenu {
-    overflow: auto;
-    max-height: 600px;
-  }
-}
+/* F1 Task 5a-bis: los cinco `@media (max-height)` de los menus de semana se
+   movieron a public/css/design-system/adapters/legacy-bridge.css con el
+   resto del layout legacy de este rango. */
 
 .iconoContratoRojo {
   color: #c22f2f;
@@ -585,14 +492,9 @@ button.borrarSoporte {
   /* margin: top right bottom left; */
 }
 
-#modal_spinner {
-  background-color: transparent !important;
-}
-
-.border-2 {
-  border-style: solid;
-  border-width: 1px;
-}
+/* F1 Task 5a-bis: `#modal_spinner` y `.border-2` se movieron a
+   public/css/design-system/adapters/legacy-bridge.css con el resto del
+   layout legacy de este rango. */
 
 .tituloFormularioCambios {
   border-style: solid;

@@ -128,4 +128,213 @@
     margin-right: 0 !important;
     margin-left: 0 !important;
   }
+
+  /* ─────────────────────────────────────────────────────────────────────
+     F1 Task 5a-bis: layout legacy absorbido desde public/css/styles.css
+     (module.components). Reglas vivas y sin fuga a claro: no tenian nada
+     malo salvo la capa. Destino: este archivo, por el mismo criterio con
+     que la Task 5a trajo aqui `.row` — son clases y ids del legado de la
+     app, no primitivas `aia-*` del design system, asi que no caben en
+     foundation.css ni en components/; y legacy-bridge.css lo importan LOS
+     DOS entrypoints (aia-design-system.css:24 y entrypoints/core.css:16),
+     los mismos que importan styles.css, de modo que el alcance queda
+     identico: ni se amplia al laboratorio ni se reduce.
+
+     Movidas VERBATIM: mismos selectores, mismos valores, mismos
+     !important, cero especificidad anadida.
+
+     Por que module -> legacy-overrides es neutro aqui, comprobado regla a
+     regla y despues medido:
+      - Declaraciones !important: el orden de capas se invierte, asi que
+        cualquier !important en una capa ANTERIOR sigue ganando igual que
+        antes, y los !important sin capa siguen perdiendo contra cualquier
+        capa. Los tres competidores !important reales estan en module
+        (el propio styles.css) y siguen ganando: `.filaBotones {
+        margin-bottom: 0.75rem !important }`, `.pg-page/.pi-page/.ps-page
+        #cuadroTabla { overflow-x: hidden !important }` y
+        `.pg-page/.pi-page/.ps-page #dt_cliente { width: 100% !important }`.
+      - Declaraciones normales: lo unico que podria voltearse son las de
+        OTRO archivo de @layer module o del resto de styles.css sobre el
+        mismo sujeto y la misma propiedad. Barridos los tres candidatos
+        (styles.css, programa-general.css y los bloques @layer module de
+        programacion-intermedia.css): los unicos sujetos compartidos son
+        `.pg-page .encabezado` y `.pi-page .encabezado`, que fijan
+        `background` y `color`, no `width`/`margin`.
+      - Los seis tokens `--ps-btn-*` de `.filaBotones` los consumen
+        listado-actividades.css, contratos.css y el propio styles.css desde
+        DESCENDIENTES, que los heredan; las otras definiciones del repo
+        cuelgan de `.filaBotones .toolbarFilaBotones`, otro elemento, asi
+        que no compiten en cascada con esta.
+
+     Verificado por medicion, no por lectura: diff de valores computados
+     VACIO en 18 rutas autenticadas a 1180x820 en dark, sobre los sujetos
+     de este bloque y sus propiedades (incluidos los que solo existen
+     dentro de modales cerrados, que la sonda lee con querySelectorAll y
+     no por visibilidad; los elementos se emparejan por firma de id/clases/
+     ancestros, no por indice, porque el orden del DOM en las rutas con
+     DataTables no es estable entre cargas).
+
+     TRES reglas del rango NO se movieron, revertidas por medicion y no por
+     criterio: `.form-group label`, `.row` y el `font-size: 12px` de
+     `.grupo_botones*`. Al llegar a esta capa ganaban a competidores de
+     module.components con MAS especificidad, que hoy les ganan. Se quedan
+     en styles.css con el detalle apuntado alli. */
+  .cuadroModal {
+    padding-left: 5%;
+    padding-right: 5%;
+    margin: auto;
+    width: 100%;
+  }
+
+  .filaBotones,
+  .filaMensajes {
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: 100%;
+    flex-wrap: wrap !important; /* Force wrapping on small screens */
+  }
+
+  .encabezado {
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  .formularioRegistro {
+    width: 100%;
+    max-width: 1900px;
+    margin: 5px auto 0 auto;
+  }
+
+  .filaBotones {
+    --ps-btn-min-h: clamp(1.35rem, 1.05rem + 0.8vw, 1.9rem);
+    --ps-btn-py: clamp(0.12rem, 0.08rem + 0.2vw, 0.22rem);
+    --ps-btn-px: clamp(0.34rem, 0.2rem + 0.45vw, 0.62rem);
+    --ps-btn-font-size: clamp(0.6rem, 0.52rem + 0.28vw, 0.78rem);
+    --ps-btn-gap-inline: clamp(0.12rem, 0.08rem + 0.2vw, 0.24rem);
+    --ps-btn-icon-size: clamp(0.62rem, 0.54rem + 0.26vw, 0.84rem);
+    width: 100%;
+    max-width: 100%; /* Allow full width */
+    margin: 0; /* Remove auto margin */
+    padding: 0;
+  }
+
+  .filaMensajes {
+    width: 100%;
+    max-width: 100%;
+    margin: 0; /* Remove 5px margin */
+    padding: 0;
+  }
+
+  .filaMensajes p {
+    margin: 0;
+  }
+
+  #dt_cliente {
+    padding: 0px 0px;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  #cuadroTabla {
+    padding: 2px;
+    max-width: 100%;
+    overflow-x: hidden; /* Container implies constraint */
+  }
+
+  button.editar,
+  button.duplicar,
+  button.eliminar,
+  button.EstadoEjecucion,
+  button.reprogramar,
+  button.abrirSoporte,
+  button.borrarSoporte {
+    padding: 0px 5px;
+  }
+
+  .grupo_botones_semanal_madre,
+  .grupo_botones_semanal {
+    float: right;
+  }
+
+  #modal_spinner {
+    background-color: transparent !important;
+  }
+
+  .border-2 {
+    border-style: solid;
+    border-width: 1px;
+  }
+
+  /* Los cinco bloques de abajo NO son responsive de ancho: acotan la altura
+     de los menus de semana por alto de ventana, asi que siguen dentro del
+     alcance desktop-only y se mueven tal cual.
+
+     HALLAZGO, para el controlador: hoy estan MUERTOS. El brief de este
+     tramo los daba por vivos porque
+     public/js/cargarDatosGeneralesPagina2.js:433-441 rellena
+     #semanasProyectoMenu, #programa_generalMenu, #programacion_intermediaMenu
+     y #programacion_semanalMenu — pero cada inyeccion esta guardada por un
+     `if (document.getElementById(...))` y ninguno de los cinco ids existe ya
+     en el markup: los aportaba la navbar que F0 retiro. Medido: cero
+     elementos para los cinco ids en 18 rutas autenticadas a 1180x820 dark
+     (las mismas 10 del guardian de canvas mas /proyectos, /plan-compras,
+     /dashboard/escalamientos, /internal/design-system, cic/cnc/cnp y
+     /programa-general-actualizar). #indicadoresMenu, que el brief si daba
+     por muerto, no se distingue en nada de los otros cuatro.
+     Se mueven en vez de borrarse porque el brief lo prohibe explicitamente
+     («no se borran») y la decision de borrar es del controlador. */
+  @media screen and (max-height: 700px) {
+    #semanasProyectoMenu,
+    #programa_generalMenu,
+    #programacion_intermediaMenu,
+    #programacion_semanalMenu,
+    #indicadoresMenu {
+      overflow: auto;
+      max-height: 200px;
+    }
+  }
+
+  @media screen and (min-height: 701px) and (max-height: 800px) {
+    #semanasProyectoMenu,
+    #programa_generalMenu,
+    #programacion_intermediaMenu,
+    #programacion_semanalMenu,
+    #indicadoresMenu {
+      overflow: auto;
+      max-height: 400px;
+    }
+  }
+
+  @media screen and (min-height: 801px) and (max-height: 900px) {
+    #semanasProyectoMenu,
+    #programa_generalMenu,
+    #programacion_intermediaMenu,
+    #programacion_semanalMenu,
+    #indicadoresMenu {
+      overflow: auto;
+      max-height: 450px;
+    }
+  }
+
+  @media screen and (min-height: 901px) and (max-height: 1080px) {
+    #semanasProyectoMenu,
+    #programa_generalMenu,
+    #programacion_intermediaMenu,
+    #programacion_semanalMenu,
+    #indicadoresMenu {
+      overflow: auto;
+      max-height: 500px;
+    }
+  }
+
+  @media screen and (min-height: 901px) {
+    #semanasProyectoMenu,
+    #programa_generalMenu,
+    #programacion_intermediaMenu,
+    #programacion_semanalMenu,
+    #indicadoresMenu {
+      overflow: auto;
+      max-height: 600px;
+    }
+  }
 }
