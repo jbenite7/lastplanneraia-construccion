@@ -333,6 +333,29 @@ foreach ($colaLarga as [$desc, $und, $tipo, $destino]) {
     $assert($ok, sprintf('%s → %s%s', $desc, $destino, $ok ? '' : ' (dio: ' . ($s['paqueteNombre'] ?? 'sin propuesta') . ')'));
 }
 
+// --- A3.3 · Un material no cae en un paquete «a todo costo» ------------------------------------
+// Si se contrata suministro + instalación, el material lo pone el contratista: que además figure
+// como insumo del presupuesto asignado a ese mismo paquete es contarlo dos veces. La excepción
+// existe para paquetes que sí absorben materiales por naturaleza (dotación), y va marcada.
+$aTodoCostoId = (int) $svc->crearPaquete('TEST A3 Sum + Inst Cerrado', 'a_todo_costo', 'test-a3')['paquete']['id'];
+$db->query(
+    "INSERT INTO general_maestro_insumos (descripcion, descripcion_norm, unidad, tipo_insumo, tipo_recurso, activo, creado_por, created_at)
+     VALUES ('MATERIAL PARA CERRADO A3', 'MATERIAL PARA CERRADO A3', 'UN', 'X', 'MATERIAL', 1, 'test-a3', NOW())",
+);
+$db->query(
+    "INSERT INTO pdc_insumo_vinculos (project_id, version_id, descripcion_norm, unidad, descripcion_original, tipo_insumo, cantidad_total, valor_total, apariciones, maestro_id, estado)
+     VALUES (?, ?, 'MATERIAL PARA CERRADO A3', 'UN', 'MATERIAL PARA CERRADO A3', 'X', 1, 100, 1, ?, 'pendiente')",
+    [$P1, $vid, $mid('MATERIAL PARA CERRADO A3', 'UN')],
+);
+$assert($svc->tipoRecursoAdmitido('MATERIAL', $aTodoCostoId) === false, 'Un MATERIAL no es admisible en un paquete a todo costo.');
+$db->query('UPDATE general_paquetes_contratacion SET admite_materiales = 1 WHERE id = ?', [$aTodoCostoId]);
+$assert($svc->tipoRecursoAdmitido('MATERIAL', $aTodoCostoId) === true, 'Con la excepción marcada en el paquete, sí se admite.');
+$db->query('UPDATE general_paquetes_contratacion SET admite_materiales = 0 WHERE id = ?', [$aTodoCostoId]);
+$assert($svc->tipoRecursoAdmitido('MANO DE OBRA', $aTodoCostoId) === true, 'La mano de obra sigue siendo admisible a todo costo.');
+// Los paquetes de dotación absorben materiales por naturaleza: el seed los marca.
+$dotacionId = (int) ($db->query("SELECT id FROM general_paquetes_contratacion WHERE nombre_norm = ? AND activo = 1", [\App\Services\Pdc\MaestroInsumosService::normalizar('Sum + Inst DOTACIÓN ZONAS COMUNES')])->fetchColumn() ?: 0);
+$assert($dotacionId > 0 && $svc->tipoRecursoAdmitido('MATERIAL', $dotacionId) === true, 'Los paquetes de dotación admiten materiales (excepción sembrada).');
+
 echo $failures === [] ? "=== OK ===\n" : '=== ' . count($failures) . " FAILED ===\n";
 $limpiar();
 exit($failures === [] ? 0 : 1);

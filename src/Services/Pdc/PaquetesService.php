@@ -77,6 +77,8 @@ final class PaquetesService
         'ELEMENTOS DE ASEO', 'EQUIPO DE OFICINA', 'EQ DE COMPUTO', 'COMUNICACIONES',
         // SST y bioseguridad: gasto de obra que no se le compra a un contratista de alcance.
         'BIOSEGURIDAD', 'PROTOCOLOS DE', 'COPIAS Y PLANOS',
+        // Personal indirecto y provisiones de gestión: sin esto el motor los mandaba a estructura.
+        'OFICIALES', 'PRESUPUESTO AMBIENTAL', 'AMBIENTAL',
     ];
 
     /** Veto: la regla declara que NO debe proponerse nada (queda pendiente para decisión humana). */
@@ -104,6 +106,52 @@ final class PaquetesService
      * Orden = prioridad: gana la PRIMERA regla que casa.
      */
     private const REGLAS_SEMBRADO = [
+        // ── A3.3 · Overrides destilados a conocimiento generalizable ────────────────────────────
+        // Estas reglas nacen de revisar las 158 entradas curadas a mano para DAPORTO: 89 eran
+        // redundantes (la regla ya acertaba) y las otras 69 tapaban huecos que, sin ellas, el motor
+        // resolvía con disparates de la capa de agrupación contable — FORMALETA COLUMNAS acababa en
+        // Indirectos, EXCAVACIÓN MECÁNICA en cielos rasos y el geodrén en ventanería. Al escribirlas
+        // como reglas el conocimiento deja de ser memoria de un proyecto y sirve para el siguiente.
+
+        // Equipos de izaje y transporte vertical: contrato propio, con montaje y desmontaje.
+        ['kw' => ['TORRE GRUA'], 'paq' => 'Sum + Inst TORRE GRUA', 'tipos' => [], 'descPrimero' => true],
+        ['kw' => ['MALACATE', 'PLUMA GRUA', 'MONTACARGA', 'ASCENSOR DE OBRA'], 'paq' => 'Sum + Inst EQUIPOS TRANSPORTE VERTICAL', 'tipos' => [], 'descPrimero' => true],
+        // Movimiento de tierra contratado a todo costo (máquina + operador + botada), distinto de la
+        // cuadrilla propia que hace excavación manual.
+        ['kw' => ['EXCAVACION MECANICA', 'BOTADA DE MATERIAL', 'BOTADA ESCOMBROS', 'BOTADA DE ESCOMBROS', 'BOBCAT', 'VIBROCOMPACTADOR', 'RETROEXCAVADORA'], 'paq' => 'Sum + Inst MOVIMIENTOS DE TIERRA', 'tipos' => [], 'descPrimero' => true],
+        ['kw' => ['BASE GRANULAR', 'SUB BASE', 'SUBBASE GRANULAR'], 'paq' => 'Suministro BASE Y SUB BASE GRANULAR', 'tipos' => [], 'soloDesc' => true, 'descPrimero' => true],
+        // Formaleta y obra falsa: el alquiler de encofrado no es un indirecto de administración.
+        ['kw' => ['FORMALETA', 'ENCOFRADO', 'OBRA FALSA', 'MADERA ESTRUCTURA', 'TABLERO FENOLIC'], 'paq' => 'Suministro FORMALETA MUROS, LOSAS Y CONTENCIÓN', 'tipos' => [], 'descPrimero' => true],
+        // Anclajes químicos y líneas de vida: el epóxico va con el anclaje, no con los aditivos.
+        ['kw' => ['EPOXICO', 'ANCLAJE QUIMICO', 'ANCLAJES PARA', 'ANCLAJES CERTIFICADOS PARA MANTENIMIENTO'], 'paq' => 'Sum + Inst ANCLAJES', 'tipos' => [], 'descPrimero' => true],
+        // Cubiertas, asfalto y otros oficios con paquete propio que el motor no alcanzaba.
+        ['kw' => ['CUBIERTA LIVIANA', 'CUBIERTA METALICA', 'TEJA'], 'paq' => 'Sum + Inst CUBIERTAS METÁLICAS', 'tipos' => [], 'descPrimero' => true],
+        ['kw' => ['PAVIMENTO ASFALTICO', 'IMPRIMACION ASFALTICA', 'CARPETA ASFALTICA', 'ASFALTO'], 'paq' => 'Sum + Inst CARPETA ASFALTICA', 'tipos' => [], 'descPrimero' => true],
+        ['kw' => ['ENSAYOS DE LABORATORIO', 'LABORATORIO DE MATERIALES', 'ENSAYO DE'], 'paq' => 'Sum + Inst LABORATORIO DE MATERIALES', 'tipos' => [], 'descPrimero' => true],
+        ['kw' => ['CAMPAMENTO'], 'paq' => 'Sum + Inst CAMPAMENTO - ALMACEN', 'tipos' => [], 'descPrimero' => true],
+        ['kw' => ['REVOQUE SECO'], 'paq' => 'Sum + Inst REVOQUE SECO', 'tipos' => [], 'descPrimero' => true],
+        ['kw' => ['GEODREN', 'ALVEODREN'], 'paq' => 'Suministro GEODREN', 'tipos' => ['MATERIAL'], 'soloDesc' => true],
+        ['kw' => ['GEODREN', 'ALVEODREN', 'LECHO FILTRANTE'], 'paq' => 'M. de O FILTROS', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO'], 'descPrimero' => true],
+        ['kw' => ['MESON', 'MESONES'], 'paq' => 'Sum + Inst MESONES', 'tipos' => [], 'descPrimero' => true],
+        ['kw' => ['ESPEJO'], 'paq' => 'Sum + Inst CABINAS Y ESPEJOS DE BAÑOS', 'tipos' => [], 'descPrimero' => true],
+        ['kw' => ['CALENTADOR', 'CALENTAMIENTO DE AGUA'], 'paq' => 'Sum + Inst SISTEMA DE CALENTAMIENTO AGUA', 'tipos' => [], 'descPrimero' => true],
+        ['kw' => ['JACUZZI', 'HIDROMASAJE', 'EQUIPO DE PRESION', 'EQUIPOS DE PRESION', 'HIDRONEUMATIC'], 'paq' => 'Suministro EQUIPOS HIDRONEUMÁTICOS', 'tipos' => [], 'descPrimero' => true],
+        ['kw' => ['REJILLA'], 'paq' => 'Sum + Inst INSTALACIONES HIDROSANITARIAS', 'tipos' => ['MATERIAL', 'SUBCONTRATO'], 'descPrimero' => true],
+        ['kw' => ['LAVADERO PREFABRICADO', 'LAVAESCOBAS'], 'paq' => 'Sum + Inst DOTACIÓN COCINAS Y LAVADEROS', 'tipos' => [], 'descPrimero' => true],
+        // Redes provisionales de obra: son instalación temporal, no un imprevisto.
+        ['kw' => ['RED PROVISIONAL', 'PROVISIONAL DE ENERGIA', 'PROVISIONAL DE AGUA'], 'paq' => 'Sum + Inst PROVISIONAL ELÉCTRICA', 'tipos' => [], 'descPrimero' => true],
+        // Bombeo de concreto: servicio con equipo y operador, contrato propio (no un indirecto).
+        ['kw' => ['BOMBEO DE CONCRETO', 'SERVICIO BOMBEO'], 'paq' => 'Sum + Inst BOMBEO DE CONCRETO', 'tipos' => [], 'descPrimero' => true],
+        // Obra de urbanismo llamada por su nombre: sin esto acababa en estructura por tokens.
+        ['kw' => ['URBANISMO', 'OBRAS CIVILES GUARDERIA', 'OBRAS EXTERIORES'], 'paq' => 'M. de O URBANISMO (MUROS, ANDENES, ESCALAS, GRAMA, ETC)', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO'], 'descPrimero' => true],
+        // Accesorios de baño: el juego de incrustaciones es dotación, no un aparato sanitario.
+        ['kw' => ['INCRUSTACION', 'ACCESORIOS DE BANO', 'TOALLERO', 'JABONERA'], 'paq' => 'Suministro DOTACIÓN Y ACCESORIOS DE BAÑOS', 'tipos' => ['MATERIAL'], 'soloDesc' => true, 'descPrimero' => true],
+        // El prefabricado se suministra; su instalación es otro paquete (regla de más abajo).
+        ['kw' => ['LAVAESCOBAS PREFABRICADO', 'LAVADERO PREFABRICADO'], 'paq' => 'Suministro LAVADERO PREFABRICADO', 'tipos' => ['MATERIAL'], 'soloDesc' => true, 'descPrimero' => true],
+        // Cimentación: el vaciado y el descabece de pilotes son de la cuadrilla de cimentación
+        // profunda, y la losa de cimentación de la superficial — no de la estructura aérea.
+        ['kw' => ['VACIADO DE PILOTES', 'DESCABECE PILOTES', 'VACIADO PILOTE'], 'paq' => 'M. de O CIMENTACIÓN PROFUNDA EN CONCRETO', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO'], 'descPrimero' => true],
+
         // ── A3.3 · Cola larga: familias que el motor no sabía colocar (71 insumos, $653M en DAPORTO).
         // Van primero porque son las más específicas: nombran un objeto o un servicio concreto y no
         // deben caer en las reglas de oficio de más abajo.
@@ -113,7 +161,7 @@ final class PaquetesService
         // resuelven los overrides antes que esta regla).
         ['kw' => ['VIBRADOR', 'CANGURO', 'APISONADOR', 'PLANCHA VIBRATORIA', 'BOMBA SUMERGIBLE', 'COMPRA EQUIPO', 'MARTILLO DEMOLEDOR', 'COMPRESOR', 'REPOSICION Y REPARACION', 'MAQUINARIA', 'BANOS PORTATILES', 'BANO PORTATIL'], 'paq' => 'Equipos y maquinaria de obra', 'tipos' => ['EQUIPO', 'MATERIAL'], 'soloDesc' => true],
         // Tecnología: no se contrata como obra, se pide a necesidad; su modalidad es consumo directo.
-        ['kw' => ['COMPUTADOR', 'TABLET', 'IPAD', 'IMPRESORA', 'SOFTWARE', 'INTERNET', 'LICENCIA', 'RADIOS DE COMUNICACION', 'RADIO DE COMUNICACION'], 'paq' => 'Tecnología y software de obra', 'tipos' => ['EQUIPO', 'MATERIAL', 'SUBCONTRATO'], 'soloDesc' => true],
+        ['kw' => ['COMPUTADOR', 'TABLET TIPO', 'TABLETS', 'IPAD', 'IMPRESORA', 'SOFTWARE', 'INTERNET', 'LICENCIA', 'RADIOS DE COMUNICACION', 'RADIO DE COMUNICACION'], 'paq' => 'Tecnología y software de obra', 'tipos' => ['EQUIPO', 'MATERIAL', 'SUBCONTRATO'], 'soloDesc' => true],
         // Transporte externo. OJO: «TRANSPORTE INTERNO» de mano de obra es acarreo dentro de la obra
         // y pertenece a la cuadrilla de estructura (regla más abajo); por eso aquí se filtra por tipo.
         ['kw' => ['ACARREO', 'FLETE', 'BUSETA', 'TRANSPORTE INTERNO', 'TRANSPORTE DE MATERIAL'], 'paq' => 'Transporte y acarreos', 'tipos' => ['TRANSPORTE'], 'soloDesc' => true],
@@ -143,7 +191,7 @@ final class PaquetesService
         ['kw' => ['TALON', 'REBANCO'], 'paq' => 'M. de O MORTEROS DE PISO', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO'], 'descPrimero' => true],
         // Amoblamiento y electrodomésticos: sin regla acababan en griferías o en estructura por pura
         // coincidencia de agrupación contable. Cada uno tiene su paquete de dotación en el catálogo.
-        ['kw' => ['CAMPANA EXTRACTORA', 'ASADOR', 'ESTUFA', 'HORNO EMPOTRA', 'MESON EN'], 'paq' => 'Sum + Inst DOTACIÓN COCINAS Y LAVADEROS', 'tipos' => ['MATERIAL', 'SUBCONTRATO'], 'soloDesc' => true],
+        ['kw' => ['CAMPANA EXTRACTORA', 'ASADOR', 'ESTUFA', 'HORNO EMPOTRA', 'CUBIERTA A GAS'], 'paq' => 'Sum + Inst DOTACIÓN COCINAS Y LAVADEROS', 'tipos' => ['MATERIAL', 'SUBCONTRATO'], 'soloDesc' => true],
         ['kw' => ['MESA DE JUNTAS', 'MESA PARA', 'MESA INFANTIL', 'SALA TIPO', 'JUEGO DE TERRAZA', 'MOBILIARIO', 'SOFA', 'POLTRONA', 'TAPETE'], 'paq' => 'Sum + Inst DOTACIÓN ZONAS COMUNES', 'tipos' => ['MATERIAL', 'SUBCONTRATO'], 'soloDesc' => true],
         // Puertas POR TIPO (decisión del usuario 2026-07-26): madera, metálicas y cortafuego son las
         // tres categorías vigentes. Los suministros de puerta metálica no los cubría la regla de
@@ -174,7 +222,7 @@ final class PaquetesService
         ['kw' => ['REJILLA DE PISO', 'REJILLA PARA DUCHA', 'SIFON', 'CROMAD', 'GRIFERIA', 'LAVAMANOS', 'LAVAPLATOS', 'ORINAL', 'APARATO SANITARIO'], 'paq' => 'M. de O APARATOS SANITARIOS Y GRIFERÍA', 'tipos' => ['MANO DE OBRA'], 'descPrimero' => true],
         ['kw' => ['INSTALACION ELECTRIC', 'ELECTRIC', 'ILUMINACION', 'VOZ Y DATOS'], 'paq' => 'Sum + Inst INSTALACIONES ELÉCTRICAS, VOZ Y DATOS (INTERIORES)', 'tipos' => ['SUBCONTRATO', 'MANO DE OBRA']],
         ['kw' => ['HIDROSANITARI', 'HIDRAULIC', 'SANITARIA', 'DESAGUE', 'TUBERIA PVC', 'RED DE AGUA', 'GARGOLA'], 'paq' => 'Sum + Inst INSTALACIONES HIDROSANITARIAS', 'tipos' => ['SUBCONTRATO', 'MANO DE OBRA', 'MATERIAL']],
-        ['kw' => ['RED DE GAS', 'GAS DOMICILIAR', 'INSTALACION DE GAS', 'GAS NATURAL'], 'paq' => 'Sum + Inst RED DE GAS', 'tipos' => ['SUBCONTRATO', 'MANO DE OBRA']],
+        ['kw' => ['RED DE GAS', 'GAS DOMICILIAR', 'INSTALACION DE GAS', 'GAS NATURAL'], 'paq' => 'Sum + Inst RED DE GAS', 'tipos' => ['SUBCONTRATO', 'MANO DE OBRA'], 'descPrimero' => true],
         ['kw' => ['RED CONTRA INCENDIO', 'DETECCION', 'EXTINCION', 'ROCIADOR'], 'paq' => 'Sum + Inst RED CONTRA INCENDIO, DETECCIÓN Y EXTINCIÓN', 'tipos' => ['SUBCONTRATO']],
         ['kw' => ['AIRE ACONDICIONADO', 'EXTRACCION', 'VENTILACION MECANIC'], 'paq' => 'Sum + Inst RED DE AIRE ACONDICIONADO Y EQUIPOS DE EXTRACCIÓN', 'tipos' => ['SUBCONTRATO']],
         ['kw' => ['ASCENSOR'], 'paq' => 'Sum + Inst ASCENSORES', 'tipos' => ['SUBCONTRATO']],
@@ -211,7 +259,7 @@ final class PaquetesService
         ['kw' => ['LOSA', 'PLACA', 'COLUMNA', 'VIGA', 'ESTRUCTURA EN CONCRETO', 'PANTALLA', 'ENTREPISO', 'ESCALERA EN CONCRETO', 'FUNDIDA', 'CONCRETO ALIGERAD'], 'paq' => 'M. de O ESTRUCTURA EN CONCRETO', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
         // Piso industrial: cuadrilla de allanadora y corte, no la de losa aérea.
         ['kw' => ['PISO INDUSTRIAL', 'PISO EN CONCRETO', 'ENDURECEDOR', 'CORTE DE PISO'], 'paq' => 'M. de O PISOS INDUSTRIALES EN CONCRETO', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO'], 'descPrimero' => true],
-        ['kw' => ['MORTERO DE PISO', 'ALISTADO', 'MORTERO DE NIVELACION', 'AFINADO DE PISO'], 'paq' => 'M. de O MORTEROS DE PISO', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
+        ['kw' => ['MORTERO DE PISO', 'ALISTADO', 'MORTERO DE NIVELACION', 'AFINADO DE PISO'], 'paq' => 'M. de O MORTEROS DE PISO', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO'], 'descPrimero' => true],
         // Mediacaña y regata: obra civil en mortero — la ejecuta el mampostero, no el impermeabilizador
         // ni el instalador de pisos (criterio del usuario 2026-07-25).
         ['kw' => ['MEDIA CANA', 'MEDIACANA', 'REGATA'], 'ctx' => ['CUBIERTA', 'IMPERMEABILIZ', 'TERRAZA'], 'paq' => 'M. de O MAMPOSTERÍA', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
@@ -225,6 +273,7 @@ final class PaquetesService
         ['kw' => ['MEDIA CANA', 'MEDIACANA'], 'paq' => self::SIN_PROPUESTA, 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
         // Enchape de MURO (el de piso ya se resolvió arriba).
         ['kw' => ['ENCHAPE', 'CERAMIC', 'PORCELANATO', 'BALDOSA', 'GRES', 'PUENTE ADHERENCIA'], 'paq' => 'M. de O ENCHAPES CERÁMICOS', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
+        ['kw' => ['TRANSPORTE INTERNO DE CONCRETO', 'TRANSPORTE INTERNO DE ACERO'], 'paq' => 'M. de O ESTRUCTURA EN CONCRETO', 'tipos' => ['MANO DE OBRA'], 'descPrimero' => true],
         ['kw' => ['PREPARACION MEZCLA', 'TRANSPORTE INTERNO', 'MEZCLA', 'PREPARACION DE CONCRETO'], 'paq' => 'M. de O ESTRUCTURA EN CONCRETO', 'tipos' => ['MANO DE OBRA']],
 
         // ── Materiales (suministro) — SOLO por la descripción: el nombre identifica el producto ──
@@ -252,7 +301,13 @@ final class PaquetesService
         ['kw' => ['CONCRETO', 'HORMIGON'], 'paq' => 'Suministro CONCRETO', 'tipos' => ['MATERIAL'], 'soloDesc' => true],
     ];
 
-    public function __construct(private readonly \Database $db)
+    /**
+     * `$conOverrides = false` corre el motor solo con su conocimiento generalizable (reglas, tokens,
+     * agrupación), ignorando la lista curada a mano. Es la medida honesta de cuánto sabe el motor:
+     * en DAPORTO los overrides explican el 71,4 % del valor asignado, así que sin distinguirlos la
+     * cobertura mide sobre todo el trabajo manual del ejercicio (A3.3).
+     */
+    public function __construct(private readonly \Database $db, private readonly bool $conOverrides = true)
     {
     }
 
@@ -673,7 +728,7 @@ final class PaquetesService
         $this->asegurarActividades($projectId, (int) $ins['version']['id']);
 
         $catalogo = $this->catalogoActivoPorNombre();
-        $overrides = $this->overridesIA();
+        $overrides = $this->overridesIA($projectId);
         $actMap = $this->actividadDominantePorInsumo($projectId, $versionId);
         $domMap = $this->dominanciaPorInsumo($projectId, $versionId);
 
@@ -910,27 +965,53 @@ final class PaquetesService
     private function catalogoActivoPorNombre(): array
     {
         $rows = $this->db->query(
-            'SELECT id, nombre, nombre_norm, tipo_negociacion, modalidad_contratacion FROM general_paquetes_contratacion WHERE activo = 1',
+            'SELECT id, nombre, nombre_norm, tipo_negociacion, modalidad_contratacion, admite_materiales
+             FROM general_paquetes_contratacion WHERE activo = 1',
         )->fetchAll(\PDO::FETCH_ASSOC);
         $mapa = [];
         foreach ($rows as $r) {
             $mapa[$r['nombre_norm']] = [
                 'id' => (int) $r['id'], 'nombre' => $r['nombre'],
                 'tipoNegociacion' => $r['tipo_negociacion'], 'modalidad' => $r['modalidad_contratacion'],
+                'admiteMateriales' => (int) $r['admite_materiales'],
             ];
         }
         return $mapa;
     }
 
     /** Overrides expertos (pasada semántica IA) desde el JSON versionado: NORMA@@UNIDAD → nombre de paquete. */
-    private function overridesIA(): array
+    /**
+     * Overrides curados: NORMA@@UNIDAD → nombre de paquete.
+     *
+     * Cada entrada declara su `alcance` (A3.3): `global` es vocabulario que sirve en cualquier obra
+     * de AIA; `proyecto` es una decisión atada a un presupuesto concreto y solo aplica ahí. La
+     * distinción importa porque sin ella la cobertura confunde memoria de un ejercicio con
+     * conocimiento del motor. Se acepta también el formato plano (valor string) por compatibilidad.
+     */
+    private function overridesIA(?int $projectId = null): array
     {
         $ruta = __DIR__ . '/../../../database/seeds/sembrado_ia_overrides.json';
-        if (!is_file($ruta)) {
+        if (!$this->conOverrides || !is_file($ruta)) {
             return [];
         }
         $data = json_decode((string) file_get_contents($ruta), true);
-        return is_array($data['overrides'] ?? null) ? $data['overrides'] : [];
+        $crudos = is_array($data['overrides'] ?? null) ? $data['overrides'] : [];
+        $out = [];
+        foreach ($crudos as $clave => $valor) {
+            if (is_string($valor)) {
+                $out[$clave] = $valor;
+                continue;
+            }
+            if (!is_array($valor) || !is_string($valor['paquete'] ?? null)) {
+                continue;
+            }
+            $esDeProyecto = ($valor['alcance'] ?? 'global') === 'proyecto';
+            if ($esDeProyecto && (int) ($valor['projectId'] ?? 0) !== (int) $projectId) {
+                continue;
+            }
+            $out[$clave] = $valor['paquete'];
+        }
+        return $out;
     }
 
     /** Actividad dominante (mayor valor) por insumo de la versión: NORMA@@UNIDAD → texto de la actividad. */
@@ -1052,6 +1133,32 @@ final class PaquetesService
         return ['versionId' => $vid, 'filas' => $filas];
     }
 
+    /**
+     * ¿Ese tipo de recurso puede ir a ese paquete? Expone la doctrina de compatibilidad para la UI y
+     * para quien audite una asignación, sin tener que replicar el cuadro en el cliente.
+     */
+    public function tipoRecursoAdmitido(?string $tipoRecurso, int $paqueteId): bool
+    {
+        $r = $this->db->query(
+            'SELECT tipo_negociacion, modalidad_contratacion, admite_materiales
+             FROM general_paquetes_contratacion WHERE id = ? AND activo = 1',
+            [$paqueteId],
+        )->fetch(\PDO::FETCH_ASSOC);
+        if ($r === false) {
+            return false;
+        }
+        // Los buckets sin proceso no son una negociación: aceptan lo que sea (ver resolverPaquete).
+        if (in_array($r['modalidad_contratacion'], self::MODALIDADES_SIN_PROCESO, true)) {
+            return true;
+        }
+        if (!in_array($r['tipo_negociacion'], self::tiposCompatibles($tipoRecurso), true)) {
+            return false;
+        }
+        return !(mb_strtoupper((string) $tipoRecurso) === 'MATERIAL'
+            && $r['tipo_negociacion'] === 'a_todo_costo'
+            && (int) $r['admite_materiales'] !== 1);
+    }
+
     /** tipo_negociacion compatibles con un tipo_recurso SINCO (evita ubicar material en paquete de mano de obra). */
     private static function tiposCompatibles(?string $tipoRecurso): array
     {
@@ -1082,6 +1189,14 @@ final class PaquetesService
             return $paq;
         }
         if (!in_array($paq['tipoNegociacion'], self::tiposCompatibles($tipoRecurso), true)) {
+            return null;
+        }
+        // Doble conteo: si el paquete es a todo costo, el material lo pone el contratista. Que además
+        // figure como insumo asignado ahí es contarlo dos veces (A3.3). Los paquetes que compran
+        // producto terminado —dotación, planta eléctrica— llevan la excepción marcada en el catálogo.
+        if (mb_strtoupper((string) $tipoRecurso) === 'MATERIAL'
+            && $paq['tipoNegociacion'] === 'a_todo_costo'
+            && (int) ($paq['admiteMateriales'] ?? 0) !== 1) {
             return null;
         }
         // El prefijo del NOMBRE del insumo manda: un suministro nunca cae en un paquete de mano de
@@ -1173,6 +1288,22 @@ final class PaquetesService
                             'veto' => true, 'capa' => 'reglas', 'confianza' => 'media',
                             'paqueteId' => 0, 'paqueteNombre' => '',
                             'evidencia' => "Regla de veto: «{$kw}» {$donde} sin contexto suficiente → queda pendiente.",
+                        ];
+                    }
+                    // Doble conteo: la regla acierta el oficio, pero el destino es «a todo costo» y
+                    // este insumo es un material. Prohibir no puede significar mandarlo a cualquier
+                    // otro sitio — sin este veto el material caía en el primer fallback de tokens o
+                    // agrupación, que es como un enchape acababa en griferías. Va a revisión humana.
+                    $destino = $catalogo[mb_substr(MaestroInsumosService::normalizar($regla['paq']), 0, 200)] ?? null;
+                    if ($destino !== null
+                        && mb_strtoupper((string) ($insumo['tipoRecurso'] ?? '')) === 'MATERIAL'
+                        && $destino['tipoNegociacion'] === 'a_todo_costo'
+                        && (int) ($destino['admiteMateriales'] ?? 0) !== 1) {
+                        return [
+                            'veto' => true, 'capa' => 'reglas', 'confianza' => 'baja',
+                            'paqueteId' => 0, 'paqueteNombre' => '',
+                            'evidencia' => "«{$kw}» {$donde} apunta a «{$destino['nombre']}», que es a todo costo: "
+                                . 'el material lo pondría el contratista y asignarlo aquí sería contarlo dos veces. Requiere decisión humana.',
                         ];
                     }
                     $paq = $this->resolverPaquete($regla['paq'], $insumo['tipoRecurso'] ?? null, $catalogo, $insumo['descripcionNorm']);
@@ -1294,7 +1425,7 @@ final class PaquetesService
             return null;
         }
         $catalogo = $this->catalogoActivoPorNombre();
-        $overrides = $this->overridesIA();
+        $overrides = $this->overridesIA($projectId);
         $actMap = $this->actividadDominantePorInsumo($projectId, $versionId);
 
         // Consenso local: qué paquetes ya recibieron insumos de cada agrupación SINCO en el proyecto.
