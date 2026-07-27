@@ -36,25 +36,71 @@
   }
 }
 
-/* F1 Task 4 BLOQUEADO (no absorbido), segundo intento: body/h1-h6/
-   .dropdown-item de public/css/styles.css (@layer base) se quedan en
-   module.base (ver styles.css). El coordinador autorizo retirar el <link>
-   crudo a handsontable-module.css de views/pdc/pdc.view.php,
-   views/contratos/contratos.view.php,
-   views/listado-actividades/listadoActividades.view.php y
-   views/programa-general-actualizar/programaGeneralActualizar.view.php (ese
-   archivo ya llega via aia-design-system.css en layer(vendor); el link
-   crudo duplicaba la cascada y corrompia el orden global de @layer
-   base/components en esas 4 rutas). Con los duplicados fuera, se reintento
-   la absorcion y SE MIDIO de nuevo: la causa (a) del intento anterior
-   desaparece (ya no compite Bootstrap/vendor), pero la causa (b) persiste,
-   ahora uniforme en las 5 rutas (incl. /pdc, que antes quedaba enmascarada
-   por la corrupcion de capas): .aia-shell (core.css, @layer components) tiene
-   mayor prioridad de capa que base (correcto por diseno DS-006) y su
-   shorthand `background: var(--ds-shell-background)` no fija
-   background-color (solo background-image) -- getComputedStyle(body)
-   .backgroundColor cae a transparente en /pdc, /indicadores, /profesionales,
-   /subcontratistas y /control-cambios aunque la superficie se vea oscura por
-   el gradiente. Arreglarlo exige tocar .aia-shell en core.css @layer
-   components, fuera del destino autorizado de esta tarea (solo su @layer
-   utilities). Ver f1-task-4-report.md. */
+/* F1 shell-background: absorbido desde public/css/styles.css (@layer base),
+   bloqueado dos veces en F1 Task 4 (ver f1-task-4-report.md). La causa raiz
+   era .aia-shell (core.css, @layer components) fijando solo background-image
+   via el shorthand `background: var(--ds-shell-background)`, sin
+   background-color -- getComputedStyle(body).backgroundColor caia a
+   transparente en rutas sin CSS de modulo propio, aunque la superficie se
+   viera oscura por el gradiente. Resuelto en core.css agregando
+   `background-color: var(--ds-active-bg-canvas)` a .aia-shell (ver
+   f1-shell-background-report.md). Con eso, body ya no depende de que este
+   bloque gane la cascada: .aia-shell (components, capa superior) pinta el
+   mismo color solido para las 21 vistas que llevan esa clase; este bloque
+   solo sigue siendo necesario tal cual para los 2 <body> restantes que no
+   llevan .aia-shell hoy (views/plan-compras/app.view.php no importa
+   styles.css en absoluto; views/dashboard/escalamientos.php pinta body via
+   un <style> propio sin capa, que gana sobre cualquier @layer por spec) --
+   ninguno de los dos depende de esta regla, pero se mueve igual para no
+   dejar el modulo.base con contenido colgante. */
+@layer base {
+  body {
+    font-size: 1rem;
+    font-family: var(--font-main);
+    background-color: var(--surface-bg);
+    color: var(--text-main);
+    line-height: 1.5;
+  }
+
+  /* Typography Overrides */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-weight: 600;
+    letter-spacing: -0.02em; /* Tight tracking like iOS */
+    color: var(--text-main);
+  }
+
+  a.dropdown-item:hover,
+  .dropdown-item:hover {
+    text-decoration: none;
+    background-color: var(--surface-bg) !important; /* F1 Task 3: fondo oscuro (canvas) */
+    /* F1 Task 3: --primary (azul Apple literal) sobre el canvas oscuro mide
+       4.09:1, bajo el 4.5:1 de AA para texto normal. --ds-active-action-primary-hover
+       es el acento que el DS ya designa para estados hover sobre fondo oscuro y
+       mide 9.02:1 aqui. Medido, no estimado (ver f1-task-3-report.md). No se
+       retiraron los !important al mover el bloque: aunque ahora vive en
+       @layer base (antes de components/module en el orden canonico) en vez
+       de module.base, retirarlos es un cambio de comportamiento sin
+       verificacion en vivo propia de esta tarea -- fuera de alcance, ver
+       f1-shell-background-report.md. */
+    color: var(--ds-active-action-primary-hover) !important;
+  }
+
+  .dropdown-item {
+    font-family: var(--font-main);
+    border-radius: var(--radius-sm);
+    margin: 2px 4px;
+    width: auto;
+    color: var(--text-main);
+  }
+
+  .dropdown-item.active {
+    background-color: var(--primary-light);
+    font-weight: 500;
+    color: var(--text-inverse);
+  }
+}

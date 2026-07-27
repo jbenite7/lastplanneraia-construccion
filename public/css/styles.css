@@ -1,4 +1,4 @@
-@layer theme, base, layout, components;
+@layer theme, layout, components;
 
 @layer theme {
 :root {
@@ -60,65 +60,14 @@
 }
 /* Fin Layer Theme */
 
-/* reset y utilities absorbidos por public/css/design-system/foundation.css y
-   public/css/design-system/core.css (@layer utilities) en F1 Task 4. */
-
-/* F1 Task 4 BLOQUEADO, segundo intento: se retiraron los 4 <link> crudo
-   duplicados a handsontable-module.css (ver views/pdc, contratos,
-   listado-actividades, programa-general-actualizar) y se reintento absorber
-   este bloque a foundation.css @layer base. Persiste un bloqueo distinto y
-   uniforme en las 5 rutas: .aia-shell (core.css, @layer components) gana por
-   capa sobre base (correcto) pero su shorthand `background:
-   var(--ds-shell-background)` no fija background-color, asi que
-   getComputedStyle(body).backgroundColor cae a transparente. Arreglo real:
-   .aia-shell en core.css @layer components, fuera del destino autorizado de
-   esta tarea. Ver f1-task-4-report.md. */
-@layer base {
-  body {
-    font-size: 1rem;
-    font-family: var(--font-main);
-    background-color: var(--surface-bg);
-    color: var(--text-main);
-    line-height: 1.5;
-  }
-
-  /* Typography Overrides */
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    font-weight: 600;
-    letter-spacing: -0.02em; /* Tight tracking like iOS */
-    color: var(--text-main);
-  }
-
-  a.dropdown-item:hover,
-  .dropdown-item:hover {
-    text-decoration: none;
-    background-color: var(--surface-bg) !important; /* F1 Task 3: fondo oscuro (canvas) */
-    /* F1 Task 3: --primary (azul Apple literal) sobre el canvas oscuro mide
-       4.09:1, bajo el 4.5:1 de AA para texto normal. --ds-active-action-primary-hover
-       es el acento que el DS ya designa para estados hover sobre fondo oscuro y
-       mide 9.02:1 aqui. Medido, no estimado (ver f1-task-3-report.md). */
-    color: var(--ds-active-action-primary-hover) !important;
-  }
-
-  .dropdown-item {
-    font-family: var(--font-main);
-    border-radius: var(--radius-sm);
-    margin: 2px 4px;
-    width: auto;
-    color: var(--text-main);
-  }
-
-  .dropdown-item.active {
-    background-color: var(--primary-light);
-    font-weight: 500;
-    color: var(--text-inverse);
-  }
-}
+/* reset, utilities y base absorbidos por public/css/design-system/foundation.css
+   (@layer base) y public/css/design-system/core.css (@layer utilities) en F1
+   Task 4 / F1 shell-background. El bloqueo de `base` (documentado en
+   f1-task-4-report.md) era .aia-shell (core.css @layer components) fijando
+   solo background-image via el shorthand `background: var(--ds-shell-background)`,
+   sin background-color -- resuelto agregando background-color explicito a
+   .aia-shell antes de reintentar esta absorcion. Ver
+   f1-shell-background-report.md. */
 /* Fin Layer Base */
 
 @layer components {
