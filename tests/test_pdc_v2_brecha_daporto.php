@@ -20,7 +20,7 @@ use App\Services\Pdc\PaquetesService;
 use App\Services\Pdc\MaestroInsumosService;
 
 /** Techo de diferencias tolerado. Bájalo cada vez que cierres un grupo: es un trinquete. */
-const BRECHA_MAXIMA = 15;
+const BRECHA_MAXIMA = 7;
 
 $PROYECTO = 73;
 $VERSION = 292;
