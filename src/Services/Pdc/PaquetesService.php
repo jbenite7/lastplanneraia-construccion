@@ -75,6 +75,8 @@ final class PaquetesService
         'IMPREVISTO', 'NOMINA', 'DOTACION', 'PAPELERIA', 'FOTOCOPIA', 'UTILES', 'CAFETERIA',
         'ASEO', 'VIGILANCIA', 'HONORARIO', 'ADMINISTRA', 'GASTOS MEDICOS', 'DROGAS',
         'ELEMENTOS DE ASEO', 'EQUIPO DE OFICINA', 'EQ DE COMPUTO', 'COMUNICACIONES',
+        // SST y bioseguridad: gasto de obra que no se le compra a un contratista de alcance.
+        'BIOSEGURIDAD', 'PROTOCOLOS DE', 'COPIAS Y PLANOS',
     ];
 
     /** Veto: la regla declara que NO debe proponerse nada (queda pendiente para decisión humana). */
@@ -102,6 +104,52 @@ final class PaquetesService
      * Orden = prioridad: gana la PRIMERA regla que casa.
      */
     private const REGLAS_SEMBRADO = [
+        // ── A3.3 · Cola larga: familias que el motor no sabía colocar (71 insumos, $653M en DAPORTO).
+        // Van primero porque son las más específicas: nombran un objeto o un servicio concreto y no
+        // deben caer en las reglas de oficio de más abajo.
+
+        // Equipo y maquinaria de obra: compra, alquiler y reposición. Se distingue de los alquileres
+        // que SÍ pertenecen a un frente (una retro alquilada es movimiento de tierra, y eso lo
+        // resuelven los overrides antes que esta regla).
+        ['kw' => ['VIBRADOR', 'CANGURO', 'APISONADOR', 'PLANCHA VIBRATORIA', 'BOMBA SUMERGIBLE', 'COMPRA EQUIPO', 'MARTILLO DEMOLEDOR', 'COMPRESOR', 'REPOSICION Y REPARACION', 'MAQUINARIA', 'BANOS PORTATILES', 'BANO PORTATIL'], 'paq' => 'Equipos y maquinaria de obra', 'tipos' => ['EQUIPO', 'MATERIAL'], 'soloDesc' => true],
+        // Tecnología: no se contrata como obra, se pide a necesidad; su modalidad es consumo directo.
+        ['kw' => ['COMPUTADOR', 'TABLET', 'IPAD', 'IMPRESORA', 'SOFTWARE', 'INTERNET', 'LICENCIA', 'RADIOS DE COMUNICACION', 'RADIO DE COMUNICACION'], 'paq' => 'Tecnología y software de obra', 'tipos' => ['EQUIPO', 'MATERIAL', 'SUBCONTRATO'], 'soloDesc' => true],
+        // Transporte externo. OJO: «TRANSPORTE INTERNO» de mano de obra es acarreo dentro de la obra
+        // y pertenece a la cuadrilla de estructura (regla más abajo); por eso aquí se filtra por tipo.
+        ['kw' => ['ACARREO', 'FLETE', 'BUSETA', 'TRANSPORTE INTERNO', 'TRANSPORTE DE MATERIAL'], 'paq' => 'Transporte y acarreos', 'tipos' => ['TRANSPORTE'], 'soloDesc' => true],
+        // Bolsas de presupuesto sin alcance definido: no se le compran a nadie todavía.
+        ['kw' => ['PARTIDA PRESUPUESTAL', 'RESANE', 'DETALLE CASAS', 'DETALLE APARTAMENTO'], 'paq' => 'Provisiones y partidas globales', 'tipos' => ['SUBCONTRATO', 'MANO DE OBRA', 'MATERIAL'], 'soloDesc' => true],
+        // Zonas verdes: la grama tiene contrato propio y gana por específica; el resto del oficio
+        // (arborización, especies vegetales, jardinería) va a paisajismo.
+        ['kw' => ['GRAMA', 'ENGRAMADO'], 'paq' => 'Sum + Inst ENGRAMADO', 'tipos' => ['SUBCONTRATO', 'MATERIAL', 'MANO DE OBRA'], 'descPrimero' => true],
+        ['kw' => ['ARBOL', 'ESPECIE VEGETAL', 'ESPECIES VEGETALES', 'JARDINERIA', 'PAISAJISMO', 'SIEMBRA'], 'paq' => 'Sum + Inst PAISAJISMO Y ZONAS VERDES', 'tipos' => ['SUBCONTRATO', 'MATERIAL', 'MANO DE OBRA'], 'descPrimero' => true],
+        // Servicios y obras menores con paquete propio ya en el catálogo, que el motor no usaba.
+        ['kw' => ['LOCALIZACION Y REPLANTEO', 'TOPOGRAFIA', 'COMISION TOPOGRAFICA'], 'paq' => 'Sum + Inst TOPOGRAFÍA', 'tipos' => ['SUBCONTRATO', 'MANO DE OBRA'], 'descPrimero' => true],
+        ['kw' => ['LECHO FILTRANTE', 'MATERIAL FILTRANTE', 'FILTRO'], 'paq' => 'M. de O FILTROS', 'tipos' => ['MANO DE OBRA'], 'descPrimero' => true],
+        ['kw' => ['CUNETA'], 'paq' => 'M. de O CUNETA TALUD', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO'], 'descPrimero' => true],
+        ['kw' => ['PLANTA ELECTRICA'], 'paq' => 'Sum + Inst PLANTA ELÉCTRICA', 'tipos' => ['EQUIPO', 'MATERIAL', 'SUBCONTRATO'], 'descPrimero' => true],
+        // Sellantes de junta: NO son aditivos de concreto — la familia SIKA cubre las dos cosas y
+        // mezclarlas ya nos costó un error (SIKAFLEX/SIKAROD sellan, ANTISOL cura).
+        ['kw' => ['SIKAROD', 'SIKAFLEX', 'SISMOFLEX', 'SELLANTE', 'BACKER ROD'], 'paq' => 'Suministro JUNTA DE DILATACIÓN', 'tipos' => ['MATERIAL'], 'soloDesc' => true],
+        // Tanques y accesorios de tanque: se contratan con el tanque, no con la red hidráulica.
+        ['kw' => ['TANQUE'], 'paq' => 'Suministro TANQUES DE RESERVA DE AGUA', 'tipos' => ['MATERIAL'], 'soloDesc' => true],
+        // Oficios de mano de obra que faltaban por nombre (mapeo del usuario, 2026-07-26).
+        ['kw' => ['SOLADO'], 'paq' => 'M. de O CIMENTACIÓN SUPERFICIAL EN CONCRETO', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO'], 'descPrimero' => true],
+        ['kw' => ['ANDEN', 'TOPELLANTA', 'SARDINEL'], 'paq' => 'M. de O URBANISMO (MUROS, ANDENES, ESCALAS, GRAMA, ETC)', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO'], 'descPrimero' => true],
+        ['kw' => ['NIVELACION DEL TERRENO', 'NIVELACION DE TERRENO', 'ROCERIA', 'LIMPIEZA DEL LOTE'], 'paq' => 'M. de O MOVIMIENTOS DE TIERRA (EXCAVACIONES Y RELLENOS)', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO'], 'descPrimero' => true],
+        ['kw' => ['INSTALACION SANITARIO', 'INSTALACION DE SANITARIO', 'BOCAMANGUERA'], 'paq' => 'M. de O APARATOS SANITARIOS Y GRIFERÍA', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO'], 'descPrimero' => true],
+        ['kw' => ['BOCAMANGUERA'], 'paq' => 'Suministro APARATOS SANITARIOS Y GRIFERÍA', 'tipos' => ['MATERIAL'], 'soloDesc' => true],
+        // Talón y rebanco cuelgan del subcapítulo de pisos: manda el frente, no el material (concreto).
+        ['kw' => ['TALON', 'REBANCO'], 'paq' => 'M. de O MORTEROS DE PISO', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO'], 'descPrimero' => true],
+        // Amoblamiento y electrodomésticos: sin regla acababan en griferías o en estructura por pura
+        // coincidencia de agrupación contable. Cada uno tiene su paquete de dotación en el catálogo.
+        ['kw' => ['CAMPANA EXTRACTORA', 'ASADOR', 'ESTUFA', 'HORNO EMPOTRA', 'MESON EN'], 'paq' => 'Sum + Inst DOTACIÓN COCINAS Y LAVADEROS', 'tipos' => ['MATERIAL', 'SUBCONTRATO'], 'soloDesc' => true],
+        ['kw' => ['MESA DE JUNTAS', 'MESA PARA', 'MESA INFANTIL', 'SALA TIPO', 'JUEGO DE TERRAZA', 'MOBILIARIO', 'SOFA', 'POLTRONA', 'TAPETE'], 'paq' => 'Sum + Inst DOTACIÓN ZONAS COMUNES', 'tipos' => ['MATERIAL', 'SUBCONTRATO'], 'soloDesc' => true],
+        // Puertas POR TIPO (decisión del usuario 2026-07-26): madera, metálicas y cortafuego son las
+        // tres categorías vigentes. Los suministros de puerta metálica no los cubría la regla de
+        // carpintería metálica, que solo admite subcontrato.
+        ['kw' => ['PUERTA METAL', 'PUERTA EN LAMINA', 'PUERTA DE LAMINA'], 'paq' => 'Sum + Inst PUERTAS METÁLICAS', 'tipos' => ['MATERIAL', 'SUBCONTRATO'], 'descPrimero' => true],
+
         // ── Objetos físicos inequívocos: van primero para que no los capturen reglas de instalación ──
         ['kw' => ['CORTA FUEGO', 'CORTAFUEGO'], 'paq' => 'Sum + Inst PUERTAS CORTAFUEGO', 'tipos' => ['SUBCONTRATO', 'MATERIAL'], 'descPrimero' => true],
         ['kw' => ['PASAMANO', 'BARANDA', 'RODAMANOS'], 'paq' => 'Sum + Inst BARANDAS Y PASAMANOS', 'tipos' => ['SUBCONTRATO', 'MATERIAL', 'MANO DE OBRA'], 'descPrimero' => true],
@@ -1026,8 +1074,11 @@ final class PaquetesService
         if ($paq === null) {
             return null;
         }
-        // El bucket de indirectos no es una negociacion: exento del cuadro de compatibilidad.
-        if ($norm === mb_substr(MaestroInsumosService::normalizar(self::PAQUETE_INDIRECTOS), 0, 200)) {
+        // Los buckets sin proceso de contratación (nómina, imprevistos, provisiones, ferretería,
+        // tecnología) no son una negociación: nadie los licita, así que el cuadro de compatibilidad
+        // tipo_recurso ↔ tipo_negociacion no aplica. Ese cuadro existe para no meter un material en
+        // un paquete de mano de obra, no para impedir que una partida global caiga en su bucket.
+        if (in_array($paq['modalidad'] ?? 'contrato', self::MODALIDADES_SIN_PROCESO, true)) {
             return $paq;
         }
         if (!in_array($paq['tipoNegociacion'], self::tiposCompatibles($tipoRecurso), true)) {

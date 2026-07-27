@@ -279,6 +279,60 @@ $assert($sRep === null || str_contains(mb_strtolower($sRep['evidencia']), 'repar
 $sGen = $by3['M.O. GENERICO PRUEBA A3'] ?? null;
 $assert($sGen !== null && $sGen['confianza'] !== 'baja', 'Con actividad dominante clara la confianza no se degrada.');
 
+// --- A3.3 · Cola larga: los oficios y familias que el motor no sabía colocar -------------------
+// Mapeos decididos con el usuario sobre los 71 insumos que DAPORTO dejaba sin destino ($653M).
+// Cada caso es un insumo real del presupuesto, con su tipo de recurso real.
+$colaLarga = [
+    // [descripción, unidad, tipo_recurso, paquete destino esperado]
+    ['M.O. SOLADO A3', 'M2', 'MANO DE OBRA', 'M. de O CIMENTACIÓN SUPERFICIAL EN CONCRETO'],
+    ['M.O. ANDEN EN CONCRETO A3', 'ML', 'MANO DE OBRA', 'M. de O URBANISMO (MUROS, ANDENES, ESCALAS, GRAMA, ETC)'],
+    ['M.O. NIVELACION DEL TERRENO A3', 'M2', 'MANO DE OBRA', 'M. de O MOVIMIENTOS DE TIERRA (EXCAVACIONES Y RELLENOS)'],
+    ['M.O. INSTALACION SANITARIO A3', 'UN', 'MANO DE OBRA', 'M. de O APARATOS SANITARIOS Y GRIFERÍA'],
+    // Talón y rebanco cuelgan de «PISOS EN ZONAS PRIVADAS»: manda el subcapítulo, no el material.
+    ['M.O. TALON EN CONCRETO A3', 'M', 'MANO DE OBRA', 'M. de O MORTEROS DE PISO'],
+    ['M.O. REBANCO EN CONCRETO A3', 'M2', 'MANO DE OBRA', 'M. de O MORTEROS DE PISO'],
+    // Sellantes de junta: NO son aditivos de concreto (ya nos costó un error antes).
+    ['SIKAROD 7/8 A3', 'M', 'MATERIAL', 'Suministro JUNTA DE DILATACIÓN'],
+    ['SISMOFLEX CORONA A3', 'KG', 'MATERIAL', 'Suministro JUNTA DE DILATACIÓN'],
+    // Hidráulicos sueltos → a sus paquetes de siempre.
+    ['TANQUE 18000 L EN FIBRA DE VIDRIO A3', 'UN', 'MATERIAL', 'Suministro TANQUES DE RESERVA DE AGUA'],
+    ['LLAVE BOCAMANGUERA CON EXTENSION A3', 'UN', 'MATERIAL', 'Suministro APARATOS SANITARIOS Y GRIFERÍA'],
+    // Familias nuevas.
+    ['VIBRADORES DE CONCRETO COMPRA EQUIPO A3', 'UN', 'EQUIPO', 'Equipos y maquinaria de obra'],
+    ['CANGURO APISONADOR COMPRA EQUIPO A3', 'UN', 'EQUIPO', 'Equipos y maquinaria de obra'],
+    ['COMPUTADORES A3', 'UN', 'EQUIPO', 'Tecnología y software de obra'],
+    ['SERVICIO SOFTWARE ASSEMBLE A3', 'MES', 'EQUIPO', 'Tecnología y software de obra'],
+    ['ACARREOS A3', 'UN', 'TRANSPORTE', 'Transporte y acarreos'],
+    ['PARTIDA PRESUPUESTAL PORTERIA A3', 'SG', 'SUBCONTRATO', 'Provisiones y partidas globales'],
+    ['RESANES APARTAMENTO A3', 'UN', 'SUBCONTRATO', 'Provisiones y partidas globales'],
+    ['SUMINISTRO E INSTALACION DE ARBOLES A3', 'UN', 'SUBCONTRATO', 'Sum + Inst PAISAJISMO Y ZONAS VERDES'],
+    // Destinos que ya existían en el catálogo y el motor no usaba.
+    ['LOCALIZACION Y REPLANTEO A3', 'M2', 'SUBCONTRATO', 'Sum + Inst TOPOGRAFÍA'],
+    ['M.O. LECHO FILTRANTE A3', 'M3', 'MANO DE OBRA', 'M. de O FILTROS'],
+    ['M.O. INSTALACION DE CUNETAS A3', 'M', 'MANO DE OBRA', 'M. de O CUNETA TALUD'],
+    ['SUMINISTRO E INSTALACION DE GRAMA A3', 'M2', 'SUBCONTRATO', 'Sum + Inst ENGRAMADO'],
+];
+foreach ($colaLarga as [$desc, $und, $tipo, $_]) {
+    $db->query(
+        "INSERT INTO general_maestro_insumos (descripcion, descripcion_norm, unidad, tipo_insumo, tipo_recurso, activo, creado_por, created_at)
+         VALUES (?, ?, ?, 'X', ?, 1, 'test-a3', NOW())",
+        [$desc, $desc, $und, $tipo],
+    );
+    $db->query(
+        "INSERT INTO pdc_insumo_vinculos (project_id, version_id, descripcion_norm, unidad, descripcion_original, tipo_insumo, cantidad_total, valor_total, apariciones, maestro_id, estado)
+         VALUES (?, ?, ?, ?, ?, 'X', 1, 100, 1, ?, 'pendiente')",
+        [$P1, $vid, $desc, $und, $desc, $mid($desc, $und)],
+    );
+}
+$sugCola = $svc->sugerencias($P1);
+$byCola = [];
+foreach ($sugCola['sugerencias'] as $s) { $byCola[$s['descripcionNorm']] = $s; }
+foreach ($colaLarga as [$desc, $und, $tipo, $destino]) {
+    $s = $byCola[$desc] ?? null;
+    $ok = $s !== null && mb_strtoupper($s['paqueteNombre']) === mb_strtoupper($destino);
+    $assert($ok, sprintf('%s → %s%s', $desc, $destino, $ok ? '' : ' (dio: ' . ($s['paqueteNombre'] ?? 'sin propuesta') . ')'));
+}
+
 echo $failures === [] ? "=== OK ===\n" : '=== ' . count($failures) . " FAILED ===\n";
 $limpiar();
 exit($failures === [] ? 0 : 1);
