@@ -65,3 +65,69 @@ describe('filasVisibles', () => {
     expect(caseta.expandible).toBe(true) // tiene insumos
   })
 })
+
+describe('búsqueda en el árbol', () => {
+  it('encuentra un insumo aunque su rama esté colapsada, y abre el camino hasta él', () => {
+    // Sin buscar, TEJA está a cuatro niveles de profundidad y no se ve.
+    const filas = filasVisibles(items, insumos, new Set(), { texto: 'teja' })
+    const desc = filas.map((f) => f.descripcion)
+    expect(desc).toContain('TEJA')
+    // Aparecen sus ancestros para no perder el contexto de dónde está.
+    expect(desc).toEqual(['PRELIMINARES', 'CAMPAMENTO', 'INSTALACIONES', 'CASETA', 'TEJA'])
+    // Y el otro insumo de la misma actividad NO se cuela.
+    expect(desc).not.toContain('AYUDANTE')
+  })
+
+  it('las ramas sin coincidencias desaparecen', () => {
+    const filas = filasVisibles(items, insumos, new Set(), { texto: 'teja' })
+    expect(filas.map((f) => f.codigo)).not.toContain('02')
+  })
+
+  it('busca también por código de actividad', () => {
+    const filas = filasVisibles(items, insumos, new Set(), { texto: '01.01.01.01' })
+    expect(filas.map((f) => f.codigo)).toContain('01.01.01.01')
+  })
+
+  it('ignora tildes y mayúsculas', () => {
+    const conTilde: ArbolItem[] = [
+      ...items,
+      { id: 6, codigo: '03', codigoPadre: null, nivel: 1, tipoFila: 'capitulo', descripcion: 'CIMENTACIÓN', unidad: null, cantidad: null },
+    ]
+    const filas = filasVisibles(conTilde, insumos, new Set(), { texto: 'cimentacion' })
+    expect(filas.map((f) => f.descripcion)).toContain('CIMENTACIÓN')
+  })
+
+  it('sin coincidencias devuelve una lista vacía, no el árbol entero', () => {
+    expect(filasVisibles(items, insumos, new Set(), { texto: 'zzz' })).toEqual([])
+  })
+
+  it('filtra por tipo de insumo y por unidad', () => {
+    const soloMat = filasVisibles(items, insumos, new Set(), { tipoInsumo: 'MAT' })
+    expect(soloMat.map((f) => f.descripcion)).toContain('TEJA')
+    expect(soloMat.map((f) => f.descripcion)).not.toContain('AYUDANTE')
+    const soloHc = filasVisibles(items, insumos, new Set(), { unidad: 'HC' })
+    expect(soloHc.map((f) => f.descripcion)).toContain('AYUDANTE')
+    expect(soloHc.map((f) => f.descripcion)).not.toContain('TEJA')
+  })
+})
+
+describe('modo tabla (plano)', () => {
+  it('lista todas las filas sin jerarquía, con su ruta', () => {
+    const filas = filasVisibles(items, insumos, new Set(), { plano: true })
+    // 5 items + 2 insumos, sin depender de qué esté expandido.
+    expect(filas).toHaveLength(7)
+    const teja = filas.find((f) => f.descripcion === 'TEJA')!
+    expect(teja.ruta).toBe('PRELIMINARES › CAMPAMENTO › INSTALACIONES › CASETA')
+    expect(teja.expandible).toBe(false)
+  })
+
+  it('el insumo hereda el código de su actividad para poder rastrearlo', () => {
+    const filas = filasVisibles(items, insumos, new Set(), { plano: true })
+    expect(filas.find((f) => f.descripcion === 'TEJA')!.codigo).toBe('01.01.01.01')
+  })
+
+  it('en plano el filtro deja solo las coincidencias, sin ancestros', () => {
+    const filas = filasVisibles(items, insumos, new Set(), { plano: true, texto: 'teja' })
+    expect(filas.map((f) => f.descripcion)).toEqual(['TEJA'])
+  })
+})
