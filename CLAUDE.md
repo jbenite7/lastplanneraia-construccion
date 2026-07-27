@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Estado actual
 
-Rama en curso: **Fases A1, A1.5, A1.6, A1.7, A2, A2.5, A3, A3.1 y A3.2 implementadas** (+ fix **A1.8**: el importador ignoraba `Cant APU` e inflaba el valor de los insumos → corregido a `Cant APU × Rend × cantidad`) — importador de presupuesto, visor en árbol; comparativo de versiones (`#/ensamble/comparar`): diff por actividad (jerárquico) e insumo (Pareto), sobrecostos vs ahorros; endpoint `GET /plan-compras/api/presupuesto/comparar`, sin migraciones; versionamiento inteligente del importador (`#/ensamble/importar`): auto-numeración (Versión N · fecha) por proyecto, anti-duplicado por hash de contenido vs la versión activa, y resumen del auto-comparativo tras cargar (reusa A1.6); maestro de insumos global (auto-match + cola de pendientes) y **importador del maestro SINCO** (siembra `general_maestro_insumos` con 3.088 insumos: código, agrupación, tipo de recurso, valor), y **paquetes de contratación** (`#/ensamble/paquetes`): catálogo global `general_paquetes_contratacion` **sembrado con los 188 paquetes reales de AIA** (extraídos del bundle de la app de Tomás; 107 a-todo-costo / 53 suministro / 28 mano-de-obra) + asignación por proyecto `pdc_insumo_paquete` (un insumo un destino — paquete u **omitido**; herencia en re-import), con motor de sugerencias cross-proyecto (exacta/tokens/agrupación SINCO + candidatos filtrados por tipo de recurso, confirmación humana), **grilla masiva y asistente paso a paso** (orden Pareto), y cobertura hacia el 100%; RBAC `lps.paquetes_contratacion.ver/editar`. Todo bajo la navegación Ensamble | Seguimiento. Verificado con Vitest, tests PHP autoejecutables y e2e Playwright. En detalle: importador de presupuesto (preview→confirmar, versionado con única activa, todo-o-nada) sobre 3 tablas `pdc_presupuesto_*` en lps-aia con RBAC `lps.pdc.importar`, visor del presupuesto en árbol jerárquico con selector de versión (`#/ensamble/presupuesto`), y maestro de insumos global (`#/ensamble/maestro`) con RBAC `lps.pdc.maestro`: cola de vínculos pendientes por versión con selección múltiple y creación masiva (cold start), vinculación individual con sugerencias por similitud, y catálogo único de insumos (`general_maestro_insumos`) con búsqueda — auto-match idempotente en cada re-import. Follow-ups del review final A2 aplicados: tolerancia a errno 1062 (carrera/colisión de prefijo → vincula al existente), upsert de vínculos en lotes multi-fila, comodines LIKE escapados, y retiro/reactivación de insumos del catálogo (`activo=0` con reversión global del auto-match, auditoría `actualizado_por`/`updated_at` y UI en el catálogo). Verificado con Vitest (28 tests), tests PHP autoejecutables (RBAC, parser, flujo BD, árbol, maestro, import SINCO) y e2e Playwright (import, fundación, visor, maestro e import del maestro SINCO).
+Rama en curso: **Fases A1, A1.5, A1.6, A1.7, A2, A2.5, A3, A3.1, A3.2 y A3.3 implementadas** (+ fix **A1.8**: el importador ignoraba `Cant APU` e inflaba el valor de los insumos → corregido a `Cant APU × Rend × cantidad`) — importador de presupuesto, visor en árbol; comparativo de versiones (`#/ensamble/comparar`): diff por actividad (jerárquico) e insumo (Pareto), sobrecostos vs ahorros; endpoint `GET /plan-compras/api/presupuesto/comparar`, sin migraciones; versionamiento inteligente del importador (`#/ensamble/importar`): auto-numeración (Versión N · fecha) por proyecto, anti-duplicado por hash de contenido vs la versión activa, y resumen del auto-comparativo tras cargar (reusa A1.6); maestro de insumos global (auto-match + cola de pendientes) y **importador del maestro SINCO** (siembra `general_maestro_insumos` con 3.088 insumos: código, agrupación, tipo de recurso, valor), y **paquetes de contratación** (`#/ensamble/paquetes`): catálogo global `general_paquetes_contratacion` **sembrado con los 188 paquetes reales de AIA** (extraídos del bundle de la app de Tomás; 107 a-todo-costo / 53 suministro / 28 mano-de-obra) + asignación por proyecto `pdc_insumo_paquete` (un insumo un destino — paquete u **omitido**; herencia en re-import), con motor de sugerencias cross-proyecto (exacta/tokens/agrupación SINCO + candidatos filtrados por tipo de recurso, confirmación humana), **grilla masiva y asistente paso a paso** (orden Pareto), y cobertura hacia el 100%; RBAC `lps.paquetes_contratacion.ver/editar`. Todo bajo la navegación Ensamble | Seguimiento. Verificado con Vitest, tests PHP autoejecutables y e2e Playwright. En detalle: importador de presupuesto (preview→confirmar, versionado con única activa, todo-o-nada) sobre 3 tablas `pdc_presupuesto_*` en lps-aia con RBAC `lps.pdc.importar`, visor del presupuesto en árbol jerárquico con selector de versión (`#/ensamble/presupuesto`), y maestro de insumos global (`#/ensamble/maestro`) con RBAC `lps.pdc.maestro`: cola de vínculos pendientes por versión con selección múltiple y creación masiva (cold start), vinculación individual con sugerencias por similitud, y catálogo único de insumos (`general_maestro_insumos`) con búsqueda — auto-match idempotente en cada re-import. Follow-ups del review final A2 aplicados: tolerancia a errno 1062 (carrera/colisión de prefijo → vincula al existente), upsert de vínculos en lotes multi-fila, comodines LIKE escapados, y retiro/reactivación de insumos del catálogo (`activo=0` con reversión global del auto-match, auditoría `actualizado_por`/`updated_at` y UI en el catálogo). Verificado con Vitest (28 tests), tests PHP autoejecutables (RBAC, parser, flujo BD, árbol, maestro, import SINCO) y e2e Playwright (import, fundación, visor, maestro e import del maestro SINCO).
 
 ### A3.2 — Modalidad de contratación (4 modalidades)
 
@@ -28,6 +28,42 @@ catálogo legacy `general_dias_procesos_contratacion`, que ya marcaba ACERO/CONC
 ciclos propios). La SPA la ofrece al crear paquetes y la pinta como badge **solo cuando no es `contrato`**.
 Reparto real en DAPORTO v292 (325 asignados, 82,1 % de cobertura): contrato 59,26 % · orden de compra 24,55 % ·
 no contratable 12,99 % · consumo directo 0,98 %.
+
+### A3.3 — Motor auditable y generalizable
+
+Al medir el motor contra DAPORTO apareció que el 82,1 % de cobertura medía sobre todo el trabajo manual del
+ejercicio: **el 71,4 % del valor asignado lo resolvía la lista curada a mano** (158 overrides, 41 literales de esa
+obra). A3.3 convierte esa memoria en conocimiento y hace el motor auditable.
+
+- **Trazabilidad:** `pdc_insumo_paquete` guarda `origen` (capa), `confianza`, `evidencia` y `confirmado_humano`;
+  `pdc_correcciones_motor` registra el par (sugerido → elegido) cuando un humano enmienda al motor. Origen y
+  confirmación son **ortogonales**: aceptar una sugerencia cuenta como acierto del motor y a la vez la vuelve
+  intocable. El resumen expone **tres indicadores** — conteo, valor y tasa de acierto (null mientras no haya base).
+- **Overrides destilados: 158 → 8.** Se midió corriendo el motor con los overrides apagados
+  (`new PaquetesService($db, false)`): 89 eran redundantes y 69 tapaban huecos que ahora son reglas. Los 8 que
+  quedan llevan `alcance` (global/proyecto) y una nota. 11 se borraron porque **el motor acierta mejor** (pilotes
+  → cimentación profunda; puertas P1–P15 → PUERTAS EN MADERA/METÁLICAS, las tres categorías vigentes).
+- **Desempate por tipo de recurso:** un MATERIAL se decide solo por su descripción (la actividad deja de influir);
+  MO y subcontrato siguen el frente, y si la actividad dominante concentra <60 % (`DOMINANCIA_MINIMA`) la
+  sugerencia baja a confianza baja. `pdc_insumo_actividades` persiste **todas** las actividades de cada insumo
+  (`unique_id` NULL hasta A4) porque Seguimiento necesita la fecha de la **primera**, no la de mayor cuantía.
+- **Doble conteo:** un MATERIAL ya no cae en un paquete `a_todo_costo` salvo `admite_materiales = 1` (dotación,
+  planta eléctrica, tanques…). Y prohibir no es redirigir: si el destino correcto queda vetado, el insumo va a
+  revisión con la explicación, en vez de caer en el primer fallback.
+- **Cola larga:** de 71 insumos sin destino a 1. Se crearon 5 paquetes (Equipos y maquinaria, Tecnología y
+  software, Transporte y acarreos, Provisiones y partidas globales, Paisajismo); el resto son reglas hacia
+  paquetes que ya existían.
+- **Auto-asignación acotada:** confianza alta y valor < `UMBRAL_AUTO_ASIGNACION` ($20M) se aplica sola, con
+  preview; el resto va a revisión con el motivo. La confianza la da la evidencia, no la capa: descripción → alta,
+  actividad padre → media, reparto sin dominante → baja.
+- **Puente con las duraciones legacy** (`duracion_ref`): 162 de 209 paquetes activos apuntan a su fila de
+  `general_dias_procesos_contratacion`; los 47 sin equivalente quedan NULL a propósito. Sin esto A4 no derivaría
+  fechas, porque el legacy guarda «CONCRETO» y el paquete se llama «Suministro CONCRETO».
+- **Gobernanza:** permiso `lps.paquetes_contratacion.reglas` (Oficina Técnica / Compras y Director de Obra) para
+  aprobar reglas y overrides globales, distinto de asignar insumos en un proyecto.
+
+⚠️ El e2e `tests/browser/pdc-v2-paquetes.spec.mjs` es **destructivo** (importa un presupuesto de juguete en el
+proyecto real): exige `PDC_E2E_DESTRUCTIVO=1`. Y el stack del worktree publica **8091**, no 8081.
 
 El desarrollo sigue el **roadmap maestro** `docs/superpowers/plans/2026-07-22-roadmap-pdc-v2.md` (fases A1→A4, B1→B3, C1); cada fase recibe su propio spec y plan detallado antes de ejecutarse.
 

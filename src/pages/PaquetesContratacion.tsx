@@ -5,7 +5,7 @@ import type { ColDef, ITooltipParams, RowClickedEvent } from 'ag-grid-community'
 import { PdcApiError, apiGet, apiPost } from '../lib/api'
 import { claveInsumo, estadoInicialPaquetes, paquetesReducer } from '../lib/paquetesState'
 import { MODALIDADES, TIPOS_NEGOCIACION } from '../lib/types'
-import type { ActividadesInsumo, InsumoPaquete, PaqueteCatalogo, ResumenPaquetes, SugerenciaPaquete } from '../lib/types'
+import type { ActividadesInsumo, InsumoPaquete, PaqueteCatalogo, PlanAuto, ResumenPaquetes, SugerenciaPaquete } from '../lib/types'
 import PaquetesAsistente from './PaquetesAsistente'
 
 // Registro selectivo de módulos (no AllCommunityModule); ValidationModule solo en dev — patrón del repo.
@@ -74,6 +74,7 @@ export default function PaquetesContratacion() {
   const [agrupacion, setAgrupacion] = useState<string>('')
   const [sinVersion, setSinVersion] = useState(false)
   const [paqueteDestino, setPaqueteDestino] = useState<number | ''>('')
+  const [planAuto, setPlanAuto] = useState<PlanAuto | null>(null)
   const [nuevoNombre, setNuevoNombre] = useState('')
   const [nuevoTipo, setNuevoTipo] = useState(TIPOS_NEGOCIACION[0].value)
   const [nuevaModalidad, setNuevaModalidad] = useState(MODALIDADES[0].value)
@@ -163,6 +164,31 @@ export default function PaquetesContratacion() {
       const d = await apiGet<{ version: unknown; sugerencias: SugerenciaPaquete[] }>('/plan-compras/api/paquetes/sugerencias')
       dispatch({ type: 'SUGERENCIAS_OK', sugerencias: d.sugerencias })
       if (d.sugerencias.length === 0) dispatch({ type: 'LISTO', mensaje: 'No hay propuestas: todo asignado o sin señales para sembrar.' })
+    } catch (e) {
+      dispatch({ type: 'FALLO', mensaje: e instanceof Error ? e.message : String(e) })
+    }
+  }
+
+  // Auto-asignación (A3.3): preview primero — nada se escribe hasta que el usuario ve el reparto
+  // entre lo que el motor despacha solo y lo que le deja a él, y con qué motivo.
+  const onAutoAsignar = async () => {
+    dispatch({ type: 'OCUPADO' })
+    try {
+      const p = await apiGet<PlanAuto>('/plan-compras/api/paquetes/plan-auto')
+      setPlanAuto(p)
+      dispatch({ type: 'LISTO', mensaje: '' })
+    } catch (e) {
+      dispatch({ type: 'FALLO', mensaje: e instanceof Error ? e.message : String(e) })
+    }
+  }
+
+  const onConfirmarAuto = async () => {
+    dispatch({ type: 'OCUPADO' })
+    try {
+      const r = await apiPost<{ asignados: number; aRevision: number }>('/plan-compras/api/paquetes/auto-asignar', {})
+      setPlanAuto(null)
+      dispatch({ type: 'LISTO', mensaje: `${r.asignados} asignado(s) por el motor; ${r.aRevision} esperan tu revisión.` })
+      refrescar()
     } catch (e) {
       dispatch({ type: 'FALLO', mensaje: e instanceof Error ? e.message : String(e) })
     }
@@ -322,7 +348,32 @@ export default function PaquetesContratacion() {
             Aceptar {state.sugerencias.size} sugerida(s)
           </button>
         )}
+        <button
+          type="button"
+          data-testid="pdc-paq-auto"
+          disabled={state.ocupado}
+          onClick={onAutoAsignar}
+          title="Aplica sola la cola larga barata cuando la evidencia es inequívoca; lo caro y lo dudoso queda para ti."
+        >
+          Auto-asignar lo seguro
+        </button>
       </div>
+
+      {planAuto && (
+        <div data-testid="pdc-paq-plan-auto" className="pdc-paq-sembrado">
+          <strong>{planAuto.auto.length} insumo(s) se pueden asignar solos</strong> — evidencia inequívoca y menos de {moneda(planAuto.umbral)} cada uno.
+          {planAuto.revision.length > 0 && (
+            <> Quedan <strong>{planAuto.revision.length}</strong> para ti: {planAuto.revision.filter((r) => r.motivo === 'valor').length} por cuantía y {planAuto.revision.filter((r) => r.motivo === 'confianza').length} porque la evidencia no basta.</>
+          )}
+          <div className="pdc-paq-fuentes">
+            <button type="button" className="pdc-paq-primario" data-testid="pdc-paq-auto-confirmar" disabled={state.ocupado || planAuto.auto.length === 0}
+              onClick={onConfirmarAuto}>
+              Aplicar {planAuto.auto.length}
+            </button>
+            <button type="button" data-testid="pdc-paq-auto-cancelar" disabled={state.ocupado} onClick={() => setPlanAuto(null)}>Cancelar</button>
+          </div>
+        </div>
+      )}
 
       {resumenSembrado.total > 0 && (
         <div data-testid="pdc-paq-sembrado-resumen" className="pdc-paq-sembrado">

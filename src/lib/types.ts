@@ -253,6 +253,30 @@ export type SugerenciaPaquete = {
   evidencia: string
 }
 
+/**
+ * Reparto de la auto-asignación (A3.3): lo que el motor despacha solo frente a lo que deja a un
+ * humano, con el motivo — `valor` (supera el umbral acordado) o `confianza` (la evidencia no basta).
+ */
+export type PropuestaAuto = {
+  descripcionNorm: string
+  unidad: string
+  descripcion: string
+  valorTotal: number
+  paqueteId: number
+  paqueteNombre: string
+  capa: string
+  confianza: string
+  evidencia: string
+  motivo?: 'valor' | 'confianza'
+}
+
+export type PlanAuto = {
+  version: { id: number; label: string }
+  umbral: number
+  auto: PropuestaAuto[]
+  revision: PropuestaAuto[]
+}
+
 export type CandidatoPaquete = {
   descripcionNorm: string
   unidad: string
