@@ -4,12 +4,16 @@
 :root {
   /* 2026 Apple-Style Design System (Premium) */
 
-  /* Palette - System Colors (Apple Inspired) */
+  /* Palette - System Colors (Apple Inspired)
+     Sin equivalente semantico 1:1 en --ds-active-action-* (verde corporate vs.
+     azul Apple): remapearlos es una decision de marca fuera del alcance de F1
+     Task 3 (solo corrige fondo/texto del body). Deuda documentada en
+     docs/design-system/exceptions.json. */
   --primary: #0071e3; /* System Blue - Action */
   --primary-dark: #005bb5; /* Darker Blue for hover */
   --primary-light: #409cff; /* Lighter Blue */
 
-  /* Palette - Semantic States */
+  /* Palette - Semantic States (sin consumidores activos hoy; ver exceptions.json) */
   --status-critical: #ff3b30; /* System Red */
   --status-delayed: #ff3b30; /* System Red (Unified) */
   --status-warning: #ff9500; /* System Orange */
@@ -17,25 +21,25 @@
   --status-ok: #34c759; /* System Green */
   --status-neutral: #8e8e93; /* System Gray */
 
-  /* Services Colors (Legacy mapping to Apple Palette) */
+  /* Services Colors (Legacy mapping to Apple Palette; sin consumidores activos hoy) */
   --color-purple: #af52de; /* System Purple */
   --color-indigo: #5856d6; /* System Indigo */
   --color-teal: #59adc4; /* Teal-ish (Custom) */
 
   /* Surfaces */
-  --surface-bg: #f5f5f7; /* Off-white background */
-  --surface-card: #ffffff; /* Pure white card */
-  --surface-header: rgba(255, 255, 255, 0.8); /* Glass effect base */
-  --surface-modal: #ffffff;
+  --surface-bg: var(--ds-active-bg-canvas); /* F1 Task 3: antes literal claro */
+  --surface-card: var(--ds-active-surface-raised); /* F1 Task 3: antes literal claro */
+  --surface-header: var(--ds-active-surface-glass); /* F1 Task 3: antes literal claro (glass) */
+  --surface-modal: var(--ds-active-surface-raised); /* F1 Task 3: antes literal claro */
 
   /* Typography */
   --font-main: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --font-mono: 'SF Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
 
   /* Text Colors */
-  --text-main: #1d1d1f; /* Almost Black */
-  --text-secondary: #86868b; /* Gray Text */
-  --text-inverse: #ffffff;
+  --text-main: var(--ds-active-text-primary); /* F1 Task 3: antes literal casi-negro */
+  --text-secondary: var(--ds-active-text-secondary); /* F1 Task 3: antes literal gris claro */
+  --text-inverse: #ffffff; /* Par de --primary-light, sin cambios (fuera de alcance) */
 
   /* Spacing & Layout */
   --radius-sm: 8px;
@@ -124,8 +128,12 @@ h6 {
 a.dropdown-item:hover,
 .dropdown-item:hover {
   text-decoration: none;
-  background-color: var(--surface-bg) !important; /* Force light background */
-  color: var(--primary) !important; /* Force blue text */
+  background-color: var(--surface-bg) !important; /* F1 Task 3: fondo oscuro (canvas) */
+  /* F1 Task 3: --primary (azul Apple literal) sobre el canvas oscuro mide
+     4.09:1, bajo el 4.5:1 de AA para texto normal. --ds-active-action-primary-hover
+     es el acento que el DS ya designa para estados hover sobre fondo oscuro y
+     mide 8.37:1 aqui. Medido, no estimado (ver f1-task-3-report.md). */
+  color: var(--ds-active-action-primary-hover) !important;
 }
 
 .dropdown-item {
@@ -431,7 +439,9 @@ button.borrarSoporte {
 .dropdown-item:hover,
 .dropdown-item:focus {
   background-color: var(--surface-bg);
-  color: var(--primary) !important;
+  /* F1 Task 3: mismo fix de contraste que la regla base (linea ~128):
+     --primary sobre el canvas oscuro mide 4.09:1, bajo AA. */
+  color: var(--ds-active-action-primary-hover) !important;
 }
 
 .grupo_botones_semanal_madre,

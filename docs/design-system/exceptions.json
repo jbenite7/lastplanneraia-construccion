@@ -342,6 +342,33 @@
       "owner": "design-system",
       "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan.",
       "expiresAtVersion": "1.1.0"
+    },
+    {
+      "module": "legacy-palette-accent",
+      "rule": "hardcoded-hex",
+      "file": "public/css/styles.css",
+      "selector": ":root (--primary, --primary-dark, --primary-light, --text-inverse)",
+      "owner": "design-system",
+      "reason": "F1 Task 3 remapeo --surface-bg/--text-main a tokens activos, pero el acento azul Apple (--primary y derivados) no tiene equivalente semantico 1:1 en --ds-active-action-* (verde corporate): remapearlo es una decision de marca fuera del alcance de esta tarea (que solo corrige el fondo/texto claro heredado del body). --text-inverse queda literal porque solo empareja con --primary-light, sin cambios. Nota: el rule hardcoded-hex del audit no lleva selector (violacion sin scope de regla CSS), por lo que esta excepcion documenta la decision pero no suprime conteo alguno.",
+      "expiresAtVersion": "1.1.0"
+    },
+    {
+      "module": "legacy-palette-status",
+      "rule": "hardcoded-hex",
+      "file": "public/css/styles.css",
+      "selector": ":root (--status-critical, --status-delayed, --status-warning, --status-attention, --status-ok, --status-neutral)",
+      "owner": "design-system",
+      "reason": "F1 Task 3: colores semanticos de estado sin consumidores activos hoy en el repo (grep -rn confirma cero usos en public/css, public/js, views, src, admin). Se conservan literales para no inventar un mapeo --ds-* sin un consumidor real que lo valide.",
+      "expiresAtVersion": "1.1.0"
+    },
+    {
+      "module": "legacy-palette-services",
+      "rule": "hardcoded-hex",
+      "file": "public/css/styles.css",
+      "selector": ":root (--color-purple, --color-indigo, --color-teal)",
+      "owner": "design-system",
+      "reason": "F1 Task 3: colores de servicio heredados sin consumidores activos hoy en el repo (grep -rn confirma cero usos). Se conservan literales como deuda documentada.",
+      "expiresAtVersion": "1.1.0"
     }
   ],
   "migratedPaths": [],
