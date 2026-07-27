@@ -43,7 +43,7 @@
         .header-actions {
             flex: 0 0 auto;
             padding: 10px;
-            background: #f8f9fa;
+            background: var(--ds-active-surface-raised); /* F1 Task 3c: antes literal claro tipo Bootstrap light */
             border-bottom: 1px solid #ddd;
             display: flex;
             justify-content: space-between;

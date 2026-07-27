@@ -132,7 +132,7 @@ a.dropdown-item:hover,
   /* F1 Task 3: --primary (azul Apple literal) sobre el canvas oscuro mide
      4.09:1, bajo el 4.5:1 de AA para texto normal. --ds-active-action-primary-hover
      es el acento que el DS ya designa para estados hover sobre fondo oscuro y
-     mide 8.37:1 aqui. Medido, no estimado (ver f1-task-3-report.md). */
+     mide 9.02:1 aqui. Medido, no estimado (ver f1-task-3-report.md). */
   color: var(--ds-active-action-primary-hover) !important;
 }
 

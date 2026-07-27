@@ -6,6 +6,11 @@
 
   :where(.table th, .table td, table.dataTable th, table.dataTable td) {
     border-color: var(--ds-color-border-default);
+    /* F1 Task 3c: Bootstrap's .table rule (vendor layer) sets a near-black
+       ink that composites against the dark canvas at ~1.24:1 once th/td
+       inherit it. th/td don't set their own color, so override it here
+       rather than patching the view. */
+    color: var(--ds-active-text-primary);
   }
 
   :where(.pg-page #pgLegend.pdc-legend-autoscaling .pdc-legend-item) {
