@@ -587,7 +587,13 @@ test('laboratory scroll and file alignment hold across desktop dark viewports', 
 
     expect(geometry.centerDelta).toBeLessThanOrEqual(1);
     expect(Math.abs(geometry.fileHeight - geometry.codeHeight)).toBeLessThanOrEqual(1);
-    expect(geometry.overflowY).toBe('auto');
+    // El body tiene que quedarse en `visible`. Con cualquier otro valor se
+    // vuelve contenedor de scroll y, como nunca scrollea de verdad
+    // (scrollHeight === clientHeight), deja inerte el `position: sticky` del
+    // header y del rail. Esto asertaba 'auto', que era justamente el defecto:
+    // no aportaba scroll —el que scrollea es documentElement, y eso lo cubre
+    // la asercion siguiente— y solo servia para congelar el bug.
+    expect(geometry.overflowY).toBe('visible');
     expect(geometry.scrollTopAfter).toBeGreaterThan(geometry.scrollTopBefore);
   }
 });

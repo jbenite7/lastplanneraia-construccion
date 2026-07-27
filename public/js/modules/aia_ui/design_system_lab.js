@@ -20,6 +20,26 @@
     var selectPreview = root.querySelector("[data-select2-preview-toggle]");
     var selectPreviewDropdown = root.querySelector("[data-select2-preview-dropdown]");
     var operationalFixtures = Array.from(root.querySelectorAll("[data-operational-fixture]"));
+    var labHeader = root.querySelector(".ds-lab__header");
+
+    // El offset del rail sticky es la altura REAL del header, no una formula de
+    // tokens. La altura la dicta el bloque de identidad (eyebrow + h1 + lede),
+    // o sea la escala tipografica, asi que cualquier constante se desvia en
+    // cuanto esa escala cambia: la formula que habia daba 97px contra un header
+    // que ya medía 104px, y el rail se solapaba 7px. Se publica medido para que
+    // .ds-lab__rail-wrap lo use en `top` y en su `max-block-size`. El calc() de
+    // lab.css queda como fallback sin JS.
+    function syncHeaderOffset() {
+      root.style.setProperty("--ds-lab-header-offset", `${labHeader.getBoundingClientRect().height}px`);
+    }
+    if (labHeader) {
+      // Observa en vez de medir una vez: la densidad (compacta/touch) y el
+      // reflow del header cambian su altura despues del boot.
+      if (typeof ResizeObserver === "function") {
+        new ResizeObserver(syncHeaderOffset).observe(labHeader);
+      }
+      syncHeaderOffset();
+    }
 
     function setOperationalState(fixture, state) {
       if (!fixture || !state) return;
