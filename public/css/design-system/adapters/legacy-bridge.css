@@ -4,12 +4,23 @@
     border-bottom-color: var(--ds-color-border-default);
   }
 
-  :where(.table th, .table td, table.dataTable th, table.dataTable td) {
+  /* F1 Task 3c/3d: Bootstrap's .table rule (vendor layer) sets a near-black
+     ink that composites against the dark canvas at ~1.24:1 once th/td
+     inherit it. th/td don't set their own color, so override it here
+     rather than patching the view. Scoped to #dt_cliente (the
+     /control-cambios table, which sits directly on the dark canvas with no
+     background of its own) rather than every .table/table.dataTable in the
+     app: the unscoped version (3c) also won against #tablaDuracionesContratos
+     (/contratos) and #autoGenListadoTable (/listado-actividades), both of
+     which render inside .aia-modal on a light green header background and
+     already carry a correct dark ink via styles.css's
+     `.aia-modal .table thead th` rule — this layer, being last, overrode
+     that correct color too. #dt_cliente is reused by the ps-page DataTables
+     (CIC/CNP/CNC), but those already set their own !important color in
+     programacion-semanal.css, and by /pdc's Handsontable container, which is
+     a <div> (not a <table>) so `table#dt_cliente` never matches it. */
+  :where(table#dt_cliente th, table#dt_cliente td) {
     border-color: var(--ds-color-border-default);
-    /* F1 Task 3c: Bootstrap's .table rule (vendor layer) sets a near-black
-       ink that composites against the dark canvas at ~1.24:1 once th/td
-       inherit it. th/td don't set their own color, so override it here
-       rather than patching the view. */
     color: var(--ds-active-text-primary);
   }
 

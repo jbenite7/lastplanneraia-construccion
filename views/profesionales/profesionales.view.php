@@ -44,7 +44,7 @@
             flex: 0 0 auto;
             padding: 10px;
             background: var(--ds-active-surface-raised); /* F1 Task 3c: antes literal claro tipo Bootstrap light */
-            border-bottom: 1px solid #ddd;
+            border-bottom: 1px solid var(--ds-active-border); /* F1 Task 3d: antes #ddd, literal claro invisible sobre la barra dark */
             display: flex;
             justify-content: space-between;
             align-items: center;
