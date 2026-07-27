@@ -188,6 +188,57 @@
     --ds-color-state-info-bg: #e3f9f7;
     --ds-color-state-info-text: #006d66;
 
+    /* ========================================
+     ESTADOS DE PROGRAMACION (paleta compartida)
+     ========================================
+     La consumen cuatro superficies: /pdc (chips + filas), /programa-general y
+     /programacion-intermedia (solo las cabeceras `pdc-header`) y
+     /programacion-semanal. Vivian en `:root` dentro de public/css/styles.css
+     (`@layer module.components`), que F1 esta desmantelando; su sitio es la
+     capa de tokens.
+
+     Son SIETE estados, no cuatro. `docs/design-system/state-semantics.json`
+     reconoce cuatro niveles (neutral/healthy/attention/urgent) y colapsar la
+     paleta contra ese contrato reasignaria estados (missing de violeta a
+     amarillo, active de azul a verde, delayed y critical fundidos): eso es
+     rediseno y tiene tarea propia fuera de F1. Aqui solo se lleva cada estado
+     a oscuro conservando su identidad de matiz.
+
+     Los seis bordes cromaticos conservan el hex original (todos superan 3:1
+     contra el canvas oscuro). El unico que cambia es `not-started`: su
+     #c7cdd4 original era un gris claro discreto sobre chip claro, pero sobre
+     canvas oscuro se volvia el borde mas luminoso de la leyenda e invertia su
+     jerarquia de "estado mas silencioso". */
+    --pdc-missing-bg: #33204a;
+    --pdc-missing-border: #c084fc;
+    --pdc-missing-text: #e0cdfa;
+    --pdc-critical-bg: #431414;
+    --pdc-critical-border: #dc2626;
+    --pdc-critical-text: #ffcdc8;
+    --pdc-delayed-bg: #452a0d;
+    --pdc-delayed-border: #e87722;
+    --pdc-delayed-text: #ffd7a8;
+    --pdc-completed-late-bg: #3a3a0f;
+    --pdc-completed-late-border: #d4a017;
+    --pdc-completed-late-text: #f2e79c;
+    --pdc-completed-ontime-bg: #173d26;
+    --pdc-completed-ontime-border: #69b578;
+    --pdc-completed-ontime-text: #b7e8c6;
+    --pdc-active-bg: #17334f;
+    --pdc-active-border: #4a81bd;
+    --pdc-active-text: #bbdcfb;
+    --pdc-not-started-bg: #2b2f2d;
+    --pdc-not-started-border: #7c8783;
+    --pdc-not-started-text: #d4dad6;
+
+    /* Cabecera naranja de las tablas (`.pdc-header` / `.row-header`). Ya era
+       oscura con texto casi blanco (7,09:1), asi que los valores se conservan
+       exactos: aqui solo dejan de estar escritos a mano en el modulo. */
+    --pdc-header-bg: #8b4011;
+    --pdc-header-text: #fafafa;
+    --pdc-header-accent: #e87722;
+    --pdc-header-border: rgba(232, 119, 34, 0.28);
+
     --ds-radius-none: 0;
     --ds-radius-xs: 0.25rem;
     --ds-radius-sm: 0.5rem;

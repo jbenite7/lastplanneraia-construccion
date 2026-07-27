@@ -522,8 +522,8 @@ table.dataTable tbody tr:hover td {
 
 /* Header Row - Naranja Construccion */
 .row-header td {
-  background-color: #8b4011 !important;
-  color: #fafafa !important;
+  background-color: var(--pdc-header-bg) !important;
+  color: var(--pdc-header-text) !important;
   font-family: 'Montserrat', sans-serif;
   font-weight: 600;
   letter-spacing: 0.02em;
@@ -531,31 +531,12 @@ table.dataTable tbody tr:hover td {
 
 /* ==============================
    PDC Unified Palette (Rows + Chips)
-   Source of truth for all PDC colors.
+   F1 Task 5b: los 21 tokens `--pdc-*` que vivian aqui en un `:root` (un
+   `global-module-selector` desde una hoja de modulo) se declaran ahora en
+   public/css/tokens.css, @layer theme, con la paleta oscura. Ver alli la nota
+   sobre los siete estados y por que no se homologan a los cuatro niveles de
+   docs/design-system/state-semantics.json.
    ============================== */
-:root {
-  --pdc-missing-bg: #e9d5ff;
-  --pdc-missing-border: #c084fc;
-  --pdc-missing-text: #6b21a8;
-  --pdc-critical-bg: #fecaca;
-  --pdc-critical-border: #dc2626;
-  --pdc-critical-text: #991b1b;
-  --pdc-delayed-bg: #fed7aa;
-  --pdc-delayed-border: #e87722;
-  --pdc-delayed-text: #8a3f12;
-  --pdc-completed-late-bg: #fef08a;
-  --pdc-completed-late-border: #d4a017;
-  --pdc-completed-late-text: #8a5a00;
-  --pdc-completed-ontime-bg: #bbf7d0;
-  --pdc-completed-ontime-border: #69b578;
-  --pdc-completed-ontime-text: #25643a;
-  --pdc-active-bg: #bae6fd;
-  --pdc-active-border: #4a81bd;
-  --pdc-active-text: #1f4f82;
-  --pdc-not-started-bg: #f3f4f6;
-  --pdc-not-started-border: #c7cdd4;
-  --pdc-not-started-text: #4b5563;
-}
 
 /* Chip Colors (source of truth) */
 .pdc-legend-item.missing { background-color: var(--pdc-missing-bg); color: var(--pdc-missing-text); border-color: var(--pdc-missing-border); }
@@ -569,12 +550,12 @@ table.dataTable tbody tr:hover td {
 /* Real-time calculation badge */
 .pdc-status-info {
 	display: inline-flex; align-items: center; gap: 6px;
-	margin-left: 10px; font-size: 0.82rem; color: #64748b;
+	margin-left: 10px; font-size: 0.82rem; color: var(--ds-active-text-secondary);
 	white-space: nowrap; padding: 3px 10px;
-	background: #f8fafc; border-radius: 6px;
-	border: 1px solid #e2e8f0;
+	background: var(--ds-active-surface-raised); border-radius: 6px;
+	border: 1px solid var(--ds-active-border);
 }
-.pdc-status-info i { color: #1a5633; }
+.pdc-status-info i { color: var(--ds-active-action-primary); }
 
 /* Row Colors (must match chips) */
 .pdc-missing-data td {
@@ -636,19 +617,19 @@ table.dataTable tbody tr:hover td {
 
 /* Header / Title Rows */
 .pdc-header td {
-  background-color: #8b4011 !important;
-  color: #fafafa !important;
+  background-color: var(--pdc-header-bg) !important;
+  color: var(--pdc-header-text) !important;
   font-family: 'Montserrat', sans-serif;
   font-weight: 600;
   letter-spacing: 0.02em;
-  border-color: rgba(232, 119, 34, 0.28) !important;
+  border-color: var(--pdc-header-border) !important;
 }
 .pdc-header td * {
-  color: #fafafa !important;
+  color: var(--pdc-header-text) !important;
 }
 .Titulo td:first-child,
 .pdc-header td:first-child {
-  box-shadow: inset 4px 0 0 #e87722 !important;
+  box-shadow: inset 4px 0 0 var(--pdc-header-accent) !important;
 }
 
 #dt_cliente .handsontable td.pdc-missing-data {
@@ -688,16 +669,16 @@ table.dataTable tbody tr:hover td {
 }
 
 #dt_cliente .handsontable td.pdc-header {
-  background-color: #8b4011 !important;
-  color: #fafafa !important;
+  background-color: var(--pdc-header-bg) !important;
+  color: var(--pdc-header-text) !important;
   font-family: 'Montserrat', sans-serif;
   font-weight: 600;
   letter-spacing: 0.02em;
-  border-color: rgba(232, 119, 34, 0.28) !important;
+  border-color: var(--pdc-header-border) !important;
 }
 
 #dt_cliente .handsontable td.pdc-header:first-child {
-  box-shadow: inset 4px 0 0 #e87722 !important;
+  box-shadow: inset 4px 0 0 var(--pdc-header-accent) !important;
 }
 
 /* Legend / Convenciones Styles */
@@ -772,13 +753,13 @@ table.dataTable tbody tr:hover td {
   border-radius: 15px;
   font-size: 0.8rem; /* Consistent readable size, matching buttons closely */
   font-weight: 600;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  /* Cada estado sobreescribe `border-color`; este es el borde de un chip sin
+     estado. Sobre canvas oscuro un negro al 5% era invisible. */
+  border: 1px solid var(--ds-active-border);
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   user-select: none;
-  box-shadow:
-    0 2px 4px rgba(0, 0, 0, 0.03),
-    0 1px 2px rgba(0, 0, 0, 0.02);
+  box-shadow: var(--ds-shadow-xs);
   flex: 0 1 auto;
   width: auto;
   white-space: normal; /* Allow text to wrap nicely if needed on very small screens, or keep nowrap */
@@ -792,9 +773,7 @@ table.dataTable tbody tr:hover td {
 /* Active/Hover Interactions */
 .pdc-legend-item:hover {
   transform: translateY(-2px);
-  box-shadow:
-    0 8px 16px rgba(0, 0, 0, 0.08),
-    0 4px 8px rgba(0, 0, 0, 0.04); /* Elevated feel */
+  box-shadow: var(--ds-shadow-md); /* Elevated feel */
   filter: brightness(0.98);
   z-index: 10;
 }
@@ -807,11 +786,16 @@ table.dataTable tbody tr:hover td {
   transform: scale(0.95);
 }
 
-/* Chip Badge (Counter) */
+/* Chip Badge (Counter)
+   Dentro de un chip gana public/css/buttons.css:993, que ya fija
+   `--ds-active-surface-raised` con `!important`; este valor solo alcanza a un
+   `.count-badge` fuera de la leyenda. Se alinea con el ganador en vez de
+   dejar un blanco al 50% que, sobre el chip oscuro, dejaria su texto claro
+   ilegible. */
 .count-badge {
   font-size: 0.7rem;
   margin-left: 4px;
-  background-color: rgba(255, 255, 255, 0.5);
+  background-color: var(--ds-active-surface-raised);
   padding: 1px 5px;
   border-radius: 8px;
   font-weight: 700;
@@ -873,13 +857,13 @@ table.dataTable tbody tr:hover td {
   top: 20px;
   right: 20px;
   z-index: 9999;
-  background-color: #ffffff;
-  color: #333;
+  background-color: var(--ds-active-surface);
+  color: var(--ds-active-text-primary);
   padding: 15px 20px;
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  border-left: 5px solid #007bff; /* Accent color */
-  font-family: 'Roboto', sans-serif;
+  box-shadow: var(--ds-shadow-md);
+  border-left: 5px solid var(--ds-color-domain-real-estate-on-dark); /* Accent color */
+  font-family: var(--ds-font-body);
   font-size: 14px;
   display: none; /* Hidden by default */
   max-width: 300px;
