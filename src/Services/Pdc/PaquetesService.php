@@ -166,7 +166,7 @@ final class PaquetesService
         // y pertenece a la cuadrilla de estructura (regla más abajo); por eso aquí se filtra por tipo.
         ['kw' => ['ACARREO', 'FLETE', 'BUSETA', 'TRANSPORTE INTERNO', 'TRANSPORTE DE MATERIAL'], 'paq' => 'Transporte y acarreos', 'tipos' => ['TRANSPORTE'], 'soloDesc' => true],
         // Bolsas de presupuesto sin alcance definido: no se le compran a nadie todavía.
-        ['kw' => ['PARTIDA PRESUPUESTAL', 'RESANE', 'DETALLE CASAS', 'DETALLE APARTAMENTO'], 'paq' => 'Provisiones y partidas globales', 'tipos' => ['SUBCONTRATO', 'MANO DE OBRA', 'MATERIAL'], 'soloDesc' => true],
+        ['kw' => ['PARTIDA PRESUPUESTAL', 'DETALLE CASAS', 'DETALLE APARTAMENTO'], 'paq' => 'Provisiones y partidas globales', 'tipos' => ['SUBCONTRATO', 'MANO DE OBRA', 'MATERIAL'], 'soloDesc' => true],
         // Zonas verdes: la grama tiene contrato propio y gana por específica; el resto del oficio
         // (arborización, especies vegetales, jardinería) va a paisajismo.
         ['kw' => ['GRAMA', 'ENGRAMADO'], 'paq' => 'Sum + Inst ENGRAMADO', 'tipos' => ['SUBCONTRATO', 'MATERIAL', 'MANO DE OBRA'], 'descPrimero' => true],
@@ -735,19 +735,30 @@ final class PaquetesService
         $propuestas = [];
         foreach ($ins['insumos'] as $insumo) {
             $clave = $insumo['descripcionNorm'] . '@@' . mb_strtoupper((string) $insumo['unidad']);
-            // Un MATERIAL se compra por lo que es, no por dónde se usa: la actividad no debe influir
-            // en su destino (A3.3). Solo mano de obra y subcontrato dependen del frente de obra.
-            $actividad = self::mandaLaActividad($insumo['tipoRecurso'] ?? null) ? ($actMap[$clave] ?? '') : '';
+            $rama = $actMap[$clave] ?? ['actividad' => '', 'cadena' => [], 'esIndirecto' => false];
+            // Un MATERIAL se compra por lo que es, no por dónde se usa: su rama no debe influir en el
+            // destino (A3.3). Solo mano de obra y subcontrato dependen del frente de obra.
+            $mandaRama = self::mandaLaActividad($insumo['tipoRecurso'] ?? null);
+            $cadena = $mandaRama ? $rama['cadena'] : [];
+            $actividad = $mandaRama ? $rama['actividad'] : '';
             // El veto de reglas corta la cascada: ni tokens ni agrupacion deben rellenar un pendiente.
             $porReglas = $this->sugerirOverrideIA($insumo, $overrides, $catalogo)
                 ?? $this->sugerirExacta($projectId, $insumo)
-                ?? $this->sugerirPorReglas($insumo, $actividad, $catalogo);
+                ?? $this->sugerirPorReglas($insumo, $cadena, $catalogo);
             if (($porReglas['veto'] ?? false) === true) {
                 $p = null;
             } else {
                 $p = $porReglas
+                    // Si el propio presupuesto lo cuelga del capítulo de costos indirectos, esa
+                    // clasificación estructural pesa más que parecerse a un insumo de otra obra:
+                    // se adelanta a la similitud de texto (A3.4).
+                    ?? ($rama['esIndirecto'] === true ? $this->sugerirIndirectos($insumo, $catalogo, $rama) : null)
                     ?? $this->sugerirPorTokens($projectId, $insumo)
-                    ?? $this->sugerirIndirectos($insumo, $catalogo)
+                    ?? $this->sugerirIndirectos($insumo, $catalogo, $rama)
+                    // Último recurso para los MATERIALES que ninguna regla reconoce por su nombre: la
+                    // rama es mejor pista que la familia contable de SINCO, que es la que mandaba el
+                    // asador a gas a hidrosanitarias. Confianza baja: nunca se auto-asigna.
+                    ?? $this->sugerirPorRamaDeMaterial($insumo, $rama['cadena'], $catalogo)
                     ?? $this->sugerirPorAgrupacion($insumo);
             }
             // Si la propuesta se apoyó en una actividad que apenas concentra valor, el motor lo dice
@@ -1015,17 +1026,123 @@ final class PaquetesService
     }
 
     /** Actividad dominante (mayor valor) por insumo de la versión: NORMA@@UNIDAD → texto de la actividad. */
+    /**
+     * Actividad dominante de cada insumo + su CADENA DE ANCESTROS, de la actividad hacia arriba.
+     *
+     * Hasta A3.3 esto devolvía solo el texto de la actividad, y con eso se perdía la señal cuando el
+     * oficio no estaba en su nombre: «REBANCO COCINA» no dice «piso» pero cuelga del grupo «PISOS EN
+     * ZONAS PRIVADAS». Ahora se devuelve la rama entera para que las reglas puedan subir (A3.4).
+     *
+     * El capítulo queda FUERA de la cadena a propósito: solo toma dos valores (COSTO DIRECTO /
+     * INDIRECTO), así que no puede identificar ningún oficio. Su información viaja aparte, en
+     * `esIndirecto`, porque sí dice algo: lo que cuelga de indirectos no se contrata como obra.
+     *
+     * @return array<string, array{actividad: string, cadena: list<array{descripcion: string, tipoFila: string}>, esIndirecto: bool}>
+     */
     private function actividadDominantePorInsumo(int $projectId, ?int $versionId): array
     {
-        $act = $this->actividadesPorInsumo($projectId, $versionId, 1);
-        if ($act === null) {
+        $version = $this->versionDe($projectId, $versionId);
+        if ($version === null) {
             return [];
         }
+        $vid = (int) $version['id'];
+
+        // Un solo SELECT de los ítems y la rama se arma en memoria: son ~500 filas por versión y
+        // resolverlas con una consulta por nivel serían miles de round-trips.
+        $items = $this->db->query(
+            'SELECT id, codigo, codigo_padre, tipo_fila, descripcion
+             FROM pdc_presupuesto_items WHERE project_id = ? AND version_id = ?',
+            [$projectId, $vid],
+        )->fetchAll(\PDO::FETCH_ASSOC);
+        $porId = [];
+        $porCodigo = [];
+        foreach ($items as $it) {
+            $porId[(int) $it['id']] = $it;
+            $porCodigo[(string) $it['codigo']] = $it;
+        }
+
+        // Actividad de mayor valor por insumo. Se lee de los APU y no de `pdc_insumo_actividades`
+        // a propósito: esa tabla se materializa perezosamente y podría ir por detrás de los datos.
+        // Aquí la fuente de verdad manda.
+        $filas = $this->db->query(
+            'SELECT ai.descripcion, ai.unidad, ai.item_id, it.descripcion AS actividad,
+                    SUM(ai.valor_total) AS valor
+             FROM pdc_presupuesto_apu_insumos ai
+             JOIN pdc_presupuesto_items it ON it.id = ai.item_id
+             WHERE ai.project_id = ? AND ai.version_id = ?
+             GROUP BY ai.descripcion, ai.unidad, ai.item_id, it.descripcion
+             ORDER BY valor DESC',
+            [$projectId, $vid],
+        )->fetchAll(\PDO::FETCH_ASSOC);
+
         $mapa = [];
-        foreach ($act['mapa'] as $clave => $info) {
-            $mapa[$clave] = (string) ($info['items'][0]['actividad'] ?? '');
+        $cacheRama = [];
+        foreach ($filas as $f) {
+            $clave = MaestroInsumosService::normalizar((string) $f['descripcion'])
+                . '@@' . mb_strtoupper(trim((string) $f['unidad']));
+            if (isset($mapa[$clave])) {
+                continue; // ya tenemos la de mayor valor: el ORDER BY garantiza que es la primera
+            }
+            $itemId = (int) $f['item_id'];
+            if (!isset($cacheRama[$itemId])) {
+                $cadena = [];
+                $esIndirecto = false;
+                $actual = $porId[$itemId] ?? null;
+                while ($actual !== null) {
+                    if ($actual['tipo_fila'] === 'capitulo') {
+                        // Tope: el capítulo no nombra oficios, solo naturaleza.
+                        $esIndirecto = str_contains(mb_strtoupper((string) $actual['descripcion']), 'INDIRECTO');
+                        break;
+                    }
+                    $cadena[] = ['descripcion' => (string) $actual['descripcion'], 'tipoFila' => (string) $actual['tipo_fila']];
+                    $padre = $actual['codigo_padre'];
+                    $actual = $padre !== null ? ($porCodigo[(string) $padre] ?? null) : null;
+                }
+                $cacheRama[$itemId] = ['cadena' => $cadena, 'esIndirecto' => $esIndirecto];
+            }
+            $mapa[$clave] = [
+                'actividad' => (string) $f['actividad'],
+                'cadena' => $cacheRama[$itemId]['cadena'],
+                'esIndirecto' => $cacheRama[$itemId]['esIndirecto'],
+            ];
         }
         return $mapa;
+    }
+
+    /**
+     * Último recurso para un MATERIAL que ninguna regla reconoce por su nombre (A3.4).
+     *
+     * La doctrina no cambia: un material se compra por lo que es, y por eso su rama no entra en la
+     * pasada normal de reglas. Pero cuando el nombre no dice nada, el frente donde se consume es
+     * mejor pista que la familia contable de SINCO — que es la capa que mandaba el asador a gas a
+     * instalaciones hidrosanitarias. Siempre confianza baja: esto no se auto-asigna nunca.
+     *
+     * @param list<array{descripcion: string, tipoFila: string}> $cadena
+     */
+    private function sugerirPorRamaDeMaterial(array $insumo, array $cadena, array $catalogo): ?array
+    {
+        if ($cadena === [] || self::mandaLaActividad($insumo['tipoRecurso'] ?? null)) {
+            return null; // la mano de obra ya usó la rama en la pasada de reglas
+        }
+        $p = $this->sugerirPorReglas($insumo, $cadena, $catalogo);
+        if ($p === null || ($p['veto'] ?? false) === true) {
+            return null;
+        }
+        $p['confianza'] = 'baja';
+        $p['evidencia'] = rtrim($p['evidencia'], '.')
+            . '. Ningún criterio reconoce este material por su nombre: el destino sale del frente donde se consume.';
+        return $p;
+    }
+
+    /** Etiqueta legible del nivel jerárquico, para que la evidencia diga de dónde salió el acierto. */
+    private static function etiquetaNivel(string $tipoFila): string
+    {
+        return match ($tipoFila) {
+            'actividad' => 'actividad padre',
+            'grupo' => 'grupo',
+            'subcapitulo' => 'subcapítulo',
+            default => 'rama',
+        };
     }
 
     /**
@@ -1355,10 +1472,13 @@ final class PaquetesService
     }
 
     /** Capa reglas (media): diccionario de dominio sobre descripción + actividad dominante, filtrado por tipo_recurso. */
-    private function sugerirPorReglas(array $insumo, string $actividad, array $catalogo): ?array
+    /**
+     * @param list<array{descripcion: string, tipoFila: string}> $cadena rama de la actividad hacia
+     *        arriba (actividad → grupo → subcapítulo), sin el capítulo.
+     */
+    private function sugerirPorReglas(array $insumo, array $cadena, array $catalogo): ?array
     {
         $desc = self::henoParaReglas($insumo['descripcionNorm']);
-        $act = $actividad !== '' ? self::henoParaReglas(MaestroInsumosService::normalizar($actividad)) : '';
         $tipoRecurso = mb_strtoupper((string) ($insumo['tipoRecurso'] ?? ''));
 
         // Doctrina de precedencia (feedback del usuario 2026-07-25):
@@ -1367,11 +1487,29 @@ final class PaquetesService
         //  2) Si la descripcion calla, el material/trabajo lo aporta la ACTIVIDAD PADRE dominante.
         //  3) Respaldo: el resto de reglas sobre la descripcion.
         // Las reglas de material (`soloDesc`) nunca miran la actividad: el nombre identifica el producto.
-        $pasadas = [
-            ['heno' => $desc, 'origen' => 'descripcion', 'soloDescPrimero' => true],
-            ['heno' => $act, 'origen' => 'actividad', 'soloDescPrimero' => false],
-            ['heno' => $desc, 'origen' => 'descripcion', 'soloDescPrimero' => false],
+        // Orden de pasadas (A3.4). Los ancestros se recorren de abajo arriba —gana el nivel más
+        // cercano, que es el que mejor describe lo que se ejecuta—, pero la descripción del propio
+        // insumo se agota ANTES de subir más allá de la actividad directa. Sin eso, un paraguas como
+        // «MAMPOSTERIA Y REVOQUE» se lleva un «M.O. ENCHAPE CERAMICA» que su propio nombre resolvía:
+        // el subcapítulo agrupa oficios distintos y no puede pisar al insumo.
+        $eslabonPasada = static fn (array $e): array => [
+            'heno' => self::henoParaReglas(MaestroInsumosService::normalizar($e['descripcion'])),
+            'origen' => 'actividad',
+            'nivel' => $e['tipoFila'],
+            'texto' => $e['descripcion'],
+            'soloDescPrimero' => false,
         ];
+        $actividadDirecta = ($cadena[0]['tipoFila'] ?? '') === 'actividad' ? array_slice($cadena, 0, 1) : [];
+        $ancestros = array_slice($cadena, count($actividadDirecta));
+
+        $pasadas = [['heno' => $desc, 'origen' => 'descripcion', 'nivel' => '', 'soloDescPrimero' => true]];
+        foreach ($actividadDirecta as $e) {
+            $pasadas[] = $eslabonPasada($e);
+        }
+        $pasadas[] = ['heno' => $desc, 'origen' => 'descripcion', 'nivel' => '', 'soloDescPrimero' => false];
+        foreach ($ancestros as $e) {
+            $pasadas[] = $eslabonPasada($e);
+        }
 
         foreach ($pasadas as $pasada) {
             if (trim($pasada['heno']) === '') {
@@ -1405,7 +1543,7 @@ final class PaquetesService
                         }
                     }
                     $donde = $pasada['origen'] === 'actividad'
-                        ? "en su actividad padre «{$actividad}»"
+                        ? 'en su ' . self::etiquetaNivel((string) $pasada['nivel']) . " «{$pasada['texto']}»"
                         : 'en la descripcion del insumo';
                     // Veto explicito: sin senal suficiente es preferible dejarlo pendiente que inventar.
                     if ($regla['paq'] === self::SIN_PROPUESTA) {
@@ -1486,10 +1624,20 @@ final class PaquetesService
     }
 
     /** Capa indirectos (media): admin/nómina/dotación → paquete «Indirectos / Administración». */
-    private function sugerirIndirectos(array $insumo, array $catalogo): ?array
+    /**
+     * @param array{actividad: string, cadena: list<array{descripcion: string, tipoFila: string}>, esIndirecto: bool} $rama
+     */
+    private function sugerirIndirectos(array $insumo, array $catalogo, array $rama = ['actividad' => '', 'cadena' => [], 'esIndirecto' => false]): ?array
     {
         $tipoRecurso = mb_strtoupper((string) ($insumo['tipoRecurso'] ?? ''));
-        $desc = ' ' . $insumo['descripcionNorm'] . ' ';
+        // La rama cuenta aquí aunque el insumo sea un material: lo que cuelga del capítulo de costos
+        // indirectos no se le compra a un contratista de alcance, sea lo que sea (A3.4). Y el nombre
+        // del frente («PAPELERIA Y UTILES») suele decirlo cuando el del insumo calla.
+        $heno = $insumo['descripcionNorm'];
+        foreach ($rama['cadena'] as $eslabon) {
+            $heno .= ' ' . MaestroInsumosService::normalizar($eslabon['descripcion']);
+        }
+        $desc = ' ' . $heno . ' ';
         $casa = static function (array $kws) use ($desc): ?string {
             foreach ($kws as $kw) {
                 if (self::casaKeyword($desc, $kw)) { return $kw; }
@@ -1515,6 +1663,9 @@ final class PaquetesService
         } elseif (($kw = $casa(self::KEYWORDS_INDIRECTOS)) !== null) {
             $destino = self::PAQUETE_INDIRECTOS;
             $motivo = "«{$kw}» en la descripcion";
+        } elseif ($rama['esIndirecto'] === true) {
+            $destino = self::PAQUETE_INDIRECTOS;
+            $motivo = 'cuelga del capitulo de costos indirectos del presupuesto';
         }
         if ($destino === null) {
             return null;
@@ -1577,7 +1728,8 @@ final class PaquetesService
         $salida = [];
         foreach ($sin['insumos'] as $insumo) {
             $clave = $insumo['descripcionNorm'] . '@@' . mb_strtoupper((string) $insumo['unidad']);
-            $actividad = $actMap[$clave] ?? '';
+            $rama = $actMap[$clave] ?? ['actividad' => '', 'cadena' => [], 'esIndirecto' => false];
+            $actividad = (string) $rama['actividad'];
             $tokIns = self::tokens($insumo['descripcionNorm']);
             $tokAct = $actividad !== '' ? self::tokens(MaestroInsumosService::normalizar($actividad)) : [];
             $agrup = (string) ($insumo['agrupacion'] ?? '');
@@ -1608,7 +1760,7 @@ final class PaquetesService
 
             // La propuesta del motor (regla/override) encabeza siempre, con confianza alta.
             $delMotor = $this->sugerirOverrideIA($insumo, $overrides, $catalogo)
-                ?? $this->sugerirPorReglas($insumo, $actividad, $catalogo);
+                ?? $this->sugerirPorReglas($insumo, $rama['cadena'], $catalogo);
             if ($delMotor !== null && ($delMotor['veto'] ?? false) !== true) {
                 $cands = array_values(array_filter($cands, static fn (array $c): bool => $c['paquete'] !== $delMotor['paqueteNombre']));
                 array_unshift($cands, [
