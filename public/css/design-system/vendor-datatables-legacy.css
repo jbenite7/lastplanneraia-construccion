@@ -8,4 +8,51 @@
   .dataTables_wrapper {
     color: var(--ds-active-text-primary);
   }
+
+  /* F1 Task 5a: absorbido desde public/css/styles.css (module.components).
+     Contencion de ancho del scroller de DataTables. Destino verificado
+     contra el AVISO DE ALCANCE del brief: este archivo solo lo emite
+     DesignSystemHeadComponent::render() cuando $handsontableOnly === false,
+     mientras que styles.css se cargaba en todas las rutas, asi que mover
+     aqui reduce el alcance. Comprobado que la reduccion no toca a nadie
+     vivo: las tres vistas que llaman render(true) --contratos.view.php:11,
+     listadoActividades.view.php:9 y pdc.view.php:12-- son Handsontable puro
+     (declaran window.__AIA_HANDSONTABLE_ONLY__ = true y no cargan ni un
+     script de DataTables), y las cinco vistas que si cargan la libreria
+     --indicadores, control-cambios y CIC/CNC/CNP de programacion-semanal--
+     llaman render() sin argumento, o sea que si reciben este archivo.
+     Medido en vivo a 1180x820 dark: de esas cinco, solo CIC/CNC/CNP llegan
+     a instanciar una DataTable (`$("#dt_cliente").DataTable(...)`), asi que
+     los unicos `table.dataTable` del producto hoy estan en
+     /programacion-semanal/{cic,cnc,cnp}; indicadores y control-cambios
+     cargan la libreria pero no la inicializan.
+     Los !important se mueven tal cual, no se anaden ni se retiran: la
+     retirada pertenece al tramo de unauthorized-important. El cambio de capa
+     es delicado con !important porque para esas declaraciones el orden de
+     capas se INVIERTE (gana la capa mas temprana), asi que module ganaria a
+     legacy-overrides. Verificado en vivo, no razonado: los valores
+     calculados de max-width y overflow-x de wrapper/scrollHead/scrollBody en
+     /programacion-semanal/{cic,cnc,cnp} son identicos antes y despues del
+     movimiento (100% / hidden / auto). El hover de fila NO sobrevivio a esa
+     misma prueba y por eso se quedo en styles.css; ver la nota alli. */
+  .dataTables_wrapper,
+  .dataTables_scroll {
+    max-width: 100% !important;
+    width: 100%;
+  }
+
+  .dataTables_scrollHead {
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  .dataTables_scrollBody {
+    max-width: 100% !important;
+    overflow-x: auto !important;
+  }
+
+  .dataTables_scrollFoot {
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
 }

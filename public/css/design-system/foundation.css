@@ -36,6 +36,30 @@
   }
 }
 
+/* F1 Task 5a: absorbido desde public/css/styles.css (@layer components, que
+   resolvia como module.components porque los dos entrypoints importan
+   styles.css con layer(module)). Es contencion de ancho de la app entera:
+   fundacion pura, no un componente. Se coloca en @layer base y no en el
+   bloque @layer reset de arriba porque base va despues de vendor en el orden
+   canonico DS-006 y reset va antes: en reset, cualquier regla de Bootstrap
+   sobre html/body le ganaria. No entra en conflicto con el
+   `html { overflow-y: auto }` del reset: overflow-x y overflow-y son
+   propiedades distintas y, al no ser ninguna de las dos `visible`, el par
+   (hidden, auto) se aplica tal cual sin que ninguna se promueva a `auto`.
+   Medido: es el unico consumidor layered de overflow-x sobre html/body en
+   todo public/css; el otro (login-brand-unified.css:11) no lleva capa y
+   tiene su propio sujeto (body.login-brand-page), asi que gana de todos
+   modos por ser unlayered y no depende de esta regla. */
+@layer base {
+  /* Prevent global horizontal scroll */
+  html,
+  body {
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
 /* F1 shell-background: absorbido desde public/css/styles.css (@layer base),
    bloqueado dos veces en F1 Task 4 (ver f1-task-4-report.md). La causa raiz
    era .aia-shell (core.css, @layer components) fijando solo background-image

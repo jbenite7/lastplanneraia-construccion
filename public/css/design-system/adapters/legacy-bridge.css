@@ -108,4 +108,24 @@
   :where(html.aia-theme-dark .aia-info-nav__eyebrow) {
     color: var(--ds-active-text-secondary);
   }
+
+  /* F1 Task 5a: absorbido desde public/css/styles.css:319-323
+     (module.components). Neutraliza las gutters negativas de `.row` de
+     Bootstrap (vendor: margin-inline: -15px), que empujaban contenido fuera
+     del viewport. Destino: `.row` es una clase de vendor, no una primitiva
+     `aia-*` del design system, asi que no cabe en foundation.css ni en un
+     archivo de components/; legacy-bridge.css es justo el adaptador donde
+     ya viven las neutralizaciones de vendor, y es de los pocos destinos que
+     importan LOS DOS entrypoints (aia-design-system.css:24 y
+     entrypoints/core.css:16), asi que el alcance queda identico al que la
+     regla tenia en styles.css --que tambien lo importan los dos-- sin
+     ampliarlo ni reducirlo. Se conserva el !important tal cual (mover, no
+     reescribir); no se le anadio especificidad. Unico competidor medido en
+     todo public/css es
+     `body.ps-page .ps-cic-rating-modal .modal-body > .row { margin-inline: 0 }`
+     (programacion-semanal.css:2500), que fija el mismo valor. */
+  .row {
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+  }
 }

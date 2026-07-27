@@ -143,13 +143,8 @@ nav.apple-navbar {
   margin-right: 0.5rem !important;
 }
 
-/* Prevent global horizontal scroll */
-html,
-body {
-  overflow-x: hidden;
-  width: 100%;
-  max-width: 100%;
-}
+/* F1 Task 5a: `html, body { overflow-x/width/max-width }` movido a
+   public/css/design-system/foundation.css (@layer base). */
 
 .navbar-nav .dropdown-menu {
   z-index: 1050 !important; /* Higher than navbar and datatables */
@@ -161,15 +156,7 @@ body {
   letter-spacing: -0.5px;
 }
 
-/* Mobile Drawer Implementation (iOS Slide Over) — Extended to 1199px for Tablet Coverage (accounts for 0.85 viewport scale) */
-
-/* Force Collapse on Tablets (992px-1199px) — Full Bootstrap navbar-expand-xl Neutralization */
-
 .navbar-brand {
-  color: white;
-}
-
-.dropdown_divider {
   color: white;
 }
 
@@ -183,56 +170,6 @@ body {
 .form-group label {
   display: inline-block;
 }
-
-/* .Semanal_Critica{
-    background: rgba(255,150,64,1);
-
-
-}
-
-.Semanal_No_Critica{
-    background: rgba(255,192,51,0.5);
-
-
-}
-
-.Semanal_Atrasada_Critica{
-    background:  #7c1c51;
-
-
-}
-
-.Semanal_Atrasada_No_Critica{
-    background:  rgba(255,83,51,0.8);
-
-
-}
-
-.Intermedia{
-    background: rgba(0,191,114,0.9);
-
-
-}
-
-.Titulo{
-    background: rgba(3,87,102,1);
-} */
-
-/* .No_Activa{
-    color: rgba(84,84,84,0.83);
-} */
-
-/* .Titulo td{
-    color: white;
-} */
-
-/* .Semanal_Atrasada_Critica td{
-    color: white;
-} */
-
-/* .OK{
-    background:white;
-} */
 
 .row {
   width: 100%;
@@ -283,9 +220,29 @@ body {
   margin: 0;
 }
 
+/* F1 Task 5a: retokenizado EN EL SITIO, no movido. Antes pintaba
+   `rgba(213, 234, 240, 0.8)` con `color: black`: azul claro con tinta negra
+   sobre todas las DataTables de una app dark-only. Remapeo semantico 1:1 a
+   la superficie elevada y al texto primario del tema, la misma pareja que ya
+   usan .cm-table y el listbox de Handsontable en programacion-semanal.css.
+   Se intento moverlo a vendor-datatables-legacy.css (@layer
+   legacy-overrides) junto con el resto del adaptador de DataTables, y se
+   revirtio por medicion, no por criterio: la regla `table.dataTable tbody
+   td` de este mismo archivo fija `color: #3a3a3c !important`, y para las
+   declaraciones !important el orden de capas se INVIERTE (gana la capa mas
+   temprana), asi que module le gana a legacy-overrides por mucha
+   especificidad que tenga el hover. Con el hover en legacy-overrides el
+   fondo si cambiaba pero la tinta se quedaba en #3a3a3c. Medido en
+   /control-cambios con una sonda que anade la clase `dataTable` a
+   #dt_cliente: 1.28:1 movido, frente a 10.95:1 del literal claro original.
+   Aqui, en la misma capa que su competidor, decide la especificidad
+   --(0,2,4) contra (0,1,3)-- y la tinta vuelve a aplicarse. El bloque
+   `table.dataTable tbody td` cae fuera del alcance de este tramo; cuando su
+   tramo lo migre, esta regla puede acompanarlo y las dos iran juntas al
+   adaptador. */
 table.dataTable tbody tr:hover td {
-  background-color: rgba(213, 234, 240, 0.8) !important;
-  color: black !important;
+  background-color: var(--ds-active-surface-raised) !important;
+  color: var(--ds-active-text-primary) !important;
 }
 
 #dt_cliente {
@@ -294,33 +251,11 @@ table.dataTable tbody tr:hover td {
   max-width: 100% !important;
 }
 
-/* Force Table Container to respect screen width - ALL MODULES */
-.dataTables_wrapper,
-.dataTables_scroll {
-  max-width: 100% !important;
-  width: 100%;
-}
-
-.dataTables_scrollHead {
-  max-width: 100% !important;
-  overflow-x: hidden !important;
-}
-
-.dataTables_scrollBody {
-  max-width: 100% !important;
-  overflow-x: auto !important;
-}
-
-.dataTables_scrollFoot {
-  max-width: 100% !important;
-  overflow-x: hidden !important;
-}
-
-/* Ensure no negative margins causing overflow */
-.row {
-  margin-right: 0 !important;
-  margin-left: 0 !important;
-}
+/* F1 Task 5a: la contencion de ancho de .dataTables_* se movio a
+   public/css/design-system/vendor-datatables-legacy.css y la neutralizacion
+   de las gutters negativas de .row a
+   public/css/design-system/adapters/legacy-bridge.css, ambas en
+   @layer legacy-overrides. */
 
 #cuadroTabla {
   padding: 2px;
@@ -611,10 +546,6 @@ button.borrarSoporte {
   color: #48c22f;
 }
 
-.inputBlanco {
-  background: #ffffff;
-}
-
 .pasoProcesoContratacion {
   background: white;
   align-items: center;
@@ -717,19 +648,6 @@ button.borrarSoporte {
   font-weight: bold;
   text-align: center;
   color: #ffffff;
-}
-
-.comprometerSugerido {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 4px;
-  padding: 0.2rem 0.55rem;
-  font-size: 0.75rem;
-  line-height: 1.1;
-  width: auto;
-  max-width: 100%;
-  white-space: nowrap;
 }
 
 /* =========================================
