@@ -110,3 +110,68 @@ test('el body de cada ruta de la Tarea 3 usa su fondo oscuro, no el fallback cla
     await logout(page).catch(() => {});
   }
 });
+
+// Hallazgo posterior a la Tarea 3 (commit efabf46): este archivo mide solo
+// `document.body`, y las cinco rutas de EXPECTED_BODY_BACKGROUND ya dan
+// verde ahi. Pero el body es el lienzo exterior; la grilla Handsontable que
+// cubre casi toda la pantalla en /contratos, /pdc, /profesionales,
+// /subcontratistas y /listado-actividades vive en su propio contenedor
+// (`#hot-container`, o `#dt_cliente` en /pdc) con su propio fondo CSS, sin
+// heredar el del body. Medido en vivo a 1180x820 dark, logueado como test.A
+// en un proyecto con project_id activo (Da Porto u otro: contratos/
+// listado-actividades no tienen filas seed en ningun proyecto disponible,
+// asi que la comparacion es sobre el contenedor, no sobre una celda de
+// datos, lo cual ademas es correcto: una celda puede llevar legitimamente
+// un tinte de estado, por ejemplo `.pdc-header` en rgb(139, 64, 17) o
+// `.pdc-missing-data` en rgb(233, 213, 255) en /pdc; ninguna de las dos es
+// un bug, y afirmar "ninguna celda es blanca" habria sido una asercion
+// invalida). El contenedor no tiene `style` inline con background (solo
+// height/width/overflow), asi que su color viene integramente de la
+// cascada CSS y es un punto de medicion real, no vacuo:
+//   /contratos            #hot-container -> rgb(17, 26, 21)   (referencia: OK)
+//   /listado-actividades  #hot-container -> rgb(17, 26, 21)   (OK)
+//   /pdc                  #dt_cliente    -> rgba(28, 36, 31, 0.92) (OK, superficie "glass" ya oscura)
+//   /profesionales        #hot-container -> rgb(255, 255, 255) (ROTO: contenedor blanco)
+//   /subcontratistas      #hot-container -> rgb(255, 255, 255) (ROTO: contenedor blanco)
+// En /profesionales y /subcontratistas el `body` que las envuelve ya es
+// oscuro (rgb(11, 16, 13), la misma EXPECTED_BODY_BACKGROUND de arriba) y
+// las celdas de datos (`td`) tambien miden blanco solido, pero el
+// contenedor es el nivel donde el token deberia aplicarse de forma estable
+// sin depender de si hay filas cargadas -- el arreglo (una tarea posterior
+// de F1 sobre `@layer components`, o F6 tokenizando
+// handsontable-module.css) vive fuera de este archivo; este test solo
+// deja el hueco visible.
+const EXPECTED_GRID_SURFACE_BACKGROUND = {
+  '/contratos': { selector: '#hot-container', background: 'rgb(17, 26, 21)' },
+  '/listado-actividades': { selector: '#hot-container', background: 'rgb(17, 26, 21)' },
+  '/pdc': { selector: '#dt_cliente', background: 'rgba(28, 36, 31, 0.92)' },
+  '/profesionales': { selector: '#hot-container', background: 'rgb(17, 26, 21)' },
+  '/subcontratistas': { selector: '#hot-container', background: 'rgb(17, 26, 21)' },
+};
+
+test('la superficie de la grilla Handsontable (no el body) usa fondo oscuro en cada ruta', async ({ page }) => {
+  test.skip(!project, 'Construction project required');
+  await page.setViewportSize(VIEWPORT);
+  await loginAndSelectProject(page, project, CI_ADMIN);
+  try {
+    for (const [route, expected] of Object.entries(EXPECTED_GRID_SURFACE_BACKGROUND)) {
+      const response = await page.goto(route, { waitUntil: 'load' });
+      expect(response?.status(), `${route} must respond`).toBeLessThan(400);
+      await page.waitForSelector(expected.selector, { state: 'attached', timeout: 15000 });
+      const background = await page.evaluate((selector) => {
+        const el = document.querySelector(selector);
+        return el ? getComputedStyle(el).backgroundColor : null;
+      }, expected.selector);
+      // `soft`, igual que el test de arriba: /profesionales y /subcontratistas estan
+      // en rojo hoy a proposito (grilla blanca sobre canvas oscuro); un expect duro
+      // ocultaria la segunda ruta rota detras de la primera.
+      expect.soft(
+        background,
+        `${route}: el fondo de ${expected.selector} (la superficie de la grilla, no una celda) debe ser el ` +
+          `token dark (${expected.background}); un valor claro es una grilla blanca flotando sobre el canvas oscuro`,
+      ).toBe(expected.background);
+    }
+  } finally {
+    await logout(page).catch(() => {});
+  }
+});
