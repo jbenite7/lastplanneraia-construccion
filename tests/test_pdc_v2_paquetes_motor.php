@@ -327,7 +327,7 @@ $colaLarga = [
     ['PARTIDA PRESUPUESTAL PORTERIA A3', 'SG', 'SUBCONTRATO', 'Provisiones y partidas globales'],
     ['SUMINISTRO E INSTALACION DE ARBOLES A3', 'UN', 'SUBCONTRATO', 'Sum + Inst PAISAJISMO Y ZONAS VERDES'],
     // Destinos que ya existían en el catálogo y el motor no usaba.
-    ['LOCALIZACION Y REPLANTEO A3', 'M2', 'SUBCONTRATO', 'Sum + Inst TOPOGRAFÍA'],
+    ['LOCALIZACION Y REPLANTEO A3', 'M2', 'SUBCONTRATO', 'M. de O TOPOGRAFÍA'],
     ['M.O. LECHO FILTRANTE A3', 'M3', 'MANO DE OBRA', 'M. de O FILTROS'],
     ['M.O. INSTALACION DE CUNETAS A3', 'M', 'MANO DE OBRA', 'M. de O CUNETA TALUD'],
     ['SUMINISTRO E INSTALACION DE GRAMA A3', 'M2', 'SUBCONTRATO', 'Sum + Inst ENGRAMADO'],
@@ -463,6 +463,57 @@ $byB = [];
 foreach ($sugB['sugerencias'] as $s) { $byB[$s['descripcionNorm']] = $s; }
 $sHuerf = $byB['MO SIN RAMA UTIL A3'] ?? null;
 $assert($sHuerf === null || $sHuerf['capa'] !== 'reglas', 'Sin oficio en toda la rama, ninguna regla lo resuelve (el capítulo no cuenta).');
+
+// --- A3.4 · Suministro y mano de obra van a paquetes distintos --------------------------------
+// Doctrina de la dirección de obra: la carpintería son dos contratos, uno de fabricación y
+// suministro (IVA pleno) y otro de instalación (IVA de servicios). El motor tiene que saber cuál
+// de los dos le toca a cada insumo según su tipo de recurso.
+$partidos = [
+    ['SUMINISTRO PUERTA MADERA P22 A3', 'UN', 'MATERIAL', 'Suministro PUERTAS EN MADERA'],
+    ['M.O. INSTALACION PUERTA MADERA A3', 'UN', 'MANO DE OBRA', 'M. de O CARPINTERÍA DE MADERA'],
+    ['SUMINISTRO PUERTA METALICA PM9 A3', 'UN', 'MATERIAL', 'Suministro PUERTAS METÁLICAS'],
+    ['EPOXICO ESTRUCTURAL A3', 'UN', 'MATERIAL', 'Suministro ANCLAJES'],
+    ['CAMPANA EXTRACTORA A3', 'UN', 'MATERIAL', 'Suministro DOTACIÓN COCINAS Y LAVADEROS'],
+    ['COMISION TOPOGRAFIA A3', 'MES', 'MANO DE OBRA', 'M. de O TOPOGRAFÍA'],
+    ['M.O. INSTALACION TOPELLANTAS A3', 'UN', 'MANO DE OBRA', 'M. de O TOPELLANTAS'],
+    ['ALQUILER BUSETA PERSONAL A3', 'MES', 'TRANSPORTE', 'Alquiler de transporte de personal'],
+];
+foreach ($partidos as [$desc, $und, $tipo, $_]) {
+    $db->query(
+        "INSERT INTO general_maestro_insumos (descripcion, descripcion_norm, unidad, tipo_insumo, tipo_recurso, activo, creado_por, created_at)
+         VALUES (?, ?, ?, 'X', ?, 1, 'test-a3', NOW())",
+        [$desc, $desc, $und, $tipo],
+    );
+    $db->query(
+        "INSERT INTO pdc_insumo_vinculos (project_id, version_id, descripcion_norm, unidad, descripcion_original, tipo_insumo, cantidad_total, valor_total, apariciones, maestro_id, estado)
+         VALUES (?, ?, ?, ?, ?, 'X', 1, 100, 1, ?, 'pendiente')",
+        [$P1, $vid, $desc, $und, $desc, $mid($desc, $und)],
+    );
+}
+$sugP = $svc->sugerencias($P1);
+$byP = [];
+foreach ($sugP['sugerencias'] as $s) { $byP[$s['descripcionNorm']] = $s; }
+foreach ($partidos as [$desc, $und, $tipo, $destino]) {
+    $s = $byP[$desc] ?? null;
+    $ok = $s !== null && mb_strtoupper($s['paqueteNombre']) === mb_strtoupper($destino);
+    $assert($ok, sprintf('%s (%s) → %s%s', mb_substr($desc, 0, 34), $tipo, $destino, $ok ? '' : ' [dio: ' . ($s['paqueteNombre'] ?? 'sin propuesta') . ']'));
+}
+
+// El aseo permanente de obra es un gasto recurrente de nómina, no el hito de entrega.
+$db->query(
+    "INSERT INTO general_maestro_insumos (descripcion, descripcion_norm, unidad, tipo_insumo, tipo_recurso, activo, creado_por, created_at)
+     VALUES ('ASEO PERMANENTE DE OBRA A3', 'ASEO PERMANENTE DE OBRA A3', 'MES', 'X', 'SUBCONTRATO', 1, 'test-a3', NOW())",
+);
+$db->query(
+    "INSERT INTO pdc_insumo_vinculos (project_id, version_id, descripcion_norm, unidad, descripcion_original, tipo_insumo, cantidad_total, valor_total, apariciones, maestro_id, estado)
+     VALUES (?, ?, 'ASEO PERMANENTE DE OBRA A3', 'MES', 'ASEO PERMANENTE DE OBRA A3', 'X', 1, 100, 1, ?, 'pendiente')",
+    [$P1, $vid, $mid('ASEO PERMANENTE DE OBRA A3', 'MES')],
+);
+$sugAseo = $svc->sugerencias($P1);
+$byAseo = [];
+foreach ($sugAseo['sugerencias'] as $s) { $byAseo[$s['descripcionNorm']] = $s; }
+$sAseo = $byAseo['ASEO PERMANENTE DE OBRA A3'] ?? null;
+$assert($sAseo !== null && (int) $sAseo['paqueteId'] === $indirectosId, 'El aseo permanente es un indirecto, no el contrato de aseo final: ' . ($sAseo['paqueteNombre'] ?? 'sin propuesta'));
 
 echo $failures === [] ? "=== OK ===\n" : '=== ' . count($failures) . " FAILED ===\n";
 $limpiar();

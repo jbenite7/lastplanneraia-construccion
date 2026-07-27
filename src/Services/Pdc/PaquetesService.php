@@ -106,6 +106,28 @@ final class PaquetesService
      * Orden = prioridad: gana la PRIMERA regla que casa.
      */
     private const REGLAS_SEMBRADO = [
+        // ── A3.4 · Oficios que AIA contrata partidos: el suministro y la instalación van a paquetes
+        // distintos, así que el TIPO DE RECURSO del insumo decide cuál de los dos le toca. Doctrina
+        // de la dirección de obra: «tengo 2 contratos, uno por fabricación y suministro y otro por
+        // mano de obra… ellos tienen 2 razones sociales». Van primero porque son más específicas que
+        // las reglas de alcance a todo costo que vienen después.
+        ['kw' => ['PUERTA MADERA', 'PUERTA EN MADERA', 'PUERTA CORREDIZA MADERA'], 'paq' => 'Suministro PUERTAS EN MADERA', 'tipos' => ['MATERIAL'], 'soloDesc' => true, 'descPrimero' => true],
+        ['kw' => ['PUERTA MADERA', 'PUERTA EN MADERA', 'CARPINTERIA MADERA', 'CARPINTERIA EN MADERA', 'CLOSET', 'ALACENA', 'VESTIER'], 'paq' => 'M. de O CARPINTERÍA DE MADERA', 'tipos' => ['MANO DE OBRA'], 'descPrimero' => true],
+        ['kw' => ['PUERTA CORTAFUEGO', 'PUERTA CORTA FUEGO'], 'paq' => 'Suministro PUERTAS CORTAFUEGO', 'tipos' => ['MATERIAL'], 'soloDesc' => true, 'descPrimero' => true],
+        ['kw' => ['CORTAFUEGO', 'CORTA FUEGO'], 'paq' => 'M. de O PUERTAS CORTAFUEGO', 'tipos' => ['MANO DE OBRA'], 'descPrimero' => true],
+        ['kw' => ['PUERTA METALICA', 'PUERTA METALIVA', 'PUERTA EN LAMINA'], 'paq' => 'Suministro PUERTAS METÁLICAS', 'tipos' => ['MATERIAL'], 'soloDesc' => true, 'descPrimero' => true],
+        ['kw' => ['PUERTA METALICA', 'PUERTA METALIVA'], 'paq' => 'M. de O PUERTAS METÁLICAS', 'tipos' => ['MANO DE OBRA'], 'descPrimero' => true],
+        // El epóxico es el consumible del anclaje químico, no un aditivo de concreto.
+        ['kw' => ['EPOXICO', 'ANCLAJE QUIMICO', 'ANCLAJES QUIMICOS'], 'paq' => 'Suministro ANCLAJES', 'tipos' => ['MATERIAL'], 'soloDesc' => true, 'descPrimero' => true],
+        // «Suministro solo. La MO la ejecutan los de la carpintería de madera.»
+        ['kw' => ['CAMPANA EXTRACTORA', 'ASADOR', 'ESTUFA', 'HORNO EMPOTRA', 'CUBIERTA A GAS'], 'paq' => 'Suministro DOTACIÓN COCINAS Y LAVADEROS', 'tipos' => ['MATERIAL'], 'soloDesc' => true, 'descPrimero' => true],
+        // «Topografía es una MO»: hasta ahora solo existía el paquete a todo costo.
+        ['kw' => ['TOPOGRAFIA', 'LOCALIZACION Y REPLANTEO', 'COMISION TOPOGRAFICA'], 'paq' => 'M. de O TOPOGRAFÍA', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO'], 'descPrimero' => true],
+        // «Aparte del urbanismo, y el suministro por aparte también.»
+        ['kw' => ['TOPELLANTA'], 'paq' => 'M. de O TOPELLANTAS', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO'], 'descPrimero' => true],
+        // El transporte de personal es un contrato distinto del acarreo de materiales.
+        ['kw' => ['BUSETA', 'BUS DE PERSONAL', 'TRANSPORTE DE PERSONAL'], 'paq' => 'Alquiler de transporte de personal', 'tipos' => [], 'soloDesc' => true, 'descPrimero' => true],
+
         // ── A3.3 · Overrides destilados a conocimiento generalizable ────────────────────────────
         // Estas reglas nacen de revisar las 158 entradas curadas a mano para DAPORTO: 89 eran
         // redundantes (la regla ya acertaba) y las otras 69 tapaban huecos que, sin ellas, el motor
@@ -208,6 +230,7 @@ final class PaquetesService
         // ── Trámites y servicios: tienen su propio proceso de contratación, no son «indirectos» ──
         ['kw' => ['RETILAP', 'CERTIFICACION RETIE', 'INSPECCION RETIE'], 'paq' => 'Sum + Inst CERTIFICACION RETILAP Y RETIE', 'tipos' => ['SUBCONTRATO'], 'descPrimero' => true],
         ['kw' => ['VIGILANCIA'], 'paq' => 'Sum + Inst SERVICIO DE VIGILANCIA', 'tipos' => ['SUBCONTRATO'], 'descPrimero' => true],
+        ['kw' => ['ASEO PERMANENTE', 'ASEO DE OBRA', 'ASEO MENSUAL'], 'paq' => self::PAQUETE_INDIRECTOS, 'tipos' => [], 'descPrimero' => true],
         ['kw' => ['ASEO'], 'paq' => 'Sum + Inst ASEO FINAL DE OBRA', 'tipos' => ['SUBCONTRATO'], 'descPrimero' => true],
         ['kw' => ['LAVADA', 'HIDROFUG'], 'ctx' => ['FACHADA'], 'paq' => 'Sum + Inst LAVADA E HIDROFUGADA DE FACHADAS', 'tipos' => ['SUBCONTRATO'], 'descPrimero' => true],
         ['kw' => ['DEMARCACION', 'NUMERACION'], 'ctx' => ['PARQUEADERO', 'VIAL', 'CELDA'], 'paq' => 'Sum + Inst PINTURA DEMARCACIÓN, NUMERACIÓN Y FLECHAS DE PARQUEADEROS', 'tipos' => ['SUBCONTRATO', 'MANO DE OBRA'], 'descPrimero' => true],
