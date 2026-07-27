@@ -20,6 +20,7 @@ $db = Database::getInstance();
 $P1 = 999901; $P2 = 999902;
 $limpiar = static function () use ($db, $P1, $P2): void {
     $db->query('DELETE FROM pdc_insumo_paquete WHERE project_id IN (?, ?)', [$P1, $P2]);
+    $db->query('DELETE FROM pdc_insumo_actividades WHERE project_id IN (?, ?)', [$P1, $P2]);
     $db->query("DELETE FROM general_paquetes_contratacion WHERE creado_por = 'test-a3'");
     $db->query('DELETE FROM pdc_insumo_vinculos WHERE project_id IN (?, ?)', [$P1, $P2]);
     $db->query('DELETE FROM pdc_presupuesto_apu_insumos WHERE project_id IN (?, ?)', [$P1, $P2]);
@@ -201,6 +202,82 @@ $db->query(
 $cand = $svc->candidatosParaPaquete($P1, $pisosId);
 $assert($cand !== null && is_array($cand['candidatos']), 'candidatosParaPaquete responde sin romper (comodines escapados).');
 $assert($svc->sugerencias($P2) === null, 'P2 sin presupuesto → null.');
+
+// --- A3.3 · Mapa completo insumo↔actividades -------------------------------------------------
+// Requisito de Seguimiento: para una orden de compra hay que programar la PRIMERA entrega, así que
+// no basta con la actividad dominante — hay que conocer todas las actividades que consumen el
+// insumo. En A4 cada fila recibirá el unique_id de programa_consolidado.
+$mat = $svc->materializarActividades($P1, $vid);
+$assert($mat !== null && $mat['filas'] > 0, 'materializarActividades persiste el mapa de la versión.');
+$filasMapa = (int) $db->query(
+    'SELECT COUNT(*) FROM pdc_insumo_actividades WHERE project_id = ? AND version_id = ?',
+    [$P1, $vid],
+)->fetchColumn();
+$assert($filasMapa === $mat['filas'], 'El conteo devuelto coincide con lo persistido.');
+$svc->materializarActividades($P1, $vid);
+$filasOtraVez = (int) $db->query(
+    'SELECT COUNT(*) FROM pdc_insumo_actividades WHERE project_id = ? AND version_id = ?',
+    [$P1, $vid],
+)->fetchColumn();
+$assert($filasOtraVez === $filasMapa, 'Materializar dos veces no duplica (idempotente).');
+$sinAmarre = (int) $db->query(
+    'SELECT COUNT(*) FROM pdc_insumo_actividades WHERE project_id = ? AND unique_id IS NOT NULL',
+    [$P1],
+)->fetchColumn();
+$assert($sinAmarre === 0, 'El amarre al cronograma (unique_id) nace vacío: lo llena A4.');
+
+// --- A3.3 · Desempate por tipo de recurso -----------------------------------------------------
+// Un MATERIAL se compra por lo que es, no por dónde se usa: la actividad deja de influir. En DAPORTO
+// el mortero vive en 33 actividades de 9 oficios distintos y la dominante solo concentra el 36%.
+$db->query(
+    "INSERT INTO general_maestro_insumos (descripcion, descripcion_norm, unidad, tipo_insumo, tipo_recurso, activo, creado_por, created_at)
+     VALUES ('CONCRETO DISPERSO A3', 'CONCRETO DISPERSO A3', 'M3', 'X', 'MATERIAL', 1, 'test-a3', NOW())",
+);
+$db->query(
+    "INSERT INTO pdc_insumo_vinculos (project_id, version_id, descripcion_norm, unidad, descripcion_original, tipo_insumo, cantidad_total, valor_total, apariciones, maestro_id, estado)
+     VALUES (?, ?, 'CONCRETO DISPERSO A3', 'M3', 'CONCRETO DISPERSO A3', 'X', 1, 100, 1, ?, 'pendiente')",
+    [$P1, $vid, $mid('CONCRETO DISPERSO A3', 'M3')],
+);
+// Se consume sobre todo en una actividad de mampostería: si la actividad mandara, acabaría ahí.
+$db->query(
+    "INSERT INTO pdc_presupuesto_apu_insumos (project_id, version_id, item_id, descripcion, tipo_insumo, unidad, cant_apu, rendimiento, cantidad_total, valor_unitario, valor_total, iva)
+     VALUES (?, ?, ?, 'CONCRETO DISPERSO A3', 'X', 'M3', 1, 1, 10, 500000, 5000000, 0)",
+    [$P1, $vid, $itemMuro],
+);
+$sug2 = $svc->sugerencias($P1);
+$by2 = [];
+foreach ($sug2['sugerencias'] as $s) { $by2[$s['descripcionNorm']] = $s; }
+$sDisp = $by2['CONCRETO DISPERSO A3'] ?? null;
+$assert($sDisp !== null && (int) $sDisp['paqueteId'] === $concretoId, 'MATERIAL: decide la descripción, no la actividad donde se consume.');
+
+// En cambio la mano de obra sí depende del frente — pero si la actividad dominante concentra poco,
+// elegirla es una moneda al aire: se marca confianza baja para que no se auto-asigne.
+$db->query(
+    "INSERT INTO general_maestro_insumos (descripcion, descripcion_norm, unidad, tipo_insumo, tipo_recurso, activo, creado_por, created_at)
+     VALUES ('M.O. REPARTIDA A3', 'M.O. REPARTIDA A3', 'M2', 'X', 'MANO DE OBRA', 1, 'test-a3', NOW())",
+);
+$db->query(
+    "INSERT INTO pdc_insumo_vinculos (project_id, version_id, descripcion_norm, unidad, descripcion_original, tipo_insumo, cantidad_total, valor_total, apariciones, maestro_id, estado)
+     VALUES (?, ?, 'M.O. REPARTIDA A3', 'M2', 'M.O. REPARTIDA A3', 'X', 2, 200, 2, ?, 'pendiente')",
+    [$P1, $vid, $mid('M.O. REPARTIDA A3', 'M2')],
+);
+// 51% en el muro y 49% en el zócalo: ninguna actividad manda de verdad.
+foreach ([[$itemMuro, 5100000], [$itemZocalo, 4900000]] as $par) {
+    $db->query(
+        "INSERT INTO pdc_presupuesto_apu_insumos (project_id, version_id, item_id, descripcion, tipo_insumo, unidad, cant_apu, rendimiento, cantidad_total, valor_unitario, valor_total, iva)
+         VALUES (?, ?, ?, 'M.O. REPARTIDA A3', 'X', 'M2', 1, 1, 10, 100, ?, 0)",
+        [$P1, $vid, $par[0], $par[1]],
+    );
+}
+$sug3 = $svc->sugerencias($P1);
+$by3 = [];
+foreach ($sug3['sugerencias'] as $s) { $by3[$s['descripcionNorm']] = $s; }
+$sRep = $by3['M.O. REPARTIDA A3'] ?? null;
+$assert($sRep !== null, 'La mano de obra repartida sí recibe propuesta (no se abandona).');
+$assert($sRep === null || $sRep['confianza'] === 'baja', 'Dominancia débil (<60%) ⇒ confianza baja: va a revisión, no se auto-asigna.');
+$assert($sRep === null || str_contains(mb_strtolower($sRep['evidencia']), 'reparte'), 'La evidencia avisa de que el insumo se reparte entre actividades.');
+$sGen = $by3['M.O. GENERICO PRUEBA A3'] ?? null;
+$assert($sGen !== null && $sGen['confianza'] !== 'baja', 'Con actividad dominante clara la confianza no se degrada.');
 
 echo $failures === [] ? "=== OK ===\n" : '=== ' . count($failures) . " FAILED ===\n";
 $limpiar();

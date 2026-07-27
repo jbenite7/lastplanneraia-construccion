@@ -35,6 +35,21 @@ final class PaquetesService
      */
     public const ORIGENES_MOTOR = ['ia', 'exacta', 'reglas', 'tokens', 'indirectos', 'agrupacion'];
 
+    /**
+     * Peso mínimo de la actividad dominante para fiarse de ella. Por debajo, el insumo se reparte
+     * demasiado y elegir «su» actividad es azar: la sugerencia baja a confianza baja (A3.3).
+     */
+    public const DOMINANCIA_MINIMA = 0.60;
+
+    /**
+     * Tipos de recurso cuyo destino depende del frente de obra. Un material se compra por lo que es;
+     * la mano de obra y el subcontrato se contratan por dónde se ejecutan.
+     */
+    private static function mandaLaActividad(?string $tipoRecurso): bool
+    {
+        return in_array(mb_strtoupper((string) $tipoRecurso), ['MANO DE OBRA', 'SUBCONTRATO', 'NOMINA'], true);
+    }
+
     /** Paquete bucket para insumos no empaquetables (A3.1). */
     public const PAQUETE_INDIRECTOS = 'Indirectos / Administración';
 
@@ -605,14 +620,21 @@ final class PaquetesService
         if ($ins === null) {
             return null;
         }
+        // El mapa insumo↔actividades se materializa la primera vez que hace falta: una versión
+        // importada ya no cambia, así que rehacerlo en cada consulta sería trabajo tirado.
+        $this->asegurarActividades($projectId, (int) $ins['version']['id']);
+
         $catalogo = $this->catalogoActivoPorNombre();
         $overrides = $this->overridesIA();
         $actMap = $this->actividadDominantePorInsumo($projectId, $versionId);
+        $domMap = $this->dominanciaPorInsumo($projectId, $versionId);
 
         $propuestas = [];
         foreach ($ins['insumos'] as $insumo) {
             $clave = $insumo['descripcionNorm'] . '@@' . mb_strtoupper((string) $insumo['unidad']);
-            $actividad = $actMap[$clave] ?? '';
+            // Un MATERIAL se compra por lo que es, no por dónde se usa: la actividad no debe influir
+            // en su destino (A3.3). Solo mano de obra y subcontrato dependen del frente de obra.
+            $actividad = self::mandaLaActividad($insumo['tipoRecurso'] ?? null) ? ($actMap[$clave] ?? '') : '';
             // El veto de reglas corta la cascada: ni tokens ni agrupacion deben rellenar un pendiente.
             $porReglas = $this->sugerirOverrideIA($insumo, $overrides, $catalogo)
                 ?? $this->sugerirExacta($projectId, $insumo)
@@ -624,6 +646,18 @@ final class PaquetesService
                     ?? $this->sugerirPorTokens($projectId, $insumo)
                     ?? $this->sugerirIndirectos($insumo, $catalogo)
                     ?? $this->sugerirPorAgrupacion($insumo);
+            }
+            // Si la propuesta se apoyó en una actividad que apenas concentra valor, el motor lo dice
+            // en vez de fingir certeza: baja la confianza para que no se auto-asigne y vaya a revisión.
+            $dom = $domMap[$clave] ?? null;
+            if ($p !== null && $actividad !== '' && $dom !== null
+                && $dom['actividades'] > 1 && $dom['peso'] < self::DOMINANCIA_MINIMA) {
+                $p['confianza'] = 'baja';
+                $p['evidencia'] = rtrim($p['evidencia'], '.') . sprintf(
+                    '. Ojo: el insumo se reparte entre %d actividades y la mayor solo concentra el %d%% del valor.',
+                    $dom['actividades'],
+                    (int) round($dom['peso'] * 100),
+                );
             }
             $propuestas[] = [
                 'descripcionNorm' => $insumo['descripcionNorm'],
@@ -863,6 +897,111 @@ final class PaquetesService
             $mapa[$clave] = (string) ($info['items'][0]['actividad'] ?? '');
         }
         return $mapa;
+    }
+
+    /**
+     * Peso de la actividad dominante sobre el valor total del insumo, por clave NORMA@@UNIDAD.
+     *
+     * Un insumo repartido entre muchos frentes no tiene «su» actividad: en DAPORTO el mortero vive
+     * en 33 actividades de 9 oficios y la mayor concentra el 36 %. Elegir esa por unas décimas es
+     * una moneda al aire, así que el motor degrada la confianza en vez de fingir certeza (A3.3).
+     */
+    private function dominanciaPorInsumo(int $projectId, ?int $versionId): array
+    {
+        $version = $this->versionDe($projectId, $versionId);
+        if ($version === null) {
+            return [];
+        }
+        $rows = $this->db->query(
+            'SELECT ai.descripcion, ai.unidad, ai.item_id, SUM(ai.valor_total) AS valor
+             FROM pdc_presupuesto_apu_insumos ai
+             WHERE ai.project_id = ? AND ai.version_id = ?
+             GROUP BY ai.descripcion, ai.unidad, ai.item_id',
+            [$projectId, (int) $version['id']],
+        )->fetchAll(\PDO::FETCH_ASSOC);
+
+        $acum = [];
+        foreach ($rows as $r) {
+            $clave = MaestroInsumosService::normalizar((string) $r['descripcion']) . '@@' . mb_strtoupper(trim((string) $r['unidad']));
+            $valor = (float) $r['valor'];
+            $acum[$clave]['total'] = ($acum[$clave]['total'] ?? 0.0) + $valor;
+            $acum[$clave]['max'] = max($acum[$clave]['max'] ?? 0.0, $valor);
+            $acum[$clave]['n'] = ($acum[$clave]['n'] ?? 0) + 1;
+        }
+        $out = [];
+        foreach ($acum as $clave => $a) {
+            // Sin valor no hay dominancia medible: se trata como concentrado para no penalizar de más.
+            $out[$clave] = [
+                'peso' => $a['total'] > 0 ? $a['max'] / $a['total'] : 1.0,
+                'actividades' => $a['n'],
+            ];
+        }
+        return $out;
+    }
+
+    /** Materializa el mapa solo si esa versión aún no lo tiene (una versión importada no cambia). */
+    private function asegurarActividades(int $projectId, int $versionId): void
+    {
+        $hay = (int) $this->db->query(
+            'SELECT COUNT(*) FROM pdc_insumo_actividades WHERE project_id = ? AND version_id = ?',
+            [$projectId, $versionId],
+        )->fetchColumn();
+        if ($hay === 0) {
+            $this->materializarActividades($projectId, $versionId);
+        }
+    }
+
+    /**
+     * Materializa el mapa insumo↔actividades de una versión (idempotente: reemplaza el de esa versión).
+     *
+     * Seguimiento necesita la fecha de la PRIMERA actividad que consume cada insumo —para una orden
+     * de compra el plan garantiza la primera entrega—, y eso no se puede sacar de la dominante. En
+     * A4 cada fila recibirá su `unique_id` de `programa_consolidado`.
+     */
+    public function materializarActividades(int $projectId, ?int $versionId = null): ?array
+    {
+        $version = $this->versionDe($projectId, $versionId);
+        if ($version === null) {
+            return null;
+        }
+        $vid = (int) $version['id'];
+        $rows = $this->db->query(
+            'SELECT ai.descripcion, ai.unidad, ai.item_id, it.codigo, it.descripcion AS actividad,
+                    SUM(ai.cantidad_total) AS cantidad, SUM(ai.valor_total) AS valor
+             FROM pdc_presupuesto_apu_insumos ai
+             JOIN pdc_presupuesto_items it ON it.id = ai.item_id
+             WHERE ai.project_id = ? AND ai.version_id = ?
+             GROUP BY ai.descripcion, ai.unidad, ai.item_id, it.codigo, it.descripcion',
+            [$projectId, $vid],
+        )->fetchAll(\PDO::FETCH_ASSOC);
+
+        $this->db->query('DELETE FROM pdc_insumo_actividades WHERE project_id = ? AND version_id = ?', [$projectId, $vid]);
+        $filas = 0;
+        foreach (array_chunk($rows, 200) as $lote) {
+            $valores = implode(', ', array_fill(0, count($lote), '(?, ?, ?, ?, ?, ?, ?, ?, ?)'));
+            $params = [];
+            foreach ($lote as $r) {
+                array_push(
+                    $params,
+                    $projectId, $vid,
+                    mb_substr(MaestroInsumosService::normalizar((string) $r['descripcion']), 0, 500),
+                    mb_substr(mb_strtoupper(trim((string) $r['unidad'])), 0, 20),
+                    (int) $r['item_id'],
+                    mb_substr((string) $r['codigo'], 0, 50),
+                    mb_substr((string) $r['actividad'], 0, 500),
+                    round((float) $r['cantidad'], 4),
+                    round((float) $r['valor'], 2),
+                );
+            }
+            $this->db->query(
+                "INSERT INTO pdc_insumo_actividades
+                    (project_id, version_id, descripcion_norm, unidad, item_id, codigo, actividad, cantidad, valor)
+                 VALUES {$valores}",
+                $params,
+            );
+            $filas += count($lote);
+        }
+        return ['versionId' => $vid, 'filas' => $filas];
     }
 
     /** tipo_negociacion compatibles con un tipo_recurso SINCO (evita ubicar material en paquete de mano de obra). */
