@@ -116,49 +116,23 @@
   vertical-align: middle;
 }
 
-/* Apple Navbar & App Shell */
-nav.apple-navbar {
-  background-color: var(--surface-header) !important;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  box-shadow: var(--shadow-sm);
-  transition: all 0.3s ease;
-  z-index: 1030;
-  position: relative;
-  width: 100%; /* Changed from 100vw to prevents scrollbar conflict */
-  max-width: 100%;
-  padding-right: 15px; /* Safety padding */
-}
-
-/* [NEUTRALIZED by CSS Layering 2026 — navbar.css now controls nav-link sizing]
-.navbar-expand-lg .navbar-nav .nav-link {
-  padding-right: 0.5rem !important;
-  padding-left: 0.5rem !important;
-  font-size: 0.9rem !important;
-} */
-
-.navbar-brand {
-  font-size: 1.1rem !important;
-  margin-right: 0.5rem !important;
-}
-
 /* F1 Task 5a: `html, body { overflow-x/width/max-width }` movido a
    public/css/design-system/foundation.css (@layer base). */
 
-.navbar-nav .dropdown-menu {
-  z-index: 1050 !important; /* Higher than navbar and datatables */
-}
-
-.navbar-brand {
-  color: var(--text-main) !important;
-  font-weight: 600;
-  letter-spacing: -0.5px;
-}
-
-.navbar-brand {
-  color: white;
-}
+/* F1 Task 5a-bis: BORRADO el residuo de la navbar retirada en F0
+   (`nav.apple-navbar`, las TRES declaraciones de `.navbar-brand` —dos de
+   ellas con `color` contradictorio—, `.navbar-nav .dropdown-menu` y el
+   bloque comentado que delegaba el tamaño de `.nav-link` en navbar.css, un
+   archivo que F0 ya borró). No es poda por inspección: medido en el
+   navegador a 1180x820 dark sobre 18 rutas autenticadas del proyecto
+   Da Porto, `nav.apple-navbar`, `.navbar-brand`, `.navbar-nav` y
+   `.navbar-collapse` dan CERO elementos en el DOM en todas ellas. El único
+   markup `navbar` vivo del repositorio es admin/views/layouts/main.php:40-52
+   y admin/ no carga esta hoja (mini-app con su propio front controller y su
+   propio admin-custom.css + AdminLTE). Las apariciones en
+   views/profesionales y views/subcontratistas son reglas CSS dentro de
+   <style>, no markup. `.navbar-collapse` de la sección UNLAYERED OVERRIDE
+   BRIDGE se deja intacta: es del tramo 5j. */
 
 .cuadroModal {
   padding-left: 5%;
