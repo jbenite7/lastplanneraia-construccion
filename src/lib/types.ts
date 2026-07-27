@@ -262,12 +262,20 @@ export type CandidatoPaquete = {
   valorTotal: number
 }
 
+/**
+ * Tasa de acierto del motor (A3.3): `tasa` es null mientras no haya decisiones suyas aplicadas —
+ * un 100 % sin base sería una mentira cómoda. La base se expone para que el número sea auditable.
+ */
+export type AciertoMotor = { sugerenciasAplicadas: number; correcciones: number; tasa: number | null }
+
 export type ResumenPaquetes = {
   version: { id: number; label: string }
   total: number
   asignados: number
   omitidos: number
   cobertura: number
+  coberturaValor?: number
+  acierto?: AciertoMotor
   porPaquete: { paqueteId: number; nombre: string; tipoNegociacion: string; modalidad?: string; insumos: number; subtotal: number }[]
 }
 

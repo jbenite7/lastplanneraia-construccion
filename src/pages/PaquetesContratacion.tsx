@@ -169,19 +169,26 @@ export default function PaquetesContratacion() {
   }
 
   const onAceptarSugeridos = async () => {
-    // Agrupa las sugerencias por paquete y asigna en bloque; el humano ya las vio en la grilla.
-    const porPaquete = new Map<number, { descripcionNorm: string; unidad: string }[]>()
+    // Agrupa por paquete + capa + confianza y asigna en bloque, conservando la procedencia: aceptar
+    // una sugerencia tal cual es un acierto del motor y así se contabiliza, aunque quede confirmada
+    // por el humano que la revisó en la grilla.
+    const grupos = new Map<string, { paqueteId: number; capa: string; confianza: string; evidencia: string; insumos: { descripcionNorm: string; unidad: string }[] }>()
     for (const s of state.sugerencias.values()) {
-      const lista = porPaquete.get(s.paqueteId) ?? []
-      lista.push({ descripcionNorm: s.descripcionNorm, unidad: s.unidad })
-      porPaquete.set(s.paqueteId, lista)
+      const clave = `${s.paqueteId}|${s.capa}|${s.confianza}`
+      const g = grupos.get(clave) ?? { paqueteId: s.paqueteId, capa: s.capa, confianza: s.confianza, evidencia: s.evidencia, insumos: [] }
+      g.insumos.push({ descripcionNorm: s.descripcionNorm, unidad: s.unidad })
+      grupos.set(clave, g)
     }
-    if (porPaquete.size === 0) return
+    if (grupos.size === 0) return
     dispatch({ type: 'OCUPADO' })
     try {
       let total = 0
-      for (const [paqueteId, lista] of porPaquete) {
-        const r = await apiPost<{ asignados: number }>('/plan-compras/api/paquetes/asignar', { insumos: lista, paqueteId })
+      for (const g of grupos.values()) {
+        const r = await apiPost<{ asignados: number }>('/plan-compras/api/paquetes/asignar', {
+          insumos: g.insumos,
+          paqueteId: g.paqueteId,
+          procedencia: { origen: g.capa, confianza: g.confianza, evidencia: g.evidencia, confirmado: true },
+        })
         total += r.asignados
       }
       dispatch({ type: 'LIMPIAR_SUGERENCIAS' })
@@ -408,7 +415,13 @@ export default function PaquetesContratacion() {
   )
 }
 
+/**
+ * Tres indicadores, no uno: por conteo («que no quede nada suelto»), por valor (la cola larga es
+ * barata y por conteo parece un agujero enorme) y el acierto del motor, que es lo único que dice si
+ * las sugerencias sirven. El acierto arranca «sin datos» a propósito: un 100 % vacío sería mentira.
+ */
 function Cobertura({ resumen }: { resumen: ResumenPaquetes }) {
+  const acierto = resumen.acierto
   return (
     <div data-testid="pdc-paq-cobertura" className="pdc-paq-cobertura">
       <div className="pdc-paq-cobertura-num">{resumen.cobertura}%</div>
@@ -416,6 +429,25 @@ function Cobertura({ resumen }: { resumen: ResumenPaquetes }) {
         {resumen.asignados} asignados + {resumen.omitidos} omitidos de {resumen.total}
       </div>
       <div className="pdc-paq-barra"><div className="pdc-paq-barra-fill" style={{ transform: `scaleX(${resumen.cobertura / 100})` }} /></div>
+      <dl className="pdc-paq-indicadores">
+        {resumen.coberturaValor !== undefined && (
+          <div data-testid="pdc-paq-cobertura-valor">
+            <dt>Por valor</dt>
+            <dd>{resumen.coberturaValor}%</dd>
+          </div>
+        )}
+        {acierto && (
+          <div
+            data-testid="pdc-paq-acierto"
+            title={acierto.tasa === null
+              ? 'Aún no se ha aplicado ninguna sugerencia del motor.'
+              : `${acierto.correcciones} corrección(es) sobre ${acierto.sugerenciasAplicadas} decisión(es) del motor.`}
+          >
+            <dt>Acierto del motor</dt>
+            <dd>{acierto.tasa === null ? 'sin datos' : `${acierto.tasa}%`}</dd>
+          </div>
+        )}
+      </dl>
     </div>
   )
 }
