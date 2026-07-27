@@ -27,6 +27,21 @@ const EXPECTED_BODY_BACKGROUND = {
   '/programacion-intermedia': 'rgb(17, 26, 21)', // --ds-color-bg-page-dark via .pi-page
   '/contratos': 'rgb(11, 16, 13)', // --ds-color-bg-canvas-dark via `html.aia-theme-dark body`
   '/listado-actividades': 'rgb(11, 16, 13)', // --ds-color-bg-canvas-dark via `html.aia-theme-dark body`
+  // Las cinco de abajo son las superficies claras que F1 ataca (spec F1-styles-css.md /
+  // plan F1-styles-css.plan.md, Task 1). Hoy caen al fallback claro de styles.css
+  // (--surface-bg: #f5f5f7 -> body rgb(245,245,247)) porque su @layer base resuelve como
+  // module.base y gana a components del DS (styles.css:26,36,104). Ninguna tiene hoy CSS
+  // propio que pinte `body` en oscuro: pdc.css no declara `body {}` y las otras cuatro no
+  // tienen hoja de módulo. El valor esperado es el canvas oscuro genérico
+  // --ds-color-bg-canvas-dark (rgb(11, 16, 13)), el mismo que /contratos y
+  // /listado-actividades, porque ninguna de estas cinco usa una clase de "page" con su
+  // propio --ds-color-bg-page-dark (no son .pg-page/.ps-page/.pi-page). Task 3 del plan F1
+  // remapea --surface-bg a var(--ds-active-bg-canvas), que es justo ese token.
+  '/pdc': 'rgb(11, 16, 13)',
+  '/indicadores': 'rgb(11, 16, 13)',
+  '/profesionales': 'rgb(11, 16, 13)',
+  '/subcontratistas': 'rgb(11, 16, 13)',
+  '/control-cambios': 'rgb(11, 16, 13)',
 };
 
 // `/programa-general`, `/programacion-semanal` y `/programacion-intermedia`
@@ -70,7 +85,10 @@ test('el body de cada ruta de la Tarea 3 usa su fondo oscuro, no el fallback cla
       const response = await page.goto(route, { waitUntil: 'load' });
       expect(response?.status(), `${route} must respond`).toBeLessThan(400);
       const background = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
-      expect(
+      // `soft` a proposito: durante F1 varias rutas estan en rojo a la vez y se van
+      // apagando tramo a tramo. Con un expect duro el test aborta en la primera y no
+      // se puede leer el progreso; con soft, cada corrida lista TODAS las que faltan.
+      expect.soft(
         background,
         `${route}: body.backgroundColor debe ser el token dark (${expectedBackground}), no un valor claro`,
       ).toBe(expectedBackground);
