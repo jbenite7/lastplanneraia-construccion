@@ -106,16 +106,56 @@ final class PaquetesService
      * Orden = prioridad: gana la PRIMERA regla que casa.
      */
     private const REGLAS_SEMBRADO = [
+        // ── A3.5 · Correcciones medidas contra el estado canónico de DAPORTO. Van primero porque
+        // todas resuelven un choque con una regla más genérica que las capturaba mal.
+
+        // El nombre comercial del producto le ganaba al oficio: «SILLAS PLÁSTICA … VARILLADA» caía en
+        // acero de refuerzo porque contiene «VARILLA». Son sillas de coworking.
+        ['kw' => ['SILLA PLASTICA', 'SILLAS PLASTICA', 'MOBILIARIO'], 'paq' => 'Sum + Inst DOTACIÓN ZONAS COMUNES', 'tipos' => ['MATERIAL', 'SUBCONTRATO'], 'descPrimero' => true],
+        // El pasamanos de vidrio templado lo hace el vidriero, no el de barandas metálicas.
+        ['kw' => ['PASAMANO', 'BARANDA'], 'ctx' => ['VIDRIO'], 'paq' => 'Sum + Inst CABINAS Y ESPEJOS DE BAÑOS', 'tipos' => ['SUBCONTRATO', 'MATERIAL'], 'descPrimero' => true],
+        ['kw' => ['PASAMANO', 'BARANDA'], 'paq' => 'Sum + Inst BARANDAS Y PASAMANOS', 'tipos' => ['SUBCONTRATO', 'MATERIAL', 'MANO DE OBRA'], 'descPrimero' => true],
+        // Alquilar un equipo es una negociación de alquiler, no del oficio que lo usa: la retro no se
+        // contrata con el movimiento de tierra ni el andamio con la fachada.
+        ['kw' => ['BANOS PORTATILES', 'BANO PORTATIL'], 'paq' => 'Sum + Inst ALQUILER BAÑOS PORTATILES', 'tipos' => ['EQUIPO', 'SUBCONTRATO'], 'descPrimero' => true],
+        ['kw' => ['ANDAMIO', 'BOBCAT', 'VIBROCOMPACTADOR', 'RETROEXCAVADORA', 'MINICARGADOR', 'COMPRESOR', 'CANGURO'], 'paq' => 'Equipos y maquinaria de obra', 'tipos' => ['EQUIPO'], 'descPrimero' => true],
+        // Instalar un aparato prefabricado es del instalador de aparatos, no de quien monta la cocina.
+        ['kw' => ['INSTALACION LAVADERO', 'INSTALACION LAVAESCOBAS', 'INSTALACION CAJA', 'INSTALACION REJILLA', 'INSTALACION SIFON'], 'paq' => 'M. de O APARATOS SANITARIOS Y GRIFERÍA', 'tipos' => ['MANO DE OBRA'], 'descPrimero' => true],
+        // El electrodoméstico lo instala quien monta la cocina (revisión en obra: es el calentador).
+        ['kw' => ['INSTALACION ELECTRODOMESTICO', 'ELECTRODOMESTICO'], 'paq' => 'Sum + Inst DOTACIÓN COCINAS Y LAVADEROS', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO'], 'descPrimero' => true],
+        // Accesorios del desagüe: los pone el proveedor de aparatos, no el de la red.
+        ['kw' => ['REJILLA', 'VALVULA DE REGULACION', 'CAJA PLASTICA'], 'paq' => 'Suministro APARATOS SANITARIOS Y GRIFERÍA', 'tipos' => ['MATERIAL'], 'soloDesc' => true, 'descPrimero' => true],
+        // La provisional de agua es del hidrosanitario aunque comparta el prefijo «RED PROVISIONAL».
+        ['kw' => ['RED PROVISIONAL'], 'ctx' => ['AGUA', 'HIDRO', 'SANITARI'], 'paq' => 'Sum + Inst PROVISIONAL HIDROSANITARIA', 'tipos' => ['SUBCONTRATO', 'MANO DE OBRA', 'MATERIAL'], 'descPrimero' => true],
+        // El material del mesón lo suministra el marmolero; el «Sum + Inst MESONES» es el alcance completo.
+        ['kw' => ['SALPICADERO'], 'paq' => 'Suministro MESONES Y ENCIMERAS DE COCINA (granito/cuarzo/acero/otros)', 'tipos' => ['MATERIAL', 'SUBCONTRATO'], 'descPrimero' => true],
+        ['kw' => ['QUARZTONE', 'CUARZO', 'ENCIMERA'], 'paq' => 'Suministro MESONES Y ENCIMERAS DE COCINA (granito/cuarzo/acero/otros)', 'tipos' => ['MATERIAL'], 'soloDesc' => true, 'descPrimero' => true],
+        // El bloque de concreto tiene proveedor propio: no es el ladrillero.
+        ['kw' => ['BLOQUE DE CONCRETO', 'BLOQUE CONCRETO'], 'paq' => 'Suministro BLOQUE DE CONCRETO', 'tipos' => ['MATERIAL'], 'soloDesc' => true, 'descPrimero' => true],
+        // La línea de vida es un anclaje estructural certificado.
+        ['kw' => ['LINEA DE VIDA'], 'paq' => 'Sum + Inst ANCLAJES', 'tipos' => ['MATERIAL', 'SUBCONTRATO'], 'descPrimero' => true],
+        // Nomenclatura y señalización del proyecto: el mismo señalizador.
+        ['kw' => ['NOMENCLATURA', 'SENALIZACION VIAL'], 'paq' => 'Sum + Inst SEÑALIZACIÓN', 'tipos' => ['MATERIAL', 'SUBCONTRATO'], 'descPrimero' => true],
+        // Seguridad industrial de obra con cuantía propia (mamparas, protocolos, señalización
+        // preventiva): es gasto de administración de obra, no ferretería contra almacén.
+        ['kw' => ['MAMPARA', 'BIOSEGURIDAD', 'SENALIZACION PREVENTIVA'], 'paq' => self::PAQUETE_INDIRECTOS, 'tipos' => ['MATERIAL', 'EQUIPO', 'SUBCONTRATO'], 'descPrimero' => true],
+        // La cubierta liviana es techo; «CUBIERTA A GAS» es una estufa y la resuelve su propia regla.
+        ['kw' => ['CUBIERTA LIVIANA', 'CUBIERTA METALICA', 'TEJA'], 'paq' => 'Sum + Inst CUBIERTAS METÁLICAS', 'tipos' => ['MATERIAL', 'SUBCONTRATO'], 'descPrimero' => true],
+        // Gárgolas y rejillas de desagüe: red hidrosanitaria.
+        ['kw' => ['GARGOLA', 'TUBERIA PARA FILTRO'], 'paq' => 'Sum + Inst INSTALACIONES HIDROSANITARIAS', 'tipos' => ['MATERIAL', 'MANO DE OBRA', 'SUBCONTRATO'], 'descPrimero' => true],
+        // Una impermeabilización es del impermeabilizador aunque la actividad nombre el jacuzzi.
+        ['kw' => ['IMPERMEABILIZ'], 'paq' => 'Sum + Inst IMPERMEABILIZACIONES', 'tipos' => ['SUBCONTRATO', 'MANO DE OBRA', 'MATERIAL'], 'descPrimero' => true],
+
         // ── A3.4 · Oficios que AIA contrata partidos: el suministro y la instalación van a paquetes
         // distintos, así que el TIPO DE RECURSO del insumo decide cuál de los dos le toca. Doctrina
         // de la dirección de obra: «tengo 2 contratos, uno por fabricación y suministro y otro por
         // mano de obra… ellos tienen 2 razones sociales». Van primero porque son más específicas que
         // las reglas de alcance a todo costo que vienen después.
-        ['kw' => ['PUERTA MADERA', 'PUERTA EN MADERA', 'PUERTA CORREDIZA MADERA'], 'paq' => 'Suministro PUERTAS EN MADERA', 'tipos' => ['MATERIAL'], 'soloDesc' => true, 'descPrimero' => true],
+        ['kw' => ['PUERTA MADERA', 'PUERTA EN MADERA', 'PUERTA CORREDIZA MADERA'], 'paq' => 'Suministro PUERTAS EN MADERA', 'tipos' => ['MATERIAL', 'SUBCONTRATO'], 'soloDesc' => true, 'descPrimero' => true],
         ['kw' => ['PUERTA MADERA', 'PUERTA EN MADERA', 'CARPINTERIA MADERA', 'CARPINTERIA EN MADERA', 'CLOSET', 'ALACENA', 'VESTIER'], 'paq' => 'M. de O CARPINTERÍA DE MADERA', 'tipos' => ['MANO DE OBRA'], 'descPrimero' => true],
         ['kw' => ['PUERTA CORTAFUEGO', 'PUERTA CORTA FUEGO'], 'paq' => 'Suministro PUERTAS CORTAFUEGO', 'tipos' => ['MATERIAL'], 'soloDesc' => true, 'descPrimero' => true],
         ['kw' => ['CORTAFUEGO', 'CORTA FUEGO'], 'paq' => 'M. de O PUERTAS CORTAFUEGO', 'tipos' => ['MANO DE OBRA'], 'descPrimero' => true],
-        ['kw' => ['PUERTA METALICA', 'PUERTA METALIVA', 'PUERTA EN LAMINA'], 'paq' => 'Suministro PUERTAS METÁLICAS', 'tipos' => ['MATERIAL'], 'soloDesc' => true, 'descPrimero' => true],
+        ['kw' => ['PUERTA METALICA', 'PUERTA METALIVA', 'PUERTA EN LAMINA'], 'paq' => 'Suministro PUERTAS METÁLICAS', 'tipos' => ['MATERIAL', 'SUBCONTRATO'], 'soloDesc' => true, 'descPrimero' => true],
         ['kw' => ['PUERTA METALICA', 'PUERTA METALIVA'], 'paq' => 'M. de O PUERTAS METÁLICAS', 'tipos' => ['MANO DE OBRA'], 'descPrimero' => true],
         // El epóxico es el consumible del anclaje químico, no un aditivo de concreto.
         ['kw' => ['EPOXICO', 'ANCLAJE QUIMICO', 'ANCLAJES QUIMICOS'], 'paq' => 'Suministro ANCLAJES', 'tipos' => ['MATERIAL'], 'soloDesc' => true, 'descPrimero' => true],
