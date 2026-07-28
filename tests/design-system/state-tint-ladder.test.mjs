@@ -70,3 +70,34 @@ for (const sheet of ['public/css/programacion-intermedia.css', 'public/css/progr
     );
   });
 }
+
+// /pdc no duplicaba la formula -sus siete estados eran hex literales-, asi que
+// el guard de duplicacion no lo alcanza. Lo que hay que garantizar aqui es lo
+// contrario: que los alias del modulo apunten a la escalera en vez de repetir
+// el valor, para que /pdc deje de ser un sistema de color paralelo. Violeta,
+// naranja y azul entraron al design system desde este modulo, asi que el hex
+// vive ahora en la escalera y `--pdc-*` solo lo nombra.
+const PDC_BACKGROUNDS = [
+  'missing',
+  'critical',
+  'delayed',
+  'completed-late',
+  'completed-ontime',
+  'active',
+  'not-started',
+];
+
+test('los fondos de /pdc nombran la escalera en vez de repetir el hex', async () => {
+  const tokens = await read('public/css/tokens.css');
+  const literal = [];
+  for (const state of PDC_BACKGROUNDS) {
+    const declaration = tokens.match(new RegExp(`--pdc-${state}-bg:\\s*([^;]+);`))?.[1]?.trim();
+    assert.ok(declaration, `public/css/tokens.css no declara --pdc-${state}-bg`);
+    if (!declaration.includes('--ds-state-tint-')) literal.push(`--pdc-${state}-bg: ${declaration}`);
+  }
+  assert.deepEqual(
+    literal,
+    [],
+    `estos fondos de /pdc siguen con valor propio en vez de consumir la escalera:\n  ${literal.join('\n  ')}`,
+  );
+});

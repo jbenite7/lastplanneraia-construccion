@@ -279,25 +279,30 @@
      especificidad que se le ponga. Si algun dia se retira ese override, estos
      siete valores pasan a verse y los siete cumplen WCAG 1.4.11 (3,18-5,50:1
      medido); antes de la tokenizacion fallaban cinco de siete. */
-    --pdc-missing-bg: #33204a;
+    /* Los FONDOS ya no llevan valor propio: nombran la escalera de arriba. El
+       hex no se movio -violeta, naranja y azul entraron al design system desde
+       aqui-, pero /pdc deja de ser un sistema de color paralelo y pasa a
+       compartir vocabulario con los otros tres modulos.
+       Guard: tests/design-system/state-tint-ladder.test.mjs. */
+    --pdc-missing-bg: var(--ds-state-tint-violet-pdc);
     --pdc-missing-border: #c084fc;
     --pdc-missing-text: #e0cdfa;
-    --pdc-critical-bg: #431414;
+    --pdc-critical-bg: var(--ds-state-tint-red-pdc);
     --pdc-critical-border: #dc2626;
     --pdc-critical-text: #ffcdc8;
-    --pdc-delayed-bg: #452a0d;
+    --pdc-delayed-bg: var(--ds-state-tint-orange-pdc);
     --pdc-delayed-border: #e87722;
     --pdc-delayed-text: #ffd7a8;
-    --pdc-completed-late-bg: #3a3a0f;
+    --pdc-completed-late-bg: var(--ds-state-tint-amber-pdc);
     --pdc-completed-late-border: #d4a017;
     --pdc-completed-late-text: #f2e79c;
-    --pdc-completed-ontime-bg: #173d26;
+    --pdc-completed-ontime-bg: var(--ds-state-tint-green-pdc);
     --pdc-completed-ontime-border: #69b578;
     --pdc-completed-ontime-text: #b7e8c6;
-    --pdc-active-bg: #17334f;
+    --pdc-active-bg: var(--ds-state-tint-blue-pdc);
     --pdc-active-border: #4a81bd;
     --pdc-active-text: #bbdcfb;
-    --pdc-not-started-bg: #2b2f2d;
+    --pdc-not-started-bg: var(--ds-state-tint-neutral-pdc);
     --pdc-not-started-border: #c7cdd4;
     --pdc-not-started-text: #d4dad6;
 
