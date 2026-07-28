@@ -31,7 +31,7 @@
 
 **lps-aia-pdc**
 - Crear `database/migrations/20260728_pdc_v2_responsable_usuario.sql` — DDL: 3 columnas, FK, índice, DROP de la vieja.
-- Modificar `src/Services/Pdc/PlanFechasService.php` — el upsert de `calcular()`, el SELECT de `plan()`, y dos métodos nuevos (`responsablesDisponibles()`, `asignarResponsable()`).
+- Modificar `src/Services/Pdc/PlanFechasService.php` — el upsert de `calcular()`, el SELECT de `plan()`, y dos métodos nuevos (`responsablesElegibles()`, `asignarResponsable()`).
 - Modificar `src/Controllers/Api/PlanComprasPlanController.php` — `responsable()` cambia de contrato y adelgaza (el SQL se va al servicio); nuevo `responsables()`.
 - Modificar `public/index.php` — una ruta nueva.
 - Modificar `tests/test_pdc_v2_plan_fechas.php` — adaptar el test del invariante y añadir los casos nuevos.
@@ -320,13 +320,13 @@ git commit -m "feat(pdc): la lectura del plan distingue responsable vigente, hu�
 
 **Interfaces:**
 - Consumes: nada de tareas previas.
-- Produces: `PlanFechasService::responsablesDisponibles(int $projectId): array` → lista de `['id' => int, 'nombre' => string, 'cargo' => string]` ordenada por nombre. Ruta `GET /plan-compras/api/plan/responsables`. La Task 6 (SPA) la consume.
+- Produces: `PlanFechasService::responsablesElegibles(int $projectId): array` → lista de `['id' => int, 'nombre' => string, 'cargo' => string]` ordenada por nombre. Ruta `GET /plan-compras/api/plan/responsables`. La Task 6 (SPA) la consume.
 
 - [ ] **Step 1: Escribir el test que falla**
 
 ```php
 // --- Responsables disponibles: los miembros ACTIVOS del proyecto ---
-$disp = $svc->responsablesDisponibles($P);
+$disp = $svc->responsablesElegibles($P);
 $assert(is_array($disp), 'Disponibles: devuelve una lista.');
 $ids = array_column($disp, 'id');
 $assert(in_array($uid, $ids, true),
@@ -338,7 +338,7 @@ $assert(isset($disp[0]['nombre'], $disp[0]['cargo']),
 // que no está en la obra.
 $otro = (int) $db->query('SELECT id FROM general_usuarios WHERE id <> ? ORDER BY id DESC LIMIT 1', [$uid])->fetchColumn();
 $db->query('DELETE FROM project_members WHERE project_id = ? AND user_id = ?', [$P, $otro]);
-$dispSinOtro = array_column($svc->responsablesDisponibles($P), 'id');
+$dispSinOtro = array_column($svc->responsablesElegibles($P), 'id');
 $assert(!in_array($otro, $dispSinOtro, true),
     'Disponibles: quien no es miembro del proyecto NO aparece. id=' . $otro);
 
@@ -346,7 +346,7 @@ $assert(!in_array($otro, $dispSinOtro, true),
 // que es lo que cubre la Task 2).
 $db->query('INSERT IGNORE INTO project_members (project_id, user_id, role) VALUES (?, ?, ?)', [$P, $otro, 'U']);
 $db->query('UPDATE general_usuarios SET activo = 0 WHERE id = ?', [$otro]);
-$dispInactivo = array_column($svc->responsablesDisponibles($P), 'id');
+$dispInactivo = array_column($svc->responsablesElegibles($P), 'id');
 $assert(!in_array($otro, $dispInactivo, true),
     'Disponibles: un miembro inactivo NO se ofrece para elegir.');
 $db->query('UPDATE general_usuarios SET activo = 1 WHERE id = ?', [$otro]);
@@ -358,7 +358,7 @@ $db->query('UPDATE general_usuarios SET activo = 1 WHERE id = ?', [$otro]);
 docker compose exec -T app php tests/test_pdc_v2_plan_fechas.php 2>&1 | grep -E "^FAIL|Fatal error" | head -3
 ```
 
-Esperado: `Fatal error: Call to undefined method ...::responsablesDisponibles()`.
+Esperado: `Fatal error: Call to undefined method ...::responsablesElegibles()`.
 
 - [ ] **Step 3: Implementar el método en el servicio**
 
@@ -374,7 +374,7 @@ Añadir en `PlanFechasService.php`, junto a los demás métodos públicos:
      *
      * @return list<array{id: int, nombre: string, cargo: string}>
      */
-    public function responsablesDisponibles(int $projectId): array
+    public function responsablesElegibles(int $projectId): array
     {
         $rows = $this->db->query(
             'SELECT u.id, u.nombre, u.cargo
@@ -417,7 +417,7 @@ En `src/Controllers/Api/PlanComprasPlanController.php`, añadir junto a los dem�
         if ($projectId === null) {
             return;
         }
-        $this->ok(['responsables' => $this->service->responsablesDisponibles($projectId)]);
+        $this->ok(['responsables' => $this->service->responsablesElegibles($projectId)]);
     }
 ```
 
@@ -445,78 +445,90 @@ git commit -m "feat(pdc): endpoint con los miembros del proyecto que pueden ser 
 
 ---
 
-### Task 4: Asignar responsable, en masa y validado
+### Task 4: Asignación en masa sobre lo ya adoptado
+
+**Contexto que cambió:** las Tasks 3 y 4 originales las implementó otra sesión en paralelo y su
+versión se adoptó en `7473c81`. Ya existen `responsablesElegibles()` (NO `responsablesElegibles`),
+`asignarResponsable()`, ambos endpoints y sus rutas. Lo único que falta de esta tarea es lo que su
+versión no cubre y el grilleo sí pidió: **asignar a varios paquetes de una vez** (hay más de 100 por
+proyecto; de uno en uno es una hora de trabajo).
 
 **Files:**
-- Modify: `lps-aia-pdc/src/Services/Pdc/PlanFechasService.php` (método nuevo)
-- Modify: `lps-aia-pdc/src/Controllers/Api/PlanComprasPlanController.php:107-145` (reescribe `responsable()`)
+- Modify: `lps-aia-pdc/src/Services/Pdc/PlanFechasService.php` (`asignarResponsable`, ~línea 988)
+- Modify: `lps-aia-pdc/src/Controllers/Api/PlanComprasPlanController.php` (`responsable()`, ~línea 118)
 - Test: `lps-aia-pdc/tests/test_pdc_v2_plan_fechas.php`
 
 **Interfaces:**
-- Consumes: `responsablesDisponibles()` (Task 3) para validar la membresía.
-- Produces: `PlanFechasService::asignarResponsable(int $projectId, array $paqueteIds, ?int $userId, string $usuario): array` → `['asignados' => int]`, o `['error' => 'NO_MIEMBRO'|'SIN_PLAN']`. El endpoint `POST /plan-compras/api/plan/responsable` pasa a recibir `{paqueteIds: [], responsableUserId: int|null}`. La Task 6 lo consume.
+- Consumes: `responsablesElegibles(int $projectId): array` → `[{id, nombre, cargo}]`, ya existente.
+- Produces: `asignarResponsable(int $projectId, array $paqueteIds, ?int $responsableUserId, string $usuario): array` → `['ok' => true, 'asignados' => int]` o `['ok' => false, 'code' => 'PAQUETE_SIN_PLAN'|'RESPONSABLE_NO_ELEGIBLE']`. El endpoint acepta **`paqueteIds` (lista) o `paqueteId` (singular)**: el e2e ya commiteado usa el singular y debe seguir en verde.
 
 - [ ] **Step 1: Escribir el test que falla**
 
 ```php
-// --- Asignar responsable ---
-$r1 = $svc->asignarResponsable($P, [$paqEstructura], $uid, 'test-a4');
-$assert(($r1['asignados'] ?? 0) === 1, 'Asignar: un paquete. Dio ' . var_export($r1, true));
+// --- Asignación en masa ---
+// El grilleo la pidió explícitamente: con más de 100 paquetes por proyecto, repartir de uno en uno
+// es la diferencia entre cinco minutos y una hora.
+$idsMasa = array_slice(array_map(static fn (array $f): int => $f['paqueteId'], $svc->plan($P)), 0, 2);
+$assert(count($idsMasa) === 2, 'Masa: hay al menos 2 paquetes con plan para la prueba.');
 
-$fila = $db->query('SELECT responsable_user_id, responsable_asignado_por, responsable_asignado_at
-                      FROM pdc_plan_paquete WHERE project_id = ? AND paquete_id = ?',
-                   [$P, $paqEstructura])->fetch(\PDO::FETCH_ASSOC);
-$assert((int) $fila['responsable_user_id'] === $uid, 'Asignar: guarda el enlace al usuario.');
-$assert($fila['responsable_asignado_por'] === 'test-a4', 'Asignar: audita QUIÉN asignó.');
-$assert(!empty($fila['responsable_asignado_at']), 'Asignar: audita CUÁNDO se asignó.');
+$rMasa = $svc->asignarResponsable($P, $idsMasa, $uid, 'test-a4');
+$assert(($rMasa['ok'] ?? false) === true, 'Masa: la asignación múltiple responde ok. Dio ' . var_export($rMasa, true));
+$assert(($rMasa['asignados'] ?? 0) === 2, 'Masa: informa 2 asignados. Dio ' . var_export($rMasa['asignados'] ?? null, true));
 
-// Desasignar con null es un estado válido, no un error.
-$r2 = $svc->asignarResponsable($P, [$paqEstructura], null, 'test-a4');
-$assert(($r2['asignados'] ?? 0) === 1, 'Asignar: desasignar con null cuenta como asignación.');
-$vacio = $db->query('SELECT responsable_user_id FROM pdc_plan_paquete WHERE project_id = ? AND paquete_id = ?',
-                    [$P, $paqEstructura])->fetchColumn();
-$assert($vacio === null, 'Asignar: null deja la fila sin responsable.');
+$marcasM = implode(',', array_fill(0, count($idsMasa), '?'));
+$conResp = (int) $db->query(
+    "SELECT COUNT(*) FROM pdc_plan_paquete WHERE project_id = ? AND responsable_user_id = ? AND paquete_id IN ($marcasM)",
+    array_merge([$P, $uid], $idsMasa),
+)->fetchColumn();
+$assert($conResp === 2, 'Masa: los 2 paquetes quedaron con el responsable en la base. Dio ' . $conResp);
 
-// En masa: varios paquetes de una vez.
-$idsPlan = array_map(static fn (array $f): int => $f['paqueteId'], $svc->plan($P));
-$dos = array_slice($idsPlan, 0, 2);
-$assert(count($dos) === 2, 'Asignar en masa: hay al menos 2 paquetes con plan para la prueba.');
-$r3 = $svc->asignarResponsable($P, $dos, $uid, 'test-a4');
-$assert(($r3['asignados'] ?? 0) === 2, 'Asignar en masa: los 2 de golpe. Dio ' . var_export($r3, true));
-
-// Un usuario que no es miembro del proyecto se rechaza: no se guarda nada.
+// Un no elegible dentro de una asignación múltiple la rechaza ENTERA: dejar la mitad hecha sería
+// peor que no hacer nada, porque nadie sabría qué mitad.
 $db->query('DELETE FROM project_members WHERE project_id = ? AND user_id = ?', [$P, $otro]);
-$r4 = $svc->asignarResponsable($P, [$paqEstructura], $otro, 'test-a4');
-$assert(($r4['error'] ?? '') === 'NO_MIEMBRO',
-    'Asignar: se rechaza a quien no es miembro del proyecto. Dio ' . var_export($r4, true));
-$sigue = (int) $db->query('SELECT responsable_user_id FROM pdc_plan_paquete WHERE project_id = ? AND paquete_id = ?',
-                          [$P, $paqEstructura])->fetchColumn();
-$assert($sigue === $uid, 'Asignar: un rechazo NO deja el responsable a medias.');
+$rNo = $svc->asignarResponsable($P, $idsMasa, $otro, 'test-a4');
+$assert(($rNo['ok'] ?? true) === false, 'Masa: se rechaza si el responsable no es elegible.');
+$sigueM = (int) $db->query(
+    "SELECT COUNT(*) FROM pdc_plan_paquete WHERE project_id = ? AND responsable_user_id = ? AND paquete_id IN ($marcasM)",
+    array_merge([$P, $uid], $idsMasa),
+)->fetchColumn();
+$assert($sigueM === 2, 'Masa: un rechazo no deja la asignación a medias. Dio ' . $sigueM);
+
+// Un paquete sin plan dentro del lote también rechaza el lote entero.
+$rSinPlan = $svc->asignarResponsable($P, array_merge($idsMasa, [999999]), $uid, 'test-a4');
+$assert(($rSinPlan['ok'] ?? true) === false && ($rSinPlan['code'] ?? '') === 'PAQUETE_SIN_PLAN',
+    'Masa: un paquete sin plan en el lote rechaza el lote. Dio ' . var_export($rSinPlan, true));
 ```
 
 - [ ] **Step 2: Ejecutar el test para verlo fallar**
 
 ```bash
-docker compose exec -T app php tests/test_pdc_v2_plan_fechas.php 2>&1 | grep -E "^FAIL|Fatal error" | head -3
+cd "/Volumes/Crucial X6/Developer/lps-aia-pdc" && docker compose exec -T app php tests/test_pdc_v2_plan_fechas.php 2>&1 | grep -E "^FAIL|Fatal error" | head -3
 ```
 
-Esperado: `Fatal error: Call to undefined method ...::asignarResponsable()`.
+Esperado: falla porque `asignarResponsable` todavía recibe un `int`, no una lista (`TypeError` o assert en rojo).
 
-- [ ] **Step 3: Implementar el método en el servicio**
+- [ ] **Step 3: Extender el método a varios paquetes**
+
+Sustituir la firma y el cuerpo de `asignarResponsable`. La validación de elegibilidad y la de
+existencia van **antes** de escribir nada — un lote a medias es peor que un lote rechazado:
 
 ```php
     /**
-     * Asigna (o quita, con $userId = null) el responsable de uno o varios paquetes.
+     * Asigna (o quita, con null) el responsable de uno o varios paquetes.
      *
-     * Valida la membresía ANTES de escribir nada: asignar a alguien que no está en la obra es un
-     * error del que llama, y dejarlo a medias sería peor que rechazarlo entero. Por eso la
-     * comprobación va fuera del bucle y devuelve sin tocar la base.
+     * Todo o nada: si cualquier paquete del lote no tiene plan, o el responsable no es elegible, no
+     * se escribe ninguno. Dejar la mitad asignada sería peor que no hacer nada, porque nadie sabría
+     * qué mitad quedó hecha.
      *
      * @param list<int> $paqueteIds
-     * @return array{asignados: int}|array{error: string}
+     * @return array{ok: true, asignados: int}|array{ok: false, code: string}
      */
-    public function asignarResponsable(int $projectId, array $paqueteIds, ?int $userId, string $usuario): array
-    {
+    public function asignarResponsable(
+        int $projectId,
+        array $paqueteIds,
+        ?int $responsableUserId,
+        string $usuario
+    ): array {
         $ids = [];
         foreach ($paqueteIds as $id) {
             $n = filter_var($id, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
@@ -526,41 +538,71 @@ Esperado: `Fatal error: Call to undefined method ...::asignarResponsable()`.
         }
         $ids = array_values(array_unique($ids));
         if ($ids === []) {
-            return ['asignados' => 0];
-        }
-
-        if ($userId !== null) {
-            $esMiembro = $this->db->query(
-                'SELECT 1 FROM project_members pm JOIN general_usuarios u ON u.id = pm.user_id
-                  WHERE pm.project_id = ? AND pm.user_id = ? AND u.activo = 1',
-                [$projectId, $userId],
-            )->fetchColumn();
-            if ($esMiembro === false) {
-                return ['error' => 'NO_MIEMBRO'];
-            }
+            return ['ok' => false, 'code' => 'PAQUETE_SIN_PLAN'];
         }
 
         $marcas = implode(',', array_fill(0, count($ids), '?'));
+        $conPlan = (int) $this->db->query(
+            "SELECT COUNT(*) FROM pdc_plan_paquete WHERE project_id = ? AND paquete_id IN ($marcas)",
+            array_merge([$projectId], $ids),
+        )->fetchColumn();
+        if ($conPlan !== count($ids)) {
+            return ['ok' => false, 'code' => 'PAQUETE_SIN_PLAN'];
+        }
+
+        if ($responsableUserId !== null) {
+            $elegible = false;
+            foreach ($this->responsablesElegibles($projectId) as $e) {
+                if ($e['id'] === $responsableUserId) {
+                    $elegible = true;
+                    break;
+                }
+            }
+            if (!$elegible) {
+                return ['ok' => false, 'code' => 'RESPONSABLE_NO_ELEGIBLE'];
+            }
+        }
+
+        // `responsable_asignado_por` se escribe también al vaciar: la columna registra quién tocó
+        // la asignación por última vez, y quitar a alguien es justo el movimiento que más interesa
+        // poder rastrear después.
         $this->db->query(
             "UPDATE pdc_plan_paquete
                 SET responsable_user_id = ?, responsable_asignado_por = ?, responsable_asignado_at = NOW()
               WHERE project_id = ? AND paquete_id IN ($marcas)",
-            array_merge([$userId, $usuario, $projectId], $ids),
+            array_merge([$responsableUserId, mb_substr($usuario, 0, 100), $projectId], $ids),
         );
 
-        // No se usa rowCount(): este repo no activa PDO::MYSQL_ATTR_FOUND_ROWS, así que MySQL
-        // reporta filas MODIFICADAS, no coincidentes — reasignar el mismo responsable daría 0 y
-        // parecería que no existe la fila. Se cuenta con un SELECT explícito.
-        $existen = (int) $this->db->query(
-            "SELECT COUNT(*) FROM pdc_plan_paquete WHERE project_id = ? AND paquete_id IN ($marcas)",
-            array_merge([$projectId], $ids),
-        )->fetchColumn();
-
-        return ['asignados' => $existen];
+        return ['ok' => true, 'asignados' => count($ids)];
     }
 ```
 
-- [ ] **Step 4: Ejecutar el test para verlo pasar**
+- [ ] **Step 4: Que el endpoint acepte lista o singular**
+
+En `responsable()`, sustituir la lectura de `paqueteId` por esta. El e2e ya commiteado manda el
+singular y tiene que seguir pasando:
+
+```php
+        // Acepta `paqueteIds` (lista, asignación en masa) o `paqueteId` (singular). El singular se
+        // conserva porque el e2e ya commiteado lo usa; los dos caminos acaban en la misma llamada.
+        $entrada = $body['paqueteIds'] ?? $body['paqueteId'] ?? null;
+        $paqueteIds = is_array($entrada) ? $entrada : ($entrada === null ? [] : [$entrada]);
+        if ($paqueteIds === []) {
+            $this->fail('PAQUETE_INVALIDO', 'No se recibió ningún paquete.', 422);
+            return;
+        }
+```
+
+Y la llamada al servicio pasa la lista:
+
+```php
+        $r = $this->service->asignarResponsable($projectId, $paqueteIds, $responsableUserId, $this->usuario());
+```
+
+Deja intacto el bloque que distingue «ausente / null / basura» en `responsableUserId`, y el de
+mensajes de error: ambos ya son correctos.
+
+- [ ] **Step 5: Ejecutar el test para verlo pasar**
 
 ```bash
 docker compose exec -T app php tests/test_pdc_v2_plan_fechas.php 2>&1 | tail -3
@@ -568,68 +610,21 @@ docker compose exec -T app php tests/test_pdc_v2_plan_fechas.php 2>&1 | tail -3
 
 Esperado: `=== OK ===`, 0 FAIL.
 
-- [ ] **Step 5: Reescribir el endpoint**
-
-Sustituir el método `responsable()` completo (líneas 107-145) por este. El SQL se va al servicio, donde vive el resto:
-
-```php
-    /** POST /plan-compras/api/plan/responsable  {paqueteIds:[...], responsableUserId:int|null} */
-    public function responsable(): void
-    {
-        $projectId = $this->guardEscritura();
-        if ($projectId === null) {
-            return;
-        }
-        $body = $this->body();
-        $paqueteIds = is_array($body['paqueteIds'] ?? null) ? $body['paqueteIds'] : [];
-        if ($paqueteIds === []) {
-            $this->fail('PAQUETE_INVALIDO', 'No se recibió ningún paquete.', 422);
-            return;
-        }
-        // null explícito = desasignar. Es un estado válido, no un error.
-        $userId = null;
-        if (($body['responsableUserId'] ?? null) !== null) {
-            $n = filter_var($body['responsableUserId'], FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-            if ($n === false) {
-                $this->fail('RESPONSABLE_INVALIDO', 'responsableUserId inválido.', 422);
-                return;
-            }
-            $userId = (int) $n;
-        }
-
-        $r = $this->service->asignarResponsable($projectId, $paqueteIds, $userId, $this->usuario());
-        if (isset($r['error']) && $r['error'] === 'NO_MIEMBRO') {
-            $this->fail('NO_MIEMBRO', 'Esa persona no es miembro activo de este proyecto.', 422);
-            return;
-        }
-        if (($r['asignados'] ?? 0) === 0) {
-            $this->fail(
-                'PAQUETE_SIN_PLAN',
-                'Estos paquetes todavía no tienen plan de compras calculado. Calcula el plan antes de asignar responsable.',
-                422
-            );
-            return;
-        }
-        $this->ok(['asignados' => $r['asignados']]);
-    }
-```
-
-- [ ] **Step 6: Comprobar la suite completa y el ratchet**
+- [ ] **Step 6: Comprobar el ratchet y PHPStan**
 
 ```bash
-cd "/Volumes/Crucial X6/Developer/lps-aia-pdc"
-docker compose exec -T app php tests/test_pdc_v2_plan_fechas.php 2>&1 | tail -2
 docker compose exec -T app php tests/test_pdc_v2_brecha_daporto.php 2>&1 | tail -2
+docker compose exec -T app vendor/bin/phpstan analyse -c phpstan-pdc.neon --no-progress 2>&1 | tail -3
 ```
 
-Esperado: `=== OK ===` y `PASS: la brecha (7) está dentro del techo (7).`
+Esperado: `PASS: la brecha (7) está dentro del techo (7).` y `[OK] No errors`.
 
 - [ ] **Step 7: Commit**
 
 ```bash
 cd "/Volumes/Crucial X6/Developer/lps-aia-pdc"
 git add src/Services/Pdc/PlanFechasService.php src/Controllers/Api/PlanComprasPlanController.php tests/test_pdc_v2_plan_fechas.php
-git commit -m "feat(pdc): asignar responsable a varios paquetes, validando que sea del proyecto"
+git commit -m "feat(pdc): asignar el mismo responsable a varios paquetes de una vez"
 ```
 
 ---
@@ -953,6 +948,6 @@ Abrir `http://localhost:8091/plan-compras#/ensamble/plan` en el navegador integr
 
 **Placeholders:** ninguno. Todos los pasos con código llevan el código.
 
-**Consistencia de tipos:** `responsableUserId: int|null`, `responsableNombre: string`, `responsableHuerfano: bool` se definen en T1/T2 y se consumen con esos mismos nombres en T5 y T6. `responsablesDisponibles()` produce `{id, nombre, cargo}` en T3 y `Miembro` en T5 lo refleja. `asignarResponsable()` devuelve `{asignados}` o `{error}` en T4 y el controlador trata ambos.
+**Consistencia de tipos:** `responsableUserId: int|null`, `responsableNombre: string`, `responsableHuerfano: bool` se definen en T1/T2 y se consumen con esos mismos nombres en T5 y T6. `responsablesElegibles()` produce `{id, nombre, cargo}` en T3 y `Miembro` en T5 lo refleja. `asignarResponsable()` devuelve `{asignados}` o `{error}` en T4 y el controlador trata ambos.
 
 **Riesgo asumido y señalado:** el paso 5 de la T6 avisa de que `trasGuardarEdicion` puede necesitar una firma más amplia; se resuelve con test, no con `any`.
