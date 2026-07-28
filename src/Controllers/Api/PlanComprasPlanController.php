@@ -117,13 +117,17 @@ class PlanComprasPlanController
             return;
         }
         $responsable = is_string($body['responsable'] ?? null) ? mb_substr($body['responsable'], 0, 100) : '';
-        $stmt = $this->db->query(
-            'UPDATE pdc_plan_paquete SET responsable = ? WHERE project_id = ? AND paquete_id = ?',
-            [$responsable, $projectId, (int) $paqueteId],
-        );
 
-        // Validar que el paquete existe en el plan calculado.
-        if ($stmt->rowCount() === 0) {
+        // No usar rowCount() del UPDATE para decidir si la fila existe: este repo no activa
+        // PDO::MYSQL_ATTR_FOUND_ROWS (ver Database.php), así que MySQL reporta filas MODIFICADAS,
+        // no coincidentes. Guardar el mismo responsable dos veces seguidas (algo normal: abrir la
+        // vista y guardar sin cambiar nada) da rowCount=0 aunque la fila exista, y el controlador
+        // respondía por error PAQUETE_SIN_PLAN. Se confirma la existencia con un SELECT explícito.
+        $existe = $this->db->query(
+            'SELECT 1 FROM pdc_plan_paquete WHERE project_id = ? AND paquete_id = ?',
+            [$projectId, (int) $paqueteId],
+        )->fetchColumn();
+        if ($existe === false) {
             $this->fail(
                 'PAQUETE_SIN_PLAN',
                 'Este paquete todavía no tiene plan de compras calculado. Calcula el plan antes de asignar responsable.',
@@ -131,6 +135,11 @@ class PlanComprasPlanController
             );
             return;
         }
+
+        $this->db->query(
+            'UPDATE pdc_plan_paquete SET responsable = ? WHERE project_id = ? AND paquete_id = ?',
+            [$responsable, $projectId, (int) $paqueteId],
+        );
 
         $this->ok(['ok' => true]);
     }
