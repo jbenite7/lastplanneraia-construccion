@@ -1922,12 +1922,34 @@ table.dataTable thead tr:nth-child(2) th {
    1180x820 dark en cic, cnc y cnp inyectando el markup exacto que inyecta la
    vista: select, textarea e input median 1,02:1, es decir texto claro sobre
    fondo claro, ilegible.
-   Fondo y borde se reasignan juntos a la superficie base y al borde del tema,
-   los mismos tokens y el mismo patron que `.aia-modal .form-control` unas
-   lineas mas arriba. NO se anade una declaracion de tinta: `.form-control` ya
-   la fija al texto primario y anadirla aqui seria un !important nuevo. Tras
-   el cambio los tres controles miden 15,14:1 en cic y 14,87:1 en cnc y cnp
-   (la diferencia es el tinte de fila que llevan las celdas de esas dos). */
+   El fondo se reasigna a la superficie base del tema, el mismo token y el
+   mismo patron que `.aia-modal .form-control` unas lineas mas arriba. NO se
+   anade una declaracion de tinta: `.form-control` ya la fija al texto primario
+   y anadirla aqui seria un !important nuevo. Tras el cambio la tinta mide
+   15,14:1 contra el relleno en cnc y 14,99:1 en cnp.
+   F1 Task 5e-fix (hallazgo Important de la review): el borde NO puede ir al
+   mismo par. Al pasarlo al token de borde del tema se perdio la frontera del
+   control -ese token es traslucido al 22 % y, compuesto, deja el borde en
+   1,91:1 contra el relleno y entre 1,70:1 y 1,93:1 contra la celda, cuando el
+   literal claro anterior daba 10,56:1 contra la celda-. Y como el relleno
+   tokenizado queda casi identico al fondo de la celda, el borde es la unica
+   frontera que sobrevive: WCAG 1.4.11 pide 3:1 para el borde de un control.
+   Medido en el ESTADO DE EDICION REAL, que es donde estos controles existen:
+   fila real de la semana 3 en cnc y fixture de red sobre /api/cnp/list en cnp,
+   pulsando el boton editar de la fila; en reposo no se ve ninguno.
+   El borde se remapea a `--ds-active-text-secondary`, el neutro claro del
+   propio tema y el equivalente tokenizado del literal que sustituye: mide
+   10,39:1 contra el relleno y 10,50:1 contra la celda en cnc (10,29:1 y 9,16:1
+   en cnp), frente a 10,45:1 y 10,56:1 del literal. Conserva la relacion, no
+   reintroduce un literal y no inventa matiz ni token. Mismo criterio de
+   medicion que el pulgar del scroller de aqui abajo, y mismo precedente que
+   programacion-intermedia.css:1652, que ya viste con este token el borde de un
+   control, y programa-general.css:241, que lo usa de borde de chip. Los otros
+   dos tokens de borde del tema quedan descartados por medicion:
+   `--ds-color-border-strong` cae a 1,21:1 y `--ds-color-border-default` a
+   1,10:1 contra el relleno. Deuda anotada para el design system: hoy no
+   declara ningun token de borde que alcance 3:1 sobre oscuro; cuando exista,
+   este borde debe volver a esa familia. */
 table.dataTable input,
 table.dataTable select,
 table.dataTable textarea {
@@ -1938,7 +1960,7 @@ table.dataTable textarea {
   font-size: 0.75rem !important;
   padding: 2px 6px !important;
   border-radius: 6px !important;
-  border: 1px solid var(--ds-active-border) !important;
+  border: 1px solid var(--ds-active-text-secondary) !important;
   background-color: var(--ds-active-surface) !important;
   box-sizing: border-box !important;
   margin: 0 !important;
