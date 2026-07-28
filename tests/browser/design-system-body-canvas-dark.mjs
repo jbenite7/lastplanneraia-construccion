@@ -62,7 +62,7 @@ const EXPECTED_STATE_TOKEN = {
   '/programa-general': {
     property: '--pg-critical-bg',
     // public/css/programa-general.css, bajo `html.aia-theme-dark .pg-page`.
-    // Consume `--ds-state-tint-red-1`, que desde la reconstruccion de la
+    // Consume `--ds-state-tint-red`, que desde la reconstruccion de la
     // escalera es el ancla de /pdc en vez de una mezcla contra una superficie
     // con alfa (antes: color-mix(in srgb, #8f1d1d 48%, rgba(35, 48, 41, 0.86) 52%)).
     value: '#431414',

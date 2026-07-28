@@ -5,64 +5,102 @@ import test from 'node:test';
 const read = (file) => readFile(new URL(`../../${file}`, import.meta.url), 'utf8');
 
 // Complemento estatico de tests/browser/state-tint-ladder.mjs. Aquel mide el
-// valor resuelto y detecta desviaciones; este lee el texto del CSS y detecta la
-// duplicacion, que es lo que el valor no puede ver: una copia fiel de la
-// formula resuelve exactamente igual que el token.
+// valor resuelto en el navegador; este lee el texto del CSS y del contrato, que
+// es donde se ven dos cosas que el pixel no puede ver: la DUPLICACION de la
+// receta (una copia fiel resuelve igual que el token) y el nombre de un token
+// que ya no existe (`var()` sin fallback pinta transparente y nadie se entera).
 //
-// El origen del problema era ese: /programacion-intermedia y /programa-general
-// escribian la misma escalera con los mismos porcentajes en dos hojas, y siete
-// de los ocho tintes de Intermedia eran el mismo hex que los de General.
+// LA PALETA ES NOMINAL, NO ORDINAL. Hubo una version con tres pasos por
+// familia, derivados del ancla bajando croma con la luminosidad fija. Medida en
+// el navegador, la separacion maxima entre dos pasos consecutivos de una misma
+// familia era 1,012:1 de contraste y dE-OK 0,0168 -por debajo del umbral de
+// percepcion-, o sea que los tres pasos eran un solo color. El efecto practico:
+// dos entradas de leyenda que el usuario filtra por separado pintaban fondos
+// bit-identicos.
+//
+// Por eso quedan las ocho anclas y nada mas, y la regla que se deriva de ello:
+// ningun modulo puede tener dos estados que compartan matiz.
 
-// Ocho familias por tres pasos, sin huecos. La numeracion vieja iba del 1 al 6
-// con saltos y hasta cuatro pasos por familia; desde que las anclas de /pdc
-// mandan, cada familia publica exactamente tres.
-const FAMILIES = ['violet', 'red', 'orange', 'amber', 'green', 'blue', 'teal', 'neutral'];
-const LADDER_STEPS = FAMILIES.flatMap((family) => [1, 2, 3].map((step) => `--ds-state-tint-${family}-${step}`));
+// Los siete hex que /pdc eligio y midio a mano, mas #134841 para teal. Se fijan
+// aqui, en el gate que corre sin Docker: antes este archivo aceptaba cualquier
+// hex (`#[0-9a-f]{6}`), asi que un ancla equivocada pasaba CI y solo la cazaba
+// la suite de navegador.
+const ANCHORS = {
+  violet: '#33204a',
+  red: '#431414',
+  orange: '#452a0d',
+  amber: '#3a3a0f',
+  green: '#173d26',
+  blue: '#17334f',
+  teal: '#134841',
+  neutral: '#2b2f2d',
+};
 
-test('la escalera de tintes vive en la capa de tokens', async () => {
+const TINT_NAMES = Object.keys(ANCHORS).map((hue) => `--ds-state-tint-${hue}`);
+
+// Toda hoja que pueda nombrar un tinte de estado. El guard anterior solo leia
+// `tokens.css`, que es justo el archivo donde un consumidor NO vive: el nombre
+// roto aparece en la hoja del modulo, no en la de los tokens.
+const SHEETS = [
+  'public/css/tokens.css',
+  'public/css/styles.css',
+  'public/css/programacion-intermedia.css',
+  'public/css/programa-general.css',
+  'public/css/programacion-semanal.css',
+  'public/css/design-system/components/states-feedback.css',
+  'public/css/design-system/adapters/legacy-bridge.css',
+];
+
+test('la paleta de matices declara las ocho anclas con su hex exacto', async () => {
   const tokens = await read('public/css/tokens.css');
-  assert.equal(LADDER_STEPS.length, 24, 'ocho familias por tres pasos');
-  for (const step of LADDER_STEPS) {
-    assert.match(
-      tokens,
-      new RegExp(`${step}:`),
-      `la escalera no declara ${step} en public/css/tokens.css`,
+  for (const [hue, hex] of Object.entries(ANCHORS)) {
+    const declaration = tokens.match(new RegExp(`--ds-state-tint-${hue}:\\s*([^;]+);`))?.[1]?.trim();
+    assert.equal(
+      declaration,
+      hex,
+      `--ds-state-tint-${hue} deberia ser el ancla ${hex} y vale: ${declaration}`,
     );
   }
-  // La numeracion vieja tiene que desaparecer del CSS, no convivir: un consumidor
-  // que se quedara apuntando a `--ds-state-tint-red-6` recibiria la cadena vacia
-  // y pintaria transparente sin que nadie se entere.
-  const retired = tokens.match(/--ds-state-tint-(?:\w+-pdc|neutral-(?:quiet|flat)|\w+-[4-9])\b(?!`)/g) ?? [];
-  assert.deepEqual(retired, [], `nombres retirados que siguen en tokens.css: ${retired.join(', ')}`);
 });
 
-// El eje de la escalera es el croma con la luminosidad fija. Escrito en CSS eso
-// es una sola forma -`oklch(from <ancla> l calc(c * k) h)`-, y es lo que hay que
-// impedir que se sustituya por una mezcla en sRGB, que fue justo el defecto que
-// agrisaba la escalera anterior.
-test('los pasos 2 y 3 se derivan del ancla bajando croma en OKLCH', async () => {
+// La paleta se cierra por arriba y por abajo: ni falta ninguna de las ocho ni
+// sobra una novena. Un `--ds-state-tint-*` nuevo es un matiz nuevo, y eso es un
+// cambio de vocabulario que se decide en el contrato, no en una hoja.
+test('la paleta no publica ningun tinte de estado fuera de las ocho anclas', async () => {
   const tokens = await read('public/css/tokens.css');
-  const chromatic = FAMILIES.filter((family) => family !== 'neutral');
-  assert.equal(chromatic.length, 7, 'siete familias cromaticas');
-  for (const family of chromatic) {
-    const anchor = tokens.match(new RegExp(`--ds-state-tint-${family}-1:\\s*(#[0-9a-f]{6});`))?.[1];
-    assert.ok(anchor, `--ds-state-tint-${family}-1 deberia ser el hex del ancla`);
-    for (const step of [2, 3]) {
-      const declaration = tokens.match(new RegExp(`--ds-state-tint-${family}-${step}:\\s*([^;]+);`))?.[1]?.trim();
-      assert.ok(declaration, `tokens.css no declara --ds-state-tint-${family}-${step}`);
-      assert.match(
-        declaration,
-        new RegExp(`^oklch\\(from var\\(--ds-state-tint-${family}-1\\) l calc\\(c \\* 0\\.\\d+\\) h\\)$`),
-        `--ds-state-tint-${family}-${step} deberia derivarse del ancla bajando croma, y vale: ${declaration}`,
-      );
+  const declared = [...tokens.matchAll(/^\s*(--ds-state-tint-[\w-]+)\s*:/gm)].map(([, name]) => name);
+  assert.deepEqual([...declared].sort(), [...TINT_NAMES].sort());
+});
+
+// Un consumidor que se quede apuntando a un nombre retirado recibe la cadena
+// vacia y pinta transparente sin que nadie se entere. Se escanean TODAS las
+// hojas y se acepta unicamente la lista blanca de ocho: cualquier otra cosa que
+// empiece por `--ds-state-tint-` es un nombre que no existe.
+//
+// No hay lookahead ni excepcion para prosa. El guard anterior llevaba un
+// `(?!`)` para dejar pasar una cita en un comentario, y esa puerta valia igual
+// para una reintroduccion futura. Si un comentario necesita hablar de un nombre
+// retirado, lo describe en palabras; el token literal no vuelve a escribirse.
+test('ninguna hoja nombra un tinte de estado que no exista', async () => {
+  const allowed = new Set(TINT_NAMES);
+  const offenders = [];
+  for (const sheet of SHEETS) {
+    const css = await read(sheet);
+    for (const [, name] of css.matchAll(/(--ds-state-tint-[a-z0-9-]+)/g)) {
+      if (!allowed.has(name)) offenders.push(`${sheet}: ${name}`);
     }
   }
+  assert.deepEqual(
+    offenders,
+    [],
+    `nombres de tinte que no existen en la paleta:\n  ${offenders.join('\n  ')}`,
+  );
 });
 
-// El tinte de estado es una mezcla del tono semantico contra la superficie
-// elevada. Esa firma -`--ds-color-state-*-text` mezclado con
+// El tinte de estado se derivaba mezclando el tono semantico contra la
+// superficie elevada. Esa firma -`--ds-color-state-*-text` mezclado con
 // `--ds-active-surface-raised`- es la que solo debe existir en la capa de
-// tokens: si reaparece en una hoja de modulo, la escalera volvio a duplicarse.
+// tokens: si reaparece en una hoja de modulo, la paleta volvio a duplicarse.
 // Se acota con `[^;]` y no con `[^)]`: los operandos van dentro de `var(...)`,
 // asi que la firma contiene parentesis anidados y una clase que excluya `)` no
 // llega nunca al segundo operando -es decir, no puede fallar nunca-. El punto y
@@ -70,7 +108,7 @@ test('los pasos 2 y 3 se derivan del ancla bajando croma en OKLCH', async () => 
 const TINT_RECIPE = /color-mix\([^;]*--ds-color-state-\w+-text[^;]*--ds-active-surface-raised[^;]*/g;
 
 for (const sheet of ['public/css/programacion-intermedia.css', 'public/css/programa-general.css']) {
-  test(`${sheet} no reescribe la formula de la escalera`, async () => {
+  test(`${sheet} no reescribe la formula de la paleta`, async () => {
     const css = await read(sheet);
     const duplicated = css.match(TINT_RECIPE) ?? [];
     assert.deepEqual(
@@ -92,7 +130,7 @@ test('la capa de componentes traduce data-aia-hue a su tinte', async () => {
     assert.ok(rule, `states-feedback.css no traduce [data-aia-hue="${id}"]`);
     assert.match(
       rule,
-      new RegExp(tint.replace(/[-]/g, '\\-')),
+      new RegExp(`${tint.replace(/[-]/g, '\\-')}\\)`),
       `[data-aia-hue="${id}"] deberia usar ${tint}, que es el que declara el contrato`,
     );
   }
@@ -101,12 +139,68 @@ test('la capa de componentes traduce data-aia-hue a su tinte', async () => {
   assert.match(css, /\[data-aia-severity="high"\]\[data-aia-urgency="now"\]/);
 });
 
+// El catalogo del contrato y la paleta del CSS son la misma lista o no son
+// nada: si el contrato nombra un matiz que la paleta no publica, el laboratorio
+// pinta un swatch vacio y los modulos que lo declaren pintan transparente.
+test('el catalogo de matices del contrato es exactamente la paleta', async () => {
+  const semantics = JSON.parse(await read('docs/design-system/state-semantics.json'));
+  assert.deepEqual(
+    semantics.hues.map(({ tint }) => tint).sort(),
+    [...TINT_NAMES].sort(),
+  );
+});
+
+// LA REGLA. Un matiz = un estado. Si dos estados de un mismo modulo declaran el
+// mismo matiz pintan el mismo fondo, y con la paleta reducida a anclas ya no
+// hay un escalon con el que separarlos.
+//
+// La excepcion viva y declarada es /programacion-semanal, que no entro en esta
+// reasignacion: sus diez estados son CINCO POR FASE (Programacion y
+// Calificacion) sobre las cinco clases que la hoja publica, asi que el contrato
+// los lista juntos y las repeticiones que se ven aqui son en parte del cruce de
+// fases y en parte colisiones reales dentro de una misma fase
+// («Condiciones Pendientes» con «Por Comprometer», «Incumplida» con «Sin
+// Calificar»). Se declara el estado exacto en vez de excluir el modulo: si
+// aparece una repeticion nueva -en Semanal o en cualquier otro- este assert la
+// enseña.
+const KNOWN_HUE_COLLISIONS = {
+  'programacion-semanal': ['amber', 'green', 'red'],
+};
+
+test('ningun modulo asigna el mismo matiz a dos estados', async () => {
+  const semantics = JSON.parse(await read('docs/design-system/state-semantics.json'));
+  const collisions = {};
+  for (const { module, states } of semantics.moduleMappings) {
+    const seen = new Map();
+    for (const { hue } of states) {
+      if (hue === undefined) continue;
+      seen.set(hue, (seen.get(hue) ?? 0) + 1);
+    }
+    const repeated = [...seen.entries()].filter(([, n]) => n > 1).map(([hue]) => hue).sort();
+    if (repeated.length) collisions[module] = repeated;
+  }
+  assert.deepEqual(collisions, KNOWN_HUE_COLLISIONS);
+});
+
+// Los tres modulos operativos que declaran matiz estado por estado tienen que
+// declararlo en TODOS: un estado sin matiz cae al token de su nivel y vuelve a
+// confundirse con los otros de su nivel, que es justo lo que el eje resuelve.
+for (const [module, count] of [['pdc', 7], ['programacion-intermedia', 8], ['programa-general', 7]]) {
+  test(`${module} declara matiz en sus ${count} estados`, async () => {
+    const semantics = JSON.parse(await read('docs/design-system/state-semantics.json'));
+    const states = semantics.moduleMappings.find((m) => m.module === module).states;
+    assert.equal(states.length, count);
+    const sinMatiz = states.filter(({ hue }) => hue === undefined).map(({ label }) => label);
+    assert.deepEqual(sinMatiz, []);
+  });
+}
+
 // /pdc no duplicaba la formula -sus siete estados eran hex literales-, asi que
 // el guard de duplicacion no lo alcanza. Lo que hay que garantizar aqui es lo
-// contrario: que los alias del modulo apunten a la escalera en vez de repetir
-// el valor, para que /pdc deje de ser un sistema de color paralelo. Violeta,
+// contrario: que los alias del modulo apunten a la paleta en vez de repetir el
+// valor, para que /pdc deje de ser un sistema de color paralelo. Violeta,
 // naranja y azul entraron al design system desde este modulo, asi que el hex
-// vive ahora en la escalera y `--pdc-*` solo lo nombra.
+// vive ahora en la paleta y `--pdc-*` solo lo nombra.
 const PDC_BACKGROUNDS = [
   'missing',
   'critical',
@@ -117,7 +211,7 @@ const PDC_BACKGROUNDS = [
   'not-started',
 ];
 
-test('los fondos de /pdc nombran la escalera en vez de repetir el hex', async () => {
+test('los fondos de /pdc nombran la paleta en vez de repetir el hex', async () => {
   const tokens = await read('public/css/tokens.css');
   const literal = [];
   for (const state of PDC_BACKGROUNDS) {
@@ -128,6 +222,6 @@ test('los fondos de /pdc nombran la escalera en vez de repetir el hex', async ()
   assert.deepEqual(
     literal,
     [],
-    `estos fondos de /pdc siguen con valor propio en vez de consumir la escalera:\n  ${literal.join('\n  ')}`,
+    `estos fondos de /pdc siguen con valor propio en vez de consumir la paleta:\n  ${literal.join('\n  ')}`,
   );
 });

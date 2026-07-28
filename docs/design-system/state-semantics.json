@@ -73,42 +73,49 @@
     {
       "id": "neutral",
       "label": "Silencio",
-      "tint": "--ds-state-tint-neutral-1"
+      "tint": "--ds-state-tint-neutral",
+      "text": "--pdc-not-started-text"
     },
     {
       "id": "teal",
       "label": "Contexto",
-      "tint": "--ds-state-tint-teal-1"
+      "tint": "--ds-state-tint-teal"
     },
     {
       "id": "blue",
       "label": "En marcha",
-      "tint": "--ds-state-tint-blue-1"
+      "tint": "--ds-state-tint-blue",
+      "text": "--pdc-active-text"
     },
     {
       "id": "violet",
       "label": "Sin datos suficientes",
-      "tint": "--ds-state-tint-violet-1"
+      "tint": "--ds-state-tint-violet",
+      "text": "--pdc-missing-text"
     },
     {
       "id": "green",
       "label": "Controlado",
-      "tint": "--ds-state-tint-green-1"
+      "tint": "--ds-state-tint-green",
+      "text": "--pdc-completed-ontime-text"
     },
     {
       "id": "amber",
       "label": "Por resolver",
-      "tint": "--ds-state-tint-amber-1"
+      "tint": "--ds-state-tint-amber",
+      "text": "--pdc-completed-late-text"
     },
     {
       "id": "orange",
       "label": "Fuera de plazo",
-      "tint": "--ds-state-tint-orange-1"
+      "tint": "--ds-state-tint-orange",
+      "text": "--pdc-delayed-text"
     },
     {
       "id": "red",
       "label": "Bloqueado o vencido",
-      "tint": "--ds-state-tint-red-1"
+      "tint": "--ds-state-tint-red",
+      "text": "--pdc-critical-text"
     }
   ],
   "translationRules": [
@@ -117,6 +124,8 @@
     "Urgencia now siempre usa critical en el acento aunque el nombre del estado -o su matiz- cambie.",
     "Un estado que no declara matiz usa el token de su nivel, asi que anadir el eje no altera a quien no lo use.",
     "Dos estados del mismo nivel pueden llevar matices distintos; es lo que permite distinguirlos sin cambiarles la prioridad.",
+    "Un matiz, un estado: ningun modulo asigna el mismo matiz a dos estados. La paleta publica un solo tinte por matiz -sobre el canvas oscuro no hay eje de intensidad que separe dos escalones- asi que dos estados con el mismo matiz pintan el mismo fondo.",
+    "El matiz significa lo mismo en todos los modulos: violet es «sin datos suficientes» tanto en /pdc como en /programacion-intermedia, y blue es «en marcha» tanto en «Contratacion en curso» como en «En Curso» y «En Ejecucion Pendiente».",
     "Un estado informativo o sin datos nunca usa warning o critical por ausencia de informacion.",
     "El significado nunca depende solo del color: cada estado muestra texto completo y, cuando aplica, icono o aria-label."
   ],
@@ -191,31 +200,45 @@
       "states": [
         {
           "label": "Actividad Futura",
-          "level": "healthy"
+          "key": "actividad-futura",
+          "level": "healthy",
+          "hue": "green"
         },
         {
           "label": "En Curso",
-          "level": "healthy"
+          "key": "en-curso",
+          "level": "healthy",
+          "hue": "blue"
         },
         {
           "label": "Terminada",
-          "level": "healthy"
+          "key": "terminada",
+          "level": "healthy",
+          "hue": "neutral"
         },
         {
           "label": "Con Alerta Restricciones",
-          "level": "attention"
+          "key": "con-alerta-restricciones",
+          "level": "attention",
+          "hue": "amber"
         },
         {
           "label": "Debe Iniciar",
-          "level": "attention"
+          "key": "debe-iniciar",
+          "level": "attention",
+          "hue": "orange"
         },
         {
           "label": "Atrasada",
-          "level": "urgent"
+          "key": "atrasada",
+          "level": "urgent",
+          "hue": "red"
         },
         {
           "label": "Sin Datos",
-          "level": "neutral"
+          "key": "sin-datos",
+          "level": "neutral",
+          "hue": "violet"
         }
       ]
     },
@@ -232,13 +255,13 @@
           "label": "Inicio vencido",
           "key": "blocked-overdue",
           "level": "urgent",
-          "hue": "red"
+          "hue": "orange"
         },
         {
           "label": "Inicio por Habilitar",
           "key": "blocked-due",
           "level": "attention",
-          "hue": "amber"
+          "hue": "violet"
         },
         {
           "label": "Alistamiento Urgente",
@@ -250,25 +273,25 @@
           "label": "Alistamiento en Riesgo",
           "key": "alert-2-3-weeks",
           "level": "attention",
-          "hue": "amber"
+          "hue": "teal"
         },
         {
           "label": "Alistamiento Pendiente",
           "key": "alert-4-6-weeks",
           "level": "attention",
-          "hue": "green"
+          "hue": "neutral"
         },
         {
           "label": "En Ejecución Pendiente",
           "key": "execution-blocked",
           "level": "attention",
-          "hue": "red"
+          "hue": "blue"
         },
         {
           "label": "Listo para Comprometer",
           "key": "liberated-control",
           "level": "healthy",
-          "hue": "teal"
+          "hue": "green"
         }
       ]
     },

@@ -68,20 +68,32 @@ test('programación intermedia exposes its eight real states with action priorit
   // `key` es el vocabulario con el que el modulo nombra sus estados; sin el, unir
   // el contrato con el renderer exige comparar etiquetas, que no coinciden.
   //
-  // Cuatro de estos ocho usan una familia de matiz distinta a la que dicta su
+  // Varios de estos ocho usan una familia de matiz distinta a la que dicta su
   // nivel. No es una contradiccion: el nivel es prioridad de accion y el matiz
   // es identidad, y son canales distintos. Declararlo aqui convierte lo que
   // parecia una divergencia silenciosa en una eleccion explicita.
+  //
+  // Los ocho matices son distintos entre si desde la reasignacion de 2026-07-28:
+  // la paleta publica un solo tinte por matiz, asi que dos estados que
+  // compartieran matiz pintarian el mismo fondo. Antes habia tres rojos y tres
+  // ambares aqui, y `Alistamiento Urgente` y `Alistamiento en Riesgo` -dos
+  // filtros de la leyenda- eran bit-identicos en pantalla. La justificacion de
+  // cada asignacion vive en public/css/programacion-intermedia.css.
   assert.deepEqual(intermediate.states, [
     { label: 'RC inicio vencido', key: 'blocked-overdue-critical', level: 'urgent', hue: 'red' },
-    { label: 'Inicio vencido', key: 'blocked-overdue', level: 'urgent', hue: 'red' },
-    { label: 'Inicio por Habilitar', key: 'blocked-due', level: 'attention', hue: 'amber' },
+    { label: 'Inicio vencido', key: 'blocked-overdue', level: 'urgent', hue: 'orange' },
+    { label: 'Inicio por Habilitar', key: 'blocked-due', level: 'attention', hue: 'violet' },
     { label: 'Alistamiento Urgente', key: 'alert-1-week', level: 'urgent', hue: 'amber' },
-    { label: 'Alistamiento en Riesgo', key: 'alert-2-3-weeks', level: 'attention', hue: 'amber' },
-    { label: 'Alistamiento Pendiente', key: 'alert-4-6-weeks', level: 'attention', hue: 'green' },
-    { label: 'En Ejecución Pendiente', key: 'execution-blocked', level: 'attention', hue: 'red' },
-    { label: 'Listo para Comprometer', key: 'liberated-control', level: 'healthy', hue: 'teal' },
+    { label: 'Alistamiento en Riesgo', key: 'alert-2-3-weeks', level: 'attention', hue: 'teal' },
+    { label: 'Alistamiento Pendiente', key: 'alert-4-6-weeks', level: 'attention', hue: 'neutral' },
+    { label: 'En Ejecución Pendiente', key: 'execution-blocked', level: 'attention', hue: 'blue' },
+    { label: 'Listo para Comprometer', key: 'liberated-control', level: 'healthy', hue: 'green' },
   ]);
+  assert.equal(
+    new Set(intermediate.states.map(({ hue }) => hue)).size,
+    8,
+    'los ocho estados de Intermedia deben llevar ocho matices distintos',
+  );
   assert.match(view, /data-state-module="programacion-intermedia"/);
   assert.match(view, /Programación Intermedia · 8 estados/);
 });

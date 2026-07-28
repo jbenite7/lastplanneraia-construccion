@@ -1,136 +1,111 @@
 import { test, expect } from '@playwright/test';
+import { readFile } from 'node:fs/promises';
 import { PROJECTS } from './fixtures/projects.mjs';
 import { loginAndSelectProject } from './support/session.mjs';
 
 const project = PROJECTS.find(({ key }) => key === 'construction');
 const VIEWPORT = { width: 1180, height: 820 };
 
-// Los cuatro modulos operativos tintan sus estados con la misma idea -el matiz
-// dice la identidad del estado, la intensidad ordena dentro del matiz- y desde
-// la promocion de la escalera comparten un solo vocabulario.
+// Los cuatro modulos operativos tintan sus estados con el mismo vocabulario: el
+// MATIZ dice cual estado es y se pinta en el fondo; el NIVEL dice que hacer y
+// cuando y se pinta en el acento.
 //
-// Lo que cambia en esta version: la escalera ya NO se deriva mezclando el tono
-// semantico contra `--ds-active-surface-raised`. Esa superficie lleva alfa, asi
-// que la mezcla arrastraba el gris del canvas y devolvia tintes pardos
-// (`--ds-state-tint-red-1` era #562522, un rojo agrisado). Los siete tonos que
-// /pdc habia elegido y medido a mano -#431414 y companeros- son limpios y
-// saturados, y son los que el producto quiere. Pasan a ser las ANCLAS.
+// EL VOCABULARIO ES NOMINAL. Hubo una version con tres pasos por familia,
+// derivados del ancla bajando croma con la luminosidad fija. Medida aqui mismo,
+// la separacion maxima entre dos pasos consecutivos de una misma familia era
+// 1,012:1 de contraste y dE-OK 0,0168 -por debajo del umbral de percepcion-: no
+// eran tres colores, era uno. Y como los modulos tenian mas estados que pasos,
+// dos entradas de leyenda que el usuario filtra por separado acababan pintando
+// fondos bit-identicos.
 //
-// Ocho familias x tres pasos. Los pasos 2 y 3 bajan CROMA con la luminosidad
-// FIJA (`oklch(from ... l calc(c * k) h)`), no luminosidad:
+// Sobre este canvas no hay eje de intensidad que gastar. El contraste WCAG es
+// ciego al croma, asi que bajar croma no separa; y bajar luminosidad tampoco
+// tiene recorrido, porque el ancla mas oscura (#431414) esta en L=0,268 OKLCH y
+// el fondo de pagina (#111a15) en L=0,207: 0,061 de margen. Queda un solo eje
+// util, el matiz, y de ahi la regla del contrato: un matiz = un estado, y
+// ningun modulo puede tener dos estados que compartan matiz.
 //
-//   #431414 esta en L=0,268 (OKLCH) y el fondo de pagina #111a15 en L=0,193.
-//   Son 0,075 de margen: bajando luminosidad, al tercer paso el tinte se cae
-//   dentro del canvas. Sobre oscuro el margen esta en el croma, que va de
-//   C=0,073 a 0 sin tocar el fondo. Medido antes de escribir la escalera; no
-//   cambiar el eje sin volver a medirlo.
-//
-// Este test fija la escalera por su valor RESUELTO, no por el texto del CSS:
-// `oklch(from ...)` solo existe una vez que el motor lo calcula, y lo que hay
-// que garantizar es el pixel.
-const LADDER = {
-  // Paso 1 = ancla, con el hex exacto que /pdc midio. Pasos 2 y 3, croma x0,6 y
-  // x0,3 sobre la misma luminosidad y el mismo matiz.
-  '--ds-state-tint-violet-1': '#33204a',
-  '--ds-state-tint-violet-2': '#30253e',
-  '--ds-state-tint-violet-3': '#2d2935',
-  '--ds-state-tint-red-1': '#431414',
-  '--ds-state-tint-red-2': '#391d1c',
-  '--ds-state-tint-red-3': '#302221',
-  '--ds-state-tint-orange-1': '#452a0d',
-  '--ds-state-tint-orange-2': '#3d2d1e',
-  '--ds-state-tint-orange-3': '#372f28',
-  '--ds-state-tint-amber-1': '#3a3a0f',
-  '--ds-state-tint-amber-2': '#393923',
-  '--ds-state-tint-amber-3': '#38382e',
-  '--ds-state-tint-green-1': '#173d26',
-  '--ds-state-tint-green-2': '#253a2c',
-  '--ds-state-tint-green-3': '#2d3730',
-  '--ds-state-tint-blue-1': '#17334f',
-  '--ds-state-tint-blue-2': '#233343',
-  '--ds-state-tint-blue-3': '#2b323a',
-  '--ds-state-tint-teal-1': '#134841',
-  '--ds-state-tint-teal-2': '#2a4440',
-  '--ds-state-tint-teal-3': '#35413f',
-  // La familia neutral es la excepcion declarada: su ancla tiene C=0,007, o sea
-  // no hay croma que gastar. Sus tres pasos bajan LUMINOSIDAD, que en una
-  // familia acromatica es el unico eje disponible, y conservan los tres grises
-  // que el producto ya pintaba (`not-started` de /pdc, `Sin Datos` y
-  // `Terminada` de /programa-general).
-  '--ds-state-tint-neutral-1': '#2b2f2d',
-  '--ds-state-tint-neutral-2': '#1b2721',
-  '--ds-state-tint-neutral-3': '#1b231e',
+// Este test fija la paleta por su valor RESUELTO, no por el texto del CSS.
+const PALETTE = {
+  violet: '#33204a',
+  red: '#431414',
+  orange: '#452a0d',
+  amber: '#3a3a0f',
+  green: '#173d26',
+  blue: '#17334f',
+  teal: '#134841',
+  // El unico acromatico. No es un tinte apagado sino el matiz del silencio, y
+  // su hex sale de `not-started` de /pdc igual que los otros siete.
+  neutral: '#2b2f2d',
 };
+const HUES = Object.keys(PALETTE);
+const CHROMATIC = HUES.filter((hue) => hue !== 'neutral');
+const tintOf = (hue) => `--ds-state-tint-${hue}`;
 
-const FAMILIES = {
-  violet: ['--ds-state-tint-violet-1', '--ds-state-tint-violet-2', '--ds-state-tint-violet-3'],
-  red: ['--ds-state-tint-red-1', '--ds-state-tint-red-2', '--ds-state-tint-red-3'],
-  orange: ['--ds-state-tint-orange-1', '--ds-state-tint-orange-2', '--ds-state-tint-orange-3'],
-  amber: ['--ds-state-tint-amber-1', '--ds-state-tint-amber-2', '--ds-state-tint-amber-3'],
-  green: ['--ds-state-tint-green-1', '--ds-state-tint-green-2', '--ds-state-tint-green-3'],
-  blue: ['--ds-state-tint-blue-1', '--ds-state-tint-blue-2', '--ds-state-tint-blue-3'],
-  teal: ['--ds-state-tint-teal-1', '--ds-state-tint-teal-2', '--ds-state-tint-teal-3'],
-  neutral: ['--ds-state-tint-neutral-1', '--ds-state-tint-neutral-2', '--ds-state-tint-neutral-3'],
-};
-const CHROMATIC = Object.keys(FAMILIES).filter((family) => family !== 'neutral');
-
-// Cada token de modulo debe resolver al MISMO VALOR que su paso en la escalera.
+// Cada estado de leyenda con su matiz. Esta tabla ES la reasignacion: si alguien
+// devuelve dos estados de un mismo modulo al mismo matiz, el bloque de
+// unicidad de mas abajo lo caza midiendo el pixel, no leyendo el nombre.
 //
-// Lo que este guard puede y no puede ver: compara el valor calculado, asi que
-// detecta cualquier DESVIACION -si alguien cambia un multiplicador o el ancla,
-// salta-, pero NO detecta la DUPLICACION, porque una copia fiel de la formula
-// resuelve al mismo string que el token. Que la hoja del modulo no reescriba la
-// formula lo verifica el test estatico
-// tests/design-system/state-tint-ladder.test.mjs, que es donde leer el texto
-// del CSS es la herramienta correcta.
-//
-// Los modulos que tenian mas usuarios que pasos colapsan de forma explicita:
-// con tres pasos por familia, `exec-blocked` y `danger-soft` de Intermedia caen
-// los dos en red-3, y `restr-1`/`restr-2-3` de General (alert1/alert23 en
-// Intermedia) caen los dos en amber-3. En la escalera vieja esos pares ya
-// distaban dE-OK 0,008, es decir eran el mismo color en pantalla.
-const MODULE_BINDINGS = {
+// /pdc ya cumplia («un matiz por estado») y no se toca. Intermedia y General se
+// reasignaron: repetian matiz -Intermedia tenia tres rojos y tres ambares,
+// General dos ambares y dos neutros- y con la paleta reducida a anclas eso son
+// fondos identicos.
+const MODULE_LEGENDS = {
   '/programacion-intermedia': {
-    '--pi-critical-bg': '--ds-state-tint-red-1',
-    '--pi-overdue-bg': '--ds-state-tint-red-2',
-    '--pi-exec-blocked-bg': '--ds-state-tint-red-3',
-    '--pi-danger-soft-bg': '--ds-state-tint-red-3',
-    '--pi-due-bg': '--ds-state-tint-amber-2',
-    '--pi-alert1-bg': '--ds-state-tint-amber-3',
-    '--pi-alert23-bg': '--ds-state-tint-amber-3',
-    '--pi-alert46-bg': '--ds-state-tint-green-2',
-    '--pi-ok-soft-bg': '--ds-state-tint-green-3',
-    '--pi-control-bg': '--ds-state-tint-teal-1',
+    '--pi-critical-bg': 'red', // RC inicio vencido: bloqueado y vencido
+    '--pi-overdue-bg': 'orange', // Inicio vencido: fuera de plazo
+    '--pi-due-bg': 'violet', // Inicio por Habilitar: le faltan condiciones
+    '--pi-alert1-bg': 'amber', // Alistamiento Urgente: por resolver
+    '--pi-alert23-bg': 'teal', // Alistamiento en Riesgo: contexto
+    '--pi-alert46-bg': 'neutral', // Alistamiento Pendiente: silencio
+    '--pi-exec-blocked-bg': 'blue', // En Ejecucion Pendiente: en marcha
+    '--pi-control-bg': 'green', // Listo para Comprometer: controlado
   },
   '/programa-general': {
-    '--pg-critical-bg': '--ds-state-tint-red-1',
-    '--pg-delayed-bg': '--ds-state-tint-red-2',
-    '--pg-alert-bg': '--ds-state-tint-amber-1',
-    '--pg-due-bg': '--ds-state-tint-amber-2',
-    '--pg-restr-1-bg': '--ds-state-tint-amber-3',
-    '--pg-restr-2-3-bg': '--ds-state-tint-amber-3',
-    '--pg-future-bg': '--ds-state-tint-green-1',
-    '--pg-restr-4-6-bg': '--ds-state-tint-green-2',
-    '--pg-progress-bg': '--ds-state-tint-teal-1',
-    '--pg-nodata-bg': '--ds-state-tint-neutral-2',
-    '--pg-done-bg': '--ds-state-tint-neutral-3',
+    '--pg-delayed-bg': 'red', // Atrasada
+    '--pg-due-bg': 'orange', // Debe Iniciar
+    '--pg-alert-bg': 'amber', // Con Alerta Restricciones
+    '--pg-future-bg': 'green', // Actividad Futura
+    '--pg-progress-bg': 'blue', // En Curso
+    '--pg-done-bg': 'neutral', // Terminada
+    '--pg-nodata-bg': 'violet', // Sin Datos
   },
   '/pdc': {
-    '--pdc-missing-bg': '--ds-state-tint-violet-1',
-    '--pdc-critical-bg': '--ds-state-tint-red-1',
-    '--pdc-delayed-bg': '--ds-state-tint-orange-1',
-    '--pdc-completed-late-bg': '--ds-state-tint-amber-1',
-    '--pdc-completed-ontime-bg': '--ds-state-tint-green-1',
-    '--pdc-active-bg': '--ds-state-tint-blue-1',
-    '--pdc-not-started-bg': '--ds-state-tint-neutral-1',
+    '--pdc-critical-bg': 'red',
+    '--pdc-delayed-bg': 'orange',
+    '--pdc-completed-late-bg': 'amber',
+    '--pdc-completed-ontime-bg': 'green',
+    '--pdc-active-bg': 'blue',
+    '--pdc-missing-bg': 'violet',
+    '--pdc-not-started-bg': 'neutral',
   },
+};
+
+// Alias declarados: no son estados de leyenda sino otra superficie del mismo
+// estado (o una superficie auxiliar que reusa su matiz). Se verifican igual
+// -tienen que resolver al ancla que dicen- pero quedan fuera de la asercion de
+// unicidad, porque compartir color con su estado es justo lo que deben hacer.
+const MODULE_ALIASES = {
+  '/programacion-intermedia': {
+    '--pi-danger-soft-bg': 'red',
+    '--pi-ok-soft-bg': 'green',
+  },
+  '/programa-general': {
+    '--pg-critical-bg': 'red',
+    '--pg-notrequired-bg': 'neutral',
+    '--pg-ontime-bg': 'blue',
+    '--pg-restr-0-bg': 'amber',
+    '--pg-restr-1-bg': 'amber',
+    '--pg-restr-2-3-bg': 'amber',
+    '--pg-restr-4-6-bg': 'amber',
+  },
+  '/pdc': {},
 };
 
 // Se devuelven dos lecturas por token porque sirven a dos comparaciones
 // distintas:
 //
-//   - `declared` es la cadena que el motor calcula (`rgb()`, `color(srgb ...)`
-//     u `oklch()` segun como se derive cada token). Es exacta y sin redondeo,
+//   - `declared` es la cadena que el motor calcula. Es exacta y sin redondeo,
 //     asi que es la buena para comparar un token contra otro y para leer matiz
 //     y croma: en 8 bits el matiz de un color de croma bajo es ruido.
 //   - `painted` es el pixel tras componer sobre el fondo de pagina real. Es
@@ -175,8 +150,8 @@ async function resolveTokens(page, names) {
 
 // --- color: sRGB <-> OKLab/OKLCh -------------------------------------------
 // Se convierte en Node y no en la pagina para poder leer `declared` con toda su
-// precision: `oklch(0.268 0.0219 23.4)` llega en flotante y rasterizarlo a 8
-// bits antes de medir el matiz destruiria justo lo que se quiere medir.
+// precision: un color de croma bajo rasterizado a 8 bits pierde justo el matiz
+// que se quiere medir.
 const linear = (c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
 
 function parseColor(declared) {
@@ -238,178 +213,209 @@ function channelDrift(painted, expectedHex) {
   return Math.max(...painted.map((v, i) => Math.abs(v - expected[i])));
 }
 
-// Umbrales.
+// Umbrales. Todos van por debajo de lo medido pero cerca, para que midan algo:
+// un umbral escrito para acomodar la medicion no discrimina nada.
 //
-// El brief pedia >=3:1 contra el fondo de pagina y >=1,3:1 entre vecinos, en
-// contraste WCAG. Medido, ninguna de las dos cifras es alcanzable por un tinte
-// oscuro sobre un canvas oscuro: la escalera ENTERA -la vieja y la nueva- vive
-// entre 1,10:1 y 1,72:1 contra #111a15, y dos pasos que solo se diferencian en
-// croma quedan por debajo de 1,02:1 entre si porque el contraste WCAG es ciego
-// al croma (ver el informe de la tarea con las 24 medidas). Pedir 3:1 dejaria
-// el guard rojo para siempre y pedir 1,3:1 entre vecinos seria incompatible con
-// derivar por croma, que es el eje que la propia tarea fija.
-//
-// Lo que se exige en su lugar mide la MISMA propiedad -que el paso se separe
-// del canvas y de su vecino- con una metrica que sobre oscuro si funciona:
-// distancia perceptual en OKLab. Los suelos van por debajo de lo medido pero
-// muy por encima de cero, asi que fallan si alguien acerca un paso a su vecino
-// (con k=0,8 en vez de 0,6 el dE23 cae a ~0,008) o hunde un tinte en el canvas.
-const MIN_DELTA_E_VS_CANVAS = 0.03; // medido: 0,040 (neutral-3) a 0,164 (teal-1)
-const MIN_DELTA_E_NEIGHBOUR = 0.012; // medido: 0,016 a 0,040
-// Los tintes se emparejan con `--ds-active-text-primary` en la capa de matiz
-// (states-feedback.css / legacy-bridge.css). Ese par SI tiene un umbral WCAG
-// real y alcanzable, y es el que impide que un paso se vuelva demasiado claro.
-const MIN_TEXT_CONTRAST = 4.5; // medido: 9,8 a 15,3
-const MAX_HUE_DRIFT_DEG = 2;
-const MAX_CHROMA_RATIO = 0.8; // cada paso baja croma al menos un 20%
-const MAX_LIGHTNESS_DRIFT = 0.004;
-const MAX_NEUTRAL_CHROMA = 0.03;
+// El contraste WCAG NO sirve para separar dos tintes entre si sobre oscuro
+// -mide luminancia relativa y toda la paleta vive entre 1,10:1 y 1,72:1 contra
+// el canvas-, asi que la separacion se mide en distancia perceptual OKLab, que
+// sobre oscuro si discrimina croma. WCAG se usa donde si es la metrica
+// correcta: tinta sobre tinte.
+const MIN_DELTA_E_VS_CANVAS = 0.06; // medido: 0,094 (neutral) a 0,164 (teal)
+const MIN_DELTA_E_BETWEEN_HUES = 0.035; // medido: minimo ~0,049 (amber vs green)
+const MIN_TEXT_CONTRAST = 4.5; // AA. Medido con --ds-active-text-primary: 9,8 a 15,3
+const MIN_TINTED_TEXT_CONTRAST = 7; // AAA. Medido con el texto tintado: 8,88 a 10,99
+const MIN_HUE_SEPARATION_DEG = 20; // medido: minimo 28,1° (green vs teal)
+const MIN_CHROMA_RATIO_VS_NEUTRAL = 4; // medido: 8,5 (teal 0,0560 / neutral 0,0066)
 
-test.describe('escalera de tintes de estado', () => {
-  test('el design system publica las ocho anclas con sus tres pasos', async ({ page }) => {
-    await page.setViewportSize(VIEWPORT);
-    await loginAndSelectProject(page, project);
-    await page.goto('/programa-general', { waitUntil: 'domcontentloaded' });
-    await expect(page.locator('#pgLegend').first()).toBeVisible({ timeout: 45000 });
+// El catalogo empareja cada ancla con el texto tintado con el que /pdc midio su
+// contraste. Son SIETE para OCHO anclas: teal entro al design system con esta
+// paleta -no venia de /pdc- y no trajo texto propio. Se declara aqui para que
+// el hueco sea una asercion y no un olvido.
+const HUE_WITHOUT_TINTED_TEXT = 'teal';
 
-    const names = Object.keys(LADDER);
-    expect(names.length, 'ocho familias por tres pasos').toBe(24);
+async function contractHues() {
+  const semantics = JSON.parse(await readFile('docs/design-system/state-semantics.json', 'utf8'));
+  return semantics.hues;
+}
+
+async function openProgramaGeneral(page) {
+  await page.setViewportSize(VIEWPORT);
+  await loginAndSelectProject(page, project);
+  await page.goto('/programa-general', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('#pgLegend').first()).toBeVisible({ timeout: 45000 });
+}
+
+test.describe('paleta de matices de estado', () => {
+  test('el design system publica los ocho matices con su ancla exacta', async ({ page }) => {
+    await openProgramaGeneral(page);
+
+    const names = HUES.map(tintOf);
+    expect(names.length, 'ocho matices, uno por estado').toBe(8);
     const resolved = await resolveTokens(page, names);
     const missing = names.filter((name) => resolved[name] === null);
-    expect(missing, `la escalera no declara: ${missing.join(', ')}`).toEqual([]);
+    expect(missing, `la paleta no declara: ${missing.join(', ')}`).toEqual([]);
 
     // Tolerancia de una unidad por canal: el compositor de canvas redondea en
     // 8 bits premultiplicados y se desvia hasta 1 respecto al calculo exacto.
-    // Lo que se fija aqui es el color, no la aritmetica del rasterizador.
-    for (const [name, expected] of Object.entries(LADDER)) {
-      const drift = channelDrift(resolved[name].painted, expected);
+    for (const [hue, expected] of Object.entries(PALETTE)) {
+      const drift = channelDrift(resolved[tintOf(hue)].painted, expected);
       expect(
         drift,
-        `${name} deberia valer ${expected} y pinta ${toHex(resolved[name].painted)}`,
+        `${tintOf(hue)} deberia valer ${expected} y pinta ${toHex(resolved[tintOf(hue)].painted)}`,
       ).toBeLessThanOrEqual(1);
     }
   });
 
-  test('cada paso se separa del canvas, de su vecino y sostiene el texto', async ({ page }) => {
-    await page.setViewportSize(VIEWPORT);
-    await loginAndSelectProject(page, project);
-    await page.goto('/programa-general', { waitUntil: 'domcontentloaded' });
-    await expect(page.locator('#pgLegend').first()).toBeVisible({ timeout: 45000 });
+  test('los ocho se separan del canvas, entre si, y sostienen el texto', async ({ page }) => {
+    await openProgramaGeneral(page);
 
-    const names = Object.keys(LADDER);
+    const names = HUES.map(tintOf);
     const resolved = await resolveTokens(page, [...names, '--ds-active-text-primary']);
     const canvas = resolved.__page.painted;
     const text = resolved['--ds-active-text-primary'];
     expect(text, 'la pagina debe publicar --ds-active-text-primary').not.toBeNull();
 
-    let checkedSteps = 0;
-    let checkedPairs = 0;
-    for (const [family, steps] of Object.entries(FAMILIES)) {
-      expect(steps.length, `${family} debe tener tres pasos`).toBe(3);
-      for (const step of steps) {
-        expect(resolved[step], `${step} no resuelve`).not.toBeNull();
-        const painted = resolved[step].painted;
-        expect(
-          deltaE(painted, canvas),
-          `${step} (${toHex(painted)}) se hunde en el canvas ${toHex(canvas)}`,
-        ).toBeGreaterThanOrEqual(MIN_DELTA_E_VS_CANVAS);
-        expect(
-          contrast(text.painted, painted),
-          `el texto primario sobre ${step} (${toHex(painted)}) no llega a AA`,
-        ).toBeGreaterThanOrEqual(MIN_TEXT_CONTRAST);
-        checkedSteps += 1;
-      }
-      for (let i = 0; i < steps.length - 1; i += 1) {
-        const [a, b] = [steps[i], steps[i + 1]];
-        expect(
-          deltaE(resolved[a].painted, resolved[b].painted),
-          `${a} y ${b} pintan casi lo mismo: ${toHex(resolved[a].painted)} vs ${toHex(resolved[b].painted)}`,
-        ).toBeGreaterThanOrEqual(MIN_DELTA_E_NEIGHBOUR);
-        checkedPairs += 1;
-      }
-    }
-    expect(checkedSteps, 'se midieron los 24 pasos').toBe(24);
-    expect(checkedPairs, 'se midieron los 16 pares de vecinos').toBe(16);
-  });
-
-  test('los pasos bajan croma sin mover matiz ni luminosidad', async ({ page }) => {
-    await page.setViewportSize(VIEWPORT);
-    await loginAndSelectProject(page, project);
-    await page.goto('/programa-general', { waitUntil: 'domcontentloaded' });
-    await expect(page.locator('#pgLegend').first()).toBeVisible({ timeout: 45000 });
-
-    const resolved = await resolveTokens(page, Object.keys(LADDER));
-
-    expect(CHROMATIC.length, 'siete familias cromaticas').toBe(7);
-    for (const family of CHROMATIC) {
-      const steps = FAMILIES[family];
-      const lch = steps.map((step) => {
-        expect(resolved[step], `${step} no resuelve`).not.toBeNull();
-        return parseColor(resolved[step].declared);
-      });
-      const anchor = lch[0];
-      for (let i = 1; i < lch.length; i += 1) {
-        // El matiz se lee del valor declarado a proposito: derivar por
-        // `color-mix(in srgb, ...)` hacia un gris -que es lo que hacia la
-        // escalera vieja- desplaza el tono varios grados, y eso es exactamente
-        // lo que este limite tiene que cazar.
-        expect(
-          hueGap(lch[i].H, anchor.H),
-          `${steps[i]} se fue a ${lch[i].H.toFixed(1)}° y su ancla esta en ${anchor.H.toFixed(1)}°`,
-        ).toBeLessThanOrEqual(MAX_HUE_DRIFT_DEG);
-        expect(
-          Math.abs(lch[i].L - anchor.L),
-          `${steps[i]} movio la luminosidad (${lch[i].L.toFixed(4)} vs ${anchor.L.toFixed(4)}): el eje es el croma`,
-        ).toBeLessThanOrEqual(MAX_LIGHTNESS_DRIFT);
-        expect(
-          lch[i].C / lch[i - 1].C,
-          `${steps[i]} apenas baja croma respecto a ${steps[i - 1]} (${lch[i].C.toFixed(4)} vs ${lch[i - 1].C.toFixed(4)})`,
-        ).toBeLessThanOrEqual(MAX_CHROMA_RATIO);
-      }
-    }
-
-    // La familia acromatica no tiene matiz que conservar: lo que hay que
-    // garantizar es lo contrario -que ninguno de sus pasos se vuelva de color-
-    // y que el eje que si usa, la luminosidad, sea monotono.
-    const neutral = FAMILIES.neutral.map((step) => parseColor(resolved[step].declared));
-    for (let i = 0; i < neutral.length; i += 1) {
+    for (const hue of HUES) {
+      const painted = resolved[tintOf(hue)].painted;
       expect(
-        neutral[i].C,
-        `${FAMILIES.neutral[i]} dejo de ser neutro (C=${neutral[i].C.toFixed(4)})`,
-      ).toBeLessThanOrEqual(MAX_NEUTRAL_CHROMA);
-      if (i > 0) {
+        deltaE(painted, canvas),
+        `${tintOf(hue)} (${toHex(painted)}) se hunde en el canvas ${toHex(canvas)}`,
+      ).toBeGreaterThanOrEqual(MIN_DELTA_E_VS_CANVAS);
+      expect(
+        contrast(text.painted, painted),
+        `el texto primario sobre ${tintOf(hue)} (${toHex(painted)}) no llega a AA`,
+      ).toBeGreaterThanOrEqual(MIN_TEXT_CONTRAST);
+    }
+
+    // Los 28 pares. Es la propiedad que sostiene toda la decision: con un solo
+    // tinte por matiz, dos estados solo se distinguen si sus matices se
+    // distinguen. Incluye a `neutral`, que en la version anterior se quedaba
+    // fuera de la asercion de matiz sin que el test lo dijera.
+    let pairs = 0;
+    for (let i = 0; i < HUES.length; i += 1) {
+      for (let j = i + 1; j < HUES.length; j += 1) {
+        const [a, b] = [HUES[i], HUES[j]];
         expect(
-          neutral[i].L,
-          `${FAMILIES.neutral[i]} no baja luminosidad respecto a ${FAMILIES.neutral[i - 1]}`,
-        ).toBeLessThan(neutral[i - 1].L);
+          deltaE(resolved[tintOf(a)].painted, resolved[tintOf(b)].painted),
+          `${a} y ${b} pintan casi lo mismo: `
+          + `${toHex(resolved[tintOf(a)].painted)} vs ${toHex(resolved[tintOf(b)].painted)}`,
+        ).toBeGreaterThanOrEqual(MIN_DELTA_E_BETWEEN_HUES);
+        pairs += 1;
       }
     }
+    expect(pairs, 'se midieron los 28 pares').toBe(28);
   });
 
-  for (const [route, bindings] of Object.entries(MODULE_BINDINGS)) {
-    test(`${route} resuelve sus tintes al mismo valor que la escalera`, async ({ page }) => {
+  test('los siete cromaticos ocupan matices distintos y el octavo es acromatico', async ({ page }) => {
+    await openProgramaGeneral(page);
+
+    const resolved = await resolveTokens(page, HUES.map(tintOf));
+    const lch = Object.fromEntries(HUES.map((hue) => [hue, parseColor(resolved[tintOf(hue)].declared)]));
+
+    // Que dos anclas no se acerquen en el circulo de matiz. La version anterior
+    // media la deriva de cada paso respecto a su ancla, pero como todos los
+    // pasos conservaban `h` literalmente esa medida daba 0,000° siempre: no
+    // podia fallar. Lo que si puede fallar -y es lo que importa- es que dos de
+    // los siete matices se junten.
+    for (let i = 0; i < CHROMATIC.length; i += 1) {
+      for (let j = i + 1; j < CHROMATIC.length; j += 1) {
+        const [a, b] = [CHROMATIC[i], CHROMATIC[j]];
+        expect(
+          hueGap(lch[a].H, lch[b].H),
+          `${a} (${lch[a].H.toFixed(1)}°) y ${b} (${lch[b].H.toFixed(1)}°) son casi el mismo matiz`,
+        ).toBeGreaterThanOrEqual(MIN_HUE_SEPARATION_DEG);
+      }
+    }
+
+    // Y que `neutral` siga siendo el silencio. El umbral anterior era un croma
+    // absoluto de 0,03 que no discriminaba nada -habia pasos cromaticos por
+    // debajo de el-. Aqui se compara contra la propia paleta: neutral tiene que
+    // ser varias veces menos cromatico que el MENOS cromatico de los siete.
+    const leastChromatic = Math.min(...CHROMATIC.map((hue) => lch[hue].C));
+    expect(
+      leastChromatic / lch.neutral.C,
+      `neutral (C=${lch.neutral.C.toFixed(4)}) dejo de ser acromatico frente al `
+      + `cromatico mas apagado (C=${leastChromatic.toFixed(4)})`,
+    ).toBeGreaterThanOrEqual(MIN_CHROMA_RATIO_VS_NEUTRAL);
+  });
+
+  // El par con el que se midio el contraste original (8,88-10,99:1) es el ancla
+  // contra SU texto tintado, y ningun test lo cubria: la capa de matiz empareja
+  // los tintes con `--ds-active-text-primary`, asi que el texto tintado vivia
+  // sin guard aunque /pdc lo pinta en sus siete chips.
+  test('cada ancla sostiene su texto tintado', async ({ page }) => {
+    await openProgramaGeneral(page);
+    const hues = await contractHues();
+
+    const sinTexto = hues.filter(({ text }) => text === undefined).map(({ id }) => id);
+    expect(
+      sinTexto,
+      'el catalogo debe declarar el texto tintado de siete de los ocho matices',
+    ).toEqual([HUE_WITHOUT_TINTED_TEXT]);
+
+    const withText = hues.filter(({ text }) => text !== undefined);
+    const resolved = await resolveTokens(
+      page,
+      withText.flatMap(({ tint, text }) => [tint, text]),
+    );
+
+    for (const { id, tint, text } of withText) {
+      expect(resolved[tint], `${tint} no resuelve`).not.toBeNull();
+      expect(resolved[text], `${text} no resuelve`).not.toBeNull();
+      const ratio = contrast(resolved[text].painted, resolved[tint].painted);
+      expect(
+        ratio,
+        `el texto tintado de ${id} (${toHex(resolved[text].painted)}) sobre su ancla `
+        + `(${toHex(resolved[tint].painted)}) mide ${ratio.toFixed(2)}:1`,
+      ).toBeGreaterThanOrEqual(MIN_TINTED_TEXT_CONTRAST);
+    }
+    expect(withText.length, 'siete anclas con texto tintado').toBe(7);
+  });
+
+  for (const [route, legend] of Object.entries(MODULE_LEGENDS)) {
+    test(`${route} da un matiz distinto a cada estado`, async ({ page }) => {
       await page.setViewportSize(VIEWPORT);
       await loginAndSelectProject(page, project);
       await page.goto(route, { waitUntil: 'domcontentloaded' });
       await page.waitForTimeout(3000);
 
-      const names = [...Object.keys(bindings), ...new Set(Object.values(bindings))];
+      const aliases = MODULE_ALIASES[route];
+      const bindings = { ...legend, ...aliases };
+      const names = [...Object.keys(bindings), ...new Set(Object.values(bindings).map(tintOf))];
       const resolved = await resolveTokens(page, names);
 
       // Igualdad estricta sobre la cadena calculada, no sobre el hex pintado:
-      // si el modulo consume el token de la escalera, el motor devuelve
+      // si el modulo consume el token de la paleta, el motor devuelve
       // literalmente el mismo valor y no hay redondeo que tolerar. Un modulo
-      // que recalcule la formula por su cuenta cae aqui aunque el resultado se
+      // que recalcule el color por su cuenta cae aqui aunque el resultado se
       // parezca.
-      for (const [moduleToken, ladderToken] of Object.entries(bindings)) {
+      for (const [moduleToken, hue] of Object.entries(bindings)) {
         expect(
-          resolved[ladderToken]?.declared,
-          `${ladderToken} no resuelve en ${route}`,
+          resolved[tintOf(hue)]?.declared,
+          `${tintOf(hue)} no resuelve en ${route}`,
         ).toBeTruthy();
         expect(
           resolved[moduleToken]?.declared,
-          `${moduleToken} deberia resolver igual que ${ladderToken}`,
-        ).toBe(resolved[ladderToken]?.declared);
+          `${moduleToken} deberia resolver igual que ${tintOf(hue)} (matiz ${hue})`,
+        ).toBe(resolved[tintOf(hue)]?.declared);
+      }
+
+      // Y la regla, medida en el pixel: dos entradas de leyenda no pueden
+      // pintar el mismo fondo. Es el fallo concreto que motivo la reduccion de
+      // la escalera -`alert1`/`alert23` aqui, `restr-1`/`restr-2-3` en
+      // General- y el que ningun guard cazaba.
+      const entries = Object.entries(legend);
+      for (let i = 0; i < entries.length; i += 1) {
+        for (let j = i + 1; j < entries.length; j += 1) {
+          const [tokenA] = entries[i];
+          const [tokenB] = entries[j];
+          expect(
+            deltaE(resolved[tokenA].painted, resolved[tokenB].painted),
+            `${tokenA} y ${tokenB} son dos entradas de leyenda y pintan `
+            + `${toHex(resolved[tokenA].painted)} y ${toHex(resolved[tokenB].painted)}`,
+          ).toBeGreaterThanOrEqual(MIN_DELTA_E_BETWEEN_HUES);
+        }
       }
     });
   }

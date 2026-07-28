@@ -2279,19 +2279,20 @@ table.dataTable td.dt-min-width-300,
   line-height: 1.4;
 }
 
-/* Hover y seleccion de fila: el matiz azul se conserva, cambia el tramo de la
-   escalera. `--ds-state-tint-blue-3` (croma bajo) para el hover pasajero y
-   `--ds-state-tint-blue-1` (croma pleno) para la fila elegida, que es el estado
-   con mas enfasis. Ojo: las `td` de esta tabla llevan `background` !important en
+/* Hover y seleccion de fila: el matiz azul se conserva y lo que cambia es el
+   enfasis. Hover y seleccion son dos superficies del MISMO gesto, no dos
+   estados, asi que comparten matiz a proposito; el tenue se deriva contra la
+   superficie con la misma receta que usa /programacion-semanal para su par
+   chip/fila. Ojo: las `td` de esta tabla llevan `background` !important en
    @layer components desde programacion-semanal.css, y esa capa gana a
    module.components por la inversion de capas de !important; como su alfa es
    0,92, de estos fondos de `tr` solo se ve un 8%. */
 #tabla_excepciones_no_autoprogramadas .ps-row-excepcion:hover {
-  background: var(--ds-state-tint-blue-3);
+  background: color-mix(in srgb, var(--ds-state-tint-blue) 46%, var(--ds-active-surface) 54%);
 }
 
 #tabla_excepciones_no_autoprogramadas .ps-row-selected {
-  background: var(--ds-state-tint-blue-1);
+  background: var(--ds-state-tint-blue);
 }
 
 /* El boton "Usar" media 2,03:1 en reposo: tinta azul oscura pensada para fondo
@@ -2332,7 +2333,7 @@ table.dataTable td.dt-min-width-300,
   text-align: left;
   border-radius: var(--ds-radius-xs);
   padding: 0.22rem 0.5rem;
-  background: var(--ds-state-tint-orange-2);
+  background: color-mix(in srgb, var(--ds-state-tint-orange) 46%, var(--ds-active-surface) 54%);
   color: var(--pdc-delayed-text);
   font-size: 0.72rem;
   line-height: 1.35;
@@ -2349,14 +2350,16 @@ table.dataTable td.dt-min-width-300,
   font-style: italic;
 }
 /* La pildora interna era, en claro, un paso mas saturada que el chip que la
-   contiene. En oscuro se conserva esa relacion invirtiendo el tramo: el chip
-   toma el escalon de croma reducido y la pildora el ancla de croma pleno. */
+   contiene. En oscuro se conserva esa relacion sin inventar un escalon: el chip
+   se atenua contra la superficie -misma receta que el par chip/fila de
+   /programacion-semanal- y la pildora se queda en el ancla. Son dos superficies
+   del mismo motivo, no dos estados. */
 #tabla_excepciones_no_autoprogramadas .ps-motivo-chip .ps-motivo-restriction {
   display: inline-block;
   margin: 1px 4px 1px 0;
   padding: 0 5px;
   border-radius: var(--ds-radius-xs);
-  background: var(--ds-state-tint-orange-1);
+  background: var(--ds-state-tint-orange);
   font-weight: 700;
 }
 
@@ -3150,32 +3153,32 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
    y la fila. Ningun relleno de la escalera llega a 3:1 sobre oscuro, asi que la
    frontera del objeto grafico (WCAG 1.4.11) la sostiene la tinta secundaria. */
 .ps-legend-modal-swatch.ps-alert-critical-route {
-  background-color: var(--ds-state-tint-red-1);
+  background-color: var(--ds-state-tint-red);
   border-color: var(--ds-active-text-secondary);
 }
 
 .ps-legend-modal-swatch.ps-alert-critical {
-  background-color: var(--ds-state-tint-red-1);
+  background-color: var(--ds-state-tint-red);
   border-color: var(--ds-active-text-secondary);
 }
 
 .ps-legend-modal-swatch.ps-alert-high {
-  background-color: var(--ds-state-tint-orange-1);
+  background-color: var(--ds-state-tint-orange);
   border-color: var(--ds-active-text-secondary);
 }
 
 .ps-legend-modal-swatch.ps-alert-medium {
-  background-color: var(--ds-state-tint-amber-1);
+  background-color: var(--ds-state-tint-amber);
   border-color: var(--ds-active-text-secondary);
 }
 
 .ps-legend-modal-swatch.ps-alert-info {
-  background-color: var(--ds-state-tint-blue-1);
+  background-color: var(--ds-state-tint-blue);
   border-color: var(--ds-active-text-secondary);
 }
 
 .ps-legend-modal-swatch.ps-alert-control {
-  background-color: var(--ds-state-tint-green-1);
+  background-color: var(--ds-state-tint-green);
   border-color: var(--ds-active-text-secondary);
 }
 
@@ -5042,11 +5045,11 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
    y no entra en un cambio de tema.
    Guard: tests/browser/pdc-chips-dark.mjs. */
 .pdc-delta--ahead {
-  background-color: var(--ds-state-tint-orange-1);
+  background-color: var(--ds-state-tint-orange);
   color: var(--pdc-delayed-text);
 }
 .pdc-delta--delay {
-  background-color: var(--ds-state-tint-red-1);
+  background-color: var(--ds-state-tint-red);
   color: var(--pdc-critical-text);
 }
 

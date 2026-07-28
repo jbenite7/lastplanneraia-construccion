@@ -425,15 +425,23 @@
     urgent: { severity: 'high', urgency: 'now' },
   };
 
+  // Ocho estados, ocho matices, sin repetir. La paleta publica un solo tinte
+  // por matiz, asi que dos estados que compartan matiz pintan el mismo fondo:
+  // antes habia tres rojos y tres ambares aqui y `Alistamiento Urgente` y
+  // `Alistamiento en Riesgo` eran bit-identicos en pantalla. La justificacion de
+  // cada asignacion esta en public/css/programacion-intermedia.css.
+  //
+  // `neutral` (fila sin clasificar) no toma tinte de estado: usa la superficie
+  // elevada, que no es un matiz.
   var statePresentation = {
     'blocked-overdue-critical': { level: 'urgent', hue: 'red' },
-    'blocked-overdue': { level: 'urgent', hue: 'red' },
-    'blocked-due': { level: 'attention', hue: 'amber' },
+    'blocked-overdue': { level: 'urgent', hue: 'orange' },
+    'blocked-due': { level: 'attention', hue: 'violet' },
     'alert-1-week': { level: 'urgent', hue: 'amber' },
-    'alert-2-3-weeks': { level: 'attention', hue: 'amber' },
-    'alert-4-6-weeks': { level: 'attention', hue: 'green' },
-    'execution-blocked': { level: 'attention', hue: 'red' },
-    'liberated-control': { level: 'healthy', hue: 'teal' },
+    'alert-2-3-weeks': { level: 'attention', hue: 'teal' },
+    'alert-4-6-weeks': { level: 'attention', hue: 'neutral' },
+    'execution-blocked': { level: 'attention', hue: 'blue' },
+    'liberated-control': { level: 'healthy', hue: 'green' },
     neutral: { level: 'neutral', hue: 'neutral' },
   };
 

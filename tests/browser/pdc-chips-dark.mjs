@@ -28,7 +28,7 @@ const CHIPS = [
 
 // El canvas de /pdc esta por debajo de 0,1 de luminancia relativa. Un chip
 // oscuro tiene que quedarse del lado oscuro de la escala; 0,25 deja margen para
-// los tintes mas intensos (`--ds-state-tint-red-1` ronda 0,03) sin admitir un
+// los tintes mas intensos (`--ds-state-tint-red` ronda 0,03) sin admitir un
 // pastel claro, que arranca por encima de 0,7.
 const MAX_BACKGROUND_LUMINANCE = 0.25;
 const MIN_CONTRAST = 4.5;

@@ -23,11 +23,28 @@ const SEVERITY_BY_LEVEL = {
   urgent: { severity: 'high', urgency: 'now' },
 };
 
+// El chip solo expone tres datos: matiz, severity y urgency. La version
+// anterior armaba un mapa matiz -> estado para deducir el nivel esperado, y ese
+// mapa no es una funcion: colapsaba silenciosamente los estados que comparten
+// matiz -los diez de Semanal caben en cinco- y podia aceptar el nivel del
+// estado equivocado. Se compara contra el CONJUNTO de tripletas que el contrato
+// declara, que es exactamente lo que el chip puede afirmar.
+//
+// `neutral` (fila sin clasificar, etiqueta «Control») no es un estado del
+// contrato sino el defecto del modulo; se declara aqui para que su tripleta sea
+// una excepcion nombrada y no un agujero.
+const MODULE_DEFAULT_TRIPLE = 'neutral|none|none';
+
 async function contractStates(module) {
   const semantics = JSON.parse(await readFile('docs/design-system/state-semantics.json', 'utf8'));
   const mapping = semantics.moduleMappings.find((m) => m.module === module);
   const hues = Object.fromEntries(semantics.hues.map((h) => [h.id, h.tint]));
-  return { states: mapping.states, hues };
+  const triples = new Set(mapping.states.map(({ hue, level }) => {
+    const { severity, urgency } = SEVERITY_BY_LEVEL[level];
+    return `${hue}|${severity}|${urgency}`;
+  }));
+  triples.add(MODULE_DEFAULT_TRIPLE);
+  return { states: mapping.states, hues, triples };
 }
 
 async function readChips(page) {
@@ -85,8 +102,7 @@ function separation(a, b) {
 }
 
 test('la celda de estado de Intermedia declara matiz y nivel', async ({ page }) => {
-  const { states, hues } = await contractStates('programacion-intermedia');
-  const byHue = new Map(states.map((s) => [s.hue, s]));
+  const { states, hues, triples } = await contractStates('programacion-intermedia');
 
   await page.setViewportSize(VIEWPORT);
   await loginAndSelectProject(page, project);
@@ -104,13 +120,13 @@ test('la celda de estado de Intermedia declara matiz y nivel', async ({ page }) 
       .toContain(chip.hue);
 
     // El nivel viaja como severity+urgency, que es el par que la capa de
-    // componentes ya usa; tiene que ser el del estado, no uno cualquiera.
-    const level = byHue.get(chip.hue).level;
-    const expectedPair = SEVERITY_BY_LEVEL[level];
+    // componentes ya usa. La tripleta completa tiene que ser una de las que el
+    // contrato declara para este modulo.
     expect(
-      { severity: chip.severity, urgency: chip.urgency },
-      `«${chip.label}» (matiz ${chip.hue}) debería declarar el par de ${level}`,
-    ).toEqual(expectedPair);
+      triples,
+      `«${chip.label}» declara ${chip.hue}|${chip.severity}|${chip.urgency}, `
+      + 'que no es ninguna de las combinaciones matiz+nivel del contrato',
+    ).toContain(`${chip.hue}|${chip.severity}|${chip.urgency}`);
 
     // Y el color pintado tiene que ser el de la escalera para ese matiz: si el
     // modulo lo sigue eligiendo por su cuenta, aqui se separa.
@@ -129,8 +145,7 @@ test('la celda de estado de Intermedia declara matiz y nivel', async ({ page }) 
 // boton -el nivel del boton no se toca en esta tarea-, pero ahora tambien
 // declara su propio matiz e identidad y la capa de componentes lo pinta.
 test('la celda de estado de Semanal declara matiz y nivel', async ({ page }) => {
-  const { states, hues } = await contractStates('programacion-semanal');
-  const byHue = new Map(states.map((s) => [s.hue, s]));
+  const { states, hues, triples } = await contractStates('programacion-semanal');
 
   await page.setViewportSize(VIEWPORT);
   await loginAndSelectProject(page, project);
@@ -153,12 +168,14 @@ test('la celda de estado de Semanal declara matiz y nivel', async ({ page }) => 
     expect(known, `«${chip.label}» declara el matiz ${chip.hue}, que no está en el contrato`)
       .toContain(chip.hue);
 
-    const level = byHue.get(chip.hue).level;
-    const expectedPair = SEVERITY_BY_LEVEL[level];
+    // El nivel viaja como severity+urgency, que es el par que la capa de
+    // componentes ya usa. La tripleta completa tiene que ser una de las que el
+    // contrato declara para este modulo.
     expect(
-      { severity: chip.severity, urgency: chip.urgency },
-      `«${chip.label}» (matiz ${chip.hue}) debería declarar el par de ${level}`,
-    ).toEqual(expectedPair);
+      triples,
+      `«${chip.label}» declara ${chip.hue}|${chip.severity}|${chip.urgency}, `
+      + 'que no es ninguna de las combinaciones matiz+nivel del contrato',
+    ).toContain(`${chip.hue}|${chip.severity}|${chip.urgency}`);
 
     const tint = await resolveTint(page, hues[chip.hue]);
     expect(

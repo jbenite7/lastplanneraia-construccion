@@ -102,42 +102,42 @@
      Cuando el puente se retire, la copia de `states-feedback.css` es la que
      queda; esta se va con el. */
   :where([data-aia-hue="neutral"]) {
-    background: var(--ds-state-tint-neutral-1);
+    background: var(--ds-state-tint-neutral);
     color: var(--ds-active-text-primary);
   }
 
   :where([data-aia-hue="teal"]) {
-    background: var(--ds-state-tint-teal-1);
+    background: var(--ds-state-tint-teal);
     color: var(--ds-active-text-primary);
   }
 
   :where([data-aia-hue="blue"]) {
-    background: var(--ds-state-tint-blue-1);
+    background: var(--ds-state-tint-blue);
     color: var(--ds-active-text-primary);
   }
 
   :where([data-aia-hue="violet"]) {
-    background: var(--ds-state-tint-violet-1);
+    background: var(--ds-state-tint-violet);
     color: var(--ds-active-text-primary);
   }
 
   :where([data-aia-hue="green"]) {
-    background: var(--ds-state-tint-green-1);
+    background: var(--ds-state-tint-green);
     color: var(--ds-active-text-primary);
   }
 
   :where([data-aia-hue="amber"]) {
-    background: var(--ds-state-tint-amber-1);
+    background: var(--ds-state-tint-amber);
     color: var(--ds-active-text-primary);
   }
 
   :where([data-aia-hue="orange"]) {
-    background: var(--ds-state-tint-orange-1);
+    background: var(--ds-state-tint-orange);
     color: var(--ds-active-text-primary);
   }
 
   :where([data-aia-hue="red"]) {
-    background: var(--ds-state-tint-red-1);
+    background: var(--ds-state-tint-red);
     color: var(--ds-active-text-primary);
   }
 
