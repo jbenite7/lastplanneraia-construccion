@@ -181,3 +181,20 @@
 .pdc-wiz-actividades summary { cursor: pointer; color: #9fd3ae; font-size: 13px; font-weight: 600; }
 .pdc-wiz-act-lista { list-style: none; margin: 10px 0 2px; padding: 0; display: grid; gap: 4px; max-height: 220px; overflow-y: auto; font-size: 12px; }
 .pdc-wiz-act-lista li { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: baseline; }
+
+/* Plan de fechas (A4) */
+.pdc-plan-resumen { display: flex; gap: 18px; font-size: 13px; opacity: 0.85; flex-wrap: wrap; align-items: center; }
+.pdc-plan-resumen strong { font-size: 16px; opacity: 1; }
+.pdc-plan-resumen-vencidos strong { color: #eaa898; }
+/* Fila vencida: el mismo rojo apagado del chip de confianza baja, para que la urgencia salte sin
+   gritar por encima del resto de la grilla. */
+.pdc-plan-fila-vencida { background: #2b1a17 !important; }
+.pdc-plan-estado { font-size: 12px; }
+.pdc-plan-estado--vencido { color: #eaa898; font-weight: 600; }
+.pdc-plan-estado--provisional { color: #e8c98a; }
+.pdc-plan-estado--en-plazo { color: #9fd3ae; }
+.pdc-plan-detalle { margin: 14px 0; border: 1px solid #3a3a3c; border-radius: 8px; padding: 12px 14px; background: #202022; max-width: 640px; }
+.pdc-plan-detalle h3 { margin: 0 0 8px; font-size: 15px; }
+.pdc-plan-pasos { width: 100%; border-collapse: collapse; font-size: 13px; }
+.pdc-plan-pasos th, .pdc-plan-pasos td { text-align: left; padding: 4px 8px; border-bottom: 1px solid #2c2c2e; }
+.pdc-plan-pasos th { opacity: 0.65; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }

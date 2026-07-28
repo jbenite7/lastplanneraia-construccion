@@ -330,6 +330,66 @@ export type ResumenPaquetes = {
   porPaquete: { paqueteId: number; nombre: string; tipoNegociacion: string; modalidad?: string; insumos: number; subtotal: number }[]
 }
 
+// Tipos del plan de fechas (Fase A4)
+export type PasoPlan = { orden: number; paso: string; dias: number; fechaInicio: string; fechaFin: string }
+
+export type FilaPlan = {
+  paqueteId: number
+  nombre: string
+  tipoNegociacion: string
+  modalidad: string
+  frenteNombre: string
+  uniqueId: number
+  fechaAncla: string
+  fechaArranque: string
+  diasTotales: number
+  duracionProvisional: boolean
+  responsable: string
+  diasRetraso: number
+  pasos: PasoPlan[]
+}
+
+export type Desfase = {
+  paqueteId: number
+  nombre: string
+  frenteNombre: string
+  fechaGuardada: string
+  fechaActual: string | null
+  diasMovidos: number | null
+}
+
+export type FrenteDisponible = { uniqueId: number; nombre: string; capitulo: string; fechaInicio: string }
+
+// `origen`/`confianza` del amarre son propios de A4 ('similitud'|'rama'; 'alta'|'media'), distintos
+// del enum de capas del sembrado de insumos (SugerenciaPaquete['capa']) — de ahí que sean string
+// libre y no se reutilice ese tipo, aunque el criterio de "aceptar la propuesta = acierto" sí se
+// reutiliza (ver procedenciaDeAmarre en planFechas.ts).
+export type SugerenciaFrente = {
+  uniqueId: number
+  nombre: string
+  fechaInicio: string
+  origen: string
+  confianza: string
+  evidencia: string
+}
+
+/** Lo que envía `POST plan/amarrar` cuando el frente elegido coincide con la propuesta del motor. */
+export type ProcedenciaAmarre = { origen: string; confianza: string; evidencia: string; confirmado: true }
+
+export type AmarrePlan = {
+  uniqueId: number
+  frenteNombre: string
+  fechaAncla: string
+  origen: string
+  confianza: string | null
+  confirmadoHumano: boolean
+}
+
+export type PlanResultado = {
+  plan: FilaPlan[]
+  amarres: Record<number, AmarrePlan>
+}
+
 export const TIPOS_NEGOCIACION: { value: string; label: string }[] = [
   { value: 'a_todo_costo', label: 'A todo costo (Sum. + Inst.)' },
   { value: 'suministro', label: 'Suministro' },
