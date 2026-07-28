@@ -633,6 +633,21 @@ $assert(($porIdH[$paqEstructura]['responsableHuerfano'] ?? null) === true,
 // Restaurar la membresía para no dejar el estado sucio a los bloques siguientes.
 $db->query('INSERT IGNORE INTO project_members (project_id, user_id, role) VALUES (?, ?, ?)', [$P, $uid, 'U']);
 
+// Huérfano por cuenta desactivada: seguir siendo miembro no basta si `general_usuarios.activo = 0`
+// — es la otra mitad de la condición que usa `plan()` (`(int) $r['responsable_activo'] !== 1`), la
+// que `responsable_miembro === null` por sí sola no puede detectar. Sin este caso, dar de baja una
+// cuenta sin sacarla del proyecto dejaría un paquete con responsable inactivo sin que nada lo señale.
+$db->query('UPDATE general_usuarios SET activo = 0 WHERE id = ?', [$uid]);
+$planInactivo = $svc->plan($P);
+$porIdInactivo = [];
+foreach ($planInactivo as $f) { $porIdInactivo[$f['paqueteId']] = $f; }
+$assert(($porIdInactivo[$paqEstructura]['responsableHuerfano'] ?? null) === true,
+    'Responsable huérfano: un miembro con activo = 0 también queda marcado como huérfano.');
+$assert(($porIdInactivo[$paqEstructura]['responsableNombre'] ?? '') !== '',
+    'Responsable huérfano: su nombre se sigue viendo aunque la cuenta esté desactivada.');
+// Se restaura para no dejar el fixture a medias: el resto del archivo asume cuentas activas.
+$db->query('UPDATE general_usuarios SET activo = 1 WHERE id = ?', [$uid]);
+
 // Sin asignar es un estado válido, no un error.
 $db->query('UPDATE pdc_plan_paquete SET responsable_user_id = NULL WHERE project_id = ? AND paquete_id = ?',
     [$P, $paqEstructura]);
