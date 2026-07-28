@@ -69,10 +69,55 @@
       ]
     }
   ],
+  "hues": [
+    {
+      "id": "neutral",
+      "label": "Silencio",
+      "tint": "--ds-state-tint-neutral-pdc"
+    },
+    {
+      "id": "teal",
+      "label": "Contexto",
+      "tint": "--ds-state-tint-teal-2"
+    },
+    {
+      "id": "blue",
+      "label": "En marcha",
+      "tint": "--ds-state-tint-blue-pdc"
+    },
+    {
+      "id": "violet",
+      "label": "Sin datos suficientes",
+      "tint": "--ds-state-tint-violet-pdc"
+    },
+    {
+      "id": "green",
+      "label": "Controlado",
+      "tint": "--ds-state-tint-green-2"
+    },
+    {
+      "id": "amber",
+      "label": "Por resolver",
+      "tint": "--ds-state-tint-amber-2"
+    },
+    {
+      "id": "orange",
+      "label": "Fuera de plazo",
+      "tint": "--ds-state-tint-orange-pdc"
+    },
+    {
+      "id": "red",
+      "label": "Bloqueado o vencido",
+      "tint": "--ds-state-tint-red-1"
+    }
+  ],
   "translationRules": [
-    "El texto del módulo conserva su nombre de dominio; el color se asigna por este nivel compartido.",
-    "Urgencia now siempre usa critical aunque el nombre del estado cambie.",
-    "Un estado informativo o sin datos nunca usa warning o critical por ausencia de información.",
+    "El texto del modulo conserva su nombre de dominio; la prioridad de accion se asigna por el nivel compartido.",
+    "El nivel y el matiz son ejes distintos: el nivel dice que hacer y cuando, el matiz dice cual estado es. El nivel se pinta en el acento y el matiz en el fondo.",
+    "Urgencia now siempre usa critical en el acento aunque el nombre del estado -o su matiz- cambie.",
+    "Un estado que no declara matiz usa el token de su nivel, asi que anadir el eje no altera a quien no lo use.",
+    "Dos estados del mismo nivel pueden llevar matices distintos; es lo que permite distinguirlos sin cambiarles la prioridad.",
+    "Un estado informativo o sin datos nunca usa warning o critical por ausencia de informacion.",
     "El significado nunca depende solo del color: cada estado muestra texto completo y, cuando aplica, icono o aria-label."
   ],
   "moduleMappings": [
@@ -80,28 +125,54 @@
       "module": "programacion-semanal",
       "states": [
         {
-          "label": "A tiempo",
-          "level": "healthy"
-        },
-        {
-          "label": "Por Comprometer",
-          "level": "attention"
-        },
-        {
-          "label": "Pendiente de aprobación del responsable",
-          "level": "attention"
+          "label": "RC con restricciones",
+          "level": "urgent",
+          "hue": "red"
         },
         {
           "label": "Ejecución con restricciones",
-          "level": "urgent"
+          "level": "urgent",
+          "hue": "amber"
         },
         {
-          "label": "Bloqueado",
-          "level": "urgent"
+          "label": "Condiciones Pendientes",
+          "level": "attention",
+          "hue": "amber"
         },
         {
-          "label": "Sin datos",
-          "level": "neutral"
+          "label": "Por Comprometer",
+          "level": "attention",
+          "hue": "amber"
+        },
+        {
+          "label": "Lista para Confirmar",
+          "level": "healthy",
+          "hue": "green"
+        },
+        {
+          "label": "Incumplida (RC)",
+          "level": "urgent",
+          "hue": "red"
+        },
+        {
+          "label": "Incumplida",
+          "level": "attention",
+          "hue": "amber"
+        },
+        {
+          "label": "Sin Calificar",
+          "level": "attention",
+          "hue": "amber"
+        },
+        {
+          "label": "Cumplida Control",
+          "level": "healthy",
+          "hue": "green"
+        },
+        {
+          "label": "Trabajo No Planificado",
+          "level": "neutral",
+          "hue": "teal"
         }
       ]
     },
@@ -143,35 +214,43 @@
       "states": [
         {
           "label": "RC inicio vencido",
-          "level": "urgent"
+          "level": "urgent",
+          "hue": "red"
         },
         {
           "label": "Inicio vencido",
-          "level": "urgent"
+          "level": "urgent",
+          "hue": "red"
         },
         {
           "label": "Inicio por Habilitar",
-          "level": "attention"
+          "level": "attention",
+          "hue": "amber"
         },
         {
           "label": "Alistamiento Urgente",
-          "level": "urgent"
+          "level": "urgent",
+          "hue": "amber"
         },
         {
           "label": "Alistamiento en Riesgo",
-          "level": "attention"
+          "level": "attention",
+          "hue": "amber"
         },
         {
           "label": "Alistamiento Pendiente",
-          "level": "attention"
+          "level": "attention",
+          "hue": "green"
         },
         {
           "label": "En Ejecución Pendiente",
-          "level": "attention"
+          "level": "attention",
+          "hue": "red"
         },
         {
           "label": "Listo para Comprometer",
-          "level": "healthy"
+          "level": "healthy",
+          "hue": "teal"
         }
       ]
     },
@@ -214,27 +293,38 @@
       "states": [
         {
           "label": "Información pendiente",
-          "level": "attention"
+          "level": "attention",
+          "hue": "violet"
+        },
+        {
+          "label": "Inicio de contratación vencido",
+          "level": "urgent",
+          "hue": "red"
         },
         {
           "label": "Contratación atrasada",
-          "level": "urgent"
-        },
-        {
-          "label": "Contratación pendiente de inicio",
-          "level": "attention"
-        },
-        {
-          "label": "Contratación en curso",
-          "level": "healthy"
+          "level": "urgent",
+          "hue": "orange"
         },
         {
           "label": "Contratación cerrada tarde",
-          "level": "attention"
+          "level": "attention",
+          "hue": "amber"
         },
         {
           "label": "Contratación cerrada a tiempo",
-          "level": "healthy"
+          "level": "healthy",
+          "hue": "green"
+        },
+        {
+          "label": "Contratación en curso",
+          "level": "healthy",
+          "hue": "blue"
+        },
+        {
+          "label": "Contratación pendiente de inicio",
+          "level": "attention",
+          "hue": "neutral"
         }
       ]
     },

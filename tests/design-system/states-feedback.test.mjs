@@ -65,16 +65,84 @@ test('programación intermedia exposes its eight real states with action priorit
   const semantics = await readJson('state-semantics.json');
   const view = await readFile('views/design-system/families/states-feedback.php', 'utf8');
   const intermediate = semantics.moduleMappings.find(({ module }) => module === 'programacion-intermedia');
+  // Cuatro de estos ocho usan una familia de matiz distinta a la que dicta su
+  // nivel. No es una contradiccion: el nivel es prioridad de accion y el matiz
+  // es identidad, y son canales distintos. Declararlo aqui convierte lo que
+  // parecia una divergencia silenciosa en una eleccion explicita.
   assert.deepEqual(intermediate.states, [
-    { label: 'RC inicio vencido', level: 'urgent' },
-    { label: 'Inicio vencido', level: 'urgent' },
-    { label: 'Inicio por Habilitar', level: 'attention' },
-    { label: 'Alistamiento Urgente', level: 'urgent' },
-    { label: 'Alistamiento en Riesgo', level: 'attention' },
-    { label: 'Alistamiento Pendiente', level: 'attention' },
-    { label: 'En Ejecución Pendiente', level: 'attention' },
-    { label: 'Listo para Comprometer', level: 'healthy' },
+    { label: 'RC inicio vencido', level: 'urgent', hue: 'red' },
+    { label: 'Inicio vencido', level: 'urgent', hue: 'red' },
+    { label: 'Inicio por Habilitar', level: 'attention', hue: 'amber' },
+    { label: 'Alistamiento Urgente', level: 'urgent', hue: 'amber' },
+    { label: 'Alistamiento en Riesgo', level: 'attention', hue: 'amber' },
+    { label: 'Alistamiento Pendiente', level: 'attention', hue: 'green' },
+    { label: 'En Ejecución Pendiente', level: 'attention', hue: 'red' },
+    { label: 'Listo para Comprometer', level: 'healthy', hue: 'teal' },
   ]);
   assert.match(view, /data-state-module="programacion-intermedia"/);
   assert.match(view, /Programación Intermedia · 8 estados/);
+});
+
+test('el contrato declara matiz e identidad como un eje aparte del nivel', async () => {
+  const semantics = await readJson('state-semantics.json');
+  // Ocho matices para cuatro niveles. Hacen falta los dos ejes porque un solo
+  // canal no puede decirlo todo: en /pdc, `Informacion pendiente` (violeta) y
+  // `Contratacion cerrada tarde` (ambar) son ambos `attention`, y
+  // `Inicio de contratacion vencido` (rojo) y `Contratacion atrasada` (naranja)
+  // son ambos `urgent`.
+  assert.deepEqual(
+    semantics.hues.map(({ id }) => id).sort(),
+    ['amber', 'blue', 'green', 'neutral', 'orange', 'red', 'teal', 'violet'],
+  );
+  // El matiz por defecto de cada nivel sigue siendo su token: un estado que no
+  // declare `hue` se comporta exactamente como antes de existir este eje.
+  const defaults = Object.fromEntries(semantics.levels.map(({ id, token }) => [id, token]));
+  assert.deepEqual(defaults, {
+    neutral: 'info', healthy: 'success', attention: 'warning', urgent: 'critical',
+  });
+  // Todo matiz declarado por un modulo tiene que existir en el catalogo.
+  const known = new Set(semantics.hues.map(({ id }) => id));
+  const unknown = semantics.moduleMappings.flatMap(({ module, states }) => states
+    .filter(({ hue }) => hue !== undefined && !known.has(hue))
+    .map(({ label, hue }) => `${module}/${label}: ${hue}`));
+  assert.deepEqual(unknown, []);
+});
+
+test('pdc declara los siete estados que su leyenda pinta', async () => {
+  const semantics = await readJson('state-semantics.json');
+  const pdc = semantics.moduleMappings.find(({ module }) => module === 'pdc');
+  // El contrato declaraba seis y la vista renderiza siete: faltaba
+  // `Inicio de contratacion vencido`, que el JSON habia fundido con
+  // `Contratacion atrasada` en un unico `urgent`. La UI lleva anios mostrando
+  // los dos filtros por separado, asi que el que estaba mal era el JSON.
+  assert.deepEqual(pdc.states, [
+    { label: 'Información pendiente', level: 'attention', hue: 'violet' },
+    { label: 'Inicio de contratación vencido', level: 'urgent', hue: 'red' },
+    { label: 'Contratación atrasada', level: 'urgent', hue: 'orange' },
+    { label: 'Contratación cerrada tarde', level: 'attention', hue: 'amber' },
+    { label: 'Contratación cerrada a tiempo', level: 'healthy', hue: 'green' },
+    { label: 'Contratación en curso', level: 'healthy', hue: 'blue' },
+    { label: 'Contratación pendiente de inicio', level: 'attention', hue: 'neutral' },
+  ]);
+});
+
+test('programación semanal declara las etiquetas de sus dos fases', async () => {
+  const semantics = await readJson('state-semantics.json');
+  const weekly = semantics.moduleMappings.find(({ module }) => module === 'programacion-semanal');
+  // El mapping anterior no estaba incompleto sino obsoleto: declaraba seis
+  // etiquetas de las que solo dos existian en la UI. Las reales viven en
+  // WEEKLY_ALERT_MODEL (public/js/modules/programacion_semanal/hot.js) y son
+  // diez, cinco por cada fase del modulo.
+  assert.deepEqual(weekly.states, [
+    { label: 'RC con restricciones', level: 'urgent', hue: 'red' },
+    { label: 'Ejecución con restricciones', level: 'urgent', hue: 'amber' },
+    { label: 'Condiciones Pendientes', level: 'attention', hue: 'amber' },
+    { label: 'Por Comprometer', level: 'attention', hue: 'amber' },
+    { label: 'Lista para Confirmar', level: 'healthy', hue: 'green' },
+    { label: 'Incumplida (RC)', level: 'urgent', hue: 'red' },
+    { label: 'Incumplida', level: 'attention', hue: 'amber' },
+    { label: 'Sin Calificar', level: 'attention', hue: 'amber' },
+    { label: 'Cumplida Control', level: 'healthy', hue: 'green' },
+    { label: 'Trabajo No Planificado', level: 'neutral', hue: 'teal' },
+  ]);
 });

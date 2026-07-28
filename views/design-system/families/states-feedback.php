@@ -37,6 +37,10 @@ $levelsById = [];
 foreach ($stateSemantics['levels'] as $level) {
     $levelsById[$level['id']] = $level;
 }
+$huesById = [];
+foreach ($stateSemantics['hues'] as $hue) {
+    $huesById[$hue['id']] = $hue;
+}
 $intermediateStates = [];
 foreach ($stateSemantics['moduleMappings'] as $mapping) {
     if ($mapping['module'] === 'programacion-intermedia') {
@@ -54,9 +58,30 @@ foreach ($stateSemantics['moduleMappings'] as $mapping) {
     <div class="ds-state-module__grid">
         <?php foreach ($intermediateStates as $state): ?>
             <?php $level = $levelsById[$state['level']]; ?>
-            <article class="ds-state-module__state" data-aia-severity="<?= htmlspecialchars($level['severity'], ENT_QUOTES, 'UTF-8') ?>" data-aia-urgency="<?= htmlspecialchars($level['urgency'], ENT_QUOTES, 'UTF-8') ?>">
+            <article class="ds-state-module__state" data-aia-severity="<?= htmlspecialchars($level['severity'], ENT_QUOTES, 'UTF-8') ?>" data-aia-urgency="<?= htmlspecialchars($level['urgency'], ENT_QUOTES, 'UTF-8') ?>"<?= isset($state['hue']) ? ' data-aia-hue="' . htmlspecialchars($state['hue'], ENT_QUOTES, 'UTF-8') . '"' : '' ?>>
                 <span class="aia-chip aia-chip--<?= htmlspecialchars($level['token'], ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($state['label'], ENT_QUOTES, 'UTF-8') ?></span>
                 <small><?= htmlspecialchars($level['action'], ENT_QUOTES, 'UTF-8') ?></small>
+                <?php if (isset($state['hue'])): ?>
+                    <small class="ds-state-module__hue">Matiz <?= htmlspecialchars($huesById[$state['hue']]['label'] ?? $state['hue'], ENT_QUOTES, 'UTF-8') ?></small>
+                <?php endif; ?>
+            </article>
+        <?php endforeach; ?>
+    </div>
+</section>
+<section class="ds-state-hues" data-state-hues aria-labelledby="state-hues-title">
+    <h4 id="state-hues-title">Matiz e identidad</h4>
+    <p class="aia-helper">
+        El nivel dice qué hacer y cuándo; el matiz dice cuál estado es. Son ejes distintos porque uno
+        solo no alcanza: en Compras, «Información pendiente» y «Contratación cerrada tarde» comparten
+        nivel <strong>Atención</strong>, y «Inicio de contratación vencido» y «Contratación atrasada»
+        comparten <strong>Acción inmediata</strong>. Un estado que no declara matiz usa el de su nivel.
+    </p>
+    <div class="ds-state-hues__grid">
+        <?php foreach ($stateSemantics['hues'] as $hue): ?>
+            <article class="ds-state-hues__hue" data-aia-hue="<?= htmlspecialchars($hue['id'], ENT_QUOTES, 'UTF-8') ?>">
+                <span class="ds-state-hues__swatch" style="background: var(<?= htmlspecialchars($hue['tint'], ENT_QUOTES, 'UTF-8') ?>)" aria-hidden="true"></span>
+                <strong><?= htmlspecialchars($hue['label'], ENT_QUOTES, 'UTF-8') ?></strong>
+                <small><?= htmlspecialchars($hue['id'], ENT_QUOTES, 'UTF-8') ?></small>
             </article>
         <?php endforeach; ?>
     </div>
