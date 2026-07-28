@@ -117,10 +117,21 @@ class PlanComprasPlanController
             return;
         }
         $responsable = is_string($body['responsable'] ?? null) ? mb_substr($body['responsable'], 0, 100) : '';
-        $this->db->query(
+        $stmt = $this->db->query(
             'UPDATE pdc_plan_paquete SET responsable = ? WHERE project_id = ? AND paquete_id = ?',
             [$responsable, $projectId, (int) $paqueteId],
         );
+
+        // Validar que el paquete existe en el plan calculado.
+        if ($stmt->rowCount() === 0) {
+            $this->fail(
+                'PAQUETE_SIN_PLAN',
+                'Este paquete todavía no tiene plan de compras calculado. Calcula el plan antes de asignar responsable.',
+                422
+            );
+            return;
+        }
+
         $this->ok(['ok' => true]);
     }
 
