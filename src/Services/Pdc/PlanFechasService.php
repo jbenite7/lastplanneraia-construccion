@@ -311,4 +311,79 @@ class PlanFechasService
 
         return $out;
     }
+
+    /**
+     * Amarra un paquete a un frente del cronograma.
+     *
+     * Guarda la fecha que el frente tenía en este momento: es lo que permite detectar más adelante
+     * que la obra se reprogramó y el plan quedó viejo. La procedencia funciona como en los insumos:
+     * aceptar la propuesta conserva la capa que la produjo (acierto), elegir a mano es «humano».
+     */
+    public function amarrar(int $projectId, int $paqueteId, int $uniqueId, string $usuario, array $procedencia = []): array
+    {
+        $frente = null;
+        foreach ($this->frentesDisponibles($projectId) as $f) {
+            if ($f['uniqueId'] === $uniqueId) {
+                $frente = $f;
+                break;
+            }
+        }
+        if ($frente === null) {
+            return ['ok' => false, 'code' => 'FRENTE_INVALIDO'];
+        }
+        $paquete = $this->db->query(
+            'SELECT id FROM general_paquetes_contratacion WHERE id = ? AND activo = 1',
+            [$paqueteId],
+        )->fetch(\PDO::FETCH_ASSOC);
+        if ($paquete === false) {
+            return ['ok' => false, 'code' => 'PAQUETE_INVALIDO'];
+        }
+
+        $origen = in_array($procedencia['origen'] ?? '', ['similitud', 'rama'], true) ? $procedencia['origen'] : 'humano';
+        $delMotor = $origen !== 'humano';
+        $semana = (int) $this->db->query('SELECT MAX(Semana) FROM semanas_activas WHERE project_id = ?', [$projectId])->fetchColumn();
+
+        $this->db->query(
+            'INSERT INTO pdc_paquete_frente
+                (project_id, paquete_id, unique_id, frente_nombre, fecha_ancla, semana_origen,
+                 origen, confianza, evidencia, confirmado_humano, asignado_por, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+             ON DUPLICATE KEY UPDATE unique_id = VALUES(unique_id), frente_nombre = VALUES(frente_nombre),
+                fecha_ancla = VALUES(fecha_ancla), semana_origen = VALUES(semana_origen),
+                origen = VALUES(origen), confianza = VALUES(confianza), evidencia = VALUES(evidencia),
+                confirmado_humano = VALUES(confirmado_humano), asignado_por = VALUES(asignado_por),
+                updated_at = NOW()',
+            [
+                $projectId, $paqueteId, $uniqueId, $frente['nombre'], $frente['fechaInicio'], $semana,
+                $origen,
+                $delMotor && in_array($procedencia['confianza'] ?? '', ['alta', 'media', 'baja'], true) ? $procedencia['confianza'] : null,
+                $delMotor ? mb_substr((string) ($procedencia['evidencia'] ?? ''), 0, 500) : '',
+                (!$delMotor || ($procedencia['confirmado'] ?? false) === true) ? 1 : 0,
+                $usuario,
+            ],
+        );
+        return ['ok' => true];
+    }
+
+    /** Amarres vigentes del proyecto, indexados por paquete. */
+    public function amarres(int $projectId): array
+    {
+        $rows = $this->db->query(
+            'SELECT paquete_id, unique_id, frente_nombre, fecha_ancla, origen, confianza, confirmado_humano
+             FROM pdc_paquete_frente WHERE project_id = ?',
+            [$projectId],
+        )->fetchAll(\PDO::FETCH_ASSOC);
+        $out = [];
+        foreach ($rows as $r) {
+            $out[(int) $r['paquete_id']] = [
+                'uniqueId' => (int) $r['unique_id'],
+                'frenteNombre' => (string) $r['frente_nombre'],
+                'fechaAncla' => (string) $r['fecha_ancla'],
+                'origen' => (string) $r['origen'],
+                'confianza' => $r['confianza'],
+                'confirmadoHumano' => (int) $r['confirmado_humano'] === 1,
+            ];
+        }
+        return $out;
+    }
 }

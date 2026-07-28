@@ -238,6 +238,30 @@ foreach ($sug as $pid => $s2) {
     $assert(in_array($s2['origen'], ['similitud', 'rama'], true), "Origen válido en el paquete $pid: {$s2['origen']}");
 }
 
+// --- amarrar ---
+$r = $svc->amarrar($P, $paqEstructura, 9001, 'test-a4', [
+    'origen' => 'similitud', 'confianza' => 'alta', 'evidencia' => 'Coincide el nombre.', 'confirmado' => true,
+]);
+$assert(($r['ok'] ?? false) === true, 'Amarrar un paquete a un frente existente.');
+$a = $svc->amarres($P);
+$assert(isset($a[$paqEstructura]), 'El amarre se puede leer de vuelta.');
+$assert($a[$paqEstructura]['fechaAncla'] === '2026-08-18', 'El amarre guarda la fecha que el frente tenía al amarrarlo.');
+$assert($a[$paqEstructura]['origen'] === 'similitud' && $a[$paqEstructura]['confirmadoHumano'] === true,
+    'Aceptar la propuesta conserva la capa Y queda confirmada.');
+
+// Reamarrar mueve, no duplica.
+$svc->amarrar($P, $paqEstructura, 9002, 'test-a4');
+$filas = (int) $db->query('SELECT COUNT(*) FROM pdc_paquete_frente WHERE project_id = ?', [$P])->fetchColumn();
+$assert($filas === 1, 'Un paquete, un frente: reamarrar no duplica filas.');
+$a2 = $svc->amarres($P);
+$assert($a2[$paqEstructura]['uniqueId'] === 9002 && $a2[$paqEstructura]['fechaAncla'] === '2026-05-25',
+    'Al reamarrar se actualiza también la fecha ancla.');
+$assert($a2[$paqEstructura]['origen'] === 'humano', 'Elegir a mano es una decisión humana.');
+
+// Un frente que no existe en la semana activa se rechaza.
+$mal = $svc->amarrar($P, $paqEstructura, 999999, 'test-a4');
+$assert(($mal['ok'] ?? true) === false && ($mal['code'] ?? '') === 'FRENTE_INVALIDO', 'Frente inexistente rechazado.');
+
 echo $failures === [] ? "=== OK ===\n" : '=== ' . count($failures) . " FAILED ===\n";
 $limpiar();
 exit($failures === [] ? 0 : 1);
