@@ -7,6 +7,15 @@ const FIXTURE = 'tests/browser/fixtures/pdc/presupuesto-mini.xlsx';
 
 test('visor: árbol expandible del presupuesto activo con insumos y totales', async ({ page }) => {
   test.skip(!project, 'Se requiere el proyecto de construcción (Da Porto)');
+  // DESTRUCTIVO (no es un spec de solo lectura): importa DOS veces el presupuesto de juguete en el
+  // proyecto real y deja la última como versión activa, desactivando el presupuesto de DAPORTO sin
+  // restaurarlo. Efecto observado: "Presupuesto" y "Paquetes" del proyecto real quedan vacíos y hay
+  // que borrar a mano las versiones de prueba y reactivar la real. Corre solo con la variable puesta:
+  //   PDC_E2E_DESTRUCTIVO=1 npx playwright test tests/browser/pdc-v2-visor.spec.mjs
+  test.skip(
+    process.env.PDC_E2E_DESTRUCTIVO !== '1',
+    'Test destructivo: reemplaza la versión activa del proyecto. Exporta PDC_E2E_DESTRUCTIVO=1 para correrlo.',
+  );
 
   await loginAndSelectProject(page, project);
   try {

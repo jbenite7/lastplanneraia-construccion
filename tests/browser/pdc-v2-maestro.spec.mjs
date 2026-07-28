@@ -7,6 +7,14 @@ const FIXTURE = 'tests/browser/fixtures/pdc/presupuesto-mini.xlsx';
 
 test('maestro: cold start masivo y re-import con auto-match', async ({ page }) => {
   test.skip(!project, 'Se requiere el proyecto de construcción (Da Porto)');
+  // DESTRUCTIVO: importa el presupuesto de juguete en el proyecto real y lo deja como versión activa
+  // (desactivando el de DAPORTO sin restaurarlo), y además crea insumos en el catálogo global desde
+  // ese fixture. Corre solo con la variable puesta:
+  //   PDC_E2E_DESTRUCTIVO=1 npx playwright test tests/browser/pdc-v2-maestro.spec.mjs
+  test.skip(
+    process.env.PDC_E2E_DESTRUCTIVO !== '1',
+    'Test destructivo: reemplaza la versión activa del proyecto. Exporta PDC_E2E_DESTRUCTIVO=1 para correrlo.',
+  );
 
   await loginAndSelectProject(page, project);
   try {

@@ -7,6 +7,14 @@ const FIXTURE = 'tests/browser/fixtures/pdc/presupuesto-mini.xlsx';
 
 test('importar presupuesto: preview, confirmación y versión activa', async ({ page }) => {
   test.skip(!project, 'Se requiere el proyecto de construcción (Da Porto)');
+  // DESTRUCTIVO: confirma la importación del presupuesto de juguete en el proyecto real, lo que crea
+  // una versión nueva y la deja activa, desactivando el presupuesto de DAPORTO sin restaurarlo.
+  // Corre solo con la variable puesta:
+  //   PDC_E2E_DESTRUCTIVO=1 npx playwright test tests/browser/pdc-v2-import.spec.mjs
+  test.skip(
+    process.env.PDC_E2E_DESTRUCTIVO !== '1',
+    'Test destructivo: reemplaza la versión activa del proyecto. Exporta PDC_E2E_DESTRUCTIVO=1 para correrlo.',
+  );
 
   await loginAndSelectProject(page, project);
   try {

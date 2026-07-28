@@ -7,6 +7,15 @@ const FIXTURE = 'tests/browser/fixtures/pdc/presupuesto-mini.xlsx';
 
 test('comparativo: dos versiones muestran resumen y ejes', async ({ page }) => {
   test.skip(!project, 'Se requiere el proyecto de construcción (Da Porto)');
+  // DESTRUCTIVO (no es un spec de solo lectura): para tener ≥2 versiones importa DOS veces el
+  // presupuesto de juguete en el proyecto real y deja la última como activa, desactivando el
+  // presupuesto de DAPORTO sin restaurarlo. Efecto observado: "Presupuesto" y "Paquetes" del
+  // proyecto real quedan vacíos. Corre solo con la variable puesta:
+  //   PDC_E2E_DESTRUCTIVO=1 npx playwright test tests/browser/pdc-v2-comparar.spec.mjs
+  test.skip(
+    process.env.PDC_E2E_DESTRUCTIVO !== '1',
+    'Test destructivo: reemplaza la versión activa del proyecto. Exporta PDC_E2E_DESTRUCTIVO=1 para correrlo.',
+  );
 
   await loginAndSelectProject(page, project);
   try {
