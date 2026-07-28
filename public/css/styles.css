@@ -4378,17 +4378,14 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
    ¡¡ESTE BLOQUE NO DEBE QUEDAR DENTRO DE NINGÚN @LAYER!!
    ======================================== */
 
-/* 1. Navbar Z-Index Rescue (Previene que Bootstrap modal tape el Navbar Mobile Drawer) */
-.navbar-collapse {
-  z-index: 99999 !important;
-}
+/* F1 5k: BORRADAS dos reglas muertas. `.navbar-collapse` (rescate de z-index de
+   la navbar que F0 desmantelo) da CERO elementos en el DOM en las 14 rutas
+   medidas a 1180x820 en dark; nav_drawer.js busca `.navbar-collapse-drawer`,
+   otra clase, y tampoco hay markup que la emita. `.modal-backdrop { z-index }`
+   repetia el valor que Bootstrap ya declara desde @layer vendor: medido con un
+   modal real abierto en /pdc, el computado no cambia al retirarla. */
 
-/* 2. Modal Backdrop Fixes */
-.modal-backdrop {
-  z-index: 1040 !important;
-}
-
-/* 3. Global Action Button Resize Rescue 
+/* 3. Global Action Button Resize Rescue
    Solución al error "botones aplastados" de 21px tras aislar @layer theme/components
    Fuerza un alto mínimo a prueba de balas contra Bootstrap CSS CDN. */
 .btn-sm, .btn-pdc-modern {
