@@ -11,6 +11,15 @@ namespace App\Services\Pdc;
  */
 class PlanFechasService
 {
+    /**
+     * Similitud mínima de nombre para proponer un frente (Jaccard sobre palabras).
+     * Un paquete con 2 palabras de ruido y 1 de coincidencia con un frente de una sola palabra
+     * («TEST A4 ESTRUCTURA» vs. «ESTRUCTURA») da Jaccard = 1/3 ≈ 0,3333: el umbral tiene que
+     * quedar por debajo de ese valor o ese caso —representativo de paquetes con prefijos que el
+     * strip de tipo de negociación no cubre— nunca propondría nada.
+     */
+    private const SIMILITUD_MINIMA = 0.33;
+
     public function __construct(private readonly \Database $db)
     {
     }
@@ -57,5 +66,230 @@ class PlanFechasService
                 'fechaInicio' => (string) $r['Fecha_Inicio'],
             ];
         }, $rows);
+    }
+
+    /** Palabras normalizadas de un nombre, sin el prefijo de tipo de negociación (no dice el oficio). */
+    private static function tokens(string $s): array
+    {
+        $limpio = preg_replace('/^(Sum \+ Inst|Suministro|M\. de O)\s*/u', '', $s);
+        return array_values(array_filter(explode(' ', MaestroInsumosService::normalizar((string) $limpio))));
+    }
+
+    /**
+     * Mejor frente para un conjunto de palabras (Jaccard sobre `tok`). Entre empates gana el que
+     * arranca antes: es el que fija la fecha límite del contrato. Null si nada llega al umbral.
+     */
+    private function mejorFrente(array $tp, array $frentesTok): ?array
+    {
+        $mejor = null;
+        $mejorPunt = 0.0;
+        foreach ($frentesTok as $f) {
+            $comunes = count(array_intersect($tp, $f['tok']));
+            if ($comunes === 0) {
+                continue;
+            }
+            $punt = $comunes / max(1, count(array_unique(array_merge($tp, $f['tok']))));
+            if ($punt > $mejorPunt || ($punt === $mejorPunt && $mejor !== null && $f['fechaInicio'] < $mejor['fechaInicio'])) {
+                $mejor = $f;
+                $mejorPunt = $punt;
+            }
+        }
+        if ($mejor === null || $mejorPunt < self::SIMILITUD_MINIMA) {
+            return null;
+        }
+        return ['frente' => $mejor, 'punt' => $mejorPunt];
+    }
+
+    /** Id de la versión activa del proyecto (o de la indicada), o null si no existe. */
+    private function versionActivaId(int $projectId, ?int $versionId): ?int
+    {
+        $sql = $versionId === null
+            ? 'SELECT id FROM pdc_presupuesto_versiones WHERE project_id = ? AND activa = 1'
+            : 'SELECT id FROM pdc_presupuesto_versiones WHERE project_id = ? AND id = ?';
+        $params = $versionId === null ? [$projectId] : [$projectId, $versionId];
+        $row = $this->db->query($sql, $params)->fetch(\PDO::FETCH_ASSOC);
+        return $row === false ? null : (int) $row['id'];
+    }
+
+    /**
+     * Subcapítulos donde cada paquete (de la lista dada) tiene insumos, en esta versión del
+     * presupuesto. Recorre `pdc_insumo_paquete` → `pdc_presupuesto_apu_insumos` → sube por
+     * `codigo_padre` hasta el primer `subcapitulo`: el mismo recorrido de
+     * `PaquetesService::actividadDominantePorInsumo()`, duplicado aquí (sin llamar ni tocar ese
+     * archivo) porque este servicio no depende de `PaquetesService`.
+     *
+     * @param list<int> $idsPaquetes
+     * @return array<int, list<string>> paqueteId => nombres de subcapítulo (sin duplicados)
+     */
+    private function subcapitulosDePaquete(int $projectId, int $versionId, array $idsPaquetes): array
+    {
+        if ($idsPaquetes === []) {
+            return [];
+        }
+        $marcadores = implode(',', array_fill(0, count($idsPaquetes), '?'));
+        $asignaciones = $this->db->query(
+            "SELECT paquete_id, descripcion_norm, unidad FROM pdc_insumo_paquete
+             WHERE project_id = ? AND paquete_id IN ({$marcadores})",
+            array_merge([$projectId], $idsPaquetes),
+        )->fetchAll(\PDO::FETCH_ASSOC);
+        if ($asignaciones === []) {
+            return [];
+        }
+
+        // Un solo SELECT de los ítems y de los insumos del APU: la rama se arma en memoria en vez
+        // de una consulta por insumo (mismo criterio que actividadDominantePorInsumo()).
+        $items = $this->db->query(
+            'SELECT id, codigo, codigo_padre, tipo_fila, descripcion FROM pdc_presupuesto_items
+             WHERE project_id = ? AND version_id = ?',
+            [$projectId, $versionId],
+        )->fetchAll(\PDO::FETCH_ASSOC);
+        $porId = [];
+        $porCodigo = [];
+        foreach ($items as $it) {
+            $porId[(int) $it['id']] = $it;
+            $porCodigo[(string) $it['codigo']] = $it;
+        }
+
+        $apu = $this->db->query(
+            'SELECT item_id, descripcion, unidad FROM pdc_presupuesto_apu_insumos
+             WHERE project_id = ? AND version_id = ?',
+            [$projectId, $versionId],
+        )->fetchAll(\PDO::FETCH_ASSOC);
+        // La clave (descripción normalizada + unidad) es la misma que usa `pdc_insumo_paquete`,
+        // que ya la guarda normalizada; aquí se normaliza la del APU para poder cruzarlas.
+        $itemPorClave = [];
+        foreach ($apu as $a) {
+            $clave = MaestroInsumosService::normalizar((string) $a['descripcion'])
+                . '@@' . mb_strtoupper(trim((string) $a['unidad']));
+            if (!isset($itemPorClave[$clave])) {
+                $itemPorClave[$clave] = (int) $a['item_id'];
+            }
+        }
+
+        $subcapPorPaquete = [];
+        foreach ($asignaciones as $asig) {
+            $clave = (string) $asig['descripcion_norm'] . '@@' . mb_strtoupper(trim((string) $asig['unidad']));
+            $itemId = $itemPorClave[$clave] ?? null;
+            if ($itemId === null) {
+                continue; // el insumo asignado no aparece en esta versión del presupuesto
+            }
+            $actual = $porId[$itemId] ?? null;
+            $sub = null;
+            $guard = 0;
+            while ($actual !== null && $guard++ < 12) {
+                if ($actual['tipo_fila'] === 'subcapitulo') {
+                    $sub = (string) $actual['descripcion'];
+                    break;
+                }
+                if ($actual['tipo_fila'] === 'capitulo') {
+                    break; // se llegó al capítulo sin pasar por un subcapítulo
+                }
+                $padre = $actual['codigo_padre'];
+                $actual = $padre !== null ? ($porCodigo[(string) $padre] ?? null) : null;
+            }
+            if ($sub !== null) {
+                $subcapPorPaquete[(int) $asig['paquete_id']][$sub] = true;
+            }
+        }
+        return array_map('array_keys', $subcapPorPaquete);
+    }
+
+    /**
+     * Propone un frente para cada paquete activo del proyecto.
+     *
+     * Señal 1 — el nombre: «Sum + Inst ESTRUCTURA» contra el frente «ESTRUCTURA». Se descarta el
+     * prefijo de tipo de negociación, que no dice nada del oficio.
+     * Señal 2 — la rama: los subcapítulos donde el paquete tiene insumos, contra el nombre del
+     * frente. Entre varios candidatos gana el que arranca antes: es el que marca la fecha límite.
+     */
+    public function sugerirFrentes(int $projectId, ?int $versionId = null): array
+    {
+        $frentes = $this->frentesDisponibles($projectId);
+        if ($frentes === []) {
+            return [];
+        }
+        $paquetes = $this->db->query(
+            'SELECT id, nombre FROM general_paquetes_contratacion WHERE activo = 1',
+        )->fetchAll(\PDO::FETCH_ASSOC);
+
+        $frentesTok = [];
+        foreach ($frentes as $f) {
+            $frentesTok[] = $f + ['tok' => self::tokens($f['nombre'])];
+        }
+
+        $out = [];
+        foreach ($paquetes as $p) {
+            $tp = self::tokens((string) $p['nombre']);
+            if ($tp === []) {
+                continue;
+            }
+            $m = $this->mejorFrente($tp, $frentesTok);
+            if ($m === null) {
+                continue;
+            }
+            $mejor = $m['frente'];
+            $out[(int) $p['id']] = [
+                'uniqueId' => $mejor['uniqueId'],
+                'nombre' => $mejor['nombre'],
+                'fechaInicio' => $mejor['fechaInicio'],
+                'origen' => 'similitud',
+                'confianza' => $m['punt'] >= 0.7 ? 'alta' : 'media',
+                'evidencia' => sprintf(
+                    'El nombre del paquete coincide con el frente «%s» del cronograma (arranca %s).',
+                    $mejor['nombre'],
+                    $mejor['fechaInicio'],
+                ),
+            ];
+        }
+
+        // Señal 2: la rama, solo para los que el nombre no resolvió.
+        $sinMatch = array_values(array_diff(
+            array_map(static fn (array $p): int => (int) $p['id'], $paquetes),
+            array_keys($out),
+        ));
+        $vid = $this->versionActivaId($projectId, $versionId);
+        if ($sinMatch !== [] && $vid !== null) {
+            $subcapPorPaquete = $this->subcapitulosDePaquete($projectId, $vid, $sinMatch);
+            foreach ($sinMatch as $paqueteId) {
+                $subs = $subcapPorPaquete[$paqueteId] ?? [];
+                if ($subs === []) {
+                    continue; // sin insumos vinculados en esta versión: la señal no aplica
+                }
+                $mejorGlobal = null;
+                $mejorSub = null;
+                foreach ($subs as $sub) {
+                    $tp = self::tokens($sub);
+                    if ($tp === []) {
+                        continue;
+                    }
+                    $m = $this->mejorFrente($tp, $frentesTok);
+                    if ($m === null) {
+                        continue;
+                    }
+                    // Entre varios subcapítulos con frente candidato, gana el que arranca antes.
+                    if ($mejorGlobal === null || $m['frente']['fechaInicio'] < $mejorGlobal['frente']['fechaInicio']) {
+                        $mejorGlobal = $m;
+                        $mejorSub = $sub;
+                    }
+                }
+                if ($mejorGlobal === null) {
+                    continue;
+                }
+                $out[$paqueteId] = [
+                    'uniqueId' => $mejorGlobal['frente']['uniqueId'],
+                    'nombre' => $mejorGlobal['frente']['nombre'],
+                    'fechaInicio' => $mejorGlobal['frente']['fechaInicio'],
+                    'origen' => 'rama',
+                    'confianza' => 'media',
+                    'evidencia' => sprintf(
+                        'Sus insumos están en el subcapítulo «%s», que en el cronograma arranca el %s.',
+                        $mejorSub,
+                        $mejorGlobal['frente']['fechaInicio'],
+                    ),
+                ];
+            }
+        }
+
+        return $out;
     }
 }

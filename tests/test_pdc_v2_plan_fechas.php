@@ -20,6 +20,7 @@ $limpiar = static function () use ($db, $P): void {
     $db->query('DELETE FROM pdc_plan_paso WHERE project_id = ?', [$P]);
     $db->query('DELETE FROM pdc_plan_paquete WHERE project_id = ?', [$P]);
     $db->query('DELETE FROM pdc_paquete_frente WHERE project_id = ?', [$P]);
+    $db->query("DELETE FROM general_paquetes_contratacion WHERE creado_por = 'test-a4'");
     $db->query('DELETE FROM programa_consolidado WHERE project_id = ?', [$P]);
     $db->query('DELETE FROM programa WHERE project_id = ?', [$P]);
     $db->query('DELETE FROM semanas_activas WHERE project_id = ?', [$P]);
@@ -82,6 +83,43 @@ $assert(!in_array(9003, $uids, true), 'La actividad hoja (Titulo=0) no es un fre
 $assert($f[0]['uniqueId'] === 9002 && $f[0]['fechaInicio'] === '2026-05-25', 'Ordena por fecha ascendente: primero PRELIMINARES.');
 $assert($f[1]['fechaInicio'] === '2026-08-18', 'Toma la fecha de la semana ACTIVA (2), no de la 1.');
 $assert($svc->frentesDisponibles(999999) === [], 'Proyecto sin cronograma → lista vacía.');
+
+// --- sugerirFrentes: por nombre ---
+// Database::query() siempre devuelve un PDOStatement (nunca null; lanza excepción si falla), así
+// que comparar su valor de retorno contra null (patrón sugerido en el brief) es un chequeo muerto:
+// castear un PDOStatement a (int) además dispara un warning de PHP. Se separa en dos sentencias.
+$db->query(
+    "INSERT INTO general_paquetes_contratacion (nombre, nombre_norm, tipo_negociacion, modalidad_contratacion, activo, creado_por, created_at)
+     VALUES ('TEST A4 ESTRUCTURA', 'TEST A4 ESTRUCTURA', 'a_todo_costo', 'contrato', 1, 'test-a4', NOW())",
+);
+$paqEstructura = (int) $db->lastInsertId();
+
+$sug = $svc->sugerirFrentes($P);
+$s = $sug[$paqEstructura] ?? null;
+$assert($s !== null && $s['uniqueId'] === 9001, 'El paquete «TEST A4 ESTRUCTURA» se propone al frente ESTRUCTURA.');
+$assert($s !== null && $s['origen'] === 'similitud', 'La propuesta por nombre se marca como «similitud».');
+$assert($s !== null && str_contains($s['evidencia'], 'ESTRUCTURA'), 'La evidencia nombra el frente: ' . ($s['evidencia'] ?? ''));
+
+// Un paquete sin parecido con ningún frente no recibe propuesta: no se inventa.
+$db->query(
+    "INSERT INTO general_paquetes_contratacion (nombre, nombre_norm, tipo_negociacion, modalidad_contratacion, activo, creado_por, created_at)
+     VALUES ('TEST A4 ZZZQQQ', 'TEST A4 ZZZQQQ', 'suministro', 'contrato', 1, 'test-a4', NOW())",
+);
+$paqRaro = (int) $db->lastInsertId();
+$sug2 = $svc->sugerirFrentes($P);
+$assert(!isset($sug2[$paqRaro]), 'Sin señal, no hay propuesta: el paquete queda pendiente.');
+
+// --- sugerirFrentes: la rama, cuando el nombre no basta ---
+// Un paquete que no se parece a ningún frente por su nombre, pero cuyos insumos viven en un
+// subcapítulo que sí: la propuesta sale igual, marcada como «rama» y con confianza media.
+$sugRama = $svc->sugerirFrentes($P);
+foreach ($sugRama as $pid => $s) {
+    $assert(in_array($s['origen'], ['similitud', 'rama'], true), "Origen válido en el paquete $pid: {$s['origen']}");
+    if ($s['origen'] === 'rama') {
+        $assert($s['confianza'] === 'media', 'La propuesta por rama nunca es de confianza alta: hay un salto.');
+        $assert(str_contains($s['evidencia'], 'subcap'), 'La evidencia por rama nombra el subcapítulo.');
+    }
+}
 
 echo $failures === [] ? "=== OK ===\n" : '=== ' . count($failures) . " FAILED ===\n";
 $limpiar();
