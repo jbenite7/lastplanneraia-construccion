@@ -1472,26 +1472,6 @@ table.dataTable tbody tr:hover td {
 }
 .aia-tipo-hint strong { color: var(--ds-active-text-primary); }
 
-/* Inline edit variant: pop-out panel anchored in the cell */
-#dt_cliente .aia-tipo-toggle--inline {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.3rem;
-  min-width: 280px;
-  padding: 0.4rem;
-  background: #fafbfc;
-  border: 1px solid #e3e6ea;
-  border-radius: 0.4rem;
-}
-#dt_cliente .aia-tipo-toggle--inline .aia-tipo-pill {
-  padding: 0.35rem 0.5rem;
-  font-size: 0.8rem;
-}
-#dt_cliente .aia-tipo-toggle--inline .aia-tipo-pill__code {
-  font-size: 0.65rem;
-  padding: 0.05rem 0.3rem;
-}
-
 #modalNuevaActividad .select2-container {
   display: block;
   inline-size: 100% !important;
