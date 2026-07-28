@@ -1488,11 +1488,10 @@ table.dataTable tbody tr:hover td {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: #24313a;
 }
 
 #modalNuevaActividad .select2-container--default .select2-selection--single .select2-selection__placeholder {
-  color: #7a8790;
+  color: var(--ds-active-text-secondary);
 }
 
 #modalNuevaActividad .select2-container--default .select2-selection--single .select2-selection__arrow {
@@ -1505,12 +1504,10 @@ table.dataTable tbody tr:hover td {
   z-index: 1080;
 }
 
+/* Panel, borde, radio y recorte los pone design-system/adapters/select2.css.
+   La sombra queda aplazada: su geometria no tiene peldaño en la escalera --ds-shadow-*. */
 #modalNuevaActividad .select2-dropdown {
-  border: 1px solid rgba(104, 116, 125, 0.24);
-  border-radius: 0.8rem;
-  background: #fff;
   box-shadow: 0 14px 28px rgba(36, 49, 58, 0.14);
-  overflow: hidden;
 }
 
 #modalNuevaActividad .select2-dropdown--below {
@@ -1523,15 +1520,15 @@ table.dataTable tbody tr:hover td {
 
 #modalNuevaActividad .select2-search--dropdown {
   padding: 0.65rem;
-  background: #fff;
 }
 
+/* Sin borde propio: el del vendor, ya capado, da la frontera que WCAG 1.4.11 pide
+   y es la misma que ven /programacion-semanal, /contratos y /pdc. */
 #modalNuevaActividad .select2-search--dropdown .select2-search__field {
   inline-size: 100% !important;
   min-block-size: 2.5rem;
   margin: 0;
   padding: 0.55rem 0.75rem;
-  border: 1px solid rgba(104, 116, 125, 0.24);
   border-radius: 0.7rem;
   box-sizing: border-box;
 }
