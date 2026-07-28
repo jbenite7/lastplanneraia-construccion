@@ -189,6 +189,64 @@
     --ds-color-state-info-text: #006d66;
 
     /* ========================================
+     ESCALERA DE TINTES DE ESTADO (matiz x intensidad)
+     ========================================
+     Dos canales ortogonales, no uno:
+
+       - NIVEL (4, en docs/design-system/state-semantics.json): prioridad de
+         accion. Se pinta en el acento -borde o punto- y siempre es uno de
+         info/success/warning/critical.
+       - MATIZ (los de aqui): identidad del estado. Se pinta en el fondo.
+
+     Hacen falta los dos porque un solo canal no puede decir las dos cosas:
+     `missing` (violeta) y `completed-late` (ambar) son ambos `attention`, y
+     `critical` (rojo) y `delayed` (naranja) son ambos `urgent`. Con el matiz
+     separado del nivel, los tres `attention` de /pdc siguen distinguiendose
+     entre si y la regla del contrato -«urgencia now siempre usa critical»- se
+     cumple igual, porque vive en el acento.
+
+     La escalera NO se invento aqui: /programacion-intermedia y
+     /programa-general ya la usaban, con la misma formula y los mismos
+     porcentajes, escrita entera dos veces (siete de los ocho tintes de
+     Intermedia eran el mismo hex que los de General). Esto es promocion, no
+     rediseno: los valores son los que la aplicacion ya pintaba.
+
+     Los pasos van del 1 (mas intenso) al 6 (mas tenue) sobre una escala
+     compartida; los huecos son informativos -ninguna familia usa los seis-.
+     Guard del valor resuelto: tests/browser/state-tint-ladder.mjs. */
+    --ds-state-tint-red-1: color-mix(in srgb, var(--ds-color-state-critical-text) 48%, var(--ds-active-surface-raised) 52%);
+    --ds-state-tint-red-3: color-mix(in srgb, var(--ds-color-state-critical-text) 38%, var(--ds-active-surface-raised) 62%);
+    --ds-state-tint-red-6: color-mix(in srgb, var(--ds-color-state-critical-text) 26%, var(--ds-active-surface-raised) 74%);
+    --ds-state-tint-amber-1: color-mix(in srgb, var(--ds-color-state-warning-text) 48%, var(--ds-active-surface-raised) 52%);
+    --ds-state-tint-amber-2: color-mix(in srgb, var(--ds-color-state-warning-text) 42%, var(--ds-active-surface-raised) 58%);
+    --ds-state-tint-amber-4: color-mix(in srgb, var(--ds-color-state-warning-text) 36%, var(--ds-active-surface-raised) 64%);
+    --ds-state-tint-amber-5: color-mix(in srgb, var(--ds-color-state-warning-text) 30%, var(--ds-active-surface-raised) 70%);
+    --ds-state-tint-green-2: color-mix(in srgb, var(--ds-color-state-success-text) 42%, var(--ds-active-surface-raised) 58%);
+    --ds-state-tint-green-5: color-mix(in srgb, var(--ds-color-state-success-text) 30%, var(--ds-active-surface-raised) 70%);
+    --ds-state-tint-teal-2: color-mix(in srgb, var(--ds-color-state-info-text) 42%, var(--ds-active-surface-raised) 58%);
+
+    /* Superficies silenciosas: los estados que no compiten por atencion
+       (`Sin Datos`, `Terminada`). No llevan matiz a proposito. */
+    --ds-state-tint-neutral-quiet: color-mix(in srgb, var(--ds-active-surface-raised) 72%, var(--ds-active-bg-page) 28%);
+    --ds-state-tint-neutral-flat: var(--ds-active-surface);
+
+    /* Matices promovidos desde /pdc. Entran con su hex exacto, no con la
+       formula `color-mix` de arriba, por dos razones: son mas profundos y
+       saturados que cualquier paso de la escalera, y ya venian verificados en
+       contraste (8,88-10,99:1 sobre canvas oscuro) al tokenizarse a dark.
+       Violeta, naranja y azul solo existian en /pdc; con ellos el design system
+       pasa a tener las ocho familias que el producto usa de verdad.
+       Unificar su derivacion con la de los pasos numerados es trabajo aparte:
+       lo que se unifica aqui es el vocabulario. */
+    --ds-state-tint-violet-pdc: #33204a;
+    --ds-state-tint-red-pdc: #431414;
+    --ds-state-tint-orange-pdc: #452a0d;
+    --ds-state-tint-amber-pdc: #3a3a0f;
+    --ds-state-tint-green-pdc: #173d26;
+    --ds-state-tint-blue-pdc: #17334f;
+    --ds-state-tint-neutral-pdc: #2b2f2d;
+
+    /* ========================================
      ESTADOS DE PROGRAMACION (paleta compartida)
      ========================================
      La consumen cuatro superficies: /pdc (chips + filas), /programa-general y
