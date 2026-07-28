@@ -497,11 +497,15 @@ class PlanFechasService
 
             if ($reamarreInvalida) {
                 // El plan viejo quedó calculado contra un frente que ya no es el amarrado: se
-                // invalida entero (pasos primero, por la FK conceptual con la cabecera). El paquete
-                // cae a "amarrado, pendiente de calcular" — bloque que la SPA ya distingue de "sin
-                // frente" — hasta el próximo «Recalcular», que es un acto explícito de quien lo vea.
-                $this->db->query('DELETE FROM pdc_plan_paso WHERE project_id = ? AND paquete_id = ?', [$projectId, $paqueteId]);
-                $this->db->query('DELETE FROM pdc_plan_paquete WHERE project_id = ? AND paquete_id = ?', [$projectId, $paqueteId]);
+                // invalida entero. El paquete cae a "amarrado, pendiente de calcular" — bloque que
+                // la SPA ya distingue de "sin frente" — hasta el próximo «Recalcular», que es un
+                // acto explícito de quien lo vea.
+                //
+                // Se invalidan las FECHAS, no la fila: hasta la revisión de UX de julio de 2026
+                // esto era un `DELETE FROM pdc_plan_paquete` que se llevaba también al responsable,
+                // en silencio. Corregir un frente mal elegido no puede costar volver a repartir el
+                // trabajo (ver limpiarPlanCalculado()).
+                $this->limpiarPlanCalculado($projectId, $paqueteId);
             }
 
             $this->db->commit();
@@ -510,6 +514,82 @@ class PlanFechasService
             throw $t;
         }
         return ['ok' => true];
+    }
+
+    /**
+     * Deshace el amarre de un paquete: vuelve a «sin frente» y pierde sus fechas, pero NO su
+     * responsable.
+     *
+     * Las fechas se borran a propósito. Se calculan hacia atrás desde la fecha de la actividad del
+     * cronograma; sin frente no hay desde dónde calcularlas, y conservarlas dejaría en pantalla unas
+     * fechas huérfanas indistinguibles de las vigentes — justo las que la gente ya comunicó a un
+     * proveedor. El responsable, en cambio, es una decisión humana que no depende de ninguna fecha:
+     * quien iba a comprar ese paquete lo sigue haciendo, y volver a repartir el trabajo desde cero
+     * por haber corregido un frente mal elegido sería un castigo absurdo.
+     *
+     * La cabecera se conserva vacía SOLO si guarda un responsable: si no hay nada que conservar se
+     * borra entera, para que una fila sin fechas signifique siempre «este paquete tiene dueño y
+     * todavía no tiene plan» y no se acumulen cabeceras huecas.
+     *
+     * Desamarrar algo que no estaba amarrado es un no-op, no un error: el usuario quería que ese
+     * paquete quedara sin frente, y ya lo está.
+     *
+     * No recibe `$usuario` a diferencia de `amarrar()`: la fila que registraría quién lo hizo
+     * (`pdc_paquete_frente.asignado_por`) es justamente la que se borra, así que un parámetro con
+     * ese nombre prometería una auditoría que no existe. Cuando B1 añada un registro de cambios,
+     * ahí sí tendrá dónde escribirse.
+     *
+     * @return array{ok: bool, code?: string}
+     */
+    public function desamarrar(int $projectId, int $paqueteId): array
+    {
+        $this->db->beginTransaction();
+        try {
+            $this->limpiarPlanCalculado($projectId, $paqueteId);
+            $this->db->query(
+                'DELETE FROM pdc_paquete_frente WHERE project_id = ? AND paquete_id = ?',
+                [$projectId, $paqueteId],
+            );
+            $this->db->commit();
+        } catch (\Throwable $t) {
+            $this->db->rollBack();
+            throw $t;
+        }
+        return ['ok' => true];
+    }
+
+    /**
+     * Borra el plan calculado de un paquete (pasos y fechas) conservando a su responsable.
+     *
+     * Lo usan los dos caminos que invalidan un plan: desamarrar del todo, y reamarrar a un frente
+     * distinto. En ambos las fechas dejan de valer, pero quién compra el paquete no cambia.
+     *
+     * La cabecera se queda vacía solo si guarda un responsable; si no, se borra entera. Así una
+     * fila sin fechas significa siempre lo mismo —«tiene dueño, todavía no tiene plan»— y no se
+     * acumulan cabeceras huecas. `calculado_por` no se toca: registra quién calculó, y esto no es
+     * calcular.
+     *
+     * Asume una transacción abierta por quien llama.
+     */
+    private function limpiarPlanCalculado(int $projectId, int $paqueteId): void
+    {
+        $this->db->query(
+            'DELETE FROM pdc_plan_paso WHERE project_id = ? AND paquete_id = ?',
+            [$projectId, $paqueteId],
+        );
+        $this->db->query(
+            'UPDATE pdc_plan_paquete
+                SET unique_id = NULL, fecha_ancla = NULL, fecha_arranque = NULL,
+                    dias_totales = NULL, duracion_ref = NULL, duracion_provisional = 0,
+                    updated_at = NOW()
+              WHERE project_id = ? AND paquete_id = ?',
+            [$projectId, $paqueteId],
+        );
+        $this->db->query(
+            'DELETE FROM pdc_plan_paquete
+              WHERE project_id = ? AND paquete_id = ? AND responsable_user_id IS NULL',
+            [$projectId, $paqueteId],
+        );
     }
 
     /**
@@ -889,6 +969,10 @@ class PlanFechasService
              LEFT JOIN general_usuarios u ON u.id = pp.responsable_user_id
              LEFT JOIN project_members pm ON pm.project_id = pp.project_id AND pm.user_id = pp.responsable_user_id
              WHERE pp.project_id = ? AND p.activo = 1
+               -- Una cabecera sin fechas existe solo para guardar al responsable de un paquete que
+               -- ya no tiene plan (ver desamarrar()): no es una fila de la grilla. Sin este filtro
+               -- aparecería con las fechas en blanco, indistinguible de un error de cálculo.
+               AND pp.fecha_arranque IS NOT NULL
                AND p.modalidad_contratacion IN (" . self::modalidadesConProcesoSql() . ')
              ORDER BY pp.fecha_arranque ASC',
             [$projectId],

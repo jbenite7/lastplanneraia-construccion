@@ -93,6 +93,27 @@ class PlanComprasPlanController
         $this->ok(['ok' => true]);
     }
 
+    /**
+     * POST /plan-compras/api/plan/desamarrar  {paqueteId}
+     *
+     * Mismo guard que amarrar (`lps.paquetes_contratacion.editar`): quien puede tomar la decisión
+     * puede deshacerla. Un permiso aparte para desamarrar dejaría a gente capaz de crear un amarre
+     * equivocado sin poder corregirlo.
+     */
+    public function desamarrar(): void
+    {
+        $projectId = $this->guardEscritura();
+        if ($projectId === null) {
+            return;
+        }
+        $paqueteId = filter_var($this->body()['paqueteId'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        if ($paqueteId === false) {
+            $this->fail('PAQUETE_INVALIDO', 'paqueteId inválido.', 422);
+            return;
+        }
+        $this->ok($this->service->desamarrar($projectId, (int) $paqueteId));
+    }
+
     /** POST /plan-compras/api/plan/calcular */
     public function calcular(): void
     {

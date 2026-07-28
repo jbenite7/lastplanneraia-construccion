@@ -1136,6 +1136,101 @@ $rSinPlan = $svc->asignarResponsable($P, array_merge($idsMasa, [999999]), $uid, 
 $assert(($rSinPlan['ok'] ?? true) === false && ($rSinPlan['code'] ?? '') === 'PAQUETE_SIN_PLAN',
     'Masa: un paquete sin plan en el lote rechaza el lote. Dio ' . var_export($rSinPlan, true));
 
+// --- Desamarrar (f10-f13 de la revisión de UX) ---
+// Amarrar era una decisión sin retorno: no había forma de corregir un frente mal elegido, ni
+// botón, ni endpoint, ni método en el servicio.
+$svc->amarrar($P, $paqEstructura, 9001, 'test-a4');
+$svc->calcular($P, 'test-a4');
+$db->query('UPDATE pdc_plan_paquete SET responsable_user_id = ? WHERE project_id = ? AND paquete_id = ?',
+    [$uid, $P, $paqEstructura]);
+
+$r = $svc->desamarrar($P, $paqEstructura);
+$assert(($r['ok'] ?? false) === true, 'Desamarrar: responde ok. Dio ' . var_export($r, true));
+
+$quedaAmarre = (int) $db->query('SELECT COUNT(*) FROM pdc_paquete_frente WHERE project_id = ? AND paquete_id = ?',
+    [$P, $paqEstructura])->fetchColumn();
+$assert($quedaAmarre === 0, 'Desamarrar: el amarre desaparece, el paquete vuelve a «sin frente». Dio ' . $quedaAmarre);
+
+// f12: sin frente no hay fecha que pueda leerse como vigente.
+$quedanPasos = (int) $db->query('SELECT COUNT(*) FROM pdc_plan_paso WHERE project_id = ? AND paquete_id = ?',
+    [$P, $paqEstructura])->fetchColumn();
+$assert($quedanPasos === 0, 'Desamarrar: las fechas calculadas se borran. Quedaron ' . $quedanPasos . ' pasos.');
+
+$fechasHuerfanas = $db->query(
+    'SELECT fecha_arranque, fecha_ancla, unique_id, dias_totales FROM pdc_plan_paquete
+      WHERE project_id = ? AND paquete_id = ?', [$P, $paqEstructura])->fetch(PDO::FETCH_ASSOC);
+$assert($fechasHuerfanas !== false && $fechasHuerfanas['fecha_arranque'] === null
+        && $fechasHuerfanas['fecha_ancla'] === null && $fechasHuerfanas['unique_id'] === null
+        && $fechasHuerfanas['dias_totales'] === null,
+    'Desamarrar: la cabecera no conserva ninguna fecha vieja. Dio ' . var_export($fechasHuerfanas, true));
+
+// El paquete desaparece de la grilla del plan: sin frente no tiene fechas que mostrar.
+$enPlan = false;
+foreach ($svc->plan($P) as $f) { if ($f['paqueteId'] === $paqEstructura) { $enPlan = true; } }
+$assert($enPlan === false, 'Desamarrar: el paquete sale de la grilla del plan.');
+
+// f11: pero el responsable NO se pierde. Es el corazón de esta tarea.
+$respTrasDesamarrar = $db->query('SELECT responsable_user_id FROM pdc_plan_paquete WHERE project_id = ? AND paquete_id = ?',
+    [$P, $paqEstructura])->fetchColumn();
+$assert((int) $respTrasDesamarrar === $uid,
+    'Desamarrar: el responsable sobrevive. Dio ' . var_export($respTrasDesamarrar, true) . ' esperando ' . $uid);
+
+// Reamarrar y volver a calcular deja el paquete como estaba, con su dueño.
+$svc->amarrar($P, $paqEstructura, 9001, 'test-a4');
+$svc->calcular($P, 'test-a4');
+$planTras = [];
+foreach ($svc->plan($P) as $f) { $planTras[$f['paqueteId']] = $f; }
+$assert(($planTras[$paqEstructura]['responsableUserId'] ?? null) === $uid,
+    'Desamarrar y reamarrar: el paquete vuelve al plan con su responsable intacto.');
+
+// Desamarrar algo que no está amarrado no es un error: es un no-op.
+$rNoop = $svc->desamarrar($P, 999999);
+$assert(isset($rNoop['ok']), 'Desamarrar algo sin amarre responde sin reventar. Dio ' . var_export($rNoop, true));
+
+// Un desamarre en un proyecto no toca el amarre del mismo paquete en otro (los paquetes son
+// globales: el mismo paqueteId vive en los dos proyectos con amarres distintos).
+$svc->amarrar($P2, $paqEstructura, 9101, 'test-a4');
+$svc->desamarrar($P, $paqEstructura);
+$sigueP2 = (int) $db->query('SELECT COUNT(*) FROM pdc_paquete_frente WHERE project_id = ? AND paquete_id = ?',
+    [$P2, $paqEstructura])->fetchColumn();
+$assert($sigueP2 === 1, 'Desamarrar respeta el project_id: el otro proyecto conserva su amarre. Dio ' . $sigueP2);
+$svc->desamarrar($P2, $paqEstructura);
+
+// --- Reamarrar a otro frente conserva el responsable (f11, f14) ---
+// Esto NO es una función nueva: es un fallo que ya existía. Cambiar de frente invalida el plan
+// calculado y hasta ahora ese DELETE se llevaba la fila entera, con el responsable dentro, sin
+// decir nada. Quien corregía un frente mal elegido descubría después que el paquete había perdido
+// a su dueño.
+$svc->amarrar($P, $paqEstructura, 9001, 'test-a4');
+$svc->calcular($P, 'test-a4');
+$db->query('UPDATE pdc_plan_paquete SET responsable_user_id = ? WHERE project_id = ? AND paquete_id = ?',
+    [$uid, $P, $paqEstructura]);
+
+$svc->amarrar($P, $paqEstructura, 9002, 'test-a4');   // otro frente: invalida el plan viejo
+$tras = $db->query('SELECT responsable_user_id FROM pdc_plan_paquete WHERE project_id = ? AND paquete_id = ?',
+    [$P, $paqEstructura])->fetchColumn();
+$assert((int) $tras === $uid,
+    'Reamarre: cambiar de frente NO borra al responsable. Dio ' . var_export($tras, true));
+
+// Y el plan viejo sí se invalida: las fechas de un frente ya no vigente no pueden quedarse.
+$pasosTras = (int) $db->query('SELECT COUNT(*) FROM pdc_plan_paso WHERE project_id = ? AND paquete_id = ?',
+    [$P, $paqEstructura])->fetchColumn();
+$assert($pasosTras === 0, 'Reamarre: el plan calculado contra el frente viejo se invalida. Quedaron ' . $pasosTras);
+
+$enPlanTras = false;
+foreach ($svc->plan($P) as $f) { if ($f['paqueteId'] === $paqEstructura) { $enPlanTras = true; } }
+$assert($enPlanTras === false,
+    'Reamarre: hasta recalcular, el paquete no aparece en la grilla con fechas del frente viejo.');
+
+// Recalcular lo devuelve a la grilla, ya contra el frente nuevo y con su responsable.
+$svc->calcular($P, 'test-a4');
+$planRe = [];
+foreach ($svc->plan($P) as $f) { $planRe[$f['paqueteId']] = $f; }
+$assert(($planRe[$paqEstructura]['responsableUserId'] ?? null) === $uid,
+    'Reamarre + recalcular: el paquete vuelve con su responsable. Dio ' . var_export($planRe[$paqEstructura]['responsableUserId'] ?? null, true));
+$assert(($planRe[$paqEstructura]['uniqueId'] ?? null) === 9002,
+    'Reamarre + recalcular: el plan queda calculado contra el frente NUEVO.');
+
 echo $failures === [] ? "=== OK ===\n" : '=== ' . count($failures) . " FAILED ===\n";
 $limpiar();
 exit($failures === [] ? 0 : 1);

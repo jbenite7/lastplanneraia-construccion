@@ -224,6 +224,7 @@ $router->get('/plan-compras/api/plan/desfases', [\App\Controllers\Api\PlanCompra
 $router->get('/plan-compras/api/plan/responsables', [\App\Controllers\Api\PlanComprasPlanController::class, 'responsables']);
 $router->get('/plan-compras/api/plan', [\App\Controllers\Api\PlanComprasPlanController::class, 'plan']);
 $router->post('/plan-compras/api/plan/amarrar', [\App\Controllers\Api\PlanComprasPlanController::class, 'amarrar']);
+$router->post('/plan-compras/api/plan/desamarrar', [\App\Controllers\Api\PlanComprasPlanController::class, 'desamarrar']);
 $router->post('/plan-compras/api/plan/calcular', [\App\Controllers\Api\PlanComprasPlanController::class, 'calcular']);
 $router->post('/plan-compras/api/plan/responsable', [\App\Controllers\Api\PlanComprasPlanController::class, 'responsable']);
 // Api/PDC Plantillas
