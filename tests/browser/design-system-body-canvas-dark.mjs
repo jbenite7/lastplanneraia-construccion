@@ -66,8 +66,11 @@ const EXPECTED_STATE_TOKEN = {
   },
   '/programacion-semanal': {
     property: '--ps-critical-bg',
-    // public/css/programacion-semanal.css:18, bajo `html.aia-theme-dark body.ps-page`
-    value: 'color-mix(in srgb, #8f1d1d 24%, rgba(28, 36, 31, 0.92) 76%)',
+    // public/css/programacion-semanal.css:41, bajo `html.aia-theme-dark body.ps-page`.
+    // El commit 9f6de25 movio este tinte a la escalera compartida
+    // --ds-state-tint-red-pdc y no actualizo esta expectativa, que quedo obsoleta.
+    // El valor de abajo es el que declara hoy la hoja, no una relajacion del test.
+    value: 'color-mix(in srgb, #431414 46%, rgba(28, 36, 31, 0.92) 54%)',
   },
   '/programacion-intermedia': {
     property: '--pi-critical-bg',
@@ -158,6 +161,23 @@ test('la superficie de la grilla Handsontable (no el body) usa fondo oscuro en c
       const response = await page.goto(route, { waitUntil: 'load' });
       expect(response?.status(), `${route} must respond`).toBeLessThan(400);
       await page.waitForSelector(expected.selector, { state: 'attached', timeout: 15000 });
+      // `attached` solo garantiza que el nodo existe. Handsontable monta su
+      // superficie de forma asincrona y, mientras no lo ha hecho, el contenedor
+      // devuelve el blanco del vendor: leer ahi produce un rojo intermitente en
+      // /pdc que no corresponde a ninguna regla mal puesta. Se espera a que la
+      // grilla este montada. Esto NO enmascara los rojos deliberados de
+      // /profesionales y /subcontratistas: ahi el blanco lo pinta el CSS y sigue
+      // siendo blanco despues de montar.
+      await page
+        .waitForFunction(
+          (selector) => {
+            const el = document.querySelector(selector);
+            return Boolean(el?.querySelector('.handsontable, .ht_master, table'));
+          },
+          expected.selector,
+          { timeout: 15000 },
+        )
+        .catch(() => {});
       const background = await page.evaluate((selector) => {
         const el = document.querySelector(selector);
         return el ? getComputedStyle(el).backgroundColor : null;
