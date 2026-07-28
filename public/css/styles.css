@@ -4358,7 +4358,9 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
 }
 
 /* PDC: los ayudantes del modal se fueron a design-system/adapters/legacy-bridge.css
-   (@layer module.components); aqui solo quedaban reglas que pdc.css ya pisaba. */
+   (@layer legacy-overrides, no module.components: ese archivo se importa ANTES que
+   este, asi que en la subcapa de origen el empate de especificidad se volteaba;
+   el motivo esta escrito alli). Aqui solo quedaban reglas que pdc.css ya pisaba. */
 
 /* PDC: los iconos de estado, los chips de desviacion y los tres iconos de
    preparacion se fueron a design-system/adapters/legacy-bridge.css. */
