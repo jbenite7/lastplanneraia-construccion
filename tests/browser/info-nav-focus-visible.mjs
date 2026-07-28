@@ -86,6 +86,43 @@ async function tabUntil(page, selector) {
   return false;
 }
 
+// Mide el elemento que DE HECHO tiene el foco, en vez de exigir que sea uno
+// concreto. Nace de una intermitencia real: la version anterior tabulaba a
+// ciegas buscando el primer `.aia-info-nav__item` con `querySelector`, y en
+// /pdc -la pagina mas larga de las tres- el recorrido podia dar la vuelta al
+// documento entero antes de alcanzarlo. Al pasar por el chrome del navegador
+// se perdia la modalidad de teclado y `:focus-visible` dejaba de casar: fallaba
+// 1 de cada 4 corridas. Medir el foco vivo elimina el recorrido y con el la
+// intermitencia.
+async function activeElementState(page) {
+  return page.evaluate(() => {
+    const node = document.activeElement;
+    if (!node || node === document.body) return null;
+    const cs = getComputedStyle(node);
+    let behind = node.parentElement;
+    let behindColor = 'rgba(0, 0, 0, 0)';
+    while (behind) {
+      const bg = getComputedStyle(behind).backgroundColor;
+      if (bg && !/rgba?\([^)]*,\s*0\s*\)$/.test(bg) && bg !== 'transparent') {
+        behindColor = bg;
+        break;
+      }
+      behind = behind.parentElement;
+    }
+    return {
+      matchesItem: node.matches('.aia-info-nav__item'),
+      className: node.className,
+      outlineWidth: cs.outlineWidth,
+      outlineStyle: cs.outlineStyle,
+      outlineColor: cs.outlineColor,
+      boxShadow: cs.boxShadow,
+      focusVisible: node.matches(':focus-visible'),
+      isActive: true,
+      behindColor,
+    };
+  });
+}
+
 function assertPaints(state, label) {
   expect(state, `no se encontró ${label}`).toBeTruthy();
   expect(state.focusVisible, `${label}: el foco de teclado debería activar :focus-visible`).toBe(true);
@@ -142,11 +179,21 @@ for (const route of ROUTES) {
     });
 
     test('los ítems del menú pintan un anillo al recibir foco de teclado', async ({ page }) => {
-      await page.locator(TRIGGER).click();
+      // El menú se abre CON TECLADO -Enter sobre el disparador ya enfocado-, no
+      // con un clic. Así la modalidad de teclado nunca se pierde y el `Tab`
+      // siguiente cae en el primer ítem sin recorrer el documento.
+      expect(await tabUntil(page, TRIGGER), 'el disparador no es alcanzable tabulando').toBe(true);
+      await page.keyboard.press('Enter');
       await expect(page.locator(ITEM).first()).toBeVisible({ timeout: 10000 });
 
-      expect(await tabUntil(page, ITEM), 'el primer ítem no es alcanzable tabulando').toBe(true);
-      assertPaints(await focusState(page, ITEM), `el ítem de menú de ${route}`);
+      await page.keyboard.press('Tab');
+      const state = await activeElementState(page);
+      expect(state, 'nada tiene el foco tras abrir el menú').toBeTruthy();
+      expect(
+        state.matchesItem,
+        `el Tab tras abrir el menú no cayó en un ítem, sino en «${state.className}»`,
+      ).toBe(true);
+      assertPaints(state, `el ítem de menú de ${route}`);
     });
 
     test('el foco de ratón sigue sin anillo, que es lo que el `outline: none` sí debe hacer', async ({ page }) => {
