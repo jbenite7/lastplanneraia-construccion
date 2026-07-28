@@ -103,6 +103,46 @@ Notas:
 - Usa siempre `--ff-only` para evitar merges manuales en cualquier servidor.
 - Si `git pull --ff-only origin main` falla, aborta el deploy y resuelve fuera del servidor.
 
+### 5.1 Migraciones de base de datos
+
+> [!CAUTION]
+> **La migracion va ANTES de que el codigo nuevo atienda trafico, no despues.**
+> El codigo desplegado asume el esquema nuevo. Si entra primero, cualquier consulta que toque
+> una columna o tabla que aun no existe revienta la vista completa, no solo la funcion nueva.
+> Ejemplo real (deploy de julio 2026): `20260728_pdc_v2_responsable_usuario.sql` elimina
+> `pdc_plan_paquete.responsable` y agrega `responsable_user_id`. Con el codigo publicado y la
+> migracion sin correr, **toda la pestana Plan del modulo de compras responde 500**, porque el
+> `SELECT` de `plan()` pide la columna nueva — no se degrada solo el responsable.
+
+No hay runner automatico: las migraciones se aplican a mano y en orden cronologico por nombre de
+archivo. Revisa que llego algo nuevo antes de aplicar:
+
+```bash
+git log --name-only --diff-filter=A HEAD@{1}..HEAD -- database/migrations/ | grep -E '^database/migrations/'
+```
+
+Si la lista sale vacia, no hay migraciones en este deploy y puedes seguir al paso 6.
+
+**Archivos `.sql` (DDL).** Se aplican directo. Backup de las tablas afectadas primero, porque un
+`DROP COLUMN` no se deshace con el backup de archivos del paso 3:
+
+```bash
+mysqldump -u USUARIO -p BASE tabla_afectada > ~/backups/tabla_afectada-$(date +%Y%m%d-%H%M%S).sql
+mysql -u USUARIO -p BASE < database/migrations/NOMBRE.sql
+```
+
+**Archivos `.php` (backfills).** Corren primero en seco y solo despues de leer el reporte se
+aplican. Nunca lances `--apply` sin haber mirado la salida del dry-run:
+
+```bash
+/usr/local/php83/bin/php-cli database/migrations/NOMBRE.php
+/usr/local/php83/bin/php-cli database/migrations/NOMBRE.php --apply
+```
+
+**Orden correcto del deploy con migraciones:** backup (paso 3) -> `git pull` -> `composer install`
+-> migraciones -> smoke tests. Si la migracion falla a la mitad, no sigas al paso 6: ve al
+rollback y restaura tambien la base, no solo los archivos.
+
 ## 6. Smoke tests minimos
 
 ### Pruebas
@@ -138,7 +178,10 @@ Si el sitio falla despues del deploy:
 
 1. Identifica el backup mas reciente.
 2. Restaura el contenido respaldado desde `~/backups`.
-3. Revalida `php -v`, `composer install` y `/`.
+3. **Si el deploy incluyo migraciones, restaurar los archivos NO basta:** el codigo vuelve a la
+   version vieja pero la base se queda en el esquema nuevo, y el fallo cambia de forma en vez de
+   desaparecer. Restaura tambien el dump de las tablas afectadas que tomaste en el paso 5.1.
+4. Revalida `php -v`, `composer install` y `/`.
 
 Ejemplo de apoyo:
 
@@ -177,3 +220,5 @@ Tambien limpia carpetas no trackeadas viejas dentro de `public_html` si confirma
 - No resolver conflictos manuales directamente en el servidor.
 - Todo deploy debe salir desde `main`.
 - Produccion requiere verificacion local y smoke test exitoso en pruebas.
+- Si el deploy trae migraciones, se aplican antes de los smoke tests (paso 5.1) y con dump previo
+  de las tablas afectadas. El backup de archivos del paso 3 no cubre la base.
