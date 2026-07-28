@@ -50,6 +50,22 @@ for (const viewport of VIEWPORTS) {
     expect(collapsedInitial.width).toBeGreaterThanOrEqual(collapsedInitial.collapsed - 1);
     expect(collapsedInitial.width).toBeLessThanOrEqual(collapsedInitial.collapsed + 1);
 
+    // En colapsado el label se convierte en una píldora flotante con
+    // visibility:hidden, que lo saca del árbol de accesibilidad. El nombre
+    // accesible no puede depender de él: cada control lo expone por su cuenta,
+    // o el rail queda mudo para lectores de pantalla (axe button-name/link-name).
+    await expect(toggle).toHaveAccessibleName('Expandir menú');
+    await expect(sidebar.locator('[data-aia-menu-trigger]'))
+      .toHaveAccessibleName('Usuario · Administrador');
+    for (const name of [
+      'Control Tower - Informes', 'Semanas del Proyecto', 'Profesionales', 'Subcontratistas',
+      'Indicadores LPS', 'Control de Cambios', 'Programa General', 'Programación Intermedia',
+      'Programación Semanal', 'Actualizar Cronograma', 'Familias de Actividades',
+      'Paquetes de Contratación', 'Plan de Compras',
+    ]) {
+      await expect(sidebar.getByRole('link', { name, exact: true })).toHaveCount(1);
+    }
+
     await toggle.click();
     await expect(sidebar).toHaveAttribute('data-sidebar-state', 'expanded');
     const expandedToken = await page.evaluate(() => {
