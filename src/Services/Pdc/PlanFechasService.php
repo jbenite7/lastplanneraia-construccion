@@ -20,8 +20,43 @@ class PlanFechasService
      */
     private const SIMILITUD_MINIMA = 0.33;
 
+    /**
+     * Modalidades que generan proceso de contratación y por tanto entran al plan de fechas.
+     * `no_contratable` (nómina, imprevistos) y `consumo_directo` (ferretería contra almacén) quedan
+     * fuera siempre: no se le compran a nadie, o el gasto se controla contra almacén sin ningún
+     * paso de contratación que programar. `sugerirFrentes()` ya las excluía de las propuestas; esta
+     * constante es la misma regla aplicada también en la escritura (`amarrar()`) y en el cálculo y
+     * la lectura del plan (`calcular()`/`plan()`), para que un amarre manual o un cambio posterior
+     * de modalidad no metan un paquete no contratable al plan de fechas.
+     */
+    private const MODALIDADES_CON_PROCESO = ['contrato', 'orden_compra'];
+
+    /**
+     * Duración de respaldo (días) cuando ni el paquete tiene un desglose completo propio ni existe
+     * ninguna mediana calculable para su tipo de negociación (ningún paquete activo de ese tipo
+     * tiene un desglose completo en `general_dias_procesos_contratacion`). En DAPORTO el único tipo
+     * que llega a necesitarlo es "consumibles": ningún paquete de ese tipo tiene `duracion_ref`, así
+     * que su mediana nunca existe y este número se usa con datos reales. 90 días (~3 meses) es una
+     * cifra conservadora heredada del ejercicio DAPORTO para no subestimar un proceso del que no hay
+     * ninguna referencia; se documenta aquí para que quede claro que es un valor de negocio, no un
+     * accidente de código, y para poder ajustarlo si aparece mejor evidencia.
+     */
+    private const DURACION_FALLBACK_DIAS = 90;
+
     public function __construct(private readonly \Database $db)
     {
+    }
+
+    /**
+     * Lista `'contrato','orden_compra'` lista para pegar en un `IN (...)` SQL. Son los dos únicos
+     * valores fijos del enum `modalidad_contratacion` que generan proceso — no hay entrada de
+     * usuario en el valor, así que interpolarlos directo en la consulta es seguro; se centraliza
+     * aquí para que `calcular()` y `plan()` no dupliquen el literal ni puedan divergir de
+     * `MODALIDADES_CON_PROCESO`.
+     */
+    private static function modalidadesConProcesoSql(): string
+    {
+        return "'" . implode("','", self::MODALIDADES_CON_PROCESO) . "'";
     }
 
     /**
@@ -332,11 +367,18 @@ class PlanFechasService
             return ['ok' => false, 'code' => 'FRENTE_INVALIDO'];
         }
         $paquete = $this->db->query(
-            'SELECT id FROM general_paquetes_contratacion WHERE id = ? AND activo = 1',
+            'SELECT id, modalidad_contratacion FROM general_paquetes_contratacion WHERE id = ? AND activo = 1',
             [$paqueteId],
         )->fetch(\PDO::FETCH_ASSOC);
         if ($paquete === false) {
             return ['ok' => false, 'code' => 'PAQUETE_INVALIDO'];
+        }
+        // `no_contratable` y `consumo_directo` no generan proceso de contratación: amarrarlos a un
+        // frente metería siete pasos y una fecha a un paquete que, por diseño, no se le compra a
+        // nadie. `sugerirFrentes()` ya no los propone, pero un amarre manual pasaba por aquí sin
+        // que nada lo detuviera.
+        if (!in_array($paquete['modalidad_contratacion'], self::MODALIDADES_CON_PROCESO, true)) {
+            return ['ok' => false, 'code' => 'MODALIDAD_NO_CONTRATABLE'];
         }
 
         $origen = in_array($procedencia['origen'] ?? '', ['similitud', 'rama'], true) ? $procedencia['origen'] : 'humano';
@@ -419,22 +461,39 @@ class PlanFechasService
 
         foreach ($amarres as $paqueteId => $a) {
             $paq = $this->db->query(
-                'SELECT p.id, p.tipo_negociacion, p.duracion_ref, d.diasElaboracionPliegos, d.diasEntregaPliegos,
+                "SELECT p.id, p.tipo_negociacion, p.duracion_ref, d.diasElaboracionPliegos, d.diasEntregaPliegos,
                         d.diasReciboPropuestas, d.diasCuadrosComparativos, d.diasLegalizacionContrato,
                         d.diasFabricacion, d.diasInsumosObra
                  FROM general_paquetes_contratacion p
                  LEFT JOIN general_dias_procesos_contratacion d ON d.id = p.duracion_ref
-                 WHERE p.id = ? AND p.activo = 1',
+                 WHERE p.id = ? AND p.activo = 1
+                   AND p.modalidad_contratacion IN (" . self::modalidadesConProcesoSql() . ')',
                 [$paqueteId],
             )->fetch(\PDO::FETCH_ASSOC);
             if ($paq === false) {
+                // Paquete inactivo, o cuya modalidad ya no genera proceso de contratación (cambió
+                // después de amarrarlo): no se calcula plan para él. Su cabecera vieja, si existe,
+                // queda huérfana en pdc_plan_paquete — plan() la filtra por su cuenta.
                 continue;
             }
 
-            $provisional = $paq['duracion_ref'] === null;
+            // «Sin duración» se decide por las columnas del desglose, no por `duracion_ref`: así
+            // se cubren de una sola vez los tres casos silenciosos (duracion_ref NULL, apuntando a
+            // una fila borrada, o a una fila con algún `dias*` NULL) porque los tres producen el
+            // mismo resultado en el LEFT JOIN — al menos una columna NULL — sin necesidad de
+            // distinguirlos.
+            $desgloseCompleto = true;
+            foreach (self::PASOS as $p) {
+                if ($paq[$p['col']] === null) {
+                    $desgloseCompleto = false;
+                    break;
+                }
+            }
+            $provisional = !$desgloseCompleto;
+
             if ($provisional) {
                 $sinDuracion++;
-                $total = $medianas[$paq['tipo_negociacion']] ?? 90;
+                $total = $medianas[$paq['tipo_negociacion']] ?? self::DURACION_FALLBACK_DIAS;
                 // Sin desglose real, la mediana se reparte proporcional al reparto típico del catálogo.
                 $dias = self::repartirMediana($total);
             } else {
@@ -449,53 +508,72 @@ class PlanFechasService
             $cursor = $ancla->modify(sprintf('-%d days', $total));
             $arranque = $cursor->format('Y-m-d');
 
-            $responsablePrevio = (string) ($this->db->query(
-                'SELECT responsable FROM pdc_plan_paquete WHERE project_id = ? AND paquete_id = ?',
-                [$projectId, $paqueteId],
-            )->fetchColumn() ?: '');
-
-            $this->db->query(
-                'INSERT INTO pdc_plan_paquete
-                    (project_id, paquete_id, unique_id, fecha_ancla, fecha_arranque, dias_totales,
-                     duracion_ref, duracion_provisional, responsable, calculado_por, updated_at)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
-                 ON DUPLICATE KEY UPDATE unique_id = VALUES(unique_id), fecha_ancla = VALUES(fecha_ancla),
-                    fecha_arranque = VALUES(fecha_arranque), dias_totales = VALUES(dias_totales),
-                    duracion_ref = VALUES(duracion_ref), duracion_provisional = VALUES(duracion_provisional),
-                    calculado_por = VALUES(calculado_por), updated_at = NOW()',
-                [
-                    $projectId, $paqueteId, $a['uniqueId'], $a['fechaAncla'], $arranque, $total,
-                    $paq['duracion_ref'], $provisional ? 1 : 0, $responsablePrevio, $usuario,
-                ],
-            );
-
-            // Los pasos se reemplazan enteros: recalcular no debe acumular.
-            $this->db->query('DELETE FROM pdc_plan_paso WHERE project_id = ? AND paquete_id = ?', [$projectId, $paqueteId]);
-            foreach (self::PASOS as $i => $p) {
-                $ini = $cursor;
-                $cursor = $cursor->modify(sprintf('+%d days', $dias[$i]));
+            // La cabecera y sus siete pasos son una sola unidad: si algo falla a mitad de camino,
+            // un rollback evita que quede una cabecera con `dias_totales = N` y menos de siete pasos
+            // (o pasos de un cálculo anterior mezclados con uno nuevo) sin que nadie lo note.
+            $this->db->beginTransaction();
+            try {
                 $this->db->query(
-                    'INSERT INTO pdc_plan_paso (project_id, paquete_id, orden, paso, dias, fecha_inicio, fecha_fin)
-                     VALUES (?, ?, ?, ?, ?, ?, ?)',
-                    [$projectId, $paqueteId, $i, $p['paso'], $dias[$i], $ini->format('Y-m-d'), $cursor->format('Y-m-d')],
+                    'INSERT INTO pdc_plan_paquete
+                        (project_id, paquete_id, unique_id, fecha_ancla, fecha_arranque, dias_totales,
+                         duracion_ref, duracion_provisional, responsable, calculado_por, updated_at)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+                     ON DUPLICATE KEY UPDATE unique_id = VALUES(unique_id), fecha_ancla = VALUES(fecha_ancla),
+                        fecha_arranque = VALUES(fecha_arranque), dias_totales = VALUES(dias_totales),
+                        duracion_ref = VALUES(duracion_ref), duracion_provisional = VALUES(duracion_provisional),
+                        calculado_por = VALUES(calculado_por), updated_at = NOW()',
+                    [
+                        // `responsable` se inserta como '' solo para la fila nueva (no hay ninguna
+                        // previa que preservar en un INSERT). En un reemarre, el `ON DUPLICATE KEY
+                        // UPDATE` de arriba NO lista `responsable` entre las columnas a actualizar,
+                        // así que MySQL conserva el valor existente por su cuenta: no hace falta
+                        // leerlo antes ni pasarlo de vuelta. No añadir `responsable` a esa cláusula
+                        // sin querer perder esta garantía.
+                        $projectId, $paqueteId, $a['uniqueId'], $a['fechaAncla'], $arranque, $total,
+                        $paq['duracion_ref'], $provisional ? 1 : 0, '', $usuario,
+                    ],
                 );
+
+                // Los pasos se reemplazan enteros: recalcular no debe acumular.
+                $this->db->query('DELETE FROM pdc_plan_paso WHERE project_id = ? AND paquete_id = ?', [$projectId, $paqueteId]);
+                foreach (self::PASOS as $i => $p) {
+                    $ini = $cursor;
+                    $cursor = $cursor->modify(sprintf('+%d days', $dias[$i]));
+                    $this->db->query(
+                        'INSERT INTO pdc_plan_paso (project_id, paquete_id, orden, paso, dias, fecha_inicio, fecha_fin)
+                         VALUES (?, ?, ?, ?, ?, ?, ?)',
+                        [$projectId, $paqueteId, $i, $p['paso'], $dias[$i], $ini->format('Y-m-d'), $cursor->format('Y-m-d')],
+                    );
+                }
+                $this->db->commit();
+            } catch (\Throwable $t) {
+                $this->db->rollBack();
+                throw $t;
             }
             $calculados++;
         }
         return ['ok' => true, 'calculados' => $calculados, 'sinDuracion' => $sinDuracion];
     }
 
-    /** Mediana del proceso completo por tipo de negociación, entre los paquetes que sí tienen duración. */
+    /**
+     * Mediana del proceso completo por tipo de negociación, entre los paquetes que sí tienen un
+     * desglose COMPLETO de duración (las siete columnas `dias*`, todas no nulas).
+     *
+     * Un `dias*` NULL propaga NULL a la suma SQL (`col1 + ... + NULL = NULL`); `(int) null` en PHP
+     * vale 0, así que sin este filtro un cero fantasma se colaba en la muestra y bajaba la mediana
+     * de todo el tipo. El `IS NOT NULL` de cada columna se construye desde `self::PASOS` para no
+     * duplicar la lista de columnas ni poder desalinearse con `calcular()`.
+     */
     private function medianasPorTipo(): array
     {
+        $suma = implode(' + ', array_map(static fn (array $p): string => 'd.' . $p['col'], self::PASOS));
+        $completo = implode(' AND ', array_map(static fn (array $p): string => 'd.' . $p['col'] . ' IS NOT NULL', self::PASOS));
         $rows = $this->db->query(
-            'SELECT p.tipo_negociacion t,
-                    (d.diasElaboracionPliegos + d.diasEntregaPliegos + d.diasReciboPropuestas
-                     + d.diasCuadrosComparativos + d.diasLegalizacionContrato + d.diasFabricacion
-                     + d.diasInsumosObra) tot
+            "SELECT p.tipo_negociacion t, ({$suma}) tot
              FROM general_paquetes_contratacion p
              JOIN general_dias_procesos_contratacion d ON d.id = p.duracion_ref
-             WHERE p.activo = 1 ORDER BY tot',
+             WHERE p.activo = 1 AND {$completo}
+             ORDER BY tot",
         )->fetchAll(\PDO::FETCH_ASSOC);
         $porTipo = [];
         foreach ($rows as $r) {
@@ -523,17 +601,26 @@ class PlanFechasService
         return $dias;
     }
 
-    /** El plan del proyecto, con los vencidos primero. */
+    /**
+     * El plan del proyecto, con los vencidos primero.
+     *
+     * `calcular()` salta los paquetes inactivos, sin modalidad contratable o sin amarre, pero no
+     * borra la cabecera vieja que hubieran dejado en `pdc_plan_paquete` — por eso el filtro va aquí:
+     * el `JOIN` (antes `LEFT JOIN`) a `pdc_paquete_frente` exige un amarre vigente, y las mismas
+     * condiciones de `p.activo`/`modalidad_contratacion` que usa `calcular()` evitan devolver un
+     * paquete retirado del catálogo o cuya modalidad cambió a algo que ya no se contrata.
+     */
     public function plan(int $projectId): array
     {
         $rows = $this->db->query(
-            'SELECT pp.paquete_id, pp.unique_id, pp.fecha_ancla, pp.fecha_arranque, pp.dias_totales,
+            "SELECT pp.paquete_id, pp.unique_id, pp.fecha_ancla, pp.fecha_arranque, pp.dias_totales,
                     pp.duracion_provisional, pp.responsable, p.nombre, p.tipo_negociacion,
                     p.modalidad_contratacion, f.frente_nombre
              FROM pdc_plan_paquete pp
              JOIN general_paquetes_contratacion p ON p.id = pp.paquete_id
-             LEFT JOIN pdc_paquete_frente f ON f.project_id = pp.project_id AND f.paquete_id = pp.paquete_id
-             WHERE pp.project_id = ?
+             JOIN pdc_paquete_frente f ON f.project_id = pp.project_id AND f.paquete_id = pp.paquete_id
+             WHERE pp.project_id = ? AND p.activo = 1
+               AND p.modalidad_contratacion IN (" . self::modalidadesConProcesoSql() . ')
              ORDER BY pp.fecha_arranque ASC',
             [$projectId],
         )->fetchAll(\PDO::FETCH_ASSOC);

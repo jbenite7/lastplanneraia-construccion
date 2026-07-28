@@ -26,7 +26,11 @@ $limpiar = static function () use ($db, $P, $P2): void {
     $db->query('DELETE FROM pdc_paquete_frente WHERE project_id IN (?, ?)', [$P, $P2]);
     $db->query('DELETE FROM pdc_insumo_paquete WHERE project_id IN (?, ?)', [$P, $P2]);
     $db->query("DELETE FROM general_paquetes_contratacion WHERE creado_por = 'test-a4'");
-    $db->query("DELETE FROM general_dias_procesos_contratacion WHERE paqueteContratacion = 'TEST A4 DURACION'");
+    // LIKE en vez de la lista exacta: cada bloque de este archivo añade su propia fila de duración
+    // sintética («TEST A4 DURACION», «... CORTA», «... SUMINISTRO COMPLETO», etc.) y todas comparten
+    // el prefijo «TEST A4»; con un DELETE por valor exacto por cada una, olvidar añadir la nueva aquí
+    // deja residuo entre corridas sin que ningún assert lo note.
+    $db->query("DELETE FROM general_dias_procesos_contratacion WHERE paqueteContratacion LIKE 'TEST A4%'");
     $db->query('DELETE FROM pdc_presupuesto_apu_insumos WHERE project_id IN (?, ?)', [$P, $P2]);
     $db->query('DELETE FROM pdc_presupuesto_items WHERE project_id IN (?, ?)', [$P, $P2]);
     $db->query('DELETE FROM pdc_presupuesto_versiones WHERE project_id IN (?, ?)', [$P, $P2]);
@@ -283,6 +287,21 @@ $malInactivo = $svc->amarrar($P, $paqInactivo, 9001, 'test-a4');
 $assert(($malInactivo['ok'] ?? true) === false && ($malInactivo['code'] ?? '') === 'PAQUETE_INVALIDO',
     'Paquete existente pero activo=0: también PAQUETE_INVALIDO.');
 
+// --- Importante 1 (review Task 6): amarrar() rechaza modalidades sin proceso de contratación ---
+// $paqNoContratable y $paqConsumoDirecto vienen de la fixture de sugerirFrentes (arriba): activos,
+// con insumos asignados, sin amarre previo. sugerirFrentes() ya los excluía de las propuestas; el
+// hallazgo era que un amarre MANUAL (este llamado directo) no tenía ninguna defensa.
+$malNoContratable = $svc->amarrar($P, $paqNoContratable, 9001, 'test-a4');
+$assert(($malNoContratable['ok'] ?? true) === false && ($malNoContratable['code'] ?? '') === 'MODALIDAD_NO_CONTRATABLE',
+    'Importante 1: un paquete no_contratable no se puede amarrar a ningún frente.');
+$malConsumoDirecto = $svc->amarrar($P, $paqConsumoDirecto, 9001, 'test-a4');
+$assert(($malConsumoDirecto['ok'] ?? true) === false && ($malConsumoDirecto['code'] ?? '') === 'MODALIDAD_NO_CONTRATABLE',
+    'Importante 1: un paquete consumo_directo tampoco.');
+// Ninguno de los dos rechazos debió dejar fila en pdc_paquete_frente.
+$sinAmarreNoContratable = $svc->amarres($P);
+$assert(!isset($sinAmarreNoContratable[$paqNoContratable]) && !isset($sinAmarreNoContratable[$paqConsumoDirecto]),
+    'Importante 1: el rechazo no deja amarre a medias.');
+
 // --- hueco 2: origen del motor sin confirmar humano queda confirmado_humano = 0 ---
 // Caso contrario al ya cubierto (propuesta aceptada y confirmada): una sugerencia aplicada que
 // todavía nadie revisó. $paqRaro está en la fixture, activo, y sin amarre previo.
@@ -380,6 +399,205 @@ $fila2 = null;
 foreach ($plan2 as $f) { if ($f['paqueteId'] === $paqEstructura) { $fila2 = $f; } }
 $assert($fila2 !== null && $fila2['duracionProvisional'] === true, 'Sin duración propia, el plazo se marca provisional.');
 $assert($fila2 !== null && $fila2['diasTotales'] > 0, 'La mediana del tipo da un plazo mayor que cero.');
+
+// --- Importante 2 (review Task 6): un desglose ausente o incompleto nunca vale como plazo real ---
+// `general_dias_procesos_contratacion`/`general_paquetes_contratacion` son catálogos GLOBALES —
+// comparten datos reales de producción (162 de 209 paquetes activos ya apuntan a una fila real,
+// según A3.3) — así que este test no puede asumir que la mediana de «suministro» está vacía ni
+// adivinar su valor exacto de antemano. En vez de eso, calcula la mediana esperada con la misma
+// query CORREGIDA (exige las siete columnas no nulas) de forma independiente, y compara contra lo
+// que produce el servicio: si `medianasPorTipo()` volviera a contar una fila incompleta como cero,
+// ambos cálculos divergirían porque el de este test sí la excluye.
+$sqlMedianaSuministro = "SELECT (d.diasElaboracionPliegos + d.diasEntregaPliegos + d.diasReciboPropuestas
+                                 + d.diasCuadrosComparativos + d.diasLegalizacionContrato + d.diasFabricacion
+                                 + d.diasInsumosObra) tot
+                         FROM general_paquetes_contratacion p
+                         JOIN general_dias_procesos_contratacion d ON d.id = p.duracion_ref
+                         WHERE p.activo = 1 AND p.tipo_negociacion = 'suministro'
+                           AND d.diasElaboracionPliegos IS NOT NULL AND d.diasEntregaPliegos IS NOT NULL
+                           AND d.diasReciboPropuestas IS NOT NULL AND d.diasCuadrosComparativos IS NOT NULL
+                           AND d.diasLegalizacionContrato IS NOT NULL AND d.diasFabricacion IS NOT NULL
+                           AND d.diasInsumosObra IS NOT NULL
+                         ORDER BY tot";
+$medianaDe = static function () use ($db, $sqlMedianaSuministro): int {
+    $totales = $db->query($sqlMedianaSuministro)->fetchAll(\PDO::FETCH_COLUMN);
+    $n = count($totales);
+    if ($n === 0) {
+        return 0;
+    }
+    return (int) round($n % 2 === 1
+        ? $totales[intdiv($n, 2)]
+        : ($totales[intdiv($n, 2) - 1] + $totales[intdiv($n, 2)]) / 2);
+};
+// Conteo SIN el filtro de completitud: sirve para probar que el JOIN sí encuentra ambas filas
+// nuevas (su duracion_ref existe) — la exclusión de PARCIAL es por columnas NULL, no porque el
+// `JOIN` no la encuentre.
+$contarTodasSuministro = static function () use ($db): int {
+    return (int) $db->query(
+        "SELECT COUNT(*) FROM general_paquetes_contratacion p
+         JOIN general_dias_procesos_contratacion d ON d.id = p.duracion_ref
+         WHERE p.activo = 1 AND p.tipo_negociacion = 'suministro'",
+    )->fetchColumn();
+};
+$todasAntes = $contarTodasSuministro();
+
+// A) fila de duración COMPLETA (70 días) — debe entrar en la muestra de la mediana.
+$db->query(
+    "INSERT INTO general_dias_procesos_contratacion
+        (paqueteContratacion, tipoPaquete, diasElaboracionPliegos, diasEntregaPliegos, diasReciboPropuestas,
+         diasCuadrosComparativos, diasLegalizacionContrato, diasFabricacion, diasInsumosObra)
+     VALUES ('TEST A4 SUMINISTRO COMPLETO', 'Suministro', 10, 10, 10, 10, 10, 10, 10)",
+);
+$durCompletaId = (int) $db->lastInsertId();
+$db->query(
+    "INSERT INTO general_paquetes_contratacion (nombre, nombre_norm, tipo_negociacion, modalidad_contratacion, duracion_ref, activo, creado_por, created_at)
+     VALUES ('TEST A4 MEDIANA COMPLETA', 'TEST A4 MEDIANA COMPLETA', 'suministro', 'contrato', ?, 1, 'test-a4', NOW())",
+    [$durCompletaId],
+);
+
+// B) fila de duración PARCIAL — un solo `dias*` en NULL basta para que la suma SQL dé NULL. Si el
+// código todavía la contara como cero (hallazgo original), esta fila entraría a la muestra de la
+// mediana como un 0 fantasma Y, además, el propio paquete que la usa (paqParcial más abajo)
+// calcularía un plan de 0 días en vez de caer a la mediana.
+$db->query(
+    "INSERT INTO general_dias_procesos_contratacion
+        (paqueteContratacion, tipoPaquete, diasElaboracionPliegos, diasEntregaPliegos, diasReciboPropuestas,
+         diasCuadrosComparativos, diasLegalizacionContrato, diasFabricacion, diasInsumosObra)
+     VALUES ('TEST A4 SUMINISTRO PARCIAL', 'Suministro', 5, NULL, 5, 5, 5, 5, 5)",
+);
+$durParcialId = (int) $db->lastInsertId();
+$db->query(
+    "INSERT INTO general_paquetes_contratacion (nombre, nombre_norm, tipo_negociacion, modalidad_contratacion, duracion_ref, activo, creado_por, created_at)
+     VALUES ('TEST A4 PARCIAL', 'TEST A4 PARCIAL', 'suministro', 'contrato', ?, 1, 'test-a4', NOW())",
+    [$durParcialId],
+);
+$paqParcial = (int) $db->lastInsertId();
+$svc->amarrar($P, $paqParcial, 9002, 'test-a4');
+
+// C) duracion_ref COLGADO — apunta a un id que nunca existió (equivalente a una fila borrada: no
+// hay FK que lo impida). El LEFT JOIN de calcular() debe devolver las siete columnas en NULL, no
+// fallar ni dar 0 días.
+$db->query(
+    "INSERT INTO general_paquetes_contratacion (nombre, nombre_norm, tipo_negociacion, modalidad_contratacion, duracion_ref, activo, creado_por, created_at)
+     VALUES ('TEST A4 DURACION HUERFANA', 'TEST A4 DURACION HUERFANA', 'suministro', 'contrato', 999999999, 1, 'test-a4', NOW())",
+);
+$paqHuerfano = (int) $db->lastInsertId();
+$svc->amarrar($P, $paqHuerfano, 9002, 'test-a4');
+
+// D) sin duracion_ref propia — es quien realmente lee la mediana de «suministro».
+$db->query(
+    "INSERT INTO general_paquetes_contratacion (nombre, nombre_norm, tipo_negociacion, modalidad_contratacion, activo, creado_por, created_at)
+     VALUES ('TEST A4 SIN DURACION SUMINISTRO', 'TEST A4 SIN DURACION SUMINISTRO', 'suministro', 'contrato', 1, 'test-a4', NOW())",
+);
+$paqSinDuracionSuministro = (int) $db->lastInsertId();
+$svc->amarrar($P, $paqSinDuracionSuministro, 9002, 'test-a4');
+
+$todasDespues = $contarTodasSuministro();
+$assert($todasDespues === $todasAntes + 2,
+    'Importante 2: el JOIN sí encuentra las dos filas nuevas (COMPLETA y PARCIAL) por duracion_ref: '
+    . $todasAntes . ' → ' . $todasDespues);
+
+$medianaEsperada = $medianaDe();
+
+$svc->calcular($P, 'test-a4');
+$plan3 = $svc->plan($P);
+$porId3 = [];
+foreach ($plan3 as $f) { $porId3[$f['paqueteId']] = $f; }
+
+$assert(($porId3[$paqParcial]['duracionProvisional'] ?? null) === true,
+    'Importante 2: un desglose con un solo `dias*` en NULL se trata como "sin duración" (provisional).');
+$assert(($porId3[$paqParcial]['diasTotales'] ?? -1) === $medianaEsperada,
+    "Importante 2: paqParcial cae en la mediana de \"suministro\" ({$medianaEsperada}), no en 0 ni en una suma con NULL. Dio "
+    . ($porId3[$paqParcial]['diasTotales'] ?? 'null'));
+
+$assert(($porId3[$paqHuerfano]['duracionProvisional'] ?? null) === true,
+    'Importante 2: un duracion_ref colgado (fila borrada) también se trata como "sin duración".');
+$assert(($porId3[$paqHuerfano]['diasTotales'] ?? -1) === $medianaEsperada,
+    "Importante 2: paqHuerfano también cae en la mediana ({$medianaEsperada}), no en 0. Dio "
+    . ($porId3[$paqHuerfano]['diasTotales'] ?? 'null'));
+
+$assert(($porId3[$paqSinDuracionSuministro]['diasTotales'] ?? -1) === $medianaEsperada,
+    "Importante 2: la mediana de \"suministro\" calculada por el servicio coincide con la esperada"
+    . " ({$medianaEsperada}) — la fila PARCIAL quedó excluida de la muestra, no contada como 0. Dio "
+    . ($porId3[$paqSinDuracionSuministro]['diasTotales'] ?? 'null'));
+
+// --- Importante 3 (review Task 6): diasRetraso, orden «vencidos primero», responsable persiste ---
+// Dos frentes con fechas deliberadamente lejanas (año 2000 y año 2099): uno queda vencido y el
+// otro no sin importar qué día real corra este test, a diferencia de las fechas de 2026 del resto
+// del fixture (cuya relación con "hoy" sí depende del reloj de la máquina que ejecute la prueba).
+$db->query(
+    "INSERT INTO programa (project_id, Consecutivo, unique_id, Actividad, Titulo, Fecha_Inicio)
+     VALUES (?, 11, 9005, '<b>TEST A4 VENCIDO, </b> <small>[Capítulo: TORRE 1]</small>', 1, '2000-01-01'),
+            (?, 12, 9006, '<b>TEST A4 LEJOS, </b> <small>[Capítulo: TORRE 1]</small>', 1, '2099-01-01')",
+    [$P, $P],
+);
+$db->query(
+    'INSERT INTO programa_consolidado (project_id, Consecutivo, Semana, unique_id, Consecutivo_en_Programa,
+         Actividad, Titulo, Fecha_Inicio, Estado_Restricciones, D_y_E, Materiales, MdeO, Equipos,
+         Predecesora, Pdto_Cons, Modelo, Activa, alerta_crisis, reprogramaciones_acumuladas)
+     VALUES (?, 301, 2, 9005, 11, ?, 1, ?, 0, "", "", "", "", "", "", "", 1, 0, 0),
+            (?, 302, 2, 9006, 12, ?, 1, ?, 0, "", "", "", "", "", "", "", 1, 0, 0)',
+    [
+        $P, '<b>TEST A4 VENCIDO, </b> <small>[Capítulo: TORRE 1]</small>', '2000-01-01',
+        $P, '<b>TEST A4 LEJOS, </b> <small>[Capítulo: TORRE 1]</small>', '2099-01-01',
+    ],
+);
+
+// Duración corta y determinista (7 días) para no acercar el arranque calculado a "hoy" por accidente.
+$db->query(
+    "INSERT INTO general_dias_procesos_contratacion
+        (paqueteContratacion, tipoPaquete, diasElaboracionPliegos, diasEntregaPliegos, diasReciboPropuestas,
+         diasCuadrosComparativos, diasLegalizacionContrato, diasFabricacion, diasInsumosObra)
+     VALUES ('TEST A4 DURACION CORTA', 'Suministro', 1, 1, 1, 1, 1, 1, 1)",
+);
+$durCortaId = (int) $db->lastInsertId();
+
+$db->query(
+    "INSERT INTO general_paquetes_contratacion (nombre, nombre_norm, tipo_negociacion, modalidad_contratacion, duracion_ref, activo, creado_por, created_at)
+     VALUES ('TEST A4 VENCIDO', 'TEST A4 VENCIDO', 'mano_obra', 'contrato', ?, 1, 'test-a4', NOW())",
+    [$durCortaId],
+);
+$paqVencido = (int) $db->lastInsertId();
+$svc->amarrar($P, $paqVencido, 9005, 'test-a4');
+
+$db->query(
+    "INSERT INTO general_paquetes_contratacion (nombre, nombre_norm, tipo_negociacion, modalidad_contratacion, duracion_ref, activo, creado_por, created_at)
+     VALUES ('TEST A4 LEJOS', 'TEST A4 LEJOS', 'mano_obra', 'contrato', ?, 1, 'test-a4', NOW())",
+    [$durCortaId],
+);
+$paqLejos = (int) $db->lastInsertId();
+$svc->amarrar($P, $paqLejos, 9006, 'test-a4');
+
+// El «responsable» no lo pone ningún método público todavía (lo escribirá un módulo futuro de
+// Seguimiento) — se simula asignándolo directo en la fila ya calculada de paqEstructura, para
+// probar que un recálculo posterior no lo borra ni lo pisa.
+$db->query('UPDATE pdc_plan_paquete SET responsable = ? WHERE project_id = ? AND paquete_id = ?', ['Juan Pérez', $P, $paqEstructura]);
+
+$svc->calcular($P, 'test-a4');
+$plan4 = $svc->plan($P);
+$porId4 = [];
+foreach ($plan4 as $f) { $porId4[$f['paqueteId']] = $f; }
+
+$assert(($porId4[$paqVencido]['diasRetraso'] ?? -1) === (int) (new \DateTimeImmutable('today'))->diff(new \DateTimeImmutable('1999-12-25'))->days,
+    'Importante 3: diasRetraso de un paquete vencido es exacto (hoy - fecha_arranque). Dio '
+    . ($porId4[$paqVencido]['diasRetraso'] ?? 'null') . ', fechaArranque=' . ($porId4[$paqVencido]['fechaArranque'] ?? '?'));
+$assert(($porId4[$paqVencido]['diasRetraso'] ?? 0) > 0, 'Importante 3: diasRetraso de un paquete vencido es positivo.');
+
+$assert(($porId4[$paqLejos]['diasRetraso'] ?? -1) === 0,
+    'Importante 3: diasRetraso de un paquete no vencido da 0 (nunca negativo). Dio ' . ($porId4[$paqLejos]['diasRetraso'] ?? 'null'));
+
+$posVencido = null;
+foreach ($plan4 as $i => $f) { if ($f['paqueteId'] === $paqVencido) { $posVencido = $i; } }
+$assert($posVencido === 0, 'Importante 3: el paquete vencido queda de primero en el plan. Posición: ' . $posVencido);
+foreach ($plan4 as $f) {
+    if ($f['paqueteId'] !== $paqVencido) {
+        $assert($f['diasRetraso'] <= $porId4[$paqVencido]['diasRetraso'],
+            "Importante 3: ningún paquete no vencido queda por delante del vencido (paquete {$f['paqueteId']}).");
+    }
+}
+
+$assert(($porId4[$paqEstructura]['responsable'] ?? '') === 'Juan Pérez',
+    'Importante 3: `responsable` sobrevive a un recálculo (lo conserva el ON DUPLICATE KEY UPDATE).');
 
 echo $failures === [] ? "=== OK ===\n" : '=== ' . count($failures) . " FAILED ===\n";
 $limpiar();
