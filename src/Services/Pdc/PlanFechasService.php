@@ -77,12 +77,28 @@ class PlanFechasService
     /** Frentes de obra de la semana activa, del más temprano al más tardío. */
     public function frentesDisponibles(int $projectId): array
     {
+        return $this->semanaYFrentes($projectId)['frentes'];
+    }
+
+    /**
+     * La semana activa y sus frentes, de una sola pasada.
+     *
+     * `amarrar()` necesita las dos cosas: los frentes para validar el destino y la semana para
+     * guardarla en `semana_origen`. Calcularlas por separado significaba pedir dos veces el mismo
+     * `MAX(Semana)` en un mismo amarre y, en teoría, leer dos semanas distintas si el consolidado
+     * cambiaba en medio (inalcanzable en la práctica: sin semanas no hay frentes y `amarrar()` sale
+     * antes con FRENTE_INVALIDO). Devolverlas juntas quita el segundo viaje y la incoherencia.
+     *
+     * @return array{semana: ?int, frentes: list<array{uniqueId: int, nombre: string, capitulo: string, fechaInicio: string}>}
+     */
+    private function semanaYFrentes(int $projectId): array
+    {
         $semana = $this->db->query(
             'SELECT MAX(Semana) FROM semanas_activas WHERE project_id = ?',
             [$projectId],
         )->fetchColumn();
         if ($semana === false || $semana === null) {
-            return [];
+            return ['semana' => null, 'frentes' => []];
         }
         $rows = $this->db->query(
             'SELECT unique_id, Actividad, Fecha_Inicio FROM programa_consolidado
@@ -92,15 +108,18 @@ class PlanFechasService
             [$projectId, (int) $semana],
         )->fetchAll(\PDO::FETCH_ASSOC);
 
-        return array_map(static function (array $r): array {
-            $l = self::limpiarActividad((string) $r['Actividad']);
-            return [
-                'uniqueId' => (int) $r['unique_id'],
-                'nombre' => $l['nombre'],
-                'capitulo' => $l['capitulo'],
-                'fechaInicio' => (string) $r['Fecha_Inicio'],
-            ];
-        }, $rows);
+        return [
+            'semana' => (int) $semana,
+            'frentes' => array_map(static function (array $r): array {
+                $l = self::limpiarActividad((string) $r['Actividad']);
+                return [
+                    'uniqueId' => (int) $r['unique_id'],
+                    'nombre' => $l['nombre'],
+                    'capitulo' => $l['capitulo'],
+                    'fechaInicio' => (string) $r['Fecha_Inicio'],
+                ];
+            }, $rows),
+        ];
     }
 
     /** Palabras normalizadas de un nombre, sin el prefijo de tipo de negociación (no dice el oficio). */
@@ -356,14 +375,19 @@ class PlanFechasService
      */
     public function amarrar(int $projectId, int $paqueteId, int $uniqueId, string $usuario, array $procedencia = []): array
     {
+        // Una sola lectura del cronograma para las dos cosas que hacen falta aquí: el frente destino
+        // y la semana activa que se guarda en `semana_origen` (ver semanaYFrentes()).
+        ['semana' => $semana, 'frentes' => $frentes] = $this->semanaYFrentes($projectId);
         $frente = null;
-        foreach ($this->frentesDisponibles($projectId) as $f) {
+        foreach ($frentes as $f) {
             if ($f['uniqueId'] === $uniqueId) {
                 $frente = $f;
                 break;
             }
         }
         if ($frente === null) {
+            // Sin semanas activas la lista viene vacía y se sale por aquí: más abajo `$semana` ya no
+            // puede ser null.
             return ['ok' => false, 'code' => 'FRENTE_INVALIDO'];
         }
         $paquete = $this->db->query(
@@ -534,7 +558,8 @@ class PlanFechasService
             if ($provisional) {
                 $sinDuracion++;
                 $total = $medianas[$paq['tipo_negociacion']] ?? self::DURACION_FALLBACK_DIAS;
-                // Sin desglose real, la mediana se reparte proporcional al reparto típico del catálogo.
+                // Sin desglose real, la mediana se reparte con los pesos medidos sobre el catálogo
+                // (`PESOS_REPARTO`), no con una intuición del reparto típico.
                 $dias = self::repartirMediana($total);
             } else {
                 $dias = [];
@@ -627,16 +652,104 @@ class PlanFechasService
         return $out;
     }
 
-    /** Reparte una duración total entre los siete pasos, con el peso típico del catálogo. */
-    private static function repartirMediana(int $total): array
+    /**
+     * Peso de cada paso dentro del proceso completo, en el orden de `self::PASOS`.
+     *
+     * GENERADO — no editar a mano. Se produce con:
+     *
+     *     docker compose exec -T app php scripts/pdc/derivar-pesos-reparto.php
+     *
+     * Última generación: 2026-07-28, sobre las 205 filas de `general_dias_procesos_contratacion`
+     * con desglose completo (las siete columnas `dias*` no nulas) y total mayor que cero.
+     * Método: media de las proporciones fila a fila (cada fila del catálogo pesa igual, sin que los
+     * procesos largos dominen la mezcla), que es la misma medida con la que se detectó la
+     * desviación de los valores anteriores.
+     *
+     * Por qué una constante congelada y no un cálculo en vivo: el catálogo es legacy y se edita
+     * fuera de este módulo. Un peso derivado en cada `calcular()` se movería solo —sin diff, sin
+     * commit, sin nadie que lo revise— y con él las fechas intermedias que ya se le comunicaron a
+     * un proveedor. Congelado, el valor viaja en el diff y se cambia a propósito. Su único riesgo
+     * —quedarse viejo en silencio— lo cubre el centinela de `tests/test_pdc_v2_plan_fechas.php`,
+     * que recalcula desde el catálogo vivo y falla si algún peso se aleja más de 0,01.
+     *
+     * Los valores anteriores (`0.08, 0.09, 0.08, 0.24, 0.20, 0.16, 0.15`) estaban escritos a mano y
+     * su comentario decía «el peso típico del catálogo» sin que nadie lo hubiera medido: el desvío
+     * mayor era Fabricación, que recibía 0,16 cuando el catálogo dice 0,249 (−36 %).
+     */
+    public const PESOS_REPARTO = [0.087872, 0.121115, 0.054079, 0.189065, 0.178996, 0.248792, 0.120081];
+
+    /**
+     * Deriva los pesos desde el catálogo vivo: la media de las proporciones fila a fila entre las
+     * filas con desglose completo. No la usa `calcular()` —que trabaja con `PESOS_REPARTO`— sino el
+     * script generador y el centinela del test; vive aquí para que el método de derivación sea uno
+     * solo y no dos copias que puedan divergir.
+     *
+     * Se mide sobre la tabla de duraciones y no sobre los paquetes que la referencian: la forma del
+     * proceso la define el catálogo, y cruzarlo con `general_paquetes_contratacion` haría que los
+     * pesos dependieran además de qué paquetes están activos, que es otra pieza móvil.
+     *
+     * @return list<float> siete pesos que suman 1
+     */
+    public function pesosDelCatalogo(): array
     {
-        $pesos = [0.08, 0.09, 0.08, 0.24, 0.20, 0.16, 0.15];
+        $suma = implode(' + ', array_map(static fn (array $p): string => $p['col'], self::PASOS));
+        $completo = implode(' AND ', array_map(static fn (array $p): string => $p['col'] . ' IS NOT NULL', self::PASOS));
+        $promedios = implode(', ', array_map(
+            static fn (array $p): string => 'AVG(' . $p['col'] . ' / t)',
+            self::PASOS,
+        ));
+        $fila = $this->db->query(
+            "SELECT {$promedios}
+             FROM (SELECT *, ({$suma}) t FROM general_dias_procesos_contratacion WHERE {$completo}) x
+             WHERE t > 0",
+        )->fetch(\PDO::FETCH_NUM);
+        if ($fila === false || $fila[0] === null) {
+            return self::PESOS_REPARTO; // catálogo vacío: no hay nada que derivar
+        }
+        $pesos = array_map('floatval', array_values($fila));
+        // Las siete medias suman 1 por construcción (cada fila aporta proporciones que suman 1),
+        // pero se normaliza igual para que el error de coma flotante no se cuele en el reparto.
+        $t = array_sum($pesos);
+        return $t > 0 ? array_map(static fn (float $w): float => $w / $t, $pesos) : self::PESOS_REPARTO;
+    }
+
+    /**
+     * Reparte una duración total entre los siete pasos según `PESOS_REPARTO`.
+     *
+     * El residuo de redondeo se asigna por resto mayor (los pasos cuya parte fraccionaria quedó más
+     * cerca del día siguiente reciben el día suelto), no cargándoselo entero al último paso: así la
+     * suma sigue siendo exactamente `$total` —la fecha de arranque y el plazo total no se mueven—
+     * pero ningún paso se desvía más de un día de su parte proporcional. Con el reparto anterior,
+     * «Insumos en obra» absorbía todo el residuo y podía quedar hasta tres días fuera de su peso.
+     *
+     * Pura y pública a propósito: es una regla del dominio, sin estado ni base de datos, y tanto los
+     * tests como cualquier consumidor futuro deben poder reproducir el reparto sin recalcular.
+     *
+     * @return list<int>
+     */
+    public static function repartirMediana(int $total): array
+    {
+        $n = count(self::PASOS);
+        if ($total <= 0) {
+            return array_fill(0, $n, 0);
+        }
+        $sumaPesos = array_sum(self::PESOS_REPARTO);
         $dias = [];
+        $restos = [];
         $acum = 0;
-        foreach ($pesos as $i => $w) {
-            $d = $i === count($pesos) - 1 ? $total - $acum : (int) round($total * $w);
-            $dias[] = max(0, $d);
-            $acum += $d;
+        foreach (self::PESOS_REPARTO as $i => $w) {
+            $exacto = $total * $w / $sumaPesos;
+            $piso = (int) floor($exacto);
+            $dias[$i] = $piso;
+            $restos[$i] = $exacto - $piso;
+            $acum += $piso;
+        }
+        // Los días que dejó el redondeo hacia abajo van a los restos mayores; entre restos iguales
+        // gana el paso más temprano, para que el reparto sea determinista.
+        $orden = array_keys($restos);
+        usort($orden, static fn (int $a, int $b): int => $restos[$b] <=> $restos[$a] ?: $a <=> $b);
+        for ($k = 0; $k < $total - $acum; $k++) {
+            $dias[$orden[$k % $n]]++;
         }
         return $dias;
     }

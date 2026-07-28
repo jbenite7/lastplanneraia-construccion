@@ -660,6 +660,36 @@ $assert($dEfimero !== null && $dEfimero['fechaActual'] === null, 'Sin frente act
 $assert($dEfimero !== null && $dEfimero['diasMovidos'] === null, 'Sin frente actual, diasMovidos queda en null: no es un número de días.');
 $assert($dEfimero !== null && $dEfimero['fechaGuardada'] === '2026-10-01', 'La fecha guardada se conserva aunque el frente ya no exista.');
 
+// --- hueco 4 (bis): desfases() tampoco cruza proyectos ---
+// `desfases()` filtra por `project_id` en su SELECT y compara contra los frentes de la semana activa
+// de ESE proyecto, pero hasta aquí ningún assert lo demostraba: la cobertura era incidental (todos
+// los casos de arriba viven en un solo proyecto, así que quitar el `WHERE f.project_id = ?` los
+// seguía dejando en verde). Se reusa el segundo proyecto del hueco 4 —$P2, con su propio cronograma
+// y $paqEstructura amarrado a CIMENTACIÓN (uid 9101, ancla 2026-08-05)— y se mueve SU frente, para
+// que los dos proyectos tengan un desfase vivo al mismo tiempo sobre el MISMO paqueteId: así el
+// aislamiento no puede confundirse con «cada proyecto tiene paquetes distintos».
+$db->query('UPDATE programa_consolidado SET Fecha_Inicio = "2026-09-14" WHERE project_id = ? AND unique_id = 9101 AND Semana = 1', [$P2]);
+
+$dP2 = $svc->desfases($P2);
+$assert(count($dP2) === 1, 'Hueco 4 bis: desfases($P2) solo trae su propio amarre, no los de $P. Trajo ' . count($dP2));
+$assert(count($dP2) === 1 && $dP2[0]['paqueteId'] === $paqEstructura && $dP2[0]['frenteNombre'] === 'CIMENTACIÓN',
+    'Hueco 4 bis: el desfase de $P2 es el de su frente CIMENTACIÓN.');
+$assert(count($dP2) === 1 && $dP2[0]['fechaGuardada'] === '2026-08-05' && $dP2[0]['fechaActual'] === '2026-09-14'
+    && $dP2[0]['diasMovidos'] === 40,
+    'Hueco 4 bis: el desfase de $P2 se mide contra el cronograma de $P2 (2026-08-05 → 2026-09-14, 40 días).');
+
+$dP1 = $svc->desfases($P);
+$frentesEnP1 = array_column($dP1, 'frenteNombre');
+$assert(!in_array('CIMENTACIÓN', $frentesEnP1, true),
+    'Hueco 4 bis: el frente de $P2 no se cuela en la lista de desfases de $P.');
+$dEstructuraEnP1 = null;
+foreach ($dP1 as $x) {
+    if ($x['paqueteId'] === $paqEstructura) { $dEstructuraEnP1 = $x; }
+}
+$assert($dEstructuraEnP1 !== null && $dEstructuraEnP1['frenteNombre'] === 'ESTRUCTURA'
+    && $dEstructuraEnP1['fechaGuardada'] === '2026-08-18',
+    'Hueco 4 bis: el desfase del mismo paqueteId en $P sigue siendo el de SU frente (ESTRUCTURA, ancla 2026-08-18), no el de $P2.');
+
 // --- Importante 1 (review final A4): reamarrar a OTRO frente invalida el plan viejo ---
 // Antes de este fix, `plan()` unía la cabecera de `pdc_plan_paquete` con el `frente_nombre` VIGENTE
 // de `pdc_paquete_frente` solo por `paquete_id` — sin comparar `unique_id`: la fila mostraba el
@@ -752,6 +782,101 @@ $assert($pasosTrasMoverYReamarrar === 0, 'Importante 2: los pasos viejos del pla
 $amarreTrasMover = $svc->amarres($P);
 $assert(($amarreTrasMover[$paqReamarre]['fechaAncla'] ?? null) === '2027-01-15',
     'Importante 2: el amarre sí guarda la fecha ancla nueva del frente movido.');
+
+// --- Pesos del reparto provisional: derivados del catálogo, no inventados ---
+// Cuando un paquete no tiene desglose propio, `calcular()` reparte la mediana de su tipo entre los
+// siete pasos. Ese reparto se hacía con siete números escritos a mano cuyo comentario decía «el peso
+// típico del catálogo» sin que nadie los hubiera medido: Fabricación iba a 0,16 cuando el catálogo
+// real dice 0,249 (−36 %). Estos asserts fijan las tres propiedades que el fix debe cumplir.
+
+// 1) La derivación en vivo: la media de las proporciones fila a fila del catálogo. Se recalcula aquí
+// con SQL independiente —igual que la mediana de «Importante 2»— para no comparar el servicio contra
+// una copia de sí mismo.
+$pesosEsperados = $db->query(
+    'SELECT AVG(diasElaboracionPliegos / t) p1, AVG(diasEntregaPliegos / t) p2, AVG(diasReciboPropuestas / t) p3,
+            AVG(diasCuadrosComparativos / t) p4, AVG(diasLegalizacionContrato / t) p5, AVG(diasFabricacion / t) p6,
+            AVG(diasInsumosObra / t) p7
+     FROM (SELECT *, (diasElaboracionPliegos + diasEntregaPliegos + diasReciboPropuestas + diasCuadrosComparativos
+                      + diasLegalizacionContrato + diasFabricacion + diasInsumosObra) t
+           FROM general_dias_procesos_contratacion
+           WHERE diasElaboracionPliegos IS NOT NULL AND diasEntregaPliegos IS NOT NULL
+             AND diasReciboPropuestas IS NOT NULL AND diasCuadrosComparativos IS NOT NULL
+             AND diasLegalizacionContrato IS NOT NULL AND diasFabricacion IS NOT NULL
+             AND diasInsumosObra IS NOT NULL) x
+     WHERE t > 0',
+)->fetch(\PDO::FETCH_NUM);
+$pesosEsperados = array_map('floatval', $pesosEsperados);
+
+$pesosVivos = $svc->pesosDelCatalogo();
+$assert(count($pesosVivos) === 7, 'pesosDelCatalogo() devuelve un peso por paso. Dio ' . count($pesosVivos));
+$assert(abs(array_sum($pesosVivos) - 1.0) < 1e-9, 'Los pesos derivados suman 1. Suman ' . array_sum($pesosVivos));
+foreach ($pesosVivos as $i => $w) {
+    $assert(abs($w - $pesosEsperados[$i]) < 1e-6, sprintf(
+        'El peso derivado del paso %d («%s») coincide con la media de proporciones del catálogo: %.6f vs %.6f.',
+        $i, PlanFechasService::PASOS[$i]['paso'], $w, $pesosEsperados[$i],
+    ));
+}
+
+// 2) Centinela de deriva: la constante congelada sigue representando al catálogo. El catálogo es
+// legacy y se edita fuera de este módulo, así que la constante puede quedarse vieja en silencio;
+// esto la vigila. Si falla, hay que volver a generarla con `scripts/pdc/derivar-pesos-reparto.php`,
+// no subir la tolerancia. Margen: 0,01 absoluto — las tres filas sintéticas «TEST A4» que este
+// archivo inserta en el catálogo mueven los pesos menos de 0,002.
+foreach (PlanFechasService::PESOS_REPARTO as $i => $w) {
+    $assert(abs($w - $pesosVivos[$i]) <= 0.01, sprintf(
+        'Centinela: la constante PESOS_REPARTO[%d] («%s») sigue al día con el catálogo (%.6f vs %.6f en vivo).'
+        . ' Si esto falla, regenera la constante con scripts/pdc/derivar-pesos-reparto.php.',
+        $i, PlanFechasService::PASOS[$i]['paso'], $w, $pesosVivos[$i],
+    ));
+}
+
+// 3) El reparto en sí: suma exacta (la fecha de arranque y el plazo total no pueden moverse) y
+// ningún paso a más de un día de su parte proporcional — el residuo de redondeo se reparte por
+// resto mayor en vez de caer entero sobre el último paso, que era lo que dejaba «Insumos en obra»
+// absorbiendo hasta tres días que no le tocaban.
+$sumaPesos = array_sum(PlanFechasService::PESOS_REPARTO);
+foreach ([0, 1, 3, 7, 30, 87, 90, 120, 365] as $total) {
+    $dias = PlanFechasService::repartirMediana($total);
+    $assert(count($dias) === 7, "Reparto de {$total} días: siete pasos. Dio " . count($dias));
+    $assert(array_sum($dias) === $total,
+        "Reparto de {$total} días: la suma es exactamente el total (el arranque no se mueve). Dio " . array_sum($dias));
+    foreach ($dias as $i => $d) {
+        $assert($d >= 0, "Reparto de {$total} días: el paso {$i} no es negativo. Dio {$d}");
+        $exacto = $total * PlanFechasService::PESOS_REPARTO[$i] / $sumaPesos;
+        $assert(abs($d - $exacto) < 1.0, sprintf(
+            'Reparto de %d días: el paso %d («%s») queda a menos de un día de su parte proporcional (%d vs %.2f).',
+            $total, $i, PlanFechasService::PASOS[$i]['paso'], $d, $exacto,
+        ));
+    }
+}
+
+// 4) El hallazgo concreto, con números: con 90 días de mediana, Fabricación es el paso más largo
+// (22 días) y no los 14 que producían los pesos inventados; Cuadros comparativos deja de ser el
+// más largo (17, antes 22). Es el caso que engañaba a quien usa el cronograma para hablar con un
+// proveedor.
+$r90 = PlanFechasService::repartirMediana(90);
+$assert($r90[5] === 22, 'Con 90 días, Fabricación recibe 22 (antes 14). Dio ' . $r90[5]);
+$assert($r90[3] === 17, 'Con 90 días, Cuadros comparativos recibe 17 (antes 22). Dio ' . $r90[3]);
+$assert($r90[5] === max($r90), 'Con 90 días, Fabricación es el paso más largo del proceso.');
+$assert(array_sum($r90) === 90, 'Con 90 días, el reparto sigue sumando 90.');
+
+// 5) Y el mismo reparto es el que llega a la base: los pasos guardados de un paquete sin desglose
+// propio son exactamente `repartirMediana(mediana de su tipo)`.
+$svc->calcular($P, 'test-a4');
+$planPesos = $svc->plan($P);
+$filaSinDuracion = null;
+foreach ($planPesos as $f) {
+    if ($f['paqueteId'] === $paqSinDuracionSuministro) { $filaSinDuracion = $f; }
+}
+$medianaAhora = $medianaDe();
+$assert($filaSinDuracion !== null, 'El paquete sin duración propia sigue en el plan para comprobar sus pasos.');
+$assert($filaSinDuracion !== null && array_column($filaSinDuracion['pasos'], 'dias') === PlanFechasService::repartirMediana($medianaAhora),
+    'Los pasos guardados de un paquete provisional son el reparto derivado de la mediana de su tipo. Dio ['
+    . implode(', ', array_column($filaSinDuracion['pasos'] ?? [], 'dias')) . '] contra ['
+    . implode(', ', PlanFechasService::repartirMediana($medianaAhora)) . ']');
+$assert($filaSinDuracion !== null && $filaSinDuracion['diasTotales'] === $medianaAhora,
+    'El plazo total de un paquete provisional sigue siendo la mediana exacta de su tipo: ' . $medianaAhora
+    . ' vs ' . ($filaSinDuracion['diasTotales'] ?? 'null'));
 
 echo $failures === [] ? "=== OK ===\n" : '=== ' . count($failures) . " FAILED ===\n";
 $limpiar();
