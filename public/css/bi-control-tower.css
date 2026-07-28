@@ -199,9 +199,14 @@
     font-size: 0.875rem;
   }
 
+  /* El hover tintaba el fondo con info-bg y dejaba el texto en el
+     --ds-active-text-primary de la regla base: claro sobre pastel claro, 1,04:1,
+     ilegible hoy mismo. Con el par completo son 5,67:1 y sigue cuadrando cuando
+     el par se invierta a fondo oscuro. */
   .bi-project-option:hover,
   .bi-project-option:focus-within {
     background-color: var(--ds-color-state-info-bg);
+    color: var(--ds-color-state-info-text);
   }
 
   .bi-filter-grid {

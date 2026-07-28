@@ -779,25 +779,38 @@ body.ps-page .ps-hot-toolbar-shell {
     background: var(--ds-color-bg-page);
 }
 
+/* La tarjeta de accion se tinta con el par completo. Traia solo el fondo y el
+   borde: el texto lo ponia `.ops-state-action-text` fijado en
+   --ds-color-text-primary, que se lee (14,53:1) unicamente mientras el fondo
+   sea el pastel claro; con el par invertido a fondo oscuro cae a 1,43:1. Ahora
+   el color viaja con el fondo y el hijo lo hereda.
+   Guard: tests/design-system/state-token-pairing.test.mjs. */
 .ps-page .ops-state-action-list li.is-done {
     border-color: var(--ds-color-state-success-text);
     background: var(--ds-color-state-success-bg);
+    color: var(--ds-color-state-success-text);
 }
 
 .ps-page .ops-state-action-list li.is-pending,
 .ps-page .ops-state-action-list li.is-partial {
     border-color: var(--ds-color-state-warning-text);
     background: var(--ds-color-state-warning-bg);
+    color: var(--ds-color-state-warning-text);
 }
 
 .ps-page .ops-state-action-list li.is-critical,
 .ps-page .ops-state-action-list li.is-conflict {
     border-color: var(--ds-color-state-critical-text);
     background: var(--ds-color-state-critical-bg);
+    color: var(--ds-color-state-critical-text);
 }
 
+/* Sin `color` propio: hereda. En la tarjeta sin estado hereda el
+   --ds-color-text-primary que ya declara `.ops-state-panel` -mismo valor que
+   tenia escrito aqui-, y en las tarjetas `.is-*` hereda el texto del par de
+   estado que pinta su fondo, que es lo que hace que el tinte sobreviva la
+   inversion del par. */
 .ps-page .ops-state-action-text {
-    color: var(--ds-color-text-primary);
     line-height: 1.35;
 }
 
@@ -1605,6 +1618,13 @@ body.ps-page #modal_cnc_hot .ps-modal-control {
     cursor: pointer;
 }
 
+/* Par completo, asi que no entra en el inventario de descompensados. Nota para
+   quien invierta los cuatro pares: styles.css (~1025) lo describe como un aviso
+   deliberadamente claro, pero la inversion vive en el valor del token, no en el
+   selector, y no existe -ni esta planificado- ningun mecanismo de exencion por
+   selector. Este bloque se oscurecera con todo lo demas, conservando el par. Si
+   el aviso tiene que seguir siendo claro hace falta darle sus propios tokens
+   aqui, no una entrada en un JSON. */
 .ps-reopen-header {
     background: var(--ds-color-state-warning-bg);
     color: var(--ds-color-state-warning-text);

@@ -57,13 +57,20 @@ body .navbar-aia .navbar-brand.aia-brand .aia-brand-mark {
   font-weight: 700;
 }
 
+/* El resalte de fila/seccion del preview se pinta con el par completo: mientras
+   el fondo fue un pastel claro el texto heredado bastaba, pero el par de estado
+   se consume en crudo -sin indireccion de tema- y al invertirse a fondo oscuro
+   ese texto heredado queda oscuro sobre oscuro. Guard:
+   tests/design-system/state-token-pairing.test.mjs. */
 .la-preview-section-created {
   background-color: var(--ds-color-state-success-bg);
+  color: var(--ds-color-state-success-text);
 }
 
 .la-preview-row-created,
 .la-preview-section-existing {
   background-color: var(--ds-color-state-info-bg);
+  color: var(--ds-color-state-info-text);
 }
 
 .la-preview-row-existing {
@@ -72,6 +79,7 @@ body .navbar-aia .navbar-brand.aia-brand .aia-brand-mark {
 
 .la-preview-section-warning {
   background-color: var(--ds-color-state-warning-bg);
+  color: var(--ds-color-state-warning-text);
 }
 
 .filaBotones .toolbarFilaBotones:has(.la-toolbar-switcher) {
@@ -199,6 +207,15 @@ body .navbar-aia .navbar-brand.aia-brand .aia-brand-mark {
 .filaBotones .la-toolbar-switcher .aia-info-nav__trigger:focus {
   border-color: var(--aia-green-primary) !important;
   background: var(--ds-color-state-success-bg) !important;
+  /* El hover tinta el fondo con success-bg, asi que el texto tiene que salir del
+     mismo par y no del --aia-green-dark de la regla base (10,19:1 hoy sobre el
+     pastel, 1,00:1 en cuanto el fondo se invierta).
+     Medido en navegador: en dark ninguna de las dos declaraciones llega a
+     pintar, porque `html.aia-theme-dark .filaBotones .la-toolbar-switcher
+     .aia-info-nav__trigger` gana con mas especificidad y tambien !important. El
+     par se completa igual para que el bloque no quede a medias el dia que ese
+     override se retire; si se decide podarlo, se van los dos juntos. */
+  color: var(--ds-color-state-success-text) !important;
   box-shadow: var(--ds-shadow-focus) !important;
   outline: 0 !important;
 }
