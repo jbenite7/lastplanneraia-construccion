@@ -75,6 +75,29 @@ const BG_RE = /background[^;:]*:\s*[^;]*--ds-color-state-(\w+)-bg/g;
 // `border-color:`, `outline-color:` y `-webkit-text-fill-color:`. Aqui solo entra
 // la propiedad `color` de verdad.
 const TEXT_RE = /(?<![-\w])color\s*:\s*[^;]*--ds-color-state-(\w+)-text/g;
+
+// Los dos de arriba solo miran el token en la posicion que le toca, asi que eran
+// ciegos al CRUCE: un `-bg` pintando texto o un `-text` pintando fondo. Eso no es
+// medio par «pendiente de emparejar», es el par usado del reves, y es justo lo
+// que la inversion de la paleta vuelve ilegible: el token viaja de claro a oscuro
+// conservando su PAPEL, no su luminancia. Un `-bg` que hoy hace de tinta clara
+// sobre superficie oscura acaba siendo oscuro sobre oscuro; un `-text` que hoy
+// hace de relleno solido oscuro bajo texto inverso acaba siendo claro bajo texto
+// claro. Se reporta SIEMPRE, este o no la otra mitad en el bloque: ninguna forma
+// de emparejarlo lo salva, solo cambiar de token o inventariarlo.
+//
+// La linea se traza en SUSTITUCION CRUDA, no en «aparece el token». El valor
+// tiene que ser el token entero (con su fallback opcional y su `!important`).
+// Queda fuera a proposito el token como INGREDIENTE de una funcion --
+// `color-mix(in srgb, var(--X-text) 24%, var(--ds-active-surface))` o un segmento
+// de `conic-gradient(...)`--: ahi el token no ocupa el papel contrario, aporta el
+// matiz de su estado a un color derivado, y la inversion lo aclara u oscurece sin
+// invertir ningun papel. Medido al abrir esta deteccion: 30 usos cruzados en el
+// arbol, 9 crudos y 21 derivados; los derivados degradan, los crudos rompen.
+const RAW_VALUE = String.raw`var\(\s*--ds-color-state-(\w+)-%ROLE%\s*(?:,[^;()]*)?\)\s*(?:!important\s*)?(?=;|$)`;
+const BG_AS_TEXT_RE = new RegExp(String.raw`(?<![-\w])color\s*:\s*${RAW_VALUE.replace('%ROLE%', 'bg')}`, 'g');
+const TEXT_AS_BG_RE = new RegExp(String.raw`background[^;:]*:\s*${RAW_VALUE.replace('%ROLE%', 'text')}`, 'g');
+
 const ANY_STATE_RE = /--ds-color-state-\w+-(?:bg|text)/g;
 
 // Se recorre bloque a bloque `{ ... }` porque la pareja tiene sentido dentro de
@@ -96,6 +119,12 @@ function unpairedUses(css) {
     }
     for (const [family, index] of text) {
       if (!bg.has(family)) found.push({ token: `--ds-color-state-${family}-text`, line: lineAt(index) });
+    }
+    for (const m of block.matchAll(BG_AS_TEXT_RE)) {
+      found.push({ token: `--ds-color-state-${m[1]}-bg`, line: lineAt(base + m.index) });
+    }
+    for (const m of block.matchAll(TEXT_AS_BG_RE)) {
+      found.push({ token: `--ds-color-state-${m[1]}-text`, line: lineAt(base + m.index) });
     }
   }
   return found;

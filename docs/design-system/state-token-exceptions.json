@@ -1,5 +1,5 @@
 {
-  "version": "2.0.0",
+  "version": "2.1.0",
   "purpose": "Inventario de los sitios que consumen la mitad de un par de estado. Al invertir los cuatro pares a fondo oscuro con texto claro, un bloque con solo -bg o solo -text queda descompensado. Cada entrada dice donde esta (file + line + selector), que token usa y de que tipo es: `by-design` sobrevive la inversion tal cual, `at-risk` no sobrevive -o ya esta mal hoy- y hay que decidirlo antes o durante la inversion, `out-of-scope-mobile` es deuda dentro de un media query movil que AGENTS.md prohibe tocar en esta linea de trabajo. Guard: tests/design-system/state-token-pairing.test.mjs.",
   "kinds": {
     "by-design": "Medio par a proposito: no hay contraparte que declarar en el bloque y el uso sigue siendo correcto con el par invertido.",
@@ -65,6 +65,60 @@
       "reason": "Estado de texto de la notificacion del sidebar: colorea la linea de texto sin chip de fondo alrededor, sobre la superficie oscura de la navegacion. Acento de texto puntual, no un par bg/text."
     },
     {
+      "file": "public/css/design-system/lab.css",
+      "line": 717,
+      "selector": ".ds-state-set--solid .aia-chip--success",
+      "token": "--ds-color-state-success-text",
+      "kind": "at-risk",
+      "reason": "Variante «solid» del laboratorio: usa el token de TEXTO como relleno y pone --ds-color-text-inverse (#ffffff) encima. No es medio par pendiente de emparejar, es el par usado del reves. Medido hoy: relleno #1a5633 contra el texto inverso = 8,67:1, conforme.",
+      "revisit": "Tras invertir, el relleno pasa a #b7e8c6 y contra #ffffff cae a 1,37:1, muy por debajo de AA. Lo desbloquea decidir si la variante solida toma un relleno de estado propio o si su tinta pasa a un texto oscuro; es diseno del laboratorio, no mecanica de tokens."
+    },
+    {
+      "file": "public/css/design-system/lab.css",
+      "line": 722,
+      "selector": ".ds-state-set--solid .aia-chip--warning",
+      "token": "--ds-color-state-warning-text",
+      "kind": "at-risk",
+      "reason": "Variante «solid» del laboratorio: usa el token de TEXTO como relleno y pone --ds-color-text-inverse (#ffffff) encima. No es medio par pendiente de emparejar, es el par usado del reves. Medido hoy: relleno #5d4200 contra el texto inverso = 9,36:1, conforme.",
+      "revisit": "Tras invertir, el relleno pasa a #f2e79c y contra #ffffff cae a 1,26:1, muy por debajo de AA. Lo desbloquea decidir si la variante solida toma un relleno de estado propio o si su tinta pasa a un texto oscuro; es diseno del laboratorio, no mecanica de tokens."
+    },
+    {
+      "file": "public/css/design-system/lab.css",
+      "line": 727,
+      "selector": ".ds-state-set--solid .aia-chip--critical",
+      "token": "--ds-color-state-critical-text",
+      "kind": "at-risk",
+      "reason": "Variante «solid» del laboratorio: usa el token de TEXTO como relleno y pone --ds-color-text-inverse (#ffffff) encima. No es medio par pendiente de emparejar, es el par usado del reves. Medido hoy: relleno #8f1d1d contra el texto inverso = 8,89:1, conforme.",
+      "revisit": "Tras invertir, el relleno pasa a #ffcdc8 y contra #ffffff cae a 1,42:1, muy por debajo de AA. Lo desbloquea decidir si la variante solida toma un relleno de estado propio o si su tinta pasa a un texto oscuro; es diseno del laboratorio, no mecanica de tokens."
+    },
+    {
+      "file": "public/css/design-system/lab.css",
+      "line": 850,
+      "selector": ".ds-state-set--solid .ds-feedback--success",
+      "token": "--ds-color-state-success-text",
+      "kind": "at-risk",
+      "reason": "Variante «solid» del laboratorio: usa el token de TEXTO como relleno y pone --ds-color-text-inverse (#ffffff) encima. No es medio par pendiente de emparejar, es el par usado del reves. Medido hoy: relleno #1a5633 contra el texto inverso = 8,67:1, conforme.",
+      "revisit": "Tras invertir, el relleno pasa a #b7e8c6 y contra #ffffff cae a 1,37:1, muy por debajo de AA. Lo desbloquea decidir si la variante solida toma un relleno de estado propio o si su tinta pasa a un texto oscuro; es diseno del laboratorio, no mecanica de tokens."
+    },
+    {
+      "file": "public/css/design-system/lab.css",
+      "line": 855,
+      "selector": ".ds-state-set--solid .ds-feedback--critical",
+      "token": "--ds-color-state-critical-text",
+      "kind": "at-risk",
+      "reason": "Variante «solid» del laboratorio: usa el token de TEXTO como relleno y pone --ds-color-text-inverse (#ffffff) encima. No es medio par pendiente de emparejar, es el par usado del reves. Medido hoy: relleno #8f1d1d contra el texto inverso = 8,89:1, conforme.",
+      "revisit": "Tras invertir, el relleno pasa a #ffcdc8 y contra #ffffff cae a 1,42:1, muy por debajo de AA. Lo desbloquea decidir si la variante solida toma un relleno de estado propio o si su tinta pasa a un texto oscuro; es diseno del laboratorio, no mecanica de tokens."
+    },
+    {
+      "file": "public/css/design-system/lab.css",
+      "line": 1143,
+      "selector": ".ds-vendor-alert__signal",
+      "token": "--ds-color-state-warning-text",
+      "kind": "at-risk",
+      "reason": "Unico cruce que va en direccion CONTRARIA a los demas: el token de texto hace de relleno del disco y la tinta es --ds-active-bg-page (#111a15), oscuro sobre oscuro. Medido HOY: #5d4200 contra #111a15 = 1,90:1, es decir ya incumple 1.4.11 antes de tocar nada.",
+      "revisit": "La inversion lo ARREGLA sola: el relleno pasa a #f2e79c y sube a 14,11:1 contra la misma tinta. Lo desbloquea la Task 2; despues hay que volver aqui y retirar esta entrada, porque dejara de ser un riesgo y una entrada fantasma hace fallar el guard."
+    },
+    {
       "file": "public/css/listado-actividades.css",
       "line": 169,
       "selector": ".la-message-success",
@@ -113,6 +167,15 @@
       "token": "--ds-color-state-critical-text",
       "kind": "by-design",
       "reason": "Mensaje de texto suelto con fallback a --aia-alert-critical, sin chip de fondo alrededor, igual que el .pdc-message-neutral vecino: acento de texto sobre la superficie de la pagina, no la mitad de un par."
+    },
+    {
+      "file": "public/css/pdc.css",
+      "line": 235,
+      "selector": ".pdc-row-action--delete",
+      "token": "--ds-color-state-critical-text",
+      "kind": "at-risk",
+      "reason": "Boton de borrar fila en /pdc, RUTA DE PRODUCCION, no laboratorio. Usa el token de texto como relleno solido con --ds-color-text-inverse encima, igual que las variantes solid del lab. Medido hoy: #8f1d1d contra #ffffff = 8,89:1, conforme.",
+      "revisit": "Tras invertir, el relleno pasa a #ffcdc8 y contra #ffffff cae a 1,42:1: un boton destructivo ilegible en produccion. Es el mas urgente de los ocho cruces. Lo desbloquea la Task 2, que debe darle un relleno de accion destructiva en vez del token de texto del par."
     },
     {
       "file": "public/css/programa-general-actualizar.css",
@@ -223,6 +286,15 @@
       "token": "--ds-color-state-critical-text",
       "kind": "by-design",
       "reason": "Rama escalada de \"Falta Calificar\" en CIC, documentada en el comentario de las lineas 2589-2594: mezcla el critical-text con --ds-active-text-primary via color-mix al 55/45, sin fondo asociado. Se ancla al texto primario claro, igual que el remapeo de .text-danger."
+    },
+    {
+      "file": "public/css/styles.css",
+      "line": 4268,
+      "selector": "#modalEditarContratos .ct-overplanning-alert",
+      "token": "--ds-color-state-warning-bg",
+      "kind": "at-risk",
+      "reason": "Unico cruce en la direccion -bg como TINTA. El aviso de sobreplanificacion del modal de contratos pinta su texto con el token de FONDO, sobre --ds-active-surface-raised. Hoy funciona por accidente: #fff8e1 es crema casi blanco y da 14,96:1 sobre esa superficie oscura.",
+      "revisit": "Tras invertir, --ds-color-state-warning-bg pasa a #3a3a0f y el aviso cae a 1,36:1, invisible. Trampa de orden: emparejarlo HOY con warning-text (#5d4200) tambien lo rompe, a ~1,4:1. Solo es correcto apuntarlo al -text del par EN EL MISMO PASO que la inversion."
     },
     {
       "file": "views/auth/login.view.php",
