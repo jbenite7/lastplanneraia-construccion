@@ -35,6 +35,12 @@ const PROBE = () => {
   // /pdc: 3,85:1 real vs 4,09:1 de la sonda). No cambia ninguna conclusion hoy
   // (todo sigue >=3:1), pero el guard no detectaria una regresion causada por
   // el contenido que quede debajo de una superficie translucida superpuesta.
+  //
+  // Otro LIMITE CONOCIDO: compone solo `backgroundColor`, nunca
+  // `backgroundImage`. Sobre una cabecera con degradado sigue subiendo por los
+  // ancestros y sobreestima el contraste (tramo 5i: informo 15,5:1 donde la
+  // verdad, contra las paradas reales del degradado, era 8,25:1). Ahi hay que
+  // medir contra esas paradas, no con esta funcion.
   const effectiveBackground = (el) => {
     let acc = [0, 0, 0, 0];
     for (let node = el; node; node = node.parentElement) {

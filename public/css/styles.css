@@ -4342,7 +4342,8 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
   font-size: 0.9rem;
 }
 
-
+/* .ct-text-* quedan a proposito: siguen vivas en backend y JS, pero en
+   escritorio las pisa contratos.css sin capa; su superficie real es la tarjeta movil. */
 .ct-text-danger {
   color: var(--aia-alert-high);
 }
