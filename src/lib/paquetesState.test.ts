@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { claveInsumo, estadoInicialPaquetes, paquetesReducer } from './paquetesState'
+import { claveInsumo, estadoInicialPaquetes, filtroInicial, paquetesReducer } from './paquetesState'
 import type { SugerenciaPaquete } from './types'
 
 const sug: SugerenciaPaquete = {
@@ -42,5 +42,21 @@ describe('paquetesReducer', () => {
   it('claveInsumo combina norma y unidad de forma estable', () => {
     expect(claveInsumo('A', 'M2')).toBe('A@@M2')
     expect(claveInsumo('A', 'M2')).not.toBe(claveInsumo('A', 'KG'))
+  })
+})
+
+describe('filtroInicial', () => {
+  it('abre en «sin asignar» cuando queda algo pendiente', () => {
+    // El caso real de la revisión: 1 insumo suelto entre 396 filas, invisible con el filtro en
+    // «Todos». Lo primero que se ve tiene que ser el trabajo que falta, no el que ya está hecho.
+    expect(filtroInicial({ sinAsignar: 1, total: 396 })).toBe('sin_asignar')
+  })
+
+  it('abre en «todos» cuando ya no queda nada', () => {
+    expect(filtroInicial({ sinAsignar: 0, total: 396 })).toBe('todos')
+  })
+
+  it('sin datos todavía, no adivina: se queda en todos', () => {
+    expect(filtroInicial(null)).toBe('todos')
   })
 })

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useReducer, useState } from 'react'
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { AgGridReact } from 'ag-grid-react'
 import { CellStyleModule, ModuleRegistry, RowStyleModule, TooltipModule, ValidationModule } from 'ag-grid-community'
 import type { ColDef, ITooltipParams, RowClickedEvent } from 'ag-grid-community'
@@ -7,7 +7,8 @@ import {
   moneda, pdcTheme,
 } from '../lib/agGrid'
 import { PdcApiError, apiGet, apiPost } from '../lib/api'
-import { claveInsumo, estadoInicialPaquetes, paquetesReducer } from '../lib/paquetesState'
+import { claveInsumo, estadoInicialPaquetes, filtroInicial, paquetesReducer } from '../lib/paquetesState'
+import type { FiltroPaquetes } from '../lib/paquetesState'
 import { MODALIDADES, TIPOS_NEGOCIACION } from '../lib/types'
 import type { ActividadesInsumo, InsumoPaquete, PaqueteCatalogo, PlanAuto, ResumenPaquetes, SugerenciaPaquete } from '../lib/types'
 import PaquetesAsistente from './PaquetesAsistente'
@@ -56,7 +57,7 @@ const FUENTE_LABEL: Record<string, string> = {
 }
 const FUENTES_ORDEN = ['reglas', 'ia', 'indirectos', 'exacta', 'tokens', 'agrupacion']
 
-type Filtro = 'todos' | 'sin_asignar' | 'asignados' | 'omitidos'
+type Filtro = FiltroPaquetes
 type Modo = 'masivo' | 'asistente'
 
 export default function PaquetesContratacion() {
@@ -74,6 +75,10 @@ export default function PaquetesContratacion() {
   const [nuevoNombre, setNuevoNombre] = useState('')
   const [nuevoTipo, setNuevoTipo] = useState(TIPOS_NEGOCIACION[0].value)
   const [nuevaModalidad, setNuevaModalidad] = useState(MODALIDADES[0].value)
+  // El filtro de apertura se decide una sola vez, cuando llega el primer resumen: en el primer
+  // render todavía no se sabe cuántos insumos faltan. A partir de ahí manda el usuario — volver a
+  // aplicarlo en cada recarga le pisaría el filtro que acabara de elegir a mano.
+  const filtroDecidido = useRef(false)
 
   const cargar = useCallback((f: Filtro) => {
     apiGet<{ version: unknown; insumos: InsumoPaquete[] }>(`/plan-compras/api/paquetes/insumos?filtro=${f}`)
@@ -83,7 +88,13 @@ export default function PaquetesContratacion() {
       .then((d) => setPaquetes(d.paquetes))
       .catch(() => setPaquetes([]))
     apiGet<ResumenPaquetes>('/plan-compras/api/paquetes/resumen')
-      .then(setResumen)
+      .then((r) => {
+        setResumen(r)
+        if (!filtroDecidido.current) {
+          filtroDecidido.current = true
+          setFiltro(filtroInicial({ sinAsignar: r.total - r.asignados - r.omitidos, total: r.total }))
+        }
+      })
       .catch(() => setResumen(null))
     apiGet<{ mapa: Record<string, ActividadesInsumo> }>('/plan-compras/api/paquetes/insumo-actividades')
       .then((d) => setActividadesMap(d.mapa))

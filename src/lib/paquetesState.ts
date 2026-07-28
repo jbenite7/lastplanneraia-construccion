@@ -5,6 +5,22 @@ export function claveInsumo(descripcionNorm: string, unidad: string): string {
   return `${descripcionNorm}@@${unidad}`
 }
 
+/** Los cuatro estados por los que se puede filtrar la grilla de insumos. */
+export type FiltroPaquetes = 'todos' | 'sin_asignar' | 'asignados' | 'omitidos'
+
+/**
+ * Con qué filtro abre la pantalla de Paquetes.
+ *
+ * Abre en «Sin asignar» mientras quede algo pendiente. La revisión encontró un insumo suelto entre
+ * 396 filas con el filtro en «Todos»: para dar con él había que saber de antemano que existía el
+ * desplegable. Lo primero que se ve tiene que ser el trabajo que falta, no el que ya está hecho.
+ * Cuando no queda nada pendiente, «Todos» vuelve a ser lo útil — es la vista del resultado.
+ */
+export function filtroInicial(resumen: { sinAsignar: number; total: number } | null): FiltroPaquetes {
+  if (resumen === null) return 'todos'
+  return resumen.sinAsignar > 0 ? 'sin_asignar' : 'todos'
+}
+
 export type PaquetesState = {
   seleccion: Set<string>
   sugerencias: Map<string, SugerenciaPaquete>
