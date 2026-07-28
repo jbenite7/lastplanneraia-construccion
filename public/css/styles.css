@@ -31,13 +31,10 @@
   --radius-lg: 18px; /* Large radius for cards */
   --radius-xl: 24px; /* Extra large (modals) */
 
-  /* F1 Task 5l: --shadow-sm, --shadow-lg y --shadow-glass eran duplicados de
-     public/css/tokens.css (@layer theme) que esta hoja ensombrecia desde
-     module.theme; borrados, la declaracion canonica vuelve a mandar con la
-     MISMA geometria. --shadow-md se queda: la canonica pierde la segunda capa
-     y el spread negativo, y su unico consumidor vivo (el tooltip de .pi-page,
-     mas abajo) si nota el cambio. Cambiar geometria de sombra es diseno, y el
-     spec de F1 lo prohibe: desajuste declarado, no resuelto. */
+  /* F1 Task 5l: --shadow-sm/-lg/-glass eran duplicados de tokens.css que esta
+     hoja ensombrecia; borrados, la canonica manda con la MISMA geometria.
+     --shadow-md NO: la canonica pierde una capa y el spread, y su consumidor
+     vivo (tooltip de .pi-page) lo nota. Desajuste declarado, no resuelto. */
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 
   --space-sm: 0.5rem;
@@ -214,13 +211,10 @@ table.dataTable tbody tr:hover td {
    ademas su ultimo residuo, `.dropdown-item { font-size: 1rem !important }`
    (estaba mas abajo, en la seccion de tamanos). */
 
-/* F1 Task 5l: los seis bordes pizarra de estos formularios (aqui y hasta
-   .pregunta) pasan a --ds-active-border, y el fondo a --ds-active-surface-raised.
-   Medido nodo a nodo en /programacion-semanal/cic, /contratos,
-   /listado-actividades, /programa-general-actualizar y /pdc: casi todos ya los
-   pintaban asi desde otras hojas. Los dos que aun rendian el literal ganan
-   frontera: 1,56:1 -> 1,91:1 en .parametro_cargarExcel de
-   /programa-general-actualizar y 1,18:1 -> 1,91:1 en .pregunta de CIC. */
+/* F1 Task 5l: los seis bordes pizarra de estos formularios (hasta .pregunta)
+   pasan a --ds-active-border y el fondo a --ds-active-surface-raised. Medido en
+   las cinco rutas que los emiten: 87 de 89 nodos ya rendian ese token. Los dos
+   vivos ganan frontera (1,18:1 y 1,56:1 -> 1,91:1). */
 .form_eval {
   border-style: solid;
   border-width: 2px;
@@ -318,11 +312,9 @@ table.dataTable tbody tr:hover td {
   margin-top: 10px;
 }
 
-/* F1 Task 5l: los cinco bordes grises de este formulario de contratacion (aqui
-   y en las cuatro reglas de mas abajo) solo se emiten en views/pdc/pdc.view.php.
-   Medidos en /pdc sobre TODOS los nodos: ninguno pinta el literal --pdc.css y
-   los adaptadores ya resuelven --ds-active-border o borde de ancho cero--, asi
-   que reapuntarlos al token es un no-op medido, no un cambio de color. */
+/* F1 Task 5l: los cinco bordes grises de este formulario (aqui y en las cuatro
+   reglas siguientes) solo los emite views/pdc/pdc.view.php. Medidos en /pdc
+   sobre los 51 nodos: ninguno pintaba el literal. No-op medido. */
 .informacionAdjudicacionProveedor,
 .informacionAdjudicacionContrato,
 .seguimientoContrato {
@@ -492,12 +484,10 @@ table.dataTable tbody tr:hover td {
    public/css/design-system/adapters/legacy-bridge.css con el resto del
    layout legacy de este rango. */
 
-/* F1 Task 5l: unica regla VIVA del barrido. Es la banda de titulo de los
-   bloques de /control-cambios, y adopta la misma pareja que control-cambios.css
-   ya usa para .cc-field-label y .cc-field-block (raised + borde del tema);
-   fondo, borde y tinta del h3 se reasignan juntos. Medido en /control-cambios
-   con los cuatro nodos: la tinta sube de 9,96:1 a 13,3:1 y el borde de 1,50:1
-   a 1,91:1, ambos compuestos contra el fondo real. */
+/* F1 Task 5l: unica regla VIVA del barrido. Adopta la pareja que
+   control-cambios.css ya usa en .cc-field-label/.cc-field-block; fondo, borde y
+   tinta del h3 se reasignan juntos. Medido sobre los cuatro nodos: tinta
+   9,96:1 -> 13,3:1 y borde 1,50:1 -> 1,91:1. */
 .tituloFormularioCambios {
   border-style: solid;
   border-width: 2px;
