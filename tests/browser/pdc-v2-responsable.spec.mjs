@@ -72,7 +72,11 @@ test('plan: el responsable se elige de la gente del proyecto y se guarda', async
     await expect(celda).toBeVisible({ timeout: 20000 });
     await expect(celda, 'el paquete recién calculado arranca sin responsable').toHaveText('');
 
-    await celda.dblclick();
+    // UN SOLO clic, no un doble: desde la revisión de UX la grilla usa `singleClickEdit`. Con un
+    // dblclick el primer clic abre el editor y el segundo cae ya sobre el desplegable y despliega
+    // la lista, que queda tapando el control — el clic siguiente se estrellaba contra el popup
+    // («subtree intercepts pointer events»). Este clic único es además la prueba de que basta uno.
+    await celda.click();
     // AG Grid 36 no usa un <select> nativo: `agSelectCellEditor` monta su propio widget
     // (`.ag-cell-editor.ag-select`) y despliega las opciones en un popup `.ag-select-list` que
     // cuelga FUERA del contenedor del grid — por eso la lista se busca en `page`, no en `grid`.
