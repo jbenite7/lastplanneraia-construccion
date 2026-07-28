@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useMemo, useReducer, useState } from 'react'
 import { AgGridReact } from 'ag-grid-react'
-import { CellStyleModule, ClientSideRowModelModule, ModuleRegistry, RowSelectionModule, RowStyleModule, SelectEditorModule, TextEditorModule, ValidationModule } from 'ag-grid-community'
+import { CellStyleModule, ModuleRegistry, RowSelectionModule, RowStyleModule, SelectEditorModule, TextEditorModule, ValidationModule } from 'ag-grid-community'
 import type { CellClickedEvent, ColDef, SelectionChangedEvent } from 'ag-grid-community'
-import { moneda, pdcTheme } from '../lib/agGrid'
+import {
+  MODULOS_TABLA, TEXTO_LARGO, autoSizeStrategy, columnaNumero, columnaTexto, defaultColDef,
+  moneda, pdcTheme,
+} from '../lib/agGrid'
 import { PdcApiError, apiGet, apiPost } from '../lib/api'
 import {
   contarSinResponsable,
@@ -34,7 +37,7 @@ import type { Desfase, FilaPlan, FrenteDisponible, PlanResultado, ResponsableEle
 // RowSelectionModule: checkboxes de selección múltiple para la asignación en masa. Es Community
 // (ver ag-grid-community/main.d.ts) — Enterprise sigue fuera del repo.
 ModuleRegistry.registerModules([
-  ClientSideRowModelModule,
+  ...MODULOS_TABLA,
   CellStyleModule,
   RowStyleModule,
   RowSelectionModule,
@@ -292,11 +295,13 @@ export default function PlanFechas() {
   }
 
   const cols = useMemo<ColDef<FilaPlan>[]>(() => [
-    { headerName: 'Paquete', field: 'nombre', flex: 2, minWidth: 220 },
-    { headerName: 'Frente', field: 'frenteNombre', flex: 1, minWidth: 160 },
-    { headerName: 'Arranque', field: 'fechaArranque', width: 120 },
-    { headerName: 'Necesidad en obra', field: 'fechaAncla', width: 150 },
-    { headerName: 'Días', field: 'diasTotales', width: 90, type: 'rightAligned' },
+    { ...TEXTO_LARGO, headerName: 'Paquete', field: 'nombre', flex: 2, minWidth: 220 },
+    columnaTexto('frenteNombre', 'Frente', 160),
+    // Las fechas nunca envuelven y toman su ancho del contenido: partir «2026-07-28» en dos
+    // renglones no ahorra nada y descuadra la fila.
+    { headerName: 'Arranque', field: 'fechaArranque' },
+    { headerName: 'Necesidad en obra', field: 'fechaAncla' },
+    columnaNumero('diasTotales', 'Días'),
     {
       headerName: 'Responsable', colId: 'responsable', field: 'responsableNombre',
       flex: 1, minWidth: 220, editable: true,
@@ -409,6 +414,8 @@ export default function PlanFechas() {
           theme={pdcTheme}
           rowData={plan}
           columnDefs={cols}
+          defaultColDef={defaultColDef}
+          autoSizeStrategy={autoSizeStrategy}
           domLayout="autoHeight"
           suppressCellFocus
           // Selección múltiple (Community — ver RowSelectionModule) solo por checkbox:

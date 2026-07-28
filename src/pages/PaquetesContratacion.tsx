@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useMemo, useReducer, useState } from 'react'
 import { AgGridReact } from 'ag-grid-react'
-import { CellStyleModule, ClientSideRowModelModule, ModuleRegistry, RowStyleModule, TooltipModule, ValidationModule } from 'ag-grid-community'
+import { CellStyleModule, ModuleRegistry, RowStyleModule, TooltipModule, ValidationModule } from 'ag-grid-community'
 import type { ColDef, ITooltipParams, RowClickedEvent } from 'ag-grid-community'
-import { moneda, pdcTheme } from '../lib/agGrid'
+import {
+  MODULOS_TABLA, TEXTO_LARGO, autoSizeStrategy, columnaMoneda, columnaTexto, defaultColDef,
+  moneda, pdcTheme,
+} from '../lib/agGrid'
 import { PdcApiError, apiGet, apiPost } from '../lib/api'
 import { claveInsumo, estadoInicialPaquetes, paquetesReducer } from '../lib/paquetesState'
 import { MODALIDADES, TIPOS_NEGOCIACION } from '../lib/types'
@@ -11,7 +14,7 @@ import PaquetesAsistente from './PaquetesAsistente'
 
 // Registro selectivo de módulos (no AllCommunityModule); ValidationModule solo en dev — patrón del repo.
 ModuleRegistry.registerModules([
-  ClientSideRowModelModule,
+  ...MODULOS_TABLA,
   CellStyleModule,
   RowStyleModule,
   TooltipModule, // tooltip de actividades que requieren el insumo
@@ -99,22 +102,24 @@ export default function PaquetesContratacion() {
 
   const cols = useMemo<ColDef<InsumoPaquete>[]>(() => [
     {
-      headerName: '', width: 46, cellClass: 'pdc-paq-check', sortable: false,
+      headerName: '', width: 46, cellClass: 'pdc-paq-check', sortable: false, suppressAutoSize: true,
       valueGetter: (p) => (p.data && state.seleccion.has(claveInsumo(p.data.descripcionNorm, p.data.unidad)) ? 1 : 0),
       valueFormatter: (p) => (p.value === 1 ? '✔' : ''),
     },
     {
+      ...TEXTO_LARGO,
       headerName: 'Insumo', field: 'descripcion', flex: 2, minWidth: 220,
       // Tooltip con las actividades que requieren el insumo (el valueGetter solo dispara el tooltip).
       tooltipValueGetter: (p) => (p.data ? p.data.descripcion : ''),
       tooltipComponent: TooltipActividades,
     },
-    { headerName: 'Agrupación', field: 'agrupacion', flex: 1, minWidth: 130, valueFormatter: (p) => p.value ?? '—' },
-    { headerName: 'Recurso', field: 'tipoRecurso', width: 120, valueFormatter: (p) => p.value ?? '—' },
-    { headerName: 'Und', field: 'unidad', width: 78 },
-    { headerName: 'Valor total', field: 'valorTotal', width: 140, type: 'rightAligned', valueFormatter: (p) => moneda(p.value) },
+    { ...columnaTexto('agrupacion', 'Agrupación', 130), valueFormatter: (p) => p.value ?? '—' },
+    { headerName: 'Recurso', field: 'tipoRecurso', valueFormatter: (p) => p.value ?? '—' },
+    { headerName: 'Und', field: 'unidad' },
+    columnaMoneda('valorTotal', 'Valor total'),
     {
-      headerName: 'Destino', flex: 1, minWidth: 150,
+      ...TEXTO_LARGO,
+      headerName: 'Destino', colId: 'destino', minWidth: 150,
       valueGetter: (p) => {
         if (!p.data) return ''
         if (p.data.omitido === 1) return '— Omitido —'
@@ -122,7 +127,8 @@ export default function PaquetesContratacion() {
       },
     },
     {
-      headerName: 'Sugerencia', flex: 1, minWidth: 190, sortable: false,
+      ...TEXTO_LARGO,
+      headerName: 'Sugerencia', colId: 'sugerencia', minWidth: 190, sortable: false,
       valueGetter: (p) => {
         if (!p.data) return ''
         const s = state.sugerencias.get(claveInsumo(p.data.descripcionNorm, p.data.unidad))
@@ -434,6 +440,8 @@ export default function PaquetesContratacion() {
           theme={pdcTheme}
           rowData={visibles}
           columnDefs={cols}
+          defaultColDef={defaultColDef}
+          autoSizeStrategy={autoSizeStrategy}
           context={{ actividadesMap }}
           tooltipShowDelay={350}
           onRowClicked={onRowClicked}

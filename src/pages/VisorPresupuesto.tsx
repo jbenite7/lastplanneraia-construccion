@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AgGridReact } from 'ag-grid-react'
 import {
-  ClientSideRowModelModule, ModuleRegistry, NumberFilterModule, TextFilterModule,
+  ModuleRegistry, NumberFilterModule, TextFilterModule,
   TooltipModule, ValidationModule,
 } from 'ag-grid-community'
 import type { CellClickedEvent, ColDef } from 'ag-grid-community'
-import { moneda, pdcTheme } from '../lib/agGrid'
+import {
+  MODULOS_TABLA, TEXTO_LARGO, autoSizeStrategy, columnaMoneda, columnaNumero, defaultColDef, pdcTheme,
+} from '../lib/agGrid'
 import { PdcApiError, apiGet } from '../lib/api'
 import { filasVisibles } from '../lib/presupuestoTree'
 import type { FilaVisor } from '../lib/presupuestoTree'
@@ -15,7 +17,7 @@ import { etiquetaVersion } from '../lib/versionLabel'
 // Mismo criterio que ImportarPresupuesto.tsx: registro selectivo de módulos
 // (no AllCommunityModule, que arrastra ~1.3MB). ValidationModule solo en dev.
 ModuleRegistry.registerModules([
-  ClientSideRowModelModule,
+  ...MODULOS_TABLA,
   // Filtros por columna del modo tabla: el registro es selectivo, así que hay que pedirlos. El
   // filtro por valores con casillas (Set Filter) es de AG Grid Enterprise y aquí se sustituye con
   // los desplegables de Tipo insumo y Unidad de la barra de herramientas.
@@ -86,13 +88,16 @@ export default function VisorPresupuesto() {
   )
 
   const cols: ColDef<FilaVisor>[] = useMemo(() => [
-    { field: 'codigo', headerName: 'Código', width: 130, filter: plano, sortable: plano },
+    { field: 'codigo', headerName: 'Código', filter: plano, sortable: plano },
     ...(plano ? [{
-      field: 'ruta', headerName: 'Dónde está', width: 300, filter: true, sortable: true,
+      ...TEXTO_LARGO, field: 'ruta', headerName: 'Dónde está', minWidth: 240, filter: true, sortable: true,
       tooltipValueGetter: (p) => String(p.value ?? ''),
     } as ColDef<FilaVisor>] : []),
     {
-      field: 'descripcion', headerName: 'Descripción', flex: 1, minWidth: 320,
+      ...TEXTO_LARGO,
+      field: 'descripcion', headerName: 'Descripción', minWidth: 320,
+      // `pre-wrap` (ver styles.css): conserva la sangría del árbol —que se dibuja con espacios— y
+      // además envuelve. Con el `pre` de antes, una descripción larga se recortaba sin remedio.
       cellClass: 'pdc-visor-descripcion',
       // En modo tabla no hay jerarquía que dibujar, así que la sangría y las flechas sobran.
       filter: plano, sortable: plano,
@@ -104,18 +109,16 @@ export default function VisorPresupuesto() {
         return `${sangria}${marca}${f.descripcion}`
       },
     },
-    { field: 'tipoInsumo', headerName: 'Tipo insumo', width: 160, filter: plano, sortable: plano },
-    { field: 'unidad', headerName: 'Und', width: 90, filter: plano, sortable: plano },
-    { field: 'cantidad', headerName: 'Cantidad', width: 120, filter: plano ? 'agNumberColumnFilter' : false, sortable: plano },
+    { field: 'tipoInsumo', headerName: 'Tipo insumo', filter: plano, sortable: plano },
+    { field: 'unidad', headerName: 'Und', filter: plano, sortable: plano },
+    { ...columnaNumero('cantidad', 'Cantidad'), filter: plano ? 'agNumberColumnFilter' : false, sortable: plano },
     {
-      field: 'valorUnitario', headerName: 'Vr. unitario', width: 140,
+      ...columnaMoneda('valorUnitario', 'Vr. unitario'),
       filter: plano ? 'agNumberColumnFilter' : false, sortable: plano,
-      valueFormatter: (p) => moneda(p.value),
     },
     {
-      field: 'valorTotal', headerName: 'Valor total', width: 160,
+      ...columnaMoneda('valorTotal', 'Valor total'),
       filter: plano ? 'agNumberColumnFilter' : false, sortable: plano,
-      valueFormatter: (p) => moneda(p.value),
     },
   ], [plano])
 
@@ -223,7 +226,8 @@ export default function VisorPresupuesto() {
               onCellClicked={onCellClicked}
               // Los filtros por columna solo tienen sentido sin jerarquía: en el árbol ordenarían y
               // esconderían filas dejando hijos sin su padre.
-              defaultColDef={{ floatingFilter: plano, resizable: true }}
+              defaultColDef={{ ...defaultColDef, floatingFilter: plano }}
+              autoSizeStrategy={autoSizeStrategy}
               tooltipShowDelay={350}
             />
           </div>

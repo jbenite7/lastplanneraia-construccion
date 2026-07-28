@@ -36,7 +36,10 @@
 .pdc-exito { padding: 12px 16px; border: 1px solid #69b578; background: #17251c; color: #b7e4c4; border-radius: 8px; }
 .pdc-bloque button { background: #1a5633; color: #f4f1ea; border: 1px solid #69b578; border-radius: 6px; padding: 8px 16px; cursor: pointer; }
 .pdc-bloque button:disabled { opacity: 0.5; cursor: wait; }
-.pdc-visor-descripcion { white-space: pre; }
+/* `pre-wrap`, no `pre`: la sangría del árbol se dibuja con espacios y hay que conservarla, pero una
+   descripción larga tiene que poder envolver en vez de recortarse. Dos clases para ganarle en
+   especificidad a `.ag-cell-wrap-text`, que impone `white-space: normal` y se comería la sangría. */
+.ag-cell.pdc-visor-descripcion { white-space: pre-wrap; }
 
 .pdc-fila-acciones { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .pdc-ayuda { opacity: 0.6; font-size: 12px; margin: 4px 0 8px; }

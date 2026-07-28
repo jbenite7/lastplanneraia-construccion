@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AgGridReact } from 'ag-grid-react'
-import { CellStyleModule, ClientSideRowModelModule, ModuleRegistry, ValidationModule } from 'ag-grid-community'
+import { CellStyleModule, ModuleRegistry, ValidationModule } from 'ag-grid-community'
 import type { CellClickedEvent, ColDef } from 'ag-grid-community'
-import { moneda, pdcTheme } from '../lib/agGrid'
+import {
+  CIFRA, MODULOS_TABLA, TEXTO_LARGO, autoSizeStrategy, columnaMoneda, columnaTexto, defaultColDef,
+  moneda, pdcTheme,
+} from '../lib/agGrid'
 import { PdcApiError, apiGet } from '../lib/api'
 import { claseDelta, filasComparativoVisibles } from '../lib/comparativo'
 import type { FilaComparativo } from '../lib/comparativo'
@@ -11,7 +14,7 @@ import { etiquetaVersion } from '../lib/versionLabel'
 
 // Mismo criterio que VisorPresupuesto.tsx: registro selectivo de módulos.
 ModuleRegistry.registerModules([
-  ClientSideRowModelModule,
+  ...MODULOS_TABLA,
   CellStyleModule, // cellClass condicional de la columna Δ (sobrecosto/ahorro)
   ...(import.meta.env.DEV ? [ValidationModule] : []),
 ])
@@ -60,7 +63,8 @@ export default function ComparativoPresupuesto() {
 
   const colsAct: ColDef<FilaComparativo>[] = useMemo(() => [
     {
-      field: 'descripcion', headerName: 'Actividad', flex: 1, minWidth: 320, cellClass: 'pdc-visor-descripcion',
+      ...TEXTO_LARGO,
+      field: 'descripcion', headerName: 'Actividad', minWidth: 320, cellClass: 'pdc-visor-descripcion',
       valueFormatter: (p) => {
         const f = p.data as FilaComparativo
         const sangria = ' '.repeat((f.nivel - 1) * 4)
@@ -68,26 +72,26 @@ export default function ComparativoPresupuesto() {
         return `${sangria}${marca}${f.descripcion}`
       },
     },
-    { field: 'valorA', headerName: 'Versión A', width: 150, valueFormatter: (p) => moneda(p.value) },
-    { field: 'valorB', headerName: 'Versión B', width: 150, valueFormatter: (p) => moneda(p.value) },
+    columnaMoneda('valorA', 'Versión A'),
+    columnaMoneda('valorB', 'Versión B'),
     {
-      field: 'deltaValor', headerName: 'Δ', width: 140, valueFormatter: (p) => signo(p.value),
+      ...CIFRA, field: 'deltaValor', headerName: 'Δ', valueFormatter: (p) => signo(p.value),
       cellClass: (p) => claseDelta(p.value, (p.data as FilaComparativo).estado),
     },
-    { field: 'estado', headerName: 'Estado', width: 120 },
+    { field: 'estado', headerName: 'Estado' },
   ], [])
 
   const colsIns: ColDef<InsumoDiff>[] = useMemo(() => [
-    { field: 'descripcion', headerName: 'Insumo', flex: 1, minWidth: 280 },
-    { field: 'tipoInsumo', headerName: 'Tipo', width: 150 },
-    { field: 'unidad', headerName: 'Und', width: 80 },
-    { field: 'valorA', headerName: 'Versión A', width: 150, valueFormatter: (p) => moneda(p.value) },
-    { field: 'valorB', headerName: 'Versión B', width: 150, valueFormatter: (p) => moneda(p.value) },
+    columnaTexto('descripcion', 'Insumo', 280),
+    { field: 'tipoInsumo', headerName: 'Tipo' },
+    { field: 'unidad', headerName: 'Und' },
+    columnaMoneda('valorA', 'Versión A'),
+    columnaMoneda('valorB', 'Versión B'),
     {
-      field: 'deltaValor', headerName: 'Δ', width: 140, valueFormatter: (p) => signo(p.value),
+      ...CIFRA, field: 'deltaValor', headerName: 'Δ', valueFormatter: (p) => signo(p.value),
       cellClass: (p) => claseDelta(p.value, (p.data as InsumoDiff).estado),
     },
-    { field: 'estado', headerName: 'Estado', width: 120 },
+    { field: 'estado', headerName: 'Estado' },
   ], [])
 
   const onCellClickedAct = (e: CellClickedEvent<FilaComparativo>) => {
@@ -147,9 +151,17 @@ export default function ComparativoPresupuesto() {
 
           <div style={{ height: 520 }} data-testid="pdc-cmp-grid">
             {eje === 'actividades' ? (
-              <AgGridReact<FilaComparativo> theme={pdcTheme} rowData={filasAct} columnDefs={colsAct} getRowId={(p) => p.data.key} onCellClicked={onCellClickedAct} />
+              <AgGridReact<FilaComparativo>
+                theme={pdcTheme} rowData={filasAct} columnDefs={colsAct} getRowId={(p) => p.data.key}
+                onCellClicked={onCellClickedAct}
+                defaultColDef={defaultColDef} autoSizeStrategy={autoSizeStrategy}
+              />
             ) : (
-              <AgGridReact<InsumoDiff> theme={pdcTheme} rowData={data.insumos} columnDefs={colsIns} getRowId={(p) => `${p.data.descripcionNorm}|${p.data.unidad}`} />
+              <AgGridReact<InsumoDiff>
+                theme={pdcTheme} rowData={data.insumos} columnDefs={colsIns}
+                getRowId={(p) => `${p.data.descripcionNorm}|${p.data.unidad}`}
+                defaultColDef={defaultColDef} autoSizeStrategy={autoSizeStrategy}
+              />
             )}
           </div>
         </>

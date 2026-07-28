@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { columnaMoneda, columnaNumero, columnaTexto, defaultColDef, moneda } from './agGrid'
+import {
+  autoSizeStrategy,
+  columnaMoneda,
+  columnaNumero,
+  columnaTexto,
+  defaultColDef,
+  moneda,
+} from './agGrid'
 
 describe('moneda', () => {
   it('un cero se muestra como $ 0, no como celda vacía', () => {
@@ -50,5 +57,18 @@ describe('columnaTexto', () => {
     const c = columnaTexto('descripcion', 'Descripción')
     expect(c.wrapText).toBe(true)
     expect(c.autoHeight).toBe(true)
+  })
+
+  it('queda fuera de la medición por contenido', () => {
+    // Si se midiera, una descripción de 200 caracteres pediría una columna de 200 caracteres y
+    // empujaría fuera de pantalla al resto. El texto largo se resuelve envolviendo, no ensanchando.
+    expect(columnaTexto('descripcion', 'Descripción').suppressAutoSize).toBe(true)
+  })
+})
+
+describe('autoSizeStrategy', () => {
+  it('el módulo expone una estrategia de ancho que se ajusta al contenido', () => {
+    expect(autoSizeStrategy).toBeDefined()
+    expect(autoSizeStrategy.type).toBe('fitCellContents')
   })
 })

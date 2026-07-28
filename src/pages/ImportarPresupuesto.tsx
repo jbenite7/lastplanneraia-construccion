@@ -1,8 +1,11 @@
 import { useEffect, useReducer, useRef, useState } from 'react'
 import { AgGridReact } from 'ag-grid-react'
-import { ClientSideRowModelModule, ModuleRegistry, ValidationModule } from 'ag-grid-community'
+import { ModuleRegistry, ValidationModule } from 'ag-grid-community'
 import type { ColDef } from 'ag-grid-community'
-import { moneda, pdcTheme } from '../lib/agGrid'
+import {
+  MODULOS_TABLA, TEXTO_LARGO, autoSizeStrategy, columnaMoneda, columnaNumero, columnaTexto,
+  defaultColDef, moneda, pdcTheme,
+} from '../lib/agGrid'
 import { PdcApiError, apiGet, apiPost, apiUpload } from '../lib/api'
 import { estadoInicial, importReducer } from '../lib/importState'
 import { etiquetaVersion } from '../lib/versionLabel'
@@ -11,30 +14,29 @@ import type { Comparativo, ImportConfirmResult, ImportErrorFila, ImportPreview, 
 // Mismo criterio que MaestroInsumos.tsx: registro selectivo de módulos
 // (no AllCommunityModule, que arrastra ~1.3MB). ValidationModule solo en dev.
 ModuleRegistry.registerModules([
-  ClientSideRowModelModule,
+  ...MODULOS_TABLA,
   ...(import.meta.env.DEV ? [ValidationModule] : []),
 ])
 
 const colsErrores: ColDef<ImportErrorFila>[] = [
-  { field: 'fila', headerName: 'Fila', width: 90 },
-  { field: 'columna', headerName: 'Columna', width: 140 },
-  { field: 'motivo', headerName: 'Motivo', flex: 1 },
+  columnaNumero('fila', 'Fila'),
+  { field: 'columna', headerName: 'Columna' },
+  columnaTexto('motivo', 'Motivo', 240),
 ]
 
 const colsVersiones: ColDef<VersionPresupuesto>[] = [
+  // El nombre de la versión y el del archivo son los dos que la revisión encontró recortados
+  // («102 DAPORTO RIONEGRO PI_Version…», «Import Da Po…»): envuelven en vez de cortarse.
   {
-    headerName: 'Versión', flex: 1, minWidth: 220,
+    ...TEXTO_LARGO, colId: 'version', headerName: 'Versión', minWidth: 240,
     valueGetter: (p) => (p.data ? etiquetaVersion(p.data) : ''),
   },
-  { field: 'archivoNombre', headerName: 'Archivo', flex: 1 },
-  { field: 'totalActividades', headerName: 'Actividades', width: 120 },
-  { field: 'totalInsumos', headerName: 'Insumos', width: 110 },
-  {
-    field: 'costoTotal', headerName: 'Costo total', width: 150,
-    valueFormatter: (p) => moneda(p.value),
-  },
-  { field: 'importadoPor', headerName: 'Importó', width: 130 },
-  { field: 'activa', headerName: 'Estado', width: 100, valueFormatter: (p) => (p.value ? 'Activa' : '') },
+  columnaTexto('archivoNombre', 'Archivo', 220),
+  columnaNumero('totalActividades', 'Actividades'),
+  columnaNumero('totalInsumos', 'Insumos'),
+  columnaMoneda('costoTotal', 'Costo total'),
+  { field: 'importadoPor', headerName: 'Importó' },
+  { field: 'activa', headerName: 'Estado', valueFormatter: (p) => (p.value ? 'Activa' : '') },
 ]
 
 export default function ImportarPresupuesto() {
@@ -113,7 +115,13 @@ export default function ImportarPresupuesto() {
             El archivo tiene {state.errores.length} error(es); no se importó nada. Corrige el Excel y vuelve a subirlo.
           </div>
           <div style={{ height: 280 }}>
-            <AgGridReact<ImportErrorFila> theme={pdcTheme} rowData={state.errores} columnDefs={colsErrores} />
+            <AgGridReact<ImportErrorFila>
+              theme={pdcTheme}
+              rowData={state.errores}
+              columnDefs={colsErrores}
+              defaultColDef={defaultColDef}
+              autoSizeStrategy={autoSizeStrategy}
+            />
           </div>
         </div>
       )}
@@ -123,7 +131,7 @@ export default function ImportarPresupuesto() {
           <h2>Previsualización — {state.preview?.versionLabel ?? 'sin versión'}</h2>
           <p>
             {r.capitulos} capítulos · {r.subcapitulos} subcapítulos · {r.grupos} grupos · {r.actividades} actividades ·{' '}
-            {r.insumos} insumos · Costo total $ {r.costoTotal.toLocaleString('es-CO')}
+            {r.insumos} insumos · Costo total {moneda(r.costoTotal)}
           </p>
           {state.preview?.advertencias.map((a) => (
             <p key={a} className="pdc-advertencia">⚠ {a}</p>
@@ -155,8 +163,8 @@ export default function ImportarPresupuesto() {
                 <div data-testid="pdc-import-comparativo">
                   <p>
                     Cambios vs la versión anterior: {cmp.nuevos} nuevos · {cmp.eliminados} eliminados · {cmp.modificados} modificados ·{' '}
-                    <span className="pdc-cmp-sobrecosto">sobrecostos $ {cmp.sobrecostos.toLocaleString('es-CO')}</span> ·{' '}
-                    <span className="pdc-cmp-ahorro">ahorros $ {cmp.ahorros.toLocaleString('es-CO')}</span>
+                    <span className="pdc-cmp-sobrecosto">sobrecostos {moneda(cmp.sobrecostos)}</span> ·{' '}
+                    <span className="pdc-cmp-ahorro">ahorros {moneda(cmp.ahorros)}</span>
                   </p>
                   <a className="pdc-nav-link" href="#/ensamble/comparar">Ver comparativo completo →</a>
                 </div>
@@ -169,7 +177,13 @@ export default function ImportarPresupuesto() {
       <div className="pdc-bloque" data-testid="pdc-import-versiones">
         <h2>Historial de versiones</h2>
         <div style={{ height: 260 }}>
-          <AgGridReact<VersionPresupuesto> theme={pdcTheme} rowData={versiones} columnDefs={colsVersiones} />
+          <AgGridReact<VersionPresupuesto>
+            theme={pdcTheme}
+            rowData={versiones}
+            columnDefs={colsVersiones}
+            defaultColDef={defaultColDef}
+            autoSizeStrategy={autoSizeStrategy}
+          />
         </div>
       </div>
     </section>

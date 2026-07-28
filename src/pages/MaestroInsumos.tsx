@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { AgGridReact } from 'ag-grid-react'
-import { CellStyleModule, ClientSideRowModelModule, ModuleRegistry, RowStyleModule, ValidationModule } from 'ag-grid-community'
+import { CellStyleModule, ModuleRegistry, RowStyleModule, ValidationModule } from 'ag-grid-community'
 import type { CellClickedEvent, ColDef, RowDoubleClickedEvent } from 'ag-grid-community'
-import { moneda, pdcTheme } from '../lib/agGrid'
+import {
+  MODULOS_TABLA, autoSizeStrategy, columnaMoneda, columnaNumero, columnaTexto, defaultColDef, pdcTheme,
+} from '../lib/agGrid'
 import { PdcApiError, apiGet, apiPost, apiUpload } from '../lib/api'
 import { estadoInicialMaestro, maestroReducer } from '../lib/maestroState'
 import { estadoInicialMaestroImport, maestroImportReducer } from '../lib/maestroImportState'
@@ -11,7 +13,7 @@ import type { MaestroImportErrorFila, MaestroImportPreview, MaestroImportResulta
 // Mismo criterio que ImportarPresupuesto.tsx/VisorPresupuesto.tsx: registro selectivo de módulos
 // (no AllCommunityModule, que arrastra ~1.3MB). ValidationModule solo en dev.
 ModuleRegistry.registerModules([
-  ClientSideRowModelModule,
+  ...MODULOS_TABLA,
   CellStyleModule, // cellClass de la columna de acción del catálogo
   RowStyleModule, // rowClassRules de filas retiradas
   ...(import.meta.env.DEV ? [ValidationModule] : []),
@@ -100,29 +102,31 @@ export default function MaestroInsumos() {
   const pendientes = useMemo(() => vinculos.filter((v) => v.estado === 'pendiente'), [vinculos])
 
   const colsPendientes: ColDef<VinculoInsumo>[] = useMemo(() => [
+    // La marca de selección se queda con su ancho fijo: medirla por contenido daría una columna de
+    // un carácter y el punto quedaría pegado al borde.
     {
-      headerName: '✓', width: 60, field: 'id',
+      headerName: '✓', width: 60, field: 'id', suppressAutoSize: true,
       valueFormatter: (p) => (state.seleccion.has(p.value as number) ? '●' : ''),
     },
-    { field: 'descripcionOriginal', headerName: 'Insumo', flex: 1, minWidth: 260 },
-    { field: 'tipoInsumo', headerName: 'Tipo', width: 150 },
-    { field: 'unidad', headerName: 'Und', width: 80 },
-    { field: 'apariciones', headerName: 'Usos', width: 80 },
-    { field: 'valorTotal', headerName: 'Valor total', width: 140, valueFormatter: (p) => moneda(p.value) },
+    columnaTexto('descripcionOriginal', 'Insumo', 260),
+    { field: 'tipoInsumo', headerName: 'Tipo' },
+    { field: 'unidad', headerName: 'Und' },
+    columnaNumero('apariciones', 'Usos'),
+    columnaMoneda('valorTotal', 'Valor total'),
   ], [state.seleccion])
 
   const colsCatalogo: ColDef<MaestroInsumo>[] = useMemo(() => [
-    { field: 'descripcion', headerName: 'Insumo', flex: 1, minWidth: 280 },
-    { field: 'unidad', headerName: 'Und', width: 80 },
-    { field: 'tipoInsumo', headerName: 'Tipo', width: 160 },
+    columnaTexto('descripcion', 'Insumo', 280),
+    { field: 'unidad', headerName: 'Und' },
+    { field: 'tipoInsumo', headerName: 'Tipo' },
     ...(verRetirados
       ? [{
-          field: 'activo', headerName: 'Estado', width: 100,
+          field: 'activo', headerName: 'Estado',
           valueFormatter: (p) => (p.value === 0 ? 'Retirado' : 'Activo'),
         } satisfies ColDef<MaestroInsumo>]
       : []),
     {
-      colId: 'accion', headerName: '', width: 110, sortable: false,
+      colId: 'accion', headerName: '', width: 110, sortable: false, suppressAutoSize: true,
       cellClass: 'pdc-celda-accion',
       valueGetter: (p) => (p.data?.activo === 0 ? 'Reactivar' : 'Retirar'),
     },
@@ -279,6 +283,8 @@ export default function MaestroInsumos() {
             theme={pdcTheme}
             rowData={pendientes}
             columnDefs={colsPendientes}
+            defaultColDef={defaultColDef}
+            autoSizeStrategy={autoSizeStrategy}
             getRowId={(p) => String(p.data.id)}
             onCellClicked={onPendienteClick}
             onRowDoubleClicked={onPendienteDoble}
@@ -333,6 +339,8 @@ export default function MaestroInsumos() {
             theme={pdcTheme}
             rowData={catalogo}
             columnDefs={colsCatalogo}
+            defaultColDef={defaultColDef}
+            autoSizeStrategy={autoSizeStrategy}
             getRowId={(p) => String(p.data.id)}
             onCellClicked={onCatalogoClick}
             rowClassRules={{ 'pdc-fila-retirada': (p) => p.data?.activo === 0 }}
