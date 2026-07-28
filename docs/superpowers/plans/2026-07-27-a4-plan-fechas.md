@@ -107,7 +107,7 @@ CREATE TABLE IF NOT EXISTS pdc_plan_paso (
 
 ```bash
 cd "/Volumes/Crucial X6/Developer/lps-aia-pdc"
-docker compose exec -T db mysql -uroot -proot lastplanner < database/migrations/20260728_pdc_v2_plan_fechas.sql
+docker compose exec -T db mysql -u"$DB_USER" -p"$DB_PASS" "$DB_NAME"   # credenciales reales en el .env del worktree < database/migrations/20260728_pdc_v2_plan_fechas.sql
 ```
 
 Si las credenciales fallan, mirar `docker-compose.yml` para el usuario/clave y la base reales.
@@ -115,10 +115,10 @@ Si las credenciales fallan, mirar `docker-compose.yml` para el usuario/clave y l
 - [ ] **Step 3: Verificar que existen y son idempotentes**
 
 ```bash
-docker compose exec -T db mysql -uroot -proot lastplanner -e "
+docker compose exec -T db mysql -u"$DB_USER" -p"$DB_PASS" "$DB_NAME"   # credenciales reales en el .env del worktree -e "
   SELECT table_name, table_collation FROM information_schema.tables
   WHERE table_schema=DATABASE() AND table_name LIKE 'pdc_pla%' OR table_name='pdc_paquete_frente';"
-docker compose exec -T db mysql -uroot -proot lastplanner < database/migrations/20260728_pdc_v2_plan_fechas.sql
+docker compose exec -T db mysql -u"$DB_USER" -p"$DB_PASS" "$DB_NAME"   # credenciales reales en el .env del worktree < database/migrations/20260728_pdc_v2_plan_fechas.sql
 ```
 
 Esperado: las 3 tablas con `utf8mb4_unicode_ci`, y la segunda ejecución sin error.
