@@ -1631,13 +1631,14 @@ table.dataTable tbody tr:hover td {
 .aia-modal .btn.aia-btn-danger,
 .aia-modal .modal-footer .btn.btn-secondary,
 .aia-modal .modal-footer .btn.btn-outline-secondary,
+.aia-modal .modal-footer .btn.btn-outline-primary,
 .aia-modal .modal-footer .btn.btn-danger,
 .aia-modal .modal-footer .btn.btn-default,
 .aia-modal__actions .btn.btn-danger,
 .aia-modal__actions .btn.btn-default {
   background: transparent;
-  border: 1px solid rgba(26, 86, 51, 0.35);
-  color: var(--aia-modal-green-primary);
+  border: 1px solid var(--ds-active-border);
+  color: var(--ds-active-text-primary);
 }
 
 .aia-modal .btn.aia-btn-secondary:hover,
@@ -1648,6 +1649,8 @@ table.dataTable tbody tr:hover td {
 .aia-modal .modal-footer .btn.btn-secondary:focus,
 .aia-modal .modal-footer .btn.btn-outline-secondary:hover,
 .aia-modal .modal-footer .btn.btn-outline-secondary:focus,
+.aia-modal .modal-footer .btn.btn-outline-primary:hover,
+.aia-modal .modal-footer .btn.btn-outline-primary:focus,
 .aia-modal .modal-footer .btn.btn-danger:hover,
 .aia-modal .modal-footer .btn.btn-danger:focus,
 .aia-modal .modal-footer .btn.btn-default:hover,
@@ -1656,8 +1659,8 @@ table.dataTable tbody tr:hover td {
 .aia-modal__actions .btn.btn-danger:focus,
 .aia-modal__actions .btn.btn-default:hover,
 .aia-modal__actions .btn.btn-default:focus {
-  background: rgba(26, 86, 51, 0.08);
-  color: var(--aia-modal-green-dark);
+  background: var(--ds-active-surface-glass);
+  color: var(--ds-active-text-primary);
 }
 
 .aia-modal__message,
