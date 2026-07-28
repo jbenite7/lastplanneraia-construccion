@@ -81,14 +81,18 @@ class PlanFechasService
      */
     private function mejorFrente(array $tp, array $frentesTok): ?array
     {
+        // Dedup ANTES de contar: `array_intersect` conserva los duplicados del primer array, y una
+        // palabra vacía repetida (p. ej. «DE») no puede valer como dos aciertos frente a un frente
+        // de una sola palabra — el denominador ya deduplica, así que el numerador también debe.
+        $tpUniq = array_unique($tp);
         $mejor = null;
         $mejorPunt = 0.0;
         foreach ($frentesTok as $f) {
-            $comunes = count(array_intersect($tp, $f['tok']));
+            $comunes = count(array_intersect($tpUniq, $f['tok']));
             if ($comunes === 0) {
                 continue;
             }
-            $punt = $comunes / max(1, count(array_unique(array_merge($tp, $f['tok']))));
+            $punt = $comunes / max(1, count(array_unique(array_merge($tpUniq, $f['tok']))));
             if ($punt > $mejorPunt || ($punt === $mejorPunt && $mejor !== null && $f['fechaInicio'] < $mejor['fechaInicio'])) {
                 $mejor = $f;
                 $mejorPunt = $punt;
@@ -150,9 +154,16 @@ class PlanFechasService
             $porCodigo[(string) $it['codigo']] = $it;
         }
 
+        // Un insumo puede vivir en varios ítems del APU (40 de 394 en DAPORTO): se agrupa por
+        // (descripción, unidad, item_id) y se ordena por SUM(valor_total) DESC, igual que
+        // `PaquetesService::actividadDominantePorInsumo()`, para quedarse con el de mayor valor y no
+        // con el primero que devuelva MySQL (orden físico, no semántico).
         $apu = $this->db->query(
-            'SELECT item_id, descripcion, unidad FROM pdc_presupuesto_apu_insumos
-             WHERE project_id = ? AND version_id = ?',
+            'SELECT descripcion, unidad, item_id, SUM(valor_total) AS valor
+             FROM pdc_presupuesto_apu_insumos
+             WHERE project_id = ? AND version_id = ?
+             GROUP BY descripcion, unidad, item_id
+             ORDER BY valor DESC',
             [$projectId, $versionId],
         )->fetchAll(\PDO::FETCH_ASSOC);
         // La clave (descripción normalizada + unidad) es la misma que usa `pdc_insumo_paquete`,
@@ -162,7 +173,7 @@ class PlanFechasService
             $clave = MaestroInsumosService::normalizar((string) $a['descripcion'])
                 . '@@' . mb_strtoupper(trim((string) $a['unidad']));
             if (!isset($itemPorClave[$clave])) {
-                $itemPorClave[$clave] = (int) $a['item_id'];
+                $itemPorClave[$clave] = (int) $a['item_id']; // el ORDER BY garantiza que es el de mayor valor
             }
         }
 
@@ -195,7 +206,10 @@ class PlanFechasService
     }
 
     /**
-     * Propone un frente para cada paquete activo del proyecto.
+     * Propone un frente para cada paquete activo **del proyecto**: los que tienen insumos
+     * asignados en `pdc_insumo_paquete` para ese `project_id` (no el catálogo global completo), y
+     * cuya `modalidad_contratacion` genera proceso de contratación (`contrato`, `orden_compra`) —
+     * `no_contratable` y `consumo_directo` no entran nunca al plan de fechas.
      *
      * Señal 1 — el nombre: «Sum + Inst ESTRUCTURA» contra el frente «ESTRUCTURA». Se descarta el
      * prefijo de tipo de negociación, que no dice nada del oficio.
@@ -209,7 +223,12 @@ class PlanFechasService
             return [];
         }
         $paquetes = $this->db->query(
-            'SELECT id, nombre FROM general_paquetes_contratacion WHERE activo = 1',
+            'SELECT DISTINCT p.id, p.nombre
+             FROM general_paquetes_contratacion p
+             JOIN pdc_insumo_paquete ip ON ip.paquete_id = p.id
+             WHERE p.activo = 1 AND ip.project_id = ?
+               AND p.modalidad_contratacion IN (\'contrato\', \'orden_compra\')',
+            [$projectId],
         )->fetchAll(\PDO::FETCH_ASSOC);
 
         $frentesTok = [];
