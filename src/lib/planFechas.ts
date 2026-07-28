@@ -222,6 +222,17 @@ export function valorResponsableMostrado(
   return overrides[fila.paqueteId] ?? etiquetaResponsableFila(fila)
 }
 
+/**
+ * Cuántos paquetes están pendientes de dueño. Un huérfano cuenta: tiene un nombre escrito, pero esa
+ * persona ya no está en el proyecto, así que sigue habiendo trabajo que repartir — dejarlo fuera de
+ * la cuenta escondería paquetes que en la práctica no tienen a quién responderle.
+ */
+export function contarSinResponsable(
+  filas: Array<{ responsableUserId: number | null; responsableHuerfano?: boolean }>,
+): number {
+  return filas.filter((f) => f.responsableUserId === null || f.responsableHuerfano === true).length
+}
+
 // Menor del review final A4: `.pdc-info` pintaba también los mensajes de FALLO con el mismo verde
 // de éxito, así que una aserción de e2e sobre ese selector pasaba aunque el amarre hubiera fallado.
 // `tipo` es lo que permite a la vista pintar (y a un test verificar) cuál de los dos fue.

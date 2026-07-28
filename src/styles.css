@@ -201,6 +201,17 @@
 .pdc-plan-estado--vencido { color: #eaa898; font-weight: 600; }
 .pdc-plan-estado--provisional { color: #e8c98a; }
 .pdc-plan-estado--en-plazo { color: #9fd3ae; }
+/* Barra de asignación en masa (Task 5): contador de "sin responsable" + selector de persona +
+   botón, agrupados porque el contador es el motivo por el que existe el control. */
+.pdc-plan-masa { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 4px 0 14px; padding: 10px 14px; border: 1px solid #3a3a3c; border-radius: 8px; background: #202022; }
+.pdc-plan-sin-responsable { font-size: 13px; opacity: 0.85; margin-right: auto; }
+.pdc-plan-sin-responsable strong { font-size: 16px; opacity: 1; }
+/* Solo se pinta de alerta cuando hay algo pendiente — con cero, el tono neutro no compite por
+   atención (mismo criterio que pdc-plan-resumen-vencidos). */
+.pdc-plan-sin-responsable.es-pendiente strong { color: #eaa898; }
+.pdc-plan-masa select { background: #2c2c2e; color: #f4f1ea; border: 1px solid #3a3a3c; border-radius: 6px; padding: 7px 10px; }
+.pdc-plan-masa button { background: #1a5633; color: #f4f1ea; border: 1px solid #69b578; border-radius: 6px; padding: 8px 16px; cursor: pointer; }
+.pdc-plan-masa button:disabled { opacity: 0.5; cursor: not-allowed; }
 .pdc-plan-detalle { margin: 14px 0; border: 1px solid #3a3a3c; border-radius: 8px; padding: 12px 14px; background: #202022; max-width: 640px; }
 .pdc-plan-detalle h3 { margin: 0 0 8px; font-size: 15px; }
 .pdc-plan-pasos { width: 100%; border-collapse: collapse; font-size: 13px; }

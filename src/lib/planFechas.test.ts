@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
-  estadoFila, etiquetaDesfase, etiquetaElegible, generaProceso, idPorEtiqueta, mensajeCalculo, opcionFrente,
+  contarSinResponsable, estadoFila, etiquetaDesfase, etiquetaElegible, generaProceso, idPorEtiqueta, mensajeCalculo, opcionFrente,
   opcionesResponsable, paquetesAmarradosSinCalcular,
   paquetesSinFrente, planUiReducer, preseleccionDestinos, procedenciaDeAmarre, resumenPlan, trasGuardarEdicion,
   valorResponsableMostrado,
@@ -356,5 +356,25 @@ describe('valorResponsableMostrado', () => {
     expect(idPorEtiqueta(ELEGIBLES, '')).toBeNull()
     // El huérfano entra aquí: se puede quitar, pero no se le puede volver a elegir.
     expect(idPorEtiqueta(ELEGIBLES, 'Carla Ruiz — Compras (ya no está en el proyecto)')).toBeNull()
+  })
+})
+
+describe('contarSinResponsable', () => {
+  it('cuenta los paquetes que no tienen a nadie', () => {
+    expect(contarSinResponsable([
+      { responsableUserId: null }, { responsableUserId: 7 }, { responsableUserId: null },
+    ])).toBe(2)
+  })
+
+  it('un responsable huérfano cuenta como pendiente: hay que reasignarlo', () => {
+    expect(contarSinResponsable([{ responsableUserId: 7, responsableHuerfano: true }])).toBe(1)
+  })
+
+  it('un responsable vigente no cuenta', () => {
+    expect(contarSinResponsable([{ responsableUserId: 7, responsableHuerfano: false }])).toBe(0)
+  })
+
+  it('sin filas da cero, no NaN', () => {
+    expect(contarSinResponsable([])).toBe(0)
   })
 })

@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useReducer, useState } from 'react'
 import { AgGridReact } from 'ag-grid-react'
-import { CellStyleModule, ClientSideRowModelModule, ModuleRegistry, RowStyleModule, SelectEditorModule, TextEditorModule, ValidationModule, themeQuartz } from 'ag-grid-community'
-import type { CellClickedEvent, ColDef } from 'ag-grid-community'
+import { CellStyleModule, ClientSideRowModelModule, ModuleRegistry, RowSelectionModule, RowStyleModule, SelectEditorModule, TextEditorModule, ValidationModule, themeQuartz } from 'ag-grid-community'
+import type { CellClickedEvent, ColDef, SelectionChangedEvent } from 'ag-grid-community'
 import { PdcApiError, apiGet, apiPost } from '../lib/api'
 import {
+  contarSinResponsable,
   estadoFila,
   estadoInicialPlanUi,
   etiquetaDesfase,
@@ -29,10 +30,13 @@ import type { Desfase, FilaPlan, FrenteDisponible, PlanResultado, ResponsableEle
 // SelectEditorModule: lo que hace existir a `agSelectCellEditor`. Sin él la celda sigue siendo
 // editable pero cae al editor de texto, así que el desplegable no llega a abrirse nunca —
 // exactamente el modo en que el e2e del responsable lo detectó.
+// RowSelectionModule: checkboxes de selección múltiple para la asignación en masa. Es Community
+// (ver ag-grid-community/main.d.ts) — Enterprise sigue fuera del repo.
 ModuleRegistry.registerModules([
   ClientSideRowModelModule,
   CellStyleModule,
   RowStyleModule,
+  RowSelectionModule,
   SelectEditorModule,
   TextEditorModule,
   ...(import.meta.env.DEV ? [ValidationModule] : []),
@@ -69,6 +73,9 @@ export default function PlanFechas() {
   // único que puede devolver la celda a lo último confirmado — ver trasGuardarEdicion.
   const [responsableOverride, setResponsableOverride] = useState<Record<number, string>>({})
   const [elegibles, setElegibles] = useState<ResponsableElegible[]>([])
+  // Filas marcadas con el checkbox de la grilla, para la asignación en masa (Task 5).
+  const [seleccionados, setSeleccionados] = useState<number[]>([])
+  const [masaEtiqueta, setMasaEtiqueta] = useState('')
 
   const cargar = useCallback(() => {
     apiGet<PlanResultado>('/plan-compras/api/plan')
@@ -104,6 +111,9 @@ export default function PlanFechas() {
   useEffect(() => { cargar() }, [cargar])
 
   const resumen = useMemo(() => resumenPlan(plan), [plan])
+  // Cuántos paquetes del plan siguen sin dueño (incluye huérfanos): la decisión de producto es que
+  // dejarlo sin asignar es válido, pero tiene que verse de un vistazo — ver contarSinResponsable.
+  const sinResponsable = useMemo(() => contarSinResponsable(plan), [plan])
   const sinFrente = useMemo(() => paquetesSinFrente(porPaquete, amarres), [porPaquete, amarres])
   // Importante 2 del review final: un paquete recién amarrado sale de «Sin frente» pero no entra a
   // la grilla (que solo lee el plan calculado) hasta que alguien pulsa «Recalcular». Sin este
@@ -142,6 +152,49 @@ export default function PlanFechas() {
       dispatch({ type: 'FALLO', mensaje })
       // El guardado no ocurrió: la celda no puede seguir mostrando lo que AG Grid ya escribió.
       setResponsableOverride((prev) => ({ ...prev, [paqueteId]: anterior }))
+    }
+  }
+
+  // Asignación en masa (Task 5): más de cien paquetes por proyecto hacen que asignar de uno en uno
+  // sea una hora de clics. `onResponsable` queda intacto arriba —esta función es un camino nuevo y
+  // paralelo, no un reemplazo— para no arriesgar la edición celda a celda que ya funciona.
+  const onResponsableMasa = async (paqueteIds: number[], etiqueta: string) => {
+    if (paqueteIds.length === 0) return
+    dispatch({ type: 'OCUPADO' })
+    const userId = idPorEtiqueta(elegibles, etiqueta)
+    // Mismo override que en la edición individual: sin él, las filas recién asignadas se repintan
+    // con los datos viejos del servidor hasta que `cargar()` traiga los nuevos.
+    setResponsableOverride((prev) => {
+      const siguiente = { ...prev }
+      paqueteIds.forEach((id) => { siguiente[id] = etiqueta })
+      return siguiente
+    })
+    try {
+      await apiPost('/plan-compras/api/plan/responsable', { paqueteIds, responsableUserId: userId })
+      dispatch({ type: 'LISTO', mensaje: `Responsable asignado a ${paqueteIds.length} paquete(s).` })
+      // El lote se guardó: limpiar la selección y la persona elegida, para no repetir el mismo
+      // envío por accidente sobre un lote que ya quedó asignado.
+      setSeleccionados([])
+      setMasaEtiqueta('')
+      cargar()
+    } catch (e) {
+      let mensaje = mensajeError(e)
+      if (e instanceof PdcApiError && e.code === 'PAQUETE_SIN_PLAN') {
+        // El backend rechaza el lote ENTERO (todo o nada): no se guardó ninguno, así que el mensaje
+        // no puede sugerir que una parte sí quedó asignada.
+        mensaje = 'Alguno de los paquetes seleccionados no tiene plan calculado. No se asignó ningún responsable; usa «Recalcular» primero.'
+      } else if (e instanceof PdcApiError && e.code === 'RESPONSABLE_NO_ELEGIBLE') {
+        mensaje = 'Esa persona ya no pertenece al equipo activo del proyecto; recarga la página para ver la lista al día.'
+      }
+      dispatch({ type: 'FALLO', mensaje })
+      // Nada se guardó: hay que soltar el override de todo el lote, no solo de una fila. La
+      // selección se conserva a propósito (a diferencia del caso de éxito): el usuario probablemente
+      // quiere corregir algo (recalcular, elegir otra persona) y reintentar sobre el mismo lote.
+      setResponsableOverride((prev) => {
+        const siguiente = { ...prev }
+        paqueteIds.forEach((id) => { delete siguiente[id] })
+        return siguiente
+      })
     }
   }
 
@@ -301,6 +354,47 @@ export default function PlanFechas() {
         </button>
       </div>
 
+      {/* Asignación en masa (Task 5): más de cien paquetes por proyecto hacen que asignar de uno en
+          uno sea una hora de clics — con selección múltiple son cinco minutos. El contador de "sin
+          responsable" vive aquí, junto al control que resuelve el problema, no solo porque se pueda
+          ver de un vistazo (decisión de producto: dejar sin asignar es válido, pero no puede pasar
+          desapercibido). */}
+      <div className="pdc-plan-masa">
+        <span
+          data-testid="pdc-plan-sin-responsable"
+          className={sinResponsable > 0 ? 'pdc-plan-sin-responsable es-pendiente' : 'pdc-plan-sin-responsable'}
+        >
+          <strong>{sinResponsable}</strong> sin responsable
+        </span>
+        <select
+          data-testid="pdc-plan-masa-persona"
+          aria-label="Persona para asignar a los paquetes seleccionados"
+          value={masaEtiqueta}
+          onChange={(e) => setMasaEtiqueta(e.target.value)}
+          disabled={ui.ocupado || seleccionados.length === 0}
+        >
+          {/* Fila «vacía» deliberada: opcionesResponsable necesita una fila para saber si debe sumar
+              una opción extra de huérfano, y aquí no hay una fila puntual — solo la lista general de
+              gente elegible del proyecto (siempre empieza en '' = "Sin asignar"). */}
+          {opcionesResponsable(elegibles, { responsableUserId: null, responsableNombre: '', responsableCargo: '', responsableHuerfano: false }).map((o) => (
+            <option key={o} value={o}>{o === '' ? 'Sin asignar' : o}</option>
+          ))}
+        </select>
+        <button
+          type="button"
+          data-testid="pdc-plan-masa-asignar"
+          disabled={ui.ocupado || seleccionados.length === 0}
+          onClick={() => void onResponsableMasa(seleccionados, masaEtiqueta)}
+        >
+          {/* La opción "Sin asignar" también es válida para el lote (quitar responsable a varios a la
+              vez), pero es además el valor con el que arranca el selector — el botón dice "Quitar"
+              en ese caso para que nadie vacíe N paquetes sin darse cuenta de qué eligió. */}
+          {masaEtiqueta === ''
+            ? `Quitar responsable a ${seleccionados.length} paquete${seleccionados.length === 1 ? '' : 's'}`
+            : `Asignar a ${seleccionados.length} paquete${seleccionados.length === 1 ? '' : 's'}`}
+        </button>
+      </div>
+
       <div data-testid="pdc-plan-grid" className="pdc-grid-wrap">
         <AgGridReact<FilaPlan>
           theme={pdcTheme}
@@ -308,6 +402,13 @@ export default function PlanFechas() {
           columnDefs={cols}
           domLayout="autoHeight"
           suppressCellFocus
+          // Selección múltiple (Community — ver RowSelectionModule) solo por checkbox:
+          // enableClickSelection: false deja que clicar una fila siga abriendo su detalle
+          // (onCellClicked, abajo) sin seleccionarla de paso, que sería fácil de no notar antes de
+          // pulsar "Asignar".
+          rowSelection={{ mode: 'multiRow', checkboxes: true, headerCheckbox: true, enableClickSelection: false }}
+          selectionColumnDef={{ width: 44, pinned: 'left' }}
+          onSelectionChanged={(e: SelectionChangedEvent<FilaPlan>) => setSeleccionados(e.api.getSelectedRows().map((r) => r.paqueteId))}
           onCellClicked={(e: CellClickedEvent<FilaPlan>) => {
             if (!e.data || e.colDef.colId === 'responsable') return
             const id = e.data.paqueteId
