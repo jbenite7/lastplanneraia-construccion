@@ -230,9 +230,15 @@ class ControlCambiosApiController
     private function nueva_sem(string $dbPrefix): void
     {
         $f_inicio_sem = date("Y-m-d", strtotime($_POST["f_inicio_sem"]));
-        // Replicating legacy require logic
+        // `nueva_semana.php` incluye él mismo `modificar_sem_estado.php` al final de su camino
+        // feliz, y sólo ahí: es un script include-scoped que lee `$dbName` y `$semana` del ámbito
+        // que lo incluye, y `nueva_semana.php` las asigna justo antes. Requerirlo también desde
+        // aquí no aporta nada cuando todo va bien (el `_once` lo convierte en no-op) y es dañino
+        // cuando no: en las tres salidas de `nueva_semana.php` que no llegan a su include —el
+        // `return` por Programa Maestro vacío, la rama de semana anterior sin confirmar y su
+        // `catch`— este ámbito no tiene esas variables y el legacy muere con un TypeError que
+        // se cuela como un segundo JSON en una respuesta ya emitida.
         require_once PROJECT_ROOT . '/src/Legacy/nueva_semana.php';
-        require_once PROJECT_ROOT . '/src/Legacy/modificar_sem_estado.php';
 
         $this->db->logActivity('ControlCambios', 'NUEVA_SEMANA', "Creó nueva semana iniciada el $f_inicio_sem", $dbPrefix);
         $this->json(["respuesta" => "BIEN"]);
