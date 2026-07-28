@@ -395,11 +395,26 @@ test('conmutador de modulo desplegado: tinta legible e indicador activo a 3:1', 
     await expect(page.locator('[data-aia-info-nav-menu] .aia-info-nav__item')).toHaveCount(3);
     await expect(page.locator('[data-aia-info-nav-menu] .aia-info-nav__item.is-active')).toHaveCount(1);
 
-    const inactiva = await measure(page, '.aia-info-nav__item:not(.is-active)');
-    expect(inactiva, `${route}: no hay opcion inactiva`).not.toBeNull();
-    expect
-      .soft(inactiva.ratio, `${route} opcion inactiva — ${inactiva.fg} sobre ${inactiva.bg}`)
-      .toBeGreaterThanOrEqual(AA);
+    // El menu emite dos opciones inactivas (3 items - 1 activa): se miden las
+    // dos, no solo la primera que devolveria un querySelector plano, para que
+    // una regla futura sobre :first-child/:last-child u otra opcion
+    // deshabilitada no degrade la segunda sin que el guard lo vea.
+    const inactivas = await page.evaluate(() => {
+      const items = Array.from(document.querySelectorAll('.aia-info-nav__item:not(.is-active)'));
+      return items.map((el, i) => {
+        const marker = `aia-inactiva-probe-${i}`;
+        el.setAttribute('data-aia-probe-id', marker);
+        const out = window.__aiaContrast(`[data-aia-probe-id="${marker}"]`);
+        el.removeAttribute('data-aia-probe-id');
+        return out;
+      });
+    });
+    expect(inactivas.length, `${route}: no hay opciones inactivas`).toBeGreaterThan(0);
+    for (const [i, inactiva] of inactivas.entries()) {
+      expect
+        .soft(inactiva.ratio, `${route} opcion inactiva #${i} — ${inactiva.fg} sobre ${inactiva.bg}`)
+        .toBeGreaterThanOrEqual(AA);
+    }
 
     const activa = await measure(page, '.aia-info-nav__item.is-active');
     expect
@@ -436,16 +451,10 @@ test('conmutador de modulo desplegado: tinta legible e indicador activo a 3:1', 
       .soft(relleno.ratio, `${route} relleno de la activa (WCAG 1.4.11) — ${relleno.fg} sobre ${relleno.bg}`)
       .toBeGreaterThanOrEqual(3);
 
-    // El indicador no puede depender de un borde que no existe: si algun dia se
-    // resuelve con borde, esta asercion documenta el cambio en vez de romperse
-    // en silencio.
-    const bordes = await page.evaluate(() => {
-      const cs = getComputedStyle(document.querySelector('.aia-info-nav__item.is-active'));
-      return [cs.borderTopWidth, cs.borderRightWidth, cs.borderBottomWidth, cs.borderLeftWidth];
-    });
-    expect
-      .soft(bordes.join('/'), `${route}: el indicador activo se resuelve por relleno, no por borde`)
-      .toBe('0px/0px/0px/0px');
+    // Nota: no se congela el mecanismo (relleno vs. borde) del indicador. La
+    // comprobacion que importa es la de arriba —el relleno mide >=3:1 (WCAG
+    // 1.4.11)— y esa sigue valiendo si el indicador algun dia se resuelve
+    // ademas o en cambio con un borde perceptible.
 
     await page.keyboard.press('Escape');
   }

@@ -28,6 +28,13 @@ const PROBE = () => {
     return [mix(0), mix(1), mix(2), a];
   };
 
+  // LIMITE CONOCIDO: compone solo la cadena de ancestros. Para un elemento
+  // `position` fuera de flujo (absolute/fixed) y translucido, el fondo real es
+  // lo que solapa en orden Z (otro subarbol, no un ancestro), y esta funcion no
+  // lo ve — infla el contraste medido (~0,2 puntos en el menu del conmutador,
+  // /pdc: 3,85:1 real vs 4,09:1 de la sonda). No cambia ninguna conclusion hoy
+  // (todo sigue >=3:1), pero el guard no detectaria una regresion causada por
+  // el contenido que quede debajo de una superficie translucida superpuesta.
   const effectiveBackground = (el) => {
     let acc = [0, 0, 0, 0];
     for (let node = el; node; node = node.parentElement) {
