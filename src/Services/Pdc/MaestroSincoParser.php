@@ -8,6 +8,29 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
  * Parser de la hoja "Maestro Insumos" del export SINCO (PDC v2 / Fase A2.5).
  * Encabezados por nombre; solo insumos ACTIVO; validación todo-o-nada con
  * reporte por fila (tope 200). La normalización es la canónica del maestro.
+ *
+ * `valorUnitario` no es nullable aunque `numero()` sí lo sea: la fila que no lo trae numérico se
+ * descarta antes de llegar al insumo. `iva` sí puede faltar, es una columna opcional.
+ *
+ * @phpstan-type SincoInsumo array{
+ *     codigoSinco: string,
+ *     descripcion: string,
+ *     descripcionNorm: string,
+ *     unidad: string,
+ *     tipoInsumo: string,
+ *     agrupacion: string,
+ *     tipoRecurso: string,
+ *     valorUnitario: float,
+ *     iva: float|null
+ * }
+ * @phpstan-type SincoErrorFila array{fila: int, columna: string, motivo: string}
+ * @phpstan-type SincoResumen array{
+ *     total: int,
+ *     activos: int,
+ *     omitidos: int,
+ *     agrupaciones: int,
+ *     tiposRecurso: int
+ * }
  */
 final class MaestroSincoParser
 {
@@ -16,6 +39,16 @@ final class MaestroSincoParser
 
     private const REQUERIDAS = ['CODIGO INSUMO', 'INSUMO DESCRIPCION', 'UNIDAD', 'TIPO DESCRIPCION', 'AGRUPACION DESCRIPCION', 'ESTADO', 'VALOR UNITARIO'];
 
+    /**
+     * @return array{
+     *     valido: bool,
+     *     insumos: list<SincoInsumo>,
+     *     resumen: SincoResumen,
+     *     errores: list<SincoErrorFila>
+     * }
+     *
+     * @throws \RuntimeException si falta la hoja, está vacía o le faltan columnas requeridas
+     */
     public function parse(string $filePath): array
     {
         $reader = IOFactory::createReaderForFile($filePath);
@@ -126,6 +159,12 @@ final class MaestroSincoParser
         ];
     }
 
+    /**
+     * @param array<int, mixed> $headerRow la fila 0 tal cual la entrega PhpSpreadsheet
+     *
+     * @return array<string, int> título normalizado → índice de columna; ante títulos repetidos
+     *                            gana el primero
+     */
     private function mapearEncabezados(array $headerRow): array
     {
         $mapa = [];
@@ -152,6 +191,9 @@ final class MaestroSincoParser
         return is_numeric($v) ? (float) $v : null;
     }
 
+    /**
+     * @param array<int, mixed> $row
+     */
     private function filaVacia(array $row): bool
     {
         foreach ($row as $v) {

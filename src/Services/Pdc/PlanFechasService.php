@@ -8,6 +8,15 @@ namespace App\Services\Pdc;
  * El cronograma no es el presupuesto a otra escala: tiene su propio árbol de frentes, con el
  * capítulo embebido en HTML dentro del campo `Actividad`. Los frentes (encabezados, `Titulo = 1`)
  * son los que hablan el idioma de los paquetes: ESTRUCTURA, MAMPOSTERÍA, RED ELÉCTRICA.
+ *
+ * @phpstan-type Frente array{uniqueId: int, nombre: string, capitulo: string, fechaInicio: string}
+ * @phpstan-type FrenteTok array{
+ *     uniqueId: int,
+ *     nombre: string,
+ *     capitulo: string,
+ *     fechaInicio: string,
+ *     tok: list<string>
+ * }
  */
 class PlanFechasService
 {
@@ -62,7 +71,9 @@ class PlanFechasService
     /**
      * Separa el nombre del frente del capítulo que el cronograma embebe en un `<small>`.
      * Entrada: `<b>ESTRUCTURA, </b> <small>[Capítulo: TORRE 1]</small>`
-     */
+      *
+      * @return array{nombre: string, capitulo: string} `capitulo` es '' cuando el `<small>` no lo trae
+      */
     public static function limpiarActividad(string $html): array
     {
         $capitulo = '';
@@ -74,7 +85,12 @@ class PlanFechasService
         return ['nombre' => rtrim($nombre, ' ,'), 'capitulo' => $capitulo];
     }
 
-    /** Frentes de obra de la semana activa, del más temprano al más tardío. */
+    /**
+     * Frentes de obra de la semana activa, del más temprano al más tardío.
+     *
+     * @return list<array{uniqueId: int, nombre: string, capitulo: string, fechaInicio: string}>
+     *         vacía si el proyecto no tiene semana activa
+     */
     public function frentesDisponibles(int $projectId): array
     {
         return $this->semanaYFrentes($projectId)['frentes'];
@@ -122,7 +138,11 @@ class PlanFechasService
         ];
     }
 
-    /** Palabras normalizadas de un nombre, sin el prefijo de tipo de negociación (no dice el oficio). */
+    /**
+     * Palabras normalizadas de un nombre, sin el prefijo de tipo de negociación (no dice el oficio).
+     *
+     * @return list<string>
+     */
     private static function tokens(string $s): array
     {
         $limpio = preg_replace('/^(Sum \+ Inst|Suministro|M\. de O)\s*/u', '', $s);
@@ -132,7 +152,12 @@ class PlanFechasService
     /**
      * Mejor frente para un conjunto de palabras (Jaccard sobre `tok`). Entre empates gana el que
      * arranca antes: es el que fija la fecha límite del contrato. Null si nada llega al umbral.
-     */
+      *
+      * @param list<string>   $tp
+      * @param list<FrenteTok> $frentesTok
+      *
+      * @return array{frente: FrenteTok, punt: float}|null null si nada alcanza SIMILITUD_MINIMA
+      */
     private function mejorFrente(array $tp, array $frentesTok): ?array
     {
         // Dedup ANTES de contar: `array_intersect` conserva los duplicados del primer array, y una
@@ -269,7 +294,16 @@ class PlanFechasService
      * prefijo de tipo de negociación, que no dice nada del oficio.
      * Señal 2 — la rama: los subcapítulos donde el paquete tiene insumos, contra el nombre del
      * frente. Entre varios candidatos gana el que arranca antes: es el que marca la fecha límite.
-     */
+      *
+      * @return array<int, array{
+      *     uniqueId: int,
+      *     nombre: string,
+      *     fechaInicio: string,
+      *     origen: 'similitud'|'rama',
+      *     confianza: 'alta'|'media',
+      *     evidencia: string
+      * }> indexado por id de paquete
+      */
     public function sugerirFrentes(int $projectId, ?int $versionId = null): array
     {
         $frentes = $this->frentesDisponibles($projectId);
@@ -372,7 +406,15 @@ class PlanFechasService
      * Guarda la fecha que el frente tenía en este momento: es lo que permite detectar más adelante
      * que la obra se reprogramó y el plan quedó viejo. La procedencia funciona como en los insumos:
      * aceptar la propuesta conserva la capa que la produjo (acierto), elegir a mano es «humano».
-     */
+      *
+      * @param array<string, mixed> $procedencia origen, confianza y confirmado de la decisión; como en
+      *                                          los insumos, aceptar la propuesta conserva su capa
+      *
+      * @return array{ok: true}|array{
+      *     ok: false,
+      *     code: 'FRENTE_INVALIDO'|'PAQUETE_INVALIDO'|'MODALIDAD_NO_CONTRATABLE'
+      * }
+      */
     public function amarrar(int $projectId, int $paqueteId, int $uniqueId, string $usuario, array $procedencia = []): array
     {
         // Una sola lectura del cronograma para las dos cosas que hacen falta aquí: el frente destino
@@ -470,7 +512,18 @@ class PlanFechasService
         return ['ok' => true];
     }
 
-    /** Amarres vigentes del proyecto, indexados por paquete. */
+    /**
+     * Amarres vigentes del proyecto, indexados por paquete.
+     *
+     * @return array<int, array{
+     *     uniqueId: int,
+     *     frenteNombre: string,
+     *     fechaAncla: string,
+     *     origen: string,
+     *     confianza: mixed,
+     *     confirmadoHumano: bool
+     * }> indexado por id de paquete
+     */
     public function amarres(int $projectId): array
     {
         $rows = $this->db->query(
@@ -524,7 +577,9 @@ class PlanFechasService
      * Al comparar avance real contra programado, un paso va a tiempo si se cerró ANTES de su
      * `fecha_fin`. Leerla como «último día del paso» —o contar `fin − inicio + 1`— cuenta dos veces
      * cada frontera e infla el proceso en siete días.
-     */
+      *
+      * @return array{ok: true, calculados: int, sinDuracion: int}
+      */
     public function calcular(int $projectId, string $usuario): array
     {
         $amarres = $this->amarres($projectId);
@@ -659,7 +714,9 @@ class PlanFechasService
      * vale 0, así que sin este filtro un cero fantasma se colaba en la muestra y bajaba la mediana
      * de todo el tipo. El `IS NOT NULL` de cada columna se construye desde `self::PASOS` para no
      * duplicar la lista de columnas ni poder desalinearse con `calcular()`.
-     */
+      *
+      * @return array<string, int> tipo de negociación → mediana del proceso completo, en días
+      */
     private function medianasPorTipo(): array
     {
         $suma = implode(' + ', array_map(static fn (array $p): string => 'd.' . $p['col'], self::PASOS));
@@ -793,7 +850,29 @@ class PlanFechasService
      * el `JOIN` (antes `LEFT JOIN`) a `pdc_paquete_frente` exige un amarre vigente, y las mismas
      * condiciones de `p.activo`/`modalidad_contratacion` que usa `calcular()` evitan devolver un
      * paquete retirado del catálogo o cuya modalidad cambió a algo que ya no se contrata.
-     */
+      *
+      * @return list<array{
+      *     paqueteId: int,
+      *     nombre: string,
+      *     tipoNegociacion: string,
+      *     modalidad: string,
+      *     frenteNombre: string,
+      *     uniqueId: int,
+      *     fechaAncla: string,
+      *     fechaArranque: string,
+      *     diasTotales: int,
+      *     duracionProvisional: bool,
+      *     responsable: string,
+      *     diasRetraso: int,
+      *     pasos: list<array{
+      *         orden: int,
+      *         paso: string,
+      *         dias: int,
+      *         fechaInicio: string,
+      *         fechaFin: string
+      *     }>
+      * }> los vencidos primero
+      */
     public function plan(int $projectId): array
     {
         $rows = $this->db->query(
@@ -871,7 +950,17 @@ class PlanFechasService
      * la lista lo omite. Se marca con `fechaActual` y `diasMovidos` en null (no un string vacío ni
      * un 0) para que el consumidor pueda distinguir «no sé a qué fecha quedó» de «se movió 0 días»
      * sin ambigüedad.
-     */
+      *
+      * @return list<array{
+      *     paqueteId: int,
+      *     nombre: string,
+      *     frenteNombre: string,
+      *     fechaGuardada: string,
+      *     fechaActual: string|null,
+      *     diasMovidos: int|null
+      * }> `fechaActual` y `diasMovidos` van en null —y no en '' ni en 0— cuando el amarre quedó
+      *    huérfano: no hay fecha nueva que comparar, que es distinto de «se movió 0 días»
+      */
     public function desfases(int $projectId): array
     {
         $actual = [];

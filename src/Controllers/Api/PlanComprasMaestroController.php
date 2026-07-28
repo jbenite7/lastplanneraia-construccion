@@ -214,6 +214,12 @@ class PlanComprasMaestroController
         return $versionId === false ? null : $versionId;
     }
 
+    /**
+     * El cuerpo llega del cliente, así que las claves no están garantizadas: un JSON que no sea
+     * un objeto se decodifica como lista y los accesos `$body[...] ?? null` devuelven null.
+     *
+     * @return array<mixed>
+     */
     private function body(): array
     {
         return json_decode((string) file_get_contents('php://input'), true) ?: [];

@@ -8,6 +8,12 @@ namespace App\Controllers\Api;
  */
 trait PlanComprasJsonRespuestas
 {
+    /**
+     * El cuerpo de `data` cambia con cada endpoint (una lista de filas, un sobre de resultado, un
+     * contador), así que `mixed` es el tipo honesto: cualquier cosa serializable a JSON.
+     *
+     * @param array<mixed> $data
+     */
     private function ok(array $data): void
     {
         if (!headers_sent()) {
@@ -16,6 +22,10 @@ trait PlanComprasJsonRespuestas
         echo json_encode(['ok' => true, 'data' => $data], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
     }
 
+    /**
+     * @param array<string, mixed> $extra campos que se funden dentro de `error`, junto a
+     *                                    `code` y `message`
+     */
     private function fail(string $code, string $message, int $status, array $extra = []): void
     {
         if (!headers_sent()) {

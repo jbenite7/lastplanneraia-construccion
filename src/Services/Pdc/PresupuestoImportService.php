@@ -5,6 +5,14 @@ namespace App\Services\Pdc;
 /**
  * Orquesta el import del presupuesto: preview (parsear + guardar temporal)
  * y confirmación transaccional (Task 5).
+ *
+ * Los valores que salen de PDO sin cast quedan como `mixed` a propósito: con
+ * `ATTR_EMULATE_PREPARES => false` el driver devuelve tipos nativos para unas columnas y strings
+ * para otras (los DECIMAL), así que afirmar `string` sería mentir. Donde el código castea, el
+ * tipo sí es exacto.
+ *
+ * @phpstan-import-type PresupuestoErrorFila from PresupuestoExcelParser
+ * @phpstan-import-type PresupuestoResumen from PresupuestoExcelParser
  */
 final class PresupuestoImportService
 {
@@ -18,6 +26,13 @@ final class PresupuestoImportService
     /**
      * Hash SHA-256 del CONTENIDO canónico del presupuesto (items + insumos), estable
      * ante reordenamiento de filas y metadata del Excel. Base del anti-duplicado por contenido.
+     *
+     * Lee un subconjunto de claves y tolera que falten (de ahí los `?? ''`), así que no exige la
+     * forma completa del parser.
+     *
+     * @param list<array<string, mixed>> $items   usa codigo, tipo_fila, unidad, cantidad
+     * @param list<array<string, mixed>> $insumos usa codigo_actividad, descripcion, tipo_insumo,
+     *                                            unidad, cantidad_total, valor_total
      */
     public function hashContenido(array $items, array $insumos): string
     {
@@ -48,7 +63,12 @@ final class PresupuestoImportService
         return hash('sha256', implode("\n", $itemLineas) . "\n##\n" . implode("\n", $insumoLineas));
     }
 
-    /** Versión activa del proyecto (con su número y hash de contenido), o null. */
+    /**
+     * Versión activa del proyecto (con su número y hash de contenido), o null.
+     *
+     * @return array<string, mixed>|null fila cruda con id, version_numero, version_label,
+     *                                   contenido_hash y created_at
+     */
     private function versionActivaDe(int $projectId): ?array
     {
         $row = $this->db->query(
@@ -59,6 +79,17 @@ final class PresupuestoImportService
         return $row === false ? null : $row;
     }
 
+    /**
+     * @return array{ok: false, errores: list<PresupuestoErrorFila>}|array{
+     *     ok: true,
+     *     importToken: string,
+     *     versionLabel: string|null,
+     *     resumen: PresupuestoResumen,
+     *     advertencias: list<string>,
+     *     sinCambios: bool,
+     *     versionActiva: array{id: int, numero: int, label: mixed, createdAt: mixed}|null
+     * }
+     */
     public function previewDesdeArchivo(string $rutaArchivo, string $nombreOriginal, int $projectId, string $usuario): array
     {
         $resultado = $this->parser->parse($rutaArchivo);
@@ -104,6 +135,22 @@ final class PresupuestoImportService
         ];
     }
 
+    /**
+     * `sinCambios` distingue el caso en que el contenido coincide con la versión activa y no se
+     * crea una nueva. `idempotente` sólo aparece cuando el token ya había producido una versión
+     * (reintento tras un commit que el cliente no llegó a ver).
+     *
+     * @return array{ok: false, code: 'TOKEN_EXPIRED'|'INVALID_FILE'}|array{
+     *     ok: true,
+     *     sinCambios: bool,
+     *     versionId: int,
+     *     versionNumero: int,
+     *     versionLabel: mixed,
+     *     versionIdAnterior: int|null,
+     *     resumen: PresupuestoResumen,
+     *     idempotente?: true
+     * }
+     */
     public function confirmar(string $token, int $projectId): array
     {
         $ruta = $this->store->ruta($token);
@@ -217,7 +264,22 @@ final class PresupuestoImportService
         ];
     }
 
-    /** Versión ya creada con este token (idempotencia de confirmar), o null. */
+    /**
+     * Versión ya creada con este token (idempotencia de confirmar), o null.
+     *
+     * Los conteos de jerarquía van a cero a propósito: la cabecera sólo persiste actividades,
+     * insumos y costo.
+     *
+     * @return array{
+     *     ok: true,
+     *     sinCambios: false,
+     *     versionId: int,
+     *     versionNumero: int,
+     *     versionLabel: mixed,
+     *     versionIdAnterior: null,
+     *     resumen: PresupuestoResumen
+     * }|null
+     */
     private function versionPorToken(string $token, int $projectId): ?array
     {
         if (!preg_match('/^[a-f0-9]{32}$/', $token)) {
@@ -250,6 +312,20 @@ final class PresupuestoImportService
         ];
     }
 
+    /**
+     * @return list<array{
+     *     id: int,
+     *     versionNumero: int,
+     *     versionLabel: mixed,
+     *     archivoNombre: mixed,
+     *     totalActividades: int,
+     *     totalInsumos: int,
+     *     costoTotal: float,
+     *     activa: int,
+     *     importadoPor: mixed,
+     *     createdAt: mixed
+     * }>
+     */
     public function versiones(int $projectId): array
     {
         $rows = $this->db->query(
@@ -275,7 +351,34 @@ final class PresupuestoImportService
         ], $rows);
     }
 
-    /** Árbol plano del presupuesto de una versión (default: la activa), o null si no existe. */
+    /**
+     * Árbol plano del presupuesto de una versión (default: la activa), o null si no existe.
+     *
+     * @return array{
+     *     version: array{id: int, versionLabel: mixed, activa: int},
+     *     items: list<array{
+     *         id: int,
+     *         codigo: mixed,
+     *         codigoPadre: mixed,
+     *         nivel: int,
+     *         tipoFila: mixed,
+     *         descripcion: mixed,
+     *         unidad: mixed,
+     *         cantidad: float|null
+     *     }>,
+     *     insumos: list<array{
+     *         itemId: int,
+     *         descripcion: mixed,
+     *         tipoInsumo: mixed,
+     *         unidad: mixed,
+     *         cantApu: float|null,
+     *         rendimiento: float|null,
+     *         cantidadTotal: float|null,
+     *         valorUnitario: float|null,
+     *         valorTotal: float|null
+     *     }>
+     * }|null
+     */
     public function arbol(int $projectId, ?int $versionId = null): ?array
     {
         if ($versionId === null) {
@@ -334,7 +437,52 @@ final class PresupuestoImportService
         ];
     }
 
-    /** Compara dos versiones del presupuesto: diff por actividad (roll-up) y por insumo consolidado. */
+    /**
+     * Compara dos versiones del presupuesto: diff por actividad (roll-up) y por insumo consolidado.
+     *
+     * `deltaPct` es null cuando la versión A vale cero: el porcentaje no está definido y no se
+     * fuerza a 100.
+     *
+     * @return array{
+     *     versionA: array{id: int, label: mixed},
+     *     versionB: array{id: int, label: mixed},
+     *     resumen: array{
+     *         costoA: float,
+     *         costoB: float,
+     *         delta: float,
+     *         sobrecostos: float,
+     *         ahorros: float,
+     *         nuevos: int,
+     *         eliminados: int,
+     *         modificados: int
+     *     },
+     *     actividades: list<array{
+     *         codigo: mixed,
+     *         codigoPadre: mixed,
+     *         nivel: mixed,
+     *         tipoFila: mixed,
+     *         descripcion: mixed,
+     *         valorA: float,
+     *         valorB: float,
+     *         deltaValor: float,
+     *         deltaPct: float|null,
+     *         estado: 'nuevo'|'eliminado'|'igual'|'modificado'
+     *     }>,
+     *     insumos: list<array{
+     *         descripcionNorm: mixed,
+     *         unidad: mixed,
+     *         descripcion: mixed,
+     *         tipoInsumo: mixed,
+     *         cantidadA: float,
+     *         cantidadB: float,
+     *         valorA: float,
+     *         valorB: float,
+     *         deltaValor: float,
+     *         deltaPct: float|null,
+     *         estado: 'nuevo'|'eliminado'|'igual'|'modificado'
+     *     }>
+     * }|null
+     */
     public function comparar(int $projectId, int $versionA, int $versionB): ?array
     {
         $va = $this->versionMeta($projectId, $versionA);
@@ -417,7 +565,11 @@ final class PresupuestoImportService
         ];
     }
 
-    /** Cabecera de una versión del proyecto, o null. */
+    /**
+     * Cabecera de una versión del proyecto, o null.
+     *
+     * @return array<string, mixed>|null fila cruda con id y version_label
+     */
     private function versionMeta(int $projectId, int $versionId): ?array
     {
         $row = $this->db->query(
@@ -427,7 +579,18 @@ final class PresupuestoImportService
         return $row === false ? null : $row;
     }
 
-    /** Insumos consolidados por (descripcion_norm, unidad) de una versión. */
+    /**
+     * Insumos consolidados por (descripcion_norm, unidad) de una versión.
+     *
+     * @return array<string, array{
+     *     norm: string,
+     *     descripcion: mixed,
+     *     tipoInsumo: mixed,
+     *     unidad: mixed,
+     *     cantidadTotal: float,
+     *     valorTotal: float
+     * }> indexado por "descripcion_norm|unidad", que es la clave de fusión del diff (spec A1.6)
+     */
     private function insumosConsolidados(int $projectId, int $versionId): array
     {
         $rows = $this->db->query(
@@ -448,7 +611,18 @@ final class PresupuestoImportService
         return $acc; // indexado por "norm|unidad" (clave de fusión del diff = descripcion_norm + unidad, spec A1.6)
     }
 
-    /** Total por codigo de item con roll-up de hojas a raíces (hoja = suma de sus insumos). */
+    /**
+     * Total por codigo de item con roll-up de hojas a raíces (hoja = suma de sus insumos).
+     *
+     * @return array<string, array{
+     *     codigo: mixed,
+     *     codigoPadre: mixed,
+     *     nivel: int,
+     *     tipoFila: mixed,
+     *     descripcion: mixed,
+     *     total: float
+     * }> indexado por código de item
+     */
     private function totalesPorCodigo(int $projectId, int $versionId): array
     {
         $items = $this->db->query(

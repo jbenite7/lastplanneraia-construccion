@@ -21,7 +21,11 @@ final class MaestroInsumosService
         return preg_replace('/\s+/', ' ', $s) ?? $s;
     }
 
-    /** Resuelve la versión (activa por defecto) del proyecto, o null. */
+    /**
+     * Resuelve la versión (activa por defecto) del proyecto, o null.
+     *
+     * @return array<string, mixed>|null fila cruda con id, version_label y activa
+     */
     private function versionDe(int $projectId, ?int $versionId): ?array
     {
         $sql = $versionId === null
@@ -32,6 +36,16 @@ final class MaestroInsumosService
         return $row === false ? null : $row;
     }
 
+    /**
+     * @return array{
+     *     total: int,
+     *     auto: int,
+     *     confirmados: int,
+     *     pendientes: int,
+     *     cobertura: float,
+     *     versionId: int
+     * }|null null si el proyecto no tiene esa versión (ni versión activa)
+     */
     public function generarVinculos(int $projectId, ?int $versionId = null): ?array
     {
         $version = $this->versionDe($projectId, $versionId);
@@ -107,6 +121,25 @@ final class MaestroInsumosService
         return $this->resumen($projectId, $vid) + ['versionId' => $vid];
     }
 
+    /**
+     * @return array{
+     *     version: array{id: int, versionLabel: mixed, activa: int},
+     *     resumen: array{total: int, auto: int, confirmados: int, pendientes: int, cobertura: float},
+     *     vinculos: list<array{
+     *         id: int,
+     *         descripcionOriginal: mixed,
+     *         descripcionNorm: mixed,
+     *         unidad: mixed,
+     *         tipoInsumo: mixed,
+     *         cantidadTotal: float,
+     *         valorTotal: float,
+     *         apariciones: int,
+     *         maestroId: int|null,
+     *         maestroDescripcion: mixed,
+     *         estado: mixed
+     *     }>
+     * }|null null si el proyecto no tiene esa versión
+     */
     public function vinculos(int $projectId, ?int $versionId = null): ?array
     {
         $version = $this->versionDe($projectId, $versionId);
@@ -144,6 +177,12 @@ final class MaestroInsumosService
         ];
     }
 
+    /**
+     * `cobertura` es el porcentaje de vínculos resueltos (auto + confirmados); con cero vínculos
+     * se define como 100, no como 0: no hay nada pendiente que cubrir.
+     *
+     * @return array{total: int, auto: int, confirmados: int, pendientes: int, cobertura: float}
+     */
     private function resumen(int $projectId, int $vid): array
     {
         $r = $this->db->query(
@@ -165,6 +204,10 @@ final class MaestroInsumosService
         ];
     }
 
+    /**
+     * @return list<array{id: int, descripcion: mixed, unidad: mixed, tipoInsumo: mixed}> vacía si
+     *         el vínculo no existe o su descripción no deja tokens de 4+ caracteres
+     */
     public function sugerencias(int $projectId, int $vinculoId, int $limite = 8): array
     {
         $vinculo = $this->db->query(
@@ -197,6 +240,9 @@ final class MaestroInsumosService
         ], $rows);
     }
 
+    /**
+     * @return array{ok: true}|array{ok: false, code: 'VINCULO_INVALIDO'}
+     */
     public function vincular(int $projectId, int $vinculoId, int $maestroId): array
     {
         $existeVinculo = (int) $this->db->query(
@@ -217,6 +263,12 @@ final class MaestroInsumosService
         return ['ok' => true];
     }
 
+    /**
+     * @param array<int|string, mixed> $vinculoIds se filtran por `intval` > 0, así que tolera
+     *                                             strings y basura del cliente
+     *
+     * @return array{ok: true, creados: int, vinculados: int}
+     */
     public function crearDesdePendientes(int $projectId, array $vinculoIds, string $usuario): array
     {
         $ids = array_values(array_filter(array_map('intval', $vinculoIds), static fn ($i) => $i > 0));
@@ -270,6 +322,12 @@ final class MaestroInsumosService
         return ['ok' => true, 'creados' => $creados, 'vinculados' => $vinculados];
     }
 
+    /**
+     * @return array{ok: true, id: int}|array{
+     *     ok: false,
+     *     code: 'VINCULO_INVALIDO'|'MAESTRO_DUPLICADO'
+     * }
+     */
     public function crearManual(int $projectId, string $descripcion, string $unidad, string $tipoInsumo, string $usuario): array
     {
         $norm = self::normalizar($descripcion);
@@ -301,6 +359,9 @@ final class MaestroInsumosService
     }
 
     /** Fila del maestro que ocupa la clave única (prefijo de 191 chars de la norma + unidad), o null. */
+    /**
+     * @return array{id: int, activo: int}|null
+     */
     private function maestroPorClave(string $norm, string $unidad): ?array
     {
         $fila = $this->db->query(
@@ -311,6 +372,11 @@ final class MaestroInsumosService
     }
 
     /** Un maestro retirado que vuelve a usarse se reactiva (con auditoría) antes de vincular. */
+    /**
+     * @param array{id: int, activo: int} $maestro tal cual lo devuelve `maestroPorClave()`
+     *
+     * @return int el id del maestro, reactivado si estaba inactivo
+     */
     private function reactivarSiInactivo(array $maestro, string $usuario): int
     {
         if ($maestro['activo'] === 0) {
@@ -329,6 +395,21 @@ final class MaestroInsumosService
 
     // Límite alto: el maestro global es un catálogo administrable completo (AG Grid lo virtualiza).
     // La búsqueda acota; sin búsqueda se listan todos (headroom sobre los ~3.083 de SINCO).
+    /**
+     * `activo` va como int 1/0 y no como bool: es el mismo criterio que el resto del módulo para
+     * que AG Grid no lo interprete como checkbox.
+     *
+     * @return list<array{
+     *     id: int,
+     *     descripcion: mixed,
+     *     unidad: mixed,
+     *     tipoInsumo: mixed,
+     *     activo: int,
+     *     creadoPor: mixed,
+     *     createdAt: mixed,
+     *     updatedAt: mixed
+     * }>
+     */
     public function catalogo(?string $busqueda = null, bool $incluirInactivos = false, int $limite = 10000): array
     {
         $where = $incluirInactivos ? '1 = 1' : 'activo = 1';
@@ -355,6 +436,12 @@ final class MaestroInsumosService
     }
 
     /** Retira un insumo del catálogo: activo=0, auditoría y reversión global del auto-match. */
+    /**
+     * `revertidos` cuenta los vínculos que vuelven a pendiente: sólo los `auto`, porque un
+     * vínculo confirmado es una decisión humana y se conserva.
+     *
+     * @return array{ok: true, revertidos: int}|array{ok: false, code: 'MAESTRO_INVALIDO'}
+     */
     public function desactivar(int $maestroId, string $usuario): array
     {
         $activo = $this->db->query('SELECT activo FROM general_maestro_insumos WHERE id = ?', [$maestroId])->fetchColumn();
@@ -381,6 +468,9 @@ final class MaestroInsumosService
         return ['ok' => true, 'revertidos' => $revertidos];
     }
 
+    /**
+     * @return array{ok: true}|array{ok: false, code: 'MAESTRO_INVALIDO'}
+     */
     public function reactivar(int $maestroId, string $usuario): array
     {
         $activo = $this->db->query('SELECT activo FROM general_maestro_insumos WHERE id = ?', [$maestroId])->fetchColumn();

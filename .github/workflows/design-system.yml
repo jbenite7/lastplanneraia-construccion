@@ -91,6 +91,8 @@ jobs:
           exit 1
       - name: Enforce PHPStan baseline
         run: npm run test:design-system:phpstan
+      - name: Enforce PHPStan level 6 on the PDC module
+        run: npm run test:pdc:phpstan
       - name: Enforce global-table safety
         run: docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.ci.yml exec -T app php tests/test_global_table_safety.php
       - name: Run laboratory gates

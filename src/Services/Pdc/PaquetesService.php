@@ -9,6 +9,60 @@ namespace App\Services\Pdc;
  * paquete (paquete_id NOT NULL, omitido=0) u omitido (paquete_id NULL, omitido=1).
  * El motor de sugerencias agrega sobre la propia asignación entre proyectos
  * (sin tabla nueva), siempre con confirmación humana.
+ *
+ * Lo que sale de PDO sin cast queda como `mixed`: con `ATTR_EMULATE_PREPARES => false` el driver
+ * devuelve tipos nativos para unas columnas y strings para otras, así que afirmar `string` sería
+ * mentir. Donde el código castea, el tipo sí es exacto.
+ *
+ * `capa` de `SugerenciaMotor` enumera exactamente los valores de `self::ORIGENES_MOTOR`: si esa
+ * constante crece, este tipo tiene que crecer con ella.
+ *
+ * @phpstan-type VersionRef array{id: int, label: mixed}
+ * @phpstan-type InsumoClave array{norm: string, unidad: string}
+ * @phpstan-type InsumoDeVersion array{
+ *     descripcionNorm: mixed,
+ *     unidad: mixed,
+ *     descripcion: mixed,
+ *     tipoInsumo: mixed,
+ *     agrupacion: mixed,
+ *     tipoRecurso: mixed,
+ *     cantidadTotal: float,
+ *     valorTotal: float,
+ *     paqueteId: int|null,
+ *     paqueteNombre: mixed,
+ *     omitido: int
+ * }
+ * @phpstan-type PaqueteActivo array{
+ *     id: int,
+ *     nombre: mixed,
+ *     tipoNegociacion: mixed,
+ *     modalidad: mixed,
+ *     admiteMateriales: int
+ * }
+ * @phpstan-type SugerenciaMotor array{
+ *     paqueteId: int,
+ *     paqueteNombre: mixed,
+ *     capa: 'ia'|'exacta'|'reglas'|'tokens'|'indirectos'|'agrupacion',
+ *     confianza: 'alta'|'media'|'baja',
+ *     evidencia: string,
+ *     veto?: true
+ * }
+ * @phpstan-type RamaActividad array{
+ *     actividad: string,
+ *     cadena: list<array{descripcion: string, tipoFila: string}>,
+ *     esIndirecto: bool
+ * }
+ * @phpstan-type PropuestaAplicable array{
+ *     descripcionNorm: mixed,
+ *     unidad: mixed,
+ *     descripcion: mixed,
+ *     valorTotal: float,
+ *     paqueteId: int,
+ *     paqueteNombre: mixed,
+ *     capa: 'ia'|'exacta'|'reglas'|'tokens'|'indirectos'|'agrupacion',
+ *     confianza: 'alta'|'media'|'baja',
+ *     evidencia: string
+ * }
  */
 final class PaquetesService
 {
@@ -377,7 +431,11 @@ final class PaquetesService
     {
     }
 
-    /** Resuelve la versión (activa por defecto) del proyecto, o null. */
+    /**
+     * Resuelve la versión (activa por defecto) del proyecto, o null.
+     *
+     * @return array<string, mixed>|null fila cruda con id, version_label y activa
+     */
     private function versionDe(int $projectId, ?int $versionId): ?array
     {
         $sql = $versionId === null
@@ -388,7 +446,18 @@ final class PaquetesService
         return $row === false ? null : $row;
     }
 
-    /** Paquetes globales activos con su nº de asignaciones (a paquete) en todos los proyectos. */
+    /**
+     * Paquetes globales activos con su nº de asignaciones (a paquete) en todos los proyectos.
+     *
+     * @return list<array{
+     *     id: int,
+     *     nombre: mixed,
+     *     tipoNegociacion: mixed,
+     *     modalidad: mixed,
+     *     admiteMateriales: bool,
+     *     insumosGlobal: int
+     * }>
+     */
     public function catalogo(?string $busqueda = null): array
     {
         $where = 'p.activo = 1';
@@ -419,7 +488,20 @@ final class PaquetesService
         ], $rows);
     }
 
-    /** Crea un paquete global; duplicado por nombre_norm devuelve el existente (reactivado si estaba inactivo). */
+    /**
+     * Crea un paquete global; duplicado por nombre_norm devuelve el existente (reactivado si estaba inactivo).
+     *
+     * @return array{ok: false, code: 'PAQUETE_INVALIDO'}|array{
+     *     ok: true,
+     *     paquete: array{
+     *         id: int,
+     *         nombre: mixed,
+     *         tipoNegociacion: mixed,
+     *         modalidad: mixed,
+     *         existente: 0|1
+     *     }
+     * }
+     */
     public function crearPaquete(string $nombre, string $tipo, string $usuario, string $modalidad = 'contrato'): array
     {
         $nombre = trim($nombre);
@@ -478,7 +560,17 @@ final class PaquetesService
         ]];
     }
 
-    /** Filtra y normaliza la lista de insumos {descripcionNorm, unidad}; descarta elementos malformados. */
+    /**
+     * Filtra y normaliza la lista de insumos {descripcionNorm, unidad}; descarta elementos malformados.
+     *
+     * Descarta lo que no traiga `descripcionNorm` y `unidad` como strings no vacíos, y recorta a lo
+     * que aguantan las columnas. Por eso el parámetro es deliberadamente laxo: entra tal cual del
+     * cliente.
+     *
+     * @param array<mixed> $insumos
+     *
+     * @return list<InsumoClave>
+     */
     private static function insumosValidos(array $insumos): array
     {
         $out = [];
@@ -507,6 +599,13 @@ final class PaquetesService
      *     motor y así se contabiliza, pero ya es intocable;
      *   · origen 'humano'                     → la persona eligió el destino; no cuenta ni a favor
      *     ni en contra del motor.
+     */
+    /**
+     * @param array<mixed>          $insumos    se filtran con `insumosValidos()`
+     * @param array<string, mixed>  $procedencia origen, confianza, evidencia y confirmado de la
+     *                                           decisión, para medir la tasa de acierto del motor
+     *
+     * @return array{ok: true, asignados: int}|array{ok: false, code: 'PAQUETE_INVALIDO'}
      */
     public function asignar(int $projectId, array $insumos, int $paqueteId, string $usuario, array $procedencia = []): array
     {
@@ -565,6 +664,9 @@ final class PaquetesService
      * hubiera aceptado antes: si se arrepiente, el motor falló y deja de contar como acierto.
      * Reasignar algo que ya era una decisión humana desde cero no es un error del motor.
      */
+    /**
+     * @param list<InsumoClave> $validos
+     */
     private function registrarCorrecciones(int $projectId, array $validos, int $paqueteNuevo, string $usuario): void
     {
         foreach (array_chunk($validos, 200) as $lote) {
@@ -592,6 +694,10 @@ final class PaquetesService
      * en el asistente el insumo llega sin asignar: no hay nada que leer. Aquí el par viaja explícito
      * en `$procedencia` y se escribe tal cual. `$paqueteElegido` es NULL cuando la decisión fue
      * omitir — rechazar hacia fuera del plan también es corregir al motor.
+     */
+    /**
+     * @param list<InsumoClave>     $validos
+     * @param array<string, mixed>  $procedencia
      */
     private function registrarCorreccionSugerida(
         int $projectId,
@@ -633,6 +739,12 @@ final class PaquetesService
      * `sugeridaCapa`): omitir lo que el motor proponía es un fallo suyo y se registra igual que
      * mandarlo a otro paquete, con el destino elegido en NULL.
      */
+    /**
+     * @param array<mixed>         $insumos
+     * @param array<string, mixed> $procedencia
+     *
+     * @return array{ok: true, omitidos: int}
+     */
     public function omitir(int $projectId, array $insumos, string $usuario, array $procedencia = []): array
     {
         $validos = self::insumosValidos($insumos);
@@ -653,7 +765,13 @@ final class PaquetesService
         return ['ok' => true, 'omitidos' => count($validos)];
     }
 
-    /** Quita la asignación u omisión (el insumo vuelve a "sin asignar"). */
+    /**
+     * Quita la asignación u omisión (el insumo vuelve a "sin asignar").
+     *
+     * @param array<mixed> $insumos
+     *
+     * @return array{ok: true, desasignados: int}
+     */
     public function desasignar(int $projectId, array $insumos): array
     {
         $validos = self::insumosValidos($insumos);
@@ -673,7 +791,12 @@ final class PaquetesService
         return ['ok' => true, 'desasignados' => $total];
     }
 
-    /** Insumos únicos de la versión (activa por defecto) con su asignación/omisión, agrupación y tipo de recurso. */
+    /**
+     * Insumos únicos de la versión (activa por defecto) con su asignación/omisión, agrupación y tipo de recurso.
+     *
+     * @return array{version: VersionRef, insumos: list<InsumoDeVersion>}|null null si el proyecto
+     *         no tiene esa versión (ni versión activa)
+     */
     public function insumosDeVersion(int $projectId, string $filtro = 'todos', ?int $versionId = null): ?array
     {
         $version = $this->versionDe($projectId, $versionId);
@@ -726,6 +849,25 @@ final class PaquetesService
      * suelto»), por valor (lo que de verdad mueve la aguja — la cola larga es barata) y la tasa de
      * acierto del motor, que sale de las correcciones humanas y es lo único que dice si el motor es
      * bueno o solo prolijo.
+     */
+    /**
+     * @return array{
+     *     version: VersionRef,
+     *     total: int,
+     *     asignados: int,
+     *     omitidos: int,
+     *     cobertura: float,
+     *     coberturaValor: float,
+     *     acierto: array{sugerenciasAplicadas: int, correcciones: int, tasa: float|null},
+     *     porPaquete: list<array{
+     *         paqueteId: int,
+     *         nombre: mixed,
+     *         tipoNegociacion: mixed,
+     *         modalidad: mixed,
+     *         insumos: int,
+     *         subtotal: float
+     *     }>
+     * }|null
      */
     public function resumen(int $projectId, ?int $versionId = null): ?array
     {
@@ -787,6 +929,9 @@ final class PaquetesService
      * `tasa` es null mientras no haya sugerencias aplicadas — un 100 % sin datos sería una mentira
      * cómoda. La base de cálculo va expuesta para que el número sea auditable y no un adorno.
      */
+    /**
+     * @return array{sugerenciasAplicadas: int, correcciones: int, tasa: float|null}
+     */
     private function tasaDeAcierto(int $projectId): array
     {
         $aplicadas = (int) $this->db->query(
@@ -814,6 +959,21 @@ final class PaquetesService
      * sin confirmación humana (esto solo PRE-marca). La 4ª señal (tipo_recurso) se aplica en el
      * asistente vía candidatosParaPaquete(), donde el usuario ya fijó el tipo de negociación.
      */
+    /**
+     * @return array{
+     *     version: VersionRef,
+     *     sugerencias: list<array{
+     *         descripcionNorm: mixed,
+     *         unidad: mixed,
+     *         paqueteId: int,
+     *         paqueteNombre: mixed,
+     *         capa: 'ia'|'exacta'|'reglas'|'tokens'|'indirectos'|'agrupacion',
+     *         confianza: 'alta'|'media'|'baja',
+     *         evidencia: string,
+     *         veto?: true
+     *     }>
+     * }|null
+     */
     public function sugerencias(int $projectId, ?int $versionId = null): ?array
     {
         $r = $this->proponerSembrado($projectId, $versionId, 'sin_asignar');
@@ -837,6 +997,21 @@ final class PaquetesService
      * (paquete + capa + confianza + evidencia) o null si nada aplicó — útil para explicar el "porqué"
      * incluso de los ya asignados (filtro 'todos') y de los que quedan sin propuesta.
      * Cascada de fuentes (la primera que acierta gana): IA → exacta → reglas → tokens → indirectos → agrupación.
+     */
+    /**
+     * @return array{
+     *     version: VersionRef,
+     *     propuestas: list<array{
+     *         descripcionNorm: mixed,
+     *         unidad: mixed,
+     *         descripcion: mixed,
+     *         tipoRecurso: mixed,
+     *         agrupacion: mixed,
+     *         valorTotal: float,
+     *         actividad: string,
+     *         propuesta: SugerenciaMotor|null
+     *     }>
+     * }|null
      */
     public function proponerSembrado(int $projectId, ?int $versionId = null, string $filtro = 'todos'): ?array
     {
@@ -908,7 +1083,13 @@ final class PaquetesService
         return ['version' => $ins['version'], 'propuestas' => $propuestas];
     }
 
-    /** Capa 1: mismo (norma, unidad) asignado en OTROS proyectos. Consenso = más proyectos. */
+    /**
+     * Capa 1: mismo (norma, unidad) asignado en OTROS proyectos. Consenso = más proyectos.
+     *
+     * @param InsumoDeVersion $insumo
+     *
+     * @return SugerenciaMotor|null
+     */
     private function sugerirExacta(int $projectId, array $insumo): ?array
     {
         $row = $this->db->query(
@@ -933,7 +1114,13 @@ final class PaquetesService
         ];
     }
 
-    /** Capa 2: similitud por tokens (>=4 chars, comodines escapados) contra asignaciones de otros proyectos. */
+    /**
+     * Capa 2: similitud por tokens (>=4 chars, comodines escapados) contra asignaciones de otros proyectos.
+     *
+     * @param InsumoDeVersion $insumo
+     *
+     * @return SugerenciaMotor|null
+     */
     private function sugerirPorTokens(int $projectId, array $insumo): ?array
     {
         $tokens = self::tokens($insumo['descripcionNorm']);
@@ -967,7 +1154,13 @@ final class PaquetesService
         ];
     }
 
-    /** Capa 3 (respaldo): paquete más frecuente entre insumos ya asignados de la misma agrupación SINCO. */
+    /**
+     * Capa 3 (respaldo): paquete más frecuente entre insumos ya asignados de la misma agrupación SINCO.
+     *
+     * @param InsumoDeVersion $insumo
+     *
+     * @return SugerenciaMotor|null
+     */
     private function sugerirPorAgrupacion(array $insumo): ?array
     {
         if (($insumo['agrupacion'] ?? null) === null || $insumo['agrupacion'] === '') {
@@ -1001,6 +1194,19 @@ final class PaquetesService
      * Candidatos para engrosar un paquete desde el asistente: insumos SIN asignar de la versión activa
      * similares (tokens/agrupación) a los que ya están en el paquete (en cualquier proyecto), opcionalmente
      * filtrados por tipo_recurso (4ª señal — replica el filtro del asistente de Tomás). null sin versión.
+     */
+    /**
+     * @return array{
+     *     version: VersionRef,
+     *     candidatos: list<array{
+     *         descripcionNorm: mixed,
+     *         unidad: mixed,
+     *         descripcion: mixed,
+     *         agrupacion: mixed,
+     *         tipoRecurso: mixed,
+     *         valorTotal: float
+     *     }>
+     * }|null
      */
     public function candidatosParaPaquete(int $projectId, int $paqueteId, ?string $tipoRecurso = null, ?int $versionId = null): ?array
     {
@@ -1057,6 +1263,16 @@ final class PaquetesService
      * (misma que usa la SPA). Los códigos son el futuro amarre con el cronograma (A4).
      * Devuelve top-`$tope` actividades por valor por insumo + el total. null sin versión.
      */
+    /**
+     * @return array{
+     *     version: VersionRef,
+     *     mapa: array<string, array{
+     *         total: int,
+     *         items: list<array{codigo: string, actividad: string, cantidad: float, valor: float}>,
+     *         ruta: string
+     *     }>
+     * }|null indexado por "DESCRIPCION_NORM@@UNIDAD"
+     */
     public function actividadesPorInsumo(int $projectId, ?int $versionId = null, int $tope = 15): ?array
     {
         $version = $this->versionDe($projectId, $versionId);
@@ -1102,6 +1318,10 @@ final class PaquetesService
      * Un solo SELECT y la cadena se arma en memoria, igual que en actividadDominantePorInsumo():
      * son ~500 filas por versión y resolverlas nivel a nivel serían miles de round-trips.
      */
+    /**
+     * @return array<int, string> id de item → ruta jerárquica legible ("Capítulo › Subcapítulo › …"),
+     *         con corte de seguridad a 12 niveles por si el árbol trae un ciclo
+     */
     private function rutasDeItems(int $projectId, int $versionId): array
     {
         $items = $this->db->query(
@@ -1129,7 +1349,11 @@ final class PaquetesService
         return $rutas;
     }
 
-    /** Catálogo activo indexado por nombre_norm → {id, nombre, tipoNegociacion} (una consulta). */
+    /**
+     * Catálogo activo indexado por nombre_norm → {id, nombre, tipoNegociacion} (una consulta).
+     *
+     * @return array<string, PaqueteActivo> indexado por nombre_norm
+     */
     private function catalogoActivoPorNombre(): array
     {
         $rows = $this->db->query(
@@ -1155,6 +1379,9 @@ final class PaquetesService
      * de AIA; `proyecto` es una decisión atada a un presupuesto concreto y solo aplica ahí. La
      * distinción importa porque sin ella la cobertura confunde memoria de un ejercicio con
      * conocimiento del motor. Se acepta también el formato plano (valor string) por compatibilidad.
+     */
+    /**
+     * @return array<string, string> "NORMA@@UNIDAD" → nombre de paquete
      */
     private function overridesIA(?int $projectId = null): array
     {
@@ -1276,6 +1503,13 @@ final class PaquetesService
      *
      * @param list<array{descripcion: string, tipoFila: string}> $cadena
      */
+    /**
+     * @param InsumoDeVersion              $insumo
+     * @param list<array{descripcion: string, tipoFila: string}> $cadena
+     * @param array<string, PaqueteActivo> $catalogo
+     *
+     * @return SugerenciaMotor|null
+     */
     private function sugerirPorRamaDeMaterial(array $insumo, array $cadena, array $catalogo): ?array
     {
         if ($cadena === [] || self::mandaLaActividad($insumo['tipoRecurso'] ?? null)) {
@@ -1308,6 +1542,10 @@ final class PaquetesService
      * Un insumo repartido entre muchos frentes no tiene «su» actividad: en DAPORTO el mortero vive
      * en 33 actividades de 9 oficios y la mayor concentra el 36 %. Elegir esa por unas décimas es
      * una moneda al aire, así que el motor degrada la confianza en vez de fingir certeza (A3.3).
+     */
+    /**
+     * @return array<string, array{peso: float, actividades: int}> indexado por "NORMA@@UNIDAD";
+     *         `peso` es la fracción de valor que concentra la actividad mayor
      */
     private function dominanciaPorInsumo(int $projectId, ?int $versionId): array
     {
@@ -1360,6 +1598,9 @@ final class PaquetesService
      * Seguimiento necesita la fecha de la PRIMERA actividad que consume cada insumo —para una orden
      * de compra el plan garantiza la primera entrega—, y eso no se puede sacar de la dominante. En
      * A4 cada fila recibirá su `unique_id` de `programa_consolidado`.
+     */
+    /**
+     * @return array{versionId: int, filas: int}|null
      */
     public function materializarActividades(int $projectId, ?int $versionId = null): ?array
     {
@@ -1424,6 +1665,14 @@ final class PaquetesService
      * en `revision` con el motivo, para que la UI explique por qué pide atención. Nada de lo que un
      * humano ya decidió entra siquiera en el reparto.
      */
+    /**
+     * @return array{
+     *     version: VersionRef,
+     *     umbral: float,
+     *     auto: list<PropuestaAplicable>,
+     *     revision: list<PropuestaAplicable>
+     * }|null
+     */
     public function planAutoAsignacion(int $projectId, ?int $versionId = null, ?float $umbral = null): ?array
     {
         $umbral ??= self::UMBRAL_AUTO_ASIGNACION;
@@ -1464,7 +1713,11 @@ final class PaquetesService
         ];
     }
 
-    /** Aplica SOLO la parte automática del plan, con su procedencia y sin confirmar por humano. */
+    /**
+     * Aplica SOLO la parte automática del plan, con su procedencia y sin confirmar por humano.
+     *
+     * @return array{asignados: int, aRevision: int, umbral: float}|null
+     */
     public function aplicarAutoAsignacion(int $projectId, ?int $versionId, ?float $umbral, string $usuario): ?array
     {
         $plan = $this->planAutoAsignacion($projectId, $versionId, $umbral);
@@ -1500,6 +1753,22 @@ final class PaquetesService
      * tipo («CONCRETO», no «Suministro CONCRETO»), así que buscarlas por nombre no encontraba nada.
      * Devuelve null cuando el paquete no tiene fila emparejada: A4 deberá resolverlo con un default
      * por modalidad, nunca inventando días.
+     */
+    /**
+     * @return array{
+     *     filaLegacy: string,
+     *     tipoLegacy: string,
+     *     pasos: array{
+     *         elaboracionPliegos: int,
+     *         entregaPliegos: int,
+     *         reciboPropuestas: int,
+     *         cuadrosComparativos: int,
+     *         legalizacionContrato: int,
+     *         fabricacion: int,
+     *         insumosObra: int
+     *     },
+     *     diasTotales: int
+     * }|null
      */
     public function duracionesDePaquete(int $paqueteId): ?array
     {
@@ -1558,7 +1827,12 @@ final class PaquetesService
             && (int) $r['admite_materiales'] !== 1);
     }
 
-    /** tipo_negociacion compatibles con un tipo_recurso SINCO (evita ubicar material en paquete de mano de obra). */
+    /**
+     * tipo_negociacion compatibles con un tipo_recurso SINCO (evita ubicar material en paquete de mano de obra).
+     *
+     * @return list<'a_todo_costo'|'mano_obra'|'suministro'|'consumibles'> tipos de negociación que
+     *         admiten ese tipo de recurso; sin coincidencia, todos
+     */
     private static function tiposCompatibles(?string $tipoRecurso): array
     {
         return match (mb_strtoupper((string) $tipoRecurso)) {
@@ -1572,7 +1846,13 @@ final class PaquetesService
         };
     }
 
-    /** Resuelve un paquete del catálogo por nombre (normalizado), respetando compatibilidad de tipo. */
+    /**
+     * Resuelve un paquete del catálogo por nombre (normalizado), respetando compatibilidad de tipo.
+     *
+     * @param array<string, PaqueteActivo> $catalogo
+     *
+     * @return PaqueteActivo|null
+     */
     private function resolverPaquete(string $nombre, ?string $tipoRecurso, array $catalogo, string $descNorm = ''): ?array
     {
         $norm = mb_substr(MaestroInsumosService::normalizar($nombre), 0, 200);
@@ -1595,7 +1875,7 @@ final class PaquetesService
         // producto terminado —dotación, planta eléctrica— llevan la excepción marcada en el catálogo.
         if (mb_strtoupper((string) $tipoRecurso) === 'MATERIAL'
             && $paq['tipoNegociacion'] === 'a_todo_costo'
-            && (int) ($paq['admiteMateriales'] ?? 0) !== 1) {
+            && (int) $paq['admiteMateriales'] !== 1) {
             return null;
         }
         // El prefijo del NOMBRE del insumo manda: un suministro nunca cae en un paquete de mano de
@@ -1609,7 +1889,15 @@ final class PaquetesService
         return $paq;
     }
 
-    /** Capa IA (alta): override experto por (norma, unidad). */
+    /**
+     * Capa IA (alta): override experto por (norma, unidad).
+     *
+     * @param InsumoDeVersion              $insumo
+     * @param array<string, string>        $overrides
+     * @param array<string, PaqueteActivo> $catalogo
+     *
+     * @return SugerenciaMotor|null
+     */
     private function sugerirOverrideIA(array $insumo, array $overrides, array $catalogo): ?array
     {
         $clave = $insumo['descripcionNorm'] . '@@' . mb_strtoupper((string) $insumo['unidad']);
@@ -1632,6 +1920,13 @@ final class PaquetesService
     /**
      * @param list<array{descripcion: string, tipoFila: string}> $cadena rama de la actividad hacia
      *        arriba (actividad → grupo → subcapítulo), sin el capítulo.
+     */
+    /**
+     * @param InsumoDeVersion              $insumo
+     * @param list<array{descripcion: string, tipoFila: string}> $cadena
+     * @param array<string, PaqueteActivo> $catalogo
+     *
+     * @return SugerenciaMotor|null
      */
     private function sugerirPorReglas(array $insumo, array $cadena, array $catalogo): ?array
     {
@@ -1718,7 +2013,7 @@ final class PaquetesService
                     if ($destino !== null
                         && mb_strtoupper((string) ($insumo['tipoRecurso'] ?? '')) === 'MATERIAL'
                         && $destino['tipoNegociacion'] === 'a_todo_costo'
-                        && (int) ($destino['admiteMateriales'] ?? 0) !== 1) {
+                        && (int) $destino['admiteMateriales'] !== 1) {
                         return [
                             'veto' => true, 'capa' => 'reglas', 'confianza' => 'baja',
                             'paqueteId' => 0, 'paqueteNombre' => '',
@@ -1784,6 +2079,13 @@ final class PaquetesService
     /**
      * @param array{actividad: string, cadena: list<array{descripcion: string, tipoFila: string}>, esIndirecto: bool} $rama
      */
+    /**
+     * @param InsumoDeVersion              $insumo
+     * @param array<string, PaqueteActivo> $catalogo
+     * @param RamaActividad $rama
+     *
+     * @return SugerenciaMotor|null
+     */
     private function sugerirIndirectos(array $insumo, array $catalogo, array $rama = ['actividad' => '', 'cadena' => [], 'esIndirecto' => false]): ?array
     {
         $tipoRecurso = mb_strtoupper((string) ($insumo['tipoRecurso'] ?? ''));
@@ -1839,7 +2141,11 @@ final class PaquetesService
         ];
     }
 
-    /** Tokens significativos (>=4 chars) de una descripción normalizada. */
+    /**
+     * Tokens significativos (>=4 chars) de una descripción normalizada.
+     *
+     * @return list<string> palabras de 4+ caracteres; por debajo de eso el ruido supera a la señal
+     */
     private static function tokens(string $norm): array
     {
         return array_values(array_filter(
@@ -1856,6 +2162,26 @@ final class PaquetesService
      * Señales (en orden de peso): regla de dominio > tokens de la descripción contra el nombre del
      * paquete > tokens de la actividad padre > consenso local por agrupación SINCO. Filtro duro de
      * compatibilidad de tipo (un suministro no puede caer en un paquete de mano de obra).
+     */
+    /**
+     * @return array{
+     *     version: VersionRef,
+     *     insumos: list<array{
+     *         descripcionNorm: mixed,
+     *         unidad: mixed,
+     *         descripcion: mixed,
+     *         tipoRecurso: mixed,
+     *         agrupacion: mixed,
+     *         valorTotal: float,
+     *         actividad: string,
+     *         opciones: list<array{
+     *             paquete: mixed,
+     *             tipoNegociacion: mixed,
+     *             motivo: string,
+     *             confianza: int
+     *         }>
+     *     }>
+     * }|null
      */
     public function alternativas(int $projectId, ?int $versionId = null, int $n = 3): ?array
     {
@@ -1929,11 +2255,14 @@ final class PaquetesService
             }
 
             usort($cands, static fn (array $a, array $b): int => $b['score'] <=> $a['score']);
-            $top = array_slice($cands, 0, $n);
-            foreach ($top as $i => $c) {
-                $top[$i]['confianza'] = self::confianzaDeScore((float) $c['score']);
-                unset($top[$i]['score']);
-            }
+            // Se rearma en vez de mutar y hacer `unset` del score: mismo resultado y mismo orden
+            // de claves, pero la forma de salida queda explícita (y verificable por el análisis).
+            $top = array_map(static fn (array $c): array => [
+                'paquete' => $c['paquete'],
+                'tipoNegociacion' => $c['tipoNegociacion'],
+                'motivo' => $c['motivo'],
+                'confianza' => self::confianzaDeScore((float) $c['score']),
+            ], array_slice($cands, 0, $n));
             $salida[] = [
                 'descripcionNorm' => $insumo['descripcionNorm'],
                 'unidad' => $insumo['unidad'],
