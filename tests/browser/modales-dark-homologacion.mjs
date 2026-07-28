@@ -46,6 +46,44 @@ test('botones outline del pie de modal legibles sobre el pie oscuro', async ({ p
   }
 });
 
+test('/control-cambios #modalordenDeCambio: etiquetas del formulario legibles', async ({ page }) => {
+  await loginAndSelectProject(page, project);
+  await page.goto('/control-cambios');
+  await installContrastProbe(page);
+  await openModal(page, 'modalordenDeCambio');
+
+  for (const selector of [
+    '#modalordenDeCambio label[for="inputJustificacion"]',
+    '#modalordenDeCambio label[for="inputDescripcion"]',
+  ]) {
+    const result = await measure(page, selector);
+    expect(result, `${selector} no existe`).not.toBeNull();
+    expect
+      .soft(result.ratio, `${selector} — ${result.fg} sobre ${result.bg}`)
+      .toBeGreaterThanOrEqual(AA);
+  }
+
+  // Ninguna utilidad de vendor con color puede sobrevivir dentro del modal:
+  // llevan !important desde @layer vendor y, al invertirse el orden de capas
+  // para !important, no hay @layer posterior capaz de vencerlas.
+  const leftovers = await page.evaluate(() => {
+    const modal = document.getElementById('modalordenDeCambio');
+    const banned = [
+      'bg-light',
+      'bg-white',
+      'border',
+      'border-right',
+      'border-top',
+      'border-bottom',
+      'text-muted',
+    ];
+    return [...modal.querySelectorAll('*')].flatMap((el) =>
+      banned.filter((c) => el.classList.contains(c)),
+    ).length;
+  });
+  expect(leftovers, 'quedan utilidades bg-*/border-*/text-muted de Bootstrap').toBe(0);
+});
+
 // El valor COMPUTADO es la unica prueba de quien gano la cascada. Este bloque
 // existe porque el mismo defecto que ataca el tramo —una regla que parece ganar
 // y esta inerte— puede repetirse en el propio arreglo.
