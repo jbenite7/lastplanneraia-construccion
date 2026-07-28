@@ -1017,16 +1017,26 @@ table.dataTable tbody tr:hover td {
   overflow: hidden;
 }
 
+/* F1 Task 5c: las tres superposiciones neutras de este bloque eran negro
+   translucido al 5%, invisible sobre oscuro. NO se sustituyen por un token
+   oscuro fijo porque este bloque no es exclusivo de cabeceras oscuras: medido
+   con los 75 modales abiertos, el unico sitio donde el fondo de `.close` pinta
+   hoy sin que lo anule otra regla es el modal de reabrir semana, cuya cabecera
+   `.ps-reopen-header` (public/css/programacion-semanal.css, fuera de este
+   tramo) es un aviso CLARO. Un token oscuro lo romperia justo ahi. Derivarlas
+   de la tinta de la propia cabecera conserva la intencion (una separacion
+   tenue) y es correcta en las dos: sobre oscuro queda clara, sobre claro queda
+   oscura. */
 .modal-header {
   background-color: var(--surface-bg);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid color-mix(in srgb, currentColor 12%, transparent);
   padding: 1.5rem;
 }
 
 .modal-header .close {
   opacity: 0.6;
   transition: opacity 0.2s;
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: color-mix(in srgb, currentColor 10%, transparent);
   border-radius: 50%;
   width: 32px;
   height: 32px;
@@ -1044,18 +1054,26 @@ table.dataTable tbody tr:hover td {
 
 .modal-footer {
   background-color: var(--surface-bg);
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  border-top: 1px solid color-mix(in srgb, currentColor 12%, transparent);
   padding: 1rem 1.5rem;
 }
 
 /* AIA Modal Shell */
 .aia-modal {
+  /* El verde oscuro se queda como literal A PROPOSITO: su unico alias --ds- es
+     --ds-color-brand-primary-dark, que encadena a --aia-green-dark, declarado en
+     coordenadas OKLCH. Medido en Chromium, esas coordenadas NO pintan el hex que
+     el comentario de tokens.css les atribuye: se van varios puntos por canal, y
+     lo mismo le pasa al par claro. Sustituirlo cambiaria el color de la
+     cabecera. El primario si tiene equivalente exacto y verificado:
+     --ds-color-domain-corporate esta declarado como ese mismo hex.
+     Estas dos custom properties las consume tambien el bloque de botones de mas
+     abajo (tramo 5d), por eso se conservan; las otras tres se han retirado
+     porque solo se usaban aqui y ahora apuntan a tokens --ds- en el punto de
+     uso. */
   --aia-modal-green-dark: #1a3c2a;
-  --aia-modal-green-primary: #1a5633;
-  --aia-modal-green-light: #d5e5db;
-  --aia-modal-green-soft: #eef5f1;
-  --aia-modal-border: rgba(26, 86, 51, 0.18);
-  color: #24313a;
+  --aia-modal-green-primary: var(--ds-color-domain-corporate);
+  color: var(--ds-active-text-primary);
 }
 
 .aia-modal .modal-dialog {
@@ -1067,7 +1085,7 @@ table.dataTable tbody tr:hover td {
   border: 0;
   border-radius: 1.25rem;
   overflow: hidden;
-  background: #f4f1ea;
+  background: var(--ds-active-surface);
   box-shadow: var(--shadow-glass, 0 8px 32px rgba(30, 30, 30, 0.12));
 }
 
@@ -1077,8 +1095,8 @@ table.dataTable tbody tr:hover td {
   justify-content: space-between;
   gap: 1rem;
   padding: 1.5rem 1.75rem 1.25rem;
-  color: #fafafa;
-  border-bottom: 1px solid rgba(213, 229, 219, 0.32);
+  color: var(--ds-active-text-primary);
+  border-bottom: 1px solid var(--ds-active-border);
   background: linear-gradient(135deg, var(--aia-modal-green-dark) 0%, var(--aia-modal-green-primary) 100%);
 }
 
@@ -1087,7 +1105,7 @@ table.dataTable tbody tr:hover td {
   max-width: calc(100% - 3rem);
   font-family: 'Montserrat', sans-serif;
   font-weight: 700;
-  color: #fafafa;
+  color: var(--ds-active-text-primary);
 }
 
 .aia-modal .modal-title p {
@@ -1099,7 +1117,7 @@ table.dataTable tbody tr:hover td {
 .aia-modal .modal-header .aia-modal__title,
 .aia-modal .modal-header .aia-modal__subtitle,
 .aia-modal .modal-header [class*="modal-body-texto"] {
-  color: #fafafa;
+  color: var(--ds-active-text-primary);
 }
 
 .aia-modal .modal-header .aia-modal__subtitle,
@@ -1109,13 +1127,13 @@ table.dataTable tbody tr:hover td {
 
 .aia-modal .modal-body {
   padding: 1.5rem 1.75rem 1.75rem;
-  background: #f4f1ea;
+  background: var(--ds-active-surface);
 }
 
 .aia-modal .modal-footer {
   padding: 1rem 1.75rem 1.5rem;
-  border-top: 1px solid var(--aia-modal-border);
-  background: #fafafa;
+  border-top: 1px solid var(--ds-active-border);
+  background: var(--ds-active-surface-raised);
 }
 
 .aia-modal .close {
@@ -1124,7 +1142,7 @@ table.dataTable tbody tr:hover td {
   margin-inline-end: 0.65rem;
   font-size: 1.8rem;
   line-height: 1;
-  color: #fafafa;
+  color: var(--ds-active-text-primary);
   opacity: 0.8;
   background: transparent;
   text-shadow: none;
@@ -1135,6 +1153,10 @@ table.dataTable tbody tr:hover td {
   background: transparent;
 }
 
+/* La pildora es CLARA a proposito y se queda: vive sobre el degradado verde
+   oscuro de la cabecera, no sobre el cuerpo del modal, y ahi mide 8,60-8,72:1
+   (F1 Task 5c). Ningun token --ds- tiene ese valor: --ds-color-surface-tint es
+   otro verde y con otro alfa. Literal deliberado. */
 .aia-modal__eyebrow {
   display: inline-flex;
   align-items: center;
@@ -1156,7 +1178,7 @@ table.dataTable tbody tr:hover td {
 .aia-modal__section-title {
   margin: 0;
   font-family: 'Montserrat', sans-serif;
-  color: #24313a;
+  color: var(--ds-active-text-primary);
 }
 
 .aia-modal__headline {
@@ -1178,7 +1200,7 @@ table.dataTable tbody tr:hover td {
 .aia-modal__body-copy {
   margin: 0;
   font-family: 'Inter', sans-serif;
-  color: #5b6870;
+  color: var(--ds-active-text-secondary);
 }
 
 .aia-modal__subtitle,
@@ -1203,14 +1225,20 @@ table.dataTable tbody tr:hover td {
   display: block;
   inline-size: 100%;
   padding: 1.1rem 1.15rem 1.2rem;
-  border: 1px solid var(--aia-modal-border);
+  border: 1px solid var(--ds-active-border);
   border-radius: 1rem;
-  background: rgba(250, 250, 250, 0.94);
-  box-shadow: 0 10px 24px rgba(36, 49, 58, 0.06);
+  background: var(--ds-active-surface-raised);
+  box-shadow: var(--ds-shadow-md);
 }
 
+/* En claro esta variante era un blanco calido frente al blanco al 94% de
+   .aia-modal__section: dos puntos de 255 de diferencia, imperceptible ya
+   entonces. La escala oscura no tiene ningun escalon por encima de
+   surface-raised, asi que la variante colapsa sobre el mismo token en vez de
+   invertir la jerarquia (surface-glass es MAS oscuro, no mas claro). La regla se
+   conserva como punto de extension; retirarla es poda, no tokenizacion. */
 .aia-modal__section--plain {
-  background: #fffdfa;
+  background: var(--ds-active-surface-raised);
 }
 
 .aia-modal__section-header {
@@ -1219,7 +1247,7 @@ table.dataTable tbody tr:hover td {
   gap: 0.35rem;
   margin-bottom: 1rem;
   padding-bottom: 0.85rem;
-  border-bottom: 1px solid var(--aia-modal-border);
+  border-bottom: 1px solid var(--ds-active-border);
 }
 
 .aia-modal__section-title {
@@ -1250,7 +1278,7 @@ table.dataTable tbody tr:hover td {
   font-size: 0.9rem;
   font-weight: 600;
   line-height: 1.45;
-  color: #24313a;
+  color: var(--ds-active-text-primary);
 }
 
 .aia-modal .form-control,
@@ -1258,9 +1286,9 @@ table.dataTable tbody tr:hover td {
 .aia-modal .select2-container--default .select2-selection--single,
 .aia-modal .select2-container--default .select2-selection--multiple {
   border-radius: 0.8rem !important;
-  border: 1px solid var(--aia-modal-border) !important;
-  background: #fff !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  border: 1px solid var(--ds-active-border) !important;
+  background: var(--ds-active-surface) !important;
+  box-shadow: inset 0 1px 0 var(--ds-active-border);
 }
 
 .aia-modal .form-control,
@@ -1269,34 +1297,40 @@ table.dataTable tbody tr:hover td {
   padding: 0.7rem 0.9rem;
   font-family: 'Inter', sans-serif;
   font-size: 0.95rem;
-  color: #24313a;
+  color: var(--ds-active-text-primary);
 }
 
+/* El anillo de foco conserva el MATIZ verde corporativo: pasa del verde
+   corporativo translucido, pensado para fondo claro, al par on-dark que el
+   propio design system declara para ese mismo verde
+   (--ds-color-domain-corporate-on-dark via --ds-active-action-primary). No se
+   usa --ds-active-focus-ring porque resuelve al teal del sistema y eso si
+   cambiaria el matiz. */
 .aia-modal .form-control:focus,
 .aia-modal .custom-select:focus,
 .aia-modal .select2-container--default.select2-container--focus .select2-selection--single,
 .aia-modal .select2-container--default.select2-container--focus .select2-selection--multiple,
 .aia-modal .select2-container--default.select2-container--open .select2-selection--single,
 .aia-modal .select2-container--default.select2-container--open .select2-selection--multiple {
-  border-color: rgba(26, 86, 51, 0.5) !important;
-  box-shadow: 0 0 0 0.2rem rgba(26, 86, 51, 0.18) !important;
+  border-color: var(--ds-active-action-primary) !important;
+  box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--ds-active-action-primary) 45%, transparent) !important;
 }
 
 .aia-modal .table thead th,
 .aia-modal .table thead td {
-  background: var(--aia-modal-green-light);
-  border-color: rgba(26, 86, 51, 0.2);
-  color: var(--aia-modal-green-dark);
+  background: var(--ds-active-surface-raised);
+  border-color: var(--ds-active-border);
+  color: var(--ds-active-text-primary);
 }
 
 .aia-modal .table td,
 .aia-modal .table th {
-  border-color: rgba(26, 86, 51, 0.14);
+  border-color: var(--ds-active-border);
 }
 
 .aia-modal .table-hover tbody tr:hover,
 .aia-modal .table tbody tr:hover {
-  background: var(--aia-modal-green-soft);
+  background: var(--ds-active-surface-glass);
 }
 
 #modalNuevaActividad .modal-body {
@@ -1320,15 +1354,25 @@ table.dataTable tbody tr:hover td {
   gap: 0.4rem;
   width: 100%;
 }
+/* --tipo-brand es el color de marca de la modalidad, con el hex EXACTO de
+   siempre; --tipo-ink es ese mismo color subido de luminosidad para leerse
+   sobre la pildora oscura. La mezcla con un acromatico en sRGB deja el tono HSL
+   INTACTO (sumar la misma cantidad a los tres canales no altera (G-B)/(max-min)),
+   asi que no hay decision de matiz: solo se mueve la luminosidad, que es lo que
+   obliga a cambiar el fondo. El porcentaje de cada variante es el escalon de 5%
+   mas bajo que llega a 4,5:1 medido, no una eleccion estetica.
+   Los dos nombres van sin prefijo --aia- a proposito: `var(--aia-*)` cuenta como
+   raw-token-in-module en el audit para los archivos que no son del design
+   system, y este lo es solo de nombre. */
 .aia-tipo-pill {
   display: flex;
   align-items: center;
   gap: 0.55rem;
   padding: 0.45rem 0.75rem;
-  border: 1.5px solid #6c757d;
+  border: 1.5px solid var(--tipo-ink, var(--ds-active-border));
   border-radius: 0.5rem;
-  background: #fff;
-  color: #495057;
+  background: var(--ds-active-surface-raised);
+  color: var(--tipo-ink, var(--ds-active-text-primary));
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
@@ -1339,9 +1383,13 @@ table.dataTable tbody tr:hover td {
   white-space: normal;
   text-align: left;
 }
+/* El hover se aleja del escalon elevado hacia la superficie base, igual que en
+   claro se alejaba del blanco hacia un gris muy tenue. El halo azul al 8% era
+   invisible sobre oscuro y su matiz no tiene token: se sustituye por el aro
+   neutro del tema, que si se ve. */
 .aia-tipo-pill:hover:not(.is-disabled) {
-  background-color: #f1f3f5;
-  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.08);
+  background-color: var(--ds-active-surface);
+  box-shadow: 0 0 0 0.2rem var(--ds-active-border);
 }
 .aia-tipo-pill input[type="checkbox"] {
   margin: 0;
@@ -1360,50 +1408,69 @@ table.dataTable tbody tr:hover td {
   font-weight: 700;
   padding: 0.1rem 0.4rem;
   border-radius: 0.3rem;
-  background: rgba(0,0,0,0.06);
+  background: var(--ds-active-surface);
   color: inherit;
   letter-spacing: 0.02em;
   flex-shrink: 0;
 }
 .aia-tipo-pill.is-checked {
-  color: #fff;
+  color: var(--ds-color-text-inverse);
 }
 .aia-tipo-pill.is-checked .aia-tipo-pill__code {
-  background: rgba(255,255,255,0.22);
-  color: #fff;
+  background: color-mix(in srgb, var(--ds-color-text-inverse) 22%, transparent);
+  color: var(--ds-color-text-inverse);
 }
 .aia-tipo-pill.is-disabled {
   opacity: 0.45;
   cursor: not-allowed;
-  background: #f8f9fa;
+  background: var(--ds-active-surface);
   border-style: dashed;
 }
 .aia-tipo-pill.is-disabled input[type="checkbox"] {
   cursor: not-allowed;
 }
 .aia-tipo-pill.is-disabled:hover {
-  background: #f8f9fa;
+  background: var(--ds-active-surface);
   box-shadow: none;
 }
 
-/* Modality color variants - match read-mode badge palette */
-.aia-tipo-pill--s { border-color: #6c757d; color: #495057; }
-.aia-tipo-pill--s.is-checked { background: #6c757d; border-color: #6c757d; color: #fff; }
-.aia-tipo-pill--mo { border-color: #17a2b8; color: #117a8b; }
-.aia-tipo-pill--mo.is-checked { background: #17a2b8; border-color: #17a2b8; color: #fff; }
-.aia-tipo-pill--si { border-color: #007bff; color: #0062cc; }
-.aia-tipo-pill--si.is-checked { background: #007bff; border-color: #007bff; color: #fff; }
-.aia-tipo-pill--oc { border-color: #343a40; color: #343a40; }
-.aia-tipo-pill--oc.is-checked { background: #343a40; border-color: #343a40; color: #fff; }
+/* Modality color variants - match read-mode badge palette.
+   Los cuatro hex de marca se conservan EXACTOS y siguen siendo los que pintan el
+   relleno de .is-checked. Ninguno tiene equivalente en la paleta del design
+   system (sus dominios son verde, naranja, teal y morado: no hay ni gris de
+   marca ni azul), asi que no se sustituyen ni se reencaminan a un token de otro
+   matiz. Lo unico que cambia es la tinta de reposo, que en claro era una version
+   MAS OSCURA del mismo color sobre pildora blanca y ahora es la version MAS
+   CLARA del mismo color sobre pildora oscura. */
+.aia-tipo-pill--s {
+  --tipo-brand: #6c757d;
+  --tipo-ink: color-mix(in srgb, var(--tipo-brand) 75%, var(--ds-color-text-inverse));
+}
+.aia-tipo-pill--s.is-checked { background: var(--tipo-brand); border-color: var(--tipo-brand); color: var(--ds-color-text-inverse); }
+.aia-tipo-pill--mo {
+  --tipo-brand: #17a2b8;
+  --tipo-ink: color-mix(in srgb, var(--tipo-brand) 80%, var(--ds-color-text-inverse));
+}
+.aia-tipo-pill--mo.is-checked { background: var(--tipo-brand); border-color: var(--tipo-brand); color: var(--ds-color-text-inverse); }
+.aia-tipo-pill--si {
+  --tipo-brand: #007bff;
+  --tipo-ink: color-mix(in srgb, var(--tipo-brand) 75%, var(--ds-color-text-inverse));
+}
+.aia-tipo-pill--si.is-checked { background: var(--tipo-brand); border-color: var(--tipo-brand); color: var(--ds-color-text-inverse); }
+.aia-tipo-pill--oc {
+  --tipo-brand: #343a40;
+  --tipo-ink: color-mix(in srgb, var(--tipo-brand) 50%, var(--ds-color-text-inverse));
+}
+.aia-tipo-pill--oc.is-checked { background: var(--tipo-brand); border-color: var(--tipo-brand); color: var(--ds-color-text-inverse); }
 
 /* Hint text under the toggle */
 .aia-tipo-hint {
   margin-top: 0.5rem;
   font-size: 0.78rem;
-  color: #6c757d;
+  color: var(--ds-active-text-secondary);
   line-height: 1.4;
 }
-.aia-tipo-hint strong { color: #495057; }
+.aia-tipo-hint strong { color: var(--ds-active-text-primary); }
 
 /* Inline edit variant: pop-out panel anchored in the cell */
 #dt_cliente .aia-tipo-toggle--inline {
