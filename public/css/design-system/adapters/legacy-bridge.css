@@ -617,6 +617,76 @@
     background-color: var(--ds-state-tint-red);
     color: var(--pdc-critical-text);
   }
+
+  /* ───────────────────────────────────────────────────────────────────────
+     F1 Task 5j: el conmutador «Solo alertas» de /pdc, absorbido desde
+     public/css/styles.css:4499-4528 (module.components).
+
+     LA PREMISA DEL TRAMO ERA FALSA Y LA MEDICION LA CORRIGE: no es una piel
+     clara suelta en una barra oscura. La barra es oscura, si, pero los NUEVE
+     `.btn-pdc-modern` que lleva son claros —los ocho restantes en blanco
+     puro— porque su piel la fija public/css/buttons.css, que
+     docs/design-system/legacy-aliases.json marca como alias deprecado con
+     dueno `pdc` y politica `future-module-migration`, es decir, fuera de
+     F1. Volver oscuro solo este boton lo dejaria como la unica isla oscura
+     de una botonera clara, y eso es un juicio de diseno, no un cambio de
+     tema. Su contraste medido es 14,14:1, muy por encima de AA.
+
+     Por eso las dos tintas neutras se mueven VERBATIM y siguen como
+     literales: ningun token del sistema rinde su valor exacto. Medido en
+     Chromium, `--aia-bg-secondary` pinta un punto por canal por encima del
+     fondo original y `--aia-text-primary` cae muy por debajo de la tinta
+     original. Es el mismo criterio con el que styles.css:1062 conservo el
+     verde de la cabecera de modal. `--aia-separators` SI coincide exacto,
+     asi que el borde y el fondo de hover si toman token.
+
+     PODADO POR CERO CONSUMIDORES, no por cascada: `.pdc-btn-alertas.active`,
+     su `:hover` y su `.badge`. El JS que construye el boton
+     (public/js/modules/pdc/hot.js:294) escribe `is-active`, y :993 y :1000
+     alternan `is-active`, nunca `active`. Medido con las transiciones
+     desactivadas -sin eso el valor computado se lee a mitad de
+     interpolacion y miente-: anadir `is-active` no cambia NADA, y anadir
+     `active`, que la app nunca anade, si pintaba el naranja. Con las reglas
+     se va el naranja corporativo, que no tenia token exacto y por eso no se
+     tradujo. El conmutador se queda hoy sin marca visual de estado activo:
+     es un defecto previo de emparejado JS/CSS, no una regresion de este
+     tramo, y se reporta aparte.
+
+     Del `.badge` se podan `padding` y `border-radius`, inertes: los ganan
+     `:where(.badge, …)` de buttons.css y `:where(.badge, …)` de
+     aia-design-system.css, las dos con !important en capas anteriores. */
+  .pdc-btn-alertas {
+    background-color: #eaeaea;
+    color: #1c1c1e;
+    border: 1px solid var(--aia-separators);
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+
+  .pdc-btn-alertas:hover {
+    background-color: var(--aia-separators);
+  }
+
+  .pdc-btn-alertas .badge {
+    font-size: 0.65rem;
+    margin-left: 4px;
+    background-color: rgba(0, 0, 0, 0.15);
+    color: inherit;
+  }
+}
+
+@layer module.components {
+  /* F1 Task 5j: `.ps-cell-readonly` (styles.css:4534-4537) conserva subcapa
+     de origen porque su declaracion es !important y `legacy-overrides` es la
+     ULTIMA capa: alli un !important queda el mas debil de toda la cascada.
+     Se mueve verbatim, sin tocar especificidad. Medido: 8 celdas readOnly en
+     /programacion-semanal, `cursor: not-allowed`, igual que antes.
+
+     `.w-80` (styles.css:4530-4532) se poda: CERO consumidores en views/,
+     src/ y public/js/, buscado por clase exacta. */
+  .ps-cell-readonly {
+    cursor: not-allowed !important;
+  }
 }
 
 /* Reintroduce el orden de subcapas de `module` que styles.css:1 fija hoy. Es
