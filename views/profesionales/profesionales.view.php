@@ -65,7 +65,7 @@
         /* Loading overlay */
         #loading {
             position: fixed; top:0; left:0; width:100%; height:100%;
-            background: rgba(255,255,255,0.95); /* Slightly more opaque for better focus */
+            background: color-mix(in srgb, var(--ds-active-bg-page) 95%, transparent); /* Velo a pantalla completa en el tema activo; se conserva la opacidad original */
             z-index: 10000; /* Higher than anything else */
             display: flex; justify-content: center; align-items: center;
         }
