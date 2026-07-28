@@ -648,21 +648,20 @@ class PlanFechasService
                 $this->db->query(
                     'INSERT INTO pdc_plan_paquete
                         (project_id, paquete_id, unique_id, fecha_ancla, fecha_arranque, dias_totales,
-                         duracion_ref, duracion_provisional, responsable, calculado_por, updated_at)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+                         duracion_ref, duracion_provisional, calculado_por, updated_at)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
                      ON DUPLICATE KEY UPDATE unique_id = VALUES(unique_id), fecha_ancla = VALUES(fecha_ancla),
                         fecha_arranque = VALUES(fecha_arranque), dias_totales = VALUES(dias_totales),
                         duracion_ref = VALUES(duracion_ref), duracion_provisional = VALUES(duracion_provisional),
                         calculado_por = VALUES(calculado_por), updated_at = NOW()',
                     [
-                        // `responsable` se inserta como '' solo para la fila nueva (no hay ninguna
-                        // previa que preservar en un INSERT). En un reemarre, el `ON DUPLICATE KEY
-                        // UPDATE` de arriba NO lista `responsable` entre las columnas a actualizar,
-                        // así que MySQL conserva el valor existente por su cuenta: no hace falta
-                        // leerlo antes ni pasarlo de vuelta. No añadir `responsable` a esa cláusula
-                        // sin querer perder esta garantía.
+                        // Las tres columnas del responsable (responsable_user_id, _asignado_por,
+                        // _asignado_at) NO aparecen aquí ni en el ON DUPLICATE KEY UPDATE: lo que no
+                        // se lista, MySQL lo conserva. Por eso recalcular el plan no borra a quién se
+                        // le asignó cada paquete, y por eso B1 podrá añadir sus columnas sin volver a
+                        // tocar este INSERT. No añadirlas sin querer perder esa garantía.
                         $projectId, $paqueteId, $a['uniqueId'], $a['fechaAncla'], $arranque, $total,
-                        $paq['duracion_ref'], $provisional ? 1 : 0, '', $usuario,
+                        $paq['duracion_ref'], $provisional ? 1 : 0, $usuario,
                     ],
                 );
 
@@ -862,7 +861,7 @@ class PlanFechasService
       *     fechaArranque: string,
       *     diasTotales: int,
       *     duracionProvisional: bool,
-      *     responsable: string,
+      *     responsableUserId: int|null,
       *     diasRetraso: int,
       *     pasos: list<array{
       *         orden: int,
@@ -877,7 +876,7 @@ class PlanFechasService
     {
         $rows = $this->db->query(
             "SELECT pp.paquete_id, pp.unique_id, pp.fecha_ancla, pp.fecha_arranque, pp.dias_totales,
-                    pp.duracion_provisional, pp.responsable, p.nombre, p.tipo_negociacion,
+                    pp.duracion_provisional, pp.responsable_user_id, p.nombre, p.tipo_negociacion,
                     p.modalidad_contratacion, f.frente_nombre
              FROM pdc_plan_paquete pp
              JOIN general_paquetes_contratacion p ON p.id = pp.paquete_id
@@ -916,7 +915,7 @@ class PlanFechasService
                 'fechaArranque' => (string) $r['fecha_arranque'],
                 'diasTotales' => (int) $r['dias_totales'],
                 'duracionProvisional' => (int) $r['duracion_provisional'] === 1,
-                'responsable' => (string) $r['responsable'],
+                'responsableUserId' => $r['responsable_user_id'] === null ? null : (int) $r['responsable_user_id'],
                 'diasRetraso' => $retraso,
                 'pasos' => $pasos[(int) $r['paquete_id']] ?? [],
             ];

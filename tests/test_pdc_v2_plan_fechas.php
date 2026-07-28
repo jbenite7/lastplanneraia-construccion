@@ -568,10 +568,15 @@ $db->query(
 $paqLejos = (int) $db->lastInsertId();
 $svc->amarrar($P, $paqLejos, 9006, 'test-a4');
 
-// El «responsable» no lo pone ningún método público todavía (lo escribirá un módulo futuro de
-// Seguimiento) — se simula asignándolo directo en la fila ya calculada de paqEstructura, para
-// probar que un recálculo posterior no lo borra ni lo pisa.
-$db->query('UPDATE pdc_plan_paquete SET responsable = ? WHERE project_id = ? AND paquete_id = ?', ['Juan Pérez', $P, $paqEstructura]);
+// --- Responsable como usuario del proyecto ---
+// Antes era texto libre y el test escribía 'Juan Pérez' con un UPDATE directo. Ahora es un enlace
+// a general_usuarios, así que el test necesita un usuario de verdad y un miembro de verdad.
+$uid = (int) $db->query('SELECT id FROM general_usuarios ORDER BY id LIMIT 1')->fetchColumn();
+$assert($uid > 0, 'Responsable: hay al menos un usuario en general_usuarios para la prueba. Dio ' . $uid);
+
+$db->query('INSERT IGNORE INTO project_members (project_id, user_id, role) VALUES (?, ?, ?)', [$P, $uid, 'U']);
+$db->query('UPDATE pdc_plan_paquete SET responsable_user_id = ? WHERE project_id = ? AND paquete_id = ?',
+    [$uid, $P, $paqEstructura]);
 
 $svc->calcular($P, 'test-a4');
 $plan4 = $svc->plan($P);
@@ -596,8 +601,9 @@ foreach ($plan4 as $f) {
     }
 }
 
-$assert(($porId4[$paqEstructura]['responsable'] ?? '') === 'Juan Pérez',
-    'Importante 3: `responsable` sobrevive a un recálculo (lo conserva el ON DUPLICATE KEY UPDATE).');
+$assert(($porId4[$paqEstructura]['responsableUserId'] ?? null) === $uid,
+    'Responsable: `responsable_user_id` sobrevive a un recálculo (el ON DUPLICATE KEY UPDATE no lo lista). Dio '
+    . var_export($porId4[$paqEstructura]['responsableUserId'] ?? null, true) . ' esperando ' . $uid);
 
 // --- B1: recalcular no debe destruir las filas de pdc_plan_paso ---
 // B1 (Seguimiento) va a colgar `fecha_real` de estas filas. Mientras `calcular()` hiciera
