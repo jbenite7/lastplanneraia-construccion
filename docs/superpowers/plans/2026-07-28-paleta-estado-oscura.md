@@ -172,6 +172,34 @@ git commit -m "chore(design-system): clasificar los usos descompensados de los t
 - Consumes: el guard de la Task 1 en verde.
 - Produces: `--ds-color-state-{critical,warning,success,info}-bg` con tinte oscuro y `-text` con tono claro; `--ds-color-doc-state-*` con los cuatro valores claros conservados.
 
+- [ ] **Step 0: Barrer los consumidores vía ALIAS**
+
+La Task 1 inventarió los usos **literales** de `--ds-color-state-*`: 34 en 9 hojas. Ese número **no
+es el mapa completo**. En `public/css` hay ~70 custom properties que indirectan los cuatro pares
+—`--pi-danger-soft-bg`, `--pg-alert-bg`, `--bi-status-*`, `--sar-*`…— y sus consumidores son
+invisibles para el guard. Medido por el revisor: **16 bloques tiñen el fondo con un `-bg` de estado
+vía alias y no declaran `color` alguno**. Se rompen igual al invertir, porque un valor no distingue
+alias.
+
+Ejemplos verificados: `programacion-intermedia.css:798,843,846` (`--pi-danger-soft-bg` →
+`critical-bg`) y `styles.css:3750` (`--pg-alert-bg` → `warning-bg`).
+
+Extender el escáner de `tests/design-system/state-token-pairing.test.mjs` para que resuelva un nivel
+de indirección: si una custom property se define con `var(--ds-color-state-X-bg)`, sus consumidores
+cuentan como usos de ese token. Clasificar los que aparezcan igual que en la Task 1.
+
+- [ ] **Step 0b: Resolver las 6 entradas `at-risk`**
+
+El inventario marca 6 entradas como `at-risk` con un campo `revisit`, pero **nada obliga a esta
+tarea a leerlo**. Son decisiones de color que la Task 1 no podía tomar:
+
+- Sustituir `--ds-color-brand-architecture` (`#2a5a8f`) o `--ds-color-brand-aqua` (`#00a499`) por su
+  `-text` pareado mata un acento de marca.
+- `.bi-chip` **ya incumple AA hoy**: 2,83:1 a 12 px con peso 700, donde el umbral es 4,5:1.
+
+Medir cada una en su superficie real, proponer el valor y **parar a preguntar** antes de decidir por
+tu cuenta. Un acento de marca no se cambia dentro de un refactor de tokens.
+
 - [ ] **Step 1: Derivar y medir el texto de `info`**
 
 /pdc aporta tres textos tintados (`#ffcdc8` rojo, `#f2e79c` ámbar, `#b7e8c6` verde) pero ninguno teal. Hay que derivarlo con la misma receta.
