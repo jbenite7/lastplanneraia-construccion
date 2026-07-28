@@ -667,4 +667,70 @@ class PlanFechasService
         });
         return $out;
     }
+
+    /**
+     * Amarres cuya fecha ancla ya no coincide con la del cronograma: el frente se movió y el plan
+     * quedó viejo. No se recalcula solo — una fecha que ya se comunicó a un proveedor no debe
+     * cambiar en silencio; aplicar el desfase es un acto explícito de quien lea esta lista.
+     *
+     * Convención de signo de `diasMovidos`: positivo cuando el frente se ATRASÓ (la fecha actual es
+     * posterior a la guardada — el caso más común y el que retrasa el paquete) y negativo cuando se
+     * ADELANTÓ (la fecha actual es anterior). Nunca aparece en cero: si las fechas coinciden, esa
+     * fila no se reporta.
+     *
+     * Un amarre cuyo `unique_id` ya no aparece entre `frentesDisponibles()` de la semana activa (se
+     * borró del cronograma, dejó de ser encabezado, o la reprogramación lo movió sin dejar rastro
+     * con ese id) es un caso real y distinto de «se movió»: no hay ninguna fecha nueva que comparar.
+     * Se decide reportarlo igual —en vez de callarlo, que es lo que hacía el ejemplo original del
+     * brief con su `continue`— porque un amarre huérfano es, si acaso, un desfase más grave que uno
+     * con fecha nueva: el paquete quedó apuntando a un frente que ya no existe y nadie se entera si
+     * la lista lo omite. Se marca con `fechaActual` y `diasMovidos` en null (no un string vacío ni
+     * un 0) para que el consumidor pueda distinguir «no sé a qué fecha quedó» de «se movió 0 días»
+     * sin ambigüedad.
+     */
+    public function desfases(int $projectId): array
+    {
+        $actual = [];
+        foreach ($this->frentesDisponibles($projectId) as $f) {
+            $actual[$f['uniqueId']] = $f;
+        }
+        $rows = $this->db->query(
+            'SELECT f.paquete_id, f.unique_id, f.frente_nombre, f.fecha_ancla, p.nombre
+             FROM pdc_paquete_frente f
+             JOIN general_paquetes_contratacion p ON p.id = f.paquete_id
+             WHERE f.project_id = ?',
+            [$projectId],
+        )->fetchAll(\PDO::FETCH_ASSOC);
+
+        $out = [];
+        foreach ($rows as $r) {
+            $f = $actual[(int) $r['unique_id']] ?? null;
+            if ($f === null) {
+                $out[] = [
+                    'paqueteId' => (int) $r['paquete_id'],
+                    'nombre' => (string) $r['nombre'],
+                    'frenteNombre' => (string) $r['frente_nombre'],
+                    'fechaGuardada' => (string) $r['fecha_ancla'],
+                    'fechaActual' => null,
+                    'diasMovidos' => null,
+                ];
+                continue;
+            }
+            if ($f['fechaInicio'] === (string) $r['fecha_ancla']) {
+                continue; // el frente sigue en la misma fecha: no hay nada que avisar
+            }
+            $guardada = new \DateTimeImmutable((string) $r['fecha_ancla']);
+            $ahora = new \DateTimeImmutable($f['fechaInicio']);
+            $dias = (int) $guardada->diff($ahora)->days;
+            $out[] = [
+                'paqueteId' => (int) $r['paquete_id'],
+                'nombre' => (string) $r['nombre'],
+                'frenteNombre' => (string) $r['frente_nombre'],
+                'fechaGuardada' => (string) $r['fecha_ancla'],
+                'fechaActual' => $f['fechaInicio'],
+                'diasMovidos' => $ahora > $guardada ? $dias : -$dias,
+            ];
+        }
+        return $out;
+    }
 }

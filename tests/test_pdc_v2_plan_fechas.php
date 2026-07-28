@@ -599,6 +599,67 @@ foreach ($plan4 as $f) {
 $assert(($porId4[$paqEstructura]['responsable'] ?? '') === 'Juan Pérez',
     'Importante 3: `responsable` sobrevive a un recálculo (lo conserva el ON DUPLICATE KEY UPDATE).');
 
+// --- desfases: el cronograma se movió y el plan quedó viejo ---
+$svc->amarrar($P, $paqEstructura, 9001, 'test-a4');   // ancla 2026-08-18
+$assert($svc->desfases($P) === [], 'Recién amarrado no hay desfase.');
+
+$db->query('UPDATE programa_consolidado SET Fecha_Inicio = "2026-09-08" WHERE project_id = ? AND unique_id = 9001 AND Semana = 2', [$P]);
+$d = $svc->desfases($P);
+$assert(count($d) === 1, 'Mover el frente genera un desfase. Hay ' . count($d));
+$assert($d[0]['fechaGuardada'] === '2026-08-18' && $d[0]['fechaActual'] === '2026-09-08',
+    'El desfase dice de qué fecha a cuál se movió.');
+$assert($d[0]['diasMovidos'] === 21, 'Cuenta los días que se corrió: ' . $d[0]['diasMovidos']);
+
+// --- desfases: convención de signo cuando el frente se ADELANTA (no solo se atrasa) ---
+// paqRaro sigue amarrado a PRELIMINARES (uid 9002, ancla 2026-05-25) desde el bloque «hueco 2»
+// de arriba. Se adelanta ese frente 24 días para cubrir el signo contrario al caso de atraso: la
+// decisión es que `diasMovidos` es positivo en atraso y negativo en adelanto (documentado en
+// PlanFechasService::desfases()).
+$db->query('UPDATE programa_consolidado SET Fecha_Inicio = "2026-05-01" WHERE project_id = ? AND unique_id = 9002 AND Semana = 2', [$P]);
+$d2 = $svc->desfases($P);
+$dRaro = null;
+foreach ($d2 as $x) {
+    if ($x['paqueteId'] === $paqRaro) { $dRaro = $x; }
+}
+$assert($dRaro !== null, 'El desfase de paqRaro aparece cuando su frente se adelanta.');
+$assert($dRaro !== null && $dRaro['fechaActual'] === '2026-05-01', 'La fecha actual refleja el adelanto: ' . ($dRaro['fechaActual'] ?? '?'));
+$assert($dRaro !== null && $dRaro['diasMovidos'] === -24, 'Adelantar el frente da diasMovidos negativo: ' . ($dRaro['diasMovidos'] ?? 'null'));
+
+// --- desfases: el frente amarrado desapareció del cronograma (no es lo mismo que «se movió») ---
+// Caso real y distinto: la reprogramación no dejó el frente en otra fecha, lo sacó por completo de
+// la semana activa (se borró, o dejó de ser encabezado). No hay ninguna fecha nueva que comparar,
+// así que se reporta con fechaActual/diasMovidos en null — no se calla el amarre huérfano.
+$db->query(
+    "INSERT INTO programa (project_id, Consecutivo, unique_id, Actividad, Titulo, Fecha_Inicio)
+     VALUES (?, 13, 9010, '<b>TEST A4 FRENTE EFIMERO, </b> <small>[Capítulo: TORRE 1]</small>', 1, '2026-10-01')",
+    [$P],
+);
+$db->query(
+    "INSERT INTO programa_consolidado (project_id, Consecutivo, Semana, unique_id, Consecutivo_en_Programa,
+         Actividad, Titulo, Fecha_Inicio, Estado_Restricciones, D_y_E, Materiales, MdeO, Equipos,
+         Predecesora, Pdto_Cons, Modelo, Activa, alerta_crisis, reprogramaciones_acumuladas)
+     VALUES (?, 401, 2, 9010, 13, '<b>TEST A4 FRENTE EFIMERO, </b> <small>[Capítulo: TORRE 1]</small>', 1, '2026-10-01', 0, \"\", \"\", \"\", \"\", \"\", \"\", \"\", 1, 0, 0)",
+    [$P],
+);
+$db->query(
+    "INSERT INTO general_paquetes_contratacion (nombre, nombre_norm, tipo_negociacion, modalidad_contratacion, activo, creado_por, created_at)
+     VALUES ('TEST A4 FRENTE EFIMERO', 'TEST A4 FRENTE EFIMERO', 'suministro', 'contrato', 1, 'test-a4', NOW())",
+);
+$paqFrenteEfimero = (int) $db->lastInsertId();
+$svc->amarrar($P, $paqFrenteEfimero, 9010, 'test-a4');
+
+$db->query('DELETE FROM programa_consolidado WHERE project_id = ? AND unique_id = 9010', [$P]);
+
+$d3 = $svc->desfases($P);
+$dEfimero = null;
+foreach ($d3 as $x) {
+    if ($x['paqueteId'] === $paqFrenteEfimero) { $dEfimero = $x; }
+}
+$assert($dEfimero !== null, 'Un frente amarrado que desapareció del cronograma también se reporta.');
+$assert($dEfimero !== null && $dEfimero['fechaActual'] === null, 'Sin frente actual, fechaActual queda en null (no se inventa una fecha).');
+$assert($dEfimero !== null && $dEfimero['diasMovidos'] === null, 'Sin frente actual, diasMovidos queda en null: no es un número de días.');
+$assert($dEfimero !== null && $dEfimero['fechaGuardada'] === '2026-10-01', 'La fecha guardada se conserva aunque el frente ya no exista.');
+
 echo $failures === [] ? "=== OK ===\n" : '=== ' . count($failures) . " FAILED ===\n";
 $limpiar();
 exit($failures === [] ? 0 : 1);
