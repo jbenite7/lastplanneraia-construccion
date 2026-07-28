@@ -368,8 +368,8 @@ export type SugerenciaFrente = {
   uniqueId: number
   nombre: string
   fechaInicio: string
-  origen: string
-  confianza: string
+  origen: 'similitud' | 'rama'
+  confianza: 'alta' | 'media' | 'baja'
   evidencia: string
 }
 
@@ -380,8 +380,8 @@ export type AmarrePlan = {
   uniqueId: number
   frenteNombre: string
   fechaAncla: string
-  origen: string
-  confianza: string | null
+  origen: 'similitud' | 'rama' | 'humano'
+  confianza: 'alta' | 'media' | 'baja' | null
   confirmadoHumano: boolean
 }
 

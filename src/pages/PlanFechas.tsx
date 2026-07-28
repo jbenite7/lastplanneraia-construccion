@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useReducer, useState } from 'react'
 import { AgGridReact } from 'ag-grid-react'
-import { CellStyleModule, ClientSideRowModelModule, ModuleRegistry, RowStyleModule, ValidationModule, themeQuartz } from 'ag-grid-community'
+import { CellStyleModule, ClientSideRowModelModule, ModuleRegistry, RowStyleModule, TextEditorModule, ValidationModule, themeQuartz } from 'ag-grid-community'
 import type { CellClickedEvent, ColDef } from 'ag-grid-community'
 import { PdcApiError, apiGet, apiPost } from '../lib/api'
 import {
@@ -13,14 +13,19 @@ import {
   planUiReducer,
   procedenciaDeAmarre,
   resumenPlan,
+  trasGuardarEdicion,
+  valorResponsableMostrado,
 } from '../lib/planFechas'
 import type { Desfase, FilaPlan, FrenteDisponible, PlanResultado, ResumenPaquetes, SugerenciaFrente } from '../lib/types'
 
 // Registro selectivo de módulos (no AllCommunityModule); ValidationModule solo en dev — patrón del repo.
+// TextEditorModule: la columna Responsable es `editable: true` (edición de texto simple); sin este
+// módulo AG Grid rechaza la edición en runtime (error #200) aunque la columna se vea igual.
 ModuleRegistry.registerModules([
   ClientSideRowModelModule,
   CellStyleModule,
   RowStyleModule,
+  TextEditorModule,
   ...(import.meta.env.DEV ? [ValidationModule] : []),
 ])
 
@@ -46,6 +51,10 @@ export default function PlanFechas() {
   // Lo que el usuario tiene elegido en cada <select> de "sin frente" mientras dura la sesión;
   // arranca en la propuesta del motor (ver el efecto de preselección más abajo).
   const [destinos, setDestinos] = useState<Record<number, number | ''>>({})
+  // Corrige la columna «Responsable» cuando el POST falla. AG Grid muta `data.responsable`
+  // in-place al confirmar la edición (antes de saber si el guardado tuvo éxito); este mapa es lo
+  // único que puede devolver la celda a lo último confirmado — ver trasGuardarEdicion.
+  const [responsableOverride, setResponsableOverride] = useState<Record<number, string>>({})
 
   const cargar = useCallback(() => {
     apiGet<PlanResultado>('/plan-compras/api/plan')
@@ -87,7 +96,11 @@ export default function PlanFechas() {
     })
   }, [sinFrente, sugerencias])
 
-  const onResponsable = async (paqueteId: number, responsable: string) => {
+  const onResponsable = async (paqueteId: number, responsable: string, anterior: string) => {
+    // AG Grid ya mutó data.responsable a `responsable` (valueSetter por defecto, corrió antes de
+    // este handler). Confiamos en esa edición optimista retirando cualquier override que quedara de
+    // un intento previo; si este intento también falla, más abajo se vuelve a fijar.
+    setResponsableOverride((prev) => trasGuardarEdicion(prev, paqueteId, { ok: true }))
     try {
       await apiPost('/plan-compras/api/plan/responsable', { paqueteId, responsable })
     } catch (e) {
@@ -95,6 +108,8 @@ export default function PlanFechas() {
         ? 'Este paquete todavía no tiene plan calculado; usa «Recalcular» antes de asignar responsable.'
         : mensajeError(e)
       dispatch({ type: 'FALLO', mensaje })
+      // El guardado no ocurrió: la celda no puede seguir mostrando lo que AG Grid ya escribió.
+      setResponsableOverride((prev) => trasGuardarEdicion(prev, paqueteId, { ok: false, anterior }))
     }
   }
 
@@ -109,7 +124,7 @@ export default function PlanFechas() {
     }
   }
 
-  const onAmarrar = async (paqueteId: number, uniqueId: number) => {
+  const onAmarrar = async (paqueteId: number, uniqueId: number, anterior: number | '') => {
     const frente = frentes.find((f) => f.uniqueId === uniqueId)
     dispatch({ type: 'OCUPADO' })
     try {
@@ -122,6 +137,9 @@ export default function PlanFechas() {
       cargar()
     } catch (e) {
       dispatch({ type: 'FALLO', mensaje: mensajeError(e) })
+      // El <select> ya mostraba la opción elegida (edición optimista): si el amarre no se guardó,
+      // vuelve a lo que había antes de este intento, no se queda en algo que nunca se aplicó.
+      setDestinos((prev) => trasGuardarEdicion(prev, paqueteId, { ok: false, anterior }))
     }
   }
 
@@ -133,14 +151,18 @@ export default function PlanFechas() {
     { headerName: 'Días', field: 'diasTotales', width: 90, type: 'rightAligned' },
     {
       headerName: 'Responsable', field: 'responsable', flex: 1, minWidth: 160, editable: true,
-      onCellValueChanged: (p) => { if (p.data) void onResponsable(p.data.paqueteId, (p.newValue ?? '').trim()) },
+      valueGetter: (p) => (p.data ? valorResponsableMostrado(p.data, responsableOverride) : ''),
+      onCellValueChanged: (p) => {
+        if (!p.data) return
+        void onResponsable(p.data.paqueteId, (p.newValue ?? '').trim(), (p.oldValue ?? '').trim())
+      },
     },
     {
       headerName: 'Estado', flex: 1, minWidth: 160, sortable: false,
       valueGetter: (p) => (p.data ? estadoFila(p.data).etiqueta : ''),
       cellClass: (p) => (p.data ? `pdc-plan-estado pdc-plan-estado--${estadoFila(p.data).clave}` : undefined),
     },
-  ], [])
+  ], [responsableOverride])
 
   const filaExpandida = plan.find((f) => f.paqueteId === expandido) ?? null
 
@@ -217,8 +239,9 @@ export default function PlanFechas() {
                 value={destino}
                 onChange={(e) => {
                   const valor = e.target.value === '' ? '' : Number(e.target.value)
+                  const anterior = destino // lo que había antes de esta elección: a eso se revierte si falla
                   setDestinos((prev) => ({ ...prev, [p.paqueteId]: valor }))
-                  if (valor !== '') void onAmarrar(p.paqueteId, valor)
+                  if (valor !== '') void onAmarrar(p.paqueteId, valor, anterior)
                 }}
               >
                 <option value="">Elegir frente…</option>
@@ -246,7 +269,9 @@ export default function PlanFechas() {
           <li key={d.paqueteId}>
             <strong>{d.nombre}</strong>
             <span className="pdc-paq-meta">{etiquetaDesfase(d)}</span>
-            <button type="button" disabled={ui.ocupado} onClick={onRecalcular}>Recalcular</button>
+            {/* No hay recálculo por paquete en el backend: este botón dispara el mismo recálculo
+                global que el de la barra superior, y el texto debe decirlo así. */}
+            <button type="button" disabled={ui.ocupado} onClick={onRecalcular}>Recalcular todo el plan</button>
           </li>
         ))}
         {desfases.length === 0 && <li className="pdc-vacio">Ningún amarre quedó desactualizado.</li>}

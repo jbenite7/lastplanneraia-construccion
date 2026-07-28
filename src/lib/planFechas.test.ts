@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   estadoFila, etiquetaDesfase, generaProceso, mensajeCalculo, opcionFrente, paquetesSinFrente, procedenciaDeAmarre,
-  resumenPlan,
+  resumenPlan, trasGuardarEdicion, valorResponsableMostrado,
 } from './planFechas'
 import type { Desfase, FilaPlan, FrenteDisponible, SugerenciaFrente } from './types'
 
@@ -65,13 +65,16 @@ describe('generaProceso', () => {
 })
 
 describe('procedenciaDeAmarre', () => {
+  // origen 'similitud'|'rama' (el cierre de tipos de Task 9 detectó que este fixture usaba 'reglas',
+  // un valor de SugerenciaPaquete['capa'] que nunca es posible aquí — TypeScript lo señaló al
+  // estrechar SugerenciaFrente.origen).
   const sugerencia: SugerenciaFrente = {
-    uniqueId: 9001, nombre: 'ESTRUCTURA', fechaInicio: '2026-08-18', origen: 'reglas', confianza: 'alta', evidencia: 'coincide por código',
+    uniqueId: 9001, nombre: 'ESTRUCTURA', fechaInicio: '2026-08-18', origen: 'similitud', confianza: 'alta', evidencia: 'coincide por código',
   }
 
   it('elegir el frente propuesto cuenta como acierto confirmado', () => {
     expect(procedenciaDeAmarre(sugerencia, 9001)).toEqual({
-      origen: 'reglas', confianza: 'alta', evidencia: 'coincide por código', confirmado: true,
+      origen: 'similitud', confianza: 'alta', evidencia: 'coincide por código', confirmado: true,
     })
   })
 
@@ -117,5 +120,42 @@ describe('mensajeCalculo', () => {
 
   it('sin pendientes, mensaje simple', () => {
     expect(mensajeCalculo({ calculados: 40, sinDuracion: 0 })).toBe('40 paquete(s) recalculado(s).')
+  })
+})
+
+describe('trasGuardarEdicion', () => {
+  it('en éxito retira el override si había uno pendiente: gana el dato real', () => {
+    expect(trasGuardarEdicion({ 1: 'Ana', 2: 'Luis' }, 1, { ok: true })).toEqual({ 2: 'Luis' })
+  })
+
+  it('en éxito sin override previo no toca nada — misma referencia, sin re-render de balde', () => {
+    const valores = { 2: 'Luis' }
+    expect(trasGuardarEdicion(valores, 1, { ok: true })).toBe(valores)
+  })
+
+  it('en fallo fija el valor anterior al intento, sin tocar overrides de otras filas', () => {
+    expect(trasGuardarEdicion({ 2: 'Luis' }, 1, { ok: false, anterior: 'Ana' })).toEqual({ 1: 'Ana', 2: 'Luis' })
+  })
+
+  it('en fallo repetido sobre la misma fila, el override queda en el último valor anterior', () => {
+    const primero = trasGuardarEdicion({}, 1, { ok: false, anterior: 'Ana' })
+    const segundo = trasGuardarEdicion(primero, 1, { ok: false, anterior: 'Ana' })
+    expect(segundo).toEqual({ 1: 'Ana' })
+  })
+})
+
+describe('valorResponsableMostrado', () => {
+  it('sin override, muestra el dato real de la fila', () => {
+    expect(valorResponsableMostrado(fila({ paqueteId: 1, responsable: 'Ana' }), {})).toBe('Ana')
+  })
+
+  it('con override pendiente (revertido tras un fallo de guardado), manda sobre el dato que AG Grid ya mutó', () => {
+    // AG Grid ya escribió 'Carlos' en data.responsable (edición optimista); el POST falló y el
+    // override quedó en 'Ana' — la celda debe mostrar 'Ana', no el 'Carlos' que nunca se guardó.
+    expect(valorResponsableMostrado(fila({ paqueteId: 1, responsable: 'Carlos' }), { 1: 'Ana' })).toBe('Ana')
+  })
+
+  it('el override de otro paquete no interfiere', () => {
+    expect(valorResponsableMostrado(fila({ paqueteId: 1, responsable: 'Ana' }), { 2: 'Luis' })).toBe('Ana')
   })
 })

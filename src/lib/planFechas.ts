@@ -88,6 +88,43 @@ export function mensajeCalculo(r: { calculados: number; sinDuracion: number }): 
   return r.sinDuracion > 0 ? `${base}; ${r.sinDuracion} sin duración de referencia.` : `${base}.`
 }
 
+/**
+ * Reconcilia una edición optimista con lo que en verdad pasó en el servidor.
+ *
+ * La interfaz muestra el valor tecleado/elegido antes de esperar la respuesta del POST (edición
+ * optimista, deseada: no hay parpadeo mientras se espera). El problema que cierra esta tarea es que,
+ * cuando el POST falla, nada devolvía la celda a lo último confirmado — se quedaba mostrando un
+ * guardado que nunca ocurrió. Este helper es ese "nada": en éxito retira cualquier override pendiente
+ * (gana el dato real, ya sea el que mutó AG Grid o el que ya estaba elegido); en fallo fija el valor
+ * anterior al intento, sin tocar los overrides de otras filas en curso.
+ *
+ * Sirve para los dos sitios de la Task 9 (overlay de Responsable y `destinos` del <select> de "sin
+ * frente"): mismo problema, mismo criterio de reconciliación.
+ */
+export function trasGuardarEdicion<T>(
+  valores: Record<number, T>,
+  id: number,
+  resultado: { ok: true } | { ok: false; anterior: T },
+): Record<number, T> {
+  if (resultado.ok) {
+    if (!(id in valores)) return valores // sin override que retirar: no dispares un re-render de balde
+    const resto = { ...valores }
+    delete resto[id]
+    return resto
+  }
+  return { ...valores, [id]: resultado.anterior }
+}
+
+/**
+ * Valor que debe verse en la celda «Responsable». AG Grid muta `data.responsable` in-place al
+ * confirmar la edición (valueSetter por defecto), sin esperar el POST — por eso un fallo de guardado
+ * no alcanza a evitar la mutación, solo puede corregirla después. `overrides` es esa corrección: si
+ * hay uno pendiente (el POST falló y se fijó el valor anterior), manda sobre el dato ya mutado.
+ */
+export function valorResponsableMostrado(fila: Pick<FilaPlan, 'paqueteId' | 'responsable'>, overrides: Record<number, string>): string {
+  return overrides[fila.paqueteId] ?? fila.responsable
+}
+
 export type PlanUiState = { ocupado: boolean; mensaje: string | null }
 
 export type PlanUiAction =
