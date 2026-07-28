@@ -605,6 +605,50 @@ $assert(($porId4[$paqEstructura]['responsableUserId'] ?? null) === $uid,
     'Responsable: `responsable_user_id` sobrevive a un recálculo (el ON DUPLICATE KEY UPDATE no lo lista). Dio '
     . var_export($porId4[$paqEstructura]['responsableUserId'] ?? null, true) . ' esperando ' . $uid);
 
+// --- Responsable: lectura con tres estados ---
+$planR = $svc->plan($P);
+$porIdR = [];
+foreach ($planR as $f) { $porIdR[$f['paqueteId']] = $f; }
+
+// Tres estados de lectura. El tercero (huérfano) es el que impide que sacar a alguien del
+// proyecto haga desaparecer su nombre de la pantalla sin decir nada.
+$filaR = $porIdR[$paqEstructura];
+$assert(($filaR['responsableNombre'] ?? '') !== '',
+    'Responsable: un responsable vigente trae su nombre resuelto. Dio ' . var_export($filaR['responsableNombre'] ?? null, true));
+$assert(($filaR['responsableHuerfano'] ?? null) === false,
+    'Responsable: un miembro vigente NO es huérfano.');
+
+// Sacarlo del proyecto (sin borrar su ficha) debe marcarlo huérfano, no borrarlo.
+$db->query('DELETE FROM project_members WHERE project_id = ? AND user_id = ?', [$P, $uid]);
+$planH = $svc->plan($P);
+$porIdH = [];
+foreach ($planH as $f) { $porIdH[$f['paqueteId']] = $f; }
+$assert(($porIdH[$paqEstructura]['responsableUserId'] ?? null) === $uid,
+    'Responsable huérfano: el enlace NO se borra al salir del proyecto.');
+$assert(($porIdH[$paqEstructura]['responsableNombre'] ?? '') !== '',
+    'Responsable huérfano: el nombre se sigue viendo.');
+$assert(($porIdH[$paqEstructura]['responsableHuerfano'] ?? null) === true,
+    'Responsable huérfano: queda marcado como tal.');
+
+// Restaurar la membresía para no dejar el estado sucio a los bloques siguientes.
+$db->query('INSERT IGNORE INTO project_members (project_id, user_id, role) VALUES (?, ?, ?)', [$P, $uid, 'U']);
+
+// Sin asignar es un estado válido, no un error.
+$db->query('UPDATE pdc_plan_paquete SET responsable_user_id = NULL WHERE project_id = ? AND paquete_id = ?',
+    [$P, $paqEstructura]);
+$planN = $svc->plan($P);
+$porIdN = [];
+foreach ($planN as $f) { $porIdN[$f['paqueteId']] = $f; }
+// Comparación directa, no `?? centinela`: con valor esperado null, cualquier centinela de
+// reserva («x») queda indistinguible de un null real (`null ?? 'x'` siempre da 'x'), así que
+// `(...) ?? 'x') === null` no podría pasar nunca sin importar la implementación. La clave
+// `responsableUserId` siempre está presente en la fila (el mapeo la fija siempre, nunca
+// condicional), así que el acceso directo es seguro.
+$assert($porIdN[$paqEstructura]['responsableUserId'] === null,
+    'Responsable: «sin asignar» es NULL, no cadena vacía.');
+$assert(($porIdN[$paqEstructura]['responsableHuerfano'] ?? null) === false,
+    'Responsable: sin asignar NO es huérfano (no hay nadie a quien marcar).');
+
 // --- B1: recalcular no debe destruir las filas de pdc_plan_paso ---
 // B1 (Seguimiento) va a colgar `fecha_real` de estas filas. Mientras `calcular()` hiciera
 // DELETE + INSERT, cada recálculo las borraba y creaba otras nuevas: el avance real se perdía sin

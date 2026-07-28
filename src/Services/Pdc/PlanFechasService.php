@@ -862,6 +862,8 @@ class PlanFechasService
       *     diasTotales: int,
       *     duracionProvisional: bool,
       *     responsableUserId: int|null,
+      *     responsableNombre: string,
+      *     responsableHuerfano: bool,
       *     diasRetraso: int,
       *     pasos: list<array{
       *         orden: int,
@@ -877,10 +879,14 @@ class PlanFechasService
         $rows = $this->db->query(
             "SELECT pp.paquete_id, pp.unique_id, pp.fecha_ancla, pp.fecha_arranque, pp.dias_totales,
                     pp.duracion_provisional, pp.responsable_user_id, p.nombre, p.tipo_negociacion,
-                    p.modalidad_contratacion, f.frente_nombre
+                    p.modalidad_contratacion, f.frente_nombre,
+                    u.nombre AS responsable_nombre, u.activo AS responsable_activo,
+                    pm.user_id AS responsable_miembro
              FROM pdc_plan_paquete pp
              JOIN general_paquetes_contratacion p ON p.id = pp.paquete_id
              JOIN pdc_paquete_frente f ON f.project_id = pp.project_id AND f.paquete_id = pp.paquete_id
+             LEFT JOIN general_usuarios u ON u.id = pp.responsable_user_id
+             LEFT JOIN project_members pm ON pm.project_id = pp.project_id AND pm.user_id = pp.responsable_user_id
              WHERE pp.project_id = ? AND p.activo = 1
                AND p.modalidad_contratacion IN (" . self::modalidadesConProcesoSql() . ')
              ORDER BY pp.fecha_arranque ASC',
@@ -916,6 +922,11 @@ class PlanFechasService
                 'diasTotales' => (int) $r['dias_totales'],
                 'duracionProvisional' => (int) $r['duracion_provisional'] === 1,
                 'responsableUserId' => $r['responsable_user_id'] === null ? null : (int) $r['responsable_user_id'],
+                'responsableNombre' => (string) ($r['responsable_nombre'] ?? ''),
+                // Huérfano = tiene responsable, pero ya no es miembro del proyecto o está inactivo.
+                // Sin responsable no hay nadie a quien marcar, así que es false, no true.
+                'responsableHuerfano' => $r['responsable_user_id'] !== null
+                    && ($r['responsable_miembro'] === null || (int) $r['responsable_activo'] !== 1),
                 'diasRetraso' => $retraso,
                 'pasos' => $pasos[(int) $r['paquete_id']] ?? [],
             ];
