@@ -363,10 +363,19 @@ export default function PlanFechas() {
           distingue cuál de los dos fue. */}
       {ui.mensaje && <div className={ui.tipo === 'error' ? 'pdc-error' : 'pdc-info'} role="status">{ui.mensaje}</div>}
 
+      {/* El dueño del producto preguntó si perdía lo avanzado antes de atreverse a pulsarlo. El
+          texto dice lo que el código garantiza: las tres columnas del responsable quedan fuera del
+          ON DUPLICATE KEY UPDATE y los pasos se actualizan en su misma fila (upsert, no DELETE +
+          INSERT) — ver PlanFechasService::calcular(). Si esa garantía cambiara, este texto pasaría
+          a ser mentira: hay tests que la vigilan. */}
       <div className="pdc-paq-toolbar">
         <button type="button" className="pdc-paq-primario" data-testid="pdc-plan-recalcular" disabled={ui.ocupado} onClick={onRecalcular}>
           Recalcular
         </button>
+        <span className="pdc-plan-recalcular-nota" data-testid="pdc-plan-recalcular-nota">
+          Recalcula las fechas contra el cronograma vigente. Conserva los responsables, los amarres
+          a frentes y lo ya registrado en cada paso: lo único que cambia son las fechas.
+        </span>
       </div>
 
       {/* Asignación en masa (Task 5): más de cien paquetes por proyecto hacen que asignar de uno en
