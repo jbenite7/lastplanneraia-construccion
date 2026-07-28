@@ -58,7 +58,7 @@ class PlanComprasMaestroController
             return;
         }
         $vinculoId = filter_var($_GET['vinculoId'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-        if ($vinculoId === false || $vinculoId === null) {
+        if ($vinculoId === false) {
             $this->fail('VINCULO_INVALIDO', 'vinculoId inválido.', 422);
             return;
         }
@@ -211,7 +211,7 @@ class PlanComprasMaestroController
     private function versionIdParam(): ?int
     {
         $versionId = filter_var($_GET['versionId'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-        return $versionId === false || $versionId === null ? null : $versionId;
+        return $versionId === false ? null : $versionId;
     }
 
     private function body(): array

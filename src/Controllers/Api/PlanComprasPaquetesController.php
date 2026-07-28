@@ -74,7 +74,7 @@ class PlanComprasPaquetesController
             return;
         }
         $paqueteId = filter_var($_GET['paqueteId'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-        if ($paqueteId === false || $paqueteId === null) {
+        if ($paqueteId === false) {
             $this->fail('PAQUETE_INVALIDO', 'paqueteId inválido.', 422);
             return;
         }
@@ -145,8 +145,8 @@ class PlanComprasPaquetesController
         $umbral = filter_var($body['umbral'] ?? null, FILTER_VALIDATE_FLOAT, ['options' => ['min_range' => 0]]);
         $r = $this->service->aplicarAutoAsignacion(
             $projectId,
-            $versionId === false || $versionId === null ? null : (int) $versionId,
-            $umbral === false || $umbral === null ? null : (float) $umbral,
+            $versionId === false ? null : (int) $versionId,
+            $umbral === false ? null : (float) $umbral,
             $this->usuario(),
         );
         if ($r === null) {
@@ -185,7 +185,7 @@ class PlanComprasPaquetesController
         $body = $this->body();
         $insumos = is_array($body['insumos'] ?? null) ? $body['insumos'] : [];
         $paqueteId = filter_var($body['paqueteId'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-        if ($paqueteId === false || $paqueteId === null) {
+        if ($paqueteId === false) {
             $this->fail('PAQUETE_INVALIDO', 'paqueteId inválido.', 422);
             return;
         }
@@ -268,14 +268,14 @@ class PlanComprasPaquetesController
     private function umbralParam(): ?float
     {
         $umbral = filter_var($_GET['umbral'] ?? null, FILTER_VALIDATE_FLOAT, ['options' => ['min_range' => 0]]);
-        return $umbral === false || $umbral === null ? null : (float) $umbral;
+        return $umbral === false ? null : (float) $umbral;
     }
 
     /** ?versionId=N validado, o null (el servicio usa la versión activa). */
     private function versionIdParam(): ?int
     {
         $versionId = filter_var($_GET['versionId'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-        return $versionId === false || $versionId === null ? null : $versionId;
+        return $versionId === false ? null : $versionId;
     }
 
     private function body(): array

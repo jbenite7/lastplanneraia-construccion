@@ -1,0 +1,397 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Call to function is_array\(\) with non\-empty\-array\<string, string\|null\> will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: admin/src/Controllers/FamilyCatalogController.php
+
+		-
+			message: '#^Offset ''email'' on array\{nombre\: string, email\: string, cargo\: string, usuario\: string, password\: mixed, activo\: int, force_password_change\: int, assignments\: array\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: admin/src/Controllers/UserController.php
+
+		-
+			message: '#^Method Admin\\Models\\Project\:\:renameProjectTables\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: admin/src/Models/Project.php
+
+		-
+			message: '#^Method Admin\\Models\\User\:\:findProjectProfessionalReferences\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: admin/src/Models/User.php
+
+		-
+			message: '#^Method App\\Controllers\\Api\\ContratosApiController\:\:formatUniquePackageNames\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: src/Controllers/Api/ContratosApiController.php
+
+		-
+			message: '#^PHPDoc tag @param references unknown parameter\: \$db$#'
+			identifier: parameter.notFound
+			count: 1
+			path: src/Controllers/Api/GeneralApiController.php
+
+		-
+			message: '#^PHPDoc tag @param references unknown parameter\: \$semana_objetivo$#'
+			identifier: parameter.notFound
+			count: 1
+			path: src/Controllers/Api/GeneralApiController.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between non\-empty\-string and '''' will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: src/Controllers/Api/GeneralApiController.php
+
+		-
+			message: '#^Property App\\Controllers\\Api\\IndicadoresApiController\:\:\$lpsService is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: src/Controllers/Api/IndicadoresApiController.php
+
+		-
+			message: '#^Method App\\Controllers\\Api\\ListadoActividadesApiController\:\:createActivityFromPg\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: src/Controllers/Api/ListadoActividadesApiController.php
+
+		-
+			message: '#^Offset ''actividades'' on array\{familiaId\: int, familiaNombre\: string, familiaCodigo\: string, categoria\: string, confianzaMin\: int, actividades\: non\-empty\-list\<array\{pg\: mixed, match\: array\}\>\} in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.offset
+			count: 1
+			path: src/Controllers/Api/ListadoActividadesApiController.php
+
+		-
+			message: '#^Offset ''familiaId'' on array\{familiaId\: int, familiaNombre\: string, familiaCodigo\: string, categoria\: string, confianzaMin\: int, actividades\: non\-empty\-list\<array\{pg\: mixed, match\: array\}\>\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: src/Controllers/Api/ListadoActividadesApiController.php
+
+		-
+			message: '#^Variable \$fechaInicio on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 1
+			path: src/Controllers/Api/ListadoActividadesApiController.php
+
+		-
+			message: '#^Variable \$nombreActividadInicio on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 1
+			path: src/Controllers/Api/ListadoActividadesApiController.php
+
+		-
+			message: '#^Comparison operation "\<" between 1\|2\|3\|4\|5\|6\|7 and 8 is always true\.$#'
+			identifier: smaller.alwaysTrue
+			count: 1
+			path: src/Controllers/Api/PdcApiController.php
+
+		-
+			message: '#^Comparison operation "\<\=" between 1\|2\|3\|4\|5\|6\|7 and 8 is always true\.$#'
+			identifier: smallerOrEqual.alwaysTrue
+			count: 1
+			path: src/Controllers/Api/PdcApiController.php
+
+		-
+			message: '#^Loose comparison using \!\= between int\<min, \-1\>\|int\<1, max\> and ''0'' will always evaluate to true\.$#'
+			identifier: notEqual.alwaysTrue
+			count: 1
+			path: src/Controllers/Api/PdcApiController.php
+
+		-
+			message: '#^Right side of && is always true\.$#'
+			identifier: booleanAnd.rightAlwaysTrue
+			count: 1
+			path: src/Controllers/Api/PdcApiController.php
+
+		-
+			message: '#^Property App\\Controllers\\Api\\ProfesionalesApiController\:\:\$lpsService is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: src/Controllers/Api/ProfesionalesApiController.php
+
+		-
+			message: '#^Property App\\Controllers\\Api\\ProfesionalesApiController\:\:\$rbac is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: src/Controllers/Api/ProfesionalesApiController.php
+
+		-
+			message: '#^Variable \$columnasCambiadas in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: src/Controllers/Api/ProfesionalesApiController.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: src/Controllers/Api/SemanalApiController.php
+
+		-
+			message: '#^Match expression does not handle remaining value\: string$#'
+			identifier: match.unhandled
+			count: 2
+			path: src/Controllers/Api/SemiAutoController.php
+
+		-
+			message: '#^Comparison operation "\>" between int\<1, max\> and 0 is always true\.$#'
+			identifier: greater.alwaysTrue
+			count: 1
+			path: src/Controllers/Gestion/ReportController.php
+
+		-
+			message: '#^Comparison operation "\>" between int\<3, max\> and 2 is always true\.$#'
+			identifier: greater.alwaysTrue
+			count: 1
+			path: src/Controllers/Gestion/ReportController.php
+
+		-
+			message: '#^Offset ''pdc\-attention''\|''pdc\-critical\-delay''\|''pdc\-delayed''\|''pdc\-header''\|''pdc\-ok''\|''pdc\-warning'' on array\{pdc\-header\: array\{fill\: ''FF035766'', font\: ''FFFFFFFF'', bold\: true\}, pdc\-critical\-delay\: array\{fill\: ''FFF3E8FF'', font\: ''FF6B21A8'', bold\: true\}, pdc\-delayed\: array\{fill\: ''FFFEE2E2'', font\: ''FF991B1B'', bold\: false\}, pdc\-warning\: array\{fill\: ''FFFEF9C3'', font\: ''FF854D0E'', bold\: false\}, pdc\-attention\: array\{fill\: ''FFDBEAFE'', font\: ''FF1E40AF'', bold\: false\}, pdc\-ok\: array\{fill\: ''FFDCFCE7'', font\: ''FF166534'', bold\: false\}, pdc\-neutral\: array\{fill\: ''FFF1F5F9'', font\: ''FF475569'', bold\: false\}\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: src/Controllers/Gestion/ReportController.php
+
+		-
+			message: '#^Offset ''pdc\-critical\-delay''\|''pdc\-delayed''\|''pdc\-neutral''\|''pdc\-ok''\|''pdc\-warning'' on array\{pdc\-header\: array\{fill\: ''FF035766'', font\: ''FFFFFFFF'', bold\: true\}, pdc\-critical\-delay\: array\{fill\: ''FFF3E8FF'', font\: ''FF6B21A8'', bold\: true\}, pdc\-delayed\: array\{fill\: ''FFFEE2E2'', font\: ''FF991B1B'', bold\: false\}, pdc\-warning\: array\{fill\: ''FFFEF9C3'', font\: ''FF854D0E'', bold\: false\}, pdc\-attention\: array\{fill\: ''FFDBEAFE'', font\: ''FF1E40AF'', bold\: false\}, pdc\-ok\: array\{fill\: ''FFDCFCE7'', font\: ''FF166534'', bold\: false\}, pdc\-neutral\: array\{fill\: ''FFF1F5F9'', font\: ''FF475569'', bold\: false\}\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: src/Controllers/Gestion/ReportController.php
+
+		-
+			message: '#^Offset ''pi\-alert\-1\-week''\|''pi\-alert\-2\-3\-weeks''\|''pi\-alert\-4\-6\-weeks''\|''pi\-blocked\-due''\|''pi\-blocked\-overdue''\|''pi\-blocked\-overdue…''\|''pi\-execution\-blocked''\|''pi\-liberated\-control'' on array\{pi\-blocked\-overdue\-critical\: array\{fill\: ''FFFEE2E2'', font\: ''FF991B1B'', bold\: true\}, pi\-blocked\-overdue\: array\{fill\: ''FFFFEDD5'', font\: ''FF9A3412'', bold\: false\}, pi\-blocked\-due\: array\{fill\: ''FFFEF3C7'', font\: ''FF92400E'', bold\: false\}, pi\-alert\-1\-week\: array\{fill\: ''FFFEF9C3'', font\: ''FF854D0E'', bold\: false\}, pi\-alert\-2\-3\-weeks\: array\{fill\: ''FFECFCCB'', font\: ''FF3F6212'', bold\: false\}, pi\-alert\-4\-6\-weeks\: array\{fill\: ''FFDCFCE7'', font\: ''FF166534'', bold\: false\}, pi\-execution\-blocked\: array\{fill\: ''FFFED7AA'', font\: ''FF9A3412'', bold\: false\}, pi\-liberated\-control\: array\{fill\: ''FFE0F2FE'', font\: ''FF0C4A6E'', bold\: false\}, \.\.\.\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: src/Controllers/Gestion/ReportController.php
+
+		-
+			message: '#^Offset ''pi\-alert\-1\-week''\|''pi\-alert\-2\-3\-weeks''\|''pi\-alert\-4\-6\-weeks''\|''pi\-blocked\-due''\|''pi\-blocked\-overdue''\|''pi\-blocked\-overdue…''\|''pi\-execution\-blocked''\|''pi\-liberated\-control''\|''pi\-neutral'' on array\{pi\-blocked\-overdue\-critical\: array\{fill\: ''FFFEE2E2'', font\: ''FF991B1B'', bold\: true\}, pi\-blocked\-overdue\: array\{fill\: ''FFFFEDD5'', font\: ''FF9A3412'', bold\: false\}, pi\-blocked\-due\: array\{fill\: ''FFFEF3C7'', font\: ''FF92400E'', bold\: false\}, pi\-alert\-1\-week\: array\{fill\: ''FFFEF9C3'', font\: ''FF854D0E'', bold\: false\}, pi\-alert\-2\-3\-weeks\: array\{fill\: ''FFECFCCB'', font\: ''FF3F6212'', bold\: false\}, pi\-alert\-4\-6\-weeks\: array\{fill\: ''FFDCFCE7'', font\: ''FF166534'', bold\: false\}, pi\-execution\-blocked\: array\{fill\: ''FFFED7AA'', font\: ''FF9A3412'', bold\: false\}, pi\-liberated\-control\: array\{fill\: ''FFE0F2FE'', font\: ''FF0C4A6E'', bold\: false\}, \.\.\.\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: src/Controllers/Gestion/ReportController.php
+
+		-
+			message: '#^Parameter \#1 \$row of method PhpOffice\\PhpSpreadsheet\\Worksheet\\Worksheet\:\:getRowDimension\(\) expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Controllers/Gestion/ReportController.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between PDOStatement and false will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: src/Controllers/Programacion/ProgramacionIntermediaController.php
+
+		-
+			message: '#^Variable \$nextLinkId might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: src/Controllers/Programacion/ProgramacionIntermediaController.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 5
+			path: src/Core/Database.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: src/Core/Database.php
+
+		-
+			message: '#^Variable \$idExpression might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: src/Core/Database.php
+
+		-
+			message: '#^Variable \$nextId might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: src/Core/Database.php
+
+		-
+			message: '#^Cannot call method query\(\) on class\-string\|object\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: src/Core/Lps/LpsService.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 1
+			path: src/Core/TableResolver.php
+
+		-
+			message: '#^Variable \$dbInstance in isset\(\) always exists and is not nullable\.$#'
+			identifier: isset.variable
+			count: 1
+			path: src/Legacy/modificar_sem_estado.php
+
+		-
+			message: '#^Variable \$dbName might not be defined\.$#'
+			identifier: variable.undefined
+			count: 4
+			path: src/Legacy/modificar_sem_estado.php
+
+		-
+			message: '#^Variable \$f_inicio_sem might not be defined\.$#'
+			identifier: variable.undefined
+			count: 2
+			path: src/Legacy/modificar_sem_estado.php
+
+		-
+			message: '#^Variable \$semana might not be defined\.$#'
+			identifier: variable.undefined
+			count: 9
+			path: src/Legacy/modificar_sem_estado.php
+
+		-
+			message: '#^Variable \$dbInstance in isset\(\) always exists and is not nullable\.$#'
+			identifier: isset.variable
+			count: 1
+			path: src/Legacy/nueva_semana.php
+
+		-
+			message: '#^Cannot call method query\(\) on class\-string\|object\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: src/Legacy/productividad_temporal.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between int\<1, max\> and 0 will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: src/Services/ActivityMatcherService.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between null and null will always evaluate to true\.$#'
+			identifier: identical.alwaysTrue
+			count: 1
+			path: src/Services/ActivityMatcherService.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 1
+			path: src/Services/Auth/PasswordResetService.php
+
+		-
+			message: '#^Method App\\Services\\ControlTowerService\:\:categoryCounts\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: src/Services/ControlTowerService.php
+
+		-
+			message: '#^Method App\\Services\\ControlTowerService\:\:earnedValueWeight\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: src/Services/ControlTowerService.php
+
+		-
+			message: '#^Method App\\Services\\ControlTowerService\:\:lastNumericPoint\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: src/Services/ControlTowerService.php
+
+		-
+			message: '#^Method App\\Services\\ControlTowerService\:\:padProjectionSeries\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: src/Services/ControlTowerService.php
+
+		-
+			message: '#^Method App\\Services\\ControlTowerService\:\:programaEarnedValueSeries\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: src/Services/ControlTowerService.php
+
+		-
+			message: '#^Method App\\Services\\ControlTowerService\:\:seededNormal\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: src/Services/ControlTowerService.php
+
+		-
+			message: '#^Method App\\Services\\ControlTowerService\:\:withInteraction\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: src/Services/ControlTowerService.php
+
+		-
+			message: '#^Offset ''cutoff'' on array\{cutoff\: non\-falsy\-string, week\: int\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 2
+			path: src/Services/ControlTowerService.php
+
+		-
+			message: '#^Offset ''rows'' on array\{project_id\: int\<1, max\>, week\: int, cutoff\: non\-falsy\-string, rows\: non\-empty\-array\<non\-falsy\-string, mixed\>\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: src/Services/ControlTowerService.php
+
+		-
+			message: '#^Offset ''week'' on array\{cutoff\: non\-falsy\-string, week\: int\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 2
+			path: src/Services/ControlTowerService.php
+
+		-
+			message: '#^Parameter \#1 \$array \(list\<array\{label\: non\-falsy\-string, activity_count\: int\<1, max\>, real_contribution_pp\: float, planned_contribution_pp\: float, recoverable_pp\: float\}\>\) of array_values is already a list, call has no effect\.$#'
+			identifier: arrayValues.list
+			count: 1
+			path: src/Services/ControlTowerService.php
+
+		-
+			message: '#^Property App\\Services\\ControlTowerService\:\:\$forecast is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: src/Services/ControlTowerService.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between mixed and null will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: src/Services/Mail/SmtpMailer.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between mixed~\(''''\|null\) and '''' will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 2
+			path: src/Services/ProjectProfessionalsSyncService.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: src/Services/ReportProcessor.php
+
+		-
+			message: '#^Method App\\Services\\SemiAutoService\:\:pdcObservationForPackage\(\) never returns string so it can be removed from the return type\.$#'
+			identifier: return.unusedType
+			count: 1
+			path: src/Services/SemiAutoService.php
+
+		-
+			message: '#^Parameter \#1 \$array \(list\<int\>\) of array_values is already a list, call has no effect\.$#'
+			identifier: arrayValues.list
+			count: 1
+			path: src/Support/BiProjectScope.php
+
+		-
+			message: '#^Method App\\Support\\SemiAutoQualityGate\:\:operationalSuffix\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: src/Support/SemiAutoQualityGate.php
+
+		-
+			message: '#^Method App\\Support\\SemiAutoQualityGate\:\:sourceScopeLabel\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: src/Support/SemiAutoQualityGate.php

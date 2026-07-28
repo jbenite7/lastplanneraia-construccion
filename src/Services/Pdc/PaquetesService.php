@@ -602,7 +602,7 @@ final class PaquetesService
     ): void {
         $sugerido = filter_var($procedencia['sugeridoPaqueteId'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
         $capa = $procedencia['sugeridaCapa'] ?? null;
-        if ($sugerido === false || $sugerido === null || !in_array($capa, self::ORIGENES_MOTOR, true)) {
+        if ($sugerido === false || !in_array($capa, self::ORIGENES_MOTOR, true)) {
             return;
         }
         if ($paqueteElegido !== null && $paqueteElegido === $sugerido) {

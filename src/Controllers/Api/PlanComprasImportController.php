@@ -173,7 +173,7 @@ class PlanComprasImportController
         }
         $va = filter_var($_GET['versionA'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
         $vb = filter_var($_GET['versionB'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-        if ($va === false || $va === null || $vb === false || $vb === null || $va === $vb) {
+        if ($va === false || $vb === false || $va === $vb) {
             $this->fail('PARAMS_INVALIDOS', 'Debes elegir dos versiones distintas para comparar.', 422);
             return;
         }

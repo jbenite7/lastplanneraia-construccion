@@ -77,7 +77,7 @@ class PlanComprasPlanController
         $body = $this->body();
         $paqueteId = filter_var($body['paqueteId'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
         $uniqueId = filter_var($body['uniqueId'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-        if ($paqueteId === false || $paqueteId === null || $uniqueId === false || $uniqueId === null) {
+        if ($paqueteId === false || $uniqueId === false) {
             $this->fail('PAQUETE_INVALIDO', 'paqueteId o uniqueId inválidos.', 422);
             return;
         }
@@ -112,7 +112,7 @@ class PlanComprasPlanController
         }
         $body = $this->body();
         $paqueteId = filter_var($body['paqueteId'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-        if ($paqueteId === false || $paqueteId === null) {
+        if ($paqueteId === false) {
             $this->fail('PAQUETE_INVALIDO', 'paqueteId inválido.', 422);
             return;
         }
