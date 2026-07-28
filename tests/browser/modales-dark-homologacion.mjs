@@ -84,6 +84,32 @@ test('/control-cambios #modalordenDeCambio: etiquetas del formulario legibles', 
   expect(leftovers, 'quedan utilidades bg-*/border-*/text-muted de Bootstrap').toBe(0);
 });
 
+test('/pdc #modalContrato: cuerpo y campos legibles', async ({ page }) => {
+  await loginAndSelectProject(page, project);
+  await page.goto('/pdc');
+  await installContrastProbe(page);
+  await openModal(page, 'modalContrato');
+
+  for (const selector of [
+    '#modalContrato .modal-body',
+    '#modalContrato .pdc-contract-section__title',
+    '#modalContrato input.form-control',
+  ]) {
+    const result = await measure(page, selector);
+    expect(result, `${selector} no existe`).not.toBeNull();
+    expect
+      .soft(result.ratio, `${selector} — ${result.fg} sobre ${result.bg}`)
+      .toBeGreaterThanOrEqual(AA);
+  }
+
+  // pdc.css entra por <link> sin capa y le gana a toda @layer: la regla del
+  // shell es inerte aqui. Si el fondo no viene del tema activo, el arreglo
+  // se escribio en el archivo equivocado.
+  const bg = await matchedStyles(page, '#modalContrato .modal-content', 'background-color');
+  // --ds-active-surface resuelve a rgba(28, 36, 31, 0.92).
+  expect(bg.computed, `candidatas:\n      ${explainRules(bg)}`).toBe('rgba(28, 36, 31, 0.92)');
+});
+
 // El valor COMPUTADO es la unica prueba de quien gano la cascada. Este bloque
 // existe porque el mismo defecto que ataca el tramo —una regla que parece ganar
 // y esta inerte— puede repetirse en el propio arreglo.

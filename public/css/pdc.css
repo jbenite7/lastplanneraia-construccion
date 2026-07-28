@@ -269,7 +269,7 @@ body.pdc-page #dt_cliente .handsontable thead th .changeType:focus {
 }
 
 #modalContrato {
-	color: var(--ds-color-text-primary);
+	color: var(--ds-active-text-primary);
 }
 
 #modalContrato .modal-dialog {
@@ -281,7 +281,7 @@ body.pdc-page #dt_cliente .handsontable thead th .changeType:focus {
 	border: 0;
 	border-radius: 1.25rem;
 	overflow: hidden;
-	background: var(--ds-color-bg-parchment);
+	background: var(--ds-active-surface);
 	box-shadow: var(--shadow-glass, 0 8px 32px rgba(30, 30, 30, 0.12));
 }
 
@@ -351,9 +351,9 @@ body.pdc-page #dt_cliente .handsontable thead th .changeType:focus {
 
 #modalContrato .pdc-contract-section {
 	padding: 1.1rem 1.15rem 1.2rem;
-	border: 1px solid rgba(26, 86, 51, 0.18);
+	border: 1px solid var(--ds-active-border);
 	border-radius: 1rem;
-	background: rgba(250, 250, 250, 0.94);
+	background: var(--ds-active-surface-raised);
 	box-shadow: 0 10px 24px rgba(36, 49, 58, 0.06);
 }
 
@@ -374,7 +374,7 @@ body.pdc-page #dt_cliente .handsontable thead th .changeType:focus {
 	font-weight: 700;
 	line-height: 1.2;
 	letter-spacing: -0.01em;
-	color: var(--ds-color-text-primary);
+	color: var(--ds-active-text-primary);
 }
 
 #modalContrato .pdc-contract-section__hint {
@@ -382,7 +382,7 @@ body.pdc-page #dt_cliente .handsontable thead th .changeType:focus {
 	font-family: 'Inter', sans-serif;
 	font-size: 0.88rem;
 	line-height: 1.45;
-	color: var(--ds-color-text-tertiary);
+	color: var(--ds-active-text-secondary);
 }
 
 #modalContrato .pdc-contract-section__body {
@@ -415,7 +415,7 @@ body.pdc-page #dt_cliente .handsontable thead th .changeType:focus {
 	font-size: 0.9rem;
 	font-weight: 600;
 	line-height: 1.45;
-	color: var(--ds-color-text-primary);
+	color: var(--ds-active-text-primary);
 }
 
 #modalContrato .pdc-modal-value,
@@ -436,28 +436,28 @@ body.pdc-page #dt_cliente .handsontable thead th .changeType:focus {
 #modalContrato .pdc-modal-value .form-control:not(textarea) {
 	min-height: 3rem;
 	border-radius: 0.8rem;
-	border: 1px solid rgba(104, 116, 125, 0.24);
-	background: var(--ds-color-surface);
-	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+	border: 1px solid var(--ds-active-border);
+	background: var(--ds-active-surface);
+	box-shadow: inset 0 1px 0 var(--ds-active-border);
 }
 
 #modalContrato textarea.form-control,
 #modalContrato input.form-control,
 #modalContrato select.form-control {
 	border-radius: 0.8rem;
-	border: 1px solid rgba(104, 116, 125, 0.24);
+	border: 1px solid var(--ds-active-border);
 	font-family: 'Inter', sans-serif;
 	font-size: 0.95rem;
-	color: var(--ds-color-text-primary);
-	background: var(--ds-color-surface);
+	color: var(--ds-active-text-primary);
+	background: var(--ds-active-surface);
 	transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 #modalContrato textarea.form-control:focus,
 #modalContrato input.form-control:focus,
 #modalContrato select.form-control:focus {
-	border-color: rgba(26, 86, 51, 0.5);
-	box-shadow: 0 0 0 0.2rem rgba(26, 86, 51, 0.18);
+	border-color: var(--ds-active-action-primary);
+	box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--ds-active-action-primary) 45%, transparent);
 }
 
 #modalContrato #actividadesDelContrato,
@@ -501,7 +501,7 @@ body.pdc-page #dt_cliente .handsontable thead th .changeType:focus {
 	padding: 1rem 1rem 1rem 1.1rem;
 	border: 1px solid rgba(26, 86, 51, 0.12);
 	border-radius: 0.9rem;
-	background: linear-gradient(180deg, var(--ds-color-surface-tint) 0%, var(--ds-color-bg-parchment) 100%);
+	background: var(--ds-active-surface-raised);
 	text-align: left;
 }
 
@@ -511,7 +511,7 @@ body.pdc-page #dt_cliente .handsontable thead th .changeType:focus {
 	font-size: 0.92rem;
 	font-weight: 600;
 	line-height: 1.5;
-	color: var(--ds-color-text-primary);
+	color: var(--ds-active-text-primary);
 }
 
 #modalContrato .labelFilaEncabezado {
@@ -537,7 +537,7 @@ body.pdc-page #dt_cliente .handsontable thead th .changeType:focus {
 	padding: 0.8rem 0.75rem;
 	border: 1px solid rgba(26, 86, 51, 0.14);
 	border-radius: 0.9rem;
-	background: var(--ds-color-surface);
+	background: var(--ds-active-surface);
 	box-shadow: 0 6px 16px rgba(36, 49, 58, 0.04);
 }
 
@@ -548,35 +548,40 @@ body.pdc-page #dt_cliente .handsontable thead th .changeType:focus {
 	width: 100%;
 	min-width: 0;
 	padding: 0.55rem 0.8rem;
-	border: 1px solid rgba(104, 116, 125, 0.24);
+	border: 1px solid var(--ds-active-border);
 	border-radius: 0.75rem;
-	background: var(--ds-color-surface);
+	background: var(--ds-active-surface);
 	font-family: 'Inter', sans-serif;
 }
 
 #modalContrato .pdc-modal-value .form-control[readonly],
 #modalContrato .inputFormularioContratos input[readonly],
 #modalContrato textarea.form-control[readonly] {
-	border-color: rgba(26, 86, 51, 0.22) !important;
+	/* El tinte verde palido que marcaba "solo lectura" era el escalon mas claro
+	   del modal. Sobre oscuro pasaria a ser el elemento que mas llama la
+	   atencion, justo el que menos deberia. El dashed ya transportaba el
+	   significado por un canal no cromatico y pasa a ser el principal; la
+	   superficie retrocede en vez de avanzar. */
+	border-color: var(--ds-active-border) !important;
 	border-style: dashed !important;
-	background-color: var(--ds-color-surface-tint) !important;
-	background-image: linear-gradient(180deg, var(--ds-color-surface-tint) 0%, var(--ds-color-state-success-bg) 100%) !important;
-	color: var(--ds-color-text-secondary);
+	background-color: var(--ds-active-surface-glass) !important;
+	background-image: none !important;
+	color: var(--ds-active-text-secondary);
 	cursor: not-allowed;
-	box-shadow: inset 0 0 0 1px rgba(26, 86, 51, 0.05);
+	box-shadow: none;
 }
 
 #modalContrato .pdc-modal-value .form-control[readonly]:focus,
 #modalContrato .inputFormularioContratos input[readonly]:focus,
 #modalContrato textarea.form-control[readonly]:focus {
-	border-color: rgba(26, 86, 51, 0.22);
-	box-shadow: inset 0 0 0 1px rgba(26, 86, 51, 0.05);
+	border-color: var(--ds-active-border);
+	box-shadow: none;
 }
 
 #modalContrato .inputFormularioContratos:has(input[readonly]) {
-	border-color: rgba(26, 86, 51, 0.22);
+	border-color: var(--ds-active-border);
 	border-style: dashed;
-	background: linear-gradient(180deg, var(--ds-color-surface-tint) 0%, var(--ds-color-state-success-bg) 100%);
+	background: var(--ds-active-surface-glass);
 }
 
 #modalContrato .inputFormularioContratos i {
@@ -584,11 +589,11 @@ body.pdc-page #dt_cliente .handsontable thead th .changeType:focus {
 	margin: 0;
 	padding: 0;
 	font-size: 1rem;
-	color: var(--ds-color-brand-primary);
+	color: var(--ds-active-action-primary);
 }
 
 #modalContrato .pdc-bg-muted {
-	background: linear-gradient(180deg, var(--ds-color-bg-parchment) 0%, var(--ds-color-bg-parchment) 100%);
+	background: var(--ds-active-surface-raised);
 }
 
 #modalContrato .pdc-bg-muted input,
@@ -603,7 +608,7 @@ body.pdc-page #dt_cliente .handsontable thead th .changeType:focus {
 	padding: 1rem 1.05rem;
 	border: 1px solid rgba(26, 86, 51, 0.14);
 	border-radius: 0.95rem;
-	background: var(--ds-color-surface)dfa;
+	background: var(--ds-active-surface);
 }
 
 #modalContrato .informacionAdjudicacionProveedor .form-group,
@@ -617,7 +622,7 @@ body.pdc-page #dt_cliente .handsontable thead th .changeType:focus {
 	font-family: 'Montserrat', sans-serif;
 	font-size: 1rem;
 	font-weight: 700;
-	color: var(--ds-color-brand-primary-dark);
+	color: var(--ds-active-text-primary);
 }
 
 #modalContrato .mensajeModalInformacionAdjudicado,
@@ -630,15 +635,15 @@ body.pdc-page #dt_cliente .handsontable thead th .changeType:focus {
 }
 
 #modalContrato .pdc-provider-locked {
-	border-color: rgba(26, 86, 51, 0.22) !important;
-	background: linear-gradient(180deg, var(--ds-color-surface-tint) 0%, var(--ds-color-state-success-bg) 100%) !important;
-        color: var(--ds-color-brand-primary-dark) !important;
+	border-color: var(--ds-active-border) !important;
+	background: var(--ds-active-surface-glass) !important;
+	color: var(--ds-active-text-secondary) !important;
 	cursor: not-allowed;
-	box-shadow: inset 0 0 0 1px rgba(26, 86, 51, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.72);
+	box-shadow: none;
 }
 
 #modalContrato .pdc-provider-locked::placeholder {
-	color: var(--ds-color-text-tertiary);
+	color: var(--ds-active-text-secondary);
 }
 
 #modalContrato .pdc-provider-locked + .pdc-provider-lock-badge,
@@ -650,7 +655,7 @@ body.pdc-page #dt_cliente .handsontable thead th .changeType:focus {
 	padding: 0.22rem 0.55rem;
 	border-radius: var(--ds-radius-pill);
 	background: rgba(26, 86, 51, 0.12);
-	color: var(--ds-color-brand-primary-dark);
+	color: var(--ds-active-action-primary);
 	font-family: 'Montserrat', sans-serif;
 	font-size: 0.72rem;
 	font-weight: 700;
@@ -701,21 +706,21 @@ body.pdc-page #dt_cliente .handsontable thead th .changeType:focus {
 
 #modalContrato #btn_cancelar_editar {
 	background: transparent;
-	border: 1px solid rgba(26, 86, 51, 0.35);
-	color: var(--ds-color-brand-primary);
+	border: 1px solid var(--ds-active-border);
+	color: var(--ds-active-text-primary);
 }
 
 #modalContrato #btn_cancelar_editar:hover,
 #modalContrato #btn_cancelar_editar:focus {
-	background: rgba(26, 86, 51, 0.08);
-	color: var(--ds-color-brand-primary-dark);
+	background: var(--ds-active-surface-glass);
+	color: var(--ds-active-text-primary);
 }
 
 #modalContrato .pdc-contract-note {
 	margin: 0;
 	font-family: 'Inter', sans-serif;
 	font-size: 0.84rem;
-	color: var(--ds-color-text-tertiary);
+	color: var(--ds-active-text-secondary);
 }
 
 @media (max-width: 1199.98px) {
