@@ -72,8 +72,9 @@ html.aia-theme-dark .pg-page {
   /* Los `--pg-*-border` de arriba mezclan `--ds-color-state-*-bg`, que son los
      pasteles casi blancos del tema claro: sobre oscuro esa mezcla da una
      hairline correcta para una fila tintada, pero deja el punto de la leyenda
-     en gris (2-11 % de saturacion; «Atrasada», el urgent del modulo, caia en
-     #9c9c98). El punto se deriva por tanto del unico token del par que conserva
+     en gris (2-11 % de saturacion; «Atrasada», el urgent del modulo, caia en un
+     gris neutro casi sin croma). El punto se deriva por tanto del unico token
+     del par que conserva
      croma -`--ds-color-state-*-text`- subiendo la luminosidad en OKLCH para
      hacerlo visible sobre oscuro sin desplazar el tono, que es lo que pasaria
      al aclarar mezclando con blanco en sRGB.
