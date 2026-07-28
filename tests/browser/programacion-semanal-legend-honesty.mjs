@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { PROJECTS } from './fixtures/projects.mjs';
 import { loginAndSelectProject } from './support/session.mjs';
+import { installContrastProbe, openModal } from './support/contrast.mjs';
 
 const project = PROJECTS.find(({ key }) => key === 'construction');
 const VIEWPORT = { width: 1180, height: 820 };
@@ -172,6 +173,117 @@ test.describe('leyenda de Programación Semanal', () => {
           `.${a} y .${b} pintan casi lo mismo: ${toHex(legend[a])} vs ${toHex(legend[b])}`,
         ).toBeGreaterThanOrEqual(MIN_CHANNEL_SEPARATION);
       }
+    }
+  });
+
+  // Las muestras del modal (`.ps-legend-modal-swatch`) son otra superficie: no
+  // las alcanza ninguna asercion de arriba —miran `#psAlertsLegend`— y sus
+  // rellenos rinden 1,01-1,20:1 contra el entorno, asi que quien hace visible
+  // cada cuadro es su frontera. Retirar un `border-color` o volverlo
+  // transparente dejaba la muestra casi invisible sin que ninguna suite lo
+  // viera.
+  //
+  // Se aserta que la muestra es PERCEPTIBLE, no como lo consigue: vale que la
+  // frontera la sostenga el borde (hoy) o que algun dia la sostenga el propio
+  // relleno si la escalera sube a 3:1. Y se exige que esa frontera siga
+  // codificando el estado, porque un marco neutro comun a los seis borra la
+  // unica distincion por color que le queda a la leyenda.
+  const MODAL_SWATCH_STATES = [
+    'ps-alert-critical-route',
+    'ps-alert-critical',
+    'ps-alert-high',
+    'ps-alert-medium',
+    'ps-alert-info',
+    'ps-alert-control',
+  ];
+
+  function parseRgb(value) {
+    return value.match(/\d+/g).slice(0, 3).map(Number);
+  }
+
+  // Cuanto color lleva encima un rgb, en amplitud de canal. El matiz por si solo
+  // no basta como guard: el neutro compartido de la interfaz no es un gris puro
+  // -tiene un sesgo verde- y cae DENTRO de MAX_HUE_DRIFT de la familia verde,
+  // asi que `ps-alert-control` podria volver al neutro sin que nadie lo viera.
+  // Lo que de verdad distingue un marco de estado de un marco neutro es el
+  // croma. Umbral de "esto no es un gris": el neutro mide 13 y el paso mas
+  // apagado de las cinco familias mide 38.
+  const MIN_BOUNDARY_CHROMA = 25;
+
+  function chroma([r, g, b]) {
+    return Math.max(r, g, b) - Math.min(r, g, b);
+  }
+
+  test('la frontera de cada muestra del modal es perceptible y lleva su matiz', async ({ page }) => {
+    await installContrastProbe(page);
+    await openModal(page, 'modal_leyenda_colores_ps');
+
+    const measured = await page.evaluate((states) => states.map((cls) => {
+      // La fase Programacion no renderiza los seis: `ps-alert-info` pertenece a
+      // Calificacion. El que falta se inyecta en un contenedor REAL del modal,
+      // para medir la misma cascada que veria el usuario en esa fase.
+      let el = document.querySelector(`.ps-legend-modal-swatch.${cls}`);
+      const injected = !el;
+      if (injected) {
+        const host = document.querySelector('.ps-legend-quick-alert-item');
+        if (!host) return { cls, missing: 'no hay contenedor donde inyectar' };
+        el = document.createElement('span');
+        el.className = `ps-legend-modal-swatch ${cls}`;
+        host.appendChild(el);
+      }
+      el.setAttribute('data-aia-swatch-probe', cls);
+      const out = window.__aiaBoundary(`[data-aia-swatch-probe="${cls}"]`);
+      el.removeAttribute('data-aia-swatch-probe');
+      if (injected) el.remove();
+      return { cls, injected, ...out };
+    }), MODAL_SWATCH_STATES);
+
+    for (const m of measured) {
+      expect(m.missing, `${m.cls}: ${m.missing}`).toBeUndefined();
+
+      // Frontera del objeto grafico (WCAG 1.4.11) contra lo adyacente: la
+      // sostiene el borde o el relleno, cualquiera de los dos sirve.
+      const where = `${m.cls}${m.injected ? ' (inyectada)' : ''}`;
+      const detalle = `borde ${m.border} (${m.borderVsFill}:1 sobre su relleno) y `
+        + `relleno ${m.fill} a ${m.fillVsSurround}:1 sobre el entorno ${m.surround}`;
+
+      const boundaryRatio = Math.max(m.borderVsSurround, m.fillVsSurround);
+      expect
+        .soft(
+          boundaryRatio,
+          `.${where} no se separa de su entorno: su borde queda a `
+          + `${m.borderVsSurround}:1 y su relleno a ${m.fillVsSurround}:1; ${detalle}`,
+        )
+        .toBeGreaterThanOrEqual(3);
+
+      // Y esa frontera tiene que seguir codificando el estado. Si la sostiene el
+      // relleno, el color es el suyo y la comparacion es trivial; si la sostiene
+      // un borde, el borde debe llevar croma y el matiz de la familia del
+      // relleno. No se exige NINGUN token ni valor concreto.
+      const boundary = parseRgb(m.borderVsSurround >= 3 ? m.border : m.fill);
+      expect
+        .soft(
+          chroma(boundary),
+          `.${where}: su frontera casi no lleva color (${detalle}); un marco sin `
+          + 'croma es el mismo para los seis estados y borra la codificacion',
+        )
+        .toBeGreaterThanOrEqual(MIN_BOUNDARY_CHROMA);
+
+      const drift = hueDistance(boundary, parseRgb(m.fill));
+      expect
+        .soft(
+          drift,
+          `.${where}: no se puede comparar la familia de su frontera con la de su `
+          + `relleno, uno de los dos es gris (${detalle})`,
+        )
+        .not.toBeNull();
+      expect
+        .soft(
+          drift,
+          `.${where}: su frontera esta a ${drift?.toFixed(0)}° del relleno que `
+          + `enmarca (${detalle}); ya no es la familia de matiz del estado`,
+        )
+        .toBeLessThanOrEqual(MAX_HUE_DRIFT);
     }
   });
 });

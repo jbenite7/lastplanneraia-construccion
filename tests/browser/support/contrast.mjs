@@ -66,6 +66,11 @@ const PROBE = () => {
     return acc;
   };
 
+  const contrast = (a, b) => {
+    const [l1, l2] = [luminance(a), luminance(b)];
+    return Math.round(((Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05)) * 100) / 100;
+  };
+
   window.__aiaContrast = (selector) => {
     const el = document.querySelector(selector);
     if (!el) return null;
@@ -73,10 +78,45 @@ const PROBE = () => {
     const ink = parseColor(getComputedStyle(el).color);
     ink[3] *= accumulatedOpacity(el);
     const fg = over(ink, bg);
-    const l1 = luminance(fg);
-    const l2 = luminance(bg);
-    const ratio = (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
-    return { ratio: Math.round(ratio * 100) / 100, fg: fmt(fg), bg: fmt(bg) };
+    return { ratio: contrast(fg, bg), fg: fmt(fg), bg: fmt(bg) };
+  };
+
+  // Un objeto grafico sin texto (una muestra de color) no se mide con
+  // `__aiaContrast`: no tiene tinta. Lo que WCAG 1.4.11 pide es que su FRONTERA
+  // se distinga de lo adyacente, y esa frontera tiene dos vecinos: el relleno
+  // propio hacia dentro y el entorno hacia fuera. Se devuelven los dos ratios y
+  // ademas el del relleno contra el entorno, para que quien aserte pueda exigir
+  // "es perceptible" sin fijar CUAL de los dos mecanismos lo consigue.
+  window.__aiaBoundary = (selector) => {
+    const el = document.querySelector(selector);
+    if (!el) return null;
+    const cs = getComputedStyle(el);
+    const opacity = accumulatedOpacity(el);
+    const surround = el.parentElement
+      ? effectiveBackground(el.parentElement)
+      : [255, 255, 255, 1];
+
+    // Relleno y borde ocupan regiones disjuntas del border-box, asi que una
+    // `opacity` de grupo se aplica a cada uno por separado; con
+    // `background-clip: border-box` (el defecto) el fondo si llega bajo el
+    // borde, de ahi que el borde se componga sobre el relleno y no sobre el
+    // entorno.
+    const fillPaint = parseColor(cs.backgroundColor);
+    fillPaint[3] *= opacity;
+    const fill = over(fillPaint, surround);
+
+    const borderPaint = parseColor(cs.borderTopColor);
+    borderPaint[3] *= opacity * (Number.parseFloat(cs.borderTopWidth) > 0 ? 1 : 0);
+    const border = over(borderPaint, fill);
+
+    return {
+      borderVsFill: contrast(border, fill),
+      borderVsSurround: contrast(border, surround),
+      fillVsSurround: contrast(fill, surround),
+      border: fmt(border),
+      fill: fmt(fill),
+      surround: fmt(surround),
+    };
   };
 };
 
@@ -103,6 +143,10 @@ export async function closeModal(page, modalId) {
 
 export async function measure(page, selector) {
   return page.evaluate((sel) => window.__aiaContrast(sel), selector);
+}
+
+export async function measureBoundary(page, selector) {
+  return page.evaluate((sel) => window.__aiaBoundary(sel), selector);
 }
 
 // Quien gana de verdad la cascada. Sin esto, un cambio puede "funcionar" por una

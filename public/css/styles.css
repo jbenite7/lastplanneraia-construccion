@@ -3148,38 +3148,39 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
 }
 
 
-/* Muestras de estado del modal de leyenda de Semanal. Cada estado conserva su
-   familia de matiz y toma el escalon `-1`, el mismo ancla del que salen el chip
-   y la fila. Ningun relleno de la escalera llega a 3:1 sobre oscuro, asi que la
-   frontera del objeto grafico (WCAG 1.4.11) la sostiene la tinta secundaria. */
+/* Muestras de estado del modal de leyenda de Semanal. Cada una toma el ancla de
+   su familia; como ningun relleno llega a 3:1 sobre oscuro, la frontera
+   (WCAG 1.4.11) la sostiene un borde de ESA MISMA familia -3,81-7,24:1 contra el
+   relleno y 3,91-8,68:1 contra el entorno, medido en las dos rutas que abren el
+   modal-, y no un neutro comun a los seis que borraria el codigo de matiz. */
 .ps-legend-modal-swatch.ps-alert-critical-route {
   background-color: var(--ds-state-tint-red);
-  border-color: var(--ds-active-text-secondary);
+  border-color: var(--aia-alert-medium);
 }
 
 .ps-legend-modal-swatch.ps-alert-critical {
   background-color: var(--ds-state-tint-red);
-  border-color: var(--ds-active-text-secondary);
+  border-color: var(--aia-alert-medium);
 }
 
 .ps-legend-modal-swatch.ps-alert-high {
   background-color: var(--ds-state-tint-orange);
-  border-color: var(--ds-active-text-secondary);
+  border-color: var(--aia-orange-medium);
 }
 
 .ps-legend-modal-swatch.ps-alert-medium {
   background-color: var(--ds-state-tint-amber);
-  border-color: var(--ds-active-text-secondary);
+  border-color: var(--aia-warning-high);
 }
 
 .ps-legend-modal-swatch.ps-alert-info {
   background-color: var(--ds-state-tint-blue);
-  border-color: var(--ds-active-text-secondary);
+  border-color: var(--aia-blue-medium);
 }
 
 .ps-legend-modal-swatch.ps-alert-control {
   background-color: var(--ds-state-tint-green);
-  border-color: var(--ds-active-text-secondary);
+  border-color: var(--aia-green-light);
 }
 
 /* Solo el sujeto de Handsontable: ninguna fila de DataTables recibe nunca
