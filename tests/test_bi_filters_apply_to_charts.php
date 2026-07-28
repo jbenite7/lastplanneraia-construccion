@@ -9,6 +9,11 @@ use App\Services\ControlTowerService;
 
 $db = \Database::getInstance();
 BiContractFixture::seedCausalRows($db);
+// Los briefs de programa-general se arman sobre `programa_consolidado`, así que el escenario
+// multi-proyecto por rango de fechas necesita también las instantáneas. Antes apuntaba a Da Porto
+// y se cumplía con las filas reales del proyecto; contra los proyectos sacrificables hay que
+// sembrarlas explícitamente.
+BiContractFixture::seedProgramSnapshots($db);
 $bi = new ControlTowerService();
 
 function lastNumericPoint(array $values): float
@@ -136,7 +141,7 @@ foreach ($mandatoryCharts as $chartId) {
     }
 }
 
-$rangeProjects = [73, 75];
+$rangeProjects = [BiContractFixture::PROYECTO_A, BiContractFixture::PROYECTO_B];
 $rangeFilters = ['desde' => '2026-07-06', 'hasta' => '2026-07-26'];
 $rangeBrief = $bi->getBrief('programa-general', $rangeProjects, '', 'R', $rangeFilters);
 if (($rangeBrief['filters']['date_range_overrides_semana'] ?? false) !== true) {

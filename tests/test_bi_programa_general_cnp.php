@@ -321,11 +321,19 @@ function cnpAssertScenario(
     cnpAssert($failures, count($seen) === $expected['summary']['total'], "{$label}: full CNP detail contains duplicate or missing source keys");
 }
 
+// La población canónica se descubre de los datos reales, pero no vale cualquiera: más abajo se
+// usan su Responsable_AIA y su Sub_Contratista para ejercitar los filtros, así que un grupo que no
+// los tenga deja esos escenarios sin materia. El `HAVING` lo exige explícitamente en vez de
+// confiar en que el grupo más grande venga completo — el mayor hoy (proyecto 76, semana 1, 73
+// filas) no trae ninguno de los dos campos, y el test fallaba pidiendo al «fixture» algo que
+// dependía de qué proyecto tuviera más filas ese día.
 $primaryContext = $db->query(
     "SELECT project_id, Semana, COUNT(*) AS rows_count
      FROM programacion_semanal
      WHERE Activa = '0' AND COALESCE(TRIM(CNP), '') <> ''
      GROUP BY project_id, Semana
+     HAVING SUM(COALESCE(TRIM(Responsable_AIA), '') <> '') > 0
+        AND SUM(COALESCE(TRIM(Sub_Contratista), '') <> '') > 0
      ORDER BY rows_count DESC, project_id, Semana
      LIMIT 1",
 )->fetch(PDO::FETCH_ASSOC) ?: [];

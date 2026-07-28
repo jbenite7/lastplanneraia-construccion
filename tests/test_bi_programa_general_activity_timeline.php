@@ -288,7 +288,7 @@ if ($firstDetail !== null) {
     timelineAssertDetail($failures, $sumDetail, $jmcOracle, 'canonical snapshot full activity contributions', true);
 }
 
-$asymmetricProjects = [$jmcProjectId, 75];
+$asymmetricProjects = [$jmcProjectId, BiContractFixture::PROYECTO_B];
 $asymmetricOracle = timelineOracle($db, $asymmetricProjects, $jmcWeek);
 timelineAssert(
     $failures,
