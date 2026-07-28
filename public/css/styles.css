@@ -4360,72 +4360,8 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
 /* PDC: los ayudantes del modal se fueron a design-system/adapters/legacy-bridge.css
    (@layer module.components); aqui solo quedaban reglas que pdc.css ya pisaba. */
 
-.pdc-icon-state {
-  margin-inline-end: 0.3125rem;
-  display: inline-block;
-}
-
-.pdc-icon-ok {
-  color: #2fc231;
-}
-.pdc-icon-warn {
-  color: #c2ac2f;
-}
-.pdc-icon-danger {
-  color: #c22f2f;
-}
-.pdc-icon-amber {
-  color: #ffc107;
-}
-.pdc-icon-info {
-  color: #2f80c2;
-}
-
-.pdc-delta {
-  font-size: 0.72rem;
-  font-weight: 500;
-  font-family: 'Inter', sans-serif;
-  display: inline-block;
-  margin-left: 6px;
-  padding: 1px 8px;
-  border-radius: 999px;
-  line-height: 1.5;
-  white-space: nowrap;
-}
-/* Los dos indicadores de desviacion conservan su familia de matiz y solo cambian
-   de tema: `--delay` era rojo claro y pasa al rojo oscuro de /pdc, `--ahead` era
-   naranja claro y pasa al naranja oscuro. Cada fondo viaja con el texto con el
-   que se midio su contraste al tokenizar la paleta a dark (10,99:1 y 9,77:1).
-
-   AVISO de semantica, no de tema: en /pdc el naranja significa «atrasada», asi
-   que usarlo para «dias de adelanto» es una colision de significado. Es PREVIA
-   -el #fbead9 original ya era la version clara de ese mismo naranja- y se
-   conserva a proposito: reasignar el matiz de «adelanto» es un juicio de diseno
-   y no entra en un cambio de tema.
-   Guard: tests/browser/pdc-chips-dark.mjs. */
-.pdc-delta--ahead {
-  background-color: var(--ds-state-tint-orange);
-  color: var(--pdc-delayed-text);
-}
-.pdc-delta--delay {
-  background-color: var(--ds-state-tint-red);
-  color: var(--pdc-critical-text);
-}
-
-.pdc-ready-icon {
-  font-size: 0.8rem;
-  margin-right: 4px;
-  vertical-align: middle;
-}
-.pdc-ready-icon--ok {
-  color: #e87722 !important;
-}
-.pdc-ready-icon--config {
-  color: #ffca28 !important;
-}
-.pdc-ready-icon--risk {
-  color: #e53935 !important;
-}
+/* PDC: los iconos de estado, los chips de desviacion y los tres iconos de
+   preparacion se fueron a design-system/adapters/legacy-bridge.css. */
 
 /* Solo Alertas Toggle Button */
 .pdc-btn-alertas {

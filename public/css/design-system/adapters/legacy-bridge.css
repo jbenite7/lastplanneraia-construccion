@@ -504,6 +504,119 @@
     line-height: 1.5;
     color: var(--ds-active-text-primary);
   }
+
+  /* ───────────────────────────────────────────────────────────────────────
+     F1 Task 5j: los iconos de estado de /pdc absorbidos desde
+     public/css/styles.css:4432-4497 (module.components). Las ocho tintas
+     eran literales de la paleta clara y ninguna estaba en la escalera de
+     tintas oscuras que /pdc ya usa en el resto del modulo.
+
+     UN FALLO REAL DE CONTRASTE, medido sobre el fondo que pinta la fila
+     (no sobre el canvas): `.pdc-icon-danger` rendia 2,59:1, por debajo del
+     3:1 que WCAG 1.4.11 pide a un icono que porta significado, en seis
+     celdas. `.pdc-ready-icon--risk` iba justo, en 3,44:1, en nueve.
+
+     Cada clase toma la tinta oscura del matiz que ya tenia. El emparejado
+     no es estetico: sale de los estados que emite
+     public/js/modules/pdc/hot.js, que son los mismos que nombran los
+     tokens `--pdc-*` de tokens.css.
+       .pdc-icon-ok      completed-ontime / proceso iniciado  -> verde
+       .pdc-icon-amber   completed-late                       -> ambar
+       .pdc-icon-info    active / debe comenzar en N semanas  -> azul
+       .pdc-icon-danger  critical / delayed / ya debio empezar-> rojo
+       .pdc-ready-icon--config  necesita configurar duraciones-> ambar
+       .pdc-ready-icon--risk    en riesgo de retraso          -> rojo
+
+     DOS emparejados llevan aviso de semantica, no de tema, con el mismo
+     criterio con que ya lo llevaba `.pdc-delta--ahead` mas abajo:
+      - `.pdc-icon-warn` («debe comenzar en 1 semana») no tiene estado
+        propio en la escalera. Toma la tinta ambar por conservar su familia
+        de matiz, la misma que `.pdc-icon-amber`. Las dos clases nunca
+        coinciden en la misma columna y su glifo es distinto
+        (`fa-glasses` frente a `fa-sad-cry`), asi que la distincion no se
+        pierde.
+      - `.pdc-ready-icon--ok` («listo para iniciar») era el naranja
+        corporativo. Se conserva la familia naranja tomando su tinta
+        oscura; el matiz no se reasigna.
+
+     Se retira el `!important` de las tres tintas de `.pdc-ready-icon--*`:
+     nada compite por `color` sobre ese sujeto —pdc.css:203 solo les fija
+     margen y tamano— asi que no defendia nada. No se anade ninguno nuevo.
+
+     Podado por medicion: `.pdc-ready-icon` entera. Su `font-size` y su
+     `margin-right` los pisa `.pdc-row-actions .pdc-ready-icon` (pdc.css,
+     sin capa), y su `vertical-align` no aplica porque `.pdc-row-actions`
+     es `inline-flex` y el icono es un item flex. */
+  .pdc-icon-state {
+    margin-inline-end: 0.3125rem;
+    display: inline-block;
+  }
+
+  .pdc-icon-ok {
+    color: var(--pdc-completed-ontime-text);
+  }
+
+  .pdc-icon-warn {
+    color: var(--pdc-completed-late-text);
+  }
+
+  .pdc-icon-danger {
+    color: var(--pdc-critical-text);
+  }
+
+  .pdc-icon-amber {
+    color: var(--pdc-completed-late-text);
+  }
+
+  .pdc-icon-info {
+    color: var(--pdc-active-text);
+  }
+
+  .pdc-ready-icon--ok {
+    color: var(--pdc-delayed-text);
+  }
+
+  .pdc-ready-icon--config {
+    color: var(--pdc-completed-late-text);
+  }
+
+  .pdc-ready-icon--risk {
+    color: var(--pdc-critical-text);
+  }
+
+  /* Los dos indicadores de desviacion llegan ya tokenizados del tramo 5b y
+     se mueven VERBATIM salvo el radio, que pasa al token de pildora: el
+     valor anterior tampoco era una medida real, ya excedia la mitad de la
+     altura del chip y renderizaba el mismo semicirculo.
+
+     AVISO de semantica, no de tema, heredado de aquel tramo: en /pdc el
+     naranja significa «atrasada», asi que usarlo para «dias de adelanto» es
+     una colision de significado. Es PREVIA -el literal original ya era la
+     version clara de ese mismo naranja- y se conserva a proposito:
+     reasignar el matiz de «adelanto» es un juicio de diseno y no entra en
+     un cambio de tema.
+     Guard: tests/browser/pdc-chips-dark.mjs. */
+  .pdc-delta {
+    font-size: 0.72rem;
+    font-weight: 500;
+    font-family: "Inter", sans-serif;
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 8px;
+    border-radius: var(--ds-radius-pill);
+    line-height: 1.5;
+    white-space: nowrap;
+  }
+
+  .pdc-delta--ahead {
+    background-color: var(--ds-state-tint-orange);
+    color: var(--pdc-delayed-text);
+  }
+
+  .pdc-delta--delay {
+    background-color: var(--ds-state-tint-red);
+    color: var(--pdc-critical-text);
+  }
 }
 
 /* Reintroduce el orden de subcapas de `module` que styles.css:1 fija hoy. Es
