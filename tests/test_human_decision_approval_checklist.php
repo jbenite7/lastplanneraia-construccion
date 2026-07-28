@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Database.php';
+require_once __DIR__ . '/support/familias_revision_obligatoria.php';
 
 $failed = 0;
 
@@ -92,14 +93,8 @@ try {
         hdacAssert(str_contains($checklist, "`{$code}`"), "checklist cubre decision de BD {$code}");
     }
 
-    $pendingRows = $db->query(
-        "SELECT codigo
-         FROM general_pdc_familias
-         WHERE COALESCE(activa, 1) = 1
-           AND COALESCE(siempre_revision, 0) = 1
-         ORDER BY codigo",
-    )->fetchAll(PDO::FETCH_COLUMN);
-    hdacAssert($pendingRows === [], 'BD no conserva decisiones humanas pendientes');
+    $pendingRows = familiasConRevisionObligatoria($db);
+    hdacAssert($pendingRows === FAMILIAS_REVISION_OBLIGATORIA, 'el catalogo mantiene exactamente las familias con revision obligatoria vigentes');
 
     hdacAssert(str_contains($status, 'human-decision-approval-checklist.md'), 'STATUS enlaza checklist');
 } catch (Throwable $e) {

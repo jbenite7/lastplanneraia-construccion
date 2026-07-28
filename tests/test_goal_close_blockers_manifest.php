@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Database.php';
+require_once __DIR__ . '/support/familias_revision_obligatoria.php';
 
 $failed = 0;
 
@@ -67,13 +68,8 @@ try {
     $exclusionIds = array_column($exclusions, 'id');
     gcbAssert(in_array('metrolinea_apply_crud_gap', $exclusionIds, true), 'Metrolinea queda como exclusion aceptada');
 
-    $pendingHuman = (int) gcbScalar(
-        $db,
-        'SELECT COUNT(*) FROM general_pdc_familias
-         WHERE COALESCE(activa, 1) = 1
-           AND COALESCE(siempre_revision, 0) = 1',
-    );
-    gcbAssert($pendingHuman === 0, 'BD confirma 0 decisiones humanas pendientes');
+    $pendingHuman = familiasConRevisionObligatoria($db);
+    gcbAssert($pendingHuman === FAMILIAS_REVISION_OBLIGATORIA, 'el catalogo mantiene exactamente las familias con revision obligatoria vigentes');
 
     $metroProjects = $db->query(
         "SELECT Id FROM general_proyectos_procesos

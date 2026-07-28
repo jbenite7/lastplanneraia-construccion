@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Database.php';
+require_once __DIR__ . '/support/familias_revision_obligatoria.php';
 
 use App\Services\SemiAutoService;
 
@@ -201,21 +202,22 @@ try {
     );
     lpcAssert($paintingMoItems === 0, 'Pinturas no tiene item activo de Mano de Obra separado');
 
-    $reviewFamilies = (int) lpcScalar(
-        $db,
-        'SELECT COUNT(*) FROM general_pdc_familias
-         WHERE COALESCE(activa, 1) = 1 AND COALESCE(siempre_revision, 0) = 1',
+    lpcAssert(
+        familiasConRevisionObligatoria($db) === FAMILIAS_REVISION_OBLIGATORIA,
+        'el catalogo mantiene exactamente las familias con revision obligatoria vigentes',
     );
-    lpcAssert($reviewFamilies === 0, 'no quedan familias ambiguas protegidas globalmente despues de aprobacion humana');
 
     foreach ([
-        'ASEO' => ['activa' => 1, 'siempre_revision' => 0],
-        'RED_TELECOMUNICACIONES' => ['activa' => 1, 'siempre_revision' => 0],
+        // Las cinco que marca `20260713_seed_v1_0_test_contract_families.sql:146` llevan revisión
+        // obligatoria; tres de ellas siguen inactivas, así que sólo dos llegan al catálogo vivo.
+        // Las dos que introdujo la 20260711 (SEGURIDAD_CONTROL, DOTACION_ZONAS_COMUNES) no.
+        'ASEO' => ['activa' => 1, 'siempre_revision' => 1],
+        'RED_TELECOMUNICACIONES' => ['activa' => 1, 'siempre_revision' => 1],
         'SEGURIDAD_CONTROL' => ['activa' => 1, 'siempre_revision' => 0],
         'DOTACION_ZONAS_COMUNES' => ['activa' => 1, 'siempre_revision' => 0],
-        'CAMPAMENTO' => ['activa' => 0, 'siempre_revision' => 0],
-        'BOTADA_ESCOMBROS' => ['activa' => 0, 'siempre_revision' => 0],
-        'AMENIDADES_CUBIERTA' => ['activa' => 0, 'siempre_revision' => 0],
+        'CAMPAMENTO' => ['activa' => 0, 'siempre_revision' => 1],
+        'BOTADA_ESCOMBROS' => ['activa' => 0, 'siempre_revision' => 1],
+        'AMENIDADES_CUBIERTA' => ['activa' => 0, 'siempre_revision' => 1],
     ] as $code => $expected) {
         $row = $db->query(
             'SELECT activa, siempre_revision FROM general_pdc_familias WHERE codigo = ?',

@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Database.php';
+require_once __DIR__ . '/support/familias_revision_obligatoria.php';
 
 use App\Services\SemiAutoService;
 
@@ -57,12 +58,8 @@ echo "=== Conditional review for Telecomunicaciones / Seguridad y Control ===\n"
 try {
     $db = Database::getInstance();
 
-    $pending = (int) $db->query(
-        'SELECT COUNT(*) FROM general_pdc_familias
-         WHERE COALESCE(activa, 1) = 1
-           AND COALESCE(siempre_revision, 0) = 1',
-    )->fetchColumn();
-    rrfAssert($pending === 0, 'no quedan familias activas con revision obligatoria global');
+    $pending = familiasConRevisionObligatoria($db);
+    rrfAssert($pending === FAMILIAS_REVISION_OBLIGATORIA, 'el catalogo mantiene exactamente las familias con revision obligatoria vigentes');
 
     $service = new SemiAutoService($db);
     $method = (new ReflectionClass($service))->getMethod('reviewCoPresentListadoFamilies');

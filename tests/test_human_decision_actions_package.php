@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../src/Core/Database.php';
+require_once __DIR__ . '/support/familias_revision_obligatoria.php';
 
 $failed = 0;
 
@@ -83,12 +84,8 @@ try {
         hdaAssert(($byCode[$code]['family_name'] ?? '') === (string) $row['nombre'], "{$code} conserva nombre de BD");
     }
 
-    $pending = (int) $db->query(
-        'SELECT COUNT(*) FROM general_pdc_familias
-         WHERE COALESCE(activa, 1) = 1
-           AND COALESCE(siempre_revision, 0) = 1',
-    )->fetchColumn();
-    hdaAssert($pending === 0, 'BD ya no mantiene decisiones humanas pendientes');
+    $pending = familiasConRevisionObligatoria($db);
+    hdaAssert($pending === FAMILIAS_REVISION_OBLIGATORIA, 'el catalogo mantiene exactamente las familias con revision obligatoria vigentes');
 
     $matrix = file_get_contents($matrixPath) ?: '';
     $status = file_get_contents($statusPath) ?: '';
