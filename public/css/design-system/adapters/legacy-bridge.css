@@ -370,14 +370,16 @@
    F1 Task 5a-ter: BORRADO el dropdown legacy de Bootstrap (`.dropdown-menu`,
    `.dropdown-item`, sus `:hover`/`:focus` y `.dropdown-item.active`), que el
    tramo 5a-bis habia reubicado aqui en `@layer module.components` en vez de
-   podarlo. Con el se va su `@layer module.theme, module.layout,
-   module.components;`: era la unica declaracion de subcapas de `module` de
-   este archivo y ese bloque era su unico usuario, asi que styles.css:1 vuelve
-   a ser —como antes de 5a-bis— lo primero que fija el orden `theme, layout,
-   components`. Los demas escritores de `module` del proyecto
-   (programa-general-handsontable.css:1, programa-general.css:1, lab.css:1,
-   programacion-intermedia.css:4 y :1200, bi-control-tower.css:1591) usan
-   `@layer module` SIN subcapa, que no crea ninguna y no altera ese orden.
+   podarlo. Con el se fue tambien su `@layer module.theme, module.layout,
+   module.components;`, que se quedaba sin usuarios.
+
+   ACTUALIZADO EN 5j: ese tramo volvio a abrir bloques `@layer module.components`
+   en este archivo, asi que la declaracion de subcapas VUELVE — y ahora vive por
+   encima del primero de ellos, que es el unico sitio donde funciona. Los demas
+   escritores de `module` del proyecto (programa-general-handsontable.css:1,
+   programa-general.css:1, lab.css:1, programacion-intermedia.css:4 y :1200,
+   bi-control-tower.css:1591) usan `@layer module` SIN subcapa, que no crea
+   ninguna y no altera ese orden.
 
    MISMA CLASE DE EVIDENCIA que la poda de los cinco `@media` de arriba: no es
    inspeccion, es medicion. Las clases no tienen un solo consumidor vivo.
@@ -436,54 +438,12 @@
    carga esta hoja ni el design system. */
 
 @layer legacy-overrides {
-  /* ───────────────────────────────────────────────────────────────────────
-     F1 Task 5j: ayudantes del modal de /pdc absorbidos desde
-     public/css/styles.css:4360-4430 (module.components).
-
-     Destino MEDIDO, no elegido por analogia. El primer intento fue
-     `@layer module.components` —la subcapa de origen— y volteo DOS reglas,
-     porque este archivo se importa ANTES que styles.css en los dos
-     entrypoints: dentro de la misma subcapa manda el orden de fuente, y
-     `.pdc-row-center` y `.pdc-inline-msg` empataban en especificidad con
-     `.row` y con `.aia-modal__message`, que en styles.css venian antes y
-     ahora venian despues. Medido: el margen inferior de `.pdc-row-center`
-     cayo de 10px a 0 y el sangrado de `.pdc-inline-msg` de 5px a 0.
-     `legacy-overrides` sale del empate por capa y devuelve los dos valores
-     originales sin tocar especificidad ni anadir !important.
-
-     Comprobado que subir de capa no voltea nada en sentido contrario: las
-     cuatro reglas ya ganaban su propiedad antes del traslado, y lo unico
-     que les gana hoy son declaraciones normales de pdc.css, que entra por
-     <link> SIN CAPA — y lo no capado gana a `legacy-overrides` igual que
-     ganaba a `module.components`. El `.row { margin-inline: 0 !important }`
-     de este mismo archivo sigue ganando al `margin: 0 auto` de
-     `.pdc-row-center` por ser !important, igual que antes.
-
-     Del rango original solo sube lo MEDIDO VIVO a 1180x820 en dark con el
-     modal abierto (`.modal('show')`, no en reposo: cerrado mide 0x0).
-     Podado por medicion, no por lectura:
-      - `.pdc-modal-row`, `.pdc-modal-label` y `.pdc-modal-value--narrow`
-        enteras: `#modalContrato .pdc-modal-row/.pdc-modal-label` de pdc.css
-        fija display, borde, paddings, margenes y alineacion, y el valor
-        computado no coincide con ninguna declaracion de styles.css.
-      - `.pdc-modal-spacer` y `.w-80`: CERO consumidores. Ni views/, ni src/,
-        ni public/js/ (buscado por clase exacta, incluida la concatenacion de
-        cadenas en JS). pdc.css:430 tambien la nombra y tambien esta muerta.
-      - `.pdc-bg-muted`: su fondo claro es inerte; el que pinta es
-        `#modalContrato .pdc-bg-muted` (pdc.css:595), ya oscuro.
-      - De `.pdc-modal-field`, todo lo geometrico (inline-size,
-        max-inline-size, margin, padding, min-block-size, border,
-        border-radius, background, transition): lo fija pdc.css:434.
-      - Los `display: inline-block` de `.pdc-modal-value` y
-        `.pdc-modal-field`: su contenedor es `display: grid`, que los
-        blockifica; sin la declaracion computan igual.
-
-     UNICA CORRECCION DE TEMA del bloque, y es un fallo real de contraste: la
-     tinta propia de `.pdc-modal-field` seguia siendo el gris de formulario
-     claro de Bootstrap y SI ganaba (nadie mas fija `color` sobre ese sujeto).
-     Sobre el fondo que pdc.css pinta rendia 1,93:1. Pasa a la tinta primaria
-     del tema activo, medida contra ESE mismo fondo: 14,99:1. Fondo y tinta se
-     comprueban juntos; el fondo no se toca porque no es de este archivo. */
+  /* F1 5j: ayudantes del modal de /pdc (styles.css:4360-4430). Van en
+     `legacy-overrides` y NO en su subcapa de origen `module.components`: alli
+     este archivo entra antes que styles.css (core.css:16 vs :20) y el empate de
+     especificidad de `.pdc-row-center`/`.pdc-inline-msg` con `.row` y
+     `.aia-modal__message` se volteaba. La tinta de `.pdc-modal-field` corrige un
+     contraste real (1,93:1 -> 14,99:1). */
   .pdc-modal-value {
     text-align: center;
   }
@@ -505,48 +465,11 @@
     color: var(--ds-active-text-primary);
   }
 
-  /* ───────────────────────────────────────────────────────────────────────
-     F1 Task 5j: los iconos de estado de /pdc absorbidos desde
-     public/css/styles.css:4432-4497 (module.components). Las ocho tintas
-     eran literales de la paleta clara y ninguna estaba en la escalera de
-     tintas oscuras que /pdc ya usa en el resto del modulo.
-
-     UN FALLO REAL DE CONTRASTE, medido sobre el fondo que pinta la fila
-     (no sobre el canvas): `.pdc-icon-danger` rendia 2,59:1, por debajo del
-     3:1 que WCAG 1.4.11 pide a un icono que porta significado, en seis
-     celdas. `.pdc-ready-icon--risk` iba justo, en 3,44:1, en nueve.
-
-     Cada clase toma la tinta oscura del matiz que ya tenia. El emparejado
-     no es estetico: sale de los estados que emite
-     public/js/modules/pdc/hot.js, que son los mismos que nombran los
-     tokens `--pdc-*` de tokens.css.
-       .pdc-icon-ok      completed-ontime / proceso iniciado  -> verde
-       .pdc-icon-amber   completed-late                       -> ambar
-       .pdc-icon-info    active / debe comenzar en N semanas  -> azul
-       .pdc-icon-danger  critical / delayed / ya debio empezar-> rojo
-       .pdc-ready-icon--config  necesita configurar duraciones-> ambar
-       .pdc-ready-icon--risk    en riesgo de retraso          -> rojo
-
-     DOS emparejados llevan aviso de semantica, no de tema, con el mismo
-     criterio con que ya lo llevaba `.pdc-delta--ahead` mas abajo:
-      - `.pdc-icon-warn` («debe comenzar en 1 semana») no tiene estado
-        propio en la escalera. Toma la tinta ambar por conservar su familia
-        de matiz, la misma que `.pdc-icon-amber`. Las dos clases nunca
-        coinciden en la misma columna y su glifo es distinto
-        (`fa-glasses` frente a `fa-sad-cry`), asi que la distincion no se
-        pierde.
-      - `.pdc-ready-icon--ok` («listo para iniciar») era el naranja
-        corporativo. Se conserva la familia naranja tomando su tinta
-        oscura; el matiz no se reasigna.
-
-     Se retira el `!important` de las tres tintas de `.pdc-ready-icon--*`:
-     nada compite por `color` sobre ese sujeto —pdc.css:203 solo les fija
-     margen y tamano— asi que no defendia nada. No se anade ninguno nuevo.
-
-     Podado por medicion: `.pdc-ready-icon` entera. Su `font-size` y su
-     `margin-right` los pisa `.pdc-row-actions .pdc-ready-icon` (pdc.css,
-     sin capa), y su `vertical-align` no aplica porque `.pdc-row-actions`
-     es `inline-flex` y el icono es un item flex. */
+  /* F1 5j: iconos de estado de /pdc (styles.css:4432-4497) llevados a la
+     escalera oscura `--pdc-*`; el emparejado sale de los estados que emite
+     public/js/modules/pdc/hot.js, no del ojo. `.pdc-icon-warn` y
+     `.pdc-ready-icon--ok` no tienen estado propio en la escalera y conservan
+     familia de matiz: reasignarles el matiz es diseno, no tema. */
   .pdc-icon-state {
     margin-inline-end: 0.3125rem;
     display: inline-block;
@@ -584,18 +507,10 @@
     color: var(--pdc-critical-text);
   }
 
-  /* Los dos indicadores de desviacion llegan ya tokenizados del tramo 5b y
-     se mueven VERBATIM salvo el radio, que pasa al token de pildora: el
-     valor anterior tampoco era una medida real, ya excedia la mitad de la
-     altura del chip y renderizaba el mismo semicirculo.
-
-     AVISO de semantica, no de tema, heredado de aquel tramo: en /pdc el
-     naranja significa «atrasada», asi que usarlo para «dias de adelanto» es
-     una colision de significado. Es PREVIA -el literal original ya era la
-     version clara de ese mismo naranja- y se conserva a proposito:
-     reasignar el matiz de «adelanto» es un juicio de diseno y no entra en
-     un cambio de tema.
-     Guard: tests/browser/pdc-chips-dark.mjs. */
+  /* F1 5j: los dos indicadores de desviacion llegan ya tokenizados del 5b y se
+     mueven verbatim salvo el radio, que pasa al token de pildora. El naranja de
+     `--ahead` colisiona con «atrasada» en /pdc: la colision es PREVIA y se
+     conserva a proposito. Guard: tests/browser/pdc-chips-dark.mjs. */
   .pdc-delta {
     font-size: 0.72rem;
     font-weight: 500;
@@ -618,45 +533,15 @@
     color: var(--pdc-critical-text);
   }
 
-  /* ───────────────────────────────────────────────────────────────────────
-     F1 Task 5j: el conmutador «Solo alertas» de /pdc, absorbido desde
-     public/css/styles.css:4499-4528 (module.components).
-
-     LA PREMISA DEL TRAMO ERA FALSA Y LA MEDICION LA CORRIGE: no es una piel
-     clara suelta en una barra oscura. La barra es oscura, si, pero los NUEVE
-     `.btn-pdc-modern` que lleva son claros —los ocho restantes en blanco
-     puro— porque su piel la fija public/css/buttons.css, que
-     docs/design-system/legacy-aliases.json marca como alias deprecado con
-     dueno `pdc` y politica `future-module-migration`, es decir, fuera de
-     F1. Volver oscuro solo este boton lo dejaria como la unica isla oscura
-     de una botonera clara, y eso es un juicio de diseno, no un cambio de
-     tema. Su contraste medido es 14,14:1, muy por encima de AA.
-
-     Por eso las dos tintas neutras se mueven VERBATIM y siguen como
-     literales: ningun token del sistema rinde su valor exacto. Medido en
-     Chromium, `--aia-bg-secondary` pinta un punto por canal por encima del
-     fondo original y `--aia-text-primary` cae muy por debajo de la tinta
-     original. Es el mismo criterio con el que styles.css:1062 conservo el
-     verde de la cabecera de modal. `--aia-separators` SI coincide exacto,
-     asi que el borde y el fondo de hover si toman token.
-
-     PODADO POR CERO CONSUMIDORES, no por cascada: `.pdc-btn-alertas.active`,
-     su `:hover` y su `.badge`. El JS que construye el boton
-     (public/js/modules/pdc/hot.js:294) escribe `is-active`, y :993 y :1000
-     alternan `is-active`, nunca `active`. Medido con las transiciones
-     desactivadas -sin eso el valor computado se lee a mitad de
-     interpolacion y miente-: anadir `is-active` no cambia NADA, y anadir
-     `active`, que la app nunca anade, si pintaba el naranja. Con las reglas
-     se va el naranja corporativo, que no tenia token exacto y por eso no se
-     tradujo. El conmutador se queda hoy sin marca visual de estado activo:
-     es un defecto previo de emparejado JS/CSS, no una regresion de este
-     tramo, y se reporta aparte.
-
-     Del `.badge` se podan `padding` y `border-radius`, inertes: los ganan
-     `:where(.badge, …)` de buttons.css y `:where(.badge, …)` de
-     aia-design-system.css, las dos con !important en capas anteriores. */
+  /* F1 5j: conmutador «Solo alertas» (styles.css:4499-4528). Sigue CLARO a
+     proposito: los otros ocho `.btn-pdc-modern` de la barra los pinta
+     buttons.css (alias deprecado, dueno `pdc`, fuera de F1) y oscurecer solo
+     este es diseno, no tema. La tinta se queda como literal: el token que le
+     corresponde rasteriza 19 puntos por canal mas oscuro. El fondo SI toma
+     token —un punto por canal, dE 0,35—. Podado `.pdc-btn-alertas.active`:
+     el JS escribe `is-active` (hot.js:294). */
   .pdc-btn-alertas {
-    background-color: #eaeaea;
+    background-color: var(--aia-bg-secondary);
     color: #1c1c1e;
     border: 1px solid var(--aia-separators);
     font-weight: 500;
@@ -675,71 +560,29 @@
   }
 }
 
-@layer module.components {
-  /* F1 Task 5j: `.ps-cell-readonly` (styles.css:4534-4537) conserva subcapa
-     de origen porque su declaracion es !important y `legacy-overrides` es la
-     ULTIMA capa: alli un !important queda el mas debil de toda la cascada.
-     Se mueve verbatim, sin tocar especificidad. Medido: 8 celdas readOnly en
-     /programacion-semanal, `cursor: not-allowed`, igual que antes.
+/* LOAD-BEARING, y tiene que ir ANTES del primer `@layer module.components` de
+   este archivo: el orden de subcapas lo fija el PRIMER encuentro del nombre, y
+   este archivo entra antes que styles.css (core.css:16 vs :20), que es quien
+   fija hoy `theme, layout, components`. Sin esta linea, o con ella mas abajo,
+   el orden real se invierte a `components, theme, layout`. */
+@layer module.theme, module.layout, module.components;
 
-     `.w-80` (styles.css:4530-4532) se poda: CERO consumidores en views/,
-     src/ y public/js/, buscado por clase exacta. */
+@layer module.components {
+  /* F1 5j: `.ps-cell-readonly` (styles.css:4534-4537) conserva subcapa de
+     origen: es !important, y en `legacy-overrides` —la ultima capa— un
+     !important queda el mas debil de toda la cascada. */
   .ps-cell-readonly {
     cursor: not-allowed !important;
   }
 
-  /* ───────────────────────────────────────────────────────────────────────
-     F1 Task 5j: geometria unificada de las leyendas, absorbida desde
-     public/css/styles.css:4539-4707 (module.components). Conserva subcapa de
-     origen porque TODO el bloque es !important y `legacy-overrides` los
-     dejaria los mas debiles de la cascada.
-
-     PRECONDICION DEL TRAMO, CORREGIDA POR MEDICION: el bloque se declaraba
-     portante para /programa-general, /programacion-intermedia y
-     /programacion-semanal. Para PG es FALSO. `#pgLegend` no lleva la clase
-     `pdc-legend-autoscaling` y sus siete chips son `.aia-chip.pg-filter-chip`,
-     no `.pdc-legend-item`: ningun selector de este bloque los alcanza, y la
-     atribucion regla a regla sobre el chip de PG no devuelve una sola
-     declaracion de styles.css. Su geometria la fijan `core.css` (.aia-chip) y
-     `programa-general.css`. Portante lo es solo para PI y PS.
-
-     De las 44 declaraciones originales sobreviven 9. El resto lo gana
-     public/css/buttons.css, que declara `@layer components` y entra por
-     `layer(components)`: al invertirse el orden de capas para !important, esa
-     capa va ANTES que `module` y sus !important ganan a los de aqui. Asi
-     mueren padding, font-size, line-height, display, align-items,
-     border-radius, white-space, word-break, overflow-wrap, height,
-     min-height, gap, flex-wrap, overflow, width y max-inline-size del
-     contenedor. `justify-content` y `text-align` los repone la regla base
-     `.pdc-legend-item` que sigue en styles.css.
-
-     PODADO ENTERO POR INERTE, ademas de lo anterior:
-      - El `@media (min-width: 993px)` con la geometria de 205px. No se poda
-        por ser responsive -a 1180px esta SIEMPRE activo, es alcance
-        soportado-, sino porque no gana una sola propiedad: en PI y PS lo tapa
-        el bloque de 155px, que es mas especifico; en /pdc lo tapa el bloque
-        de `#pdc-hot-shell`; y en PG no tiene sujeto.
-      - `html body .pdc-legend-item .indicator` y `… .count-badge`: sus cinco
-        declaraciones las gana buttons.css:984 y :993.
-      - El bloque entero de `#pdc-hot-shell .pdc-legend .pdc-legend-item`. Sus
-        cinco declaraciones vivas (width, max-width, min-width, flex, margin)
-        solo servian para neutralizar el `@media` de 205px. Retirado ese, las
-        repone pdc.css:846 con los mismos valores -y `flex: none` es
-        exactamente `0 0 auto`-, que al ser una hoja sin capa gana a lo normal
-        y aqui ya no compite contra ningun !important capado.
-      - Las dos reglas que ocultaban la barra de scroll. `scrollbar-width`
-        computa `thin`, no `none`: lo gana buttons.css:932. Y no hay barra que
-        ocultar, scrollWidth == clientWidth en las tres leyendas.
-      - Del bloque de 155px: `min-width`, que la propia regla anulaba tres
-        lineas mas abajo con `min-inline-size: 0`; y `block-size: auto`, que
-        repite el `height: auto` de buttons.css.
-      - Del contenedor: `inline-size` y `max-inline-size`, que son la misma
-        propiedad que el `width` y el `max-inline-size` que buttons.css fija
-        con !important en capa anterior.
-
-     `justify-content: flex-start` SI es portante en los dos contenedores: sin
-     el gana `.pdc-legend { justify-content: flex-end }` del `@media` de 992px
-     que sigue en styles.css, y los chips se irian al borde derecho. */
+  /* F1 5j: geometria de las leyendas (styles.css:4539-4707). Conserva subcapa
+     de origen: todo el bloque es !important y `legacy-overrides` lo dejaria el
+     mas debil. Solo sobreviven 9 de las 44 declaraciones originales; el resto
+     lo gana buttons.css, que entra en `@layer components` — al invertirse el
+     orden de capas para !important, esa capa va antes que `module`.
+     `justify-content` SI es portante: sin el gana el `@media` de 992px que
+     sigue en styles.css y los chips se van al borde derecho. Portante solo para
+     PI y PS: en PG los chips son `.aia-chip.pg-filter-chip` y no los alcanza. */
   body.pi-page #piLegend.pdc-legend-autoscaling,
   body.pg-page #pgLegend.pdc-legend-autoscaling,
   body.ps-page #psAlertsLegend.pdc-legend-autoscaling,
@@ -772,19 +615,12 @@
 }
 
 @layer legacy-overrides {
-  /* F1 Task 5j: el badge de fecha de corte de /pdc, absorbido desde
-     public/css/styles.css:4606-4631. Lo crea el modulo en JS
-     (hot.js:324-336) dentro de `.context-right-group`, asi que no existe en
-     reposo; se mide inyectandolo, igual que hace su guard.
-     Guard: tests/browser/pdc-chips-dark.mjs.
-
-     No lleva matiz: es informativo, asi que toma la superficie elevada neutra
-     del tema en vez de un tinte de estado -el mismo tratamiento que
-     `.count-badge` en las leyendas-.
-
-     Podado por inerte su `border-radius`: el badge lleva tambien la clase
-     `badge`, y `:where(.badge, …)` de aia-design-system.css le fija el radio
-     de pildora con !important, que gana a cualquier declaracion normal. */
+  /* F1 5j: badge de fecha de corte de /pdc (styles.css:4606-4631), retintado a
+     la superficie elevada neutra por ser informativo, sin matiz de estado.
+     SUJETO AUSENTE: lo crea el modulo en JS (hot.js:324-336) y solo si hay
+     semana en contexto, asi que NO existe en reposo y el barrido de computados
+     del tramo no lo alcanzo — no hay A/B de este bloque. Lo cubre el guard
+     tests/browser/pdc-chips-dark.mjs, que si lo inyecta. */
   .context-right-group {
     display: inline-flex;
     align-items: center;
@@ -808,22 +644,10 @@
   }
 }
 
-/* Reintroduce el orden de subcapas de `module` que styles.css:1 fija hoy. Es
-   LOAD-BEARING: este archivo se importa ANTES que styles.css en los dos
-   entrypoints, asi que sin esta linea el `@layer module.components` de abajo
-   crearia `components` como PRIMERA subcapa de `module` y dejaria `theme` y
-   `layout` detras, invirtiendo el orden canonico. */
-@layer module.theme, module.layout, module.components;
-
 @layer module.components {
-  /* F1 Task 5j: el `display` de `.pdc-inline-msg` NO puede acompanar a su
-     margen en `legacy-overrides`. De los cinco `.pdc-inline-msg` de /pdc solo
-     uno (`#mensajeModalContrato`) computa `inline-block`; los otros cuatro
-     computan `block` porque les gana un selector mas especifico. Desde la
-     ultima capa la declaracion ganaria a los cinco y ensancharia cuatro
-     parrafos de mensaje. Conserva la subcapa de origen para que siga
-     decidiendo la especificidad, no la capa. Medido: 4 x block + 1 x
-     inline-block, identico a antes del traslado. */
+  /* F1 5j: el `display` de `.pdc-inline-msg` conserva subcapa de origen: desde
+     `legacy-overrides` ganaria a los cinco sujetos de /pdc y ensancharia los
+     cuatro que hoy computan `block` por un selector mas especifico. */
   .pdc-inline-msg {
     display: inline-block;
   }
