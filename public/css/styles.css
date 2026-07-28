@@ -2767,10 +2767,15 @@ table.dataTable td.dt-min-width-300,
   white-space: nowrap;
 }
 
+/* F1 Task 5g: tinta retokenizada en el sitio. La declaracion anterior era
+   inerte en las tres rutas del conmutador: legacy-bridge.css pinta
+   `html.aia-theme-dark .aia-info-nav__chevron` desde @layer legacy-overrides
+   (posterior a module) y gana. Se fija el mismo token que ya ganaba, asi que
+   el color calculado no cambia y deja de haber un literal claro de reserva. */
 .filaBotones .aia-info-nav__chevron {
   grid-area: chevron;
   font-size: 0.78rem;
-  color: var(--aia-green-primary, oklch(32% 0.07 148.5));
+  color: var(--ds-active-text-primary);
   transition: transform 0.16s ease;
 }
 
@@ -2786,10 +2791,18 @@ table.dataTable td.dt-min-width-300,
   display: none;
   width: min(24rem, calc(100vw - 1.5rem));
   padding: 0.35rem;
-  border: 1px solid var(--aia-green-light, oklch(75.5% 0.06 149.8));
+  /* F1 Task 5g: borde y fondo retokenizados en el sitio. Los dos estaban
+     muertos en dark: en /contratos y /pdc gana legacy-bridge.css desde
+     @layer legacy-overrides, y en /listado-actividades gana
+     listado-actividades.css, que entra por <link> SIN capa y con !important.
+     Se fijan aqui los mismos tokens que ya ganaban en /contratos y /pdc
+     (borde y superficie elevada), de modo que el valor calculado no se mueve
+     en ninguna de las tres rutas. La sombra, en cambio, SI estaba viva: era
+     la ganadora medida en las tres, y pasa al token de sombra grande del DS. */
+  border: 1px solid var(--ds-active-border);
   border-radius: 0.875rem;
-  background: #ffffff;
-  box-shadow: 0 18px 40px rgba(30, 72, 45, 0.18);
+  background: var(--ds-active-surface-raised);
+  box-shadow: var(--ds-shadow-lg);
 }
 
 .filaBotones .aia-info-nav.is-open .aia-info-nav__menu {
@@ -2807,26 +2820,52 @@ table.dataTable td.dt-min-width-300,
   border: 0;
   border-radius: 0.65rem;
   background: transparent;
-  color: var(--aia-text-secondary, oklch(35% 0.002 260));
+  /* F1 Task 5g: esta tinta SI estaba viva y rota. legacy-bridge.css oscurecio
+     el fondo del menu pero no la tinta de las opciones, y en las dos rutas que
+     no cargan listado-actividades.css la opcion inactiva quedaba en el gris
+     claro de reserva: 1,24:1 medido en /contratos y 1,29:1 en /pdc, es decir
+     ilegible. Con el token secundario de la paleta activa sube a 9,21:1 y 9,53:1.
+     En /listado-actividades no cambia nada: alli gana el !important sin capa de
+     listado-actividades.css, que ya fijaba este mismo token. */
+  color: var(--ds-active-text-secondary);
   font-size: 0.86rem;
   font-weight: 650;
   text-align: left;
 }
 
+/* F1 Task 5g: el hover tambien estaba vivo y en claro en /contratos y /pdc
+   (pastilla verde muy clara con tinta verde oscura dentro de un menu oscuro).
+   Se homologa al par que listado-actividades.css ya imponia en su ruta, para
+   que las tres se comporten igual. Fondo y tinta se mueven juntos. */
 .filaBotones .aia-info-nav__item:hover,
 .filaBotones .aia-info-nav__item:focus {
-  background: var(--aia-green-very-light, oklch(91.5% 0.02 149.8));
-  color: var(--aia-green-dark, oklch(27.8% 0.05 147.1));
+  background: var(--ds-active-surface-raised);
+  color: var(--ds-active-text-primary);
   outline: none;
 }
 
+/* F1 Task 5g — cierre del incumplimiento de WCAG 1.4.11 arrastrado desde 5f-bis.
+   El indicador de la opcion activa no usa borde (`border-*-width: 0px` medido en
+   las tres rutas) sino relleno, y el verde de marca daba 1,14:1 en /contratos,
+   1,18:1 en /pdc y 1,31:1 en /listado-actividades contra el fondo del menu:
+   se leia el texto pero no CUAL opcion estaba activa. No es matiz nuevo ni
+   diseno nuevo: `--ds-active-action-primary` es el token que el propio design
+   system declara como accion primaria sobre oscuro y resuelve al verde
+   corporativo en su variante on-dark, con su tinta pareja
+   `--ds-active-action-text`. Medido despues: relleno 3,96:1 (/contratos),
+   4,09:1 (/pdc) y 4,54:1 (/listado-actividades) contra el fondo del menu, y
+   tinta 4,87:1 sobre el relleno. La misma pareja se aplica en la regla gemela de
+   public/css/listado-actividades.css, que es quien gana la cascada en esa ruta. */
 .filaBotones .aia-info-nav__item.is-active {
-  background: var(--aia-green-primary, oklch(32% 0.07 148.5));
-  color: #ffffff;
+  background: var(--ds-active-action-primary);
+  color: var(--ds-active-action-text);
 }
 
+/* F1 Task 5g: el check solo lo emite info_general_nav.js dentro de la opcion
+   activa, asi que heredar su tinta es exacto y elimina el literal blanco, que
+   sobre el relleno nuevo se quedaria en 3,56:1. */
 .filaBotones .aia-info-nav__check {
-  color: #ffffff;
+  color: inherit;
   font-size: 0.75rem;
 }
 
@@ -2877,7 +2916,14 @@ table.dataTable td.dt-min-width-300,
   padding: 0.25rem;
   border: none;
   border-radius: var(--radius-sm);
-  background: linear-gradient(180deg, oklch(99% 0.003 260), oklch(97% 0.004 260));
+  /* F1 Task 5g: aqui vivia un degradado claro de dos paradas. Estaba muerto:
+     `.toolbarFilaBotones` solo existe en /listado-actividades y /contratos
+     (censo de las 22 rutas del harness), y en las dos el nodo lleva siempre el
+     conmutador, asi que gana `.filaBotones .toolbarFilaBotones:has(.aia-info-nav)`
+     con `background: transparent !important`. Medido en ambas:
+     background-image `none` y background-color totalmente transparente. Se borra
+     la declaracion; el sujeto cae en el `background: transparent` que la misma hoja
+     ya le fija mas arriba, que es exactamente el valor que hoy se calcula. */
 }
 
 /* Size presets for toolbar buttons */
@@ -2917,7 +2963,16 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
   padding: 0.125rem 0.25rem;
   border-radius: var(--radius-sm);
   border: none;
-  background-color: oklch(99% 0.002 260);
+  /* F1 Task 5g: unica fuga a claro VIVA del bloque de toolbar. En /pdc esta
+     declaracion es la ganadora medida y pinta una barra de 640x36 casi blanca
+     sobre el lienzo oscuro; en el resto de rutas donde el sujeto existe
+     (/programacion-semanal/cic, /cnc, /cnp, /listado-actividades) ya gana otra
+     hoja. Se retokeniza a `--ds-active-surface`, que es justo el valor que esas
+     otras rutas ya calculan, asi que /pdc se homologa y las demas no se mueven
+     ni un tono. Los botones que van dentro
+     (`btn-pdc-modern`) traen su propio fondo opaco, de modo que su tinta no
+     depende de este color. */
+  background-color: var(--ds-active-surface);
   overflow-x: clip;
   overflow-y: clip;
   -webkit-overflow-scrolling: touch;
@@ -2943,9 +2998,14 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
   overflow: visible;
 }
 
-.filaBotones .ps-toolbar-nav-wrap {
-  background-color: oklch(97.5% 0.01 150 / 12%);
-}
+/* F1 Task 5g: aqui vivia un tinte verde claro al 12% para `.ps-toolbar-nav-wrap`.
+   Muerto en las seis rutas donde el sujeto existe: en /programacion-semanal/cic,
+   /cnc y /cnp el fondo calculado ya es `--ds-active-surface` (gana un `background`
+   de otra hoja) y en /listado-actividades, /contratos y /pdc queda totalmente
+   transparente porque `:has(.aia-info-nav)` lo neutraliza con !important. Se borra la
+   regla entera —era su unica declaracion—; el sujeto cae en la declaracion
+   compartida de arriba, que ahora resuelve a la superficie oscura, de modo que
+   ninguna de las seis rutas cambia su valor calculado. */
 
 .filaBotones .toolbarFilaBotones .grupo_botones_semanal_madre.ps-toolbar-nav-wrap {
   justify-content: flex-end !important;
@@ -2982,11 +3042,18 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
   border-radius: var(--ds-radius-none) !important;
 }
 
-.filaBotones .ps-toolbar-nav-wrap .grupo_botones_semanal .btn.btn-success {
-  color: var(--aia-green-dark);
-  background-color: oklch(95% 0.02 149.8);
-  border-color: oklch(75.5% 0.06 149.8);
-}
+/* F1 Task 5g: aqui vivia la piel clara de `.btn.btn-success` dentro del
+   `.grupo_botones_semanal` de la barra de navegacion. Sujeto inexistente: el
+   censo de las 22 rutas del harness devolvio cero nodos para
+   `.filaBotones .ps-toolbar-nav-wrap .grupo_botones_semanal .btn.btn-success`
+   y cero para `.filaBotones .ps-toolbar-nav-wrap .btn.btn-success`. Concuerda
+   con el markup: las siete apariciones de `ps-toolbar-nav-wrap` repartidas en sus
+   seis productores (CNC, CNP y CIC de programacion-semanal,
+   listado_actividades/hot.js, listadoActividades.view.php e info_general_nav.js)
+   rellenan el wrapper con `btn-pdc-modern`,
+   `ps-dropdown-item` o el conmutador; ninguno emite `btn-success` ahi dentro, y
+   en listado el `.grupo_botones_semanal` que se construye lo reemplaza acto
+   seguido `.html(AIAInfoGeneralNav.render(...))`. Se borra. */
 
 .filaBotones .ps-toolbar-nav-wrap .btn-group > .btn,
 .filaBotones .ps-toolbar-nav-wrap .btn-group > .btn:not(:first-child) {
@@ -3096,19 +3163,11 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
   border-color: var(--aia-alert-critical);
 }
 
-.filaBotones .ps-toolbar-nav-wrap .btn.btn-success {
-  color: var(--aia-green-dark);
-  background-color: oklch(98% 0.01 150);
-  border-color: oklch(75.5% 0.06 149.8);
-}
-
-.filaBotones .ps-toolbar-nav-wrap .btn.btn-success.active,
-.filaBotones .ps-toolbar-nav-wrap .btn.btn-success:focus {
-  background-color: var(--aia-green-primary);
-  color: #fff;
-  border-color: var(--aia-green-dark);
-  box-shadow: 0 0 0 0.1rem oklch(52% 0.08 149.8 / 25%);
-}
+/* F1 Task 5g: aqui vivian el reposo y el par activo/foco de `.btn.btn-success`
+   dentro de `.ps-toolbar-nav-wrap` —piel clara, mas el blanco literal que el brief
+   senala como unico hex del bloque—. Mismo sujeto inexistente que la regla
+   hermana borrada mas arriba: cero nodos en las 22 rutas del harness, tanto
+   para `.btn.btn-success` como para `.btn.btn-success.active`. Se borran. */
 
 @media (min-width: 64rem) {
   .filaBotones .toolbarFilaBotones {

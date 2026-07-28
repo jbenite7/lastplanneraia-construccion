@@ -761,9 +761,19 @@ html.aia-theme-dark .filaBotones .aia-info-nav__item:focus {
   color: var(--ds-active-text-primary) !important;
 }
 
+/* F1 Task 5g. Esta hoja entra por <link> SIN capa (listadoActividades.view.php:14),
+   asi que su !important gana a todo lo que llega en @layer: en /listado-actividades
+   el indicador de la opcion activa lo decide esta regla, no styles.css. El verde de
+   marca daba 1,31:1 contra el fondo del menu, por debajo del 3:1 que WCAG 1.4.11
+   exige a un indicador de estado. Se pasa al par que el design system declara para
+   accion primaria sobre oscuro —mismo verde corporativo en su variante on-dark, con
+   su tinta pareja—, que mide 4,54:1 de relleno contra el menu y 4,87:1 de tinta
+   sobre el relleno. Se conservan los dos !important tal cual: son los que hacen
+   que la regla gane, no se anade especificidad. Cambio espejo en
+   public/css/styles.css (module.components), que es quien gana en /contratos y /pdc. */
 html.aia-theme-dark .filaBotones .aia-info-nav__item.is-active {
-  background: var(--ds-color-brand-primary) !important;
-  color: var(--ds-color-text-inverse) !important;
+  background: var(--ds-active-action-primary) !important;
+  color: var(--ds-active-action-text) !important;
 }
 
 html.aia-theme-dark .la-mobile-card {

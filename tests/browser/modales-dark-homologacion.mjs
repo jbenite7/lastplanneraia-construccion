@@ -361,3 +361,92 @@ test('/programacion-semanal/cic: la escalada "Falta Calificar" es legible sobre 
   expect(escalada.fg, 'la escalada y la normal no pueden pintar el mismo color')
     .not.toBe(normal.fg);
 });
+
+// F1 Task 5g. El conmutador de modulo (`.aia-info-nav`) es otra capa flotante
+// que un barrido en reposo no alcanza: su menu solo existe con `.is-open`, y
+// el unico productor del nodo es public/js/modules/info_general_nav.js, que lo
+// pinta en /listado-actividades, /contratos y /pdc. Cada una de esas tres rutas
+// resuelve la piel del menu con una cascada distinta —listado-actividades.css
+// entra por <link> SIN capa y gana con !important; contratos y pdc no la cargan
+// y caen en styles.css (module.components) mas legacy-bridge.css
+// (legacy-overrides)— asi que las tres se miden por separado.
+//
+// Dos defectos medidos antes del tramo, ambos invisibles para el guard de
+// canvas y para el estatico: (1) la tinta de las opciones NO activas caia a
+// 1,24:1 en /contratos y 1,29:1 en /pdc, porque legacy-bridge oscurecio el
+// fondo del menu y la tinta se quedo en el `--aia-text-secundario` claro de
+// styles.css; (2) el indicador de la opcion activa se resuelve por relleno, sin
+// borde (`border-*-width: 0px` medido), y ese relleno daba 1,14–1,31:1 contra
+// el fondo del menu, por debajo del 3:1 que WCAG 1.4.11 exige a un indicador de
+// estado.
+const INFO_NAV_ROUTES = ['/listado-actividades', '/contratos', '/pdc'];
+
+test('conmutador de modulo desplegado: tinta legible e indicador activo a 3:1', async ({ page }) => {
+  await loginAndSelectProject(page, project);
+  await installContrastProbe(page);
+
+  for (const route of INFO_NAV_ROUTES) {
+    await page.goto(route);
+    const trigger = page.locator('[data-aia-info-nav-trigger]').first();
+    await expect(trigger, `${route}: el conmutador no se renderizo`).toBeVisible({ timeout: 30000 });
+    await trigger.click();
+    await expect(page.locator('[data-aia-info-nav-menu]')).toBeVisible();
+    // El JS siempre emite las tres opciones y marca exactamente una activa.
+    await expect(page.locator('[data-aia-info-nav-menu] .aia-info-nav__item')).toHaveCount(3);
+    await expect(page.locator('[data-aia-info-nav-menu] .aia-info-nav__item.is-active')).toHaveCount(1);
+
+    const inactiva = await measure(page, '.aia-info-nav__item:not(.is-active)');
+    expect(inactiva, `${route}: no hay opcion inactiva`).not.toBeNull();
+    expect
+      .soft(inactiva.ratio, `${route} opcion inactiva — ${inactiva.fg} sobre ${inactiva.bg}`)
+      .toBeGreaterThanOrEqual(AA);
+
+    const activa = await measure(page, '.aia-info-nav__item.is-active');
+    expect
+      .soft(activa.ratio, `${route} opcion activa — ${activa.fg} sobre ${activa.bg}`)
+      .toBeGreaterThanOrEqual(AA);
+
+    // El check solo lo emite el JS dentro de la opcion activa (info_general_nav.js:62);
+    // como icono le basta 3:1.
+    const check = await measure(page, '.aia-info-nav__check');
+    expect(check, `${route}: la opcion activa no trae check`).not.toBeNull();
+    expect
+      .soft(check.ratio, `${route} check de la activa — ${check.fg} sobre ${check.bg}`)
+      .toBeGreaterThanOrEqual(3);
+
+    // WCAG 1.4.11 sobre el relleno que hace de indicador. Se mide con un span
+    // fantasma pintado con el `background-color` de la activa y colgado del
+    // menu, que es justo el color adyacente contra el que hay que distinguirlo
+    // (los items inactivos son transparentes, asi que su color adyacente es el
+    // mismo fondo del menu).
+    const relleno = await page.evaluate(() => {
+      const activa = document.querySelector('.aia-info-nav__item.is-active');
+      const menu = document.querySelector('[data-aia-info-nav-menu]');
+      if (!activa || !menu) return null;
+      const ghost = document.createElement('span');
+      ghost.id = 'aia-ghost-fill';
+      ghost.style.color = getComputedStyle(activa).backgroundColor;
+      menu.appendChild(ghost);
+      const out = window.__aiaContrast('#aia-ghost-fill');
+      ghost.remove();
+      return out;
+    });
+    expect(relleno, `${route}: no se pudo medir el relleno de la activa`).not.toBeNull();
+    expect
+      .soft(relleno.ratio, `${route} relleno de la activa (WCAG 1.4.11) — ${relleno.fg} sobre ${relleno.bg}`)
+      .toBeGreaterThanOrEqual(3);
+
+    // El indicador no puede depender de un borde que no existe: si algun dia se
+    // resuelve con borde, esta asercion documenta el cambio en vez de romperse
+    // en silencio.
+    const bordes = await page.evaluate(() => {
+      const cs = getComputedStyle(document.querySelector('.aia-info-nav__item.is-active'));
+      return [cs.borderTopWidth, cs.borderRightWidth, cs.borderBottomWidth, cs.borderLeftWidth];
+    });
+    expect
+      .soft(bordes.join('/'), `${route}: el indicador activo se resuelve por relleno, no por borde`)
+      .toBe('0px/0px/0px/0px');
+
+    await page.keyboard.press('Escape');
+  }
+});
