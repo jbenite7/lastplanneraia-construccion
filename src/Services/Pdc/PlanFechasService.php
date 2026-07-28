@@ -407,7 +407,6 @@ class PlanFechasService
 
         $origen = in_array($procedencia['origen'] ?? '', ['similitud', 'rama'], true) ? $procedencia['origen'] : 'humano';
         $delMotor = $origen !== 'humano';
-        $semana = (int) $this->db->query('SELECT MAX(Semana) FROM semanas_activas WHERE project_id = ?', [$projectId])->fetchColumn();
 
         $this->db->beginTransaction();
         try {
@@ -512,6 +511,19 @@ class PlanFechasService
      *
      * En días calendario, porque así están escritos los números del catálogo: quien puso «25 días de
      * cuadros comparativos» pensaba en semanas de calendario, no en jornadas laborales.
+     *
+     * Convención de fronteras entre pasos (contrato con B1 · Seguimiento — no cambiar sin migrar
+     * los datos ya guardados; la misma nota está en la migración 20260728_pdc_v2_plan_fechas.sql):
+     * el intervalo de cada paso es MEDIO ABIERTO, `[fecha_inicio, fecha_fin)`. El cursor de abajo
+     * avanza `+dias` y esa fecha es a la vez el fin de un paso y el inicio del siguiente:
+     * `fecha_fin` es la frontera en la que se entrega el testigo, no el último día trabajado. De ahí
+     * salen las tres propiedades que el consumidor puede dar por ciertas:
+     *   1. `dias` = fecha_fin − fecha_inicio, sin sumar ni restar uno.
+     *   2. la suma de los siete `dias` es exactamente `fecha_arranque` → `fecha_ancla`.
+     *   3. la `fecha_fin` del último paso ES la `fecha_ancla` (el día que se necesita en obra).
+     * Al comparar avance real contra programado, un paso va a tiempo si se cerró ANTES de su
+     * `fecha_fin`. Leerla como «último día del paso» —o contar `fin − inicio + 1`— cuenta dos veces
+     * cada frontera e infla el proceso en siete días.
      */
     public function calcular(int $projectId, string $usuario): array
     {

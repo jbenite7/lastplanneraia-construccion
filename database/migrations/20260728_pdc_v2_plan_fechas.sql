@@ -9,6 +9,19 @@
 -- (C) pdc_plan_paso — una fila por paso del proceso. Tabla hija y no siete columnas porque B1
 --     pondrá la fecha real junto a la programada sin rehacer el modelo.
 --
+-- Convención de fronteras entre pasos (contrato con B1 · Seguimiento — no cambiar sin migrar datos):
+-- el intervalo de cada paso es MEDIO ABIERTO, `[fecha_inicio, fecha_fin)`. `fecha_fin` es la
+-- frontera en la que el paso entrega el testigo al siguiente, no el último día trabajado: por eso
+-- coincide exactamente con la `fecha_inicio` del paso siguiente y no hay ningún día de holgura
+-- entre pasos. De ahí se siguen las tres propiedades que el consumidor puede dar por ciertas:
+--   1. `dias` = DATEDIFF(fecha_fin, fecha_inicio), sin sumar ni restar uno.
+--   2. la suma de los siete `dias` es exactamente el intervalo completo del proceso
+--      (`pdc_plan_paquete.fecha_arranque` → `pdc_plan_paquete.fecha_ancla`).
+--   3. la `fecha_fin` del último paso ES `fecha_ancla`: el día en que el insumo se necesita en obra.
+-- Al comparar avance real contra programado, un paso va a tiempo si se cerró ANTES de su
+-- `fecha_fin`. No leer `fecha_fin` como «último día del paso» ni contar `fin - inicio + 1`: ese día
+-- pertenece al paso siguiente y contarlo dos veces infla el proceso en siete días.
+--
 -- Las tres referencian su catálogo padre (paquete_id → general_paquetes_contratacion),
 -- igual que el resto de tablas PDC (ver fk_pip_paquete en 20260724_pdc_v2_paquetes_contratacion.sql).
 --
