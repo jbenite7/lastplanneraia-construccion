@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useReducer, useState } from 'react'
 import { AgGridReact } from 'ag-grid-react'
-import { CellStyleModule, ClientSideRowModelModule, ModuleRegistry, RowStyleModule, TooltipModule, ValidationModule, themeQuartz } from 'ag-grid-community'
+import { CellStyleModule, ClientSideRowModelModule, ModuleRegistry, RowStyleModule, TooltipModule, ValidationModule } from 'ag-grid-community'
 import type { ColDef, ITooltipParams, RowClickedEvent } from 'ag-grid-community'
+import { moneda, pdcTheme } from '../lib/agGrid'
 import { PdcApiError, apiGet, apiPost } from '../lib/api'
 import { claveInsumo, estadoInicialPaquetes, paquetesReducer } from '../lib/paquetesState'
 import { MODALIDADES, TIPOS_NEGOCIACION } from '../lib/types'
@@ -43,14 +44,6 @@ function TooltipActividades(params: ITooltipParams<InsumoPaquete>) {
   )
 }
 
-const pdcTheme = themeQuartz.withParams({
-  backgroundColor: '#1c1c1e',
-  foregroundColor: '#f4f1ea',
-  accentColor: '#69b578',
-  headerBackgroundColor: '#1a3c2a',
-})
-
-const moneda = (v: number | null | undefined) => (v == null ? '' : `$ ${v.toLocaleString('es-CO')}`)
 const CONFIANZA_LABEL: Record<string, string> = { alta: 'alta', media: 'media', baja: 'baja' }
 const tipoNegLabel = (v: string) => TIPOS_NEGOCIACION.find((t) => t.value === v)?.label ?? v
 const modalidadLabel = (v?: string) => MODALIDADES.find((m) => m.value === v)?.label ?? v ?? ''

@@ -1,7 +1,8 @@
 import { useEffect, useReducer, useRef, useState } from 'react'
 import { AgGridReact } from 'ag-grid-react'
-import { ClientSideRowModelModule, ModuleRegistry, ValidationModule, themeQuartz } from 'ag-grid-community'
+import { ClientSideRowModelModule, ModuleRegistry, ValidationModule } from 'ag-grid-community'
 import type { ColDef } from 'ag-grid-community'
+import { moneda, pdcTheme } from '../lib/agGrid'
 import { PdcApiError, apiGet, apiPost, apiUpload } from '../lib/api'
 import { estadoInicial, importReducer } from '../lib/importState'
 import { etiquetaVersion } from '../lib/versionLabel'
@@ -13,13 +14,6 @@ ModuleRegistry.registerModules([
   ClientSideRowModelModule,
   ...(import.meta.env.DEV ? [ValidationModule] : []),
 ])
-
-const pdcTheme = themeQuartz.withParams({
-  backgroundColor: '#1c1c1e',
-  foregroundColor: '#f4f1ea',
-  accentColor: '#69b578',
-  headerBackgroundColor: '#1a3c2a',
-})
 
 const colsErrores: ColDef<ImportErrorFila>[] = [
   { field: 'fila', headerName: 'Fila', width: 90 },
@@ -37,7 +31,7 @@ const colsVersiones: ColDef<VersionPresupuesto>[] = [
   { field: 'totalInsumos', headerName: 'Insumos', width: 110 },
   {
     field: 'costoTotal', headerName: 'Costo total', width: 150,
-    valueFormatter: (p) => p.value != null ? `$ ${Number(p.value).toLocaleString('es-CO')}` : '',
+    valueFormatter: (p) => moneda(p.value),
   },
   { field: 'importadoPor', headerName: 'Importó', width: 130 },
   { field: 'activa', headerName: 'Estado', width: 100, valueFormatter: (p) => (p.value ? 'Activa' : '') },

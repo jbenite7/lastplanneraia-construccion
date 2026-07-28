@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AgGridReact } from 'ag-grid-react'
-import { CellStyleModule, ClientSideRowModelModule, ModuleRegistry, ValidationModule, themeQuartz } from 'ag-grid-community'
+import { CellStyleModule, ClientSideRowModelModule, ModuleRegistry, ValidationModule } from 'ag-grid-community'
 import type { CellClickedEvent, ColDef } from 'ag-grid-community'
+import { moneda, pdcTheme } from '../lib/agGrid'
 import { PdcApiError, apiGet } from '../lib/api'
 import { claseDelta, filasComparativoVisibles } from '../lib/comparativo'
 import type { FilaComparativo } from '../lib/comparativo'
@@ -15,11 +16,6 @@ ModuleRegistry.registerModules([
   ...(import.meta.env.DEV ? [ValidationModule] : []),
 ])
 
-const pdcTheme = themeQuartz.withParams({
-  backgroundColor: '#1c1c1e', foregroundColor: '#f4f1ea', accentColor: '#69b578', headerBackgroundColor: '#1a3c2a',
-})
-
-const moneda = (v: number | null) => (v == null || v === 0 ? '' : `$ ${v.toLocaleString('es-CO')}`)
 const signo = (v: number) => (v > 0 ? '+' : '') + v.toLocaleString('es-CO')
 
 export default function ComparativoPresupuesto() {

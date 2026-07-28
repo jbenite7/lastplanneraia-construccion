@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useReducer, useState } from 'react'
 import { AgGridReact } from 'ag-grid-react'
-import { CellStyleModule, ClientSideRowModelModule, ModuleRegistry, RowSelectionModule, RowStyleModule, SelectEditorModule, TextEditorModule, ValidationModule, themeQuartz } from 'ag-grid-community'
+import { CellStyleModule, ClientSideRowModelModule, ModuleRegistry, RowSelectionModule, RowStyleModule, SelectEditorModule, TextEditorModule, ValidationModule } from 'ag-grid-community'
 import type { CellClickedEvent, ColDef, SelectionChangedEvent } from 'ag-grid-community'
+import { moneda, pdcTheme } from '../lib/agGrid'
 import { PdcApiError, apiGet, apiPost } from '../lib/api'
 import {
   contarSinResponsable,
@@ -42,14 +43,6 @@ ModuleRegistry.registerModules([
   ...(import.meta.env.DEV ? [ValidationModule] : []),
 ])
 
-const pdcTheme = themeQuartz.withParams({
-  backgroundColor: '#1c1c1e',
-  foregroundColor: '#f4f1ea',
-  accentColor: '#69b578',
-  headerBackgroundColor: '#1a3c2a',
-})
-
-const moneda = (v: number | null | undefined) => (v == null ? '' : `$ ${v.toLocaleString('es-CO')}`)
 const mensajeError = (e: unknown) => (e instanceof Error ? e.message : String(e))
 
 export default function PlanFechas() {

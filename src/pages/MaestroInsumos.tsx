@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { AgGridReact } from 'ag-grid-react'
-import { CellStyleModule, ClientSideRowModelModule, ModuleRegistry, RowStyleModule, ValidationModule, themeQuartz } from 'ag-grid-community'
+import { CellStyleModule, ClientSideRowModelModule, ModuleRegistry, RowStyleModule, ValidationModule } from 'ag-grid-community'
 import type { CellClickedEvent, ColDef, RowDoubleClickedEvent } from 'ag-grid-community'
+import { moneda, pdcTheme } from '../lib/agGrid'
 import { PdcApiError, apiGet, apiPost, apiUpload } from '../lib/api'
 import { estadoInicialMaestro, maestroReducer } from '../lib/maestroState'
 import { estadoInicialMaestroImport, maestroImportReducer } from '../lib/maestroImportState'
@@ -15,15 +16,6 @@ ModuleRegistry.registerModules([
   RowStyleModule, // rowClassRules de filas retiradas
   ...(import.meta.env.DEV ? [ValidationModule] : []),
 ])
-
-const pdcTheme = themeQuartz.withParams({
-  backgroundColor: '#1c1c1e',
-  foregroundColor: '#f4f1ea',
-  accentColor: '#69b578',
-  headerBackgroundColor: '#1a3c2a',
-})
-
-const moneda = (v: number | null | undefined) => (v == null ? '' : `$ ${v.toLocaleString('es-CO')}`)
 
 export default function MaestroInsumos() {
   const [state, dispatch] = useReducer(maestroReducer, estadoInicialMaestro)
