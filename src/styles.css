@@ -201,6 +201,11 @@
 .pdc-plan-estado--vencido { color: #eaa898; font-weight: 600; }
 .pdc-plan-estado--provisional { color: #e8c98a; }
 .pdc-plan-estado--en-plazo { color: #9fd3ae; }
+/* Menor del review final A4: un responsable huérfano (cuenta desactivada, o salió del proyecto)
+   solo se distinguía por el texto « (ya no está disponible)» añadido a la etiqueta — mismo ámbar de
+   aviso que "plazo estimado" (no bloquea, pero hay que reasignarlo) y cursiva además del color, para
+   que se note aun si el tono no se distingue bien. */
+.pdc-plan-responsable-huerfano { color: #e8c98a; font-style: italic; }
 /* Barra de asignación en masa (Task 5): contador de "sin responsable" + selector de persona +
    botón, agrupados porque el contador es el motivo por el que existe el control. */
 .pdc-plan-masa { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 4px 0 14px; padding: 10px 14px; border: 1px solid #3a3a3c; border-radius: 8px; background: #202022; }

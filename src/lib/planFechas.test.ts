@@ -260,6 +260,44 @@ describe('trasGuardarEdicion', () => {
     const segundo = trasGuardarEdicion(primero, 1, { ok: false, anterior: 'Ana' })
     expect(segundo).toEqual({ 1: 'Ana' })
   })
+
+  // Crítico del review final A4: reproduce a nivel de lógica el mecanismo exacto del bug. AG Grid
+  // calcula `newValue` para `onCellValueChanged` llamando al valueGetter de la columna —que ES
+  // `valorResponsableMostrado`— DESPUÉS de que el valueSetter ya dejó la fila con los datos nuevos.
+  // Si el override de la 1ª edición (Ana) sigue puesto cuando se elige a Luis, el valueGetter no lee
+  // la fila (que ya dice Luis) sino el override viejo: AG Grid le pasaría a `onResponsable` "Ana" en
+  // vez de "Luis" como `newValue`, así que ni siquiera llegaría a intentar guardar a Luis.
+  it('sin soltar el override en éxito, la 2ª edición seguiría "viendo" al primer elegido (el bug)', () => {
+    // 1ª edición: el usuario elige a Ana; el POST sale bien pero el override queda puesto (sin el
+    // fix de defecto 1: onResponsable no lo suelta tras el éxito).
+    const overrideSinSoltar: Record<number, string> = { 1: 'Ana Gómez — Residente' }
+
+    // 2ª edición: el usuario elige a Luis. AG Grid ya corrió el valueSetter —la fila quedó con los
+    // datos de Luis— antes de calcular `newValue` para el evento.
+    const filaTrasElegirLuis = fila({
+      paqueteId: 1, responsableUserId: 9, responsableNombre: 'Luis Paz', responsableCargo: '',
+    })
+    // Esto es exactamente lo que el valueGetter de la columna Responsable le entrega a AG Grid como
+    // `newValue`. Con el override de Ana todavía puesto, gana el override — no la fila.
+    expect(valorResponsableMostrado(filaTrasElegirLuis, overrideSinSoltar)).toBe('Ana Gómez — Residente')
+  })
+
+  it('con el fix (override suelto en éxito), la 2ª edición sí ve al recién elegido', () => {
+    let overrides: Record<number, string> = {}
+
+    // 1ª edición: elegir a Ana, POST exitoso → el fix suelta el override (trasGuardarEdicion ok:true).
+    overrides = { ...overrides, 1: 'Ana Gómez — Residente' } // optimista, antes de esperar el POST
+    overrides = trasGuardarEdicion(overrides, 1, { ok: true })
+    expect(overrides).toEqual({}) // nada queda pendiente: gana el dato real de la fila
+
+    // 2ª edición sobre LA MISMA celda: elegir a Luis. Sin ningún override pendiente, el valueGetter
+    // de AG Grid (valorResponsableMostrado) lee la fila —que el valueSetter ya dejó en Luis— y por
+    // fin `newValue` es el que el usuario acaba de elegir, no el de la edición anterior.
+    const filaTrasElegirLuis = fila({
+      paqueteId: 1, responsableUserId: 9, responsableNombre: 'Luis Paz', responsableCargo: '',
+    })
+    expect(valorResponsableMostrado(filaTrasElegirLuis, overrides)).toBe('Luis Paz')
+  })
 })
 
 describe('planUiReducer — tipo del mensaje', () => {
@@ -309,13 +347,16 @@ describe('valorResponsableMostrado', () => {
     )).toBe('Ana Gómez — Residente')
   })
 
-  it('avisa cuando el responsable ya no está en el proyecto', () => {
+  // Menor del review final A4: el servidor marca huérfano por DOS causas (la persona salió del
+  // proyecto, o su cuenta se desactivó) con un único booleano que no distingue cuál — el texto no
+  // puede afirmar «ya no está en el proyecto» cuando la causa real fue la cuenta desactivada.
+  it('avisa cuando el responsable ya no está disponible (sin afirmar una causa que el servidor no distingue)', () => {
     expect(valorResponsableMostrado(
       fila({
         paqueteId: 1, responsableUserId: 7, responsableNombre: 'Ana Gómez',
         responsableCargo: 'Residente', responsableHuerfano: true,
       }), {},
-    )).toBe('Ana Gómez — Residente (ya no está en el proyecto)')
+    )).toBe('Ana Gómez — Residente (ya no está disponible)')
   })
 
   it('el override manda sobre el dato del servidor (guardado optimista)', () => {
@@ -343,7 +384,7 @@ describe('valorResponsableMostrado', () => {
       responsableCargo: 'Compras', responsableHuerfano: true,
     })
     expect(opcionesResponsable(ELEGIBLES, fHuerfano)).toEqual([
-      '', 'Ana Gómez — Residente', 'Luis Paz', 'Carla Ruiz — Compras (ya no está en el proyecto)',
+      '', 'Ana Gómez — Residente', 'Luis Paz', 'Carla Ruiz — Compras (ya no está disponible)',
     ])
   })
 
@@ -355,7 +396,7 @@ describe('valorResponsableMostrado', () => {
   it('el vacío y cualquier etiqueta desconocida se traducen a «sin responsable»', () => {
     expect(idPorEtiqueta(ELEGIBLES, '')).toBeNull()
     // El huérfano entra aquí: se puede quitar, pero no se le puede volver a elegir.
-    expect(idPorEtiqueta(ELEGIBLES, 'Carla Ruiz — Compras (ya no está en el proyecto)')).toBeNull()
+    expect(idPorEtiqueta(ELEGIBLES, 'Carla Ruiz — Compras (ya no está disponible)')).toBeNull()
   })
 })
 

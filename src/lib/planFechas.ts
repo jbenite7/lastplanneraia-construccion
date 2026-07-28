@@ -168,8 +168,15 @@ export function trasGuardarEdicion<T>(
   return { ...valores, [id]: resultado.anterior }
 }
 
-/** Lo que se añade al nombre de quien ya no puede ser responsable. Ver `responsableHuerfano`. */
-export const MARCA_HUERFANO = ' (ya no está en el proyecto)'
+/**
+ * Lo que se añade al nombre de quien ya no puede ser responsable. Ver `responsableHuerfano`.
+ *
+ * Menor del review final A4: el servidor marca huérfano por dos causas distintas (la persona salió
+ * del proyecto, o su cuenta se desactivó) con un único booleano que no distingue cuál de las dos
+ * fue — «ya no está en el proyecto» afirmaba la primera causa aunque hubiera sido la segunda. Esta
+ * redacción es cierta en ambos casos sin inventar una distinción que el backend no manda.
+ */
+export const MARCA_HUERFANO = ' (ya no está disponible)'
 
 /** Etiqueta con la que una persona se ve y se elige: el cargo desempata nombres parecidos. */
 export function etiquetaElegible(persona: Pick<ResponsableElegible, 'nombre' | 'cargo'>): string {

@@ -113,7 +113,15 @@ export default function PlanFechas() {
   const resumen = useMemo(() => resumenPlan(plan), [plan])
   // Cuántos paquetes del plan siguen sin dueño (incluye huérfanos): la decisión de producto es que
   // dejarlo sin asignar es válido, pero tiene que verse de un vistazo — ver contarSinResponsable.
-  const sinResponsable = useMemo(() => contarSinResponsable(plan), [plan])
+  // Importante del review final: sin memo, a propósito. AG Grid muta las filas de `plan` in-place
+  // (el valueSetter de la columna Responsable), así que la referencia del array nunca cambia con
+  // una edición celda a celda — un useMemo([plan]) se queda pegado al conteo de antes de editar
+  // hasta el próximo «Recalcular» o recarga completa, mintiendo justo durante el reparto manual.
+  // Recalcularlo en cada render es barato (un filter sobre unas pocas centenas de filas, como
+  // mucho) y siempre queda al día: cada edición individual ya dispara un re-render propio, porque
+  // onResponsable cambia responsableOverride (mismo patrón que `filaExpandida` más abajo, que
+  // tampoco memoiza su lectura de `plan`).
+  const sinResponsable = contarSinResponsable(plan)
   const sinFrente = useMemo(() => paquetesSinFrente(porPaquete, amarres), [porPaquete, amarres])
   // Importante 2 del review final: un paquete recién amarrado sale de «Sin frente» pero no entra a
   // la grilla (que solo lee el plan calculado) hasta que alguien pulsa «Recalcular». Sin este
@@ -133,15 +141,23 @@ export default function PlanFechas() {
 
   const onResponsable = async (paqueteId: number, etiqueta: string, anterior: string) => {
     // AG Grid ya mutó la fila al valor nuevo (valueSetter por defecto, corrió antes de este
-    // handler). El override se fija SIEMPRE, no solo al fallar: es lo único que sabe la etiqueta
-    // completa («Nombre — Cargo») que el usuario acaba de elegir, y sin él la celda volvería a
-    // pintarse desde unos datos del servidor que todavía son los viejos.
+    // handler). El override se fija de entrada para pintar la elección al instante —es lo único que
+    // sabe la etiqueta completa («Nombre — Cargo») que el usuario acaba de elegir—, pero solo dura
+    // mientras el POST está en vuelo: `trasGuardarEdicion` lo suelta en éxito (la fila ya quedó
+    // coherente vía el valueSetter, así que de ahí en más manda el dato real) y lo fija al valor
+    // anterior en fallo. Crítico del review final: dejarlo puesto tras un éxito —en vez de
+    // soltarlo— era el bug. AG Grid calcula `newValue` para la SIGUIENTE edición ejecutando el
+    // valueGetter de la columna (que mira este override primero) DESPUÉS de correr su valueSetter,
+    // así que un override que sobrevive a su propio guardado le hace creer a AG Grid que el usuario
+    // volvió a elegir la persona vieja (Ana) en la siguiente edición, en vez de la nueva (Luis) que
+    // de verdad eligió — se reenviaba el id de Ana al servidor, en silencio, sin ningún error.
     setResponsableOverride((prev) => ({ ...prev, [paqueteId]: etiqueta }))
     try {
       await apiPost('/plan-compras/api/plan/responsable', {
         paqueteId,
         responsableUserId: idPorEtiqueta(elegibles, etiqueta),
       })
+      setResponsableOverride((prev) => trasGuardarEdicion(prev, paqueteId, { ok: true }))
     } catch (e) {
       let mensaje = mensajeError(e)
       if (e instanceof PdcApiError && e.code === 'PAQUETE_SIN_PLAN') {
@@ -151,7 +167,7 @@ export default function PlanFechas() {
       }
       dispatch({ type: 'FALLO', mensaje })
       // El guardado no ocurrió: la celda no puede seguir mostrando lo que AG Grid ya escribió.
-      setResponsableOverride((prev) => ({ ...prev, [paqueteId]: anterior }))
+      setResponsableOverride((prev) => trasGuardarEdicion(prev, paqueteId, { ok: false, anterior }))
     }
   }
 
