@@ -80,10 +80,11 @@ Validación recomendada: `node tests/browser/modal-brand.mjs`.
 | Token | Valor | Uso |
 |-------|-------|-----|
 | `--primary` | `#0071e3` | Azul sistema, botones de acción |
-| `--status-critical` | `#ff3b30` | Rojo sistema, errores |
-| `--status-warning` | `#ff9500` | Naranja sistema, advertencias |
-| `--status-ok` | `#34c759` | Verde sistema, éxito |
-| `--status-neutral` | `#8e8e93` | Gris sistema, neutro |
+
+Los seis `--status-*`, los tres `--color-*`, `--primary-dark`, `--primary-light` y
+`--text-inverse` **ya no existen**: F1 Task 5l los borró tras censar cero
+consumidores. Para estado usa la escalera `--ds-state-tint-*` de
+`public/css/tokens.css`; para gráficos de BI, los `--bi-status-*`.
 
 ### Modo Oscuro (`public/css/dark-mode.css`)
 
