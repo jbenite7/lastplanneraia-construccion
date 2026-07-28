@@ -31,10 +31,14 @@
   --radius-lg: 18px; /* Large radius for cards */
   --radius-xl: 24px; /* Extra large (modals) */
 
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  /* F1 Task 5l: --shadow-sm, --shadow-lg y --shadow-glass eran duplicados de
+     public/css/tokens.css (@layer theme) que esta hoja ensombrecia desde
+     module.theme; borrados, la declaracion canonica vuelve a mandar con la
+     MISMA geometria. --shadow-md se queda: la canonica pierde la segunda capa
+     y el spread negativo, y su unico consumidor vivo (el tooltip de .pi-page,
+     mas abajo) si nota el cambio. Cambiar geometria de sombra es diseno, y el
+     spec de F1 lo prohibe: desajuste declarado, no resuelto. */
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
 
   --space-sm: 0.5rem;
   --space-md: 1rem;
@@ -931,7 +935,7 @@ table.dataTable tbody tr:hover td {
   line-height: 1.4;
   transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   border: 1px solid transparent;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--ds-shadow-xs);
   text-transform: none !important;
   gap: 5px;
 }
@@ -996,7 +1000,7 @@ table.dataTable tbody tr:hover td {
   background-color: #ffffff !important;
   border: 1px solid var(--aia-separators) !important;
   color: var(--aia-text-primary) !important;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--ds-shadow-xs);
 }
 .btn-secondary:hover,
 .btn-light:hover {
@@ -1082,7 +1086,7 @@ table.dataTable tbody tr:hover td {
   border-radius: 1.25rem;
   overflow: hidden;
   background: var(--ds-active-surface);
-  box-shadow: var(--shadow-glass, 0 8px 32px rgba(30, 30, 30, 0.12));
+  box-shadow: var(--shadow-glass);
 }
 
 .aia-modal .modal-header {
