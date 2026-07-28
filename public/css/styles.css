@@ -1722,7 +1722,12 @@ table.dataTable tbody tr:hover td {
 }
 
 
-/* Modal Backdrop */
+/* Modal Backdrop. El velo se queda SIN tokenizar: no hay token de scrim, y la
+   unica receta emparentada -el ::backdrop de design-system/components/
+   dialog.css:13- resuelve a un casi-negro MAS claro que el canvas oscuro, asi
+   que invierte la funcion del velo. Medido sobre una pagina en 17/26/21: negro
+   puro deja el pixel en 13/20/16 (oscurece); la receta del DS lo sube a
+   18/26/21 (aclara). Detalle en .superpowers/sdd/task-5d-report.md. */
 .modal-backdrop.show {
   opacity: 0.4;
   backdrop-filter: blur(4px);
@@ -1730,21 +1735,36 @@ table.dataTable tbody tr:hover td {
   background-color: rgba(0, 0, 0, 0.6);
 }
 
-/* Inputs & Form Controls */
+/* Inputs & Form Controls. Fondo, borde y tinta se reasignan juntos -la tinta
+   caia al gris medio de bootstrap y voltear solo el fondo la dejaria gris
+   sobre oscuro-, a los mismos tokens que ya usa `.aia-modal .form-control`.
+   El anillo de foco conserva el azul: `--primary` no tiene equivalente en
+   `--ds-active-action-*` y remapearlo es marca, no tokenizacion (ver la
+   cabecera de esta hoja y docs/design-system/exceptions.json). */
 .form-control,
 .custom-select {
   border-radius: var(--radius-md) !important;
-  border: 1px solid #d1d1d6;
+  border: 1px solid var(--ds-active-border);
   padding: 0.6rem 0.8rem;
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: var(--ds-active-surface);
+  color: var(--ds-active-text-primary);
   transition: all 0.2s;
+}
+
+/* El placeholder tambien es texto: sin esto se queda en el gris medio de
+   bootstrap y al voltear el fondo cae a 2,69:1 (antes 4,65:1). Mismo token que
+   ya usan login-brand-unified, project-selector, programacion-semanal y
+   programacion-intermedia. */
+.form-control::placeholder,
+.custom-select::placeholder {
+  color: var(--ds-active-text-secondary);
 }
 
 .form-control:focus,
 .custom-select:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.15); /* Soft Blue Ring */
-  background-color: white;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent);
+  background-color: var(--ds-active-surface-raised);
 }
 
 /* =========================================
