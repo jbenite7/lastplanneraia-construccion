@@ -872,7 +872,7 @@ table.dataTable tbody tr:hover td {
      entra por <link> sin capa desde views/pdc/pdc.view.php:14, y una hoja sin
      capa gana a cualquier @layer. El toast de /pdc sigue saliendo blanco en una
      app dark-only, y su arreglo real vive en pdc.css, no aqui. */
-  border-left: 5px solid #007bff; /* Accent color */
+  border-left: 5px solid var(--aia-blue-primary); /* Accent color */
   font-family: var(--ds-font-body);
   font-size: 14px;
   display: none; /* Hidden by default */
@@ -997,7 +997,7 @@ table.dataTable tbody tr:hover td {
 
 .btn-secondary,
 .btn-light {
-  background-color: #ffffff !important;
+  background-color: var(--ds-color-text-inverse) !important;
   border: 1px solid var(--aia-separators) !important;
   color: var(--aia-text-primary) !important;
   box-shadow: var(--ds-shadow-xs);
@@ -1551,8 +1551,8 @@ table.dataTable tbody tr:hover td {
 }
 
 #modalNuevaActividad .select2-results__option--highlighted[aria-selected] {
-  background: #1a5633;
-  color: #fafafa;
+  background: var(--ds-color-domain-corporate);
+  color: var(--ds-color-text-inverse);
 }
 
 .aia-modal__actions {
@@ -1589,8 +1589,8 @@ table.dataTable tbody tr:hover td {
 .aia-modal__actions .btn.btn-success {
   background: var(--aia-modal-green-primary);
   border-color: var(--aia-modal-green-primary);
-  color: #fafafa;
-  box-shadow: 0 12px 22px rgba(26, 86, 51, 0.18);
+  color: var(--ds-color-text-inverse);
+  box-shadow: 0 12px 22px color-mix(in srgb, var(--ds-color-domain-corporate) 18%, transparent);
 }
 
 .aia-modal .btn.aia-btn-primary:hover,
@@ -2052,7 +2052,7 @@ table.dataTable td.dt-min-width-300,
 }
 
 .icon-status-critical {
-  color: var(--aia-alert-medium, #ed7472) !important;
+  color: var(--aia-alert-medium) !important;
 }
 
 .icon-status-warning {
@@ -2060,7 +2060,7 @@ table.dataTable td.dt-min-width-300,
 }
 
 .icon-status-ok {
-  color: var(--aia-green-light, #8cb4a1) !important;
+  color: var(--aia-green-light) !important;
 }
 
 /* ========================================
@@ -2728,17 +2728,17 @@ table.dataTable td.dt-min-width-300,
   align-items: center;
   gap: 0.1rem 0.75rem;
   padding: 0.48rem 0.8rem;
-  border: 1px solid var(--aia-green-light, oklch(75.5% 0.06 149.8));
+  border: 1px solid var(--aia-green-light);
   border-radius: 0.875rem;
-  background: linear-gradient(180deg, #ffffff, var(--aia-green-very-light, oklch(91.5% 0.02 149.8)));
-  color: var(--aia-green-dark, oklch(27.8% 0.05 147.1));
+  background: linear-gradient(180deg, var(--ds-color-text-inverse), var(--aia-green-very-light));
+  color: var(--aia-green-dark);
   box-shadow: 0 6px 16px rgba(30, 72, 45, 0.1);
   text-align: left;
 }
 
 .filaBotones .aia-info-nav__trigger:hover,
 .filaBotones .aia-info-nav__trigger:focus {
-  border-color: var(--aia-green-primary, oklch(32% 0.07 148.5));
+  border-color: var(--aia-green-primary);
   box-shadow: 0 10px 22px rgba(30, 72, 45, 0.16);
   outline: none;
 }
@@ -2748,7 +2748,7 @@ table.dataTable td.dt-min-width-300,
   font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0;
-  color: var(--aia-text-secondary, oklch(35% 0.002 260));
+  color: var(--aia-text-secondary);
   line-height: 1;
 }
 
