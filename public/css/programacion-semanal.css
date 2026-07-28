@@ -14,16 +14,43 @@ body.ps-page,
     color: var(--ds-active-text-primary);
 }
 
+/* Los tintes de este modulo son mas tenues que los del resto (14-24 % contra
+   26-48 %) porque aqui se tine la FILA COMPLETA en una grilla densa; subirlos al
+   nivel de los otros modulos la volveria ilegible.
+
+   Dos matices vuelven a su familia historica. Al pasar a dark se derivaron del
+   nombre de la variable en vez de la paleta clara que sustituian, y con eso el
+   modulo perdio dos distinciones que si tenia en claro:
+
+     - `high` era NARANJA (`--aia-orange-very-light`) y habia quedado ambar,
+       identico a `medium`. Con los dos en ambar, «Ejecucion con restricciones» y
+       «Condiciones Pendientes» eran el mismo chip.
+     - `info` era AZUL (`--aia-blue-very-light`) y habia quedado teal.
+
+   Ambas familias existen hoy en la escalera del design system, asi que se
+   derivan de su ancla en vez de reinventarlas.
+   Guard: tests/browser/programacion-semanal-legend-honesty.mjs. */
 html.aia-theme-dark body.ps-page {
-    --ps-critical-bg: color-mix(in srgb, var(--ds-color-state-critical-text) 24%, var(--ds-active-surface) 76%);
+    /* Cada familia da DOS pasos, y no es redundancia: el chip de la leyenda usa
+       el intenso -tiene que identificarse de un vistazo en una fila de cinco- y
+       la fila de la grilla el tenue, porque aqui se tine la fila COMPLETA y al
+       nivel de los otros modulos la tabla se vuelve ilegible.
+       Los dos salen del mismo ancla, asi que comparten matiz: lo que la leyenda
+       promete es la familia, no el valor. */
+    --ps-critical-chip: color-mix(in srgb, var(--ds-state-tint-red) 88%, var(--ds-active-surface) 12%);
+    --ps-critical-bg: color-mix(in srgb, var(--ds-state-tint-red) 46%, var(--ds-active-surface) 54%);
     --ps-critical-text: var(--ds-active-text-primary);
-    --ps-high-bg: color-mix(in srgb, var(--ds-color-state-warning-text) 22%, var(--ds-active-surface) 78%);
+    --ps-high-chip: color-mix(in srgb, var(--ds-state-tint-orange) 88%, var(--ds-active-surface) 12%);
+    --ps-high-bg: color-mix(in srgb, var(--ds-state-tint-orange) 46%, var(--ds-active-surface) 54%);
     --ps-high-text: var(--ds-active-text-primary);
-    --ps-medium-bg: color-mix(in srgb, var(--ds-color-state-warning-text) 14%, var(--ds-active-surface) 86%);
+    --ps-medium-chip: color-mix(in srgb, var(--ds-state-tint-amber) 88%, var(--ds-active-surface) 12%);
+    --ps-medium-bg: color-mix(in srgb, var(--ds-state-tint-amber) 46%, var(--ds-active-surface) 54%);
     --ps-medium-text: var(--ds-active-text-primary);
-    --ps-info-bg: color-mix(in srgb, var(--ds-color-state-info-text) 18%, var(--ds-active-surface) 82%);
+    --ps-info-chip: color-mix(in srgb, var(--ds-state-tint-blue) 88%, var(--ds-active-surface) 12%);
+    --ps-info-bg: color-mix(in srgb, var(--ds-state-tint-blue) 46%, var(--ds-active-surface) 54%);
     --ps-info-text: var(--ds-active-text-primary);
-    --ps-control-bg: color-mix(in srgb, var(--ds-color-state-success-text) 16%, var(--ds-active-surface) 84%);
+    --ps-control-chip: color-mix(in srgb, var(--ds-state-tint-green) 88%, var(--ds-active-surface) 12%);
+    --ps-control-bg: color-mix(in srgb, var(--ds-state-tint-green) 46%, var(--ds-active-surface) 54%);
     --ps-control-text: var(--ds-active-text-primary);
     --ps-neutral-bg: var(--ds-active-surface);
     --ps-neutral-text: var(--ds-active-text-secondary);
@@ -431,7 +458,12 @@ body.ps-page .ps-hot-toolbar-shell {
     max-width: 100%;
     border: 0;
     border-radius: var(--ds-radius-none);
-    background: transparent;
+    /* Sin `background` a proposito: el fondo del chip lo pinta la capa de
+       componentes desde `data-aia-hue`. Esta hoja no esta en @layer module -es
+       CSS suelto que llega por un <link> propio, fuera de cualquier @layer- asi
+       que aunque declarara `transparent` seguia ganando siempre por ser
+       unlayered, y la primitiva del design system era inerte sobre esta
+       superficie. */
     color: var(--ops-state-count-text, var(--ds-active-text-primary));
     font-weight: 900;
     font-size: 0.72rem;
@@ -747,25 +779,38 @@ body.ps-page .ps-hot-toolbar-shell {
     background: var(--ds-color-bg-page);
 }
 
+/* La tarjeta de accion se tinta con el par completo. Traia solo el fondo y el
+   borde: el texto lo ponia `.ops-state-action-text` fijado en
+   --ds-color-text-primary, que se lee (14,53:1) unicamente mientras el fondo
+   sea el pastel claro; con el par invertido a fondo oscuro cae a 1,43:1. Ahora
+   el color viaja con el fondo y el hijo lo hereda.
+   Guard: tests/design-system/state-token-pairing.test.mjs. */
 .ps-page .ops-state-action-list li.is-done {
     border-color: var(--ds-color-state-success-text);
     background: var(--ds-color-state-success-bg);
+    color: var(--ds-color-state-success-text);
 }
 
 .ps-page .ops-state-action-list li.is-pending,
 .ps-page .ops-state-action-list li.is-partial {
     border-color: var(--ds-color-state-warning-text);
     background: var(--ds-color-state-warning-bg);
+    color: var(--ds-color-state-warning-text);
 }
 
 .ps-page .ops-state-action-list li.is-critical,
 .ps-page .ops-state-action-list li.is-conflict {
     border-color: var(--ds-color-state-critical-text);
     background: var(--ds-color-state-critical-bg);
+    color: var(--ds-color-state-critical-text);
 }
 
+/* Sin `color` propio: hereda. En la tarjeta sin estado hereda el
+   --ds-color-text-primary que ya declara `.ops-state-panel` -mismo valor que
+   tenia escrito aqui-, y en las tarjetas `.is-*` hereda el texto del par de
+   estado que pinta su fondo, que es lo que hace que el tinte sobreviva la
+   inversion del par. */
 .ps-page .ops-state-action-text {
-    color: var(--ds-color-text-primary);
     line-height: 1.35;
 }
 
@@ -1499,7 +1544,10 @@ body.ps-page #modal_cnc_hot .modal-footer {
 
 .ps-modal-copy strong,
 .ps-required {
-    color: var(--ds-color-brand-primary);
+    /* El par on-dark del verde corporativo se queda en 4,46:1 sobre la superficie
+       del modal, cuatro centesimas por debajo de AA. Se levanta hacia la tinta
+       primaria conservando el matiz, en vez de renunciar al acento. */
+    color: color-mix(in srgb, var(--ds-active-action-primary) 70%, var(--ds-active-text-primary));
 }
 
 .ps-modal-label {
@@ -1570,6 +1618,13 @@ body.ps-page #modal_cnc_hot .ps-modal-control {
     cursor: pointer;
 }
 
+/* Par completo, asi que no entra en el inventario de descompensados. Nota para
+   quien invierta los cuatro pares: styles.css (~1025) lo describe como un aviso
+   deliberadamente claro, pero la inversion vive en el valor del token, no en el
+   selector, y no existe -ni esta planificado- ningun mecanismo de exencion por
+   selector. Este bloque se oscurecera con todo lo demas, conservando el par. Si
+   el aviso tiene que seguir siendo claro hace falta darle sus propios tokens
+   aqui, no una entrada en un JSON. */
 .ps-reopen-header {
     background: var(--ds-color-state-warning-bg);
     color: var(--ds-color-state-warning-text);
@@ -1666,6 +1721,13 @@ body.ps-page #modal_cnc_hot .ps-modal-control {
 }
 
 @layer components {
+    /* Sustituye a text-muted de Bootstrap: su gris de modo claro lleva !important
+       desde @layer vendor y, al invertirse el orden de capas para !important,
+       ninguna @layer posterior puede vencerlo. Habia que retirarlo del markup. */
+    .ps-muted {
+        color: var(--ds-active-text-secondary);
+    }
+
     html body.ps-page #hot-container .handsontable thead th {
         border-color: var(--ds-active-border) !important;
         background: var(--ds-active-surface-raised) !important;
@@ -2436,25 +2498,31 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
 
     html.aia-theme-dark body.ps-page #psAlertsLegend :is(
         .ps-alert-critical-route, .ps-alert-critical) {
-        background: var(--ps-critical-bg) !important;
+        background: var(--ps-critical-chip) !important;
     }
 
-    html.aia-theme-dark body.ps-page #psAlertsLegend :is(
-        .ps-alert-high, .ps-alert-medium) {
-        background: var(--ps-high-bg) !important;
+    /* `high` y `medium` NO se agrupan: cada uno promete el tinte de la fila que
+       filtra, y esos tintes son distintos. Agrupados, los dos chips pintaban
+       `--ps-high-bg` y «Condiciones Pendientes» mentia sobre su propia grilla. */
+    html.aia-theme-dark body.ps-page #psAlertsLegend .ps-alert-high {
+        background: var(--ps-high-chip) !important;
+    }
+
+    html.aia-theme-dark body.ps-page #psAlertsLegend .ps-alert-medium {
+        background: var(--ps-medium-chip) !important;
     }
 
     html.aia-theme-dark body.ps-page #psAlertsLegend .ps-alert-info {
-        background: var(--ps-info-bg) !important;
+        background: var(--ps-info-chip) !important;
     }
 
     html.aia-theme-dark body.ps-page #psAlertsLegend .ps-alert-control {
-        background: var(--ps-control-bg) !important;
+        background: var(--ps-control-chip) !important;
     }
 
     html.aia-theme-dark body.ps-page #psAlertsLegend .ps-alert-tnp {
         border-color: var(--ds-active-border) !important;
-        background: var(--ps-info-bg) !important;
+        background: var(--ps-info-chip) !important;
         color: var(--ds-active-text-primary) !important;
     }
 
@@ -2978,7 +3046,7 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
 }
 
 .cm-modal-body {
-    background: var(--ds-color-bg-parchment);
+    background: var(--ds-active-surface);
     padding: 1.25rem 1.75rem;
 }
 
@@ -2990,9 +3058,9 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
 }
 
 .cm-refresh-btn {
-    background: var(--ds-color-text-inverse);
-    border: 1px solid var(--ds-color-border-default);
-    color: var(--ds-color-text-secondary);
+    background: var(--ds-active-surface-raised);
+    border: 1px solid var(--ds-active-border);
+    color: var(--ds-active-text-secondary);
     font-size: 0.78rem;
     padding: 0.3rem 0.75rem;
     border-radius: var(--ds-radius-xs);
@@ -3001,8 +3069,8 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
 }
 
 .cm-refresh-btn:hover {
-    background: var(--ds-color-surface-tint);
-    border-color: var(--ds-color-border-strong);
+    background: var(--ds-active-surface-glass);
+    border-color: color-mix(in srgb, var(--ds-active-border) 100%, var(--ds-active-text-secondary) 25%);
 }
 
 .cm-guidance {
@@ -3010,8 +3078,8 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
     align-items: flex-start;
     gap: 0.5rem;
     font-size: 0.8rem;
-    color: var(--ds-color-text-secondary);
-    background: var(--ds-color-surface-tint);
+    color: var(--ds-active-text-secondary);
+    background: var(--ds-active-surface-raised);
     padding: 0.6rem 0.85rem;
     border-radius: var(--ds-radius-xs);
     margin-bottom: 1rem;
@@ -3023,10 +3091,10 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
 }
 
 .cm-table-shell {
-    background: var(--ds-color-text-inverse);
+    background: var(--ds-active-surface);
     border-radius: var(--ds-radius-sm);
     overflow: hidden;
-    border: 1px solid var(--ds-color-border-subtle);
+    border: 1px solid color-mix(in srgb, var(--ds-active-border) 55%, transparent);
 }
 
 .cm-table {
@@ -3035,21 +3103,21 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
 }
 
 .cm-table thead th {
-    background: var(--ds-color-bg-page);
-    color: var(--ds-color-text-secondary);
+    background: var(--ds-active-surface-raised);
+    color: var(--ds-active-text-secondary);
     font-size: 0.72rem;
     text-transform: uppercase;
     letter-spacing: 0.04em;
     padding: 0.55rem 0.75rem;
-    border-bottom: 2px solid var(--ds-color-border-subtle);
+    border-bottom: 2px solid color-mix(in srgb, var(--ds-active-border) 55%, transparent);
     white-space: nowrap;
 }
 
 .cm-table tbody td {
     font-size: 0.82rem;
-    color: var(--ds-color-text-primary);
+    color: var(--ds-active-text-primary);
     padding: 0.5rem 0.75rem;
-    border-bottom: 1px solid var(--ds-color-bg-page);
+    border-bottom: 1px solid color-mix(in srgb, var(--ds-active-border) 55%, transparent);
     vertical-align: middle;
 }
 
@@ -3058,21 +3126,25 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
 }
 
 .cm-table tbody tr:hover {
-    background: var(--ds-color-bg-page);
+    background: var(--ds-active-surface-glass);
 }
 
 /* El tipo de cambio se codifica con un tinte de fondo de fila (sin stripes
-   laterales); el color semántico se mezcla sobre la superficie activa. */
+   laterales); el color semántico se mezcla sobre la superficie activa.
+   Se mezcla la mitad con matiz del par de estado, no la clara: la clara es casi
+   blanca y sobre oscuro deja los tres tintes a 2-4 puntos de distancia entre sí,
+   indistinguibles justo donde tienen que distinguirse. El 45% es el escalón
+   medido que separa los tres pares y los despega del fondo. */
 .cm-row-comprometer {
-    background: color-mix(in srgb, var(--ds-color-state-success-text) 10%, transparent);
+    background: color-mix(in srgb, var(--ds-color-state-success-text) 45%, transparent);
 }
 
 .cm-row-descomprometer {
-    background: color-mix(in srgb, var(--ds-color-state-critical-text) 10%, transparent);
+    background: color-mix(in srgb, var(--ds-color-state-critical-text) 45%, transparent);
 }
 
 .cm-row-insert_cnp {
-    background: color-mix(in srgb, var(--ds-color-state-warning-text) 10%, transparent);
+    background: color-mix(in srgb, var(--ds-color-state-warning-text) 45%, transparent);
 }
 
 .cm-detail-cell {
@@ -3083,23 +3155,23 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
 
 .cm-empty-state {
     text-align: center;
-    color: var(--ds-color-text-tertiary);
+    color: var(--ds-active-text-secondary);
     font-style: italic;
     padding: 2rem !important;
 }
 
 .cm-modal-footer {
-    background: var(--ds-color-bg-page);
-    border-top: 1px solid var(--ds-color-border-default);
+    background: var(--ds-active-surface-raised);
+    border-top: 1px solid var(--ds-active-border);
     padding: 0.75rem 1.75rem;
     display: flex;
     justify-content: flex-end;
 }
 
 .cm-close-btn {
-    background: var(--ds-color-border-default);
+    background: var(--ds-active-surface-glass);
     border: 0;
-    color: var(--ds-color-text-secondary);
+    color: var(--ds-active-text-primary);
     font-size: 0.82rem;
     padding: 0.4rem 1.25rem;
     border-radius: var(--ds-radius-xs);
@@ -3107,7 +3179,7 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
 }
 
 .cm-close-btn:hover {
-    background: var(--ds-color-border-default);
+    background: var(--ds-active-surface-raised);
 }
 
 .cm-badge-btn {

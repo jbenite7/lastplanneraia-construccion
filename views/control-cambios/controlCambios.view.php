@@ -4,6 +4,7 @@
 	<meta charset="UTF-8">
 	<!--Script cque va al archivo linksComunesHead2.js-->
 	<?= \App\View\Components\DesignSystemHeadComponent::render() ?>
+	<link rel="stylesheet" href="/css/control-cambios.css?v=<?= urlencode((string) (@filemtime(dirname(__DIR__, 2) . '/public/css/control-cambios.css') ?: 'cc1')) ?>" />
 	<script type="text/javascript" src="/js/linksComunesHead2.js?v=20260711foundation5" charset="utf-8"></script>
 </head>
 
@@ -166,7 +167,7 @@
 
 
 								<!-- Se crean los inputs del formulario de contratos de suministro -->
-								<div class="col-sm-12 p-0 mb-4 border-2 border-top-0 rounded border-dark">
+								<div class="col-sm-12 p-0 mb-4 cc-field-block border-top-0 rounded">
 									<div class="tituloFormularioCambios form-group mb-0">
 									<h3 class="form_general">Información General</h3>
 									</div>
@@ -180,7 +181,7 @@
 											<input type="text" class="form-control" name="inputProyecto" id="inputProyecto" placeholder="Proyecto" autocomplete="off" readonly>
 										</div>
 									</div>
-									<div class="row m-0 border-bottom">
+									<div class="row m-0 cc-field-divider">
 									<div class="form-group col-sm mt-0 mb-0 pb-3 h-100">
 											<label for="inputDirector"><b>Director de Obra</b></label>
 											<input type="text" class="form-control" name="inputDirector" id="inputDirector" placeholder="Director" autocomplete="off" readonly>
@@ -190,8 +191,8 @@
 											<input type="text" class="form-control" name="inputFechaSolicitud" id="inputFechaSolicitud" placeholder="Fecha de Solicitud" autocomplete="off" readonly>
 										</div>
 									</div>
-									<div class="row m-0 border-bottom">
-									<div class="form-group col-sm-7 border-right mt-0 mb-0 pt-3 pb-3 h-100">
+									<div class="row m-0 cc-field-divider">
+									<div class="form-group col-sm-7 cc-field-edge mt-0 mb-0 pt-3 pb-3 h-100">
 											<div class="form-group mb-0">
 												<label for="radioSolicitanteCambio"><b>Solicitante del Cambio</b></label>
 											</div>
@@ -232,7 +233,7 @@
 										</div>
 									</div>
 									<div class="row m-0">
-										<div class="form-group col-sm-5 border-right mt-0 mb-0 pt-3 pb-3">
+										<div class="form-group col-sm-5 cc-field-edge mt-0 mb-0 pt-3 pb-3">
 											<div class="form-group mb-0">
 												<label for="checkboxTipoCambio"><b>Tipo de Cambio</b></label>
 											</div>
@@ -289,66 +290,66 @@
 										</div>
 									</div>
 								</div>
-								<div class="col-sm-12 p-0 mb-4 border-2 border-top-0 rounded border-dark">
+								<div class="col-sm-12 p-0 mb-4 cc-field-block border-top-0 rounded">
 									<div class="tituloFormularioCambios form-group mb-0">
 									<h3 class="form_general">Detalle del Cambio</h3>
 									</div>
-									<div class="row m-0 mb-3 border rounded shadow-sm">
-										<div class="col-sm-3 p-2 bg-light d-flex align-items-center justify-content-center border-right">
+									<div class="row m-0 mb-3 cc-field-row rounded shadow-sm">
+										<div class="col-sm-3 p-2 cc-field-label d-flex align-items-center justify-content-center">
 											<label class="mb-0 text-center font-weight-bold" for="inputJustificacion">Justificación</label>
 										</div>
-										<div class="col-sm-9 p-0 d-flex flex-column bg-white">
+										<div class="col-sm-9 p-0 d-flex flex-column cc-field-value">
 											<textarea class="form-control border-0 rounded-0" name="inputJustificacion" id="inputJustificacion" rows="3" onkeyup="contadorTextarea(this,'contadorJustificacion',500)" autocomplete="off" style="resize: none;"></textarea>
-											<div class="d-flex justify-content-end px-2 py-1 border-top">
-												<p id="contadorJustificacion" class="mb-0 small text-muted">0 de 500 caracteres permitidos.</p>
+											<div class="d-flex justify-content-end px-2 py-1 cc-field-counter">
+												<p id="contadorJustificacion" class="mb-0 small">0 de 500 caracteres permitidos.</p>
 											</div>
 										</div>
 									</div>
-									<div class="row m-0 mb-3 border rounded shadow-sm">
-										<div class="col-sm-3 p-2 bg-light d-flex align-items-center justify-content-center border-right">
+									<div class="row m-0 mb-3 cc-field-row rounded shadow-sm">
+										<div class="col-sm-3 p-2 cc-field-label d-flex align-items-center justify-content-center">
 											<label class="mb-0 text-center font-weight-bold" for="inputDescripcion">Descripción <br>del Cambio</label>
 										</div>
-										<div class="col-sm-9 p-0 d-flex flex-column bg-white">
+										<div class="col-sm-9 p-0 d-flex flex-column cc-field-value">
 											<textarea class="form-control border-0 rounded-0" name="inputDescripcion" id="inputDescripcion" rows="3" onkeyup="contadorTextarea(this,'contadorDescripcion',500)" autocomplete="off" style="resize: none;"></textarea>
-											<div class="d-flex justify-content-end px-2 py-1 border-top">
-												<p id="contadorDescripcion" class="mb-0 small text-muted">0 de 500 caracteres permitidos.</p>
+											<div class="d-flex justify-content-end px-2 py-1 cc-field-counter">
+												<p id="contadorDescripcion" class="mb-0 small">0 de 500 caracteres permitidos.</p>
 											</div>
 										</div>
 									</div>
-									<div class="row m-0 mb-3 border rounded shadow-sm">
-										<div class="col-sm-3 p-2 bg-light d-flex align-items-center justify-content-center border-right">
+									<div class="row m-0 mb-3 cc-field-row rounded shadow-sm">
+										<div class="col-sm-3 p-2 cc-field-label d-flex align-items-center justify-content-center">
 											<label class="mb-0 text-center font-weight-bold" for="inputIncidenciaAlcance">Incidencia en <br>el Alcance</label>
 										</div>
-										<div class="col-sm-9 p-0 d-flex flex-column bg-white">
+										<div class="col-sm-9 p-0 d-flex flex-column cc-field-value">
 											<textarea class="form-control border-0 rounded-0" name="inputIncidenciaAlcance" id="inputIncidenciaAlcance" rows="3" onkeyup="contadorTextarea(this,'contadorIncidenciaAlcance',500)" autocomplete="off" style="resize: none;"></textarea>
-											<div class="d-flex justify-content-end px-2 py-1 border-top">
-												<p id="contadorIncidenciaAlcance" class="mb-0 small text-muted">0 de 500 caracteres permitidos.</p>
+											<div class="d-flex justify-content-end px-2 py-1 cc-field-counter">
+												<p id="contadorIncidenciaAlcance" class="mb-0 small">0 de 500 caracteres permitidos.</p>
 											</div>
 										</div>
 									</div>
-									<div class="row m-0 mb-3 border rounded shadow-sm">
-										<div class="col-sm-3 p-2 bg-light d-flex align-items-center justify-content-center border-right">
+									<div class="row m-0 mb-3 cc-field-row rounded shadow-sm">
+										<div class="col-sm-3 p-2 cc-field-label d-flex align-items-center justify-content-center">
 											<label class="mb-0 text-center font-weight-bold">Incidencia <br>en el <br>Cronograma</label>
 										</div>
-										<div class="col-sm-9 p-0 d-flex flex-column bg-white">
-											<div class="row m-0 border-bottom">
-												<div class="col-sm-5 bg-light p-2 border-right d-flex align-items-center">
+										<div class="col-sm-9 p-0 d-flex flex-column cc-field-value">
+											<div class="row m-0 cc-field-divider">
+												<div class="col-sm-5 cc-field-label p-2 d-flex align-items-center">
 													<label class="mb-0 font-weight-bold text-wrap" for="inputTiempoCronograma">Días Según Cronograma</label>
 												</div>
 												<div class="col-sm-7 p-0">
 													<input type="text" class="form-control border-0 rounded-0 h-100" name="inputTiempoCronograma" id="inputTiempoCronograma" data-type="number" autocomplete="off">
 												</div>
 											</div>
-											<div class="row m-0 border-bottom">
-												<div class="col-sm-5 bg-light p-2 border-right d-flex align-items-center">
+											<div class="row m-0 cc-field-divider">
+												<div class="col-sm-5 cc-field-label p-2 d-flex align-items-center">
 													<label class="mb-0 font-weight-bold text-wrap" for="inputTiempoCronogramaAfectado">Días Adicionales</label>
 												</div>
 												<div class="col-sm-7 p-0">
 													<input type="text" class="form-control border-0 rounded-0 h-100" name="inputTiempoCronogramaAfectado" id="inputTiempoCronogramaAfectado" data-type="number" autocomplete="off">
 												</div>
 											</div>
-											<div class="row m-0 border-bottom">
-												<div class="col-sm-5 bg-light p-2 border-right d-flex align-items-center">
+											<div class="row m-0 cc-field-divider">
+												<div class="col-sm-5 cc-field-label p-2 d-flex align-items-center">
 													<label class="mb-0 font-weight-bold text-wrap" for="inputPorcentajeAfectacionCronograma">% Afectación Cronograma</label>
 												</div>
 												<div class="col-sm-7 p-0">
@@ -356,65 +357,65 @@
 												</div>
 											</div>
 											<div class="row m-0">
-												<div class="col-sm-5 bg-light p-2 border-right d-flex align-items-center">
+												<div class="col-sm-5 cc-field-label p-2 d-flex align-items-center">
 													<label class="mb-0 font-weight-bold text-wrap" for="inputIncidenciaCronograma">Observaciones</label>
 												</div>
 												<div class="col-sm-7 p-0 d-flex flex-column">
 													<textarea class="form-control border-0 rounded-0" name="inputIncidenciaCronograma" id="inputIncidenciaCronograma" rows="3" onkeyup="contadorTextarea(this,'contadorIncidenciaCronograma',500)" autocomplete="off" style="resize: none;"></textarea>
 												</div>
 											</div>
-											<div class="d-flex justify-content-end px-2 py-1 border-top">
-												<p id="contadorIncidenciaCronograma" class="mb-0 small text-muted">0 de 500 caracteres permitidos.</p>
+											<div class="d-flex justify-content-end px-2 py-1 cc-field-counter">
+												<p id="contadorIncidenciaCronograma" class="mb-0 small">0 de 500 caracteres permitidos.</p>
 											</div>
 										</div>
 									</div>
-									<div class="row m-0 mb-3 border rounded shadow-sm">
-										<div class="col-sm-3 p-2 bg-light d-flex align-items-center justify-content-center border-right">
+									<div class="row m-0 mb-3 cc-field-row rounded shadow-sm">
+										<div class="col-sm-3 p-2 cc-field-label d-flex align-items-center justify-content-center">
 											<label class="mb-0 text-center font-weight-bold">Incidencia <br>en el <br>Presupuesto</label>
 										</div>
-										<div class="col-sm-9 p-0 d-flex flex-column bg-white">
-											<div class="row m-0 border-bottom">
-												<div class="col-sm-5 bg-light p-2 border-right d-flex align-items-center">
+										<div class="col-sm-9 p-0 d-flex flex-column cc-field-value">
+											<div class="row m-0 cc-field-divider">
+												<div class="col-sm-5 cc-field-label p-2 d-flex align-items-center">
 													<label class="mb-0 font-weight-bold text-wrap" for="inputValorPresupuesto">Costo Actividad Según Presupuesto (Incluye AIU + IVA)</label>
 												</div>
 												<div class="col-sm-7 p-0">
 													<input type="text" class="form-control border-0 rounded-0 h-100" name="inputValorPresupuesto" id="inputValorPresupuesto" data-type="currency" autocomplete="off">
 												</div>
 											</div>
-											<div class="row m-0 border-bottom">
-												<div class="col-sm-5 bg-light p-2 border-right d-flex align-items-center">
+											<div class="row m-0 cc-field-divider">
+												<div class="col-sm-5 cc-field-label p-2 d-flex align-items-center">
 													<label class="mb-0 font-weight-bold text-wrap" for="inputCostoDirecto">Costo Directo</label>
 												</div>
 												<div class="col-sm-7 p-0">
 													<input type="text" class="form-control border-0 rounded-0 h-100" name="inputCostoDirecto" id="inputCostoDirecto" data-type="currency" autocomplete="off">
 												</div>
 											</div>
-											<div class="row m-0 border-bottom">
-												<div class="col-sm-5 bg-light p-2 border-right d-flex align-items-center">
+											<div class="row m-0 cc-field-divider">
+												<div class="col-sm-5 cc-field-label p-2 d-flex align-items-center">
 													<label class="mb-0 font-weight-bold text-wrap" for="inputCostoDirectoAIU">Costo Directo + AIU</label>
 												</div>
 												<div class="col-sm-7 p-0">
 													<input type="text" class="form-control border-0 rounded-0 h-100" name="inputCostoDirectoAIU" id="inputCostoDirectoAIU" data-type="currency" autocomplete="off">
 												</div>
 											</div>
-											<div class="row m-0 border-bottom">
-												<div class="col-sm-5 bg-light p-2 border-right d-flex align-items-center">
+											<div class="row m-0 cc-field-divider">
+												<div class="col-sm-5 cc-field-label p-2 d-flex align-items-center">
 													<label class="mb-0 font-weight-bold text-wrap" for="inputCostoDirectoAIUIVA">Costo Directo + AIU + IVA</label>
 												</div>
 												<div class="col-sm-7 p-0">
 													<input type="text" class="form-control border-0 rounded-0 h-100" name="inputCostoDirectoAIUIVA" id="inputCostoDirectoAIUIVA" data-type="currency" autocomplete="off">
 												</div>
 											</div>
-											<div class="row m-0 border-bottom">
-												<div class="col-sm-5 bg-light p-2 border-right d-flex align-items-center">
+											<div class="row m-0 cc-field-divider">
+												<div class="col-sm-5 cc-field-label p-2 d-flex align-items-center">
 													<label class="mb-0 font-weight-bold text-wrap" for="inputValorAprobado">Valor Aprobado</label>
 												</div>
 												<div class="col-sm-7 p-0">
 													<input type="text" class="form-control border-0 rounded-0 h-100" name="inputValorAprobado" id="inputValorAprobado" data-type="currency" autocomplete="off">
 												</div>
 											</div>
-											<div class="row m-0 border-bottom">
-												<div class="col-sm-5 bg-light p-2 border-right d-flex align-items-center">
+											<div class="row m-0 cc-field-divider">
+												<div class="col-sm-5 cc-field-label p-2 d-flex align-items-center">
 													<label class="mb-0 font-weight-bold text-wrap" for="inputPorcentajeAfectacionPresupuesto">% Afectación Presupuesto</label>
 												</div>
 												<div class="col-sm-7 p-0">
@@ -422,53 +423,53 @@
 												</div>
 											</div>
 											<div class="row m-0">
-												<div class="col-sm-5 bg-light p-2 border-right d-flex align-items-center">
+												<div class="col-sm-5 cc-field-label p-2 d-flex align-items-center">
 													<label class="mb-0 font-weight-bold text-wrap" for="inputIncidenciaPresupuesto">Observaciones</label>
 												</div>
 												<div class="col-sm-7 p-0 d-flex flex-column">
 													<textarea class="form-control border-0 rounded-0" name="inputIncidenciaPresupuesto" id="inputIncidenciaPresupuesto" rows="3" onkeyup="contadorTextarea(this,'contadorIncidenciaPresupuesto',500)" autocomplete="off" style="resize: none;"></textarea>
 												</div>
 											</div>
-											<div class="d-flex justify-content-end px-2 py-1 border-top">
-												<p id="contadorIncidenciaPresupuesto" class="mb-0 small text-muted">0 de 500 caracteres permitidos.</p>
+											<div class="d-flex justify-content-end px-2 py-1 cc-field-counter">
+												<p id="contadorIncidenciaPresupuesto" class="mb-0 small">0 de 500 caracteres permitidos.</p>
 											</div>
 										</div>
 									</div>
-									<div class="row m-0 mb-3 border rounded shadow-sm">
-										<div class="col-sm-3 p-2 bg-light d-flex align-items-center justify-content-center border-right">
+									<div class="row m-0 mb-3 cc-field-row rounded shadow-sm">
+										<div class="col-sm-3 p-2 cc-field-label d-flex align-items-center justify-content-center">
 											<label class="mb-0 text-center font-weight-bold" for="inputIncidenciaCalidad">Incidencia <br>en la <br>Calidad</label>
 										</div>
-										<div class="col-sm-9 p-0 d-flex flex-column bg-white">
+										<div class="col-sm-9 p-0 d-flex flex-column cc-field-value">
 											<textarea class="form-control border-0 rounded-0" name="inputIncidenciaCalidad" id="inputIncidenciaCalidad" rows="3" onkeyup="contadorTextarea(this,'contadorIncidenciaCalidad',500)" autocomplete="off" style="resize: none;"></textarea>
-											<div class="d-flex justify-content-end px-2 py-1 border-top">
-												<p id="contadorIncidenciaCalidad" class="mb-0 small text-muted">0 de 500 caracteres permitidos.</p>
+											<div class="d-flex justify-content-end px-2 py-1 cc-field-counter">
+												<p id="contadorIncidenciaCalidad" class="mb-0 small">0 de 500 caracteres permitidos.</p>
 											</div>
 										</div>
 									</div>
-									<div class="row m-0 mb-3 border rounded shadow-sm">
-										<div class="col-sm-3 p-2 bg-light d-flex align-items-center justify-content-center border-right">
+									<div class="row m-0 mb-3 cc-field-row rounded shadow-sm">
+										<div class="col-sm-3 p-2 cc-field-label d-flex align-items-center justify-content-center">
 											<label class="mb-0 text-center font-weight-bold" for="inputIncidenciaRiesgo">Incidencia <br>en el <br>Riesgo</label>
 										</div>
-										<div class="col-sm-9 p-0 d-flex flex-column bg-white">
+										<div class="col-sm-9 p-0 d-flex flex-column cc-field-value">
 											<textarea class="form-control border-0 rounded-0" name="inputIncidenciaRiesgo" id="inputIncidenciaRiesgo" rows="3" onkeyup="contadorTextarea(this,'contadorIncidenciaRiesgo',500)" autocomplete="off" style="resize: none;"></textarea>
-											<div class="d-flex justify-content-end px-2 py-1 border-top">
-												<p id="contadorIncidenciaRiesgo" class="mb-0 small text-muted">0 de 500 caracteres permitidos.</p>
+											<div class="d-flex justify-content-end px-2 py-1 cc-field-counter">
+												<p id="contadorIncidenciaRiesgo" class="mb-0 small">0 de 500 caracteres permitidos.</p>
 											</div>
 										</div>
 									</div>
-									<div class="row m-0 mb-3 border rounded shadow-sm">
-										<div class="col-sm-3 p-2 bg-light d-flex align-items-center justify-content-center border-right">
+									<div class="row m-0 mb-3 cc-field-row rounded shadow-sm">
+										<div class="col-sm-3 p-2 cc-field-label d-flex align-items-center justify-content-center">
 											<label class="mb-0 text-center font-weight-bold" for="inputIncidenciaRecurso">Incidencia <br>en el <br>Recurso</label>
 										</div>
-										<div class="col-sm-9 p-0 d-flex flex-column bg-white">
+										<div class="col-sm-9 p-0 d-flex flex-column cc-field-value">
 											<textarea class="form-control border-0 rounded-0" name="inputIncidenciaRecurso" id="inputIncidenciaRecurso" rows="3" onkeyup="contadorTextarea(this,'contadorIncidenciaRecurso',500)" autocomplete="off" style="resize: none;"></textarea>
-											<div class="d-flex justify-content-end px-2 py-1 border-top">
-												<p id="contadorIncidenciaRecurso" class="mb-0 small text-muted">0 de 500 caracteres permitidos.</p>
+											<div class="d-flex justify-content-end px-2 py-1 cc-field-counter">
+												<p id="contadorIncidenciaRecurso" class="mb-0 small">0 de 500 caracteres permitidos.</p>
 											</div>
 										</div>
 									</div>
 									<div class="row m-0">
-										<div class="col-sm-6 d-flex justify-content-center border-right">
+										<div class="col-sm-6 d-flex justify-content-center cc-field-edge">
 										<div class="form-group col-sm-8 mt-0 mb-0 pt-3 pb-3 h-100">
 												<label for="inputFechaEntregaInterventoria"><b>Fecha de Entrega a Interventoría</b></label>
 												<input type="text" class="form-control" name="inputFechaEntregaInterventoria" id="inputFechaEntregaInterventoria" placeholder="Fecha de Entrega a Interventoría" autocomplete="off">
@@ -482,12 +483,12 @@
 										</div>
 									</div>
 								</div>
-								<div class="col-sm-12 p-0 mb-4 border-2 border-top-0 rounded border-dark">
+								<div class="col-sm-12 p-0 mb-4 cc-field-block border-top-0 rounded">
 									<div class="tituloFormularioCambios form-group mb-0">
 									<h3 class="form_general">Aprobación</h3>
 									</div>
 									<div class="row m-0">
-									<div class="form-group col-sm-8 mt-0 mb-0 pt-3 pb-3 border-right h-100">
+									<div class="form-group col-sm-8 mt-0 mb-0 pt-3 pb-3 cc-field-edge h-100">
 											<div class="form-group mb-0">
 												<label for="radioAprobacion"><b>Estado de Aprobación</b></label>
 											</div>
@@ -520,7 +521,7 @@
 										</div>
 									</div>
 								</div>
-								<div class="col-sm-12 p-0 border-2 border-top-0 rounded border-dark">
+								<div class="col-sm-12 p-0 cc-field-block border-top-0 rounded">
 									<div class="tituloFormularioCambios form-group mb-0">
 									<h3 class="form_general">Archivos de Soporte</h3>
 									</div>

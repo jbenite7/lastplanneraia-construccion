@@ -784,6 +784,44 @@
     white-space: normal;
   }
 
+  /* El matiz se anota en texto, no solo como color: cuatro de los ocho estados
+     de Intermedia usan una familia distinta a la que dicta su nivel, y esa
+     eleccion tiene que poder leerse.
+     Hereda el color en vez de fijarlo: la tarjeta lleva el fondo tintado de su
+     nivel -que en esta familia es un pastel claro- y forzar aqui un gris de
+     tema oscuro rompia el contraste. Lo detecto el gate de accesibilidad. */
+  .ds-state-module__hue {
+    font-variant: small-caps;
+    letter-spacing: 0.04em;
+  }
+
+  .ds-state-hues__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    gap: var(--ds-space-3);
+  }
+
+  .ds-state-hues__hue {
+    display: grid;
+    gap: var(--ds-space-1);
+    min-width: 0;
+    padding: var(--ds-space-3);
+    border: var(--ds-border-width) solid var(--ds-active-border);
+    border-radius: var(--ds-radius-control-sm);
+    color: var(--ds-active-text-primary);
+  }
+
+  .ds-state-hues__swatch {
+    display: block;
+    block-size: var(--ds-space-6);
+    border: var(--ds-border-width) solid var(--ds-active-border);
+    border-radius: var(--ds-radius-control-sm);
+  }
+
+  .ds-state-hues__hue small {
+    color: var(--ds-active-text-secondary);
+  }
+
   @media (max-width: 47.99rem) {
     .ds-state-module__grid {
       grid-template-columns: minmax(0, 1fr);

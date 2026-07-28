@@ -406,6 +406,56 @@
     header: 'Capítulo',
   };
 
+  // Presentacion de cada estado, con las claves de
+  // docs/design-system/state-semantics.json (modulo `programacion-intermedia`).
+  // El chip declara QUE estado es -matiz para la identidad, severity+urgency
+  // para la prioridad- y la capa de componentes lo pinta. Antes cada estado
+  // llevaba su propia regla de color en la hoja del modulo: diez reglas que
+  // repetian el mapa que ya vive en el contrato.
+  //
+  // El nivel viaja como el par severity+urgency y no como su nombre porque es
+  // lo que `states-feedback.css` ya consumia desde antes del eje de matiz.
+  //
+  // Guard de que esta tabla no se desvie del contrato:
+  // tests/design-system/ops-state-contract.test.mjs
+  var LEVEL_ATTRS = {
+    neutral: { severity: 'none', urgency: 'none' },
+    healthy: { severity: 'low', urgency: 'none' },
+    attention: { severity: 'medium', urgency: 'soon' },
+    urgent: { severity: 'high', urgency: 'now' },
+  };
+
+  // Ocho estados, ocho matices, sin repetir. La paleta publica un solo tinte
+  // por matiz, asi que dos estados que compartan matiz pintan el mismo fondo:
+  // antes habia tres rojos y tres ambares aqui y `Alistamiento Urgente` y
+  // `Alistamiento en Riesgo` eran bit-identicos en pantalla. La justificacion de
+  // cada asignacion esta en public/css/programacion-intermedia.css.
+  //
+  // `neutral` (fila sin clasificar) no toma tinte de estado: usa la superficie
+  // elevada, que no es un matiz.
+  var statePresentation = {
+    'blocked-overdue-critical': { level: 'urgent', hue: 'red' },
+    'blocked-overdue': { level: 'urgent', hue: 'orange' },
+    'blocked-due': { level: 'attention', hue: 'violet' },
+    'alert-1-week': { level: 'urgent', hue: 'amber' },
+    'alert-2-3-weeks': { level: 'attention', hue: 'teal' },
+    'alert-4-6-weeks': { level: 'attention', hue: 'neutral' },
+    'execution-blocked': { level: 'attention', hue: 'blue' },
+    'liberated-control': { level: 'healthy', hue: 'green' },
+    neutral: { level: 'neutral', hue: 'neutral' },
+  };
+
+  function stateChipAttrs(state) {
+    var presentation = statePresentation[state];
+    if (!presentation) {
+      return '';
+    }
+    var pair = LEVEL_ATTRS[presentation.level];
+    return ' data-aia-hue="' + presentation.hue + '"'
+      + ' data-aia-severity="' + pair.severity + '"'
+      + ' data-aia-urgency="' + pair.urgency + '"';
+  }
+
   var columnMinWidths = [44, 54, 150, 130, 130, 60, 72, 74, 74, 74, 74, 82, 94, 88, 92, 150, 180];
   var columnFloorWidths = [36, 44, 120, 100, 100, 52, 64, 64, 64, 64, 64, 70, 80, 76, 78, 118, 130];
   var columnMaxWidths = [90, 70, 460, 240, 240, 110, 110, 120, 120, 120, 120, 130, 148, 136, 136, 240, 380];
@@ -1090,7 +1140,8 @@
     var pills = view.actionItems.length > 0 ? '<span class="ops-state-pills">' + renderStatePills(view.actionItems, 2) + '</span>' : '';
 
     return '<button type="button" class="ops-state-zoom" aria-label="Ver detalle operativo">'
-      + '<span class="ops-state-topline"><span class="ops-state-chip">' + escapeHtml(view.label) + '</span></span>'
+      + '<span class="ops-state-topline"><span class="ops-state-chip"' + stateChipAttrs(view.state) + '>'
+      + escapeHtml(view.label) + '</span></span>'
       + pills
       + '</button>';
   }
@@ -1117,7 +1168,8 @@
   function renderOperationalStateDrawerBody(view) {
     var activity = view.activity || 'Actividad';
     var id = view.id ? ('<span class="ops-state-activity-id">' + escapeHtml(view.id) + '</span>') : '';
-    var html = '<div class="ops-state-drawer-state"><span class="ops-state-chip">' + escapeHtml(view.label) + '</span>';
+    var html = '<div class="ops-state-drawer-state"><span class="ops-state-chip"'
+      + stateChipAttrs(view.state) + '>' + escapeHtml(view.label) + '</span>';
     if (view.actionItems.length) {
       html += '<span class="ops-state-count">' + view.actionItems.length + ' acciones</span>';
     }

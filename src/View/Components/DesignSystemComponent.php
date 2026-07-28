@@ -112,9 +112,13 @@ final class DesignSystemComponent
         $id = self::id($config['id'] ?? '', 'menu id');
         $label = self::text($config['label'] ?? '', 'menu label');
         $items = self::menuItems($config['items'] ?? null);
+        // Sin aria-controls: `aria-haspopup` + `aria-expanded` ya expresan la
+        // relación con el panel, y el JS lo resuelve por [data-aia-menu-panel].
+        // Apuntar a un panel `hidden` dejaba a axe sin poder verificar la
+        // referencia (aria-valid-attr-value, critical incomplete).
         return '<div class="aia-menu" data-aia-component="menu"><button class="aia-btn aia-btn--secondary"'
-            . ' type="button" data-aia-menu-trigger aria-haspopup="menu" aria-controls="' . self::escape($id)
-            . '" aria-expanded="false">' . self::escape($label) . '</button><div id="'
+            . ' type="button" data-aia-menu-trigger aria-haspopup="menu"'
+            . ' aria-expanded="false">' . self::escape($label) . '</button><div id="'
             . self::escape($id) . '" data-aia-menu-panel role="menu" hidden>' . $items . '</div></div>';
     }
 
@@ -358,6 +362,7 @@ final class DesignSystemComponent
                     $itemsMarkup[] = '<li><button type="button" class="aia-sidebar__link"'
                         . ' data-sidebar-item data-sidebar-action data-destination-id="' . self::escape($itemId) . '"'
                         . ' data-sidebar-icon="' . self::escape($icon) . '" title="' . self::escape($label) . '"'
+                        . ' aria-label="' . self::escape($label) . '"'
                         . ' aria-haspopup="menu" aria-expanded="false">'
                         . self::icon(['name' => $icon, 'decorative' => true])
                         . '<span class="aia-sidebar__label">' . self::escape($label) . '</span>' . $badge . '</button></li>';
@@ -365,7 +370,12 @@ final class DesignSystemComponent
                 }
                 $linkAttributes = $itemState === 'disabled'
                     ? ' role="link" aria-disabled="true" aria-label="' . self::escape($label . ' (no disponible temporalmente)') . '" data-sidebar-disabled'
-                    : ' href="' . self::escape($href) . '" data-shell-destination data-destination-id="' . self::escape($itemId) . '"';
+                    // El rail colapsado esconde el label (visibility:hidden) y el JS
+                    // aparca el title nativo, así que sin aria-label el enlace se
+                    // queda sin nombre accesible. Coincide con el texto visible en
+                    // expandido, de modo que respeta «Label in Name» (WCAG 2.5.3).
+                    : ' href="' . self::escape($href) . '" aria-label="' . self::escape($label) . '"'
+                        . ' data-shell-destination data-destination-id="' . self::escape($itemId) . '"';
                 $itemsMarkup[] = '<li><' . ($itemState === 'disabled' ? 'span' : 'a') . ' class="aia-sidebar__link"'
                     . $linkAttributes . ' data-sidebar-item data-sidebar-icon="' . self::escape($icon) . '"'
                     . ' title="' . self::escape($label) . '"' . $current . '>'
@@ -423,7 +433,8 @@ final class DesignSystemComponent
             . $contextMarkup
             . '<button type="button" class="aia-btn aia-btn--secondary aia-sidebar__toggle" id="' . self::escape($toggleId)
             . '" data-sidebar-toggle aria-controls="' . self::escape($panelId) . '" aria-expanded="'
-            . ($state === 'expanded' ? 'true' : 'false') . '"><span class="aia-sidebar__toggle-icon">'
+            . ($state === 'expanded' ? 'true' : 'false') . '" aria-label="'
+            . ($state === 'expanded' ? 'Colapsar menú' : 'Expandir menú') . '"><span class="aia-sidebar__toggle-icon">'
             . self::icon(['name' => 'collapse', 'decorative' => true]) . '</span><span class="aia-sidebar__toggle-label">'
             . ($state === 'expanded' ? 'Colapsar menú' : 'Expandir menú') . '</span></button></header>'
             . '<nav id="' . self::escape($panelId) . '" class="aia-sidebar__nav" aria-label="Navegación del proyecto" aria-busy="false">'
@@ -456,7 +467,8 @@ final class DesignSystemComponent
             }
         }
         return '<div class="aia-menu aia-sidebar__account" data-aia-component="menu"><button type="button" class="aia-sidebar__utility"'
-            . ' data-aia-menu-trigger aria-haspopup="menu" aria-controls="' . self::escape($id) . '" aria-expanded="false">'
+            . ' data-aia-menu-trigger aria-haspopup="menu" aria-expanded="false"'
+            . ' aria-label="' . self::escape($label) . '">'
             . self::icon(['name' => 'user', 'decorative' => true]) . '<span class="aia-sidebar__label">'
             . self::escape($label) . '</span></button><div id="' . self::escape($id) . '" data-aia-menu-panel role="menu" hidden>'
             . '<span class="aia-sidebar__account-head" role="presentation">' . self::escape($label) . '</span>'

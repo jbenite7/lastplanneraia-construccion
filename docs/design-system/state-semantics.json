@@ -69,10 +69,64 @@
       ]
     }
   ],
+  "hues": [
+    {
+      "id": "neutral",
+      "label": "Silencio",
+      "tint": "--ds-state-tint-neutral",
+      "text": "--pdc-not-started-text"
+    },
+    {
+      "id": "teal",
+      "label": "Contexto",
+      "tint": "--ds-state-tint-teal"
+    },
+    {
+      "id": "blue",
+      "label": "En marcha",
+      "tint": "--ds-state-tint-blue",
+      "text": "--pdc-active-text"
+    },
+    {
+      "id": "violet",
+      "label": "Sin datos suficientes",
+      "tint": "--ds-state-tint-violet",
+      "text": "--pdc-missing-text"
+    },
+    {
+      "id": "green",
+      "label": "Controlado",
+      "tint": "--ds-state-tint-green",
+      "text": "--pdc-completed-ontime-text"
+    },
+    {
+      "id": "amber",
+      "label": "Por resolver",
+      "tint": "--ds-state-tint-amber",
+      "text": "--pdc-completed-late-text"
+    },
+    {
+      "id": "orange",
+      "label": "Fuera de plazo",
+      "tint": "--ds-state-tint-orange",
+      "text": "--pdc-delayed-text"
+    },
+    {
+      "id": "red",
+      "label": "Bloqueado o vencido",
+      "tint": "--ds-state-tint-red",
+      "text": "--pdc-critical-text"
+    }
+  ],
   "translationRules": [
-    "El texto del módulo conserva su nombre de dominio; el color se asigna por este nivel compartido.",
-    "Urgencia now siempre usa critical aunque el nombre del estado cambie.",
-    "Un estado informativo o sin datos nunca usa warning o critical por ausencia de información.",
+    "El texto del modulo conserva su nombre de dominio; la prioridad de accion se asigna por el nivel compartido.",
+    "El nivel y el matiz son ejes distintos: el nivel dice que hacer y cuando, el matiz dice cual estado es. El nivel se pinta en el acento y el matiz en el fondo.",
+    "Urgencia now siempre usa critical en el acento aunque el nombre del estado -o su matiz- cambie.",
+    "Un estado que no declara matiz usa el token de su nivel, asi que anadir el eje no altera a quien no lo use.",
+    "Dos estados del mismo nivel pueden llevar matices distintos; es lo que permite distinguirlos sin cambiarles la prioridad.",
+    "Un matiz, un estado: ningun modulo asigna el mismo matiz a dos estados. La paleta publica un solo tinte por matiz -sobre el canvas oscuro no hay eje de intensidad que separe dos escalones- asi que dos estados con el mismo matiz pintan el mismo fondo.",
+    "El matiz significa lo mismo en todos los modulos: violet es «sin datos suficientes» tanto en /pdc como en /programacion-intermedia, y blue es «en marcha» tanto en «Contratacion en curso» como en «En Curso» y «En Ejecucion Pendiente».",
+    "Un estado informativo o sin datos nunca usa warning o critical por ausencia de informacion.",
     "El significado nunca depende solo del color: cada estado muestra texto completo y, cuando aplica, icono o aria-label."
   ],
   "moduleMappings": [
@@ -80,28 +134,64 @@
       "module": "programacion-semanal",
       "states": [
         {
-          "label": "A tiempo",
-          "level": "healthy"
-        },
-        {
-          "label": "Por Comprometer",
-          "level": "attention"
-        },
-        {
-          "label": "Pendiente de aprobación del responsable",
-          "level": "attention"
+          "label": "RC con restricciones",
+          "key": "prog-bloqueo-critico-sin-compromiso",
+          "level": "urgent",
+          "hue": "red"
         },
         {
           "label": "Ejecución con restricciones",
-          "level": "urgent"
+          "key": "prog-ejecucion-con-restricciones",
+          "level": "urgent",
+          "hue": "orange"
         },
         {
-          "label": "Bloqueado",
-          "level": "urgent"
+          "label": "Condiciones Pendientes",
+          "key": "prog-condiciones-pendientes",
+          "level": "attention",
+          "hue": "amber"
         },
         {
-          "label": "Sin datos",
-          "level": "neutral"
+          "label": "Por Comprometer",
+          "key": "prog-sin-compromiso",
+          "level": "attention",
+          "hue": "amber"
+        },
+        {
+          "label": "Lista para Confirmar",
+          "key": "prog-lista-para-confirmar",
+          "level": "healthy",
+          "hue": "green"
+        },
+        {
+          "label": "Incumplida (RC)",
+          "key": "cal-incumplida-critica",
+          "level": "urgent",
+          "hue": "red"
+        },
+        {
+          "label": "Incumplida",
+          "key": "cal-incumplida",
+          "level": "attention",
+          "hue": "amber"
+        },
+        {
+          "label": "Sin Calificar",
+          "key": "cal-sin-calificar",
+          "level": "attention",
+          "hue": "amber"
+        },
+        {
+          "label": "Cumplida Control",
+          "key": "cal-cumplida-control",
+          "level": "healthy",
+          "hue": "green"
+        },
+        {
+          "label": "Trabajo No Planificado",
+          "key": "cal-tnp",
+          "level": "neutral",
+          "hue": "blue"
         }
       ]
     },
@@ -110,31 +200,45 @@
       "states": [
         {
           "label": "Actividad Futura",
-          "level": "healthy"
+          "key": "actividad-futura",
+          "level": "healthy",
+          "hue": "green"
         },
         {
           "label": "En Curso",
-          "level": "healthy"
+          "key": "en-curso",
+          "level": "healthy",
+          "hue": "blue"
         },
         {
           "label": "Terminada",
-          "level": "healthy"
+          "key": "terminada",
+          "level": "healthy",
+          "hue": "neutral"
         },
         {
           "label": "Con Alerta Restricciones",
-          "level": "attention"
+          "key": "con-alerta-restricciones",
+          "level": "attention",
+          "hue": "amber"
         },
         {
           "label": "Debe Iniciar",
-          "level": "attention"
+          "key": "debe-iniciar",
+          "level": "attention",
+          "hue": "orange"
         },
         {
           "label": "Atrasada",
-          "level": "urgent"
+          "key": "atrasada",
+          "level": "urgent",
+          "hue": "red"
         },
         {
           "label": "Sin Datos",
-          "level": "neutral"
+          "key": "sin-datos",
+          "level": "neutral",
+          "hue": "violet"
         }
       ]
     },
@@ -143,35 +247,51 @@
       "states": [
         {
           "label": "RC inicio vencido",
-          "level": "urgent"
+          "key": "blocked-overdue-critical",
+          "level": "urgent",
+          "hue": "red"
         },
         {
           "label": "Inicio vencido",
-          "level": "urgent"
+          "key": "blocked-overdue",
+          "level": "urgent",
+          "hue": "orange"
         },
         {
           "label": "Inicio por Habilitar",
-          "level": "attention"
+          "key": "blocked-due",
+          "level": "attention",
+          "hue": "violet"
         },
         {
           "label": "Alistamiento Urgente",
-          "level": "urgent"
+          "key": "alert-1-week",
+          "level": "urgent",
+          "hue": "amber"
         },
         {
           "label": "Alistamiento en Riesgo",
-          "level": "attention"
+          "key": "alert-2-3-weeks",
+          "level": "attention",
+          "hue": "teal"
         },
         {
           "label": "Alistamiento Pendiente",
-          "level": "attention"
+          "key": "alert-4-6-weeks",
+          "level": "attention",
+          "hue": "neutral"
         },
         {
           "label": "En Ejecución Pendiente",
-          "level": "attention"
+          "key": "execution-blocked",
+          "level": "attention",
+          "hue": "blue"
         },
         {
           "label": "Listo para Comprometer",
-          "level": "healthy"
+          "key": "liberated-control",
+          "level": "healthy",
+          "hue": "green"
         }
       ]
     },
@@ -214,27 +334,38 @@
       "states": [
         {
           "label": "Información pendiente",
-          "level": "attention"
+          "level": "attention",
+          "hue": "violet"
+        },
+        {
+          "label": "Inicio de contratación vencido",
+          "level": "urgent",
+          "hue": "red"
         },
         {
           "label": "Contratación atrasada",
-          "level": "urgent"
-        },
-        {
-          "label": "Contratación pendiente de inicio",
-          "level": "attention"
-        },
-        {
-          "label": "Contratación en curso",
-          "level": "healthy"
+          "level": "urgent",
+          "hue": "orange"
         },
         {
           "label": "Contratación cerrada tarde",
-          "level": "attention"
+          "level": "attention",
+          "hue": "amber"
         },
         {
           "label": "Contratación cerrada a tiempo",
-          "level": "healthy"
+          "level": "healthy",
+          "hue": "green"
+        },
+        {
+          "label": "Contratación en curso",
+          "level": "healthy",
+          "hue": "blue"
+        },
+        {
+          "label": "Contratación pendiente de inicio",
+          "level": "attention",
+          "hue": "neutral"
         }
       ]
     },

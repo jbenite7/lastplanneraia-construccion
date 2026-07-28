@@ -24,6 +24,19 @@ const SOURCE_PATHS = [
   'package.json',
 ];
 
+// El laboratorio carga un único entrypoint empaquetado, servido desde /runtime
+// para bustear la caché de sus @import anidados (45ea3c0). El contrato del head
+// lo fija tests/design-system/foundation.test.mjs.
+const LAB_ENTRYPOINT = '/runtime/css/design-system/lab-entrypoint.css';
+// Las hojas que el entrypoint agrega por @import se derivan del propio archivo:
+// así el contrato sigue siendo exacto sin fijar una lista que envejezca, y un
+// entrypoint que dejara de resolver sus imports no pasaría inadvertido (los
+// presupuestos solo son techos, no suelos).
+const BUNDLED_SHEETS = [...readFileSync(
+  new URL('../../public/css/design-system/lab-entrypoint.css', import.meta.url),
+  'utf8',
+).matchAll(/@import\s+url\("([^"?]+)/g)].map(([, href]) => href);
+
 const median = (values) => [...values].sort((left, right) => left - right)[Math.floor(values.length / 2)];
 const sha256 = (value) => createHash('sha256').update(value).digest('hex');
 
@@ -156,7 +169,10 @@ test('laboratory preserves three cold desktop samples within its CSS and renderi
       expect(aggregate[metric], `${viewport.name}: ${metric}`).toBeLessThanOrEqual(maximum);
     }
     for (const sample of measurements[viewport.name].samples) {
-      expect(sample.stylesheetPaths).toContain('/css/design-system/lab-entrypoint.css');
+      expect(sample.stylesheetPaths).toContain(LAB_ENTRYPOINT);
+      for (const sheet of BUNDLED_SHEETS) {
+        expect(sample.stylesheetPaths, `${viewport.name}: @import sin resolver`).toContain(sheet);
+      }
       expect(sample.stylesheetPaths).not.toContain('/css/aia-design-system.css');
       expect(sample.stylesheetPaths).not.toContain('/css/styles.css');
     }

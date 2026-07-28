@@ -98,33 +98,12 @@
     color: var(--text-main);
   }
 
-  a.dropdown-item:hover,
-  .dropdown-item:hover {
-    text-decoration: none;
-    background-color: var(--surface-bg) !important; /* F1 Task 3: fondo oscuro (canvas) */
-    /* F1 Task 3: --primary (azul Apple literal) sobre el canvas oscuro mide
-       4.09:1, bajo el 4.5:1 de AA para texto normal. --ds-active-action-primary-hover
-       es el acento que el DS ya designa para estados hover sobre fondo oscuro y
-       mide 9.02:1 aqui. Medido, no estimado (ver f1-task-3-report.md). No se
-       retiraron los !important al mover el bloque: aunque ahora vive en
-       @layer base (antes de components/module en el orden canonico) en vez
-       de module.base, retirarlos es un cambio de comportamiento sin
-       verificacion en vivo propia de esta tarea -- fuera de alcance, ver
-       f1-shell-background-report.md. */
-    color: var(--ds-active-action-primary-hover) !important;
-  }
-
-  .dropdown-item {
-    font-family: var(--font-main);
-    border-radius: var(--radius-sm);
-    margin: 2px 4px;
-    width: auto;
-    color: var(--text-main);
-  }
-
-  .dropdown-item.active {
-    background-color: var(--primary-light);
-    font-weight: 500;
-    color: var(--text-inverse);
-  }
+  /* F1 Task 5a-ter: el bloque del dropdown legacy (`.dropdown-menu`,
+     `.dropdown-item`, sus `:hover`/`:focus` y `.dropdown-item.active`) paso
+     por aqui en las Tasks 4 y 5a-bis, salio a
+     public/css/design-system/adapters/legacy-bridge.css y ahi se BORRO: no
+     tiene un solo consumidor vivo. La evidencia esta al final de ese archivo.
+     No volver a traerlo: aunque reaparezca un consumidor, estas son clases
+     legacy de Bootstrap y no primitivas `aia-*`, y legacy-bridge.css:112-126
+     ya declara que no caben en foundation. */
 }

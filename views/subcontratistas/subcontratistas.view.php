@@ -54,7 +54,7 @@
             width: 100%;
             overflow: hidden;
             position: relative;
-            background: #fff; /* Ensure it has a background */
+            background: var(--ds-active-bg-page); /* Superficie de la grilla en el tema activo */
         }
 
         /* Custom Renderers */
@@ -64,7 +64,7 @@
         /* Loading overlay */
         #loading {
             position: fixed; top:0; left:0; width:100%; height:100%;
-            background: rgba(255,255,255,0.95); /* Slightly more opaque for better focus */
+            background: color-mix(in srgb, var(--ds-active-bg-page) 95%, transparent); /* Velo a pantalla completa en el tema activo; se conserva la opacidad original */
             z-index: 10000; /* Higher than anything else */
             display: flex; justify-content: center; align-items: center;
         }
@@ -73,7 +73,7 @@
         #hot-container {
             width: 100%;
             height: calc(100vh - 180px); /* Fill available vertical space */
-            background: #fff;
+            background: var(--ds-active-bg-page);
             box-shadow: var(--shadow-sm);
             border-radius: var(--radius-sm);
             overflow: hidden;
@@ -94,8 +94,28 @@
         #hot-container th {
             display: table-cell !important; /* Force back from 'flex' used in mobile-fix */
             padding: 0 !important; /* HOT handles padding internally */
-            border-right: 1px solid #EDEDED !important;
-            border-bottom: 1px solid #EDEDED !important;
+            /* INERTES: handsontable-module.css ya declara esta rejilla con !important
+               desde @layer vendor, y para !important el orden de capas se invierte. */
+            border-right: 1px solid var(--ds-active-border) !important;
+            border-bottom: 1px solid var(--ds-active-border) !important;
+        }
+
+        /* Par fondo/tinta de la celda. El vendor de Handsontable pinta
+           `.handsontable td, .handsontable th` con fondo blanco: aqui la tinta
+           heredada ya era casi blanca (texto de datos invisible sobre celda
+           blanca antes de este cambio). Se reasignan LOS DOS a la vez, como en
+           contratos.css:227-232.
+           SIN !important a proposito: la especificidad de id ya gana al vendor
+           (0,1,1), y un !important sin capa perderia igualmente contra
+           handsontable-module.css porque en el cascade !important el orden de
+           capas se invierte y lo sin capa queda por debajo.
+           EFECTO DECLARADO: por especificidad de id esta regla gana tambien a
+           `.handsontable .htDimmed` del vendor, asi que las celdas de solo lectura
+           dejan de verse atenuadas. Mismo comportamiento que contratos.css, que
+           enumera `td.htDimmed` con la tinta primaria. */
+        #hot-container td {
+            background: var(--ds-active-surface);
+            color: var(--ds-active-text-primary);
         }
 
         /* Enforce HOT alignment classes */
@@ -108,10 +128,16 @@
         #hot-container td.htMiddle,
         #hot-container th.htMiddle { vertical-align: middle !important; }
 
-        /* 3. Ensure headers look premium AND centered */
+        /* 3. Ensure headers look premium AND centered.
+           NOTA: estas dos declaraciones son INERTES. Llevan !important sin capa,
+           y handsontable-module.css declara el mismo par con !important desde
+           layer(vendor); en el cascade !important el orden de capas se invierte,
+           asi que lo sin capa pierde. Lo que se renderiza hoy es el par del
+           modulo, ya oscuro. Se tokenizan al mismo par para que la fuente diga
+           la verdad y no quede un literal claro latente. */
         #hot-container th {
-            background-color: #f8f9fa !important;
-            color: #495057 !important;
+            background-color: var(--ds-active-surface-raised) !important;
+            color: var(--ds-active-text-primary) !important;
             font-weight: 600 !important;
             vertical-align: middle !important;
             text-align: center !important;

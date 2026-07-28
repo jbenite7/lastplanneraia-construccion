@@ -7,6 +7,20 @@
  * Uso: <link rel="stylesheet" href="../funciones_generales/css/handsontable-module.css" />
  */
 
+/* Orden canonico de capas (DS-006), declarado antes de abrir ninguna.
+   Sus dos importadores lo envuelven hoy con layer(vendor) --
+   public/css/aia-design-system.css:10 y
+   public/css/design-system/entrypoints/attach-handsontable.css:3 -- asi que
+   estas capas resuelven anidadas como vendor.base / vendor.components y el
+   orden relativo es el mismo que ya tenian por orden de aparicion: no-op de
+   comportamiento, verificado midiendo valores computados en las 8 rutas que
+   montan Handsontable.
+   El motivo de declararlo es que un archivo que abre @layer sin fijar el orden
+   se lo impone a quien lo importe SIN envolverlo. Este no es un vendor pasivo:
+   su regla html,body{overflow:hidden} (mas abajo) gobierna el scroll del
+   documento y gana al @layer reset de design-system/foundation.css. */
+@layer reset, vendor, theme, base, layout, components, utilities, module, legacy-overrides;
+
 @layer base {
 :root {
   --lps-rail-width: 42px;

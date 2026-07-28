@@ -1,0 +1,53 @@
+/* ===========================================================================
+   Control de Cambios — piel del modal de orden de cambio
+
+   Sustituye a las utilidades de Bootstrap (bg-light, bg-white, border,
+   border-right, border-top, border-bottom, text-muted) que el markup usaba
+   para dibujar la rejilla del formulario. Esas utilidades llevan !important
+   desde @layer vendor y, al invertirse el orden de capas para !important,
+   ninguna @layer posterior puede vencerlas: habia que retirarlas del markup.
+
+   Va en @layer module para sentarse junto a styles.css. Entrar sin capa —como
+   hace pdc.css— le ganaria a todo el design system, que es justo el defecto
+   que este tramo corrige.
+   =========================================================================== */
+
+@layer module {
+  .cc-field-row {
+    border: 1px solid var(--ds-active-border);
+  }
+
+  /* La etiqueta es el escalon claro y el valor el oscuro, al reves que en el
+     markup original. En dark la escala se invierte perceptualmente y esta es
+     la misma decision que el shell ya tomo para .aia-modal .table thead: hace
+     que la rejilla se lea como la tabla que en realidad es. */
+  .cc-field-label {
+    background: var(--ds-active-surface-raised);
+    color: var(--ds-active-text-primary);
+    border-right: 1px solid var(--ds-active-border);
+  }
+
+  .cc-field-value {
+    background: var(--ds-active-surface);
+    color: var(--ds-active-text-primary);
+  }
+
+  /* Bloque de 2px, donde el markup usaba border-2 + border-dark. */
+  .cc-field-block {
+    border: 2px solid var(--ds-active-border);
+  }
+
+  /* Separador vertical suelto, donde el markup usaba border-right sin bg-light. */
+  .cc-field-edge {
+    border-right: 1px solid var(--ds-active-border);
+  }
+
+  .cc-field-divider {
+    border-bottom: 1px solid var(--ds-active-border);
+  }
+
+  .cc-field-counter {
+    border-top: 1px solid var(--ds-active-border);
+    color: var(--ds-active-text-secondary);
+  }
+}

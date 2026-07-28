@@ -19,53 +19,130 @@
   --pg-alert-bg: var(--ds-color-state-warning-bg);
   --pg-alert-text: var(--ds-color-state-warning-text);
   --pg-alert-border: var(--ds-color-state-warning-text);
+  /* Acento cromatico del punto de la leyenda. Deliberadamente separado de
+     `--pg-*-border`: ese token pinta ~50 bordes de fila, celda y box-shadow
+     dentro de la grilla, donde se busca una hairline discreta sobre un fondo ya
+     tintado. El punto es el caso opuesto -8px solidos sobre un chip neutro- y
+     necesita el matiz entero. Sobre claro el tono de texto ya sirve tal cual. */
+  --pg-dot-alert: var(--ds-color-state-warning-text);
+  --pg-dot-due: var(--ds-color-state-warning-text);
+  --pg-dot-future: var(--ds-color-state-success-text);
+  --pg-dot-progress: var(--ds-color-state-info-text);
+  --pg-dot-delayed: var(--ds-color-state-critical-text);
   max-inline-size: 100%;
   overflow-x: clip;
   background: var(--ds-active-bg-page);
   color: var(--ds-active-text-primary);
 }
 
+/* Los fondos de estado consumen la paleta compartida
+   (public/css/tokens.css, `--ds-state-tint-*`), construida sobre las anclas que
+   /pdc habia medido a mano.
+
+   REASIGNACION DE MATICES (2026-07-28). La paleta publica UN tinte por matiz:
+   sobre este canvas no hay eje de intensidad que separe dos escalones (ver el
+   comentario de tokens.css con la medicion). Este modulo repetia matiz en dos
+   pares -`alert` con `due` en ambar y `done` con `nodata` en neutro-, asi que
+   sus siete entradas de leyenda pintaban cinco fondos.
+
+   Ahora los siete estados llevan siete de los ocho matices del catalogo
+   (docs/design-system/state-semantics.json), y el matiz significa aqui lo mismo
+   que en /pdc y /programacion-intermedia:
+
+     delayed (Atrasada)             rojo     vencida contra la curva teorica
+     due (Debe Iniciar)             naranja  la semana de inicio llego sin avance
+     alert (Con Alerta Restricc.)   ambar    hay restricciones por resolver
+     future (Actividad Futura)      verde    planificada y sin problema: controlado
+     progress (En Curso)            azul     en marcha -el mismo azul que
+                                             «Contratacion en curso» de /pdc-
+     done (Terminada)               neutral  cerrada: silencio
+     nodata (Sin Datos)             violeta  sin fecha ni ejecucion registrada,
+                                             que es literalmente «sin datos
+                                             suficientes» del catalogo
+
+   Teal queda libre en este modulo: `progress` lo cedio al azul porque «En
+   Curso» y «Contratacion en curso» son el mismo concepto y deben leerse igual
+   entre modulos.
+
+   Los bordes usan otra receta -`--ds-color-state-*-bg` contra
+   `--ds-active-border`- y se quedan aqui: una hairline sobre una fila ya
+   tintada busca lo contrario que el fondo, y ademas siguen codificando el
+   NIVEL, que es el otro eje. */
 html.aia-theme-dark .pg-page {
-  --pg-critical-bg: color-mix(in srgb, var(--ds-color-state-critical-text) 48%, var(--ds-active-surface-raised) 52%);
-  --pg-critical-text: var(--ds-active-text-primary);
-  --pg-critical-border: color-mix(in srgb, var(--ds-color-state-critical-bg) 54%, var(--ds-active-border) 46%);
-  --pg-delayed-bg: color-mix(in srgb, var(--ds-color-state-critical-text) 38%, var(--ds-active-surface-raised) 62%);
+  --pg-delayed-bg: var(--ds-state-tint-red);
   --pg-delayed-text: var(--ds-active-text-primary);
   --pg-delayed-border: color-mix(in srgb, var(--ds-color-state-critical-bg) 46%, var(--ds-active-border) 54%);
-  --pg-due-bg: color-mix(in srgb, var(--ds-color-state-warning-text) 42%, var(--ds-active-surface-raised) 58%);
+  /* «Atrasada critica» no es una entrada de leyenda: la ruta critica se marca
+     con icono sobre la propia «Atrasada» (asi lo dice la Guia Operativa del
+     modulo). Por eso es un alias y no un matiz propio. */
+  --pg-critical-bg: var(--pg-delayed-bg);
+  --pg-critical-text: var(--pg-delayed-text);
+  --pg-critical-border: var(--pg-delayed-border);
+  --pg-due-bg: var(--ds-state-tint-orange);
   --pg-due-text: var(--ds-active-text-primary);
   --pg-due-border: color-mix(in srgb, var(--ds-color-state-warning-bg) 54%, var(--ds-active-border) 46%);
-  --pg-future-bg: color-mix(in srgb, var(--ds-color-state-success-text) 42%, var(--ds-active-surface-raised) 58%);
+  --pg-future-bg: var(--ds-state-tint-green);
   --pg-future-text: var(--ds-active-text-primary);
   --pg-future-border: color-mix(in srgb, var(--ds-color-state-success-bg) 54%, var(--ds-active-border) 46%);
-  --pg-progress-bg: color-mix(in srgb, var(--ds-color-state-info-text) 42%, var(--ds-active-surface-raised) 58%);
+  --pg-progress-bg: var(--ds-state-tint-blue);
   --pg-progress-text: var(--ds-active-text-primary);
   --pg-progress-border: color-mix(in srgb, var(--ds-color-state-info-bg) 54%, var(--ds-active-border) 46%);
-  --pg-alert-bg: color-mix(in srgb, var(--ds-color-state-warning-text) 48%, var(--ds-active-surface-raised) 52%);
+  --pg-alert-bg: var(--ds-state-tint-amber);
   --pg-alert-text: var(--ds-active-text-primary);
   --pg-alert-border: color-mix(in srgb, var(--ds-color-state-warning-bg) 58%, var(--ds-active-border) 42%);
-  --pg-restr-0-bg: var(--pg-due-bg);
-  --pg-restr-0-text: var(--pg-due-text);
-  --pg-restr-0-border: var(--pg-due-border);
-  --pg-restr-1-bg: color-mix(in srgb, var(--ds-color-state-warning-text) 36%, var(--ds-active-surface-raised) 64%);
-  --pg-restr-1-text: var(--ds-active-text-primary);
-  --pg-restr-1-border: color-mix(in srgb, var(--ds-color-state-warning-bg) 50%, var(--ds-active-border) 50%);
-  --pg-restr-2-3-bg: color-mix(in srgb, var(--ds-color-state-warning-text) 30%, var(--ds-active-surface-raised) 70%);
-  --pg-restr-2-3-text: var(--ds-active-text-primary);
-  --pg-restr-2-3-border: color-mix(in srgb, var(--ds-color-state-warning-bg) 46%, var(--ds-active-border) 54%);
-  --pg-restr-4-6-bg: color-mix(in srgb, var(--ds-color-state-success-text) 30%, var(--ds-active-surface-raised) 70%);
-  --pg-restr-4-6-text: var(--ds-active-text-primary);
-  --pg-restr-4-6-border: color-mix(in srgb, var(--ds-color-state-success-bg) 46%, var(--ds-active-border) 54%);
+  /* Los `--pg-*-border` de arriba mezclan `--ds-color-state-*-bg`, que son los
+     pasteles casi blancos del tema claro: sobre oscuro esa mezcla da una
+     hairline correcta para una fila tintada, pero deja el punto de la leyenda
+     en gris (2-11 % de saturacion; «Atrasada», el urgent del modulo, caia en un
+     gris neutro casi sin croma). El punto se deriva por tanto del unico token
+     del par que conserva croma -`--ds-color-state-*-text`- subiendo la
+     luminosidad en OKLCH para hacerlo visible sobre oscuro sin desplazar el
+     tono, que es lo que pasaria al aclarar mezclando con blanco en sRGB.
+     Guard: tests/browser/programa-general-legend-hue.mjs mide el pixel real. */
+  --pg-dot-alert: oklch(from var(--ds-color-state-warning-text) 0.68 calc(c * 1.4) h);
+  --pg-dot-due: oklch(from var(--ds-color-state-warning-text) 0.68 calc(c * 1.4) h);
+  --pg-dot-future: oklch(from var(--ds-color-state-success-text) 0.68 calc(c * 1.4) h);
+  --pg-dot-progress: oklch(from var(--ds-color-state-info-text) 0.68 calc(c * 1.4) h);
+  --pg-dot-delayed: oklch(from var(--ds-color-state-critical-text) 0.68 calc(c * 1.4) h);
+  /* R0-R1-R2/3-R4/6 son la ALERTA SECUNDARIA de restricciones -en cuantas
+     semanas hay que liberarlas-, no el estado principal, y viven en su propia
+     columna. Eran el unico gradiente ordinal del modulo y la unica familia
+     donde varios pasos tendrian sentido, pero el gradiente ya no existia en el
+     producto: medido en public/css/styles.css, las cuatro celdas de la grilla
+     (`td.pg-row-state.pg-state-r0` … `-r4-6`) y los cuatro badges
+     (`.pg-alert-badge.pg-alert-r0` … `-r4-6`) pintan TODOS `--pg-alert-bg`. Los
+     cuatro valores distintos solo sobrevivian en las cuatro muestras del modal
+     de leyenda, que prometian un degradado que la tabla nunca enseño -y dos de
+     ellas, `restr-1` y `restr-2-3`, ya eran el mismo hex-.
+
+     Se colapsan al ambar de la alerta: la leyenda dice ahora lo mismo que
+     pinta la grilla, y el orden lo lleva la etiqueta (R0/R1/R2-3/R4-6), que es
+     donde estaba de verdad. Fundir las cuatro filas del modal en una es cambio
+     de copy y queda para su propia tarea. */
+  --pg-restr-0-bg: var(--pg-alert-bg);
+  --pg-restr-0-text: var(--pg-alert-text);
+  --pg-restr-0-border: var(--pg-alert-border);
+  --pg-restr-1-bg: var(--pg-alert-bg);
+  --pg-restr-1-text: var(--pg-alert-text);
+  --pg-restr-1-border: var(--pg-alert-border);
+  --pg-restr-2-3-bg: var(--pg-alert-bg);
+  --pg-restr-2-3-text: var(--pg-alert-text);
+  --pg-restr-2-3-border: var(--pg-alert-border);
+  --pg-restr-4-6-bg: var(--pg-alert-bg);
+  --pg-restr-4-6-text: var(--pg-alert-text);
+  --pg-restr-4-6-border: var(--pg-alert-border);
   --pg-ontime-bg: var(--pg-progress-bg);
   --pg-ontime-text: var(--pg-progress-text);
   --pg-ontime-border: var(--pg-progress-border);
-  --pg-done-bg: var(--ds-active-surface);
+  --pg-done-bg: var(--ds-state-tint-neutral);
   --pg-done-text: var(--ds-active-text-secondary);
   --pg-done-border: var(--ds-active-border);
-  --pg-notrequired-bg: var(--ds-active-surface);
-  --pg-notrequired-text: var(--ds-active-text-secondary);
-  --pg-notrequired-border: var(--ds-active-border);
-  --pg-nodata-bg: color-mix(in srgb, var(--ds-active-surface-raised) 72%, var(--ds-active-bg-page) 28%);
+  /* «No requerida» tampoco es entrada de leyenda y significa lo mismo que
+     «Terminada» para el equipo: nada que hacer. Alias explicito. */
+  --pg-notrequired-bg: var(--pg-done-bg);
+  --pg-notrequired-text: var(--pg-done-text);
+  --pg-notrequired-border: var(--pg-done-border);
+  --pg-nodata-bg: var(--ds-state-tint-violet);
   --pg-nodata-text: var(--ds-active-text-secondary);
   --pg-nodata-border: var(--ds-active-border);
 }
@@ -191,11 +268,11 @@ html.aia-theme-dark .pg-page {
   background: var(--ds-active-border);
 }
 
-.pg-page #pgLegend .pg-filter-chip.alerta-restricciones .indicator { background: var(--pg-alert-border); }
-.pg-page #pgLegend .pg-filter-chip.debe-iniciar .indicator { background: var(--pg-due-border); }
-.pg-page #pgLegend .pg-filter-chip.actividad-futura .indicator { background: var(--pg-future-border); }
-.pg-page #pgLegend .pg-filter-chip.en-curso .indicator { background: var(--pg-progress-border); }
-.pg-page #pgLegend .pg-filter-chip.atrasada .indicator { background: var(--pg-delayed-border); }
+.pg-page #pgLegend .pg-filter-chip.alerta-restricciones .indicator { background: var(--pg-dot-alert); }
+.pg-page #pgLegend .pg-filter-chip.debe-iniciar .indicator { background: var(--pg-dot-due); }
+.pg-page #pgLegend .pg-filter-chip.actividad-futura .indicator { background: var(--pg-dot-future); }
+.pg-page #pgLegend .pg-filter-chip.en-curso .indicator { background: var(--pg-dot-progress); }
+.pg-page #pgLegend .pg-filter-chip.atrasada .indicator { background: var(--pg-dot-delayed); }
 
 .pg-page #pgLegend .pg-filter-chip[aria-pressed="true"] {
   border-color: var(--ds-active-text-secondary);

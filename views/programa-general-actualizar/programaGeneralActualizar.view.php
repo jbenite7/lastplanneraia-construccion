@@ -7,6 +7,7 @@
 	<script src="https://code.jquery.com/ui/1.10.1/jquery-ui.js"></script>
 	<!--Script cque va al archivo linksComunesHead2.js-->
 	<?= \App\View\Components\DesignSystemHeadComponent::render() ?>
+	<link rel="stylesheet" href="/css/programa-general-actualizar.css?v=<?= urlencode((string) (@filemtime(dirname(__DIR__, 2) . '/public/css/programa-general-actualizar.css') ?: 'pga1')) ?>" />
 	<script type="text/javascript" src="/js/linksComunesHead2.js?v=20260711foundation5" charset="utf-8"></script>
 
 	<!-- Estilos Core Hot -->
@@ -130,8 +131,8 @@
 			margin-bottom: var(--spacing-lg, 1.5rem);
 		}
 		.match-stats .match-stat-card {
-			background: var(--aia-bg-alabaster, #fafafa);
-			border: 1px solid var(--aia-separators, #d1d1d1);
+			background: var(--ds-active-surface-raised);
+			border: 1px solid var(--ds-active-border);
 			border-radius: var(--radius-md, 0.5rem);
 			padding: var(--spacing-md, 1rem);
 			text-align: center;
@@ -140,19 +141,19 @@
 			font-family: 'Montserrat', sans-serif;
 			font-size: 1.75rem;
 			font-weight: 700;
-			color: var(--aia-green-primary, #1a5633);
+			color: var(--ds-active-action-primary);
 			line-height: 1.2;
 		}
 		.match-stats .match-stat-card .match-stat-label {
 			font-family: 'Inter', sans-serif;
 			font-size: 0.75rem;
-			color: var(--aia-text-secondary, #4a4a4d);
+			color: var(--ds-active-text-secondary);
 			text-transform: uppercase;
 			letter-spacing: 0.05em;
 			margin-top: var(--spacing-xs, 0.25rem);
 		}
 		.match-stats .match-stat-card.match-stat-none .match-stat-value {
-			color: var(--aia-text-tertiary, #a9a9a9);
+			color: var(--ds-active-text-secondary);
 		}
 
 		#review-list {
@@ -344,25 +345,25 @@
 		   Opción C: Split view tabs + Cambiar + Guardar
 		   ======================================== */
 		.review-tabs {
-			border-bottom: 2px solid var(--aia-separators, #d1d1d1);
+			border-bottom: 2px solid var(--ds-active-border);
 			margin-bottom: var(--spacing-md, 1rem);
 		}
 		.review-tabs .nav-link {
 			font-family: 'Inter', sans-serif;
 			font-weight: 600;
 			font-size: 0.85rem;
-			color: var(--aia-text-secondary, #4a4a4d);
+			color: var(--ds-active-text-secondary);
 			border: none;
 			padding: 0.5rem 1rem;
 			transition: color 0.2s ease, border-color 0.2s ease;
 		}
 		.review-tabs .nav-link.active {
-			color: var(--aia-green-primary, #1a5633);
-			border-bottom: 2px solid var(--aia-green-primary, #1a5633);
+			color: var(--ds-active-text-primary);
+			border-bottom: 2px solid var(--ds-active-action-primary);
 			background: transparent;
 		}
 		.review-tabs .nav-link:hover {
-			color: var(--aia-green-primary, #1a5633);
+			color: var(--ds-active-action-primary);
 			border-color: transparent;
 		}
 		.review-tab-content {
@@ -631,11 +632,11 @@
 		  <div class="modal-dialog modal-dialog-centered">
 		    <div class="modal-content" style="border-radius: 12px; border: none; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
 		      <div class="modal-body text-center" style="padding: 40px 20px;">
-		        <div style="width: 80px; height: 80px; background: #d5e5db; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
-		          <i class="fas fa-check" style="color: #1a5633; font-size: 40px;"></i>
+		        <div class="pga-success-badge" style="width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+		          <i class="fas fa-check" style="font-size: 40px;"></i>
 		        </div>
-		        <h3 style="font-family: 'Montserrat', sans-serif; font-weight: 700; color: #1a3c2a; margin-bottom: 10px;">¡Carga Exitosa!</h3>
-		        <p style="font-family: 'Inter', sans-serif; color: #4a4a4d; font-size: 16px; margin-bottom: 25px;">
+		        <h3 style="font-family: 'Montserrat', sans-serif; font-weight: 700; margin-bottom: 10px;">¡Carga Exitosa!</h3>
+		        <p class="pga-success-copy" style="font-family: 'Inter', sans-serif; font-size: 16px; margin-bottom: 25px;">
 		          El cronograma y la primera semana han sido creados correctamente. <br>
 		          Hemos preparado todo para que inicies tu seguimiento.
 		        </p>
@@ -717,16 +718,16 @@
 		<div class="modal fade aia-modal" id="modalAutoAsociar" role="dialog" aria-labelledby="modalAutoAsociarLabel" data-backdrop="static">
 			<div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" role="document">
 				<div class="modal-content">
-					<div class="modal-header" style="background: #1a5633; color: white;">
+					<div class="modal-header">
 						<div class="modal-title" id="modalAutoAsociarLabel">
-							<div class="aia-modal__eyebrow" style="color: rgba(255,255,255,0.7);">AIA Corporativo</div>
-							<h5 style="margin: 0; font-family: 'Montserrat', sans-serif; font-weight: 600; color: white;">Resultados de Auto-Asociación</h5>
+							<div class="aia-modal__eyebrow">AIA Corporativo</div>
+							<h5 class="aia-modal__title">Resultados de Auto-Asociación</h5>
 						</div>
-						<button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: white; opacity: 0.8;">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 							<span aria-hidden="true">&times;</span>
 						</button>
 					</div>
-					<div class="modal-body" style="background: #F4F1EA;">
+					<div class="modal-body">
 						<!-- Resumen estadístico -->
 						<div class="match-stats" id="match-stats">
 							<div class="match-stat-card">
@@ -776,7 +777,7 @@
 						<!-- Fallback single list (sin split) cuando no hay ítems -->
 						<div id="review-list" style="display:none;"></div>
 					</div>
-					<div class="modal-footer" style="background: #FAFAFA; display: flex; justify-content: space-between; align-items: center;">
+					<div class="modal-footer">
 						<div>
 							<button type="button" class="btn btn-primary" id="btn-guardar-cambios" disabled>
 								<i class="fas fa-save"></i> Guardar Cambios

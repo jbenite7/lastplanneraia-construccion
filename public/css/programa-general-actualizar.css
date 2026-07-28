@@ -1,0 +1,35 @@
+/* ===========================================================================
+   Programa General · Actualizar — piel de los dos modales que la traian en
+   atributos style= del markup.
+
+   Los style= ganan a cualquier hoja, asi que mientras estuvieran ahi ningun
+   cambio de CSS podia alcanzar a estos modales. Se retiran del markup y lo que
+   no aporta el shell .aia-modal se declara aqui.
+
+   Va en @layer module para sentarse junto a styles.css. Entrar sin capa —como
+   hace pdc.css— le ganaria a todo el design system.
+   =========================================================================== */
+
+@layer module {
+  /* El pie reparte sus dos grupos de botones a los extremos. Es geometria, no
+     color: la traia el style= junto al fondo y hay que conservarla. */
+  #modalAutoAsociar .modal-footer {
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* Sello de exito. Es un par de estado semantico, que DESIGN.md declara
+     constante entre temas: conserva su color y su ratio exactos (8,7:1) y solo
+     deja de estar escrito como hex suelto. */
+  .pga-success-badge {
+    background: var(--ds-color-state-success-bg);
+  }
+
+  .pga-success-badge i {
+    color: var(--ds-color-state-success-text);
+  }
+
+  .pga-success-copy {
+    color: var(--ds-active-text-secondary);
+  }
+}

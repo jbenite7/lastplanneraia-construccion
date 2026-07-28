@@ -83,3 +83,65 @@
     color: var(--ds-color-state-critical-text);
   }
 }
+
+@layer components {
+  /* Segundo eje: el matiz. Los cuatro selectores de arriba traducen el NIVEL
+     -prioridad de accion- y bastan mientras un modulo tenga un estado por
+     nivel. En cuanto tiene dos, se pisan: en /pdc, `Informacion pendiente` y
+     `Contratacion cerrada tarde` son ambos `attention`, y `Inicio de
+     contratacion vencido` y `Contratacion atrasada` son ambos `urgent`.
+     `data-aia-hue` desempata sin tocar la prioridad.
+
+     Se emparejan con `[data-aia-severity]` para que pesen 0,2,0 y ganen al
+     fondo del nivel, que tambien son dos atributos: un solo `[data-aia-hue]`
+     pesa 0,1,0 y pierde por especificidad aunque vaya despues. Leido en voz
+     alta el selector dice lo que hace -un elemento que declara nivel Y matiz
+     pinta el fondo por el matiz-, y el nivel sigue vivo en el acento. El
+     catalogo de matices y su tinte los fija docs/design-system/state-semantics.json;
+     tests/design-system/state-tint-ladder.test.mjs comprueba que esta traduccion
+     no se desvie de el.
+
+     El texto SI se declara: la regla de nivel lo fija en `--ds-color-state-*-text`,
+     un tono oscuro pensado para el pastel claro del nivel, y sobre estos tintes
+     -que son oscuros- queda ilegible. Los pasos de la escalera estan calculados
+     contra `--ds-active-text-primary`, asi que el par viaja junto. */
+  [data-aia-hue="neutral"][data-aia-severity] {
+    background: var(--ds-state-tint-neutral);
+    color: var(--ds-active-text-primary);
+  }
+
+  [data-aia-hue="teal"][data-aia-severity] {
+    background: var(--ds-state-tint-teal);
+    color: var(--ds-active-text-primary);
+  }
+
+  [data-aia-hue="blue"][data-aia-severity] {
+    background: var(--ds-state-tint-blue);
+    color: var(--ds-active-text-primary);
+  }
+
+  [data-aia-hue="violet"][data-aia-severity] {
+    background: var(--ds-state-tint-violet);
+    color: var(--ds-active-text-primary);
+  }
+
+  [data-aia-hue="green"][data-aia-severity] {
+    background: var(--ds-state-tint-green);
+    color: var(--ds-active-text-primary);
+  }
+
+  [data-aia-hue="amber"][data-aia-severity] {
+    background: var(--ds-state-tint-amber);
+    color: var(--ds-active-text-primary);
+  }
+
+  [data-aia-hue="orange"][data-aia-severity] {
+    background: var(--ds-state-tint-orange);
+    color: var(--ds-active-text-primary);
+  }
+
+  [data-aia-hue="red"][data-aia-severity] {
+    background: var(--ds-state-tint-red);
+    color: var(--ds-active-text-primary);
+  }
+}

@@ -188,7 +188,7 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
                                                 </tr>
                                             </thead>
                                             <tbody id="tbody_excepciones_no_autoprogramadas">
-                                                <tr><td colspan="4" class="text-center text-muted">Cargando actividades...</td></tr>
+                                                <tr><td colspan="4" class="text-center ps-muted">Cargando actividades...</td></tr>
                                             </tbody>
                                         </table>
                                     </div>
@@ -413,25 +413,25 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
             <div class="card-body py-2 px-3">
               <div class="row">
                 <div class="col-6">
-                  <small class="text-muted d-block">Subcontratista</small>
+                  <small class="ps-muted d-block">Subcontratista</small>
                   <strong id="tnp_info_subcontratista">-</strong>
                 </div>
                 <div class="col-6">
-                  <small class="text-muted d-block">Responsable AIA</small>
+                  <small class="ps-muted d-block">Responsable AIA</small>
                   <strong id="tnp_info_residente">-</strong>
                 </div>
               </div>
               <div class="row mt-2">
                 <div class="col-4">
-                  <small class="text-muted d-block">Frente</small>
+                  <small class="ps-muted d-block">Frente</small>
                   <strong id="tnp_info_frente">-</strong>
                 </div>
                 <div class="col-4">
-                  <small class="text-muted d-block">Unidad</small>
+                  <small class="ps-muted d-block">Unidad</small>
                   <strong id="tnp_info_unidad">-</strong>
                 </div>
                 <div class="col-4">
-                  <small class="text-muted d-block">Cuantía</small>
+                  <small class="ps-muted d-block">Cuantía</small>
                   <strong id="tnp_info_cuantia">-</strong>
                 </div>
               </div>

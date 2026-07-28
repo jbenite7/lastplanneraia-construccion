@@ -87,6 +87,60 @@
     color: var(--ds-color-state-critical-text);
   }
 
+  /* El segundo eje, el matiz, tiene que reafirmarse aqui por la misma razon que
+     las cuatro reglas de nivel de arriba: la copia canonica vive en
+     `components/states-feedback.css`, pero `@layer module` va despues de
+     `components` y cualquier hoja de modulo la tapa. Este puente es
+     `legacy-overrides`, la ultima capa, y es el unico sitio desde el que el
+     design system alcanza una superficie de modulo.
+
+     Van DESPUES de las de nivel a proposito: con `:where()` las dos familias
+     pesan 0,0,0, asi que dentro de la capa decide el orden de fuente y el matiz
+     -que es la identidad del estado- gana el fondo. El nivel sigue vivo en el
+     acento y en el par severity/urgency que el modulo declara.
+
+     Cuando el puente se retire, la copia de `states-feedback.css` es la que
+     queda; esta se va con el. */
+  :where([data-aia-hue="neutral"]) {
+    background: var(--ds-state-tint-neutral);
+    color: var(--ds-active-text-primary);
+  }
+
+  :where([data-aia-hue="teal"]) {
+    background: var(--ds-state-tint-teal);
+    color: var(--ds-active-text-primary);
+  }
+
+  :where([data-aia-hue="blue"]) {
+    background: var(--ds-state-tint-blue);
+    color: var(--ds-active-text-primary);
+  }
+
+  :where([data-aia-hue="violet"]) {
+    background: var(--ds-state-tint-violet);
+    color: var(--ds-active-text-primary);
+  }
+
+  :where([data-aia-hue="green"]) {
+    background: var(--ds-state-tint-green);
+    color: var(--ds-active-text-primary);
+  }
+
+  :where([data-aia-hue="amber"]) {
+    background: var(--ds-state-tint-amber);
+    color: var(--ds-active-text-primary);
+  }
+
+  :where([data-aia-hue="orange"]) {
+    background: var(--ds-state-tint-orange);
+    color: var(--ds-active-text-primary);
+  }
+
+  :where([data-aia-hue="red"]) {
+    background: var(--ds-state-tint-red);
+    color: var(--ds-active-text-primary);
+  }
+
   :where(.aia-pagination a[aria-current="page"]) {
     color: var(--ds-active-action-text);
   }
@@ -109,6 +163,28 @@
     color: var(--ds-active-text-secondary);
   }
 
+  /* WCAG 2.4.7: el design system reclama el anillo de foco de la barra
+     «Informacion General». `styles.css:2739` y `:2829` apagaban el anillo con
+     `outline: none` en `:focus` sin sustituto, y ganaban por especificidad al
+     `button:focus` de Bootstrap (vendor), asi que el teclado se quedaba sin
+     marca en las tres rutas que montan `info_general_nav.js`:
+     /listado-actividades, /contratos y /pdc.
+
+     No hace falta `!important` ni subir especificidad: esta hoja vive en
+     `@layer legacy-overrides`, la ultima del orden de `aia-design-system.css:1`,
+     y `styles.css` entra en `module`. La capa decide.
+
+     Se declara sobre `:focus-visible`, no sobre `:focus`, a proposito: asi el
+     `outline: none` de `styles.css` conserva su unica funcion legitima -matar
+     el anillo del navegador tras un clic de raton- y el teclado recupera la
+     suya. Los tres valores son los del contrato de `core.css:104`, sin
+     inventar nada local. */
+  :where(.aia-info-nav__trigger, .aia-info-nav__item):focus-visible {
+    outline: var(--ds-outline-width) solid var(--ds-active-focus-ring);
+    outline-offset: var(--ds-outline-offset);
+    box-shadow: var(--ds-shadow-focus);
+  }
+
   /* F1 Task 5a: absorbido desde public/css/styles.css:319-323
      (module.components). Neutraliza las gutters negativas de `.row` de
      Bootstrap (vendor: margin-inline: -15px), que empujaban contenido fuera
@@ -127,5 +203,452 @@
   .row {
     margin-right: 0 !important;
     margin-left: 0 !important;
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────
+     F1 Task 5a-bis: layout legacy absorbido desde public/css/styles.css
+     (module.components). Reglas vivas y sin fuga a claro: no tenian nada
+     malo salvo la capa. Destino: este archivo, por el mismo criterio con
+     que la Task 5a trajo aqui `.row` — son clases y ids del legado de la
+     app, no primitivas `aia-*` del design system, asi que no caben en
+     foundation.css ni en components/; y legacy-bridge.css lo importan LOS
+     DOS entrypoints (aia-design-system.css:24 y entrypoints/core.css:16),
+     los mismos que importan styles.css, de modo que el alcance queda
+     identico: ni se amplia al laboratorio ni se reduce.
+
+     Movidas VERBATIM: mismos selectores, mismos valores, mismos
+     !important, cero especificidad anadida.
+
+     Por que module -> legacy-overrides es neutro aqui, comprobado regla a
+     regla y despues medido:
+      - Declaraciones !important: el orden de capas se invierte, asi que
+        cualquier !important en una capa ANTERIOR sigue ganando igual que
+        antes, y los !important sin capa siguen perdiendo contra cualquier
+        capa. Los tres competidores !important reales estan en module
+        (el propio styles.css) y siguen ganando: `.filaBotones {
+        margin-bottom: 0.75rem !important }`, `.pg-page/.pi-page/.ps-page
+        #cuadroTabla { overflow-x: hidden !important }` y
+        `.pg-page/.pi-page/.ps-page #dt_cliente { width: 100% !important }`.
+      - Declaraciones normales: lo unico que podria voltearse son las de
+        OTRO archivo de @layer module o del resto de styles.css sobre el
+        mismo sujeto y la misma propiedad. Barridos los tres candidatos
+        (styles.css, programa-general.css y los bloques @layer module de
+        programacion-intermedia.css): los unicos sujetos compartidos son
+        `.pg-page .encabezado` y `.pi-page .encabezado`, que fijan
+        `background` y `color`, no `width`/`margin`.
+      - Los seis tokens `--ps-btn-*` de `.filaBotones` los consumen
+        listado-actividades.css, contratos.css y el propio styles.css desde
+        DESCENDIENTES, que los heredan; las otras definiciones del repo
+        cuelgan de `.filaBotones .toolbarFilaBotones`, otro elemento, asi
+        que no compiten en cascada con esta.
+
+     Verificado por medicion, no por lectura: diff de valores computados
+     VACIO en 18 rutas autenticadas a 1180x820 en dark, sobre los sujetos
+     de este bloque y sus propiedades (incluidos los que solo existen
+     dentro de modales cerrados, que la sonda lee con querySelectorAll y
+     no por visibilidad; los elementos se emparejan por firma de id/clases/
+     ancestros, no por indice, porque el orden del DOM en las rutas con
+     DataTables no es estable entre cargas).
+
+     TRES reglas del rango NO se movieron, revertidas por medicion y no por
+     criterio: `.form-group label`, `.row` y el `font-size: 12px` de
+     `.grupo_botones*`. Al llegar a esta capa ganaban a competidores de
+     module.components con MAS especificidad, que hoy les ganan. Se quedan
+     en styles.css con el detalle apuntado alli. */
+  .cuadroModal {
+    padding-left: 5%;
+    padding-right: 5%;
+    margin: auto;
+    width: 100%;
+  }
+
+  .filaBotones,
+  .filaMensajes {
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: 100%;
+    flex-wrap: wrap !important; /* Force wrapping on small screens */
+  }
+
+  .encabezado {
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  .formularioRegistro {
+    width: 100%;
+    max-width: 1900px;
+    margin: 5px auto 0 auto;
+  }
+
+  .filaBotones {
+    --ps-btn-min-h: clamp(1.35rem, 1.05rem + 0.8vw, 1.9rem);
+    --ps-btn-py: clamp(0.12rem, 0.08rem + 0.2vw, 0.22rem);
+    --ps-btn-px: clamp(0.34rem, 0.2rem + 0.45vw, 0.62rem);
+    --ps-btn-font-size: clamp(0.6rem, 0.52rem + 0.28vw, 0.78rem);
+    --ps-btn-gap-inline: clamp(0.12rem, 0.08rem + 0.2vw, 0.24rem);
+    --ps-btn-icon-size: clamp(0.62rem, 0.54rem + 0.26vw, 0.84rem);
+    width: 100%;
+    max-width: 100%; /* Allow full width */
+    margin: 0; /* Remove auto margin */
+    padding: 0;
+  }
+
+  .filaMensajes {
+    width: 100%;
+    max-width: 100%;
+    margin: 0; /* Remove 5px margin */
+    padding: 0;
+  }
+
+  .filaMensajes p {
+    margin: 0;
+  }
+
+  #dt_cliente {
+    padding: 0px 0px;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  #cuadroTabla {
+    padding: 2px;
+    max-width: 100%;
+    overflow-x: hidden; /* Container implies constraint */
+  }
+
+  button.editar,
+  button.duplicar,
+  button.eliminar,
+  button.EstadoEjecucion,
+  button.reprogramar,
+  button.abrirSoporte,
+  button.borrarSoporte {
+    padding: 0px 5px;
+  }
+
+  .grupo_botones_semanal_madre,
+  .grupo_botones_semanal {
+    float: right;
+  }
+
+  #modal_spinner {
+    background-color: transparent !important;
+  }
+
+  .border-2 {
+    border-style: solid;
+    border-width: 1px;
+  }
+
+  /* F1 Task 5a-bis (fix): aqui vivian cinco `@media (max-height)` que acotaban
+     la altura de los menus de semana (#semanasProyectoMenu,
+     #programa_generalMenu, #programacion_intermediaMenu,
+     #programacion_semanalMenu, #indicadoresMenu). BORRADOS: estaban muertos y
+     el tramo anterior los habia movido aqui en vez de podarlos porque su brief
+     lo prohibia. Evidencia, por si alguien los echa de menos:
+      - Ningun markup del repo crea esos cinco ids. El unico JS que los nombra
+        es public/js/cargarDatosGeneralesPagina2.js: en :392, :405 y :418
+        escribe ids CON sufijo de semana (`programa_generalMenu` + numero)
+        sobre los `<a class='dropdown-item'>`, y en :433-441 busca los ids SIN
+        sufijo del contenedor, guardado ademas por `if
+        (document.getElementById(...))`. Ese contenedor lo aportaba la navbar
+        que F0 retiro; y aunque existiera, `#programa_generalMenu` jamas
+        casaria `programa_generalMenu5`.
+      - Medido en el navegador (1180x820, dark, sesion real): cero elementos
+        para los cinco ids en /programa-general, /contratos,
+        /listado-actividades, /pdc, /programacion-semanal, /proyectos y
+        /internal/design-system, ademas de las 18 rutas que ya habia medido el
+        tramo anterior.
+      - Nunca llegaron a ejecutarse ni cuando habia markup: el bloque
+        901-1080px (500px) quedaba integramente tapado por el min-height:901px
+        (600px) que le seguia, con los mismos selectores y la misma
+        especificidad. */
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+   F1 Task 5a-ter: BORRADO el dropdown legacy de Bootstrap (`.dropdown-menu`,
+   `.dropdown-item`, sus `:hover`/`:focus` y `.dropdown-item.active`), que el
+   tramo 5a-bis habia reubicado aqui en `@layer module.components` en vez de
+   podarlo. Con el se fue tambien su `@layer module.theme, module.layout,
+   module.components;`, que se quedaba sin usuarios.
+
+   ACTUALIZADO EN 5j: ese tramo volvio a abrir bloques `@layer module.components`
+   en este archivo, asi que la declaracion de subcapas VUELVE — y ahora vive por
+   encima del primero de ellos, que es el unico sitio donde funciona. Los demas
+   escritores de `module` del proyecto (programa-general-handsontable.css:1,
+   programa-general.css:1, lab.css:1, programacion-intermedia.css:4 y :1200,
+   bi-control-tower.css:1591) usan `@layer module` SIN subcapa, que no crea
+   ninguna y no altera ese orden.
+
+   MISMA CLASE DE EVIDENCIA que la poda de los cinco `@media` de arriba: no es
+   inspeccion, es medicion. Las clases no tienen un solo consumidor vivo.
+
+    - DOM. Cero `.dropdown-menu` y cero `.dropdown-item` a 1180x820 en dark,
+      con sesion real (test.A / Da Porto), en /programa-general, /contratos,
+      /pdc, /listado-actividades, /programacion-semanal,
+      /programacion-intermedia, /control-cambios, /indicadores, /profesionales,
+      /subcontratistas y /proyectos, y en las tres sub-secciones legacy
+      /programacion-semanal/cnc, /cnp y /cic.
+    - CON LOS MODALES ABIERTOS, no solo en reposo: se abrieron los 57 modales
+      de las ocho rutas que tienen y los 15 de las tres sub-secciones
+      (modalEditarContratos, modalDefinirContratos, modalNuevaActividad,
+      modal_cnc_hot, formulario_nuevo, modalordenDeCambio, lps_drawer…) y se
+      recontó tras cada apertura y tras clicar todos sus disparadores. Sigue
+      dando cero. La sonda se autovalida inyectando un `.dropdown-item` y
+      comprobando que lo cuenta, y cuenta bien las clases vecinas que SI
+      existen (`.ps-dropdown-item`: 4).
+    - EL MENU DE CUENTA Y LOS DE SEMANA no usan estas clases: son
+      `.aia-sidebar__account-item` (2 elementos) y `.shell-week-flyout__item`
+      (17 en 4 flyouts, construidos en runtime por
+      views/partials/shell_sidebar.php:240-334). Clicar los 25 controles del
+      rail no produce ni un `.dropdown-menu`.
+    - LOS INYECTORES DE JS ESTAN HUERFANOS. Los seis de
+      public/js/cargarDatosGeneralesPagina2.js (:313, :353, :369, :392, :405 y
+      :418) desembocan en cuatro `innerHTML` guardados por
+      `if (document.getElementById(...))` sobre `#semanasProyectoMenu`,
+      `#programa_generalMenu`, `#programacion_intermediaMenu` y
+      `#programacion_semanalMenu` (:433-441); esos cuatro ids no los crea
+      ningun markup del repositorio —solo aparecen dentro de ese mismo
+      archivo—, porque los aportaba la navbar que F0 retiro. Los tres de
+      public/js/components/notifications.js (:78, :107 y :139) cuelgan de
+      `initNotifications`, que retorna en :19 (`if (!badgeDesk && !badgeMob)
+      return`) porque `#notificationBadge` y `#notificationBadgeMobile`
+      tampoco existen en ningun archivo del repositorio.
+    - NINGUN DISPARADOR BOOTSTRAP. Cero `data-toggle="dropdown"` /
+      `data-bs-toggle="dropdown"` en views/, src/ y public/js/: el plugin de
+      Bootstrap no monta menus por si solo, solo alterna `.show` sobre los que
+      ya existen.
+    - TERCEROS. Select2 emite `.select2-dropdown` y Tom Select `.ts-dropdown`,
+      no estas clases. DataTables Buttons SI las emitiria —medido en el
+      navegador: en /programacion-semanal/cnc, /cnp y /cic el plugin esta
+      cargado y su `Buttons.defaults.dom.collection.className` vale
+      literalmente `dropdown-menu`—, pero solo al abrir un boton de tipo
+      `collection`, y ninguna DataTable del proyecto instancia botones: no hay
+      `B` en ningun `dom`, ni opcion `buttons: [...]`, ni llamada `.buttons()`;
+      el unico `"buttons"` de esas vistas es el bloque de traducciones de
+      `idioma_espanol`. Medido `.dt-buttons/.dt-button` = 0 en las tres. Si
+      alguna vez se anade un boton `collection`, hereda el estilo del DS
+      (`:where(.dropdown-menu, .popover, .toast, .tooltip-inner)` de
+      entrypoints/theme-overrides.css:43), que sigue vivo y no se toca aqui.
+
+   Las apariciones que quedan en el repositorio no son consumidores: las de
+   views/profesionales/profesionales.view.php:278 y :284 son reglas CSS dentro
+   de un `<style>`, bajo `.navbar-nav` y en un `@media` de movil; y admin/ no
+   carga esta hoja ni el design system. */
+
+@layer legacy-overrides {
+  /* F1 5j: ayudantes del modal de /pdc (styles.css:4360-4430). Van en
+     `legacy-overrides` y NO en su subcapa de origen `module.components`: alli
+     este archivo entra antes que styles.css (core.css:16 vs :20) y el empate de
+     especificidad de `.pdc-row-center`/`.pdc-inline-msg` con `.row` y
+     `.aia-modal__message` se volteaba. La tinta de `.pdc-modal-field` corrige un
+     contraste real (1,93:1 -> 14,99:1). */
+  .pdc-modal-value {
+    text-align: center;
+  }
+
+  .pdc-row-center {
+    text-align: center;
+    margin: 0 auto 0.625rem;
+  }
+
+  .pdc-inline-msg {
+    margin-inline-start: 0.3125rem;
+  }
+
+  .pdc-modal-field {
+    text-align: left;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--ds-active-text-primary);
+  }
+
+  /* F1 5j: iconos de estado de /pdc (styles.css:4432-4497) llevados a la
+     escalera oscura `--pdc-*`; el emparejado sale de los estados que emite
+     public/js/modules/pdc/hot.js, no del ojo. `.pdc-icon-warn` y
+     `.pdc-ready-icon--ok` no tienen estado propio en la escalera y conservan
+     familia de matiz: reasignarles el matiz es diseno, no tema. */
+  .pdc-icon-state {
+    margin-inline-end: 0.3125rem;
+    display: inline-block;
+  }
+
+  .pdc-icon-ok {
+    color: var(--pdc-completed-ontime-text);
+  }
+
+  .pdc-icon-warn {
+    color: var(--pdc-completed-late-text);
+  }
+
+  .pdc-icon-danger {
+    color: var(--pdc-critical-text);
+  }
+
+  .pdc-icon-amber {
+    color: var(--pdc-completed-late-text);
+  }
+
+  .pdc-icon-info {
+    color: var(--pdc-active-text);
+  }
+
+  .pdc-ready-icon--ok {
+    color: var(--pdc-delayed-text);
+  }
+
+  .pdc-ready-icon--config {
+    color: var(--pdc-completed-late-text);
+  }
+
+  .pdc-ready-icon--risk {
+    color: var(--pdc-critical-text);
+  }
+
+  /* F1 5j: los dos indicadores de desviacion llegan ya tokenizados del 5b y se
+     mueven verbatim salvo el radio, que pasa al token de pildora. El naranja de
+     `--ahead` colisiona con «atrasada» en /pdc: la colision es PREVIA y se
+     conserva a proposito. Guard: tests/browser/pdc-chips-dark.mjs. */
+  .pdc-delta {
+    font-size: 0.72rem;
+    font-weight: 500;
+    font-family: "Inter", sans-serif;
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 8px;
+    border-radius: var(--ds-radius-pill);
+    line-height: 1.5;
+    white-space: nowrap;
+  }
+
+  .pdc-delta--ahead {
+    background-color: var(--ds-state-tint-orange);
+    color: var(--pdc-delayed-text);
+  }
+
+  .pdc-delta--delay {
+    background-color: var(--ds-state-tint-red);
+    color: var(--pdc-critical-text);
+  }
+
+  /* F1 5j: conmutador «Solo alertas» (styles.css:4499-4528). Sigue CLARO a
+     proposito: los otros ocho `.btn-pdc-modern` de la barra los pinta
+     buttons.css (alias deprecado, dueno `pdc`, fuera de F1) y oscurecer solo
+     este es diseno, no tema. La tinta se queda como literal: el token que le
+     corresponde rasteriza 19 puntos por canal mas oscuro. El fondo SI toma
+     token —un punto por canal, dE 0,35—. Podado `.pdc-btn-alertas.active`:
+     el JS escribe `is-active` (hot.js:294). */
+  .pdc-btn-alertas {
+    background-color: var(--aia-bg-secondary);
+    color: #1c1c1e;
+    border: 1px solid var(--aia-separators);
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+
+  .pdc-btn-alertas:hover {
+    background-color: var(--aia-separators);
+  }
+
+  .pdc-btn-alertas .badge {
+    font-size: 0.65rem;
+    margin-left: 4px;
+    background-color: rgba(0, 0, 0, 0.15);
+    color: inherit;
+  }
+}
+
+/* LOAD-BEARING, y tiene que ir ANTES del primer `@layer module.components` de
+   este archivo: el orden de subcapas lo fija el PRIMER encuentro del nombre, y
+   este archivo entra antes que styles.css (core.css:16 vs :20), que es quien
+   fija hoy `theme, layout, components`. Sin esta linea, o con ella mas abajo,
+   el orden real se invierte a `components, theme, layout`. */
+@layer module.theme, module.layout, module.components;
+
+@layer module.components {
+  /* F1 5j: `.ps-cell-readonly` (styles.css:4534-4537) conserva subcapa de
+     origen: es !important, y en `legacy-overrides` —la ultima capa— un
+     !important queda el mas debil de toda la cascada. */
+  .ps-cell-readonly {
+    cursor: not-allowed !important;
+  }
+
+  /* F1 5j: geometria de las leyendas (styles.css:4539-4707). Conserva subcapa
+     de origen: todo el bloque es !important y `legacy-overrides` lo dejaria el
+     mas debil. Solo sobreviven 9 de las 44 declaraciones originales; el resto
+     lo gana buttons.css, que entra en `@layer components` — al invertirse el
+     orden de capas para !important, esa capa va antes que `module`.
+     `justify-content` SI es portante: sin el gana el `@media` de 992px que
+     sigue en styles.css y los chips se van al borde derecho. Portante solo para
+     PI y PS: en PG los chips son `.aia-chip.pg-filter-chip` y no los alcanza. */
+  body.pi-page #piLegend.pdc-legend-autoscaling,
+  body.pg-page #pgLegend.pdc-legend-autoscaling,
+  body.ps-page #psAlertsLegend.pdc-legend-autoscaling,
+  #piLegend.pdc-legend-autoscaling,
+  #pgLegend.pdc-legend-autoscaling,
+  #psAlertsLegend.pdc-legend-autoscaling {
+    justify-content: flex-start !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 0 10px 0 !important;
+  }
+
+  body.pi-page #piLegend.pdc-legend-autoscaling .pdc-legend-item,
+  body.pg-page #pgLegend.pdc-legend-autoscaling .pdc-legend-item,
+  body.ps-page #psAlertsLegend.pdc-legend-autoscaling .pdc-legend-item,
+  #piLegend.pdc-legend-autoscaling .pdc-legend-item,
+  #pgLegend.pdc-legend-autoscaling .pdc-legend-item,
+  #psAlertsLegend.pdc-legend-autoscaling .pdc-legend-item {
+    width: 155px !important;
+    max-width: 155px !important;
+    flex: 0 0 155px !important;
+    font-weight: 500 !important;
+    min-inline-size: 0 !important;
+    margin: 4px !important;
+  }
+
+  html body #pdc-hot-shell .pdc-legend {
+    justify-content: flex-start !important;
+  }
+}
+
+@layer legacy-overrides {
+  /* F1 5j: badge de fecha de corte de /pdc (styles.css:4606-4631), retintado a
+     la superficie elevada neutra por ser informativo, sin matiz de estado.
+     SUJETO AUSENTE: lo crea el modulo en JS (hot.js:324-336) y solo si hay
+     semana en contexto, asi que NO existe en reposo y el barrido de computados
+     del tramo no lo alcanzo — no hay A/B de este bloque. Lo cubre el guard
+     tests/browser/pdc-chips-dark.mjs, que si lo inyecta. */
+  .context-right-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  #ctxPdcCalcDate {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+    background-color: var(--ds-active-surface-raised);
+    color: var(--ds-active-text-primary);
+    border: 1px solid var(--ds-active-border);
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+
+  #ctxPdcCalcDate .pdc-calc-date {
+    margin-left: 4px;
+    font-weight: 700;
+  }
+}
+
+@layer module.components {
+  /* F1 5j: el `display` de `.pdc-inline-msg` conserva subcapa de origen: desde
+     `legacy-overrides` ganaria a los cinco sujetos de /pdc y ensancharia los
+     cuatro que hoy computan `block` por un selector mas especifico. */
+  .pdc-inline-msg {
+    display: inline-block;
   }
 }

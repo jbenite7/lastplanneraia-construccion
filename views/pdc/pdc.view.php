@@ -114,7 +114,7 @@
 												<label for="valorPresupuesto" class="control-label pdc-modal-label">
 													<span class="h6 font-weight-bold">Valor en presupuesto de la familia:</span>
 												</label>
-												<div id='divValorPresupuesto' name='divValorPresupuesto' class='pdc-modal-value pdc-modal-value--narrow'><input id='valorPresupuesto' name='valorPresupuesto' class='form-control bg-white text-center' type='text' value='' placeholder='Valor en Pesos Colombianos' autocomplete="off" data-type="currency">
+												<div id='divValorPresupuesto' name='divValorPresupuesto' class='pdc-modal-value pdc-modal-value--narrow'><input id='valorPresupuesto' name='valorPresupuesto' class='form-control text-center' type='text' value='' placeholder='Valor en Pesos Colombianos' autocomplete="off" data-type="currency">
 												</div>
 											</div>
 										</div>

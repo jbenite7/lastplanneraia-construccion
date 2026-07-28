@@ -42,35 +42,81 @@
     color: var(--ds-active-text-primary);
 }
 
+/* Los fondos de estado consumen la paleta compartida
+   (public/css/tokens.css, `--ds-state-tint-*`); antes reescribian aqui la misma
+   formula y los mismos porcentajes que /programa-general, hasta el punto de que
+   siete de los ocho tintes eran el mismo hex en las dos hojas.
+
+   REASIGNACION DE MATICES (2026-07-28). La paleta publica UN tinte por matiz:
+   sobre este canvas no hay eje de intensidad que separe dos escalones (ver el
+   comentario de tokens.css con la medicion). Este modulo tenia tres estados en
+   rojo y tres en ambar, asi que sus ocho entradas de leyenda pintaban solo
+   cuatro fondos y `Alistamiento Urgente` y `Alistamiento en Riesgo` -dos
+   filtros distintos- eran bit-identicos.
+
+   Ahora los ocho estados llevan los ocho matices del catalogo
+   (docs/design-system/state-semantics.json), y el matiz significa aqui lo mismo
+   que en /pdc y /programa-general:
+
+     critical (RC inicio vencido)      rojo     bloqueado Y vencido: el arquetipo
+     overdue (Inicio vencido)          naranja  vencido sin bloqueo: fuera de plazo
+     due (Inicio por Habilitar)        violeta  inicia esta semana y le faltan
+                                                las condiciones para comprometer
+     alert1 (Alistamiento Urgente)     ambar    por resolver, y es esta semana
+     alert23 (Alistamiento en Riesgo)  teal     todavia es horizonte: contexto
+     alert46 (Alistamiento Pendiente)  neutral  4-6 semanas: no exige nada aun
+     exec-blocked (En Ejecucion Pdte.) azul     ya esta en marcha; la urgencia
+                                                la lleva el nivel, no el matiz
+     control (Listo p/ Comprometer)    verde    liberado: controlado
+
+   El unico forzado es `due` en violeta: el catalogo lo llama «sin datos
+   suficientes» y aqui lo que falta no es informacion sino condiciones. Se elige
+   porque es el hueco menos malo de los ocho y porque /pdc ya usa violeta para
+   «Informacion pendiente», que es el mismo gesto de «no puedo comprometer con
+   lo que tengo».
+
+   `Control` -la fila fuera de la ventana de 6 semanas- no es un estado de
+   leyenda y comparte el matiz del silencio con `alert46`: son buckets contiguos
+   del mismo eje (4-6 semanas y mas de 6) y ninguno pide accion.
+
+   Los bordes NO entran en la paleta: usan otra receta -mezclan
+   `--ds-color-state-*-bg` contra `--ds-active-border`, no el tono contra la
+   superficie- porque una hairline sobre una fila ya tintada busca lo contrario
+   que el fondo. Se quedan aqui hasta que tengan su propia primitiva, y siguen
+   codificando el NIVEL, que es el otro eje. */
 html.aia-theme-dark .pi-page {
-    --pi-critical-bg: color-mix(in srgb, var(--ds-color-state-critical-text) 48%, var(--ds-active-surface-raised) 52%);
+    --pi-critical-bg: var(--ds-state-tint-red);
     --pi-critical-text: var(--ds-active-text-primary);
     --pi-critical-border: color-mix(in srgb, var(--ds-color-state-critical-bg) 54%, var(--ds-active-border) 46%);
-    --pi-overdue-bg: color-mix(in srgb, var(--ds-color-state-critical-text) 38%, var(--ds-active-surface-raised) 62%);
+    --pi-overdue-bg: var(--ds-state-tint-orange);
     --pi-overdue-text: var(--ds-active-text-primary);
     --pi-overdue-border: color-mix(in srgb, var(--ds-color-state-critical-bg) 46%, var(--ds-active-border) 54%);
-    --pi-due-bg: color-mix(in srgb, var(--ds-color-state-warning-text) 42%, var(--ds-active-surface-raised) 58%);
+    --pi-due-bg: var(--ds-state-tint-violet);
     --pi-due-text: var(--ds-active-text-primary);
     --pi-due-border: color-mix(in srgb, var(--ds-color-state-warning-bg) 54%, var(--ds-active-border) 46%);
-    --pi-alert1-bg: color-mix(in srgb, var(--ds-color-state-warning-text) 36%, var(--ds-active-surface-raised) 64%);
+    --pi-alert1-bg: var(--ds-state-tint-amber);
     --pi-alert1-text: var(--ds-active-text-primary);
     --pi-alert1-border: color-mix(in srgb, var(--ds-color-state-warning-bg) 50%, var(--ds-active-border) 50%);
-    --pi-alert23-bg: color-mix(in srgb, var(--ds-color-state-warning-text) 30%, var(--ds-active-surface-raised) 70%);
+    --pi-alert23-bg: var(--ds-state-tint-teal);
     --pi-alert23-text: var(--ds-active-text-primary);
     --pi-alert23-border: color-mix(in srgb, var(--ds-color-state-warning-bg) 46%, var(--ds-active-border) 54%);
-    --pi-alert46-bg: color-mix(in srgb, var(--ds-color-state-success-text) 30%, var(--ds-active-surface-raised) 70%);
+    --pi-alert46-bg: var(--ds-state-tint-neutral);
     --pi-alert46-text: var(--ds-active-text-primary);
     --pi-alert46-border: color-mix(in srgb, var(--ds-color-state-success-bg) 46%, var(--ds-active-border) 54%);
-    --pi-exec-blocked-bg: color-mix(in srgb, var(--ds-color-state-critical-text) 26%, var(--ds-active-surface-raised) 74%);
+    --pi-exec-blocked-bg: var(--ds-state-tint-blue);
     --pi-exec-blocked-text: var(--ds-active-text-primary);
     --pi-exec-blocked-border: color-mix(in srgb, var(--ds-color-state-critical-bg) 40%, var(--ds-active-border) 60%);
-    --pi-control-bg: color-mix(in srgb, var(--ds-color-state-info-text) 42%, var(--ds-active-surface-raised) 58%);
+    --pi-control-bg: var(--ds-state-tint-green);
     --pi-control-text: var(--ds-active-text-primary);
     --pi-control-border: color-mix(in srgb, var(--ds-color-state-info-bg) 54%, var(--ds-active-border) 46%);
-    --pi-ok-soft-bg: color-mix(in srgb, var(--ds-color-state-success-text) 26%, var(--ds-active-surface-raised) 74%);
+    /* `ok-soft` y `danger-soft` no son estados de leyenda sino superficies
+       auxiliares del modal de restricciones compartidas. Reusan el matiz de su
+       familia -verde y rojo- porque hablan de lo mismo; lo que ya no pueden
+       hacer es tomar un escalon apagado, porque no existe. */
+    --pi-ok-soft-bg: var(--ds-state-tint-green);
     --pi-ok-text: var(--ds-active-text-primary);
     --pi-ok-border: color-mix(in srgb, var(--ds-color-state-success-bg) 40%, var(--ds-active-border) 60%);
-    --pi-danger-soft-bg: color-mix(in srgb, var(--ds-color-state-critical-text) 30%, var(--ds-active-surface-raised) 70%);
+    --pi-danger-soft-bg: var(--ds-state-tint-red);
     --pi-danger-text: var(--ds-active-text-primary);
     --pi-danger-border: color-mix(in srgb, var(--ds-color-state-critical-bg) 44%, var(--ds-active-border) 56%);
 }
@@ -208,7 +254,10 @@ html.aia-theme-dark .pi-page {
     padding: 4px 8px;
     border: 1px solid var(--ds-active-border);
     border-radius: 8px;
-    background: color-mix(in srgb, var(--ds-active-surface-raised) 92%, transparent);
+    /* Sin `background` a proposito: el fondo del chip lo pinta la capa de
+       componentes desde `data-aia-hue`. Mientras el modulo lo declarara aqui
+       ganaba siempre -`module` va despues de `components` en el orden de capas-
+       y la primitiva del design system era inerte sobre esta superficie. */
     color: inherit;
     font-weight: 900;
     font-size: 0.78rem;
@@ -220,73 +269,14 @@ html.aia-theme-dark .pi-page {
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.48);
 }
 
+/* Las diez reglas de color por nombre de estado que vivian aqui las sustituye
+   la primitiva de `design-system/components/states-feedback.css`: el chip
+   declara su matiz y su nivel y el design system lo pinta. El mapa de estado a
+   matiz sale del contrato (`statePresentation` en el hot.js del modulo).
+   Solo sobrevive el peso tipografico, que no es color: el estado critico va mas
+   marcado para que se lea antes en una grilla densa. */
 .pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-blocked-overdue-critical .ops-state-chip {
-    background: var(--pi-critical-bg);
-    background: color-mix(in srgb, var(--pi-critical-bg) 78%, var(--ds-active-surface-raised) 22%);
-    border-color: var(--pi-critical-border);
-    color: var(--pi-critical-text);
     font-weight: 900;
-    box-shadow: inset 0 0 0 1px rgba(220, 38, 38, 0.24), 0 1px 3px rgba(153, 27, 27, 0.14);
-}
-
-.pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-blocked-overdue .ops-state-chip,
-.pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-blocked-due .ops-state-chip,
-.pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-alert-1-week .ops-state-chip,
-.pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-alert-2-3-weeks .ops-state-chip,
-.pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-alert-4-6-weeks .ops-state-chip,
-.pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-execution-blocked .ops-state-chip,
-.pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-liberated-control .ops-state-chip {
-    font-weight: 800;
-    box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.06);
-}
-
-.pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-blocked-overdue .ops-state-chip {
-    background: var(--pi-overdue-bg);
-    background: color-mix(in srgb, var(--pi-overdue-bg) 70%, var(--ds-active-surface-raised) 30%);
-    border-color: var(--pi-overdue-border);
-    color: var(--pi-overdue-text);
-}
-
-.pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-blocked-due .ops-state-chip {
-    background: var(--pi-due-bg);
-    background: color-mix(in srgb, var(--pi-due-bg) 68%, var(--ds-active-surface-raised) 32%);
-    border-color: var(--pi-due-border);
-    color: var(--pi-due-text);
-}
-
-.pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-alert-1-week .ops-state-chip {
-    background: var(--pi-alert1-bg);
-    background: color-mix(in srgb, var(--pi-alert1-bg) 66%, var(--ds-active-surface-raised) 34%);
-    border-color: var(--pi-alert1-border);
-    color: var(--pi-alert1-text);
-}
-
-.pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-alert-2-3-weeks .ops-state-chip {
-    background: var(--pi-alert23-bg);
-    background: color-mix(in srgb, var(--pi-alert23-bg) 66%, var(--ds-active-surface-raised) 34%);
-    border-color: var(--pi-alert23-border);
-    color: var(--pi-alert23-text);
-}
-
-.pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-alert-4-6-weeks .ops-state-chip {
-    background: var(--pi-alert46-bg);
-    background: color-mix(in srgb, var(--pi-alert46-bg) 66%, var(--ds-active-surface-raised) 34%);
-    border-color: var(--pi-alert46-border);
-    color: var(--pi-alert46-text);
-}
-
-.pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-execution-blocked .ops-state-chip {
-    background: var(--pi-exec-blocked-bg);
-    background: color-mix(in srgb, var(--pi-exec-blocked-bg) 66%, var(--ds-active-surface-raised) 34%);
-    border-color: var(--pi-exec-blocked-border);
-    color: var(--pi-exec-blocked-text);
-}
-
-.pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-liberated-control .ops-state-chip {
-    background: var(--pi-control-bg);
-    background: color-mix(in srgb, var(--pi-control-bg) 66%, var(--ds-active-surface-raised) 34%);
-    border-color: var(--pi-control-border);
-    color: var(--pi-control-text);
 }
 
 .pi-page .handsontable td.pi-soft-restriction-cell:not(.pi-row-state) {
@@ -1575,9 +1565,15 @@ border: 1px solid var(--pi-due-border);
     border-color: color-mix(in srgb, var(--ds-color-state-info-text) 30%, var(--ds-active-border));
 }
 
+/* El badge de ventana no es un estado: es una etiqueta de contexto que vive en
+   la misma fila que los ocho chips de la leyenda. Tomaba un escalon apagado del
+   teal, y ese matiz ya identifica a «Alistamiento en Riesgo»: con un solo tinte
+   por matiz seria el mismo color que un estado. Pasa a la superficie elevada,
+   que es lo que era antes de que existiera la paleta de matices. */
 html.aia-theme-dark .pi-page .pi-legend-window-label--info {
-    background: color-mix(in srgb, var(--ds-color-state-info-text) 30%, var(--ds-active-surface-raised));
+    background: var(--ds-active-surface-raised);
     color: var(--ds-active-text-primary);
+    border-color: var(--ds-active-border);
 }
 
 /* Modales PI sobre superficie activa (familia programación: misma receta que

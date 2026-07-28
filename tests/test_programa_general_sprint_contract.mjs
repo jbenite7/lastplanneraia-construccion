@@ -20,7 +20,15 @@ const bridgeCss = fs.readFileSync(path.join(root, 'public/css/design-system/adap
 
 const filterMarkup = view.match(/class="aia-chip pg-filter-chip[^"]*"[^>]*data-filter="[^"]+"[^>]*>/g) || [];
 
-assert.match(view, /<body class="aia-shell pg-page">/, 'PG debe usar el shell canónico');
+// El shell canonico admite modificadores: PG lleva `aia-shell--sidebar` desde
+// da792e8 («Programa General usa el shell sidebar»). Se asierta la presencia de
+// las dos clases en vez de la cadena exacta, que caducaba con cada variante
+// legitima del shell y dejaba la CI en rojo sin que hubiera defecto alguno.
+assert.match(
+  view,
+  /<body class="(?=[^"]*\baia-shell\b)(?=[^"]*\bpg-page\b)[^"]*">/,
+  'PG debe usar el shell canónico y conservar el gancho pg-page',
+);
 assert.match(view, /<main[^>]*class="aia-page/, 'PG debe usar el canvas canónico');
 assert.match(view, /class="[^"]*aia-action-group/, 'PG debe usar el grupo de acciones aprobado');
 assert.match(view, /class="[^"]*aia-filter-form/, 'PG debe usar el filtro siempre visible aprobado');

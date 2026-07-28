@@ -57,13 +57,20 @@ body .navbar-aia .navbar-brand.aia-brand .aia-brand-mark {
   font-weight: 700;
 }
 
+/* El resalte de fila/seccion del preview se pinta con el par completo: mientras
+   el fondo fue un pastel claro el texto heredado bastaba, pero el par de estado
+   se consume en crudo -sin indireccion de tema- y al invertirse a fondo oscuro
+   ese texto heredado queda oscuro sobre oscuro. Guard:
+   tests/design-system/state-token-pairing.test.mjs. */
 .la-preview-section-created {
   background-color: var(--ds-color-state-success-bg);
+  color: var(--ds-color-state-success-text);
 }
 
 .la-preview-row-created,
 .la-preview-section-existing {
   background-color: var(--ds-color-state-info-bg);
+  color: var(--ds-color-state-info-text);
 }
 
 .la-preview-row-existing {
@@ -72,6 +79,7 @@ body .navbar-aia .navbar-brand.aia-brand .aia-brand-mark {
 
 .la-preview-section-warning {
   background-color: var(--ds-color-state-warning-bg);
+  color: var(--ds-color-state-warning-text);
 }
 
 .filaBotones .toolbarFilaBotones:has(.la-toolbar-switcher) {
@@ -185,22 +193,42 @@ body .navbar-aia .navbar-brand.aia-brand .aia-brand-mark {
   border-radius: var(--ds-radius-md) !important;
 }
 
+/* Esta regla nacio para el tema claro y hoy solo sobrevive su geometria. El
+   color -borde, fondo, texto y sombra- lo pintaba `--aia-green-*`, y lo gana
+   `html.aia-theme-dark .filaBotones .la-toolbar-switcher .aia-info-nav__trigger`
+   (linea ~753): anade `html.aia-theme-dark`, asi que tiene mas especificidad, y
+   tambien lleva `!important`.
+
+   Lo que queda NO es decorativo y por eso la regla no se poda entera: el
+   override de dark no declara `min-height`, `padding` ni `outline-offset`, y del
+   borde solo declara el color. Los 44px son el area tactil accesible.
+
+   Junto a esta habia un bloque `:hover, :focus` que tintaba el fondo con
+   `success-bg`. Se retiro entero: sus cuatro declaraciones de color estaban
+   muertas por lo mismo, pero ademas llevaba `outline: 0 !important`, que el
+   override NO declara y por tanto SI aplicaba, mientras su sustituto
+   -`box-shadow: var(--ds-shadow-focus)`- si lo pisaba el override. O sea que
+   suprimia el anillo de foco sin poner nada en su lugar.
+
+   AVISO, medido: retirarlo NO devuelve la marca de foco. El computado pasa a
+   `outline-width: 3px` con `outline-style: none`, y esos 3px son solo `medium`
+   -el ancho inicial que el atajo `outline: none` deja al resetear-, asi que no
+   pintan nada.
+
+   Quien lo suprime ahora esta medido y es `styles.css:2739`:
+   `.filaBotones .aia-info-nav__trigger:hover, ...:focus { outline: none; }`,
+   una copia hermana de este mismo bloque muerto en la hoja compartida, que le
+   gana por especificidad al `button:focus` de Bootstrap. El conmutador NO es
+   `.btn`, asi que `buttons.css` no interviene. Como vive en `styles.css`, el
+   mismo defecto de WCAG 2.4.7 alcanza a /contratos y /pdc, y arreglarlo aqui
+   seria parchear en un modulo algo que es de la hoja compartida.
+   Guard: tests/browser/listado-actividades-switcher-focus.mjs. */
 .filaBotones .la-toolbar-switcher .aia-info-nav__trigger {
-  border: thin solid var(--aia-green-light) !important;
-  background: var(--aia-green-very-light) !important;
-  color: var(--aia-green-dark) !important;
-  box-shadow: var(--shadow-sm) !important;
+  border-width: thin !important;
+  border-style: solid !important;
   min-height: var(--ds-target-min) !important;
   padding: var(--spacing-xs) var(--spacing-sm) !important;
   outline-offset: calc(var(--spacing-xs) / 2) !important;
-}
-
-.filaBotones .la-toolbar-switcher .aia-info-nav__trigger:hover,
-.filaBotones .la-toolbar-switcher .aia-info-nav__trigger:focus {
-  border-color: var(--aia-green-primary) !important;
-  background: var(--ds-color-state-success-bg) !important;
-  box-shadow: var(--ds-shadow-focus) !important;
-  outline: 0 !important;
 }
 
 .filaBotones .la-toolbar-switcher .aia-info-nav__eyebrow {
@@ -761,9 +789,19 @@ html.aia-theme-dark .filaBotones .aia-info-nav__item:focus {
   color: var(--ds-active-text-primary) !important;
 }
 
+/* F1 Task 5g. Esta hoja entra por <link> SIN capa (listadoActividades.view.php:14),
+   asi que su !important gana a todo lo que llega en @layer: en /listado-actividades
+   el indicador de la opcion activa lo decide esta regla, no styles.css. El verde de
+   marca daba 1,31:1 contra el fondo del menu, por debajo del 3:1 que WCAG 1.4.11
+   exige a un indicador de estado. Se pasa al par que el design system declara para
+   accion primaria sobre oscuro —mismo verde corporativo en su variante on-dark, con
+   su tinta pareja—, que mide 4,54:1 de relleno contra el menu y 4,87:1 de tinta
+   sobre el relleno. Se conservan los dos !important tal cual: son los que hacen
+   que la regla gane, no se anade especificidad. Cambio espejo en
+   public/css/styles.css (module.components), que es quien gana en /contratos y /pdc. */
 html.aia-theme-dark .filaBotones .aia-info-nav__item.is-active {
-  background: var(--ds-color-brand-primary) !important;
-  color: var(--ds-color-text-inverse) !important;
+  background: var(--ds-active-action-primary) !important;
+  color: var(--ds-active-action-text) !important;
 }
 
 html.aia-theme-dark .la-mobile-card {

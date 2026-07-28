@@ -8,6 +8,7 @@
     "purpose",
     "dimensions",
     "levels",
+    "hues",
     "translationRules",
     "moduleMappings"
   ],
@@ -74,6 +75,33 @@
         }
       }
     },
+    "hues": {
+      "type": "array",
+      "minItems": 4,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "label",
+          "tint"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "tint": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "translationRules": {
       "type": "array",
       "items": {
@@ -108,7 +136,13 @@
                 "label": {
                   "type": "string"
                 },
+                "key": {
+                  "type": "string"
+                },
                 "level": {
+                  "type": "string"
+                },
+                "hue": {
                   "type": "string"
                 }
               }

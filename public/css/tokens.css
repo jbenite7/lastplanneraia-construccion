@@ -188,6 +188,135 @@
     --ds-color-state-info-bg: #e3f9f7;
     --ds-color-state-info-text: #006d66;
 
+    /* ========================================
+     PALETA DE MATICES DE ESTADO (un matiz, un estado)
+     ========================================
+     Dos canales ortogonales, no uno:
+
+       - NIVEL (4, en docs/design-system/state-semantics.json): prioridad de
+         accion. Se pinta en el acento -borde o punto- y siempre es uno de
+         info/success/warning/critical.
+       - MATIZ (los de aqui): identidad del estado. Se pinta en el fondo.
+
+     Hacen falta los dos porque un solo canal no puede decir las dos cosas:
+     `missing` (violeta) y `completed-late` (ambar) son ambos `attention`, y
+     `critical` (rojo) y `delayed` (naranja) son ambos `urgent`. Con el matiz
+     separado del nivel, los tres `attention` de /pdc siguen distinguiendose
+     entre si y la regla del contrato -«urgencia now siempre usa critical»- se
+     cumple igual, porque vive en el acento.
+
+     ANCLAS. Son los siete tonos que /pdc eligio y midio a mano mas `#134841`
+     para teal. Antes esto se derivaba mezclando el tono semantico
+     (`--ds-color-state-*-text`) contra `--ds-active-surface-raised`, y esa
+     superficie lleva alfa: la mezcla se comia el color contra el gris del
+     canvas y devolvia tintes pardos -el rojo salia #562522, agrisado, frente al
+     #431414 limpio de /pdc-.
+
+     OCHO ANCLAS Y NADA MAS: la paleta es NOMINAL. Hubo una version con tres
+     pasos por familia, derivados del ancla bajando croma con la luminosidad
+     fija. Medida en el navegador, la separacion maxima entre dos pasos
+     consecutivos era 1,012:1 de contraste y dE-OK 0,0168 -por debajo del umbral
+     de percepcion-: no eran tres colores sino uno, y como varios modulos tenian
+     mas estados que pasos, dos entradas de leyenda que el usuario filtra por
+     separado acababan pintando fondos bit-identicos.
+
+     Sobre este canvas no hay eje de intensidad que gastar. El contraste WCAG es
+     ciego al croma, asi que bajar croma no separa; y bajar luminosidad tampoco
+     tiene recorrido, porque el ancla mas oscura (#431414) esta en L=0,268 OKLCH
+     y el fondo de pagina (#111a15) en L=0,207 -0,061 de margen para repartir-.
+     Queda un solo eje util: el matiz.
+
+     CONSECUENCIA CONTRACTUAL: ningun modulo puede tener dos estados que
+     compartan matiz. /pdc ya cumplia; /programacion-intermedia (8 estados) y
+     /programa-general (7) se reasignaron para cumplirlo, y la justificacion de
+     cada estado esta en el comentario de su hoja.
+
+     Lo que SI sigue permitido es que un modulo derive dos intensidades del
+     mismo matiz para dos superficies distintas del MISMO estado -el chip de la
+     leyenda y la fila de la grilla en /programacion-semanal-. Lo que el
+     contrato prohibe es que dos estados distintos compartan matiz.
+
+     Guards: tests/design-system/state-tint-ladder.test.mjs (texto del CSS y
+     contrato) y tests/browser/state-tint-ladder.mjs (valor resuelto, separacion
+     entre los 28 pares y unicidad por modulo). */
+    --ds-state-tint-violet: #33204a;
+    --ds-state-tint-red: #431414;
+    --ds-state-tint-orange: #452a0d;
+    --ds-state-tint-amber: #3a3a0f;
+    --ds-state-tint-green: #173d26;
+    --ds-state-tint-blue: #17334f;
+    --ds-state-tint-teal: #134841;
+
+    /* El unico acromatico (C=0,0066). No es un tinte apagado sino el matiz del
+       silencio, y su hex sale de `not-started` de /pdc igual que los otros
+       siete. */
+    --ds-state-tint-neutral: #2b2f2d;
+
+    /* ========================================
+     ESTADOS DE PROGRAMACION (paleta compartida)
+     ========================================
+     La consumen cuatro superficies: /pdc (chips + filas), /programa-general y
+     /programacion-intermedia (solo las cabeceras `pdc-header`) y
+     /programacion-semanal. Vivian en `:root` dentro de public/css/styles.css
+     (`@layer module.components`), que F1 esta desmantelando; su sitio es la
+     capa de tokens.
+
+     Son SIETE estados, no cuatro. `docs/design-system/state-semantics.json`
+     reconoce cuatro niveles (neutral/healthy/attention/urgent) y colapsar la
+     paleta contra ese contrato reasignaria estados (missing de violeta a
+     amarillo, active de azul a verde, delayed y critical fundidos): eso es
+     rediseno y tiene tarea propia fuera de F1. Aqui solo se lleva cada estado
+     a oscuro conservando su identidad de matiz.
+
+     Los SIETE bordes conservan el hex original. El tramo 5b habia oscurecido
+     `not-started` de #c7cdd4 a #7c8783 para que dejara de ser el borde mas
+     luminoso de la leyenda sobre canvas oscuro; el argumento es bueno, pero es
+     un juicio de DISENO y el usuario acoto este tramo a tokenizar. Revertido
+     por decision suya (2026-07-27). Si al arreglar el borde inerte (ver abajo)
+     la jerarquia visual chirria, se decide entonces y como diseno explicito.
+
+     AVISO para quien toque estos bordes: hoy NO PINTAN NINGUNO.
+     public/css/buttons.css:981 fija un `border` con !important sobre
+     .pdc-legend-item en @layer components, y para las declaraciones !important
+     el orden de capas se INVIERTE, asi que gana a module por mucha
+     especificidad que se le ponga. Si algun dia se retira ese override, estos
+     siete valores pasan a verse y los siete cumplen WCAG 1.4.11 (3,18-5,50:1
+     medido); antes de la tokenizacion fallaban cinco de siete. */
+    /* Los FONDOS ya no llevan valor propio: nombran la escalera de arriba. El
+       hex no se movio -violeta, naranja y azul entraron al design system desde
+       aqui-, pero /pdc deja de ser un sistema de color paralelo y pasa a
+       compartir vocabulario con los otros tres modulos.
+       Guard: tests/design-system/state-tint-ladder.test.mjs. */
+    --pdc-missing-bg: var(--ds-state-tint-violet);
+    --pdc-missing-border: #c084fc;
+    --pdc-missing-text: #e0cdfa;
+    --pdc-critical-bg: var(--ds-state-tint-red);
+    --pdc-critical-border: #dc2626;
+    --pdc-critical-text: #ffcdc8;
+    --pdc-delayed-bg: var(--ds-state-tint-orange);
+    --pdc-delayed-border: #e87722;
+    --pdc-delayed-text: #ffd7a8;
+    --pdc-completed-late-bg: var(--ds-state-tint-amber);
+    --pdc-completed-late-border: #d4a017;
+    --pdc-completed-late-text: #f2e79c;
+    --pdc-completed-ontime-bg: var(--ds-state-tint-green);
+    --pdc-completed-ontime-border: #69b578;
+    --pdc-completed-ontime-text: #b7e8c6;
+    --pdc-active-bg: var(--ds-state-tint-blue);
+    --pdc-active-border: #4a81bd;
+    --pdc-active-text: #bbdcfb;
+    --pdc-not-started-bg: var(--ds-state-tint-neutral);
+    --pdc-not-started-border: #c7cdd4;
+    --pdc-not-started-text: #d4dad6;
+
+    /* Cabecera naranja de las tablas (`.pdc-header` / `.row-header`). Ya era
+       oscura con texto casi blanco (7,09:1), asi que los valores se conservan
+       exactos: aqui solo dejan de estar escritos a mano en el modulo. */
+    --pdc-header-bg: #8b4011;
+    --pdc-header-text: #fafafa;
+    --pdc-header-accent: #e87722;
+    --pdc-header-border: rgba(232, 119, 34, 0.28);
+
     --ds-radius-none: 0;
     --ds-radius-xs: 0.25rem;
     --ds-radius-sm: 0.5rem;
