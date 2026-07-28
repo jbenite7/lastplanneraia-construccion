@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
-  estadoFila, etiquetaDesfase, generaProceso, mensajeCalculo, opcionFrente, paquetesAmarradosSinCalcular,
+  estadoFila, etiquetaDesfase, etiquetaElegible, generaProceso, idPorEtiqueta, mensajeCalculo, opcionFrente,
+  opcionesResponsable, paquetesAmarradosSinCalcular,
   paquetesSinFrente, planUiReducer, preseleccionDestinos, procedenciaDeAmarre, resumenPlan, trasGuardarEdicion,
   valorResponsableMostrado,
 } from './planFechas'
@@ -9,7 +10,9 @@ import type { Desfase, FilaPlan, FrenteDisponible, SugerenciaFrente } from './ty
 const fila = (over: Partial<FilaPlan> = {}): FilaPlan => ({
   paqueteId: 1, nombre: 'Suministro CONCRETO', tipoNegociacion: 'suministro', modalidad: 'orden_compra',
   frenteNombre: 'ESTRUCTURA', uniqueId: 9001, fechaAncla: '2026-08-18', fechaArranque: '2026-05-23',
-  diasTotales: 87, duracionProvisional: false, responsable: '', diasRetraso: 0, pasos: [],
+  diasTotales: 87, duracionProvisional: false,
+  responsableUserId: null, responsableNombre: '', responsableCargo: '', responsableHuerfano: false,
+  diasRetraso: 0, pasos: [],
   ...over,
 })
 
@@ -134,7 +137,9 @@ describe('paquetesAmarradosSinCalcular', () => {
   const filaPlan = (paqueteId: number): FilaPlan => ({
     paqueteId, nombre: 'x', tipoNegociacion: 'suministro', modalidad: 'contrato', frenteNombre: 'ESTRUCTURA',
     uniqueId: 9001, fechaAncla: '2026-08-18', fechaArranque: '2026-05-23', diasTotales: 87,
-    duracionProvisional: false, responsable: '', diasRetraso: 0, pasos: [],
+    duracionProvisional: false,
+    responsableUserId: null, responsableNombre: '', responsableCargo: '', responsableHuerfano: false,
+    diasRetraso: 0, pasos: [],
   })
 
   // Importante 2 del review final A4: amarrar sin recalcular dejaba el paquete invisible en las
@@ -282,17 +287,74 @@ describe('planUiReducer — tipo del mensaje', () => {
 })
 
 describe('valorResponsableMostrado', () => {
-  it('sin override, muestra el dato real de la fila', () => {
-    expect(valorResponsableMostrado(fila({ paqueteId: 1, responsable: 'Ana' }), {})).toBe('Ana')
+  const ELEGIBLES = [
+    { id: 7, nombre: 'Ana Gómez', cargo: 'Residente' },
+    { id: 9, nombre: 'Luis Paz', cargo: '' },
+  ]
+
+  it('etiqueta a una persona con su cargo, y sin guion cuando no tiene', () => {
+    expect(etiquetaElegible(ELEGIBLES[0])).toBe('Ana Gómez — Residente')
+    expect(etiquetaElegible(ELEGIBLES[1])).toBe('Luis Paz')
   })
 
-  it('con override pendiente (revertido tras un fallo de guardado), manda sobre el dato que AG Grid ya mutó', () => {
-    // AG Grid ya escribió 'Carlos' en data.responsable (edición optimista); el POST falló y el
-    // override quedó en 'Ana' — la celda debe mostrar 'Ana', no el 'Carlos' que nunca se guardó.
-    expect(valorResponsableMostrado(fila({ paqueteId: 1, responsable: 'Carlos' }), { 1: 'Ana' })).toBe('Ana')
+  it('muestra vacío cuando el paquete no tiene responsable', () => {
+    expect(valorResponsableMostrado(
+      fila({ paqueteId: 1, responsableUserId: null, responsableNombre: '', responsableCargo: '' }), {},
+    )).toBe('')
   })
 
-  it('el override de otro paquete no interfiere', () => {
-    expect(valorResponsableMostrado(fila({ paqueteId: 1, responsable: 'Ana' }), { 2: 'Luis' })).toBe('Ana')
+  it('muestra el nombre y el cargo que mandó el servidor', () => {
+    expect(valorResponsableMostrado(
+      fila({ paqueteId: 1, responsableUserId: 7, responsableNombre: 'Ana Gómez', responsableCargo: 'Residente' }), {},
+    )).toBe('Ana Gómez — Residente')
+  })
+
+  it('avisa cuando el responsable ya no está en el proyecto', () => {
+    expect(valorResponsableMostrado(
+      fila({
+        paqueteId: 1, responsableUserId: 7, responsableNombre: 'Ana Gómez',
+        responsableCargo: 'Residente', responsableHuerfano: true,
+      }), {},
+    )).toBe('Ana Gómez — Residente (ya no está en el proyecto)')
+  })
+
+  it('el override manda sobre el dato del servidor (guardado optimista)', () => {
+    expect(valorResponsableMostrado(
+      fila({ paqueteId: 1, responsableUserId: 7, responsableNombre: 'Ana Gómez', responsableCargo: 'Residente' }),
+      { 1: 'Luis Paz' },
+    )).toBe('Luis Paz')
+  })
+
+  it('un override de OTRA fila no afecta a esta', () => {
+    expect(valorResponsableMostrado(
+      fila({ paqueteId: 1, responsableUserId: 7, responsableNombre: 'Ana Gómez', responsableCargo: 'Residente' }),
+      { 2: 'Luis Paz' },
+    )).toBe('Ana Gómez — Residente')
+  })
+
+  it('las opciones arrancan con el vacío para poder dejar el paquete sin responsable', () => {
+    const fSin = fila({ paqueteId: 1, responsableUserId: null, responsableNombre: '', responsableCargo: '' })
+    expect(opcionesResponsable(ELEGIBLES, fSin)).toEqual(['', 'Ana Gómez — Residente', 'Luis Paz'])
+  })
+
+  it('las opciones incluyen al huérfano para que su celda no aparezca en blanco', () => {
+    const fHuerfano = fila({
+      paqueteId: 1, responsableUserId: 4, responsableNombre: 'Carla Ruiz',
+      responsableCargo: 'Compras', responsableHuerfano: true,
+    })
+    expect(opcionesResponsable(ELEGIBLES, fHuerfano)).toEqual([
+      '', 'Ana Gómez — Residente', 'Luis Paz', 'Carla Ruiz — Compras (ya no está en el proyecto)',
+    ])
+  })
+
+  it('traduce la etiqueta elegida al id que espera el servidor', () => {
+    expect(idPorEtiqueta(ELEGIBLES, 'Ana Gómez — Residente')).toBe(7)
+    expect(idPorEtiqueta(ELEGIBLES, 'Luis Paz')).toBe(9)
+  })
+
+  it('el vacío y cualquier etiqueta desconocida se traducen a «sin responsable»', () => {
+    expect(idPorEtiqueta(ELEGIBLES, '')).toBeNull()
+    // El huérfano entra aquí: se puede quitar, pero no se le puede volver a elegir.
+    expect(idPorEtiqueta(ELEGIBLES, 'Carla Ruiz — Compras (ya no está en el proyecto)')).toBeNull()
   })
 })

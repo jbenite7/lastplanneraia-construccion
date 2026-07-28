@@ -344,9 +344,18 @@ export type FilaPlan = {
   fechaArranque: string
   diasTotales: number
   duracionProvisional: boolean
-  responsable: string
+  responsableUserId: number | null
+  responsableNombre: string
+  responsableCargo: string
+  responsableHuerfano: boolean
   diasRetraso: number
   pasos: PasoPlan[]
+}
+
+export type ResponsableElegible = {
+  id: number
+  nombre: string
+  cargo: string
 }
 
 export type Desfase = {

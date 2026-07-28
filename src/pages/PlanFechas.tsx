@@ -1,14 +1,17 @@
 import { useCallback, useEffect, useMemo, useReducer, useState } from 'react'
 import { AgGridReact } from 'ag-grid-react'
-import { CellStyleModule, ClientSideRowModelModule, ModuleRegistry, RowStyleModule, TextEditorModule, ValidationModule, themeQuartz } from 'ag-grid-community'
+import { CellStyleModule, ClientSideRowModelModule, ModuleRegistry, RowStyleModule, SelectEditorModule, TextEditorModule, ValidationModule, themeQuartz } from 'ag-grid-community'
 import type { CellClickedEvent, ColDef } from 'ag-grid-community'
 import { PdcApiError, apiGet, apiPost } from '../lib/api'
 import {
   estadoFila,
   estadoInicialPlanUi,
   etiquetaDesfase,
+  etiquetaElegible,
+  idPorEtiqueta,
   mensajeCalculo,
   opcionFrente,
+  opcionesResponsable,
   paquetesAmarradosSinCalcular,
   paquetesSinFrente,
   planUiReducer,
@@ -18,15 +21,19 @@ import {
   trasGuardarEdicion,
   valorResponsableMostrado,
 } from '../lib/planFechas'
-import type { Desfase, FilaPlan, FrenteDisponible, PlanResultado, ResumenPaquetes, SugerenciaFrente } from '../lib/types'
+import type { Desfase, FilaPlan, FrenteDisponible, PlanResultado, ResponsableElegible, ResumenPaquetes, SugerenciaFrente } from '../lib/types'
 
 // Registro selectivo de módulos (no AllCommunityModule); ValidationModule solo en dev — patrón del repo.
-// TextEditorModule: la columna Responsable es `editable: true` (edición de texto simple); sin este
-// módulo AG Grid rechaza la edición en runtime (error #200) aunque la columna se vea igual.
+// TextEditorModule: la columna Responsable es `editable: true`; sin este módulo AG Grid rechaza la
+// edición en runtime (error #200) aunque la columna se vea igual.
+// SelectEditorModule: lo que hace existir a `agSelectCellEditor`. Sin él la celda sigue siendo
+// editable pero cae al editor de texto, así que el desplegable no llega a abrirse nunca —
+// exactamente el modo en que el e2e del responsable lo detectó.
 ModuleRegistry.registerModules([
   ClientSideRowModelModule,
   CellStyleModule,
   RowStyleModule,
+  SelectEditorModule,
   TextEditorModule,
   ...(import.meta.env.DEV ? [ValidationModule] : []),
 ])
@@ -61,6 +68,7 @@ export default function PlanFechas() {
   // in-place al confirmar la edición (antes de saber si el guardado tuvo éxito); este mapa es lo
   // único que puede devolver la celda a lo último confirmado — ver trasGuardarEdicion.
   const [responsableOverride, setResponsableOverride] = useState<Record<number, string>>({})
+  const [elegibles, setElegibles] = useState<ResponsableElegible[]>([])
 
   const cargar = useCallback(() => {
     apiGet<PlanResultado>('/plan-compras/api/plan')
@@ -85,6 +93,9 @@ export default function PlanFechas() {
     apiGet<{ desfases: Desfase[] }>('/plan-compras/api/plan/desfases')
       .then((d) => setDesfases(d.desfases))
       .catch(() => setDesfases([]))
+    apiGet<{ responsables: ResponsableElegible[] }>('/plan-compras/api/plan/responsables')
+      .then((d) => setElegibles(d.responsables))
+      .catch(() => setElegibles([]))
     apiGet<ResumenPaquetes>('/plan-compras/api/paquetes/resumen')
       .then((d) => setPorPaquete(d.porPaquete))
       .catch(() => setPorPaquete([]))
@@ -110,20 +121,27 @@ export default function PlanFechas() {
     setDestinos((prev) => preseleccionDestinos(prev, sinFrente, sugerencias, sugerenciasCargadas))
   }, [sinFrente, sugerencias, sugerenciasCargadas])
 
-  const onResponsable = async (paqueteId: number, responsable: string, anterior: string) => {
-    // AG Grid ya mutó data.responsable a `responsable` (valueSetter por defecto, corrió antes de
-    // este handler). Confiamos en esa edición optimista retirando cualquier override que quedara de
-    // un intento previo; si este intento también falla, más abajo se vuelve a fijar.
-    setResponsableOverride((prev) => trasGuardarEdicion(prev, paqueteId, { ok: true }))
+  const onResponsable = async (paqueteId: number, etiqueta: string, anterior: string) => {
+    // AG Grid ya mutó la fila al valor nuevo (valueSetter por defecto, corrió antes de este
+    // handler). El override se fija SIEMPRE, no solo al fallar: es lo único que sabe la etiqueta
+    // completa («Nombre — Cargo») que el usuario acaba de elegir, y sin él la celda volvería a
+    // pintarse desde unos datos del servidor que todavía son los viejos.
+    setResponsableOverride((prev) => ({ ...prev, [paqueteId]: etiqueta }))
     try {
-      await apiPost('/plan-compras/api/plan/responsable', { paqueteId, responsable })
+      await apiPost('/plan-compras/api/plan/responsable', {
+        paqueteId,
+        responsableUserId: idPorEtiqueta(elegibles, etiqueta),
+      })
     } catch (e) {
-      const mensaje = e instanceof PdcApiError && e.code === 'PAQUETE_SIN_PLAN'
-        ? 'Este paquete todavía no tiene plan calculado; usa «Recalcular» antes de asignar responsable.'
-        : mensajeError(e)
+      let mensaje = mensajeError(e)
+      if (e instanceof PdcApiError && e.code === 'PAQUETE_SIN_PLAN') {
+        mensaje = 'Este paquete todavía no tiene plan calculado; usa «Recalcular» antes de asignar responsable.'
+      } else if (e instanceof PdcApiError && e.code === 'RESPONSABLE_NO_ELEGIBLE') {
+        mensaje = 'Esa persona ya no pertenece al equipo activo del proyecto; recarga la página para ver la lista al día.'
+      }
       dispatch({ type: 'FALLO', mensaje })
       // El guardado no ocurrió: la celda no puede seguir mostrando lo que AG Grid ya escribió.
-      setResponsableOverride((prev) => trasGuardarEdicion(prev, paqueteId, { ok: false, anterior }))
+      setResponsableOverride((prev) => ({ ...prev, [paqueteId]: anterior }))
     }
   }
 
@@ -218,8 +236,32 @@ export default function PlanFechas() {
     { headerName: 'Necesidad en obra', field: 'fechaAncla', width: 150 },
     { headerName: 'Días', field: 'diasTotales', width: 90, type: 'rightAligned' },
     {
-      headerName: 'Responsable', field: 'responsable', flex: 1, minWidth: 160, editable: true,
+      headerName: 'Responsable', colId: 'responsable', field: 'responsableNombre',
+      flex: 1, minWidth: 220, editable: true,
+      cellEditor: 'agSelectCellEditor',
+      // Las opciones se calculan por fila, no una sola vez para la tabla: una fila con responsable
+      // huérfano necesita su propia opción extra (ver opcionesResponsable) o AG Grid no podría
+      // mostrar el valor que ya tiene.
+      cellEditorParams: (p: { data?: FilaPlan }) => ({
+        values: p.data ? opcionesResponsable(elegibles, p.data) : [''],
+      }),
       valueGetter: (p) => (p.data ? valorResponsableMostrado(p.data, responsableOverride) : ''),
+      // valueSetter explícito, no el de por defecto: aquel solo escribiría la etiqueta en
+      // `responsableNombre`, y como el valueGetter deriva lo que se ve de `responsableUserId` —que
+      // el editor no toca—, la celda volvía a leerse vacía y `onCellValueChanged` recibía '' como
+      // newValue. Resultado: se guardaba «sin responsable» justo después de elegir a alguien.
+      // Aquí se actualizan los cuatro campos a la vez para que la fila quede coherente hasta que
+      // `cargar()` la refresque desde el servidor.
+      valueSetter: (p) => {
+        const persona = elegibles.find((e) => etiquetaElegible(e) === (p.newValue ?? '').trim())
+        p.data.responsableUserId = persona?.id ?? null
+        p.data.responsableNombre = persona?.nombre ?? ''
+        p.data.responsableCargo = persona?.cargo ?? ''
+        // Lo elegido sale siempre de la lista de elegibles, así que nunca es un huérfano.
+        p.data.responsableHuerfano = false
+        return true
+      },
+      cellClass: (p) => (p.data?.responsableHuerfano ? 'pdc-plan-responsable-huerfano' : undefined),
       onCellValueChanged: (p) => {
         if (!p.data) return
         void onResponsable(p.data.paqueteId, (p.newValue ?? '').trim(), (p.oldValue ?? '').trim())
@@ -230,7 +272,7 @@ export default function PlanFechas() {
       valueGetter: (p) => (p.data ? estadoFila(p.data, desfasePorPaquete.get(p.data.paqueteId)).etiqueta : ''),
       cellClass: (p) => (p.data ? `pdc-plan-estado pdc-plan-estado--${estadoFila(p.data, desfasePorPaquete.get(p.data.paqueteId)).clave}` : undefined),
     },
-  ], [responsableOverride, desfasePorPaquete])
+  ], [responsableOverride, desfasePorPaquete, elegibles])
 
   const filaExpandida = plan.find((f) => f.paqueteId === expandido) ?? null
 
@@ -267,7 +309,7 @@ export default function PlanFechas() {
           domLayout="autoHeight"
           suppressCellFocus
           onCellClicked={(e: CellClickedEvent<FilaPlan>) => {
-            if (!e.data || e.colDef.field === 'responsable') return
+            if (!e.data || e.colDef.colId === 'responsable') return
             const id = e.data.paqueteId
             setExpandido((prev) => (prev === id ? null : id))
           }}

@@ -1,4 +1,4 @@
-import type { Desfase, FilaPlan, FrenteDisponible, ProcedenciaAmarre, ResumenPaquetes, SugerenciaFrente } from './types'
+import type { Desfase, FilaPlan, FrenteDisponible, ProcedenciaAmarre, ResponsableElegible, ResumenPaquetes, SugerenciaFrente } from './types'
 
 export type EstadoFila = { clave: 'desfasado' | 'vencido' | 'provisional' | 'en-plazo'; etiqueta: string }
 
@@ -168,14 +168,58 @@ export function trasGuardarEdicion<T>(
   return { ...valores, [id]: resultado.anterior }
 }
 
+/** Lo que se añade al nombre de quien ya no puede ser responsable. Ver `responsableHuerfano`. */
+export const MARCA_HUERFANO = ' (ya no está en el proyecto)'
+
+/** Etiqueta con la que una persona se ve y se elige: el cargo desempata nombres parecidos. */
+export function etiquetaElegible(persona: Pick<ResponsableElegible, 'nombre' | 'cargo'>): string {
+  return persona.cargo ? `${persona.nombre} — ${persona.cargo}` : persona.nombre
+}
+
 /**
- * Valor que debe verse en la celda «Responsable». AG Grid muta `data.responsable` in-place al
- * confirmar la edición (valueSetter por defecto), sin esperar el POST — por eso un fallo de guardado
- * no alcanza a evitar la mutación, solo puede corregirla después. `overrides` es esa corrección: si
- * hay uno pendiente (el POST falló y se fijó el valor anterior), manda sobre el dato ya mutado.
+ * Etiqueta del responsable que trae la fila del servidor. El servidor manda el nombre resuelto (no
+ * solo el id) justamente para este caso: a un huérfano no lo encontraríamos en la lista de
+ * elegibles, y la celda quedaría en blanco sin explicar por qué.
  */
-export function valorResponsableMostrado(fila: Pick<FilaPlan, 'paqueteId' | 'responsable'>, overrides: Record<number, string>): string {
-  return overrides[fila.paqueteId] ?? fila.responsable
+export function etiquetaResponsableFila(
+  fila: Pick<FilaPlan, 'responsableUserId' | 'responsableNombre' | 'responsableCargo' | 'responsableHuerfano'>,
+): string {
+  if (fila.responsableUserId === null || fila.responsableNombre === '') return ''
+  const base = etiquetaElegible({ nombre: fila.responsableNombre, cargo: fila.responsableCargo })
+  return fila.responsableHuerfano ? `${base}${MARCA_HUERFANO}` : base
+}
+
+/**
+ * Opciones del desplegable. El '' inicial es lo que permite dejar el paquete sin responsable; el
+ * huérfano se añade al final solo si es el valor actual de esta fila, porque AG Grid no puede
+ * mostrar un valor que no esté entre las opciones — sin esto, abrir el editor de una fila huérfana
+ * borraría de la vista al responsable que sí tiene.
+ */
+export function opcionesResponsable(
+  elegibles: ResponsableElegible[],
+  fila: Pick<FilaPlan, 'responsableUserId' | 'responsableNombre' | 'responsableCargo' | 'responsableHuerfano'>,
+): string[] {
+  const opciones = ['', ...elegibles.map(etiquetaElegible)]
+  const actual = etiquetaResponsableFila(fila)
+  return actual !== '' && !opciones.includes(actual) ? [...opciones, actual] : opciones
+}
+
+/** Traduce lo elegido en el desplegable al id que espera el servidor. Desconocido y '' → sin responsable. */
+export function idPorEtiqueta(elegibles: ResponsableElegible[], etiqueta: string): number | null {
+  return elegibles.find((e) => etiquetaElegible(e) === etiqueta)?.id ?? null
+}
+
+/**
+ * Valor que debe verse en la celda «Responsable». AG Grid muta la fila in-place al confirmar la
+ * edición (valueSetter por defecto), sin esperar el POST — por eso el override es la única fuente
+ * fiable mientras dura la sesión: guarda lo último confirmado, y si el POST falla se le devuelve el
+ * valor anterior.
+ */
+export function valorResponsableMostrado(
+  fila: Pick<FilaPlan, 'paqueteId' | 'responsableUserId' | 'responsableNombre' | 'responsableCargo' | 'responsableHuerfano'>,
+  overrides: Record<number, string>,
+): string {
+  return overrides[fila.paqueteId] ?? etiquetaResponsableFila(fila)
 }
 
 // Menor del review final A4: `.pdc-info` pintaba también los mensajes de FALLO con el mismo verde
