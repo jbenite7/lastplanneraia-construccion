@@ -87,6 +87,60 @@
     color: var(--ds-color-state-critical-text);
   }
 
+  /* El segundo eje, el matiz, tiene que reafirmarse aqui por la misma razon que
+     las cuatro reglas de nivel de arriba: la copia canonica vive en
+     `components/states-feedback.css`, pero `@layer module` va despues de
+     `components` y cualquier hoja de modulo la tapa. Este puente es
+     `legacy-overrides`, la ultima capa, y es el unico sitio desde el que el
+     design system alcanza una superficie de modulo.
+
+     Van DESPUES de las de nivel a proposito: con `:where()` las dos familias
+     pesan 0,0,0, asi que dentro de la capa decide el orden de fuente y el matiz
+     -que es la identidad del estado- gana el fondo. El nivel sigue vivo en el
+     acento y en el par severity/urgency que el modulo declara.
+
+     Cuando el puente se retire, la copia de `states-feedback.css` es la que
+     queda; esta se va con el. */
+  :where([data-aia-hue="neutral"]) {
+    background: var(--ds-state-tint-neutral-pdc);
+    color: var(--ds-active-text-primary);
+  }
+
+  :where([data-aia-hue="teal"]) {
+    background: var(--ds-state-tint-teal-2);
+    color: var(--ds-active-text-primary);
+  }
+
+  :where([data-aia-hue="blue"]) {
+    background: var(--ds-state-tint-blue-pdc);
+    color: var(--ds-active-text-primary);
+  }
+
+  :where([data-aia-hue="violet"]) {
+    background: var(--ds-state-tint-violet-pdc);
+    color: var(--ds-active-text-primary);
+  }
+
+  :where([data-aia-hue="green"]) {
+    background: var(--ds-state-tint-green-2);
+    color: var(--ds-active-text-primary);
+  }
+
+  :where([data-aia-hue="amber"]) {
+    background: var(--ds-state-tint-amber-2);
+    color: var(--ds-active-text-primary);
+  }
+
+  :where([data-aia-hue="orange"]) {
+    background: var(--ds-state-tint-orange-pdc);
+    color: var(--ds-active-text-primary);
+  }
+
+  :where([data-aia-hue="red"]) {
+    background: var(--ds-state-tint-red-1);
+    color: var(--ds-active-text-primary);
+  }
+
   :where(.aia-pagination a[aria-current="page"]) {
     color: var(--ds-active-action-text);
   }

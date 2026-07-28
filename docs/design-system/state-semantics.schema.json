@@ -133,6 +133,9 @@
                 "label": {
                   "type": "string"
                 },
+                "key": {
+                  "type": "string"
+                },
                 "level": {
                   "type": "string"
                 },

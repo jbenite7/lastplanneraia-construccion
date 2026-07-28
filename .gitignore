@@ -154,6 +154,7 @@ tests/browser/*
 !tests/browser/programacion-semanal-hot-height.mjs
 !tests/browser/programacion-intermedia-mobile-runtime.mjs
 !tests/browser/programacion-intermedia.visual.mjs
+!tests/browser/ops-state-chip-hue.mjs
 !tests/browser/cic-role-disciplines.mjs
 !tests/browser/listado-actividades-handsontable.mjs
 !tests/browser/fixtures/

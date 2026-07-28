@@ -214,41 +214,49 @@
       "states": [
         {
           "label": "RC inicio vencido",
+          "key": "blocked-overdue-critical",
           "level": "urgent",
           "hue": "red"
         },
         {
           "label": "Inicio vencido",
+          "key": "blocked-overdue",
           "level": "urgent",
           "hue": "red"
         },
         {
           "label": "Inicio por Habilitar",
+          "key": "blocked-due",
           "level": "attention",
           "hue": "amber"
         },
         {
           "label": "Alistamiento Urgente",
+          "key": "alert-1-week",
           "level": "urgent",
           "hue": "amber"
         },
         {
           "label": "Alistamiento en Riesgo",
+          "key": "alert-2-3-weeks",
           "level": "attention",
           "hue": "amber"
         },
         {
           "label": "Alistamiento Pendiente",
+          "key": "alert-4-6-weeks",
           "level": "attention",
           "hue": "green"
         },
         {
           "label": "En Ejecución Pendiente",
+          "key": "execution-blocked",
           "level": "attention",
           "hue": "red"
         },
         {
           "label": "Listo para Comprometer",
+          "key": "liberated-control",
           "level": "healthy",
           "hue": "teal"
         }

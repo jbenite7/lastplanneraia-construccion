@@ -218,7 +218,10 @@ html.aia-theme-dark .pi-page {
     padding: 4px 8px;
     border: 1px solid var(--ds-active-border);
     border-radius: 8px;
-    background: color-mix(in srgb, var(--ds-active-surface-raised) 92%, transparent);
+    /* Sin `background` a proposito: el fondo del chip lo pinta la capa de
+       componentes desde `data-aia-hue`. Mientras el modulo lo declarara aqui
+       ganaba siempre -`module` va despues de `components` en el orden de capas-
+       y la primitiva del design system era inerte sobre esta superficie. */
     color: inherit;
     font-weight: 900;
     font-size: 0.78rem;
@@ -230,73 +233,14 @@ html.aia-theme-dark .pi-page {
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.48);
 }
 
+/* Las diez reglas de color por nombre de estado que vivian aqui las sustituye
+   la primitiva de `design-system/components/states-feedback.css`: el chip
+   declara su matiz y su nivel y el design system lo pinta. El mapa de estado a
+   matiz sale del contrato (`statePresentation` en el hot.js del modulo).
+   Solo sobrevive el peso tipografico, que no es color: el estado critico va mas
+   marcado para que se lea antes en una grilla densa. */
 .pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-blocked-overdue-critical .ops-state-chip {
-    background: var(--pi-critical-bg);
-    background: color-mix(in srgb, var(--pi-critical-bg) 78%, var(--ds-active-surface-raised) 22%);
-    border-color: var(--pi-critical-border);
-    color: var(--pi-critical-text);
     font-weight: 900;
-    box-shadow: inset 0 0 0 1px rgba(220, 38, 38, 0.24), 0 1px 3px rgba(153, 27, 27, 0.14);
-}
-
-.pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-blocked-overdue .ops-state-chip,
-.pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-blocked-due .ops-state-chip,
-.pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-alert-1-week .ops-state-chip,
-.pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-alert-2-3-weeks .ops-state-chip,
-.pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-alert-4-6-weeks .ops-state-chip,
-.pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-execution-blocked .ops-state-chip,
-.pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-liberated-control .ops-state-chip {
-    font-weight: 800;
-    box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.06);
-}
-
-.pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-blocked-overdue .ops-state-chip {
-    background: var(--pi-overdue-bg);
-    background: color-mix(in srgb, var(--pi-overdue-bg) 70%, var(--ds-active-surface-raised) 30%);
-    border-color: var(--pi-overdue-border);
-    color: var(--pi-overdue-text);
-}
-
-.pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-blocked-due .ops-state-chip {
-    background: var(--pi-due-bg);
-    background: color-mix(in srgb, var(--pi-due-bg) 68%, var(--ds-active-surface-raised) 32%);
-    border-color: var(--pi-due-border);
-    color: var(--pi-due-text);
-}
-
-.pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-alert-1-week .ops-state-chip {
-    background: var(--pi-alert1-bg);
-    background: color-mix(in srgb, var(--pi-alert1-bg) 66%, var(--ds-active-surface-raised) 34%);
-    border-color: var(--pi-alert1-border);
-    color: var(--pi-alert1-text);
-}
-
-.pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-alert-2-3-weeks .ops-state-chip {
-    background: var(--pi-alert23-bg);
-    background: color-mix(in srgb, var(--pi-alert23-bg) 66%, var(--ds-active-surface-raised) 34%);
-    border-color: var(--pi-alert23-border);
-    color: var(--pi-alert23-text);
-}
-
-.pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-alert-4-6-weeks .ops-state-chip {
-    background: var(--pi-alert46-bg);
-    background: color-mix(in srgb, var(--pi-alert46-bg) 66%, var(--ds-active-surface-raised) 34%);
-    border-color: var(--pi-alert46-border);
-    color: var(--pi-alert46-text);
-}
-
-.pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-execution-blocked .ops-state-chip {
-    background: var(--pi-exec-blocked-bg);
-    background: color-mix(in srgb, var(--pi-exec-blocked-bg) 66%, var(--ds-active-surface-raised) 34%);
-    border-color: var(--pi-exec-blocked-border);
-    color: var(--pi-exec-blocked-text);
-}
-
-.pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-liberated-control .ops-state-chip {
-    background: var(--pi-control-bg);
-    background: color-mix(in srgb, var(--pi-control-bg) 66%, var(--ds-active-surface-raised) 34%);
-    border-color: var(--pi-control-border);
-    color: var(--pi-control-text);
 }
 
 .pi-page .handsontable td.pi-soft-restriction-cell:not(.pi-row-state) {

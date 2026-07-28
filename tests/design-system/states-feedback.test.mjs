@@ -65,19 +65,22 @@ test('programación intermedia exposes its eight real states with action priorit
   const semantics = await readJson('state-semantics.json');
   const view = await readFile('views/design-system/families/states-feedback.php', 'utf8');
   const intermediate = semantics.moduleMappings.find(({ module }) => module === 'programacion-intermedia');
+  // `key` es el vocabulario con el que el modulo nombra sus estados; sin el, unir
+  // el contrato con el renderer exige comparar etiquetas, que no coinciden.
+  //
   // Cuatro de estos ocho usan una familia de matiz distinta a la que dicta su
   // nivel. No es una contradiccion: el nivel es prioridad de accion y el matiz
   // es identidad, y son canales distintos. Declararlo aqui convierte lo que
   // parecia una divergencia silenciosa en una eleccion explicita.
   assert.deepEqual(intermediate.states, [
-    { label: 'RC inicio vencido', level: 'urgent', hue: 'red' },
-    { label: 'Inicio vencido', level: 'urgent', hue: 'red' },
-    { label: 'Inicio por Habilitar', level: 'attention', hue: 'amber' },
-    { label: 'Alistamiento Urgente', level: 'urgent', hue: 'amber' },
-    { label: 'Alistamiento en Riesgo', level: 'attention', hue: 'amber' },
-    { label: 'Alistamiento Pendiente', level: 'attention', hue: 'green' },
-    { label: 'En Ejecución Pendiente', level: 'attention', hue: 'red' },
-    { label: 'Listo para Comprometer', level: 'healthy', hue: 'teal' },
+    { label: 'RC inicio vencido', key: 'blocked-overdue-critical', level: 'urgent', hue: 'red' },
+    { label: 'Inicio vencido', key: 'blocked-overdue', level: 'urgent', hue: 'red' },
+    { label: 'Inicio por Habilitar', key: 'blocked-due', level: 'attention', hue: 'amber' },
+    { label: 'Alistamiento Urgente', key: 'alert-1-week', level: 'urgent', hue: 'amber' },
+    { label: 'Alistamiento en Riesgo', key: 'alert-2-3-weeks', level: 'attention', hue: 'amber' },
+    { label: 'Alistamiento Pendiente', key: 'alert-4-6-weeks', level: 'attention', hue: 'green' },
+    { label: 'En Ejecución Pendiente', key: 'execution-blocked', level: 'attention', hue: 'red' },
+    { label: 'Listo para Comprometer', key: 'liberated-control', level: 'healthy', hue: 'teal' },
   ]);
   assert.match(view, /data-state-module="programacion-intermedia"/);
   assert.match(view, /Programación Intermedia · 8 estados/);
