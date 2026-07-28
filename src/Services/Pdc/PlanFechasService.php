@@ -386,4 +386,198 @@ class PlanFechasService
         }
         return $out;
     }
+
+    /**
+     * Los siete pasos del proceso de contratación, en orden, con la columna del catálogo legacy que
+     * guarda su duración. El último termina en la fecha en que el paquete se necesita en obra.
+     */
+    public const PASOS = [
+        ['paso' => 'Elaboración de pliegos', 'col' => 'diasElaboracionPliegos'],
+        ['paso' => 'Entrega de pliegos', 'col' => 'diasEntregaPliegos'],
+        ['paso' => 'Recibo de propuestas', 'col' => 'diasReciboPropuestas'],
+        ['paso' => 'Cuadros comparativos', 'col' => 'diasCuadrosComparativos'],
+        ['paso' => 'Legalización', 'col' => 'diasLegalizacionContrato'],
+        ['paso' => 'Fabricación', 'col' => 'diasFabricacion'],
+        ['paso' => 'Insumos en obra', 'col' => 'diasInsumosObra'],
+    ];
+
+    /**
+     * Calcula el plan de todos los paquetes amarrados: resta hacia atrás desde la fecha del frente.
+     *
+     * En días calendario, porque así están escritos los números del catálogo: quien puso «25 días de
+     * cuadros comparativos» pensaba en semanas de calendario, no en jornadas laborales.
+     */
+    public function calcular(int $projectId, string $usuario): array
+    {
+        $amarres = $this->amarres($projectId);
+        if ($amarres === []) {
+            return ['ok' => true, 'calculados' => 0, 'sinDuracion' => 0];
+        }
+        $medianas = $this->medianasPorTipo();
+        $calculados = 0;
+        $sinDuracion = 0;
+
+        foreach ($amarres as $paqueteId => $a) {
+            $paq = $this->db->query(
+                'SELECT p.id, p.tipo_negociacion, p.duracion_ref, d.diasElaboracionPliegos, d.diasEntregaPliegos,
+                        d.diasReciboPropuestas, d.diasCuadrosComparativos, d.diasLegalizacionContrato,
+                        d.diasFabricacion, d.diasInsumosObra
+                 FROM general_paquetes_contratacion p
+                 LEFT JOIN general_dias_procesos_contratacion d ON d.id = p.duracion_ref
+                 WHERE p.id = ? AND p.activo = 1',
+                [$paqueteId],
+            )->fetch(\PDO::FETCH_ASSOC);
+            if ($paq === false) {
+                continue;
+            }
+
+            $provisional = $paq['duracion_ref'] === null;
+            if ($provisional) {
+                $sinDuracion++;
+                $total = $medianas[$paq['tipo_negociacion']] ?? 90;
+                // Sin desglose real, la mediana se reparte proporcional al reparto típico del catálogo.
+                $dias = self::repartirMediana($total);
+            } else {
+                $dias = [];
+                foreach (self::PASOS as $p) {
+                    $dias[] = (int) $paq[$p['col']];
+                }
+            }
+            $total = array_sum($dias);
+
+            $ancla = new \DateTimeImmutable($a['fechaAncla']);
+            $cursor = $ancla->modify(sprintf('-%d days', $total));
+            $arranque = $cursor->format('Y-m-d');
+
+            $responsablePrevio = (string) ($this->db->query(
+                'SELECT responsable FROM pdc_plan_paquete WHERE project_id = ? AND paquete_id = ?',
+                [$projectId, $paqueteId],
+            )->fetchColumn() ?: '');
+
+            $this->db->query(
+                'INSERT INTO pdc_plan_paquete
+                    (project_id, paquete_id, unique_id, fecha_ancla, fecha_arranque, dias_totales,
+                     duracion_ref, duracion_provisional, responsable, calculado_por, updated_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+                 ON DUPLICATE KEY UPDATE unique_id = VALUES(unique_id), fecha_ancla = VALUES(fecha_ancla),
+                    fecha_arranque = VALUES(fecha_arranque), dias_totales = VALUES(dias_totales),
+                    duracion_ref = VALUES(duracion_ref), duracion_provisional = VALUES(duracion_provisional),
+                    calculado_por = VALUES(calculado_por), updated_at = NOW()',
+                [
+                    $projectId, $paqueteId, $a['uniqueId'], $a['fechaAncla'], $arranque, $total,
+                    $paq['duracion_ref'], $provisional ? 1 : 0, $responsablePrevio, $usuario,
+                ],
+            );
+
+            // Los pasos se reemplazan enteros: recalcular no debe acumular.
+            $this->db->query('DELETE FROM pdc_plan_paso WHERE project_id = ? AND paquete_id = ?', [$projectId, $paqueteId]);
+            foreach (self::PASOS as $i => $p) {
+                $ini = $cursor;
+                $cursor = $cursor->modify(sprintf('+%d days', $dias[$i]));
+                $this->db->query(
+                    'INSERT INTO pdc_plan_paso (project_id, paquete_id, orden, paso, dias, fecha_inicio, fecha_fin)
+                     VALUES (?, ?, ?, ?, ?, ?, ?)',
+                    [$projectId, $paqueteId, $i, $p['paso'], $dias[$i], $ini->format('Y-m-d'), $cursor->format('Y-m-d')],
+                );
+            }
+            $calculados++;
+        }
+        return ['ok' => true, 'calculados' => $calculados, 'sinDuracion' => $sinDuracion];
+    }
+
+    /** Mediana del proceso completo por tipo de negociación, entre los paquetes que sí tienen duración. */
+    private function medianasPorTipo(): array
+    {
+        $rows = $this->db->query(
+            'SELECT p.tipo_negociacion t,
+                    (d.diasElaboracionPliegos + d.diasEntregaPliegos + d.diasReciboPropuestas
+                     + d.diasCuadrosComparativos + d.diasLegalizacionContrato + d.diasFabricacion
+                     + d.diasInsumosObra) tot
+             FROM general_paquetes_contratacion p
+             JOIN general_dias_procesos_contratacion d ON d.id = p.duracion_ref
+             WHERE p.activo = 1 ORDER BY tot',
+        )->fetchAll(\PDO::FETCH_ASSOC);
+        $porTipo = [];
+        foreach ($rows as $r) {
+            $porTipo[(string) $r['t']][] = (int) $r['tot'];
+        }
+        $out = [];
+        foreach ($porTipo as $t => $v) {
+            $n = count($v);
+            $out[$t] = (int) round($n % 2 === 1 ? $v[intdiv($n, 2)] : ($v[$n / 2 - 1] + $v[$n / 2]) / 2);
+        }
+        return $out;
+    }
+
+    /** Reparte una duración total entre los siete pasos, con el peso típico del catálogo. */
+    private static function repartirMediana(int $total): array
+    {
+        $pesos = [0.08, 0.09, 0.08, 0.24, 0.20, 0.16, 0.15];
+        $dias = [];
+        $acum = 0;
+        foreach ($pesos as $i => $w) {
+            $d = $i === count($pesos) - 1 ? $total - $acum : (int) round($total * $w);
+            $dias[] = max(0, $d);
+            $acum += $d;
+        }
+        return $dias;
+    }
+
+    /** El plan del proyecto, con los vencidos primero. */
+    public function plan(int $projectId): array
+    {
+        $rows = $this->db->query(
+            'SELECT pp.paquete_id, pp.unique_id, pp.fecha_ancla, pp.fecha_arranque, pp.dias_totales,
+                    pp.duracion_provisional, pp.responsable, p.nombre, p.tipo_negociacion,
+                    p.modalidad_contratacion, f.frente_nombre
+             FROM pdc_plan_paquete pp
+             JOIN general_paquetes_contratacion p ON p.id = pp.paquete_id
+             LEFT JOIN pdc_paquete_frente f ON f.project_id = pp.project_id AND f.paquete_id = pp.paquete_id
+             WHERE pp.project_id = ?
+             ORDER BY pp.fecha_arranque ASC',
+            [$projectId],
+        )->fetchAll(\PDO::FETCH_ASSOC);
+
+        $pasos = [];
+        foreach ($this->db->query(
+            'SELECT paquete_id, orden, paso, dias, fecha_inicio, fecha_fin FROM pdc_plan_paso
+             WHERE project_id = ? ORDER BY paquete_id, orden',
+            [$projectId],
+        )->fetchAll(\PDO::FETCH_ASSOC) as $p) {
+            $pasos[(int) $p['paquete_id']][] = [
+                'orden' => (int) $p['orden'], 'paso' => (string) $p['paso'], 'dias' => (int) $p['dias'],
+                'fechaInicio' => (string) $p['fecha_inicio'], 'fechaFin' => (string) $p['fecha_fin'],
+            ];
+        }
+
+        $hoy = new \DateTimeImmutable('today');
+        $out = [];
+        foreach ($rows as $r) {
+            $arranque = new \DateTimeImmutable((string) $r['fecha_arranque']);
+            $retraso = $arranque < $hoy ? (int) $hoy->diff($arranque)->days : 0;
+            $out[] = [
+                'paqueteId' => (int) $r['paquete_id'],
+                'nombre' => (string) $r['nombre'],
+                'tipoNegociacion' => (string) $r['tipo_negociacion'],
+                'modalidad' => (string) $r['modalidad_contratacion'],
+                'frenteNombre' => (string) ($r['frente_nombre'] ?? ''),
+                'uniqueId' => (int) $r['unique_id'],
+                'fechaAncla' => (string) $r['fecha_ancla'],
+                'fechaArranque' => (string) $r['fecha_arranque'],
+                'diasTotales' => (int) $r['dias_totales'],
+                'duracionProvisional' => (int) $r['duracion_provisional'] === 1,
+                'responsable' => (string) $r['responsable'],
+                'diasRetraso' => $retraso,
+                'pasos' => $pasos[(int) $r['paquete_id']] ?? [],
+            ];
+        }
+        // Los vencidos primero, del más atrasado al menos; luego el resto por fecha de arranque.
+        usort($out, static function (array $a, array $b): int {
+            if ($a['diasRetraso'] !== $b['diasRetraso']) {
+                return $b['diasRetraso'] <=> $a['diasRetraso'];
+            }
+            return strcmp($a['fechaArranque'], $b['fechaArranque']);
+        });
+        return $out;
+    }
 }

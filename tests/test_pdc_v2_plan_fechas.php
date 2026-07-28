@@ -26,6 +26,7 @@ $limpiar = static function () use ($db, $P, $P2): void {
     $db->query('DELETE FROM pdc_paquete_frente WHERE project_id IN (?, ?)', [$P, $P2]);
     $db->query('DELETE FROM pdc_insumo_paquete WHERE project_id IN (?, ?)', [$P, $P2]);
     $db->query("DELETE FROM general_paquetes_contratacion WHERE creado_por = 'test-a4'");
+    $db->query("DELETE FROM general_dias_procesos_contratacion WHERE paqueteContratacion = 'TEST A4 DURACION'");
     $db->query('DELETE FROM pdc_presupuesto_apu_insumos WHERE project_id IN (?, ?)', [$P, $P2]);
     $db->query('DELETE FROM pdc_presupuesto_items WHERE project_id IN (?, ?)', [$P, $P2]);
     $db->query('DELETE FROM pdc_presupuesto_versiones WHERE project_id IN (?, ?)', [$P, $P2]);
@@ -332,6 +333,53 @@ $assert($aP1[$paqEstructura]['uniqueId'] === 9002,
 $uidsEnP1 = array_column($aP1, 'uniqueId');
 $assert(!in_array(9101, $uidsEnP1, true),
     'Hueco 4: el frente de $P2 (9101) no aparece colgado de ningún paquete de $P.');
+
+// --- calcular: la resta hacia atrás ---
+// Catálogo de duraciones de juguete: 7+5+7+25+20 de proceso + 8 fabricación + 15 en obra = 87.
+$db->query(
+    "INSERT INTO general_dias_procesos_contratacion
+        (paqueteContratacion, tipoPaquete, diasElaboracionPliegos, diasEntregaPliegos, diasReciboPropuestas,
+         diasCuadrosComparativos, diasLegalizacionContrato, diasFabricacion, diasInsumosObra)
+     VALUES ('TEST A4 DURACION', 'Suministro', 7, 5, 7, 25, 20, 8, 15)",
+);
+$durId = (int) $db->lastInsertId();
+$db->query('UPDATE general_paquetes_contratacion SET duracion_ref = ? WHERE id = ?', [$durId, $paqEstructura]);
+
+// Reamarrar a ESTRUCTURA (18-ago-2026) para tener una fecha ancla conocida.
+$svc->amarrar($P, $paqEstructura, 9001, 'test-a4');
+$c = $svc->calcular($P, 'test-a4');
+// El fixture ya trae otro amarre vigente en $P a esta altura del archivo: $paqRaro quedó amarrado
+// a PRELIMINARES en el bloque «hueco 2» (arriba, sin duracion_ref propia). calcular() opera sobre
+// TODOS los amarres del proyecto, no solo el que acaba de tocar este bloque — así que lo correcto
+// es 2 calculados (paqEstructura + paqRaro) y 1 sin duración (paqRaro, que cae en la mediana).
+$assert(($c['ok'] ?? false) === true && ($c['calculados'] ?? 0) === 2 && ($c['sinDuracion'] ?? 0) === 1,
+    'Se calcula el plan de los paquetes amarrados (paqEstructura con duración propia, paqRaro sin ella).');
+
+$plan = $svc->plan($P);
+$fila = null;
+foreach ($plan as $f) { if ($f['paqueteId'] === $paqEstructura) { $fila = $f; } }
+$assert($fila !== null, 'El plan trae el paquete calculado.');
+$assert($fila['diasTotales'] === 87, 'Suma los siete pasos: 87 días. Dio ' . ($fila['diasTotales'] ?? 0));
+$assert($fila['fechaArranque'] === '2026-05-23', 'Arranque = ancla menos 87 días calendario. Dio ' . ($fila['fechaArranque'] ?? ''));
+$assert(count($fila['pasos']) === 7, 'Guarda una fila por paso.');
+$assert($fila['pasos'][0]['paso'] === 'Elaboración de pliegos' && $fila['pasos'][0]['fechaInicio'] === '2026-05-23',
+    'El primer paso arranca en la fecha de arranque.');
+$assert(end($fila['pasos'])['fechaFin'] === '2026-08-18', 'El último paso TERMINA en la fecha del frente.');
+$assert($fila['duracionProvisional'] === false, 'Con duracion_ref real, no es provisional.');
+
+// Recalcular no duplica pasos.
+$svc->calcular($P, 'test-a4');
+$np = (int) $db->query('SELECT COUNT(*) FROM pdc_plan_paso WHERE project_id = ? AND paquete_id = ?', [$P, $paqEstructura])->fetchColumn();
+$assert($np === 7, 'Recalcular reemplaza los pasos, no los acumula. Hay ' . $np);
+
+// Sin duracion_ref: se usa la mediana del tipo y queda marcado como provisional.
+$db->query('UPDATE general_paquetes_contratacion SET duracion_ref = NULL WHERE id = ?', [$paqEstructura]);
+$svc->calcular($P, 'test-a4');
+$plan2 = $svc->plan($P);
+$fila2 = null;
+foreach ($plan2 as $f) { if ($f['paqueteId'] === $paqEstructura) { $fila2 = $f; } }
+$assert($fila2 !== null && $fila2['duracionProvisional'] === true, 'Sin duración propia, el plazo se marca provisional.');
+$assert($fila2 !== null && $fila2['diasTotales'] > 0, 'La mediana del tipo da un plazo mayor que cero.');
 
 echo $failures === [] ? "=== OK ===\n" : '=== ' . count($failures) . " FAILED ===\n";
 $limpiar();
