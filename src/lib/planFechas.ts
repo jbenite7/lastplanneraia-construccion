@@ -262,3 +262,15 @@ export function planUiReducer(state: PlanUiState, action: PlanUiAction): PlanUiS
       return { ocupado: false, mensaje: action.mensaje, tipo: 'error' }
   }
 }
+
+/**
+ * Qué hace un clic sencillo según la columna donde cayó.
+ *
+ * En la tabla del Plan el clic sencillo ya estaba ocupado: abre el detalle de los siete pasos. Al
+ * pedir que un solo clic baste para editar hubo que repartir el gesto por columna — edita donde se
+ * puede editar (hoy solo «Responsable») y abre el detalle en el resto. Sin columna identificada
+ * abre el detalle, que es lo que no toca ningún dato.
+ */
+export function accionDeClic(colId: string | undefined): 'editar' | 'detalle' {
+  return colId === 'responsable' ? 'editar' : 'detalle'
+}

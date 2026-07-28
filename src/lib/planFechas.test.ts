@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  accionDeClic,
   contarSinResponsable, estadoFila, etiquetaDesfase, etiquetaElegible, generaProceso, idPorEtiqueta, mensajeCalculo, opcionFrente,
   opcionesResponsable, paquetesAmarradosSinCalcular,
   paquetesSinFrente, planUiReducer, preseleccionDestinos, procedenciaDeAmarre, resumenPlan, trasGuardarEdicion,
@@ -417,5 +418,20 @@ describe('contarSinResponsable', () => {
 
   it('sin filas da cero, no NaN', () => {
     expect(contarSinResponsable([])).toBe(0)
+  })
+})
+
+describe('accionDeClic', () => {
+  it('en la columna de responsable, el clic edita', () => {
+    expect(accionDeClic('responsable')).toBe('editar')
+  })
+
+  it('en cualquier otra columna, el clic abre el detalle', () => {
+    expect(accionDeClic('nombre')).toBe('detalle')
+    expect(accionDeClic('estado')).toBe('detalle')
+  })
+
+  it('sin columna identificada, abre el detalle: es lo que no destruye nada', () => {
+    expect(accionDeClic(undefined)).toBe('detalle')
   })
 })

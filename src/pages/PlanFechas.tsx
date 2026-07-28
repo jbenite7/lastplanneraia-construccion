@@ -8,6 +8,7 @@ import {
 } from '../lib/agGrid'
 import { PdcApiError, apiGet, apiPost } from '../lib/api'
 import {
+  accionDeClic,
   contarSinResponsable,
   estadoFila,
   estadoInicialPlanUi,
@@ -425,8 +426,10 @@ export default function PlanFechas() {
           rowSelection={{ mode: 'multiRow', checkboxes: true, headerCheckbox: true, enableClickSelection: false }}
           selectionColumnDef={{ width: 44, pinned: 'left' }}
           onSelectionChanged={(e: SelectionChangedEvent<FilaPlan>) => setSeleccionados(e.api.getSelectedRows().map((r) => r.paqueteId))}
+          // Un solo clic abre el desplegable de responsable; hasta ahora hacía falta un doble clic.
+          singleClickEdit
           onCellClicked={(e: CellClickedEvent<FilaPlan>) => {
-            if (!e.data || e.colDef.colId === 'responsable') return
+            if (!e.data || accionDeClic(e.column?.getColId()) === 'editar') return
             const id = e.data.paqueteId
             setExpandido((prev) => (prev === id ? null : id))
           }}
