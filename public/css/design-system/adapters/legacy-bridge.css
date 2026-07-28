@@ -687,6 +687,125 @@
   .ps-cell-readonly {
     cursor: not-allowed !important;
   }
+
+  /* ───────────────────────────────────────────────────────────────────────
+     F1 Task 5j: geometria unificada de las leyendas, absorbida desde
+     public/css/styles.css:4539-4707 (module.components). Conserva subcapa de
+     origen porque TODO el bloque es !important y `legacy-overrides` los
+     dejaria los mas debiles de la cascada.
+
+     PRECONDICION DEL TRAMO, CORREGIDA POR MEDICION: el bloque se declaraba
+     portante para /programa-general, /programacion-intermedia y
+     /programacion-semanal. Para PG es FALSO. `#pgLegend` no lleva la clase
+     `pdc-legend-autoscaling` y sus siete chips son `.aia-chip.pg-filter-chip`,
+     no `.pdc-legend-item`: ningun selector de este bloque los alcanza, y la
+     atribucion regla a regla sobre el chip de PG no devuelve una sola
+     declaracion de styles.css. Su geometria la fijan `core.css` (.aia-chip) y
+     `programa-general.css`. Portante lo es solo para PI y PS.
+
+     De las 44 declaraciones originales sobreviven 9. El resto lo gana
+     public/css/buttons.css, que declara `@layer components` y entra por
+     `layer(components)`: al invertirse el orden de capas para !important, esa
+     capa va ANTES que `module` y sus !important ganan a los de aqui. Asi
+     mueren padding, font-size, line-height, display, align-items,
+     border-radius, white-space, word-break, overflow-wrap, height,
+     min-height, gap, flex-wrap, overflow, width y max-inline-size del
+     contenedor. `justify-content` y `text-align` los repone la regla base
+     `.pdc-legend-item` que sigue en styles.css.
+
+     PODADO ENTERO POR INERTE, ademas de lo anterior:
+      - El `@media (min-width: 993px)` con la geometria de 205px. No se poda
+        por ser responsive -a 1180px esta SIEMPRE activo, es alcance
+        soportado-, sino porque no gana una sola propiedad: en PI y PS lo tapa
+        el bloque de 155px, que es mas especifico; en /pdc lo tapa el bloque
+        de `#pdc-hot-shell`; y en PG no tiene sujeto.
+      - `html body .pdc-legend-item .indicator` y `… .count-badge`: sus cinco
+        declaraciones las gana buttons.css:984 y :993.
+      - El bloque entero de `#pdc-hot-shell .pdc-legend .pdc-legend-item`. Sus
+        cinco declaraciones vivas (width, max-width, min-width, flex, margin)
+        solo servian para neutralizar el `@media` de 205px. Retirado ese, las
+        repone pdc.css:846 con los mismos valores -y `flex: none` es
+        exactamente `0 0 auto`-, que al ser una hoja sin capa gana a lo normal
+        y aqui ya no compite contra ningun !important capado.
+      - Las dos reglas que ocultaban la barra de scroll. `scrollbar-width`
+        computa `thin`, no `none`: lo gana buttons.css:932. Y no hay barra que
+        ocultar, scrollWidth == clientWidth en las tres leyendas.
+      - Del bloque de 155px: `min-width`, que la propia regla anulaba tres
+        lineas mas abajo con `min-inline-size: 0`; y `block-size: auto`, que
+        repite el `height: auto` de buttons.css.
+      - Del contenedor: `inline-size` y `max-inline-size`, que son la misma
+        propiedad que el `width` y el `max-inline-size` que buttons.css fija
+        con !important en capa anterior.
+
+     `justify-content: flex-start` SI es portante en los dos contenedores: sin
+     el gana `.pdc-legend { justify-content: flex-end }` del `@media` de 992px
+     que sigue en styles.css, y los chips se irian al borde derecho. */
+  body.pi-page #piLegend.pdc-legend-autoscaling,
+  body.pg-page #pgLegend.pdc-legend-autoscaling,
+  body.ps-page #psAlertsLegend.pdc-legend-autoscaling,
+  #piLegend.pdc-legend-autoscaling,
+  #pgLegend.pdc-legend-autoscaling,
+  #psAlertsLegend.pdc-legend-autoscaling {
+    justify-content: flex-start !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 0 10px 0 !important;
+  }
+
+  body.pi-page #piLegend.pdc-legend-autoscaling .pdc-legend-item,
+  body.pg-page #pgLegend.pdc-legend-autoscaling .pdc-legend-item,
+  body.ps-page #psAlertsLegend.pdc-legend-autoscaling .pdc-legend-item,
+  #piLegend.pdc-legend-autoscaling .pdc-legend-item,
+  #pgLegend.pdc-legend-autoscaling .pdc-legend-item,
+  #psAlertsLegend.pdc-legend-autoscaling .pdc-legend-item {
+    width: 155px !important;
+    max-width: 155px !important;
+    flex: 0 0 155px !important;
+    font-weight: 500 !important;
+    min-inline-size: 0 !important;
+    margin: 4px !important;
+  }
+
+  html body #pdc-hot-shell .pdc-legend {
+    justify-content: flex-start !important;
+  }
+}
+
+@layer legacy-overrides {
+  /* F1 Task 5j: el badge de fecha de corte de /pdc, absorbido desde
+     public/css/styles.css:4606-4631. Lo crea el modulo en JS
+     (hot.js:324-336) dentro de `.context-right-group`, asi que no existe en
+     reposo; se mide inyectandolo, igual que hace su guard.
+     Guard: tests/browser/pdc-chips-dark.mjs.
+
+     No lleva matiz: es informativo, asi que toma la superficie elevada neutra
+     del tema en vez de un tinte de estado -el mismo tratamiento que
+     `.count-badge` en las leyendas-.
+
+     Podado por inerte su `border-radius`: el badge lleva tambien la clase
+     `badge`, y `:where(.badge, …)` de aia-design-system.css le fija el radio
+     de pildora con !important, que gana a cualquier declaracion normal. */
+  .context-right-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  #ctxPdcCalcDate {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+    background-color: var(--ds-active-surface-raised);
+    color: var(--ds-active-text-primary);
+    border: 1px solid var(--ds-active-border);
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+
+  #ctxPdcCalcDate .pdc-calc-date {
+    margin-left: 4px;
+    font-weight: 700;
+  }
 }
 
 /* Reintroduce el orden de subcapas de `module` que styles.css:1 fija hoy. Es
