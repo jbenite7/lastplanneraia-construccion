@@ -321,3 +321,43 @@ test('/programacion-semanal #formulario_nuevo: la bandeja con filas es legible s
     .soft(hovered.ratio, `boton Usar en hover — ${hovered.fg} sobre ${hovered.bg}`)
     .toBeGreaterThanOrEqual(AA);
 });
+
+// Vive aqui, y no en un guard de CIC, por la misma razon que la bandeja de
+// arriba: es un estado que un barrido en reposo no alcanza. La rama escalada de
+// "Falta Calificar" solo se pinta cuando `semanasEnProyecto % 8 === 0` y alguna
+// disciplina sigue en NR, asi que la unica forma de medirla es forzar la celda.
+// El HTML inyectado es literalmente el que devuelve el render de DataTables en
+// CIC.view.php (columnas 7..13), sin adornos.
+const CIC_ESCALADA = "<p class='cic-text-dark'>Falta Calificar</p>";
+const CIC_NORMAL = "<p class='text-danger'>Falta Calificar</p>";
+
+test('/programacion-semanal/cic: la escalada "Falta Calificar" es legible sobre la celda oscura', async ({ page }) => {
+  await loginAndSelectProject(page, project);
+  await page.goto('/programacion-semanal/cic');
+  await page.waitForLoadState('networkidle').catch(() => {});
+  await installContrastProbe(page);
+
+  const injected = await page.evaluate(([escalada, normal]) => {
+    const row = document.querySelector('#dt_cliente tbody tr');
+    if (!row) return { ok: false, reason: '#dt_cliente sin filas cargadas' };
+    const cells = row.querySelectorAll('td');
+    if (cells.length < 9) return { ok: false, reason: `solo ${cells.length} celdas` };
+    cells[7].innerHTML = escalada;
+    cells[8].innerHTML = normal;
+    return { ok: true };
+  }, [CIC_ESCALADA, CIC_NORMAL]);
+  expect(injected.ok, injected.reason).toBe(true);
+
+  const escalada = await measure(page, '.cic-text-dark');
+  expect(escalada, '.cic-text-dark no existe').not.toBeNull();
+  expect(escalada.ratio, `.cic-text-dark — ${escalada.fg} sobre ${escalada.bg}`)
+    .toBeGreaterThanOrEqual(AA);
+
+  // La rama escalada debe seguir leyendose como MAS severa que la normal: mismo
+  // matiz rojo, mas saturado. Si ambas convergen al mismo color, la bifurcacion
+  // del render deja de significar nada.
+  const normal = await measure(page, '.text-danger');
+  expect(normal, '.text-danger no existe').not.toBeNull();
+  expect(escalada.fg, 'la escalada y la normal no pueden pintar el mismo color')
+    .not.toBe(normal.fg);
+});

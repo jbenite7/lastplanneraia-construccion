@@ -2511,7 +2511,7 @@ table.dataTable td.dt-min-width-300,
 
 /* Pulse animation for Guardar button after "Usar" click */
 @keyframes ps-btn-pulse {
-  0%   { box-shadow: 0 0 0 0 rgba(26, 86, 51, 0.45); }
+  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--ds-active-action-primary) 45%, transparent); }
   70%  { box-shadow: 0 0 0 0.65rem transparent; }
   100% { box-shadow: 0 0 0 0 transparent; }
 }
@@ -2553,113 +2553,44 @@ table.dataTable td.dt-min-width-300,
   text-align: center;
 }
 
-.ps-bg-white {
-  background: #fff;
-}
-
 .ps-modal-content-wrap {
   inline-size: 100%;
   margin: auto;
   padding: 0.625rem 1.25rem;
 }
 
-.ps-modal-content {
-  border: 1px solid var(--aia-separators, #d9dee6);
-  border-radius: 0.9rem;
-  overflow: hidden;
-  box-shadow: 0 16px 34px rgb(17 24 39 / 22%);
-}
+/* Aqui vivia la piel completa de un modal de aviso claro: contenido, cabecera,
+   boton de cierre, cuerpo en rejilla, envoltorio del icono con su variante
+   critica, texto y pie con su boton naranja. Ninguno de esos sujetos existe en
+   el markup: el censo de las siete rutas del modulo (semanal, CIC, listado,
+   contratos, PDC, general, intermedia) devolvio cero nodos para cada clase, y
+   los dos parecidos que sobreviven en la vista -el pie entre extremos y el area
+   de texto- son clases distintas, no las que estas reglas seleccionaban. Se
+   borran en lugar de retokenizarse. */
 
-.ps-modal-header {
-  border-bottom: 1px solid var(--aia-separators, #d9dee6);
-  background: linear-gradient(180deg, #fff, #f8fafc);
-  padding: 0.9rem 1.1rem;
-}
-
+/* El unico sujeto vivo del bloque: el titulo del modal CNC. Su `color` se
+   retira porque nunca llego a pintar — el titulo tambien lleva `.modal-title`
+   dentro de `.aia-modal`, y esa regla (misma capa, un selector mas especifico)
+   gana la cascada con la tinta del tema activo. Medido con el modal abierto:
+   15,27:1 antes y despues. */
 .ps-modal-title {
   margin: 0;
   font-size: 1.35rem;
   line-height: 1.2;
-  color: var(--aia-text-primary, #111827);
 }
-
-.ps-modal-close {
-  inline-size: 2.1rem;
-  block-size: 2.1rem;
-  border-radius: 999px;
-  background: #eef2f7;
-  opacity: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0;
-}
-
-.ps-modal-close:hover {
-  background: #e2e8f0;
-}
-
-.ps-modal-body-content {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 0.85rem;
-  align-items: start;
-  padding: 0.35rem 0.15rem;
-}
-
-.ps-modal-icon-wrapper {
-  inline-size: 3.2rem;
-  block-size: 3.2rem;
-  border-radius: 999px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 auto;
-}
-
-.ps-modal-icon-wrapper i {
-  font-size: 1.45rem;
-}
-
-.ps-modal-icon-wrapper--critical {
-  background: var(--aia-alert-background, #fdecec);
-  color: var(--aia-alert-critical, #9a1f1f);
-}
-
-.ps-modal-text {
-  font-size: 1.02rem;
-  line-height: 1.48;
-  color: var(--aia-text-primary, #111827);
-  padding-top: 0.1rem;
-}
-
-.ps-modal-footer {
-  border-top: 1px solid var(--aia-separators, #d9dee6);
-  background: #f8fafc;
-  padding: 0.7rem 1rem;
-}
-
-.ps-modal-footer .btn {
-  border-radius: 999px;
-  padding: 0.42rem 1.05rem;
-  font-weight: 600;
-  background-color: var(--aia-orange-primary, #b55211);
-  border-color: var(--aia-orange-dark, #8b4011);
-  color: #fff;
-}
-
-.ps-modal-footer .btn:hover {
-  background-color: var(--aia-orange-dark, #8b4011);
-  border-color: var(--aia-orange-dark, #8b4011);
-}
-
 
 .ps-meta-small {
   font-size: 0.75em;
 }
 
+/* Rama escalada de "Falta Calificar" en CIC (ocho semanas en proyecto sin
+   calificar). Su rojo casi negro daba 1,14:1 sobre la celda oscura: invisible.
+   Se remapea con el mismo par de tokens que usa `.text-danger` en dark, pero
+   con mas peso del critico (55/45 contra 40/60), para conservar la lectura de
+   "mas severa que la rama normal" sin inventar un matiz: 5,04:1 contra los
+   7,10:1 de la rama normal. */
 .cic-text-dark {
-  color: rgb(82 23 23);
+  color: color-mix(in srgb, var(--ds-color-state-critical-text) 55%, var(--ds-active-text-primary) 45%);
 }
 
 .ps-toolbar-actions {
@@ -2698,14 +2629,19 @@ table.dataTable td.dt-min-width-300,
   max-inline-size: 40%;
 }
 
+/* El conmutador esta vivo en listado, contratos y PDC, pero su piel no: el
+   unico productor del nodo (info_general_nav.js) le pone siempre `aia-info-nav`
+   ademas de esta clase, y la regla `.filaBotones .aia-info-nav` de mas abajo
+   -misma capa, misma especificidad, posterior- lo deja sin relleno y sin borde.
+   Medido en las tres rutas: fondo transparente y ancho de borde cero. Se
+   retiran las dos declaraciones muertas; la geometria que si sobrevive
+   (alineacion, hueco y flex) se queda. */
 .filaBotones .ps-module-switcher {
   display: inline-flex;
   align-items: center;
   gap: calc(6px * var(--ps-module-scale, 1));
   padding: calc(4px * var(--ps-module-scale, 1));
   border-radius: 999px;
-  border: 1px solid #dbe6f1;
-  background: #f8fafc;
   width: fit-content;
   max-width: 100%;
   overflow-x: clip;
@@ -2715,46 +2651,13 @@ table.dataTable td.dt-min-width-300,
   -webkit-overflow-scrolling: touch;
 }
 
-.filaBotones .ps-module-tab {
-  border: 1px solid #e2e8f0;
-  border-radius: 14px;
-  background: #ffffff;
-  color: #475569;
-  padding: calc(0.3rem * var(--ps-module-scale, 1)) calc(0.8rem * var(--ps-module-scale, 1));
-  min-block-size: auto;
-  font-size: calc(0.85rem * var(--ps-module-scale, 1));
-  font-weight: 500;
-  line-height: 1;
-  display: inline-flex;
-  align-items: center;
-  gap: calc(0.38rem * var(--ps-module-scale, 1));
-  white-space: nowrap;
-  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  flex: 0 0 auto;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-.filaBotones .ps-module-tab:hover,
-.filaBotones .ps-module-tab:focus {
-  background: #f8fafc;
-  color: #1e293b;
-  border-color: #cbd5e1;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  transform: translateY(-1px);
-}
-
-.filaBotones .ps-module-tab.is-active {
-  background: #ffffff;
-  color: #1e5ea8;
-  border: 2px solid #1e5ea8;
-  border-radius: 999px;
-  font-weight: 600;
-}
-
-.filaBotones .ps-module-tab i {
-  font-size: calc(0.78rem * var(--ps-module-scale, 1));
-  line-height: 1;
-}
+/* Aqui vivian las pestanas `.ps-module-tab` -reposo, hover/focus, activa e
+   icono- enteramente en claro, con azul de marca en la tinta y en el borde de
+   la activa. No hay markup que las produzca: ni las vistas, ni el JS que arma
+   el conmutador, ni la suite emiten esa clase, y el censo de las siete rutas
+   del modulo devolvio cero nodos. El indicador de estado real es
+   `.aia-info-nav__item.is-active`, que se resuelve por relleno en su propia
+   hoja. Se borran. */
 
 /* PDC uses toolbarNavegacion outside toolbarFilaBotones; prevent tab clipping */
 .filaBotones .toolbarNavegacion .ps-toolbar-nav-wrap {
