@@ -159,6 +159,7 @@ tests/browser/*
 !tests/browser/ops-state-chip-hue.mjs
 !tests/browser/cic-role-disciplines.mjs
 !tests/browser/listado-actividades-handsontable.mjs
+!tests/browser/listado-actividades-switcher-focus.mjs
 !tests/browser/fixtures/
 !tests/browser/fixtures/*.mjs
 !tests/browser/support/

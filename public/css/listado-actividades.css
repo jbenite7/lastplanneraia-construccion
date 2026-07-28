@@ -193,31 +193,37 @@ body .navbar-aia .navbar-brand.aia-brand .aia-brand-mark {
   border-radius: var(--ds-radius-md) !important;
 }
 
+/* Esta regla nacio para el tema claro y hoy solo sobrevive su geometria. El
+   color -borde, fondo, texto y sombra- lo pintaba `--aia-green-*`, y lo gana
+   `html.aia-theme-dark .filaBotones .la-toolbar-switcher .aia-info-nav__trigger`
+   (linea ~753): anade `html.aia-theme-dark`, asi que tiene mas especificidad, y
+   tambien lleva `!important`.
+
+   Lo que queda NO es decorativo y por eso la regla no se poda entera: el
+   override de dark no declara `min-height`, `padding` ni `outline-offset`, y del
+   borde solo declara el color. Los 44px son el area tactil accesible.
+
+   Junto a esta habia un bloque `:hover, :focus` que tintaba el fondo con
+   `success-bg`. Se retiro entero: sus cuatro declaraciones de color estaban
+   muertas por lo mismo, pero ademas llevaba `outline: 0 !important`, que el
+   override NO declara y por tanto SI aplicaba, mientras su sustituto
+   -`box-shadow: var(--ds-shadow-focus)`- si lo pisaba el override. O sea que
+   suprimia el anillo de foco sin poner nada en su lugar.
+
+   AVISO, medido: retirarlo devuelve el ancho del outline (0px -> 3px) pero el
+   conmutador SIGUE sin marca de foco visible, porque su `outline-style` es
+   `none` desde antes: un `<button>` desnudo en esta pagina ya computa `none`,
+   asi que lo suprime un reset global de botones y no este bloque. Es un defecto
+   de WCAG 2.4.7 anterior a esta poda y mas ancho que ella -afecta a cualquier
+   boton sin `:focus-visible` propio-, y arreglarlo aqui seria parchear en un
+   modulo algo que es del sistema.
+   Guard: tests/browser/listado-actividades-switcher-focus.mjs. */
 .filaBotones .la-toolbar-switcher .aia-info-nav__trigger {
-  border: thin solid var(--aia-green-light) !important;
-  background: var(--aia-green-very-light) !important;
-  color: var(--aia-green-dark) !important;
-  box-shadow: var(--shadow-sm) !important;
+  border-width: thin !important;
+  border-style: solid !important;
   min-height: var(--ds-target-min) !important;
   padding: var(--spacing-xs) var(--spacing-sm) !important;
   outline-offset: calc(var(--spacing-xs) / 2) !important;
-}
-
-.filaBotones .la-toolbar-switcher .aia-info-nav__trigger:hover,
-.filaBotones .la-toolbar-switcher .aia-info-nav__trigger:focus {
-  border-color: var(--aia-green-primary) !important;
-  background: var(--ds-color-state-success-bg) !important;
-  /* El hover tinta el fondo con success-bg, asi que el texto tiene que salir del
-     mismo par y no del --aia-green-dark de la regla base (10,19:1 hoy sobre el
-     pastel, 1,00:1 en cuanto el fondo se invierta).
-     Medido en navegador: en dark ninguna de las dos declaraciones llega a
-     pintar, porque `html.aia-theme-dark .filaBotones .la-toolbar-switcher
-     .aia-info-nav__trigger` gana con mas especificidad y tambien !important. El
-     par se completa igual para que el bloque no quede a medias el dia que ese
-     override se retire; si se decide podarlo, se van los dos juntos. */
-  color: var(--ds-color-state-success-text) !important;
-  box-shadow: var(--ds-shadow-focus) !important;
-  outline: 0 !important;
 }
 
 .filaBotones .la-toolbar-switcher .aia-info-nav__eyebrow {

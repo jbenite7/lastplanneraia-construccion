@@ -82,7 +82,7 @@
     },
     {
       "file": "public/css/listado-actividades.css",
-      "line": 573,
+      "line": 579,
       "selector": ".la-mobile-card__edit-field",
       "token": "--ds-color-state-success-bg",
       "kind": "out-of-scope-mobile",
@@ -91,7 +91,7 @@
     },
     {
       "file": "public/css/listado-actividades.css",
-      "line": 666,
+      "line": 672,
       "selector": ".la-mobile-tipo-pill.is-checked",
       "token": "--ds-color-state-success-bg",
       "kind": "out-of-scope-mobile",
