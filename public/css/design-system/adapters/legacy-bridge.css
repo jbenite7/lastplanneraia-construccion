@@ -434,3 +434,95 @@
    views/profesionales/profesionales.view.php:278 y :284 son reglas CSS dentro
    de un `<style>`, bajo `.navbar-nav` y en un `@media` de movil; y admin/ no
    carga esta hoja ni el design system. */
+
+@layer legacy-overrides {
+  /* ───────────────────────────────────────────────────────────────────────
+     F1 Task 5j: ayudantes del modal de /pdc absorbidos desde
+     public/css/styles.css:4360-4430 (module.components).
+
+     Destino MEDIDO, no elegido por analogia. El primer intento fue
+     `@layer module.components` —la subcapa de origen— y volteo DOS reglas,
+     porque este archivo se importa ANTES que styles.css en los dos
+     entrypoints: dentro de la misma subcapa manda el orden de fuente, y
+     `.pdc-row-center` y `.pdc-inline-msg` empataban en especificidad con
+     `.row` y con `.aia-modal__message`, que en styles.css venian antes y
+     ahora venian despues. Medido: el margen inferior de `.pdc-row-center`
+     cayo de 10px a 0 y el sangrado de `.pdc-inline-msg` de 5px a 0.
+     `legacy-overrides` sale del empate por capa y devuelve los dos valores
+     originales sin tocar especificidad ni anadir !important.
+
+     Comprobado que subir de capa no voltea nada en sentido contrario: las
+     cuatro reglas ya ganaban su propiedad antes del traslado, y lo unico
+     que les gana hoy son declaraciones normales de pdc.css, que entra por
+     <link> SIN CAPA — y lo no capado gana a `legacy-overrides` igual que
+     ganaba a `module.components`. El `.row { margin-inline: 0 !important }`
+     de este mismo archivo sigue ganando al `margin: 0 auto` de
+     `.pdc-row-center` por ser !important, igual que antes.
+
+     Del rango original solo sube lo MEDIDO VIVO a 1180x820 en dark con el
+     modal abierto (`.modal('show')`, no en reposo: cerrado mide 0x0).
+     Podado por medicion, no por lectura:
+      - `.pdc-modal-row`, `.pdc-modal-label` y `.pdc-modal-value--narrow`
+        enteras: `#modalContrato .pdc-modal-row/.pdc-modal-label` de pdc.css
+        fija display, borde, paddings, margenes y alineacion, y el valor
+        computado no coincide con ninguna declaracion de styles.css.
+      - `.pdc-modal-spacer` y `.w-80`: CERO consumidores. Ni views/, ni src/,
+        ni public/js/ (buscado por clase exacta, incluida la concatenacion de
+        cadenas en JS). pdc.css:430 tambien la nombra y tambien esta muerta.
+      - `.pdc-bg-muted`: su fondo claro es inerte; el que pinta es
+        `#modalContrato .pdc-bg-muted` (pdc.css:595), ya oscuro.
+      - De `.pdc-modal-field`, todo lo geometrico (inline-size,
+        max-inline-size, margin, padding, min-block-size, border,
+        border-radius, background, transition): lo fija pdc.css:434.
+      - Los `display: inline-block` de `.pdc-modal-value` y
+        `.pdc-modal-field`: su contenedor es `display: grid`, que los
+        blockifica; sin la declaracion computan igual.
+
+     UNICA CORRECCION DE TEMA del bloque, y es un fallo real de contraste: la
+     tinta propia de `.pdc-modal-field` seguia siendo el gris de formulario
+     claro de Bootstrap y SI ganaba (nadie mas fija `color` sobre ese sujeto).
+     Sobre el fondo que pdc.css pinta rendia 1,93:1. Pasa a la tinta primaria
+     del tema activo, medida contra ESE mismo fondo: 14,99:1. Fondo y tinta se
+     comprueban juntos; el fondo no se toca porque no es de este archivo. */
+  .pdc-modal-value {
+    text-align: center;
+  }
+
+  .pdc-row-center {
+    text-align: center;
+    margin: 0 auto 0.625rem;
+  }
+
+  .pdc-inline-msg {
+    margin-inline-start: 0.3125rem;
+  }
+
+  .pdc-modal-field {
+    text-align: left;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--ds-active-text-primary);
+  }
+}
+
+/* Reintroduce el orden de subcapas de `module` que styles.css:1 fija hoy. Es
+   LOAD-BEARING: este archivo se importa ANTES que styles.css en los dos
+   entrypoints, asi que sin esta linea el `@layer module.components` de abajo
+   crearia `components` como PRIMERA subcapa de `module` y dejaria `theme` y
+   `layout` detras, invirtiendo el orden canonico. */
+@layer module.theme, module.layout, module.components;
+
+@layer module.components {
+  /* F1 Task 5j: el `display` de `.pdc-inline-msg` NO puede acompanar a su
+     margen en `legacy-overrides`. De los cinco `.pdc-inline-msg` de /pdc solo
+     uno (`#mensajeModalContrato`) computa `inline-block`; los otros cuatro
+     computan `block` porque les gana un selector mas especifico. Desde la
+     ultima capa la declaracion ganaria a los cinco y ensancharia cuatro
+     parrafos de mensaje. Conserva la subcapa de origen para que siga
+     decidiendo la especificidad, no la capa. Medido: 4 x block + 1 x
+     inline-block, identico a antes del traslado. */
+  .pdc-inline-msg {
+    display: inline-block;
+  }
+}

@@ -4357,77 +4357,8 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
   color: var(--aia-text-primary);
 }
 
-/* PDC */
-.pdc-modal-row {
-  display: flex;
-  align-items: center;
-  border-bottom-color: black;
-}
-
-.pdc-modal-label {
-  inline-size: 15.625rem;
-  max-inline-size: 40%;
-  display: inline-block;
-  text-align: center;
-  margin: 0 auto;
-}
-
-.pdc-modal-value {
-  inline-size: 75rem;
-  max-inline-size: 60%;
-  padding: 0.0625rem;
-  margin: 0 auto;
-  display: inline-block;
-  text-align: center;
-}
-
-.pdc-modal-value--narrow {
-  max-inline-size: 29%;
-}
-
-.pdc-modal-spacer {
-  inline-size: 75rem;
-  max-inline-size: 25%;
-  padding: 0.0625rem;
-  margin: 0 auto;
-  display: inline-block;
-  text-align: center;
-}
-
-.pdc-row-center {
-  text-align: center;
-  margin: 0 auto 0.625rem;
-}
-
-.pdc-inline-msg {
-  margin-inline-start: 0.3125rem;
-  display: inline-block;
-}
-
-.pdc-bg-muted {
-  background: #c7c7c7;
-}
-
-.pdc-modal-field {
-  inline-size: 75rem;
-  max-inline-size: 60%;
-  margin: 0 auto;
-  display: inline-block;
-  text-align: left;
-  min-block-size: calc(1.5em + 0.75rem + 2px);
-  padding: 0.375rem 0.75rem;
-  font-size: 1rem;
-  font-weight: 400;
-  line-height: 1.5;
-  color: #495057;
-  background-color: #fff;
-  background-clip: padding-box;
-  border: 1px solid #ced4da;
-  border-radius: 0.25rem;
-  transition:
-    border-color 0.15s ease-in-out,
-    box-shadow 0.15s ease-in-out;
-}
+/* PDC: los ayudantes del modal se fueron a design-system/adapters/legacy-bridge.css
+   (@layer module.components); aqui solo quedaban reglas que pdc.css ya pisaba. */
 
 .pdc-icon-state {
   margin-inline-end: 0.3125rem;
