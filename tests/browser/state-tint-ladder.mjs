@@ -21,6 +21,7 @@ const LADDER = {
   // Familia critical. Paso 1 es el mas intenso de la escalera compartida.
   '--ds-state-tint-red-1': '#562522',
   '--ds-state-tint-red-3': '#4a2723',
+  '--ds-state-tint-red-5': '#412823',
   '--ds-state-tint-red-6': '#3d2924',
   // Familia warning.
   '--ds-state-tint-amber-1': '#3e3714',
@@ -30,8 +31,10 @@ const LADDER = {
   // Familia success.
   '--ds-state-tint-green-2': '#1e3e2c',
   '--ds-state-tint-green-5': '#1f392a',
+  '--ds-state-tint-green-6': '#1e3729',
   // Familia info.
   '--ds-state-tint-teal-2': '#134841',
+  '--ds-state-tint-teal-5': '#174039',
   // Superficies silenciosas.
   '--ds-state-tint-neutral-quiet': '#1c2821',
   '--ds-state-tint-neutral-flat': '#1b231e',

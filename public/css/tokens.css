@@ -216,6 +216,7 @@
      Guard del valor resuelto: tests/browser/state-tint-ladder.mjs. */
     --ds-state-tint-red-1: color-mix(in srgb, var(--ds-color-state-critical-text) 48%, var(--ds-active-surface-raised) 52%);
     --ds-state-tint-red-3: color-mix(in srgb, var(--ds-color-state-critical-text) 38%, var(--ds-active-surface-raised) 62%);
+    --ds-state-tint-red-5: color-mix(in srgb, var(--ds-color-state-critical-text) 30%, var(--ds-active-surface-raised) 70%);
     --ds-state-tint-red-6: color-mix(in srgb, var(--ds-color-state-critical-text) 26%, var(--ds-active-surface-raised) 74%);
     --ds-state-tint-amber-1: color-mix(in srgb, var(--ds-color-state-warning-text) 48%, var(--ds-active-surface-raised) 52%);
     --ds-state-tint-amber-2: color-mix(in srgb, var(--ds-color-state-warning-text) 42%, var(--ds-active-surface-raised) 58%);
@@ -223,7 +224,9 @@
     --ds-state-tint-amber-5: color-mix(in srgb, var(--ds-color-state-warning-text) 30%, var(--ds-active-surface-raised) 70%);
     --ds-state-tint-green-2: color-mix(in srgb, var(--ds-color-state-success-text) 42%, var(--ds-active-surface-raised) 58%);
     --ds-state-tint-green-5: color-mix(in srgb, var(--ds-color-state-success-text) 30%, var(--ds-active-surface-raised) 70%);
+    --ds-state-tint-green-6: color-mix(in srgb, var(--ds-color-state-success-text) 26%, var(--ds-active-surface-raised) 74%);
     --ds-state-tint-teal-2: color-mix(in srgb, var(--ds-color-state-info-text) 42%, var(--ds-active-surface-raised) 58%);
+    --ds-state-tint-teal-5: color-mix(in srgb, var(--ds-color-state-info-text) 30%, var(--ds-active-surface-raised) 70%);
 
     /* Superficies silenciosas: los estados que no compiten por atencion
        (`Sin Datos`, `Terminada`). No llevan matiz a proposito. */

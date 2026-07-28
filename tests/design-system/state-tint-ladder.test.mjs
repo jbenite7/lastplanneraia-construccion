@@ -16,6 +16,7 @@ const read = (file) => readFile(new URL(`../../${file}`, import.meta.url), 'utf8
 const LADDER_STEPS = [
   '--ds-state-tint-red-1',
   '--ds-state-tint-red-3',
+  '--ds-state-tint-red-5',
   '--ds-state-tint-red-6',
   '--ds-state-tint-amber-1',
   '--ds-state-tint-amber-2',
@@ -23,7 +24,9 @@ const LADDER_STEPS = [
   '--ds-state-tint-amber-5',
   '--ds-state-tint-green-2',
   '--ds-state-tint-green-5',
+  '--ds-state-tint-green-6',
   '--ds-state-tint-teal-2',
+  '--ds-state-tint-teal-5',
   '--ds-state-tint-neutral-quiet',
   '--ds-state-tint-neutral-flat',
   '--ds-state-tint-violet-pdc',
