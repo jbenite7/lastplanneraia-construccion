@@ -3145,218 +3145,77 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
 }
 
 
-/* Programacion Semanal - Phase Indicator in Context Bar */
-.context-has-weekly-phase {
-  display: grid !important;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  align-items: center;
-  column-gap: 0.75rem;
-}
-
-.context-has-weekly-phase .context-breadcrumb {
-  justify-self: start;
-  min-inline-size: 0;
-}
-
-.context-has-weekly-phase .context-right-info {
-  justify-self: end;
-  margin-left: 0 !important;
-}
-
-.context-weekly-phase {
-  justify-self: center;
-  text-align: center;
-  white-space: nowrap;
-  border: 1px solid transparent;
-  border-radius: 999px;
-  padding: 0.1rem 0.6rem;
-  background-color: #fff;
-}
-
-.ps-weekly-phase-title {
-  display: block;
-  margin: 0;
-  font-size: 0.82rem;
-  line-height: 1.2;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-}
-
-.context-weekly-phase--programacion {
-  color: var(--aia-orange-dark, #8b4011);
-  border-color: var(--aia-orange-medium, #e87722);
-  background-color: var(--aia-orange-very-light, #fbead9);
-}
-
-.context-weekly-phase--calificacion {
-  color: var(--aia-green-dark, #1a3c2a);
-  border-color: var(--aia-green-medium, #4a7c64);
-  background-color: var(--aia-green-very-light, #d5e5db);
-}
-
-.pdc-legend-item.ps-alert-critical-route,
+/* Muestras de estado del modal de leyenda de Semanal. Cada estado conserva su
+   familia de matiz y toma el escalon `-1`, el mismo ancla del que salen el chip
+   y la fila. Ningun relleno de la escalera llega a 3:1 sobre oscuro, asi que la
+   frontera del objeto grafico (WCAG 1.4.11) la sostiene la tinta secundaria. */
 .ps-legend-modal-swatch.ps-alert-critical-route {
-  background-color: var(--aia-alert-background, #fdecec);
-  color: var(--aia-alert-critical, #9a1f1f);
-  border-color: var(--aia-alert-high, #e53935);
+  background-color: var(--ds-state-tint-red-1);
+  border-color: var(--ds-active-text-secondary);
 }
 
-.pdc-legend-item.ps-alert-critical,
 .ps-legend-modal-swatch.ps-alert-critical {
-  background-color: var(--aia-alert-background, #fdecec);
-  color: var(--aia-alert-critical, #9a1f1f);
-  border-color: var(--aia-alert-high, #e53935);
+  background-color: var(--ds-state-tint-red-1);
+  border-color: var(--ds-active-text-secondary);
 }
 
-.pdc-legend-item.ps-alert-high,
 .ps-legend-modal-swatch.ps-alert-high {
-  background-color: var(--aia-orange-very-light, #fbead9);
-  color: var(--aia-orange-dark, #8b4011);
-  border-color: var(--aia-orange-primary, #b55211);
+  background-color: var(--ds-state-tint-orange-1);
+  border-color: var(--ds-active-text-secondary);
 }
 
-.pdc-legend-item.ps-alert-medium,
 .ps-legend-modal-swatch.ps-alert-medium {
-  background-color: var(--aia-warning-background, #fff8e1);
-  color: var(--aia-warning-critical, #a0731a);
-  border-color: var(--aia-warning-high, #ffca28);
+  background-color: var(--ds-state-tint-amber-1);
+  border-color: var(--ds-active-text-secondary);
 }
 
-.pdc-legend-item.ps-alert-info,
 .ps-legend-modal-swatch.ps-alert-info {
-  background-color: var(--aia-blue-very-light, #e6f0fa);
-  color: var(--aia-blue-dark, #2a5a8f);
-  border-color: var(--aia-blue-primary, #4a81bd);
+  background-color: var(--ds-state-tint-blue-1);
+  border-color: var(--ds-active-text-secondary);
 }
 
-.pdc-legend-item.ps-alert-control,
 .ps-legend-modal-swatch.ps-alert-control {
-  background-color: var(--aia-green-very-light, #d5e5db);
-  color: var(--aia-green-dark, #1a3c2a);
-  border-color: var(--aia-green-primary, #1a5633);
+  background-color: var(--ds-state-tint-green-1);
+  border-color: var(--ds-active-text-secondary);
 }
 
-.ps-page {
-  --ps-critical-bg: #fecaca;
-  --ps-critical-text: #9a1f1f;
-  --ps-high-bg: #fed7aa;
-  --ps-high-text: #8b4011;
-  --ps-medium-bg: #fde68a;
-  --ps-medium-text: #a0731a;
-  --ps-info-bg: #bae6fd;
-  --ps-info-text: #2a5a8f;
-  --ps-control-bg: #bbf7d0;
-  --ps-control-text: #1a3c2a;
-  --ps-neutral-bg: #f1f5f9;
-  --ps-neutral-text: #475569;
-}
-
-table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-critical,
+/* Solo el sujeto de Handsontable: ninguna fila de DataTables recibe nunca
+   `ps-row-state` (medido en las cuatro rutas de `ps-page`), asi que su mitad del
+   selector -y las siete franjas de `td:first-child`- estaban inertes. El tinte y
+   la tinta salen de los tokens del modulo, ya resueltos en oscuro. */
 .ps-page #hot-container .handsontable td.ps-row-state.ps-alert-critical {
   background-color: var(--ps-critical-bg) !important;
   color: var(--ps-critical-text) !important;
 }
 
-table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-critical-route,
 .ps-page #hot-container .handsontable td.ps-row-state.ps-alert-critical-route {
   background-color: var(--ps-critical-bg) !important;
   color: var(--ps-critical-text) !important;
 }
 
-table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-critical-route td,
-.ps-page #hot-container .handsontable td.ps-row-state.ps-alert-critical-route {
-  color: var(--ps-critical-text) !important;
-}
-
-table.dt_programacionSemanal.dataTable
-  tbody
-  tr.ps-row-state.ps-alert-critical-route
-  td:first-child {
-  border-left: 4px solid var(--aia-alert-high, #e53935) !important;
-}
-
-table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-critical td,
-.ps-page #hot-container .handsontable td.ps-row-state.ps-alert-critical {
-  color: var(--ps-critical-text) !important;
-}
-
-table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-critical td:first-child {
-  border-left: 4px solid var(--aia-alert-high, #e53935) !important;
-}
-
-table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-high,
 .ps-page #hot-container .handsontable td.ps-row-state.ps-alert-high {
   background-color: var(--ps-high-bg) !important;
   color: var(--ps-high-text) !important;
 }
 
-table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-high td,
-.ps-page #hot-container .handsontable td.ps-row-state.ps-alert-high {
-  color: var(--ps-high-text) !important;
-}
-
-table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-high td:first-child {
-  border-left: 4px solid var(--aia-orange-primary, #b55211) !important;
-}
-
-table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-medium,
 .ps-page #hot-container .handsontable td.ps-row-state.ps-alert-medium {
   background-color: var(--ps-medium-bg) !important;
   color: var(--ps-medium-text) !important;
 }
 
-table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-medium td,
-.ps-page #hot-container .handsontable td.ps-row-state.ps-alert-medium {
-  color: var(--ps-medium-text) !important;
-}
-
-table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-medium td:first-child {
-  border-left: 4px solid var(--aia-warning-high, #ffca28) !important;
-}
-
-table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-info,
 .ps-page #hot-container .handsontable td.ps-row-state.ps-alert-info {
   background-color: var(--ps-info-bg) !important;
   color: var(--ps-info-text) !important;
 }
 
-table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-info td,
-.ps-page #hot-container .handsontable td.ps-row-state.ps-alert-info {
-  color: var(--ps-info-text) !important;
-}
-
-table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-info td:first-child {
-  border-left: 4px solid var(--aia-blue-primary, #4a81bd) !important;
-}
-
-table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-control,
 .ps-page #hot-container .handsontable td.ps-row-state.ps-alert-control {
   background-color: var(--ps-control-bg) !important;
   color: var(--ps-control-text) !important;
 }
 
-table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-control td,
-.ps-page #hot-container .handsontable td.ps-row-state.ps-alert-control {
-  color: var(--ps-control-text) !important;
-}
-
-table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-control td:first-child {
-  border-left: 4px solid var(--aia-green-primary, #1a5633) !important;
-}
-
-table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral,
 .ps-page #hot-container .handsontable td.ps-row-state.ps-alert-neutral {
   background-color: var(--ps-neutral-bg) !important;
   color: var(--ps-neutral-text) !important;
-}
-
-table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td,
-.ps-page #hot-container .handsontable td.ps-row-state.ps-alert-neutral {
-  color: var(--ps-neutral-text) !important;
-}
-
-table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td:first-child {
-  border-left: 4px solid #94a3b8 !important;
 }
 
 .ps-legend-quick {
@@ -3381,52 +3240,16 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
   line-height: 1.35;
 }
 
-.ps-legend-quick-scale {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-}
-
-.ps-legend-quick-badge,
-.ps-legend-quick-priority {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  border: 1px solid transparent;
-  font-size: 0.7rem;
-  font-weight: 700;
-  line-height: 1;
-  padding: 0.2rem 0.5rem;
-  white-space: nowrap;
-}
-
-.ps-legend-quick-badge.is-p1,
-.ps-legend-quick-priority.is-p1 {
-  background-color: #fee2e2;
-  color: #991b1b;
-  border-color: #fecaca;
-}
-
-.ps-legend-quick-badge.is-p2,
-.ps-legend-quick-priority.is-p2 {
-  background-color: #ffedd5;
-  color: #9a3412;
-  border-color: #fed7aa;
-}
-
-.ps-legend-quick-badge.is-p3,
-.ps-legend-quick-priority.is-p3 {
-  background-color: #e2e8f0;
-  color: #334155;
-  border-color: #cbd5e1;
-}
-
+/* Este bloque es la piel por defecto del modal de leyenda. En la ruta de CNP
+   `programacion-semanal.css` la sobrescribe apuntando al id `modal_leyenda_colores`;
+   en `/programacion-semanal` el modal se llama distinto y ese override no llega,
+   asi que aqui tiene que quedar ya en oscuro. Los valores son los mismos que la
+   otra ruta ya pinta. */
 .ps-legend-quick-group,
 .ps-legend-quick-alerts {
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--ds-active-border);
   border-radius: 0.65rem;
-  background: #ffffff;
+  background: var(--ds-active-surface-raised);
   overflow: hidden;
 }
 
@@ -3436,9 +3259,9 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
   font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.01em;
-  color: #0f172a;
-  background-color: #f8fafc;
-  border-bottom: 1px solid #e2e8f0;
+  color: var(--ds-active-text-primary);
+  background-color: var(--ds-active-surface);
+  border-bottom: 1px solid var(--ds-active-border);
 }
 
 .ps-legend-quick-row {
@@ -3447,7 +3270,7 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
   align-items: center;
   gap: 0.45rem;
   padding: 0.52rem 0.65rem;
-  border-top: 1px solid #eef2f7;
+  border-top: 1px solid var(--ds-active-border);
 }
 
 .ps-legend-quick-group .ps-legend-quick-row:first-of-type {
@@ -3468,34 +3291,32 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
 }
 
 .ps-legend-quick-state strong {
-  color: #111827;
+  color: var(--ds-active-text-primary);
   font-size: 0.82rem;
   line-height: 1.2;
 }
 
 .ps-legend-quick-state small {
-  color: #64748b;
+  color: var(--ds-active-text-secondary);
   font-size: 0.73rem;
   line-height: 1.25;
 }
 
+/* El `strong` interior tenia su propio gris; sobre oscuro las dos tintas son la
+   misma primaria, asi que la regla hija sobraba y hereda. */
 .ps-legend-quick-action {
-  color: #1f2937;
+  color: var(--ds-active-text-primary);
   font-size: 0.75rem;
   line-height: 1.28;
-}
-
-.ps-legend-quick-action strong {
-  color: #0f172a;
 }
 
 .ps-legend-quick-alert-intro {
   margin: 0;
   padding: 0.55rem 0.65rem;
-  color: #475569;
+  color: var(--ds-active-text-secondary);
   font-size: 0.76rem;
   line-height: 1.35;
-  border-bottom: 1px solid #eef2f7;
+  border-bottom: 1px solid var(--ds-active-border);
 }
 
 .ps-legend-quick-alert-grid {
@@ -3511,10 +3332,10 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
   grid-template-rows: auto auto;
   column-gap: 0.45rem;
   align-items: start;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--ds-active-border);
   border-radius: 0.5rem;
   padding: 0.4rem 0.5rem;
-  background: #f8fafc;
+  background: var(--ds-active-surface);
 }
 
 .ps-legend-quick-alert-item .ps-legend-modal-swatch {
@@ -3526,41 +3347,16 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
 .ps-legend-quick-alert-item strong {
   display: block;
   grid-column: 2;
-  color: #1f2937;
+  color: var(--ds-active-text-primary);
   font-size: 0.74rem;
   line-height: 1.1;
 }
 
 .ps-legend-quick-alert-item small {
   grid-column: 2;
-  color: #64748b;
+  color: var(--ds-active-text-secondary);
   font-size: 0.71rem;
   line-height: 1.2;
-}
-
-
-
-.ps-legend-modal {
-  display: grid;
-  gap: 0.5rem;
-  max-width: 54rem;
-}
-
-.ps-legend-modal-intro {
-  margin-bottom: 0.25rem;
-  color: #374151;
-  font-size: 0.92rem;
-}
-
-.ps-legend-modal-item {
-  display: grid;
-  grid-template-columns: 1.1rem 1fr;
-  gap: 0.55rem;
-  align-items: start;
-}
-
-.ps-legend-modal-item small {
-  color: #6b7280;
 }
 
 .ps-legend-modal-swatch {
@@ -3577,38 +3373,6 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
   gap: 0.7rem;
 }
 
-.ps-close-summary-status {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.6rem;
-  border: 1px solid transparent;
-  border-radius: 0.7rem;
-  padding: 0.65rem 0.8rem;
-}
-
-.ps-close-summary-status i {
-  margin-top: 0.12rem;
-  font-size: 1rem;
-}
-
-.ps-close-summary-status p {
-  margin: 0.15rem 0 0;
-  font-size: 0.86rem;
-  line-height: 1.3;
-}
-
-.ps-close-summary-status--critical {
-  color: var(--aia-alert-critical, #9a1f1f);
-  border-color: var(--aia-alert-high, #e53935);
-  background: var(--aia-alert-background, #fdecec);
-}
-
-.ps-close-summary-status--ok {
-  color: var(--aia-green-dark, #1a3c2a);
-  border-color: var(--aia-green-medium, #4a7c64);
-  background: var(--aia-green-very-light, #d5e5db);
-}
-
 .ps-close-summary-kpis {
   display: grid;
   gap: 0.5rem;
@@ -3616,10 +3380,10 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
 }
 
 .ps-close-summary-kpi {
-  border: 1px solid #dbe2ea;
+  border: 1px solid var(--ds-active-border);
   border-radius: 0.55rem;
   padding: 0.5rem 0.6rem;
-  background: #fff;
+  background: var(--ds-active-surface-raised);
 }
 
 .ps-close-summary-kpi strong {
@@ -3629,28 +3393,30 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
 }
 
 .ps-close-summary-kpi small {
-  color: #5f6b7a;
+  color: var(--ds-active-text-secondary);
   font-size: 0.78rem;
   line-height: 1.2;
 }
 
+/* Al oscurecerse el KPI, el borde de estado cambia de escalon dentro de SU
+   MISMA familia: los pasos claros caian a 1,14-2,60:1 sobre el fondo nuevo. */
 .ps-close-summary-kpi.is-blocking {
-  border-color: var(--aia-alert-high, #e53935);
+  border-color: var(--aia-alert-medium);
 }
 
 .ps-close-summary-kpi.is-ready {
-  border-color: var(--aia-green-primary, #1a5633);
+  border-color: var(--aia-green-light);
 }
 
 .ps-close-summary-kpi.is-warning {
-  border-color: var(--aia-warning-high, #ffca28);
+  border-color: var(--aia-warning-high);
 }
 
 .ps-close-summary-block {
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--ds-active-border);
   border-radius: 0.55rem;
   padding: 0.55rem 0.65rem;
-  background: #fff;
+  background: var(--ds-active-surface-raised);
 }
 
 .ps-close-summary-block h6 {
@@ -3675,18 +3441,13 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
 }
 
 .ps-close-summary-list small {
-  color: #667085;
+  color: var(--ds-active-text-secondary);
 }
 
 .ps-close-summary-note {
   margin: 0;
   font-size: 0.83rem;
-  color: #4b5563;
-}
-
-.ps-close-summary-note.is-critical {
-  color: var(--aia-alert-critical, #9a1f1f);
-  font-weight: 600;
+  color: var(--ds-active-text-secondary);
 }
 
 .ps-weekly-phase-mobile-label {

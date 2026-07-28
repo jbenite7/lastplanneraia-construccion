@@ -183,7 +183,19 @@ const EXTRA = [
   // deshabilitado.
   ['/listado-actividades', 'modalAutoGenerarListado', ['#modalAutoGenerarListado .modal-footer .btn.btn-secondary']],
   ['/programa-general-actualizar', 'modalCargarExcel', ['#modalCargarExcel h3#form_general']],
-  ['/programacion-semanal', 'modal_leyenda_colores_ps', ['.ps-legend-quick-intro']],
+  // La cabecera de esta leyenda ya venia del tema activo, pero el resto del
+  // cuerpo no: `programacion-semanal.css` lo oscurece apuntando al id
+  // `modal_leyenda_colores` y en esta ruta el modal se llama distinto, asi que
+  // el override no llegaba. Los contenedores se miden a proposito: no tienen
+  // texto propio, y una tinta heredada que no se lee sobre su propio fondo es
+  // la firma exacta de la isla clara.
+  ['/programacion-semanal', 'modal_leyenda_colores_ps', [
+    '.ps-legend-quick-intro',
+    '.ps-legend-quick-group',
+    '.ps-legend-quick-alerts',
+    '.ps-legend-quick-alert-item',
+    '.ps-legend-quick-alert-item small',
+  ]],
   ['/programacion-semanal', 'formulario_nuevo', [
     '#btn_recargar_bandeja_no_autoprogramadas',
     '#btn_listar',
@@ -208,6 +220,34 @@ for (const [route, modalId, selectors] of EXTRA) {
     }
   });
 }
+
+// El resumen de cierre no existe al abrir el modal: lo escribe renderCloseSummary()
+// en el handler del boton. Un barrido que solo llama a .modal('show') encuentra el
+// cuerpo vacio y no mide nada, asi que este caso dispara el boton real.
+test('/programacion-semanal #modal_cerrar_compromisos: resumen legible sobre oscuro', async ({ page }) => {
+  await loginAndSelectProject(page, project);
+  await page.goto('/programacion-semanal');
+  await page.waitForLoadState('networkidle').catch(() => {});
+  await installContrastProbe(page);
+
+  await page.locator('#btn_cerrar_compromisos_semana').click();
+  await expect(page.locator('#modal_cerrar_compromisos .ps-close-summary-kpi').first())
+    .toBeVisible({ timeout: 15000 });
+  await page.waitForTimeout(450);
+
+  for (const selector of [
+    '#modal_cerrar_compromisos .ps-close-summary-kpi',
+    '#modal_cerrar_compromisos .ps-close-summary-kpi strong',
+    '#modal_cerrar_compromisos .ps-close-summary-kpi small',
+    '#modal_cerrar_compromisos .ps-close-summary-note',
+  ]) {
+    const result = await measure(page, selector);
+    expect(result, `${selector} no existe`).not.toBeNull();
+    expect
+      .soft(result.ratio, `${selector} — ${result.fg} sobre ${result.bg}`)
+      .toBeGreaterThanOrEqual(AA);
+  }
+});
 
 // El valor COMPUTADO es la unica prueba de quien gano la cascada. Este bloque
 // existe porque el mismo defecto que ataca el tramo —una regla que parece ganar
