@@ -132,7 +132,7 @@
         {
           "label": "Ejecución con restricciones",
           "level": "urgent",
-          "hue": "amber"
+          "hue": "orange"
         },
         {
           "label": "Condiciones Pendientes",
@@ -172,7 +172,7 @@
         {
           "label": "Trabajo No Planificado",
           "level": "neutral",
-          "hue": "teal"
+          "hue": "blue"
         }
       ]
     },

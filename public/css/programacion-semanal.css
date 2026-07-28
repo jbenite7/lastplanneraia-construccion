@@ -14,16 +14,43 @@ body.ps-page,
     color: var(--ds-active-text-primary);
 }
 
+/* Los tintes de este modulo son mas tenues que los del resto (14-24 % contra
+   26-48 %) porque aqui se tine la FILA COMPLETA en una grilla densa; subirlos al
+   nivel de los otros modulos la volveria ilegible.
+
+   Dos matices vuelven a su familia historica. Al pasar a dark se derivaron del
+   nombre de la variable en vez de la paleta clara que sustituian, y con eso el
+   modulo perdio dos distinciones que si tenia en claro:
+
+     - `high` era NARANJA (`--aia-orange-very-light`) y habia quedado ambar,
+       identico a `medium`. Con los dos en ambar, «Ejecucion con restricciones» y
+       «Condiciones Pendientes» eran el mismo chip.
+     - `info` era AZUL (`--aia-blue-very-light`) y habia quedado teal.
+
+   Ambas familias existen hoy en la escalera del design system, asi que se
+   derivan de su ancla en vez de reinventarlas.
+   Guard: tests/browser/programacion-semanal-legend-honesty.mjs. */
 html.aia-theme-dark body.ps-page {
-    --ps-critical-bg: color-mix(in srgb, var(--ds-color-state-critical-text) 24%, var(--ds-active-surface) 76%);
+    /* Cada familia da DOS pasos, y no es redundancia: el chip de la leyenda usa
+       el intenso -tiene que identificarse de un vistazo en una fila de cinco- y
+       la fila de la grilla el tenue, porque aqui se tine la fila COMPLETA y al
+       nivel de los otros modulos la tabla se vuelve ilegible.
+       Los dos salen del mismo ancla, asi que comparten matiz: lo que la leyenda
+       promete es la familia, no el valor. */
+    --ps-critical-chip: color-mix(in srgb, var(--ds-state-tint-red-pdc) 88%, var(--ds-active-surface) 12%);
+    --ps-critical-bg: color-mix(in srgb, var(--ds-state-tint-red-pdc) 46%, var(--ds-active-surface) 54%);
     --ps-critical-text: var(--ds-active-text-primary);
-    --ps-high-bg: color-mix(in srgb, var(--ds-color-state-warning-text) 22%, var(--ds-active-surface) 78%);
+    --ps-high-chip: color-mix(in srgb, var(--ds-state-tint-orange-pdc) 88%, var(--ds-active-surface) 12%);
+    --ps-high-bg: color-mix(in srgb, var(--ds-state-tint-orange-pdc) 46%, var(--ds-active-surface) 54%);
     --ps-high-text: var(--ds-active-text-primary);
-    --ps-medium-bg: color-mix(in srgb, var(--ds-color-state-warning-text) 14%, var(--ds-active-surface) 86%);
+    --ps-medium-chip: color-mix(in srgb, var(--ds-state-tint-amber-pdc) 88%, var(--ds-active-surface) 12%);
+    --ps-medium-bg: color-mix(in srgb, var(--ds-state-tint-amber-pdc) 46%, var(--ds-active-surface) 54%);
     --ps-medium-text: var(--ds-active-text-primary);
-    --ps-info-bg: color-mix(in srgb, var(--ds-color-state-info-text) 18%, var(--ds-active-surface) 82%);
+    --ps-info-chip: color-mix(in srgb, var(--ds-state-tint-blue-pdc) 88%, var(--ds-active-surface) 12%);
+    --ps-info-bg: color-mix(in srgb, var(--ds-state-tint-blue-pdc) 46%, var(--ds-active-surface) 54%);
     --ps-info-text: var(--ds-active-text-primary);
-    --ps-control-bg: color-mix(in srgb, var(--ds-color-state-success-text) 16%, var(--ds-active-surface) 84%);
+    --ps-control-chip: color-mix(in srgb, var(--ds-state-tint-green-pdc) 88%, var(--ds-active-surface) 12%);
+    --ps-control-bg: color-mix(in srgb, var(--ds-state-tint-green-pdc) 46%, var(--ds-active-surface) 54%);
     --ps-control-text: var(--ds-active-text-primary);
     --ps-neutral-bg: var(--ds-active-surface);
     --ps-neutral-text: var(--ds-active-text-secondary);
@@ -2436,25 +2463,31 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
 
     html.aia-theme-dark body.ps-page #psAlertsLegend :is(
         .ps-alert-critical-route, .ps-alert-critical) {
-        background: var(--ps-critical-bg) !important;
+        background: var(--ps-critical-chip) !important;
     }
 
-    html.aia-theme-dark body.ps-page #psAlertsLegend :is(
-        .ps-alert-high, .ps-alert-medium) {
-        background: var(--ps-high-bg) !important;
+    /* `high` y `medium` NO se agrupan: cada uno promete el tinte de la fila que
+       filtra, y esos tintes son distintos. Agrupados, los dos chips pintaban
+       `--ps-high-bg` y «Condiciones Pendientes» mentia sobre su propia grilla. */
+    html.aia-theme-dark body.ps-page #psAlertsLegend .ps-alert-high {
+        background: var(--ps-high-chip) !important;
+    }
+
+    html.aia-theme-dark body.ps-page #psAlertsLegend .ps-alert-medium {
+        background: var(--ps-medium-chip) !important;
     }
 
     html.aia-theme-dark body.ps-page #psAlertsLegend .ps-alert-info {
-        background: var(--ps-info-bg) !important;
+        background: var(--ps-info-chip) !important;
     }
 
     html.aia-theme-dark body.ps-page #psAlertsLegend .ps-alert-control {
-        background: var(--ps-control-bg) !important;
+        background: var(--ps-control-chip) !important;
     }
 
     html.aia-theme-dark body.ps-page #psAlertsLegend .ps-alert-tnp {
         border-color: var(--ds-active-border) !important;
-        background: var(--ps-info-bg) !important;
+        background: var(--ps-info-chip) !important;
         color: var(--ds-active-text-primary) !important;
     }
 

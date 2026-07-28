@@ -133,9 +133,16 @@ test('programación semanal declara las etiquetas de sus dos fases', async () =>
   // etiquetas de las que solo dos existian en la UI. Las reales viven en
   // WEEKLY_ALERT_MODEL (public/js/modules/programacion_semanal/hot.js) y son
   // diez, cinco por cada fase del modulo.
+  //
+  // Dos matices se corrigieron despues: `Ejecucion con restricciones` es NARANJA
+  // y `Trabajo No Planificado` es AZUL. Se habian deducido del nombre de la
+  // clase (`ps-alert-high`, `ps-alert-tnp`) en vez de la paleta clara que el
+  // modulo tenia antes de pasar a dark, que es la que dice la intencion:
+  // `--aia-orange-very-light` y `--aia-blue-very-light`. Con `high` en ambar era
+  // indistinguible de `medium`.
   assert.deepEqual(weekly.states, [
     { label: 'RC con restricciones', level: 'urgent', hue: 'red' },
-    { label: 'Ejecución con restricciones', level: 'urgent', hue: 'amber' },
+    { label: 'Ejecución con restricciones', level: 'urgent', hue: 'orange' },
     { label: 'Condiciones Pendientes', level: 'attention', hue: 'amber' },
     { label: 'Por Comprometer', level: 'attention', hue: 'amber' },
     { label: 'Lista para Confirmar', level: 'healthy', hue: 'green' },
@@ -143,6 +150,6 @@ test('programación semanal declara las etiquetas de sus dos fases', async () =>
     { label: 'Incumplida', level: 'attention', hue: 'amber' },
     { label: 'Sin Calificar', level: 'attention', hue: 'amber' },
     { label: 'Cumplida Control', level: 'healthy', hue: 'green' },
-    { label: 'Trabajo No Planificado', level: 'neutral', hue: 'teal' },
+    { label: 'Trabajo No Planificado', level: 'neutral', hue: 'blue' },
   ]);
 });
