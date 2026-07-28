@@ -107,7 +107,8 @@ CREATE TABLE IF NOT EXISTS pdc_plan_paso (
 
 ```bash
 cd "/Volumes/Crucial X6/Developer/lps-aia-pdc"
-docker compose exec -T db mysql -u"$DB_USER" -p"$DB_PASS" "$DB_NAME"   # credenciales reales en el .env del worktree < database/migrations/20260728_pdc_v2_plan_fechas.sql
+# Credenciales reales en el .env del worktree.
+docker compose exec -T db mysql -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" < database/migrations/20260728_pdc_v2_plan_fechas.sql
 ```
 
 Si las credenciales fallan, mirar `docker-compose.yml` para el usuario/clave y la base reales.
@@ -115,10 +116,13 @@ Si las credenciales fallan, mirar `docker-compose.yml` para el usuario/clave y l
 - [ ] **Step 3: Verificar que existen y son idempotentes**
 
 ```bash
-docker compose exec -T db mysql -u"$DB_USER" -p"$DB_PASS" "$DB_NAME"   # credenciales reales en el .env del worktree -e "
+# Credenciales reales en el .env del worktree.
+# El paréntesis del OR no es opcional: `AND ... OR ...` sin él ata el AND primero y la consulta
+# devuelve `pdc_paquete_frente` de cualquier esquema, no solo del que se está verificando.
+docker compose exec -T db mysql -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" -e "
   SELECT table_name, table_collation FROM information_schema.tables
-  WHERE table_schema=DATABASE() AND table_name LIKE 'pdc_pla%' OR table_name='pdc_paquete_frente';"
-docker compose exec -T db mysql -u"$DB_USER" -p"$DB_PASS" "$DB_NAME"   # credenciales reales en el .env del worktree < database/migrations/20260728_pdc_v2_plan_fechas.sql
+  WHERE table_schema=DATABASE() AND (table_name LIKE 'pdc_pla%' OR table_name='pdc_paquete_frente');"
+docker compose exec -T db mysql -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" < database/migrations/20260728_pdc_v2_plan_fechas.sql
 ```
 
 Esperado: las 3 tablas con `utf8mb4_unicode_ci`, y la segunda ejecución sin error.

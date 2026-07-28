@@ -287,7 +287,11 @@ export default function PlanFechas() {
           <h3>Pasos de «{filaExpandida.nombre}»</h3>
           <table className="pdc-plan-pasos">
             <thead>
-              <tr><th>Paso</th><th>Días</th><th>Inicio</th><th>Fin</th></tr>
+              {/* «Hasta», no «Fin»: el intervalo de cada paso es medio abierto —esa fecha es la
+                  frontera con el paso siguiente, no su último día trabajado (ver la convención en
+                  PlanFechasService::calcular()). Con «Fin», «7 días · 23 may → 30 may» se lee como
+                  ocho días y como si dos pasos compartieran uno; «Hasta» dice lo que el dato es. */}
+              <tr><th>Paso</th><th>Días</th><th>Inicio</th><th>Hasta</th></tr>
             </thead>
             <tbody>
               {filaExpandida.pasos.map((p) => (
