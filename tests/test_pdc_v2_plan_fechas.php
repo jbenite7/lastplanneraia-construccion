@@ -599,6 +599,66 @@ foreach ($plan4 as $f) {
 $assert(($porId4[$paqEstructura]['responsable'] ?? '') === 'Juan Pérez',
     'Importante 3: `responsable` sobrevive a un recálculo (lo conserva el ON DUPLICATE KEY UPDATE).');
 
+// --- B1: recalcular no debe destruir las filas de pdc_plan_paso ---
+// B1 (Seguimiento) va a colgar `fecha_real` de estas filas. Mientras `calcular()` hiciera
+// DELETE + INSERT, cada recálculo las borraba y creaba otras nuevas: el avance real se perdía sin
+// aviso. Esa columna todavía no existe, así que aquí se prueba el invariante observable
+// equivalente — si el `id` de la fila sobrevive, la fila es la misma y con ella cualquier columna
+// que B1 le añada.
+$idsPaso = static function () use ($db, $P, $paqEstructura): array {
+    return $db->query(
+        'SELECT orden, id FROM pdc_plan_paso WHERE project_id = ? AND paquete_id = ? ORDER BY orden',
+        [$P, $paqEstructura],
+    )->fetchAll(\PDO::FETCH_KEY_PAIR);
+};
+
+$idsAntes = $idsPaso();
+$assert(count($idsAntes) === count(PlanFechasService::PASOS),
+    'B1: el paquete de referencia tiene una fila por paso antes de recalcular. Hay ' . count($idsAntes));
+
+$svc->calcular($P, 'test-a4');
+$idsDespues = $idsPaso();
+
+$assert($idsAntes === $idsDespues,
+    'B1: recalcular conserva las MISMAS filas de pdc_plan_paso (mismos ids por orden), no las borra y recrea.');
+
+// El upsert tiene que seguir actualizando las fechas programadas: conservar la fila no puede
+// significar dejarla congelada. Se mueve el frente, se recalcula y se comprueba que las fechas
+// cambiaron.
+$db->query('UPDATE programa_consolidado SET Fecha_Inicio = "2026-10-15" WHERE project_id = ? AND unique_id = 9001 AND Semana = 2', [$P]);
+$svc->amarrar($P, $paqEstructura, 9001, 'test-a4');   // reamarre al mismo frente movido: invalida el plan viejo
+$svc->calcular($P, 'test-a4');
+$finDespues = $db->query(
+    'SELECT fecha_fin FROM pdc_plan_paso WHERE project_id = ? AND paquete_id = ? AND orden = ?',
+    [$P, $paqEstructura, count(PlanFechasService::PASOS) - 1],
+)->fetchColumn();
+$assert($finDespues === '2026-10-15',
+    'B1: el upsert sigue reescribiendo las fechas programadas — el último paso termina en la fecha nueva del frente. Dio ' . var_export($finDespues, true));
+
+// Los pasos sobrantes se retiran si el proceso se acortara. No se puede cambiar la constante PASOS
+// desde el test, así que se simula el residuo insertando a mano una fila con un `orden` por encima
+// del último válido y comprobando que el siguiente recálculo la barre.
+$db->query(
+    'INSERT INTO pdc_plan_paso (project_id, paquete_id, orden, paso, dias, fecha_inicio, fecha_fin)
+     VALUES (?, ?, ?, ?, ?, ?, ?)',
+    [$P, $paqEstructura, count(PlanFechasService::PASOS), 'PASO FANTASMA', 5, '2026-01-01', '2026-01-06'],
+);
+$svc->calcular($P, 'test-a4');
+$sobrantes = (int) $db->query(
+    'SELECT COUNT(*) FROM pdc_plan_paso WHERE project_id = ? AND paquete_id = ? AND orden >= ?',
+    [$P, $paqEstructura, count(PlanFechasService::PASOS)],
+)->fetchColumn();
+$assert($sobrantes === 0,
+    'B1: un paso sobrante (orden por encima del último válido) se borra en el siguiente recálculo. Quedaron ' . $sobrantes);
+
+// Este bloque movió el frente 9001 y reamarró paqEstructura: se deja el estado como estaba para que
+// los bloques de abajo (desfases, aislamiento entre proyectos) sigan midiendo contra el ancla
+// 2026-08-18 que esperan. Sin esta restauración, el assert «fechaGuardada === 2026-08-18» de más
+// abajo empezaría a fallar por un efecto colateral de este bloque, no por el comportamiento que mide.
+$db->query('UPDATE programa_consolidado SET Fecha_Inicio = "2026-08-18" WHERE project_id = ? AND unique_id = 9001 AND Semana = 2', [$P]);
+$svc->amarrar($P, $paqEstructura, 9001, 'test-a4');
+$svc->calcular($P, 'test-a4');
+
 // --- desfases: el cronograma se movió y el plan quedó viejo ---
 $svc->amarrar($P, $paqEstructura, 9001, 'test-a4');   // ancla 2026-08-18
 $assert($svc->desfases($P) === [], 'Recién amarrado no hay desfase.');

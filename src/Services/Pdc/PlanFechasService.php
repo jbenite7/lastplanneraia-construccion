@@ -611,17 +611,36 @@ class PlanFechasService
                     ],
                 );
 
-                // Los pasos se reemplazan enteros: recalcular no debe acumular.
-                $this->db->query('DELETE FROM pdc_plan_paso WHERE project_id = ? AND paquete_id = ?', [$projectId, $paqueteId]);
+                // Upsert, no DELETE + INSERT: B1 (Seguimiento) va a colgar la fecha REAL de cada
+                // paso de estas mismas filas, y borrarlas en cada recálculo se llevaría por delante
+                // el avance ya registrado sin ningún aviso. La clave única
+                // (project_id, paquete_id, orden) hace que cada paso caiga siempre en su misma fila.
+                //
+                // El ON DUPLICATE KEY UPDATE lista SOLO las cuatro columnas programadas: lo que no
+                // se lista, MySQL lo conserva. Es la misma garantía que protege `responsable` en
+                // pdc_plan_paquete, y es lo que hace que las columnas que añada B1 sobrevivan sin
+                // volver a tocar este servicio. No añadir aquí ninguna columna de seguimiento.
                 foreach (self::PASOS as $i => $p) {
                     $ini = $cursor;
                     $cursor = $cursor->modify(sprintf('+%d days', $dias[$i]));
                     $this->db->query(
                         'INSERT INTO pdc_plan_paso (project_id, paquete_id, orden, paso, dias, fecha_inicio, fecha_fin)
-                         VALUES (?, ?, ?, ?, ?, ?, ?)',
+                         VALUES (?, ?, ?, ?, ?, ?, ?)
+                         ON DUPLICATE KEY UPDATE paso = VALUES(paso), dias = VALUES(dias),
+                            fecha_inicio = VALUES(fecha_inicio), fecha_fin = VALUES(fecha_fin)',
                         [$projectId, $paqueteId, $i, $p['paso'], $dias[$i], $ini->format('Y-m-d'), $cursor->format('Y-m-d')],
                     );
                 }
+
+                // Sobrantes: si el proceso se acortara (PASOS pasa de 7 a 5), las filas de los
+                // órdenes que ya no existen quedarían huérfanas y `plan()` las seguiría devolviendo.
+                // Los órdenes son el índice del foreach, contiguos desde 0, así que todo lo que esté
+                // en el último válido o por encima sobra. Se borra DESPUÉS del upsert para no dejar
+                // ni un instante al paquete sin sus pasos dentro de la transacción.
+                $this->db->query(
+                    'DELETE FROM pdc_plan_paso WHERE project_id = ? AND paquete_id = ? AND orden >= ?',
+                    [$projectId, $paqueteId, count(self::PASOS)],
+                );
                 $this->db->commit();
             } catch (\Throwable $t) {
                 $this->db->rollBack();
