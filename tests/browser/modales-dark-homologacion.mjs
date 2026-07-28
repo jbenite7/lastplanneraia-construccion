@@ -110,6 +110,42 @@ test('/pdc #modalContrato: cuerpo y campos legibles', async ({ page }) => {
   expect(bg.computed, `candidatas:\n      ${explainRules(bg)}`).toBe('rgba(28, 36, 31, 0.92)');
 });
 
+test('/programa-general-actualizar: modales de auto-asociacion y exito legibles', async ({ page }) => {
+  await loginAndSelectProject(page, project);
+  await page.goto('/programa-general-actualizar');
+  await installContrastProbe(page);
+
+  await openModal(page, 'modalAutoAsociar');
+  for (const selector of ['#modalAutoAsociar .modal-body', '#modalAutoAsociar .modal-footer']) {
+    const result = await measure(page, selector);
+    expect(result, `${selector} no existe`).not.toBeNull();
+    expect
+      .soft(result.ratio, `${selector} — ${result.fg} sobre ${result.bg}`)
+      .toBeGreaterThanOrEqual(AA);
+  }
+  await closeModal(page, 'modalAutoAsociar');
+
+  await openModal(page, 'modalImportacionExitosa');
+  for (const selector of ['#modalImportacionExitosa h3', '#modalImportacionExitosa p']) {
+    const result = await measure(page, selector);
+    expect(result, `${selector} no existe`).not.toBeNull();
+    expect
+      .soft(result.ratio, `${selector} — ${result.fg} sobre ${result.bg}`)
+      .toBeGreaterThanOrEqual(AA);
+  }
+
+  // Los style= del markup ganan a todo: mientras sigan ahi, ningun cambio de
+  // CSS puede alcanzar a estos dos modales.
+  const inlineColors = await page.evaluate(() =>
+    ['modalAutoAsociar', 'modalImportacionExitosa'].flatMap((id) =>
+      [...document.getElementById(id).querySelectorAll('[style]')]
+        .map((el) => el.getAttribute('style'))
+        .filter((s) => /(^|;)\s*(background|color)\s*:/i.test(s)),
+    ).length,
+  );
+  expect(inlineColors, 'quedan style= de color en el markup').toBe(0);
+});
+
 // El valor COMPUTADO es la unica prueba de quien gano la cascada. Este bloque
 // existe porque el mismo defecto que ataca el tramo —una regla que parece ganar
 // y esta inerte— puede repetirse en el propio arreglo.
