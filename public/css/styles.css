@@ -210,11 +210,18 @@ table.dataTable tbody tr:hover td {
    ademas su ultimo residuo, `.dropdown-item { font-size: 1rem !important }`
    (estaba mas abajo, en la seccion de tamanos). */
 
+/* F1 Task 5l: los seis bordes pizarra de estos formularios (aqui y hasta
+   .pregunta) pasan a --ds-active-border, y el fondo a --ds-active-surface-raised.
+   Medido nodo a nodo en /programacion-semanal/cic, /contratos,
+   /listado-actividades, /programa-general-actualizar y /pdc: casi todos ya los
+   pintaban asi desde otras hojas. Los dos que aun rendian el literal ganan
+   frontera: 1,56:1 -> 1,91:1 en .parametro_cargarExcel de
+   /programa-general-actualizar y 1,18:1 -> 1,91:1 en .pregunta de CIC. */
 .form_eval {
   border-style: solid;
   border-width: 2px;
-  border-color: rgba(55, 68, 81, 1);
-  background: rgb(191, 215, 48);
+  border-color: var(--ds-active-border);
+  background: var(--ds-active-surface-raised);
   border-radius: 5px;
 }
 
@@ -228,7 +235,7 @@ table.dataTable tbody tr:hover td {
 .parametro {
   border-style: solid;
   border-width: 2px;
-  border-color: rgba(55, 68, 81, 1);
+  border-color: var(--ds-active-border);
   border-radius: 5px;
   display: inline-block;
   padding: 2px 2px 10px 2px;
@@ -248,7 +255,7 @@ table.dataTable tbody tr:hover td {
 .parametro_cic {
   border-style: solid;
   border-width: 2px;
-  border-color: rgba(55, 68, 81, 1);
+  border-color: var(--ds-active-border);
   border-radius: 5px;
   display: inline-block;
   padding: 2px 2px 10px 2px;
@@ -270,7 +277,7 @@ table.dataTable tbody tr:hover td {
 .parametro_EditarContratos {
   border-style: solid;
   border-width: 2px;
-  border-color: rgba(55, 68, 81, 1);
+  border-color: var(--ds-active-border);
   border-radius: 5px;
   display: inline-block;
   padding: 2px 2px 10px 2px;
@@ -292,7 +299,7 @@ table.dataTable tbody tr:hover td {
 .parametro_Contrato {
   border-style: solid;
   border-width: 2px;
-  border-color: rgba(55, 68, 81, 1);
+  border-color: var(--ds-active-border);
   border-radius: 5px;
   display: inline-block;
   padding: 2px 2px 10px 2px;
@@ -344,7 +351,7 @@ table.dataTable tbody tr:hover td {
   padding: 1% 5%;
   border-bottom-style: solid;
   border-bottom-width: 0.7px;
-  border-bottom-color: rgba(55, 68, 81, 0.4);
+  border-bottom-color: var(--ds-active-border);
   width: 95%;
 }
 
