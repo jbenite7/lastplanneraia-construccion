@@ -10,6 +10,8 @@
 --     pondrá la fecha real junto a la programada sin rehacer el modelo.
 --
 -- Idempotente: CREATE TABLE IF NOT EXISTS. No toca datos existentes.
+-- Las tres referencian su catálogo padre (paquete_id → general_paquetes_contratacion),
+-- igual que el resto de tablas PDC (ver fk_pip_paquete en 20260724_pdc_v2_paquetes_contratacion.sql).
 
 CREATE TABLE IF NOT EXISTS pdc_paquete_frente (
   id BIGINT NOT NULL AUTO_INCREMENT,
@@ -27,7 +29,8 @@ CREATE TABLE IF NOT EXISTS pdc_paquete_frente (
   updated_at DATETIME NOT NULL,
   PRIMARY KEY (id),
   UNIQUE KEY uq_ppf_proyecto_paquete (project_id, paquete_id),
-  KEY idx_ppf_proyecto_frente (project_id, unique_id)
+  KEY idx_ppf_proyecto_frente (project_id, unique_id),
+  CONSTRAINT fk_ppf_paquete FOREIGN KEY (paquete_id) REFERENCES general_paquetes_contratacion (id) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS pdc_plan_paquete (
@@ -45,7 +48,8 @@ CREATE TABLE IF NOT EXISTS pdc_plan_paquete (
   updated_at DATETIME NOT NULL,
   PRIMARY KEY (id),
   UNIQUE KEY uq_ppp_proyecto_paquete (project_id, paquete_id),
-  KEY idx_ppp_proyecto_arranque (project_id, fecha_arranque)
+  KEY idx_ppp_proyecto_arranque (project_id, fecha_arranque),
+  CONSTRAINT fk_ppp_paquete FOREIGN KEY (paquete_id) REFERENCES general_paquetes_contratacion (id) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS pdc_plan_paso (
@@ -59,5 +63,5 @@ CREATE TABLE IF NOT EXISTS pdc_plan_paso (
   fecha_fin DATE NOT NULL,
   PRIMARY KEY (id),
   UNIQUE KEY uq_pps_proyecto_paquete_orden (project_id, paquete_id, orden),
-  KEY idx_pps_proyecto_paquete (project_id, paquete_id)
+  CONSTRAINT fk_pps_paquete FOREIGN KEY (paquete_id) REFERENCES general_paquetes_contratacion (id) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
