@@ -80,6 +80,82 @@ final class PresupuestoImportService
     }
 
     /**
+     * Fija a mano cuál versión del presupuesto es la oficial del proyecto.
+     *
+     * Hasta ahora la marca «Activa» se la llevaba siempre la última importación y no había forma
+     * de volver atrás: un presupuesto cargado por equivocación dejaba colgando de él al proyecto
+     * entero. La versión activa es la raíz de lo que se ve en el visor, en el maestro y en el
+     * Pareto, así que elegirla es una decisión que tiene que poder tomarse.
+     *
+     * Todo en una transacción y apagando primero: `pdc_presupuesto_versiones` tiene la columna
+     * generada `activa_unica` con índice único, así que encender la nueva antes de apagar la vieja
+     * lo rechazaría la propia base.
+     *
+     * No recibe `$usuario`: la tabla no tiene dónde registrar quién activó, y un parámetro con ese
+     * nombre prometería una auditoría inexistente. El permiso que lo protege es `lps.pdc.importar`,
+     * el mismo que carga presupuestos — quien puede traer una versión nueva puede decidir cuál rige.
+     *
+     * @return array{ok: bool, code?: string}
+     */
+    public function activar(int $projectId, int $versionId): array
+    {
+        $existe = $this->db->query(
+            'SELECT id FROM pdc_presupuesto_versiones WHERE project_id = ? AND id = ?',
+            [$projectId, $versionId],
+        )->fetch(\PDO::FETCH_ASSOC);
+        if ($existe === false) {
+            return ['ok' => false, 'code' => 'VERSION_INVALIDA'];
+        }
+
+        $this->db->beginTransaction();
+        try {
+            $this->db->query(
+                'UPDATE pdc_presupuesto_versiones SET activa = 0 WHERE project_id = ? AND activa = 1',
+                [$projectId],
+            );
+            $this->db->query(
+                'UPDATE pdc_presupuesto_versiones SET activa = 1 WHERE project_id = ? AND id = ?',
+                [$projectId, $versionId],
+            );
+            $this->db->commit();
+        } catch (\Throwable $t) {
+            $this->db->rollBack();
+            throw $t;
+        }
+        return ['ok' => true];
+    }
+
+    /**
+     * Qué trabajo quedará apuntando a otra versión si se cambia la oficial.
+     *
+     * Solo cuenta los vínculos del maestro: son lo ÚNICO atado a una versión concreta
+     * (`pdc_insumo_vinculos.version_id`). Las asignaciones a paquete y el plan de fechas no llevan
+     * `version_id` — viven a nivel de proyecto y sobreviven al cambio. Por eso esto sirve para
+     * avisar y no para bloquear: bloquear protegería de un peligro que no existe.
+     *
+     * Calcula por su cuenta de qué versión se sale, en vez de recibirla: quien llama no puede
+     * equivocarse de versión al preguntar.
+     *
+     * @return array{vinculosAfectados: int, versionActual: array{id: int, label: mixed}|null}
+     */
+    public function impactoDeCambiarVersion(int $projectId): array
+    {
+        $activa = $this->versionActivaDe($projectId);
+        if ($activa === null) {
+            return ['vinculosAfectados' => 0, 'versionActual' => null];
+        }
+        $n = (int) $this->db->query(
+            'SELECT COUNT(*) FROM pdc_insumo_vinculos WHERE project_id = ? AND version_id = ?',
+            [$projectId, (int) $activa['id']],
+        )->fetchColumn();
+
+        return [
+            'vinculosAfectados' => $n,
+            'versionActual' => ['id' => (int) $activa['id'], 'label' => $activa['version_label']],
+        ];
+    }
+
+    /**
      * @return array{ok: false, errores: list<PresupuestoErrorFila>}|array{
      *     ok: true,
      *     importToken: string,

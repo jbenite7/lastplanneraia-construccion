@@ -186,6 +186,8 @@ $router->get('/plan-compras/api/contexto', [\App\Controllers\Api\PlanComprasApiC
 $router->post('/plan-compras/api/presupuesto/preview', [\App\Controllers\Api\PlanComprasImportController::class, 'preview']);
 $router->post('/plan-compras/api/presupuesto/confirmar', [\App\Controllers\Api\PlanComprasImportController::class, 'confirmar']);
 $router->get('/plan-compras/api/presupuesto/versiones', [\App\Controllers\Api\PlanComprasImportController::class, 'versiones']);
+$router->post('/plan-compras/api/presupuesto/activar', [\App\Controllers\Api\PlanComprasImportController::class, 'activar']);
+$router->get('/plan-compras/api/presupuesto/impacto-version', [\App\Controllers\Api\PlanComprasImportController::class, 'impactoVersion']);
 $router->get('/plan-compras/api/presupuesto/arbol', [\App\Controllers\Api\PlanComprasImportController::class, 'arbol']);
 $router->get('/plan-compras/api/presupuesto/comparar', [\App\Controllers\Api\PlanComprasImportController::class, 'comparar']);
 
