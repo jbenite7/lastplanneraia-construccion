@@ -210,7 +210,15 @@ export type Comparativo = {
 }
 
 // Tipos de paquetes de contratación (Fase A3)
-export type PaqueteCatalogo = { id: number; nombre: string; tipoNegociacion: string; modalidad?: string; insumosGlobal: number }
+export type PaqueteCatalogo = {
+  id: number
+  nombre: string
+  tipoNegociacion: string
+  modalidad?: string
+  insumosGlobal: number
+  /** Si es «a todo costo», ¿compra producto terminado? Sin esto un MATERIAL ahí es doble conteo. */
+  admiteMateriales?: boolean
+}
 
 /**
  * Modalidad de contratación — dimensión ortogonal al tipo de negociación: dice CÓMO se compra, que es
@@ -241,7 +249,12 @@ export type InsumoPaquete = {
 }
 
 export type ActividadDeInsumo = { codigo: string; actividad: string; cantidad: number; valor: number }
-export type ActividadesInsumo = { total: number; items: ActividadDeInsumo[] }
+export type ActividadesInsumo = {
+  total: number
+  items: ActividadDeInsumo[]
+  /** «CAPÍTULO › subcapítulo › grupo › actividad» de la actividad de mayor valor. */
+  ruta?: string
+}
 
 export type SugerenciaPaquete = {
   descripcionNorm: string
@@ -251,6 +264,20 @@ export type SugerenciaPaquete = {
   capa: 'ia' | 'exacta' | 'reglas' | 'tokens' | 'indirectos' | 'agrupacion'
   confianza: 'alta' | 'media' | 'baja'
   evidencia: string
+}
+
+/**
+ * Qué se le cuenta al motor por una asignación. Aceptar su propuesta tal cual conserva la capa
+ * (acierto); descartarla deja el par sugerido→elegido para saber dónde falla. Los dos casos son
+ * ortogonales: una fila puede venir del motor y estar confirmada por un humano a la vez.
+ */
+export type Procedencia = {
+  origen?: SugerenciaPaquete['capa']
+  confianza?: SugerenciaPaquete['confianza']
+  evidencia?: string
+  confirmado?: boolean
+  sugeridoPaqueteId?: number
+  sugeridaCapa?: SugerenciaPaquete['capa']
 }
 
 /**

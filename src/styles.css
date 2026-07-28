@@ -132,8 +132,23 @@
 .pdc-wiz-atributos { display: flex; gap: 24px; margin: 12px 0 0; flex-wrap: wrap; }
 .pdc-wiz-atributos dt { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; opacity: 0.6; }
 .pdc-wiz-atributos dd { margin: 2px 0 0; font-size: 14px; }
-.pdc-wiz-sugerencia { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 16px 0; padding: 12px 14px; border: 1px solid #69b578; border-radius: 8px; background: #17251c; }
+.pdc-wiz-sugerencia { margin: 16px 0; padding: 12px 14px; border: 1px solid #69b578; border-radius: 8px; background: #17251c; }
 .pdc-wiz-sugerencia .pdc-sub { margin-top: 4px; }
+/* Sin propuesta el bloque sigue ahí, pero apagado: el hueco también es información. */
+.pdc-wiz-sugerencia.es-vacia { border-color: #3a3a3c; background: #202022; }
+.pdc-paq-tag.conf-media { background: #3a2f18; color: #e8c98a; }
+.pdc-paq-tag.conf-baja { background: #3a1f1a; color: #eaa898; }
+/* La ruta del presupuesto: de dónde salió la propuesta cuando la decidió la rama y no el nombre. */
+.pdc-wiz-ruta { margin: 10px 0 0; font-size: 12px; color: #a9a9ae; line-height: 1.45; }
+.pdc-wiz-filtro { display: inline-flex; gap: 6px; margin-left: 12px; }
+.pdc-wiz-filtro button { background: transparent; color: #c9c9ce; border: 1px solid #3a3a3c; border-radius: 999px; padding: 3px 11px; font-size: 12px; cursor: pointer; }
+.pdc-wiz-filtro button.is-activo { background: #1a3c2a; border-color: #69b578; color: #b7e4c4; }
+.pdc-wiz-deshacer { margin-left: 12px; background: transparent; border: 1px solid #3a3a3c; color: #c9c9ce; border-radius: 6px; padding: 2px 10px; font-size: 12px; cursor: pointer; }
+/* Cuantía por encima del umbral de auto-asignación: un error ahí se paga distinto. */
+.pdc-wiz-valor.es-caro { color: #e8c98a; }
+.pdc-wiz-caro-nota { display: block; font-size: 11px; text-transform: none; letter-spacing: 0; opacity: 0.8; }
+.pdc-wiz-aviso { margin: 0; padding: 9px 12px; border: 1px solid #b8863b; border-radius: 6px; background: #2b2416; color: #e8c98a; font-size: 12.5px; line-height: 1.45; }
+.pdc-wiz-card kbd { font: inherit; font-size: 11px; opacity: 0.7; border: 1px solid currentColor; border-radius: 3px; padding: 0 4px; margin-left: 6px; }
 .pdc-wiz-manual { margin-top: 14px; display: grid; gap: 10px; }
 .pdc-wiz-fila { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
 .pdc-wiz-fila label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; opacity: 0.85; }

@@ -149,6 +149,13 @@ export default function PaquetesContratacion() {
   )
   const insumosPayload = (lista: InsumoPaquete[]) => lista.map((i) => ({ descripcionNorm: i.descripcionNorm, unidad: i.unidad }))
 
+  // Qué paquetes usa ya este proyecto y por cuánto: el asistente los pone arriba del desplegable,
+  // porque al corregir una propuesta el destino correcto casi siempre es uno que la obra ya usa.
+  const usadosEnProyecto = useMemo(
+    () => new Map((resumen?.porPaquete ?? []).map((p) => [p.paqueteId, p.subtotal])),
+    [resumen],
+  )
+
   // Resumen de la propuesta de sembrado por fuente (para el preview).
   const resumenSembrado = useMemo(() => {
     const porFuente: Record<string, number> = {}
@@ -310,7 +317,7 @@ export default function PaquetesContratacion() {
           {resumen && <Cobertura resumen={resumen} />}
         </header>
         {barra}
-        <PaquetesAsistente onCambio={() => cargar(filtro)} actividadesMap={actividadesMap} />
+        <PaquetesAsistente onCambio={() => cargar(filtro)} actividadesMap={actividadesMap} usadosEnProyecto={usadosEnProyecto} />
       </section>
     )
   }
