@@ -488,11 +488,17 @@ table.dataTable tbody tr:hover td {
    public/css/design-system/adapters/legacy-bridge.css con el resto del
    layout legacy de este rango. */
 
+/* F1 Task 5l: unica regla VIVA del barrido. Es la banda de titulo de los
+   bloques de /control-cambios, y adopta la misma pareja que control-cambios.css
+   ya usa para .cc-field-label y .cc-field-block (raised + borde del tema);
+   fondo, borde y tinta del h3 se reasignan juntos. Medido en /control-cambios
+   con los cuatro nodos: la tinta sube de 9,96:1 a 13,3:1 y el borde de 1,50:1
+   a 1,91:1, ambos compuestos contra el fondo real. */
 .tituloFormularioCambios {
   border-style: solid;
   border-width: 2px;
-  border-color: rgb(0, 0, 0);
-  background: rgba(55, 68, 81, 1);
+  border-color: var(--ds-active-border);
+  background: var(--ds-active-surface-raised);
   border-top-left-radius: 5px;
   border-top-right-radius: 5px;
 }
@@ -502,7 +508,7 @@ table.dataTable tbody tr:hover td {
   margin: auto;
   font-weight: bold;
   text-align: center;
-  color: #ffffff;
+  color: var(--ds-active-text-primary);
 }
 
 /* =========================================
