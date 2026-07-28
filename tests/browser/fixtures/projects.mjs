@@ -1,3 +1,8 @@
+import { BASE_URL, puertoDelStackLocal } from './base-url.mjs';
+
+// Re-exportadas: media docena de specs y helpers ya las importan desde aquí.
+export { BASE_URL, puertoDelStackLocal };
+
 const appUsername = process.env.E2E_APP_USERNAME;
 const appPassword = process.env.E2E_APP_PASSWORD;
 
@@ -12,7 +17,6 @@ export const CREDENTIALS = {
   password: appPassword || 'aia2026',
 };
 
-export const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:8081';
 
 export const GLOBAL_TABLES = [
   'actividades',
