@@ -398,11 +398,12 @@ final class PaquetesService
             $params[] = '%' . addcslashes(MaestroInsumosService::normalizar($busqueda), '\\%_') . '%';
         }
         $rows = $this->db->query(
-            "SELECT p.id, p.nombre, p.tipo_negociacion, p.modalidad_contratacion, COUNT(a.id) AS insumos_global
+            "SELECT p.id, p.nombre, p.tipo_negociacion, p.modalidad_contratacion, p.admite_materiales,
+                    COUNT(a.id) AS insumos_global
              FROM general_paquetes_contratacion p
              LEFT JOIN pdc_insumo_paquete a ON a.paquete_id = p.id
              WHERE {$where}
-             GROUP BY p.id, p.nombre, p.tipo_negociacion, p.modalidad_contratacion
+             GROUP BY p.id, p.nombre, p.tipo_negociacion, p.modalidad_contratacion, p.admite_materiales
              ORDER BY p.nombre ASC",
             $params,
         )->fetchAll(\PDO::FETCH_ASSOC);
@@ -411,6 +412,9 @@ final class PaquetesService
             'nombre' => $r['nombre'],
             'tipoNegociacion' => $r['tipo_negociacion'],
             'modalidad' => $r['modalidad_contratacion'],
+            // La UI lo necesita para avisar del doble conteo al elegir destino a mano, sin replicar
+            // el cuadro de compatibilidad tipo_recurso ↔ tipo_negociacion en el cliente.
+            'admiteMateriales' => (int) $r['admite_materiales'] === 1,
             'insumosGlobal' => (int) $r['insumos_global'],
         ], $rows);
     }
@@ -525,6 +529,9 @@ final class PaquetesService
         // ese par (sugerido → elegido) es la señal más valiosa que tenemos sobre dónde falla.
         if (!$delMotor) {
             $this->registrarCorrecciones($projectId, $validos, $paqueteId, $usuario);
+            // En el asistente el insumo llega SIN asignar, así que no hay destino previo del que
+            // deducir el par: la propuesta descartada viaja en la petición.
+            $this->registrarCorreccionSugerida($projectId, $validos, $paqueteId, $procedencia, $usuario);
         }
 
         // Lotes multi-fila (patrón generarVinculos): evita un round-trip por insumo.
@@ -578,10 +585,58 @@ final class PaquetesService
         }
     }
 
-    /** Marca insumos como omitidos (no van al plan de compras): paquete_id NULL, omitido=1. */
-    public function omitir(int $projectId, array $insumos, string $usuario): array
+    /**
+     * Registra la propuesta que un humano descartó cuando el insumo no tenía destino previo.
+     *
+     * `registrarCorrecciones()` deduce el par leyendo lo que ya había en `pdc_insumo_paquete`, pero
+     * en el asistente el insumo llega sin asignar: no hay nada que leer. Aquí el par viaja explícito
+     * en `$procedencia` y se escribe tal cual. `$paqueteElegido` es NULL cuando la decisión fue
+     * omitir — rechazar hacia fuera del plan también es corregir al motor.
+     */
+    private function registrarCorreccionSugerida(
+        int $projectId,
+        array $validos,
+        ?int $paqueteElegido,
+        array $procedencia,
+        string $usuario,
+    ): void {
+        $sugerido = filter_var($procedencia['sugeridoPaqueteId'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        $capa = $procedencia['sugeridaCapa'] ?? null;
+        if ($sugerido === false || $sugerido === null || !in_array($capa, self::ORIGENES_MOTOR, true)) {
+            return;
+        }
+        if ($paqueteElegido !== null && $paqueteElegido === $sugerido) {
+            return; // el humano aceptó la propuesta: eso es un acierto, no una corrección
+        }
+        if ($validos === []) {
+            return;
+        }
+        foreach (array_chunk($validos, 200) as $lote) {
+            $valores = implode(', ', array_fill(0, count($lote), '(?, ?, ?, ?, ?, ?, ?, NOW())'));
+            $params = [];
+            foreach ($lote as $u) {
+                array_push($params, $projectId, $u['norm'], $u['unidad'], $sugerido, $paqueteElegido, $capa, $usuario);
+            }
+            $this->db->query(
+                "INSERT INTO pdc_correcciones_motor
+                    (project_id, descripcion_norm, unidad, paquete_sugerido, paquete_elegido, capa_sugerida, usuario, created_at)
+                 VALUES {$valores}",
+                $params,
+            );
+        }
+    }
+
+    /**
+     * Marca insumos como omitidos (no van al plan de compras): paquete_id NULL, omitido=1.
+     *
+     * `$procedencia` puede traer la propuesta que el humano rechazó (`sugeridoPaqueteId` +
+     * `sugeridaCapa`): omitir lo que el motor proponía es un fallo suyo y se registra igual que
+     * mandarlo a otro paquete, con el destino elegido en NULL.
+     */
+    public function omitir(int $projectId, array $insumos, string $usuario, array $procedencia = []): array
     {
         $validos = self::insumosValidos($insumos);
+        $this->registrarCorreccionSugerida($projectId, $validos, null, $procedencia, $usuario);
         foreach (array_chunk($validos, 200) as $lote) {
             $valores = implode(', ', array_fill(0, count($lote), '(?, ?, ?, NULL, 1, ?, NOW())'));
             $params = [];
@@ -1011,19 +1066,22 @@ final class PaquetesService
         $vid = (int) $version['id'];
         $rows = $this->db->query(
             "SELECT ai.descripcion, ai.unidad, ai.cantidad_total, ai.valor_total,
-                    it.codigo, it.descripcion AS actividad
+                    it.codigo, it.descripcion AS actividad, ai.item_id
              FROM pdc_presupuesto_apu_insumos ai
              JOIN pdc_presupuesto_items it ON it.id = ai.item_id
              WHERE ai.project_id = ? AND ai.version_id = ?
              ORDER BY ai.valor_total DESC",
             [$projectId, $vid],
         )->fetchAll(\PDO::FETCH_ASSOC);
+        $rutas = $this->rutasDeItems($projectId, $vid);
 
         $mapa = [];
         foreach ($rows as $r) {
             $clave = MaestroInsumosService::normalizar((string) $r['descripcion']) . '@@' . mb_strtoupper(trim((string) $r['unidad']));
             if (!isset($mapa[$clave])) {
-                $mapa[$clave] = ['total' => 0, 'items' => []];
+                // El ORDER BY es por valor: la primera fila de cada insumo es su actividad dominante,
+                // y su ruta es la que explica una propuesta decidida por la rama y no por el nombre.
+                $mapa[$clave] = ['total' => 0, 'items' => [], 'ruta' => $rutas[(int) $r['item_id']] ?? ''];
             }
             $mapa[$clave]['total']++;
             if (count($mapa[$clave]['items']) < $tope) {
@@ -1036,6 +1094,39 @@ final class PaquetesService
             }
         }
         return ['version' => ['id' => $vid, 'label' => $version['version_label']], 'mapa' => $mapa];
+    }
+
+    /**
+     * Ruta legible de cada ítem de una versión: «CAPÍTULO › subcapítulo › grupo › actividad».
+     *
+     * Un solo SELECT y la cadena se arma en memoria, igual que en actividadDominantePorInsumo():
+     * son ~500 filas por versión y resolverlas nivel a nivel serían miles de round-trips.
+     */
+    private function rutasDeItems(int $projectId, int $versionId): array
+    {
+        $items = $this->db->query(
+            'SELECT id, codigo, codigo_padre, descripcion FROM pdc_presupuesto_items
+             WHERE project_id = ? AND version_id = ?',
+            [$projectId, $versionId],
+        )->fetchAll(\PDO::FETCH_ASSOC);
+        $porCodigo = [];
+        foreach ($items as $it) {
+            $porCodigo[(string) $it['codigo']] = $it;
+        }
+
+        $rutas = [];
+        foreach ($items as $it) {
+            $cadena = [];
+            $actual = $it;
+            $guard = 0;
+            while ($actual !== null && $guard++ < 12) {
+                $cadena[] = (string) $actual['descripcion'];
+                $padre = $actual['codigo_padre'];
+                $actual = $padre !== null ? ($porCodigo[(string) $padre] ?? null) : null;
+            }
+            $rutas[(int) $it['id']] = implode(' › ', array_reverse($cadena));
+        }
+        return $rutas;
     }
 
     /** Catálogo activo indexado por nombre_norm → {id, nombre, tipoNegociacion} (una consulta). */
