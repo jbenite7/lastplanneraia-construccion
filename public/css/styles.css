@@ -4,27 +4,12 @@
 :root {
   /* 2026 Apple-Style Design System (Premium) */
 
-  /* Palette - System Colors (Apple Inspired)
-     Sin equivalente semantico 1:1 en --ds-active-action-* (verde corporate vs.
-     azul Apple): remapearlos es una decision de marca fuera del alcance de F1
-     Task 3 (solo corrige fondo/texto del body). Deuda documentada en
-     docs/design-system/exceptions.json. */
+  /* Acento azul heredado. Sin equivalente semantico 1:1 en --ds-active-action-*
+     (verde corporate contra azul Apple): remapearlo es marca, no tokenizacion.
+     F1 Task 5l borro sus doce companeros de paleta (--primary-dark,
+     --primary-light, los seis --status-*, los tres --color-* y --text-inverse)
+     tras censar cero consumidores en public/css, views, public/js, src y admin. */
   --primary: #0071e3; /* System Blue - Action */
-  --primary-dark: #005bb5; /* Darker Blue for hover */
-  --primary-light: #409cff; /* Lighter Blue */
-
-  /* Palette - Semantic States (sin consumidores activos hoy; ver exceptions.json) */
-  --status-critical: #ff3b30; /* System Red */
-  --status-delayed: #ff3b30; /* System Red (Unified) */
-  --status-warning: #ff9500; /* System Orange */
-  --status-attention: #007aff; /* System Blue */
-  --status-ok: #34c759; /* System Green */
-  --status-neutral: #8e8e93; /* System Gray */
-
-  /* Services Colors (Legacy mapping to Apple Palette; sin consumidores activos hoy) */
-  --color-purple: #af52de; /* System Purple */
-  --color-indigo: #5856d6; /* System Indigo */
-  --color-teal: #59adc4; /* Teal-ish (Custom) */
 
   /* Surfaces */
   --surface-bg: var(--ds-active-bg-canvas); /* F1 Task 3: antes literal claro */
@@ -39,7 +24,6 @@
   /* Text Colors */
   --text-main: var(--ds-active-text-primary); /* F1 Task 3: antes literal casi-negro */
   --text-secondary: var(--ds-active-text-secondary); /* F1 Task 3: antes literal gris claro */
-  --text-inverse: #ffffff; /* Par de --primary-light, sin cambios (fuera de alcance) */
 
   /* Spacing & Layout */
   --radius-sm: 8px;

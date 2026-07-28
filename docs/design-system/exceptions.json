@@ -347,27 +347,9 @@
       "module": "legacy-palette-accent",
       "rule": "hardcoded-hex",
       "file": "public/css/styles.css",
-      "selector": ":root (--primary, --primary-dark, --primary-light, --text-inverse)",
+      "selector": ":root (--primary)",
       "owner": "design-system",
-      "reason": "F1 Task 3 remapeo --surface-bg/--text-main a tokens activos, pero el acento azul Apple (--primary y derivados) no tiene equivalente semantico 1:1 en --ds-active-action-* (verde corporate): remapearlo es una decision de marca fuera del alcance de esta tarea (que solo corrige el fondo/texto claro heredado del body). --text-inverse queda literal porque solo empareja con --primary-light, sin cambios. Nota: el rule hardcoded-hex del audit no lleva selector (violacion sin scope de regla CSS), por lo que esta excepcion documenta la decision pero no suprime conteo alguno.",
-      "expiresAtVersion": "1.1.0"
-    },
-    {
-      "module": "legacy-palette-status",
-      "rule": "hardcoded-hex",
-      "file": "public/css/styles.css",
-      "selector": ":root (--status-critical, --status-delayed, --status-warning, --status-attention, --status-ok, --status-neutral)",
-      "owner": "design-system",
-      "reason": "F1 Task 3: colores semanticos de estado sin consumidores activos hoy en el repo (grep -rn confirma cero usos en public/css, public/js, views, src, admin). Se conservan literales para no inventar un mapeo --ds-* sin un consumidor real que lo valide.",
-      "expiresAtVersion": "1.1.0"
-    },
-    {
-      "module": "legacy-palette-services",
-      "rule": "hardcoded-hex",
-      "file": "public/css/styles.css",
-      "selector": ":root (--color-purple, --color-indigo, --color-teal)",
-      "owner": "design-system",
-      "reason": "F1 Task 3: colores de servicio heredados sin consumidores activos hoy en el repo (grep -rn confirma cero usos). Se conservan literales como deuda documentada.",
+      "reason": "F1 Task 3 remapeo --surface-bg/--text-main a tokens activos, pero el acento azul Apple (--primary) no tiene equivalente semantico 1:1 en --ds-active-action-* (verde corporate): remapearlo es una decision de marca fuera del alcance de esta tarea (que solo corrige el fondo/texto claro heredado del body). F1 Task 5l retiro de esta excepcion --primary-dark, --primary-light y --text-inverse, y borro por completo las entradas legacy-palette-status y legacy-palette-services: sus doce tokens se eliminaron de styles.css tras censar cero consumidores por nombre exacto en public/css, views, public/js, src y admin (incluida la concatenacion de cadenas en JS: los 'color_token' de ControlTowerService resuelven contra el mapa --bi-* de public/js/modules/bi-spa.js, no contra estos). --primary se queda porque conserva consumidores vivos en esta misma hoja. Nota: el rule hardcoded-hex del audit no lleva selector (violacion sin scope de regla CSS), por lo que esta excepcion documenta la decision pero no suprime conteo alguno.",
       "expiresAtVersion": "1.1.0"
     }
   ],
