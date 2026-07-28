@@ -1,0 +1,252 @@
+{
+  "version": "1.0.0",
+  "purpose": "Sitios que consumen la mitad de un par de estado a proposito. Al invertir los cuatro pares a oscuro, un bloque con solo -bg o solo -text queda descompensado; los que aparecen aqui es porque su intencion lo justifica.",
+  "exceptions": [
+    {
+      "file": "public/css/programacion-semanal.css",
+      "selector": "body.ps-page .ps-status-badges .badge-success",
+      "token": "--ds-color-state-success-text",
+      "reason": "El comentario de la linea anterior ya documenta la receta: tinta la superficie con color-mix usando success-text como operando y deja el texto en --ds-active-text-primary para cumplir AA; no es el par success-bg/success-text."
+    },
+    {
+      "file": "public/css/programacion-semanal.css",
+      "selector": ".ps-dropdown-item.is-active",
+      "token": "--ds-color-state-info-bg",
+      "reason": "El item activo del dropdown tinta el fondo con info-bg pero mantiene el texto en --ds-color-brand-architecture a proposito, para conservar el acento de marca en el estado activo en vez del info-text pareado."
+    },
+    {
+      "file": "public/css/programacion-semanal.css",
+      "selector": ".ps-page #hot-container .handsontable .changeType:hover, :focus",
+      "token": "--ds-color-state-info-bg",
+      "reason": "Mismo patron que .ps-dropdown-item.is-active: el hover/focus del icono changeType tinta el fondo con info-bg y deja el texto en --ds-color-brand-architecture, no en info-text, para el acento de marca."
+    },
+    {
+      "file": "public/css/programacion-semanal.css",
+      "selector": ".ps-dropdown-item.is-active (segunda aparicion en el archivo)",
+      "token": "--ds-color-state-info-bg",
+      "reason": "Repeticion identica del bloque de la linea ~360: fondo info-bg con texto --ds-color-brand-architecture fijo, no el info-text pareado, para mantener el acento de marca en el item activo."
+    },
+    {
+      "file": "public/css/programacion-semanal.css",
+      "selector": ".ps-page .ops-state-ready",
+      "token": "--ds-color-state-success-text",
+      "reason": "Es una etiqueta de texto suelta sin chip de fondo: colorea directamente el texto de estado 'listo' sobre la superficie ambiente, sin backdrop, a diferencia de los pills .ops-state-* que si usan el par completo."
+    },
+    {
+      "file": "public/css/programacion-semanal.css",
+      "selector": ".ps-page .ps-mobile-save-status.is-success",
+      "token": "--ds-color-state-success-text",
+      "reason": "Vive dentro de @media (max-width: 768px), fuera del alcance dark-desktop >=1180px que rige esta sesion (AGENTS.md); se deja intacto sin tocar CSS movil, pendiente de una tarea con alcance movil explicito."
+    },
+    {
+      "file": "public/css/programacion-semanal.css",
+      "selector": ".ps-page .ps-mobile-save-status.is-error",
+      "token": "--ds-color-state-warning-text",
+      "reason": "Vive dentro de @media (max-width: 768px), fuera del alcance dark-desktop >=1180px que rige esta sesion (AGENTS.md); se deja intacto sin tocar CSS movil, pendiente de una tarea con alcance movil explicito."
+    },
+    {
+      "file": "public/css/programacion-semanal.css",
+      "selector": ".ps-page #hot-container td .ps-commit-indicator.is-low",
+      "token": "--ds-color-state-warning-text",
+      "reason": "Colorea solo el icono/indicador inline de compromiso bajo, sin chip de fondo alrededor; es un acento de texto puntual, igual que el icono changeType, no un par bg/text."
+    },
+    {
+      "file": "public/css/programacion-semanal.css",
+      "selector": ".ps-page #hot-container td .ps-commit-indicator.is-ok",
+      "token": "--ds-color-state-success-text",
+      "reason": "Mismo patron que .is-low: colorea solo el icono/indicador inline sin fondo propio, un acento de texto puntual sobre la celda, no un chip con par completo."
+    },
+    {
+      "file": "public/css/programacion-semanal.css",
+      "selector": "@layer reset { html.aia-theme-dark body.ps-page .text-danger }",
+      "token": "--ds-color-state-critical-text",
+      "reason": "El comentario justo arriba (lineas 1408-1413) ya explica la razon: remapea el rojo utilitario de Bootstrap mezclando critical-text con texto primario via color-mix, sin fondo, para cumplir AA sobre celda oscura."
+    },
+    {
+      "file": "public/css/programacion-semanal.css",
+      "selector": ".ps-missing-assignment",
+      "token": "--ds-color-state-critical-text",
+      "reason": "Etiqueta de texto suelta (falta de asignacion) sin chip de fondo alrededor, igual que .ops-state-ready y los mensajes .la-message-*/.pdc-message-*; es un acento de texto, no un par bg/text."
+    },
+    {
+      "file": "public/css/programacion-semanal.css",
+      "selector": ".ps-legacy-card.is-cnp-critical",
+      "token": "--ds-color-state-warning-text",
+      "reason": "Vive dentro de @media (max-width: 767px) como fallback de tarjeta movil del listado (.ps-legacy-card-view), fuera del alcance dark-desktop >=1180px de esta sesion (AGENTS.md); se deja intacto."
+    },
+    {
+      "file": "public/css/programacion-semanal.css",
+      "selector": ".ps-legacy-card.is-cnp-non-critical",
+      "token": "--ds-color-state-info-text",
+      "reason": "Vive dentro de @media (max-width: 767px) como fallback de tarjeta movil del listado (.ps-legacy-card-view), fuera del alcance dark-desktop >=1180px de esta sesion (AGENTS.md); se deja intacto."
+    },
+    {
+      "file": "public/css/programacion-semanal.css",
+      "selector": ".ps-legacy-card.is-cnp-overdue-critical",
+      "token": "--ds-color-state-critical-text",
+      "reason": "Vive dentro de @media (max-width: 767px) como fallback de tarjeta movil del listado (.ps-legacy-card-view), fuera del alcance dark-desktop >=1180px de esta sesion (AGENTS.md); se deja intacto."
+    },
+    {
+      "file": "public/css/programacion-semanal.css",
+      "selector": ".ps-legacy-card.is-cnp-overdue-non-critical",
+      "token": "--ds-color-state-warning-text",
+      "reason": "Vive dentro de @media (max-width: 767px) como fallback de tarjeta movil del listado (.ps-legacy-card-view), fuera del alcance dark-desktop >=1180px de esta sesion (AGENTS.md); se deja intacto."
+    },
+    {
+      "file": "public/css/programacion-semanal.css",
+      "selector": ".ps-legacy-card.is-critical",
+      "token": "--ds-color-state-critical-text",
+      "reason": "Vive dentro de @media (max-width: 767px) como fallback de tarjeta movil del listado (.ps-legacy-card-view), fuera del alcance dark-desktop >=1180px de esta sesion (AGENTS.md); se deja intacto."
+    },
+    {
+      "file": "public/css/programacion-semanal.css",
+      "selector": ".ps-legacy-card.is-warning",
+      "token": "--ds-color-state-warning-text",
+      "reason": "Vive dentro de @media (max-width: 767px) como fallback de tarjeta movil del listado (.ps-legacy-card-view), fuera del alcance dark-desktop >=1180px de esta sesion (AGENTS.md); se deja intacto."
+    },
+    {
+      "file": "public/css/programacion-semanal.css",
+      "selector": ".ps-reopen-header",
+      "token": "--ds-color-state-warning-bg",
+      "reason": "Caso conocido senalado en el brief: aviso deliberadamente claro (documentado en styles.css ~linea 1020-1029); en la Task 2 este selector debe quedar exento de la inversion a oscuro para no perder su enfasis."
+    },
+    {
+      "file": "public/css/programacion-semanal.css",
+      "selector": ".ps-reopen-header",
+      "token": "--ds-color-state-warning-text",
+      "reason": "Mismo caso conocido que su -bg: aviso deliberadamente claro (documentado en styles.css ~linea 1020-1029); debe quedar exento de la inversion a oscuro de la Task 2 para no perder el enfasis del modal."
+    },
+    {
+      "file": "public/css/listado-actividades.css",
+      "selector": ".la-preview-section-created",
+      "token": "--ds-color-state-success-bg",
+      "reason": "Resalta la seccion de la previsualizacion con un tinte de fondo unicamente; el texto de las celdas conserva su color habitual para que la fila siga siendo legible igual que las demas filas del preview."
+    },
+    {
+      "file": "public/css/listado-actividades.css",
+      "selector": ".la-preview-row-created, .la-preview-section-existing",
+      "token": "--ds-color-state-info-bg",
+      "reason": "Mismo patron de resalte de fila/seccion del preview: solo tinta el fondo, el texto de las celdas no cambia de color para mantener la legibilidad uniforme entre filas creadas y existentes."
+    },
+    {
+      "file": "public/css/listado-actividades.css",
+      "selector": ".la-preview-section-warning",
+      "token": "--ds-color-state-warning-bg",
+      "reason": "Mismo patron de resalte de seccion del preview: solo tinta el fondo, el texto de las celdas no cambia de color para mantener la legibilidad uniforme frente a las demas secciones."
+    },
+    {
+      "file": "public/css/listado-actividades.css",
+      "selector": ".la-message-success",
+      "token": "--ds-color-state-success-text",
+      "reason": "Mensaje de texto suelto sin chip de fondo alrededor, igual que .pdc-message-success y .ct-message-error; es un acento de texto puntual, no un par bg/text."
+    },
+    {
+      "file": "public/css/listado-actividades.css",
+      "selector": ".la-message-error",
+      "token": "--ds-color-state-critical-text",
+      "reason": "Mensaje de texto suelto sin chip de fondo alrededor, igual que .pdc-message-error y .ct-message-error; es un acento de texto puntual, no un par bg/text."
+    },
+    {
+      "file": "public/css/listado-actividades.css",
+      "selector": ".filaBotones .la-toolbar-switcher .aia-info-nav__trigger:hover, :focus",
+      "token": "--ds-color-state-success-bg",
+      "reason": "El estado hover/focus solo tinta el fondo con success-bg; el color de texto lo sigue dando --aia-green-dark heredado de la regla base, que nunca fue el success-text pareado."
+    },
+    {
+      "file": "public/css/listado-actividades.css",
+      "selector": ".la-mobile-card__edit-field",
+      "token": "--ds-color-state-success-bg",
+      "reason": "Vive dentro de @media (max-width: 43.75rem) como parte de la vista de tarjeta movil (.la-mobile-card__*), fuera del alcance dark-desktop >=1180px de esta sesion (AGENTS.md); se deja intacto."
+    },
+    {
+      "file": "public/css/listado-actividades.css",
+      "selector": ".la-mobile-tipo-pill.is-checked",
+      "token": "--ds-color-state-success-bg",
+      "reason": "Vive dentro de @media (max-width: 43.75rem) como parte de la vista de tarjeta movil (.la-mobile-tipo-pill), fuera del alcance dark-desktop >=1180px de esta sesion (AGENTS.md); se deja intacto."
+    },
+    {
+      "file": "public/css/bi-control-tower.css",
+      "selector": ".bi-chip",
+      "token": "--ds-color-state-info-bg",
+      "reason": "El chip tinta el fondo con info-bg pero mantiene el texto en --ds-color-brand-aqua a proposito, para conservar el acento de marca del modulo BI en vez del info-text pareado."
+    },
+    {
+      "file": "public/css/bi-control-tower.css",
+      "selector": ".bi-project-option:hover, :focus-within",
+      "token": "--ds-color-state-info-bg",
+      "reason": "El hover/focus solo tinta el fondo con info-bg; el color de texto sigue siendo --ds-active-text-primary heredado de la regla base, nunca el info-text pareado."
+    },
+    {
+      "file": "public/css/bi-control-tower.css",
+      "selector": ".bi-switch-input:checked + .bi-switch-track",
+      "token": "--ds-color-state-info-bg",
+      "reason": "Es el riel de un switch decorativo sin texto dentro; no hay contenido textual que pueda llevar el info-text pareado porque el elemento nunca renderiza texto."
+    },
+    {
+      "file": "public/css/contratos.css",
+      "selector": ".ct-table-status[data-state=\"error\"]",
+      "token": "--ds-color-state-critical-text",
+      "reason": "Modificador de estado que solo cambia el color del texto sobre el chip neutro base (.ct-table-status); el fondo del chip queda en --ds-color-bg-surface, no en critical-bg."
+    },
+    {
+      "file": "public/css/contratos.css",
+      "selector": ".ct-message-error",
+      "token": "--ds-color-state-critical-text",
+      "reason": "Mensaje de texto suelto sin chip de fondo alrededor, igual que .la-message-error y .pdc-message-error; es un acento de texto puntual, no un par bg/text."
+    },
+    {
+      "file": "public/css/design-system/adapters/lps-drawer.css",
+      "selector": ".lps-drawer-state--error",
+      "token": "--ds-color-state-critical-text",
+      "reason": "Modificador que solo cambia el color del texto de estado del drawer sobre .lps-drawer-state (que tampoco define fondo propio); es un acento de texto puntual, no un par bg/text."
+    },
+    {
+      "file": "public/css/design-system/components/navigation.css",
+      "selector": ".aia-sidebar__retry",
+      "token": "--ds-color-state-critical-text",
+      "reason": "Declara background: transparent de forma explicita: es un boton fantasma de solo texto para reintentar, por lo que no le corresponde el critical-bg pareado."
+    },
+    {
+      "file": "public/css/design-system/components/navigation.css",
+      "selector": ".ds-shell-candidate[data-sidebar-preview-state=\"error\"] .aia-sidebar__notification-state",
+      "token": "--ds-color-state-critical-text",
+      "reason": "Es un estado de texto suelto para la notificacion del sidebar, sin chip de fondo alrededor; acento de texto puntual, no un par bg/text."
+    },
+    {
+      "file": "public/css/login-brand-unified.css",
+      "selector": "[data-aia-theme='dark'] body.login-brand-page .alert-danger, .aia-theme-dark body.login-brand-page .alert-danger",
+      "token": "--ds-color-state-critical-text",
+      "reason": "Receta de tinte para el override oscuro: mezcla critical-text con color-mix para borde y fondo, pero el texto queda fijo en --ds-active-text-primary; el par completo critical-bg/critical-text ya existe arriba en el bloque claro de .alert-danger."
+    },
+    {
+      "file": "public/css/pdc.css",
+      "selector": ".pdc-message-success",
+      "token": "--ds-color-state-success-text",
+      "reason": "Mensaje de texto suelto con fallback, sin chip de fondo alrededor, igual que .pdc-message-neutral vecino; acento de texto puntual, no un par bg/text."
+    },
+    {
+      "file": "public/css/pdc.css",
+      "selector": ".pdc-message-error",
+      "token": "--ds-color-state-critical-text",
+      "reason": "Mensaje de texto suelto con fallback, sin chip de fondo alrededor, igual que .pdc-message-neutral vecino; acento de texto puntual, no un par bg/text."
+    },
+    {
+      "file": "public/css/programa-general-actualizar.css",
+      "selector": ".pga-success-badge",
+      "token": "--ds-color-state-success-bg",
+      "reason": "El comentario de las lineas 21-23 ya lo declara: es el par de estado semantico que DESIGN.md fija constante entre temas (ratio 8,7:1); el fondo vive en el contenedor y el texto en el icono anidado (.pga-success-badge i), por eso el guard los ve como bloques separados."
+    },
+    {
+      "file": "public/css/programa-general-actualizar.css",
+      "selector": ".pga-success-badge i",
+      "token": "--ds-color-state-success-text",
+      "reason": "Mitad del mismo par constante que .pga-success-badge (ver comentario lineas 21-23): el icono anidado lleva el success-text mientras el contenedor lleva el success-bg; DESIGN.md fija este par como constante entre temas."
+    },
+    {
+      "file": "public/css/styles.css",
+      "selector": ".cic-text-dark",
+      "token": "--ds-color-state-critical-text",
+      "reason": "El comentario de las lineas 2589-2594 ya documenta la receta: mezcla critical-text con texto primario via color-mix con mas peso del critico (55/45) para la rama escalada de CIC, medido en 5,04:1; no hay fondo asociado."
+    }
+  ]
+}
