@@ -1506,10 +1506,6 @@ table.dataTable tbody tr:hover td {
 
 /* Panel, borde, radio y recorte los pone design-system/adapters/select2.css.
    La sombra queda aplazada: su geometria no tiene peldaño en la escalera --ds-shadow-*. */
-#modalNuevaActividad .select2-dropdown {
-  box-shadow: 0 14px 28px rgba(36, 49, 58, 0.14);
-}
-
 #modalNuevaActividad .select2-dropdown--below {
   margin-top: 0.35rem;
 }
