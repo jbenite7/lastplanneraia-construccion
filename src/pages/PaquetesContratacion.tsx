@@ -7,10 +7,10 @@ import {
   moneda, pdcTheme,
 } from '../lib/agGrid'
 import { PdcApiError, apiGet, apiPost } from '../lib/api'
-import { claveInsumo, estadoInicialPaquetes, filtroInicial, paquetesReducer } from '../lib/paquetesState'
+import { ACCION_PROPONER, claveInsumo, estadoInicialPaquetes, filtroInicial, paquetesReducer } from '../lib/paquetesState'
 import type { FiltroPaquetes } from '../lib/paquetesState'
 import { MODALIDADES, TIPOS_NEGOCIACION } from '../lib/types'
-import type { ActividadesInsumo, InsumoPaquete, PaqueteCatalogo, PlanAuto, ResumenPaquetes, SugerenciaPaquete } from '../lib/types'
+import type { ActividadesInsumo, InsumoPaquete, PaqueteCatalogo, ResumenPaquetes, SugerenciaPaquete } from '../lib/types'
 import PaquetesAsistente from './PaquetesAsistente'
 
 // Registro selectivo de módulos (no AllCommunityModule); ValidationModule solo en dev — patrón del repo.
@@ -71,7 +71,6 @@ export default function PaquetesContratacion() {
   const [agrupacion, setAgrupacion] = useState<string>('')
   const [sinVersion, setSinVersion] = useState(false)
   const [paqueteDestino, setPaqueteDestino] = useState<number | ''>('')
-  const [planAuto, setPlanAuto] = useState<PlanAuto | null>(null)
   const [nuevoNombre, setNuevoNombre] = useState('')
   const [nuevoTipo, setNuevoTipo] = useState(TIPOS_NEGOCIACION[0].value)
   const [nuevaModalidad, setNuevaModalidad] = useState(MODALIDADES[0].value)
@@ -166,7 +165,7 @@ export default function PaquetesContratacion() {
     [resumen],
   )
 
-  // Resumen de la propuesta de sembrado por fuente (para el preview).
+  // Resumen de la propuesta por fuente (para el preview).
   const resumenSembrado = useMemo(() => {
     const porFuente: Record<string, number> = {}
     for (const s of state.sugerencias.values()) porFuente[s.capa] = (porFuente[s.capa] ?? 0) + 1
@@ -175,37 +174,14 @@ export default function PaquetesContratacion() {
 
   const refrescar = () => { cargar(filtro); dispatch({ type: 'LIMPIAR_SEL' }) }
 
-  const onSugerir = async () => {
+  // El único botón de propuestas (ver ACCION_PROPONER): pide sugerencias y no escribe nada. Lo que
+  // escribe es «Aceptar N sugeridas», más abajo, y solo cuando la persona lo pulsa.
+  const onProponer = async () => {
     dispatch({ type: 'OCUPADO' })
     try {
-      const d = await apiGet<{ version: unknown; sugerencias: SugerenciaPaquete[] }>('/plan-compras/api/paquetes/sugerencias')
+      const d = await apiGet<{ version: unknown; sugerencias: SugerenciaPaquete[] }>(ACCION_PROPONER.endpoint)
       dispatch({ type: 'SUGERENCIAS_OK', sugerencias: d.sugerencias })
-      if (d.sugerencias.length === 0) dispatch({ type: 'LISTO', mensaje: 'No hay propuestas: todo asignado o sin señales para sembrar.' })
-    } catch (e) {
-      dispatch({ type: 'FALLO', mensaje: e instanceof Error ? e.message : String(e) })
-    }
-  }
-
-  // Auto-asignación (A3.3): preview primero — nada se escribe hasta que el usuario ve el reparto
-  // entre lo que el motor despacha solo y lo que le deja a él, y con qué motivo.
-  const onAutoAsignar = async () => {
-    dispatch({ type: 'OCUPADO' })
-    try {
-      const p = await apiGet<PlanAuto>('/plan-compras/api/paquetes/plan-auto')
-      setPlanAuto(p)
-      dispatch({ type: 'LISTO', mensaje: '' })
-    } catch (e) {
-      dispatch({ type: 'FALLO', mensaje: e instanceof Error ? e.message : String(e) })
-    }
-  }
-
-  const onConfirmarAuto = async () => {
-    dispatch({ type: 'OCUPADO' })
-    try {
-      const r = await apiPost<{ asignados: number; aRevision: number }>('/plan-compras/api/paquetes/auto-asignar', {})
-      setPlanAuto(null)
-      dispatch({ type: 'LISTO', mensaje: `${r.asignados} asignado(s) por el motor; ${r.aRevision} esperan tu revisión.` })
-      refrescar()
+      if (d.sugerencias.length === 0) dispatch({ type: 'LISTO', mensaje: 'No hay propuestas: todo está asignado o no hay señales suficientes.' })
     } catch (e) {
       dispatch({ type: 'FALLO', mensaje: e instanceof Error ? e.message : String(e) })
     }
@@ -357,44 +333,26 @@ export default function PaquetesContratacion() {
           <option value="">Todas las agrupaciones</option>
           {agrupaciones.map((a) => <option key={a} value={a}>{a}</option>)}
         </select>
-        <button type="button" data-testid="pdc-paq-sembrar" className="pdc-paq-primario" disabled={state.ocupado} onClick={onSugerir}>
-          Sembrar 1ª iteración
+        <button
+          type="button"
+          data-testid="pdc-paq-sembrar"
+          className="pdc-paq-primario"
+          disabled={state.ocupado}
+          onClick={onProponer}
+          title="Solo propone: las propuestas aparecen en la columna «Sugerencia» y no se guarda nada hasta que las aceptes."
+        >
+          {ACCION_PROPONER.etiqueta}
         </button>
         {state.sugerencias.size > 0 && (
           <button type="button" data-testid="pdc-paq-aceptar-sugeridos" className="pdc-paq-primario" disabled={state.ocupado} onClick={onAceptarSugeridos}>
             Aceptar {state.sugerencias.size} sugerida(s)
           </button>
         )}
-        <button
-          type="button"
-          data-testid="pdc-paq-auto"
-          disabled={state.ocupado}
-          onClick={onAutoAsignar}
-          title="Aplica sola la cola larga barata cuando la evidencia es inequívoca; lo caro y lo dudoso queda para ti."
-        >
-          Auto-asignar lo seguro
-        </button>
       </div>
-
-      {planAuto && (
-        <div data-testid="pdc-paq-plan-auto" className="pdc-paq-sembrado">
-          <strong>{planAuto.auto.length} insumo(s) se pueden asignar solos</strong> — evidencia inequívoca y menos de {moneda(planAuto.umbral)} cada uno.
-          {planAuto.revision.length > 0 && (
-            <> Quedan <strong>{planAuto.revision.length}</strong> para ti: {planAuto.revision.filter((r) => r.motivo === 'valor').length} por cuantía y {planAuto.revision.filter((r) => r.motivo === 'confianza').length} porque la evidencia no basta.</>
-          )}
-          <div className="pdc-paq-fuentes">
-            <button type="button" className="pdc-paq-primario" data-testid="pdc-paq-auto-confirmar" disabled={state.ocupado || planAuto.auto.length === 0}
-              onClick={onConfirmarAuto}>
-              Aplicar {planAuto.auto.length}
-            </button>
-            <button type="button" data-testid="pdc-paq-auto-cancelar" disabled={state.ocupado} onClick={() => setPlanAuto(null)}>Cancelar</button>
-          </div>
-        </div>
-      )}
 
       {resumenSembrado.total > 0 && (
         <div data-testid="pdc-paq-sembrado-resumen" className="pdc-paq-sembrado">
-          <strong>Propuesta de sembrado: {resumenSembrado.total} insumo(s)</strong> — revísala en la columna «Sugerencia» y ajusta lo que quieras antes de <em>Aceptar</em>.
+          <strong>Propuesta del motor: {resumenSembrado.total} insumo(s)</strong> — nada se ha guardado. Revísala en la columna «Sugerencia» y ajusta lo que quieras antes de <em>Aceptar</em>.
           <div className="pdc-paq-fuentes">
             {FUENTES_ORDEN.filter((f) => resumenSembrado.porFuente[f]).map((f) => (
               <span key={f} className="pdc-paq-fuente"><span className={`pdc-paq-punto pdc-fuente-${f}`} />{FUENTE_LABEL[f]}: {resumenSembrado.porFuente[f]}</span>

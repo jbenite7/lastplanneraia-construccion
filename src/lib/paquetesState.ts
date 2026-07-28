@@ -5,6 +5,23 @@ export function claveInsumo(descripcionNorm: string, unidad: string): string {
   return `${descripcionNorm}@@${unidad}`
 }
 
+/**
+ * El único botón de propuestas de la pantalla de Paquetes.
+ *
+ * Antes eran dos —«Sembrar 1ª iteración» y «Auto-asignar lo seguro»— y elegir entre ellos exigía
+ * entender una distinción interna del motor: proponer contra escribir, y el umbral de $20 M. Ahora
+ * hay uno solo y **solo propone**: las propuestas aparecen en la columna «Sugerencia» y no se
+ * guarda nada hasta que la persona pulsa «Aceptar N sugeridas».
+ *
+ * Vive aquí, y no suelto en el componente, para que la etiqueta y el endpoint sean verificables:
+ * si algún día el botón pasara a escribir, habría que cambiar este contrato a la vista de todos.
+ */
+export const ACCION_PROPONER = {
+  etiqueta: 'Proponer destinos',
+  endpoint: '/plan-compras/api/paquetes/sugerencias',
+  escribe: false,
+} as const
+
 /** Los cuatro estados por los que se puede filtrar la grilla de insumos. */
 export type FiltroPaquetes = 'todos' | 'sin_asignar' | 'asignados' | 'omitidos'
 

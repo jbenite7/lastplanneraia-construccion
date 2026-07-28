@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { claveInsumo, estadoInicialPaquetes, filtroInicial, paquetesReducer } from './paquetesState'
+import { ACCION_PROPONER, claveInsumo, estadoInicialPaquetes, filtroInicial, paquetesReducer } from './paquetesState'
 import type { SugerenciaPaquete } from './types'
 
 const sug: SugerenciaPaquete = {
@@ -58,5 +58,25 @@ describe('filtroInicial', () => {
 
   it('sin datos todavía, no adivina: se queda en todos', () => {
     expect(filtroInicial(null)).toBe('todos')
+  })
+})
+
+describe('ACCION_PROPONER — el botón único de propuestas', () => {
+  it('proponer no escribe: nada se guarda hasta que la persona confirma', () => {
+    expect(ACCION_PROPONER.escribe).toBe(false)
+  })
+
+  it('pide sugerencias por lectura, no por un endpoint de asignación', () => {
+    expect(ACCION_PROPONER.endpoint).toBe('/plan-compras/api/paquetes/sugerencias')
+    expect(ACCION_PROPONER.endpoint).not.toContain('asignar')
+  })
+
+  it('el nombre se entiende sin conocer el motor por dentro', () => {
+    // «Sembrar 1ª iteración» era vocabulario del desarrollo: el dueño del producto tuvo que
+    // preguntar qué hacía el botón antes de atreverse a pulsarlo.
+    const etiqueta = ACCION_PROPONER.etiqueta.toLowerCase()
+    expect(etiqueta).not.toContain('sembrar')
+    expect(etiqueta).not.toContain('iteración')
+    expect(etiqueta).toContain('proponer')
   })
 })
