@@ -125,6 +125,11 @@ test.describe('superficies con estado abierto de Programacion Intermedia en dark
       };
     }, COLOR_HELPERS.toString());
 
+    // El `h6` es el unico delta visual del tramo: si desapareciera, el bucle de
+    // abajo se quedaria sin nada que medir y el guard pasaria en verde vacio.
+    // La asercion exige que el titulo exista, no que lo pinte un token concreto.
+    expect(readings.title, 'el tooltip perdio su titulo (h6): el guard se queda sin medir el delta del tramo').not.toBeNull();
+
     for (const sample of [readings.body, readings.title].filter(Boolean)) {
       expect(sample.visible, `${sample.label} mide 0x0: el tooltip no llego a abrirse`).toBe(true);
       expect(

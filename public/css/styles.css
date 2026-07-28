@@ -3923,13 +3923,16 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
   max-width: 66rem;
 }
 
-/* Solo geometria: el color de todo este bloque lo resuelve
-   `programacion-intermedia.css`, que gana la cascada en esta ruta. */
+/* Solo geometria y el borde neutro del sistema: el resto del color de este
+   bloque (fondos y textos) lo resuelve `programacion-intermedia.css`, que gana
+   la cascada en esta ruta. Los `border` van con su color explicito a proposito:
+   el shorthand resetea `border-color` a `currentColor`, asi que dejarlo
+   mutilado haria depender el borde de que el modulo siga aportando el color. */
 .pi-page .pi-legend-quick-header {
   display: grid;
   gap: 0.45rem;
   padding: 0.72rem 0.8rem;
-  border: 1px solid;
+  border: 1px solid var(--ds-active-border);
   border-radius: 0.65rem;
 }
 
@@ -3960,7 +3963,7 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
 }
 
 .pi-page .pi-legend-quick-group {
-  border: 1px solid;
+  border: 1px solid var(--ds-active-border);
   border-radius: 0.65rem;
   overflow: hidden;
 }
@@ -3971,7 +3974,7 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
   font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.01em;
-  border-bottom: 1px solid;
+  border-bottom: 1px solid var(--ds-active-border);
 }
 
 .pi-page .pi-legend-quick-row {
@@ -3980,7 +3983,7 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
   align-items: center;
   gap: 0.45rem;
   padding: 0.52rem 0.65rem;
-  border-top: 1px solid;
+  border-top: 1px solid var(--ds-active-border);
 }
 
 .pi-page .pi-legend-quick-group .pi-legend-quick-row:first-of-type {
